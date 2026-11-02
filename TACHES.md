@@ -38,11 +38,11 @@ revue et validation avant fusion.
 ## Tableau
 | Clé | Titre | Type | Priorité | Livraison | Statut | Responsable | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
+| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
 | WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
 | WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | 🔧 En cours | Claude (session trafic) | `feature/waforspeed-08` |  | |
@@ -267,3 +267,28 @@ n'est pas encore dans `main`) ; synchronisation avec `main` dès la fusion de la
 **avant** la mise en place de `CLAUDE.md` et du tableau. Approche abandonnée (l'utilisateur veut une appli native,
 sans navigateur). Hors tableau : **ne pas fusionner, ne pas reprendre**. Branche conservée (on ne supprime pas de branche).
 Règle ajoutée à `CLAUDE.md` : même si la session attribue une branche `claude/…`, travailler sur `feature/waforspeed-XX`.
+
+### 2026-11-02 — QA WFS-01→05, passage 1 : REFUSÉ (Claude, session moteur-natif)
+Émulateur Android 14 (2400x1080) : installation et démarrage OK, mais scène rendue en portrait 1080x2400 (erreur de
+pré-rotation, cause de l'image étirée sur téléphone) et vitesse restée à 0 (0,1 image/s sur GPU logiciel, appuis non vus).
+Rapport : `qa/rapports/WFS-01.md`. Corrections poussées sur `feature/waforspeed-01` ; nouveau passage QA à la prochaine construction.
+
+### 2026-11-02 — WFS-08 : code écrit, première construction en cours (Claude, session trafic)
+**Fait**
+- `src/game/traffic.*` : port de `traffic.js` (addCars, laneFree, stepTraffic, advanceTraffic, crashTraffic) et des chocs
+  de `update.js` (hitCar, quasi-contacts). Mode parallèle : la voiture de devant de chaque voiture est cherchée sur
+  tous les cœurs (`jobs().parallelFor`), le reste du pas garde l'ordre du jeu web.
+- `Player` : accident (tête-à-queue, commandes bloquées) comme le jeu web. `Track::wrap` : même calcul que le JavaScript.
+- `Game` : trafic dessiné avec les 4 modèles natifs (chargés une fois, partagés avec le joueur), à la longueur réelle de
+  chaque voiture, 14 au plus de 30 m derrière à 300 m devant ; secousse aux chocs ; pilote automatique du banc d'essai
+  porté de `autopilot()` (change de file, freine derrière plus lent).
+- Fichiers hors du plan initial : `src/game/player.*`, `src/game/track.h`, `src/platform/desktop_main.cpp` (journal du banc).
+
+**Vérification (conteneur)**
+- `test_traffic` : **0 écart sur 39 voitures** comparées au jeu web (2 cartes, 20 s) ; mode parallèle déterministe et sans
+  chevauchement ; choc arrière à 156 km/h → accident, voiture percutée en glissade. `test_track` inchangé.
+- Tout le C++ compile sans avertissement (`-Wall -Wextra`).
+
+**Pas encore vérifié** : shaders, banc d'essai Vulkan, APK et captures (construction GitHub en cours).
+**Limites** : 16 des 20 voitures du jeu web s'affichent avec le modèle natif le plus proche (les 20 modèles : WFS-13) ;
+pas encore de feux stop ni de clignotants dessinés ; score des quasi-contacts compté mais pas affiché (HUD : WFS-12).
