@@ -7,7 +7,7 @@
 namespace wfs {
 
 static constexpr int CHUNKS_BEHIND = 2, CHUNKS_AHEAD = 22;
-static constexpr float WALK_W = 4.0f, CURB_H = 0.15f, GROUND_W = 70.f;
+static constexpr float WALK_W = 4.0f, CURB_H = 0.15f, GROUND_W = 260.f;
 
 static vec3 hexColor(unsigned h) {
     auto lin = [](float c) { return std::pow(c, 2.2f); };
@@ -84,8 +84,8 @@ void Game::buildChunkCpu(int64_t c, ChunkCpu& out) {
     strip(1, {{-R - WALK_W, CURB_H}, {-R - 0.12f, CURB_H}, {-R, CURB_H - 0.02f}, {-R, 0.f}});
     strip(1, {{R, 0.f}, {R, CURB_H - 0.02f}, {R + 0.12f, CURB_H}, {R + WALK_W, CURB_H}});
     // bas-côtés
-    strip(2, {{-R - WALK_W - GROUND_W, -0.4f}, {-R - WALK_W - 20.f, 0.f}, {-R - WALK_W, CURB_H - 0.02f}});
-    strip(2, {{R + WALK_W, CURB_H - 0.02f}, {R + WALK_W + 20.f, 0.f}, {R + WALK_W + GROUND_W, -0.4f}});
+    strip(2, {{-R - WALK_W - GROUND_W, -6.f}, {-R - WALK_W - 80.f, -0.8f}, {-R - WALK_W - 20.f, 0.f}, {-R - WALK_W, CURB_H - 0.02f}});
+    strip(2, {{R + WALK_W, CURB_H - 0.02f}, {R + WALK_W + 20.f, 0.f}, {R + WALK_W + 80.f, -0.8f}, {R + WALK_W + GROUND_W, -6.f}});
 
     // normales : produit vectoriel des côtés de chaque triangle, moyenné par sommet
     for (int w = 0; w < 3; w++) {

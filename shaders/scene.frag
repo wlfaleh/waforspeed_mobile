@@ -100,7 +100,9 @@ void main() {
     vec3 R = reflect(-V, N);
     vec3 skyAmb = mix(F.groundCol.rgb, F.skyTop.rgb, N.y * 0.5 + 0.5) * F.misc.z;
     vec3 Fe = f0 + (max(vec3(1.0 - rough), f0) - f0) * pow(1.0 - NoV, 5.0);
-    vec3 env = mix(skyColor(R), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
+    // le disque du soleil ne se reflète nettement que sur les surfaces lisses (sinon tache blanche sur la route)
+    float sunK = pow(1.0 - clamp(rough, 0.0, 1.0), 6.0);
+    vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     col += albedo * (1.0 - metal) * skyAmb + env * Fe * F.misc.w * specOcc;
 
