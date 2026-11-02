@@ -23,6 +23,9 @@ public:
     const Traffic& traffic() const { return traffic_; }
     // compteurs de la course (quasi-contacts, chocs) : affichés par le HUD de WFS-12
     int nearMisses = 0, accidents = 0;
+    // banc d'essai : place le joueur `metres` derrière la voiture du trafic la plus entourée,
+    // décalé de `lat` (demi-largeurs de route), à sa vitesse + `extraKmh` ; renvoie l'indice de la voiture
+    int benchPlaceBehind(double metres, double lat, double extraKmh);
     void setCar(const char* carId);
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;

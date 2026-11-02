@@ -276,6 +276,25 @@ void Game::drawTraffic() {
     }
 }
 
+int Game::benchPlaceBehind(double metres, double lat, double extraKmh) {
+    // voiture qui a le plus de voisines à moins de 120 m devant elle : la scène montre plusieurs voitures
+    int best = 0, bestN = -1;
+    for (size_t i = 0; i < traffic_.cars.size(); i++) {
+        int n = 0;
+        for (const auto& o : traffic_.cars) { const double dz = track_.relZ(o.z - traffic_.cars[i].z); if (dz > 0 && dz < 120 / M) n++; }
+        if (n > bestN) { bestN = n; best = (int)i; }
+    }
+    const TrafficCar& c = traffic_.cars[(size_t)best];
+    const double newPos = track_.wrap(c.z - metres / M);
+    player_.dist += track_.relZ(newPos - player_.position);
+    player_.position = newPos;
+    player_.playerX = c.offset + lat; player_.heading = 0; player_.steer = 0;
+    player_.speed = c.speed + extraKmh / 260.0 * MAX_SPEED;
+    for (auto& o : traffic_.cars) o.prevDz = track_.relZ(o.z - player_.position);
+    camInit_ = false;
+    return best;
+}
+
 mat4 Game::carMatrix(double s, double lat, double yaw) {
     TrackPoint p = track_.point(s, lat);
     return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
