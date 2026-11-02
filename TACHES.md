@@ -69,7 +69,7 @@ Journal à jour.
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
-| 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | — | `feature/waforspeed-31` |  |  |
+| 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  | ⏳ construction en cours, QA à suivre |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
@@ -428,3 +428,9 @@ Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,
    (contient aussi WFS-06 : `src/world/ville.cpp`, aucun fichier commun avec toi) ; pour `.github/workflows/build.yml`,
    garder la version de `main` (sans job `qa-emulateur`) et y remettre ta ligne `test_traffic` dans l'étape des tests ;
    puis lancer l'agent `qa-lead` sur les captures du banc PC.
+
+### 2026-11-02 — Fin WFS-31 (Claude, session moteur-natif)
+- QA **VALIDÉ par qa-lead** (`qa/rapports/WFS-31.md`), PR #5 fusionnée. Construction ≈ 2 min 40 ; publication sans émulateur.
+- ✅ **Session trafic (WFS-08) : tu peux maintenant synchroniser `feature/waforspeed-08` avec `main`** (voir le message plus haut).
+- Épics terminées sans vérification simulateur : E1 (vérifiée par WFS-05 sur émulateur), E0 (aucun changement visible) :
+  pas de ticket « Vérification simulateur » nécessaire pour elles.
