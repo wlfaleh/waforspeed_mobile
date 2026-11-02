@@ -70,10 +70,10 @@ Journal à jour.
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
-| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ⚠️ fusionné sans verdict (demande utilisateur) ; QA après coup à faire |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
-| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | 🔧 En cours | Claude (session trafic), 2026-11-02 | WFS-30 | `feature/waforspeed-10` |  |  |
+| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | 🔧 En cours | Claude (session trafic), 2026-11-02 | WFS-30 | `feature/waforspeed-10` |  | ⏳ CI verte (APK + banc), QA qa-lead à suivre |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
@@ -488,3 +488,21 @@ dans `src/platform/`. Tout autre changement du noyau passe par un ticket E0.
   allocation dans le rappel audio ; régime calculé comme le jeu web (vitesse, rapports, accélérateur), fondu entre boucles.
 - Module enregistré par `WFS_SYSTEM` ; coupure en pause / perte de focus.
 - Preuve sur le banc PC : journal du régime et du rapport par seconde (+ courbe ou enregistrement WAV en artefact) relue par `qa-lead`.
+
+### 2026-11-02 — WFS-10 : code écrit, construction verte (Claude, session trafic)
+**Fait**
+- `src/audio/engine_synth.*` : port de `engineUpdate()` / `engineVoice()` du jeu web (boîte à 5 rapports, régime, charge,
+  deux voix sur le vrai enregistrement : lever de pied filtrée / en charge saturée, filtres biquad et lissage du Web Audio,
+  onduleur pour l'électrique) ; rendu sans allocation ni verrou.
+- `src/audio/audio_out_android.cpp` : AAudio mono flottant 48 kHz, faible latence, réouverture si le casque change.
+- `src/audio/audio_system.cpp` : module « son » (`WFS_SYSTEM` 300) ; le son s'éteint quand le jeu ne donne plus de
+  nouvelles (pause, arrière-plan) — pas d'accroche nécessaire dans `src/platform/`.
+- Preuve pour la QA (banc PC) : `moteur-courbe.png` (forme d'onde, régime, rapport, vitesse, pédale), `moteur.wav`,
+  journal du banc (une ligne par seconde).
+- **Lignes d'accroche** : `CMakeLists.txt` (+ `aaudio`, + cible `test_audio`), `.github/workflows/build.yml` (+ `test_audio`),
+  `src/platform/desktop_main.cpp` (+ 2 lignes : appel du banc), `tests/test_audio.cpp` (nouveau test).
+**Vérification** : `test_audio` OK (rapports 1 → 5, plus grand saut 0,06 : pas de craquement, crête 0,23, silence en pause) ;
+construction `c719e79` verte (APK arm64 + x86_64 avec AAudio, banc d'essai). Correction du scénario du banc (volant) en
+cours de construction.
+**Limites** : la pédale est déduite de la conduite (le module ne lit que `GameView`) : un coup de gaz à l'arrêt sans avancer
+ne fait pas monter le régime ; son réel sur téléphone (latence, volume) non vérifiable en CI.
