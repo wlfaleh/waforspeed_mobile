@@ -12,7 +12,7 @@ void main() {
     vec3 glow = vec3(0.0);
     for (int i = -2; i <= 2; i++) for (int j = -2; j <= 2; j++) {
         vec3 s = texture(hdr, vUv + vec2(i, j) * px * 3.0).rgb * pc.params.x;
-        glow += max(s - 1.0, 0.0);
+        glow += max(s - 2.5, 0.0);
     }
     c += glow / 25.0 * 0.35;
     c = aces(c);

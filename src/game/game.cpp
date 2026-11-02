@@ -21,6 +21,13 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId) {
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     m.flags = MAT_GROUND; m.rough = 0.95f; groundMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+    m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f}; shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+    {
+        // carré 1x1 au sol (uv 0..1), légèrement surélevé
+        std::vector<Vertex> v = {{-0.5f, 0.02f, -0.5f, 0, 1, 0, 0, 0}, {0.5f, 0.02f, -0.5f, 0, 1, 0, 1, 0},
+                                 {0.5f, 0.02f, 0.5f, 0, 1, 0, 1, 1}, {-0.5f, 0.02f, 0.5f, 0, 1, 0, 0, 1}};
+        shadowQuad_ = r.makeMesh(v, {0, 1, 2, 0, 2, 3});
+    }
     setCar(carId);
     return car_.ok;
 }
@@ -42,6 +49,7 @@ void Game::shutdown() {
     for (auto& g : graveyard_) r_->destroy(g.second);
     graveyard_.clear();
     r_->destroy(car_);
+    r_->destroy(shadowQuad_);
     r_ = nullptr;
 }
 
@@ -191,6 +199,7 @@ mat4 Game::carMatrix(double s, double lat, double yaw) {
 
 void Game::render(double time) {
     frameNo_++;
+    struct LastT { double& t; double v; ~LastT() { t = v; } } keepTime{lastTime_, time};
     streamChunks();
     const double s = player_.dist, lat = player_.playerX * RW;
     mat4 carM = carMatrix(s, lat, player_.heading);
@@ -210,8 +219,10 @@ void Game::render(double time) {
         TrackPoint behind = track_.point(s - back / M, lat * 0.85);
         vec3 eyeT = vec3{(float)behind.x, (float)behind.y + up, (float)behind.z};
         vec3 lookT = carPos + fwd * 4.0f + vec3{0, 0.8f, 0};
-        if (!camInit_) { camEye_ = eyeT; camLook_ = lookT; camInit_ = true; }
-        camEye_ = lerp(camEye_, eyeT, 0.25f); camLook_ = lerp(camLook_, lookT, 0.35f);
+        // lissage indépendant de la fréquence d'affichage ; si la caméra est trop loin (téléportation), on la recale
+        const float fdt = (float)std::clamp(time - lastTime_, 0.0, 0.1);
+        if (!camInit_ || length(camEye_ - eyeT) > 25.f) { camEye_ = eyeT; camLook_ = lookT; camInit_ = true; }
+        camEye_ = lerp(camEye_, eyeT, 1.f - std::exp(-fdt * 14.f)); camLook_ = lerp(camLook_, lookT, 1.f - std::exp(-fdt * 20.f));
         eye = camEye_; look = camLook_;
     }
     float aspect = (float)r_->width() / (float)std::max(1u, r_->height());
@@ -223,8 +234,8 @@ void Game::render(double time) {
     fp.camPos = eye; fp.time = (float)time;
     fp.sunDir = {-0.45f, 0.42f, -0.55f}; fp.sunIntensity = 3.2f; fp.sunColor = {1.0f, 0.93f, 0.82f};
     fp.skyTop = {0.16f, 0.34f, 0.75f}; fp.skyHorizon = {0.66f, 0.76f, 0.88f}; fp.ground = {0.2f, 0.19f, 0.17f};
-    fp.fogColor = {0.62f, 0.7f, 0.8f}; fp.fogDensity = 0.0018f;
-    fp.exposure = 1.0f; fp.ambient = 0.9f;
+    fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
+    fp.exposure = 0.85f; fp.ambient = 0.85f;
     if (!r_->beginFrame(fp)) return;
 
     const mat4 I = mat4::identity();
@@ -233,6 +244,8 @@ void Game::render(double time) {
         r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
+    // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
+    r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
     r_->draw(car_, carM, &paint_);
     if (camMode != 2) drawControls();
     r_->endFrame();

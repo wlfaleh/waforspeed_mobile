@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
     for (int cam = 0; cam < 2; cam++) {
         g.camMode = cam;
         for (int shot = 0; shot < 3; shot++) {
-            for (int i = 0; i < 240; i++) g.update(1.0 / 60);
-            g.render(shot); g.render(shot);
+            for (int i = 0; i < 240; i++) { g.update(1.0 / 60); if (i % 8 == 0) g.render(shot * 10 + i / 60.0); }
+            g.render(shot * 10 + 4.0); g.render(shot * 10 + 4.02);
             char name[128]; std::snprintf(name, sizeof name, "%s/course-cam%d-%d.png", out.c_str(), cam, shot);
             r.capturePng(name);
             WFS_LOG("capture %s : %.0f km/h, %.0f m", name, g.player().kmh(), g.player().dist * M);

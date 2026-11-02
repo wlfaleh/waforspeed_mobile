@@ -432,7 +432,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || !m.indexCount) return;
-    Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, 0};
+    Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};

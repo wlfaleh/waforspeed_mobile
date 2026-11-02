@@ -12,7 +12,7 @@ layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
-           F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_HASNORMAL = 4096u, F_HASMR = 8192u;
+           F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -38,6 +38,12 @@ vec3 perturb(vec3 N, vec3 p, vec2 uv, vec3 tn) {
 
 void main() {
     uint flags = uint(pc.params.w + 0.5);
+    if ((flags & F_SHADOW) != 0u) {   // ombre de contact : rectangle aux bords très doux
+        vec2 q = abs(vUv * 2.0 - 1.0);
+        float a = (1.0 - smoothstep(0.55, 1.0, q.x)) * (1.0 - smoothstep(0.6, 1.0, q.y));
+        outColor = vec4(0.0, 0.0, 0.0, a * pc.color.a);
+        return;
+    }
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
     if (!gl_FrontFacing) N = -N;   // pièces double face
@@ -95,7 +101,8 @@ void main() {
     vec3 skyAmb = mix(F.groundCol.rgb, F.skyTop.rgb, N.y * 0.5 + 0.5) * F.misc.z;
     vec3 Fe = f0 + (max(vec3(1.0 - rough), f0) - f0) * pow(1.0 - NoV, 5.0);
     vec3 env = mix(skyColor(R), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
-    col += albedo * (1.0 - metal) * skyAmb + env * Fe * F.misc.w;
+    float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
+    col += albedo * (1.0 - metal) * skyAmb + env * Fe * F.misc.w * specOcc;
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
     if ((flags & F_PAINT) != 0u) {

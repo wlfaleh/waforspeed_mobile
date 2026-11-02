@@ -40,7 +40,9 @@ private:
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frameNo_ = 0;
-    Material roadMat_, walkMat_, groundMat_;
+    Material roadMat_, walkMat_, groundMat_, shadowMat_;
+    Mesh shadowQuad_;
+    double lastTime_ = 0;
     vec3 camEye_{}, camLook_{}; bool camInit_ = false;
     // commandes
     DriveInput input_;
