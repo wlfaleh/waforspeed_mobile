@@ -65,6 +65,9 @@ public:
     void draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth = 0);
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
+    // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
+    void uiSetFontAtlas(const Image& atlas);
+    void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c);
     void endFrame();
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
@@ -93,7 +96,7 @@ private:
     VkPipeline opaque_ = VK_NULL_HANDLE, blend_ = VK_NULL_HANDLE, sky_ = VK_NULL_HANDLE, post_ = VK_NULL_HANDLE, ui_ = VK_NULL_HANDLE;
     VkDescriptorPool pool_ = VK_NULL_HANDLE;
     VkSampler sampler_ = VK_NULL_HANDLE, clampSampler_ = VK_NULL_HANDLE;
-    VkDescriptorSet postSet_ = VK_NULL_HANDLE;
+    VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
 
     static constexpr int FRAMES = 2;
     struct FrameRes {
