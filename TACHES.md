@@ -72,7 +72,7 @@ Journal à jour.
 | 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔍 En revue | Claude (session trafic) | — | `feature/waforspeed-08` | #6 | ⏳ construction en cours, puis qa-lead (banc PC) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
-| 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
+| 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ En attente |  | WFS-08 | `feature/waforspeed-12` |  |  |
@@ -113,7 +113,7 @@ Journal à jour.
 - [ ] Instanciation GPU, ≤ 300 appels de dessin
 - [ ] Captures : rue bordée d'immeubles, lampadaires, arbres
 
-**WFS-26 — Rendu de texte (police, nombres, libellés)** · E5 · priorité 4 · ⏳ Prêt
+**WFS-26 — Rendu de texte (police, nombres, libellés)** · E5 · priorité 4 · 🔧 En cours
 - [ ] Police (licence libre) en atlas, texte en pixels logiques, accents français
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
@@ -440,3 +440,15 @@ Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,
 - Captures banc PC de la construction précédente : `trafic-cam1` (trafic de près) et `trafic-choc` (accident en 0,43 s,
   voiture percutée en glissade, tête-à-queue 1,54 rad) correctes ; `trafic-cam0` refaite (joueur placé sur le trottoir
   par la scène de test, corrigé). Construction `66d27be` en cours, puis QA par `qa-lead` sur les captures du banc PC.
+
+### 2026-11-02 — Début WFS-26 Rendu de texte (police, nombres, libellés) (attribué par le PO)
+Épic **E5 — Interface et contenu**. Branche `feature/waforspeed-26`, partie de `main`. Dépendance WFS-30 ✅.
+**Zone de code autorisée** : `src/ui/**`, `shaders/ui*`, `assets/fonts/**`. Tout autre changement du noyau (ex. API 2D du renderer dans `src/render/`) passe par une ligne d'accroche annoncée au Journal, ou par E0.
+**Critères**
+- Police (licence libre) en atlas, texte en pixels logiques, accents français
+- Lisible sur 2400x1080 et petits écrans
+- Capture : texte d'essai net
+**Plan**
+- `assets/fonts/` : police libre convertie en atlas, licence incluse.
+- `src/ui/` : module de texte (libellés, nombres, accents) en pixels logiques, mise à l'échelle selon la taille réelle de la surface.
+- `shaders/ui*` : échantillonnage de l'atlas ; scène d'essai du banc PC pour la capture, relue par `qa-lead`.
