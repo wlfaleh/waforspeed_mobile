@@ -5,14 +5,15 @@
 set -u
 APK="$1"; OUT="${2:-qa-sortie}"
 # chaque commande adb est limitée dans le temps : le test ne peut plus rester bloqué
-adb() { timeout 60 command adb "$@"; }
+ADB="$(command -v adb)"
+adb() { timeout 60 "$ADB" "$@"; }
 mkdir -p "$OUT"
 PKG=com.waforspeed.game
 log() { echo "[QA] $*" | tee -a "$OUT/deroulement.txt"; }
 shot() { adb exec-out screencap -p > "$OUT/$1.png" && log "capture $1"; }
 alive() { adb shell pidof $PKG > /dev/null 2>&1; }
 
-timeout 120 command adb wait-for-device
+timeout 120 "$ADB" wait-for-device
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1           # paysage
 adb shell wm size > "$OUT/ecran.txt"
@@ -37,7 +38,7 @@ adb shell input motionevent UP $gx $gy
 log "nitro 3 s"
 adb shell input motionevent DOWN $nx $ny; sleep 3; shot 04-nitro; adb shell input motionevent UP $nx $ny
 log "braquage à droite (glisser) 2 s"
-(timeout 20 command adb shell input swipe $sx $sy $((sx + W * 10 / 100)) $sy 2000 &) ; sleep 1; shot 05-braquage; sleep 2
+(timeout 20 "$ADB" shell input swipe $sx $sy $((sx + W * 10 / 100)) $sy 2000 &) ; sleep 1; shot 05-braquage; sleep 2
 log "freinage 3 s"
 adb shell input motionevent DOWN $bx $by; sleep 3; shot 06-freinage; adb shell input motionevent UP $bx $by
 sleep 6
