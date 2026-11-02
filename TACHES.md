@@ -74,8 +74,10 @@ Journal à jour.
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
+| 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | 🔧 En cours | Claude (session trafic), 2026-11-02 | — | `feature/waforspeed-32` |  |  |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
@@ -83,7 +85,7 @@ Journal à jour.
 | 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-14` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
-| 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ En attente |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
+| 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
 | 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
@@ -122,6 +124,16 @@ Journal à jour.
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
 - [ ] Pas de craquement, coupure en pause
 
+**WFS-32 — Carrosseries : supprimer les points blancs en trame (reflets du vernis)** · E4 · priorité 5.5 · 🔧 En cours
+Origine : remarque 5 du [rapport QA WFS-08](qa/rapports/WFS-08.md) (défaut antérieur à WFS-08). Zone : `src/render/**`
+(sauf `ui_*`), `shaders/scene*`. Pistes : reflet spéculaire du vernis (`scene.frag`) trop fin / non filtré (aliasing
+spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tonemapping), résolution MSAA.
+- [ ] Cause identifiée et notée au Journal (avec la capture qui la montre)
+- [ ] Captures du banc PC `vitrine-golf-0`, `vitrine-p911-1`, `course-cam0-1`, `trafic-choc` : plus aucun point blanc
+  isolé en trame sur les carrosseries (Golf près des feux arrière, avant de la 911, Gallardo)
+- [ ] Les reflets du vernis restent visibles (peinture toujours brillante, pas d'aspect mat) ; aucune autre régression visible
+- [ ] Coût GPU inchangé à ±0,5 ms (journal du banc)
+
 **WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · ⏳ Prêt
 - [ ] Ombres stables sans scintillement
 - [ ] Coût ≤ 3 ms sur mobile
@@ -129,6 +141,18 @@ Journal à jour.
 **WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ Prêt
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
+
+**WFS-33 — Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné)** · E3 · priorité 7.5 · ⏳ Prêt
+Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zone : `src/game/traffic_system.cpp`
+(scènes du banc uniquement ; la simulation `traffic.cpp` ne change pas, le test de fidélité doit rester à 0 écart). Petite taille.
+- [ ] `trafic-cam0` : le joueur roule derrière un **groupe de 2 à 3 voitures** du trafic, visibles ensemble sur la capture,
+  chacune dans sa file
+- [ ] Captures `course-*` : au moins **3 images sur 6** montrent une voiture du trafic dans le champ, sur la route
+  (placement ou densité du trafic près du joueur pour les scènes du banc seulement, pas de changement des règles du jeu)
+- [ ] `trafic-choc` (vérification) : le journal donne l'écart latéral de la voiture percutée, borné à ±1,12 comme
+  `crashTraffic` du jeu web ; le ticket note au Journal si le dépassement de l'arrière sur le trottoir existe aussi dans
+  le jeu web (alors accepté) ou non (alors correction dans la scène ou ticket E3 de correction)
+- [ ] Journal du banc : `mode exact : … 0 écart(s)` inchangé ; aucune voiture du trafic dans le décor
 
 **WFS-11 — Menu et garage 3D (voiture + couleur)** · E5 · priorité 8 · ⏳ En attente
 - [ ] Choix des voitures et peintures
@@ -156,7 +180,7 @@ Journal à jour.
 **WFS-15 — Réglages de qualité selon le téléphone** · E4 · priorité 14 · ⏳ En attente
 - [ ] Niveaux bas / moyen / haut, choix automatique
 
-**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ En attente
+**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ Prêt
 - [ ] Bruitages synchronisés aux évènements du jeu
 
 **WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité 16 · ⏳ Prêt
@@ -521,3 +545,27 @@ lissage du Web Audio), sortie AAudio 48 kHz faible latence, coupure en pause, pr
 monte pas (pédale déduite de la conduite) — à reprendre si `GameView` expose la pédale (ticket E0).
 **À vérifier en fin d'épic E6** (simulateur / téléphone) : son réel, latence AAudio, coupure en arrière-plan.
 WFS-28 (bruitages) n'attend plus WFS-10 : à passer en Prêt par le PO.
+
+### 2026-11-02 — Suite de la QA de WFS-08 : WFS-32 et WFS-33 créés (PO)
+Remarques non bloquantes du [rapport QA WFS-08](qa/rapports/WFS-08.md) :
+- Remarque 5 (points blancs en trame sur les carrosseries, antérieurs à WFS-08) → **WFS-32** (E4, priorité 5.5, ⏳ Prêt) :
+  défaut visible sur toutes les captures, petit, placé avant WFS-07 (aucun ticket E4 actif).
+- Remarques 1 et 4 (un seul véhicule sur `trafic-cam0`, peu de trafic sur `course-*`) → **WFS-33** (E3, priorité 7.5,
+  ⏳ Prêt, après WFS-12) ; la remarque 2 (arrière de la voiture percutée sur le trottoir) y est fusionnée comme
+  vérification : `traffic.cpp` borne déjà l'écart à ±1,12 comme `crashTraffic` du jeu web, le dépassement vient sans
+  doute de la demi-longueur de la voiture en travers — à confirmer face au jeu web.
+- Remarque 3 (quasi-contacts invisibles) : pas de ticket, couverte par WFS-12 et WFS-27.
+Aucune attribution.
+Fin de ticket WFS-10 : **WFS-28** (bruitages, E6) a toutes ses dépendances ✅ (WFS-10, WFS-08) → ⏳ Prêt.
+
+### 2026-11-02 — Début WFS-32 Carrosseries : points blancs en trame (Claude, session trafic)
+**Attribution (PO)** : ticket ⏳ Prêt le plus prioritaire (5.5) dont l'épic n'a aucun ticket actif (E4 : aucun 🔧/🔍) ;
+la session trafic n'a plus de ticket (WFS-10 ✅). Dépendances : aucune (rendu PBR WFS-03 ✅).
+**Épic** : E4 Rendu et performances. **Zone de code autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`
+(et `shaders/common.glsl` si la correction y est) ; rien dans `src/game/`, `src/world/`, `src/ui/`.
+**Branche** : `feature/waforspeed-32`.
+**Critères** : cause identifiée et notée au Journal ; plus de points blancs isolés sur `vitrine-golf-0`, `vitrine-p911-1`,
+`course-cam0-1`, `trafic-choc` ; vernis toujours brillant, aucune régression ; coût GPU ±0,5 ms.
+**Plan court** : reproduire sur les captures du banc PC ; chercher l'aliasing spéculaire du vernis dans `scene.frag`
+(normales normalisées, rugosité minimale / filtrage spéculaire de type Toksvig, garde NaN / borne HDR avant tonemapping) ;
+vérifier la résolution MSAA ; nouvelle construction puis QA `qa-lead` sur le banc PC.
