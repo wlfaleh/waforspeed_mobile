@@ -33,7 +33,8 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
    Tout autre changement du noyau passe par un ticket de l'épic E0.
 4. **Branche** `feature/waforspeed-XX` par ticket (même si la session propose `claude/…`). Synchroniser avec `main` avant
    chaque validation et avant chaque PR.
-5. **QA** : après chaque APK, `qa-lead` regarde les captures et écrit `qa/rapports/WFS-XX.md`. Fusion seulement si VALIDÉ.
+5. **QA** : après chaque APK, le développeur **lance l'agent `qa-lead`**, qui regarde les captures et écrit
+   `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket. Fusion seulement si VALIDÉ.
 6. **Statuts à jour** après chaque avancement, envoyés sur `main` tout de suite, en modifiant seulement ses lignes à partir
    de la dernière version de `main` (ne jamais écraser le fichier).
 7. **Fin de ticket** : ✅, Responsable libéré, entrée « Fin » au Journal ; le PO passe en `⏳ Prêt` les tickets débloqués.

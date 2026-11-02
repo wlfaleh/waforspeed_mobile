@@ -11,7 +11,8 @@
 - **Une branche par ticket** : `feature/waforspeed-XX`. Même si ta session Claude t'attribue une branche `claude/…`,
   travaille sur `feature/waforspeed-XX` (aucun travail hors ticket, aucune branche `claude/…`). Synchroniser avec `main` avant chaque validation et avant chaque PR.
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
-- **QA** : après chaque APK d'un ticket, l'agent `qa-lead` regarde les captures et rend un verdict (`qa/rapports/WFS-XX.md`).
+- **QA** : après chaque APK d'un ticket, **lancer l'agent `qa-lead`** : c'est lui qui regarde les captures et rend le verdict
+  (`qa/rapports/WFS-XX.md`). **Un développeur ne fait jamais la QA de son propre ticket** et n'écrit pas le rapport QA.
   **Ne fusionner qu'avec le verdict `VALIDÉ`.** L'utilisateur ne teste pas lui-même.
 - **Statuts de `TACHES.md` mis à jour après chaque avancement et envoyés sur `main` tout de suite** (les autres agents s'y fient).
   Toujours partir de la dernière version de `main` (`git pull`), modifier seulement ses propres lignes, puis envoyer :
