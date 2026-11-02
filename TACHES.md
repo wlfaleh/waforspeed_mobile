@@ -43,7 +43,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 8. **Ne jamais supprimer de branche** (gérées par l'utilisateur).
 9. Une réservation sans nouvelle depuis 24 h peut être réattribuée par le PO (noté au Journal).
 
-**Définition de « Prêt »** : dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
+**Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
 **Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA VALIDÉ, synchronisé, fusionné,
 Journal à jour.
@@ -70,12 +70,15 @@ Journal à jour.
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
-| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔍 En revue | Claude (session trafic) | — | `feature/waforspeed-08` | #6 | ⏳ construction en cours, puis qa-lead (banc PC) |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
-| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
+| 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-34` |  |  |
+| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
+| 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ En attente |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
@@ -83,8 +86,8 @@ Journal à jour.
 | 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-14` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
-| 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ En attente |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
-| 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ En attente |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
+| 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
+| 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
@@ -103,7 +106,7 @@ Journal à jour.
 - [ ] Accès en lecture pour les systèmes : piste, joueur, caméra, renderer ; doc dans le skill `waforspeed-natif`
 - [ ] Aucun changement visible ; CI verte, captures identiques
 
-**WFS-08 — Trafic multi-thread et collisions** · E3 · priorité 2 · 🔧 En cours
+**WFS-08 — Trafic multi-thread et collisions** · E3 · priorité 2 · ✅ Terminé
 - [ ] Port de traffic.js (même graine)
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
@@ -118,17 +121,43 @@ Journal à jour.
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
 
-**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · ⏳ Prêt
+**WFS-34 — Arbres réalistes portés du jeu web** · E2 · priorité 4.5 · ⏳ Prêt (règles : `regles-de-gestion/WFS-34.md`)
+- [ ] Générateurs de `life.js` portés en `src/world/vegetation.*`, atlas exporté en PNG (`assets/world/feuillage.png`), arbres de `ville.cpp` remplacés
+- [ ] Capture : platanes avec tronc, branches, feuillage découpé ; ≤ 300 appels de dessin ; banc `0 écart(s)`
+
+**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · ✅ Terminé
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
 - [ ] Pas de craquement, coupure en pause
+
+**WFS-32 — Carrosseries : supprimer les points blancs en trame (reflets du vernis)** · E4 · priorité 5.5 · ✅ Terminé
+Origine : remarque 5 du [rapport QA WFS-08](qa/rapports/WFS-08.md) (défaut antérieur à WFS-08). Zone : `src/render/**`
+(sauf `ui_*`), `shaders/scene*`. Pistes : reflet spéculaire du vernis (`scene.frag`) trop fin / non filtré (aliasing
+spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tonemapping), résolution MSAA.
+- [ ] Cause identifiée et notée au Journal (avec la capture qui la montre)
+- [ ] Captures du banc PC `vitrine-golf-0`, `vitrine-p911-1`, `course-cam0-1`, `trafic-choc` : plus aucun point blanc
+  isolé en trame sur les carrosseries (Golf près des feux arrière, avant de la 911, Gallardo)
+- [ ] Les reflets du vernis restent visibles (peinture toujours brillante, pas d'aspect mat) ; aucune autre régression visible
+- [ ] Coût GPU inchangé à ±0,5 ms (journal du banc)
 
 **WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · ⏳ Prêt
 - [ ] Ombres stables sans scintillement
 - [ ] Coût ≤ 3 ms sur mobile
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ En attente
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ Prêt
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
+
+**WFS-33 — Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné)** · E3 · priorité 7.5 · ⏳ Prêt
+Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zone : `src/game/traffic_system.cpp`
+(scènes du banc uniquement ; la simulation `traffic.cpp` ne change pas, le test de fidélité doit rester à 0 écart). Petite taille.
+- [ ] `trafic-cam0` : le joueur roule derrière un **groupe de 2 à 3 voitures** du trafic, visibles ensemble sur la capture,
+  chacune dans sa file
+- [ ] Captures `course-*` : au moins **3 images sur 6** montrent une voiture du trafic dans le champ, sur la route
+  (placement ou densité du trafic près du joueur pour les scènes du banc seulement, pas de changement des règles du jeu)
+- [ ] `trafic-choc` (vérification) : le journal donne l'écart latéral de la voiture percutée, borné à ±1,12 comme
+  `crashTraffic` du jeu web ; le ticket note au Journal si le dépassement de l'arrière sur le trottoir existe aussi dans
+  le jeu web (alors accepté) ou non (alors correction dans la scène ou ticket E3 de correction)
+- [ ] Journal du banc : `mode exact : … 0 écart(s)` inchangé ; aucune voiture du trafic dans le décor
 
 **WFS-11 — Menu et garage 3D (voiture + couleur)** · E5 · priorité 8 · ⏳ En attente
 - [ ] Choix des voitures et peintures
@@ -156,10 +185,10 @@ Journal à jour.
 **WFS-15 — Réglages de qualité selon le téléphone** · E4 · priorité 14 · ⏳ En attente
 - [ ] Niveaux bas / moyen / haut, choix automatique
 
-**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ En attente
+**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ Prêt
 - [ ] Bruitages synchronisés aux évènements du jeu
 
-**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité 16 · ⏳ En attente
+**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité 16 · ⏳ Prêt
 - [ ] 60 i/s visés, mesures dans le journal
 
 **WFS-19 — Piétons animés et conducteurs** · E2 · priorité 17 · ⏳ En attente
@@ -452,3 +481,155 @@ Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,
 - `assets/fonts/` : police libre convertie en atlas, licence incluse.
 - `src/ui/` : module de texte (libellés, nombres, accents) en pixels logiques, mise à l'échelle selon la taille réelle de la surface.
 - `shaders/ui*` : échantillonnage de l'atlas ; scène d'essai du banc PC pour la capture, relue par `qa-lead`.
+
+### 2026-11-02 — Fin WFS-08 Trafic multi-thread et collisions (Claude, session trafic)
+**⚠️ Exception à la règle de QA** : PR #6 fusionnée **à la demande explicite de l'utilisateur, avant le verdict de
+`qa-lead`** (construction `66d27be` encore en cours). La QA sur les captures du banc PC reste à faire après coup
+(`qa/rapports/WFS-08.md`) ; un éventuel REFUSÉ donnera un ticket de correction.
+**Fait** : trafic porté de `traffic.js` (0 écart sur 39 voitures avec le jeu web), mode parallèle, chocs et quasi-contacts,
+accident du joueur, module `traffic_system` (dessin, pilote automatique, scènes `trafic-*` du banc d'essai).
+**Fichiers** : `src/game/traffic*.{h,cpp}`, `src/game/player.*`, `src/game/track.h`, `tests/test_traffic.cpp`,
+`tests/trafic_web*.{cjs,txt}` ; accroches : `src/core/system.h`, `src/game/game.cpp` (8 lignes), `desktop_main.cpp` (1),
+`CMakeLists.txt` (2), `build.yml` (1).
+**Vérification** : tests (trafic, piste, systèmes) OK en local et en CI ; captures banc PC de `61e2ecf` regardées par le
+développeur (trafic de près, choc) — pas de verdict QA.
+**Limites** : 16 voitures du jeu web affichées avec le modèle natif le plus proche (WFS-13) ; pas de feux stop ni de
+clignotants ; score des quasi-contacts non affiché (WFS-12) ; modèles chargés en double (joueur + trafic).
+Tickets qui dépendaient de WFS-08 (WFS-12, WFS-28, WFS-20) : à passer en « Prêt » par le PO.
+
+### 2026-11-02 — PO : tickets débloqués par WFS-08
+- WFS-08 ✅ (fusion exceptionnelle, QA après coup par `qa-lead` à faire : `qa/rapports/WFS-08.md`).
+- Passent en ⏳ Prêt : **WFS-12** (E3, dépend de WFS-08 ✅) et **WFS-20** (E4, dépend de WFS-06 ✅ et WFS-08 ✅).
+- Reste ⏳ En attente : **WFS-28** (E6), qui attend encore WFS-10.
+
+### 2026-11-02 — Début WFS-10 Sons de moteur (AAudio, régime et rapports) (attribué par le PO à Claude, session trafic)
+Épic **E6 — Audio**. Branche `feature/waforspeed-10`, partie de `main`. Dépendance WFS-30 ✅.
+Choix du PO : ticket ⏳ Prêt de meilleure priorité (5) ; épic E6 libre (E5 occupée par WFS-26, E3 libre mais WFS-12 moins prioritaire).
+**Zone de code autorisée** : `src/audio/**`, `assets/audio/**`. Lecture seule de l'état du joueur via `GameView` (WFS-30).
+Lignes d'accroche possibles (≤ 10, à annoncer au Journal) : liaison `aaudio` dans `CMakeLists.txt`, pause / reprise du son
+dans `src/platform/`. Tout autre changement du noyau passe par un ticket E0.
+**Critères**
+- Sons du jeu web, régime qui suit l'accélérateur et les rapports
+- Pas de craquement, coupure en pause
+**Plan**
+- `assets/audio/` : sons de moteur du jeu web (`wlfaleh/waaps`, `waforspeed/`) convertis, licence vérifiée.
+- `src/audio/` : sortie AAudio (Android) sur son propre fil, sortie muette ou fichier sur le banc d'essai PC ; mélangeur sans
+  allocation dans le rappel audio ; régime calculé comme le jeu web (vitesse, rapports, accélérateur), fondu entre boucles.
+- Module enregistré par `WFS_SYSTEM` ; coupure en pause / perte de focus.
+- Preuve sur le banc PC : journal du régime et du rapport par seconde (+ courbe ou enregistrement WAV en artefact) relue par `qa-lead`.
+
+### 2026-11-02 — WFS-10 : code écrit, construction verte (Claude, session trafic)
+**Fait**
+- `src/audio/engine_synth.*` : port de `engineUpdate()` / `engineVoice()` du jeu web (boîte à 5 rapports, régime, charge,
+  deux voix sur le vrai enregistrement : lever de pied filtrée / en charge saturée, filtres biquad et lissage du Web Audio,
+  onduleur pour l'électrique) ; rendu sans allocation ni verrou.
+- `src/audio/audio_out_android.cpp` : AAudio mono flottant 48 kHz, faible latence, réouverture si le casque change.
+- `src/audio/audio_system.cpp` : module « son » (`WFS_SYSTEM` 300) ; le son s'éteint quand le jeu ne donne plus de
+  nouvelles (pause, arrière-plan) — pas d'accroche nécessaire dans `src/platform/`.
+- Preuve pour la QA (banc PC) : `moteur-courbe.png` (forme d'onde, régime, rapport, vitesse, pédale), `moteur.wav`,
+  journal du banc (une ligne par seconde).
+- **Lignes d'accroche** : `CMakeLists.txt` (+ `aaudio`, + cible `test_audio`), `.github/workflows/build.yml` (+ `test_audio`),
+  `src/platform/desktop_main.cpp` (+ 2 lignes : appel du banc), `tests/test_audio.cpp` (nouveau test).
+**Vérification** : `test_audio` OK (rapports 1 → 5, plus grand saut 0,06 : pas de craquement, crête 0,23, silence en pause) ;
+construction `c719e79` verte (APK arm64 + x86_64 avec AAudio, banc d'essai). Correction du scénario du banc (volant) en
+cours de construction.
+**Limites** : la pédale est déduite de la conduite (le module ne lit que `GameView`) : un coup de gaz à l'arrêt sans avancer
+ne fait pas monter le régime ; son réel sur téléphone (latence, volume) non vérifiable en CI.
+
+### 2026-11-02 — WFS-10 : PR #7 ouverte (Claude, session trafic)
+Branche synchronisée avec `main` (aucun conflit). PR : https://github.com/wlfaleh/waforspeed_mobile/pull/7 — QA par `qa-lead` après la construction `d65cd1e`.
+
+### 2026-11-02 — Fin WFS-10 Sons de moteur (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-10.md`, banc PC, `d65cd1e`), PR #7 fusionnée.
+**Fait** : son du moteur porté de `sfx.js` (5 rapports, régime, charge, deux voix sur le vrai enregistrement, filtres et
+lissage du Web Audio), sortie AAudio 48 kHz faible latence, coupure en pause, preuve banc PC `moteur-courbe.png`.
+**Fichiers** : `src/audio/**`, `tests/test_audio.cpp` ; accroches : `CMakeLists.txt` (aaudio, test_audio), `build.yml`,
+`src/platform/desktop_main.cpp`.
+**Remarques QA** : licence des sons — elle existe, `assets/licences/sons-moteur.txt` (pas dans `assets/audio/`) ;
+`moteur.wav` n'est pas publié (la publication ne prend que les PNG) ; coup de gaz à l'arrêt sans avancer : le régime ne
+monte pas (pédale déduite de la conduite) — à reprendre si `GameView` expose la pédale (ticket E0).
+**À vérifier en fin d'épic E6** (simulateur / téléphone) : son réel, latence AAudio, coupure en arrière-plan.
+WFS-28 (bruitages) n'attend plus WFS-10 : à passer en Prêt par le PO.
+
+### 2026-11-02 — Suite de la QA de WFS-08 : WFS-32 et WFS-33 créés (PO)
+Remarques non bloquantes du [rapport QA WFS-08](qa/rapports/WFS-08.md) :
+- Remarque 5 (points blancs en trame sur les carrosseries, antérieurs à WFS-08) → **WFS-32** (E4, priorité 5.5, ⏳ Prêt) :
+  défaut visible sur toutes les captures, petit, placé avant WFS-07 (aucun ticket E4 actif).
+- Remarques 1 et 4 (un seul véhicule sur `trafic-cam0`, peu de trafic sur `course-*`) → **WFS-33** (E3, priorité 7.5,
+  ⏳ Prêt, après WFS-12) ; la remarque 2 (arrière de la voiture percutée sur le trottoir) y est fusionnée comme
+  vérification : `traffic.cpp` borne déjà l'écart à ±1,12 comme `crashTraffic` du jeu web, le dépassement vient sans
+  doute de la demi-longueur de la voiture en travers — à confirmer face au jeu web.
+- Remarque 3 (quasi-contacts invisibles) : pas de ticket, couverte par WFS-12 et WFS-27.
+Aucune attribution.
+Fin de ticket WFS-10 : **WFS-28** (bruitages, E6) a toutes ses dépendances ✅ (WFS-10, WFS-08) → ⏳ Prêt.
+
+### 2026-11-02 — Début WFS-32 Carrosseries : points blancs en trame (Claude, session trafic)
+**Attribution (PO)** : ticket ⏳ Prêt le plus prioritaire (5.5) dont l'épic n'a aucun ticket actif (E4 : aucun 🔧/🔍) ;
+la session trafic n'a plus de ticket (WFS-10 ✅). Dépendances : aucune (rendu PBR WFS-03 ✅).
+**Épic** : E4 Rendu et performances. **Zone de code autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`
+(et `shaders/common.glsl` si la correction y est) ; rien dans `src/game/`, `src/world/`, `src/ui/`.
+**Branche** : `feature/waforspeed-32`.
+**Critères** : cause identifiée et notée au Journal ; plus de points blancs isolés sur `vitrine-golf-0`, `vitrine-p911-1`,
+`course-cam0-1`, `trafic-choc` ; vernis toujours brillant, aucune régression ; coût GPU ±0,5 ms.
+**Plan court** : reproduire sur les captures du banc PC ; chercher l'aliasing spéculaire du vernis dans `scene.frag`
+(normales normalisées, rugosité minimale / filtrage spéculaire de type Toksvig, garde NaN / borne HDR avant tonemapping) ;
+vérifier la résolution MSAA ; nouvelle construction puis QA `qa-lead` sur le banc PC.
+
+### 2026-11-02 — WFS-32 : cause trouvée, correction poussée (Claude, session trafic)
+**Cause** (capture `vitrine-golf-0`, construction 83 : plaques de points blancs **espacés de 3 pixels**, en 5 × 5, sur la
+carrosserie près du feu arrière, le long des arêtes et sur la route sous la voiture) : ce n'est pas le vernis lui-même mais
+le **halo de la passe finale** (`shaders/post.frag`), qui additionnait 5 × 5 lectures **espacées de 3 pixels**. Un seul pixel
+HDR très brillant (reflet du soleil sur un petit triangle verni, en incidence rasante) allume alors exactement 25 pixels
+isolés en grille. Vérifié par le calcul : ancien halo → 25 pixels isolés à pleine intensité ; nouveau → 64 pixels
+contigus à 1/4.
+**Correction** : `post.frag` — 4 × 4 lectures bilinéaires à cheval sur 2 × 2 pixels, espacées de 2 pixels (carré de 8 × 8
+sans trou, 16 lectures au lieu de 25 : un peu moins coûteux), plafonnées à 24 ; `scene.frag` — couleur plafonnée à 64,
+NaN / infini remplacés par 0. Vernis inchangé (reflets toujours nets).
+**À vérifier** : captures `vitrine-golf-0`, `vitrine-p911-1`, `course-cam0-1`, `trafic-choc` de la construction `4a20e7c`.
+
+### 2026-11-02 — ⚠️ MESSAGE pour toutes les sessions : banc d'essai qui plante au hasard (Claude, session trafic)
+**Symptôme** : `wfs_bench` s'arrête juste après « Système : AudioSystem » avec « corrupted size vs. prev_size while
+consolidating » (construction de `main` `76265ee`, et `feature/waforspeed-32` `4a20e7c`) ; le même code est passé
+d'autres fois : c'est aléatoire.
+**Cause** (ThreadSanitizer, banc complet lancé dans le conteneur avec lavapipe) : **course dans `blob()` de
+`src/world/ville.cpp`** — ses tableaux statiques étaient remplis par « if (unit.empty()) » depuis plusieurs threads à la
+fois (construction parallèle des morceaux de ville, WFS-06). Ni le trafic ni le son.
+**Correction** (hors zone de WFS-32, quelques lignes, faute de ticket E2 en cours) : forme calculée une seule fois par une
+variable statique locale. Banc complet sous ThreadSanitizer : plus aucune alerte dans notre code (restent 3 alertes
+internes au pilote lavapipe). Elle arrive dans `main` avec la PR de WFS-32 ; en attendant, une construction qui plante
+juste après « Système : AudioSystem » n'est pas un défaut de votre ticket.
+**WFS-32** : cause des points blancs en grille = halo de la passe finale (voir entrée précédente) ; ajout d'un
+anticrénelage des reflets. Restent de fines lignes pointillées sur les jointures (triangles plus fins qu'un pixel,
+crénelage de géométrie : TAA de WFS-17).
+
+### 2026-11-02 — Fin WFS-32 Carrosseries : points blancs en trame (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-32.md`, banc PC, `84b489b` — la construction de référence est `84b489b`,
+pas `4a20e7c` cité plus haut). PR #8 fusionnée.
+**Fait** : halo de la passe finale sans trou (cause des trames de points), anticrénelage des reflets du vernis, couleur
+plafonnée / NaN supprimés ; course dans `blob()` de la ville corrigée (banc d'essai qui plantait au hasard sur `main`).
+Points brillants isolés (comptage qa-lead, avant → après) : Golf 66 → 25 (dont en trame 45 → 2), 911 43 → 8 (22 → 0),
+course-cam0-1 24 → 8 (14 → 0), trafic-choc 15 → 5.
+**Fichiers** : `shaders/post.frag`, `shaders/scene.frag` ; hors zone (annoncé) : `src/world/ville.cpp`.
+**Restes (non bloquants, pour le PO)** : lignes pointillées sur les jointures de carrosserie (crénelage de géométrie,
+déjà présent avant) → à ajouter aux critères de WFS-17 (TAA) ; trame de petits points clairs sur la **lunette arrière de la
+Golf** (vitrage, identique avant/après : texture du modèle ou transparence ?) ; points sur les rayons des jantes (911) ;
+coût GPU non mesuré (halo 25 → 16 lectures + 2 dérivées) : à confirmer sur téléphone en fin d'épic E4.
+
+### 2026-11-02 — Règles de gestion par US (demande de l'utilisateur)
+- Nouveau dossier `regles-de-gestion/` : un fichier `WFS-XX.md` par US, écrit par le PO (règles RG-xx, éléments à
+  réutiliser du jeu web `wlfaleh/waaps` : code `js/`, modèles 3D `models/`, sons `audio/`, critères, hors périmètre).
+- Un ticket n'est « Prêt » que si son fichier de règles existe. Le PO rédige les fichiers des tickets ouverts.
+
+### 2026-11-02 — Règles de gestion rédigées par le PO
+Fichiers créés dans `regles-de-gestion/` (un par US ouverte, valeurs reprises de `wlfaleh/waaps`, `waforspeed/js/`) :
+`WFS-07`, `WFS-09`, `WFS-11`, `WFS-12`, `WFS-13`, `WFS-14`, `WFS-15`, `WFS-16`, `WFS-17`, `WFS-18`, `WFS-19`, `WFS-20`,
+`WFS-21`, `WFS-22`, `WFS-23`, `WFS-24`, `WFS-25`, `WFS-26` (en cours : règles pour la revue), `WFS-27`, `WFS-28`,
+`WFS-29`, `WFS-33`. WFS-08 est déjà ✅ (rapport QA) : pas de fichier. Tableau et statuts inchangés.
+Constat : `LOD_CAR_M` vaut 50 m dans le code (le skill disait 70 m) ; le critère « jointures de carrosserie » du rapport
+WFS-32 est reporté dans WFS-17 (TAA).
+
+### 2026-11-02 — WFS-34 créé (PO) : arbres réalistes du jeu web
+Retour de l'utilisateur : les arbres de la ville native (WFS-06 ✅) sont simplifiés alors que le jeu web a déjà les siens
+(`waaps/waforspeed/js/world/life.js` ~250-690). Ticket de correction **WFS-34** (E2, priorité 4.5, ⏳ Prêt, dépend de WFS-06 ✅) :
+port des générateurs en C++ et atlas de feuillage exporté tel quel en PNG via le Chromium de test (pas de redessin).
+Règles : `regles-de-gestion/WFS-34.md`. E2 est libre (aucun ticket actif).
