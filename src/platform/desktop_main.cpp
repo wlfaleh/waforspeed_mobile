@@ -2,6 +2,7 @@
 // et les enregistre en PNG (utilisé par l'intégration continue pour vérifier le rendu).
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -37,7 +38,10 @@ int main(int argc, char** argv) {
     if (argc > 2) g_root = argv[2];
     jobs().start();
     VkCtx vk;
-    if (!vk.init(nullptr, 1280, 720)) return 1;
+    // taille des captures (WFS_TAILLE=2400x1080 pour tester un grand écran), 1280x720 par défaut
+    unsigned cw = 1280, chh = 720;
+    if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
+    if (!vk.init(nullptr, cw, chh)) return 1;
     Renderer r; r.init(vk);
     Game g;
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
