@@ -15,6 +15,9 @@ revue et validation avant fusion.
 | ⛔ Bloqué | en attente d'une décision ou d'un autre ticket (préciser dans le journal) |
 
 ## Processus (obligatoire pour chaque ticket)
+0. **Le tableau reflète toujours l'état réel.** Après CHAQUE avancement (réservation, branche créée, construction
+   réussie ou en échec, PR ouverte, verdict QA, correction, fusion), mettre à jour le statut, la colonne QA et le Journal,
+   puis envoyer `TACHES.md` sur `main` immédiatement : c'est ce que lisent les autres agents pour éviter les conflits.
 1. **Réserver** : `git checkout main && git pull`, vérifier que le ticket n'a pas de Responsable, puis dans ce fichier :
    statut 🔧, Responsable, Branche ; entrée « Début » dans le Journal (plan, fichiers prévus).
    Envoyer ce changement sur `main` **immédiatement**, avant d'écrire du code.
@@ -35,11 +38,11 @@ revue et validation avant fusion.
 ## Tableau
 | Clé | Titre | Type | Priorité | Livraison | Statut | Responsable | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | |
-| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | |
-| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | |
-| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | |
-| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | |
+| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
+| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
+| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
+| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
+| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
 | WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
 | WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-08` |  | |
@@ -232,3 +235,16 @@ Réservation de la livraison 1 complète. Fichiers prévus : `src/**`, `shaders/
 - Correction de l'image déformée à confirmer sur le téléphone de l'utilisateur.
 - Décor encore vide (bâtiments, arbres, lampadaires = F6), pas d'ombres dynamiques (F7), pas de trafic (F8), pas de son (F10).
 - Barre de navigation Android encore visible (mode immersif à faire).
+
+### 2026-11-02 — Organisation, QA automatique (Claude, session moteur-natif)
+**Fait**
+- Tableau type Jira (tickets WFS-XX, une branche par ticket, synchronisation avec `main` avant validation et avant PR).
+- Branche `claude/moteur-natif` reprise en `feature/waforspeed-01` (lot WFS-01→05), PR #1 ouverte vers `main`.
+- Règle : ne jamais supprimer de branche (gérées par l'utilisateur).
+- QA : agent `qa-lead` (`.claude/agents/qa-lead.md`) qui **regarde les captures** et rend un verdict VALIDÉ / REFUSÉ ;
+  captures produites automatiquement par la CI sur un émulateur Android 14 (`tools/qa/emulateur.sh` : démarrage,
+  accélération, nitro, braquage, freinage) en plus du banc d'essai. APK aussi en x86_64 pour l'émulateur.
+- Règle : le tableau est mis à jour et envoyé sur `main` après chaque avancement.
+
+**En cours**
+- Construction de `feature/waforspeed-01` avec le premier test sur émulateur ; ensuite verdict du QA lead sur WFS-01→05.

@@ -9,4 +9,5 @@
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
 - **QA** : après chaque APK d'un ticket, l'agent `qa-lead` regarde les captures et rend un verdict (`qa/rapports/WFS-XX.md`).
   **Ne fusionner qu'avec le verdict `VALIDÉ`.** L'utilisateur ne teste pas lui-même.
+- **Statuts de `TACHES.md` mis à jour après chaque avancement et envoyés sur `main` tout de suite** (les autres agents s'y fient).
 - Journal de `TACHES.md` à jour à chaque étape. Tout en français (code commenté, messages, interface, commits).
