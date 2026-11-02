@@ -42,7 +42,7 @@ revue et validation avant fusion.
 | WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
 | WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
 | WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
-| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔧 En cours | Claude (moteur-natif) | `feature/waforspeed-05` | #1 (code fusionné) | ❌ REFUSÉ passage 1 — corrections à valider (orientation paysage, commandes) |
+| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-05` | #1, #2 | ✅ VALIDÉ (passage 2, `qa/rapports/WFS-05.md`) |
 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
 | WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
 | WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | 🔧 En cours | Claude (session trafic) | `feature/waforspeed-08` |  | |
@@ -88,7 +88,7 @@ revue et validation avant fusion.
 - [ ] 4 voitures à la bonne taille, avant vers -Z, peinture détectée
 - [ ] Textures décodées en parallèle, licences dans assets/licences
 
-**WFS-05 — Route générée, conduite tactile, caméra de poursuite** · Fonctionnalité · priorité Haute · 🔧 En cours (retours QA)
+**WFS-05 — Route générée, conduite tactile, caméra de poursuite** · Fonctionnalité · priorité Haute · ✅ Terminé
 - [x] Piste identique au jeu web (test automatique)
 - [ ] Conduite reprise de update.js (pas fixe)
 - [ ] Commandes tactiles volant / frein / accélérateur / nitro : vitesse monte, nitro, freinage (logcat QA sur émulateur)
@@ -301,3 +301,10 @@ pas encore de feux stop ni de clignotants dessinés ; score des quasi-contacts c
   qualité réduite sur GPU logiciel, test émulateur qui se termine.
 - Fichiers prévus : `src/render/{vk,renderer}.*`, `src/game/game.*`, `src/platform/android_main.cpp`, `tools/qa/emulateur.sh`,
   `.github/workflows/build.yml`, `qa/rapports/WFS-05.md`.
+
+### 2026-11-02 — Fin WFS-05 et LIVRAISON 1 (Claude, session moteur-natif)
+- QA passage 2 **VALIDÉ** (`qa/rapports/WFS-05.md`) : image en paysage 2400x1080 sur émulateur, commandes prises en compte,
+  aucun plantage. Limite : émulateur à ~0,2 image/s (GPU logiciel).
+- PR #2 fusionnée. WFS-01 à WFS-05 terminés : **livraison 1 « Première course »** dans `main`.
+- APK de `main` : Release `apercu` (reconstruite par la CI après la fusion).
+- Reste à mesurer sur un vrai téléphone : fluidité (images/s), confort des commandes.
