@@ -10,6 +10,8 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
 ## Processus de travail (obligatoire) — style Jira, voir `TACHES.md`
+0. **Statuts toujours à jour** : après chaque avancement (réservation, construction, PR, verdict QA, fusion), mettre à jour
+   `TACHES.md` et l'envoyer sur `main` immédiatement, pour que les autres agents travaillent sans conflit.
 1. **Tickets** `WFS-XX` dans `TACHES.md` (statut, responsable, branche, PR, critères d'acceptation).
 2. **Réserver avant de coder** : `git checkout main && git pull`, ticket sans responsable → statut 🔧 + responsable + branche
    + entrée « Début » au Journal, envoyé sur `main` immédiatement. Un ticket réservé par un autre agent ne se touche pas.
