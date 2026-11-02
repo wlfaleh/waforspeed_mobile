@@ -70,7 +70,7 @@ Journal à jour.
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
-| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔍 En revue | Claude (session trafic) | — | `feature/waforspeed-08` | #6 | ⏳ construction en cours, puis qa-lead (banc PC) |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ⚠️ fusionné sans verdict (demande utilisateur) ; QA après coup à faire |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
@@ -103,7 +103,7 @@ Journal à jour.
 - [ ] Accès en lecture pour les systèmes : piste, joueur, caméra, renderer ; doc dans le skill `waforspeed-natif`
 - [ ] Aucun changement visible ; CI verte, captures identiques
 
-**WFS-08 — Trafic multi-thread et collisions** · E3 · priorité 2 · 🔧 En cours
+**WFS-08 — Trafic multi-thread et collisions** · E3 · priorité 2 · ✅ Terminé
 - [ ] Port de traffic.js (même graine)
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
@@ -452,3 +452,18 @@ Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,
 - `assets/fonts/` : police libre convertie en atlas, licence incluse.
 - `src/ui/` : module de texte (libellés, nombres, accents) en pixels logiques, mise à l'échelle selon la taille réelle de la surface.
 - `shaders/ui*` : échantillonnage de l'atlas ; scène d'essai du banc PC pour la capture, relue par `qa-lead`.
+
+### 2026-11-02 — Fin WFS-08 Trafic multi-thread et collisions (Claude, session trafic)
+**⚠️ Exception à la règle de QA** : PR #6 fusionnée **à la demande explicite de l'utilisateur, avant le verdict de
+`qa-lead`** (construction `66d27be` encore en cours). La QA sur les captures du banc PC reste à faire après coup
+(`qa/rapports/WFS-08.md`) ; un éventuel REFUSÉ donnera un ticket de correction.
+**Fait** : trafic porté de `traffic.js` (0 écart sur 39 voitures avec le jeu web), mode parallèle, chocs et quasi-contacts,
+accident du joueur, module `traffic_system` (dessin, pilote automatique, scènes `trafic-*` du banc d'essai).
+**Fichiers** : `src/game/traffic*.{h,cpp}`, `src/game/player.*`, `src/game/track.h`, `tests/test_traffic.cpp`,
+`tests/trafic_web*.{cjs,txt}` ; accroches : `src/core/system.h`, `src/game/game.cpp` (8 lignes), `desktop_main.cpp` (1),
+`CMakeLists.txt` (2), `build.yml` (1).
+**Vérification** : tests (trafic, piste, systèmes) OK en local et en CI ; captures banc PC de `61e2ecf` regardées par le
+développeur (trafic de près, choc) — pas de verdict QA.
+**Limites** : 16 voitures du jeu web affichées avec le modèle natif le plus proche (WFS-13) ; pas de feux stop ni de
+clignotants ; score des quasi-contacts non affiché (WFS-12) ; modèles chargés en double (joueur + trafic).
+Tickets qui dépendaient de WFS-08 (WFS-12, WFS-28, WFS-20) : à passer en « Prêt » par le PO.
