@@ -4,8 +4,8 @@
 #include <vector>
 #include "player.h"
 #include "track.h"
-#include "traffic.h"
 #include "../render/renderer.h"
+#include "../core/system.h"
 
 namespace wfs {
 
@@ -20,12 +20,6 @@ public:
     void update(double dt);
     void render(double time);
     const Player& player() const { return player_; }
-    const Traffic& traffic() const { return traffic_; }
-    // compteurs de la course (quasi-contacts, chocs) : affichés par le HUD de WFS-12
-    int nearMisses = 0, accidents = 0;
-    // banc d'essai : place le joueur `metres` derrière la voiture du trafic la plus entourée,
-    // décalé de `lat` (demi-largeurs de route), à sa vitesse + `extraKmh` ; renvoie l'indice de la voiture
-    int benchPlaceBehind(double metres, double lat, double extraKmh);
     void setCar(const char* carId);
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
@@ -37,20 +31,12 @@ private:
     void retire(Mesh& m);
     void drawControls();
     mat4 carMatrix(double s, double lat, double yaw);
-    void autopilotInput(DriveInput& in, double dt);
-    int nativeModelFor(int webType) const;
-    void drawTraffic();
 
     Renderer* r_ = nullptr;
     Track track_;
     Player player_;
-    // modèles 3D des voitures natives (joueur + trafic), chargés une fois ; carIdx_ = voiture du joueur
-    Model models_[CAR_COUNT];
-    int carIdx_ = 0;
+    Model car_;
     const CarDef* carDef_ = nullptr;
-    Traffic traffic_;
-    float shake_ = 0;
-    double autoTimer_ = 0, autoTarget_ = 0;
     vec3 paint_{0.1f, 0.3f, 0.85f};
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
@@ -66,6 +52,15 @@ private:
     bool autopilot_ = false;
     bool latchGas_ = false, latchBrake_ = false, latchNitro_ = false;
     double acc_ = 0;
+    // systèmes enfichables (WFS-30, voir src/core/system.h)
+    std::vector<std::unique_ptr<System>> systems_;
+    GameView view_;
+    void systemsInit();
+    void systemsShutdown();
+    void systemsUpdate(double dt);
+    void systemsRender(const vec3& eye, const vec3& look, const mat4& view, const mat4& proj, double time);
+    void systemsUi();
+    bool systemsTouch(const Touch& t);
 };
 
 } // namespace wfs

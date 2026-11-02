@@ -1,6 +1,6 @@
 // Vérifie que le trafic natif est identique à celui du jeu web (mode exact), puis que le mode parallèle
 // (threads de jobs()) reste cohérent : même résultat à chaque exécution, aucune voiture qui en chevauche une autre.
-// Référence : tests/trafic_web_ref.txt, produite par `node tools/qa/trafic_web.cjs <jeu web>/waforspeed`.
+// Référence : tests/trafic_web_ref.txt, produite par `node tests/trafic_web.cjs <jeu web>/waforspeed`.
 // usage : test_traffic tests/trafic_web_ref.txt
 #include <cmath>
 #include <cstdio>

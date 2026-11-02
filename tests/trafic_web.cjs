@@ -1,6 +1,6 @@
 // Référence du trafic : exécute js/game/traffic.js du jeu web (dépôt wlfaleh/waaps) dans le même scénario
 // que tests/test_traffic.cpp et affiche l'état des voitures. Sert à (re)générer les valeurs attendues du test.
-// usage : node tools/qa/trafic_web.cjs <dossier waforspeed du jeu web>
+// usage : node tests/trafic_web.cjs <dossier waforspeed du jeu web>
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const web = process.argv[2] || '../waaps/waforspeed';

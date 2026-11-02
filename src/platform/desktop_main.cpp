@@ -9,6 +9,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../game/game.h"
+#include "../game/traffic_system.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 
@@ -59,31 +60,10 @@ int main(int argc, char** argv) {
             g.render(shot * 10 + 4.0); g.render(shot * 10 + 4.02);
             char name[128]; std::snprintf(name, sizeof name, "%s/course-cam%d-%d.png", out.c_str(), cam, shot);
             r.capturePng(name);
-            WFS_LOG("capture %s : %.0f km/h, %.0f m, %zu voitures, %d quasi-contacts, %d accidents", name, g.player().kmh(),
-                    g.player().dist * M, g.traffic().cars.size(), g.nearMisses, g.accidents);
+            WFS_LOG("capture %s : %.0f km/h, %.0f m", name, g.player().kmh(), g.player().dist * M);
         }
     }
-    // trafic de près : le joueur roule derrière un groupe de voitures (file voisine), caméra proche puis haute
-    for (int cam = 0; cam < 2; cam++) {
-        g.camMode = cam;
-        g.setAutopilot(false);
-        g.benchPlaceBehind(22, 0.66, 0);
-        for (int i = 0; i < 30; i++) { g.update(1.0 / 60); g.render(100 + cam * 10 + i / 60.0); }
-        char name[128]; std::snprintf(name, sizeof name, "%s/trafic-cam%d.png", out.c_str(), cam);
-        r.capturePng(name);
-        WFS_LOG("capture %s : %.0f km/h", name, g.player().kmh());
-    }
-    // choc : le joueur arrive 80 km/h plus vite que la voiture de devant, dans sa file, sans freiner
-    {
-        g.camMode = 1;
-        const int hit = g.benchPlaceBehind(14, 0, 80);
-        const int before = g.accidents;
-        for (int i = 0; i < 40; i++) { g.update(1.0 / 60); g.render(200 + i / 60.0); }
-        r.capturePng(out + "/trafic-choc.png");
-        WFS_LOG("capture trafic-choc : %d accident(s), voiture %d %s, joueur %.0f km/h, tête-à-queue %.2f rad",
-                g.accidents - before, hit, g.traffic().cars[(size_t)hit].crashed ? "en glissade" : "intacte",
-                g.player().kmh(), g.player().spinYaw);
-    }
+    benchTrafficScenes(g, r, out);   // WFS-08 : trafic de près et choc (captures trafic-*.png)
     g.shutdown();
     r.shutdown();
     vk.shutdown();
