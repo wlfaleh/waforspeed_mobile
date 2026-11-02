@@ -38,11 +38,11 @@ revue et validation avant fusion.
 ## Tableau
 | Clé | Titre | Type | Priorité | Livraison | Statut | Responsable | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
-| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
+| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
 | WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
 | WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | 🔧 En cours | Claude (session trafic) | `feature/waforspeed-08` |  | |
@@ -267,3 +267,8 @@ n'est pas encore dans `main`) ; synchronisation avec `main` dès la fusion de la
 **avant** la mise en place de `CLAUDE.md` et du tableau. Approche abandonnée (l'utilisateur veut une appli native,
 sans navigateur). Hors tableau : **ne pas fusionner, ne pas reprendre**. Branche conservée (on ne supprime pas de branche).
 Règle ajoutée à `CLAUDE.md` : même si la session attribue une branche `claude/…`, travailler sur `feature/waforspeed-XX`.
+
+### 2026-11-02 — QA WFS-01→05, passage 1 : REFUSÉ (Claude, session moteur-natif)
+Émulateur Android 14 (2400x1080) : installation et démarrage OK, mais scène rendue en portrait 1080x2400 (erreur de
+pré-rotation, cause de l'image étirée sur téléphone) et vitesse restée à 0 (0,1 image/s sur GPU logiciel, appuis non vus).
+Rapport : `qa/rapports/WFS-01.md`. Corrections poussées sur `feature/waforspeed-01` ; nouveau passage QA à la prochaine construction.
