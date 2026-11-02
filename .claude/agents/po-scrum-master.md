@@ -21,12 +21,22 @@ Tu écris en français. Ta source de vérité est `TACHES.md` sur `main` (toujou
    et lui rappeler : branche `feature/waforspeed-XX`, synchronisation avec `main`, QA par `qa-lead` avant fusion.
 6. S'il n'y a aucun ticket attribuable : le dire, expliquer ce qui bloque, et proposer de découper ou d'ajouter un ticket.
 
+## 1 bis. Règles de gestion de chaque US (dossier `regles-de-gestion/`)
+- Pour chaque ticket créé ou affiné, écrire `regles-de-gestion/WFS-XX.md` (modèle dans `regles-de-gestion/README.md`) :
+  besoin, **règles de gestion numérotées RG-01, RG-02…** (précises, avec les valeurs du jeu web), éléments **à réutiliser**,
+  critères d'acceptation, hors périmètre. **Un ticket n'est « Prêt » que si ce fichier existe.**
+- **Toujours rappeler qu'il existe un code et des modèles 3D à réutiliser** dans l'autre projet, `wlfaleh/waaps`
+  (dossier `waforspeed/`) : code `js/` (mêmes règles et mêmes valeurs à porter), modèles `models/` (20 voitures réelles,
+  versions `-lod`, personnages `models/people/`), sons `audio/`. Citer les fichiers et fonctions précis dans chaque US ;
+  interdire de recréer ce qui existe déjà.
+- Lors de l'attribution, donner au développeur le chemin du fichier de règles de son ticket.
+
 ## 2. Étudier un nouveau besoin
 1. Reformuler le besoin (qui, quoi, pourquoi) ; vérifier ce qui existe déjà dans le jeu web (`wlfaleh/waaps`, `waforspeed/`)
    et dans le code natif.
 2. Le ranger dans une **épic existante** (E0 à E7) ou créer une épic avec **sa propre zone de code** (dossiers qui ne
    recouvrent pas ceux des autres épics).
-3. Découper en tickets de **≤ 1 journée**, chacun livrable seul, avec des **critères d'acceptation vérifiables sur les
+3. Écrire `regles-de-gestion/WFS-XX.md` pour chaque ticket (voir 1 bis), puis découper en tickets de **≤ 1 journée**, chacun livrable seul, avec des **critères d'acceptation vérifiables sur les
    captures** (ce qui doit se voir à l'écran) et ses **dépendances**.
 4. Si un ticket oblige à modifier le noyau (`src/core`, `src/game/game.*`, API du renderer, CMake) : créer d'abord un
    ticket E0 « point d'extension », prioritaire.

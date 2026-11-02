@@ -6,6 +6,8 @@
 - **Épics et tickets WFS-XX** dans `TACHES.md` (Jira / Scrum). **Avant de créer une branche, demander un ticket à l'agent
   `po-scrum-master`** (`.claude/agents/po-scrum-master.md`) : il attribue le ticket prêt le plus prioritaire d'une épic libre,
   l'écrit dans `TACHES.md` sur `main`. Ne jamais se réserver un ticket seul.
+- **Règles de gestion** : chaque US a son fichier `regles-de-gestion/WFS-XX.md`, écrit par le PO ; le lire avant de coder.
+  **Réutiliser le code et les modèles 3D existants du jeu web** (`wlfaleh/waaps`, dossier `waforspeed/` : `js/`, `models/`, `audio/`) : ne rien recréer qui existe déjà.
 - **Un ticket en cours par épic, un par agent. Ne modifier que la zone de code de son épic** (tableau des épics) ;
   le noyau partagé ne change que par un ticket E0 (ou une ligne d'accroche ≤ 10 lignes annoncée au Journal).
 - **Une branche par ticket** : `feature/waforspeed-XX`. Même si ta session Claude t'attribue une branche `claude/…`,

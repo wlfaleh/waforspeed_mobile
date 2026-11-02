@@ -43,7 +43,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 8. **Ne jamais supprimer de branche** (gérées par l'utilisateur).
 9. Une réservation sans nouvelle depuis 24 h peut être réattribuée par le PO (noté au Journal).
 
-**Définition de « Prêt »** : dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
+**Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
 **Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA VALIDÉ, synchronisé, fusionné,
 Journal à jour.
@@ -609,3 +609,8 @@ course-cam0-1 24 → 8 (14 → 0), trafic-choc 15 → 5.
 déjà présent avant) → à ajouter aux critères de WFS-17 (TAA) ; trame de petits points clairs sur la **lunette arrière de la
 Golf** (vitrage, identique avant/après : texture du modèle ou transparence ?) ; points sur les rayons des jantes (911) ;
 coût GPU non mesuré (halo 25 → 16 lectures + 2 dérivées) : à confirmer sur téléphone en fin d'épic E4.
+
+### 2026-11-02 — Règles de gestion par US (demande de l'utilisateur)
+- Nouveau dossier `regles-de-gestion/` : un fichier `WFS-XX.md` par US, écrit par le PO (règles RG-xx, éléments à
+  réutiliser du jeu web `wlfaleh/waaps` : code `js/`, modèles 3D `models/`, sons `audio/`, critères, hors périmètre).
+- Un ticket n'est « Prêt » que si son fichier de règles existe. Le PO rédige les fichiers des tickets ouverts.
