@@ -45,7 +45,7 @@ revue et validation avant fusion.
 | WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | 🔧 QA en attente : construction avec 1er test sur émulateur en cours |
 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
 | WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
-| WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-08` |  | |
+| WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | 🔧 En cours | Claude (session trafic) | `feature/waforspeed-08` |  | |
 | WFS-09 | Nuit : vrais phares et éclairage public | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-09` |  | |
 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-10` |  | |
 | WFS-11 | Menu et garage 3D (voiture + couleur) | Fonctionnalité | Haute | L3 | ⏳ À faire |  | `feature/waforspeed-11` |  | |
@@ -104,7 +104,7 @@ revue et validation avant fusion.
 - [ ] Ombres stables sans scintillement
 - [ ] Coût ≤ 3 ms sur mobile
 
-**WFS-08 — Trafic multi-thread et collisions** · Fonctionnalité · priorité Haute · ⏳ À faire
+**WFS-08 — Trafic multi-thread et collisions** · Fonctionnalité · priorité Haute · 🔧 En cours
 - [ ] Port de traffic.js (même graine)
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
@@ -248,3 +248,16 @@ Réservation de la livraison 1 complète. Fichiers prévus : `src/**`, `shaders/
 
 **En cours**
 - Construction de `feature/waforspeed-01` avec le premier test sur émulateur ; ensuite verdict du QA lead sur WFS-01→05.
+
+### 2026-11-02 — Début WFS-08 Trafic multi-thread et collisions (Claude, session trafic)
+Réservation de WFS-08. Branche `feature/waforspeed-08`, partie de `feature/waforspeed-01` (le code de la livraison 1
+n'est pas encore dans `main`) ; synchronisation avec `main` dès la fusion de la PR #1.
+**Plan**
+- `src/game/traffic.{h,cpp}` : port exact de `js/game/traffic.js` (addCars, laneFree, stepTraffic, crashTraffic,
+  pas fixe 1/60 s, mêmes graines `mulberry32` et `nextRand`), catalogue des dimensions du jeu web pour garder le même tirage.
+- Mise à jour en parallèle sur les threads de `jobs()` : décisions calculées sur une copie en lecture seule, écrites ensuite.
+- Collisions joueur / trafic et quasi-contacts (port de la partie chocs de `js/game/update.js`).
+- Rendu des voitures du trafic dans `Game` (modèles partagés, dessinées seulement à portée de vue en attendant le LOD de WFS-20).
+- `tests/test_traffic.cpp` : même trafic que le jeu web (comparaison avec un script Node qui exécute traffic.js).
+**Fichiers prévus** : `src/game/traffic.*`, `src/game/game.*`, `src/game/cars.h`, `tests/test_traffic.cpp`,
+`tools/qa/` (script de comparaison), `CMakeLists.txt`, `.github/workflows/build.yml` (lancement du test).
