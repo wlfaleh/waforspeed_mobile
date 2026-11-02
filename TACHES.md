@@ -76,10 +76,10 @@ Journal à jour.
 | 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
-| 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
+| 6 | WFS-07 | Ombres dynamiques du soleil | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
-| 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
+| 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ Prêt |  | WFS-26 | `feature/waforspeed-11` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
@@ -139,9 +139,11 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Les reflets du vernis restent visibles (peinture toujours brillante, pas d'aspect mat) ; aucune autre régression visible
 - [ ] Coût GPU inchangé à ±0,5 ms (journal du banc)
 
-**WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · ⏳ Prêt
-- [ ] Ombres stables sans scintillement
-- [ ] Coût ≤ 3 ms sur mobile
+**WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · 🔧 En cours (règles : `regles-de-gestion/WFS-07.md`)
+- [ ] `course-cam0-*` en jour : ombres nettes des voitures, immeubles et lampadaires sur chaussée et trottoirs
+- [ ] Deux captures à 1 m d'écart : bords d'ombre stables (calage sur la grille des texels)
+- [ ] Nuit : aucune ombre solaire, ombre de contact conservée
+- [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
 **WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ Prêt
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
@@ -159,7 +161,7 @@ Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zon
   le jeu web (alors accepté) ou non (alors correction dans la scène ou ticket E3 de correction)
 - [ ] Journal du banc : `mode exact : … 0 écart(s)` inchangé ; aucune voiture du trafic dans le décor
 
-**WFS-11 — Menu et garage 3D (voiture + couleur)** · E5 · priorité 8 · ⏳ En attente
+**WFS-11 — Menu et garage 3D (voiture + couleur)** · E5 · priorité 8 · ⏳ Prêt (règles : `regles-de-gestion/WFS-11.md`)
 - [ ] Choix des voitures et peintures
 - [ ] Style design-street-racing
 
@@ -654,3 +656,22 @@ Remarques non bloquantes pour la suite : apostrophe droite (`'`) au lieu de `’
   la luminosité du sommet (le format de sommet n'a pas de couleur), pas d'inversion de normale en face arrière, couverture
   alpha conservée dans les mipmaps du feuillage. Aucun effet sur les autres matériaux.
 **Suite** : captures de la CI → agent qa-lead → fusion si `VALIDÉ`.
+
+### 2026-11-02 — Début WFS-07 Ombres dynamiques du soleil (attribué par le PO, pendant l'attente CI/QA de WFS-34, à la demande de l'utilisateur)
+Même exception voulue par l'utilisateur à la règle « un ticket par agent » que pendant la QA de WFS-26.
+Ticket choisi : meilleur `⏳ Prêt` d'une épic libre (E2 occupée par WFS-34 ; E4 sans ticket actif).
+**Zone de code autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*` (épic E4).
+Pas de modification de `src/world/**` (WFS-34). Tout autre changement du noyau passe par E0 (ou ligne d'accroche annoncée).
+**Responsable** : Claude (session moteur-natif), branche `feature/waforspeed-07`. Règles : `regles-de-gestion/WFS-07.md`.
+Plan court : passe de profondeur 2048 (1024 mobile) suivant le joueur (+20 m devant), calage sur les texels, PCF rayon 3,
+bias -0,0003 / normalBias 0,035 ; ombre de contact conservée la nuit ; coût mesuré au journal du banc.
+**PO** : WFS-26 ✅ → **WFS-11** (E5, garage) passe en `⏳ Prêt`.
+
+### 2026-11-02 — WFS-07 construit, en attente de la CI
+**Fait** (`feature/waforspeed-07`, poussée) : passe d'ombre du soleil avant la scène (objets opaques mis en file), carte
+2048 (1024 Android), boîte du jeu web (40 m, 260 m, 20 m devant, calage texels), 9 lectures comparées, ombre de contact
+0,55 / 0,62 / 0,7, coût GPU au journal ; captures `ombres-a`, `ombres-b` (1 m d'écart), `ombres-coupees`.
+**Accroches hors zone annoncées** : `src/game/game.cpp` (2 lignes : soleil `[-0.45, 0.75, -0.5]` du jeu web, point suivi = voiture ;
+intensité 3,2 gardée, réglée pour notre PBR), `CMakeLists.txt` (2 shaders), `src/platform/desktop_main.cpp` (2 lignes : captures).
+Conflit possible avec WFS-34 sur `shaders/scene.frag` (lignes différentes) : réglé à la synchronisation.
+**Suite** : CI → qa-lead → fusion si `VALIDÉ`.
