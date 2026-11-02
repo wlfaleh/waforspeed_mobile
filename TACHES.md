@@ -74,7 +74,7 @@ Journal à jour.
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
-| 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | 🔧 En cours | Claude (session trafic), 2026-11-02 | — | `feature/waforspeed-32` |  | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
+| 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
@@ -124,7 +124,7 @@ Journal à jour.
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
 - [ ] Pas de craquement, coupure en pause
 
-**WFS-32 — Carrosseries : supprimer les points blancs en trame (reflets du vernis)** · E4 · priorité 5.5 · 🔧 En cours
+**WFS-32 — Carrosseries : supprimer les points blancs en trame (reflets du vernis)** · E4 · priorité 5.5 · ✅ Terminé
 Origine : remarque 5 du [rapport QA WFS-08](qa/rapports/WFS-08.md) (défaut antérieur à WFS-08). Zone : `src/render/**`
 (sauf `ui_*`), `shaders/scene*`. Pistes : reflet spéculaire du vernis (`scene.frag`) trop fin / non filtré (aliasing
 spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tonemapping), résolution MSAA.
@@ -596,3 +596,16 @@ juste après « Système : AudioSystem » n'est pas un défaut de votre ticket.
 **WFS-32** : cause des points blancs en grille = halo de la passe finale (voir entrée précédente) ; ajout d'un
 anticrénelage des reflets. Restent de fines lignes pointillées sur les jointures (triangles plus fins qu'un pixel,
 crénelage de géométrie : TAA de WFS-17).
+
+### 2026-11-02 — Fin WFS-32 Carrosseries : points blancs en trame (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-32.md`, banc PC, `84b489b` — la construction de référence est `84b489b`,
+pas `4a20e7c` cité plus haut). PR #8 fusionnée.
+**Fait** : halo de la passe finale sans trou (cause des trames de points), anticrénelage des reflets du vernis, couleur
+plafonnée / NaN supprimés ; course dans `blob()` de la ville corrigée (banc d'essai qui plantait au hasard sur `main`).
+Points brillants isolés (comptage qa-lead, avant → après) : Golf 66 → 25 (dont en trame 45 → 2), 911 43 → 8 (22 → 0),
+course-cam0-1 24 → 8 (14 → 0), trafic-choc 15 → 5.
+**Fichiers** : `shaders/post.frag`, `shaders/scene.frag` ; hors zone (annoncé) : `src/world/ville.cpp`.
+**Restes (non bloquants, pour le PO)** : lignes pointillées sur les jointures de carrosserie (crénelage de géométrie,
+déjà présent avant) → à ajouter aux critères de WFS-17 (TAA) ; trame de petits points clairs sur la **lunette arrière de la
+Golf** (vitrage, identique avant/après : texture du modèle ou transparence ?) ; points sur les rayons des jantes (911) ;
+coût GPU non mesuré (halo 25 → 16 lectures + 2 dérivées) : à confirmer sur téléphone en fin d'épic E4.
