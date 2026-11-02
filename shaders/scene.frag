@@ -124,5 +124,9 @@ void main() {
     float d = length(F.camPos.xyz - vWorld);
     float fogK = 1.0 - exp(-d * F.fog.a);
     col = mix(col, F.fog.rgb, fogK);
+    // pas de pixel aberrant (WFS-32) : un reflet du soleil sur un minuscule triangle du vernis peut donner une valeur
+    // énorme, voire NaN (normale nulle) ; on plafonne à 64 et on remplace NaN / infini par 0
+    col = clamp(col, vec3(0.0), vec3(64.0));
+    if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
     outColor = vec4(col, ((flags & F_BLEND) != 0u) ? alpha : 1.0);
 }
