@@ -248,3 +248,9 @@ Réservation de la livraison 1 complète. Fichiers prévus : `src/**`, `shaders/
 
 **En cours**
 - Construction de `feature/waforspeed-01` avec le premier test sur émulateur ; ensuite verdict du QA lead sur WFS-01→05.
+
+### 2026-11-02 — Branche hors processus repérée
+`claude/version-web-capacitor` (autre agent, 12h59 → 19h08) : version web emballée avec Capacitor dans `www/`, créée
+**avant** la mise en place de `CLAUDE.md` et du tableau. Approche abandonnée (l'utilisateur veut une appli native,
+sans navigateur). Hors tableau : **ne pas fusionner, ne pas reprendre**. Branche conservée (on ne supprime pas de branche).
+Règle ajoutée à `CLAUDE.md` : même si la session attribue une branche `claude/…`, travailler sur `feature/waforspeed-XX`.
