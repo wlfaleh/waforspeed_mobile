@@ -8,50 +8,62 @@ Une **livraison** = 5 fonctionnalités terminées + un APK Android à installer 
 
 Légende : ✅ terminé · 🔧 en cours · ⏳ à faire
 
+## Règles pour travailler à plusieurs (agents)
+1. **Avant de commencer** une tâche : récupérer la dernière version de `main` (`git pull`), vérifier que la colonne « Qui »
+   de la tâche est vide, puis la **réserver** : état 🔧, « Qui » = nom de l'agent / session + date, et une entrée
+   « Début » dans le Journal (ce qui va être fait, fichiers prévus). Envoyer ce changement sur `main` **tout de suite**,
+   avant d'écrire du code, pour que les autres agents le voient.
+2. Si la tâche est déjà réservée par quelqu'un d'autre : ne pas y toucher, en choisir une autre (ou demander à l'utilisateur).
+3. Pendant le travail : ne modifier que les fichiers annoncés ; si un fichier commun doit changer (ex. `renderer.*`, `CMakeLists.txt`),
+   le noter dans le Journal.
+4. **À la fin** : état ✅, entrée « Fin » dans le Journal (fait / fichiers / vérification / limites), libérer la colonne « Qui »
+   (garder le nom dans le Journal).
+5. Une réservation sans nouvelle depuis plus de 24 h peut être reprise, en le notant dans le Journal.
+
 ## Livraison 1 — « Première course »
-| # | Fonctionnalité | État |
-|---|---|---|
-| F1 | Projet C++ + construction automatique de l'APK Android (GitHub Actions) | 🔧 |
-| F2 | Noyau du moteur : boucle de jeu, threads (système de tâches), mémoire (arènes, pools), journal | 🔧 (écrit, à valider sur téléphone) |
-| F3 | Rendu Vulkan PBR : soleil, ciel, HDR + tonemapping, MSAA | 🔧 |
-| F4 | Vraies voitures importées du jeu web (Golf 8 GTI, BMW M4, Porsche 911, Lamborghini Gallardo) | 🔧 |
-| F5 | Route générée + conduite tactile + caméra de poursuite (physique reprise du jeu web) | 🔧 |
+| # | Fonctionnalité | État | Qui |
+|---|---|---|---|
+| F1 | Projet C++ + construction automatique de l'APK Android (GitHub Actions) | 🔧 | Claude — session moteur-natif (02/11) |
+| F2 | Noyau du moteur : boucle de jeu, threads (système de tâches), mémoire (arènes, pools), journal | 🔧 (écrit, à valider sur téléphone) | Claude — session moteur-natif (02/11) |
+| F3 | Rendu Vulkan PBR : soleil, ciel, HDR + tonemapping, MSAA | 🔧 | Claude — session moteur-natif (02/11) |
+| F4 | Vraies voitures importées du jeu web (Golf 8 GTI, BMW M4, Porsche 911, Lamborghini Gallardo) | 🔧 | Claude — session moteur-natif (02/11) |
+| F5 | Route générée + conduite tactile + caméra de poursuite (physique reprise du jeu web) | 🔧 | Claude — session moteur-natif (02/11) |
 
 ## Livraison 2 — « Ville vivante »
-| # | Fonctionnalité | État |
-|---|---|---|
-| F6 | Ville : bâtiments, trottoirs, lampadaires, arbres | ⏳ |
-| F7 | Ombres dynamiques du soleil (cascades) | ⏳ |
-| F8 | Trafic (mis à jour sur plusieurs threads) + collisions | ⏳ |
-| F9 | Nuit : vrais phares et éclairage public | ⏳ |
-| F10 | Sons de moteur (AAudio, régime + rapports) | ⏳ |
+| # | Fonctionnalité | État | Qui |
+|---|---|---|---|
+| F6 | Ville : bâtiments, trottoirs, lampadaires, arbres | ⏳ |  |
+| F7 | Ombres dynamiques du soleil (cascades) | ⏳ |  |
+| F8 | Trafic (mis à jour sur plusieurs threads) + collisions | ⏳ |  |
+| F9 | Nuit : vrais phares et éclairage public | ⏳ |  |
+| F10 | Sons de moteur (AAudio, régime + rapports) | ⏳ |  |
 
 ## Livraison 3 — « Jeu complet »
-| # | Fonctionnalité | État |
-|---|---|---|
-| F11 | Menu et garage 3D (choix voiture + couleur) | ⏳ |
-| F12 | Chrono, checkpoints, score, nitro, HUD | ⏳ |
-| F13 | Les 20 voitures + 16 peintures | ⏳ |
-| F14 | Cartes campagne, plage, circuit | ⏳ |
-| F15 | Réglages de qualité selon le téléphone | ⏳ |
+| # | Fonctionnalité | État | Qui |
+|---|---|---|---|
+| F11 | Menu et garage 3D (choix voiture + couleur) | ⏳ |  |
+| F12 | Chrono, checkpoints, score, nitro, HUD | ⏳ |  |
+| F13 | Les 20 voitures + 16 peintures | ⏳ |  |
+| F14 | Cartes campagne, plage, circuit | ⏳ |  |
+| F15 | Réglages de qualité selon le téléphone | ⏳ |  |
 
 ## Livraison 4 — « Rendu nouvelle génération »
-| # | Fonctionnalité | État |
-|---|---|---|
-| F16 | Route mouillée avec reflets | ⏳ |
-| F17 | Post-traitement : bloom, anticrénelage temporel, flou de mouvement | ⏳ |
-| F18 | Météo : pluie, flaques | ⏳ |
-| F19 | Piétons animés et conducteurs | ⏳ |
-| F20 | Performances : niveaux de détail, tri des objets visibles en parallèle | ⏳ |
+| # | Fonctionnalité | État | Qui |
+|---|---|---|---|
+| F16 | Route mouillée avec reflets | ⏳ |  |
+| F17 | Post-traitement : bloom, anticrénelage temporel, flou de mouvement | ⏳ |  |
+| F18 | Météo : pluie, flaques | ⏳ |  |
+| F19 | Piétons animés et conducteurs | ⏳ |  |
+| F20 | Performances : niveaux de détail, tri des objets visibles en parallèle | ⏳ |  |
 
 ## Livraison 5 — « Multijoueur et iOS »
-| # | Fonctionnalité | État |
-|---|---|---|
-| F21 | Duel en ligne | ⏳ |
-| F22 | Version iOS (Metal via MoltenVK) | ⏳ |
-| F23 | Manettes de jeu | ⏳ |
-| F24 | Sauvegarde et progression | ⏳ |
-| F25 | Préparation des stores (icônes, signature, fiches) | ⏳ |
+| # | Fonctionnalité | État | Qui |
+|---|---|---|---|
+| F21 | Duel en ligne | ⏳ |  |
+| F22 | Version iOS (Metal via MoltenVK) | ⏳ |  |
+| F23 | Manettes de jeu | ⏳ |  |
+| F24 | Sauvegarde et progression | ⏳ |  |
+| F25 | Préparation des stores (icônes, signature, fiches) | ⏳ |  |
 
 ---
 
@@ -63,6 +75,10 @@ Légende : ✅ terminé · 🔧 en cours · ⏳ à faire
 - Tableau des tâches (5 livraisons de 5 fonctionnalités).
 - Skills pour les agents : `waforspeed-natif` (règles du moteur natif, processus, construction), `design-street-racing`
   (direction artistique, reprise de la version web), `waforspeed-3d` (référence de la version navigateur). `CLAUDE.md` à la racine.
+
+### 2026-11-02 — Début F1 à F5 (Claude, session moteur-natif)
+Réservation de la livraison 1 complète. Fichiers prévus : `src/**`, `shaders/**`, `tools/convert_car.mjs`, `assets/**`,
+`CMakeLists.txt`, `android/**`, `.github/workflows/build.yml`.
 
 ### 2026-11-02 — F1 à F5 (livraison 1) : code écrit, première construction en cours
 **Fait**

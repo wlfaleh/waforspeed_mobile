@@ -10,7 +10,10 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
 ## Processus de travail (obligatoire)
-1. **Tableau des tâches** : `TACHES.md`. Avant de commencer une fonctionnalité, la passer à 🔧 ; à la fin, ✅.
+1. **Tableau des tâches** : `TACHES.md` (voir ses « Règles pour travailler à plusieurs »).
+   **Avant d'écrire du code** : `git pull` de `main`, vérifier que la tâche n'est pas réservée (colonne « Qui »), la réserver
+   (🔧 + nom + date + entrée « Début » dans le Journal avec les fichiers prévus) et envoyer ce changement sur `main` tout de suite.
+   Une tâche réservée par un autre agent ne se touche pas. À la fin : ✅, colonne « Qui » libérée.
 2. **Journal** : à la fin de CHAQUE étape (fonctionnalité ou correction importante), ajouter une entrée datée dans
    la section « Journal » de `TACHES.md` : ce qui a été fait, fichiers touchés, comment c'est vérifié, ce qui reste / limites connues.
 3. **Livraison toutes les 5 fonctionnalités** : APK publié par la CI dans la Release `apercu`, captures vérifiées,
