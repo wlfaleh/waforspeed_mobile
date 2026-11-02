@@ -67,9 +67,13 @@ void core(Geo& g, vec3 c, vec3 s, float k) {
     for (int f = 0; f < 60; f += 3) {
         vec3 p[3];
         for (int j = 0; j < 3; j++) { const vec3& u = V[F[f + j]]; p[j] = c + vec3{u.x * s.x, u.y * s.y, u.z * s.z} * inv; }
-        const vec3 n = lit(normalize(cross(p[1] - p[0], p[2] - p[0])), k);
+        // normales lissées (vers l'extérieur de l'ellipsoïde, un peu vers le ciel) : pas de facettes sombres visibles
         const uint32_t k0 = (uint32_t)g.v.size();
-        for (auto& q : p) vert(g, q, n, 0.5f, 0.5f);
+        for (int j = 0; j < 3; j++) {
+            const vec3& u = V[F[f + j]];
+            const vec3 n = normalize(vec3{u.x / s.x, u.y / s.y + 0.6f / std::max(s.y, 1e-3f), u.z / s.z});
+            vert(g, p[j], lit(n, k), 0.5f, 0.5f);
+        }
         g.i.insert(g.i.end(), {k0, k0 + 1, k0 + 2});
     }
 }

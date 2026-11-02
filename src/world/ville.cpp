@@ -149,7 +149,8 @@ public:
         barkTex_ = r.vk().uploadTexture(bark, 2, 1, true);
         Material mb; mb.rough = 0.9f; mb.flags = MAT_VTINT;
         mats_[P_BARK] = r.makeMaterial(mb, &barkTex_, nullptr, nullptr);
-        Material mc; vec3 c = lin(veg::hex(veg::CORE_LEAF)); mc.color = {c.x, c.y, c.z, 1}; mc.rough = 0.9f; mc.flags = MAT_VTINT;
+        // cœur : le jeu web l'éclaire en Lambert par sommet (plus clair que notre PBR + ACES) → éclairci pour rester un fond d'ombre verte
+        Material mc; vec3 c = lin(veg::hex(veg::CORE_LEAF)) * 2.2f; mc.color = {c.x, c.y, c.z, 1}; mc.rough = 0.9f; mc.flags = MAT_VTINT;
         mats_[P_CORE] = r.makeMaterial(mc, nullptr, nullptr, nullptr);
     }
 
@@ -241,7 +242,9 @@ public:
             if (frame_ > it->first + 3) { r.destroy(it->second); it = graveyard_.erase(it); } else ++it;
         }
         const mat4 I = mat4::identity();
-        for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) r.draw(ch.m[p], mats_[p], I);
+        int draws = 0;
+        for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) { r.draw(ch.m[p], mats_[p], I); draws++; }
+        if (frame_ % 300 == 1) WFS_LOG("Ville : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
     }
 
     void shutdown(Renderer& r) override {
