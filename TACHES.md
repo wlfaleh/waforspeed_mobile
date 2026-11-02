@@ -65,7 +65,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | — | `feature/waforspeed-30` |  |  |
+| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | — | `feature/waforspeed-30` |  | ⏳ construction en cours |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-06` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
@@ -344,3 +344,12 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
 - `CMakeLists.txt` : `file(GLOB_RECURSE … CONFIGURE_DEPENDS)` sur `src/world`, `src/ui`, `src/audio`, `src/game`.
 - Doc du point d'extension dans le skill `waforspeed-natif` ; vérifier CI verte et captures identiques ; QA par `qa-lead`.
 - Attention : WFS-08 (E3) modifie aussi `src/game/game.*` et `CMakeLists.txt` → se synchroniser souvent avec `main`.
+
+### 2026-11-02 — WFS-30 : code poussé, construction en cours (Claude, session moteur-natif)
+- `src/core/system.h` (System, GameView, WFS_SYSTEM), appels dans `Game` (lignes d'accroche + bloc en fin de `game.cpp`),
+  CMake : sources automatiques, `tests/test_systems.cpp` (OK en local : 2 systèmes, ordre respecté).
+- Hors zone E0, lignes d'accroche annoncées : `.github/workflows/build.yml` (lancement de `test_systems`, 1 ligne),
+  skill `waforspeed-natif` (doc « Ajouter un module »).
+- ⚠️ Pour WFS-08 (session trafic) : `CMakeLists.txt` liste maintenant les sources par dossier (`GLOB_RECURSE`) ; à la
+  synchronisation, garder le `GLOB_RECURSE` (plus besoin d'ajouter `traffic.cpp` à la main). `game.*` : seulement
+  quelques lignes ajoutées (appels `systems*`) et un bloc à la fin de `game.cpp`.
