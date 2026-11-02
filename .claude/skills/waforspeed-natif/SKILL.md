@@ -19,8 +19,9 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 5. **PR** `WFS-XX : <titre>` vers `main`, statut 🔍. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
 6. **Ne fusionner qu'après validation** : critères d'acceptation cochés, CI verte, captures relues, test sur téléphone
    pour tout ce qui touche l'affichage ou les commandes. Puis statut ✅ et entrée « Fin » au Journal.
-7. **Journal** à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
-8. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
+7. **Ne jamais supprimer de branche** (locale ou distante), même fusionnée : l'utilisateur s'en occupe.
+8. **Journal** à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
+9. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
 
 ## Architecture
 Voir `references/architecture.md`. En bref :

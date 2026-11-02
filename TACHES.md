@@ -29,7 +29,8 @@ revue et validation avant fusion.
 6. **Fusionner** : synchroniser une dernière fois, fusionner la PR, statut ✅, Responsable libéré, entrée « Fin » au Journal
    (fait / fichiers / vérification / limites).
 7. Livraison = 5 tickets terminés : APK de `main` dans la Release `apercu`, entrée « Livraison N » au Journal.
-8. Une réservation sans nouvelle depuis 24 h peut être reprise, en le notant au Journal.
+8. **Ne jamais supprimer de branche** : c'est l'utilisateur qui gère les branches (même après fusion).
+9. Une réservation sans nouvelle depuis 24 h peut être reprise, en le notant au Journal.
 
 ## Tableau
 | Clé | Titre | Type | Priorité | Livraison | Statut | Responsable | Branche | PR |
