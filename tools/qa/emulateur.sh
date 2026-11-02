@@ -4,19 +4,21 @@
 # prend des captures et récupère le journal. Échoue si l'appli plante ou ne démarre pas le moteur.
 set -u
 APK="$1"; OUT="${2:-qa-sortie}"
+# chaque commande adb est limitée dans le temps : le test ne peut plus rester bloqué
+adb() { timeout 60 command adb "$@"; }
 mkdir -p "$OUT"
 PKG=com.waforspeed.game
 log() { echo "[QA] $*" | tee -a "$OUT/deroulement.txt"; }
 shot() { adb exec-out screencap -p > "$OUT/$1.png" && log "capture $1"; }
 alive() { adb shell pidof $PKG > /dev/null 2>&1; }
 
-adb wait-for-device
+timeout 120 command adb wait-for-device
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1           # paysage
 adb shell wm size > "$OUT/ecran.txt"
 log "installation"; adb install -r -g "$APK" >> "$OUT/deroulement.txt" 2>&1 || { log "ÉCHEC installation"; exit 1; }
 adb logcat -c
-log "lancement"; adb shell am start -W -n $PKG/android.app.NativeActivity >> "$OUT/deroulement.txt" 2>&1
+log "lancement"; adb shell am start -n $PKG/android.app.NativeActivity >> "$OUT/deroulement.txt" 2>&1
 sleep 20
 shot 01-demarrage
 alive || log "ATTENTION : l'appli ne tourne plus après le démarrage"
@@ -35,7 +37,7 @@ adb shell input motionevent UP $gx $gy
 log "nitro 3 s"
 adb shell input motionevent DOWN $nx $ny; sleep 3; shot 04-nitro; adb shell input motionevent UP $nx $ny
 log "braquage à droite (glisser) 2 s"
-adb shell input swipe $sx $sy $((sx + W * 10 / 100)) $sy 2000 & sleep 1; shot 05-braquage; wait
+(timeout 20 command adb shell input swipe $sx $sy $((sx + W * 10 / 100)) $sy 2000 &) ; sleep 1; shot 05-braquage; sleep 2
 log "freinage 3 s"
 adb shell input motionevent DOWN $bx $by; sleep 3; shot 06-freinage; adb shell input motionevent UP $bx $by
 sleep 6
