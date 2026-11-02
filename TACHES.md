@@ -67,7 +67,7 @@ Journal à jour.
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
-| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-06` |  |  |
+| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-06` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
@@ -104,7 +104,7 @@ Journal à jour.
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
 
-**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · ⏳ Prêt
+**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · 🔧 En cours
 - [ ] Décor généré par la graine de la carte (comme decor.js)
 - [ ] Instanciation GPU, ≤ 300 appels de dessin
 - [ ] Captures : rue bordée d'immeubles, lampadaires, arbres
@@ -359,3 +359,16 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
 - Débloqués (dépendance WFS-30 terminée) : WFS-06 (E2 ville), WFS-26 (E5 texte), WFS-10 (E6 sons), WFS-07 (E4 ombres) :
   **quatre épics attribuables en parallèle**, en plus de WFS-08 (E3) en cours.
 - Pour ajouter un module : skill `waforspeed-natif`, section « Ajouter un module ».
+
+### 2026-11-02 — Début WFS-06 Ville : bâtiments, trottoirs, lampadaires, arbres (attribué par le PO)
+Épic **E2 — Monde et décor**. Branche `feature/waforspeed-06`, partie de `main`. Dépendance WFS-30 ✅.
+**Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*`. Tout autre changement du noyau passe par E0 (ou une ligne d'accroche annoncée au Journal).
+**Critères**
+- Décor généré par la graine de la carte (comme decor.js)
+- Instanciation GPU, ≤ 300 appels de dessin
+- Captures : rue bordée d'immeubles, lampadaires, arbres
+**Plan**
+- `src/world/` : générateur de décor à partir de la graine (port de decor.js), bâtiments, trottoirs, lampadaires, arbres.
+- Instanciation GPU par type d'objet, dessin borné à ≤ 300 appels.
+- Module enregistré via le système `System` de WFS-30 : nouveaux fichiers + 1 ligne d'enregistrement dans `Game`.
+- Captures de la CI relues par `qa-lead` avant fusion.
