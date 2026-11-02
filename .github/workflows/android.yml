@@ -1,0 +1,97 @@
+# Fabrique l'appli Android (APK) à chaque mise à jour de main, et sur demande (onglet Actions → Run workflow).
+# - sur main : l'APK est publié dans « Releases » (téléchargeable depuis le téléphone, sans compte) ;
+# - sur une pull request : l'APK est seulement vérifié et joint au run (onglet Actions → Artifacts).
+# Signature : si les secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS et
+# ANDROID_KEY_PASSWORD existent, l'APK est signé avec ta clé (mises à jour sans désinstaller) ; sinon,
+# APK « debug » avec une clé temporaire (il faut désinstaller l'ancienne version avant d'installer la nouvelle).
+name: Appli Android (APK)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      WFS_VERSION_CODE: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Copier le jeu dans le projet Android
+        run: npm run vendor && npx cap sync android
+
+      - name: Clé de signature (si fournie)
+        id: key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/wfs.keystore"
+            echo "WFS_KEYSTORE_FILE=$RUNNER_TEMP/wfs.keystore" >> "$GITHUB_ENV"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Pas de clé : APK debug."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fabriquer l'APK
+        working-directory: android
+        env:
+          WFS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          WFS_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          WFS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          if [ "${{ steps.key.outputs.signed }}" = "true" ]; then
+            ./gradlew --no-daemon assembleRelease
+            cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/WaForSpeed.apk"
+          else
+            ./gradlew --no-daemon assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/WaForSpeed.apk"
+          fi
+          ls -la "$RUNNER_TEMP/WaForSpeed.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WaForSpeed-apk-${{ github.run_number }}
+          path: ${{ runner.temp }}/WaForSpeed.apk
+
+      - name: Publier dans Releases
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v${{ github.run_number }}
+          name: WaForSpeed Android ${{ github.run_number }}
+          make_latest: true
+          files: ${{ runner.temp }}/WaForSpeed.apk
+          body: |
+            Appli Android de WaForSpeed (build ${{ github.run_number }}, commit ${{ github.sha }}).
+            Sur le téléphone : télécharge **WaForSpeed.apk**, ouvre-le, autorise l'installation depuis cette source.
+            ${{ steps.key.outputs.signed == 'true' && 'APK signé : il se met à jour par-dessus la version précédente.' || 'APK de test (debug) : désinstalle la version précédente avant d''installer celle-ci.' }}

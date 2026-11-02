@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>WaForSpeed</title>
+<meta name="description" content="WaForSpeed : course de rue arcade en 3D, de nuit, en solo ou en duel. Version mobile.">
+<meta name="theme-color" content="#0A0B10">
+<meta name="color-scheme" content="dark">
+<!-- web app installable (Android : « Installer l'application », iOS : Partager → « Sur l'écran d'accueil ») -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WaForSpeed">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<!-- bibliothèques et polices locales : rien à télécharger ailleurs, marche hors ligne et dans l'appli -->
+<script src="lib/three.min.js"></script>
+<script src="lib/CopyShader.js"></script>
+<script src="lib/LuminosityHighPassShader.js"></script>
+<script src="lib/EffectComposer.js"></script>
+<script src="lib/RenderPass.js"></script>
+<script src="lib/ShaderPass.js"></script>
+<script src="lib/UnrealBloomPass.js"></script>
+<script src="lib/GLTFLoader.js"></script>
+<link rel="stylesheet" href="lib/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+
+<canvas id="game" aria-label="Vue de la course"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <div class="hud-btns">
+  <button class="cam-btn" id="menuBtnHud" aria-label="Réglages et quitter (touche Échap)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg><span>Menu</span></button>
+  <button class="cam-btn" id="camBtn" aria-label="Changer de caméra (touche C)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l1.6-2h6.8L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zm8 3.2a3.3 3.3 0 1 0 0 6.6 3.3 3.3 0 0 0 0-6.6z"/></svg><span>Proche</span></button>
+  </div>
+  <div class="hud-top">
+    <div class="hud-col">
+    <div class="panel p-time">
+      <span class="label" id="timeLabel">Temps</span>
+      <span class="time-value" id="time">30.0</span>
+      <div class="cp">
+        <span class="label"><span id="cpLabel">Checkpoint</span> <b id="cpn">1</b></span>
+        <div class="cp-bar"><i id="cpbar"></i></div>
+      </div>
+    </div>
+    <div class="panel duel-board" id="duelBoard" hidden></div>
+    </div>
+    <div class="panel p-score">
+      <span class="label" id="scoreLabel">Score</span>
+      <span class="score-value" id="score">0</span>
+      <span class="combo" id="combo"></span>
+    </div>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <div class="hud-bottom">
+    <div class="panel nitro" id="nitroPanel">
+      <span class="label">Nitro <kbd>Espace</kbd></span>
+      <div class="nitro-bar" id="nitroBar"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="speedo" id="speedoBox">
+      <canvas id="speedo" width="380" height="380"></canvas>
+      <div class="speedo-read"><span id="kmh">0</span><span class="unit">KM/H</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="touch" id="touch" hidden>
+  <div class="group">
+    <button class="tbtn" data-key="left" aria-label="Gauche"><svg viewBox="0 0 24 24"><path d="M15.5 4 7 12l8.5 8 1.5-1.6L10.2 12 17 5.6z"/></svg></button>
+    <button class="tbtn" data-key="right" aria-label="Droite"><svg viewBox="0 0 24 24"><path d="M8.5 4 17 12l-8.5 8L7 18.4 13.8 12 7 5.6z"/></svg></button>
+  </div>
+  <div class="group">
+    <button class="tbtn" data-key="down">Frein</button>
+    <div class="pedals">
+      <button class="tbtn nitro-btn" data-key="nitro">Nitro</button>
+      <button class="tbtn gas-btn" data-key="up">Gaz</button>
+    </div>
+  </div>
+</div>
+
+<section class="screen" id="menu" aria-labelledby="logo">
+  <div class="screen-inner">
+    <p class="eyebrow">Sprint urbain · 10 vraies voitures</p>
+    <h1 class="logo" id="logo"><span>Wa<em>for</em></span><span class="speed">Speed</span></h1>
+    <nav class="menu-list" aria-label="Menu principal">
+      <button class="mitem" id="startBtn"><span class="mi-t">Course solo</span><span class="mi-d">Bats le chrono, frôle le trafic, enchaîne les checkpoints</span></button>
+      <button class="mitem" id="duelBtn"><span class="mi-t">Duel en ligne</span><span class="mi-d">Défie un ami sur la même route, même trafic</span></button>
+      <button class="mitem" id="garageBtn"><span class="mi-t">Showroom</span><span class="mi-d">Choisis ta voiture et sa couleur</span></button>
+      <button class="mitem mitem--small" id="qualityBtn"><span class="mi-t">Graphismes : haute</span></button>
+    </nav>
+    <div class="menu-foot">
+      <div class="record"><span class="label">Record</span><strong id="best">—</strong></div>
+      <button class="mycar" id="myCarBtn" aria-label="Changer de voiture"><span class="label">Ta voiture</span><strong id="myCarName">—</strong></button>
+    </div>
+    <details class="help only-desk">
+      <summary>Commandes</summary>
+      <ul class="keys">
+        <li><kbd>↑</kbd><kbd>Z</kbd><span>Accélérer</span></li>
+        <li><kbd>↓</kbd><kbd>S</kbd><span>Freiner · à l'arrêt : marche arrière</span></li>
+        <li><kbd>←</kbd><kbd>→</kbd><kbd>Q</kbd><kbd>D</kbd><span>Tourner le volant</span></li>
+        <li><kbd>Espace</kbd><span>Nitro</span></li>
+        <li><kbd>C</kbd><span>Caméra</span></li>
+        <li><kbd>P</kbd><span>Pause</span></li>
+        <li><kbd>M</kbd><span>Son</span></li>
+      </ul>
+    </details>
+    <p class="intro only-touch">Flèches à gauche : volant. À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.</p>
+  </div>
+</section>
+
+<section class="screen screen--show" id="garage" hidden aria-labelledby="carName">
+  <header class="show-head">
+    <p class="eyebrow"><span id="carBrand">Volkswagen</span> · <span id="carIndex">01 / 10</span></p>
+    <h2 class="show-name" id="carName">Golf 8 GTI</h2>
+    <p class="show-body"><span class="chip" id="carBody">Compacte</span><span class="show-tag" id="carTag"></span></p>
+    <div class="car-dots" id="carGrid" role="group" aria-label="Voitures"></div>
+  </header>
+  <button class="show-arrow show-arrow--prev" id="carPrev" aria-label="Voiture précédente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+  <button class="show-arrow show-arrow--next" id="carNext" aria-label="Voiture suivante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></button>
+  <p class="show-loading" id="carLoading" hidden><span class="spin" aria-hidden="true"></span>Chargement du modèle 3D…</p>
+  <div class="show-panel">
+    <dl class="specs" id="carSpecs">
+      <div><dt>Puissance</dt><dd><b id="spCh">—</b><small>ch</small></dd></div>
+      <div><dt>0 à 100</dt><dd><b id="spS100">—</b><small>s</small></dd></div>
+      <div><dt>Vitesse max</dt><dd><b id="spVmax">—</b><small>km/h</small></dd></div>
+    </dl>
+    <div class="statlist" id="carStats"></div>
+    <div class="paint-line"><span class="label">Couleur</span><div class="paint-row" id="paintRow" role="group" aria-label="Couleur"></div><span class="paint-name" id="paintName"></span></div>
+    <div class="actions">
+      <button class="btn" id="garageGo">Choisir</button>
+      <button class="btn btn--ghost" id="garageBack">Retour</button>
+    </div>
+  </div>
+  <p class="note show-credit" id="carModelNote"></p>
+</section>
+
+
+<section class="screen screen--garage" id="mapSel" hidden aria-labelledby="mapName">
+  <div class="screen-inner">
+    <p class="eyebrow">Choisis ton terrain</p>
+    <h2 class="big" id="mapName">Ville néon</h2>
+    <p class="intro" id="mapDesc"></p>
+    <div class="map-grid" id="mapGrid" role="group" aria-label="Terrains"></div>
+    <div class="tod" role="group" aria-label="Moment de la journée">
+      <button class="tod-btn" data-tod="jour" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Jour</button>
+      <button class="tod-btn" data-tod="nuit" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>Nuit</button>
+    </div>
+    <div class="actions">
+      <button class="btn" id="mapGo">Rouler</button>
+      <button class="btn btn--ghost" id="mapBack">Retour</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="pause" hidden aria-labelledby="pauseTitle">
+  <div class="screen-inner">
+    <p class="eyebrow" id="pauseEyebrow">Course en pause</p>
+    <h2 class="big" id="pauseTitle">Réglages</h2>
+    <div class="settings">
+      <div class="set-row"><span class="label">Caméra</span><div class="seg" id="setCam" role="group" aria-label="Caméra">
+        <button data-v="0">Proche</button><button data-v="1">Loin</button><button data-v="2">Cockpit</button></div></div>
+      <div class="set-row"><span class="label">Graphismes</span><div class="seg" id="setGfx" role="group" aria-label="Graphismes">
+        <button data-v="high">Haute</button><button data-v="low">Rapide</button></div></div>
+      <div class="set-row"><span class="label">Son</span><div class="seg" id="setSnd" role="group" aria-label="Son">
+        <button data-v="on">Activé</button><button data-v="off">Coupé</button></div></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="resumeBtn">Reprendre</button>
+      <button class="btn btn--ghost" id="restartBtn">Recommencer</button>
+      <button class="btn btn--ghost" id="quitBtn">Quitter la course</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="over" hidden aria-labelledby="overTitle">
+  <div class="screen-inner">
+    <p class="eyebrow" id="overTitle">Temps écoulé</p>
+    <h2 class="big"><span class="score-big" id="finalScore">0</span></h2>
+    <span class="badge" id="newBest" hidden>Nouveau record</span>
+    <dl class="stats">
+      <div><dt>Distance</dt><dd id="stDist">0 km</dd></div>
+      <div><dt>Vitesse max</dt><dd id="stSpeed">0 km/h</dd></div>
+      <div><dt>Quasi-contacts</dt><dd id="stNear">0</dd></div>
+      <div><dt>Checkpoints</dt><dd id="stCp">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn" id="againBtn">Rejouer</button>
+      <button class="btn btn--ghost" id="menuBtn">Menu</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="lobby" hidden aria-labelledby="lobbyTitle">
+  <div class="screen-inner">
+    <p class="eyebrow">Duel en ligne · 2 pilotes</p>
+    <h2 class="big" id="lobbyTitle">Duel</h2>
+    <div class="stack" id="lobbyHome">
+      <div class="field">
+        <label class="label" for="nick">Ton pseudo</label>
+        <input class="input" id="nick" maxlength="14" autocomplete="off" spellcheck="false" placeholder="Pilote">
+      </div>
+      <div class="field" id="openRooms" hidden>
+        <span class="label">Salons qui t'attendent</span>
+        <div class="open-list" id="openList"></div>
+      </div>
+      <div class="actions"><button class="btn" id="createBtn">Créer un salon</button></div>
+      <div class="field">
+        <label class="label" for="codeIn">Ou rejoins avec un code</label>
+        <div class="join-row">
+          <input class="input" id="codeIn" maxlength="4" autocomplete="off" spellcheck="false" placeholder="CODE">
+          <button class="btn btn--ghost" id="joinBtn">Rejoindre</button>
+        </div>
+      </div>
+      <p class="note" id="lobbyNote">Connexion au serveur de jeu…</p>
+      <div class="actions"><button class="btn btn--ghost" id="lobbyBack">Retour</button></div>
+    </div>
+    <div class="stack" id="lobbyRoom" hidden>
+      <div><span class="label">Code du salon</span><div class="room-code" id="roomCode">----</div></div>
+      <div class="car-line"><span class="label">Ta voiture</span><strong id="lobbyCar">Golf GTI</strong><button class="btn btn--ghost" id="lobbyGarage">Changer</button></div>
+      <div class="car-line"><span class="label">Terrain</span><strong id="lobbyMap">Ville néon · Nuit</strong><button class="btn btn--ghost" id="lobbyMapBtn">Changer</button><span class="note" id="lobbyMapNote"></span></div>
+      <div class="car-line"><span class="label">Distance</span><div class="tod km-row" id="kmRow" role="group" aria-label="Distance de la course"></div></div>
+      <ul class="players" id="players"></ul>
+      <p class="note" id="roomNote"></p>
+      <div class="actions">
+        <button class="btn" id="readyBtn">Prêt</button>
+        <button class="btn btn--ghost" id="leaveBtn">Quitter le salon</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="duelOver" hidden aria-labelledby="duelTitle">
+  <div class="screen-inner">
+    <p class="eyebrow" id="duelEyebrow">Duel terminé</p>
+    <h2 class="big" id="duelTitle">Victoire</h2>
+    <div class="record"><span class="label">Ton chrono</span><strong id="duelTime">0:00.0</strong></div>
+    <ol class="players" id="duelResults"></ol>
+    <dl class="stats">
+      <div><dt>Vitesse max</dt><dd id="dSpeed">0 km/h</dd></div>
+      <div><dt>Quasi-contacts</dt><dd id="dNear">0</dd></div>
+    </dl>
+    <div class="actions">
+      <button class="btn" id="rematchBtn">Revanche</button>
+      <button class="btn btn--ghost" id="duelQuit">Quitter le duel</button>
+    </div>
+  </div>
+</section>
+
+<div class="countdown" id="countdown" hidden></div>
+
+<div class="rotate" id="rotate" hidden role="alert">
+  <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="18" y="6" width="28" height="52" rx="5"/><path d="M8 40a24 24 0 0 0 20 16m-6 4 6-4-4-6"/></svg>
+  <p class="rotate-title">Tourne ton téléphone</p>
+  <p>La course se joue à l'horizontale. La partie est en pause.</p>
+</div>
+
+
+<script src="js/core/config.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/cars/catalog.js"></script>
+<script src="js/world/track.js"></script>
+<script src="js/world/maps.js"></script>
+<script src="js/world/decor.js"></script>
+<script src="js/world/renderer.js"></script>
+<script src="js/world/life.js"></script>
+<script src="js/cars/procedural.js"></script>
+<script src="js/cars/models.js"></script>
+<script src="js/cars/player.js"></script>
+<script src="js/world/scene.js"></script>
+<script src="js/world/garage.js"></script>
+<script src="js/world/fx.js"></script>
+<script src="js/world/particles.js"></script>
+<script src="js/game/state.js"></script>
+<script src="js/game/traffic.js"></script>
+<script src="js/audio/sfx.js"></script>
+<script src="js/ui/toasts.js"></script>
+<script src="js/game/update.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/ui/screens.js"></script>
+<script src="js/net/p2p.js"></script>
+<script src="js/net/duel.js"></script>
+<script src="js/mobile.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

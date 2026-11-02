@@ -1,0 +1,12 @@
+{
+  "appId": "io.github.wlfaleh.waforspeed",
+  "appName": "WaForSpeed",
+  "webDir": "www",
+  "backgroundColor": "#0A0B10",
+  "android": {
+    "backgroundColor": "#0A0B10",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

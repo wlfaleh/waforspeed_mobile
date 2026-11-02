@@ -1,0 +1,25 @@
+{
+  "name": "waforspeed-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WaForSpeed pour mobile : web app installable (iOS, Android) et appli Android.",
+  "scripts": {
+    "vendor": "node scripts/vendor.mjs",
+    "serve": "python3 -m http.server 8000 --directory www",
+    "sync": "npm run vendor && npx cap sync android",
+    "android:debug": "npm run sync && cd android && ./gradlew assembleDebug"
+  },
+  "devDependencies": {
+    "@fontsource/inter": "5.1.0",
+    "@fontsource/orbitron": "5.1.0",
+    "@fontsource/rajdhani": "5.1.0",
+    "peerjs": "1.5.4",
+    "three": "0.128.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/cli": "8.6.0",
+    "@capacitor/core": "8.6.0"
+  }
+}
