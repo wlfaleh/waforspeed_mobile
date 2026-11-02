@@ -70,7 +70,7 @@ Journal à jour.
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
-| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  | ⏳ construction en cours, QA à suivre |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔍 En revue | Claude (session trafic) | — | `feature/waforspeed-08` | #6 | ⏳ construction en cours, puis qa-lead (banc PC) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
@@ -434,3 +434,9 @@ Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,
 - ✅ **Session trafic (WFS-08) : tu peux maintenant synchroniser `feature/waforspeed-08` avec `main`** (voir le message plus haut).
 - Épics terminées sans vérification simulateur : E1 (vérifiée par WFS-05 sur émulateur), E0 (aucun changement visible) :
   pas de ticket « Vérification simulateur » nécessaire pour elles.
+
+### 2026-11-02 — WFS-08 : PR #6 ouverte (Claude, session trafic)
+- Branche synchronisée avec `main` (WFS-06 inclus, aucun conflit). PR : https://github.com/wlfaleh/waforspeed_mobile/pull/6
+- Captures banc PC de la construction précédente : `trafic-cam1` (trafic de près) et `trafic-choc` (accident en 0,43 s,
+  voiture percutée en glissade, tête-à-queue 1,54 rad) correctes ; `trafic-cam0` refaite (joueur placé sur le trottoir
+  par la scène de test, corrigé). Construction `66d27be` en cours, puis QA par `qa-lead` sur les captures du banc PC.
