@@ -144,7 +144,9 @@ private:
         const TrafficCar& c = traffic_.cars[(size_t)best];
         const double np = t.wrap(c.z - benchM_ / M);
         pl.dist += t.relZ(np - pl.position); pl.position = np;
-        pl.playerX = c.offset + benchLat_; pl.heading = 0; pl.steer = 0;
+        // décalage toujours vers le milieu de la route (jamais sur le trottoir)
+        const double lat = std::abs(c.offset + benchLat_) > 0.7 ? -benchLat_ : benchLat_;
+        pl.playerX = c.offset + lat; pl.heading = 0; pl.steer = 0;
         pl.speed = c.speed + benchKmh_ / 260.0 * MAX_SPEED;
         for (auto& o : traffic_.cars) o.prevDz = t.relZ(o.z - pl.position);
         holdLane_ = benchHold_; holdX_ = pl.playerX; benchCar_ = best;
