@@ -4,6 +4,7 @@
 #include <vector>
 #include "player.h"
 #include "track.h"
+#include "traffic.h"
 #include "../render/renderer.h"
 
 namespace wfs {
@@ -19,6 +20,9 @@ public:
     void update(double dt);
     void render(double time);
     const Player& player() const { return player_; }
+    const Traffic& traffic() const { return traffic_; }
+    // compteurs de la course (quasi-contacts, chocs) : affichés par le HUD de WFS-12
+    int nearMisses = 0, accidents = 0;
     void setCar(const char* carId);
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
@@ -30,12 +34,20 @@ private:
     void retire(Mesh& m);
     void drawControls();
     mat4 carMatrix(double s, double lat, double yaw);
+    void autopilotInput(DriveInput& in, double dt);
+    int nativeModelFor(int webType) const;
+    void drawTraffic();
 
     Renderer* r_ = nullptr;
     Track track_;
     Player player_;
-    Model car_;
+    // modèles 3D des voitures natives (joueur + trafic), chargés une fois ; carIdx_ = voiture du joueur
+    Model models_[CAR_COUNT];
+    int carIdx_ = 0;
     const CarDef* carDef_ = nullptr;
+    Traffic traffic_;
+    float shake_ = 0;
+    double autoTimer_ = 0, autoTarget_ = 0;
     vec3 paint_{0.1f, 0.3f, 0.85f};
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;

@@ -41,6 +41,7 @@ set(ENGINE_SOURCES
   src/render/model_loader.cpp
   src/game/track.cpp
   src/game/player.cpp
+  src/game/traffic.cpp
   src/game/game.cpp)
 
 if(MSVC)
@@ -67,4 +68,6 @@ else()
   target_compile_options(wfs_bench PRIVATE ${WARN})
   target_link_libraries(wfs_bench Vulkan::Vulkan Threads::Threads)
   add_executable(test_track tests/test_track.cpp src/game/track.cpp src/game/player.cpp)
+  add_executable(test_traffic tests/test_traffic.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
+  target_link_libraries(test_traffic Threads::Threads)
 endif()

@@ -59,7 +59,8 @@ int main(int argc, char** argv) {
             g.render(shot * 10 + 4.0); g.render(shot * 10 + 4.02);
             char name[128]; std::snprintf(name, sizeof name, "%s/course-cam%d-%d.png", out.c_str(), cam, shot);
             r.capturePng(name);
-            WFS_LOG("capture %s : %.0f km/h, %.0f m", name, g.player().kmh(), g.player().dist * M);
+            WFS_LOG("capture %s : %.0f km/h, %.0f m, %zu voitures, %d quasi-contacts, %d accidents", name, g.player().kmh(),
+                    g.player().dist * M, g.traffic().cars.size(), g.nearMisses, g.accidents);
         }
     }
     g.shutdown();

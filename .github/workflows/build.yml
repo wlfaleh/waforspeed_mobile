@@ -30,6 +30,8 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         run: ./build/test_track
+      - name: Test du trafic (identique au jeu web, mode parallèle, chocs)
+        run: ./build/test_traffic tests/trafic_web_ref.txt
       - name: Captures du rendu
         run: |
           mkdir -p captures

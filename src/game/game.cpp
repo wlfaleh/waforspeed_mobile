@@ -1,5 +1,6 @@
 #include "game.h"
 #include <algorithm>
+#include <cstring>
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../render/model_loader.h"
@@ -28,16 +29,20 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId) {
                                  {0.5f, 0.02f, 0.5f, 0, 1, 0, 1, 1}, {-0.5f, 0.02f, 0.5f, 0, 1, 0, 0, 1}};
         shadowQuad_ = r.makeMesh(v, {0, 1, 2, 0, 2, 3});
     }
+    // toutes les voitures natives : la voiture du joueur et celles du trafic partagent les mêmes modèles
+    for (int i = 0; i < CAR_COUNT; i++) if (!models_[i].ok) loadCarModel(r, std::string(CARS[i].file), models_[i]);
     setCar(carId);
-    return car_.ok;
+    return models_[carIdx_].ok;
 }
 
 void Game::setCar(const char* carId) {
-    if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &carById(carId);
+    carIdx_ = (int)(carDef_ - CARS);
     paint_ = hexColor(carDef_->paint);
-    loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
+    // trafic de la carte (resetRace du jeu web) ; la graine changera à chaque course avec WFS-12
+    traffic_.reset(track_, 0x5eed1u, track_.map()->trafficN, player_.position);
+    nearMisses = accidents = 0; shake_ = 0;
     camInit_ = false;
 }
 
@@ -48,7 +53,7 @@ void Game::shutdown() {
     chunks_.clear();
     for (auto& g : graveyard_) r_->destroy(g.second);
     graveyard_.clear();
-    r_->destroy(car_);
+    for (auto& m : models_) r_->destroy(m);
     r_->destroy(shadowQuad_);
     r_ = nullptr;
 }
@@ -182,14 +187,93 @@ void Game::drawControls() {
 void Game::update(double dt) {
     dt = std::min(dt, 0.05);
     DriveInput in = input_;
-    if (autopilot_) {   // démonstration / tests : plein gaz, reste au milieu de sa voie
-        in.gas = true; in.brake = false;
-        in.steer = (float)clampf((float)((0.0 - player_.playerX) * 3.0 - player_.heading * 4.0), -1.f, 1.f);
-    }
-    // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage
+    if (autopilot_) autopilotInput(in, dt);   // démonstration / tests
+    // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage ;
+    // le trafic avance par ses propres pas de 1/60 s (même graine → même trafic que le jeu web)
     acc_ += dt;
     const double step = 1.0 / 120.0;
-    while (acc_ >= step) { player_.update(step, in, track_, true); acc_ -= step; }
+    TrafficView pv;
+    pv.myLen = webCarLength(carDef_->id, carDef_->d.L);
+    while (acc_ >= step) {
+        pv.position = player_.position; pv.playerX = player_.playerX; pv.speed = player_.speed;
+        traffic_.advance(step, pv);
+        player_.update(step, in, track_, true);
+        HitEvents e = traffic_.collide(player_, step);
+        nearMisses += e.nearMiss; accidents += e.accidents;
+        shake_ = std::max(shake_, e.shake);
+        acc_ -= step;
+    }
+    shake_ = std::max(0.f, shake_ - (float)dt);
+}
+
+// autopilot() du jeu web : choisit la file la plus dégagée toutes les 0,4 s et la vise ;
+// freine derrière une voiture plus lente (le jeu web roule à vitesse fixe en démonstration, ici on pilote vraiment)
+void Game::autopilotInput(DriveInput& in, double dt) {
+    autoTimer_ -= dt;
+    if (autoTimer_ <= 0) {
+        autoTimer_ = 0.4;
+        double bestLane = autoTarget_, bestGap = -1;
+        for (double lx : LANE_X) {
+            double gap = 9000;
+            for (const auto& c : traffic_.cars) {
+                if (std::abs(c.offset - lx) > 0.3) continue;
+                const double dz = track_.relZ(c.z - (player_.position + PLAYER_Z));
+                if (dz > -800 && dz < gap) gap = dz;
+            }
+            const double g = gap + (lx == autoTarget_ ? 600 : 0);
+            if (g > bestGap) { bestGap = g; bestLane = lx; }
+        }
+        autoTarget_ = bestLane;
+    }
+    in.steer = (float)clampf((float)((autoTarget_ - player_.playerX) * 5 - player_.heading * 4), -1.f, 1.f);
+    // voiture juste devant dans notre trajectoire : on lève le pied puis on freine
+    double ahead = 1e9, aheadSpeed = 0;
+    for (const auto& c : traffic_.cars) {
+        if (std::abs(c.offset - player_.playerX) > 0.3) continue;
+        const double dz = track_.relZ(c.z - player_.position);
+        if (dz > 0 && dz < ahead) { ahead = dz; aheadSpeed = c.speed; }
+    }
+    const double safe = (8 + player_.speed * M * 0.9) / M;
+    in.gas = !(ahead < safe * 1.4 && aheadSpeed < player_.speed);
+    in.brake = ahead < safe && aheadSpeed < player_.speed * 0.9;
+    in.nitro = false;
+}
+
+// modèle natif affiché pour une voiture du jeu web : le même s'il existe, sinon celui de longueur la plus proche
+int Game::nativeModelFor(int webType) const {
+    const WebCarDims& w = WEB_CARS[webType];
+    int best = 0; double bd = 1e9;
+    for (int i = 0; i < CAR_COUNT; i++) {
+        if (std::strcmp(CARS[i].id, w.id) == 0) return i;
+        const double d = std::abs(CARS[i].d.L - w.L) + (i == webType % CAR_COUNT ? -0.05 : 0);   // départage stable
+        if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+}
+
+// voitures du trafic visibles (de 30 m derrière à 300 m devant), les plus proches d'abord, 14 au plus
+// (en attendant le niveau de détail de WFS-20) ; chaque voiture : modèle mis à sa longueur réelle, ombre de contact
+void Game::drawTraffic() {
+    struct Vis { double dz; const TrafficCar* c; };
+    Vis vis[64]; int n = 0;
+    for (const auto& c : traffic_.cars) {
+        const double dz = track_.relZ(c.z - player_.position);
+        if (dz < -30 / M || dz > 300 / M) continue;
+        if (n < 64) vis[n++] = {std::abs(dz), &c};
+    }
+    std::sort(vis, vis + n, [](const Vis& a, const Vis& b) { return a.dz < b.dz; });
+    n = std::min(n, 14);
+    for (int k = 0; k < n; k++) {
+        const TrafficCar& c = *vis[k].c;
+        const int mi = nativeModelFor(c.type);
+        if (!models_[mi].ok) continue;
+        const double s = player_.dist + track_.relZ(c.z - player_.position);
+        const float L = (float)WEB_CARS[c.type].L, W = (float)WEB_CARS[c.type].W, k0 = L / CARS[mi].d.L;
+        const mat4 m = carMatrix(s, c.offset * RW, c.laneYaw + (c.crashed ? c.crashYaw : 0));
+        r_->draw(shadowQuad_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
+        const vec3 paint = hexColor(TRAFFIC_PAINTS[c.color]);
+        r_->draw(models_[mi], m * scale({k0, k0, k0}), &paint);
+    }
 }
 
 mat4 Game::carMatrix(double s, double lat, double yaw) {
@@ -202,7 +286,7 @@ void Game::render(double time) {
     struct LastT { double& t; double v; ~LastT() { t = v; } } keepTime{lastTime_, time};
     streamChunks();
     const double s = player_.dist, lat = player_.playerX * RW;
-    mat4 carM = carMatrix(s, lat, player_.heading);
+    mat4 carM = carMatrix(s, lat, player_.heading + player_.spinYaw);
     vec3 carPos = carM.transformPoint({0, 0, 0});
     vec3 fwd = normalize(carM.transformDir({0, 0, -1}));
 
@@ -224,6 +308,11 @@ void Game::render(double time) {
         if (!camInit_ || length(camEye_ - eyeT) > 25.f) { camEye_ = eyeT; camLook_ = lookT; camInit_ = true; }
         camEye_ = lerp(camEye_, eyeT, 1.f - std::exp(-fdt * 14.f)); camLook_ = lerp(camLook_, lookT, 1.f - std::exp(-fdt * 20.f));
         eye = camEye_; look = camLook_;
+        // secousse aux chocs (s'éteint en ~1 s)
+        if (shake_ > 0) {
+            const float a = shake_ * 0.12f;
+            eye = eye + vec3{std::sin((float)time * 71.f) * a, std::sin((float)time * 53.f) * a * 0.6f, 0};
+        }
     }
     float aspect = (float)r_->width() / (float)std::max(1u, r_->height());
     float fov = (camMode == 0 ? 58.f : 62.f) + (float)std::min(player_.kmh() / 300.0, 1.0) * 8.f;
@@ -246,7 +335,8 @@ void Game::render(double time) {
     }
     // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
     r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
-    r_->draw(car_, carM, &paint_);
+    drawTraffic();
+    r_->draw(models_[carIdx_], carM, &paint_);
     if (camMode != 2) drawControls();
     r_->endFrame();
 }
