@@ -139,6 +139,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     struct Phase { double until; int what; };   // 0 rien, 1 gaz, 2 frein
     const Phase phases[] = {{2, 0}, {16, 1}, {20, 0}, {23, 2}, {28, 1}};
     int cur = -1;
+    g.onTouch({9, W * 0.18f, H * 0.72f, true});   // point de départ du volant
     for (int i = 0; i < 28 * 60; i++) {
         const double t = i / 60.0;
         int p = 0; while (p < 4 && t >= phases[p].until) p++;
@@ -149,8 +150,13 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
             if (cur == 1) g.onTouch(gasDown);
             if (cur == 2) g.onTouch(brDown);
         }
+        // volant : reste au milieu de la route (sinon la voiture dérive dans les virages et sort de la route)
+        const Player& pl = g.player();
+        const float st = clampf((float)((0.0 - pl.playerX) * 3 - pl.heading * 4), -1.f, 1.f);
+        g.onTouch({9, W * 0.18f + st * W * 0.12f, H * 0.72f, true});
         g.update(1.0 / 60);
     }
+    g.onTouch({9, W * 0.18f, H * 0.72f, false});
     g_rec.on = false;
     writeWav(out + "/moteur.wav", g_rec.pcm, OUT_RATE);
     writeCurve(out + "/moteur-courbe.png", g_rec.pcm, g_rec.frames);
