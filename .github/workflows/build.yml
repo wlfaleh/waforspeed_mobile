@@ -1,0 +1,106 @@
+# Construit le jeu à chaque envoi :
+#  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests de la piste + captures d'écran du rendu
+#  - APK Android (arm64)
+#  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
+#      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
+name: Construction WaForSpeed
+
+on:
+  push:
+    branches: [main, 'feature/**', 'claude/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  banc-essai:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel, compilateur de shaders)
+        run: sudo apt-get update && sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build
+      - name: Compilation
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
+      - name: Test de la piste (identique au jeu web)
+        run: ./build/test_track
+      - name: Captures du rendu
+        run: |
+          mkdir -p captures
+          ./build/wfs_bench captures assets/
+          ls -la captures
+      - uses: actions/upload-artifact@v4
+        with: { name: captures, path: captures }
+
+  android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: NDK et CMake Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" > /dev/null
+      - name: Construction de l'APK
+        working-directory: android
+        run: gradle --no-daemon assembleRelease
+      - name: Renommer
+        run: cp android/app/build/outputs/apk/release/app-release.apk WaForSpeed.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: apk, path: WaForSpeed.apk }
+
+  qa-emulateur:
+    # QA automatique : l'APK est installé et joué sur un émulateur Android (Vulkan logiciel SwiftShader)
+    needs: [android]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: apk, path: dl }
+      - name: Activer KVM (accélération de l'émulateur)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Scénario de jeu sur émulateur
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: ./tools/qa/emulateur.sh dl/WaForSpeed.apk qa-sortie
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: qa, path: qa-sortie }
+
+  publication:
+    needs: [banc-essai, android, qa-emulateur]
+    runs-on: ubuntu-24.04
+    if: always() && needs.android.result == 'success' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dl }
+      - name: Release d'aperçu (remplacée à chaque construction)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=apercu
+          case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
+          gh release delete "$tag" -y --cleanup-tag || true
+          files="dl/apk/WaForSpeed.apk"
+          if [ -d dl/captures ]; then files="$files $(ls dl/captures/*.png | tr '\n' ' ')"; fi
+          if [ -d dl/qa ]; then for f in dl/qa/*; do cp "$f" "dl/qa-$(basename "$f")"; files="$files dl/qa-$(basename "$f")"; done; fi
+          gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
+            --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \
+            --notes "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."
