@@ -34,14 +34,15 @@ foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui
 endforeach()
 add_custom_target(shaders DEPENDS ${SHADER_INCS})
 
-set(ENGINE_SOURCES
-  src/core/jobs.cpp
-  src/render/vk.cpp
-  src/render/renderer.cpp
-  src/render/model_loader.cpp
-  src/game/track.cpp
-  src/game/player.cpp
-  src/game/game.cpp)
+# sources du moteur : tous les .cpp des dossiers du jeu sont pris automatiquement (WFS-30) —
+# un nouveau module = un nouveau fichier, sans modifier ce fichier
+file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/render/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/game/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/world/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/audio/*.cpp)
 
 if(MSVC)
   set(WARN /W3)
@@ -67,4 +68,5 @@ else()
   target_compile_options(wfs_bench PRIVATE ${WARN})
   target_link_libraries(wfs_bench Vulkan::Vulkan Threads::Threads)
   add_executable(test_track tests/test_track.cpp src/game/track.cpp src/game/player.cpp)
+  add_executable(test_systems tests/test_systems.cpp)
 endif()

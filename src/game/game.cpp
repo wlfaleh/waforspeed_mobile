@@ -29,6 +29,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId) {
         shadowQuad_ = r.makeMesh(v, {0, 1, 2, 0, 2, 3});
     }
     setCar(carId);
+    systemsInit();
     return car_.ok;
 }
 
@@ -44,6 +45,7 @@ void Game::setCar(const char* carId) {
 void Game::shutdown() {
     if (!r_) return;
     r_->vk().waitIdle();
+    systemsShutdown();
     for (auto& [k, c] : chunks_) { r_->destroy(c.road); r_->destroy(c.walk); r_->destroy(c.ground); }
     chunks_.clear();
     for (auto& g : graveyard_) r_->destroy(g.second);
@@ -137,6 +139,7 @@ void Game::streamChunks() {
 // ---------------------------------------------------------------- commandes tactiles
 // gauche : glisser pour braquer ; droite : frein et accélérateur ; au-dessus de l'accélérateur : nitro
 void Game::onTouch(const Touch& t) {
+    if (systemsTouch(t)) return;
     const float W = (float)r_->width(), H = (float)r_->height();
     if (t.down) {
         bool fresh = t.id != steerId_ && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
@@ -196,7 +199,7 @@ void Game::update(double dt) {
     // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage
     acc_ += dt;
     const double step = 1.0 / 120.0;
-    while (acc_ >= step) { player_.update(step, in, track_, true); acc_ -= step; }
+    while (acc_ >= step) { player_.update(step, in, track_, true); systemsUpdate(step); acc_ -= step; }
 }
 
 mat4 Game::carMatrix(double s, double lat, double yaw) {
@@ -251,11 +254,53 @@ void Game::render(double time) {
         r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
+    systemsRender(eye, look, fp.view, fp.proj, time);
     // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
     r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
     r_->draw(car_, carM, &paint_);
     if (camMode != 2) drawControls();
+    systemsUi();
     r_->endFrame();
+}
+
+// ---------------------------------------------------------------- systèmes enfichables (WFS-30)
+// Tous les systèmes enregistrés par WFS_SYSTEM sont créés au démarrage de la partie, dans l'ordre croissant.
+void Game::systemsInit() {
+    systemsShutdown();
+    auto entries = systemRegistry();
+    std::stable_sort(entries.begin(), entries.end(), [](const SystemEntry& a, const SystemEntry& b) { return a.order < b.order; });
+    view_ = GameView{};
+    view_.track = &track_; view_.player = &player_; view_.car = carDef_; view_.map = track_.map();
+    view_.uiWidth = (float)r_->width(); view_.uiHeight = (float)r_->height();
+    for (const SystemEntry& e : entries) {
+        systems_.push_back(e.make());
+        systems_.back()->init(*r_, view_);
+        WFS_LOG("Système : %s (ordre %d)", e.name, e.order);
+    }
+}
+
+void Game::systemsShutdown() {
+    if (!r_) return;
+    for (auto it = systems_.rbegin(); it != systems_.rend(); ++it) (*it)->shutdown(*r_);
+    systems_.clear();
+}
+
+void Game::systemsUpdate(double dt) {
+    view_.car = carDef_;
+    for (auto& s : systems_) s->update(dt, view_);
+}
+
+void Game::systemsRender(const vec3& eye, const vec3& look, const mat4& view, const mat4& proj, double time) {
+    view_.camPos = eye; view_.camTarget = look; view_.view = view; view_.proj = proj; view_.time = time;
+    view_.uiWidth = (float)r_->width(); view_.uiHeight = (float)r_->height();
+    for (auto& s : systems_) s->render(*r_, view_);
+}
+
+void Game::systemsUi() { for (auto& s : systems_) s->drawUi(*r_, view_); }
+
+bool Game::systemsTouch(const Touch& t) {
+    for (auto& s : systems_) if (s->onTouch(t, view_)) return true;
+    return false;
 }
 
 } // namespace wfs
