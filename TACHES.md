@@ -675,3 +675,8 @@ bias -0,0003 / normalBias 0,035 ; ombre de contact conservée la nuit ; coût me
 intensité 3,2 gardée, réglée pour notre PBR), `CMakeLists.txt` (2 shaders), `src/platform/desktop_main.cpp` (2 lignes : captures).
 Conflit possible avec WFS-34 sur `shaders/scene.frag` (lignes différentes) : réglé à la synchronisation.
 **Suite** : CI → qa-lead → fusion si `VALIDÉ`.
+
+### 2026-11-02 — WFS-34 refusé par la QA, corrigé
+**Retours QA** (`qa/rapports/WFS-34.md`) : blocs sombres à facettes (cœur du houppier) et feuilles délavées (reflet du ciel).
+**Fait** (`feature/waforspeed-34`, 68ffdaf) : feuillage éclairé sans reflet comme le Lambert du jeu web, cœur lissé et éclairci,
+nombre d'appels de dessin de la ville au journal du banc. **Suite** : CI → nouvelle QA.
