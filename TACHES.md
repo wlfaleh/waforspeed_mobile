@@ -67,7 +67,7 @@ Journal à jour.
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
-| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  | ⏳ construction en cours, QA à suivre |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-06` |  | ⏳ construction en cours |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
@@ -383,3 +383,19 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
   placés par la graine de la carte, morceaux construits en parallèle, ≈ 6 appels de dessin par morceau (≤ 150 au total).
 - Écart avec le critère « instanciation GPU » : maillages fusionnés par morceau (même objectif : peu d'appels de dessin),
   l'instanciation demanderait de changer le renderer (zone E0/E4).
+
+### 2026-11-02 — WFS-08 : synchronisé avec main, trafic branché en système enfichable (Claude, session trafic)
+**Fait**
+- Synchronisation avec `main` (livraison 1 + WFS-30) ; conflits résolus en reprenant `main`, puis le trafic est rangé
+  dans la zone E3 : `src/game/traffic_system.*` (module `WFS_SYSTEM`, ordre 50) — simulation, chocs, dessin, aide au
+  pilote automatique, scènes du banc d'essai `trafic-cam0`, `trafic-cam1`, `trafic-choc`.
+- **Lignes d'accroche du noyau (8 lignes)** : `src/core/system.h` + `System::collide(dt, Player&, GameView)` (seul point
+  où un système modifie la voiture du joueur : chocs) et `System::autopilot(dt, DriveInput&, GameView)` ;
+  `src/game/game.cpp` : leurs deux appels + tête-à-queue affiché (`heading + spinYaw`).
+- Hors zone (accroches) : 1 ligne dans `src/platform/desktop_main.cpp`, 2 dans `CMakeLists.txt` (test_traffic),
+  1 dans `.github/workflows/build.yml` ; script de référence déplacé dans `tests/trafic_web.cjs`.
+- Zone E3 aussi : `src/game/player.*` (accident), `src/game/track.h` (`wrap` identique au JavaScript).
+
+**Vérification (conteneur)** : `test_traffic` 0 écart sur 39 voitures, mode parallèle déterministe, choc OK ;
+`test_track`, `test_systems` OK ; tout compile sans avertissement. Construction GitHub en cours, puis QA par `qa-lead`.
+**Limite** : le module charge ses propres modèles (la voiture du joueur est en double en mémoire, à partager via E0).
