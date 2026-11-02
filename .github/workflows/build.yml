@@ -1,12 +1,15 @@
 # Construit le jeu à chaque envoi :
 #  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests de la piste + captures d'écran du rendu
 #  - APK Android (arm64)
-#  - publie l'APK et les captures dans la Release « apercu » (lien fixe)
+#  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
+#      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
 name: Construction WaForSpeed
 
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main, 'feature/**', 'claude/**']
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -56,18 +59,20 @@ jobs:
   publication:
     needs: [banc-essai, android]
     runs-on: ubuntu-24.04
-    if: always() && needs.android.result == 'success'
+    if: always() && needs.android.result == 'success' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: { path: dl }
-      - name: Release « apercu » (remplacée à chaque construction)
+      - name: Release d'aperçu (remplacée à chaque construction)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete apercu -y --cleanup-tag || true
+          tag=apercu
+          case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
+          gh release delete "$tag" -y --cleanup-tag || true
           files="dl/apk/WaForSpeed.apk"
           if [ -d dl/captures ]; then files="$files $(ls dl/captures/*.png | tr '\n' ' ')"; fi
-          gh release create apercu $files --prerelease --target "$GITHUB_SHA" \
+          gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
             --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \
             --notes "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."
