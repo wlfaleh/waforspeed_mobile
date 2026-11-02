@@ -105,3 +105,25 @@ Réservation de la livraison 1 complète. Fichiers prévus : `src/**`, `shaders/
 **Pas encore vérifié**
 - Compilation des shaders, banc d'essai Vulkan et APK : première construction GitHub en cours.
 - Rendu réel sur téléphone (pré-rotation, tactile, performances) : à tester sur l'appareil de l'utilisateur.
+
+### 2026-11-02 — Premières constructions et premier essai sur téléphone (Claude, session moteur-natif)
+**Fait**
+- CI : banc d'essai Linux OK du premier coup (shaders compilés, test de la piste OK, 18 captures).
+  APK : 2 erreurs de configuration corrigées (numéro de version Gradle, chemin de `glslc` du NDK) → APK 23 Mo publié.
+- Captures examinées et corrigées : caméra en retard (voiture invisible en course), voiture qui flottait (ajout d'une ombre
+  de contact), route trop claire et bleutée (reflets du ciel atténués sur les surfaces rugueuses), tache blanche du soleil
+  sur la route (le disque solaire ne se reflète plus sur les surfaces rugueuses), bord du sol visible (sol étendu à 260 m).
+- **Retour utilisateur sur téléphone** : l'appli démarre et tourne, mais l'image était étirée ~4× en largeur.
+  Cause : démarrage en portrait puis passage en paysage, la swapchain gardait la forme portrait.
+  Corrections : vérification de la rotation / taille de la surface toutes les 15 images avec recréation,
+  caméra et interface calées sur la taille réelle de la fenêtre (`Renderer::setViewSize`), plein écran sous l'encoche.
+- Fichiers : `src/render/{vk,renderer}.*`, `src/game/game.*`, `src/platform/*`, `shaders/{common.glsl,scene.frag,post.frag}`,
+  `android/app/{build.gradle,src/main/**}`, `CMakeLists.txt`.
+
+**Vérification**
+- Construction n° 8 : banc d'essai + APK OK ; captures relues (4 voitures en vitrine, course caméra proche et haute).
+
+**Reste / limites**
+- Correction de l'image déformée à confirmer sur le téléphone de l'utilisateur.
+- Décor encore vide (bâtiments, arbres, lampadaires = F6), pas d'ombres dynamiques (F7), pas de trafic (F8), pas de son (F10).
+- Barre de navigation Android encore visible (mode immersif à faire).
