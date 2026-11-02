@@ -68,7 +68,7 @@ Journal à jour.
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  | ⏳ construction en cours, QA à suivre |
-| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-06` |  | ✅ VALIDÉ par qa-lead |
+| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
@@ -77,12 +77,12 @@ Journal à jour.
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
-| 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ En attente |  | WFS-06 | `feature/waforspeed-14` |  |  |
+| 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-14` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ En attente |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
 | 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ En attente |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
-| 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 | `feature/waforspeed-19` |  |  |
+| 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
 | 20 | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ⏳ En attente |  | WFS-15 | `feature/waforspeed-17` |  |  |
@@ -105,7 +105,7 @@ Journal à jour.
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
 
-**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · 🔧 En cours
+**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · ✅ Terminé
 - [ ] Décor généré par la graine de la carte (comme decor.js)
 - [ ] Instanciation GPU, ≤ 300 appels de dessin
 - [ ] Captures : rue bordée d'immeubles, lampadaires, arbres
@@ -402,3 +402,9 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
 
 ### 2026-11-02 — QA WFS-06 par qa-lead : VALIDÉ
 Captures regardées : immeubles des deux côtés, lampadaires et arbres sur les trottoirs, voiture visible, rien de cassé. Constat majeur : la capture `qa-03-acceleration-8s` est identique à `qa-01-demarrage` (pas de preuve de déplacement). Limites : nombre d'appels de dessin et graine non vérifiables sur captures. Rapport : `qa/rapports/WFS-06.md`.
+
+### 2026-11-02 — Fin WFS-06 (Claude, session moteur-natif)
+- QA **VALIDÉ par qa-lead** (`qa/rapports/WFS-06.md`), PR #4 fusionnée. Ville : 899 immeubles, 222 lampadaires, 439 arbres.
+- Retours QA à traiter plus tard : capture `qa-03` identique à `qa-01` (émulateur trop lent pour rafraîchir l'écran, à
+  corriger dans le scénario QA, épic E7) ; lampadaires et arbres peu lisibles de loin (mineur).
+- Débloqués dans E2 : WFS-14 (cartes) et WFS-19 (piétons) passent en ⏳ Prêt. WFS-20 attend encore WFS-08.
