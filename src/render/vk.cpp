@@ -145,6 +145,14 @@ bool VkCtx::createSwapchain() {
     return true;
 }
 
+bool VkCtx::surfaceChanged() {
+    if (offscreen || !surface) return false;
+    VkSurfaceCapabilitiesKHR caps;
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, &caps) != VK_SUCCESS) return false;
+    if (caps.currentExtent.width == 0 || caps.currentExtent.height == 0) return false;
+    return caps.currentTransform != transform || caps.currentExtent.width != swapExtent.width || caps.currentExtent.height != swapExtent.height;
+}
+
 void VkCtx::destroySwapchain() {
     if (offscreen || !device) return;
     for (auto v : swapViews) vkDestroyImageView(device, v, nullptr);

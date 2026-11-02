@@ -28,6 +28,8 @@ public:
     void shutdown();
     bool createSwapchain();          // (re)crée la swapchain ; renvoie false si la fenêtre est réduite
     void destroySwapchain();
+    // vrai si l'écran a tourné ou changé de taille depuis la création de la swapchain
+    bool surfaceChanged();
     void waitIdle() { if (device) vkDeviceWaitIdle(device); }
 
     // utilitaires

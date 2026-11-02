@@ -33,6 +33,7 @@ struct App {
     VkCtx vk; Renderer renderer; Game game;
     bool ready = false, focused = false;
     double last = 0, start = 0;
+    int checkFrames = 0, orientRetries = 0;
 };
 
 static void initGraphics(App& app, android_app* a) {
@@ -40,6 +41,7 @@ static void initGraphics(App& app, android_app* a) {
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
     app.renderer.init(app.vk);
     app.game.init(app.renderer, "golf", "ville");
+    app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();
 }
@@ -73,8 +75,8 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
     int32_t action = AMotionEvent_getAction(e), kind = action & AMOTION_EVENT_ACTION_MASK;
     size_t idx = (size_t)((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
     // coordonnées de l'écran (orientation actuelle) → coordonnées logiques du rendu
-    const float sx = (float)app.renderer.width() / (float)std::max(1, ANativeWindow_getWidth(a->window));
-    const float sy = (float)app.renderer.height() / (float)std::max(1, ANativeWindow_getHeight(a->window));
+    // l'interface est exprimée en pixels de la fenêtre (Renderer::setViewSize) : pas de conversion
+    const float sx = 1.f, sy = 1.f;
     auto send = [&](size_t i, bool down) {
         app.game.onTouch({AMotionEvent_getPointerId(e, i), AMotionEvent_getX(e, i) * sx, AMotionEvent_getY(e, i) * sy, down});
     };
@@ -105,6 +107,20 @@ void android_main(android_app* a) {
         }
         if (a->destroyRequested) break;
         if (app.ready && app.focused) {
+            // l'appli démarre souvent en portrait puis passe en paysage : la nouvelle taille et la rotation
+            // n'arrivent pas toujours avec l'événement de changement ; on les vérifie régulièrement.
+            if (++app.checkFrames >= 15) {
+                app.checkFrames = 0;
+                const bool winLandscape = ANativeWindow_getWidth(a->window) >= ANativeWindow_getHeight(a->window);
+                const bool logicalLandscape = app.renderer.width() >= app.renderer.height();
+                if (app.vk.surfaceChanged() || (winLandscape != logicalLandscape && app.orientRetries < 8)) {
+                    if (winLandscape != logicalLandscape) app.orientRetries++; else app.orientRetries = 0;
+                    app.vk.waitIdle();
+                    if (app.vk.createSwapchain()) app.renderer.resize();
+                    WFS_LOG("Écran : %ux%u logique", app.renderer.width(), app.renderer.height());
+                }
+            }
+            app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
             double t = nowSeconds(), dt = t - app.last; app.last = t;
             app.game.update(dt);
             app.game.render(t - app.start);

@@ -481,7 +481,7 @@ void Renderer::endFrame() {
     vkCmdDraw(r.cb, 3, 1, 0, 0);
     if (!ui_vtx_.empty()) {
         std::memcpy(r.uiVb.mapped, ui_vtx_.data(), ui_vtx_.size() * sizeof(UiVertex));
-        pp.params[0] = 1.f / lw_; pp.params[1] = 1.f / lh_;
+        pp.params[0] = 1.f / width(); pp.params[1] = 1.f / height();
         vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, ui_);
         vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32, &pp);
         VkDeviceSize zero = 0;

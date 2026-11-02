@@ -44,8 +44,11 @@ public:
     void shutdown();
     bool resize();                         // après recréation de la swapchain
     // taille logique (paysage) dans laquelle on dessine la scène et l'interface
-    uint32_t width() const { return lw_; }
-    uint32_t height() const { return lh_; }
+    // taille d'affichage (fenêtre) : proportions de la caméra et coordonnées de l'interface / du tactile.
+    // Si le tampon n'a pas la même forme que la fenêtre (rotation mal signalée), l'image reste non déformée.
+    uint32_t width() const { return vw_ ? vw_ : lw_; }
+    uint32_t height() const { return vh_ ? vh_ : lh_; }
+    void setViewSize(uint32_t w, uint32_t h) { vw_ = w; vh_ = h; }
 
     // ressources
     Material makeMaterial(const Material& m, const Image* color, const Image* normal, const Image* mr);
@@ -77,7 +80,8 @@ private:
     void rotationMatrix(float out[4]) const;
 
     VkCtx* vk_ = nullptr;
-    uint32_t lw_ = 0, lh_ = 0;   // taille logique
+    uint32_t lw_ = 0, lh_ = 0;   // taille logique (tampon)
+    uint32_t vw_ = 0, vh_ = 0;   // taille d'affichage (fenêtre), 0 = identique
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
     Image msaaColor_, depth_, hdr_;
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;
