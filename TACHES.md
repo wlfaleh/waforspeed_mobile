@@ -65,7 +65,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-30` |  |  |
+| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | — | `feature/waforspeed-30` |  |  |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-06` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
@@ -93,7 +93,7 @@ Journal à jour.
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · ⏳ Prêt
+**WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · 🔧 En cours
 - [ ] Interface `System` (init / update / render / interface) enregistrée dans `Game` : un nouveau module = un nouveau fichier + 1 ligne d'enregistrement
 - [ ] CMake ajoute automatiquement les fichiers de `src/world`, `src/ui`, `src/audio`, `src/game`
 - [ ] Accès en lecture pour les systèmes : piste, joueur, caméra, renderer ; doc dans le skill `waforspeed-natif`
@@ -328,3 +328,19 @@ pas encore de feux stop ni de clignotants dessinés ; score des quasi-contacts c
 - Agent `po-scrum-master` : attribue les tickets (règle : un ticket en cours par épic, un par agent).
 - WFS-08 (session trafic) conservé en cours dans l'épic E3.
 
+
+### 2026-11-02 — Début WFS-30 Points d'extension du moteur (Claude, session moteur-natif)
+Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feature/waforspeed-30`, partie de `main`.
+**Zone de code autorisée** : `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API), `CMakeLists.txt`
+(+ documentation dans le skill `waforspeed-natif`). Ne pas toucher `src/game/` hors `game.*` (épic E3, WFS-08 en cours).
+**Critères**
+- Interface `System` (init / update / render / interface) enregistrée dans `Game` : un nouveau module = un nouveau fichier + 1 ligne d'enregistrement
+- CMake ajoute automatiquement les fichiers de `src/world`, `src/ui`, `src/audio`, `src/game`
+- Accès en lecture pour les systèmes : piste, joueur, caméra, renderer ; doc dans le skill `waforspeed-natif`
+- Aucun changement visible ; CI verte, captures identiques
+**Plan**
+- `src/core/system.h` : interface `System` + contexte en lecture seule (piste, joueur, caméra, renderer).
+- `Game` : liste de systèmes enregistrés, appelés dans la boucle (init, update, render, interface).
+- `CMakeLists.txt` : `file(GLOB_RECURSE … CONFIGURE_DEPENDS)` sur `src/world`, `src/ui`, `src/audio`, `src/game`.
+- Doc du point d'extension dans le skill `waforspeed-natif` ; vérifier CI verte et captures identiques ; QA par `qa-lead`.
+- Attention : WFS-08 (E3) modifie aussi `src/game/game.*` et `CMakeLists.txt` → se synchroniser souvent avec `main`.
