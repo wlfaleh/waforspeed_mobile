@@ -73,6 +73,7 @@ Journal à jour.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
+| 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-34` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
@@ -119,6 +120,10 @@ Journal à jour.
 - [ ] Police (licence libre) en atlas, texte en pixels logiques, accents français
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
+
+**WFS-34 — Arbres réalistes portés du jeu web** · E2 · priorité 4.5 · ⏳ Prêt (règles : `regles-de-gestion/WFS-34.md`)
+- [ ] Générateurs de `life.js` portés en `src/world/vegetation.*`, atlas exporté en PNG (`assets/world/feuillage.png`), arbres de `ville.cpp` remplacés
+- [ ] Capture : platanes avec tronc, branches, feuillage découpé ; ≤ 300 appels de dessin ; banc `0 écart(s)`
 
 **WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · ✅ Terminé
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
@@ -622,3 +627,9 @@ Fichiers créés dans `regles-de-gestion/` (un par US ouverte, valeurs reprises 
 `WFS-29`, `WFS-33`. WFS-08 est déjà ✅ (rapport QA) : pas de fichier. Tableau et statuts inchangés.
 Constat : `LOD_CAR_M` vaut 50 m dans le code (le skill disait 70 m) ; le critère « jointures de carrosserie » du rapport
 WFS-32 est reporté dans WFS-17 (TAA).
+
+### 2026-11-02 — WFS-34 créé (PO) : arbres réalistes du jeu web
+Retour de l'utilisateur : les arbres de la ville native (WFS-06 ✅) sont simplifiés alors que le jeu web a déjà les siens
+(`waaps/waforspeed/js/world/life.js` ~250-690). Ticket de correction **WFS-34** (E2, priorité 4.5, ⏳ Prêt, dépend de WFS-06 ✅) :
+port des générateurs en C++ et atlas de feuillage exporté tel quel en PNG via le Chromium de test (pas de redessin).
+Règles : `regles-de-gestion/WFS-34.md`. E2 est libre (aucun ticket actif).
