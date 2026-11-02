@@ -1,0 +1,64 @@
+# WaForSpeed Mobile — moteur natif C++20 / Vulkan
+cmake_minimum_required(VERSION 3.22)
+project(WaForSpeed LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# ---------- shaders GLSL -> SPIR-V (inclus dans le binaire) ----------
+if(ANDROID)
+  file(GLOB GLSLC_HINT "${ANDROID_NDK}/shader-tools/*/glslc")
+  find_program(GLSLC glslc HINTS ${GLSLC_HINT} REQUIRED)
+else()
+  find_program(GLSLC glslc REQUIRED)
+endif()
+set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SHADER_OUT ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+file(MAKE_DIRECTORY ${SHADER_OUT})
+set(SHADER_INCS)
+foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag)
+  add_custom_command(
+    OUTPUT ${SHADER_OUT}/${S}.inc
+    COMMAND ${GLSLC} -O --target-env=vulkan1.0 -mfmt=num -I ${SHADER_DIR} -o ${SHADER_OUT}/${S}.inc ${SHADER_DIR}/${S}
+    DEPENDS ${SHADER_DIR}/${S} ${SHADER_DIR}/common.glsl
+    COMMENT "Shader ${S}")
+  list(APPEND SHADER_INCS ${SHADER_OUT}/${S}.inc)
+endforeach()
+add_custom_target(shaders DEPENDS ${SHADER_INCS})
+
+set(ENGINE_SOURCES
+  src/core/jobs.cpp
+  src/render/vk.cpp
+  src/render/renderer.cpp
+  src/render/model_loader.cpp
+  src/game/track.cpp
+  src/game/player.cpp
+  src/game/game.cpp)
+
+if(MSVC)
+  set(WARN /W3)
+else()
+  set(WARN -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
+endif()
+
+if(ANDROID)
+  add_library(native_app_glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+  target_include_directories(native_app_glue PUBLIC ${ANDROID_NDK}/sources/android/native_app_glue)
+  add_library(waforspeed SHARED ${ENGINE_SOURCES} src/platform/android_main.cpp)
+  add_dependencies(waforspeed shaders)
+  target_include_directories(waforspeed PRIVATE ${SHADER_OUT})
+  target_compile_options(waforspeed PRIVATE ${WARN})
+  set_target_properties(waforspeed PROPERTIES LINK_FLAGS "-u ANativeActivity_onCreate")
+  target_link_libraries(waforspeed native_app_glue android log vulkan)
+else()
+  find_package(Vulkan REQUIRED)
+  find_package(Threads REQUIRED)
+  add_executable(wfs_bench ${ENGINE_SOURCES} src/platform/desktop_main.cpp)
+  add_dependencies(wfs_bench shaders)
+  target_include_directories(wfs_bench PRIVATE ${SHADER_OUT})
+  target_compile_options(wfs_bench PRIVATE ${WARN})
+  target_link_libraries(wfs_bench Vulkan::Vulkan Threads::Threads)
+  add_executable(test_track tests/test_track.cpp src/game/track.cpp src/game/player.cpp)
+endif()
