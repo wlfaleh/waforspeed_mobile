@@ -66,7 +66,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ |
+| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-06` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
@@ -373,3 +373,7 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
 - Instanciation GPU par type d'objet, dessin borné à ≤ 300 appels.
 - Module enregistré via le système `System` de WFS-30 : nouveaux fichiers + 1 ligne d'enregistrement dans `Game`.
 - Captures de la CI relues par `qa-lead` avant fusion.
+
+### 2026-11-02 — QA WFS-30 par qa-lead : VALIDÉ
+- Banc d'essai `course-cam0-2` identique à WFS-05 (7 pixels différents sur 921 600, écart 1/255) : aucun changement visible.
+- Captures émulateur sans régression ; logs sans erreur. Limite : GPU logiciel à 0,5 image/s, performances non jugées.
