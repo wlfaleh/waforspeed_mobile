@@ -243,7 +243,8 @@ void Game::render(double time) {
     fp.view = lookAt(eye, look, {0, 1, 0});
     fp.proj = perspectiveVk(fov * PI / 180.f, aspect, 0.1f);
     fp.camPos = eye; fp.time = (float)time;
-    fp.sunDir = {-0.45f, 0.42f, -0.55f}; fp.sunIntensity = 3.2f; fp.sunColor = {1.0f, 0.93f, 0.82f};
+    fp.sunDir = {-0.45f, 0.75f, -0.5f}; fp.sunIntensity = 3.2f; fp.sunColor = {1.0f, 0.93f, 0.82f};   // soleil du jeu web (envFor, jour)
+    fp.focus = carPos; fp.hasFocus = true;   // WFS-07 : la boîte d'ombre suit la voiture
     fp.skyTop = {0.16f, 0.34f, 0.75f}; fp.skyHorizon = {0.66f, 0.76f, 0.88f}; fp.ground = {0.2f, 0.19f, 0.17f};
     fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
     fp.exposure = 0.85f; fp.ambient = 0.85f;

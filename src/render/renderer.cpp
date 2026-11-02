@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -32,11 +33,25 @@ static const uint32_t SPV_UI_VERT[] = {
 static const uint32_t SPV_UI_FRAG[] = {
 #include "ui.frag.inc"
 };
+static const uint32_t SPV_SHADOW_VERT[] = {
+#include "shadow.vert.inc"
+};
+static const uint32_t SPV_SHADOW_FRAG[] = {
+#include "shadow.frag.inc"
+};
 
 struct FrameUBO {
     mat4 viewProj, invViewProj;
     vec4 camPos, sunDir, sunColor, skyTop, skyHorizon, groundCol, fog, misc;
+    mat4 shadowMat; vec4 shadowP;
 };
+
+// ombres du soleil (WFS-07, valeurs du jeu web : renderer.js applyEnv / stableShadow)
+static constexpr float SHADOW_HALF = 40.f;        // demi-largeur de la boîte (m)
+static constexpr float SHADOW_DEPTH = 260.f;      // near 1 → far 260 : profondeur couverte (m)
+static constexpr float SHADOW_AHEAD = 20.f;       // boîte décalée vers l'avant (m)
+static constexpr float SHADOW_BIAS = -0.0003f, SHADOW_NORMAL_BIAS = 0.035f;
+static constexpr VkFormat SHADOW_FORMAT = VK_FORMAT_D16_UNORM;
 
 static constexpr VkFormat HDR_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
 static constexpr size_t UI_MAX_VERTS = 6 * 8192;
@@ -63,9 +78,10 @@ bool Renderer::init(VkCtx& vk) {
     flatNormal = vk.uploadTexture(nrm, 1, 1, false);
 
     // ---------- descripteurs ----------
-    VkDescriptorSetLayoutBinding b0{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+    VkDescriptorSetLayoutBinding b0[2] = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                          {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};   // carte d'ombre
     VkDescriptorSetLayoutCreateInfo lci{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-    lci.bindingCount = 1; lci.pBindings = &b0;
+    lci.bindingCount = 2; lci.pBindings = b0;
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &frameLayout_));
     VkDescriptorSetLayoutBinding mb[3];
     for (uint32_t i = 0; i < 3; i++) mb[i] = {i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
@@ -74,7 +90,7 @@ bool Renderer::init(VkCtx& vk) {
     lci.bindingCount = 1; lci.pBindings = mb;
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &postLayout_));
 
-    VkDescriptorPoolSize sizes[2] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 8}};
+    VkDescriptorPoolSize sizes[2] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16}};
     VkDescriptorPoolCreateInfo pci{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     pci.maxSets = 1024 + 16; pci.poolSizeCount = 2; pci.pPoolSizes = sizes;
@@ -88,6 +104,8 @@ bool Renderer::init(VkCtx& vk) {
     VkPushConstantRange ppr{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32};
     plci.setLayoutCount = 1; plci.pSetLayouts = &postLayout_; plci.pPushConstantRanges = &ppr;
     VK_OK(vkCreatePipelineLayout(d, &plci, nullptr, &postPLayout_));
+
+    createShadows();
 
     // ---------- ressources par image en vol ----------
     VkCommandBufferAllocateInfo cai{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
@@ -105,9 +123,12 @@ bool Renderer::init(VkCtx& vk) {
         dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &frameLayout_;
         VK_OK(vkAllocateDescriptorSets(d, &dai, &r.frameSet));
         VkDescriptorBufferInfo bi{r.ubo.buf, 0, sizeof(FrameUBO)};
-        VkWriteDescriptorSet wr{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
-        wr.dstSet = r.frameSet; wr.dstBinding = 0; wr.descriptorCount = 1; wr.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; wr.pBufferInfo = &bi;
-        vkUpdateDescriptorSets(d, 1, &wr, 0, nullptr);
+        VkDescriptorImageInfo si{shadowSampler_, shadowMap_.view, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+        VkWriteDescriptorSet wr[2]{};
+        for (auto& w : wr) { w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; w.dstSet = r.frameSet; w.descriptorCount = 1; }
+        wr[0].dstBinding = 0; wr[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; wr[0].pBufferInfo = &bi;
+        wr[1].dstBinding = 1; wr[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[1].pImageInfo = &si;
+        vkUpdateDescriptorSets(d, 2, wr, 0, nullptr);
     }
     VkDescriptorSetAllocateInfo dai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
@@ -116,6 +137,97 @@ bool Renderer::init(VkCtx& vk) {
     createTargets();
     createPipelines();
     return true;
+}
+
+// ---------- ombres du soleil (WFS-07) : carte de profondeur fixe (2048, 1024 sur mobile), jamais changée par image ----------
+void Renderer::createShadows() {
+    VkCtx& vk = *vk_; VkDevice d = vk.device;
+#ifdef __ANDROID__
+    shadowSize_ = 1024;
+#else
+    shadowSize_ = 2048;
+#endif
+    VkFormatProperties fp; vkGetPhysicalDeviceFormatProperties(vk.gpu, SHADOW_FORMAT, &fp);
+    const bool linear = (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) != 0;
+    shadowMap_ = vk.createImage(shadowSize_, shadowSize_, 1, SHADOW_FORMAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+    VkSamplerCreateInfo sci{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+    sci.magFilter = sci.minFilter = linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+    sci.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    sci.addressModeU = sci.addressModeV = sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    sci.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    sci.compareEnable = VK_TRUE; sci.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;   // 1 = éclairé
+    VK_OK(vkCreateSampler(d, &sci, nullptr, &shadowSampler_));
+
+    VkAttachmentDescription at{};
+    at.format = SHADOW_FORMAT; at.samples = VK_SAMPLE_COUNT_1_BIT;
+    at.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    at.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    at.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    VkAttachmentReference ref{0, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+    VkSubpassDescription sp{};
+    sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; sp.pDepthStencilAttachment = &ref;
+    VkSubpassDependency dep[2]{};
+    dep[0].srcSubpass = VK_SUBPASS_EXTERNAL; dep[0].dstSubpass = 0;
+    dep[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dep[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    dep[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT; dep[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dep[1].srcSubpass = 0; dep[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    dep[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT; dep[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dep[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; dep[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+    rpci.attachmentCount = 1; rpci.pAttachments = &at; rpci.subpassCount = 1; rpci.pSubpasses = &sp;
+    rpci.dependencyCount = 2; rpci.pDependencies = dep;
+    VK_OK(vkCreateRenderPass(d, &rpci, nullptr, &shadowPass_));
+    VkFramebufferCreateInfo fci{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+    fci.renderPass = shadowPass_; fci.attachmentCount = 1; fci.pAttachments = &shadowMap_.view;
+    fci.width = fci.height = shadowSize_; fci.layers = 1;
+    VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &shadowFb_));
+
+    // mesure du coût GPU de la passe (2 horodatages par image en vol)
+    if (vk.props.limits.timestampComputeAndGraphics) {
+        VkQueryPoolCreateInfo q{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
+        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 2 * FRAMES;
+        VK_OK(vkCreateQueryPool(d, &q, nullptr, &tsPool_));
+    }
+    WFS_LOG("Ombres du soleil : carte %ux%u, filtre %s", shadowSize_, shadowSize_, linear ? "bilinéaire" : "au plus proche");
+}
+
+void Renderer::readShadowTiming() {
+    if (!tsPool_ || !tsWritten_[cur_]) return;
+    uint64_t t[2];
+    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 2, 2, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
+    shadowMsSum_ += (double)(t[1] - t[0]) * vk_->props.limits.timestampPeriod * 1e-6;
+    if (++shadowMsN_ == 120) {
+        WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u)", shadowMsSum_ / shadowMsN_, shadowSize_);
+        shadowMsSum_ = 0; shadowMsN_ = 0;
+    }
+}
+
+// passe d'ombre : objets opaques vus du soleil (sauf sol, route, trottoirs : ils reçoivent l'ombre sans en projeter)
+void Renderer::shadowPass(VkCommandBuffer cb) {
+    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 2, 2); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 2); }
+    VkClearValue clear{}; clear.depthStencil = {1.f, 0};
+    VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+    rbi.renderPass = shadowPass_; rbi.framebuffer = shadowFb_; rbi.renderArea = {{0, 0}, {shadowSize_, shadowSize_}};
+    rbi.clearValueCount = 1; rbi.pClearValues = &clear;
+    vkCmdBeginRenderPass(cb, &rbi, VK_SUBPASS_CONTENTS_INLINE);
+    if (shadowsOn_) {
+        VkViewport vpt{0, 0, (float)shadowSize_, (float)shadowSize_, 0, 1};
+        VkRect2D sc{{0, 0}, {shadowSize_, shadowSize_}};
+        vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &fr_[cur_].frameSet, 0, nullptr);
+        constexpr uint32_t NO_CAST = MAT_SHADOWBLOB | MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_BLEND;
+        VkPipeline bound = VK_NULL_HANDLE;
+        for (const Pending& p : opaqueQ_) {
+            if (p.mat->flags & NO_CAST) continue;
+            VkPipeline want = (p.mat->flags & MAT_MASK) ? shadowMaskPipe_ : shadowPipe_;
+            if (want != bound) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, want); bound = want; }
+            flushDraw(p);
+        }
+    }
+    vkCmdEndRenderPass(cb);
+    if (tsPool_) { vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 2 + 1); tsWritten_[cur_] = shadowsOn_; }
 }
 
 void Renderer::rotationMatrix(float r[4]) const {
@@ -229,7 +341,7 @@ bool Renderer::resize() {
 }
 
 VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
-                                  VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout) {
+                                  VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly) {
     VkPipelineShaderStageCreateInfo st[2]{};
     st[0].sType = st[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     st[0].stage = VK_SHADER_STAGE_VERTEX_BIT; st[0].module = vs; st[0].pName = "main";
@@ -263,7 +375,7 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     ms.rasterizationSamples = samples;
     VkPipelineDepthStencilStateCreateInfo ds{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     ds.depthTestEnable = depthTest; ds.depthWriteEnable = depthWrite;
-    ds.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;   // profondeur inversée
+    ds.depthCompareOp = depthOnly ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_GREATER_OR_EQUAL;   // profondeur inversée (sauf carte d'ombre)
     VkPipelineColorBlendAttachmentState cb{};
     cb.colorWriteMask = 0xF;
     if (blend) {
@@ -273,12 +385,12 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         cb.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; cb.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; cb.alphaBlendOp = VK_BLEND_OP_ADD;
     }
     VkPipelineColorBlendStateCreateInfo cbs{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};
-    cbs.attachmentCount = 1; cbs.pAttachments = &cb;
+    cbs.attachmentCount = depthOnly ? 0 : 1; cbs.pAttachments = &cb;
     VkDynamicState dyn[2] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
     VkPipelineDynamicStateCreateInfo dy{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
     dy.dynamicStateCount = 2; dy.pDynamicStates = dyn;
     VkGraphicsPipelineCreateInfo gp{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
-    gp.stageCount = 2; gp.pStages = st; gp.pVertexInputState = &vi; gp.pInputAssemblyState = &ia;
+    gp.stageCount = fs ? 2 : 1; gp.pStages = st; gp.pVertexInputState = &vi; gp.pInputAssemblyState = &ia;
     gp.pViewportState = &vp; gp.pRasterizationState = &rs; gp.pMultisampleState = &ms; gp.pDepthStencilState = &ds;
     gp.pColorBlendState = &cbs; gp.pDynamicState = &dy; gp.layout = layout; gp.renderPass = rp; gp.subpass = 0;
     VkPipeline p; VK_OK(vkCreateGraphicsPipelines(vk_->device, VK_NULL_HANDLE, 1, &gp, nullptr, &p));
@@ -303,6 +415,9 @@ void Renderer::createPipelines() {
     sky_ = makePipeline(kv, kf, 0, false, false, false, false, scenePass_, s, sceneLayout_);
     post_ = makePipeline(pv, pf, 0, false, false, false, false, finalPass_, VK_SAMPLE_COUNT_1_BIT, postPLayout_);
     ui_ = makePipeline(uv, uf, 2, true, true, false, false, finalPass_, VK_SAMPLE_COUNT_1_BIT, postPLayout_);
+    VkShaderModule hv = mod(SPV_SHADOW_VERT, sizeof(SPV_SHADOW_VERT)), hf = mod(SPV_SHADOW_FRAG, sizeof(SPV_SHADOW_FRAG));
+    shadowPipe_ = makePipeline(hv, VK_NULL_HANDLE, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
+    shadowMaskPipe_ = makePipeline(hv, hf, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
 }
 
 Material Renderer::makeMaterial(const Material& src, const Image* color, const Image* normal, const Image* mr) {
@@ -379,28 +494,36 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     u.groundCol = {fp.ground.x, fp.ground.y, fp.ground.z, 0};
     u.fog = {fp.fogColor.x, fp.fogColor.y, fp.fogColor.z, fp.fogDensity};
     u.misc = {fp.exposure, fp.night ? 1.f : 0.f, fp.ambient, fp.reflections};
+    // boîte d'ombre (stableShadow du jeu web) : centrée sur la voiture, 20 m devant dans le sens de la caméra,
+    // repère du soleil fixe et centre calé sur la grille des texels → bords d'ombre stables quand on roule
+    shadowsOn_ = fp.shadows && !fp.night && !forceNoShadows; night_ = fp.night || forceNoShadows;
+    {
+        const vec3 L = sd, up = std::fabs(L.y) > 0.99f ? vec3{1, 0, 0} : vec3{0, 1, 0};
+        const mat4 V = lookAt(L, {0, 0, 0}, up);
+        vec3 fwd{-fp.view.at(2, 0), 0, -fp.view.at(2, 2)};
+        vec3 c = fp.hasFocus ? fp.focus : fp.camPos;
+        if (length(fwd) > 1e-4f) c = c + normalize(fwd) * SHADOW_AHEAD;
+        const vec3 lc = V.transformPoint(c);
+        const float texel = 2 * SHADOW_HALF / (float)shadowSize_;
+        const float cx = std::round(lc.x / texel) * texel, cy = std::round(lc.y / texel) * texel;
+        const float nearD = -lc.z - SHADOW_DEPTH * 0.5f;   // distance le long du soleil (vue : -z)
+        mat4 P{};
+        P.at(0, 0) = 1 / SHADOW_HALF; P.at(0, 3) = -cx / SHADOW_HALF;
+        P.at(1, 1) = 1 / SHADOW_HALF; P.at(1, 3) = -cy / SHADOW_HALF;
+        P.at(2, 2) = -1 / SHADOW_DEPTH; P.at(2, 3) = -nearD / SHADOW_DEPTH;
+        P.at(3, 3) = 1;
+        u.shadowMat = P * V;
+        u.shadowP = {shadowsOn_ ? 1.f : 0.f, 1.f / (float)shadowSize_, SHADOW_NORMAL_BIAS, SHADOW_BIAS};
+    }
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     camPos_ = fp.camPos; exposure_ = fp.exposure;
-    transparent_.clear(); ui_vtx_.clear();
+    transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear();
+    readShadowTiming();
 
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     VK_OK(vkResetCommandBuffer(r.cb, 0));
     VK_OK(vkBeginCommandBuffer(r.cb, &bi));
-    VkClearValue clears[3]{};
-    clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};   // profondeur inversée : 0 = loin
-    VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-    rbi.renderPass = scenePass_; rbi.framebuffer = sceneFb_; rbi.renderArea = {{0, 0}, {sw_, sh_}};
-    rbi.clearValueCount = 2; rbi.pClearValues = clears;
-    vkCmdBeginRenderPass(r.cb, &rbi, VK_SUBPASS_CONTENTS_INLINE);
-    VkViewport vpt{0, 0, (float)sw_, (float)sh_, 0, 1};
-    VkRect2D sc{{0, 0}, {sw_, sh_}};
-    vkCmdSetViewport(r.cb, 0, 1, &vpt); vkCmdSetScissor(r.cb, 0, 1, &sc);
-    vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &r.frameSet, 0, nullptr);
-    // ciel
-    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
-    vkCmdDraw(r.cb, 3, 1, 0, 0);
-    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
     inFrame_ = true;
     return true;
 }
@@ -428,7 +551,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
         if (mat.flags & MAT_BLEND) transparent_.push_back(p);
-        else flushDraw(p);
+        else opaqueQ_.push_back(p);
     }
 }
 
@@ -438,7 +561,9 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
-    if (mat.flags & MAT_BLEND) transparent_.push_back(p); else flushDraw(p);
+    // ombre de contact sous les voitures (RG-05) : plus légère quand les ombres du soleil sont actives
+    if (mat.flags & MAT_SHADOWBLOB) p.pc.color.w *= (shadowsOn_ ? 0.55f : night_ ? 0.7f : 0.62f) / 0.75f;
+    if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
 }
 
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
@@ -479,6 +604,24 @@ void Renderer::endFrame() {
     if (!inFrame_) return;
     VkCtx& vk = *vk_;
     FrameRes& r = fr_[cur_];
+    shadowPass(r.cb);
+    // passe de scène : ciel, objets opaques (dans l'ordre d'appel), puis transparents
+    VkClearValue clears[3]{};
+    clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};   // profondeur inversée : 0 = loin
+    VkRenderPassBeginInfo sbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+    sbi.renderPass = scenePass_; sbi.framebuffer = sceneFb_; sbi.renderArea = {{0, 0}, {sw_, sh_}};
+    sbi.clearValueCount = 2; sbi.pClearValues = clears;
+    vkCmdBeginRenderPass(r.cb, &sbi, VK_SUBPASS_CONTENTS_INLINE);
+    {
+        VkViewport vpt{0, 0, (float)sw_, (float)sh_, 0, 1};
+        VkRect2D sc{{0, 0}, {sw_, sh_}};
+        vkCmdSetViewport(r.cb, 0, 1, &vpt); vkCmdSetScissor(r.cb, 0, 1, &sc);
+    }
+    vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &r.frameSet, 0, nullptr);
+    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
+    vkCmdDraw(r.cb, 3, 1, 0, 0);
+    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
+    for (const Pending& p : opaqueQ_) flushDraw(p);
     // objets transparents (vitres) : du plus loin au plus proche
     if (!transparent_.empty()) {
         std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
@@ -558,7 +701,12 @@ void Renderer::shutdown() {
         vkDestroyFence(d, r.fence, nullptr); vkDestroySemaphore(d, r.acquired, nullptr); vkDestroySemaphore(d, r.done, nullptr);
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
-    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_}) if (p) vkDestroyPipeline(d, p, nullptr);
+    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_}) if (p) vkDestroyPipeline(d, p, nullptr);
+    if (shadowFb_) vkDestroyFramebuffer(d, shadowFb_, nullptr);
+    if (shadowPass_) vkDestroyRenderPass(d, shadowPass_, nullptr);
+    if (shadowSampler_) vkDestroySampler(d, shadowSampler_, nullptr);
+    if (tsPool_) vkDestroyQueryPool(d, tsPool_, nullptr);
+    vk_->destroy(shadowMap_);
     for (auto m : modules_) vkDestroyShaderModule(d, m, nullptr);
     vkDestroyPipelineLayout(d, sceneLayout_, nullptr); vkDestroyPipelineLayout(d, postPLayout_, nullptr);
     vkDestroyRenderPass(d, scenePass_, nullptr); vkDestroyRenderPass(d, finalPass_, nullptr);
