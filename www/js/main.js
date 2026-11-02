@@ -15,6 +15,7 @@ function frame(t) {
   update(dt);
   watchPerf(raw);
   if (renderer) render3D(dt, t);
+  if (raceStartWall < 0 && ++raceStartWall === 0) raceStartWall = performance.now();   // départ du duel : après les premières images
   if (state === 'play' || state === 'pause' || state === 'over' || state === 'count') updateHud();
   engineUpdate();
   requestAnimationFrame(frame);

@@ -139,8 +139,8 @@ function update(dt) {
   const playerSeg = findSegment(position + PLAYER_Z);
   const speedPct = speed / MAX_SPEED;
 
-  if (mode === 'duel' && raceStartWall) trafficClock = (performance.now() - raceStartWall) / 1000 - 3;
-  else trafficClock += dt;
+  if (mode === 'duel' && raceStartWall > 0) trafficClock = (performance.now() - raceStartWall) / 1000 - 3;
+  else if (!(mode === 'duel' && raceStartWall < 0)) trafficClock += dt;   // < 0 : départ du duel pas encore lancé
   advanceTraffic();
   // tête-à-queue après un accident : la voiture tourne puis se remet droite
   controlLock = Math.max(0, controlLock - dt); scrapeCd -= dt;

@@ -5,7 +5,7 @@
    Change VERSION à chaque mise à jour pour vider l'ancien cache. */
 'use strict';
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = 'wfs-shell-' + VERSION;
 const MODELS = 'wfs-models-' + VERSION;
 importScripts('sw-files.js');   // liste SHELL_FILES, générée par « npm run vendor »

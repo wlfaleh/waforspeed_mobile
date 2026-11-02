@@ -6,6 +6,7 @@ let room = null, roomState = 'pending', sub = null, roomCode = null, round = 0, 
 let nick = (store('waforspeed-nick') || '').slice(0, 14);
 let advertised = undefined;
 const ghosts = new Map();
+const DUEL_GRID_X = 0.22;   // départ côte à côte : centres à ±1,65 m, environ 1,5 m entre les carrosseries (pas de contact, les deux voitures visibles)
 const pres = (p, k) => (p && p.presence ? p.presence[k] : undefined);
 const num = (v, d = 0) => (typeof v === 'number' && isFinite(v) ? v : d);
 const cleanName = (n) => (typeof n === 'string' ? n.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) : '');
@@ -107,6 +108,8 @@ function onRoomPeers(change) {
     const mx = Math.max(round, ...others().filter((p) => pres(p, 'st') === 'ready').map((p) => num(pres(p, 'r'))));
     if (mx > round) { round = mx; sub.presence({ r: round }).catch(() => {}); }
   }
+  // voiture de l'adversaire chargée dès le salon : son modèle 3D (plusieurs Mo) n'arrive plus pendant le compte à rebours
+  if (typeof requestModel === 'function') for (const p of others()) requestModel(peerCar(p));
   followHostMap();
   checkStart();
   if (!screens.lobby.hidden) renderLobby();
@@ -128,9 +131,12 @@ function startDuelRace() {
   audioInit();
   followHostMap();
   resetRace('play', hashStr(roomCode) + Math.imul(round, 977));
+  // grille de départ : les deux voitures côte à côte sur la même ligne (créateur à gauche, invité à droite)
+  playerX = iAmHost ? -DUEL_GRID_X : DUEL_GRID_X;
   for (const k in input) input[k] = false;
-  state = 'count'; myFinish = 0; presenceTimer = 0; raceStartWall = performance.now();
-  sub.presence({ st: 'race', r: round, d: 0, x: 0, v: 0, ft: null, car: myCar.id, paint: myPaint().id }).catch(() => {});
+  // le compte à rebours part après 3 images affichées : la préparation de la 3D (quelques secondes sur téléphone) ne le mange plus
+  state = 'count'; myFinish = 0; presenceTimer = 0; raceStartWall = -3;
+  sub.presence({ st: 'race', r: round, d: 0, x: playerX, v: 0, ft: null, car: myCar.id, paint: myPaint().id }).catch(() => {});
   show(null);
   Object.keys(last).forEach((k) => delete last[k]);
   updateHud(); advertise();

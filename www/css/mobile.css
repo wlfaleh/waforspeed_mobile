@@ -125,3 +125,12 @@ body { -webkit-touch-callout: none; -webkit-text-size-adjust: 100%; }
   #mapSel .tod { grid-area: tod; }
   #mapSel .actions { grid-area: actions; }
 }
+
+/* ---------- Compte à rebours du départ ----------
+   chaque chiffre reste affiché jusqu'au suivant (même si le téléphone rame), au-dessus du HUD et des commandes */
+.countdown { z-index: 30; }
+.countdown span { animation: count-in 420ms var(--ease) both; -webkit-text-stroke: 2px rgba(10, 11, 16, .35); }
+.countdown.go span { animation: count-go 900ms var(--ease) both; }
+@keyframes count-in { from { transform: scale(1.8) skewX(-8deg); opacity: 0; } to { transform: scale(1) skewX(-8deg); opacity: 1; } }
+@keyframes count-go { from { transform: scale(1.8) skewX(-8deg); opacity: 0; } 20% { transform: scale(1) skewX(-8deg); opacity: 1; } 70% { opacity: 1; } to { transform: scale(1.15) skewX(-8deg); opacity: 0; } }
+@media (max-height: 500px) { .countdown span { font-size: clamp(110px, 42vh, 200px); } }
