@@ -65,7 +65,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | — | `feature/waforspeed-30` |  | ⏳ construction en cours |
+| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-06` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
@@ -93,7 +93,7 @@ Journal à jour.
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · 🔧 En cours
+**WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · ✅ Terminé
 - [ ] Interface `System` (init / update / render / interface) enregistrée dans `Game` : un nouveau module = un nouveau fichier + 1 ligne d'enregistrement
 - [ ] CMake ajoute automatiquement les fichiers de `src/world`, `src/ui`, `src/audio`, `src/game`
 - [ ] Accès en lecture pour les systèmes : piste, joueur, caméra, renderer ; doc dans le skill `waforspeed-natif`
@@ -353,3 +353,9 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
 - ⚠️ Pour WFS-08 (session trafic) : `CMakeLists.txt` liste maintenant les sources par dossier (`GLOB_RECURSE`) ; à la
   synchronisation, garder le `GLOB_RECURSE` (plus besoin d'ajouter `traffic.cpp` à la main). `game.*` : seulement
   quelques lignes ajoutées (appels `systems*`) et un bloc à la fin de `game.cpp`.
+
+### 2026-11-02 — Fin WFS-30 (Claude, session moteur-natif)
+- QA **VALIDÉ** (`qa/rapports/WFS-30.md`) : rendu identique au pixel près, `test_systems` OK. PR #3 fusionnée.
+- Débloqués (dépendance WFS-30 terminée) : WFS-06 (E2 ville), WFS-26 (E5 texte), WFS-10 (E6 sons), WFS-07 (E4 ombres) :
+  **quatre épics attribuables en parallèle**, en plus de WFS-08 (E3) en cours.
+- Pour ajouter un module : skill `waforspeed-natif`, section « Ajouter un module ».
