@@ -8,6 +8,7 @@
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../core/platform.h"
+#include "../audio/audio_system.h"
 #include "../game/game.h"
 #include "../game/traffic_system.h"
 #include "../render/renderer.h"
@@ -65,6 +66,7 @@ int main(int argc, char** argv) {
     }
     benchTrafficScenes(g, r, out);   // WFS-08 : trafic de près et choc (captures trafic-*.png)
     g.shutdown();
+    benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
     r.shutdown();
     vk.shutdown();
     jobs().stop();
