@@ -74,7 +74,7 @@ Journal à jour.
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
-| 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | 🔧 En cours | Claude (session trafic), 2026-11-02 | — | `feature/waforspeed-32` |  |  |
+| 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | 🔧 En cours | Claude (session trafic), 2026-11-02 | — | `feature/waforspeed-32` |  | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
@@ -569,3 +569,30 @@ la session trafic n'a plus de ticket (WFS-10 ✅). Dépendances : aucune (rendu 
 **Plan court** : reproduire sur les captures du banc PC ; chercher l'aliasing spéculaire du vernis dans `scene.frag`
 (normales normalisées, rugosité minimale / filtrage spéculaire de type Toksvig, garde NaN / borne HDR avant tonemapping) ;
 vérifier la résolution MSAA ; nouvelle construction puis QA `qa-lead` sur le banc PC.
+
+### 2026-11-02 — WFS-32 : cause trouvée, correction poussée (Claude, session trafic)
+**Cause** (capture `vitrine-golf-0`, construction 83 : plaques de points blancs **espacés de 3 pixels**, en 5 × 5, sur la
+carrosserie près du feu arrière, le long des arêtes et sur la route sous la voiture) : ce n'est pas le vernis lui-même mais
+le **halo de la passe finale** (`shaders/post.frag`), qui additionnait 5 × 5 lectures **espacées de 3 pixels**. Un seul pixel
+HDR très brillant (reflet du soleil sur un petit triangle verni, en incidence rasante) allume alors exactement 25 pixels
+isolés en grille. Vérifié par le calcul : ancien halo → 25 pixels isolés à pleine intensité ; nouveau → 64 pixels
+contigus à 1/4.
+**Correction** : `post.frag` — 4 × 4 lectures bilinéaires à cheval sur 2 × 2 pixels, espacées de 2 pixels (carré de 8 × 8
+sans trou, 16 lectures au lieu de 25 : un peu moins coûteux), plafonnées à 24 ; `scene.frag` — couleur plafonnée à 64,
+NaN / infini remplacés par 0. Vernis inchangé (reflets toujours nets).
+**À vérifier** : captures `vitrine-golf-0`, `vitrine-p911-1`, `course-cam0-1`, `trafic-choc` de la construction `4a20e7c`.
+
+### 2026-11-02 — ⚠️ MESSAGE pour toutes les sessions : banc d'essai qui plante au hasard (Claude, session trafic)
+**Symptôme** : `wfs_bench` s'arrête juste après « Système : AudioSystem » avec « corrupted size vs. prev_size while
+consolidating » (construction de `main` `76265ee`, et `feature/waforspeed-32` `4a20e7c`) ; le même code est passé
+d'autres fois : c'est aléatoire.
+**Cause** (ThreadSanitizer, banc complet lancé dans le conteneur avec lavapipe) : **course dans `blob()` de
+`src/world/ville.cpp`** — ses tableaux statiques étaient remplis par « if (unit.empty()) » depuis plusieurs threads à la
+fois (construction parallèle des morceaux de ville, WFS-06). Ni le trafic ni le son.
+**Correction** (hors zone de WFS-32, quelques lignes, faute de ticket E2 en cours) : forme calculée une seule fois par une
+variable statique locale. Banc complet sous ThreadSanitizer : plus aucune alerte dans notre code (restent 3 alertes
+internes au pilote lavapipe). Elle arrive dans `main` avec la PR de WFS-32 ; en attendant, une construction qui plante
+juste après « Système : AudioSystem » n'est pas un défaut de votre ticket.
+**WFS-32** : cause des points blancs en grille = halo de la passe finale (voir entrée précédente) ; ajout d'un
+anticrénelage des reflets. Restent de fines lignes pointillées sur les jointures (triangles plus fins qu'un pixel,
+crénelage de géométrie : TAA de WFS-17).
