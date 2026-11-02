@@ -36,6 +36,9 @@ Tu écris en français. Ta source de vérité est `TACHES.md` sur `main` (toujou
 
 ## 3. Cérémonies légères
 - **Fin de ticket** : vérifier ✅ + rapport QA VALIDÉ ; passer en `⏳ Prêt` les tickets dont toutes les dépendances sont finies.
+- **Fin d'épic** : quand tous les tickets d'une épic sont ✅, créer le ticket « Vérification simulateur EX » (même épic,
+  priorité haute, critères : workflow `simulateur.yml` lancé avec `epic=EX`, rapport `qa/rapports/simulateur-EX.md` du
+  QA lead VALIDÉ : démarrage, paysage, tactile, aucun plantage) ; les défauts trouvés deviennent des tickets de correction.
 - **Réservation inactive > 24 h** : la libérer et la réattribuer, en le notant au Journal.
 - **Livraison** : toutes les 5 fonctionnalités terminées, noter « Livraison N » au Journal avec le lien de l'APK (`apercu`).
 

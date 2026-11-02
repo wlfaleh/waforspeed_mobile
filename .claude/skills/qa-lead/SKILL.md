@@ -7,10 +7,12 @@ description: Validation des tickets de WaForSpeed Mobile par le QA lead — rega
 
 - Après chaque APK d'un ticket, l'agent `qa-lead` regarde les captures publiées par la CI dans la Release
   `apercu-waforspeed-XX` et rend un verdict **VALIDÉ** ou **REFUSÉ**.
-- Captures disponibles :
-  - émulateur Android (le jeu installé et joué) : `qa-01-demarrage`, `qa-02/03-acceleration`, `qa-04-nitro`,
-    `qa-05-braquage`, `qa-06-freinage`, `qa-07-fin` ;
-  - banc d'essai : `vitrine-<voiture>-N`, `course-camC-N`.
+- **QA de chaque ticket = banc d'essai PC** (rapide, ~3 min) : `vitrine-<voiture>-N`, `course-camC-N` et les captures
+  propres au ticket, dans la Release `apercu-waforspeed-XX`.
+- **QA de fin d'épic = simulateur Android** : quand tous les tickets d'une épic sont terminés, le PO crée le ticket
+  « Vérification simulateur EX » ; on lance le workflow `simulateur.yml` (entrée `epic`), puis le QA lead regarde les
+  captures de la Release `simulateur-EX` (`qa-01-demarrage` … `qa-07-fin`, `qa-logcat.txt`) et écrit
+  `qa/rapports/simulateur-EX.md` (orientation, tactile, démarrage, plantages sur un vrai APK).
 - Ce qu'on regarde : la fonctionnalité du ticket se voit et est correcte, l'image n'est pas déformée, la voiture est
   visible, rien n'est cassé.
 - Rapport court dans `qa/rapports/WFS-XX.md` : verdict + problèmes (capture concernée, ce qui ne va pas).
