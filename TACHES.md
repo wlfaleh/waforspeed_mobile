@@ -1,179 +1,191 @@
 # WaForSpeed Mobile — tableau des tâches
 
-Version native (C++20, Vulkan) du jeu WaForSpeed, pour Android puis iOS, conçue pour pouvoir être portée sur consoles.
-Aucun moteur de jeu tiers : moteur maison. Le contenu (voitures 3D, sons, règles, cartes, physique) vient du jeu web
-`wlfaleh/waaps` (dossier `waforspeed/`). Organisation inspirée de Jira : tickets numérotés, une branche par ticket,
-revue et validation avant fusion.
+Version native (C++20, Vulkan) du jeu WaForSpeed, pour Android puis iOS, portable sur consoles. Moteur maison, aucun moteur
+de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`). Organisation type Jira / Scrum :
+**épics** (une zone de code chacune), **tickets** WFS-XX priorisés, plusieurs agents en parallèle, en autonomie.
+
+## Rôles
+| Rôle | Agent | Ce qu'il fait |
+|---|---|---|
+| PO / Scrum Master | `po-scrum-master` (`.claude/agents/po-scrum-master.md`) | étudie le besoin, découpe en épics et tickets, priorise, **attribue les tickets**, débloque |
+| Développeur | toute session Claude | réalise le ticket attribué, sur sa branche, dans la zone de son épic |
+| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, verdict VALIDÉ / REFUSÉ |
 
 ## Statuts
 | Statut | Signification |
 |---|---|
-| ⏳ À faire | personne ne travaille dessus |
-| 🔧 En cours | réservé (Responsable renseigné), branche créée, développement en cours |
-| 🔍 En revue | demande de fusion (PR) ouverte, CI verte, en attente du verdict de l'agent QA (`qa-lead`) |
-| ✅ Terminé | validé et fusionné dans `main` |
-| ⛔ Bloqué | en attente d'une décision ou d'un autre ticket (préciser dans le journal) |
+| ⏳ En attente | dépendances pas encore terminées |
+| ⏳ Prêt | dépendances terminées, critères clairs : peut être attribué |
+| 🔧 En cours | attribué (Responsable), branche créée |
+| 🔍 En revue | PR ouverte, CI verte, attente du verdict QA |
+| ✅ Terminé | VALIDÉ et fusionné dans `main` |
+| ⛔ Bloqué | raison au Journal |
 
-## Processus (obligatoire pour chaque ticket)
-0. **Le tableau reflète toujours l'état réel.** Après CHAQUE avancement (réservation, branche créée, construction
-   réussie ou en échec, PR ouverte, verdict QA, correction, fusion), mettre à jour le statut, la colonne QA et le Journal,
-   puis envoyer `TACHES.md` sur `main` immédiatement : c'est ce que lisent les autres agents pour éviter les conflits.
-1. **Réserver** : `git checkout main && git pull`, vérifier que le ticket n'a pas de Responsable, puis dans ce fichier :
-   statut 🔧, Responsable, Branche ; entrée « Début » dans le Journal (plan, fichiers prévus).
-   Envoyer ce changement sur `main` **immédiatement**, avant d'écrire du code.
-2. **Branche** : `git checkout -b feature/waforspeed-XX` (XX = numéro du ticket sur 2 chiffres, ex. `feature/waforspeed-06`).
-   Une branche = un ticket. Ne modifier que les fichiers annoncés (sinon le noter au Journal).
-3. **Synchroniser avant chaque validation** : `git fetch origin && git merge origin/main` (ou rebase), corriger les conflits,
-   puis relancer les vérifications (tests, CI, captures).
-4. **Demande de fusion** : synchroniser à nouveau avec `main`, ouvrir la PR `WFS-XX : <titre>` vers `main`, statut 🔍,
-   lien de la PR dans le tableau. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
-5. **Valider (QA)** : après chaque APK de la branche, l'agent **`qa-lead`** regarde les captures (émulateur Android +
-   banc d'essai) et rend un verdict dans `qa/rapports/WFS-XX.md`. **Ne jamais fusionner sans verdict `VALIDÉ`.**
-6. **Fusionner** : synchroniser une dernière fois, fusionner la PR, statut ✅, Responsable libéré, entrée « Fin » au Journal
-   (fait / fichiers / vérification / limites).
-7. Livraison = 5 tickets terminés : APK de `main` dans la Release `apercu`, entrée « Livraison N » au Journal.
-8. **Ne jamais supprimer de branche** : c'est l'utilisateur qui gère les branches (même après fusion).
-9. Une réservation sans nouvelle depuis 24 h peut être reprise, en le notant au Journal.
+## Règles de travail en parallèle (obligatoires)
+1. **Attribution par le PO** : avant de créer une branche, un agent développeur **demande un ticket à l'agent
+   `po-scrum-master`**. Le PO choisit le ticket `⏳ Prêt` le plus prioritaire **dont l'épic n'a aucun ticket en cours**,
+   l'écrit dans ce fichier (🔧, Responsable, Branche, entrée « Début » au Journal) et l'envoie sur `main`. Personne ne
+   se réserve un ticket seul.
+2. **Un ticket en cours maximum par épic** et **un ticket maximum par agent** : chaque épic a sa zone de code, donc deux
+   agents ne modifient jamais les mêmes fichiers.
+3. **Zone de code** : un ticket ne modifie que les fichiers de la zone de son épic (tableau des épics). Exception unique :
+   une « ligne d'accroche » (≤ 10 lignes, ex. enregistrer un système dans `Game`) annoncée au Journal.
+   Tout autre changement du noyau passe par un ticket de l'épic E0.
+4. **Branche** `feature/waforspeed-XX` par ticket (même si la session propose `claude/…`). Synchroniser avec `main` avant
+   chaque validation et avant chaque PR.
+5. **QA** : après chaque APK, `qa-lead` regarde les captures et écrit `qa/rapports/WFS-XX.md`. Fusion seulement si VALIDÉ.
+6. **Statuts à jour** après chaque avancement, envoyés sur `main` tout de suite, en modifiant seulement ses lignes à partir
+   de la dernière version de `main` (ne jamais écraser le fichier).
+7. **Fin de ticket** : ✅, Responsable libéré, entrée « Fin » au Journal ; le PO passe en `⏳ Prêt` les tickets débloqués.
+8. **Ne jamais supprimer de branche** (gérées par l'utilisateur).
+9. Une réservation sans nouvelle depuis 24 h peut être réattribuée par le PO (noté au Journal).
 
-## Tableau
-| Clé | Titre | Type | Priorité | Livraison | Statut | Responsable | Branche | PR | QA |
+**Définition de « Prêt »** : dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
+taille ≤ 1 journée (sinon le PO découpe).
+**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA VALIDÉ, synchronisé, fusionné,
+Journal à jour.
+
+## Épics et zones de code
+| Épic | Nom | Zone de code (fichiers modifiables) | But |
+|---|---|---|---|
+| E0 | Noyau partagé (catalyseur) | `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API), `CMakeLists.txt` | Stabiliser les points d'extension pour que les autres épics ajoutent des fichiers sans toucher au noyau. |
+| E1 | Socle moteur (livraison 1) | — | Terminé. |
+| E2 | Monde et décor | `src/world/**`, `assets/world/**`, `shaders/world_*` | Ville, cartes, météo, piétons : tout ce qui entoure la route. |
+| E3 | Gameplay et simulation | `src/game/` sauf `game.*` (trafic, course, duel, sauvegarde), `tests/**` | Règles du jeu portées du jeu web, tests de fidélité. |
+| E4 | Rendu et performances | `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*` | Ombres, nuit, reflets, post-traitement, qualité, LOD. |
+| E5 | Interface et contenu | `src/ui/**`, `shaders/ui*`, `assets/fonts/**`, `assets/cars/**`, `tools/convert_car.mjs` | Texte, menus, garage, HUD, voitures et peintures. |
+| E6 | Audio | `src/audio/**`, `assets/audio/**` | Moteur, bruitages. |
+| E7 | Plateformes et publication | `src/platform/**`, `android/**`, `ios/**`, `.github/**`, `tools/qa/**` | Android, iOS, manettes, stores, CI. |
+
+## Tableau (par ordre de priorité)
+| Prio | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
-| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
-| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
-| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
-| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-05` | #1, #2 | ✅ VALIDÉ (passage 2, `qa/rapports/WFS-05.md`) |
-| WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
-| WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
-| WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | 🔧 En cours | Claude (session trafic) | `feature/waforspeed-08` |  | |
-| WFS-09 | Nuit : vrais phares et éclairage public | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-09` |  | |
-| WFS-10 | Sons de moteur (AAudio, régime et rapports) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-10` |  | |
-| WFS-11 | Menu et garage 3D (voiture + couleur) | Fonctionnalité | Haute | L3 | ⏳ À faire |  | `feature/waforspeed-11` |  | |
-| WFS-12 | Chrono, checkpoints, score, nitro, HUD avec texte | Fonctionnalité | Haute | L3 | ⏳ À faire |  | `feature/waforspeed-12` |  | |
-| WFS-13 | Les 20 voitures et 16 peintures | Fonctionnalité | Moyenne | L3 | ⏳ À faire |  | `feature/waforspeed-13` |  | |
-| WFS-14 | Cartes campagne, plage, circuit | Fonctionnalité | Moyenne | L3 | ⏳ À faire |  | `feature/waforspeed-14` |  | |
-| WFS-15 | Réglages de qualité selon le téléphone | Technique | Moyenne | L3 | ⏳ À faire |  | `feature/waforspeed-15` |  | |
-| WFS-16 | Route mouillée avec reflets | Fonctionnalité | Basse | L4 | ⏳ À faire |  | `feature/waforspeed-16` |  | |
-| WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | Fonctionnalité | Basse | L4 | ⏳ À faire |  | `feature/waforspeed-17` |  | |
-| WFS-18 | Météo : pluie, flaques | Fonctionnalité | Basse | L4 | ⏳ À faire |  | `feature/waforspeed-18` |  | |
-| WFS-19 | Piétons animés et conducteurs | Fonctionnalité | Basse | L4 | ⏳ À faire |  | `feature/waforspeed-19` |  | |
-| WFS-20 | Performances : LOD, tri des objets visibles en parallèle | Technique | Moyenne | L4 | ⏳ À faire |  | `feature/waforspeed-20` |  | |
-| WFS-21 | Duel en ligne | Fonctionnalité | Moyenne | L5 | ⏳ À faire |  | `feature/waforspeed-21` |  | |
-| WFS-22 | Version iOS (Metal via MoltenVK) | Technique | Moyenne | L5 | ⏳ À faire |  | `feature/waforspeed-22` |  | |
-| WFS-23 | Manettes de jeu | Fonctionnalité | Basse | L5 | ⏳ À faire |  | `feature/waforspeed-23` |  | |
-| WFS-24 | Sauvegarde et progression | Fonctionnalité | Basse | L5 | ⏳ À faire |  | `feature/waforspeed-24` |  | |
-| WFS-25 | Préparation des stores | Technique | Basse | L5 | ⏳ À faire |  | `feature/waforspeed-25` |  | |
+| — | WFS-01 | Projet C++ et construction automatique de l'APK | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
+| — | WFS-02 | Noyau : boucle, threads, mémoire, journal | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
+| — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
+| — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
+| — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
+| 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-30` |  |  |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
+| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-06` |  |  |
+| 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
+| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
+| 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ En attente |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
+| 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
+| 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
+| 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
+| 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ En attente |  | WFS-06 | `feature/waforspeed-14` |  |  |
+| 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
+| 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
+| 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ En attente |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
+| 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ En attente |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
+| 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 | `feature/waforspeed-19` |  |  |
+| 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
+| 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
+| 20 | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ⏳ En attente |  | WFS-15 | `feature/waforspeed-17` |  |  |
+| 21 | WFS-24 | Sauvegarde et progression | E3 | ⏳ En attente |  | WFS-12 | `feature/waforspeed-24` |  |  |
+| 22 | WFS-21 | Duel en ligne | E3 | ⏳ En attente |  | WFS-12 | `feature/waforspeed-21` |  |  |
+| 23 | WFS-23 | Manettes de jeu | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-23` |  |  |
+| 24 | WFS-22 | Version iOS (Metal via MoltenVK) | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
+| 25 | WFS-25 | Préparation des stores | E7 | ⏳ En attente |  | WFS-22 | `feature/waforspeed-25` |  |  |
 
-## Détail des tickets (critères d'acceptation)
+## Critères d'acceptation des tickets ouverts
 
-### Livraison 1 — « Première course »
+**WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · ⏳ Prêt
+- [ ] Interface `System` (init / update / render / interface) enregistrée dans `Game` : un nouveau module = un nouveau fichier + 1 ligne d'enregistrement
+- [ ] CMake ajoute automatiquement les fichiers de `src/world`, `src/ui`, `src/audio`, `src/game`
+- [ ] Accès en lecture pour les systèmes : piste, joueur, caméra, renderer ; doc dans le skill `waforspeed-natif`
+- [ ] Aucun changement visible ; CI verte, captures identiques
 
-**WFS-01 — Projet C++ et construction automatique de l'APK Android** · Technique · priorité Haute · ✅ Terminé (fusion exceptionnelle)
-- [ ] CMake + Gradle (NativeActivity, arm64) construisent un APK installable
-- [x] CI GitHub : banc d'essai Linux + APK + Release d'aperçu
-- [ ] L'APK s'installe et démarre (émulateur Android de la QA : « QA pret », pas de plantage)
-
-**WFS-02 — Noyau du moteur : boucle, threads, mémoire, journal** · Technique · priorité Haute · ✅ Terminé (fusion exceptionnelle)
-- [ ] Système de tâches multi-thread (un thread par cœur) avec parallelFor
-- [ ] Arène par image et réserve d'objets
-- [ ] Boucle Android : pause hors focus, reprise propre
-
-**WFS-03 — Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA** · Fonctionnalité · priorité Haute · ✅ Terminé (fusion exceptionnelle)
-- [ ] Passe HDR + MSAA, passe finale ACES
-- [ ] Peinture vernie, vitres, ciel analytique
-- [ ] Image non déformée en paysage (captures de l'émulateur : commandes rondes)
-
-**WFS-04 — Vraies voitures du jeu web (Golf, M4, 911, Gallardo)** · Fonctionnalité · priorité Haute · ✅ Terminé (fusion exceptionnelle)
-- [ ] Convertisseur glTF → .wfm documenté
-- [ ] 4 voitures à la bonne taille, avant vers -Z, peinture détectée
-- [ ] Textures décodées en parallèle, licences dans assets/licences
-
-**WFS-05 — Route générée, conduite tactile, caméra de poursuite** · Fonctionnalité · priorité Haute · ✅ Terminé
-- [x] Piste identique au jeu web (test automatique)
-- [ ] Conduite reprise de update.js (pas fixe)
-- [ ] Commandes tactiles volant / frein / accélérateur / nitro : vitesse monte, nitro, freinage (logcat QA sur émulateur)
-
-### Livraison 2 — « Ville vivante »
-
-**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · Fonctionnalité · priorité Haute · ⏳ À faire
-- [ ] Décor généré par la graine de la carte (comme decor.js)
-- [ ] Instanciation GPU, ≤ 300 appels de dessin
-- [ ] 60 i/s sur téléphone milieu de gamme
-
-**WFS-07 — Ombres dynamiques du soleil (cascades)** · Fonctionnalité · priorité Moyenne · ⏳ À faire
-- [ ] Ombres stables sans scintillement
-- [ ] Coût ≤ 3 ms sur mobile
-
-**WFS-08 — Trafic multi-thread et collisions** · Fonctionnalité · priorité Haute · 🔧 En cours
+**WFS-08 — Trafic multi-thread et collisions** · E3 · priorité 2 · 🔧 En cours
 - [ ] Port de traffic.js (même graine)
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
 
-**WFS-09 — Nuit : vrais phares et éclairage public** · Fonctionnalité · priorité Moyenne · ⏳ À faire
-- [ ] Phares réalistes (leçons de la version web)
-- [ ] Lampadaires, mode nuit par carte
+**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · ⏳ Prêt
+- [ ] Décor généré par la graine de la carte (comme decor.js)
+- [ ] Instanciation GPU, ≤ 300 appels de dessin
+- [ ] Captures : rue bordée d'immeubles, lampadaires, arbres
 
-**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · Fonctionnalité · priorité Moyenne · ⏳ À faire
-- [ ] Sons du jeu web, régime suit l'accélérateur
-- [ ] Latence faible, pas de craquements
+**WFS-26 — Rendu de texte (police, nombres, libellés)** · E5 · priorité 4 · ⏳ Prêt
+- [ ] Police (licence libre) en atlas, texte en pixels logiques, accents français
+- [ ] Lisible sur 2400x1080 et petits écrans
+- [ ] Capture : texte d'essai net
 
-### Livraison 3 — « Jeu complet »
+**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · ⏳ Prêt
+- [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
+- [ ] Pas de craquement, coupure en pause
 
-**WFS-11 — Menu et garage 3D (voiture + couleur)** · Fonctionnalité · priorité Haute · ⏳ À faire
+**WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · ⏳ Prêt
+- [ ] Ombres stables sans scintillement
+- [ ] Coût ≤ 3 ms sur mobile
+
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ En attente
+- [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
+- [ ] Tests automatiques de fidélité
+
+**WFS-11 — Menu et garage 3D (voiture + couleur)** · E5 · priorité 8 · ⏳ En attente
 - [ ] Choix des voitures et peintures
 - [ ] Style design-street-racing
 
-**WFS-12 — Chrono, checkpoints, score, nitro, HUD avec texte** · Fonctionnalité · priorité Haute · ⏳ À faire
-- [ ] Règles identiques au mode solo web
-- [ ] Police lisible sur téléphone
+**WFS-09 — Nuit : vrais phares et éclairage public** · E4 · priorité 9 · ⏳ En attente
+- [ ] Phares réalistes (leçons de la version web)
+- [ ] Lampadaires, mode nuit par carte
 
-**WFS-13 — Les 20 voitures et 16 peintures** · Fonctionnalité · priorité Moyenne · ⏳ À faire
+**WFS-27 — HUD de course (vitesse, chrono, score, nitro en texte)** · E5 · priorité 10 · ⏳ En attente
+- [ ] Vitesse, chrono, score, nitro lisibles
+- [ ] Style design-street-racing
+
+**WFS-29 — Android : mode plein écran immersif, icône, nom** · E7 · priorité 11 · ⏳ Prêt
+- [ ] Barres système masquées pendant la course
+- [ ] Icône et nom WaForSpeed
+
+**WFS-14 — Cartes campagne, plage, circuit** · E2 · priorité 12 · ⏳ En attente
+- [ ] Décors et ambiances par carte
+
+**WFS-13 — Les 20 voitures et 16 peintures** · E5 · priorité 13 · ⏳ En attente
 - [ ] Toutes converties et vérifiées en vitrine
 - [ ] Taille de l'APK maîtrisée
 
-**WFS-14 — Cartes campagne, plage, circuit** · Fonctionnalité · priorité Moyenne · ⏳ À faire
-- [ ] Décors et ambiances par carte
+**WFS-15 — Réglages de qualité selon le téléphone** · E4 · priorité 14 · ⏳ En attente
+- [ ] Niveaux bas / moyen / haut, choix automatique
 
-**WFS-15 — Réglages de qualité selon le téléphone** · Technique · priorité Moyenne · ⏳ À faire
-- [ ] Niveaux bas/moyen/haut, choix automatique
+**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ En attente
+- [ ] Bruitages synchronisés aux évènements du jeu
 
-### Livraison 4 — « Rendu nouvelle génération »
+**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité 16 · ⏳ En attente
+- [ ] 60 i/s visés, mesures dans le journal
 
-**WFS-16 — Route mouillée avec reflets** · Fonctionnalité · priorité Basse · ⏳ À faire
-- [ ] Reflets plausibles, coût maîtrisé
-
-**WFS-17 — Post-traitement : bloom, TAA, flou de mouvement** · Fonctionnalité · priorité Basse · ⏳ À faire
-- [ ] Activable selon la qualité
-
-**WFS-18 — Météo : pluie, flaques** · Fonctionnalité · priorité Basse · ⏳ À faire
-- [ ] Pluie animée, route mouillée
-
-**WFS-19 — Piétons animés et conducteurs** · Fonctionnalité · priorité Basse · ⏳ À faire
+**WFS-19 — Piétons animés et conducteurs** · E2 · priorité 17 · ⏳ En attente
 - [ ] Personnages du jeu web, conducteur face au volant
 
-**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · Technique · priorité Moyenne · ⏳ À faire
-- [ ] 60 i/s stables, mesures dans le journal
+**WFS-16 — Route mouillée avec reflets** · E4 · priorité 18 · ⏳ En attente
+- [ ] Reflets plausibles, coût maîtrisé
 
-### Livraison 5 — « Multijoueur et iOS »
+**WFS-18 — Météo : pluie, flaques** · E2 · priorité 19 · ⏳ En attente
+- [ ] Pluie animée, route mouillée
 
-**WFS-21 — Duel en ligne** · Fonctionnalité · priorité Moyenne · ⏳ À faire
-- [ ] Compatible avec le principe du duel web
+**WFS-17 — Post-traitement : bloom, TAA, flou de mouvement** · E4 · priorité 20 · ⏳ En attente
+- [ ] Activable selon la qualité
 
-**WFS-22 — Version iOS (Metal via MoltenVK)** · Technique · priorité Moyenne · ⏳ À faire
-- [ ] Construction iOS, test TestFlight
-
-**WFS-23 — Manettes de jeu** · Fonctionnalité · priorité Basse · ⏳ À faire
-- [ ] Manettes Bluetooth Android
-
-**WFS-24 — Sauvegarde et progression** · Fonctionnalité · priorité Basse · ⏳ À faire
+**WFS-24 — Sauvegarde et progression** · E3 · priorité 21 · ⏳ En attente
 - [ ] Meilleurs scores, voitures et réglages conservés
 
-**WFS-25 — Préparation des stores** · Technique · priorité Basse · ⏳ À faire
-- [ ] Icônes, signature de publication, fiches
+**WFS-21 — Duel en ligne** · E3 · priorité 22 · ⏳ En attente
+- [ ] Compatible avec le principe du duel web
 
-> Note : WFS-01 à WFS-05 ont été développés ensemble avant la mise en place de ce processus, sur la branche
-> `claude/moteur-natif`, renommée `feature/waforspeed-01`. Ils sont fusionnés en un seul lot après validation.
-> À partir de WFS-06, une branche et une PR par ticket.
+**WFS-23 — Manettes de jeu** · E7 · priorité 23 · ⏳ En attente
+- [ ] Manettes Bluetooth Android
+
+**WFS-22 — Version iOS (Metal via MoltenVK)** · E7 · priorité 24 · ⏳ En attente
+- [ ] Construction iOS, test TestFlight
+
+**WFS-25 — Préparation des stores** · E7 · priorité 25 · ⏳ En attente
+- [ ] Icônes, signature, fiches
+
+> WFS-01 à WFS-05 (E1) : critères détaillés et rapports dans `qa/rapports/` et dans le Journal.
 
 ## Journal
 
@@ -308,3 +320,11 @@ pas encore de feux stop ni de clignotants dessinés ; score des quasi-contacts c
 - PR #2 fusionnée. WFS-01 à WFS-05 terminés : **livraison 1 « Première course »** dans `main`.
 - APK de `main` : Release `apercu` (reconstruite par la CI après la fusion).
 - Reste à mesurer sur un vrai téléphone : fluidité (images/s), confort des commandes.
+
+### 2026-11-02 — Organisation en épics, priorisation, PO / Scrum Master (Claude, session moteur-natif)
+- Backlog découpé en 8 épics (E0 à E7), chacune avec sa zone de code ; tickets priorisés avec dépendances.
+- Nouveaux tickets : WFS-26 (texte), WFS-27 (HUD), WFS-28 (bruitages), WFS-29 (Android immersif), WFS-30 (points
+  d'extension du moteur, priorité 1 : catalyseur du travail en parallèle). WFS-12 recentré sur les règles de course (sans HUD).
+- Agent `po-scrum-master` : attribue les tickets (règle : un ticket en cours par épic, un par agent).
+- WFS-08 (session trafic) conservé en cours dans l'épic E3.
+

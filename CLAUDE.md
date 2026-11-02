@@ -3,8 +3,11 @@
 - Lire et suivre le skill `.claude/skills/waforspeed-natif` pour tout changement de code ; `design-street-racing` pour l'interface ;
   `waforspeed-3d` est la référence de la version navigateur (dépôt `wlfaleh/waaps`).
 - **Pas de moteur de jeu tiers** (Unity, Godot, Unreal…) : moteur maison C++20 + Vulkan.
-- **Tickets WFS-XX** dans `TACHES.md` (organisation type Jira). Avant de coder : `git pull` de `main`, réserver le ticket
-  (statut 🔧, responsable, branche, entrée « Début » au Journal) et l'envoyer sur `main` immédiatement.
+- **Épics et tickets WFS-XX** dans `TACHES.md` (Jira / Scrum). **Avant de créer une branche, demander un ticket à l'agent
+  `po-scrum-master`** (`.claude/agents/po-scrum-master.md`) : il attribue le ticket prêt le plus prioritaire d'une épic libre,
+  l'écrit dans `TACHES.md` sur `main`. Ne jamais se réserver un ticket seul.
+- **Un ticket en cours par épic, un par agent. Ne modifier que la zone de code de son épic** (tableau des épics) ;
+  le noyau partagé ne change que par un ticket E0 (ou une ligne d'accroche ≤ 10 lignes annoncée au Journal).
 - **Une branche par ticket** : `feature/waforspeed-XX`. Même si ta session Claude t'attribue une branche `claude/…`,
   travaille sur `feature/waforspeed-XX` (aucun travail hors ticket, aucune branche `claude/…`). Synchroniser avec `main` avant chaque validation et avant chaque PR.
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
