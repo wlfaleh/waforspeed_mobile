@@ -72,7 +72,7 @@ Journal à jour.
 | 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
-| 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔍 En revue | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  | ⏳ construction + qa-lead |
+| 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔍 En revue | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  | ✅ VALIDÉ par qa-lead |
 | 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
@@ -639,3 +639,7 @@ Exception voulue par l'utilisateur à la règle « un ticket par agent » : la s
 **Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*` (épic E2). Tout autre changement du noyau passe par E0 (ou une ligne d'accroche annoncée au Journal).
 **Responsable** : Claude (session moteur-natif), branche `feature/waforspeed-34`. Règles : `regles-de-gestion/WFS-34.md`.
 Critères : voir la section « Critères d'acceptation des tickets ouverts » (WFS-34).
+
+### 2026-11-02 — WFS-26 validé par qa-lead (rapport `qa/rapports/WFS-26.md`)
+Captures du commit 19c62c6 (`texte-essai-1280`, `texte-essai-2400`, `course-cam0-2`) : accents, chiffres, `1:23.4`, `12 345`, `1,2 km` lisibles, net sur les deux résolutions, trois tailles, alignements gauche et centre, aucun texte parasite en course.
+Remarques non bloquantes pour la suite : apostrophe droite (`'`) au lieu de `’` (RG-02) ; alignement droit à montrer sur la planche (à traiter en WFS-27).
