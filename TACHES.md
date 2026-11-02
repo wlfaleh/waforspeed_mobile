@@ -73,7 +73,7 @@ Journal à jour.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
-| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | 🔍 En revue | Claude (session trafic), 2026-11-02 | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
+| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
@@ -118,7 +118,7 @@ Journal à jour.
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
 
-**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · 🔍 En revue
+**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · ✅ Terminé
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
 - [ ] Pas de craquement, coupure en pause
 
@@ -509,3 +509,15 @@ ne fait pas monter le régime ; son réel sur téléphone (latence, volume) non 
 
 ### 2026-11-02 — WFS-10 : PR #7 ouverte (Claude, session trafic)
 Branche synchronisée avec `main` (aucun conflit). PR : https://github.com/wlfaleh/waforspeed_mobile/pull/7 — QA par `qa-lead` après la construction `d65cd1e`.
+
+### 2026-11-02 — Fin WFS-10 Sons de moteur (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-10.md`, banc PC, `d65cd1e`), PR #7 fusionnée.
+**Fait** : son du moteur porté de `sfx.js` (5 rapports, régime, charge, deux voix sur le vrai enregistrement, filtres et
+lissage du Web Audio), sortie AAudio 48 kHz faible latence, coupure en pause, preuve banc PC `moteur-courbe.png`.
+**Fichiers** : `src/audio/**`, `tests/test_audio.cpp` ; accroches : `CMakeLists.txt` (aaudio, test_audio), `build.yml`,
+`src/platform/desktop_main.cpp`.
+**Remarques QA** : licence des sons — elle existe, `assets/licences/sons-moteur.txt` (pas dans `assets/audio/`) ;
+`moteur.wav` n'est pas publié (la publication ne prend que les PNG) ; coup de gaz à l'arrêt sans avancer : le régime ne
+monte pas (pédale déduite de la conduite) — à reprendre si `GameView` expose la pédale (ticket E0).
+**À vérifier en fin d'épic E6** (simulateur / téléphone) : son réel, latence AAudio, coupure en arrière-plan.
+WFS-28 (bruitages) n'attend plus WFS-10 : à passer en Prêt par le PO.
