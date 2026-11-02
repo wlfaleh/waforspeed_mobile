@@ -158,6 +158,10 @@ void Game::onTouch(const Touch& t) {
         if (t.id == brakeId_) brakeId_ = -1;
         if (t.id == nitroId_) nitroId_ = -1;
     }
+    // un appui bref (appui et relâchement entre deux images) compte quand même pour au moins une mise à jour
+    if (t.down && t.id == gasId_) latchGas_ = true;
+    if (t.down && t.id == brakeId_) latchBrake_ = true;
+    if (t.down && t.id == nitroId_) latchNitro_ = true;
     input_.steer = steerId_ >= 0 ? clampf((steerX_ - steerX0_) / (W * 0.12f), -1.f, 1.f) : 0.f;
     input_.gas = gasId_ >= 0 || nitroId_ >= 0;
     input_.brake = brakeId_ >= 0;
@@ -187,6 +191,10 @@ void Game::drawControls() {
 void Game::update(double dt) {
     dt = std::min(dt, 0.05);
     DriveInput in = input_;
+    // appuis très courts (entre deux images) : pris en compte quand même
+    in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
+    if (latchNitro_) in.gas = true;
+    latchGas_ = latchBrake_ = latchNitro_ = false;
     if (autopilot_) autopilotInput(in, dt);   // démonstration / tests
     // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage ;
     // le trafic avance par ses propres pas de 1/60 s (même graine → même trafic que le jeu web)

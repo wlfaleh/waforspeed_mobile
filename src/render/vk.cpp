@@ -82,6 +82,11 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
     }
     VkSampleCountFlags sc = props.limits.framebufferColorSampleCounts & props.limits.framebufferDepthSampleCounts;
     msaa = (sc & VK_SAMPLE_COUNT_4_BIT) ? VK_SAMPLE_COUNT_4_BIT : VK_SAMPLE_COUNT_1_BIT;
+    // GPU logiciel sur un appareil (émulateur de la QA) : qualité réduite pour rester jouable
+    if (!offscreen && (std::strstr(props.deviceName, "SwiftShader") || std::strstr(props.deviceName, "llvmpipe"))) {
+        msaa = VK_SAMPLE_COUNT_1_BIT; renderScale = 0.5f;
+        WFS_LOG("GPU logiciel : qualité réduite (sans MSAA, rendu à 50 %%)");
+    }
     VkFormatProperties tp; vkGetPhysicalDeviceFormatProperties(gpu, VK_FORMAT_R8G8B8A8_SRGB, &tp);
     linearBlitSrgb = (tp.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) &&
                      (tp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) && (tp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT);
@@ -110,9 +115,14 @@ bool VkCtx::createSwapchain() {
 
     // pré-rotation (recommandée sur Android) : on dessine dans l'orientation native de l'écran,
     // la passe finale tourne l'image ; le compositeur n'a plus rien à faire.
+    // Android donne currentExtent dans l'orientation ACTUELLE (ex. 2400x1080 en paysage) avec currentTransform = ROTATE_90 :
+    // pour la pré-rotation, la swapchain se crée dans l'orientation NATIVE, donc largeur et hauteur échangées
+    // (guide Android « Vulkan pre-rotation »). Le rendu se fait ensuite en taille logique paysage (Renderer::createTargets).
     transform = caps.currentTransform;
     swapExtent = caps.currentExtent;
     if (swapExtent.width == 0xFFFFFFFFu) swapExtent = {1280, 720};
+    if (transform == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR || transform == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+        std::swap(swapExtent.width, swapExtent.height);
 
     uint32_t count = std::max(caps.minImageCount, 3u);
     if (caps.maxImageCount && count > caps.maxImageCount) count = caps.maxImageCount;
@@ -150,7 +160,9 @@ bool VkCtx::surfaceChanged() {
     VkSurfaceCapabilitiesKHR caps;
     if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, &caps) != VK_SUCCESS) return false;
     if (caps.currentExtent.width == 0 || caps.currentExtent.height == 0) return false;
-    return caps.currentTransform != transform || caps.currentExtent.width != swapExtent.width || caps.currentExtent.height != swapExtent.height;
+    VkExtent2D e = caps.currentExtent;
+    if (caps.currentTransform == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR || caps.currentTransform == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) std::swap(e.width, e.height);
+    return caps.currentTransform != transform || e.width != swapExtent.width || e.height != swapExtent.height;
 }
 
 void VkCtx::destroySwapchain() {

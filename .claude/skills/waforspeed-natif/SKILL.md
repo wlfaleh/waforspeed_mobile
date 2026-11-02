@@ -13,8 +13,8 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 0. **Statuts toujours à jour** : après chaque avancement (réservation, construction, PR, verdict QA, fusion), mettre à jour
    `TACHES.md` et l'envoyer sur `main` immédiatement, pour que les autres agents travaillent sans conflit.
 1. **Tickets** `WFS-XX` dans `TACHES.md` (statut, responsable, branche, PR, critères d'acceptation).
-2. **Réserver avant de coder** : `git checkout main && git pull`, ticket sans responsable → statut 🔧 + responsable + branche
-   + entrée « Début » au Journal, envoyé sur `main` immédiatement. Un ticket réservé par un autre agent ne se touche pas.
+2. **Se faire attribuer un ticket par l'agent `po-scrum-master`** avant de créer une branche (il l'inscrit dans `TACHES.md`
+   sur `main`). Un ticket en cours par épic, un par agent ; ne modifier que la **zone de code de l'épic** du ticket.
 3. **Une branche par ticket** : `feature/waforspeed-XX` (2 chiffres). Ne modifier que les fichiers annoncés.
 4. **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
    puis relancer tests / CI / captures.

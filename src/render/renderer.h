@@ -82,6 +82,7 @@ private:
     VkCtx* vk_ = nullptr;
     uint32_t lw_ = 0, lh_ = 0;   // taille logique (tampon)
     uint32_t vw_ = 0, vh_ = 0;   // taille d'affichage (fenêtre), 0 = identique
+    uint32_t sw_ = 0, sh_ = 0;   // taille de la scène 3D (logique × renderScale)
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
     Image msaaColor_, depth_, hdr_;
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;

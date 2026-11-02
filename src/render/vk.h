@@ -72,6 +72,7 @@ public:
     VkFormat depthFormat = VK_FORMAT_D32_SFLOAT;
     VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;
     bool linearBlitSrgb = true;      // mipmaps par blit linéaire disponibles
+    float renderScale = 1.f;         // échelle de la scène 3D (1 = pleine définition)
 };
 
 } // namespace wfs
