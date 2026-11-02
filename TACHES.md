@@ -73,9 +73,9 @@ Journal à jour.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ⚠️ fusionné sans verdict (demande utilisateur) ; QA après coup à faire |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
-| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
+| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | 🔧 En cours | Claude (session trafic), 2026-11-02 | WFS-30 | `feature/waforspeed-10` |  |  |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ En attente |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
@@ -84,7 +84,7 @@ Journal à jour.
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ En attente |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
-| 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ En attente |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
+| 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
@@ -118,7 +118,7 @@ Journal à jour.
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
 
-**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · ⏳ Prêt
+**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · 🔧 En cours
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
 - [ ] Pas de craquement, coupure en pause
 
@@ -126,7 +126,7 @@ Journal à jour.
 - [ ] Ombres stables sans scintillement
 - [ ] Coût ≤ 3 ms sur mobile
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ En attente
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ Prêt
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -159,7 +159,7 @@ Journal à jour.
 **WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ En attente
 - [ ] Bruitages synchronisés aux évènements du jeu
 
-**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité 16 · ⏳ En attente
+**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité 16 · ⏳ Prêt
 - [ ] 60 i/s visés, mesures dans le journal
 
 **WFS-19 — Piétons animés et conducteurs** · E2 · priorité 17 · ⏳ En attente
@@ -467,3 +467,24 @@ développeur (trafic de près, choc) — pas de verdict QA.
 **Limites** : 16 voitures du jeu web affichées avec le modèle natif le plus proche (WFS-13) ; pas de feux stop ni de
 clignotants ; score des quasi-contacts non affiché (WFS-12) ; modèles chargés en double (joueur + trafic).
 Tickets qui dépendaient de WFS-08 (WFS-12, WFS-28, WFS-20) : à passer en « Prêt » par le PO.
+
+### 2026-11-02 — PO : tickets débloqués par WFS-08
+- WFS-08 ✅ (fusion exceptionnelle, QA après coup par `qa-lead` à faire : `qa/rapports/WFS-08.md`).
+- Passent en ⏳ Prêt : **WFS-12** (E3, dépend de WFS-08 ✅) et **WFS-20** (E4, dépend de WFS-06 ✅ et WFS-08 ✅).
+- Reste ⏳ En attente : **WFS-28** (E6), qui attend encore WFS-10.
+
+### 2026-11-02 — Début WFS-10 Sons de moteur (AAudio, régime et rapports) (attribué par le PO à Claude, session trafic)
+Épic **E6 — Audio**. Branche `feature/waforspeed-10`, partie de `main`. Dépendance WFS-30 ✅.
+Choix du PO : ticket ⏳ Prêt de meilleure priorité (5) ; épic E6 libre (E5 occupée par WFS-26, E3 libre mais WFS-12 moins prioritaire).
+**Zone de code autorisée** : `src/audio/**`, `assets/audio/**`. Lecture seule de l'état du joueur via `GameView` (WFS-30).
+Lignes d'accroche possibles (≤ 10, à annoncer au Journal) : liaison `aaudio` dans `CMakeLists.txt`, pause / reprise du son
+dans `src/platform/`. Tout autre changement du noyau passe par un ticket E0.
+**Critères**
+- Sons du jeu web, régime qui suit l'accélérateur et les rapports
+- Pas de craquement, coupure en pause
+**Plan**
+- `assets/audio/` : sons de moteur du jeu web (`wlfaleh/waaps`, `waforspeed/`) convertis, licence vérifiée.
+- `src/audio/` : sortie AAudio (Android) sur son propre fil, sortie muette ou fichier sur le banc d'essai PC ; mélangeur sans
+  allocation dans le rappel audio ; régime calculé comme le jeu web (vitesse, rapports, accélérateur), fondu entre boucles.
+- Module enregistré par `WFS_SYSTEM` ; coupure en pause / perte de focus.
+- Preuve sur le banc PC : journal du régime et du rapport par seconde (+ courbe ou enregistrement WAV en artefact) relue par `qa-lead`.
