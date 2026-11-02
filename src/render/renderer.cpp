@@ -39,7 +39,7 @@ struct FrameUBO {
 };
 
 static constexpr VkFormat HDR_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
-static constexpr size_t UI_MAX_VERTS = 6 * 2048;
+static constexpr size_t UI_MAX_VERTS = 6 * 8192;
 
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
@@ -448,6 +448,26 @@ void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});
 }
 
+void Renderer::uiSetFontAtlas(const Image& atlas) {
+    if (!fontSet_) {
+        VkDescriptorSetAllocateInfo dai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+        dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
+        VK_OK(vkAllocateDescriptorSets(vk_->device, &dai, &fontSet_));
+    }
+    VkDescriptorImageInfo ii{sampler_, atlas.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    VkWriteDescriptorSet wr{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+    wr.dstSet = fontSet_; wr.dstBinding = 0; wr.descriptorCount = 1; wr.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr.pImageInfo = &ii;
+    vkUpdateDescriptorSets(vk_->device, 1, &wr, 0, nullptr);
+}
+
+void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c) {
+    // uv décalés de +2 : le shader d'interface sait qu'il doit lire l'atlas de police
+    UiVertex a{x, y, u0 + 2, v0, c.x, c.y, c.z, c.w}, b{x + w, y, u1 + 2, v0, c.x, c.y, c.z, c.w},
+             cc{x + w, y + h, u1 + 2, v1, c.x, c.y, c.z, c.w}, d{x, y + h, u0 + 2, v1, c.x, c.y, c.z, c.w};
+    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});
+}
+
 void Renderer::uiCircle(float cx, float cy, float r, const vec4& c) {
     UiVertex a{cx - r, cy - r, 0, 0, c.x, c.y, c.z, c.w}, b{cx + r, cy - r, 1, 0, c.x, c.y, c.z, c.w},
              cc{cx + r, cy + r, 1, 1, c.x, c.y, c.z, c.w}, d{cx - r, cy + r, 0, 1, c.x, c.y, c.z, c.w};
@@ -485,6 +505,7 @@ void Renderer::endFrame() {
         std::memcpy(r.uiVb.mapped, ui_vtx_.data(), ui_vtx_.size() * sizeof(UiVertex));
         pp.params[0] = 1.f / width(); pp.params[1] = 1.f / height();
         vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, ui_);
+        if (fontSet_) vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &fontSet_, 0, nullptr);
         vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32, &pp);
         VkDeviceSize zero = 0;
         vkCmdBindVertexBuffers(r.cb, 0, 1, &r.uiVb.buf, &zero);
