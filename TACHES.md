@@ -38,11 +38,11 @@ revue et validation avant fusion.
 ## Tableau
 | Clé | Titre | Type | Priorité | Livraison | Statut | Responsable | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
-| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
-| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
-| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
-| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
-| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔍 En revue | Claude (moteur-natif) | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ❌ REFUSÉ (passage 1 : orientation, commandes) — correction en cours |
+| WFS-01 | Projet C++ et construction automatique de l'APK Android | Technique | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
+| WFS-02 | Noyau du moteur : boucle, threads, mémoire, journal | Technique | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
+| WFS-03 | Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
+| WFS-04 | Vraies voitures du jeu web (Golf, M4, 911, Gallardo) | Fonctionnalité | Haute | L1 | ✅ Terminé | — | `feature/waforspeed-01` (lot WFS-01→05) | #1 | ⚠️ fusion exceptionnelle (demande utilisateur), retours QA suivis dans WFS-05 |
+| WFS-05 | Route générée, conduite tactile, caméra de poursuite | Fonctionnalité | Haute | L1 | 🔧 En cours | Claude (moteur-natif) | `feature/waforspeed-05` | #1 (code fusionné) | ❌ REFUSÉ passage 1 — corrections à valider (orientation paysage, commandes) |
 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | Fonctionnalité | Haute | L2 | ⏳ À faire |  | `feature/waforspeed-06` |  | |
 | WFS-07 | Ombres dynamiques du soleil (cascades) | Fonctionnalité | Moyenne | L2 | ⏳ À faire |  | `feature/waforspeed-07` |  | |
 | WFS-08 | Trafic multi-thread et collisions | Fonctionnalité | Haute | L2 | 🔧 En cours | Claude (session trafic) | `feature/waforspeed-08` |  | |
@@ -68,27 +68,27 @@ revue et validation avant fusion.
 
 ### Livraison 1 — « Première course »
 
-**WFS-01 — Projet C++ et construction automatique de l'APK Android** · Technique · priorité Haute · 🔍 En revue
+**WFS-01 — Projet C++ et construction automatique de l'APK Android** · Technique · priorité Haute · ✅ Terminé (fusion exceptionnelle)
 - [ ] CMake + Gradle (NativeActivity, arm64) construisent un APK installable
 - [x] CI GitHub : banc d'essai Linux + APK + Release d'aperçu
 - [ ] L'APK s'installe et démarre (émulateur Android de la QA : « QA pret », pas de plantage)
 
-**WFS-02 — Noyau du moteur : boucle, threads, mémoire, journal** · Technique · priorité Haute · 🔍 En revue
+**WFS-02 — Noyau du moteur : boucle, threads, mémoire, journal** · Technique · priorité Haute · ✅ Terminé (fusion exceptionnelle)
 - [ ] Système de tâches multi-thread (un thread par cœur) avec parallelFor
 - [ ] Arène par image et réserve d'objets
 - [ ] Boucle Android : pause hors focus, reprise propre
 
-**WFS-03 — Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA** · Fonctionnalité · priorité Haute · 🔍 En revue
+**WFS-03 — Rendu Vulkan PBR : soleil, ciel, HDR, tonemapping, MSAA** · Fonctionnalité · priorité Haute · ✅ Terminé (fusion exceptionnelle)
 - [ ] Passe HDR + MSAA, passe finale ACES
 - [ ] Peinture vernie, vitres, ciel analytique
 - [ ] Image non déformée en paysage (captures de l'émulateur : commandes rondes)
 
-**WFS-04 — Vraies voitures du jeu web (Golf, M4, 911, Gallardo)** · Fonctionnalité · priorité Haute · 🔍 En revue
+**WFS-04 — Vraies voitures du jeu web (Golf, M4, 911, Gallardo)** · Fonctionnalité · priorité Haute · ✅ Terminé (fusion exceptionnelle)
 - [ ] Convertisseur glTF → .wfm documenté
 - [ ] 4 voitures à la bonne taille, avant vers -Z, peinture détectée
 - [ ] Textures décodées en parallèle, licences dans assets/licences
 
-**WFS-05 — Route générée, conduite tactile, caméra de poursuite** · Fonctionnalité · priorité Haute · 🔍 En revue
+**WFS-05 — Route générée, conduite tactile, caméra de poursuite** · Fonctionnalité · priorité Haute · 🔧 En cours (retours QA)
 - [x] Piste identique au jeu web (test automatique)
 - [ ] Conduite reprise de update.js (pas fixe)
 - [ ] Commandes tactiles volant / frein / accélérateur / nitro : vitesse monte, nitro, freinage (logcat QA sur émulateur)
@@ -292,3 +292,12 @@ Rapport : `qa/rapports/WFS-01.md`. Corrections poussées sur `feature/waforspeed
 **Pas encore vérifié** : shaders, banc d'essai Vulkan, APK et captures (construction GitHub en cours).
 **Limites** : 16 des 20 voitures du jeu web s'affichent avec le modèle natif le plus proche (les 20 modèles : WFS-13) ;
 pas encore de feux stop ni de clignotants dessinés ; score des quasi-contacts compté mais pas affiché (HUD : WFS-12).
+
+### 2026-11-02 — Fusion exceptionnelle de la PR #1 et début WFS-05 (retours QA) (Claude, session moteur-natif)
+- À la demande de l'utilisateur, PR #1 (WFS-01→05) fusionnée dans `main` **avant** le verdict du passage 2 de la QA
+  (le test sur émulateur de la construction n° 29 était encore en cours, peut-être bloqué).
+- WFS-01 à WFS-04 : ✅. WFS-05 : 🔧, nouvelle branche `feature/waforspeed-05` (partie de `main`) pour traiter les retours
+  QA du passage 1 et les faire valider : orientation paysage (pré-rotation), commandes tactiles prises en compte,
+  qualité réduite sur GPU logiciel, test émulateur qui se termine.
+- Fichiers prévus : `src/render/{vk,renderer}.*`, `src/game/game.*`, `src/platform/android_main.cpp`, `tools/qa/emulateur.sh`,
+  `.github/workflows/build.yml`, `qa/rapports/WFS-05.md`.
