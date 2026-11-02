@@ -24,9 +24,8 @@ revue et validation avant fusion.
    puis relancer les vérifications (tests, CI, captures).
 4. **Demande de fusion** : synchroniser à nouveau avec `main`, ouvrir la PR `WFS-XX : <titre>` vers `main`, statut 🔍,
    lien de la PR dans le tableau. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
-5. **Valider (QA)** : après chaque APK de la branche, l'agent **`qa-lead`** (`.claude/agents/qa-lead.md`, protocole dans le
-   skill `qa-lead`) teste le ticket : CI, scénario joué sur émulateur Android, captures, logcat, performances, critères
-   d'acceptation. Il écrit `qa/rapports/WFS-XX.md` et rend un verdict. **Ne jamais fusionner sans verdict `VALIDÉ`.**
+5. **Valider (QA)** : après chaque APK de la branche, l'agent **`qa-lead`** regarde les captures (émulateur Android +
+   banc d'essai) et rend un verdict dans `qa/rapports/WFS-XX.md`. **Ne jamais fusionner sans verdict `VALIDÉ`.**
 6. **Fusionner** : synchroniser une dernière fois, fusionner la PR, statut ✅, Responsable libéré, entrée « Fin » au Journal
    (fait / fichiers / vérification / limites).
 7. Livraison = 5 tickets terminés : APK de `main` dans la Release `apercu`, entrée « Livraison N » au Journal.
