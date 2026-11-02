@@ -666,3 +666,12 @@ Pas de modification de `src/world/**` (WFS-34). Tout autre changement du noyau p
 Plan court : passe de profondeur 2048 (1024 mobile) suivant le joueur (+20 m devant), calage sur les texels, PCF rayon 3,
 bias -0,0003 / normalBias 0,035 ; ombre de contact conservée la nuit ; coût mesuré au journal du banc.
 **PO** : WFS-26 ✅ → **WFS-11** (E5, garage) passe en `⏳ Prêt`.
+
+### 2026-11-02 — WFS-07 construit, en attente de la CI
+**Fait** (`feature/waforspeed-07`, poussée) : passe d'ombre du soleil avant la scène (objets opaques mis en file), carte
+2048 (1024 Android), boîte du jeu web (40 m, 260 m, 20 m devant, calage texels), 9 lectures comparées, ombre de contact
+0,55 / 0,62 / 0,7, coût GPU au journal ; captures `ombres-a`, `ombres-b` (1 m d'écart), `ombres-coupees`.
+**Accroches hors zone annoncées** : `src/game/game.cpp` (2 lignes : soleil `[-0.45, 0.75, -0.5]` du jeu web, point suivi = voiture ;
+intensité 3,2 gardée, réglée pour notre PBR), `CMakeLists.txt` (2 shaders), `src/platform/desktop_main.cpp` (2 lignes : captures).
+Conflit possible avec WFS-34 sur `shaders/scene.frag` (lignes différentes) : réglé à la synchronisation.
+**Suite** : CI → qa-lead → fusion si `VALIDÉ`.
