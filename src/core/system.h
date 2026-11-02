@@ -31,6 +31,7 @@ struct Player;
 struct MapDef;
 struct CarDef;
 struct Touch;
+struct DriveInput;
 
 // état de la partie, en lecture pour les systèmes (rempli par Game à chaque appel)
 struct GameView {
@@ -53,6 +54,10 @@ public:
     virtual void init(Renderer&, const GameView&) {}
     // simulation à pas fixe (même pas que la conduite, 1/120 s)
     virtual void update(double /*dt*/, const GameView&) {}
+    // contacts physiques avec la voiture du joueur, après chaque pas de conduite : seul endroit où un système
+    // peut la modifier (chocs du trafic, WFS-08) ; pilote automatique : un système peut corriger les commandes
+    virtual void collide(double /*dt*/, Player&, const GameView&) {}
+    virtual void autopilot(double /*dt*/, DriveInput&, const GameView&) {}
     // dessin 3D dans la scène (après la route, avant la voiture du joueur)
     virtual void render(Renderer&, const GameView&) {}
     // interface 2D, par-dessus l'image (pixels logiques)

@@ -195,11 +195,12 @@ void Game::update(double dt) {
     if (autopilot_) {   // démonstration / tests : plein gaz, reste au milieu de sa voie
         in.gas = true; in.brake = false;
         in.steer = (float)clampf((float)((0.0 - player_.playerX) * 3.0 - player_.heading * 4.0), -1.f, 1.f);
+        for (auto& sy : systems_) sy->autopilot(dt, in, view_);   // ex. : éviter le trafic (WFS-08)
     }
     // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage
     acc_ += dt;
     const double step = 1.0 / 120.0;
-    while (acc_ >= step) { player_.update(step, in, track_, true); systemsUpdate(step); acc_ -= step; }
+    while (acc_ >= step) { player_.update(step, in, track_, true); for (auto& sy : systems_) sy->collide(step, player_, view_); systemsUpdate(step); acc_ -= step; }
 }
 
 mat4 Game::carMatrix(double s, double lat, double yaw) {
@@ -212,7 +213,7 @@ void Game::render(double time) {
     struct LastT { double& t; double v; ~LastT() { t = v; } } keepTime{lastTime_, time};
     streamChunks();
     const double s = player_.dist, lat = player_.playerX * RW;
-    mat4 carM = carMatrix(s, lat, player_.heading);
+    mat4 carM = carMatrix(s, lat, player_.heading + player_.spinYaw);   // + tête-à-queue après un accident
     vec3 carPos = carM.transformPoint({0, 0, 0});
     vec3 fwd = normalize(carM.transformDir({0, 0, -1}));
 

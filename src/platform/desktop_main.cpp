@@ -9,6 +9,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../game/game.h"
+#include "../game/traffic_system.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 
@@ -62,6 +63,7 @@ int main(int argc, char** argv) {
             WFS_LOG("capture %s : %.0f km/h, %.0f m", name, g.player().kmh(), g.player().dist * M);
         }
     }
+    benchTrafficScenes(g, r, out);   // WFS-08 : trafic de près et choc (captures trafic-*.png)
     g.shutdown();
     r.shutdown();
     vk.shutdown();
