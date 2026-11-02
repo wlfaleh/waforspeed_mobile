@@ -9,15 +9,25 @@ void Player::reset(const CarDef& c) {
     car = &c; perf = carPerf(c);
     position = dist = playerX = speed = steer = heading = 0;
     latAcc = lonAcc = 0; nitro = 0.4; nitroOn = braking = reversing = false;
+    playerSpin = spinYaw = controlLock = 0;
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
     const Segment& seg = track.findSegment(position);
     const double speedPct = speed / MAX_SPEED;
 
+    // tête-à-queue après un accident : la voiture tourne puis se remet droite (update() du jeu web)
+    controlLock = std::max(0.0, controlLock - dt);
+    if (std::abs(playerSpin) > 0.25) {
+        spinYaw += playerSpin * dt; playerSpin *= std::max(0.0, 1 - 2.4 * dt);
+        playerX += playerSpin * 0.012 * dt * std::min(1.0, speedPct * 3);
+    } else { playerSpin = 0; spinYaw += (0 - spinYaw) * std::min(1.0, dt * 3); if (std::abs(spinYaw) < 0.002) spinYaw = 0; }
+    spinYaw = std::atan2(std::sin(spinYaw), std::cos(spinYaw));   // ramené entre -π et π
+    const bool locked = controlLock > 0;
+
     // ---------- braquage progressif : la voiture tourne, son cap la déplace ----------
     const double v = speed * M;   // m/s
-    if (playing) {
+    if (playing && !locked) {
         double target = clampd(in.steer, -1, 1);
         double rate = (std::abs(target) < 1e-3 || signf((float)target) != signf((float)steer)) ? Phys::steerOut : Phys::steerIn;
         steer += clampd(target - steer, -dt * rate, dt * rate);
@@ -27,8 +37,8 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     double yawRate = v / perf.wb * std::tan(wheelAngle) * perf.handling;
     const double yawLim = Phys::grip * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence
     yawRate = clampd(yawRate, -yawLim, yawLim);
-    heading += yawRate * dt;
-    if (std::abs(steer) < 0.05) heading *= std::exp(-dt * Phys::align);   // réalignement doux sur la route
+    if (!locked) heading += yawRate * dt;
+    if (std::abs(steer) < 0.05 || locked) heading *= std::exp(-dt * Phys::align * (locked ? 2 : 1));   // réalignement doux sur la route
     const double maxH = clampd(Phys::maxHeading - std::abs(v) * 0.0045, 0.16, Phys::maxHeading);
     heading = clampd(heading, -maxH, maxH);
     latAcc = v * yawRate;
@@ -44,13 +54,14 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     nitroOn = playing && in.nitro && nitro > 0.01;
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
     const double top = MAX_SPEED * perf.top * (nitroOn ? perf.nitroMult : 1);
-    const bool accelerating = playing && in.gas && !in.brake;
-    reversing = playing && in.brake && !in.gas && speed <= 0;
-    braking = playing && in.brake && speed > 0;
+    const bool accelerating = playing && !locked && in.gas && !in.brake;
+    reversing = playing && !locked && in.brake && !in.gas && speed <= 0;
+    braking = playing && !locked && in.brake && speed > 0;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
     const double off = std::abs(playerX) > 1 ? Phys::offRoad / M : 0;
     if (!playing) speed = std::max(0.0, speed - resist * dt);
+    else if (locked) speed = speed > 0 ? std::max(0.0, speed - Phys::brake * 0.5 / M * dt) : std::min(0.0, speed + Phys::brake * 0.5 / M * dt);
     else if (reversing) speed = std::max(REV_MAX, speed - REV_ACC * dt);
     else if (braking) speed = std::max(0.0, speed - (Phys::brake / M + resist) * dt);
     else if (accelerating && speed < 0) speed = std::min(0.0, speed + Phys::brake / M * dt);

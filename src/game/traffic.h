@@ -5,6 +5,7 @@
 // La simulation avance par pas fixes de 1/60 s à partir d'une graine : même graine → même trafic.
 #pragma once
 #include <cstdint>
+#include <cstring>
 #include <vector>
 #include "player.h"
 #include "track.h"
@@ -22,14 +23,19 @@ constexpr double NEAR_MISS = 0.24;          // marge latérale d'un quasi-contac
 
 // catalogue du jeu web (js/cars/catalog.js, même ordre) : seules la longueur et la largeur servent au trafic.
 // Le tirage du type utilise ces 20 voitures, comme le jeu web ; l'affichage prend le modèle natif le plus proche.
-struct WebCarDims { const char* id; float L, W; };
+struct WebCarDims { const char* id; double L, W; };   // double : mêmes calculs que le JavaScript
 inline const WebCarDims WEB_CARS[] = {
-    {"golf", 4.29f, 1.79f}, {"p208", 4.06f, 1.75f}, {"abarth", 3.66f, 1.63f}, {"tcross", 4.11f, 1.76f}, {"compass", 4.40f, 1.82f},
-    {"s3", 4.47f, 1.80f}, {"x5", 4.92f, 2.00f}, {"giulia", 4.64f, 1.87f}, {"m4", 4.79f, 1.89f}, {"p911", 4.52f, 1.85f},
-    {"a45", 4.36f, 1.78f}, {"model3", 4.69f, 1.85f}, {"corsa", 4.06f, 1.77f}, {"gt86", 4.24f, 1.78f}, {"elantra", 4.68f, 1.83f},
-    {"v60", 4.63f, 1.87f}, {"rrsport", 4.95f, 2.05f}, {"mustang", 4.82f, 1.92f}, {"gallardo", 4.35f, 1.90f}, {"sf90", 4.85f, 1.97f},
+    {"golf", 4.29, 1.79}, {"p208", 4.06, 1.75}, {"abarth", 3.66, 1.63}, {"tcross", 4.11, 1.76}, {"compass", 4.40, 1.82},
+    {"s3", 4.47, 1.80}, {"x5", 4.92, 2.00}, {"giulia", 4.64, 1.87}, {"m4", 4.79, 1.89}, {"p911", 4.52, 1.85},
+    {"a45", 4.36, 1.78}, {"model3", 4.69, 1.85}, {"corsa", 4.06, 1.77}, {"gt86", 4.24, 1.78}, {"elantra", 4.68, 1.83},
+    {"v60", 4.63, 1.87}, {"rrsport", 4.95, 2.05}, {"mustang", 4.82, 1.92}, {"gallardo", 4.35, 1.90}, {"sf90", 4.85, 1.97},
 };
 constexpr int WEB_CAR_COUNT = sizeof(WEB_CARS) / sizeof(WEB_CARS[0]);
+// longueur exacte (double) d'une voiture du jeu web, en unités ; repli : valeur du catalogue natif
+inline double webCarLength(const char* id, double fallbackM) {
+    for (const auto& c : WEB_CARS) if (std::strcmp(c.id, id) == 0) return c.L / M;
+    return fallbackM / M;
+}
 // couleurs du trafic (TRAFFIC_PAINTS du jeu web)
 inline const unsigned TRAFFIC_PAINTS[] = {0xc9ccd2, 0x0f1014, 0x7b808a, 0xa7acb5, 0x1d3f8f, 0x7a1426, 0x2f4b3e, 0x3b3f48, 0xc9b28a};
 constexpr int TRAFFIC_PAINT_COUNT = sizeof(TRAFFIC_PAINTS) / sizeof(TRAFFIC_PAINTS[0]);

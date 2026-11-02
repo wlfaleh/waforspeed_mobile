@@ -36,7 +36,8 @@ public:
     const Segment& segAt(int64_t a) const { int64_t n = (int64_t)segs_.size(); return segs_[(size_t)(((a % n) + n) % n)]; }
     const Segment& findSegment(double z) const { return segAt((int64_t)std::floor(z / SEG)); }
     double length() const { return length_; }
-    double wrap(double z) const { double r = std::fmod(z, length_); return r < 0 ? r + length_ : r; }
+    // wrap() du jeu web, même calcul ((z % L) + L) % L : les arrondis sont identiques (trafic au bit près)
+    double wrap(double z) const { return std::fmod(std::fmod(z, length_) + length_, length_); }
     double relZ(double d) const { d = wrap(d); return d > length_ / 2 ? d - length_ : d; }
     const Pose& pose(int64_t a);
     // point sur la route : s = abscisse absolue (unités), lat = mètres à droite du centre

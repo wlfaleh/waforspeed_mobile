@@ -21,7 +21,10 @@ struct Player {
     double position = 0, dist = 0, playerX = 0, speed = 0, steer = 0, heading = 0;
     double latAcc = 0, lonAcc = 0, nitro = 0.4;
     bool nitroOn = false, braking = false, reversing = false;
+    // accident (playerAccident du jeu web) : tête-à-queue puis remise dans l'axe, commandes bloquées un moment
+    double playerSpin = 0, spinYaw = 0, controlLock = 0;
     void reset(const CarDef& c);
+    void accident(double impact, int side) { playerSpin = side * (3 + impact * 9); controlLock = 0.6 + impact * 1.2; }
     // une étape de conduite (dt en secondes) ; analog : braquage continu (-1..1) du tactile
     void update(double dt, const DriveInput& in, Track& track, bool playing);
     double kmh() const { return speed / MAX_SPEED * 260.0; }
