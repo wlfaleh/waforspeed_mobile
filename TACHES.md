@@ -614,3 +614,11 @@ coût GPU non mesuré (halo 25 → 16 lectures + 2 dérivées) : à confirmer su
 - Nouveau dossier `regles-de-gestion/` : un fichier `WFS-XX.md` par US, écrit par le PO (règles RG-xx, éléments à
   réutiliser du jeu web `wlfaleh/waaps` : code `js/`, modèles 3D `models/`, sons `audio/`, critères, hors périmètre).
 - Un ticket n'est « Prêt » que si son fichier de règles existe. Le PO rédige les fichiers des tickets ouverts.
+
+### 2026-11-02 — Règles de gestion rédigées par le PO
+Fichiers créés dans `regles-de-gestion/` (un par US ouverte, valeurs reprises de `wlfaleh/waaps`, `waforspeed/js/`) :
+`WFS-07`, `WFS-09`, `WFS-11`, `WFS-12`, `WFS-13`, `WFS-14`, `WFS-15`, `WFS-16`, `WFS-17`, `WFS-18`, `WFS-19`, `WFS-20`,
+`WFS-21`, `WFS-22`, `WFS-23`, `WFS-24`, `WFS-25`, `WFS-26` (en cours : règles pour la revue), `WFS-27`, `WFS-28`,
+`WFS-29`, `WFS-33`. WFS-08 est déjà ✅ (rapport QA) : pas de fichier. Tableau et statuts inchangés.
+Constat : `LOD_CAR_M` vaut 50 m dans le code (le skill disait 70 m) ; le critère « jointures de carrosserie » du rapport
+WFS-32 est reporté dans WFS-17 (TAA).
