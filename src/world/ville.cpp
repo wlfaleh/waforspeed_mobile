@@ -71,10 +71,12 @@ void cylinder(Geo& g, vec3 base, float rad, float h, int n = 8) {
 }
 
 // boule facettée (octaèdre subdivisé, normales lisses) : feuillages
-void blob(Geo& g, vec3 c, vec3 s, uint32_t seed) {
-    static std::vector<vec3> unit;
-    static std::vector<uint32_t> tri;
-    if (unit.empty()) {
+// forme de base calculée une seule fois. Initialisation d'une variable statique locale : garantie sans course par le
+// C++ (WFS-32 : l'ancien « if (unit.empty()) » était exécuté par plusieurs threads à la fois → mémoire corrompue).
+struct UnitBlob { std::vector<vec3> unit; std::vector<uint32_t> tri; };
+static UnitBlob makeUnitBlob() {
+    UnitBlob ub;
+    {
         std::vector<vec3> v = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
         std::vector<uint32_t> t = {2, 4, 0, 2, 0, 5, 2, 5, 1, 2, 1, 4, 3, 0, 4, 3, 5, 0, 3, 1, 5, 3, 4, 1};
         for (int lvl = 0; lvl < 2; lvl++) {
@@ -89,8 +91,14 @@ void blob(Geo& g, vec3 c, vec3 s, uint32_t seed) {
             }
             t = nt;
         }
-        unit = v; tri = t;
+        ub.unit = v; ub.tri = t;
     }
+    return ub;
+}
+void blob(Geo& g, vec3 c, vec3 s, uint32_t seed) {
+    static const UnitBlob shape = makeUnitBlob();
+    const std::vector<vec3>& unit = shape.unit;
+    const std::vector<uint32_t>& tri = shape.tri;
     Mulberry32 R(seed);
     uint32_t k = (uint32_t)g.v.size();
     for (const vec3& u : unit) {
