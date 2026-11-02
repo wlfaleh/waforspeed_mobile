@@ -9,18 +9,18 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 **Pas de Unity, Godot, Unreal ni autre moteur de jeu** : moteur maison. Petites bibliothèques libres autorisées
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
-## Processus de travail (obligatoire)
-1. **Tableau des tâches** : `TACHES.md` (voir ses « Règles pour travailler à plusieurs »).
-   **Avant d'écrire du code** : `git pull` de `main`, vérifier que la tâche n'est pas réservée (colonne « Qui »), la réserver
-   (🔧 + nom + date + entrée « Début » dans le Journal avec les fichiers prévus) et envoyer ce changement sur `main` tout de suite.
-   Une tâche réservée par un autre agent ne se touche pas. À la fin : ✅, colonne « Qui » libérée.
-2. **Journal** : à la fin de CHAQUE étape (fonctionnalité ou correction importante), ajouter une entrée datée dans
-   la section « Journal » de `TACHES.md` : ce qui a été fait, fichiers touchés, comment c'est vérifié, ce qui reste / limites connues.
-3. **Livraison toutes les 5 fonctionnalités** : APK publié par la CI dans la Release `apercu`, captures vérifiées,
-   entrée « Livraison N » dans le journal, lien donné à l'utilisateur.
-4. Ne jamais annoncer qu'une chose marche sans l'avoir vérifiée (test, capture, journal de la CI). Dire clairement ce qui n'a pas pu être testé
-   (ex. : rendu réel sur téléphone).
-5. Langue : français pour les commentaires, messages, journal et interface.
+## Processus de travail (obligatoire) — style Jira, voir `TACHES.md`
+1. **Tickets** `WFS-XX` dans `TACHES.md` (statut, responsable, branche, PR, critères d'acceptation).
+2. **Réserver avant de coder** : `git checkout main && git pull`, ticket sans responsable → statut 🔧 + responsable + branche
+   + entrée « Début » au Journal, envoyé sur `main` immédiatement. Un ticket réservé par un autre agent ne se touche pas.
+3. **Une branche par ticket** : `feature/waforspeed-XX` (2 chiffres). Ne modifier que les fichiers annoncés.
+4. **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
+   puis relancer tests / CI / captures.
+5. **PR** `WFS-XX : <titre>` vers `main`, statut 🔍. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
+6. **Ne fusionner qu'après validation** : critères d'acceptation cochés, CI verte, captures relues, test sur téléphone
+   pour tout ce qui touche l'affichage ou les commandes. Puis statut ✅ et entrée « Fin » au Journal.
+7. **Journal** à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
+8. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
 
 ## Architecture
 Voir `references/architecture.md`. En bref :
