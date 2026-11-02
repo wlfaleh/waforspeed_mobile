@@ -87,7 +87,12 @@ void main() {
     vec3 L = normalize(F.sunDir.xyz);
     vec3 H = normalize(V + L);
     float NoL = max(dot(N, L), 0.0), NoV = max(dot(N, V), 1e-3), NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
-    float a = max(rough * rough, 0.002);
+    // anticrénelage des reflets (Tokuyoshi et Kaplanyan 2019, WFS-32) : là où la normale change beaucoup d'un pixel à
+    // l'autre (arêtes, petits triangles vus en biais), le reflet est un peu élargi : plus d'éclat isolé sur un pixel.
+    // Les grandes surfaces (normale régulière) gardent leur reflet net.
+    vec3 dndx = dFdx(N), dndy = dFdy(N);
+    float aaKernel = min(2.0 * 0.25 * (dot(dndx, dndx) + dot(dndy, dndy)), 0.18);
+    float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
     vec3 Fs = F_Schlick(f0, VoH);
@@ -109,8 +114,9 @@ void main() {
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
     if ((flags & F_PAINT) != 0u) {
         float Fc = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
-        float ac = 0.03;
-        col = col * (1.0 - Fc) + (skyColor(R) * F.misc.z * F.misc.w + D_GGX(NoH, ac * ac) * V_Smith(NoV, NoL, ac * ac) * sun * NoL) * Fc;
+        float acA = sqrt(0.03 * 0.03 * 0.03 * 0.03 + aaKernel);          // vernis : alpha 0,0009, élargi sur les arêtes
+        float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0);        // disque du soleil reflété : seulement si net
+        col = col * (1.0 - Fc) + (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
     }
     float alpha = base.a;
     if ((flags & F_GLASS) != 0u) {
