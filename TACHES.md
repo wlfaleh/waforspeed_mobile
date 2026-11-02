@@ -33,8 +33,10 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
    Tout autre changement du noyau passe par un ticket de l'épic E0.
 4. **Branche** `feature/waforspeed-XX` par ticket (même si la session propose `claude/…`). Synchroniser avec `main` avant
    chaque validation et avant chaque PR.
-5. **QA** : après chaque APK, le développeur **lance l'agent `qa-lead`**, qui regarde les captures et écrit
-   `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket. Fusion seulement si VALIDÉ.
+5. **QA** : après chaque construction, le développeur **lance l'agent `qa-lead`**, qui regarde les captures du
+   **banc d'essai PC** et écrit `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket.
+   Fusion seulement si VALIDÉ. **Fin d'épic** : le PO crée le ticket « Vérification simulateur EX » (émulateur Android,
+   workflow `simulateur.yml`, rapport `qa/rapports/simulateur-EX.md`).
 6. **Statuts à jour** après chaque avancement, envoyés sur `main` tout de suite, en modifiant seulement ses lignes à partir
    de la dernière version de `main` (ne jamais écraser le fichier).
 7. **Fin de ticket** : ✅, Responsable libéré, entrée « Fin » au Journal ; le PO passe en `⏳ Prêt` les tickets débloqués.
@@ -67,8 +69,9 @@ Journal à jour.
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
-| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  |  |
-| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-06` |  | ⏳ construction en cours |
+| 0 | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | — | `feature/waforspeed-31` |  |  |
+| 2 | WFS-08 | Trafic multi-thread et collisions | E3 | 🔧 En cours | Claude (session trafic) | — | `feature/waforspeed-08` |  | ⏳ construction en cours, QA à suivre |
+| 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-26` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-10` |  |  |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
@@ -77,12 +80,12 @@ Journal à jour.
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
-| 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ En attente |  | WFS-06 | `feature/waforspeed-14` |  |  |
+| 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-14` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ En attente |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
 | 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ En attente |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
-| 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 | `feature/waforspeed-19` |  |  |
+| 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
 | 20 | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ⏳ En attente |  | WFS-15 | `feature/waforspeed-17` |  |  |
@@ -105,7 +108,7 @@ Journal à jour.
 - [ ] Mise à jour sur les threads de travail
 - [ ] Collisions et quasi-contacts comme le jeu web
 
-**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · 🔧 En cours
+**WFS-06 — Ville : bâtiments, trottoirs, lampadaires, arbres** · E2 · priorité 3 · ✅ Terminé
 - [ ] Décor généré par la graine de la carte (comme decor.js)
 - [ ] Instanciation GPU, ≤ 300 appels de dessin
 - [ ] Captures : rue bordée d'immeubles, lampadaires, arbres
@@ -383,3 +386,45 @@ Attribué par le PO. Épic **E0 — Noyau partagé (catalyseur)**. Branche `feat
   placés par la graine de la carte, morceaux construits en parallèle, ≈ 6 appels de dessin par morceau (≤ 150 au total).
 - Écart avec le critère « instanciation GPU » : maillages fusionnés par morceau (même objectif : peu d'appels de dessin),
   l'instanciation demanderait de changer le renderer (zone E0/E4).
+
+### 2026-11-02 — WFS-08 : synchronisé avec main, trafic branché en système enfichable (Claude, session trafic)
+**Fait**
+- Synchronisation avec `main` (livraison 1 + WFS-30) ; conflits résolus en reprenant `main`, puis le trafic est rangé
+  dans la zone E3 : `src/game/traffic_system.*` (module `WFS_SYSTEM`, ordre 50) — simulation, chocs, dessin, aide au
+  pilote automatique, scènes du banc d'essai `trafic-cam0`, `trafic-cam1`, `trafic-choc`.
+- **Lignes d'accroche du noyau (8 lignes)** : `src/core/system.h` + `System::collide(dt, Player&, GameView)` (seul point
+  où un système modifie la voiture du joueur : chocs) et `System::autopilot(dt, DriveInput&, GameView)` ;
+  `src/game/game.cpp` : leurs deux appels + tête-à-queue affiché (`heading + spinYaw`).
+- Hors zone (accroches) : 1 ligne dans `src/platform/desktop_main.cpp`, 2 dans `CMakeLists.txt` (test_traffic),
+  1 dans `.github/workflows/build.yml` ; script de référence déplacé dans `tests/trafic_web.cjs`.
+- Zone E3 aussi : `src/game/player.*` (accident), `src/game/track.h` (`wrap` identique au JavaScript).
+
+**Vérification (conteneur)** : `test_traffic` 0 écart sur 39 voitures, mode parallèle déterministe, choc OK ;
+`test_track`, `test_systems` OK ; tout compile sans avertissement. Construction GitHub en cours, puis QA par `qa-lead`.
+**Limite** : le module charge ses propres modèles (la voiture du joueur est en double en mémoire, à partager via E0).
+
+### 2026-11-02 — QA WFS-06 par qa-lead : VALIDÉ
+Captures regardées : immeubles des deux côtés, lampadaires et arbres sur les trottoirs, voiture visible, rien de cassé. Constat majeur : la capture `qa-03-acceleration-8s` est identique à `qa-01-demarrage` (pas de preuve de déplacement). Limites : nombre d'appels de dessin et graine non vérifiables sur captures. Rapport : `qa/rapports/WFS-06.md`.
+
+### 2026-11-02 — Fin WFS-06 (Claude, session moteur-natif)
+- QA **VALIDÉ par qa-lead** (`qa/rapports/WFS-06.md`), PR #4 fusionnée. Ville : 899 immeubles, 222 lampadaires, 439 arbres.
+- Retours QA à traiter plus tard : capture `qa-03` identique à `qa-01` (émulateur trop lent pour rafraîchir l'écran, à
+  corriger dans le scénario QA, épic E7) ; lampadaires et arbres peu lisibles de loin (mineur).
+- Débloqués dans E2 : WFS-14 (cartes) et WFS-19 (piétons) passent en ⏳ Prêt. WFS-20 attend encore WFS-08.
+
+### 2026-11-02 — Début WFS-31 (décision de l'utilisateur, Claude, session moteur-natif)
+L'utilisateur décide : QA de chaque ticket sur le **banc d'essai PC** seulement ; **simulateur Android à la fin de chaque
+épic** (ticket « Vérification simulateur EX » préparé par le PO, rapport QA simulateur). Ticket WFS-31 (E7, priorité 0 :
+débloque WFS-08 dont la publication échouait sur une capture d'émulateur vide).
+Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,po-scrum-master}.md`, `.claude/skills/qa-lead/`, `CLAUDE.md`.
+
+### 2026-11-02 — ⚠️ MESSAGE pour la session trafic (WFS-08), de Claude (session moteur-natif)
+1. Ta construction n° 59 (commit `61e2ecf`) a réussi (APK, banc d'essai, émulateur) mais la **publication a échoué** :
+   « HTTP 400 Bad Content-Length » sur `qa-01-demarrage.png`, capture d'émulateur **vide** (0 octet). Pas un défaut du trafic.
+2. **Décision de l'utilisateur (WFS-31)** : QA de chaque ticket sur le **banc d'essai PC seulement** (`vitrine-*`, `course-*`,
+   tes `trafic-*`) ; l'émulateur est retiré de `build.yml` et ne tourne qu'**en fin d'épic** (`simulateur.yml`, ticket
+   « Vérification simulateur EX » créé par le PO) ; captures vides ignorées à la publication.
+3. **À faire de ton côté** dès que WFS-31 est ✅ dans ce tableau : synchroniser `feature/waforspeed-08` avec `main`
+   (contient aussi WFS-06 : `src/world/ville.cpp`, aucun fichier commun avec toi) ; pour `.github/workflows/build.yml`,
+   garder la version de `main` (sans job `qa-emulateur`) et y remettre ta ligne `test_traffic` dans l'étape des tests ;
+   puis lancer l'agent `qa-lead` sur les captures du banc PC.
