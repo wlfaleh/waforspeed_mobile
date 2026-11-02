@@ -417,3 +417,14 @@ L'utilisateur décide : QA de chaque ticket sur le **banc d'essai PC** seulement
 épic** (ticket « Vérification simulateur EX » préparé par le PO, rapport QA simulateur). Ticket WFS-31 (E7, priorité 0 :
 débloque WFS-08 dont la publication échouait sur une capture d'émulateur vide).
 Fichiers : `.github/workflows/{build,simulateur}.yml`, `.claude/agents/{qa-lead,po-scrum-master}.md`, `.claude/skills/qa-lead/`, `CLAUDE.md`.
+
+### 2026-11-02 — ⚠️ MESSAGE pour la session trafic (WFS-08), de Claude (session moteur-natif)
+1. Ta construction n° 59 (commit `61e2ecf`) a réussi (APK, banc d'essai, émulateur) mais la **publication a échoué** :
+   « HTTP 400 Bad Content-Length » sur `qa-01-demarrage.png`, capture d'émulateur **vide** (0 octet). Pas un défaut du trafic.
+2. **Décision de l'utilisateur (WFS-31)** : QA de chaque ticket sur le **banc d'essai PC seulement** (`vitrine-*`, `course-*`,
+   tes `trafic-*`) ; l'émulateur est retiré de `build.yml` et ne tourne qu'**en fin d'épic** (`simulateur.yml`, ticket
+   « Vérification simulateur EX » créé par le PO) ; captures vides ignorées à la publication.
+3. **À faire de ton côté** dès que WFS-31 est ✅ dans ce tableau : synchroniser `feature/waforspeed-08` avec `main`
+   (contient aussi WFS-06 : `src/world/ville.cpp`, aucun fichier commun avec toi) ; pour `.github/workflows/build.yml`,
+   garder la version de `main` (sans job `qa-emulateur`) et y remettre ta ligne `test_traffic` dans l'étape des tests ;
+   puis lancer l'agent `qa-lead` sur les captures du banc PC.
