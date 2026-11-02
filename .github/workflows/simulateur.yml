@@ -1,0 +1,61 @@
+# Vérification sur simulateur Android — lancée À LA DEMANDE, à la fin de chaque épic (ticket « Vérification simulateur EX »).
+# Construit l'APK de la branche choisie, l'installe sur un émulateur Android 14 (Pixel 6), joue le scénario de
+# tools/qa/emulateur.sh et publie captures + journal dans la Release « simulateur-<epic> ».
+# Déclenchement : onglet Actions > « Vérification simulateur » > Run workflow (ou outil actions_run_trigger).
+name: Vérification simulateur
+
+on:
+  workflow_dispatch:
+    inputs:
+      epic:
+        description: "Épic vérifiée (ex. E2)"
+        required: true
+        default: "E0"
+
+permissions:
+  contents: write
+
+jobs:
+  simulateur:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: NDK et CMake Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" > /dev/null
+      - name: Construction de l'APK
+        working-directory: android
+        run: gradle --no-daemon assembleRelease && cp app/build/outputs/apk/release/app-release.apk ../WaForSpeed.apk
+      - name: Activer KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Scénario de jeu sur émulateur
+        timeout-minutes: 25
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: ./tools/qa/emulateur.sh WaForSpeed.apk qa-sortie
+      - name: Release « simulateur-<épic> »
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EPIC: ${{ inputs.epic }}
+        run: |
+          tag="simulateur-${EPIC}"
+          gh release delete "$tag" -y --cleanup-tag || true
+          files="WaForSpeed.apk"
+          for f in qa-sortie/*; do [ -s "$f" ] && { cp "$f" "qa-$(basename "$f")"; files="$files qa-$(basename "$f")"; }; done
+          gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
+            --title "Vérification simulateur — épic ${EPIC}" \
+            --notes "Émulateur Android 14 (GPU logiciel). Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."

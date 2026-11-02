@@ -1,5 +1,6 @@
 # Construit le jeu à chaque envoi :
-#  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests de la piste + captures d'écran du rendu
+#  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests + captures d'écran du rendu (QA de chaque ticket)
+#  - le test sur émulateur Android n'est plus lancé ici : voir simulateur.yml (vérification de fin d'épic)
 #  - APK Android (arm64)
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
@@ -56,37 +57,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: apk, path: WaForSpeed.apk }
 
-  qa-emulateur:
-    # QA automatique : l'APK est installé et joué sur un émulateur Android (Vulkan logiciel SwiftShader)
-    needs: [android]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with: { name: apk, path: dl }
-      - name: Activer KVM (accélération de l'émulateur)
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
-      - name: Scénario de jeu sur émulateur
-        timeout-minutes: 15
-        continue-on-error: true
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          profile: pixel_6
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: ./tools/qa/emulateur.sh dl/WaForSpeed.apk qa-sortie
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: { name: qa, path: qa-sortie }
-
   publication:
-    needs: [banc-essai, android, qa-emulateur]
+    needs: [banc-essai, android]
     runs-on: ubuntu-24.04
     if: always() && needs.android.result == 'success' && github.event_name == 'push'
     steps:
@@ -101,8 +73,8 @@ jobs:
           case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
           gh release delete "$tag" -y --cleanup-tag || true
           files="dl/apk/WaForSpeed.apk"
-          if [ -d dl/captures ]; then files="$files $(ls dl/captures/*.png | tr '\n' ' ')"; fi
-          if [ -d dl/qa ]; then for f in dl/qa/*; do cp "$f" "dl/qa-$(basename "$f")"; files="$files dl/qa-$(basename "$f")"; done; fi
+          # les fichiers vides (capture ratée) sont ignorés : ils ne doivent pas empêcher la publication
+          if [ -d dl/captures ]; then for f in dl/captures/*.png; do [ -s "$f" ] && files="$files $f"; done; fi
           gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
             --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \
             --notes "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."
