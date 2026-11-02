@@ -34,6 +34,7 @@ struct App {
     bool ready = false, focused = false;
     double last = 0, start = 0;
     int checkFrames = 0, orientRetries = 0;
+    int fpsFrames = 0; double fpsT0 = 0;
 };
 
 static void initGraphics(App& app, android_app* a) {
@@ -44,6 +45,7 @@ static void initGraphics(App& app, android_app* a) {
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();
+    WFS_LOG("QA pret : moteur initialise");
 }
 
 static void termGraphics(App& app) {
@@ -124,6 +126,14 @@ void android_main(android_app* a) {
             double t = nowSeconds(), dt = t - app.last; app.last = t;
             app.game.update(dt);
             app.game.render(t - app.start);
+            // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
+            if (app.fpsT0 == 0) app.fpsT0 = t;
+            if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {
+                const Player& p = app.game.player();
+                WFS_LOG("QA ips=%.1f vitesse=%.0f km/h distance=%.0f m ecran=%ux%u", app.fpsFrames / (t - app.fpsT0), p.kmh(), p.dist * M,
+                        app.renderer.width(), app.renderer.height());
+                app.fpsFrames = 0; app.fpsT0 = t;
+            }
         }
     }
     termGraphics(app);
