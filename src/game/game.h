@@ -49,6 +49,7 @@ private:
     int steerId_ = -1, gasId_ = -1, brakeId_ = -1, nitroId_ = -1;
     float steerX0_ = 0, steerX_ = 0;
     bool autopilot_ = false;
+    bool latchGas_ = false, latchBrake_ = false, latchNitro_ = false;
     double acc_ = 0;
 };
 

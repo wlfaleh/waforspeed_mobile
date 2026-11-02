@@ -132,11 +132,13 @@ void Renderer::createTargets() {
     bool rotated = vk.transform == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR || vk.transform == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR;
     lw_ = rotated ? vk.swapExtent.height : vk.swapExtent.width;
     lh_ = rotated ? vk.swapExtent.width : vk.swapExtent.height;
+    // scène 3D éventuellement rendue en plus petit (GPU lents), agrandie par la passe finale
+    sw_ = std::max(1u, (uint32_t)(lw_ * vk.renderScale)); sh_ = std::max(1u, (uint32_t)(lh_ * vk.renderScale));
     const bool ms = vk.msaa != VK_SAMPLE_COUNT_1_BIT;
 
-    hdr_ = vk.createImage(lw_, lh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    if (ms) msaaColor_ = vk.createImage(lw_, lh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
-    depth_ = vk.createImage(lw_, lh_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
+    hdr_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    if (ms) msaaColor_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
+    depth_ = vk.createImage(sw_, sh_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
 
     if (!scenePass_) {
         // ---------- passe de scène : couleur HDR (MSAA) + profondeur, résolue dans hdr_ ----------
@@ -195,7 +197,7 @@ void Renderer::createTargets() {
     VkImageView views[3] = {ms ? msaaColor_.view : hdr_.view, depth_.view, hdr_.view};
     VkFramebufferCreateInfo fci{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
     fci.renderPass = scenePass_; fci.attachmentCount = ms ? 3 : 2; fci.pAttachments = views;
-    fci.width = lw_; fci.height = lh_; fci.layers = 1;
+    fci.width = sw_; fci.height = sh_; fci.layers = 1;
     VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &sceneFb_));
     finalFbs_.resize(vk.swapViews.size());
     for (size_t i = 0; i < vk.swapViews.size(); i++) {
@@ -207,7 +209,7 @@ void Renderer::createTargets() {
     VkWriteDescriptorSet wr{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
     wr.dstSet = postSet_; wr.dstBinding = 0; wr.descriptorCount = 1; wr.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr.pImageInfo = &ii;
     vkUpdateDescriptorSets(d, 1, &wr, 0, nullptr);
-    WFS_LOG("Cibles de rendu : %ux%u (logique), MSAA x%d", lw_, lh_, (int)vk.msaa);
+    WFS_LOG("Cibles de rendu : %ux%u (logique), scène %ux%u, MSAA x%d", lw_, lh_, sw_, sh_, (int)vk.msaa);
 }
 
 void Renderer::destroyTargets() {
@@ -388,11 +390,11 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     VkClearValue clears[3]{};
     clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};   // profondeur inversée : 0 = loin
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-    rbi.renderPass = scenePass_; rbi.framebuffer = sceneFb_; rbi.renderArea = {{0, 0}, {lw_, lh_}};
+    rbi.renderPass = scenePass_; rbi.framebuffer = sceneFb_; rbi.renderArea = {{0, 0}, {sw_, sh_}};
     rbi.clearValueCount = 2; rbi.pClearValues = clears;
     vkCmdBeginRenderPass(r.cb, &rbi, VK_SUBPASS_CONTENTS_INLINE);
-    VkViewport vpt{0, 0, (float)lw_, (float)lh_, 0, 1};
-    VkRect2D sc{{0, 0}, {lw_, lh_}};
+    VkViewport vpt{0, 0, (float)sw_, (float)sh_, 0, 1};
+    VkRect2D sc{{0, 0}, {sw_, sh_}};
     vkCmdSetViewport(r.cb, 0, 1, &vpt); vkCmdSetScissor(r.cb, 0, 1, &sc);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &r.frameSet, 0, nullptr);
     // ciel

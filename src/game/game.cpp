@@ -153,6 +153,10 @@ void Game::onTouch(const Touch& t) {
         if (t.id == brakeId_) brakeId_ = -1;
         if (t.id == nitroId_) nitroId_ = -1;
     }
+    // un appui bref (appui et relâchement entre deux images) compte quand même pour au moins une mise à jour
+    if (t.down && t.id == gasId_) latchGas_ = true;
+    if (t.down && t.id == brakeId_) latchBrake_ = true;
+    if (t.down && t.id == nitroId_) latchNitro_ = true;
     input_.steer = steerId_ >= 0 ? clampf((steerX_ - steerX0_) / (W * 0.12f), -1.f, 1.f) : 0.f;
     input_.gas = gasId_ >= 0 || nitroId_ >= 0;
     input_.brake = brakeId_ >= 0;
@@ -182,6 +186,9 @@ void Game::drawControls() {
 void Game::update(double dt) {
     dt = std::min(dt, 0.05);
     DriveInput in = input_;
+    in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
+    if (latchNitro_) in.gas = true;
+    latchGas_ = latchBrake_ = latchNitro_ = false;
     if (autopilot_) {   // démonstration / tests : plein gaz, reste au milieu de sa voie
         in.gas = true; in.brake = false;
         in.steer = (float)clampf((float)((0.0 - player_.playerX) * 3.0 - player_.heading * 4.0), -1.f, 1.f);
