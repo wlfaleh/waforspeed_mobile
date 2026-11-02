@@ -32,7 +32,18 @@ Voir `references/architecture.md`. En bref :
 - `src/game` — `Track` (port exact de track.js), `Player` (port de update.js), `Game` (route par morceaux, caméra, tactile).
 - `src/platform` — `android_main.cpp` (NativeActivity), `desktop_main.cpp` (banc d'essai hors écran → PNG).
 
-## Règles par priorité
+## Ajouter un module (systèmes enfichables, WFS-30)
+Tout nouveau module (ville, météo, sons, interface, HUD…) est un **système** : une classe dérivée de `wfs::System`
+(`src/core/system.h`) dans **son propre fichier** de la zone de son épic, enregistrée par `WFS_SYSTEM(Classe, ordre)`.
+- Aucun fichier du noyau à modifier : CMake compile tous les `.cpp` de `src/core|render|game|world|ui|audio`,
+  et `Game` crée tous les systèmes enregistrés (ordre croissant).
+- Méthodes : `init` (ressources), `update` (pas fixe 1/120 s), `render` (3D, après la route), `drawUi` (2D),
+  `onTouch` (renvoyer true pour garder le toucher), `shutdown` (libérer ses ressources GPU).
+- Lecture seule de la partie via `GameView` : piste, joueur, voiture, carte, caméra (vue / projection), temps, taille d'écran.
+  Ne pas modifier le joueur ni reconstruire la piste depuis un système.
+- Ordres conseillés : 100-199 monde (E2), 200-299 gameplay (E3), 300-399 rendu (E4), 400-499 interface (E5), 500-599 audio (E6).
+
+
 
 ### 1. Fidélité au jeu web (CRITIQUE)
 - Même piste, mêmes graines (`Mulberry32` identique à `mulberry32`), mêmes unités (1 unité = 6 mm, `SEG` = 200, `RW` = 7,5 m).

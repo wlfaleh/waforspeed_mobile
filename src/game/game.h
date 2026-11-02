@@ -5,6 +5,7 @@
 #include "player.h"
 #include "track.h"
 #include "../render/renderer.h"
+#include "../core/system.h"
 
 namespace wfs {
 
@@ -51,6 +52,15 @@ private:
     bool autopilot_ = false;
     bool latchGas_ = false, latchBrake_ = false, latchNitro_ = false;
     double acc_ = 0;
+    // systèmes enfichables (WFS-30, voir src/core/system.h)
+    std::vector<std::unique_ptr<System>> systems_;
+    GameView view_;
+    void systemsInit();
+    void systemsShutdown();
+    void systemsUpdate(double dt);
+    void systemsRender(const vec3& eye, const vec3& look, const mat4& view, const mat4& proj, double time);
+    void systemsUi();
+    bool systemsTouch(const Touch& t);
 };
 
 } // namespace wfs

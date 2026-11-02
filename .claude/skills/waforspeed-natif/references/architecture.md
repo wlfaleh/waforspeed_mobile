@@ -21,3 +21,9 @@ Rotation / taille → `VkCtx::createSwapchain()` + `Renderer::resize()`.
 ## Piste
 `Track::build(map)` crée les segments (courbure, altitude) ; `pose(a)` calcule à la demande la position et le cap ;
 `point(s, lat)` = point 3D. La route est dessinée par morceaux de `CH` segments, générés en parallèle (`Game::streamChunks`).
+
+## Systèmes enfichables (WFS-30)
+`src/core/system.h` : `System`, `GameView`, registre `systemRegistry()` rempli par `WFS_SYSTEM`.
+`Game` : `systemsInit()` à la fin de `init`, `systemsUpdate()` à chaque pas fixe après la conduite, `systemsRender()`
+après la route (avant la voiture du joueur), `systemsUi()` après les commandes, `systemsTouch()` avant les commandes,
+`systemsShutdown()` au début de `shutdown`. Test : `tests/test_systems.cpp`.
