@@ -73,7 +73,7 @@ Journal à jour.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` |  |  |
-| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | 🔧 En cours | Claude (session trafic), 2026-11-02 | WFS-30 | `feature/waforspeed-10` |  | ⏳ CI verte (APK + banc), QA qa-lead à suivre |
+| 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | 🔍 En revue | Claude (session trafic), 2026-11-02 | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ⏳ Prêt |  | WFS-30 | `feature/waforspeed-07` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ En attente |  | WFS-26 | `feature/waforspeed-11` |  |  |
@@ -118,7 +118,7 @@ Journal à jour.
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
 
-**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · 🔧 En cours
+**WFS-10 — Sons de moteur (AAudio, régime et rapports)** · E6 · priorité 5 · 🔍 En revue
 - [ ] Sons du jeu web, régime qui suit l'accélérateur et les rapports
 - [ ] Pas de craquement, coupure en pause
 
@@ -506,3 +506,6 @@ construction `c719e79` verte (APK arm64 + x86_64 avec AAudio, banc d'essai). Cor
 cours de construction.
 **Limites** : la pédale est déduite de la conduite (le module ne lit que `GameView`) : un coup de gaz à l'arrêt sans avancer
 ne fait pas monter le régime ; son réel sur téléphone (latence, volume) non vérifiable en CI.
+
+### 2026-11-02 — WFS-10 : PR #7 ouverte (Claude, session trafic)
+Branche synchronisée avec `main` (aucun conflit). PR : https://github.com/wlfaleh/waforspeed_mobile/pull/7 — QA par `qa-lead` après la construction `d65cd1e`.
