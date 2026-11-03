@@ -547,7 +547,6 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
     float depth = length(c - camPos_);
     for (size_t pi = 0; pi < m.parts.size(); pi++) {
         const ModelPart& part = m.parts[pi];
-        if ((int)pi == debugHidePart) continue;
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
         p.pc.model = world;
@@ -555,7 +554,10 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
-        if (mat.flags & MAT_BLEND) transparent_.push_back(p);
+        if (mat.filament) {   // WFS-42 : fils plus fins qu'un pixel → mélangés selon leur couverture, avant les vitres
+            p.pc.params.w = (float)(mat.flags | MAT_BLEND); p.depth += 0.05f;
+            transparent_.push_back(p);
+        } else if (mat.flags & MAT_BLEND) transparent_.push_back(p);
         else opaqueQ_.push_back(p);
     }
 }

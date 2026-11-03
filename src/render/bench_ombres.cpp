@@ -27,32 +27,6 @@ void benchShadowScenes(Game& g, Renderer& r, const std::string& out) {
     r.forceNoShadows = false;
     // coût : quelques images de plus pour que le journal donne la moyenne de la passe d'ombre
     for (int i = 0; i < 130; i++) g.render(303 + i / 60.0);
-    // diagnostic WFS-42 (temporaire) : vues de vitrine en masquant une à une les pièces, pour trouver la pièce qui
-    // porte la trame (Golf : intérieur derrière la lunette ; 911 : jantes). 1er tour : la vitre et les couches fines ne sont pas en cause.
-    const int savedCam = g.camMode; const float savedOrbit = g.orbit;
-    g.camMode = 2; g.orbit = 0.7f;
-    for (int part : {-1, 0, 1, 2, 3, 4, 6, 7, 9, 11, 14, 15, 16, 18}) {
-        r.debugHidePart = part;
-        g.render(310); g.render(310.02);
-        r.capturePng(out + "/diag42-golf-sans-" + (part < 0 ? std::string("rien") : std::to_string(part)) + ".png");
-    }
-    r.debugHidePart = -1; g.camMode = savedCam; g.orbit = savedOrbit;
-    // 911 : on recharge la voiture le temps du diagnostic, puis on remet la Golf (les scènes suivantes repartent du départ)
-    g.shutdown();
-    if (g.init(r, "p911", "ville")) {
-        g.camMode = 2; g.orbit = 0.7f;
-        for (int part = -1; part <= 12; part++) {
-            r.debugHidePart = part;
-            g.render(320); g.render(320.02);
-            r.capturePng(out + "/diag42-p911-sans-" + (part < 0 ? std::string("rien") : std::to_string(part)) + ".png");
-        }
-        r.debugHidePart = -1;
-        g.shutdown();
-    }
-    g.init(r, "golf", "ville");
-    g.camMode = savedCam; g.orbit = savedOrbit;
-    g.setAutopilot(true);
-    for (int i = 0; i < 240; i++) g.update(1.0 / 60);
 }
 
 } // namespace wfs

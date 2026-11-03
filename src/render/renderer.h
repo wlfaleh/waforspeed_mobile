@@ -19,6 +19,7 @@ struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
 struct Material {
     vec4 color{1, 1, 1, 1}; float metal = 0, rough = 0.6f, cutoff = 0.5f; vec3 emissive{0, 0, 0};
     float detail = 0;   // WFS-42 : épaisseur typique des triangles (m) quand la pièce est très fine (< 4 mm), sinon 0
+    bool filament = false;   // WFS-42 : pièce opaque faite de fils (baguettes, filets chromés) → dessinée en couverture partielle
     uint32_t flags = 0; VkDescriptorSet set = VK_NULL_HANDLE;
 };
 
@@ -75,8 +76,7 @@ public:
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
     Image white, flatNormal;
-    bool forceNoShadows = false;
-    int debugHidePart = -1;        // diagnostic du banc (WFS-42) : pièce de voiture à ne pas dessiner   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
     uint32_t shadowMapSize() const { return shadowSize_; }
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
