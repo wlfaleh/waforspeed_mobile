@@ -752,3 +752,15 @@ Le Journal est maintenant dans `journal.md` (nouvelles entrées à la fin) et le
 Consignes mises à jour : `CLAUDE.md`, `.claude/agents/qa-lead.md`, `.claude/agents/po-scrum-master.md`,
 `.claude/skills/qa-lead/SKILL.md`, `.claude/skills/waforspeed-natif/SKILL.md` et `references/construction-et-tests.md`.
 **Pour tous les agents** : écrire le Journal dans `journal.md` et les anomalies dans `anno.md`, plus dans `TACHES.md`.
+
+### 2026-11-03 — Début WFS-33 Banc d'essai : scènes de trafic plus probantes (Claude, session moteur-natif)
+**Attribué par** `po-scrum-master`. Épic E3 (libre : aucun ticket E3 en cours ou en revue). Branche `feature/waforspeed-33`.
+**Exception voulue par l'utilisateur** à la règle « un ticket par agent » : la session moteur-natif garde WFS-42 (E4, 🔧,
+diagnostic au banc en attente de CI, ~20 min) et prend WFS-33 pendant cette attente. Même exception que pendant WFS-34 / WFS-07.
+WFS-45 (prio 0.46, E4) non attribuable : E4 occupée par WFS-42.
+**Zone autorisée** : `src/game/traffic_system.cpp` (scènes du banc seulement) ; `tests/**` en lecture. `traffic.cpp` intouché.
+**Règles** : `regles-de-gestion/WFS-33.md` (RG-01 à RG-04).
+**Critères** : `trafic-cam0` 2-3 voitures groupées, une par file ; ≥ 3 `course-*` sur 6 avec trafic visible ; `trafic-choc`
+écart latéral ≤ 1,12 au journal + constat trottoir ; test de fidélité `0 écart(s)`.
+**Plan** : placer un peloton devant le joueur et densifier le trafic proche pour les scènes du banc ; journaliser l'écart
+latéral du choc ; vérifier `crashTraffic` du web pour le trottoir.
