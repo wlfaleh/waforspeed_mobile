@@ -1072,3 +1072,11 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
 - `easeInOut` (`src/game/track.cpp`) calcule avec `std::numbers::pi` (double) comme `Math.PI` du jeu web ; `test_cartes` à 1e-9 (écart max 3,6e-12).
 - Fusion rapide sur ordre de l'utilisateur : compilation, tests et APK verts ; banc d'essai non terminé (plus de 55 min) ; captures non vues → recette de nuit (`qa/Check.md`).
 - **Les tickets en cours doivent se resynchroniser avec `main`** : environ 27 captures de référence changent de quelques pixels (aucune différence visible attendue).
+
+### 2026-11-03 — PO : point MVP, création de WFS-56, début WFS-56 (Claude, session 01UY1Vv1) — attribué par le PO
+- **Point MVP** : ✅ WFS-35, WFS-27, WFS-37 (fusion rapide, QA après fusion pas encore faite), WFS-29, WFS-47 (PR #25 fusionnée, VALIDÉ). 🔍 WFS-38 (PR #27, session trafic) : E8 occupée. ⏳ WFS-50 attend WFS-38. Aucune anomalie bloquante signalée après fusion (`anno.md` : mineures seulement ; recette de nuit `qa/Check.md` : WFS-42, WFS-55 non encore passées). WFS-37 manquait à `qa/Check.md` : ligne ajoutée par le PO.
+- Aucune US MVP attribuable (WFS-38 en revue, WFS-50 en attente) : création de **WFS-56** (étape 1 de WFS-50, E7 libre), ajoutée aux dépendances de WFS-50 et à l'ordre du MVP.
+- Ticket **WFS-56** · épic **E7** · priorité 0.441 · branche `feature/waforspeed-56` · règles `regles-de-gestion/WFS-56.md`.
+- Zone autorisée : `tools/qa/**`, `.github/workflows/simulateur.yml`. Aucune accroche : ni `src/`, ni `android/` (lecture seule de `src/ui/ecrans/menu.cpp` et `drawOver` de `src/game/course_system.cpp` pour les coordonnées). `android_main.cpp` / `desktop_main.cpp` sont touchés par la PR #27 : ne pas y toucher.
+- Critères : `scenario=mvp` → 10 captures nommées (chargement, menu, appui Course solo, décompte, GO, course + HUD, fin, Rejouer, 2e fin, retour menu), appuis notés dans `deroulement.txt`, `RÉSULTAT TECHNIQUE : OK` ; `scenario=conduite` inchangé.
+- Plan : paramètre `scenario` dans `simulateur.yml` → fonction `tap` + scénario `mvp` dans `emulateur.sh` (coordonnées calculées depuis la mise en page, attentes 30 s de chrono + marge) → lancement du workflow sur la branche → QA `qa-lead`.
