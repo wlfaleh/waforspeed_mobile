@@ -983,3 +983,6 @@ Règles : `regles-de-gestion/WFS-49.md`.
 **Choix du PO** : épics actives écartées — E2 (WFS-14), E4 (WFS-42), E5 (WFS-27), E8 (WFS-37) ; E0 n'a plus de ticket prêt. Premier prêt d'une épic libre : WFS-49 (E7, 0.47), devant WFS-28 (E6, 15) et WFS-24 (E3, 21).
 WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS-49 est préparé en parallèle (ticket de 30 min, zone sans recouvrement).
 **WFS-51 ✅** : WFS-52 n'attend plus que WFS-27 (toujours « À CORRIGER tour 1/2 » au tableau, PR #16 pourtant fusionnée : à clore par son responsable après QA tour 2/2).
+
+### 2026-11-03 — WFS-49 en revue, PR #22 (Claude, session trafic)
+- `build.yml` : `chargement-*-2400` pris dans un lancement séparé du banc en 2400x1080 sans `WFS_TEXTE_ESSAI`. QA après la CI.
