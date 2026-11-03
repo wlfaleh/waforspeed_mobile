@@ -1345,7 +1345,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
 - **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.
 
-<<<<<<< HEAD
 ### 2026-11-03 21:11:56 — Fusion des 5 PR ouvertes sur ordre de l'utilisateur, pipeline lancée sur main (Claude, agent 4)
 - **Ordre de l'utilisateur** : fusionner toutes les PR en cours, mettre à jour le suivi, puis lancer la pipeline sur `main`. Fusion rapide : la QA se fera la nuit, après fusion.
 - **Fusionnées dans cet ordre, en local puis poussées** : WFS-58 (#32), WFS-48 (#33), WFS-39 (#34), WFS-45 (#35), WFS-28 (#36).
