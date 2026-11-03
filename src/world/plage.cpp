@@ -28,6 +28,7 @@
 namespace wfs {
 namespace {
 
+constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et part propre (émissive) du stipe, de jour
 enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
@@ -177,7 +178,11 @@ public:
             bark[k * 4] = (uint8_t)(c.x * 255 + 0.5f); bark[k * 4 + 1] = (uint8_t)(c.y * 255 + 0.5f); bark[k * 4 + 2] = (uint8_t)(c.z * 255 + 0.5f); bark[k * 4 + 3] = 255;
         }
         barkTex_ = r.vk().uploadTexture(bark, 2, 1, true);
-        Material mb; mb.rough = 0.9f; mb.flags = MAT_VTINT;
+        // ANO-13 : le jeu web (three r128 sans encodage de sortie) éclaire les couleurs de sommet brutes ; ici la texture
+        // sRGB est linéarisée, et le stipe, presque toujours à contre-jour, sortait gris anthracite.
+        Material mb; mb.rough = 0.9f; mb.flags = MAT_VTINT; mb.color = {STIPE_K, STIPE_K, STIPE_K, 1};
+        // part propre brun BARK.palm : garde la teinte du jeu web à contre-jour (presque éteinte la nuit)
+        mb.emissive = lin(veg::hex(veg::BARK_PALM)) * (night_ ? 0.05f : STIPE_E);
         mats_[P_STIPE] = r.makeMaterial(mb, &barkTex_, nullptr, nullptr);
     }
 
