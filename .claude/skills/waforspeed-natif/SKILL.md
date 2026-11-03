@@ -88,6 +88,30 @@ Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), comme `r
 - Sans système qui prend la scène, rien ne change (pixel près). Lumières supplémentaires (projecteurs, hémisphère) : WFS-45.
 - Exemple et test : `src/core/scene_essai.cpp` (inactif par défaut ; banc d'essai : capture `scene-dediee-vide`).
 
+## Personnages animés par squelette (point d'extension WFS-63)
+Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, sans aucun personnage recréé.
+- **Données** : `tools/convert_people.mjs <personnage.json> <animations.json> <sortie.wfp>` convertit `models/people/homme.json`,
+  `femme.json` et `animations.json` du jeu web (Quaternius, CC0 : `assets/licences/personnages-quaternius.txt`) en
+  `assets/people/<nom>.wfp`. Le fichier contient le maillage (4 os + 4 poids par sommet), l'atlas couleur et les normales
+  (1024 px), le squelette (65 os, palette de 62 os à poids), les 7 clips (`Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`…) et les
+  plages d'indices : `corps-<lod>` et `<coiffure>-<lod>`, avec 3 niveaux de détail.
+- **Charger / animer** (`src/render/squelette.h`) : `chargerPersonnage(r, "people/homme.wfp", p)` ; par instance,
+  `preparerPose(p, pose)` (allocation, une fois), puis à chaque image `echantillonner(p, clipParNom(p, "Walk_Loop"), t, pose)`.
+  L'échantillonnage n'alloue rien et peut tourner sur un thread de travail : la pose appartient à l'appelant, le
+  personnage n'est que lu. Les positions et échelles sont interpolées linéairement, les rotations sphériquement, en boucle.
+- **Dessiner** : `r.drawSkinned(p.maillage, p.materiau, monde, pose.palette.data(), (int)pose.palette.size(), plage->premier,
+  plage->nombre)`, une fois pour le corps et une fois pour la coiffure (`plageParNom`).
+  - Le skinning se fait dans le vertex shader (`scene_skin.vert`, `shadow_skin.vert`), avec le même `scene.frag` : mêmes
+    matériaux PBR, ombres du soleil et brouillard que les voitures.
+  - Limites : `SKIN_MAX_OS` = 64 matrices par instance, `SKIN_MAX_INSTANCES` = 16 instances par image ; au-delà, l'instance
+    est ignorée.
+  - Opaque seulement.
+- **Repère** : mètres, Y vers le haut, pieds en y = 0, le personnage regarde vers +Z.
+- **Hors point d'extension (WFS-19)** : couleurs des vêtements (attribut `_CLOTH` et `pedMaterial` du jeu web, non
+  convertis), placement, choix du niveau de détail, mélange de clips.
+- **Test** : `src/render/bench_squelette.cpp`. Le système `squelette-essai` est inactif hors banc. Captures `squelette-essai`,
+  `squelette-marche-0` / `-1` et `squelette-8` ; coût au journal. Lancement seul : `WFS_BANC=squelette`.
+
 
 
 ### 1. Fidélité au jeu web (CRITIQUE)

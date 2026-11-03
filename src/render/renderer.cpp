@@ -39,6 +39,13 @@ static const uint32_t SPV_SHADOW_VERT[] = {
 static const uint32_t SPV_SHADOW_FRAG[] = {
 #include "shadow.frag.inc"
 };
+static const uint32_t SPV_SCENE_SKIN_VERT[] = {   // WFS-63 : maillages animés par squelette
+#include "scene_skin.vert.inc"
+};
+static const uint32_t SPV_SHADOW_SKIN_VERT[] = {
+#include "shadow_skin.vert.inc"
+};
+static constexpr VkDeviceSize OS_SLOT = sizeof(float) * 16 * SKIN_MAX_OS;   // une palette (4 096 octets, aligné)
 
 struct FrameUBO {
     mat4 viewProj, invViewProj;
@@ -90,10 +97,11 @@ bool Renderer::init(VkCtx& vk) {
     lci.bindingCount = 1; lci.pBindings = mb;
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &postLayout_));
 
-    VkDescriptorPoolSize sizes[2] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16}};
+    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16},
+                                     {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 4}};   // WFS-63 : palettes d'os
     VkDescriptorPoolCreateInfo pci{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    pci.maxSets = 1024 + 16; pci.poolSizeCount = 2; pci.pPoolSizes = sizes;
+    pci.maxSets = 1024 + 16; pci.poolSizeCount = 3; pci.pPoolSizes = sizes;
     VK_OK(vkCreateDescriptorPool(d, &pci, nullptr, &pool_));
 
     VkPushConstantRange pcr{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC)};
@@ -101,6 +109,25 @@ bool Renderer::init(VkCtx& vk) {
     VkPipelineLayoutCreateInfo plci{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
     plci.setLayoutCount = 2; plci.pSetLayouts = sl; plci.pushConstantRangeCount = 1; plci.pPushConstantRanges = &pcr;
     VK_OK(vkCreatePipelineLayout(d, &plci, nullptr, &sceneLayout_));
+    {   // WFS-63 : set 2 = palette d'os (tampon uniforme à offset dynamique) ; sets 0 et 1 identiques à la scène
+        VkDescriptorSetLayoutBinding ob{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        lci.bindingCount = 1; lci.pBindings = &ob;
+        VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &osLayout_));
+        VkDescriptorSetLayout sk[3] = {frameLayout_, matLayout_, osLayout_};
+        VkPipelineLayoutCreateInfo kci = plci; kci.setLayoutCount = 3; kci.pSetLayouts = sk;
+        VK_OK(vkCreatePipelineLayout(d, &kci, nullptr, &skinLayout_));
+        for (int f = 0; f < FRAMES; f++) {
+            osBuf_[f] = vk.createBuffer(OS_SLOT * SKIN_MAX_INSTANCES, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, true);
+            VkDescriptorSetAllocateInfo oai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+            oai.descriptorPool = pool_; oai.descriptorSetCount = 1; oai.pSetLayouts = &osLayout_;
+            VK_OK(vkAllocateDescriptorSets(d, &oai, &osSet_[f]));
+            VkDescriptorBufferInfo obi{osBuf_[f].buf, 0, OS_SLOT};
+            VkWriteDescriptorSet ow{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+            ow.dstSet = osSet_[f]; ow.dstBinding = 0; ow.descriptorCount = 1; ow.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            ow.pBufferInfo = &obi;
+            vkUpdateDescriptorSets(d, 1, &ow, 0, nullptr);
+        }
+    }
     VkPushConstantRange ppr{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32};
     plci.setLayoutCount = 1; plci.pSetLayouts = &postLayout_; plci.pPushConstantRanges = &ppr;
     VK_OK(vkCreatePipelineLayout(d, &plci, nullptr, &postPLayout_));
@@ -224,7 +251,8 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         VkPipeline bound = VK_NULL_HANDLE;
         for (const Pending& p : opaqueQ_) {
             if (p.mat->flags & NO_CAST) continue;
-            VkPipeline want = (p.mat->flags & MAT_MASK) ? shadowMaskPipe_ : shadowPipe_;
+            const bool masque = p.mat->flags & MAT_MASK;
+            VkPipeline want = p.osOfs >= 0 ? (masque ? skinShadowMask_ : skinShadow_) : (masque ? shadowMaskPipe_ : shadowPipe_);   // WFS-63
             if (want != bound) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, want); bound = want; }
             flushDraw(p);
         }
@@ -351,7 +379,7 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     st[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; st[1].module = fs; st[1].pName = "main";
 
     VkVertexInputBindingDescription bind{};
-    VkVertexInputAttributeDescription attr[3]{};
+    VkVertexInputAttributeDescription attr[5]{};
     VkPipelineVertexInputStateCreateInfo vi{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     if (vertexKind == 1) {   // scène : position, normale, uv
         bind = {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
@@ -360,6 +388,15 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         attr[2] = {2, 0, VK_FORMAT_R32G32_SFLOAT, 24};
         vi.vertexBindingDescriptionCount = 1; vi.pVertexBindingDescriptions = &bind;
         vi.vertexAttributeDescriptionCount = 3; vi.pVertexAttributeDescriptions = attr;
+    } else if (vertexKind == 3) {   // WFS-63 : sommet à squelette (position, normale, uv, 4 os, 4 poids)
+        bind = {0, sizeof(SkinVertex), VK_VERTEX_INPUT_RATE_VERTEX};
+        attr[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};
+        attr[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12};
+        attr[2] = {2, 0, VK_FORMAT_R32G32_SFLOAT, 24};
+        attr[3] = {3, 0, VK_FORMAT_R8G8B8A8_UINT, 32};
+        attr[4] = {4, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 36};
+        vi.vertexBindingDescriptionCount = 1; vi.pVertexBindingDescriptions = &bind;
+        vi.vertexAttributeDescriptionCount = 5; vi.pVertexAttributeDescriptions = attr;
     } else if (vertexKind == 2) {   // interface : position, uv, couleur
         bind = {0, sizeof(UiVertex), VK_VERTEX_INPUT_RATE_VERTEX};
         attr[0] = {0, 0, VK_FORMAT_R32G32_SFLOAT, 0};
@@ -421,6 +458,11 @@ void Renderer::createPipelines() {
     VkShaderModule hv = mod(SPV_SHADOW_VERT, sizeof(SPV_SHADOW_VERT)), hf = mod(SPV_SHADOW_FRAG, sizeof(SPV_SHADOW_FRAG));
     shadowPipe_ = makePipeline(hv, VK_NULL_HANDLE, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
     shadowMaskPipe_ = makePipeline(hv, hf, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
+    // WFS-63 : maillages à squelette (même scene.frag / shadow.frag que les objets rigides)
+    VkShaderModule kv2 = mod(SPV_SCENE_SKIN_VERT, sizeof(SPV_SCENE_SKIN_VERT)), kh = mod(SPV_SHADOW_SKIN_VERT, sizeof(SPV_SHADOW_SKIN_VERT));
+    skinOpaque_ = makePipeline(kv2, sf, 3, false, false, true, true, scenePass_, s, skinLayout_);
+    skinShadow_ = makePipeline(kh, VK_NULL_HANDLE, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
+    skinShadowMask_ = makePipeline(kh, hf, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
 }
 
 Material Renderer::makeMaterial(const Material& src, const Image* color, const Image* normal, const Image* mr) {
@@ -465,6 +507,15 @@ void Renderer::updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vect
 }
 
 void Renderer::destroy(Mesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
+
+SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx) {
+    SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
+    m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    return m;
+}
+
+void Renderer::destroy(SkinnedMesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
 
 void Renderer::destroy(Model& m) {
     for (auto& mat : m.mats) if (mat.set) vkFreeDescriptorSets(vk_->device, pool_, 1, &mat.set);
@@ -520,7 +571,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     }
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     camPos_ = fp.camPos; exposure_ = fp.exposure;
-    transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear();
+    transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear(); skinUsed_ = 0;
     readShadowTiming();
 
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
@@ -536,8 +587,10 @@ void Renderer::flushDraw(const Pending& p) {
     VkDeviceSize zero = 0;
     vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &zero);
     vkCmdBindIndexBuffer(cb, p.ib, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 1, 1, &p.mat->set, 0, nullptr);
-    vkCmdPushConstants(cb, sceneLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC), &p.pc);
+    const VkPipelineLayout lay = p.osOfs >= 0 ? skinLayout_ : sceneLayout_;   // WFS-63 : palette d'os en set 2
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, lay, 1, 1, &p.mat->set, 0, nullptr);
+    if (p.osOfs >= 0) { const uint32_t ofs = (uint32_t)p.osOfs; vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skinLayout_, 2, 1, &osSet_[cur_], 1, &ofs); }
+    vkCmdPushConstants(cb, lay, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC), &p.pc);
     vkCmdDrawIndexed(cb, p.count, 1, p.first, p.vofs, 0);
 }
 
@@ -571,6 +624,20 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     // ombre de contact sous les voitures (RG-05) : plus légère quand les ombres du soleil sont actives
     if (mat.flags & MAT_SHADOWBLOB) p.pc.color.w *= (shadowsOn_ ? 0.55f : night_ ? 0.7f : 0.62f) / 0.75f;
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
+}
+
+void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count) {
+    if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
+    if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
+    const int n = std::min(nOs, SKIN_MAX_OS);
+    const VkDeviceSize ofs = OS_SLOT * (VkDeviceSize)skinUsed_++;
+    std::memcpy((uint8_t*)osBuf_[cur_].mapped + ofs, os, sizeof(mat4) * (size_t)n);
+    Pending p{m.vb.buf, m.ib.buf, first, count ? count : m.indexCount - first, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
+    p.pc.model = world; p.pc.color = mat.color;
+    p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
+    p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
+    p.osOfs = (int32_t)ofs;
+    opaqueQ_.push_back(p);   // maillages à squelette : opaques (ou alpha découpé) seulement
 }
 
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
@@ -628,7 +695,12 @@ void Renderer::endFrame() {
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
     vkCmdDraw(r.cb, 3, 1, 0, 0);
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
-    for (const Pending& p : opaqueQ_) flushDraw(p);
+    VkPipeline lie = opaque_;
+    for (const Pending& p : opaqueQ_) {
+        const VkPipeline voulu = p.osOfs >= 0 ? skinOpaque_ : opaque_;   // WFS-63
+        if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
+        flushDraw(p);
+    }
     // objets transparents (vitres) : du plus loin au plus proche
     if (!transparent_.empty()) {
         std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
@@ -709,7 +781,11 @@ void Renderer::shutdown() {
         vkDestroyFence(d, r.fence, nullptr); vkDestroySemaphore(d, r.acquired, nullptr); vkDestroySemaphore(d, r.done, nullptr);
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
-    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_}) if (p) vkDestroyPipeline(d, p, nullptr);
+    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_})
+        if (p) vkDestroyPipeline(d, p, nullptr);
+    for (auto& b : osBuf_) vk_->destroy(b);
+    if (skinLayout_) vkDestroyPipelineLayout(d, skinLayout_, nullptr);
+    if (osLayout_) vkDestroyDescriptorSetLayout(d, osLayout_, nullptr);
     if (shadowFb_) vkDestroyFramebuffer(d, shadowFb_, nullptr);
     if (shadowPass_) vkDestroyRenderPass(d, shadowPass_, nullptr);
     if (shadowSampler_) vkDestroySampler(d, shadowSampler_, nullptr);
