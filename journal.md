@@ -3,6 +3,8 @@
 Journal du projet (tickets WFS-XX de `TACHES.md`) : une entrée par étape (début, construction, PR, verdict QA, fin…) avec
 fait / fichiers / vérification / limites. **Nouvelles entrées à la fin du fichier.** Toujours partir de la dernière version de
 `main` (`git pull`), ajouter seulement ses entrées, puis envoyer tout de suite ; ne jamais écraser le fichier.
+**Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
+Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)`.
 
 ### 2026-11-02 — Démarrage du projet natif
 **Fait**
@@ -1008,8 +1010,7 @@ Captures : `menu-anim`, `menu-0`, `menu-1` (2400x1080). **Suite** : CI → qa-le
 
 ### 2026-11-03 — Fin WFS-27 HUD de course (QA VALIDÉ au tour 2/2)
 PR #16 fusionnée (c68c460, avant le verdict, puis réparée par la PR #20) ; QA du tour 2/2 VALIDÉ sur `main` (ae41abd). Épic E5 libre.
-Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `<<<<<<< HEAD` restée dans ce journal après une
-résolution de conflit (Claude, session 01UY1Vv1) : retirée.
+Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `résolution de conflit (Claude, session 01UY1Vv1) : retirée.
 
 ### 2026-11-03 — WFS-14 terminé (Claude, session trafic)
 - QA tour 2/2 : VALIDÉ (ANO-13 corrigée, stipes bruns de jour, sombres la nuit ; 48/50 captures identiques). PR #21 fusionnée (e4bc431). E2 libre ; WFS-53, WFS-54 et WFS-55 débloqués.
@@ -1161,3 +1162,99 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Début WFS-58** · épic E7 · responsable Claude (session trafic) · branche `feature/waforspeed-58` · zone `tools/qa/**`, `.github/**` (aucun `src/`, `android/`).
 - **Critères** : chaque étape attend son événement du logcat ; `01-chargement` = barre du jeu sans barres système, `02-menu` = menu ; jamais `RÉSULTAT TECHNIQUE : OK` avec une étape manquante ; `scenario=conduite` inchangé.
 - **Plan** : fonction `attendre` (logcat borné) → réécrire les étapes du scénario `mvp` autour → `wm size` + extra `qa_simu` → lancer `simulateur.yml` sur la branche → `qa-lead`.
+
+### 2026-11-03 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)
+- `tools/qa/emulateur.sh`, scénario `mvp` : chaque étape attend sa ligne du journal du jeu avec un délai max. Ensuite, 2 lignes `QA ips=` avant la capture et une marque FIGÉE si deux captures sont identiques. Si une étape manque, le scénario s'arrête en échec franc. L'écran est réduit à 540x1200 et l'appli est lancée avec `--ez qa_simu true`. `simulateur.yml` : l'étape du scénario passe à 35 min.
+- **Pour le PO** : ni le décompte ni le « GO » ne sont journalisés dans `src/` (`course_system.cpp` n'écrit que `nouvelle course`, `checkpoint` et `temps écoulé`), et l'affichage de l'écran de fin non plus. En attendant, le scénario détecte GO par la première ligne `QA ips=… vitesse=[1-9]` avec le gaz tenu, et l'écran de fin par `course : temps écoulé` suivi de 2 lignes `QA ips`. Une ligne `course : GO` serait plus sûre ; c'est une piste pour WFS-59 ou un ticket E3.
+- Essai : `simulateur.yml` sur `feature/waforspeed-58` (`epic=WFS-58`, `scenario=mvp`, run 41705761615). Tant que WFS-59 n'est pas fusionné, un ÉCHEC franc est le résultat attendu.
+
+### 2026-11-03 19:47:29 — Règle : heure complète dans chaque entrée du Journal (Claude, agent 3, à la demande de l'utilisateur)
+- La règle de `CLAUDE.md` (date et heure UTC à la seconde, `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, via `date -u "+%Y-%m-%d %H:%M:%S"`) n'était pas appliquée : les entrées récentes n'avaient que la date.
+- Rappel ajouté là où les agents la lisent : en-tête de `journal.md`, `TACHES.md` (section Journal), skill `waforspeed-natif` (point 8), agents `po-scrum-master` et `qa-lead`.
+- Les anciennes entrées ne sont pas modifiées (heure inconnue, on ne la devine pas). La règle s'applique à toutes les nouvelles entrées.
+
+### 2026-11-03 19:50:27 — PO : début WFS-59 Point d'extension mode GPU logiciel (agent 3) — attribué par le PO
+- **Choix** : WFS-59 est le ticket ⏳ Prêt de meilleure priorité (0.438, MVP) dont l'épic est libre : E0 n'a aucun ticket actif ; E5 (WFS-52 en revue) et E7 (WFS-58 en cours) sont occupées par la session trafic. Dépendances : aucune. Il débloque WFS-50 (vérification simulateur du MVP) avec WFS-58.
+- **Ticket** : WFS-59 · épic E0 · branche `feature/waforspeed-59` · règles `regles-de-gestion/WFS-59.md`.
+- **Zone autorisée** : `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API), `CMakeLists.txt` ; accroches ≤ 10 lignes annoncées au Journal dans `src/render/vk.cpp` (détection SwiftShader / llvmpipe, rendu 25 %, sans ombres) et `src/platform/android_main.cpp` (extra `qa_simu`). Aucun fichier de `tools/qa/**` ni `.github/**` (WFS-58).
+- **Critères** : banc PC identique à `main` (0 écart, mode inactif) ; simulateur `scenario=mvp` : ligne `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)` dans le logcat, `QA ips` ≥ 1, décompte puis course qui avance (chrono < 30,0, vitesse > 0).
+- **Plan** : booléen `gpuLogiciel()` dans `renderer.h` → accroche `vk.cpp` (renderScale 0,25 + forceNoShadows) → accroche `android_main.cpp` (`qa_simu`) → plafond dt 0,5 s dans `Game::update` (pas de 1/120 s, ≤ 60 pas par image) → banc PC + simulateur sur la branche → contrôle rapide, fusion, ajout à `qa/Check.md`.
+- Piste notée par WFS-58 (hors périmètre ici sauf accord) : une ligne de logcat `course : GO` faciliterait le scénario ; elle relève d'E3 (`src/game/course_system.cpp`).
+
+### 2026-11-03 19:53:50 — Début WFS-45 Lumières : spots, hémisphère, brouillard linéaire (Claude, agent 3, session 011cpqZan) — attribué par le PO
+- **Choix** : WFS-59 (E0, 0.438) était déjà attribué à 19:50:27 à « agent 3 » d'une autre session (011cpqZdegh) : E0 occupée, pas de double attribution. E5 (WFS-52 en revue) et E7 (WFS-58) occupées. WFS-45 est le ⏳ Prêt suivant (0.46), épic E4 libre, sans dépendance ; catalyseur de WFS-11 (garage) et WFS-09 (nuit).
+- **Ticket** : WFS-45 · épic E4 · branche `feature/waforspeed-45` · règles `regles-de-gestion/WFS-45.md`.
+- **Zone autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*` ; nouveau banc `src/render/bench_spots.*` (CMake : glob, rien à changer). Accroches ≤ 10 lignes annoncées au Journal : champs de `FrameParams` dans `src/render/renderer.h` (RG-07) et enregistrement de la capture `spots-sol` dans `src/platform/desktop_main.cpp`.
+- **Coordination WFS-59** (E0, en cours) : WFS-59 accroche `renderer.h` (booléen GPU logiciel) et `src/render/vk.cpp` (rendu 25 %, sans ombres). WFS-45 ne touche pas à ce code ; synchroniser souvent avec `main`, conflit de fusion à résoudre en gardant les deux.
+- **Critères** : captures existantes identiques à `main` (0 spot par défaut) ; capture `spots-sol` (valeurs de `js/world/garage.js` → `buildGarage`) ; passe de scène ≤ +0,3 ms avec 3 spots.
+- **Plan** : FrameParams (4 spots, hémisphère, fogNear/fogFar) → `shaders/scene.frag` (formules three r128) → banc `spots-sol` → contrôle rapide, fusion, ajout à `qa/Check.md`.
+
+### 2026-11-03 19:56:48 — WFS-59 : mode GPU logiciel codé, PR #31 (agent 3)
+- **Fait** : `src/core/gpu_logiciel.h` (drapeau du mode, plafond de dt 0,05 s → 0,5 s en mode, 60 pas de 1/120 s au plus par image) et `src/core/gpu_logiciel_android.cpp` (extra d'intent `qa_simu`, `--ez` ou `--es`). `Game::update` utilise `plafondDt` ; `Game::init` coupe les ombres et écrit la ligne de logcat `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)`. `Renderer::gpuLogiciel()` dans `renderer.h`.
+- **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50 %) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
+- **Vérification** : `test_systems` OK en local (hors mode inchangé ; 360 images à 0,3 i/s = 180 s de jeu). Compilation `-fsyntax-only` OK ; JNI et APK vérifiés par la CI. Banc PC : mode inactif (hors écran).
+- **Limites** : le simulateur ne passe `qa_simu=true` que si le scénario de WFS-58 l'ajoute à `am start` ; sans cela, la détection SwiftShader suffit.
+
+### 2026-11-03 19:56:51 — Renommage : la session 011cpqZan est « agent 4 » (Claude, agent 4, à la demande de l'utilisateur)
+- L'utilisateur précise que cette session est **agent 4**. « Agent 3 » est la session qui tient WFS-59 (E0).
+- Responsable de **WFS-45** (E4) corrigé dans `TACHES.md` : « Claude (agent 4, session 011cpqZan) ».
+- Les entrées précédentes de cette session au Journal (19:47:29, règle sur l'heure ; 19:53:50, début de WFS-45), signées « agent 3 », sont de l'agent 4. Elles ne sont pas réécrites.
+
+### 2026-11-03 20:00:50 — QA WFS-52 : VALIDÉ (qa-lead)
+- Construction `d2b19dc` (PR #30, run 41699480375 vert), Release `apercu-waforspeed-52` (63 captures) regardée.
+- `encoche-hud-2400` : bande de 90 px vide de HUD (panneau Temps à x ≈ 114, vitesse centrée entre les marges). Autres captures comparées à `apercu-waforspeed-57` : bruit de rendu ≤ 1/255 seulement (le même qu'entre deux `main`), banc `0 écart(s)`.
+- RG-01 à RG-03 respectées ; l'accroche d'1 ligne de `build.yml` (annoncée) est acceptée à la place de `tools/qa/**`.
+- Aucune anomalie : **fusion autorisée**. Rapport : `qa/rapports/WFS-52.md`.
+
+### 2026-11-03 20:03:17 — PO : début WFS-48 Texte en italique (agent 5) — attribué par le PO ; fin de WFS-52
+- **Fin de WFS-52** (cérémonie PO) : QA VALIDÉ (`qa/rapports/WFS-52.md`) et PR #30 fusionnée (`318ac8b`) → ✅ Terminé. L'épic E5 est libre.
+- **Choix** : épics occupées : E0 (WFS-59 en revue), E4 (WFS-45), E7 (WFS-58). WFS-48 (E5, 0.48) est le ⏳ Prêt de meilleure priorité dans une épic libre ; dépendance WFS-26 ✅. (Une première attribution de WFS-39 a été préparée puis annulée avant envoi quand la fusion de WFS-52 a libéré E5 ; WFS-39 reste ⏳ Prêt, règles affinées : zone, `Ecran::Pause` déjà dans le noyau.)
+- **Ticket** : WFS-48 · épic E5 · branche `feature/waforspeed-48` · règles `regles-de-gestion/WFS-48.md` · corrige ANO-04.
+- **Zone autorisée** : `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*`. Accroche E3 ≤ 10 lignes à annoncer au Journal dans `src/game/course_system.cpp` (décompte et écran de fin en italique).
+- **Critères** : `course-decompte-3`, `course-decompte-go`, `course-fin`, `course-*` : chiffres inclinés de 12°, nets, sans débordement ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées.
+- **Plan** : cisaillement des quads de glyphe dans `src/ui/text.*` (option, droit par défaut, largeur inchangée) → HUD → accroche décompte / fin → banc → contrôle rapide, fusion, ajout à `qa/Check.md`.
+- **Ménage** : marqueur de conflit orphelin `
+### 2026-11-03 20:07:56 — WFS-48 : italique codé, PR #33 en revue (Claude, agent 5)
+- **Fait** : `ui::text(..., italique)` : glyphes cisaillés de 12° autour du milieu des capitales, droit par défaut, `ui::width` inchangée. Italique activé là où le web l'a (`css/style.css`) : HUD (`.time-value`, `.score-value`, `.combo`, `.speedo-read`), titre des bandeaux (`.toast b` = le titre, pas la valeur), décompte, score de fin (`.score-big`), valeurs des stats (`.stats dd`). Planche `texte-essai-*` : ligne droite + ligne italique.
+- **Accroches annoncées** : noyau `src/render/renderer.h/.cpp` (4 lignes) : `Renderer::uiGlyph(..., float biais = 0)` décale le bord haut du quad (sans conflit avec la PR #31 de WFS-59) ; E3 `src/game/course_system.cpp` (7 lignes) : décompte, score et stats de fin en italique.
+- **Fichiers** : `src/ui/text.h`, `src/ui/text.cpp`, `src/ui/hud.cpp`, `src/ui/toasts.cpp`, `src/render/renderer.h`, `src/render/renderer.cpp`, `src/game/course_system.cpp`.
+- **Vérification** : compilation `-fsyntax-only -Wall` des 5 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
+
+
+### 2026-11-03 — WFS-52 fusionné ; WFS-58 : essais simulateur 1 à 3 (Claude, session trafic)
+- **WFS-52** : VALIDÉ par qa-lead, PR #30 fusionnée (318ac8b).
+- **WFS-58, essai 1** : faux échec juste après `am start` (le processus n'existait pas encore). Corrigé : l'appli n'est déclarée arrêtée qu'après 10 s de suite sans processus.
+- **WFS-58, essai 2** (run 41707107542) : le scénario suit bien le jeu. Chargement, menu, « Course solo » et décompte sont atteints, avec leurs captures. L'écran réduit (1200x540) fait passer le jeu de 0,3 à **1,2 image/s**. Échec franc à l'étape « go » : Android affichait la bulle « Tap to restart this app for a better view », déclenchée par le changement de densité, sur l'accélérateur, et le gaz n'arrivait pas. Corrigé : la densité ne change plus et le gaz est appuyé en bas du bouton (0,84 W ; 0,92 H).
+- **WFS-58, essai 3** lancé. Sans WFS-59 (PR #31), la course de 30 s dure encore environ 8 min réelles à 1,2 image/s (plafond de 0,05 s par image), un ÉCHEC franc à l'étape « fin » reste donc possible. Le scénario envoie déjà `--ez qa_simu true` pour WFS-59.
+
+### 2026-11-03 20:09:37 — Règle : autonomie des agents, pas de confirmation demandée à l'utilisateur (Claude, agent 4, à la demande de l'utilisateur)
+- Les agents suivent le processus sans demander à l'utilisateur « je lance ? » ou « je continue ? » : ils agissent puis rendent compte.
+- L'utilisateur n'est sollicité que pour un vrai blocage (décision produit non tranchée par les règles ni par le PO, accès manquant, action irréversible hors processus), avec une seule question précise et une recommandation. Les questions de règles et de priorité vont au PO.
+- Règle ajoutée dans `CLAUDE.md` (en tête des consignes), `TACHES.md` (règle 10), skill `waforspeed-natif`, agents `po-scrum-master` et `qa-lead`.
+- **Ménage** : marqueur de conflit orphelin `<<<<<<< HEAD` retiré du Journal (aucun texte perdu).
+
+### 2026-11-03 20:08:40 — PO : création de WFS-60, WFS-61, WFS-62 (roues animées) (po-scrum-master)
+- **Besoin** (utilisateur) : animer les roues quand la voiture roule ou s'arrête. Aucune US n'existait ; priorité **basse** (hors MVP, 17.6 à 17.8).
+- **Constat** : le natif ne sépare pas les roues (drapeau « roue » au niveau du matériau seulement) ; le jeu web a déjà `splitWheels` et `animWheels` (Ackermann, rotation = distance / rayon).
+- **Découpage** : WFS-60 (E5, roues séparées dans le `.wfm`, ⏳ Prêt) → WFS-61 (E0, accroche de rendu par roue) → WFS-62 (E3, animation). Règles : `regles-de-gestion/WFS-60.md` à `WFS-62.md`.
+
+### 2026-11-03 — Point des PR et WFS-58 en revue, PR #32 (Claude, session trafic)
+- PR fusionnées depuis le dernier point : **#30 (WFS-52)**, déjà marquée Terminé. PR ouvertes : #31 (WFS-59, agent 3), #32 (WFS-58), #33 (WFS-48, agent 5). Le tableau est à jour pour toutes.
+- **WFS-58** : PR #32 (ouverte par l'utilisateur, titre et description complétés) → 🔍 En revue. L'essai simulateur 3 est en cours. La QA viendra après, et un ÉCHEC franc reste attendu tant que WFS-59 n'est pas fusionné.
+
+### 2026-11-03 — Début WFS-39 : pause en course et retour au menu (po-scrum-master → Claude, session trafic)
+- **Ticket** : WFS-39 · épic E8 · priorité 0.6 · branche `feature/waforspeed-39` · règles `regles-de-gestion/WFS-39.md`.
+- **Choix** : meilleure priorité prête d'une épic libre. WFS-46 (0.49) écarté : E5 occupée par WFS-48 (en revue). E7, E0, E4 occupées (WFS-58, WFS-59, WFS-45). L'agent garde WFS-58 en revue en parallèle, à la demande de l'utilisateur.
+- **Zone autorisée** : `src/ui/ecrans/**` ; accroches ≤ 10 lignes annoncées au Journal : `src/platform/android_main.cpp` (APP_CMD_PAUSE / APP_CMD_LOST_FOCUS → `Ecran::Pause`) et enregistrement des scènes `pause-*` du banc (comme WFS-38).
+- **Critères** : `pause-bouton` (bouton Menu hors encoche), `pause-0` (3 boutons), `pause-reprise` (même chrono), `pause-quitter` (retour au menu).
+- **Plan court** : utiliser `Ecran::Pause` et le gel de `Game::update` (WFS-36), marges WFS-51, boutons de l'écran de fin WFS-38 / WFS-57 ; porter `pauseGame` / `resumeGame` / `toMenu` de `js/ui/screens.js` (waaps).
+
+### 2026-11-03 20:13:45 — Règle : synchroniser la branche avec main avant chaque CI (Claude, agent 4, à la demande de l'utilisateur)
+- Avant chaque `git push` de branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…) : `git fetch origin && git merge origin/main`, conflits résolus en gardant les deux modifications, tests locaux relancés, puis seulement pousser.
+- Une CI lancée sur une branche en retard sur `main` ne compte pas : ses captures et son verdict ne sont pas valables.
+- Ajouté dans `CLAUDE.md`, `TACHES.md` (règle 4) et le skill `waforspeed-natif` (point 4).
+
+### 2026-11-03 — WFS-39 en revue, PR #34 (Claude, session trafic)
+- `src/ui/ecrans/pause.*` : bouton « Menu », écran de pause, « Reprendre », « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné) et « Quitter la course ». Chrono figé pendant la pause, vérifié au journal du banc.
+- **Accroches annoncées** : `src/platform/android_main.cpp` (`APP_CMD_PAUSE` / `LOST_FOCUS` en course → Pause, 4 lignes) et `src/platform/desktop_main.cpp` (`benchPause` + include, 3 lignes). QA après la CI.
+- WFS-58 (PR #32) : l'essai simulateur 3 atteint le GO, puis échoue franchement à l'étape « fin » (attendu sans WFS-59). La QA est lancée.

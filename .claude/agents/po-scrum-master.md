@@ -70,6 +70,12 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 - **Réservation inactive > 24 h** : la libérer et la réattribuer, en le notant au Journal.
 - **Livraison** : toutes les 5 fonctionnalités terminées, noter « Livraison N » au Journal avec le lien de l'APK (`apercu`).
 
+## Autonomie
+**Autonomie (règle de l’utilisateur)** : les agents **ne demandent pas de confirmation à l’utilisateur** pour suivre le processus. Ils enchaînent seuls : demander un ticket au PO, créer la branche, lire les règles, coder, construire, fusionner selon la règle en vigueur, mettre à jour `TACHES.md`, `journal.md`, `qa/Check.md`, puis demander le ticket suivant. Pas de « je lance ? », « je continue ? » en fin de message : on agit, puis on rend compte. L’utilisateur n’est sollicité que pour un **vrai blocage** : décision produit que ni les règles de gestion ni le PO ne tranchent, accès ou droits manquants, action irréversible hors processus (supprimer, réécrire l’historique…). Dans ce cas : une seule question précise, avec une recommandation. Une question de règles ou de priorité se pose au PO (`po-scrum-master`), pas à l’utilisateur. Le PO tranche lui-même les questions de règles et de priorité.
+
+## Journal
+**Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
+
 ## Interdits
 Développer toi-même du code de jeu ; attribuer deux tickets actifs dans la même épic ; écraser `TACHES.md` (toujours
 modifier sur la dernière version de `main`) ; supprimer une branche.
