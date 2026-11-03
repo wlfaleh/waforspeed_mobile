@@ -43,6 +43,22 @@ Tout nouveau module (ville, météo, sons, interface, HUD…) est un **système*
   Ne pas modifier le joueur ni reconstruire la piste depuis un système.
 - Ordres conseillés : 100-199 monde (E2), 200-299 gameplay (E3), 300-399 rendu (E4), 400-499 interface (E5), 500-599 audio (E6).
 
+## Écrans de l'application (point d'extension WFS-36)
+Un seul écran à la fois : `enum class Ecran { Chargement, Menu, Garage, Terrain, Course, Pause, Fin }` (`src/core/ecran.h`),
+équivalent de `state` du jeu web (`js/ui/screens.js`, `show(name)`).
+- **Lire** : `GameView::ecran` (dans `update`, `render`, `drawUi`, `onTouch`). Un menu ne dessine son interface que si
+  `g.ecran == Ecran::Menu`, etc.
+- **Changer** : `g.allerA(Ecran::Garage)` depuis un système (ou `Game::allerA` pour la plateforme / le banc d'essai).
+  Le changement est appliqué **entre deux images** (début de `update` / `render`), jamais au milieu.
+- **Réagir** : `System::onEcran(ancien, nouveau, vue)` est appelé pour tous les systèmes après chaque changement
+  (ex. : la course repart du début en passant à `Course`, comme `startRace()` → `resetRace('play', graine)`).
+- **Règles du noyau** : hors `Course`, la conduite ne reçoit aucune commande (commandes lâchées au changement), les
+  commandes tactiles de conduite ne sont ni lues ni dessinées, la voiture reste immobile, la scène (route, ville, trafic)
+  continue d'être dessinée derrière les menus ; `Pause` fige la simulation (aucun `update`, ni conduite ni systèmes).
+- **Écran de départ** : `Course` tant que le menu (WFS-37) n'est pas fusionné ; ensuite `Menu`. Chaque `Game::init`
+  revient à l'écran de départ.
+- Les touchers vont d'abord aux systèmes (`onTouch`) : un menu garde ses touchers en renvoyant `true`.
+
 
 
 ### 1. Fidélité au jeu web (CRITIQUE)
