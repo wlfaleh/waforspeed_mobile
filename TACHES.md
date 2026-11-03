@@ -79,7 +79,7 @@ Journal à jour.
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` | #15 | ⏳ construction b9771e0, puis qa-lead (banc PC) |
+| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` | #15 | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⛔ Bloqué |  | WFS-26, WFS-36, WFS-44, WFS-45 | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
