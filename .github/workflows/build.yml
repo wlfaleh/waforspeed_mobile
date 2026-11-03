@@ -38,7 +38,9 @@ jobs:
           # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
           mkdir -p texte && WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
           WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
-          for f in texte/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-35 : écran de chargement en 2400x1080
+          # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
+          mkdir -p chargement && WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
+          for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
           mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png   # WFS-27
           ls -la captures
       - uses: actions/upload-artifact@v4
