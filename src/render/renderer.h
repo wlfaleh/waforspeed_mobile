@@ -26,6 +26,14 @@ struct Material {
 
 struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; };
 
+// maillage animé par squelette (WFS-63, point d'extension) : sommet = position, normale, uv + 4 os (indices dans la
+// palette de l'instance) et 4 poids ; dessiné avec une palette de matrices d'os (skinning dans le vertex shader).
+struct SkinVertex { float px, py, pz, nx, ny, nz, u, v; uint8_t os[4]; float poids[4]; };
+static_assert(sizeof(SkinVertex) == 52, "SkinVertex : 52 octets (format .wfp)");
+struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; };
+constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
+constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
+
 struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; };
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
@@ -67,12 +75,19 @@ public:
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
     void destroy(Model& m);
+    // WFS-63 : maillage à squelette (les maillages rigides ne changent pas)
+    SkinnedMesh makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx);
+    void destroy(SkinnedMesh& m);
     VkCtx& vk() { return *vk_; }
 
     // image par image
     bool beginFrame(const FrameParams& fp);
     void draw(const Model& m, const mat4& world, const vec3* paint = nullptr);
     void draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth = 0);
+    // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
+    // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
+    void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
+                     uint32_t first = 0, uint32_t count = 0);
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
@@ -89,7 +104,7 @@ public:
     uint32_t shadowMapSize() const { return shadowSize_; }
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; };
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; };
     void createTargets();
     void destroyTargets();
     void createPipelines();
@@ -131,6 +146,12 @@ private:
     VkRenderPass shadowPass_ = VK_NULL_HANDLE;
     VkFramebuffer shadowFb_ = VK_NULL_HANDLE;
     VkPipeline shadowPipe_ = VK_NULL_HANDLE, shadowMaskPipe_ = VK_NULL_HANDLE;
+    // maillages à squelette (WFS-63) : palettes d'os de l'image dans un tampon uniforme (offset dynamique, set 2)
+    VkDescriptorSetLayout osLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout skinLayout_ = VK_NULL_HANDLE;
+    VkPipeline skinOpaque_ = VK_NULL_HANDLE, skinShadow_ = VK_NULL_HANDLE, skinShadowMask_ = VK_NULL_HANDLE;
+    Buffer osBuf_[2]; VkDescriptorSet osSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+    int skinUsed_ = 0;
     VkSampler shadowSampler_ = VK_NULL_HANDLE;
     bool shadowsOn_ = false, night_ = false;
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
