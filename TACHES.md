@@ -75,7 +75,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` |  |  |
+| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours (corrections QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟠 À CORRIGER, tour 1/2 (`qa/rapports/WFS-35.md`) |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
@@ -116,7 +116,7 @@ Journal à jour.
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔧 En cours (règles : `regles-de-gestion/WFS-35.md`)
+**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔧 En cours (QA : À CORRIGER, tour 1/2, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
 - [ ] `chargement-0/1/2` : fond `#0A0B10`, sur-titre cyan, logo « WAFOR / SPEED » (SPEED orange), barre cyan → orange à 0 %, 20-70 %, 100 %, étape + « n % »
 - [ ] mêmes captures en 2400x1080 : bloc à gauche, rien de coupé ; `chargement-fondu` : ville visible à travers (fondu 300 ms)
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
@@ -933,3 +933,14 @@ pixel pour les pièces transparentes fines, reflet du soleil élargi pour les pi
 sur des centaines de petits points / facettes en miroir, certains renvoient le soleil → pics HDR plafonnés à 64
 (baisser l'opacité ne suffisait pas : 64 x 0,1 reste saturé). **Fait** : pour les pièces fines, ciel et disque du soleil
 reflétés suivent la rugosité effective ; seuil de finesse 4 mm ; coût de la passe de scène au journal.
+
+### 2026-11-03 — QA WFS-35 : À CORRIGER (tour 1/2)
+**qa-lead** (`qa/rapports/WFS-35.md`), commit `cfd7088`, run 41605344614, Release `apercu-waforspeed-35`.
+- Critères remplis : `chargement-0/1/2` (couleurs mesurées au pixel conformes, barre 0 / 20 / 100 %, mise en page RG-05),
+  `chargement-fondu` (ville visible à 50 %), `chargement-erreur` (message rouge, pas de plantage), journal (durée par étape et
+  total ; première image 0,046 à 0,071 s après Vulkan). 2400x1080 vérifié sur une construction du QA (non publié par la CI).
+  Pas de régression : les 28 autres captures sont identiques au pixel près à `apercu` (`main` 3278fa4).
+- Anomalies **mineures** : ANO-06 superpositions visibles pendant le fondu (traits dans la barre, « FOR » qui paraît plein) ;
+  ANO-07 « 3D » qui se lit « 30 » à 720 p ; ANO-08 échec attribué à « Construction de la ville » au lieu du modèle 3D (barre à 70 %) ;
+  ANO-09 captures `chargement-*` en 2400x1080 non publiées par la CI.
+**Suite** : le développeur corrige ANO-06 à ANO-09, CI, 2e passage QA. Pas de fusion avant.
