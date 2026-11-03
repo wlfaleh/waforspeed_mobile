@@ -51,11 +51,8 @@ int main(int argc, char** argv) {
     Renderer r; r.init(vk);
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
-<<<<<<< HEAD
     if (const char* b = std::getenv("WFS_BANC"); b && std::string(b) == "hud") { benchHud(g, r, out); r.shutdown(); vk.shutdown(); jobs().stop(); return 0; }   // WFS-27 : HUD seul (2400x1080)
-=======
     ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
->>>>>>> origin/main
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
         // vitrine : 3 angles
@@ -69,6 +66,7 @@ int main(int argc, char** argv) {
     }
     // course : la Golf roule en pilote automatique, captures à différents moments
     g.init(r, "golf", std::getenv("WFS_CARTE") ? std::getenv("WFS_CARTE") : "ville");   // WFS-14 : WFS_CARTE=plage pour essayer une autre carte
+    if (const char* e = std::getenv("WFS_ENCOCHE")) g.setMarges({(float)std::atoi(e), 0, 0, 0});   // WFS-51 : encoche simulée à gauche
     g.setAutopilot(true);
     for (int cam = 0; cam < 2; cam++) {
         g.camMode = cam;
@@ -102,6 +100,16 @@ int main(int argc, char** argv) {
     benchHud(g, r, out);          // WFS-27 : HUD (hud-course, hud-temps-bas, hud-nitro, hud-combo)
     r.shutdown();
     vk.shutdown();
+    {   // WFS-51 : encoche de 90 px à gauche en 2400x1080 : bande marquée, volant et jauges décalés à droite de la bande
+        VkCtx vk2; Renderer r2; Game g2;
+        if (vk2.init(nullptr, 2400, 1080) && r2.init(vk2) && g2.init(r2, "golf", "ville")) {
+            g2.setMarges({90, 0, 0, 0}); g2.montrerMarges = true; g2.setAutopilot(true);
+            for (int i = 0; i < 120; i++) { g2.update(1.0 / 60); if (i % 10 == 0) g2.render(500 + i / 60.0); }
+            g2.render(502); g2.render(502.02); r2.capturePng(out + "/encoche-course.png");
+            WFS_LOG("capture encoche-course : marge gauche %.0f px, écran %ux%u", g2.marges().gauche, r2.width(), r2.height());
+            g2.shutdown(); r2.shutdown(); vk2.shutdown();
+        }
+    }
     jobs().stop();
     return 0;
 }

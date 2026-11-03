@@ -62,6 +62,14 @@ Un seul écran à la fois : `enum class Ecran { Chargement, Menu, Garage, Terrai
   revient à l'écran de départ.
 - Les touchers vont d'abord aux systèmes (`onTouch`) : un menu garde ses touchers en renvoyant `true`.
 
+## Marges de sécurité de l'écran (point d'extension WFS-51)
+- `GameView::marges` (`Marges { gauche, haut, droite, bas }`, pixels de l'interface, 0 par défaut) : zone sûre (encoche,
+  coins arrondis). **Toute interface** (HUD, menus, boutons) se place entre `gauche` et `uiWidth − droite`, `haut` et
+  `uiHeight − bas` (équivalent de `env(safe-area-inset-*)` du jeu web).
+- Android : `JeuActivity` lit `DisplayCutout.getSafeInset*` à chaque changement d'insets → JNI `nativeMarges` →
+  `Game::setMarges` (boucle de `android_main`). Les commandes tactiles de `Game` et leurs zones de toucher sont déjà décalées.
+- Banc d'essai : `WFS_ENCOCHE=<px>` simule une encoche à gauche ; capture `encoche-course` (2400x1080, 90 px, bande marquée).
+
 ## Scène dédiée d'un écran (point d'extension WFS-44)
 Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), comme `renderGarage` du jeu web (`gScene`, `gCamera`) :
 - **Prendre la scène** : `bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override` — appelée par `Game::render`
