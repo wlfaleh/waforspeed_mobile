@@ -797,7 +797,7 @@ Chemin critique : E8 (35 → 37 → 38) en série ; E5 (27 → 47) et E7 (29) en
 **Mises à jour** : WFS-44 ✅ (PR #15 fusionnée, E0 libre) ; WFS-11 ⛔ → ⏳ En attente (ne dépend plus que de WFS-45) ;
 WFS-24 et WFS-21 → ⏳ Prêt (WFS-12 ✅) ; WFS-38 reste en attente de WFS-37 ; critère de WFS-12 corrigé :
 « checkpoint 10 → +7,4 s (checkpoint 11 → +7 s) » (`TACHES.md` et `regles-de-gestion/WFS-12.md`).
-**Parallélisme (épics attribuables maintenant)** : E7 WFS-29 [MVP] ; E3 WFS-33 / WFS-24 ; E2 WFS-14 / WFS-43 / WFS-19 ;
+**Parallélisme (épics attribuables maintenant)** : E7 WFS-29 [MVP] ; E3 WFS-24 dès la fin de WFS-33 (en cours) ; E2 WFS-14 / WFS-43 / WFS-19 ;
 E6 WFS-28 ; E4 WFS-45 dès la fin de WFS-42 ; E8 WFS-37 dès la fusion de PR #12. E0 : rien à faire.
 Règles de gestion écrites : `WFS-27` (réécrite, réduite), `WFS-46`, `WFS-47`, `WFS-48`, `WFS-49`, `WFS-50`.
 
