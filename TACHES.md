@@ -9,7 +9,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 |---|---|---|
 | PO / Scrum Master | `po-scrum-master` (`.claude/agents/po-scrum-master.md`) | étudie le besoin, découpe en épics et tickets, priorise, **attribue les tickets**, débloque |
 | Développeur | toute session Claude | réalise le ticket attribué, sur sa branche, dans la zone de son épic |
-| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, verdict VALIDÉ / REFUSÉ |
+| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, classe les anomalies (bloquante / mineure), verdict VALIDÉ / VALIDÉ AVEC RÉSERVES / REFUSÉ |
 
 ## Statuts
 | Statut | Signification |
@@ -18,7 +18,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 | ⏳ Prêt | dépendances terminées, critères clairs : peut être attribué |
 | 🔧 En cours | attribué (Responsable), branche créée |
 | 🔍 En revue | PR ouverte, CI verte, attente du verdict QA |
-| ✅ Terminé | VALIDÉ et fusionné dans `main` |
+| ✅ Terminé | VALIDÉ (ou VALIDÉ AVEC RÉSERVES) et fusionné dans `main` |
 | ⛔ Bloqué | raison au Journal |
 
 ## Règles de travail en parallèle (obligatoires)

@@ -57,10 +57,16 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 6. Numéroter à la suite (`WFS-31`, …), ajouter au tableau, aux critères et au Journal ; envoyer sur `main`.
 
 ## 3. Cérémonies légères
-- **Fin de ticket** : vérifier ✅ + rapport QA VALIDÉ ; passer en `⏳ Prêt` les tickets dont toutes les dépendances sont finies.
+- **Fin de ticket** : vérifier ✅ + rapport QA `VALIDÉ` ou `VALIDÉ AVEC RÉSERVES` ; passer en `⏳ Prêt` les tickets dont toutes les dépendances sont finies.
 - **Fin d'épic** : quand tous les tickets d'une épic sont ✅, créer le ticket « Vérification simulateur EX » (même épic,
   priorité haute, critères : workflow `simulateur.yml` lancé avec `epic=EX`, rapport `qa/rapports/simulateur-EX.md` du
   QA lead VALIDÉ : démarrage, paysage, tactile, aucun plantage) ; les défauts trouvés deviennent des tickets de correction.
+- **Anomalies mineures** (tableau des anomalies de `TACHES.md`, écrit par le QA) : à chaque passage, regarder les
+  anomalies `🆕 Nouvelle`, les prioriser (gêne pour le joueur, visibilité, effort) et créer des **US de correction dédiées**
+  (`WFS-XX — Correction : …`, dans l'épic dont la zone de code contient le défaut, avec `regles-de-gestion/WFS-XX.md`,
+  critère = l'anomalie n'est plus visible sur la capture citée). Plusieurs petites anomalies d'une même zone peuvent aller
+  dans une seule US. Mettre l'anomalie en `📋 Planifiée` avec le numéro de l'US ; le QA la passe en `✅ Corrigée` quand l'US
+  est validée. Une anomalie jugée sans intérêt peut être `🚫 Abandonnée` (raison au Journal).
 - **Réservation inactive > 24 h** : la libérer et la réattribuer, en le notant au Journal.
 - **Livraison** : toutes les 5 fonctionnalités terminées, noter « Livraison N » au Journal avec le lien de l'APK (`apercu`).
 
