@@ -920,3 +920,19 @@ parasols, plan d'eau `#1e7fa8`) → `WFS_CARTE=plage` au banc + captures → PR,
 (WFS-35) avant la fusion : APK reconstruit avec succès (run 41621305547). **Épic E7 libre** : WFS-49 et WFS-51 attribuables (PO).
 À vérifier au simulateur (WFS-50) : barres masquées, icône et nom sur le lanceur, démarrage de `.JeuActivity`.
 
+### 2026-11-03 — WFS-14 : code écrit, PR ouverte (Claude, session trafic)
+**Fait** : `src/world/plage.cpp` (bas-côtés `GROUND.beach` par zone, océan, palmiers, parasols, transats, ambiance
+`envFor` jour / nuit) ; palmier `veg::palmier` (port de `vegPalm`) ; `src/world/zones.*` (`ZONES`, `ZONE_LEN`, nom exposé) ;
+`tests/test_cartes.cpp` + référence du jeu web (tracé plage, campagne, circuit).
+**Lignes d'accroche** : `src/core/system.h` (+4 : `System::ambiance`, `System::remplaceSol`), `src/game/game.cpp` (+3/−1 :
+leurs appels, sol générique omis si remplacé) ; `src/platform/desktop_main.cpp` (captures `carte-plage-*`, `WFS_CARTE`) ;
+`CMakeLists.txt` (+1) et `.github/workflows/build.yml` (test_cartes).
+**Vérification (conteneur, lavapipe)** : banc de `main` et de la branche : 35 captures identiques au pixel près ;
+`carte-plage-jour` / `carte-plage-nuit` conformes à l'œil ; 108 appels de dessin pour la plage ; test_cartes OK.
+**⚠️ Pour le PO (épic E3)** : `easeInOut` de `src/game/track.cpp` utilise `PI` en float (jeu web : `Math.PI` double) →
+altitudes de campagne / circuit décalées de 3 µm au plus. Corrigé et mesuré (0 écart à 1e-12), mais cela change
+légèrement 27 captures existantes (ville comprise) : retiré de WFS-14 ; à faire dans un ticket E3 qui renouvelle les
+références (test_cartes passera alors sa tolérance de 1e-3 à 1e-9).
+**Limites** : villas, tours de sauveteurs, bateaux, lampadaires de plage, baigneurs non portés ; nuit sans éclairage
+(WFS-09).
+

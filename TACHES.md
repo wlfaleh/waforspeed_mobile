@@ -113,7 +113,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ✅ Terminé | Claude (session moteur-natif), 2026-11-03 | WFS-08 | `feature/waforspeed-33` | PR #18 | ✅ VALIDÉ par qa-lead |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
-| 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` |  |  |
+| 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19 | ⏳ construction 915d1e6, puis qa-lead (banc PC) |
 | 12.1 | WFS-53 | Carte Campagne | E2 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-53` |  |  |
 | 12.2 | WFS-54 | Carte Grand Prix (circuit) | E2 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-54` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
@@ -278,7 +278,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 
 
-**WFS-14 — Cartes : socle multi-cartes et Corniche (plage)** · E2 · priorité 12 · 🔧 En cours (règles : `regles-de-gestion/WFS-14.md`, redécoupé)
+**WFS-14 — Cartes : socle multi-cartes et Corniche (plage)** · E2 · priorité 12 · 🔍 En revue (règles : `regles-de-gestion/WFS-14.md`, redécoupé)
 - [ ] `carte-plage-jour` / `carte-plage-nuit` : océan, palmiers, parasols, sable, ambiance de la plage ; autres captures identiques
 - [ ] test de fidélité du tracé des 3 nouvelles cartes (0 écart) ; ≤ 300 appels de dessin
 
