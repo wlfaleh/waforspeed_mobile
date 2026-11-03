@@ -966,8 +966,7 @@ insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture
 ### 2026-11-03 — main ne compile plus depuis la fusion de WFS-27 (Claude, session trafic)
 - La fusion de la PR #16 (WFS-27) a laissé des marqueurs de conflit (`<<<<<<<` / `>>>>>>>`) dans `.github/workflows/build.yml` et `src/platform/desktop_main.cpp` : CI de `main` en échec (c68c460, c17627d).
 - Réparé dans `feature/waforspeed-51` (PR #20, validée par le QA) en gardant les deux côtés : WFS-35 (écran de chargement) et WFS-27 (banc HUD seul). Tests et banc local OK ; `main` sera réparé à la fusion de #20.
-- Agents : avant toute fusion, vérifier `git grep -n "^<<<<<<< "` sur le résultat.
-
+- Agents : avant toute fusion, vérifier `git grep -n "^
 ### 2026-11-03 — WFS-51 fusionné ; main réparé ; WFS-14 (Claude, session trafic)
 - PR #20 (WFS-51, VALIDÉ) fusionnée en 24f08d3 : `main` compile de nouveau (marqueurs de conflit de WFS-27 retirés, CI verte sur 04ec9f5).
 - La PR #19 (WFS-14) a été fusionnée par l'utilisateur alors qu'elle était « À CORRIGER tour 1/2 ». La correction d'ANO-13 (stipes des palmiers trop sombres) part de `main` sur `feature/waforspeed-14`, nouvelle PR, puis QA tour 2/2.
@@ -987,6 +986,7 @@ WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS
 ### 2026-11-03 — WFS-49 en revue, PR #22 (Claude, session trafic)
 - `build.yml` : `chargement-*-2400` pris dans un lancement séparé du banc en 2400x1080 sans `WFS_TEXTE_ESSAI`. QA après la CI.
 
+<<<<<<< HEAD
 ### 2026-11-03 — QA WFS-27 HUD de course : VALIDÉ, tour 2/2 (qa-lead)
 Captures de la Release `apercu` (`main` 6e672a9, run 41639563396, contient 24f08d3) ; `feature/waforspeed-27` (4f1a32d) = main.
 ANO-11 corrigée : plus de HUD ni de temps « 1000000000,0 » dans `course-cam*`, `trafic-*`, `ombres-*`, `texte-essai-*` ; les 12
@@ -994,3 +994,15 @@ ANO-11 corrigée : plus de HUD ni de temps « 1000000000,0 » dans `course-cam*`
 `hud-*`, `course-decompte-3` et `course-fin` toujours conformes, banc à 0 écart(s). Aucune anomalie restante, rien dans `anno.md`.
 **Procédure** : la PR #16 avait été fusionnée (c68c460) avant ce verdict, avec des marqueurs de conflit réparés par la PR #20 (WFS-51).
 Remarque pour WFS-51 : `encoche-course` est prise sans HUD (scène sans règles de course). Rapport : `qa/rapports/WFS-27.md`.
+### 2026-11-03 — WFS-27 corrigé (tour 1/2) et WFS-37 construit (Claude, session 01UY1Vv1)
+**WFS-27** : corrections ANO-11 (pas de HUD quand le temps est illimité : vitrines et scènes du banc sans règles) et ANO-12
+(libellés à 13 px minimum, calés au pixel) poussées en 1846220. **Incident** : ce commit de synchronisation contenait des marqueurs
+de conflit (`desktop_main.cpp`, `build.yml`) et la PR #16 a été fusionnée par quelqu'un d'autre avant le tour 2/2 de QA ; réparé par
+la PR #20 (WFS-51). Leçon notée : toujours vérifier l'absence de marqueurs avant chaque commit de synchronisation. La branche
+(4f1a32d) est identique à `main`. **Suite** : QA tour 2/2 sur `main`, puis clôture.
+**WFS-37** (`feature/waforspeed-37`, e252578) : `src/ui/ecrans/menu.{h,cpp}` (système Menu, ordre 450, seulement en `Ecran::Menu`) :
+voile `.screen` en 16 bandes, fondu 300 ms, slide-in (−36 px, 40 ms de décalage, `--ease`), 3 choix `.mitem` aux textes exacts
+(« Course solo » orange), pied `.menu-foot` (RECORD « — » / meilleur score de la session, TA VOITURE « GOLF 8 GTI »), aide tactile.
+Logo et sur-titre mis en commun avec le chargement (`miseEnPage`, `dessinerBlocLogo` dans `chargement.{h,cpp}`, dessin inchangé).
+**Accroches annoncées** : `desktop_main.cpp` (3 lignes : include, `benchMenu`, mode `WFS_BANC=menu`), `build.yml` (1 ligne : `menu-1`).
+Captures : `menu-anim`, `menu-0`, `menu-1` (2400x1080). **Suite** : CI → qa-lead.
