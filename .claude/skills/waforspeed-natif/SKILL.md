@@ -10,13 +10,15 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
 ## Processus de travail (obligatoire) — style Jira, voir `TACHES.md`
+- **Autonomie (règle de l’utilisateur)** : les agents **ne demandent pas de confirmation à l’utilisateur** pour suivre le processus. Ils enchaînent seuls : demander un ticket au PO, créer la branche, lire les règles, coder, construire, fusionner selon la règle en vigueur, mettre à jour `TACHES.md`, `journal.md`, `qa/Check.md`, puis demander le ticket suivant. Pas de « je lance ? », « je continue ? » en fin de message : on agit, puis on rend compte. L’utilisateur n’est sollicité que pour un **vrai blocage** : décision produit que ni les règles de gestion ni le PO ne tranchent, accès ou droits manquants, action irréversible hors processus (supprimer, réécrire l’historique…). Dans ce cas : une seule question précise, avec une recommandation. Une question de règles ou de priorité se pose au PO (`po-scrum-master`), pas à l’utilisateur.
 0. **Statuts toujours à jour** : après chaque avancement (réservation, construction, PR, verdict QA, fusion), mettre à jour
    `TACHES.md` et l'envoyer sur `main` immédiatement, pour que les autres agents travaillent sans conflit.
 1. **Tickets** `WFS-XX` dans `TACHES.md` (statut, responsable, branche, PR, critères d'acceptation).
 2. **Se faire attribuer un ticket par l'agent `po-scrum-master`** avant de créer une branche (il l'inscrit dans `TACHES.md`
    sur `main`). Un ticket en cours par épic, un par agent ; ne modifier que la **zone de code de l'épic** du ticket.
 3. **Une branche par ticket** : `feature/waforspeed-XX` (2 chiffres). Ne modifier que les fichiers annoncés.
-4. **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
+4. **Toujours synchroniser la branche avec `main` avant de lancer une CI** : avant chaque `git push` de la branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…), faire `git fetch origin && git merge origin/main`, résoudre les conflits en gardant les deux modifications, recompiler / relancer les tests locaux, puis seulement pousser. Une CI lancée sur une branche en retard sur `main` ne compte pas (captures et verdict non valables).
+   **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
    puis relancer tests / CI / captures.
 5. **PR** `WFS-XX : <titre>` vers `main`, statut 🔍. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
 6. **QA après chaque APK** : l'agent `qa-lead` regarde les captures, classe les anomalies et rend un verdict

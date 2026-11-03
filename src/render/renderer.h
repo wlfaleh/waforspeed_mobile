@@ -4,6 +4,7 @@
 #include <vector>
 #include "vk.h"
 #include "../core/math.h"
+#include "../core/gpu_logiciel.h"
 
 namespace wfs {
 
@@ -78,6 +79,8 @@ public:
 
     Image white, flatNormal;
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    // WFS-59 : mode GPU logiciel actif (émulateur de la QA : GPU SwiftShader / llvmpipe, ou intent qa_simu=true)
+    bool gpuLogiciel() const { return modeGpuLogiciel(); }
     uint32_t shadowMapSize() const { return shadowSize_; }
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };

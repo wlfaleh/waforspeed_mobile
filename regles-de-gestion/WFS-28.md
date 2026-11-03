@@ -27,3 +27,10 @@ Le web synthétise ces sons par bruit filtré, `noiseHit(durée s, fréquence Hz
 
 ## Hors périmètre
 Sons de moteur (WFS-10), musique, ambiance de ville/mer (si demandée, nouveau ticket).
+Flammes de nitro (rendu, autre épic) : seul le son est dans ce ticket.
+
+## Précisions du PO (2026-11-03, à l'attribution)
+- RG-08 : source des événements = lecture seule, sans modifier `src/game/` : `activeCourse()` (`src/game/course_system.h` : compteurs `nearCount`, `accidents`, phase du décompte, checkpoints, fin) et `GameView::player` (nitro, freinage, vitesse, accélération latérale). Un son par **changement** de compteur ou d'état (front montant), jamais par image.
+- RG-09 : s'il manque un compteur lisible (petits chocs, frottements), l'exposer par une **ligne d'accroche ≤ 10 lignes** dans `src/game/course.*`, annoncée au Journal ; rien d'autre hors `src/audio/**`.
+- RG-10 : sons générés une fois au démarrage (bruit blanc filtré passe-bande, enveloppe linéaire vers la fréquence finale, attaque et relâche ≥ 5 ms pour éviter les craquements) puis mixés dans le flux AAudio existant de WFS-10 (`audio_out_android.cpp`, `audio_system.cpp`) ; aucune allocation dans le rappel audio.
+- RG-11 : sur PC (banc), pas de sortie son : chaque déclenchement écrit une ligne `SFX <nom>` au journal ; enregistrement WAV hors ligne optionnel pour vérifier l'absence de craquement.

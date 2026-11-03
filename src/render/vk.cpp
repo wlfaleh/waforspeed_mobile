@@ -1,6 +1,7 @@
 #include "vk.h"
 #include <algorithm>
 #include <cstring>
+#include "../core/gpu_logiciel.h"   // WFS-59
 #if defined(__ANDROID__)
 #include <android/native_window.h>
 #endif
@@ -83,9 +84,12 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
     VkSampleCountFlags sc = props.limits.framebufferColorSampleCounts & props.limits.framebufferDepthSampleCounts;
     msaa = (sc & VK_SAMPLE_COUNT_4_BIT) ? VK_SAMPLE_COUNT_4_BIT : VK_SAMPLE_COUNT_1_BIT;
     // GPU logiciel sur un appareil (émulateur de la QA) : qualité réduite pour rester jouable
-    if (!offscreen && (std::strstr(props.deviceName, "SwiftShader") || std::strstr(props.deviceName, "llvmpipe"))) {
-        msaa = VK_SAMPLE_COUNT_1_BIT; renderScale = 0.5f;
-        WFS_LOG("GPU logiciel : qualité réduite (sans MSAA, rendu à 50 %%)");
+    // WFS-59 : mode GPU logiciel (détecté ici, ou demandé par l'intent qa_simu=true) → rendu à 25 %
+    if (!offscreen && (std::strstr(props.deviceName, "SwiftShader") || std::strstr(props.deviceName, "llvmpipe")))
+        activerModeGpuLogiciel(props.deviceName);
+    if (!offscreen && modeGpuLogiciel()) {
+        msaa = VK_SAMPLE_COUNT_1_BIT; renderScale = gpu_logiciel::RENDU;
+        WFS_LOG("GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %%)");
     }
     VkFormatProperties tp; vkGetPhysicalDeviceFormatProperties(gpu, VK_FORMAT_R8G8B8A8_SRGB, &tp);
     linearBlitSrgb = (tp.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) &&
