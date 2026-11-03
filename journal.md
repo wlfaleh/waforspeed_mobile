@@ -1258,3 +1258,23 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - `src/ui/ecrans/pause.*` : bouton « Menu », écran de pause, « Reprendre », « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné) et « Quitter la course ». Chrono figé pendant la pause, vérifié au journal du banc.
 - **Accroches annoncées** : `src/platform/android_main.cpp` (`APP_CMD_PAUSE` / `LOST_FOCUS` en course → Pause, 4 lignes) et `src/platform/desktop_main.cpp` (`benchPause` + include, 3 lignes). QA après la CI.
 - WFS-58 (PR #32) : l'essai simulateur 3 atteint le GO, puis échoue franchement à l'étape « fin » (attendu sans WFS-59). La QA est lancée.
+### 2026-11-03 20:17:58 — PO : tableau de TACHES.md trié par numéro de ticket (po-scrum-master)
+- Demande de l'utilisateur : tableau affiché dans l'ordre des numéros WFS-XX. Fait ; la colonne « Prio » reste l'ordre de travail, la colonne « Épic » existait déjà. Aucun statut ni responsable modifié.
+
+### 2026-11-03 20:20:43 — PO : priorités à la Jira (P1 Urgent à P4 Basse) dans TACHES.md (po-scrum-master)
+- Demande de l'utilisateur. Colonne « Priorité » : P1 Urgent (bloque le MVP : WFS-50, 58, 59), P2 Haute (garage, pause, terrain, compteur, italique, lumières), P3 Moyenne (nuit, 20 voitures, performances, cartes, bruitages, piétons), P4 Basse (roues, arbres, météo, post-traitement, duel, sauvegarde, iOS, stores). À égalité : plus petit numéro de ticket. `po-scrum-master.md` mis à jour. Aucun statut ni responsable modifié.
+
+### 2026-11-03 20:24:41 — WFS-45 en revue, PR #35 (Claude, agent 4)
+- **Fait** : `FrameParams` gagne 4 projecteurs (three `SpotLight`), une lumière hémisphère et `fogNear` / `fogFar`. UBO, `common.glsl` et `scene.frag` étendus : cône lissé, portée, GGX du soleil, `HemisphereLight`, `Fog` linéaire. Banc `src/render/bench_spots.*` : éclairage du garage du jeu web (`garage.js`, `buildGarage`), capture `spots-sol` et mesure du coût sans projecteur puis avec 3.
+- **Accroches annoncées** : `src/render/renderer.h` (5 lignes dans `FrameParams`, RG-07) et `src/platform/desktop_main.cpp` (2 lignes : include et appel de `benchSpots`).
+- **Écart à RG-02, pour rester fidèle au jeu web** : le jeu web n'active pas `physicallyCorrectLights`. three r128 applique donc `pow(saturate(1 − d/portée), decay)` et une irradiance × PI. J'ai porté ce comportement plutôt que la formule physique de RG-02, qui donnerait un garage environ 10 fois plus sombre. À confirmer par le PO dans le fichier de règles.
+- **Vérification** : compilation C++ et `test_systems` réussis en local, branche synchronisée avec `main` avant le push. Shaders, banc et APK : CI de la PR #35 en cours.
+
+### 2026-11-03 — WFS-58 : corrections du tour 1 (REFUSÉ) ; WFS-39 comparé à main (Claude, session trafic)
+- **WFS-58** (ffb5474, branche synchronisée avec main) :
+  - **WFS58-1** : plus de `wm size`. Avec ou sans changement de densité, Android passait l'appli en mode de compatibilité et posait la bulle « Tap to restart this app » sur la moitié droite de l'écran. La vitesse sur GPU logiciel viendra du rendu à 25 % de WFS-59.
+  - **WFS58-2** : chaque étape trace le motif attendu et la ligne du journal du jeu trouvée, avec l'heure. Attente de 2 s avant `01-chargement`.
+  - **WFS58-3** : `03` est prise dès l'appui, `04` après des images.
+  - **WFS58-4** : la taille d'écran est tracée en fin de scénario.
+  - Essais relancés : `scenario=mvp` (Release `simulateur-WFS-58`) et `scenario=conduite` (Release `simulateur-WFS-58-conduite`).
+- **WFS-39** (PR #34), banc local comparé à main : 11 captures de vraie course ne changent que dans la zone du bouton « Menu » (`course-decompte-*`, `hud-*`, `encoche-hud`, `menu-depart-*`, `toast-*`) ; 5 nouvelles captures `pause-*` ; aucune autre différence. Branche synchronisée avec main avant la CI (nouvelle règle 2384f67).
