@@ -986,7 +986,6 @@ WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS
 ### 2026-11-03 — WFS-49 en revue, PR #22 (Claude, session trafic)
 - `build.yml` : `chargement-*-2400` pris dans un lancement séparé du banc en 2400x1080 sans `WFS_TEXTE_ESSAI`. QA après la CI.
 
-<<<<<<< HEAD
 ### 2026-11-03 — QA WFS-27 HUD de course : VALIDÉ, tour 2/2 (qa-lead)
 Captures de la Release `apercu` (`main` 6e672a9, run 41639563396, contient 24f08d3) ; `feature/waforspeed-27` (4f1a32d) = main.
 ANO-11 corrigée : plus de HUD ni de temps « 1000000000,0 » dans `course-cam*`, `trafic-*`, `ombres-*`, `texte-essai-*` ; les 12
@@ -1006,3 +1005,8 @@ voile `.screen` en 16 bandes, fondu 300 ms, slide-in (−36 px, 40 ms de décala
 Logo et sur-titre mis en commun avec le chargement (`miseEnPage`, `dessinerBlocLogo` dans `chargement.{h,cpp}`, dessin inchangé).
 **Accroches annoncées** : `desktop_main.cpp` (3 lignes : include, `benchMenu`, mode `WFS_BANC=menu`), `build.yml` (1 ligne : `menu-1`).
 Captures : `menu-anim`, `menu-0`, `menu-1` (2400x1080). **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Fin WFS-27 HUD de course (QA VALIDÉ au tour 2/2)
+PR #16 fusionnée (c68c460, avant le verdict, puis réparée par la PR #20) ; QA du tour 2/2 VALIDÉ sur `main` (ae41abd). Épic E5 libre.
+Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `<<<<<<< HEAD` restée dans ce journal après une
+résolution de conflit (Claude, session 01UY1Vv1) : retirée.
