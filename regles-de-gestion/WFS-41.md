@@ -22,3 +22,7 @@ Avant de rouler, le joueur choisit la carte (ville, campagne, plage, circuit) et
 
 ## Hors périmètre
 Décors des autres cartes (WFS-14), éclairage de nuit (WFS-09).
+
+
+## Périmètre élargi (tickets plus gros, moins de builds)
+Ce ticket absorbe WFS-68 : **lire et appliquer aussi** `regles-de-gestion/WFS-68.md` (écran de réglages : caméra, qualité, son, commandes, vibrations). Une seule branche, une seule CI à la fin.

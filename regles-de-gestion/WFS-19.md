@@ -26,6 +26,3 @@ conducteur face au volant. Les silhouettes géométriques sont proscrites.
 ## Hors périmètre
 Piétons qui traversent ou sont percutés, voix, foule dense hors liste ci-dessus.
 
-
-## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
-Ce ticket absorbe : WFS-18. **Lire et appliquer aussi** `regles-de-gestion/WFS-18.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

@@ -24,6 +24,3 @@ Le joueur retrouve ses meilleurs scores, sa voiture, ses peintures et ses régla
 ## Hors périmètre
 Compte en ligne, synchronisation entre appareils, succès.
 
-
-## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
-Ce ticket absorbe : WFS-21. **Lire et appliquer aussi** `regles-de-gestion/WFS-21.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

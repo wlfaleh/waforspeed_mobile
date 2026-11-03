@@ -1325,3 +1325,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Note : ses tickets WFS-58 (PR #32) et WFS-39 (PR #34) sont en revue sans code en cours ; pas de conflit d'épic (E7, E8).
 ### 2026-11-03 21:04:53 — PO : 4 nouveaux gros sujets (WFS-65 à 68) (po-scrum-master)
 - Écart avec le jeu web comblé : **WFS-65** effets de conduite (E4), **WFS-66** caméras et cockpit (E3), **WFS-67** trafic vivant (E3, après WFS-60), **WFS-68** réglages (E8, après WFS-39). Règles : `regles-de-gestion/WFS-65.md` à `WFS-68.md`. Tickets de 1 à 3 jours, une seule CI chacun. Aucun ticket en cours ou terminé touché.
+
+### 2026-11-03 21:05:42 — PO : les 6 sujets importants (map, caméra, personnages, menus, duel, garage) (po-scrum-master)
+- **Demande de l'utilisateur** : 6 sujets distincts, en P2 Haute. **Map design 3D** : WFS-53 (Campagne, Grand Prix, arbres). **Caméra** : WFS-66. **Personnages** : WFS-19 (piétons et conducteurs, après WFS-63 squelettes ; la pluie redevient WFS-18, séparée). **Menus** : WFS-41 (terrain, moment, réglages ; absorbe WFS-68). **Mode duel** : WFS-21 redevenu un ticket à part (séparé de WFS-24 sauvegarde). **Garage** : WFS-11. Aucun ticket en cours ou terminé touché.
