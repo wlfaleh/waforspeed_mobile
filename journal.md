@@ -1340,3 +1340,5 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Les anomalies du tour 1 sont corrigées : plus de bulle Android, déroulement tracé (motif, ligne, heure), 03 et 04 séparées, écran tracé en fin de scénario. L'échec reste franc sur les deux essais `mvp`.
 - **Nouvelle anomalie bloquante, WFS58-5** : `01-chargement` est presque noire (capture prise 2 s après « Cibles de rendu », avant la police). Il faut attendre `chargement : première image … écran complet (police)`. [Rapport](qa/rapports/WFS-58.md).
 - Pour le PO, hors WFS-58 : le gel du jeu avec la fenêtre « Pixel Launcher isn't responding » apparaît aussi sans WFS-59 (essai `conduite` à ffb5474). Le scénario `conduite` conclut OK sur des captures figées.
+### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
+- **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.
