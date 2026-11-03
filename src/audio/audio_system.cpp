@@ -18,6 +18,7 @@
 #include "../game/player.h"
 #include "audio_out.h"
 #include "engine_synth.h"
+#include "sfx.h"   // WFS-28 : bruitages
 
 namespace wfs {
 
@@ -40,8 +41,9 @@ public:
             synths_[i]->setOutputRate(OUT_RATE);
         }
         active_ = -1;
-        const int rate = audioOutStart([this](float* out, int n) { renderInto(out, n, nowSeconds()); });
+        const int rate = audioOutStart([this](float* out, int n) { const double now = nowSeconds(); renderInto(out, n, now); sfx_.mix(out, n, now); });
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
+        sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
     }
 
     void shutdown(Renderer&) override { audioOutStop(); }
@@ -62,6 +64,7 @@ public:
         s.targets.lastUpdate = nowSeconds();
         for (int i = 0; i < SAMPLE_COUNT; i++) if (i != idx) { synths_[i]->targets.loGain = 0; synths_[i]->targets.hiGain = 0; }
         active_ = idx;
+        sfx_.lastUpdate = nowSeconds(); events_.update(dt, g, sfx_);   // WFS-28 : un son par événement de la partie
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
             const int n = (int)g_rec.acc; g_rec.acc -= n;
@@ -81,6 +84,7 @@ private:
     std::unique_ptr<EngineSynth> synths_[SAMPLE_COUNT];
     std::atomic<int> active_{-1};
     EngineModel model_;
+    SfxMixer sfx_; SfxEvenements events_;   // WFS-28 : bruitages (mélangés au moteur dans le rappel audio)
 };
 WFS_SYSTEM(AudioSystem, 300)
 

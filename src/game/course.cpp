@@ -9,6 +9,7 @@ void Course::reset() {
     state = RaceState::Count; clock = -3;
     timeLeft = 30; nextCp = CHECK_DIST; level = 0; bonus = 0; raceTime = 0;
     combo = 0; comboTimer = 0; nearCount = 0; maxKmh = 0; overTimer = 0; accidents = 0;
+    bumps = 0; scrapes = 0; lastImpact = 0;   // WFS-28
     lastCount = -1; goShown = 0; timeScale = 1; slowmoT = 0;
 }
 
@@ -21,6 +22,7 @@ void Course::nearMiss() {
 // bump(impact) : petit choc, le combo est perdu au-delà de 0,08
 void Course::bump(double impact) {
     if (impact > 0.08) { combo = 0; comboTimer = 0; }
+    bumps++; lastImpact = impact;   // WFS-28 : bruitage du petit choc (volume 0,4 + impact)
 }
 
 // playerAccident(impact, side) : partie « règles » (le tête-à-queue est fait par Player::accident)
@@ -40,6 +42,7 @@ void Course::crash(Player& pl, Track& t) {
 }
 
 void Course::applyHits(const HitEvents& e) {
+    scrapes += e.scrapes;   // WFS-28 : frottements latéraux (au plus un toutes les 0,18 s, Traffic)
     for (int i = 0; i < e.count; i++) {
         const HitEvent& h = e.seq[i];
         if (h.kind == 'n') nearMiss();
