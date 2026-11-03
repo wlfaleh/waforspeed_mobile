@@ -27,7 +27,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     const float logo = clampv(0.14f * W / k, 64, 140) * k;                 // clamp(64px, 14vw, 140px)
     const float x = clampv(0.06f * W / k, 0, 96) * k + 16 * k;             // margin-left clamp(0, 6vw, 96px) + gouttière
     const float largeur = std::min(600 * k, W - x - 16 * k);              // max-width: 600px
-    const float sur = 12 * k, gap = 22 * k, ligne = logo * 0.82f, barre = 6 * k, txt = 16 * k;
+    const float sur = 12 * k, gap = 22 * k, ligne = logo * 0.82f, barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
     const float total = sur + gap + 2 * ligne + gap + barre + 10 * k + txt;
     float y = std::max(16 * k, (H - total) / 2);
 
@@ -40,14 +40,15 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
         ui::text(r, x, y, logo, "WA", hex(TEXTE, op), ui::GAUCHE, -0.01f, false);
         const float xf = x + ui::width(logo, "WA", -0.01f) - 0.01f * logo;
         const float e = 2 * k;
-        for (int i = 0; i < 8; i++) {
+        if (op < 0.999f) ui::text(r, xf, y, logo, "FOR", hex(MUTED, op), ui::GAUCHE, -0.01f, false);   // fondu : couleur unie
+        else for (int i = 0; i < 8; i++) {
             const float a = i * 0.785398f;
             ui::text(r, xf + std::cos(a) * e, y + std::sin(a) * e, logo, "FOR", hex(TEXTE, op), ui::GAUCHE, -0.01f, false);
         }
-        ui::text(r, xf, y, logo, "FOR", hex(BG, op), ui::GAUCHE, -0.01f, false);
+        if (op >= 0.999f) ui::text(r, xf, y, logo, "FOR", hex(BG, op), ui::GAUCHE, -0.01f, false);
         y += ligne;
         // SPEED orange avec halo léger (text-shadow 0 0 22px rgba(255,106,0,.45))
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4 && op >= 0.999f; i++) {   // halo seulement à pleine opacité (sinon les copies s'additionnent)
             const float a = 0.785398f + i * 1.570796f;
             ui::text(r, x + std::cos(a) * 4 * k, y + std::sin(a) * 4 * k, logo, "SPEED", hex(ACCENT, 0.18f * op), ui::GAUCHE, -0.01f, false);
         }
@@ -61,7 +62,9 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     for (int i = 0; i < N && plein > 0; i++) {
         const float t = (i + 0.5f) / N;
         const vec4 a = hex(ACCENT2, op), b = hex(ACCENT, op);
-        r.uiRect(x + plein * i / N, y, plein / N + 0.5f, barre, {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, op});
+        // tranches bord à bord, arrêtées au pixel (aucun recouvrement visible pendant le fondu)
+        const float x0 = std::floor(x + plein * i / N), x1 = i == N - 1 ? x + plein : std::floor(x + plein * (i + 1) / N);
+        if (x1 > x0) r.uiRect(x0, y, x1 - x0, barre, {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, op});
     }
     y += barre + 10 * k;
     // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec

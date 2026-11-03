@@ -33,6 +33,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     }
     if (progression) progression(0.20f, "Chargement du modèle 3D…");   // WFS-35
     setCar(carId);
+    if (progression && !car_.ok) return false;   // WFS-35 : voiture introuvable, l'écran garde l'étape où l'erreur a eu lieu
     if (progression) progression(0.70f, "Construction de la ville");   // WFS-35
     systemsInit();
     return car_.ok;
