@@ -1263,3 +1263,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 20:20:43 — PO : priorités à la Jira (P1 Urgent à P4 Basse) dans TACHES.md (po-scrum-master)
 - Demande de l'utilisateur. Colonne « Priorité » : P1 Urgent (bloque le MVP : WFS-50, 58, 59), P2 Haute (garage, pause, terrain, compteur, italique, lumières), P3 Moyenne (nuit, 20 voitures, performances, cartes, bruitages, piétons), P4 Basse (roues, arbres, météo, post-traitement, duel, sauvegarde, iOS, stores). À égalité : plus petit numéro de ticket. `po-scrum-master.md` mis à jour. Aucun statut ni responsable modifié.
+
+### 2026-11-03 20:24:41 — WFS-45 en revue, PR #35 (Claude, agent 4)
+- **Fait** : `FrameParams` gagne 4 projecteurs (three `SpotLight`), une lumière hémisphère et `fogNear` / `fogFar`. UBO, `common.glsl` et `scene.frag` étendus : cône lissé, portée, GGX du soleil, `HemisphereLight`, `Fog` linéaire. Banc `src/render/bench_spots.*` : éclairage du garage du jeu web (`garage.js`, `buildGarage`), capture `spots-sol` et mesure du coût sans projecteur puis avec 3.
+- **Accroches annoncées** : `src/render/renderer.h` (5 lignes dans `FrameParams`, RG-07) et `src/platform/desktop_main.cpp` (2 lignes : include et appel de `benchSpots`).
+- **Écart à RG-02, pour rester fidèle au jeu web** : le jeu web n'active pas `physicallyCorrectLights`. three r128 applique donc `pow(saturate(1 − d/portée), decay)` et une irradiance × PI. J'ai porté ce comportement plutôt que la formule physique de RG-02, qui donnerait un garage environ 10 fois plus sombre. À confirmer par le PO dans le fichier de règles.
+- **Vérification** : compilation C++ et `test_systems` réussis en local, branche synchronisée avec `main` avant le push. Shaders, banc et APK : CI de la PR #35 en cours.
