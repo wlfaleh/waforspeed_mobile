@@ -12,6 +12,7 @@
 #include "../audio/audio_system.h"
 #include "../core/scene_essai.h"
 #include "../game/game.h"
+#include "../game/course_system.h"
 #include "../game/traffic_system.h"
 #include "../render/bench_ombres.h"
 #include "../render/renderer.h"
@@ -46,6 +47,7 @@ int main(int argc, char** argv) {
     if (!vk.init(nullptr, cw, chh)) return 1;
     Renderer r; r.init(vk);
     Game g;
+    courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
         // vitrine : 3 angles
@@ -81,6 +83,7 @@ int main(int argc, char** argv) {
     activerSceneEssai(true); g.render(310); g.render(310.02); r.capturePng(out + "/scene-dediee-vide.png"); activerSceneEssai(false);
     g.shutdown();
     benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
+    benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)
     r.shutdown();
     vk.shutdown();
     jobs().stop();

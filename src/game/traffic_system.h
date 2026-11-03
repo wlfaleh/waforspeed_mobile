@@ -15,6 +15,8 @@ struct TrafficStats { int nearMisses = 0, accidents = 0, scrapes = 0, bumps = 0;
 // état du module actif (nullptr si aucune partie) : lecture pour le banc d'essai et, plus tard, le HUD (WFS-12)
 const Traffic* activeTraffic();
 const TrafficStats* activeTrafficStats();
+Traffic* activeTrafficMut();                 // course (WFS-12) : +6 voitures à chaque checkpoint
+void trafficRestart(double playerPos);       // course (WFS-12) : « Rejouer », même graine de trafic
 // banc d'essai : au prochain pas, place le joueur `metres` derrière la voiture la plus entourée, décalé de `lat`
 // (demi-largeurs de route), à sa vitesse + `extraKmh` ; `holdLane` : garde sa file sans freiner (scène de choc)
 void trafficBenchPlace(double metres, double lat, double extraKmh, bool holdLane);

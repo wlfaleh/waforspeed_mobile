@@ -75,11 +75,11 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours (corrections QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟠 À CORRIGER, tour 1/2 (`qa/rapports/WFS-35.md`) |
+| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔍 En revue | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10), fusion autorisée |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` |  |  |
+| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` | #15 | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⛔ Bloqué |  | WFS-26, WFS-36, WFS-44, WFS-45 | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
@@ -94,7 +94,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔧 En cours (corrections QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 | 🟠 À CORRIGER, tour 1/2 (`qa/rapports/WFS-12.md`) |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -118,7 +118,7 @@ Journal à jour.
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔧 En cours (QA : À CORRIGER, tour 1/2, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
+**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔍 En revue (QA : PASSABLE AVEC ANOMALIES MINEURES, fusion autorisée, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
 - [ ] `chargement-0/1/2` : fond `#0A0B10`, sur-titre cyan, logo « WAFOR / SPEED » (SPEED orange), barre cyan → orange à 0 %, 20-70 %, 100 %, étape + « n % »
 - [ ] mêmes captures en 2400x1080 : bloc à gauche, rien de coupé ; `chargement-fondu` : ville visible à travers (fondu 300 ms)
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
@@ -134,7 +134,7 @@ Journal à jour.
 **WFS-38 — Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · 🔧 En cours (règles : `regles-de-gestion/WFS-44.md`)
+**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · 🔍 En revue (règles : `regles-de-gestion/WFS-44.md`)
 - [ ] Captures du banc identiques à `main` (aucune scène dédiée par défaut), tests à 0 écart
 - [ ] Capture `scene-dediee-vide` : fond uni `#07070c`, ni route, ni ville, ni trafic, ni voiture du joueur, ni commandes ; cube repère vu en FOV 36°
 - [ ] Doc du point d'extension dans le skill `waforspeed-natif`
@@ -201,7 +201,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔧 En cours (QA : À CORRIGER, tour 1/2, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ✅ Terminé (QA : PASSABLE AVEC ANOMALIES MINEURES, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -295,6 +295,8 @@ Statuts : 🆕 Nouvelle (QA) → 📋 Planifiée (PO, US de correction créée) 
 | ANO-01 | WFS-34 | `trafic-cam0` | cœur du houppier un peu visible au bord d'un arbre | 📋 Planifiée | WFS-43 |
 | ANO-02 | WFS-34 | `course-*` | ombres des arbres peu visibles (rues à l'ombre des immeubles) | 📋 Planifiée | WFS-43 |
 | ANO-03 | WFS-34 | `course-*` | branches en « baleines de parapluie » | 🚫 Abandonnée | — (identique au jeu web) |
+| ANO-04 | WFS-12 | `course-decompte-3`, `course-decompte-go`, `course-fin` | texte droit au lieu d'italique (chiffres du décompte, score, stats) : le texte natif (`src/ui/text.*`) ne sait pas incliner les glyphes | 🆕 Nouvelle |  |
+| ANO-10 | WFS-35 | `chargement-fondu-2400` | capture prise pendant la planche de test du texte (`WFS_TEXTE_ESSAI=1`) : le panneau « DÉMO DU TEXTE » chevauche l'écran de chargement en fondu ; prendre les captures `chargement-*-2400` dans un lancement du banc sans planche de test | 🆕 Nouvelle |  |
 
 ## Journal
 
@@ -1005,3 +1007,37 @@ Ne pas toucher aux shaders ni au reste de `src/render/**` (WFS-45, E4).
 course, cube repère en FOV 36°) ; doc dans le skill `waforspeed-natif`.
 **Plan court** : `SceneDediee` + `System::scene` + `GameView::sceneDediee` → `Game::render` les applique avant `beginFrame` →
 accroches ville / trafic → système de test du banc → captures → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-44 : code écrit, PR #15 ouverte (Claude, session trafic)
+**Fait** : `System::scene(fp, s, vue)`, `SceneDediee { route, joueur, commandes, cible }`, `GameView::sceneDediee` ;
+`Game::render` donne la scène au premier système qui la prend (caméra, fond, brouillard, soleil, ambiance, ombres) et ne
+dessine plus route / voiture du joueur / commandes sauf demande ; système de test `src/core/scene_essai.*` (inactif par
+défaut) ; doc dans le skill `waforspeed-natif`.
+**Lignes d'accroche** : `src/world/ville.cpp` (1 ligne), `src/game/traffic_system.cpp` (1 ligne) : pas de dessin pendant une
+scène dédiée ; `src/platform/desktop_main.cpp` (2 lignes) : capture `scene-dediee-vide`.
+**Vérification (conteneur, lavapipe)** : banc de `main` et de la branche : 26 captures identiques au pixel près ;
+`scene-dediee-vide` : cube seul, fond (7, 7, 13) pour `#07070c` ; tests piste, systèmes, trafic (0 écart), son OK.
+
+### 2026-11-03 — QA WFS-12 : PASSABLE AVEC ANOMALIES MINEURES (2e passage, tour 2/2)
+**qa-lead** (`qa/rapports/WFS-12.md`), commit `f228e46`, run 41609393349, Release `apercu-waforspeed-12` mise à jour.
+- Corrigé : décompte blanc à halo cyan et « GO » orange à halo orange, sans ombre décalée ; écran de fin avec bouton en
+  parallélogramme, sur-titre cyan, score orange à halo. Course de référence toujours à 0 écart ; autres captures identiques.
+- Reste **ANO-04** (mineure, 🆕 au tableau des anomalies) : italique absent (décompte, score, stats), à faire dans `src/ui/text.*`
+  (hors zone E3, donc impossible dans un 2e tour de WFS-12). **Fusion autorisée.** Au PO : US de correction pour ANO-04, et
+  critère « checkpoint 10 → +7 s » à corriger en +7,4 s.
+
+### 2026-11-03 — QA WFS-35 : PASSABLE AVEC ANOMALIES MINEURES (2e passage, tour 2/2)
+**qa-lead** (`qa/rapports/WFS-35.md`), commit `dff7464`, run 41609812174, Release `apercu-waforspeed-35` mise à jour.
+- Corrigé : ANO-06 (barre sans traits, « FOR » gris uni et SPEED sans halo pendant le fondu), ANO-07 (« 3D » lisible à 19 px),
+  ANO-08 (échec sur « Chargement du modèle 3D… », barre à 20 %), ANO-09 (`chargement-*-2400.png` publiées, conformes).
+  Première image 0,045 à 0,058 s après Vulkan ; les 28 autres captures identiques au pixel près à `main`.
+- Reste **ANO-10** (mineure, 🆕 au tableau des anomalies) : `chargement-fondu-2400` prise pendant la planche de test du texte,
+  le panneau « DÉMO DU TEXTE » chevauche l'écran (banc seulement, le joueur ne le voit pas). **Fusion autorisée.**
+  Au PO : US de correction pour ANO-10.
+
+### 2026-11-03 — Fin WFS-12 Règles de course (PR #10 fusionnée, d4bab4c)
+QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-04 (italique du décompte, du score et des stats, à faire dans `src/ui/text.*`)
+au tableau des anomalies, pour le PO. Branche synchronisée avec `main` juste avant la fusion (ddcb0af : seuls des fichiers de
+règles avaient changé ; compilation et `test_course` OK, 0 écart). Épic E3 libre.
+**PO** : passer en `⏳ Prêt` les tickets qui dépendaient de WFS-12 (WFS-27, WFS-24, WFS-21, WFS-38 si WFS-37 est fini) ; créer l'US de
+correction d'ANO-04 ; corriger le critère « checkpoint 10 → +7 s » en « checkpoint 10 → +7,4 s (checkpoint 11 → +7 s) ».
