@@ -764,3 +764,13 @@ WFS-45 (prio 0.46, E4) non attribuable : E4 occupée par WFS-42.
 écart latéral ≤ 1,12 au journal + constat trottoir ; test de fidélité `0 écart(s)`.
 **Plan** : placer un peloton devant le joueur et densifier le trafic proche pour les scènes du banc ; journaliser l'écart
 latéral du choc ; vérifier `crashTraffic` du web pour le trottoir.
+
+### 2026-11-03 — WFS-33 construit, en attente de la CI (Claude, session moteur-natif)
+**Fait** (`feature/waforspeed-33`, zone `src/game/traffic_system.cpp` seulement) : peloton de 3 voitures une par file pour
+`trafic-cam0` ; au banc (rendu hors écran) une voiture du trafic gardée dans le champ pendant la course ; écart latéral de
+la voiture percutée au journal du banc.
+**Constat RG-03** : le jeu web borne aussi l'écart latéral d'une voiture en glissade à ±1,12 demi-largeur de route
+(`stepTraffic` de `js/game/traffic.js` : `clamp(car.offset + c.vx * h, -1.12, 1.12)`), soit 8,4 m du centre pour une
+chaussée de 7,5 m : l'arrière sur le trottoir pendant une glissade existe donc aussi dans le jeu web (comportement identique).
+**WFS-42** (toujours en cours) : diagnostic au banc en cours (pièce opaque de l'intérieur de la Golf).
+**Suite** : CI → qa-lead.
