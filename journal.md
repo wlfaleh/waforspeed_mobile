@@ -1189,3 +1189,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Coordination WFS-59** (E0, en cours) : WFS-59 accroche `renderer.h` (booléen GPU logiciel) et `src/render/vk.cpp` (rendu 25 %, sans ombres). WFS-45 ne touche pas à ce code ; synchroniser souvent avec `main`, conflit de fusion à résoudre en gardant les deux.
 - **Critères** : captures existantes identiques à `main` (0 spot par défaut) ; capture `spots-sol` (valeurs de `js/world/garage.js` → `buildGarage`) ; passe de scène ≤ +0,3 ms avec 3 spots.
 - **Plan** : FrameParams (4 spots, hémisphère, fogNear/fogFar) → `shaders/scene.frag` (formules three r128) → banc `spots-sol` → contrôle rapide, fusion, ajout à `qa/Check.md`.
+
+### 2026-11-03 19:56:48 — WFS-59 : mode GPU logiciel codé, PR #31 (agent 3)
+- **Fait** : `src/core/gpu_logiciel.h` (drapeau du mode, plafond de dt 0,05 s → 0,5 s en mode, 60 pas de 1/120 s au plus par image) et `src/core/gpu_logiciel_android.cpp` (extra d'intent `qa_simu`, `--ez` ou `--es`). `Game::update` utilise `plafondDt` ; `Game::init` coupe les ombres et écrit la ligne de logcat `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)`. `Renderer::gpuLogiciel()` dans `renderer.h`.
+- **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50 %) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
+- **Vérification** : `test_systems` OK en local (hors mode inchangé ; 360 images à 0,3 i/s = 180 s de jeu). Compilation `-fsyntax-only` OK ; JNI et APK vérifiés par la CI. Banc PC : mode inactif (hors écran).
+- **Limites** : le simulateur ne passe `qa_simu=true` que si le scénario de WFS-58 l'ajoute à `am start` ; sans cela, la détection SwiftShader suffit.
