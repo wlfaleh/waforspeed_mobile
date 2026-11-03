@@ -14,9 +14,9 @@
 namespace wfs {
 
 // couleurs du skill design-street-racing (tokens.md), en linéaire
-static const vec4 FOND{0.0030f, 0.0033f, 0.0052f, 0.82f};    // --bg #0A0B10, voile de l'écran de fin
+static const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f};     // --bg #0A0B10 (code sRGB, comme ui::CYAN), voile de l'écran de fin
 static bool g_rules = true;   // règles de course actives (voir courseBenchRules)
-static const vec4 SURFACE{0.0070f, 0.0080f, 0.0137f, 0.92f}; // --surface #14161F
+static const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};  // --surface #14161F
 
 class CourseSystem : public System {
 public:
@@ -94,7 +94,7 @@ private:
         const float bw = 40 * u, bh = 10 * u;
         btn_[0] = cx - bw / 2; btn_[1] = py + 60 * u; btn_[2] = bw; btn_[3] = bh;
         r.uiRect(btn_[0], btn_[1], bw, bh, ui::ORANGE);
-        ui::text(r, cx, btn_[1] + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {0.003f, 0.003f, 0.005f, 1}, ui::CENTRE, 0.12f, false);
+        ui::text(r, cx, btn_[1] + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
     }
     bool restartReq_ = false;
     long long score_ = 0; double km_ = 0;
