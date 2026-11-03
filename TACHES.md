@@ -95,7 +95,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | P3 Moyenne | WFS-09 | Nuit complète : phares, éclairage public, route mouillée et reflets | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | — | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
-| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ⏳ En attente |  | WFS-27 ✅, WFS-36, WFS-44 ✅), WFS-45 (WFS-26 | `feature/waforspeed-11` |  |  |
+| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅), WFS-27 ✅ | `feature/waforspeed-11` |  |  |
 | — | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
 | — | WFS-13 | Les 20 voitures et 16 peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-13` |  |  |
 | — | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
@@ -103,7 +103,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
 | — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
 | — | WFS-18 | Météo : pluie, flaques | E2 | ↪ Fusionné dans WFS-19 |  | — | `feature/waforspeed-18` |  |  |
-| P3 Moyenne | WFS-19 | Vie et météo : piétons, conducteurs, pluie et flaques | E2 | ⏳ En attente |  | WFS-06 ✅, WFS-16, WFS-63 | `feature/waforspeed-19` |  |  |
+| P3 Moyenne | WFS-19 | Vie et météo : piétons, conducteurs, pluie et flaques | E2 | ⏳ En attente |  | WFS-06 ✅, WFS-09, WFS-63 | `feature/waforspeed-19` |  |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | — | WFS-21 | Duel en ligne | E3 | ↪ Fusionné dans WFS-24 |  | — | `feature/waforspeed-21` |  |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
