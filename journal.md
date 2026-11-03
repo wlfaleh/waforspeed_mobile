@@ -1145,3 +1145,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Zone autorisée** : `tools/qa/**`, `.github/**` (E7) seulement, et uniquement si le scénario `mvp` de WFS-56 doit être ajusté ; aucun changement de `src/` ni `android/`.
 - **Critères** : `simulateur.yml` lancé sur `main` avec `epic=MVP` et `scenario=mvp` ; captures de chaque étape (chargement, menu, Course solo, décompte, course + HUD, fin, Rejouer, Menu) ; paysage plein écran, aucun plantage ni ANR, logcat sans erreur Vulkan ; rapport `qa/rapports/simulateur-MVP.md` VALIDÉ par `qa-lead`.
 - **Plan** : lancer le workflow sur `main` → récupérer captures et `deroulement.txt` → `qa-lead` → si VALIDÉ, le PO note « Livraison MVP » au Journal avec le lien de l'APK (`apercu`).
+
+### 2026-11-03 — WFS-50 : simulateur lancé sur main (Claude, session trafic)
+- `simulateur.yml` lancé sur `main` (b8b89fc), avec `epic=MVP` et `scenario=mvp` (run 41702978455). L'APK est celle de `main` après fusion de tous les tickets du MVP.
+- Aucun changement de code pour l'instant. La branche `feature/waforspeed-50` ne sera créée que si le scénario `mvp` doit être ajusté (`tools/qa/**`).
+- `qa-lead` rendra `qa/rapports/simulateur-MVP.md` sur les captures du run.
