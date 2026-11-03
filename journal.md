@@ -1080,3 +1080,10 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
 - Zone autorisée : `tools/qa/**`, `.github/workflows/simulateur.yml`. Aucune accroche : ni `src/`, ni `android/` (lecture seule de `src/ui/ecrans/menu.cpp` et `drawOver` de `src/game/course_system.cpp` pour les coordonnées). `android_main.cpp` / `desktop_main.cpp` sont touchés par la PR #27 : ne pas y toucher.
 - Critères : `scenario=mvp` → 10 captures nommées (chargement, menu, appui Course solo, décompte, GO, course + HUD, fin, Rejouer, 2e fin, retour menu), appuis notés dans `deroulement.txt`, `RÉSULTAT TECHNIQUE : OK` ; `scenario=conduite` inchangé.
 - Plan : paramètre `scenario` dans `simulateur.yml` → fonction `tap` + scénario `mvp` dans `emulateur.sh` (coordonnées calculées depuis la mise en page, attentes 30 s de chrono + marge) → lancement du workflow sur la branche → QA `qa-lead`.
+
+### 2026-11-03 — WFS-56 construit, essai simulateur lancé (Claude, session 01UY1Vv1)
+`feature/waforspeed-56` (088e0b3), PR #28 : `tools/qa/emulateur.sh` gagne un 3e argument `scenario` (`conduite` par défaut,
+inchangé ; `mvp` : 10 captures 01-chargement … 10-retour-menu, appuis `adb input tap` aux centres calculés comme la mise en page
+du jeu, « appui <nom> x,y » dans `deroulement.txt`, contrôle `VK_ERROR`) ; `simulateur.yml` : entrée `scenario`. Essai lancé avec
+`scenario=mvp` (Release `simulateur-WFS-56-mvp`). Seules les captures 01 et 02 sont attendues correctes tant que WFS-38 n'est pas
+fusionné. **Suite** : résultat du simulateur → qa-lead.
