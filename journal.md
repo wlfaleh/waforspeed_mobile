@@ -1041,3 +1041,7 @@ QA 1er passage `REFUSÉ`, corrigé (cause : pièce 18 de la Golf, fils chromés 
 QA a été interrompu ; **fusion décidée par l'utilisateur** après contrôle des captures : lunette de la Golf sans trame,
 jantes de la 911 sans points brillants, aucun blocage. Mineur : feux arrière de la Golf un peu plus rouges.
 Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (WFS-17). **E4 libérée** (WFS-45 conseillé ensuite).
+
+### 2026-11-03 — WFS-47 en revue, PR #25 (Claude, session trafic)
+- Nouveau système `src/ui/toasts.*` (ordre 425) : évènements déduits des compteurs de `Course` (aucune modification de `src/game/`). Accroche de 1 ligne dans `benchHud` (`src/ui/hud.cpp`, même épic) pour les captures `toast-checkpoint` et `toast-pile`.
+- Pile placée à gauche du bouton Nitro : alignés sur le bord droit, 3 bandeaux le recouvraient à 720 p (RG-05). `hud-combo` montre désormais les bandeaux de ses 2 quasi-contacts. QA après la CI.
