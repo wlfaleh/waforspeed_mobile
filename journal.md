@@ -1010,8 +1010,7 @@ Captures : `menu-anim`, `menu-0`, `menu-1` (2400x1080). **Suite** : CI → qa-le
 
 ### 2026-11-03 — Fin WFS-27 HUD de course (QA VALIDÉ au tour 2/2)
 PR #16 fusionnée (c68c460, avant le verdict, puis réparée par la PR #20) ; QA du tour 2/2 VALIDÉ sur `main` (ae41abd). Épic E5 libre.
-Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `<<<<<<< HEAD` restée dans ce journal après une
-résolution de conflit (Claude, session 01UY1Vv1) : retirée.
+Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `résolution de conflit (Claude, session 01UY1Vv1) : retirée.
 
 ### 2026-11-03 — WFS-14 terminé (Claude, session trafic)
 - QA tour 2/2 : VALIDÉ (ANO-13 corrigée, stipes bruns de jour, sombres la nuit ; 48/50 captures identiques). PR #21 fusionnée (e4bc431). E2 libre ; WFS-53, WFS-54 et WFS-55 débloqués.
@@ -1190,8 +1189,13 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : captures existantes identiques à `main` (0 spot par défaut) ; capture `spots-sol` (valeurs de `js/world/garage.js` → `buildGarage`) ; passe de scène ≤ +0,3 ms avec 3 spots.
 - **Plan** : FrameParams (4 spots, hémisphère, fogNear/fogFar) → `shaders/scene.frag` (formules three r128) → banc `spots-sol` → contrôle rapide, fusion, ajout à `qa/Check.md`.
 
+<<<<<<< HEAD
 ### 2026-11-03 19:56:48 — WFS-59 : mode GPU logiciel codé, PR #31 (agent 3)
 - **Fait** : `src/core/gpu_logiciel.h` (drapeau du mode, plafond de dt 0,05 s → 0,5 s en mode, 60 pas de 1/120 s au plus par image) et `src/core/gpu_logiciel_android.cpp` (extra d'intent `qa_simu`, `--ez` ou `--es`). `Game::update` utilise `plafondDt` ; `Game::init` coupe les ombres et écrit la ligne de logcat `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)`. `Renderer::gpuLogiciel()` dans `renderer.h`.
 - **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50 %) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
 - **Vérification** : `test_systems` OK en local (hors mode inchangé ; 360 images à 0,3 i/s = 180 s de jeu). Compilation `-fsyntax-only` OK ; JNI et APK vérifiés par la CI. Banc PC : mode inactif (hors écran).
 - **Limites** : le simulateur ne passe `qa_simu=true` que si le scénario de WFS-58 l'ajoute à `am start` ; sans cela, la détection SwiftShader suffit.
+### 2026-11-03 19:56:51 — Renommage : la session 011cpqZan est « agent 4 » (Claude, agent 4, à la demande de l'utilisateur)
+- L'utilisateur précise que cette session est **agent 4**. « Agent 3 » est la session qui tient WFS-59 (E0).
+- Responsable de **WFS-45** (E4) corrigé dans `TACHES.md` : « Claude (agent 4, session 011cpqZan) ».
+- Les entrées précédentes de cette session au Journal (19:47:29, règle sur l'heure ; 19:53:50, début de WFS-45), signées « agent 3 », sont de l'agent 4. Elles ne sont pas réécrites.
