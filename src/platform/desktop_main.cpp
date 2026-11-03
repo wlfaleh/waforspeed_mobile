@@ -11,6 +11,7 @@
 #include "../core/platform.h"
 #include "../audio/audio_system.h"
 #include "../core/scene_essai.h"
+#include "../game/camera_banc.h"
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
@@ -63,6 +64,7 @@ int main(int argc, char** argv) {
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); return finir(); }   // WFS-37
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
@@ -127,6 +129,7 @@ int main(int argc, char** argv) {
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
+        benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
     }
     r.shutdown();
     vk.shutdown();
