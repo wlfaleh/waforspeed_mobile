@@ -9,13 +9,14 @@ Donner de la vie au décor : cafés, restaurants et bars avec terrasses, portiqu
 - RG-02 : clients attablés = personnages de WFS-19 (si disponibles, sinon tables vides) ; pas de silhouettes géométriques.
 - RG-03 : portique au-dessus de la route : panneau lumineux « CHECKPOINT », « n km », « ARRIVÉE » avec les couleurs du jeu web, visible de loin.
 - RG-04 : panneaux publicitaires et enseignes néon (`BOARD_TEXTS`, `AD_TEXTS` : WAFORSPEED, GARAGE 88, TURBO CAFÉ, NUIT BLANCHE, PNEUS 24/7, GRAND PRIX…) sur la ville et le circuit.
+- RG-06 : plage : serviettes (`decor.js` l. 51) avec personnes allongées, et baigneurs ; personnages et apparence de WFS-19 (`populatePeople` : plage 50 % côté mer, 10 % rochers), poses `Sitting_*` et allongée du jeu web.
 - RG-05 : coût maîtrisé : objets fusionnés par tronçon (comme le décor existant) ; ≤ 300 appels de dessin.
 
 ## À réutiliser du jeu web
 `js/world/life.js` (`SHOPS`, `getShopMats`, `placeShop`, terrasses) ; `js/world/scene.js` (`setGantry`) ; `js/world/decor.js` (`BOARD_TEXTS`, `AD_TEXTS`, panneaux).
 
 ## Critères d'acceptation
-- [ ] captures : terrasse de café, portique de checkpoint, enseigne néon la nuit ; banc `0 écart(s)` hors zones modifiées
+- [ ] captures : terrasse de café avec clients assis, plage avec serviettes et allongés, portique de checkpoint, enseigne néon la nuit ; banc `0 écart(s)` hors zones modifiées
 
 ## Hors périmètre
-Piétons (WFS-19), nouvelles cartes (WFS-53).
+Piétons qui marchent (WFS-19), conducteurs (WFS-73), nouvelles cartes (WFS-53).
