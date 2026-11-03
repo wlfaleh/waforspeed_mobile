@@ -59,7 +59,13 @@ struct TrafficCar {
 struct TrafficView { double position = 0, playerX = 0, speed = 0, myLen = 0; bool garage = false; };
 
 // événements d'un pas de collision (pour le score, le son et les secousses : WFS-10 / WFS-12)
-struct HitEvents { int nearMiss = 0; int scrapes = 0; int bumps = 0; int accidents = 0; float shake = 0; };
+// seq : les événements qui comptent pour les règles de course (WFS-12), dans l'ordre de la boucle du jeu web
+struct HitEvent { char kind; double impact; };   // 'n' quasi-contact, 'b' petit choc (bump), 'a' accident
+struct HitEvents {
+    int nearMiss = 0; int scrapes = 0; int bumps = 0; int accidents = 0; float shake = 0;
+    HitEvent seq[16]; int count = 0;
+    void push(char kind, double impact) { if (count < 16) seq[count++] = {kind, impact}; }
+};
 
 class Traffic {
 public:
@@ -74,6 +80,8 @@ public:
     static void crash(TrafficCar& car, double impact, int side);   // crashTraffic
     // chocs et quasi-contacts avec le joueur (boucle « for (const car of cars) » de update())
     HitEvents collide(Player& pl, double dt);
+    // pendant le compte à rebours (pas de chocs) : suit seulement la position relative des voitures (car.prevDz)
+    void watch(const Player& pl);
 
     std::vector<TrafficCar> cars;
     uint32_t seed = 1;

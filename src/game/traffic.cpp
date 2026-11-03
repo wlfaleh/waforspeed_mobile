@@ -208,9 +208,9 @@ HitEvents Traffic::collide(Player& pl, double dt) {
                 pl.position = track_->wrap(pl.position - back); pl.dist = std::max(0.0, pl.dist - back);
                 car.speed = v0 + rel * 0.55;
                 pl.speed = v0 + rel * clampd(0.04 + 0.08 * pl.perf.mass, 0.06, 0.2);   // une voiture lourde garde plus de vitesse
-                if (impact / pl.perf.mass > 0.28) { crash(car, impact, -side); pl.accident(impact, side); ev.accidents++; ev.shake = 0.9f; }
+                if (impact / pl.perf.mass > 0.28) { crash(car, impact, -side); pl.accident(impact, side); ev.accidents++; ev.shake = 0.9f; ev.push('a', impact); }
                 else {
-                    ev.bumps++; ev.shake = std::max(ev.shake, (float)(0.25 + impact * 1.5));
+                    ev.bumps++; ev.shake = std::max(ev.shake, (float)(0.25 + impact * 1.5)); ev.push('b', impact);
                     if (impact > 0.15) crash(car, impact * 0.5, -side);
                 }
             } else {
@@ -218,19 +218,23 @@ HitEvents Traffic::collide(Player& pl, double dt) {
                 const double rel = std::max(0.0, car.speed - pl.speed), impact = rel / MAX_SPEED;
                 car.z = track_->wrap(pl.position + PLAYER_Z - touchZ - 0.25 / M);
                 pl.speed += rel * 0.5; car.speed = pl.speed - rel * 0.1;
-                ev.bumps++; ev.shake = std::max(ev.shake, (float)(0.25 + impact * 1.5));
+                ev.bumps++; ev.shake = std::max(ev.shake, (float)(0.25 + impact * 1.5)); ev.push('b', impact);
             }
             car.prevDz = track_->relZ(car.z - (pl.position + PLAYER_Z));
             continue;
         }
         // quasi-contact : on double une voiture en la frôlant à plus de la moitié de la vitesse max
         if (car.prevDz > 0 && dz <= 0 && dz > -2000 && lat >= touchLat && lat < touchLat + NEAR_MISS && pl.speed > MAX_SPEED * 0.5 && !car.crashed) {
-            ev.nearMiss++;
+            ev.nearMiss++; ev.push('n', 0);
             pl.nitro = std::min(1.0, pl.nitro + pl.perf.nitroGain);
         }
         car.prevDz = dz;
     }
     return ev;
+}
+
+void Traffic::watch(const Player& pl) {
+    for (auto& car : cars) car.prevDz = track_->relZ(car.z - (pl.position + PLAYER_Z));
 }
 
 } // namespace wfs

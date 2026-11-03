@@ -3,6 +3,7 @@
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../render/model_loader.h"
+#include "course_system.h"   // WFS-12 : ralenti après un accident
 
 namespace wfs {
 
@@ -190,7 +191,7 @@ void Game::drawControls() {
 
 // ---------------------------------------------------------------- mise à jour
 void Game::update(double dt) {
-    dt = std::min(dt, 0.05);
+    dt = courseScaleDt(std::min(dt, 0.05));   // WFS-12 : ralenti ×0,35 après un accident
     appliquerEcran();
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
     const bool course = ecran_ == Ecran::Course;
