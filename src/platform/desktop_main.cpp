@@ -14,6 +14,7 @@
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/traffic_system.h"
+#include "../ui/hud.h"
 #include "../render/bench_ombres.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -50,7 +51,11 @@ int main(int argc, char** argv) {
     Renderer r; r.init(vk);
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
+<<<<<<< HEAD
+    if (const char* b = std::getenv("WFS_BANC"); b && std::string(b) == "hud") { benchHud(g, r, out); r.shutdown(); vk.shutdown(); jobs().stop(); return 0; }   // WFS-27 : HUD seul (2400x1080)
+=======
     ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
+>>>>>>> origin/main
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
         // vitrine : 3 angles
@@ -87,6 +92,7 @@ int main(int argc, char** argv) {
     g.shutdown();
     benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
     benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)
+    benchHud(g, r, out);          // WFS-27 : HUD (hud-course, hud-temps-bas, hud-nitro, hud-combo)
     r.shutdown();
     vk.shutdown();
     jobs().stop();
