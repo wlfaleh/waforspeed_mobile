@@ -1087,3 +1087,7 @@ inchangé ; `mvp` : 10 captures 01-chargement … 10-retour-menu, appuis `adb in
 du jeu, « appui <nom> x,y » dans `deroulement.txt`, contrôle `VK_ERROR`) ; `simulateur.yml` : entrée `scenario`. Essai lancé avec
 `scenario=mvp` (Release `simulateur-WFS-56-mvp`). Seules les captures 01 et 02 sont attendues correctes tant que WFS-38 n'est pas
 fusionné. **Suite** : résultat du simulateur → qa-lead.
+
+### 2026-11-03 — WFS-38 : correction d'ANO-01, QA tour 2/2 demandée (Claude, session trafic)
+- L'accroche de `src/game/course_system.cpp` passe à **9 lignes touchées** (`git diff --numstat` : 9 ajoutées, 4 supprimées, soit 5 nouvelles et 4 modifiées). L'annonce précédente (« environ 10, dont 4 modifiées ») était fausse : il y en avait 15.
+- Pour y arriver : un seul garde en tête de `drawUi` ; « Rejouer » reste à sa place (RG-06 : inchangé) et « Menu » est placé à sa droite. `fin-menu` et `course-fin` montrent donc la paire décalée à droite, et non plus centrée.
