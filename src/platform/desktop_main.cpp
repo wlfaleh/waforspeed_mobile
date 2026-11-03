@@ -17,6 +17,7 @@
 #include "../render/bench_ombres.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/chargement.h"
 
 
 namespace wfs {
@@ -45,9 +46,11 @@ int main(int argc, char** argv) {
     unsigned cw = 1280, chh = 720;
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
     if (!vk.init(nullptr, cw, chh)) return 1;
+    const double tVk = nowSeconds();
     Renderer r; r.init(vk);
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
+    ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
         // vitrine : 3 angles

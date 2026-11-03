@@ -15,10 +15,11 @@ static vec3 hexColor(unsigned h) {
     return {lin(((h >> 16) & 255) / 255.f), lin(((h >> 8) & 255) / 255.f), lin((h & 255) / 255.f)};
 }
 
-bool Game::init(Renderer& r, const char* carId, const char* mapId) {
+bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
     ecran_ = ecranDemande_ = Ecran::Course; demandeEcran_ = false;   // écran de départ (Menu quand WFS-37 existera)
     lacherCommandes();
+    if (progression) progression(0.10f, "Construction de la route");   // WFS-35
     track_.build(mapById(mapId));
     Material m;
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
@@ -31,7 +32,10 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId) {
                                  {0.5f, 0.02f, 0.5f, 0, 1, 0, 1, 1}, {-0.5f, 0.02f, 0.5f, 0, 1, 0, 0, 1}};
         shadowQuad_ = r.makeMesh(v, {0, 1, 2, 0, 2, 3});
     }
+    if (progression) progression(0.20f, "Chargement du modèle 3D…");   // WFS-35
     setCar(carId);
+    if (progression && !car_.ok) return false;   // WFS-35 : voiture introuvable, l'écran garde l'étape où l'erreur a eu lieu
+    if (progression) progression(0.70f, "Construction de la ville");   // WFS-35
     systemsInit();
     return car_.ok;
 }
