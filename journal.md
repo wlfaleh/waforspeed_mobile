@@ -1161,3 +1161,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Début WFS-58** · épic E7 · responsable Claude (session trafic) · branche `feature/waforspeed-58` · zone `tools/qa/**`, `.github/**` (aucun `src/`, `android/`).
 - **Critères** : chaque étape attend son événement du logcat ; `01-chargement` = barre du jeu sans barres système, `02-menu` = menu ; jamais `RÉSULTAT TECHNIQUE : OK` avec une étape manquante ; `scenario=conduite` inchangé.
 - **Plan** : fonction `attendre` (logcat borné) → réécrire les étapes du scénario `mvp` autour → `wm size` + extra `qa_simu` → lancer `simulateur.yml` sur la branche → `qa-lead`.
+
+### 2026-11-03 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)
+- `tools/qa/emulateur.sh`, scénario `mvp` : chaque étape attend sa ligne du journal du jeu avec un délai max. Ensuite, 2 lignes `QA ips=` avant la capture et une marque FIGÉE si deux captures sont identiques. Si une étape manque, le scénario s'arrête en échec franc. L'écran est réduit à 540x1200 et l'appli est lancée avec `--ez qa_simu true`. `simulateur.yml` : l'étape du scénario passe à 35 min.
+- **Pour le PO** : ni le décompte ni le « GO » ne sont journalisés dans `src/` (`course_system.cpp` n'écrit que `nouvelle course`, `checkpoint` et `temps écoulé`), et l'affichage de l'écran de fin non plus. En attendant, le scénario détecte GO par la première ligne `QA ips=… vitesse=[1-9]` avec le gaz tenu, et l'écran de fin par `course : temps écoulé` suivi de 2 lignes `QA ips`. Une ligne `course : GO` serait plus sûre ; c'est une piste pour WFS-59 ou un ticket E3.
+- Essai : `simulateur.yml` sur `feature/waforspeed-58` (`epic=WFS-58`, `scenario=mvp`, run 41705761615). Tant que WFS-59 n'est pas fusionné, un ÉCHEC franc est le résultat attendu.
