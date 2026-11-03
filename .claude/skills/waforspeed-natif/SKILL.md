@@ -22,10 +22,10 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 6. **QA après chaque APK** : l'agent `qa-lead` regarde les captures, classe les anomalies et rend un verdict
    (`qa/rapports/WFS-XX.md`). `REFUSÉ` (anomalie bloquante) : corriger jusqu'à ce qu'il n'y en ait plus.
    `À CORRIGER` (mineures seulement) : corriger, deux tours au plus. `VALIDÉ`, ou `PASSABLE AVEC ANOMALIES MINEURES` après deux tours
-   (anomalies restantes inscrites au tableau des anomalies, US de correction créées par le PO) : fusionner, puis statut ✅
+   (anomalies restantes inscrites au tableau des anomalies `anno.md`, US de correction créées par le PO) : fusionner, puis statut ✅
    et entrée « Fin » au Journal.
 7. **Ne jamais supprimer de branche** (locale ou distante), même fusionnée : l'utilisateur s'en occupe.
-8. **Journal** à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
+8. **Journal** (`journal.md`, nouvelles entrées à la fin) à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
 9. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
 
 ## Architecture
