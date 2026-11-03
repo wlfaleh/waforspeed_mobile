@@ -12,6 +12,16 @@ layout(set = 0, binding = 0) uniform Frame {
     vec4 misc;        // x exposition, y nuit (0/1), z intensité ambiante, w réflexions
     mat4 shadowMat;   // monde → carte d'ombre du soleil (WFS-07)
     vec4 shadowP;     // x ombres actives (0/1), y taille d'un texel (uv), z décalage normal (m), w biais de profondeur
+    // WFS-45 : projecteurs, lumière hémisphère, brouillard linéaire (three.js r128)
+    vec4 camFwd;      // xyz direction regardée par la caméra (profondeur du brouillard linéaire)
+    vec4 fogLin;      // x début, y fin du brouillard linéaire (three Fog) ; y = 0 : brouillard exponentiel
+    vec4 hemiSky;     // rgb couleur du haut × intensité (HemisphereLight) ; w 1 = active, sinon ambiance du ciel
+    vec4 hemiGround;  // rgb couleur du bas × intensité
+    vec4 spotN;       // x nombre de projecteurs (0 à 4)
+    vec4 spotPos[4];  // xyz position, w portée (0 = infinie)
+    vec4 spotDir[4];  // xyz direction éclairée, w décroissance
+    vec4 spotCol[4];  // rgb couleur × intensité × PI
+    vec4 spotCone[4]; // x cos(angle), y cos(angle × (1 − pénombre))
 } F;
 layout(set = 0, binding = 1) uniform sampler2DShadow shadowMap;
 
