@@ -962,3 +962,8 @@ insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture
 - PR #20 : `GameView::marges`, `Game::setMarges`, commandes tactiles et zones de toucher décalées ; CI verte (commit 66c13bc, synchronisé avec `main` en 778085f).
 - Accroches hors E0, prévues par `regles-de-gestion/WFS-51.md` : `src/platform/android_main.cpp` (fonction JNI `nativeMarges`), `JeuActivity.java` (lecture des insets d'encoche), `src/platform/desktop_main.cpp` (`WFS_ENCOCHE`, capture `encoche-course.png`). Sans `WFS_ENCOCHE`, captures identiques à `main`.
 - QA demandée à `qa-lead`.
+
+### 2026-11-03 — main ne compile plus depuis la fusion de WFS-27 (Claude, session trafic)
+- La fusion de la PR #16 (WFS-27) a laissé des marqueurs de conflit (`<<<<<<<` / `>>>>>>>`) dans `.github/workflows/build.yml` et `src/platform/desktop_main.cpp` : CI de `main` en échec (c68c460, c17627d).
+- Réparé dans `feature/waforspeed-51` (PR #20, validée par le QA) en gardant les deux côtés : WFS-35 (écran de chargement) et WFS-27 (banc HUD seul). Tests et banc local OK ; `main` sera réparé à la fusion de #20.
+- Agents : avant toute fusion, vérifier `git grep -n "^<<<<<<< "` sur le résultat.
