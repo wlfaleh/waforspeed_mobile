@@ -79,7 +79,9 @@ Journal à jour.
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
+| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` |  |  |
+| 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
+| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⛔ Bloqué |  | WFS-26, WFS-36, WFS-44, WFS-45 | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
 | 0.7 | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-40` |  |  |
 | 0.8 | WFS-41 | Choix du terrain et du moment (jour / nuit) | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-41` |  |  |
@@ -132,7 +134,17 @@ Journal à jour.
 **WFS-38 — Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · 🔧 En cours (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
+**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · 🔧 En cours (règles : `regles-de-gestion/WFS-44.md`)
+- [ ] Captures du banc identiques à `main` (aucune scène dédiée par défaut), tests à 0 écart
+- [ ] Capture `scene-dediee-vide` : fond uni `#07070c`, ni route, ni ville, ni trafic, ni voiture du joueur, ni commandes ; cube repère vu en FOV 36°
+- [ ] Doc du point d'extension dans le skill `waforspeed-natif`
+
+**WFS-45 — Lumières : projecteurs (spots), hémisphère, brouillard linéaire** · E4 · priorité 0.46 · ⏳ Prêt (règles : `regles-de-gestion/WFS-45.md`)
+- [ ] Captures existantes identiques à `main` (0 spot par défaut)
+- [ ] Capture `spots-sol` : 3 taches orange / cyan / blanche aux bords adoucis, hémisphère bleutée, brouillard linéaire, voiture éclairée
+- [ ] Coût de la passe de scène ≤ +0,3 ms avec 3 spots (journal du banc)
+
+**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⛔ Bloqué par WFS-44 et WFS-45 (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité 0.6 · ⏳ En attente (règles : `regles-de-gestion/WFS-39.md`)
@@ -972,3 +984,24 @@ Gallardo), texte WFS-26. Aucune voiture générée par le code.
 du banc inchangées (écran `Course` par défaut).
 **Plan court** : scène du garage (plateau, sol, anneau, lumières, brouillard) → voiture tournante 0,35 rad/s → glisser /
 glissement rapide et flèches → nom, index, « Retour » → captures du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — PO : WFS-11 bloqué ; nouveaux tickets WFS-44 (E0) et WFS-45 (E4) ; début WFS-44 (attribué à Claude, session trafic)
+**Blocage WFS-11** (signalé par la session trafic, comme prévu à l'attribution) : un système ne peut que dessiner en plus
+dans la scène de `Game` ; il ne peut ni choisir la caméra (`Game::render` calcule seul poursuite / orbite et FOV 58-70°, RG-02
+demande FOV 36, distance 1,9×L, regard y = −0,35), ni régler fond / ciel / brouillard / soleil (`FrameParams` en dur, ciel de
+jour, brouillard 0,0009 ; RG-01 demande `#07070c` et brouillard 14-40 m), ni masquer route, ville, trafic et voiture du joueur ;
+et le renderer n'a qu'un soleil + ambiance (RG-02 : hémisphère + 3 projecteurs). WFS-11 → ⛔ Bloqué, **responsable libéré**
+(un ticket par agent) ; dépendances ajoutées : WFS-44, WFS-45. La session trafic le reprendra en priorité une fois débloqué.
+**Nouveaux tickets** : WFS-44 (E0, 0.45) scène dédiée par écran ; WFS-45 (E4, 0.46, ⏳ Prêt, attribuable dès la fin de WFS-42)
+spots + hémisphère + brouillard linéaire, réutilisable par WFS-09 (phares). Les deux sont indépendants : en parallèle.
+
+**Début WFS-44** — Épic **E0**, libre (WFS-30 et WFS-36 ✅). Responsable : Claude (session trafic), 2026-11-03.
+Branche `feature/waforspeed-44`, partie de `main`. Règles : `regles-de-gestion/WFS-44.md`.
+**Zone de code autorisée** : `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API seulement), `CMakeLists.txt` ;
+accroches annoncées ≤ 10 lignes : arrêt du dessin si `sceneDediee` dans la ville (`src/world/`) et le trafic
+(`src/game/traffic_system.cpp`), système de test + capture `scene-dediee-vide` dans `src/platform/desktop_main.cpp`.
+Ne pas toucher aux shaders ni au reste de `src/render/**` (WFS-45, E4).
+**Critères** : captures du banc identiques par défaut, tests à 0 écart ; `scene-dediee-vide` (fond uni `#07070c`, rien de la
+course, cube repère en FOV 36°) ; doc dans le skill `waforspeed-natif`.
+**Plan court** : `SceneDediee` + `System::scene` + `GameView::sceneDediee` → `Game::render` les applique avant `beginFrame` →
+accroches ville / trafic → système de test du banc → captures → PR, CI, QA par `qa-lead`.

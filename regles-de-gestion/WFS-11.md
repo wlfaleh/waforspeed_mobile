@@ -1,5 +1,7 @@
 # WFS-11 — Garage 3D : plateau tournant et choix de la voiture
-Épic : E5 · Priorité : 0.5 · Dépend de : WFS-26 (✅), WFS-36
+Épic : E5 · Priorité : 0.5 · Dépend de : WFS-26 (✅), WFS-36 (✅), WFS-44 (scène dédiée, E0), WFS-45 (spots et hémisphère, E4)
+
+> ⛔ Bloqué le 2026-11-03 : la scène du garage (caméra, fond, brouillard, lumières) demande WFS-44 et WFS-45. RG-01 et RG-02 s'appuient sur eux.
 
 > Redécoupé le 2026-11-03 par le PO : le menu passe dans l'épic E8 (WFS-37, WFS-38), la fiche et les peintures dans WFS-40.
 > Ce ticket ne garde que la scène 3D du garage et le changement de voiture.
