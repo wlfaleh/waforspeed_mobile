@@ -1291,3 +1291,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Règles** : `regles-de-gestion/WFS-28.md` complété (RG-08 à RG-11 : événements lus par front montant sur `activeCourse()` et `GameView::player`, sons synthétisés au démarrage par bruit filtré comme `js/audio/sfx.js`, mixés dans le flux AAudio de WFS-10, ligne `SFX <nom>` au journal du banc).
 - **Critères** : chaque événement déclenche son son une seule fois (journal du banc) ; pas de craquement ; coupure en pause ; captures inchangées, `0 écart(s)`.
 - **Plan court** : 1) `noiseHit` / `beep` natifs (tables pré-calculées) ; 2) détection des événements ; 3) mixage et coupure en pause ; 4) journal du banc.
+
+### 2026-11-03 20:49:47 — WFS-28 : bruitages codés, PR #36 (agent 3, session 011cpqZd)
+- **Fait** : `src/audio/sfx_synth.h` (noiseHit / beep de `js/audio/sfx.js`, fondus de 5 ms, boucles raccordées), `src/audio/sfx.h/.cpp` (sons calculés au démarrage, file sans verrou, 16 voix, coupure en pause, setMuted ; un son par changement d'état de la course : décompte, GO, checkpoint, fin, accident, choc, frottement, quasi-contact ; crissements et souffle de nitro ; « SFX <nom> » au journal). Mélange dans le rappel AAudio de `audio_system.cpp` seulement (`moteur.wav` du banc inchangé).
+- **Accroche annoncée (4 lignes, zone E3)** : `src/game/course.h` (compteurs `bumps`, `scrapes`, `lastImpact`) et `src/game/course.cpp` (`reset`, `bump`, `applyHits`). Aucune règle de course changée.
+- **Vérification** : `test_audio` OK en local (6 bruitages : bouts à zéro, raccords de boucle, crête) ; essai du mélangeur : silence après pause. CI en cours.
+- **Limites** : contact et arrivée en duel préparés, pas encore joués (pas de duel) ; vibration non faite (hors `src/audio`).
