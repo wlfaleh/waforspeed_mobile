@@ -1253,3 +1253,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Avant chaque `git push` de branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…) : `git fetch origin && git merge origin/main`, conflits résolus en gardant les deux modifications, tests locaux relancés, puis seulement pousser.
 - Une CI lancée sur une branche en retard sur `main` ne compte pas : ses captures et son verdict ne sont pas valables.
 - Ajouté dans `CLAUDE.md`, `TACHES.md` (règle 4) et le skill `waforspeed-natif` (point 4).
+
+### 2026-11-03 — WFS-39 en revue, PR #34 (Claude, session trafic)
+- `src/ui/ecrans/pause.*` : bouton « Menu », écran de pause, « Reprendre », « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné) et « Quitter la course ». Chrono figé pendant la pause, vérifié au journal du banc.
+- **Accroches annoncées** : `src/platform/android_main.cpp` (`APP_CMD_PAUSE` / `LOST_FOCUS` en course → Pause, 4 lignes) et `src/platform/desktop_main.cpp` (`benchPause` + include, 3 lignes). QA après la CI.
+- WFS-58 (PR #32) : l'essai simulateur 3 atteint le GO, puis échoue franchement à l'étape « fin » (attendu sans WFS-59). La QA est lancée.
