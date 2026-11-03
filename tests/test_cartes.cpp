@@ -1,9 +1,7 @@
 // WFS-14 : le tracé natif des cartes plage, campagne et circuit est identique à celui du jeu web (buildTrack, même graine) :
 // même nombre de segments, même courbure et mêmes altitudes pour chaque segment.
 // Référence : tests/cartes_web_ref.txt, produite par `node tests/cartes_web.cjs <jeu web>/waforspeed`.
-// Tolérance : 1e-3 unité (6 µm). Écart connu, signalé au PO (épic E3) : easeInOut de src/game/track.cpp utilise PI en float
-// (Math.PI en double dans le jeu web) → altitudes de campagne et circuit décalées de 3 µm au plus ; plage : 7,6e-8.
-// La correction changerait légèrement toutes les captures (ville comprise) : elle relève d'un ticket E3 dédié.
+// Tolérance : 1e-9 (WFS-55 : easeInOut de src/game/track.cpp calcule en double, comme Math.PI du jeu web).
 // usage : test_cartes tests/cartes_web_ref.txt
 #include <algorithm>
 #include <cmath>
@@ -28,7 +26,7 @@ int main(int argc, char** argv) {
             const Segment& s = t.segAt((int64_t)i);
             const double e = std::max({std::abs(s.curve - c), std::abs(s.y1 - y1), std::abs(s.y2 - y2)});
             worst = std::max(worst, e);
-            if (e > 1e-3) { if (bad++ < 3) std::printf("%s segment %zu : natif %.9f %.6f %.6f | web %.9f %.6f %.6f\n", id.c_str(), i, s.curve, s.y1, s.y2, c, y1, y2); }
+            if (e > 1e-9) { if (bad++ < 3) std::printf("%s segment %zu : natif %.9f %.6f %.6f | web %.9f %.6f %.6f\n", id.c_str(), i, s.curve, s.y1, s.y2, c, y1, y2); }
         }
         std::printf("%s : %zu segments comparés au jeu web, %d écart(s) (écart max %.2g)\n", id.c_str(), n, bad, worst);
         totalBad += bad;
