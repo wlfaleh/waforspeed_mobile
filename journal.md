@@ -986,3 +986,11 @@ WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS
 
 ### 2026-11-03 — WFS-49 en revue, PR #22 (Claude, session trafic)
 - `build.yml` : `chargement-*-2400` pris dans un lancement séparé du banc en 2400x1080 sans `WFS_TEXTE_ESSAI`. QA après la CI.
+
+### 2026-11-03 — QA WFS-27 HUD de course : VALIDÉ, tour 2/2 (qa-lead)
+Captures de la Release `apercu` (`main` 6e672a9, run 41639563396, contient 24f08d3) ; `feature/waforspeed-27` (4f1a32d) = main.
+ANO-11 corrigée : plus de HUD ni de temps « 1000000000,0 » dans `course-cam*`, `trafic-*`, `ombres-*`, `texte-essai-*` ; les 12
+`vitrine-*` sont identiques au pixel près à la référence WFS-44. ANO-12 corrigée : libellés lisibles à 720 p (`hud-course`, `hud-nitro`).
+`hud-*`, `course-decompte-3` et `course-fin` toujours conformes, banc à 0 écart(s). Aucune anomalie restante, rien dans `anno.md`.
+**Procédure** : la PR #16 avait été fusionnée (c68c460) avant ce verdict, avec des marqueurs de conflit réparés par la PR #20 (WFS-51).
+Remarque pour WFS-51 : `encoche-course` est prise sans HUD (scène sans règles de course). Rapport : `qa/rapports/WFS-27.md`.
