@@ -28,6 +28,6 @@ Tu es le **QA lead** de WaForSpeed Mobile. Ton travail est simple : **regarder l
    Une anomalie bloquante n'a pas de limite de tours : `REFUSÉ` tant qu'elle est là.
 6. Écrire un court rapport `qa/rapports/WFS-XX.md` : verdict, puis un tableau des anomalies
    `| ANO-XX | Gravité | Capture | Ce qui ne va pas |`.
-7. Au verdict **PASSABLE AVEC ANOMALIES MINEURES** seulement, pour chaque anomalie mineure restante, ajouter une ligne au **tableau des anomalies** de `TACHES.md` (numéro ANO suivant,
+7. Au verdict **PASSABLE AVEC ANOMALIES MINEURES** seulement, pour chaque anomalie mineure restante, ajouter une ligne au **tableau des anomalies** `anno.md` (numéro ANO suivant,
    ticket d'origine, capture, description, statut `🆕 Nouvelle`, colonne « US de correction » vide), sur la dernière version
    de `main`, en ne modifiant que tes lignes. Le PO les priorise ensuite et crée les US de correction : ce n'est pas ton rôle.

@@ -9,7 +9,7 @@
 - **Règles de gestion** : chaque US a son fichier `regles-de-gestion/WFS-XX.md`, écrit par le PO ; le lire avant de coder.
   **Réutiliser le code et les modèles 3D existants du jeu web** (`wlfaleh/waaps`, dossier `waforspeed/` : `js/`, `models/`, `audio/`) : ne rien recréer qui existe déjà.
 - **Un ticket en cours par épic, un par agent. Ne modifier que la zone de code de son épic** (tableau des épics) ;
-  le noyau partagé ne change que par un ticket E0 (ou une ligne d'accroche ≤ 10 lignes annoncée au Journal).
+  le noyau partagé ne change que par un ticket E0 (ou une ligne d'accroche ≤ 10 lignes annoncée au Journal, `journal.md`).
 - **Une branche par ticket** : `feature/waforspeed-XX`. Même si ta session Claude t'attribue une branche `claude/…`,
   travaille sur `feature/waforspeed-XX` (aucun travail hors ticket, aucune branche `claude/…`). Synchroniser avec `main` avant chaque validation et avant chaque PR.
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
@@ -19,10 +19,10 @@
   **Gravité des anomalies, décidée par le QA** : une anomalie **bloquante** donne `REFUSÉ` : le développeur corrige jusqu'à ce
   qu'il n'y ait plus de bloquante. S'il n'y a que des anomalies **mineures**, verdict `À CORRIGER` : le QA donne la main au
   développeur **deux fois au plus** pour les corriger. Si elles restent après ces deux tours, le QA crée les anomalies au
-  **tableau des anomalies** de `TACHES.md` (ANO-XX) et accepte avec le verdict `PASSABLE AVEC ANOMALIES MINEURES` : on fusionne,
+  **tableau des anomalies** `anno.md` (ANO-XX) et accepte avec le verdict `PASSABLE AVEC ANOMALIES MINEURES` : on fusionne,
   puis le **PO** priorise ces anomalies et crée des US de correction dédiées.
   **Fusion autorisée avec `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES`, jamais avec `REFUSÉ` ni `À CORRIGER`.** L'utilisateur ne teste pas lui-même.
 - **Statuts de `TACHES.md` mis à jour après chaque avancement et envoyés sur `main` tout de suite** (les autres agents s'y fient).
   Toujours partir de la dernière version de `main` (`git pull`), modifier seulement ses propres lignes, puis envoyer :
   **ne jamais copier un `TACHES.md` d'une autre branche par-dessus celui de `main`** (cela efface les réservations des autres).
-- Journal de `TACHES.md` à jour à chaque étape. Tout en français (code commenté, messages, interface, commits).
+- **Journal** (`journal.md`, nouvelles entrées à la fin, mêmes règles que `TACHES.md` : partir de `main`, n'ajouter que ses entrées) à jour à chaque étape. Tout en français (code commenté, messages, interface, commits).

@@ -223,7 +223,7 @@ public:
     }
 
     void render(Renderer& r, const GameView& g) override {
-        if (!active_) return;
+        if (!active_ || g.sceneDediee) return;   // scène dédiée (garage…) : pas de ville (WFS-44)
         frame_++;
         Track& t = *g.track;
         const int64_t aP = (int64_t)std::floor(g.player->dist / SEG), pc = aP / CH;

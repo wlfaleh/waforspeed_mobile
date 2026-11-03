@@ -26,7 +26,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
    - l'agent demandeur n'a pas déjà un ticket en cours ;
    - toutes ses dépendances sont ✅.
 3. L'écrire dans `TACHES.md` : statut 🔧 En cours, Responsable = nom de l'agent / session + date, Branche
-   `feature/waforspeed-XX` ; entrée « Début » au Journal (ticket, épic, zone de code autorisée, critères, plan court).
+   `feature/waforspeed-XX` ; entrée « Début » au Journal `journal.md` (ticket, épic, zone de code autorisée, critères, plan court).
 4. Modifier **uniquement ces lignes**, commit « WFS-XX attribué à … », `git push` sur `main` (si refus : `git pull --rebase`
    puis recommencer à l'étape 2 — quelqu'un a peut-être pris l'épic entre-temps).
 5. Répondre à l'agent : le ticket, l'épic, la **zone de code autorisée**, les critères d'acceptation, les dépendances,
@@ -61,7 +61,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 - **Fin d'épic** : quand tous les tickets d'une épic sont ✅, créer le ticket « Vérification simulateur EX » (même épic,
   priorité haute, critères : workflow `simulateur.yml` lancé avec `epic=EX`, rapport `qa/rapports/simulateur-EX.md` du
   QA lead VALIDÉ : démarrage, paysage, tactile, aucun plantage) ; les défauts trouvés deviennent des tickets de correction.
-- **Anomalies mineures** (tableau des anomalies de `TACHES.md`, écrit par le QA) : à chaque passage, regarder les
+- **Anomalies mineures** (`anno.md`, écrit par le QA) : à chaque passage, regarder les
   anomalies `🆕 Nouvelle`, les prioriser (gêne pour le joueur, visibilité, effort) et créer des **US de correction dédiées**
   (`WFS-XX — Correction : …`, dans l'épic dont la zone de code contient le défaut, avec `regles-de-gestion/WFS-XX.md`,
   critère = l'anomalie n'est plus visible sur la capture citée). Plusieurs petites anomalies d'une même zone peuvent aller

@@ -22,10 +22,10 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 6. **QA après chaque APK** : l'agent `qa-lead` regarde les captures, classe les anomalies et rend un verdict
    (`qa/rapports/WFS-XX.md`). `REFUSÉ` (anomalie bloquante) : corriger jusqu'à ce qu'il n'y en ait plus.
    `À CORRIGER` (mineures seulement) : corriger, deux tours au plus. `VALIDÉ`, ou `PASSABLE AVEC ANOMALIES MINEURES` après deux tours
-   (anomalies restantes inscrites au tableau des anomalies, US de correction créées par le PO) : fusionner, puis statut ✅
+   (anomalies restantes inscrites au tableau des anomalies `anno.md`, US de correction créées par le PO) : fusionner, puis statut ✅
    et entrée « Fin » au Journal.
 7. **Ne jamais supprimer de branche** (locale ou distante), même fusionnée : l'utilisateur s'en occupe.
-8. **Journal** à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
+8. **Journal** (`journal.md`, nouvelles entrées à la fin) à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
 9. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
 
 ## Architecture
@@ -61,6 +61,21 @@ Un seul écran à la fois : `enum class Ecran { Chargement, Menu, Garage, Terrai
 - **Écran de départ** : `Course` tant que le menu (WFS-37) n'est pas fusionné ; ensuite `Menu`. Chaque `Game::init`
   revient à l'écran de départ.
 - Les touchers vont d'abord aux systèmes (`onTouch`) : un menu garde ses touchers en renvoyant `true`.
+
+## Scène dédiée d'un écran (point d'extension WFS-44)
+Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), comme `renderGarage` du jeu web (`gScene`, `gCamera`) :
+- **Prendre la scène** : `bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override` — appelée par `Game::render`
+  avant chaque image, dans l'ordre des systèmes ; le **premier** qui renvoie `true` prend l'image. Ne la prendre que pour
+  son écran (`if (g.ecran != Ecran::Garage) return false;`).
+- **Régler** dans `fp` (déjà rempli avec les valeurs de la course) : `view`, `proj`, `camPos`, ciel (`skyTop`, `skyHorizon`,
+  `ground` ; mêmes couleurs = fond uni), `fogColor` / `fogDensity` (0 = sans), soleil (`sunDir`, `sunColor`, `sunIntensity`),
+  `ambient`, `exposure`, ombres (`shadows`, `hasFocus`, `focus`). Mettre aussi `s.cible` (point regardé).
+- **Choisir ce que Game dessine encore** dans `s` : `route`, `joueur` (voiture du joueur + ombre), `commandes` ; tout est à
+  `false` par défaut. Dessiner sa scène dans `render()`.
+- **Les autres systèmes** voient `GameView::sceneDediee` (et la caméra choisie dans `view` / `proj` / `camPos` / `camTarget`) :
+  un système de décor ou de course ne dessine pas quand `sceneDediee` est vrai (ville et trafic le font déjà).
+- Sans système qui prend la scène, rien ne change (pixel près). Lumières supplémentaires (projecteurs, hémisphère) : WFS-45.
+- Exemple et test : `src/core/scene_essai.cpp` (inactif par défaut ; banc d'essai : capture `scene-dediee-vide`).
 
 
 

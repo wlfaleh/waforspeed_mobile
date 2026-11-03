@@ -23,7 +23,7 @@ combos de quasi-contacts, nitro, fin de partie. Aujourd'hui `Player` ne porte qu
 ## Critères d'acceptation (captures / journal du banc PC)
 - [ ] journal : temps, checkpoints et score d'une course automatique identiques au JS (tolérance nulle sur les entiers)
 - [ ] capture : décompte « 3 » puis « GO » (texte de WFS-26 si livré, sinon journal)
-- [ ] test unitaire : checkpoint 1 → +11 s, checkpoint 10 → +7 s, quasi-contact ×3 → 750 points
+- [ ] test unitaire : checkpoint 1 → +11 s, checkpoint 10 → +7,4 s (checkpoint 11 → +7 s), quasi-contact ×3 → 750 points
 
 ## Hors périmètre
 Affichage du HUD (WFS-27), sauvegarde du meilleur score (WFS-24), duel (WFS-21).

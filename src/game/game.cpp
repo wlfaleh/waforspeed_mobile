@@ -3,6 +3,7 @@
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../render/model_loader.h"
+#include "course_system.h"   // WFS-12 : ralenti après un accident
 
 namespace wfs {
 
@@ -190,7 +191,7 @@ void Game::drawControls() {
 
 // ---------------------------------------------------------------- mise à jour
 void Game::update(double dt) {
-    dt = std::min(dt, 0.05);
+    dt = courseScaleDt(std::min(dt, 0.05));   // WFS-12 : ralenti ×0,35 après un accident
     appliquerEcran();
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
     const bool course = ecran_ == Ecran::Course;
@@ -257,19 +258,27 @@ void Game::render(double time) {
     fp.skyTop = {0.16f, 0.34f, 0.75f}; fp.skyHorizon = {0.66f, 0.76f, 0.88f}; fp.ground = {0.2f, 0.19f, 0.17f};
     fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
     fp.exposure = 0.85f; fp.ambient = 0.85f;
+    // scène dédiée (WFS-44) : le premier système qui la prend règle fp et choisit ce que Game dessine encore
+    SceneDediee sd; sd.cible = look;
+    bool dediee = false;
+    for (auto& sy : systems_) if (sy->scene(fp, sd, view_)) { dediee = true; break; }
+    view_.sceneDediee = dediee;
+    if (dediee) { eye = fp.camPos; look = sd.cible; }
     if (!r_->beginFrame(fp)) return;
 
     const mat4 I = mat4::identity();
-    for (auto& [k, c] : chunks_) {
+    if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
         r_->draw(c.ground, groundMat_, I);
         r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
     systemsRender(eye, look, fp.view, fp.proj, time);
-    // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
-    r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
-    r_->draw(car_, carM, &paint_);
-    if (camMode != 2 && ecran_ == Ecran::Course) drawControls();   // commandes de conduite : seulement en course
+    if (!dediee || sd.joueur) {
+        // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
+        r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
+        r_->draw(car_, carM, &paint_);
+    }
+    if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes)) drawControls();   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();
 }

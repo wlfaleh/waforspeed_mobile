@@ -7,6 +7,7 @@
 #include "../core/log.h"
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
+#include "course_system.h"
 #include "game.h"
 
 namespace wfs {
@@ -28,8 +29,10 @@ public:
         std::vector<Vertex> v = {{-0.5f, 0.02f, -0.5f, 0, 1, 0, 0, 0}, {0.5f, 0.02f, -0.5f, 0, 1, 0, 1, 0},
                                  {0.5f, 0.02f, 0.5f, 0, 1, 0, 1, 1}, {-0.5f, 0.02f, 0.5f, 0, 1, 0, 0, 1}};
         shadow_ = r.makeMesh(v, {0, 1, 2, 0, 2, 3});
-        // trafic de la carte (resetRace du jeu web) ; la graine changera à chaque course avec WFS-12
-        traffic_.reset(*g.track, 0x5eed1u, g.map ? g.map->trafficN : 42, g.player ? g.player->position : 0);
+        // trafic de la carte (resetRace du jeu web) ; « Rejouer » (WFS-12) repart de la même graine.
+        // Graine tirée au hasard à chaque course : avec le menu (WFS-11).
+        trafficN_ = g.map ? g.map->trafficN : 42; track_ = g.track;
+        traffic_.reset(*g.track, seed_, trafficN_, g.player ? g.player->position : 0);
         stats_ = {};
         active_ = this;
     }
@@ -43,11 +46,17 @@ public:
     // après chaque pas de conduite : le trafic avance (pas de 1/60 s), puis chocs et quasi-contacts
     void collide(double dt, Player& pl, const GameView& g) override {
         if (benchReq_) { applyBench(pl, *g.track); benchReq_ = false; }
+        // règles de course (WFS-12) : voiture immobile pendant le compte à rebours, chocs seulement en course
+        Course* course = activeCourseMut();
+        if (course) course->hold(pl);
+        const bool playing = !course || course->playing();
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
         pv.myLen = webCarLength(pl.car->id, pl.car->d.L);
         traffic_.advance(dt, pv);
+        if (!playing) { traffic_.watch(pl); return; }
         HitEvents e = traffic_.collide(pl, dt);
+        if (course) course->applyHits(e);   // quasi-contacts, combos, accidents
         stats_.nearMisses += e.nearMiss; stats_.accidents += e.accidents; stats_.scrapes += e.scrapes; stats_.bumps += e.bumps;
         if (e.accidents) holdLane_ = false;
     }
@@ -91,6 +100,7 @@ public:
 
     // voitures visibles (30 m derrière à 300 m devant), les plus proches d'abord, 14 au plus (LOD : WFS-20)
     void render(Renderer& r, const GameView& g) override {
+        if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
         const Player& pl = *g.player; Track& t = *g.track;
         struct Vis { double dz; const TrafficCar* c; };
         Vis vis[64]; int n = 0;
@@ -119,6 +129,7 @@ public:
     static TrafficSystem* active_;
     Traffic traffic_;
     TrafficStats stats_;
+    uint32_t seed_ = 0x5eed1u; int trafficN_ = 42; Track* track_ = nullptr;
     bool benchReq_ = false; double benchM_ = 0, benchLat_ = 0, benchKmh_ = 0; bool benchHold_ = false; int benchCar_ = -1;
 
 private:
@@ -163,6 +174,10 @@ const Traffic* activeTraffic() { return TrafficSystem::active_ ? &TrafficSystem:
 const TrafficStats* activeTrafficStats() { return TrafficSystem::active_ ? &TrafficSystem::active_->stats_ : nullptr; }
 void trafficBenchPlace(double metres, double lat, double extraKmh, bool holdLane) {
     if (auto* s = TrafficSystem::active_) { s->benchReq_ = true; s->benchM_ = metres; s->benchLat_ = lat; s->benchKmh_ = extraKmh; s->benchHold_ = holdLane; }
+}
+Traffic* activeTrafficMut() { return TrafficSystem::active_ ? &TrafficSystem::active_->traffic_ : nullptr; }
+void trafficRestart(double playerPos) {
+    if (auto* s = TrafficSystem::active_; s && s->track_) { s->traffic_.reset(*s->track_, s->seed_, s->trafficN_, playerPos); s->stats_ = {}; }
 }
 int trafficBenchCar() { return TrafficSystem::active_ ? TrafficSystem::active_->benchCar_ : -1; }
 

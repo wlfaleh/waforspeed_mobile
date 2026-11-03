@@ -20,7 +20,7 @@ description: Validation des tickets de WaForSpeed Mobile par le QA lead — rega
     le développeur corrige jusqu'à ce qu'il n'y ait plus d'anomalie bloquante ;
   - **mineure** (détail de finition qui ne gêne ni le joueur ni les autres tickets) → **À CORRIGER** : le QA donne la main au
     développeur **deux fois au plus** ; si l'anomalie reste après le 2e tour → **PASSABLE AVEC ANOMALIES MINEURES** : fusion autorisée,
-    l'anomalie va au **tableau des anomalies** de `TACHES.md` (ANO-XX, statut `🆕 Nouvelle`) ;
+    l'anomalie va au **tableau des anomalies** `anno.md` (ANO-XX, statut `🆕 Nouvelle`) ;
   - aucune anomalie → **VALIDÉ**.
 - Rapport court dans `qa/rapports/WFS-XX.md` : verdict + tableau `| ANO-XX | Gravité | Capture | Ce qui ne va pas |`.
 - Les anomalies mineures restantes après les deux tours sont corrigées plus tard par des **US de correction créées par le PO**.
