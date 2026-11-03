@@ -125,7 +125,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-37, WFS-12 | `feature/waforspeed-38` | #27 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES tour 2/2 (ANO-14) — [rapport](qa/rapports/WFS-38.md) |
 | P2 Haute | WFS-39 | Pause en course et retour au menu | E8 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-39` | #34 |  |
 | — | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-40` |  |  |
-| P2 Haute | WFS-41 | Menus complets : choix du terrain et du moment, réglages (qualité, caméra, son, commandes) | E8 | ⏳ Prêt |  | WFS-38 ✅ | `feature/waforspeed-41` |  |  |
+| P2 Haute | WFS-41 | Menus complets : choix du terrain et du moment, réglages (qualité, caméra, son, commandes) | E8 | 🔧 En cours | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-41` |  |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` | PR #24 | ✅ fusion décidée par l'utilisateur (captures sans blocage) |
 | — | WFS-43 | Arbres : finitions (cœur du houppier, ombres des arbres) | E2 | ↪ Fusionné dans WFS-53 |  | — | `feature/waforspeed-43` |  |  |
 | 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
@@ -244,7 +244,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-40 — Garage : fiche de la voiture et peintures** · E5 · priorité P2 Haute · ⏳ En attente (règles : `regles-de-gestion/WFS-40.md`) — ↪ fusionné dans WFS-11
 - [ ] `garage-fiche` (fiche + crédit), `garage-peinture-0/1`, course avec la voiture et la peinture choisies
 
-**WFS-41 — Menus complets : terrain, moment, réglages** · E8 · priorité P2 Haute · ⏳ Prêt (WFS-38 ✅) (règles : `regles-de-gestion/WFS-41.md`)
+**WFS-41 — Menus complets : terrain, moment, réglages** · E8 · priorité P2 Haute · 🔧 En cours — Claude (agent 5), 2026-11-03, branche `feature/waforspeed-41` (règles : `regles-de-gestion/WFS-41.md`)
 - [ ] `terrain-0` / `terrain-1` (carrousel, Jour / Nuit), `terrain-rouler` (course sur le circuit)
 
 **WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · ✅ Terminé
