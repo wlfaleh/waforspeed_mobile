@@ -82,7 +82,7 @@ Journal à jour.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` | PR #9 | ✅ VALIDÉ par qa-lead |
-| 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` |  |  |
+| 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` | PR #14 | ✅ VALIDÉ par qa-lead |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
@@ -158,7 +158,7 @@ Journal à jour.
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
 
-**WFS-34 — Arbres réalistes portés du jeu web** · E2 · priorité 4.5 · 🔧 En cours (règles : `regles-de-gestion/WFS-34.md`)
+**WFS-34 — Arbres réalistes portés du jeu web** · E2 · priorité 4.5 · ✅ Terminé (PR #14) (règles : `regles-de-gestion/WFS-34.md`)
 - [ ] Générateurs de `life.js` portés en `src/world/vegetation.*`, atlas exporté en PNG (`assets/world/feuillage.png`), arbres de `ville.cpp` remplacés
 - [ ] Capture : platanes avec tronc, branches, feuillage découpé ; ≤ 300 appels de dessin ; banc `0 écart(s)`
 
@@ -853,3 +853,9 @@ aucune commande, touchers non lus, commandes non dessinées, voiture immobile ; 
 `.claude/skills/waforspeed-natif/{SKILL.md,references/architecture.md}`.
 **Débloque** : WFS-37 (menu, E8) et WFS-11 (garage, E5) — à passer en Prêt par le PO. RG-05 (course qui repart en passant
 à `Course`) : `CourseSystem` via `onEcran` (WFS-38).
+
+### 2026-11-03 — WFS-34 fusionné (PR #14)
+- QA 4e passage `VALIDÉ` (`qa/rapports/WFS-34.md`) : platanes du jeu web, cœur du houppier en feuillage découpé,
+  pas de feuillage délavé, ville à 160 appels de dessin. **E2 libérée.** Plus aucun ticket en cours pour cette session.
+- Restes non bloquants (pour le PO) : branches en « baleines de parapluie » (comme le jeu web), cœur un peu visible au bord
+  d'un houppier (trafic-cam0) ; ombres d'arbres peu visibles sur les captures (rues à l'ombre des immeubles).
