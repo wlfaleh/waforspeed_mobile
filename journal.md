@@ -1115,3 +1115,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Banc PC, commit `cc76b01` (PR #29) : paire « Rejouer » / « Menu » centrée (milieu 639,5, marges 187 / 187 px), `fin-retour-menu` au menu (record 390),
   58 autres captures identiques à `apercu-waforspeed-38`, banc `0 écart(s)`. Aucune anomalie : **fusion autorisée**. ANO-14 passée en ✅ Corrigée.
   Rapport : `qa/rapports/WFS-57.md`.
+
+### 2026-11-03 — WFS-57 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage, ANO-14 corrigée. PR #29 fusionnée (b08d7d2). E3 libre.
