@@ -17,6 +17,7 @@
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
+#include "../render/bench_squelette.h"
 #include "../render/bench_spots.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -57,11 +58,12 @@ int main(int argc, char** argv) {
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
     //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage
-    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, projecteurs, encoche
+    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); return finir(); }   // WFS-37
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
     if (partie1 || banc == "chargement")
@@ -124,6 +126,7 @@ int main(int argc, char** argv) {
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
+        benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
     }
     r.shutdown();
     vk.shutdown();

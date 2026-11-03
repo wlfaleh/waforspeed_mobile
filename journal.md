@@ -1415,3 +1415,55 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroches annoncées** : `CMakeLists.txt` (2 shaders ajoutés à la liste) ; `src/platform/desktop_main.cpp` (include, `WFS_BANC=squelette`, appel dans `partie2`).
 - **Incident (réparé)** : mon dossier de travail avait été basculé sur `main` local par un autre agent. Les 2 commits WFS-63 y ont été déplacés vers `feature/waforspeed-63`, sans aucun envoi sur `main` ; `main` local est remis sur `origin/main`. **Agents : travaillez dans un worktree ou un clone séparé, pas dans `/home/user/waforspeed_mobile`.**
 - Les PR #32 (WFS-58) et #34 (WFS-39) ont été fusionnées par l'utilisateur (QA de nuit notée par le PO). Le dernier essai simulateur de WFS-58 (cc78b4d, correction de WFS58-5) est à joindre à cette QA.
+
+### 2026-11-03 21:34:56 — Début WFS-41 : menus complets (terrain, moment, réglages), attribué à agent 5 (PO)
+- **Choix** : agent 5 libre (WFS-48 fusionné, PR #33). Épics occupées : E5 (WFS-11), E3 (WFS-21, PR #38), E0 (WFS-63, PR #39). Parmi les ⏳ Prêt d'épics libres, P2 Haute : WFS-41 (E8) et WFS-53 (E2) ; plus petit numéro → WFS-41. WFS-53 (E2) reste attribuable en parallèle.
+- **Ticket** : WFS-41 (absorbe WFS-68), épic E8, branche `feature/waforspeed-41`. Règles : `regles-de-gestion/WFS-41.md` + `regles-de-gestion/WFS-68.md`.
+- **Zone autorisée** : `src/ui/ecrans/**` (nouveaux écrans `terrain.*`, `reglages.*`). **Accroches** (≤ 10 lignes chacune, annoncées au journal) : `src/game/game.*` / `CMakeLists.txt` (brancher les écrans, passer `mapId` et le moment à la course, appliquer les réglages), `src/platform/desktop_main.cpp` (captures dans un groupe `WFS_BANC` existant). `src/ui/ecrans/menu.cpp` est aussi touché par WFS-11 (agent 3 : « Course solo » → garage) : garder les deux modifications. Ne pas toucher `src/world/**` (E2) ni `src/render/**` (E4) : la qualité s'applique par l'API existante du renderer, sinon le noter comme limite.
+- **Plan** : (1) écran terrain : carrousel 4 cartes de `maps.js`, Jour / Nuit, « Rouler » → course sur la carte choisie, « Retour » ; (2) écran réglages (caméra, qualité, son, commandes, vibrations) depuis le menu et la pause, mémorisé ; (3) captures, CI, fusion rapide, `qa/Check.md`.
+- **Critères** : `terrain-0` (ville, Jour / Nuit), `terrain-1` (circuit), `terrain-rouler` (journal : carte = circuit), `reglages-menu`, `reglages-pause`, un choix de qualité change le rendu, banc `0 écart(s)` sur les captures existantes.
+- **Rappel** : travailler dans un worktree ou un clone séparé (incident du journal WFS-63), pas dans `/home/user/waforspeed_mobile`.
+
+### 2026-11-03 21:37:53 — Pipeline de main verte (4f95695) ; contrôle de spots-sol (WFS-45) (Claude, agent 4)
+- **Pipeline** : `build.yml` sur `main` 4f95695 (5 PR fusionnées + WFS-69) **verte**, en 8 min 31 s (run 41722024755). Release `apercu` à jour.
+- **WFS-45, `spots-sol`** :
+  - Ce qui marche : projecteurs orange et cyan visibles sur les bords de la Golf, plateau bleuté par l'hémisphère, brouillard linéaire.
+  - Ce qui manque : **pas de tache de lumière visible sur le grand sol**, alors que le critère d'acceptation en demande trois. Le sol a un métal de 0,7 et une couleur 0x101219, donc son diffus est quasi nul, et le reflet des spots tombe hors du cône pour cette caméra.
+  - La voiture est vue de l'arrière, alors que le jeu web la montre de 3/4 avant : il faudrait un cap de 0,6 + π dans le repère natif.
+  - Noté dans `qa/Check.md` pour la recette de nuit ; à reprendre avec WFS-11 (garage, agent 3), qui utilise ces projecteurs.
+
+### 2026-11-03 21:38:55 — PO : écarts avec le jeu web transformés en tickets (po-scrum-master)
+- **WFS-70** (E3, P2 Haute) ressenti de conduite : modes de direction, secousse / ralenti / vibration au choc, réduire les mouvements. **WFS-71** (E2, P3) ville vivante : commerces et terrasses, portique 3D, enseignes. Écran de fin (record, stats) et pause « Recommencer » ajoutés à **WFS-41**. Aucun ticket en cours ou terminé touché. Message agent 4 → agent 3 (projecteurs du garage) : pas pour le PO, aucune action.
+
+### 2026-11-03 21:40:54 — PO : WFS-50 remis en Prêt, WFS-64 suspendu et revu en diagnostic (po-scrum-master)
+- **Fait apporté par Claude (session trafic)** : le run `simulateur.yml` 41719456821 (`scenario=mvp`, `feature/waforspeed-58` au commit cc78b4d, c'est-à-dire le code de la PR #32 avec WFS-59, sans WFS-64 ; Release `simulateur-WFS-58`, 21:22) passe tout le parcours MVP. Le résultat est « RÉSULTAT TECHNIQUE : OK ». Étapes vues : chargement, menu, Course solo, décompte, GO, fin (124 s), Rejouer, 2e fin (140 s), Menu. Score de fin : 2 260. Il y a une seule marque FIGÉE, sur `03-appui-course-solo`, identique à `02-menu`. Elle est **attendue** : la capture est prise juste après l'appui (WFS58-3). Le gel après le chargement (run 41716390682, et un essai `conduite` sans WFS-59) ne s'est pas reproduit. Il paraît donc intermittent (émulateur ou focus), et WFS-59 n'en est pas la cause.
+- **Décisions** :
+  - **WFS-50** passe en ⏳ Prêt, P4 Basse. La priorité reste basse parce que l'utilisateur teste l'APK sur téléphone, mais E7 est libre et le coût est d'environ 1 h. WFS-64 sort de ses dépendances. Il faut le relancer sur `main` avec `epic=MVP` et `scenario=mvp`, puis le donner à `qa-lead`. Règles mises à jour dans `regles-de-gestion/WFS-50.md`. La capture 03 figée n'est pas une anomalie. Un gel qui réapparaît est noté au rapport et réactive WFS-64.
+  - **WFS-64** est renommé « Diagnostic : gel intermittent juste après le chargement sur le simulateur » et passe en ⏸ Suspendu (P4). Le repli du rendu à 50 % est abandonné, car on ne corrige pas à l'aveugle. Le ticket est réactivé seulement si un essai sur `main` se fige de nouveau. Règles réécrites dans `regles-de-gestion/WFS-64.md` : diagnostic par 2 lignes de logcat et l'état du focus.
+  - **WFS-59** : la mention « fige le simulateur » est retirée du tableau.
+  - **QA de nuit de WFS-58 et WFS-39** : elles peuvent s'appuyer sur la Release `simulateur-WFS-58` du run 41719456821.
+- Rien n'est attribué à Claude (session trafic), qui est sur WFS-63 (PR #39, en QA).
+
+### 2026-11-03 21:42:36 — QA WFS-63 : VALIDÉ (qa-lead)
+- PR #39, commit `0eb5465`, run 41722597629 vert, Release `apercu-waforspeed-63`. `squelette-essai` (Idle_Loop), `squelette-marche-0/1` (deux poses de Walk_Loop différentes) et `squelette-8` sont corrects : proportions justes, éclairage et ombre comme les voitures. Coût RG-05 au journal : 8 instances, 0,030 ms CPU par image.
+- Non-régression contre `apercu-waforspeed-69` (main) : 63 captures identiques ; 6 écrans d'interface avec un écart de 1/255 au plus (bruit du rendu, invisible). Vêtements non colorés acceptés (apparence prévue dans WFS-19). **Fusion autorisée.** Rapport : `qa/rapports/WFS-63.md`.
+
+### 2026-11-03 — WFS-63 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage, sans anomalie. PR #39 fusionnée (fc70591). Le point d'extension « personnages animés par squelette » est sur main : `drawSkinned`, `src/render/squelette.h`, `assets/people/*.wfp`, documenté dans le skill `waforspeed-natif`.
+- **Pour le PO** : WFS-19 (piétons et conducteurs) n'attend plus WFS-63.
+
+### 2026-11-03 21:48:57 — Début WFS-19 Piétons animés et conducteurs, attribué à Claude (session trafic) (po-scrum-master)
+- **Ticket** : WFS-19, épic E2 (P2 Haute), branche `feature/waforspeed-19`. WFS-63 ✅ (PR #39, VALIDÉ) : dépendances toutes terminées. À priorité égale avec WFS-53 (P2, E2), le plus petit numéro l'emporte ; E3 occupée (WFS-21 en revue), donc WFS-66 et WFS-70 non attribuables.
+- **Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*` (et `assets/people/**` en lecture). Le renderer et `drawSkinned` ne changent pas (sinon ticket E0 ou ligne d'accroche ≤ 10 lignes annoncée ici).
+- **Critères** : capture de ville avec piétons aux poses variées ; capture plage (baigneurs, promeneurs) ; conducteur visible face au volant ; deux captures à des instants différents avec des poses de marche différentes ; banc `0 écart(s)` hors scènes concernées.
+- **Plan court** : porter `populatePeople` / `pedLook` / `updatePeopleReal` (people.js, life.js) en un système E2 qui place et habille les personnes près du joueur, puis `bakeBust` / `measureSeat` / `addDriver` (drivers.js) pour le conducteur, rendus par `drawSkinned`. Règles : `regles-de-gestion/WFS-19.md`.
+
+### 2026-11-03 21:52:23 — Arbitrage WFS-19 : création de WFS-72 (E0), attribué à Claude (session trafic) (po-scrum-master)
+- **Constat** (remonté par Claude, session trafic) : RG-04 de WFS-19 (apparence du jeu web) repose sur le shader `pedMaterial` (`js/world/people.js` l. 54-110) : attribut par sommet `_cloth` et couleurs / seuils par personne. `drawSkinned` (WFS-63) n'a ni l'un ni l'autre ; il faut toucher au renderer, au format `.wfp` et ajouter `scene_skin.frag` : hors zone E2 et bien plus que 10 lignes d'accroche.
+- **Décision** : on crée un ticket E0 « point d'extension » préalable, **WFS-72 — Point d'extension : apparence des personnages** (P2 Haute, environ 2 h). Le portage de `pedMaterial` se fait tel quel, sans finitions. L'apparence réduite (peau seule) est **refusée** : des personnages torse nu ne tiennent pas RG-04 et feraient refaire une seconde passe sur les mêmes fichiers.
+- **Début WFS-72** : épic E0, attribué à Claude (session trafic), branche `feature/waforspeed-72`. E0 et E4 n'ont aucun ticket actif.
+  - **Zone de code autorisée** : `src/render/renderer.h`, la partie skinning de `renderer.cpp`, `src/render/squelette.*`, `bench_squelette.*`, `shaders/scene_skin.*` / `shadow_skin.*`, `tools/convert_people.mjs`, `assets/people/**`, `CMakeLists.txt` et le skill `waforspeed-natif`.
+  - **Critères** : nouvelle capture `squelette-tenue` (homme et femme habillés, parties distinctes) ; captures existantes identiques, banc `0 écart(s)` ; doc du point d'extension.
+  - **Plan court** : `_cloth` → convertisseur, `SkinVertex` et `.wfp` ; bloc d'apparence par instance dans `drawSkinned` ; `scene_skin.frag` porte `pedMaterial`.
+  - **Règles** : `regles-de-gestion/WFS-72.md`.
+- **WFS-19** passe en ⏸ En attente de WFS-72. Sa réservation est conservée à Claude (session trafic), et E2 reste tenue par WFS-19 : l'attente est courte et WFS-19 (P2) passe avant WFS-71 (P3). Le ticket reprend sur `feature/waforspeed-19` dès que WFS-72 est fusionné. `pedLook` (tirage des tenues) reste dans WFS-19.
