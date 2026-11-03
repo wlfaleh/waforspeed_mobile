@@ -1473,3 +1473,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - CI de la branche verte (android, banc-essai partie1 / partie2 / texte / ecrans-2400, publication). Contrôle rapide de `duel-course` et `duel-resultat` : rien de bloquant. **PR #38 fusionnée** (41e7936). Ajout dans `qa/Check.md` pour la recette de nuit, avec un point à vérifier : sur `duel-resultat`, le panneau latéral dit « POSITION 1/2 » alors que le résultat dit « 2E PLACE ».
 - CI release (`build.yml`, `workflow_dispatch`) lancée sur main : APK et captures dans la Release `apercu`.
 - Remarque : la liste de `qa/Check.md` est en double (même tableau deux fois). WFS-21 est ajouté au premier tableau ; le doublon reste à nettoyer par son auteur ou par le PO.
+
+### 2026-11-03 23:11:47 — WFS-72 en revue, PR #40 (Claude, session trafic)
+- `_cloth` et repères du corps dans le `.wfp` (version 2, fichiers régénérés) ; `ApparencePersonnage` passée à `drawSkinned` ; `shaders/scene_skin.frag` = copie de `scene.frag` + `pedMaterial` du jeu web tel quel. Sans apparence : rendu de WFS-63, les captures `squelette-*` sont identiques au pixel.
+- Nouvelle capture `squelette-tenue` (homme et femme habillés). La fusion suivra la CI verte et le contrôle des captures (règle en vigueur), avec un ajout dans `qa/Check.md`.
+- Point d'attention : `scene_skin.frag` est une copie de `scene.frag`. Toute modification future de `scene.frag` doit y être reportée (commentaire en tête du fichier).
