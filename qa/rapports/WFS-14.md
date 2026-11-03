@@ -1,9 +1,12 @@
 # QA WFS-14 : Cartes, socle multi-cartes et Corniche (plage)
 
-**Verdict : À CORRIGER (tour 1/2)**, banc d'essai PC, 1er passage. **Pas de fusion** pour l'instant.
-Aucune anomalie bloquante. Une anomalie mineure (ANO-13) est à corriger par le développeur.
+**Verdict : VALIDÉ** (tour 2/2), banc d'essai PC. **Fusion autorisée** (PR #21).
+ANO-13 (mineure, tour 1/2) est corrigée au commit `e6eaa57`. Il ne reste aucune anomalie, bloquante ou mineure,
+donc rien à ajouter à `anno.md`.
 
-## 1er passage : commit `915d1e6`
+Historique : 1er passage `915d1e6`, **À CORRIGER (tour 1/2)** pour ANO-13. Correction `e6eaa57`, **VALIDÉ (tour 2/2)**.
+
+## 1er passage : commit `915d1e6` (À CORRIGER, tour 1/2)
 
 - Construction regardée : commit `915d1e6` (`feature/waforspeed-14`), PR #19. Run Actions 41627083861 réussi (android,
   banc-essai, publication). Release `apercu-waforspeed-14` (« commit 915d1e6 »), 44 captures.
@@ -40,3 +43,24 @@ tirage séparé (`Rn`) et non avec le `R` du jeu web : l'écart n'est pas visibl
 
 Tour de correction : **1/2**. Prochaine étape : le développeur corrige ANO-13 et relance la CI. Le QA regarde ensuite les nouvelles
 captures (`carte-plage-*`, et les 42 autres captures, qui doivent rester identiques à `main`).
+
+## 2e passage (tour 2/2) : commit `e6eaa57`
+
+- Contexte : la PR #19 a été fusionnée sur `main` par l'utilisateur avant la correction. La correction est dans la PR #21
+  (`feature/waforspeed-14`, commit `e6eaa57`). Runs Actions 41639202555 et 41639222602 réussis (android, banc-essai,
+  publication). Release `apercu-waforspeed-14` (« commit e6eaa57 », 50 captures PNG).
+- Diff relu : `git diff 2ae1104 e6eaa57` ne touche que `src/world/plage.cpp` (+6/−1, zone E2). Le matériau du stipe reçoit
+  un gain d'albédo de 1,5 et une part propre (émissive) brune `BARK.palm #7d6a52`, 0,8 de jour et 0,05 de nuit.
+- Référence de non-régression : Release `apercu-waforspeed-51` (commit `04ec9f5`). `git diff --stat 04ec9f5 2ae1104 -- src shaders assets`
+  est vide : c'est le code de `main` sur lequel la correction est construite.
+  Comparaison pixel par pixel (PIL) : **48 captures sur 50 sont identiques**. Seules `carte-plage-jour` et `carte-plage-nuit`
+  changent (zone (365, 23)–(1037, 365), environ 15 000 pixels, soit les stipes uniquement). C'est ce qu'annonçait le développeur.
+
+| Point vérifié | Résultat |
+|---|---|
+| ANO-13, `carte-plage-jour` | **Corrigé.** Les stipes sont bruns, couleur bois clair au soleil. Palmier du premier plan à droite : (140, 121, 98) au milieu, (137, 118, 94) en bas. Palmiers de gauche et du fond : (135, 117, 95) à (142, 126, 104). Avant : (43, 44, 45). La teinte est celle de `BARK.palm` (125, 106, 82), un peu plus claire en plein soleil, comme le sable (194, 188, 164) pour `#cdb683`. Le stipe n'est pas fluo : il ne brille pas, ne prend pas de halo et reste moins clair que le sable. Les anneaux et le léger ombrage sur les bords restent visibles, et les noix de coco et les palmes ne changent pas. |
+| ANO-13, `carte-plage-nuit` | **OK.** Le stipe reste sombre, en silhouette : (33, 27, 32), avant (15, 14, 21). Il ne s'allume pas dans la nuit et reste plus sombre que le sable nocturne (52, 49, 71). |
+| Reste de la carte plage | OK. L'océan, la promenade, les parasols, les ombres, le brouillard, la voiture et les commandes sont inchangés (hors stipes). L'image n'est pas déformée et rien ne flotte. |
+| Non-régression | OK. Les 48 autres captures (vitrines, course, trafic, ombres, chargement, texte, scène dédiée, décompte, fin) sont identiques à `main` au pixel près. |
+
+Anomalies du 2e passage : **aucune**.
