@@ -48,11 +48,13 @@ if [ "$SCENARIO" = mvp ]; then
   MARQUE=0; ECHEC=""
   # attendre <nom> <motif grep -E> <délai max s> : cherche le motif après la dernière marque ; la marque passe sur la ligne trouvée
   attendre() {
-    local nom="$1" motif="$2" max="$3" t=0 n
+    local nom="$1" motif="$2" max="$3" t=0 n mort=0
     while [ $t -lt "$max" ]; do
       n=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -nE "$motif" | head -1 | cut -d: -f1)
       if [ -n "$n" ]; then MARQUE=$((MARQUE + n)); log "étape $nom atteinte après ${t} s"; return 0; fi
-      alive || { log "ÉCHEC étape $nom : l'appli ne tourne plus"; ECHEC="$nom"; return 1; }
+      # appli arrêtée = 10 s de suite sans processus (juste après « am start », le processus n'existe pas encore)
+      if alive; then mort=0; else mort=$((mort + 1)); fi
+      [ $mort -ge 10 ] && { log "ÉCHEC étape $nom : l'appli ne tourne plus"; ECHEC="$nom"; return 1; }
       sleep 1; t=$((t + 1))
     done
     log "ÉCHEC étape $nom (délai ${max} s)"; ECHEC="$nom"; return 1
