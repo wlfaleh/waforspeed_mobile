@@ -1334,3 +1334,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 21:07:16 — PO : retours des agents 3, 4, 5 intégrés à WFS-69 (po-scrum-master)
 - Mesures concordantes : banc d'essai 37 à 52 min (Captures du rendu en série sur lavapipe) ; Android < 2 min ; doublon push + PR ; commits de documentation qui annulent `main`. **WFS-69** élargi (RG-06 à RG-10) : banc en matrice de jobs parallèles par groupe de scènes (cible ≈ 10-15 min), `WFS_CAPTURES`, moins d'images inutiles, un seul banc par commit, aucune annulation sur `main`.
+
+### 2026-11-03 21:00:20 — QA WFS-58 tour 2 : REFUSÉ (QA lead)
+- Captures regardées : `simulateur-WFS-58` (a51bbc8), `simulateur-WFS-58-avec-59` (3d447b1) et `simulateur-WFS-58-conduite` (ffb5474).
+- Les anomalies du tour 1 sont corrigées : plus de bulle Android, déroulement tracé (motif, ligne, heure), 03 et 04 séparées, écran tracé en fin de scénario. L'échec reste franc sur les deux essais `mvp`.
+- **Nouvelle anomalie bloquante, WFS58-5** : `01-chargement` est presque noire (capture prise 2 s après « Cibles de rendu », avant la police). Il faut attendre `chargement : première image … écran complet (police)`. [Rapport](qa/rapports/WFS-58.md).
+- Pour le PO, hors WFS-58 : le gel du jeu avec la fenêtre « Pixel Launcher isn't responding » apparaît aussi sans WFS-59 (essai `conduite` à ffb5474). Le scénario `conduite` conclut OK sur des captures figées.
