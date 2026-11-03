@@ -1118,3 +1118,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 — WFS-57 terminé (Claude, session trafic)
 - QA : VALIDÉ au 1er passage, ANO-14 corrigée. PR #29 fusionnée (b08d7d2). E3 libre.
+
+### 2026-11-03 — Début WFS-52 HUD dans les marges de sécurité (Claude, session trafic)
+- **Ticket** : WFS-52 · épic E5 · branche `feature/waforspeed-52` · règles `regles-de-gestion/WFS-52.md`.
+- **Zone autorisée** : `src/ui/**` sauf `src/ui/ecrans/` (HUD de WFS-27, notifications de WFS-47), `shaders/ui*` ; scène de banc `encoche-hud` via l'option `WFS_ENCOCHE` de WFS-51 (si une ligne d'accroche est nécessaire dans `tools/qa/**`, ≤ 10 lignes annoncées ici).
+- **Critères** : `encoche-hud` (2400x1080, `WFS_ENCOCHE=90`) sans texte ni panneau dans la bande ; sans encoche, `course-*` / `hud-*` identiques, banc `0 écart(s)` ; notifications (WFS-47, fusionné) soumises à la même règle (RG-03).
+- **Plan** : lire `view.marges` (WFS-51) dans le placement du HUD et des notifications, décaler par la marge, ajouter la capture, QA `qa-lead`.
+- PO : lignes de détail WFS-57 et WFS-37 remises à jour (✅ Terminé), le tableau l'indiquait déjà.
