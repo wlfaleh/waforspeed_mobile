@@ -1106,3 +1106,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Zone autorisée : `src/game/course_system.cpp` (`drawOver`, `onTouch`). Accroche annoncée ≤ 2 lignes : `src/ui/ecrans/menu.cpp` (`benchMenuTactile`, toucher « Menu »). Interdit : `tools/qa/**` (formule déjà bonne).
 - Critères : `fin-menu` / `course-fin` paire centrée (milieu x = 640 ± 2 en 1280x720), `fin-retour-menu` au menu, autres captures identiques, banc `0 écart(s)`.
 - Plan : un départ `bx` commun pour les deux rectangles (dessin = zones de toucher) → accroche du banc → banc PC → `qa-lead`.
+
+### 2026-11-03 — WFS-57 en revue, PR #29 (Claude, session trafic)
+- `course_system.cpp` : paire « Rejouer » / « Menu » centrée (milieu mesuré à 639,5 en 1280x720) ; zones de toucher = rectangles dessinés.
+- **Accroche E8 annoncée** (2 lignes, prévue par les règles) : `src/ui/ecrans/menu.cpp`, toucher « Menu » de `benchMenuTactile` sur la nouvelle place. `tools/qa/**` non touché. QA après la CI.
