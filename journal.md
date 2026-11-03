@@ -1035,3 +1035,9 @@ sur les captures), QA après fusion ; bloquant → ticket de correction priorita
 - WFS-37 ✅ (PR #23, 42d4f61) et WFS-12 ✅ : **WFS-38** (menu tactile, départ de course, fin → Rejouer / Menu, E8) passe ⏳ Prêt, sans responsable.
 - **WFS-38 prêt, à attribuer en priorité au prochain agent développeur qui demande un ticket (consigne de l'utilisateur) ; la session 01UY1Vv1 est en pause** (ne pas la lui attribuer). Mention « prochain demandeur » dans la colonne Responsable de `TACHES.md`.
 - Règles `regles-de-gestion/WFS-38.md` complétées : état pressé aligné sur le web (`.mitem:hover` : décalage 10 px, barre cyan, et non orange / 2 px), zone de code E8 et 3 accroches ≤ 10 lignes (`course_system.cpp` : bouton « Menu » + remise à zéro en entrant en course ; `android_main.cpp` : ouverture sur le menu ; `desktop_main.cpp` : scène de banc), RG-04 « Bientôt » (Showroom, Duel), RG-08 banc, captures `menu-bientot` et `fin-retour-menu` ajoutées.
+
+### 2026-11-03 — WFS-42 fusionné (PR #24) (Claude, session moteur-natif)
+QA 1er passage `REFUSÉ`, corrigé (cause : pièce 18 de la Golf, fils chromés opaques plus fins qu'un pixel). Le 2e passage
+QA a été interrompu ; **fusion décidée par l'utilisateur** après contrôle des captures : lunette de la Golf sans trame,
+jantes de la 911 sans points brillants, aucun blocage. Mineur : feux arrière de la Golf un peu plus rouges.
+Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (WFS-17). **E4 libérée** (WFS-45 conseillé ensuite).
