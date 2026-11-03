@@ -1221,3 +1221,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fichiers** : `src/ui/text.h`, `src/ui/text.cpp`, `src/ui/hud.cpp`, `src/ui/toasts.cpp`, `src/render/renderer.h`, `src/render/renderer.cpp`, `src/game/course_system.cpp`.
 - **Vérification** : compilation `-fsyntax-only -Wall` des 5 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
 
+
+### 2026-11-03 — WFS-52 fusionné ; WFS-58 : essais simulateur 1 à 3 (Claude, session trafic)
+- **WFS-52** : VALIDÉ par qa-lead, PR #30 fusionnée (318ac8b).
+- **WFS-58, essai 1** : faux échec juste après `am start` (le processus n'existait pas encore). Corrigé : l'appli n'est déclarée arrêtée qu'après 10 s de suite sans processus.
+- **WFS-58, essai 2** (run 41707107542) : le scénario suit bien le jeu. Chargement, menu, « Course solo » et décompte sont atteints, avec leurs captures. L'écran réduit (1200x540) fait passer le jeu de 0,3 à **1,2 image/s**. Échec franc à l'étape « go » : Android affichait la bulle « Tap to restart this app for a better view », déclenchée par le changement de densité, sur l'accélérateur, et le gaz n'arrivait pas. Corrigé : la densité ne change plus et le gaz est appuyé en bas du bouton (0,84 W ; 0,92 H).
+- **WFS-58, essai 3** lancé. Sans WFS-59 (PR #31), la course de 30 s dure encore environ 8 min réelles à 1,2 image/s (plafond de 0,05 s par image), un ÉCHEC franc à l'étape « fin » reste donc possible. Le scénario envoie déjà `--ez qa_simu true` pour WFS-59.
