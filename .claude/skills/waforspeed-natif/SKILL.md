@@ -107,8 +107,12 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, s
     est ignorée.
   - Opaque seulement.
 - **Repère** : mètres, Y vers le haut, pieds en y = 0, le personnage regarde vers +Z.
-- **Hors point d'extension (WFS-19)** : couleurs des vêtements (attribut `_CLOTH` et `pedMaterial` du jeu web, non
-  convertis), placement, choix du niveau de détail, mélange de clips.
+- **Apparence (WFS-72)** : dernier argument de `drawSkinned`, un `ApparencePersonnage*` (`renderer.h`). Il prend les
+  uniformes de `pedMaterial` du jeu web, en codes sRGB 0..1 : `peau` (multiplicateur), `cheveux`, `haut`, `bas`,
+  `chaussures`, `maillot`, `vetement` = (manches, longueur du bas, habillé 0/1, 0), `corps` = `Personnage::corps` (cou, taille).
+  `shaders/scene_skin.frag` (copie de `scene.frag` + bloc « WFS-72 ») peint peau, vêtements et cheveux selon l'attribut `_cloth`
+  du `.wfp` (version 2). Sans apparence (`nullptr`) : texture seule. Les tenues sont tirées par `pedLook`, dans WFS-19.
+- **Hors point d'extension (WFS-19)** : tirage des tenues (`pedLook`), placement, choix du niveau de détail, mélange de clips.
 - **Test** : `src/render/bench_squelette.cpp`. Le système `squelette-essai` est inactif hors banc. Captures `squelette-essai`,
   `squelette-marche-0` / `-1` et `squelette-8` ; coût au journal. Lancement seul : `WFS_BANC=squelette`.
 
