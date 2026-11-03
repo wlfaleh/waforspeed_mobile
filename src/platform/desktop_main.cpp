@@ -18,6 +18,7 @@
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
+#include "../world/pietons.h"
 #include "../render/bench_spots.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -64,6 +65,7 @@ int main(int argc, char** argv) {
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); return finir(); }   // WFS-37
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
     if (partie1 || banc == "chargement")
@@ -127,6 +129,7 @@ int main(int argc, char** argv) {
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
+        benchPietons(g, r, out);      // WFS-19 : piétons de la ville et de la plage (pietons-*.png)
     }
     r.shutdown();
     vk.shutdown();
