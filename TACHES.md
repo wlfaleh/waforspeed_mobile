@@ -173,7 +173,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] `simulateur.yml` (`epic=MVP`) : chargement → menu → Course solo → décompte → course + HUD → fin → Rejouer puis Menu ; paysage plein écran, aucun plantage
 - [ ] rapport `qa/rapports/simulateur-MVP.md` VALIDÉ par `qa-lead`
 
-**WFS-49 — Banc : captures du chargement 2400 sans planche de texte (ANO-10)** · E7 · priorité 0.47 · 🔧 En cours (Claude, session trafic) (règles : `regles-de-gestion/WFS-49.md`)
+**WFS-49 — Banc : captures du chargement 2400 sans planche de texte (ANO-10)** · E7 · priorité 0.47 · ✅ Terminé (Claude, session trafic, PR #22) (règles : `regles-de-gestion/WFS-49.md`)
 - [ ] `chargement-*-2400` sans panneau « DÉMO DU TEXTE » ; `texte-essai-2400` inchangée
 
 **WFS-48 — Texte en italique (ANO-04)** · E5 · priorité 0.48 · ⏳ Prêt (règles : `regles-de-gestion/WFS-48.md`)
