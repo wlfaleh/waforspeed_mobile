@@ -21,10 +21,10 @@ const unsigned TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, DANGER = 0xFF1F4B, ACCENT = 0
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f};   // --glass rgba(20,22,31,.72)
 
 // halo néon (text-shadow) : copies transparentes du texte autour de sa place
-void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float rad) {
+void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float rad, bool italique = false) {
     for (int k = 0; k < 12; k++) {
         const float ang = k * 0.5235988f, d = rad * (k % 2 ? 1.f : 0.55f);
-        ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, 0, false);
+        ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, 0, false, italique);
     }
 }
 // .label : capitales, espacement 0,16 em, gris ; 11 px du web portés à 13 px minimum et calés sur les pixels entiers
@@ -70,8 +70,9 @@ public:
             const bool bas = c->timeLeft < 8;   // .time-value.low
             const std::string t = ui::decimal(std::max(0.0, c->timeLeft), 1);
             const float tp = 48 * k, ty = y + 26 * k;
-            halo(r, x + pad, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k);
-            ui::text(r, x + pad, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false);
+            // WFS-48 : .time-value en italique (font-style: italic du web)
+            halo(r, x + pad, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k, true);
+            ui::text(r, x + pad, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false, true);
             label(r, x + pad, y + 80 * k, k, "Checkpoint " + std::to_string(c->level + 1));
             barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)(1 - (c->nextCp - pl.dist) / CHECK_DIST));
         }
@@ -81,9 +82,10 @@ public:
             r.uiRect(x, y, w, h, GLASS);
             const float xr = x + w - pad;
             label(r, xr, y + 10 * k, k, "Score", ui::DROITE);
-            ui::text(r, xr, y + 26 * k, 34 * k, ui::nombre(c->score(pl)), hex(TEXTE), ui::DROITE, 0, false);
+            // WFS-48 : .score-value et .combo en italique
+            ui::text(r, xr, y + 26 * k, 34 * k, ui::nombre(c->score(pl)), hex(TEXTE), ui::DROITE, 0, false, true);
             if (c->combo > 1)   // .combo : cyan, 16 px
-                ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false);
+                ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
         }
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
         {
@@ -92,7 +94,7 @@ public:
             r.uiRect(x, y, w, h, GLASS);
             const int v = std::abs(Course::kmh(pl.speed));
             const bool rouge = v > 300, arriere = pl.speed < -1;
-            ui::text(r, cx, y + 8 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false);
+            ui::text(r, cx, y + 8 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
             label(r, cx, y + 56 * k, k, arriere ? "R · km/h" : "km/h", ui::CENTRE);
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
             const vec4 lumineux = hex(SUCCESS);

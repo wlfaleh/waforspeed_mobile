@@ -71,7 +71,8 @@ public:
     void uiCircle(float cx, float cy, float r, const vec4& c);
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
     void uiSetFontAtlas(const Image& atlas);
-    void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c);
+    // WFS-48 : biais = décalage en x du bord haut par rapport au bord bas (italique synthétique), 0 = droit
+    void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais = 0);
     void endFrame();
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 

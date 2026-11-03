@@ -21,8 +21,11 @@ bool fontReady();
 bool chargerPolice(Renderer& r);   // WFS-35 : police chargée une seule fois, avant la partie (écran de chargement)
 // x, y : coin haut-gauche de la ligne (selon l'alignement) en pixels logiques ; px : hauteur des capitales + jambages
 // espacement : en fraction de px (0,16 = letter-spacing .16em du web) ; ombre : léger contour sombre pour la lisibilité
+// italique (WFS-48) : glyphes inclinés de ITALIQUE_DEG (font-style: italic du web, oblique synthétique), cisaillés autour
+// du milieu des capitales : largeur mesurée et alignement inchangés ; faux par défaut (texte droit)
+constexpr float ITALIQUE_DEG = 12.f;
 void text(Renderer& r, float x, float y, float px, const std::string& utf8, const vec4& color, Align align = GAUCHE,
-          float espacement = 0.f, bool ombre = true);
+          float espacement = 0.f, bool ombre = true, bool italique = false);
 float width(float px, const std::string& utf8, float espacement = 0.f);
 
 // formats français (toLocaleString('fr-FR') du jeu web)
