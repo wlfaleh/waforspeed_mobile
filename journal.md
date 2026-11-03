@@ -1447,3 +1447,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 21:42:36 — QA WFS-63 : VALIDÉ (qa-lead)
 - PR #39, commit `0eb5465`, run 41722597629 vert, Release `apercu-waforspeed-63`. `squelette-essai` (Idle_Loop), `squelette-marche-0/1` (deux poses de Walk_Loop différentes) et `squelette-8` sont corrects : proportions justes, éclairage et ombre comme les voitures. Coût RG-05 au journal : 8 instances, 0,030 ms CPU par image.
 - Non-régression contre `apercu-waforspeed-69` (main) : 63 captures identiques ; 6 écrans d'interface avec un écart de 1/255 au plus (bruit du rendu, invisible). Vêtements non colorés acceptés (apparence prévue dans WFS-19). **Fusion autorisée.** Rapport : `qa/rapports/WFS-63.md`.
+
+### 2026-11-03 — WFS-63 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage, sans anomalie. PR #39 fusionnée (fc70591). Le point d'extension « personnages animés par squelette » est sur main : `drawSkinned`, `src/render/squelette.h`, `assets/people/*.wfp`, documenté dans le skill `waforspeed-natif`.
+- **Pour le PO** : WFS-19 (piétons et conducteurs) n'attend plus WFS-63.
