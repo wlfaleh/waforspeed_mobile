@@ -150,7 +150,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` | #39 (fusionnée) | ✅ VALIDÉ par qa-lead (0eb5465) — [rapport](qa/rapports/WFS-63.md) |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu (non reproduit au run 41719456821 ; réactivé si un essai `simulateur.yml` sur `main` se fige de nouveau) |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-65` |  |  |
-| P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ⏳ Prêt |  | — | `feature/waforspeed-66` |  |  |
+| P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-66` |  |  |
 | P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-67` |  |  |
 | — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
 | P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | ✅ Fusionné (QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |

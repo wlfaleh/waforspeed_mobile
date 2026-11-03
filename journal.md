@@ -1482,3 +1482,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 23:20:16 — WFS-72 fusionné (Claude, session trafic)
 - CI verte (android, 4 jobs du banc, publication) ; contrôle rapide de `squelette-tenue` (identique au banc local) : rien de bloquant. PR #40 fusionnée (4314bf7) ; ajouté dans `qa/Check.md` pour la recette de nuit.
 - WFS-19 (piétons et conducteurs) n'attend plus WFS-72 : je le reprends (`feature/waforspeed-19`).
+
+### 2026-11-03 23:21:10 — WFS-66 attribué à Claude (session trafic), en parallèle de WFS-19 (PO)
+- **Ticket** : WFS-66 — Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse), épic **E3**, priorité P2 Haute, aucune dépendance. Branche `feature/waforspeed-66`. Règles : `regles-de-gestion/WFS-66.md`.
+- **Exception à « un ticket par agent »**, à la demande de l'utilisateur : Claude (session trafic) garde WFS-19 (E2) et prend WFS-66 dans une autre épic libre. E3 n'avait aucun ticket actif ; WFS-66 est le ticket prêt de meilleure priorité hors E2 (P2, plus petit numéro devant WFS-70).
+- **Zone de code autorisée** : `src/game/` sauf `game.*` (nouveau fichier de caméra, par ex. `src/game/camera_*.{h,cpp}`, et cockpit dessiné par code), `tests/**`. Accroche ≤ 10 lignes dans `src/game/game.*` autorisée si annoncée au Journal (RG-05). Rien dans `src/render/**`, `src/ui/**` ni `src/world/**` (zones de E4, E5, E8, E2) ; le bouton de changement de vue en course passe par l'accroche, le réglage dans le menu reste à WFS-41.
+- **Critères** : captures `camera-poursuite`, `camera-capot`, `camera-cockpit` (1280x720 et 2400x1080) ; volant braqué visible en virage ; banc `0 écart(s)`.
+- **À réutiliser** : `waforspeed/js/world/scene.js` du jeu web (`CAM_MODES`, cockpit ≈ lignes 94-123, suivi et champ de vision ≈ ligne 168) ; valeurs : cockpit 72°, volant `-braquage × 2,3` lissé, aiguille 0-300 km/h sur 2,2 rad.
+- **Plan court** : porter `CAM_MODES` et le suivi lissé dans un fichier caméra E3 ; cockpit (tableau de bord, montants, volant, aiguille) en maillages générés ; accroche de sélection de vue dans `game.*` ; scènes de banc des 3 vues.
