@@ -58,10 +58,13 @@ public:
         const Player& pl = *g.player;
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;   // 1 px CSS = k pixels logiques (720 p de référence)
         const float gl = 16 * k, gt = 14 * k, pad = 14 * k;           // gouttières --gutter-*, marge intérieure .panel
+        // WFS-52 : zone sûre (encoche, coins arrondis) = marges de view.marges (WFS-51) + gouttières de WFS-27 ;
+        // marges à 0 : positions de WFS-27 inchangées
+        const Marges& mg = g.marges;
 
         // ---------- haut gauche : temps + checkpoint (.p-time) ----------
         {
-            const float w = 200 * k, h = 112 * k, x = gl, y = gt;
+            const float w = 200 * k, h = 112 * k, x = mg.gauche + gl, y = mg.haut + gt;
             r.uiRect(x, y, w, h, GLASS);
             label(r, x + pad, y + 10 * k, k, "Temps");
             const bool bas = c->timeLeft < 8;   // .time-value.low
@@ -74,7 +77,7 @@ public:
         }
         // ---------- haut droite : score + combo (.p-score), au-dessus du bouton Nitro (y < 22 % de H) ----------
         {
-            const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - gl - w, y = gt;
+            const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
             r.uiRect(x, y, w, h, GLASS);
             const float xr = x + w - pad;
             label(r, xr, y + 10 * k, k, "Score", ui::DROITE);
@@ -84,11 +87,11 @@ public:
         }
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
         {
-            const float w = 230 * k, h = 128 * k, x = W / 2 - w / 2, y = H - gt - h;
+            // centré dans la zone sûre (entre les marges gauche et droite)
+            const float cx = (mg.gauche + W - mg.droite) / 2, w = 230 * k, h = 128 * k, x = cx - w / 2, y = H - mg.bas - gt - h;
             r.uiRect(x, y, w, h, GLASS);
             const int v = std::abs(Course::kmh(pl.speed));
             const bool rouge = v > 300, arriere = pl.speed < -1;
-            const float cx = W / 2;
             ui::text(r, cx, y + 8 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false);
             label(r, cx, y + 56 * k, k, arriere ? "R · km/h" : "km/h", ui::CENTRE);
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
@@ -141,6 +144,14 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
     if (Course* c = activeCourseMut()) { c->nearMiss(); c->nearMiss(); }
     rouler(12);
     capture("hud-combo");
+    // WFS-52 : encoche simulée de 90 px à gauche (WFS_ENCOCHE, sinon 90) : bande marquée, aucun panneau du HUD dedans
+    {
+        const char* e = std::getenv("WFS_ENCOCHE");
+        g.setMarges({e ? (float)std::atoi(e) : 90.f, 0, 0, 0}); g.montrerMarges = true;
+        rouler(12);
+        capture("encoche-hud");
+        g.setMarges({}); g.montrerMarges = false;
+    }
     g.onTouch({7, W * 0.89f, H * 0.74f, false});
     g.shutdown();
     courseBenchRules(false);
