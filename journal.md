@@ -774,3 +774,41 @@ la voiture percutée au journal du banc.
 chaussée de 7,5 m : l'arrière sur le trottoir pendant une glissade existe donc aussi dans le jeu web (comportement identique).
 **WFS-42** (toujours en cours) : diagnostic au banc en cours (pièce opaque de l'intérieur de la Golf).
 **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Décision du PO : MVP du 2026-11-03 (demande de l'utilisateur : « un MVP aujourd'hui »)
+**But** : le plus petit jeu complet sur téléphone : chargement → menu principal → « Course solo » → décompte 3-2-1-GO →
+course solo avec trafic, chrono, checkpoints, HUD lisible (vitesse, temps, score, nitro) et notifications → écran de fin →
+« Rejouer » / « Menu », en paysage plein écran Android.
+**Déjà là** : conduite tactile, caméra, ville, arbres, ombres, trafic + collisions, sons du moteur, règles de course (décompte,
+chrono, checkpoints, score, nitro, écran de fin + Rejouer), texte, écrans (WFS-36) et scène dédiée (WFS-44).
+**Tickets du MVP, dans l'ordre** (marqués [MVP] en tête du tableau) :
+1. WFS-35 chargement (E8, 🔍, fusion PR #12) ;
+2. WFS-27 HUD **réduit** à du texte (E5, ≈ 2-3 h) : le compteur en arc sort en **WFS-46**, les notifications en **WFS-47** ;
+3. WFS-37 menu, affichage (E8, Prêt dès la fusion de WFS-35) ;
+4. WFS-29 Android plein écran, icône, nom (E7, Prêt, parallèle) ;
+5. WFS-38 menu tactile, départ, fin → Rejouer / Menu (E8) ;
+6. **WFS-47** notifications (checkpoint, quasi-contact, accident) (E5, nouveau, ≈ 2 h) ;
+7. **WFS-50** vérification simulateur du MVP (E7, nouveau, parcours complet, rapport `simulateur-MVP.md`), puis « Livraison MVP ».
+Chemin critique : E8 (35 → 37 → 38) en série ; E5 (27 → 47) et E7 (29) en parallèle.
+**Hors MVP** : garage (WFS-11/40/13), terrain (WFS-41), pause (WFS-39), duel (WFS-21), sauvegarde (WFS-24), compteur en arc
+(WFS-46), italique (WFS-48), nuit / lumières / météo / post-traitement (E4, E2), bruitages (WFS-28), piétons (WFS-19).
+**Anomalies planifiées** : ANO-04 → **WFS-48** (E5, italique dans `src/ui/text.*`) ; ANO-10 → **WFS-49** (E7, captures
+`chargement-*-2400` dans un lancement du banc sans `WFS_TEXTE_ESSAI`, `.github/workflows/build.yml`). `anno.md` : 📋 Planifiée.
+**Mises à jour** : WFS-44 ✅ (PR #15 fusionnée, E0 libre) ; WFS-11 ⛔ → ⏳ En attente (ne dépend plus que de WFS-45) ;
+WFS-24 et WFS-21 → ⏳ Prêt (WFS-12 ✅) ; WFS-38 reste en attente de WFS-37 ; critère de WFS-12 corrigé :
+« checkpoint 10 → +7,4 s (checkpoint 11 → +7 s) » (`TACHES.md` et `regles-de-gestion/WFS-12.md`).
+**Parallélisme (épics attribuables maintenant)** : E7 WFS-29 [MVP] ; E3 WFS-33 / WFS-24 ; E2 WFS-14 / WFS-43 / WFS-19 ;
+E6 WFS-28 ; E4 WFS-45 dès la fin de WFS-42 ; E8 WFS-37 dès la fusion de PR #12. E0 : rien à faire.
+Règles de gestion écrites : `WFS-27` (réécrite, réduite), `WFS-46`, `WFS-47`, `WFS-48`, `WFS-49`, `WFS-50`.
+
+**Début WFS-27** — Épic **E5**, libre (WFS-11 en attente, aucun ticket E5 actif). Responsable : Claude (agent développeur,
+session 01UY1Vv1), 2026-11-03 (WFS-35 n'attend plus que la fusion de PR #12, code fini, QA passable). Branche
+`feature/waforspeed-27`, partie de `main`. Règles : `regles-de-gestion/WFS-27.md`.
+**Zone de code autorisée** : `src/ui/**` sauf `src/ui/ecrans/` (nouveau `src/ui/hud.*`), `shaders/ui*`, `assets/fonts/**` ;
+lecture seule de `src/game/course_system.h` / `course.h` / `player.h` ; accroche annoncée ≤ 10 lignes dans `src/game/game.cpp`
+(retrait des deux barres provisoires de `Game::drawUi`) ; captures `hud-*` dans `src/platform/desktop_main.cpp` (≤ 10 lignes).
+**Critères** : `course-*` + `hud-2400` lisibles ; `hud-temps-bas`, `hud-nitro`, `hud-combo` ; anciennes barres retirées ;
+décompte et fin inchangés ; banc `0 écart(s)`.
+**Plan court** : système `Hud` (lit `activeCourse()` et `GameView::player`, seulement en `Ecran::Course` et course non finie) →
+temps + checkpoint (haut gauche), score + combo (haut droite), vitesse + nitro (bas centre) → accroche `game.cpp` → captures
+du banc → PR, CI, QA par `qa-lead`.
