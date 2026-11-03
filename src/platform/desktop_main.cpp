@@ -13,6 +13,7 @@
 #include "../core/scene_essai.h"
 #include "../game/game.h"
 #include "../game/course_system.h"
+#include "../game/duel_system.h"
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
     //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage
-    //   partie2 : son, course (décompte / fin), HUD, menus, pause, projecteurs, personnages (WFS-63), encoche
+    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
@@ -123,6 +124,7 @@ int main(int argc, char** argv) {
         ecrans::benchMenu(g, r, out); // WFS-37 : menu principal (menu-anim, menu-0)
         ecrans::benchMenuTactile(g, r, out);   // WFS-38 : appuis du menu, départ, « Bientôt », fin → Menu
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
+        benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
     }
