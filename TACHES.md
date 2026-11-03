@@ -70,7 +70,7 @@ Journal à jour.
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` |  |  |
-| 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-36` |  |  |
+| 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-36` |  |  |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
@@ -88,12 +88,13 @@ Journal à jour.
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue (QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
-| 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
+| 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | ⏳ Prêt |  | WFS-32 | `feature/waforspeed-42` |  |  |
+| 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
 | 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-14` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
-| 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-15` |  |  |
+| 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-15` |  |  |
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
 | 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
@@ -114,7 +115,7 @@ Journal à jour.
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
 - [ ] journal : durée de chaque étape + total, première image < 0,5 s ; autres captures inchangées
 
-**WFS-36 — Point d'extension : écrans de l'application** · E0 · priorité 0.2 · ⏳ Prêt (règles : `regles-de-gestion/WFS-36.md`)
+**WFS-36 — Point d'extension : écrans de l'application** · E0 · priorité 0.2 · 🔧 En cours (règles : `regles-de-gestion/WFS-36.md`)
 - [ ] `Ecran` lu dans `GameView`, changement demandé par un système, `System::onEcran` ; hors `Course` : pas de conduite ni de commandes tactiles
 - [ ] captures du banc identiques (écran `Course` par défaut), tests à 0 écart ; capture `ecran-menu-vide`
 
@@ -197,8 +198,15 @@ Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zon
   le jeu web (alors accepté) ou non (alors correction dans la scène ou ticket E3 de correction)
 - [ ] Journal du banc : `mode exact : … 0 écart(s)` inchangé ; aucune voiture du trafic dans le décor
 
+**WFS-42 — Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes)** · E4 · priorité 8 · ⏳ Prêt (règles : `regles-de-gestion/WFS-42.md`)
+Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `src/render/**` (sauf `ui_*`), `shaders/scene*` ; si la cause est dans le modèle (`assets/cars/**`, E5) : la noter au Journal et ouvrir un ticket E5, ne pas toucher au modèle.
+- [ ] Cause identifiée et notée au Journal (texture du modèle, transparence du vitrage, reflet spéculaire des rayons…) avec la capture qui la montre
+- [ ] `vitrine-golf-0` (agrandie sur la lunette arrière) : plus de trame régulière de petits points clairs ; vitre toujours teintée et réfléchissante
+- [ ] `vitrine-p911-1` (agrandie sur les jantes) : rayons sans points brillants isolés, jantes toujours métalliques
+- [ ] Aucune autre capture du banc dégradée ; coût GPU au journal du banc inchangé à ±0,5 ms
 
-**WFS-09 — Nuit : vrais phares et éclairage public** · E4 · priorité 9 · ⏳ En attente
+
+**WFS-09 — Nuit : vrais phares et éclairage public** · E4 · priorité 9 · ⏳ Prêt
 - [ ] Phares réalistes (leçons de la version web)
 - [ ] Lampadaires, mode nuit par carte
 
@@ -217,7 +225,7 @@ Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zon
 - [ ] Toutes converties et vérifiées en vitrine
 - [ ] Taille de l'APK maîtrisée
 
-**WFS-15 — Réglages de qualité selon le téléphone** · E4 · priorité 14 · ⏳ En attente
+**WFS-15 — Réglages de qualité selon le téléphone** · E4 · priorité 14 · ⏳ Prêt
 - [ ] Niveaux bas / moyen / haut, choix automatique
 
 **WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité 15 · ⏳ Prêt
@@ -235,8 +243,9 @@ Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zon
 **WFS-18 — Météo : pluie, flaques** · E2 · priorité 19 · ⏳ En attente
 - [ ] Pluie animée, route mouillée
 
-**WFS-17 — Post-traitement : bloom, TAA, flou de mouvement** · E4 · priorité 20 · ⏳ En attente
+**WFS-17 — Post-traitement : bloom, TAA, flou de mouvement** · E4 · priorité 20 · ⏳ En attente (règles : `regles-de-gestion/WFS-17.md`)
 - [ ] Activable selon la qualité
+- [ ] `vitrine-golf-0`, `vitrine-p911-1` : plus de lignes pointillées sur les jointures de carrosserie (reste de WFS-32, crénelage de géométrie lissé par le TAA)
 
 **WFS-24 — Sauvegarde et progression** · E3 · priorité 21 · ⏳ En attente
 - [ ] Meilleurs scores, voitures et réglages conservés
@@ -645,7 +654,7 @@ plafonnée / NaN supprimés ; course dans `blob()` de la ville corrigée (banc d
 Points brillants isolés (comptage qa-lead, avant → après) : Golf 66 → 25 (dont en trame 45 → 2), 911 43 → 8 (22 → 0),
 course-cam0-1 24 → 8 (14 → 0), trafic-choc 15 → 5.
 **Fichiers** : `shaders/post.frag`, `shaders/scene.frag` ; hors zone (annoncé) : `src/world/ville.cpp`.
-**Restes (non bloquants, pour le PO)** : lignes pointillées sur les jointures de carrosserie (crénelage de géométrie,
+**Restes (non bloquants, pour le PO)** (reportés le 2026-11-03 : WFS-17 et WFS-42) : lignes pointillées sur les jointures de carrosserie (crénelage de géométrie,
 déjà présent avant) → à ajouter aux critères de WFS-17 (TAA) ; trame de petits points clairs sur la **lunette arrière de la
 Golf** (vitrage, identique avant/après : texture du modèle ou transparence ?) ; points sur les rayons des jantes (911) ;
 coût GPU non mesuré (halo 25 → 16 lectures + 2 dérivées) : à confirmer sur téléphone en fin d'épic E4.
@@ -802,3 +811,24 @@ ne donne pas d'avancement pendant le décodage ; un avancement plus fin demander
   trottoirs, bords stables, pas d'acné. **E4 libérée.** WFS-09 (nuit) et WFS-15 (qualité) débloqués côté dépendance.
 - À mesurer en fin d'épic E4 (simulateur / téléphone) : coût de la passe d'ombre ≤ 3 ms avec la carte 1024.
 - WFS-34 : 4e correction (cœur en feuillage découpé), en attente de CI puis QA.
+
+### 2026-11-03 — PO : restes de WFS-32 reportés, WFS-09 et WFS-15 prêts
+- Lignes pointillées des jointures de carrosserie → critère ajouté à **WFS-17** (déjà dans `regles-de-gestion/WFS-17.md`).
+- Trame de points sur la lunette arrière de la Golf et points sur les rayons des jantes (911) → nouveau ticket **WFS-42** (E4,
+  priorité 8, ⏳ Prêt, règles `regles-de-gestion/WFS-42.md`) ; le coût GPU du halo reste à mesurer en fin d'épic E4.
+- WFS-07 ✅ : **WFS-09** (nuit) et **WFS-15** (qualité) passent en ⏳ Prêt. E4 est libre : WFS-42 puis WFS-09 sont attribuables.
+
+### 2026-11-03 — Début WFS-36 Point d'extension : écrans de l'application (attribué par le PO à Claude, session trafic)
+Ticket choisi : meilleur ⏳ Prêt du backlog (priorité 0.2), épic E0 sans ticket actif, aucune dépendance ; l'agent n'a plus de
+ticket (WFS-08, WFS-10, WFS-32 ✅). Catalyseur : débloque WFS-37 (E8) et WFS-11 (E5). Branche `feature/waforspeed-36`.
+**Zone de code autorisée (E0)** : `src/core/**` (nouveau `ecran.h`, `system.h` : `onEcran`), `src/game/game.{h,cpp}` (`GameView::ecran`,
+`allerA`, application entre deux images, conduite et commandes tactiles coupées hors `Course`, `Pause` sans `update`),
+`src/render/renderer.h` si besoin, `CMakeLists.txt` ; doc du point d'extension dans `.claude/skills/waforspeed-natif`.
+Accroche annoncée ≤ 10 lignes : capture `ecran-menu-vide` dans `src/platform/desktop_main.cpp` (banc). Attention : WFS-35
+(E8, accroches dans `game.*` et `desktop_main.cpp`) et WFS-12 (en revue) touchent aussi `game.*` : se synchroniser avec `main` souvent.
+**Critères** : voir le tableau (captures du banc identiques, écran `Course` par défaut ; tests de trafic et de course à 0 écart ;
+capture `ecran-menu-vide` sans commandes tactiles, voiture immobile ; doc dans le skill). Règles : `regles-de-gestion/WFS-36.md`.
+**Plan court** : `enum class Ecran` dans `src/core/ecran.h` ; `GameView::ecran` + `allerA(Ecran)` (demande mise en attente,
+appliquée en début d'image, `onEcran(ancien, nouveau)` à tous les systèmes) ; hors `Course` commandes remises à zéro et
+`drawControls` sauté ; `Pause` saute les `update` ; écran initial `Course` ; capture du banc forcée ; doc ; QA par `qa-lead`.
+
