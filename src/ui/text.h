@@ -18,6 +18,7 @@ inline const vec4 BLANC{1, 1, 1, 1}, CYAN{0.f, 0.898f, 1.f, 1}, ORANGE{1.f, 0.41
                   GRIS{0.62f, 0.66f, 0.72f, 1};
 
 bool fontReady();
+bool chargerPolice(Renderer& r);   // WFS-35 : police chargée une seule fois, avant la partie (écran de chargement)
 // x, y : coin haut-gauche de la ligne (selon l'alignement) en pixels logiques ; px : hauteur des capitales + jambages
 // espacement : en fraction de px (0,16 = letter-spacing .16em du web) ; ombre : léger contour sombre pour la lisibilité
 void text(Renderer& r, float x, float y, float px, const std::string& utf8, const vec4& color, Align align = GAUCHE,

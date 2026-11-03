@@ -13,7 +13,7 @@ struct Touch { int id; float x, y; bool down; };
 
 class Game {
 public:
-    bool init(Renderer& r, const char* carId, const char* mapId);
+    bool init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*) = nullptr);   // WFS-35 : écran de chargement
     void shutdown();
     void onTouch(const Touch& t);                 // coordonnées logiques (paysage, pixels)
     void setAutopilot(bool on) { autopilot_ = on; }
