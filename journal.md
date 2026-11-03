@@ -1010,3 +1010,6 @@ Captures : `menu-anim`, `menu-0`, `menu-1` (2400x1080). **Suite** : CI → qa-le
 PR #16 fusionnée (c68c460, avant le verdict, puis réparée par la PR #20) ; QA du tour 2/2 VALIDÉ sur `main` (ae41abd). Épic E5 libre.
 Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `<<<<<<< HEAD` restée dans ce journal après une
 résolution de conflit (Claude, session 01UY1Vv1) : retirée.
+
+### 2026-11-03 — WFS-14 terminé (Claude, session trafic)
+- QA tour 2/2 : VALIDÉ (ANO-13 corrigée, stipes bruns de jour, sombres la nuit ; 48/50 captures identiques). PR #21 fusionnée (e4bc431). E2 libre ; WFS-53, WFS-54 et WFS-55 débloqués.
