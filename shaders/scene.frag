@@ -51,6 +51,8 @@ float sunShadow(vec3 p, vec3 n) {
 
 void main() {
     uint flags = uint(pc.params.w + 0.5);
+    // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
+    bool fine = pc.emissive.w > 0.0 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u;
     if ((flags & F_SHADOW) != 0u) {   // ombre de contact : rectangle aux bords très doux
         vec2 q = abs(vUv * 2.0 - 1.0);
         float a = (1.0 - smoothstep(0.55, 1.0, q.x)) * (1.0 - smoothstep(0.6, 1.0, q.y));
@@ -111,6 +113,15 @@ void main() {
     // Les grandes surfaces (normale régulière) gardent leur reflet net.
     vec3 dndx = dFdx(N), dndy = dFdy(N);
     float aaKernel = min(2.0 * 0.25 * (dot(dndx, dndx) + dot(dndy, dndy)), 0.18);
+    // pièces très fines (WFS-42 : fils de la lunette, rayons de jante) : triangles plus petits qu'un pixel, que les
+    // dérivées ne voient pas → reflet du soleil élargi selon le rapport taille du pixel / finesse de la pièce
+    float detailK = 1.0;   // part du pixel réellement couverte par la pièce (1 = pièce plus large qu'un pixel)
+    if (fine) {
+        float px = length(fwidth(vWorld));
+        float ratio = px / pc.emissive.w;
+        detailK = clamp(1.0 / ratio, 0.0, 1.0);
+        if ((flags & (F_PAINT | F_GLASS)) == 0u) aaKernel = max(aaKernel, clamp((ratio - 1.0) * 0.06, 0.0, 0.3));
+    }
     float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
@@ -126,8 +137,11 @@ void main() {
     vec3 Fe = f0 + (max(vec3(1.0 - rough), f0) - f0) * pow(1.0 - NoV, 5.0);
     if (vtint) Fe = vec3(0.0);   // pas de reflet du ciel sur les cartes vues en rasant ou de dos
     // le disque du soleil ne se reflète nettement que sur les surfaces lisses (sinon tache blanche sur la route)
-    float sunK = pow(1.0 - clamp(rough, 0.0, 1.0), 6.0);
-    vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
+    // pièces fines (WFS-42) : le ciel reflété, et surtout le disque du soleil (60 x l'intensité), suivent la rugosité
+    // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
+    float roughEnv = fine ? max(rough, sqrt(a)) : rough;
+    float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
+    vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     col += albedo * (1.0 - metal) * skyAmb + env * Fe * F.misc.w * specOcc;
 
@@ -138,7 +152,7 @@ void main() {
         float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0);        // disque du soleil reflété : seulement si net
         col = col * (1.0 - Fc) + (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
     }
-    float alpha = base.a;
+    float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
     if ((flags & F_GLASS) != 0u) {
         float Fg = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
         col = albedo * 0.08 * skyAmb + skyColor(R) * F.misc.z * Fg + D_GGX(NoH, 0.0004) * 0.25 * sun * NoL;

@@ -62,6 +62,8 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
 
     // géométrie : tous les maillages dans un seul tampon de sommets et d'indices
     std::vector<Vertex> verts; std::vector<uint32_t> idx;
+    std::vector<float> partDetail(nMat, 0.f);
+    std::vector<char> partFil(nMat, 0);
     for (uint32_t i = 0; i < nMesh; i++) {
         uint32_t mat = rd.get<uint32_t>(), nv = rd.get<uint32_t>(), ni = rd.get<uint32_t>();
         const uint8_t* vp = rd.take((size_t)nv * sizeof(Vertex));
@@ -72,6 +74,27 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         verts.resize(v0 + nv); std::memcpy(&verts[v0], vp, (size_t)nv * sizeof(Vertex));
         idx.resize(i0 + ni); std::memcpy(&idx[i0], ip, (size_t)ni * 4);
         out.parts.push_back(part);
+        // WFS-42 : finesse de la pièce = hauteur médiane de ses triangles (fils de dégivrage, rayons de jante…)
+        if (ni >= 3 && mat < nMat) {
+            const Vertex* V = &verts[v0]; const uint32_t* I = &idx[i0];
+            std::vector<float> alt, asp; alt.reserve(ni / 3); asp.reserve(ni / 3);
+            for (uint32_t t = 0; t + 2 < ni; t += 3) {
+                if (I[t] >= nv || I[t + 1] >= nv || I[t + 2] >= nv) continue;
+                const Vertex &a = V[I[t]], &b = V[I[t + 1]], &c = V[I[t + 2]];
+                vec3 A{a.px, a.py, a.pz}, B{b.px, b.py, b.pz}, C{c.px, c.py, c.pz};
+                float e = std::max({length(B - A), length(C - B), length(A - C)});
+                if (e > 1e-7f) { const float h = length(cross(B - A, C - A)) / e; alt.push_back(h); asp.push_back(e / std::max(h, 1e-7f)); }
+            }
+            if (!alt.empty()) {
+                std::nth_element(alt.begin(), alt.begin() + alt.size() / 2, alt.end());
+                const float med = alt[alt.size() / 2];
+                if (med < 0.004f) partDetail[mat] = partDetail[mat] > 0 ? std::min(partDetail[mat], med) : med;
+                // fils : triangles longs et étroits (allongement médian > 8), à la différence des surfaces faites de
+                // petits triangles (jantes : 3,3)
+                std::nth_element(asp.begin(), asp.begin() + asp.size() / 2, asp.end());
+                if (med < 0.004f && asp[asp.size() / 2] > 8.f) partFil[mat] = true;
+            }
+        }
     }
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -81,8 +104,11 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     for (uint32_t i = 0; i < nTex; i++)
         if (dec[i].w) out.textures[i] = r.vk().uploadTexture(dec[i].rgba.data(), (uint32_t)dec[i].w, (uint32_t)dec[i].h, dec[i].srgb);
     auto texAt = [&](int32_t t) -> const Image* { return (t >= 0 && t < (int32_t)nTex && out.textures[t].view) ? &out.textures[t] : nullptr; };
-    for (auto& m : raw) {
+    for (size_t mi = 0; mi < raw.size(); mi++) {
+        const RawMat& m = raw[mi];
         Material mt;
+        mt.detail = partDetail[mi];
+        mt.filament = partFil[mi] && !(m.flags & (MAT_PAINT | MAT_BLEND | MAT_GLASS));
         mt.color = {m.col[0], m.col[1], m.col[2], m.col[3]};
         mt.metal = m.metal; mt.rough = m.rough; mt.cutoff = m.cut;
         mt.emissive = {m.em[0], m.em[1], m.em[2]};
@@ -91,6 +117,9 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         if (mt.flags & MAT_PAINT) { mt.rough = std::min(mt.rough, 0.45f); }
         out.mats.push_back(r.makeMaterial(mt, texAt(m.tC), texAt(m.tN), texAt(m.tMR)));
     }
+    for (uint32_t mi = 0; mi < nMat; mi++)
+        if (partDetail[mi] > 0) WFS_LOG("%s : matériau %u très fin (%.1f mm) → préfiltré%s (WFS-42)", path.c_str(), mi, partDetail[mi] * 1000.f,
+                                        out.mats[mi].filament ? ", fils en couverture partielle" : "");
     out.ok = true;
     WFS_LOG("%s : %u matériaux, %u textures, %zu triangles", path.c_str(), nMat, nTex, idx.size() / 3);
     return true;
