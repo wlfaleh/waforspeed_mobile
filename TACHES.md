@@ -79,7 +79,7 @@ Journal à jour.
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ Prêt |  | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
+| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
 | 0.7 | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-40` |  |  |
 | 0.8 | WFS-41 | Choix du terrain et du moment (jour / nuit) | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-41` |  |  |
@@ -132,7 +132,7 @@ Journal à jour.
 **WFS-38 — Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⏳ Prêt (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
+**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · 🔧 En cours (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité 0.6 · ⏳ En attente (règles : `regles-de-gestion/WFS-39.md`)
@@ -954,3 +954,21 @@ ANO-07 : libellé à 19 px (720 p) ; ANO-08 : `Game::init` s'arrête dès que la
 reste sur « Chargement du modèle 3D… » ; ANO-09 : `build.yml` publie `chargement-*-2400.png`.
 **Accroches WFS-35** : +2 lignes (`game.cpp` 1, `build.yml` 1), soit 15 au total (annoncé).
 **Suite** : CI → 2e passage QA (tour 2/2) des deux tickets.
+
+### 2026-11-03 — PO : WFS-36 terminé ; début WFS-11 Garage 3D (attribué par le PO à Claude, session trafic)
+**Déblocages** : WFS-36 ✅ (PR #13). **WFS-11** (E5) était déjà ⏳ Prêt ; **WFS-37** (E8) reste ⏳ En attente de WFS-35
+(🔧 corrections QA, tour 2/2).
+**Choix** : meilleur ⏳ Prêt dont l'épic est libre (WFS-11, priorité 0.5 ; E0, E3, E4, E8 occupées ou sans Prêt devant) ;
+l'agent n'a plus de ticket. Branche `feature/waforspeed-11`. Règles : `regles-de-gestion/WFS-11.md`.
+**Zone de code autorisée (E5)** : `src/ui/**` sauf `src/ui/ecrans/` (nouveau `src/ui/garage.*` : système enfichable WFS-30
+réagissant à `onEcran(Ecran::Garage)` de WFS-36), `shaders/ui*`, `assets/cars/**`. Pas de changement du noyau ni de
+`src/render/**` : si l'API du renderer ne suffit pas (scène dédiée, caméra du garage), le signaler au PO pour un ticket E0.
+Accroche annoncée ≤ 10 lignes : captures `garage-*` dans `src/platform/desktop_main.cpp` (banc).
+**Réutiliser** (`wlfaleh/waaps`, `waforspeed/`) : `js/world/garage.js` (`buildGarage`, `setGarageCar`, `renderGarage` : mêmes
+dimensions, lumières, caméra, vitesses), `js/cars/catalog.js` (`CARS`), modèles `.wfm` déjà convertis (Golf 8, M4, 911,
+Gallardo), texte WFS-26. Aucune voiture générée par le code.
+**Critères** : captures `garage-*` (plateau rayon 3,6 m, anneau néon `glow`, 3 projecteurs, 3 angles) ; `garage-golf` puis
+`garage-m4` (nom et index « 01 / 04 » → « 02 / 04 ») ; lisible en 1280x720 et 2400x1080, accents corrects ; autres captures
+du banc inchangées (écran `Course` par défaut).
+**Plan court** : scène du garage (plateau, sol, anneau, lumières, brouillard) → voiture tournante 0,35 rad/s → glisser /
+glissement rapide et flèches → nom, index, « Retour » → captures du banc → PR, CI, QA par `qa-lead`.
