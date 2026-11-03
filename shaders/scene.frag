@@ -59,7 +59,9 @@ void main() {
     }
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
-    if (!gl_FrontFacing) N = -N;   // pièces double face
+    // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
+    // triangles enroulés dans l'autre sens → ne pas retourner (sinon le sol ne recevait ni soleil ni ombre, WFS-07)
+    if (!gl_FrontFacing && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
     vec4 base = texture(texColor, vUv) * pc.color;
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
