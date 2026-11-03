@@ -1357,3 +1357,38 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 21:13:18 — Fin WFS-28 : fusionné sur ordre de l'utilisateur (PR #36) ; marqueur de conflit retiré du journal (agent 3, session 011cpqZd)
 - WFS-28 fusionné par l'utilisateur à 21:12:25, CI de la PR non terminée (Android ✅). Suivi déjà fait par l'agent 4 (`TACHES.md` ✅, `qa/Check.md`). Contrôle : la pipeline de `main` doit montrer les lignes `SFX bip-decompte`, `SFX bip-go`, `SFX quasi-contact`, `SFX accident`, `SFX bip-fin`… dans le journal du banc, et `test_audio` vert.
 - `journal.md` : une ligne orpheline `<<<<<<< HEAD` (sans `=======` ni `>>>>>>>`, aucun contenu en double) envoyée sur `main` avant l'entrée de 21:11:56 : ligne retirée, rien d'autre changé.
+
+### 2026-11-03 21:14:33 — Début WFS-69 : CI banc en jobs parallèles, fin des builds inutiles (PO / Scrum Master)
+- Ticket : WFS-69 · épic E7 · P1 Urgent · attribué à agent 3 (session 011cpqZd) · branche `feature/waforspeed-69` · règles `regles-de-gestion/WFS-69.md`.
+- Zone autorisée : `.github/**`, `tools/qa/**` (E7). Toucher au banc (`WFS_BANC` groupes) côté code de jeu = ligne d'accroche ≤ 10 lignes annoncée au Journal, sinon ticket E0.
+- Critères : RG-01 à RG-05 d'abord (pas de build pour la doc, un build par commit, `main` jamais annulé), puis RG-06 (banc en matrice de 4 groupes, cible 10-15 min) ; RG-07/08/10 facultatifs. 3 essais documentés au journal avec les runs.
+- Plan court : paths-ignore + concurrency conditionnelle dans `build.yml` ; matrice par groupe de scènes ; publication des captures dans la même Release.
+
+### 2026-11-03 21:16:00 — Début WFS-21 Mode duel en ligne (Claude, agent 4) — attribué par le PO
+- Ticket : WFS-21 · Épic E3 (Gameplay et simulation) · P2 Haute · branche `feature/waforspeed-21` · règles `regles-de-gestion/WFS-21.md`.
+- Choix du PO : WFS-69 (E7, P1) demandé en premier, mais déjà attribué à l'agent 3 (commit 44c41f3) ; ticket « Prêt » suivant par priorité puis numéro : WFS-21 (E3 libre, WFS-12 ✅).
+- Zone de code autorisée : `src/game/` sauf `game.*`, `tests/**`. Noyau (`game.*`, renderer, CMake) : ligne d'accroche ≤ 10 lignes annoncée au Journal, sinon ticket E0. HUD/menus du salon : uniquement ce qui est propre au duel.
+- Décision du PO sur RG-07 (transport) : interface de transport abstraite + transport local en mémoire (deux instances dans le même processus, et un adversaire simulé qui rejoue des messages de présence) pour le banc et les tests ; le transport réseau réel (sockets, permission INTERNET dans `android/**` = E7) n'est pas exigé ici et fera l'objet d'un ticket E7 si l'utilisateur le veut sur téléphone.
+- Réutiliser : `js/net/duel.js` (`startDuelRace`, `sendRacePresence`, `updateGhosts`, `finishDuel`, `renderLobby`), `js/game/update.js` → `hitGhosts`, `js/ui/hud.js` → `renderBoard`, modèles `models/<voiture>/`.
+- Plan : RG-02/03 (graine commune, messages de présence) → RG-04 fantômes bornés → RG-05 contacts → RG-06 classement + résultat → RG-01 salon minimal.
+- Critères : test CPU même graine = trafic identique image par image ; test messages hostiles sans plantage ; capture voiture adverse avec son nom + classement.
+
+### 2026-11-03 21:19:39 — WFS-69 : CI découpée, PR #37 (agent 3, session 011cpqZd)
+- **Constat** (run de WFS-59) : appel principal de `wfs_bench` ≈ 5 min ; les lancements `texte` ×2 et `chargement` 2400 refaisaient tout le banc pour 1 à 3 captures : ≈ 21 min sur 29.
+- **Fait** : `build.yml` (paths-ignore de la doc ; plus de déclencheur `pull_request` ; concurrency par commit et sans annulation sur `main` ; banc en matrice `partie1` / `partie2` / `texte` / `ecrans-2400` ; publication en série qui ne remplace jamais une Release `apercu` plus récente) ; `desktop_main.cpp` (`WFS_BANC=partie1|partie2|chargement|texte`, rien ne change sans la variable).
+- **Essai 1 (commit de code sur branche + PR)** : un seul run, [n° 435](https://github.com/wlfaleh/waforspeed_mobile/actions/runs/41720665103), aucun run créé par l'ouverture de la PR #37.
+- **Essai 2 (documentation seule)** : ce commit (`TACHES.md` + `journal.md` sur `main`) ne doit lancer aucun build une fois WFS-69 fusionné ; avant fusion, `main` garde l'ancien `build.yml`.
+
+### 2026-11-03 21:24:50 — WFS-21 en revue, PR #38 (Claude, agent 4)
+- **Fait** :
+  - `src/game/duel.*` : port de `js/net/duel.js` (graine `hashStr`, présence toutes les 0,1 s, fantômes estimés, lissés et bornés, résultat), de `hitGhosts` et de `renderBoard`. Messages texte nettoyés. Interface `Transport` et transport en mémoire (RG-07, décision du PO).
+  - `src/game/duel_system.*` : départ commun avec la graine du trafic, horloge commune, contacts, voiture adverse avec son nom, classement « POSITION n/N », résultat « Revanche » / « Menu ».
+  - Mode duel de `Course` et `trafficRestartSeed`.
+  - Banc : `duel-course` et `duel-resultat`, avec un adversaire simulé.
+- **Accroches annoncées** : `CMakeLists.txt` (2 lignes, `test_duel`), `.github/workflows/build.yml` (`&& ./build/test_duel` sur la ligne des tests ; WFS-69 de l'agent 3 touche aussi ce fichier, garder les deux), `src/platform/desktop_main.cpp` (2 lignes).
+- **Vérification** :
+  - `test_duel` OK : graine = jeu web ; trafic identique image par image sur 1800 images, en mode exact et en mode parallèle ; 6 messages hostiles sans plantage ; contacts et classement corrects.
+  - `test_course` et `test_systems` OK.
+  - Branche synchronisée avec `main` avant le push.
+  - Shaders, banc et APK : CI de la PR #38.
+- **Limites** : pas de réseau réel (ticket E7 à créer par le PO), pas d'entrée « Duel » dans le menu (E8), HUD solo affiché pendant le duel.
