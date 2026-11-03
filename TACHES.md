@@ -74,7 +74,7 @@ Journal à jour.
 ## MVP du 2026-11-03 (décision du PO, détail au Journal)
 Parcours jouable sur téléphone : **chargement → menu → Course solo → décompte → course (trafic, chrono, checkpoints, HUD,
 notifications) → fin → Rejouer / Menu**, en plein écran Android. Tickets marqués **[MVP]**, en tête du tableau, dans l'ordre :
-WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-50 (vérification simulateur). Hors MVP : garage, terrain, pause,
+WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-56 (scénario simulateur) → WFS-50 (vérification simulateur). Hors MVP : garage, terrain, pause,
 duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 
 ## Tableau (par ordre de priorité)
@@ -94,7 +94,8 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-27 ✅ | `feature/waforspeed-47` | #25 (fusionnée) | ✅ VALIDÉ par qa-lead (c813a56) — [rapport](qa/rapports/WFS-47.md) |
 | 0.43 | WFS-51 | Point d'extension : marges de sécurité de l'écran (encoche), commandes tactiles | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-29 ✅ | `feature/waforspeed-51` | #20 (fusionnée) | ✅ VALIDÉ par qa-lead (66c13bc, banc PC) — [rapport](qa/rapports/WFS-51.md) |
 | 0.435 | WFS-52 | HUD et notifications dans les marges de sécurité (encoche) | E5 | ⏳ Prêt |  | WFS-51 ✅, WFS-27 ✅ | `feature/waforspeed-52` |  |  |
-| 0.44 | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏳ En attente |  | WFS-35, WFS-27, WFS-37, WFS-38, WFS-29, WFS-47 | `feature/waforspeed-50` |  |  |
+| 0.441 | WFS-56 | [MVP] Simulateur : scénario « parcours MVP » par appuis (étape 1 de WFS-50) | E7 | 🔧 En cours | Claude (session 01UY1Vv1), 2026-11-03 | WFS-31 ✅ (essai complet après WFS-38) | `feature/waforspeed-56` |  |  |
+| 0.44 | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏳ En attente |  | WFS-35, WFS-27, WFS-37, WFS-38, WFS-29, WFS-47, WFS-56 | `feature/waforspeed-50` |  |  |
 | 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
 | 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-35 ✅ | `feature/waforspeed-49` | #22 (fusionnée) | ✅ VALIDÉ par qa-lead (52648fd) — [rapport](qa/rapports/WFS-49.md) |
@@ -173,6 +174,10 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 
 **WFS-52 — HUD dans les marges de sécurité (encoche)** · E5 · priorité 0.435 · ⏳ Prêt (règles : `regles-de-gestion/WFS-52.md`)
 - [ ] `encoche-hud` : aucun panneau du HUD dans la bande ; sans encoche, captures identiques
+
+**WFS-56 — [MVP] Simulateur : scénario « parcours MVP » par appuis** · E7 · priorité 0.441 · 🔧 En cours — Claude (session 01UY1Vv1), 2026-11-03 (règles : `regles-de-gestion/WFS-56.md`)
+- [ ] `simulateur.yml` avec `scenario=mvp` sur `feature/waforspeed-56` : 10 captures nommées (RG-02), `01-chargement` et `02-menu` corrects, appuis et coordonnées dans `deroulement.txt`, `RÉSULTAT TECHNIQUE : OK`
+- [ ] `scenario=conduite` (défaut) : mêmes 7 captures qu'avant ; aucun changement de `src/` ni `android/`
 
 **WFS-50 — [MVP] Vérification simulateur du MVP** · E7 · priorité 0.44 · ⏳ En attente de tout le MVP (règles : `regles-de-gestion/WFS-50.md`)
 - [ ] `simulateur.yml` (`epic=MVP`) : chargement → menu → Course solo → décompte → course + HUD → fin → Rejouer puis Menu ; paysage plein écran, aucun plantage
