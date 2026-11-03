@@ -62,6 +62,21 @@ Un seul écran à la fois : `enum class Ecran { Chargement, Menu, Garage, Terrai
   revient à l'écran de départ.
 - Les touchers vont d'abord aux systèmes (`onTouch`) : un menu garde ses touchers en renvoyant `true`.
 
+## Scène dédiée d'un écran (point d'extension WFS-44)
+Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), comme `renderGarage` du jeu web (`gScene`, `gCamera`) :
+- **Prendre la scène** : `bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override` — appelée par `Game::render`
+  avant chaque image, dans l'ordre des systèmes ; le **premier** qui renvoie `true` prend l'image. Ne la prendre que pour
+  son écran (`if (g.ecran != Ecran::Garage) return false;`).
+- **Régler** dans `fp` (déjà rempli avec les valeurs de la course) : `view`, `proj`, `camPos`, ciel (`skyTop`, `skyHorizon`,
+  `ground` ; mêmes couleurs = fond uni), `fogColor` / `fogDensity` (0 = sans), soleil (`sunDir`, `sunColor`, `sunIntensity`),
+  `ambient`, `exposure`, ombres (`shadows`, `hasFocus`, `focus`). Mettre aussi `s.cible` (point regardé).
+- **Choisir ce que Game dessine encore** dans `s` : `route`, `joueur` (voiture du joueur + ombre), `commandes` ; tout est à
+  `false` par défaut. Dessiner sa scène dans `render()`.
+- **Les autres systèmes** voient `GameView::sceneDediee` (et la caméra choisie dans `view` / `proj` / `camPos` / `camTarget`) :
+  un système de décor ou de course ne dessine pas quand `sceneDediee` est vrai (ville et trafic le font déjà).
+- Sans système qui prend la scène, rien ne change (pixel près). Lumières supplémentaires (projecteurs, hémisphère) : WFS-45.
+- Exemple et test : `src/core/scene_essai.cpp` (inactif par défaut ; banc d'essai : capture `scene-dediee-vide`).
+
 
 
 ### 1. Fidélité au jeu web (CRITIQUE)

@@ -34,3 +34,10 @@ après la route (avant la voiture du joueur), `systemsUi()` après les commandes
 `GameView::ecran` à jour et appelle `System::onEcran` pour tous. `update` : `Pause` → retour immédiat ; hors `Course` →
 entrée de conduite vide, pas de pilote automatique, vitesse du joueur à 0 à chaque pas. `onTouch` : hors `Course`, seuls les
 systèmes reçoivent les touchers. `render` : `drawControls()` seulement en `Course`. Banc d'essai : capture `ecran-menu-vide`.
+
+## Scène dédiée (WFS-44)
+`System::scene(fp, s, vue)` (`src/core/system.h`), `SceneDediee { route, joueur, commandes, cible }`, `GameView::sceneDediee`.
+`Game::render` : après le calcul habituel de `fp`, demande aux systèmes dans l'ordre ; le premier qui accepte modifie `fp`
+et `s` ; puis `beginFrame(fp)`, route seulement si `s.route`, `systemsRender` (caméra choisie), voiture du joueur seulement
+si `s.joueur`, commandes seulement si `s.commandes`. Ville (`src/world/ville.cpp`) et trafic (`traffic_system.cpp`) :
+`if (g.sceneDediee) return;` dans `render`. Test : `src/core/scene_essai.cpp`, capture `scene-dediee-vide`.
