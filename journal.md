@@ -1129,3 +1129,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 — WFS-52 en revue, PR #30 (Claude, session trafic)
 - `src/ui/hud.cpp` : panneaux du HUD à la marge de `view.marges` + gouttières de WFS-27 ; sans marge, rendu inchangé. Capture `encoche-hud` dans `benchHud`.
 - **Accroche annoncée** : `.github/workflows/build.yml`, 1 ligne modifiée (copie de `hud/encoche-hud.png` en `captures/encoche-hud-2400.png`, dans le lancement HUD 2400x1080). QA après la CI.
+
+### 2026-11-03 — Point des PR fusionnées, tableau remis à jour (Claude, session trafic, à la demande de l'utilisateur)
+- Revue des 20 dernières PR fermées (#10 à #29), toutes fusionnées, comparées à `TACHES.md` : 19 tickets étaient déjà à jour.
+- **WFS-56** (E7, session 01UY1Vv1) : PR #28 fusionnée par l'utilisateur à 17:54 (94087c7), ligne restée « En cours » → passée à **✅ Terminé (QA après fusion)**, PR #28 notée. Aucun rapport `qa/rapports/WFS-56.md` pour l'instant.
+- QA encore à faire après fusion : **WFS-37** (PR #23) et **WFS-56** (PR #28) ; pas de rapport QA non plus pour WFS-55 (PR #26, « recette de nuit »).
+- Seule PR ouverte : **#30 (WFS-52, en revue)**, CI en cours.
+- Pour le PO : toutes les dépendances de **WFS-50** (vérification simulateur du MVP) sont maintenant fusionnées (WFS-35, 27, 37, 38, 29, 47, 56, 57).
