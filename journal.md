@@ -1278,3 +1278,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - **WFS58-4** : la taille d'écran est tracée en fin de scénario.
   - Essais relancés : `scenario=mvp` (Release `simulateur-WFS-58`) et `scenario=conduite` (Release `simulateur-WFS-58-conduite`).
 - **WFS-39** (PR #34), banc local comparé à main : 11 captures de vraie course ne changent que dans la zone du bouton « Menu » (`course-decompte-*`, `hud-*`, `encoche-hud`, `menu-depart-*`, `toast-*`) ; 5 nouvelles captures `pause-*` ; aucune autre différence. Branche synchronisée avec main avant la CI (nouvelle règle 2384f67).
+
+### 2026-11-03 20:41:47 — Fin WFS-59 : fusionné (PR #31), ajouté à qa/Check.md (agent 3)
+- **Contrôle rapide** : CI verte sur `14056c9` (android, banc-essai avec tous les tests, publication `apercu-waforspeed-59`). Banc : GPU llvmpipe hors écran → mode inactif (« MSAA x4 », scène 2400x1080, ombres présentes) ; captures `course-cam0-0`, `hud-course`, `ombres-a`, `menu-0` regardées : rien de bloquant.
+- **Limite** : comparaison au pixel avec `main` non faite (Release `apercu` en reconstruction au moment de la fusion) : à faire par la recette de nuit. Comportement sur le simulateur à mesurer avec WFS-50 (et le scénario de WFS-58).
+- **Fusion** : `b2ede73`. WFS-50 ne dépend plus que de WFS-58.
