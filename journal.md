@@ -914,3 +914,9 @@ dans `tests/**` (ligne d'accroche E3 annoncée ici) ; branche `feature/waforspee
 cartes fidèle au JS (0 écart) ; ≤ 300 appels de dessin ; ville par défaut, autres captures identiques.
 **Plan court** : porter `MAPS` / `envFor` / `ZONES` (maps.js, decor.js) → décor plage (`vegPalm` via `vegetation.*`,
 parasols, plan d'eau `#1e7fa8`) → `WFS_CARTE=plage` au banc + captures → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — Fin WFS-29 Android : plein écran immersif, icône, nom (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-29.md`, `45f3d8a`), PR #17 fusionnée. Branche resynchronisée avec `main`
+(WFS-35) avant la fusion : APK reconstruit avec succès (run 41621305547). **Épic E7 libre** : WFS-49 et WFS-51 attribuables (PO).
+À vérifier au simulateur (WFS-50) : barres masquées, icône et nom sur le lanceur, démarrage de `.JeuActivity`.
+
