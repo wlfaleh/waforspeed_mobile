@@ -27,3 +27,10 @@ Rotation / taille → `VkCtx::createSwapchain()` + `Renderer::resize()`.
 `Game` : `systemsInit()` à la fin de `init`, `systemsUpdate()` à chaque pas fixe après la conduite, `systemsRender()`
 après la route (avant la voiture du joueur), `systemsUi()` après les commandes, `systemsTouch()` avant les commandes,
 `systemsShutdown()` au début de `shutdown`. Test : `tests/test_systems.cpp`.
+
+## Écrans (WFS-36)
+`src/core/ecran.h` : `Ecran`, `nomEcran()`. `Game` : `ecran_` (défaut `Course`), `allerA()` mémorise la demande,
+`appliquerEcran()` (au début de `update` et de `render`) l'applique, lâche les commandes (`lacherCommandes()`), met
+`GameView::ecran` à jour et appelle `System::onEcran` pour tous. `update` : `Pause` → retour immédiat ; hors `Course` →
+entrée de conduite vide, pas de pilote automatique, vitesse du joueur à 0 à chaque pas. `onTouch` : hors `Course`, seuls les
+systèmes reçoivent les touchers. `render` : `drawControls()` seulement en `Course`. Banc d'essai : capture `ecran-menu-vide`.
