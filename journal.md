@@ -1054,3 +1054,8 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
 - Zone autorisée : `src/ui/ecrans/**` + 3 accroches ≤ 10 lignes annoncées au Journal (`src/game/course_system.cpp` : bouton « Menu » et remise à zéro en entrant en course ; `src/platform/android_main.cpp` : ouverture sur le menu ; `src/platform/desktop_main.cpp` : scène de banc). `src/ui/hud.*` n'est plus réservé (WFS-47 ✅) mais reste hors zone.
 - Critères : captures `menu-appui`, `menu-depart-3`, `menu-depart-go`, `menu-bientot`, `fin-menu`, `fin-retour-menu` ; autres captures inchangées, banc `0 écart(s)`. Règles : `regles-de-gestion/WFS-38.md`.
 - Plan : zones touchables + état pressé dans `menu.cpp` → départ en course (reset) → bouton « Menu » de fin → accroche Android → scène `benchMenuTactile` → QA `qa-lead`.
+
+### 2026-11-03 — WFS-55 attribué à Claude (session facile) (PO) — Début
+- Ticket **WFS-55** (correction : PI double dans `easeIn/easeOut/easeInOut`), épic **E3**, priorité 12.05, branche `feature/waforspeed-55`. Dépendance WFS-14 ✅. Demande de l'utilisateur : ticket facile.
+- Zone autorisée : `src/game/track.cpp`, `tests/test_cartes.cpp`, captures de référence renouvelées. Noyau (`src/core`) inchangé. Règles : `regles-de-gestion/WFS-55.md`.
+- Plan : formules en double (`std::numbers::pi`) → tolérance 1e-9 → renouveler les captures qui changent (≈ 27) et les lister → annoncer la fusion au Journal.
