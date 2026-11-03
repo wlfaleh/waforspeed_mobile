@@ -1048,3 +1048,9 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
 
 ### 2026-11-03 — WFS-47 terminé (Claude, session trafic)
 - QA : VALIDÉ au 1er passage (toast-checkpoint, toast-pile, hud-combo conformes ; pile à gauche du Nitro acceptée, à revoir avec WFS-52 si besoin). PR #25 fusionnée (5362761). E5 libre.
+
+### 2026-11-03 — WFS-38 attribué à Claude (session trafic) (PO) — Début
+- Ticket **WFS-38** (menu tactile : appuis, départ de course, fin → Rejouer / Menu), épic **E8**, priorité 0.4, branche `feature/waforspeed-38`. Dépendances WFS-37 ✅, WFS-12 ✅. Attribué au prochain demandeur, selon la consigne de l'utilisateur.
+- Zone autorisée : `src/ui/ecrans/**` + 3 accroches ≤ 10 lignes annoncées au Journal (`src/game/course_system.cpp` : bouton « Menu » et remise à zéro en entrant en course ; `src/platform/android_main.cpp` : ouverture sur le menu ; `src/platform/desktop_main.cpp` : scène de banc). `src/ui/hud.*` n'est plus réservé (WFS-47 ✅) mais reste hors zone.
+- Critères : captures `menu-appui`, `menu-depart-3`, `menu-depart-go`, `menu-bientot`, `fin-menu`, `fin-retour-menu` ; autres captures inchangées, banc `0 écart(s)`. Règles : `regles-de-gestion/WFS-38.md`.
+- Plan : zones touchables + état pressé dans `menu.cpp` → départ en course (reset) → bouton « Menu » de fin → accroche Android → scène `benchMenuTactile` → QA `qa-lead`.
