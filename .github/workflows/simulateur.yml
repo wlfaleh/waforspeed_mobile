@@ -11,6 +11,12 @@ on:
         description: "Épic vérifiée (ex. E2)"
         required: true
         default: "E0"
+      scenario:
+        description: "Scénario : conduite (accélérer, nitro, braquer, freiner) ou mvp (parcours du MVP par appuis, WFS-56)"
+        required: false
+        default: "conduite"
+        type: choice
+        options: [conduite, mvp]
 
 permissions:
   contents: write
@@ -45,7 +51,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
-          script: ./tools/qa/emulateur.sh WaForSpeed.apk qa-sortie
+          script: ./tools/qa/emulateur.sh WaForSpeed.apk qa-sortie ${{ inputs.scenario || 'conduite' }}
       - name: Release « simulateur-<épic> »
         if: always()
         env:
