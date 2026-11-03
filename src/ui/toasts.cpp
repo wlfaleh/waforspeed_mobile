@@ -42,8 +42,10 @@ public:
             for (int n = level_ + 1; n <= c->level; n++)
                 pousser({"Checkpoint " + std::to_string(n), "+" + ui::decimal(Course::checkpointBonus(n), 1) + " s", CP});
         }
-        if (c->nearCount > near_) {   // RG-03 : quasi-contact (web : « Quasi-contact ×N » si combo > 1, « +250×combo »)
-            const int combo = std::max(1, c->combo);
+        // RG-03 : quasi-contact (web : « Quasi-contact ×N » si combo > 1, « +250×combo ») ; un bandeau par quasi-contact,
+        // même si plusieurs tombent dans la même mise à jour (le combo de chacun : combo final − ceux qui suivent)
+        for (int i = 0, d = c->nearCount - near_; i < d; i++) {
+            const int combo = std::max(1, c->combo - (d - 1 - i));
             pousser({combo > 1 ? "Quasi-contact ×" + std::to_string(combo) : "Quasi-contact", "+" + std::to_string(250 * combo), NORMAL});
         }
         if (c->accidents > accidents_) pousser({"Accident !", "", BAD});   // RG-04 : playerAccident
