@@ -1451,3 +1451,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 — WFS-63 terminé (Claude, session trafic)
 - QA : VALIDÉ au 1er passage, sans anomalie. PR #39 fusionnée (fc70591). Le point d'extension « personnages animés par squelette » est sur main : `drawSkinned`, `src/render/squelette.h`, `assets/people/*.wfp`, documenté dans le skill `waforspeed-natif`.
 - **Pour le PO** : WFS-19 (piétons et conducteurs) n'attend plus WFS-63.
+
+### 2026-11-03 21:48:57 — Début WFS-19 Piétons animés et conducteurs, attribué à Claude (session trafic) (po-scrum-master)
+- **Ticket** : WFS-19, épic E2 (P2 Haute), branche `feature/waforspeed-19`. WFS-63 ✅ (PR #39, VALIDÉ) : dépendances toutes terminées. À priorité égale avec WFS-53 (P2, E2), le plus petit numéro l'emporte ; E3 occupée (WFS-21 en revue), donc WFS-66 et WFS-70 non attribuables.
+- **Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*` (et `assets/people/**` en lecture). Le renderer et `drawSkinned` ne changent pas (sinon ticket E0 ou ligne d'accroche ≤ 10 lignes annoncée ici).
+- **Critères** : capture de ville avec piétons aux poses variées ; capture plage (baigneurs, promeneurs) ; conducteur visible face au volant ; deux captures à des instants différents avec des poses de marche différentes ; banc `0 écart(s)` hors scènes concernées.
+- **Plan court** : porter `populatePeople` / `pedLook` / `updatePeopleReal` (people.js, life.js) en un système E2 qui place et habille les personnes près du joueur, puis `bakeBust` / `measureSeat` / `addDriver` (drivers.js) pour le conducteur, rendus par `drawSkinned`. Règles : `regles-de-gestion/WFS-19.md`.

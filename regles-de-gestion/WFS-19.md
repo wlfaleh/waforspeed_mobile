@@ -1,5 +1,5 @@
 # WFS-19 — Piétons animés et conducteurs
-Épic : E2 · Priorité : 17 · Dépend de : WFS-06 (✅)
+Épic : E2 · Priorité : P2 Haute · Dépend de : WFS-06 (✅), WFS-63 (✅)
 
 ## Besoin (qui, quoi, pourquoi)
 La ville et les plages sont peuplées de vrais personnages animés (marche, assis, allongés, joggeurs) et chaque voiture a un
@@ -16,6 +16,7 @@ conducteur face au volant. Les silhouettes géométriques sont proscrites.
 ## À réutiliser du jeu web (wlfaleh/waaps, waforspeed/)
 - Code : `js/world/people.js` (`PED_*`, `pedLook`, `updatePeopleReal`, `pedClone`) ; `js/world/life.js` (`populatePeople`, `addPerson`, `updatePeople`) ; `js/world/drivers.js` (`bakeBust`, `measureSeat`, `addDriver`).
 - Modèles : `models/people/homme.json`, `femme.json`, `animations.json` + `license.txt` — **ne pas créer d'autres personnages**.
+- Natif (WFS-63, sur `main`) : utiliser le point d'extension existant `drawSkinned`, `src/render/squelette.h` et les modèles déjà convertis `assets/people/*.wfp` (doc dans le skill `waforspeed-natif`) ; ne pas toucher au renderer (zone E0/E4).
 - Retours connus : jamais de silhouettes géométriques ; conducteur face au volant (pas de dos).
 
 ## Critères d'acceptation (captures du banc PC)
