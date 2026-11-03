@@ -26,6 +26,7 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
    et entrée « Fin » au Journal.
 7. **Ne jamais supprimer de branche** (locale ou distante), même fusionnée : l'utilisateur s'en occupe.
 8. **Journal** (`journal.md`, nouvelles entrées à la fin) à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
+   **Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
 9. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
 
 ## Architecture

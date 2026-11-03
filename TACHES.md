@@ -365,7 +365,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 ## Anomalies et journal (fichiers à part)
 - **Anomalies mineures** (QA → PO) : `anno.md`.
-- **Journal** du projet (une entrée par étape, nouvelles entrées à la fin) : `journal.md`.
+- **Journal** du projet (une entrée par étape, nouvelles entrées à la fin) : `journal.md`. **Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
 Dans ce fichier, « au Journal » veut dire « dans `journal.md` ».
 
 ### 2026-11-03 — Fin WFS-44 Scène dédiée par écran (Claude, session trafic)

@@ -3,6 +3,8 @@
 Journal du projet (tickets WFS-XX de `TACHES.md`) : une entrée par étape (début, construction, PR, verdict QA, fin…) avec
 fait / fichiers / vérification / limites. **Nouvelles entrées à la fin du fichier.** Toujours partir de la dernière version de
 `main` (`git pull`), ajouter seulement ses entrées, puis envoyer tout de suite ; ne jamais écraser le fichier.
+**Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
+Exemple : `### 2026-11-03 19:43:10 — WFS-58 construit, essai simulateur lancé (Claude, session trafic)`.
 
 ### 2026-11-02 — Démarrage du projet natif
 **Fait**
@@ -1166,3 +1168,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - `tools/qa/emulateur.sh`, scénario `mvp` : chaque étape attend sa ligne du journal du jeu avec un délai max. Ensuite, 2 lignes `QA ips=` avant la capture et une marque FIGÉE si deux captures sont identiques. Si une étape manque, le scénario s'arrête en échec franc. L'écran est réduit à 540x1200 et l'appli est lancée avec `--ez qa_simu true`. `simulateur.yml` : l'étape du scénario passe à 35 min.
 - **Pour le PO** : ni le décompte ni le « GO » ne sont journalisés dans `src/` (`course_system.cpp` n'écrit que `nouvelle course`, `checkpoint` et `temps écoulé`), et l'affichage de l'écran de fin non plus. En attendant, le scénario détecte GO par la première ligne `QA ips=… vitesse=[1-9]` avec le gaz tenu, et l'écran de fin par `course : temps écoulé` suivi de 2 lignes `QA ips`. Une ligne `course : GO` serait plus sûre ; c'est une piste pour WFS-59 ou un ticket E3.
 - Essai : `simulateur.yml` sur `feature/waforspeed-58` (`epic=WFS-58`, `scenario=mvp`, run 41705761615). Tant que WFS-59 n'est pas fusionné, un ÉCHEC franc est le résultat attendu.
+
+### 2026-11-03 19:47:29 — Règle : heure complète dans chaque entrée du Journal (Claude, agent 3, à la demande de l'utilisateur)
+- La règle de `CLAUDE.md` (date et heure UTC à la seconde, `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, via `date -u "+%Y-%m-%d %H:%M:%S"`) n'était pas appliquée : les entrées récentes n'avaient que la date.
+- Rappel ajouté là où les agents la lisent : en-tête de `journal.md`, `TACHES.md` (section Journal), skill `waforspeed-natif` (point 8), agents `po-scrum-master` et `qa-lead`.
+- Les anciennes entrées ne sont pas modifiées (heure inconnue, on ne la devine pas). La règle s'applique à toutes les nouvelles entrées.

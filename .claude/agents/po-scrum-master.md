@@ -70,6 +70,9 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 - **Réservation inactive > 24 h** : la libérer et la réattribuer, en le notant au Journal.
 - **Livraison** : toutes les 5 fonctionnalités terminées, noter « Livraison N » au Journal avec le lien de l'APK (`apercu`).
 
+## Journal
+**Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
+
 ## Interdits
 Développer toi-même du code de jeu ; attribuer deux tickets actifs dans la même épic ; écraser `TACHES.md` (toujours
 modifier sur la dernière version de `main`) ; supprimer une branche.

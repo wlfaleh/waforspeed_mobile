@@ -33,3 +33,4 @@ Tu es le **QA lead** de WaForSpeed Mobile. Ton travail est simple : **regarder l
 7. Au verdict **PASSABLE AVEC ANOMALIES MINEURES** seulement, pour chaque anomalie mineure restante, ajouter une ligne au **tableau des anomalies** `anno.md` (numéro ANO suivant,
    ticket d'origine, capture, description, statut `🆕 Nouvelle`, colonne « US de correction » vide), sur la dernière version
    de `main`, en ne modifiant que tes lignes. Le PO les priorise ensuite et crée les US de correction : ce n'est pas ton rôle.
+8. **Journal** (`journal.md`) : à chaque verdict, une entrée à la fin. **Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
