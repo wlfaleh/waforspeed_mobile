@@ -9,7 +9,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 |---|---|---|
 | PO / Scrum Master | `po-scrum-master` (`.claude/agents/po-scrum-master.md`) | étudie le besoin, découpe en épics et tickets, priorise, **attribue les tickets**, débloque |
 | Développeur | toute session Claude | réalise le ticket attribué, sur sa branche, dans la zone de son épic |
-| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, verdict VALIDÉ / REFUSÉ |
+| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, classe les anomalies (bloquante / mineure), verdict VALIDÉ / À CORRIGER / PASSABLE AVEC ANOMALIES MINEURES / REFUSÉ |
 
 ## Statuts
 | Statut | Signification |
@@ -18,7 +18,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 | ⏳ Prêt | dépendances terminées, critères clairs : peut être attribué |
 | 🔧 En cours | attribué (Responsable), branche créée |
 | 🔍 En revue | PR ouverte, CI verte, attente du verdict QA |
-| ✅ Terminé | VALIDÉ et fusionné dans `main` |
+| ✅ Terminé | VALIDÉ (ou PASSABLE AVEC ANOMALIES MINEURES) et fusionné dans `main` |
 | ⛔ Bloqué | raison au Journal |
 
 ## Règles de travail en parallèle (obligatoires)
@@ -35,7 +35,13 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
    chaque validation et avant chaque PR.
 5. **QA** : après chaque construction, le développeur **lance l'agent `qa-lead`**, qui regarde les captures du
    **banc d'essai PC** et écrit `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket.
-   Fusion seulement si VALIDÉ. **Fin d'épic** : le PO crée le ticket « Vérification simulateur EX » (émulateur Android,
+   **Le QA décide de la gravité de chaque anomalie** :
+   - au moins une anomalie **bloquante** → `REFUSÉ` : pas de fusion, le développeur corrige jusqu'à ce qu'il n'y en ait plus ;
+   - anomalies **mineures** seulement → `À CORRIGER` : le QA donne la main au développeur **deux fois au plus** pour les corriger ;
+     si elles restent après le 2e tour → `PASSABLE AVEC ANOMALIES MINEURES` : fusion autorisée ; le QA inscrit chaque anomalie
+     restante au **tableau des anomalies** ci-dessous ; le **PO** les priorise et crée des **US de correction dédiées** ;
+   - aucune anomalie → `VALIDÉ`.
+   **Fin d'épic** : le PO crée le ticket « Vérification simulateur EX » (émulateur Android,
    workflow `simulateur.yml`, rapport `qa/rapports/simulateur-EX.md`).
 6. **Statuts à jour** après chaque avancement, envoyés sur `main` tout de suite, en modifiant seulement ses lignes à partir
    de la dernière version de `main` (ne jamais écraser le fichier).
@@ -45,7 +51,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 
 **Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
-**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA VALIDÉ, synchronisé, fusionné,
+**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` (anomalies mineures restantes inscrites au tableau des anomalies), synchronisé, fusionné,
 Journal à jour.
 
 ## Épics et zones de code
@@ -73,7 +79,7 @@ Journal à jour.
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
+| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ Prêt |  | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
 | 0.7 | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-40` |  |  |
 | 0.8 | WFS-41 | Choix du terrain et du moment (jour / nuit) | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-41` |  |  |
@@ -82,13 +88,13 @@ Journal à jour.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` | PR #9 | ✅ VALIDÉ par qa-lead |
-| 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` |  |  |
+| 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` | PR #14 | ✅ VALIDÉ par qa-lead |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue (QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
-| 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | ⏳ Prêt |  | WFS-32 | `feature/waforspeed-42` |  |  |
+| 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
@@ -98,6 +104,7 @@ Journal à jour.
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
 | 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
+| 17.5 | WFS-43 | Arbres : finitions (cœur du houppier, ombres des arbres) | E2 | ⏳ Prêt |  | WFS-34, WFS-07 | `feature/waforspeed-43` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
 | 20 | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ⏳ En attente |  | WFS-15 | `feature/waforspeed-17` |  |  |
@@ -125,7 +132,7 @@ Journal à jour.
 **WFS-38 — Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⏳ En attente (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
+**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⏳ Prêt (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité 0.6 · ⏳ En attente (règles : `regles-de-gestion/WFS-39.md`)
@@ -158,7 +165,7 @@ Journal à jour.
 - [ ] Lisible sur 2400x1080 et petits écrans
 - [ ] Capture : texte d'essai net
 
-**WFS-34 — Arbres réalistes portés du jeu web** · E2 · priorité 4.5 · 🔧 En cours (règles : `regles-de-gestion/WFS-34.md`)
+**WFS-34 — Arbres réalistes portés du jeu web** · E2 · priorité 4.5 · ✅ Terminé (PR #14) (règles : `regles-de-gestion/WFS-34.md`)
 - [ ] Générateurs de `life.js` portés en `src/world/vegetation.*`, atlas exporté en PNG (`assets/world/feuillage.png`), arbres de `ville.cpp` remplacés
 - [ ] Capture : platanes avec tronc, branches, feuillage découpé ; ≤ 300 appels de dessin ; banc `0 écart(s)`
 
@@ -198,7 +205,7 @@ Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zon
   le jeu web (alors accepté) ou non (alors correction dans la scène ou ticket E3 de correction)
 - [ ] Journal du banc : `mode exact : … 0 écart(s)` inchangé ; aucune voiture du trafic dans le décor
 
-**WFS-42 — Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes)** · E4 · priorité 8 · ⏳ Prêt (règles : `regles-de-gestion/WFS-42.md`)
+**WFS-42 — Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes)** · E4 · priorité 8 · 🔧 En cours (règles : `regles-de-gestion/WFS-42.md`)
 Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `src/render/**` (sauf `ui_*`), `shaders/scene*` ; si la cause est dans le modèle (`assets/cars/**`, E5) : la noter au Journal et ouvrir un ticket E5, ne pas toucher au modèle.
 - [ ] Cause identifiée et notée au Journal (texture du modèle, transparence du vitrage, reflet spéculaire des rayons…) avec la capture qui la montre
 - [ ] `vitrine-golf-0` (agrandie sur la lunette arrière) : plus de trame régulière de petits points clairs ; vitre toujours teintée et réfléchissante
@@ -237,6 +244,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-19 — Piétons animés et conducteurs** · E2 · priorité 17 · ⏳ En attente
 - [ ] Personnages du jeu web, conducteur face au volant
 
+**WFS-43 — Arbres : finitions (cœur du houppier, ombres des arbres)** · E2 · priorité 17.5 · ⏳ Prêt (règles : `regles-de-gestion/WFS-43.md`)
+- [ ] `trafic-cam0` : plus de cœur visible au bord des houppiers ; ombre d'arbre découpée visible sur une capture au soleil
+- [ ] ≤ 300 appels de dessin ; banc `0 écart(s)`
+
 **WFS-16 — Route mouillée avec reflets** · E4 · priorité 18 · ⏳ En attente
 - [ ] Reflets plausibles, coût maîtrisé
 
@@ -263,6 +274,15 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] Icônes, signature, fiches
 
 > WFS-01 à WFS-05 (E1) : critères détaillés et rapports dans `qa/rapports/` et dans le Journal.
+
+## Tableau des anomalies (mineures, écrites par le QA, planifiées par le PO)
+Statuts : 🆕 Nouvelle (QA) → 📋 Planifiée (PO, US de correction créée) → ✅ Corrigée (QA, US validée) · 🚫 Abandonnée (PO, raison au Journal).
+
+| ANO | Ticket d'origine | Capture | Anomalie | Statut | US de correction |
+|---|---|---|---|---|---|
+| ANO-01 | WFS-34 | `trafic-cam0` | cœur du houppier un peu visible au bord d'un arbre | 📋 Planifiée | WFS-43 |
+| ANO-02 | WFS-34 | `course-*` | ombres des arbres peu visibles (rues à l'ombre des immeubles) | 📋 Planifiée | WFS-43 |
+| ANO-03 | WFS-34 | `course-*` | branches en « baleines de parapluie » | 🚫 Abandonnée | — (identique au jeu web) |
 
 ## Journal
 
@@ -853,3 +873,37 @@ aucune commande, touchers non lus, commandes non dessinées, voiture immobile ; 
 `.claude/skills/waforspeed-natif/{SKILL.md,references/architecture.md}`.
 **Débloque** : WFS-37 (menu, E8) et WFS-11 (garage, E5) — à passer en Prêt par le PO. RG-05 (course qui repart en passant
 à `Course`) : `CourseSystem` via `onEcran` (WFS-38).
+
+### 2026-11-03 — WFS-34 fusionné (PR #14)
+- QA 4e passage `VALIDÉ` (`qa/rapports/WFS-34.md`) : platanes du jeu web, cœur du houppier en feuillage découpé,
+  pas de feuillage délavé, ville à 160 appels de dessin. **E2 libérée.** Plus aucun ticket en cours pour cette session.
+- Restes non bloquants (pour le PO) : branches en « baleines de parapluie » (comme le jeu web), cœur un peu visible au bord
+  d'un houppier (trafic-cam0) ; ombres d'arbres peu visibles sur les captures (rues à l'ombre des immeubles).
+
+### 2026-11-03 — Nouvelle règle QA : anomalies bloquantes ou mineures (demande de l'utilisateur)
+Le QA ne doit plus bloquer un ticket pour de petits problèmes. **Le QA décide de la gravité** de chaque anomalie :
+**bloquante** → `REFUSÉ`, le développeur corrige jusqu'à ce qu'il n'y en ait plus ; **mineures seulement** →
+`VALIDÉ AVEC RÉSERVES`, fusion autorisée, anomalies inscrites au **tableau des anomalies** (ANO-XX) ; le **PO** les priorise
+et crée des US de correction dédiées. Mis à jour : `CLAUDE.md`, `.claude/agents/qa-lead.md`, `.claude/skills/qa-lead/SKILL.md`,
+`.claude/agents/po-scrum-master.md`, `.claude/skills/waforspeed-natif/SKILL.md`, ce fichier (règle 5, rôles, statuts,
+définition de « Fini », nouveau tableau des anomalies).
+
+### 2026-11-03 — Règle QA précisée : deux tours de correction pour les anomalies mineures (demande de l'utilisateur)
+Anomalies **mineures** seulement → verdict `À CORRIGER` : le QA donne la main au développeur **deux fois au plus**.
+Si elles restent après le 2e tour, le QA les crée au tableau des anomalies et accepte avec `PASSABLE AVEC ANOMALIES MINEURES`
+(fusion autorisée) ; le PO crée ensuite les US de correction. Anomalie **bloquante** → `REFUSÉ`, sans limite de tours.
+Remplace le verdict « VALIDÉ AVEC RÉSERVES » de l'entrée précédente.
+
+### 2026-11-03 — PO : restes de WFS-34, WFS-11 prêt, début WFS-42 (attribué à Claude, session moteur-natif)
+- **Restes de WFS-34** → ANO-01 et ANO-02 planifiées dans **WFS-43** (E2, priorité 17.5, ⏳ Prêt, `regles-de-gestion/WFS-43.md`) ;
+  ANO-03 (baleines de parapluie) abandonnée : identique au jeu web.
+- **WFS-36 ✅** : **WFS-11** (garage, E5) passe en ⏳ Prêt (WFS-26 et WFS-36 ✅). WFS-37 attend encore WFS-35.
+- **Fin d'épic** : aucune nouvelle épic terminée (E0 entièrement ✅ mais sans changement visible : pas de vérification simulateur,
+  décision du 2026-11-02 maintenue).
+- **Début WFS-42** (E4) : meilleur ⏳ Prêt d'une épic libre (WFS-33 attend : E3 occupée par WFS-12 en revue ; E8 occupée par WFS-35).
+  Responsable : Claude (session moteur-natif), branche `feature/waforspeed-42`, règles `regles-de-gestion/WFS-42.md`.
+  **Zone de code autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*` ; cause dans le modèle → noter, ticket E5 via le PO.
+  **Critères** : cause notée au Journal avec capture ; `vitrine-golf-0` sans trame sur la lunette arrière ; `vitrine-p911-1` sans
+  points sur les rayons ; vitres teintées, jantes métalliques ; coût GPU ±0,5 ms.
+  **Plan court** : agrandir les deux captures, isoler la cause (matériau vitrage / spéculaire sous-pixel des rayons), appliquer
+  l'anticrénelage spéculaire de WFS-32 aux vitres et métaux de `scene.frag`, banc, QA par `qa-lead`.

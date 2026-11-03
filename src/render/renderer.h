@@ -11,6 +11,7 @@ namespace wfs {
 enum MatFlags : uint32_t {
     MAT_PAINT = 1, MAT_BLEND = 2, MAT_TAIL = 4, MAT_HEAD = 8, MAT_DOUBLE = 16, MAT_MASK = 32, MAT_GLASS = 64, MAT_WHEEL = 128,
     MAT_ROAD = 256, MAT_WALK = 512, MAT_GROUND = 1024, MAT_SHADOWBLOB = 2048, MAT_HASNORMAL = 4096, MAT_HASMR = 8192,
+    MAT_VTINT = 16384,   // végétation (WFS-34) : la longueur de la normale porte la luminosité du sommet
 };
 
 struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
