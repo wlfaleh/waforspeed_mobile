@@ -957,3 +957,8 @@ Branche `feature/waforspeed-51`. Règles : `regles-de-gestion/WFS-51.md`.
 autres captures identiques, banc `0 écart(s)` ; insets Android + JNI relus en revue.
 **Plan court** : `GameView::marges` (0 par défaut) → décalage des commandes et zones de toucher dans `Game` → lecture des
 insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture → PR, CI, qa-lead.
+
+### 2026-11-03 — WFS-51 en recette (Claude, session trafic)
+- PR #20 : `GameView::marges`, `Game::setMarges`, commandes tactiles et zones de toucher décalées ; CI verte (commit 66c13bc, synchronisé avec `main` en 778085f).
+- Accroches hors E0, prévues par `regles-de-gestion/WFS-51.md` : `src/platform/android_main.cpp` (fonction JNI `nativeMarges`), `JeuActivity.java` (lecture des insets d'encoche), `src/platform/desktop_main.cpp` (`WFS_ENCOCHE`, capture `encoche-course.png`). Sans `WFS_ENCOCHE`, captures identiques à `main`.
+- QA demandée à `qa-lead`.

@@ -78,6 +78,10 @@ public:
     // peut la modifier (chocs du trafic, WFS-08) ; pilote automatique : un système peut corriger les commandes
     virtual void collide(double /*dt*/, Player&, const GameView&) {}
     virtual void autopilot(double /*dt*/, DriveInput&, const GameView&) {}
+    // ambiance de la carte (WFS-14) : chaque système peut ajuster fp (ciel, brouillard, soleil…) sans prendre la scène ;
+    // remplaceSol : true = le système dessine ses propres bas-côtés, Game ne dessine plus les siens (sol générique)
+    virtual void ambiance(FrameParams& /*fp*/, const GameView&) {}
+    virtual bool remplaceSol(const GameView&) const { return false; }
     // scène dédiée (WFS-44) : appelée avant chaque image, dans l'ordre des systèmes ; le premier qui renvoie true prend la
     // scène : il règle caméra (view, proj, camPos), ciel / fond uni, brouillard, soleil, ambiance, exposition, ombres dans fp
     // (déjà rempli avec les valeurs habituelles de Game) et choisit dans s ce que Game dessine encore

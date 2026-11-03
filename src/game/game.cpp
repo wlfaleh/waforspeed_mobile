@@ -192,12 +192,7 @@ void Game::drawControls() {
     r_->uiCircle(W * 0.89f - md, H * 0.74f - mb, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
     r_->uiCircle(W * 0.70f - md, H * 0.80f - mb, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
     r_->uiCircle(W * 0.90f - md, H * 0.32f, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
-    // jauges : vitesse (haut à gauche) et nitro
-    float k = (float)clampf((float)(player_.kmh() / 330.0), 0.f, 1.f);
-    r_->uiRect(3 * u + mg, 4 * u + mh, 40 * u, 2.2f * u, {0, 0, 0, 0.35f});
-    r_->uiRect(3 * u + mg, 4 * u + mh, 40 * u * k, 2.2f * u, {1, 0.42f + 0.4f * (1 - k), 0.1f, 0.9f});
-    r_->uiRect(3 * u + mg, 7.5f * u + mh, 25 * u, 1.4f * u, {0, 0, 0, 0.35f});
-    r_->uiRect(3 * u + mg, 7.5f * u + mh, 25 * u * (float)player_.nitro, 1.4f * u, {0.2f, 0.85f, 1, 0.9f});
+    // vitesse, nitro, temps, score : HUD de course (WFS-27, src/ui/hud.cpp ; marges : WFS-52)
 }
 
 // ---------------------------------------------------------------- mise à jour
@@ -270,6 +265,8 @@ void Game::render(double time) {
     fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
     fp.exposure = 0.85f; fp.ambient = 0.85f;
     // scène dédiée (WFS-44) : le premier système qui la prend règle fp et choisit ce que Game dessine encore
+    bool solPropre = false;   // WFS-14 : ambiance et bas-côtés propres à la carte
+    for (auto& sy : systems_) { sy->ambiance(fp, view_); solPropre = solPropre || sy->remplaceSol(view_); }
     SceneDediee sd; sd.cible = look;
     bool dediee = false;
     for (auto& sy : systems_) if (sy->scene(fp, sd, view_)) { dediee = true; break; }
@@ -279,7 +276,7 @@ void Game::render(double time) {
 
     const mat4 I = mat4::identity();
     if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
-        r_->draw(c.ground, groundMat_, I);
+        if (!solPropre) r_->draw(c.ground, groundMat_, I);
         r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
