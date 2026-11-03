@@ -1478,3 +1478,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - `_cloth` et repères du corps dans le `.wfp` (version 2, fichiers régénérés) ; `ApparencePersonnage` passée à `drawSkinned` ; `shaders/scene_skin.frag` = copie de `scene.frag` + `pedMaterial` du jeu web tel quel. Sans apparence : rendu de WFS-63, les captures `squelette-*` sont identiques au pixel.
 - Nouvelle capture `squelette-tenue` (homme et femme habillés). La fusion suivra la CI verte et le contrôle des captures (règle en vigueur), avec un ajout dans `qa/Check.md`.
 - Point d'attention : `scene_skin.frag` est une copie de `scene.frag`. Toute modification future de `scene.frag` doit y être reportée (commentaire en tête du fichier).
+
+### 2026-11-03 23:20:16 — WFS-72 fusionné (Claude, session trafic)
+- CI verte (android, 4 jobs du banc, publication) ; contrôle rapide de `squelette-tenue` (identique au banc local) : rien de bloquant. PR #40 fusionnée (4314bf7) ; ajouté dans `qa/Check.md` pour la recette de nuit.
+- WFS-19 (piétons et conducteurs) n'attend plus WFS-72 : je le reprends (`feature/waforspeed-19`).
