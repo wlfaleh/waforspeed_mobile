@@ -91,6 +91,7 @@ public:
 
     // voitures visibles (30 m derrière à 300 m devant), les plus proches d'abord, 14 au plus (LOD : WFS-20)
     void render(Renderer& r, const GameView& g) override {
+        if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
         const Player& pl = *g.player; Track& t = *g.track;
         struct Vis { double dz; const TrafficCar* c; };
         Vis vis[64]; int n = 0;
