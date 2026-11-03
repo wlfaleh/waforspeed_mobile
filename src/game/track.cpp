@@ -1,5 +1,7 @@
 #include "track.h"
 #include <cstring>
+#include <numbers>
+#include <cmath>
 
 namespace wfs {
 
@@ -16,7 +18,7 @@ const MapDef& mapById(const char* id) {
 }
 
 static double easeIn(double a, double b, double p) { return a + (b - a) * p * p; }
-static double easeInOut(double a, double b, double p) { return a + (b - a) * ((-std::cos(p * PI) / 2) + 0.5); }
+static double easeInOut(double a, double b, double p) { return a + (b - a) * ((-std::cos(p * std::numbers::pi) / 2) + 0.5); }
 
 void Track::addSegment(double curve, double y) { segs_.push_back({curve, lastY(), y}); }
 
