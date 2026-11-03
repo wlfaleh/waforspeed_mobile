@@ -13,7 +13,7 @@
 
 namespace wfs {
 
-// couleurs du skill design-street-racing (tokens.md), en linéaire
+// couleurs du skill design-street-racing (tokens.md), codes sRGB
 static const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f};     // --bg #0A0B10 (code sRGB, comme ui::CYAN), voile de l'écran de fin
 static bool g_rules = true;   // règles de course actives (voir courseBenchRules)
 static const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};  // --surface #14161F
