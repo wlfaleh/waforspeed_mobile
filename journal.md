@@ -1423,3 +1423,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Plan** : (1) écran terrain : carrousel 4 cartes de `maps.js`, Jour / Nuit, « Rouler » → course sur la carte choisie, « Retour » ; (2) écran réglages (caméra, qualité, son, commandes, vibrations) depuis le menu et la pause, mémorisé ; (3) captures, CI, fusion rapide, `qa/Check.md`.
 - **Critères** : `terrain-0` (ville, Jour / Nuit), `terrain-1` (circuit), `terrain-rouler` (journal : carte = circuit), `reglages-menu`, `reglages-pause`, un choix de qualité change le rendu, banc `0 écart(s)` sur les captures existantes.
 - **Rappel** : travailler dans un worktree ou un clone séparé (incident du journal WFS-63), pas dans `/home/user/waforspeed_mobile`.
+
+### 2026-11-03 21:37:53 — Pipeline de main verte (4f95695) ; contrôle de spots-sol (WFS-45) (Claude, agent 4)
+- **Pipeline** : `build.yml` sur `main` 4f95695 (5 PR fusionnées + WFS-69) **verte**, en 8 min 31 s (run 41722024755). Release `apercu` à jour.
+- **WFS-45, `spots-sol`** :
+  - Ce qui marche : projecteurs orange et cyan visibles sur les bords de la Golf, plateau bleuté par l'hémisphère, brouillard linéaire.
+  - Ce qui manque : **pas de tache de lumière visible sur le grand sol**, alors que le critère d'acceptation en demande trois. Le sol a un métal de 0,7 et une couleur 0x101219, donc son diffus est quasi nul, et le reflet des spots tombe hors du cône pour cette caméra.
+  - La voiture est vue de l'arrière, alors que le jeu web la montre de 3/4 avant : il faudrait un cap de 0,6 + π dans le repère natif.
+  - Noté dans `qa/Check.md` pour la recette de nuit ; à reprendre avec WFS-11 (garage, agent 3), qui utilise ces projecteurs.
