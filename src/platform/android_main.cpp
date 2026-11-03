@@ -7,6 +7,7 @@
 #include <time.h>
 #include <string>
 #include <vector>
+#include "../core/gpu_logiciel.h"
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -113,6 +114,8 @@ void android_main(android_app* a) {
     a->onAppCmd = onCmd;
     a->onInputEvent = onInput;
     g_assets = a->activity->assetManager;
+    // WFS-59 : extra d'intent qa_simu=true (émulateur de la QA) → mode GPU logiciel, lu avant l'initialisation de Vulkan
+    if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
     app.start = nowSeconds();
     while (!a->destroyRequested) {

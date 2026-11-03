@@ -17,6 +17,10 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
+    if (r.gpuLogiciel()) {   // WFS-59 : émulateur de la QA → ombres du soleil coupées (dt et rendu : plafondDt, vk.cpp)
+        r.forceNoShadows = true;
+        WFS_LOG("mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %%, sans ombres)");
+    }
     ecran_ = ecranDemande_ = Ecran::Course; demandeEcran_ = false;   // écran de départ (Menu quand WFS-37 existera)
     lacherCommandes();
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
@@ -197,7 +201,7 @@ void Game::drawControls() {
 
 // ---------------------------------------------------------------- mise à jour
 void Game::update(double dt) {
-    dt = courseScaleDt(std::min(dt, 0.05));   // WFS-12 : ralenti ×0,35 après un accident
+    dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
     const bool course = ecran_ == Ecran::Course;
@@ -213,7 +217,7 @@ void Game::update(double dt) {
     // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage
     acc_ += dt;
     const double step = 1.0 / 120.0;
-    while (acc_ >= step) {
+    for (int pas = 0; acc_ >= step && pas < gpu_logiciel::PAS_MAX; ++pas) {   // WFS-59 : 60 pas au plus par image
         if (!course) player_.speed = 0;   // hors course : voiture immobile, la scène continue de vivre derrière
         player_.update(step, in, track_, true); for (auto& sy : systems_) sy->collide(step, player_, view_); systemsUpdate(step); acc_ -= step; }
 }
