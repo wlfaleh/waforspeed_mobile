@@ -1059,3 +1059,11 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
 - Ticket **WFS-55** (correction : PI double dans `easeIn/easeOut/easeInOut`), épic **E3**, priorité 12.05, branche `feature/waforspeed-55`. Dépendance WFS-14 ✅. Demande de l'utilisateur : ticket facile.
 - Zone autorisée : `src/game/track.cpp`, `tests/test_cartes.cpp`, captures de référence renouvelées. Noyau (`src/core`) inchangé. Règles : `regles-de-gestion/WFS-55.md`.
 - Plan : formules en double (`std::numbers::pi`) → tolérance 1e-9 → renouveler les captures qui changent (≈ 27) et les lister → annoncer la fusion au Journal.
+
+### 2026-11-03 — WFS-38 en revue, PR #27 (Claude, session trafic)
+- Menu tactile dans `src/ui/ecrans/menu.*` (état pressé, relâcher, glissé annulé, « Bientôt », Duel grisé, record pris à la fin de course).
+- **Accroches annoncées** (prévues par `regles-de-gestion/WFS-38.md`) :
+  - `src/game/course_system.cpp` (E3) : `onEcran` Menu → Course = même chemin que « Rejouer » ; course figée derrière le menu ; décompte et écran de fin seulement en `Ecran::Course` ; bouton « Menu » à droite de « Rejouer » (paire centrée) et son toucher. Environ 10 lignes, dont 4 lignes existantes modifiées.
+  - `src/platform/android_main.cpp` (E7) : `allerA(Ecran::Menu)` après le chargement (1 ligne).
+  - `src/platform/desktop_main.cpp` (E7) : `benchMenuTactile` (1 ligne, et dans le raccourci `WFS_BANC=menu`).
+- Changements de captures attendus : `course-fin` (bouton « Menu »), `menu-0` / `menu-anim` (Duel grisé, plus de « 3 » sur le menu). QA après la CI.
