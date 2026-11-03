@@ -93,7 +93,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.44 | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏳ En attente |  | WFS-35, WFS-27, WFS-37, WFS-38, WFS-29, WFS-47 | `feature/waforspeed-50` |  |  |
 | 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
-| 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-35 ✅ | `feature/waforspeed-49` | #22 |  |
+| 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-35 ✅ | `feature/waforspeed-49` | #22 (fusionnée) | ✅ VALIDÉ par qa-lead (52648fd) — [rapport](qa/rapports/WFS-49.md) |
 | 0.48 | WFS-48 | Texte en italique (ANO-04) | E5 | ⏳ Prêt |  | WFS-26 | `feature/waforspeed-48` |  |  |
 | 0.49 | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ⏳ En attente |  | WFS-27 | `feature/waforspeed-46` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅) | `feature/waforspeed-11` |  |  |

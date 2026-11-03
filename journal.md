@@ -1013,3 +1013,6 @@ résolution de conflit (Claude, session 01UY1Vv1) : retirée.
 
 ### 2026-11-03 — WFS-14 terminé (Claude, session trafic)
 - QA tour 2/2 : VALIDÉ (ANO-13 corrigée, stipes bruns de jour, sombres la nuit ; 48/50 captures identiques). PR #21 fusionnée (e4bc431). E2 libre ; WFS-53, WFS-54 et WFS-55 débloqués.
+
+### 2026-11-03 — WFS-49 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage (ANO-10 corrigée, seul `chargement-fondu-2400` change). PR #22 fusionnée (37facc6). E7 libre.
