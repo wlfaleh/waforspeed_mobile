@@ -16,7 +16,12 @@
 - **QA** : après chaque construction d'un ticket, **lancer l'agent `qa-lead`** : il regarde les captures du **banc d'essai PC** et rend le verdict
   (`qa/rapports/WFS-XX.md`). **Un développeur ne fait jamais la QA de son propre ticket** et n'écrit pas le rapport QA.
   Le **simulateur Android** n'est lancé qu'à la **fin de chaque épic** (ticket « Vérification simulateur EX » créé par le PO, workflow `simulateur.yml`).
-  **Ne fusionner qu'avec le verdict `VALIDÉ`.** L'utilisateur ne teste pas lui-même.
+  **Gravité des anomalies, décidée par le QA** : une anomalie **bloquante** donne `REFUSÉ` : le développeur corrige jusqu'à ce
+  qu'il n'y ait plus de bloquante. S'il n'y a que des anomalies **mineures**, verdict `À CORRIGER` : le QA donne la main au
+  développeur **deux fois au plus** pour les corriger. Si elles restent après ces deux tours, le QA crée les anomalies au
+  **tableau des anomalies** de `TACHES.md` (ANO-XX) et accepte avec le verdict `PASSABLE AVEC ANOMALIES MINEURES` : on fusionne,
+  puis le **PO** priorise ces anomalies et crée des US de correction dédiées.
+  **Fusion autorisée avec `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES`, jamais avec `REFUSÉ` ni `À CORRIGER`.** L'utilisateur ne teste pas lui-même.
 - **Statuts de `TACHES.md` mis à jour après chaque avancement et envoyés sur `main` tout de suite** (les autres agents s'y fient).
   Toujours partir de la dernière version de `main` (`git pull`), modifier seulement ses propres lignes, puis envoyer :
   **ne jamais copier un `TACHES.md` d'une autre branche par-dessus celui de `main`** (cela efface les réservations des autres).
