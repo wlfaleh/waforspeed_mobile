@@ -18,7 +18,7 @@ struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
 
 struct Material {
     vec4 color{1, 1, 1, 1}; float metal = 0, rough = 0.6f, cutoff = 0.5f; vec3 emissive{0, 0, 0};
-    float detail = 0;   // WFS-42 : épaisseur typique des triangles (m) quand la pièce est très fine (< 1 cm), sinon 0
+    float detail = 0;   // WFS-42 : épaisseur typique des triangles (m) quand la pièce est très fine (< 4 mm), sinon 0
     uint32_t flags = 0; VkDescriptorSet set = VK_NULL_HANDLE;
 };
 
@@ -125,7 +125,7 @@ private:
     bool shadowsOn_ = false, night_ = false;
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
-    double shadowMsSum_ = 0; int shadowMsN_ = 0;
+    double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     vec3 camPos_{};
     float exposure_ = 1;

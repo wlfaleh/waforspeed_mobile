@@ -87,7 +87,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             if (!alt.empty()) {
                 std::nth_element(alt.begin(), alt.begin() + alt.size() / 2, alt.end());
                 const float med = alt[alt.size() / 2];
-                if (med < 0.01f) partDetail[mat] = partDetail[mat] > 0 ? std::min(partDetail[mat], med) : med;
+                if (med < 0.004f) partDetail[mat] = partDetail[mat] > 0 ? std::min(partDetail[mat], med) : med;
             }
         }
     }

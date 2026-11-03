@@ -187,7 +187,7 @@ void Renderer::createShadows() {
     // mesure du coût GPU de la passe (2 horodatages par image en vol)
     if (vk.props.limits.timestampComputeAndGraphics) {
         VkQueryPoolCreateInfo q{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
-        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 2 * FRAMES;
+        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 3 * FRAMES;
         VK_OK(vkCreateQueryPool(d, &q, nullptr, &tsPool_));
     }
     WFS_LOG("Ombres du soleil : carte %ux%u, filtre %s", shadowSize_, shadowSize_, linear ? "bilinéaire" : "au plus proche");
@@ -195,18 +195,21 @@ void Renderer::createShadows() {
 
 void Renderer::readShadowTiming() {
     if (!tsPool_ || !tsWritten_[cur_]) return;
-    uint64_t t[2];
-    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 2, 2, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
-    shadowMsSum_ += (double)(t[1] - t[0]) * vk_->props.limits.timestampPeriod * 1e-6;
+    uint64_t t[3];
+    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 3, 3, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
+    const double k = vk_->props.limits.timestampPeriod * 1e-6;
+    shadowMsSum_ += (double)(t[1] - t[0]) * k;
+    sceneMsSum_ += (double)(t[2] - t[1]) * k;   // WFS-42 : coût de la passe de scène, pour comparer avant / après
     if (++shadowMsN_ == 120) {
-        WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u)", shadowMsSum_ / shadowMsN_, shadowSize_);
-        shadowMsSum_ = 0; shadowMsN_ = 0;
+        WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms", shadowMsSum_ / shadowMsN_, shadowSize_,
+                sceneMsSum_ / shadowMsN_);
+        shadowMsSum_ = 0; sceneMsSum_ = 0; shadowMsN_ = 0;
     }
 }
 
 // passe d'ombre : objets opaques vus du soleil (sauf sol, route, trottoirs : ils reçoivent l'ombre sans en projeter)
 void Renderer::shadowPass(VkCommandBuffer cb) {
-    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 2, 2); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 2); }
+    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 3, 3); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 3); }
     VkClearValue clear{}; clear.depthStencil = {1.f, 0};
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     rbi.renderPass = shadowPass_; rbi.framebuffer = shadowFb_; rbi.renderArea = {{0, 0}, {shadowSize_, shadowSize_}};
@@ -227,7 +230,7 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         }
     }
     vkCmdEndRenderPass(cb);
-    if (tsPool_) { vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 2 + 1); tsWritten_[cur_] = shadowsOn_; }
+    if (tsPool_) vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 3 + 1);
 }
 
 void Renderer::rotationMatrix(float r[4]) const {
@@ -629,6 +632,7 @@ void Renderer::endFrame() {
         for (const Pending& p : transparent_) flushDraw(p);
     }
     vkCmdEndRenderPass(r.cb);
+    if (tsPool_) { vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 3 + 2); tsWritten_[cur_] = shadowsOn_; }
 
     // passe finale : tonemapping puis interface
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
