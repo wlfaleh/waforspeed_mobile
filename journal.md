@@ -870,3 +870,15 @@ accroches annoncées ≤ 10 lignes : enregistrement du système, captures `menu-
 « Golf 8 GTI » ; `menu-anim` ; ni commandes ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`.
 **Plan court** : sortir le bloc logo de `chargement.cpp` → système `Menu` (voile 8-16 bandes, 3 choix, pied, aide tactile,
 `slide-in`) → captures du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-29 : code écrit, PR #17 ouverte (Claude, session trafic)
+**Fait** : `JeuActivity` (sous-classe de `NativeActivity`, jeu toujours natif) : mode immersif collant
+(`WindowInsetsController` ≥ Android 11, `SYSTEM_UI_FLAG_IMMERSIVE_STICKY` avant) à `onCreate`, `onResume`,
+`onWindowFocusChanged` ; écran toujours allumé ; encoche `shortEdges`. Icône adaptative (fond `#07070c`, « W » orange,
+lignes cyan, monochrome) dans la zone sûre (32,8 / 33 dp). Manifeste : `hasCode`, `.JeuActivity`, icône.
+`tools/qa/emulateur.sh` lance `.JeuActivity` (sinon le simulateur ne démarrerait plus l'appli).
+**Vérification** : CI `45f3d8a` verte (APK avec le Java) ; APK inspecté : `classes.dex` avec `JeuActivity`, ressources
+`ic_launcher*`, `ic_avant_plan`, nom « WaForSpeed ». Aucun fichier du moteur modifié (captures du banc inchangées).
+**Pour le PO** : RG-02 « le HUD respecte les marges de l'encoche » n'est pas dans la zone E7 (HUD : E5 / E3) : à porter dans
+un ticket du HUD. Barres masquées et icône : à vérifier au simulateur (WFS-50, fin d'épic E7).
+
