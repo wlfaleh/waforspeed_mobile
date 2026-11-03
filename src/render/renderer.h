@@ -28,8 +28,17 @@ struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; };
 
 // maillage animé par squelette (WFS-63, point d'extension) : sommet = position, normale, uv + 4 os (indices dans la
 // palette de l'instance) et 4 poids ; dessiné avec une palette de matrices d'os (skinning dans le vertex shader).
-struct SkinVertex { float px, py, pz, nx, ny, nz, u, v; uint8_t os[4]; float poids[4]; };
-static_assert(sizeof(SkinVertex) == 52, "SkinVertex : 52 octets (format .wfp)");
+// WFS-72 : cloth = attribut _cloth du jeu web (bras, hauteur, jambe, partie 0 corps / 1 yeux / 2 cheveux)
+struct SkinVertex { float px, py, pz, nx, ny, nz, u, v; uint8_t os[4]; float poids[4]; float cloth[4]; };
+static_assert(sizeof(SkinVertex) == 68, "SkinVertex : 68 octets (format .wfp version 2)");
+// WFS-72 : apparence d'une instance (uniformes de pedMaterial du jeu web, couleurs en codes sRGB 0..1 comme THREE.Color) :
+//   peau = multiplicateur de la texture (uSkin), cheveux, haut, bas, chaussures, maillot (uHair … uSwim) ;
+//   vetement = (manches, longueur du bas, habillé 0/1, 0) (uCloth) ; corps = (hauteur du cou, taille, profondeur du cou, 0) (uBody,
+//   donné par le modèle : Personnage::corps). Sans apparence (nullptr) : rendu de WFS-63 (texture seule).
+struct ApparencePersonnage {
+    vec3 peau{1, 1, 1}, cheveux{}, haut{}, bas{}, chaussures{}, maillot{};
+    vec4 vetement{0.45f, 1.9f, 1, 0}, corps{};
+};
 struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; };
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
 constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
@@ -87,7 +96,7 @@ public:
     // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
     void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
-                     uint32_t first = 0, uint32_t count = 0);
+                     uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr);
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère

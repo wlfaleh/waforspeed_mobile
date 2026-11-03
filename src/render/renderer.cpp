@@ -45,7 +45,12 @@ static const uint32_t SPV_SCENE_SKIN_VERT[] = {   // WFS-63 : maillages animés 
 static const uint32_t SPV_SHADOW_SKIN_VERT[] = {
 #include "shadow_skin.vert.inc"
 };
-static constexpr VkDeviceSize OS_SLOT = sizeof(float) * 16 * SKIN_MAX_OS;   // une palette (4 096 octets, aligné)
+static const uint32_t SPV_SCENE_SKIN_FRAG[] = {   // WFS-72
+#include "scene_skin.frag.inc"
+};
+// une palette (64 matrices, 4 096 octets) puis l'apparence (WFS-72 : 8 vec4, 128 octets) ; tranche alignée sur 256 octets
+static constexpr VkDeviceSize OS_PALETTE = sizeof(float) * 16 * SKIN_MAX_OS, OS_APPARENCE = sizeof(float) * 4 * 8;
+static constexpr VkDeviceSize OS_SLOT = (OS_PALETTE + OS_APPARENCE + 255) / 256 * 256;
 
 struct FrameUBO {
     mat4 viewProj, invViewProj;
@@ -113,7 +118,7 @@ bool Renderer::init(VkCtx& vk) {
     plci.setLayoutCount = 2; plci.pSetLayouts = sl; plci.pushConstantRangeCount = 1; plci.pPushConstantRanges = &pcr;
     VK_OK(vkCreatePipelineLayout(d, &plci, nullptr, &sceneLayout_));
     {   // WFS-63 : set 2 = palette d'os (tampon uniforme à offset dynamique) ; sets 0 et 1 identiques à la scène
-        VkDescriptorSetLayoutBinding ob{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        VkDescriptorSetLayoutBinding ob{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};   // WFS-72 : apparence lue par scene_skin.frag
         lci.bindingCount = 1; lci.pBindings = &ob;
         VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &osLayout_));
         VkDescriptorSetLayout sk[3] = {frameLayout_, matLayout_, osLayout_};
@@ -124,7 +129,7 @@ bool Renderer::init(VkCtx& vk) {
             VkDescriptorSetAllocateInfo oai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
             oai.descriptorPool = pool_; oai.descriptorSetCount = 1; oai.pSetLayouts = &osLayout_;
             VK_OK(vkAllocateDescriptorSets(d, &oai, &osSet_[f]));
-            VkDescriptorBufferInfo obi{osBuf_[f].buf, 0, OS_SLOT};
+            VkDescriptorBufferInfo obi{osBuf_[f].buf, 0, OS_PALETTE + OS_APPARENCE};
             VkWriteDescriptorSet ow{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
             ow.dstSet = osSet_[f]; ow.dstBinding = 0; ow.descriptorCount = 1; ow.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             ow.pBufferInfo = &obi;
@@ -382,7 +387,7 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     st[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; st[1].module = fs; st[1].pName = "main";
 
     VkVertexInputBindingDescription bind{};
-    VkVertexInputAttributeDescription attr[5]{};
+    VkVertexInputAttributeDescription attr[6]{};
     VkPipelineVertexInputStateCreateInfo vi{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     if (vertexKind == 1) {   // scène : position, normale, uv
         bind = {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
@@ -398,8 +403,9 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         attr[2] = {2, 0, VK_FORMAT_R32G32_SFLOAT, 24};
         attr[3] = {3, 0, VK_FORMAT_R8G8B8A8_UINT, 32};
         attr[4] = {4, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 36};
+        attr[5] = {5, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 52};   // WFS-72 : _cloth du jeu web
         vi.vertexBindingDescriptionCount = 1; vi.pVertexBindingDescriptions = &bind;
-        vi.vertexAttributeDescriptionCount = 5; vi.pVertexAttributeDescriptions = attr;
+        vi.vertexAttributeDescriptionCount = 6; vi.pVertexAttributeDescriptions = attr;
     } else if (vertexKind == 2) {   // interface : position, uv, couleur
         bind = {0, sizeof(UiVertex), VK_VERTEX_INPUT_RATE_VERTEX};
         attr[0] = {0, 0, VK_FORMAT_R32G32_SFLOAT, 0};
@@ -463,7 +469,8 @@ void Renderer::createPipelines() {
     shadowMaskPipe_ = makePipeline(hv, hf, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
     // WFS-63 : maillages à squelette (même scene.frag / shadow.frag que les objets rigides)
     VkShaderModule kv2 = mod(SPV_SCENE_SKIN_VERT, sizeof(SPV_SCENE_SKIN_VERT)), kh = mod(SPV_SHADOW_SKIN_VERT, sizeof(SPV_SHADOW_SKIN_VERT));
-    skinOpaque_ = makePipeline(kv2, sf, 3, false, false, true, true, scenePass_, s, skinLayout_);
+    VkShaderModule kf2 = mod(SPV_SCENE_SKIN_FRAG, sizeof(SPV_SCENE_SKIN_FRAG));   // WFS-72 : vêtements (pedMaterial)
+    skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);
     skinShadow_ = makePipeline(kh, VK_NULL_HANDLE, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
     skinShadowMask_ = makePipeline(kh, hf, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
 }
@@ -651,12 +658,23 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
 }
 
-void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count) {
+void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
+                           const ApparencePersonnage* ap) {
     if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);
     const VkDeviceSize ofs = OS_SLOT * (VkDeviceSize)skinUsed_++;
     std::memcpy((uint8_t*)osBuf_[cur_].mapped + ofs, os, sizeof(mat4) * (size_t)n);
+    {   // WFS-72 : apparence (look[0].w = 1 : active ; 0 : texture seule, rendu de WFS-63)
+        const vec3 z{};
+        const vec3* c[6] = {ap ? &ap->peau : &z, ap ? &ap->cheveux : &z, ap ? &ap->haut : &z, ap ? &ap->bas : &z,
+                            ap ? &ap->chaussures : &z, ap ? &ap->maillot : &z};
+        vec4 look[8];
+        for (int i = 0; i < 6; i++) look[i] = {c[i]->x, c[i]->y, c[i]->z, 0};
+        look[0].w = ap ? 1.f : 0.f;
+        look[6] = ap ? ap->vetement : vec4{}; look[7] = ap ? ap->corps : vec4{};
+        std::memcpy((uint8_t*)osBuf_[cur_].mapped + ofs + OS_PALETTE, look, sizeof(look));
+    }
     Pending p{m.vb.buf, m.ib.buf, first, count ? count : m.indexCount - first, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};

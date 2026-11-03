@@ -9,7 +9,8 @@
 //   PoseSquelette pose; preparerPose(homme, pose);                         // une fois par instance (allocation)
 //   echantillonner(homme, clipParNom(homme, "Walk_Loop"), t, pose); // chaque image (aucune allocation)
 //   const Plage* p = plageParNom(homme, "corps-0");                // corps du niveau de détail 0 (+ coiffure au choix)
-//   r.drawSkinned(homme.maillage, homme.materiau, monde, pose.palette.data(), (int)pose.palette.size(), p->premier, p->nombre);
+//   r.drawSkinned(homme.maillage, homme.materiau, monde, pose.palette.data(), (int)pose.palette.size(), p->premier, p->nombre,
+//                 &apparence);   // WFS-72 : ApparencePersonnage (renderer.h), corps = homme.corps ; nullptr = texture seule
 // Repère : mètres, Y vers le haut, pieds au sol (y = 0), le personnage regarde vers +Z (repère glTF du jeu web).
 #pragma once
 #include <string>
@@ -32,6 +33,7 @@ struct Personnage {
     std::vector<ClipAnim> clips;
     std::vector<Plage> plages;
     float hauteur = 0;
+    vec4 corps{};   // WFS-72 : (hauteur du cou, taille, profondeur du cou, 0) → ApparencePersonnage::corps
     bool ok = false;
 };
 

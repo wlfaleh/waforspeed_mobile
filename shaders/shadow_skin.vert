@@ -6,7 +6,7 @@ layout(location = 2) in vec2 inUv;
 layout(location = 3) in uvec4 inOs;
 layout(location = 4) in vec4 inPoids;
 layout(push_constant) uniform P { mat4 model; vec4 color; vec4 params; vec4 emissive; } pc;
-layout(set = 2, binding = 0) uniform Os { mat4 os[64]; } B;
+layout(set = 2, binding = 0) uniform Os { mat4 os[64]; vec4 look[8]; } B;
 layout(location = 0) out vec2 vUv;
 void main() {
     mat4 s = B.os[inOs.x] * inPoids.x + B.os[inOs.y] * inPoids.y + B.os[inOs.z] * inPoids.z + B.os[inOs.w] * inPoids.w;

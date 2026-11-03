@@ -61,12 +61,14 @@ bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) 
     if (!readAsset(chemin, fichier)) { WFS_ERR("Personnage introuvable : %s", chemin.c_str()); return false; }
     Lecteur l{fichier.data(), fichier.data() + fichier.size()};
     const uint8_t* magie = l.prendre(4);
-    if (!magie || std::memcmp(magie, "WFP1", 4) != 0 || l.lire<uint32_t>() != 1) { WFS_ERR("%s : format inconnu", chemin.c_str()); return false; }
+    // WFS-72 : version 2 (attribut _cloth par sommet, repères du corps) ; la version 1 de WFS-63 n'est plus lue
+    if (!magie || std::memcmp(magie, "WFP1", 4) != 0 || l.lire<uint32_t>() != 2) { WFS_ERR("%s : format inconnu (version 2 attendue)", chemin.c_str()); return false; }
     const uint32_t nTex = l.lire<uint32_t>();
     std::vector<std::pair<const uint8_t*, uint32_t>> blobs(nTex);
     for (auto& b : blobs) { const uint32_t n = l.lire<uint32_t>(); b = {l.prendre(n), n}; }
     const float rugo = l.lire<float>(), metal = l.lire<float>();
     out.hauteur = l.lire<float>();
+    { float c[4]; l.floats(c, 4); out.corps = {c[0], c[1], c[2], c[3]}; }   // uBody du jeu web
     const uint32_t nV = l.lire<uint32_t>(), nI = l.lire<uint32_t>(), nP = l.lire<uint32_t>(), nO = l.lire<uint32_t>(), nC = l.lire<uint32_t>();
     std::vector<SkinVertex> v(nV);
     if (const uint8_t* b = l.prendre((size_t)nV * sizeof(SkinVertex))) std::memcpy(v.data(), b, (size_t)nV * sizeof(SkinVertex));

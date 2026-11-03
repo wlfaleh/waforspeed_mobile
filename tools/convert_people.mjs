@@ -7,11 +7,12 @@
 // Les textures WebP sont réencodées en JPEG (couleur) et PNG (normales), 1024 px max (comme le jeu web sur mobile).
 //
 // Format .wfp (petit-boutiste) :
-//   'WFP1' u32 version=1
+//   'WFP1' u32 version=2 (WFS-72 : attribut _cloth et repères du corps)
 //   u32 nTex, textures : u32 octets, octets (jpg/png)                    × nTex (0 = couleur, 1 = normales)
-//   f32 rugosite f32 metal f32 hauteur(m)
+//   f32 rugosite f32 metal f32 hauteur(m) f32 corps[4] (hauteur du cou, taille, profondeur du cou, 0 : uBody du jeu web)
 //   u32 nSommets u32 nIndices u32 nPlages u32 nOs u32 nClips
-//   sommets  : pos3 normale3 uv2 (f32), palette u8[4], poids f32[4]  = 52 octets  × nSommets
+//   sommets  : pos3 normale3 uv2 (f32), palette u8[4], poids f32[4], cloth f32[4] = 68 octets  × nSommets
+//              (cloth = attribut _cloth du jeu web : bras, hauteur, jambe, partie 0 corps / 1 yeux / 2 cheveux)
 //   indices  : u32                                                            × nIndices
 //   plages   : char nom[32] u32 premier u32 nombre (« corps-<lod> », « <coiffure>-<lod> »)   × nPlages
 //   os       : char nom[32] i32 parent (-1 = racine) f32 t[3] r[4] s[3] (pose de repos locale) f32 bindInverse[16]
@@ -47,6 +48,8 @@ const ch = charger(inChar), an = charger(inAnim);
 const mesh = ch.meshes[0], prim = mesh.primitives[0], skin = ch.skins[0];
 const A = prim.attributes;
 const pos = lire(ch, A.POSITION), nrm = lire(ch, A.NORMAL), uv = lire(ch, A.TEXCOORD_0);
+if (A._CLOTH === undefined) throw new Error('attribut _CLOTH absent : vêtements impossibles (WFS-72)');
+const cloth = lire(ch, A._CLOTH);
 const jts = lire(ch, A.JOINTS_0), wts = lire(ch, A.WEIGHTS_0), idx = lire(ch, prim.indices);
 const nV = pos.length / 3;
 
@@ -114,13 +117,16 @@ const u32 = (v) => { const b = Buffer.alloc(4); b.writeUInt32LE(v >>> 0); parts.
 const i32 = (v) => { const b = Buffer.alloc(4); b.writeInt32LE(v); parts.push(b); };
 const f32s = (a) => { const b = Buffer.alloc(a.length * 4); a.forEach((v, i) => b.writeFloatLE(v, i * 4)); parts.push(b); };
 const nom32 = (s) => { const b = Buffer.alloc(32); b.write(s.slice(0, 31), 'utf8'); parts.push(b); };
-parts.push(Buffer.from('WFP1')); u32(1);
+parts.push(Buffer.from('WFP1')); u32(2);
 u32(texs.length); for (const t of texs) { u32(t.length); parts.push(t); }
 f32s([pbr.roughnessFactor ?? 1, pbr.metallicFactor ?? 0, ex.height || 1.6]);
+if (!ex.neck || ex.waistY === undefined) throw new Error('extras neck / waistY absents (uBody du jeu web)');
+f32s([ex.neck[1], ex.waistY, ex.neck[2], 0]);
 u32(nV); u32(idx.length); u32(plages.length); u32(os.length); u32(clips.length);
-const vb = Buffer.alloc(nV * 52);
+const vb = Buffer.alloc(nV * 68);
 for (let v = 0; v < nV; v++) {
-  const o = v * 52;
+  const o = v * 68;
+  for (let k = 0; k < 4; k++) vb.writeFloatLE(cloth[v * 4 + k], o + 52 + k * 4);
   for (let k = 0; k < 3; k++) { vb.writeFloatLE(pos[v * 3 + k], o + k * 4); vb.writeFloatLE(nrm[v * 3 + k], o + 12 + k * 4); }
   vb.writeFloatLE(uv[v * 2], o + 24); vb.writeFloatLE(uv[v * 2 + 1], o + 28);
   let somme = 0; for (let k = 0; k < 4; k++) somme += wts[v * 4 + k];
