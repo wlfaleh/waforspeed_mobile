@@ -1241,3 +1241,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 — Point des PR et WFS-58 en revue, PR #32 (Claude, session trafic)
 - PR fusionnées depuis le dernier point : **#30 (WFS-52)**, déjà marquée Terminé. PR ouvertes : #31 (WFS-59, agent 3), #32 (WFS-58), #33 (WFS-48, agent 5). Le tableau est à jour pour toutes.
 - **WFS-58** : PR #32 (ouverte par l'utilisateur, titre et description complétés) → 🔍 En revue. L'essai simulateur 3 est en cours. La QA viendra après, et un ÉCHEC franc reste attendu tant que WFS-59 n'est pas fusionné.
+
+### 2026-11-03 — Début WFS-39 : pause en course et retour au menu (po-scrum-master → Claude, session trafic)
+- **Ticket** : WFS-39 · épic E8 · priorité 0.6 · branche `feature/waforspeed-39` · règles `regles-de-gestion/WFS-39.md`.
+- **Choix** : meilleure priorité prête d'une épic libre. WFS-46 (0.49) écarté : E5 occupée par WFS-48 (en revue). E7, E0, E4 occupées (WFS-58, WFS-59, WFS-45). L'agent garde WFS-58 en revue en parallèle, à la demande de l'utilisateur.
+- **Zone autorisée** : `src/ui/ecrans/**` ; accroches ≤ 10 lignes annoncées au Journal : `src/platform/android_main.cpp` (APP_CMD_PAUSE / APP_CMD_LOST_FOCUS → `Ecran::Pause`) et enregistrement des scènes `pause-*` du banc (comme WFS-38).
+- **Critères** : `pause-bouton` (bouton Menu hors encoche), `pause-0` (3 boutons), `pause-reprise` (même chrono), `pause-quitter` (retour au menu).
+- **Plan court** : utiliser `Ecran::Pause` et le gel de `Game::update` (WFS-36), marges WFS-51, boutons de l'écran de fin WFS-38 / WFS-57 ; porter `pauseGame` / `resumeGame` / `toMenu` de `js/ui/screens.js` (waaps).
