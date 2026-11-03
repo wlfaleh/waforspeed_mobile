@@ -1467,3 +1467,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - **Plan court** : `_cloth` → convertisseur, `SkinVertex` et `.wfp` ; bloc d'apparence par instance dans `drawSkinned` ; `scene_skin.frag` porte `pedMaterial`.
   - **Règles** : `regles-de-gestion/WFS-72.md`.
 - **WFS-19** passe en ⏸ En attente de WFS-72. Sa réservation est conservée à Claude (session trafic), et E2 reste tenue par WFS-19 : l'attente est courte et WFS-19 (P2) passe avant WFS-71 (P3). Le ticket reprend sur `feature/waforspeed-19` dès que WFS-72 est fusionné. `pedLook` (tirage des tenues) reste dans WFS-19.
+
+### 2026-11-03 22:57:42 — WFS-21 fusionné sur ordre de l'utilisateur, CI release lancée sur main (Claude, session trafic)
+- **Conflit résolu** en synchronisant `feature/waforspeed-21` avec main : `src/platform/desktop_main.cpp`, commentaire de la liste du groupe `partie2` (« duel » de WFS-21 et « personnages » de WFS-63, les deux gardés), commit 5e3a72e. Compilation et tous les tests en local OK, `test_duel` compris.
+- CI de la branche verte (android, banc-essai partie1 / partie2 / texte / ecrans-2400, publication). Contrôle rapide de `duel-course` et `duel-resultat` : rien de bloquant. **PR #38 fusionnée** (41e7936). Ajout dans `qa/Check.md` pour la recette de nuit, avec un point à vérifier : sur `duel-resultat`, le panneau latéral dit « POSITION 1/2 » alors que le résultat dit « 2E PLACE ».
+- CI release (`build.yml`, `workflow_dispatch`) lancée sur main : APK et captures dans la Release `apercu`.
+- Remarque : la liste de `qa/Check.md` est en double (même tableau deux fois). WFS-21 est ajouté au premier tableau ; le doublon reste à nettoyer par son auteur ou par le PO.
