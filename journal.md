@@ -1331,3 +1331,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 21:06:35 — PO : WFS-69 créé, CI qui annule les builds (po-scrum-master)
 - Constat (runs 390 à 419) : chaque commit sur `main`, même documentation, lance un build de ~30 min qui annule celui en cours ; push + PR lancent deux builds identiques. Les commits du PO y ont contribué. **WFS-69** (E7, P1 Urgent) : pas de build pour la documentation, un seul build par commit, jamais d'annulation sur `main`. Retours des agents 3, 4 et 5 demandés (attente et idées).
+
+### 2026-11-03 21:07:16 — PO : retours des agents 3, 4, 5 intégrés à WFS-69 (po-scrum-master)
+- Mesures concordantes : banc d'essai 37 à 52 min (Captures du rendu en série sur lavapipe) ; Android < 2 min ; doublon push + PR ; commits de documentation qui annulent `main`. **WFS-69** élargi (RG-06 à RG-10) : banc en matrice de jobs parallèles par groupe de scènes (cible ≈ 10-15 min), `WFS_CAPTURES`, moins d'images inutiles, un seul banc par commit, aucune annulation sur `main`.
