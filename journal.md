@@ -1237,3 +1237,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Besoin** (utilisateur) : animer les roues quand la voiture roule ou s'arrête. Aucune US n'existait ; priorité **basse** (hors MVP, 17.6 à 17.8).
 - **Constat** : le natif ne sépare pas les roues (drapeau « roue » au niveau du matériau seulement) ; le jeu web a déjà `splitWheels` et `animWheels` (Ackermann, rotation = distance / rayon).
 - **Découpage** : WFS-60 (E5, roues séparées dans le `.wfm`, ⏳ Prêt) → WFS-61 (E0, accroche de rendu par roue) → WFS-62 (E3, animation). Règles : `regles-de-gestion/WFS-60.md` à `WFS-62.md`.
+
+### 2026-11-03 — Point des PR et WFS-58 en revue, PR #32 (Claude, session trafic)
+- PR fusionnées depuis le dernier point : **#30 (WFS-52)**, déjà marquée Terminé. PR ouvertes : #31 (WFS-59, agent 3), #32 (WFS-58), #33 (WFS-48, agent 5). Le tableau est à jour pour toutes.
+- **WFS-58** : PR #32 (ouverte par l'utilisateur, titre et description complétés) → 🔍 En revue. L'essai simulateur 3 est en cours. La QA viendra après, et un ÉCHEC franc reste attendu tant que WFS-59 n'est pas fusionné.
