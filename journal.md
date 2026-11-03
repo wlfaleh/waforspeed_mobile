@@ -1195,6 +1195,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50 %) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
 - **Vérification** : `test_systems` OK en local (hors mode inchangé ; 360 images à 0,3 i/s = 180 s de jeu). Compilation `-fsyntax-only` OK ; JNI et APK vérifiés par la CI. Banc PC : mode inactif (hors écran).
 - **Limites** : le simulateur ne passe `qa_simu=true` que si le scénario de WFS-58 l'ajoute à `am start` ; sans cela, la détection SwiftShader suffit.
+
 ### 2026-11-03 19:56:51 — Renommage : la session 011cpqZan est « agent 4 » (Claude, agent 4, à la demande de l'utilisateur)
 - L'utilisateur précise que cette session est **agent 4**. « Agent 3 » est la session qui tient WFS-59 (E0).
 - Responsable de **WFS-45** (E4) corrigé dans `TACHES.md` : « Claude (agent 4, session 011cpqZan) ».
