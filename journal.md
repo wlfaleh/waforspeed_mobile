@@ -1297,3 +1297,48 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroche annoncée (4 lignes, zone E3)** : `src/game/course.h` (compteurs `bumps`, `scrapes`, `lastImpact`) et `src/game/course.cpp` (`reset`, `bump`, `applyHits`). Aucune règle de course changée.
 - **Vérification** : `test_audio` OK en local (6 bruitages : bouts à zéro, raccords de boucle, crête) ; essai du mélangeur : silence après pause. CI en cours.
 - **Limites** : contact et arrivée en duel préparés, pas encore joués (pas de duel) ; vibration non faite (hors `src/audio`).
+
+### 2026-11-03 — WFS-58 tour 2 ; WFS-39 resynchronisé après WFS-59 (Claude, session trafic)
+- **WFS-58** :
+  - Essai `mvp` sans `wm size` (run 41714023261) : plus de bulle Android. Le scénario atteint chargement, menu, « Course solo », décompte et GO (195 s), chaque étape étant tracée avec la ligne du journal du jeu. Il échoue franchement à l'étape « fin », comme attendu : il était parti 3 min avant la fusion de WFS-59.
+  - Scénario `conduite` : OK, 7 captures.
+  - Un essai intermédiaire n'a rien produit : l'émulateur de la CI n'a pas démarré (panne de CI).
+  - QA tour 2 en cours. Nouvel essai `mvp` lancé sur la branche resynchronisée avec WFS-59 (3d447b1, Release `simulateur-WFS-58-avec-59`) pour voir le parcours complet.
+- **WFS-39** : branche resynchronisée avec main après la fusion de WFS-59 (b4fc8f6), comme l'exige la nouvelle règle : la CI précédente ne compte plus. Tests et banc `menu` en local : captures `pause-*` identiques au pixel. CI relancée.
+
+### 2026-11-03 21:01:08 — WFS-64 créé : simulateur figé par le mode GPU logiciel de WFS-59 ; repli du rendu à 50 % (po-scrum-master)
+- **Signalé par** Claude (session trafic), preuve du scénario `mvp` de WFS-58 : Releases `simulateur-WFS-58` (run 41714023261, sans WFS-59 : scène 1200x540, « Écran : course → menu », `QA ips=0.3`, GO atteint) et `simulateur-WFS-58-avec-59` (run 41716390682 : mode actif, scène 600x270, puis plus aucune ligne au logcat, ni erreur ni plantage ; échec à l'étape « menu » après 180 s).
+- **Décision du PO** : défaut **bloquant pour le MVP**, ticket **WFS-64** (E0, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-64.md`). Repli immédiat : en mode GPU logiciel le rendu revient à **50 %** (valeur qui tournait), dt max 0,5 s et ombres coupées gardés ; deux lignes de diagnostic (fin de la 1re mise à jour, 1re image après recréation de la swapchain) pour trancher « rendu ou 60 pas » ; si figé avant la fin de la mise à jour, `PAS_MAX` à 20. Réparer le 25 % est hors périmètre (ticket E4 seulement si besoin).
+- **Pourquoi E0** : la constante est dans `src/core/gpu_logiciel.h` ; accroches ≤ 10 lignes annoncées dans `vk.cpp`, `renderer.cpp`, `game.cpp`. E0 libre (WFS-63 Prêt en P3 passe après).
+- **Effets** : WFS-59 reste fusionné, marqué « fige le simulateur, corrigé par WFS-64 ». **WFS-50** dépend désormais de WFS-58 et **WFS-64** (⛔ Bloqué). Rien ne change sur un vrai GPU ni sur le banc PC.
+### 2026-11-03 21:00:40 — PO : le MVP n'attend plus le simulateur (po-scrum-master)
+- **Décision de l'utilisateur** : il teste lui-même l'APK de `main` sur téléphone. WFS-50 (vérification simulateur) suspendu, P4 ; WFS-58 (PR #32) sans urgence, P4 ; WFS-59 déjà fusionné. Le MVP est jouable dès maintenant sur `main` (WFS-35, 27, 37, 29, 38, 47, 57 terminés). `CLAUDE.md` mis à jour. Les anomalies du rapport `simulateur-MVP` (lenteur de l'émulateur) ne sont plus bloquantes.
+
+### 2026-11-03 21:02:56 — PO : regroupement en gros tickets (po-scrum-master)
+- **Décision de l'utilisateur** : fini les micro-tickets (≈ 30 min de build chacun). Regroupés (le ticket qui absorbe lit aussi les règles des absorbés, une seule CI) : WFS-09 ← 16 ; WFS-15 ← 20, 17 ; WFS-53 ← 54, 43 ; WFS-19 ← 18 ; WFS-11 ← 40, 13, 46 ; WFS-24 ← 21 ; WFS-22 ← 23, 25 ; WFS-61 ← 62. Tickets en cours ou en revue non touchés. Règle ajoutée à `po-scrum-master.md` : tickets de 1 à 3 jours, jamais de micro-ticket.
+
+### 2026-11-03 21:03:05 — Début WFS-63 : point d'extension skinning, attribué à Claude (session trafic) (po-scrum-master)
+- **Demande** : WFS-64. **Refusée par le PO** : depuis la décision utilisateur de 21:00:40 (le MVP n'attend plus le simulateur), WFS-64 est P4 Basse ; le ticket ⏳ Prêt le plus prioritaire d'E0 (libre) est **WFS-63 (P3 Moyenne)**, attribué à la place. WFS-64 reste ⏳ Prêt.
+- **Épic** E0 ; **zone autorisée** : `src/render/renderer.h` (API), `src/render/**` pour le pipeline skinning, `shaders/` (variantes de `scene.vert` / `shadow.vert`), `tools/` (convertisseur), `assets/` (personnages convertis), CMake si besoin ; doc dans le skill `waforspeed-natif`.
+- **Critères** : captures `squelette-essai` (homme en `Idle_Loop`), `squelette-marche-0/1` (poses `Walk_Loop` différentes), captures existantes identiques, banc `0 écart(s)`.
+- **Plan** : API maillage à os (RG-01) → shader (RG-02) → conversion `models/people/*.json` de `wlfaleh/waaps` (RG-03, aucun personnage recréé) → lecture d'animation CPU (RG-04) → mesure (RG-05). Règles : `regles-de-gestion/WFS-63.md`.
+- Note : ses tickets WFS-58 (PR #32) et WFS-39 (PR #34) sont en revue sans code en cours ; pas de conflit d'épic (E7, E8).
+### 2026-11-03 21:04:53 — PO : 4 nouveaux gros sujets (WFS-65 à 68) (po-scrum-master)
+- Écart avec le jeu web comblé : **WFS-65** effets de conduite (E4), **WFS-66** caméras et cockpit (E3), **WFS-67** trafic vivant (E3, après WFS-60), **WFS-68** réglages (E8, après WFS-39). Règles : `regles-de-gestion/WFS-65.md` à `WFS-68.md`. Tickets de 1 à 3 jours, une seule CI chacun. Aucun ticket en cours ou terminé touché.
+
+### 2026-11-03 21:05:42 — PO : les 6 sujets importants (map, caméra, personnages, menus, duel, garage) (po-scrum-master)
+- **Demande de l'utilisateur** : 6 sujets distincts, en P2 Haute. **Map design 3D** : WFS-53 (Campagne, Grand Prix, arbres). **Caméra** : WFS-66. **Personnages** : WFS-19 (piétons et conducteurs, après WFS-63 squelettes ; la pluie redevient WFS-18, séparée). **Menus** : WFS-41 (terrain, moment, réglages ; absorbe WFS-68). **Mode duel** : WFS-21 redevenu un ticket à part (séparé de WFS-24 sauvegarde). **Garage** : WFS-11. Aucun ticket en cours ou terminé touché.
+
+### 2026-11-03 21:06:35 — PO : WFS-69 créé, CI qui annule les builds (po-scrum-master)
+- Constat (runs 390 à 419) : chaque commit sur `main`, même documentation, lance un build de ~30 min qui annule celui en cours ; push + PR lancent deux builds identiques. Les commits du PO y ont contribué. **WFS-69** (E7, P1 Urgent) : pas de build pour la documentation, un seul build par commit, jamais d'annulation sur `main`. Retours des agents 3, 4 et 5 demandés (attente et idées).
+
+### 2026-11-03 21:07:16 — PO : retours des agents 3, 4, 5 intégrés à WFS-69 (po-scrum-master)
+- Mesures concordantes : banc d'essai 37 à 52 min (Captures du rendu en série sur lavapipe) ; Android < 2 min ; doublon push + PR ; commits de documentation qui annulent `main`. **WFS-69** élargi (RG-06 à RG-10) : banc en matrice de jobs parallèles par groupe de scènes (cible ≈ 10-15 min), `WFS_CAPTURES`, moins d'images inutiles, un seul banc par commit, aucune annulation sur `main`.
+
+### 2026-11-03 21:00:20 — QA WFS-58 tour 2 : REFUSÉ (QA lead)
+- Captures regardées : `simulateur-WFS-58` (a51bbc8), `simulateur-WFS-58-avec-59` (3d447b1) et `simulateur-WFS-58-conduite` (ffb5474).
+- Les anomalies du tour 1 sont corrigées : plus de bulle Android, déroulement tracé (motif, ligne, heure), 03 et 04 séparées, écran tracé en fin de scénario. L'échec reste franc sur les deux essais `mvp`.
+- **Nouvelle anomalie bloquante, WFS58-5** : `01-chargement` est presque noire (capture prise 2 s après « Cibles de rendu », avant la police). Il faut attendre `chargement : première image … écran complet (police)`. [Rapport](qa/rapports/WFS-58.md).
+- Pour le PO, hors WFS-58 : le gel du jeu avec la fenêtre « Pixel Launcher isn't responding » apparaît aussi sans WFS-59 (essai `conduite` à ffb5474). Le scénario `conduite` conclut OK sur des captures figées.
+### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
+- **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.

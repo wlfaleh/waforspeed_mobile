@@ -31,7 +31,7 @@
   puis le **PO** priorise ces anomalies et crée des US de correction dédiées.
   **Fusion autorisée avec `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES`, jamais avec `REFUSÉ` ni `À CORRIGER`.**
   **Exception, fusion rapide sur ordre de l'utilisateur** : CI verte (compilation, tests, APK) et rien de bloquant sur les
-  captures → fusion tout de suite, QA après fusion sur `main` (bloquant → ticket de correction prioritaire, mineur → `anno.md`). L'utilisateur ne teste pas lui-même.
+  captures → fusion tout de suite, QA après fusion sur `main` (bloquant → ticket de correction prioritaire, mineur → `anno.md`). L'utilisateur teste lui-même l'APK de `main` sur téléphone (le simulateur n'est plus requis pour le MVP).
 - **Statuts de `TACHES.md` mis à jour après chaque avancement et envoyés sur `main` tout de suite** (les autres agents s'y fient).
   Toujours partir de la dernière version de `main` (`git pull`), modifier seulement ses propres lignes, puis envoyer :
   **ne jamais copier un `TACHES.md` d'une autre branche par-dessus celui de `main`** (cela efface les réservations des autres).

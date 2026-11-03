@@ -19,3 +19,7 @@ Pour animer les roues sans toucher au noyau à chaque fois, le rendu doit accept
 
 ## Hors périmètre
 Calcul des angles (WFS-62), flou de roue, suspension / roulis.
+
+
+## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
+Ce ticket absorbe : WFS-62. **Lire et appliquer aussi** `regles-de-gestion/WFS-62.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

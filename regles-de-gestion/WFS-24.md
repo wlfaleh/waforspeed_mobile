@@ -23,3 +23,4 @@ Le joueur retrouve ses meilleurs scores, sa voiture, ses peintures et ses régla
 
 ## Hors périmètre
 Compte en ligne, synchronisation entre appareils, succès.
+

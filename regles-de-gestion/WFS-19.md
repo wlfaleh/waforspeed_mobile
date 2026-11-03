@@ -25,3 +25,4 @@ conducteur face au volant. Les silhouettes géométriques sont proscrites.
 
 ## Hors périmètre
 Piétons qui traversent ou sont percutés, voix, foule dense hors liste ci-dessus.
+
