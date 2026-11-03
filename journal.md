@@ -1231,3 +1231,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Les agents suivent le processus sans demander à l'utilisateur « je lance ? » ou « je continue ? » : ils agissent puis rendent compte.
 - L'utilisateur n'est sollicité que pour un vrai blocage (décision produit non tranchée par les règles ni par le PO, accès manquant, action irréversible hors processus), avec une seule question précise et une recommandation. Les questions de règles et de priorité vont au PO.
 - Règle ajoutée dans `CLAUDE.md` (en tête des consignes), `TACHES.md` (règle 10), skill `waforspeed-natif`, agents `po-scrum-master` et `qa-lead`.
+- **Ménage** : marqueur de conflit orphelin `<<<<<<< HEAD` retiré du Journal (aucun texte perdu).
+
+### 2026-11-03 20:08:40 — PO : création de WFS-60, WFS-61, WFS-62 (roues animées) (po-scrum-master)
+- **Besoin** (utilisateur) : animer les roues quand la voiture roule ou s'arrête. Aucune US n'existait ; priorité **basse** (hors MVP, 17.6 à 17.8).
+- **Constat** : le natif ne sépare pas les roues (drapeau « roue » au niveau du matériau seulement) ; le jeu web a déjà `splitWheels` et `animWheels` (Ackermann, rotation = distance / rayon).
+- **Découpage** : WFS-60 (E5, roues séparées dans le `.wfm`, ⏳ Prêt) → WFS-61 (E0, accroche de rendu par roue) → WFS-62 (E3, animation). Règles : `regles-de-gestion/WFS-60.md` à `WFS-62.md`.

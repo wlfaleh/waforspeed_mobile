@@ -132,6 +132,9 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
 | 16 | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | 17 | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
+| 17.6 | WFS-60 | Roues séparées dans les modèles de voiture (.wfm) | E5 | ⏳ Prêt |  | — | `feature/waforspeed-60` |  |  |
+| 17.7 | WFS-61 | Point d'extension : transformation par roue | E0 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-61` |  |  |
+| 17.8 | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ⏳ En attente |  | WFS-61 | `feature/waforspeed-62` |  |  |
 | 17.5 | WFS-43 | Arbres : finitions (cœur du houppier, ombres des arbres) | E2 | ⏳ Prêt |  | WFS-34, WFS-07 | `feature/waforspeed-43` |  |  |
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
@@ -337,6 +340,15 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-43 — Arbres : finitions (cœur du houppier, ombres des arbres)** · E2 · priorité 17.5 · ⏳ Prêt (règles : `regles-de-gestion/WFS-43.md`)
 - [ ] `trafic-cam0` : plus de cœur visible au bord des houppiers ; ombre d'arbre découpée visible sur une capture au soleil
 - [ ] ≤ 300 appels de dessin ; banc `0 écart(s)`
+
+**WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité 17.6 · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
+- [ ] 4 roues distinctes (centre, rayon) par voiture ; captures de voiture identiques à avant
+
+**WFS-61 — Point d'extension : transformation par roue** · E0 · priorité 17.7 · ⏳ En attente de WFS-60 (règles : `regles-de-gestion/WFS-61.md`)
+- [ ] Rotation et braquage par roue dans l'API du rendu ; sans appel, rien ne change
+
+**WFS-62 — Roues animées** · E3 · priorité 17.8 · ⏳ En attente de WFS-61 (règles : `regles-de-gestion/WFS-62.md`)
+- [ ] Roues immobiles à l'arrêt, qui tournent en roulant, avant braquées en virage
 
 **WFS-16 — Route mouillée avec reflets** · E4 · priorité 18 · ⏳ En attente
 - [ ] Reflets plausibles, coût maîtrisé
