@@ -70,7 +70,7 @@ Journal à jour.
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
 | 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` |  |  |
-| 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
+| 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-26, WFS-36 | `feature/waforspeed-11` |  |  |
@@ -115,7 +115,7 @@ Journal à jour.
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
 - [ ] journal : durée de chaque étape + total, première image < 0,5 s ; autres captures inchangées
 
-**WFS-36 — Point d'extension : écrans de l'application** · E0 · priorité 0.2 · 🔍 En revue (règles : `regles-de-gestion/WFS-36.md`)
+**WFS-36 — Point d'extension : écrans de l'application** · E0 · priorité 0.2 · ✅ Terminé (règles : `regles-de-gestion/WFS-36.md`)
 - [ ] `Ecran` lu dans `GameView`, changement demandé par un système, `System::onEcran` ; hors `Course` : pas de conduite ni de commandes tactiles
 - [ ] captures du banc identiques (écran `Course` par défaut), tests à 0 écart ; capture `ecran-menu-vide`
 
@@ -843,3 +843,13 @@ commandes lâchées, hors `Course` : aucune commande, touchers non lus, commande
 (0 écart), son OK. PR : https://github.com/wlfaleh/waforspeed_mobile/pull/13
 **Limites** : pas encore de test de course (WFS-12 en revue) ; RG-05 (course qui repart en passant à `Course`) via
 `onEcran` dans `CourseSystem` au moment de WFS-38.
+
+### 2026-11-03 — Fin WFS-36 Écrans de l'application (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-36.md`, banc PC, `e3d7ea4`) — 27 captures sur 27 identiques au pixel près à
+celles de `main`, `ecran-menu-vide` conforme. PR #13 fusionnée.
+**Fait** : `Ecran` (`src/core/ecran.h`), `GameView::ecran` / `allerA`, `System::onEcran`, règles du noyau (hors `Course` :
+aucune commande, touchers non lus, commandes non dessinées, voiture immobile ; `Pause` : simulation figée ; départ `Course`).
+**Fichiers** : `src/core/{ecran,system}.h`, `src/game/game.{h,cpp}`, `src/platform/desktop_main.cpp` (accroche 5 lignes),
+`.claude/skills/waforspeed-natif/{SKILL.md,references/architecture.md}`.
+**Débloque** : WFS-37 (menu, E8) et WFS-11 (garage, E5) — à passer en Prêt par le PO. RG-05 (course qui repart en passant
+à `Course`) : `CourseSystem` via `onEcran` (WFS-38).
