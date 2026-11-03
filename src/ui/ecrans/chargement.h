@@ -42,6 +42,11 @@ private:
 
 Chargement& chargement();   // écran de chargement de l'application (un seul)
 
+// mise en page commune des écrans (.screen-inner du web) et bloc sur-titre + logo, partagés par le chargement et le menu (WFS-37)
+struct MiseEnPage { float k, logo, x, largeur, sur, gap, ligne, hauteurBloc; };
+MiseEnPage miseEnPage(float W, float H);
+// dessine le sur-titre et le logo à partir de y (haut du bloc) ; renvoie y sous le logo + l'espace (gap) suivant
+float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float opacite);
 // dessin de l'écran (sans beginFrame / endFrame) : opacite de 0 à 1 (fondu)
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float opacite);
 // banc d'essai (desktop_main.cpp) : captures chargement-0/1/2, -fondu et -erreur ; racine(false) fait échouer le

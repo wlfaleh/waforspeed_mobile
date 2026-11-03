@@ -20,17 +20,19 @@ static const unsigned BG = 0x0A0B10, SURFACE2 = 0x1E2130, TEXTE = 0xF2F4F8, MUTE
 static const char* MESSAGE_ECHEC = "Le moteur 3D n'a pas pu démarrer sur cet appareil.";   // main.js boot()
 static float clampv(float v, float a, float b) { return std::max(a, std::min(b, v)); }
 
-void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
-    // 1 px CSS = k pixels logiques (720 p de référence) : même aspect à 1280x720 et 2400x1080
-    const float k = H / 720.f;
-    r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
-    const float logo = clampv(0.14f * W / k, 64, 140) * k;                 // clamp(64px, 14vw, 140px)
-    const float x = clampv(0.06f * W / k, 0, 96) * k + 16 * k;             // margin-left clamp(0, 6vw, 96px) + gouttière
-    const float largeur = std::min(600 * k, W - x - 16 * k);              // max-width: 600px
-    const float sur = 12 * k, gap = 22 * k, ligne = logo * 0.82f, barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
-    const float total = sur + gap + 2 * ligne + gap + barre + 10 * k + txt;
-    float y = std::max(16 * k, (H - total) / 2);
+MiseEnPage miseEnPage(float W, float H) {
+    MiseEnPage m;
+    m.k = H / 720.f;   // 1 px CSS = k pixels logiques (720 p de référence) : même aspect à 1280x720 et 2400x1080
+    m.logo = clampv(0.14f * W / m.k, 64, 140) * m.k;                     // clamp(64px, 14vw, 140px)
+    m.x = clampv(0.06f * W / m.k, 0, 96) * m.k + 16 * m.k;               // margin-left clamp(0, 6vw, 96px) + gouttière
+    m.largeur = std::min(600 * m.k, W - m.x - 16 * m.k);                // max-width: 600px
+    m.sur = 12 * m.k; m.gap = 22 * m.k; m.ligne = m.logo * 0.82f;
+    m.hauteurBloc = m.sur + m.gap + 2 * m.ligne;
+    return m;
+}
 
+float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
+    const float x = m.x, k = m.k, logo = m.logo, sur = m.sur, gap = m.gap, ligne = m.ligne;
     const bool police = ui::fontReady();   // première image : la police n'est pas encore construite (fond + barre)
     // sur-titre .eyebrow : capitales cyan espacées de 0,22 em
     if (police) ui::text(r, x, y, sur, ui::majuscules("Sprint urbain · vraies voitures"), hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
@@ -55,6 +57,18 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
         ui::text(r, x, y, logo, "SPEED", hex(ACCENT, op), ui::GAUCHE, -0.01f, false);
         y += ligne + gap;
     } else y += 2 * ligne + gap;
+    return y;
+}
+
+void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
+    const MiseEnPage m = miseEnPage(W, H);
+    const float k = m.k, x = m.x, largeur = m.largeur, gap = m.gap;
+    r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
+    const float barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
+    const float total = m.hauteurBloc + gap + barre + 10 * k + txt;
+    float y = std::max(16 * k, (H - total) / 2);
+    const bool police = ui::fontReady();
+    y = dessinerBlocLogo(r, m, y, op);
     // barre .cp-bar : fond --surface-2, remplissage dégradé cyan → orange (16 tranches sur la partie remplie)
     r.uiRect(x, y, largeur, barre, hex(SURFACE2, op));
     const float plein = largeur * clampv(p, 0, 1);
