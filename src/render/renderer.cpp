@@ -592,9 +592,9 @@ void Renderer::uiSetFontAtlas(const Image& atlas) {
     vkUpdateDescriptorSets(vk_->device, 1, &wr, 0, nullptr);
 }
 
-void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c) {
-    // uv décalés de +2 : le shader d'interface sait qu'il doit lire l'atlas de police
-    UiVertex a{x, y, u0 + 2, v0, c.x, c.y, c.z, c.w}, b{x + w, y, u1 + 2, v0, c.x, c.y, c.z, c.w},
+void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais) {
+    // uv décalés de +2 : le shader d'interface sait qu'il doit lire l'atlas de police ; biais : haut décalé (WFS-48)
+    UiVertex a{x + biais, y, u0 + 2, v0, c.x, c.y, c.z, c.w}, b{x + w + biais, y, u1 + 2, v0, c.x, c.y, c.z, c.w},
              cc{x + w, y + h, u1 + 2, v1, c.x, c.y, c.z, c.w}, d{x, y + h, u0 + 2, v1, c.x, c.y, c.z, c.w};
     if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});

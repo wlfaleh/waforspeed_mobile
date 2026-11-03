@@ -84,7 +84,8 @@ public:
             r.uiRect(x, y, w, h, {GLASS.x, GLASS.y, GLASS.z, GLASS.w * op});
             r.uiRect(x, y, 4 * k, h, bord);   // border-left 4 px
             // titre 18 px en capitales (letter-spacing .06em) ; valeur 14 px alignée sur la ligne de base du titre
-            ui::text(r, std::round(x + padL), std::round(y + padV), tp, titre, hex(TEXTE, op), ui::GAUCHE, 0.06f, false);
+            // WFS-48 : titre (.toast b) en italique
+            ui::text(r, std::round(x + padL), std::round(y + padV), tp, titre, hex(TEXTE, op), ui::GAUCHE, 0.06f, false, true);
             if (wv > 0) ui::text(r, std::round(x + padL + wt + gap), std::round(y + padV + (tp - vp) * 0.8f), vp, it->valeur, bord, ui::GAUCHE, 0, false);
             y += h + 8 * k;   // gap 8 px
             ++it;
