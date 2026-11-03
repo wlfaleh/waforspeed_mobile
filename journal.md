@@ -1125,3 +1125,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : `encoche-hud` (2400x1080, `WFS_ENCOCHE=90`) sans texte ni panneau dans la bande ; sans encoche, `course-*` / `hud-*` identiques, banc `0 écart(s)` ; notifications (WFS-47, fusionné) soumises à la même règle (RG-03).
 - **Plan** : lire `view.marges` (WFS-51) dans le placement du HUD et des notifications, décaler par la marge, ajouter la capture, QA `qa-lead`.
 - PO : lignes de détail WFS-57 et WFS-37 remises à jour (✅ Terminé), le tableau l'indiquait déjà.
+
+### 2026-11-03 — WFS-52 en revue, PR #30 (Claude, session trafic)
+- `src/ui/hud.cpp` : panneaux du HUD à la marge de `view.marges` + gouttières de WFS-27 ; sans marge, rendu inchangé. Capture `encoche-hud` dans `benchHud`.
+- **Accroche annoncée** : `.github/workflows/build.yml`, 1 ligne modifiée (copie de `hud/encoche-hud.png` en `captures/encoche-hud-2400.png`, dans le lancement HUD 2400x1080). QA après la CI.
