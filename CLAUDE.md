@@ -13,6 +13,12 @@
 - **Une branche par ticket** : `feature/waforspeed-XX`. Même si ta session Claude t'attribue une branche `claude/…`,
   travaille sur `feature/waforspeed-XX` (aucun travail hors ticket, aucune branche `claude/…`). Synchroniser avec `main` avant chaque validation et avant chaque PR.
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
+- **Processus de fusion (règle en vigueur)** : le développeur **ne lance plus le `qa-lead`**. Après la construction, il fait un **contrôle rapide** :
+  CI verte (compilation, tests, APK) et captures du banc d'essai PC regardées sans rien de bloquant → **il fusionne tout de suite**, puis ajoute
+  le ticket (PR, date, points à regarder) dans `qa/Check.md`. **L'utilisateur relance le `qa-lead` chaque nuit** sur `qa/Check.md` : recette par lot,
+  rapports `qa/rapports/WFS-XX.md`, verdicts, anomalies créées dans `anno.md` (ANO-XX) ; bloquant → ticket de correction prioritaire. Le reste du
+  processus ne change pas : le **PO** priorise les anomalies et crée les US de correction. Les paragraphes QA ci-dessous décrivent les verdicts et la gravité,
+  appliqués par le `qa-lead` lors de la recette de nuit (la fusion n'attend plus le verdict).
 - **QA** : après chaque construction d'un ticket, **lancer l'agent `qa-lead`** : il regarde les captures du **banc d'essai PC** et rend le verdict
   (`qa/rapports/WFS-XX.md`). **Un développeur ne fait jamais la QA de son propre ticket** et n'écrit pas le rapport QA.
   Le **simulateur Android** n'est lancé qu'à la **fin de chaque épic** (ticket « Vérification simulateur EX » créé par le PO, workflow `simulateur.yml`).
