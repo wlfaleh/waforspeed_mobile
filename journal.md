@@ -1023,3 +1023,10 @@ résolution de conflit (Claude, session 01UY1Vv1) : retirée.
 - Critères : `toast-checkpoint` (« CHECKPOINT 1 » « +11,0 s » sous le score) ; `toast-pile` (3 bandeaux cyan / orange / rouge, rien sur les commandes) ; banc `0 écart(s)`, autres captures inchangées.
 - Plan : porter `js/ui/toasts.js` (pile de 3, 1,9 s, entrée 240 ms / sortie 260 ms) ; détection par différence d'image (`level`, `nearCount`, `combo`, `accidents`) ; remise à zéro au Rejouer ; 2 scènes de banc.
 - PO : WFS-27 ✅ débloque WFS-52 et WFS-46 (E5, ⏳ Prêt) ; WFS-14 ✅ débloque WFS-53, WFS-54 (E2) et WFS-55 (E3), passés ⏳ Prêt. Ligne de critères de WFS-27 corrigée (Terminé).
+
+### 2026-11-03 — WFS-37 Menu principal fusionné sur ordre de l'utilisateur (PR #23, 42d4f61)
+L'utilisateur a ordonné la fusion sans attendre le banc d'essai complet ni la QA (« fusionne, c'est un ordre ») : compilation,
+test de la piste et APK verts (run 41644926035), captures du banc encore en cours. Statut ✅, **QA faite après la fusion** sur `main`.
+**Nouvelle règle (demande de l'utilisateur)** : fusion rapide possible sur ordre de l'utilisateur (CI verte et rien de bloquant
+sur les captures), QA après fusion ; bloquant → ticket de correction prioritaire, mineur → `anno.md`. Mis à jour : `TACHES.md`
+(règle 5), `CLAUDE.md`, `.claude/agents/qa-lead.md`. Épic E8 libre : **WFS-38** (menu tactile, départ, Rejouer / Menu) débloqué.
