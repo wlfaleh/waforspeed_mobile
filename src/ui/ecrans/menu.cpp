@@ -188,7 +188,8 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     g.setAutopilot(false); g.camMode = 0;
     const float W = (float)r.width(), H = (float)r.height();
     double t = 800;
-    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; g.render(t); };
+    int n = 0;   // rendu une image sur 10 seulement (comme les autres scènes) : le banc reste rapide en 2400x1080
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; if (++n % 10 == 0) g.render(t); };
     auto capture = [&](const char* nom, const char* quoi) {
         g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
         WFS_LOG("capture %s : écran %s, %s", nom, nomEcran(g.ecran()), quoi);
