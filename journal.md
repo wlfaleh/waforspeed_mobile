@@ -1110,3 +1110,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 — WFS-57 en revue, PR #29 (Claude, session trafic)
 - `course_system.cpp` : paire « Rejouer » / « Menu » centrée (milieu mesuré à 639,5 en 1280x720) ; zones de toucher = rectangles dessinés.
 - **Accroche E8 annoncée** (2 lignes, prévue par les règles) : `src/ui/ecrans/menu.cpp`, toucher « Menu » de `benchMenuTactile` sur la nouvelle place. `tools/qa/**` non touché. QA après la CI.
+
+### 2026-11-03 — QA WFS-57 : VALIDÉ (qa-lead)
+- Banc PC, commit `cc76b01` (PR #29) : paire « Rejouer » / « Menu » centrée (milieu 639,5, marges 187 / 187 px), `fin-retour-menu` au menu (record 390),
+  58 autres captures identiques à `apercu-waforspeed-38`, banc `0 écart(s)`. Aucune anomalie : **fusion autorisée**. ANO-14 passée en ✅ Corrigée.
+  Rapport : `qa/rapports/WFS-57.md`.
