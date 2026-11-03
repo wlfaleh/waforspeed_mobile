@@ -95,7 +95,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | P3 Moyenne | WFS-09 | Nuit complète : phares, éclairage public, route mouillée et reflets | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
-| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅), WFS-27 ✅ | `feature/waforspeed-11` |  |  |
+| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | 🔧 En cours | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
 | — | WFS-13 | Les 20 voitures et 16 peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-13` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
@@ -235,7 +235,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] Capture `spots-sol` : 3 taches orange / cyan / blanche aux bords adoucis, hémisphère bleutée, brouillard linéaire, voiture éclairée
 - [ ] Coût de la passe de scène ≤ +0,3 ms avec 3 spots (journal du banc)
 
-**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · ⏳ En attente de WFS-45 (WFS-44 ✅) (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
+**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · 🔧 En cours — agent 3 (session 011cpqZd), 2026-11-03, branche `feature/waforspeed-11` (règles : `regles-de-gestion/WFS-11.md` + WFS-40, WFS-13, WFS-46)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité P2 Haute · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-39.md`)
