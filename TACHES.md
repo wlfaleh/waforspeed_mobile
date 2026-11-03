@@ -67,6 +67,12 @@ Journal à jour.
 | E7 | Plateformes et publication | `src/platform/**`, `android/**`, `ios/**`, `.github/**`, `tools/qa/**` | Android, iOS, manettes, stores, CI. |
 | E8 | Écrans et menus | `src/ui/ecrans/**` | Chargement de l'application, menu principal, navigation, pause, choix du terrain. |
 
+## MVP du 2026-11-03 (décision du PO, détail au Journal)
+Parcours jouable sur téléphone : **chargement → menu → Course solo → décompte → course (trafic, chrono, checkpoints, HUD,
+notifications) → fin → Rejouer / Menu**, en plein écran Android. Tickets marqués **[MVP]**, en tête du tableau, dans l'ordre :
+WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-50 (vérification simulateur). Hors MVP : garage, terrain, pause,
+duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
+
 ## Tableau (par ordre de priorité)
 | Prio | Clé | Titre | Épic | Statut | Responsable | Dépend de | Branche | PR | QA |
 |---|---|---|---|---|---|---|---|---|---|
@@ -75,13 +81,20 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔍 En revue | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10), fusion autorisée |
+| 0.1 | WFS-35 | [MVP] Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | ✅ Terminé |  | WFS-26 | `feature/waforspeed-35` | PR #12 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10) |
+| 0.15 | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | 🔍 En revue (CI verte, QA en cours) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26, WFS-12 | `feature/waforspeed-27` | PR #16 |  |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
-| 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
-| 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé | | WFS-36 | `feature/waforspeed-44` | #15 | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
+| 0.3 | WFS-37 | [MVP] Menu principal : affichage (logo, choix, record, ta voiture) | E8 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
+| 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | 🔍 En revue | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-29` | #17 | ⏳ qa-lead (CI 45f3d8a verte) |
+| 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
+| 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ⏳ En attente |  | WFS-27 | `feature/waforspeed-47` |  |  |
+| 0.44 | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏳ En attente |  | WFS-35, WFS-27, WFS-37, WFS-38, WFS-29, WFS-47 | `feature/waforspeed-50` |  |  |
+| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
-| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⛔ Bloqué |  | WFS-26, WFS-36, WFS-44, WFS-45 | `feature/waforspeed-11` |  |  |
+| 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | ⏳ Prêt |  | WFS-35 | `feature/waforspeed-49` |  |  |
+| 0.48 | WFS-48 | Texte en italique (ANO-04) | E5 | ⏳ Prêt |  | WFS-26 | `feature/waforspeed-48` |  |  |
+| 0.49 | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ⏳ En attente |  | WFS-27 | `feature/waforspeed-46` |  |  |
+| 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅) | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
 | 0.7 | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-40` |  |  |
 | 0.8 | WFS-41 | Choix du terrain et du moment (jour / nuit) | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-41` |  |  |
@@ -98,8 +111,6 @@ Journal à jour.
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
-| 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
-| 11 | WFS-29 | Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
 | 12 | WFS-14 | Cartes campagne, plage, circuit | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-14` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-15` |  |  |
@@ -110,15 +121,15 @@ Journal à jour.
 | 18 | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | 19 | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
 | 20 | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ⏳ En attente |  | WFS-15 | `feature/waforspeed-17` |  |  |
-| 21 | WFS-24 | Sauvegarde et progression | E3 | ⏳ En attente |  | WFS-12 | `feature/waforspeed-24` |  |  |
-| 22 | WFS-21 | Duel en ligne | E3 | ⏳ En attente |  | WFS-12 | `feature/waforspeed-21` |  |  |
+| 21 | WFS-24 | Sauvegarde et progression | E3 | ⏳ Prêt |  | WFS-12 | `feature/waforspeed-24` |  |  |
+| 22 | WFS-21 | Duel en ligne | E3 | ⏳ Prêt |  | WFS-12 | `feature/waforspeed-21` |  |  |
 | 23 | WFS-23 | Manettes de jeu | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-23` |  |  |
 | 24 | WFS-22 | Version iOS (Metal via MoltenVK) | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
 | 25 | WFS-25 | Préparation des stores | E7 | ⏳ En attente |  | WFS-22 | `feature/waforspeed-25` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔍 En revue (QA : PASSABLE AVEC ANOMALIES MINEURES, fusion autorisée, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
+**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · ✅ Terminé (QA : PASSABLE AVEC ANOMALIES MINEURES, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
 - [ ] `chargement-0/1/2` : fond `#0A0B10`, sur-titre cyan, logo « WAFOR / SPEED » (SPEED orange), barre cyan → orange à 0 %, 20-70 %, 100 %, étape + « n % »
 - [ ] mêmes captures en 2400x1080 : bloc à gauche, rien de coupé ; `chargement-fondu` : ville visible à travers (fondu 300 ms)
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
@@ -128,13 +139,39 @@ Journal à jour.
 - [ ] `Ecran` lu dans `GameView`, changement demandé par un système, `System::onEcran` ; hors `Course` : pas de conduite ni de commandes tactiles
 - [ ] captures du banc identiques (écran `Course` par défaut), tests à 0 écart ; capture `ecran-menu-vide`
 
-**WFS-37 — Menu principal : affichage** · E8 · priorité 0.3 · ⏳ En attente (règles : `regles-de-gestion/WFS-37.md`)
-- [ ] `menu-0` / `menu-1` (720p, 2400x1080) : ville assombrie, logo, 3 choix, record « — », « Golf 8 GTI » ; `menu-anim`
+**WFS-27 — [MVP] HUD de course (version réduite)** · E5 · priorité 0.15 · 🔍 En revue, PR #16 (règles : `regles-de-gestion/WFS-27.md`)
+- [ ] `course-*` et `hud-2400` : temps, checkpoint + barre, score, vitesse (bas centre), nitro 10 cases lisibles, rien sous les commandes
+- [ ] `hud-temps-bas` (rouge sous 8 s), `hud-nitro` (nitro active), `hud-combo` (« Combo ×2 »)
+- [ ] anciennes barres de `Game::drawUi` retirées ; `course-decompte-*`, `course-fin` inchangées ; banc `0 écart(s)`
 
-**WFS-38 — Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
+**WFS-37 — [MVP] Menu principal : affichage** · E8 · priorité 0.3 · 🔧 En cours (règles : `regles-de-gestion/WFS-37.md`)
+- [ ] `menu-0` / `menu-1` (720p, 2400x1080, sans planche de texte) : ville assombrie, logo, 3 choix, record « — », « Golf 8 GTI » ; `menu-anim`
+- [ ] aucune commande de conduite ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`
+
+**WFS-29 — [MVP] Android : mode plein écran immersif, icône, nom** · E7 · priorité 0.35 · 🔍 En revue (règles : `regles-de-gestion/WFS-29.md`)
+- [ ] manifeste : `android:label="WaForSpeed"`, icône adaptative, thème plein écran ; appel immersif au démarrage et à `onWindowFocusChanged`
+- [ ] captures du banc PC inchangées (vérification à l'écran par WFS-50)
+
+**WFS-38 — [MVP] Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · ✅ Terminé (règles : `regles-de-gestion/WFS-44.md`)
+**WFS-47 — [MVP] Notifications de course** · E5 · priorité 0.42 · ⏳ En attente de WFS-27 (règles : `regles-de-gestion/WFS-47.md`)
+- [ ] `toast-checkpoint` (« CHECKPOINT 1 » « +11,0 s ») ; `toast-pile` (3 bandeaux cyan / orange / rouge, rien sur les commandes) ; banc `0 écart(s)`
+
+**WFS-50 — [MVP] Vérification simulateur du MVP** · E7 · priorité 0.44 · ⏳ En attente de tout le MVP (règles : `regles-de-gestion/WFS-50.md`)
+- [ ] `simulateur.yml` (`epic=MVP`) : chargement → menu → Course solo → décompte → course + HUD → fin → Rejouer puis Menu ; paysage plein écran, aucun plantage
+- [ ] rapport `qa/rapports/simulateur-MVP.md` VALIDÉ par `qa-lead`
+
+**WFS-49 — Banc : captures du chargement 2400 sans planche de texte (ANO-10)** · E7 · priorité 0.47 · ⏳ Prêt (règles : `regles-de-gestion/WFS-49.md`)
+- [ ] `chargement-*-2400` sans panneau « DÉMO DU TEXTE » ; `texte-essai-2400` inchangée
+
+**WFS-48 — Texte en italique (ANO-04)** · E5 · priorité 0.48 · ⏳ Prêt (règles : `regles-de-gestion/WFS-48.md`)
+- [ ] décompte, écran de fin et HUD en italique (12°) ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées
+
+**WFS-46 — Compteur de vitesse en arc** · E5 · priorité 0.49 · ⏳ En attente de WFS-27 (règles : `regles-de-gestion/WFS-46.md`)
+- [ ] `hud-arc-120`, `hud-arc-320` (zone rouge) en 1280x720 et 2400x1080 ; banc `0 écart(s)`
+
+**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · ✅ Terminé (PR #15) (règles : `regles-de-gestion/WFS-44.md`)
 - [ ] Captures du banc identiques à `main` (aucune scène dédiée par défaut), tests à 0 écart
 - [ ] Capture `scene-dediee-vide` : fond uni `#07070c`, ni route, ni ville, ni trafic, ni voiture du joueur, ni commandes ; cube repère vu en FOV 36°
 - [ ] Doc du point d'extension dans le skill `waforspeed-natif`
@@ -144,7 +181,7 @@ Journal à jour.
 - [ ] Capture `spots-sol` : 3 taches orange / cyan / blanche aux bords adoucis, hémisphère bleutée, brouillard linéaire, voiture éclairée
 - [ ] Coût de la passe de scène ≤ +0,3 ms avec 3 spots (journal du banc)
 
-**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⛔ Bloqué par WFS-44 et WFS-45 (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
+**WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⏳ En attente de WFS-45 (WFS-44 ✅) (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité 0.6 · ⏳ En attente (règles : `regles-de-gestion/WFS-39.md`)
@@ -203,7 +240,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 
 **WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ✅ Terminé (QA : PASSABLE AVEC ANOMALIES MINEURES, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
-- [ ] Tests automatiques de fidélité
+- [ ] Tests automatiques de fidélité (test unitaire : checkpoint 1 → +11 s, checkpoint 10 → +7,4 s (checkpoint 11 → +7 s), quasi-contact ×3 → 750 points)
 
 **WFS-33 — Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné)** · E3 · priorité 7.5 · 🔧 En cours (règles : `regles-de-gestion/WFS-33.md`)
 Origine : remarques 1, 2 et 4 du [rapport QA WFS-08](qa/rapports/WFS-08.md). Zone : `src/game/traffic_system.cpp`
@@ -229,13 +266,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] Phares réalistes (leçons de la version web)
 - [ ] Lampadaires, mode nuit par carte
 
-**WFS-27 — HUD de course (vitesse, chrono, score, nitro en texte)** · E5 · priorité 10 · ⏳ En attente
-- [ ] Vitesse, chrono, score, nitro lisibles
-- [ ] Style design-street-racing
 
-**WFS-29 — Android : mode plein écran immersif, icône, nom** · E7 · priorité 11 · ⏳ Prêt
-- [ ] Barres système masquées pendant la course
-- [ ] Icône et nom WaForSpeed
 
 **WFS-14 — Cartes campagne, plage, circuit** · E2 · priorité 12 · ⏳ En attente
 - [ ] Décors et ambiances par carte
@@ -270,10 +301,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] Activable selon la qualité
 - [ ] `vitrine-golf-0`, `vitrine-p911-1` : plus de lignes pointillées sur les jointures de carrosserie (reste de WFS-32, crénelage de géométrie lissé par le TAA)
 
-**WFS-24 — Sauvegarde et progression** · E3 · priorité 21 · ⏳ En attente
+**WFS-24 — Sauvegarde et progression** · E3 · priorité 21 · ⏳ Prêt
 - [ ] Meilleurs scores, voitures et réglages conservés
 
-**WFS-21 — Duel en ligne** · E3 · priorité 22 · ⏳ En attente
+**WFS-21 — Duel en ligne** · E3 · priorité 22 · ⏳ Prêt
 - [ ] Compatible avec le principe du duel web
 
 **WFS-23 — Manettes de jeu** · E7 · priorité 23 · ⏳ En attente

@@ -764,3 +764,121 @@ WFS-45 (prio 0.46, E4) non attribuable : E4 occupée par WFS-42.
 écart latéral ≤ 1,12 au journal + constat trottoir ; test de fidélité `0 écart(s)`.
 **Plan** : placer un peloton devant le joueur et densifier le trafic proche pour les scènes du banc ; journaliser l'écart
 latéral du choc ; vérifier `crashTraffic` du web pour le trottoir.
+
+### 2026-11-03 — WFS-33 construit, en attente de la CI (Claude, session moteur-natif)
+**Fait** (`feature/waforspeed-33`, zone `src/game/traffic_system.cpp` seulement) : peloton de 3 voitures une par file pour
+`trafic-cam0` ; au banc (rendu hors écran) une voiture du trafic gardée dans le champ pendant la course ; écart latéral de
+la voiture percutée au journal du banc.
+**Constat RG-03** : le jeu web borne aussi l'écart latéral d'une voiture en glissade à ±1,12 demi-largeur de route
+(`stepTraffic` de `js/game/traffic.js` : `clamp(car.offset + c.vx * h, -1.12, 1.12)`), soit 8,4 m du centre pour une
+chaussée de 7,5 m : l'arrière sur le trottoir pendant une glissade existe donc aussi dans le jeu web (comportement identique).
+**WFS-42** (toujours en cours) : diagnostic au banc en cours (pièce opaque de l'intérieur de la Golf).
+**Suite** : CI → qa-lead.
+
+### 2026-11-03 — Décision du PO : MVP du 2026-11-03 (demande de l'utilisateur : « un MVP aujourd'hui »)
+**But** : le plus petit jeu complet sur téléphone : chargement → menu principal → « Course solo » → décompte 3-2-1-GO →
+course solo avec trafic, chrono, checkpoints, HUD lisible (vitesse, temps, score, nitro) et notifications → écran de fin →
+« Rejouer » / « Menu », en paysage plein écran Android.
+**Déjà là** : conduite tactile, caméra, ville, arbres, ombres, trafic + collisions, sons du moteur, règles de course (décompte,
+chrono, checkpoints, score, nitro, écran de fin + Rejouer), texte, écrans (WFS-36) et scène dédiée (WFS-44).
+**Tickets du MVP, dans l'ordre** (marqués [MVP] en tête du tableau) :
+1. WFS-35 chargement (E8, 🔍, fusion PR #12) ;
+2. WFS-27 HUD **réduit** à du texte (E5, ≈ 2-3 h) : le compteur en arc sort en **WFS-46**, les notifications en **WFS-47** ;
+3. WFS-37 menu, affichage (E8, Prêt dès la fusion de WFS-35) ;
+4. WFS-29 Android plein écran, icône, nom (E7, Prêt, parallèle) ;
+5. WFS-38 menu tactile, départ, fin → Rejouer / Menu (E8) ;
+6. **WFS-47** notifications (checkpoint, quasi-contact, accident) (E5, nouveau, ≈ 2 h) ;
+7. **WFS-50** vérification simulateur du MVP (E7, nouveau, parcours complet, rapport `simulateur-MVP.md`), puis « Livraison MVP ».
+Chemin critique : E8 (35 → 37 → 38) en série ; E5 (27 → 47) et E7 (29) en parallèle.
+**Hors MVP** : garage (WFS-11/40/13), terrain (WFS-41), pause (WFS-39), duel (WFS-21), sauvegarde (WFS-24), compteur en arc
+(WFS-46), italique (WFS-48), nuit / lumières / météo / post-traitement (E4, E2), bruitages (WFS-28), piétons (WFS-19).
+**Anomalies planifiées** : ANO-04 → **WFS-48** (E5, italique dans `src/ui/text.*`) ; ANO-10 → **WFS-49** (E7, captures
+`chargement-*-2400` dans un lancement du banc sans `WFS_TEXTE_ESSAI`, `.github/workflows/build.yml`). `anno.md` : 📋 Planifiée.
+**Mises à jour** : WFS-44 ✅ (PR #15 fusionnée, E0 libre) ; WFS-11 ⛔ → ⏳ En attente (ne dépend plus que de WFS-45) ;
+WFS-24 et WFS-21 → ⏳ Prêt (WFS-12 ✅) ; WFS-38 reste en attente de WFS-37 ; critère de WFS-12 corrigé :
+« checkpoint 10 → +7,4 s (checkpoint 11 → +7 s) » (`TACHES.md` et `regles-de-gestion/WFS-12.md`).
+**Parallélisme (épics attribuables maintenant)** : E7 WFS-29 [MVP] ; E3 WFS-24 dès la fin de WFS-33 (en cours) ; E2 WFS-14 / WFS-43 / WFS-19 ;
+E6 WFS-28 ; E4 WFS-45 dès la fin de WFS-42 ; E8 WFS-37 dès la fusion de PR #12. E0 : rien à faire.
+Règles de gestion écrites : `WFS-27` (réécrite, réduite), `WFS-46`, `WFS-47`, `WFS-48`, `WFS-49`, `WFS-50`.
+
+**Début WFS-27** — Épic **E5**, libre (WFS-11 en attente, aucun ticket E5 actif). Responsable : Claude (agent développeur,
+session 01UY1Vv1), 2026-11-03 (WFS-35 n'attend plus que la fusion de PR #12, code fini, QA passable). Branche
+`feature/waforspeed-27`, partie de `main`. Règles : `regles-de-gestion/WFS-27.md`.
+**Zone de code autorisée** : `src/ui/**` sauf `src/ui/ecrans/` (nouveau `src/ui/hud.*`), `shaders/ui*`, `assets/fonts/**` ;
+lecture seule de `src/game/course_system.h` / `course.h` / `player.h` ; accroche annoncée ≤ 10 lignes dans `src/game/game.cpp`
+(retrait des deux barres provisoires de `Game::drawUi`) ; captures `hud-*` dans `src/platform/desktop_main.cpp` (≤ 10 lignes).
+**Critères** : `course-*` + `hud-2400` lisibles ; `hud-temps-bas`, `hud-nitro`, `hud-combo` ; anciennes barres retirées ;
+décompte et fin inchangés ; banc `0 écart(s)`.
+**Plan court** : système `Hud` (lit `activeCourse()` et `GameView::player`, seulement en `Ecran::Course` et course non finie) →
+temps + checkpoint (haut gauche), score + combo (haut droite), vitesse + nitro (bas centre) → accroche `game.cpp` → captures
+du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-27 HUD de course construit (MVP), en attente de la CI
+**Fait** (`feature/waforspeed-27`, 29139a4) : `src/ui/hud.{h,cpp}`, système `Hud` (ordre 420), port de `updateHud` et du style
+`.hud-top` / `.time-value(.low)` / `.cp-bar` / `.score-value` / `.combo` / `.nitro-bar` du jeu web. Affiché seulement en
+`Ecran::Course`, avec une course active, hors écran de fin et hors scène dédiée. Haut gauche : « TEMPS » à 1 décimale (rouge sous
+8 s) + « CHECKPOINT n » et sa barre cyan → orange ; haut droite (au-dessus de 22 % de H) : « SCORE » au format français + « Combo ×N » ;
+bas centre (entre volant et frein) : |km/h| (« R · KM/H » en marche arrière, rouge > 300) + « NITRO » en 10 cases vertes #B6FF00
+(halo en nitro active). Fonds vitrés rgba(20,22,31,.72), gouttières 16 / 14 px, tailles en fraction de la hauteur.
+**Accroches annoncées** : `game.cpp` (5 lignes retirées : anciennes barres de vitesse et de nitro), `desktop_main.cpp`
+(3 lignes : include, `benchHud`, mode `WFS_BANC=hud` pour la capture 2400x1080 sans planche de texte), `build.yml` (1 ligne : `hud-2400`).
+Captures : `hud-course`, `hud-temps-bas` (temps forcé à 6 s), `hud-nitro` (touchers gaz + nitro), `hud-combo` (deux quasi-contacts
+déclenchés par le banc), `hud-2400`.
+**Suite** : CI → qa-lead → fusion. **WFS-35** : resynchronisé avec main (WFS-44, 825dfc6), CI en cours avant fusion de la PR #12.
+
+### 2026-11-03 — PO : fin WFS-44 prise en compte, début WFS-29 (Claude, session trafic)
+**Débloqué par WFS-44** : rien de nouveau en Prêt. WFS-11 reste ⏳ En attente : il dépend encore de WFS-45 (projecteurs, E4,
+⏳ Prêt mais non attribuable tant que WFS-42 occupe E4). Anomalies : ANO-04 → WFS-48 (E5 occupée par WFS-27), ANO-10 → WFS-49
+(attend la fusion de WFS-35) ; aucune nouvelle anomalie à planifier.
+**Début WFS-29** — Épic **E7**, libre (aucun ticket E7 actif). Ticket Prêt le plus prioritaire attribuable (0.35, MVP).
+Responsable : Claude (session trafic), 2026-11-03. Branche `feature/waforspeed-29`, partie de `main`.
+Règles : `regles-de-gestion/WFS-29.md`.
+**Zone de code autorisée** : `android/**` (manifeste, `res/` : icône adaptative, thème, chaînes ; activité Java/Kotlin),
+`src/platform/**` (partie Android seulement si l'appel immersif passe par le natif). Rien dans `src/game`, `src/render`, `src/ui`.
+**Critères** : `android:label="WaForSpeed"` ; icône adaptative (avant-plan + fond `#07070c`, orange `#FF6A00` / cyan `#00E5FF`) ;
+thème plein écran, paysage verrouillé, écran allumé, `layoutInDisplayCutoutMode=shortEdges` ; immersif collant au démarrage et à
+`onWindowFocusChanged` ; APK construit en CI ; captures du banc PC inchangées (`0 écart(s)`). Vérification à l'écran : WFS-50.
+**Plan court** : manifeste + `res/values` (nom, thème) → `mipmap-anydpi-v26` (icône adaptative vectorielle) → immersif dans
+l'activité → CI (APK + banc) → QA `qa-lead` (revue du manifeste et du code, banc inchangé) → fusion.
+
+### 2026-11-03 — WFS-42 : cause trouvée par diagnostic au banc (Claude, session moteur-natif)
+**Méthode** : captures de vitrine en masquant une à une les pièces (diagnostic temporaire, retiré ensuite).
+**Cause (RG-01)** : la trame de la lunette de la Golf ne vient ni de la vitre ni des couches transparentes, mais de la
+**pièce 18** : baguette chrome **opaque** (métal 1, rugosité 0) faite de fils de 1,3 mm x 21 mm, vue à travers la vitre ;
+plus fins qu'un pixel, les fils se rasterisent en tirets brillants (`diag42-golf-sans-18` : trame disparue).
+911 : la jante (matériau 4, triangles de 1,9 mm) ne scintille plus avec les reflets élargis du 2e passage.
+**Correction** (`feature/waforspeed-42`, 6798421) : pièces « fils » (triangles < 4 mm, allongement médian > 8, hors peinture
+et vitres) dessinées en couverture partielle avant les vitres ; modèles inchangés (RG-02). **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Fin WFS-35 Écran de chargement (PR #12 fusionnée, 500c5b5)
+QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-10 → WFS-49 (PO). Branche resynchronisée avec main (WFS-12 puis WFS-44)
+avant la fusion, CI verte à chaque fois (dernière : run 41617276755). Épic E8 libre.
+**PO** : WFS-37 (menu principal, E8, MVP) et WFS-49 sont débloqués (dépendance WFS-35 finie).
+**WFS-27** : CI verte (run 41617208849), QA lancée.
+
+### 2026-11-03 — PO : WFS-37 et WFS-49 Prêts, début WFS-37 (agent développeur, session 01UY1Vv1)
+**Fin de ticket WFS-35** prise en compte (✅, PR #12, 500c5b5). **Débloqués** : WFS-37 (WFS-35 ✅, WFS-36 ✅) et WFS-49 (WFS-35 ✅)
+→ ⏳ Prêt. WFS-49 reste non attribuable tant que WFS-29 occupe E7. **WFS-27** → 🔍 En revue (PR #16, CI verte, QA en cours).
+**Début WFS-37** — Épic **E8**, libre (WFS-35 fini, aucun ticket E8 actif). Ticket MVP Prêt le plus prioritaire (0.3).
+Responsable : Claude (agent développeur, session 01UY1Vv1), 2026-11-03 ; son WFS-27 est en revue (même règle que pour WFS-35) ;
+**les corrections demandées par la QA de WFS-27 passent avant WFS-37**. Branche `feature/waforspeed-37`, partie de `main`.
+Règles : `regles-de-gestion/WFS-37.md` (complétées : RG-07 à RG-10, zone et accroches).
+**Zone de code autorisée** : `src/ui/ecrans/**` (nouveau `menu.{h,cpp}`, mise en commun du logo dans `chargement.{h,cpp}`) ;
+accroches annoncées ≤ 10 lignes : enregistrement du système, captures `menu-*` dans `src/platform/desktop_main.cpp`,
+1 ligne `menu-1` dans `.github/workflows/build.yml`.
+**Critères** : `menu-0` / `menu-1` (2400x1080, sans planche de texte) : ville assombrie, logo, 3 choix, record « — »,
+« Golf 8 GTI » ; `menu-anim` ; ni commandes ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`.
+**Plan court** : sortir le bloc logo de `chargement.cpp` → système `Menu` (voile 8-16 bandes, 3 choix, pied, aide tactile,
+`slide-in`) → captures du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-29 : code écrit, PR #17 ouverte (Claude, session trafic)
+**Fait** : `JeuActivity` (sous-classe de `NativeActivity`, jeu toujours natif) : mode immersif collant
+(`WindowInsetsController` ≥ Android 11, `SYSTEM_UI_FLAG_IMMERSIVE_STICKY` avant) à `onCreate`, `onResume`,
+`onWindowFocusChanged` ; écran toujours allumé ; encoche `shortEdges`. Icône adaptative (fond `#07070c`, « W » orange,
+lignes cyan, monochrome) dans la zone sûre (32,8 / 33 dp). Manifeste : `hasCode`, `.JeuActivity`, icône.
+`tools/qa/emulateur.sh` lance `.JeuActivity` (sinon le simulateur ne démarrerait plus l'appli).
+**Vérification** : CI `45f3d8a` verte (APK avec le Java) ; APK inspecté : `classes.dex` avec `JeuActivity`, ressources
+`ic_launcher*`, `ic_avant_plan`, nom « WaForSpeed ». Aucun fichier du moteur modifié (captures du banc inchangées).
+**Pour le PO** : RG-02 « le HUD respecte les marges de l'encoche » n'est pas dans la zone E7 (HUD : E5 / E3) : à porter dans
+un ticket du HUD. Barres masquées et icône : à vérifier au simulateur (WFS-50, fin d'épic E7).
+
