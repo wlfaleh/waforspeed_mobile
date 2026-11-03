@@ -33,6 +33,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
    Tout autre changement du noyau passe par un ticket de l'épic E0.
 4. **Branche** `feature/waforspeed-XX` par ticket (même si la session propose `claude/…`). Synchroniser avec `main` avant
    chaque validation et avant chaque PR.
+   **Toujours synchroniser la branche avec `main` avant de lancer une CI** : avant chaque `git push` de la branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…), faire `git fetch origin && git merge origin/main`, résoudre les conflits en gardant les deux modifications, recompiler / relancer les tests locaux, puis seulement pousser. Une CI lancée sur une branche en retard sur `main` ne compte pas (captures et verdict non valables).
 5. **QA** : après chaque construction, le développeur **lance l'agent `qa-lead`**, qui regarde les captures du
    **banc d'essai PC** et écrit `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket.
    **Le QA décide de la gravité de chaque anomalie** :
@@ -107,7 +108,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.48 | WFS-48 | Texte en italique (ANO-04) | E5 | 🔍 En revue (CI) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-26 | `feature/waforspeed-48` | [#33](https://github.com/wlfaleh/waforspeed_mobile/pull/33) |  |
 | 0.49 | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ⏳ Prêt |  | WFS-27 ✅ | `feature/waforspeed-46` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅) | `feature/waforspeed-11` |  |  |
-| 0.6 | WFS-39 | Pause en course et retour au menu | E8 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-39` |  |  |
+| 0.6 | WFS-39 | Pause en course et retour au menu | E8 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-39` | #34 |  |
 | 0.7 | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-40` |  |  |
 | 0.8 | WFS-41 | Choix du terrain et du moment (jour / nuit) | E8 | ⏳ Prêt |  | WFS-38 ✅ | `feature/waforspeed-41` |  |  |
 | 1 | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
@@ -224,7 +225,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-11 — Garage 3D : plateau tournant et choix de la voiture** · E5 · priorité 0.5 · ⏳ En attente de WFS-45 (WFS-44 ✅) (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
-**WFS-39 — Pause en course et retour au menu** · E8 · priorité 0.6 · 🔧 En cours — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-39.md`)
+**WFS-39 — Pause en course et retour au menu** · E8 · priorité 0.6 · 🔍 En revue (PR #34) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-39.md`)
 - [ ] `pause-bouton`, `pause-0` (3 boutons), `pause-reprise` (chrono conservé), `pause-quitter` (menu)
 
 **WFS-40 — Garage : fiche de la voiture et peintures** · E5 · priorité 0.7 · ⏳ En attente (règles : `regles-de-gestion/WFS-40.md`)

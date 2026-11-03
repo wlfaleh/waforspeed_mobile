@@ -13,6 +13,7 @@
   le noyau partagé ne change que par un ticket E0 (ou une ligne d'accroche ≤ 10 lignes annoncée au Journal, `journal.md`).
 - **Une branche par ticket** : `feature/waforspeed-XX`. Même si ta session Claude t'attribue une branche `claude/…`,
   travaille sur `feature/waforspeed-XX` (aucun travail hors ticket, aucune branche `claude/…`). Synchroniser avec `main` avant chaque validation et avant chaque PR.
+- **Toujours synchroniser la branche avec `main` avant de lancer une CI** : avant chaque `git push` de la branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…), faire `git fetch origin && git merge origin/main`, résoudre les conflits en gardant les deux modifications, recompiler / relancer les tests locaux, puis seulement pousser. Une CI lancée sur une branche en retard sur `main` ne compte pas (captures et verdict non valables).
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
 - **Processus de fusion (règle en vigueur)** : le développeur **ne lance plus le `qa-lead`**. Après la construction, il fait un **contrôle rapide** :
   CI verte (compilation, tests, APK) et captures du banc d'essai PC regardées sans rien de bloquant → **il fusionne tout de suite**, puis ajoute
