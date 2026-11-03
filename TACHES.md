@@ -77,7 +77,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` |  |  |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` |  |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ Prêt |  | WFS-26 | `feature/waforspeed-11` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -145,7 +145,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ Prêt
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔧 En cours (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -666,3 +666,48 @@ Pas de modification de `src/world/**` (WFS-34). Tout autre changement du noyau p
 Plan court : passe de profondeur 2048 (1024 mobile) suivant le joueur (+20 m devant), calage sur les texels, PCF rayon 3,
 bias -0,0003 / normalBias 0,035 ; ombre de contact conservée la nuit ; coût mesuré au journal du banc.
 **PO** : WFS-26 ✅ → **WFS-11** (E5, garage) passe en `⏳ Prêt`.
+
+### 2026-11-02 — WFS-07 construit, en attente de la CI
+**Fait** (`feature/waforspeed-07`, poussée) : passe d'ombre du soleil avant la scène (objets opaques mis en file), carte
+2048 (1024 Android), boîte du jeu web (40 m, 260 m, 20 m devant, calage texels), 9 lectures comparées, ombre de contact
+0,55 / 0,62 / 0,7, coût GPU au journal ; captures `ombres-a`, `ombres-b` (1 m d'écart), `ombres-coupees`.
+**Accroches hors zone annoncées** : `src/game/game.cpp` (2 lignes : soleil `[-0.45, 0.75, -0.5]` du jeu web, point suivi = voiture ;
+intensité 3,2 gardée, réglée pour notre PBR), `CMakeLists.txt` (2 shaders), `src/platform/desktop_main.cpp` (2 lignes : captures).
+Conflit possible avec WFS-34 sur `shaders/scene.frag` (lignes différentes) : réglé à la synchronisation.
+**Suite** : CI → qa-lead → fusion si `VALIDÉ`.
+
+### 2026-11-02 — WFS-34 refusé par la QA, corrigé
+**Retours QA** (`qa/rapports/WFS-34.md`) : blocs sombres à facettes (cœur du houppier) et feuilles délavées (reflet du ciel).
+**Fait** (`feature/waforspeed-34`, 68ffdaf) : feuillage éclairé sans reflet comme le Lambert du jeu web, cœur lissé et éclairci,
+nombre d'appels de dessin de la ville au journal du banc. **Suite** : CI → nouvelle QA.
+
+### 2026-11-02 — Début WFS-12 Règles de course (attribué par le PO)
+Ticket choisi : meilleur `⏳ Prêt` d'une épic libre (E2 occupée par WFS-34, E4 par WFS-07 ; E3 sans ticket actif, WFS-08 ✅).
+**Zone de code autorisée** : `src/game/**` sauf `game.*` (nouveau système de course, ex. `src/game/course.{h,cpp}`), `tests/**` (épic E3).
+Pas de HUD (WFS-27, E5) ; décompte « 3 / GO » via le texte de WFS-26 seulement par une accroche annoncée, sinon au journal du banc.
+Tout autre changement du noyau passe par E0 (ou ligne d'accroche ≤ 10 lignes annoncée ; attention, WFS-07 touche aussi `game.cpp`).
+**Responsable** : Claude (agent développeur, session 01UY1Vv1), branche `feature/waforspeed-12`. Règles : `regles-de-gestion/WFS-12.md`.
+Critères : course automatique du banc identique au JS (temps, checkpoints, score, tolérance nulle sur les entiers) ;
+capture « 3 » puis « GO » ; test unitaire checkpoint 1 → +11 s, checkpoint 10 → +7 s, quasi-contact ×3 → 750 points.
+Plan court : porter `resetRace` / `update` / `hitCar` / `playerAccident` / `crash` du jeu web dans un système `Course`
+branché sur les collisions existantes de WFS-08 ; constantes de `config.js` et `carPerf` ; tests de référence dans `tests/`.
+
+### 2026-11-03 — WFS-12 construit, en attente de la CI
+**Fait** (`feature/waforspeed-12`, poussée) : `src/game/course.{h,cpp}` (port de la fin de `update()`, `playerAccident`, `bump`,
+`crash`, `resetRace`, `score`, `kmh`) et système `CourseSystem` (ordre 210) dans `src/game/course_system.{h,cpp}` : décompte
+3-2-1-GO (voiture immobile, texte de WFS-26 depuis le système), chrono 30 s, checkpoints tous les 600 m (+6 voitures si < 110),
+combos de quasi-contacts, combo perdu au-delà de 0,08, accident (ralenti ×0,35 pendant 0,5 s), fin de partie avec écran
+(score, distance, vitesse max, quasi-contacts, checkpoints) et bouton « Rejouer » (même graine de trafic).
+Trafic (`traffic.*`, même épic) : événements des chocs dans l'ordre (`HitEvents.seq`), `Traffic::watch` pendant le décompte.
+**Vérification** : `tests/test_course.cpp` contre `tests/course_web_ref.txt` (produit par `node tests/course_web.cjs`, qui exécute
+`update.js` / `state.js` du jeu web) : 2 courses automatiques complètes (ville/Golf 7 checkpoints 24 000 pts ; circuit/M4
+11 checkpoints 37 480 pts), **22 lignes, 0 écart** (pas, temps restant à 4 décimales, score, quasi-contacts) ; règles unitaires OK ;
+`test_traffic` toujours OK. Compilation vérifiée ici (`-fsyntax-only`) ; banc Vulkan et APK : CI.
+**Accroches hors zone annoncées (8 lignes)** : `src/game/game.cpp` (2 : include + `dt = courseScaleDt(...)`, ralenti),
+`src/platform/desktop_main.cpp` (3 : include, `courseBenchRules(false)` pour garder les scènes des autres tickets sans décompte
+ni fin, `benchCourseScene`), `CMakeLists.txt` (2 : `test_course`), `build.yml` (1 : lancement de `test_course`).
+**Remarque pour le PO** : le critère « checkpoint 10 → +7 s » ne correspond pas à la règle RG-02 : `max(5, 11 − 9×0,4)` = 7,4 s ;
++7 s est le checkpoint 11. Le test vérifie les deux valeurs exactes du jeu web.
+**Limites** : collisions avec le décor (`crash`) portées et testées mais pas encore déclenchées (aucun décor percutable natif) ;
+graine aléatoire par course avec le menu (WFS-11) ; HUD en continu : WFS-27.
+**Suite** : CI → qa-lead → fusion si `VALIDÉ`.
