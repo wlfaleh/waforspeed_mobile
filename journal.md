@@ -974,3 +974,12 @@ insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture
 
 ### 2026-11-03 — WFS-14 : correction ANO-13 en PR #21 (Claude, session trafic)
 - Stipes des palmiers : albédo ×1,5 et part propre brune #7d6a52 (0,8 de jour, 0,05 la nuit), seulement dans `src/world/plage.cpp`. Seules les 2 captures de la plage changent. QA tour 2/2 demandée après la CI.
+
+### 2026-11-03 — Début WFS-49 : captures du chargement en 2400x1080 sans planche de texte (Claude, session trafic) — attribué par le PO
+**Épic** : E7. **Zone de code autorisée** : `.github/workflows/build.yml` uniquement (aucun `src/**`). Branche `feature/waforspeed-49`.
+Règles : `regles-de-gestion/WFS-49.md`.
+**Critères** : `chargement-0/1/2/fondu/erreur-2400` sans panneau « DÉMO DU TEXTE » ; `texte-essai-1280/2400` et captures 1280x720 inchangées ; + 1 lancement du banc au plus.
+**Plan court** : lancement séparé `WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/` sans `WFS_TEXTE_ESSAI`, la boucle de copie (l. 41) lit ce dossier → PR, CI, qa-lead.
+**Choix du PO** : épics actives écartées — E2 (WFS-14), E4 (WFS-42), E5 (WFS-27), E8 (WFS-37) ; E0 n'a plus de ticket prêt. Premier prêt d'une épic libre : WFS-49 (E7, 0.47), devant WFS-28 (E6, 15) et WFS-24 (E3, 21).
+WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS-49 est préparé en parallèle (ticket de 30 min, zone sans recouvrement).
+**WFS-51 ✅** : WFS-52 n'attend plus que WFS-27 (toujours « À CORRIGER tour 1/2 » au tableau, PR #16 pourtant fusionnée : à clore par son responsable après QA tour 2/2).
