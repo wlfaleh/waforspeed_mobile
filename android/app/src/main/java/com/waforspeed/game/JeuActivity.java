@@ -10,6 +10,7 @@ package com.waforspeed.game;
 import android.app.NativeActivity;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.DisplayCutout;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
@@ -17,6 +18,12 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 
 public class JeuActivity extends NativeActivity {
+
+    // la bibliothèque du jeu (déjà chargée par NativeActivity) doit l'être aussi par Java pour la fonction JNI ci-dessous
+    static { System.loadLibrary("waforspeed"); }
+
+    // marges de sécurité (WFS-51) : encoche / coins, en pixels de la fenêtre ; lues par la boucle de jeu (android_main)
+    private static native void nativeMarges(int gauche, int haut, int droite, int bas);
 
     @Override
     protected void onCreate(Bundle etat) {
@@ -29,6 +36,19 @@ public class JeuActivity extends NativeActivity {
             w.setAttributes(lp);
         }
         pleinEcran();
+        // à chaque changement d'insets (rotation, barres) : marges de l'encoche transmises au jeu (WFS-51)
+        w.getDecorView().setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                int g = 0, h = 0, d = 0, b = 0;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    DisplayCutout c = insets.getDisplayCutout();
+                    if (c != null) { g = c.getSafeInsetLeft(); h = c.getSafeInsetTop(); d = c.getSafeInsetRight(); b = c.getSafeInsetBottom(); }
+                }
+                nativeMarges(g, h, d, b);
+                return v.onApplyWindowInsets(insets);
+            }
+        });
     }
 
     @Override
@@ -46,6 +66,7 @@ public class JeuActivity extends NativeActivity {
     // mode immersif collant
     private void pleinEcran() {
         Window w = getWindow();
+        w.getDecorView().requestApplyInsets();   // relit les marges (WFS-51)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             w.setDecorFitsSystemWindows(false);
             WindowInsetsController c = w.getInsetsController();

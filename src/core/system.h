@@ -43,6 +43,10 @@ struct SceneDediee {
     vec3 cible{};             // point regardé par la caméra choisie (GameView::camTarget)
 };
 
+// marges de sécurité de l'écran (WFS-51) : encoche, coins arrondis ; pixels de l'interface (paysage), 0 par défaut.
+// Toute interface (commandes, HUD, menus) reste à l'intérieur : de gauche à W − droite, de haut à H − bas.
+struct Marges { float gauche = 0, haut = 0, droite = 0, bas = 0; };
+
 // état de la partie, en lecture pour les systèmes (rempli par Game à chaque appel)
 struct GameView {
     Track* track = nullptr;            // piste (lecture : point(), pose(), findSegment() ; ne pas reconstruire)
@@ -53,6 +57,7 @@ struct GameView {
     mat4 view = mat4::identity(), proj = mat4::identity();
     double time = 0;                   // temps depuis le lancement (s)
     float uiWidth = 0, uiHeight = 0;   // taille de l'interface (pixels logiques, paysage)
+    Marges marges;                     // zone sûre de l'interface (WFS-51)
     bool night = false;                // ambiance de nuit
     // écran affiché (WFS-36) et demande de changement : appliquée entre deux images, puis System::onEcran
     Ecran ecran = Ecran::Course;
