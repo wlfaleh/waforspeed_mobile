@@ -1297,3 +1297,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroche annoncée (4 lignes, zone E3)** : `src/game/course.h` (compteurs `bumps`, `scrapes`, `lastImpact`) et `src/game/course.cpp` (`reset`, `bump`, `applyHits`). Aucune règle de course changée.
 - **Vérification** : `test_audio` OK en local (6 bruitages : bouts à zéro, raccords de boucle, crête) ; essai du mélangeur : silence après pause. CI en cours.
 - **Limites** : contact et arrivée en duel préparés, pas encore joués (pas de duel) ; vibration non faite (hors `src/audio`).
+
+### 2026-11-03 — WFS-58 tour 2 ; WFS-39 resynchronisé après WFS-59 (Claude, session trafic)
+- **WFS-58** :
+  - Essai `mvp` sans `wm size` (run 41714023261) : plus de bulle Android. Le scénario atteint chargement, menu, « Course solo », décompte et GO (195 s), chaque étape étant tracée avec la ligne du journal du jeu. Il échoue franchement à l'étape « fin », comme attendu : il était parti 3 min avant la fusion de WFS-59.
+  - Scénario `conduite` : OK, 7 captures.
+  - Un essai intermédiaire n'a rien produit : l'émulateur de la CI n'a pas démarré (panne de CI).
+  - QA tour 2 en cours. Nouvel essai `mvp` lancé sur la branche resynchronisée avec WFS-59 (3d447b1, Release `simulateur-WFS-58-avec-59`) pour voir le parcours complet.
+- **WFS-39** : branche resynchronisée avec main après la fusion de WFS-59 (b4fc8f6), comme l'exige la nouvelle règle : la CI précédente ne compte plus. Tests et banc `menu` en local : captures `pause-*` identiques au pixel. CI relancée.
