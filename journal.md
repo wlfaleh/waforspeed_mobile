@@ -1248,3 +1248,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Zone autorisée** : `src/ui/ecrans/**` ; accroches ≤ 10 lignes annoncées au Journal : `src/platform/android_main.cpp` (APP_CMD_PAUSE / APP_CMD_LOST_FOCUS → `Ecran::Pause`) et enregistrement des scènes `pause-*` du banc (comme WFS-38).
 - **Critères** : `pause-bouton` (bouton Menu hors encoche), `pause-0` (3 boutons), `pause-reprise` (même chrono), `pause-quitter` (retour au menu).
 - **Plan court** : utiliser `Ecran::Pause` et le gel de `Game::update` (WFS-36), marges WFS-51, boutons de l'écran de fin WFS-38 / WFS-57 ; porter `pauseGame` / `resumeGame` / `toMenu` de `js/ui/screens.js` (waaps).
+
+### 2026-11-03 20:13:45 — Règle : synchroniser la branche avec main avant chaque CI (Claude, agent 4, à la demande de l'utilisateur)
+- Avant chaque `git push` de branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…) : `git fetch origin && git merge origin/main`, conflits résolus en gardant les deux modifications, tests locaux relancés, puis seulement pousser.
+- Une CI lancée sur une branche en retard sur `main` ne compte pas : ses captures et son verdict ne sont pas valables.
+- Ajouté dans `CLAUDE.md`, `TACHES.md` (règle 4) et le skill `waforspeed-natif` (point 4).

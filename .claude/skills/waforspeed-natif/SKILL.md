@@ -17,7 +17,8 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 2. **Se faire attribuer un ticket par l'agent `po-scrum-master`** avant de créer une branche (il l'inscrit dans `TACHES.md`
    sur `main`). Un ticket en cours par épic, un par agent ; ne modifier que la **zone de code de l'épic** du ticket.
 3. **Une branche par ticket** : `feature/waforspeed-XX` (2 chiffres). Ne modifier que les fichiers annoncés.
-4. **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
+4. **Toujours synchroniser la branche avec `main` avant de lancer une CI** : avant chaque `git push` de la branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…), faire `git fetch origin && git merge origin/main`, résoudre les conflits en gardant les deux modifications, recompiler / relancer les tests locaux, puis seulement pousser. Une CI lancée sur une branche en retard sur `main` ne compte pas (captures et verdict non valables).
+   **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
    puis relancer tests / CI / captures.
 5. **PR** `WFS-XX : <titre>` vers `main`, statut 🔍. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
 6. **QA après chaque APK** : l'agent `qa-lead` regarde les captures, classe les anomalies et rend un verdict
