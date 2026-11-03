@@ -1173,3 +1173,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - La règle de `CLAUDE.md` (date et heure UTC à la seconde, `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, via `date -u "+%Y-%m-%d %H:%M:%S"`) n'était pas appliquée : les entrées récentes n'avaient que la date.
 - Rappel ajouté là où les agents la lisent : en-tête de `journal.md`, `TACHES.md` (section Journal), skill `waforspeed-natif` (point 8), agents `po-scrum-master` et `qa-lead`.
 - Les anciennes entrées ne sont pas modifiées (heure inconnue, on ne la devine pas). La règle s'applique à toutes les nouvelles entrées.
+
+### 2026-11-03 19:50:27 — PO : début WFS-59 Point d'extension mode GPU logiciel (agent 3) — attribué par le PO
+- **Choix** : WFS-59 est le ticket ⏳ Prêt de meilleure priorité (0.438, MVP) dont l'épic est libre : E0 n'a aucun ticket actif ; E5 (WFS-52 en revue) et E7 (WFS-58 en cours) sont occupées par la session trafic. Dépendances : aucune. Il débloque WFS-50 (vérification simulateur du MVP) avec WFS-58.
+- **Ticket** : WFS-59 · épic E0 · branche `feature/waforspeed-59` · règles `regles-de-gestion/WFS-59.md`.
+- **Zone autorisée** : `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API), `CMakeLists.txt` ; accroches ≤ 10 lignes annoncées au Journal dans `src/render/vk.cpp` (détection SwiftShader / llvmpipe, rendu 25 %, sans ombres) et `src/platform/android_main.cpp` (extra `qa_simu`). Aucun fichier de `tools/qa/**` ni `.github/**` (WFS-58).
+- **Critères** : banc PC identique à `main` (0 écart, mode inactif) ; simulateur `scenario=mvp` : ligne `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)` dans le logcat, `QA ips` ≥ 1, décompte puis course qui avance (chrono < 30,0, vitesse > 0).
+- **Plan** : booléen `gpuLogiciel()` dans `renderer.h` → accroche `vk.cpp` (renderScale 0,25 + forceNoShadows) → accroche `android_main.cpp` (`qa_simu`) → plafond dt 0,5 s dans `Game::update` (pas de 1/120 s, ≤ 60 pas par image) → banc PC + simulateur sur la branche → contrôle rapide, fusion, ajout à `qa/Check.md`.
+- Piste notée par WFS-58 (hors périmètre ici sauf accord) : une ligne de logcat `course : GO` faciliterait le scénario ; elle relève d'E3 (`src/game/course_system.cpp`).
