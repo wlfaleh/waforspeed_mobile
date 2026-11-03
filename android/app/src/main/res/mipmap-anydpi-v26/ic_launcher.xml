@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- icône adaptative (WFS-29) : fond nuit #07070c, « W » orange incliné et lignes de vitesse cyan ; aucun logo tiers -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/fond" />
+    <foreground android:drawable="@drawable/ic_avant_plan" />
+    <monochrome android:drawable="@drawable/ic_avant_plan" />
+</adaptive-icon>

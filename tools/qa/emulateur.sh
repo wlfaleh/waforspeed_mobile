@@ -19,7 +19,7 @@ adb shell settings put system user_rotation 1           # paysage
 adb shell wm size > "$OUT/ecran.txt"
 log "installation"; adb install -r -g "$APK" >> "$OUT/deroulement.txt" 2>&1 || { log "ÉCHEC installation"; exit 1; }
 adb logcat -c
-log "lancement"; adb shell am start -n $PKG/android.app.NativeActivity >> "$OUT/deroulement.txt" 2>&1
+log "lancement"; adb shell am start -n $PKG/.JeuActivity >> "$OUT/deroulement.txt" 2>&1
 sleep 20
 shot 01-demarrage
 alive || log "ATTENTION : l'appli ne tourne plus après le démarrage"

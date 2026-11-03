@@ -149,13 +149,14 @@ void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
     if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
     const float W = (float)r_->width(), H = (float)r_->height();
+    const float mg = marges_.gauche, md = marges_.droite;   // zones de toucher décalées des marges (WFS-51)
     if (t.down) {
         bool fresh = t.id != steerId_ && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
         if (fresh) {
-            if (t.x < W * 0.45f) { steerId_ = t.id; steerX0_ = steerX_ = t.x; }
-            else if (t.x > W * 0.80f && t.y < H * 0.45f) nitroId_ = t.id;
-            else if (t.x > W * 0.78f) gasId_ = t.id;
-            else if (t.x > W * 0.55f) brakeId_ = t.id;
+            if (t.x < mg + W * 0.45f) { steerId_ = t.id; steerX0_ = steerX_ = t.x; }
+            else if (t.x > W * 0.80f - md && t.y < H * 0.45f) nitroId_ = t.id;
+            else if (t.x > W * 0.78f - md) gasId_ = t.id;
+            else if (t.x > W * 0.55f - md) brakeId_ = t.id;
         }
         if (t.id == steerId_) steerX_ = t.x;
     } else {
@@ -176,16 +177,22 @@ void Game::onTouch(const Touch& t) {
 
 void Game::drawControls() {
     const float W = (float)r_->width(), H = (float)r_->height(), u = H / 100.f;
+    // marges de sécurité (WFS-51) : à gauche le volant et les jauges, à droite les pédales, en bas tout le monde
+    const float mg = marges_.gauche, mh = marges_.haut, md = marges_.droite, mb = marges_.bas;
+    if (montrerMarges) {   // banc d'essai : zone interdite marquée (encoche simulée)
+        if (mg > 0) r_->uiRect(0, 0, mg, H, {1, 0.1f, 0.2f, 0.35f});
+        if (md > 0) r_->uiRect(W - md, 0, md, H, {1, 0.1f, 0.2f, 0.35f});
+    }
     // volant virtuel
     if (steerId_ >= 0) {
-        r_->uiCircle(steerX0_, H * 0.72f, 11 * u, {1, 1, 1, 0.12f});
-        r_->uiCircle(steerX0_ + clampf(steerX_ - steerX0_, -W * 0.12f, W * 0.12f), H * 0.72f, 5 * u, {0, 0.9f, 1, 0.55f});
-    } else r_->uiCircle(W * 0.18f, H * 0.72f, 9 * u, {1, 1, 1, 0.08f});
+        r_->uiCircle(steerX0_, H * 0.72f - mb, 11 * u, {1, 1, 1, 0.12f});
+        r_->uiCircle(steerX0_ + clampf(steerX_ - steerX0_, -W * 0.12f, W * 0.12f), H * 0.72f - mb, 5 * u, {0, 0.9f, 1, 0.55f});
+    } else r_->uiCircle(W * 0.18f + mg, H * 0.72f - mb, 9 * u, {1, 1, 1, 0.08f});
     // pédales
-    r_->uiCircle(W * 0.89f, H * 0.74f, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
-    r_->uiCircle(W * 0.70f, H * 0.80f, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
-    r_->uiCircle(W * 0.90f, H * 0.32f, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
-    // vitesse, nitro, temps, score : HUD de course (WFS-27, src/ui/hud.cpp)
+    r_->uiCircle(W * 0.89f - md, H * 0.74f - mb, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
+    r_->uiCircle(W * 0.70f - md, H * 0.80f - mb, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
+    r_->uiCircle(W * 0.90f - md, H * 0.32f, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
+    // vitesse, nitro, temps, score : HUD de course (WFS-27, src/ui/hud.cpp ; marges : WFS-52)
 }
 
 // ---------------------------------------------------------------- mise à jour
@@ -258,6 +265,8 @@ void Game::render(double time) {
     fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
     fp.exposure = 0.85f; fp.ambient = 0.85f;
     // scène dédiée (WFS-44) : le premier système qui la prend règle fp et choisit ce que Game dessine encore
+    bool solPropre = false;   // WFS-14 : ambiance et bas-côtés propres à la carte
+    for (auto& sy : systems_) { sy->ambiance(fp, view_); solPropre = solPropre || sy->remplaceSol(view_); }
     SceneDediee sd; sd.cible = look;
     bool dediee = false;
     for (auto& sy : systems_) if (sy->scene(fp, sd, view_)) { dediee = true; break; }
@@ -267,7 +276,7 @@ void Game::render(double time) {
 
     const mat4 I = mat4::identity();
     if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
-        r_->draw(c.ground, groundMat_, I);
+        if (!solPropre) r_->draw(c.ground, groundMat_, I);
         r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
@@ -314,6 +323,7 @@ void Game::systemsInit() {
     view_.track = &track_; view_.player = &player_; view_.car = carDef_; view_.map = track_.map();
     view_.uiWidth = (float)r_->width(); view_.uiHeight = (float)r_->height();
     view_.ecran = ecran_;
+    view_.marges = marges_;
     view_.allerA = [this](Ecran e) { allerA(e); };
     for (const SystemEntry& e : entries) {
         systems_.push_back(e.make());

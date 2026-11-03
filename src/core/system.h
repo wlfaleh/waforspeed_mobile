@@ -43,6 +43,10 @@ struct SceneDediee {
     vec3 cible{};             // point regardé par la caméra choisie (GameView::camTarget)
 };
 
+// marges de sécurité de l'écran (WFS-51) : encoche, coins arrondis ; pixels de l'interface (paysage), 0 par défaut.
+// Toute interface (commandes, HUD, menus) reste à l'intérieur : de gauche à W − droite, de haut à H − bas.
+struct Marges { float gauche = 0, haut = 0, droite = 0, bas = 0; };
+
 // état de la partie, en lecture pour les systèmes (rempli par Game à chaque appel)
 struct GameView {
     Track* track = nullptr;            // piste (lecture : point(), pose(), findSegment() ; ne pas reconstruire)
@@ -53,6 +57,7 @@ struct GameView {
     mat4 view = mat4::identity(), proj = mat4::identity();
     double time = 0;                   // temps depuis le lancement (s)
     float uiWidth = 0, uiHeight = 0;   // taille de l'interface (pixels logiques, paysage)
+    Marges marges;                     // zone sûre de l'interface (WFS-51)
     bool night = false;                // ambiance de nuit
     // écran affiché (WFS-36) et demande de changement : appliquée entre deux images, puis System::onEcran
     Ecran ecran = Ecran::Course;
@@ -73,6 +78,10 @@ public:
     // peut la modifier (chocs du trafic, WFS-08) ; pilote automatique : un système peut corriger les commandes
     virtual void collide(double /*dt*/, Player&, const GameView&) {}
     virtual void autopilot(double /*dt*/, DriveInput&, const GameView&) {}
+    // ambiance de la carte (WFS-14) : chaque système peut ajuster fp (ciel, brouillard, soleil…) sans prendre la scène ;
+    // remplaceSol : true = le système dessine ses propres bas-côtés, Game ne dessine plus les siens (sol générique)
+    virtual void ambiance(FrameParams& /*fp*/, const GameView&) {}
+    virtual bool remplaceSol(const GameView&) const { return false; }
     // scène dédiée (WFS-44) : appelée avant chaque image, dans l'ordre des systèmes ; le premier qui renvoie true prend la
     // scène : il règle caméra (view, proj, camPos), ciel / fond uni, brouillard, soleil, ambiance, exposition, ombres dans fp
     // (déjà rempli avec les valeurs habituelles de Game) et choisit dans s ce que Game dessine encore
