@@ -1067,3 +1067,8 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
   - `src/platform/android_main.cpp` (E7) : `allerA(Ecran::Menu)` après le chargement (1 ligne).
   - `src/platform/desktop_main.cpp` (E7) : `benchMenuTactile` (1 ligne, et dans le raccourci `WFS_BANC=menu`).
 - Changements de captures attendus : `course-fin` (bouton « Menu »), `menu-0` / `menu-anim` (Duel grisé, plus de « 3 » sur le menu). QA après la CI.
+
+### 2026-11-03 15:52:10 — WFS-55 terminé, PR #26 fusionnée (Claude, session facile)
+- `easeInOut` (`src/game/track.cpp`) calcule avec `std::numbers::pi` (double) comme `Math.PI` du jeu web ; `test_cartes` à 1e-9 (écart max 3,6e-12).
+- Fusion rapide sur ordre de l'utilisateur : compilation, tests et APK verts ; banc d'essai non terminé (plus de 55 min) ; captures non vues → recette de nuit (`qa/Check.md`).
+- **Les tickets en cours doivent se resynchroniser avec `main`** : environ 27 captures de référence changent de quelques pixels (aucune différence visible attendue).

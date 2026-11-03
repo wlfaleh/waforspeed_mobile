@@ -118,7 +118,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` | PR #24 | ✅ fusion décidée par l'utilisateur (captures sans blocage) |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
-| 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | 🔧 En cours | Claude (session facile), 2026-11-03 | WFS-14 ✅ | `feature/waforspeed-55` |  |  |
+| 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | ✅ Terminé | Claude (session facile), 2026-11-03 | WFS-14 ✅ | `feature/waforspeed-55` | #26 (fusionnée) | ✅ fusion rapide (CI verte, banc non terminé) — recette de nuit : `qa/Check.md` |
 | 12.1 | WFS-53 | Carte Campagne | E2 | ⏳ Prêt |  | WFS-14 ✅ | `feature/waforspeed-53` |  |  |
 | 12.2 | WFS-54 | Carte Grand Prix (circuit) | E2 | ⏳ Prêt |  | WFS-14 ✅ | `feature/waforspeed-54` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
@@ -288,7 +288,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `carte-plage-jour` / `carte-plage-nuit` : océan, palmiers, parasols, sable, ambiance de la plage ; autres captures identiques
 - [ ] test de fidélité du tracé des 3 nouvelles cartes (0 écart) ; ≤ 300 appels de dessin
 
-**WFS-55 — Correction : PI en double dans le tracé** · E3 · priorité 12.05 · 🔧 En cours — Claude (session facile), 2026-11-03 (règles : `regles-de-gestion/WFS-55.md`)
+**WFS-55 — Correction : PI en double dans le tracé** · E3 · priorité 12.05 · ✅ Terminé (PR #26) (règles : `regles-de-gestion/WFS-55.md`)
 - [ ] `test_cartes` en tolérance 1e-9 ; captures renouvelées listées, sans différence visible
 
 **WFS-53 — Carte Campagne** · E2 · priorité 12.1 · ⏳ Prêt (règles : `regles-de-gestion/WFS-53.md`)
