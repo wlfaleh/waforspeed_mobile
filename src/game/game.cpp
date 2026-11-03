@@ -3,6 +3,7 @@
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../render/model_loader.h"
+#include "course_system.h"   // WFS-12 : ralenti après un accident
 
 namespace wfs {
 
@@ -187,7 +188,7 @@ void Game::drawControls() {
 
 // ---------------------------------------------------------------- mise à jour
 void Game::update(double dt) {
-    dt = std::min(dt, 0.05);
+    dt = courseScaleDt(std::min(dt, 0.05));   // WFS-12 : ralenti ×0,35 après un accident
     DriveInput in = input_;
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
