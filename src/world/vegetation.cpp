@@ -97,7 +97,62 @@ void card(Geo& g, vec3 base, vec3 U, vec3 V, vec3 n, float kb, float kt) {
     g.i.insert(g.i.end(), {k0, k0 + 1, k0 + 2, k0, k0 + 2, k0 + 3});
 }
 
+// bande de feuillage entre deux bords (vegStrip, texture le long de v), case t de l'atlas, de a0 à a1 en travers
+void strip(Geo& g, const vec3* EA, const vec3* EB, int npts, int t, const vec3* nrm, const float* k, float a0, float a1) {
+    const int cx = t % 2, cy = t >> 1;
+    const float u0 = cx * 0.5f + E, u1 = cx * 0.5f + 0.5f - E, vb = (cy + 1) * 0.5f - E, vt = cy * 0.5f + E;
+    auto uv = [&](float s, float w) { return vec2{u0 + (u1 - u0) * w, vb + (vt - vb) * s}; };
+    const int n = npts - 1;
+    for (int i = 0; i < n; i++) {
+        const float s0 = (float)i / n, s1 = (float)(i + 1) / n;
+        const vec2 ua = uv(s0, a0), ub = uv(s0, a1), uc = uv(s1, a1), ud = uv(s1, a0);
+        const uint32_t k0 = (uint32_t)g.v.size();
+        vert(g, EA[i], lit(nrm[i], k[i]), ua.x, ua.y); vert(g, EB[i], lit(nrm[i], k[i]), ub.x, ub.y);
+        vert(g, EB[i + 1], lit(nrm[i + 1], k[i + 1]), uc.x, uc.y); vert(g, EA[i + 1], lit(nrm[i + 1], k[i + 1]), ud.x, ud.y);
+        g.i.insert(g.i.end(), {k0, k0 + 1, k0 + 2, k0, k0 + 2, k0 + 3});
+    }
+}
+
 } // namespace
+
+// vegPalm (js/world/life.js) : stipe en ns tronçons courbés, palmes en demi-cases 2 de l'atlas (folioles relevées en V)
+vec3 palmier(Geo& bark, Geo& leaf, Geo& dead, vec3 b, float h, float yaw, float leanIn, Mulberry32& R, bool lo) {
+    const float lean = std::fabs(leanIn);
+    const int ns = lo ? 4 : 9;
+    vec3 prev = b;
+    for (int i = 0; i < ns; i++) {
+        const float t = (float)(i + 1) / ns, bend = lean * t * t * h * 0.5f;
+        const vec3 pt{b.x + std::sin(yaw) * bend, b.y + h * t, b.z + std::cos(yaw) * bend};
+        const float r0 = 0.27f - 0.08f * ((float)i / ns) + (i == 0 ? 0.08f : 0), r1 = 0.27f - 0.08f * t;
+        limb(bark, prev, pt, r0, r1, lo ? 5 : 8, R, 0.12f);
+        prev = pt;
+    }
+    const vec3 top = prev;
+    if (!lo) for (int k = 0; k < 5; k++) rnd(R);   // positions des noix (dessinées par l'appelant) : mêmes tirages
+    const int nf = lo ? 7 : 15;
+    for (int k = 0; k < nf; k++) {
+        const float az = yaw + k * 2.4f + rnd(R) * 0.3f, ca = std::cos(az), sa = std::sin(az);
+        const bool young = k < 3, isDead = !young && !lo && k >= nf - 2;
+        const float el = young ? 0.9f + rnd(R) * 0.35f : isDead ? -1.1f : 0.15f + rnd(R) * 0.45f;
+        const float len = h * (0.36f + rnd(R) * 0.12f) * (young ? 0.75f : 1.f);
+        const vec3 dir{ca * std::cos(el), std::sin(el), sa * std::cos(el)}, T{-sa, 0, ca};
+        if (!isDead && !young) { rnd(R); rnd(R); }   // teinte de la palme (portée par le matériau)
+        const int segs = lo ? 2 : 4;
+        vec3 pts[5], L[5], Rr[5], nrm[5]; float kk[5];
+        for (int i = 0; i <= segs; i++) {
+            const float s = (float)i / segs, w = len * 0.26f * std::sin(3.14159265f * (0.15f + 0.85f * s)) + 0.08f;
+            pts[i] = {top.x + dir.x * len * s, top.y + dir.y * len * s - len * s * s * (isDead ? 0.1f : 0.42f), top.z + dir.z * len * s};
+            L[i] = pts[i] + T * (-w * 0.94f) + vec3{0, w * 0.32f, 0};
+            Rr[i] = pts[i] + T * (w * 0.94f) + vec3{0, w * 0.32f, 0};
+            nrm[i] = normalize(vec3{dir.x * 0.4f, 1, dir.z * 0.4f});
+            kk[i] = colK(0.68f + 0.32f * s, R);
+        }
+        Geo& g = isDead ? dead : leaf;
+        strip(g, L, pts, segs + 1, 2, nrm, kk, 0.f, 0.5f);    // demi-palme gauche
+        strip(g, pts, Rr, segs + 1, 2, nrm, kk, 0.5f, 1.f);   // demi-palme droite
+    }
+    return top;
+}
 
 vec3 hex(uint32_t c) { return {((c >> 16) & 255) / 255.f, ((c >> 8) & 255) / 255.f, (c & 255) / 255.f}; }
 

@@ -70,6 +70,7 @@ else()
   add_executable(test_track tests/test_track.cpp src/game/track.cpp src/game/player.cpp)
   add_executable(test_systems tests/test_systems.cpp)
   add_executable(test_traffic tests/test_traffic.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
+  add_executable(test_cartes tests/test_cartes.cpp src/game/track.cpp)   # WFS-14 : tracé des cartes = jeu web
   target_link_libraries(test_traffic Threads::Threads)
   add_executable(test_course tests/test_course.cpp src/game/course.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
   target_link_libraries(test_course Threads::Threads)
