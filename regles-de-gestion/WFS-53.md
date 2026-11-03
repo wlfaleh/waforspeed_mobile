@@ -20,3 +20,7 @@ Deuxième nouvelle carte, sur le socle de WFS-14 : routes de campagne vallonnée
 
 ## Hors périmètre
 Circuit (WFS-54), sélecteur (WFS-41).
+
+
+## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
+Ce ticket absorbe : WFS-54, WFS-43. **Lire et appliquer aussi** `regles-de-gestion/WFS-54.md`, `regles-de-gestion/WFS-43.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

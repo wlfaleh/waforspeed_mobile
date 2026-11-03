@@ -1313,3 +1313,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Effets** : WFS-59 reste fusionné, marqué « fige le simulateur, corrigé par WFS-64 ». **WFS-50** dépend désormais de WFS-58 et **WFS-64** (⛔ Bloqué). Rien ne change sur un vrai GPU ni sur le banc PC.
 ### 2026-11-03 21:00:40 — PO : le MVP n'attend plus le simulateur (po-scrum-master)
 - **Décision de l'utilisateur** : il teste lui-même l'APK de `main` sur téléphone. WFS-50 (vérification simulateur) suspendu, P4 ; WFS-58 (PR #32) sans urgence, P4 ; WFS-59 déjà fusionné. Le MVP est jouable dès maintenant sur `main` (WFS-35, 27, 37, 29, 38, 47, 57 terminés). `CLAUDE.md` mis à jour. Les anomalies du rapport `simulateur-MVP` (lenteur de l'émulateur) ne sont plus bloquantes.
+
+### 2026-11-03 21:02:56 — PO : regroupement en gros tickets (po-scrum-master)
+- **Décision de l'utilisateur** : fini les micro-tickets (≈ 30 min de build chacun). Regroupés (le ticket qui absorbe lit aussi les règles des absorbés, une seule CI) : WFS-09 ← 16 ; WFS-15 ← 20, 17 ; WFS-53 ← 54, 43 ; WFS-19 ← 18 ; WFS-11 ← 40, 13, 46 ; WFS-24 ← 21 ; WFS-22 ← 23, 25 ; WFS-61 ← 62. Tickets en cours ou en revue non touchés. Règle ajoutée à `po-scrum-master.md` : tickets de 1 à 3 jours, jamais de micro-ticket.

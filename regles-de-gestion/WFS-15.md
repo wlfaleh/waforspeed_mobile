@@ -24,3 +24,7 @@ automatiquement au premier lancement, modifiables dans la pause.
 
 ## Hors périmètre
 Contenu des effets eux-mêmes (WFS-07, 16, 17), détection fine du modèle de téléphone.
+
+
+## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
+Ce ticket absorbe : WFS-20, WFS-17. **Lire et appliquer aussi** `regles-de-gestion/WFS-20.md`, `regles-de-gestion/WFS-17.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

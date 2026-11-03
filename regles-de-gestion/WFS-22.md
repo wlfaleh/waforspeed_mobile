@@ -23,3 +23,7 @@ Le même jeu fonctionne sur iPhone/iPad : rendu Vulkan traduit par MoltenVK, mê
 
 ## Hors périmètre
 Publication App Store (WFS-25), manettes iOS, iPadOS multitâche.
+
+
+## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
+Ce ticket absorbe : WFS-23, WFS-25. **Lire et appliquer aussi** `regles-de-gestion/WFS-23.md`, `regles-de-gestion/WFS-25.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

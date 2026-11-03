@@ -29,3 +29,7 @@ Le joueur choisit sa voiture avant la course, dans un garage 3D (plateau tournan
 
 ## Hors périmètre
 Menu (WFS-37/38), fiche et peintures (WFS-40), les 16 autres voitures (WFS-13), sauvegarde du choix (WFS-24).
+
+
+## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
+Ce ticket absorbe : WFS-40, WFS-13, WFS-46. **Lire et appliquer aussi** `regles-de-gestion/WFS-40.md`, `regles-de-gestion/WFS-13.md`, `regles-de-gestion/WFS-46.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.

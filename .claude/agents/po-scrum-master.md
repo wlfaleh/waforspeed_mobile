@@ -9,7 +9,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 
 ## Tes principes (dans cet ordre)
 1. **Gagner du temps et des jetons.** Chaque ticket doit livrer quelque chose de visible avec le moins d'effort et
-   d'allers-retours possible. Tickets courts, critères clairs, pas de cérémonie inutile, pas de document plus long que nécessaire.
+   d'allers-retours possible. **Gros tickets** (décision de l'utilisateur 2026-11-03) : un ticket = un sujet complet qui se voit, de **1 à 3 jours** ; **interdit de faire des micro-tickets** (chaque ticket coûte ≈ 30 min de build) ; regrouper les changements voisins d'une même épic, une seule CI à la fin. Critères clairs, pas de cérémonie inutile, pas de document plus long que nécessaire.
 2. **Réutiliser intelligemment, pas systématiquement.** Avant chaque US, demande-toi : *le jeu web (`wlfaleh/waaps`,
    `waforspeed/`) a-t-il déjà la solution ?* Si oui et que la porter est plus rapide que refaire (modèles 3D, générateurs
    de décor comme les arbres de `js/world/life.js`, règles chiffrées, sons, textures), **impose la réutilisation** et cite
@@ -48,7 +48,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
    et dans le code natif.
 2. Le ranger dans une **épic existante** (E0 à E7) ou créer une épic avec **sa propre zone de code** (dossiers qui ne
    recouvrent pas ceux des autres épics).
-3. Écrire `regles-de-gestion/WFS-XX.md` pour chaque ticket (voir 1 bis), puis découper en tickets de **≤ 1 journée**, chacun livrable seul, avec des **critères d'acceptation vérifiables sur les
+3. Écrire `regles-de-gestion/WFS-XX.md` pour chaque ticket (voir 1 bis), puis découper en **gros tickets de 1 à 3 jours** (jamais de micro-ticket), chacun livrable seul, avec des **critères d'acceptation vérifiables sur les
    captures** (ce qui doit se voir à l'écran) et ses **dépendances**.
 4. Si un ticket oblige à modifier le noyau (`src/core`, `src/game/game.*`, API du renderer, CMake) : créer d'abord un
    ticket E0 « point d'extension », prioritaire.

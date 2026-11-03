@@ -25,3 +25,7 @@ visibles, comme dans la version web (ambiance « ville néon »).
 
 ## Hors périmètre
 Route mouillée (WFS-16), bloom (WFS-17), réglages de qualité (WFS-15).
+
+
+## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
+Ce ticket absorbe : WFS-16. **Lire et appliquer aussi** `regles-de-gestion/WFS-16.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.
