@@ -75,7 +75,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours (corrections QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟠 À CORRIGER, tour 1/2 (`qa/rapports/WFS-35.md`) |
+| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔍 En revue | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10), fusion autorisée |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
@@ -118,7 +118,7 @@ Journal à jour.
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔧 En cours (QA : À CORRIGER, tour 1/2, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
+**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔍 En revue (QA : PASSABLE AVEC ANOMALIES MINEURES, fusion autorisée, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
 - [ ] `chargement-0/1/2` : fond `#0A0B10`, sur-titre cyan, logo « WAFOR / SPEED » (SPEED orange), barre cyan → orange à 0 %, 20-70 %, 100 %, étape + « n % »
 - [ ] mêmes captures en 2400x1080 : bloc à gauche, rien de coupé ; `chargement-fondu` : ville visible à travers (fondu 300 ms)
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
@@ -296,6 +296,7 @@ Statuts : 🆕 Nouvelle (QA) → 📋 Planifiée (PO, US de correction créée) 
 | ANO-02 | WFS-34 | `course-*` | ombres des arbres peu visibles (rues à l'ombre des immeubles) | 📋 Planifiée | WFS-43 |
 | ANO-03 | WFS-34 | `course-*` | branches en « baleines de parapluie » | 🚫 Abandonnée | — (identique au jeu web) |
 | ANO-04 | WFS-12 | `course-decompte-3`, `course-decompte-go`, `course-fin` | texte droit au lieu d'italique (chiffres du décompte, score, stats) : le texte natif (`src/ui/text.*`) ne sait pas incliner les glyphes | 🆕 Nouvelle |  |
+| ANO-10 | WFS-35 | `chargement-fondu-2400` | capture prise pendant la planche de test du texte (`WFS_TEXTE_ESSAI=1`) : le panneau « DÉMO DU TEXTE » chevauche l'écran de chargement en fondu ; prendre les captures `chargement-*-2400` dans un lancement du banc sans planche de test | 🆕 Nouvelle |  |
 
 ## Journal
 
@@ -1024,3 +1025,12 @@ scène dédiée ; `src/platform/desktop_main.cpp` (2 lignes) : capture `scene-de
 - Reste **ANO-04** (mineure, 🆕 au tableau des anomalies) : italique absent (décompte, score, stats), à faire dans `src/ui/text.*`
   (hors zone E3, donc impossible dans un 2e tour de WFS-12). **Fusion autorisée.** Au PO : US de correction pour ANO-04, et
   critère « checkpoint 10 → +7 s » à corriger en +7,4 s.
+
+### 2026-11-03 — QA WFS-35 : PASSABLE AVEC ANOMALIES MINEURES (2e passage, tour 2/2)
+**qa-lead** (`qa/rapports/WFS-35.md`), commit `dff7464`, run 41609812174, Release `apercu-waforspeed-35` mise à jour.
+- Corrigé : ANO-06 (barre sans traits, « FOR » gris uni et SPEED sans halo pendant le fondu), ANO-07 (« 3D » lisible à 19 px),
+  ANO-08 (échec sur « Chargement du modèle 3D… », barre à 20 %), ANO-09 (`chargement-*-2400.png` publiées, conformes).
+  Première image 0,045 à 0,058 s après Vulkan ; les 28 autres captures identiques au pixel près à `main`.
+- Reste **ANO-10** (mineure, 🆕 au tableau des anomalies) : `chargement-fondu-2400` prise pendant la planche de test du texte,
+  le panneau « DÉMO DU TEXTE » chevauche l'écran (banc seulement, le joueur ne le voit pas). **Fusion autorisée.**
+  Au PO : US de correction pour ANO-10.
