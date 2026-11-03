@@ -69,7 +69,7 @@ Journal à jour.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours (réservé : démarrage dès que WFS-12 est 🔍) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` |  |  |
+| 0.1 | WFS-35 | Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` |  |  |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-36` |  |  |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
@@ -86,7 +86,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` |  |  |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue (QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 10 | WFS-27 | HUD de course (vitesse, chrono, score, nitro en texte) | E5 | ⏳ En attente |  | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
@@ -181,7 +181,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔧 En cours (règles : `regles-de-gestion/WFS-12.md`)
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔍 En revue, PR #10 (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -778,3 +778,21 @@ avant WFS-35. Même exception que pendant la QA de WFS-26 et de WFS-07.
 (`src/ui/text.*`), appel de l'écran dans `src/platform/android_main.cpp` et `desktop_main.cpp` (captures `chargement-*`).
 Critères : voir le tableau ci-dessus (captures `chargement-0/1/2`, 2400x1080, `chargement-fondu`, `chargement-erreur`, journal des durées).
 Plan court : écran dessiné avant tout chargement lourd, 4 étapes pondérées (10 / 20 / 70 / 100 %), fondu 300 ms, message d'échec.
+
+### 2026-11-03 — WFS-12 en revue (PR #10) ; début de WFS-35
+**WFS-12** : PR #10 ouverte, première CI verte (banc, APK, publication ; journal du banc : course de référence identique au jeu web,
+captures `course-decompte-3`, `course-decompte-go`, `course-fin`). Deux corrections poussées depuis : score et distance de l'écran
+de fin figés à la fin (ils continuaient de monter pendant que la voiture roulait seule), couleurs de l'écran de fin en codes sRGB
+(`#0A0B10`, `#14161F`, comme `ui::CYAN`). **Suite** : CI → qa-lead → fusion si `VALIDÉ`.
+**WFS-35 démarré** (`feature/waforspeed-35`, poussée) : `src/ui/ecrans/chargement.{h,cpp}` — écran dessiné juste après
+l'initialisation Vulkan (police puis 0 %), logo « WAFOR / SPEED » (FOR en contour de 2 px), sur-titre cyan, barre dégradée
+cyan → orange (16 tranches), étapes 10 / 20 / 70 / 100 %, fondu de 300 ms (système `FonduChargement`, ordre 490), message
+d'échec rouge, durée de chaque étape au journal ; banc : `chargement-0/1/2`, `-fondu`, `-erreur` (fichiers introuvables).
+**Accroches annoncées (13 lignes, 3 de plus que les 10 prévues)** :
+- `game.h` (1 : paramètre `progression` de `Game::init`) ;
+- `game.cpp` (4 : signature + 3 étapes) ;
+- `text.h/.cpp` (2 : `ui::chargerPolice`) ;
+- `android_main.cpp` (4 : include, instant Vulkan, `debut`, `init` avec progression / `erreur`, `fin`) ;
+- `desktop_main.cpp` (3 : include, instant Vulkan, `benchChargement`).
+**Limite** : `chargement-1` montre l'étape « Chargement du modèle 3D… » à son début (20 %) : le chargeur de modèles (noyau)
+ne donne pas d'avancement pendant le décodage ; un avancement plus fin demanderait un ticket E0.
