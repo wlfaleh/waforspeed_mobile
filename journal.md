@@ -840,3 +840,149 @@ thème plein écran, paysage verrouillé, écran allumé, `layoutInDisplayCutout
 `onWindowFocusChanged` ; APK construit en CI ; captures du banc PC inchangées (`0 écart(s)`). Vérification à l'écran : WFS-50.
 **Plan court** : manifeste + `res/values` (nom, thème) → `mipmap-anydpi-v26` (icône adaptative vectorielle) → immersif dans
 l'activité → CI (APK + banc) → QA `qa-lead` (revue du manifeste et du code, banc inchangé) → fusion.
+
+### 2026-11-03 — WFS-42 : cause trouvée par diagnostic au banc (Claude, session moteur-natif)
+**Méthode** : captures de vitrine en masquant une à une les pièces (diagnostic temporaire, retiré ensuite).
+**Cause (RG-01)** : la trame de la lunette de la Golf ne vient ni de la vitre ni des couches transparentes, mais de la
+**pièce 18** : baguette chrome **opaque** (métal 1, rugosité 0) faite de fils de 1,3 mm x 21 mm, vue à travers la vitre ;
+plus fins qu'un pixel, les fils se rasterisent en tirets brillants (`diag42-golf-sans-18` : trame disparue).
+911 : la jante (matériau 4, triangles de 1,9 mm) ne scintille plus avec les reflets élargis du 2e passage.
+**Correction** (`feature/waforspeed-42`, 6798421) : pièces « fils » (triangles < 4 mm, allongement médian > 8, hors peinture
+et vitres) dessinées en couverture partielle avant les vitres ; modèles inchangés (RG-02). **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Fin WFS-35 Écran de chargement (PR #12 fusionnée, 500c5b5)
+QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-10 → WFS-49 (PO). Branche resynchronisée avec main (WFS-12 puis WFS-44)
+avant la fusion, CI verte à chaque fois (dernière : run 41617276755). Épic E8 libre.
+**PO** : WFS-37 (menu principal, E8, MVP) et WFS-49 sont débloqués (dépendance WFS-35 finie).
+**WFS-27** : CI verte (run 41617208849), QA lancée.
+
+### 2026-11-03 — PO : WFS-37 et WFS-49 Prêts, début WFS-37 (agent développeur, session 01UY1Vv1)
+**Fin de ticket WFS-35** prise en compte (✅, PR #12, 500c5b5). **Débloqués** : WFS-37 (WFS-35 ✅, WFS-36 ✅) et WFS-49 (WFS-35 ✅)
+→ ⏳ Prêt. WFS-49 reste non attribuable tant que WFS-29 occupe E7. **WFS-27** → 🔍 En revue (PR #16, CI verte, QA en cours).
+**Début WFS-37** — Épic **E8**, libre (WFS-35 fini, aucun ticket E8 actif). Ticket MVP Prêt le plus prioritaire (0.3).
+Responsable : Claude (agent développeur, session 01UY1Vv1), 2026-11-03 ; son WFS-27 est en revue (même règle que pour WFS-35) ;
+**les corrections demandées par la QA de WFS-27 passent avant WFS-37**. Branche `feature/waforspeed-37`, partie de `main`.
+Règles : `regles-de-gestion/WFS-37.md` (complétées : RG-07 à RG-10, zone et accroches).
+**Zone de code autorisée** : `src/ui/ecrans/**` (nouveau `menu.{h,cpp}`, mise en commun du logo dans `chargement.{h,cpp}`) ;
+accroches annoncées ≤ 10 lignes : enregistrement du système, captures `menu-*` dans `src/platform/desktop_main.cpp`,
+1 ligne `menu-1` dans `.github/workflows/build.yml`.
+**Critères** : `menu-0` / `menu-1` (2400x1080, sans planche de texte) : ville assombrie, logo, 3 choix, record « — »,
+« Golf 8 GTI » ; `menu-anim` ; ni commandes ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`.
+**Plan court** : sortir le bloc logo de `chargement.cpp` → système `Menu` (voile 8-16 bandes, 3 choix, pied, aide tactile,
+`slide-in`) → captures du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-29 : code écrit, PR #17 ouverte (Claude, session trafic)
+**Fait** : `JeuActivity` (sous-classe de `NativeActivity`, jeu toujours natif) : mode immersif collant
+(`WindowInsetsController` ≥ Android 11, `SYSTEM_UI_FLAG_IMMERSIVE_STICKY` avant) à `onCreate`, `onResume`,
+`onWindowFocusChanged` ; écran toujours allumé ; encoche `shortEdges`. Icône adaptative (fond `#07070c`, « W » orange,
+lignes cyan, monochrome) dans la zone sûre (32,8 / 33 dp). Manifeste : `hasCode`, `.JeuActivity`, icône.
+`tools/qa/emulateur.sh` lance `.JeuActivity` (sinon le simulateur ne démarrerait plus l'appli).
+**Vérification** : CI `45f3d8a` verte (APK avec le Java) ; APK inspecté : `classes.dex` avec `JeuActivity`, ressources
+`ic_launcher*`, `ic_avant_plan`, nom « WaForSpeed ». Aucun fichier du moteur modifié (captures du banc inchangées).
+**Pour le PO** : RG-02 « le HUD respecte les marges de l'encoche » n'est pas dans la zone E7 (HUD : E5 / E3) : à porter dans
+un ticket du HUD. Barres masquées et icône : à vérifier au simulateur (WFS-50, fin d'épic E7).
+
+
+### 2026-11-03 — WFS-33 fusionné (PR #18) (Claude, session moteur-natif)
+QA `VALIDÉ` du premier coup (`qa/rapports/WFS-33.md`) : peloton de 3 voitures, trafic visible sur 3 captures de course
+sur 6, écart latéral du choc +0,905 (≤ 1,12), 0 écart(s). **E3 libérée** (WFS-24 devient attribuable).
+Observation non bloquante : en caméra 0, la voiture replacée à 90 m est petite à l'écran.
+
+### 2026-11-03 — QA WFS-27 HUD de course : À CORRIGER, tour 1/2 (qa-lead)
+Commit `29139a4`, run 41617208849, Release `apercu-waforspeed-27`, comparée pixel par pixel à `apercu-waforspeed-44` (même base).
+Règles RG-01 à RG-09 remplies : temps (rouge à 5,5 s), checkpoint + barre, score au-dessus du bouton Nitro, « Combo ×2 », vitesse entre
+volant et frein, nitro (halo en nitro active), anciennes barres retirées, `course-fin` sans HUD, décompte inchangé, `hud-2400` propre,
+banc à 0 écart(s), rendu 3D inchangé hors panneaux du HUD. **Deux anomalies mineures** : ANO-11 (scènes de banc sans règles : temps
+« 1000000000,0 » qui déborde du panneau, HUD affiché dans les vitrines) et ANO-12 (libellés 11 px flous à 720 p). Pas de fusion ;
+le développeur corrige puis nouvelles captures. Rapport : `qa/rapports/WFS-27.md`.
+
+### 2026-11-03 — PO : WFS-14 attribué à Claude (session trafic) ; WFS-14 redécoupé ; RG-02 de WFS-29 → WFS-51 / WFS-52 (po-scrum-master)
+**Décision « un ticket par agent »** : WFS-29 (E7) est `VALIDÉ` par qa-lead et n'attend plus que la fusion (CI de la
+resynchronisation) : il ne demande plus de travail, la session trafic peut donc prendre un nouveau ticket. E7 reste occupée
+jusqu'à la fusion (WFS-49 non attribuable d'ici là).
+**Choix** : prêts mieux classés écartés car leur épic est active — WFS-45 (E4 : WFS-42), WFS-49 (E7 : WFS-29), WFS-48
+(E5 : WFS-27). Premier prêt d'une épic libre : **WFS-14 (E2)**, trop gros pour une journée → **redécoupé** : WFS-14 = socle
+multi-cartes + Corniche (plage) ; **WFS-53** Campagne, **WFS-54** Grand Prix (en attente de WFS-14).
+**Remarque RG-02 de WFS-29** (HUD sous l'encoche, hors E7) : **WFS-51** (E0, prio 0.43, point d'extension `view.marges`,
+lecture des insets Android dans `JeuActivity`, commandes tactiles décalées, banc `WFS_ENCOCHE`) puis **WFS-52** (E5,
+prio 0.435, HUD dans la zone sûre). WFS-51 devient `Prêt` dès la fusion de WFS-29.
+
+### 2026-11-03 — Début WFS-14 : socle multi-cartes et Corniche (plage) (Claude, session trafic)
+**Épic** : E2. **Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*` ; test de fidélité du tracé
+dans `tests/**` (ligne d'accroche E3 annoncée ici) ; branche `feature/waforspeed-14`. Règles : `regles-de-gestion/WFS-14.md`.
+**Critères** : `carte-plage-jour` / `carte-plage-nuit` (océan, palmiers, parasols, sable, ambiance) ; tracé des 3 nouvelles
+cartes fidèle au JS (0 écart) ; ≤ 300 appels de dessin ; ville par défaut, autres captures identiques.
+**Plan court** : porter `MAPS` / `envFor` / `ZONES` (maps.js, decor.js) → décor plage (`vegPalm` via `vegetation.*`,
+parasols, plan d'eau `#1e7fa8`) → `WFS_CARTE=plage` au banc + captures → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — Fin WFS-29 Android : plein écran immersif, icône, nom (Claude, session trafic)
+**QA** : VALIDÉ par `qa-lead` (`qa/rapports/WFS-29.md`, `45f3d8a`), PR #17 fusionnée. Branche resynchronisée avec `main`
+(WFS-35) avant la fusion : APK reconstruit avec succès (run 41621305547). **Épic E7 libre** : WFS-49 et WFS-51 attribuables (PO).
+À vérifier au simulateur (WFS-50) : barres masquées, icône et nom sur le lanceur, démarrage de `.JeuActivity`.
+
+### 2026-11-03 — WFS-14 : code écrit, PR ouverte (Claude, session trafic)
+**Fait** : `src/world/plage.cpp` (bas-côtés `GROUND.beach` par zone, océan, palmiers, parasols, transats, ambiance
+`envFor` jour / nuit) ; palmier `veg::palmier` (port de `vegPalm`) ; `src/world/zones.*` (`ZONES`, `ZONE_LEN`, nom exposé) ;
+`tests/test_cartes.cpp` + référence du jeu web (tracé plage, campagne, circuit).
+**Lignes d'accroche** : `src/core/system.h` (+4 : `System::ambiance`, `System::remplaceSol`), `src/game/game.cpp` (+3/−1 :
+leurs appels, sol générique omis si remplacé) ; `src/platform/desktop_main.cpp` (captures `carte-plage-*`, `WFS_CARTE`) ;
+`CMakeLists.txt` (+1) et `.github/workflows/build.yml` (test_cartes).
+**Vérification (conteneur, lavapipe)** : banc de `main` et de la branche : 35 captures identiques au pixel près ;
+`carte-plage-jour` / `carte-plage-nuit` conformes à l'œil ; 108 appels de dessin pour la plage ; test_cartes OK.
+**⚠️ Pour le PO (épic E3)** : `easeInOut` de `src/game/track.cpp` utilise `PI` en float (jeu web : `Math.PI` double) →
+altitudes de campagne / circuit décalées de 3 µm au plus. Corrigé et mesuré (0 écart à 1e-12), mais cela change
+légèrement 27 captures existantes (ville comprise) : retiré de WFS-14 ; à faire dans un ticket E3 qui renouvelle les
+références (test_cartes passera alors sa tolérance de 1e-3 à 1e-9).
+**Limites** : villas, tours de sauveteurs, bateaux, lampadaires de plage, baigneurs non portés ; nuit sans éclairage
+(WFS-09).
+
+
+### 2026-11-03 — PO : WFS-55 créé (écart de PI) ; WFS-51 Prêt puis attribué à Claude (session trafic) (po-scrum-master)
+**WFS-55** (E3, prio 12.05, en attente de WFS-14 qui apporte `test_cartes`) : `easeIn/Out/InOut` de `src/game/track.cpp`
+en double (`std::numbers::pi`), `test_cartes` à 1e-9, captures de référence renouvelées et listées ; fusion annoncée au
+Journal pour que les tickets en cours se resynchronisent. Priorité basse : invisible pour le joueur, mais nécessaire avant
+WFS-53 / WFS-54 pour un test de fidélité strict. Règles : `regles-de-gestion/WFS-55.md`.
+**WFS-51** passe `Prêt` (WFS-29 ✅). **Décision « un ticket par agent »** : WFS-14 est 🔍 En revue (code fini, attente CI et
+qa-lead) ; la session trafic peut prendre un ticket, mais **les corrections de WFS-14 passent en premier** si qa-lead rend
+`À CORRIGER` ou `REFUSÉ`. E2 reste occupée par WFS-14.
+**Choix** : prêts mieux classés écartés car leur épic est active — WFS-45 (E4 : WFS-42), WFS-48 (E5 : WFS-27). Premier
+prêt d'une épic libre : **WFS-51 (E0, 0.43)**, devant WFS-49 (E7, 0.47), qui reste attribuable à un autre agent
+(il ne touche que `.github/workflows/build.yml`).
+
+### 2026-11-03 — Début WFS-51 : marges de sécurité de l'écran (encoche) (Claude, session trafic)
+**Épic** : E0. **Zone de code autorisée** : `src/core/**`, `src/game/game.*` ; exceptionnellement `src/platform/android_main.cpp`,
+`android/**/JeuActivity.java` et, pour `WFS_ENCOCHE`, `src/platform/desktop_main.cpp` (pas `.github/**` : WFS-49).
+Branche `feature/waforspeed-51`. Règles : `regles-de-gestion/WFS-51.md`.
+**Critères** : `encoche-course` (2400x1080, `WFS_ENCOCHE=90`) : bande de 90 px marquée, volant et gaz hors de la bande ;
+autres captures identiques, banc `0 écart(s)` ; insets Android + JNI relus en revue.
+**Plan court** : `GameView::marges` (0 par défaut) → décalage des commandes et zones de toucher dans `Game` → lecture des
+insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture → PR, CI, qa-lead.
+
+### 2026-11-03 — WFS-51 en recette (Claude, session trafic)
+- PR #20 : `GameView::marges`, `Game::setMarges`, commandes tactiles et zones de toucher décalées ; CI verte (commit 66c13bc, synchronisé avec `main` en 778085f).
+- Accroches hors E0, prévues par `regles-de-gestion/WFS-51.md` : `src/platform/android_main.cpp` (fonction JNI `nativeMarges`), `JeuActivity.java` (lecture des insets d'encoche), `src/platform/desktop_main.cpp` (`WFS_ENCOCHE`, capture `encoche-course.png`). Sans `WFS_ENCOCHE`, captures identiques à `main`.
+- QA demandée à `qa-lead`.
+
+### 2026-11-03 — main ne compile plus depuis la fusion de WFS-27 (Claude, session trafic)
+- La fusion de la PR #16 (WFS-27) a laissé des marqueurs de conflit (`<<<<<<<` / `>>>>>>>`) dans `.github/workflows/build.yml` et `src/platform/desktop_main.cpp` : CI de `main` en échec (c68c460, c17627d).
+- Réparé dans `feature/waforspeed-51` (PR #20, validée par le QA) en gardant les deux côtés : WFS-35 (écran de chargement) et WFS-27 (banc HUD seul). Tests et banc local OK ; `main` sera réparé à la fusion de #20.
+- Agents : avant toute fusion, vérifier `git grep -n "^<<<<<<< "` sur le résultat.
+
+### 2026-11-03 — WFS-51 fusionné ; main réparé ; WFS-14 (Claude, session trafic)
+- PR #20 (WFS-51, VALIDÉ) fusionnée en 24f08d3 : `main` compile de nouveau (marqueurs de conflit de WFS-27 retirés, CI verte sur 04ec9f5).
+- La PR #19 (WFS-14) a été fusionnée par l'utilisateur alors qu'elle était « À CORRIGER tour 1/2 ». La correction d'ANO-13 (stipes des palmiers trop sombres) part de `main` sur `feature/waforspeed-14`, nouvelle PR, puis QA tour 2/2.
+
+### 2026-11-03 — WFS-14 : correction ANO-13 en PR #21 (Claude, session trafic)
+- Stipes des palmiers : albédo ×1,5 et part propre brune #7d6a52 (0,8 de jour, 0,05 la nuit), seulement dans `src/world/plage.cpp`. Seules les 2 captures de la plage changent. QA tour 2/2 demandée après la CI.
+
+### 2026-11-03 — Début WFS-49 : captures du chargement en 2400x1080 sans planche de texte (Claude, session trafic) — attribué par le PO
+**Épic** : E7. **Zone de code autorisée** : `.github/workflows/build.yml` uniquement (aucun `src/**`). Branche `feature/waforspeed-49`.
+Règles : `regles-de-gestion/WFS-49.md`.
+**Critères** : `chargement-0/1/2/fondu/erreur-2400` sans panneau « DÉMO DU TEXTE » ; `texte-essai-1280/2400` et captures 1280x720 inchangées ; + 1 lancement du banc au plus.
+**Plan court** : lancement séparé `WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/` sans `WFS_TEXTE_ESSAI`, la boucle de copie (l. 41) lit ce dossier → PR, CI, qa-lead.
+**Choix du PO** : épics actives écartées — E2 (WFS-14), E4 (WFS-42), E5 (WFS-27), E8 (WFS-37) ; E0 n'a plus de ticket prêt. Premier prêt d'une épic libre : WFS-49 (E7, 0.47), devant WFS-28 (E6, 15) et WFS-24 (E3, 21).
+WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS-49 est préparé en parallèle (ticket de 30 min, zone sans recouvrement).
+**WFS-51 ✅** : WFS-52 n'attend plus que WFS-27 (toujours « À CORRIGER tour 1/2 » au tableau, PR #16 pourtant fusionnée : à clore par son responsable après QA tour 2/2).
+
+### 2026-11-03 — WFS-49 en revue, PR #22 (Claude, session trafic)
+- `build.yml` : `chargement-*-2400` pris dans un lancement séparé du banc en 2400x1080 sans `WFS_TEXTE_ESSAI`. QA après la CI.

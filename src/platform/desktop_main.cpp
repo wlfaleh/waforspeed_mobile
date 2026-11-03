@@ -14,9 +14,11 @@
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/traffic_system.h"
+#include "../ui/hud.h"
 #include "../render/bench_ombres.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/chargement.h"
 
 
 namespace wfs {
@@ -45,9 +47,12 @@ int main(int argc, char** argv) {
     unsigned cw = 1280, chh = 720;
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
     if (!vk.init(nullptr, cw, chh)) return 1;
+    const double tVk = nowSeconds();
     Renderer r; r.init(vk);
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
+    if (const char* b = std::getenv("WFS_BANC"); b && std::string(b) == "hud") { benchHud(g, r, out); r.shutdown(); vk.shutdown(); jobs().stop(); return 0; }   // WFS-27 : HUD seul (2400x1080)
+    ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
         // vitrine : 3 angles
@@ -60,7 +65,8 @@ int main(int argc, char** argv) {
         g.shutdown();
     }
     // course : la Golf roule en pilote automatique, captures à différents moments
-    g.init(r, "golf", "ville");
+    g.init(r, "golf", std::getenv("WFS_CARTE") ? std::getenv("WFS_CARTE") : "ville");   // WFS-14 : WFS_CARTE=plage pour essayer une autre carte
+    if (const char* e = std::getenv("WFS_ENCOCHE")) g.setMarges({(float)std::atoi(e), 0, 0, 0});   // WFS-51 : encoche simulée à gauche
     g.setAutopilot(true);
     for (int cam = 0; cam < 2; cam++) {
         g.camMode = cam;
@@ -82,10 +88,28 @@ int main(int argc, char** argv) {
     // WFS-44 : un système de test prend la scène (fond uni #07070c, cube, caméra FOV 36°)
     activerSceneEssai(true); g.render(310); g.render(310.02); r.capturePng(out + "/scene-dediee-vide.png"); activerSceneEssai(false);
     g.shutdown();
+    // WFS-14 : carte Corniche (plage) de jour et de nuit, en pilote automatique, caméra haute
+    for (const char* mo : {"jour", "nuit"}) {
+        setenv("WFS_MOMENT", mo, 1); g.init(r, "golf", "plage"); g.setAutopilot(true); g.camMode = 1;
+        for (int i = 0; i < 240; i++) { g.update(1.0 / 60); if (i % 8 == 0) g.render(400 + i / 60.0); }
+        g.render(404); g.render(404.02); r.capturePng(out + "/carte-plage-" + mo + ".png"); g.shutdown();
+    }
+    unsetenv("WFS_MOMENT");
     benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
     benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)
+    benchHud(g, r, out);          // WFS-27 : HUD (hud-course, hud-temps-bas, hud-nitro, hud-combo)
     r.shutdown();
     vk.shutdown();
+    {   // WFS-51 : encoche de 90 px à gauche en 2400x1080 : bande marquée, volant et jauges décalés à droite de la bande
+        VkCtx vk2; Renderer r2; Game g2;
+        if (vk2.init(nullptr, 2400, 1080) && r2.init(vk2) && g2.init(r2, "golf", "ville")) {
+            g2.setMarges({90, 0, 0, 0}); g2.montrerMarges = true; g2.setAutopilot(true);
+            for (int i = 0; i < 120; i++) { g2.update(1.0 / 60); if (i % 10 == 0) g2.render(500 + i / 60.0); }
+            g2.render(502); g2.render(502.02); r2.capturePng(out + "/encoche-course.png");
+            WFS_LOG("capture encoche-course : marge gauche %.0f px, écran %ux%u", g2.marges().gauche, r2.width(), r2.height());
+            g2.shutdown(); r2.shutdown(); vk2.shutdown();
+        }
+    }
     jobs().stop();
     return 0;
 }

@@ -13,7 +13,7 @@ juge sur des captures fausses.
 - RG-03 : durée de la CI : + 1 lancement du banc au plus.
 
 ## À réutiliser
-Rien du jeu web (outil de test natif). Natif : étape « captures » de `.github/workflows/build.yml` (l. 39-41 de la branche WFS-35).
+Rien du jeu web (outil de test natif). Natif : étape « captures » de `.github/workflows/build.yml` (sur `main` au 2026-11-03 : l. 40-41, la boucle `for f in texte/chargement-*.png` copie les captures du lancement « texte »).
 
 ## Critères d'acceptation
 - [ ] `chargement-0/1/2/fondu/erreur-2400` : plus aucun panneau « DÉMO DU TEXTE » ; `texte-essai-2400` inchangée

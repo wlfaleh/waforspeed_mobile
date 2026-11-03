@@ -13,7 +13,7 @@ struct Touch { int id; float x, y; bool down; };
 
 class Game {
 public:
-    bool init(Renderer& r, const char* carId, const char* mapId);
+    bool init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*) = nullptr);   // WFS-35 : écran de chargement
     void shutdown();
     void onTouch(const Touch& t);                 // coordonnées logiques (paysage, pixels)
     void setAutopilot(bool on) { autopilot_ = on; }
@@ -24,6 +24,11 @@ public:
     // écrans (WFS-36, voir src/core/ecran.h) : demande appliquée entre deux images, systèmes prévenus par onEcran
     void allerA(Ecran e) { ecranDemande_ = e; demandeEcran_ = true; }
     Ecran ecran() const { return ecran_; }
+    // marges de sécurité (WFS-51) : données par la plateforme (Android : encoche ; banc : WFS_ENCOCHE) ; les commandes
+    // tactiles et leurs zones de toucher sont décalées d'autant ; montrerMarges : bandes visibles (captures du banc)
+    void setMarges(const Marges& m) { marges_ = m; view_.marges = m; }
+    const Marges& marges() const { return marges_; }
+    bool montrerMarges = false;
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
 private:
@@ -55,6 +60,7 @@ private:
     bool autopilot_ = false;
     bool latchGas_ = false, latchBrake_ = false, latchNitro_ = false;
     double acc_ = 0;
+    Marges marges_;
     // écran affiché ; par défaut Course tant que le menu (WFS-37) n'existe pas
     Ecran ecran_ = Ecran::Course, ecranDemande_ = Ecran::Course;
     bool demandeEcran_ = false;

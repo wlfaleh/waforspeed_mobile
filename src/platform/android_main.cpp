@@ -1,5 +1,7 @@
 // WaForSpeed — point d'entrée Android (NativeActivity) : cycle de vie de la fenêtre, tactile, boucle de jeu.
 #include <android/asset_manager.h>
+#include <jni.h>
+#include <atomic>
 #include <android/native_window.h>
 #include <android_native_app_glue.h>
 #include <time.h>
@@ -11,6 +13,7 @@
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/chargement.h"
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -29,6 +32,14 @@ double nowSeconds() { timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return t.t
 
 using namespace wfs;
 
+// marges de sécurité de l'écran (WFS-51) : écrites par JeuActivity (thread de l'interface Android), lues par la boucle
+static std::atomic<int> g_marges[4] = {0, 0, 0, 0};
+static std::atomic<bool> g_margesNeuves{false};
+extern "C" JNIEXPORT void JNICALL Java_com_waforspeed_game_JeuActivity_nativeMarges(JNIEnv*, jclass, jint g, jint h, jint d, jint b) {
+    g_marges[0] = g; g_marges[1] = h; g_marges[2] = d; g_marges[3] = b; g_margesNeuves = true;
+    WFS_LOG("Marges de l'écran : gauche %d, haut %d, droite %d, bas %d", g, h, d, b);
+}
+
 struct App {
     VkCtx vk; Renderer renderer; Game game;
     bool ready = false, focused = false;
@@ -40,8 +51,11 @@ struct App {
 static void initGraphics(App& app, android_app* a) {
     if (app.ready || !a->window) return;
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
+    const double tVk = nowSeconds();
     app.renderer.init(app.vk);
-    app.game.init(app.renderer, "golf", "ville");
+    ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
+    if (!app.game.init(app.renderer, "golf", "ville", ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }
+    ecrans::chargement().fin();
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();
@@ -124,6 +138,8 @@ void android_main(android_app* a) {
             }
             app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
             double t = nowSeconds(), dt = t - app.last; app.last = t;
+            if (g_margesNeuves.exchange(false))
+                app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             app.game.update(dt);
             app.game.render(t - app.start);
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
