@@ -21,7 +21,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 
 ## 1. Attribuer un ticket (demande d'un agent développeur)
 1. `git checkout main && git pull`. Lire le tableau, les épics et les règles de `TACHES.md`.
-2. Choisir le ticket au statut **⏳ Prêt** ayant la **meilleure priorité** (plus petit numéro dans « Prio ») tel que :
+2. Choisir le ticket au statut **⏳ Prêt** ayant la **meilleure priorité** (P1 Urgent, puis P2 Haute, P3 Moyenne, P4 Basse dans « Priorité » ; à égalité, le plus petit numéro de ticket) tel que :
    - aucun autre ticket de **son épic** n'est 🔧 En cours ou 🔍 En revue (un ticket actif par épic) ;
    - l'agent demandeur n'a pas déjà un ticket en cours ;
    - toutes ses dépendances sont ✅.

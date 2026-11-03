@@ -1258,3 +1258,42 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - `src/ui/ecrans/pause.*` : bouton « Menu », écran de pause, « Reprendre », « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné) et « Quitter la course ». Chrono figé pendant la pause, vérifié au journal du banc.
 - **Accroches annoncées** : `src/platform/android_main.cpp` (`APP_CMD_PAUSE` / `LOST_FOCUS` en course → Pause, 4 lignes) et `src/platform/desktop_main.cpp` (`benchPause` + include, 3 lignes). QA après la CI.
 - WFS-58 (PR #32) : l'essai simulateur 3 atteint le GO, puis échoue franchement à l'étape « fin » (attendu sans WFS-59). La QA est lancée.
+### 2026-11-03 20:17:58 — PO : tableau de TACHES.md trié par numéro de ticket (po-scrum-master)
+- Demande de l'utilisateur : tableau affiché dans l'ordre des numéros WFS-XX. Fait ; la colonne « Prio » reste l'ordre de travail, la colonne « Épic » existait déjà. Aucun statut ni responsable modifié.
+
+### 2026-11-03 20:20:43 — PO : priorités à la Jira (P1 Urgent à P4 Basse) dans TACHES.md (po-scrum-master)
+- Demande de l'utilisateur. Colonne « Priorité » : P1 Urgent (bloque le MVP : WFS-50, 58, 59), P2 Haute (garage, pause, terrain, compteur, italique, lumières), P3 Moyenne (nuit, 20 voitures, performances, cartes, bruitages, piétons), P4 Basse (roues, arbres, météo, post-traitement, duel, sauvegarde, iOS, stores). À égalité : plus petit numéro de ticket. `po-scrum-master.md` mis à jour. Aucun statut ni responsable modifié.
+
+### 2026-11-03 20:24:41 — WFS-45 en revue, PR #35 (Claude, agent 4)
+- **Fait** : `FrameParams` gagne 4 projecteurs (three `SpotLight`), une lumière hémisphère et `fogNear` / `fogFar`. UBO, `common.glsl` et `scene.frag` étendus : cône lissé, portée, GGX du soleil, `HemisphereLight`, `Fog` linéaire. Banc `src/render/bench_spots.*` : éclairage du garage du jeu web (`garage.js`, `buildGarage`), capture `spots-sol` et mesure du coût sans projecteur puis avec 3.
+- **Accroches annoncées** : `src/render/renderer.h` (5 lignes dans `FrameParams`, RG-07) et `src/platform/desktop_main.cpp` (2 lignes : include et appel de `benchSpots`).
+- **Écart à RG-02, pour rester fidèle au jeu web** : le jeu web n'active pas `physicallyCorrectLights`. three r128 applique donc `pow(saturate(1 − d/portée), decay)` et une irradiance × PI. J'ai porté ce comportement plutôt que la formule physique de RG-02, qui donnerait un garage environ 10 fois plus sombre. À confirmer par le PO dans le fichier de règles.
+- **Vérification** : compilation C++ et `test_systems` réussis en local, branche synchronisée avec `main` avant le push. Shaders, banc et APK : CI de la PR #35 en cours.
+
+### 2026-11-03 — WFS-58 : corrections du tour 1 (REFUSÉ) ; WFS-39 comparé à main (Claude, session trafic)
+- **WFS-58** (ffb5474, branche synchronisée avec main) :
+  - **WFS58-1** : plus de `wm size`. Avec ou sans changement de densité, Android passait l'appli en mode de compatibilité et posait la bulle « Tap to restart this app » sur la moitié droite de l'écran. La vitesse sur GPU logiciel viendra du rendu à 25 % de WFS-59.
+  - **WFS58-2** : chaque étape trace le motif attendu et la ligne du journal du jeu trouvée, avec l'heure. Attente de 2 s avant `01-chargement`.
+  - **WFS58-3** : `03` est prise dès l'appui, `04` après des images.
+  - **WFS58-4** : la taille d'écran est tracée en fin de scénario.
+  - Essais relancés : `scenario=mvp` (Release `simulateur-WFS-58`) et `scenario=conduite` (Release `simulateur-WFS-58-conduite`).
+- **WFS-39** (PR #34), banc local comparé à main : 11 captures de vraie course ne changent que dans la zone du bouton « Menu » (`course-decompte-*`, `hud-*`, `encoche-hud`, `menu-depart-*`, `toast-*`) ; 5 nouvelles captures `pause-*` ; aucune autre différence. Branche synchronisée avec main avant la CI (nouvelle règle 2384f67).
+
+### 2026-11-03 20:41:47 — Fin WFS-59 : fusionné (PR #31), ajouté à qa/Check.md (agent 3)
+- **Contrôle rapide** : CI verte sur `14056c9` (android, banc-essai avec tous les tests, publication `apercu-waforspeed-59`). Banc : GPU llvmpipe hors écran → mode inactif (« MSAA x4 », scène 2400x1080, ombres présentes) ; captures `course-cam0-0`, `hud-course`, `ombres-a`, `menu-0` regardées : rien de bloquant.
+- **Limite** : comparaison au pixel avec `main` non faite (Release `apercu` en reconstruction au moment de la fusion) : à faire par la recette de nuit. Comportement sur le simulateur à mesurer avec WFS-50 (et le scénario de WFS-58).
+- **Fusion** : `b2ede73`. WFS-50 ne dépend plus que de WFS-58.
+
+### 2026-11-03 20:43:48 — Début WFS-28 attribué à agent 3 (session 011cpqZd) ; WFS-19 remis en attente, WFS-63 créé (po-scrum-master)
+- **Épics occupées** : E4 (WFS-45), E5 (WFS-48), E7 (WFS-58), E8 (WFS-39). Libres : E0, E2, E3, E6.
+- **WFS-19 (E2) n'est pas réellement prêt** : les personnages du jeu web sont des maillages à squelette, le renderer natif n'en dessine pas (rien dans `renderer.h`), et le ticket dépasse une journée. Il passe en ⏳ En attente de **WFS-63** (E0, P3, ⏳ Prêt, `regles-de-gestion/WFS-63.md`) : point d'extension « maillages animés par squelette », catalyseur des piétons et des conducteurs. E0 retrouve ainsi un ticket prêt.
+- **Attribution** : **WFS-28 — Bruitages** (E6, P3 Moyenne), branche `feature/waforspeed-28`. Zone autorisée : `src/audio/**`, `assets/audio/**` ; accroche ≤ 10 lignes dans `src/game/course.*` seulement si un compteur manque (RG-09, à annoncer ici).
+- **Règles** : `regles-de-gestion/WFS-28.md` complété (RG-08 à RG-11 : événements lus par front montant sur `activeCourse()` et `GameView::player`, sons synthétisés au démarrage par bruit filtré comme `js/audio/sfx.js`, mixés dans le flux AAudio de WFS-10, ligne `SFX <nom>` au journal du banc).
+- **Critères** : chaque événement déclenche son son une seule fois (journal du banc) ; pas de craquement ; coupure en pause ; captures inchangées, `0 écart(s)`.
+- **Plan court** : 1) `noiseHit` / `beep` natifs (tables pré-calculées) ; 2) détection des événements ; 3) mixage et coupure en pause ; 4) journal du banc.
+
+### 2026-11-03 20:49:47 — WFS-28 : bruitages codés, PR #36 (agent 3, session 011cpqZd)
+- **Fait** : `src/audio/sfx_synth.h` (noiseHit / beep de `js/audio/sfx.js`, fondus de 5 ms, boucles raccordées), `src/audio/sfx.h/.cpp` (sons calculés au démarrage, file sans verrou, 16 voix, coupure en pause, setMuted ; un son par changement d'état de la course : décompte, GO, checkpoint, fin, accident, choc, frottement, quasi-contact ; crissements et souffle de nitro ; « SFX <nom> » au journal). Mélange dans le rappel AAudio de `audio_system.cpp` seulement (`moteur.wav` du banc inchangé).
+- **Accroche annoncée (4 lignes, zone E3)** : `src/game/course.h` (compteurs `bumps`, `scrapes`, `lastImpact`) et `src/game/course.cpp` (`reset`, `bump`, `applyHits`). Aucune règle de course changée.
+- **Vérification** : `test_audio` OK en local (6 bruitages : bouts à zéro, raccords de boucle, crête) ; essai du mélangeur : silence après pause. CI en cours.
+- **Limites** : contact et arrivée en duel préparés, pas encore joués (pas de duel) ; vibration non faite (hors `src/audio`).
