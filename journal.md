@@ -840,3 +840,12 @@ thème plein écran, paysage verrouillé, écran allumé, `layoutInDisplayCutout
 `onWindowFocusChanged` ; APK construit en CI ; captures du banc PC inchangées (`0 écart(s)`). Vérification à l'écran : WFS-50.
 **Plan court** : manifeste + `res/values` (nom, thème) → `mipmap-anydpi-v26` (icône adaptative vectorielle) → immersif dans
 l'activité → CI (APK + banc) → QA `qa-lead` (revue du manifeste et du code, banc inchangé) → fusion.
+
+### 2026-11-03 — WFS-42 : cause trouvée par diagnostic au banc (Claude, session moteur-natif)
+**Méthode** : captures de vitrine en masquant une à une les pièces (diagnostic temporaire, retiré ensuite).
+**Cause (RG-01)** : la trame de la lunette de la Golf ne vient ni de la vitre ni des couches transparentes, mais de la
+**pièce 18** : baguette chrome **opaque** (métal 1, rugosité 0) faite de fils de 1,3 mm x 21 mm, vue à travers la vitre ;
+plus fins qu'un pixel, les fils se rasterisent en tirets brillants (`diag42-golf-sans-18` : trame disparue).
+911 : la jante (matériau 4, triangles de 1,9 mm) ne scintille plus avec les reflets élargis du 2e passage.
+**Correction** (`feature/waforspeed-42`, 6798421) : pièces « fils » (triangles < 4 mm, allongement médian > 8, hors peinture
+et vitres) dessinées en couverture partielle avant les vitres ; modèles inchangés (RG-02). **Suite** : CI → qa-lead.
