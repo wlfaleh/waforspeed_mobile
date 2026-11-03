@@ -181,12 +181,7 @@ void Game::drawControls() {
     r_->uiCircle(W * 0.89f, H * 0.74f, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
     r_->uiCircle(W * 0.70f, H * 0.80f, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
     r_->uiCircle(W * 0.90f, H * 0.32f, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
-    // jauges : vitesse (haut à gauche) et nitro
-    float k = (float)clampf((float)(player_.kmh() / 330.0), 0.f, 1.f);
-    r_->uiRect(3 * u, 4 * u, 40 * u, 2.2f * u, {0, 0, 0, 0.35f});
-    r_->uiRect(3 * u, 4 * u, 40 * u * k, 2.2f * u, {1, 0.42f + 0.4f * (1 - k), 0.1f, 0.9f});
-    r_->uiRect(3 * u, 7.5f * u, 25 * u, 1.4f * u, {0, 0, 0, 0.35f});
-    r_->uiRect(3 * u, 7.5f * u, 25 * u * (float)player_.nitro, 1.4f * u, {0.2f, 0.85f, 1, 0.9f});
+    // vitesse, nitro, temps, score : HUD de course (WFS-27, src/ui/hud.cpp)
 }
 
 // ---------------------------------------------------------------- mise à jour
