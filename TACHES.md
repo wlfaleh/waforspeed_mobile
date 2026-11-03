@@ -102,7 +102,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | 🔧 En cours | Claude (agent 4, session 011cpqZan), 2026-11-03 | — | `feature/waforspeed-45` |  |  |
 | 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-35 ✅ | `feature/waforspeed-49` | #22 (fusionnée) | ✅ VALIDÉ par qa-lead (52648fd) — [rapport](qa/rapports/WFS-49.md) |
-| 0.48 | WFS-48 | Texte en italique (ANO-04) | E5 | 🔧 En cours | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-26 | `feature/waforspeed-48` |  |  |
+| 0.48 | WFS-48 | Texte en italique (ANO-04) | E5 | 🔍 En revue (CI) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-26 | `feature/waforspeed-48` | [#33](https://github.com/wlfaleh/waforspeed_mobile/pull/33) |  |
 | 0.49 | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ⏳ Prêt |  | WFS-27 ✅ | `feature/waforspeed-46` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅) | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ Prêt |  | WFS-38 ✅ | `feature/waforspeed-39` |  |  |
@@ -200,7 +200,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-49 — Banc : captures du chargement 2400 sans planche de texte (ANO-10)** · E7 · priorité 0.47 · ✅ Terminé (Claude, session trafic, PR #22) (règles : `regles-de-gestion/WFS-49.md`)
 - [ ] `chargement-*-2400` sans panneau « DÉMO DU TEXTE » ; `texte-essai-2400` inchangée
 
-**WFS-48 — Texte en italique (ANO-04)** · E5 · priorité 0.48 · 🔧 En cours — Claude (agent 5), 2026-11-03 (règles : `regles-de-gestion/WFS-48.md`)
+**WFS-48 — Texte en italique (ANO-04)** · E5 · priorité 0.48 · 🔍 En revue (CI, PR #33) — Claude (agent 5), 2026-11-03 (règles : `regles-de-gestion/WFS-48.md`)
 - [ ] décompte, écran de fin et HUD en italique (12°) ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées
 
 **WFS-46 — Compteur de vitesse en arc** · E5 · priorité 0.49 · ⏳ Prêt (règles : `regles-de-gestion/WFS-46.md`)

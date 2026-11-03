@@ -1214,3 +1214,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : `course-decompte-3`, `course-decompte-go`, `course-fin`, `course-*` : chiffres inclinés de 12°, nets, sans débordement ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées.
 - **Plan** : cisaillement des quads de glyphe dans `src/ui/text.*` (option, droit par défaut, largeur inchangée) → HUD → accroche décompte / fin → banc → contrôle rapide, fusion, ajout à `qa/Check.md`.
 - **Ménage** : marqueur de conflit orphelin `<<<<<<< HEAD` retiré du Journal (aucun texte perdu).
+
+### 2026-11-03 20:07:56 — WFS-48 : italique codé, PR #33 en revue (Claude, agent 5)
+- **Fait** : `ui::text(..., italique)` : glyphes cisaillés de 12° autour du milieu des capitales, droit par défaut, `ui::width` inchangée. Italique activé là où le web l'a (`css/style.css`) : HUD (`.time-value`, `.score-value`, `.combo`, `.speedo-read`), titre des bandeaux (`.toast b` = le titre, pas la valeur), décompte, score de fin (`.score-big`), valeurs des stats (`.stats dd`). Planche `texte-essai-*` : ligne droite + ligne italique.
+- **Accroches annoncées** : noyau `src/render/renderer.h/.cpp` (4 lignes) : `Renderer::uiGlyph(..., float biais = 0)` décale le bord haut du quad (sans conflit avec la PR #31 de WFS-59) ; E3 `src/game/course_system.cpp` (7 lignes) : décompte, score et stats de fin en italique.
+- **Fichiers** : `src/ui/text.h`, `src/ui/text.cpp`, `src/ui/hud.cpp`, `src/ui/toasts.cpp`, `src/render/renderer.h`, `src/render/renderer.cpp`, `src/game/course_system.cpp`.
+- **Vérification** : compilation `-fsyntax-only -Wall` des 5 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
+
