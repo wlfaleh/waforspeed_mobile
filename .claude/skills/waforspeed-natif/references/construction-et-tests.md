@@ -18,4 +18,4 @@
 
 ## Ce que la CI ne peut pas vérifier
 Le rendu sur un vrai GPU mobile, la pré-rotation, le tactile et les performances : à faire tester par l'utilisateur
-et le noter dans le journal de `TACHES.md`.
+et le noter dans le Journal (`journal.md`).

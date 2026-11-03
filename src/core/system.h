@@ -33,6 +33,15 @@ struct MapDef;
 struct CarDef;
 struct Touch;
 struct DriveInput;
+struct FrameParams;
+
+// scène dédiée (WFS-44) : ce que Game dessine encore quand un système prend la scène de l'image (tout à false par défaut)
+struct SceneDediee {
+    bool route = false;       // sol, trottoirs, chaussée
+    bool joueur = false;      // voiture du joueur + ombre de contact
+    bool commandes = false;   // commandes tactiles de conduite
+    vec3 cible{};             // point regardé par la caméra choisie (GameView::camTarget)
+};
 
 // état de la partie, en lecture pour les systèmes (rempli par Game à chaque appel)
 struct GameView {
@@ -48,6 +57,8 @@ struct GameView {
     // écran affiché (WFS-36) et demande de changement : appliquée entre deux images, puis System::onEcran
     Ecran ecran = Ecran::Course;
     std::function<void(Ecran)> allerA;
+    // scène dédiée (WFS-44) : un système a pris la scène de l'image (caméra, fond…) ; la ville, le trafic, etc. ne dessinent pas
+    bool sceneDediee = false;
 };
 
 class System {
@@ -62,6 +73,10 @@ public:
     // peut la modifier (chocs du trafic, WFS-08) ; pilote automatique : un système peut corriger les commandes
     virtual void collide(double /*dt*/, Player&, const GameView&) {}
     virtual void autopilot(double /*dt*/, DriveInput&, const GameView&) {}
+    // scène dédiée (WFS-44) : appelée avant chaque image, dans l'ordre des systèmes ; le premier qui renvoie true prend la
+    // scène : il règle caméra (view, proj, camPos), ciel / fond uni, brouillard, soleil, ambiance, exposition, ombres dans fp
+    // (déjà rempli avec les valeurs habituelles de Game) et choisit dans s ce que Game dessine encore
+    virtual bool scene(FrameParams& /*fp*/, SceneDediee& /*s*/, const GameView&) { return false; }
     // dessin 3D dans la scène (après la route, avant la voiture du joueur)
     virtual void render(Renderer&, const GameView&) {}
     // interface 2D, par-dessus l'image (pixels logiques)

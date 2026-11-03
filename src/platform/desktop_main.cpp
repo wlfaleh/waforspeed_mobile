@@ -10,6 +10,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../audio/audio_system.h"
+#include "../core/scene_essai.h"
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/traffic_system.h"
@@ -81,6 +82,8 @@ int main(int argc, char** argv) {
     for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 15 == 0) g.render(300 + i / 60.0); }
     g.render(301.5); r.capturePng(out + "/ecran-menu-vide.png");
     WFS_LOG("capture ecran-menu-vide : écran %s, %.1f km/h", nomEcran(g.ecran()), g.player().kmh());
+    // WFS-44 : un système de test prend la scène (fond uni #07070c, cube, caméra FOV 36°)
+    activerSceneEssai(true); g.render(310); g.render(310.02); r.capturePng(out + "/scene-dediee-vide.png"); activerSceneEssai(false);
     g.shutdown();
     benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
     benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)
