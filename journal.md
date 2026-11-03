@@ -1372,3 +1372,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Réutiliser : `js/net/duel.js` (`startDuelRace`, `sendRacePresence`, `updateGhosts`, `finishDuel`, `renderLobby`), `js/game/update.js` → `hitGhosts`, `js/ui/hud.js` → `renderBoard`, modèles `models/<voiture>/`.
 - Plan : RG-02/03 (graine commune, messages de présence) → RG-04 fantômes bornés → RG-05 contacts → RG-06 classement + résultat → RG-01 salon minimal.
 - Critères : test CPU même graine = trafic identique image par image ; test messages hostiles sans plantage ; capture voiture adverse avec son nom + classement.
+
+### 2026-11-03 21:19:39 — WFS-69 : CI découpée, PR #37 (agent 3, session 011cpqZd)
+- **Constat** (run de WFS-59) : appel principal de `wfs_bench` ≈ 5 min ; les lancements `texte` ×2 et `chargement` 2400 refaisaient tout le banc pour 1 à 3 captures : ≈ 21 min sur 29.
+- **Fait** : `build.yml` (paths-ignore de la doc ; plus de déclencheur `pull_request` ; concurrency par commit et sans annulation sur `main` ; banc en matrice `partie1` / `partie2` / `texte` / `ecrans-2400` ; publication en série qui ne remplace jamais une Release `apercu` plus récente) ; `desktop_main.cpp` (`WFS_BANC=partie1|partie2|chargement|texte`, rien ne change sans la variable).
+- **Essai 1 (commit de code sur branche + PR)** : un seul run, [n° 435](https://github.com/wlfaleh/waforspeed_mobile/actions/runs/41720665103), aucun run créé par l'ouverture de la PR #37.
+- **Essai 2 (documentation seule)** : ce commit (`TACHES.md` + `journal.md` sur `main`) ne doit lancer aucun build une fois WFS-69 fusionné ; avant fusion, `main` garde l'ancien `build.yml`.
