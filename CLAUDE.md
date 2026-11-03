@@ -33,4 +33,4 @@
 - **Statuts de `TACHES.md` mis à jour après chaque avancement et envoyés sur `main` tout de suite** (les autres agents s'y fient).
   Toujours partir de la dernière version de `main` (`git pull`), modifier seulement ses propres lignes, puis envoyer :
   **ne jamais copier un `TACHES.md` d'une autre branche par-dessus celui de `main`** (cela efface les réservations des autres).
-- **Journal** (`journal.md`, nouvelles entrées à la fin, mêmes règles que `TACHES.md` : partir de `main`, n'ajouter que ses entrées) à jour à chaque étape. Tout en français (code commenté, messages, interface, commits).
+- **Journal** (`journal.md`, nouvelles entrées à la fin, mêmes règles que `TACHES.md` : partir de `main`, n'ajouter que ses entrées) à jour à chaque étape. **Chaque entrée commence par la date et l’heure complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)` (heure UTC, obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"`, jamais devinée). Tout en français (code commenté, messages, interface, commits).
