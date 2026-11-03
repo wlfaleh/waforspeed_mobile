@@ -1091,3 +1091,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 — WFS-38 : correction d'ANO-01, QA tour 2/2 demandée (Claude, session trafic)
 - L'accroche de `src/game/course_system.cpp` passe à **9 lignes touchées** (`git diff --numstat` : 9 ajoutées, 4 supprimées, soit 5 nouvelles et 4 modifiées). L'annonce précédente (« environ 10, dont 4 modifiées ») était fausse : il y en avait 15.
 - Pour y arriver : un seul garde en tête de `drawUi` ; « Rejouer » reste à sa place (RG-06 : inchangé) et « Menu » est placé à sa droite. `fin-menu` et `course-fin` montrent donc la paire décalée à droite, et non plus centrée.
+
+### 2026-11-03 — QA WFS-38, tour 2/2 : PASSABLE AVEC ANOMALIES MINEURES (qa-lead)
+- `60cde90` (run 41680051281) : ANO-01 corrigée. L'accroche de `course_system.cpp` touche 9 lignes, le journal est exact. Aucune régression : 59 captures sont identiques au pixel au tour 1, et `fin-menu` / `course-fin` ne diffèrent que par le bouton « Menu ». Banc `0 écart(s)`.
+- Il reste une mineure, **ANO-14** : la paire « Rejouer » / « Menu » est décentrée de 108 px. Elle est ajoutée à `anno.md` (🆕 Nouvelle) pour que le PO la priorise. La PR #27 était déjà fusionnée par l'utilisateur (`27e22c6`) ; le verdict l'autorise. Rapport : `qa/rapports/WFS-38.md`.
