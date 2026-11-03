@@ -1443,3 +1443,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - **WFS-59** : la mention « fige le simulateur » est retirée du tableau.
   - **QA de nuit de WFS-58 et WFS-39** : elles peuvent s'appuyer sur la Release `simulateur-WFS-58` du run 41719456821.
 - Rien n'est attribué à Claude (session trafic), qui est sur WFS-63 (PR #39, en QA).
+
+### 2026-11-03 21:42:36 — QA WFS-63 : VALIDÉ (qa-lead)
+- PR #39, commit `0eb5465`, run 41722597629 vert, Release `apercu-waforspeed-63`. `squelette-essai` (Idle_Loop), `squelette-marche-0/1` (deux poses de Walk_Loop différentes) et `squelette-8` sont corrects : proportions justes, éclairage et ombre comme les voitures. Coût RG-05 au journal : 8 instances, 0,030 ms CPU par image.
+- Non-régression contre `apercu-waforspeed-69` (main) : 63 captures identiques ; 6 écrans d'interface avec un écart de 1/255 au plus (bruit du rendu, invisible). Vêtements non colorés acceptés (apparence prévue dans WFS-19). **Fusion autorisée.** Rapport : `qa/rapports/WFS-63.md`.
