@@ -48,7 +48,7 @@ public:
                     pl.dist * 0.006 / 1000, course_.maxKmh, course_.nearCount, course_.level);
         // partie finie : la voiture roule seule à 62 % de la vitesse max (« auto » du jeu web)
         if (course_.state == RaceState::Over) pl.speed += (MAX_SPEED * 0.62 - pl.speed) * std::min(1.0, dt);
-        score_ = course_.score(pl); km_ = pl.dist * 0.006 / 1000;
+        if (course_.state != RaceState::Over) { score_ = course_.score(pl); km_ = pl.dist * 0.006 / 1000; }   // figés à la fin (endRace)
     }
 
     bool onTouch(const Touch& t, const GameView&) override {
@@ -141,8 +141,8 @@ void benchCourseScene(Game& g, Renderer& r, const std::string& out) {
     for (int i = 0; i < 80; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t + 30 + i / 60.0); }
     g.render(t + 32); g.render(t + 32.01);
     r.capturePng(out + "/course-fin.png");
-    WFS_LOG("capture course-fin : état %s, score %lld, %d checkpoint(s)", k->state == RaceState::Over ? "fin" : "en course",
-            k->score(g.player()), k->level);
+    WFS_LOG("capture course-fin : état %s, %d checkpoint(s), %d km/h max (score affiché = score à la fin, ci-dessus)",
+            k->state == RaceState::Over ? "fin" : "en course", k->level, k->maxKmh);
     g.shutdown();
 }
 
