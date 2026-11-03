@@ -1392,3 +1392,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Branche synchronisée avec `main` avant le push.
   - Shaders, banc et APK : CI de la PR #38.
 - **Limites** : pas de réseau réel (ticket E7 à créer par le PO), pas d'entrée « Duel » dans le menu (E8), HUD solo affiché pendant le duel.
+
+### 2026-11-03 21:28:24 — Fin WFS-69 : fusionné (PR #37), CI de 29-52 min à 7 min (agent 3, session 011cpqZd)
+- **Run 435** (commit de code sur branche + PR) : un seul build ; android 1 min 32 ; banc `texte` + tests 1 min 44 ; `partie2` 4 min 05 ; `ecrans-2400` 5 min 24 ; `partie1` 6 min (chemin le plus long) ; publication 52 s ; **total 7 min** (21:18:54 → 21:25:52) au lieu de 29 à 52 min. Release `apercu-waforspeed-69` : 70 fichiers.
+- **Captures** : 59 captures comparées à une référence locale (ancien banc de `main`, lavapipe dans le conteneur) : écart max 1 niveau, 0 pixel > 16 (arrondi entre versions de lavapipe), donc identiques. Les 10 captures des nouveaux lancements `texte` / `chargement` regardées : correctes ; comparaison au pixel à venir (référence locale en cours).
+- **Fusion** : `4f95695`. Ajouté à `qa/Check.md`.
+- **Essai 2 (doc seule)** : ce commit (`TACHES.md`, `qa/Check.md`, `journal.md`) ne doit lancer aucun build. **Essai 3** : deux commits de code de suite sur `main` (la fusion `4f95695` puis le prochain ticket fusionné) doivent publier tous les deux. Résultats ajoutés ici dès qu'ils sont connus.
+- Constat au passage : la Release `apercu` de `main` n'avait plus qu'un fichier (builds de `main` annulés les uns par les autres) ; la fusion de WFS-69 la republie.
