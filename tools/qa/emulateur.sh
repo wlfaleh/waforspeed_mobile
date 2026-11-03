@@ -84,9 +84,10 @@ if [ "$SCENARIO" = mvp ]; then
   etape() { if attendre "$1" "$2" "$3"; then images; capture "$4"; else capture "$4"; return 1; fi; }
   parcours() {
     # délais max : 1 440 s d'étapes + 9 × 30 s d'images = 1 710 s ≈ 28,5 min ≤ 30 min (RG-07) ; jeu ≥ 1 image/s attendu avec WFS-59
-    # 1re image du jeu (RG-04) : « Cibles de rendu » est écrit quand l'écran de chargement commence à se dessiner (pas de
-    # ligne « QA ips » pendant le chargement) ; 3 s plus tard la barre avance, jamais l'écran de démarrage Android
-    if attendre chargement "Cibles de rendu" 120; then sleep 2; capture 01-chargement; else capture 01-chargement; return 1; fi
+    # 1re image du jeu (RG-04) : l'écran de chargement complet (texte et barre) est écrit par chargement.cpp
+    # (« chargement : première image … écran complet (police) … ») ; avant, seul le rail de la barre est dessiné (QA WFS58-5).
+    # Jamais l'écran de démarrage Android ; pas de ligne « QA ips » pendant le chargement, d'où 1 s d'attente fixe.
+    if attendre chargement "écran complet \(police\)" 120; then sleep 1; capture 01-chargement; else capture 01-chargement; return 1; fi
     etape menu "Écran : course → menu" 180 02-menu || return 1               # chargement fini, menu (WFS-37)
     read W H < <(adb shell wm size | tail -1 | sed -E 's/.* ([0-9]+)x([0-9]+).*/\1 \2/' | awk '{ if ($1 < $2) print $2, $1; else print $1, $2 }')
     log "écran ${W}x${H} (paysage)"
