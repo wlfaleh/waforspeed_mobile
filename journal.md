@@ -1030,3 +1030,8 @@ test de la piste et APK verts (run 41644926035), captures du banc encore en cour
 **Nouvelle règle (demande de l'utilisateur)** : fusion rapide possible sur ordre de l'utilisateur (CI verte et rien de bloquant
 sur les captures), QA après fusion ; bloquant → ticket de correction prioritaire, mineur → `anno.md`. Mis à jour : `TACHES.md`
 (règle 5), `CLAUDE.md`, `.claude/agents/qa-lead.md`. Épic E8 libre : **WFS-38** (menu tactile, départ, Rejouer / Menu) débloqué.
+
+### 2026-11-03 — WFS-38 prêt (PO)
+- WFS-37 ✅ (PR #23, 42d4f61) et WFS-12 ✅ : **WFS-38** (menu tactile, départ de course, fin → Rejouer / Menu, E8) passe ⏳ Prêt, sans responsable.
+- **WFS-38 prêt, à attribuer en priorité au prochain agent développeur qui demande un ticket (consigne de l'utilisateur) ; la session 01UY1Vv1 est en pause** (ne pas la lui attribuer). Mention « prochain demandeur » dans la colonne Responsable de `TACHES.md`.
+- Règles `regles-de-gestion/WFS-38.md` complétées : état pressé aligné sur le web (`.mitem:hover` : décalage 10 px, barre cyan, et non orange / 2 px), zone de code E8 et 3 accroches ≤ 10 lignes (`course_system.cpp` : bouton « Menu » + remise à zéro en entrant en course ; `android_main.cpp` : ouverture sur le menu ; `desktop_main.cpp` : scène de banc), RG-04 « Bientôt » (Showroom, Duel), RG-08 banc, captures `menu-bientot` et `fin-retour-menu` ajoutées.
