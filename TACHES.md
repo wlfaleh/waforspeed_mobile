@@ -711,3 +711,10 @@ ni fin, `benchCourseScene`), `CMakeLists.txt` (2 : `test_course`), `build.yml` (
 **Limites** : collisions avec le décor (`crash`) portées et testées mais pas encore déclenchées (aucun décor percutable natif) ;
 graine aléatoire par course avec le menu (WFS-11) ; HUD en continu : WFS-27.
 **Suite** : CI → qa-lead → fusion si `VALIDÉ`.
+
+### 2026-11-03 — WFS-07 refusé (sol sans ombre), WFS-34 refusé 2e fois (cœurs) : corrigés
+- WFS-34 (deb85f2) : cœur du houppier réduit (×0,7) et teinté comme le feuillage à l'ombre (moyenne de l'atlas × teinte × 0,45).
+- WFS-07 (6743fbc) : cause trouvée, antérieure au ticket : les triangles du sol sont enroulés à l'envers, le shader
+  retournait leur normale vers le bas → route, trottoirs et bas-côtés ne recevaient jamais le soleil direct (ni l'ombre).
+  Corrigé dans `scene.frag` (pas de retournement pour ROAD/WALK/GROUND). La route sera plus claire au soleil : attendu.
+**Suite** : CI → nouvelles QA.
