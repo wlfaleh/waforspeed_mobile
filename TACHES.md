@@ -103,7 +103,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
 | — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-18` |  |  |
-| P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅ | `feature/waforspeed-19` |  |  |
+| P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | ⏸ En attente de WFS-72 (réservé, reprise dès WFS-72 fusionné) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 | `feature/waforspeed-19` |  |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | 🔍 En revue | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
@@ -156,6 +156,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | ✅ Fusionné (QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |
 | P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | ⏳ Prêt |  | — | `feature/waforspeed-70` |  |  |
 | P3 Moyenne | WFS-71 | Ville vivante : commerces et terrasses, portique 3D, enseignes | E2 | ⏳ Prêt |  | WFS-06 ✅ | `feature/waforspeed-71` |  |  |
+| P2 Haute | WFS-72 | Point d'extension : apparence des personnages (peau, cheveux, vêtements) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-63 ✅ | `feature/waforspeed-72` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -351,7 +352,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité P3 Moyenne · ⏳ Prêt — ↪ fusionné dans WFS-15
 - [ ] 60 i/s visés, mesures dans le journal
 
-**WFS-19 — Personnages : piétons animés et conducteurs** · E2 · priorité P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-03, branche `feature/waforspeed-19` (WFS-63 ✅) (règles : `regles-de-gestion/WFS-19.md`)
+**WFS-19 — Personnages : piétons animés et conducteurs** · E2 · priorité P2 Haute · ⏸ En attente de WFS-72 (réservé à Claude, session trafic, 2026-11-03), branche `feature/waforspeed-19` (WFS-63 ✅, WFS-72) (règles : `regles-de-gestion/WFS-19.md`)
 - [ ] Personnages du jeu web, conducteur face au volant
 
 **WFS-63 — Point d'extension : maillages animés par squelette (skinning)** · E0 · priorité P3 Moyenne · ✅ Terminé (PR #39, VALIDÉ) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-63.md`)
@@ -382,6 +383,9 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-71 — Ville vivante** · E2 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-71.md`)
 - [ ] terrasses, portique, enseignes visibles
+
+**WFS-72 — Point d'extension : apparence des personnages** · E0 · priorité P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-03, branche `feature/waforspeed-72` (règles : `regles-de-gestion/WFS-72.md`)
+- [ ] `squelette-tenue` : homme et femme habillés, peau / cheveux / haut / bas / chaussures distincts ; captures existantes identiques, banc `0 écart(s)`
 
 **WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; captures de voiture identiques à avant
