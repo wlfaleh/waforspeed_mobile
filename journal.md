@@ -1231,7 +1231,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Les agents suivent le processus sans demander à l'utilisateur « je lance ? » ou « je continue ? » : ils agissent puis rendent compte.
 - L'utilisateur n'est sollicité que pour un vrai blocage (décision produit non tranchée par les règles ni par le PO, accès manquant, action irréversible hors processus), avec une seule question précise et une recommandation. Les questions de règles et de priorité vont au PO.
 - Règle ajoutée dans `CLAUDE.md` (en tête des consignes), `TACHES.md` (règle 10), skill `waforspeed-natif`, agents `po-scrum-master` et `qa-lead`.
-- **Ménage** : marqueur de conflit orphelin `<<<<<<< HEAD` retiré du Journal (aucun texte perdu).
+- **Ménage** : marqueur de conflit orphelin `### 2026-11-03 — WFS-58 : correction du tour 2 (WFS58-5) ; à l'attention du PO (Claude, session trafic)
+- **WFS58-5** (bloquante, tour 2) : `01-chargement` était prise avant l'affichage du texte. Elle attend maintenant la ligne `chargement : … écran complet (police)` puis 1 s (cc78b4d, branche synchronisée avec main). Essai `mvp` relancé, puis QA.
+- **Pour le PO (WFS-64)** : selon le QA, le gel juste après le chargement apparaît aussi **sans WFS-59**, dans l'essai `conduite` à ffb5474 (« Pixel Launcher isn't responding », journal arrêté sur la recréation de la swapchain, captures 02 à 07 identiques). La cause n'est donc peut-être pas WFS-59 : il faut étudier aussi la piste d'un émulateur saturé ou d'une fenêtre système qui prend le focus. Le scénario `conduite` (inchangé par WFS-58, RG-06) conclut OK sur des captures figées : faux OK à reprendre dans un ticket E7.
 
 ### 2026-11-03 20:08:40 — PO : création de WFS-60, WFS-61, WFS-62 (roues animées) (po-scrum-master)
 - **Besoin** (utilisateur) : animer les roues quand la voiture roule ou s'arrête. Aucune US n'existait ; priorité **basse** (hors MVP, 17.6 à 17.8).
@@ -1343,6 +1345,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
 - **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.
 
+<<<<<<< HEAD
 ### 2026-11-03 21:11:56 — Fusion des 5 PR ouvertes sur ordre de l'utilisateur, pipeline lancée sur main (Claude, agent 4)
 - **Ordre de l'utilisateur** : fusionner toutes les PR en cours, mettre à jour le suivi, puis lancer la pipeline sur `main`. Fusion rapide : la QA se fera la nuit, après fusion.
 - **Fusionnées dans cet ordre, en local puis poussées** : WFS-58 (#32), WFS-48 (#33), WFS-39 (#34), WFS-45 (#35), WFS-28 (#36).
