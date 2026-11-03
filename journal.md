@@ -1200,3 +1200,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - L'utilisateur précise que cette session est **agent 4**. « Agent 3 » est la session qui tient WFS-59 (E0).
 - Responsable de **WFS-45** (E4) corrigé dans `TACHES.md` : « Claude (agent 4, session 011cpqZan) ».
 - Les entrées précédentes de cette session au Journal (19:47:29, règle sur l'heure ; 19:53:50, début de WFS-45), signées « agent 3 », sont de l'agent 4. Elles ne sont pas réécrites.
+
+### 2026-11-03 20:00:50 — QA WFS-52 : VALIDÉ (qa-lead)
+- Construction `d2b19dc` (PR #30, run 41699480375 vert), Release `apercu-waforspeed-52` (63 captures) regardée.
+- `encoche-hud-2400` : bande de 90 px vide de HUD (panneau Temps à x ≈ 114, vitesse centrée entre les marges). Autres captures comparées à `apercu-waforspeed-57` : bruit de rendu ≤ 1/255 seulement (le même qu'entre deux `main`), banc `0 écart(s)`.
+- RG-01 à RG-03 respectées ; l'accroche d'1 ligne de `build.yml` (annoncée) est acceptée à la place de `tools/qa/**`.
+- Aucune anomalie : **fusion autorisée**. Rapport : `qa/rapports/WFS-52.md`.
