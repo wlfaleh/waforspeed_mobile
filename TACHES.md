@@ -90,7 +90,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | [MVP] Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ✅ Terminé (fusionné sur ordre de l'utilisateur, QA après fusion) |  | WFS-35, WFS-36 | `feature/waforspeed-37` | PR #23 (fusionnée) | ⏳ QA après fusion |
 | 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | ✅ Terminé | | — | `feature/waforspeed-29` | #17 | ✅ VALIDÉ par qa-lead ([rapport](qa/rapports/WFS-29.md)) |
-| 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-37, WFS-12 | `feature/waforspeed-38` | #27 |  |
+| 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-37, WFS-12 | `feature/waforspeed-38` | #27 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES tour 2/2 (ANO-14) — [rapport](qa/rapports/WFS-38.md) |
 | 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-27 ✅ | `feature/waforspeed-47` | #25 (fusionnée) | ✅ VALIDÉ par qa-lead (c813a56) — [rapport](qa/rapports/WFS-47.md) |
 | 0.43 | WFS-51 | Point d'extension : marges de sécurité de l'écran (encoche), commandes tactiles | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-29 ✅ | `feature/waforspeed-51` | #20 (fusionnée) | ✅ VALIDÉ par qa-lead (66c13bc, banc PC) — [rapport](qa/rapports/WFS-51.md) |
 | 0.435 | WFS-52 | HUD et notifications dans les marges de sécurité (encoche) | E5 | ⏳ Prêt |  | WFS-51 ✅, WFS-27 ✅ | `feature/waforspeed-52` |  |  |
@@ -162,7 +162,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] manifeste : `android:label="WaForSpeed"`, icône adaptative, thème plein écran ; appel immersif au démarrage et à `onWindowFocusChanged`
 - [ ] captures du banc PC inchangées (vérification à l'écran par WFS-50)
 
-**WFS-38 — [MVP] Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · 🔍 En revue (PR #27) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-38.md`)
+**WFS-38 — [MVP] Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ✅ Terminé (PR #27, PASSABLE, ANO-14) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `menu-bientot`, `fin-menu` (Rejouer + Menu) puis `fin-retour-menu`
 - [ ] Android : ouverture sur le menu après le chargement ; autres captures inchangées, banc `0 écart(s)`
 

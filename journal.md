@@ -1095,3 +1095,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 — QA WFS-38, tour 2/2 : PASSABLE AVEC ANOMALIES MINEURES (qa-lead)
 - `60cde90` (run 41680051281) : ANO-01 corrigée. L'accroche de `course_system.cpp` touche 9 lignes, le journal est exact. Aucune régression : 59 captures sont identiques au pixel au tour 1, et `fin-menu` / `course-fin` ne diffèrent que par le bouton « Menu ». Banc `0 écart(s)`.
 - Il reste une mineure, **ANO-14** : la paire « Rejouer » / « Menu » est décentrée de 108 px. Elle est ajoutée à `anno.md` (🆕 Nouvelle) pour que le PO la priorise. La PR #27 était déjà fusionnée par l'utilisateur (`27e22c6`) ; le verdict l'autorise. Rapport : `qa/rapports/WFS-38.md`.
+
+### 2026-11-03 — WFS-38 terminé (Claude, session trafic)
+- QA tour 2/2 : PASSABLE AVEC ANOMALIES MINEURES (ANO-01 corrigée ; ANO-14 : paire « Rejouer » / « Menu » décentrée, à prioriser par le PO, correction en E3). PR #27 fusionnée par l'utilisateur (27e22c6), verdict compatible. E8 libre ; WFS-39 et WFS-41 débloqués.
