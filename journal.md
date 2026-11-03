@@ -1353,3 +1353,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Point d'attention** : WFS-58 est fusionné alors que son dernier passage QA était **REFUSÉ** au tour 2 (WFS58-5, `01-chargement` presque noire). Il est remis à la QA de nuit ; s'il reste bloquant, le PO crée un ticket de correction prioritaire.
 - **Les CI des PR n'étaient pas terminées** au moment de la fusion. La pipeline de `main` sert de contrôle.
 - **Suivi** : `TACHES.md` passe WFS-58, 48, 39, 45 et 28 à ✅ Fusionné (QA de nuit à faire) ; les 5 tickets sont ajoutés à `qa/Check.md`.
+
+### 2026-11-03 21:13:18 — Fin WFS-28 : fusionné sur ordre de l'utilisateur (PR #36) ; marqueur de conflit retiré du journal (agent 3, session 011cpqZd)
+- WFS-28 fusionné par l'utilisateur à 21:12:25, CI de la PR non terminée (Android ✅). Suivi déjà fait par l'agent 4 (`TACHES.md` ✅, `qa/Check.md`). Contrôle : la pipeline de `main` doit montrer les lignes `SFX bip-decompte`, `SFX bip-go`, `SFX quasi-contact`, `SFX accident`, `SFX bip-fin`… dans le journal du banc, et `test_audio` vert.
+- `journal.md` : une ligne orpheline `<<<<<<< HEAD` (sans `=======` ni `>>>>>>>`, aucun contenu en double) envoyée sur `main` avant l'entrée de 21:11:56 : ligne retirée, rien d'autre changé.
