@@ -85,7 +85,7 @@ Journal à jour.
 | 4.5 | WFS-34 | Arbres réalistes portés du jeu web (correction de WFS-06) | E2 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-06 | `feature/waforspeed-34` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
-| 6 | WFS-07 | Ombres dynamiques du soleil | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` |  |  |
+| 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue (QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -175,7 +175,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Les reflets du vernis restent visibles (peinture toujours brillante, pas d'aspect mat) ; aucune autre régression visible
 - [ ] Coût GPU inchangé à ±0,5 ms (journal du banc)
 
-**WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · 🔧 En cours (règles : `regles-de-gestion/WFS-07.md`)
+**WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · ✅ Terminé (PR #11) (règles : `regles-de-gestion/WFS-07.md`)
 - [ ] `course-cam0-*` en jour : ombres nettes des voitures, immeubles et lampadaires sur chaussée et trottoirs
 - [ ] Deux captures à 1 m d'écart : bords d'ombre stables (calage sur la grille des texels)
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
@@ -796,3 +796,9 @@ d'échec rouge, durée de chaque étape au journal ; banc : `chargement-0/1/2`, 
 - `desktop_main.cpp` (3 : include, instant Vulkan, `benchChargement`).
 **Limite** : `chargement-1` montre l'étape « Chargement du modèle 3D… » à son début (20 %) : le chargeur de modèles (noyau)
 ne donne pas d'avancement pendant le décodage ; un avancement plus fin demanderait un ticket E0.
+
+### 2026-11-03 — WFS-07 fusionné (PR #11)
+- QA 2e passage `VALIDÉ` (`qa/rapports/WFS-07.md`) : ombres des immeubles, voitures et lampadaires sur la chaussée et les
+  trottoirs, bords stables, pas d'acné. **E4 libérée.** WFS-09 (nuit) et WFS-15 (qualité) débloqués côté dépendance.
+- À mesurer en fin d'épic E4 (simulateur / téléphone) : coût de la passe d'ombre ≤ 3 ms avec la carte 1024.
+- WFS-34 : 4e correction (cœur en feuillage découpé), en attente de CI puis QA.
