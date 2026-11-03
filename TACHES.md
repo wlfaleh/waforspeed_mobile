@@ -944,3 +944,13 @@ reflétés suivent la rugosité effective ; seuil de finesse 4 mm ; coût de la 
   ANO-07 « 3D » qui se lit « 30 » à 720 p ; ANO-08 échec attribué à « Construction de la ville » au lieu du modèle 3D (barre à 70 %) ;
   ANO-09 captures `chargement-*` en 2400x1080 non publiées par la CI.
 **Suite** : le développeur corrige ANO-06 à ANO-09, CI, 2e passage QA. Pas de fusion avant.
+
+### 2026-11-03 — WFS-12 et WFS-35 : corrections du tour 1/2 de QA poussées
+**WFS-12** (`f228e46`) — ANO-04 : décompte blanc #F2F4F8 avec halo cyan, « GO » orange avec halo orange, sans ombre sombre ;
+ANO-05 : bouton Rejouer en parallélogramme (biais 14 px du `.btn`), « TEMPS ÉCOULÉ » cyan espacé 0,22 em, score orange avec halo.
+Italique impossible dans le texte natif (`src/ui`, hors zone E3) : laissé au jugement du QA.
+**WFS-35** — ANO-06 : tranches de la barre bord à bord au pixel, « FOR » en `--muted` et sans halo pendant le fondu ;
+ANO-07 : libellé à 19 px (720 p) ; ANO-08 : `Game::init` s'arrête dès que la voiture manque (si écran de chargement), l'échec
+reste sur « Chargement du modèle 3D… » ; ANO-09 : `build.yml` publie `chargement-*-2400.png`.
+**Accroches WFS-35** : +2 lignes (`game.cpp` 1, `build.yml` 1), soit 15 au total (annoncé).
+**Suite** : CI → 2e passage QA (tour 2/2) des deux tickets.
