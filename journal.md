@@ -1431,3 +1431,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Ce qui manque : **pas de tache de lumière visible sur le grand sol**, alors que le critère d'acceptation en demande trois. Le sol a un métal de 0,7 et une couleur 0x101219, donc son diffus est quasi nul, et le reflet des spots tombe hors du cône pour cette caméra.
   - La voiture est vue de l'arrière, alors que le jeu web la montre de 3/4 avant : il faudrait un cap de 0,6 + π dans le repère natif.
   - Noté dans `qa/Check.md` pour la recette de nuit ; à reprendre avec WFS-11 (garage, agent 3), qui utilise ces projecteurs.
+
+### 2026-11-03 21:38:55 — PO : écarts avec le jeu web transformés en tickets (po-scrum-master)
+- **WFS-70** (E3, P2 Haute) ressenti de conduite : modes de direction, secousse / ralenti / vibration au choc, réduire les mouvements. **WFS-71** (E2, P3) ville vivante : commerces et terrasses, portique 3D, enseignes. Écran de fin (record, stats) et pause « Recommencer » ajoutés à **WFS-41**. Aucun ticket en cours ou terminé touché. Message agent 4 → agent 3 (projecteurs du garage) : pas pour le PO, aucune action.

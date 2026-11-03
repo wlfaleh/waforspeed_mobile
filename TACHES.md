@@ -154,6 +154,8 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-67` |  |  |
 | — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
 | P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | ✅ Fusionné (QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |
+| P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | ⏳ Prêt |  | — | `feature/waforspeed-70` |  |  |
+| P3 Moyenne | WFS-71 | Ville vivante : commerces et terrasses, portique 3D, enseignes | E2 | ⏳ Prêt |  | WFS-06 ✅ | `feature/waforspeed-71` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -374,6 +376,12 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-69 — [STABLE] CI : banc en jobs parallèles, fin des builds inutiles** · E7 · priorité P1 Urgent · ✅ Fusionné le 2026-11-03 (PR #37, QA de nuit : `qa/Check.md`) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-69.md`)
 - [ ] doc seule = aucun build ; un seul build par commit ; `main` jamais annulé
+
+**WFS-70 — Ressenti de conduite** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-70.md`)
+- [ ] choc = secousse + ralenti ; 2 modes de direction ; réduire les mouvements
+
+**WFS-71 — Ville vivante** · E2 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-71.md`)
+- [ ] terrasses, portique, enseignes visibles
 
 **WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; captures de voiture identiques à avant

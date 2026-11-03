@@ -26,3 +26,8 @@ Décors des autres cartes (WFS-14), éclairage de nuit (WFS-09).
 
 ## Périmètre élargi (tickets plus gros, moins de builds)
 Ce ticket absorbe WFS-68 : **lire et appliquer aussi** `regles-de-gestion/WFS-68.md` (écran de réglages : caméra, qualité, son, commandes, vibrations). Une seule branche, une seule CI à la fin.
+
+## Compléments (écarts avec le jeu web)
+- Écran de fin : « NOUVEAU RECORD » quand le score bat le meilleur (`newBest`) et statistiques distance / vitesse max / quasi-contacts / checkpoints (`stDist`, `stSpeed`, `stNear`, `stCp`) ; la sauvegarde du record est dans WFS-24.
+- Pause : bouton « Recommencer » (`restartBtn`) en plus de « Reprendre » et « Quitter » (voir WFS-39).
+- Réglages : le choix du mode de direction vient de WFS-70.
