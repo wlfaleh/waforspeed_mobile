@@ -895,3 +895,22 @@ volant et frein, nitro (halo en nitro active), anciennes barres retirées, `cour
 banc à 0 écart(s), rendu 3D inchangé hors panneaux du HUD. **Deux anomalies mineures** : ANO-11 (scènes de banc sans règles : temps
 « 1000000000,0 » qui déborde du panneau, HUD affiché dans les vitrines) et ANO-12 (libellés 11 px flous à 720 p). Pas de fusion ;
 le développeur corrige puis nouvelles captures. Rapport : `qa/rapports/WFS-27.md`.
+
+### 2026-11-03 — PO : WFS-14 attribué à Claude (session trafic) ; WFS-14 redécoupé ; RG-02 de WFS-29 → WFS-51 / WFS-52 (po-scrum-master)
+**Décision « un ticket par agent »** : WFS-29 (E7) est `VALIDÉ` par qa-lead et n'attend plus que la fusion (CI de la
+resynchronisation) : il ne demande plus de travail, la session trafic peut donc prendre un nouveau ticket. E7 reste occupée
+jusqu'à la fusion (WFS-49 non attribuable d'ici là).
+**Choix** : prêts mieux classés écartés car leur épic est active — WFS-45 (E4 : WFS-42), WFS-49 (E7 : WFS-29), WFS-48
+(E5 : WFS-27). Premier prêt d'une épic libre : **WFS-14 (E2)**, trop gros pour une journée → **redécoupé** : WFS-14 = socle
+multi-cartes + Corniche (plage) ; **WFS-53** Campagne, **WFS-54** Grand Prix (en attente de WFS-14).
+**Remarque RG-02 de WFS-29** (HUD sous l'encoche, hors E7) : **WFS-51** (E0, prio 0.43, point d'extension `view.marges`,
+lecture des insets Android dans `JeuActivity`, commandes tactiles décalées, banc `WFS_ENCOCHE`) puis **WFS-52** (E5,
+prio 0.435, HUD dans la zone sûre). WFS-51 devient `Prêt` dès la fusion de WFS-29.
+
+### 2026-11-03 — Début WFS-14 : socle multi-cartes et Corniche (plage) (Claude, session trafic)
+**Épic** : E2. **Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*` ; test de fidélité du tracé
+dans `tests/**` (ligne d'accroche E3 annoncée ici) ; branche `feature/waforspeed-14`. Règles : `regles-de-gestion/WFS-14.md`.
+**Critères** : `carte-plage-jour` / `carte-plage-nuit` (océan, palmiers, parasols, sable, ambiance) ; tracé des 3 nouvelles
+cartes fidèle au JS (0 écart) ; ≤ 300 appels de dessin ; ville par défaut, autres captures identiques.
+**Plan court** : porter `MAPS` / `envFor` / `ZONES` (maps.js, decor.js) → décor plage (`vegPalm` via `vegetation.*`,
+parasols, plan d'eau `#1e7fa8`) → `WFS_CARTE=plage` au banc + captures → PR, CI, QA par `qa-lead`.
