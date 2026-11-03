@@ -12,6 +12,7 @@
 #include "../audio/audio_system.h"
 #include "../game/game.h"
 #include "../game/traffic_system.h"
+#include "../render/bench_ombres.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
@@ -71,6 +72,7 @@ int main(int argc, char** argv) {
             WFS_LOG("capture %s : %.0f km/h, %.0f m", name, g.player().kmh(), g.player().dist * M);
         }
     }
+    benchShadowScenes(g, r, out);    // WFS-07 : ombres du soleil (captures ombres-*.png)
     benchTrafficScenes(g, r, out);   // WFS-08 : trafic de près et choc (captures trafic-*.png)
     g.shutdown();
     benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
