@@ -1,9 +1,28 @@
 # QA WFS-27 : [MVP] HUD de course (vitesse, temps, score, checkpoint, nitro — texte, version réduite)
 
-**Verdict : À CORRIGER (tour 1/2)** — banc d'essai PC, 1er passage. **Pas de fusion** pour l'instant.
-Aucune anomalie bloquante ; deux anomalies mineures à corriger par le développeur.
+**Verdict final : VALIDÉ** (banc d'essai PC), 2e passage (tour 2/2). ANO-11 et ANO-12 corrigées, aucune anomalie restante.
 
-## 1er passage — commit `29139a4`
+> Remarque de procédure : la PR #16 a été fusionnée dans `main` (c68c460) **avant** ce verdict, par quelqu'un d'autre que le
+> développeur et le QA, en laissant des marqueurs de conflit réparés ensuite par la PR #20 (WFS-51, 24f08d3). Le verdict porte
+> sur le code de `main` qui contient les corrections du tour 1/2.
+
+## 2e passage — `main` 6e672a9 (contient 24f08d3 ; `feature/waforspeed-27` 4f1a32d identique à main)
+
+- Construction regardée : run 41639563396 (`main`, 6e672a9) réussi ; Release `apercu` (cible 6e672a9, 51 fichiers). Banc :
+  `mode exact … 0 écart(s)`, `course automatique : 22 lignes … 0 écart(s)` (et cartes plage / campagne / circuit à 0 écart(s)).
+- Code : `src/ui/hud.cpp` — pas de HUD si `timeLeft > 1e6` (scènes sans règles de course) ; libellés `round(max(13, 11·k))` px,
+  position arrondie au pixel.
+
+| Point | Résultat |
+|---|---|
+| ANO-11 (temps « 1000000000,0 », HUD dans les vitrines) | **CORRIGÉ.** Les 12 `vitrine-*` sont identiques au pixel près à la référence `apercu-waforspeed-44` (aucun HUD). `course-cam0/1-*`, `trafic-*`, `ombres-*`, `texte-essai-1280/2400` : plus de HUD ni de temps géant (les autres écarts de ces captures viennent des tickets fusionnés entre-temps : trafic WFS-33, etc.). |
+| ANO-12 (libellés flous à 720 p) | **CORRIGÉ.** `hud-course` et `hud-nitro` : « TEMPS », « CHECKPOINT 1 », « SCORE », « KM/H », « NITRO » nets et lisibles à 720 p. |
+| Autres captures du HUD | Conformes : `hud-course` (24,0 / 545 / 126 km/h / 4 cases), `hud-temps-bas` (5,5 en rouge), `hud-nitro` (3 cases avec halo, libellé vert), `hud-combo` (1 505, « Combo ×2 » cyan), `hud-2400` (propre, à l'échelle, rien sous les commandes), `course-decompte-3` (HUD par-dessus la course, « 3 » inchangé), `course-fin` (sans HUD). |
+
+Remarque (hors WFS-27) : `encoche-course` (WFS-51) n'affiche pas le HUD (scène sans règles de course), donc ne montre pas le HUD
+dans la zone de l'encoche ; à voir par le QA de WFS-51 / le PO si cette preuve est attendue.
+
+## 1er passage — commit `29139a4` : À CORRIGER (tour 1/2)
 
 - Construction regardée : commit `29139a4` (`feature/waforspeed-27`), PR #16, run Actions 41617208849 réussi
   (android, banc-essai, publication). Release `apercu-waforspeed-27` (cible `29139a4…`, 37 captures du 2026-11-03 10:25 UTC).
@@ -26,11 +45,11 @@ Aucune anomalie bloquante ; deux anomalies mineures à corriger par le développ
 | RG-09 : fond vitré, polices de WFS-26 | OK. |
 | `course-decompte-3` / `-go` | HUD affiché par-dessus la course pendant le décompte (« 30,0 », 0 km/h) ; décompte de WFS-12 inchangé (aucun écart hors panneaux). |
 
-## Anomalies
+### Anomalies du 1er passage
 
 | ANO | Gravité | Capture | Ce qui ne va pas |
 |---|---|---|---|
 | ANO-11 | Mineure | `course-cam0-*`, `course-cam1-*`, `trafic-*`, `ombres-*`, `texte-essai-*`, `vitrine-*` (les 12) | Dans les scènes du banc sans règles de course (`courseBenchRules(false)`, `timeLeft = 1e9`), le HUD affiche un temps « 1000000000,0 » / « 999999995,0 » qui **déborde à droite du panneau TEMPS** (texte jusqu'à x ≈ 250, panneau jusqu'à 216) ; et le HUD de course s'affiche **dans les 12 vitrines** des voitures, qui ne sont pas une course. Le joueur ne le verra pas (temps réel ≤ quelques dizaines de s), mais les captures de preuve de `course-*` montrent une donnée fausse et les vitrines (référence des autres tickets) sont encombrées. À corriger : ne pas dessiner le HUD quand les règles de course sont coupées (scènes de banc) ou y donner un temps réaliste, et ne pas dessiner le HUD dans les vitrines. |
 | ANO-12 | Mineure | `hud-course`, `hud-nitro`, `course-*` (1280x720) | Les libellés à 11 px sont flous et mal formés à 720 p : « TEMPS » se lit « IEMPS », « NITRO » a des lettres déformées, « CHECKPOINT 1 » est à peine lisible (le numéro du checkpoint est une information de jeu). En 2400x1080 (`hud-2400`) ils sont nets. À corriger : caler les libellés sur le pixel entier (position et taille) ou fixer une taille minimale lisible à 720 p (ex. 12-13 px), sans changer le reste du style. |
 
-Tour de correction : **1/2**. Prochaine étape : le développeur corrige ANO-11 et ANO-12, relance la CI, puis le QA regarde les nouvelles captures.
+Tour de correction : **1/2** (anomalies corrigées au 2e passage).

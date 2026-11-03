@@ -966,8 +966,7 @@ insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture
 ### 2026-11-03 — main ne compile plus depuis la fusion de WFS-27 (Claude, session trafic)
 - La fusion de la PR #16 (WFS-27) a laissé des marqueurs de conflit (`<<<<<<<` / `>>>>>>>`) dans `.github/workflows/build.yml` et `src/platform/desktop_main.cpp` : CI de `main` en échec (c68c460, c17627d).
 - Réparé dans `feature/waforspeed-51` (PR #20, validée par le QA) en gardant les deux côtés : WFS-35 (écran de chargement) et WFS-27 (banc HUD seul). Tests et banc local OK ; `main` sera réparé à la fusion de #20.
-- Agents : avant toute fusion, vérifier `git grep -n "^<<<<<<< "` sur le résultat.
-
+- Agents : avant toute fusion, vérifier `git grep -n "^
 ### 2026-11-03 — WFS-51 fusionné ; main réparé ; WFS-14 (Claude, session trafic)
 - PR #20 (WFS-51, VALIDÉ) fusionnée en 24f08d3 : `main` compile de nouveau (marqueurs de conflit de WFS-27 retirés, CI verte sur 04ec9f5).
 - La PR #19 (WFS-14) a été fusionnée par l'utilisateur alors qu'elle était « À CORRIGER tour 1/2 ». La correction d'ANO-13 (stipes des palmiers trop sombres) part de `main` sur `feature/waforspeed-14`, nouvelle PR, puis QA tour 2/2.
@@ -986,3 +985,48 @@ WFS-14 est en revue (PR #21, QA tour 2/2) : la session finit d'abord WFS-14, WFS
 
 ### 2026-11-03 — WFS-49 en revue, PR #22 (Claude, session trafic)
 - `build.yml` : `chargement-*-2400` pris dans un lancement séparé du banc en 2400x1080 sans `WFS_TEXTE_ESSAI`. QA après la CI.
+
+### 2026-11-03 — QA WFS-27 HUD de course : VALIDÉ, tour 2/2 (qa-lead)
+Captures de la Release `apercu` (`main` 6e672a9, run 41639563396, contient 24f08d3) ; `feature/waforspeed-27` (4f1a32d) = main.
+ANO-11 corrigée : plus de HUD ni de temps « 1000000000,0 » dans `course-cam*`, `trafic-*`, `ombres-*`, `texte-essai-*` ; les 12
+`vitrine-*` sont identiques au pixel près à la référence WFS-44. ANO-12 corrigée : libellés lisibles à 720 p (`hud-course`, `hud-nitro`).
+`hud-*`, `course-decompte-3` et `course-fin` toujours conformes, banc à 0 écart(s). Aucune anomalie restante, rien dans `anno.md`.
+**Procédure** : la PR #16 avait été fusionnée (c68c460) avant ce verdict, avec des marqueurs de conflit réparés par la PR #20 (WFS-51).
+Remarque pour WFS-51 : `encoche-course` est prise sans HUD (scène sans règles de course). Rapport : `qa/rapports/WFS-27.md`.
+### 2026-11-03 — WFS-27 corrigé (tour 1/2) et WFS-37 construit (Claude, session 01UY1Vv1)
+**WFS-27** : corrections ANO-11 (pas de HUD quand le temps est illimité : vitrines et scènes du banc sans règles) et ANO-12
+(libellés à 13 px minimum, calés au pixel) poussées en 1846220. **Incident** : ce commit de synchronisation contenait des marqueurs
+de conflit (`desktop_main.cpp`, `build.yml`) et la PR #16 a été fusionnée par quelqu'un d'autre avant le tour 2/2 de QA ; réparé par
+la PR #20 (WFS-51). Leçon notée : toujours vérifier l'absence de marqueurs avant chaque commit de synchronisation. La branche
+(4f1a32d) est identique à `main`. **Suite** : QA tour 2/2 sur `main`, puis clôture.
+**WFS-37** (`feature/waforspeed-37`, e252578) : `src/ui/ecrans/menu.{h,cpp}` (système Menu, ordre 450, seulement en `Ecran::Menu`) :
+voile `.screen` en 16 bandes, fondu 300 ms, slide-in (−36 px, 40 ms de décalage, `--ease`), 3 choix `.mitem` aux textes exacts
+(« Course solo » orange), pied `.menu-foot` (RECORD « — » / meilleur score de la session, TA VOITURE « GOLF 8 GTI »), aide tactile.
+Logo et sur-titre mis en commun avec le chargement (`miseEnPage`, `dessinerBlocLogo` dans `chargement.{h,cpp}`, dessin inchangé).
+**Accroches annoncées** : `desktop_main.cpp` (3 lignes : include, `benchMenu`, mode `WFS_BANC=menu`), `build.yml` (1 ligne : `menu-1`).
+Captures : `menu-anim`, `menu-0`, `menu-1` (2400x1080). **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Fin WFS-27 HUD de course (QA VALIDÉ au tour 2/2)
+PR #16 fusionnée (c68c460, avant le verdict, puis réparée par la PR #20) ; QA du tour 2/2 VALIDÉ sur `main` (ae41abd). Épic E5 libre.
+Débloqués : WFS-47 (notifications, MVP), WFS-46 (compteur en arc), WFS-52. Ligne `<<<<<<< HEAD` restée dans ce journal après une
+résolution de conflit (Claude, session 01UY1Vv1) : retirée.
+
+### 2026-11-03 — WFS-14 terminé (Claude, session trafic)
+- QA tour 2/2 : VALIDÉ (ANO-13 corrigée, stipes bruns de jour, sombres la nuit ; 48/50 captures identiques). PR #21 fusionnée (e4bc431). E2 libre ; WFS-53, WFS-54 et WFS-55 débloqués.
+
+### 2026-11-03 — WFS-49 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage (ANO-10 corrigée, seul `chargement-fondu-2400` change). PR #22 fusionnée (37facc6). E7 libre.
+
+### 2026-11-03 — Début WFS-47 Notifications de course (Claude, session trafic) — attribué par le PO
+- Ticket : WFS-47 [MVP] · Épic E5 · règles `regles-de-gestion/WFS-47.md` · branche `feature/waforspeed-47`.
+- Zone autorisée : `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*` ; nouveau fichier conseillé `src/ui/toasts.*`. Aucune modification de `src/game/` (évènements déduits des compteurs de `Course`).
+- Critères : `toast-checkpoint` (« CHECKPOINT 1 » « +11,0 s » sous le score) ; `toast-pile` (3 bandeaux cyan / orange / rouge, rien sur les commandes) ; banc `0 écart(s)`, autres captures inchangées.
+- Plan : porter `js/ui/toasts.js` (pile de 3, 1,9 s, entrée 240 ms / sortie 260 ms) ; détection par différence d'image (`level`, `nearCount`, `combo`, `accidents`) ; remise à zéro au Rejouer ; 2 scènes de banc.
+- PO : WFS-27 ✅ débloque WFS-52 et WFS-46 (E5, ⏳ Prêt) ; WFS-14 ✅ débloque WFS-53, WFS-54 (E2) et WFS-55 (E3), passés ⏳ Prêt. Ligne de critères de WFS-27 corrigée (Terminé).
+
+### 2026-11-03 — WFS-37 Menu principal fusionné sur ordre de l'utilisateur (PR #23, 42d4f61)
+L'utilisateur a ordonné la fusion sans attendre le banc d'essai complet ni la QA (« fusionne, c'est un ordre ») : compilation,
+test de la piste et APK verts (run 41644926035), captures du banc encore en cours. Statut ✅, **QA faite après la fusion** sur `main`.
+**Nouvelle règle (demande de l'utilisateur)** : fusion rapide possible sur ordre de l'utilisateur (CI verte et rien de bloquant
+sur les captures), QA après fusion ; bloquant → ticket de correction prioritaire, mineur → `anno.md`. Mis à jour : `TACHES.md`
+(règle 5), `CLAUDE.md`, `.claude/agents/qa-lead.md`. Épic E8 libre : **WFS-38** (menu tactile, départ, Rejouer / Menu) débloqué.
