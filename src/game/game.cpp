@@ -263,6 +263,8 @@ void Game::render(double time) {
     fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
     fp.exposure = 0.85f; fp.ambient = 0.85f;
     // scène dédiée (WFS-44) : le premier système qui la prend règle fp et choisit ce que Game dessine encore
+    bool solPropre = false;   // WFS-14 : ambiance et bas-côtés propres à la carte
+    for (auto& sy : systems_) { sy->ambiance(fp, view_); solPropre = solPropre || sy->remplaceSol(view_); }
     SceneDediee sd; sd.cible = look;
     bool dediee = false;
     for (auto& sy : systems_) if (sy->scene(fp, sd, view_)) { dediee = true; break; }
@@ -272,7 +274,7 @@ void Game::render(double time) {
 
     const mat4 I = mat4::identity();
     if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
-        r_->draw(c.ground, groundMat_, I);
+        if (!solPropre) r_->draw(c.ground, groundMat_, I);
         r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
     }

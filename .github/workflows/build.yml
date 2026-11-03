@@ -30,7 +30,7 @@ jobs:
       - name: Compilation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets
       - name: Captures du rendu
         run: |
           mkdir -p captures
