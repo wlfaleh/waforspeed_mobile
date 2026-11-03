@@ -812,3 +812,86 @@ décompte et fin inchangés ; banc `0 écart(s)`.
 **Plan court** : système `Hud` (lit `activeCourse()` et `GameView::player`, seulement en `Ecran::Course` et course non finie) →
 temps + checkpoint (haut gauche), score + combo (haut droite), vitesse + nitro (bas centre) → accroche `game.cpp` → captures
 du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-27 HUD de course construit (MVP), en attente de la CI
+**Fait** (`feature/waforspeed-27`, 29139a4) : `src/ui/hud.{h,cpp}`, système `Hud` (ordre 420), port de `updateHud` et du style
+`.hud-top` / `.time-value(.low)` / `.cp-bar` / `.score-value` / `.combo` / `.nitro-bar` du jeu web. Affiché seulement en
+`Ecran::Course`, avec une course active, hors écran de fin et hors scène dédiée. Haut gauche : « TEMPS » à 1 décimale (rouge sous
+8 s) + « CHECKPOINT n » et sa barre cyan → orange ; haut droite (au-dessus de 22 % de H) : « SCORE » au format français + « Combo ×N » ;
+bas centre (entre volant et frein) : |km/h| (« R · KM/H » en marche arrière, rouge > 300) + « NITRO » en 10 cases vertes #B6FF00
+(halo en nitro active). Fonds vitrés rgba(20,22,31,.72), gouttières 16 / 14 px, tailles en fraction de la hauteur.
+**Accroches annoncées** : `game.cpp` (5 lignes retirées : anciennes barres de vitesse et de nitro), `desktop_main.cpp`
+(3 lignes : include, `benchHud`, mode `WFS_BANC=hud` pour la capture 2400x1080 sans planche de texte), `build.yml` (1 ligne : `hud-2400`).
+Captures : `hud-course`, `hud-temps-bas` (temps forcé à 6 s), `hud-nitro` (touchers gaz + nitro), `hud-combo` (deux quasi-contacts
+déclenchés par le banc), `hud-2400`.
+**Suite** : CI → qa-lead → fusion. **WFS-35** : resynchronisé avec main (WFS-44, 825dfc6), CI en cours avant fusion de la PR #12.
+
+### 2026-11-03 — PO : fin WFS-44 prise en compte, début WFS-29 (Claude, session trafic)
+**Débloqué par WFS-44** : rien de nouveau en Prêt. WFS-11 reste ⏳ En attente : il dépend encore de WFS-45 (projecteurs, E4,
+⏳ Prêt mais non attribuable tant que WFS-42 occupe E4). Anomalies : ANO-04 → WFS-48 (E5 occupée par WFS-27), ANO-10 → WFS-49
+(attend la fusion de WFS-35) ; aucune nouvelle anomalie à planifier.
+**Début WFS-29** — Épic **E7**, libre (aucun ticket E7 actif). Ticket Prêt le plus prioritaire attribuable (0.35, MVP).
+Responsable : Claude (session trafic), 2026-11-03. Branche `feature/waforspeed-29`, partie de `main`.
+Règles : `regles-de-gestion/WFS-29.md`.
+**Zone de code autorisée** : `android/**` (manifeste, `res/` : icône adaptative, thème, chaînes ; activité Java/Kotlin),
+`src/platform/**` (partie Android seulement si l'appel immersif passe par le natif). Rien dans `src/game`, `src/render`, `src/ui`.
+**Critères** : `android:label="WaForSpeed"` ; icône adaptative (avant-plan + fond `#07070c`, orange `#FF6A00` / cyan `#00E5FF`) ;
+thème plein écran, paysage verrouillé, écran allumé, `layoutInDisplayCutoutMode=shortEdges` ; immersif collant au démarrage et à
+`onWindowFocusChanged` ; APK construit en CI ; captures du banc PC inchangées (`0 écart(s)`). Vérification à l'écran : WFS-50.
+**Plan court** : manifeste + `res/values` (nom, thème) → `mipmap-anydpi-v26` (icône adaptative vectorielle) → immersif dans
+l'activité → CI (APK + banc) → QA `qa-lead` (revue du manifeste et du code, banc inchangé) → fusion.
+
+### 2026-11-03 — WFS-42 : cause trouvée par diagnostic au banc (Claude, session moteur-natif)
+**Méthode** : captures de vitrine en masquant une à une les pièces (diagnostic temporaire, retiré ensuite).
+**Cause (RG-01)** : la trame de la lunette de la Golf ne vient ni de la vitre ni des couches transparentes, mais de la
+**pièce 18** : baguette chrome **opaque** (métal 1, rugosité 0) faite de fils de 1,3 mm x 21 mm, vue à travers la vitre ;
+plus fins qu'un pixel, les fils se rasterisent en tirets brillants (`diag42-golf-sans-18` : trame disparue).
+911 : la jante (matériau 4, triangles de 1,9 mm) ne scintille plus avec les reflets élargis du 2e passage.
+**Correction** (`feature/waforspeed-42`, 6798421) : pièces « fils » (triangles < 4 mm, allongement médian > 8, hors peinture
+et vitres) dessinées en couverture partielle avant les vitres ; modèles inchangés (RG-02). **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Fin WFS-35 Écran de chargement (PR #12 fusionnée, 500c5b5)
+QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-10 → WFS-49 (PO). Branche resynchronisée avec main (WFS-12 puis WFS-44)
+avant la fusion, CI verte à chaque fois (dernière : run 41617276755). Épic E8 libre.
+**PO** : WFS-37 (menu principal, E8, MVP) et WFS-49 sont débloqués (dépendance WFS-35 finie).
+**WFS-27** : CI verte (run 41617208849), QA lancée.
+
+### 2026-11-03 — PO : WFS-37 et WFS-49 Prêts, début WFS-37 (agent développeur, session 01UY1Vv1)
+**Fin de ticket WFS-35** prise en compte (✅, PR #12, 500c5b5). **Débloqués** : WFS-37 (WFS-35 ✅, WFS-36 ✅) et WFS-49 (WFS-35 ✅)
+→ ⏳ Prêt. WFS-49 reste non attribuable tant que WFS-29 occupe E7. **WFS-27** → 🔍 En revue (PR #16, CI verte, QA en cours).
+**Début WFS-37** — Épic **E8**, libre (WFS-35 fini, aucun ticket E8 actif). Ticket MVP Prêt le plus prioritaire (0.3).
+Responsable : Claude (agent développeur, session 01UY1Vv1), 2026-11-03 ; son WFS-27 est en revue (même règle que pour WFS-35) ;
+**les corrections demandées par la QA de WFS-27 passent avant WFS-37**. Branche `feature/waforspeed-37`, partie de `main`.
+Règles : `regles-de-gestion/WFS-37.md` (complétées : RG-07 à RG-10, zone et accroches).
+**Zone de code autorisée** : `src/ui/ecrans/**` (nouveau `menu.{h,cpp}`, mise en commun du logo dans `chargement.{h,cpp}`) ;
+accroches annoncées ≤ 10 lignes : enregistrement du système, captures `menu-*` dans `src/platform/desktop_main.cpp`,
+1 ligne `menu-1` dans `.github/workflows/build.yml`.
+**Critères** : `menu-0` / `menu-1` (2400x1080, sans planche de texte) : ville assombrie, logo, 3 choix, record « — »,
+« Golf 8 GTI » ; `menu-anim` ; ni commandes ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`.
+**Plan court** : sortir le bloc logo de `chargement.cpp` → système `Menu` (voile 8-16 bandes, 3 choix, pied, aide tactile,
+`slide-in`) → captures du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-29 : code écrit, PR #17 ouverte (Claude, session trafic)
+**Fait** : `JeuActivity` (sous-classe de `NativeActivity`, jeu toujours natif) : mode immersif collant
+(`WindowInsetsController` ≥ Android 11, `SYSTEM_UI_FLAG_IMMERSIVE_STICKY` avant) à `onCreate`, `onResume`,
+`onWindowFocusChanged` ; écran toujours allumé ; encoche `shortEdges`. Icône adaptative (fond `#07070c`, « W » orange,
+lignes cyan, monochrome) dans la zone sûre (32,8 / 33 dp). Manifeste : `hasCode`, `.JeuActivity`, icône.
+`tools/qa/emulateur.sh` lance `.JeuActivity` (sinon le simulateur ne démarrerait plus l'appli).
+**Vérification** : CI `45f3d8a` verte (APK avec le Java) ; APK inspecté : `classes.dex` avec `JeuActivity`, ressources
+`ic_launcher*`, `ic_avant_plan`, nom « WaForSpeed ». Aucun fichier du moteur modifié (captures du banc inchangées).
+**Pour le PO** : RG-02 « le HUD respecte les marges de l'encoche » n'est pas dans la zone E7 (HUD : E5 / E3) : à porter dans
+un ticket du HUD. Barres masquées et icône : à vérifier au simulateur (WFS-50, fin d'épic E7).
+
+
+### 2026-11-03 — WFS-33 fusionné (PR #18) (Claude, session moteur-natif)
+QA `VALIDÉ` du premier coup (`qa/rapports/WFS-33.md`) : peloton de 3 voitures, trafic visible sur 3 captures de course
+sur 6, écart latéral du choc +0,905 (≤ 1,12), 0 écart(s). **E3 libérée** (WFS-24 devient attribuable).
+Observation non bloquante : en caméra 0, la voiture replacée à 90 m est petite à l'écran.
+
+### 2026-11-03 — QA WFS-27 HUD de course : À CORRIGER, tour 1/2 (qa-lead)
+Commit `29139a4`, run 41617208849, Release `apercu-waforspeed-27`, comparée pixel par pixel à `apercu-waforspeed-44` (même base).
+Règles RG-01 à RG-09 remplies : temps (rouge à 5,5 s), checkpoint + barre, score au-dessus du bouton Nitro, « Combo ×2 », vitesse entre
+volant et frein, nitro (halo en nitro active), anciennes barres retirées, `course-fin` sans HUD, décompte inchangé, `hud-2400` propre,
+banc à 0 écart(s), rendu 3D inchangé hors panneaux du HUD. **Deux anomalies mineures** : ANO-11 (scènes de banc sans règles : temps
+« 1000000000,0 » qui déborde du panneau, HUD affiché dans les vitrines) et ANO-12 (libellés 11 px flous à 720 p). Pas de fusion ;
+le développeur corrige puis nouvelles captures. Rapport : `qa/rapports/WFS-27.md`.

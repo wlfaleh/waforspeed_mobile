@@ -11,6 +11,7 @@
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/chargement.h"
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -40,8 +41,11 @@ struct App {
 static void initGraphics(App& app, android_app* a) {
     if (app.ready || !a->window) return;
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
+    const double tVk = nowSeconds();
     app.renderer.init(app.vk);
-    app.game.init(app.renderer, "golf", "ville");
+    ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
+    if (!app.game.init(app.renderer, "golf", "ville", ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }
+    ecrans::chargement().fin();
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();

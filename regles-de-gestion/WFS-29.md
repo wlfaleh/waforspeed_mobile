@@ -1,5 +1,5 @@
 # WFS-29 — Android : mode plein écran immersif, icône, nom
-Épic : E7 · Priorité : 11 · Dépend de : —
+Épic : E7 · Priorité : 0.35 (MVP) · Dépend de : —
 
 ## Besoin (qui, quoi, pourquoi)
 L'application doit occuper tout l'écran pendant la course (barres système masquées) et se présenter correctement sur le

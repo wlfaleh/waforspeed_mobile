@@ -26,9 +26,11 @@ void halo(Renderer& r, float x, float y, float px, const std::string& t, const v
         ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, 0, false);
     }
 }
-// .label : 11 px, capitales, espacement 0,16 em, gris
+// .label : capitales, espacement 0,16 em, gris ; 11 px du web portés à 13 px minimum et calés sur les pixels entiers
+// (à 11 px sur 720 p, « TEMPS » se lisait « IEMPS »)
 void label(Renderer& r, float x, float y, float k, const std::string& t, ui::Align a = ui::GAUCHE, const vec4* c = nullptr) {
-    ui::text(r, x, y, 11 * k, ui::majuscules(t), c ? *c : hex(MUTED), a, 0.16f, false);
+    const float px = std::round(std::max(13.f, 11 * k));
+    ui::text(r, std::round(x), std::round(y), px, ui::majuscules(t), c ? *c : hex(MUTED), a, 0.16f, false);
 }
 // barre de progression dégradée cyan → orange (.cp-bar i), tranches bord à bord
 void barre(Renderer& r, float x, float y, float w, float h, float p) {
@@ -50,6 +52,8 @@ public:
         const Course* c = activeCourse();
         // RG-01 : seulement en course (pas de menu, pas d'écran de fin, pas de scène dédiée)
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
+        // temps illimité = pas de vraie course (vitrines et scènes du banc sans règles de course, courseBenchRules(false))
+        if (c->timeLeft > 1e6) return;
         const Player& pl = *g.player;
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;   // 1 px CSS = k pixels logiques (720 p de référence)
         const float gl = 16 * k, gt = 14 * k, pad = 14 * k;           // gouttières --gutter-*, marge intérieure .panel
