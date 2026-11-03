@@ -1150,3 +1150,14 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - `simulateur.yml` lancé sur `main` (b8b89fc), avec `epic=MVP` et `scenario=mvp` (run 41702978455). L'APK est celle de `main` après fusion de tous les tickets du MVP.
 - Aucun changement de code pour l'instant. La branche `feature/waforspeed-50` ne sera créée que si le scénario `mvp` doit être ajusté (`tools/qa/**`).
 - `qa-lead` rendra `qa/rapports/simulateur-MVP.md` sur les captures du run.
+
+### 2026-11-03 — PO : WFS-50 REFUSÉ, corrections WFS-58 et WFS-59 créées ; début WFS-58 (Claude, session trafic) — attribué par le PO
+- Rapport `qa/rapports/simulateur-MVP.md` (4bb1670) : **REFUSÉ**, bloquantes SIM-MVP-1 (0,3 ips sur SwiftShader, dt plafonné à 0,05 s → temps du jeu ≈ 1 s par minute), SIM-MVP-2 (captures 01-05 hors étape), SIM-MVP-3 (faux « OK » du scénario), mineure SIM-MVP-4 (barres système sur `qa-01`). Pas de « Livraison MVP ».
+- Découpage (RG-04 de WFS-50), deux tickets **parallèles**, zones séparées :
+  - **WFS-58** (E7, prio 0.437, `tools/qa/**`, `.github/**`) : scénario `mvp` piloté par les lignes du logcat avec délai max, capture après présentation d'images, `ÉCHEC` au lieu de faux OK, 1re capture après la 1re image du jeu (SIM-MVP-4), écran d'émulateur réduit (`wm size`), lancement avec `--ez qa_simu true`. Règles : `regles-de-gestion/WFS-58.md`.
+  - **WFS-59** (E0, prio 0.438) : mode GPU logiciel (détection SwiftShader existante de `vk.cpp` ou extra `qa_simu`) : dt max 0,5 s (pas fixes 1/120 s gardés), rendu 25 %, sans ombres ; rien ne change sur GPU matériel ni au banc. Accroches ≤ 10 lignes autorisées dans `src/render/vk.cpp` (E4 libre) et `src/platform/android_main.cpp` (pas de fichier commun avec WFS-58). Règles : `regles-de-gestion/WFS-59.md`. Prêt pour un autre agent.
+  - Arbitrage PO : pas de course raccourcie (on garderait des règles différentes du jeu web) ; distance de vue hors périmètre tant que l'objectif `QA ips` ≥ 1 est atteint.
+- **WFS-50** : 🔧 → ⛔ Bloqué, dépend de WFS-58 et WFS-59, réservation libérée ; à relancer sur `main` (`epic=MVP`, `scenario=mvp`) après leurs fusions, puis nouveau passage `qa-lead`. La QA à l'écran de WFS-37 et de WFS-56 reste due par ce parcours.
+- **Début WFS-58** · épic E7 · responsable Claude (session trafic) · branche `feature/waforspeed-58` · zone `tools/qa/**`, `.github/**` (aucun `src/`, `android/`).
+- **Critères** : chaque étape attend son événement du logcat ; `01-chargement` = barre du jeu sans barres système, `02-menu` = menu ; jamais `RÉSULTAT TECHNIQUE : OK` avec une étape manquante ; `scenario=conduite` inchangé.
+- **Plan** : fonction `attendre` (logcat borné) → réécrire les étapes du scénario `mvp` autour → `wm size` + extra `qa_simu` → lancer `simulateur.yml` sur la branche → `qa-lead`.
