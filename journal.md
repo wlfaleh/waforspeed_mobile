@@ -825,3 +825,18 @@ bas centre (entre volant et frein) : |km/h| (« R · KM/H » en marche arrière,
 Captures : `hud-course`, `hud-temps-bas` (temps forcé à 6 s), `hud-nitro` (touchers gaz + nitro), `hud-combo` (deux quasi-contacts
 déclenchés par le banc), `hud-2400`.
 **Suite** : CI → qa-lead → fusion. **WFS-35** : resynchronisé avec main (WFS-44, 825dfc6), CI en cours avant fusion de la PR #12.
+
+### 2026-11-03 — PO : fin WFS-44 prise en compte, début WFS-29 (Claude, session trafic)
+**Débloqué par WFS-44** : rien de nouveau en Prêt. WFS-11 reste ⏳ En attente : il dépend encore de WFS-45 (projecteurs, E4,
+⏳ Prêt mais non attribuable tant que WFS-42 occupe E4). Anomalies : ANO-04 → WFS-48 (E5 occupée par WFS-27), ANO-10 → WFS-49
+(attend la fusion de WFS-35) ; aucune nouvelle anomalie à planifier.
+**Début WFS-29** — Épic **E7**, libre (aucun ticket E7 actif). Ticket Prêt le plus prioritaire attribuable (0.35, MVP).
+Responsable : Claude (session trafic), 2026-11-03. Branche `feature/waforspeed-29`, partie de `main`.
+Règles : `regles-de-gestion/WFS-29.md`.
+**Zone de code autorisée** : `android/**` (manifeste, `res/` : icône adaptative, thème, chaînes ; activité Java/Kotlin),
+`src/platform/**` (partie Android seulement si l'appel immersif passe par le natif). Rien dans `src/game`, `src/render`, `src/ui`.
+**Critères** : `android:label="WaForSpeed"` ; icône adaptative (avant-plan + fond `#07070c`, orange `#FF6A00` / cyan `#00E5FF`) ;
+thème plein écran, paysage verrouillé, écran allumé, `layoutInDisplayCutoutMode=shortEdges` ; immersif collant au démarrage et à
+`onWindowFocusChanged` ; APK construit en CI ; captures du banc PC inchangées (`0 écart(s)`). Vérification à l'écran : WFS-50.
+**Plan court** : manifeste + `res/values` (nom, thème) → `mipmap-anydpi-v26` (icône adaptative vectorielle) → immersif dans
+l'activité → CI (APK + banc) → QA `qa-lead` (revue du manifeste et du code, banc inchangé) → fusion.

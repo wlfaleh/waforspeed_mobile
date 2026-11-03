@@ -85,7 +85,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.15 | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | [MVP] Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente (Prêt dès la fusion de PR #12) |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
-| 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | ⏳ Prêt |  | — | `feature/waforspeed-29` |  |  |
+| 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-29` |  |  |
 | 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
 | 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ⏳ En attente |  | WFS-27 | `feature/waforspeed-47` |  |  |
 | 0.44 | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏳ En attente |  | WFS-35, WFS-27, WFS-37, WFS-38, WFS-29, WFS-47 | `feature/waforspeed-50` |  |  |
@@ -147,7 +147,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-37 — [MVP] Menu principal : affichage** · E8 · priorité 0.3 · ⏳ En attente (règles : `regles-de-gestion/WFS-37.md`)
 - [ ] `menu-0` / `menu-1` (720p, 2400x1080) : ville assombrie, logo, 3 choix, record « — », « Golf 8 GTI » ; `menu-anim`
 
-**WFS-29 — [MVP] Android : mode plein écran immersif, icône, nom** · E7 · priorité 0.35 · ⏳ Prêt (règles : `regles-de-gestion/WFS-29.md`)
+**WFS-29 — [MVP] Android : mode plein écran immersif, icône, nom** · E7 · priorité 0.35 · 🔧 En cours (règles : `regles-de-gestion/WFS-29.md`)
 - [ ] manifeste : `android:label="WaForSpeed"`, icône adaptative, thème plein écran ; appel immersif au démarrage et à `onWindowFocusChanged`
 - [ ] captures du banc PC inchangées (vérification à l'écran par WFS-50)
 
