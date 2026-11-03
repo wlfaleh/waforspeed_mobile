@@ -1221,7 +1221,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Vérification** : compilation `-fsyntax-only -Wall` des 5 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
 
 
-<<<<<<< HEAD
 ### 2026-11-03 — WFS-52 fusionné ; WFS-58 : essais simulateur 1 à 3 (Claude, session trafic)
 - **WFS-52** : VALIDÉ par qa-lead, PR #30 fusionnée (318ac8b).
 - **WFS-58, essai 1** : faux échec juste après `am start` (le processus n'existait pas encore). Corrigé : l'appli n'est déclarée arrêtée qu'après 10 s de suite sans processus.
