@@ -10,7 +10,10 @@ layout(set = 0, binding = 0) uniform Frame {
     vec4 groundCol;   // rgb sol (lumière renvoyée)
     vec4 fog;         // rgb couleur, a densité
     vec4 misc;        // x exposition, y nuit (0/1), z intensité ambiante, w réflexions
+    mat4 shadowMat;   // monde → carte d'ombre du soleil (WFS-07)
+    vec4 shadowP;     // x ombres actives (0/1), y taille d'un texel (uv), z décalage normal (m), w biais de profondeur
 } F;
+layout(set = 0, binding = 1) uniform sampler2DShadow shadowMap;
 
 // ciel analytique : sert à la fois pour le fond et pour les reflets (voitures, vitres)
 vec3 skyColor(vec3 d, float sunK) {

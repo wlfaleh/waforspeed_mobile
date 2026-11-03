@@ -36,6 +36,19 @@ vec3 perturb(vec3 N, vec3 p, vec2 uv, vec3 tn) {
     return normalize(mat3(T * inv, B * inv, N) * tn);
 }
 
+// ombre du soleil (WFS-07) : 9 lectures comparées (filtre bilinéaire matériel → flou d'environ 3 texels, ombres douces).
+// Le point est d'abord poussé le long de la normale (normalBias du jeu web) pour éviter l'acné d'ombre.
+float sunShadow(vec3 p, vec3 n) {
+    if (F.shadowP.x < 0.5) return 1.0;
+    vec4 c = F.shadowMat * vec4(p + n * F.shadowP.z, 1.0);
+    vec2 uv = c.xy * 0.5 + 0.5;
+    if (uv.x <= 0.0 || uv.y <= 0.0 || uv.x >= 1.0 || uv.y >= 1.0 || c.z >= 1.0) return 1.0;
+    float z = c.z + F.shadowP.w, t = F.shadowP.y * 1.5, sum = 0.0;
+    for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) sum += texture(shadowMap, vec3(uv + vec2(x, y) * t, z));
+    vec2 e = min(uv, 1.0 - uv);   // fondu au bord de la boîte d'ombre : pas de coupure nette
+    return mix(1.0, sum / 9.0, smoothstep(0.0, 0.06, min(e.x, e.y)));
+}
+
 void main() {
     uint flags = uint(pc.params.w + 0.5);
     if ((flags & F_SHADOW) != 0u) {   // ombre de contact : rectangle aux bords très doux
@@ -47,7 +60,9 @@ void main() {
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
     bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
-    if (!gl_FrontFacing && !vtint) N = -N;   // pièces double face
+    // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
+    // triangles enroulés dans l'autre sens → ne pas retourner (sinon le sol ne recevait ni soleil ni ombre, WFS-07)
+    if (!gl_FrontFacing && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
     vec4 base = texture(texColor, vUv) * pc.color;
     if (vtint) base.rgb *= length(vNrm);
     // alpha découpé : la couverture est conservée dans les mipmaps lointains (le feuillage ne s'éclaircit pas au loin)
@@ -103,7 +118,7 @@ void main() {
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
     vec3 sun = F.sunColor.rgb * F.sunDir.w;
-    vec3 col = (diff + spec) * sun * NoL;
+    vec3 col = (diff + spec) * sun * NoL * sunShadow(vWorld, N);
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement
     vec3 R = reflect(-V, N);
