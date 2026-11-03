@@ -1378,3 +1378,17 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fait** : `build.yml` (paths-ignore de la doc ; plus de déclencheur `pull_request` ; concurrency par commit et sans annulation sur `main` ; banc en matrice `partie1` / `partie2` / `texte` / `ecrans-2400` ; publication en série qui ne remplace jamais une Release `apercu` plus récente) ; `desktop_main.cpp` (`WFS_BANC=partie1|partie2|chargement|texte`, rien ne change sans la variable).
 - **Essai 1 (commit de code sur branche + PR)** : un seul run, [n° 435](https://github.com/wlfaleh/waforspeed_mobile/actions/runs/41720665103), aucun run créé par l'ouverture de la PR #37.
 - **Essai 2 (documentation seule)** : ce commit (`TACHES.md` + `journal.md` sur `main`) ne doit lancer aucun build une fois WFS-69 fusionné ; avant fusion, `main` garde l'ancien `build.yml`.
+
+### 2026-11-03 21:24:50 — WFS-21 en revue, PR #38 (Claude, agent 4)
+- **Fait** :
+  - `src/game/duel.*` : port de `js/net/duel.js` (graine `hashStr`, présence toutes les 0,1 s, fantômes estimés, lissés et bornés, résultat), de `hitGhosts` et de `renderBoard`. Messages texte nettoyés. Interface `Transport` et transport en mémoire (RG-07, décision du PO).
+  - `src/game/duel_system.*` : départ commun avec la graine du trafic, horloge commune, contacts, voiture adverse avec son nom, classement « POSITION n/N », résultat « Revanche » / « Menu ».
+  - Mode duel de `Course` et `trafficRestartSeed`.
+  - Banc : `duel-course` et `duel-resultat`, avec un adversaire simulé.
+- **Accroches annoncées** : `CMakeLists.txt` (2 lignes, `test_duel`), `.github/workflows/build.yml` (`&& ./build/test_duel` sur la ligne des tests ; WFS-69 de l'agent 3 touche aussi ce fichier, garder les deux), `src/platform/desktop_main.cpp` (2 lignes).
+- **Vérification** :
+  - `test_duel` OK : graine = jeu web ; trafic identique image par image sur 1800 images, en mode exact et en mode parallèle ; 6 messages hostiles sans plantage ; contacts et classement corrects.
+  - `test_course` et `test_systems` OK.
+  - Branche synchronisée avec `main` avant le push.
+  - Shaders, banc et APK : CI de la PR #38.
+- **Limites** : pas de réseau réel (ticket E7 à créer par le PO), pas d'entrée « Duel » dans le menu (E8), HUD solo affiché pendant le duel.
