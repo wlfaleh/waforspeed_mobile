@@ -1342,3 +1342,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Pour le PO, hors WFS-58 : le gel du jeu avec la fenêtre « Pixel Launcher isn't responding » apparaît aussi sans WFS-59 (essai `conduite` à ffb5474). Le scénario `conduite` conclut OK sur des captures figées.
 ### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
 - **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.
+
+### 2026-11-03 21:11:56 — Fusion des 5 PR ouvertes sur ordre de l'utilisateur, pipeline lancée sur main (Claude, agent 4)
+- **Ordre de l'utilisateur** : fusionner toutes les PR en cours, mettre à jour le suivi, puis lancer la pipeline sur `main`. Fusion rapide : la QA se fera la nuit, après fusion.
+- **Fusionnées dans cet ordre, en local puis poussées** : WFS-58 (#32), WFS-48 (#33), WFS-39 (#34), WFS-45 (#35), WFS-28 (#36).
+- **Un seul conflit** : `src/platform/desktop_main.cpp`, où `benchPause` (WFS-39) et `benchSpots` (WFS-45) s'ajoutaient au même endroit. Les deux appels sont gardés.
+- **Vérification avant l'envoi** : syntaxe C++ de tous les `src/**/*.cpp` (hors Android) sans erreur ; `test_audio`, `test_course`, `test_systems` OK ; `bash -n tools/qa/emulateur.sh` OK. Les shaders, le banc et l'APK seront vérifiés par la pipeline de `main`.
+- **Point d'attention** : WFS-58 est fusionné alors que son dernier passage QA était **REFUSÉ** au tour 2 (WFS58-5, `01-chargement` presque noire). Il est remis à la QA de nuit ; s'il reste bloquant, le PO crée un ticket de correction prioritaire.
+- **Les CI des PR n'étaient pas terminées** au moment de la fusion. La pipeline de `main` sert de contrôle.
+- **Suivi** : `TACHES.md` passe WFS-58, 48, 39, 45 et 28 à ✅ Fusionné (QA de nuit à faire) ; les 5 tickets sont ajoutés à `qa/Check.md`.
