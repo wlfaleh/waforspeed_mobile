@@ -1,28 +1,36 @@
-# Construit le jeu à chaque envoi :
-#  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests + captures d'écran du rendu (QA de chaque ticket)
+# Construit le jeu à chaque envoi de code :
+#  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests + captures d'écran du rendu (QA de chaque ticket),
+#    découpé en 4 jobs parallèles (WFS-69) : partie1, partie2, texte, ecrans-2400 (WFS_BANC de desktop_main.cpp)
 #  - le test sur émulateur Android n'est plus lancé ici : voir simulateur.yml (vérification de fin d'épic)
 #  - APK Android (arm64)
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
+# WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
+# du commit s'affichent sur la PR) ; sur main, aucun build annulé : chaque commit de code publie son APK.
 name: Construction WaForSpeed
 
 on:
   push:
     branches: [main, 'feature/**', 'claude/**']
-  pull_request:
-    branches: [main]
+    paths-ignore: ['**/*.md', 'qa/**', 'regles-de-gestion/**', '.claude/**']
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
+  # branche : le nouvel envoi annule l'ancien ; main : un groupe par commit, rien n'est annulé
+  group: build-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   banc-essai:
+    name: banc-essai (${{ matrix.groupe }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        groupe: [partie1, partie2, texte, ecrans-2400]
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -30,22 +38,28 @@ jobs:
       - name: Compilation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
+        if: matrix.groupe == 'texte'
         run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel
-      - name: Captures du rendu
+      - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
-          ./build/wfs_bench captures assets/
-          # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
-          mkdir -p texte && WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
-          WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
-          # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
-          mkdir -p chargement && WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
-          for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
-          mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
-          mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
+          case "${{ matrix.groupe }}" in
+            partie1|partie2)
+              WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
+            texte)
+              # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
+              mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
+              WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png ;;
+            ecrans-2400)
+              # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
+              mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
+              for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
+              mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
+              mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png ;;   # WFS-37
+          esac
           ls -la captures
       - uses: actions/upload-artifact@v4
-        with: { name: captures, path: captures }
+        with: { name: 'captures-${{ matrix.groupe }}', path: captures }
 
   android:
     runs-on: ubuntu-24.04
@@ -69,20 +83,33 @@ jobs:
     needs: [banc-essai, android]
     runs-on: ubuntu-24.04
     if: always() && needs.android.result == 'success' && github.event_name == 'push'
+    # une publication à la fois par branche, jamais annulée (main : chaque commit de code publie)
+    concurrency:
+      group: publication-${{ github.ref }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - uses: actions/download-artifact@v4
-        with: { path: dl }
+        with: { name: apk, path: dl/apk }
+      - uses: actions/download-artifact@v4
+        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
       - name: Release d'aperçu (remplacée à chaque construction)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag=apercu
           case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
+          # les builds de main tournent en parallèle : ne jamais remplacer une Release faite d'un commit plus récent
+          cible=$(gh release view "$tag" --json targetCommitish -q .targetCommitish 2>/dev/null || true)
+          if [ -n "$cible" ] && [ "$cible" != "$GITHUB_SHA" ] && git merge-base --is-ancestor "$GITHUB_SHA" "$cible" 2>/dev/null; then
+            echo "La Release $tag vient déjà d'un commit plus récent ($cible) : rien à publier pour ${GITHUB_SHA::7}"; exit 0
+          fi
           gh release delete "$tag" -y --cleanup-tag || true
           files="dl/apk/WaForSpeed.apk"
           # les fichiers vides (capture ratée) sont ignorés : ils ne doivent pas empêcher la publication
           if [ -d dl/captures ]; then for f in dl/captures/*.png; do [ -s "$f" ] && files="$files $f"; done; fi
+          echo "$(echo $files | wc -w) fichiers publiés"
           gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
             --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \
             --notes "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."

@@ -95,7 +95,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
 | P3 Moyenne | WFS-09 | Nuit complète : phares, éclairage public, route mouillée et reflets | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
-| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅), WFS-27 ✅ | `feature/waforspeed-11` |  |  |
+| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | 🔧 En cours | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
 | — | WFS-13 | Les 20 voitures et 16 peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-13` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
@@ -105,7 +105,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-18` |  |  |
 | P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 ✅, WFS-63 | `feature/waforspeed-19` |  |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
-| P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | 🔧 En cours | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` |  |  |
+| P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | 🔍 En revue | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
 | — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
 | P4 Basse | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | ⏳ Prêt |  | WFS-12 | `feature/waforspeed-24` |  |  |
@@ -147,13 +147,13 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-60 | Roues séparées dans les modèles de voiture (.wfm) | E5 | ⏳ Prêt |  | — | `feature/waforspeed-60` |  |  |
 | P4 Basse | WFS-61 | Roues animées : transformation par roue et animation (rotation, braquage) | E0 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-61` |  |  |
 | — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-61 |  | — | `feature/waforspeed-62` |  |  |
-| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` |  |  |
+| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` | #39 |  |
 | P4 Basse | WFS-64 | [MVP] Correction : jeu figé sur le simulateur en mode GPU logiciel (repli du rendu à 50 %) | E0 | ⏳ Prêt |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-65` |  |  |
 | P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ⏳ Prêt |  | — | `feature/waforspeed-66` |  |  |
 | P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-67` |  |  |
 | — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
-| P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | 🔍 En revue (CI) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |
+| P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | ✅ Fusionné (QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -235,7 +235,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] Capture `spots-sol` : 3 taches orange / cyan / blanche aux bords adoucis, hémisphère bleutée, brouillard linéaire, voiture éclairée
 - [ ] Coût de la passe de scène ≤ +0,3 ms avec 3 spots (journal du banc)
 
-**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · ⏳ En attente de WFS-45 (WFS-44 ✅) (règles : `regles-de-gestion/WFS-11.md`, redécoupé)
+**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · 🔧 En cours — agent 3 (session 011cpqZd), 2026-11-03, branche `feature/waforspeed-11` (règles : `regles-de-gestion/WFS-11.md` + WFS-40, WFS-13, WFS-46)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité P2 Haute · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-39.md`)
@@ -372,7 +372,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-68 — Réglages : qualité, caméra, son, commandes** · E8 · priorité P3 Moyenne · ⏳ En attente (règles : `regles-de-gestion/WFS-68.md`) — ↪ fusionné dans WFS-41
 - [ ] voir les critères du fichier de règles
 
-**WFS-69 — [STABLE] CI : banc en jobs parallèles, fin des builds inutiles** · E7 · priorité P1 Urgent · 🔍 En revue (CI, PR #37) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-69.md`)
+**WFS-69 — [STABLE] CI : banc en jobs parallèles, fin des builds inutiles** · E7 · priorité P1 Urgent · ✅ Fusionné le 2026-11-03 (PR #37, QA de nuit : `qa/Check.md`) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-69.md`)
 - [ ] doc seule = aucun build ; un seul build par commit ; `main` jamais annulé
 
 **WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
@@ -397,7 +397,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-24 — Sauvegarde et progression** · E3 · priorité P4 Basse · ⏳ Prêt
 - [ ] Meilleurs scores, voitures et réglages conservés
 
-**WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · 🔧 En cours — Claude (agent 4, session 011cpqZan), 2026-11-03, branche `feature/waforspeed-21` (règles : `regles-de-gestion/WFS-21.md`)
+**WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · 🔍 En revue (PR #38) — Claude (agent 4, session 011cpqZan), 2026-11-03, branche `feature/waforspeed-21` (règles : `regles-de-gestion/WFS-21.md`)
 - [ ] Compatible avec le principe du duel web
 
 **WFS-23 — Manettes de jeu** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22

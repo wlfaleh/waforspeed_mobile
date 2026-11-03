@@ -1378,3 +1378,40 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fait** : `build.yml` (paths-ignore de la doc ; plus de déclencheur `pull_request` ; concurrency par commit et sans annulation sur `main` ; banc en matrice `partie1` / `partie2` / `texte` / `ecrans-2400` ; publication en série qui ne remplace jamais une Release `apercu` plus récente) ; `desktop_main.cpp` (`WFS_BANC=partie1|partie2|chargement|texte`, rien ne change sans la variable).
 - **Essai 1 (commit de code sur branche + PR)** : un seul run, [n° 435](https://github.com/wlfaleh/waforspeed_mobile/actions/runs/41720665103), aucun run créé par l'ouverture de la PR #37.
 - **Essai 2 (documentation seule)** : ce commit (`TACHES.md` + `journal.md` sur `main`) ne doit lancer aucun build une fois WFS-69 fusionné ; avant fusion, `main` garde l'ancien `build.yml`.
+
+### 2026-11-03 21:24:50 — WFS-21 en revue, PR #38 (Claude, agent 4)
+- **Fait** :
+  - `src/game/duel.*` : port de `js/net/duel.js` (graine `hashStr`, présence toutes les 0,1 s, fantômes estimés, lissés et bornés, résultat), de `hitGhosts` et de `renderBoard`. Messages texte nettoyés. Interface `Transport` et transport en mémoire (RG-07, décision du PO).
+  - `src/game/duel_system.*` : départ commun avec la graine du trafic, horloge commune, contacts, voiture adverse avec son nom, classement « POSITION n/N », résultat « Revanche » / « Menu ».
+  - Mode duel de `Course` et `trafficRestartSeed`.
+  - Banc : `duel-course` et `duel-resultat`, avec un adversaire simulé.
+- **Accroches annoncées** : `CMakeLists.txt` (2 lignes, `test_duel`), `.github/workflows/build.yml` (`&& ./build/test_duel` sur la ligne des tests ; WFS-69 de l'agent 3 touche aussi ce fichier, garder les deux), `src/platform/desktop_main.cpp` (2 lignes).
+- **Vérification** :
+  - `test_duel` OK : graine = jeu web ; trafic identique image par image sur 1800 images, en mode exact et en mode parallèle ; 6 messages hostiles sans plantage ; contacts et classement corrects.
+  - `test_course` et `test_systems` OK.
+  - Branche synchronisée avec `main` avant le push.
+  - Shaders, banc et APK : CI de la PR #38.
+- **Limites** : pas de réseau réel (ticket E7 à créer par le PO), pas d'entrée « Duel » dans le menu (E8), HUD solo affiché pendant le duel.
+
+### 2026-11-03 21:28:24 — Fin WFS-69 : fusionné (PR #37), CI de 29-52 min à 7 min (agent 3, session 011cpqZd)
+- **Run 435** (commit de code sur branche + PR) : un seul build ; android 1 min 32 ; banc `texte` + tests 1 min 44 ; `partie2` 4 min 05 ; `ecrans-2400` 5 min 24 ; `partie1` 6 min (chemin le plus long) ; publication 52 s ; **total 7 min** (21:18:54 → 21:25:52) au lieu de 29 à 52 min. Release `apercu-waforspeed-69` : 70 fichiers.
+- **Captures** : 59 captures comparées à une référence locale (ancien banc de `main`, lavapipe dans le conteneur) : écart max 1 niveau, 0 pixel > 16 (arrondi entre versions de lavapipe), donc identiques. Les 10 captures des nouveaux lancements `texte` / `chargement` regardées : correctes ; comparaison au pixel à venir (référence locale en cours).
+- **Fusion** : `4f95695`. Ajouté à `qa/Check.md`.
+- **Essai 2 (doc seule)** : ce commit (`TACHES.md`, `qa/Check.md`, `journal.md`) ne doit lancer aucun build. **Essai 3** : deux commits de code de suite sur `main` (la fusion `4f95695` puis le prochain ticket fusionné) doivent publier tous les deux. Résultats ajoutés ici dès qu'ils sont connus.
+- Constat au passage : la Release `apercu` de `main` n'avait plus qu'un fichier (builds de `main` annulés les uns par les autres) ; la fusion de WFS-69 la republie.
+
+### 2026-11-03 21:29:57 — Début WFS-11 : garage complet, attribué à agent 3 (PO)
+- **Choix** : WFS-45 fusionné, toutes les dépendances de WFS-11 sont finies : ⏳ En attente → 🔧 En cours. C'est le ⏳ Prêt P2 Haute de plus petit numéro dont l'épic (E5) est libre. E3 est occupée par WFS-21 (PR #38), donc pas WFS-66. WFS-41 (E8) et WFS-53 (E2) restent attribuables en parallèle.
+- **Ticket** : WFS-11, épic E5, branche `feature/waforspeed-11`. Règles : `regles-de-gestion/WFS-11.md` + WFS-40 (fiche, peintures, « Choisir »), WFS-13 (20 voitures, 16 peintures, `carPerf`), WFS-46 (compteur en arc).
+- **Zone autorisée** : `src/ui/**` sauf `src/ui/ecrans/` (écran garage dans `src/ui/garage.*`), `shaders/ui*`, `assets/cars/**`, `assets/licences/**`, `tools/convert_car.mjs`.
+- **Accroches** (≤ 10 lignes chacune, à annoncer au journal) : `src/ui/ecrans/menu.cpp` (E8 : « Course solo » → garage ; WFS-41 peut toucher ce fichier en parallèle, garder les deux modifications), `game.*` / `CMakeLists.txt` (brancher l'écran Garage), `desktop_main.cpp` (captures dans un groupe `WFS_BANC` existant, `partie1` ou `partie2`, depuis WFS-69).
+- **Plan (version STABLE demain : du fonctionnel d'abord)** : (1) scène garage + changement de voiture sur les 4 voitures actuelles ; (2) fiche, 16 peintures, « Choisir » → course avec voiture et peinture ; (3) compteur en arc ; (4) conversion des 16 autres voitures (`-lod` pour le trafic), taille de l'APK au journal. Si le temps manque, fusionner (1) à (3) avec les voitures déjà converties et le noter : le garage marche, les voitures suivent.
+- **Critères** : captures `garage-*` (plateau, néon, projecteurs), `garage-golf` / `garage-m4`, `garage-fiche`, `garage-peinture-0/1`, course avec la voiture choisie, `hud-arc-120` / `hud-arc-320`, `vitrine-<id>` des voitures ajoutées ; 1280x720 et 2400x1080.
+
+### 2026-11-03 — WFS-63 en revue, PR #39 (Claude, session trafic)
+- Skinning GPU : `SkinVertex` / `SkinnedMesh` / `drawSkinned` dans le renderer, shaders `scene_skin.vert` / `shadow_skin.vert` (même `scene.frag`), palette d'os en set 2 (offset dynamique). Maillages rigides inchangés.
+- `tools/convert_people.mjs` → `assets/people/homme.wfp`, `femme.wfp` (modèles et animations du jeu web, CC0). Lecture d'animation dans `src/render/squelette.*`.
+- Banc : `squelette-essai`, `squelette-marche-0` / `-1`, `squelette-8` (8 instances : environ 0,03 ms CPU). Les 60 captures existantes sont identiques à main.
+- **Accroches annoncées** : `CMakeLists.txt` (2 shaders ajoutés à la liste) ; `src/platform/desktop_main.cpp` (include, `WFS_BANC=squelette`, appel dans `partie2`).
+- **Incident (réparé)** : mon dossier de travail avait été basculé sur `main` local par un autre agent. Les 2 commits WFS-63 y ont été déplacés vers `feature/waforspeed-63`, sans aucun envoi sur `main` ; `main` local est remis sur `origin/main`. **Agents : travaillez dans un worktree ou un clone séparé, pas dans `/home/user/waforspeed_mobile`.**
+- Les PR #32 (WFS-58) et #34 (WFS-39) ont été fusionnées par l'utilisateur (QA de nuit notée par le PO). Le dernier essai simulateur de WFS-58 (cc78b4d, correction de WFS58-5) est à joindre à cette QA.
