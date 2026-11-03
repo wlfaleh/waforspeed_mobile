@@ -12,7 +12,7 @@ layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
-           F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u;
+           F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -59,10 +59,14 @@ void main() {
     }
     vec3 N = normalize(vNrm);
     vec3 V = normalize(F.camPos.xyz - vWorld);
+    bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
     // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
     // triangles enroulés dans l'autre sens → ne pas retourner (sinon le sol ne recevait ni soleil ni ombre, WFS-07)
-    if (!gl_FrontFacing && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
+    if (!gl_FrontFacing && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
     vec4 base = texture(texColor, vUv) * pc.color;
+    if (vtint) base.rgb *= length(vNrm);
+    // alpha découpé : la couverture est conservée dans les mipmaps lointains (le feuillage ne s'éclaircit pas au loin)
+    if (vtint && (flags & F_MASK) != 0u) base.a *= 1.0 + max(textureQueryLod(texColor, vUv).x, 0.0) * 0.25;
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
     if ((flags & F_HASNORMAL) != 0u) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
@@ -111,7 +115,7 @@ void main() {
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
     vec3 Fs = F_Schlick(f0, VoH);
-    vec3 spec = D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;
+    vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
     vec3 sun = F.sunColor.rgb * F.sunDir.w;
     vec3 col = (diff + spec) * sun * NoL * sunShadow(vWorld, N);
@@ -120,6 +124,7 @@ void main() {
     vec3 R = reflect(-V, N);
     vec3 skyAmb = mix(F.groundCol.rgb, F.skyTop.rgb, N.y * 0.5 + 0.5) * F.misc.z;
     vec3 Fe = f0 + (max(vec3(1.0 - rough), f0) - f0) * pow(1.0 - NoV, 5.0);
+    if (vtint) Fe = vec3(0.0);   // pas de reflet du ciel sur les cartes vues en rasant ou de dos
     // le disque du soleil ne se reflète nettement que sur les surfaces lisses (sinon tache blanche sur la route)
     float sunK = pow(1.0 - clamp(rough, 0.0, 1.0), 6.0);
     vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(rough * 1.2, 0.0, 1.0)) * F.misc.z;
