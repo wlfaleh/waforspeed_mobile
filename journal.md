@@ -1231,7 +1231,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Les agents suivent le processus sans demander à l'utilisateur « je lance ? » ou « je continue ? » : ils agissent puis rendent compte.
 - L'utilisateur n'est sollicité que pour un vrai blocage (décision produit non tranchée par les règles ni par le PO, accès manquant, action irréversible hors processus), avec une seule question précise et une recommandation. Les questions de règles et de priorité vont au PO.
 - Règle ajoutée dans `CLAUDE.md` (en tête des consignes), `TACHES.md` (règle 10), skill `waforspeed-natif`, agents `po-scrum-master` et `qa-lead`.
-- **Ménage** : marqueur de conflit orphelin `<<<<<<< HEAD` retiré du Journal (aucun texte perdu).
+- **Ménage** : marqueur de conflit orphelin `### 2026-11-03 — WFS-58 : correction du tour 2 (WFS58-5) ; à l'attention du PO (Claude, session trafic)
+- **WFS58-5** (bloquante, tour 2) : `01-chargement` était prise avant l'affichage du texte. Elle attend maintenant la ligne `chargement : … écran complet (police)` puis 1 s (cc78b4d, branche synchronisée avec main). Essai `mvp` relancé, puis QA.
+- **Pour le PO (WFS-64)** : selon le QA, le gel juste après le chargement apparaît aussi **sans WFS-59**, dans l'essai `conduite` à ffb5474 (« Pixel Launcher isn't responding », journal arrêté sur la recréation de la swapchain, captures 02 à 07 identiques). La cause n'est donc peut-être pas WFS-59 : il faut étudier aussi la piste d'un émulateur saturé ou d'une fenêtre système qui prend le focus. Le scénario `conduite` (inchangé par WFS-58, RG-06) conclut OK sur des captures figées : faux OK à reprendre dans un ticket E7.
 
 ### 2026-11-03 20:08:40 — PO : création de WFS-60, WFS-61, WFS-62 (roues animées) (po-scrum-master)
 - **Besoin** (utilisateur) : animer les roues quand la voiture roule ou s'arrête. Aucune US n'existait ; priorité **basse** (hors MVP, 17.6 à 17.8).
@@ -1323,3 +1325,35 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : captures `squelette-essai` (homme en `Idle_Loop`), `squelette-marche-0/1` (poses `Walk_Loop` différentes), captures existantes identiques, banc `0 écart(s)`.
 - **Plan** : API maillage à os (RG-01) → shader (RG-02) → conversion `models/people/*.json` de `wlfaleh/waaps` (RG-03, aucun personnage recréé) → lecture d'animation CPU (RG-04) → mesure (RG-05). Règles : `regles-de-gestion/WFS-63.md`.
 - Note : ses tickets WFS-58 (PR #32) et WFS-39 (PR #34) sont en revue sans code en cours ; pas de conflit d'épic (E7, E8).
+### 2026-11-03 21:04:53 — PO : 4 nouveaux gros sujets (WFS-65 à 68) (po-scrum-master)
+- Écart avec le jeu web comblé : **WFS-65** effets de conduite (E4), **WFS-66** caméras et cockpit (E3), **WFS-67** trafic vivant (E3, après WFS-60), **WFS-68** réglages (E8, après WFS-39). Règles : `regles-de-gestion/WFS-65.md` à `WFS-68.md`. Tickets de 1 à 3 jours, une seule CI chacun. Aucun ticket en cours ou terminé touché.
+
+### 2026-11-03 21:05:42 — PO : les 6 sujets importants (map, caméra, personnages, menus, duel, garage) (po-scrum-master)
+- **Demande de l'utilisateur** : 6 sujets distincts, en P2 Haute. **Map design 3D** : WFS-53 (Campagne, Grand Prix, arbres). **Caméra** : WFS-66. **Personnages** : WFS-19 (piétons et conducteurs, après WFS-63 squelettes ; la pluie redevient WFS-18, séparée). **Menus** : WFS-41 (terrain, moment, réglages ; absorbe WFS-68). **Mode duel** : WFS-21 redevenu un ticket à part (séparé de WFS-24 sauvegarde). **Garage** : WFS-11. Aucun ticket en cours ou terminé touché.
+
+### 2026-11-03 21:06:35 — PO : WFS-69 créé, CI qui annule les builds (po-scrum-master)
+- Constat (runs 390 à 419) : chaque commit sur `main`, même documentation, lance un build de ~30 min qui annule celui en cours ; push + PR lancent deux builds identiques. Les commits du PO y ont contribué. **WFS-69** (E7, P1 Urgent) : pas de build pour la documentation, un seul build par commit, jamais d'annulation sur `main`. Retours des agents 3, 4 et 5 demandés (attente et idées).
+
+### 2026-11-03 21:07:16 — PO : retours des agents 3, 4, 5 intégrés à WFS-69 (po-scrum-master)
+- Mesures concordantes : banc d'essai 37 à 52 min (Captures du rendu en série sur lavapipe) ; Android < 2 min ; doublon push + PR ; commits de documentation qui annulent `main`. **WFS-69** élargi (RG-06 à RG-10) : banc en matrice de jobs parallèles par groupe de scènes (cible ≈ 10-15 min), `WFS_CAPTURES`, moins d'images inutiles, un seul banc par commit, aucune annulation sur `main`.
+
+### 2026-11-03 21:00:20 — QA WFS-58 tour 2 : REFUSÉ (QA lead)
+- Captures regardées : `simulateur-WFS-58` (a51bbc8), `simulateur-WFS-58-avec-59` (3d447b1) et `simulateur-WFS-58-conduite` (ffb5474).
+- Les anomalies du tour 1 sont corrigées : plus de bulle Android, déroulement tracé (motif, ligne, heure), 03 et 04 séparées, écran tracé en fin de scénario. L'échec reste franc sur les deux essais `mvp`.
+- **Nouvelle anomalie bloquante, WFS58-5** : `01-chargement` est presque noire (capture prise 2 s après « Cibles de rendu », avant la police). Il faut attendre `chargement : première image … écran complet (police)`. [Rapport](qa/rapports/WFS-58.md).
+- Pour le PO, hors WFS-58 : le gel du jeu avec la fenêtre « Pixel Launcher isn't responding » apparaît aussi sans WFS-59 (essai `conduite` à ffb5474). Le scénario `conduite` conclut OK sur des captures figées.
+### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
+- **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.
+
+### 2026-11-03 21:11:56 — Fusion des 5 PR ouvertes sur ordre de l'utilisateur, pipeline lancée sur main (Claude, agent 4)
+- **Ordre de l'utilisateur** : fusionner toutes les PR en cours, mettre à jour le suivi, puis lancer la pipeline sur `main`. Fusion rapide : la QA se fera la nuit, après fusion.
+- **Fusionnées dans cet ordre, en local puis poussées** : WFS-58 (#32), WFS-48 (#33), WFS-39 (#34), WFS-45 (#35), WFS-28 (#36).
+- **Un seul conflit** : `src/platform/desktop_main.cpp`, où `benchPause` (WFS-39) et `benchSpots` (WFS-45) s'ajoutaient au même endroit. Les deux appels sont gardés.
+- **Vérification avant l'envoi** : syntaxe C++ de tous les `src/**/*.cpp` (hors Android) sans erreur ; `test_audio`, `test_course`, `test_systems` OK ; `bash -n tools/qa/emulateur.sh` OK. Les shaders, le banc et l'APK seront vérifiés par la pipeline de `main`.
+- **Point d'attention** : WFS-58 est fusionné alors que son dernier passage QA était **REFUSÉ** au tour 2 (WFS58-5, `01-chargement` presque noire). Il est remis à la QA de nuit ; s'il reste bloquant, le PO crée un ticket de correction prioritaire.
+- **Les CI des PR n'étaient pas terminées** au moment de la fusion. La pipeline de `main` sert de contrôle.
+- **Suivi** : `TACHES.md` passe WFS-58, 48, 39, 45 et 28 à ✅ Fusionné (QA de nuit à faire) ; les 5 tickets sont ajoutés à `qa/Check.md`.
+
+### 2026-11-03 21:13:18 — Fin WFS-28 : fusionné sur ordre de l'utilisateur (PR #36) ; marqueur de conflit retiré du journal (agent 3, session 011cpqZd)
+- WFS-28 fusionné par l'utilisateur à 21:12:25, CI de la PR non terminée (Android ✅). Suivi déjà fait par l'agent 4 (`TACHES.md` ✅, `qa/Check.md`). Contrôle : la pipeline de `main` doit montrer les lignes `SFX bip-decompte`, `SFX bip-go`, `SFX quasi-contact`, `SFX accident`, `SFX bip-fin`… dans le journal du banc, et `test_audio` vert.
+- `journal.md` : une ligne orpheline `<<<<<<< HEAD` (sans `=======` ni `>>>>>>>`, aucun contenu en double) envoyée sur `main` avant l'entrée de 21:11:56 : ligne retirée, rien d'autre changé.

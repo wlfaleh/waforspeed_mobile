@@ -1,5 +1,70 @@
 # QA WFS-58 : scénario simulateur `mvp` piloté par l'état du jeu (SIM-MVP-2, 3, 4)
 
+## Tour 2 (2026-11-03 21:00 UTC)
+
+**Verdict : REFUSÉ** (émulateur Android), 2e passage. **Fusion interdite.** 1 anomalie bloquante (nouvelle, WFS58-5). Les 2 bloquantes et les 2 mineures du tour 1 sont corrigées.
+
+- Constructions regardées (PR #32, `feature/waforspeed-58`) :
+  - `scenario=mvp`, run 41714023261, commit `a51bbc8`, Release `simulateur-WFS-58` (20:49:59Z) : `qa-01` à `qa-07` et les fichiers texte. Essai parti avant la fusion de WFS-59 (0,2 à 0,3 image/s).
+  - `scenario=mvp`, run 41716390682, commit `3d447b1` (avec WFS-59), Release `simulateur-WFS-58-avec-59` (20:58:26Z) : `qa-01`, `qa-02` et les fichiers texte.
+  - `scenario=conduite`, run 41711636444, commit `ffb5474`, Release `simulateur-WFS-58-conduite` (20:25:05Z) : 7 captures.
+- Code : `tools/qa/emulateur.sh` et `timeout-minutes` de `simulateur.yml`. Toujours rien dans `src/` ni `android/`.
+- WFS-58 est jugé sur son rôle : attendre l'état du jeu, échouer franchement, tracer. Le gel du jeu dans l'essai avec WFS-59 n'est pas compté contre ce ticket (voir « Hors périmètre »).
+
+### Captures
+
+| Capture | Constat |
+|---|---|
+| `qa-01-chargement` (a51bbc8) | **Écran presque noir** : seul le rail vide de la barre de chargement est visible. Il n'y a ni texte, ni pourcentage, ni titre. La capture est prise 2 s après « Cibles de rendu » (20:39:11.776), alors que l'écran complet, police comprise, ne paraît qu'à 20:39:14.791 (« chargement : première image … écran complet (police) 3,045 s »). Au tour 1, avec 3 s d'attente, la capture montrait « Chargement du modèle 3D… 20 % ». Pas de barre système, pas de bulle. |
+| `qa-02-menu` | Menu WFS-37 complet (Course solo, Duel en ligne « bientôt », Showroom, record, Golf 8 GTI) sur la ville, voiture visible. **Plus de bulle de compatibilité** (WFS58-1 corrigée). |
+| `qa-03-appui-course-solo` | Menu, prise dès « menu : « Course solo » » : c'est attendu, l'appui vient d'être reçu. |
+| `qa-04-decompte` | Encore le menu, alors que la capture est prise après 2 lignes `QA ips=`. À 0,2 image/s, l'écran de course n'est pas encore présenté. Cela vient de la vitesse du jeu (au tour 1, à environ 1 image/s, on voyait le décompte « 3 ») : ce n'est pas compté, mais il faudra le revoir quand le jeu tournera plus vite. |
+| `qa-05-go` | Course, « GO », TEMPS 30,0, 1 km/h, HUD complet, voiture visible. Bonne étape. |
+| `qa-06-course-hud` | Course, TEMPS 29,9, 2 km/h, HUD complet. Bonne étape. |
+| `qa-07-fin` | Preuve d'échec : course à 25,1 s, 0 km/h. Cohérent avec `ÉCHEC étape fin (délai 300 s)`. |
+| `qa-01` / `qa-02` (3d447b1, avec WFS-59) | Écran noir puis écran de chargement à 100 %, tous deux couverts par la fenêtre Android « Pixel Launcher isn't responding ». Le jeu est figé (plus aucune ligne de journal après 20:55:25). Le scénario conclut `ÉCHEC étape menu (délai 180 s)`, prend la capture de preuve et écrit `RÉSULTAT TECHNIQUE : ÉCHEC`, ce qui est le comportement voulu. |
+| `conduite` `qa-01` à `qa-07` (ffb5474) | `01` : écran de chargement à 70 %, sous la fenêtre « Pixel Launcher isn't responding » et l'avis « Viewing full screen ». `02` à `07` : **même image** (md5 identique, chargement à 100 % sous les mêmes fenêtres). Le scénario affiche pourtant `RÉSULTAT TECHNIQUE : OK`. Le rapport WFS-56 (`simulateur-WFS-56-conduite`) montrait déjà la même chose : `04` à `07` identiques, chargement à 100 % sous « Viewing full screen ». Voir « Hors périmètre ». |
+
+### Suivi des anomalies du tour 1
+
+| Anomalie | Résultat au tour 2 |
+|---|---|
+| WFS58-1 (bulle de compatibilité, bloquante) | **Corrigée** : plus de `wm size`, écran 1080x2400 (2400x1080 en paysage), aucune bulle sur `qa-01` à `qa-07`. RG-05 (écran réduit) est abandonnée, comme le tour 1 le permettait. |
+| WFS58-2 (déroulement sans événement ni heure, `sleep 3`, bloquante) | **Corrigée** : chaque étape indique le motif attendu, puis le numéro de ligne, l'heure de l'appareil et le texte de la ligne du journal trouvée. L'attente fixe passe à 2 s. Mais ce raccourcissement crée WFS58-5. |
+| WFS58-3 (03 et 04 identiques, mineure) | **Corrigée** dans le script : `03` est prise à l'appui, `04` après des images. Le contenu de `04` reste à revoir quand le jeu sera plus rapide (voir plus haut). |
+| WFS58-4 (retour d'écran non tracé, mineure) | **Corrigée** : `écran en fin de scénario : Physical size: 1080x2400`. |
+
+### Critères d'acceptation
+
+| Critère | Résultat |
+|---|---|
+| CA 1 : `deroulement.txt` avec l'événement attendu, l'heure et la taille d'écran ; aucune attente fixe > 2 s | OK |
+| CA 2 : `01-chargement` montre la barre du jeu sans barres système ; `02-menu` montre le menu | **KO pour `01`** (écran presque noir, WFS58-5). OK pour `02`. |
+| CA 3 : échec franc, jamais de faux OK pour `mvp` | OK, sur les deux essais (`ÉCHEC étape fin`, puis `ÉCHEC étape menu`, avec `RÉSULTAT TECHNIQUE : ÉCHEC`). |
+| CA 4 : `scenario=conduite` donne les mêmes 7 captures qu'avant | OK au sens du critère : 7 captures et script inchangé. Elles étaient déjà inexploitables avant ce ticket (hors périmètre). |
+| RG-07 : durée | OK (essai a51bbc8 : 11 min environ). |
+
+### Anomalies
+
+| ANO-XX | Gravité | Capture | Ce qui ne va pas |
+|---|---|---|---|
+| WFS58-5 | **Bloquante** | `qa-01-chargement` (a51bbc8 et 3d447b1) | Critère 2 non rempli : la capture est presque noire. On ne voit que le rail vide de la barre, sans texte ni pourcentage, et ce n'est pas une preuve croyable de l'écran de chargement du jeu. Il s'agit d'une régression par rapport au tour 1. La cause : l'attente fixe de 2 s après « Cibles de rendu » tombe avant l'affichage de la police (environ 3 s). À faire : attendre la ligne `chargement : première image … écran complet (police)` (ou `chargement : Préparation du moteur`, écrite à la même heure), puis 2 s au plus, comme suggéré au tour 1. |
+
+### Hors périmètre (signalé au PO, non compté contre WFS-58)
+
+- **Gel du jeu après le chargement, avec la fenêtre « Pixel Launcher isn't responding »** : il apparaît dans l'essai avec WFS-59 (3d447b1) **et aussi dans l'essai `conduite` à ffb5474, donc sans WFS-59** (journal arrêté sur la recréation de swapchain de 20:24:35, captures figées). Le rapport WFS-56 montrait déjà des captures `conduite` figées sur le chargement. Imputer ce gel à WFS-59 n'est donc pas prouvé : la piste d'un émulateur saturé, ou d'une fenêtre système qui prend le focus au lancement, est à étudier dans le ticket de correction que crée le PO. Le scénario `mvp` de WFS-58 le détecte correctement.
+- **Scénario `conduite` : faux OK** sur des captures figées (`02` à `07` identiques) : il n'a ni contrôle FIGÉE ni attente d'état. Il est resté inchangé à dessein (RG-06), mais c'est à reprendre dans un ticket E7.
+- L'avis « Viewing full screen » peut être neutralisé avant le lancement (`settings put secure immersive_mode_confirmations confirmed`) : c'est une piste pour ce même ticket.
+
+### Pour le tour suivant
+
+- Corriger WFS58-5, puis relancer `simulateur.yml` avec `scenario=mvp` et rappeler le QA. Il suffit que `01-chargement` montre le texte et la barre du chargement. L'échec franc d'une étape suivante (gel ou lenteur du jeu) reste accepté pour WFS-58.
+
+---
+
+## Tour 1
+
+
 **Verdict : REFUSÉ** (émulateur Android), 1er passage. **Fusion interdite.** 2 anomalies bloquantes, 2 mineures.
 
 - Construction regardée : commit `22cd5fd` (`feature/waforspeed-58`, PR #32). Run `simulateur.yml` 41709020767

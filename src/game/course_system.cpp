@@ -72,8 +72,8 @@ public:
             // .countdown.go : « GO » --accent orange avec halo orange (--glow-accent). Halo = copies transparentes autour.
             const bool go = c == "GO";
             const float px = 34 * u, x = W * 0.5f, y = H * 0.30f;
-            halo(r, x, y, px, c, go ? vec4{1.f, 0.416f, 0.f, 0.10f} : vec4{0.f, 0.898f, 1.f, 0.10f}, ui::CENTRE, 0.04f, px * 0.035f);
-            ui::text(r, x, y, px, c, go ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false);
+            halo(r, x, y, px, c, go ? vec4{1.f, 0.416f, 0.f, 0.10f} : vec4{0.f, 0.898f, 1.f, 0.10f}, ui::CENTRE, 0.04f, px * 0.035f, true);
+            ui::text(r, x, y, px, c, go ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);   // WFS-48 : italique
         }
         // écran de fin (endRace / section #over du jeu web), affiché 0,9 s après la fin
         if (course_.state == RaceState::Over && course_.overTimer >= 0.9) drawOver(r, W, H, u);
@@ -84,10 +84,10 @@ public:
 
 private:
     // halo néon (text-shadow du web) : 12 copies transparentes du texte sur deux cercles autour de sa place
-    static void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float esp, float rad) {
+    static void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float esp, float rad, bool it = false) {
         for (int k = 0; k < 12; k++) {
             const float ang = k * 0.5235988f, d = rad * (k % 2 ? 1.f : 0.55f);
-            ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, esp, false);
+            ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, esp, false, it);
         }
     }
     // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais) dessiné en bandes horizontales
@@ -107,15 +107,15 @@ private:
         // .eyebrow : cyan --accent-2, espacement 0,22 em
         ui::text(r, cx, py + 6 * u, 4.2f * u, ui::majuscules("Temps écoulé"), ui::CYAN, ui::CENTRE, 0.22f, false);
         // .score-big : orange --accent avec halo (--glow-accent)
-        halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u);
-        ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false);
+        halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u, true);
+        ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false, true);
         char kmh[32]; std::snprintf(kmh, sizeof kmh, "%d km/h", course_.maxKmh);
         const std::string vals[4] = {ui::decimal(km_, 2) + " km", kmh, ui::nombre(course_.nearCount), ui::nombre(course_.level)};
         const char* labs[4] = {"Distance", "Vitesse max", "Quasi-contacts", "Checkpoints"};
         for (int i = 0; i < 4; i++) {
             const float x = px + pw * (0.125f + 0.25f * i);
             ui::text(r, x, py + 38 * u, 3.4f * u, ui::majuscules(labs[i]), ui::GRIS, ui::CENTRE, 0.16f);
-            ui::text(r, x, py + 43 * u, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE);
+            ui::text(r, x, py + 43 * u, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
         }
         // bouton « Rejouer » (biseau orange, texte sombre)
         const float bw = 40 * u, bh = 10 * u;

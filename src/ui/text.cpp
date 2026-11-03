@@ -1,5 +1,6 @@
 // WaForSpeed — texte de l'interface (WFS-26) : atlas SDF construit au démarrage avec stb_truetype.
 #include "text.h"
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <unordered_map>
@@ -25,7 +26,7 @@ struct Font {
     bool ready = false;
     std::vector<uint8_t> ttf;
     stbtt_fontinfo info{};
-    float scale = 1, ascent = 0;
+    float scale = 1, ascent = 0, capH = 0;   // capH : hauteur des capitales (pivot de l'italique, WFS-48)
     std::unordered_map<int, Glyph> glyphs;
     Image atlas;
 } F;
@@ -49,6 +50,7 @@ bool load(Renderer& r) {
     F.scale = stbtt_ScaleForPixelHeight(&F.info, BASE_PX);
     int asc, desc, gap; stbtt_GetFontVMetrics(&F.info, &asc, &desc, &gap);
     F.ascent = asc * F.scale;
+    { int x0, y0, x1, y1; F.capH = stbtt_GetCodepointBox(&F.info, 'H', &x0, &y0, &x1, &y1) ? y1 * F.scale : F.ascent * 0.7f; }
     // jeu de caractères : ASCII, Latin-1 (accents, « », ×, ·), œ Œ ’ … € et espace fine insécable
     std::vector<int> cps;
     for (int c = 32; c < 127; c++) cps.push_back(c);
@@ -91,8 +93,10 @@ void unload(Renderer& r) {
     F.glyphs.clear(); F.ready = false;
 }
 
-void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, const vec4& c, float spacing, float* outW) {
-    const float s = px / BASE_PX;
+// pente : tan de l'angle d'italique (0 = droit) ; chaque quad est cisaillé autour du milieu des capitales (pivot)
+void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, const vec4& c, float spacing, float* outW,
+         float pente = 0) {
+    const float s = px / BASE_PX, pivot = y + (F.ascent - F.capH * 0.5f) * s;
     float pen = 0; int prev = 0;
     for (int cp : cps) {
         auto it = F.glyphs.find(cp);
@@ -100,7 +104,10 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
         if (it == F.glyphs.end()) continue;
         const Glyph& g = it->second;
         if (prev) pen += stbtt_GetCodepointKernAdvance(&F.info, prev, cp) * F.scale * s;
-        if (r && g.w > 0) r->uiGlyph(x + pen + g.xoff * s, y + (F.ascent + g.yoff) * s, g.w * s, g.h * s, g.u0, g.v0, g.u1, g.v1, c);
+        if (r && g.w > 0) {
+            const float gy = y + (F.ascent + g.yoff) * s, gh = g.h * s;   // bas du quad décalé de (pivot − bas) × pente
+            r->uiGlyph(x + pen + g.xoff * s + (pivot - gy - gh) * pente, gy, g.w * s, gh, g.u0, g.v0, g.u1, g.v1, c, gh * pente);
+        }
         pen += g.adv * s + spacing * px;
         prev = cp;
     }
@@ -118,16 +125,18 @@ float width(float px, const std::string& s, float spacing) {
     return w;
 }
 
-void text(Renderer& r, float x, float y, float px, const std::string& s, const vec4& color, Align align, float spacing, bool ombre) {
+void text(Renderer& r, float x, float y, float px, const std::string& s, const vec4& color, Align align, float spacing, bool ombre,
+          bool italique) {
     if (!F.ready || s.empty()) return;
     auto cps = codepoints(s);
     float w = 0; run(nullptr, 0, 0, px, cps, {}, spacing, &w);
     if (align == CENTRE) x -= w * 0.5f; else if (align == DROITE) x -= w;
+    const float pente = italique ? std::tan(ITALIQUE_DEG * 3.14159265f / 180.f) : 0.f;
     if (ombre) {   // contour sombre décalé : lisible sur la route et le ciel
         const float o = std::max(1.f, px * 0.05f);
-        run(&r, x + o, y + o, px, cps, {0, 0, 0, 0.55f * color.w}, spacing, nullptr);
+        run(&r, x + o, y + o, px, cps, {0, 0, 0, 0.55f * color.w}, spacing, nullptr, pente);
     }
-    run(&r, x, y, px, cps, color, spacing, nullptr);
+    run(&r, x, y, px, cps, color, spacing, nullptr, pente);
 }
 
 std::string nombre(long long v) {
@@ -183,6 +192,10 @@ public:
         text(r, W * 0.92f, H * 0.58f, 11 * u, "182", ORANGE, DROITE);
         text(r, W * 0.92f, H * 0.70f, 3.2f * u, "KM/H", ROUGE, DROITE, 0.16f);
         text(r, W * 0.5f, H * 0.62f, 4 * u, "Centré : WaForSpeed", CYAN, CENTRE);
+        // WFS-48 : même texte droit puis italique (12°), côte à côte
+        const std::string ex = "Droit 1:23,4 · 12 345", ei = "Italique 1:23,4 · 12 345";
+        text(r, W * 0.08f, H * 0.68f, 5 * u, ex, BLANC);
+        text(r, W * 0.08f + width(5 * u, ex) + 5 * u, H * 0.68f, 5 * u, ei, ORANGE, GAUCHE, 0.f, true, true);
     }
     void shutdown(Renderer& r) override { unload(r); }
 private:

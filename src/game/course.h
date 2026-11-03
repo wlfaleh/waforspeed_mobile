@@ -20,6 +20,7 @@ struct Course {
     double clock = -3;                      // trafficClock : < 0 pendant le compte à rebours
     double timeLeft = 30, nextCp = CHECK_DIST, raceTime = 0, comboTimer = 0, overTimer = 0;
     int level = 0, combo = 0, nearCount = 0, maxKmh = 0, accidents = 0;
+    int bumps = 0, scrapes = 0; double lastImpact = 0;   // WFS-28 : compteurs lus par les bruitages (src/audio/sfx.cpp)
     long long bonus = 0;
     int lastCount = -1;                     // dernier chiffre affiché (3, 2, 1, puis 0 = « GO »)
     double goShown = 0;                     // « GO » reste affiché 0,7 s après le départ (setTimeout du jeu web)

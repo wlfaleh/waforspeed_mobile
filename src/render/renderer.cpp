@@ -51,6 +51,9 @@ struct FrameUBO {
     mat4 viewProj, invViewProj;
     vec4 camPos, sunDir, sunColor, skyTop, skyHorizon, groundCol, fog, misc;
     mat4 shadowMat; vec4 shadowP;
+    // WFS-45 : même ordre que shaders/common.glsl
+    vec4 camFwd, fogLin, hemiSky, hemiGround, spotN;
+    vec4 spotPos[4], spotDir[4], spotCol[4], spotCone[4];
 };
 
 // ombres du soleil (WFS-07, valeurs du jeu web : renderer.js applyEnv / stableShadow)
@@ -569,6 +572,28 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         u.shadowMat = P * V;
         u.shadowP = {shadowsOn_ ? 1.f : 0.f, 1.f / (float)shadowSize_, SHADOW_NORMAL_BIAS, SHADOW_BIAS};
     }
+    {   // WFS-45 : projecteurs, lumière hémisphère, brouillard linéaire (three.js r128, physicallyCorrectLights non activé)
+        const vec3 fwd = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
+        u.camFwd = {fwd.x, fwd.y, fwd.z, 0};
+        u.fogLin = {fp.fogNear, fp.fogFar, 0, 0};
+        if (fp.hemiIntensity > 0) {
+            const vec3 a = fp.hemiSky * fp.hemiIntensity, b = fp.hemiGround * fp.hemiIntensity;
+            u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
+        }
+        const int n = std::clamp(fp.spotCount, 0, 4);
+        u.spotN = {(float)n, 0, 0, 0};
+        for (int i = 0; i < n; i++) {
+            const FrameParams::Spot& s = fp.spots[i];
+            vec3 dir = normalize(s.target - s.pos);
+            if (length(dir) < 0.5f) dir = {0, -1, 0};
+            // r128 sans lumières physiques : irradiance × PI (lights_fragment_begin), compensée par le 1/PI du Lambert
+            const vec3 c = s.color * (s.intensity * PI);
+            u.spotPos[i] = {s.pos.x, s.pos.y, s.pos.z, std::max(s.distance, 0.f)};
+            u.spotDir[i] = {dir.x, dir.y, dir.z, std::max(s.decay, 0.f)};
+            u.spotCol[i] = {c.x, c.y, c.z, 0};
+            u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), 0, 0};
+        }
+    }
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear(); skinUsed_ = 0;
@@ -659,9 +684,9 @@ void Renderer::uiSetFontAtlas(const Image& atlas) {
     vkUpdateDescriptorSets(vk_->device, 1, &wr, 0, nullptr);
 }
 
-void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c) {
-    // uv décalés de +2 : le shader d'interface sait qu'il doit lire l'atlas de police
-    UiVertex a{x, y, u0 + 2, v0, c.x, c.y, c.z, c.w}, b{x + w, y, u1 + 2, v0, c.x, c.y, c.z, c.w},
+void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais) {
+    // uv décalés de +2 : le shader d'interface sait qu'il doit lire l'atlas de police ; biais : haut décalé (WFS-48)
+    UiVertex a{x + biais, y, u0 + 2, v0, c.x, c.y, c.z, c.w}, b{x + w + biais, y, u1 + 2, v0, c.x, c.y, c.z, c.w},
              cc{x + w, y + h, u1 + 2, v1, c.x, c.y, c.z, c.w}, d{x, y + h, u0 + 2, v1, c.x, c.y, c.z, c.w};
     if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});

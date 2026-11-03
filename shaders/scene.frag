@@ -49,6 +49,33 @@ float sunShadow(vec3 p, vec3 n) {
     return mix(1.0, sum / 9.0, smoothstep(0.0, 0.06, min(e.x, e.y)));
 }
 
+// projecteurs (WFS-45) : SpotLight de three.js r128 sans lumières physiques (lights_pars_begin / lights_fragment_begin) :
+// cône smoothstep(coneCos, penumbraCos, cosθ), distance pow(saturate(1 − d / portée), décroissance), même GGX que le soleil.
+// Pas d'ombre portée des projecteurs.
+vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
+    vec3 sum = vec3(0.0);
+    int n = int(F.spotN.x + 0.5);
+    float NoV = max(dot(N, V), 1e-3);
+    for (int i = 0; i < 4; i++) {
+        if (i >= n) break;
+        vec3 Lv = F.spotPos[i].xyz - p;
+        float d = length(Lv);
+        vec3 L = Lv / max(d, 1e-4);
+        float cosT = dot(L, -F.spotDir[i].xyz);
+        float NoL = max(dot(N, L), 0.0);
+        if (cosT <= F.spotCone[i].x || NoL <= 0.0) continue;
+        float range = F.spotPos[i].w, decay = F.spotDir[i].w;
+        float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
+        float k = smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att * NoL;
+        vec3 H = normalize(V + L);
+        float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
+        vec3 Fs = F_Schlick(f0, VoH);
+        vec3 spec = noSpec ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;
+        sum += ((1.0 - Fs) * (1.0 - metal) * albedo / PI + spec) * F.spotCol[i].rgb * k;
+    }
+    return sum;
+}
+
 void main() {
     uint flags = uint(pc.params.w + 0.5);
     // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
@@ -130,10 +157,13 @@ void main() {
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
     vec3 sun = F.sunColor.rgb * F.sunDir.w;
     vec3 col = (diff + spec) * sun * NoL * sunShadow(vWorld, N);
+    col += spotLights(vWorld, N, V, albedo, f0, metal, a, vtint);   // WFS-45 (aucun si spotN = 0)
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement
     vec3 R = reflect(-V, N);
     vec3 skyAmb = mix(F.groundCol.rgb, F.skyTop.rgb, N.y * 0.5 + 0.5) * F.misc.z;
+    // WFS-45 : HemisphereLight de three (irradiance mix(bas, haut, 0,5·N.y + 0,5), × PI puis Lambert 1/PI → albedo × mix)
+    if (F.hemiSky.w > 0.5) skyAmb = mix(F.hemiGround.rgb, F.hemiSky.rgb, N.y * 0.5 + 0.5);
     vec3 Fe = f0 + (max(vec3(1.0 - rough), f0) - f0) * pow(1.0 - NoV, 5.0);
     if (vtint) Fe = vec3(0.0);   // pas de reflet du ciel sur les cartes vues en rasant ou de dos
     // le disque du soleil ne se reflète nettement que sur les surfaces lisses (sinon tache blanche sur la route)
@@ -163,6 +193,8 @@ void main() {
     // brouillard (perspective atmosphérique)
     float d = length(F.camPos.xyz - vWorld);
     float fogK = 1.0 - exp(-d * F.fog.a);
+    // WFS-45 : brouillard linéaire de three r128 (fog_fragment : smoothstep(near, far, profondeur de vue))
+    if (F.fogLin.y > 0.0) fogK = smoothstep(F.fogLin.x, F.fogLin.y, dot(vWorld - F.camPos.xyz, F.camFwd.xyz));
     col = mix(col, F.fog.rgb, fogK);
     // pas de pixel aberrant (WFS-32) : un reflet du soleil sur un minuscule triangle du vernis peut donner une valeur
     // énorme, voire NaN (normale nulle) ; on plafonne à 64 et on remplace NaN / infini par 0

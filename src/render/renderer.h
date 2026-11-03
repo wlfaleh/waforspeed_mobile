@@ -48,6 +48,11 @@ struct FrameParams {
     float exposure = 1.0f, ambient = 1.0f, reflections = 1.0f, time = 0; bool night = false;
     // ombres du soleil (WFS-07) : la boîte d'ombre suit le point focus (la voiture), coupées la nuit
     bool shadows = true, hasFocus = false; vec3 focus{};
+    // WFS-45 : projecteurs (three SpotLight, r128 sans lumières physiques), hémisphère, brouillard linéaire. Couleurs linéaires.
+    struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1; };
+    Spot spots[4]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
+    vec3 hemiSky{}, hemiGround{}; float hemiIntensity = 0;   // HemisphereLight ; 0 = ambiance du ciel actuelle
+    float fogNear = 0, fogFar = 0;                           // fogFar > 0 : brouillard linéaire (Fog) au lieu de l'exponentiel
 };
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
@@ -87,7 +92,8 @@ public:
     void uiCircle(float cx, float cy, float r, const vec4& c);
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
     void uiSetFontAtlas(const Image& atlas);
-    void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c);
+    // WFS-48 : biais = décalage en x du bord haut par rapport au bord bas (italique synthétique), 0 = droit
+    void uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais = 0);
     void endFrame();
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
