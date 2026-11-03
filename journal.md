@@ -1328,3 +1328,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 21:05:42 — PO : les 6 sujets importants (map, caméra, personnages, menus, duel, garage) (po-scrum-master)
 - **Demande de l'utilisateur** : 6 sujets distincts, en P2 Haute. **Map design 3D** : WFS-53 (Campagne, Grand Prix, arbres). **Caméra** : WFS-66. **Personnages** : WFS-19 (piétons et conducteurs, après WFS-63 squelettes ; la pluie redevient WFS-18, séparée). **Menus** : WFS-41 (terrain, moment, réglages ; absorbe WFS-68). **Mode duel** : WFS-21 redevenu un ticket à part (séparé de WFS-24 sauvegarde). **Garage** : WFS-11. Aucun ticket en cours ou terminé touché.
+
+### 2026-11-03 21:06:35 — PO : WFS-69 créé, CI qui annule les builds (po-scrum-master)
+- Constat (runs 390 à 419) : chaque commit sur `main`, même documentation, lance un build de ~30 min qui annule celui en cours ; push + PR lancent deux builds identiques. Les commits du PO y ont contribué. **WFS-69** (E7, P1 Urgent) : pas de build pour la documentation, un seul build par commit, jamais d'annulation sur `main`. Retours des agents 3, 4 et 5 demandés (attente et idées).
