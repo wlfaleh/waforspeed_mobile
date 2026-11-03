@@ -907,3 +907,11 @@ Remplace le verdict « VALIDÉ AVEC RÉSERVES » de l'entrée précédente.
   points sur les rayons ; vitres teintées, jantes métalliques ; coût GPU ±0,5 ms.
   **Plan court** : agrandir les deux captures, isoler la cause (matériau vitrage / spéculaire sous-pixel des rayons), appliquer
   l'anticrénelage spéculaire de WFS-32 aux vitres et métaux de `scene.frag`, banc, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-42 construit, en attente de la CI
+**Cause trouvée (RG-01)** : géométrie plus fine qu'un pixel, non préfiltrée. Golf : pièce 17 (fils de la lunette arrière,
+triangles de 2 mm, transparents, métal 1 / rugosité 0) → pointillés brillants (`vitrine-golf-0`). 911 : matériau 4 (jantes,
+21 778 triangles de 1,9 mm, métal) → chaque triangle accroche le soleil (`vitrine-p911-1`).
+**Fait** (`feature/waforspeed-42`) : finesse de chaque matériau mesurée au chargement (journal), opacité x couverture du
+pixel pour les pièces transparentes fines, reflet du soleil élargi pour les pièces opaques fines. Modèles inchangés (RG-02).
+**Suite** : CI → qa-lead.
