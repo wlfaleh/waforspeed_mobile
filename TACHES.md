@@ -103,7 +103,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-16 | Route mouillée avec reflets | E4 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-16` |  |  |
 | P4 Basse | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ⏳ En attente |  | WFS-15 | `feature/waforspeed-17` |  |  |
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-16 | `feature/waforspeed-18` |  |  |
-| P3 Moyenne | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ Prêt |  | WFS-06 | `feature/waforspeed-19` |  |  |
+| P3 Moyenne | WFS-19 | Piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 ✅, WFS-63 | `feature/waforspeed-19` |  |  |
 | P3 Moyenne | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ⏳ Prêt |  | WFS-06, WFS-08 | `feature/waforspeed-20` |  |  |
 | P4 Basse | WFS-21 | Duel en ligne | E3 | ⏳ Prêt |  | WFS-12 | `feature/waforspeed-21` |  |  |
 | P4 Basse | WFS-22 | Version iOS (Metal via MoltenVK) | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
@@ -112,7 +112,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-25 | Préparation des stores | E7 | ⏳ En attente |  | WFS-22 | `feature/waforspeed-25` |  |  |
 | — | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` | PR #9 | ✅ VALIDÉ par qa-lead |
 | — | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | ✅ Terminé |  | WFS-26, WFS-12 | `feature/waforspeed-27` | PR #16 | ✅ VALIDÉ par qa-lead au tour 2/2 (main 6e672a9, ANO-11 et ANO-12 corrigées) [rapport](qa/rapports/WFS-27.md) |
-| P3 Moyenne | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
+| P3 Moyenne | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | 🔍 En revue (CI) | agent 3 (session 011cpqZd), 2026-11-03 | WFS-10 ✅, WFS-08 ✅ | `feature/waforspeed-28` | [#36](https://github.com/wlfaleh/waforspeed_mobile/pull/36) |  |
 | — | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | ✅ Terminé | | — | `feature/waforspeed-29` | #17 | ✅ VALIDÉ par qa-lead ([rapport](qa/rapports/WFS-29.md)) |
 | — | WFS-30 | Points d'extension du moteur (systèmes enfichables, CMake par dossier) | E0 | ✅ Terminé | — | — | `feature/waforspeed-30` | #3 | ✅ VALIDÉ par qa-lead |
 | — | WFS-31 | QA par banc d'essai PC ; simulateur Android en fin d'épic (CI) | E7 | ✅ Terminé | — | — | `feature/waforspeed-31` | #5 | ✅ VALIDÉ par qa-lead |
@@ -143,10 +143,11 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-56 | [MVP] Simulateur : scénario « parcours MVP » par appuis (étape 1 de WFS-50) | E7 | ✅ Terminé (fusionné par l'utilisateur, QA après fusion) | Claude (session 01UY1Vv1), 2026-11-03 | WFS-31 ✅ (essai complet après WFS-38) | `feature/waforspeed-56` | PR #28 (fusionnée, 94087c7) | ⏳ QA après fusion |
 | — | WFS-57 | [MVP] Correction : centrer la paire « Rejouer » / « Menu » de l'écran de fin (ANO-14) | E3 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-57` | #29 (fusionnée) | ✅ VALIDÉ par qa-lead (cc76b01, banc PC, ANO-14 corrigée) — [rapport](qa/rapports/WFS-57.md) |
 | P1 Urgent | WFS-58 | [MVP] Correction simulateur : scénario `mvp` piloté par l'état du jeu (SIM-MVP-2, 3, 4) | E7 | 🔍 En revue | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-58` | #32 |  |
-| P1 Urgent | WFS-59 | [MVP] Point d'extension : mode GPU logiciel, temps de jeu au temps réel et rendu allégé (SIM-MVP-1) | E0 | 🔍 En revue (CI) | agent 3, 2026-11-03 | — | `feature/waforspeed-59` | [#31](https://github.com/wlfaleh/waforspeed_mobile/pull/31) |  |
+| P1 Urgent | WFS-59 | [MVP] Point d'extension : mode GPU logiciel, temps de jeu au temps réel et rendu allégé (SIM-MVP-1) | E0 | ✅ Fusionné (QA de nuit à faire) | agent 3, 2026-11-03 | — | `feature/waforspeed-59` | [#31](https://github.com/wlfaleh/waforspeed_mobile/pull/31) |  |
 | P4 Basse | WFS-60 | Roues séparées dans les modèles de voiture (.wfm) | E5 | ⏳ Prêt |  | — | `feature/waforspeed-60` |  |  |
 | P4 Basse | WFS-61 | Point d'extension : transformation par roue | E0 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-61` |  |  |
 | P4 Basse | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ⏳ En attente |  | WFS-61 | `feature/waforspeed-62` |  |  |
+| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-63` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -197,7 +198,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] scénario `mvp` : chaque étape attend sa ligne du logcat (délai max), capture après présentation d'images, `ÉCHEC` au lieu d'un faux `OK` si une étape manque
 - [ ] `01-chargement` = barre du jeu sans barres système, `02-menu` = menu ; écran d'émulateur réduit (`wm size`) ; `scenario=conduite` inchangé
 
-**WFS-59 — [MVP] Point d'extension : mode GPU logiciel (SIM-MVP-1)** · E0 · priorité P1 Urgent · 🔍 En revue (CI, PR #31) — agent 3, 2026-11-03 (règles : `regles-de-gestion/WFS-59.md`)
+**WFS-59 — [MVP] Point d'extension : mode GPU logiciel (SIM-MVP-1)** · E0 · priorité P1 Urgent · ✅ Fusionné le 2026-11-03 (PR #31, QA de nuit : `qa/Check.md`) — agent 3, 2026-11-03 (règles : `regles-de-gestion/WFS-59.md`)
 - [ ] GPU logiciel ou extra `qa_simu` : dt max 0,5 s, rendu 25 %, sans ombres ; logcat `QA ips` ≥ 1, course qui avance sur les captures du simulateur
 - [ ] banc PC : captures identiques à `main`, `0 écart(s)`
 
@@ -331,14 +332,19 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-15 — Réglages de qualité selon le téléphone** · E4 · priorité P3 Moyenne · ⏳ Prêt
 - [ ] Niveaux bas / moyen / haut, choix automatique
 
-**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité P3 Moyenne · ⏳ Prêt
-- [ ] Bruitages synchronisés aux évènements du jeu
+**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité P3 Moyenne · 🔍 En revue (CI, PR #36) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-28.md`)
+- [ ] journal du banc : chaque événement (accident, petit choc, frottement, quasi-contact, nitro, bips décompte / GO / checkpoint / fin, crissement) déclenche son son une seule fois
+- [ ] pas de craquement au début / à la fin des sons ; coupure en pause ; captures du banc inchangées, `0 écart(s)`
 
 **WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité P3 Moyenne · ⏳ Prêt
 - [ ] 60 i/s visés, mesures dans le journal
 
-**WFS-19 — Piétons animés et conducteurs** · E2 · priorité P3 Moyenne · ⏳ En attente
+**WFS-19 — Piétons animés et conducteurs** · E2 · priorité P3 Moyenne · ⏳ En attente de WFS-63 (animation par squelette absente du renderer) (règles : `regles-de-gestion/WFS-19.md`)
 - [ ] Personnages du jeu web, conducteur face au volant
+
+**WFS-63 — Point d'extension : maillages animés par squelette (skinning)** · E0 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-63.md`)
+- [ ] capture `squelette-essai` : `homme` du jeu web debout, proportions justes ; `squelette-marche-0` / `-1` : deux poses de `Walk_Loop` différentes
+- [ ] captures existantes identiques à `main`, banc `0 écart(s)` ; doc du point d'extension dans le skill `waforspeed-natif`
 
 **WFS-43 — Arbres : finitions (cœur du houppier, ombres des arbres)** · E2 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-43.md`)
 - [ ] `trafic-cam0` : plus de cœur visible au bord des houppiers ; ombre d'arbre découpée visible sur une capture au soleil
