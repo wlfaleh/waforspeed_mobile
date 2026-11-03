@@ -1136,3 +1136,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - QA encore à faire après fusion : **WFS-37** (PR #23) et **WFS-56** (PR #28) ; pas de rapport QA non plus pour WFS-55 (PR #26, « recette de nuit »).
 - Seule PR ouverte : **#30 (WFS-52, en revue)**, CI en cours.
 - Pour le PO : toutes les dépendances de **WFS-50** (vérification simulateur du MVP) sont maintenant fusionnées (WFS-35, 27, 37, 38, 29, 47, 56, 57).
+
+### 2026-11-03 — PO : WFS-50 prêt puis début WFS-50 Vérification simulateur du MVP (Claude, session trafic) — attribué par le PO
+- Toutes les dépendances de **WFS-50** sont ✅ (WFS-35, 27, 37, 38, 29, 47, 56, 57) : ⏳ En attente → ⏳ Prêt, puis attribué (meilleure priorité hors E5, E7 libre). Ligne de détail WFS-52 remise en « 🔍 En revue (PR #30) ».
+- Règle « un ticket par agent » : dérogation assumée par le PO, WFS-52 n'est plus qu'en revue (attente QA) et les zones ne se recouvrent pas (E5 `src/ui/**` / E7 `tools/qa/**`, `.github/**`).
+- **QA après fusion de WFS-37, WFS-56 (et recette de WFS-55)** : le parcours simulateur de WFS-50 sert de vérification à l'écran de WFS-37 (menu) et de WFS-56 (scénario `mvp`) ; `qa-lead` le citera dans `simulateur-MVP.md`. Un défaut trouvé = ticket de correction créé par le PO, pas de correctif dans WFS-50.
+- **Ticket** : WFS-50 · épic E7 · branche `feature/waforspeed-50` · règles `regles-de-gestion/WFS-50.md`.
+- **Zone autorisée** : `tools/qa/**`, `.github/**` (E7) seulement, et uniquement si le scénario `mvp` de WFS-56 doit être ajusté ; aucun changement de `src/` ni `android/`.
+- **Critères** : `simulateur.yml` lancé sur `main` avec `epic=MVP` et `scenario=mvp` ; captures de chaque étape (chargement, menu, Course solo, décompte, course + HUD, fin, Rejouer, Menu) ; paysage plein écran, aucun plantage ni ANR, logcat sans erreur Vulkan ; rapport `qa/rapports/simulateur-MVP.md` VALIDÉ par `qa-lead`.
+- **Plan** : lancer le workflow sur `main` → récupérer captures et `deroulement.txt` → `qa-lead` → si VALIDÉ, le PO note « Livraison MVP » au Journal avec le lien de l'APK (`apercu`).
