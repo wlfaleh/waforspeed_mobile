@@ -232,8 +232,8 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     courseBenchSetTime(0.05);
     for (int i = 0; i < 80; i++) image();
     capture("fin-menu", "écran de fin avec « Rejouer » et « Menu »");
-    // bouton « Menu » : à droite de « Rejouer » (CourseSystem::drawOver : Rejouer centré, 40 u × 10 u à y = 70 u ; Menu à + 1,05 × 40 u)
-    const float u = H / 100, bw = 40 * u, bx = W / 2 - bw / 2 + bw * 1.05f;
+    // bouton « Menu » (CourseSystem::drawOver, WFS-57 : paire centrée, Rejouer 40 u + 2 u + Menu 28 u, à y = 70 u)
+    const float u = H / 100, bw = 40 * u, bx = W / 2 - (bw * 1.7f + 2 * u) / 2 + bw + 2 * u;
     g.onTouch({6, bx + bw * 0.35f, 70 * u + 5 * u, true}); image(); g.onTouch({6, bx + bw * 0.35f, 75 * u, false});
     for (int i = 0; i < 60; i++) image();
     capture("fin-retour-menu", "retour au menu après « Menu »");

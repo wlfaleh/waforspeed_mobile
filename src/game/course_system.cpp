@@ -56,8 +56,9 @@ public:
 
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Course || course_.state != RaceState::Over || course_.overTimer < 0.9) return false;
-        if (t.down && t.x >= btn_[0] && t.x <= btn_[0] + btn_[2] && t.y >= btn_[1] && t.y <= btn_[1] + btn_[3]) restartReq_ = true;
-        if (t.down && t.x >= btn_[0] + btn_[2] * 1.05f && t.x <= btn_[0] + btn_[2] * 1.75f && t.y >= btn_[1] && t.y <= btn_[1] + btn_[3]) g.allerA(Ecran::Menu);   // WFS-38
+        // zones de toucher = rectangles dessinés par drawOver (une seule source, WFS-57)
+        if (t.down && rejouer_.contient(t.x, t.y)) restartReq_ = true;
+        if (t.down && menu_.contient(t.x, t.y)) g.allerA(Ecran::Menu);   // WFS-38
         return true;   // l'écran de fin garde tous les touchers
     }
 
@@ -118,15 +119,22 @@ private:
         }
         // bouton « Rejouer » (biseau orange, texte sombre)
         const float bw = 40 * u, bh = 10 * u;
-        btn_[0] = cx - bw / 2; btn_[1] = py + 60 * u; btn_[2] = bw; btn_[3] = bh;
-        biseau(r, btn_[0], btn_[1], bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
-        ui::text(r, cx, btn_[1] + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
-        biseau(r, btn_[0] + bw * 1.05f, btn_[1], bw * 0.7f, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130) à droite
-        ui::text(r, btn_[0] + bw * 1.4f, btn_[1] + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
+        // WFS-57 (ANO-14) : paire « Rejouer » + « Menu » (0,7 × la largeur, 2 u d'écart) centrée sur le panneau
+        const float mw = bw * 0.7f, gap = 2 * u, bx = cx - (bw + gap + mw) / 2, by = py + 60 * u;
+        rejouer_ = {bx, by, bw, bh};
+        menu_ = {bx + bw + gap, by, mw, bh};
+        biseau(r, rejouer_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
+        ui::text(r, rejouer_.x + bw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
+        biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
+        ui::text(r, menu_.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
     }
     bool restartReq_ = false;
     long long score_ = 0; double km_ = 0;
-    float btn_[4] = {0, 0, 0, 0};
+    struct Bouton {
+        float x = 0, y = 0, w = 0, h = 0;
+        bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; }
+    };
+    Bouton rejouer_, menu_;   // boutons de l'écran de fin, posés à chaque dessin (WFS-57)
 };
 CourseSystem* CourseSystem::active_ = nullptr;
 WFS_SYSTEM(CourseSystem, 210)   // gameplay (200-299), après le trafic (50) dont il lit les chocs
