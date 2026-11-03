@@ -926,3 +926,10 @@ pixel pour les pièces transparentes fines, reflet du soleil élargi pour les pi
 - **Pour le PO** : le critère « checkpoint 10 → +7 s » contredit RG-02 et le jeu web (+7,4 s ; +7 s au checkpoint 11) :
   critère à corriger, pas le code.
 **Suite** : le développeur corrige ANO-04 / ANO-05, CI, 2e passage QA. Pas de fusion avant.
+
+### 2026-11-03 — WFS-42 refusé (1er passage) puis corrigé
+**Retour QA** (`qa/rapports/WFS-42.md`) : trame de la lunette et points des jantes inchangés ; coût de la passe de scène non mesuré.
+**Vraie cause** : le ciel reflété ajoute le disque du soleil (60 x l'intensité) selon la seule rugosité du matériau ;
+sur des centaines de petits points / facettes en miroir, certains renvoient le soleil → pics HDR plafonnés à 64
+(baisser l'opacité ne suffisait pas : 64 x 0,1 reste saturé). **Fait** : pour les pièces fines, ciel et disque du soleil
+reflétés suivent la rugosité effective ; seuil de finesse 4 mm ; coût de la passe de scène au journal.
