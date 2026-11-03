@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include "../src/audio/engine_synth.h"
+#include "../src/audio/sfx_synth.h"   // WFS-28
 #include "../src/game/player.h"
 using namespace wfs;
 
@@ -44,5 +45,25 @@ int main(int argc, char** argv) {
     const bool ok = gearsSeen == 5 && shifts >= 4 && rpmMax > 0.85f && peak < 0.99f && rms > 0.01 && jump < 0.25f && tail < 0.005f;   // après 0,1 s de pause : < 0,005 (environ −40 dB sous la crête), inaudible
     std::printf("son : %zu échantillons, rapports vus %d (%d passages), régime max %.2f, crête %.2f, RMS %.3f, plus grand saut %.3f, après pause %.5f → %s\n",
                 pcm.size(), gearsSeen, shifts, rpmMax, peak, rms, jump, tail, ok ? "OK" : "ÉCHEC");
-    return ok ? 0 : 1;
+    // WFS-28 : bruitages (noiseHit / beep du jeu web) — pas de craquement : départ et fin à zéro (fondu de 5 ms),
+    // raccord des boucles sans saut plus grand que dans le son lui-même, aucun son vide ni saturé
+    bool okSfx = true;
+    auto verifie = [&](const char* nom, const std::vector<float>& b, bool boucle) {
+        float pk = 0, sautMax = 0; for (size_t i = 1; i < b.size(); i++) { pk = std::max(pk, std::abs(b[i])); sautMax = std::max(sautMax, std::abs(b[i] - b[i - 1])); }
+        const float bout = std::max(std::abs(b.front()), std::abs(b.back())), raccord = std::abs(b.front() - b.back());
+        const bool o = !b.empty() && pk > 0.02f && pk < 1.5f && (boucle ? raccord <= sautMax * 1.01f : bout < 0.002f);
+        std::printf("bruitage %-14s : %5.2f s, crête %.2f, %s %.4f → %s\n", nom, b.size() / 48000.0, pk, boucle ? "raccord" : "bouts", boucle ? raccord : bout, o ? "OK" : "ÉCHEC");
+        okSfx = okSfx && o;
+    };
+    {
+        using namespace sfx; const float R = 48000;
+        std::vector<float> acc; noiseHit(acc, 0, R, 0.6f, 140, 0.7f, 1, 45); noiseHit(acc, 0, R, 0.4f, 2600, 1.4f, 0.55f, 7000); noiseHit(acc, 0, R, 0.25f, 900, 2, 0.4f, 300);
+        verifie("accident", acc, false);
+        std::vector<float> fr; noiseHit(fr, 0, R, 0.22f, 3200, 3, 0.35f, 1600); verifie("frottement", fr, false);
+        std::vector<float> qc; noiseHit(qc, 0, R, 0.28f, 900, 1.2f, 0.5f, 2600); verifie("quasi-contact", qc, false);
+        std::vector<float> fin; beep(fin, R, 660, 0, 0.2f); beep(fin, R, 440, 0.2f, 0.2f); beep(fin, R, 330, 0.4f, 0.4f); verifie("bip-fin", fin, false);
+        verifie("crissement", boucle(R, 1.0f, 2100, 7, 0.9f, 3400, 9), true);
+        verifie("nitro", boucle(R, 1.2f, 650, 0.7f, 0.6f), true);
+    }
+    return ok && okSfx ? 0 : 1;
 }
