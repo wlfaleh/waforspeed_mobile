@@ -134,7 +134,16 @@ public:
         std::vector<uint8_t> png;
         int w = 0, h = 0, n = 0;
         stbi_uc* px = readAsset("world/feuillage.png", png) ? stbi_load_from_memory(png.data(), (int)png.size(), &w, &h, &n, 4) : nullptr;
-        if (px) { leafTex_ = r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, true); stbi_image_free(px); }
+        vec3 leafAvg{0.2f, 0.3f, 0.12f};   // couleur moyenne des feuilles (case 0 de l'atlas), pour le cœur du houppier
+        if (px) {
+            double acc[3] = {0, 0, 0}; int cnt = 0;
+            for (int y = 0; y < h / 2; y += 2) for (int x = 0; x < w / 2; x += 2) {
+                const stbi_uc* q = px + ((size_t)y * w + x) * 4;
+                if (q[3] > 200) { for (int k = 0; k < 3; k++) acc[k] += q[k] / 255.0; cnt++; }
+            }
+            if (cnt) leafAvg = {(float)(acc[0] / cnt), (float)(acc[1] / cnt), (float)(acc[2] / cnt)};
+            leafTex_ = r.vk().uploadTexture(px, (uint32_t)w, (uint32_t)h, true); stbi_image_free(px);
+        }
         else WFS_ERR("Atlas de feuillage introuvable (world/feuillage.png)");
         for (int k = 0; k < 2; k++) {
             Material m; vec3 c = lin(veg::TINT_PLANE[k]); m.color = {c.x, c.y, c.z, 1}; m.rough = 0.8f; m.cutoff = 0.5f;
@@ -149,8 +158,9 @@ public:
         barkTex_ = r.vk().uploadTexture(bark, 2, 1, true);
         Material mb; mb.rough = 0.9f; mb.flags = MAT_VTINT;
         mats_[P_BARK] = r.makeMaterial(mb, &barkTex_, nullptr, nullptr);
-        // cœur : le jeu web l'éclaire en Lambert par sommet (plus clair que notre PBR + ACES) → éclairci pour rester un fond d'ombre verte
-        Material mc; vec3 c = lin(veg::hex(veg::CORE_LEAF)) * 2.2f; mc.color = {c.x, c.y, c.z, 1}; mc.rough = 0.9f; mc.flags = MAT_VTINT;
+                // = feuille moyenne × teinte du platane, à l'ombre (×0,45) : se confond avec le feuillage au lieu de faire un bloc sombre
+        const vec3 la = lin(leafAvg), tp = lin(veg::TINT_PLANE[0]);
+        Material mc; vec3 c = vec3{la.x * tp.x, la.y * tp.y, la.z * tp.z} * 0.45f; mc.color = {c.x, c.y, c.z, 1}; mc.rough = 0.9f; mc.flags = MAT_VTINT;
         mats_[P_CORE] = r.makeMaterial(mc, nullptr, nullptr, nullptr);
     }
 

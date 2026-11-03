@@ -112,7 +112,8 @@ void broadleaf(const Out& o, vec3 b, float h, Mulberry32& R, const Broadleaf& p,
         const vec3 cpos{cc.x + std::cos(az) * sp, cc.y + (el - 0.45f) * Ry * 0.9f, cc.z + std::sin(az) * sp};
         const float ri = (lo ? 0.7f : 0.5f + rnd(R) * 0.15f) * Rx;
         if (!lo) limb(S, top + vec3{0, -0.3f, 0}, cpos + vec3{0, -ri * 0.3f, 0}, rT * 0.62f, rT * 0.16f, 5, R, 0.2f);
-        core(*o.core, cpos + vec3{0, ri * 0.1f, 0}, {ri * 0.42f, ri * 0.36f, ri * 0.42f}, colK(1, R));
+        // cœur réduit (×0,7) pour rester sous les cartes : sans couleur par sommet, il ne se fond pas aussi bien que dans le jeu web
+        core(*o.core, cpos + vec3{0, ri * 0.1f, 0}, vec3{ri * 0.42f, ri * 0.36f, ri * 0.42f} * 0.7f, colK(1, R));
         const int m = lo ? 6 : p.cards;
         for (int j = 0; j < m; j++) {
             vec3 d = randUnit(R); d.y = d.y * 0.9f + 0.05f;
