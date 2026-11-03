@@ -1,12 +1,12 @@
 ---
 name: qa-lead
-description: Validation des tickets de WaForSpeed Mobile par le QA lead — regarder les captures d'écran de l'APK (émulateur Android et banc d'essai) classer les anomalies (bloquante / mineure) et rendre le verdict VALIDÉ, VALIDÉ AVEC RÉSERVES ou REFUSÉ avant toute fusion. À utiliser quand on teste, valide ou fusionne un ticket.
+description: Validation des tickets de WaForSpeed Mobile par le QA lead — regarder les captures d'écran de l'APK (émulateur Android et banc d'essai) classer les anomalies (bloquante / mineure) et rendre le verdict VALIDÉ, À CORRIGER, PASSABLE AVEC ANOMALIES MINEURES ou REFUSÉ avant toute fusion. À utiliser quand on teste, valide ou fusionne un ticket.
 ---
 
 # QA — regarder les captures
 
 - Après chaque APK d'un ticket, l'agent `qa-lead` regarde les captures publiées par la CI dans la Release
-  `apercu-waforspeed-XX` et rend un verdict **VALIDÉ**, **VALIDÉ AVEC RÉSERVES** ou **REFUSÉ**.
+  `apercu-waforspeed-XX` et rend un verdict **VALIDÉ**, **À CORRIGER**, **PASSABLE AVEC ANOMALIES MINEURES** ou **REFUSÉ**.
 - **QA de chaque ticket = banc d'essai PC** (rapide, ~3 min) : `vitrine-<voiture>-N`, `course-camC-N` et les captures
   propres au ticket, dans la Release `apercu-waforspeed-XX`.
 - **QA de fin d'épic = simulateur Android** : quand tous les tickets d'une épic sont terminés, le PO crée le ticket
@@ -18,9 +18,10 @@ description: Validation des tickets de WaForSpeed Mobile par le QA lead — rega
 - **Le QA décide de la gravité de chaque anomalie** :
   - **bloquante** (critère d'acceptation ou règle de gestion non respecté, plantage, écran noir, image cassée, régression) → **REFUSÉ** :
     le développeur corrige jusqu'à ce qu'il n'y ait plus d'anomalie bloquante ;
-  - **mineure** (détail de finition qui ne gêne ni le joueur ni les autres tickets) → **VALIDÉ AVEC RÉSERVES** : fusion autorisée,
+  - **mineure** (détail de finition qui ne gêne ni le joueur ni les autres tickets) → **À CORRIGER** : le QA donne la main au
+    développeur **deux fois au plus** ; si l'anomalie reste après le 2e tour → **PASSABLE AVEC ANOMALIES MINEURES** : fusion autorisée,
     l'anomalie va au **tableau des anomalies** de `TACHES.md` (ANO-XX, statut `🆕 Nouvelle`) ;
   - aucune anomalie → **VALIDÉ**.
 - Rapport court dans `qa/rapports/WFS-XX.md` : verdict + tableau `| ANO-XX | Gravité | Capture | Ce qui ne va pas |`.
-- Les anomalies mineures sont corrigées plus tard par des **US de correction créées par le PO**, jamais en plus dans le ticket.
-- **Fusion avec VALIDÉ ou VALIDÉ AVEC RÉSERVES, jamais avec REFUSÉ.**
+- Les anomalies mineures restantes après les deux tours sont corrigées plus tard par des **US de correction créées par le PO**.
+- **Fusion avec VALIDÉ ou PASSABLE AVEC ANOMALIES MINEURES, jamais avec REFUSÉ ni À CORRIGER.**

@@ -57,7 +57,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 6. Numéroter à la suite (`WFS-31`, …), ajouter au tableau, aux critères et au Journal ; envoyer sur `main`.
 
 ## 3. Cérémonies légères
-- **Fin de ticket** : vérifier ✅ + rapport QA `VALIDÉ` ou `VALIDÉ AVEC RÉSERVES` ; passer en `⏳ Prêt` les tickets dont toutes les dépendances sont finies.
+- **Fin de ticket** : vérifier ✅ + rapport QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` ; passer en `⏳ Prêt` les tickets dont toutes les dépendances sont finies.
 - **Fin d'épic** : quand tous les tickets d'une épic sont ✅, créer le ticket « Vérification simulateur EX » (même épic,
   priorité haute, critères : workflow `simulateur.yml` lancé avec `epic=EX`, rapport `qa/rapports/simulateur-EX.md` du
   QA lead VALIDÉ : démarrage, paysage, tactile, aucun plantage) ; les défauts trouvés deviennent des tickets de correction.

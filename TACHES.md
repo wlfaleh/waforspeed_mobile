@@ -9,7 +9,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 |---|---|---|
 | PO / Scrum Master | `po-scrum-master` (`.claude/agents/po-scrum-master.md`) | étudie le besoin, découpe en épics et tickets, priorise, **attribue les tickets**, débloque |
 | Développeur | toute session Claude | réalise le ticket attribué, sur sa branche, dans la zone de son épic |
-| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, classe les anomalies (bloquante / mineure), verdict VALIDÉ / VALIDÉ AVEC RÉSERVES / REFUSÉ |
+| QA lead | `qa-lead` (`.claude/agents/qa-lead.md`) | regarde les captures de chaque APK, classe les anomalies (bloquante / mineure), verdict VALIDÉ / À CORRIGER / PASSABLE AVEC ANOMALIES MINEURES / REFUSÉ |
 
 ## Statuts
 | Statut | Signification |
@@ -18,7 +18,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 | ⏳ Prêt | dépendances terminées, critères clairs : peut être attribué |
 | 🔧 En cours | attribué (Responsable), branche créée |
 | 🔍 En revue | PR ouverte, CI verte, attente du verdict QA |
-| ✅ Terminé | VALIDÉ (ou VALIDÉ AVEC RÉSERVES) et fusionné dans `main` |
+| ✅ Terminé | VALIDÉ (ou PASSABLE AVEC ANOMALIES MINEURES) et fusionné dans `main` |
 | ⛔ Bloqué | raison au Journal |
 
 ## Règles de travail en parallèle (obligatoires)
@@ -37,8 +37,9 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
    **banc d'essai PC** et écrit `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket.
    **Le QA décide de la gravité de chaque anomalie** :
    - au moins une anomalie **bloquante** → `REFUSÉ` : pas de fusion, le développeur corrige jusqu'à ce qu'il n'y en ait plus ;
-   - anomalies **mineures** seulement → `VALIDÉ AVEC RÉSERVES` : fusion autorisée ; le QA inscrit chaque anomalie mineure au
-     **tableau des anomalies** ci-dessous ; le **PO** les priorise et crée des **US de correction dédiées** (jamais corrigées hors ticket) ;
+   - anomalies **mineures** seulement → `À CORRIGER` : le QA donne la main au développeur **deux fois au plus** pour les corriger ;
+     si elles restent après le 2e tour → `PASSABLE AVEC ANOMALIES MINEURES` : fusion autorisée ; le QA inscrit chaque anomalie
+     restante au **tableau des anomalies** ci-dessous ; le **PO** les priorise et crée des **US de correction dédiées** ;
    - aucune anomalie → `VALIDÉ`.
    **Fin d'épic** : le PO crée le ticket « Vérification simulateur EX » (émulateur Android,
    workflow `simulateur.yml`, rapport `qa/rapports/simulateur-EX.md`).
@@ -50,7 +51,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 
 **Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
-**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `VALIDÉ AVEC RÉSERVES` (anomalies mineures inscrites au tableau des anomalies), synchronisé, fusionné,
+**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` (anomalies mineures restantes inscrites au tableau des anomalies), synchronisé, fusionné,
 Journal à jour.
 
 ## Épics et zones de code
@@ -878,3 +879,9 @@ Le QA ne doit plus bloquer un ticket pour de petits problèmes. **Le QA décide 
 et crée des US de correction dédiées. Mis à jour : `CLAUDE.md`, `.claude/agents/qa-lead.md`, `.claude/skills/qa-lead/SKILL.md`,
 `.claude/agents/po-scrum-master.md`, `.claude/skills/waforspeed-natif/SKILL.md`, ce fichier (règle 5, rôles, statuts,
 définition de « Fini », nouveau tableau des anomalies).
+
+### 2026-11-03 — Règle QA précisée : deux tours de correction pour les anomalies mineures (demande de l'utilisateur)
+Anomalies **mineures** seulement → verdict `À CORRIGER` : le QA donne la main au développeur **deux fois au plus**.
+Si elles restent après le 2e tour, le QA les crée au tableau des anomalies et accepte avec `PASSABLE AVEC ANOMALIES MINEURES`
+(fusion autorisée) ; le PO crée ensuite les US de correction. Anomalie **bloquante** → `REFUSÉ`, sans limite de tours.
+Remplace le verdict « VALIDÉ AVEC RÉSERVES » de l'entrée précédente.
