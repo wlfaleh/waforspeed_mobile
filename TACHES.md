@@ -94,7 +94,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔧 En cours (corrections QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 | 🟠 À CORRIGER, tour 1/2 (`qa/rapports/WFS-12.md`) |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04), fusion autorisée |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -201,7 +201,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔧 En cours (QA : À CORRIGER, tour 1/2, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔍 En revue (QA : PASSABLE AVEC ANOMALIES MINEURES, fusion autorisée, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -295,6 +295,7 @@ Statuts : 🆕 Nouvelle (QA) → 📋 Planifiée (PO, US de correction créée) 
 | ANO-01 | WFS-34 | `trafic-cam0` | cœur du houppier un peu visible au bord d'un arbre | 📋 Planifiée | WFS-43 |
 | ANO-02 | WFS-34 | `course-*` | ombres des arbres peu visibles (rues à l'ombre des immeubles) | 📋 Planifiée | WFS-43 |
 | ANO-03 | WFS-34 | `course-*` | branches en « baleines de parapluie » | 🚫 Abandonnée | — (identique au jeu web) |
+| ANO-04 | WFS-12 | `course-decompte-3`, `course-decompte-go`, `course-fin` | texte droit au lieu d'italique (chiffres du décompte, score, stats) : le texte natif (`src/ui/text.*`) ne sait pas incliner les glyphes | 🆕 Nouvelle |  |
 
 ## Journal
 
@@ -1015,3 +1016,11 @@ défaut) ; doc dans le skill `waforspeed-natif`.
 scène dédiée ; `src/platform/desktop_main.cpp` (2 lignes) : capture `scene-dediee-vide`.
 **Vérification (conteneur, lavapipe)** : banc de `main` et de la branche : 26 captures identiques au pixel près ;
 `scene-dediee-vide` : cube seul, fond (7, 7, 13) pour `#07070c` ; tests piste, systèmes, trafic (0 écart), son OK.
+
+### 2026-11-03 — QA WFS-12 : PASSABLE AVEC ANOMALIES MINEURES (2e passage, tour 2/2)
+**qa-lead** (`qa/rapports/WFS-12.md`), commit `f228e46`, run 41609393349, Release `apercu-waforspeed-12` mise à jour.
+- Corrigé : décompte blanc à halo cyan et « GO » orange à halo orange, sans ombre décalée ; écran de fin avec bouton en
+  parallélogramme, sur-titre cyan, score orange à halo. Course de référence toujours à 0 écart ; autres captures identiques.
+- Reste **ANO-04** (mineure, 🆕 au tableau des anomalies) : italique absent (décompte, score, stats), à faire dans `src/ui/text.*`
+  (hors zone E3, donc impossible dans un 2e tour de WFS-12). **Fusion autorisée.** Au PO : US de correction pour ANO-04, et
+  critère « checkpoint 10 → +7 s » à corriger en +7,4 s.
