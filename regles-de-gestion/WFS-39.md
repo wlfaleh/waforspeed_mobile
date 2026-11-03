@@ -14,6 +14,15 @@ En course, un bouton « Menu » met en pause et propose Reprendre / Recommencer 
 ## À réutiliser
 `index.html` `#pause`, `#menuBtnHud` ; `js/ui/screens.js` → `pauseGame`, `resumeGame`, `toMenu` ; `css/style.css` `.cam-btn`, `.btn`.
 
+## Zone de code et points d'appui (affinage PO, 2026-11-03)
+- Zone E8 : `src/ui/ecrans/**` (nouveaux fichiers `pause.h/.cpp`, bouton Menu dans l'écran de course côté E8).
+- Déjà prêt dans le noyau (WFS-36) : `Ecran::Pause` (`src/core/ecran.h`) et `Game::update` qui fige la simulation
+  (`src/game/game.cpp` l. 202) : **ne pas recoder la pause, l'utiliser**. Marges de l'encoche : API de WFS-51.
+- RG-04 : accroche ≤ 10 lignes annoncée au Journal dans `src/platform/android_main.cpp` (`APP_CMD_PAUSE` / `APP_CMD_LOST_FOCUS`
+  → passage à `Ecran::Pause` si l'écran courant est `Course`). Rien d'autre hors zone ; si plus est nécessaire : ticket E0.
+- Capture `pause-*` : enregistrement des scènes du banc par la même accroche que WFS-38 (≤ 10 lignes, annoncée).
+- Boutons : réutiliser les composants et le style de l'écran de fin de WFS-38 / WFS-57 (paire centrée), ne pas en refaire.
+
 ## Critères d'acceptation
 - [ ] `pause-bouton` : bouton Menu visible en course, hors encoche
 - [ ] `pause-0` : écran de pause, 3 boutons ; `pause-reprise` : même chrono qu'avant la pause (journal)

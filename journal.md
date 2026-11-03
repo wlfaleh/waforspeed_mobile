@@ -1189,7 +1189,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : captures existantes identiques à `main` (0 spot par défaut) ; capture `spots-sol` (valeurs de `js/world/garage.js` → `buildGarage`) ; passe de scène ≤ +0,3 ms avec 3 spots.
 - **Plan** : FrameParams (4 spots, hémisphère, fogNear/fogFar) → `shaders/scene.frag` (formules three r128) → banc `spots-sol` → contrôle rapide, fusion, ajout à `qa/Check.md`.
 
-<<<<<<< HEAD
 ### 2026-11-03 19:56:48 — WFS-59 : mode GPU logiciel codé, PR #31 (agent 3)
 - **Fait** : `src/core/gpu_logiciel.h` (drapeau du mode, plafond de dt 0,05 s → 0,5 s en mode, 60 pas de 1/120 s au plus par image) et `src/core/gpu_logiciel_android.cpp` (extra d'intent `qa_simu`, `--ez` ou `--es`). `Game::update` utilise `plafondDt` ; `Game::init` coupe les ombres et écrit la ligne de logcat `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)`. `Renderer::gpuLogiciel()` dans `renderer.h`.
 - **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50 %) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
@@ -1206,3 +1205,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - `encoche-hud-2400` : bande de 90 px vide de HUD (panneau Temps à x ≈ 114, vitesse centrée entre les marges). Autres captures comparées à `apercu-waforspeed-57` : bruit de rendu ≤ 1/255 seulement (le même qu'entre deux `main`), banc `0 écart(s)`.
 - RG-01 à RG-03 respectées ; l'accroche d'1 ligne de `build.yml` (annoncée) est acceptée à la place de `tools/qa/**`.
 - Aucune anomalie : **fusion autorisée**. Rapport : `qa/rapports/WFS-52.md`.
+
+### 2026-11-03 20:03:17 — PO : début WFS-48 Texte en italique (agent 5) — attribué par le PO ; fin de WFS-52
+- **Fin de WFS-52** (cérémonie PO) : QA VALIDÉ (`qa/rapports/WFS-52.md`) et PR #30 fusionnée (`318ac8b`) → ✅ Terminé. L'épic E5 est libre.
+- **Choix** : épics occupées : E0 (WFS-59 en revue), E4 (WFS-45), E7 (WFS-58). WFS-48 (E5, 0.48) est le ⏳ Prêt de meilleure priorité dans une épic libre ; dépendance WFS-26 ✅. (Une première attribution de WFS-39 a été préparée puis annulée avant envoi quand la fusion de WFS-52 a libéré E5 ; WFS-39 reste ⏳ Prêt, règles affinées : zone, `Ecran::Pause` déjà dans le noyau.)
+- **Ticket** : WFS-48 · épic E5 · branche `feature/waforspeed-48` · règles `regles-de-gestion/WFS-48.md` · corrige ANO-04.
+- **Zone autorisée** : `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*`. Accroche E3 ≤ 10 lignes à annoncer au Journal dans `src/game/course_system.cpp` (décompte et écran de fin en italique).
+- **Critères** : `course-decompte-3`, `course-decompte-go`, `course-fin`, `course-*` : chiffres inclinés de 12°, nets, sans débordement ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées.
+- **Plan** : cisaillement des quads de glyphe dans `src/ui/text.*` (option, droit par défaut, largeur inchangée) → HUD → accroche décompte / fin → banc → contrôle rapide, fusion, ajout à `qa/Check.md`.
+- **Ménage** : marqueur de conflit orphelin `<<<<<<< HEAD` retiré du Journal (aucun texte perdu).
