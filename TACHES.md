@@ -113,7 +113,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ✅ Terminé | Claude (session moteur-natif), 2026-11-03 | WFS-08 | `feature/waforspeed-33` | PR #18 | ✅ VALIDÉ par qa-lead |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
-| 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19 (fusionnée par l'utilisateur) ; correction ANO-13 en cours | 🔧 À CORRIGER tour 1/2 par qa-lead (ANO-13 mineure, 915d1e6) |
+| 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19 (fusionnée par l'utilisateur) ; #21 correction ANO-13 | 🔧 À CORRIGER tour 1/2 par qa-lead (ANO-13 mineure, 915d1e6) |
 | 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-55` |  |  |
 | 12.1 | WFS-53 | Carte Campagne | E2 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-53` |  |  |
 | 12.2 | WFS-54 | Carte Grand Prix (circuit) | E2 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-54` |  |  |

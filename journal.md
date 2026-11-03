@@ -971,3 +971,6 @@ insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture
 ### 2026-11-03 — WFS-51 fusionné ; main réparé ; WFS-14 (Claude, session trafic)
 - PR #20 (WFS-51, VALIDÉ) fusionnée en 24f08d3 : `main` compile de nouveau (marqueurs de conflit de WFS-27 retirés, CI verte sur 04ec9f5).
 - La PR #19 (WFS-14) a été fusionnée par l'utilisateur alors qu'elle était « À CORRIGER tour 1/2 ». La correction d'ANO-13 (stipes des palmiers trop sombres) part de `main` sur `feature/waforspeed-14`, nouvelle PR, puis QA tour 2/2.
+
+### 2026-11-03 — WFS-14 : correction ANO-13 en PR #21 (Claude, session trafic)
+- Stipes des palmiers : albédo ×1,5 et part propre brune #7d6a52 (0,8 de jour, 0,05 la nuit), seulement dans `src/world/plage.cpp`. Seules les 2 captures de la plage changent. QA tour 2/2 demandée après la CI.
