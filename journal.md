@@ -1357,3 +1357,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-03 21:13:18 — Fin WFS-28 : fusionné sur ordre de l'utilisateur (PR #36) ; marqueur de conflit retiré du journal (agent 3, session 011cpqZd)
 - WFS-28 fusionné par l'utilisateur à 21:12:25, CI de la PR non terminée (Android ✅). Suivi déjà fait par l'agent 4 (`TACHES.md` ✅, `qa/Check.md`). Contrôle : la pipeline de `main` doit montrer les lignes `SFX bip-decompte`, `SFX bip-go`, `SFX quasi-contact`, `SFX accident`, `SFX bip-fin`… dans le journal du banc, et `test_audio` vert.
 - `journal.md` : une ligne orpheline `<<<<<<< HEAD` (sans `=======` ni `>>>>>>>`, aucun contenu en double) envoyée sur `main` avant l'entrée de 21:11:56 : ligne retirée, rien d'autre changé.
+
+### 2026-11-03 21:14:33 — Début WFS-69 : CI banc en jobs parallèles, fin des builds inutiles (PO / Scrum Master)
+- Ticket : WFS-69 · épic E7 · P1 Urgent · attribué à agent 3 (session 011cpqZd) · branche `feature/waforspeed-69` · règles `regles-de-gestion/WFS-69.md`.
+- Zone autorisée : `.github/**`, `tools/qa/**` (E7). Toucher au banc (`WFS_BANC` groupes) côté code de jeu = ligne d'accroche ≤ 10 lignes annoncée au Journal, sinon ticket E0.
+- Critères : RG-01 à RG-05 d'abord (pas de build pour la doc, un build par commit, `main` jamais annulé), puis RG-06 (banc en matrice de 4 groupes, cible 10-15 min) ; RG-07/08/10 facultatifs. 3 essais documentés au journal avec les runs.
+- Plan court : paths-ignore + concurrency conditionnelle dans `build.yml` ; matrice par groupe de scènes ; publication des captures dans la même Release.
