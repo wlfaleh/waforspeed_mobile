@@ -9,6 +9,7 @@
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "text.h"
+#include "toasts.h"
 
 namespace wfs {
 namespace {
@@ -143,6 +144,7 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
     g.onTouch({7, W * 0.89f, H * 0.74f, false});
     g.shutdown();
     courseBenchRules(false);
+    benchToasts(g, r, out);   // WFS-47 : bandeaux (toast-checkpoint, toast-pile)
 }
 
 } // namespace wfs
