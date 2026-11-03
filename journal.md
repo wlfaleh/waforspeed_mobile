@@ -887,3 +887,11 @@ un ticket du HUD. Barres masquées et icône : à vérifier au simulateur (WFS-5
 QA `VALIDÉ` du premier coup (`qa/rapports/WFS-33.md`) : peloton de 3 voitures, trafic visible sur 3 captures de course
 sur 6, écart latéral du choc +0,905 (≤ 1,12), 0 écart(s). **E3 libérée** (WFS-24 devient attribuable).
 Observation non bloquante : en caméra 0, la voiture replacée à 90 m est petite à l'écran.
+
+### 2026-11-03 — QA WFS-27 HUD de course : À CORRIGER, tour 1/2 (qa-lead)
+Commit `29139a4`, run 41617208849, Release `apercu-waforspeed-27`, comparée pixel par pixel à `apercu-waforspeed-44` (même base).
+Règles RG-01 à RG-09 remplies : temps (rouge à 5,5 s), checkpoint + barre, score au-dessus du bouton Nitro, « Combo ×2 », vitesse entre
+volant et frein, nitro (halo en nitro active), anciennes barres retirées, `course-fin` sans HUD, décompte inchangé, `hud-2400` propre,
+banc à 0 écart(s), rendu 3D inchangé hors panneaux du HUD. **Deux anomalies mineures** : ANO-11 (scènes de banc sans règles : temps
+« 1000000000,0 » qui déborde du panneau, HUD affiché dans les vitrines) et ANO-12 (libellés 11 px flous à 720 p). Pas de fusion ;
+le développeur corrige puis nouvelles captures. Rapport : `qa/rapports/WFS-27.md`.
