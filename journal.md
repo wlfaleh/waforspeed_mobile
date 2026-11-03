@@ -812,3 +812,16 @@ décompte et fin inchangés ; banc `0 écart(s)`.
 **Plan court** : système `Hud` (lit `activeCourse()` et `GameView::player`, seulement en `Ecran::Course` et course non finie) →
 temps + checkpoint (haut gauche), score + combo (haut droite), vitesse + nitro (bas centre) → accroche `game.cpp` → captures
 du banc → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-27 HUD de course construit (MVP), en attente de la CI
+**Fait** (`feature/waforspeed-27`, 29139a4) : `src/ui/hud.{h,cpp}`, système `Hud` (ordre 420), port de `updateHud` et du style
+`.hud-top` / `.time-value(.low)` / `.cp-bar` / `.score-value` / `.combo` / `.nitro-bar` du jeu web. Affiché seulement en
+`Ecran::Course`, avec une course active, hors écran de fin et hors scène dédiée. Haut gauche : « TEMPS » à 1 décimale (rouge sous
+8 s) + « CHECKPOINT n » et sa barre cyan → orange ; haut droite (au-dessus de 22 % de H) : « SCORE » au format français + « Combo ×N » ;
+bas centre (entre volant et frein) : |km/h| (« R · KM/H » en marche arrière, rouge > 300) + « NITRO » en 10 cases vertes #B6FF00
+(halo en nitro active). Fonds vitrés rgba(20,22,31,.72), gouttières 16 / 14 px, tailles en fraction de la hauteur.
+**Accroches annoncées** : `game.cpp` (5 lignes retirées : anciennes barres de vitesse et de nitro), `desktop_main.cpp`
+(3 lignes : include, `benchHud`, mode `WFS_BANC=hud` pour la capture 2400x1080 sans planche de texte), `build.yml` (1 ligne : `hud-2400`).
+Captures : `hud-course`, `hud-temps-bas` (temps forcé à 6 s), `hud-nitro` (touchers gaz + nitro), `hud-combo` (deux quasi-contacts
+déclenchés par le banc), `hud-2400`.
+**Suite** : CI → qa-lead → fusion. **WFS-35** : resynchronisé avec main (WFS-44, 825dfc6), CI en cours avant fusion de la PR #12.
