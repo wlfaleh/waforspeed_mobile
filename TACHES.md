@@ -77,7 +77,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` |  |  |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-12` |  |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` |  |  |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-11 | Menu et garage 3D (voiture + couleur) | E5 | ⏳ Prêt |  | WFS-26 | `feature/waforspeed-11` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ En attente |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -145,7 +145,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ⏳ Prêt
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔧 En cours (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -675,3 +675,19 @@ bias -0,0003 / normalBias 0,035 ; ombre de contact conservée la nuit ; coût me
 intensité 3,2 gardée, réglée pour notre PBR), `CMakeLists.txt` (2 shaders), `src/platform/desktop_main.cpp` (2 lignes : captures).
 Conflit possible avec WFS-34 sur `shaders/scene.frag` (lignes différentes) : réglé à la synchronisation.
 **Suite** : CI → qa-lead → fusion si `VALIDÉ`.
+
+### 2026-11-02 — WFS-34 refusé par la QA, corrigé
+**Retours QA** (`qa/rapports/WFS-34.md`) : blocs sombres à facettes (cœur du houppier) et feuilles délavées (reflet du ciel).
+**Fait** (`feature/waforspeed-34`, 68ffdaf) : feuillage éclairé sans reflet comme le Lambert du jeu web, cœur lissé et éclairci,
+nombre d'appels de dessin de la ville au journal du banc. **Suite** : CI → nouvelle QA.
+
+### 2026-11-02 — Début WFS-12 Règles de course (attribué par le PO)
+Ticket choisi : meilleur `⏳ Prêt` d'une épic libre (E2 occupée par WFS-34, E4 par WFS-07 ; E3 sans ticket actif, WFS-08 ✅).
+**Zone de code autorisée** : `src/game/**` sauf `game.*` (nouveau système de course, ex. `src/game/course.{h,cpp}`), `tests/**` (épic E3).
+Pas de HUD (WFS-27, E5) ; décompte « 3 / GO » via le texte de WFS-26 seulement par une accroche annoncée, sinon au journal du banc.
+Tout autre changement du noyau passe par E0 (ou ligne d'accroche ≤ 10 lignes annoncée ; attention, WFS-07 touche aussi `game.cpp`).
+**Responsable** : Claude (agent développeur, session 01UY1Vv1), branche `feature/waforspeed-12`. Règles : `regles-de-gestion/WFS-12.md`.
+Critères : course automatique du banc identique au JS (temps, checkpoints, score, tolérance nulle sur les entiers) ;
+capture « 3 » puis « GO » ; test unitaire checkpoint 1 → +11 s, checkpoint 10 → +7 s, quasi-contact ×3 → 750 points.
+Plan court : porter `resetRace` / `update` / `hitCar` / `playerAccident` / `crash` du jeu web dans un système `Course`
+branché sur les collisions existantes de WFS-08 ; constantes de `config.js` et `carPerf` ; tests de référence dans `tests/`.
