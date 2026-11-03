@@ -1316,3 +1316,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 21:02:56 — PO : regroupement en gros tickets (po-scrum-master)
 - **Décision de l'utilisateur** : fini les micro-tickets (≈ 30 min de build chacun). Regroupés (le ticket qui absorbe lit aussi les règles des absorbés, une seule CI) : WFS-09 ← 16 ; WFS-15 ← 20, 17 ; WFS-53 ← 54, 43 ; WFS-19 ← 18 ; WFS-11 ← 40, 13, 46 ; WFS-24 ← 21 ; WFS-22 ← 23, 25 ; WFS-61 ← 62. Tickets en cours ou en revue non touchés. Règle ajoutée à `po-scrum-master.md` : tickets de 1 à 3 jours, jamais de micro-ticket.
+
+### 2026-11-03 21:03:05 — Début WFS-63 : point d'extension skinning, attribué à Claude (session trafic) (po-scrum-master)
+- **Demande** : WFS-64. **Refusée par le PO** : depuis la décision utilisateur de 21:00:40 (le MVP n'attend plus le simulateur), WFS-64 est P4 Basse ; le ticket ⏳ Prêt le plus prioritaire d'E0 (libre) est **WFS-63 (P3 Moyenne)**, attribué à la place. WFS-64 reste ⏳ Prêt.
+- **Épic** E0 ; **zone autorisée** : `src/render/renderer.h` (API), `src/render/**` pour le pipeline skinning, `shaders/` (variantes de `scene.vert` / `shadow.vert`), `tools/` (convertisseur), `assets/` (personnages convertis), CMake si besoin ; doc dans le skill `waforspeed-natif`.
+- **Critères** : captures `squelette-essai` (homme en `Idle_Loop`), `squelette-marche-0/1` (poses `Walk_Loop` différentes), captures existantes identiques, banc `0 écart(s)`.
+- **Plan** : API maillage à os (RG-01) → shader (RG-02) → conversion `models/people/*.json` de `wlfaleh/waaps` (RG-03, aucun personnage recréé) → lecture d'animation CPU (RG-04) → mesure (RG-05). Règles : `regles-de-gestion/WFS-63.md`.
+- Note : ses tickets WFS-58 (PR #32) et WFS-39 (PR #34) sont en revue sans code en cours ; pas de conflit d'épic (E7, E8).

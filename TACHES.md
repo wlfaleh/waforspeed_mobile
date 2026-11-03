@@ -147,7 +147,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-60 | Roues séparées dans les modèles de voiture (.wfm) | E5 | ⏳ Prêt |  | — | `feature/waforspeed-60` |  |  |
 | P4 Basse | WFS-61 | Roues animées : transformation par roue et animation (rotation, braquage) | E0 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-61` |  |  |
 | — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-61 |  | — | `feature/waforspeed-62` |  |  |
-| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-63` |  |  |
+| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` |  |  |
 | P4 Basse | WFS-64 | [MVP] Correction : jeu figé sur le simulateur en mode GPU logiciel (repli du rendu à 50 %) | E0 | ⏳ Prêt |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
@@ -347,7 +347,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-19 — Vie et météo : piétons, conducteurs, pluie et flaques** · E2 · priorité P3 Moyenne · ⏳ En attente de WFS-63 (animation par squelette absente du renderer) (règles : `regles-de-gestion/WFS-19.md`)
 - [ ] Personnages du jeu web, conducteur face au volant
 
-**WFS-63 — Point d'extension : maillages animés par squelette (skinning)** · E0 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-63.md`)
+**WFS-63 — Point d'extension : maillages animés par squelette (skinning)** · E0 · priorité P3 Moyenne · 🔧 En cours — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-63.md`)
 - [ ] capture `squelette-essai` : `homme` du jeu web debout, proportions justes ; `squelette-marche-0` / `-1` : deux poses de `Walk_Loop` différentes
 - [ ] captures existantes identiques à `main`, banc `0 écart(s)` ; doc du point d'extension dans le skill `waforspeed-natif`
 
