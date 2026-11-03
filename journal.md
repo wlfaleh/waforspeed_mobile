@@ -1490,3 +1490,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : captures `camera-poursuite`, `camera-capot`, `camera-cockpit` (1280x720 et 2400x1080) ; volant braqué visible en virage ; banc `0 écart(s)`.
 - **À réutiliser** : `waforspeed/js/world/scene.js` du jeu web (`CAM_MODES`, cockpit ≈ lignes 94-123, suivi et champ de vision ≈ ligne 168) ; valeurs : cockpit 72°, volant `-braquage × 2,3` lissé, aiguille 0-300 km/h sur 2,2 rad.
 - **Plan court** : porter `CAM_MODES` et le suivi lissé dans un fichier caméra E3 ; cockpit (tableau de bord, montants, volant, aiguille) en maillages générés ; accroche de sélection de vue dans `game.*` ; scènes de banc des 3 vues.
+
+### 2026-11-03 23:23:49 — Découpage de WFS-19 : piétons / conducteurs (PO)
+- **Décision** : proposition de Claude (session trafic) acceptée. WFS-19 (E2) = **piétons seulement**, cartes ville et plage (`populatePeople` : trottoirs par zone, promenade, côté de parc tiré à la graine faute de `parkSide`). Règles mises à jour (`regles-de-gestion/WFS-19.md`, RG-05 retirée).
+- **Nouveau ticket WFS-73 — Conducteurs dans les voitures**, épic **E0** (mesure du siège dans `model_loader` / `Model`, accroches joueur, trafic, duel ≤ 10 lignes chacune), P3 Moyenne, ⏳ En attente de WFS-19. Règles : `regles-de-gestion/WFS-73.md` (réutiliser `drivers.js` : `measureSeat`, `bakeBust`, `addDriver`).
+- **Poses assis, allongés, baigneurs** : pas de nouveau ticket, rattachées à **WFS-71** (terrasses : RG-02 existante ; serviettes de plage et baigneurs : nouvelle RG-06), même zone E2.
+- Pourquoi : la mesure du siège et les accroches sortent de la zone E2 ; les mettre à part garde WFS-19 livrable vite et visible.
