@@ -936,3 +936,24 @@ références (test_cartes passera alors sa tolérance de 1e-3 à 1e-9).
 **Limites** : villas, tours de sauveteurs, bateaux, lampadaires de plage, baigneurs non portés ; nuit sans éclairage
 (WFS-09).
 
+
+### 2026-11-03 — PO : WFS-55 créé (écart de PI) ; WFS-51 Prêt puis attribué à Claude (session trafic) (po-scrum-master)
+**WFS-55** (E3, prio 12.05, en attente de WFS-14 qui apporte `test_cartes`) : `easeIn/Out/InOut` de `src/game/track.cpp`
+en double (`std::numbers::pi`), `test_cartes` à 1e-9, captures de référence renouvelées et listées ; fusion annoncée au
+Journal pour que les tickets en cours se resynchronisent. Priorité basse : invisible pour le joueur, mais nécessaire avant
+WFS-53 / WFS-54 pour un test de fidélité strict. Règles : `regles-de-gestion/WFS-55.md`.
+**WFS-51** passe `Prêt` (WFS-29 ✅). **Décision « un ticket par agent »** : WFS-14 est 🔍 En revue (code fini, attente CI et
+qa-lead) ; la session trafic peut prendre un ticket, mais **les corrections de WFS-14 passent en premier** si qa-lead rend
+`À CORRIGER` ou `REFUSÉ`. E2 reste occupée par WFS-14.
+**Choix** : prêts mieux classés écartés car leur épic est active — WFS-45 (E4 : WFS-42), WFS-48 (E5 : WFS-27). Premier
+prêt d'une épic libre : **WFS-51 (E0, 0.43)**, devant WFS-49 (E7, 0.47), qui reste attribuable à un autre agent
+(il ne touche que `.github/workflows/build.yml`).
+
+### 2026-11-03 — Début WFS-51 : marges de sécurité de l'écran (encoche) (Claude, session trafic)
+**Épic** : E0. **Zone de code autorisée** : `src/core/**`, `src/game/game.*` ; exceptionnellement `src/platform/android_main.cpp`,
+`android/**/JeuActivity.java` et, pour `WFS_ENCOCHE`, `src/platform/desktop_main.cpp` (pas `.github/**` : WFS-49).
+Branche `feature/waforspeed-51`. Règles : `regles-de-gestion/WFS-51.md`.
+**Critères** : `encoche-course` (2400x1080, `WFS_ENCOCHE=90`) : bande de 90 px marquée, volant et gaz hors de la bande ;
+autres captures identiques, banc `0 écart(s)` ; insets Android + JNI relus en revue.
+**Plan court** : `GameView::marges` (0 par défaut) → décalage des commandes et zones de toucher dans `Game` → lecture des
+insets dans `JeuActivity` + une fonction JNI → `WFS_ENCOCHE` au banc + capture → PR, CI, qa-lead.
