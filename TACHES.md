@@ -149,6 +149,10 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-61 |  | — | `feature/waforspeed-62` |  |  |
 | P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` |  |  |
 | P4 Basse | WFS-64 | [MVP] Correction : jeu figé sur le simulateur en mode GPU logiciel (repli du rendu à 50 %) | E0 | ⏳ Prêt |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
+| P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-65` |  |  |
+| P3 Moyenne | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ⏳ Prêt |  | — | `feature/waforspeed-66` |  |  |
+| P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-67` |  |  |
+| P3 Moyenne | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ⏳ En attente |  | WFS-39 | `feature/waforspeed-68` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -354,6 +358,18 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-43 — Arbres : finitions (cœur du houppier, ombres des arbres)** · E2 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-43.md`) — ↪ fusionné dans WFS-53
 - [ ] `trafic-cam0` : plus de cœur visible au bord des houppiers ; ombre d'arbre découpée visible sur une capture au soleil
 - [ ] ≤ 300 appels de dessin ; banc `0 écart(s)`
+
+**WFS-65 — Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash)** · E4 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-65.md`)
+- [ ] voir les critères du fichier de règles
+
+**WFS-66 — Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse)** · E3 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-66.md`)
+- [ ] voir les critères du fichier de règles
+
+**WFS-67 — Trafic vivant (clignotants, feux, accidents contournés, variété des modèles)** · E3 · priorité P3 Moyenne · ⏳ En attente (règles : `regles-de-gestion/WFS-67.md`)
+- [ ] voir les critères du fichier de règles
+
+**WFS-68 — Réglages : qualité, caméra, son, commandes** · E8 · priorité P3 Moyenne · ⏳ En attente (règles : `regles-de-gestion/WFS-68.md`)
+- [ ] voir les critères du fichier de règles
 
 **WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; captures de voiture identiques à avant

@@ -1323,3 +1323,5 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : captures `squelette-essai` (homme en `Idle_Loop`), `squelette-marche-0/1` (poses `Walk_Loop` différentes), captures existantes identiques, banc `0 écart(s)`.
 - **Plan** : API maillage à os (RG-01) → shader (RG-02) → conversion `models/people/*.json` de `wlfaleh/waaps` (RG-03, aucun personnage recréé) → lecture d'animation CPU (RG-04) → mesure (RG-05). Règles : `regles-de-gestion/WFS-63.md`.
 - Note : ses tickets WFS-58 (PR #32) et WFS-39 (PR #34) sont en revue sans code en cours ; pas de conflit d'épic (E7, E8).
+### 2026-11-03 21:04:53 — PO : 4 nouveaux gros sujets (WFS-65 à 68) (po-scrum-master)
+- Écart avec le jeu web comblé : **WFS-65** effets de conduite (E4), **WFS-66** caméras et cockpit (E3), **WFS-67** trafic vivant (E3, après WFS-60), **WFS-68** réglages (E8, après WFS-39). Règles : `regles-de-gestion/WFS-65.md` à `WFS-68.md`. Tickets de 1 à 3 jours, une seule CI chacun. Aucun ticket en cours ou terminé touché.
