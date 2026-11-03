@@ -28,11 +28,10 @@ adb logcat -c
 # les appuis n'arrivent pas au jeu)
 [ "$SCENARIO" = mvp ] && adb shell settings put secure immersive_mode_confirmations confirmed
 if [ "$SCENARIO" = mvp ]; then
-  # WFS-58 RG-05 : écran réduit (moins de pixels pour le GPU logiciel) ; taille naturelle de l'appareil (portrait), remise
-  # à zéro en fin de script. Densité inchangée : la changer fait afficher par Android la bulle « Tap to restart this app
-  # for a better view », posée sur l'accélérateur (1er essai de WFS-58)
-  adb shell wm size 540x1200
-  log "écran réduit : $(adb shell wm size | tail -1 | tr -d '\r')"
+  # WFS-58 RG-05 : pas de réduction d'écran (`wm size`) : avec ou sans changement de densité, Android passe l'appli en
+  # mode de compatibilité et pose la bulle « Tap to restart this app for a better view » sur la moitié droite de l'écran
+  # (essais 2 et 3, QA WFS58-1). Le rendu allégé du GPU logiciel vient de WFS-59 (rendu à 25 %).
+  log "écran : $(adb shell wm size | tail -1 | tr -d '\r') (taille d'origine, pas de wm size)"
   # journal du jeu lu en continu (WFS-58 RG-01)
   LIVE="$OUT/journal-jeu.txt"; : > "$LIVE"
   (timeout 2400 "$ADB" logcat -v time -s WaForSpeed:I > "$LIVE" 2>/dev/null &)
@@ -52,7 +51,12 @@ if [ "$SCENARIO" = mvp ]; then
     local nom="$1" motif="$2" max="$3" t=0 n mort=0
     while [ $t -lt "$max" ]; do
       n=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -nE "$motif" | head -1 | cut -d: -f1)
-      if [ -n "$n" ]; then MARQUE=$((MARQUE + n)); log "étape $nom atteinte après ${t} s"; return 0; fi
+      if [ -n "$n" ]; then
+        MARQUE=$((MARQUE + n))
+        # heure de l'appareil et ligne du jeu trouvée : recoupement direct avec journal-jeu.txt (QA WFS58-2)
+        log "étape $nom atteinte après ${t} s — attendu « $motif » — ligne $MARQUE du journal du jeu : $(sed -n "${MARQUE}p" "$LIVE" | tr -d '\r')"
+        return 0
+      fi
       # appli arrêtée = 10 s de suite sans processus (juste après « am start », le processus n'existe pas encore)
       if alive; then mort=0; else mort=$((mort + 1)); fi
       [ $mort -ge 10 ] && { log "ÉCHEC étape $nom : l'appli ne tourne plus"; ECHEC="$nom"; return 1; }
@@ -82,13 +86,14 @@ if [ "$SCENARIO" = mvp ]; then
     # délais max : 1 440 s d'étapes + 9 × 30 s d'images = 1 710 s ≈ 28,5 min ≤ 30 min (RG-07) ; jeu ≥ 1 image/s attendu avec WFS-59
     # 1re image du jeu (RG-04) : « Cibles de rendu » est écrit quand l'écran de chargement commence à se dessiner (pas de
     # ligne « QA ips » pendant le chargement) ; 3 s plus tard la barre avance, jamais l'écran de démarrage Android
-    if attendre chargement "Cibles de rendu" 120; then sleep 3; capture 01-chargement; else capture 01-chargement; return 1; fi
+    if attendre chargement "Cibles de rendu" 120; then sleep 2; capture 01-chargement; else capture 01-chargement; return 1; fi
     etape menu "Écran : course → menu" 180 02-menu || return 1               # chargement fini, menu (WFS-37)
     read W H < <(adb shell wm size | tail -1 | sed -E 's/.* ([0-9]+)x([0-9]+).*/\1 \2/' | awk '{ if ($1 < $2) print $2, $1; else print $1, $2 }')
-    log "écran ${W}x${H} (lu après wm size)"
+    log "écran ${W}x${H} (paysage)"
     coordonnees
     appui course-solo $SX $SY
-    etape course-solo "menu : « Course solo »" 60 03-appui-course-solo || return 1
+    # 03 : juste après l'appui reçu (sans attendre d'images), 04 : le décompte une fois des images présentées (WFS58-3)
+    if attendre course-solo "menu : « Course solo »" 60; then capture 03-appui-course-solo; else capture 03-appui-course-solo; return 1; fi
     etape decompte "course : nouvelle course" 60 04-decompte || return 1     # remise à zéro : décompte 3-2-1 (WFS-12)
     # « GO » n'est pas journalisé : gaz tenu, la voiture ne roule qu'après GO → première ligne « QA ips » à vitesse > 0
     adb shell input motionevent DOWN $gx $gy
@@ -101,7 +106,7 @@ if [ "$SCENARIO" = mvp ]; then
     appui menu $MX $MY
     etape retour-menu "Écran : course → menu" 60 10-retour-menu || return 1
   }
-  # coordonnees : points d'appui calculés depuis W, H (lus après wm size)
+  # coordonnees : points d'appui calculés depuis W, H (paysage)
   coordonnees() {
   # Coordonnées calculées comme la mise en page du jeu (pixels logiques = pixels de l'écran paysage) :
   #  menu (src/ui/ecrans/menu.cpp + miseEnPage de chargement.cpp) : k = H/720 ; logo = clamp(0,14·W/k, 64, 140)·k ;
@@ -122,7 +127,7 @@ if [ "$SCENARIO" = mvp ]; then
   }
   appui() { alive || log "ATTENTION : l'appli ne tourne plus avant l'appui $1"; log "appui $1 $2,$3"; adb shell input tap "$2" "$3"; }
   parcours
-  adb shell wm size reset   # RG-05 : écran de l'émulateur rétabli
+  log "écran en fin de scénario : $(adb shell wm size | tail -1 | tr -d '\r')"   # WFS58-4 : taille tracée en fin de scénario
 else
 sleep 20
 shot 01-demarrage
