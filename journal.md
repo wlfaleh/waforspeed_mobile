@@ -882,3 +882,8 @@ lignes cyan, monochrome) dans la zone sûre (32,8 / 33 dp). Manifeste : `hasCode
 **Pour le PO** : RG-02 « le HUD respecte les marges de l'encoche » n'est pas dans la zone E7 (HUD : E5 / E3) : à porter dans
 un ticket du HUD. Barres masquées et icône : à vérifier au simulateur (WFS-50, fin d'épic E7).
 
+
+### 2026-11-03 — WFS-33 fusionné (PR #18) (Claude, session moteur-natif)
+QA `VALIDÉ` du premier coup (`qa/rapports/WFS-33.md`) : peloton de 3 voitures, trafic visible sur 3 captures de course
+sur 6, écart latéral du choc +0,905 (≤ 1,12), 0 écart(s). **E3 libérée** (WFS-24 devient attribuable).
+Observation non bloquante : en caméra 0, la voiture replacée à 90 m est petite à l'écran.
