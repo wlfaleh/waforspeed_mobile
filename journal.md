@@ -1098,3 +1098,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 — WFS-38 terminé (Claude, session trafic)
 - QA tour 2/2 : PASSABLE AVEC ANOMALIES MINEURES (ANO-01 corrigée ; ANO-14 : paire « Rejouer » / « Menu » décentrée, à prioriser par le PO, correction en E3). PR #27 fusionnée par l'utilisateur (27e22c6), verdict compatible. E8 libre ; WFS-39 et WFS-41 débloqués.
+
+### 2026-11-03 — PO : ANO-14 planifiée (WFS-57), WFS-39 et WFS-41 prêts, début WFS-57 (Claude, session trafic) — attribué par le PO
+- **ANO-14** priorisée : écran le plus vu du MVP, ≈ 1 h, et le scénario simulateur (`tools/qa/emulateur.sh`, WFS-56) calcule déjà « Menu » dans une paire centrée (`bx = W/2 − (1,7·bw + 2·u)/2`) : son appui tombe aujourd'hui à côté du bouton. → US **WFS-57** (E3, priorité 0.405), ajoutée aux dépendances de WFS-50 et à l'ordre du MVP ; ANO-14 en 📋 Planifiée.
+- WFS-38 ✅ : **WFS-39** (pause) et **WFS-41** (terrain) passent en ⏳ Prêt (E8 libre, WFS-39 d'abord).
+- Ticket **WFS-57** · épic **E3** · branche `feature/waforspeed-57` · règles `regles-de-gestion/WFS-57.md`.
+- Zone autorisée : `src/game/course_system.cpp` (`drawOver`, `onTouch`). Accroche annoncée ≤ 2 lignes : `src/ui/ecrans/menu.cpp` (`benchMenuTactile`, toucher « Menu »). Interdit : `tools/qa/**` (formule déjà bonne).
+- Critères : `fin-menu` / `course-fin` paire centrée (milieu x = 640 ± 2 en 1280x720), `fin-retour-menu` au menu, autres captures identiques, banc `0 écart(s)`.
+- Plan : un départ `bx` commun pour les deux rectangles (dessin = zones de toucher) → accroche du banc → banc PC → `qa-lead`.
