@@ -549,7 +549,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
-        p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
+        p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
         if (mat.flags & MAT_BLEND) transparent_.push_back(p);
         else opaqueQ_.push_back(p);
     }
