@@ -103,7 +103,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
 | — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-18` |  |  |
-| P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | ⏸ En attente de WFS-72 (réservé, reprise dès WFS-72 fusionné) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 | `feature/waforspeed-19` |  |  |
+| P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` |  |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
