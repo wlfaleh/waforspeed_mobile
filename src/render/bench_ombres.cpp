@@ -27,6 +27,16 @@ void benchShadowScenes(Game& g, Renderer& r, const std::string& out) {
     r.forceNoShadows = false;
     // coût : quelques images de plus pour que le journal donne la moyenne de la passe d'ombre
     for (int i = 0; i < 130; i++) g.render(303 + i / 60.0);
+    // diagnostic WFS-42 (temporaire) : vue de vitrine de la Golf, en masquant une à une ses pièces transparentes,
+    // pour trouver la pièce qui porte la trame de points de la lunette arrière
+    const int savedCam = g.camMode; const float savedOrbit = g.orbit;
+    g.camMode = 2; g.orbit = 0.7f;
+    for (int part : {-1, 5, 8, 13, 17, 12, 10}) {
+        r.debugHidePart = part;
+        g.render(310); g.render(310.02);
+        r.capturePng(out + "/diag42-golf-sans-" + (part < 0 ? std::string("rien") : std::to_string(part)) + ".png");
+    }
+    r.debugHidePart = -1; g.camMode = savedCam; g.orbit = savedOrbit;
 }
 
 } // namespace wfs

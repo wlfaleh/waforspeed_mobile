@@ -545,7 +545,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
     if (!inFrame_ || !m.ok) return;
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
-    for (const ModelPart& part : m.parts) {
+    for (size_t pi = 0; pi < m.parts.size(); pi++) {
+        const ModelPart& part = m.parts[pi];
+        if ((int)pi == debugHidePart) continue;
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
         p.pc.model = world;
