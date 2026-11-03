@@ -35,7 +35,12 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
    chaque validation et avant chaque PR.
 5. **QA** : après chaque construction, le développeur **lance l'agent `qa-lead`**, qui regarde les captures du
    **banc d'essai PC** et écrit `qa/rapports/WFS-XX.md`. Le développeur ne fait jamais la QA de son propre ticket.
-   Fusion seulement si VALIDÉ. **Fin d'épic** : le PO crée le ticket « Vérification simulateur EX » (émulateur Android,
+   **Le QA décide de la gravité de chaque anomalie** :
+   - au moins une anomalie **bloquante** → `REFUSÉ` : pas de fusion, le développeur corrige jusqu'à ce qu'il n'y en ait plus ;
+   - anomalies **mineures** seulement → `VALIDÉ AVEC RÉSERVES` : fusion autorisée ; le QA inscrit chaque anomalie mineure au
+     **tableau des anomalies** ci-dessous ; le **PO** les priorise et crée des **US de correction dédiées** (jamais corrigées hors ticket) ;
+   - aucune anomalie → `VALIDÉ`.
+   **Fin d'épic** : le PO crée le ticket « Vérification simulateur EX » (émulateur Android,
    workflow `simulateur.yml`, rapport `qa/rapports/simulateur-EX.md`).
 6. **Statuts à jour** après chaque avancement, envoyés sur `main` tout de suite, en modifiant seulement ses lignes à partir
    de la dernière version de `main` (ne jamais écraser le fichier).
@@ -45,7 +50,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 
 **Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
-**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA VALIDÉ, synchronisé, fusionné,
+**Définition de « Fini »** : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `VALIDÉ AVEC RÉSERVES` (anomalies mineures inscrites au tableau des anomalies), synchronisé, fusionné,
 Journal à jour.
 
 ## Épics et zones de code
@@ -263,6 +268,12 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] Icônes, signature, fiches
 
 > WFS-01 à WFS-05 (E1) : critères détaillés et rapports dans `qa/rapports/` et dans le Journal.
+
+## Tableau des anomalies (mineures, écrites par le QA, planifiées par le PO)
+Statuts : 🆕 Nouvelle (QA) → 📋 Planifiée (PO, US de correction créée) → ✅ Corrigée (QA, US validée) · 🚫 Abandonnée (PO, raison au Journal).
+
+| ANO | Ticket d'origine | Capture | Anomalie | Statut | US de correction |
+|---|---|---|---|---|---|
 
 ## Journal
 
@@ -859,3 +870,11 @@ aucune commande, touchers non lus, commandes non dessinées, voiture immobile ; 
   pas de feuillage délavé, ville à 160 appels de dessin. **E2 libérée.** Plus aucun ticket en cours pour cette session.
 - Restes non bloquants (pour le PO) : branches en « baleines de parapluie » (comme le jeu web), cœur un peu visible au bord
   d'un houppier (trafic-cam0) ; ombres d'arbres peu visibles sur les captures (rues à l'ombre des immeubles).
+
+### 2026-11-03 — Nouvelle règle QA : anomalies bloquantes ou mineures (demande de l'utilisateur)
+Le QA ne doit plus bloquer un ticket pour de petits problèmes. **Le QA décide de la gravité** de chaque anomalie :
+**bloquante** → `REFUSÉ`, le développeur corrige jusqu'à ce qu'il n'y en ait plus ; **mineures seulement** →
+`VALIDÉ AVEC RÉSERVES`, fusion autorisée, anomalies inscrites au **tableau des anomalies** (ANO-XX) ; le **PO** les priorise
+et crée des US de correction dédiées. Mis à jour : `CLAUDE.md`, `.claude/agents/qa-lead.md`, `.claude/skills/qa-lead/SKILL.md`,
+`.claude/agents/po-scrum-master.md`, `.claude/skills/waforspeed-natif/SKILL.md`, ce fichier (règle 5, rôles, statuts,
+définition de « Fini », nouveau tableau des anomalies).
