@@ -691,3 +691,23 @@ Critères : course automatique du banc identique au JS (temps, checkpoints, scor
 capture « 3 » puis « GO » ; test unitaire checkpoint 1 → +11 s, checkpoint 10 → +7 s, quasi-contact ×3 → 750 points.
 Plan court : porter `resetRace` / `update` / `hitCar` / `playerAccident` / `crash` du jeu web dans un système `Course`
 branché sur les collisions existantes de WFS-08 ; constantes de `config.js` et `carPerf` ; tests de référence dans `tests/`.
+
+### 2026-11-03 — WFS-12 construit, en attente de la CI
+**Fait** (`feature/waforspeed-12`, poussée) : `src/game/course.{h,cpp}` (port de la fin de `update()`, `playerAccident`, `bump`,
+`crash`, `resetRace`, `score`, `kmh`) et système `CourseSystem` (ordre 210) dans `src/game/course_system.{h,cpp}` : décompte
+3-2-1-GO (voiture immobile, texte de WFS-26 depuis le système), chrono 30 s, checkpoints tous les 600 m (+6 voitures si < 110),
+combos de quasi-contacts, combo perdu au-delà de 0,08, accident (ralenti ×0,35 pendant 0,5 s), fin de partie avec écran
+(score, distance, vitesse max, quasi-contacts, checkpoints) et bouton « Rejouer » (même graine de trafic).
+Trafic (`traffic.*`, même épic) : événements des chocs dans l'ordre (`HitEvents.seq`), `Traffic::watch` pendant le décompte.
+**Vérification** : `tests/test_course.cpp` contre `tests/course_web_ref.txt` (produit par `node tests/course_web.cjs`, qui exécute
+`update.js` / `state.js` du jeu web) : 2 courses automatiques complètes (ville/Golf 7 checkpoints 24 000 pts ; circuit/M4
+11 checkpoints 37 480 pts), **22 lignes, 0 écart** (pas, temps restant à 4 décimales, score, quasi-contacts) ; règles unitaires OK ;
+`test_traffic` toujours OK. Compilation vérifiée ici (`-fsyntax-only`) ; banc Vulkan et APK : CI.
+**Accroches hors zone annoncées (8 lignes)** : `src/game/game.cpp` (2 : include + `dt = courseScaleDt(...)`, ralenti),
+`src/platform/desktop_main.cpp` (3 : include, `courseBenchRules(false)` pour garder les scènes des autres tickets sans décompte
+ni fin, `benchCourseScene`), `CMakeLists.txt` (2 : `test_course`), `build.yml` (1 : lancement de `test_course`).
+**Remarque pour le PO** : le critère « checkpoint 10 → +7 s » ne correspond pas à la règle RG-02 : `max(5, 11 − 9×0,4)` = 7,4 s ;
++7 s est le checkpoint 11. Le test vérifie les deux valeurs exactes du jeu web.
+**Limites** : collisions avec le décor (`crash`) portées et testées mais pas encore déclenchées (aucun décor percutable natif) ;
+graine aléatoire par course avec le menu (WFS-11) ; HUD en continu : WFS-27.
+**Suite** : CI → qa-lead → fusion si `VALIDÉ`.
