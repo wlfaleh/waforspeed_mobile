@@ -21,6 +21,9 @@ public:
     void render(double time);
     const Player& player() const { return player_; }
     void setCar(const char* carId);
+    // écrans (WFS-36, voir src/core/ecran.h) : demande appliquée entre deux images, systèmes prévenus par onEcran
+    void allerA(Ecran e) { ecranDemande_ = e; demandeEcran_ = true; }
+    Ecran ecran() const { return ecran_; }
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
 private:
@@ -52,6 +55,11 @@ private:
     bool autopilot_ = false;
     bool latchGas_ = false, latchBrake_ = false, latchNitro_ = false;
     double acc_ = 0;
+    // écran affiché ; par défaut Course tant que le menu (WFS-37) n'existe pas
+    Ecran ecran_ = Ecran::Course, ecranDemande_ = Ecran::Course;
+    bool demandeEcran_ = false;
+    void appliquerEcran();
+    void lacherCommandes();
     // systèmes enfichables (WFS-30, voir src/core/system.h)
     std::vector<std::unique_ptr<System>> systems_;
     GameView view_;

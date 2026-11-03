@@ -21,6 +21,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include "ecran.h"
 #include "math.h"
 
 namespace wfs {
@@ -44,6 +45,9 @@ struct GameView {
     double time = 0;                   // temps depuis le lancement (s)
     float uiWidth = 0, uiHeight = 0;   // taille de l'interface (pixels logiques, paysage)
     bool night = false;                // ambiance de nuit
+    // écran affiché (WFS-36) et demande de changement : appliquée entre deux images, puis System::onEcran
+    Ecran ecran = Ecran::Course;
+    std::function<void(Ecran)> allerA;
 };
 
 class System {
@@ -64,6 +68,8 @@ public:
     virtual void drawUi(Renderer&, const GameView&) {}
     // tactile : renvoyer true pour garder le toucher (les commandes de conduite ne le verront pas)
     virtual bool onTouch(const Touch&, const GameView&) { return false; }
+    // changement d'écran (WFS-36) : appelé pour tous les systèmes, entre deux images, après chaque changement accepté
+    virtual void onEcran(Ecran /*ancien*/, Ecran /*nouveau*/, const GameView&) {}
     // libération des ressources (GPU au repos)
     virtual void shutdown(Renderer&) {}
 };
