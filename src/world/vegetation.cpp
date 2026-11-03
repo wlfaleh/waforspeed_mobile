@@ -56,7 +56,9 @@ void limb(Geo& g, vec3 a, vec3 b, float r0, float r1, int sides, Mulberry32& R, 
     }
 }
 
-// masse sombre au cœur du houppier (icosaèdre à facettes, comme prims().ball)
+// masse au cœur du houppier (vegCore) : évite de voir le ciel à travers. Sans couleur par sommet, une boule lisse se
+// voyait (retours QA WFS-34) : elle est donc dessinée avec la texture de feuilles découpée (même matériau que les cartes),
+// projetée sur le plan dominant de chaque face, et assombrie (intérieur du houppier) → masse de feuillage dense.
 void core(Geo& g, vec3 c, vec3 s, float k) {
     static const float P = 1.618034f;
     static const vec3 V[12] = {{-1, P, 0}, {1, P, 0}, {-1, -P, 0}, {1, -P, 0}, {0, -1, P}, {0, 1, P},
@@ -64,15 +66,20 @@ void core(Geo& g, vec3 c, vec3 s, float k) {
     static const uint8_t F[60] = {0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11, 1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
                                   3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1};
     const float inv = 1.f / std::sqrt(1 + P * P);
+    const float span = 2.4f * std::max(s.x, std::max(s.y, s.z));   // taille couverte par une case de l'atlas (m)
+    auto cell = [&](float a, float b) { return vec2{std::clamp(0.25f + a / span * 0.5f, E, 0.5f - E), std::clamp(0.25f + b / span * 0.5f, E, 0.5f - E)}; };
     for (int f = 0; f < 60; f += 3) {
         vec3 p[3];
         for (int j = 0; j < 3; j++) { const vec3& u = V[F[f + j]]; p[j] = c + vec3{u.x * s.x, u.y * s.y, u.z * s.z} * inv; }
-        // normales lissées (vers l'extérieur de l'ellipsoïde, un peu vers le ciel) : pas de facettes sombres visibles
+        const vec3 fn = cross(p[1] - p[0], p[2] - p[0]);
+        const float ax = std::fabs(fn.x), ay = std::fabs(fn.y), az = std::fabs(fn.z);
         const uint32_t k0 = (uint32_t)g.v.size();
         for (int j = 0; j < 3; j++) {
             const vec3& u = V[F[f + j]];
             const vec3 n = normalize(vec3{u.x / s.x, u.y / s.y + 0.6f / std::max(s.y, 1e-3f), u.z / s.z});
-            vert(g, p[j], lit(n, k), 0.5f, 0.5f);
+            const vec3 d = p[j] - c;
+            const vec2 uv = ay >= ax && ay >= az ? cell(d.x, d.z) : ax >= az ? cell(d.z, -d.y) : cell(d.x, -d.y);
+            vert(g, p[j], lit(n, k), uv.x, uv.y);
         }
         g.i.insert(g.i.end(), {k0, k0 + 1, k0 + 2});
     }
@@ -112,8 +119,7 @@ void broadleaf(const Out& o, vec3 b, float h, Mulberry32& R, const Broadleaf& p,
         const vec3 cpos{cc.x + std::cos(az) * sp, cc.y + (el - 0.45f) * Ry * 0.9f, cc.z + std::sin(az) * sp};
         const float ri = (lo ? 0.7f : 0.5f + rnd(R) * 0.15f) * Rx;
         if (!lo) limb(S, top + vec3{0, -0.3f, 0}, cpos + vec3{0, -ri * 0.3f, 0}, rT * 0.62f, rT * 0.16f, 5, R, 0.2f);
-        // cœur réduit (×0,7) pour rester sous les cartes : sans couleur par sommet, il ne se fond pas aussi bien que dans le jeu web
-        core(*o.core, cpos + vec3{0, ri * 0.1f, 0}, vec3{ri * 0.42f, ri * 0.36f, ri * 0.42f} * 0.7f, colK(1, R));
+                core(*o.leaf, cpos + vec3{0, ri * 0.1f, 0}, vec3{ri * 0.42f, ri * 0.36f, ri * 0.42f}, colK(1, R) * 0.55f);
         const int m = lo ? 6 : p.cards;
         for (int j = 0; j < m; j++) {
             vec3 d = randUnit(R); d.y = d.y * 0.9f + 0.05f;
