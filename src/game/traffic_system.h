@@ -17,6 +17,7 @@ const Traffic* activeTraffic();
 const TrafficStats* activeTrafficStats();
 Traffic* activeTrafficMut();                 // course (WFS-12) : +6 voitures à chaque checkpoint
 void trafficRestart(double playerPos);       // course (WFS-12) : « Rejouer », même graine de trafic
+void trafficRestartSeed(uint32_t seed, double playerPos);   // duel (WFS-21) : graine commune de la manche
 // banc d'essai : au prochain pas, place le joueur `metres` derrière la voiture la plus entourée, décalé de `lat`
 // (demi-largeurs de route), à sa vitesse + `extraKmh` ; `holdLane` : garde sa file sans freiner (scène de choc)
 void trafficBenchPlace(double metres, double lat, double extraKmh, bool holdLane);

@@ -55,7 +55,7 @@ public:
     }
 
     bool onTouch(const Touch& t, const GameView& g) override {
-        if (g.ecran != Ecran::Course || course_.state != RaceState::Over || course_.overTimer < 0.9) return false;
+        if (g.ecran != Ecran::Course || course_.state != RaceState::Over || course_.overTimer < 0.9 || course_.duelFinish > 0) return false;
         // zones de toucher = rectangles dessinés par drawOver (une seule source, WFS-57)
         if (t.down && rejouer_.contient(t.x, t.y)) restartReq_ = true;
         if (t.down && menu_.contient(t.x, t.y)) g.allerA(Ecran::Menu);   // WFS-38
@@ -76,7 +76,7 @@ public:
             ui::text(r, x, y, px, c, go ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);   // WFS-48 : italique
         }
         // écran de fin (endRace / section #over du jeu web), affiché 0,9 s après la fin
-        if (course_.state == RaceState::Over && course_.overTimer >= 0.9) drawOver(r, W, H, u);
+        if (course_.state == RaceState::Over && course_.overTimer >= 0.9 && course_.duelFinish <= 0) drawOver(r, W, H, u);   // WFS-21 : résultat du duel à part
     }
 
     static CourseSystem* active_;

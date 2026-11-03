@@ -13,6 +13,7 @@
 #include "../core/scene_essai.h"
 #include "../game/game.h"
 #include "../game/course_system.h"
+#include "../game/duel_system.h"
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
@@ -105,6 +106,7 @@ int main(int argc, char** argv) {
     ecrans::benchMenu(g, r, out); // WFS-37 : menu principal (menu-anim, menu-0)
     ecrans::benchMenuTactile(g, r, out);   // WFS-38 : appuis du menu, départ, « Bientôt », fin → Menu
     ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
+    benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
     benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
     r.shutdown();
     vk.shutdown();

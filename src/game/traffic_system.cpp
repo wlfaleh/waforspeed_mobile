@@ -227,6 +227,9 @@ Traffic* activeTrafficMut() { return TrafficSystem::active_ ? &TrafficSystem::ac
 void trafficRestart(double playerPos) {
     if (auto* s = TrafficSystem::active_; s && s->track_) { s->traffic_.reset(*s->track_, s->seed_, s->trafficN_, playerPos); s->stats_ = {}; }
 }
+void trafficRestartSeed(uint32_t seed, double playerPos) {
+    if (auto* s = TrafficSystem::active_) { s->seed_ = seed; trafficRestart(playerPos); }
+}
 int trafficBenchCar() { return TrafficSystem::active_ ? TrafficSystem::active_->benchCar_ : -1; }
 static void trafficBenchPeloton(double metres) { if (auto* s = TrafficSystem::active_) { s->pelotonReq_ = true; s->pelotonM_ = metres; } }
 static void trafficBenchDense(bool on) { if (auto* s = TrafficSystem::active_) s->benchDense_ = on; }
