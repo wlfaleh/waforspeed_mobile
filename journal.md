@@ -849,3 +849,9 @@ plus fins qu'un pixel, les fils se rasterisent en tirets brillants (`diag42-golf
 911 : la jante (matériau 4, triangles de 1,9 mm) ne scintille plus avec les reflets élargis du 2e passage.
 **Correction** (`feature/waforspeed-42`, 6798421) : pièces « fils » (triangles < 4 mm, allongement médian > 8, hors peinture
 et vitres) dessinées en couverture partielle avant les vitres ; modèles inchangés (RG-02). **Suite** : CI → qa-lead.
+
+### 2026-11-03 — Fin WFS-35 Écran de chargement (PR #12 fusionnée, 500c5b5)
+QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-10 → WFS-49 (PO). Branche resynchronisée avec main (WFS-12 puis WFS-44)
+avant la fusion, CI verte à chaque fois (dernière : run 41617276755). Épic E8 libre.
+**PO** : WFS-37 (menu principal, E8, MVP) et WFS-49 sont débloqués (dépendance WFS-35 finie).
+**WFS-27** : CI verte (run 41617208849), QA lancée.

@@ -81,8 +81,8 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-03 | Rendu Vulkan PBR, HDR, tonemapping, MSAA | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-04 | Vraies voitures du jeu web (4 modèles) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1 | ✅ VALIDÉ |
 | — | WFS-05 | Route, conduite tactile, caméra (+ retours QA) | E1 | ✅ Terminé |  | — | `feature/waforspeed-01`/`05` | #1, #2 | ✅ VALIDÉ |
-| 0.1 | WFS-35 | [MVP] Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | 🔍 En revue | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26 | `feature/waforspeed-35` | PR #12 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10), fusion autorisée |
-| 0.15 | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | 🔧 En cours | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
+| 0.1 | WFS-35 | [MVP] Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | ✅ Terminé |  | WFS-26 | `feature/waforspeed-35` | PR #12 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10) |
+| 0.15 | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | 🔧 En cours (CI verte, QA en cours) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-26, WFS-12 | `feature/waforspeed-27` |  |  |
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | [MVP] Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente (Prêt dès la fusion de PR #12) |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | 🔧 En cours | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-29` |  |  |
@@ -129,7 +129,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 
 ## Critères d'acceptation des tickets ouverts
 
-**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · 🔍 En revue (QA : PASSABLE AVEC ANOMALIES MINEURES, fusion autorisée, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
+**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · ✅ Terminé (QA : PASSABLE AVEC ANOMALIES MINEURES, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
 - [ ] `chargement-0/1/2` : fond `#0A0B10`, sur-titre cyan, logo « WAFOR / SPEED » (SPEED orange), barre cyan → orange à 0 %, 20-70 %, 100 %, étape + « n % »
 - [ ] mêmes captures en 2400x1080 : bloc à gauche, rien de coupé ; `chargement-fondu` : ville visible à travers (fondu 300 ms)
 - [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
