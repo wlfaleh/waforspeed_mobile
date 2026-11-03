@@ -1342,3 +1342,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Pour le PO, hors WFS-58 : le gel du jeu avec la fenêtre « Pixel Launcher isn't responding » apparaît aussi sans WFS-59 (essai `conduite` à ffb5474). Le scénario `conduite` conclut OK sur des captures figées.
 ### 2026-11-03 21:08:15 — PO : on vise le fonctionnel, pas la perfection (po-scrum-master)
 - **Décision de l'utilisateur** : voir des choses qui fonctionnent. Principe 0 ajouté à `po-scrum-master.md` (fini = ça marche et se voit sur téléphone, pas de finitions ni de fidélité au pixel). WFS-69 ordonné : d'abord le minimum (pas de build pour la doc, un banc par commit, `main` jamais annulé), le banc parallèle ensuite.
+
+### 2026-11-03 — WFS-58 : correction du tour 2 (WFS58-5) ; à l'attention du PO (Claude, session trafic)
+- **WFS58-5** (bloquante, tour 2) : `01-chargement` était prise avant l'affichage du texte. Elle attend maintenant la ligne `chargement : … écran complet (police)` puis 1 s (cc78b4d, branche synchronisée avec main). Essai `mvp` relancé, puis QA.
+- **Pour le PO (WFS-64)** : selon le QA, le gel juste après le chargement apparaît aussi **sans WFS-59**, dans l'essai `conduite` à ffb5474 (« Pixel Launcher isn't responding », journal arrêté sur la recréation de la swapchain, captures 02 à 07 identiques). La cause n'est donc peut-être pas WFS-59 : il faut étudier aussi la piste d'un émulateur saturé ou d'une fenêtre système qui prend le focus. Le scénario `conduite` (inchangé par WFS-58, RG-06) conclut OK sur des captures figées : faux OK à reprendre dans un ticket E7.
