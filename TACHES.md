@@ -105,7 +105,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-18` |  |  |
 | P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 ✅, WFS-63 | `feature/waforspeed-19` |  |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
-| P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ⏳ Prêt |  | WFS-12 ✅ | `feature/waforspeed-21` |  |  |
+| P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | 🔧 En cours | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` |  |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
 | — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
 | P4 Basse | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | ⏳ Prêt |  | WFS-12 | `feature/waforspeed-24` |  |  |
@@ -397,7 +397,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-24 — Sauvegarde et progression** · E3 · priorité P4 Basse · ⏳ Prêt
 - [ ] Meilleurs scores, voitures et réglages conservés
 
-**WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · ⏳ Prêt
+**WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · 🔧 En cours — Claude (agent 4, session 011cpqZan), 2026-11-03, branche `feature/waforspeed-21` (règles : `regles-de-gestion/WFS-21.md`)
 - [ ] Compatible avec le principe du duel web
 
 **WFS-23 — Manettes de jeu** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22

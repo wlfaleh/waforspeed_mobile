@@ -1363,3 +1363,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Zone autorisée : `.github/**`, `tools/qa/**` (E7). Toucher au banc (`WFS_BANC` groupes) côté code de jeu = ligne d'accroche ≤ 10 lignes annoncée au Journal, sinon ticket E0.
 - Critères : RG-01 à RG-05 d'abord (pas de build pour la doc, un build par commit, `main` jamais annulé), puis RG-06 (banc en matrice de 4 groupes, cible 10-15 min) ; RG-07/08/10 facultatifs. 3 essais documentés au journal avec les runs.
 - Plan court : paths-ignore + concurrency conditionnelle dans `build.yml` ; matrice par groupe de scènes ; publication des captures dans la même Release.
+
+### 2026-11-03 21:16:00 — Début WFS-21 Mode duel en ligne (Claude, agent 4) — attribué par le PO
+- Ticket : WFS-21 · Épic E3 (Gameplay et simulation) · P2 Haute · branche `feature/waforspeed-21` · règles `regles-de-gestion/WFS-21.md`.
+- Choix du PO : WFS-69 (E7, P1) demandé en premier, mais déjà attribué à l'agent 3 (commit 44c41f3) ; ticket « Prêt » suivant par priorité puis numéro : WFS-21 (E3 libre, WFS-12 ✅).
+- Zone de code autorisée : `src/game/` sauf `game.*`, `tests/**`. Noyau (`game.*`, renderer, CMake) : ligne d'accroche ≤ 10 lignes annoncée au Journal, sinon ticket E0. HUD/menus du salon : uniquement ce qui est propre au duel.
+- Décision du PO sur RG-07 (transport) : interface de transport abstraite + transport local en mémoire (deux instances dans le même processus, et un adversaire simulé qui rejoue des messages de présence) pour le banc et les tests ; le transport réseau réel (sockets, permission INTERNET dans `android/**` = E7) n'est pas exigé ici et fera l'objet d'un ticket E7 si l'utilisateur le veut sur téléphone.
+- Réutiliser : `js/net/duel.js` (`startDuelRace`, `sendRacePresence`, `updateGhosts`, `finishDuel`, `renderLobby`), `js/game/update.js` → `hitGhosts`, `js/ui/hud.js` → `renderBoard`, modèles `models/<voiture>/`.
+- Plan : RG-02/03 (graine commune, messages de présence) → RG-04 fantômes bornés → RG-05 contacts → RG-06 classement + résultat → RG-01 salon minimal.
+- Critères : test CPU même graine = trafic identique image par image ; test messages hostiles sans plantage ; capture voiture adverse avec son nom + classement.
