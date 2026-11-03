@@ -79,7 +79,7 @@ Journal à jour.
 | 0.2 | WFS-36 | Point d'extension : écrans de l'application (menu, garage, course, pause…) | E0 | ✅ Terminé | | — | `feature/waforspeed-36` | #13 | ✅ VALIDÉ par qa-lead (e3d7ea4, [rapport](qa/rapports/WFS-36.md)) |
 | 0.3 | WFS-37 | Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ⏳ En attente |  | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.4 | WFS-38 | Menu tactile : appuis et départ de course | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` |  |  |
+| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | WFS-36 | `feature/waforspeed-44` | #14 | ⏳ construction b9771e0, puis qa-lead (banc PC) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⛔ Bloqué |  | WFS-26, WFS-36, WFS-44, WFS-45 | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
@@ -134,7 +134,7 @@ Journal à jour.
 **WFS-38 — Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · 🔧 En cours (règles : `regles-de-gestion/WFS-44.md`)
+**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · 🔍 En revue (règles : `regles-de-gestion/WFS-44.md`)
 - [ ] Captures du banc identiques à `main` (aucune scène dédiée par défaut), tests à 0 écart
 - [ ] Capture `scene-dediee-vide` : fond uni `#07070c`, ni route, ni ville, ni trafic, ni voiture du joueur, ni commandes ; cube repère vu en FOV 36°
 - [ ] Doc du point d'extension dans le skill `waforspeed-natif`
@@ -1005,3 +1005,13 @@ Ne pas toucher aux shaders ni au reste de `src/render/**` (WFS-45, E4).
 course, cube repère en FOV 36°) ; doc dans le skill `waforspeed-natif`.
 **Plan court** : `SceneDediee` + `System::scene` + `GameView::sceneDediee` → `Game::render` les applique avant `beginFrame` →
 accroches ville / trafic → système de test du banc → captures → PR, CI, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-44 : code écrit, PR ouverte (Claude, session trafic)
+**Fait** : `System::scene(fp, s, vue)`, `SceneDediee { route, joueur, commandes, cible }`, `GameView::sceneDediee` ;
+`Game::render` donne la scène au premier système qui la prend (caméra, fond, brouillard, soleil, ambiance, ombres) et ne
+dessine plus route / voiture du joueur / commandes sauf demande ; système de test `src/core/scene_essai.*` (inactif par
+défaut) ; doc dans le skill `waforspeed-natif`.
+**Lignes d'accroche** : `src/world/ville.cpp` (1 ligne), `src/game/traffic_system.cpp` (1 ligne) : pas de dessin pendant une
+scène dédiée ; `src/platform/desktop_main.cpp` (2 lignes) : capture `scene-dediee-vide`.
+**Vérification (conteneur, lavapipe)** : banc de `main` et de la branche : 26 captures identiques au pixel près ;
+`scene-dediee-vide` : cube seul, fond (7, 7, 13) pour `#07070c` ; tests piste, systèmes, trafic (0 écart), son OK.
