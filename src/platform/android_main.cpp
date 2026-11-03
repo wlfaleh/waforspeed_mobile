@@ -77,7 +77,10 @@ static void onCmd(android_app* a, int32_t cmd) {
         case APP_CMD_INIT_WINDOW: initGraphics(app, a); break;
         case APP_CMD_TERM_WINDOW: termGraphics(app); break;
         case APP_CMD_GAINED_FOCUS: app.focused = true; app.last = nowSeconds(); break;
-        case APP_CMD_LOST_FOCUS: app.focused = false; break;
+        case APP_CMD_PAUSE:   // WFS-39 RG-04 : arrière-plan ou perte du focus en course → pause (web blur / visibilitychange)
+        case APP_CMD_LOST_FOCUS: if (app.ready && app.game.ecran() == Ecran::Course) app.game.allerA(Ecran::Pause);
+            if (cmd == APP_CMD_LOST_FOCUS) app.focused = false;
+            break;
         case APP_CMD_CONFIG_CHANGED:
         case APP_CMD_WINDOW_RESIZED:
             if (app.ready) { app.vk.waitIdle(); if (app.vk.createSwapchain()) app.renderer.resize(); }
