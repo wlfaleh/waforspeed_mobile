@@ -92,7 +92,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue (QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 |  |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔧 En cours (corrections QA) | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 | 🟠 À CORRIGER, tour 1/2 (`qa/rapports/WFS-12.md`) |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -189,7 +189,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔍 En revue, PR #10 (règles : `regles-de-gestion/WFS-12.md`)
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔧 En cours (QA : À CORRIGER, tour 1/2, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -907,3 +907,22 @@ Remplace le verdict « VALIDÉ AVEC RÉSERVES » de l'entrée précédente.
   points sur les rayons ; vitres teintées, jantes métalliques ; coût GPU ±0,5 ms.
   **Plan court** : agrandir les deux captures, isoler la cause (matériau vitrage / spéculaire sous-pixel des rayons), appliquer
   l'anticrénelage spéculaire de WFS-32 aux vitres et métaux de `scene.frag`, banc, QA par `qa-lead`.
+
+### 2026-11-03 — WFS-42 construit, en attente de la CI
+**Cause trouvée (RG-01)** : géométrie plus fine qu'un pixel, non préfiltrée. Golf : pièce 17 (fils de la lunette arrière,
+triangles de 2 mm, transparents, métal 1 / rugosité 0) → pointillés brillants (`vitrine-golf-0`). 911 : matériau 4 (jantes,
+21 778 triangles de 1,9 mm, métal) → chaque triangle accroche le soleil (`vitrine-p911-1`).
+**Fait** (`feature/waforspeed-42`) : finesse de chaque matériau mesurée au chargement (journal), opacité x couverture du
+pixel pour les pièces transparentes fines, reflet du soleil élargi pour les pièces opaques fines. Modèles inchangés (RG-02).
+**Suite** : CI → qa-lead.
+
+### 2026-11-03 — QA WFS-12 : À CORRIGER (tour 1/2)
+**qa-lead** (`qa/rapports/WFS-12.md`), commit `12662d9`, run 41605341761, Release `apercu-waforspeed-12`.
+- Critères remplis : course de référence identique au jeu web (22 lignes, 0 écart ; référence regénérée par le QA depuis
+  `wlfaleh/waaps` : identique), décompte « 3 » / « GO » visible, écran de fin complet, tests RG-01 à RG-07 OK.
+  Pas de régression : vitrine, course, ombres, texte identiques au pixel à `main` ; trafic déplacé par les règles de course (attendu).
+- Anomalies **mineures** : ANO-04 couleurs du décompte inversées (web : chiffres blancs à halo cyan, « GO » orange) ;
+  ANO-05 écran de fin (bouton droit au lieu de parallélogramme, sur-titre gris au lieu de cyan, chiffres non italiques).
+- **Pour le PO** : le critère « checkpoint 10 → +7 s » contredit RG-02 et le jeu web (+7,4 s ; +7 s au checkpoint 11) :
+  critère à corriger, pas le code.
+**Suite** : le développeur corrige ANO-04 / ANO-05, CI, 2e passage QA. Pas de fusion avant.
