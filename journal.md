@@ -855,3 +855,18 @@ QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-10 → WFS-49 (PO). Bran
 avant la fusion, CI verte à chaque fois (dernière : run 41617276755). Épic E8 libre.
 **PO** : WFS-37 (menu principal, E8, MVP) et WFS-49 sont débloqués (dépendance WFS-35 finie).
 **WFS-27** : CI verte (run 41617208849), QA lancée.
+
+### 2026-11-03 — PO : WFS-37 et WFS-49 Prêts, début WFS-37 (agent développeur, session 01UY1Vv1)
+**Fin de ticket WFS-35** prise en compte (✅, PR #12, 500c5b5). **Débloqués** : WFS-37 (WFS-35 ✅, WFS-36 ✅) et WFS-49 (WFS-35 ✅)
+→ ⏳ Prêt. WFS-49 reste non attribuable tant que WFS-29 occupe E7. **WFS-27** → 🔍 En revue (PR #16, CI verte, QA en cours).
+**Début WFS-37** — Épic **E8**, libre (WFS-35 fini, aucun ticket E8 actif). Ticket MVP Prêt le plus prioritaire (0.3).
+Responsable : Claude (agent développeur, session 01UY1Vv1), 2026-11-03 ; son WFS-27 est en revue (même règle que pour WFS-35) ;
+**les corrections demandées par la QA de WFS-27 passent avant WFS-37**. Branche `feature/waforspeed-37`, partie de `main`.
+Règles : `regles-de-gestion/WFS-37.md` (complétées : RG-07 à RG-10, zone et accroches).
+**Zone de code autorisée** : `src/ui/ecrans/**` (nouveau `menu.{h,cpp}`, mise en commun du logo dans `chargement.{h,cpp}`) ;
+accroches annoncées ≤ 10 lignes : enregistrement du système, captures `menu-*` dans `src/platform/desktop_main.cpp`,
+1 ligne `menu-1` dans `.github/workflows/build.yml`.
+**Critères** : `menu-0` / `menu-1` (2400x1080, sans planche de texte) : ville assombrie, logo, 3 choix, record « — »,
+« Golf 8 GTI » ; `menu-anim` ; ni commandes ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`.
+**Plan court** : sortir le bloc logo de `chargement.cpp` → système `Menu` (voile 8-16 bandes, 3 choix, pied, aide tactile,
+`slide-in`) → captures du banc → PR, CI, QA par `qa-lead`.
