@@ -1045,3 +1045,6 @@ Hors périmètre, inchangé : pointillés le long des jointures de carrosserie (
 ### 2026-11-03 — WFS-47 en revue, PR #25 (Claude, session trafic)
 - Nouveau système `src/ui/toasts.*` (ordre 425) : évènements déduits des compteurs de `Course` (aucune modification de `src/game/`). Accroche de 1 ligne dans `benchHud` (`src/ui/hud.cpp`, même épic) pour les captures `toast-checkpoint` et `toast-pile`.
 - Pile placée à gauche du bouton Nitro : alignés sur le bord droit, 3 bandeaux le recouvraient à 720 p (RG-05). `hud-combo` montre désormais les bandeaux de ses 2 quasi-contacts. QA après la CI.
+
+### 2026-11-03 — WFS-47 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage (toast-checkpoint, toast-pile, hud-combo conformes ; pile à gauche du Nitro acceptée, à revoir avec WFS-52 si besoin). PR #25 fusionnée (5362761). E5 libre.
