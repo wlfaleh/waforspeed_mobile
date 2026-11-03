@@ -87,15 +87,15 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.3 | WFS-37 | [MVP] Menu principal : affichage (logo, choix, record, ta voiture) | E8 | 🔧 En cours (construit, CI en cours) | Claude (agent développeur, session 01UY1Vv1), 2026-11-03 | WFS-35, WFS-36 | `feature/waforspeed-37` |  |  |
 | 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | ✅ Terminé | | — | `feature/waforspeed-29` | #17 | ✅ VALIDÉ par qa-lead ([rapport](qa/rapports/WFS-29.md)) |
 | 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ⏳ En attente |  | WFS-37, WFS-12 | `feature/waforspeed-38` |  |  |
-| 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ⏳ En attente |  | WFS-27 | `feature/waforspeed-47` |  |  |
+| 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-27 ✅ | `feature/waforspeed-47` |  |  |
 | 0.43 | WFS-51 | Point d'extension : marges de sécurité de l'écran (encoche), commandes tactiles | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-29 ✅ | `feature/waforspeed-51` | #20 (fusionnée) | ✅ VALIDÉ par qa-lead (66c13bc, banc PC) — [rapport](qa/rapports/WFS-51.md) |
-| 0.435 | WFS-52 | HUD et notifications dans les marges de sécurité (encoche) | E5 | ⏳ En attente |  | WFS-51 ✅, WFS-27 | `feature/waforspeed-52` |  |  |
+| 0.435 | WFS-52 | HUD et notifications dans les marges de sécurité (encoche) | E5 | ⏳ Prêt |  | WFS-51 ✅, WFS-27 ✅ | `feature/waforspeed-52` |  |  |
 | 0.44 | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏳ En attente |  | WFS-35, WFS-27, WFS-37, WFS-38, WFS-29, WFS-47 | `feature/waforspeed-50` |  |  |
 | 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
 | 0.46 | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ⏳ Prêt |  | — | `feature/waforspeed-45` |  |  |
 | 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-35 ✅ | `feature/waforspeed-49` | #22 (fusionnée) | ✅ VALIDÉ par qa-lead (52648fd) — [rapport](qa/rapports/WFS-49.md) |
 | 0.48 | WFS-48 | Texte en italique (ANO-04) | E5 | ⏳ Prêt |  | WFS-26 | `feature/waforspeed-48` |  |  |
-| 0.49 | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ⏳ En attente |  | WFS-27 | `feature/waforspeed-46` |  |  |
+| 0.49 | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ⏳ Prêt |  | WFS-27 ✅ | `feature/waforspeed-46` |  |  |
 | 0.5 | WFS-11 | Garage 3D : plateau tournant et choix de la voiture | E5 | ⏳ En attente |  | WFS-45 (WFS-26, WFS-36, WFS-44 ✅) | `feature/waforspeed-11` |  |  |
 | 0.6 | WFS-39 | Pause en course et retour au menu | E8 | ⏳ En attente |  | WFS-38 | `feature/waforspeed-39` |  |  |
 | 0.7 | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-40` |  |  |
@@ -114,9 +114,9 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
-| 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-55` |  |  |
-| 12.1 | WFS-53 | Carte Campagne | E2 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-53` |  |  |
-| 12.2 | WFS-54 | Carte Grand Prix (circuit) | E2 | ⏳ En attente |  | WFS-14 | `feature/waforspeed-54` |  |  |
+| 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | ⏳ Prêt |  | WFS-14 ✅ | `feature/waforspeed-55` |  |  |
+| 12.1 | WFS-53 | Carte Campagne | E2 | ⏳ Prêt |  | WFS-14 ✅ | `feature/waforspeed-53` |  |  |
+| 12.2 | WFS-54 | Carte Grand Prix (circuit) | E2 | ⏳ Prêt |  | WFS-14 ✅ | `feature/waforspeed-54` |  |  |
 | 13 | WFS-13 | Les 20 voitures et 16 peintures | E5 | ⏳ En attente |  | WFS-11 | `feature/waforspeed-13` |  |  |
 | 14 | WFS-15 | Réglages de qualité selon le téléphone | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-15` |  |  |
 | 15 | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ⏳ Prêt |  | WFS-10, WFS-08 | `feature/waforspeed-28` |  |  |
@@ -144,7 +144,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] `Ecran` lu dans `GameView`, changement demandé par un système, `System::onEcran` ; hors `Course` : pas de conduite ni de commandes tactiles
 - [ ] captures du banc identiques (écran `Course` par défaut), tests à 0 écart ; capture `ecran-menu-vide`
 
-**WFS-27 — [MVP] HUD de course (version réduite)** · E5 · priorité 0.15 · 🔍 En revue, PR #16 (règles : `regles-de-gestion/WFS-27.md`)
+**WFS-27 — [MVP] HUD de course (version réduite)** · E5 · priorité 0.15 · ✅ Terminé, PR #16 (règles : `regles-de-gestion/WFS-27.md`)
 - [ ] `course-*` et `hud-2400` : temps, checkpoint + barre, score, vitesse (bas centre), nitro 10 cases lisibles, rien sous les commandes
 - [ ] `hud-temps-bas` (rouge sous 8 s), `hud-nitro` (nitro active), `hud-combo` (« Combo ×2 »)
 - [ ] anciennes barres de `Game::drawUi` retirées ; `course-decompte-*`, `course-fin` inchangées ; banc `0 écart(s)`
@@ -160,13 +160,13 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-38 — [MVP] Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ⏳ En attente (règles : `regles-de-gestion/WFS-38.md`)
 - [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `fin-menu` (Rejouer + Menu)
 
-**WFS-47 — [MVP] Notifications de course** · E5 · priorité 0.42 · ⏳ En attente de WFS-27 (règles : `regles-de-gestion/WFS-47.md`)
+**WFS-47 — [MVP] Notifications de course** · E5 · priorité 0.42 · 🔧 En cours (Claude, session trafic) (règles : `regles-de-gestion/WFS-47.md`)
 - [ ] `toast-checkpoint` (« CHECKPOINT 1 » « +11,0 s ») ; `toast-pile` (3 bandeaux cyan / orange / rouge, rien sur les commandes) ; banc `0 écart(s)`
 
 **WFS-51 — Point d'extension : marges de sécurité (encoche)** · E0 · priorité 0.43 · ✅ Terminé (Claude, session trafic, PR #20 fusionnée) (règles : `regles-de-gestion/WFS-51.md`)
 - [ ] `encoche-course` (2400x1080, `WFS_ENCOCHE=90`) : commandes tactiles hors de la bande ; autres captures identiques, banc `0 écart(s)`
 
-**WFS-52 — HUD dans les marges de sécurité (encoche)** · E5 · priorité 0.435 · ⏳ En attente de WFS-27 (WFS-51 ✅) (règles : `regles-de-gestion/WFS-52.md`)
+**WFS-52 — HUD dans les marges de sécurité (encoche)** · E5 · priorité 0.435 · ⏳ Prêt (règles : `regles-de-gestion/WFS-52.md`)
 - [ ] `encoche-hud` : aucun panneau du HUD dans la bande ; sans encoche, captures identiques
 
 **WFS-50 — [MVP] Vérification simulateur du MVP** · E7 · priorité 0.44 · ⏳ En attente de tout le MVP (règles : `regles-de-gestion/WFS-50.md`)
@@ -179,7 +179,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-48 — Texte en italique (ANO-04)** · E5 · priorité 0.48 · ⏳ Prêt (règles : `regles-de-gestion/WFS-48.md`)
 - [ ] décompte, écran de fin et HUD en italique (12°) ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées
 
-**WFS-46 — Compteur de vitesse en arc** · E5 · priorité 0.49 · ⏳ En attente de WFS-27 (règles : `regles-de-gestion/WFS-46.md`)
+**WFS-46 — Compteur de vitesse en arc** · E5 · priorité 0.49 · ⏳ Prêt (règles : `regles-de-gestion/WFS-46.md`)
 - [ ] `hud-arc-120`, `hud-arc-320` (zone rouge) en 1280x720 et 2400x1080 ; banc `0 écart(s)`
 
 **WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · ✅ Terminé (PR #15) (règles : `regles-de-gestion/WFS-44.md`)
@@ -283,13 +283,13 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `carte-plage-jour` / `carte-plage-nuit` : océan, palmiers, parasols, sable, ambiance de la plage ; autres captures identiques
 - [ ] test de fidélité du tracé des 3 nouvelles cartes (0 écart) ; ≤ 300 appels de dessin
 
-**WFS-55 — Correction : PI en double dans le tracé** · E3 · priorité 12.05 · ⏳ En attente de WFS-14 (règles : `regles-de-gestion/WFS-55.md`)
+**WFS-55 — Correction : PI en double dans le tracé** · E3 · priorité 12.05 · ⏳ Prêt (règles : `regles-de-gestion/WFS-55.md`)
 - [ ] `test_cartes` en tolérance 1e-9 ; captures renouvelées listées, sans différence visible
 
-**WFS-53 — Carte Campagne** · E2 · priorité 12.1 · ⏳ En attente de WFS-14 (règles : `regles-de-gestion/WFS-53.md`)
+**WFS-53 — Carte Campagne** · E2 · priorité 12.1 · ⏳ Prêt (règles : `regles-de-gestion/WFS-53.md`)
 - [ ] `carte-campagne-jour` / `-nuit` : collines, champs, haies, fermes, éoliennes ; ≤ 300 appels de dessin
 
-**WFS-54 — Carte Grand Prix (circuit)** · E2 · priorité 12.2 · ⏳ En attente de WFS-14 (règles : `regles-de-gestion/WFS-54.md`)
+**WFS-54 — Carte Grand Prix (circuit)** · E2 · priorité 12.2 · ⏳ Prêt (règles : `regles-de-gestion/WFS-54.md`)
 - [ ] `carte-circuit-jour` / `-nuit` : vibreurs, tribunes, murs de pneus, gravier ; ≤ 300 appels de dessin
 
 **WFS-13 — Les 20 voitures et 16 peintures** · E5 · priorité 13 · ⏳ En attente

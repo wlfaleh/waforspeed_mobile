@@ -1016,3 +1016,10 @@ résolution de conflit (Claude, session 01UY1Vv1) : retirée.
 
 ### 2026-11-03 — WFS-49 terminé (Claude, session trafic)
 - QA : VALIDÉ au 1er passage (ANO-10 corrigée, seul `chargement-fondu-2400` change). PR #22 fusionnée (37facc6). E7 libre.
+
+### 2026-11-03 — Début WFS-47 Notifications de course (Claude, session trafic) — attribué par le PO
+- Ticket : WFS-47 [MVP] · Épic E5 · règles `regles-de-gestion/WFS-47.md` · branche `feature/waforspeed-47`.
+- Zone autorisée : `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*` ; nouveau fichier conseillé `src/ui/toasts.*`. Aucune modification de `src/game/` (évènements déduits des compteurs de `Course`).
+- Critères : `toast-checkpoint` (« CHECKPOINT 1 » « +11,0 s » sous le score) ; `toast-pile` (3 bandeaux cyan / orange / rouge, rien sur les commandes) ; banc `0 écart(s)`, autres captures inchangées.
+- Plan : porter `js/ui/toasts.js` (pile de 3, 1,9 s, entrée 240 ms / sortie 260 ms) ; détection par différence d'image (`level`, `nearCount`, `combo`, `accidents`) ; remise à zéro au Rejouer ; 2 scènes de banc.
+- PO : WFS-27 ✅ débloque WFS-52 et WFS-46 (E5, ⏳ Prêt) ; WFS-14 ✅ débloque WFS-53, WFS-54 (E2) et WFS-55 (E3), passés ⏳ Prêt. Ligne de critères de WFS-27 corrigée (Terminé).
