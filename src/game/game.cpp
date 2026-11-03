@@ -17,6 +17,8 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId) {
     r_ = &r;
+    ecran_ = ecranDemande_ = Ecran::Course; demandeEcran_ = false;   // écran de départ (Menu quand WFS-37 existera)
+    lacherCommandes();
     track_.build(mapById(mapId));
     Material m;
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
@@ -141,6 +143,7 @@ void Game::streamChunks() {
 // gauche : glisser pour braquer ; droite : frein et accélérateur ; au-dessus de l'accélérateur : nitro
 void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
+    if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
     const float W = (float)r_->width(), H = (float)r_->height();
     if (t.down) {
         bool fresh = t.id != steerId_ && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
@@ -189,11 +192,14 @@ void Game::drawControls() {
 // ---------------------------------------------------------------- mise à jour
 void Game::update(double dt) {
     dt = courseScaleDt(std::min(dt, 0.05));   // WFS-12 : ralenti ×0,35 après un accident
-    DriveInput in = input_;
+    appliquerEcran();
+    if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
+    const bool course = ecran_ == Ecran::Course;
+    DriveInput in = course ? input_ : DriveInput{};     // hors course : aucune commande de conduite
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
     latchGas_ = latchBrake_ = latchNitro_ = false;
-    if (autopilot_) {   // démonstration / tests : plein gaz, reste au milieu de sa voie
+    if (autopilot_ && course) {   // démonstration / tests : plein gaz, reste au milieu de sa voie
         in.gas = true; in.brake = false;
         in.steer = (float)clampf((float)((0.0 - player_.playerX) * 3.0 - player_.heading * 4.0), -1.f, 1.f);
         for (auto& sy : systems_) sy->autopilot(dt, in, view_);   // ex. : éviter le trafic (WFS-08)
@@ -201,7 +207,9 @@ void Game::update(double dt) {
     // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage
     acc_ += dt;
     const double step = 1.0 / 120.0;
-    while (acc_ >= step) { player_.update(step, in, track_, true); for (auto& sy : systems_) sy->collide(step, player_, view_); systemsUpdate(step); acc_ -= step; }
+    while (acc_ >= step) {
+        if (!course) player_.speed = 0;   // hors course : voiture immobile, la scène continue de vivre derrière
+        player_.update(step, in, track_, true); for (auto& sy : systems_) sy->collide(step, player_, view_); systemsUpdate(step); acc_ -= step; }
 }
 
 mat4 Game::carMatrix(double s, double lat, double yaw) {
@@ -211,6 +219,7 @@ mat4 Game::carMatrix(double s, double lat, double yaw) {
 
 void Game::render(double time) {
     frameNo_++;
+    appliquerEcran();
     struct LastT { double& t; double v; ~LastT() { t = v; } } keepTime{lastTime_, time};
     streamChunks();
     const double s = player_.dist, lat = player_.playerX * RW;
@@ -244,7 +253,8 @@ void Game::render(double time) {
     fp.view = lookAt(eye, look, {0, 1, 0});
     fp.proj = perspectiveVk(fov * PI / 180.f, aspect, 0.1f);
     fp.camPos = eye; fp.time = (float)time;
-    fp.sunDir = {-0.45f, 0.42f, -0.55f}; fp.sunIntensity = 3.2f; fp.sunColor = {1.0f, 0.93f, 0.82f};
+    fp.sunDir = {-0.45f, 0.75f, -0.5f}; fp.sunIntensity = 3.2f; fp.sunColor = {1.0f, 0.93f, 0.82f};   // soleil du jeu web (envFor, jour)
+    fp.focus = carPos; fp.hasFocus = true;   // WFS-07 : la boîte d'ombre suit la voiture
     fp.skyTop = {0.16f, 0.34f, 0.75f}; fp.skyHorizon = {0.66f, 0.76f, 0.88f}; fp.ground = {0.2f, 0.19f, 0.17f};
     fp.fogColor = {0.55f, 0.63f, 0.74f}; fp.fogDensity = 0.0009f;
     fp.exposure = 0.85f; fp.ambient = 0.85f;
@@ -260,9 +270,31 @@ void Game::render(double time) {
     // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
     r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
     r_->draw(car_, carM, &paint_);
-    if (camMode != 2) drawControls();
+    if (camMode != 2 && ecran_ == Ecran::Course) drawControls();   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();
+}
+
+// ---------------------------------------------------------------- écrans (WFS-36)
+// Le changement demandé (Game::allerA ou GameView::allerA) est appliqué ici, au début de update() / render() : jamais au
+// milieu d'une image. Les commandes de conduite en cours sont lâchées, puis tous les systèmes sont prévenus.
+void Game::appliquerEcran() {
+    if (!demandeEcran_) return;
+    demandeEcran_ = false;
+    if (ecranDemande_ == ecran_) return;
+    const Ecran ancien = ecran_;
+    ecran_ = ecranDemande_;
+    view_.ecran = ecran_;
+    lacherCommandes();
+    WFS_LOG("Écran : %s → %s", nomEcran(ancien), nomEcran(ecran_));
+    for (auto& s : systems_) s->onEcran(ancien, ecran_, view_);
+}
+
+// toutes les commandes de conduite relâchées (web : for (const k in input) input[k] = false)
+void Game::lacherCommandes() {
+    input_ = DriveInput{};
+    steerId_ = gasId_ = brakeId_ = nitroId_ = -1;
+    latchGas_ = latchBrake_ = latchNitro_ = false;
 }
 
 // ---------------------------------------------------------------- systèmes enfichables (WFS-30)
@@ -274,6 +306,8 @@ void Game::systemsInit() {
     view_ = GameView{};
     view_.track = &track_; view_.player = &player_; view_.car = carDef_; view_.map = track_.map();
     view_.uiWidth = (float)r_->width(); view_.uiHeight = (float)r_->height();
+    view_.ecran = ecran_;
+    view_.allerA = [this](Ecran e) { allerA(e); };
     for (const SystemEntry& e : entries) {
         systems_.push_back(e.make());
         systems_.back()->init(*r_, view_);

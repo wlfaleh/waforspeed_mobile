@@ -13,6 +13,7 @@
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/traffic_system.h"
+#include "../render/bench_ombres.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 
@@ -70,7 +71,13 @@ int main(int argc, char** argv) {
             WFS_LOG("capture %s : %.0f km/h, %.0f m", name, g.player().kmh(), g.player().dist * M);
         }
     }
+    benchShadowScenes(g, r, out);    // WFS-07 : ombres du soleil (captures ombres-*.png)
     benchTrafficScenes(g, r, out);   // WFS-08 : trafic de près et choc (captures trafic-*.png)
+    // WFS-36 : écran Menu forcé (sans menu dessiné) : scène sans commandes tactiles, voiture immobile
+    g.allerA(Ecran::Menu); g.setAutopilot(false);
+    for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 15 == 0) g.render(300 + i / 60.0); }
+    g.render(301.5); r.capturePng(out + "/ecran-menu-vide.png");
+    WFS_LOG("capture ecran-menu-vide : écran %s, %.1f km/h", nomEcran(g.ecran()), g.player().kmh());
     g.shutdown();
     benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
     benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)

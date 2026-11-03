@@ -34,6 +34,8 @@ struct FrameParams {
     vec3 skyTop{0.18f, 0.36f, 0.78f}, skyHorizon{0.62f, 0.74f, 0.88f}, ground{0.22f, 0.21f, 0.2f};
     vec3 fogColor{0.6f, 0.7f, 0.82f}; float fogDensity = 0.0022f;
     float exposure = 1.0f, ambient = 1.0f, reflections = 1.0f, time = 0; bool night = false;
+    // ombres du soleil (WFS-07) : la boîte d'ombre suit le point focus (la voiture), coupées la nuit
+    bool shadows = true, hasFocus = false; vec3 focus{};
 };
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
@@ -71,6 +73,8 @@ public:
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
     Image white, flatNormal;
+    bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    uint32_t shadowMapSize() const { return shadowSize_; }
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
     struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; };
@@ -78,8 +82,11 @@ private:
     void destroyTargets();
     void createPipelines();
     VkPipeline makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
-                            VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout);
+                            VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false);
     void flushDraw(const Pending& d);
+    void createShadows();
+    void shadowPass(VkCommandBuffer cb);
+    void readShadowTiming();
     void rotationMatrix(float out[4]) const;
 
     VkCtx* vk_ = nullptr;
@@ -104,7 +111,19 @@ private:
         Buffer ubo, uiVb; VkDescriptorSet frameSet = VK_NULL_HANDLE;
     } fr_[FRAMES];
     int cur_ = 0; uint32_t imageIndex_ = 0; bool inFrame_ = false;
-    std::vector<Pending> transparent_;
+    std::vector<Pending> transparent_, opaqueQ_;   // dessinés à endFrame (après la passe d'ombre)
+
+    // ombres du soleil (WFS-07)
+    Image shadowMap_;
+    uint32_t shadowSize_ = 2048;
+    VkRenderPass shadowPass_ = VK_NULL_HANDLE;
+    VkFramebuffer shadowFb_ = VK_NULL_HANDLE;
+    VkPipeline shadowPipe_ = VK_NULL_HANDLE, shadowMaskPipe_ = VK_NULL_HANDLE;
+    VkSampler shadowSampler_ = VK_NULL_HANDLE;
+    bool shadowsOn_ = false, night_ = false;
+    VkQueryPool tsPool_ = VK_NULL_HANDLE;
+    bool tsWritten_[2] = {false, false};
+    double shadowMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     vec3 camPos_{};
     float exposure_ = 1;
