@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     if (const char* b = std::getenv("WFS_BANC"); b && std::string(b) == "hud") { benchHud(g, r, out); r.shutdown(); vk.shutdown(); jobs().stop(); return 0; }   // WFS-27 : HUD seul (2400x1080)
-    if (const char* b = std::getenv("WFS_BANC"); b && std::string(b) == "menu") { ecrans::benchMenu(g, r, out); r.shutdown(); vk.shutdown(); jobs().stop(); return 0; }   // WFS-37
+    if (const char* b = std::getenv("WFS_BANC"); b && std::string(b) == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); r.shutdown(); vk.shutdown(); jobs().stop(); return 0; }   // WFS-37
     ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
     for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
@@ -101,6 +101,7 @@ int main(int argc, char** argv) {
     benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)
     benchHud(g, r, out);          // WFS-27 : HUD (hud-course, hud-temps-bas, hud-nitro, hud-combo)
     ecrans::benchMenu(g, r, out); // WFS-37 : menu principal (menu-anim, menu-0)
+    ecrans::benchMenuTactile(g, r, out);   // WFS-38 : appuis du menu, départ, « Bientôt », fin → Menu
     r.shutdown();
     vk.shutdown();
     {   // WFS-51 : encoche de 90 px à gauche en 2400x1080 : bande marquée, volant et jauges décalés à droite de la bande

@@ -28,9 +28,10 @@ public:
         if (!g_rules) { course_.state = RaceState::Play; course_.clock = 0; course_.timeLeft = 1e9; course_.lastCount = 0; }
     }
     void shutdown(Renderer&) override { if (active_ == this) active_ = nullptr; }
+    void onEcran(Ecran a, Ecran n, const GameView&) override { if (a == Ecran::Menu && n == Ecran::Course) restartReq_ = true; }   // WFS-38 : départ du menu = « Rejouer »
 
     // après la conduite et les chocs du trafic (ordre 210 > 50) : fin de update() du jeu web
-    void collide(double dt, Player& pl, const GameView&) override {
+    void collide(double dt, Player& pl, const GameView& g) override {
         if (restartReq_) {   // « Rejouer » : même carte, même graine de trafic (RG-08)
             restartReq_ = false;
             pl.reset(*pl.car);
@@ -39,6 +40,7 @@ public:
             WFS_LOG("course : nouvelle course (même graine de trafic)");
             return;
         }
+        if (g.ecran == Ecran::Menu) return;   // WFS-38 : course figée derrière le menu (pas de partie fantôme)
         const RaceState before = course_.state; const int cp = course_.level;
         course_.step(dt, pl, activeTrafficMut(), pl.position);
         if (course_.level != cp)
@@ -52,14 +54,15 @@ public:
         if (course_.state != RaceState::Over) { score_ = course_.score(pl); km_ = pl.dist * 0.006 / 1000; }   // figés à la fin (endRace)
     }
 
-    bool onTouch(const Touch& t, const GameView&) override {
-        if (course_.state != RaceState::Over || course_.overTimer < 0.9) return false;
+    bool onTouch(const Touch& t, const GameView& g) override {
+        if (g.ecran != Ecran::Course || course_.state != RaceState::Over || course_.overTimer < 0.9) return false;
         if (t.down && t.x >= btn_[0] && t.x <= btn_[0] + btn_[2] && t.y >= btn_[1] && t.y <= btn_[1] + btn_[3]) restartReq_ = true;
+        if (t.down && t.x >= btn_[0] + btn_[2] * 1.05f && t.x <= btn_[0] + btn_[2] * 1.75f && t.y >= btn_[1] && t.y <= btn_[1] + btn_[3]) g.allerA(Ecran::Menu);   // WFS-38
         return true;   // l'écran de fin garde tous les touchers
     }
 
     void drawUi(Renderer& r, const GameView& g) override {
-        if (!ui::fontReady()) return;
+        if (!ui::fontReady() || g.ecran != Ecran::Course || restartReq_) return;   // WFS-38 : ni décompte ni fin sur le menu
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         // compte à rebours : chiffre énorme au centre (showCount du jeu web)
         const std::string c = course_.countText();
@@ -118,6 +121,8 @@ private:
         btn_[0] = cx - bw / 2; btn_[1] = py + 60 * u; btn_[2] = bw; btn_[3] = bh;
         biseau(r, btn_[0], btn_[1], bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
         ui::text(r, cx, btn_[1] + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
+        biseau(r, btn_[0] + bw * 1.05f, btn_[1], bw * 0.7f, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130) à droite
+        ui::text(r, btn_[0] + bw * 1.4f, btn_[1] + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
     }
     bool restartReq_ = false;
     long long score_ = 0; double km_ = 0;
