@@ -19,13 +19,11 @@ static const unsigned BG = 0x0A0B10, SURFACE2 = 0x1E2130, TEXTE = 0xF2F4F8, MUTE
                       ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF;
 static const char* MESSAGE_ECHEC = "Le moteur 3D n'a pas pu démarrer sur cet appareil.";   // main.js boot()
 static float clampv(float v, float a, float b) { return std::max(a, std::min(b, v)); }
-static vec4 avecAlpha(vec4 c, float a) { c.w *= a; return c; }
 
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
     // 1 px CSS = k pixels logiques (720 p de référence) : même aspect à 1280x720 et 2400x1080
     const float k = H / 720.f;
     r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
-    if (!ui::fontReady()) return;
     const float logo = clampv(0.14f * W / k, 64, 140) * k;                 // clamp(64px, 14vw, 140px)
     const float x = clampv(0.06f * W / k, 0, 96) * k + 16 * k;             // margin-left clamp(0, 6vw, 96px) + gouttière
     const float largeur = std::min(600 * k, W - x - 16 * k);              // max-width: 600px
@@ -33,26 +31,29 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     const float total = sur + gap + 2 * ligne + gap + barre + 10 * k + txt;
     float y = std::max(16 * k, (H - total) / 2);
 
+    const bool police = ui::fontReady();   // première image : la police n'est pas encore construite (fond + barre)
     // sur-titre .eyebrow : capitales cyan espacées de 0,22 em
-    ui::text(r, x, y, sur, ui::majuscules("Sprint urbain · vraies voitures"), hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
+    if (police) ui::text(r, x, y, sur, ui::majuscules("Sprint urbain · vraies voitures"), hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
     y += sur + gap;
-    // logo « Wa<em>for</em> » / « Speed » : FOR en contour de 2 px (copies décalées, puis remplissage couleur du fond)
-    ui::text(r, x, y, logo, "WA", hex(TEXTE, op), ui::GAUCHE, -0.01f, false);
-    const float xf = x + ui::width(logo, "WA", -0.01f) - 0.01f * logo;
-    const float e = 2 * k;
-    for (int i = 0; i < 8; i++) {
-        const float a = i * 0.785398f;
-        ui::text(r, xf + std::cos(a) * e, y + std::sin(a) * e, logo, "FOR", hex(TEXTE, op), ui::GAUCHE, -0.01f, false);
-    }
-    ui::text(r, xf, y, logo, "FOR", hex(BG, op), ui::GAUCHE, -0.01f, false);
-    y += ligne;
-    // SPEED orange avec halo léger (text-shadow 0 0 22px rgba(255,106,0,.45))
-    for (int i = 0; i < 4; i++) {
-        const float a = 0.785398f + i * 1.570796f;
-        ui::text(r, x + std::cos(a) * 4 * k, y + std::sin(a) * 4 * k, logo, "SPEED", hex(ACCENT, 0.18f * op), ui::GAUCHE, -0.01f, false);
-    }
-    ui::text(r, x, y, logo, "SPEED", hex(ACCENT, op), ui::GAUCHE, -0.01f, false);
-    y += ligne + gap;
+    if (police) {
+        // logo « Wa<em>for</em> » / « Speed » : FOR en contour de 2 px (copies décalées, puis remplissage couleur du fond)
+        ui::text(r, x, y, logo, "WA", hex(TEXTE, op), ui::GAUCHE, -0.01f, false);
+        const float xf = x + ui::width(logo, "WA", -0.01f) - 0.01f * logo;
+        const float e = 2 * k;
+        for (int i = 0; i < 8; i++) {
+            const float a = i * 0.785398f;
+            ui::text(r, xf + std::cos(a) * e, y + std::sin(a) * e, logo, "FOR", hex(TEXTE, op), ui::GAUCHE, -0.01f, false);
+        }
+        ui::text(r, xf, y, logo, "FOR", hex(BG, op), ui::GAUCHE, -0.01f, false);
+        y += ligne;
+        // SPEED orange avec halo léger (text-shadow 0 0 22px rgba(255,106,0,.45))
+        for (int i = 0; i < 4; i++) {
+            const float a = 0.785398f + i * 1.570796f;
+            ui::text(r, x + std::cos(a) * 4 * k, y + std::sin(a) * 4 * k, logo, "SPEED", hex(ACCENT, 0.18f * op), ui::GAUCHE, -0.01f, false);
+        }
+        ui::text(r, x, y, logo, "SPEED", hex(ACCENT, op), ui::GAUCHE, -0.01f, false);
+        y += ligne + gap;
+    } else y += 2 * ligne + gap;
     // barre .cp-bar : fond --surface-2, remplissage dégradé cyan → orange (16 tranches sur la partie remplie)
     r.uiRect(x, y, largeur, barre, hex(SURFACE2, op));
     const float plein = largeur * clampv(p, 0, 1);
@@ -64,6 +65,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     }
     y += barre + 10 * k;
     // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec
+    if (!police) return;
     if (erreur) ui::text(r, x, y, txt, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
     else ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
 }
@@ -81,9 +83,13 @@ void Chargement::debut(Renderer& r, double depuis) {
     r_ = &r; p_ = 0; n_ = 0; erreur_ = false;
     libelle_ = "Préparation du moteur";
     t0_ = tEtape_ = nowSeconds();
+    // première image tout de suite (fond + barre), puis police (≈ 0,1 à 0,9 s) et image complète à 0 %
+    if (!ui::fontReady()) image(r, p_, libelle_, false);
+    const double premiere = nowSeconds() - depuis;
     ui::chargerPolice(r);
     image(r, p_, libelle_, false);
-    WFS_LOG("chargement : première image %s s après l'initialisation Vulkan", ui::decimal(nowSeconds() - depuis, 3).c_str());
+    WFS_LOG("chargement : première image %s s après l'initialisation Vulkan, écran complet (police) %s s",
+            ui::decimal(premiere, 3).c_str(), ui::decimal(nowSeconds() - depuis, 3).c_str());
     if (apresImage) apresImage(0);
 }
 
