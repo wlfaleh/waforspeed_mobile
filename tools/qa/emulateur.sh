@@ -23,6 +23,9 @@ adb shell settings put system user_rotation 1           # paysage
 adb shell wm size > "$OUT/ecran.txt"
 log "installation"; adb install -r -g "$APK" >> "$OUT/deroulement.txt" 2>&1 || { log "ÉCHEC installation"; exit 1; }
 adb logcat -c
+# scénario mvp : pas de bulle Android « Viewing full screen » (elle prend le focus : le jeu ne se redessine plus et
+# les appuis n'arrivent pas au jeu)
+[ "$SCENARIO" = mvp ] && adb shell settings put secure immersive_mode_confirmations confirmed
 log "lancement (scénario $SCENARIO)"; adb shell am start -n $PKG/.JeuActivity >> "$OUT/deroulement.txt" 2>&1
 if [ "$SCENARIO" = mvp ]; then
   # ---------------------------------------------------------------- scénario « parcours MVP » (WFS-56)
