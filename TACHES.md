@@ -94,7 +94,7 @@ Journal à jour.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | 5.5 | WFS-32 | Carrosseries : supprimer les points blancs en trame (reflets du vernis) | E4 | ✅ Terminé | | — | `feature/waforspeed-32` | #8 | ✅ VALIDÉ par qa-lead (84b489b, banc PC) — [rapport](qa/rapports/WFS-32.md) |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
-| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | 🔍 En revue | Claude (agent développeur, session 01UY1Vv1), 2026-11-02 | WFS-08 | `feature/waforspeed-12` | PR #10 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04), fusion autorisée |
+| 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
 | 7.5 | WFS-33 | Banc d'essai : scènes de trafic plus probantes (peloton, trafic en course, choc borné) | E3 | ⏳ Prêt |  | WFS-08 | `feature/waforspeed-33` |  |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | 🔧 En cours | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` |  |  |
 | 9 | WFS-09 | Nuit : vrais phares et éclairage public | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
@@ -201,7 +201,7 @@ spéculaire, normales non normalisées, NaN, valeurs HDR extrêmes avant le tone
 - [ ] Nuit : aucune ombre solaire, ombre de contact conservée
 - [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé
 
-**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · 🔍 En revue (QA : PASSABLE AVEC ANOMALIES MINEURES, fusion autorisée, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
+**WFS-12 — Règles de course : chrono, checkpoints, score, nitro, quasi-contacts** · E3 · priorité 7 · ✅ Terminé (QA : PASSABLE AVEC ANOMALIES MINEURES, [rapport](qa/rapports/WFS-12.md)), PR #10 (règles : `regles-de-gestion/WFS-12.md`)
 - [ ] Règles identiques au mode solo web (temps, checkpoints, score, combos, nitro)
 - [ ] Tests automatiques de fidélité
 
@@ -1034,3 +1034,10 @@ scène dédiée ; `src/platform/desktop_main.cpp` (2 lignes) : capture `scene-de
 - Reste **ANO-10** (mineure, 🆕 au tableau des anomalies) : `chargement-fondu-2400` prise pendant la planche de test du texte,
   le panneau « DÉMO DU TEXTE » chevauche l'écran (banc seulement, le joueur ne le voit pas). **Fusion autorisée.**
   Au PO : US de correction pour ANO-10.
+
+### 2026-11-03 — Fin WFS-12 Règles de course (PR #10 fusionnée, d4bab4c)
+QA : PASSABLE AVEC ANOMALIES MINEURES au tour 2/2 ; ANO-04 (italique du décompte, du score et des stats, à faire dans `src/ui/text.*`)
+au tableau des anomalies, pour le PO. Branche synchronisée avec `main` juste avant la fusion (ddcb0af : seuls des fichiers de
+règles avaient changé ; compilation et `test_course` OK, 0 écart). Épic E3 libre.
+**PO** : passer en `⏳ Prêt` les tickets qui dépendaient de WFS-12 (WFS-27, WFS-24, WFS-21, WFS-38 si WFS-37 est fini) ; créer l'US de
+correction d'ANO-04 ; corriger le critère « checkpoint 10 → +7 s » en « checkpoint 10 → +7,4 s (checkpoint 11 → +7 s) ».
