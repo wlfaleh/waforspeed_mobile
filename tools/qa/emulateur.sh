@@ -29,9 +29,10 @@ adb logcat -c
 [ "$SCENARIO" = mvp ] && adb shell settings put secure immersive_mode_confirmations confirmed
 if [ "$SCENARIO" = mvp ]; then
   # WFS-58 RG-05 : écran réduit (moins de pixels pour le GPU logiciel) ; taille naturelle de l'appareil (portrait), remise
-  # à zéro en fin de script ; densité divisée d'autant
-  adb shell wm size 540x1200; adb shell wm density 210
-  log "écran réduit : $(adb shell wm size | tail -1 | tr -d '\r') (densité 210)"
+  # à zéro en fin de script. Densité inchangée : la changer fait afficher par Android la bulle « Tap to restart this app
+  # for a better view », posée sur l'accélérateur (1er essai de WFS-58)
+  adb shell wm size 540x1200
+  log "écran réduit : $(adb shell wm size | tail -1 | tr -d '\r')"
   # journal du jeu lu en continu (WFS-58 RG-01)
   LIVE="$OUT/journal-jeu.txt"; : > "$LIVE"
   (timeout 2400 "$ADB" logcat -v time -s WaForSpeed:I > "$LIVE" 2>/dev/null &)
@@ -115,11 +116,13 @@ if [ "$SCENARIO" = mvp ]; then
     lw=(460*k<larg)?460*k:larg; bloc=12*k+22*k+2*0.82*logo; liste=3*70*k+2*6*k; tot=bloc+22*k+liste+22*k+44*k+22*k+44*k;
     y0=(H-tot)/2; if (y0<24*k) y0=24*k; u=H/100; bw=40*u; bx=W/2-(1.7*bw+2*u)/2;
     printf "%d %d %d %d %d %d\n", x+0.4*lw, y0+bloc+22*k+35*k, bx+bw/2, 75*u, bx+bw+2*u+0.35*bw, 75*u }')
-  gx=$((W * 89 / 100)); gy=$((H * 74 / 100))     # accélérateur
+  # accélérateur : zone de toucher x > 0,78 W hors nitro (Game::onTouch) ; appui en bas (0,84 W ; 0,92 H), sous la bulle
+  # de compatibilité d'Android qui peut couvrir le centre du bouton
+  gx=$((W * 84 / 100)); gy=$((H * 92 / 100))
   }
   appui() { alive || log "ATTENTION : l'appli ne tourne plus avant l'appui $1"; log "appui $1 $2,$3"; adb shell input tap "$2" "$3"; }
   parcours
-  adb shell wm size reset; adb shell wm density reset   # RG-05 : écran de l'émulateur rétabli
+  adb shell wm size reset   # RG-05 : écran de l'émulateur rétabli
 else
 sleep 20
 shot 01-demarrage
