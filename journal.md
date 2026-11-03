@@ -1283,3 +1283,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Contrôle rapide** : CI verte sur `14056c9` (android, banc-essai avec tous les tests, publication `apercu-waforspeed-59`). Banc : GPU llvmpipe hors écran → mode inactif (« MSAA x4 », scène 2400x1080, ombres présentes) ; captures `course-cam0-0`, `hud-course`, `ombres-a`, `menu-0` regardées : rien de bloquant.
 - **Limite** : comparaison au pixel avec `main` non faite (Release `apercu` en reconstruction au moment de la fusion) : à faire par la recette de nuit. Comportement sur le simulateur à mesurer avec WFS-50 (et le scénario de WFS-58).
 - **Fusion** : `b2ede73`. WFS-50 ne dépend plus que de WFS-58.
+
+### 2026-11-03 20:43:48 — Début WFS-28 attribué à agent 3 (session 011cpqZd) ; WFS-19 remis en attente, WFS-63 créé (po-scrum-master)
+- **Épics occupées** : E4 (WFS-45), E5 (WFS-48), E7 (WFS-58), E8 (WFS-39). Libres : E0, E2, E3, E6.
+- **WFS-19 (E2) n'est pas réellement prêt** : les personnages du jeu web sont des maillages à squelette, le renderer natif n'en dessine pas (rien dans `renderer.h`), et le ticket dépasse une journée. Il passe en ⏳ En attente de **WFS-63** (E0, P3, ⏳ Prêt, `regles-de-gestion/WFS-63.md`) : point d'extension « maillages animés par squelette », catalyseur des piétons et des conducteurs. E0 retrouve ainsi un ticket prêt.
+- **Attribution** : **WFS-28 — Bruitages** (E6, P3 Moyenne), branche `feature/waforspeed-28`. Zone autorisée : `src/audio/**`, `assets/audio/**` ; accroche ≤ 10 lignes dans `src/game/course.*` seulement si un compteur manque (RG-09, à annoncer ici).
+- **Règles** : `regles-de-gestion/WFS-28.md` complété (RG-08 à RG-11 : événements lus par front montant sur `activeCourse()` et `GameView::player`, sons synthétisés au démarrage par bruit filtré comme `js/audio/sfx.js`, mixés dans le flux AAudio de WFS-10, ligne `SFX <nom>` au journal du banc).
+- **Critères** : chaque événement déclenche son son une seule fois (journal du banc) ; pas de craquement ; coupure en pause ; captures inchangées, `0 écart(s)`.
+- **Plan court** : 1) `noiseHit` / `beep` natifs (tables pré-calculées) ; 2) détection des événements ; 3) mixage et coupure en pause ; 4) journal du banc.
