@@ -17,6 +17,7 @@
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
+#include "reseau_android.cpp"     // WFS-83 : verrou de diffusion du Wi-Fi (duel sur le réseau local)
 #include "manette_jeu.h"   // WFS-22 : manettes
 
 namespace wfs {
@@ -131,6 +132,7 @@ void android_main(android_app* a) {
     if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
     installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
+    installerReseauAndroid(a->activity->vm, a->activity->clazz);      // WFS-83 : verrou de diffusion du salon
     // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);

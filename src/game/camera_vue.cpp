@@ -42,10 +42,28 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
     g_ck.actif = false;
     if (camMode == 2 || (ecran != Ecran::Course && ecran != Ecran::Pause)) { g_suivi.init = false; g_ck.fov = fov; return false; }
     const VueDef& V = VUES[(int)g_vue];
-    if (!V.capot) {
-        // RG-02 : jamais sous la route dans les côtes (ground = trackPoint(sP − dist / M).y + 0,6 du jeu web)
-        const float back = camMode == 0 ? 5.2f : 8.0f;
-        const TrackPoint sol = track.point(pl.dist - back / M, pl.playerX * RW * 0.85);
+    if (!V.capot && camMode == 0) {
+        // WFS-85 : poursuite « loin » (défaut) ou « proche » d'updateCamera du jeu web : œil derrière la voiture sur la route,
+        // regard entre l'avant de la voiture et le virage qui arrive, suivi lissé, champ de vision qui s'élargit avec la vitesse
+        const Poursuite& P = g_vue == VueCamera::Proche ? POURSUITE_PROCHE : POURSUITE_LOIN;
+        const double p = std::abs(pl.speed) / MAX_SPEED, lat = pl.playerX * RW;
+        const vec3 carPos = carM.transformPoint({0, 0, 0}), fwd = normalize(carM.transformDir({0, 0, -1}));
+        const TrackPoint der = track.point(pl.dist - P.dist / M, lat * 0.85);
+        const vec3 eT{(float)der.x, (float)der.y + P.h + (float)p * 0.12f, (float)der.z};
+        const TrackPoint dev = track.point(pl.dist + P.ahead * 1.6 / M, lat);
+        const vec3 lT{(carPos.x + fwd.x * P.ahead) * 0.6f + (float)dev.x * 0.4f, carPos.y + P.lookH,
+                      (carPos.z + fwd.z * P.ahead) * 0.6f + (float)dev.z * 0.4f};
+        const float fovT = fovVue(g_vue, p, pl.nitroOn);
+        if (!g_suivi.init || g_suivi.vue != g_vue || length(g_suivi.eye - eT) > 25.f) g_suivi = {true, g_vue, eT, lT, fovT};
+        g_suivi.eye = lerp(g_suivi.eye, eT, 1.f - std::exp(-fdt * SUIVI_OEIL));
+        g_suivi.look = lerp(g_suivi.look, lT, 1.f - std::exp(-fdt * SUIVI_REGARD));
+        g_suivi.fov = lisser(g_suivi.fov, fovT, fdt, 4.f);
+        g_suivi.eye.y = std::max(g_suivi.eye.y, (float)der.y + 0.6f);   // RG-03 : jamais sous la route dans les côtes
+        eye = g_suivi.eye; look = g_suivi.look; fov = g_suivi.fov; g_ck.fov = fov;
+        return false;
+    }
+    if (!V.capot) {   // vue haute du banc (camMode 1) : caméra de Game, jamais sous la route (ground = trackPoint(sP − dist).y + 0,6)
+        const TrackPoint sol = track.point(pl.dist - 8.0 / M, pl.playerX * RW * 0.85);
         eye.y = std::max(eye.y, (float)sol.y + 0.6f);
         g_suivi.init = false; g_ck.fov = fov;
         return false;

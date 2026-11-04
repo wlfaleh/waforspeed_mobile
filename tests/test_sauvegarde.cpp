@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
         VERIFIER(s.peinture("gallardo") == "jaune");
         VERIFIER(s.peinture("sf90") == "rouge"); VERIFIER(s.peinture("x5") == "blanc");   // voitures de WFS-13
         VERIFIER(s.lire("version=1\ncar=sf90\npaint-sf90=turquoise\nquality=medium\ncam=proche\n"));
-        VERIFIER(s.car == "sf90"); VERIFIER(s.peinture("sf90") == "turquoise"); VERIFIER(s.qualiteIndex() == 1); VERIFIER(s.camIndex() == 0);
+        VERIFIER(s.car == "sf90"); VERIFIER(s.peinture("sf90") == "turquoise"); VERIFIER(s.qualiteIndex() == 1); VERIFIER(s.camIndex() == 3);   // WFS-85 : vue Proche
     }
 
     // 5) record (endRace) : écrit seulement s'il est battu

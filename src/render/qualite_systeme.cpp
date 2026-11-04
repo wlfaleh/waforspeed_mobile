@@ -57,7 +57,7 @@ public:
             banniere_ = 2.5;
             WFS_LOG("qualité : rétrogradation automatique au niveau %d (%.0f images/s à l'échelle 0,6)", g_auto.niveau, g_auto.fpsMesure);
         }
-        r_->vk().renderScale = qualite::echelleNiveau(g_auto.niveau) * g_auto.echelle;
+        r_->vk().renderScale = qualite::echelleRendu(g_auto.niveau, g_auto.echelle);   // WFS-86 : plancher (voiture nette en course)
         r_->resize();
         WFS_LOG("qualité : %.0f images/s → échelle dynamique %.2f (scène à %.0f %%)", g_auto.fpsMesure, g_auto.echelle, r_->vk().renderScale * 100);
         effets_ = 0;

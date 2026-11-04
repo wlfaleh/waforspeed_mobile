@@ -293,7 +293,7 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         constexpr uint32_t NO_CAST = MAT_SHADOWBLOB | MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_BLEND;
         VkPipeline bound = VK_NULL_HANDLE;
         for (const Pending& p : opaqueQ_) {
-            if (p.mat->flags & NO_CAST) continue;
+            if ((p.mat->flags & NO_CAST) || !(p.vis & VIS_OMBRE)) continue;   // WFS-82 : hors de la boîte d'ombre
             const bool masque = p.mat->flags & MAT_MASK;
             VkPipeline want = p.osOfs >= 0 ? (masque ? skinShadowMask_ : skinShadow_) : (masque ? shadowMaskPipe_ : shadowPipe_);   // WFS-63
             if (want != bound) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, want); bound = want; }
@@ -485,10 +485,10 @@ void Renderer::refletPass(VkCommandBuffer cb) {
     vkCmdDraw(cb, 3, 1, 0, 0);
     constexpr uint32_t SANS = MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_SHADOWBLOB | MAT_POOL;
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refOpaque_);
-    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS)) flushDraw(p);
+    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS) && (p.vis & VIS_REFLET)) flushDraw(p);   // WFS-82
     VkPipeline lie = VK_NULL_HANDLE;
     for (const Pending& p : transparent_) {
-        if (p.mat->flags & SANS) continue;
+        if ((p.mat->flags & SANS) || !(p.vis & VIS_REFLET)) continue;   // WFS-82
         const VkPipeline voulu = (p.mat->flags & MAT_ADD) ? refAdd_ : refBlend_;
         if (voulu != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
@@ -641,8 +641,27 @@ Material Renderer::makeMaterial(const Material& src, const Image* color, const I
     return m;
 }
 
+// WFS-82 : sphère englobante des sommets (boîte → sphère) ; aucun sommet : inconnue (jamais masquée)
+template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
+    if (v.empty()) return {};
+    vec3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
+    for (const V& s : v) { mn = {std::min(mn.x, s.px), std::min(mn.y, s.py), std::min(mn.z, s.pz)}; mx = {std::max(mx.x, s.px), std::max(mx.y, s.py), std::max(mx.z, s.pz)}; }
+    return masquage::deBoite(mn, mx);
+}
+
+// WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
+uint8_t Renderer::classer(const masquage::Sphere& s) {
+    if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE;
+    if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { masques_++; return 0; }
+    const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
+                      (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
+    if (!v) masques_++;
+    return v;
+}
+
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
+    { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
@@ -660,12 +679,14 @@ void Renderer::updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vect
     std::memcpy(m.vb.mapped, v.data(), v.size() * sizeof(Vertex));
     std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
     m.indexCount = (uint32_t)idx.size();
+    { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
 }
 
 void Renderer::destroy(Mesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
 
 SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx) {
     SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
+    { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r < 0 ? b.r : b.r * 1.5f; }   // WFS-82 : marge pour l'animation
     m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     return m;
@@ -763,6 +784,14 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         m.nuitA = {0, 0, 0, 1};   // passe de reflet : pas de route mouillée ni de reflet lu, rien sous le plan
         std::memcpy(refletUbo_[cur_].mapped, &m, sizeof(m));
     }
+    {   // WFS-82 : plans de la caméra, du miroir des reflets et de la boîte d'ombre ; fin du brouillard
+        fCam_ = masquage::depuis(u.viewProj);
+        mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
+        fReflet_ = masquage::depuis(fp.proj * fp.view * R);
+        fOmbre_ = masquage::depuis(u.shadowMat);
+        finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
+        masquesPrec_ = masques_; masques_ = 0;
+    }
     feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
@@ -795,6 +824,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
+    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)));   // WFS-82
+    if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     if (fx.nuit) feuxVoiture(m, world, fx);
     mat4 wr[4]; const bool anim = roues && m.nRoues == 4;   // WFS-60 : matrice de chaque roue (braquage, roulage)
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
@@ -804,6 +835,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = m.parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        p.vis = vis;   // WFS-82
         p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
@@ -822,7 +854,10 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || !m.indexCount) return;
+    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82
+    if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
+    p.vis = vis;
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
@@ -834,6 +869,8 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
 void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
                            const ApparencePersonnage* ap) {
     if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
+    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82 : avant de prendre une place
+    if (!vis) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);
     const VkDeviceSize ofs = OS_SLOT * (VkDeviceSize)skinUsed_++;
@@ -852,7 +889,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
-    p.osOfs = (int32_t)ofs;
+    p.osOfs = (int32_t)ofs; p.vis = vis;
     opaqueQ_.push_back(p);   // maillages à squelette : opaques (ou alpha découpé) seulement
 }
 
@@ -886,28 +923,58 @@ void Renderer::haloSol(const vec3& c, const vec3& r, const vec3& f, float hr, fl
     drawQuads(q, 1, haloMat_);
 }
 
-// setLights du jeu web (js/cars/models.js) : halos des feux arrière (stop au freinage), de recul, des phares, et reflet
-// discret des feux sur la route (tailGlow 0,16, tailGlowBrake 0,38, revGlow 0,55). Couleurs sRGB du jeu web linéarisées,
-// × FEUX_HDR (sprites additifs du jeu web, sans tonemapping → passe HDR + ACES ici).
+// WFS-84 : feux de nuit naturels. Réglages en un seul endroit (RG-06), à ajuster après un essai sur téléphone.
+// Chaque feu = un point lumineux net (cœur, quelques cm, qui reste un point au loin) + une lueur douce d'environ
+// 2,5 × la taille du feu (jamais un disque géant), éteinte progressivement entre 60 et 120 m (RG-04) ; un feu ne
+// brille que du côté où on le voit (pas de halo de phare autour d'une voiture vue de dos, ni au-dessus du toit).
+// Le feu lui-même (matériau MAT_TAIL) s'allume aussi : émission plus forte au freinage (draw, plus haut).
+namespace feux {
+constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du jeu web (sans tonemapping) → passe HDR + ACES
+constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
+constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
+constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
+constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.30f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.35f;
+constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
+constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
+constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
+constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
+constexpr float SOL_LARGEUR = 0.9f, SOL_LONGUEUR = 1.1f, SOL_RECUL = 0.45f;   // reflet sur la route (× largeur ; m ; m derrière)
+constexpr float I_SOL = 0.07f, I_SOL_STOP = 0.18f, I_SOL_RECUL = 0.2f;        // tailGlow, tailGlowBrake, revGlow (atténués)
+}
+
+// setLights du jeu web (js/cars/models.js : tailGlow, tailGlowBrake, revGlow) revu pour un rendu naturel (WFS-84)
 void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) {
-    constexpr float FEUX_HDR = 1.6f;
+    using namespace feux;
     auto lin = [](unsigned h, float k) {
         auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
         return vec3{c(16), c(8), c(0)} * (k * FEUX_HDR);
     };
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
+    const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
+    // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
+    auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
+        const vec3 v = camPos_ - p;
+        const float d = length(v);
+        const float face = std::clamp((dot(v * (1.f / std::max(d, 1e-3f)), dehors) + 0.1f) / 0.45f, 0.f, 1.f);   // de dos : rien
+        if (face <= 0.f) return;
+        halo(p, std::max(coeur * ech, d * POINT_MIN), col * (iCoeur * face));
+        const float kl = 1.f - std::clamp((d - LUEUR_DEBUT) / (LUEUR_FIN - LUEUR_DEBUT), 0.f, 1.f);
+        if (kl > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));
+    };
+    const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
     for (int side : {-1, 1}) {
-        const vec3 t = w.transformPoint({side * F.arriereX, F.arriereY, F.arriere + 0.06f});
-        halo(t, (f.stop ? 0.9f : 0.55f) * 0.5f * ech, f.stop ? lin(0xff2038, 1.f) : lin(0xff1a30, 0.55f));
-        if (f.recul) halo(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.07f}), 0.3f * 0.5f * ech, lin(0xf4f6ff, 0.7f));
-        halo(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.01f}), 0.85f * 0.5f * ech, lin(0xfff1d6, 0.9f));
+        feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge,
+            f.stop ? I_COEUR_STOP : I_COEUR, f.stop ? I_LUEUR_STOP : I_LUEUR);
+        if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.05f}), arriere,
+                         RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
+        feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
     }
-    // reflet des feux sur la route (tg : glowGeo × (W × 1,2 ; 1,8) à L / 2 + 0,6)
-    const vec3 r = normalize(w.transformDir({1, 0, 0})), fw = normalize(w.transformDir({0, 0, 1}));
-    const vec3 c = w.transformPoint({0, 0.03f, F.arriere + 0.6f});
-    const vec3 col = f.recul ? lin(0xdfe6ff, 0.55f) : lin(0xff2040, f.stop ? 0.38f : 0.16f);
-    haloSol(c, r, fw, F.largeur * 1.2f * 0.5f * ech, 1.8f * 0.5f * ech, col);
+    // reflet discret des feux sur la route, juste derrière la voiture (RG-05) ; aucun faisceau arrière
+    const vec3 r = normalize(w.transformDir({1, 0, 0}));
+    const vec3 c = w.transformPoint({0, 0.03f, F.arriere + SOL_RECUL});
+    const vec3 col = f.recul ? lin(0xdfe6ff, I_SOL_RECUL) : lin(0xff2040, f.stop ? I_SOL_STOP : I_SOL);
+    haloSol(c, r, arriere, F.largeur * SOL_LARGEUR * 0.5f * ech, SOL_LONGUEUR * 0.5f * ech, col);
 }
 
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
@@ -977,6 +1044,7 @@ void Renderer::endFrame() {
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
     VkPipeline lie = opaque_;
     for (const Pending& p : opaqueQ_) {
+        if (!(p.vis & VIS_CAM)) continue;   // WFS-82 : hors champ (gardé pour l'ombre ou le reflet)
         const VkPipeline voulu = p.osOfs >= 0 ? skinOpaque_ : opaque_;   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
@@ -985,6 +1053,7 @@ void Renderer::endFrame() {
     if (!transparent_.empty()) {
         VkPipeline lieT = VK_NULL_HANDLE;
         for (const Pending& p : transparent_) {
+            if (!(p.vis & VIS_CAM)) continue;   // WFS-82
             // WFS-09 : tache des phares (multiplicative), halos (additifs), sinon mélange alpha
             const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : blend_;
             if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }

@@ -1910,3 +1910,142 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Zone autorisée : `src/ui/ecrans/reglages.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.*` si besoin.
 - Critères : lignes visibles et appliquées tout de suite, choix relus au relancement, focus manette sur pastilles et choix (A applique, B retour), captures tactiles du garage inchangées.
 - Plan : 1) deux lignes dans `LIGNES` + lecture / écriture ; 2) zones de focus des choix ; 3) accroche garage ; 4) banc manette ; fusion par confiance si > 50 %.
+
+### 2026-11-04 12:49:44 — WFS-18 fusionné par confiance (PR #66) (Claude, session trafic, agent WFS-18)
+- Fait : météo dans `src/world/meteo.h` / `meteo.cpp` (nouveaux, E2). Système `pluie` (ordre 199) : port de `initRain` / `drawFx` (fx.js), min(160, L×H/9000) gouttes, 10-24 px, 900-1500 px/s × (0,7 + 0,6 p), inclinaison (−0,12 − braquage×0,25)×(0,4 + p), trait rgba(170,190,255,.2) de 1 px, dessiné dans `drawUi` avant la vignette (350) et le HUD ; nuit + ville + écran Course seulement ; 0 goutte avec « réduire les mouvements » (`reglagesRessenti`, WFS-70). Système `ciel-couvert` (ordre 960, après `Nuit` 950) : couleur des nuages de `makeSkyMaterial` (mix(mid, hor, 0,5)×0,9) mêlée au ciel à nightClouds 0,35, brouillard rapproché de (1 − 0,35×0,52).
+- Accroches : **aucune** (enregistrement par `WFS_SYSTEM`, aucun fichier du noyau, de `src/render/**` ni de `renderer.h` modifié).
+- Vérification locale : tests CPU de build.yml OK ; banc `WFS_BANC=nuit` : pluie active seulement en ville, `course-nuit-ville-0` et `-1` différentes (gouttes déplacées), coût 0,008 ms/image (102 gouttes, 1280x720) ; capture de jour en ville (`ressenti-choc`) sans pluie.
+- Limites : la pluie est discrète (alpha 0,2 du jeu web) ; RG-05 « désactivée en qualité basse si baisse sous 60 i/s » non appliquée (coût négligeable mesuré). Option « réduire les mouvements » non vérifiée par capture.
+
+### 2026-11-04 12:50:28 — Début WFS-81 attribué à Claude (session trafic, agent WFS-81) (po-scrum-master)
+- Ticket : WFS-81 — Nuit corniche et circuit (vrais lampadaires, lumières alignées, double halo trafic) · épic E2 (libre depuis la fusion de WFS-18, PR #66) · branche `feature/waforspeed-81` · règles `regles-de-gestion/WFS-81.md`.
+- Zone autorisée : `src/world/plage.cpp`, `src/world/circuit.cpp`, `src/world/decor_carte.*`, banc `cartes_banc.cpp` ; accroche ≤ 10 lignes dans `src/game/traffic_system.cpp` (E3) seulement si le double halo se voit, annoncée au Journal. Interdit : `src/world/meteo.*`, `src/render/**` (dont `nuit.cpp`).
+- Critères : poteaux blancs à boule sous chaque lumière de la corniche ; lumière sous chaque mât du circuit (compte au journal) ; un seul halo rouge par feu sur une voiture du trafic qui freine la nuit.
+- Plan : porter les lignes `lamp(…, 'beach'/'flood')` de `js/world/decor.js` et les positions de `js/world/scene.js` l. 270-282 ; style beach dans `CarteDecor::lampe` ; inscription dans `lampadaires()` comme `ville.cpp` ; contrôle du double halo sur les captures `nuit-*` de `main`.
+- En parallèle (zones séparées) : WFS-78 (E7), WFS-79 (src/audio), WFS-80 (E8), WFS-82 (E4).
+
+### 2026-11-04 12:51:57 — WFS-82 masquage hors champ et au loin, fusionné par confiance, PR #67 (Claude, agent 4)
+- **Fait** :
+  - `src/render/masquage.*` : plans des matrices de la caméra, du miroir et de l'ombre, test de sphère, coupure au loin selon le rayon (RG-02). Testé par `test_masquage`.
+  - Renderer : chaque objet est classé pour la caméra, le reflet et l'ombre (RG-01, RG-03). Un objet invisible partout n'est pas dessiné. Les feux du trafic disparaissent avec leur voiture (RG-06). Compteur `objetsMasques()`.
+- **Accroches annoncées** :
+  - `src/ui/ecrans/reglages.cpp` : 1 ligne, `qualiteBasse` ;
+  - `CMakeLists.txt` et `build.yml` : `test_masquage` ;
+  - `renderer.h` et `renderer.cpp` dans la zone E4.
+- **Vérification** : `test_masquage`, `test_systems`, `test_roues` et compilation complète OK.
+- **Mesure** : appels de dessin avant / après au journal du banc de `main` (avant : Basse 346, Moyenne 607). Je les reporte dès la fin de la CI. L'instanciation (RG-04) sera faite si la cible n'est pas atteinte.
+
+### 2026-11-04 12:55:55 — WFS-83 : duel sur le Wi-Fi local codé, PR #68 en revue (Claude, agent 5)
+- **Fait** : `src/game/reseau_udp.*` : `TransportUdp`, diffusion UDP sur le port 47321, présence toutes les 0,1 s en course et 0,5 s hors course, retrait après 3 s ou `bye`, horloge de l'hôte, messages invalides ignorés, salons ouverts annoncés. `src/ui/ecrans/salon.*` : écran Salon (accueil et salon), départ sur la carte de l'hôte par `Game::demandes()` (WFS-74). `src/platform/reseau_android.cpp` : `MulticastLock` par JNI.
+- **Accroches annoncées** : `src/core/ecran.h` (2 lignes : `Ecran::Salon`) ; `src/ui/ecrans/menu.cpp` (5 lignes : « Duel en ligne » actif, banc `menu-bientot`) ; `src/platform/android_main.cpp` (2 lignes) ; `AndroidManifest.xml` (4 permissions) ; `CMakeLists.txt` (1 ligne : `reseau_udp.cpp` dans `test_duel`) ; `src/platform/desktop_main.cpp` (3 lignes) ; `.github/workflows/build.yml` (1 ligne : copies `-2400`). `game.cpp` n'a pas été modifié.
+- **Vérification locale** : `test_duel` étendu OK. Deux `TransportUdp` sur 127.0.0.1, horloges à 777 777 ms d'écart : salon vu puis plein, départ commun avec la même graine, `trafficClock` à 0 ms près, messages hostiles ignorés, `bye` immédiat, retrait à 3 s. Compilation sans erreur, sauf le JNI Android (non compilable ici). Fusion après CI verte et captures regardées.
+
+
+### 2026-11-04 12:56:57 — PO : 2 tickets urgents issus du test réel de l'utilisateur (po-scrum-master)
+- **WFS-84** (E4, P1) nuit : feux des voitures artificiels → petits feux nets + lueur douce (le double halo du trafic reste dans WFS-81, en cours). **WFS-85** (E3, P1) caméra de poursuite plus haute (vue « loin » du jeu web par défaut ; l'ancienne vue basse reste en option). Règles : `regles-de-gestion/WFS-84.md`, `WFS-85.md`. À attribuer en premier, en dehors de tout autre ticket.
+
+### 2026-11-04 12:57:31 — PO : WFS-86 créé, voitures en course moins belles qu'au garage (po-scrum-master)
+- Retour de l'utilisateur : garage « nickel », course moins bien. Ticket P1 (E4) : trouver la cause (qualité auto, échelle de rendu, MSAA, ombres/reflets, LOD, éclairage) puis aligner la course sur le garage. Règles : `regles-de-gestion/WFS-86.md`. E4 : un seul ticket actif à la fois, WFS-84 passe après ou avant selon l'agent libre.
+
+### 2026-11-04 13:30:37 — Fin WFS-83 : PR #68 fusionnée par confiance (Claude, agent 5)
+- **CI de la branche verte** (run 41833456101 : android avec le JNI du verrou de diffusion, 7 bancs, publication). Captures regardées : accueil (salon de Nadia listé par UDP en boucle locale), salon (code, voiture, terrain, distance, 2 pilotes), course (adversaire visible, classement à 2). Journal : même graine pour les deux joueurs.
+- **Corrigé avant fusion** : le classement du duel chevauchait le bouton de vue de WFS-66 (`duel_system.cpp`, zone E3 : descendu de 24 à 33 % de la hauteur) ; banc : `salon-pret` prise avant le départ, et Nadia vérifie le départ dans la même image (l'écart de `trafficClock` de 1,76 s venait du temps de capture du banc, pas du jeu ; test CPU : 0 ms).
+- **Fusion** : synchro avec `main`, `test_duel` OK, compilation OK, fusion par confiance (`b6a0247`), ajouté à `qa/Check.md`. Je suis la CI de `main`. Le duel à deux téléphones reste à essayer par l'utilisateur.
+
+
+### 2026-11-04 13:31:02 — Début WFS-84 : feux des voitures naturels la nuit, attribué à Claude (agent 5) (PO)
+- **Ticket** : WFS-84 (E4, P1 Urgent), branche `feature/waforspeed-84`, règles `regles-de-gestion/WFS-84.md`. Choisi car P1 et plus petit numéro des P1 attribuables (E4 libre ; WFS-85 en E3 reste Prêt pour un autre agent ; WFS-86 attend la fin de WFS-84, même épic).
+- **Zone autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `post*` ; accroches ≤ 10 lignes annoncées au Journal. Ne pas toucher aux lampadaires ni au double halo du trafic (WFS-81, E2 + `traffic_system.cpp`, en cours) : se synchroniser avec `main` avant fusion et vérifier qu'il n'y a pas de contradiction.
+- **Critères** : capture `nuit-trafic-arriere` (petits feux rouges nets + lueur douce, plus vifs au freinage), aucune régression phares / lampadaires WFS-09.
+- **Plan court** : feu émissif net sur le drapeau feu arrière du `.wfm`, une lueur radiale additive petite et atténuée avec la distance (coupée > 120 m), reflet discret au sol, constantes réglables ; réutiliser `js/cars/models.js` (`glowGeo`, `MAT.tailGlow`, `tailGlowBrake`, `revGlow`) et `TEXS.radial`.
+
+### 2026-11-04 13:33:23 — WFS-82 : mesures sur main et suite pour la qualité Basse, PR #69 (Claude, agent 4)
+- **CI de `main` f825201 (PR #67)** : verte sur les 8 tâches.
+- **Appels de dessin** (scène de nuit en ville) :
+
+  | Niveau | Avant | Après | Objets masqués | Cible |
+  |---|---|---|---|---|
+  | Moyenne | 607 | **337** | 53 | ≤ 450, atteinte |
+  | Haute | — | 585 | 53 | — |
+  | Basse | 346 | **331** | 59 | ≤ 300, **non atteinte** |
+
+  ms par image au banc (CPU) : Basse 230, Moyenne 377, Haute 530.
+- **Captures** : rien ne manque de près ; reflets et ombres complets.
+- **Suite, PR #69, fusion par confiance** : en Basse, trafic en silhouette dès 25 m (accroche d'une ligne dans `traffic_system.cpp`). Nouvelle mesure de la Basse attendue sur `main`.
+- **Si la cible n'est toujours pas atteinte** : instancier les objets répétés (RG-04).
+
+### 2026-11-04 13:33:32 — WFS-84 : feux de nuit naturels, PR #70 en revue (Claude, agent 5)
+- **Constat** (`course-nuit-ville-stop` sur `main`) : feux stop = halos de 0,45 m de rayon (gros disques rouges qui débordent), halos des phares visibles autour d'une voiture vue de dos, grande ellipse rouge au sol.
+- **Fait** (zone E4, `src/render/renderer.cpp`) : `feuxVoiture` réécrit. Cœur net de 7 cm qui reste un point au loin + lueur douce de 0,24 m éteinte entre 60 et 120 m ; stop plus vif, même taille ; recul : petit feu blanc ; feu visible seulement de son côté ; reflet au sol réduit. Réglages groupés dans `feux::` (RG-06). Banc : capture `nuit-trafic-arriere` (`bench_nuit.cpp`). Aucune accroche hors zone ; lampadaires et double halo du trafic non touchés (WFS-81).
+- **Vérification** : compilation sans avertissement ; rendu non visible ici → fusion après CI verte et captures regardées.
+
+### 2026-11-04 13:55:34 — Fin WFS-84 : PR #70 fusionnée par confiance (Claude, agent 5)
+- **CI de la branche verte** (run 41839125641, nuit comprise). Captures regardées : plus de gros disques rouges ; les voitures du trafic au loin ne montrent qu'un point rouge ; pas de halo de phare autour d'une voiture vue de dos. Au freinage, la lueur était encore un peu marquée et sur le bord extérieur des feux : constantes ajustées (lueur 0,24 → 0,20 m, stop 0,75 → 0,5, feux rapprochés du centre de 12 %).
+- **Coordination WFS-81** : toujours en cours, il n'a pas touché `feuxVoiture` ; aucun conflit.
+- **Fusion** : synchro avec `main`, compilation OK, fusion par confiance (`afd0816`), ajouté à `qa/Check.md`. Je suis la CI de `main`. **CI de `main` après WFS-83** : verte (run 41838693753).
+
+
+### 2026-11-04 13:55:55 — Début WFS-85 : caméra de poursuite plus haute (PO, attribution à Claude agent 5)
+- Ticket : WFS-85 (P1 Urgent), épic E3, attribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), branche `feature/waforspeed-85`. Règles : `regles-de-gestion/WFS-85.md`.
+- Choix : deux P1 prêts (WFS-85 E3, WFS-86 E4) ; E3 et E4 libres ; plus petit numéro retenu. WFS-86 reste prêt pour l'agent suivant.
+- Zone autorisée : `src/game/` sauf `game.*` (surtout `src/game/camera_vue.*`), `tests/**` ; accroche ≤ 10 lignes annoncée au Journal permise dans `src/ui/ecrans/reglages.*` pour la vue « Proche » (attention : WFS-80 est en cours sur ce fichier, rester minimal et synchroniser avec `main`).
+- Critères : Poursuite par défaut = vue « loin » du web (8 m, 2,5 m, regard 14 m, visée 0,9 m, 62°) ; ancienne vue basse conservée (« Proche », 4,6 m / 1,28 m / 58°) dans le cycle et les réglages, choix mémorisé ; lissage, FOV selon la vitesse et « jamais sous la route » inchangés ; au moins 3 voitures devant visibles sur `trafic-cam0` / `course-*`.
+- Plan court : constantes dans `camera_vue.*`, ajout du mode Proche au cycle, test CPU des valeurs, banc PC, fusion par confiance si > 50 %.
+
+### 2026-11-04 13:57:53 — WFS-82 : bilan sur main ; CI ae7daef rouge à cause de la publication (limite de l'API GitHub) (Claude, agent 4)
+- **CI de `main` ae7daef (PR #69)** : compilation, tests, APK et les 7 bancs sont **verts**. Seule la tâche `publication` a échoué : « API rate limit exceeded » de GitHub en remplaçant la Release d'aperçu. Ce n'est pas le code. La construction suivante (afd0816) republie la Release ; rien à corriger.
+- **Mesure** : Basse **331** appels de dessin (inchangé), Moyenne 337, Haute 585. Il n'y avait aucune voiture du trafic entre 25 et 50 m dans la scène : le passage en silhouette à 25 m n'y change rien, mais il reste utile en course.
+- **Bilan de WFS-82** :
+  - Moyenne 607 → 337 : cible atteinte ;
+  - Basse 346 → 331 : **cible de 300 non atteinte** ;
+  - captures complètes, rien ne manque de près.
+- **Pour le PO** : le reste de la Basse vient des décors répétés (bâtiments, arbres, lampadaires, piétons), qui sont dans la zone monde (`src/world/**`, E2), interdite pendant WFS-18. RG-04 (instanciation) demande une API d'instanciation dans le renderer (E4) et son emploi dans le monde (E2). Je propose un ticket dédié quand E2 sera libre.
+
+### 2026-11-04 13:58:46 — Décision PO : WFS-82, cible Basse ≤ 300 assouplie (PO)
+- **Constat** (bilan agent 4) : Moyenne 607 → 337 (cible ≤ 450 atteinte), Basse 346 → 331 (cible ≤ 300 non atteinte, écart de 10 %).
+- **Décision** : WFS-82 reste ✅, critère Basse **assoupli à 331** (mention dans `TACHES.md`). Raisons : règle « du jeu qui marche, pas la perfection » ; 31 appels de dessin de plus ne se voient pas à l'écran ; l'instanciation (RG-04) coûte une API E4 + un chantier E2 (`src/world/**`, où WFS-81 est en cours), soit 1 à 2 jours sans gain visible.
+- **Pas de ticket créé maintenant.** L'instanciation des décors répétés (bâtiments, arbres, lampadaires, piétons) ne sera ouverte que si l'utilisateur signale des saccades en qualité Basse sur son téléphone (ticket E2 avec API E4, alors prioritaire).
+- **CI de `main` ae7daef** : seule la publication de la Release a échoué (« API rate limit exceeded » de GitHub) ; compilation, tests, APK et bancs verts. Pas une anomalie du code, rien à corriger.
+
+### 2026-11-04 13:58:47 — Début WFS-86 : voitures en course aussi belles qu'au garage (Claude, agent 4) — attribué par le PO
+- Ticket : WFS-86 (P1 Urgent), épic E4 (libre : WFS-82 et WFS-84 fusionnés), branche `feature/waforspeed-86`. Règles : `regles-de-gestion/WFS-86.md`. Seul ticket ⏳ Prêt restant ; l'agent 4 connaît la qualité / LOD (WFS-15, WFS-82).
+- Zone autorisée : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*`. Hors zone : réglages de qualité côté menu (`src/ui/ecrans/reglages.*`, WFS-80 en cours) et `src/game/traffic_system.cpp` (accroches ≤ 10 lignes annoncées au Journal seulement). Ne pas toucher à `feuxVoiture` (WFS-84) ni aux lampadaires (WFS-81).
+- Critères : cause notée au Journal (qualité réelle, échelle de rendu, MSAA, ombres/reflets/bloom, LOD du joueur, éclairage) ; voiture du joueur toujours en modèle complet ; course = garage en netteté et reflets en Moyenne/Haute ; Basse nette sans perte d'images/s ; téléphone en Moyenne ou Haute par défaut s'il tient 30 images/s ; capture course vs garage de la même voiture au banc.
+- Attention WFS-82 : le passage en silhouette du trafic (25 m en Basse) ne doit jamais toucher la voiture du joueur.
+- Plan court : comparer les réglages garage / course, corriger l'écart, capture côte à côte au banc, fusion par confiance si > 50 %.
+
+### 2026-11-04 13:58:51 — WFS-85 : caméra de poursuite plus haute, PR #71 en revue (Claude, agent 5)
+- **Fait** (zone E3) : `camera_vue.*` : la poursuite par défaut reprend `updateCamera` du jeu web en vue « loin » (8 m derrière, 2,5 m de haut, regard 14 m devant à 0,9 m, 62°) ; nouvelle vue Proche (ancienne vue basse : 4,6 m, 1,28 m, 58°) ; suivi lissé, champ de vision selon la vitesse, jamais sous la route ; constantes `POURSUITE_LOIN` / `POURSUITE_PROCHE`. Cycle Poursuite → Proche → Capot → Cockpit. `sauvegarde.cpp` : `cam=proche`. `camera_banc.cpp` : capture `camera-proche`. Tests `test_systems` et `test_sauvegarde` à jour.
+- **Accroche annoncée** : `src/ui/ecrans/reglages.cpp` (E8, 5 lignes : 4 vues dans la ligne « Caméra »).
+- **Vérification** : compilation et tests CPU OK ; captures (au moins 3 voitures devant) : CI de la PR #71.
+- **CI de `main` après WFS-84** : voir l'entrée suivante.
+
+
+### 2026-11-04 14:02:41 — WFS-86 voiture nette en course : cause trouvée, fusionné par confiance, PR #72 (Claude, agent 4)
+- **Cause (RG-01)** : la résolution dynamique de WFS-15, active en course seulement, baissait jusqu'à 0,6 sous 40 images/s. Cette valeur se **multipliait** à l'échelle du niveau, appliquée aux pixels physiques : Haute 60 %, Moyenne 45 %, Basse 30 % sur un téléphone lent. Le garage, vu avant la course, est à 100 %. D'où une voiture floue en course mais nette au garage. Le jeu web applique `resScale` à une densité déjà plafonnée (DPR ≤ 1,5 sur téléphone) et ne descend jamais sous environ 0,9 pixel CSS.
+- **Autres pistes vérifiées, hors de cause** : MSAA identique ; voiture du joueur toujours en modèle complet (la silhouette ne concerne que le trafic) ; voiture du joueur jamais masquée par WFS-82 ; matériau et vernis identiques.
+- **Correctif** : `echelleRendu` avec un plancher de 0,6 en Moyenne et Haute, et une Basse fixe à 0,5. `test_qualite` est étendu. Au banc : échelle réelle par niveau au journal, et capture `voiture-course-haute` à comparer à `garage-golf`.
+- **Vérification** : tests et compilation OK. **Reste à confirmer sur le téléphone de l'utilisateur.**
+
+### 2026-11-04 14:15:50 — CI de main après WFS-84 : compilation, APK et bancs verts ; publication en échec (pas le code) (Claude, agent 5)
+- Run 41842506874 (`afd0816`, fusion de WFS-84) : android et les 7 bancs (nuit comprise) **verts** ; seul le job **publication** échoue : `release not found` puis `error checking for existing release: HTTP 403` sur la Release `apercu`. Même échec au run précédent (`ae7daef`, autre ticket) : problème d'accès à l'API GitHub ou de remplacement de la Release, pas une erreur de compilation ni de capture. La Release `apercu` est absente pour le moment (404).
+- Run suivant de `main` (41843628141) en cours : je regarde s'il republie `apercu`. Sinon, le PO ou l'utilisateur devront vérifier les droits du jeton de la CI.
+
+### 2026-11-04 14:17:14 — Fin WFS-85 : PR #71 fusionnée (Claude, agent 5)
+- **CI de la branche verte** (run 41843000546, publication comprise). Captures regardées : `trafic-cam0` montre la route et 3 voitures devant, la voiture du joueur plus petite ; `camera-proche` = ancienne vue basse avec le bouton « PROCHE ». Synchro avec `main`, `test_systems` OK, fusion (`0d3a233`), ajouté à `qa/Check.md`. Je suis la CI de `main`.
+
+
+### 2026-11-04 14:18:54 — Création et début WFS-87 : APK de main toujours publié (PO, attribution à Claude agent 5)
+- **Constat** : aucun ticket ⏳ Prêt sur `main` ; épics actives E2 (WFS-81), E7 (WFS-78), E8 (WFS-80). Le job `publication` de `main` a échoué deux fois de suite (runs 41839138847 et 41842506874 : `release not found` puis HTTP 403 à la création) et, à 2026-11-04 14:18:54, la Release `apercu` **n'existe plus** (API : 404) : l'utilisateur ne peut plus télécharger l'APK de `main`. Cause : le script supprime la Release avant de la recréer avec ≈ 212 fichiers ; un échec de l'API (limite secondaire probable) laisse un trou.
+- **Décision** : ticket **WFS-87 (P1 Urgent, E7)**, règles `regles-de-gestion/WFS-87.md` (jamais de trou, APK d'abord, nouvelles tentatives, script `tools/qa/publier_apercu.sh`). Rien à réutiliser du jeu web.
+- **Exception « un ticket actif par épic »** : E7 a déjà WFS-78 (iOS, P4) ; zones disjointes (WFS-78 : `ios.yml`, `ios/**`, `ios_main.mm` ; WFS-87 : `build.yml` job `publication`, `tools/qa/publier_apercu.sh`), comme les exceptions WFS-13 et WFS-71. Le blocage de la livraison à l'utilisateur prime.
+- **Attribution** : Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), branche `feature/waforspeed-87`.
+- **Critères** : job `publication` de `main` vert après fusion ; `releases/download/apercu/WaForSpeed.apk` répond ; captures à la même adresse ; branche `apercu-waforspeed-87` publiée.
+- **Plan court** : sortir le script dans `tools/qa/publier_apercu.sh`, téléverser dans la Release existante (`--clobber`) puis déplacer le tag (ou tag temporaire), APK d'abord, tentatives 15/30/60/120 s ; essai sur la branche ; fusion par confiance si > 50 %.
+- **Note pour l'utilisateur** (non fait, irréversible) : 74 Releases d'aperçu de branches existent ; les supprimer réduirait la charge, à décider par l'utilisateur.
+
+### 2026-11-04 14:21:14 — WFS-87 : publication de l'aperçu fiable, PR #73 en revue (Claude, agent 5)
+- **Fait** (zone E7) : `tools/qa/publier_apercu.sh` (nouveau) appelé par le job `publication` de `build.yml` : plus de suppression de la Release ; APK téléversé sous un nom provisoire puis substitué (suppression + renommage), tag déplacé ; APK avant les captures ; 4 nouvelles tentatives par appel (15, 30, 60, 120 s) ; une seule lecture de la Release ; captures par lots de 20 ; garde « commit plus récent » conservée ; APK raté = job rouge, captures ratées = avertissement.
+- **Vérification** : `bash -n` ; essai local avec un faux `gh` (création, remplacement avec 403 à la première lecture, Release d'un commit plus récent) : déroulés corrects. Preuve attendue : CI de la branche (`apercu-waforspeed-87` créée), puis relance du job de publication (chemin de remplacement).
+
+### 2026-11-04 16h regarder tache-utilisateur.md
