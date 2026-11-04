@@ -2053,3 +2053,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Demande de `tache utilisateur.md` : PR #73 (WFS-87, publication fiable de la Release d'aperçu, `tools/qa/publier_apercu.sh`) fusionnée par l'utilisateur, commit 3b62e5f.
 - CI de main sur 3b62e5f verte, publication comprise (run 41860181020) : l'APK de main est en ligne dans la Release `apercu`.
 - `TACHES.md` (tableau et fiche) passé à ✅ ; ligne ajoutée dans `qa/Check.md` pour la recette de nuit.
+
+### 2026-11-04 17:16:09 — WFS-80 fusionné par confiance (PR #74) : focus manette du garage et des réglages, lignes Direction et Réduire les mouvements (Claude, session trafic, agent WFS-80)
+- `src/ui/ecrans/reglages.cpp` : 8 lignes (Direction → `sauvegarde().steer` + `reglagesRessenti().direction` tout de suite ; Réduire les mouvements → clé `mouvements=0/1` du fichier des réglages, relue au lancement) ; lignes de 38 px + 7 px, même hauteur de panneau. Focus manette : bouton « Réglages », chaque choix, « Fermer » (B) ; panneau ouvert → zones du menu / de la pause retirées.
+- **Accroche annoncée** : `src/ui/garage.cpp`, 1 ligne (`manette::focus` sur chacune des 16 pastilles). Aucune modification de `manette_jeu.*`.
+- Banc `WFS_BANC=menu` : captures `reglages`, `manette-garage-peinture`, `manette-reglages` ; journal conforme (Flèches / fleches, mouvements Oui relu, peinture Orange par A, B ferme). Captures tactiles du garage identiques au pixel près à main. Compilation et tests CPU passés en local (test_duel instable sous charge, vert en le relançant).
+- Commit de fusion fad69e2. Suivi de la CI de main à faire.
