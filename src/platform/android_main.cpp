@@ -12,9 +12,12 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../game/game.h"
+#include "../game/sauvegarde.h"   // WFS-24
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
+#include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
+#include "manette_jeu.h"   // WFS-22 : manettes
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -55,7 +58,7 @@ static void initGraphics(App& app, android_app* a) {
     const double tVk = nowSeconds();
     app.renderer.init(app.vk);
     ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
-    if (!app.game.init(app.renderer, "golf", "ville", ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }
+    if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }   // WFS-24 : voiture et carte gardées
     ecrans::chargement().fin();
     app.game.allerA(Ecran::Menu);   // WFS-38 : l'application s'ouvre sur le menu après le chargement
     // WFS-74 : écran de chargement de WFS-35 au changement de carte (« Rouler »), étapes réelles, message rouge en cas d'échec
@@ -83,6 +86,8 @@ static void onCmd(android_app* a, int32_t cmd) {
         case APP_CMD_TERM_WINDOW: termGraphics(app); break;
         case APP_CMD_GAINED_FOCUS: app.focused = true; app.last = nowSeconds(); break;
         case APP_CMD_PAUSE:   // WFS-39 RG-04 : arrière-plan ou perte du focus en course → pause (web blur / visibilitychange)
+            sauvegarde().enregistrer();   // WFS-24 RG-06 : sauvegarde au passage en arrière-plan
+            [[fallthrough]];
         case APP_CMD_LOST_FOCUS: if (app.ready && app.game.ecran() == Ecran::Course) app.game.allerA(Ecran::Pause);
             if (cmd == APP_CMD_LOST_FOCUS) app.focused = false;
             break;
@@ -96,6 +101,7 @@ static void onCmd(android_app* a, int32_t cmd) {
 
 static int32_t onInput(android_app* a, AInputEvent* e) {
     App& app = *static_cast<App*>(a->userData);
+    if (app.ready && manette::evenementAndroid(e)) return 1;   // WFS-22 : manette (un toucher rend la main au tactile)
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
     int32_t action = AMotionEvent_getAction(e), kind = action & AMOTION_EVENT_ACTION_MASK;
     size_t idx = (size_t)((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
@@ -124,6 +130,10 @@ void android_main(android_app* a) {
     // WFS-59 : extra d'intent qa_simu=true (émulateur de la QA) → mode GPU logiciel, lu avant l'initialisation de Vulkan
     if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
+    installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
+    // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
+    sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
+    setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
     while (!a->destroyRequested) {
         int events; android_poll_source* src;
@@ -152,7 +162,7 @@ void android_main(android_app* a) {
             if (g_margesNeuves.exchange(false))
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
-            else { app.game.update(dt); app.game.render(t - app.start); }
+            else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); app.game.render(t - app.start); }   // WFS-22 : manette
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
             if (app.fpsT0 == 0) app.fpsT0 = t;
             if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {

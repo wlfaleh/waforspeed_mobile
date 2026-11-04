@@ -19,6 +19,7 @@ double courseScaleDt(double raw);
 // banc d'essai : false = départ lancé, temps illimité, sans ralenti (scènes des autres tickets inchangées) ;
 // la scène de la course (benchCourseScene) remet les règles. Vrai par défaut (jeu).
 void courseBenchRules(bool on);
+bool courseBenchRulesOn();   // WFS-70 : état à remettre après une scène
 // banc d'essai : temps restant forcé (pour voir la fin de partie)
 void courseBenchSetTime(double seconds);
 // scènes du banc d'essai de la course (captures course-decompte-*.png, course-fin.png), appelées par desktop_main.cpp

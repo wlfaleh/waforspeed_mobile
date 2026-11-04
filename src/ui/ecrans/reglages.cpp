@@ -10,6 +10,7 @@
 #include "../../game/course_system.h"
 #include "../../game/camera_vue.h"
 #include "../../game/game.h"
+#include "../../game/sauvegarde.h"   // WFS-24 : réglages dans la sauvegarde commune
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../text.h"
@@ -59,6 +60,11 @@ std::string fichier() {
 #endif
 }
 bool lire() {
+    if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : sauvegarde commune (cam, quality, muted)
+        Reglages& R = reglages(); R.camera = s.camIndex(); R.son = !s.muted; R.musique = s.music;
+        if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
+        return true;
+    }
     const std::string f = fichier();
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "r");
     if (!fp) return false;
@@ -75,6 +81,11 @@ bool lire() {
     return true;
 }
 void ecrire() {
+    if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : écriture atomique sur le thread de travail
+        const Reglages& R = reglages(); s.setCamIndex(R.camera); s.muted = !R.son; s.music = R.musique;
+        if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
+        s.enregistrer(); return;
+    }
     const std::string f = fichier();
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "w");
     if (!fp) return;

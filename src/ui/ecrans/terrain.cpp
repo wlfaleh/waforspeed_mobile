@@ -9,10 +9,12 @@
 #include "../../core/system.h"
 #include "../../game/course_system.h"
 #include "../../game/game.h"
+#include "../../game/sauvegarde.h"   // WFS-24 : moment gardé
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "reglages.h"
+#include "../../platform/manette.h"   // WFS-22
 
 namespace wfs {
 namespace ecrans {
@@ -171,6 +173,7 @@ public:
         if (nouveau != Ecran::Terrain) { g_carte = g_prec = g_suiv = g_jour = g_nuit = g_retour = g_rouler = {}; return; }
         // carte en cours présélectionnée (pickMap garde MAP)
         for (int i = 0; i < 4; i++) if (g.map && std::string(g.map->id) == CARTES[i].id) g_index = i;
+        if (sauvegarde().actif()) g_nuitChoisie = sauvegarde().tod != "jour";   // WFS-24 : moment de la dernière course
     }
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -271,6 +274,7 @@ public:
         const float rw = ui::width(tp, rt, 0.12f) + 56 * k + 26 * k, bw = ui::width(tp, bt, 0.12f) + 52 * k;
         const float rx = zr - rw, bx = rx - 10 * k - bw;
         g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
+        for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
         biseau(r, bx, by, bw, bh, 14 * k, hex(SURFACE2));   // .btn--ghost
         ui::text(r, bx + bw / 2, by + (bh - tp) / 2, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
         biseau(r, rx, by, rw, bh, 14 * k, hex(ACCENT));     // .btn--go avec la flèche

@@ -43,6 +43,7 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/world/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/audio/*.cpp)
+list(APPEND ENGINE_SOURCES src/platform/manette.cpp src/platform/manette_jeu.cpp)   # WFS-22 : manettes (Android, banc)
 
 if(MSVC)
   set(WARN /W3)
@@ -53,12 +54,14 @@ endif()
 if(ANDROID)
   add_library(native_app_glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
   target_include_directories(native_app_glue PUBLIC ${ANDROID_NDK}/sources/android/native_app_glue)
-  add_library(waforspeed SHARED ${ENGINE_SOURCES} src/platform/android_main.cpp)
+  add_library(waforspeed SHARED ${ENGINE_SOURCES} src/platform/android_main.cpp src/platform/manette_android.cpp)
   add_dependencies(waforspeed shaders)
   target_include_directories(waforspeed PRIVATE ${SHADER_OUT})
   target_compile_options(waforspeed PRIVATE ${WARN})
   set_target_properties(waforspeed PROPERTIES LINK_FLAGS "-u ANativeActivity_onCreate")
   target_link_libraries(waforspeed native_app_glue android log vulkan aaudio)   # aaudio : son (WFS-10)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+  include(ios/ios.cmake)   # WFS-22 : application iOS (MoltenVK), voir ios/ios.cmake et .github/workflows/ios.yml
 else()
   find_package(Vulkan REQUIRED)
   find_package(Threads REQUIRED)
@@ -81,5 +84,7 @@ else()
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
+  add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
+  add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
 endif()

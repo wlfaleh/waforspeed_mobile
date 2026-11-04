@@ -8,9 +8,11 @@
 #include "../core/system.h"
 #include "../game/cars.h"
 #include "../game/game.h"
+#include "../game/sauvegarde.h"   // WFS-24 : voiture et peintures gardées
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "text.h"
+#include "../platform/manette.h"   // WFS-22
 
 namespace wfs {
 namespace ecrans {
@@ -171,6 +173,7 @@ public:
             matNeon_[i] = r.makeMaterial(me, nullptr, nullptr, nullptr); matNeon_[i].flags |= MAT_DOUBLE;
         }
         for (int i = 0; i < CAR_COUNT; i++) peinture_[i] = peintureParId(ficheDe(CARS[i].id).paint);
+        for (int i = 0; i < CAR_COUNT; i++) if (const PeintureDef* p = sauvegarde().peintureChoisie(CARS[i].id)) peinture_[i] = peintureParId(p->id);   // WFS-24
     }
 
     void shutdown(Renderer& r) override {
@@ -263,6 +266,7 @@ public:
                 const CarDef& c = CARS[index_];
                 WFS_LOG("garage : « Choisir » %s %s, peinture %s", c.brand, c.model, PAINTS[peinture_[index_]].nom);
                 if (g.choisirVoiture) g.choisirVoiture(c.id, lin(PAINTS[peinture_[index_]].hex));
+                if (Sauvegarde& s = sauvegarde(); s.actif()) { s.car = c.id; s.paint[c.id] = PAINTS[peinture_[index_]].id; s.enregistrer(); }   // WFS-24
                 choisi_ = true; g.allerA(Ecran::Menu);
                 return true;
             }
@@ -370,6 +374,7 @@ public:
             biseau(r, bx, gy, bw, hg, 14 * k, hex(SURFACE2, op));
             ui::text(r, bx + bw / 2, gy + 13 * k, 16 * k, ui::majuscules("Retour"), hex(TEXTE, op), ui::CENTRE, 0.1f, false);
             g_z.retour = {bx, gy, bw, hg};
+            for (const Zone* z : {&g_z.choisir, &g_z.retour, &g_z.prev, &g_z.next}) manette::focus(*z, z == &g_z.retour);   // WFS-22
         }
         // .statlist : 4 barres sur 10 (Vitesse, Accélération, Maniabilité, Puissance)
         {

@@ -38,7 +38,7 @@ void Particules::emit(Reserve& s, const vec3& at, float floor, int count, float 
 // emitSparks(at, vel, count) : dispersion 9, durée 0,55 s
 void Particules::etincelles(const vec3& at, float floor, const vec3& vel, int count) { emit(sparks_, at, floor, count, 9.f, vel, 0, 0.55f); }
 // emitSmoke(at, count) : dispersion 0,8, montée de 1,2 m/s, durée 2,2 s ; sol : at.y − 0,5 (sans rebond)
-void Particules::fumee(const vec3& at, int count) { emit(smoke_, at, at.y - 0.5f, count, 0.8f, {0, 1.2f, 0}, 1, 2.2f); }
+void Particules::fumee(const vec3& at, int count, float sol) { emit(smoke_, at, sol > -1e8f ? sol : at.y - 0.5f, count, 0.8f, {0, 1.2f, 0}, 1, 2.2f); }
 
 // updateParticles : gravité (14 vers le bas pour les étincelles, 0,4 vers le haut pour la fumée), frottement de l'air,
 // rebond des étincelles sur le sol (vitesse verticale × −0,35)
