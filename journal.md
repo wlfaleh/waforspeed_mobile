@@ -1653,3 +1653,22 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Tailles (RG-16)** : p208 6,70 Mo · abarth 4,98 · tcross 6,01 · compass 8,42 · s3 6,31 · x5 7,24 · giulia 6,54 · a45 6,43 · model3 6,45 · corsa 4,83 · gt86 5,36 · elantra 5,98 · v60 2,54 · rrsport 6,01 · mustang 5,85 · sf90 7,40 → 92 Mo ; `assets/cars` 22 → 114 Mo ; APK de `main` avant : 31,4 Mo (après : relevé à la CI).
 - **Triangles** : compass 154 k, x5 138 k, model3 135 k, p208 132 k dépassent la cible de 120 k du joueur (versions `-lod` possibles plus tard).
 - **À regarder** : Giulia et Elantra ont un motif de camouflage venant de la texture de peinture de leur modèle.
+
+### 2026-11-04 00:52:19 — WFS-60 roues animées fusionné par confiance, PR #48 (Claude, agent 4)
+- **Fait** :
+  - `src/game/roues.*` porte `splitWheels`, `looksLikeWheel`, `rigWheels` et `animWheels` (`js/cars/models.js`) et les angles de `scene.js`.
+  - Le chargeur redécoupe chaque matériau en une partie fixe et une partie par roue. Les 4 voitures ont 4 roues chacune, **sans reconversion des `.wfm`** (la Golf et la 911 n'ont aucun matériau marqué « roue »).
+  - Les jantes de la 911, fusionnées avec le chrome, sont récupérées dans le cylindre de chaque roue ; les étriers sont exclus (règle des 10/12 du tour).
+  - Rendu : `draw(model, world, paint, RouesPose*)`. Sans pose, rien ne change (garage, duel).
+- **Accroches annoncées** :
+  - `src/render/renderer.h` et `renderer.cpp` : API et matrice par roue, environ 8 lignes ;
+  - `src/game/game.cpp` : 2 lignes ;
+  - `src/game/traffic_system.cpp` : 2 lignes ;
+  - `src/platform/desktop_main.cpp` : 2 lignes, groupe `partie2` ;
+  - `CMakeLists.txt` et `build.yml` : `test_roues`.
+  - Nouveau fichier `src/game/roues_banc.*` pour le banc. `player.*` n'a pas été touché (angle recalculé depuis `steer` et `speed`).
+- **Vérification** :
+  - `test_roues` OK sur les 4 `.wfm` : rayons 0,323 à 0,344 m ; entre 10 931 et 25 778 triangles tournent selon la voiture ; symétrie, roulage, braquage, Ackermann et pose nulle = identité.
+  - Compilation complète et `test_systems` OK.
+  - Fusion par confiance (environ 60 %) : je suis la CI de `main` et je corrige tout de suite si une capture est cassée.
+- **Limite** : dans le modèle source de la 911, les roues avant sont braquées (7,6 cm d'écart en z entre gauche et droite).
