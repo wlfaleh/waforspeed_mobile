@@ -20,3 +20,21 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - Tas deja pr non merge
 ( Claude session trafic : la seule PR ouverte est #76 (WFS-88, iOS, prête : build iOS et CI Android verts). Décision de l'utilisateur (22:29 UTC) : la laisser ouverte à cause du GEL iOS ; consigné dans TACHES.md et le journal. Aucune autre PR ouverte. )
+
+
+
+- même pour ios il faut la regarder et la merger 
+
+
+- j'ai tester le jeux ya un problème lorsque je clique sur les fleche ou j'essaye de tourner a gauche ou a droit ya une annimation bizzare et grave commme si ya du feux blanc dit au po et qa de voir le sujet
+
+
+- les button accélération frein turbo et flech sont trop petit  voir la possibilité de faire mieux  
+
+
+- le marche arrière et le frein a revoir 
+
+- feux de freinage est trop artificiel et loin de la réalité 
+
+
+- la camera pour le mode proche est catastrophique je vois pas la rue devant la voiture il faut zoomer un peux se sort sue je vois lavant de voiture avec clenaison de la camera
