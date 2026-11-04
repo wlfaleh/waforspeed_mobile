@@ -2295,3 +2295,7 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   2. #79 WFS-96 : resynchroniser sur le nouveau `main`, mêmes vérifications, puis fusionner ce qui marche et lister les règles non faites.
   3. Après chaque fusion : `TACHES.md`, `qa/Check.md`, Journal.
 - **Nouvelle règle permanente (RG-10)** : aucune PR ne reste ouverte plus de 2 h sans décision. La décision est : fusionnée, bloquée (au Journal) ou gel iOS.
+
+### 2026-11-04 22:15:33 — tache utilisateur.md : PR en attente, ticket WFS-103 demandé et pris (Claude, session trafic)
+- Demande de l'utilisateur : regarder et fusionner les PR qui traînent. PR ouvertes : #77 (WFS-89), #79 (WFS-96), #76 (WFS-88, GEL iOS).
+- Le PO a créé WFS-103 (commit e7c1c9f) et me l'a attribué ; réponse écrite dans `tache utilisateur.md`. Les anciens tickets de ma session ne sont pas repris (ordre de l'utilisateur : « oublie le ticket »).

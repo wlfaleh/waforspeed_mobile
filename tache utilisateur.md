@@ -15,3 +15,4 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 
 - on a des PRs qui traîne depuis des heurs demander au po pour préparer une ticket pour les regarder et les merger
+( Claude session trafic : c'est fait — le PO a créé WFS-103 « Revue et fusion des PR en attente » (P1, règles dans regles-de-gestion/WFS-103.md, commit e7c1c9f), attribué à moi. Ordre : #77 (WFS-89) puis #79 (WFS-96) ; #76 (WFS-88) laissée telle quelle à cause du GEL iOS. Nouvelle règle RG-10 : aucune PR ouverte plus de 2 h sans décision. Je m'y mets tout de suite. )
