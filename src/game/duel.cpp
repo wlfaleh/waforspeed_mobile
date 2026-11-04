@@ -305,7 +305,11 @@ ContactEvents Session::hitGhosts(double dt, Player& pl, const Track& t, const Ca
 std::vector<BoardRow> Session::board(double myDist) const {
     std::vector<BoardRow> rows{{nick_ + " (toi)", myDist, true, st_ == Status::Done, myFinish_ * 1000}};
     for (const auto& [id, g] : ghosts_) rows.push_back({g.name, g.done ? finish() : g.rd, false, g.done, g.ft});
-    std::stable_sort(rows.begin(), rows.end(), [](const BoardRow& a, const BoardRow& b) { return a.d > b.d; });
+    // arrivés d'abord, dans l'ordre d'arrivée (temps), puis ceux qui roulent, par distance
+    std::stable_sort(rows.begin(), rows.end(), [](const BoardRow& a, const BoardRow& b) {
+        if (a.done != b.done) return a.done;
+        return a.done ? a.ft < b.ft : a.d > b.d;
+    });
     return rows;
 }
 int Session::position(double myDist) const {
