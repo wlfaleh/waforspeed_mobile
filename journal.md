@@ -2102,3 +2102,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Plan court** : (1) lever `maxH` et le réalignement aux grands angles, marche arrière sans arrêt complet ; (2) `dist` / checkpoints uniquement en avançant dans le bon sens ; (3) caméra de poursuite sur le cap ; (4) test + capture `conduite-demi-tour`. Fusion par confiance si > 50 %.
 - **Branche** : `feature/waforspeed-90`.
 - **Ticket WFS-91 créé (E7, P2 Haute, ⏳ Prêt)** : [STABLE] endurance (≥ 12 cycles automatiques sur les 4 cartes jour/nuit, retours d'arrière-plan simulés, RSS ≤ +10 %, couches de validation Vulkan à 0 erreur par `VK_INSTANCE_LAYERS`, job CI `endurance`). Règles : `regles-de-gestion/WFS-91.md`. Rien à porter du jeu web. Garde une épic libre (E7) attribuable au prochain agent.
+
+### 2026-11-04 17:55:16 — PO : GEL iOS (po-scrum-master)
+- **Décision de l'utilisateur** : aucun travail ni CI iOS tant qu'Android n'est pas validé. Règle en tête de `CLAUDE.md` et dans `po-scrum-master.md` ; WFS-88 (iOS, en cours) passé en ⏸ Suspendu ; agents 3, 4 et 5 prévenus par message. Rien supprimé (branches comprises). WFS-22, 78 et 79 déjà fusionnés : inchangés.
