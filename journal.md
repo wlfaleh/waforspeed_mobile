@@ -2284,3 +2284,14 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi et chaque CI.
   - Si la confiance dépasse 50 %, fusionner directement. Sinon, attendre la CI verte et regarder les captures.
   - Au moment de la fusion, ajouter une ligne dans `qa/Check.md`.
+
+### 2026-11-04 22:14:49 — Début WFS-103 — Revue et fusion des PR en attente, attribution à Claude (session trafic) (PO / Scrum Master)
+- **Ticket** : WFS-103, épic E7 (transverse, n'occupe pas l'épic : WFS-91 reste attribuable), P1 Urgent. Demande de l'utilisateur (`tache utilisateur.md`) : PR ouvertes depuis des heures.
+- **Exception assumée** : Claude (session trafic) a déjà WFS-96 🔧 (développement arrêté à la limite d'usage). WFS-103 couvre la fusion de sa PR #79 : WFS-96 n'est pas réattribué.
+- **Zone autorisée** : fichiers des PR revues (résolution de conflits seulement), `TACHES.md`, `qa/Check.md`, `journal.md`, `anno.md`. Aucune nouvelle fonctionnalité. #76 (WFS-88, iOS) : gel iOS, on n'y touche pas.
+- **Règles** : `regles-de-gestion/WFS-103.md` (RG-01 à RG-11).
+- **Plan court** :
+  1. #77 WFS-89 : synchroniser avec `main`, compiler, lancer les tests CPU, regarder CI et captures, puis fusionner la partie faite (décision B).
+  2. #79 WFS-96 : resynchroniser sur le nouveau `main`, mêmes vérifications, puis fusionner ce qui marche et lister les règles non faites.
+  3. Après chaque fusion : `TACHES.md`, `qa/Check.md`, Journal.
+- **Nouvelle règle permanente (RG-10)** : aucune PR ne reste ouverte plus de 2 h sans décision. La décision est : fusionnée, bloquée (au Journal) ou gel iOS.

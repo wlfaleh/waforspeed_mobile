@@ -190,6 +190,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-100 | Correction : carrosseries sans reflets flottants ni taches, bloom sans images fantômes (ANO-21, ANO-28, ANO-27) | E4 (exception : 2e ticket E4, fichiers séparés de WFS-97) | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-100` |  |  |
 | P1 Urgent | WFS-101 | Correction : étincelles et lignes de nitro visibles, trafic du banc de près, écran de fin aéré (ANO-25, ANO-26, ANO-36) | E4 (exception : 3e ticket E4, fichiers séparés ; + E3 `traffic_system.cpp`, `course_system.*`) | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-101` |  |  |
 | P1 Urgent | WFS-102 | Correction : interface à l'échelle du téléphone (dp, cibles 44 dp), biseaux d'un seul tenant, écrans lisibles (ANO-19, ANO-18, ANO-20, ANO-32, ANO-35, ANO-38, ANO-39, ANO-41) | E8 (+ E5, accroches E0 / E7) | ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 : mêmes fichiers) |  | WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 | `feature/waforspeed-102` |  |  |
+| P1 Urgent | WFS-103 | Revue et fusion des PR en attente (#77 WFS-89, #79 WFS-96 ; #76 iOS gelée) | E7 (transverse : n'occupe pas l'épic, WFS-91 reste attribuable) | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-103` (travail sur les branches des PR) | #77, #79 |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -569,6 +570,11 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-102 — Correction : interface à l'échelle du téléphone, biseaux, écrans lisibles** · E8 (+ E5, accroches E0 / E7) · P1 Urgent · ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101) — branche `feature/waforspeed-102` (règles : `regles-de-gestion/WFS-102.md`). Zone : `src/ui/ecrans/**`, nouveau `src/ui/echelle.*`, une ligne `ui::echelle` par fichier d'interface, accroches `game.h` / `android_main.cpp`
 - [ ] `*-2400` : boutons ≥ 44 dp, libellés ≥ 12 dp ; 1280x720 inchangé ; aucun bouton rayé sur aucun écran
 - [ ] `terrain-*` : description sur fond sombre, sélection cyan ; `menu-0` aide juste ; `salon-*` carte centrale ; `chargement-erreur` « Réessayer »
+
+**WFS-103 — Revue et fusion des PR en attente** · E7 (transverse) · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-04 (règles : `regles-de-gestion/WFS-103.md`). Zone : fichiers des PR revues (résolution de conflits seulement), `TACHES.md`, `qa/Check.md`, `journal.md`, `anno.md` ; aucune nouvelle fonctionnalité, rien d'iOS (#76 gelée). Ordre : #77 (WFS-89) puis #79 (WFS-96, non réattribué)
+- [ ] #77 et #79 fusionnées, ou blocage précis écrit au Journal (PR laissée ouverte)
+- [ ] CI de `main` verte après la dernière fusion ; `TACHES.md`, `qa/Check.md`, Journal à jour pour WFS-89 et WFS-96
+- [ ] **Règle permanente** : aucune PR ouverte plus de 2 h sans décision (fusionnée, bloquée au Journal, ou gel iOS)
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
