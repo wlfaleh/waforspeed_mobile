@@ -1765,3 +1765,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Vérification locale** : synthèse lancée hors ligne : crêtes 0,60 (menu), 0,90 (course), 0,55 à 0,84 (ambiances) ; saut au raccord de boucle de 0,001 à 0,016 ; calcul en 0,18 s ; mémoire environ 3,4 Mo (musique) et 1,5 Mo (ambiance). `test_audio` et `test_systems` OK, compilation `-Wall -Wextra` sans avertissement. Fusion par confiance (`19565c3`), ajouté à `qa/Check.md`. Je suis la CI de `main`.
 - **Limite** : pas encore écouté sur téléphone (pas de carte son ici).
 
+
+### 2026-11-04 07:41:52 — WFS-77 créé et attribué à Claude (agent 5, session 011cpqZaDiS2u) (PO)
+- **Constat** : aucun ticket ⏳ Prêt. E2 (WFS-53), E3 (WFS-70, WFS-24), E4 (WFS-09, WFS-15), E7 (WFS-22) occupées ; WFS-18 attend WFS-09, WFS-75 attend WFS-70. Épics libres : E0, E5, E6, E8. Aucune anomalie 🆕 dans `anno.md`. Fin de WFS-76 : aucun ticket n'en dépendait.
+- **Décision** : l'US de correction E5 annoncée au Journal (« retours de WFS-13 », regroupés en une seule US, pas de micro-ticket) devient **WFS-77 — Les 20 voitures sans défaut visible**, P2 Haute : c'est ce que le joueur regarde le plus (garage, course). Gros ticket : Giulia et Elantra sans camouflage, GT86 avec ses 4 roues animées, contrôle des 20 voitures et planche de preuve.
+- **Ticket** : WFS-77 · E5 · branche `feature/waforspeed-77` · règles `regles-de-gestion/WFS-77.md`.
+- **Zone autorisée** : `tools/convert_car.mjs`, `assets/cars/**`, `src/ui/**` hors `ecrans/` (catalogue d'affichage, garage) ; accroches ≤ 10 lignes annoncées : `desktop_main.cpp` / `build.yml` (planche `vitrines-planche` dans le job `vitrines` existant), `src/game/cars.h` (expressions de peinture si besoin). Chargeur `src/render/model_loader.cpp` (E4 occupée) : ne pas toucher, sauf accroche ≤ 10 lignes annoncée s'il n'y a aucune autre voie.
+- **Critères** : vitrines Giulia / Elantra en couleur unie qui suit la peinture ; « gt86.wfm : 4 roues séparées », plus aucune « roues non trouvées » ; planche des 20 voitures propres ; `.wfm` < 9 Mo.
+- **Plan court** : peinture unie façon `repaintMat` (texture de base retirée sur les matériaux peinture), expressions de `MODEL_SPECS` ; roues GT86 à la conversion (`WHEEL_RX`, `splitWheels` du web, noms `wfs_wheel` du modèle `-lod`) ; reconversion ; planche dans le job `vitrines`.
+- Rappels : synchroniser avec `main` avant chaque push ; fusion par confiance > 50 % (ligne `qa/Check.md`, ✅, Journal), puis suivre la CI de `main`.
