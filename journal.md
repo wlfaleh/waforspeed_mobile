@@ -2638,3 +2638,37 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - l'APK est en ligne depuis 23:15:14, sous le titre « construction 559 », soit ≈ 23 min après la fusion de 22:52:16, ce qui montre encore le délai que corrige WFS-106 ;
   - les captures étaient en cours d'envoi.
 - **Règle provisoire, jusqu'à la fusion de WFS-106** : un job `publication` de `main` rouge sur 403 se relance une heure après le premier 403 (`gh run rerun <run> --failed`). `TACHES.md` est à jour : RG-01 à RG-11, critère « quota ».
+
+### 2026-11-04 23:18:05 — Début WFS-93 Ville : les 6 quartiers du jeu web + finitions des cartes (PO / Scrum Master, pour Copilot session 0e5c192d)
+- **Demande** : Copilot (session 0e5c192d) a fini WFS-98 (PR #80) et WFS-99 (PR #81, fusion `c1f5bbb`). Il demande le ticket suivant. La CI de `main` de WFS-99 (run 41926218379) est **verte**, publication comprise : terminée à 23:10:19 après 16,5 min, elle n'était donc pas bloquée pour de bon. L'APK de `df708ac` (WFS-104) est en ligne depuis 23:15:14.
+- **Ticket** : WFS-93 (P2 Haute), épic **E2**, attribué à **Copilot (session 0e5c192d)**, branche `feature/waforspeed-93` (aucune branche distante, vérifié par `git ls-remote`). Règles : `regles-de-gestion/WFS-93.md` (RG-01 à RG-08, déjà écrites).
+- **Choix** parmi les tickets ⏳ Prêt de `main` (9111c53) : WFS-91, WFS-93 et WFS-95 en P2, WFS-97 en P3. Aucun P1 n'est prêt : WFS-107 est réservé à Copilot (session dc0cdd3f) après WFS-101 (entrée de 23:13:25) ; WFS-102 et WFS-109 attendent d'autres tickets.
+  - WFS-91 (E7) : l'épic est occupée par WFS-106 (Copilot 6be876ef), avec les mêmes fichiers (`build.yml`, `desktop_main.cpp`). Mon idée de fondre WFS-106 dans WFS-91 (WFS-87 avait déjà fiabilisé la publication) est abandonnée : WFS-106 a été élargi et attribué à 23:10:18.
+  - **WFS-93 (E2)** : E2 n'a aucun ticket actif, le ticket n'a aucune dépendance, et aucun ticket actif ne touche `src/world/**`. C'est le plus petit numéro P2 attribuable : il est attribué. WFS-95 (P2, E5) reste ⏳ Prêt pour le prochain agent.
+  - WFS-97 (P3, E4) : l'épic est occupée (WFS-100, WFS-101).
+- **Zone autorisée** : `src/world/**` (nouveau `ville_quartiers.cpp` conseillé, `ville.cpp`, `circuit.cpp`, `campagne.cpp`, `cartes_banc.cpp`).
+- **Interdit** (liste de la fiche mise à jour d'après les tickets en cours) :
+  - `src/render/**`, `shaders/**` (WFS-100, WFS-101) ;
+  - `src/platform/**`, `.github/**` (WFS-106) : ne pas toucher `desktop_main.cpp`, ajouter les captures dans `benchCartes` ;
+  - `src/game/**` (WFS-105, WFS-108) ;
+  - `src/ui/**`, le duel, iOS.
+- **Critères** :
+  - captures `carte-ville-residentiel`, `-parc`, `-port` ; les `course-*` de la ville ne changent pas ;
+  - texte d'`AD_TEXTS` lisible sur `carte-circuit-jour` et `-nuit` ;
+  - `carte-campagne-vignes` sans marches ;
+  - ≤ 300 appels de dessin, ≥ 30 im/s en qualité Basse ; tests CPU verts.
+- **Plan court** :
+  1. porter `city.residentiel`, `city.parc` et `city.port` de `decor.js` (mêmes tirages `D()`), aiguillés par `zoneId()` ;
+  2. construire les objets `DECOR` (abribus, grille, banc, fontaine, entrepôt, conteneurs, grillage, grue) avec les primitives de `decor_carte.*`, et ajouter les lampadaires à `lampadaires()` ;
+  3. écrire le texte des panneaux du circuit avec `AtlasTextes` ;
+  4. poser les vignes sur `groundY` ;
+  5. ajouter les captures dans `benchCartes` ; fusion par confiance si > 50 %.
+- **Mises à jour du PO** :
+  - **WFS-102** : WFS-96, WFS-89, WFS-98 et WFS-99 marqués ✅ dans les dépendances. **WFS-105** est ajouté, car `camera_vue.*` est dans la zone de WFS-102 ; WFS-108 avait déjà été ajouté à 23:13:25. La fiche donne les noms des fonctions de densité de WFS-108 : `densiteCommandes()` et `uniteCommandes()`, dans `commandes_tactiles.h`.
+  - **WFS-107** : une note de taille est ajoutée à la fin de la fiche, en complément de RG-05 ; les règles de 23:13:25 ne changent pas.
+    - Le `PointsMaterial` du jeu web (taille 2,4, `sizeAttenuation`) équivaut à l'écran à un carré de 2,4 × tan(fov/2), soit ≈ 1,3 m en vue Proche (FOV 58°).
+    - Le carré de 2,4 m du natif est donc ≈ 1,8 fois plus large.
+    - À appliquer si la fumée voile encore l'écran en vue Proche après RG-04 et RG-05.
+- **Coordination** :
+  - WFS-106 redécoupe le banc. Les nouvelles captures de WFS-93 partent avec `benchCartes`, quel que soit son job. En cas de conflit, garder les deux.
+  - WFS-94 (Corniche, E2) attend la fin de WFS-93.
