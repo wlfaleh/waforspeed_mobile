@@ -195,7 +195,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-105 | [PRIORITAIRE] Caméra de poursuite : angle d'environ 40° (voir les voitures devant) + vue Proche qui montre la route (RG-06) | E3 | 🔧 En cours | Copilot (session 1ef8d4d6), 2026-11-04 | WFS-85 ✅ | `feature/waforspeed-105` |  |  |
 | P1 Urgent | WFS-106 | [STABLE] CI : publier l'APK de main (Release apercu) à chaque fusion | E7 | ⏳ Prêt |  | — | `feature/waforspeed-106` |  |  |
 | P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 | ⏳ Prêt |  | — | `feature/waforspeed-107` |  |  |
-| P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 (exception : 2e ticket E3, fichiers séparés de WFS-105, demande de l'utilisateur) | 🔧 En cours | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-98 ✅ | `feature/waforspeed-108` |  |  |
+| P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 (exception : 2e ticket E3, fichiers séparés de WFS-105, demande de l'utilisateur) | 🔍 PR #83 ouverte, CI en cours (fusion après CI verte : code Android non compilable en local) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-98 ✅ | `feature/waforspeed-108` | #83 |  |
 | P1 Urgent | WFS-109 | [URGENT] Feux de freinage réalistes (2e passage) | E4 | ⏳ En attente (après WFS-107, même épic) |  | WFS-84 ✅ | `feature/waforspeed-109` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
