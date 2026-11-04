@@ -2491,3 +2491,39 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Fait** : `qualite_auto.h` (Moyenne et Haute à 100 % ; plancher dynamique 100 % en Haute, 90 % en Moyenne ; Basse 50 % fixe ; téléphone lent : bloom coupé à 0,8 puis ombres à 0,6 au lieu de la netteté), `qualite_systeme.cpp` (application + journal échelle / MSAA / bloom / ombres), `test_qualite`, banc `voiture-course-moyenne` / `-haute`.
 - **Accroches annoncées** : `src/ui/ecrans/reglages.cpp` (1 ligne : échelle des niveaux par `qualite::echelleRendu`), `desktop_main.cpp` (`WFS_BANC=qualite`, essai local). Aucun shader, bloom, `model_loader` ou `vk` touché (WFS-100).
 - **Preuve (RG-06)** : banc local : course Moyenne et Haute à 100 %, MSAA ×4, comme le garage ; téléphone lent simulé : Haute 100 %, Moyenne 90 %, Basse 50 %. 16 tests CPU OK. Fusion `df708ac`. Je suis la CI de `main`.
+
+### 2026-11-04 22:53:20 — Début WFS-105 Caméras : poursuite ≈ 40° et vue Proche qui montre la route (PO / Scrum Master)
+- **Ticket** : WFS-105 (P1 Urgent, [PRIORITAIRE], retour de l'utilisateur au téléphone), épic **E3**, attribué à **Copilot (session 1ef8d4d6)**, branche `feature/waforspeed-105` (créée et poussée par le développeur). Règles : `regles-de-gestion/WFS-105.md` (RG-01 à RG-06).
+- **Choix** : P1 Prêt, plus petit numéro attribuable, sans nouvelle exception d'épic. WFS-104 vient d'être fusionné par confiance (agent 3, PR #82). E3 n'a aucun ticket actif. WFS-101 (E4) touche deux fichiers E3 (`traffic_system.cpp`, `course_system.*`), hors de cette zone. WFS-108 (E3) passe juste après WFS-105, qui est court. WFS-107 (E4) attend qu'un ticket E4 se libère (WFS-100 et WFS-101 sont actifs).
+- **Zone autorisée** :
+  - `src/game/camera_vue.*` : `POURSUITE_LOIN`, `POURSUITE_PROCHE`, `fovVue`, suivi ;
+  - `src/game/camera_banc.*` : captures `camera-poursuite`, `camera-proche`, et une capture en virage si utile ;
+  - les assertions caméra de `tests/test_systems.cpp` (l. ≈ 36-52 : valeurs de `POURSUITE_LOIN` et `POURSUITE_PROCHE`).
+- **Accroches** : aucune prévue. Si l'une est indispensable (`src/game/sauvegarde.cpp`, `game.cpp`), 10 lignes au plus, annoncées ici.
+- **Interdit** :
+  - `src/render/**` (WFS-100, WFS-101) et `shaders/**` ;
+  - `src/game/traffic_system.cpp` et `course_system.*` (WFS-101) : la capture `trafic-cam0` y est produite, on la regarde seulement ;
+  - `commandes_tactiles.*`, `direction.*`, `player.*` (WFS-108) ;
+  - `src/game/game.*`, `src/ui/**`, `src/platform/**`, `.github/**` ;
+  - iOS (gel iOS).
+- **Critères** :
+  - poursuite (vue par défaut) : élévation de 30 à 40° (≈ 7 m derrière, ≈ 5,9 m de haut), point visé 14 à 20 m devant à 0,9 m, champ ≈ 62° ;
+  - `trafic-cam0` et `course-*` : route et au moins 4 voitures devant visibles ;
+  - `camera-proche` : avant de la voiture et rue devant (≥ 15 m) visibles, caméra inclinée vers le bas d'environ 20 à 25° (ancienne valeur : 4,6 m, 1,28 m, 58°) ;
+  - Capot et Cockpit inchangés. On garde le suivi lissé, le champ selon la vitesse, « jamais sous la route » et le suivi du demi-tour ;
+  - valeurs retenues notées au Journal avec les captures ; tests CPU verts ;
+  - l'utilisateur valide sur son téléphone.
+- **À réutiliser** : `js/world/scene.js` du jeu web. On garde la logique de `updateCamera` (l. 131-165) :
+  - distance dynamique `C.dist + p × 0,6 + clamp(lonAcc × 0,05, −0,4, 0,6)` ;
+  - retard de cap × 3,4 ;
+  - sol + 0,6 m ;
+  - point visé : 60 % voiture + avant, 40 % point de piste à `ahead × 1,6`.
+
+  Seules les valeurs de `CAM_MODES` (l. 91-95) changent, volontairement : 40° et 20-25° viennent de la demande de l'utilisateur. Le reste est déjà porté (WFS-66, WFS-85).
+- **Plan court** :
+  1. changer les constantes `POURSUITE_LOIN` et `POURSUITE_PROCHE` et le champ de vision ;
+  2. regarder les captures `camera-*` et `trafic-cam0` sur le banc PC ;
+  3. ajuster l'angle (30-40° et 20-25°) ;
+  4. mettre à jour les assertions de `test_systems.cpp` ;
+  5. noter les valeurs au Journal.
+- **Fusion** : fusion par confiance si la confiance dépasse 50 % (ligne dans `qa/Check.md`, puis suivi de la CI de `main`). Sinon, attendre la CI verte et les captures. Se synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi.

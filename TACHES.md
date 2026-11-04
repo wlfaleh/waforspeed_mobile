@@ -192,7 +192,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-102 | Correction : interface à l'échelle du téléphone (dp, cibles 44 dp), biseaux d'un seul tenant, écrans lisibles (ANO-19, ANO-18, ANO-20, ANO-32, ANO-35, ANO-38, ANO-39, ANO-41, ANO-42, ANO-43, ANO-44, ANO-45) | E8 (+ E5, accroches E0 / E7) | ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 : mêmes fichiers) |  | WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 | `feature/waforspeed-102` |  |  |
 | P1 Urgent | WFS-103 | Revue et fusion des PR en attente (#77 WFS-89, #79 WFS-96 ; #76 iOS gelée) | E7 (transverse : n'occupe pas l'épic, WFS-91 reste attribuable) | 🔍 #77 et #79 fusionnées, CI de main à confirmer ; #76 gelée (iOS) | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-103` (travail sur les branches des PR) | #77, #79 |  |
 | P1 Urgent | WFS-104 | [PRIORITÉ ABSOLUE] Voiture en course : qualité identique au garage (2e passage, résolution 100 %, jamais sous le garage) | E4 (exception : 3e ticket E4, fichiers séparés de WFS-100 / WFS-101 : `qualite_*`, `masquage.*`) | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 3, session 011cpqZd), 2026-11-04 | WFS-86 ✅ | `feature/waforspeed-104` |  |  |
-| P1 Urgent | WFS-105 | [PRIORITAIRE] Caméra de poursuite : angle d'environ 40° (voir les voitures devant) | E3 | ⏳ Prêt |  | WFS-85 ✅ | `feature/waforspeed-105` |  |  |
+| P1 Urgent | WFS-105 | [PRIORITAIRE] Caméra de poursuite : angle d'environ 40° (voir les voitures devant) + vue Proche qui montre la route (RG-06) | E3 | 🔧 En cours | Copilot (session 1ef8d4d6), 2026-11-04 | WFS-85 ✅ | `feature/waforspeed-105` |  |  |
 | P1 Urgent | WFS-106 | [STABLE] CI : publier l'APK de main (Release apercu) à chaque fusion | E7 | ⏳ Prêt |  | — | `feature/waforspeed-106` |  |  |
 | P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 | ⏳ Prêt |  | — | `feature/waforspeed-107` |  |  |
 | P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 | ⏳ Prêt |  | WFS-98 ✅ | `feature/waforspeed-108` |  |  |
@@ -446,8 +446,9 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-104 — [PRIORITÉ ABSOLUE] Voiture en course = qualité du garage** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-104.md`)
 - [ ] course = garage en netteté et reflets, confirmé sur téléphone
 
-**WFS-105 — [PRIORITAIRE] Caméra de poursuite ≈ 40°** · E3 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-105.md`)
+**WFS-105 — [PRIORITAIRE] Caméra de poursuite ≈ 40° + vue Proche** · E3 · priorité P1 Urgent · 🔧 En cours — Copilot (session 1ef8d4d6), 2026-11-04, branche `feature/waforspeed-105` (règles : `regles-de-gestion/WFS-105.md`). Zone : `src/game/camera_vue.*`, `src/game/camera_banc.*`, assertions caméra de `tests/test_systems.cpp` ; interdit : `src/render/**`, `shaders/**`, `src/game/traffic_system.cpp`, `course_system.*` (WFS-101), `commandes_tactiles.*`, `direction.*`, `player.*` (WFS-108), `src/game/game.*`, `src/ui/**`, `src/platform/**`, `.github/**`, iOS
 - [ ] au moins 4 voitures devant visibles ; angle documenté
+- [ ] `camera-proche` : avant de la voiture et rue devant (≥ 15 m) visibles, caméra inclinée ≈ 20-25° ; Capot et Cockpit inchangés
 
 **WFS-106 — [STABLE] CI : publier l'APK de main** · E7 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-106.md`)
 - [ ] Release apercu = APK du dernier commit de main
