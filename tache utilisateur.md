@@ -38,3 +38,5 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 
 - la camera pour le mode proche est catastrophique je vois pas la rue devant la voiture il faut zoomer un peux se sort sue je vois lavant de voiture avec clenaison de la camera
+
+- voir la possibilité dajouter aussi le mode gyroscope acec les fleches ou le glissage
