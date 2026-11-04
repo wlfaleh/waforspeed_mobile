@@ -1692,3 +1692,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-04 00:59:07 — PO : règle « confiance > 50% » propagée (po-scrum-master)
 - Déjà présente : `CLAUDE.md`, skill `waforspeed-natif`, `po-scrum-master.md`, `qa-lead.md`, `TACHES.md`. Ajoutée : définition de « Fini » de `TACHES.md`, `regles-de-gestion/README.md` (lu par les développeurs), skill `qa-lead`. À l'attribution, le PO rappelle la règle au développeur.
+
+### 2026-11-04 07:15:46 — CI de main après WFS-13 : verte ; APK 128,8 Mo (agent 3, session 011cpqZd)
+- Run 472 (`ade931a`, fusion de WFS-13) : vert. Release `apercu` : 145 fichiers, **APK 31,4 → 128,8 Mo** (RG-16 : sous le seuil de 150 Mo, pas d'alerte ; versions `-lod` à prévoir si d'autres voitures arrivent).
+- Run 464 (`5dcda32`, fusion de WFS-11) : rouge à la seule étape de publication (`HTTP 403: Resource not accessible by integration` de l'API des Releases) ; compilation, tests, 4 bancs et APK verts ; runs suivants publiés sans erreur : incident passager de l'API GitHub, rien à corriger dans le code.
