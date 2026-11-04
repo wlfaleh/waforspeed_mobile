@@ -1653,3 +1653,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Tailles (RG-16)** : p208 6,70 Mo · abarth 4,98 · tcross 6,01 · compass 8,42 · s3 6,31 · x5 7,24 · giulia 6,54 · a45 6,43 · model3 6,45 · corsa 4,83 · gt86 5,36 · elantra 5,98 · v60 2,54 · rrsport 6,01 · mustang 5,85 · sf90 7,40 → 92 Mo ; `assets/cars` 22 → 114 Mo ; APK de `main` avant : 31,4 Mo (après : relevé à la CI).
 - **Triangles** : compass 154 k, x5 138 k, model3 135 k, p208 132 k dépassent la cible de 120 k du joueur (versions `-lod` possibles plus tard).
 - **À regarder** : Giulia et Elantra ont un motif de camouflage venant de la texture de peinture de leur modèle.
+
+### 2026-11-04 00:52:11 — WFS-74 : chargement au changement de carte, course figée — PR #50 en revue (Claude, agent 5)
+- **Fait** : `Game::changerCarte` (zone E0) : écran de chargement branché par la plateforme via `Game::demandes()` (`debutChargement`, `progression`, `finChargement`), étapes réelles de `init`, voiture et peinture gardées, durée au journal ; même carte et même moment = pas de reconstruction. La course n'avance que sur l'écran Course (menu, garage, terrain : figée) ; Terrain → Course = course neuve.
+- **Accroches annoncées** : `src/game/course_system.cpp` (E3, 5 lignes : `onEcran`, test d'écran dans `collide`) ; `src/platform/android_main.cpp` (6 lignes : branchement du chargement, message rouge si échec) ; `src/platform/desktop_main.cpp` (3 lignes) ; nouveau `src/game/bench_changement_carte.*` (banc).
+- **Vérification** : compilation sans erreur, `test_systems` et `test_course` OK en local ; Android et captures : CI de la PR #50. Fusion après CI verte (noyau et Android non testables ici : confiance ≤ 50 %).
+
