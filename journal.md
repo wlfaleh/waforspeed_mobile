@@ -2090,3 +2090,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Attribution** : Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), branche `feature/waforspeed-89`.
 - **Critères** : captures `salon-code`, `salon-code-saisi`, `salon-internet` (relais simulé), `salon-hors-ligne` ; `test_binarypack` vert ; APK : duel entre deux réseaux et avec le jeu web (vérifié par l'utilisateur).
 - **Plan court** : BinaryPack + test ; transport PeerJS (WebSocket de signalisation, canal de données libdatachannel) derrière `duel::Transport` ; bloc de saisie du code ; scène de banc avec relais simulé. Nouvelle dépendance et réseau non testable en local de bout en bout : confiance probablement ≤ 50 %, attendre la CI verte (Android compris) avant de fusionner.
+
+### 2026-11-04 17:51:36 — PO : WFS-90 créé, conduite libre (demi-tour) (po-scrum-master)
+- Demande de l'utilisateur : pouvoir tourner de l'autre sens. Cause trouvée dans le code : l'angle de la voiture est limité (`maxHeading`) et se réaligne seul sur la route, identique au jeu web. Ticket P2 (E3) : supprimer cette limite, marche arrière sans arrêt complet, caméra qui suit, chrono et checkpoints dans le bon sens seulement. Règles : `regles-de-gestion/WFS-90.md`.
