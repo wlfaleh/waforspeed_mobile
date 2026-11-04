@@ -1896,3 +1896,41 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 **Début WFS-83** : Claude (agent 5), branche `feature/waforspeed-83`. Zone : E3 `src/game/duel*`, `src/game/reseau_udp.*` (nouveau), `tests/**` ; **exception du PO** : nouveaux fichiers `src/ui/ecrans/salon.*` (E8 occupée par WFS-75, mais fichiers disjoints de `reglages.*`). Accroches permises, à annoncer au Journal : `src/core/ecran.h` ≤ 5 lignes, `menu.cpp` ≤ 10, `game.cpp` ≤ 10, `AndroidManifest.xml` (4 permissions), `android_main.cpp` ≤ 3 + nouveau `src/platform/reseau_android.cpp` (verrou de diffusion JNI), `CMakeLists.txt` ≤ 3, `desktop_main.cpp` ≤ 3. Interdit : `reglages.*` (WFS-75), `ios/**` et `ios_main.mm` (WFS-78), `src/world/**` (WFS-18).
 **Critères** : test CPU deux `TransportUdp` en boucle locale (annonce, rejoindre, prêts, même graine, horloge ±50 ms, hostile ignoré, retrait 3 s) ; banc `menu-duel`, `salon-accueil`, `salon-hote`, `salon-pret`, `duel-reseau-course` ; APK sans Wi-Fi : note orange, aucun plantage.
 **Plan court** : 1) `TransportUdp` + test CPU ; 2) écran Salon (accueil, salon) branché sur `duelSession()` ; 3) menu dégrisé, `Ecran::Salon`, chargement de la carte de l'hôte ; 4) Android (permissions, verrou) ; 5) banc et captures ; fusion par confiance si > 50 %.
+
+### 2026-11-04 12:48:00 — WFS-75 fusionné par confiance : réglages Commandes gaucher et Vibrations (Claude, session trafic, agent WFS-75)
+**Fusion** : PR #65, commit de fusion `35183c6`, fusion par confiance (règle n°1) : synchronisé avec `main`, compilation et tests CPU passés en local, banc `WFS_BANC=menu` regardé. CI de `main` à suivre.
+**Fait** : deux lignes de plus au panneau des réglages, « Commandes : Droitier / Gaucher » et « Vibrations : Activées / Coupées », appliquées tout de suite (même depuis la pause) et enregistrées par la sauvegarde WFS-24 (clés `commandes=`, `vibrations=`) ou, sans elle, par le fichier de WFS-41. Mode gaucher : miroir des commandes tactiles par `ecrans::miroirX` et `ecrans::margesCommandes` (`src/ui/ecrans/reglages.h`), au dessin comme au toucher. La flèche gauche reste à gauche dans le mode flèches. La nitro est abaissée à 40 % de la hauteur en mode gaucher pour ne pas passer sous les boutons Menu et caméra du HUD (écart à « même hauteur » de RG-02, imposé par « rien sous le HUD »).
+**Accroches annoncées** : `src/game/game.cpp` 9 lignes (zones des pédales et dessin des pédales passés par miroirX), `src/game/direction.cpp` 9 lignes (zone de direction, boutons flèches, volant au repos), `src/game/ressenti.cpp` 2 lignes (`vibrer()` : « vibration ignorée (réglage) »), `src/game/sauvegarde.h/.cpp` 4 lignes (champs `gaucher` et `vibrations`, indispensables pour que le réglage soit enregistré par WFS-24).
+**Captures** : `reglages-commandes`, `course-gaucher` (groupe menu et partie2). Journal du banc : « gaucher, appui à gauche = gaz : 65 → 86 km/h », « vibration ignorée (réglage) : 90-40-120 ». Les captures de course droitier sont identiques à `main`. `reglages-menu`, `-pause` et `-musique` ne changent que par le panneau à 6 lignes.
+**Pas fait (non prévu par les règles WFS-75)** : lignes « Direction » (glisser / flèches) et « Réduire les mouvements » du panneau. C'est au PO de décider.
+
+### 2026-11-04 12:49:07 — Début WFS-80 attribué à Claude (session trafic) (po-scrum-master)
+- Ticket : WFS-80, épic E8, P3 Moyenne (remonté de P4 : il absorbe les deux lignes de réglages laissées par WFS-70). Dépendances WFS-22 ✅, WFS-75 ✅ (PR #65).
+- Décision PO : les lignes « Direction » (clé `steer`) et « Réduire les mouvements » vont dans WFS-80 (même fichier `reglages.cpp`, mêmes boutons, pas de micro-ticket). « Réduire les mouvements » est mémorisé dans le fichier de réglages de `reglages.cpp` (clé `mouvements`), sans toucher `src/game/**`.
+- Zone autorisée : `src/ui/ecrans/reglages.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.*` si besoin.
+- Critères : lignes visibles et appliquées tout de suite, choix relus au relancement, focus manette sur pastilles et choix (A applique, B retour), captures tactiles du garage inchangées.
+- Plan : 1) deux lignes dans `LIGNES` + lecture / écriture ; 2) zones de focus des choix ; 3) accroche garage ; 4) banc manette ; fusion par confiance si > 50 %.
+
+### 2026-11-04 12:49:44 — WFS-18 fusionné par confiance (PR #66) (Claude, session trafic, agent WFS-18)
+- Fait : météo dans `src/world/meteo.h` / `meteo.cpp` (nouveaux, E2). Système `pluie` (ordre 199) : port de `initRain` / `drawFx` (fx.js), min(160, L×H/9000) gouttes, 10-24 px, 900-1500 px/s × (0,7 + 0,6 p), inclinaison (−0,12 − braquage×0,25)×(0,4 + p), trait rgba(170,190,255,.2) de 1 px, dessiné dans `drawUi` avant la vignette (350) et le HUD ; nuit + ville + écran Course seulement ; 0 goutte avec « réduire les mouvements » (`reglagesRessenti`, WFS-70). Système `ciel-couvert` (ordre 960, après `Nuit` 950) : couleur des nuages de `makeSkyMaterial` (mix(mid, hor, 0,5)×0,9) mêlée au ciel à nightClouds 0,35, brouillard rapproché de (1 − 0,35×0,52).
+- Accroches : **aucune** (enregistrement par `WFS_SYSTEM`, aucun fichier du noyau, de `src/render/**` ni de `renderer.h` modifié).
+- Vérification locale : tests CPU de build.yml OK ; banc `WFS_BANC=nuit` : pluie active seulement en ville, `course-nuit-ville-0` et `-1` différentes (gouttes déplacées), coût 0,008 ms/image (102 gouttes, 1280x720) ; capture de jour en ville (`ressenti-choc`) sans pluie.
+- Limites : la pluie est discrète (alpha 0,2 du jeu web) ; RG-05 « désactivée en qualité basse si baisse sous 60 i/s » non appliquée (coût négligeable mesuré). Option « réduire les mouvements » non vérifiée par capture.
+
+### 2026-11-04 12:50:28 — Début WFS-81 attribué à Claude (session trafic, agent WFS-81) (po-scrum-master)
+- Ticket : WFS-81 — Nuit corniche et circuit (vrais lampadaires, lumières alignées, double halo trafic) · épic E2 (libre depuis la fusion de WFS-18, PR #66) · branche `feature/waforspeed-81` · règles `regles-de-gestion/WFS-81.md`.
+- Zone autorisée : `src/world/plage.cpp`, `src/world/circuit.cpp`, `src/world/decor_carte.*`, banc `cartes_banc.cpp` ; accroche ≤ 10 lignes dans `src/game/traffic_system.cpp` (E3) seulement si le double halo se voit, annoncée au Journal. Interdit : `src/world/meteo.*`, `src/render/**` (dont `nuit.cpp`).
+- Critères : poteaux blancs à boule sous chaque lumière de la corniche ; lumière sous chaque mât du circuit (compte au journal) ; un seul halo rouge par feu sur une voiture du trafic qui freine la nuit.
+- Plan : porter les lignes `lamp(…, 'beach'/'flood')` de `js/world/decor.js` et les positions de `js/world/scene.js` l. 270-282 ; style beach dans `CarteDecor::lampe` ; inscription dans `lampadaires()` comme `ville.cpp` ; contrôle du double halo sur les captures `nuit-*` de `main`.
+- En parallèle (zones séparées) : WFS-78 (E7), WFS-79 (src/audio), WFS-80 (E8), WFS-82 (E4).
+
+### 2026-11-04 12:51:57 — WFS-82 masquage hors champ et au loin, fusionné par confiance, PR #67 (Claude, agent 4)
+- **Fait** :
+  - `src/render/masquage.*` : plans des matrices de la caméra, du miroir et de l'ombre, test de sphère, coupure au loin selon le rayon (RG-02). Testé par `test_masquage`.
+  - Renderer : chaque objet est classé pour la caméra, le reflet et l'ombre (RG-01, RG-03). Un objet invisible partout n'est pas dessiné. Les feux du trafic disparaissent avec leur voiture (RG-06). Compteur `objetsMasques()`.
+- **Accroches annoncées** :
+  - `src/ui/ecrans/reglages.cpp` : 1 ligne, `qualiteBasse` ;
+  - `CMakeLists.txt` et `build.yml` : `test_masquage` ;
+  - `renderer.h` et `renderer.cpp` dans la zone E4.
+- **Vérification** : `test_masquage`, `test_systems`, `test_roues` et compilation complète OK.
+- **Mesure** : appels de dessin avant / après au journal du banc de `main` (avant : Basse 346, Moyenne 607). Je les reporte dès la fin de la CI. L'instanciation (RG-04) sera faite si la cible n'est pas atteinte.

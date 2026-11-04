@@ -5,6 +5,7 @@
 #include "vk.h"
 #include "../core/math.h"
 #include "../game/roues.h"   // WFS-60 : RoueModele, RouesPose
+#include "masquage.h"   // WFS-82 : masquage hors champ et au loin
 #include "../core/gpu_logiciel.h"
 
 namespace wfs {
@@ -28,7 +29,7 @@ struct Material {
     uint32_t flags = 0; VkDescriptorSet set = VK_NULL_HANDLE;
 };
 
-struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; };
+struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (repère local)
 
 // maillage animé par squelette (WFS-63, point d'extension) : sommet = position, normale, uv + 4 os (indices dans la
 // palette de l'instance) et 4 poids ; dessiné avec une palette de matrices d'os (skinning dans le vertex shader).
@@ -43,7 +44,7 @@ struct ApparencePersonnage {
     vec3 peau{1, 1, 1}, cheveux{}, haut{}, bas{}, chaussures{}, maillot{};
     vec4 vetement{0.45f, 1.9f, 1, 0}, corps{};
 };
-struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; };
+struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (pose de repos × 1,5)
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
 constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
 
@@ -136,6 +137,8 @@ public:
 
     Image white, flatNormal;
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    bool qualiteBasse = false;     // WFS-82 : petits objets coupés plus tôt (150 m) en qualité Basse
+    uint32_t objetsMasques() const { return masquesPrec_; }   // WFS-82 : objets non dessinés à la dernière image (journal)
     float bloomForce = 1.f;        // WFS-15 : bloom (UnrealBloomPass du jeu web) : 1 en Moyenne / Haute, 0 en Basse
     uint32_t appelsDessin() const { return appelsPrec_; }   // WFS-15 : appels de dessin de la dernière image (journal)
     // WFS-59 : mode GPU logiciel actif (émulateur de la QA : GPU SwiftShader / llvmpipe, ou intent qa_simu=true)
@@ -143,7 +146,11 @@ public:
     uint32_t shadowMapSize() const { return shadowSize_; }
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; };
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 7; };
+    // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
+    enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4 };
+    uint8_t classer(const masquage::Sphere& s);
+    masquage::Frustum fCam_, fReflet_, fOmbre_; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
     void createTargets();
     void destroyTargets();
     void createPipelines();

@@ -35,8 +35,8 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 20; i++) { g.update(1.0 / 60); g.render(904 + i / 60.0); }
         const double ms = (nowSeconds() - t0) / 20 * 1000;
         r.capturePng(out + "/qualite-" + noms[q] + ".png");
-        WFS_LOG("qualité %s : scène à %.0f %%, ombres %s, bloom %.1f, %u appels de dessin, %.1f ms par image (banc, CPU)", noms[q],
-                r.vk().renderScale * 100, r.forceNoShadows ? "coupées" : "actives", r.bloomForce, r.appelsDessin(), ms);
+        WFS_LOG("qualité %s : scène à %.0f %%, ombres %s, bloom %.1f, %u appels de dessin, %u objets masqués (WFS-82), %.1f ms par image (banc, CPU)",
+                noms[q], r.vk().renderScale * 100, r.forceNoShadows ? "coupées" : "actives", r.bloomForce, r.appelsDessin(), r.objetsMasques(), ms);
         g.shutdown();
     }
     unsetenv("WFS_MOMENT");
