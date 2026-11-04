@@ -2105,3 +2105,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-04 17:55:16 — PO : GEL iOS (po-scrum-master)
 - **Décision de l'utilisateur** : aucun travail ni CI iOS tant qu'Android n'est pas validé. Règle en tête de `CLAUDE.md` et dans `po-scrum-master.md` ; WFS-88 (iOS, en cours) passé en ⏸ Suspendu ; agents 3, 4 et 5 prévenus par message. Rien supprimé (branches comprises). WFS-22, 78 et 79 déjà fusionnés : inchangés.
+
+### 2026-11-04 17:57:26 — WFS-89 : partie hors WebRTC faite ; intégration de libdatachannel à décider par l'utilisateur (Claude, agent 5)
+- **Fait** (branche `feature/waforspeed-89`, pas encore fusionnée) :
+  - `src/game/binarypack.*` : port exact de peerjs-js-binarypack 2.1.0. `test_binarypack` compare aux octets produits par la vraie bibliothèque (Node), sous AddressSanitizer et UBSan.
+  - `src/game/reseau_peerjs.*` : `TransportPeerJs` (`joinP2P` du jeu web : relais `waforspeed-wfs-<code>-v1`, ID-TAKEN → invité, `{t:'p'}` groupé à 30 ms, `{t:'all'}`, 12 s), conversion des présences au format du jeu web (nombres, `host` booléen, `map` + `tod`), réseau PeerJS simulé (RG-11), `TransportDouble` (Wi-Fi local + Internet, le premier qui trouve un adversaire gagne). `test_duel` étendu.
+  - Écran Salon : « Rejoindre avec un code » (clavier à l'écran) et état du réseau.
+- **Accroches annoncées** : `src/ui/ecrans/salon.cpp` (E8, permise) ; `CMakeLists.txt` (2 lignes : `test_binarypack`, sources de `test_duel`) ; `.github/workflows/build.yml` (1 ligne : `test_binarypack` dans les tests CPU).
+- **Bloqué** : le pair PeerJS réel (signalisation WebSocket et WebRTC) demande libdatachannel et Mbed TLS. Les télécharger pendant la construction (FetchContent) a été refusé par le système d'autorisations (intégration de code tiers non vérifié), et la règle du projet veut les bibliothèques copiées dans `third_party/` avec leur licence (environ 15 Mo de sources : libdatachannel, libjuice, usrsctp, plog, Mbed TLS). Décision demandée à l'utilisateur. En attendant, l'APK ouvre le salon sur le Wi-Fi local et affiche la note « Sans Internet » (aucun plantage).
