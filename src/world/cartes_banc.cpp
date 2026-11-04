@@ -22,7 +22,8 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         {"campagne", "jour", "Vignobles", "carte-campagne-vignes"}, {"campagne", "jour", "Bois de pins", "carte-campagne-pins"},
         {"circuit", "jour", nullptr, "carte-circuit-jour"}, {"circuit", "nuit", nullptr, "carte-circuit-nuit"},
         {"circuit", "jour", "Paddock", "carte-circuit-paddock"}, {"circuit", "jour", "Virages rapides", "carte-circuit-gravier"},
-        {"circuit", "jour", "Section boisée", "carte-circuit-foret"}};
+        {"circuit", "jour", "Section boisée", "carte-circuit-foret"},
+        {"plage", "nuit", nullptr, "nuit-plage-corniche"}, {"plage", "jour", nullptr, "carte-plage-corniche"}};   // WFS-81 : lampadaires « beach »
     for (const Cap& c : CAPS) {
         int64_t depart = 0;
         if (c.zone) {   // premier segment de la zone, + 40 (≈ 50 m) pour être dans le décor de la zone

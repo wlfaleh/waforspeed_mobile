@@ -8,6 +8,7 @@
 //   - ambiance envFor : jour brouillard 820 m ; nuit #0e1020 à 640 m.
 #include <cmath>
 #include <cstring>
+#include "../render/eclairage.h"
 #include "decor_carte.h"
 
 namespace wfs {
@@ -41,7 +42,11 @@ protected:
         auto fl = [](float v) { return (int64_t)std::floor(v); };
         const float R = (float)RW, SM = (float)SEG_M;
         auto tires = [&](int64_t n, int side, float lat) { Item it; it.t = T_TIRES; it.side = side; it.lat = lat; it.petit = true; item(n, it); };
-        auto lamp = [&](int64_t n, int side) { Item it; it.t = T_LAMP; it.side = side; it.k = 1; item(n, it); };
+        auto lamp = [&](int64_t n, int side) {
+            Item it; it.t = T_LAMP; it.side = side; it.k = 1; item(n, it);
+            // WFS-81 : éclairage de nuit sous le mât (scene.js : flood à RW + 4, 16 m, côté du mât)
+            lampadaires().push_back({((n % len()) + len()) % len(), side * (R + 4.f), 16.f, StyleLampadaire::Stade});
+        };
         auto stand = [&](int64_t n, int side, int rows) { Item it; it.t = T_STAND; it.side = side; it.lat = R + 14; it.l = 26 * SM - 1; it.k = rows; item(n, it); };
         auto tree = [&](int64_t n, int side, float lat, float h, int kind, float along) {
             Item it; it.t = T_TREE; it.side = side; it.lat = lat; it.h = h; it.k = kind; it.along = along; item(n, it);
