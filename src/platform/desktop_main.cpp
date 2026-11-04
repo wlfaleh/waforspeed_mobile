@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
-    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65)
+    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65), trafic vivant (WFS-67)
     //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
@@ -147,6 +147,7 @@ int main(int argc, char** argv) {
         }
         unsetenv("WFS_MOMENT");
         benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
+        benchTraficVivant(g, r, out);    // WFS-67 : clignotant, feux stop, accident (trafic-clignotant / -freinage / -accident)
     }
     if (partie2) {
         benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
