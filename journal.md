@@ -1675,3 +1675,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Compilation complète et `test_systems` OK.
   - Fusion par confiance (environ 60 %) : je suis la CI de `main` et je corrige tout de suite si une capture est cassée.
 - **Limite** : dans le modèle source de la 911, les roues avant sont braquées (7,6 cm d'écart en z entre gauche et droite).
+
+### 2026-11-04 00:54:33 — Début WFS-67 Trafic vivant (Claude, agent 4) — attribué par le PO
+- **Cérémonie de fin de ticket** : WFS-60 fusionné par confiance (PR #48) → **WFS-67** (seule dépendance WFS-60) passe de « En attente » à Prêt, puis attribué. WFS-75 reste en attente de WFS-70.
+- **Ticket** : WFS-67 — Trafic vivant (clignotants, feux stop, accidents contournés avec détresse et fumée, variété des modèles, version légère au-delà de 50 m), épic **E3**, P3 Moyenne. Branche `feature/waforspeed-67`. Règles : `regles-de-gestion/WFS-67.md` (précisions RG-07 à RG-12 ajoutées).
+- **Pourquoi lui** : aucun Prêt dans une épic libre. WFS-15 (E4) recouvre `renderer.cpp` / `post*` / `scene*` de WFS-09 ; WFS-71 (E2) recouvre `ville.cpp` de WFS-53 ; WFS-22 (E7, P4, iOS) ne se voit pas sur le téléphone. WFS-67 vient d'être débloqué, se voit en permanence en course, et ses fichiers sont disjoints de WFS-70 et WFS-24.
+- **Exception « un ticket actif par épic »** (E3 : WFS-70, WFS-24, WFS-67) accordée car les fichiers sont disjoints.
+- **Zone autorisée** : `src/game/traffic.*` (ajout d'état seulement : `freine`, `recul` ; pas de réécriture, signatures publiques de `HitEvent` / `TrafficEvents` inchangées car WFS-70 les lit), `src/game/traffic_system.*` (dessin : émissifs, tirage des modèles, version légère), nouveau `tests/test_trafic_vivant.cpp` ; accroches ≤ 10 lignes annoncées : `src/game/cars.h` (`TRAFIC_MODELES`, `LOD_CAR_M`), `desktop_main.cpp` + `build.yml` (scènes `trafic-*`, hors job `ecrans-2400`). **Interdit** : `renderer.*`, shaders (WFS-09), `roues.*`, `direction.*`, `player.*`, `course*.cpp` (WFS-70 / WFS-24), `sauvegarde.*`, `camera_*`.
+- **Critères** : captures `trafic-clignotant`, `trafic-freinage`, `trafic-accident` ; ≥ 3 modèles / couleurs visibles en course ; banc `0 écart(s)` ; ≤ 300 appels de dessin ; coût avant / après au Journal ; test CPU même graine → même trafic.
+- **Plan** : état `freine` → émissifs feux stop / clignotants 2 Hz / détresse → fumée WFS-65 sur accident → tirage modèle + peinture par graine → version légère > 50 m → test + scènes de banc → une CI, fusion par confiance si > 50 %.
