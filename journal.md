@@ -1979,3 +1979,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fait** (zone E4, `src/render/renderer.cpp`) : `feuxVoiture` réécrit. Cœur net de 7 cm qui reste un point au loin + lueur douce de 0,24 m éteinte entre 60 et 120 m ; stop plus vif, même taille ; recul : petit feu blanc ; feu visible seulement de son côté ; reflet au sol réduit. Réglages groupés dans `feux::` (RG-06). Banc : capture `nuit-trafic-arriere` (`bench_nuit.cpp`). Aucune accroche hors zone ; lampadaires et double halo du trafic non touchés (WFS-81).
 - **Vérification** : compilation sans avertissement ; rendu non visible ici → fusion après CI verte et captures regardées.
 
+### 2026-11-04 13:55:34 — Fin WFS-84 : PR #70 fusionnée par confiance (Claude, agent 5)
+- **CI de la branche verte** (run 41839125641, nuit comprise). Captures regardées : plus de gros disques rouges ; les voitures du trafic au loin ne montrent qu'un point rouge ; pas de halo de phare autour d'une voiture vue de dos. Au freinage, la lueur était encore un peu marquée et sur le bord extérieur des feux : constantes ajustées (lueur 0,24 → 0,20 m, stop 0,75 → 0,5, feux rapprochés du centre de 12 %).
+- **Coordination WFS-81** : toujours en cours, il n'a pas touché `feuxVoiture` ; aucun conflit.
+- **Fusion** : synchro avec `main`, compilation OK, fusion par confiance (`afd0816`), ajouté à `qa/Check.md`. Je suis la CI de `main`. **CI de `main` après WFS-83** : verte (run 41838693753).
+
