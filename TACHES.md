@@ -109,7 +109,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | 🔧 En cours | Claude (session trafic), 2026-11-04 | WFS-29 ✅ | `feature/waforspeed-22` |  |  |
 | — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
-| P3 Moyenne | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | 🔧 En cours (exception : 2e ticket E3, fichiers séparés de WFS-70) | Claude (session trafic), 2026-11-04 | WFS-12 | `feature/waforspeed-24` |  |  |
+| P3 Moyenne | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-04 | WFS-12 | `feature/waforspeed-24` | [#54](https://github.com/wlfaleh/waforspeed_mobile/pull/54) |  |
 | — | WFS-25 | Préparation des stores | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-25` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` | PR #9 | ✅ VALIDÉ par qa-lead |
 | 0.15 | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | ✅ Terminé |  | WFS-26, WFS-12 | `feature/waforspeed-27` | PR #16 | ✅ VALIDÉ par qa-lead au tour 2/2 (main 6e672a9, ANO-11 et ANO-12 corrigées) [rapport](qa/rapports/WFS-27.md) |
@@ -418,8 +418,8 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] Activable selon la qualité
 - [ ] `vitrine-golf-0`, `vitrine-p911-1` : plus de lignes pointillées sur les jointures de carrosserie (reste de WFS-32, crénelage de géométrie lissé par le TAA)
 
-**WFS-24 — Sauvegarde et progression** · E3 · priorité P4 Basse · ⏳ Prêt
-- [ ] Meilleurs scores, voitures et réglages conservés
+**WFS-24 — Sauvegarde et progression** · E3 · priorité P3 Moyenne · ✅ Fusionné (QA de nuit à faire), PR #54 — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-24` (règles : `regles-de-gestion/WFS-24.md`)
+- [x] Meilleurs scores, voitures et réglages conservés
 
 **WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · ✅ Fusionné (PR #38, QA de nuit à faire) — Claude (agent 4, session 011cpqZan), 2026-11-03, branche `feature/waforspeed-21` (règles : `regles-de-gestion/WFS-21.md`)
 - [ ] Compatible avec le principe du duel web
