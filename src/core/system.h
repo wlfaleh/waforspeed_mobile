@@ -84,6 +84,8 @@ public:
     // remplaceSol : true = le système dessine ses propres bas-côtés, Game ne dessine plus les siens (sol générique)
     virtual void ambiance(FrameParams& /*fp*/, const GameView&) {}
     virtual bool remplaceSol(const GameView&) const { return false; }
+    // WFS-53 : true = le système dessine aussi ses bords de route (verge, vibreurs), Game ne dessine plus ses trottoirs
+    virtual bool remplaceTrottoir(const GameView&) const { return false; }
     // scène dédiée (WFS-44) : appelée avant chaque image, dans l'ordre des systèmes ; le premier qui renvoie true prend la
     // scène : il règle caméra (view, proj, camPos), ciel / fond uni, brouillard, soleil, ambiance, exposition, ombres dans fp
     // (déjà rempli avec les valeurs habituelles de Game) et choisit dans s ce que Game dessine encore

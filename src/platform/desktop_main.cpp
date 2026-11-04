@@ -23,6 +23,7 @@
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 #include "../world/pietons.h"
+#include "../world/decor_carte.h"
 #include "../render/bench_spots.h"
 #include "../render/qualite_banc.h"
 #include "../game/roues_banc.h"
@@ -100,6 +101,7 @@ int main(int argc, char** argv) {
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
@@ -159,6 +161,7 @@ int main(int argc, char** argv) {
             g.render(404); g.render(404.02); r.capturePng(out + "/carte-plage-" + mo + ".png"); g.shutdown();
         }
         unsetenv("WFS_MOMENT");
+        benchCartes(g, r, out);   // WFS-53 : cartes Campagne et Grand Prix (carte-campagne-*, carte-circuit-*)
         benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
         benchTraficVivant(g, r, out);    // WFS-67 : clignotant, feux stop, accident (trafic-clignotant / -freinage / -accident)
     }
