@@ -390,13 +390,13 @@ void benchTraficVivant(Game& g, Renderer& r, const std::string& out) {
     double t = 800;
     auto image = [&](bool rendu) { g.update(1.0 / 60); t += 1.0 / 60; if (rendu) g.render(t); };
     auto devant = [&](const TrafficCar& c) { return s->track_->relZ(c.z - g.player().position) * M; };
-    // une voiture entre 8 et 45 m devant qui vérifie `cond`, cherchée pendant `secondes` au plus
+    // une voiture entre 8 et 25 m devant qui vérifie `cond`, cherchée pendant `secondes` au plus
     auto cherche = [&](double secondes, auto cond) {
         for (int i = 0; i < (int)(secondes * 60); i++) {
             image(i % 8 == 0);
             for (size_t k = 0; k < s->traffic_.cars.size(); k++) {
                 const TrafficCar& c = s->traffic_.cars[k]; const double dz = devant(c);
-                if (dz > 8 && dz < 45 && std::abs(c.offset - g.player().playerX) < 0.9 && cond(c, k)) return (int)k;
+                if (dz > 8 && dz < 25 && std::abs(c.offset - g.player().playerX) < 0.9 && cond(c, k)) return (int)k;   // assez près pour voir les feux
             }
         }
         return -1;
@@ -434,7 +434,7 @@ void benchTraficVivant(Game& g, Renderer& r, const std::string& out) {
     trafficBenchPlace(14, 0, 80, true);
     int n = 0;
     for (; n < 180 && s->stats_.accidents == avant; n++) image(true);
-    for (int i = 0; i < 100; i++) image(i % 6 == 0);
+    for (int i = 0; i < 30; i++) image(i % 6 == 0);   // 0,5 s : la voiture percutée est encore dans le champ
     // image au moment où les feux de détresse sont allumés
     const int hit = trafficBenchCar();
     for (int i = 0; i < 60 && hit >= 0 && !clignotantAllume(t, s->traffic_.cars[(size_t)hit].rng); i++) image(false);
