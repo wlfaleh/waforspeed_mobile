@@ -98,7 +98,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ✅ Fusionné (QA de nuit à faire ; 16 voitures à suivre) | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
-| P2 Haute | WFS-13 | Les 16 autres voitures (conversion, catalogue, sons, licences) — rouvert après WFS-11 | E5 | 🔍 En revue (CI) (exception : 2e ticket E5, fichiers séparés de WFS-60) | agent 3 (session 011cpqZd), 2026-11-04 | WFS-11 ✅ | `feature/waforspeed-13` |  |  |
+| P2 Haute | WFS-13 | Les 16 autres voitures (conversion, catalogue, sons, licences) — rouvert après WFS-11 | E5 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) (exception : 2e ticket E5, fichiers séparés de WFS-60) | agent 3 (session 011cpqZd), 2026-11-04 | WFS-11 ✅ | `feature/waforspeed-13` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
 | P3 Moyenne | WFS-15 | Qualité, performances et post-traitement (réglages téléphone, LOD, bloom, TAA, flou) | E4 | ⏳ Prêt |  | WFS-06, WFS-07, WFS-08 | `feature/waforspeed-15` |  |  |
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
@@ -342,7 +342,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-54 — Carte Grand Prix (circuit)** · E2 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-54.md`) — ↪ fusionné dans WFS-53
 - [ ] `carte-circuit-jour` / `-nuit` : vibreurs, tribunes, murs de pneus, gravier ; ≤ 300 appels de dessin
 
-**WFS-13 — Les 16 autres voitures (rouvert après WFS-11)** · E5 · priorité P2 Haute · 🔍 En revue (CI) — agent 3 (session 011cpqZd), 2026-11-04, branche `feature/waforspeed-13` (règles : `regles-de-gestion/WFS-13.md`, section « Réouverture du 2026-11-04 »)
+**WFS-13 — Les 16 autres voitures (rouvert après WFS-11)** · E5 · priorité P2 Haute · ✅ Fusionné (fusion par confiance, QA de nuit à faire) — agent 3 (session 011cpqZd), 2026-11-04, branche `feature/waforspeed-13` (règles : `regles-de-gestion/WFS-13.md`, section « Réouverture du 2026-11-04 »)
 - [ ] `vitrine-<id>-0` pour les 16 voitures : bon sens, 4 roues au sol, peinture, feux arrière non blancs
 - [ ] garage : 20 voitures ; `garage-<id>` sur 2 nouvelles ; course avec une nouvelle voiture sans plantage
 - [ ] tailles des `.wfm` et de l'APK au Journal ; autres captures inchangées
