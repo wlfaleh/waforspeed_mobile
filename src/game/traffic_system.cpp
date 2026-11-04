@@ -410,7 +410,7 @@ void benchTraficVivant(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture trafic-clignotant : voiture %d à %.1f m, clignotant %s, file %d → %d", k, devant(c), c.signal < 0 ? "gauche" : "droite", c.lane, c.pendLane); }
     else WFS_LOG("capture trafic-clignotant : aucune voiture en train de changer de file trouvée en 40 s");
     // freinage : feux stop allumés (décélération > 2 m/s²)
-    k = cherche(40, [&](const TrafficCar& c, size_t i) { return !c.crashed && i < s->stops_.size() && s->stops_[i].freine(); });
+    k = cherche(40, [&](const TrafficCar& c, size_t i) { return !c.crashed && i < s->feuxStop().size() && s->feuxStop()[i].freine(); });
     g.render(t); g.render(t);
     r.capturePng(out + "/trafic-freinage.png");
     if (k >= 0) WFS_LOG("capture trafic-freinage : voiture %d à %.1f m, %.0f km/h, feux stop allumés", k, devant(s->traffic_.cars[(size_t)k]),
