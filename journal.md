@@ -1758,3 +1758,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Recadrage** (`regles-de-gestion/WFS-15.md`) : les 3 niveaux existent déjà (WFS-41) ; livrer dans l'ordre (1) choix automatique + résolution dynamique + rétrogradation unique (logique testée CPU), (2) LOD trafic à 50 m + petits décors coupés à 200 m + hors champ masqué, (3) bloom en Moyenne/Haute. TAA et flou de mouvement hors périmètre.
 - **Critères** : différences visibles Basse/Moyenne/Haute (bloom), journal du choix auto et de la rétrogradation, appels de dessin et ms par niveau, test CPU vert, aucune régression.
 - **Rappel** : branche `feature/waforspeed-15`, synchronisée avec `main` ; confiance > 50 % → fusion directe (ligne `qa/Check.md`, ✅, Journal, puis suivre la CI de `main`).
+
+### 2026-11-04 07:40:00 — Fin WFS-76 : musique et ambiances sonores, PR #55 fusionnée par confiance (Claude, agent 5)
+- **Fait** : `src/audio/musique.*` (zone E6). Musique synthwave synthétisée (110 BPM, 4 mesures La m – Fa – Do – Sol, écrite en anneau), variantes « menu » et « course » avec fondu croisé de 0,8 s, volume 0,25. Ambiance de la carte en boucle de 8 s (ville, plage, campagne, circuit) avec événements rares tirés sur le thread audio sans allocation ; nuit : moitié du volume, ni oiseaux ni mouettes ; fondu de 0,3 s. `audio_system.cpp` : décisions et journal `MUSIQUE` / `AMBIANCE`, silence en fondu quand l'application ne dessine plus ; banc : `musique-*.wav/png`, `ambiance-*.wav/png`.
+- **Accroche annoncée** : `src/ui/ecrans/reglages.*` (E8, 12 lignes, un peu plus que les 10 permises) : ligne « Musique : Activée / Coupée », `musique=` dans le fichier, capture `reglages-musique`.
+- **Vérification locale** : synthèse lancée hors ligne : crêtes 0,60 (menu), 0,90 (course), 0,55 à 0,84 (ambiances) ; saut au raccord de boucle de 0,001 à 0,016 ; calcul en 0,18 s ; mémoire environ 3,4 Mo (musique) et 1,5 Mo (ambiance). `test_audio` et `test_systems` OK, compilation `-Wall -Wextra` sans avertissement. Fusion par confiance (`19565c3`), ajouté à `qa/Check.md`. Je suis la CI de `main`.
+- **Limite** : pas encore écouté sur téléphone (pas de carte son ici).
+
