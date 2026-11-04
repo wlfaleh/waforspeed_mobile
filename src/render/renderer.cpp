@@ -839,14 +839,24 @@ bool Renderer::beginFrame(const FrameParams& fp) {
 void Renderer::flushDraw(const Pending& p) {
     appels_++;   // WFS-15
     VkCommandBuffer cb = fr_[cur_].cb;
+#if defined(__APPLE__)
+    // WFS-88 : le GPU du simulateur iOS (famille Apple 2) refuse un sommet de base non nul (MoltenVK : VK_ERROR_FEATURE_NOT_PRESENT,
+    // puis vkEndCommandBuffer échoue) : le décalage passe dans l'adresse du tampon de sommets, même résultat
+    int32_t vofs = p.vofs;
+    VkDeviceSize vbOfs = 0;
+    if (vofs > 0) { vbOfs = (VkDeviceSize)vofs * (p.osOfs >= 0 ? sizeof(SkinVertex) : sizeof(Vertex)); vofs = 0; }
+    vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &vbOfs);
+#else
+    const int32_t vofs = p.vofs;
     VkDeviceSize zero = 0;
     vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &zero);
+#endif
     vkCmdBindIndexBuffer(cb, p.ib, 0, VK_INDEX_TYPE_UINT32);
     const VkPipelineLayout lay = p.osOfs >= 0 ? skinLayout_ : sceneLayout_;   // WFS-63 : palette d'os en set 2
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, lay, 1, 1, &p.mat->set, 0, nullptr);
     if (p.osOfs >= 0) { const uint32_t ofs = (uint32_t)p.osOfs; vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skinLayout_, 2, 1, &osSet_[cur_], 1, &ofs); }
     vkCmdPushConstants(cb, lay, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC), &p.pc);
-    vkCmdDrawIndexed(cb, p.count, 1, p.first, p.vofs, 0);
+    vkCmdDrawIndexed(cb, p.count, 1, p.first, vofs, 0);
 }
 
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {
