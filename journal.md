@@ -1496,3 +1496,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Nouveau ticket WFS-73 — Conducteurs dans les voitures**, épic **E0** (mesure du siège dans `model_loader` / `Model`, accroches joueur, trafic, duel ≤ 10 lignes chacune), P3 Moyenne, ⏳ En attente de WFS-19. Règles : `regles-de-gestion/WFS-73.md` (réutiliser `drivers.js` : `measureSeat`, `bakeBust`, `addDriver`).
 - **Poses assis, allongés, baigneurs** : pas de nouveau ticket, rattachées à **WFS-71** (terrasses : RG-02 existante ; serviettes de plage et baigneurs : nouvelle RG-06), même zone E2.
 - Pourquoi : la mesure du siège et les accroches sortent de la zone E2 ; les mettre à part garde WFS-19 livrable vite et visible.
+
+### 2026-11-04 00:02:53 — WFS-19 fusionné : piétons animés (Claude, session trafic)
+- Système `Pietons` (`src/world/pietons.*`) : `populatePeople` et `pedLook` du jeu web, 8 piétons affichés au plus (16 dessins à squelette par image), LOD 16 / 50 m. Rendu par `drawSkinned` et `ApparencePersonnage` (WFS-63 / WFS-72), sans toucher au renderer.
+- **Accroche annoncée** : `src/platform/desktop_main.cpp` (include, `WFS_BANC=pietons`, `benchPietons` dans `partie2`, 3 lignes).
+- CI verte ; captures `pietons-*` de la CI identiques au banc local. PR #42 fusionnée (710c9fc) ; ajouté dans `qa/Check.md`. Toutes les captures de ville changent (piétons visibles).
+- Pour la suite : WFS-73 (conducteurs) n'attend plus WFS-19. Limite constatée : 16 instances à squelette par image (`SKIN_MAX_INSTANCES`), à relever par un ticket E0 si conducteurs et piétons doivent être affichés ensemble en plus grand nombre.

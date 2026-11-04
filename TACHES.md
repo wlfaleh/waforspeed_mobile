@@ -103,7 +103,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
 | — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-18` |  |  |
-| P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | 🔧 En cours | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` |  |  |
+| P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` | #42 (fusionnée, 710c9fc) |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
@@ -157,7 +157,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | ⏳ Prêt |  | — | `feature/waforspeed-70` |  |  |
 | P3 Moyenne | WFS-71 | Ville vivante : commerces et terrasses, portique 3D, enseignes | E2 | ⏳ Prêt |  | WFS-06 ✅ | `feature/waforspeed-71` |  |  |
 | P2 Haute | WFS-72 | Point d'extension : apparence des personnages (peau, cheveux, vêtements) | E0 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-63 ✅ | `feature/waforspeed-72` | #40 (fusionnée, 4314bf7) |  |
-| P3 Moyenne | WFS-73 | Conducteurs dans les voitures (siège mesuré au chargement, buste figé, joueur / trafic / duel) | E0 | ⏳ En attente |  | WFS-19 | `feature/waforspeed-73` |  |  |
+| P3 Moyenne | WFS-73 | Conducteurs dans les voitures (siège mesuré au chargement, buste figé, joueur / trafic / duel) | E0 | ✅ Fusionné (QA de nuit à faire) |  | WFS-19 | `feature/waforspeed-73` | #42 (fusionnée, 710c9fc) |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -353,7 +353,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité P3 Moyenne · ⏳ Prêt — ↪ fusionné dans WFS-15
 - [ ] 60 i/s visés, mesures dans le journal
 
-**WFS-19 — Personnages : piétons animés (ville et plage)** · E2 · priorité P2 Haute · 🔧 En cours (Claude, session trafic, 2026-11-03), branche `feature/waforspeed-19` (règles : `regles-de-gestion/WFS-19.md`)
+**WFS-19 — Personnages : piétons animés (ville et plage)** · E2 · priorité P2 Haute · ✅ Fusionné (PR #42, QA de nuit à faire) (Claude, session trafic, 2026-11-03), branche `feature/waforspeed-19` (règles : `regles-de-gestion/WFS-19.md`)
 - [ ] ville : piétons sur les trottoirs, poses variées ; plage : promeneurs ; deux instants : poses de marche différentes
 
 **WFS-73 — Conducteurs dans les voitures** · E0 · priorité P3 Moyenne · ⏳ En attente de WFS-19 (règles : `regles-de-gestion/WFS-73.md`)
