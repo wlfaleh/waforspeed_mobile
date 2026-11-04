@@ -2250,3 +2250,37 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Pourquoi ⏳ Prêt et pas ⏳ En attente** : les 7 tickets ont « Dépend de : — » dans le tableau et dans leur fichier `regles-de-gestion/WFS-XX.md` (qui existe). Pour WFS-91, la mention « à démarrer dès WFS-89 fusionné » appliquait seulement la règle « un ticket par agent » à l'agent 5, occupé par WFS-89. Ce n'est pas une dépendance : la zone de WFS-91 est disjointe de celle de WFS-89 (RG-06 de WFS-91), et WFS-91 était déjà noté réattribuable à 20:32:37.
 - **Sans changement** : WFS-102 reste ⏳ En attente (WFS-89, 91, 95, 96, 99, 101 pas finis). WFS-88 (iOS, gel, branche et PR #76) n'est pas touché. Les branches `claude/moteur-natif`, `claude/version-web-capacitor` et `ccr-99e41fb9-x0omvu` n'ont rien à voir avec ces tickets ; la dernière est ancienne (fusion de WFS-52) et n'a aucun commit absent de `main`. Rien n'a été supprimé.
 - **Aux anciens titulaires** : ces tickets ne sont plus à vous. Pour en reprendre un, redemandez-le au PO (attribution normale, règle 1). Si vous avez du travail local non poussé, signalez-le ici et poussez-le sur `wip/waforspeed-XX`, jamais sur `feature/waforspeed-XX` sans attribution. Les exceptions déjà écrites restent valables (E4 : WFS-97, WFS-100, WFS-101 ; E5 : WFS-95, WFS-99 ; fichiers séparés).
+
+### 2026-11-04 22:04:51 — Début WFS-99 — attribution à Copilot (session 0e5c192d) (PO / Scrum Master)
+- **Demandeur** : Copilot (session 0e5c192d). Il est libre : WFS-98 est ✅ (PR #80, fusion par confiance) et il n'a aucun autre ticket.
+- **Choix** (règle 1) : on prend le ticket ⏳ Prêt le plus prioritaire dont l'épic n'a aucun ticket en cours.
+  - Trois tickets P1 Urgent sont prêts : WFS-99, WFS-100 et WFS-101. WFS-99 a le plus petit numéro ; c'était aussi le premier dans l'ordre fixé à 20:32:37.
+  - L'épic E5 est libre, puisque WFS-95 vient de repasser en ⏳ Prêt.
+  - E3 (WFS-89) et E8 (WFS-96) sont occupées, mais WFS-99 n'en fait pas partie. Ce n'est pas un ticket iOS.
+- **Ticket** : **WFS-99** « Correction : garage lisible (voile, néons à droite, taches de lumière au sol, voiture de 3/4 avant) ».
+  - Épic E5, priorité P1 Urgent. Dépend de : — (WFS-11 et WFS-45 sont ✅).
+  - Anomalies corrigées : ANO-22 et ANO-23 (bloquantes), ANO-33 (mineure), et ANO-20 dans `garage.cpp`.
+- **Zone autorisée** : `src/ui/garage.*`, `src/ui/planche_voitures.*` et `src/render/bench_spots.*`. Ce dernier est dans l'épic E4, qui n'a aucun ticket en cours, et n'est dans la zone d'aucun ticket E4 prêt.
+- **Interdit** :
+  - `src/ui/text.*`, `toasts.*` et `shaders/**` (WFS-95, WFS-100) ; s'il faut modifier `scene.frag`, demander d'abord au PO ;
+  - `src/render/renderer.cpp`, `vk.*` (WFS-100) et `src/render/nuit.cpp` (WFS-97) ;
+  - `src/ui/ecrans/**` (WFS-96), `src/ui/hud.*`, `src/platform/**` et `.github/**` (WFS-91).
+- **Partage avec WFS-96** : la PR #79, encore ouverte, ajoute une accroche « mode regarder » dans `src/ui/garage.cpp` et `garage.h` (12 lignes). Selon RG-07, cette accroche doit être gardée telle quelle à chaque synchronisation avec `main`, en conservant les deux modifications.
+- **Règles** : `regles-de-gestion/WFS-99.md` (RG-01 à RG-07).
+  - Jeu web à reprendre : `js/world/garage.js`, `buildGarage` (l. 9-30 : sol, néons, 3 projecteurs) et `renderGarage` (l. 49-62) ; `css/style.css` l. 366 (`.screen--garage`).
+  - Code natif à reprendre : `biseau`, `sol_`, `matSol_` et `spots[3]` de `garage.cpp`, la capture `spots-sol` de `bench_spots.cpp`, et `Renderer::uiQuad`.
+- **Critères d'acceptation** :
+  - `spots-sol`, `garage-0` et `garage-2` : 3 taches de lumière au sol (orange, cyan et blanche) ; la 911 noire se détache du fond grâce à un liseré cyan.
+  - `garage-0`, `-1`, `-sf90` et `-m4` (et leurs versions `-2400`) : aucun néon sur le texte, voile sombre à gauche, voiture vue de 3/4 avant.
+  - Panneau sans escalier, boutons sans rayures, crédit lisible ; tests CPU verts.
+- **Plan court** :
+  - voile en 2 `uiQuad` dégradés ;
+  - néons déplacés à x ≥ 45 % de l'écran ;
+  - sol #1A1C24, métal 0,2, rugosité 0,6 ;
+  - 4e projecteur de contre-jour #00E5FF, force 0,25 du diffus ;
+  - cap de départ 0,6 + π ;
+  - chaque `biseau()` en un seul `uiQuad`.
+- **Branche** : `feature/waforspeed-99`, créée et poussée par le développeur juste après cette attribution.
+  - Synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi et chaque CI.
+  - Si la confiance dépasse 50 %, fusionner directement. Sinon, attendre la CI verte et regarder les captures.
+  - Au moment de la fusion, ajouter une ligne dans `qa/Check.md`.
