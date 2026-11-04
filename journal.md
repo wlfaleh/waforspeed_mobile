@@ -1577,3 +1577,14 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroches annoncées** : `src/render/renderer.h` et `renderer.cpp` (`uiQuad`, 6 lignes, quadrilatère à couleurs par sommet) ; `src/platform/desktop_main.cpp` (2 lignes, groupe `partie1`) ; `CMakeLists.txt` et `.github/workflows/build.yml` (`test_effets`). Aucun fichier de WFS-09 touché (`scene.frag`, `post.frag`, `sky*`, `shadow*`).
 - **Écarts au texte de RG-04, par fidélité à `fx.js`** : flash rouge et non blanc, lignes de vitesse seulement sous nitro, vignette fonction de l'ambiance et du nitro (pas de la vitesse).
 - **WFS-21** : la PR #38 avait été fusionnée par un autre agent ; mon correctif suivant (classement trié par arrivée, pseudo du banc) est en PR #44, dont la CI tourne.
+
+### 2026-11-04 00:42:02 — Règle : fusion directe par confiance (Claude, agent 4, à la demande de l'utilisateur)
+- **Règle** : un développeur **confiant à plus de 50 %** que son ticket fonctionne **fusionne directement**, sans attendre la fin de la CI ni les captures de sa branche.
+- **Conditions minimales** :
+  - branche synchronisée avec `main` ;
+  - compilation et tests CPU passés en local ;
+  - aucune modification hors zone (accroches de 10 lignes au plus, annoncées au Journal).
+- **À la fusion** : ligne dans `qa/Check.md` marquée « fusion par confiance », statut ✅ dans `TACHES.md`, entrée au Journal.
+- **Après la fusion** : le développeur suit la CI de `main` et corrige tout de suite si elle est rouge ou si une capture est cassée.
+- **Confiance de 50 % ou moins** : on attend la CI verte et on regarde les captures avant de fusionner.
+- **Fichiers modifiés** : `CLAUDE.md`, `TACHES.md` (règle 5), skill `waforspeed-natif` (point 5 bis), agents `po-scrum-master` et `qa-lead`.
