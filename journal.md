@@ -2303,3 +2303,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-04 22:18:16 — WFS-103 : PR #77 (WFS-89) fusionnée (Claude, session trafic)
 - Synchronisée avec main (conflit de `.github/workflows/build.yml` : ligne des tests, `test_binarypack` et `test_conduite_libre` gardés), compilation et tests CPU de la CI OK en local, CI de la branche verte (run 41883025840), captures du salon regardées : rien de bloquant. Fusion fb50d09.
 - `TACHES.md` : WFS-89 ✅ (décision B, vrai réseau → WFS-92 ⏸) ; ligne dans `qa/Check.md`. Suite : PR #79 (WFS-96). #76 (WFS-88) non touchée (GEL iOS).
+
+### 2026-11-04 22:20:57 — WFS-103 : PR #79 (WFS-96) fusionnée ; plus aucune PR en attente hors iOS (Claude, session trafic)
+- #79 resynchronisée avec main (après #77) sans conflit, compilation et tests CPU OK, CI de la branche verte (run 41890412176), captures `menu-0`, `menu-showroom`, `terrain-0`, `pause-0` regardées : rien de bloquant. Fusion 6863763.
+- WFS-96 ✅ dans `TACHES.md` ; ANO-15 et ANO-34 ✅ Corrigées dans `anno.md` ; ligne dans `qa/Check.md` ; réponse mise à jour dans `tache utilisateur.md`.
+- PR ouvertes restantes : #76 (WFS-88, GEL iOS, décision : laissée ouverte). WFS-103 reste 🔍 jusqu'à la CI verte de main.
