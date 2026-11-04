@@ -145,9 +145,9 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.405 | WFS-57 | [MVP] Correction : centrer la paire « Rejouer » / « Menu » de l'écran de fin (ANO-14) | E3 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-57` | #29 (fusionnée) | ✅ VALIDÉ par qa-lead (cc76b01, banc PC, ANO-14 corrigée) — [rapport](qa/rapports/WFS-57.md) |
 | P4 Basse | WFS-58 | [MVP] Correction simulateur : scénario `mvp` piloté par l'état du jeu (SIM-MVP-2, 3, 4) | E7 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-58` | #32 |  |
 | P1 Urgent | WFS-59 | [MVP] Point d'extension : mode GPU logiciel, temps de jeu au temps réel et rendu allégé (SIM-MVP-1) | E0 | ✅ Fusionné (QA de nuit à faire) — gel du simulateur non reproduit au run 41719456821 (WFS-64 suspendu) | agent 3, 2026-11-03 | — | `feature/waforspeed-59` | [#31](https://github.com/wlfaleh/waforspeed_mobile/pull/31) |  |
-| P4 Basse | WFS-60 | Roues séparées dans les modèles de voiture (.wfm) | E5 | ⏳ Prêt |  | — | `feature/waforspeed-60` |  |  |
-| P4 Basse | WFS-61 | Roues animées : transformation par roue et animation (rotation, braquage) | E0 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-61` |  |  |
-| — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-61 |  | — | `feature/waforspeed-62` |  |  |
+| P2 Haute | WFS-60 | Roues animées : roues séparées dans les .wfm, rotation et braquage (absorbe WFS-61, WFS-62) | E5 (+ API E0) | 🔧 En cours (exception : 2e ticket E5, fichiers séparés de WFS-11) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-60` |  |  |
+| — | WFS-61 | Roues animées : transformation par roue et animation (rotation, braquage) | E0 | ↪ Fusionné dans WFS-60 |  | — | `feature/waforspeed-61` |  |  |
+| — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-60 (via WFS-61) |  | — | `feature/waforspeed-62` |  |  |
 | P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` | #39 (fusionnée) | ✅ VALIDÉ par qa-lead (0eb5465) — [rapport](qa/rapports/WFS-63.md) |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu (non reproduit au run 41719456821 ; réactivé si un essai `simulateur.yml` sur `main` se fige de nouveau) |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-65` | #46 |  |
@@ -392,13 +392,15 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-72 — Point d'extension : apparence des personnages** · E0 · priorité P2 Haute · ✅ Fusionné (PR #40, QA de nuit à faire) — Claude (session trafic), 2026-11-03, branche `feature/waforspeed-72` (règles : `regles-de-gestion/WFS-72.md`)
 - [ ] `squelette-tenue` : homme et femme habillés, peau / cheveux / haut / bas / chaussures distincts ; captures existantes identiques, banc `0 écart(s)`
 
-**WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
-- [ ] 4 roues distinctes (centre, rayon) par voiture ; captures de voiture identiques à avant
+**WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · 🔧 En cours (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
+- [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
+- [ ] Rotation et braquage par roue dans l'API du rendu ; sans appel, rien ne change
+- [ ] Roues immobiles à l'arrêt, qui tournent en roulant, avant braquées en virage (joueur et trafic proche)
 
-**WFS-61 — Roues animées : transformation par roue et animation (rotation, braquage)** · E0 · priorité P4 Basse · ⏳ En attente de WFS-60 (règles : `regles-de-gestion/WFS-61.md`)
+**WFS-61 — Roues animées : transformation par roue et animation (rotation, braquage)** · E0 · ↪ fusionné dans WFS-60 (règles : `regles-de-gestion/WFS-61.md`)
 - [ ] Rotation et braquage par roue dans l'API du rendu ; sans appel, rien ne change
 
-**WFS-62 — Roues animées** · E3 · priorité P4 Basse · ⏳ En attente de WFS-61 (règles : `regles-de-gestion/WFS-62.md`) — ↪ fusionné dans WFS-61
+**WFS-62 — Roues animées** · E3 · priorité P4 Basse · ↪ fusionné dans WFS-60 (via WFS-61) (règles : `regles-de-gestion/WFS-62.md`)
 - [ ] Roues immobiles à l'arrêt, qui tournent en roulant, avant braquées en virage
 
 **WFS-16 — Route mouillée avec reflets** · E4 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-09
