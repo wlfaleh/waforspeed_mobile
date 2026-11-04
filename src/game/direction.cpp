@@ -28,7 +28,7 @@ const vec4 SUR_ACCENT{10 / 255.f, 11 / 255.f, 16 / 255.f, 1.f};        // --on-a
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c, float lw, const vec4& bord) {
     const int N = 24;
     for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N, dx = biais * (1 - t), yy = y + h * i / N, hh = h / N + 0.5f;
+        const float t = (i + 0.5f) / N, dx = biais * (1 - t), yy = y + h * i / N, hh = y + h * (i + 1) / N - yy;   // bandes jointives (fond translucide)
         r.uiRect(x + dx, yy, w - biais, hh, c);
         if (lw > 0) { r.uiRect(x + dx, yy, lw, hh, bord); r.uiRect(x + dx + w - biais - lw, yy, lw, hh, bord); }
     }

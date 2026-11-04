@@ -95,7 +95,7 @@ public:
                 parts_.etincelles(at, (float)p.y + 0.05f, vel, 16 + (int)std::lround(c->lastImpact * 50));
                 flash_ = std::max(flash_, 0.35f);
             }
-            if (c->scrapes > scr_) parts_.etincelles(at, (float)p.y + 0.05f, vel, 14);                         // frottement
+            if (c->scrapes > scr_) { parts_.etincelles(at, (float)p.y + 0.05f, vel, 14); flash_ = std::max(flash_, 0.25f); }   // frottement (flash 0,25 : WFS-70 RG-03)
             acc_ = c->accidents; bumps_ = c->bumps; scr_ = c->scrapes;
         }
         // fumée des pneus : gros freinage, tête-à-queue, dérapage à haute vitesse (scene.js)

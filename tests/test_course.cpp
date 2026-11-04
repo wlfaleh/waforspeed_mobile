@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
     // WFS-70 RG-08 : modes de direction
     {
         check(reglagesRessenti().direction == ModeDirection::Glisser, "WFS-70 RG-08 mode par défaut : zone de glissement");
-        check(braquageGlisser(100, 100 + 1280 * 0.06f, 1280) == 0.5f && braquageGlisser(100, 900, 1280) == 1.f,
+        check(std::abs(braquageGlisser(100, 100 + 1280 * 0.06f, 1280) - 0.5f) < 1e-5f && braquageGlisser(100, 900, 1280) == 1.f,
               "WFS-70 glissement : 6 % de la largeur = 0,5, butée à 1");
         check(braquageFleches(true, false) == -1 && braquageFleches(false, true) == 1 && braquageFleches(false, false) == 0,
               "WFS-70 flèches : consigne −1 / +1 / 0");

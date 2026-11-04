@@ -50,8 +50,6 @@ struct EtatRessenti {
         const float x = (float)(rng.next() - 0.5) * secousse * 0.6f, y = (float)(rng.next() - 0.5) * secousse * 0.4f;
         return {x, y, 0};
     }
-    // couleur du flash (fx.js : rgba(255, 31, 75, flash × 0,28), codes sRGB comme ui::ROUGE)
-    vec4 couleurFlash() const { return {1.f, 31 / 255.f, 75 / 255.f, flash * 0.28f}; }
 };
 
 // ---------- vibration du téléphone ----------

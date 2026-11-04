@@ -1,7 +1,7 @@
 // WaForSpeed — ressenti de conduite (WFS-70) : voir ressenti.h.
 // Système « ressenti » (ordre 220, après la course 210) : il lit les compteurs de chocs de la course (accidents, petits
 // chocs, frottements : mêmes compteurs que les bruitages de WFS-28), règle secousse et flash, fait vibrer le téléphone et
-// dessine le flash. La secousse est appliquée à la caméra par cameraVue (camera_vue.cpp), le ralenti par Course::accident.
+// journalise le flash (dessiné par les effets de WFS-65). La secousse est appliquée à la caméra par cameraVue (camera_vue.cpp), le ralenti par Course::accident.
 #include "ressenti.h"
 #include <cmath>
 #include <cstdio>
@@ -12,6 +12,7 @@
 #include "direction.h"
 #include "game.h"
 #include "traffic_system.h"
+#include "../render/effets_systeme.h"
 
 namespace wfs {
 
@@ -73,11 +74,8 @@ public:
 
     void update(double dt, const GameView&) override { etat_.avancer(dt); }
 
-    // flash rouge par-dessus la 3D (fx.js), sous le HUD
-    void drawUi(Renderer& r, const GameView& g) override {
-        if (g.ecran != Ecran::Course || g.sceneDediee || etat_.flash <= 0) return;
-        r.uiRect(0, 0, g.uiWidth, g.uiHeight, etat_.couleurFlash());
-    }
+    // le flash rouge est dessiné par les effets de WFS-65 (effets_systeme.cpp, mêmes valeurs : 1 / 0,35 / 0,25, −3 dt) ;
+    // etat_.flash le suit ici pour le journal et les tests (RG-11 : flash du HUD existant)
 
     static RessentiSystem* active_;
     EtatRessenti etat_;
@@ -116,7 +114,8 @@ void benchRessenti(Game& g, Renderer& r, const std::string& out) {
     const double DT = 1.0 / 60;
     auto choc = [&](bool reduit, const char* nom) {
         reglagesRessenti() = ReglagesRessenti{}; reglagesRessenti().reduireMouvements = reduit;
-        courseBenchRules(true);
+        courseBenchRules(true); effetsBanc(true);   // flash et étincelles des effets de WFS-65
+
         if (!g.init(r, "golf", "ville")) { WFS_ERR("ressenti : chargement impossible"); return; }
         const Course* k = activeCourse();
         if (!k) { WFS_ERR("ressenti : course inactive"); g.shutdown(); return; }
@@ -138,7 +137,7 @@ void benchRessenti(Game& g, Renderer& r, const std::string& out) {
         for (int i = 3; i < 30; i++) { g.update(DT); t += DT; if (i % 10 == 0) g.render(t); }   // 0,5 s réelle après le choc
         WFS_LOG("ressenti : pendant 0,50 s réelle après le choc, chrono +%.3f s (RG-05 : non allongé), temps de jeu +%.3f s%s",
                 k->raceTime - chrono0, k->clock - jeu0, reduit ? "" : " (ralenti)");
-        g.shutdown();
+        g.shutdown(); effetsBanc(false);
     };
     choc(false, "ressenti-choc");
     choc(true, "ressenti-reduit");
@@ -175,7 +174,7 @@ void benchRessenti(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     } else WFS_ERR("ressenti : chargement impossible");
     reglagesRessenti() = sauve;
-    courseBenchRules(regles);
+    courseBenchRules(regles); effetsBanc(false);
 }
 
 } // namespace wfs
