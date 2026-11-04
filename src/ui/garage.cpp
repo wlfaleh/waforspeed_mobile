@@ -7,6 +7,7 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/cars.h"
+#include "../game/commandes_tactiles.h"   // WFS-99 : dessin2d (biseaux d'un seul tenant, traits lissés)
 #include "../game/game.h"
 #include "../game/sauvegarde.h"   // WFS-24 : voiture et peintures gardées
 #include "../render/model_loader.h"
@@ -25,6 +26,10 @@ vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8)
 const unsigned TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF, SURFACE2 = 0x1E2130,
                ON_ACCENT = 0x0A0B10, TAG = 0xC9CDDA, BG = 0x0A0B10;
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.08f};
+// WFS-99 (RG-05, ANO-33) : cap de départ 0,6 + π, voiture vue de 3/4 avant (gYaw = 0,6 de garage.js la montrait de l'arrière)
+constexpr float CAP_DEPART = 0.6f + PI;
+// WFS-99 (RG-04) : intensité du projecteur de contre-jour, 0,25 × celle des projecteurs du diffus (1,6)
+constexpr float CONTRE_JOUR = 0.25f * 1.6f;
 // couleur 0xRRGGBB → linéaire (même conversion que la peinture des voitures, game.cpp)
 vec3 lin(unsigned h) {
     auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
@@ -89,19 +94,18 @@ struct Zone {
 };
 struct Zones { Zone prev, next, choisir, retour, peintures[NB_PEINTURES], points[CAR_COUNT]; } g_z;
 
-// parallélogramme (clip-path / skewX du web) en bandes horizontales : haut décalé à droite de `biais`
+// parallélogramme (clip-path / skewX du web) d'un seul tenant, haut décalé à droite de `biais` (WFS-99, ANO-20 / ANO-33 :
+// plus de bandes qui se chevauchent, donc ni rayures ni escalier)
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 12;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - std::abs(biais), h / N + 0.5f, c);
-    }
+    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
-// trait épais d'un point à un autre (chevrons des flèches) : petits carrés
-void trait(Renderer& r, float x0, float y0, float x1, float y1, float ep, const vec4& c) {
-    const float l = std::hypot(x1 - x0, y1 - y0);
-    const int n = std::max(2, (int)(l / (ep * 0.5f)));
-    for (int i = 0; i <= n; i++) { const float t = (float)i / n; r.uiRect(x0 + (x1 - x0) * t - ep / 2, y0 + (y1 - y0) * t - ep / 2, ep, ep, c); }
+// dégradé linéaire d'un seul uiQuad sur le rectangle (x0, y0)-(x1, y1) : c0 → c1 de gauche à droite (horizontal)
+// ou de haut en bas (WFS-99 : voiles du garage sans bandes)
+void degrade(Renderer& r, float x0, float y0, float x1, float y1, const vec4& c0, const vec4& c1, bool horizontal) {
+    const vec4& hg = c0; const vec4& hd = horizontal ? c1 : c0; const vec4& bd = c1; const vec4& bg = horizontal ? c0 : c1;
+    const UiVertex q[4] = {{x0, y0, -1, -1, hg.x, hg.y, hg.z, hg.w}, {x1, y0, -1, -1, hd.x, hd.y, hd.z, hd.w},
+                           {x1, y1, -1, -1, bd.x, bd.y, bd.z, bd.w}, {x0, y1, -1, -1, bg.x, bg.y, bg.z, bg.w}};
+    r.uiQuad(q);
 }
 
 // disque horizontal (CircleGeometry couché) ou cylindre plat (dessus + tour) : repris de bench_spots.cpp (WFS-45)
@@ -164,7 +168,9 @@ public:
         r_ = &r;
         sol_ = disque(r, 30.f, 0.f, 0.f, 64); plateau_ = disque(r, 3.6f, 0.08f, 0.08f, 64);
         anneau_ = tore(r, 3.62f, 0.035f, 8, 96, 0.08f); barre_ = boite(r, 0.08f, 9.f, 0.08f);
-        Material ms; ms.color = {lin(0x101219).x, lin(0x101219).y, lin(0x101219).z, 1}; ms.rough = 0.22f; ms.metal = 0.7f;
+        // WFS-99 (RG-03, ANO-23) : sol mat (#1A1C24, rugosité 0,6, métal 0,2) au lieu du miroir de garage.js
+        // (#101219, 0,22, 0,7) : le diffus des 3 projecteurs y dessine ses taches orange, cyan et blanche
+        Material ms; ms.color = {lin(0x1a1c24).x, lin(0x1a1c24).y, lin(0x1a1c24).z, 1}; ms.rough = 0.6f; ms.metal = 0.2f;
         Material mp; mp.color = {lin(0x161925).x, lin(0x161925).y, lin(0x161925).z, 1}; mp.rough = 0.4f; mp.metal = 0.6f;
         matSol_ = r.makeMaterial(ms, nullptr, nullptr, nullptr); matPlateau_ = r.makeMaterial(mp, nullptr, nullptr, nullptr);
         matSol_.flags |= MAT_DOUBLE; matPlateau_.flags |= MAT_DOUBLE;
@@ -186,8 +192,8 @@ public:
     }
 
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
-        if (nouveau == Ecran::Garage) {   // openGarage : voiture de la partie, plateau à 0,6 rad, panneau qui glisse
-            index_ = indexDe(g.car); yaw_ = 0.6f; slide_ = 0; t0_ = -1; doigt_ = -1;
+        if (nouveau == Ecran::Garage) {   // openGarage : voiture de la partie, plateau au cap de départ, panneau qui glisse
+            index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(),
                     CAR_COUNT, PAINTS[peinture_[index_]].nom);
@@ -227,7 +233,10 @@ public:
             {{0, 10, 8}, {0, 0, 0}, lin(0xffffff), 1.4f, 30, 0.5f, 0.7f, 1.2f},
         };
         for (int i = 0; i < 3; i++) fp.spots[i] = spots[i];
-        fp.spotCount = 3;
+        // WFS-99 (RG-04, ANO-23) : 4e projecteur cyan en contre-jour, derrière la voiture à l'opposé de la caméra :
+        // liseré sur la carrosserie (une voiture noire se détache du fond noir), force 0,25 × le diffus des projecteurs
+        fp.spots[3] = {{-std::sin(0.55f) * 7.f, 3.2f, -std::cos(0.55f) * 7.f}, {0, 0.6f, 0}, lin(0x00e5ff), CONTRE_JOUR, 30, 0.6f, 0.6f, 1.2f};
+        fp.spotCount = 4;
         s.route = false; s.joueur = false; s.commandes = false; s.cible = look;
         return true;
     }
@@ -241,7 +250,10 @@ public:
         matAnneau_ = matNeon_[0]; matAnneau_.emissive = lin(ficheDe(CARS[index_].id).glow) * 2.2f;
         r.draw(anneau_, matAnneau_, mat4::identity());
         for (int i = 0; i < 9; i++) {   // 9 barres lumineuses en arc derrière la voiture
-            const float a = -0.9f + i * 0.32f;
+            // WFS-99 (RG-02, ANO-22) : arc de garage.js (rayon 16, centre z = 4) tourné vers la droite et resserré
+            // (−0,9 + i × 0,32 → −0,36 + i × 0,18) : toute barre visible tombe à x ≥ 0,53 de l'écran (derrière la
+            // voiture ou à droite), jamais sur le titre, l'accroche ni la barre d'index ; 4 barres visibles en 16/9
+            const float a = -0.36f + i * 0.18f;
             r.draw(barre_, matNeon_[i % 3 == 1 ? 1 : 2], translate({std::sin(a) * 16, 4.5f, -std::cos(a) * 16 + 4}));
         }
         if (voiture_.ok) {   // RG-06 : que des vraies voitures, pas de silhouette provisoire
@@ -294,11 +306,12 @@ public:
         const CarDef& car = CARS[index_];
         const Fiche& fi = ficheDe(car.id);
         const float op = std::clamp(t / 0.3f, 0.f, 1.f);
-        // .screen--show : voile du bas (linear-gradient 0deg, .92 → 0 à 42 %) et vignette
-        for (int i = 0; i < 12; i++) {
-            const float u0 = i / 12.f, u1 = (i + 1) / 12.f, a = 0.92f * (1 - (u0 + u1) / 2);
-            r.uiRect(0, H - H * 0.42f * u1, W, H * 0.42f * (u1 - u0) + 0.5f, hex(BG, a * op));
-        }
+        // .screen--show : voile du bas (linear-gradient 0deg, .92 → 0 à 42 %), un seul dégradé (WFS-99 : sans bandes)
+        degrade(r, 0, H * 0.58f, W, H, hex(BG, 0), hex(BG, 0.92f * op), false);
+        // WFS-99 (RG-01, ANO-22) : voile .screen--garage à gauche (linear-gradient 100deg, rendu horizontal) :
+        // .92 à 0 %, .70 à 34 %, 0 à 62 % de la largeur, sous le titre, l'accroche et la barre d'index
+        degrade(r, 0, 0, W * 0.34f, H, hex(BG, 0.92f * op), hex(BG, 0.70f * op), true);
+        degrade(r, W * 0.34f, 0, W * 0.62f, H, hex(BG, 0.70f * op), hex(BG, 0), true);
         // ---------- .show-head : marque · index, nom, type + accroche, points des voitures ----------
         {
             const float x = gl + std::clamp(W * 0.04f, 0.f, 64 * k);
@@ -330,22 +343,19 @@ public:
             const float w = 64 * k, h = 88 * k, x = s == 0 ? gl : W - gr - w, y = H * 0.42f - h / 2;
             biseau(r, x, y, w, h, 12 * k, hex(0x14161F, 0.72f * op));
             const float cx = x + w / 2, cy = y + h / 2, d = s == 0 ? 1.f : -1.f, e = 3.2f * k;
-            trait(r, cx + 6 * k * d, cy - 14 * k, cx - 8 * k * d, cy, e, hex(TEXTE, op));
-            trait(r, cx - 8 * k * d, cy, cx + 6 * k * d, cy + 14 * k, e, hex(TEXTE, op));
+            const vec2 chevron[3] = {{cx + 6 * k * d, cy - 14 * k}, {cx - 8 * k * d, cy}, {cx + 6 * k * d, cy + 14 * k}};
+            dessin2d::trait(r, chevron, 3, e, hex(TEXTE, op));   // WFS-99 : trait lissé d'un seul tenant
             (s == 0 ? g_z.prev : g_z.next) = {x, y, w, h};
         }
         // ---------- .show-panel : fiche, barres, peintures, boutons ----------
         const float padX = 24 * k, padY = 18 * k;
         const float statH = 4 * 14 * k + 3 * 10 * k, paintH = 30 * k, panelH = padY * 2 + statH + 14 * k + paintH;
         const float px0 = gl, px1 = W - gr, py0 = H - gb - 26 * k - panelH;
-        {   // fond vitré, coin haut droit coupé de 22 px, bord supérieur
-            const int N = 10;
-            for (int i = 0; i < N; i++) {
-                const float t1 = (i + 0.5f) / N, cut = 22 * k * (1 - std::min(1.f, (i + 0.5f) * (panelH / N) / (22 * k)));
-                (void)t1;
-                r.uiRect(px0, py0 + panelH * i / N, px1 - px0 - std::max(0.f, cut), panelH / N + 0.5f, {GLASS.x, GLASS.y, GLASS.z, GLASS.w * op});
-            }
-            r.uiRect(px0, py0, px1 - px0 - 22 * k, 1 * k, {BORD.x, BORD.y, BORD.z, BORD.w * op});
+        {   // fond vitré d'un seul tenant, coin haut droit coupé (WFS-99, RG-06 : 14 px), bord supérieur
+            const float coin = 14 * k;
+            const vec2 p[5] = {{px0, py0}, {px1 - coin, py0}, {px1, py0 + coin}, {px1, py0 + panelH}, {px0, py0 + panelH}};
+            dessin2d::polygone(r, p, 5, dessin2d::uni({GLASS.x, GLASS.y, GLASS.z, GLASS.w * op}));
+            r.uiRect(px0, py0, px1 - px0 - coin, 1 * k, {BORD.x, BORD.y, BORD.z, BORD.w * op});
         }
         float x = px0 + padX;
         const float y1 = py0 + padY;
@@ -419,8 +429,9 @@ public:
             }
             ui::text(r, cx + 6 * k, yy + 6 * k, 15 * k, PAINTS[peinture_[index_]].nom, hex(TEXTE, op), ui::GAUCHE, 0, false);
         }
-        // .show-credit : crédit du modèle (licence obligatoire), en bas à droite
-        ui::text(r, W - gr, H - gb - 12 * k, 11 * k, car.credit, hex(MUTED, op), ui::DROITE, 0, false);
+        // .show-credit : crédit du modèle (licence obligatoire), en bas à droite ; WFS-99 (RG-06, ANO-33) : capitales de
+        // 10 px à 720p (taille 14 = capitales + jambages), #8A90A6, sous le panneau
+        ui::text(r, W - gr, H - gb - 17 * k, 14 * k, car.credit, hex(MUTED, op), ui::DROITE, 0, false);
         if (!voiture_.ok) {   // .show-loading
             const std::string l = "Chargement du modèle 3D…";
             const float lw = ui::width(14 * k, l, 0.08f) + 36 * k;
@@ -463,7 +474,7 @@ private:
     Material matSol_, matPlateau_, matNeon_[3], matAnneau_;
     Model voiture_; int charge_ = -1;
     int index_ = 0, peinture_[CAR_COUNT] = {};
-    float yaw_ = 0.6f, slide_ = 0, yaw0_ = 0, x0_ = 0;
+    float yaw_ = CAP_DEPART, slide_ = 0, yaw0_ = 0, x0_ = 0;
     double t0_ = -1, tAppui_ = 0;
     int doigt_ = -1; bool glisse_ = false, choisi_ = false;
 };
