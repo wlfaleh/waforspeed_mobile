@@ -62,7 +62,7 @@ void audioOutStop() {
 }
 
 } // namespace wfs
-#else
+#elif !defined(__APPLE__)   // WFS-79 : iOS a sa sortie Core Audio (audio_out_ios.cpp)
 namespace wfs {
 int audioOutStart(AudioFill) { return 0; }   // banc d'essai : pas de carte son
 void audioOutStop() {}
