@@ -2728,3 +2728,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-04 23:48:25 — PO : décisions de l'utilisateur appliquées (po-scrum-master)
 - Cloudflare Workers accepté pour le relais du duel (WFS-112) ; Checkpoint : départ 60 s et +30 s par checkpoint (WFS-110 RG-08) ; valeurs de la poursuite police validées (WFS-111). Règles mises à jour.
+
+### 2026-11-04 23:51:37 — PO : les anomalies passent en priorité, regroupées en gros lots (po-scrum-master)
+- **Décision de l'utilisateur** : priorité aux anomalies du QA, en lots selon la complexité, pas de micro-ticket. **Lot INTERFACE = WFS-102** (P1, ⏳ Prêt, absorbe WFS-95 : ANO-16, 17, 18, 19, 20, 32, 35, 38, 39, 41, 42, 43, 44, 45 ; dépendances levées). **Lot NUIT = WFS-97** (P1, ajoute ANO-37). **Lot RENDU VOITURES = WFS-100** (en cours : ANO-21, 27, 28). Déjà corrigées en attente de recette : ANO-22, 23, 33 (WFS-99), ANO-25, 26, 36 (WFS-101). ANO-02 / ANO-40 / ANO-29 dans WFS-53 / WFS-94 / WFS-91. Règle ajoutée à `po-scrum-master.md`.

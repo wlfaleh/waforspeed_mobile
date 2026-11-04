@@ -30,3 +30,8 @@ Vraies lumières dynamiques par projecteur, ombres des projecteurs.
 
 ## Zone de code
 `src/render/nuit.cpp` (E4). Interdit : `src/world/**` (WFS-93), `src/platform/**` (WFS-91), fichiers iOS (gel iOS).
+
+
+## Lot élargi (décision de l'utilisateur, 2026-11-04 : anomalies prioritaires, gros lots)
+- Ce ticket devient le **lot « nuit »** : il corrige aussi **ANO-37** (nuit en ville : façades trop claires, on dirait le crépuscule). Correction proposée par le QA : hémisphère de nuit × 0,45, façades #1A1C28, 30 % des fenêtres émissives au hasard (#FFD9A0 et #9F…), néons et reflets qui ressortent. Priorité passée en **P1 Urgent**. Une seule branche, une seule CI.
+- Coordonner avec WFS-100 (bloom, en cours) et WFS-84 / WFS-109 (feux).
