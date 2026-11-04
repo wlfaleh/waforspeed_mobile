@@ -10,6 +10,7 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "chargement.h"
+#include "../garage.h"   // WFS-11
 
 namespace wfs {
 namespace ecrans {
@@ -67,7 +68,7 @@ public:
         const int choix = presse_;
         doigt_ = -1; presse_ = -1;
         if (choix < 0 || sous != choix) return true;
-        if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Course); }             // RG-03
+        if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Garage); }             // RG-03 ; WFS-11 : garage d'abord
         else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom » (bientôt)"); bientot_ = g.time; }  // RG-04
         return true;
     }
@@ -207,8 +208,10 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     // menu-appui : « Course solo » tenu
     g.onTouch({2, x, y, true}); image();
     capture("menu-appui", "« Course solo » à l'état pressé");
-    // relâcher → course remise à zéro, décompte 3-2-1-GO de WFS-12
+    // relâcher → garage (WFS-11) → « Choisir » → course remise à zéro, décompte 3-2-1-GO de WFS-12
     g.onTouch({2, x, y, false});
+    for (int i = 0; i < 30; i++) image();
+    if (float gx, gy; garageBouton("choisir", gx, gy)) { g.onTouch({7, gx, gy, true}); image(); g.onTouch({7, gx, gy, false}); }
     const Course* k = nullptr;
     bool trois = false, go = false;
     for (int i = 0; i < 60 * 5 && !(trois && go); i++) {
@@ -226,6 +229,8 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     capture("menu-bientot", "bandeau « Bientôt » après « Showroom », « Duel en ligne » grisé");
     // fin-menu : course depuis le menu, temps forcé à 0,05 s, écran de fin (boutons actifs 0,9 s après la fin)
     centre(SOLO, x, y); g.onTouch({5, x, y, true}); image(); g.onTouch({5, x, y, false});
+    for (int i = 0; i < 30; i++) image();
+    if (float gx, gy; garageBouton("choisir", gx, gy)) { g.onTouch({8, gx, gy, true}); image(); g.onTouch({8, gx, gy, false}); }   // WFS-11
     g.setAutopilot(true);                        // une vraie petite course : score et record non nuls
     for (int i = 0; i < 60 * 8; i++) image();   // décompte (3 s) puis 5 s de course
     g.setAutopilot(false);
