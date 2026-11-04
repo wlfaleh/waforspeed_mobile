@@ -2482,3 +2482,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - le plancher de résolution (60 %) se trouve dans `src/render/qualite_auto.h` (`echelleRendu`) ;
   - la qualité automatique est dans `src/render/qualite_systeme.cpp` ;
   - la capture de comparaison `voiture-course-haute` est faite au banc (`src/render/qualite_banc.cpp`).
+
+### 2026-11-04 22:50:42 — PO : WFS-104 à réattribuer (agent 4 en pause sur ordre de l'utilisateur) (po-scrum-master)
+- L'agent 4 ne prend plus de tâche (aucun ticket en cours, branches fusionnées, rien supprimé). WFS-104 (priorité absolue) reste ⏳ Prêt ; pistes de WFS-86 ajoutées à ses règles ; agent 3 prévenu pour le prendre en premier.
