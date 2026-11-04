@@ -10,6 +10,7 @@
 #include "../game/track.h"
 #include "../render/squelette.h"
 #include "zones.h"
+#include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
 
 namespace wfs {
 namespace {
@@ -41,6 +42,7 @@ struct Look {
 struct Personne {
     double s = 0, lat = 0, v = 1.1, ph = 0, dodge = 0, y = 0, t = 0; int pose = 0, dir = 1;
     bool look_ = false; Look look; double rel = 0;
+    bool assis = false, yawFixe = false; float yawRel = 0;   // WFS-71 : assis (Sitting_*) / orientation donnée par le décor
 };
 
 // pedLook (people.js) : tirée une fois, déterministe selon la place de la personne dans la liste
@@ -80,6 +82,12 @@ public:
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
         peupler(*g.map, (int64_t)g.track->segmentCount());
+        {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
+            const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;
+            for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
+            for (const vie::Serviette& v : vie::serviettes(*g.map, L)) { P.s = v.s + 0.4; P.lat = v.lat; P.pose = 2; P.y = vie::hauteurSable(v.lat) + 0.03; P.yawRel = 1.5708f + v.rot; gens_.push_back(P); }
+            P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
+        }
         if (gens_.empty()) return;
         if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0]) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1])) {
             WFS_ERR("Piétons indisponibles (assets/people) : aucun piéton affiché");   // pas de silhouettes de repli
@@ -143,8 +151,8 @@ public:
             const TrackPoint tp = tr.point((aP + P.rel) * SEG, lat);
             const double gy = P.y != 0 ? P.y : sol(side);
             // le personnage regarde vers +Z dans son repère : face au sens de la route = demi-tour (repère natif)
-            float yaw = (float)(-tp.th) + (P.dir > 0 ? 3.14159265f : 0.f);
-            const char* anim = P.pose == 0 ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : L.idle;
+            float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
+            const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : L.idle;
             echantillonner(M, clipParNom(M, anim), P.t + P.ph / 6.283 * 1.333, pose);
             const mat4 monde = translate({(float)tp.x, (float)(tp.y + gy), (float)tp.z}) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
             const double dm = std::fabs(P.rel) * SEG_M;
