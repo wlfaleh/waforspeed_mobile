@@ -433,8 +433,8 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
         gyroscope::publier(9.81f * std::cos(a), 9.81f * std::sin(a));
         g.onTouch({30, d.gaz.cx(), d.gaz.cy(), true});
         for (int i = 0; i < 45; i++) image();
-        WFS_LOG("commandes (WFS-108) : grands boutons, gaz %.0f × %.0f px (%.2f px/dp), gyroscope 12° → braquage %.2f (0,53 attendu), %.0f km/h",
-                d.gaz.w, d.gaz.h, d.k, g.player().steer, g.player().kmh());
+        WFS_LOG("commandes (WFS-108) : grands boutons, gaz %.0f × %.0f px (%.2f px/dp), gyroscope 12° → consigne %.2f (0,53 attendu), braquage de la voiture %.2f%s, %.0f km/h",
+                d.gaz.w, d.gaz.h, d.k, directionBraquage(W), g.player().steer, g.player().controlLock > 0 ? " (bloqué : accident)" : "", g.player().kmh());
         capture("commandes-grandes-gyro", "boutons grands, gaz appuyé, téléphone incliné de 12° vers la droite");
         g.onTouch({30, d.gaz.cx(), d.gaz.cy(), false});
         gyroscope::publier(9.81f, 0.f);
