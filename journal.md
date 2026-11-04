@@ -1612,3 +1612,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - CI verte (run de la PR : android, 4 bancs, publication) ; captures `garage-0-2400`, `menu-depart-go` (menu → garage → « Choisir » → GO) et `garage-course` regardées : rien de bloquant. Fusion `5dcda32`, ajouté à `qa/Check.md`.
 - Le job `ecrans-2400` passe à 11 min (caméras WFS-66 + garage en 2400) : c'est maintenant le plus long de la CI.
 - Reste à faire (ex-WFS-13) : conversion des 16 autres voitures (le garage montre les 4 voitures converties).
+
+### 2026-11-04 00:44:51 — WFS-50 fusionné (PR #47) (Claude, session trafic)
+- Run 41747781094 de la branche : `RÉSULTAT TECHNIQUE : OK`, 10 étapes. Course 1 : score 3240, 0,65 km, 143 km/h max ; Rejouer et Menu
+  fonctionnent. Captures regardées (HUD, piétons, écran de fin) : rien de bloquant. CI de construction verte (run 41747775305).
+- Fusion immédiate (règle en vigueur), ligne ajoutée dans `qa/Check.md`. Simulateur relancé sur `main` (`epic=MVP`, `scenario=mvp`) :
+  la Release `simulateur-MVP` sera écrasée par ce passage, à recetter la nuit (`qa/rapports/simulateur-MVP.md`).
