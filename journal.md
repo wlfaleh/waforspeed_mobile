@@ -2049,3 +2049,20 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Vérification** : `bash -n` ; essai local avec un faux `gh` (création, remplacement avec 403 à la première lecture, Release d'un commit plus récent) : déroulés corrects. Preuve attendue : CI de la branche (`apercu-waforspeed-87` créée), puis relance du job de publication (chemin de remplacement).
 
 ### 2026-11-04 16h regarder tache-utilisateur.md
+### 2026-11-04 17:12:22 — WFS-87 fusionné par l'utilisateur (PR #73) : TACHES et qa/Check.md à jour (Claude, session trafic)
+- Demande de `tache utilisateur.md` : PR #73 (WFS-87, publication fiable de la Release d'aperçu, `tools/qa/publier_apercu.sh`) fusionnée par l'utilisateur, commit 3b62e5f.
+- CI de main sur 3b62e5f verte, publication comprise (run 41860181020) : l'APK de main est en ligne dans la Release `apercu`.
+- `TACHES.md` (tableau et fiche) passé à ✅ ; ligne ajoutée dans `qa/Check.md` pour la recette de nuit.
+
+### 2026-11-04 17:16:09 — WFS-80 fusionné par confiance (PR #74) : focus manette du garage et des réglages, lignes Direction et Réduire les mouvements (Claude, session trafic, agent WFS-80)
+- `src/ui/ecrans/reglages.cpp` : 8 lignes (Direction → `sauvegarde().steer` + `reglagesRessenti().direction` tout de suite ; Réduire les mouvements → clé `mouvements=0/1` du fichier des réglages, relue au lancement) ; lignes de 38 px + 7 px, même hauteur de panneau. Focus manette : bouton « Réglages », chaque choix, « Fermer » (B) ; panneau ouvert → zones du menu / de la pause retirées.
+- **Accroche annoncée** : `src/ui/garage.cpp`, 1 ligne (`manette::focus` sur chacune des 16 pastilles). Aucune modification de `manette_jeu.*`.
+- Banc `WFS_BANC=menu` : captures `reglages`, `manette-garage-peinture`, `manette-reglages` ; journal conforme (Flèches / fleches, mouvements Oui relu, peinture Orange par A, B ferme). Captures tactiles du garage identiques au pixel près à main. Compilation et tests CPU passés en local (test_duel instable sous charge, vert en le relançant).
+- Commit de fusion fad69e2. Suivi de la CI de main à faire.
+
+### 2026-11-04 17:28:45 — WFS-78 fusionné par confiance : iOS dans une surface Metal (Claude, session trafic, agent WFS-78)
+- PR #64, commit de fusion 2ac79d4. `ios_main.mm` : vue adossée à un `CAMetalLayer`, rendu à la taille du calque en pixels, tactile et marges dans ce repère, plus de recopie PNG ni d'`UIImageView`, initialisation sur plusieurs images (vue, vulkan, rendu, jeu avec l'écran de chargement WFS-35), durées au journal (`iOS : étape … ms`).
+- **Accroche annoncée** : `src/render/vk.cpp`, 8 lignes sous `#elif defined(__APPLE__)` (`VK_EXT_metal_surface`, `vkCreateMetalSurfaceEXT`), sur le modèle du bloc Android. `VK_USE_PLATFORM_METAL_EXT` est défini par `ios/ios.cmake` (une ligne, hors lignes audio de WFS-79). `vk.h` ne change pas.
+- `ios.yml` : `ios-menu.png` et `ios-course.png` sont pris avec `simctl io screenshot` quand les repères du journal apparaissent (`QA iOS : menu affiche` / `course affichee`), car `capturePng` ne marche qu'en rendu hors écran. Délais : 600 s pour « QA pret », 25 min pour l'étape, 90 min pour le job. En cas de blocage, la pile de l'app est relevée (`ios-pile.txt`).
+- Résultat du run 41831769796 : compilation et archive vertes, `VK_EXT_metal_surface` activée, swapchain 2622x1206 (échelle 3) à la taille de la vue, étape vulkan 2692 ms. Ensuite, **aucun journal pendant 600 s dans `Renderer::init`** (même arrêt que WFS-22, donc ni la surface ni la taille ne sont en cause). Ce n'est pas une simple lenteur : il faut chercher dans le rendu, hors de ma zone. Essai dans ma zone : `MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0` (GPU du simulateur : famille Apple 2), à vérifier sur le run `ios.yml` de `main`. S'il bloque encore, le PO crée un ticket E4 à partir de `ios-pile.txt`.
+- CI Android verte (run 41831769652). Le banc PC est inchangé : aucun code compilé sous Linux n'a changé. `test_duel` a échoué une fois en local par instabilité UDP, puis il est passé.
