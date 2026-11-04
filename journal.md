@@ -2457,3 +2457,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Après la QA de nuit (d210f62), aucune bloquante. Pas de nouveau ticket : les 4 anomalies sont dans la zone de WFS-102 (même tour de l'interface E8, mêmes fichiers `terrain.cpp`, `salon.*`, commandes), qui attend déjà WFS-89 et WFS-98 fusionnés : un seul passage, une seule CI.
 - WFS-102 : RG-11 (clavier du code ≈ 26 dp, GAZ ≈ 37 dp, NITRO ≈ 39 dp → ≥ 44 dp, ANO-19), RG-12 (ANO-42, terrain sans bandes), RG-13 (ANO-43, touche effacer), RG-14 (ANO-44, aide sous le code), RG-15 (ANO-45, commandes seulement en course) ; zone élargie à `commandes_tactiles.*` et à l'accroche `game.cpp` (`drawControls`).
 - `anno.md` : ANO-42 à ANO-45 en 📋 Planifiée → WFS-102.
+
+### 2026-11-04 22:46:18 — PO : 3 tickets P1 après le test réel de l'utilisateur (po-scrum-master)
+- **WFS-104** (E4, priorité absolue) : qualité de la voiture en course = garage (2e passage : WFS-86 n'a pas suffi pour l'utilisateur). **WFS-105** (E3) : caméra de poursuite ≈ 40° (angle exact à vérifier sur captures, entre 30° et 40°). **WFS-106** (E7) : la Release `apercu` de `main` date de 14:34 UTC alors que main a avancé, publication en échec signalée (403) : l'utilisateur teste peut-être une ancienne version. À attribuer avant tout autre ticket. Aucun ticket iOS.
