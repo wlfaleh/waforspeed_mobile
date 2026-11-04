@@ -1,5 +1,20 @@
 # QA simulateur MVP (WFS-50) : parcours complet sur Android
 
+## Tour 2 — recette de nuit (2026-11-04 18:34:47 UTC, qa-lead)
+
+**Verdict : VALIDÉ** (simulateur Android). Les 3 bloquantes et la mineure du 1er passage ne se voient plus.
+
+- Release regardée : `simulateur-MVP` (publiée 2026-11-04T00:53:14Z, commit `2ac6ed5`, après la PR #47), `qa-01` à `qa-10`, `qa-deroulement.txt`, `qa-logcat.txt`.
+- `qa-deroulement.txt` : `fenêtre du jeu 2400x1080`, `gaz tenu 2016,993`, **`RÉSULTAT TECHNIQUE : OK`**.
+- `qa-05-go` : course lancée, 108 km/h, HUD, piétons ; `qa-06-course-hud` : 135 km/h ; `qa-07-fin` : score 4 170, 0,83 km, Rejouer / Menu.
+- `qa-logcat.txt` : `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)`, `QA ips=1.0` puis 0,6 (GPU logiciel).
+- Le design des écrans (commandes tactiles, échelle de l'interface) est jugé sur le banc PC : ANO-19 et ANO-31.
+
+| ANO-XX | Gravité | Capture | Ce qui ne va pas |
+|---|---|---|---|
+| — | — | — | Aucune anomalie. |
+
+
 **Verdict : REFUSÉ** (simulateur Android), 1er passage, 3 anomalies bloquantes et 1 mineure. Le MVP n'est **pas** livrable
 en l'état : le parcours RG-02 n'est pas visible sur les captures.
 

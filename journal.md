@@ -2155,3 +2155,19 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - **WFS-93** (E2) `feature/waforspeed-93` : `src/world/**` ; **WFS-95** (E5) `feature/waforspeed-95` : `src/ui/text.*`, `toasts.*`, `shaders/ui*`, `assets/fonts/**` ; **WFS-96** (E8) `feature/waforspeed-96` : `src/ui/ecrans/**` sauf `salon.*`, accroches ≤ 10 lignes `garage.cpp`, `manette_jeu.cpp`, `sfx.*` ; **WFS-97** (E4) `feature/waforspeed-97` : `src/render/nuit.cpp`.
   - Interdits pour les quatre : `src/platform/desktop_main.cpp` et `.github/**` (WFS-91 : captures dans les bancs déjà branchés), fichiers du duel (WFS-89), tout fichier iOS (gel).
 - **Plan** : WFS-96 et WFS-95 d'abord (visibles dès le menu), puis WFS-93, puis WFS-97. Fusion par confiance si > 50 %, une CI par ticket, ligne dans `qa/Check.md` à chaque fusion.
+
+### 2026-11-04 18:35:12 — Recette de nuit, lot de 45 lignes de qa/Check.md, accent qualité et design (qa-lead)
+- **Captures** : Release `apercu` de main, construction 547 (`dade9be`, toutes les fusions jusqu'à WFS-90), comparées à `apercu-waforspeed-80` ; simulateur : Release `simulateur-MVP` (`2ac6ed5`). Gel iOS : WFS-78 et WFS-79 non recettés (restent ☐), partie iOS de WFS-22 ignorée.
+- **Verdicts** (45 lignes, 41 rapports + `simulateur-MVP.md`) : **REFUSÉ 14** (WFS-37, 42, 39, 45, 66, 65 ×2 lignes, 11, 41, 67, 15, 77, 87, 90) ; **PASSABLE AVEC ANOMALIES MINEURES 7** (WFS-21 ×2, 74, 71, 24, 09, 83) ; **VALIDÉ 24** (dont WFS-50 sur le simulateur).
+- **Anomalies** créées dans `anno.md` : **ANO-15 à ANO-41** (17 bloquantes, 10 mineures), chacune avec sa correction (valeurs du skill `design-street-racing` et du jeu web). Bloquantes → tickets de correction prioritaires à créer par le PO. Plusieurs recouvrent des tickets en cours : ANO-15 (voile en bandes) ↔ WFS-96, ANO-16 / ANO-17 (« — » manquant, petits textes) ↔ WFS-95.
+- **À traiter d'abord** (vu sur presque toutes les captures) : ANO-31 commandes tactiles sans dessin ni libellé, ANO-19 interface trop petite sur téléphone (`k = H / 720`), ANO-20 boutons rayés (bandes qui se chevauchent), ANO-21 reflets qui flottent sur les voitures, ANO-27 bloom qui dédouble l'image.
+- **Release `apercu`** : trouvée à 96 fichiers sur 222 à 17:45 UTC après des runs annulés (ANO-29, WFS-87) ; complète à nouveau après le run 547.
+
+### 2026-11-04 18:39:48 — Suite de la recette qualité et design : anomalies rattachées, PO saisi (Claude, session trafic)
+- Recette de nuit (qa-lead) : 45 tickets, 24 VALIDÉ, 7 PASSABLE, 14 REFUSÉ ; ANO-15 à ANO-41 (17 bloquantes, 10 mineures).
+- Rattachées aux tickets en cours (même zone de code), demande envoyée aux développeurs :
+  ANO-15 (voile du menu en bandes) et ANO-34 (pause titrée « RÉGLAGES ») → WFS-96 ;
+  ANO-16 (« — » manquant) et ANO-17 (petits textes illisibles, Inter 500 sous 16 px) → WFS-95. `anno.md` : statut 📋 Planifiée.
+- Autres bloquantes (ANO-18 à ANO-31) : PO saisi pour créer des US de correction P1 regroupées par zone
+  (commandes tactiles, échelle dp, rendu voitures, bloom et spots, effets et trafic, CI) et me les attribuer.
+- Rappel de l'utilisateur : `TACHES.md`, `journal.md`, `qa/Check.md` et `anno.md` mis à jour à chaque étape.

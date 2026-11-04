@@ -1,5 +1,27 @@
 # QA WFS-42 : Vitrages et jantes, trame de points (lunette arrière de la Golf, rayons des jantes)
 
+## QA après fusion, recette de nuit (2026-11-04 18:34:47 UTC, qa-lead, accent qualité et design)
+
+**Verdict : REFUSÉ**
+
+- Captures regardées : Release `apercu` (main, construction 547, commit `dade9be`, publiée après le run 41883566488), comparées à `apercu-waforspeed-80` (construction 537) : 189 captures identiques, 26 qui ne changent que par le trafic, les piétons ou le code de salon tiré au hasard.
+- Référence design : skill `design-street-racing` (tokens.md) et jeu web `waaps/waforspeed/` (css/style.css, index.html).
+- Ticket déjà fusionné (fusion par confiance / rapide) : chaque anomalie **bloquante** devient un **ticket de correction prioritaire** à créer par le PO ; les mineures sont au tableau `anno.md`.
+
+### Captures
+
+| Capture | Constat |
+|---|---|
+| `vitrine-golf-0` | lunette arrière sans trame de points visible, feux arrière rouges : OK |
+| `vitrine-golf-0`, garage, trafic | traits et points brillants qui flottent sur et au-dessus de la carrosserie (ANO-21) |
+
+### Anomalies
+
+| ANO-XX | Gravité | Capture | Ce qui ne va pas |
+|---|---|---|---|
+| ANO-21 | Bloquante | `vitrine-golf-0`, `garage-0`, `garage-peinture-1`, `garage-peintures`, `trafic-clignotant`, `trafic-freinage` | traits et points brillants qui flottent sur la carrosserie et **au-dessus du toit** (traits blancs dans le vide au-dessus de la Golf, gerbes cyan et orange sur la lunette et les feux au garage) : reflet du soleil « élargi » des pièces fines opaques. **Correction** : retirer l'élargissement du reflet des opaques fins et leur appliquer le même facteur de couverture du pixel que les transparents ; plafonner le spéculaire à 4,0 avant le bloom |
+
+
 **Verdict : REFUSÉ** (banc d'essai PC), 1er passage
 
 - Construction regardée : commit `5444e02` (branche `feature/waforspeed-42`). Release `apercu-waforspeed-42`
