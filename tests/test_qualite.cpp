@@ -15,7 +15,7 @@ static int course(Auto& a, double fps, double secondes, bool enCourse = true) {
 
 int main() {
     VERIFIE(niveauInitial(false) == HAUTE && niveauInitial(true) == BASSE, "niveau du premier lancement");
-    VERIFIE(echelleNiveau(BASSE) == 0.5f && echelleNiveau(MOYENNE) == 0.75f && echelleNiveau(HAUTE) == 1.f, "échelles des niveaux");
+    VERIFIE(echelleNiveau(BASSE) == 0.5f && echelleNiveau(MOYENNE) == 1.f && echelleNiveau(HAUTE) == 1.f, "échelles des niveaux (WFS-104)");
     VERIFIE(bloomNiveau(BASSE) == 0.f && bloomNiveau(MOYENNE) > 0 && bloomNiveau(HAUTE) > 0, "bloom coupé en Basse seulement");
 
     // 25 images/s : −0,1 toutes les 2 s jusqu'à 0,6, puis rétrogradation unique
@@ -46,11 +46,20 @@ int main() {
     Auto e; e.niveau = BASSE; course(e, 20, 30); VERIFIE(e.niveau == BASSE, "pas de niveau sous Basse");
     std::printf("choix du joueur, hors course, niveau Basse : OK\n");
 
-    // WFS-86 : plancher de l'échelle réelle (pas de 0,75 × 0,6 = 45 % en course)
-    VERIFIE(echelleRendu(HAUTE, 1) == 1.f && std::abs(echelleRendu(HAUTE, 0.6f) - 0.6f) < 1e-6f, "Haute : 100 %% → 60 %%");
-    VERIFIE(echelleRendu(MOYENNE, 1) == 0.75f && echelleRendu(MOYENNE, 0.6f) == PLANCHER && echelleRendu(MOYENNE, 0.7f) == PLANCHER, "Moyenne : jamais sous 60 %%");
+    // WFS-104 (RG-02) : netteté du garage en course : Haute toujours 100 %, Moyenne jamais sous 90 %, Basse 50 % fixe
+    bool hauteFixe = true, moyenneOk = true;
+    for (float d = 0.6f; d <= 1.0001f; d += 0.1f) {
+        hauteFixe = hauteFixe && echelleRendu(HAUTE, d) == 1.f;
+        moyenneOk = moyenneOk && echelleRendu(MOYENNE, d) >= 0.9f - 1e-6f && echelleRendu(MOYENNE, d) <= 1.f;
+    }
+    VERIFIE(hauteFixe, "Haute : toujours 100 %%");
+    VERIFIE(moyenneOk && echelleRendu(MOYENNE, 1) == 1.f && std::abs(echelleRendu(MOYENNE, 0.6f) - 0.9f) < 1e-6f, "Moyenne : 90-100 %%");
     VERIFIE(echelleRendu(BASSE, 1) == 0.5f && echelleRendu(BASSE, 0.6f) == 0.5f, "Basse : 50 %% fixe");
-    std::printf("plancher de l'échelle réelle : Haute 60-100 %%, Moyenne 60-75 %%, Basse 50 %% : OK\n");
+    std::printf("échelle réelle (WFS-104) : Haute 100 %% fixe, Moyenne 90-100 %%, Basse 50 %% : OK\n");
+    // téléphone lent : bloom coupé à 0,8, ombres à 0,6, rien à 0,9 ; Basse : ni bloom ni ombres
+    const Allegement a1 = allegement(HAUTE, 0.9f), a8 = allegement(HAUTE, 0.8f), a6 = allegement(MOYENNE, 0.6f), aB = allegement(BASSE, 1);
+    VERIFIE(a1.bloom && a1.ombres && !a8.bloom && a8.ombres && !a6.bloom && !a6.ombres && !aB.bloom && !aB.ombres, "allègement");
+    std::printf("allègement : bloom coupé à 0,8, ombres à 0,6, résolution intacte : OK\n");
 
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("qualité : tout est OK\n");

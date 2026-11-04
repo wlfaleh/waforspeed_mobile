@@ -40,10 +40,12 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 20; i++) { g.update(1.0 / 60); g.render(904 + i / 60.0); }
         const double ms = (nowSeconds() - t0) / 20 * 1000;
         r.capturePng(out + "/qualite-" + noms[q] + ".png");
-        if (q == 2) {   // WFS-86 : la Golf en course, vue de près (comme garage-golf), qualité Haute
+        if (q >= 1) {   // WFS-104 : la Golf en course, vue de près (comme garage-golf), qualités Moyenne et Haute
             g.camMode = 2; g.orbit = 2.4f;
             for (int i = 0; i < 4; i++) g.render(905 + i / 60.0);
-            r.capturePng(out + "/voiture-course-haute.png");
+            r.capturePng(out + "/voiture-course-" + noms[q] + ".png");
+            WFS_LOG("qualité (WFS-104) : voiture-course-%s : scène à %.0f %%, MSAA ×%d, niveau %s (garage : même échelle, même MSAA)",
+                    noms[q], r.vk().renderScale * 100, (int)r.vk().msaa, noms[q]);
             g.camMode = 1;
         }
         WFS_LOG("qualité %s : scène à %.0f %%, ombres %s, bloom %.1f, %u appels de dessin, %u objets masqués (WFS-82), %.1f ms par image (banc, CPU)",
