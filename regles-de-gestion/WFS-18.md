@@ -28,3 +28,5 @@ Il pleut la nuit en ville : gouttes animées, ciel couvert, route mouillée avec
 
 ## Hors périmètre
 Orage, vent, pluie sur le pare-brise, changement de météo en cours de course.
+
+> **Décision PO (2026-11-04)** : RG-05 (« désactivé en qualité basse si baisse sous 60 i/s ») **abandonnée** : coût mesuré 0,008 ms par image, le jeu web n'a pas cette règle. Aucun ticket.

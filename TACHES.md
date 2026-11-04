@@ -178,6 +178,11 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-89 | Duel par Internet : salon par code à 4 caractères, compatible avec le jeu web (PeerJS) | E3 (+ accroches E8 `salon.*`, E0 `CMakeLists.txt`, E7 manifeste) | 🔧 En cours — décision PO 2026-11-04 (B) : fusionner la partie faite (duel Wi-Fi local, saisie du code, « Sans Internet ») dès CI verte ; vrai réseau PeerJS → WFS-92 ⏸ | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-83 ✅, WFS-21 ✅ | `feature/waforspeed-89` |  |  |
 | P2 Haute | WFS-91 | [STABLE] Endurance : parcours automatique long sans plantage ni fuite, validation Vulkan à zéro erreur, retours d'arrière-plan | E7 | 🔧 En cours (à démarrer dès WFS-89 fusionné) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | — | `feature/waforspeed-91` |  |  |
 | P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans `third_party/`) | E3 | ⏸ En attente (décision de l'utilisateur : ajout des bibliothèques tierces) |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
+| P2 Haute | WFS-93 | Ville : les 6 quartiers du jeu web (résidentiel, parc, port) + panneaux du circuit avec texte, vignes sans marches | E2 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-93` |  |  |
+| P3 Moyenne | WFS-94 | Corniche : quartiers Port de plaisance, Côte rocheuse, Village de pêcheurs (villas, bateaux, rochers) | E2 | ⏳ En attente (après WFS-93, même épic) |  | WFS-93 | `feature/waforspeed-94` |  |  |
+| P2 Haute | WFS-95 | Texte et bandeaux : caractères manquants (« — »), petits libellés lisibles, nom du quartier en course | E5 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-95` |  |  |
+| P2 Haute | WFS-96 | Menus : Showroom et « Ta voiture » ouvrent le garage, quartiers sur la carte du terrain, focus manette, voile sans bandes, sons d'interface | E8 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-96` |  |  |
+| P3 Moyenne | WFS-97 | Nuit du circuit : taches de lumière visibles sous les projecteurs | E4 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-97` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -519,6 +524,22 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-92 — Duel par Internet : pair PeerJS réel** · E3 · P2 Haute · ⏸ En attente de la décision de l'utilisateur sur l'ajout de libdatachannel 0.22.6 + Mbed TLS 3.6.2 dans `third_party/` (≈ 14 Mo, recommandation PO : autoriser) — branche `feature/waforspeed-92` (règles : `regles-de-gestion/WFS-92.md`). Zone : `src/game/reseau_peerjs.*`, `third_party/**` (nouvelles bibliothèques) ; accroches : `CMakeLists.txt`, `android/**` ≤ 10 lignes
 - [ ] APK : duel entre deux réseaux différents et contre le jeu web (vérifié par l'utilisateur)
 - [ ] sans Internet : note orange, aucun plantage ; CI verte, APK publié
+
+**WFS-93 — Ville : 6 quartiers + finitions des cartes** · E2 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-93` (règles : `regles-de-gestion/WFS-93.md`). Zone : `src/world/**` (nouveau `ville_quartiers.cpp`, `ville.cpp`, `circuit.cpp`, `campagne.cpp`, `cartes_banc.cpp`) ; interdit : `src/render/**`, `src/platform/**`, `.github/**`, fichiers du duel
+- [ ] `carte-ville-residentiel`, `-parc`, `-port` : objets du quartier (abribus ; grille, bancs, fontaine ; entrepôts, conteneurs, grues) ; `course-*` inchangées
+- [ ] `carte-circuit-jour` / `-nuit` : texte d'AD_TEXTS lisible sur les panneaux ; `carte-campagne-vignes` : rangs sans marches ; ≤ 300 appels de dessin
+
+**WFS-94 — Corniche : quartiers marina, rochers, village** · E2 · P3 Moyenne · ⏳ En attente (après WFS-93) — branche `feature/waforspeed-94` (règles : `regles-de-gestion/WFS-94.md`). Zone : `src/world/plage.cpp`, `cartes_banc.cpp`, nouveaux `src/world/plage_*.cpp`
+- [ ] `carte-plage-marina`, `-rochers`, `-village` : bateaux, bornes, villas, rochers, glissières visibles ; ≤ 300 appels de dessin
+
+**WFS-95 — Texte et bandeaux** · E5 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-95` (règles : `regles-de-gestion/WFS-95.md`). Zone : `src/ui/text.*`, `src/ui/toasts.*`, `shaders/ui*`, `assets/fonts/**` ; interdit : `src/ui/garage.*`, `src/ui/ecrans/**`, `src/render/**`, `src/platform/**`
+- [ ] menu : « — » sous RECORD (plus de « ? »), « TA VOITURE » lisible ; capture `toast-quartier` : bandeau du nom du quartier à chaque changement de zone
+
+**WFS-96 — Menus : Showroom, quartiers du terrain, focus manette, voile, sons** · E8 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-96` (règles : `regles-de-gestion/WFS-96.md`). Zone : `src/ui/ecrans/**` sauf `salon.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.cpp`, `src/audio/sfx.*` ; interdit : `desktop_main.cpp`, `.github/**`, `src/render/**`, `src/ui/text.*`, `toasts.*`
+- [ ] `menu-showroom`, `showroom-choisir` : Showroom ouvre le garage, « Choisir » ramène au menu ; `terrain-0` : « Quartiers » et noms ; voile du menu sans rayures ; focus manette sur le 1er choix ; « SFX garage » / « SFX carte » au journal
+
+**WFS-97 — Nuit du circuit : taches de lumière des projecteurs** · E4 · P3 Moyenne · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-97` (règles : `regles-de-gestion/WFS-97.md`). Zone : `src/render/nuit.cpp` ; interdit : `src/world/**`, `src/platform/**`, iOS
+- [ ] `carte-circuit-nuit`, `course-nuit-circuit-0` : taches froides visibles sous les mâts ; ville et plage de nuit sans surexposition
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
