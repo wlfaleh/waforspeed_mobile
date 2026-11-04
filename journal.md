@@ -2527,3 +2527,201 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   4. mettre à jour les assertions de `test_systems.cpp` ;
   5. noter les valeurs au Journal.
 - **Fusion** : fusion par confiance si la confiance dépasse 50 % (ligne dans `qa/Check.md`, puis suivi de la CI de `main`). Sinon, attendre la CI verte et les captures. Se synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi.
+
+### 2026-11-04 22:58:39 — Début WFS-108 (PO, pour Claude agent 5, session 011cpqZaDiS2unNJuwyaruGd)
+- **Ticket** : WFS-108 [URGENT] Commandes tactiles plus grandes, frein / marche arrière, gyroscope · E3 · P1 · branche `feature/waforspeed-108` · règles `regles-de-gestion/WFS-108.md`.
+- **Exception** : 2e ticket actif en E3 (WFS-105 en cours, Copilot) accordée sur demande explicite de l'utilisateur ; zones disjointes (la fiche de WFS-105 réserve déjà `commandes_tactiles.*`, `direction.*`, `player.*` à WFS-108).
+- **Zone** : `src/game/commandes_tactiles.*`, `direction.*`, `player.*`, `src/ui/ecrans/reglages.*`, `src/game/sauvegarde.*`, nouveau `src/platform/gyroscope*`, tests CPU. Accroches ≤ 10 lignes annoncées au Journal : `hud.cpp` (« R »), `android_main.cpp` (capteur), `CMakeLists.txt`, `game.cpp` (réétalonnage). Interdit : `camera_*`, `traffic_system.cpp`, `course_system.*`, `src/render/**`, `shaders/**`, `.github/**`, iOS.
+- **Décision PO (RG-02)** : marche arrière par maintien du frein (jeu web `js/game/update.js`, déjà amorcé par WFS-90 `vRecul = 3`), pas de bouton « R ».
+- **Plan court** : 1) agrandir et espacer les boutons (dp, marges de sécurité) ; 2) vérifier / corriger frein → marche arrière par test CPU, « R » au HUD ; 3) gyroscope Android (capteur de rotation, sensibilité, zone morte, réétalonnage) + valeurs d'essai sur le banc ; 4) réglages mémorisés ; 5) fusion par confiance si > 50 %.
+
+### 2026-11-04 23:08:23 — WFS-108 : PR #83 ouverte, accroches annoncées (Claude, agent 5)
+- **Fait** : commandes en dp (densité réelle sur Android, 420 dp de haut sur le banc PC ; avant `H / 720`, soit ≈ 35 dp sur téléphone) : gaz 80 × 120 dp, frein 84 × 88, nitro 68 (**placé au-dessus du frein**, sinon les pédales agrandies ne tiennent pas et les appuis des bancs changent de commande), flèches 76 dp ; « Boutons : Grands » × 1,25 ; zones de toucher élargies. Gyroscope (Coupé / Doux / Moyen / Fort, zone morte 1,5° / 3° / 5°), combiné au glissement ou aux flèches, réétalonné à chaque changement d'écran. Réglages et sauvegarde (`boutons`, `gyro`, `gyroZone`).
+- **RG-02 constaté** : le frein maintenu passait déjà en marche arrière sans relâcher (WFS-90, `vRecul = 3`) : arrêt à 1,97 s depuis 89 km/h, marche arrière dans la même image, gaz → avant en 0,69 s. Corrigé : « R » au HUD dès `reversing` (avant : seulement sous −1 unité/s).
+- **Accroches annoncées** : `game.cpp` 1 ligne (inclinaison lue à chaque image), `hud.cpp` 1 ligne (« R »), `android_main.cpp` 4 lignes (capteur, densité), `CMakeLists.txt` 3 lignes, `tests/test_course.cpp` (assertion WFS-98 nitro → au-dessus du frein, appel de `testCommandes()` pour que le test tourne en CI sans toucher `.github/`).
+- **Fusion** : confiance ≤ 50 % sur la partie Android (pas de NDK en local) → j'attends la CI verte (APK) et les captures `reglages-108`, `commandes-grandes-gyro`, `commandes-marche-arriere`.
+
+### 2026-11-04 23:10:18 — Début WFS-106 CI : APK de main en ligne ≈ 5 min après chaque fusion + banc découpé (PO / Scrum Master, pour Copilot session 6be876ef)
+- **Ticket** : WFS-106 (P1 Urgent, [STABLE]), épic **E7**, attribué à **Copilot (session 6be876ef)**, branche `feature/waforspeed-106`. Règles : `regles-de-gestion/WFS-106.md` (RG-01 à RG-10, réécrites).
+- **Choix** : P1 Prêt attribuable avec le plus petit numéro. E7 n'a aucun ticket actif : WFS-103 est transverse et n'occupe pas l'épic. WFS-107 (P1) attend qu'un ticket E4 se libère (WFS-100 et WFS-101 sont actifs).
+- **WFS-91 (E7, P2)** passe après WFS-106 : même épic, et les mêmes fichiers (`build.yml`, `desktop_main.cpp`).
+- **Constat mesuré** (Copilot 6be876ef, vérifié par le PO avec `gh run view`) :
+  - La publication est fiable depuis WFS-87. « 14:34 UTC » est le `publishedAt` de la Release ; l'APK a été remplacé à 22:54:11 (construction 557, `c1f5bbb`).
+  - **Le problème est le délai.** Run 41926218379 : fusion à 22:32:53, APK construit à 22:35:50, publication à 22:53:51 seulement (attente de `ecrans-2400` ≈ 19 min et de `partie2` ≈ 15,5 min).
+  - **Le PO ajoute deux points** :
+    - Ce même job de publication est bloqué : 175 captures sur 229 envoyées à 22:55:06, puis plus rien ; il est toujours « en cours » à 23:08. Il n'a aucun `timeout-minutes` (6 h par défaut). La publication de `df708ac` (WFS-104, run 41928993894) attend derrière.
+    - Le banc ralentit depuis WFS-104 (rendu à 100 %) : `partie1` passe de 6,8 à 11,8 min.
+- **Décision PO : élargissement accepté.** C'est la vraie cause de « l'utilisateur teste une ancienne version », dans les mêmes fichiers et la même épic, avec une seule CI (règle des gros tickets). On retire « Hors périmètre : vitesse de la CI ». Les RG proposées sont reprises et précisées :
+  - RG-05 : job APK à part (`needs: [android]`), **avec son propre groupe de concurrence**, pour ne jamais attendre la publication des captures d'un autre commit (on a vu aujourd'hui une publication bloquée).
+  - RG-06 : chaque job ne touche que ses fichiers (APK, tag et titre / captures et notes). **Pas de repli** où le job des captures publierait l'APK : deux jobs qui écrivent l'APK en même temps pourraient remettre un APK plus ancien. Si l'APK échoue, son job est rouge et on le relance.
+  - RG-07 : délais maximaux (`timeout` par appel `gh`, `timeout-minutes` par job).
+  - RG-08 et RG-09 : banc découpé, plus long job ≤ 11 min, au plus 12 jobs. Mêmes captures et mêmes noms. Groupes d'essai local conservés. Les appels `bench*` restent intacts.
+  - RG-04 : titre « Aperçu — construction N (abc1234) ».
+- **Zone autorisée** :
+  - `.github/workflows/build.yml` ;
+  - `tools/qa/publier_apercu.sh` (modes « APK seul » / « captures seules ») ;
+  - `src/platform/desktop_main.cpp` (aiguillage `WFS_BANC` seulement) ;
+  - doc ≤ 10 lignes dans `.claude/skills/waforspeed-natif/references/construction-et-tests.md`.
+- **Interdit** : `ios.yml`, `ios/**` (gel iOS), `simulateur.yml` (plus de simulateur), `android/**`, les fonctions `bench*`, tout code de jeu, `shaders/**`.
+- **Conflits possibles** : WFS-100, 101, 105, 107, 108 et 109 peuvent ajouter une ligne de banc. En cas de conflit, garder les deux et placer la nouvelle ligne dans le bon groupe.
+- **Critères** :
+  - deux fusions de suite sur `main` : APK de `apercu` remplacé ≤ 8 min après chaque fusion ; Release finale = dernier commit ; runs et heures au Journal ;
+  - même liste de captures avant / après, notée au Journal ;
+  - CI de la branche : plus long job de banc ≤ 11 min, durée totale notée au Journal (cible ≈ 12 min) ;
+  - délais maximaux visibles dans `build.yml` ;
+  - `apercu-waforspeed-106` publiée ;
+  - `bash -n` passe sur le script.
+- **Plan court** :
+  1. annuler la publication bloquée du run 41926218379 si elle tourne encore (l'APK `c1f5bbb` est déjà en ligne ; cela libère `df708ac`, WFS-104) ;
+  2. mesurer la durée de chaque scène du banc ;
+  3. séparer les jobs APK et captures, avec les délais maximaux ;
+  4. découper `ecrans-2400`, `partie2` et `partie1` ;
+  5. CI de branche, puis comparer la liste des captures ;
+  6. fusion après CI verte, quand aucune publication de `main` n'est en cours ;
+  7. vérifier les deux fusions sur `main`.
+- **Fusion** : pas d'essai local possible (GitHub Actions) → attendre la CI de branche verte avant de fusionner. Ensuite, ligne dans `qa/Check.md`, statut ✅, Journal, et suivi de la CI de `main`. Toujours `git fetch origin && git merge origin/main` avant chaque envoi.
+
+### 2026-11-04 23:13:25 — PO : WFS-107 réservé à Copilot (session dc0cdd3f) après WFS-101, ANO-46, #76 confiée à WFS-103, WFS-109 après WFS-101 (po-scrum-master)
+- **Contexte** : les 7 demandes de `tache utilisateur.md` ont déjà reçu leur réponse de l'autre session PO (1409020, 30d240f, 22:47). Cette entrée complète et remet en cohérence `TACHES.md` et les règles.
+- **WFS-107 (« feu blanc »)** : cause trouvée et reproduite au banc par Copilot (session dc0cdd3f). C'est la fumée des pneus de WFS-65, ≈ 4,6 × trop claire à cause de `hdr()` dans `effets_systeme.cpp`, et dessinée en lumière émise. WFS-107 touche les mêmes fichiers que WFS-101 → **réservé à Copilot (session dc0cdd3f)**, ⏳ En attente de WFS-101. Il le passe lui-même 🔧 à la fusion de WFS-101 (entrée « Début » au Journal, sans repasser par le PO). Pas de RG-06 dans WFS-101 : WFS-101 se ferme tel quel. Règles complétées :
+  - RG-01 ✅ cause ;
+  - RG-04 couleur du jeu web ;
+  - RG-05 bouffées rondes ;
+  - RG-06 aucune particule si « réduire les mouvements » (`particles.js` l. 20) ;
+  - RG-07 étincelles et nitro de WFS-101 inchangés ;
+  - zone : `effets_systeme.*`, `effets_particules.*`, `bench_effets.*`, `tests/test_effets.cpp`, accroche dans `desktop_main.cpp`.
+- **ANO-46** (bloquante, essai sur le téléphone de l'utilisateur) : « feu blanc » au braquage → 📋 WFS-107.
+- **#76 (WFS-88, iOS)** : ordre de l'utilisateur : « même pour ios il faut la regarder et la merger ».
+  - Le GEL iOS est levé **pour #76 seulement** : travail déjà fait, sans effet sur Android. Aucun nouveau ticket ni travail iOS.
+  - Confiée à **WFS-103** (Claude, session trafic) en RG-12 (renumérotée : RG-11 est la zone). WFS-103 repasse 🔧 ; WFS-88 reste ⏸.
+  - Revue du PO : Android inchangé (tout sous `__APPLE__`), fusion sans conflit à 22:59.
+  - **Ordre** : #76 avant le code de WFS-100 dans `renderer.cpp` / `vk.cpp` (même agent).
+  - Si elle n'est pas fusionnée dans les 2 h (RG-10), le PO la confie à un agent libre.
+- **WFS-109 (feux de freinage)** : dépendance corrigée : WFS-101 (`traffic_system.cpp`) au lieu de WFS-107 (fichiers différents).
+  - Statut : ⏳ En attente, **Prêt dès que WFS-101 est ✅**.
+  - Exception E4 (3e ticket) : seulement le bloc des feux de `renderer.cpp`, que WFS-100 ne touche pas.
+  - RG-07, constat : le jour, aucun feu du modèle ne s'allume au freinage. Le joueur n'a rien ; le trafic n'a que des carrés de halo de 1,1 m × 7.
+  - RG-08 : valeurs du jeu web (`setLights` / `setBrake` de `models.js` : 2,5 / 0,4, halos de 0,9 m / 0,55 m).
+  - RG-09 : coordination avec WFS-100 ; zone écrite.
+- **WFS-102** : attend aussi WFS-108 (mêmes fichiers `commandes_tactiles.*`). Il réutilise la densité déjà lue par WFS-108 (PR #83) ; RG-11 se limite au clavier du code du salon.
+- **Piste pour WFS-105 (vue Proche, Copilot 1ef8d4d6)** :
+  - Aujourd'hui (`POURSUITE_PROCHE{4.6, 1.28, 7, 0.78}`, FOV 58), le toit monte à ≈ 57 % de la hauteur de l'image et l'horizon est à ≈ 54 % : le toit cache la route.
+  - Calcul d'essai : distance 5,2 m, hauteur 2,2 m, visée 10 m devant à 0,4 m, FOV 58. Résultat : élévation ≈ 23°, horizon ≈ 10 % au-dessus du toit, route visible dès ≈ 14 m.
+  - À vérifier sur la voiture la plus haute : l'horizon reste ≥ 8 % au-dessus du toit.
+- **Récapitulatif** :
+  - tiret 1 → WFS-103 RG-12 ;
+  - tiret 2 → WFS-107 (ANO-46) ;
+  - tirets 3, 4 et 7 → WFS-108 (🔍 PR #83) ;
+  - tiret 5 → WFS-109 ;
+  - tiret 6 → WFS-105 RG-06 (🔧).
+
+### 2026-11-04 23:14:38 — WFS-106 : règles complétées, quota de l'API (PO / Scrum Master)
+- **Constat** : le job `publication` du run 41926218379 n'était pas figé, il était limité par le quota de l'API.
+  - L'APK a été publié à 22:54:11.
+  - De 22:55:06 à 23:10:17, chaque lot de captures reçoit `HTTP 403: API rate limit exceeded for installation`.
+  - Le job finit vert à 23:10:19, avec 69 captures sur 229 non publiées (avertissement). La publication de `df708ac` (WFS-104) a attendu 16 min derrière lui.
+- **Cause** :
+  - `GITHUB_TOKEN` = 1 000 appels par heure pour tout le dépôt, et environ 500 écritures par heure ;
+  - `gh release upload --clobber` = 2 appels par capture, soit ≈ 470 appels par publication ;
+  - deux publications dans l'heure (branches ou `main`) épuisent le quota, **APK suivant compris** ;
+  - les nouvelles tentatives de WFS-87 (15 à 120 s) ne peuvent rien contre un quota horaire.
+- **Décision** : ajout de **RG-11** dans `regles-de-gestion/WFS-106.md`. Une attente comme celle-ci peut retenir l'APK de 16 min, et un APK refusé par le quota n'est pas publié du tout : c'est la même cause que « l'utilisateur teste une ancienne version ».
+  - L'APK passe toujours : ≈ 15 appels ; si le quota est épuisé, il attend la remise à zéro (`gh api rate_limit`, gratuit) au lieu d'échouer.
+  - Les captures gardent une réserve de 200 appels pour les APK.
+  - On n'envoie que les captures qui ont changé (empreintes sha256 lues par l'adresse publique `releases/download`, hors quota).
+  - Mesure du nombre d'appels au Journal.
+  - Un jeton à 5 000 appels par heure (secret à demander à l'utilisateur) seulement si cela ne suffit pas.
+- **RG-07 ajustée** : `timeout-minutes` de l'APK ≈ 60 min (il peut attendre le quota), captures ≈ 20 min.
+- **Plus rien à relancer** (vérifié à 23:16) :
+  - la publication de `c1f5bbb` est finie ;
+  - celle de `df708ac` (WFS-104, run 41928993894) a démarré à 23:13:07, après le quota remis à zéro ;
+  - l'APK est en ligne depuis 23:15:14, sous le titre « construction 559 », soit ≈ 23 min après la fusion de 22:52:16, ce qui montre encore le délai que corrige WFS-106 ;
+  - les captures étaient en cours d'envoi.
+- **Règle provisoire, jusqu'à la fusion de WFS-106** : un job `publication` de `main` rouge sur 403 se relance une heure après le premier 403 (`gh run rerun <run> --failed`). `TACHES.md` est à jour : RG-01 à RG-11, critère « quota ».
+
+### 2026-11-04 23:18:05 — Début WFS-93 Ville : les 6 quartiers du jeu web + finitions des cartes (PO / Scrum Master, pour Copilot session 0e5c192d)
+- **Demande** : Copilot (session 0e5c192d) a fini WFS-98 (PR #80) et WFS-99 (PR #81, fusion `c1f5bbb`). Il demande le ticket suivant. La CI de `main` de WFS-99 (run 41926218379) est **verte**, publication comprise : terminée à 23:10:19 après 16,5 min, elle n'était donc pas bloquée pour de bon. L'APK de `df708ac` (WFS-104) est en ligne depuis 23:15:14.
+- **Ticket** : WFS-93 (P2 Haute), épic **E2**, attribué à **Copilot (session 0e5c192d)**, branche `feature/waforspeed-93` (aucune branche distante, vérifié par `git ls-remote`). Règles : `regles-de-gestion/WFS-93.md` (RG-01 à RG-08, déjà écrites).
+- **Choix** parmi les tickets ⏳ Prêt de `main` (9111c53) : WFS-91, WFS-93 et WFS-95 en P2, WFS-97 en P3. Aucun P1 n'est prêt : WFS-107 est réservé à Copilot (session dc0cdd3f) après WFS-101 (entrée de 23:13:25) ; WFS-102 et WFS-109 attendent d'autres tickets.
+  - WFS-91 (E7) : l'épic est occupée par WFS-106 (Copilot 6be876ef), avec les mêmes fichiers (`build.yml`, `desktop_main.cpp`). Mon idée de fondre WFS-106 dans WFS-91 (WFS-87 avait déjà fiabilisé la publication) est abandonnée : WFS-106 a été élargi et attribué à 23:10:18.
+  - **WFS-93 (E2)** : E2 n'a aucun ticket actif, le ticket n'a aucune dépendance, et aucun ticket actif ne touche `src/world/**`. C'est le plus petit numéro P2 attribuable : il est attribué. WFS-95 (P2, E5) reste ⏳ Prêt pour le prochain agent.
+  - WFS-97 (P3, E4) : l'épic est occupée (WFS-100, WFS-101).
+- **Zone autorisée** : `src/world/**` (nouveau `ville_quartiers.cpp` conseillé, `ville.cpp`, `circuit.cpp`, `campagne.cpp`, `cartes_banc.cpp`).
+- **Interdit** (liste de la fiche mise à jour d'après les tickets en cours) :
+  - `src/render/**`, `shaders/**` (WFS-100, WFS-101) ;
+  - `src/platform/**`, `.github/**` (WFS-106) : ne pas toucher `desktop_main.cpp`, ajouter les captures dans `benchCartes` ;
+  - `src/game/**` (WFS-105, WFS-108) ;
+  - `src/ui/**`, le duel, iOS.
+- **Critères** :
+  - captures `carte-ville-residentiel`, `-parc`, `-port` ; les `course-*` de la ville ne changent pas ;
+  - texte d'`AD_TEXTS` lisible sur `carte-circuit-jour` et `-nuit` ;
+  - `carte-campagne-vignes` sans marches ;
+  - ≤ 300 appels de dessin, ≥ 30 im/s en qualité Basse ; tests CPU verts.
+- **Plan court** :
+  1. porter `city.residentiel`, `city.parc` et `city.port` de `decor.js` (mêmes tirages `D()`), aiguillés par `zoneId()` ;
+  2. construire les objets `DECOR` (abribus, grille, banc, fontaine, entrepôt, conteneurs, grillage, grue) avec les primitives de `decor_carte.*`, et ajouter les lampadaires à `lampadaires()` ;
+  3. écrire le texte des panneaux du circuit avec `AtlasTextes` ;
+  4. poser les vignes sur `groundY` ;
+  5. ajouter les captures dans `benchCartes` ; fusion par confiance si > 50 %.
+- **Mises à jour du PO** :
+  - **WFS-102** : WFS-96, WFS-89, WFS-98 et WFS-99 marqués ✅ dans les dépendances. **WFS-105** est ajouté, car `camera_vue.*` est dans la zone de WFS-102 ; WFS-108 avait déjà été ajouté à 23:13:25. La fiche donne les noms des fonctions de densité de WFS-108 : `densiteCommandes()` et `uniteCommandes()`, dans `commandes_tactiles.h`.
+  - **WFS-107** : une note de taille est ajoutée à la fin de la fiche, en complément de RG-05 ; les règles de 23:13:25 ne changent pas.
+    - Le `PointsMaterial` du jeu web (taille 2,4, `sizeAttenuation`) équivaut à l'écran à un carré de 2,4 × tan(fov/2), soit ≈ 1,3 m en vue Proche (FOV 58°).
+    - Le carré de 2,4 m du natif est donc ≈ 1,8 fois plus large.
+    - À appliquer si la fumée voile encore l'écran en vue Proche après RG-04 et RG-05.
+- **Coordination** :
+  - WFS-106 redécoupe le banc. Les nouvelles captures de WFS-93 partent avec `benchCartes`, quel que soit son job. En cas de conflit, garder les deux.
+  - WFS-94 (Corniche, E2) attend la fin de WFS-93.
+
+### 2026-11-04 23:29:56 — Fin WFS-101 : étincelles, nitro, banc du trafic, écran de fin — PR #84 fusionnée par confiance (Copilot, session dc0cdd3f)
+- **Fait** (`src/render/effets_particules.*`, `effets_systeme.*`, `bench_effets.cpp` ; E3 : `src/game/traffic_system.cpp`, `course_system.cpp` ; `tests/test_effets.cpp`) :
+  - RG-01 (ANO-25) : étincelles de `emitSparks` (20 + impact × 80, 14 au frottement), point de contact de `contactAt` du jeu web (vitesse d'avant le choc), dessinées en un seul `drawQuads` additif ; taille = `sizeAttenuation` de three.js (côté = max(0,22 ; d × 3/360) / |proj(1,1)|) ; couleurs passées à l'écran par l'inverse exact d'ACES (`effets::versHdr`) ; aucune étincelle si « réduire les mouvements » ;
+  - RG-02 : traits de nitro α 0,35, vignette cyan sombre ;
+  - RG-03 (ANO-26) : `benchTraficVivant` place la voiture à 15 m dans la file voisine (`placeVoisine()`) ;
+  - RG-04 (ANO-36) : écran de fin avec record espacé (16 px / 12 px, panneau + 28 px), paire de boutons centrée ;
+  - RG-05 (ANO-20, `course_system.cpp` seulement) : `biseau()` en un seul quad.
+- **Cause du « feu blanc » (WFS-107, ANO-46)** : la fumée des pneus passe par l'ancien `hdr()` (`pow(v, 2,2) / (0,214 × EXPO)`), ≈ 4,6 fois trop claire ; gardée telle quelle dans WFS-101, corrigée par WFS-107.
+- **Vérification** : compilation sans avertissement ; 16 tests CPU + `verifier_licences.py` verts ; banc local regardé (`effets`, `trafic-vivant`, `course`).
+  - `choc-etincelles` **prise de côté** (vue vitrine perpendiculaire à la route, 8 images après le choc) : en poursuite, la Golf en tête-à-queue cachait le point de contact (0 pixel d'étincelle 2 images après le choc, mesuré avec et sans étincelles, secousse coupée) ; de côté : ≈ 2 200 pixels, gerbe orange et blanche entre les deux voitures, `46 étincelles émises au choc`.
+  - `accident-fumee` : 55 images au lieu de 63 pour garder le même instant ; capture identique à avant.
+  - `trafic-clignotant` 14,9 m, `trafic-freinage` 14,7 m (feux stop allumés), `trafic-accident` inchangée, `fin-record` espacée.
+- **Écarts** : nouvelle accroche `effetsCapDernierChoc()` (cap de la route au choc, pour cadrer la vue de côté) ; halo orange de `accident-fumee` = feux de détresse, déjà présent avant.
+- **Suite** : ligne ajoutée dans `qa/Check.md` ; ANO-25, ANO-26, ANO-36 notées « corrigées par WFS-101, recette QA à faire » dans `anno.md` (ANO-20 : reste WFS-102 pour les autres fichiers). WFS-109 passe ⏳ Prêt (consigne du PO). Je suis la CI de `main` (merge `a256432`). WFS-102 dépend aussi de WFS-101 : à débloquer par le PO quand ses autres dépendances seront finies.
+
+### 2026-11-04 23:29:57 — Début WFS-107 : supprimer le « feu blanc » au braquage (Copilot, session dc0cdd3f)
+- Réservé par le PO (23:13:25), démarré à la fusion de WFS-101 ; branche `feature/waforspeed-107` depuis `main` (`a256432`).
+- **Plan** (`regles-de-gestion/WFS-107.md`) :
+  1. RG-04 : fumée par `effets::versHdr` (inverse exact d'ACES) au lieu de `hdr()` : gris 0,25 à 0,40 à l'écran, opacité 0,45, mélange normal, aucun halo de bloom la nuit ;
+  2. RG-05 : bouffées rondes et douces (texture radiale), taille du `PointsMaterial` du jeu web (2,4 × tan(fov/2), note du PO) ;
+  3. RG-06 : aucune particule (fumée comprise) si « réduire les mouvements » ;
+  4. seuil : aucune fumée à 30 km/h ni sous 72 km/h au simple braquage ;
+  5. RG-07 : étincelles et nitro de WFS-101 inchangées ;
+  6. captures `braquage-gauche` / `braquage-droite` à 30, 120 et 250 km/h, jour et nuit (banc E4) ; test CPU du gris à l'écran.
+- **Zone** : `src/render/effets_*`, `bench_effets.cpp`, `tests/test_effets.cpp` ; accroche ≤ 10 lignes dans `desktop_main.cpp` (groupe du banc) annoncée ici si nécessaire.
+
+### 2026-11-04 23:31:08 — WFS-93 : critère « `course-*` inchangées » précisé, port fidèle des tirages du web accepté (PO / Scrum Master)
+- **Question** de Copilot (session 0e5c192d, WFS-93) : RG-01 contredit le critère « `course-*` de la ville (départ au centre) inchangées ».
+  - RG-01 demande les mêmes tirages que `generateDecor`, avec un seul générateur `D = mulberry32(seed × 31 + 7)` pour toute la carte.
+  - Mesures du run 41928993894 de `main` : `course-cam0-*` à 50, 188 et 372 m (tronçons < 448, Centre-ville) ; `course-cam1-*` à 541, 754 et 991 m (tronçons 451, 628 et 826, Quartier résidentiel).
+- **Vérifié** dans `decor.js` (l. 22, 58-70, 221) : un seul `D()`, zones traitées dans l'ordre ; ≈ 11 tirages par immeuble du centre, plus ceux de `placeShop`. Le natif en tire 6 et parcourt toute la piste côté −1 puis côté +1 : il ne suit déjà plus le web après le premier immeuble, ses places actuelles n'ont donc rien à préserver.
+- **Décision : proposition acceptée.** Mon critère était faux : j'avais supposé toutes les `course-*` au centre.
+  - `course-cam1-*` montrent le quartier résidentiel : c'est le résultat attendu de RG-01 et la valeur visible du ticket.
+  - Le centre suit aussi les tirages du web : ses immeubles changent de place sur `course-cam0-*`, avec la même allure (tours, commerces, platanes, lampadaires tous les 24). Garder les anciennes places coûterait deux générateurs pour une fidélité au pixel que personne ne demande (principe 0).
+  - Toujours exigé sur toutes les `course-*` : aucune régression de la voiture, de la route, du HUD, de la lumière et du trafic ; ≤ 300 appels de dessin, ≥ 30 im/s en Basse.
+- **Réalisation**, dans `src/world/**`, sans nouveau ticket :
+  - port littéral : chaque tirage du web est consommé dans le même ordre, même quand le natif n'utilise pas encore sa valeur (`u0`, `v0`, néon, enseigne, terrasses de `placeShop`) ;
+  - identité avec le web visée mais pas prouvée : aucun test contre le web, un écart restant n'est pas une anomalie ;
+  - une seule liste d'immeubles et de commerces : `commerces.cpp` (WFS-71) ne recopie plus les tirages de `ville.cpp`, et aucun commerce ni terrasse ne reste devant un vide.
+- **Recette** :
+  - le développeur le note dans `qa/Check.md` (points à regarder) ;
+  - le QA juge `course-cam0-*` sur l'allure et la non-régression, pas sur la place des immeubles ;
+  - après la fusion de WFS-93, les tickets qui comparent `course-cam1-*` avant et après (WFS-105, WFS-107…) regardent la voiture, la caméra et les effets, pas le décor.
+- **Fichiers** : critère précisé dans `regles-de-gestion/WFS-93.md` (le reste de la fiche ne change pas) et sa copie dans le détail de WFS-93 de `TACHES.md`.
+
+### 2026-11-04 23:32:21 — WFS-108 fusionné (PR #83, fusion par confiance) (Claude, agent 5)
+- CI de la branche verte (bancs partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit ; APK ; publication). Captures regardées : pédales et flèches agrandies sans chevauchement, réglages en 11 lignes, « R · KM/H » en marche arrière (frein maintenu 3,7 s → −16 km/h).
+- `commandes-grandes-gyro` : la voiture était bloquée par un accident du trafic pendant la capture (braquage 0,00 au journal) ; le pavé montre bien la consigne à droite. Journal du banc corrigé avant la fusion : il donne la consigne du gyroscope et signale le blocage.
+- Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`. Ensuite, arrêt : pas de nouveau ticket (ordre de l'utilisateur).
+
+### 2026-11-04 23:45:15 — PO : modes de jeu, duel entre amis, bug showroom (po-scrum-master)
+- **WFS-113** (E5, P1) bug flèches du showroom. **WFS-110** (E3, P2) Course à 5 voitures + Checkpoint 60 s + duel sans trafic. **WFS-111** (E3, P2) Poursuite police (après WFS-110). **WFS-112** (E3, P2) duel entre amis par Internet : serveur de relais, code + lien d'invitation ; **WFS-92 remplacé** (pas de bibliothèques tierces). Décision attendue de l'utilisateur : hébergement gratuit du relais (Cloudflare Workers recommandé). Commentaires du PO dans `tache utilisateur.md`.

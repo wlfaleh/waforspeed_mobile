@@ -8,4 +8,6 @@ namespace wfs {
 void effetsBanc(bool on);
 int effetsEtincelles();   // étincelles vivantes (journal du banc)
 int effetsFumee();        // bouffées de fumée vivantes
+int effetsDernierChoc();  // WFS-101 : étincelles émises au dernier choc (journal du banc)
+float effetsCapDernierChoc();   // WFS-101 : cap de la route (th) au point du dernier choc (caméra de côté du banc)
 }

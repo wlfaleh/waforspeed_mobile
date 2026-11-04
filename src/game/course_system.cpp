@@ -96,13 +96,12 @@ private:
             ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, esp, false, it);
         }
     }
-    // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais) dessiné en bandes horizontales
+    // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais), haut décalé à droite, bas à gauche ;
+    // WFS-101 (RG-05, ANO-20) : un seul quadrilatère (plus de bandes horizontales ni de rayures)
     static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-        const int N = 16;
-        for (int i = 0; i < N; i++) {
-            const float t = (i + 0.5f) / N, dx = biais * (1 - t);   // haut décalé à droite, bas à gauche
-            r.uiRect(x + dx, y + h * i / N, w - biais, h / N + 0.5f, c);
-        }
+        const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
+                               {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
+        r.uiQuad(q);
     }
     // endRace du jeu web (WFS-24, RG-03 / RG-09) : record écrit seulement s'il est battu (s > best), puis enregistrement
     // (thread de travail). Sauvegarde inactive (banc d'essai sans WFS_BANC=sauvegarde) : rien, captures inchangées.
@@ -117,7 +116,11 @@ private:
     }
     void drawOver(Renderer& r, float W, float H, float u) {
         r.uiRect(0, 0, W, H, FOND);
-        const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, py = 10 * u, ph = 80 * u;
+        // WFS-101 (RG-04, ANO-36) : avec la sauvegarde (ligne « RECORD », badge si battu), mise en page aérée : statistiques
+        // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px
+        const bool rec = sauvegarde().actif();
+        const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
+        const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
         const float cx = W / 2;
@@ -126,19 +129,19 @@ private:
         // .score-big : orange --accent avec halo (--glow-accent)
         halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u, true);
         ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false, true);
-        if (sauvegarde().actif()) drawRecord(r, cx, py, u);   // WFS-24
         char kmh[32]; std::snprintf(kmh, sizeof kmh, "%d km/h", course_.maxKmh);
         const std::string vals[4] = {ui::decimal(km_, 2) + " km", kmh, ui::nombre(course_.nearCount), ui::nombre(course_.level)};
         const char* labs[4] = {"Distance", "Vitesse max", "Quasi-contacts", "Checkpoints"};
         for (int i = 0; i < 4; i++) {
             const float x = px + pw * (0.125f + 0.25f * i);
-            ui::text(r, x, py + 38 * u, 3.4f * u, ui::majuscules(labs[i]), ui::GRIS, ui::CENTRE, 0.16f);
-            ui::text(r, x, py + 43 * u, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
+            ui::text(r, x, py + 38 * u + dStats, 3.4f * u, ui::majuscules(labs[i]), ui::GRIS, ui::CENTRE, 0.16f);
+            ui::text(r, x, py + 43 * u + dStats, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
         }
         // bouton « Rejouer » (biseau orange, texte sombre)
         const float bw = 40 * u, bh = 10 * u;
         // WFS-57 (ANO-14) : paire « Rejouer » + « Menu » (0,7 × la largeur, 2 u d'écart) centrée sur le panneau
-        const float mw = bw * 0.7f, gap = 2 * u, bx = cx - (bw + gap + mw) / 2, by = py + 60 * u;
+        const float mw = bw * 0.7f, gap = 2 * u, bx = cx - (bw + gap + mw) / 2, by = py + 60 * u + plus;
+        if (rec) drawRecord(r, cx, py, u, by - 12 * s);   // WFS-24
         rejouer_ = {bx, by, bw, bh};
         menu_ = {bx + bw + gap, by, mw, bh}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
         biseau(r, rejouer_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
@@ -147,8 +150,9 @@ private:
         ui::text(r, menu_.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
     }
     // WFS-24 : badge « NOUVEAU RECORD » (.badge #newBest du jeu web, sous le score ; accent orange, texte sombre, biais
-    // skewX(-10deg)) et ligne « RECORD » avec le meilleur score (.record du menu web), entre les stats et les boutons
-    void drawRecord(Renderer& r, float cx, float py, float u) {
+    // skewX(-10deg)) et ligne « RECORD » avec le meilleur score (.record du menu web), entre les stats et les boutons ;
+    // bas : bas de la ligne « RECORD » (WFS-101 : 12 px au-dessus des boutons)
+    void drawRecord(Renderer& r, float cx, float py, float u, float bas) {
         if (nouveauRecord_) {
             const std::string t = ui::majuscules("Nouveau record");
             const float px = 3.6f * u, bw = ui::width(px, t, 0.12f) + 4.f * u, bh = 5.2f * u, by = py + 31.5f * u;
@@ -157,8 +161,9 @@ private:
         }
         const std::string lab = ui::majuscules("Record"), val = ui::nombre(sauvegarde().best);
         const float lw = ui::width(3.4f * u, lab, 0.16f), vw = ui::width(5.5f * u, val), gap = 2.5f * u, x0 = cx - (lw + gap + vw) / 2;
-        ui::text(r, x0, py + 52.6f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
-        ui::text(r, x0 + lw + gap, py + 51.4f * u, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
+        const float y = bas - 5.5f * u;   // haut de la valeur (5,5 u) ; libellé (3,4 u) 1,2 u plus bas, comme avant
+        ui::text(r, x0, y + 1.2f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
+        ui::text(r, x0 + lw + gap, y, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
     }
     bool nouveauRecord_ = false;
     bool restartReq_ = false;

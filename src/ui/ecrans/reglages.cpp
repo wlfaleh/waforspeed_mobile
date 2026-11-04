@@ -14,6 +14,8 @@
 #include "../../game/traffic_system.h"   // WFS-75 : choc du banc (vibration coupée)
 #include "../../game/sauvegarde.h"   // WFS-24 : réglages dans la sauvegarde commune
 #include "../../game/ressenti.h"     // WFS-80 : direction et « réduire les mouvements » (WFS-70)
+#include "../../game/direction.h"    // WFS-108 : gyroscope, taille des boutons (commandes_tactiles.h)
+#include "../../platform/gyroscope.h"
 #include "../../platform/manette.h"  // WFS-80 : focus de la manette
 #include "../../platform/manette_jeu.h"   // WFS-80 : banc (appliquer, focusCourant)
 #include <deque>
@@ -45,7 +47,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
-const Ligne LIGNES[8] = {
+const Ligne LIGNES[11] = {
     {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
     {"Son", 2, {"Activé", "Coupé", nullptr}},
@@ -54,8 +56,12 @@ const Ligne LIGNES[8] = {
     {"Vibrations", 2, {"Activées", "Coupées", nullptr}},  // WFS-75 : vibrer() de WFS-70
     {"Direction", 2, {"Glisser", "Flèches", nullptr}},     // WFS-80 : steerMode du web (ModeDirection de WFS-70)
     {"Réduire les mouvements", 2, {"Non", "Oui", nullptr}},   // WFS-80 : reduceMotion du web
+    {"Boutons", 2, {"Normaux", "Grands", nullptr}},             // WFS-108 RG-04 : taille des commandes tactiles (× 1,25)
+    {"Gyroscope", 4, {"Coupé", "Doux", "Moyen", "Fort"}},       // WFS-108 RG-03 : sensibilité (28°, 20°, 14° pour braquer à fond)
+    {"Zone morte gyro", 3, {"Petite", "Moyenne", "Grande"}},    // WFS-108 RG-03 : 1,5°, 3°, 5°
 };
-enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7, N_LIGNES = 8 };
+enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
+       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, N_LIGNES = 11 };
 
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
 bool g_ouvert = false;
@@ -74,6 +80,7 @@ bool lire() {
     if (Sauvegarde& s = sauvegarde(); commune) {   // WFS-24 : sauvegarde commune (cam, quality, muted)
         Reglages& R = reglages(); R.camera = s.camIndex(); R.son = !s.muted; R.musique = s.music;
         R.gaucher = s.gaucher; R.vibrations = s.vibrations;   // WFS-75
+        grandsBoutons() = s.grandsBoutons; reglagesGyro() = {s.gyro, s.gyroZone};   // WFS-108
         if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
     }
     const std::string f = fichier();
@@ -90,6 +97,9 @@ bool lire() {
         else if (!std::strcmp(cle, "musique")) R.musique = v != 0;   // WFS-76
         else if (!std::strcmp(cle, "gaucher")) R.gaucher = v != 0;   // WFS-75
         else if (!std::strcmp(cle, "vibrations")) R.vibrations = v != 0;
+        else if (!std::strcmp(cle, "boutons")) grandsBoutons() = v != 0;   // WFS-108
+        else if (!std::strcmp(cle, "gyro")) reglagesGyro().niveau = std::clamp(v, 0, 3);
+        else if (!std::strcmp(cle, "gyrozone")) reglagesGyro().zone = std::clamp(v, 0, 2);
     }
     std::fclose(fp);
     WFS_LOG("réglages lus : caméra %d, qualité %d, son %d, gaucher %d, vibrations %d, mouvements %d", R.camera, R.qualite, (int)R.son,
@@ -100,6 +110,7 @@ void ecrire() {
     if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : écriture atomique sur le thread de travail
         const Reglages& R = reglages(); s.setCamIndex(R.camera); s.muted = !R.son; s.music = R.musique;
         s.gaucher = R.gaucher; s.vibrations = R.vibrations;   // WFS-75
+        s.grandsBoutons = grandsBoutons(); s.gyro = reglagesGyro().niveau; s.gyroZone = reglagesGyro().zone;   // WFS-108
         if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
         s.enregistrer();   // WFS-80 : le fichier simple garde en plus « mouvements » (absent de la sauvegarde commune)
     }
@@ -109,6 +120,7 @@ void ecrire() {
     const Reglages& R = reglages();
     std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
                  (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
+    std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone);   // WFS-108
     std::fclose(fp);
 }
 
@@ -136,6 +148,9 @@ int valeur(int ligne) {
     case L_COMMANDES: return R.gaucher ? 1 : 0;
     case L_DIRECTION: return (int)reglagesRessenti().direction;
     case L_MOUVEMENTS: return reglagesRessenti().reduireMouvements ? 1 : 0;
+    case L_BOUTONS: return grandsBoutons() ? 1 : 0;   // WFS-108
+    case L_GYRO: return reglagesGyro().niveau;
+    case L_GYROZONE: return reglagesGyro().zone;
     default: return R.vibrations ? 0 : 1;
     }
 }
@@ -174,7 +189,10 @@ public:
             else if (l == L_VIBRATIONS) R.vibrations = c == 0;   // WFS-75 : lu à chaque vibrer()
             else if (l == L_DIRECTION) {   // WFS-80 (RG-01) : sauvegarde (clé steer) et ressenti tout de suite
                 reglagesRessenti().direction = (ModeDirection)c; sauvegarde().steer = c ? "fleches" : "glisser";
-            } else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
+            } else if (l == L_BOUTONS) grandsBoutons() = c == 1;   // WFS-108 : appliqué à l'image suivante
+            else if (l == L_GYRO) reglagesGyro().niveau = c;
+            else if (l == L_GYROZONE) reglagesGyro().zone = c;
+            else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
         }
@@ -210,8 +228,9 @@ private:
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
         // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut ;
-        // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement)
-        const float rowH = 38 * k, gap = 7 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
+        // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement) ;
+        // WFS-108 : 11 lignes → lignes de 30 px séparées de 5 px
+        const float rowH = 30 * k, gap = 5 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
@@ -232,7 +251,7 @@ private:
                     r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
                     r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
                 } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
-                ui::text(r, bx + segW / 2, y + (rowH - 17 * k) / 2, 17 * k, ui::majuscules(LIGNES[l].choix[c]), on ? hex(ACCENT2) : hex(TEXTE),
+                ui::text(r, bx + segW / 2, y + (rowH - 15 * k) / 2, 15 * k, ui::majuscules(LIGNES[l].choix[c]), on ? hex(ACCENT2) : hex(TEXTE),
                          ui::CENTRE, 0.08f, false);
                 bx += segW + 6 * k;
             }
@@ -398,8 +417,36 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("réglages : après relecture, réduire les mouvements = %s (Oui attendu)", reglagesRessenti().reduireMouvements ? "Oui" : "Non");
         unsetenv("WFS_REGLAGES"); std::remove(f.c_str());
     }
+    // WFS-108 : « Boutons : Grands », « Gyroscope : Moyen » (capture reglages-108), puis course : inclinaison d'essai de 12°
+    // (braquage attendu (12 − 3) / (20 − 3) ≈ 0,53), gaz ; puis frein maintenu jusqu'à la marche arrière (« R » au HUD)
+    toucher(25, g_choix[L_BOUTONS][1]); toucher(26, g_choix[L_GYRO][2]);
+    capture("reglages-108", "11 lignes : Boutons Grands, Gyroscope Moyen, Zone morte Moyenne");
+    reglagesRessenti() = {}; sauvegarde().steer = "glisser";
+    gyroscope::capteurPresent(true); gyroscope::publier(9.81f, 0.f);   // téléphone droit : zéro pris au départ de la course
     toucher(24, g_fermer);
-    reglagesRessenti() = {}; sauvegarde().steer = "glisser";   // banc : retour aux défauts
+    g.allerA(Ecran::Course); g.setAutopilot(false);
+    for (int i = 0; i < 6; i++) image();
+    {
+        const float W = (float)r.width(), H = (float)r.height();
+        const DispositionCommandes d = dispositionCommandes(W, H, Marges{});
+        const float a = 12.f * PI / 180.f;
+        gyroscope::publier(9.81f * std::cos(a), 9.81f * std::sin(a));
+        g.onTouch({30, d.gaz.cx(), d.gaz.cy(), true});
+        for (int i = 0; i < 45; i++) image();
+        WFS_LOG("commandes (WFS-108) : grands boutons, gaz %.0f × %.0f px (%.2f px/dp), gyroscope 12° → consigne %.2f (0,53 attendu), braquage de la voiture %.2f%s, %.0f km/h",
+                d.gaz.w, d.gaz.h, d.k, directionBraquage(W), g.player().steer, g.player().controlLock > 0 ? " (bloqué : accident)" : "", g.player().kmh());
+        capture("commandes-grandes-gyro", "boutons grands, gaz appuyé, téléphone incliné de 12° vers la droite");
+        g.onTouch({30, d.gaz.cx(), d.gaz.cy(), false});
+        gyroscope::publier(9.81f, 0.f);
+        g.onTouch({31, d.frein.cx(), d.frein.cy(), true});   // frein maintenu : arrêt puis marche arrière sans relâcher
+        int f = 0;
+        for (; f < 60 * 8 && !(g.player().reversing && g.player().speed < REV_MAX * 0.5); f++) image();
+        WFS_LOG("commandes (WFS-108) : frein maintenu %.1f s → marche arrière %s, %.0f km/h", f / 60.0, g.player().reversing ? "oui" : "non",
+                g.player().kmh());
+        capture("commandes-marche-arriere", "frein maintenu à l'arrêt : marche arrière, « R » au compteur");
+        g.onTouch({31, d.frein.cx(), d.frein.cy(), false});
+    }
+    grandsBoutons() = false; reglagesGyro() = {}; gyroscope::capteurPresent(false); gyroscope::etat() = {};   // banc : défauts
     g.shutdown();
     benchManetteEcrans(g, r, out);
     courseBenchRules(false);

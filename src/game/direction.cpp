@@ -2,6 +2,7 @@
 // La partie « volant » de Game::onTouch et de Game::drawControls a été déplacée ici sans changement (mode glissement) ;
 // WFS-98 : dessin du jeu web (pavé vitré .steer-pad, bouton volant .steer-knob, flèches .arrow-btn), bords lissés (dessin2d).
 #include "direction.h"
+#include <algorithm>
 #include <cmath>
 #include "../render/renderer.h"
 #include "commandes_tactiles.h"   // WFS-98 : dessin2d (bords lissés)
@@ -65,7 +66,7 @@ void bouton(Renderer& r, float x, float y, float c, bool droite, bool appuye) {
 // .steer-knob (56 px, volant SVG 44 px) ; place du jeu web couché : 16 px du bord gauche, 14 px du bas
 void pave(Renderer& r, float W, float H, const Marges& m) {
     const Marges mc = ecrans::margesCommandes(m);
-    const float k = H / 720.f, w = std::round(156 * k), h = std::round(60 * k), y = std::round(H - mc.bas - 14 * k) - h;
+    const float k = uniteCommandes(W, H), w = std::round(156 * k), h = std::round(60 * k), y = std::round(H - mc.bas - 14 * k) - h;
     const float x = ecrans::miroirX(std::round(mc.gauche + 16 * k) + w / 2, W) - w / 2;   // WFS-75 : miroir sans retourner
     const float cx = x + w / 2, cy = y + h / 2, b = 12 * k, s = directionBraquage(W);
     const bool appui = g_gl.id >= 0;
@@ -128,8 +129,11 @@ bool directionToucher(const Touch& t, bool libre, float W, float H, const Marges
 }
 
 float directionBraquage(float W) {
-    if (fleches()) return braquageFleches(g_fl.gauche >= 0, g_fl.droite >= 0);
-    return g_gl.id >= 0 ? braquageGlisser(g_gl.x0, g_gl.x, W) : 0.f;
+    float t = 0;
+    bool doigt = false;
+    if (fleches()) { t = braquageFleches(g_fl.gauche >= 0, g_fl.droite >= 0); doigt = g_fl.gauche >= 0 || g_fl.droite >= 0; }
+    else if (g_gl.id >= 0) { t = braquageGlisser(g_gl.x0, g_gl.x, W); doigt = true; }
+    return doigt ? t : braquageIncline();   // WFS-108 : un doigt sur la direction l'emporte sur l'inclinaison
 }
 
 void directionDessiner(Renderer& r, float W, float H, const Marges& m) {
@@ -142,6 +146,9 @@ void directionDessiner(Renderer& r, float W, float H, const Marges& m) {
     pave(r, W, H, m);   // WFS-98 : volant du jeu web (zone de glissement inchangée : x0 = point d'appui)
 }
 
-void directionLacher() { g_gl.id = -1; g_fl = {}; }
+void directionLacher() {
+    g_gl.id = -1; g_fl = {};
+    gyroscopeEtalonner();   // WFS-108 RG-03 : à chaque changement d'écran (départ de course, reprise après la pause)
+}
 
 } // namespace wfs
