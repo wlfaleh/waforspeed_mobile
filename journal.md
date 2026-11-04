@@ -2777,3 +2777,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - les taches blanches près de la voiture sur `camera-poursuite-trafic` sont la fumée des pneus (ANO-46, corrigée par WFS-107) ;
   - CI de la branche non attendue (fusion par confiance) : je suis la CI de `main` (`facefd2`).
 - **Suite** : ligne ajoutée dans `qa/Check.md`, statut ✅ dans `TACHES.md`, réponse dans `tache utilisateur.md`. Je demande le ticket suivant au PO.
+
+### 2026-11-04 23:59:34 — QA de nuit : WFS-108 validé, lot terminé (qa-lead)
+
+- **WFS-108** : VALIDÉ, d'après la Release `apercu` construction 564 (`e6ea49b`). Pédales agrandies, nitro au-dessus du frein, encoche et compteur dégagés, mode gaucher, 11 lignes de réglages, mode « Grands » et marche arrière (« R · KM/H ») conformes.
+- Lot de la nuit terminé : WFS-79, WFS-104, WFS-101 et WFS-108 VALIDÉS ; WFS-99 PASSABLE (ANO-47) ; **WFS-78 REFUSÉ** (pas de menu iOS ; la correction est WFS-88 / PR #76, à fusionner par WFS-103).
