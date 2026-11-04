@@ -1958,3 +1958,24 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Zone autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `post*` ; accroches ≤ 10 lignes annoncées au Journal. Ne pas toucher aux lampadaires ni au double halo du trafic (WFS-81, E2 + `traffic_system.cpp`, en cours) : se synchroniser avec `main` avant fusion et vérifier qu'il n'y a pas de contradiction.
 - **Critères** : capture `nuit-trafic-arriere` (petits feux rouges nets + lueur douce, plus vifs au freinage), aucune régression phares / lampadaires WFS-09.
 - **Plan court** : feu émissif net sur le drapeau feu arrière du `.wfm`, une lueur radiale additive petite et atténuée avec la distance (coupée > 120 m), reflet discret au sol, constantes réglables ; réutiliser `js/cars/models.js` (`glowGeo`, `MAT.tailGlow`, `tailGlowBrake`, `revGlow`) et `TEXS.radial`.
+
+### 2026-11-04 13:33:23 — WFS-82 : mesures sur main et suite pour la qualité Basse, PR #69 (Claude, agent 4)
+- **CI de `main` f825201 (PR #67)** : verte sur les 8 tâches.
+- **Appels de dessin** (scène de nuit en ville) :
+
+  | Niveau | Avant | Après | Objets masqués | Cible |
+  |---|---|---|---|---|
+  | Moyenne | 607 | **337** | 53 | ≤ 450, atteinte |
+  | Haute | — | 585 | 53 | — |
+  | Basse | 346 | **331** | 59 | ≤ 300, **non atteinte** |
+
+  ms par image au banc (CPU) : Basse 230, Moyenne 377, Haute 530.
+- **Captures** : rien ne manque de près ; reflets et ombres complets.
+- **Suite, PR #69, fusion par confiance** : en Basse, trafic en silhouette dès 25 m (accroche d'une ligne dans `traffic_system.cpp`). Nouvelle mesure de la Basse attendue sur `main`.
+- **Si la cible n'est toujours pas atteinte** : instancier les objets répétés (RG-04).
+
+### 2026-11-04 13:33:32 — WFS-84 : feux de nuit naturels, PR #70 en revue (Claude, agent 5)
+- **Constat** (`course-nuit-ville-stop` sur `main`) : feux stop = halos de 0,45 m de rayon (gros disques rouges qui débordent), halos des phares visibles autour d'une voiture vue de dos, grande ellipse rouge au sol.
+- **Fait** (zone E4, `src/render/renderer.cpp`) : `feuxVoiture` réécrit. Cœur net de 7 cm qui reste un point au loin + lueur douce de 0,24 m éteinte entre 60 et 120 m ; stop plus vif, même taille ; recul : petit feu blanc ; feu visible seulement de son côté ; reflet au sol réduit. Réglages groupés dans `feux::` (RG-06). Banc : capture `nuit-trafic-arriere` (`bench_nuit.cpp`). Aucune accroche hors zone ; lampadaires et double halo du trafic non touchés (WFS-81).
+- **Vérification** : compilation sans avertissement ; rendu non visible ici → fusion après CI verte et captures regardées.
+
