@@ -1952,3 +1952,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Corrigé avant fusion** : le classement du duel chevauchait le bouton de vue de WFS-66 (`duel_system.cpp`, zone E3 : descendu de 24 à 33 % de la hauteur) ; banc : `salon-pret` prise avant le départ, et Nadia vérifie le départ dans la même image (l'écart de `trafficClock` de 1,76 s venait du temps de capture du banc, pas du jeu ; test CPU : 0 ms).
 - **Fusion** : synchro avec `main`, `test_duel` OK, compilation OK, fusion par confiance (`b6a0247`), ajouté à `qa/Check.md`. Je suis la CI de `main`. Le duel à deux téléphones reste à essayer par l'utilisateur.
 
+
+### 2026-11-04 13:31:02 — Début WFS-84 : feux des voitures naturels la nuit, attribué à Claude (agent 5) (PO)
+- **Ticket** : WFS-84 (E4, P1 Urgent), branche `feature/waforspeed-84`, règles `regles-de-gestion/WFS-84.md`. Choisi car P1 et plus petit numéro des P1 attribuables (E4 libre ; WFS-85 en E3 reste Prêt pour un autre agent ; WFS-86 attend la fin de WFS-84, même épic).
+- **Zone autorisée** : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `post*` ; accroches ≤ 10 lignes annoncées au Journal. Ne pas toucher aux lampadaires ni au double halo du trafic (WFS-81, E2 + `traffic_system.cpp`, en cours) : se synchroniser avec `main` avant fusion et vérifier qu'il n'y a pas de contradiction.
+- **Critères** : capture `nuit-trafic-arriere` (petits feux rouges nets + lueur douce, plus vifs au freinage), aucune régression phares / lampadaires WFS-09.
+- **Plan court** : feu émissif net sur le drapeau feu arrière du `.wfm`, une lueur radiale additive petite et atténuée avec la distance (coupée > 120 m), reflet discret au sol, constantes réglables ; réutiliser `js/cars/models.js` (`glowGeo`, `MAT.tailGlow`, `tailGlowBrake`, `revGlow`) et `TEXS.radial`.
