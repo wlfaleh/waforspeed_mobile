@@ -51,9 +51,32 @@ int main() {
     std::printf("fumée : monte, gris du jeu web, dissipée avant 2,64 s : OK\n");
 
     // qualité basse (RG-05) : moitié moins de particules
-    p.setReduit(true); p.etincelles({0, 1, 0}, 0, {}, 40);
-    VERIFIE(p.sparks().vivantes() == 20, "qualité basse : 20 étincelles (%d)", p.sparks().vivantes());
+    p.setReduit(true);
+    const int emises = p.etincelles({0, 1, 0}, 0, {}, 40);
+    VERIFIE(p.sparks().vivantes() == 20 && emises == 20, "qualité basse : 20 étincelles (%d vivantes, %d annoncées)", p.sparks().vivantes(), emises);
     std::printf("qualité basse : moitié moins de particules : OK\n");
+
+    // WFS-101 (RG-01) : nombre d'étincelles par choc, comme emitSparks dans js/game/update.js
+    VERIFIE(nombreEtincelles(Choc::ArrierePercute, 0) == 20 && nombreEtincelles(Choc::ArrierePercute, 0.5) == 60, "arrière percuté : 20 + impact × 80");
+    VERIFIE(nombreEtincelles(Choc::ArrierePercute, 0.3) >= 20 + 22, "accident (impact > 0,28) : au moins 42 (%d)", nombreEtincelles(Choc::ArrierePercute, 0.3));
+    VERIFIE(nombreEtincelles(Choc::PercuteParArriere, 0) == 16 && nombreEtincelles(Choc::PercuteParArriere, 0.5) == 41, "percuté par l'arrière : 16 + impact × 50");
+    VERIFIE(nombreEtincelles(Choc::Frottement, 0.9) == 14 && nombreEtincelles(Choc::Decor, 0.45) == 50, "frottement 14, décor 50");
+    VERIFIE(nombreEtincelles(Choc::ArrierePercute, -1) == 20, "impact négatif borné à 0");
+    std::printf("étincelles par choc (20 + impact × 80, 16 + impact × 50, frottement 14, décor 50) : OK\n");
+
+    // WFS-101 : couleur → HDR : à l'écran natif (ACES × exposition 0,85, gamma 2,2), même couleur qu'au jeu web
+    // (aces(c^2,2) / aces(1,6))^(1/2,2), à 1e-3 près, du noir au blanc ; et croissante
+    float pire = 0, prec = -1; bool croissante = true;
+    for (int i = 0; i <= 100; i++) {
+        const float c = i / 100.f, x = versHdr(c, 0.85f);
+        const float natif = std::pow(aces(x * 0.85f), 1 / 2.2f), web = std::pow(aces(std::pow(c, 2.2f)) / aces(1.6f), 1 / 2.2f);
+        pire = std::max(pire, std::abs(natif - web));
+        croissante &= x > prec || (i == 0 && x >= 0); prec = x;
+    }
+    VERIFIE(pire < 1e-3f, "écart avec l'écran du jeu web : %.5f", pire);
+    VERIFIE(croissante, "conversion HDR non croissante");
+    VERIFIE(versHdr(1.f, 0.85f) > 1.8f && versHdr(1.f, 0.85f) < 2.6f, "blanc de la gerbe : %.2f", versHdr(1.f, 0.85f));
+    std::printf("couleur → HDR identique à l'écran du jeu web (écart max %.5f) : OK\n", pire);
 
     // tirages déterministes : même graine → mêmes particules
     Particules a, b; a.etincelles({0, 1, 0}, 0, {}, 10); b.etincelles({0, 1, 0}, 0, {}, 10);

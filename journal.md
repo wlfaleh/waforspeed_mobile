@@ -2672,3 +2672,53 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Coordination** :
   - WFS-106 redécoupe le banc. Les nouvelles captures de WFS-93 partent avec `benchCartes`, quel que soit son job. En cas de conflit, garder les deux.
   - WFS-94 (Corniche, E2) attend la fin de WFS-93.
+
+### 2026-11-04 23:29:56 — Fin WFS-101 : étincelles, nitro, banc du trafic, écran de fin — PR #84 fusionnée par confiance (Copilot, session dc0cdd3f)
+- **Fait** (`src/render/effets_particules.*`, `effets_systeme.*`, `bench_effets.cpp` ; E3 : `src/game/traffic_system.cpp`, `course_system.cpp` ; `tests/test_effets.cpp`) :
+  - RG-01 (ANO-25) : étincelles de `emitSparks` (20 + impact × 80, 14 au frottement), point de contact de `contactAt` du jeu web (vitesse d'avant le choc), dessinées en un seul `drawQuads` additif ; taille = `sizeAttenuation` de three.js (côté = max(0,22 ; d × 3/360) / |proj(1,1)|) ; couleurs passées à l'écran par l'inverse exact d'ACES (`effets::versHdr`) ; aucune étincelle si « réduire les mouvements » ;
+  - RG-02 : traits de nitro α 0,35, vignette cyan sombre ;
+  - RG-03 (ANO-26) : `benchTraficVivant` place la voiture à 15 m dans la file voisine (`placeVoisine()`) ;
+  - RG-04 (ANO-36) : écran de fin avec record espacé (16 px / 12 px, panneau + 28 px), paire de boutons centrée ;
+  - RG-05 (ANO-20, `course_system.cpp` seulement) : `biseau()` en un seul quad.
+- **Cause du « feu blanc » (WFS-107, ANO-46)** : la fumée des pneus passe par l'ancien `hdr()` (`pow(v, 2,2) / (0,214 × EXPO)`), ≈ 4,6 fois trop claire ; gardée telle quelle dans WFS-101, corrigée par WFS-107.
+- **Vérification** : compilation sans avertissement ; 16 tests CPU + `verifier_licences.py` verts ; banc local regardé (`effets`, `trafic-vivant`, `course`).
+  - `choc-etincelles` **prise de côté** (vue vitrine perpendiculaire à la route, 8 images après le choc) : en poursuite, la Golf en tête-à-queue cachait le point de contact (0 pixel d'étincelle 2 images après le choc, mesuré avec et sans étincelles, secousse coupée) ; de côté : ≈ 2 200 pixels, gerbe orange et blanche entre les deux voitures, `46 étincelles émises au choc`.
+  - `accident-fumee` : 55 images au lieu de 63 pour garder le même instant ; capture identique à avant.
+  - `trafic-clignotant` 14,9 m, `trafic-freinage` 14,7 m (feux stop allumés), `trafic-accident` inchangée, `fin-record` espacée.
+- **Écarts** : nouvelle accroche `effetsCapDernierChoc()` (cap de la route au choc, pour cadrer la vue de côté) ; halo orange de `accident-fumee` = feux de détresse, déjà présent avant.
+- **Suite** : ligne ajoutée dans `qa/Check.md` ; ANO-25, ANO-26, ANO-36 notées « corrigées par WFS-101, recette QA à faire » dans `anno.md` (ANO-20 : reste WFS-102 pour les autres fichiers). WFS-109 passe ⏳ Prêt (consigne du PO). Je suis la CI de `main` (merge `a256432`). WFS-102 dépend aussi de WFS-101 : à débloquer par le PO quand ses autres dépendances seront finies.
+
+### 2026-11-04 23:29:57 — Début WFS-107 : supprimer le « feu blanc » au braquage (Copilot, session dc0cdd3f)
+- Réservé par le PO (23:13:25), démarré à la fusion de WFS-101 ; branche `feature/waforspeed-107` depuis `main` (`a256432`).
+- **Plan** (`regles-de-gestion/WFS-107.md`) :
+  1. RG-04 : fumée par `effets::versHdr` (inverse exact d'ACES) au lieu de `hdr()` : gris 0,25 à 0,40 à l'écran, opacité 0,45, mélange normal, aucun halo de bloom la nuit ;
+  2. RG-05 : bouffées rondes et douces (texture radiale), taille du `PointsMaterial` du jeu web (2,4 × tan(fov/2), note du PO) ;
+  3. RG-06 : aucune particule (fumée comprise) si « réduire les mouvements » ;
+  4. seuil : aucune fumée à 30 km/h ni sous 72 km/h au simple braquage ;
+  5. RG-07 : étincelles et nitro de WFS-101 inchangées ;
+  6. captures `braquage-gauche` / `braquage-droite` à 30, 120 et 250 km/h, jour et nuit (banc E4) ; test CPU du gris à l'écran.
+- **Zone** : `src/render/effets_*`, `bench_effets.cpp`, `tests/test_effets.cpp` ; accroche ≤ 10 lignes dans `desktop_main.cpp` (groupe du banc) annoncée ici si nécessaire.
+
+### 2026-11-04 23:31:08 — WFS-93 : critère « `course-*` inchangées » précisé, port fidèle des tirages du web accepté (PO / Scrum Master)
+- **Question** de Copilot (session 0e5c192d, WFS-93) : RG-01 contredit le critère « `course-*` de la ville (départ au centre) inchangées ».
+  - RG-01 demande les mêmes tirages que `generateDecor`, avec un seul générateur `D = mulberry32(seed × 31 + 7)` pour toute la carte.
+  - Mesures du run 41928993894 de `main` : `course-cam0-*` à 50, 188 et 372 m (tronçons < 448, Centre-ville) ; `course-cam1-*` à 541, 754 et 991 m (tronçons 451, 628 et 826, Quartier résidentiel).
+- **Vérifié** dans `decor.js` (l. 22, 58-70, 221) : un seul `D()`, zones traitées dans l'ordre ; ≈ 11 tirages par immeuble du centre, plus ceux de `placeShop`. Le natif en tire 6 et parcourt toute la piste côté −1 puis côté +1 : il ne suit déjà plus le web après le premier immeuble, ses places actuelles n'ont donc rien à préserver.
+- **Décision : proposition acceptée.** Mon critère était faux : j'avais supposé toutes les `course-*` au centre.
+  - `course-cam1-*` montrent le quartier résidentiel : c'est le résultat attendu de RG-01 et la valeur visible du ticket.
+  - Le centre suit aussi les tirages du web : ses immeubles changent de place sur `course-cam0-*`, avec la même allure (tours, commerces, platanes, lampadaires tous les 24). Garder les anciennes places coûterait deux générateurs pour une fidélité au pixel que personne ne demande (principe 0).
+  - Toujours exigé sur toutes les `course-*` : aucune régression de la voiture, de la route, du HUD, de la lumière et du trafic ; ≤ 300 appels de dessin, ≥ 30 im/s en Basse.
+- **Réalisation**, dans `src/world/**`, sans nouveau ticket :
+  - port littéral : chaque tirage du web est consommé dans le même ordre, même quand le natif n'utilise pas encore sa valeur (`u0`, `v0`, néon, enseigne, terrasses de `placeShop`) ;
+  - identité avec le web visée mais pas prouvée : aucun test contre le web, un écart restant n'est pas une anomalie ;
+  - une seule liste d'immeubles et de commerces : `commerces.cpp` (WFS-71) ne recopie plus les tirages de `ville.cpp`, et aucun commerce ni terrasse ne reste devant un vide.
+- **Recette** :
+  - le développeur le note dans `qa/Check.md` (points à regarder) ;
+  - le QA juge `course-cam0-*` sur l'allure et la non-régression, pas sur la place des immeubles ;
+  - après la fusion de WFS-93, les tickets qui comparent `course-cam1-*` avant et après (WFS-105, WFS-107…) regardent la voiture, la caméra et les effets, pas le décor.
+- **Fichiers** : critère précisé dans `regles-de-gestion/WFS-93.md` (le reste de la fiche ne change pas) et sa copie dans le détail de WFS-93 de `TACHES.md`.
+
+### 2026-11-04 23:32:21 — WFS-108 fusionné (PR #83, fusion par confiance) (Claude, agent 5)
+- CI de la branche verte (bancs partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit ; APK ; publication). Captures regardées : pédales et flèches agrandies sans chevauchement, réglages en 11 lignes, « R · KM/H » en marche arrière (frein maintenu 3,7 s → −16 km/h).
+- `commandes-grandes-gyro` : la voiture était bloquée par un accident du trafic pendant la capture (braquage 0,00 au journal) ; le pavé montre bien la consigne à droite. Journal du banc corrigé avant la fusion : il donne la consigne du gyroscope et signale le blocage.
+- Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`. Ensuite, arrêt : pas de nouveau ticket (ordre de l'utilisateur).
