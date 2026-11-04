@@ -25,6 +25,11 @@ de maisons ni de barques au village, pas de tour de sauveteur. La carte paraît 
 - [ ] `carte-plage-marina`, `carte-plage-rochers`, `carte-plage-village` : objets de la zone visibles ; `carte-plage-jour`
   avec villas côté terre ; ≤ 300 appels de dessin ; tests CPU verts
 
+## Ajout du PO (2026-11-04) — ANO-40 (mineure) : captures de la vie de la plage lisibles
+- RG-A1 : banc `vie-portique` pris à **25 m** du portique « CHECKPOINT 1 » (texte lisible) et `vie-plage` à **15 m** de la plage
+  (serviettes et baigneurs visibles) ; seul le cadrage du banc change (banc de `src/world/commerces.cpp`, ajouté à la zone de ce ticket).
+- Critère : - [ ] `vie-portique` : « CHECKPOINT 1 » lisible ; `vie-plage` : serviettes et baigneurs visibles.
+
 ## Hors périmètre
 Bateaux animés, mer animée.
 

@@ -2171,3 +2171,135 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Autres bloquantes (ANO-18 à ANO-31) : PO saisi pour créer des US de correction P1 regroupées par zone
   (commandes tactiles, échelle dp, rendu voitures, bloom et spots, effets et trafic, CI) et me les attribuer.
 - Rappel de l'utilisateur : `TACHES.md`, `journal.md`, `qa/Check.md` et `anno.md` mis à jour à chaque étape.
+
+### 2026-11-04 18:42:05 — PO : US de correction des bloquantes de la QA de nuit (ANO-18 à ANO-41), WFS-98 à WFS-101 attribués (po-scrum-master)
+Demande de Claude (session trafic). Regroupement **par zone de code** (pas par thème) pour que les tickets avancent en parallèle sans se toucher :
+- **WFS-98** (P1, E3 + E0 `game.cpp` + E5 `hud.*`) : ANO-31 commandes tactiles du web, ANO-24 HUD cockpit, **ANO-30 ajoutée ici** (la caméra de poursuite est dans `game.cpp`, même fichier que les commandes ; `camera_vue.cpp` aussi). Règles : `regles-de-gestion/WFS-98.md`.
+- **WFS-99** (P1, E5) : ANO-22, **ANO-23** (sol et projecteurs du garage : `garage.cpp` + `bench_spots.*`, contre-jour par un 4e `FrameParams::Spot`, sans shader), ANO-33. Règles : `regles-de-gestion/WFS-99.md`.
+- **WFS-100** (P1, E4) : ANO-21, ANO-28 et **ANO-27 (bloom)** : le bloom est dans `renderer.cpp` / `post.frag`, mêmes fichiers que les carrosseries ; séparé des projecteurs (garage, WFS-99). Règles : `regles-de-gestion/WFS-100.md`.
+- **WFS-101** (P1, E4 + E3) : ANO-25 effets, ANO-26 banc du trafic, ANO-36 (écran de fin, `course_system.cpp`). Règles : `regles-de-gestion/WFS-101.md`.
+- **WFS-102** (P1, E8) : ANO-19 échelle dp, ANO-18, ANO-20 (reste), ANO-32, ANO-35, ANO-38, ANO-39, ANO-41 ; **⏳ En attente** de WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 (l'échelle touche tous les fichiers d'interface). Règles : `regles-de-gestion/WFS-102.md`.
+- **ANO-20** (biseaux rayés) répartie par zone : chaque ticket passe `biseau()` en un seul `uiQuad` dans ses fichiers ; WFS-102 fait le reste et la fonction partagée.
+- **ANO-29** (Release `apercu` incomplète) **rattachée à WFS-91** (même zone `.github/**`, évite un micro-ticket) : RG-A1 / RG-A2 ajoutées à `regles-de-gestion/WFS-91.md`, critère ajouté dans `TACHES.md`. À l'attention de l'agent 5.
+- **ANO-40** rattachée à WFS-94 (même épic E2, banc `commerces.cpp` ajouté à sa zone). ANO-15 / ANO-34 → WFS-96, ANO-16 / ANO-17 → WFS-95 (déjà en cours).
+- **ANO-37** (nuit en ville trop claire) reste 🆕 : elle touche `nuit.cpp` (WFS-97) et `src/world/**` (WFS-93), tous deux en cours ; à planifier à leur fin.
+- Exceptions « plusieurs tickets par épic » : zones de fichiers disjointes écrites dans chaque fichier de règles (précédents WFS-13, WFS-90).
+
+### 2026-11-04 18:42:05 — Début WFS-98 Correction : commandes tactiles, HUD cockpit, caméra du demi-tour (Claude, session trafic)
+Épic E3 (+ E0 `game.cpp`, E5 `hud.*`), branche `feature/waforspeed-98`. Zone : `src/game/game.cpp` (commandes, caméra de poursuite), `direction.*`, `camera_vue.*`, `conduite_libre_banc.*`, nouveau `commandes_tactiles.*`, `src/ui/hud.*`. Critères : pédales GAZ / FREIN, nitro à anneau vert acide, volant dessiné (`.pedal`, `.nitro-touch`, `.steer-pad` du web) ; un seul compteur en cockpit ; caméra qui suit le cap (retard 3,4) au demi-tour. Plan : dessin dans `commandes_tactiles.cpp`, accroche dans `drawControls`, caméra d'après `updateCamera`.
+
+### 2026-11-04 18:42:05 — Début WFS-99 Correction : garage lisible (Claude, session trafic)
+Épic E5, branche `feature/waforspeed-99`. Zone : `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`. Critères : 3 taches de lumière au sol, liseré cyan, néons hors du texte, voile à gauche, 3/4 avant, panneau sans escalier. Plan : voile `uiQuad`, néons déplacés, sol #1A1C24 / 0,2 / 0,6, 4e projecteur, cap 0,6 + π.
+
+### 2026-11-04 18:42:05 — Début WFS-100 Correction : carrosseries propres et bloom sans fantômes (Claude, session trafic)
+Épic E4, branche `feature/waforspeed-100`. Zone : `src/render/renderer.cpp`, `vk.*`, `model_loader.*`, `qualite_*`, `shaders/scene*`, `post*`, `common.glsl`. Critères : plus de reflets flottants, peinture unie (Giulia, X5, Model 3), halo rond sans copies fantômes. Plan : couverture du pixel des opaques fins, spéculaire ≤ 4, peinture sans texture de base, bloom dual filter 5 niveaux à flou séparable 9 prises.
+
+### 2026-11-04 18:42:05 — Début WFS-101 Correction : étincelles, nitro, trafic du banc, écran de fin (Claude, session trafic)
+Épic E4 (+ E3), branche `feature/waforspeed-101`. Zone : `src/render/effets_*`, `bench_effets.*`, `src/game/traffic_system.cpp` (`benchTraficVivant`), `src/game/course_system.*`. Critères : gerbe d'étincelles, traits radiaux + vignette nitro, voiture du banc à 8-25 m, écran de fin record aéré. Plan : `emitSparks` / `drawFx` du web, banc à 15 m file voisine.
+
+### 2026-11-04 20:32:37 — Réattribution WFS-98 à Copilot (session 0e5c192d) : aucune branche poussée (po-scrum-master)
+- **Ordre de l'utilisateur** (2026-11-04 ≈ 20:28 UTC, transmis par Copilot (session 0e5c192d), sans ticket) : « Tu dois regarder les tâches en cours ; si l'agent n'a pas créé de branche, tu demandes au PO de la prendre et tu traces. » Il prime sur la règle des 24 h d'inactivité.
+- **Constat** (vérifié par le PO à 20:29 UTC : `git ls-remote origin 'refs/heads/*'`, `gh pr list --state all`) :
+  - 🔧 avec branche : WFS-89 (`feature/waforspeed-89`, PR #77, agent 5), WFS-96 (`feature/waforspeed-96`, PR #79, Claude session trafic) ;
+  - 🔧 **sans branche distante ni PR** : P1 **WFS-98**, **WFS-99**, **WFS-100**, **WFS-101** (Claude, session trafic, attribués à 18:42:05) ; P2 **WFS-93**, **WFS-95** et P3 **WFS-97** (Claude, session trafic, 18:19:20) ; P2 **WFS-91** (agent 5, 18:00:55, « à démarrer dès WFS-89 fusionné »).
+- **Décision** : **WFS-98** (P1, plus petit numéro) réattribué à **Copilot (session 0e5c192d)**, branche inchangée `feature/waforspeed-98`, règles `regles-de-gestion/WFS-98.md`. Aucun conflit : les PR #77 et #79 ne touchent aucun fichier de sa zone ; exception « 2e ticket E3 » (fichiers séparés de WFS-89) inchangée.
+- **Précisions de règles** (évitent un aller-retour) : `src/game/camera_banc.*` ajouté à la zone si besoin (fichier libre, capture `camera-cockpit`) ; **RG-05 bis** : zone de toucher ≥ dessin, le point (0,89 W ; 0,74 H) reste dans le gaz car `course-gaucher` appuie en (0,11 W ; 0,74 H) depuis `reglages.cpp` (zone WFS-96, à ne pas modifier) ; appuis de `benchHud` à recaler dans `hud.cpp`. Critères de `TACHES.md` complétés (`hud-nitro`, `course-gaucher`, tests CPU).
+- **Début (reprise) WFS-98** — E3 (+ E0 `game.cpp`, E5 `hud.*`). Zone : `src/game/game.cpp` (seulement `drawControls`, caméra de poursuite, appui des commandes), `direction.*`, `camera_vue.*`, `camera_banc.*` (si besoin), `conduite_libre_banc.*`, nouveau `commandes_tactiles.*`, `src/ui/hud.*`. Critères : pédales GAZ / FREIN, nitro à anneau vert acide, volant dessiné (`hud-course`, `hud-nitro`, `course-gaucher`, `encoche-hud-2400`) ; un seul compteur en cockpit (`camera-cockpit`) ; Golf entière au tiers bas au demi-tour (`conduite-demitour`) ; tests CPU verts. Plan : dessin dans `commandes_tactiles.cpp` d'après `.pedal`, `.nitro-touch`, `.steer-pad` (`css/style.css` l. 130-251 du jeu web), accroche dans `drawControls`, caméra d'après `updateCamera` (`js/world/scene.js` l. 131-165). Fusion par confiance si > 50 %.
+- **À Claude (session trafic), ancien responsable** : **ne pas poursuivre WFS-98** et ne pas créer `feature/waforspeed-98`. S'il existe du travail local non poussé, le signaler ici au Journal (fichiers, état) et le pousser sur une branche à part (`wip/waforspeed-98`, jamais `feature/waforspeed-98`) pour que Copilot (session 0e5c192d) le reprenne. Priorité conseillée : finir WFS-96 (PR #79).
+- **Autres tickets sans branche** (WFS-99, WFS-100, WFS-101, WFS-91, WFS-93, WFS-95, WFS-97) : restent à leurs responsables pour l'instant ; ils seront réattribués de la même façon, **un par un, à la demande** d'un agent libre, dans l'ordre de priorité : WFS-99, WFS-100, WFS-101, puis WFS-91 (zone disjointe de WFS-89), WFS-93, WFS-95, puis WFS-97.
+
+### 2026-11-04 20:52:49 — WFS-98 RG-01 : icônes des pédales reprises du jeu web (PO)
+- **Question** de Copilot (session 0e5c192d, WFS-98) : RG-01 demandait « deux barres » pour l'icône du frein ; or deux barres verticales orange sont déjà l'icône pause du bouton MENU de la course (`pause.cpp`, `.cam-btn#menuBtnHud`), et le jeu web dessine le frein autrement (`index.html` l. 98).
+- **Décision** : recommandation du développeur retenue. Icônes = SVG du jeu web (`.pedal-icon` 26 px, trait 2,4) : **frein = disque et étriers** (cercle r 5,6 + deux arcs r 9, #FF6A85), **gaz = double chevron montant** (`index.html` l. 103, #FF6A00). Jamais deux barres sur une pédale. Motifs : fidélité au jeu web (règle n°1 du skill `waforspeed-natif`), aucune confusion avec la pause, coût faible (segments `uiQuad`, sans finition au pixel).
+- `regles-de-gestion/WFS-98.md` : seule la phrase de l'icône de RG-01 est amendée (« PO, 2026-11-04 »). Zone, critères et `TACHES.md` inchangés.
+
+### 2026-11-04 21:57:04 — Fin WFS-98 : commandes tactiles du jeu web, HUD de la vue cockpit, caméra du demi-tour — fusion par confiance (Copilot, session 0e5c192d)
+- **Fait** (PR #80, commit de fusion f542093, confiance ≈ 75 %) :
+  - **Commandes** (ANO-31) : pédales « GAZ » et « FREIN », bouton « NITRO » à anneau vert acide, volant dans un pavé vitré, d'après `.pedal`, `.nitro-touch` et `.steer-pad` du jeu web.
+  - **Cockpit** (ANO-24) : plus de compteur en arc ; vitesse 28 px et cases de nitro sous le temps.
+  - **Caméra** (ANO-30) : la poursuite suit le cap de la voiture avec retard (`camHd`, 3,4/s) et un recul dynamique (`camDistDyn`) ; en demi-tour, recul ≥ 6 m, œil à 3 m, regard relevé de 0,8 m.
+  - **Boutons de vue** (ANO-20) : un seul polygone, sans bandes.
+- **Fichiers** :
+  - nouveaux `src/game/commandes_tactiles.h/.cpp` : disposition, `commandeSous`, dessin, primitives `dessin2d` ;
+  - modifiés `src/game/game.cpp` (`onTouch`, `drawControls`), `src/game/direction.cpp`, `src/game/camera_vue.cpp/.h`, `src/ui/hud.cpp` (panneau cockpit, appuis de `benchHud`), `tests/test_course.cpp`.
+- **Vérification** (en local, banc lavapipe) :
+  - Tous les tests CPU passent, dont 5 nouveaux tests WFS-98 : tailles ≥ CSS × k, zone sûre, aucun chevauchement, tout point dessiné dans sa zone de toucher, appuis des bancs ; en droitier et en gaucher, en 720p et en 2400 × 1080 avec encoche.
+  - Captures regardées : `hud-course`, `hud-nitro`, `encoche-hud` (1280 et 2400), `camera-*` (cockpit avec un seul compteur), `course-gaucher`, `encoche-course`, `nitro-lignes`.
+  - `conduite-demitour` : Golf entière en travers, entre 0,62 et 0,81 H. Sur `main`, la caméra fixait le trottoir ; avec l'œil à 2,5 m, le centre de la Golf était à 0,65 H.
+- **Écarts et limites** (à regarder lors de la QA de nuit) :
+  - Bouton MENU encore rayé : `pause.cpp` est hors zone (WFS-102).
+  - Biseaux : un polygone plus une frange lissée d'un pixel, au lieu d'un seul `uiQuad` nu (bords nets, sans bandes).
+  - Libellé NITRO à 11 px au moins (10 px dans le web), pour la lisibilité.
+  - Pas d'animation de remplissage ni de pulsation.
+  - Gaz dessiné appuyé seulement sous son propre doigt (`.pressed` du web).
+  - Coin haut droit gardé au nitro pour le banc `nitro-lignes`.
+  - Glissé du volant inchangé (WFS-70).
+  - Tailles arrondies au pixel supérieur (jamais moins que CSS × k).
+  - Groupes de banc locaux `demitour-local` et `effets-local` ajoutés pour l'essai, puis retirés : `src/platform` n'est pas modifié.
+- **Suite** : suivre la CI de `main`, puis demander le ticket suivant au PO.
+
+### 2026-11-04 22:04:18 — Statuts remis à jour : tickets 🔧 sans branche (PO / Scrum Master)
+- **Motif** : ordre de l'utilisateur dans `tache utilisateur.md` : « on a des tâches avec des statuts en cours alors que l'agent n'a pas encore créé la branche ; il faut remettre à jour les statuts dans `TACHES.md` et `journal.md` pour ne pas bloquer le dev ». Légende de `TACHES.md` : 🔧 En cours = « attribué (Responsable), **branche créée** ». Cet ordre remplace la décision PO de 20:32:37 (réattribution un par un, à la demande).
+- **Vérification** à 21:59:45 puis 22:03:38 UTC (`git fetch origin`, `git ls-remote origin 'refs/heads/*'`, `gh pr list`) :
+  - restent 🔧 (branche poussée) : **WFS-89** (`feature/waforspeed-89`, PR #77 ouverte, non fusionnée, agent 5) et **WFS-96** (`feature/waforspeed-96`, PR #79 ouverte, Claude (session trafic)) ;
+  - aucune branche ni PR pour les 7 tickets ci-dessous.
+- **Tickets remis en ⏳ Prêt** (Responsable libéré, branche prévue gardée, zone, critères et règles inchangés) :
+  - attribués à Claude (session trafic) à 18:42:05 : P1 **WFS-99** (E5), **WFS-100** (E4), **WFS-101** (E4 + E3) ;
+  - attribués à Claude (session trafic) à 18:19:20 : P2 **WFS-93** (E2), P2 **WFS-95** (E5), P3 **WFS-97** (E4) ;
+  - attribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd) à 18:00:55 : P2 **WFS-91** (E7).
+- **Pourquoi ⏳ Prêt et pas ⏳ En attente** : les 7 tickets ont « Dépend de : — » dans le tableau et dans leur fichier `regles-de-gestion/WFS-XX.md` (qui existe). Pour WFS-91, la mention « à démarrer dès WFS-89 fusionné » appliquait seulement la règle « un ticket par agent » à l'agent 5, occupé par WFS-89. Ce n'est pas une dépendance : la zone de WFS-91 est disjointe de celle de WFS-89 (RG-06 de WFS-91), et WFS-91 était déjà noté réattribuable à 20:32:37.
+- **Sans changement** : WFS-102 reste ⏳ En attente (WFS-89, 91, 95, 96, 99, 101 pas finis). WFS-88 (iOS, gel, branche et PR #76) n'est pas touché. Les branches `claude/moteur-natif`, `claude/version-web-capacitor` et `ccr-99e41fb9-x0omvu` n'ont rien à voir avec ces tickets ; la dernière est ancienne (fusion de WFS-52) et n'a aucun commit absent de `main`. Rien n'a été supprimé.
+- **Aux anciens titulaires** : ces tickets ne sont plus à vous. Pour en reprendre un, redemandez-le au PO (attribution normale, règle 1). Si vous avez du travail local non poussé, signalez-le ici et poussez-le sur `wip/waforspeed-XX`, jamais sur `feature/waforspeed-XX` sans attribution. Les exceptions déjà écrites restent valables (E4 : WFS-97, WFS-100, WFS-101 ; E5 : WFS-95, WFS-99 ; fichiers séparés).
+
+### 2026-11-04 22:04:51 — Début WFS-99 — attribution à Copilot (session 0e5c192d) (PO / Scrum Master)
+- **Demandeur** : Copilot (session 0e5c192d). Il est libre : WFS-98 est ✅ (PR #80, fusion par confiance) et il n'a aucun autre ticket.
+- **Choix** (règle 1) : on prend le ticket ⏳ Prêt le plus prioritaire dont l'épic n'a aucun ticket en cours.
+  - Trois tickets P1 Urgent sont prêts : WFS-99, WFS-100 et WFS-101. WFS-99 a le plus petit numéro ; c'était aussi le premier dans l'ordre fixé à 20:32:37.
+  - L'épic E5 est libre, puisque WFS-95 vient de repasser en ⏳ Prêt.
+  - E3 (WFS-89) et E8 (WFS-96) sont occupées, mais WFS-99 n'en fait pas partie. Ce n'est pas un ticket iOS.
+- **Ticket** : **WFS-99** « Correction : garage lisible (voile, néons à droite, taches de lumière au sol, voiture de 3/4 avant) ».
+  - Épic E5, priorité P1 Urgent. Dépend de : — (WFS-11 et WFS-45 sont ✅).
+  - Anomalies corrigées : ANO-22 et ANO-23 (bloquantes), ANO-33 (mineure), et ANO-20 dans `garage.cpp`.
+- **Zone autorisée** : `src/ui/garage.*`, `src/ui/planche_voitures.*` et `src/render/bench_spots.*`. Ce dernier est dans l'épic E4, qui n'a aucun ticket en cours, et n'est dans la zone d'aucun ticket E4 prêt.
+- **Interdit** :
+  - `src/ui/text.*`, `toasts.*` et `shaders/**` (WFS-95, WFS-100) ; s'il faut modifier `scene.frag`, demander d'abord au PO ;
+  - `src/render/renderer.cpp`, `vk.*` (WFS-100) et `src/render/nuit.cpp` (WFS-97) ;
+  - `src/ui/ecrans/**` (WFS-96), `src/ui/hud.*`, `src/platform/**` et `.github/**` (WFS-91).
+- **Partage avec WFS-96** : la PR #79, encore ouverte, ajoute une accroche « mode regarder » dans `src/ui/garage.cpp` et `garage.h` (12 lignes). Selon RG-07, cette accroche doit être gardée telle quelle à chaque synchronisation avec `main`, en conservant les deux modifications.
+- **Règles** : `regles-de-gestion/WFS-99.md` (RG-01 à RG-07).
+  - Jeu web à reprendre : `js/world/garage.js`, `buildGarage` (l. 9-30 : sol, néons, 3 projecteurs) et `renderGarage` (l. 49-62) ; `css/style.css` l. 366 (`.screen--garage`).
+  - Code natif à reprendre : `biseau`, `sol_`, `matSol_` et `spots[3]` de `garage.cpp`, la capture `spots-sol` de `bench_spots.cpp`, et `Renderer::uiQuad`.
+- **Critères d'acceptation** :
+  - `spots-sol`, `garage-0` et `garage-2` : 3 taches de lumière au sol (orange, cyan et blanche) ; la 911 noire se détache du fond grâce à un liseré cyan.
+  - `garage-0`, `-1`, `-sf90` et `-m4` (et leurs versions `-2400`) : aucun néon sur le texte, voile sombre à gauche, voiture vue de 3/4 avant.
+  - Panneau sans escalier, boutons sans rayures, crédit lisible ; tests CPU verts.
+- **Plan court** :
+  - voile en 2 `uiQuad` dégradés ;
+  - néons déplacés à x ≥ 45 % de l'écran ;
+  - sol #1A1C24, métal 0,2, rugosité 0,6 ;
+  - 4e projecteur de contre-jour #00E5FF, force 0,25 du diffus ;
+  - cap de départ 0,6 + π ;
+  - chaque `biseau()` en un seul `uiQuad`.
+- **Branche** : `feature/waforspeed-99`, créée et poussée par le développeur juste après cette attribution.
+  - Synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi et chaque CI.
+  - Si la confiance dépasse 50 %, fusionner directement. Sinon, attendre la CI verte et regarder les captures.
+  - Au moment de la fusion, ajouter une ligne dans `qa/Check.md`.
+
+### 2026-11-04 22:14:49 — Début WFS-103 — Revue et fusion des PR en attente, attribution à Claude (session trafic) (PO / Scrum Master)
+- **Ticket** : WFS-103, épic E7 (transverse, n'occupe pas l'épic : WFS-91 reste attribuable), P1 Urgent. Demande de l'utilisateur (`tache utilisateur.md`) : PR ouvertes depuis des heures.
+- **Exception assumée** : Claude (session trafic) a déjà WFS-96 🔧 (développement arrêté à la limite d'usage). WFS-103 couvre la fusion de sa PR #79 : WFS-96 n'est pas réattribué.
+- **Zone autorisée** : fichiers des PR revues (résolution de conflits seulement), `TACHES.md`, `qa/Check.md`, `journal.md`, `anno.md`. Aucune nouvelle fonctionnalité. #76 (WFS-88, iOS) : gel iOS, on n'y touche pas.
+- **Règles** : `regles-de-gestion/WFS-103.md` (RG-01 à RG-11).
+- **Plan court** :
+  1. #77 WFS-89 : synchroniser avec `main`, compiler, lancer les tests CPU, regarder CI et captures, puis fusionner la partie faite (décision B).
+  2. #79 WFS-96 : resynchroniser sur le nouveau `main`, mêmes vérifications, puis fusionner ce qui marche et lister les règles non faites.
+  3. Après chaque fusion : `TACHES.md`, `qa/Check.md`, Journal.
+- **Nouvelle règle permanente (RG-10)** : aucune PR ne reste ouverte plus de 2 h sans décision. La décision est : fusionnée, bloquée (au Journal) ou gel iOS.
+
+### 2026-11-04 22:15:33 — tache utilisateur.md : PR en attente, ticket WFS-103 demandé et pris (Claude, session trafic)
+- Demande de l'utilisateur : regarder et fusionner les PR qui traînent. PR ouvertes : #77 (WFS-89), #79 (WFS-96), #76 (WFS-88, GEL iOS).
+- Le PO a créé WFS-103 (commit e7c1c9f) et me l'a attribué ; réponse écrite dans `tache utilisateur.md`. Les anciens tickets de ma session ne sont pas repris (ordre de l'utilisateur : « oublie le ticket »).
+
+### 2026-11-04 22:18:16 — WFS-103 : PR #77 (WFS-89) fusionnée (Claude, session trafic)
+- Synchronisée avec main (conflit de `.github/workflows/build.yml` : ligne des tests, `test_binarypack` et `test_conduite_libre` gardés), compilation et tests CPU de la CI OK en local, CI de la branche verte (run 41883025840), captures du salon regardées : rien de bloquant. Fusion fb50d09.
+- `TACHES.md` : WFS-89 ✅ (décision B, vrai réseau → WFS-92 ⏸) ; ligne dans `qa/Check.md`. Suite : PR #79 (WFS-96). #76 (WFS-88) non touchée (GEL iOS).

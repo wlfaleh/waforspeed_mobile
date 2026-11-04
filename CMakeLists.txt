@@ -77,7 +77,8 @@ else()
   target_link_libraries(test_traffic Threads::Threads)
   add_executable(test_course tests/test_course.cpp src/game/course.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
   target_link_libraries(test_course Threads::Threads)
-  add_executable(test_duel tests/test_duel.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-21
+  add_executable(test_duel tests/test_duel.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-21
+  add_executable(test_binarypack tests/test_binarypack.cpp src/game/binarypack.cpp)   # WFS-89 : messages de PeerJS
   target_link_libraries(test_duel Threads::Threads)
   add_executable(test_effets tests/test_effets.cpp src/render/effets_particules.cpp)   # WFS-65
   add_executable(test_roues tests/test_roues.cpp src/game/roues.cpp)   # WFS-60
