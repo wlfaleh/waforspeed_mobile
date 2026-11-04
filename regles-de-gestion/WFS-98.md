@@ -28,6 +28,10 @@ du cadre (ANO-30). Ce sont les commandes et la vue qu'on voit en permanence en c
   braquage. Mode « Flèches » (WFS-70) : mêmes fonds vitrés, chevrons #8A90A6.
 - RG-05 : gaucher (WFS-75, `ecrans::miroirX`) et marges sûres conservés ; zones de toucher = rectangles dessinés (≥ 44 dp
   après WFS-102 ; d'ici là ≥ les tailles CSS ci-dessus × k).
+- RG-05 bis (PO, 2026-11-04, à la réattribution) : la zone de toucher peut **déborder** du dessin (confort du pouce), jamais
+  l'inverse. Le point (0,89 W ; 0,74 H) doit rester dans la zone du **gaz** (en gaucher : (0,11 W ; 0,74 H), appui du banc
+  `course-gaucher` dans `src/ui/ecrans/reglages.cpp`, zone de WFS-96 : **ne pas modifier ce fichier**). Les appuis de
+  `benchHud` (`hud.cpp` : gaz et nitro de `hud-nitro`) sont dans la zone du ticket : à recaler sur les nouvelles commandes.
 - RG-06 (cockpit, ANO-24) : en vue cockpit (`etatCockpit()` / `V.cockpit`), **ne pas dessiner le compteur en arc** du
   HUD ; la vitesse s'affiche en chiffres 28 px sous le temps ; le cadran du tableau de bord 3D reste. Le disque cyan isolé
   du tableau de bord est supprimé (ou devient le voyant nitro vert acide #B6FF00 s'il vient de `buildCockpit`).
@@ -58,7 +62,7 @@ du cadre (ANO-30). Ce sont les commandes et la vue qu'on voit en permanence en c
 
 ## Zone de code
 `src/game/game.cpp` (seulement `drawControls`, la caméra de poursuite et l'appui des commandes ; dessin conseillé dans un
-nouveau `src/game/commandes_tactiles.*`), `src/game/direction.*`, `src/game/camera_vue.*`, `src/game/conduite_libre_banc.*`,
+nouveau `src/game/commandes_tactiles.*`), `src/game/direction.*`, `src/game/camera_vue.*`, `src/game/camera_banc.*` (si besoin), `src/game/conduite_libre_banc.*`,
 `src/ui/hud.*`. **Interdit** : `src/ui/text.*`, `toasts.*`, `shaders/ui*` (WFS-95), `src/ui/ecrans/**` (WFS-96 ;
 `ecrans::miroirX`, `reglages()` en lecture seule), `src/platform/**` et `.github/**` (WFS-91 : captures dans les bancs
 déjà branchés), `src/render/**` (WFS-97, WFS-100, WFS-101), fichiers du duel (WFS-89), `src/world/**` (WFS-93).
