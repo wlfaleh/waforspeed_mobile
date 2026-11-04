@@ -1903,3 +1903,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 **Accroches annoncées** : `src/game/game.cpp` 9 lignes (zones des pédales et dessin des pédales passés par miroirX), `src/game/direction.cpp` 9 lignes (zone de direction, boutons flèches, volant au repos), `src/game/ressenti.cpp` 2 lignes (`vibrer()` : « vibration ignorée (réglage) »), `src/game/sauvegarde.h/.cpp` 4 lignes (champs `gaucher` et `vibrations`, indispensables pour que le réglage soit enregistré par WFS-24).
 **Captures** : `reglages-commandes`, `course-gaucher` (groupe menu et partie2). Journal du banc : « gaucher, appui à gauche = gaz : 65 → 86 km/h », « vibration ignorée (réglage) : 90-40-120 ». Les captures de course droitier sont identiques à `main`. `reglages-menu`, `-pause` et `-musique` ne changent que par le panneau à 6 lignes.
 **Pas fait (non prévu par les règles WFS-75)** : lignes « Direction » (glisser / flèches) et « Réduire les mouvements » du panneau. C'est au PO de décider.
+
+### 2026-11-04 12:49:07 — Début WFS-80 attribué à Claude (session trafic) (po-scrum-master)
+- Ticket : WFS-80, épic E8, P3 Moyenne (remonté de P4 : il absorbe les deux lignes de réglages laissées par WFS-70). Dépendances WFS-22 ✅, WFS-75 ✅ (PR #65).
+- Décision PO : les lignes « Direction » (clé `steer`) et « Réduire les mouvements » vont dans WFS-80 (même fichier `reglages.cpp`, mêmes boutons, pas de micro-ticket). « Réduire les mouvements » est mémorisé dans le fichier de réglages de `reglages.cpp` (clé `mouvements`), sans toucher `src/game/**`.
+- Zone autorisée : `src/ui/ecrans/reglages.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.*` si besoin.
+- Critères : lignes visibles et appliquées tout de suite, choix relus au relancement, focus manette sur pastilles et choix (A applique, B retour), captures tactiles du garage inchangées.
+- Plan : 1) deux lignes dans `LIGNES` + lecture / écriture ; 2) zones de focus des choix ; 3) accroche garage ; 4) banc manette ; fusion par confiance si > 50 %.
