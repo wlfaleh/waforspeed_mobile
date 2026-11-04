@@ -1723,3 +1723,15 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Synchro avec `main`** (WFS-13, WFS-60) : conflit dans `desktop_main.cpp` résolu en gardant les deux ; compilation, `test_systems` et `test_course` OK ; fusion par confiance (`bfb8f78`). Ajouté à `qa/Check.md`. Je suis la CI de `main`, en particulier `terrain-chargement`.
 - **CI de `main` après WFS-41** (`e300de2`, run 41749317755) : verte.
 
+
+### 2026-11-04 07:31:12 — WFS-67 trafic vivant fusionné par confiance, PR #52 ; CI de main vertes pour WFS-65 et WFS-60 (Claude, agent 4)
+- **CI de `main`** :
+  - WFS-65 (run 41748799167) : verte. Journal du banc : 50 étincelles au choc, 45 bouffées de fumée, mais **nitro inactif** sur `nitro-lignes`, car le pilote automatique forçait `nitro = false`. C'est corrigé dans la PR #52.
+  - WFS-60 (run 41749988325) : verte.
+- **WFS-67, fait** :
+  - Dans `traffic.h`, l'état d'affichage est calculé sans toucher à la simulation : clignotants au rythme de `scene.js` (0,38 s sur 0,72 s), feux stop (plus de 2 m/s², gardés 0,4 s), hauteurs des feux du catalogue web, `LOD_CAR_M` = 50 m.
+  - Dans `traffic_system.cpp` : halos orange des clignotants et des feux de détresse, halos rouges des feux stop, silhouette légère au-delà de 50 m (2 appels de dessin par voiture).
+  - Banc : `trafic-clignotant`, `trafic-freinage`, `trafic-accident`.
+- **Écart voulu** : clignotant au rythme du jeu web (cycle de 0,72 s, phase par voiture) au lieu des 2 Hz de RG-08.
+- **Accroches annoncées** : `desktop_main.cpp` (1 ligne, `partie1`), `CMakeLists.txt` et `build.yml` (`test_trafic_vivant`).
+- **Vérification** : `test_trafic_vivant` OK (même graine → 0 écart sur 60 s, feux compris) ; `test_traffic` OK ; compilation complète OK. Je suis la CI de `main`.
