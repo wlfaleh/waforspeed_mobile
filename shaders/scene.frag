@@ -12,7 +12,8 @@ layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
-           F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u;
+           F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u,
+           F_POOL = 32768u, F_ADD = 65536u;   // WFS-09 : tache des phares (multiplicative), halo (additif)
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -20,6 +21,17 @@ float noise(vec2 p) {
     return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
 }
 float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
+// WFS-16 : bruit de la route mouillée (rh12 / rnoise de roadShader, js/world/renderer.js), en coordonnées monde
+float rh12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float rnoise(vec2 p) {
+    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(rh12(i), rh12(i + vec2(1.0, 0.0)), f.x), mix(rh12(i + vec2(0.0, 1.0)), rh12(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+// part du brouillard au point p (même calcul que la fin de main)
+float fogAt(vec3 p) {
+    if (F.fogLin.y > 0.0) return smoothstep(F.fogLin.x, F.fogLin.y, dot(p - F.camPos.xyz, F.camFwd.xyz));
+    return 1.0 - exp(-length(F.camPos.xyz - p) * F.fog.a);
+}
 
 float D_GGX(float NoH, float a) { float a2 = a * a; float d = NoH * NoH * (a2 - 1.0) + 1.0; return a2 / (PI * d * d); }
 float V_Smith(float NoV, float NoL, float a) {
@@ -56,7 +68,7 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
     vec3 sum = vec3(0.0);
     int n = int(F.spotN.x + 0.5);
     float NoV = max(dot(N, V), 1e-3);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 8; i++) {
         if (i >= n) break;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
@@ -80,6 +92,28 @@ void main() {
     uint flags = uint(pc.params.w + 0.5);
     // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
     bool fine = pc.emissive.w > 0.0 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u;
+    // WFS-16 : passe de reflet (vue miroir de la chaussée) : rien de ce qui est sous le plan
+    if (F.nuitA.w > 0.5 && vWorld.y < F.nuitB.x - 0.05) discard;
+    if ((flags & F_ADD) != 0u) {   // WFS-09 : halo des feux et des lampadaires (TEXS.radial du jeu web, mélange additif)
+        // dégradé radial 1 → 0,45 (35 % du rayon) → 0 ; couleur × intensité portée par la normale du sommet
+        float r = length(vUv * 2.0 - 1.0);
+        float k = r < 0.35 ? mix(1.0, 0.45, r / 0.35) : mix(0.45, 0.0, clamp((r - 0.35) / 0.65, 0.0, 1.0));
+        outColor = vec4(max(vNrm, vec3(0.0)) * k * (1.0 - fogAt(vWorld)), 1.0);
+        return;
+    }
+    if ((flags & F_POOL) != 0u) {   // WFS-09 : tache des phares sur la route (beamTex('pool') de js/cars/models.js)
+        // uv.x = travers (0..1 sur BEAM.wid = 26 m), uv.y = distance devant le pare-chocs / BEAM.len (110 m) ;
+        // mélange multiplicatif : sol × (1 + faisceau), comme MAT.headPool (DstColor + One)
+        float dm = vUv.y * 110.0, xm = (vUv.x - 0.5) * 26.0;
+        float rise = min(1.0, dm / 2.5);
+        float fall = 1.0 / (1.0 + pow(dm / 32.0, 2.0)) * (1.0 - max(0.0, (dm - 110.0 * 0.82) / (110.0 * 0.18)));
+        float spread = 0.9 + dm * 0.32, spotW = 0.8 + dm * 0.06;
+        float wide = exp(-0.5 * pow(xm / spread, 4.0));
+        float hot = 0.3 * exp(-0.5 * pow((dm - 36.0) / 22.0, 2.0)) * exp(-0.5 * pow(xm / spotW, 2.0));
+        float a = clamp(rise * (fall * wide * 0.7 + hot), 0.0, 1.0);
+        outColor = vec4(pc.color.rgb * a * (1.0 - fogAt(vWorld)), 1.0);
+        return;
+    }
     if ((flags & F_SHADOW) != 0u) {   // ombre de contact : rectangle aux bords très doux
         vec2 q = abs(vUv * 2.0 - 1.0);
         float a = (1.0 - smoothstep(0.55, 1.0, q.x)) * (1.0 - smoothstep(0.6, 1.0, q.y));
@@ -91,7 +125,9 @@ void main() {
     bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
     // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
     // triangles enroulés dans l'autre sens → ne pas retourner (sinon le sol ne recevait ni soleil ni ombre, WFS-07)
-    if (!gl_FrontFacing && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
+    // passe de reflet (WFS-16) : la vue miroir inverse le sens des faces
+    bool face = gl_FrontFacing != (F.nuitA.w > 0.5);
+    if (!face && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
     vec4 base = texture(texColor, vUv) * pc.color;
     if (vtint) base.rgb *= length(vNrm);
     // alpha découpé : la couverture est conservée dans les mipmaps lointains (le feuillage ne s'éclaircit pas au loin)
@@ -102,6 +138,7 @@ void main() {
     if ((flags & F_MASK) != 0u && base.a < pc.params.z) discard;
 
     // ---------- surfaces procédurales (uv = mètres : x latéral, y le long de la route) ----------
+    bool wetRoad = false;   // WFS-16 : chaussée mouillée (nuit en ville et sur la corniche)
     if ((flags & F_ROAD) != 0u) {
         vec2 p = vUv;
         float grain = fbm(p * 3.1) * 0.6 + fbm(p * 23.0) * 0.4;
@@ -118,6 +155,19 @@ void main() {
         float paint = max(edgeL, lane) * (0.75 + 0.25 * noise(p * 6.0));
         base.rgb = mix(asphalt, vec3(0.78, 0.78, 0.74), paint);
         rough = mix(0.82 - grain * 0.15, 0.55, paint); metal = 0.0;
+        if (F.nuitA.x > 0.5) {   // WFS-16 : roadShader du jeu web (rnoise, trk, puddle) ; RG-01 rugosité 0,22, métal 0,4
+            wetRoad = true;
+            vec2 w = vWorld.xz;
+            float rn = rnoise(w * 0.11) * 0.62 + rnoise(w * 0.43 + 7.0) * 0.38;      // deux échelles, pas de motif répété
+            float lane = fract((p.x + halfW) / (2.0 * halfW) * 3.0);                   // position dans la voie (0..1)
+            float trk = exp(-pow((lane - 0.3) * 13.0, 2.0)) + exp(-pow((lane - 0.7) * 13.0, 2.0));   // traces de roues
+            float puddle = smoothstep(0.6, 0.7, rn - trk * 0.08) * F.nuitA.y;          // flaques (qualité haute)
+            base.rgb *= (0.9 + 0.2 * rnoise(w * 0.031 + 3.0)) * (1.0 - trk * 0.07) * mix(1.0, 0.5, puddle);   // réparations
+            rough = clamp(mix(0.22, 0.45, paint) * (0.8 + rn * 0.4) - trk * 0.08, 0.04, 1.0);
+            rough = mix(rough, 0.02, puddle);
+            metal = 0.4 * (1.0 - paint);
+            N = normalize(mix(N, normalize(vNrm), puddle));                             // flaque : surface miroir
+        }
     } else if ((flags & F_WALK) != 0u) {
         vec2 p = vUv;
         vec2 tile = fract(p / 0.6);
@@ -173,6 +223,15 @@ void main() {
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
     vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
+    if (wetRoad && F.nuitA.z > 0.5) {
+        // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran ; étiré à la
+        // verticale selon la rugosité (traînées des lumières sur l'asphalte mouillé), légèrement déformé par le relief
+        vec2 suv = gl_FragCoord.xy * F.nuitB.yz + N.xz * 0.01;
+        float spread = rough * 0.05;
+        vec3 rs = vec3(0.0);
+        for (int i = 0; i < 6; i++) rs += texture(reflTex, suv + vec2(0.0, (float(i) - 2.5) * 0.4 * spread)).rgb;
+        env = rs / 6.0;
+    }
     col += albedo * (1.0 - metal) * skyAmb + env * Fe * F.misc.w * specOcc;
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)

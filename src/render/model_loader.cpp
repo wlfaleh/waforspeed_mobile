@@ -64,6 +64,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     std::vector<Vertex> verts; std::vector<uint32_t> idx;
     std::vector<float> partDetail(nMat, 0.f);
     std::vector<char> partFil(nMat, 0);
+    std::vector<vec3> matMin(nMat, vec3{1e9f, 1e9f, 1e9f}), matMax(nMat, vec3{-1e9f, -1e9f, -1e9f});   // WFS-09 : boîte de chaque matériau
     for (uint32_t i = 0; i < nMesh; i++) {
         uint32_t mat = rd.get<uint32_t>(), nv = rd.get<uint32_t>(), ni = rd.get<uint32_t>();
         const uint8_t* vp = rd.take((size_t)nv * sizeof(Vertex));
@@ -74,6 +75,11 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         verts.resize(v0 + nv); std::memcpy(&verts[v0], vp, (size_t)nv * sizeof(Vertex));
         idx.resize(i0 + ni); std::memcpy(&idx[i0], ip, (size_t)ni * 4);
         out.parts.push_back(part);
+        if (mat < nMat) for (uint32_t k = 0; k < nv; k++) {
+            const Vertex& q = verts[v0 + k];
+            matMin[mat] = {std::min(matMin[mat].x, q.px), std::min(matMin[mat].y, q.py), std::min(matMin[mat].z, q.pz)};
+            matMax[mat] = {std::max(matMax[mat].x, q.px), std::max(matMax[mat].y, q.py), std::max(matMax[mat].z, q.pz)};
+        }
         // WFS-42 : finesse de la pièce = hauteur médiane de ses triangles (fils de dégivrage, rayons de jante…)
         if (ni >= 3 && mat < nMat) {
             const Vertex* V = &verts[v0]; const uint32_t* I = &idx[i0];
@@ -104,6 +110,26 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     for (uint32_t i = 0; i < nTex; i++)
         if (dec[i].w) out.textures[i] = r.vk().uploadTexture(dec[i].rgba.data(), (uint32_t)dec[i].w, (uint32_t)dec[i].h, dec[i].srgb);
     auto texAt = [&](int32_t t) -> const Image* { return (t >= 0 && t < (int32_t)nTex && out.textures[t].view) ? &out.textures[t] : nullptr; };
+    // WFS-09 : feux repérés par matériau (lampAt de js/cars/models.js). Un matériau n'est un feu que si toutes ses pièces
+    // sont au bon endroit : feux arrière dans le dernier tiers (z > 0,3 L), phares dans le premier (z < −0,3 L), bloc
+    // de moins de 0,5 m de haut ; sinon (étriers « brake », plastique partagé) le drapeau est retiré.
+    const float L = out.bmax.z - out.bmin.z, H = out.bmax.y - out.bmin.y;
+    vec3 tMin{1e9f, 1e9f, 1e9f}, tMax{-1e9f, -1e9f, -1e9f}, hMin = tMin, hMax = tMax;
+    for (uint32_t mi = 0; mi < nMat; mi++) {
+        if (matMax[mi].x < matMin[mi].x) { raw[mi].flags &= ~(uint32_t)(MAT_TAIL | MAT_HEAD); continue; }
+        const bool basse = matMax[mi].y - matMin[mi].y < 0.5f;
+        if ((raw[mi].flags & MAT_TAIL) && !(basse && matMin[mi].z > L * 0.3f)) raw[mi].flags &= ~(uint32_t)MAT_TAIL;
+        if ((raw[mi].flags & MAT_HEAD) && !(basse && matMax[mi].z < -L * 0.3f)) raw[mi].flags &= ~(uint32_t)MAT_HEAD;
+        vec3 &a = (raw[mi].flags & MAT_TAIL) ? tMin : hMin, &b = (raw[mi].flags & MAT_TAIL) ? tMax : hMax;
+        if (raw[mi].flags & (MAT_TAIL | MAT_HEAD)) {
+            a = {std::min(a.x, matMin[mi].x), std::min(a.y, matMin[mi].y), std::min(a.z, matMin[mi].z)};
+            b = {std::max(b.x, matMax[mi].x), std::max(b.y, matMax[mi].y), std::max(b.z, matMax[mi].z)};
+        }
+    }
+    // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
+    out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
+    out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;
+    out.feux.avantY = hMax.y > hMin.y ? (hMin.y + hMax.y) * 0.5f : out.bmin.y + H * 0.41f;
     for (size_t mi = 0; mi < raw.size(); mi++) {
         const RawMat& m = raw[mi];
         Material mt;

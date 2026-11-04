@@ -58,7 +58,8 @@ struct FrameUBO {
     mat4 shadowMat; vec4 shadowP;
     // WFS-45 : même ordre que shaders/common.glsl
     vec4 camFwd, fogLin, hemiSky, hemiGround, spotN;
-    vec4 spotPos[4], spotDir[4], spotCol[4], spotCone[4];
+    vec4 spotPos[8], spotDir[8], spotCol[8], spotCone[8];   // WFS-09 : 8 lumières
+    vec4 nuitA, nuitB;                                      // WFS-09 / WFS-16 : route mouillée, reflets
 };
 
 // ombres du soleil (WFS-07, valeurs du jeu web : renderer.js applyEnv / stableShadow)
@@ -70,6 +71,7 @@ static constexpr VkFormat SHADOW_FORMAT = VK_FORMAT_D16_UNORM;
 
 static constexpr VkFormat HDR_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
 static constexpr size_t UI_MAX_VERTS = 6 * 8192;
+static constexpr int QUADS_MAX = 4096;   // WFS-09 : quads transitoires par image (halos, tache des phares)
 
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
@@ -93,10 +95,11 @@ bool Renderer::init(VkCtx& vk) {
     flatNormal = vk.uploadTexture(nrm, 1, 1, false);
 
     // ---------- descripteurs ----------
-    VkDescriptorSetLayoutBinding b0[2] = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-                                          {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};   // carte d'ombre
+    VkDescriptorSetLayoutBinding b0[3] = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                          {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},    // carte d'ombre
+                                          {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};   // reflet (WFS-16)
     VkDescriptorSetLayoutCreateInfo lci{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-    lci.bindingCount = 2; lci.pBindings = b0;
+    lci.bindingCount = 3; lci.pBindings = b0;
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &frameLayout_));
     VkDescriptorSetLayoutBinding mb[3];
     for (uint32_t i = 0; i < 3; i++) mb[i] = {i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
@@ -165,12 +168,43 @@ bool Renderer::init(VkCtx& vk) {
         wr[1].dstBinding = 1; wr[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[1].pImageInfo = &si;
         vkUpdateDescriptorSets(d, 2, wr, 0, nullptr);
     }
+    // WFS-16 : passe de reflet = même jeu de descripteurs, tampon uniforme miroir, sans reflet lisible (texture blanche)
+    for (int f = 0; f < FRAMES; f++) {
+        refletUbo_[f] = vk.createBuffer(sizeof(FrameUBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, true);
+        VkDescriptorSetAllocateInfo rai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+        rai.descriptorPool = pool_; rai.descriptorSetCount = 1; rai.pSetLayouts = &frameLayout_;
+        VK_OK(vkAllocateDescriptorSets(d, &rai, &refletSet_[f]));
+        VkDescriptorBufferInfo bi{refletUbo_[f].buf, 0, sizeof(FrameUBO)};
+        VkDescriptorImageInfo si{shadowSampler_, shadowMap_.view, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+        VkDescriptorImageInfo wi{clampSampler_, white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+        VkWriteDescriptorSet wr[3]{};
+        for (auto& w : wr) { w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; w.dstSet = refletSet_[f]; w.descriptorCount = 1; }
+        wr[0].dstBinding = 0; wr[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; wr[0].pBufferInfo = &bi;
+        wr[1].dstBinding = 1; wr[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[1].pImageInfo = &si;
+        wr[2].dstBinding = 2; wr[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[2].pImageInfo = &wi;
+        vkUpdateDescriptorSets(d, 3, wr, 0, nullptr);
+        quadVb_[f] = vk.createBuffer(sizeof(Vertex) * 4 * QUADS_MAX, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
+    }
+    {   // WFS-09 : indices des quads transitoires (0-1-2, 0-2-3 par quad)
+        std::vector<uint32_t> qi((size_t)QUADS_MAX * 6);
+        for (uint32_t q = 0; q < (uint32_t)QUADS_MAX; q++) {
+            const uint32_t k = q * 4, a[6] = {k, k + 1, k + 2, k, k + 2, k + 3};
+            std::memcpy(&qi[(size_t)q * 6], a, sizeof a);
+        }
+        quadIb_ = vk.uploadBuffer(qi.data(), qi.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    }
     VkDescriptorSetAllocateInfo dai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
     VK_OK(vkAllocateDescriptorSets(d, &dai, &postSet_));
 
     createTargets();
     createPipelines();
+    {   // WFS-09 : halos additifs ; tache des phares (MAT.headPool du jeu web : couleur 0xfff0dc, multiplicative)
+        Material h; h.flags = MAT_ADD | MAT_BLEND; haloMat_ = makeMaterial(h, nullptr, nullptr, nullptr);
+        Material t; t.flags = MAT_POOL | MAT_BLEND;
+        t.color = {std::pow(0xff / 255.f, 2.2f), std::pow(0xf0 / 255.f, 2.2f), std::pow(0xdc / 255.f, 2.2f), 1};
+        poolMat = makeMaterial(t, nullptr, nullptr, nullptr);
+    }
     return true;
 }
 
@@ -222,7 +256,7 @@ void Renderer::createShadows() {
     // mesure du coût GPU de la passe (2 horodatages par image en vol)
     if (vk.props.limits.timestampComputeAndGraphics) {
         VkQueryPoolCreateInfo q{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
-        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 3 * FRAMES;
+        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 4 * FRAMES;   // ombre, reflet (WFS-16), scène
         VK_OK(vkCreateQueryPool(d, &q, nullptr, &tsPool_));
     }
     WFS_LOG("Ombres du soleil : carte %ux%u, filtre %s", shadowSize_, shadowSize_, linear ? "bilinéaire" : "au plus proche");
@@ -230,21 +264,22 @@ void Renderer::createShadows() {
 
 void Renderer::readShadowTiming() {
     if (!tsPool_ || !tsWritten_[cur_]) return;
-    uint64_t t[3];
-    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 3, 3, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
+    uint64_t t[4];
+    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 4, 4, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
     const double k = vk_->props.limits.timestampPeriod * 1e-6;
     shadowMsSum_ += (double)(t[1] - t[0]) * k;
-    sceneMsSum_ += (double)(t[2] - t[1]) * k;   // WFS-42 : coût de la passe de scène, pour comparer avant / après
+    refletMsSum_ += (double)(t[2] - t[1]) * k;   // WFS-16 : passe de reflet (0 sans route mouillée)
+    sceneMsSum_ += (double)(t[3] - t[2]) * k;    // WFS-42 : coût de la passe de scène, pour comparer avant / après
     if (++shadowMsN_ == 120) {
-        WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms", shadowMsSum_ / shadowMsN_, shadowSize_,
-                sceneMsSum_ / shadowMsN_);
-        shadowMsSum_ = 0; sceneMsSum_ = 0; shadowMsN_ = 0;
+        WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms ; reflets %.2f ms (WFS-16)", shadowMsSum_ / shadowMsN_, shadowSize_,
+                sceneMsSum_ / shadowMsN_, refletMsSum_ / shadowMsN_);
+        shadowMsSum_ = 0; sceneMsSum_ = 0; refletMsSum_ = 0; shadowMsN_ = 0;
     }
 }
 
 // passe d'ombre : objets opaques vus du soleil (sauf sol, route, trottoirs : ils reçoivent l'ombre sans en projeter)
 void Renderer::shadowPass(VkCommandBuffer cb) {
-    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 3, 3); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 3); }
+    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 4, 4); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4); }
     VkClearValue clear{}; clear.depthStencil = {1.f, 0};
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     rbi.renderPass = shadowPass_; rbi.framebuffer = shadowFb_; rbi.renderArea = {{0, 0}, {shadowSize_, shadowSize_}};
@@ -266,7 +301,7 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         }
     }
     vkCmdEndRenderPass(cb);
-    if (tsPool_) vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 3 + 1);
+    if (tsPool_) vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 1);
 }
 
 void Renderer::rotationMatrix(float r[4]) const {
@@ -360,7 +395,105 @@ void Renderer::createTargets() {
     VkWriteDescriptorSet wr{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
     wr.dstSet = postSet_; wr.dstBinding = 0; wr.descriptorCount = 1; wr.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr.pImageInfo = &ii;
     vkUpdateDescriptorSets(d, 1, &wr, 0, nullptr);
+    createReflets();
     WFS_LOG("Cibles de rendu : %ux%u (logique), scène %ux%u, MSAA x%d", lw_, lh_, sw_, sh_, (int)vk.msaa);
+}
+
+// ---------- WFS-16 : passe de reflet (scène vue dans le miroir de la chaussée), demi-résolution, une cible par image en vol ----------
+// Image n : la passe miroir écrit refletColor_[n], puis la passe de scène la lit : jamais lue et écrite dans la même passe.
+void Renderer::createReflets() {
+    VkCtx& vk = *vk_; VkDevice d = vk.device;
+    rw_ = std::max(1u, sw_ / 2); rh_ = std::max(1u, sh_ / 2);
+    if (!refletPass_) {
+        VkAttachmentDescription at[2]{};
+        at[0].format = HDR_FORMAT; at[0].samples = VK_SAMPLE_COUNT_1_BIT;
+        at[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        at[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        at[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        at[1].format = vk.depthFormat; at[1].samples = VK_SAMPLE_COUNT_1_BIT;
+        at[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; at[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        at[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; at[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        at[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; at[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VkAttachmentReference colRef{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, depRef{1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+        VkSubpassDescription sp{};
+        sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        sp.colorAttachmentCount = 1; sp.pColorAttachments = &colRef; sp.pDepthStencilAttachment = &depRef;
+        VkSubpassDependency dep[2]{};
+        dep[0].srcSubpass = VK_SUBPASS_EXTERNAL; dep[0].dstSubpass = 0;
+        dep[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dep[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dep[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dep[1].srcSubpass = 0; dep[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dep[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; dep[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dep[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; dep[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        VkRenderPassCreateInfo rpci{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+        rpci.attachmentCount = 2; rpci.pAttachments = at; rpci.subpassCount = 1; rpci.pSubpasses = &sp;
+        rpci.dependencyCount = 2; rpci.pDependencies = dep;
+        VK_OK(vkCreateRenderPass(d, &rpci, nullptr, &refletPass_));
+    }
+    refletDepth_ = vk.createImage(rw_, rh_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, true);
+    VkCommandBuffer cb = vk.beginOneShot();
+    for (int f = 0; f < FRAMES; f++) {
+        refletColor_[f] = vk.createImage(rw_, rh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+        // lisible dès le départ (aucune passe de reflet le jour) : passage en lecture seule
+        VkImageMemoryBarrier b{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+        b.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; b.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        b.srcQueueFamilyIndex = b.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        b.image = refletColor_[f].img; b.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+        b.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &b);
+    }
+    vk.endOneShot(cb);
+    for (int f = 0; f < FRAMES; f++) {
+        VkImageView v[2] = {refletColor_[f].view, refletDepth_.view};
+        VkFramebufferCreateInfo fci{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+        fci.renderPass = refletPass_; fci.attachmentCount = 2; fci.pAttachments = v; fci.width = rw_; fci.height = rh_; fci.layers = 1;
+        VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &refletFb_[f]));
+        VkDescriptorImageInfo ii{clampSampler_, refletColor_[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+        VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+        w.dstSet = fr_[f].frameSet; w.dstBinding = 2; w.descriptorCount = 1; w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; w.pImageInfo = &ii;
+        vkUpdateDescriptorSets(d, 1, &w, 0, nullptr);
+    }
+}
+
+void Renderer::destroyReflets() {
+    VkDevice d = vk_->device;
+    for (int f = 0; f < FRAMES; f++) {
+        if (refletFb_[f]) vkDestroyFramebuffer(d, refletFb_[f], nullptr);
+        refletFb_[f] = VK_NULL_HANDLE;
+        vk_->destroy(refletColor_[f]);
+    }
+    vk_->destroy(refletDepth_);
+}
+
+// passe miroir : ciel, objets opaques (sauf route, trottoirs, sol, ombres de contact, personnages), puis transparents
+// (vitres, halos) ; la tache des phares n'y est pas (elle est sur la chaussée)
+void Renderer::refletPass(VkCommandBuffer cb) {
+    if (!refletsOn_) return;
+    VkClearValue clears[2]{};
+    clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};
+    VkRenderPassBeginInfo bi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+    bi.renderPass = refletPass_; bi.framebuffer = refletFb_[cur_]; bi.renderArea = {{0, 0}, {rw_, rh_}};
+    bi.clearValueCount = 2; bi.pClearValues = clears;
+    vkCmdBeginRenderPass(cb, &bi, VK_SUBPASS_CONTENTS_INLINE);
+    VkViewport vpt{0, 0, (float)rw_, (float)rh_, 0, 1};
+    VkRect2D sc{{0, 0}, {rw_, rh_}};
+    vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &refletSet_[cur_], 0, nullptr);
+    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refSky_);
+    vkCmdDraw(cb, 3, 1, 0, 0);
+    constexpr uint32_t SANS = MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_SHADOWBLOB | MAT_POOL;
+    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refOpaque_);
+    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS)) flushDraw(p);
+    VkPipeline lie = VK_NULL_HANDLE;
+    for (const Pending& p : transparent_) {
+        if (p.mat->flags & SANS) continue;
+        const VkPipeline voulu = (p.mat->flags & MAT_ADD) ? refAdd_ : refBlend_;
+        if (voulu != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
+        flushDraw(p);
+    }
+    vkCmdEndRenderPass(cb);
 }
 
 void Renderer::destroyTargets() {
@@ -370,6 +503,7 @@ void Renderer::destroyTargets() {
     if (sceneFb_) vkDestroyFramebuffer(d, sceneFb_, nullptr);
     sceneFb_ = VK_NULL_HANDLE;
     vk_->destroy(hdr_); vk_->destroy(msaaColor_); vk_->destroy(depth_);
+    destroyReflets();
 }
 
 bool Renderer::resize() {
@@ -380,7 +514,7 @@ bool Renderer::resize() {
 }
 
 VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
-                                  VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly) {
+                                  VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly, int melange) {
     VkPipelineShaderStageCreateInfo st[2]{};
     st[0].sType = st[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     st[0].stage = VK_SHADER_STAGE_VERTEX_BIT; st[0].module = vs; st[0].pName = "main";
@@ -432,6 +566,10 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         cb.srcColorBlendFactor = premul ? VK_BLEND_FACTOR_ONE : VK_BLEND_FACTOR_SRC_ALPHA;
         cb.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; cb.colorBlendOp = VK_BLEND_OP_ADD;
         cb.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; cb.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; cb.alphaBlendOp = VK_BLEND_OP_ADD;
+        // WFS-09 : 1 = multiplicatif (sol × (1 + source), MAT.headPool : DstColor + One), 2 = additif (halos)
+        if (melange == 1) { cb.srcColorBlendFactor = VK_BLEND_FACTOR_DST_COLOR; cb.dstColorBlendFactor = VK_BLEND_FACTOR_ONE; }
+        if (melange == 2) { cb.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; cb.dstColorBlendFactor = VK_BLEND_FACTOR_ONE; }
+        if (melange) { cb.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; cb.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE; }
     }
     VkPipelineColorBlendStateCreateInfo cbs{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};
     cbs.attachmentCount = depthOnly ? 0 : 1; cbs.pAttachments = &cb;
@@ -473,6 +611,14 @@ void Renderer::createPipelines() {
     skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);
     skinShadow_ = makePipeline(kh, VK_NULL_HANDLE, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
     skinShadowMask_ = makePipeline(kh, hf, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
+    // WFS-09 : tache des phares (multiplicative) et halos (additifs) ; WFS-16 : passe de reflet (1 échantillon)
+    poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
+    addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
+    const VkSampleCountFlagBits s1 = VK_SAMPLE_COUNT_1_BIT;
+    refOpaque_ = makePipeline(sv, sf, 1, false, false, true, true, refletPass_, s1, sceneLayout_);
+    refBlend_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_);
+    refSky_ = makePipeline(kv, kf, 0, false, false, false, false, refletPass_, s1, sceneLayout_);
+    refAdd_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_, false, 2);
 }
 
 Material Renderer::makeMaterial(const Material& src, const Image* color, const Image* normal, const Image* mr) {
@@ -587,7 +733,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             const vec3 a = fp.hemiSky * fp.hemiIntensity, b = fp.hemiGround * fp.hemiIntensity;
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
-        const int n = std::clamp(fp.spotCount, 0, 4);
+        const int n = std::clamp(fp.spotCount, 0, 8);
         u.spotN = {(float)n, 0, 0, 0};
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[i];
@@ -599,9 +745,25 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.spotDir[i] = {dir.x, dir.y, dir.z, std::max(s.decay, 0.f)};
             u.spotCol[i] = {c.x, c.y, c.z, 0};
             u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), 0, 0};
+            if (s.angle >= PI - 1e-3f) u.spotCone[i] = {-2.f, -1.5f, 0, 0};   // WFS-09 : PointLight (toutes directions)
         }
     }
+    // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
+    refletsOn_ = fp.mouille && fp.reflets;
+    u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
+    u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, 0};
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
+    if (refletsOn_) {
+        FrameUBO m = u;
+        mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;   // y → 2h − y
+        m.viewProj = fp.proj * fp.view * R; m.invViewProj = inverse(m.viewProj);
+        m.camPos.y = 2 * fp.refletY - fp.camPos.y;
+        m.camFwd.y = -m.camFwd.y;
+        m.nuitA = {0, 0, 0, 1};   // passe de reflet : pas de route mouillée ni de reflet lu, rien sous le plan
+        std::memcpy(refletUbo_[cur_].mapped, &m, sizeof(m));
+    }
+    feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
+    quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear(); skinUsed_ = 0;
     readShadowTiming();
@@ -628,6 +790,10 @@ void Renderer::flushDraw(const Pending& p) {
 
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
     if (!inFrame_ || !m.ok) return;
+    // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
+    const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
+    feuxSuivantPose_ = false;
+    if (fx.nuit) feuxVoiture(m, world, fx);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
     for (size_t pi = 0; pi < m.parts.size(); pi++) {
@@ -639,6 +805,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
+        // WFS-09 : pièces des feux (repérées par matériau) allumées la nuit : rouge (plus fort au freinage), phares blancs
+        if (fx.nuit && (mat.flags & MAT_TAIL)) { const float k = fx.stop ? 4.f : 1.6f; p.pc.emissive.x += k; p.pc.emissive.y += k * 0.02f; p.pc.emissive.z += k * 0.04f; }
+        if (fx.nuit && (mat.flags & MAT_HEAD)) { p.pc.emissive.x += 2.4f; p.pc.emissive.y += 2.2f; p.pc.emissive.z += 1.9f; }
         if (mat.filament) {   // WFS-42 : fils plus fins qu'un pixel → mélangés selon leur couverture, avant les vitres
             p.pc.params.w = (float)(mat.flags | MAT_BLEND); p.depth += 0.05f;
             transparent_.push_back(p);
@@ -683,6 +852,61 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     opaqueQ_.push_back(p);   // maillages à squelette : opaques (ou alpha découpé) seulement
 }
 
+// ---------- WFS-09 : quads transitoires, halos, feux des voitures ----------
+void Renderer::drawQuads(const Vertex* v, int nQuads, const Material& mat) {
+    if (!inFrame_ || nQuads <= 0 || quadsUsed_ + nQuads > QUADS_MAX) return;
+    std::memcpy((Vertex*)quadVb_[cur_].mapped + (size_t)quadsUsed_ * 4, v, sizeof(Vertex) * 4 * (size_t)nQuads);
+    vec3 c{};
+    for (int i = 0; i < nQuads * 4; i++) c += vec3{v[i].px, v[i].py, v[i].pz};
+    c = c * (1.f / (float)(nQuads * 4));
+    Pending p{quadVb_[cur_].buf, quadIb_.buf, 0, (uint32_t)nQuads * 6, quadsUsed_ * 4, &mat, {}, length(c - camPos_)};
+    p.pc.model = mat4::identity(); p.pc.color = mat.color;
+    p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
+    p.pc.emissive = {0, 0, 0, 0};
+    quadsUsed_ += nQuads;
+    transparent_.push_back(p);
+}
+
+void Renderer::halo(const vec3& c, float taille, const vec3& col) {
+    const vec3 r = vec3{view_.at(0, 0), view_.at(0, 1), view_.at(0, 2)} * taille, u = vec3{view_.at(1, 0), view_.at(1, 1), view_.at(1, 2)} * taille;
+    const vec3 a = c - r - u, b = c + r - u, d = c + r + u, e = c - r + u;
+    const Vertex q[4] = {{a.x, a.y, a.z, col.x, col.y, col.z, 0, 0}, {b.x, b.y, b.z, col.x, col.y, col.z, 1, 0},
+                         {d.x, d.y, d.z, col.x, col.y, col.z, 1, 1}, {e.x, e.y, e.z, col.x, col.y, col.z, 0, 1}};
+    drawQuads(q, 1, haloMat_);
+}
+
+void Renderer::haloSol(const vec3& c, const vec3& r, const vec3& f, float hr, float hf, const vec3& col) {
+    const vec3 a = c - r * hr - f * hf, b = c + r * hr - f * hf, d = c + r * hr + f * hf, e = c - r * hr + f * hf;
+    const Vertex q[4] = {{a.x, a.y, a.z, col.x, col.y, col.z, 0, 0}, {b.x, b.y, b.z, col.x, col.y, col.z, 1, 0},
+                         {d.x, d.y, d.z, col.x, col.y, col.z, 1, 1}, {e.x, e.y, e.z, col.x, col.y, col.z, 0, 1}};
+    drawQuads(q, 1, haloMat_);
+}
+
+// setLights du jeu web (js/cars/models.js) : halos des feux arrière (stop au freinage), de recul, des phares, et reflet
+// discret des feux sur la route (tailGlow 0,16, tailGlowBrake 0,38, revGlow 0,55). Couleurs sRGB du jeu web linéarisées,
+// × FEUX_HDR (sprites additifs du jeu web, sans tonemapping → passe HDR + ACES ici).
+void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) {
+    constexpr float FEUX_HDR = 3.0f;
+    auto lin = [](unsigned h, float k) {
+        auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
+        return vec3{c(16), c(8), c(0)} * (k * FEUX_HDR);
+    };
+    const FeuxModele& F = m.feux;
+    const float ech = length(w.transformDir({1, 0, 0}));
+    const float hw = F.largeur * 0.5f;
+    for (int side : {-1, 1}) {
+        const vec3 t = w.transformPoint({side * (hw - 0.18f), F.arriereY, F.arriere + 0.06f});
+        halo(t, (f.stop ? 0.9f : 0.55f) * 0.5f * ech, f.stop ? lin(0xff2038, 1.f) : lin(0xff1a30, 0.55f));
+        if (f.recul) halo(w.transformPoint({side * (hw - 0.42f), F.arriereY - 0.04f, F.arriere + 0.07f}), 0.3f * 0.5f * ech, lin(0xf4f6ff, 0.7f));
+        halo(w.transformPoint({side * (hw - 0.3f), F.avantY, F.avant - 0.01f}), 0.85f * 0.5f * ech, lin(0xfff1d6, 0.9f));
+    }
+    // reflet des feux sur la route (tg : glowGeo × (W × 1,2 ; 1,8) à L / 2 + 0,6)
+    const vec3 r = normalize(w.transformDir({1, 0, 0})), fw = normalize(w.transformDir({0, 0, 1}));
+    const vec3 c = w.transformPoint({0, 0.03f, F.arriere + 0.6f});
+    const vec3 col = f.recul ? lin(0xdfe6ff, 0.55f) : lin(0xff2040, f.stop ? 0.38f : 0.16f);
+    haloSol(c, r, fw, F.largeur * 1.2f * 0.5f * ech, 1.8f * 0.5f * ech, col);
+}
+
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
     UiVertex a{x, y, -1, -1, c.x, c.y, c.z, c.w}, b{x + w, y, -1, -1, c.x, c.y, c.z, c.w},
              cc{x + w, y + h, -1, -1, c.x, c.y, c.z, c.w}, d{x, y + h, -1, -1, c.x, c.y, c.z, c.w};
@@ -722,6 +946,10 @@ void Renderer::endFrame() {
     VkCtx& vk = *vk_;
     FrameRes& r = fr_[cur_];
     shadowPass(r.cb);
+    // objets transparents (vitres, halos) : du plus loin au plus proche, triés une fois pour les deux passes
+    std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
+    refletPass(r.cb);   // WFS-16 : reflet de la scène (route mouillée seulement)
+    if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 2);
     // passe de scène : ciel, objets opaques (dans l'ordre d'appel), puis transparents
     VkClearValue clears[3]{};
     clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};   // profondeur inversée : 0 = loin
@@ -746,12 +974,17 @@ void Renderer::endFrame() {
     }
     // objets transparents (vitres) : du plus loin au plus proche
     if (!transparent_.empty()) {
-        std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
-        vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, blend_);
-        for (const Pending& p : transparent_) flushDraw(p);
+        VkPipeline lieT = VK_NULL_HANDLE;
+        for (const Pending& p : transparent_) {
+            // WFS-09 : tache des phares (multiplicative), halos (additifs), sinon mélange alpha
+            const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : blend_;
+            if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }
+            flushDraw(p);
+        }
     }
     vkCmdEndRenderPass(r.cb);
-    if (tsPool_) { vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 3 + 2); tsWritten_[cur_] = shadowsOn_; }
+    // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène
+    if (tsPool_) { vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 3); tsWritten_[cur_] = true; }
 
     // passe finale : tonemapping puis interface
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
@@ -824,8 +1057,12 @@ void Renderer::shutdown() {
         vkDestroyFence(d, r.fence, nullptr); vkDestroySemaphore(d, r.acquired, nullptr); vkDestroySemaphore(d, r.done, nullptr);
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
-    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_})
+    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_,
+                         poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_})
         if (p) vkDestroyPipeline(d, p, nullptr);
+    for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
+    vk_->destroy(quadIb_);
+    if (refletPass_) vkDestroyRenderPass(d, refletPass_, nullptr);
     for (auto& b : osBuf_) vk_->destroy(b);
     if (skinLayout_) vkDestroyPipelineLayout(d, skinLayout_, nullptr);
     if (osLayout_) vkDestroyDescriptorSetLayout(d, osLayout_, nullptr);

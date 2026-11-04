@@ -13,6 +13,9 @@ enum MatFlags : uint32_t {
     MAT_PAINT = 1, MAT_BLEND = 2, MAT_TAIL = 4, MAT_HEAD = 8, MAT_DOUBLE = 16, MAT_MASK = 32, MAT_GLASS = 64, MAT_WHEEL = 128,
     MAT_ROAD = 256, MAT_WALK = 512, MAT_GROUND = 1024, MAT_SHADOWBLOB = 2048, MAT_HASNORMAL = 4096, MAT_HASMR = 8192,
     MAT_VTINT = 16384,   // végétation (WFS-34) : la longueur de la normale porte la luminosité du sommet
+    // WFS-09 (moteur seulement, jamais dans un .wfm) : tache des phares (multiplie le sol : sol × (1 + tache)) et
+    // halo additif (dégradé radial, couleur × intensité dans la normale du sommet)
+    MAT_POOL = 32768, MAT_ADD = 65536,
 };
 
 struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
@@ -44,10 +47,17 @@ constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille 
 constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
 
 struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; };
+// WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le
+// modèle en a (lampY / headY de js/cars/models.js), sinon proportions des voitures du jeu web (d.tail − 0,25, d.nose − 0,12)
+struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0; };
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     vec3 bmin, bmax; bool ok = false;
+    FeuxModele feux;
 };
+
+// WFS-09 : état des feux d'une voiture (setLights du jeu web : nuit, frein, recul)
+struct FeuxVoiture { bool nuit = false, stop = false, recul = false; };
 
 struct FrameParams {
     mat4 view, proj; vec3 camPos;
@@ -59,9 +69,13 @@ struct FrameParams {
     bool shadows = true, hasFocus = false; vec3 focus{};
     // WFS-45 : projecteurs (three SpotLight, r128 sans lumières physiques), hémisphère, brouillard linéaire. Couleurs linéaires.
     struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1; };
-    Spot spots[4]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
+    // WFS-09 : 8 au plus (phares, feu de recul, 4 lampadaires) ; angle ≥ PI = lumière ponctuelle (PointLight)
+    Spot spots[8]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
     vec3 hemiSky{}, hemiGround{}; float hemiIntensity = 0;   // HemisphereLight ; 0 = ambiance du ciel actuelle
     float fogNear = 0, fogFar = 0;                           // fogFar > 0 : brouillard linéaire (Fog) au lieu de l'exponentiel
+    // WFS-09 : feux des voitures allumés (nuit) ; WFS-16 : chaussée mouillée, flaques, reflets temps réel de la scène
+    // (passe miroir autour du plan horizontal y = refletY, demi-résolution). Tout à faux le jour : rendu inchangé.
+    bool feux = false, mouille = false, flaques = false, reflets = false; float refletY = 0;
 };
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
@@ -97,6 +111,16 @@ public:
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
     void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
                      uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr);
+    // WFS-09 : quads transitoires de l'image (4 sommets par quad, triangles 0-1-2 / 0-2-3), dessinés avec les objets
+    // transparents ; nQuads ≤ 4096 par image. halo : quad face à la caméra (MAT_ADD), couleur linéaire × intensité ;
+    // haloSol : quad couché (repère monde : centre c, axes r et f, demi-tailles), additif ; tache des phares : MAT_POOL
+    void drawQuads(const Vertex* v, int nQuads, const Material& mat);
+    void halo(const vec3& c, float taille, const vec3& couleur);
+    void haloSol(const vec3& c, const vec3& r, const vec3& f, float demiR, float demiF, const vec3& couleur);
+    // feux de la prochaine voiture dessinée par draw(Model) (la voiture du joueur : WFS-09, src/render/nuit.cpp) ;
+    // remis à l'état de nuit de FrameParams::feux à chaque beginFrame
+    void feuxProchaineVoiture(const FeuxVoiture& f) { feuxSuivant_ = f; feuxSuivantPose_ = true; }
+    Material poolMat;   // WFS-09 : matériau de la tache des phares (couleur 0xfff0dc du jeu web)
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
@@ -118,11 +142,15 @@ private:
     void destroyTargets();
     void createPipelines();
     VkPipeline makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
-                            VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false);
+                            VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false, int melange = 0);
     void flushDraw(const Pending& d);
     void createShadows();
     void shadowPass(VkCommandBuffer cb);
     void readShadowTiming();
+    void createReflets();     // WFS-16 : cibles et pipelines de la passe miroir
+    void destroyReflets();
+    void refletPass(VkCommandBuffer cb);
+    void feuxVoiture(const Model& m, const mat4& world, const FeuxVoiture& f);
     void rotationMatrix(float out[4]) const;
 
     VkCtx* vk_ = nullptr;
@@ -167,6 +195,20 @@ private:
     bool tsWritten_[2] = {false, false};
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
+    // WFS-09 / WFS-16 : lumières de nuit et reflets
+    VkPipeline poolPipe_ = VK_NULL_HANDLE, addPipe_ = VK_NULL_HANDLE;
+    VkRenderPass refletPass_ = VK_NULL_HANDLE;
+    Image refletColor_[2], refletDepth_;
+    VkFramebuffer refletFb_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+    uint32_t rw_ = 0, rh_ = 0;   // taille de la cible de reflet (demi-résolution de la scène)
+    VkPipeline refOpaque_ = VK_NULL_HANDLE, refBlend_ = VK_NULL_HANDLE, refSky_ = VK_NULL_HANDLE, refAdd_ = VK_NULL_HANDLE;
+    Buffer refletUbo_[2]; VkDescriptorSet refletSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+    bool refletsOn_ = false;
+    Buffer quadVb_[2], quadIb_; int quadsUsed_ = 0;
+    Material haloMat_;
+    mat4 view_ = mat4::identity();
+    FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
+    double refletMsSum_ = 0;
     vec3 camPos_{};
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
