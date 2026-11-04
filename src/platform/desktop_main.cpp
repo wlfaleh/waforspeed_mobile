@@ -31,6 +31,7 @@
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
+#include "../world/enseignes.h"
 #include "../ui/text.h"
 #include "../game/cars.h"
 #include <cstring>
@@ -87,6 +88,7 @@ int main(int argc, char** argv) {
         }
         return finir();
     }
+    if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
