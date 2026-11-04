@@ -31,6 +31,8 @@ public:
     void setMarges(const Marges& m) { marges_ = m; view_.marges = m; }
     const Marges& marges() const { return marges_; }
     bool montrerMarges = false;
+    // WFS-22 : manette (src/platform/manette_jeu.cpp) : commandes de conduite données par la manette ; vrai = commandes tactiles masquées
+    DriveInput manette; bool modeManette = false;
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
     // WFS-41 : demande de l'écran Terrain, appliquée au début de la mise à jour suivante : carte non vide = course neuve sur

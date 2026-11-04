@@ -9,6 +9,7 @@
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
+#include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 
 namespace wfs {
@@ -160,18 +161,17 @@ void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
     if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
     const float W = (float)r_->width(), H = (float)r_->height();
-    const float mg = marges_.gauche, md = marges_.droite;   // zones de toucher décalées des marges (WFS-51)
+    const float md = marges_.droite;   // zones de toucher décalées des marges (WFS-51)
     if (t.down) {
-        bool fresh = t.id != steerId_ && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
-        if (fresh) {
-            if (t.x < mg + W * 0.45f) { steerId_ = t.id; steerX0_ = steerX_ = t.x; }
-            else if (t.x > W * 0.80f - md && t.y < H * 0.45f) nitroId_ = t.id;
+        bool fresh = !directionPossede(t.id) && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
+        if (directionToucher(t, fresh, W, H, marges_)) {}   // WFS-70 : volant ou flèches (direction.cpp)
+        else if (fresh) {
+            if (t.x > W * 0.80f - md && t.y < H * 0.45f) nitroId_ = t.id;
             else if (t.x > W * 0.78f - md) gasId_ = t.id;
             else if (t.x > W * 0.55f - md) brakeId_ = t.id;
         }
-        if (t.id == steerId_) steerX_ = t.x;
     } else {
-        if (t.id == steerId_) steerId_ = -1;
+        directionToucher(t, false, W, H, marges_);   // WFS-70
         if (t.id == gasId_) gasId_ = -1;
         if (t.id == brakeId_) brakeId_ = -1;
         if (t.id == nitroId_) nitroId_ = -1;
@@ -180,7 +180,7 @@ void Game::onTouch(const Touch& t) {
     if (t.down && t.id == gasId_) latchGas_ = true;
     if (t.down && t.id == brakeId_) latchBrake_ = true;
     if (t.down && t.id == nitroId_) latchNitro_ = true;
-    input_.steer = steerId_ >= 0 ? clampf((steerX_ - steerX0_) / (W * 0.12f), -1.f, 1.f) : 0.f;
+    input_.steer = directionBraquage(W);   // WFS-70
     input_.gas = gasId_ >= 0 || nitroId_ >= 0;
     input_.brake = brakeId_ >= 0;
     input_.nitro = nitroId_ >= 0;
@@ -194,11 +194,7 @@ void Game::drawControls() {
         if (mg > 0) r_->uiRect(0, 0, mg, H, {1, 0.1f, 0.2f, 0.35f});
         if (md > 0) r_->uiRect(W - md, 0, md, H, {1, 0.1f, 0.2f, 0.35f});
     }
-    // volant virtuel
-    if (steerId_ >= 0) {
-        r_->uiCircle(steerX0_, H * 0.72f - mb, 11 * u, {1, 1, 1, 0.12f});
-        r_->uiCircle(steerX0_ + clampf(steerX_ - steerX0_, -W * 0.12f, W * 0.12f), H * 0.72f - mb, 5 * u, {0, 0.9f, 1, 0.55f});
-    } else r_->uiCircle(W * 0.18f + mg, H * 0.72f - mb, 9 * u, {1, 1, 1, 0.08f});
+    directionDessiner(*r_, W, H, marges_);   // WFS-70 : volant virtuel ou flèches (direction.cpp)
     // pédales
     r_->uiCircle(W * 0.89f - md, H * 0.74f - mb, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
     r_->uiCircle(W * 0.70f - md, H * 0.80f - mb, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
@@ -216,6 +212,7 @@ void Game::update(double dt) {
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
     const bool course = ecran_ == Ecran::Course;
     DriveInput in = course ? input_ : DriveInput{};     // hors course : aucune commande de conduite
+    if (modeManette) in = course ? manette : DriveInput{};   // WFS-22 : la manette remplace le tactile
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
     latchGas_ = latchBrake_ = latchNitro_ = false;
@@ -302,7 +299,7 @@ void Game::render(double time) {
         const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.dist, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
         r_->draw(car_, carM, &paint_, &rouesJoueur);
     }
-    if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes)) drawControls();   // commandes de conduite : seulement en course
+    if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();
 }
@@ -358,7 +355,7 @@ void Game::appliquerEcran() {
 // toutes les commandes de conduite relâchées (web : for (const k in input) input[k] = false)
 void Game::lacherCommandes() {
     input_ = DriveInput{};
-    steerId_ = gasId_ = brakeId_ = nitroId_ = -1;
+    gasId_ = brakeId_ = nitroId_ = -1; directionLacher();   // WFS-70
     latchGas_ = latchBrake_ = latchNitro_ = false;
 }
 

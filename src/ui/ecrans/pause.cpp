@@ -9,6 +9,7 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "reglages.h"
+#include "../../platform/manette.h"   // WFS-22
 
 namespace wfs {
 namespace ecrans {
@@ -40,7 +41,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
-    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6;
+    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif();   // WFS-22 : masqué à la manette
 }
 
 class Pause : public System {
@@ -110,7 +111,7 @@ private:
         float x = cx - total / 2;
         const float y = H * 0.56f;
         for (int i = 0; i < 3; i++) {
-            g_boutons[i] = {x, y, wb[i], bh};
+            g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
             biseau(r, x, y, wb[i], bh, 14 * k, i == REPRENDRE ? hex(ACCENT) : hex(SURFACE2));
             ui::text(r, x + wb[i] / 2, y + 2.6f * u, tp, ui::majuscules(TEXTES[i]), i == REPRENDRE ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
             x += wb[i] + gap;

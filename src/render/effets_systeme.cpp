@@ -8,6 +8,7 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/course_system.h"
+#include "../game/ressenti.h"   // WFS-70 : « réduire les mouvements »
 #include "../game/player.h"
 #include "../game/track.h"
 #include "../game/traffic_system.h"
@@ -95,7 +96,7 @@ public:
                 parts_.etincelles(at, (float)p.y + 0.05f, vel, 16 + (int)std::lround(c->lastImpact * 50));
                 flash_ = std::max(flash_, 0.35f);
             }
-            if (c->scrapes > scr_) parts_.etincelles(at, (float)p.y + 0.05f, vel, 14);                         // frottement
+            if (c->scrapes > scr_) { parts_.etincelles(at, (float)p.y + 0.05f, vel, 14); flash_ = std::max(flash_, 0.25f); }   // frottement (flash 0,25 : WFS-70 RG-03)
             acc_ = c->accidents; bumps_ = c->bumps; scr_ = c->scrapes;
         }
         // fumée des pneus : gros freinage, tête-à-queue, dérapage à haute vitesse (scene.js)
@@ -163,7 +164,7 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course) return;
         const float w = g.uiWidth, h = g.uiHeight, s = h / 720.f;
-        if (nitro_ && !r.gpuLogiciel()) {   // 28 traits tirés à chaque image, rgba(230,240,255,.14), 2 px
+        if (nitro_ && !r.gpuLogiciel() && !reglagesRessenti().reduireMouvements) {   // fx.js : nitroOn && !reduceMotion (WFS-70 RG-04)   // 28 traits tirés à chaque image, rgba(230,240,255,.14), 2 px
             const float u = std::min(w, h), e = std::max(1.f, 1.f * s);
             const vec4 c{230 / 255.f, 240 / 255.f, 1, 0.14f};
             for (int i = 0; i < 28; i++) {

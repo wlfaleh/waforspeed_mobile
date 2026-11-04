@@ -2,7 +2,8 @@
 #  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests + captures d'écran du rendu (QA de chaque ticket),
 #    découpé en 4 jobs parallèles (WFS-69) : partie1, partie2, texte, ecrans-2400 (WFS_BANC de desktop_main.cpp)
 #  - le test sur émulateur Android n'est plus lancé ici : voir simulateur.yml (vérification de fin d'épic)
-#  - APK Android (arm64)
+#  - APK Android (arm64) et AAB signé pour Google Play (WFS-22 : clé des secrets, sinon clé factice ; store/signature.md)
+#  - iOS : workflow à part (ios.yml), jamais bloquant pour celui-ci
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
 # WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
@@ -39,7 +40,7 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_sauvegarde
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
@@ -50,7 +51,9 @@ jobs:
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
               mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
               WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
-              mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/ ;;   # WFS-24 : deux lancements
+              mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/   # WFS-24 : deux lancements
+              # WFS-22 : manette (course pilotée par des entrées injectées, focus des menus, pause) ; journal du banc gardé
+              mkdir -p manette && WFS_BANC=manette ./build/wfs_bench manette assets/ 2>&1 | grep -i "manette" | tee captures/manette-journal.txt && cp manette/manette-*.png captures/ ;;
             ecrans-2400)
               # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
               mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
@@ -74,13 +77,42 @@ jobs:
         with: { gradle-version: '8.7' }
       - name: NDK et CMake Android
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" > /dev/null
-      - name: Construction de l'APK
+      - name: Construction de l'APK et de l'AAB
         working-directory: android
-        run: gradle --no-daemon assembleRelease
+        run: gradle --no-daemon assembleRelease bundleRelease
       - name: Renommer
         run: cp android/app/build/outputs/apk/release/app-release.apk WaForSpeed.apk
+      # WFS-22 (WFS-25 RG-02) : AAB pour Google Play, signé avec la clé de publication des secrets du dépôt ; sans secret,
+      # avec une clé factice jetable (vérifie la chaîne de signature). L'APK d'aperçu garde la signature de débogage.
+      - name: Signature de l'AAB
+        env:
+          WFS_CLE_ANDROID: ${{ secrets.WFS_CLE_ANDROID }}
+          WFS_CLE_MDP: ${{ secrets.WFS_CLE_MDP }}
+          WFS_CLE_ALIAS: ${{ secrets.WFS_CLE_ALIAS }}
+          WFS_CLE_ALIAS_MDP: ${{ secrets.WFS_CLE_ALIAS_MDP }}
+        run: |
+          cp android/app/build/outputs/bundle/release/app-release.aab WaForSpeed.aab
+          zip -q -d WaForSpeed.aab 'META-INF/*.SF' 'META-INF/*.RSA' 'META-INF/*.EC' 'META-INF/*.DSA' 'META-INF/MANIFEST.MF' || true
+          cle="$RUNNER_TEMP/cle.jks"
+          if [ -n "$WFS_CLE_ANDROID" ]; then
+            echo "$WFS_CLE_ANDROID" | base64 -d > "$cle"; mdp="$WFS_CLE_MDP"; alias="$WFS_CLE_ALIAS"; amdp="${WFS_CLE_ALIAS_MDP:-$WFS_CLE_MDP}"
+            echo "AAB : clé de publication (secrets du dépôt)"
+          else
+            mdp=factice-$GITHUB_RUN_ID; alias=factice; amdp=$mdp
+            keytool -genkeypair -noprompt -keystore "$cle" -storepass "$mdp" -keypass "$amdp" -alias "$alias" -keyalg RSA -keysize 2048 \
+              -validity 3650 -dname "CN=WaForSpeed test, O=WaForSpeed, C=FR"
+            echo "AAB : clé factice (aucun secret WFS_CLE_ANDROID)"
+          fi
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore "$cle" -storepass "$mdp" -keypass "$amdp" WaForSpeed.aab "$alias" > /dev/null
+          rm -f "$cle"
+          jarsigner -verify WaForSpeed.aab | tail -1
+          ls -la WaForSpeed.apk WaForSpeed.aab
       - uses: actions/upload-artifact@v4
-        with: { name: apk, path: WaForSpeed.apk }
+        with:
+          name: apk
+          path: |
+            WaForSpeed.apk
+            WaForSpeed.aab
 
   publication:
     needs: [banc-essai, android]
@@ -110,8 +142,9 @@ jobs:
           fi
           gh release delete "$tag" -y --cleanup-tag || true
           files="dl/apk/WaForSpeed.apk"
+          [ -s dl/apk/WaForSpeed.aab ] && files="$files dl/apk/WaForSpeed.aab"   # WFS-22 : AAB signé (Google Play)
           # les fichiers vides (capture ratée) sont ignorés : ils ne doivent pas empêcher la publication
-          if [ -d dl/captures ]; then for f in dl/captures/*.png; do [ -s "$f" ] && files="$files $f"; done; fi
+          if [ -d dl/captures ]; then for f in dl/captures/*.png dl/captures/*.txt; do [ -s "$f" ] && files="$files $f"; done; fi
           echo "$(echo $files | wc -w) fichiers publiés"
           gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
             --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \

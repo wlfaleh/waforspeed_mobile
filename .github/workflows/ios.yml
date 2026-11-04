@@ -1,0 +1,97 @@
+# WaForSpeed — construction iOS (WFS-22) sur macOS : application pour le simulateur (et archive non signée pour l'appareil).
+# Workflow À PART de build.yml : son échec n'empêche jamais l'APK d'aperçu ni la CI Android (WFS-22 RG-08).
+# Rendu Vulkan par MoltenVK (bibliothèque statique de la Release officielle KhronosGroup/MoltenVK).
+# Signature, TestFlight : non faits ici (pas de compte Apple) ; marche à suivre dans store/signature.md.
+name: Construction iOS
+
+on:
+  # seulement quand la cible iOS change (et à la demande) : un échec iOS ne colore pas chaque commit de main
+  push:
+    branches: [main, 'feature/**']
+    paths: ['ios/**', 'src/platform/ios_main.mm', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  MOLTENVK_VERSION: v1.2.11
+
+jobs:
+  ios:
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (compilateur de shaders, en-têtes Vulkan, Ninja)
+        run: brew install shaderc vulkan-headers ninja || brew upgrade shaderc vulkan-headers ninja || true
+      - name: MoltenVK (Release officielle)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p mvk && cd mvk
+          # noms des fichiers de la Release (ils ont changé selon les versions) : on prend celui d'iOS, sinon « all »
+          for v in "$MOLTENVK_VERSION" ""; do
+            noms=$(gh release view $v -R KhronosGroup/MoltenVK --json assets -q '.assets[].name' || true)
+            echo "MoltenVK ${v:-dernière} : $(echo $noms)"
+            f=$(echo "$noms" | grep -i -m1 'ios.*\.tar' || echo "$noms" | grep -i -m1 'all.*\.tar' || true)
+            [ -n "$f" ] && gh release download $v -R KhronosGroup/MoltenVK -p "$f" && break
+          done
+          ls -la
+          for t in *.tar; do tar xf "$t"; done
+          sim=$(find . -path '*static*' -path '*ios-arm64*simulator*' -name 'libMoltenVK.a' | head -1)
+          dev=$(find . -path '*static*' -path '*ios-arm64*' ! -path '*simulator*' -name 'libMoltenVK.a' | head -1)
+          echo "MoltenVK simulateur : $sim ; appareil : $dev"
+          test -n "$sim"
+          echo "MVK_SIM=$PWD/${sim#./}" >> "$GITHUB_ENV"
+          echo "MVK_DEV=$PWD/${dev#./}" >> "$GITHUB_ENV"
+      - name: Compilation pour le simulateur iOS
+        run: |
+          cmake -S . -B build-sim -G Ninja -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DCMAKE_BUILD_TYPE=Release \
+            -DGLSLC="$(command -v glslc)" -DMOLTENVK_LIB="$MVK_SIM" -DVULKAN_INCLUDE="$(brew --prefix)/include" \
+            -DWFS_BUILD="$GITHUB_RUN_NUMBER"
+          cmake --build build-sim
+          ditto -c -k --keepParent build-sim/WaForSpeed.app WaForSpeed-ios-simulateur.zip
+          ls -la WaForSpeed-ios-simulateur.zip
+      - name: Archive pour l'appareil (non signée)
+        continue-on-error: true
+        run: |
+          test -n "$MVK_DEV"
+          cmake -S . -B build-dev -G Ninja -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DCMAKE_BUILD_TYPE=Release \
+            -DGLSLC="$(command -v glslc)" -DMOLTENVK_LIB="$MVK_DEV" -DVULKAN_INCLUDE="$(brew --prefix)/include" \
+            -DWFS_BUILD="$GITHUB_RUN_NUMBER"
+          cmake --build build-dev
+          mkdir -p Payload && cp -R build-dev/WaForSpeed.app Payload/
+          zip -qr WaForSpeed-ios-non-signe.ipa Payload
+          ls -la WaForSpeed-ios-non-signe.ipa
+      - name: Lancement dans le simulateur (captures, au mieux)
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          dev=$(xcrun simctl list devices available | grep -m1 -E 'iPhone 1[456]' | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          echo "simulateur : $dev"
+          xcrun simctl boot "$dev" || true
+          xcrun simctl bootstatus "$dev" -b
+          xcrun simctl install "$dev" build-sim/WaForSpeed.app
+          xcrun simctl launch --console-pty "$dev" com.waforspeed.game > ios-journal.txt 2>&1 &
+          sleep 150
+          docs=$(xcrun simctl get_app_container "$dev" com.waforspeed.game data)/Documents
+          mkdir -p captures-ios && cp "$docs"/ios-*.png captures-ios/ || true
+          xcrun simctl io "$dev" screenshot captures-ios/ios-ecran-simulateur.png || true
+          head -c 20000 ios-journal.txt; ls -la captures-ios
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios
+          if-no-files-found: ignore
+          path: |
+            WaForSpeed-ios-simulateur.zip
+            WaForSpeed-ios-non-signe.ipa
+            ios-journal.txt
+            captures-ios

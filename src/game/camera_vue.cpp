@@ -12,7 +12,9 @@
 #include "course_system.h"
 #include "game.h"
 #include "player.h"
+#include "ressenti.h"   // WFS-70 : secousse de la caméra après un choc
 #include "track.h"
+#include "../platform/manette.h"   // WFS-22 : bouton de vue masqué à la manette
 
 namespace wfs {
 
@@ -35,8 +37,8 @@ const EtatCockpit& etatCockpit() { return g_ck; }
 bool boutonVue(float& cx, float& cy) { cx = g_bouton.x + g_bouton.w / 2; cy = g_bouton.y + g_bouton.h / 2; return g_bouton.w > 0; }
 
 // updateCamera du jeu web, pour les vues liées à la carrosserie (C.hood) ; la poursuite reste celle de Game
-bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& carM, int camMode, Ecran ecran, float fdt,
-               vec3& eye, vec3& look, float& fov) {
+static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, const mat4& carM, int camMode, Ecran ecran, float fdt,
+                          vec3& eye, vec3& look, float& fov) {
     g_ck.actif = false;
     if (camMode == 2 || (ecran != Ecran::Course && ecran != Ecran::Pause)) { g_suivi.init = false; g_ck.fov = fov; return false; }
     const VueDef& V = VUES[(int)g_vue];
@@ -72,6 +74,15 @@ bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& ca
         g_ck.aiguille = aiguilleAngle(pl.kmh());
     }
     return V.cockpit;   // vue cockpit : playerMesh.visible = false (on ne voit pas sa propre voiture)
+}
+
+bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& carM, int camMode, Ecran ecran, float fdt,
+               vec3& eye, vec3& look, float& fov) {
+    const bool cache = cameraVueBase(track, pl, car, carM, camMode, ecran, fdt, eye, look, fov);
+    // WFS-70 : secousse après un choc (scene.js : camera.position += décalage, puis lookAt du même point), toutes les vues
+    // de course ; rien en vitrine ni hors course (aucun tirage aléatoire : image identique sans choc)
+    if (camMode != 2 && ecran == Ecran::Course) eye = eye + ressentiDecalageCamera();
+    return cache;
 }
 
 namespace {
@@ -170,7 +181,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // bouton visible : vraie course en cours (comme le bouton « Menu » de WFS-39 : pas de fin, pas de scène du banc sans règles)
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
-    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6;
+    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif();   // WFS-22 : masqué à la manette
 }
 
 class Camera : public System {
