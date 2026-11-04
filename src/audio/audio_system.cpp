@@ -13,6 +13,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
+#include "../ui/ecrans/reglages.h"   // WFS-68 : réglage du son
 #include "../game/cars.h"
 #include "../game/game.h"
 #include "../game/player.h"
@@ -41,7 +42,8 @@ public:
             synths_[i]->setOutputRate(OUT_RATE);
         }
         active_ = -1;
-        const int rate = audioOutStart([this](float* out, int n) { const double now = nowSeconds(); renderInto(out, n, now); sfx_.mix(out, n, now); });
+        const int rate = audioOutStart([this](float* out, int n) { const double now = nowSeconds(); renderInto(out, n, now); sfx_.mix(out, n, now);
+            if (!ecrans::reglages().son) std::fill(out, out + n, 0.f); });   // WFS-68 : réglage « Son : Coupé » (setMuted du web)
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
     }

@@ -1607,3 +1607,39 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-04 00:44:41 — Règle « confiance > 50% » rendue visible (Claude, agent 4, à la demande de l'utilisateur)
 - « 50 % » est réécrit « 50% » partout : une recherche de « 50% » ne trouvait pas la règle.
 - `CLAUDE.md` : la règle de fusion par confiance passe **en tête** des consignes, avec un titre « RÈGLE DE FUSION N°1 — CONFIANCE > 50% → FUSION DIRECTE ».
+
+### 2026-11-04 00:45:01 — Fin WFS-11 : garage et compteur en arc fusionnés (PR #43) (agent 3, session 011cpqZd)
+- CI verte (run de la PR : android, 4 bancs, publication) ; captures `garage-0-2400`, `menu-depart-go` (menu → garage → « Choisir » → GO) et `garage-course` regardées : rien de bloquant. Fusion `5dcda32`, ajouté à `qa/Check.md`.
+- Le job `ecrans-2400` passe à 11 min (caméras WFS-66 + garage en 2400) : c'est maintenant le plus long de la CI.
+- Reste à faire (ex-WFS-13) : conversion des 16 autres voitures (le garage montre les 4 voitures converties).
+
+### 2026-11-04 00:44:51 — WFS-50 fusionné (PR #47) (Claude, session trafic)
+- Run 41747781094 de la branche : `RÉSULTAT TECHNIQUE : OK`, 10 étapes. Course 1 : score 3240, 0,65 km, 143 km/h max ; Rejouer et Menu
+  fonctionnent. Captures regardées (HUD, piétons, écran de fin) : rien de bloquant. CI de construction verte (run 41747775305).
+- Fusion immédiate (règle en vigueur), ligne ajoutée dans `qa/Check.md`. Simulateur relancé sur `main` (`epic=MVP`, `scenario=mvp`) :
+  la Release `simulateur-MVP` sera écrasée par ce passage, à recetter la nuit (`qa/rapports/simulateur-MVP.md`).
+
+### 2026-11-04 00:46:48 — Fin WFS-41 : PR #45 fusionnée par confiance (Claude, agent 5)
+- **Fusion** : PR #45 fusionnée sur `main` (`e300de2`). CI verte sur la branche (run 41747977801 : android, 4 bancs, publication), captures regardées : terrain, réglages et qualité basse conformes. Deux synchros avec `main` ensuite (WFS-11, WFS-65, WFS-50, WFS-21 suite) : compilation et `test_systems` passés en local, puis fusion par confiance (règle du 2026-11-04).
+- **Synchro avec WFS-11** : le parcours suit le web : menu → garage (« Choisir ») → terrain → « Rouler » → course. Accroche d'une ligne dans `src/ui/garage.cpp` (E5) : après « Choisir », `Ecran::Terrain` au lieu de `Ecran::Course`. Au changement de carte, la voiture et la peinture du garage sont gardées.
+- **Corrigé avant fusion** : les vibreurs du circuit dépassaient de la vignette (`terrain-1`).
+- **Ajouté à `qa/Check.md`** ; je suis la CI de `main` après la fusion.
+
+
+### 2026-11-04 00:47:17 — Début WFS-13 : les 16 autres voitures (agent 3, session 011cpqZd) — attribué par le PO
+- **Ticket** : WFS-13 **rouvert** (était fusionné dans WFS-11 ; étape 4 de WFS-11 non faite), épic **E5**, **P2 Haute**, branche `feature/waforspeed-13`. Règles : `regles-de-gestion/WFS-13.md`, section « Réouverture du 2026-11-04 » (RG-10 à RG-17, prime sur l'ancien texte).
+- **Pourquoi lui** : aucun ⏳ Prêt attribuable dans une épic libre à priorité utile. WFS-15 (E4) recouvre `post*` / `scene*` de WFS-09 ; WFS-71 (E2) recouvre `ville.cpp` / `plage.cpp` de WFS-53 ; WFS-22 (E7, P4, iOS) ne se voit pas sur le téléphone de l'utilisateur. Le garage montre 20 fiches mais 4 voitures : c'est le manque le plus visible, et il prépare la variété du trafic (WFS-67). Gros ticket d'un seul sujet, une CI.
+- **Exception « un ticket actif par épic »** (E5 : WFS-60 et WFS-13) : fichiers disjoints. WFS-60 garde `tools/convert_car.mjs` et les 4 `.wfm` existants ; WFS-13 ajoute 16 `.wfm` neufs et un script neuf. Si WFS-60 fusionne avant : merge de `main` et relance du script (roues séparées pour les 16).
+- **Zone de code autorisée** : `assets/cars/<16 nouveaux>.wfm`, nouveau `tools/convertir_voitures.sh`, `assets/licences/<id>.txt`, `src/ui/garage.*` (si besoin pour lister les voitures disponibles) ; accroches **données seulement** annoncées au Journal : 16 entrées de `CARS` dans `src/game/cars.h` (E3), 16 lignes de `VOICES` dans `src/audio/engine_synth.cpp` (E6) ; banc : `src/platform/desktop_main.cpp` et `.github/workflows/build.yml` (≤ 10 lignes, **hors job `ecrans-2400`**). **Interdit** : `tools/convert_car.mjs`, `model_loader.*`, `renderer.*`, `roues.*` (WFS-60), `player.*` / `direction.*` (WFS-70), `traffic.*` (WFS-67).
+- **Critères** : `vitrine-<id>-0` × 16 (sens, 4 roues, peinture, feux arrière non blancs) ; 20 voitures au garage, `garage-<id>` × 2, course avec une nouvelle voiture ; tailles `.wfm` + APK au Journal ; autres captures inchangées.
+- **À réutiliser** : `waaps/waforspeed/js/cars/catalog.js` (`CARS`, `CAR_MODELS` : longueur, `rotateY`, `paint`, `tail`), `js/audio/sfx.js` (`ENGINE_SET`), modèles `models/<voiture>/<voiture>.json` + `license.txt` ; `tools/convert_car.mjs` tel quel ; `carPerf` / `carStats` déjà portés.
+- **Plan court** : 1) script de conversion des 16 ; 2) catalogue, sons, licences ; 3) captures vitrines (1 par voiture) ; 4) une CI, fusion par confiance si > 50%, `qa/Check.md`.
+- **Ménage PO** : WFS-22 passe ⏳ En attente → ⏳ Prêt (WFS-29 ✅). Note de l'agent 3 : `ecrans-2400` dure 11 min ; pas de ticket dédié (ce serait un micro-ticket) : WFS-13 ne doit rien y ajouter, et le prochain ticket E7 qui touche la CI le scindera en deux jobs.
+
+### 2026-11-04 00:48:56 — PO : limites de WFS-41 → WFS-74 et WFS-75 ; WFS-74 attribué à agent 5 (po-scrum-master)
+- **Analyse des limites laissées par WFS-41** : (1) vibrations Android : **déjà couvertes par WFS-70** (RG-10, `vibration_android.cpp`, en cours) → pas de nouveau ticket pour le vibreur ; (2) disposition gaucher : touche `Game::onTouch` / `drawControls` dont WFS-70 déplace le volant vers `direction.cpp` → à faire **après** WFS-70 ; (3) écran de chargement au changement de carte et (4) course non figée derrière Terrain / Réglages : indépendants, faisables tout de suite.
+- **Créés** (gros tickets, regroupés par moment possible) : **WFS-74** (E0, P2 Haute, ⏳ Prêt) changement de carte avec écran de chargement (progression réelle de `Game::init`, fondu, course neuve avec décompte) + course figée sur tout écran autre que `Course` ; **WFS-75** (E8, P3 Moyenne, ⏳ En attente de WFS-70) réglages « Commandes : droitier / gaucher » (miroir des commandes) et « Vibrations : oui / non ». Règles : `regles-de-gestion/WFS-74.md`, `regles-de-gestion/WFS-75.md`. Aucune anomalie 🆕 dans `anno.md`.
+- **Début WFS-74** — attribué à **Claude (agent 5, session 011cpqZaDiS2u)**, épic E0 (libre ; seuls tickets Prêt restants WFS-15 / WFS-71 bloqués par WFS-09 / WFS-53 dans leurs épics). Branche `feature/waforspeed-74`.
+  - Zone : `src/game/game.{h,cpp}` ; accroches ≤ 10 lignes annoncées au Journal : `src/game/course_system.cpp` (E3, WFS-24 et WFS-70 en cours : synchroniser avec `main`), `src/ui/ecrans/chargement.cpp` / `terrain.cpp`, `src/platform/android_main.cpp` / `desktop_main.cpp`. Ne pas toucher la partie « volant » de `onTouch` / `drawControls` (WFS-70).
+  - Critères : `terrain-chargement`, `terrain-arrivee` (décompte, chrono à zéro, voiture gardée), `terrain-fige-1/2` (chrono figé au journal), pause → reprise sans remise à zéro, autres captures inchangées.
+  - Plan court : point d'extension de progression dans `Game` branché par la plateforme → écran WFS-35 pendant `init` → course neuve (Rejouer) → `CourseSystem` figé hors `Course` → scènes de banc → fusion (règle en vigueur), `qa/Check.md`.

@@ -32,6 +32,10 @@ public:
     bool montrerMarges = false;
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
+    // WFS-41 : demande de l'écran Terrain, appliquée au début de la mise à jour suivante : carte non vide = partie
+    // reconstruite sur cette carte (moment : WFS_MOMENT), puis course
+    struct Demandes { std::string carte; bool nuit = true; };
+    static Demandes& demandes();
 private:
     struct Chunk { Mesh road, walk, ground; bool ready = false; };
     struct ChunkCpu { std::vector<Vertex> v[3]; std::vector<uint32_t> i[3]; };

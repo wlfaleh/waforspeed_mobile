@@ -57,7 +57,7 @@ jobs:
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-66
               mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
-              for f in menu/garage-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11
+              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/reglages-menu.png menu/reglages-pause.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11, WFS-41
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4
