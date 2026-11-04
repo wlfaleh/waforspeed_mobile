@@ -2049,3 +2049,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Vérification** : `bash -n` ; essai local avec un faux `gh` (création, remplacement avec 403 à la première lecture, Release d'un commit plus récent) : déroulés corrects. Preuve attendue : CI de la branche (`apercu-waforspeed-87` créée), puis relance du job de publication (chemin de remplacement).
 
 ### 2026-11-04 16h regarder tache-utilisateur.md
+### 2026-11-04 17:12:22 — WFS-87 fusionné par l'utilisateur (PR #73) : TACHES et qa/Check.md à jour (Claude, session trafic)
+- Demande de `tache utilisateur.md` : PR #73 (WFS-87, publication fiable de la Release d'aperçu, `tools/qa/publier_apercu.sh`) fusionnée par l'utilisateur, commit 3b62e5f.
+- CI de main sur 3b62e5f verte, publication comprise (run 41860181020) : l'APK de main est en ligne dans la Release `apercu`.
+- `TACHES.md` (tableau et fiche) passé à ✅ ; ligne ajoutée dans `qa/Check.md` pour la recette de nuit.
