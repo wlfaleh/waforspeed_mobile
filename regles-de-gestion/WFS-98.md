@@ -13,8 +13,11 @@ du cadre (ANO-30). Ce sont les commandes et la vue qu'on voit en permanence en c
   **gaz 64 × 120** (px CSS), écart 10 px, bas et droite dans les marges sûres (WFS-51 / WFS-52). Fond dégradé vertical
   rgba(44,48,66,.78) → rgba(16,18,26,.86) (2 sommets hauts / 2 bas), bordure 1 px rgba(255,255,255,.12) ; bordure du
   gaz rgba(255,106,0,.55). Libellés **« GAZ » / « FREIN »** en bas de la pédale, Rajdhani 700, 13 px, espacement .14em,
-  majuscules ; icône simple au-dessus (flèche montante pour le gaz, deux barres pour le frein) couleur #FF6A00 (gaz) /
-  #FF6A85 (frein).
+  majuscules ; icône **26 px**, 6 px au-dessus du libellé, **SVG du jeu web** (`index.html` l. 98 et 103, `.pedal-icon` :
+  viewBox 24, trait 2,4, sans remplissage) : **gaz = double chevron montant** `m6 12.5 6-6 6 6M6 18.5l6-6 6 6` #FF6A00 ;
+  **frein = disque et étriers** : cercle r 5,6 au centre + deux arcs r 9 à gauche et à droite (±40° autour de
+  l'horizontale, `M5.2 6.2a9 9 0 0 0 0 11.6M18.8 6.2a9 9 0 0 1 0 11.6`) #FF6A85. **Jamais deux barres verticales** (icône
+  pause du bouton MENU, `pause.cpp`) ; cercle et arcs en petits segments `uiQuad`, sans finition au pixel (PO, 2026-11-04).
 - RG-02 (appui) : pédale appuyée = remplissage de bas en haut, gaz rgba(255,106,0,.9) → .25, frein rgba(255,31,75,.85) →
   .2 ; bordure #FF6A00 (gaz) ou #FF1F4B (frein) ; libellé et icône en #0A0B10 (`--on-accent`).
 - RG-03 (nitro, `.nitro-touch`) : disque **68 px** à gauche des pédales (colonne 68 px du web couché), fond radial
