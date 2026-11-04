@@ -657,7 +657,7 @@ reflétés suivent la rugosité effective ; seuil de finesse 4 mm ; coût de la 
 ### 2026-11-03 — QA WFS-35 : À CORRIGER (tour 1/2)
 **qa-lead** (`qa/rapports/WFS-35.md`), commit `cfd7088`, run 41605344614, Release `apercu-waforspeed-35`.
 - Critères remplis : `chargement-0/1/2` (couleurs mesurées au pixel conformes, barre 0 / 20 / 100 %, mise en page RG-05),
-  `chargement-fondu` (ville visible à 50 %), `chargement-erreur` (message rouge, pas de plantage), journal (durée par étape et
+  `chargement-fondu` (ville visible à 50%), `chargement-erreur` (message rouge, pas de plantage), journal (durée par étape et
   total ; première image 0,046 à 0,071 s après Vulkan). 2400x1080 vérifié sur une construction du QA (non publié par la CI).
   Pas de régression : les 28 autres captures sont identiques au pixel près à `apercu` (`main` 3278fa4).
 - Anomalies **mineures** : ANO-06 superpositions visibles pendant le fondu (traits dans la barre, « FOR » qui paraît plein) ;
@@ -1191,7 +1191,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 19:56:48 — WFS-59 : mode GPU logiciel codé, PR #31 (agent 3)
 - **Fait** : `src/core/gpu_logiciel.h` (drapeau du mode, plafond de dt 0,05 s → 0,5 s en mode, 60 pas de 1/120 s au plus par image) et `src/core/gpu_logiciel_android.cpp` (extra d'intent `qa_simu`, `--ez` ou `--es`). `Game::update` utilise `plafondDt` ; `Game::init` coupe les ombres et écrit la ligne de logcat `mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)`. `Renderer::gpuLogiciel()` dans `renderer.h`.
-- **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50 %) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
+- **Accroches annoncées (≤ 10 lignes)** : `src/render/vk.cpp` l. 85-92 (SwiftShader/llvmpipe → mode ; en mode : sans MSAA, rendu 25 % au lieu de 50%) — zone E4 (WFS-45 en cours) : conflit éventuel à résoudre en gardant les deux ; `src/platform/android_main.cpp` (intent lu au début d'`android_main`, avant Vulkan).
 - **Vérification** : `test_systems` OK en local (hors mode inchangé ; 360 images à 0,3 i/s = 180 s de jeu). Compilation `-fsyntax-only` OK ; JNI et APK vérifiés par la CI. Banc PC : mode inactif (hors écran).
 - **Limites** : le simulateur ne passe `qa_simu=true` que si le scénario de WFS-58 l'ajoute à `am start` ; sans cela, la détection SwiftShader suffit.
 
@@ -1308,9 +1308,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - QA tour 2 en cours. Nouvel essai `mvp` lancé sur la branche resynchronisée avec WFS-59 (3d447b1, Release `simulateur-WFS-58-avec-59`) pour voir le parcours complet.
 - **WFS-39** : branche resynchronisée avec main après la fusion de WFS-59 (b4fc8f6), comme l'exige la nouvelle règle : la CI précédente ne compte plus. Tests et banc `menu` en local : captures `pause-*` identiques au pixel. CI relancée.
 
-### 2026-11-03 21:01:08 — WFS-64 créé : simulateur figé par le mode GPU logiciel de WFS-59 ; repli du rendu à 50 % (po-scrum-master)
+### 2026-11-03 21:01:08 — WFS-64 créé : simulateur figé par le mode GPU logiciel de WFS-59 ; repli du rendu à 50% (po-scrum-master)
 - **Signalé par** Claude (session trafic), preuve du scénario `mvp` de WFS-58 : Releases `simulateur-WFS-58` (run 41714023261, sans WFS-59 : scène 1200x540, « Écran : course → menu », `QA ips=0.3`, GO atteint) et `simulateur-WFS-58-avec-59` (run 41716390682 : mode actif, scène 600x270, puis plus aucune ligne au logcat, ni erreur ni plantage ; échec à l'étape « menu » après 180 s).
-- **Décision du PO** : défaut **bloquant pour le MVP**, ticket **WFS-64** (E0, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-64.md`). Repli immédiat : en mode GPU logiciel le rendu revient à **50 %** (valeur qui tournait), dt max 0,5 s et ombres coupées gardés ; deux lignes de diagnostic (fin de la 1re mise à jour, 1re image après recréation de la swapchain) pour trancher « rendu ou 60 pas » ; si figé avant la fin de la mise à jour, `PAS_MAX` à 20. Réparer le 25 % est hors périmètre (ticket E4 seulement si besoin).
+- **Décision du PO** : défaut **bloquant pour le MVP**, ticket **WFS-64** (E0, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-64.md`). Repli immédiat : en mode GPU logiciel le rendu revient à **50%** (valeur qui tournait), dt max 0,5 s et ombres coupées gardés ; deux lignes de diagnostic (fin de la 1re mise à jour, 1re image après recréation de la swapchain) pour trancher « rendu ou 60 pas » ; si figé avant la fin de la mise à jour, `PAS_MAX` à 20. Réparer le 25 % est hors périmètre (ticket E4 seulement si besoin).
 - **Pourquoi E0** : la constante est dans `src/core/gpu_logiciel.h` ; accroches ≤ 10 lignes annoncées dans `vk.cpp`, `renderer.cpp`, `game.cpp`. E0 libre (WFS-63 Prêt en P3 passe après).
 - **Effets** : WFS-59 reste fusionné, marqué « fige le simulateur, corrigé par WFS-64 ». **WFS-50** dépend désormais de WFS-58 et **WFS-64** (⛔ Bloqué). Rien ne change sur un vrai GPU ni sur le banc PC.
 ### 2026-11-03 21:00:40 — PO : le MVP n'attend plus le simulateur (po-scrum-master)
@@ -1439,7 +1439,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fait apporté par Claude (session trafic)** : le run `simulateur.yml` 41719456821 (`scenario=mvp`, `feature/waforspeed-58` au commit cc78b4d, c'est-à-dire le code de la PR #32 avec WFS-59, sans WFS-64 ; Release `simulateur-WFS-58`, 21:22) passe tout le parcours MVP. Le résultat est « RÉSULTAT TECHNIQUE : OK ». Étapes vues : chargement, menu, Course solo, décompte, GO, fin (124 s), Rejouer, 2e fin (140 s), Menu. Score de fin : 2 260. Il y a une seule marque FIGÉE, sur `03-appui-course-solo`, identique à `02-menu`. Elle est **attendue** : la capture est prise juste après l'appui (WFS58-3). Le gel après le chargement (run 41716390682, et un essai `conduite` sans WFS-59) ne s'est pas reproduit. Il paraît donc intermittent (émulateur ou focus), et WFS-59 n'en est pas la cause.
 - **Décisions** :
   - **WFS-50** passe en ⏳ Prêt, P4 Basse. La priorité reste basse parce que l'utilisateur teste l'APK sur téléphone, mais E7 est libre et le coût est d'environ 1 h. WFS-64 sort de ses dépendances. Il faut le relancer sur `main` avec `epic=MVP` et `scenario=mvp`, puis le donner à `qa-lead`. Règles mises à jour dans `regles-de-gestion/WFS-50.md`. La capture 03 figée n'est pas une anomalie. Un gel qui réapparaît est noté au rapport et réactive WFS-64.
-  - **WFS-64** est renommé « Diagnostic : gel intermittent juste après le chargement sur le simulateur » et passe en ⏸ Suspendu (P4). Le repli du rendu à 50 % est abandonné, car on ne corrige pas à l'aveugle. Le ticket est réactivé seulement si un essai sur `main` se fige de nouveau. Règles réécrites dans `regles-de-gestion/WFS-64.md` : diagnostic par 2 lignes de logcat et l'état du focus.
+  - **WFS-64** est renommé « Diagnostic : gel intermittent juste après le chargement sur le simulateur » et passe en ⏸ Suspendu (P4). Le repli du rendu à 50% est abandonné, car on ne corrige pas à l'aveugle. Le ticket est réactivé seulement si un essai sur `main` se fige de nouveau. Règles réécrites dans `regles-de-gestion/WFS-64.md` : diagnostic par 2 lignes de logcat et l'état du focus.
   - **WFS-59** : la mention « fige le simulateur » est retirée du tableau.
   - **QA de nuit de WFS-58 et WFS-39** : elles peuvent s'appuyer sur la Release `simulateur-WFS-58` du run 41719456821.
 - Rien n'est attribué à Claude (session trafic), qui est sur WFS-63 (PR #39, en QA).
@@ -1559,3 +1559,56 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Correction dans `tools/qa/emulateur.sh` (branche `feature/waforspeed-50`, e7f4777) : points d'appui calculés sur
   « Cibles de rendu : WxH (logique) » ; étape go en échec si « temps écoulé » arrive avant une vitesse > 0. Simulateur relancé
   sur la branche (scénario mvp).
+
+### 2026-11-04 00:36:06 — WFS-41 : terrain et réglages codés, PR #45 en revue (Claude, agent 5)
+- **Fait** : écran Terrain (`src/ui/ecrans/terrain.*`) : carrousel des 4 cartes (vignette façon `mapArt`, nom, description, longueur `mapLengthKm`), « 01 / 04 », glisser ou flèches, Jour / Nuit (nuit par défaut), Retour, Rouler (partie reconstruite sur la carte). Écran Réglages (`src/ui/ecrans/reglages.*`, WFS-68) depuis le menu et la pause : caméra Poursuite / Capot / Cockpit (`choisirVue` de WFS-66), graphismes Basse / Moyenne / Haute (échelle de scène 50 / 75 / 100 %, ombres), son Activé / Coupé ; enregistrés dans un fichier simple relu au démarrage. Menu : « Course solo » → Terrain ; record gardé entre les cartes.
+- **Accroches annoncées** : `src/game/game.*` (5 + 8 lignes) : `Game::demandes()` (carte et moment, `shutdown` + `init` au début de la mise à jour suivante) ; `src/audio/audio_system.cpp` (3 lignes, accord du PO) : sortie audio à zéro si son coupé ; `src/platform/desktop_main.cpp` (7 lignes) : bancs `benchTerrain` / `benchReglages` ; `.github/workflows/build.yml` (1 ligne) : captures `-2400` du groupe menu.
+- **Pour WFS-11 (agent 3)** : `menu.cpp` envoie « Course solo » vers `Ecran::Terrain` ; quand le garage arrive, garder Menu → Garage et faire Garage (« Valider ») → `Ecran::Terrain` (ordre du web : étape 1 garage, étape 2 terrain).
+- **Limites** : vibrations masquées (décision PO, ticket Android à créer) ; disposition gaucher des commandes non faite (ticket E0 nécessaire) ; pas d'écran de chargement pendant la reconstruction de carte ; « Nuit » visible seulement sur la plage (ville : WFS-09) ; la course n'est pas figée derrière l'écran Terrain (seulement derrière le menu, règle E3).
+- **Vérification** : compilation `-fsyntax-only -Wall` des 7 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
+
+
+### 2026-11-04 00:39:55 — WFS-65 en revue, PR #46 ; WFS-21 suite en PR #44 (Claude, agent 4)
+- **WFS-65, fait** :
+  - Port de `particles.js` (`src/render/effets_particules.*`, testé par `test_effets`).
+  - Système d'effets en lecture seule (`src/render/effets_systeme.*`, ordre 350) : étincelles aux accidents, chocs et frottements ; fumée des pneus et des voitures accidentées (5 s) ; `drawFx` avec les lignes sous nitro, la vignette radiale et le flash rouge.
+  - Qualité basse en GPU logiciel : moitié moins de particules, pas de lignes.
+  - Banc : `choc-etincelles`, `accident-fumee`, `nitro-lignes`. Effets coupés dans les autres scènes du banc.
+- **Accroches annoncées** : `src/render/renderer.h` et `renderer.cpp` (`uiQuad`, 6 lignes, quadrilatère à couleurs par sommet) ; `src/platform/desktop_main.cpp` (2 lignes, groupe `partie1`) ; `CMakeLists.txt` et `.github/workflows/build.yml` (`test_effets`). Aucun fichier de WFS-09 touché (`scene.frag`, `post.frag`, `sky*`, `shadow*`).
+- **Écarts au texte de RG-04, par fidélité à `fx.js`** : flash rouge et non blanc, lignes de vitesse seulement sous nitro, vignette fonction de l'ambiance et du nitro (pas de la vitesse).
+- **WFS-21** : la PR #38 avait été fusionnée par un autre agent ; mon correctif suivant (classement trié par arrivée, pseudo du banc) est en PR #44, dont la CI tourne.
+
+### 2026-11-04 00:42:02 — Règle : fusion directe par confiance (Claude, agent 4, à la demande de l'utilisateur)
+- **Règle** : un développeur **confiant à plus de 50%** que son ticket fonctionne **fusionne directement**, sans attendre la fin de la CI ni les captures de sa branche.
+- **Conditions minimales** :
+  - branche synchronisée avec `main` ;
+  - compilation et tests CPU passés en local ;
+  - aucune modification hors zone (accroches de 10 lignes au plus, annoncées au Journal).
+- **À la fusion** : ligne dans `qa/Check.md` marquée « fusion par confiance », statut ✅ dans `TACHES.md`, entrée au Journal.
+- **Après la fusion** : le développeur suit la CI de `main` et corrige tout de suite si elle est rouge ou si une capture est cassée.
+- **Confiance de 50% ou moins** : on attend la CI verte et on regarde les captures avant de fusionner.
+- **Fichiers modifiés** : `CLAUDE.md`, `TACHES.md` (règle 5), skill `waforspeed-natif` (point 5 bis), agents `po-scrum-master` et `qa-lead`.
+
+### 2026-11-04 00:42:35 — WFS-65 et suite de WFS-21 fusionnés par confiance (Claude, agent 4)
+- **PR #46 (WFS-65)** : fusionnée par confiance (environ 70 %), alors que la CI de la branche n'était pas finie. Code compilé, `test_effets` OK, aucun shader modifié, branche synchronisée.
+- **PR #44 (suite de WFS-21)** : fusionnée ; sa CI (1fe1ff1) a fini verte.
+- **Suivi** : `TACHES.md` passe WFS-65 à ✅ Fusionné ; les deux PR sont ajoutées à `qa/Check.md`, marquées « fusion par confiance ».
+- **Suite** : je surveille la CI de `main`. Si les captures `choc-etincelles`, `accident-fumee` ou `nitro-lignes` sont cassées, je corrige tout de suite.
+
+### 2026-11-04 00:44:22 — Début WFS-60 Roues animées (roues séparées, rotation, braquage) (Claude, agent 4) — attribué par le PO
+- **Ticket** : WFS-60, épic **E5** (+ API du rendu E0, épic libre), relevé de P4 à **P2 Haute**, **élargi** : absorbe WFS-61 (accroche de rendu par roue) et WFS-62 (animation) ; règles `regles-de-gestion/WFS-60.md` (section « Périmètre élargi »), `WFS-61.md`, `WFS-62.md`. Branche `feature/waforspeed-60`.
+- **Pourquoi lui** : aucun ticket ⏳ Prêt dans une épic libre (E2 WFS-53, E3 WFS-70/WFS-24, E4 WFS-09, E5 WFS-11 en revue, E7 WFS-50, E8 WFS-41 en revue ; E0 et E6 sans ticket prêt). Vérification faite : la PR de WFS-11 **ne touche ni `assets/cars` ni `tools/convert_car.mjs`** (garage.*, hud.cpp, menu.cpp, accroches) : la raison qui écartait WFS-60 tombe. Roues qui tournent = défaut le plus visible restant pour la version stable ; débloque WFS-67. Regroupement 60+61+62 : un seul sujet visible, une seule CI (règle des gros tickets).
+- **Exception « un ticket actif par épic »** (E5 : WFS-11 en revue et WFS-60) : fichiers disjoints, comme WFS-24 en E3 et WFS-65 en E4.
+- **Zone de code autorisée** : `tools/convert_car.mjs`, `assets/cars/*.wfm` (4 voitures), `src/render/model_loader.*`, `src/render/renderer.h` (API) et l'appel de dessin d'une voiture dans `renderer.cpp` (accroche minimale, WFS-09 y travaille), nouveaux `src/game/roues.*`, `tests/test_roues.cpp`, accroches ≤ 10 lignes (`game.cpp`, trafic, `desktop_main.cpp`, `build.yml`) annoncées au Journal. **Interdit** : `player.*`/`direction.*` (WFS-70, sauf ≤ 3 lignes de lecture de `wheelAngle`), `sauvegarde.*`, `garage.*`, `hud.cpp`, `scene*.frag`, `post*`, `sky*`, `shadow*`, `effets_*`.
+- **Critères** : `roues-arret-1/2` identiques, `roues-roule` jante tournée, `roues-virage` avant braquées ; `test_roues` (4 roues, rayon 0,25-0,45 m, symétrie, roulage = distance/rayon, braquage ×1,6 ≤ 0,6 rad, Ackermann 1,12/0,9) ; autres captures inchangées, `0 écart(s)`.
+- **À réutiliser** : `waaps/waforspeed/js/cars/models.js` (`splitWheels`, `looksLikeWheel`, `WHEEL_RX`, `animWheels`), `js/world/scene.js` (≈ l. 208, 238), modèles `models/<voiture>/`.
+- **Plan court** : 1) conversion roues séparées + chargeur rétro-compatible ; 2) API `draw` avec pose des roues (défaut = rendu actuel) ; 3) `src/game/roues.*` (roulage, Ackermann) branché joueur + trafic proche ; 4) test + scènes `roues-*` ; une CI, **fusion directe par confiance** (> 50%, règle de l'utilisateur) puis `qa/Check.md`.
+
+### 2026-11-04 00:44:41 — Règle « confiance > 50% » rendue visible (Claude, agent 4, à la demande de l'utilisateur)
+- « 50 % » est réécrit « 50% » partout : une recherche de « 50% » ne trouvait pas la règle.
+- `CLAUDE.md` : la règle de fusion par confiance passe **en tête** des consignes, avec un titre « RÈGLE DE FUSION N°1 — CONFIANCE > 50% → FUSION DIRECTE ».
+
+### 2026-11-04 00:45:01 — Fin WFS-11 : garage et compteur en arc fusionnés (PR #43) (agent 3, session 011cpqZd)
+- CI verte (run de la PR : android, 4 bancs, publication) ; captures `garage-0-2400`, `menu-depart-go` (menu → garage → « Choisir » → GO) et `garage-course` regardées : rien de bloquant. Fusion `5dcda32`, ajouté à `qa/Check.md`.
+- Le job `ecrans-2400` passe à 11 min (caméras WFS-66 + garage en 2400) : c'est maintenant le plus long de la CI.
+- Reste à faire (ex-WFS-13) : conversion des 16 autres voitures (le garage montre les 4 voitures converties).

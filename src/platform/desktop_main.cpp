@@ -21,6 +21,7 @@
 #include "../render/bench_squelette.h"
 #include "../world/pietons.h"
 #include "../render/bench_spots.h"
+#include "../render/bench_effets.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
@@ -28,6 +29,7 @@
 #include "../ui/ecrans/pause.h"
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"
+#include "../ui/garage.h"
 
 
 namespace wfs {
@@ -61,17 +63,18 @@ int main(int argc, char** argv) {
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
-    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage
+    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65)
     //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
-    if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out);
-        ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-41
+    if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
+        ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
     if (partie1 || banc == "chargement")
         ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
@@ -123,6 +126,7 @@ int main(int argc, char** argv) {
             g.render(404); g.render(404.02); r.capturePng(out + "/carte-plage-" + mo + ".png"); g.shutdown();
         }
         unsetenv("WFS_MOMENT");
+        benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
     }
     if (partie2) {
         benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
@@ -131,6 +135,7 @@ int main(int argc, char** argv) {
         ecrans::benchMenu(g, r, out); // WFS-37 : menu principal (menu-anim, menu-0)
         ecrans::benchMenuTactile(g, r, out);   // WFS-38 : appuis du menu, départ, « Bientôt », fin → Menu
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
+        ecrans::benchGarage(g, r, out);        // WFS-11 : garage (plateau, fiche, peintures, voiture suivante, « Choisir »)
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse

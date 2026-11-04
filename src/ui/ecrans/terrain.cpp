@@ -145,8 +145,9 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
         if (idx == 3) {   // vibreurs rouge et blanc
             const vec4 v = ((int)(std::sqrt(t) * 9)) % 2 ? hex(0xF2F4F8) : hex(0xE2262B);
             const float e = (4 + demi * 0.12f) * sx;
-            if (cx - demi >= 0) r.uiRect(px(cx - demi) - e, py(y0), e, 100.f / NR * sy + 0.5f, v);
-            if (cx + demi <= 400) r.uiRect(px(cx + demi), py(y0), e, 100.f / NR * sy + 0.5f, v);
+            const float g0 = std::max(X, px(cx - demi) - e), d1 = std::min(X + W, px(cx + demi) + e);   // vibreurs gardés dans la vignette
+            if (px(cx - demi) > g0) r.uiRect(g0, py(y0), px(cx - demi) - g0, 100.f / NR * sy + 0.5f, v);
+            if (d1 > px(cx + demi)) r.uiRect(px(cx + demi), py(y0), d1 - px(cx + demi), 100.f / NR * sy + 0.5f, v);
         } else {
             const vec4 v = hex(nuit ? 0xC9CDDA : 0xF2F4F8, 0.8f);
             if (cx - demi >= 0) r.uiRect(px(cx - demi), py(y0), bord, 100.f / NR * sy + 0.5f, v);
@@ -205,7 +206,7 @@ public:
         const float hy = mg.haut + 26 * k;
         ui::text(r, zl, hy, 13 * k, ui::majuscules("Étape 2 sur 2 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
         ui::text(r, zl, hy + 20 * k, 44 * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        char idx[8]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
+        char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
         const std::string tot = " / 04";
         ui::text(r, zr, hy + 30 * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
         ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + 22 * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);

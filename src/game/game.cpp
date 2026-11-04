@@ -206,8 +206,8 @@ Game::Demandes& Game::demandes() { static Demandes d; return d; }
 
 void Game::update(double dt) {
     if (Demandes& d = demandes(); !d.carte.empty() && r_) {   // WFS-41 : carte choisie, partie reconstruite entre deux images
-        const std::string c = d.carte, v = carDef_->id; Renderer& r = *r_; d.carte.clear();
-        setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str());
+        const std::string c = d.carte, v = carDef_->id; const vec3 p = paint_; Renderer& r = *r_; d.carte.clear();   // voiture et peinture du garage gardées
+        setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str()); paint_ = p;
         WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour");
     }
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
@@ -309,6 +309,7 @@ void Game::render(double time) {
 // Le changement demandé (Game::allerA ou GameView::allerA) est appliqué ici, au début de update() / render() : jamais au
 // milieu d'une image. Les commandes de conduite en cours sont lâchées, puis tous les systèmes sont prévenus.
 void Game::appliquerEcran() {
+    if (!voitureDemandee_.empty()) { setCar(voitureDemandee_.c_str()); paint_ = peintureDemandee_; voitureDemandee_.clear(); }   // WFS-11
     if (!demandeEcran_) return;
     demandeEcran_ = false;
     if (ecranDemande_ == ecran_) return;
@@ -339,6 +340,7 @@ void Game::systemsInit() {
     view_.ecran = ecran_;
     view_.marges = marges_;
     view_.allerA = [this](Ecran e) { allerA(e); };
+    view_.choisirVoiture = [this](const char* id, vec3 p) { voitureDemandee_ = id; peintureDemandee_ = p; };   // WFS-11
     for (const SystemEntry& e : entries) {
         systems_.push_back(e.make());
         systems_.back()->init(*r_, view_);
