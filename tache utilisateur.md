@@ -11,3 +11,6 @@ demande utilisateur :
 
 - on a des tâches avec des statuts en cours alors que l'agent na pas encore créé la branche 
 pour ça il faut remettre a jour les status dans les fichiers taches.md et journal.md  pour ne pas bloquer le dev
+
+
+- on a des PRs qui traîne depuis des heurs demander au po de voir si on cest possible de les merger et creer une tache pour un dev 
