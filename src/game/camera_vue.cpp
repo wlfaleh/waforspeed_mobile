@@ -1,6 +1,8 @@
 // WaForSpeed — caméras de course (WFS-66) : voir camera_vue.h.
 // Système « camera » (ordre 260) : cockpit dessiné par code (buildCockpit du jeu web) et bouton de vue en course (#camBtn).
 #include "camera_vue.h"
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 #include "../core/log.h"
@@ -8,6 +10,7 @@
 #include "../render/renderer.h"
 #include "../ui/text.h"
 #include "cars.h"
+#include "commandes_tactiles.h"   // WFS-98 : dessin2d (biseau à bords lissés)
 #include "course.h"
 #include "course_system.h"
 #include "game.h"
@@ -20,7 +23,8 @@ namespace wfs {
 
 namespace {
 VueCamera g_vue = VueCamera::Poursuite;   // store('waforspeed-cam') du jeu web : mémorisée pour la session
-struct Suivi { bool init = false; VueCamera vue = VueCamera::Poursuite; vec3 eye{}, look{}; float fov = 72.f; } g_suivi;
+struct Suivi { bool init = false; VueCamera vue = VueCamera::Poursuite; vec3 eye{}, look{}; float fov = 72.f;
+               double camHd = 0, distDyn = 0; } g_suivi;   // WFS-98 : camHd et camDistDyn d'updateCamera du jeu web
 EtatCockpit g_ck;
 struct Zone { float x = 0, y = 0, w = 0, h = 0;
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } } g_bouton;
@@ -43,22 +47,47 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
     if (camMode == 2 || (ecran != Ecran::Course && ecran != Ecran::Pause)) { g_suivi.init = false; g_ck.fov = fov; return false; }
     const VueDef& V = VUES[(int)g_vue];
     if (!V.capot && camMode == 0) {
-        // WFS-85 : poursuite « loin » (défaut) ou « proche » d'updateCamera du jeu web : œil derrière la voiture sur la route,
-        // regard entre l'avant de la voiture et le virage qui arrive, suivi lissé, champ de vision qui s'élargit avec la vitesse
+        // WFS-85 : poursuite « loin » (défaut) ou « proche » d'updateCamera du jeu web : œil derrière la voiture, regard entre
+        // l'avant de la voiture et le virage qui arrive, suivi lissé, champ de vision qui s'élargit avec la vitesse.
+        // WFS-98 (RG-07, ANO-30) : l'œil suit le cap de la VOITURE (cap de la route + lacet) avec retard (camHd), le recul
+        // suit l'accélération (camDistDyn) ; voiture en travers (demi-tour) : recul ≥ 6 m et hauteur ≥ 2,5 m
         const Poursuite& P = g_vue == VueCamera::Proche ? POURSUITE_PROCHE : POURSUITE_LOIN;
         const double p = std::abs(pl.speed) / MAX_SPEED, lat = pl.playerX * RW;
-        const vec3 carPos = carM.transformPoint({0, 0, 0}), fwd = normalize(carM.transformDir({0, 0, -1}));
-        const TrackPoint der = track.point(pl.dist - P.dist / M, lat * 0.85);
-        const vec3 eT{(float)der.x, (float)der.y + P.h + (float)p * 0.12f, (float)der.z};
-        const TrackPoint dev = track.point(pl.dist + P.ahead * 1.6 / M, lat);
-        const vec3 lT{(carPos.x + fwd.x * P.ahead) * 0.6f + (float)dev.x * 0.4f, carPos.y + P.lookH,
-                      (carPos.z + fwd.z * P.ahead) * 0.6f + (float)dev.z * 0.4f};
+        const vec3 carPos = carM.transformPoint({0, 0, 0});
+        const double th = track.point(pl.dist, lat).th;
+        const double hdT = th + pl.heading + pl.spinYaw * 0.15;   // tête-à-queue : la caméra n'en suit qu'un peu (reste stable)
+        const bool neuf = !g_suivi.init || g_suivi.vue != g_vue || length(g_suivi.eye - carPos) > 25.f + P.dist;   // camInit
+        if (neuf) { g_suivi.camHd = hdT; g_suivi.distDyn = P.dist; }
+        double dh = hdT - g_suivi.camHd;
+        dh = std::atan2(std::sin(dh), std::cos(dh));
+        g_suivi.camHd += dh * std::min(1.0, fdt * 3.4);   // ≈ 0,3 s de retard : la voiture pivote d'abord dans l'image
+        const double distT = P.dist + p * 0.6 + std::clamp(pl.lonAcc * 0.05, -0.4, 0.6);   // s'éloigne en accélérant
+        g_suivi.distDyn += (distT - g_suivi.distDyn) * std::min(1.0, fdt * 2.5);
+        const double t = std::clamp((std::abs(std::sin(pl.heading)) - 0.3) / 0.4, 0.0, 1.0), a = t * t * (3 - 2 * t);
+        // demi-tour (RG-07) : recul ≥ 6 m, œil à 3 m au moins (≥ 2,5 m) et regard relevé de 0,8 m : la voiture, vue de plus
+        // haut, descend dans le tiers bas de l'image
+        const double dist = std::max(g_suivi.distDyn, g_suivi.distDyn + (6.0 - g_suivi.distDyn) * a);
+        const double h = std::max((double)P.h, P.h + (3.0 - P.h) * a);
+        const double hd = g_suivi.camHd, side = -pl.steer * 0.35 * std::min(1.0, p * 2);
+        const vec3 f{(float)std::sin(hd), 0.f, (float)-std::cos(hd)}, droite{(float)std::cos(hd), 0.f, (float)std::sin(hd)};
+        vec3 eT = carPos - f * (float)dist + droite * (float)side;
+        eT.y = carPos.y + (float)(h + p * 0.12);
+        // RG-03 : jamais sous la route dans les côtes (sol à la place de l'œil, devant ou derrière selon le cap)
+        const float sol = (float)track.point(pl.dist - std::cos(hd - th) * dist / M, lat).y + 0.6f;
+        eT.y = std::max(eT.y, sol);
+        // WFS-90 : virage qui arrive dans le sens de marche (1 dans le sens de la route, −1 à contresens) ; en travers, droit
+        // devant la voiture (le bord de la route n'attire plus le regard)
+        const double sens = std::clamp(std::cos(pl.heading) * 3.0, -1.0, 1.0);
+        const TrackPoint dev = track.point(pl.dist + sens * P.ahead * 1.6 / M, lat);
+        const vec3 devant = lerp(carPos + f * (P.ahead * 1.6f), vec3{(float)dev.x, carPos.y, (float)dev.z}, (float)std::abs(sens));
+        const vec3 lT{(carPos.x + f.x * P.ahead) * 0.6f + devant.x * 0.4f, carPos.y + P.lookH + 0.8f * (float)a,
+                      (carPos.z + f.z * P.ahead) * 0.6f + devant.z * 0.4f};
         const float fovT = fovVue(g_vue, p, pl.nitroOn);
-        if (!g_suivi.init || g_suivi.vue != g_vue || length(g_suivi.eye - eT) > 25.f) g_suivi = {true, g_vue, eT, lT, fovT};
+        if (neuf) { g_suivi.init = true; g_suivi.vue = g_vue; g_suivi.eye = eT; g_suivi.look = lT; g_suivi.fov = fovT; }
         g_suivi.eye = lerp(g_suivi.eye, eT, 1.f - std::exp(-fdt * SUIVI_OEIL));
         g_suivi.look = lerp(g_suivi.look, lT, 1.f - std::exp(-fdt * SUIVI_REGARD));
         g_suivi.fov = lisser(g_suivi.fov, fovT, fdt, 4.f);
-        g_suivi.eye.y = std::max(g_suivi.eye.y, (float)der.y + 0.6f);   // RG-03 : jamais sous la route dans les côtes
+        g_suivi.eye.y = std::max(g_suivi.eye.y, sol);
         eye = g_suivi.eye; look = g_suivi.look; fov = g_suivi.fov; g_ck.fov = fov;
         return false;
     }
@@ -187,13 +216,10 @@ vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8)
 const unsigned TEXTE = 0xF2F4F8, BG = 0x0A0B10;
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.10f};
 
-// parallélogramme (clip-path de .cam-btn) en bandes horizontales : haut décalé à droite de `biais`
+// parallélogramme (clip-path de .cam-btn) : haut décalé à droite de `biais` ; WFS-98 (RG-08) : un seul polygone à bords
+// lissés (dessin2d), plus de bandes
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
 
 // bouton visible : vraie course en cours (comme le bouton « Menu » de WFS-39 : pas de fin, pas de scène du banc sans règles)

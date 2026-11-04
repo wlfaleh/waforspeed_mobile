@@ -1,5 +1,7 @@
 # WaForSpeed Mobile — tableau des tâches
 
+** RÈGLE IMPORTANT : il faut voir systématiquement le fichier tache utilisateur.md et répondre en cas de besoin à l'utilisateur
+
 Version native (C++20, Vulkan) du jeu WaForSpeed, pour Android puis iOS, portable sur consoles. Moteur maison, aucun moteur
 de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`). Organisation type Jira / Scrum :
 **épics** (une zone de code chacune), **tickets** WFS-XX priorisés, plusieurs agents en parallèle, en autonomie.
@@ -172,12 +174,23 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-84 | [URGENT] Nuit : feux des voitures naturels (petits feux nets, lueur douce, fini l'effet artificiel) | E4 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-09 ✅ | `feature/waforspeed-84` | [#70](https://github.com/wlfaleh/waforspeed_mobile/pull/70) |  |
 | P1 Urgent | WFS-85 | [URGENT] Caméra de poursuite plus haute (voir les voitures devant) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-66 ✅ | `feature/waforspeed-85` | [#71](https://github.com/wlfaleh/waforspeed_mobile/pull/71) |  |
 | P1 Urgent | WFS-86 | [URGENT] Voitures en course aussi belles qu'au garage (qualité, échelle de rendu, anticrénelage, modèle complet) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-86` | #72 |  |
-| P2 Haute | WFS-90 | Conduite libre : demi-tour, marche arrière facile, rouler dans l'autre sens | E3 (exception : 2e ticket E3, fichiers séparés de WFS-89) | 🔧 En cours | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-90` |  |  |
+| P2 Haute | WFS-90 | Conduite libre : demi-tour, marche arrière facile, rouler dans l'autre sens | E3 (exception : 2e ticket E3, fichiers séparés de WFS-89) | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-90` | #78 |  |
 | P1 Urgent | WFS-87 | [URGENT] CI : l'APK de `main` toujours publié (Release `apercu` fiable, plus de trou ni d'échec 403) | E7 (exception : 2e ticket E7, fichiers séparés de WFS-78) | ✅ Fusionné par l'utilisateur (PR #73, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-69 ✅ | `feature/waforspeed-87` | [#73](https://github.com/wlfaleh/waforspeed_mobile/pull/73) |  |
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu (GEL iOS, décision utilisateur 2026-11-04 : Android d'abord) | Claude (session trafic), 2026-11-04 | WFS-78 ✅ | `feature/waforspeed-88` |  |  |
 | P2 Haute | WFS-89 | Duel par Internet : salon par code à 4 caractères, compatible avec le jeu web (PeerJS) | E3 (+ accroches E8 `salon.*`, E0 `CMakeLists.txt`, E7 manifeste) | 🔧 En cours — décision PO 2026-11-04 (B) : fusionner la partie faite (duel Wi-Fi local, saisie du code, « Sans Internet ») dès CI verte ; vrai réseau PeerJS → WFS-92 ⏸ | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-83 ✅, WFS-21 ✅ | `feature/waforspeed-89` |  |  |
-| P2 Haute | WFS-91 | [STABLE] Endurance : parcours automatique long sans plantage ni fuite, validation Vulkan à zéro erreur, retours d'arrière-plan | E7 | 🔧 En cours (à démarrer dès WFS-89 fusionné) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | — | `feature/waforspeed-91` |  |  |
+| P2 Haute | WFS-91 | [STABLE] Endurance : parcours automatique long sans plantage ni fuite, validation Vulkan à zéro erreur, retours d'arrière-plan | E7 | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-91` |  |  |
 | P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans `third_party/`) | E3 | ⏸ En attente (décision de l'utilisateur : ajout des bibliothèques tierces) |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
+| P2 Haute | WFS-93 | Ville : les 6 quartiers du jeu web (résidentiel, parc, port) + panneaux du circuit avec texte, vignes sans marches | E2 | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-93` |  |  |
+| P3 Moyenne | WFS-94 | Corniche : quartiers Port de plaisance, Côte rocheuse, Village de pêcheurs (villas, bateaux, rochers) | E2 | ⏳ En attente (après WFS-93, même épic) |  | WFS-93 | `feature/waforspeed-94` |  |  |
+| P2 Haute | WFS-95 | Texte et bandeaux : caractères manquants (« — »), petits libellés lisibles, nom du quartier en course | E5 | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-95` |  |  |
+| P2 Haute | WFS-96 | Menus : Showroom et « Ta voiture » ouvrent le garage, quartiers sur la carte du terrain, focus manette, voile sans bandes, sons d'interface | E8 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-96` |  |  |
+| P3 Moyenne | WFS-97 | Nuit du circuit : taches de lumière visibles sous les projecteurs | E4 | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-97` |  |  |
+| P1 Urgent | WFS-98 | Correction : commandes tactiles du jeu web (GAZ / FREIN / NITRO / volant), HUD de la vue cockpit, caméra qui suit le demi-tour (ANO-31, ANO-24, ANO-30) | E3 (exception : 2e ticket E3, fichiers séparés de WFS-89 ; + E0 `game.cpp`, E5 `hud.*`) | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Copilot (session 0e5c192d), 2026-11-04 | — | `feature/waforspeed-98` | #80 |  |
+| P1 Urgent | WFS-99 | Correction : garage lisible (voile, néons à droite, taches de lumière au sol, voiture de 3/4 avant) (ANO-22, ANO-23, ANO-33) | E5 (exception : 2e ticket E5, fichiers séparés de WFS-95) | 🔧 En cours | Copilot (session 0e5c192d), 2026-11-04 | — | `feature/waforspeed-99` |  |  |
+| P1 Urgent | WFS-100 | Correction : carrosseries sans reflets flottants ni taches, bloom sans images fantômes (ANO-21, ANO-28, ANO-27) | E4 (exception : 2e ticket E4, fichiers séparés de WFS-97) | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-100` |  |  |
+| P1 Urgent | WFS-101 | Correction : étincelles et lignes de nitro visibles, trafic du banc de près, écran de fin aéré (ANO-25, ANO-26, ANO-36) | E4 (exception : 3e ticket E4, fichiers séparés ; + E3 `traffic_system.cpp`, `course_system.*`) | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-101` |  |  |
+| P1 Urgent | WFS-102 | Correction : interface à l'échelle du téléphone (dp, cibles 44 dp), biseaux d'un seul tenant, écrans lisibles (ANO-19, ANO-18, ANO-20, ANO-32, ANO-35, ANO-38, ANO-39, ANO-41) | E8 (+ E5, accroches E0 / E7) | ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 : mêmes fichiers) |  | WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 | `feature/waforspeed-102` |  |  |
+| P1 Urgent | WFS-103 | Revue et fusion des PR en attente (#77 WFS-89, #79 WFS-96 ; #76 iOS gelée) | E7 (transverse : n'occupe pas l'épic, WFS-91 reste attribuable) | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-103` (travail sur les branches des PR) | #77, #79 |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -421,7 +434,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-86 — [URGENT] Voitures en course aussi belles qu'au garage** · E4 · priorité P1 Urgent · ✅ Fusionné le 2026-11-04 par confiance (PR #72, QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-86` (règles : `regles-de-gestion/WFS-86.md`)
 - [ ] course = garage en netteté et reflets ; cause au Journal
 
-**WFS-90 — Conduite libre : demi-tour, marche arrière, autre sens** · E3 · priorité P2 Haute · 🔧 En cours — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-90` (règles : `regles-de-gestion/WFS-90.md`). Zone (exception E3, fichiers séparés de WFS-89) : `src/game/player.*`, `src/game/course*`, `src/game/camera_vue.*`, `src/game/direction.*`, `src/game/roues.*`, nouveau `tests/test_conduite_libre.cpp` ; accroches ≤ 10 lignes annoncées : `CMakeLists.txt`, `src/game/traffic_system.cpp`, `src/ui/hud.cpp`, bouton « Demi-tour » ; interdit : `src/game/duel*`, `reseau_*`, `binarypack*`, `tests/test_binarypack*`, `src/ui/ecrans/salon.*` (WFS-89), `src/render/**` (WFS-88)
+**WFS-90 — Conduite libre : demi-tour, marche arrière, autre sens** · E3 · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #78, QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-90` (règles : `regles-de-gestion/WFS-90.md`). Zone (exception E3, fichiers séparés de WFS-89) : `src/game/player.*`, `src/game/course*`, `src/game/camera_vue.*`, `src/game/direction.*`, `src/game/roues.*`, nouveau `tests/test_conduite_libre.cpp` ; accroches ≤ 10 lignes annoncées : `CMakeLists.txt`, `src/game/traffic_system.cpp`, `src/ui/hud.cpp`, bouton « Demi-tour » ; interdit : `src/game/duel*`, `reseau_*`, `binarypack*`, `tests/test_binarypack*`, `src/ui/ecrans/salon.*` (WFS-89), `src/render/**` (WFS-88)
 - [ ] demi-tour possible, caméra qui suit, chrono et checkpoints seulement dans le bon sens
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
@@ -511,14 +524,57 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `salon-internet` (relais simulé : 2 pilotes) et `salon-hors-ligne` (note orange, pas de plantage)
 - [ ] `test_binarypack` vert (octets de référence PeerJS) ; APK : duel entre deux réseaux différents et avec le jeu web (vérifié par l'utilisateur)
 
-**WFS-91 — [STABLE] Endurance : parcours long, validation Vulkan, retours d'arrière-plan** · E7 · P2 Haute · 🔧 En cours — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, à démarrer dès WFS-89 fusionné, branche `feature/waforspeed-91` (règles : `regles-de-gestion/WFS-91.md`). Zone : `src/platform/**` (nouveau `endurance_banc.*`, `desktop_main.cpp`), `.github/workflows/build.yml` (job `endurance`), `tools/qa/**` ; corrections ailleurs : accroches ≤ 10 lignes annoncées, jamais dans les zones de tickets en cours
+**WFS-91 — [STABLE] Endurance : parcours long, validation Vulkan, retours d'arrière-plan** · E7 · P2 Haute · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), ordre de l'utilisateur ; « à démarrer dès WFS-89 fusionné » ne valait que pour l'agent 5, occupé par WFS-89 : aucune dépendance, zone disjointe de WFS-89), branche `feature/waforspeed-91` (règles : `regles-de-gestion/WFS-91.md`). Zone : `src/platform/**` (nouveau `endurance_banc.*`, `desktop_main.cpp`), `.github/workflows/build.yml` (job `endurance`), `tools/qa/**` ; corrections ailleurs : accroches ≤ 10 lignes annoncées, jamais dans les zones de tickets en cours
 - [ ] job `endurance` vert sur `main` (≤ 15 min), artefact `captures-endurance`
 - [ ] `endurance-journal.txt` : ≥ 12 cycles, 4 cartes, jour et nuit, ≥ 4 retours d'arrière-plan, RSS final ≤ cycle 2 + 10 %, 0 erreur de validation (hors erreurs connues avec ticket)
 - [ ] `endurance-retour-*.png` : image correcte après chaque retour ; une capture de fin de course par carte ; autres jobs verts, APK publié
+- [ ] (ajout PO, ANO-29) Release `apercu` jamais incomplète : publication `cancel-in-progress: false`, anciens fichiers supprimés après l'envoi complet des nouveaux (RG-A1, RG-A2)
 
 **WFS-92 — Duel par Internet : pair PeerJS réel** · E3 · P2 Haute · ⏸ En attente de la décision de l'utilisateur sur l'ajout de libdatachannel 0.22.6 + Mbed TLS 3.6.2 dans `third_party/` (≈ 14 Mo, recommandation PO : autoriser) — branche `feature/waforspeed-92` (règles : `regles-de-gestion/WFS-92.md`). Zone : `src/game/reseau_peerjs.*`, `third_party/**` (nouvelles bibliothèques) ; accroches : `CMakeLists.txt`, `android/**` ≤ 10 lignes
 - [ ] APK : duel entre deux réseaux différents et contre le jeu web (vérifié par l'utilisateur)
 - [ ] sans Internet : note orange, aucun plantage ; CI verte, APK publié
+
+**WFS-93 — Ville : 6 quartiers + finitions des cartes** · E2 · P2 Haute · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-93` (règles : `regles-de-gestion/WFS-93.md`). Zone : `src/world/**` (nouveau `ville_quartiers.cpp`, `ville.cpp`, `circuit.cpp`, `campagne.cpp`, `cartes_banc.cpp`) ; interdit : `src/render/**`, `src/platform/**`, `.github/**`, fichiers du duel
+- [ ] `carte-ville-residentiel`, `-parc`, `-port` : objets du quartier (abribus ; grille, bancs, fontaine ; entrepôts, conteneurs, grues) ; `course-*` inchangées
+- [ ] `carte-circuit-jour` / `-nuit` : texte d'AD_TEXTS lisible sur les panneaux ; `carte-campagne-vignes` : rangs sans marches ; ≤ 300 appels de dessin
+
+**WFS-94 — Corniche : quartiers marina, rochers, village** · E2 · P3 Moyenne · ⏳ En attente (après WFS-93) — branche `feature/waforspeed-94` (règles : `regles-de-gestion/WFS-94.md`). Zone : `src/world/plage.cpp`, `cartes_banc.cpp`, nouveaux `src/world/plage_*.cpp`
+- [ ] `carte-plage-marina`, `-rochers`, `-village` : bateaux, bornes, villas, rochers, glissières visibles ; ≤ 300 appels de dessin
+- [ ] (ajout PO, ANO-40) `vie-portique` à 25 m (« CHECKPOINT 1 » lisible), `vie-plage` à 15 m (serviettes et baigneurs visibles)
+
+**WFS-95 — Texte et bandeaux** · E5 · P2 Haute · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-95` (règles : `regles-de-gestion/WFS-95.md`). Zone : `src/ui/text.*`, `src/ui/toasts.*`, `shaders/ui*`, `assets/fonts/**` ; interdit : `src/ui/garage.*`, `src/ui/ecrans/**`, `src/render/**`, `src/platform/**`
+- [ ] menu : « — » sous RECORD (plus de « ? »), « TA VOITURE » lisible ; capture `toast-quartier` : bandeau du nom du quartier à chaque changement de zone
+
+**WFS-96 — Menus : Showroom, quartiers du terrain, focus manette, voile, sons** · E8 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-96` (règles : `regles-de-gestion/WFS-96.md`). Zone : `src/ui/ecrans/**` sauf `salon.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.cpp`, `src/audio/sfx.*` ; interdit : `desktop_main.cpp`, `.github/**`, `src/render/**`, `src/ui/text.*`, `toasts.*`
+- [ ] `menu-showroom`, `showroom-choisir` : Showroom ouvre le garage, « Choisir » ramène au menu ; `terrain-0` : « Quartiers » et noms ; voile du menu sans rayures ; focus manette sur le 1er choix ; « SFX garage » / « SFX carte » au journal
+
+**WFS-97 — Nuit du circuit : taches de lumière des projecteurs** · E4 · P3 Moyenne · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-97` (règles : `regles-de-gestion/WFS-97.md`). Zone : `src/render/nuit.cpp` ; interdit : `src/world/**`, `src/platform/**`, iOS
+- [ ] `carte-circuit-nuit`, `course-nuit-circuit-0` : taches froides visibles sous les mâts ; ville et plage de nuit sans surexposition
+
+**WFS-98 — Correction : commandes tactiles, HUD cockpit, caméra du demi-tour** · E3 (+ E0 `game.cpp`, E5 `hud.*`) · P1 Urgent · ✅ Fusionné le 2026-11-04 par confiance (PR #80, QA de nuit : `qa/Check.md`) — Copilot (session 0e5c192d), 2026-11-04 (réattribué : aucune branche poussée depuis l'attribution à Claude (session trafic) à 18:42:05, ordre de l'utilisateur), branche `feature/waforspeed-98` (règles : `regles-de-gestion/WFS-98.md`). Zone : `src/game/game.cpp` (commandes, caméra de poursuite), `direction.*`, `camera_vue.*`, `camera_banc.*` (si besoin), `conduite_libre_banc.*`, nouveau `commandes_tactiles.*`, `src/ui/hud.*`
+- [ ] `hud-course`, `encoche-hud-2400` : pédales « GAZ » orange et « FREIN » rouge, nitro rond à anneau vert acide « NITRO », volant dessiné ; boutons du HUD sans rayures ; `hud-nitro` : gaz appuyé (remplissage orange) ; `course-gaucher` : commandes en miroir, gaz appuyé (RG-05 bis)
+- [ ] `camera-cockpit` : un seul compteur, plus de disque cyan ; `conduite-demitour` : Golf entière au tiers bas, en travers ; tests CPU verts
+
+**WFS-99 — Correction : garage lisible** · E5 · P1 Urgent · 🔧 En cours — Copilot (session 0e5c192d), 2026-11-04 (après remise en ⏳ Prêt le 2026-11-04 : aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-99` (règles : `regles-de-gestion/WFS-99.md`). Zone : `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`
+- [ ] `spots-sol`, `garage-0`, `garage-2` : 3 taches de lumière au sol, 911 noire détachée du fond (liseré cyan)
+- [ ] `garage-*` : aucun néon sur le texte, voile à gauche, voiture de 3/4 avant, panneau sans escalier
+
+**WFS-100 — Correction : carrosseries propres et bloom sans fantômes** · E4 · P1 Urgent · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-100` (règles : `regles-de-gestion/WFS-100.md`). Zone : `src/render/renderer.cpp`, `vk.*`, `model_loader.*`, `qualite_*`, `shaders/scene*`, `post*`, `common.glsl`
+- [ ] `vitrine-*`, `garage-peinture*`, `trafic-clignotant` : aucun trait brillant dans le vide ; Giulia, X5, Model 3 en peinture unie
+- [ ] `qualite-haute`, `qualite-moyenne`, `course-nuit-*` : halo rond et doux, aucune copie fantôme ni traînée
+
+**WFS-101 — Correction : étincelles, nitro, trafic du banc, écran de fin** · E4 (+ E3) · P1 Urgent · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-101` (règles : `regles-de-gestion/WFS-101.md`). Zone : `src/render/effets_*`, `bench_effets.*`, `src/game/traffic_system.cpp` (`benchTraficVivant`), `src/game/course_system.*`
+- [ ] `choc-etincelles` : gerbe orange et blanche ; `nitro-lignes` : traits en étoile + vignette cyan sombre
+- [ ] `trafic-clignotant`, `trafic-freinage` : voiture à 8-25 m ; `fin-record` : badge et record espacés
+
+**WFS-102 — Correction : interface à l'échelle du téléphone, biseaux, écrans lisibles** · E8 (+ E5, accroches E0 / E7) · P1 Urgent · ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101) — branche `feature/waforspeed-102` (règles : `regles-de-gestion/WFS-102.md`). Zone : `src/ui/ecrans/**`, nouveau `src/ui/echelle.*`, une ligne `ui::echelle` par fichier d'interface, accroches `game.h` / `android_main.cpp`
+- [ ] `*-2400` : boutons ≥ 44 dp, libellés ≥ 12 dp ; 1280x720 inchangé ; aucun bouton rayé sur aucun écran
+- [ ] `terrain-*` : description sur fond sombre, sélection cyan ; `menu-0` aide juste ; `salon-*` carte centrale ; `chargement-erreur` « Réessayer »
+
+**WFS-103 — Revue et fusion des PR en attente** · E7 (transverse) · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-04 (règles : `regles-de-gestion/WFS-103.md`). Zone : fichiers des PR revues (résolution de conflits seulement), `TACHES.md`, `qa/Check.md`, `journal.md`, `anno.md` ; aucune nouvelle fonctionnalité, rien d'iOS (#76 gelée). Ordre : #77 (WFS-89) puis #79 (WFS-96, non réattribué)
+- [ ] #77 et #79 fusionnées, ou blocage précis écrit au Journal (PR laissée ouverte)
+- [ ] CI de `main` verte après la dernière fusion ; `TACHES.md`, `qa/Check.md`, Journal à jour pour WFS-89 et WFS-96
+- [ ] **Règle permanente** : aucune PR ouverte plus de 2 h sans décision (fusionnée, bloquée au Journal, ou gel iOS)
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

@@ -16,6 +16,7 @@
 #include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
+#include "../game/conduite_libre_banc.h"
 #include "../game/ressenti.h"   // WFS-70 : ressenti de conduite (captures ressenti-*.png)
 #include "../game/sauvegarde.h"   // WFS-24
 #include "../game/traffic_system.h"
@@ -178,6 +179,7 @@ int main(int argc, char** argv) {
         ecrans::benchSalon(g, r, out);         // WFS-83 : salon du duel, second joueur en UDP (boucle locale)
         ecrans::benchGarage(g, r, out);        // WFS-11 : garage (plateau, fiche, peintures, voiture suivante, « Choisir »)
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
+        benchConduiteLibre(g, r, out);   // WFS-90 : demi-tour et contresens (conduite-demitour.png, conduite-contresens.png)
         benchRoues(r, out);           // WFS-60 : roues animées (roues-arret-1/2, roues-roule, roues-virage)
         ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse

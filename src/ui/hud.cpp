@@ -5,9 +5,12 @@
 #include <cstdlib>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../game/camera_vue.h"           // WFS-98 : vue cockpit (etatCockpit)
+#include "../game/commandes_tactiles.h"   // WFS-98 : place des commandes (appuis du banc)
 #include "../game/course_system.h"
 #include "../game/game.h"
 #include "../render/renderer.h"
+#include "ecrans/reglages.h"   // WFS-75 : miroirX (lecture seule)
 #include "text.h"
 #include "toasts.h"
 
@@ -111,7 +114,7 @@ public:
             label(r, x + pad, y + 80 * k, k, "Checkpoint " + std::to_string(c->level + 1));
             barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)(1 - (c->nextCp - pl.dist) / CHECK_DIST));
         }
-        // ---------- haut droite : score + combo (.p-score), au-dessus du bouton Nitro (y < 22 % de H) ----------
+        // ---------- haut droite : score + combo (.p-score) ----------
         {
             const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
             r.uiRect(x, y, w, h, GLASS);
@@ -122,14 +125,33 @@ public:
             if (c->combo > 1)   // .combo : cyan, 16 px
                 ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
         }
+        const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));
+        const bool rouge = v > 300, arriere = pl.speed < -1 && g_kmhForce < 0;
+        const int on = (int)std::lround(std::clamp(pl.nitro, 0.0, 1.0) * 10);   // cases de nitro allumées
+        // ---------- vue cockpit (WFS-98, RG-06, ANO-24) : vitesse sous le temps ----------
+        // le cadran du tableau de bord 3D donne déjà la vitesse : pas de compteur en arc ; chiffres 28 px et cases de nitro
+        // dans un petit panneau sous le temps, sur la rangée du bouton « Menu » (à sa droite, bord droit sur celui du temps)
+        if (etatCockpit().actif) {
+            const std::string lib = ui::majuscules(arriere ? "R · km/h" : "km/h");
+            const float tp = 28 * k, lp = std::round(std::max(13.f, 11 * k)), wd = ui::width(tp, "000", 0), h = 40 * k;
+            const float w = pad + wd + 6 * k + ui::width(lp, lib, 0.16f) + pad;
+            const float wMenu = pad + 18 * k + 6 * k + ui::width(14 * k, "MENU", 0.1f) + pad;   // .cam-btn#menuBtnHud (pause.cpp)
+            const float x = std::max(mg.gauche + gl + 200 * k - w, mg.gauche + gl + wMenu + 8 * k), y = mg.haut + gt + 112 * k + 10 * k;
+            r.uiRect(x, y, w, h, GLASS);
+            const float ty = y + 17 * k - 0.4768f * tp, base = ty + 0.7288f * tp;   // milieu des capitales à 17 px du haut
+            ui::text(r, x + pad + wd, ty, tp, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::DROITE, 0, false, true);
+            label(r, x + pad + wd + 6 * k, base - 0.7288f * lp, k, lib);   // même ligne de base que les chiffres
+            const float gap = 2 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 4 * k, cy = y + 30 * k;
+            for (int i = 0; i < 10; i++)
+                r.uiRect(x + pad + i * (cw + gap), cy, cw, ch, i < on ? hex(SUCCESS, pl.nitroOn ? 1.f : 0.85f) : hex(SURFACE2));
+            return;
+        }
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
         {
             // centré dans la zone sûre (entre les marges gauche et droite)
             // WFS-46 : compteur en arc (Ø 190 px ≈ 26 % de la hauteur) ; lecture au centre ; nitro dans l'ouverture du bas
             const float cx = (mg.gauche + W - mg.droite) / 2, R = 95 * k, ccy = H - mg.bas - gt - R - 4 * k;
             r.uiCircle(cx, ccy, R - 2 * k, {GLASS.x, GLASS.y, GLASS.z, 0.55f});   // fond discret pour la lisibilité
-            const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));
-            const bool rouge = v > 300, arriere = pl.speed < -1 && g_kmhForce < 0;
             compteur(r, cx, ccy, k, v);
             ui::text(r, cx, ccy - 30 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
             label(r, cx, ccy + 18 * k, k, arriere ? "R · km/h" : "km/h", ui::CENTRE);
@@ -137,7 +159,6 @@ public:
             const vec4 lumineux = hex(SUCCESS);
             const float w = 112 * k, x = cx - w / 2, pad = 0;
             label(r, cx, ccy + 44 * k, k, "Nitro", ui::CENTRE, pl.nitroOn ? &lumineux : nullptr);
-            const int on = (int)std::lround(std::clamp(pl.nitro, 0.0, 1.0) * 10);
             const float gap = 2 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 9 * k, cy = ccy + 64 * k;
             for (int i = 0; i < 10; i++) {
                 const float xi = x + pad + i * (cw + gap);
@@ -157,6 +178,9 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
     courseBenchRules(true);
     if (!g.init(r, "golf", "ville")) { WFS_ERR("HUD : chargement impossible"); return; }
     const float W = (float)r.width(), H = (float)r.height();
+    // WFS-98 : appuis au centre des commandes dessinées (pédale de gaz, bouton nitro), sans marges
+    const DispositionCommandes dc = dispositionCommandes(W, H, ecrans::margesCommandes(Marges{}));
+    const float gx = ecrans::miroirX(dc.gaz.cx(), W), gy = dc.gaz.cy(), nx = ecrans::miroirX(dc.nitro.cx(), W), ny = dc.nitro.cy();
     double t = 600;
     auto rouler = [&](int images) { for (int i = 0; i < images; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); } };
     auto capture = [&](const char* nom) {
@@ -176,10 +200,10 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
     courseBenchSetTime(30.0);
     // nitro : le pilote automatique ne l'utilise pas ; on appuie sur gaz + nitro comme un joueur
     g.setAutopilot(false);
-    g.onTouch({7, W * 0.89f, H * 0.74f, true}); g.onTouch({8, W * 0.90f, H * 0.32f, true});
+    g.onTouch({7, gx, gy, true}); g.onTouch({8, nx, ny, true});
     rouler(24);
     capture("hud-nitro");
-    g.onTouch({8, W * 0.90f, H * 0.32f, false});
+    g.onTouch({8, nx, ny, false});
     // combo ×2 : deux quasi-contacts de suite (événements de règles, comme ceux du trafic)
     if (Course* c = activeCourseMut()) { c->nearMiss(); c->nearMiss(); }
     rouler(12);
@@ -196,7 +220,7 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
         capture("encoche-hud");
         g.setMarges({}); g.montrerMarges = false;
     }
-    g.onTouch({7, W * 0.89f, H * 0.74f, false});
+    g.onTouch({7, gx, gy, false});
     g.shutdown();
     courseBenchRules(false);
     benchToasts(g, r, out);   // WFS-47 : bandeaux (toast-checkpoint, toast-pile)

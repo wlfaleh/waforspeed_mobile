@@ -87,6 +87,7 @@ else()
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
+  add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
 endif()

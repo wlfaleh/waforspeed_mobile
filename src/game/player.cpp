@@ -4,10 +4,11 @@
 namespace wfs {
 
 static double clampd(double v, double a, double b) { return v < a ? a : (v > b ? b : v); }
+static constexpr double PI_D = 3.14159265358979323846;
 
 void Player::reset(const CarDef& c) {
     car = &c; perf = carPerf(c);
-    position = dist = playerX = speed = steer = heading = 0;
+    position = dist = playerX = speed = steer = heading = odo = 0;
     latAcc = lonAcc = 0; nitro = 0.4; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
 }
@@ -38,13 +39,26 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     const double yawLim = Phys::grip * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence
     yawRate = clampd(yawRate, -yawLim, yawLim);
     if (!locked) heading += yawRate * dt;
-    if (std::abs(steer) < 0.05 || locked) heading *= std::exp(-dt * Phys::align * (locked ? 2 : 1));   // réalignement doux sur la route
+    // WFS-90 : conduite libre. Le cap est compté par rapport au sens de la route le plus proche (axe 0, ou ±π à
+    // contresens). Dans le sens normal et près de l'axe, tout est identique au jeu web (réalignement, cap borné).
+    if (std::abs(heading) > PI_D) heading = std::atan2(std::sin(heading), std::cos(heading));
+    const double axe = std::abs(heading) > PI_D / 2 ? (heading > 0 ? PI_D : -PI_D) : 0.0;
+    double dev = heading - axe;
+    // réalignement doux sur la route, seulement près d'un axe : plus de retour automatique quand l'angle est grand (RG-02)
+    if ((std::abs(steer) < 0.05 || locked) && std::abs(dev) <= Phys::maxHeading) dev *= std::exp(-dt * Phys::align * (locked ? 2 : 1));
     const double maxH = clampd(Phys::maxHeading - std::abs(v) * 0.0045, 0.16, Phys::maxHeading);
-    heading = clampd(heading, -maxH, maxH);
+    // cap borné autour de l'axe (jeu web) ; à basse vitesse (< V_LIBRE) la voiture tourne librement jusqu'à 180° (RG-01) ;
+    // au-delà, un cap trop grand revient vers la borne à 2,5 rad/s au plus (pas de saut) — dépassement d'un pas : borne exacte
+    if (std::abs(v) >= Phys::vLibre && std::abs(dev) > maxH) {
+        const double exces = std::abs(dev) - maxH;
+        dev = (dev > 0 ? 1 : -1) * (maxH + std::max(0.0, exces - 2.5 * dt));
+    }
+    heading = axe + dev;
     latAcc = v * yawRate;
     const double prevSpeed = speed;
     position = track.wrap(position + dt * speed * std::cos(heading));
     dist += dt * speed * std::cos(heading);
+    odo += dt * speed;   // WFS-90
     playerX += v * std::sin(heading) * dt / RW;
     // force centrifuge dans les virages
     const double sp = std::min(speedPct, 1.1);
@@ -55,8 +69,9 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
     const double top = MAX_SPEED * perf.top * (nitroOn ? perf.nitroMult : 1);
     const bool accelerating = playing && !locked && in.gas && !in.brake;
-    reversing = playing && !locked && in.brake && !in.gas && speed <= 0;
-    braking = playing && !locked && in.brake && speed > 0;
+    // WFS-90 (RG-03) : marche arrière sans attendre l'arrêt complet (sous 3 m/s, le frein enchaîne sur la marche arrière)
+    reversing = playing && !locked && in.brake && !in.gas && speed * M < Phys::vRecul;
+    braking = playing && !locked && in.brake && speed > 0 && !reversing;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
     const double off = std::abs(playerX) > 1 ? Phys::offRoad / M : 0;
@@ -76,7 +91,8 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     const double edge = track.map() ? track.map()->edge : 1.6;
     if (std::abs(playerX) > edge) {
         playerX = signf((float)playerX) * edge;
-        if (signf((float)heading) == signf((float)playerX)) heading *= -0.25;
+        // vers la bordure : le cap est renvoyé (× −0,25) autour de son axe (WFS-90 : aussi à contresens)
+        if (signf((float)std::sin(heading)) == signf((float)playerX)) { const double ax = std::abs(heading) > PI_D / 2 ? (heading > 0 ? PI_D : -PI_D) : 0.0; heading = ax + (heading - ax) * -0.25; }
         speed *= 1 - dt * 2;
     }
     speed = clampd(speed, REV_MAX, MAX_SPEED * 1.6);

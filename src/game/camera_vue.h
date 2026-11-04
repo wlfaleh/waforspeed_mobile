@@ -2,7 +2,9 @@
 // Port de js/world/scene.js du jeu web : CAM_MODES, cycleCamera, updateCamera (suivi, champ de vision) et buildCockpit
 // (tableau de bord, montants, volant et compteur dessinés par code, attachés à la caméra).
 //
-// - Poursuite (vue par défaut) : caméra de poursuite de Game (inchangée, image identique), plus « jamais sous la route ».
+// - Poursuite (vue par défaut) et Proche (WFS-85) : updateCamera du jeu web ; l'œil suit le cap de la voiture avec retard
+//   (camHd, WFS-98), recule en accélérant (camDistDyn), jamais sous la route ; demi-tour : recul ≥ 6 m, œil à 3 m au moins
+//   et regard relevé (voiture dans le tiers bas).
 // - Capot : œil au-dessus du capot, lié à la carrosserie, champ de vision 72° (hood du jeu web).
 // - Cockpit : œil du conducteur (à gauche), voiture du joueur cachée, tableau de bord, montants de pare-brise, volant qui
 //   tourne de −braquage × 2,3 (lissé) et aiguille de 0 à 300 km/h (2,2 − v / 300 × 4,4 rad), champ de vision 72°.
@@ -63,7 +65,8 @@ inline float fovVue(VueCamera v, double p, bool nitro) {
 
 // ---------- accroche de Game::render (WFS-66) ----------
 // Appelée après la caméra de poursuite de Game (eye, look, fov déjà calculés). camMode 2 (vitrine) et écrans hors course
-// et pause : rien ne change. Poursuite : eye jamais sous la route. Capot / cockpit : eye, look et fov remplacés.
+// et pause : rien ne change. Poursuite et proche : eye, look et fov remplacés (updateCamera du jeu web, WFS-85 / WFS-98) ;
+// vue haute du banc (camMode 1) : eye jamais sous la route. Capot / cockpit : eye, look et fov remplacés.
 // fdt : temps écoulé depuis l'image précédente (s, borné). Renvoie true si la voiture du joueur ne doit pas être dessinée.
 bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& carM, int camMode, Ecran ecran, float fdt,
                vec3& eye, vec3& look, float& fov);
