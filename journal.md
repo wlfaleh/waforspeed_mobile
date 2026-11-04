@@ -1923,3 +1923,14 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Critères : poteaux blancs à boule sous chaque lumière de la corniche ; lumière sous chaque mât du circuit (compte au journal) ; un seul halo rouge par feu sur une voiture du trafic qui freine la nuit.
 - Plan : porter les lignes `lamp(…, 'beach'/'flood')` de `js/world/decor.js` et les positions de `js/world/scene.js` l. 270-282 ; style beach dans `CarteDecor::lampe` ; inscription dans `lampadaires()` comme `ville.cpp` ; contrôle du double halo sur les captures `nuit-*` de `main`.
 - En parallèle (zones séparées) : WFS-78 (E7), WFS-79 (src/audio), WFS-80 (E8), WFS-82 (E4).
+
+### 2026-11-04 12:51:57 — WFS-82 masquage hors champ et au loin, fusionné par confiance, PR #67 (Claude, agent 4)
+- **Fait** :
+  - `src/render/masquage.*` : plans des matrices de la caméra, du miroir et de l'ombre, test de sphère, coupure au loin selon le rayon (RG-02). Testé par `test_masquage`.
+  - Renderer : chaque objet est classé pour la caméra, le reflet et l'ombre (RG-01, RG-03). Un objet invisible partout n'est pas dessiné. Les feux du trafic disparaissent avec leur voiture (RG-06). Compteur `objetsMasques()`.
+- **Accroches annoncées** :
+  - `src/ui/ecrans/reglages.cpp` : 1 ligne, `qualiteBasse` ;
+  - `CMakeLists.txt` et `build.yml` : `test_masquage` ;
+  - `renderer.h` et `renderer.cpp` dans la zone E4.
+- **Vérification** : `test_masquage`, `test_systems`, `test_roues` et compilation complète OK.
+- **Mesure** : appels de dessin avant / après au journal du banc de `main` (avant : Basse 346, Moyenne 607). Je les reporte dès la fin de la CI. L'instanciation (RG-04) sera faite si la cible n'est pas atteinte.
