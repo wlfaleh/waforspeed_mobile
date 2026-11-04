@@ -46,6 +46,12 @@ int main() {
     Auto e; e.niveau = BASSE; course(e, 20, 30); VERIFIE(e.niveau == BASSE, "pas de niveau sous Basse");
     std::printf("choix du joueur, hors course, niveau Basse : OK\n");
 
+    // WFS-86 : plancher de l'échelle réelle (pas de 0,75 × 0,6 = 45 % en course)
+    VERIFIE(echelleRendu(HAUTE, 1) == 1.f && std::abs(echelleRendu(HAUTE, 0.6f) - 0.6f) < 1e-6f, "Haute : 100 %% → 60 %%");
+    VERIFIE(echelleRendu(MOYENNE, 1) == 0.75f && echelleRendu(MOYENNE, 0.6f) == PLANCHER && echelleRendu(MOYENNE, 0.7f) == PLANCHER, "Moyenne : jamais sous 60 %%");
+    VERIFIE(echelleRendu(BASSE, 1) == 0.5f && echelleRendu(BASSE, 0.6f) == 0.5f, "Basse : 50 %% fixe");
+    std::printf("plancher de l'échelle réelle : Haute 60-100 %%, Moyenne 60-75 %%, Basse 50 %% : OK\n");
+
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("qualité : tout est OK\n");
     return 0;
