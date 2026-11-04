@@ -17,6 +17,7 @@
 #include "../game/player.h"
 #include "../game/track.h"
 #include "../render/renderer.h"
+#include "../render/eclairage.h"   // WFS-09
 #include "../../third_party/stb/stb_image.h"
 #include "../core/platform.h"
 #include "vegetation.h"
@@ -177,6 +178,7 @@ public:
         }
         std::vector<char> lampAt((size_t)len, 0);
         for (int64_t n = 12; n < len; n += 24) { int side = (n / 24) % 2 ? 1 : -1; lamps_.push_back({n, side}); lampAt[(size_t)n] = 1; }
+        for (const Lamp& l : lamps_) lampadaires().push_back({l.seg, l.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville});   // WFS-09 : éclairage de nuit
         for (int side : {-1, 1}) for (int64_t n = side < 0 ? 4 : 10; n + 1 < len; n += 16)
             if (!lampAt[(size_t)n] && !lampAt[(size_t)(n + 1)] && D.next() > 0.2) trees_.push_back({n, side, (float)(5 + D.next() * 2.5)});
         WFS_LOG("Ville : %zu immeubles, %zu lampadaires, %zu arbres", blds_.size(), lamps_.size(), trees_.size());

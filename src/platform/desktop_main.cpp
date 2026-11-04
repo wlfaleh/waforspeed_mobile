@@ -23,6 +23,7 @@
 #include "../render/bench_spots.h"
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
+#include "../render/bench_nuit.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
@@ -87,6 +88,7 @@ int main(int argc, char** argv) {
         }
         return finir();
     }
+    if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls

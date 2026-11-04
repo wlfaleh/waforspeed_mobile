@@ -888,19 +888,18 @@ void Renderer::haloSol(const vec3& c, const vec3& r, const vec3& f, float hr, fl
 // discret des feux sur la route (tailGlow 0,16, tailGlowBrake 0,38, revGlow 0,55). Couleurs sRGB du jeu web linéarisées,
 // × FEUX_HDR (sprites additifs du jeu web, sans tonemapping → passe HDR + ACES ici).
 void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) {
-    constexpr float FEUX_HDR = 3.0f;
+    constexpr float FEUX_HDR = 1.6f;
     auto lin = [](unsigned h, float k) {
         auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
         return vec3{c(16), c(8), c(0)} * (k * FEUX_HDR);
     };
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
-    const float hw = F.largeur * 0.5f;
     for (int side : {-1, 1}) {
-        const vec3 t = w.transformPoint({side * (hw - 0.18f), F.arriereY, F.arriere + 0.06f});
+        const vec3 t = w.transformPoint({side * F.arriereX, F.arriereY, F.arriere + 0.06f});
         halo(t, (f.stop ? 0.9f : 0.55f) * 0.5f * ech, f.stop ? lin(0xff2038, 1.f) : lin(0xff1a30, 0.55f));
-        if (f.recul) halo(w.transformPoint({side * (hw - 0.42f), F.arriereY - 0.04f, F.arriere + 0.07f}), 0.3f * 0.5f * ech, lin(0xf4f6ff, 0.7f));
-        halo(w.transformPoint({side * (hw - 0.3f), F.avantY, F.avant - 0.01f}), 0.85f * 0.5f * ech, lin(0xfff1d6, 0.9f));
+        if (f.recul) halo(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.07f}), 0.3f * 0.5f * ech, lin(0xf4f6ff, 0.7f));
+        halo(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.01f}), 0.85f * 0.5f * ech, lin(0xfff1d6, 0.9f));
     }
     // reflet des feux sur la route (tg : glowGeo × (W × 1,2 ; 1,8) à L / 2 + 0,6)
     const vec3 r = normalize(w.transformDir({1, 0, 0})), fw = normalize(w.transformDir({0, 0, 1}));
