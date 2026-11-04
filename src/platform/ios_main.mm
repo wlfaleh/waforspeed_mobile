@@ -96,7 +96,7 @@ static std::string dossierDocuments() {
     const CGSize s = self.view.bounds.size;
     for (UITouch* t in touches) {
         const CGPoint p = [t locationInView:self.view];
-        g_jeu.onTouch({(int)(((uintptr_t)(__bridge void*)t) & 0x7fffffff), (float)(p.x / s.width * LARGEUR), (float)(p.y / s.height * HAUTEUR), appui});
+        g_jeu.onTouch({(int)(t.hash & 0x7fffffff), (float)(p.x / s.width * LARGEUR), (float)(p.y / s.height * HAUTEUR), appui});
     }
 }
 - (void)touchesBegan:(NSSet<UITouch*>*)t withEvent:(UIEvent*)e { [self envoyer:t appui:true]; }
