@@ -42,6 +42,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
      si elles restent après le 2e tour → `PASSABLE AVEC ANOMALIES MINEURES` : fusion autorisée ; le QA inscrit chaque anomalie
      restante au **tableau des anomalies** (`anno.md`) ; le **PO** les priorise et crée des **US de correction dédiées** ;
    - aucune anomalie → `VALIDÉ`.
+   **Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire sur les règles de fusion ci-dessous)** : si le développeur est **confiant à plus de 50 %** que son ticket fonctionne, il **fusionne directement**, sans attendre la fin de la CI ni les captures de sa branche. Conditions minimales, toujours : branche synchronisée avec `main` (`git fetch origin && git merge origin/main`), compilation et tests CPU passés en local, aucune modification hors de sa zone (sauf accroches ≤ 10 lignes annoncées au Journal). Au moment de la fusion : ligne obligatoire dans `qa/Check.md` (ticket, PR, date, « fusion par confiance », points à regarder), statut ✅ dans `TACHES.md`, entrée au Journal. Après la fusion, le développeur **suit la CI de `main`** : si elle est rouge ou si une capture est cassée par son ticket, il corrige **tout de suite**, en priorité sur tout le reste. Confiance ≤ 50 % (gros changement du rendu ou du noyau, aucun moyen de tester en local, doute sur le résultat) : il attend la CI verte et regarde les captures avant de fusionner.
    **Fusion rapide (décision de l'utilisateur, 2026-11-03, MVP)** : sur ordre de l'utilisateur, le développeur peut fusionner sans
    attendre le verdict du QA dès que la compilation, les tests et l'APK sont verts et que ses captures ne montrent rien de bloquant.
    Le QA fait alors son passage **après la fusion**, sur `main` ; une anomalie bloquante trouvée ensuite devient un ticket de
@@ -125,7 +126,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-37, WFS-12 | `feature/waforspeed-38` | #27 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES tour 2/2 (ANO-14) — [rapport](qa/rapports/WFS-38.md) |
 | P2 Haute | WFS-39 | Pause en course et retour au menu | E8 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-39` | #34 |  |
 | — | WFS-40 | Garage : fiche de la voiture et peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-40` |  |  |
-| P2 Haute | WFS-41 | Menus complets : choix du terrain et du moment, réglages (qualité, caméra, son, commandes) | E8 | 🔧 En cours | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-41` |  |  |
+| P2 Haute | WFS-41 | Menus complets : choix du terrain et du moment, réglages (qualité, caméra, son, commandes) | E8 | 🔍 En revue (CI) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-41` | [#45](https://github.com/wlfaleh/waforspeed_mobile/pull/45) |  |
 | 8 | WFS-42 | Vitrages et jantes : trame de points (lunette arrière de la Golf, rayons des jantes) | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-03 | WFS-32 | `feature/waforspeed-42` | PR #24 | ✅ fusion décidée par l'utilisateur (captures sans blocage) |
 | — | WFS-43 | Arbres : finitions (cœur du houppier, ombres des arbres) | E2 | ↪ Fusionné dans WFS-53 |  | — | `feature/waforspeed-43` |  |  |
 | 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
@@ -149,7 +150,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-61 |  | — | `feature/waforspeed-62` |  |  |
 | P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` | #39 (fusionnée) | ✅ VALIDÉ par qa-lead (0eb5465) — [rapport](qa/rapports/WFS-63.md) |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu (non reproduit au run 41719456821 ; réactivé si un essai `simulateur.yml` sur `main` se fige de nouveau) |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
-| P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-65` |  |  |
+| P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-65` | #46 |  |
 | P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-66` | #41 (fusionnée, 3994283) |  |
 | P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-67` |  |  |
 | — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
@@ -248,7 +249,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 **WFS-40 — Garage : fiche de la voiture et peintures** · E5 · priorité P2 Haute · ⏳ En attente (règles : `regles-de-gestion/WFS-40.md`) — ↪ fusionné dans WFS-11
 - [ ] `garage-fiche` (fiche + crédit), `garage-peinture-0/1`, course avec la voiture et la peinture choisies
 
-**WFS-41 — Menus complets : terrain, moment, réglages** · E8 · priorité P2 Haute · 🔧 En cours — Claude (agent 5), 2026-11-03, branche `feature/waforspeed-41` (règles : `regles-de-gestion/WFS-41.md`)
+**WFS-41 — Menus complets : terrain, moment, réglages** · E8 · priorité P2 Haute · 🔍 En revue (CI, PR #45) — Claude (agent 5), 2026-11-03, branche `feature/waforspeed-41` (règles : `regles-de-gestion/WFS-41.md`)
 - [ ] `terrain-0` / `terrain-1` (carrousel, Jour / Nuit), `terrain-rouler` (course sur le circuit)
 
 **WFS-30 — Points d'extension du moteur (systèmes enfichables, CMake par dossier)** · E0 · priorité 1 · ✅ Terminé
@@ -367,7 +368,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `trafic-cam0` : plus de cœur visible au bord des houppiers ; ombre d'arbre découpée visible sur une capture au soleil
 - [ ] ≤ 300 appels de dessin ; banc `0 écart(s)`
 
-**WFS-65 — Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash)** · E4 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-65.md`)
+**WFS-65 — Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash)** · E4 · priorité P3 Moyenne · ✅ Fusionné le 2026-11-04 par confiance (PR #46, QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-04, exception 2e ticket E4 (fichiers séparés de WFS-09) (règles : `regles-de-gestion/WFS-65.md`)
 - [ ] voir les critères du fichier de règles
 
 **WFS-66 — Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse)** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-66.md`)

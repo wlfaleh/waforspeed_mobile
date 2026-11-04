@@ -99,6 +99,7 @@ public:
                      uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr);
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
+    void uiQuad(const UiVertex q[4]);   // WFS-65 : quadrilatère à couleurs par sommet (dégradés), u = v = −1
     // texte (WFS-26) : atlas de police en champ de distance signé (canal rouge) ; uiGlyph dessine un caractère
     void uiSetFontAtlas(const Image& atlas);
     // WFS-48 : biais = décalage en x du bord haut par rapport au bord bas (italique synthétique), 0 = droit

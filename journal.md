@@ -1542,3 +1542,55 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroches annoncées** : `src/core/system.h` (`GameView::choisirVoiture`, 2 lignes), `src/game/game.*` (choix appliqué entre deux images, 4 lignes), `src/ui/ecrans/menu.cpp` (« Course solo » → garage, 1 ligne ; banc tactile : appui sur « Choisir », 4 lignes), `desktop_main.cpp` et `build.yml` (banc du garage, copies 2400).
 - **Vérification locale** (lavapipe) : captures du garage en 1280 et 2400 et compteur regardés ; `test_track`, `test_systems`, `test_audio` OK. Branche synchronisée avec `main` (conflits `desktop_main.cpp` et `build.yml` résolus en gardant caméras, piétons, duel et garage).
 - **Limite** : étape 4 (16 autres voitures, ex-WFS-13) non faite : le garage montre les 4 voitures converties. À reprendre dans un ticket dédié.
+
+### 2026-11-04 00:33:58 — Début WFS-65 Effets de conduite et d'accident (Claude, agent 4) — attribué par le PO
+- **Ticket** : WFS-65, épic **E4**, P3 Moyenne. Branche `feature/waforspeed-65`. Règles : `regles-de-gestion/WFS-65.md`. Aucune dépendance.
+- **Pourquoi ce ticket** : aucun ticket ⏳ Prêt dans une épic libre (E2 WFS-53, E3 WFS-70/WFS-24, E4 WFS-09, E5 WFS-11 en revue, E7 WFS-50, E8 WFS-41 ; E0 et E6 n'ont aucun ticket prêt). WFS-65 est le ticket prêt le plus visible dont le code se sépare proprement du ticket actif de son épic : **exception « un ticket actif par épic »**, comme WFS-24 en E3. WFS-15 (post-traitement) et WFS-60 (roues, `assets/cars` touché par WFS-11) écartés pour risque de conflit.
+- **Zone de code autorisée (séparée de WFS-09)** : nouveaux fichiers `src/render/effets_*.{h,cpp}` (particules étincelles / fumée, couche d'écran lignes de vitesse / vignette / flash), `shaders/particules.*` et `shaders/effets_ecran.*`, banc `src/render/bench_effets.*`, tests `tests/test_effets.cpp`. **Interdit** : `scene.frag`, `scene_skin.frag`, `post.frag`, `sky*`, `shadow*` (WFS-09). Accroches ≤ 10 lignes dans `renderer.cpp` / `renderer.h` et pour lire chocs, nitro, accidents depuis le jeu (`src/game`), annoncées au Journal.
+- **Critères** : captures `choc-etincelles`, `accident-fumee`, `nitro-lignes` avec effets visibles ; vignette avec la vitesse, flash au choc et au départ du nitro ; coupé / réduit en qualité basse, ≥ 30 im/s ; physique et chrono inchangés ; autres captures inchangées, banc `0 écart(s)`.
+- **À réutiliser** : `waaps/waforspeed/js/world/particles.js` (`makeParticleSystem` : nombres, durées, couleurs des étincelles et de la fumée), `js/world/fx.js` (`drawFx` : lignes de vitesse, vignette, flash, seuils de vitesse et nitro). Ne rien inventer qui y existe.
+- **Plan court** : 1) système de particules en lots (un appel de dessin, billboards additifs) ; 2) étincelles au choc et fumée des accidentés ; 3) couche d'écran (lignes, vignette, flash) ; 4) qualité basse ; 5) 3 scènes de banc ; une seule CI à la fin, fusion rapide puis `qa/Check.md`.
+- **Coordination** : synchroniser souvent avec `main` (WFS-09 touche `renderer.cpp` en parallèle).
+
+### 2026-11-04 00:34:10 — WFS-50 : cause de l'échec du simulateur MVP trouvée (Claude, session trafic)
+- Passage 41745827872 (main b01ae36) : fenêtre du jeu 2400x954 (barre de navigation de l'émulateur affichée), écran 2400x1080.
+  Le scénario appuyait le gaz à 0,92 × 1080 = 993 px, sous la fenêtre : 0 km/h toute la course ; l'avance automatique après
+  « temps écoulé » faisait croire au GO. Le jeu n'est pas en cause (gaz vérifié au banc PC : 12 puis 57 km/h après GO).
+- Correction dans `tools/qa/emulateur.sh` (branche `feature/waforspeed-50`, e7f4777) : points d'appui calculés sur
+  « Cibles de rendu : WxH (logique) » ; étape go en échec si « temps écoulé » arrive avant une vitesse > 0. Simulateur relancé
+  sur la branche (scénario mvp).
+
+### 2026-11-04 00:36:06 — WFS-41 : terrain et réglages codés, PR #45 en revue (Claude, agent 5)
+- **Fait** : écran Terrain (`src/ui/ecrans/terrain.*`) : carrousel des 4 cartes (vignette façon `mapArt`, nom, description, longueur `mapLengthKm`), « 01 / 04 », glisser ou flèches, Jour / Nuit (nuit par défaut), Retour, Rouler (partie reconstruite sur la carte). Écran Réglages (`src/ui/ecrans/reglages.*`, WFS-68) depuis le menu et la pause : caméra Poursuite / Capot / Cockpit (`choisirVue` de WFS-66), graphismes Basse / Moyenne / Haute (échelle de scène 50 / 75 / 100 %, ombres), son Activé / Coupé ; enregistrés dans un fichier simple relu au démarrage. Menu : « Course solo » → Terrain ; record gardé entre les cartes.
+- **Accroches annoncées** : `src/game/game.*` (5 + 8 lignes) : `Game::demandes()` (carte et moment, `shutdown` + `init` au début de la mise à jour suivante) ; `src/audio/audio_system.cpp` (3 lignes, accord du PO) : sortie audio à zéro si son coupé ; `src/platform/desktop_main.cpp` (7 lignes) : bancs `benchTerrain` / `benchReglages` ; `.github/workflows/build.yml` (1 ligne) : captures `-2400` du groupe menu.
+- **Pour WFS-11 (agent 3)** : `menu.cpp` envoie « Course solo » vers `Ecran::Terrain` ; quand le garage arrive, garder Menu → Garage et faire Garage (« Valider ») → `Ecran::Terrain` (ordre du web : étape 1 garage, étape 2 terrain).
+- **Limites** : vibrations masquées (décision PO, ticket Android à créer) ; disposition gaucher des commandes non faite (ticket E0 nécessaire) ; pas d'écran de chargement pendant la reconstruction de carte ; « Nuit » visible seulement sur la plage (ville : WFS-09) ; la course n'est pas figée derrière l'écran Terrain (seulement derrière le menu, règle E3).
+- **Vérification** : compilation `-fsyntax-only -Wall` des 7 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
+
+
+### 2026-11-04 00:39:55 — WFS-65 en revue, PR #46 ; WFS-21 suite en PR #44 (Claude, agent 4)
+- **WFS-65, fait** :
+  - Port de `particles.js` (`src/render/effets_particules.*`, testé par `test_effets`).
+  - Système d'effets en lecture seule (`src/render/effets_systeme.*`, ordre 350) : étincelles aux accidents, chocs et frottements ; fumée des pneus et des voitures accidentées (5 s) ; `drawFx` avec les lignes sous nitro, la vignette radiale et le flash rouge.
+  - Qualité basse en GPU logiciel : moitié moins de particules, pas de lignes.
+  - Banc : `choc-etincelles`, `accident-fumee`, `nitro-lignes`. Effets coupés dans les autres scènes du banc.
+- **Accroches annoncées** : `src/render/renderer.h` et `renderer.cpp` (`uiQuad`, 6 lignes, quadrilatère à couleurs par sommet) ; `src/platform/desktop_main.cpp` (2 lignes, groupe `partie1`) ; `CMakeLists.txt` et `.github/workflows/build.yml` (`test_effets`). Aucun fichier de WFS-09 touché (`scene.frag`, `post.frag`, `sky*`, `shadow*`).
+- **Écarts au texte de RG-04, par fidélité à `fx.js`** : flash rouge et non blanc, lignes de vitesse seulement sous nitro, vignette fonction de l'ambiance et du nitro (pas de la vitesse).
+- **WFS-21** : la PR #38 avait été fusionnée par un autre agent ; mon correctif suivant (classement trié par arrivée, pseudo du banc) est en PR #44, dont la CI tourne.
+
+### 2026-11-04 00:42:02 — Règle : fusion directe par confiance (Claude, agent 4, à la demande de l'utilisateur)
+- **Règle** : un développeur **confiant à plus de 50 %** que son ticket fonctionne **fusionne directement**, sans attendre la fin de la CI ni les captures de sa branche.
+- **Conditions minimales** :
+  - branche synchronisée avec `main` ;
+  - compilation et tests CPU passés en local ;
+  - aucune modification hors zone (accroches de 10 lignes au plus, annoncées au Journal).
+- **À la fusion** : ligne dans `qa/Check.md` marquée « fusion par confiance », statut ✅ dans `TACHES.md`, entrée au Journal.
+- **Après la fusion** : le développeur suit la CI de `main` et corrige tout de suite si elle est rouge ou si une capture est cassée.
+- **Confiance de 50 % ou moins** : on attend la CI verte et on regarde les captures avant de fusionner.
+- **Fichiers modifiés** : `CLAUDE.md`, `TACHES.md` (règle 5), skill `waforspeed-natif` (point 5 bis), agents `po-scrum-master` et `qa-lead`.
+
+### 2026-11-04 00:42:35 — WFS-65 et suite de WFS-21 fusionnés par confiance (Claude, agent 4)
+- **PR #46 (WFS-65)** : fusionnée par confiance (environ 70 %), alors que la CI de la branche n'était pas finie. Code compilé, `test_effets` OK, aucun shader modifié, branche synchronisée.
+- **PR #44 (suite de WFS-21)** : fusionnée ; sa CI (1fe1ff1) a fini verte.
+- **Suivi** : `TACHES.md` passe WFS-65 à ✅ Fusionné ; les deux PR sont ajoutées à `qa/Check.md`, marquées « fusion par confiance ».
+- **Suite** : je surveille la CI de `main`. Si les captures `choc-etincelles`, `accident-fumee` ou `nitro-lignes` sont cassées, je corrige tout de suite.

@@ -239,7 +239,7 @@ void benchDuelScene(Game& g, Renderer& r, const std::string& out) {
     duel::Session& s = g_session;
     courseBenchRules(true);
     if (!g.init(r, "golf", "ville")) { g_banc = nullptr; return; }
-    s.join(std::make_unique<duel::TransportMemoire>(banc.salon, "moi"), "K7QX", true, "Toi", "golf", "", "ville");
+    s.join(std::make_unique<duel::TransportMemoire>(banc.salon, "moi"), "K7QX", true, "Alex", "golf", "", "ville");
     s.setKm(2);
     banc.rival.join(std::make_unique<duel::TransportMemoire>(banc.salon, "rival"), "k7qx", false, "Nadia", "m4", "", "ville");
     banc.rivalPl.reset(carById("m4"));
