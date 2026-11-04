@@ -173,6 +173,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-85 | [URGENT] Caméra de poursuite plus haute (voir les voitures devant) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-66 ✅ | `feature/waforspeed-85` | [#71](https://github.com/wlfaleh/waforspeed_mobile/pull/71) |  |
 | P1 Urgent | WFS-86 | [URGENT] Voitures en course aussi belles qu'au garage (qualité, échelle de rendu, anticrénelage, modèle complet) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-86` | #72 |  |
 | P1 Urgent | WFS-87 | [URGENT] CI : l'APK de `main` toujours publié (Release `apercu` fiable, plus de trou ni d'échec 403) | E7 (exception : 2e ticket E7, fichiers séparés de WFS-78) | ✅ Fusionné par l'utilisateur (PR #73, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-69 ✅ | `feature/waforspeed-87` | [#73](https://github.com/wlfaleh/waforspeed_mobile/pull/73) |  |
+| P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | 🔧 En cours | Claude (session trafic), 2026-11-04 | WFS-78 ✅ | `feature/waforspeed-88` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -493,6 +494,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] CI de `main` après fusion : job `publication` vert, `releases/download/apercu/WaForSpeed.apk` répond
 - [ ] Release `apercu` sur le dernier commit, captures à la même adresse ; jamais de moment sans APK (plus de suppression avant création)
 - [ ] branche `feature/*` : `apercu-waforspeed-87` publiée
+
+**WFS-88 — iOS : `Renderer::init` ne se bloque plus** · E4 · P4 Basse · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-88` (règles : `regles-de-gestion/WFS-88.md`). Zone : `src/render/**` (+ accroche ≤ 10 lignes `ios/**` / `ios.yml` annoncée)
+- [ ] `ios.yml` : « QA pret » atteint, `ios-menu.png` montre le menu
+- [ ] plus de trou de 60 s après l'étape vulkan ; CI Android verte, banc PC inchangé
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

@@ -2073,3 +2073,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Banc `cartes_banc.cpp` : captures `nuit-plage-corniche` et `carte-plage-corniche`.
 - Double halo : essai local de `trafic-freinage` avec WFS_MOMENT=nuit sur main : deux halos rouges sur la voiture qui freine (feu arrière du moteur + halo stop WFS-67). **Accroche annoncée** : `src/game/traffic_system.cpp`, 6 lignes : la nuit (WFS_MOMENT=nuit), le trafic ne dessine plus son halo stop et donne l'état stop (freinage ou accident) à `r.feuxProchaineVoiture` ; clignotants et détresse inchangés. Après : un seul halo.
 - Local : compilation, tests CPU de build.yml OK ; WFS_BANC=nuit et cartes regardés. Fusion par confiance (règle n°1), commit de fusion 704eaa3. Je suis la CI de `main`.
+
+### 2026-11-04 17:39:20 — WFS-88 créé (E4) et attribué à Claude, session trafic (PO)
+- Besoin : WFS-78 fusionné mais iOS bloqué dans `Renderer::init` après l'étape vulkan (600 s sans journal) ; empêche aussi de vérifier le son iOS (WFS-79). Ticket justifié, P4 (le téléphone de l'utilisateur est sous Android).
+- Zone : `src/render/**` (E4), accroche ≤ 10 lignes `ios/**` / `ios.yml` si annoncée. Règles : `regles-de-gestion/WFS-88.md`.
+- Plan : lire `ios-pile.txt` du run 41877869097, sinon journaux par sous-étape ; corriger sous `__APPLE__` ; 2 relances au plus puis ⏸ si cause introuvable.
+- Aucun autre ticket Prêt ou En attente dans le tableau : tout le reste est ✅.
