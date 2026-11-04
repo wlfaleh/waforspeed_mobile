@@ -33,10 +33,12 @@ void benchEffets(Game& g, Renderer& r, const std::string& out) {
     r.capturePng(out + "/accident-fumee.png");
     WFS_LOG("capture accident-fumee : %d bouffées de fumée, %d étincelles", effetsFumee(), effetsEtincelles());
     g.shutdown();
-    // nitro : appui maintenu sur le bouton nitro (au-dessus de l'accélérateur), pilote automatique pour la direction
+    // nitro : appui maintenu sur le bouton nitro (au-dessus de l'accélérateur) ; le pilote automatique est coupé pendant
+    // l'appui (il force nitro = false, comme autopilot() du jeu web) : ligne droite, 0,75 s
     g.init(r, "golf", "ville"); g.setAutopilot(true); g.camMode = 0;
     for (int i = 0; i < 90; i++) image(i % 8 == 0);
     const float W = (float)r.width(), H = (float)r.height();
+    g.setAutopilot(false);
     g.onTouch({7, W * 0.90f, H * 0.32f, true});
     for (int i = 0; i < 45; i++) image(i % 8 == 0);
     g.render(t + 0.001);

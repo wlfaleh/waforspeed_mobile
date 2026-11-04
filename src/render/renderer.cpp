@@ -707,6 +707,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // boîte d'ombre (stableShadow du jeu web) : centrée sur la voiture, 20 m devant dans le sens de la caméra,
     // repère du soleil fixe et centre calé sur la grille des texels → bords d'ombre stables quand on roule
     shadowsOn_ = fp.shadows && !fp.night && !forceNoShadows; night_ = fp.night || forceNoShadows;
+    nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
     {
         const vec3 L = sd, up = std::fabs(L.y) > 0.99f ? vec3{1, 0, 0} : vec3{0, 1, 0};
         const mat4 V = lookAt(L, {0, 0, 0}, up);
@@ -777,6 +778,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
 }
 
 void Renderer::flushDraw(const Pending& p) {
+    appels_++;   // WFS-15
     VkCommandBuffer cb = fr_[cur_].cb;
     VkDeviceSize zero = 0;
     vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &zero);
@@ -1003,6 +1005,8 @@ void Renderer::endFrame() {
     struct { float rot[4]; float params[4]; } pp{};
     rotationMatrix(pp.rot);
     pp.params[0] = exposure_; pp.params[1] = vk.swapSrgb ? 1.f : 0.f;
+    // WFS-15 : bloom d'ENV.bloom du jeu web (force, seuil) : nuit [0,8 ; 0,46], jour [0,3 ; 0,9] ; coupé en Basse et en GPU logiciel
+    pp.params[2] = gpuLogiciel() ? 0.f : bloomForce * (nuitScene_ ? 0.8f : 0.3f); pp.params[3] = nuitScene_ ? 0.46f : 0.9f;
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, post_);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &postSet_, 0, nullptr);
     vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32, &pp);
