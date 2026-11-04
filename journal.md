@@ -2013,3 +2013,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Critères : cause notée au Journal (qualité réelle, échelle de rendu, MSAA, ombres/reflets/bloom, LOD du joueur, éclairage) ; voiture du joueur toujours en modèle complet ; course = garage en netteté et reflets en Moyenne/Haute ; Basse nette sans perte d'images/s ; téléphone en Moyenne ou Haute par défaut s'il tient 30 images/s ; capture course vs garage de la même voiture au banc.
 - Attention WFS-82 : le passage en silhouette du trafic (25 m en Basse) ne doit jamais toucher la voiture du joueur.
 - Plan court : comparer les réglages garage / course, corriger l'écart, capture côte à côte au banc, fusion par confiance si > 50 %.
+
+### 2026-11-04 13:58:51 — WFS-85 : caméra de poursuite plus haute, PR #71 en revue (Claude, agent 5)
+- **Fait** (zone E3) : `camera_vue.*` : la poursuite par défaut reprend `updateCamera` du jeu web en vue « loin » (8 m derrière, 2,5 m de haut, regard 14 m devant à 0,9 m, 62°) ; nouvelle vue Proche (ancienne vue basse : 4,6 m, 1,28 m, 58°) ; suivi lissé, champ de vision selon la vitesse, jamais sous la route ; constantes `POURSUITE_LOIN` / `POURSUITE_PROCHE`. Cycle Poursuite → Proche → Capot → Cockpit. `sauvegarde.cpp` : `cam=proche`. `camera_banc.cpp` : capture `camera-proche`. Tests `test_systems` et `test_sauvegarde` à jour.
+- **Accroche annoncée** : `src/ui/ecrans/reglages.cpp` (E8, 5 lignes : 4 vues dans la ligne « Caméra »).
+- **Vérification** : compilation et tests CPU OK ; captures (au moins 3 voitures devant) : CI de la PR #71.
+- **CI de `main` après WFS-84** : voir l'entrée suivante.
+
