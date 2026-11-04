@@ -296,12 +296,16 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     capture("salon-hote", "code, voiture, terrain, distance, 2 pilotes");
     // salon-pret : Nadia prête, puis moi ; image prise avant le départ
     nadia.setReady(true); pas(40);
-    g.render(t); toucher(2, g_pret);
+    g.render(t);
+    const float px = g_pret.x + g_pret.w / 2, py = g_pret.y + g_pret.h / 2;
+    g.onTouch({2, px, py, true});   // « Prêt » : appliqué au toucher, le départ se fait à la mise à jour suivante
     capture("salon-pret", "les deux pilotes prêts");
+    g.onTouch({2, px, py, false});
     // départ : course sur la carte de l'hôte (moi), Nadia roule 18 m devant dans la file de gauche
     g.setAutopilot(true);
     bool nadiaPartie = false;
     for (int i = 0; i < 60 * 7; i++) {
+        pas(1);   // mon départ (checkStart de DuelSystem), puis celui de Nadia dans la même image : même horloge de course
         if (!nadiaPartie && nadia.checkStart()) {
             nadiaPartie = true;
             WFS_LOG("duel : manche %d, salon %s, graine %u, %d km (second joueur, UDP)", nadia.round(), nadia.code().c_str(), nadia.seed(), nadia.km());
@@ -310,7 +314,6 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
             nadiaPl.dist = g.player().dist + 18 / M; nadiaPl.position = nadiaPl.dist; nadiaPl.playerX = -0.45; nadiaPl.speed = g.player().speed;
             nadia.raceTick(1.0 / 60, nadiaPl, nadia.trafficClock());
         }
-        pas(1);
     }
     const duel::Session& s = duelSession();
     capture("duel-reseau-course", "course démarrée, adversaire visible, classement à 2");
