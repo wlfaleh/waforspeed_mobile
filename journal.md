@@ -1774,3 +1774,19 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : vitrines Giulia / Elantra en couleur unie qui suit la peinture ; « gt86.wfm : 4 roues séparées », plus aucune « roues non trouvées » ; planche des 20 voitures propres ; `.wfm` < 9 Mo.
 - **Plan court** : peinture unie façon `repaintMat` (texture de base retirée sur les matériaux peinture), expressions de `MODEL_SPECS` ; roues GT86 à la conversion (`WHEEL_RX`, `splitWheels` du web, noms `wfs_wheel` du modèle `-lod`) ; reconversion ; planche dans le job `vitrines`.
 - Rappels : synchroniser avec `main` avant chaque push ; fusion par confiance > 50 % (ligne `qa/Check.md`, ✅, Journal), puis suivre la CI de `main`.
+
+### 2026-11-04 07:47:23 — WFS-15 qualité automatique et bloom, fusionné par confiance, PR #56 (Claude, agent 4)
+- **Fait** :
+  - `src/render/qualite_auto.*` porte `watchPerf` et `setQuality` du jeu web : résolution dynamique de 0,6 à 1 toutes les 2 s, rétrogradation unique sous 30 images/s, sauf choix du joueur. Testé par `test_qualite`.
+  - `qualite_systeme.cpp` mesure les vraies images/s en course et affiche le bandeau « Graphismes rapides — pour plus de fluidité ». Il est inactif au banc et en GPU logiciel.
+  - Bloom dans `post.frag` avec les valeurs `ENV.bloom` du jeu web, coupé en Basse.
+  - Banc `qualite-*` de nuit, avec appels de dessin et ms par niveau.
+- **Accroches annoncées** :
+  - `renderer.h` et `renderer.cpp` : `bloomForce`, `appelsDessin()`, paramètres du bloom, environ 8 lignes ;
+  - `src/ui/ecrans/reglages.*` (E8) : 7 lignes, `qualiteChoisie`, `appliquerQualiteNiveau`, bloom par niveau ; un conflit avec WFS-76 (musique) a été résolu en gardant les deux ;
+  - `desktop_main.cpp`, `CMakeLists.txt` et `build.yml`.
+- **Vérification** : `test_qualite` et compilation complète OK. L'étape de compilation de la CI de la branche (shaders compris) était verte avant la fusion.
+- **Non fait, reste pour un autre ticket** :
+  - petits décors coupés au-delà de 200 m (zone E2) ;
+  - voitures hors champ non dessinées ;
+  - `qualiteChoisie` vaut vrai dès qu'un fichier de réglages existe, même si seule la caméra a été changée.
