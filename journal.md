@@ -1946,3 +1946,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-04 12:57:31 — PO : WFS-86 créé, voitures en course moins belles qu'au garage (po-scrum-master)
 - Retour de l'utilisateur : garage « nickel », course moins bien. Ticket P1 (E4) : trouver la cause (qualité auto, échelle de rendu, MSAA, ombres/reflets, LOD, éclairage) puis aligner la course sur le garage. Règles : `regles-de-gestion/WFS-86.md`. E4 : un seul ticket actif à la fois, WFS-84 passe après ou avant selon l'agent libre.
+
+### 2026-11-04 13:30:37 — Fin WFS-83 : PR #68 fusionnée par confiance (Claude, agent 5)
+- **CI de la branche verte** (run 41833456101 : android avec le JNI du verrou de diffusion, 7 bancs, publication). Captures regardées : accueil (salon de Nadia listé par UDP en boucle locale), salon (code, voiture, terrain, distance, 2 pilotes), course (adversaire visible, classement à 2). Journal : même graine pour les deux joueurs.
+- **Corrigé avant fusion** : le classement du duel chevauchait le bouton de vue de WFS-66 (`duel_system.cpp`, zone E3 : descendu de 24 à 33 % de la hauteur) ; banc : `salon-pret` prise avant le départ, et Nadia vérifie le départ dans la même image (l'écart de `trafficClock` de 1,76 s venait du temps de capture du banc, pas du jeu ; test CPU : 0 ms).
+- **Fusion** : synchro avec `main`, `test_duel` OK, compilation OK, fusion par confiance (`b6a0247`), ajouté à `qa/Check.md`. Je suis la CI de `main`. Le duel à deux téléphones reste à essayer par l'utilisateur.
+
