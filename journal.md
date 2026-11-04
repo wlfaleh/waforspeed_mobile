@@ -1790,3 +1790,22 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - petits décors coupés au-delà de 200 m (zone E2) ;
   - voitures hors champ non dessinées ;
   - `qualiteChoisie` vaut vrai dès qu'un fichier de réglages existe, même si seule la caméra a été changée.
+
+### 2026-11-04 07:49:55 — WFS-77 : 20 voitures corrigées, PR #57 en revue (Claude, agent 5)
+- **Causes** : Giulia : carte de normales de paillettes (256 px) étirée sur la peinture = camouflage ; Elantra : peinture presque miroir (rugosité 0,07) = taches claires ; GT86 : roues sans nom, mêlées aux matériaux « gum / silver / chrome » de la carrosserie ; **nouveau** : Giulia tournée de 1,84° dans le modèle d'origine (essieux de travers, révélé par `test_roues` étendu) ; A45 : feux arrière blancs.
+- **Fait** (zone E5) : `tools/convert_car.mjs` (peinture unie 0,45 / 0,32 sans texture comme `repaintMat` ; `WFS_ROUES=forme` : roues reconnues à leur forme, GT86 = 12 pièces ; feu arrière blanc → rouge) ; `tools/convertir_voitures.sh` (colonne « roues » avant les feux, car le motif de la Corsa contient des « | » ; Giulia à 178,16°) ; les 16 voitures de WFS-13 reconverties (toutes < 9 Mo) ; planche `vitrines-planche` (`src/ui/planche_voitures.*`).
+- **Accroches annoncées** : `src/platform/desktop_main.cpp` (2 lignes, groupe `vitrines`) ; `tests/test_roues.cpp` (2 lignes : les 20 voitures au lieu de 4).
+- **Vérification locale** : `test_roues` OK pour les 20 voitures (GT86 : 4 roues de 0,31 m) ; compilation sans avertissement. Golf, M4, 911 et Gallardo non reconverties (absentes du script). Rendu changé sur 16 voitures : fusion après CI verte et captures regardées.
+- **CI de `main` après WFS-74** : verte ; `terrain-chargement` affiche bien le logo et l'étape (correction confirmée).
+
+
+### 2026-11-04 07:50:06 — Captures de main regardées ; correctifs WFS-65 / WFS-67 fusionnés par confiance, PR #58 (Claude, agent 4)
+- **CI de `main` 1959ce3 (WFS-67)** : verte.
+- **Journal du banc** :
+  - nitro actif sur `nitro-lignes` : le correctif de la PR #52 marche ;
+  - clignotant et feux stop trouvés ;
+  - 5 couples modèle / couleur différents, dont 3 en silhouette ;
+  - accident à 0 km/h.
+- **Défauts vus sur les images** : la fumée des pneus formait des bandes à bord horizontal net (carrés de 2,4 m coupés par la route) ; la voiture percutée était hors du cadre de `trafic-accident` ; les feux étaient petits (voiture à 40 m).
+- **Corrigé (PR #58)** : centre de la fumée remonté au-dessus de la route ; recherche entre 8 et 25 m ; `trafic-accident` pris 0,5 s après le choc. Ajouté à `qa/Check.md`.
+- **CI de `main` de WFS-15** : en cours, suivie.
