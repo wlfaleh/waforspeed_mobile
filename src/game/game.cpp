@@ -213,6 +213,7 @@ void Game::update(double dt) {
     const bool course = ecran_ == Ecran::Course;
     DriveInput in = course ? input_ : DriveInput{};     // hors course : aucune commande de conduite
     if (modeManette) in = course ? manette : DriveInput{};   // WFS-22 : la manette remplace le tactile
+    else if (course && r_ && gyroscopeActif()) in.steer = directionBraquage((float)r_->width());   // WFS-108 : inclinaison lue à chaque image
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
     latchGas_ = latchBrake_ = latchNitro_ = false;
