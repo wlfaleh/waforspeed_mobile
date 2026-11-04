@@ -195,7 +195,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-105 | [PRIORITAIRE] Caméra de poursuite : angle d'environ 40° (voir les voitures devant) + vue Proche qui montre la route (RG-06) | E3 | 🔧 En cours | Copilot (session 1ef8d4d6), 2026-11-04 | WFS-85 ✅ | `feature/waforspeed-105` |  |  |
 | P1 Urgent | WFS-106 | [STABLE] CI : publier l'APK de main (Release apercu) à chaque fusion | E7 | ⏳ Prêt |  | — | `feature/waforspeed-106` |  |  |
 | P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 | ⏳ Prêt |  | — | `feature/waforspeed-107` |  |  |
-| P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 | ⏳ Prêt |  | WFS-98 ✅ | `feature/waforspeed-108` |  |  |
+| P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 (exception : 2e ticket E3, fichiers séparés de WFS-105, demande de l'utilisateur) | 🔧 En cours | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-98 ✅ | `feature/waforspeed-108` |  |  |
 | P1 Urgent | WFS-109 | [URGENT] Feux de freinage réalistes (2e passage) | E4 | ⏳ En attente (après WFS-107, même épic) |  | WFS-84 ✅ | `feature/waforspeed-109` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
@@ -456,8 +456,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-107 — [URGENT] Bug animation « feu blanc » au braquage** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-107.md`)
 - [ ] voir les critères du fichier de règles
 
-**WFS-108 — [URGENT] Commandes tactiles plus grandes, frein / marche arrière, gyroscope** · E3 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-108.md`)
-- [ ] voir les critères du fichier de règles
+**WFS-108 — [URGENT] Commandes tactiles plus grandes, frein / marche arrière, gyroscope** · E3 (exception : 2e ticket E3, zones disjointes de WFS-105, demande explicite de l'utilisateur) · priorité P1 Urgent · 🔧 En cours — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-108` (règles : `regles-de-gestion/WFS-108.md`). Zone : `src/game/commandes_tactiles.*`, `src/game/direction.*`, `src/game/player.*` (frein / marche arrière), `src/ui/ecrans/reglages.*` (mode de direction, taille des boutons, sensibilité / zone morte du gyroscope), `src/game/sauvegarde.*` (champs ajoutés, rétrocompatibles), nouveau fichier `src/platform/gyroscope_android.cpp` (+ `gyroscope.h`, banc PC : valeurs d'essai), tests CPU (`tests/test_systems.cpp` hors assertions caméra, ou nouveau fichier de test). Accroches ≤ 10 lignes chacune, annoncées au Journal : `src/ui/hud.cpp` (indication « R »), `src/platform/android_main.cpp` (démarrer / lire le capteur), `CMakeLists.txt` (nouveau fichier source), `src/game/game.cpp` (réétalonnage au départ de course). Interdit : `src/game/camera_*` (WFS-105), `src/game/traffic_system.cpp` et `course_system.*` (WFS-101), `src/render/**`, `shaders/**`, autres écrans de `src/ui/**`, `.github/**`, iOS (gel). Décision RG-02 : marche arrière par **maintien du frein** (comme le jeu web, `js/game/update.js`), pas de bouton « R » séparé.
+- [ ] boutons GAZ / FREIN / NITRO / flèches ≥ 48 dp (GAZ / FREIN 64 à 80 dp), sans chevauchement ni encoche (captures du HUD tactile)
+- [ ] test CPU : frein maintenu à l'arrêt → marche arrière, « R » au HUD ; gaz → avant
+- [ ] mode gyroscope (seul ou combiné) : valeurs d'essai → braquage ; réglages mémorisés ; l'utilisateur confirme sur téléphone
 
 **WFS-109 — [URGENT] Feux de freinage réalistes** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-109.md`)
 - [ ] voir les critères du fichier de règles

@@ -2527,3 +2527,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   4. mettre à jour les assertions de `test_systems.cpp` ;
   5. noter les valeurs au Journal.
 - **Fusion** : fusion par confiance si la confiance dépasse 50 % (ligne dans `qa/Check.md`, puis suivi de la CI de `main`). Sinon, attendre la CI verte et les captures. Se synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi.
+
+### 2026-11-04 22:58:39 — Début WFS-108 (PO, pour Claude agent 5, session 011cpqZaDiS2unNJuwyaruGd)
+- **Ticket** : WFS-108 [URGENT] Commandes tactiles plus grandes, frein / marche arrière, gyroscope · E3 · P1 · branche `feature/waforspeed-108` · règles `regles-de-gestion/WFS-108.md`.
+- **Exception** : 2e ticket actif en E3 (WFS-105 en cours, Copilot) accordée sur demande explicite de l'utilisateur ; zones disjointes (la fiche de WFS-105 réserve déjà `commandes_tactiles.*`, `direction.*`, `player.*` à WFS-108).
+- **Zone** : `src/game/commandes_tactiles.*`, `direction.*`, `player.*`, `src/ui/ecrans/reglages.*`, `src/game/sauvegarde.*`, nouveau `src/platform/gyroscope*`, tests CPU. Accroches ≤ 10 lignes annoncées au Journal : `hud.cpp` (« R »), `android_main.cpp` (capteur), `CMakeLists.txt`, `game.cpp` (réétalonnage). Interdit : `camera_*`, `traffic_system.cpp`, `course_system.*`, `src/render/**`, `shaders/**`, `.github/**`, iOS.
+- **Décision PO (RG-02)** : marche arrière par maintien du frein (jeu web `js/game/update.js`, déjà amorcé par WFS-90 `vRecul = 3`), pas de bouton « R ».
+- **Plan court** : 1) agrandir et espacer les boutons (dp, marges de sécurité) ; 2) vérifier / corriger frein → marche arrière par test CPU, « R » au HUD ; 3) gyroscope Android (capteur de rotation, sensibilité, zone morte, réétalonnage) + valeurs d'essai sur le banc ; 4) réglages mémorisés ; 5) fusion par confiance si > 50 %.
