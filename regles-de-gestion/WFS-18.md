@@ -1,5 +1,5 @@
 # WFS-18 — Météo : pluie, flaques
-Épic : E2 · Priorité : 19 · Dépend de : WFS-16
+Épic : E2 · Priorité : P4 Basse · Dépend de : WFS-09 ✅ (absorbe WFS-16 : route mouillée, flaques et reflets déjà faits dans `src/render/nuit.cpp`)
 
 ## Besoin (qui, quoi, pourquoi)
 Il pleut la nuit en ville : gouttes animées, ciel couvert, route mouillée avec flaques, comme le jeu web.
@@ -19,6 +19,12 @@ Il pleut la nuit en ville : gouttes animées, ciel couvert, route mouillée avec
 - [ ] capture nuit ville : traits de pluie fins, inclinés, sur toute la largeur, sans masquer la voiture ; route mouillée
 - [ ] deux captures successives : gouttes à des positions différentes
 - [ ] jour / plage / campagne / circuit : aucune pluie
+
+## Zone de code et mise en œuvre (précision du PO, 2026-11-04)
+- Zone : **`src/world/meteo.*` (nouveau fichier, E2)** uniquement. Un `System` enregistré comme les autres systèmes du monde (accroche ≤ 2 lignes annoncée au Journal si l'enregistrement l'exige).
+- Pluie : traits 2D dessinés dans `System::drawUi` (passe d'interface, donc après la 3D et le bloom, RG-05) ; seulement en écran Course, carte ville, nuit.
+- Ciel couvert (RG-04) : dans `System::ambiance(FrameParams&)` en assombrissant `skyTop` / `skyHorizon` et en rapprochant le brouillard ; **aucun nouveau champ dans `renderer.h`** (sinon ticket E0, hors de ce ticket). La route mouillée de WFS-09 n'est pas retouchée (`src/render/**` interdit).
+- Banc : une capture `course-pluie-0` / `-1` (deux instants) ajoutée par le système lui-même ou via le banc `nuit` existant si possible sans toucher à `src/platform/**` ; sinon, deux captures du job `nuit` existant suffisent (`course-nuit-*` en ville).
 
 ## Hors périmètre
 Orage, vent, pluie sur le pare-brise, changement de météo en cours de course.
