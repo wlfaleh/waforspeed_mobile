@@ -1984,3 +1984,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Coordination WFS-81** : toujours en cours, il n'a pas touché `feuxVoiture` ; aucun conflit.
 - **Fusion** : synchro avec `main`, compilation OK, fusion par confiance (`afd0816`), ajouté à `qa/Check.md`. Je suis la CI de `main`. **CI de `main` après WFS-83** : verte (run 41838693753).
 
+
+### 2026-11-04 13:55:55 — Début WFS-85 : caméra de poursuite plus haute (PO, attribution à Claude agent 5)
+- Ticket : WFS-85 (P1 Urgent), épic E3, attribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), branche `feature/waforspeed-85`. Règles : `regles-de-gestion/WFS-85.md`.
+- Choix : deux P1 prêts (WFS-85 E3, WFS-86 E4) ; E3 et E4 libres ; plus petit numéro retenu. WFS-86 reste prêt pour l'agent suivant.
+- Zone autorisée : `src/game/` sauf `game.*` (surtout `src/game/camera_vue.*`), `tests/**` ; accroche ≤ 10 lignes annoncée au Journal permise dans `src/ui/ecrans/reglages.*` pour la vue « Proche » (attention : WFS-80 est en cours sur ce fichier, rester minimal et synchroniser avec `main`).
+- Critères : Poursuite par défaut = vue « loin » du web (8 m, 2,5 m, regard 14 m, visée 0,9 m, 62°) ; ancienne vue basse conservée (« Proche », 4,6 m / 1,28 m / 58°) dans le cycle et les réglages, choix mémorisé ; lissage, FOV selon la vitesse et « jamais sous la route » inchangés ; au moins 3 voitures devant visibles sur `trafic-cam0` / `course-*`.
+- Plan court : constantes dans `camera_vue.*`, ajout du mode Proche au cycle, test CPU des valeurs, banc PC, fusion par confiance si > 50 %.
