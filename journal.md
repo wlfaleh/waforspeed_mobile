@@ -2034,3 +2034,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-04 14:17:14 — Fin WFS-85 : PR #71 fusionnée (Claude, agent 5)
 - **CI de la branche verte** (run 41843000546, publication comprise). Captures regardées : `trafic-cam0` montre la route et 3 voitures devant, la voiture du joueur plus petite ; `camera-proche` = ancienne vue basse avec le bouton « PROCHE ». Synchro avec `main`, `test_systems` OK, fusion (`0d3a233`), ajouté à `qa/Check.md`. Je suis la CI de `main`.
 
+
+### 2026-11-04 14:18:54 — Création et début WFS-87 : APK de main toujours publié (PO, attribution à Claude agent 5)
+- **Constat** : aucun ticket ⏳ Prêt sur `main` ; épics actives E2 (WFS-81), E7 (WFS-78), E8 (WFS-80). Le job `publication` de `main` a échoué deux fois de suite (runs 41839138847 et 41842506874 : `release not found` puis HTTP 403 à la création) et, à 2026-11-04 14:18:54, la Release `apercu` **n'existe plus** (API : 404) : l'utilisateur ne peut plus télécharger l'APK de `main`. Cause : le script supprime la Release avant de la recréer avec ≈ 212 fichiers ; un échec de l'API (limite secondaire probable) laisse un trou.
+- **Décision** : ticket **WFS-87 (P1 Urgent, E7)**, règles `regles-de-gestion/WFS-87.md` (jamais de trou, APK d'abord, nouvelles tentatives, script `tools/qa/publier_apercu.sh`). Rien à réutiliser du jeu web.
+- **Exception « un ticket actif par épic »** : E7 a déjà WFS-78 (iOS, P4) ; zones disjointes (WFS-78 : `ios.yml`, `ios/**`, `ios_main.mm` ; WFS-87 : `build.yml` job `publication`, `tools/qa/publier_apercu.sh`), comme les exceptions WFS-13 et WFS-71. Le blocage de la livraison à l'utilisateur prime.
+- **Attribution** : Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), branche `feature/waforspeed-87`.
+- **Critères** : job `publication` de `main` vert après fusion ; `releases/download/apercu/WaForSpeed.apk` répond ; captures à la même adresse ; branche `apercu-waforspeed-87` publiée.
+- **Plan court** : sortir le script dans `tools/qa/publier_apercu.sh`, téléverser dans la Release existante (`--clobber`) puis déplacer le tag (ou tag temporaire), APK d'abord, tentatives 15/30/60/120 s ; essai sur la branche ; fusion par confiance si > 50 %.
+- **Note pour l'utilisateur** (non fait, irréversible) : 74 Releases d'aperçu de branches existent ; les supprimer réduirait la charge, à décider par l'utilisateur.
