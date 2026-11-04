@@ -24,7 +24,7 @@ env:
 jobs:
   ios:
     runs-on: macos-15   # Xcode 16 (SDK iOS 18) : exigé par MoltenVK 1.3+ (MTLResidencySet)
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Xcode 16
@@ -73,21 +73,33 @@ jobs:
           mkdir -p Payload && cp -R build-dev/WaForSpeed.app Payload/
           zip -qr WaForSpeed-ios-non-signe.ipa Payload
           ls -la WaForSpeed-ios-non-signe.ipa
-      - name: Lancement dans le simulateur (captures, au mieux)
-        continue-on-error: true
-        timeout-minutes: 15
+      - name: Lancement dans le simulateur (captures)
+        timeout-minutes: 25
         run: |
           dev=$(xcrun simctl list devices available | grep -m1 -E 'iPhone 1[456]' | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
           echo "simulateur : $dev"
           xcrun simctl boot "$dev" || true
           xcrun simctl bootstatus "$dev" -b
           xcrun simctl install "$dev" build-sim/WaForSpeed.app
+          mkdir -p captures-ios
+          t0=$(date +%s)
           xcrun simctl launch --console-pty "$dev" com.waforspeed.game > ios-journal.txt 2>&1 &
-          sleep 150
-          docs=$(xcrun simctl get_app_container "$dev" com.waforspeed.game data)/Documents
-          mkdir -p captures-ios && cp "$docs"/ios-*.png captures-ios/ || true
+          # WFS-78 : captures de l'écran du simulateur (surface Metal) sur les repères du journal ; durée de chaque attente
+          attendre() {   # attendre <texte> <délai en s>
+            local d=$(date +%s)
+            until grep -q "$1" ios-journal.txt; do
+              [ $(( $(date +%s) - d )) -ge "$2" ] && { echo "::warning::« $1 » absent après $2 s"; return 1; }
+              sleep 5
+            done
+            echo "« $1 » après $(( $(date +%s) - t0 )) s depuis le lancement"
+          }
+          ok=0
+          attendre "QA pret" 600 && attendre "QA iOS : menu affiche" 120 && xcrun simctl io "$dev" screenshot captures-ios/ios-menu.png \
+            && attendre "QA iOS : course affichee" 180 && xcrun simctl io "$dev" screenshot captures-ios/ios-course.png && ok=1
           xcrun simctl io "$dev" screenshot captures-ios/ios-ecran-simulateur.png || true
-          head -c 20000 ios-journal.txt; ls -la captures-ios
+          grep -E "iOS :|QA|ERREUR|Vulkan|MoltenVK" ios-journal.txt | head -200 || true
+          tail -c 4000 ios-journal.txt || true; ls -la captures-ios
+          test "$ok" = 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -19,6 +19,7 @@ add_executable(WaForSpeed MACOSX_BUNDLE ${ENGINE_SOURCES} src/platform/ios_main.
 add_dependencies(WaForSpeed shaders)
 target_include_directories(WaForSpeed PRIVATE ${SHADER_OUT} ${VULKAN_INCLUDE})
 target_compile_options(WaForSpeed PRIVATE ${WARN})
+target_compile_definitions(WaForSpeed PRIVATE VK_USE_PLATFORM_METAL_EXT)   # WFS-78 : VkMetalSurfaceCreateInfoEXT (vk.cpp)
 set_source_files_properties(src/platform/ios_main.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
 target_link_libraries(WaForSpeed ${MOLTENVK_LIB} "-framework UIKit" "-framework Foundation" "-framework QuartzCore"
   "-framework Metal" "-framework IOSurface" "-framework CoreGraphics")
