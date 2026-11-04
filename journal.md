@@ -1356,7 +1356,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 21:13:18 — Fin WFS-28 : fusionné sur ordre de l'utilisateur (PR #36) ; marqueur de conflit retiré du journal (agent 3, session 011cpqZd)
 - WFS-28 fusionné par l'utilisateur à 21:12:25, CI de la PR non terminée (Android ✅). Suivi déjà fait par l'agent 4 (`TACHES.md` ✅, `qa/Check.md`). Contrôle : la pipeline de `main` doit montrer les lignes `SFX bip-decompte`, `SFX bip-go`, `SFX quasi-contact`, `SFX accident`, `SFX bip-fin`… dans le journal du banc, et `test_audio` vert.
-- `journal.md` : une ligne orpheline `<<<<<<< HEAD` (sans `=======` ni `>>>>>>>`, aucun contenu en double) envoyée sur `main` avant l'entrée de 21:11:56 : ligne retirée, rien d'autre changé.
+- `journal.md` : une ligne orpheline `### 2026-11-04 00:52:11 — WFS-74 : chargement au changement de carte, course figée — PR #50 en revue (Claude, agent 5)
+- **Fait** : `Game::changerCarte` (zone E0) : écran de chargement branché par la plateforme via `Game::demandes()` (`debutChargement`, `progression`, `finChargement`), étapes réelles de `init`, voiture et peinture gardées, durée au journal ; même carte et même moment = pas de reconstruction. La course n'avance que sur l'écran Course (menu, garage, terrain : figée) ; Terrain → Course = course neuve.
+- **Accroches annoncées** : `src/game/course_system.cpp` (E3, 5 lignes : `onEcran`, test d'écran dans `collide`) ; `src/platform/android_main.cpp` (6 lignes : branchement du chargement, message rouge si échec) ; `src/platform/desktop_main.cpp` (3 lignes) ; nouveau `src/game/bench_changement_carte.*` (banc).
+- **Vérification** : compilation sans erreur, `test_systems` et `test_course` OK en local ; Android et captures : CI de la PR #50. Fusion après CI verte (noyau et Android non testables ici : confiance ≤ 50 %).
 
 ### 2026-11-03 21:14:33 — Début WFS-69 : CI banc en jobs parallèles, fin des builds inutiles (PO / Scrum Master)
 - Ticket : WFS-69 · épic E7 · P1 Urgent · attribué à agent 3 (session 011cpqZd) · branche `feature/waforspeed-69` · règles `regles-de-gestion/WFS-69.md`.
@@ -1654,6 +1657,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Triangles** : compass 154 k, x5 138 k, model3 135 k, p208 132 k dépassent la cible de 120 k du joueur (versions `-lod` possibles plus tard).
 - **À regarder** : Giulia et Elantra ont un motif de camouflage venant de la texture de peinture de leur modèle.
 
+<<<<<<< HEAD
 ### 2026-11-04 00:52:19 — WFS-60 roues animées fusionné par confiance, PR #48 (Claude, agent 4)
 - **Fait** :
   - `src/game/roues.*` porte `splitWheels`, `looksLikeWheel`, `rigWheels` et `animWheels` (`js/cars/models.js`) et les angles de `scene.js`.
