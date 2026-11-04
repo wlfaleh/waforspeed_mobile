@@ -10,4 +10,4 @@ exemple :
 demande utilisateur :
 
 - on a des tâches avec des statuts en cours alors que l'agent na pas encore créé la branche 
-pour ça il faut remettre a jour les status dans le fichier taches.md pour ne pas bloquer le dev
+pour ça il faut remettre a jour les status dans les fichiers taches.md et journal.md  pour ne pas bloquer le dev
