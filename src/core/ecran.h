@@ -10,7 +10,7 @@
 
 namespace wfs {
 
-enum class Ecran { Chargement, Menu, Garage, Terrain, Course, Pause, Fin };
+enum class Ecran { Chargement, Menu, Garage, Terrain, Course, Pause, Fin, Salon };   // Salon : duel en ligne (WFS-83)
 
 inline const char* nomEcran(Ecran e) {
     switch (e) {
@@ -18,6 +18,7 @@ inline const char* nomEcran(Ecran e) {
         case Ecran::Menu: return "menu";
         case Ecran::Garage: return "garage";
         case Ecran::Terrain: return "terrain";
+        case Ecran::Salon: return "salon";
         case Ecran::Course: return "course";
         case Ecran::Pause: return "pause";
         case Ecran::Fin: return "fin";

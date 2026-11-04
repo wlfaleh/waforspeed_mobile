@@ -170,7 +170,7 @@ private:
         const duel::Session& s = g_session;
         const auto rows = s.board(g.player->dist);
         const float x = g.marges.gauche + 2.5f * u, w = 34 * u, rh = 4.6f * u, px = 2.7f * u;
-        float y = g.marges.haut + 24 * u;
+        float y = g.marges.haut + 33 * u;   // sous le bouton « Menu » (WFS-39) et le bouton de vue (WFS-66)
         char pos[48]; std::snprintf(pos, sizeof pos, "POSITION %d/%d", s.position(g.player->dist), (int)rows.size());
         r.uiRect(x, y, w, rh * (rows.size() + 1) + 1.2f * u, SURFACE);
         ui::text(r, x + 1.2f * u, y + 0.9f * u, px, pos, ui::CYAN, ui::GAUCHE, 0.12f, false, true);

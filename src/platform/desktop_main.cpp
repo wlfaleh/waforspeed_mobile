@@ -36,6 +36,7 @@
 #include "manette_jeu.h"   // WFS-22
 #include "../ui/ecrans/menu.h"
 #include "../ui/ecrans/pause.h"
+#include "../ui/ecrans/salon.h"
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
@@ -111,7 +112,7 @@ int main(int argc, char** argv) {
     if (banc == "manette") { manette::benchManette(g, r, out); return finir(); }   // WFS-22 : manettes (job texte)
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
-        ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41
+        ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); ecrans::benchSalon(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41, WFS-83
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
     if (partie1 || banc == "chargement")
         ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
@@ -174,6 +175,7 @@ int main(int argc, char** argv) {
         ecrans::benchMenu(g, r, out); // WFS-37 : menu principal (menu-anim, menu-0)
         ecrans::benchMenuTactile(g, r, out);   // WFS-38 : appuis du menu, départ, « Bientôt », fin → Menu
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
+        ecrans::benchSalon(g, r, out);         // WFS-83 : salon du duel, second joueur en UDP (boucle locale)
         ecrans::benchGarage(g, r, out);        // WFS-11 : garage (plateau, fiche, peintures, voiture suivante, « Choisir »)
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         benchRoues(r, out);           // WFS-60 : roues animées (roues-arret-1/2, roues-roule, roues-virage)
