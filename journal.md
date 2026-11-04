@@ -2079,3 +2079,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Zone : `src/render/**` (E4), accroche ≤ 10 lignes `ios/**` / `ios.yml` si annoncée. Règles : `regles-de-gestion/WFS-88.md`.
 - Plan : lire `ios-pile.txt` du run 41877869097, sinon journaux par sous-étape ; corriger sous `__APPLE__` ; 2 relances au plus puis ⏸ si cause introuvable.
 - Aucun autre ticket Prêt ou En attente dans le tableau : tout le reste est ✅.
+
+### 2026-11-04 17:42:48 — CI de main après WFS-71 : verte (agent 3, session 011cpqZd)
+- Run 480 (`abc4685`, fusion de WFS-71) : vert (android, 7 bancs dont `vie`, publication) ; runs suivants de `main` (533, 535) verts. Suivi de la fusion par confiance terminé. Sur consigne de l'utilisateur, pas d'autre ticket pris.
