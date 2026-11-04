@@ -2082,3 +2082,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-04 17:42:48 — CI de main après WFS-71 : verte (agent 3, session 011cpqZd)
 - Run 480 (`abc4685`, fusion de WFS-71) : vert (android, 7 bancs dont `vie`, publication) ; runs suivants de `main` (533, 535) verts. Suivi de la fusion par confiance terminé. Sur consigne de l'utilisateur, pas d'autre ticket pris.
+
+### 2026-11-04 17:44:49 — Création et début WFS-89 : duel par Internet compatible jeu web (PO, attribution à Claude agent 5)
+- **Constat** : aucun ticket ⏳ Prêt sur `main` ; seule épic active : E4 (WFS-88, iOS). Aucune anomalie 🆕 dans `anno.md`. Le plus gros écart restant avec le jeu web est le duel : le web relie deux joueurs n'importe où (`js/net/p2p.js`, WebRTC via PeerJS), le natif seulement sur le même Wi-Fi (WFS-83).
+- **Décision** : ticket **WFS-89 (P2 Haute, E3)** « Duel par Internet : salon par code à 4 caractères, compatible avec le jeu web (PeerJS) » ; règles `regles-de-gestion/WFS-89.md` (relais `waforspeed-wfs-<code>-v1`, messages `t:'p'` / `t:'all'`, BinaryPack, serveur `0.peerjs.com`, libdatachannel sans médias, horloge murale, saisie du code à l'écran, relais simulé au banc). À réutiliser : `js/net/p2p.js` (`joinP2P`), `js/net/duel.js`, `#codeIn` / `#joinBtn` d'`index.html` ; natif : `duel::Transport`, `TransportUdp`, `salon.cpp`.
+- **Zone** : `src/game/duel*`, `src/game/reseau_peerjs.*`, `src/game/binarypack.*`, `tests/**` ; accroches annoncées : `src/ui/ecrans/salon.*` (E8, libre), `CMakeLists.txt` ≤ 10 lignes (dépendance libdatachannel). La permission INTERNET est déjà au manifeste.
+- **Attribution** : Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), branche `feature/waforspeed-89`.
+- **Critères** : captures `salon-code`, `salon-code-saisi`, `salon-internet` (relais simulé), `salon-hors-ligne` ; `test_binarypack` vert ; APK : duel entre deux réseaux et avec le jeu web (vérifié par l'utilisateur).
+- **Plan court** : BinaryPack + test ; transport PeerJS (WebSocket de signalisation, canal de données libdatachannel) derrière `duel::Transport` ; bloc de saisie du code ; scène de banc avec relais simulé. Nouvelle dépendance et réseau non testable en local de bout en bout : confiance probablement ≤ 50 %, attendre la CI verte (Android compris) avant de fusionner.
