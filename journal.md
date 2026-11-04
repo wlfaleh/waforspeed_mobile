@@ -1684,3 +1684,35 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Zone autorisée** : `src/game/traffic.*` (ajout d'état seulement : `freine`, `recul` ; pas de réécriture, signatures publiques de `HitEvent` / `TrafficEvents` inchangées car WFS-70 les lit), `src/game/traffic_system.*` (dessin : émissifs, tirage des modèles, version légère), nouveau `tests/test_trafic_vivant.cpp` ; accroches ≤ 10 lignes annoncées : `src/game/cars.h` (`TRAFIC_MODELES`, `LOD_CAR_M`), `desktop_main.cpp` + `build.yml` (scènes `trafic-*`, hors job `ecrans-2400`). **Interdit** : `renderer.*`, shaders (WFS-09), `roues.*`, `direction.*`, `player.*`, `course*.cpp` (WFS-70 / WFS-24), `sauvegarde.*`, `camera_*`.
 - **Critères** : captures `trafic-clignotant`, `trafic-freinage`, `trafic-accident` ; ≥ 3 modèles / couleurs visibles en course ; banc `0 écart(s)` ; ≤ 300 appels de dessin ; coût avant / après au Journal ; test CPU même graine → même trafic.
 - **Plan** : état `freine` → émissifs feux stop / clignotants 2 Hz / détresse → fumée WFS-65 sur accident → tirage modèle + peinture par graine → version légère > 50 m → test + scènes de banc → une CI, fusion par confiance si > 50 %.
+
+### 2026-11-04 00:58:20 — Fin WFS-13 : 16 voitures fusionnées par confiance (PR #49) (agent 3, session 011cpqZd)
+- **Fusion par confiance** (règle de l'utilisateur) : branche synchronisée avec `main` (WFS-60, WFS-41, WFS-74…), compilation et les 9 tests CPU de la CI OK en local, groupe `vitrines` relancé en local après la synchronisation (16 vitrines, garage, course SF90). Fusion `ade931a`, ajouté à `qa/Check.md`. Je suis la CI de `main`.
+- **Après WFS-60** : `convert_car.mjs` inchangé (roues séparées au chargement), donc pas de reconversion. 15 voitures sur 16 ont leurs 4 roues séparées. **GT86 : « roues non trouvées, modèle inchangé »** → à traiter par la détection de WFS-60 (pour le PO).
+- Taille de l'APK : relevée à la fin de la CI de `main`.
+
+### 2026-11-04 00:59:07 — PO : règle « confiance > 50% » propagée (po-scrum-master)
+- Déjà présente : `CLAUDE.md`, skill `waforspeed-natif`, `po-scrum-master.md`, `qa-lead.md`, `TACHES.md`. Ajoutée : définition de « Fini » de `TACHES.md`, `regles-de-gestion/README.md` (lu par les développeurs), skill `qa-lead`. À l'attribution, le PO rappelle la règle au développeur.
+
+### 2026-11-04 07:15:46 — CI de main après WFS-13 : verte ; APK 128,8 Mo (agent 3, session 011cpqZd)
+- Run 472 (`ade931a`, fusion de WFS-13) : vert. Release `apercu` : 145 fichiers, **APK 31,4 → 128,8 Mo** (RG-16 : sous le seuil de 150 Mo, pas d'alerte ; versions `-lod` à prévoir si d'autres voitures arrivent).
+- Run 464 (`5dcda32`, fusion de WFS-11) : rouge à la seule étape de publication (`HTTP 403: Resource not accessible by integration` de l'API des Releases) ; compilation, tests, 4 bancs et APK verts ; runs suivants publiés sans erreur : incident passager de l'API GitHub, rien à corriger dans le code.
+
+### 2026-11-04 07:16:01 — WFS-50 : simulateur MVP OK sur main ; reprise des 4 tickets en parallèle (Claude, session trafic)
+- Passage sur `main` (après PR #47) : `RÉSULTAT TECHNIQUE : OK`, 10 étapes ; GO après 5 s, deux fins de course, Rejouer et Menu. Release `simulateur-MVP` à recetter (`qa/rapports/simulateur-MVP.md`).
+- WFS-53, WFS-09, WFS-70 et WFS-24 : agents interrompus par la limite d'usage (00:47 UTC), relancés à partir de leurs worktrees (travail non commité conservé).
+
+### 2026-11-04 07:16:40 — WFS-71 attribué à agent 3 (session 011cpqZd), 2e sujet de E2 en parallèle (PO)
+- **Début WFS-71** — Ville vivante : commerces et terrasses, portique 3D, enseignes · épic **E2** · P3 Moyenne · branche `feature/waforspeed-71` · règles : `regles-de-gestion/WFS-71.md` (RG-01 à RG-11).
+- **Pourquoi lui** : ticket ⏳ Prêt le plus prioritaire attribuable. WFS-15 (E4) recouvre `renderer.cpp` / `post*` / `scene*` de WFS-09 (même moteur de rendu, pas de séparation possible) ; WFS-22 (E7, P4, iOS) ne se voit pas sur le téléphone. WFS-71 se voit partout en ville et peut être isolé de WFS-53.
+- **Exception « un ticket actif par épic »** (E2, WFS-53 en cours) accordée car fichiers disjoints : nouveaux fichiers `src/world/commerces.*`, `portique.*`, `enseignes.*`, `assets/world/vie/**`, plus `plage.cpp` ; accroches ≤ 10 lignes dans `ville.cpp` / `zones.*` annoncées au Journal (RG-07 à RG-10). Le premier des deux qui fusionne n'impose rien à l'autre ; le second se synchronise avec `main`.
+- Critères : captures terrasse de café avec clients assis, plage avec serviettes et allongés, portique de checkpoint, enseigne néon la nuit ; ≤ 300 appels de dessin ; autres captures inchangées hors zones modifiées.
+- À réutiliser : `js/world/life.js` (`SHOPS`, `getShopMats`, `placeShop`, terrasses, `populatePeople`), `js/world/scene.js` (`setGantry`), `js/world/decor.js` (`BOARD_TEXTS`, `AD_TEXTS`, serviettes l. 51) ; personnages et poses de WFS-19 / WFS-72 (`models/people/`, `Sitting_*`).
+- **Retours de WFS-13 notés par le PO** : GT86 sans roues détectées par WFS-60 (« roues non trouvées, modèle inchangé ») ; Giulia et Elantra avec un motif de camouflage venant de la texture de peinture du modèle. À confirmer à la recette de nuit (`qa/Check.md`) ; ensuite regroupés dans une seule US de correction E5 (catalogue des voitures), pas de micro-ticket.
+- Surveillance : session trafic tient WFS-09, WFS-24, WFS-53, WFS-70 depuis 00:05-00:20 UTC sans branche poussée ; libérables par le PO après 24 h sans nouvelle.
+
+### 2026-11-04 07:18:04 — Début WFS-22 Plateformes : manettes, stores, iOS (Claude, session trafic) — attribué par le PO
+- **Ticket** : WFS-22 (absorbe WFS-23 manettes et WFS-25 stores), épic **E7**, P4 Basse. Branche `feature/waforspeed-22`. Règles : `regles-de-gestion/WFS-22.md` (+ `WFS-23.md`, `WFS-25.md`, ordre de travail RG-07 à RG-10 ajouté par le PO).
+- **Pourquoi lui** : seul ⏳ Prêt d'une épic libre (E7 : WFS-50 fusionné, simulateur MVP OK). E2 (WFS-53), E3 (WFS-70, WFS-24, WFS-67), E4 (WFS-09), E0 (WFS-74 en revue) occupés ; WFS-15 et WFS-71 recouvrent les fichiers de WFS-09 / WFS-53 ; E5, E6, E8 sans ticket prêt (WFS-75 attend WFS-70) ; `anno.md` sans anomalie 🆕.
+- **Exception « un ticket par agent »** : la session trafic mène déjà WFS-53, WFS-09, WFS-70, WFS-24 en agents parallèles sur des zones disjointes ; WFS-22 touche une 5e zone (plateforme / CI), sans recouvrement.
+- **Zone autorisée** : `src/platform/**`, `android/**`, `ios/**` (nouveau), `.github/**`, `tools/qa/**`, nouveaux `store/**` et `assets/licences/**` ; accroches ≤ 10 lignes annoncées au Journal pour brancher la manette sur l'`input` existant et pour le focus des menus (`src/ui/ecrans/`, E8 libre). Interdit : `src/game/player.*`, `direction.*` (WFS-70), `sauvegarde.*` (WFS-24), `src/world/**` (WFS-53), `src/render/**` (WFS-09).
+- **Plan** : (1) manettes Android (ce que l'utilisateur peut essayer sur son téléphone) ; (2) dossier `store/` + licences + AAB signé par clé factice ; (3) job iOS macOS (MoltenVK) qui compile et produit une archive, sans bloquer la CI Android. Une seule CI à la fin, fusion par confiance si > 50 %.
