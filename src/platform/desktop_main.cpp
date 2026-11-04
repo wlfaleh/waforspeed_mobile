@@ -20,6 +20,7 @@
 #include "../game/sauvegarde.h"   // WFS-24
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
+#include "../ui/planche_voitures.h"
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 #include "../world/pietons.h"
@@ -94,6 +95,7 @@ int main(int argc, char** argv) {
             WFS_LOG("capture vitrine-%s-0%s%s", id, garage ? ", garage" : "", course ? ", course" : "");
             g.shutdown();
         }
+        benchPlancheVoitures(g, r, out);   // WFS-77 : les 20 voitures en Turquoise, roues et peinture au journal
         return finir();
     }
     if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
