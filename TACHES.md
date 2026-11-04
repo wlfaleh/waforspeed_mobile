@@ -107,7 +107,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` | #42 (fusionnée, 710c9fc) |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
-| P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ Prêt |  | WFS-29 | `feature/waforspeed-22` |  |  |
+| P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | 🔧 En cours | Claude (session trafic), 2026-11-04 | WFS-29 ✅ | `feature/waforspeed-22` |  |  |
 | — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
 | P3 Moyenne | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | 🔧 En cours (exception : 2e ticket E3, fichiers séparés de WFS-70) | Claude (session trafic), 2026-11-04 | WFS-12 | `feature/waforspeed-24` |  |  |
 | — | WFS-25 | Préparation des stores | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-25` |  |  |
@@ -425,7 +425,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-23 — Manettes de jeu** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22
 - [ ] Manettes Bluetooth Android
 
-**WFS-22 — Plateformes : iOS, manettes et préparation des stores** · E7 · priorité P4 Basse · ⏳ Prêt (WFS-29 ✅)
+**WFS-22 — Plateformes : iOS, manettes et préparation des stores** · E7 · priorité P4 Basse · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-22` (règles : `regles-de-gestion/WFS-22.md`)
 - [ ] Construction iOS, test TestFlight
 
 **WFS-25 — Préparation des stores** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22
