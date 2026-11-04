@@ -10,6 +10,8 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "chargement.h"
+#include "reglages.h"
+#include "terrain.h"
 
 namespace wfs {
 namespace ecrans {
@@ -34,6 +36,7 @@ enum { SOLO = 0, DUEL = 1, SHOWROOM = 2 };
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
 Zone g_zones[3];
+long long g_best = 0;   // record de la session : gardé quand la partie est reconstruite sur une autre carte (WFS-41)
 bool dansZone(const Zone& z, float x, float y) {
     if (!z.ok || y < z.y || y > z.y + z.h || x < z.x) return false;
     return x <= z.x + z.w - z.biais * (y - z.y) / z.h;   // coin bas droit coupé (clip-path)
@@ -56,7 +59,7 @@ public:
     // RG-01 : appui = état pressé ; l'action part au relâcher sur le même choix, glisser hors du choix l'annule.
     // RG-05 : sur le menu, tout toucher est gardé (aucune commande de conduite).
     bool onTouch(const Touch& t, const GameView& g) override {
-        if (g.ecran != Ecran::Menu) return false;
+        if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages
         const int sous = choixSous(t.x, t.y);
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; presse_ = sous == DUEL ? -1 : sous; }   // « Duel en ligne » grisé : pas d'état pressé
@@ -67,7 +70,7 @@ public:
         const int choix = presse_;
         doigt_ = -1; presse_ = -1;
         if (choix < 0 || sous != choix) return true;
-        if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Course); }             // RG-03
+        if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Terrain); }            // WFS-41 : choix du terrain
         else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom » (bientôt)"); bientot_ = g.time; }  // RG-04
         return true;
     }
@@ -76,7 +79,7 @@ public:
         const Course* c = activeCourse();
         // score pris à la fin de la course (endRace), pas pendant la roue libre de l'écran de fin (WFS-38)
         const bool fin = c && c->state == RaceState::Over;
-        if (fin && !finVue_ && g.player && c->timeLeft < 1e6) best_ = std::max(best_, c->score(*g.player));
+        if (fin && !finVue_ && g.player && c->timeLeft < 1e6) g_best = std::max(g_best, c->score(*g.player));
         finVue_ = fin;
     }
     void drawUi(Renderer& r, const GameView& g) override {
@@ -145,8 +148,8 @@ public:
         {
             const float x = m.x + dx;
             ui::text(r, x, y, 11 * k, ui::majuscules("Record"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
-            ui::text(r, x, y + 16 * k, 22 * k, best_ > 0 ? ui::nombre(best_) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
-            const float x2 = x + std::max(ui::width(22 * k, best_ > 0 ? ui::nombre(best_) : "—"), ui::width(11 * k, "RECORD", 0.16f)) + 28 * k;
+            ui::text(r, x, y + 16 * k, 22 * k, g_best > 0 ? ui::nombre(g_best) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
+            const float x2 = x + std::max(ui::width(22 * k, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(11 * k, "RECORD", 0.16f)) + 28 * k;
             const std::string nom = ui::majuscules(g.car ? g.car->model : "—");
             ui::text(r, x2, y, 11 * k, ui::majuscules("Ta voiture"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
             ui::text(r, x2, y + 16 * k, 22 * k, nom, hex(TEXTE, a), ui::GAUCHE, 0, false);
@@ -160,7 +163,6 @@ public:
     }
 private:
     double t0_ = -1, bientot_ = -10;
-    long long best_ = 0;
     bool finVue_ = false;
     int presse_ = -1, doigt_ = -1;   // choix à l'état pressé, doigt qui le tient (WFS-38)
 };
@@ -195,6 +197,12 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture %s : écran %s, %s", nom, nomEcran(g.ecran()), quoi);
     };
     auto centre = [](int i, float& x, float& y) { x = g_zones[i].x + g_zones[i].w * 0.4f; y = g_zones[i].y + g_zones[i].h * 0.5f; };
+    // WFS-41 : écran Terrain → appui sur « Rouler » (carte inchangée : ville), partie reconstruite au pas suivant
+    auto rouler = [&]() {
+        for (int i = 0; i < 3; i++) image();
+        g.render(t); float rx, ry;
+        if (centreRouler(rx, ry)) { g.onTouch({20, rx, ry, true}); image(); g.onTouch({20, rx, ry, false}); image(); }
+    };
     auto auMenu = [&]() { g.allerA(Ecran::Menu); for (int i = 0; i < 60; i++) image(); };   // 1 s : menu posé
     float x, y;
     for (int i = 0; i < 30; i++) g.update(1.0 / 60);
@@ -207,8 +215,9 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     // menu-appui : « Course solo » tenu
     g.onTouch({2, x, y, true}); image();
     capture("menu-appui", "« Course solo » à l'état pressé");
-    // relâcher → course remise à zéro, décompte 3-2-1-GO de WFS-12
+    // relâcher → choix du terrain (WFS-41), « Rouler » → course remise à zéro, décompte 3-2-1-GO de WFS-12
     g.onTouch({2, x, y, false});
+    rouler();
     const Course* k = nullptr;
     bool trois = false, go = false;
     for (int i = 0; i < 60 * 5 && !(trois && go); i++) {
@@ -226,6 +235,7 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     capture("menu-bientot", "bandeau « Bientôt » après « Showroom », « Duel en ligne » grisé");
     // fin-menu : course depuis le menu, temps forcé à 0,05 s, écran de fin (boutons actifs 0,9 s après la fin)
     centre(SOLO, x, y); g.onTouch({5, x, y, true}); image(); g.onTouch({5, x, y, false});
+    rouler();
     g.setAutopilot(true);                        // une vraie petite course : score et record non nuls
     for (int i = 0; i < 60 * 8; i++) image();   // décompte (3 s) puis 5 s de course
     g.setAutopilot(false);
@@ -238,6 +248,7 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     for (int i = 0; i < 60; i++) image();
     capture("fin-retour-menu", "retour au menu après « Menu »");
     g.shutdown();
+    unsetenv("WFS_MOMENT");   // WFS-41 : moment choisi à l'écran Terrain
     courseBenchRules(false);
 }
 

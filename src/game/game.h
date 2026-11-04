@@ -1,6 +1,7 @@
 // WaForSpeed — la partie : piste, voiture du joueur, route générée par morceaux, caméra, commandes tactiles.
 #pragma once
 #include <map>
+#include <string>
 #include <vector>
 #include "player.h"
 #include "track.h"
@@ -29,8 +30,12 @@ public:
     void setMarges(const Marges& m) { marges_ = m; view_.marges = m; }
     const Marges& marges() const { return marges_; }
     bool montrerMarges = false;
-    // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
+    // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine), 3 cockpit (pare-chocs avant, WFS-68)
     int camMode = 0; float orbit = 0;
+    // WFS-41 / WFS-68 : demandes des écrans (terrain, réglages), appliquées au début de la mise à jour suivante :
+    // carte non vide = partie reconstruite sur cette carte (moment : WFS_MOMENT), puis course ; camera >= 0 = camMode
+    struct Demandes { std::string carte; bool nuit = true; int camera = -1; };
+    static Demandes& demandes();
 private:
     struct Chunk { Mesh road, walk, ground; bool ready = false; };
     struct ChunkCpu { std::vector<Vertex> v[3]; std::vector<uint32_t> i[3]; };

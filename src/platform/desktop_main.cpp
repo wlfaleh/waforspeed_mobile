@@ -22,6 +22,8 @@
 #include "../ui/ecrans/chargement.h"
 #include "../ui/ecrans/menu.h"
 #include "../ui/ecrans/pause.h"
+#include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/terrain.h"
 
 
 namespace wfs {
@@ -61,7 +63,8 @@ int main(int argc, char** argv) {
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
-    if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); return finir(); }   // WFS-37
+    if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out);
+        ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-41
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
     if (partie1 || banc == "chargement")
         ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
@@ -121,6 +124,8 @@ int main(int argc, char** argv) {
         ecrans::benchMenu(g, r, out); // WFS-37 : menu principal (menu-anim, menu-0)
         ecrans::benchMenuTactile(g, r, out);   // WFS-38 : appuis du menu, départ, « Bientôt », fin → Menu
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
+        ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
+        ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
     }
     r.shutdown();
