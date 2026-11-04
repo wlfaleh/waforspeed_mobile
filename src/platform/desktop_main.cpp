@@ -15,6 +15,7 @@
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
+#include "../game/ressenti.h"   // WFS-70 : ressenti de conduite (captures ressenti-*.png)
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
@@ -67,6 +68,7 @@ int main(int argc, char** argv) {
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); return finir(); }   // WFS-37
     const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
@@ -133,6 +135,7 @@ int main(int argc, char** argv) {
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
         benchPietons(g, r, out);      // WFS-19 : piétons de la ville et de la plage (pietons-*.png)
+        benchRessenti(g, r, out);     // WFS-70 : choc, flèches, mouvements réduits (ressenti-*.png)
     }
     r.shutdown();
     vk.shutdown();

@@ -15,6 +15,7 @@
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
+#include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -120,6 +121,7 @@ void android_main(android_app* a) {
     // WFS-59 : extra d'intent qa_simu=true (émulateur de la QA) → mode GPU logiciel, lu avant l'initialisation de Vulkan
     if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
+    installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
     app.start = nowSeconds();
     while (!a->destroyRequested) {
         int events; android_poll_source* src;

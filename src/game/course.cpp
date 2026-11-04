@@ -1,6 +1,7 @@
 // WaForSpeed — règles de la course solo (WFS-12) : voir course.h.
 #include "course.h"
 #include <cstdio>
+#include "ressenti.h"   // WFS-70 : « réduire les mouvements » coupe le ralenti
 
 namespace wfs {
 
@@ -10,7 +11,7 @@ void Course::reset() {
     timeLeft = 30; nextCp = CHECK_DIST; level = 0; bonus = 0; raceTime = 0;
     combo = 0; comboTimer = 0; nearCount = 0; maxKmh = 0; overTimer = 0; accidents = 0;
     bumps = 0; scrapes = 0; lastImpact = 0;   // WFS-28
-    lastCount = -1; goShown = 0; timeScale = 1; slowmoT = 0;
+    lastCount = -1; goShown = 0; timeScale = 1; slowmoT = 0; echelleDt = 1;
     duelFinish = 0;   // WFS-21 : course solo par défaut
 }
 
@@ -28,7 +29,7 @@ void Course::bump(double impact) {
 
 // playerAccident(impact, side) : partie « règles » (le tête-à-queue est fait par Player::accident)
 void Course::accident() {
-    timeScale = 0.35; slowmoT = 0.5;
+    if (!reglagesRessenti().reduireMouvements) { timeScale = 0.35; slowmoT = 0.5; }   // if (!reduceMotion) du jeu web (WFS-70)
     combo = 0; comboTimer = 0;
     accidents++;
 }
@@ -58,7 +59,8 @@ void Course::hold(Player& pl) const {
 }
 
 // fin de update() du jeu web
-void Course::step(double dt, const Player& pl, Traffic* traffic, double playerPos) {
+void Course::step(double dt, const Player& pl, Traffic* traffic, double playerPos, double chronoDt) {
+    const double cdt = chronoDt >= 0 ? chronoDt : dt;   // WFS-70 (RG-05) : chrono en temps réel
     const bool playing = state == RaceState::Play;   // état en début d'image, comme `playing` du jeu web
     clock += dt;                                       // trafficClock += dt
     if (comboTimer > 0) { comboTimer -= dt; if (comboTimer <= 0) combo = 0; }
@@ -73,9 +75,9 @@ void Course::step(double dt, const Player& pl, Traffic* traffic, double playerPo
         maxKmh = std::max(maxKmh, kmh(pl.speed));
         if (pl.dist >= duelFinish) state = RaceState::Over;
     } else if (playing) {
-        raceTime += dt;
+        raceTime += cdt;
         maxKmh = std::max(maxKmh, kmh(pl.speed));
-        timeLeft -= dt;
+        timeLeft -= cdt;
         if (pl.dist >= nextCp) {
             const double add = std::max(5.0, 11 - level * 0.4);
             timeLeft += add; level++; nextCp += CHECK_DIST;
@@ -88,6 +90,7 @@ void Course::step(double dt, const Player& pl, Traffic* traffic, double playerPo
 // boucle de main.js : le ralenti dure 0,5 s puis le temps revient doucement à la normale
 double Course::scaleDt(double raw) {
     if (slowmoT > 0) slowmoT -= raw; else timeScale += (1 - timeScale) * std::min(1.0, raw * 4);
+    echelleDt = timeScale;   // WFS-70 : le chrono repasse en temps réel (Course::step, chronoDt)
     return raw * timeScale;
 }
 
