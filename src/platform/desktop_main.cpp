@@ -30,6 +30,9 @@
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
+#include "../ui/text.h"
+#include "../game/cars.h"
+#include <cstring>
 
 
 namespace wfs {
@@ -69,6 +72,20 @@ int main(int argc, char** argv) {
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
+        ui::chargerPolice(r);
+        for (int i = TRAFIC_MODELES; i < CAR_COUNT; i++) {
+            const char* id = CARS[i].id;
+            if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); continue; }
+            g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png");
+            const bool garage = !std::strcmp(id, "p208") || !std::strcmp(id, "sf90"), course = !std::strcmp(id, "sf90");
+            if (garage) { g.allerA(Ecran::Garage); for (int k = 0; k < 40; k++) { g.update(1.0 / 60); if (k % 10 == 0) g.render(950 + k / 60.0); } g.render(951); g.render(951.01); r.capturePng(out + "/garage-" + id + ".png"); }
+            if (course) { g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true); for (int k = 0; k < 240; k++) { g.update(1.0 / 60); if (k % 8 == 0) g.render(960 + k / 60.0); } g.render(964); g.render(964.02); r.capturePng(out + "/course-" + std::string(id) + ".png"); g.setAutopilot(false); }
+            WFS_LOG("capture vitrine-%s-0%s%s", id, garage ? ", garage" : "", course ? ", course" : "");
+            g.shutdown();
+        }
+        return finir();
+    }
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
