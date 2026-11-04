@@ -2540,3 +2540,43 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **RG-02 constaté** : le frein maintenu passait déjà en marche arrière sans relâcher (WFS-90, `vRecul = 3`) : arrêt à 1,97 s depuis 89 km/h, marche arrière dans la même image, gaz → avant en 0,69 s. Corrigé : « R » au HUD dès `reversing` (avant : seulement sous −1 unité/s).
 - **Accroches annoncées** : `game.cpp` 1 ligne (inclinaison lue à chaque image), `hud.cpp` 1 ligne (« R »), `android_main.cpp` 4 lignes (capteur, densité), `CMakeLists.txt` 3 lignes, `tests/test_course.cpp` (assertion WFS-98 nitro → au-dessus du frein, appel de `testCommandes()` pour que le test tourne en CI sans toucher `.github/`).
 - **Fusion** : confiance ≤ 50 % sur la partie Android (pas de NDK en local) → j'attends la CI verte (APK) et les captures `reglages-108`, `commandes-grandes-gyro`, `commandes-marche-arriere`.
+
+### 2026-11-04 23:10:18 — Début WFS-106 CI : APK de main en ligne ≈ 5 min après chaque fusion + banc découpé (PO / Scrum Master, pour Copilot session 6be876ef)
+- **Ticket** : WFS-106 (P1 Urgent, [STABLE]), épic **E7**, attribué à **Copilot (session 6be876ef)**, branche `feature/waforspeed-106`. Règles : `regles-de-gestion/WFS-106.md` (RG-01 à RG-10, réécrites).
+- **Choix** : P1 Prêt attribuable avec le plus petit numéro. E7 n'a aucun ticket actif : WFS-103 est transverse et n'occupe pas l'épic. WFS-107 (P1) attend qu'un ticket E4 se libère (WFS-100 et WFS-101 sont actifs).
+- **WFS-91 (E7, P2)** passe après WFS-106 : même épic, et les mêmes fichiers (`build.yml`, `desktop_main.cpp`).
+- **Constat mesuré** (Copilot 6be876ef, vérifié par le PO avec `gh run view`) :
+  - La publication est fiable depuis WFS-87. « 14:34 UTC » est le `publishedAt` de la Release ; l'APK a été remplacé à 22:54:11 (construction 557, `c1f5bbb`).
+  - **Le problème est le délai.** Run 41926218379 : fusion à 22:32:53, APK construit à 22:35:50, publication à 22:53:51 seulement (attente de `ecrans-2400` ≈ 19 min et de `partie2` ≈ 15,5 min).
+  - **Le PO ajoute deux points** :
+    - Ce même job de publication est bloqué : 175 captures sur 229 envoyées à 22:55:06, puis plus rien ; il est toujours « en cours » à 23:08. Il n'a aucun `timeout-minutes` (6 h par défaut). La publication de `df708ac` (WFS-104, run 41928993894) attend derrière.
+    - Le banc ralentit depuis WFS-104 (rendu à 100 %) : `partie1` passe de 6,8 à 11,8 min.
+- **Décision PO : élargissement accepté.** C'est la vraie cause de « l'utilisateur teste une ancienne version », dans les mêmes fichiers et la même épic, avec une seule CI (règle des gros tickets). On retire « Hors périmètre : vitesse de la CI ». Les RG proposées sont reprises et précisées :
+  - RG-05 : job APK à part (`needs: [android]`), **avec son propre groupe de concurrence**, pour ne jamais attendre la publication des captures d'un autre commit (on a vu aujourd'hui une publication bloquée).
+  - RG-06 : chaque job ne touche que ses fichiers (APK, tag et titre / captures et notes). **Pas de repli** où le job des captures publierait l'APK : deux jobs qui écrivent l'APK en même temps pourraient remettre un APK plus ancien. Si l'APK échoue, son job est rouge et on le relance.
+  - RG-07 : délais maximaux (`timeout` par appel `gh`, `timeout-minutes` par job).
+  - RG-08 et RG-09 : banc découpé, plus long job ≤ 11 min, au plus 12 jobs. Mêmes captures et mêmes noms. Groupes d'essai local conservés. Les appels `bench*` restent intacts.
+  - RG-04 : titre « Aperçu — construction N (abc1234) ».
+- **Zone autorisée** :
+  - `.github/workflows/build.yml` ;
+  - `tools/qa/publier_apercu.sh` (modes « APK seul » / « captures seules ») ;
+  - `src/platform/desktop_main.cpp` (aiguillage `WFS_BANC` seulement) ;
+  - doc ≤ 10 lignes dans `.claude/skills/waforspeed-natif/references/construction-et-tests.md`.
+- **Interdit** : `ios.yml`, `ios/**` (gel iOS), `simulateur.yml` (plus de simulateur), `android/**`, les fonctions `bench*`, tout code de jeu, `shaders/**`.
+- **Conflits possibles** : WFS-100, 101, 105, 107, 108 et 109 peuvent ajouter une ligne de banc. En cas de conflit, garder les deux et placer la nouvelle ligne dans le bon groupe.
+- **Critères** :
+  - deux fusions de suite sur `main` : APK de `apercu` remplacé ≤ 8 min après chaque fusion ; Release finale = dernier commit ; runs et heures au Journal ;
+  - même liste de captures avant / après, notée au Journal ;
+  - CI de la branche : plus long job de banc ≤ 11 min, durée totale notée au Journal (cible ≈ 12 min) ;
+  - délais maximaux visibles dans `build.yml` ;
+  - `apercu-waforspeed-106` publiée ;
+  - `bash -n` passe sur le script.
+- **Plan court** :
+  1. annuler la publication bloquée du run 41926218379 si elle tourne encore (l'APK `c1f5bbb` est déjà en ligne ; cela libère `df708ac`, WFS-104) ;
+  2. mesurer la durée de chaque scène du banc ;
+  3. séparer les jobs APK et captures, avec les délais maximaux ;
+  4. découper `ecrans-2400`, `partie2` et `partie1` ;
+  5. CI de branche, puis comparer la liste des captures ;
+  6. fusion après CI verte, quand aucune publication de `main` n'est en cours ;
+  7. vérifier les deux fusions sur `main`.
+- **Fusion** : pas d'essai local possible (GitHub Actions) → attendre la CI de branche verte avant de fusionner. Ensuite, ligne dans `qa/Check.md`, statut ✅, Journal, et suivi de la CI de `main`. Toujours `git fetch origin && git merge origin/main` avant chaque envoi.

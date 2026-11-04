@@ -193,7 +193,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-103 | Revue et fusion des PR en attente (#77 WFS-89, #79 WFS-96 ; #76 iOS gelée) | E7 (transverse : n'occupe pas l'épic, WFS-91 reste attribuable) | 🔍 #77 et #79 fusionnées, CI de main à confirmer ; #76 gelée (iOS) | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-103` (travail sur les branches des PR) | #77, #79 |  |
 | P1 Urgent | WFS-104 | [PRIORITÉ ABSOLUE] Voiture en course : qualité identique au garage (2e passage, résolution 100 %, jamais sous le garage) | E4 (exception : 3e ticket E4, fichiers séparés de WFS-100 / WFS-101 : `qualite_*`, `masquage.*`) | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 3, session 011cpqZd), 2026-11-04 | WFS-86 ✅ | `feature/waforspeed-104` |  |  |
 | P1 Urgent | WFS-105 | [PRIORITAIRE] Caméra de poursuite : angle d'environ 40° (voir les voitures devant) + vue Proche qui montre la route (RG-06) | E3 | 🔧 En cours | Copilot (session 1ef8d4d6), 2026-11-04 | WFS-85 ✅ | `feature/waforspeed-105` |  |  |
-| P1 Urgent | WFS-106 | [STABLE] CI : publier l'APK de main (Release apercu) à chaque fusion | E7 | ⏳ Prêt |  | — | `feature/waforspeed-106` |  |  |
+| P1 Urgent | WFS-106 | [STABLE] CI : APK de main en ligne ≈ 5 min après chaque fusion (job APK séparé, délais maximaux) + banc découpé (CI ≈ 2× plus courte) | E7 | 🔧 En cours | Copilot (session 6be876ef), 2026-11-04 | WFS-87 ✅, WFS-69 ✅ | `feature/waforspeed-106` |  |  |
 | P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 | ⏳ Prêt |  | — | `feature/waforspeed-107` |  |  |
 | P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 (exception : 2e ticket E3, fichiers séparés de WFS-105, demande de l'utilisateur) | 🔍 PR #83 ouverte, CI en cours (fusion après CI verte : code Android non compilable en local) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-98 ✅ | `feature/waforspeed-108` | #83 |  |
 | P1 Urgent | WFS-109 | [URGENT] Feux de freinage réalistes (2e passage) | E4 | ⏳ En attente (après WFS-107, même épic) |  | WFS-84 ✅ | `feature/waforspeed-109` |  |  |
@@ -450,8 +450,11 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] au moins 4 voitures devant visibles ; angle documenté
 - [ ] `camera-proche` : avant de la voiture et rue devant (≥ 15 m) visibles, caméra inclinée ≈ 20-25° ; Capot et Cockpit inchangés
 
-**WFS-106 — [STABLE] CI : publier l'APK de main** · E7 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-106.md`)
-- [ ] Release apercu = APK du dernier commit de main
+**WFS-106 — [STABLE] CI : APK de main en ligne ≈ 5 min après chaque fusion + banc découpé** · E7 · priorité P1 Urgent · 🔧 En cours — Copilot (session 6be876ef), 2026-11-04, branche `feature/waforspeed-106` (règles : `regles-de-gestion/WFS-106.md`, RG-01 à RG-10 ; élargi par le PO le 2026-11-04 : délai de publication et durée du banc, mêmes fichiers, une seule CI). Zone : `.github/workflows/build.yml`, `tools/qa/publier_apercu.sh` (modes « APK seul » / « captures seules »), `src/platform/desktop_main.cpp` (aiguillage `WFS_BANC` seulement) ; doc ≤ 10 lignes `.claude/skills/waforspeed-natif/references/construction-et-tests.md`. Interdit : `ios.yml`, `ios/**`, `simulateur.yml`, `android/**`, fonctions `bench*`, tout code de jeu, `shaders/**`. Première action : annuler la publication bloquée du run 41926218379 si elle tourne encore. Fusion après CI de branche verte (pas d'essai local possible).
+- [ ] deux fusions de suite sur `main` : `WaForSpeed.apk` de `apercu` remplacé ≤ 8 min après chaque fusion, Release finale = APK et titre du dernier commit ; runs et heures au Journal
+- [ ] même liste de captures dans `apercu` avant / après (aucune perdue ni renommée), notes = commit des captures
+- [ ] CI de la branche : plus long job de banc ≤ 11 min, durée totale notée au Journal (cible ≈ 12 min contre ≈ 21-25)
+- [ ] délais maximaux (`timeout-minutes`, délai par appel `gh`) : une publication bloquée ne retient plus la suivante ; `apercu-waforspeed-106` publiée (APK + captures)
 
 **WFS-107 — [URGENT] Bug animation « feu blanc » au braquage** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-107.md`)
 - [ ] voir les critères du fichier de règles
