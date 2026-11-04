@@ -1,12 +1,16 @@
 #include "game.h"
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>   // setenv (WFS-41)
+#include <cstring>
 #include "../core/jobs.h"
 #include "../core/log.h"
+#include "../core/platform.h"   // nowSeconds (WFS-74)
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
+#include "sauvegarde.h"       // WFS-24 : peinture gardée
 
 namespace wfs {
 
@@ -51,6 +55,7 @@ void Game::setCar(const char* carId) {
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &carById(carId);
     paint_ = hexColor(carDef_->paint);
+    if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureChoisie(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24
     loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
     camInit_ = false;
@@ -201,11 +206,7 @@ void Game::drawControls() {
 Game::Demandes& Game::demandes() { static Demandes d; return d; }
 
 void Game::update(double dt) {
-    if (Demandes& d = demandes(); !d.carte.empty() && r_) {   // WFS-41 : carte choisie, partie reconstruite entre deux images
-        const std::string c = d.carte, v = carDef_->id; const vec3 p = paint_; Renderer& r = *r_; d.carte.clear();   // voiture et peinture du garage gardées
-        setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str()); paint_ = p;
-        WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour");
-    }
+    if (!demandes().carte.empty() && r_) changerCarte();   // WFS-41 / WFS-74 : entre deux images, jamais au milieu
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
@@ -300,6 +301,38 @@ void Game::render(double time) {
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes)) drawControls();   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();
+}
+
+// ---------------------------------------------------------------- changement de carte (WFS-41, WFS-74)
+// « Rouler » de l'écran Terrain : course neuve sur la carte et le moment choisis. Même carte et même moment : pas de
+// reconstruction, la course repart à zéro (Terrain → Course, comme « Rejouer »). Sinon : écran de chargement de la
+// plateforme (si branché), partie reconstruite (étapes réelles de init), voiture et peinture du garage gardées.
+void Game::changerCarte() {
+    Demandes& d = demandes();
+    const std::string c = d.carte, v = carDef_->id;
+    const bool nuit = d.nuit;
+    d.carte.clear();
+    if (sauvegarde().actif()) { sauvegarde().map = c; sauvegarde().tod = nuit ? "nuit" : "jour"; sauvegarde().enregistrer(); }   // WFS-24
+    lacherCommandes();   // RG-07 : aucune commande tenue pendant le chargement
+    const char* m = std::getenv("WFS_MOMENT");
+    const bool nuitActuelle = m && std::strcmp(m, "nuit") == 0;
+    if (track_.map() && c == track_.map()->id && nuit == nuitActuelle) {   // RG-02
+        WFS_LOG("terrain : carte = %s, %s, déjà chargée (pas de reconstruction)", c.c_str(), nuit ? "nuit" : "jour");
+        allerA(Ecran::Course);
+        return;
+    }
+    const vec3 p = paint_;
+    Renderer& r = *r_;
+    const double t0 = nowSeconds();
+    setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+    shutdown();
+    // après shutdown : le système « texte » vient de libérer la police, l'écran de chargement la recharge (logo et étape lisibles)
+    if (d.debutChargement) d.debutChargement();
+    const bool ok = init(r, v.c_str(), c.c_str(), d.progression);
+    paint_ = p;   // RG-06
+    if (d.finChargement) d.finChargement(ok);
+    if (ok) WFS_LOG("terrain : carte = %s, %s, chargée en %d ms", c.c_str(), nuit ? "nuit" : "jour", (int)std::lround((nowSeconds() - t0) * 1000));
+    else WFS_ERR("terrain : carte = %s, chargement impossible", c.c_str());
 }
 
 // ---------------------------------------------------------------- écrans (WFS-36)

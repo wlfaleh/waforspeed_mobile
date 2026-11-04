@@ -11,6 +11,7 @@
 #include "course_system.h"
 #include "direction.h"
 #include "game.h"
+#include "sauvegarde.h"
 #include "traffic_system.h"
 #include "../render/effets_systeme.h"
 
@@ -37,6 +38,8 @@ public:
 
     void init(Renderer&, const GameView&) override {
         etat_ = {}; rng_ = Mulberry32(0x70u); g_dernierDecalage = {};
+        static bool lu = false;   // RG-01 : mode de direction mémorisé (clé steer de WFS-24), lu une fois par lancement
+        if (!lu && sauvegarde().actif()) { lu = true; reglagesRessenti().direction = sauvegarde().steer == "fleches" ? ModeDirection::Fleches : ModeDirection::Glisser; }
         suivre(activeCourse());
         active_ = this;
     }

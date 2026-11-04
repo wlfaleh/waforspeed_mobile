@@ -12,6 +12,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../game/game.h"
+#include "../game/sauvegarde.h"   // WFS-24
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
@@ -56,9 +57,13 @@ static void initGraphics(App& app, android_app* a) {
     const double tVk = nowSeconds();
     app.renderer.init(app.vk);
     ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
-    if (!app.game.init(app.renderer, "golf", "ville", ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }
+    if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }   // WFS-24 : voiture et carte gardées
     ecrans::chargement().fin();
     app.game.allerA(Ecran::Menu);   // WFS-38 : l'application s'ouvre sur le menu après le chargement
+    // WFS-74 : écran de chargement de WFS-35 au changement de carte (« Rouler »), étapes réelles, message rouge en cas d'échec
+    Game::demandes().debutChargement = [&app] { ecrans::chargement().debut(app.renderer, nowSeconds()); };
+    Game::demandes().progression = ecrans::Chargement::progression;
+    Game::demandes().finChargement = [](bool ok) { if (ok) ecrans::chargement().fin(); else ecrans::chargement().erreur(); };
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();
@@ -80,6 +85,8 @@ static void onCmd(android_app* a, int32_t cmd) {
         case APP_CMD_TERM_WINDOW: termGraphics(app); break;
         case APP_CMD_GAINED_FOCUS: app.focused = true; app.last = nowSeconds(); break;
         case APP_CMD_PAUSE:   // WFS-39 RG-04 : arrière-plan ou perte du focus en course → pause (web blur / visibilitychange)
+            sauvegarde().enregistrer();   // WFS-24 RG-06 : sauvegarde au passage en arrière-plan
+            [[fallthrough]];
         case APP_CMD_LOST_FOCUS: if (app.ready && app.game.ecran() == Ecran::Course) app.game.allerA(Ecran::Pause);
             if (cmd == APP_CMD_LOST_FOCUS) app.focused = false;
             break;
@@ -122,6 +129,9 @@ void android_main(android_app* a) {
     if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
     installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
+    // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
+    sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
+    setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
     while (!a->destroyRequested) {
         int events; android_poll_source* src;
@@ -149,8 +159,8 @@ void android_main(android_app* a) {
             double t = nowSeconds(), dt = t - app.last; app.last = t;
             if (g_margesNeuves.exchange(false))
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
-            app.game.update(dt);
-            app.game.render(t - app.start);
+            if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
+            else { app.game.update(dt); app.game.render(t - app.start); }
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
             if (app.fpsT0 == 0) app.fpsT0 = t;
             if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {

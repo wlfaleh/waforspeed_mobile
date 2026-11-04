@@ -35,7 +35,8 @@ public:
     void setReduit(bool r) { reduit_ = r; }
     // étincelles au point de contact ; vel = vitesse du véhicule dans le monde (m/s) ; floor = hauteur du sol
     void etincelles(const vec3& at, float floor, const vec3& vel, int count = 40);
-    void fumee(const vec3& at, int count = 2);
+    // sol : hauteur de la route sous la bouffée (affichage : le carré ne passe pas sous la route) ; par défaut at.y − 0,5
+    void fumee(const vec3& at, int count = 2, float sol = -1e9f);
     void update(float dt);
     void vider();
     const Reserve& sparks() const { return sparks_; }
