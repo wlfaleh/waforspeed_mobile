@@ -129,23 +129,8 @@ jobs:
         with: { name: apk, path: dl/apk }
       - uses: actions/download-artifact@v4
         with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
-      - name: Release d'aperçu (remplacée à chaque construction)
+      - name: Release d'aperçu (APK d'abord, jamais supprimée ; WFS-87)
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          tag=apercu
-          case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
-          # les builds de main tournent en parallèle : ne jamais remplacer une Release faite d'un commit plus récent
-          cible=$(gh release view "$tag" --json targetCommitish -q .targetCommitish 2>/dev/null || true)
-          if [ -n "$cible" ] && [ "$cible" != "$GITHUB_SHA" ] && git merge-base --is-ancestor "$GITHUB_SHA" "$cible" 2>/dev/null; then
-            echo "La Release $tag vient déjà d'un commit plus récent ($cible) : rien à publier pour ${GITHUB_SHA::7}"; exit 0
-          fi
-          gh release delete "$tag" -y --cleanup-tag || true
-          files="dl/apk/WaForSpeed.apk"
-          [ -s dl/apk/WaForSpeed.aab ] && files="$files dl/apk/WaForSpeed.aab"   # WFS-22 : AAB signé (Google Play)
-          # les fichiers vides (capture ratée) sont ignorés : ils ne doivent pas empêcher la publication
-          if [ -d dl/captures ]; then for f in dl/captures/*.png dl/captures/*.txt; do [ -s "$f" ] && files="$files $f"; done; fi
-          echo "$(echo $files | wc -w) fichiers publiés"
-          gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
-            --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \
-            --notes "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."
+          GH_REPO: ${{ github.repository }}
+        run: bash tools/qa/publier_apercu.sh
