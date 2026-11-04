@@ -56,5 +56,14 @@ Pluie RG-05 de WFS-18 : abandonnée par le PO (coût mesuré 0,008 ms, le web n'
 
 ## Zone de code
 `src/world/**` (nouveau fichier conseillé `src/world/ville_quartiers.cpp`, plus `ville.cpp`, `circuit.cpp`,
-`campagne.cpp`, `cartes_banc.cpp`). Interdit : `src/render/**` (WFS-97), `src/game/duel*`, `src/ui/ecrans/salon.*`
-(WFS-89), `src/platform/**` et `.github/**` (WFS-91 : ne pas toucher `desktop_main.cpp`, utiliser le groupe `cartes`).
+`campagne.cpp`, `cartes_banc.cpp`).
+
+**Interdit** (liste mise à jour par le PO le 2026-11-04, à l'attribution, d'après les tickets en cours) :
+- `src/render/**` et `shaders/**` : WFS-100, WFS-101 en cours, WFS-97 et WFS-107 en attente ;
+- `src/platform/**` et `.github/**` : WFS-106 en cours, qui redécoupe les groupes du banc. Ne pas toucher
+  `desktop_main.cpp` : ajouter les nouvelles captures dans `benchCartes` (`cartes_banc.cpp`). Le groupe `cartes` reste
+  valable (RG-09 de WFS-106) et chaque job de CI qui appelle `benchCartes` produira les nouvelles captures ;
+- `src/game/**` : WFS-105, WFS-108 ;
+- `src/ui/**`, fichiers du duel, iOS.
+
+Une modification nécessaire hors de cette zone se limite à une accroche de 10 lignes au plus, annoncée au Journal.

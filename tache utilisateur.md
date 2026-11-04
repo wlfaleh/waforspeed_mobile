@@ -24,7 +24,7 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 
 - même pour ios il faut la regarder et la merger
-( PO : c'est fait côté planification — ordre ajouté à WFS-103 (RG-11) : l'agent de la revue regarde et fusionne la PR #76 (WFS-88, iOS) ; le gel iOS reste pour tout le reste. ) 
+( PO : c'est fait côté planification — ordre ajouté à WFS-103 (RG-12) : l'agent de la revue regarde et fusionne la PR #76 (WFS-88, iOS) ; le gel iOS reste pour tout le reste. ) 
 
 
 - j'ai tester le jeux ya un problème lorsque je clique sur les fleche ou j'essaye de tourner a gauche ou a droit ya une annimation bizzare et grave commme si ya du feux blanc dit au po et qa de voir le sujet
@@ -39,7 +39,7 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 ( PO : c'est dans WFS-108 (RG-02) : frein maintenu à l'arrêt = marche arrière sans attendre ; comportement vérifié par test CPU et corrigé. ) 
 
 - feux de freinage est trop artificiel et loin de la réalité
-( PO : c'est créé — WFS-109 (E4, P1) : 2e passage des feux de frein (zone du feu du modèle qui s'allume, pas de gros halo, transition douce). Il passe après WFS-107 (même épic). ) 
+( PO : c'est créé — WFS-109 (E4, P1) : 2e passage des feux de frein (zone du feu du modèle qui s'allume, pas de gros halo, transition douce). Il démarre dès la fusion de WFS-101 (même fichier du trafic), en parallèle de WFS-107. Constat du PO : aujourd'hui, de jour, le feu de la voiture ne s'allume jamais au freinage (seul un grand halo rouge plaqué sur le trafic) ; WFS-109 le corrige. ) 
 
 
 - la camera pour le mode proche est catastrophique je vois pas la rue devant la voiture il faut zoomer un peux se sort sue je vois lavant de voiture avec clenaison de la camera
