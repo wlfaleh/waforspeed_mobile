@@ -5,10 +5,12 @@
 //   - Graphismes : Basse / Moyenne / Haute (échelle de la scène 3D et ombres du soleil) ;
 //   - Son : Activé / Coupé (setMuted du web : la sortie audio passe à zéro).
 // Les choix s'appliquent tout de suite et sont enregistrés (fichier texte simple), relus au démarrage.
-// Limites : « Vibrations » masquée (pas de vibreur côté Android) ; disposition gaucher des commandes : à venir (ticket E0).
+//   - Commandes : Droitier / Gaucher (WFS-75 : miroir horizontal des commandes tactiles, miroirX ci-dessous) ;
+//   - Vibrations : Activées / Coupées (WFS-75 : vibrer() de WFS-70 n'envoie plus rien, « vibration ignorée (réglage) »).
 #pragma once
 #include <atomic>
 #include <string>
+#include "../../core/system.h"   // Marges
 
 namespace wfs {
 class Game;
@@ -24,8 +26,16 @@ struct Reglages {
     bool qualiteChoisie = false;   // WFS-15 : niveau choisi par le joueur (lu ou touché) → pas de rétrogradation automatique
     std::atomic<bool> son{true};   // lu par le thread audio (src/audio/audio_system.cpp)
     std::atomic<bool> musique{true};   // WFS-76 : musique seule (l'ambiance reste)
+    bool gaucher = false;      // WFS-75 : commandes en miroir (volant à droite, pédales et nitro à gauche)
+    bool vibrations = true;    // WFS-75 : vibrations du téléphone (motifs de WFS-70)
 };
 Reglages& reglages();
+
+// WFS-75 : miroir des commandes tactiles, seul point de bascule, appliqué au dessin comme au toucher (game.cpp,
+// direction.cpp). Les positions sont calculées pour un droitier avec margesCommandes(), puis x passe par miroirX.
+inline float miroirX(float x, float W) { return reglages().gaucher ? W - x : x; }
+// marges de sécurité (WFS-51) vues par les commandes : gauche et droite échangées pour un gaucher
+inline Marges margesCommandes(const Marges& m) { return reglages().gaucher ? Marges{m.droite, m.haut, m.gauche, m.bas} : m; }
 void appliquerQualiteNiveau(Renderer& r);   // WFS-15 : applique reglages().qualite (qualité automatique)
 
 // panneau ouvert : le menu et la pause ne prennent plus les touchers
