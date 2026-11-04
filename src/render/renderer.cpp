@@ -710,6 +710,12 @@ void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, f
     ui_vtx_.insert(ui_vtx_.end(), {a, b, cc, a, cc, d});
 }
 
+// WFS-65 : quadrilatère libre (sommets dans l'ordre), couleurs interpolées entre les sommets (vignette, lignes)
+void Renderer::uiQuad(const UiVertex q[4]) {
+    if (ui_vtx_.size() + 6 > UI_MAX_VERTS) return;
+    ui_vtx_.insert(ui_vtx_.end(), {q[0], q[1], q[2], q[0], q[2], q[3]});
+}
+
 void Renderer::uiCircle(float cx, float cy, float r, const vec4& c) {
     UiVertex a{cx - r, cy - r, 0, 0, c.x, c.y, c.z, c.w}, b{cx + r, cy - r, 1, 0, c.x, c.y, c.z, c.w},
              cc{cx + r, cy + r, 1, 1, c.x, c.y, c.z, c.w}, d{cx - r, cy + r, 0, 1, c.x, c.y, c.z, c.w};
