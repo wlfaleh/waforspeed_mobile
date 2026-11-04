@@ -41,7 +41,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
-    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6;
+    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif();   // WFS-22 : masqué à la manette
 }
 
 class Pause : public System {

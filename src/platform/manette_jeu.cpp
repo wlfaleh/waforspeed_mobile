@@ -95,7 +95,7 @@ private:
 
 // ---------------------------------------------------------------- banc d'essai
 void benchManette(Game& g, Renderer& r, const std::string& out) {
-    courseBenchRules(false);
+    courseBenchRules(true);   // vraie course : décompte, chrono, HUD (boutons tactiles du HUD masqués à la manette)
     double t = 1200;
     int n = 0;
     auto image = [&](int rendu = 10) { appliquer(g); g.update(1.0 / 60); t += 1.0 / 60; if (++n % rendu == 0) g.render(t); };
@@ -109,7 +109,7 @@ void benchManette(Game& g, Renderer& r, const std::string& out) {
 
     // 1) course automatique de référence (pilote automatique), puis la même conduite donnée par la manette :
     //    gâchette droite à fond, stick gauche = consigne du pilote automatique (milieu de la voie)
-    const int PAS = 600;
+    const int PAS = 1200;   // 20 s : décompte, puis ligne droite et premiers virages
     if (!g.init(r, "golf", "ville")) { WFS_ERR("manette : chargement impossible"); return; }
     g.setAutopilot(true); g.camMode = 0;
     for (int i = 0; i < PAS; i++) g.update(1.0 / 60);
@@ -167,6 +167,7 @@ void benchManette(Game& g, Renderer& r, const std::string& out) {
     toucherEcran(); image(1);
     WFS_LOG("manette : toucher de l'écran → mode manette %s", g.modeManette ? "oui" : "non");
     g.shutdown();
+    courseBenchRules(false);
     unsetenv("WFS_MOMENT");   // choisi à l'écran Terrain (WFS-41)
 }
 
