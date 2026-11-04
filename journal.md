@@ -1657,7 +1657,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Triangles** : compass 154 k, x5 138 k, model3 135 k, p208 132 k dépassent la cible de 120 k du joueur (versions `-lod` possibles plus tard).
 - **À regarder** : Giulia et Elantra ont un motif de camouflage venant de la texture de peinture de leur modèle.
 
-<<<<<<< HEAD
 ### 2026-11-04 00:52:19 — WFS-60 roues animées fusionné par confiance, PR #48 (Claude, agent 4)
 - **Fait** :
   - `src/game/roues.*` porte `splitWheels`, `looksLikeWheel`, `rigWheels` et `animWheels` (`js/cars/models.js`) et les angles de `scene.js`.
