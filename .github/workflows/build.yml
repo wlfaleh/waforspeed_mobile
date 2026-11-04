@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        groupe: [partie1, partie2, texte, ecrans-2400, vitrines, vie]
+        groupe: [partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit]   # nuit : WFS-09
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -44,7 +44,7 @@ jobs:
         run: |
           mkdir -p captures
           case "${{ matrix.groupe }}" in
-            partie1|partie2|vitrines|vie)   # vitrines : WFS-13, 16 voitures ajoutées ; vie : WFS-71
+            partie1|partie2|vitrines|vie|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; vie : WFS-71 ; nuit : WFS-09
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
             texte)
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
