@@ -167,6 +167,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-79 | Son iOS (sortie Core Audio) | E6 (+ accroche E7 `ios.cmake`) | ✅ Fusionné (QA de nuit à faire) — PR #63 | Claude (session trafic, agent WFS-79), 2026-11-04 | WFS-22 ✅, WFS-76 ✅ | `feature/waforspeed-79` |  |  |
 | P4 Basse | WFS-80 | Manette : garage (peintures) et réglages joignables au focus | E8 (+ accroche E5 `garage.cpp`) | ⏳ En attente | | WFS-22 ✅, WFS-75 | `feature/waforspeed-80` |  |  |
 | P3 Moyenne | WFS-81 | Nuit corniche et circuit : vrais lampadaires, lumières alignées, feux du trafic sans double halo | E2 (+ accroche E3 `traffic_system.cpp`) | ⏳ Prêt (attribuable à la fin de WFS-18, E2 occupée) | | WFS-09 ✅, WFS-53 ✅, WFS-67 ✅ | `feature/waforspeed-81` |  |  |
+| P2 Haute | WFS-82 | [STABLE] Performances téléphone : masquage hors champ et au loin, moins d'appels de dessin (Basse ≤ 300) | E4 | 🔧 En cours | Claude (agent 4, session 011cpqZan), 2026-11-04 | WFS-15 ✅, WFS-67 ✅ | `feature/waforspeed-82` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -462,6 +463,11 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-81 — Nuit corniche et circuit** · E2 · P3 Moyenne · ⏳ Prêt, après WFS-18 (règles : `regles-de-gestion/WFS-81.md`)
 - [ ] `nuit-plage-*` : poteaux sous chaque lumière ; `nuit-circuit-*` : lumière sous chaque mât ; trafic qui freine la nuit : un seul halo rouge par feu
+
+**WFS-82 — [STABLE] Performances téléphone : masquage** · E4 · P2 Haute · 🔧 En cours — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-82` (règles : `regles-de-gestion/WFS-82.md`)
+- [ ] banc nuit ville : Basse ≤ 300 appels de dessin, Moyenne ≤ 450, Haute sans hausse ; avant/après au Journal
+- [ ] captures `qualite-*` et partie1 : rien ne manque à moins de 150 m ; phares et feux du trafic restent attachés à leur voiture
+- [ ] test CPU `masquage` vert ; aucun plantage, aucune régression du banc
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
