@@ -82,4 +82,5 @@ else()
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
+  add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
 endif()

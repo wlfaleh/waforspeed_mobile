@@ -9,6 +9,7 @@
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
+#include "sauvegarde.h"       // WFS-24 : peinture gardée
 
 namespace wfs {
 
@@ -53,6 +54,7 @@ void Game::setCar(const char* carId) {
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &carById(carId);
     paint_ = hexColor(carDef_->paint);
+    if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureChoisie(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24
     loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
     camInit_ = false;
@@ -314,6 +316,7 @@ void Game::changerCarte() {
     const std::string c = d.carte, v = carDef_->id;
     const bool nuit = d.nuit;
     d.carte.clear();
+    if (sauvegarde().actif()) { sauvegarde().map = c; sauvegarde().tod = nuit ? "nuit" : "jour"; sauvegarde().enregistrer(); }   // WFS-24
     lacherCommandes();   // RG-07 : aucune commande tenue pendant le chargement
     const char* m = std::getenv("WFS_MOMENT");
     const bool nuitActuelle = m && std::strcmp(m, "nuit") == 0;
