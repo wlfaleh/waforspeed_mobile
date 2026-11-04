@@ -66,7 +66,7 @@ bool lire() {
     char cle[32]; int v;
     while (std::fscanf(fp, " %31[^=]=%d", cle, &v) == 2) {
         if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
-        else if (!std::strcmp(cle, "qualite")) R.qualite = std::clamp(v, 0, 2);
+        else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
         else if (!std::strcmp(cle, "son")) R.son = v != 0;
         else if (!std::strcmp(cle, "musique")) R.musique = v != 0;   // WFS-76
     }
@@ -91,6 +91,7 @@ void appliquerQualite(Renderer& r) {
     const int q = reglages().qualite;
     r.vk().renderScale = q == QUALITE_BASSE ? 0.5f : q == QUALITE_MOYENNE ? 0.75f : 1.f;
     r.forceNoShadows = q == QUALITE_BASSE;
+    r.bloomForce = q == QUALITE_BASSE ? 0.f : 1.f;   // WFS-15 : bloom en Moyenne et Haute
     r.resize();
     WFS_LOG("réglages : qualité %s (scène à %.0f %%, ombres %s)", LIGNES[L_QUALITE].choix[q], r.vk().renderScale * 100,
             r.forceNoShadows ? "coupées" : "actives");
@@ -127,7 +128,7 @@ public:
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
             Reglages& R = reglages();
             if (l == L_CAMERA) { R.camera = c; appliquerCamera(); }
-            else if (l == L_QUALITE) { R.qualite = c; if (r_) appliquerQualite(*r_); }
+            else if (l == L_QUALITE) { R.qualite = c; R.qualiteChoisie = true; if (r_) appliquerQualite(*r_); }
             else if (l == L_SON) R.son = c == 0; else R.musique = c == 0;
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
@@ -245,6 +246,8 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
     courseBenchRules(false);
 }
+
+void appliquerQualiteNiveau(Renderer& r) { appliquerQualite(r); }   // WFS-15
 
 } // namespace ecrans
 

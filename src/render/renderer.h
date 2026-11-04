@@ -111,6 +111,8 @@ public:
 
     Image white, flatNormal;
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
+    float bloomForce = 1.f;        // WFS-15 : bloom (UnrealBloomPass du jeu web) : 1 en Moyenne / Haute, 0 en Basse
+    uint32_t appelsDessin() const { return appelsPrec_; }   // WFS-15 : appels de dessin de la dernière image (journal)
     // WFS-59 : mode GPU logiciel actif (émulateur de la QA : GPU SwiftShader / llvmpipe, ou intent qa_simu=true)
     bool gpuLogiciel() const { return modeGpuLogiciel(); }
     uint32_t shadowMapSize() const { return shadowSize_; }
@@ -165,7 +167,7 @@ private:
     Buffer osBuf_[2]; VkDescriptorSet osSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
     int skinUsed_ = 0;
     VkSampler shadowSampler_ = VK_NULL_HANDLE;
-    bool shadowsOn_ = false, night_ = false;
+    bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
