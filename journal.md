@@ -1910,3 +1910,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Zone autorisée : `src/ui/ecrans/reglages.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.*` si besoin.
 - Critères : lignes visibles et appliquées tout de suite, choix relus au relancement, focus manette sur pastilles et choix (A applique, B retour), captures tactiles du garage inchangées.
 - Plan : 1) deux lignes dans `LIGNES` + lecture / écriture ; 2) zones de focus des choix ; 3) accroche garage ; 4) banc manette ; fusion par confiance si > 50 %.
+
+### 2026-11-04 12:49:44 — WFS-18 fusionné par confiance (PR #66) (Claude, session trafic, agent WFS-18)
+- Fait : météo dans `src/world/meteo.h` / `meteo.cpp` (nouveaux, E2). Système `pluie` (ordre 199) : port de `initRain` / `drawFx` (fx.js), min(160, L×H/9000) gouttes, 10-24 px, 900-1500 px/s × (0,7 + 0,6 p), inclinaison (−0,12 − braquage×0,25)×(0,4 + p), trait rgba(170,190,255,.2) de 1 px, dessiné dans `drawUi` avant la vignette (350) et le HUD ; nuit + ville + écran Course seulement ; 0 goutte avec « réduire les mouvements » (`reglagesRessenti`, WFS-70). Système `ciel-couvert` (ordre 960, après `Nuit` 950) : couleur des nuages de `makeSkyMaterial` (mix(mid, hor, 0,5)×0,9) mêlée au ciel à nightClouds 0,35, brouillard rapproché de (1 − 0,35×0,52).
+- Accroches : **aucune** (enregistrement par `WFS_SYSTEM`, aucun fichier du noyau, de `src/render/**` ni de `renderer.h` modifié).
+- Vérification locale : tests CPU de build.yml OK ; banc `WFS_BANC=nuit` : pluie active seulement en ville, `course-nuit-ville-0` et `-1` différentes (gouttes déplacées), coût 0,008 ms/image (102 gouttes, 1280x720) ; capture de jour en ville (`ressenti-choc`) sans pluie.
+- Limites : la pluie est discrète (alpha 0,2 du jeu web) ; RG-05 « désactivée en qualité basse si baisse sous 60 i/s » non appliquée (coût négligeable mesuré). Option « réduire les mouvements » non vérifiée par capture.
