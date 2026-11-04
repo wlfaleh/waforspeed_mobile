@@ -2237,3 +2237,16 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Tailles arrondies au pixel supérieur (jamais moins que CSS × k).
   - Groupes de banc locaux `demitour-local` et `effets-local` ajoutés pour l'essai, puis retirés : `src/platform` n'est pas modifié.
 - **Suite** : suivre la CI de `main`, puis demander le ticket suivant au PO.
+
+### 2026-11-04 22:04:18 — Statuts remis à jour : tickets 🔧 sans branche (PO / Scrum Master)
+- **Motif** : ordre de l'utilisateur dans `tache utilisateur.md` : « on a des tâches avec des statuts en cours alors que l'agent n'a pas encore créé la branche ; il faut remettre à jour les statuts dans `TACHES.md` et `journal.md` pour ne pas bloquer le dev ». Légende de `TACHES.md` : 🔧 En cours = « attribué (Responsable), **branche créée** ». Cet ordre remplace la décision PO de 20:32:37 (réattribution un par un, à la demande).
+- **Vérification** à 21:59:45 puis 22:03:38 UTC (`git fetch origin`, `git ls-remote origin 'refs/heads/*'`, `gh pr list`) :
+  - restent 🔧 (branche poussée) : **WFS-89** (`feature/waforspeed-89`, PR #77 ouverte, non fusionnée, agent 5) et **WFS-96** (`feature/waforspeed-96`, PR #79 ouverte, Claude (session trafic)) ;
+  - aucune branche ni PR pour les 7 tickets ci-dessous.
+- **Tickets remis en ⏳ Prêt** (Responsable libéré, branche prévue gardée, zone, critères et règles inchangés) :
+  - attribués à Claude (session trafic) à 18:42:05 : P1 **WFS-99** (E5), **WFS-100** (E4), **WFS-101** (E4 + E3) ;
+  - attribués à Claude (session trafic) à 18:19:20 : P2 **WFS-93** (E2), P2 **WFS-95** (E5), P3 **WFS-97** (E4) ;
+  - attribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd) à 18:00:55 : P2 **WFS-91** (E7).
+- **Pourquoi ⏳ Prêt et pas ⏳ En attente** : les 7 tickets ont « Dépend de : — » dans le tableau et dans leur fichier `regles-de-gestion/WFS-XX.md` (qui existe). Pour WFS-91, la mention « à démarrer dès WFS-89 fusionné » appliquait seulement la règle « un ticket par agent » à l'agent 5, occupé par WFS-89. Ce n'est pas une dépendance : la zone de WFS-91 est disjointe de celle de WFS-89 (RG-06 de WFS-91), et WFS-91 était déjà noté réattribuable à 20:32:37.
+- **Sans changement** : WFS-102 reste ⏳ En attente (WFS-89, 91, 95, 96, 99, 101 pas finis). WFS-88 (iOS, gel, branche et PR #76) n'est pas touché. Les branches `claude/moteur-natif`, `claude/version-web-capacitor` et `ccr-99e41fb9-x0omvu` n'ont rien à voir avec ces tickets ; la dernière est ancienne (fusion de WFS-52) et n'a aucun commit absent de `main`. Rien n'a été supprimé.
+- **Aux anciens titulaires** : ces tickets ne sont plus à vous. Pour en reprendre un, redemandez-le au PO (attribution normale, règle 1). Si vous avez du travail local non poussé, signalez-le ici et poussez-le sur `wip/waforspeed-XX`, jamais sur `feature/waforspeed-XX` sans attribution. Les exceptions déjà écrites restent valables (E4 : WFS-97, WFS-100, WFS-101 ; E5 : WFS-95, WFS-99 ; fichiers séparés).
