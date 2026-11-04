@@ -2303,3 +2303,40 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-04 22:18:16 — WFS-103 : PR #77 (WFS-89) fusionnée (Claude, session trafic)
 - Synchronisée avec main (conflit de `.github/workflows/build.yml` : ligne des tests, `test_binarypack` et `test_conduite_libre` gardés), compilation et tests CPU de la CI OK en local, CI de la branche verte (run 41883025840), captures du salon regardées : rien de bloquant. Fusion fb50d09.
 - `TACHES.md` : WFS-89 ✅ (décision B, vrai réseau → WFS-92 ⏸) ; ligne dans `qa/Check.md`. Suite : PR #79 (WFS-96). #76 (WFS-88) non touchée (GEL iOS).
+
+### 2026-11-04 22:20:27 — PR en attente : analyse et ticket WFS-103 (PO / Scrum Master)
+- **Demande** : ordre de l'utilisateur dans `tache utilisateur.md` (commits f58ad7b, a87df30), transmis par Copilot (session 0e5c192d).
+  - Les essais de fusion ont été faits en mémoire (`git merge-tree`), avec une compilation dans le dossier ignoré `build/`.
+  - Aucune branche ni aucune PR n'a été touchée.
+- **Pas de second ticket.** WFS-103 a été créé pendant l'analyse (22:14:49, e7c1c9f) pour la même demande, et attribué à Claude (session trafic). Je ne crée pas de doublon. L'attribution et l'ordre (#77 puis #79) restent tels quels.
+- **#77 (WFS-89, `feature/waforspeed-89`)**
+  - CI verte sur le commit de code ce35ded (run 41883025840, 18:02 → 18:22, APK `apercu-waforspeed-89`). Le dernier commit 02d8dc4 ne touche que des `.md` (`paths-ignore`), d'où « no checks » sur la PR.
+  - Retard : 29 commits sur `main`.
+  - Un seul conflit : la ligne « Tests CPU » de `.github/workflows/build.yml` (`test_binarypack` de #77 contre `test_conduite_libre` de WFS-90). `CMakeLists.txt` se fusionnait seul.
+  - Zone respectée : accroches annoncées à 17:57:26.
+  - Captures `salon-code-saisi`, `salon-internet`, `salon-hors-ligne` : rien de bloquant.
+  - La décision B (18:00:55) s'appliquait depuis 18:22, mais le titulaire (agent 5) était inactif depuis environ 4 h.
+  - Décision : fusionnable. **Fusionnée à 22:17:54 par WFS-103 (fb50d09)**. Le conflit est bien résolu : les deux tests sont dans `build.yml`.
+  - CI de `main` en cours (run 41924029885).
+- **#79 (WFS-96, `feature/waforspeed-96`)**
+  - CI verte (run 41890412176, 18:46 → 19:07, APK `apercu-waforspeed-96`).
+  - Retard : 30 commits. Se fusionne avec `main` f127cfd **sans conflit**.
+  - Zone respectée : `src/ui/ecrans/**`, plus les accroches permises par `WFS-96.md`. Ces accroches n'ont **jamais été annoncées** au Journal :
+    - `garage.cpp` / `garage.h` : mode « regarder » ;
+    - `sfx.*` : 2 sons ;
+    - `manette_jeu.cpp` : focus.
+  - Captures `menu-showroom`, `showroom-choisir`, `terrain-0`, `menu-0` : rien de bloquant.
+  - Aucun rapport QA ni ligne `qa/Check.md`. ANO-15 et ANO-34 sont planifiées pour WFS-96.
+  - **Décision : fusionnable maintenant** après synchronisation, compilation et tests CPU de la CI. Confiance du PO ≈ 85 % : fusion par confiance permise. Les accroches sont à annoncer dans l'entrée de fusion.
+- **Vérification du PO** sur l'arbre `main` + #79 + #77, fusionné en mémoire :
+  - le banc PC compile : salon, menu, terrain, pause, garage, sfx, manette_jeu, reseau_peerjs, binarypack, duel_system, game ;
+  - `test_binarypack`, `test_duel`, `test_conduite_libre` et `test_manette` passent.
+  - Cela ne remplace pas la vérification du titulaire (RG-04).
+- **#76 (WFS-88, iOS)** : **gel iOS**. Ni fusion, ni ticket, ni fermeture : la PR reste ouverte. CI verte, 35 commits de retard, sans conflit avec `main` à 22:20.
+- **Règles de WFS-103 complétées** (`regles-de-gestion/WFS-103.md`)
+  - RG-04 corrigée : les tests CPU sont la ligne « Tests CPU » de `build.yml`, **pas `ctest`**. `CMakeLists.txt` n'a aucun `add_test` : `ctest` ne lance rien.
+  - RG-03 : ajout du constat ci-dessus (#77 faite, #79 sans conflit, accroches à annoncer, WFS-99).
+- **Coordination avec WFS-99 (Copilot)**
+  - Copilot garde WFS-99 et ne prend pas WFS-103 : un ticket à la fois, et WFS-103 est déjà en cours.
+  - Dès la fusion de #79 : `git merge origin/main` sur `feature/waforspeed-99`, en gardant l'accroche « regarder » de `garage.*` (RG-07 de WFS-99).
+- **Si WFS-103 s'arrête** (aucun commit ni entrée au Journal pendant 2 h, RG-10) : le PO le remet en ⏳ Prêt et le donne au premier développeur libre.
