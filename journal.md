@@ -2118,3 +2118,19 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **WFS-89 (E3)** : la partie faite (BinaryPack, TransportPeerJs sur réseau simulé, TransportDouble, écran Salon « Rejoindre avec un code », duel Wi-Fi local, note « Sans Internet ») est **fusionnée dès que la CI de la branche est verte** (synchro avec `main` avant). Le critère « duel entre deux réseaux / avec le jeu web » est reporté à WFS-92. Raisons : la valeur visible (saisie du code, duel local sans plantage) est prête et ne doit pas pourrir sur une branche ; l'ajout de ≈ 14 Mo de code tiers (libdatachannel 0.22.6 + libjuice, usrsctp, plog, json, Mbed TLS 3.6.2) a été refusé par le système d'autorisations, c'est une décision de l'utilisateur, pas du PO.
 - **WFS-92 créé** (E3, P2, ⏸ En attente de la décision de l'utilisateur) : pair PeerJS réel branché sur `TransportPeerJs`, bibliothèques copiées dans `third_party/` avec licences. Règles : `regles-de-gestion/WFS-92.md`. Recommandation PO à l'utilisateur : **autoriser** l'ajout (seule voie compatible avec le jeu web sans serveur à nous).
 - **WFS-91 (E7, P2, [STABLE] Endurance)** attribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), à démarrer dès WFS-89 fusionné. Zone : `src/platform/**` (nouveau `endurance_banc.*`, `desktop_main.cpp`), `.github/workflows/build.yml` (job `endurance`), `tools/qa/**`. Plan : banc `WFS_BANC=endurance` (12 cycles, 4 cartes, jour/nuit, garage, pause), 4 retours d'arrière-plan simulés, RSS ≤ +10 %, couches de validation Vulkan à 0 erreur, job CI `endurance` hors chemin de publication. Aucun autre ticket E7 actif (WFS-87 ✅, WFS-88 est en E4 et gelé).
+
+### 2026-11-04 18:03:11 — WFS-90 conduite libre fusionné par confiance, PR #78 (Claude, agent 4)
+- **Fait** :
+  - Dans `player.cpp`, le cap est compté par rapport au sens de la route le plus proche (0 ou ±π). La conduite normale est identique au jeu web.
+  - Sous 10 m/s, la voiture tourne librement jusqu'à 180° ; pas de réalignement automatique quand l'angle est grand.
+  - Au-dessus de 10 m/s, le cap est ramené vers le sens de la route sans saut.
+  - Marche arrière enchaînée sous 3 m/s.
+  - `odo` fait tourner les roues dans le bon sens à contresens.
+  - La caméra de poursuite suit le sens de marche.
+  - Checkpoints et chrono ne comptent que dans le bon sens, puisque `dist` diminue à contresens.
+- **Accroches annoncées** : `src/game/game.cpp` (1 ligne, roues sur `odo`), `desktop_main.cpp` (banc `conduite-*`, nouveau fichier `src/game/conduite_libre_banc.*`), `CMakeLists.txt` et `build.yml` (`test_conduite_libre`).
+- **Vérification** :
+  - `test_conduite_libre` OK : demi-tour à 172° en 3,8 s ; contresens à 107 km/h, cap à 0,16 rad du sens de la route ; marche arrière jusqu'à −31 km/h ;
+  - **les 15 tests CPU de CMake passent**, dont la fidélité au jeu web (`test_track`, `test_course`, `test_traffic`) ;
+  - compilation complète OK.
+- **Non fait** : RG-07, bouton « Demi-tour » (facultatif).
