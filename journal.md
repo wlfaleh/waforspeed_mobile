@@ -1646,3 +1646,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-04 00:51:56 — PO : plus de tickets simulateur (po-scrum-master)
 - **Décision de l'utilisateur** : le simulateur est hors objectif. Règle ajoutée à `po-scrum-master.md` : plus de création ni d'attribution de ticket simulateur (« Vérification simulateur EX » supprimée du processus du PO). Tickets déjà fusionnés ou en cours non touchés.
+
+### 2026-11-04 00:52:07 — WFS-13 : 16 voitures en revue (agent 3, session 011cpqZd)
+- **Fait** : `tools/convertir_voitures.sh` (16 conversions, `convert_car.mjs` inchangé, peinture trouvée partout) ; 16 `.wfm` + licences ; 16 entrées `CARS` et 16 `VOICES` (Model 3 : son citadine en attendant l'électrique) ; fiche Mustang ajoutée au garage ; job CI `vitrines`.
+- **Accroches annoncées** : `src/game/cars.h` (données + `TRAFIC_MODELES = 4`), `src/audio/engine_synth.cpp` (données), `src/game/traffic_system.cpp` (2 lignes : le trafic garde ses 4 modèles, sinon il chargerait les 20 ; variété : WFS-67), `desktop_main.cpp` + `build.yml` (groupe `vitrines`).
+- **Tailles (RG-16)** : p208 6,70 Mo · abarth 4,98 · tcross 6,01 · compass 8,42 · s3 6,31 · x5 7,24 · giulia 6,54 · a45 6,43 · model3 6,45 · corsa 4,83 · gt86 5,36 · elantra 5,98 · v60 2,54 · rrsport 6,01 · mustang 5,85 · sf90 7,40 → 92 Mo ; `assets/cars` 22 → 114 Mo ; APK de `main` avant : 31,4 Mo (après : relevé à la CI).
+- **Triangles** : compass 154 k, x5 138 k, model3 135 k, p208 132 k dépassent la cible de 120 k du joueur (versions `-lod` possibles plus tard).
+- **À regarder** : Giulia et Elantra ont un motif de camouflage venant de la texture de peinture de leur modèle.
