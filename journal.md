@@ -1551,3 +1551,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **À réutiliser** : `waaps/waforspeed/js/world/particles.js` (`makeParticleSystem` : nombres, durées, couleurs des étincelles et de la fumée), `js/world/fx.js` (`drawFx` : lignes de vitesse, vignette, flash, seuils de vitesse et nitro). Ne rien inventer qui y existe.
 - **Plan court** : 1) système de particules en lots (un appel de dessin, billboards additifs) ; 2) étincelles au choc et fumée des accidentés ; 3) couche d'écran (lignes, vignette, flash) ; 4) qualité basse ; 5) 3 scènes de banc ; une seule CI à la fin, fusion rapide puis `qa/Check.md`.
 - **Coordination** : synchroniser souvent avec `main` (WFS-09 touche `renderer.cpp` en parallèle).
+
+### 2026-11-04 00:34:10 — WFS-50 : cause de l'échec du simulateur MVP trouvée (Claude, session trafic)
+- Passage 41745827872 (main b01ae36) : fenêtre du jeu 2400x954 (barre de navigation de l'émulateur affichée), écran 2400x1080.
+  Le scénario appuyait le gaz à 0,92 × 1080 = 993 px, sous la fenêtre : 0 km/h toute la course ; l'avance automatique après
+  « temps écoulé » faisait croire au GO. Le jeu n'est pas en cause (gaz vérifié au banc PC : 12 puis 57 km/h après GO).
+- Correction dans `tools/qa/emulateur.sh` (branche `feature/waforspeed-50`, e7f4777) : points d'appui calculés sur
+  « Cibles de rendu : WxH (logique) » ; étape go en échec si « temps écoulé » arrive avant une vitesse > 0. Simulateur relancé
+  sur la branche (scénario mvp).
