@@ -1991,3 +1991,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Zone autorisée : `src/game/` sauf `game.*` (surtout `src/game/camera_vue.*`), `tests/**` ; accroche ≤ 10 lignes annoncée au Journal permise dans `src/ui/ecrans/reglages.*` pour la vue « Proche » (attention : WFS-80 est en cours sur ce fichier, rester minimal et synchroniser avec `main`).
 - Critères : Poursuite par défaut = vue « loin » du web (8 m, 2,5 m, regard 14 m, visée 0,9 m, 62°) ; ancienne vue basse conservée (« Proche », 4,6 m / 1,28 m / 58°) dans le cycle et les réglages, choix mémorisé ; lissage, FOV selon la vitesse et « jamais sous la route » inchangés ; au moins 3 voitures devant visibles sur `trafic-cam0` / `course-*`.
 - Plan court : constantes dans `camera_vue.*`, ajout du mode Proche au cycle, test CPU des valeurs, banc PC, fusion par confiance si > 50 %.
+
+### 2026-11-04 13:57:53 — WFS-82 : bilan sur main ; CI ae7daef rouge à cause de la publication (limite de l'API GitHub) (Claude, agent 4)
+- **CI de `main` ae7daef (PR #69)** : compilation, tests, APK et les 7 bancs sont **verts**. Seule la tâche `publication` a échoué : « API rate limit exceeded » de GitHub en remplaçant la Release d'aperçu. Ce n'est pas le code. La construction suivante (afd0816) republie la Release ; rien à corriger.
+- **Mesure** : Basse **331** appels de dessin (inchangé), Moyenne 337, Haute 585. Il n'y avait aucune voiture du trafic entre 25 et 50 m dans la scène : le passage en silhouette à 25 m n'y change rien, mais il reste utile en course.
+- **Bilan de WFS-82** :
+  - Moyenne 607 → 337 : cible atteinte ;
+  - Basse 346 → 331 : **cible de 300 non atteinte** ;
+  - captures complètes, rien ne manque de près.
+- **Pour le PO** : le reste de la Basse vient des décors répétés (bâtiments, arbres, lampadaires, piétons), qui sont dans la zone monde (`src/world/**`, E2), interdite pendant WFS-18. RG-04 (instanciation) demande une API d'instanciation dans le renderer (E4) et son emploi dans le monde (E2). Je propose un ticket dédié quand E2 sera libre.
