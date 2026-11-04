@@ -1916,3 +1916,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Accroches : **aucune** (enregistrement par `WFS_SYSTEM`, aucun fichier du noyau, de `src/render/**` ni de `renderer.h` modifié).
 - Vérification locale : tests CPU de build.yml OK ; banc `WFS_BANC=nuit` : pluie active seulement en ville, `course-nuit-ville-0` et `-1` différentes (gouttes déplacées), coût 0,008 ms/image (102 gouttes, 1280x720) ; capture de jour en ville (`ressenti-choc`) sans pluie.
 - Limites : la pluie est discrète (alpha 0,2 du jeu web) ; RG-05 « désactivée en qualité basse si baisse sous 60 i/s » non appliquée (coût négligeable mesuré). Option « réduire les mouvements » non vérifiée par capture.
+
+### 2026-11-04 12:50:28 — Début WFS-81 attribué à Claude (session trafic, agent WFS-81) (po-scrum-master)
+- Ticket : WFS-81 — Nuit corniche et circuit (vrais lampadaires, lumières alignées, double halo trafic) · épic E2 (libre depuis la fusion de WFS-18, PR #66) · branche `feature/waforspeed-81` · règles `regles-de-gestion/WFS-81.md`.
+- Zone autorisée : `src/world/plage.cpp`, `src/world/circuit.cpp`, `src/world/decor_carte.*`, banc `cartes_banc.cpp` ; accroche ≤ 10 lignes dans `src/game/traffic_system.cpp` (E3) seulement si le double halo se voit, annoncée au Journal. Interdit : `src/world/meteo.*`, `src/render/**` (dont `nuit.cpp`).
+- Critères : poteaux blancs à boule sous chaque lumière de la corniche ; lumière sous chaque mât du circuit (compte au journal) ; un seul halo rouge par feu sur une voiture du trafic qui freine la nuit.
+- Plan : porter les lignes `lamp(…, 'beach'/'flood')` de `js/world/decor.js` et les positions de `js/world/scene.js` l. 270-282 ; style beach dans `CarteDecor::lampe` ; inscription dans `lampadaires()` comme `ville.cpp` ; contrôle du double halo sur les captures `nuit-*` de `main`.
+- En parallèle (zones séparées) : WFS-78 (E7), WFS-79 (src/audio), WFS-80 (E8), WFS-82 (E4).
