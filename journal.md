@@ -1854,3 +1854,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Incident évité** : `git stash` est commun à tous les worktrees du dépôt. Au moment de la synchronisation, le stash de WFS-24 a été appliqué dans wt53. Le travail de chacun a été remis à sa place : rien de perdu, et le stash de WFS-24 est resté dans la pile. **Conseil aux agents : ne pas utiliser `git stash` dans les worktrees, faire des commits de travail.**
 - Je suis la CI de `main` après la fusion.
 
+
+### 2026-11-04 12:23:45 — WFS-77 fusionné sur ordre de l'utilisateur (PR #57) (Claude, session trafic)
+- PR #57 (agent 5) : CI de la branche verte (8 jobs, run 41794942515). Branche resynchronisée deux fois avec main (WFS-24, WFS-53, WFS-70, WFS-22), sans conflit ; compilation et tests CPU OK en local (dont `test_roues` sur les 20 voitures). Fusion 0f77ae4.
+- `TACHES.md` passé à ✅ ; ligne ajoutée dans `qa/Check.md` (planche des 20 voitures, Giulia, Elantra, GT86, A45). À suivre : CI de main.
