@@ -22,6 +22,7 @@ const char* sfxNom(SfxId id) {
         case SfxId::BipCheckpoint: return "bip-checkpoint";
         case SfxId::BipFin: return "bip-fin";
         case SfxId::BipDuel: return "bip-duel";
+        case SfxId::Garage: return "garage"; case SfxId::Carte: return "carte";   // WFS-96
         default: return "?";
     }
 }
@@ -42,6 +43,7 @@ void SfxMixer::build(float rate) {
     auto& cp = sons_[(int)SfxId::BipCheckpoint]; beep(cp, rate, 880, 0, 0.12f); beep(cp, rate, 1320, 0.12f, 0.18f);
     auto& fin = sons_[(int)SfxId::BipFin]; beep(fin, rate, 660, 0, 0.2f); beep(fin, rate, 440, 0.2f, 0.2f); beep(fin, rate, 330, 0.4f, 0.4f);
     auto& bd = sons_[(int)SfxId::BipDuel]; beep(bd, rate, 880, 0, 0.15f); beep(bd, rate, 1320, 0.15f, 0.15f); beep(bd, rate, 1760, 0.3f, 0.4f);
+    noiseHit(sons_[(int)SfxId::Garage], 0, rate, 0.18f, 1400, 1.5f, 0.25f, 500); noiseHit(sons_[(int)SfxId::Carte], 0, rate, 0.12f, 1600, 1.4f, 0.2f, 500);   // WFS-96
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
     nitro_ = boucle(rate, 1.2f, 650, 0.7f, 0.6f);
@@ -101,7 +103,10 @@ void SfxEvenements::resync(const Course& c) {
     bumps_ = c.bumps; scrapes_ = c.scrapes; state_ = (int)c.state;
 }
 
+static std::atomic<uint32_t> g_interface{0};   // WFS-96 : sons demandés par les écrans (un bit par son)
+void sfxInterface(SfxId id) { g_interface.fetch_or(1u << (int)id); }
 void SfxEvenements::update(double, const GameView& g, SfxMixer& m) {
+    for (uint32_t d = g_interface.exchange(0); d; d &= d - 1) m.play((SfxId)__builtin_ctz(d));
     const Course* c = activeCourse();
     const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee;
     if (!c || !enCourse) {

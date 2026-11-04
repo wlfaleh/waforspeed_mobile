@@ -97,12 +97,12 @@ private:
         ui::text(r, std::round(ix + ic + gap), std::round(y + (h - tp) / 2), tp, t, o, ui::GAUCHE, 0.1f, false);
     }
 
-    // section #pause : voile, .eyebrow « Course en pause » (cyan), .big « Réglages », .actions : .btn + 2 × .btn--ghost
+    // section #pause : voile, .eyebrow « Course en pause » (cyan), .big « Pause » (ANO-34), .actions : .btn + 2 × .btn--ghost
     void dessinerPause(Renderer& r, float W, float H, float k) {
         r.uiRect(0, 0, W, H, hex(BG, 0.82f));
         const float cx = W / 2;
         ui::text(r, cx, H * 0.24f, 14 * k, ui::majuscules("Course en pause"), hex(ACCENT2), ui::CENTRE, 0.22f, false);
-        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::CENTRE, 0.02f, false);
+        ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules("Pause"), hex(TEXTE), ui::CENTRE, 0.02f, false);
         // boutons de l'écran de fin (WFS-38 / WFS-57) : hauteur 10 % de H, biais 14 px, texte 5 % de H, espacement 0,12 em,
         // largeur = texte + 2 × 28 px ; rangée centrée, 2 % de H d'écart
         const float u = H / 100, bh = 10 * u, tp = 5 * u, gap = 2 * u;
