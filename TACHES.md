@@ -164,7 +164,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P3 Moyenne | WFS-76 | Ambiances sonores par carte et musique (menu et course) | E6 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-10 ✅, WFS-28 ✅, WFS-41 ✅ | `feature/waforspeed-76` | [#55](https://github.com/wlfaleh/waforspeed_mobile/pull/55) |  |
 | P2 Haute | WFS-77 | Les 20 voitures sans défaut visible (peinture unie Giulia et Elantra, roues de la GT86, contrôle des 20) | E5 | ✅ Fusionné (PR #57, sur ordre de l'utilisateur ; QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-13 ✅, WFS-60 ✅ | `feature/waforspeed-77` | [#57](https://github.com/wlfaleh/waforspeed_mobile/pull/57) |  |
 | P4 Basse | WFS-78 | iOS : affichage direct dans une surface Metal et démarrage jusqu'au menu | E7 (+ accroche E4 `vk.cpp`) | 🔧 En cours | Claude (session trafic, agent WFS-78), 2026-11-04 | WFS-22 ✅ | `feature/waforspeed-78` |  |  |
-| P4 Basse | WFS-79 | Son iOS (sortie Core Audio) | E6 (+ accroche E7 `ios.cmake`) | 🔧 En cours | Claude (session trafic, agent WFS-79), 2026-11-04 | WFS-22 ✅, WFS-76 ✅ | `feature/waforspeed-79` |  |  |
+| P4 Basse | WFS-79 | Son iOS (sortie Core Audio) | E6 (+ accroche E7 `ios.cmake`) | ✅ Fusionné (QA de nuit à faire) — PR #63 | Claude (session trafic, agent WFS-79), 2026-11-04 | WFS-22 ✅, WFS-76 ✅ | `feature/waforspeed-79` |  |  |
 | P4 Basse | WFS-80 | Manette : garage (peintures) et réglages joignables au focus | E8 (+ accroche E5 `garage.cpp`) | ⏳ En attente | | WFS-22 ✅, WFS-75 | `feature/waforspeed-80` |  |  |
 | P3 Moyenne | WFS-81 | Nuit corniche et circuit : vrais lampadaires, lumières alignées, feux du trafic sans double halo | E2 (+ accroche E3 `traffic_system.cpp`) | ⏳ Prêt (attribuable à la fin de WFS-18, E2 occupée) | | WFS-09 ✅, WFS-53 ✅, WFS-67 ✅ | `feature/waforspeed-81` |  |  |
 
@@ -454,7 +454,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-78 — iOS : surface Metal et démarrage jusqu'au menu** · E7 · P4 Basse · 🔧 En cours — Claude (session trafic, agent WFS-78), 2026-11-04 (règles : `regles-de-gestion/WFS-78.md`)
 - [ ] run `ios.yml` vert : durées des étapes puis `QA pret` ; `ios-menu.png` = menu, `ios-course.png` = course ; surface Metal, plus de recopie PNG ; CI Android et banc inchangés
 
-**WFS-79 — Son iOS** · E6 · P4 Basse · 🔧 En cours — Claude (session trafic, agent WFS-79), 2026-11-04 (règles : `regles-de-gestion/WFS-79.md`)
+**WFS-79 — Son iOS** · E6 · P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #63 — Claude (session trafic, agent WFS-79), 2026-11-04 (règles : `regles-de-gestion/WFS-79.md`)
 - [ ] journal du simulateur `audio iOS : 48000 Hz` puis `n rappels` > 0 ; son Android et WAV du banc inchangés
 
 **WFS-80 — Manette : garage et réglages au focus** · E8 · P4 Basse · ⏳ En attente de WFS-75 (règles : `regles-de-gestion/WFS-80.md`)
