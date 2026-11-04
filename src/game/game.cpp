@@ -290,7 +290,8 @@ void Game::render(double time) {
     if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
-        r_->draw(car_, carM, &paint_);
+        const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.dist, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
+        r_->draw(car_, carM, &paint_, &rouesJoueur);
     }
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes)) drawControls();   // commandes de conduite : seulement en course
     systemsUi();
