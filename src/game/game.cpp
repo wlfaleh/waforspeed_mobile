@@ -6,6 +6,7 @@
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
+#include "sauvegarde.h"       // WFS-24 : peinture gardée
 
 namespace wfs {
 
@@ -50,6 +51,7 @@ void Game::setCar(const char* carId) {
     if (car_.ok) { r_->vk().waitIdle(); r_->destroy(car_); }
     carDef_ = &carById(carId);
     paint_ = hexColor(carDef_->paint);
+    if (const PeintureDef* p = sauvegarde().actif() ? sauvegarde().peintureChoisie(carDef_->id) : nullptr) paint_ = hexColor(p->hex);   // WFS-24
     loadCarModel(*r_, std::string(carDef_->file), car_);
     player_.reset(*carDef_);
     camInit_ = false;
@@ -209,6 +211,7 @@ void Game::update(double dt) {
         const std::string c = d.carte, v = carDef_->id; const vec3 p = paint_; Renderer& r = *r_; d.carte.clear();   // voiture et peinture du garage gardées
         setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str()); paint_ = p;
         WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour");
+        if (sauvegarde().actif()) { sauvegarde().map = c; sauvegarde().tod = d.nuit ? "nuit" : "jour"; sauvegarde().enregistrer(); }   // WFS-24
     }
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();

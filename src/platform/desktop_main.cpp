@@ -15,6 +15,7 @@
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
+#include "../game/sauvegarde.h"   // WFS-24
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
@@ -90,6 +91,9 @@ int main(int argc, char** argv) {
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
+        benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
+    }
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
         ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41

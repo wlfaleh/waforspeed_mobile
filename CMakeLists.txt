@@ -79,4 +79,5 @@ else()
   add_executable(test_effets tests/test_effets.cpp src/render/effets_particules.cpp)   # WFS-65
   add_executable(test_roues tests/test_roues.cpp src/game/roues.cpp)   # WFS-60
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
+  add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
 endif()
