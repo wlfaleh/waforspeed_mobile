@@ -21,6 +21,8 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
         exts.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #if defined(__ANDROID__)
         exts.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#elif defined(__APPLE__)
+        exts.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);   // WFS-78 : iOS (MoltenVK), window = CAMetalLayer
 #endif
     }
     VkInstanceCreateInfo ici{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
@@ -33,6 +35,12 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
         VkAndroidSurfaceCreateInfoKHR sci{VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR};
         sci.window = window;
         VK_OK(vkCreateAndroidSurfaceKHR(instance, &sci, nullptr, &surface));
+    }
+#elif defined(__APPLE__)
+    if (!offscreen) {   // WFS-78 : surface Metal (calque de la vue iOS)
+        VkMetalSurfaceCreateInfoEXT sci{VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT};
+        sci.pLayer = (const CAMetalLayer*)(const void*)window;
+        VK_OK(vkCreateMetalSurfaceEXT(instance, &sci, nullptr, &surface));
     }
 #endif
 
