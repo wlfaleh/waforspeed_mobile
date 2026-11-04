@@ -186,5 +186,7 @@ static bool g_pret = false;
 @end
 
 int main(int argc, char* argv[]) {
+    // WFS-78 : sans argument buffers Metal (GPU du simulateur : famille Apple 2), lu par MoltenVK à vkCreateInstance
+    setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "0", 0);
     @autoreleasepool { return UIApplicationMain(argc, argv, nil, NSStringFromClass([Appli class])); }
 }

@@ -97,6 +97,8 @@ jobs:
           attendre "QA pret" 600 && attendre "QA iOS : menu affiche" 120 && xcrun simctl io "$dev" screenshot captures-ios/ios-menu.png \
             && attendre "QA iOS : course affichee" 180 && xcrun simctl io "$dev" screenshot captures-ios/ios-course.png && ok=1
           xcrun simctl io "$dev" screenshot captures-ios/ios-ecran-simulateur.png || true
+          # blocage : pile du fil principal de l'app (processus du simulateur visible depuis macOS)
+          [ "$ok" = 1 ] || { p=$(pgrep -f 'WaForSpeed.app/WaForSpeed' | head -1); [ -n "$p" ] && sample "$p" 3 -file ios-pile.txt && head -c 15000 ios-pile.txt; } || true
           grep -E "iOS :|QA|ERREUR|Vulkan|MoltenVK" ios-journal.txt | head -200 || true
           tail -c 4000 ios-journal.txt || true; ls -la captures-ios
           test "$ok" = 1
@@ -109,4 +111,5 @@ jobs:
             WaForSpeed-ios-simulateur.zip
             WaForSpeed-ios-non-signe.ipa
             ios-journal.txt
+            ios-pile.txt
             captures-ios
