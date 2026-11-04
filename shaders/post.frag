@@ -1,7 +1,7 @@
 #version 450
 // WaForSpeed — passe finale : exposition, tonemapping ACES, vignette, gamma, tramage
 layout(set = 0, binding = 0) uniform sampler2D hdr;
-layout(push_constant) uniform P { vec4 rot; vec4 params; } pc;   // params : x exposition, y sortie sRGB matérielle
+layout(push_constant) uniform P { vec4 rot; vec4 params; } pc;   // params : x exposition, y sortie sRGB matérielle, z force du bloom, w seuil
 layout(location = 0) in vec2 vUv;
 layout(location = 0) out vec4 outColor;
 vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
@@ -19,6 +19,23 @@ void main() {
         glow += max(min(s, vec3(24.0)) - 2.5, 0.0);
     }
     c += glow / 16.0 * 0.35;
+    // bloom (WFS-15, UnrealBloomPass du jeu web, force et seuil d'ENV.bloom) : halo large autour des feux, néons, phares.
+    // 2 couronnes de 8 lectures (rayons 1,6 % et 4,5 % de la hauteur) ; seule la part au-dessus du seuil de luminance
+    // brille ; force 0 (qualité basse) : rien n'est lu, image identique
+    if (pc.params.z > 0.0) {
+        vec2 k = vec2(float(textureSize(hdr, 0).y) / float(textureSize(hdr, 0).x), 1.0);
+        vec3 b = vec3(0.0); float poids = 0.0;
+        for (int anneau = 0; anneau < 2; anneau++) {
+            float rayon = anneau == 0 ? 0.016 : 0.045, w = anneau == 0 ? 1.0 : 0.6;
+            for (int i = 0; i < 8; i++) {
+                float a = (float(i) + 0.5 * float(anneau)) * 0.785398;
+                vec3 s = min(texture(hdr, vUv + vec2(cos(a), sin(a)) * rayon * k).rgb * pc.params.x, vec3(24.0));
+                float l = dot(s, vec3(0.2126, 0.7152, 0.0722));
+                b += s * (max(l - pc.params.w, 0.0) / max(l, 1e-4)) * w; poids += w;
+            }
+        }
+        c += b / poids * pc.params.z;
+    }
     c = aces(c);
     vec2 q = vUv - 0.5;
     c *= 1.0 - dot(q, q) * 0.35;

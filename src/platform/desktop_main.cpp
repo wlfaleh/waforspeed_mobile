@@ -22,6 +22,7 @@
 #include "../render/bench_squelette.h"
 #include "../world/pietons.h"
 #include "../render/bench_spots.h"
+#include "../render/qualite_banc.h"
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
 #include "../render/renderer.h"
@@ -70,7 +71,7 @@ int main(int argc, char** argv) {
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
     //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65), trafic vivant (WFS-67)
-    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), projecteurs, personnages (WFS-63), encoche
+    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), qualité (WFS-15), projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
@@ -164,6 +165,7 @@ int main(int argc, char** argv) {
         ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
         benchChangementCarte(g, r, out);       // WFS-74 : écran de chargement au changement de carte, course figée hors course
+        benchQualite(g, r, out);      // WFS-15 : qualité Basse / Moyenne / Haute de nuit, bloom, images/s simulées
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
