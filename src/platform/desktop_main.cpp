@@ -78,9 +78,14 @@ int main(int argc, char** argv) {
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
-    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65), trafic vivant (WFS-67)
-    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), qualité (WFS-15), projecteurs, personnages (WFS-63), encoche
-    //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
+    // WFS-106 : jobs de CI ≤ 11 min (durées mesurées) : partie1 = partie1a + partie1b, partie2 = partie2a + partie2b + partie2c,
+    //   menu = menu1 + menu2 ; même ordre des scènes que dans le banc complet.
+    //   partie1a : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée
+    //   partie1b : plage, cartes, effets (WFS-65), trafic vivant (WFS-67)
+    //   partie2a : son, course (décompte / fin), HUD, menus, pause, salon, garage
+    //   partie2b : duel, conduite libre, roues (WFS-60), terrain, réglages, changement de carte, qualité (WFS-15)
+    //   partie2c : projecteurs, personnages (WFS-63), caméras, piétons, ressenti, encoche
+    //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu (menu1, menu2)
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
@@ -113,13 +118,22 @@ int main(int argc, char** argv) {
     }
     if (banc == "manette") { manette::benchManette(g, r, out); return finir(); }   // WFS-22 : manettes (job texte)
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
-    if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
-        ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); ecrans::benchSalon(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41, WFS-83
-    const bool texte = banc == "texte", partie1 = banc.empty() || banc == "partie1", partie2 = banc.empty() || banc == "partie2";
-    if (partie1 || banc == "chargement")
+    const bool menu1 = banc == "menu" || banc == "menu1", menu2 = banc == "menu" || banc == "menu2";   // WFS-106 : 2400x1080 en deux jobs
+    if (menu1) { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
+        ecrans::benchTerrain(g, r, out); }
+    if (menu2) { ecrans::benchReglages(g, r, out); ecrans::benchSalon(g, r, out); }
+    if (menu1 || menu2) return finir();   // WFS-37, WFS-11, WFS-41, WFS-83
+    // WFS-106 : un morceau tourne sans WFS_BANC, sous son nom ou sous celui de sa partie (partie1 / partie2)
+    auto morceau = [&](const char* nom, const char* partie) { return banc.empty() || banc == nom || banc == partie; };
+    const bool texte = banc == "texte", partie1a = morceau("partie1a", "partie1"), partie1b = morceau("partie1b", "partie1"),
+               partie2a = morceau("partie2a", "partie2"), partie2b = morceau("partie2b", "partie2"), partie2c = morceau("partie2c", "partie2");
+    if (!texte && banc != "chargement" && !partie1a && !partie1b && !partie2a && !partie2b && !partie2c) {   // aucune capture en silence
+        WFS_ERR("WFS_BANC=%s : groupe inconnu", banc.c_str()); finir(); return 2;
+    }
+    if (partie1a || banc == "chargement")
         ecrans::benchChargement(g, r, out, tVk, [](bool ok) { static const std::string keep = g_root; g_root = ok ? keep : "absent/"; });   // WFS-35
     if (banc == "chargement") return finir();
-    if (partie1) for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
+    if (partie1a) for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
         if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); return 2; }
         // vitrine : 3 angles
         g.camMode = 2;
@@ -130,7 +144,7 @@ int main(int argc, char** argv) {
         }
         g.shutdown();
     }
-    if (partie1 || texte) {
+    if (partie1a || texte) {
         // course : la Golf roule en pilote automatique, captures à différents moments
         g.init(r, "golf", std::getenv("WFS_CARTE") ? std::getenv("WFS_CARTE") : "ville");   // WFS-14 : WFS_CARTE=plage pour essayer une autre carte
         if (const char* e = std::getenv("WFS_ENCOCHE")) g.setMarges({(float)std::atoi(e), 0, 0, 0});   // WFS-51 : encoche simulée à gauche
@@ -148,7 +162,7 @@ int main(int argc, char** argv) {
         }
         if (texte) { g.shutdown(); return finir(); }
     }
-    if (partie1) {
+    if (partie1a) {
         benchShadowScenes(g, r, out);    // WFS-07 : ombres du soleil (captures ombres-*.png)
         benchTrafficScenes(g, r, out);   // WFS-08 : trafic de près et choc (captures trafic-*.png)
         // WFS-36 : écran Menu forcé (sans menu dessiné) : scène sans commandes tactiles, voiture immobile
@@ -159,6 +173,8 @@ int main(int argc, char** argv) {
         // WFS-44 : un système de test prend la scène (fond uni #07070c, cube, caméra FOV 36°)
         activerSceneEssai(true); g.render(310); g.render(310.02); r.capturePng(out + "/scene-dediee-vide.png"); activerSceneEssai(false);
         g.shutdown();
+    }
+    if (partie1b) {
         // WFS-14 : carte Corniche (plage) de jour et de nuit, en pilote automatique, caméra haute
         for (const char* mo : {"jour", "nuit"}) {
             setenv("WFS_MOMENT", mo, 1); g.init(r, "golf", "plage"); g.setAutopilot(true); g.camMode = 1;
@@ -170,7 +186,7 @@ int main(int argc, char** argv) {
         benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
         benchTraficVivant(g, r, out);    // WFS-67 : clignotant, feux stop, accident (trafic-clignotant / -freinage / -accident)
     }
-    if (partie2) {
+    if (partie2a) {
         benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
         benchCourseScene(g, r, out);  // WFS-12 : décompte, checkpoints, fin de partie (course-*.png)
         benchHud(g, r, out);          // WFS-27 : HUD (hud-course, hud-temps-bas, hud-nitro, hud-combo)
@@ -179,6 +195,8 @@ int main(int argc, char** argv) {
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
         ecrans::benchSalon(g, r, out);         // WFS-83 : salon du duel, second joueur en UDP (boucle locale)
         ecrans::benchGarage(g, r, out);        // WFS-11 : garage (plateau, fiche, peintures, voiture suivante, « Choisir »)
+    }
+    if (partie2b) {
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         benchConduiteLibre(g, r, out);   // WFS-90 : demi-tour et contresens (conduite-demitour.png, conduite-contresens.png)
         benchRoues(r, out);           // WFS-60 : roues animées (roues-arret-1/2, roues-roule, roues-virage)
@@ -186,6 +204,8 @@ int main(int argc, char** argv) {
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
         benchChangementCarte(g, r, out);       // WFS-74 : écran de chargement au changement de carte, course figée hors course
         benchQualite(g, r, out);      // WFS-15 : qualité Basse / Moyenne / Haute de nuit, bloom, images/s simulées
+    }
+    if (partie2c) {
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
@@ -194,7 +214,7 @@ int main(int argc, char** argv) {
     }
     r.shutdown();
     vk.shutdown();
-    if (partie2) {   // WFS-51 : encoche de 90 px à gauche en 2400x1080 : bande marquée, volant et jauges décalés à droite de la bande
+    if (partie2c) {   // WFS-51 : encoche de 90 px à gauche en 2400x1080 : bande marquée, volant et jauges décalés à droite de la bande
         VkCtx vk2; Renderer r2; Game g2;
         if (vk2.init(nullptr, 2400, 1080) && r2.init(vk2) && g2.init(r2, "golf", "ville")) {
             g2.setMarges({90, 0, 0, 0}); g2.montrerMarges = true; g2.setAutopilot(true);
