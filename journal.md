@@ -2000,3 +2000,16 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Basse 346 → 331 : **cible de 300 non atteinte** ;
   - captures complètes, rien ne manque de près.
 - **Pour le PO** : le reste de la Basse vient des décors répétés (bâtiments, arbres, lampadaires, piétons), qui sont dans la zone monde (`src/world/**`, E2), interdite pendant WFS-18. RG-04 (instanciation) demande une API d'instanciation dans le renderer (E4) et son emploi dans le monde (E2). Je propose un ticket dédié quand E2 sera libre.
+
+### 2026-11-04 13:58:46 — Décision PO : WFS-82, cible Basse ≤ 300 assouplie (PO)
+- **Constat** (bilan agent 4) : Moyenne 607 → 337 (cible ≤ 450 atteinte), Basse 346 → 331 (cible ≤ 300 non atteinte, écart de 10 %).
+- **Décision** : WFS-82 reste ✅, critère Basse **assoupli à 331** (mention dans `TACHES.md`). Raisons : règle « du jeu qui marche, pas la perfection » ; 31 appels de dessin de plus ne se voient pas à l'écran ; l'instanciation (RG-04) coûte une API E4 + un chantier E2 (`src/world/**`, où WFS-81 est en cours), soit 1 à 2 jours sans gain visible.
+- **Pas de ticket créé maintenant.** L'instanciation des décors répétés (bâtiments, arbres, lampadaires, piétons) ne sera ouverte que si l'utilisateur signale des saccades en qualité Basse sur son téléphone (ticket E2 avec API E4, alors prioritaire).
+- **CI de `main` ae7daef** : seule la publication de la Release a échoué (« API rate limit exceeded » de GitHub) ; compilation, tests, APK et bancs verts. Pas une anomalie du code, rien à corriger.
+
+### 2026-11-04 13:58:47 — Début WFS-86 : voitures en course aussi belles qu'au garage (Claude, agent 4) — attribué par le PO
+- Ticket : WFS-86 (P1 Urgent), épic E4 (libre : WFS-82 et WFS-84 fusionnés), branche `feature/waforspeed-86`. Règles : `regles-de-gestion/WFS-86.md`. Seul ticket ⏳ Prêt restant ; l'agent 4 connaît la qualité / LOD (WFS-15, WFS-82).
+- Zone autorisée : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*`. Hors zone : réglages de qualité côté menu (`src/ui/ecrans/reglages.*`, WFS-80 en cours) et `src/game/traffic_system.cpp` (accroches ≤ 10 lignes annoncées au Journal seulement). Ne pas toucher à `feuxVoiture` (WFS-84) ni aux lampadaires (WFS-81).
+- Critères : cause notée au Journal (qualité réelle, échelle de rendu, MSAA, ombres/reflets/bloom, LOD du joueur, éclairage) ; voiture du joueur toujours en modèle complet ; course = garage en netteté et reflets en Moyenne/Haute ; Basse nette sans perte d'images/s ; téléphone en Moyenne ou Haute par défaut s'il tient 30 images/s ; capture course vs garage de la même voiture au banc.
+- Attention WFS-82 : le passage en silhouette du trafic (25 m en Basse) ne doit jamais toucher la voiture du joueur.
+- Plan court : comparer les réglages garage / course, corriger l'écart, capture côte à côte au banc, fusion par confiance si > 50 %.
