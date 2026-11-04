@@ -2043,3 +2043,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : job `publication` de `main` vert après fusion ; `releases/download/apercu/WaForSpeed.apk` répond ; captures à la même adresse ; branche `apercu-waforspeed-87` publiée.
 - **Plan court** : sortir le script dans `tools/qa/publier_apercu.sh`, téléverser dans la Release existante (`--clobber`) puis déplacer le tag (ou tag temporaire), APK d'abord, tentatives 15/30/60/120 s ; essai sur la branche ; fusion par confiance si > 50 %.
 - **Note pour l'utilisateur** (non fait, irréversible) : 74 Releases d'aperçu de branches existent ; les supprimer réduirait la charge, à décider par l'utilisateur.
+
+### 2026-11-04 14:21:14 — WFS-87 : publication de l'aperçu fiable, PR #73 en revue (Claude, agent 5)
+- **Fait** (zone E7) : `tools/qa/publier_apercu.sh` (nouveau) appelé par le job `publication` de `build.yml` : plus de suppression de la Release ; APK téléversé sous un nom provisoire puis substitué (suppression + renommage), tag déplacé ; APK avant les captures ; 4 nouvelles tentatives par appel (15, 30, 60, 120 s) ; une seule lecture de la Release ; captures par lots de 20 ; garde « commit plus récent » conservée ; APK raté = job rouge, captures ratées = avertissement.
+- **Vérification** : `bash -n` ; essai local avec un faux `gh` (création, remplacement avec 403 à la première lecture, Release d'un commit plus récent) : déroulés corrects. Preuve attendue : CI de la branche (`apercu-waforspeed-87` créée), puis relance du job de publication (chemin de remplacement).
+
