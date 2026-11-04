@@ -21,6 +21,7 @@
 #include "../core/system.h"
 #include "../game/player.h"
 #include "../game/track.h"
+#include "../render/eclairage.h"
 #include "../render/renderer.h"
 #include "vegetation.h"
 #include "zones.h"
@@ -29,7 +30,7 @@ namespace wfs {
 namespace {
 
 constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et part propre (émissive) du stipe, de jour
-enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_COUNT };
+enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_COUNT };   // P_NEON : boules des lampadaires (WFS-81)
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
 constexpr float OCEAN_Y = -1.75f;     // niveau de la mer sous la route (le sable mouillé y plonge)
@@ -37,10 +38,11 @@ constexpr float OCEAN_W = 1400.f;     // largeur du plan d'eau (m)
 
 // palette des couleurs unies (GCOL, GCOL2, C du jeu web) ; indice = case de la texture 32 × 1
 enum Col { C_PROM, C_SABLE, C_MOUILLE, C_DUNE, C_COLLINE, C_ROCHER, C_QUAI, C_HERBE, C_MUR, C_TRANSAT, C_GAINE, C_NOIX,
-           C_PARASOL0, C_NB = C_PARASOL0 + 5 };
+           C_PARASOL0, C_POTEAU = C_PARASOL0 + 5, C_LAMPE, C_NB };
 const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c, 0x7d7a70, 0x9a958a, 0x5f6a3a,
                                 0xf2efe6, 0xf2efe6, veg::PALM_SHEATH, veg::PALM_COCO,
-                                0xe2262b, 0xffd23a, 0x1d8fb8, 0xffffff, 0xff6a00};
+                                0xe2262b, 0xffd23a, 0x1d8fb8, 0xffffff, 0xff6a00,
+                                0xe8e8e8, 0xffd9a8};   // WFS-81 : poteau « beach », lampWarm (decor.js)
 constexpr int PAL_W = 32;   // cases de la palette (≥ C_NB)
 static_assert(C_NB <= PAL_W, "palette trop petite");
 inline vec2 palUv(int c) { return {(c + 0.5f) / PAL_W, 0.5f}; }
@@ -49,6 +51,7 @@ using Geo = veg::Geo;
 
 struct Palm { int64_t seg; float lat, h, lean, rot; };          // lat : signé (> 0 côté mer, à droite)
 struct Umbrella { int64_t seg; float lat, along; int col; };
+struct Lampe { int64_t seg; int side; };                           // WFS-81 : lampadaire « beach » (decor.js, lamp)
 
 // bande de sol : de a à b (m depuis l'axe, côté positif), hauteurs ya → yb, couleur
 struct Band { float a, b, ya, yb; int col; };
@@ -155,6 +158,9 @@ public:
         Material mo; const vec3 w = linHex(night_ ? 0x0a1828 : 0x1e7fa8);   // ENV.water
         mo.color = {w.x, w.y, w.z, 1}; mo.rough = 0.12f; mo.flags = MAT_DOUBLE;
         mats_[P_OCEAN] = r.makeMaterial(mo, nullptr, nullptr, nullptr);
+        // WFS-81 : boules des lampadaires, part propre (neonK du jeu web : allumées la nuit, 0,5 de jour, comme CarteDecor)
+        Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE; mn.emissive = linHex(0xffd9a8) * (night_ ? 2.f : 0.5f);
+        mats_[P_NEON] = r.makeMaterial(mn, &palTex_, nullptr, nullptr);
         initVegetation(r);
         place(*g.track);
     }
@@ -207,8 +213,14 @@ public:
             // côté terre : palmiers sur la dune (toutes les zones sauf la côte rocheuse, plus clairsemée)
             const int pas = !std::strcmp(z, "rochers") ? 30 : 14;
             for (int64_t n = z0 + 9; n < z1; n += pas + (int64_t)(d() * 8)) palms_.push_back({n, -(R + 5 + d() * 3), 6 + d() * 4, (d() - 0.5f) * 0.4f, d() * 6});
+            // WFS-81 : lampadaires « beach », pas et côté de chaque zone (decor.js : corniche, marina, rochers, village)
+            int64_t l0 = 15, lp = 30; int ls = 1;
+            if (!std::strcmp(z, "marina")) lp = 28; else if (!std::strcmp(z, "rochers")) { l0 = 20; lp = 40; } else if (!std::strcmp(z, "village")) { l0 = 12; lp = 26; ls = -1; }
+            for (int64_t n = z0 + l0; n < z1; n += lp) lamps_.push_back({n % len, ls});
         }
-        WFS_LOG("Plage : %zu palmiers, %zu parasols, %s", palms_.size(), umbrellas_.size(), night_ ? "nuit" : "jour");
+        // éclairage de nuit (src/render/nuit.cpp) : lumière du jeu web (scene.js) à RW + 0,6, 5,6 m, côté du poteau
+        for (const Lampe& l : lamps_) lampadaires().push_back({l.seg, l.side * (R + 0.6f), 5.6f, StyleLampadaire::Plage});
+        WFS_LOG("Plage : %zu palmiers, %zu parasols, %zu lampadaires, %s", palms_.size(), umbrellas_.size(), lamps_.size(), night_ ? "nuit" : "jour");
     }
 
     bool remplaceSol(const GameView&) const override { return active_; }
@@ -272,6 +284,14 @@ public:
                 for (int k = 0; k < 5; k++) { const float an = (float)Rn.next() * 6.283f; ball(out[P_UNI], top + vec3{std::cos(an) * 0.3f, -0.55f, std::sin(an) * 0.3f}, {0.22f, 0.32f, 0.22f}, palUv(C_NOIX)); }
             }
         }
+        // WFS-81 : lampadaire « beach » (decor.js, lamp) : poteau blanc 0,18 × 5,8 à RW + 0,8, boule lampWarm 0,35 à 6,1 m
+        for (const Lampe& l : lamps_) {
+            int64_t a; if (!inChunk(l.seg, a)) continue;
+            const Frame fr = frameAt(t, (double)a * SEG);
+            const vec3 b = fr.o + fr.r * (l.side * ((float)RW + 0.8f));
+            box(out[P_UNI], b + vec3{0, 0.1f, 0}, fr.r, fr.f, 0.09f, 0.09f, 5.8f, palUv(C_POTEAU));
+            ball(out[P_NEON], b + vec3{0, 6.1f, 0}, {0.35f, 0.35f, 0.35f}, palUv(C_LAMPE));
+        }
         if (!lod) for (const Umbrella& u : umbrellas_) {   // petits objets : pas au-delà de 200 m
             int64_t a; if (!inChunk(u.seg, a)) continue;
             const Frame fr = frameAt(t, (double)a * SEG);
@@ -330,7 +350,7 @@ public:
 
 private:
     bool active_ = false, night_ = false;
-    std::vector<Palm> palms_; std::vector<Umbrella> umbrellas_;
+    std::vector<Palm> palms_; std::vector<Umbrella> umbrellas_; std::vector<Lampe> lamps_;
     Material mats_[P_COUNT];
     Image palTex_{}, leafTex_{}, barkTex_{};
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
