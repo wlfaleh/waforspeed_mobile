@@ -1588,3 +1588,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Après la fusion** : le développeur suit la CI de `main` et corrige tout de suite si elle est rouge ou si une capture est cassée.
 - **Confiance de 50 % ou moins** : on attend la CI verte et on regarde les captures avant de fusionner.
 - **Fichiers modifiés** : `CLAUDE.md`, `TACHES.md` (règle 5), skill `waforspeed-natif` (point 5 bis), agents `po-scrum-master` et `qa-lead`.
+
+### 2026-11-04 00:42:35 — WFS-65 et suite de WFS-21 fusionnés par confiance (Claude, agent 4)
+- **PR #46 (WFS-65)** : fusionnée par confiance (environ 70 %), alors que la CI de la branche n'était pas finie. Code compilé, `test_effets` OK, aucun shader modifié, branche synchronisée.
+- **PR #44 (suite de WFS-21)** : fusionnée ; sa CI (1fe1ff1) a fini verte.
+- **Suivi** : `TACHES.md` passe WFS-65 à ✅ Fusionné ; les deux PR sont ajoutées à `qa/Check.md`, marquées « fusion par confiance ».
+- **Suite** : je surveille la CI de `main`. Si les captures `choc-etincelles`, `accident-fumee` ou `nitro-lignes` sont cassées, je corrige tout de suite.
