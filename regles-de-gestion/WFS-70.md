@@ -20,3 +20,11 @@ Rendre la conduite agréable sur téléphone : choix de la façon de tourner, ch
 
 ## Hors périmètre
 Manettes de jeu (WFS-22), effets visuels (WFS-65).
+
+## Précisions du PO (2026-11-04 00:17:41, à l'attribution)
+- RG-07 (zone) : code dans de nouveaux fichiers `src/game/ressenti.{h,cpp}` (secousse, flash, ralenti, vibration, réduire les mouvements) et `src/game/direction.{h,cpp}` (modes de direction). **Exception accordée par le PO** : dans `src/game/game.cpp`, la partie « volant » de `Game::onTouch` et de `Game::drawControls` peut être **déplacée** vers `direction.cpp` (lignes retirées + appels ≤ 10 lignes ajoutées) ; pédales, nitro et marges (WFS-51) inchangées. À annoncer au Journal.
+- RG-08 (mode « flèches ») : deux zones à gauche (flèche gauche / flèche droite), braquage progressif vers ±1 tant qu'on appuie, retour à 0 au relâchement (comme `keys` du jeu web). Mode par défaut : « zone de glissement » (comportement actuel, inchangé).
+- RG-09 (réglages) : le mode de direction et « réduire les mouvements » sont deux champs publics lisibles et modifiables par les écrans (WFS-41, E8) ; si WFS-41 n'est pas fusionné, ne pas toucher `src/ui/ecrans/` : le banc les règle (`WFS_BANC=ressenti`). Mémorisation : WFS-24, hors périmètre.
+- RG-10 (vibration Android) : nouveau fichier `src/platform/vibration_android.cpp` (JNI `Vibrator`, motif `[90, 40, 120]` / 40 ms) + permission `VIBRATE` dans le manifeste (1 ligne) + accroche dans `android_main.cpp` ≤ 10 lignes ; sur PC, la vibration est seulement écrite au journal (`vibration 90-40-120`). Pas de conflit : WFS-50 (E7) ne touche que `tools/qa/**` et `simulateur.yml`.
+- RG-11 (existant à reprendre, ne pas refaire) : `traffic.cpp` calcule déjà `ev.shake` (0,9 / `0,25 + impact × 1,5` / 0,15 au frottement → porter à 0,3 selon RG-03) et `course.cpp` a déjà `timeScale = 0,35`, `slowmoT = 0,5` : brancher dessus (secousse appliquée à la caméra de `camera_vue.*`, flash par le HUD existant si disponible, sinon un rectangle blanc translucide `uiRect`).
+- Banc : scène `ressenti` avec captures `ressenti-choc` (secousse + flash visibles), `ressenti-fleches` (deux flèches à l'écran), `ressenti-reduit` (même choc, pas de secousse) ; tests dans `tests/` : chrono non allongé par le ralenti (RG-05), secousse nulle avec « réduire les mouvements ».

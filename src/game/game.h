@@ -1,6 +1,7 @@
 // WaForSpeed — la partie : piste, voiture du joueur, route générée par morceaux, caméra, commandes tactiles.
 #pragma once
 #include <map>
+#include <string>
 #include <vector>
 #include "player.h"
 #include "track.h"
@@ -31,6 +32,10 @@ public:
     bool montrerMarges = false;
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
+    // WFS-41 : demande de l'écran Terrain, appliquée au début de la mise à jour suivante : carte non vide = partie
+    // reconstruite sur cette carte (moment : WFS_MOMENT), puis course
+    struct Demandes { std::string carte; bool nuit = true; };
+    static Demandes& demandes();
 private:
     struct Chunk { Mesh road, walk, ground; bool ready = false; };
     struct ChunkCpu { std::vector<Vertex> v[3]; std::vector<uint32_t> i[3]; };
@@ -64,6 +69,7 @@ private:
     // écran affiché ; par défaut Course tant que le menu (WFS-37) n'existe pas
     Ecran ecran_ = Ecran::Course, ecranDemande_ = Ecran::Course;
     bool demandeEcran_ = false;
+    std::string voitureDemandee_; vec3 peintureDemandee_{};   // WFS-11 : choix du garage (GameView::choisirVoiture)
     void appliquerEcran();
     void lacherCommandes();
     // systèmes enfichables (WFS-30, voir src/core/system.h)

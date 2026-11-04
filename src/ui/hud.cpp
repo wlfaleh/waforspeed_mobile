@@ -46,6 +46,41 @@ void barre(Renderer& r, float x, float y, float w, float h, float p) {
     }
 }
 
+// banc d'essai (WFS-46) : vitesse affichée forcée (captures hud-arc-120 / hud-arc-320), −1 = vitesse réelle
+int g_kmhForce = -1;
+
+// compteur en arc (WFS-46) : drawSpeedo(k) de js/ui/hud.js, canvas 380 px affiché en 190 px (.speedo) → rayon 80 px,
+// trait 7 px ; arc de 270° depuis 135° (0,75 π), échelle 0-380, zone rouge au-delà de 300, graduations tous les 20
+// (grand trait tous les 60). Dessiné en disques (arc) et petits carrés (graduations) : aucun nouveau shader.
+void compteur(Renderer& r, float cx, float cy, float k, int kmh) {
+    const float R = 80 * k, ep = 7 * k, a0 = 0.75f * PI, span = 1.5f * PI, vmax = 380;
+    const int N = 90;
+    auto at = [&](int i) { return a0 + span * i / N; };
+    for (int i = 0; i <= N; i++)   // piste rgba(30,33,48,.85), zone rouge rgba(255,31,75,.55) au-delà de 300
+        r.uiCircle(cx + std::cos(at(i)) * R, cy + std::sin(at(i)) * R, ep / 2,
+                   (float)i / N >= 300 / vmax ? hex(DANGER, 0.55f) : vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.85f});
+    const float pct = std::clamp(kmh / vmax, 0.f, 1.f);
+    const int n = (int)std::lround(pct * N);
+    const bool rouge = kmh > 300;
+    for (int pass = 0; pass < 2; pass++)   // halo (shadowBlur 16) puis trait
+        for (int i = 0; i <= n && n > 0; i++) {
+            const float a = at(i), x = std::cos(a), y = std::sin(a);
+            // createLinearGradient(0, s, s, 0) : du bas gauche (cyan) au haut droit (orange)
+            const float t = std::clamp(((0.5f + x * 0.42f) + (1 - (0.5f + y * 0.42f))) / 2, 0.f, 1.f);
+            const vec4 c0 = hex(ACCENT2), c1 = hex(ACCENT);
+            vec4 c = rouge ? hex(DANGER) : vec4{c0.x + (c1.x - c0.x) * t, c0.y + (c1.y - c0.y) * t, c0.z + (c1.z - c0.z) * t, 1};
+            if (pass == 0) { c.w = 0.16f; r.uiCircle(cx + x * R, cy + y * R, ep * 1.25f, c); }
+            else r.uiCircle(cx + x * R, cy + y * R, ep / 2, c);
+        }
+    for (int v = 0; v <= 380; v += 20) {   // graduations rgba(242,244,248,.55), trait 1,5 px
+        const float a = a0 + span * (v / vmax), r1 = R - 11 * k, r2 = R - ((v % 60 == 0) ? 20 : 15) * k;
+        for (int s = 0; s <= 4; s++) {
+            const float rr = r1 + (r2 - r1) * s / 4.f, w = 1.6f * k;
+            r.uiRect(cx + std::cos(a) * rr - w / 2, cy + std::sin(a) * rr - w / 2, w, w, hex(TEXTE, 0.55f));
+        }
+    }
+}
+
 class Hud : public System {
 public:
     const char* name() const override { return "HUD"; }
@@ -90,17 +125,20 @@ public:
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
         {
             // centré dans la zone sûre (entre les marges gauche et droite)
-            const float cx = (mg.gauche + W - mg.droite) / 2, w = 230 * k, h = 128 * k, x = cx - w / 2, y = H - mg.bas - gt - h;
-            r.uiRect(x, y, w, h, GLASS);
-            const int v = std::abs(Course::kmh(pl.speed));
-            const bool rouge = v > 300, arriere = pl.speed < -1;
-            ui::text(r, cx, y + 8 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
-            label(r, cx, y + 56 * k, k, arriere ? "R · km/h" : "km/h", ui::CENTRE);
+            // WFS-46 : compteur en arc (Ø 190 px ≈ 26 % de la hauteur) ; lecture au centre ; nitro dans l'ouverture du bas
+            const float cx = (mg.gauche + W - mg.droite) / 2, R = 95 * k, ccy = H - mg.bas - gt - R - 4 * k;
+            r.uiCircle(cx, ccy, R - 2 * k, {GLASS.x, GLASS.y, GLASS.z, 0.55f});   // fond discret pour la lisibilité
+            const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));
+            const bool rouge = v > 300, arriere = pl.speed < -1 && g_kmhForce < 0;
+            compteur(r, cx, ccy, k, v);
+            ui::text(r, cx, ccy - 30 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
+            label(r, cx, ccy + 18 * k, k, arriere ? "R · km/h" : "km/h", ui::CENTRE);
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
             const vec4 lumineux = hex(SUCCESS);
-            label(r, x + pad, y + 78 * k, k, "Nitro", ui::GAUCHE, pl.nitroOn ? &lumineux : nullptr);
+            const float w = 112 * k, x = cx - w / 2, pad = 0;
+            label(r, cx, ccy + 44 * k, k, "Nitro", ui::CENTRE, pl.nitroOn ? &lumineux : nullptr);
             const int on = (int)std::lround(std::clamp(pl.nitro, 0.0, 1.0) * 10);
-            const float gap = 4 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 14 * k, cy = y + 96 * k;
+            const float gap = 2 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 9 * k, cy = ccy + 64 * k;
             for (int i = 0; i < 10; i++) {
                 const float xi = x + pad + i * (cw + gap);
                 if (i < on && pl.nitroOn) r.uiRect(xi - 2 * k, cy - 2 * k, cw + 4 * k, ch + 4 * k, hex(SUCCESS, 0.35f));   // halo
@@ -146,6 +184,10 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
     if (Course* c = activeCourseMut()) { c->nearMiss(); c->nearMiss(); }
     rouler(12);
     capture("hud-combo");
+    // WFS-46 : compteur en arc à 120 et 320 km/h (zone rouge)
+    g_kmhForce = 120; rouler(6); capture("hud-arc-120");
+    g_kmhForce = 320; rouler(6); capture("hud-arc-320");
+    g_kmhForce = -1;
     // WFS-52 : encoche simulée de 90 px à gauche (WFS_ENCOCHE, sinon 90) : bande marquée, aucun panneau du HUD dedans
     {
         const char* e = std::getenv("WFS_ENCOCHE");

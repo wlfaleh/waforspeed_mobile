@@ -23,7 +23,7 @@ public:
 
     void init(Renderer& r, const GameView& g) override {
         // modèles natifs, partagés par toutes les voitures du trafic
-        for (int i = 0; i < CAR_COUNT; i++) loadCarModel(r, std::string(CARS[i].file), models_[i]);
+        for (int i = 0; i < TRAFIC_MODELES; i++) loadCarModel(r, std::string(CARS[i].file), models_[i]);   // WFS-13
         Material m; m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f};
         shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
         std::vector<Vertex> v = {{-0.5f, 0.02f, -0.5f, 0, 1, 0, 0, 0}, {0.5f, 0.02f, -0.5f, 0, 1, 0, 1, 0},
@@ -126,7 +126,8 @@ public:
             const float L = (float)WEB_CARS[c.type].L, W = (float)WEB_CARS[c.type].W, k0 = L / CARS[mi].d.L;
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
-            r.draw(models_[mi], m * scale({k0, k0, k0}), &paint);
+            const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
+            r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
         }
     }
 
@@ -142,7 +143,7 @@ private:
     static int nativeModelFor(int webType) {
         const WebCarDims& w = WEB_CARS[webType];
         int best = 0; double bd = 1e9;
-        for (int i = 0; i < CAR_COUNT; i++) {
+        for (int i = 0; i < TRAFIC_MODELES; i++) {   // WFS-13 : 4 modèles du trafic (inchangé)
             if (std::strcmp(CARS[i].id, w.id) == 0) return i;
             const double d = std::abs(CARS[i].d.L - w.L);
             if (d < bd) { bd = d; best = i; }

@@ -1,5 +1,7 @@
 # Règles de gestion des US (user stories)
 
+> **Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire)** : développeur confiant à plus de 50% → il fusionne tout de suite (conditions et suite : `CLAUDE.md`, règle de fusion n°1).
+
 Un fichier par ticket : `WFS-XX.md`, **écrit par l'agent `po-scrum-master`** quand il crée ou affine le ticket,
 et **au plus tard avant de l'attribuer**. Le développeur le lit avant de coder ; le QA lead s'en sert pour juger.
 
