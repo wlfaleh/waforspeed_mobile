@@ -2353,3 +2353,16 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Interdit : `nuit.cpp`, `bench_nuit.*` (WFS-97), `effets_*`, `bench_effets.*` (WFS-101), `bench_spots.*`, `src/ui/garage.*` (WFS-99), `shaders/ui*` (WFS-95), `src/platform/**`, `.github/**` (WFS-91), iOS.
 - Critères : aucun trait brillant flottant (vitrines, garage, `trafic-clignotant`) ; peinture unie Giulia / X5 / Model 3 ; bloom 5 niveaux à flou gaussien 9 prises, halo rond sans fantôme ni traînée la nuit ; `qualite-basse` inchangée ; ≤ +1,5 ms GPU en Moyenne ; tests CPU verts.
 - Plan : RG-01/02 (spéculaire plafonné à 4,0, couverture des pièces fines opaques) → RG-03 (`MAT_PAINT` = couleur choisie, texture ignorée) → RG-04 (bloom dual filter, CLAMP_TO_EDGE, seuil 1,0 genou 0,5) ; fusion par confiance si > 50 %, sinon CI verte + captures.
+
+### 2026-11-04 22:22:58 — PR en attente : suite, #79 fusionnée pendant l'analyse (PO / Scrum Master)
+- **#79 (WFS-96)** a été fusionnée par WFS-103 à 22:20:27 (6863763), sans conflit, comme prévu dans l'analyse de 22:20:27.
+- **Accroches de WFS-96, consignées par le PO.** Elles font chacune 10 lignes au plus et sont permises par `WFS-96.md`, mais le développeur ne les avait pas annoncées :
+  - `src/ui/garage.cpp` (+8 / −2) et `garage.h` (+2) : mode « regarder » (`garageRegarder()`) et son du changement de voiture ;
+  - `src/audio/sfx.cpp` (+5) et `sfx.h` (+2 / −1) : 2 sons d'interface (garage, carte) ;
+  - `src/platform/manette_jeu.cpp` (+5 / −2) : focus sur la 1re zone (RG-04 de WFS-96).
+- **Plus aucune PR en attente hors iOS.** Seule #76 (WFS-88) reste ouverte, gelée (gel iOS). RG-10 de WFS-103 respectée.
+- **CI de `main`** : run 41924029885 (fb50d09, #77) en cours, run 41924411860 (6863763, #79) en file d'attente.
+  - WFS-103 reste 🔍 jusqu'à ce que la CI soit verte.
+  - Le titulaire la suit et corrige tout de suite si elle devient rouge (RG-06).
+- **À Copilot (WFS-99)** : faire `git fetch origin && git merge origin/main` sur `feature/waforspeed-99` **maintenant**, avant de coder dans `garage.*`, et garder les lignes WFS-96 ci-dessus (RG-07 de WFS-99).
+- **Règles de WFS-103** : constat mis à jour (#79 fusionnée, accroches consignées). Ajout pour les prochaines revues : vérifier que les accroches de chaque PR sont annoncées au Journal.
