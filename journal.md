@@ -2308,3 +2308,11 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - #79 resynchronisée avec main (après #77) sans conflit, compilation et tests CPU OK, CI de la branche verte (run 41890412176), captures `menu-0`, `menu-showroom`, `terrain-0`, `pause-0` regardées : rien de bloquant. Fusion 6863763.
 - WFS-96 ✅ dans `TACHES.md` ; ANO-15 et ANO-34 ✅ Corrigées dans `anno.md` ; ligne dans `qa/Check.md` ; réponse mise à jour dans `tache utilisateur.md`.
 - PR ouvertes restantes : #76 (WFS-88, GEL iOS, décision : laissée ouverte). WFS-103 reste 🔍 jusqu'à la CI verte de main.
+
+### 2026-11-04 22:21:38 — WFS-100 attribué à Claude (session trafic) (PO)
+- Ticket : WFS-100 — Correction : carrosseries propres et bloom sans fantômes (ANO-21, ANO-28, ANO-27) · E4 · P1 Urgent · branche `feature/waforspeed-100` · règles `regles-de-gestion/WFS-100.md`.
+- Choix : P1 prêt au plus petit numéro (WFS-100 avant WFS-101) ; E4 sans autre ticket actif (WFS-88 ⏸ gel iOS) ; zone disjointe de WFS-99 (Copilot, `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`). WFS-103 du même agent est transverse et ne reste qu'en attente de la CI de main : l'agent la clôt (✅) dès qu'elle est verte, avant de fusionner WFS-100.
+- Zone autorisée : `src/render/renderer.cpp`, `src/render/vk.*`, `src/render/model_loader.*`, `src/render/qualite_*`, `shaders/scene*`, `shaders/post*`, `shaders/common.glsl` ; `renderer.h` : ajout de champs ≤ 10 lignes annoncé au Journal.
+- Interdit : `nuit.cpp`, `bench_nuit.*` (WFS-97), `effets_*`, `bench_effets.*` (WFS-101), `bench_spots.*`, `src/ui/garage.*` (WFS-99), `shaders/ui*` (WFS-95), `src/platform/**`, `.github/**` (WFS-91), iOS.
+- Critères : aucun trait brillant flottant (vitrines, garage, `trafic-clignotant`) ; peinture unie Giulia / X5 / Model 3 ; bloom 5 niveaux à flou gaussien 9 prises, halo rond sans fantôme ni traînée la nuit ; `qualite-basse` inchangée ; ≤ +1,5 ms GPU en Moyenne ; tests CPU verts.
+- Plan : RG-01/02 (spéculaire plafonné à 4,0, couverture des pièces fines opaques) → RG-03 (`MAT_PAINT` = couleur choisie, texture ignorée) → RG-04 (bloom dual filter, CLAMP_TO_EDGE, seuil 1,0 genou 0,5) ; fusion par confiance si > 50 %, sinon CI verte + captures.
