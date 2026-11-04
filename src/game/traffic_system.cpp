@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include "../core/log.h"
 #include "../render/model_loader.h"
@@ -23,6 +24,7 @@ public:
     const char* name() const override { return "trafic"; }
 
     void init(Renderer& r, const GameView& g) override {
+        { const char* mo = std::getenv("WFS_MOMENT"); nuit_ = mo && !std::strcmp(mo, "nuit"); }   // WFS-81 : feux stop portés par le moteur la nuit
         // modèles natifs, partagés par toutes les voitures du trafic
         for (int i = 0; i < TRAFIC_MODELES; i++) loadCarModel(r, std::string(CARS[i].file), models_[i]);   // WFS-13
         Material m; m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f};
@@ -136,6 +138,7 @@ public:
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
+            if (nuit_) r.feuxProchaineVoiture({true, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, false});   // WFS-81 : un seul halo rouge
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
         }
         dessineHalos(r, g);   // WFS-67
@@ -209,7 +212,7 @@ private:
             if (allume)
                 for (float z : {L / 2 + 0.03f + 0.08f, -L / 2 - 0.03f - 0.08f})
                     halos_[0].push_back({m.transformPoint({side * (W / 2 - 0.05f), z > 0 ? f.tail - 0.22f : f.nose - 0.14f, z}), 1.5f});
-            if (freine || c.crashed) halos_[1].push_back({m.transformPoint({side * (W / 2 - 0.28f), f.tail - 0.12f, L / 2 + 0.1f}), 1.1f});
+            if (!nuit_ && (freine || c.crashed)) halos_[1].push_back({m.transformPoint({side * (W / 2 - 0.28f), f.tail - 0.12f, L / 2 + 0.1f}), 1.1f});
         }
     }
     void dessineHalos(Renderer& r, const GameView& g) {
@@ -237,6 +240,7 @@ private:
     Image haloTex_; Material haloMat_[2]; Mesh haloMesh_[2][2]; int haloBuf_ = 0;
     std::vector<Halo> halos_[2];
     std::vector<FeuxStop> stops_;
+    bool nuit_ = false;   // WFS-81
 public:
     const std::vector<FeuxStop>& feuxStop() const { return stops_; }
 private:
