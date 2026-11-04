@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        groupe: [partie1, partie2, texte, ecrans-2400, vitrines]
+        groupe: [partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit]   # nuit : WFS-09
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -39,17 +39,18 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_sauvegarde
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
           case "${{ matrix.groupe }}" in
-            partie1|partie2|vitrines)   # vitrines : WFS-13, 16 voitures ajoutées
+            partie1|partie2|vitrines|vie|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; vie : WFS-71 ; nuit : WFS-09
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
             texte)
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
               mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
-              WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png ;;
+              WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
+              mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/ ;;   # WFS-24 : deux lancements
             ecrans-2400)
               # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
               mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null

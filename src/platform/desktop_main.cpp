@@ -13,8 +13,10 @@
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
 #include "../game/game.h"
+#include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
+#include "../game/sauvegarde.h"   // WFS-24
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
 #include "../render/bench_ombres.h"
@@ -22,8 +24,10 @@
 #include "../world/pietons.h"
 #include "../world/decor_carte.h"
 #include "../render/bench_spots.h"
+#include "../render/qualite_banc.h"
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
+#include "../render/bench_nuit.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
@@ -32,6 +36,7 @@
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
+#include "../world/enseignes.h"
 #include "../ui/text.h"
 #include "../game/cars.h"
 #include <cstring>
@@ -68,12 +73,13 @@ int main(int argc, char** argv) {
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
-    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65)
-    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), projecteurs, personnages (WFS-63), encoche
+    //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65), trafic vivant (WFS-67)
+    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), qualité (WFS-15), projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
     if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
         ui::chargerPolice(r);
         for (int i = TRAFIC_MODELES; i < CAR_COUNT; i++) {
@@ -88,10 +94,15 @@ int main(int argc, char** argv) {
         }
         return finir();
     }
+    if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
+    if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
+    if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
+        benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
+    }
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
         ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41
@@ -148,6 +159,7 @@ int main(int argc, char** argv) {
         unsetenv("WFS_MOMENT");
         benchCartes(g, r, out);   // WFS-53 : cartes Campagne et Grand Prix (carte-campagne-*, carte-circuit-*)
         benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
+        benchTraficVivant(g, r, out);    // WFS-67 : clignotant, feux stop, accident (trafic-clignotant / -freinage / -accident)
     }
     if (partie2) {
         benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
@@ -161,6 +173,8 @@ int main(int argc, char** argv) {
         benchRoues(r, out);           // WFS-60 : roues animées (roues-arret-1/2, roues-roule, roues-virage)
         ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
+        benchChangementCarte(g, r, out);       // WFS-74 : écran de chargement au changement de carte, course figée hors course
+        benchQualite(g, r, out);      // WFS-15 : qualité Basse / Moyenne / Haute de nuit, bloom, images/s simulées
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)

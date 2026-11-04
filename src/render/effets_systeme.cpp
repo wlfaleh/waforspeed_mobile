@@ -107,7 +107,7 @@ public:
             const double L = pl.car ? pl.car->d.L : 4.3, W = pl.car ? pl.car->d.W : 1.8;
             for (int sx : {-1, 1}) {
                 const TrackPoint q = g.track->point(pl.dist - L * 0.35 / M, pl.playerX * RW + sx * W * 0.4);
-                parts_.fumee({(float)q.x, (float)q.y + 0.25f, (float)q.z}, 1);
+                parts_.fumee({(float)q.x, (float)q.y + 0.25f, (float)q.z}, 1, (float)q.y);
             }
         }
         // fumée du capot des voitures du trafic accidentées : 5 s, une bouffée toutes les 0,12 s
@@ -121,7 +121,7 @@ public:
                 if (std::abs(rel) * M > 300) continue;
                 crashSmoke_[i] = 0.12f;
                 const TrackPoint q = g.track->point(pl.dist + rel - car.len * 0.35, car.offset * RW);
-                parts_.fumee({(float)q.x, (float)q.y + 1.1f, (float)q.z}, 1);
+                parts_.fumee({(float)q.x, (float)q.y + 1.1f, (float)q.z}, 1, (float)q.y);
             }
         }
         parts_.update(dt);
@@ -147,7 +147,10 @@ public:
             ix.insert(ix.end(), {n, n + 1, n + 2, n, n + 2, n + 3});
         };
         for (const auto& q : parts_.sparks().p) if (q.vivante()) ajoute(q.c.y > 0.9f ? 0 : 1, q, parts_.sparks().taille);
-        for (const auto& q : parts_.smoke().p) if (q.vivante()) ajoute(2, q, parts_.smoke().taille);
+        // fumée : carré de 2,4 m face à la caméra ; centre remonté pour que son bas reste au-dessus de la route
+        // (sinon la route le coupe net : bandes à bord horizontal sur les captures)
+        const float hs = parts_.smoke().taille * 0.5f * std::abs(up.y);
+        for (auto q : parts_.smoke().p) if (q.vivante()) { q.p.y = std::max(q.p.y, q.floor + hs); ajoute(2, q, parts_.smoke().taille); }
         for (int c = 0; c < 3; c++) for (int k = 0; k < NIV; k++) {
             Mesh& m = meshes_[b][c][k];
             if (vtx_[c][k].empty()) { m.indexCount = 0; continue; }
