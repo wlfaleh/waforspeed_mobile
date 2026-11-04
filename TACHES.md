@@ -171,6 +171,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-83 | Duel jouable entre deux téléphones sur le même Wi-Fi : écran Salon, transport réseau local, menu « Duel en ligne » actif | E3 (+ `src/ui/ecrans/salon.*`, accroches E0 / E7 / E8) | 🔍 En revue (CI) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-21 ✅, WFS-24 ✅, WFS-41 ✅, WFS-74 ✅ | `feature/waforspeed-83` | [#68](https://github.com/wlfaleh/waforspeed_mobile/pull/68) |  |
 | P1 Urgent | WFS-84 | [URGENT] Nuit : feux des voitures naturels (petits feux nets, lueur douce, fini l'effet artificiel) | E4 | ⏳ Prêt |  | WFS-09 ✅ | `feature/waforspeed-84` |  |  |
 | P1 Urgent | WFS-85 | [URGENT] Caméra de poursuite plus haute (voir les voitures devant) | E3 | ⏳ Prêt |  | WFS-66 ✅ | `feature/waforspeed-85` |  |  |
+| P1 Urgent | WFS-86 | [URGENT] Voitures en course aussi belles qu'au garage (qualité, échelle de rendu, anticrénelage, modèle complet) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-86` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -410,6 +411,9 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-85 — [URGENT] Caméra de poursuite plus haute** · E3 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-85.md`)
 - [ ] trafic devant visible depuis la vue Poursuite ; ancienne vue basse conservée en option
+
+**WFS-86 — [URGENT] Voitures en course aussi belles qu'au garage** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-86.md`)
+- [ ] course = garage en netteté et reflets ; cause au Journal
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant

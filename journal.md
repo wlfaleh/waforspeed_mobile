@@ -1943,3 +1943,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-04 12:56:57 — PO : 2 tickets urgents issus du test réel de l'utilisateur (po-scrum-master)
 - **WFS-84** (E4, P1) nuit : feux des voitures artificiels → petits feux nets + lueur douce (le double halo du trafic reste dans WFS-81, en cours). **WFS-85** (E3, P1) caméra de poursuite plus haute (vue « loin » du jeu web par défaut ; l'ancienne vue basse reste en option). Règles : `regles-de-gestion/WFS-84.md`, `WFS-85.md`. À attribuer en premier, en dehors de tout autre ticket.
+
+### 2026-11-04 12:57:31 — PO : WFS-86 créé, voitures en course moins belles qu'au garage (po-scrum-master)
+- Retour de l'utilisateur : garage « nickel », course moins bien. Ticket P1 (E4) : trouver la cause (qualité auto, échelle de rendu, MSAA, ombres/reflets, LOD, éclairage) puis aligner la course sur le garage. Règles : `regles-de-gestion/WFS-86.md`. E4 : un seul ticket actif à la fois, WFS-84 passe après ou avant selon l'agent libre.
