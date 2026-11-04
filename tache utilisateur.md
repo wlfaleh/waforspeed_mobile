@@ -64,3 +64,6 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 - Bug showroom : les flèches sautent des voitures
 ( PO : c'est créé — WFS-113 (E5, P1 urgent) : une flèche = exactement une voiture, cause documentée, 40 appuis sans saut. )
 
+- Cloudflare ok ; checkpoint de départ 60 sec et 30 sec de plus à chaque checkpoint ; ok pour les propositions de la poursuite police
+( PO : c'est pris en compte — WFS-110 RG-08 : départ 60 s, +30 s à chaque checkpoint ; WFS-111 : valeurs validées ; WFS-112 : relais sur Cloudflare Workers (compte gratuit) : le développeur livre le code, le script de déploiement et un mode d'emploi en 5 lignes ; il te demandera de créer le compte et de déployer ou de lui donner un jeton d'API. )
+

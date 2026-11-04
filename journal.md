@@ -2725,3 +2725,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-04 23:45:15 — PO : modes de jeu, duel entre amis, bug showroom (po-scrum-master)
 - **WFS-113** (E5, P1) bug flèches du showroom. **WFS-110** (E3, P2) Course à 5 voitures + Checkpoint 60 s + duel sans trafic. **WFS-111** (E3, P2) Poursuite police (après WFS-110). **WFS-112** (E3, P2) duel entre amis par Internet : serveur de relais, code + lien d'invitation ; **WFS-92 remplacé** (pas de bibliothèques tierces). Décision attendue de l'utilisateur : hébergement gratuit du relais (Cloudflare Workers recommandé). Commentaires du PO dans `tache utilisateur.md`.
+
+### 2026-11-04 23:48:25 — PO : décisions de l'utilisateur appliquées (po-scrum-master)
+- Cloudflare Workers accepté pour le relais du duel (WFS-112) ; Checkpoint : départ 60 s et +30 s par checkpoint (WFS-110 RG-08) ; valeurs de la poursuite police validées (WFS-111). Règles mises à jour.
