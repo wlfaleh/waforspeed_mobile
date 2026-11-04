@@ -568,7 +568,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] sans Internet : note orange, aucun plantage ; CI verte, APK publié
 
 **WFS-93 — Ville : 6 quartiers + finitions des cartes** · E2 · P2 Haute · 🔧 En cours — Copilot (session 0e5c192d), 2026-11-04 (après remise en ⏳ Prêt le 2026-11-04 : aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-93` (règles : `regles-de-gestion/WFS-93.md`). Zone : `src/world/**` (nouveau `ville_quartiers.cpp`, `ville.cpp`, `circuit.cpp`, `campagne.cpp`, `cartes_banc.cpp`) ; interdit : `src/render/**` et `shaders/**` (WFS-100, WFS-101), `src/platform/**` et `.github/**` (WFS-106 : captures dans le groupe `cartes` existant), `src/game/**` (WFS-105, WFS-108), `src/ui/**`, fichiers du duel, iOS
-- [ ] `carte-ville-residentiel`, `-parc`, `-port` : objets du quartier (abribus ; grille, bancs, fontaine ; entrepôts, conteneurs, grues) ; `course-*` inchangées
+- [ ] `carte-ville-residentiel`, `-parc`, `-port` : objets du quartier (abribus ; grille, bancs, fontaine ; entrepôts, conteneurs, grues) ; `course-*` sans régression : `course-cam0-*` centre-ville (immeubles replacés par les tirages du web), `course-cam1-*` quartier résidentiel (précision du PO, `WFS-93.md`)
 - [ ] `carte-circuit-jour` / `-nuit` : texte d'AD_TEXTS lisible sur les panneaux ; `carte-campagne-vignes` : rangs sans marches ; ≤ 300 appels de dessin
 
 **WFS-94 — Corniche : quartiers marina, rochers, village** · E2 · P3 Moyenne · ⏳ En attente (après WFS-93) — branche `feature/waforspeed-94` (règles : `regles-de-gestion/WFS-94.md`). Zone : `src/world/plage.cpp`, `cartes_banc.cpp`, nouveaux `src/world/plage_*.cpp`

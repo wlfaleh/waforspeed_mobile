@@ -2698,3 +2698,22 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   5. RG-07 : étincelles et nitro de WFS-101 inchangées ;
   6. captures `braquage-gauche` / `braquage-droite` à 30, 120 et 250 km/h, jour et nuit (banc E4) ; test CPU du gris à l'écran.
 - **Zone** : `src/render/effets_*`, `bench_effets.cpp`, `tests/test_effets.cpp` ; accroche ≤ 10 lignes dans `desktop_main.cpp` (groupe du banc) annoncée ici si nécessaire.
+
+### 2026-11-04 23:31:08 — WFS-93 : critère « `course-*` inchangées » précisé, port fidèle des tirages du web accepté (PO / Scrum Master)
+- **Question** de Copilot (session 0e5c192d, WFS-93) : RG-01 contredit le critère « `course-*` de la ville (départ au centre) inchangées ».
+  - RG-01 demande les mêmes tirages que `generateDecor`, avec un seul générateur `D = mulberry32(seed × 31 + 7)` pour toute la carte.
+  - Mesures du run 41928993894 de `main` : `course-cam0-*` à 50, 188 et 372 m (tronçons < 448, Centre-ville) ; `course-cam1-*` à 541, 754 et 991 m (tronçons 451, 628 et 826, Quartier résidentiel).
+- **Vérifié** dans `decor.js` (l. 22, 58-70, 221) : un seul `D()`, zones traitées dans l'ordre ; ≈ 11 tirages par immeuble du centre, plus ceux de `placeShop`. Le natif en tire 6 et parcourt toute la piste côté −1 puis côté +1 : il ne suit déjà plus le web après le premier immeuble, ses places actuelles n'ont donc rien à préserver.
+- **Décision : proposition acceptée.** Mon critère était faux : j'avais supposé toutes les `course-*` au centre.
+  - `course-cam1-*` montrent le quartier résidentiel : c'est le résultat attendu de RG-01 et la valeur visible du ticket.
+  - Le centre suit aussi les tirages du web : ses immeubles changent de place sur `course-cam0-*`, avec la même allure (tours, commerces, platanes, lampadaires tous les 24). Garder les anciennes places coûterait deux générateurs pour une fidélité au pixel que personne ne demande (principe 0).
+  - Toujours exigé sur toutes les `course-*` : aucune régression de la voiture, de la route, du HUD, de la lumière et du trafic ; ≤ 300 appels de dessin, ≥ 30 im/s en Basse.
+- **Réalisation**, dans `src/world/**`, sans nouveau ticket :
+  - port littéral : chaque tirage du web est consommé dans le même ordre, même quand le natif n'utilise pas encore sa valeur (`u0`, `v0`, néon, enseigne, terrasses de `placeShop`) ;
+  - identité avec le web visée mais pas prouvée : aucun test contre le web, un écart restant n'est pas une anomalie ;
+  - une seule liste d'immeubles et de commerces : `commerces.cpp` (WFS-71) ne recopie plus les tirages de `ville.cpp`, et aucun commerce ni terrasse ne reste devant un vide.
+- **Recette** :
+  - le développeur le note dans `qa/Check.md` (points à regarder) ;
+  - le QA juge `course-cam0-*` sur l'allure et la non-régression, pas sur la place des immeubles ;
+  - après la fusion de WFS-93, les tickets qui comparent `course-cam1-*` avant et après (WFS-105, WFS-107…) regardent la voiture, la caméra et les effets, pas le décor.
+- **Fichiers** : critère précisé dans `regles-de-gestion/WFS-93.md` (le reste de la fiche ne change pas) et sa copie dans le détail de WFS-93 de `TACHES.md`.
