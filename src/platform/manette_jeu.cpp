@@ -20,6 +20,7 @@ bool g_arme = true;          // réarmement du stick dans les menus
 int g_focus = -1;            // bouton qui a le focus
 Ecran g_ecranFocus = Ecran::Chargement;
 size_t g_nbZones = 0;
+float g_zone0[2] = {};      // WFS-96 : taille de la 1re zone (changement de panneau sur le même écran)
 constexpr int DOIGT = 9000;  // identifiant des touchers simulés (aucun doigt réel n'a cet identifiant)
 
 void toucher(Game& g, const Zone& z) {
@@ -43,8 +44,10 @@ void appliquer(Game& g) {
     auto front = [&](Bouton b) { return e.bouton[b] && !g_prec.bouton[b]; };
     const std::vector<Zone>& z = zonesPrecedentes();
     // nouvel écran (ou boutons apparus : écran de fin) : focus sur le premier bouton déclaré
-    if (g.ecran() != g_ecranFocus || (g_nbZones == 0) != z.empty()) { g_focus = z.empty() ? -1 : 0; g_ecranFocus = g.ecran(); }
-    g_nbZones = z.size();
+    // WFS-96 (RG-04) : zones changées sur le même écran (panneau ouvert / fermé, nombre ou 1re zone) → 1re zone aussi
+    const bool autre0 = !z.empty() && (std::fabs(z[0].w - g_zone0[0]) > 0.5f || std::fabs(z[0].h - g_zone0[1]) > 0.5f);
+    if (g.ecran() != g_ecranFocus || z.size() != g_nbZones || autre0) { g_focus = z.empty() ? -1 : 0; g_ecranFocus = g.ecran(); }
+    g_nbZones = z.size(); if (!z.empty()) { g_zone0[0] = z[0].w; g_zone0[1] = z[0].h; }
     int dx, dy;
     directionMenu(e, g_prec, g_arme, dx, dy);
     if (!z.empty()) {   // RG-04 : menus

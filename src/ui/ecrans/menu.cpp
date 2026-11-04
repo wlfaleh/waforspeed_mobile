@@ -35,16 +35,16 @@ float ease(float t) {
 }
 
 struct Choix { const char* titre; const char* desc; };
-enum { SOLO = 0, DUEL = 1, SHOWROOM = 2 };
+enum { SOLO = 0, DUEL = 1, SHOWROOM = 2, TA_VOITURE = 3 };   // WFS-96 : 4e zone = « Ta voiture » (pied du menu)
 // zones touchables des 3 choix (RG-02) : les parallélogrammes dessinés à la dernière image (x, y, largeur, hauteur, biais)
 struct Zone { float x = 0, y = 0, w = 0, h = 0, biais = 0; bool ok = false; };
-Zone g_zones[3];
+Zone g_zones[4];
 long long g_best = 0;   // record de la session : gardé quand la partie est reconstruite sur une autre carte (WFS-41)
 bool dansZone(const Zone& z, float x, float y) {
     if (!z.ok || y < z.y || y > z.y + z.h || x < z.x) return false;
     return x <= z.x + z.w - z.biais * (y - z.y) / z.h;   // coin bas droit coupé (clip-path)
 }
-int choixSous(float x, float y) { for (int i = 0; i < 3; i++) if (dansZone(g_zones[i], x, y)) return i; return -1; }
+int choixSous(float x, float y) { for (int i = 0; i < 4; i++) if (dansZone(g_zones[i], x, y)) return i; return -1; }
 const Choix CHOIX[3] = {   // section #menu de index.html, textes exacts
     {"Course solo", "Bats le chrono, frôle le trafic, enchaîne les checkpoints"},
     {"Duel en ligne", "Défie un ami sur la même route, même trafic"},
@@ -56,7 +56,7 @@ public:
     const char* name() const override { return "menu"; }
     void onEcran(Ecran, Ecran nouveau, const GameView&) override {
         if (nouveau == Ecran::Menu) t0_ = -1;
-        presse_ = -1; doigt_ = -1; bientot_ = -10;
+        presse_ = -1; doigt_ = -1;
         for (Zone& z : g_zones) z.ok = false;
     }
     // RG-01 : appui = état pressé ; l'action part au relâcher sur le même choix, glisser hors du choix l'annule.
@@ -75,7 +75,8 @@ public:
         if (choix < 0 || sous != choix) return true;
         if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Garage); }             // RG-03 ; WFS-11 : garage d'abord
         else if (choix == DUEL) { WFS_LOG("menu : « Duel en ligne »"); g.allerA(Ecran::Salon); }   // WFS-83 : écran Salon
-        else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom » (bientôt)"); bientot_ = g.time; }  // RG-04
+        else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom »"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-96 (RG-01)
+        else if (choix == TA_VOITURE) { WFS_LOG("menu : « Ta voiture »"); garageRegarder(); g.allerA(Ecran::Garage); }   // #myCarBtn
         return true;
     }
     // record de la session (RG-09) : meilleur score des courses terminées
@@ -93,13 +94,15 @@ public:
         const float W = g.uiWidth, H = g.uiHeight, t = (float)(g.time - t0_);
         const MiseEnPage m = miseEnPage(W, H);
         const float k = m.k, gap = m.gap;
-        // .screen : fondu de 300 ms (screen-in) ; voile linear-gradient(100deg, .94 → .78 à 42 % → .12), en 16 bandes
+        // .screen : fondu de 300 ms (screen-in) ; voile linear-gradient(100deg, .94 → .78 à 42 % → .12) ;
+        // WFS-96 (RG-03) : dégradé par sommets (2 quadrilatères), plus de bandes visibles
         const float op = ease(t / 0.3f);
-        const int N = 16;
-        for (int i = 0; i < N; i++) {
-            const float u = (i + 0.5f) / N, a = u < 0.42f ? 0.94f + (0.78f - 0.94f) * u / 0.42f : 0.78f + (0.12f - 0.78f) * (u - 0.42f) / 0.58f;
-            const float x0 = std::floor(W * i / N), x1 = i == N - 1 ? W : std::floor(W * (i + 1) / N);
-            r.uiRect(x0, 0, x1 - x0, H, hex(BG, a * op));
+        const vec4 bg = hex(BG);
+        const float xs[3] = {0, W * 0.42f, W}, as[3] = {0.94f * op, 0.78f * op, 0.12f * op};
+        for (int i = 0; i < 2; i++) {
+            const UiVertex q[4] = {{xs[i], 0, -1, -1, bg.x, bg.y, bg.z, as[i]}, {xs[i + 1], 0, -1, -1, bg.x, bg.y, bg.z, as[i + 1]},
+                                   {xs[i + 1], H, -1, -1, bg.x, bg.y, bg.z, as[i + 1]}, {xs[i], H, -1, -1, bg.x, bg.y, bg.z, as[i]}};
+            r.uiQuad(q);
         }
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
         const float itemH = 70 * k, listeH = 3 * itemH + 2 * 6 * k, piedH = 44 * k, aideH = 2 * 22 * k;
@@ -134,19 +137,6 @@ public:
             } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
             ui::text(r, x + 22 * k, yi + 12 * k, 26 * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
             ui::text(r, x + 22 * k, yi + 44 * k, 13 * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
-            if (grise)   // RG-04 : « Bientôt » sur le choix grisé
-                ui::text(r, x + lw - 30 * k, yi + 18 * k, 12 * k, ui::majuscules("Bientôt"), hex(ACCENT2, a / 0.45f * 0.8f), ui::DROITE, 0.16f, false);
-        }
-        // RG-04 : bandeau « Bientôt » 1,5 s après « Showroom » (style des bandeaux de course : vitré, bordure gauche cyan)
-        if (g.time - bientot_ < 1.5) {
-            const float e = ease((float)(g.time - bientot_) / 0.24f), fin = std::min(1.f, (float)(1.5 - (g.time - bientot_)) / 0.26f);
-            const float bo = e * fin, bx = m.x + lw + 24 * k + 30 * k * (1 - e), byy = y + 2 * (itemH + 6 * k) + 16 * k;
-            const std::string bt = ui::majuscules("Bientôt"), bv = "Showroom";
-            const float bw = 14 * k + ui::width(18 * k, bt, 0.06f) + 12 * k + ui::width(14 * k, bv) + 18 * k, bh = 38 * k;
-            r.uiRect(bx, byy, bw, bh, {GLASS.x, GLASS.y, GLASS.z, GLASS.w * bo});
-            r.uiRect(bx, byy, 4 * k, bh, hex(ACCENT2, bo));
-            ui::text(r, bx + 14 * k, byy + 8 * k, 18 * k, bt, hex(TEXTE, bo), ui::GAUCHE, 0.06f, false);
-            ui::text(r, bx + 14 * k + ui::width(18 * k, bt, 0.06f) + 12 * k, byy + 11 * k, 14 * k, bv, hex(ACCENT2, bo), ui::GAUCHE, 0, false);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------
@@ -158,8 +148,12 @@ public:
             const float x2 = x + std::max(ui::width(22 * k, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(11 * k, "RECORD", 0.16f)) + 28 * k;
             const std::string nom = ui::majuscules(g.car ? g.car->model : "—");
             ui::text(r, x2, y, 11 * k, ui::majuscules("Ta voiture"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
-            ui::text(r, x2, y + 16 * k, 22 * k, nom, hex(TEXTE, a), ui::GAUCHE, 0, false);
+            const bool presse = presse_ == TA_VOITURE;   // #myCarBtn : appui = ouvre le garage (WFS-96)
+            ui::text(r, x2, y + 16 * k, 22 * k, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false);
+            const float nw = std::max(ui::width(22 * k, nom), ui::width(11 * k, "TA VOITURE", 0.16f));
             r.uiRect(x2, y + 40 * k, ui::width(22 * k, nom), 2 * k, hex(ACCENT2, a));   // border-bottom cyan de .mycar strong
+            g_zones[TA_VOITURE] = {x2 - 6 * k, y - 6 * k, nw + 12 * k, piedH + 6 * k, 0, true};
+            manette::focus(g_zones[TA_VOITURE]);
         }
         y += piedH + gap;
         // ---------- .intro.only-touch : aide des commandes tactiles ----------
@@ -168,7 +162,7 @@ public:
         ui::text(r, m.x + dx, y + 22 * k, 16 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
     }
 private:
-    double t0_ = -1, bientot_ = -10;
+    double t0_ = -1;
     bool finVue_ = false;
     int presse_ = -1, doigt_ = -1;   // choix à l'état pressé, doigt qui le tient (WFS-38)
 };
@@ -235,11 +229,6 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
         if (!trois && c == "3") { trois = true; capture("menu-depart-3", "décompte « 3 » après le relâcher"); }
         if (!go && c == "GO") { for (int f = 0; f < 6; f++) image(); go = true; capture("menu-depart-go", "« GO », départ de la course"); }
     }
-    // menu-bientot : retour au menu, « Showroom » → bandeau « Bientôt » (« Duel en ligne » : écran Salon, WFS-83)
-    auMenu();
-    centre(SHOWROOM, x, y); g.onTouch({4, x, y, true}); image(); g.onTouch({4, x, y, false});
-    for (int i = 0; i < 24; i++) image();
-    capture("menu-bientot", "bandeau « Bientôt » après « Showroom »");
     // fin-menu : course depuis le menu, temps forcé à 0,05 s, écran de fin (boutons actifs 0,9 s après la fin)
     centre(SOLO, x, y); g.onTouch({5, x, y, true}); image(); g.onTouch({5, x, y, false});
     for (int i = 0; i < 30; i++) image();
@@ -256,6 +245,23 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
     g.onTouch({6, bx + bw * 0.35f, 70 * u + 5 * u, true}); image(); g.onTouch({6, bx + bw * 0.35f, 75 * u, false});
     for (int i = 0; i < 60; i++) image();
     capture("fin-retour-menu", "retour au menu après « Menu »");
+    // WFS-96 : « Showroom » → garage en mode regarder ; voiture suivante ; « Choisir » → retour au menu avec la voiture
+    centre(SHOWROOM, x, y); g.onTouch({9, x, y, true}); image(); g.onTouch({9, x, y, false});
+    for (int i = 0; i < 30; i++) image();
+    if (float gx, gy; garageBouton("suivant", gx, gy)) { g.onTouch({10, gx, gy, true}); image(); g.onTouch({10, gx, gy, false}); }
+    for (int i = 0; i < 40; i++) image();
+    capture("menu-showroom", "garage ouvert depuis « Showroom », voiture suivante");
+    if (float gx, gy; garageBouton("choisir", gx, gy)) { g.onTouch({11, gx, gy, true}); image(); g.onTouch({11, gx, gy, false}); }
+    for (int i = 0; i < 60; i++) image();
+    capture("showroom-choisir", "retour au menu après « Choisir », nouvelle voiture sous « Ta voiture »");
+    WFS_LOG("menu : « Choisir » depuis le Showroom → écran %s", nomEcran(g.ecran()));
+    // « Ta voiture » (pied du menu) → garage en mode regarder ; « Retour » → menu
+    centre(TA_VOITURE, x, y); g.onTouch({12, x, y, true}); image(); g.onTouch({12, x, y, false});
+    for (int i = 0; i < 30; i++) image();
+    WFS_LOG("menu : « Ta voiture » → écran %s", nomEcran(g.ecran()));
+    if (float gx, gy; garageBouton("retour", gx, gy)) { g.onTouch({13, gx, gy, true}); image(); g.onTouch({13, gx, gy, false}); }
+    for (int i = 0; i < 30; i++) image();
+    WFS_LOG("menu : « Retour » du garage → écran %s", nomEcran(g.ecran()));
     g.shutdown();
     unsetenv("WFS_MOMENT");   // WFS-41 : moment choisi à l'écran Terrain
     courseBenchRules(false);

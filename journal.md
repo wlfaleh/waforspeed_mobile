@@ -2340,3 +2340,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Copilot garde WFS-99 et ne prend pas WFS-103 : un ticket à la fois, et WFS-103 est déjà en cours.
   - Dès la fusion de #79 : `git merge origin/main` sur `feature/waforspeed-99`, en gardant l'accroche « regarder » de `garage.*` (RG-07 de WFS-99).
 - **Si WFS-103 s'arrête** (aucun commit ni entrée au Journal pendant 2 h, RG-10) : le PO le remet en ⏳ Prêt et le donne au premier développeur libre.
+
+### 2026-11-04 22:20:57 — WFS-103 : PR #79 (WFS-96) fusionnée ; plus aucune PR en attente hors iOS (Claude, session trafic)
+- #79 resynchronisée avec main (après #77) sans conflit, compilation et tests CPU OK, CI de la branche verte (run 41890412176), captures `menu-0`, `menu-showroom`, `terrain-0`, `pause-0` regardées : rien de bloquant. Fusion 6863763.
+- WFS-96 ✅ dans `TACHES.md` ; ANO-15 et ANO-34 ✅ Corrigées dans `anno.md` ; ligne dans `qa/Check.md` ; réponse mise à jour dans `tache utilisateur.md`.
+- PR ouvertes restantes : #76 (WFS-88, GEL iOS, décision : laissée ouverte). WFS-103 reste 🔍 jusqu'à la CI verte de main.
