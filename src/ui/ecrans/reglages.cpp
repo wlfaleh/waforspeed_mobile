@@ -10,6 +10,7 @@
 #include "../../game/course_system.h"
 #include "../../game/camera_vue.h"
 #include "../../game/game.h"
+#include "../../game/traffic_system.h"   // WFS-75 : choc du banc (vibration coupée)
 #include "../../game/sauvegarde.h"   // WFS-24 : réglages dans la sauvegarde commune
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
@@ -39,15 +40,17 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[3]; };
-const Ligne LIGNES[4] = {
+const Ligne LIGNES[6] = {
     {"Caméra", 3, {VUES[0].nom, VUES[1].nom, VUES[2].nom}},   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
     {"Son", 2, {"Activé", "Coupé", nullptr}},
     {"Musique", 2, {"Activée", "Coupée", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
+    {"Commandes", 2, {"Droitier", "Gaucher", nullptr}},   // WFS-75 : miroir des commandes tactiles
+    {"Vibrations", 2, {"Activées", "Coupées", nullptr}},  // WFS-75 : vibrer() de WFS-70
 };
-enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3 };
+enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, N_LIGNES = 6 };
 
-Zone g_bouton, g_fermer, g_choix[4][3];
+Zone g_bouton, g_fermer, g_choix[N_LIGNES][3];
 bool g_ouvert = false;
 
 // ---------------------------------------------------------------- sauvegarde simple (camera=, qualite=, son=)
@@ -62,6 +65,7 @@ std::string fichier() {
 bool lire() {
     if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : sauvegarde commune (cam, quality, muted)
         Reglages& R = reglages(); R.camera = s.camIndex(); R.son = !s.muted; R.musique = s.music;
+        R.gaucher = s.gaucher; R.vibrations = s.vibrations;   // WFS-75
         if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
         return true;
     }
@@ -75,14 +79,18 @@ bool lire() {
         else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
         else if (!std::strcmp(cle, "son")) R.son = v != 0;
         else if (!std::strcmp(cle, "musique")) R.musique = v != 0;   // WFS-76
+        else if (!std::strcmp(cle, "gaucher")) R.gaucher = v != 0;   // WFS-75
+        else if (!std::strcmp(cle, "vibrations")) R.vibrations = v != 0;
     }
     std::fclose(fp);
-    WFS_LOG("réglages lus : caméra %d, qualité %d, son %d", R.camera, R.qualite, (int)R.son);
+    WFS_LOG("réglages lus : caméra %d, qualité %d, son %d, gaucher %d, vibrations %d", R.camera, R.qualite, (int)R.son, (int)R.gaucher,
+            (int)R.vibrations);
     return true;
 }
 void ecrire() {
     if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : écriture atomique sur le thread de travail
         const Reglages& R = reglages(); s.setCamIndex(R.camera); s.muted = !R.son; s.music = R.musique;
+        s.gaucher = R.gaucher; s.vibrations = R.vibrations;   // WFS-75
         if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
         s.enregistrer(); return;
     }
@@ -90,7 +98,8 @@ void ecrire() {
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "w");
     if (!fp) return;
     const Reglages& R = reglages();
-    std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\n", R.camera, R.qualite, (int)R.son, (int)R.musique);
+    std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\n", R.camera, R.qualite, (int)R.son, (int)R.musique,
+                 (int)R.gaucher, (int)R.vibrations);
     std::fclose(fp);
 }
 
@@ -109,7 +118,14 @@ void appliquerQualite(Renderer& r) {
 }
 int valeur(int ligne) {
     const Reglages& R = reglages();
-    return ligne == L_CAMERA ? R.camera : ligne == L_QUALITE ? R.qualite : ligne == L_SON ? (R.son ? 0 : 1) : (R.musique ? 0 : 1);
+    switch (ligne) {
+    case L_CAMERA: return R.camera;
+    case L_QUALITE: return R.qualite;
+    case L_SON: return R.son ? 0 : 1;
+    case L_MUSIQUE: return R.musique ? 0 : 1;
+    case L_COMMANDES: return R.gaucher ? 1 : 0;
+    default: return R.vibrations ? 0 : 1;
+    }
 }
 
 class EcranReglages : public System {
@@ -135,12 +151,15 @@ public:
         if (!t.down) { if (t.id == doigt_) doigt_ = -1; return true; }
         if (t.id == doigt_) return true;
         if (g_fermer.contient(t.x, t.y)) { g_ouvert = false; doigt_ = t.id; WFS_LOG("réglages : fermés"); return true; }
-        for (int l = 0; l < 4; l++) for (int c = 0; c < LIGNES[l].n; c++) {
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < LIGNES[l].n; c++) {
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
             Reglages& R = reglages();
             if (l == L_CAMERA) { R.camera = c; appliquerCamera(); }
             else if (l == L_QUALITE) { R.qualite = c; R.qualiteChoisie = true; if (r_) appliquerQualite(*r_); }
-            else if (l == L_SON) R.son = c == 0; else R.musique = c == 0;
+            else if (l == L_SON) R.son = c == 0;
+            else if (l == L_MUSIQUE) R.musique = c == 0;
+            else if (l == L_COMMANDES) R.gaucher = c == 1;   // WFS-75 : lu à chaque toucher et à chaque image (miroirX)
+            else R.vibrations = c == 0;                      // WFS-75 : lu à chaque vibrer()
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
         }
@@ -171,17 +190,18 @@ private:
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
-        const float rowH = 64 * k, bh = 50 * k, ph = 150 * k + 4 * (rowH + 16 * k) + bh + 30 * k;
+        // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut
+        const float rowH = 50 * k, gap = 10 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
         ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        float y = py + 150 * k;
+        float y = py + haut;
         const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 2 * 6 * k) / 3);
-        for (int l = 0; l < 4; l++) {
-            r.uiRect(x0, y + rowH + 7 * k, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
+        for (int l = 0; l < N_LIGNES; l++) {
+            r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = LIGNES[l].n;
             float bx = px + pw - 36 * k - n * segW - (n - 1) * 6 * k;
@@ -197,12 +217,12 @@ private:
                 bx += segW + 6 * k;
             }
             for (int c = n; c < 3; c++) g_choix[l][c] = {};
-            y += rowH + 16 * k;
+            y += rowH + gap;
         }
         // .btn « Fermer » (orange, biais 14 px), à droite
         const float tp = 20 * k;
         const std::string ft = ui::majuscules("Fermer");
-        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = y + 14 * k;
+        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = y + 10 * k;
         g_fermer = {fx, fy, fw, bh};
         biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
         ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
@@ -254,6 +274,30 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(8, g_bouton);
     toucher(9, g_choix[L_QUALITE][QUALITE_HAUTE]); toucher(11, g_choix[L_MUSIQUE][1]);   // WFS-76 : « Musique : Coupée »
     capture("reglages-musique", "musique coupée"); toucher(12, g_choix[L_MUSIQUE][0]); toucher(10, g_fermer);
+    // WFS-75 : depuis la pause, « Commandes : Gaucher » et « Vibrations : Coupées », appliqués sans redémarrer
+    g.allerA(Ecran::Pause); image(); g.render(t); toucher(13, g_bouton);
+    toucher(14, g_choix[L_COMMANDES][1]); toucher(15, g_choix[L_VIBRATIONS][1]);
+    capture("reglages-commandes", "Commandes : Gaucher, Vibrations : Coupées");
+    toucher(16, g_fermer); g.allerA(Ecran::Course); g.setAutopilot(false);
+    for (int i = 0; i < 30; i++) image();
+    {   // appui simulé à gauche, à la place de l'accélérateur du droitier en miroir : gaz attendu
+        const float W = (float)r.width(), H = (float)r.height(), x = W * 0.11f, y = H * 0.74f;
+        const double v0 = g.player().kmh();
+        g.onTouch({20, x, y, true});
+        for (int i = 0; i < 60; i++) image();
+        WFS_LOG("réglages : gaucher, appui à gauche (%.0f ; %.0f) = gaz : %.0f → %.0f km/h", x, y, v0, g.player().kmh());
+        capture("course-gaucher", "commandes gaucher, accélérateur à gauche appuyé");
+        g.onTouch({20, x, y, false});
+    }
+    // choc du banc, vibrations coupées : « vibration ignorée (réglage) » attendu au journal
+    if (const Course* k = activeCourse()) {
+        g.setAutopilot(true);
+        const int avant = k->accidents;
+        trafficBenchPlace(14, 0, 80, true);
+        for (int f = 0; f < 150 && k->accidents == avant; f++) image();
+        WFS_LOG("réglages : choc du banc avec vibrations coupées : %d accident(s)", k->accidents - avant);
+    }
+    reglages().gaucher = false; reglages().vibrations = true;   // banc : retour aux défauts
     g.shutdown();
     courseBenchRules(false);
 }

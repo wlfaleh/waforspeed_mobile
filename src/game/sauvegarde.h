@@ -55,6 +55,7 @@ public:
     std::string nick = "Pilote";               // nick : pseudo (14 caractères au plus)
     int km = 4;                                // km : distance de duel (2, 4, 6 ou 10)
     std::string steer = "glisser";             // steer : mode de braquage (glisser / fleches), stocké seulement
+    bool gaucher = false, vibrations = true;   // WFS-75 : commandes en miroir, vibrations (propres au jeu natif)
 
     ~Sauvegarde();
     // remet les défauts, puis lit le fichier ; vrai si un fichier valide a été lu. Rend la sauvegarde active.

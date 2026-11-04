@@ -4,6 +4,7 @@
 #include <cmath>
 #include "../render/renderer.h"
 #include "game.h"
+#include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 
 namespace wfs {
 
@@ -14,6 +15,9 @@ struct Glisser { int id = -1; float x0 = 0, x = 0; } g_gl;
 struct Fleches { int gauche = -1, droite = -1; } g_fl;
 
 bool fleches() { return reglagesRessenti().direction == ModeDirection::Fleches; }
+BoutonsFleches boutonsPlaces(float W, float H, const Marges& m) {   // WFS-75 : groupe passé par miroirX, flèche gauche à gauche
+    BoutonsFleches b = boutonsFleches(W, H, ecrans::margesCommandes(m)); const float cx = (b.xg + b.xd + b.c) / 2, d = ecrans::miroirX(cx, W) - cx;
+    b.xg += d; b.xd += d; return b; }
 
 // couleurs du skill design-street-racing (tokens.md, codes sRGB comme ui::CYAN)
 const vec4 FOND_BOUTON{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.62f};   // rgba(20, 22, 31, .62)
@@ -62,9 +66,9 @@ bool directionPossede(int id) { return id == g_gl.id || id == g_fl.gauche || id 
 
 bool directionToucher(const Touch& t, bool libre, float W, float H, const Marges& m) {
     if (t.down) {
-        if (libre && dansZoneDirection(t.x, W, m)) {
+        if (libre && dansZoneDirection(ecrans::miroirX(t.x, W), W, ecrans::margesCommandes(m))) {   // WFS-75
             if (!fleches()) { g_gl.id = t.id; g_gl.x0 = g_gl.x = t.x; }   // pointerdown de #steerZone
-            else if (flecheDroite(t.x, boutonsFleches(W, H, m))) g_fl.droite = t.id;
+            else if (flecheDroite(t.x, boutonsPlaces(W, H, m))) g_fl.droite = t.id;
             else g_fl.gauche = t.id;
         }
         if (t.id == g_gl.id) { g_gl.x = t.x; return true; }   // pointermove : le pouce glisse
@@ -83,9 +87,9 @@ float directionBraquage(float W) {
 }
 
 void directionDessiner(Renderer& r, float W, float H, const Marges& m) {
-    const float u = H / 100.f, mg = m.gauche, mb = m.bas;
+    const float u = H / 100.f, mb = m.bas;
     if (fleches()) {   // #steerArrows : deux boutons, le bouton appuyé en cyan
-        const BoutonsFleches b = boutonsFleches(W, H, m);
+        const BoutonsFleches b = boutonsPlaces(W, H, m);
         bouton(r, b.xg, b.y, b.c, false, g_fl.gauche >= 0);
         bouton(r, b.xd, b.y, b.c, true, g_fl.droite >= 0);
         return;
@@ -94,7 +98,7 @@ void directionDessiner(Renderer& r, float W, float H, const Marges& m) {
     if (g_gl.id >= 0) {
         r.uiCircle(g_gl.x0, H * 0.72f - mb, 11 * u, {1, 1, 1, 0.12f});
         r.uiCircle(g_gl.x0 + clampf(g_gl.x - g_gl.x0, -W * 0.12f, W * 0.12f), H * 0.72f - mb, 5 * u, {0, 0.9f, 1, 0.55f});
-    } else r.uiCircle(W * 0.18f + mg, H * 0.72f - mb, 9 * u, {1, 1, 1, 0.08f});
+    } else r.uiCircle(ecrans::miroirX(W * 0.18f + ecrans::margesCommandes(m).gauche, W), H * 0.72f - mb, 9 * u, {1, 1, 1, 0.08f});   // WFS-75
 }
 
 void directionLacher() { g_gl.id = -1; g_fl = {}; }
