@@ -26,6 +26,10 @@ void benchNuit(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 240; i++) image(i % 8 == 0);
         capture(base + "-0");
         if (!std::string(carte).compare("ville")) { image(true); capture(base + "-1"); }   // WFS-16 : pas de scintillement
+        if (!std::string(carte).compare("ville")) {   // WFS-84 : voitures du trafic vues de derrière (feux nets, lueur douce)
+            for (int i = 0; i < 300; i++) image(i % 8 == 0);
+            capture("nuit-trafic-arriere");
+        }
         g.camMode = 1;
         for (int i = 0; i < 30; i++) image(i % 8 == 0);
         capture(base + "-haut");

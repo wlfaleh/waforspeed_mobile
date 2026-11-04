@@ -923,28 +923,58 @@ void Renderer::haloSol(const vec3& c, const vec3& r, const vec3& f, float hr, fl
     drawQuads(q, 1, haloMat_);
 }
 
-// setLights du jeu web (js/cars/models.js) : halos des feux arrière (stop au freinage), de recul, des phares, et reflet
-// discret des feux sur la route (tailGlow 0,16, tailGlowBrake 0,38, revGlow 0,55). Couleurs sRGB du jeu web linéarisées,
-// × FEUX_HDR (sprites additifs du jeu web, sans tonemapping → passe HDR + ACES ici).
+// WFS-84 : feux de nuit naturels. Réglages en un seul endroit (RG-06), à ajuster après un essai sur téléphone.
+// Chaque feu = un point lumineux net (cœur, quelques cm, qui reste un point au loin) + une lueur douce d'environ
+// 2,5 × la taille du feu (jamais un disque géant), éteinte progressivement entre 60 et 120 m (RG-04) ; un feu ne
+// brille que du côté où on le voit (pas de halo de phare autour d'une voiture vue de dos, ni au-dessus du toit).
+// Le feu lui-même (matériau MAT_TAIL) s'allume aussi : émission plus forte au freinage (draw, plus haut).
+namespace feux {
+constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du jeu web (sans tonemapping) → passe HDR + ACES
+constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
+constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
+constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
+constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.30f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.35f;
+constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
+constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
+constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
+constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
+constexpr float SOL_LARGEUR = 0.9f, SOL_LONGUEUR = 1.1f, SOL_RECUL = 0.45f;   // reflet sur la route (× largeur ; m ; m derrière)
+constexpr float I_SOL = 0.07f, I_SOL_STOP = 0.18f, I_SOL_RECUL = 0.2f;        // tailGlow, tailGlowBrake, revGlow (atténués)
+}
+
+// setLights du jeu web (js/cars/models.js : tailGlow, tailGlowBrake, revGlow) revu pour un rendu naturel (WFS-84)
 void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) {
-    constexpr float FEUX_HDR = 1.6f;
+    using namespace feux;
     auto lin = [](unsigned h, float k) {
         auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
         return vec3{c(16), c(8), c(0)} * (k * FEUX_HDR);
     };
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
+    const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
+    // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
+    auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
+        const vec3 v = camPos_ - p;
+        const float d = length(v);
+        const float face = std::clamp((dot(v * (1.f / std::max(d, 1e-3f)), dehors) + 0.1f) / 0.45f, 0.f, 1.f);   // de dos : rien
+        if (face <= 0.f) return;
+        halo(p, std::max(coeur * ech, d * POINT_MIN), col * (iCoeur * face));
+        const float kl = 1.f - std::clamp((d - LUEUR_DEBUT) / (LUEUR_FIN - LUEUR_DEBUT), 0.f, 1.f);
+        if (kl > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));
+    };
+    const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
     for (int side : {-1, 1}) {
-        const vec3 t = w.transformPoint({side * F.arriereX, F.arriereY, F.arriere + 0.06f});
-        halo(t, (f.stop ? 0.9f : 0.55f) * 0.5f * ech, f.stop ? lin(0xff2038, 1.f) : lin(0xff1a30, 0.55f));
-        if (f.recul) halo(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.07f}), 0.3f * 0.5f * ech, lin(0xf4f6ff, 0.7f));
-        halo(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.01f}), 0.85f * 0.5f * ech, lin(0xfff1d6, 0.9f));
+        feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge,
+            f.stop ? I_COEUR_STOP : I_COEUR, f.stop ? I_LUEUR_STOP : I_LUEUR);
+        if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.05f}), arriere,
+                         RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
+        feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
     }
-    // reflet des feux sur la route (tg : glowGeo × (W × 1,2 ; 1,8) à L / 2 + 0,6)
-    const vec3 r = normalize(w.transformDir({1, 0, 0})), fw = normalize(w.transformDir({0, 0, 1}));
-    const vec3 c = w.transformPoint({0, 0.03f, F.arriere + 0.6f});
-    const vec3 col = f.recul ? lin(0xdfe6ff, 0.55f) : lin(0xff2040, f.stop ? 0.38f : 0.16f);
-    haloSol(c, r, fw, F.largeur * 1.2f * 0.5f * ech, 1.8f * 0.5f * ech, col);
+    // reflet discret des feux sur la route, juste derrière la voiture (RG-05) ; aucun faisceau arrière
+    const vec3 r = normalize(w.transformDir({1, 0, 0}));
+    const vec3 c = w.transformPoint({0, 0.03f, F.arriere + SOL_RECUL});
+    const vec3 col = f.recul ? lin(0xdfe6ff, I_SOL_RECUL) : lin(0xff2040, f.stop ? I_SOL_STOP : I_SOL);
+    haloSol(c, r, arriere, F.largeur * SOL_LARGEUR * 0.5f * ech, SOL_LONGUEUR * 0.5f * ech, col);
 }
 
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {
