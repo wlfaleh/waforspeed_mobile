@@ -2580,3 +2580,37 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   6. fusion après CI verte, quand aucune publication de `main` n'est en cours ;
   7. vérifier les deux fusions sur `main`.
 - **Fusion** : pas d'essai local possible (GitHub Actions) → attendre la CI de branche verte avant de fusionner. Ensuite, ligne dans `qa/Check.md`, statut ✅, Journal, et suivi de la CI de `main`. Toujours `git fetch origin && git merge origin/main` avant chaque envoi.
+
+### 2026-11-04 23:13:25 — PO : WFS-107 réservé à Copilot (session dc0cdd3f) après WFS-101, ANO-46, #76 confiée à WFS-103, WFS-109 après WFS-101 (po-scrum-master)
+- **Contexte** : les 7 demandes de `tache utilisateur.md` ont déjà reçu leur réponse de l'autre session PO (1409020, 30d240f, 22:47). Cette entrée complète et remet en cohérence `TACHES.md` et les règles.
+- **WFS-107 (« feu blanc »)** : cause trouvée et reproduite au banc par Copilot (session dc0cdd3f). C'est la fumée des pneus de WFS-65, ≈ 4,6 × trop claire à cause de `hdr()` dans `effets_systeme.cpp`, et dessinée en lumière émise. WFS-107 touche les mêmes fichiers que WFS-101 → **réservé à Copilot (session dc0cdd3f)**, ⏳ En attente de WFS-101. Il le passe lui-même 🔧 à la fusion de WFS-101 (entrée « Début » au Journal, sans repasser par le PO). Pas de RG-06 dans WFS-101 : WFS-101 se ferme tel quel. Règles complétées :
+  - RG-01 ✅ cause ;
+  - RG-04 couleur du jeu web ;
+  - RG-05 bouffées rondes ;
+  - RG-06 aucune particule si « réduire les mouvements » (`particles.js` l. 20) ;
+  - RG-07 étincelles et nitro de WFS-101 inchangés ;
+  - zone : `effets_systeme.*`, `effets_particules.*`, `bench_effets.*`, `tests/test_effets.cpp`, accroche dans `desktop_main.cpp`.
+- **ANO-46** (bloquante, essai sur le téléphone de l'utilisateur) : « feu blanc » au braquage → 📋 WFS-107.
+- **#76 (WFS-88, iOS)** : ordre de l'utilisateur : « même pour ios il faut la regarder et la merger ».
+  - Le GEL iOS est levé **pour #76 seulement** : travail déjà fait, sans effet sur Android. Aucun nouveau ticket ni travail iOS.
+  - Confiée à **WFS-103** (Claude, session trafic) en RG-12 (renumérotée : RG-11 est la zone). WFS-103 repasse 🔧 ; WFS-88 reste ⏸.
+  - Revue du PO : Android inchangé (tout sous `__APPLE__`), fusion sans conflit à 22:59.
+  - **Ordre** : #76 avant le code de WFS-100 dans `renderer.cpp` / `vk.cpp` (même agent).
+  - Si elle n'est pas fusionnée dans les 2 h (RG-10), le PO la confie à un agent libre.
+- **WFS-109 (feux de freinage)** : dépendance corrigée : WFS-101 (`traffic_system.cpp`) au lieu de WFS-107 (fichiers différents).
+  - Statut : ⏳ En attente, **Prêt dès que WFS-101 est ✅**.
+  - Exception E4 (3e ticket) : seulement le bloc des feux de `renderer.cpp`, que WFS-100 ne touche pas.
+  - RG-07, constat : le jour, aucun feu du modèle ne s'allume au freinage. Le joueur n'a rien ; le trafic n'a que des carrés de halo de 1,1 m × 7.
+  - RG-08 : valeurs du jeu web (`setLights` / `setBrake` de `models.js` : 2,5 / 0,4, halos de 0,9 m / 0,55 m).
+  - RG-09 : coordination avec WFS-100 ; zone écrite.
+- **WFS-102** : attend aussi WFS-108 (mêmes fichiers `commandes_tactiles.*`). Il réutilise la densité déjà lue par WFS-108 (PR #83) ; RG-11 se limite au clavier du code du salon.
+- **Piste pour WFS-105 (vue Proche, Copilot 1ef8d4d6)** :
+  - Aujourd'hui (`POURSUITE_PROCHE{4.6, 1.28, 7, 0.78}`, FOV 58), le toit monte à ≈ 57 % de la hauteur de l'image et l'horizon est à ≈ 54 % : le toit cache la route.
+  - Calcul d'essai : distance 5,2 m, hauteur 2,2 m, visée 10 m devant à 0,4 m, FOV 58. Résultat : élévation ≈ 23°, horizon ≈ 10 % au-dessus du toit, route visible dès ≈ 14 m.
+  - À vérifier sur la voiture la plus haute : l'horizon reste ≥ 8 % au-dessus du toit.
+- **Récapitulatif** :
+  - tiret 1 → WFS-103 RG-12 ;
+  - tiret 2 → WFS-107 (ANO-46) ;
+  - tirets 3, 4 et 7 → WFS-108 (🔍 PR #83) ;
+  - tiret 5 → WFS-109 ;
+  - tiret 6 → WFS-105 RG-06 (🔧).
