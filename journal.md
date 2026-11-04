@@ -2452,3 +2452,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Non recetté** :
   - WFS-99 (PR #81, fusionné à 22:32) : pas de Release `apercu-waforspeed-99`, et le run de main 41926218379 était en cours. Reste ☐ pour la prochaine recette.
   - WFS-78 et WFS-79 : GEL iOS.
+
+### 2026-11-04 22:39:40 — PO : anomalies ANO-42 à ANO-45 planifiées dans WFS-102 (po-scrum-master)
+- Après la QA de nuit (d210f62), aucune bloquante. Pas de nouveau ticket : les 4 anomalies sont dans la zone de WFS-102 (même tour de l'interface E8, mêmes fichiers `terrain.cpp`, `salon.*`, commandes), qui attend déjà WFS-89 et WFS-98 fusionnés : un seul passage, une seule CI.
+- WFS-102 : RG-11 (clavier du code ≈ 26 dp, GAZ ≈ 37 dp, NITRO ≈ 39 dp → ≥ 44 dp, ANO-19), RG-12 (ANO-42, terrain sans bandes), RG-13 (ANO-43, touche effacer), RG-14 (ANO-44, aide sous le code), RG-15 (ANO-45, commandes seulement en course) ; zone élargie à `commandes_tactiles.*` et à l'accroche `game.cpp` (`drawControls`).
+- `anno.md` : ANO-42 à ANO-45 en 📋 Planifiée → WFS-102.
