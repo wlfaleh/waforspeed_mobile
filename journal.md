@@ -2212,3 +2212,28 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Question** de Copilot (session 0e5c192d, WFS-98) : RG-01 demandait « deux barres » pour l'icône du frein ; or deux barres verticales orange sont déjà l'icône pause du bouton MENU de la course (`pause.cpp`, `.cam-btn#menuBtnHud`), et le jeu web dessine le frein autrement (`index.html` l. 98).
 - **Décision** : recommandation du développeur retenue. Icônes = SVG du jeu web (`.pedal-icon` 26 px, trait 2,4) : **frein = disque et étriers** (cercle r 5,6 + deux arcs r 9, #FF6A85), **gaz = double chevron montant** (`index.html` l. 103, #FF6A00). Jamais deux barres sur une pédale. Motifs : fidélité au jeu web (règle n°1 du skill `waforspeed-natif`), aucune confusion avec la pause, coût faible (segments `uiQuad`, sans finition au pixel).
 - `regles-de-gestion/WFS-98.md` : seule la phrase de l'icône de RG-01 est amendée (« PO, 2026-11-04 »). Zone, critères et `TACHES.md` inchangés.
+
+### 2026-11-04 21:57:04 — Fin WFS-98 : commandes tactiles du jeu web, HUD de la vue cockpit, caméra du demi-tour — fusion par confiance (Copilot, session 0e5c192d)
+- **Fait** (PR #80, commit de fusion f542093, confiance ≈ 75 %) :
+  - **Commandes** (ANO-31) : pédales « GAZ » et « FREIN », bouton « NITRO » à anneau vert acide, volant dans un pavé vitré, d'après `.pedal`, `.nitro-touch` et `.steer-pad` du jeu web.
+  - **Cockpit** (ANO-24) : plus de compteur en arc ; vitesse 28 px et cases de nitro sous le temps.
+  - **Caméra** (ANO-30) : la poursuite suit le cap de la voiture avec retard (`camHd`, 3,4/s) et un recul dynamique (`camDistDyn`) ; en demi-tour, recul ≥ 6 m, œil à 3 m, regard relevé de 0,8 m.
+  - **Boutons de vue** (ANO-20) : un seul polygone, sans bandes.
+- **Fichiers** :
+  - nouveaux `src/game/commandes_tactiles.h/.cpp` : disposition, `commandeSous`, dessin, primitives `dessin2d` ;
+  - modifiés `src/game/game.cpp` (`onTouch`, `drawControls`), `src/game/direction.cpp`, `src/game/camera_vue.cpp/.h`, `src/ui/hud.cpp` (panneau cockpit, appuis de `benchHud`), `tests/test_course.cpp`.
+- **Vérification** (en local, banc lavapipe) :
+  - Tous les tests CPU passent, dont 5 nouveaux tests WFS-98 : tailles ≥ CSS × k, zone sûre, aucun chevauchement, tout point dessiné dans sa zone de toucher, appuis des bancs ; en droitier et en gaucher, en 720p et en 2400 × 1080 avec encoche.
+  - Captures regardées : `hud-course`, `hud-nitro`, `encoche-hud` (1280 et 2400), `camera-*` (cockpit avec un seul compteur), `course-gaucher`, `encoche-course`, `nitro-lignes`.
+  - `conduite-demitour` : Golf entière en travers, entre 0,62 et 0,81 H. Sur `main`, la caméra fixait le trottoir ; avec l'œil à 2,5 m, le centre de la Golf était à 0,65 H.
+- **Écarts et limites** (à regarder lors de la QA de nuit) :
+  - Bouton MENU encore rayé : `pause.cpp` est hors zone (WFS-102).
+  - Biseaux : un polygone plus une frange lissée d'un pixel, au lieu d'un seul `uiQuad` nu (bords nets, sans bandes).
+  - Libellé NITRO à 11 px au moins (10 px dans le web), pour la lisibilité.
+  - Pas d'animation de remplissage ni de pulsation.
+  - Gaz dessiné appuyé seulement sous son propre doigt (`.pressed` du web).
+  - Coin haut droit gardé au nitro pour le banc `nitro-lignes`.
+  - Glissé du volant inchangé (WFS-70).
+  - Tailles arrondies au pixel supérieur (jamais moins que CSS × k).
+  - Groupes de banc locaux `demitour-local` et `effets-local` ajoutés pour l'essai, puis retirés : `src/platform` n'est pas modifié.
+- **Suite** : suivre la CI de `main`, puis demander le ticket suivant au PO.
