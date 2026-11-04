@@ -34,6 +34,9 @@ void benchCameras(Game& g, Renderer& r, const std::string& out) {
     g.setAutopilot(true); g.camMode = 0;
     rouler(60 * 9);                       // décompte (3 s) puis 6 s de course
     capture("camera-poursuite");
+    appuyer(19);                          // WFS-85 : Poursuite (haute) → Proche (basse) → Capot → Cockpit
+    rouler(30);
+    capture("camera-proche");
     appuyer(20);
     rouler(30);
     capture("camera-capot");

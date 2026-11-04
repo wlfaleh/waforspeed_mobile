@@ -14,6 +14,7 @@
 #include "sauvegarde.h"
 #include "traffic_system.h"
 #include "../render/effets_systeme.h"
+#include "../ui/ecrans/reglages.h"   // WFS-75 : réglage « Vibrations »
 
 namespace wfs {
 
@@ -28,6 +29,7 @@ void installerVibreur(Vibreur v) { g_vibreur = v; }
 void vibrer(const int* ms, int n) {
     char buf[96]; int k = 0;
     for (int i = 0; i < n && k < (int)sizeof buf - 8; i++) k += std::snprintf(buf + k, sizeof buf - k, i ? "-%d" : "%d", ms[i]);
+    if (!ecrans::reglages().vibrations) { WFS_LOG("vibration ignorée (réglage) : %s", n ? buf : "(vide)"); return; }   // WFS-75
     WFS_LOG("vibration %s", n ? buf : "(vide)");
     if (g_vibreur && n > 0) g_vibreur(ms, n);
 }

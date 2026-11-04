@@ -40,7 +40,7 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_masquage && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
@@ -61,7 +61,7 @@ jobs:
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-66
               mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
-              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/reglages-menu.png menu/reglages-pause.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11, WFS-41
+              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11, WFS-41, WFS-83
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4
@@ -129,23 +129,8 @@ jobs:
         with: { name: apk, path: dl/apk }
       - uses: actions/download-artifact@v4
         with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
-      - name: Release d'aperçu (remplacée à chaque construction)
+      - name: Release d'aperçu (APK d'abord, jamais supprimée ; WFS-87)
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          tag=apercu
-          case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
-          # les builds de main tournent en parallèle : ne jamais remplacer une Release faite d'un commit plus récent
-          cible=$(gh release view "$tag" --json targetCommitish -q .targetCommitish 2>/dev/null || true)
-          if [ -n "$cible" ] && [ "$cible" != "$GITHUB_SHA" ] && git merge-base --is-ancestor "$GITHUB_SHA" "$cible" 2>/dev/null; then
-            echo "La Release $tag vient déjà d'un commit plus récent ($cible) : rien à publier pour ${GITHUB_SHA::7}"; exit 0
-          fi
-          gh release delete "$tag" -y --cleanup-tag || true
-          files="dl/apk/WaForSpeed.apk"
-          [ -s dl/apk/WaForSpeed.aab ] && files="$files dl/apk/WaForSpeed.aab"   # WFS-22 : AAB signé (Google Play)
-          # les fichiers vides (capture ratée) sont ignorés : ils ne doivent pas empêcher la publication
-          if [ -d dl/captures ]; then for f in dl/captures/*.png dl/captures/*.txt; do [ -s "$f" ] && files="$files $f"; done; fi
-          echo "$(echo $files | wc -w) fichiers publiés"
-          gh release create "$tag" $files --prerelease --target "$GITHUB_SHA" \
-            --title "Aperçu — construction ${GITHUB_RUN_NUMBER}" \
-            --notes "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME}, commit ${GITHUB_SHA::7}."
+          GH_REPO: ${{ github.repository }}
+        run: bash tools/qa/publier_apercu.sh

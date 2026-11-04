@@ -65,7 +65,7 @@ public:
         if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages
         const int sous = choixSous(t.x, t.y);
         if (t.down) {
-            if (doigt_ < 0) { doigt_ = t.id; presse_ = sous == DUEL ? -1 : sous; }   // « Duel en ligne » grisé : pas d'état pressé
+            if (doigt_ < 0) { doigt_ = t.id; presse_ = sous; }   // WFS-83 : « Duel en ligne » actif (plus grisé)
             else if (t.id == doigt_ && sous != presse_) presse_ = -1;               // glissé hors du choix : annulé
             return true;
         }
@@ -74,6 +74,7 @@ public:
         doigt_ = -1; presse_ = -1;
         if (choix < 0 || sous != choix) return true;
         if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Garage); }             // RG-03 ; WFS-11 : garage d'abord
+        else if (choix == DUEL) { WFS_LOG("menu : « Duel en ligne »"); g.allerA(Ecran::Salon); }   // WFS-83 : écran Salon
         else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom » (bientôt)"); bientot_ = g.time; }  // RG-04
         return true;
     }
@@ -114,7 +115,7 @@ public:
         const float lw = std::min(460 * k, m.largeur);
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
-            const bool presse = i == presse_, grise = i == DUEL;   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
+            const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
             const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + 6 * k);   // translateX(10px)
             g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * k, true};   // zone fixe : l'état pressé ne la déplace pas
             manette::focus(g_zones[i]);   // WFS-22
@@ -234,12 +235,11 @@ void benchMenuTactile(Game& g, Renderer& r, const std::string& out) {
         if (!trois && c == "3") { trois = true; capture("menu-depart-3", "décompte « 3 » après le relâcher"); }
         if (!go && c == "GO") { for (int f = 0; f < 6; f++) image(); go = true; capture("menu-depart-go", "« GO », départ de la course"); }
     }
-    // menu-bientot : retour au menu, « Showroom » → bandeau « Bientôt » ; « Duel en ligne » grisé (sans effet)
+    // menu-bientot : retour au menu, « Showroom » → bandeau « Bientôt » (« Duel en ligne » : écran Salon, WFS-83)
     auMenu();
-    centre(DUEL, x, y); g.onTouch({3, x, y, true}); image(); g.onTouch({3, x, y, false}); image();
     centre(SHOWROOM, x, y); g.onTouch({4, x, y, true}); image(); g.onTouch({4, x, y, false});
     for (int i = 0; i < 24; i++) image();
-    capture("menu-bientot", "bandeau « Bientôt » après « Showroom », « Duel en ligne » grisé");
+    capture("menu-bientot", "bandeau « Bientôt » après « Showroom »");
     // fin-menu : course depuis le menu, temps forcé à 0,05 s, écran de fin (boutons actifs 0,9 s après la fin)
     centre(SOLO, x, y); g.onTouch({5, x, y, true}); image(); g.onTouch({5, x, y, false});
     for (int i = 0; i < 30; i++) image();

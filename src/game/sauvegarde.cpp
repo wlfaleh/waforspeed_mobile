@@ -33,7 +33,7 @@ static bool voitureExiste(const std::string& id) {
     return false;
 }
 static bool carteExiste(const std::string& id) { return id == mapById(id.c_str()).id; }   // mapById : MAPS[0] si inconnue
-static const char* CAMS[] = {"poursuite", "capot", "cockpit"};   // VUES de src/game/camera_vue.h (WFS-66)
+static const char* CAMS[] = {"poursuite", "capot", "cockpit", "proche"};   // VUES de src/game/camera_vue.h (WFS-66, WFS-85)
 static const char* QUALITES[] = {"low", "medium", "high"};         // quality du web (low / high) + niveau moyen (WFS-68)
 
 // cleanName du jeu web (js/net/duel.js) : caractères de contrôle retirés, espaces autour retirés, 14 caractères au plus
@@ -57,7 +57,7 @@ static bool entier(const std::string& s, long long& v) {
 
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; quality = "high"; qualityChoisie = false; cam = "poursuite";
-    muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser";
+    muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
 }
 
 std::string Sauvegarde::texte() const {
@@ -70,6 +70,7 @@ std::string Sauvegarde::texte() const {
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
     o << "cam=" << cam << "\n";
     o << "muted=" << (muted ? 1 : 0) << "\n" << "music=" << (music ? 1 : 0) << "\n" << "nick=" << nick << "\n" << "km=" << km << "\n" << "steer=" << steer << "\n";
+    o << "commandes=" << (gaucher ? "gaucher" : "droitier") << "\n" << "vibrations=" << (vibrations ? 1 : 0) << "\n";   // WFS-75
     return o.str();
 }
 
@@ -98,12 +99,13 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "map") { if (carteExiste(v)) map = v; }
         else if (k == "tod") { tod = v == "jour" ? "jour" : "nuit"; }
         else if (k == "quality") { for (const char* q : QUALITES) if (v == q) { quality = v; qualityChoisie = true; } }
-        else if (k == "cam") { for (const char* c : CAMS) if (v == c) cam = v; if (v == "proche") cam = "poursuite"; }   // « proche » du web
+        else if (k == "cam") { for (const char* c : CAMS) if (v == c) cam = v; if (v == "loin") cam = "poursuite"; }   // « loin » du web = poursuite (WFS-85)
         else if (k == "muted") { muted = v == "1"; }
         else if (k == "music") { music = v != "0"; }
         else if (k == "nick") { const std::string p = nettoyerPseudo(v); if (!p.empty()) nick = p; }
         else if (k == "km") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km = (int)n; }
         else if (k == "steer") { steer = v == "fleches" ? "fleches" : "glisser"; }
+        else if (k == "commandes") { gaucher = v == "gaucher"; } else if (k == "vibrations") { vibrations = v != "0"; }   // WFS-75
     }
     if (premiere) return false;   // fichier vide
     return true;
@@ -126,10 +128,10 @@ const PeintureDef* Sauvegarde::peintureChoisie(const std::string& carId) const {
 }
 
 int Sauvegarde::camIndex() const {
-    for (int i = 0; i < 3; i++) if (cam == CAMS[i]) return i;
+    for (int i = 0; i < 4; i++) if (cam == CAMS[i]) return i;
     return 0;
 }
-void Sauvegarde::setCamIndex(int i) { cam = CAMS[i >= 0 && i < 3 ? i : 0]; }
+void Sauvegarde::setCamIndex(int i) { cam = CAMS[i >= 0 && i < 4 ? i : 0]; }
 int Sauvegarde::qualiteIndex() const {
     for (int i = 0; i < 3; i++) if (quality == QUALITES[i]) return i;
     return 2;

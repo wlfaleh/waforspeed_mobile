@@ -103,7 +103,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-15 | Qualité, performances et post-traitement (réglages téléphone, LOD, bloom, TAA, flou) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | WFS-06, WFS-07, WFS-08 | `feature/waforspeed-15` | #56 |  |
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
 | — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
-| P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | 🔧 En cours | Claude (session trafic, agent WFS-18), 2026-11-04 | WFS-09 ✅ | `feature/waforspeed-18` |  |  |
+| P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-18), 2026-11-04 | WFS-09 ✅ | `feature/waforspeed-18` | #66 |  |
 | P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` | #42 (fusionnée, 710c9fc) |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
@@ -160,13 +160,19 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-72 | Point d'extension : apparence des personnages (peau, cheveux, vêtements) | E0 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-63 ✅ | `feature/waforspeed-72` | #40 (fusionnée, 4314bf7) |  |
 | P3 Moyenne | WFS-73 | Conducteurs dans les voitures (siège mesuré au chargement, buste figé, joueur / trafic / duel) | E0 | ✅ Fusionné (QA de nuit à faire) |  | WFS-19 | `feature/waforspeed-73` | #42 (fusionnée, 710c9fc) |  |
 | P2 Haute | WFS-74 | Changement de carte avec écran de chargement, course figée hors de l'écran Course | E0 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-41 ✅, WFS-35 ✅ | `feature/waforspeed-74` | [#50](https://github.com/wlfaleh/waforspeed_mobile/pull/50) |  |
-| P3 Moyenne | WFS-75 | Réglages : commandes gaucher et vibrations | E8 | 🔧 En cours | Claude (session trafic, agent WFS-75), 2026-11-04 | WFS-41 ✅, WFS-70 ✅ | `feature/waforspeed-75` |  |  |
+| P3 Moyenne | WFS-75 | Réglages : commandes gaucher et vibrations | E8 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-75), 2026-11-04 | WFS-41 ✅, WFS-70 ✅ | `feature/waforspeed-75` | #65 |  |
 | P3 Moyenne | WFS-76 | Ambiances sonores par carte et musique (menu et course) | E6 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-10 ✅, WFS-28 ✅, WFS-41 ✅ | `feature/waforspeed-76` | [#55](https://github.com/wlfaleh/waforspeed_mobile/pull/55) |  |
 | P2 Haute | WFS-77 | Les 20 voitures sans défaut visible (peinture unie Giulia et Elantra, roues de la GT86, contrôle des 20) | E5 | ✅ Fusionné (PR #57, sur ordre de l'utilisateur ; QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-13 ✅, WFS-60 ✅ | `feature/waforspeed-77` | [#57](https://github.com/wlfaleh/waforspeed_mobile/pull/57) |  |
 | P4 Basse | WFS-78 | iOS : affichage direct dans une surface Metal et démarrage jusqu'au menu | E7 (+ accroche E4 `vk.cpp`) | 🔧 En cours | Claude (session trafic, agent WFS-78), 2026-11-04 | WFS-22 ✅ | `feature/waforspeed-78` |  |  |
 | P4 Basse | WFS-79 | Son iOS (sortie Core Audio) | E6 (+ accroche E7 `ios.cmake`) | ✅ Fusionné (QA de nuit à faire) — PR #63 | Claude (session trafic, agent WFS-79), 2026-11-04 | WFS-22 ✅, WFS-76 ✅ | `feature/waforspeed-79` |  |  |
-| P4 Basse | WFS-80 | Manette : garage (peintures) et réglages joignables au focus | E8 (+ accroche E5 `garage.cpp`) | ⏳ En attente | | WFS-22 ✅, WFS-75 | `feature/waforspeed-80` |  |  |
-| P3 Moyenne | WFS-81 | Nuit corniche et circuit : vrais lampadaires, lumières alignées, feux du trafic sans double halo | E2 (+ accroche E3 `traffic_system.cpp`) | ⏳ Prêt (attribuable à la fin de WFS-18, E2 occupée) | | WFS-09 ✅, WFS-53 ✅, WFS-67 ✅ | `feature/waforspeed-81` |  |  |
+| P3 Moyenne | WFS-80 | Manette (peintures, réglages au focus) + réglages « Direction » et « Réduire les mouvements » | E8 (+ accroche E5 `garage.cpp`) | 🔧 En cours | Claude (session trafic), 2026-11-04 | WFS-22 ✅, WFS-75 ✅ | `feature/waforspeed-80` |  |  |
+| P3 Moyenne | WFS-81 | Nuit corniche et circuit : vrais lampadaires, lumières alignées, feux du trafic sans double halo | E2 (+ accroche E3 `traffic_system.cpp`) | 🔧 En cours | Claude (session trafic, agent WFS-81), 2026-11-04 | WFS-09 ✅, WFS-53 ✅, WFS-67 ✅ | `feature/waforspeed-81` |  |  |
+| P2 Haute | WFS-82 | [STABLE] Performances téléphone : masquage hors champ et au loin, moins d'appels de dessin (Basse ≤ 300) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) — Basse 331 > 300 : cible assouplie par le PO (Moyenne 337 ≤ 450 atteinte) | Claude (agent 4, session 011cpqZan), 2026-11-04 | WFS-15 ✅, WFS-67 ✅ | `feature/waforspeed-82` | #67 |  |
+| P2 Haute | WFS-83 | Duel jouable entre deux téléphones sur le même Wi-Fi : écran Salon, transport réseau local, menu « Duel en ligne » actif | E3 (+ `src/ui/ecrans/salon.*`, accroches E0 / E7 / E8) | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-21 ✅, WFS-24 ✅, WFS-41 ✅, WFS-74 ✅ | `feature/waforspeed-83` | [#68](https://github.com/wlfaleh/waforspeed_mobile/pull/68) |  |
+| P1 Urgent | WFS-84 | [URGENT] Nuit : feux des voitures naturels (petits feux nets, lueur douce, fini l'effet artificiel) | E4 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-09 ✅ | `feature/waforspeed-84` | [#70](https://github.com/wlfaleh/waforspeed_mobile/pull/70) |  |
+| P1 Urgent | WFS-85 | [URGENT] Caméra de poursuite plus haute (voir les voitures devant) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-66 ✅ | `feature/waforspeed-85` | [#71](https://github.com/wlfaleh/waforspeed_mobile/pull/71) |  |
+| P1 Urgent | WFS-86 | [URGENT] Voitures en course aussi belles qu'au garage (qualité, échelle de rendu, anticrénelage, modèle complet) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-86` | #72 |  |
+| P1 Urgent | WFS-87 | [URGENT] CI : l'APK de `main` toujours publié (Release `apercu` fiable, plus de trou ni d'échec 403) | E7 (exception : 2e ticket E7, fichiers séparés de WFS-78) | 🔍 En revue (CI) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-69 ✅ | `feature/waforspeed-87` | [#73](https://github.com/wlfaleh/waforspeed_mobile/pull/73) |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -401,6 +407,15 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-72 — Point d'extension : apparence des personnages** · E0 · priorité P2 Haute · ✅ Fusionné (PR #40, QA de nuit à faire) — Claude (session trafic), 2026-11-03, branche `feature/waforspeed-72` (règles : `regles-de-gestion/WFS-72.md`)
 - [ ] `squelette-tenue` : homme et femme habillés, peau / cheveux / haut / bas / chaussures distincts ; captures existantes identiques, banc `0 écart(s)`
 
+**WFS-84 — [URGENT] Nuit : feux des voitures naturels** · E4 · priorité P1 Urgent · ✅ Fusionné le 2026-11-04 (PR #70, par confiance ; QA de nuit : `qa/Check.md`) — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-84` (règles : `regles-de-gestion/WFS-84.md`)
+- [ ] petits feux rouges nets + lueur douce, pas de gros halos (coordonné avec WFS-81)
+
+**WFS-85 — [URGENT] Caméra de poursuite plus haute** · E3 · priorité P1 Urgent · ✅ Fusionné le 2026-11-04 (PR #71, CI verte et captures regardées ; QA de nuit : `qa/Check.md`) — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-85` (règles : `regles-de-gestion/WFS-85.md`)
+- [ ] trafic devant visible depuis la vue Poursuite ; ancienne vue basse conservée en option
+
+**WFS-86 — [URGENT] Voitures en course aussi belles qu'au garage** · E4 · priorité P1 Urgent · ✅ Fusionné le 2026-11-04 par confiance (PR #72, QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-86` (règles : `regles-de-gestion/WFS-86.md`)
+- [ ] course = garage en netteté et reflets ; cause au Journal
+
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
 - [ ] Rotation et braquage par roue dans l'API du rendu ; sans appel, rien ne change
@@ -415,7 +430,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-16 — Route mouillée avec reflets** · E4 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-09
 - [ ] Reflets plausibles, coût maîtrisé
 
-**WFS-18 — Météo : pluie, flaques** · E2 · priorité P4 Basse · 🔧 En cours — Claude (session trafic, agent WFS-18), 2026-11-04, branche `feature/waforspeed-18` (règles : `regles-de-gestion/WFS-18.md`)
+**WFS-18 — Météo : pluie, flaques** · E2 · priorité P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #66 — Claude (session trafic, agent WFS-18), 2026-11-04, branche `feature/waforspeed-18` (règles : `regles-de-gestion/WFS-18.md`)
 - [ ] Pluie animée, route mouillée
 
 **WFS-17 — Post-traitement : bloom, TAA, flou de mouvement** · E4 · priorité P4 Basse · ⏳ En attente (règles : `regles-de-gestion/WFS-17.md`) — ↪ fusionné dans WFS-15
@@ -441,7 +456,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `terrain-chargement` (barre partielle + étape) puis `terrain-arrivee` (nouvelle carte, décompte, chrono et score à zéro, voiture du garage gardée)
 - [ ] `terrain-fige-1/2` : chrono et score identiques au journal derrière l'écran Terrain ; pause → reprise sans remise à zéro ; autres captures inchangées
 
-**WFS-75 — Réglages : commandes gaucher et vibrations** · E8 · P3 Moyenne · 🔧 En cours — Claude (session trafic, agent WFS-75), 2026-11-04, branche `feature/waforspeed-75` (règles : `regles-de-gestion/WFS-75.md`)
+**WFS-75 — Réglages : commandes gaucher et vibrations** · E8 · P3 Moyenne · ✅ Fusionné (QA de nuit à faire), PR #65, fusion par confiance — Claude (session trafic, agent WFS-75), 2026-11-04, branche `feature/waforspeed-75` (règles : `regles-de-gestion/WFS-75.md`)
 - [ ] `reglages-commandes` (Commandes + Vibrations) ; `course-gaucher` (volant à droite, pédales et nitro à gauche) ; vibrations coupées → `vibration ignorée (réglage)`
 
 **WFS-76 — Ambiances sonores par carte et musique (menu et course)** · E6 · P3 Moyenne · ✅ Fusionné le 2026-11-04 (PR #55, par confiance ; QA de nuit : `qa/Check.md`) — Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04, branche `feature/waforspeed-76` (règles : `regles-de-gestion/WFS-76.md`)
@@ -457,11 +472,27 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-79 — Son iOS** · E6 · P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #63 — Claude (session trafic, agent WFS-79), 2026-11-04 (règles : `regles-de-gestion/WFS-79.md`)
 - [ ] journal du simulateur `audio iOS : 48000 Hz` puis `n rappels` > 0 ; son Android et WAV du banc inchangés
 
-**WFS-80 — Manette : garage et réglages au focus** · E8 · P4 Basse · ⏳ En attente de WFS-75 (règles : `regles-de-gestion/WFS-80.md`)
+**WFS-80 — Manette au focus + réglages Direction et Réduire les mouvements** · E8 · P3 Moyenne · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-80` (règles : `regles-de-gestion/WFS-80.md`). Zone : `src/ui/ecrans/reglages.*` ; accroches ≤ 10 lignes annoncées dans `src/ui/garage.cpp` et, si besoin, `src/platform/manette_jeu.*`.
+- [ ] `reglages` : lignes « Direction » (Glisser / Flèches, clé `steer`) et « Réduire les mouvements » (Non / Oui) visibles ; le choix s'applique tout de suite (`reglagesRessenti()`) et survit au relancement
 - [ ] `manette-garage-peinture`, `manette-reglages` : cadre cyan, A applique, B retour ; captures tactiles inchangées
 
-**WFS-81 — Nuit corniche et circuit** · E2 · P3 Moyenne · ⏳ Prêt, après WFS-18 (règles : `regles-de-gestion/WFS-81.md`)
+**WFS-81 — Nuit corniche et circuit** · E2 · P3 Moyenne · 🔧 En cours — Claude (session trafic, agent WFS-81), 2026-11-04, branche `feature/waforspeed-81` (règles : `regles-de-gestion/WFS-81.md`)
 - [ ] `nuit-plage-*` : poteaux sous chaque lumière ; `nuit-circuit-*` : lumière sous chaque mât ; trafic qui freine la nuit : un seul halo rouge par feu
+
+**WFS-82 — [STABLE] Performances téléphone : masquage** · E4 · P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #67, QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-82` (règles : `regles-de-gestion/WFS-82.md`)
+- [ ] banc nuit ville : Basse ≤ 300 appels de dessin (**mesuré 331 : cible assouplie par le PO le 2026-11-04**, instanciation des décors reportée), Moyenne ≤ 450 (337, atteint), Haute sans hausse ; avant/après au Journal
+- [ ] captures `qualite-*` et partie1 : rien ne manque à moins de 150 m ; phares et feux du trafic restent attachés à leur voiture
+- [ ] test CPU `masquage` vert ; aucun plantage, aucune régression du banc
+
+**WFS-83 — Duel jouable sur le même Wi-Fi** · E3 · P2 Haute · ✅ Fusionné le 2026-11-04 (PR #68, par confiance ; QA de nuit : `qa/Check.md`) — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-83` (règles : `regles-de-gestion/WFS-83.md`)
+- [ ] test CPU : deux `TransportUdp` en boucle locale (annonce, rejoindre, prêts, même graine, horloge commune, message hostile ignoré, retrait après 3 s)
+- [ ] banc : `menu-duel`, `salon-accueil`, `salon-hote`, `salon-pret`, `duel-reseau-course` (1280x720 et `-2400`)
+- [ ] APK : « Duel en ligne » ouvre le Salon ; sans Wi-Fi, note orange, aucun plantage
+
+**WFS-87 — [URGENT] CI : APK de `main` toujours publié** · E7 · P1 Urgent · 🔍 En revue (CI, PR #73) — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-87` (règles : `regles-de-gestion/WFS-87.md`). Zone : `.github/workflows/build.yml` (job `publication`), `tools/qa/publier_apercu.sh` ; ne pas toucher `ios.yml`, `ios/**` (WFS-78).
+- [ ] CI de `main` après fusion : job `publication` vert, `releases/download/apercu/WaForSpeed.apk` répond
+- [ ] Release `apercu` sur le dernier commit, captures à la même adresse ; jamais de moment sans APK (plus de suppression avant création)
+- [ ] branche `feature/*` : `apercu-waforspeed-87` publiée
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

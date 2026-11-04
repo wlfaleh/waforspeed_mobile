@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <string>
 #include "../src/game/duel.h"
+#include "../src/game/reseau_udp.h"   // WFS-83
+#include <chrono>
+#include <thread>
 #include "../src/game/player.h"
 #include "../src/game/traffic.h"
 using namespace wfs;
@@ -13,6 +16,60 @@ using namespace wfs::duel;
 
 static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
+
+// WFS-83 : deux transports UDP en boucle locale (127.0.0.1) dans le même processus ; horloges d'appareils différentes
+static double msReel() { using namespace std::chrono; return duration<double, std::milli>(steady_clock::now().time_since_epoch()).count(); }
+static void attendre(int ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+template <class F> static bool jusqua(F ok, int msMax) { for (int t = 0; t < msMax; t += 5) { if (ok()) return true; attendre(5); } return ok(); }
+static void testReseau() {
+    using namespace wfs::reseau;
+    double avanceB = 0;   // l'horloge de B avance de 777 777 ms sur celle de A (appareils différents), + avanceB (test des 3 s)
+    auto pa = std::make_shared<Prise>(Config{47401, {{"127.0.0.1", 47402}}, [] { return msReel(); }});
+    auto pb = std::make_shared<Prise>(Config{47402, {{"127.0.0.1", 47401}}, [&] { return msReel() + 777777 + avanceB; }});
+    if (!pa->ouverte() || !pb->ouverte()) { std::printf("réseau local indisponible : test UDP sauté\n"); return; }
+    // RG-05 : messages hostiles refusés par l'analyse (aucun plantage)
+    Recu r;
+    VERIFIE(!Prise::lire(std::string(600, 'x'), r) && !Prise::lire("WFS2|k7qx|abcdefgh|12|n=a", r) && !Prise::lire("WFS1|k7qx|BAD|12|n=a", r) &&
+            !Prise::lire("WFS1|k7qx|abcdefgh|-1|n=a", r) && !Prise::lire("WFS1|k7qx|abcdefgh|12|n=%ZZ", r) && !Prise::lire("WFS1|k7|abcdefgh|12|n=a", r) &&
+            !Prise::lire("WFS1|k7qx|abcdefgh", r), "message hostile accepté");
+    VERIFIE(Prise::lire("WFS1|K7QX|abcdefgh|12|n=Al|ice;st=lobby", r) && r.code == "k7qx" && duel::str(r.f, "n") == "Al|ice", "message valide refusé");
+    // RG-08 / RG-02 : l'hôte annonce son salon, l'appareil de B (sur l'accueil, sans salon) le voit
+    Session a, b;
+    VERIFIE(a.join(std::make_unique<TransportUdp>(pa, "k7qx"), "k7qx", true, "Alice", "golf", "", "plage/nuit"), "UDP : création du salon");
+    bool vu = jusqua([&] { a.others(); pb->pomper(); auto l = salonsOuverts(*pb); return l.size() == 1 && l[0].code == "k7qx" && l[0].hote == "Alice" && l[0].carte == "plage/nuit"; }, 2000);
+    VERIFIE(vu, "UDP : le salon annoncé n'est pas vu par l'autre appareil");
+    // rejoindre, puis le salon n'est plus annoncé (2 pilotes au plus)
+    VERIFIE(b.join(std::make_unique<TransportUdp>(pb, "K7QX"), "K7QX", false, "Bob", "m4", "", ""), "UDP : rejoindre");
+    VERIFIE(jusqua([&] { return a.others().size() == 1 && b.others().size() == 1; }, 2000), "UDP : les deux joueurs ne se voient pas");
+    VERIFIE(jusqua([&] { a.others(); b.others(); return salonsOuverts(*pb).empty(); }, 2000), "UDP : salon plein encore annoncé");
+    // prêts → départ commun, même graine, horloge commune (trafic identique) à ± 50 ms
+    b.setReady(true); a.setReady(true);
+    bool partiA = false, partiB = false;
+    jusqua([&] { partiA = partiA || a.checkStart(); partiB = partiB || b.checkStart(); return partiA && partiB; }, 3000);
+    VERIFIE(partiA && partiB, "UDP : départ non commun (A %d, B %d)", partiA, partiB);
+    VERIFIE(a.seed() == b.seed() && a.round() == 1 && b.round() == 1, "UDP : graines %u / %u", a.seed(), b.seed());
+    jusqua([&] { a.others(); b.others(); return false; }, 400);   // quelques messages de l'hôte : moyenne du décalage
+    const double ecart = std::abs(a.trafficClock() - b.trafficClock()) * 1000;
+    VERIFIE(ecart <= 50, "UDP : trafficClock A %.3f s, B %.3f s (écart %.0f ms)", a.trafficClock(), b.trafficClock(), ecart);
+    std::printf("duel UDP : salon vu puis plein, départ commun, graine %u, horloges d'appareils à 777 777 ms d'écart → trafficClock à %.0f ms près : OK\n", a.seed(), ecart);
+    // message hostile reçu par la prise : ignoré, le duel continue
+    const int avant = pb->ignores();
+    pa->envoyer("WFS2|k7qx|abcdefgh|12|n=x"); pa->envoyer("WFS1|k7qx|abc|12|n=x"); pa->envoyer("WFS1|k7qx|abcdefgh|12|n=%Z");
+    jusqua([&] { b.others(); return pb->ignores() >= avant + 3; }, 1000);
+    VERIFIE(pb->ignores() >= avant + 3 && b.others().size() == 1, "UDP : messages hostiles (%d ignorés, %zu joueur(s))", pb->ignores() - avant, b.others().size());
+    // RG-06 : bye → retrait immédiat
+    a.leave();
+    VERIFIE(jusqua([&] { return b.others().empty(); }, 500), "UDP : bye non pris en compte");
+    // RG-06 : plus rien depuis 3 s → retiré (l'horloge de B avance de 3,1 s ; C ne parle plus)
+    Session c, d;
+    c.join(std::make_unique<TransportUdp>(pa, "zz99"), "zz99", true, "Cleo", "golf", "", "ville/jour");
+    d.join(std::make_unique<TransportUdp>(pb, "zz99"), "zz99", false, "Dan", "golf", "", "");
+    VERIFIE(jusqua([&] { c.others(); return d.others().size() == 1; }, 2000), "UDP : second salon");
+    avanceB += 2900; VERIFIE(d.others().size() == 1, "UDP : retiré avant 3 s");
+    avanceB += 200; VERIFIE(d.others().empty(), "UDP : pas retiré après 3 s sans message");
+    std::printf("duel UDP : messages hostiles ignorés, bye immédiat, retrait après 3 s de silence : OK\n");
+    b.leave(); c.leave(); d.leave();
+}
 
 int main() {
     // RG-02 : hashStr et graine identiques au jeu web (valeurs de node : hashStr de js/net/duel.js)
@@ -129,6 +186,7 @@ int main() {
 
     a.leave(); b.updateGhosts(0.1);
     VERIFIE(b.ghosts().empty(), "joueur parti : fantôme retiré");
+    testReseau();   // WFS-83
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("duel : tout est OK\n");
     return 0;
