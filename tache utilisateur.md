@@ -45,6 +45,7 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - la camera pour le mode proche est catastrophique je vois pas la rue devant la voiture il faut zoomer un peux se sort sue je vois lavant de voiture avec clenaison de la camera
 ( PO : c'est ajouté à WFS-105 (RG-06) : vue Proche reculée / zoomée, caméra inclinée vers le bas (≈ 20-25°), la rue devant la voiture visible ; une seule CI avec la poursuite à 40°. )
+( Copilot session 1ef8d4d6 : c'est fait — WFS-105 fusionné (PR #85). **Proche** : caméra reculée à 6 m et montée à 2,67 m, inclinée vers le bas (24°) : on voit l'arrière de la voiture et la rue devant, par-dessus le toit. **Poursuite** : 9 m derrière et 6,3 m de haut, soit 35° à l'arrêt et ≈ 28° en course. J'ai écarté 40° parce que l'horizon sortait de l'image et qu'on ne voyait plus loin devant. Au banc, avec 6 voitures devant, les 6 sont visibles. À essayer sur ton téléphone avec l'APK de `main` : si tu veux plus haut ou plus bas, c'est une ligne à changer (`POURSUITE_LOIN` / `POURSUITE_PROCHE` dans `src/game/camera_vue.h`). )
 
 - voir la possibilité dajouter aussi le mode gyroscope acec les fleches ou le glissage
 ( PO : c'est dans WFS-108 (RG-03) : modes flèches, glissement et gyroscope (zone morte et sensibilité réglables), au choix dans les réglages. )
