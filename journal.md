@@ -1618,3 +1618,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   fonctionnent. Captures regardées (HUD, piétons, écran de fin) : rien de bloquant. CI de construction verte (run 41747775305).
 - Fusion immédiate (règle en vigueur), ligne ajoutée dans `qa/Check.md`. Simulateur relancé sur `main` (`epic=MVP`, `scenario=mvp`) :
   la Release `simulateur-MVP` sera écrasée par ce passage, à recetter la nuit (`qa/rapports/simulateur-MVP.md`).
+
+### 2026-11-04 00:46:48 — Fin WFS-41 : PR #45 fusionnée par confiance (Claude, agent 5)
+- **Fusion** : PR #45 fusionnée sur `main` (`e300de2`). CI verte sur la branche (run 41747977801 : android, 4 bancs, publication), captures regardées : terrain, réglages et qualité basse conformes. Deux synchros avec `main` ensuite (WFS-11, WFS-65, WFS-50, WFS-21 suite) : compilation et `test_systems` passés en local, puis fusion par confiance (règle du 2026-11-04).
+- **Synchro avec WFS-11** : le parcours suit le web : menu → garage (« Choisir ») → terrain → « Rouler » → course. Accroche d'une ligne dans `src/ui/garage.cpp` (E5) : après « Choisir », `Ecran::Terrain` au lieu de `Ecran::Course`. Au changement de carte, la voiture et la peinture du garage sont gardées.
+- **Corrigé avant fusion** : les vibreurs du circuit dépassaient de la vignette (`terrain-1`).
+- **Ajouté à `qa/Check.md`** ; je suis la CI de `main` après la fusion.
+
