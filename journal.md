@@ -1750,3 +1750,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : journal `MUSIQUE menu|course|coupée`, `AMBIANCE <carte>|nuit|coupée` ; WAV + PNG du banc (musique menu/course, 4 ambiances) sans coupure, crête < 1,0 ; capture `reglages-musique` ; téléphone : musique au menu, ambiance ville ≠ plage, pas de craquement.
 - **Plan court** : grille synthwave 110 BPM calculée au démarrage (2 variantes), ambiances en bruit filtré (réutiliser `sfx_synth.h`, `noiseHit`/`beep` du jeu web), mélange dans le thread de WFS-10 sans allocation, ligne « Musique » dans Réglages, banc audio.
 - Rappels : synchroniser avec `main` avant chaque push ; fusion par confiance > 50% (ligne `qa/Check.md`, ✅, Journal), puis suivre la CI de `main`.
+
+### 2026-11-04 07:33:41 — Début WFS-15 Qualité et performances (choix auto, résolution dynamique, LOD, bloom) (Claude, agent 4) — attribué par le PO
+- **Cérémonie de fin de WFS-67** : aucun ticket ne dépendait de WFS-67 ; rien à débloquer. Aucune anomalie 🆕 dans `anno.md`.
+- **Pourquoi lui** : aucun ticket ⏳ Prêt dans une épic libre (E0, E5, E6, E8 sans ticket prêt ; E2, E3, E7 occupées). Seul prêt : WFS-15 (E4, où WFS-09 nuit est en cours). **Exception justifiée** : 2e ticket E4, fichiers séparés (WFS-15 : `shaders/post.*`, nouveaux `src/render/qualite_*`, `lod_*`, `tests/test_qualite*` ; WFS-09 : `scene*`, `sky*`, lumières). Passé de P3 à **P2** : la fluidité sur le téléphone de l'utilisateur est le premier besoin de la version stable.
+- **Zone autorisée** : ci-dessus + accroches courtes annoncées au Journal dans `renderer.cpp/.h` et ≤ 10 lignes dans `src/ui/ecrans/reglages.cpp` (E8).
+- **Recadrage** (`regles-de-gestion/WFS-15.md`) : les 3 niveaux existent déjà (WFS-41) ; livrer dans l'ordre (1) choix automatique + résolution dynamique + rétrogradation unique (logique testée CPU), (2) LOD trafic à 50 m + petits décors coupés à 200 m + hors champ masqué, (3) bloom en Moyenne/Haute. TAA et flou de mouvement hors périmètre.
+- **Critères** : différences visibles Basse/Moyenne/Haute (bloom), journal du choix auto et de la rétrogradation, appels de dessin et ms par niveau, test CPU vert, aucune régression.
+- **Rappel** : branche `feature/waforspeed-15`, synchronisée avec `main` ; confiance > 50 % → fusion directe (ligne `qa/Check.md`, ✅, Journal, puis suivre la CI de `main`).
