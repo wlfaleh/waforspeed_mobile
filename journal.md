@@ -2370,3 +2370,23 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-04 22:29:06 — PR #76 (WFS-88, iOS) : laissée ouverte, décision de l'utilisateur (Claude, session trafic)
 - Seule PR non fusionnée. Question posée à l'utilisateur (fusionner, laisser ouverte, fermer) : réponse « laisser ouverte ». Le GEL iOS reste appliqué à la lettre.
 - Décision consignée : #76 ne compte pas dans la règle RG-10 de WFS-103 (aucune PR ouverte plus de 2 h sans décision). Aucune autre PR ouverte.
+
+### 2026-11-04 22:33:26 — Fin WFS-99 : garage lisible, PR #81 fusionnée par confiance (Copilot, session 0e5c192d)
+- **Fait** (`src/ui/garage.cpp`, `src/render/bench_spots.cpp`, rien hors zone) :
+  - RG-01 : voile `.screen--garage` à gauche (2 dégradés `uiQuad` .92 → .70 à 34 % → 0 à 62 %), voile du bas en un seul dégradé ;
+  - RG-02 : arc des 9 néons `a = −0,36 + i × 0,18` (au lieu de −0,9 + i × 0,32 ; rayon 16, z + 4, couleurs gardés) : barres visibles à x ≥ 0,53 de l'écran, calculé pour les 20 voitures en 4:3, 16:9 et 20:9 (règle : ≥ 0,45) ;
+  - RG-03 : sol #1A1C24, rugosité 0,6, métal 0,2 au garage et dans `spots-sol` ;
+  - RG-04 : 4e projecteur #00E5FF derrière la voiture, à l'opposé de la caméra ((−sin 0,55 × 7, 3,2, −cos 0,55 × 7) vers (0, 0,6, 0)), force 0,25 × 1,6 = 0,4 ; aucun shader touché ;
+  - RG-05 : cap de départ 0,6 + π (garage et `spots-sol`) ; rotation lente et glissement inchangés ;
+  - RG-06 : biseaux, flèches et panneau d'un seul tenant, coin coupé 14 px, chevrons en trait lissé ; crédit 11·k → 14·k, #8A90A6 ;
+  - RG-07 : accroche « regarder » de WFS-96 gardée (fusion de `main` sans conflit).
+- **Vérification** : compilation OK ; 17 tests CPU de la ligne « Tests CPU » de `build.yml` verts ; captures `garage` (720p et 2400x1080), `vitrines` (`garage-sf90`, `garage-p208`) et `spots-sol` regardées avant / après.
+  - Sol 2 à 4 fois plus clair autour du plateau (`spots-sol` : orangé à gauche, cyan à droite, clair devant).
+  - Crédit : capitales 5 → 7 px en 720p, 11 px en 2400x1080 (ANO-33 : « 8 px → 10 px », même rapport × 1,25).
+  - Captures de la CI de la branche non attendues (fusion par confiance).
+- **Écarts** :
+  - « un seul `uiQuad` » par biseau → `dessin2d::polygone` de WFS-98 : même forme, plus une frange lissée de 1 px (bords sans escalier).
+  - Le cap n'est pas remis à zéro au changement de voiture (comme `cycleCar` du web) : `garage-1`, `garage-2` et `garage-m4` montrent l'angle laissé par les glissés du banc, pas forcément l'avant.
+  - Taches orange et blanche discrètes dans le cadrage du garage avec les valeurs imposées par RG-03.
+  - Le banc `spots-sol` n'a été lancé seul qu'avec une ligne d'essai locale dans `desktop_main.cpp`, retirée avant validation (rien d'envoyé dans `src/platform`).
+- **Suite** : ligne ajoutée dans `qa/Check.md` pour la recette de nuit ; je suis la CI de `main` (commit c1f5bbb). WFS-99 était l'une des dépendances de WFS-102 (le PO la débloquera quand les autres seront finies).
