@@ -57,7 +57,7 @@ static bool entier(const std::string& s, long long& v) {
 
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; quality = "high"; qualityChoisie = false; cam = "poursuite";
-    muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser";
+    muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
 }
 
 std::string Sauvegarde::texte() const {
@@ -70,6 +70,7 @@ std::string Sauvegarde::texte() const {
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
     o << "cam=" << cam << "\n";
     o << "muted=" << (muted ? 1 : 0) << "\n" << "music=" << (music ? 1 : 0) << "\n" << "nick=" << nick << "\n" << "km=" << km << "\n" << "steer=" << steer << "\n";
+    o << "commandes=" << (gaucher ? "gaucher" : "droitier") << "\n" << "vibrations=" << (vibrations ? 1 : 0) << "\n";   // WFS-75
     return o.str();
 }
 
@@ -104,6 +105,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "nick") { const std::string p = nettoyerPseudo(v); if (!p.empty()) nick = p; }
         else if (k == "km") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km = (int)n; }
         else if (k == "steer") { steer = v == "fleches" ? "fleches" : "glisser"; }
+        else if (k == "commandes") { gaucher = v == "gaucher"; } else if (k == "vibrations") { vibrations = v != "0"; }   // WFS-75
     }
     if (premiere) return false;   // fichier vide
     return true;

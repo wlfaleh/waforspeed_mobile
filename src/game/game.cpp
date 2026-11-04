@@ -11,6 +11,7 @@
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
+#include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 
 namespace wfs {
 
@@ -161,14 +162,14 @@ void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
     if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
     const float W = (float)r_->width(), H = (float)r_->height();
-    const float md = marges_.droite;   // zones de toucher décalées des marges (WFS-51)
+    const float md = ecrans::margesCommandes(marges_).droite, x = ecrans::miroirX(t.x, W), yn = ecrans::reglages().gaucher ? 0.53f : 0.45f;   // WFS-51 ; WFS-75 : miroir
     if (t.down) {
         bool fresh = !directionPossede(t.id) && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
         if (directionToucher(t, fresh, W, H, marges_)) {}   // WFS-70 : volant ou flèches (direction.cpp)
         else if (fresh) {
-            if (t.x > W * 0.80f - md && t.y < H * 0.45f) nitroId_ = t.id;
-            else if (t.x > W * 0.78f - md) gasId_ = t.id;
-            else if (t.x > W * 0.55f - md) brakeId_ = t.id;
+            if (x > W * 0.80f - md && t.y < H * yn) nitroId_ = t.id;
+            else if (x > W * 0.78f - md) gasId_ = t.id;
+            else if (x > W * 0.55f - md) brakeId_ = t.id;
         }
     } else {
         directionToucher(t, false, W, H, marges_);   // WFS-70
@@ -195,10 +196,11 @@ void Game::drawControls() {
         if (md > 0) r_->uiRect(W - md, 0, md, H, {1, 0.1f, 0.2f, 0.35f});
     }
     directionDessiner(*r_, W, H, marges_);   // WFS-70 : volant virtuel ou flèches (direction.cpp)
+    const float mc = ecrans::margesCommandes(marges_).droite, yn = ecrans::reglages().gaucher ? 0.40f : 0.32f;   // WFS-75 : nitro sous les boutons du HUD
     // pédales
-    r_->uiCircle(W * 0.89f - md, H * 0.74f - mb, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
-    r_->uiCircle(W * 0.70f - md, H * 0.80f - mb, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
-    r_->uiCircle(W * 0.90f - md, H * 0.32f, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
+    r_->uiCircle(ecrans::miroirX(W * 0.89f - mc, W), H * 0.74f - mb, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
+    r_->uiCircle(ecrans::miroirX(W * 0.70f - mc, W), H * 0.80f - mb, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
+    r_->uiCircle(ecrans::miroirX(W * 0.90f - mc, W), H * yn, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
     // vitesse, nitro, temps, score : HUD de course (WFS-27, src/ui/hud.cpp ; marges : WFS-52)
 }
 
