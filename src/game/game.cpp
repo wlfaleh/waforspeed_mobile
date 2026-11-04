@@ -324,9 +324,10 @@ void Game::changerCarte() {
     const vec3 p = paint_;
     Renderer& r = *r_;
     const double t0 = nowSeconds();
-    if (d.debutChargement) d.debutChargement();
     setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
     shutdown();
+    // après shutdown : le système « texte » vient de libérer la police, l'écran de chargement la recharge (logo et étape lisibles)
+    if (d.debutChargement) d.debutChargement();
     const bool ok = init(r, v.c_str(), c.c_str(), d.progression);
     paint_ = p;   // RG-06
     if (d.finChargement) d.finChargement(ok);
