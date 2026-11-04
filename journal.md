@@ -2390,3 +2390,41 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Taches orange et blanche discrètes dans le cadrage du garage avec les valeurs imposées par RG-03.
   - Le banc `spots-sol` n'a été lancé seul qu'avec une ligne d'essai locale dans `desktop_main.cpp`, retirée avant validation (rien d'envoyé dans `src/platform`).
 - **Suite** : ligne ajoutée dans `qa/Check.md` pour la recette de nuit ; je suis la CI de `main` (commit c1f5bbb). WFS-99 était l'une des dépendances de WFS-102 (le PO la débloquera quand les autres seront finies).
+
+### 2026-11-04 22:33:28 — WFS-101 attribué à Copilot (session dc0cdd3f) (PO)
+- **Demandeur** : Copilot (session dc0cdd3f), sans ticket en cours.
+- **Choix** (règle 1) : 5 tickets ⏳ Prêt aux dépendances ✅ : WFS-101 (P1), WFS-91, WFS-93, WFS-95 (P2) et WFS-97 (P3). WFS-101 est le seul P1 : il passe devant.
+  - E4 a déjà WFS-100 🔧 (Claude, session trafic) ; l'exception « 3e ticket E4, fichiers séparés de WFS-97 et WFS-100 » est écrite dans `regles-de-gestion/WFS-101.md` et a été confirmée à 22:04:18.
+  - E3 (`traffic_system.cpp`, `course_system.*`) n'a aucun ticket actif. Ce n'est ni un ticket iOS ni un ticket simulateur.
+- **Ticket** : WFS-101 — Correction : étincelles et lignes de nitro visibles, trafic du banc de près, écran de fin aéré.
+  - Anomalies : ANO-25 et ANO-26 (bloquantes), ANO-36 (mineure), ANO-20 dans `course_system.cpp`.
+  - E4 (+ E3), P1 Urgent. Dépend de : — (WFS-65, WFS-67 et WFS-24 sont ✅). Règles : `regles-de-gestion/WFS-101.md` (RG-01 à RG-05).
+- **Zone autorisée** :
+  - `src/render/effets_particules.*`, `src/render/effets_systeme.*` et `src/render/bench_effets.*` ;
+  - `src/game/traffic_system.cpp` (seulement `benchTraficVivant`, l. 389) et `src/game/course_system.*` ;
+  - ajout du PO : les tests touchés par ces changements, seulement leurs assertions (`tests/test_effets.cpp`, `test_trafic_vivant.cpp`, `test_course.cpp`, `test_sauvegarde.cpp`). Ces fichiers sont dans E3, qui n'a aucun ticket actif.
+- **Interdit** :
+  - `src/render/renderer.*`, `vk.*`, `model_loader.*`, `qualite_*` et `shaders/**` (WFS-100 en cours) ;
+  - `nuit.cpp` et `bench_nuit.*` (WFS-97) ;
+  - `bench_spots.*`, `src/ui/garage.*` et `planche_voitures.*` (zone de WFS-99, fusionné à 22:33 par la PR #81) ;
+  - `src/ui/text.*` et `toasts.*` (WFS-95) ;
+  - `src/game/game.*`, `direction.*`, `camera_vue.*`, `commandes_tactiles.*` et `src/ui/hud.*` ;
+  - les fichiers du duel, `src/platform/**` (y compris `desktop_main.cpp`) et `.github/**` (WFS-91) ;
+  - `src/world/**` (WFS-93) et tout fichier iOS (gel iOS).
+- **Faisabilité vérifiée par le PO** : l'API existante suffit, sans toucher le rendu ni les shaders.
+  - Le drapeau additif `MAT_ADD` existe déjà (`renderer.h` l. 20 ; pipelines `addPipe_` et `refAdd_` dans `renderer.cpp`). C'est l'équivalent de `THREE.AdditiveBlending` des étincelles du web. Aujourd'hui, `effets_systeme.cpp` l. 63 ne met que `MAT_BLEND`.
+  - Les traits et la vignette passent par `r.uiQuad`.
+  - `desktop_main.cpp` appelle déjà `benchEffets` et `benchTraficVivant` : rien à y changer.
+- **Critères** :
+  - `choc-etincelles` : gerbe orange et blanche au point de choc, avec au moins 20 étincelles au journal ;
+  - `nitro-lignes` : traits en étoile et vignette cyan sombre ;
+  - `trafic-clignotant` et `trafic-freinage` : voiture entre 8 et 25 m, feux nets ;
+  - `fin-record` : badge et ligne RECORD espacés, boutons centrés sans rayures ;
+  - tests CPU verts.
+- **Plan court** :
+  1. Étincelles : `MAT_ADD`, nombres de `update.js` (50 pour un accident, 20 + impact × 80 pour un choc, 14 pour un frottement), taille lisible en 720p, capture prise pendant leur vie.
+  2. Nitro : vérifier au journal qu'elle est active au moment de la capture (sinon, recaler l'appui dans `bench_effets.cpp`), α 0,35.
+  3. `benchTraficVivant` : voiture à 15 m, dans la file voisine.
+  4. Écran de fin : marges de 16 px et 12 px, panneau agrandi de 28 px, chaque `biseau()` en un seul `uiQuad`.
+- **Coordination** : `trafic-clignotant` est aussi une capture critère de WFS-100. La rapprocher l'aide ; le signaler dans `qa/Check.md`.
+- **Suite** : le développeur crée et pousse tout de suite la branche `feature/waforspeed-101`. Il synchronise avec `main` avant chaque envoi. Fusion par confiance si elle dépasse 50 %, sinon attendre la CI verte et regarder les captures.
