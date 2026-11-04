@@ -11,6 +11,13 @@ static constexpr float PI_F = 3.14159265358979f;
 static const EngineVoiceDef VOICES[] = {
     {"golf", "audio/sport.wav", 1.0f}, {"m4", "audio/v8.wav", 1.25f},
     {"p911", "audio/v8.wav", 1.45f}, {"gallardo", "audio/v8.wav", 1.62f},
+    // WFS-13 : ENGINE_SET de js/audio/sfx.js (model3 « électrique » : citadine en attendant le son électrique)
+    {"p208", "audio/citadine.wav", 1.0f}, {"abarth", "audio/citadine.wav", 1.14f}, {"tcross", "audio/citadine.wav", 0.9f},
+    {"compass", "audio/thermique.wav", 1.0f}, {"s3", "audio/sport.wav", 0.95f}, {"x5", "audio/thermique.wav", 0.88f},
+    {"giulia", "audio/sport.wav", 0.86f}, {"a45", "audio/sport.wav", 1.06f}, {"model3", "audio/citadine.wav", 1.0f},
+    {"corsa", "audio/citadine.wav", 0.96f}, {"gt86", "audio/sport.wav", 1.12f}, {"elantra", "audio/sport.wav", 1.0f},
+    {"v60", "audio/thermique.wav", 1.1f}, {"rrsport", "audio/gros.wav", 1.0f}, {"mustang", "audio/v8.wav", 0.9f},
+    {"sf90", "audio/v8.wav", 1.72f},
 };
 const EngineVoiceDef& engineVoiceFor(const char* carId) {
     for (const auto& v : VOICES) if (std::strcmp(v.carId, carId) == 0) return v;

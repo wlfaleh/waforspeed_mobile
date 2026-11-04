@@ -64,6 +64,8 @@ struct GameView {
     std::function<void(Ecran)> allerA;
     // scène dédiée (WFS-44) : un système a pris la scène de l'image (caméra, fond…) ; la ville, le trafic, etc. ne dessinent pas
     bool sceneDediee = false;
+    // garage (WFS-11) : voiture et peinture (linéaire) retenues pour la course ; appliquées par Game entre deux images
+    std::function<void(const char* carId, vec3 peinture)> choisirVoiture;
 };
 
 class System {

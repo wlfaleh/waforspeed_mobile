@@ -26,3 +26,39 @@ et leurs crédits de licence.
 
 ## Hors périmètre
 Interface du garage (WFS-11), trafic avec 20 modèles (WFS-20 pour le LOD), sons (WFS-10 ✅).
+
+## Réouverture du 2026-11-04 (PO) — périmètre en vigueur (prime sur ce qui précède)
+WFS-11 est fusionné (PR #43) avec le garage, les 20 fiches (`src/ui/garage.cpp`, `FICHES`) et les 16 peintures, mais seules 4 voitures
+sont converties (golf, m4, p911, gallardo). WFS-13 est rouvert pour **les 16 autres voitures**, rien d'autre. Taille : 1 à 2 jours.
+
+### Règles de gestion (en vigueur)
+- RG-10 : convertir les 16 voitures manquantes (p208, abarth, tcross, compass, s3, x5, giulia, a45, model3, corsa, gt86, elantra, v60,
+  rrsport, mustang, sf90) depuis `waaps/waforspeed/models/<voiture>/<voiture>.json` vers `assets/cars/<id>.wfm`, avec les longueurs
+  `d.L`, `rotateY`, motifs `paint` / `tail` de `CAR_MODELS` (`js/cars/catalog.js`). Les commandes de conversion sont écrites dans un
+  **nouveau script** `tools/convertir_voitures.sh` (une ligne par voiture, arguments de `convert_car.mjs`), rejouable d'un coup.
+- RG-11 : **ne pas modifier `tools/convert_car.mjs`** (WFS-60 y travaille : roues séparées). Les cas particuliers passent par les
+  arguments (regex de peinture, de feux) ; si une voiture est impossible sans changer le convertisseur, la noter au Journal et la
+  laisser de côté (la fiche reste au garage, on n'arrête pas le ticket pour elle).
+- RG-12 : quand WFS-60 est fusionné avant la fin de ce ticket : `git merge origin/main` puis relancer `tools/convertir_voitures.sh`
+  pour que les 16 voitures aient aussi des roues séparées. Sinon, fusionner tel quel (le chargeur de WFS-60 est rétro-compatible) et
+  le noter au Journal : WFS-60 ou WFS-67 relancera le script.
+- RG-13 : ajouter les 16 entrées au catalogue `CARS` de `src/game/cars.h` (fiche `ch`, `s100`, `vmax`, `kg`, `grip`, dimensions `d`,
+  peinture par défaut, crédit) : **données seulement**, aucune logique (accroche annoncée au Journal, E3 a WFS-70 / WFS-24 en cours).
+  Les performances viennent de `carPerf` déjà porté (RG-02) : rien à recoder.
+- RG-14 : son moteur par voiture : 16 lignes ajoutées à `VOICES` de `src/audio/engine_synth.cpp` (fichier de `ENGINE_SET` du jeu web :
+  v8, sport, citadine, thermique, gros, électrique ; mêmes hauteurs) — données seulement, accroche annoncée au Journal.
+- RG-15 : licence de chaque modèle copiée dans `assets/licences/<id>.txt` ; crédit affiché au garage (déjà prévu par la fiche).
+- RG-16 : taille : textures à 1024 px (réglage actuel du convertisseur). Noter au Journal la taille de chaque `.wfm` et de l'APK avant /
+  après. Si l'APK dépasse 150 Mo, prévenir le PO au Journal (on décidera d'utiliser les versions `-lod` du jeu web) sans bloquer le ticket.
+- RG-17 : banc : **une seule capture par nouvelle voiture** (`vitrine-<id>-0`, vue de 3/4 avant) + `garage-<id>` pour 2 voitures au
+  choix (preuve que le garage les montre). Les 3 angles restent pour les 4 voitures actuelles. Ces captures vont dans un job qui n'est
+  **pas** `ecrans-2400` (déjà 11 min, le plus long) : groupe `partie1` ou nouveau groupe `vitrines` en job parallèle.
+
+### Critères d'acceptation (en vigueur)
+- [ ] `vitrine-<id>-0` pour les 16 voitures : voiture entière, dans le bon sens, 4 roues au sol, peinture appliquée, feux arrière non blancs
+- [ ] garage : les 20 voitures défilent ; `garage-<id>` sur 2 nouvelles voitures ; course lancée avec une nouvelle voiture sans plantage
+- [ ] tailles des `.wfm` et de l'APK au Journal ; autres captures inchangées
+
+### Hors périmètre
+Versions `-lod` et variété du trafic (WFS-67), roues animées (WFS-60), modification de `convert_car.mjs`, interface du garage (WFS-11 ✅),
+finitions de matériaux au pixel près.

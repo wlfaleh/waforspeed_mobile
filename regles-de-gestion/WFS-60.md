@@ -1,5 +1,5 @@
 # WFS-60 — Roues séparées dans les modèles de voiture (.wfm)
-Épic : E5 · Priorité : 17.6 (hors MVP) · Dépend de : — · Taille : ≈ 3 h
+Épic : E5 (+ API du rendu, E0) · Priorité : P2 Haute (version stable) · Dépend de : — · Taille : ≈ 1 à 1,5 jour (absorbe WFS-61 et WFS-62)
 
 ## Besoin (qui, quoi, pourquoi)
 Aujourd'hui les roues d'une voiture sont dessinées avec la carrosserie (simple drapeau « roue » au niveau du matériau) : on ne peut ni les faire tourner ni les braquer. Il faut que chaque voiture ait **4 roues distinctes**, chacune avec son centre, pour que WFS-61 / WFS-62 les animent.
@@ -23,3 +23,25 @@ Aujourd'hui les roues d'une voiture sont dessinées avec la carrosserie (simple 
 
 ## Hors périmètre
 Animation (WFS-61, WFS-62), flou de roue, les 16 autres voitures.
+
+
+## Périmètre élargi (PO, 2026-11-04 : gros tickets, une seule CI)
+Ce ticket **absorbe WFS-61** (accroche de rendu par roue, E0) **et WFS-62** (animation selon la vitesse et le braquage). **Lire et appliquer aussi** `regles-de-gestion/WFS-61.md` et `regles-de-gestion/WFS-62.md` (toutes leurs règles et critères). Une seule branche `feature/waforspeed-60`, une seule CI à la fin.
+Priorité relevée P4 → **P2 Haute** : sans roues qui tournent, la voiture « glisse » sur la route à chaque image ; c'est le défaut le plus visible restant pour la version stable, et il débloque WFS-67 (trafic vivant).
+
+### Règles complémentaires
+- RG-07 : ordre de travail : (1) conversion des 4 voitures avec roues séparées + chargeur (RG-01 à RG-06) ; (2) API du rendu : `draw(model, world, paint, const RouesPose* roues = nullptr)` ou équivalent, valeur par défaut = rendu actuel (WFS-61 RG-02) ; (3) calcul des angles dans un **nouveau module** `src/game/roues.{h,cpp}` (WFS-62), branché par accroche ≤ 10 lignes.
+- RG-08 : le garage (WFS-11, `src/ui/garage.cpp`) n'est pas modifié : il appelle `draw` sans roues, voitures inchangées. Les 16 autres voitures (ex-WFS-13, étape 4 de WFS-11) **ne sont pas** dans ce ticket mais utiliseront la même conversion.
+- RG-09 : angle de braquage lu depuis l'état du joueur (`wheelAngle` de `src/game/player.cpp`, exposé en lecture seule) **sans modifier la physique** ; si une valeur doit être exposée dans `player.h`, c'est une accroche ≤ 3 lignes annoncée au Journal (WFS-70 travaille dans ce fichier).
+
+### Zone de code autorisée
+`tools/convert_car.mjs`, `assets/cars/*.wfm` (4 voitures actuelles), `src/render/model_loader.{h,cpp}`, `src/render/renderer.h` (API, E0) et l'appel de dessin d'une voiture dans `src/render/renderer.cpp` (accroche minimale : WFS-09 y travaille), nouveaux `src/game/roues.{h,cpp}`, `tests/test_roues.cpp`, scène de banc `roues-*` (accroche ≤ 10 lignes dans `src/platform/desktop_main.cpp` et `.github/workflows/build.yml`), accroches ≤ 10 lignes dans `src/game/game.cpp` / trafic pour appeler le calcul.
+**Interdit** : `src/game/player.*` et `src/game/direction.*` (WFS-70) sauf RG-09, `src/game/sauvegarde.*` (WFS-24), `src/ui/garage.*` et `src/ui/hud.cpp` (WFS-11), `shaders/scene*.frag`, `post*`, `sky*`, `shadow*` (WFS-09), `src/render/effets_*`.
+
+### Critères d'acceptation regroupés (captures du banc PC)
+- [ ] Captures `roues-arret-1` / `roues-arret-2` : roues identiques ; `roues-roule` : repère de jante tourné ; `roues-virage` : roues avant braquées vers l'intérieur, arrière droites
+- [ ] Test `test_roues` : chaque `.wfm` donne 4 roues (rayon 0,25 à 0,45 m, centres symétriques gauche/droite) ; angle de roulage = distance / rayon ; braquage ×1,6 limité à ±0,6 rad, Ackermann 1,12 / 0,9
+- [ ] Captures du garage et des autres scènes inchangées (banc `0 écart(s)` hors scènes `roues-*`) ; aucun ralentissement mesurable
+
+### Rappel : réutiliser, ne rien recréer
+`waaps/waforspeed/js/cars/models.js` → `splitWheels`, `looksLikeWheel`, `WHEEL_RX`, `animWheels(steerAngle, meters)` ; `js/world/scene.js` (≈ l. 208 et 238, appels `animWheels(yaw * 1.6, vitesse × dt)`) ; modèles `models/<voiture>/<voiture>.json` (mêmes sources que les `.wfm` actuels).

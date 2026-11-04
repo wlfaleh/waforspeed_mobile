@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        groupe: [partie1, partie2, texte, ecrans-2400]
+        groupe: [partie1, partie2, texte, ecrans-2400, vitrines]
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -39,12 +39,12 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
           case "${{ matrix.groupe }}" in
-            partie1|partie2)
+            partie1|partie2|vitrines)   # vitrines : WFS-13, 16 voitures ajoutées
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
             texte)
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
@@ -56,7 +56,8 @@ jobs:
               for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-66
-              mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png ;;   # WFS-37
+              mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
+              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/reglages-menu.png menu/reglages-pause.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11, WFS-41
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4

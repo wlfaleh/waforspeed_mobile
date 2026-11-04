@@ -1,5 +1,6 @@
 #include "game.h"
 #include <algorithm>
+#include <cstdlib>   // setenv (WFS-41)
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../render/model_loader.h"
@@ -197,7 +198,14 @@ void Game::drawControls() {
 }
 
 // ---------------------------------------------------------------- mise à jour
+Game::Demandes& Game::demandes() { static Demandes d; return d; }
+
 void Game::update(double dt) {
+    if (Demandes& d = demandes(); !d.carte.empty() && r_) {   // WFS-41 : carte choisie, partie reconstruite entre deux images
+        const std::string c = d.carte, v = carDef_->id; const vec3 p = paint_; Renderer& r = *r_; d.carte.clear();   // voiture et peinture du garage gardées
+        setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str()); paint_ = p;
+        WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour");
+    }
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
@@ -286,7 +294,8 @@ void Game::render(double time) {
     if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
-        r_->draw(car_, carM, &paint_);
+        const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.dist, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
+        r_->draw(car_, carM, &paint_, &rouesJoueur);
     }
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes)) drawControls();   // commandes de conduite : seulement en course
     systemsUi();
@@ -297,6 +306,7 @@ void Game::render(double time) {
 // Le changement demandé (Game::allerA ou GameView::allerA) est appliqué ici, au début de update() / render() : jamais au
 // milieu d'une image. Les commandes de conduite en cours sont lâchées, puis tous les systèmes sont prévenus.
 void Game::appliquerEcran() {
+    if (!voitureDemandee_.empty()) { setCar(voitureDemandee_.c_str()); paint_ = peintureDemandee_; voitureDemandee_.clear(); }   // WFS-11
     if (!demandeEcran_) return;
     demandeEcran_ = false;
     if (ecranDemande_ == ecran_) return;
@@ -327,6 +337,7 @@ void Game::systemsInit() {
     view_.ecran = ecran_;
     view_.marges = marges_;
     view_.allerA = [this](Ecran e) { allerA(e); };
+    view_.choisirVoiture = [this](const char* id, vec3 p) { voitureDemandee_ = id; peintureDemandee_ = p; };   // WFS-11
     for (const SystemEntry& e : entries) {
         systems_.push_back(e.make());
         systems_.back()->init(*r_, view_);

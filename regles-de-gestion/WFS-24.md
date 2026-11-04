@@ -24,3 +24,12 @@ Le joueur retrouve ses meilleurs scores, sa voiture, ses peintures et ses régla
 ## Hors périmètre
 Compte en ligne, synchronisation entre appareils, succès.
 
+
+## Précisions du PO (2026-11-04 00:20:10, à l'attribution — exception « deux tickets E3 »)
+Ce ticket débloque la mémorisation attendue par WFS-11 (voiture, peinture), WFS-41 (réglages) et WFS-70 (mode de direction) : il fournit le **magasin de réglages**, les écrans le branchent ensuite.
+- RG-07 : un seul module neuf, `src/game/sauvegarde.h/.cpp` : structure `Sauvegarde` (toutes les clés de RG-01, défauts de RG-02), `charger(chemin)`, `enregistrer()` (asynchrone, RG-05/06), accès global `sauvegarde()` lisible et modifiable par les autres épics. Format texte simple `cle=valeur` par ligne, première ligne `version=1` (lisible dans le journal du banc, aucune bibliothèque).
+- RG-08 : chemin : Android = `app->activity->internalDataPath` + `/sauvegarde.txt` ; PC/banc = dossier de travail (`WFS_SAUVEGARDE` pour le forcer). Accroches autorisées, ≤ 10 lignes chacune, annoncées au Journal : `src/platform/android_main.cpp` (chemin + `enregistrer()` sur `APP_CMD_PAUSE`), `src/platform/desktop_main.cpp` (chemin), `src/game/game.cpp` (`charger` au démarrage, appliquer voiture / carte / moment existants).
+- RG-09 : record : `CourseSystem` (`course_system.cpp`, zone E3) compare le score final au record, l'écrit s'il est battu et affiche « NOUVEAU RECORD » sur l'écran de fin existant (texte WFS-26, accent orange du design). Le menu (`src/ui/ecrans/menu.cpp`, WFS-41 actif) : accroche ≤ 3 lignes seulement pour initialiser `best_` depuis la sauvegarde ; synchroniser avec `main` avant (WFS-41 y travaille).
+- RG-10 : ne **pas** modifier les fichiers de WFS-70 (`src/game/direction.*`, `player.*`) : le champ `steer` est seulement stocké ; le brancher au mode de direction est une ligne d'accroche faite par celui des deux tickets qui fusionne en second.
+- RG-11 : banc : scène `WFS_BANC=sauvegarde` lancée deux fois dans le même job : 1er lancement écrit (voiture ≠ golf, peinture, record), le 2e journalise `SAUVEGARDE relue : car=… paint=… best=…` identiques ; capture `fin-record` (écran de fin avec « NOUVEAU RECORD »).
+- Rien à réutiliser côté modèles ni sons ; seulement les **noms de clés et défauts** du web (`js/ui/screens.js` `store()`), pour garder la même signification.
