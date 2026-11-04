@@ -5,6 +5,7 @@
 #include "../core/log.h"
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
+#include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
 
 namespace wfs {
 
@@ -204,11 +205,10 @@ void Game::drawControls() {
 Game::Demandes& Game::demandes() { static Demandes d; return d; }
 
 void Game::update(double dt) {
-    if (Demandes& d = demandes(); d.camera >= 0 || (!d.carte.empty() && r_)) {   // WFS-41 / WFS-68 : entre deux images
-        if (d.camera >= 0) { camMode = d.camera; d.camera = -1; }
-        if (!d.carte.empty() && r_) { const std::string c = d.carte, v = carDef_->id; Renderer& r = *r_; d.carte.clear();
-            setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str());
-            WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour"); }
+    if (Demandes& d = demandes(); !d.carte.empty() && r_) {   // WFS-41 : carte choisie, partie reconstruite entre deux images
+        const std::string c = d.carte, v = carDef_->id; Renderer& r = *r_; d.carte.clear();
+        setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str());
+        WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour");
     }
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
@@ -253,8 +253,6 @@ void Game::render(double time) {
         eye = carPos + vec3{std::sin(a) * 6.5f, 1.7f, std::cos(a) * 6.5f};
         look = carPos + vec3{0, 0.55f, 0};
         camInit_ = false;
-    } else if (camMode == 3) {   // WFS-68 : « Cockpit » (camMode 2 du web) : vue du pare-chocs avant, la voiture reste derrière
-        eye = carM.transformPoint({0, 0.85f, -carDef_->d.L * 0.5f - 0.15f}); look = eye + fwd * 12.f; camInit_ = false;
     } else {
         const float back = camMode == 0 ? 5.2f : 8.0f, up = camMode == 0 ? 1.55f : 2.6f;
         // la caméra suit le cap de la route (pas le dérapage) avec un peu de retard
@@ -269,6 +267,7 @@ void Game::render(double time) {
     }
     float aspect = (float)r_->width() / (float)std::max(1u, r_->height());
     float fov = (camMode == 0 ? 58.f : 62.f) + (float)std::min(player_.kmh() / 300.0, 1.0) * 8.f;
+    const bool vueInterieure = cameraVue(track_, player_, *carDef_, carM, camMode, ecran_, (float)std::clamp(time - lastTime_, 0.0, 0.1), eye, look, fov);   // WFS-66
 
     FrameParams fp;
     fp.view = lookAt(eye, look, {0, 1, 0});
@@ -296,7 +295,7 @@ void Game::render(double time) {
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
     systemsRender(eye, look, fp.view, fp.proj, time);
-    if (!dediee || sd.joueur) {
+    if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
         r_->draw(car_, carM, &paint_);

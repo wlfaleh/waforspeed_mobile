@@ -1423,3 +1423,139 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Plan** : (1) écran terrain : carrousel 4 cartes de `maps.js`, Jour / Nuit, « Rouler » → course sur la carte choisie, « Retour » ; (2) écran réglages (caméra, qualité, son, commandes, vibrations) depuis le menu et la pause, mémorisé ; (3) captures, CI, fusion rapide, `qa/Check.md`.
 - **Critères** : `terrain-0` (ville, Jour / Nuit), `terrain-1` (circuit), `terrain-rouler` (journal : carte = circuit), `reglages-menu`, `reglages-pause`, un choix de qualité change le rendu, banc `0 écart(s)` sur les captures existantes.
 - **Rappel** : travailler dans un worktree ou un clone séparé (incident du journal WFS-63), pas dans `/home/user/waforspeed_mobile`.
+
+### 2026-11-03 21:37:53 — Pipeline de main verte (4f95695) ; contrôle de spots-sol (WFS-45) (Claude, agent 4)
+- **Pipeline** : `build.yml` sur `main` 4f95695 (5 PR fusionnées + WFS-69) **verte**, en 8 min 31 s (run 41722024755). Release `apercu` à jour.
+- **WFS-45, `spots-sol`** :
+  - Ce qui marche : projecteurs orange et cyan visibles sur les bords de la Golf, plateau bleuté par l'hémisphère, brouillard linéaire.
+  - Ce qui manque : **pas de tache de lumière visible sur le grand sol**, alors que le critère d'acceptation en demande trois. Le sol a un métal de 0,7 et une couleur 0x101219, donc son diffus est quasi nul, et le reflet des spots tombe hors du cône pour cette caméra.
+  - La voiture est vue de l'arrière, alors que le jeu web la montre de 3/4 avant : il faudrait un cap de 0,6 + π dans le repère natif.
+  - Noté dans `qa/Check.md` pour la recette de nuit ; à reprendre avec WFS-11 (garage, agent 3), qui utilise ces projecteurs.
+
+### 2026-11-03 21:38:55 — PO : écarts avec le jeu web transformés en tickets (po-scrum-master)
+- **WFS-70** (E3, P2 Haute) ressenti de conduite : modes de direction, secousse / ralenti / vibration au choc, réduire les mouvements. **WFS-71** (E2, P3) ville vivante : commerces et terrasses, portique 3D, enseignes. Écran de fin (record, stats) et pause « Recommencer » ajoutés à **WFS-41**. Aucun ticket en cours ou terminé touché. Message agent 4 → agent 3 (projecteurs du garage) : pas pour le PO, aucune action.
+
+### 2026-11-03 21:40:54 — PO : WFS-50 remis en Prêt, WFS-64 suspendu et revu en diagnostic (po-scrum-master)
+- **Fait apporté par Claude (session trafic)** : le run `simulateur.yml` 41719456821 (`scenario=mvp`, `feature/waforspeed-58` au commit cc78b4d, c'est-à-dire le code de la PR #32 avec WFS-59, sans WFS-64 ; Release `simulateur-WFS-58`, 21:22) passe tout le parcours MVP. Le résultat est « RÉSULTAT TECHNIQUE : OK ». Étapes vues : chargement, menu, Course solo, décompte, GO, fin (124 s), Rejouer, 2e fin (140 s), Menu. Score de fin : 2 260. Il y a une seule marque FIGÉE, sur `03-appui-course-solo`, identique à `02-menu`. Elle est **attendue** : la capture est prise juste après l'appui (WFS58-3). Le gel après le chargement (run 41716390682, et un essai `conduite` sans WFS-59) ne s'est pas reproduit. Il paraît donc intermittent (émulateur ou focus), et WFS-59 n'en est pas la cause.
+- **Décisions** :
+  - **WFS-50** passe en ⏳ Prêt, P4 Basse. La priorité reste basse parce que l'utilisateur teste l'APK sur téléphone, mais E7 est libre et le coût est d'environ 1 h. WFS-64 sort de ses dépendances. Il faut le relancer sur `main` avec `epic=MVP` et `scenario=mvp`, puis le donner à `qa-lead`. Règles mises à jour dans `regles-de-gestion/WFS-50.md`. La capture 03 figée n'est pas une anomalie. Un gel qui réapparaît est noté au rapport et réactive WFS-64.
+  - **WFS-64** est renommé « Diagnostic : gel intermittent juste après le chargement sur le simulateur » et passe en ⏸ Suspendu (P4). Le repli du rendu à 50 % est abandonné, car on ne corrige pas à l'aveugle. Le ticket est réactivé seulement si un essai sur `main` se fige de nouveau. Règles réécrites dans `regles-de-gestion/WFS-64.md` : diagnostic par 2 lignes de logcat et l'état du focus.
+  - **WFS-59** : la mention « fige le simulateur » est retirée du tableau.
+  - **QA de nuit de WFS-58 et WFS-39** : elles peuvent s'appuyer sur la Release `simulateur-WFS-58` du run 41719456821.
+- Rien n'est attribué à Claude (session trafic), qui est sur WFS-63 (PR #39, en QA).
+
+### 2026-11-03 21:42:36 — QA WFS-63 : VALIDÉ (qa-lead)
+- PR #39, commit `0eb5465`, run 41722597629 vert, Release `apercu-waforspeed-63`. `squelette-essai` (Idle_Loop), `squelette-marche-0/1` (deux poses de Walk_Loop différentes) et `squelette-8` sont corrects : proportions justes, éclairage et ombre comme les voitures. Coût RG-05 au journal : 8 instances, 0,030 ms CPU par image.
+- Non-régression contre `apercu-waforspeed-69` (main) : 63 captures identiques ; 6 écrans d'interface avec un écart de 1/255 au plus (bruit du rendu, invisible). Vêtements non colorés acceptés (apparence prévue dans WFS-19). **Fusion autorisée.** Rapport : `qa/rapports/WFS-63.md`.
+
+### 2026-11-03 — WFS-63 terminé (Claude, session trafic)
+- QA : VALIDÉ au 1er passage, sans anomalie. PR #39 fusionnée (fc70591). Le point d'extension « personnages animés par squelette » est sur main : `drawSkinned`, `src/render/squelette.h`, `assets/people/*.wfp`, documenté dans le skill `waforspeed-natif`.
+- **Pour le PO** : WFS-19 (piétons et conducteurs) n'attend plus WFS-63.
+
+### 2026-11-03 21:48:57 — Début WFS-19 Piétons animés et conducteurs, attribué à Claude (session trafic) (po-scrum-master)
+- **Ticket** : WFS-19, épic E2 (P2 Haute), branche `feature/waforspeed-19`. WFS-63 ✅ (PR #39, VALIDÉ) : dépendances toutes terminées. À priorité égale avec WFS-53 (P2, E2), le plus petit numéro l'emporte ; E3 occupée (WFS-21 en revue), donc WFS-66 et WFS-70 non attribuables.
+- **Zone de code autorisée** : `src/world/**`, `assets/world/**`, `shaders/world_*` (et `assets/people/**` en lecture). Le renderer et `drawSkinned` ne changent pas (sinon ticket E0 ou ligne d'accroche ≤ 10 lignes annoncée ici).
+- **Critères** : capture de ville avec piétons aux poses variées ; capture plage (baigneurs, promeneurs) ; conducteur visible face au volant ; deux captures à des instants différents avec des poses de marche différentes ; banc `0 écart(s)` hors scènes concernées.
+- **Plan court** : porter `populatePeople` / `pedLook` / `updatePeopleReal` (people.js, life.js) en un système E2 qui place et habille les personnes près du joueur, puis `bakeBust` / `measureSeat` / `addDriver` (drivers.js) pour le conducteur, rendus par `drawSkinned`. Règles : `regles-de-gestion/WFS-19.md`.
+
+### 2026-11-03 21:52:23 — Arbitrage WFS-19 : création de WFS-72 (E0), attribué à Claude (session trafic) (po-scrum-master)
+- **Constat** (remonté par Claude, session trafic) : RG-04 de WFS-19 (apparence du jeu web) repose sur le shader `pedMaterial` (`js/world/people.js` l. 54-110) : attribut par sommet `_cloth` et couleurs / seuils par personne. `drawSkinned` (WFS-63) n'a ni l'un ni l'autre ; il faut toucher au renderer, au format `.wfp` et ajouter `scene_skin.frag` : hors zone E2 et bien plus que 10 lignes d'accroche.
+- **Décision** : on crée un ticket E0 « point d'extension » préalable, **WFS-72 — Point d'extension : apparence des personnages** (P2 Haute, environ 2 h). Le portage de `pedMaterial` se fait tel quel, sans finitions. L'apparence réduite (peau seule) est **refusée** : des personnages torse nu ne tiennent pas RG-04 et feraient refaire une seconde passe sur les mêmes fichiers.
+- **Début WFS-72** : épic E0, attribué à Claude (session trafic), branche `feature/waforspeed-72`. E0 et E4 n'ont aucun ticket actif.
+  - **Zone de code autorisée** : `src/render/renderer.h`, la partie skinning de `renderer.cpp`, `src/render/squelette.*`, `bench_squelette.*`, `shaders/scene_skin.*` / `shadow_skin.*`, `tools/convert_people.mjs`, `assets/people/**`, `CMakeLists.txt` et le skill `waforspeed-natif`.
+  - **Critères** : nouvelle capture `squelette-tenue` (homme et femme habillés, parties distinctes) ; captures existantes identiques, banc `0 écart(s)` ; doc du point d'extension.
+  - **Plan court** : `_cloth` → convertisseur, `SkinVertex` et `.wfp` ; bloc d'apparence par instance dans `drawSkinned` ; `scene_skin.frag` porte `pedMaterial`.
+  - **Règles** : `regles-de-gestion/WFS-72.md`.
+- **WFS-19** passe en ⏸ En attente de WFS-72. Sa réservation est conservée à Claude (session trafic), et E2 reste tenue par WFS-19 : l'attente est courte et WFS-19 (P2) passe avant WFS-71 (P3). Le ticket reprend sur `feature/waforspeed-19` dès que WFS-72 est fusionné. `pedLook` (tirage des tenues) reste dans WFS-19.
+
+### 2026-11-03 22:57:42 — WFS-21 fusionné sur ordre de l'utilisateur, CI release lancée sur main (Claude, session trafic)
+- **Conflit résolu** en synchronisant `feature/waforspeed-21` avec main : `src/platform/desktop_main.cpp`, commentaire de la liste du groupe `partie2` (« duel » de WFS-21 et « personnages » de WFS-63, les deux gardés), commit 5e3a72e. Compilation et tous les tests en local OK, `test_duel` compris.
+- CI de la branche verte (android, banc-essai partie1 / partie2 / texte / ecrans-2400, publication). Contrôle rapide de `duel-course` et `duel-resultat` : rien de bloquant. **PR #38 fusionnée** (41e7936). Ajout dans `qa/Check.md` pour la recette de nuit, avec un point à vérifier : sur `duel-resultat`, le panneau latéral dit « POSITION 1/2 » alors que le résultat dit « 2E PLACE ».
+- CI release (`build.yml`, `workflow_dispatch`) lancée sur main : APK et captures dans la Release `apercu`.
+- Remarque : la liste de `qa/Check.md` est en double (même tableau deux fois). WFS-21 est ajouté au premier tableau ; le doublon reste à nettoyer par son auteur ou par le PO.
+
+### 2026-11-03 23:11:47 — WFS-72 en revue, PR #40 (Claude, session trafic)
+- `_cloth` et repères du corps dans le `.wfp` (version 2, fichiers régénérés) ; `ApparencePersonnage` passée à `drawSkinned` ; `shaders/scene_skin.frag` = copie de `scene.frag` + `pedMaterial` du jeu web tel quel. Sans apparence : rendu de WFS-63, les captures `squelette-*` sont identiques au pixel.
+- Nouvelle capture `squelette-tenue` (homme et femme habillés). La fusion suivra la CI verte et le contrôle des captures (règle en vigueur), avec un ajout dans `qa/Check.md`.
+- Point d'attention : `scene_skin.frag` est une copie de `scene.frag`. Toute modification future de `scene.frag` doit y être reportée (commentaire en tête du fichier).
+
+### 2026-11-03 23:20:16 — WFS-72 fusionné (Claude, session trafic)
+- CI verte (android, 4 jobs du banc, publication) ; contrôle rapide de `squelette-tenue` (identique au banc local) : rien de bloquant. PR #40 fusionnée (4314bf7) ; ajouté dans `qa/Check.md` pour la recette de nuit.
+- WFS-19 (piétons et conducteurs) n'attend plus WFS-72 : je le reprends (`feature/waforspeed-19`).
+
+### 2026-11-03 23:21:10 — WFS-66 attribué à Claude (session trafic), en parallèle de WFS-19 (PO)
+- **Ticket** : WFS-66 — Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse), épic **E3**, priorité P2 Haute, aucune dépendance. Branche `feature/waforspeed-66`. Règles : `regles-de-gestion/WFS-66.md`.
+- **Exception à « un ticket par agent »**, à la demande de l'utilisateur : Claude (session trafic) garde WFS-19 (E2) et prend WFS-66 dans une autre épic libre. E3 n'avait aucun ticket actif ; WFS-66 est le ticket prêt de meilleure priorité hors E2 (P2, plus petit numéro devant WFS-70).
+- **Zone de code autorisée** : `src/game/` sauf `game.*` (nouveau fichier de caméra, par ex. `src/game/camera_*.{h,cpp}`, et cockpit dessiné par code), `tests/**`. Accroche ≤ 10 lignes dans `src/game/game.*` autorisée si annoncée au Journal (RG-05). Rien dans `src/render/**`, `src/ui/**` ni `src/world/**` (zones de E4, E5, E8, E2) ; le bouton de changement de vue en course passe par l'accroche, le réglage dans le menu reste à WFS-41.
+- **Critères** : captures `camera-poursuite`, `camera-capot`, `camera-cockpit` (1280x720 et 2400x1080) ; volant braqué visible en virage ; banc `0 écart(s)`.
+- **À réutiliser** : `waforspeed/js/world/scene.js` du jeu web (`CAM_MODES`, cockpit ≈ lignes 94-123, suivi et champ de vision ≈ ligne 168) ; valeurs : cockpit 72°, volant `-braquage × 2,3` lissé, aiguille 0-300 km/h sur 2,2 rad.
+- **Plan court** : porter `CAM_MODES` et le suivi lissé dans un fichier caméra E3 ; cockpit (tableau de bord, montants, volant, aiguille) en maillages générés ; accroche de sélection de vue dans `game.*` ; scènes de banc des 3 vues.
+
+### 2026-11-03 23:23:49 — Découpage de WFS-19 : piétons / conducteurs (PO)
+- **Décision** : proposition de Claude (session trafic) acceptée. WFS-19 (E2) = **piétons seulement**, cartes ville et plage (`populatePeople` : trottoirs par zone, promenade, côté de parc tiré à la graine faute de `parkSide`). Règles mises à jour (`regles-de-gestion/WFS-19.md`, RG-05 retirée).
+- **Nouveau ticket WFS-73 — Conducteurs dans les voitures**, épic **E0** (mesure du siège dans `model_loader` / `Model`, accroches joueur, trafic, duel ≤ 10 lignes chacune), P3 Moyenne, ⏳ En attente de WFS-19. Règles : `regles-de-gestion/WFS-73.md` (réutiliser `drivers.js` : `measureSeat`, `bakeBust`, `addDriver`).
+- **Poses assis, allongés, baigneurs** : pas de nouveau ticket, rattachées à **WFS-71** (terrasses : RG-02 existante ; serviettes de plage et baigneurs : nouvelle RG-06), même zone E2.
+- Pourquoi : la mesure du siège et les accroches sortent de la zone E2 ; les mettre à part garde WFS-19 livrable vite et visible.
+
+### 2026-11-04 00:02:53 — WFS-19 fusionné : piétons animés (Claude, session trafic)
+- Système `Pietons` (`src/world/pietons.*`) : `populatePeople` et `pedLook` du jeu web, 8 piétons affichés au plus (16 dessins à squelette par image), LOD 16 / 50 m. Rendu par `drawSkinned` et `ApparencePersonnage` (WFS-63 / WFS-72), sans toucher au renderer.
+- **Accroche annoncée** : `src/platform/desktop_main.cpp` (include, `WFS_BANC=pietons`, `benchPietons` dans `partie2`, 3 lignes).
+- CI verte ; captures `pietons-*` de la CI identiques au banc local. PR #42 fusionnée (710c9fc) ; ajouté dans `qa/Check.md`. Toutes les captures de ville changent (piétons visibles).
+- Pour la suite : WFS-73 (conducteurs) n'attend plus WFS-19. Limite constatée : 16 instances à squelette par image (`SKIN_MAX_INSTANCES`), à relever par un ticket E0 si conducteurs et piétons doivent être affichés ensemble en plus grand nombre.
+
+### 2026-11-04 00:05:25 — WFS-53 et WFS-09 attribués à Claude (session trafic), deux sujets en parallèle (PO)
+- **WFS-53** — Cartes Campagne et Grand Prix + finitions des arbres, épic **E2**, P2 Haute (ticket prêt le plus prioritaire). Dépendances WFS-07, WFS-14, WFS-34 : toutes ✅. Branche `feature/waforspeed-53`. Règles : `regles-de-gestion/WFS-53.md` + `WFS-54.md` + `WFS-43.md` (périmètre élargi). Zone : `src/world/**`, `assets/world/**`, `shaders/world_*`.
+  - Critères : captures `carte-campagne-jour` / `-nuit` et Grand Prix (collines, champs, haies, fermes, éoliennes animées ; circuit) ; finitions des arbres de WFS-43 ; ≤ 300 appels de dessin ; autres cartes inchangées.
+  - À réutiliser : `js/world/decor.js` (`DECOR`, `ZONES`), `js/world/life.js` (`vegBroadleaf`, `vegPine`), `js/world/maps.js` (`envFor`) ; socle natif WFS-14 et `src/world/vegetation.*`.
+- **WFS-09** — Nuit complète : phares, éclairage public, route mouillée et reflets, épic **E4**, P3 Moyenne (plus petit numéro parmi les P3 de E4, épic libre). Dépendance WFS-07 ✅. Branche `feature/waforspeed-09`. Règles : `regles-de-gestion/WFS-09.md` + `WFS-16.md`. Zone : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*` (`scene_skin.frag` à garder synchrone avec `scene.frag`).
+  - Critères : nuit = cône de phares sur la chaussée, feux arrière / stop, halos des lampadaires, route mouillée avec reflets ; jour sans faisceau ; campagne de nuit sans lampadaire ; coût GPU au Journal.
+  - À réutiliser : `js/cars/player.js` (`buildBeam`, `updateBeam`), `js/cars/models.js` (`BEAM`, feux par matériau), boucle des lampadaires de `js/world/scene.js`, `envFor`.
+- **Pourquoi pas WFS-70 (E3, P2)** : E3 a encore WFS-66 actif (un ticket actif par épic). WFS-70 sera le prochain ticket de E3 dès la fusion de WFS-66.
+- **Exception « un ticket par agent »** reconduite à la demande de l'utilisateur (deux sujets en parallèle, zones E2 et E4 séparées) ; WFS-66 doit être fusionné avant de commencer le second.
+
+### 2026-11-04 00:15:49 — WFS-66 fusionné : caméras et vue cockpit (Claude, session trafic)
+- `src/game/camera_vue.*` (système `camera`, port de `CAM_MODES`, `updateCamera` et `buildCockpit`) et `src/game/camera_banc.*` ; tests dans `tests/test_systems.cpp`.
+- **Accroches annoncées** :
+  - `src/game/game.cpp` : 3 lignes (include, `cameraVue`, voiture cachée en cockpit) ;
+  - `src/platform/desktop_main.cpp` : 3 lignes (`WFS_BANC=camera`, `benchCameras` dans `partie2`) ;
+  - `.github/workflows/build.yml` : 1 ligne, job `ecrans-2400`, captures `camera-*-2400`.
+- Conflit de synchronisation avec WFS-19 dans `desktop_main.cpp` résolu, les deux scènes du banc sont gardées. CI verte (9506863), PR #41 fusionnée (3994283), ajouté à `qa/Check.md`.
+- Suite : WFS-53 (E2, cartes Campagne et Grand Prix, finitions des arbres) et WFS-09 (E4, nuit complète) attribués par le PO. WFS-70 (E3) passe ensuite.
+
+### 2026-11-04 00:17:41 — WFS-70 et WFS-50 attribués à Claude (session trafic), deux sujets en parallèle (PO)
+- **WFS-70** — Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements, épic **E3**, P2 Haute (ticket prêt le plus prioritaire ; E3 libérée par la fusion de WFS-66). Aucune dépendance. Branche `feature/waforspeed-70`. Règles : `regles-de-gestion/WFS-70.md` (précisions RG-07 à RG-11 ajoutées).
+  - Zone : `src/game/` sauf `game.*`, `tests/**` ; **exceptions accordées** : déplacement de la partie « volant » de `Game::onTouch` / `drawControls` vers `src/game/direction.cpp` (appels ≤ 10 lignes dans `game.cpp`) ; vibration Android dans un nouveau `src/platform/vibration_android.cpp` + permission `VIBRATE` + accroche ≤ 10 lignes dans `android_main.cpp`.
+  - Critères : choc = secousse visible + ralenti (journal) ; deux modes de direction utilisables ; « réduire les mouvements » supprime secousse et ralenti ; chrono non allongé ; captures `ressenti-*` ; banc sans régression.
+  - À réutiliser : `js/game/update.js` (`shake`, `flash`, `timeScale`, `slowmoT`, `navigator.vibrate`), `js/ui/screens.js` (`setSteer`, `setSteerRow`), `js/core/config.js` (`reduceMotion`) ; déjà portés en natif : `ev.shake` (`traffic.cpp`), `timeScale` / `slowmoT` (`course.cpp`).
+- **WFS-50** — [MVP] Vérification simulateur du MVP, épic **E7**, P4 Basse : seul ticket prêt d'une épic libre (E2, E4, E5, E8 ont un ticket actif ; E0 et E6 n'ont rien de prêt). Dépendances toutes ✅. Branche `feature/waforspeed-50` (seulement si `tools/qa/**` doit changer ; sinon lancement de `simulateur.yml` sur `main`, `epic=MVP`, `scenario=mvp`). Règles : `regles-de-gestion/WFS-50.md`. Zone : `tools/qa/**`, `.github/workflows/simulateur.yml`. Rapport `qa/rapports/simulateur-MVP.md` par `qa-lead` (pas par le développeur) ; défauts → tickets de correction par le PO ; VALIDÉ → « Livraison MVP » au Journal.
+- **Exception « un ticket par agent »** reconduite à la demande de l'utilisateur (agents distincts de la session trafic, zones séparées : E2 WFS-53, E4 WFS-09, E3 WFS-70, E7 WFS-50).
+
+### 2026-11-04 00:20:10 — WFS-24 attribué à Claude (session trafic), 5e sujet en parallèle (PO)
+- **WFS-24** — Sauvegarde et progression, épic **E3**, relevé de P4 Basse à **P3 Moyenne** : il débloque la mémorisation attendue par WFS-11 (voiture, peinture), WFS-41 (réglages) et WFS-70 (mode de direction). Branche `feature/waforspeed-24`, règles `regles-de-gestion/WFS-24.md` (précisions RG-07 à RG-11 ajoutées).
+- **Pourquoi lui** : E0 et E6 n'ont rien de prêt ni d'utile à créer (WFS-61 attend WFS-60, WFS-64 suspendu ; audio : moteur et bruitages livrés, la musique est hors périmètre). WFS-60 (E5) toucherait `assets/cars` et `tools/convert_car.mjs` en même temps que WFS-11 ; WFS-15 / WFS-65 (E4) et WFS-71 (E2) recouvrent les fichiers des tickets actifs de leur épic. WFS-24 est un module neuf.
+- **Exception « un ticket actif par épic »** (E3 : WFS-70 et WFS-24, même agent) : accordée car les fichiers sont disjoints. Zone WFS-24 : `src/game/sauvegarde.*` (neuf), `src/game/course_system.cpp` (record et « NOUVEAU RECORD » sur l'écran de fin), `tests/test_sauvegarde.cpp` (neuf) ; accroches ≤ 10 lignes : `src/game/game.cpp`, `src/platform/android_main.cpp`, `src/platform/desktop_main.cpp`, ≤ 3 lignes dans `src/ui/ecrans/menu.cpp`. Interdit : `src/game/direction.*`, `player.*` (WFS-70).
+- Critères : test CPU écriture/relecture, fichier corrompu et identifiant inconnu → défauts ; banc `sauvegarde` lancé deux fois, le second retrouve voiture, peinture et record ; capture `fin-record` avec « NOUVEAU RECORD ».
+- Plan : module `Sauvegarde` clé=valeur versionné, écriture atomique sur thread de travail → chargement au démarrage → record en fin de course → enregistrement en arrière-plan → test + scène de banc.
+
+### 2026-11-04 00:33:03 — WFS-11 : garage et compteur en arc en revue (agent 3, session 011cpqZd)
+- **Fait** (étapes 1 à 3 du PO) : `src/ui/garage.*` (scène du garage, fiche, 16 peintures, changement de voiture par geste / flèches / points, « Choisir » → course avec voiture et peinture, « Retour » → menu) ; compteur en arc dans `src/ui/hud.cpp` (captures `hud-arc-120`, `hud-arc-320`).
+- **Accroches annoncées** : `src/core/system.h` (`GameView::choisirVoiture`, 2 lignes), `src/game/game.*` (choix appliqué entre deux images, 4 lignes), `src/ui/ecrans/menu.cpp` (« Course solo » → garage, 1 ligne ; banc tactile : appui sur « Choisir », 4 lignes), `desktop_main.cpp` et `build.yml` (banc du garage, copies 2400).
+- **Vérification locale** (lavapipe) : captures du garage en 1280 et 2400 et compteur regardés ; `test_track`, `test_systems`, `test_audio` OK. Branche synchronisée avec `main` (conflits `desktop_main.cpp` et `build.yml` résolus en gardant caméras, piétons, duel et garage).
+- **Limite** : étape 4 (16 autres voitures, ex-WFS-13) non faite : le garage montre les 4 voitures converties. À reprendre dans un ticket dédié.
+
+### 2026-11-04 00:33:58 — Début WFS-65 Effets de conduite et d'accident (Claude, agent 4) — attribué par le PO
+- **Ticket** : WFS-65, épic **E4**, P3 Moyenne. Branche `feature/waforspeed-65`. Règles : `regles-de-gestion/WFS-65.md`. Aucune dépendance.
+- **Pourquoi ce ticket** : aucun ticket ⏳ Prêt dans une épic libre (E2 WFS-53, E3 WFS-70/WFS-24, E4 WFS-09, E5 WFS-11 en revue, E7 WFS-50, E8 WFS-41 ; E0 et E6 n'ont aucun ticket prêt). WFS-65 est le ticket prêt le plus visible dont le code se sépare proprement du ticket actif de son épic : **exception « un ticket actif par épic »**, comme WFS-24 en E3. WFS-15 (post-traitement) et WFS-60 (roues, `assets/cars` touché par WFS-11) écartés pour risque de conflit.
+- **Zone de code autorisée (séparée de WFS-09)** : nouveaux fichiers `src/render/effets_*.{h,cpp}` (particules étincelles / fumée, couche d'écran lignes de vitesse / vignette / flash), `shaders/particules.*` et `shaders/effets_ecran.*`, banc `src/render/bench_effets.*`, tests `tests/test_effets.cpp`. **Interdit** : `scene.frag`, `scene_skin.frag`, `post.frag`, `sky*`, `shadow*` (WFS-09). Accroches ≤ 10 lignes dans `renderer.cpp` / `renderer.h` et pour lire chocs, nitro, accidents depuis le jeu (`src/game`), annoncées au Journal.
+- **Critères** : captures `choc-etincelles`, `accident-fumee`, `nitro-lignes` avec effets visibles ; vignette avec la vitesse, flash au choc et au départ du nitro ; coupé / réduit en qualité basse, ≥ 30 im/s ; physique et chrono inchangés ; autres captures inchangées, banc `0 écart(s)`.
+- **À réutiliser** : `waaps/waforspeed/js/world/particles.js` (`makeParticleSystem` : nombres, durées, couleurs des étincelles et de la fumée), `js/world/fx.js` (`drawFx` : lignes de vitesse, vignette, flash, seuils de vitesse et nitro). Ne rien inventer qui y existe.
+- **Plan court** : 1) système de particules en lots (un appel de dessin, billboards additifs) ; 2) étincelles au choc et fumée des accidentés ; 3) couche d'écran (lignes, vignette, flash) ; 4) qualité basse ; 5) 3 scènes de banc ; une seule CI à la fin, fusion rapide puis `qa/Check.md`.
+- **Coordination** : synchroniser souvent avec `main` (WFS-09 touche `renderer.cpp` en parallèle).
+
+### 2026-11-04 00:34:10 — WFS-50 : cause de l'échec du simulateur MVP trouvée (Claude, session trafic)
+- Passage 41745827872 (main b01ae36) : fenêtre du jeu 2400x954 (barre de navigation de l'émulateur affichée), écran 2400x1080.
+  Le scénario appuyait le gaz à 0,92 × 1080 = 993 px, sous la fenêtre : 0 km/h toute la course ; l'avance automatique après
+  « temps écoulé » faisait croire au GO. Le jeu n'est pas en cause (gaz vérifié au banc PC : 12 puis 57 km/h après GO).
+- Correction dans `tools/qa/emulateur.sh` (branche `feature/waforspeed-50`, e7f4777) : points d'appui calculés sur
+  « Cibles de rendu : WxH (logique) » ; étape go en échec si « temps écoulé » arrive avant une vitesse > 0. Simulateur relancé
+  sur la branche (scénario mvp).

@@ -77,7 +77,7 @@ Journal à jour.
 ## MVP du 2026-11-03 (décision du PO, détail au Journal)
 Parcours jouable sur téléphone : **chargement → menu → Course solo → décompte → course (trafic, chrono, checkpoints, HUD,
 notifications) → fin → Rejouer / Menu**, en plein écran Android. **Décision de l'utilisateur (2026-11-03) : le MVP n'attend plus le simulateur ; l'utilisateur teste lui-même l'APK de `main` sur téléphone** (WFS-50, WFS-58 et WFS-64 sans urgence). Tickets marqués **[MVP]** (le tableau est trié par numéro de ticket ; la colonne « Priorité » donne l'urgence), dans l'ordre :
-WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-57 (centrage fin, ANO-14) → WFS-56 (scénario simulateur) → WFS-58 + WFS-59 (corrections simulateur) → WFS-64 (simulateur figé) → WFS-50 (vérification simulateur). Hors MVP : garage, terrain, pause,
+WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-57 (centrage fin, ANO-14) → WFS-56 (scénario simulateur) → WFS-58 + WFS-59 (corrections simulateur) → WFS-50 (vérification simulateur ; WFS-64 suspendu : le gel ne s'est pas reproduit, run 41719456821). Hors MVP : garage, terrain, pause,
 duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 
 ## Tableau (par numéro de ticket)
@@ -93,9 +93,9 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 3 | WFS-06 | Ville : bâtiments, trottoirs, lampadaires, arbres | E2 | ✅ Terminé | — | WFS-30 | `feature/waforspeed-06` | #4 | ✅ VALIDÉ par qa-lead |
 | 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
 | 2 | WFS-08 | Trafic multi-thread et collisions | E3 | ✅ Terminé | | — | `feature/waforspeed-08` | #6 | ✅ VALIDÉ par qa-lead après coup ([rapport](qa/rapports/WFS-08.md)) |
-| P3 Moyenne | WFS-09 | Nuit complète : phares, éclairage public, route mouillée et reflets | E4 | ⏳ Prêt |  | WFS-07 | `feature/waforspeed-09` |  |  |
+| P3 Moyenne | WFS-09 | Nuit complète : phares, éclairage public, route mouillée et reflets | E4 | 🔧 En cours | Claude (session trafic), 2026-11-04 | WFS-07 | `feature/waforspeed-09` |  |  |
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
-| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | 🔧 En cours | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
+| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | 🔍 En revue (CI) | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
 | — | WFS-13 | Les 20 voitures et 16 peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-13` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
@@ -103,12 +103,12 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
 | — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
 | P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ⏳ En attente |  | WFS-09 | `feature/waforspeed-18` |  |  |
-| P2 Haute | WFS-19 | Personnages : piétons animés et conducteurs | E2 | ⏳ En attente |  | WFS-06 ✅, WFS-63 | `feature/waforspeed-19` |  |  |
+| P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` | #42 (fusionnée, 710c9fc) |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
-| P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | 🔍 En revue | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 |  |
+| P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
 | P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
 | — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
-| P4 Basse | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | ⏳ Prêt |  | WFS-12 | `feature/waforspeed-24` |  |  |
+| P3 Moyenne | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | 🔧 En cours (exception : 2e ticket E3, fichiers séparés de WFS-70) | Claude (session trafic), 2026-11-04 | WFS-12 | `feature/waforspeed-24` |  |  |
 | — | WFS-25 | Préparation des stores | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-25` |  |  |
 | 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` | PR #9 | ✅ VALIDÉ par qa-lead |
 | 0.15 | WFS-27 | [MVP] HUD de course : vitesse, temps, score, checkpoint, nitro (texte, version réduite) | E5 | ✅ Terminé |  | WFS-26, WFS-12 | `feature/waforspeed-27` | PR #16 | ✅ VALIDÉ par qa-lead au tour 2/2 (main 6e672a9, ANO-11 et ANO-12 corrigées) [rapport](qa/rapports/WFS-27.md) |
@@ -134,26 +134,30 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-27 ✅ | `feature/waforspeed-47` | #25 (fusionnée) | ✅ VALIDÉ par qa-lead (c813a56) — [rapport](qa/rapports/WFS-47.md) |
 | P2 Haute | WFS-48 | Texte en italique (ANO-04) | E5 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-26 | `feature/waforspeed-48` | [#33](https://github.com/wlfaleh/waforspeed_mobile/pull/33) |  |
 | 0.47 | WFS-49 | Banc : captures du chargement en 2400x1080 sans planche de texte (ANO-10) | E7 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-35 ✅ | `feature/waforspeed-49` | #22 (fusionnée) | ✅ VALIDÉ par qa-lead (52648fd) — [rapport](qa/rapports/WFS-49.md) |
-| P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | ⏸ Suspendu (décision utilisateur 2026-11-03 : il teste lui-même l'APK sur téléphone ; plus nécessaire au MVP) | libéré (Claude, session trafic) | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅, WFS-29 ✅, WFS-47 ✅, WFS-56 ✅, WFS-57 ✅, WFS-58, WFS-59 ✅, WFS-64 | `feature/waforspeed-50` |  | ⛔ REFUSÉ (SIM-MVP-1 à 4) — [rapport](qa/rapports/simulateur-MVP.md) |
+| P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | 🔧 En cours (à relancer sur `main` : `epic=MVP`, `scenario=mvp` ; parcours OK au run 41719456821) | Claude (session trafic), 2026-11-04 | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅, WFS-29 ✅, WFS-47 ✅, WFS-56 ✅, WFS-57 ✅, WFS-58 ✅, WFS-59 ✅ | `feature/waforspeed-50` |  | ⛔ REFUSÉ (SIM-MVP-1 à 4) — [rapport](qa/rapports/simulateur-MVP.md) |
 | 0.43 | WFS-51 | Point d'extension : marges de sécurité de l'écran (encoche), commandes tactiles | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-29 ✅ | `feature/waforspeed-51` | #20 (fusionnée) | ✅ VALIDÉ par qa-lead (66c13bc, banc PC) — [rapport](qa/rapports/WFS-51.md) |
 | 0.435 | WFS-52 | HUD et notifications dans les marges de sécurité (encoche) | E5 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-51 ✅, WFS-27 ✅ | `feature/waforspeed-52` | #30 (fusionnée, 318ac8b) | ✅ VALIDÉ par qa-lead (d2b19dc) — [rapport](qa/rapports/WFS-52.md) |
-| P2 Haute | WFS-53 | Cartes Campagne et Grand Prix + finitions des arbres | E2 | ⏳ Prêt |  | WFS-07, WFS-14 ✅, WFS-34 | `feature/waforspeed-53` |  |  |
+| P2 Haute | WFS-53 | Cartes Campagne et Grand Prix + finitions des arbres | E2 | 🔧 En cours | Claude (session trafic), 2026-11-04 | WFS-07, WFS-14 ✅, WFS-34 | `feature/waforspeed-53` |  |  |
 | — | WFS-54 | Carte Grand Prix (circuit) | E2 | ↪ Fusionné dans WFS-53 |  | — | `feature/waforspeed-54` |  |  |
 | 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | ✅ Terminé | Claude (session facile), 2026-11-03 | WFS-14 ✅ | `feature/waforspeed-55` | #26 (fusionnée) | ✅ fusion rapide (CI verte, banc non terminé) — recette de nuit : `qa/Check.md` |
 | 0.441 | WFS-56 | [MVP] Simulateur : scénario « parcours MVP » par appuis (étape 1 de WFS-50) | E7 | ✅ Terminé (fusionné par l'utilisateur, QA après fusion) | Claude (session 01UY1Vv1), 2026-11-03 | WFS-31 ✅ (essai complet après WFS-38) | `feature/waforspeed-56` | PR #28 (fusionnée, 94087c7) | ⏳ QA après fusion |
 | 0.405 | WFS-57 | [MVP] Correction : centrer la paire « Rejouer » / « Menu » de l'écran de fin (ANO-14) | E3 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-57` | #29 (fusionnée) | ✅ VALIDÉ par qa-lead (cc76b01, banc PC, ANO-14 corrigée) — [rapport](qa/rapports/WFS-57.md) |
 | P4 Basse | WFS-58 | [MVP] Correction simulateur : scénario `mvp` piloté par l'état du jeu (SIM-MVP-2, 3, 4) | E7 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-58` | #32 |  |
-| P1 Urgent | WFS-59 | [MVP] Point d'extension : mode GPU logiciel, temps de jeu au temps réel et rendu allégé (SIM-MVP-1) | E0 | ✅ Fusionné (QA de nuit à faire) — ⚠️ fige le simulateur, corrigé par WFS-64 | agent 3, 2026-11-03 | — | `feature/waforspeed-59` | [#31](https://github.com/wlfaleh/waforspeed_mobile/pull/31) |  |
+| P1 Urgent | WFS-59 | [MVP] Point d'extension : mode GPU logiciel, temps de jeu au temps réel et rendu allégé (SIM-MVP-1) | E0 | ✅ Fusionné (QA de nuit à faire) — gel du simulateur non reproduit au run 41719456821 (WFS-64 suspendu) | agent 3, 2026-11-03 | — | `feature/waforspeed-59` | [#31](https://github.com/wlfaleh/waforspeed_mobile/pull/31) |  |
 | P4 Basse | WFS-60 | Roues séparées dans les modèles de voiture (.wfm) | E5 | ⏳ Prêt |  | — | `feature/waforspeed-60` |  |  |
 | P4 Basse | WFS-61 | Roues animées : transformation par roue et animation (rotation, braquage) | E0 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-61` |  |  |
 | — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-61 |  | — | `feature/waforspeed-62` |  |  |
-| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | 🔍 En revue | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` | #39 |  |
-| P4 Basse | WFS-64 | [MVP] Correction : jeu figé sur le simulateur en mode GPU logiciel (repli du rendu à 50 %) | E0 | ⏳ Prêt |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
-| P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | ⏳ Prêt |  | — | `feature/waforspeed-65` |  |  |
-| P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ⏳ Prêt |  | — | `feature/waforspeed-66` |  |  |
+| P3 Moyenne | WFS-63 | Point d'extension : maillages animés par squelette (skinning) | E0 | ✅ Terminé | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-63` | #39 (fusionnée) | ✅ VALIDÉ par qa-lead (0eb5465) — [rapport](qa/rapports/WFS-63.md) |
+| P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu (non reproduit au run 41719456821 ; réactivé si un essai `simulateur.yml` sur `main` se fige de nouveau) |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
+| P3 Moyenne | WFS-65 | Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash) | E4 | 🔧 En cours (exception : 2e ticket E4, fichiers séparés de WFS-09) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-65` |  |  |
+| P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-66` | #41 (fusionnée, 3994283) |  |
 | P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ⏳ En attente |  | WFS-60 | `feature/waforspeed-67` |  |  |
 | — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
 | P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | ✅ Fusionné (QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |
+| P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-70` |  |  |
+| P3 Moyenne | WFS-71 | Ville vivante : commerces et terrasses, portique 3D, enseignes | E2 | ⏳ Prêt |  | WFS-06 ✅ | `feature/waforspeed-71` |  |  |
+| P2 Haute | WFS-72 | Point d'extension : apparence des personnages (peau, cheveux, vêtements) | E0 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-63 ✅ | `feature/waforspeed-72` | #40 (fusionnée, 4314bf7) |  |
+| P3 Moyenne | WFS-73 | Conducteurs dans les voitures (siège mesuré au chargement, buste figé, joueur / trafic / duel) | E0 | ✅ Fusionné (QA de nuit à faire) |  | WFS-19 | `feature/waforspeed-73` | #42 (fusionnée, 710c9fc) |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -208,11 +212,11 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] GPU logiciel ou extra `qa_simu` : dt max 0,5 s, rendu 25 %, sans ombres ; logcat `QA ips` ≥ 1, course qui avance sur les captures du simulateur
 - [ ] banc PC : captures identiques à `main`, `0 écart(s)`
 
-**WFS-64 — [MVP] Correction : jeu figé sur le simulateur en mode GPU logiciel** · E0 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-64.md`)
-- [ ] simulateur `scenario=mvp` : logcat « rendu 50 % », lignes de diagnostic, « Écran : course → menu », `QA ips` > 0 ; le scénario dépasse « menu » et atteint le GO
+**WFS-64 — Diagnostic : gel intermittent juste après le chargement sur le simulateur** · E0 · priorité P4 Basse · ⏸ Suspendu tant que le gel ne se reproduit pas (règles : `regles-de-gestion/WFS-64.md`)
+- [ ] gel reproduit puis expliqué par les lignes de diagnostic (mise à jour ou rendu) ; 3 essais `scenario=mvp` de suite sans gel
 - [ ] banc PC : captures identiques à `main`, `0 écart(s)`
 
-**WFS-50 — [MVP] Vérification simulateur du MVP** · E7 · priorité P4 Basse · ⛔ Bloqué (REFUSÉ au 1er passage, [rapport](qa/rapports/simulateur-MVP.md) ; à relancer sur `main` après WFS-58 et WFS-64) (règles : `regles-de-gestion/WFS-50.md`)
+**WFS-50 — [MVP] Vérification simulateur du MVP** · E7 · priorité P4 Basse · ⏳ Prêt (REFUSÉ au 1er passage, [rapport](qa/rapports/simulateur-MVP.md) ; WFS-58 et WFS-59 fusionnés, parcours MVP complet OK au run 41719456821 : relancer sur `main` avec `epic=MVP`, `scenario=mvp`, puis `qa-lead`) (règles : `regles-de-gestion/WFS-50.md`)
 - [ ] `simulateur.yml` (`epic=MVP`) : chargement → menu → Course solo → décompte → course + HUD → fin → Rejouer puis Menu ; paysage plein écran, aucun plantage
 - [ ] rapport `qa/rapports/simulateur-MVP.md` VALIDÉ par `qa-lead`
 
@@ -235,7 +239,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 - [ ] Capture `spots-sol` : 3 taches orange / cyan / blanche aux bords adoucis, hémisphère bleutée, brouillard linéaire, voiture éclairée
 - [ ] Coût de la passe de scène ≤ +0,3 ms avec 3 spots (journal du banc)
 
-**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · 🔧 En cours — agent 3 (session 011cpqZd), 2026-11-03, branche `feature/waforspeed-11` (règles : `regles-de-gestion/WFS-11.md` + WFS-40, WFS-13, WFS-46)
+**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · 🔍 En revue (CI, étapes 1 à 3 ; 16 voitures à suivre) — agent 3 (session 011cpqZd), 2026-11-03, branche `feature/waforspeed-11` (règles : `regles-de-gestion/WFS-11.md` + WFS-40, WFS-13, WFS-46)
 - [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index
 
 **WFS-39 — Pause en course et retour au menu** · E8 · priorité P2 Haute · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-39.md`)
@@ -349,10 +353,13 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité P3 Moyenne · ⏳ Prêt — ↪ fusionné dans WFS-15
 - [ ] 60 i/s visés, mesures dans le journal
 
-**WFS-19 — Personnages : piétons animés et conducteurs** · E2 · priorité P2 Haute · ⏳ En attente de WFS-63 (animation par squelette absente du renderer) (règles : `regles-de-gestion/WFS-19.md`)
-- [ ] Personnages du jeu web, conducteur face au volant
+**WFS-19 — Personnages : piétons animés (ville et plage)** · E2 · priorité P2 Haute · ✅ Fusionné (PR #42, QA de nuit à faire) (Claude, session trafic, 2026-11-03), branche `feature/waforspeed-19` (règles : `regles-de-gestion/WFS-19.md`)
+- [ ] ville : piétons sur les trottoirs, poses variées ; plage : promeneurs ; deux instants : poses de marche différentes
 
-**WFS-63 — Point d'extension : maillages animés par squelette (skinning)** · E0 · priorité P3 Moyenne · 🔧 En cours — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-63.md`)
+**WFS-73 — Conducteurs dans les voitures** · E0 · priorité P3 Moyenne · ⏳ En attente de WFS-19 (règles : `regles-de-gestion/WFS-73.md`)
+- [ ] conducteur face au volant chez le joueur et dans le trafic, bien placé sur deux modèles de hauteurs différentes ; banc `0 écart(s)`
+
+**WFS-63 — Point d'extension : maillages animés par squelette (skinning)** · E0 · priorité P3 Moyenne · ✅ Terminé (PR #39, VALIDÉ) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-63.md`)
 - [ ] capture `squelette-essai` : `homme` du jeu web debout, proportions justes ; `squelette-marche-0` / `-1` : deux poses de `Walk_Loop` différentes
 - [ ] captures existantes identiques à `main`, banc `0 écart(s)` ; doc du point d'extension dans le skill `waforspeed-natif`
 
@@ -360,7 +367,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `trafic-cam0` : plus de cœur visible au bord des houppiers ; ombre d'arbre découpée visible sur une capture au soleil
 - [ ] ≤ 300 appels de dessin ; banc `0 écart(s)`
 
-**WFS-65 — Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash)** · E4 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-65.md`)
+**WFS-65 — Effets de conduite et d'accident (étincelles, fumée, lignes de vitesse, vignette, flash)** · E4 · priorité P3 Moyenne · 🔧 En cours — Claude (agent 4, session 011cpqZan), 2026-11-04, exception 2e ticket E4 (fichiers séparés de WFS-09) (règles : `regles-de-gestion/WFS-65.md`)
 - [ ] voir les critères du fichier de règles
 
 **WFS-66 — Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse)** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-66.md`)
@@ -374,6 +381,15 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-69 — [STABLE] CI : banc en jobs parallèles, fin des builds inutiles** · E7 · priorité P1 Urgent · ✅ Fusionné le 2026-11-03 (PR #37, QA de nuit : `qa/Check.md`) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-69.md`)
 - [ ] doc seule = aucun build ; un seul build par commit ; `main` jamais annulé
+
+**WFS-70 — Ressenti de conduite** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-70.md`)
+- [ ] choc = secousse + ralenti ; 2 modes de direction ; réduire les mouvements
+
+**WFS-71 — Ville vivante** · E2 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-71.md`)
+- [ ] terrasses, portique, enseignes visibles
+
+**WFS-72 — Point d'extension : apparence des personnages** · E0 · priorité P2 Haute · ✅ Fusionné (PR #40, QA de nuit à faire) — Claude (session trafic), 2026-11-03, branche `feature/waforspeed-72` (règles : `regles-de-gestion/WFS-72.md`)
+- [ ] `squelette-tenue` : homme et femme habillés, peau / cheveux / haut / bas / chaussures distincts ; captures existantes identiques, banc `0 écart(s)`
 
 **WFS-60 — Roues séparées dans les modèles de voiture (.wfm)** · E5 · priorité P4 Basse · ⏳ Prêt (règles : `regles-de-gestion/WFS-60.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; captures de voiture identiques à avant
@@ -397,7 +413,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-24 — Sauvegarde et progression** · E3 · priorité P4 Basse · ⏳ Prêt
 - [ ] Meilleurs scores, voitures et réglages conservés
 
-**WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · 🔍 En revue (PR #38) — Claude (agent 4, session 011cpqZan), 2026-11-03, branche `feature/waforspeed-21` (règles : `regles-de-gestion/WFS-21.md`)
+**WFS-21 — Mode duel en ligne** · E3 · priorité P2 Haute · ✅ Fusionné (PR #38, QA de nuit à faire) — Claude (agent 4, session 011cpqZan), 2026-11-03, branche `feature/waforspeed-21` (règles : `regles-de-gestion/WFS-21.md`)
 - [ ] Compatible avec le principe du duel web
 
 **WFS-23 — Manettes de jeu** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22

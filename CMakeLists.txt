@@ -24,7 +24,7 @@ set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 set(SHADER_OUT ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_OUT})
 set(SHADER_INCS)
-foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag)
+foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag)
   add_custom_command(
     OUTPUT ${SHADER_OUT}/${S}.inc
     COMMAND ${GLSLC} -O --target-env=vulkan1.0 -mfmt=num -I ${SHADER_DIR} -o ${SHADER_OUT}/${S}.inc ${SHADER_DIR}/${S}
@@ -74,5 +74,7 @@ else()
   target_link_libraries(test_traffic Threads::Threads)
   add_executable(test_course tests/test_course.cpp src/game/course.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
   target_link_libraries(test_course Threads::Threads)
+  add_executable(test_duel tests/test_duel.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-21
+  target_link_libraries(test_duel Threads::Threads)
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
 endif()

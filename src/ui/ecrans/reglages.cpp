@@ -8,6 +8,7 @@
 #include "../../core/log.h"
 #include "../../core/system.h"
 #include "../../game/course_system.h"
+#include "../../game/camera_vue.h"
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
@@ -38,7 +39,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[3]; };
 const Ligne LIGNES[3] = {
-    {"Caméra", 3, {"Proche", "Loin", "Cockpit"}},
+    {"Caméra", 3, {VUES[0].nom, VUES[1].nom, VUES[2].nom}},   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
     {"Son", 2, {"Activé", "Coupé", nullptr}},
 };
@@ -81,7 +82,7 @@ void ecrire() {
 }
 
 // ---------------------------------------------------------------- application immédiate
-void appliquerCamera() { Game::demandes().camera = reglages().camera == CAM_COCKPIT ? 3 : reglages().camera; }
+void appliquerCamera() { choisirVue((VueCamera)reglages().camera); }   // WFS-66 : vue mémorisée pour la session
 // qualité : échelle de la scène 3D (cibles recréées) et ombres du soleil ; jamais en mode GPU logiciel (WFS-59)
 void appliquerQualite(Renderer& r) {
     if (r.gpuLogiciel()) return;
@@ -106,7 +107,7 @@ public:
         if (lu) return;
         lu = true;
         if (!lire()) return;
-        if (reglages().camera != CAM_PROCHE) appliquerCamera();
+        if (reglages().camera != CAM_POURSUITE) appliquerCamera();
         if (reglages().qualite != QUALITE_HAUTE) appliquerQualite(r);
     }
     void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_bouton = {}; }
@@ -224,15 +225,15 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     for (int i = 0; i < 60; i++) image();
     g.render(t); toucher(1, g_bouton);
     capture("reglages-menu", "panneau ouvert depuis le menu");
-    toucher(2, g_choix[L_CAMERA][CAM_LOIN]); toucher(3, g_fermer);
-    WFS_LOG("réglages : caméra = %d (Loin attendu : 1)", g.camMode);
+    toucher(2, g_choix[L_CAMERA][CAM_CAPOT]); toucher(3, g_fermer);
+    WFS_LOG("réglages : vue = %s (Capot attendu)", VUES[(int)vueCamera()].nom);
     // course (départ du menu), puis pause → réglages
     g.allerA(Ecran::Course);
     for (int i = 0; i < 60 * 5; i++) image();
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(4, g_bouton);
-    capture("reglages-pause", "panneau ouvert depuis la pause, caméra Loin choisie");
+    capture("reglages-pause", "panneau ouvert depuis la pause, vue Capot choisie");
     // qualité basse : scène à 50 %, sans ombres du soleil ; capture en course, puis retour à Haute et Proche
-    toucher(5, g_choix[L_QUALITE][QUALITE_BASSE]); toucher(6, g_choix[L_CAMERA][CAM_PROCHE]); toucher(7, g_fermer);
+    toucher(5, g_choix[L_QUALITE][QUALITE_BASSE]); toucher(6, g_choix[L_CAMERA][CAM_POURSUITE]); toucher(7, g_fermer);
     g.allerA(Ecran::Course);
     for (int i = 0; i < 60; i++) image();
     capture("reglages-basse", "course en qualité basse");
