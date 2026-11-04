@@ -1,5 +1,6 @@
 // WaForSpeed — scènes du banc d'essai des effets de conduite (WFS-65) : voir bench_effets.h.
 #include "bench_effets.h"
+#include <cmath>
 #include "../core/log.h"
 #include "../game/course_system.h"
 #include "../game/game.h"
@@ -22,13 +23,21 @@ void benchEffets(Game& g, Renderer& r, const std::string& out) {
     trafficBenchPlace(14, 0, 80, true);
     int n = 0;
     for (; n < 180; n++) { image(true); if (c && c->accidents + c->bumps + c->scrapes > avant) break; }
-    for (int k = 0; k < 3; k++) image(true);   // étincelles encore groupées au point de contact (0,05 s)
+    const int emises = effetsDernierChoc();
+    // WFS-101 : la caméra de poursuite suit le tête-à-queue et la Golf cache le point de contact (mesuré en rendant la
+    // même image avec et sans étincelles : 0 pixel visible 2 images après le choc, ≈ 200 ensuite) ; capture de côté (vue
+    // vitrine à 6,5 m de la Golf, perpendiculaire à la route, côté chaussée : ≈ 2 200 pixels), 8 images après le choc
+    // (ralenti × 0,35 : ≈ 0,05 s de jeu) : la gerbe s'est ouverte entre les deux voitures ; puis la caméra haute reprend
+    for (int k = 0; k < 8; k++) image(true);
+    const float cap = effetsCapDernierChoc(), cote = g.player().playerX > 0 ? -1.f : 1.f;   // vers le milieu de la route
+    g.camMode = 2; g.orbit = std::atan2(cote * std::cos(cap), cote * std::sin(cap));
     g.render(t + 0.001);
     r.capturePng(out + "/choc-etincelles.png");
-    WFS_LOG("capture choc-etincelles : choc après %.2f s (accidents %d, chocs %d, frottements %d), %d étincelles, %.0f km/h",
-            n / 60.0, c ? c->accidents : 0, c ? c->bumps : 0, c ? c->scrapes : 0, effetsEtincelles(), g.player().kmh());
+    g.camMode = 1;
+    WFS_LOG("capture choc-etincelles (vue de côté) : choc après %.2f s (accidents %d, chocs %d, frottements %d), %d étincelles émises au choc, %d vivantes, %.0f km/h",
+            n / 60.0, c ? c->accidents : 0, c ? c->bumps : 0, c ? c->scrapes : 0, emises, effetsEtincelles(), g.player().kmh());
     // fumée : voiture percutée en glissade (capot qui fume) et pneus de la voiture en tête-à-queue
-    for (int k = 0; k < 60; k++) image(k % 4 == 0);
+    for (int k = 0; k < 55; k++) image(k % 4 == 0);   // même instant qu'avant WFS-101 (63 images après le choc)
     g.render(t + 0.001);
     r.capturePng(out + "/accident-fumee.png");
     WFS_LOG("capture accident-fumee : %d bouffées de fumée, %d étincelles", effetsFumee(), effetsEtincelles());
@@ -50,3 +59,4 @@ void benchEffets(Game& g, Renderer& r, const std::string& out) {
 }
 
 } // namespace wfs
+
