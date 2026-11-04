@@ -2048,3 +2048,4 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fait** (zone E7) : `tools/qa/publier_apercu.sh` (nouveau) appelé par le job `publication` de `build.yml` : plus de suppression de la Release ; APK téléversé sous un nom provisoire puis substitué (suppression + renommage), tag déplacé ; APK avant les captures ; 4 nouvelles tentatives par appel (15, 30, 60, 120 s) ; une seule lecture de la Release ; captures par lots de 20 ; garde « commit plus récent » conservée ; APK raté = job rouge, captures ratées = avertissement.
 - **Vérification** : `bash -n` ; essai local avec un faux `gh` (création, remplacement avec 403 à la première lecture, Release d'un commit plus récent) : déroulés corrects. Preuve attendue : CI de la branche (`apercu-waforspeed-87` créée), puis relance du job de publication (chemin de remplacement).
 
+### 2026-11-04 16h regarder tache-utilisateur.md
