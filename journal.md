@@ -2020,3 +2020,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Vérification** : compilation et tests CPU OK ; captures (au moins 3 voitures devant) : CI de la PR #71.
 - **CI de `main` après WFS-84** : voir l'entrée suivante.
 
+
+### 2026-11-04 14:02:41 — WFS-86 voiture nette en course : cause trouvée, fusionné par confiance, PR #72 (Claude, agent 4)
+- **Cause (RG-01)** : la résolution dynamique de WFS-15, active en course seulement, baissait jusqu'à 0,6 sous 40 images/s. Cette valeur se **multipliait** à l'échelle du niveau, appliquée aux pixels physiques : Haute 60 %, Moyenne 45 %, Basse 30 % sur un téléphone lent. Le garage, vu avant la course, est à 100 %. D'où une voiture floue en course mais nette au garage. Le jeu web applique `resScale` à une densité déjà plafonnée (DPR ≤ 1,5 sur téléphone) et ne descend jamais sous environ 0,9 pixel CSS.
+- **Autres pistes vérifiées, hors de cause** : MSAA identique ; voiture du joueur toujours en modèle complet (la silhouette ne concerne que le trafic) ; voiture du joueur jamais masquée par WFS-82 ; matériau et vernis identiques.
+- **Correctif** : `echelleRendu` avec un plancher de 0,6 en Moyenne et Haute, et une Basse fixe à 0,5. `test_qualite` est étendu. Au banc : échelle réelle par niveau au journal, et capture `voiture-course-haute` à comparer à `garage-golf`.
+- **Vérification** : tests et compilation OK. **Reste à confirmer sur le téléphone de l'utilisateur.**
