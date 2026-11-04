@@ -179,7 +179,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu (GEL iOS) ; **PR #76 à regarder et fusionner par WFS-103** (ordre de l'utilisateur, `tache utilisateur.md`, 2026-11-04 : seule exception au GEL iOS, aucune autre suite iOS) | Claude (session trafic), 2026-11-04 | WFS-78 ✅ | `feature/waforspeed-88` |  |  |
 | P2 Haute | WFS-89 | Duel par Internet : salon par code à 4 caractères, compatible avec le jeu web (PeerJS) | E3 (+ accroches E8 `salon.*`, E0 `CMakeLists.txt`, E7 manifeste) | ✅ Fusionné (PR #77, revue WFS-103, décision B : duel Wi-Fi local, saisie du code, « Sans Internet » ; vrai réseau PeerJS → WFS-92 ⏸ ; QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-83 ✅, WFS-21 ✅ | `feature/waforspeed-89` |  |  |
 | P2 Haute | WFS-91 | [STABLE] Endurance : parcours automatique long sans plantage ni fuite, validation Vulkan à zéro erreur, retours d'arrière-plan | E7 | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-91` |  |  |
-| P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans `third_party/`) | E3 | ⏸ En attente (décision de l'utilisateur : ajout des bibliothèques tierces) |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
+| P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans `third_party/`) | E3 | ⏸ Remplacé par WFS-112 (décision du PO : serveur de relais, pas de bibliothèques tierces de 14 Mo) |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
 | P2 Haute | WFS-93 | Ville : les 6 quartiers du jeu web (résidentiel, parc, port) + panneaux du circuit avec texte, vignes sans marches | E2 | 🔧 En cours | Copilot (session 0e5c192d), 2026-11-04 | — | `feature/waforspeed-93` |  |  |
 | P3 Moyenne | WFS-94 | Corniche : quartiers Port de plaisance, Côte rocheuse, Village de pêcheurs (villas, bateaux, rochers) | E2 | ⏳ En attente (après WFS-93, même épic) |  | WFS-93 | `feature/waforspeed-94` |  |  |
 | P2 Haute | WFS-95 | Texte et bandeaux : caractères manquants (« — »), petits libellés lisibles, nom du quartier en course | E5 | ⏳ Prêt (libéré le 2026-11-04 : aucune branche poussée, ordre de l'utilisateur) |  | — | `feature/waforspeed-95` |  |  |
@@ -197,6 +197,10 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 (exception : prend la place de WFS-101, mêmes fichiers `effets_*` ; séparés de WFS-100 / WFS-109) | 🔧 En cours — cause trouvée (fumée des pneus, `hdr()`) | Copilot (session dc0cdd3f), 2026-11-04 | WFS-101 ✅ | `feature/waforspeed-107` |  |  |
 | P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 (exception : 2e ticket E3, fichiers séparés de WFS-105, demande de l'utilisateur) | ✅ Fusionné (fusion par confiance après CI verte, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-98 ✅ | `feature/waforspeed-108` | #83 |  |
 | P1 Urgent | WFS-109 | [URGENT] Feux de freinage réalistes (2e passage) | E4 (exception : 3e ticket E4, blocs séparés : bloc des feux de `renderer.cpp`, que WFS-100 ne touche pas ; aucun fichier de WFS-107) | ⏳ Prêt (WFS-101 ✅ le 2026-11-04) |  | WFS-84 ✅, WFS-101 ✅ | `feature/waforspeed-109` |  |  |
+| P1 Urgent | WFS-113 | [URGENT] Showroom : les flèches sautent des voitures et l'écran bugue | E5 | ⏳ Prêt |  | WFS-11 ✅ | `feature/waforspeed-113` |  |  |
+| P2 Haute | WFS-110 | Modes de course : Course à 5 voitures (1 joueur + 4 ordinateurs), Checkpoint à 60 s, duel sans trafic | E3 (+ accroche E8) | ⏳ Prêt |  | WFS-11 ✅, WFS-13 ✅, WFS-21 ✅ | `feature/waforspeed-110` |  |  |
+| P2 Haute | WFS-111 | Mode Poursuite police (score 100, 10 km, trafic dense, embouteillages, surprises) | E3 | ⏳ En attente | | WFS-110, WFS-67 ✅ | `feature/waforspeed-111` |  |  |
+| P2 Haute | WFS-112 | Duel entre amis par Internet : serveur de relais, code + lien d'invitation, reconnexion, mieux que le web | E3 (+ accroches E7, E8) | ⏳ En attente | | WFS-89 ✅, WFS-110 | `feature/waforspeed-112` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -469,6 +473,18 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-109 — [URGENT] Feux de freinage réalistes** · E4 (exception : 3e ticket E4, blocs séparés) · priorité P1 Urgent · ⏳ Prêt (WFS-101 ✅ le 2026-11-04) (règles : `regles-de-gestion/WFS-109.md`). **Constat** : le jour, aucun feu du modèle ne s'allume au freinage (joueur : rien ; trafic : carrés de halo de 1,1 m, lumière × 7). Zone : bloc des feux de `src/render/renderer.cpp` (`draw`, lignes `feuxVoiture` / `MAT_TAIL` ; `namespace feux` et `feuxVoiture` de WFS-84), `src/game/traffic_system.cpp` (`feux`, halos, ligne `feuxProchaineVoiture`), `tests/test_trafic_vivant.cpp` ; accroches ≤ 10 lignes annoncées : `src/render/renderer.h` (`FeuxVoiture`), `src/render/nuit.cpp` (feux du joueur, aussi le jour), `src/platform/desktop_main.cpp` (captures). Interdit : `shaders/**`, peinture et bloom de `renderer.cpp` (WFS-100), `effets_*` (WFS-107), `player.*` (WFS-108), iOS
 - [ ] captures `jour-frein` (joueur), `trafic-freinage` (trafic, de jour) et `nuit-frein` : le feu du modèle lui-même s'allume en rouge vif, lueur courte, plus de grand disque plaqué
 - [ ] joueur et trafic identiques ; valeurs notées au Journal ; l'utilisateur valide sur téléphone
+
+**WFS-113 — [URGENT] Showroom : flèches qui sautent des voitures** · E5 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-113.md`)
+- [ ] une flèche = une voiture, sans saut ni erreur
+
+**WFS-110 — Modes de course : 5 voitures, Checkpoint 60 s, duel sans trafic** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-110.md`)
+- [ ] grille de 5 voitures sans trafic ; Checkpoint à 60 s
+
+**WFS-111 — Mode Poursuite police** · E3 · priorité P2 Haute · ⏳ En attente de WFS-110 (règles : `regles-de-gestion/WFS-111.md`)
+- [ ] police, trafic dense, embouteillages, surprises, score 100
+
+**WFS-112 — Duel entre amis par Internet** · E3 · priorité P2 Haute · ⏳ En attente de WFS-110 (règles : `regles-de-gestion/WFS-112.md`)
+- [ ] code + lien d'invitation, serveur de relais, reconnexion
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant

@@ -48,3 +48,19 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - voir la possibilité dajouter aussi le mode gyroscope acec les fleches ou le glissage
 ( PO : c'est dans WFS-108 (RG-03) : modes flèches, glissement et gyroscope (zone morte et sensibilité réglables), au choix dans les réglages. )
+
+- Créer une tâche mode course entre 5 voitures (1 joueur + 4 ordinateurs, voitures aléatoires, le joueur choisit sa voiture et les km, même chose pour le duel : seulement les voitures qui participent)
+( PO : c'est créé — WFS-110 (E3, P2) : Course à 5 voitures, 4 ordinateurs tirés au hasard, choix de la voiture et de 2 / 4 / 6 / 10 km, aucun trafic ; le duel n'a plus de trafic non plus. )
+
+- Mode poursuite police : score 100, 10 km, garder au moins 1, beaucoup de trafic, embouteillages, surprises
+( PO : c'est créé — WFS-111 (E3, P2) : police qui poursuit (renfort tous les 2 km), score qui baisse aux chocs et à la proximité, trafic 2 à 3 fois plus dense, embouteillages, 6 types de surprises. Les valeurs de points sont proposées par le PO et ajustables. Il démarre après WFS-110 (menu des modes). )
+
+- Garder le mode checkpoint actuel avec 60 secondes
+( PO : c'est dans WFS-110 (RG-08) : temps de départ 60 s, checkpoints inchangés. )
+
+- Revoir le duel en ligne : pas de Wi-Fi, jouer avec des amis, faire mieux que la version web
+( PO : c'est créé — WFS-112 (E3, P2). Solution : un petit serveur de relais (marche en 4G et partout), code à 4 caractères + lien d'invitation partagé par WhatsApp / SMS qui ouvre le jeu dans le salon, reconnexion automatique, ping, revanche. WFS-92 (bibliothèques tierces) est abandonné. Une décision pour toi : autoriser un compte gratuit Cloudflare Workers pour héberger le relais (recommandé, ~5 min). )
+
+- Bug showroom : les flèches sautent des voitures
+( PO : c'est créé — WFS-113 (E5, P1 urgent) : une flèche = exactement une voiture, cause documentée, 40 appuis sans saut. )
+

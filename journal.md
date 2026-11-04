@@ -2722,3 +2722,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - CI de la branche verte (bancs partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit ; APK ; publication). Captures regardées : pédales et flèches agrandies sans chevauchement, réglages en 11 lignes, « R · KM/H » en marche arrière (frein maintenu 3,7 s → −16 km/h).
 - `commandes-grandes-gyro` : la voiture était bloquée par un accident du trafic pendant la capture (braquage 0,00 au journal) ; le pavé montre bien la consigne à droite. Journal du banc corrigé avant la fusion : il donne la consigne du gyroscope et signale le blocage.
 - Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`. Ensuite, arrêt : pas de nouveau ticket (ordre de l'utilisateur).
+
+### 2026-11-04 23:45:15 — PO : modes de jeu, duel entre amis, bug showroom (po-scrum-master)
+- **WFS-113** (E5, P1) bug flèches du showroom. **WFS-110** (E3, P2) Course à 5 voitures + Checkpoint 60 s + duel sans trafic. **WFS-111** (E3, P2) Poursuite police (après WFS-110). **WFS-112** (E3, P2) duel entre amis par Internet : serveur de relais, code + lien d'invitation ; **WFS-92 remplacé** (pas de bibliothèques tierces). Décision attendue de l'utilisateur : hébergement gratuit du relais (Cloudflare Workers recommandé). Commentaires du PO dans `tache utilisateur.md`.
