@@ -191,7 +191,7 @@ public:
             liberer();   // mémoire rendue pendant la course
             // « Choisir » : Garage → Menu → Course, appliqués avant l'image suivante (le menu n'est jamais dessiné) ;
             // l'entrée en course depuis le menu remet la course à zéro (même chemin que « Recommencer » de la pause)
-            if (nouveau == Ecran::Menu && choisi_) { choisi_ = false; g.allerA(Ecran::Course); }
+            if (nouveau == Ecran::Menu && choisi_) { choisi_ = false; g.allerA(Ecran::Terrain); }   // WFS-41 : étape 2, le terrain
         }
     }
 

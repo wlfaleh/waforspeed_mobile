@@ -1,5 +1,6 @@
 #include "game.h"
 #include <algorithm>
+#include <cstdlib>   // setenv (WFS-41)
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../render/model_loader.h"
@@ -201,7 +202,14 @@ void Game::drawControls() {
 }
 
 // ---------------------------------------------------------------- mise à jour
+Game::Demandes& Game::demandes() { static Demandes d; return d; }
+
 void Game::update(double dt) {
+    if (Demandes& d = demandes(); !d.carte.empty() && r_) {   // WFS-41 : carte choisie, partie reconstruite entre deux images
+        const std::string c = d.carte, v = carDef_->id; const vec3 p = paint_; Renderer& r = *r_; d.carte.clear();   // voiture et peinture du garage gardées
+        setenv("WFS_MOMENT", d.nuit ? "nuit" : "jour", 1); shutdown(); init(r, v.c_str(), c.c_str()); paint_ = p;
+        WFS_LOG("terrain : carte = %s, %s", c.c_str(), d.nuit ? "nuit" : "jour");
+    }
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
