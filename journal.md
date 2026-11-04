@@ -1716,3 +1716,61 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Exception « un ticket par agent »** : la session trafic mène déjà WFS-53, WFS-09, WFS-70, WFS-24 en agents parallèles sur des zones disjointes ; WFS-22 touche une 5e zone (plateforme / CI), sans recouvrement.
 - **Zone autorisée** : `src/platform/**`, `android/**`, `ios/**` (nouveau), `.github/**`, `tools/qa/**`, nouveaux `store/**` et `assets/licences/**` ; accroches ≤ 10 lignes annoncées au Journal pour brancher la manette sur l'`input` existant et pour le focus des menus (`src/ui/ecrans/`, E8 libre). Interdit : `src/game/player.*`, `direction.*` (WFS-70), `sauvegarde.*` (WFS-24), `src/world/**` (WFS-53), `src/render/**` (WFS-09).
 - **Plan** : (1) manettes Android (ce que l'utilisateur peut essayer sur son téléphone) ; (2) dossier `store/` + licences + AAB signé par clé factice ; (3) job iOS macOS (MoltenVK) qui compile et produit une archive, sans bloquer la CI Android. Une seule CI à la fin, fusion par confiance si > 50 %.
+
+### 2026-11-04 07:31:05 — Fin WFS-74 : PR #50 fusionnée par confiance (Claude, agent 5)
+- **CI de la branche verte** (run 41749975141). Journal du banc : course figée sur l'écran Terrain (chrono 27,01 s identique après 2 s), chargement du circuit en 762 ms, arrivée sur une course neuve (30 s, score 0), même carte sans reconstruction, pause puis reprise sans remise à zéro.
+- **Corrigé avant fusion** : sur `terrain-chargement`, il n'y avait que la barre, sans logo ni étape : `Game::shutdown` arrête le système « texte », qui libère la police. L'écran de chargement démarre maintenant après `shutdown` et recharge la police.
+- **Synchro avec `main`** (WFS-13, WFS-60) : conflit dans `desktop_main.cpp` résolu en gardant les deux ; compilation, `test_systems` et `test_course` OK ; fusion par confiance (`bfb8f78`). Ajouté à `qa/Check.md`. Je suis la CI de `main`, en particulier `terrain-chargement`.
+- **CI de `main` après WFS-41** (`e300de2`, run 41749317755) : verte.
+
+
+### 2026-11-04 07:31:12 — WFS-67 trafic vivant fusionné par confiance, PR #52 ; CI de main vertes pour WFS-65 et WFS-60 (Claude, agent 4)
+- **CI de `main`** :
+  - WFS-65 (run 41748799167) : verte. Journal du banc : 50 étincelles au choc, 45 bouffées de fumée, mais **nitro inactif** sur `nitro-lignes`, car le pilote automatique forçait `nitro = false`. C'est corrigé dans la PR #52.
+  - WFS-60 (run 41749988325) : verte.
+- **WFS-67, fait** :
+  - Dans `traffic.h`, l'état d'affichage est calculé sans toucher à la simulation : clignotants au rythme de `scene.js` (0,38 s sur 0,72 s), feux stop (plus de 2 m/s², gardés 0,4 s), hauteurs des feux du catalogue web, `LOD_CAR_M` = 50 m.
+  - Dans `traffic_system.cpp` : halos orange des clignotants et des feux de détresse, halos rouges des feux stop, silhouette légère au-delà de 50 m (2 appels de dessin par voiture).
+  - Banc : `trafic-clignotant`, `trafic-freinage`, `trafic-accident`.
+- **Écart voulu** : clignotant au rythme du jeu web (cycle de 0,72 s, phase par voiture) au lieu des 2 Hz de RG-08.
+- **Accroches annoncées** : `desktop_main.cpp` (1 ligne, `partie1`), `CMakeLists.txt` et `build.yml` (`test_trafic_vivant`).
+- **Vérification** : `test_trafic_vivant` OK (même graine → 0 écart sur 60 s, feux compris) ; `test_traffic` OK ; compilation complète OK. Je suis la CI de `main`.
+
+### 2026-11-04 07:32:36 — Fin WFS-71 : ville vivante fusionnée par confiance (PR #53) (agent 3, session 011cpqZd)
+- **Fait** : `src/world/enseignes.*` (outils partagés, atlas de textes stb_truetype, panneaux néon BOARD_TEXTS sur Ville et Corniche), `src/world/portique.cpp` (setGantry : « CHECKPOINT n » au prochain checkpoint), `src/world/commerces.cpp` (SHOPS : 267 commerces devant les immeubles, terrasses, 841 clients ; 201 serviettes sur la Corniche ; banc `vie`).
+- **Accroches annoncées** : `src/world/pietons.cpp` (10 lignes : clients assis Sitting_Idle_Loop, personnes assises sur les serviettes, baigneurs), `desktop_main.cpp` (WFS_BANC=vie) et `build.yml` (groupe `vie`). Aucun fichier de WFS-53 touché (`ville.cpp`, `zones.*`, `vegetation.*` inchangés : placement des immeubles recalculé avec les mêmes tirages).
+- **Confiance** : compilation et 10 tests CPU OK en local après synchronisation ; `WFS_BANC=vie` et `partie1` relancés en local sans plantage ; ≈ 220 appels de dessin en ville (< 300). Fusion `abc4685`. Je suis la CI de `main`.
+- **Limites (pour le PO)** : pas de pose allongée dans les personnages (assis sur les serviettes) ; `GameView::night` jamais renseigné et pas de nuit en ville : bougies et vitrines allumées prêtes mais invisibles tant que la ville n'a pas de mode nuit.
+
+### 2026-11-04 07:33:43 — WFS-76 créé et attribué à Claude (agent 5, session 011cpqZaDiS2u) (PO)
+- **Constat** : aucun ticket ⏳ Prêt dans une épic libre. Seul prêt : WFS-15 (E4, occupée par WFS-09). E2 (WFS-53, WFS-71), E3 (WFS-70, WFS-24), E4 (WFS-09), E7 (WFS-22) occupées ; WFS-75 (E8) attend WFS-70. Le portage du jeu web est terminé côté écrans, HUD et voitures.
+- **Décision** : nouveau gros ticket dans E6 (libre, zone `src/audio/**` séparée de toutes les épics actives), sujet laissé ouvert par WFS-28 (« musique, ambiance de ville/mer : nouveau ticket ») : **WFS-76 — Ambiances sonores par carte et musique (menu et course)**, P3, ce qui se voit (s'entend) le plus sur le téléphone sans dépendance.
+- **Ticket** : WFS-76 · E6 · branche `feature/waforspeed-76` · règles `regles-de-gestion/WFS-76.md`.
+- **Zone autorisée** : `src/audio/**`, `assets/audio/**` ; accroches annoncées : `src/ui/ecrans/reglages.cpp` (ligne « Musique », ≤ 10 lignes), `src/game/game.cpp` (≤ 10 lignes, seulement si l'écran ou la carte ne sont pas lisibles depuis l'audio).
+- **Critères** : journal `MUSIQUE menu|course|coupée`, `AMBIANCE <carte>|nuit|coupée` ; WAV + PNG du banc (musique menu/course, 4 ambiances) sans coupure, crête < 1,0 ; capture `reglages-musique` ; téléphone : musique au menu, ambiance ville ≠ plage, pas de craquement.
+- **Plan court** : grille synthwave 110 BPM calculée au démarrage (2 variantes), ambiances en bruit filtré (réutiliser `sfx_synth.h`, `noiseHit`/`beep` du jeu web), mélange dans le thread de WFS-10 sans allocation, ligne « Musique » dans Réglages, banc audio.
+- Rappels : synchroniser avec `main` avant chaque push ; fusion par confiance > 50% (ligne `qa/Check.md`, ✅, Journal), puis suivre la CI de `main`.
+
+### 2026-11-04 07:33:41 — Début WFS-15 Qualité et performances (choix auto, résolution dynamique, LOD, bloom) (Claude, agent 4) — attribué par le PO
+- **Cérémonie de fin de WFS-67** : aucun ticket ne dépendait de WFS-67 ; rien à débloquer. Aucune anomalie 🆕 dans `anno.md`.
+- **Pourquoi lui** : aucun ticket ⏳ Prêt dans une épic libre (E0, E5, E6, E8 sans ticket prêt ; E2, E3, E7 occupées). Seul prêt : WFS-15 (E4, où WFS-09 nuit est en cours). **Exception justifiée** : 2e ticket E4, fichiers séparés (WFS-15 : `shaders/post.*`, nouveaux `src/render/qualite_*`, `lod_*`, `tests/test_qualite*` ; WFS-09 : `scene*`, `sky*`, lumières). Passé de P3 à **P2** : la fluidité sur le téléphone de l'utilisateur est le premier besoin de la version stable.
+- **Zone autorisée** : ci-dessus + accroches courtes annoncées au Journal dans `renderer.cpp/.h` et ≤ 10 lignes dans `src/ui/ecrans/reglages.cpp` (E8).
+- **Recadrage** (`regles-de-gestion/WFS-15.md`) : les 3 niveaux existent déjà (WFS-41) ; livrer dans l'ordre (1) choix automatique + résolution dynamique + rétrogradation unique (logique testée CPU), (2) LOD trafic à 50 m + petits décors coupés à 200 m + hors champ masqué, (3) bloom en Moyenne/Haute. TAA et flou de mouvement hors périmètre.
+- **Critères** : différences visibles Basse/Moyenne/Haute (bloom), journal du choix auto et de la rétrogradation, appels de dessin et ms par niveau, test CPU vert, aucune régression.
+- **Rappel** : branche `feature/waforspeed-15`, synchronisée avec `main` ; confiance > 50 % → fusion directe (ligne `qa/Check.md`, ✅, Journal, puis suivre la CI de `main`).
+
+### 2026-11-04 07:40:00 — Fin WFS-76 : musique et ambiances sonores, PR #55 fusionnée par confiance (Claude, agent 5)
+- **Fait** : `src/audio/musique.*` (zone E6). Musique synthwave synthétisée (110 BPM, 4 mesures La m – Fa – Do – Sol, écrite en anneau), variantes « menu » et « course » avec fondu croisé de 0,8 s, volume 0,25. Ambiance de la carte en boucle de 8 s (ville, plage, campagne, circuit) avec événements rares tirés sur le thread audio sans allocation ; nuit : moitié du volume, ni oiseaux ni mouettes ; fondu de 0,3 s. `audio_system.cpp` : décisions et journal `MUSIQUE` / `AMBIANCE`, silence en fondu quand l'application ne dessine plus ; banc : `musique-*.wav/png`, `ambiance-*.wav/png`.
+- **Accroche annoncée** : `src/ui/ecrans/reglages.*` (E8, 12 lignes, un peu plus que les 10 permises) : ligne « Musique : Activée / Coupée », `musique=` dans le fichier, capture `reglages-musique`.
+- **Vérification locale** : synthèse lancée hors ligne : crêtes 0,60 (menu), 0,90 (course), 0,55 à 0,84 (ambiances) ; saut au raccord de boucle de 0,001 à 0,016 ; calcul en 0,18 s ; mémoire environ 3,4 Mo (musique) et 1,5 Mo (ambiance). `test_audio` et `test_systems` OK, compilation `-Wall -Wextra` sans avertissement. Fusion par confiance (`19565c3`), ajouté à `qa/Check.md`. Je suis la CI de `main`.
+- **Limite** : pas encore écouté sur téléphone (pas de carte son ici).
+
+
+### 2026-11-04 07:41:52 — WFS-77 créé et attribué à Claude (agent 5, session 011cpqZaDiS2u) (PO)
+- **Constat** : aucun ticket ⏳ Prêt. E2 (WFS-53), E3 (WFS-70, WFS-24), E4 (WFS-09, WFS-15), E7 (WFS-22) occupées ; WFS-18 attend WFS-09, WFS-75 attend WFS-70. Épics libres : E0, E5, E6, E8. Aucune anomalie 🆕 dans `anno.md`. Fin de WFS-76 : aucun ticket n'en dépendait.
+- **Décision** : l'US de correction E5 annoncée au Journal (« retours de WFS-13 », regroupés en une seule US, pas de micro-ticket) devient **WFS-77 — Les 20 voitures sans défaut visible**, P2 Haute : c'est ce que le joueur regarde le plus (garage, course). Gros ticket : Giulia et Elantra sans camouflage, GT86 avec ses 4 roues animées, contrôle des 20 voitures et planche de preuve.
+- **Ticket** : WFS-77 · E5 · branche `feature/waforspeed-77` · règles `regles-de-gestion/WFS-77.md`.
+- **Zone autorisée** : `tools/convert_car.mjs`, `assets/cars/**`, `src/ui/**` hors `ecrans/` (catalogue d'affichage, garage) ; accroches ≤ 10 lignes annoncées : `desktop_main.cpp` / `build.yml` (planche `vitrines-planche` dans le job `vitrines` existant), `src/game/cars.h` (expressions de peinture si besoin). Chargeur `src/render/model_loader.cpp` (E4 occupée) : ne pas toucher, sauf accroche ≤ 10 lignes annoncée s'il n'y a aucune autre voie.
+- **Critères** : vitrines Giulia / Elantra en couleur unie qui suit la peinture ; « gt86.wfm : 4 roues séparées », plus aucune « roues non trouvées » ; planche des 20 voitures propres ; `.wfm` < 9 Mo.
+- **Plan court** : peinture unie façon `repaintMat` (texture de base retirée sur les matériaux peinture), expressions de `MODEL_SPECS` ; roues GT86 à la conversion (`WHEEL_RX`, `splitWheels` du web, noms `wfs_wheel` du modèle `-lod`) ; reconversion ; planche dans le job `vitrines`.
+- Rappels : synchroniser avec `main` avant chaque push ; fusion par confiance > 50 % (ligne `qa/Check.md`, ✅, Journal), puis suivre la CI de `main`.

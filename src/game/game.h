@@ -1,5 +1,6 @@
 // WaForSpeed — la partie : piste, voiture du joueur, route générée par morceaux, caméra, commandes tactiles.
 #pragma once
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -34,9 +35,16 @@ public:
     DriveInput manette; bool modeManette = false;
     // caméra : 0 poursuite proche, 1 poursuite haute, 2 orbite (vitrine)
     int camMode = 0; float orbit = 0;
-    // WFS-41 : demande de l'écran Terrain, appliquée au début de la mise à jour suivante : carte non vide = partie
-    // reconstruite sur cette carte (moment : WFS_MOMENT), puis course
-    struct Demandes { std::string carte; bool nuit = true; };
+    // WFS-41 : demande de l'écran Terrain, appliquée au début de la mise à jour suivante : carte non vide = course neuve sur
+    // cette carte (moment : WFS_MOMENT) ; même carte et même moment : pas de reconstruction (WFS-74, RG-02).
+    // WFS-74 : écran de chargement branché par la plateforme (Game ne dépend pas de src/ui/ecrans) : debutChargement avant la
+    // reconstruction, progression passée à init (étapes réelles), finChargement(réussite) après ; rien de branché = sans écran.
+    struct Demandes {
+        std::string carte; bool nuit = true;
+        std::function<void()> debutChargement;
+        void (*progression)(float, const char*) = nullptr;
+        std::function<void(bool ok)> finChargement;
+    };
     static Demandes& demandes();
 private:
     struct Chunk { Mesh road, walk, ground; bool ready = false; };
@@ -73,6 +81,7 @@ private:
     bool demandeEcran_ = false;
     std::string voitureDemandee_; vec3 peintureDemandee_{};   // WFS-11 : choix du garage (GameView::choisirVoiture)
     void appliquerEcran();
+    void changerCarte();   // WFS-41 / WFS-74 : demande de l'écran Terrain (Game::demandes)
     void lacherCommandes();
     // systèmes enfichables (WFS-30, voir src/core/system.h)
     std::vector<std::unique_ptr<System>> systems_;
