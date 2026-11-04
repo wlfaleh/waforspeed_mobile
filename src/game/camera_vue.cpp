@@ -1,6 +1,8 @@
 // WaForSpeed — caméras de course (WFS-66) : voir camera_vue.h.
 // Système « camera » (ordre 260) : cockpit dessiné par code (buildCockpit du jeu web) et bouton de vue en course (#camBtn).
 #include "camera_vue.h"
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 #include "../core/log.h"
@@ -48,9 +50,11 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         const Poursuite& P = g_vue == VueCamera::Proche ? POURSUITE_PROCHE : POURSUITE_LOIN;
         const double p = std::abs(pl.speed) / MAX_SPEED, lat = pl.playerX * RW;
         const vec3 carPos = carM.transformPoint({0, 0, 0}), fwd = normalize(carM.transformDir({0, 0, -1}));
-        const TrackPoint der = track.point(pl.dist - P.dist / M, lat * 0.85);
+        // WFS-90 : sens de marche (1 dans le sens de la route, −1 à contresens), progressif autour de 90° : derrière la voiture
+        const double sens = std::clamp(std::cos(pl.heading) * 3.0, -1.0, 1.0);   // pas le tête-à-queue (spinYaw) : caméra stable
+        const TrackPoint der = track.point(pl.dist - sens * P.dist / M, lat * 0.85);
         const vec3 eT{(float)der.x, (float)der.y + P.h + (float)p * 0.12f, (float)der.z};
-        const TrackPoint dev = track.point(pl.dist + P.ahead * 1.6 / M, lat);
+        const TrackPoint dev = track.point(pl.dist + sens * P.ahead * 1.6 / M, lat);
         const vec3 lT{(carPos.x + fwd.x * P.ahead) * 0.6f + (float)dev.x * 0.4f, carPos.y + P.lookH,
                       (carPos.z + fwd.z * P.ahead) * 0.6f + (float)dev.z * 0.4f};
         const float fovT = fovVue(g_vue, p, pl.nitroOn);
