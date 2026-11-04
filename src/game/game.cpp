@@ -216,6 +216,7 @@ void Game::update(double dt) {
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
     const bool course = ecran_ == Ecran::Course;
     DriveInput in = course ? input_ : DriveInput{};     // hors course : aucune commande de conduite
+    if (modeManette) in = course ? manette : DriveInput{};   // WFS-22 : la manette remplace le tactile
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
     latchGas_ = latchBrake_ = latchNitro_ = false;
@@ -302,7 +303,7 @@ void Game::render(double time) {
         const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.dist, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
         r_->draw(car_, carM, &paint_, &rouesJoueur);
     }
-    if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes)) drawControls();   // commandes de conduite : seulement en course
+    if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();
 }

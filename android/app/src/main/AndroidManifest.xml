@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.vulkan.version" android:version="0x400003" android:required="true" />
     <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="false" />
+    <!-- WFS-22 : manettes prises en charge (non exigées : le tactile suffit) -->
+    <uses-feature android:name="android.hardware.gamepad" android:required="false" />
     <application
         android:label="@string/app_name"
         android:hasCode="true"
