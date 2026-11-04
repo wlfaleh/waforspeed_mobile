@@ -1,1 +1,12 @@
+ instruction dans ce fichier je veux laisse mes remarques et mes ordes 
+
+il faut me laisse un commentaire après chaque tiret entre parenthèses 
+
+exemple :
+
 - j'ai merger la pr 87 il faut mettre a jour le tache et le journal 
+( agent 3 session xyxyxt : c'est fait )
+
+demande utilisateur :
+
+- 
