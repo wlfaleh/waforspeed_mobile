@@ -28,7 +28,7 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 
 - j'ai tester le jeux ya un problème lorsque je clique sur les fleche ou j'essaye de tourner a gauche ou a droit ya une annimation bizzare et grave commme si ya du feux blanc dit au po et qa de voir le sujet
-( PO : c'est créé — WFS-107 (E4, P1) : reproduire, nommer la cause (flash, vignette, étincelles, halo de roues…) et supprimer l'effet blanc au braquage ; captures  pour le QA, qui les regarde à la prochaine recette de nuit. )
+( PO : c'est créé — WFS-107 (E4, P1) : reproduire, nommer la cause (flash, vignette, étincelles, halo de roues…) et supprimer l'effet blanc au braquage ; captures « braquage-gauche » et « braquage-droite » pour le QA, qui les regarde à la prochaine recette de nuit. )
 
 
 - les button accélération frein turbo et flech sont trop petit  voir la possibilité de faire mieux
