@@ -103,6 +103,7 @@ void appliquerQualite(Renderer& r) {
     r.vk().renderScale = q == QUALITE_BASSE ? 0.5f : q == QUALITE_MOYENNE ? 0.75f : 1.f;
     r.forceNoShadows = q == QUALITE_BASSE;
     r.bloomForce = q == QUALITE_BASSE ? 0.f : 1.f;   // WFS-15 : bloom en Moyenne et Haute
+    r.qualiteBasse = q == QUALITE_BASSE;               // WFS-82 : petits objets coupés à 150 m
     r.resize();
     WFS_LOG("réglages : qualité %s (scène à %.0f %%, ombres %s)", LIGNES[L_QUALITE].choix[q], r.vk().renderScale * 100,
             r.forceNoShadows ? "coupées" : "actives");

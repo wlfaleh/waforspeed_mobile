@@ -293,7 +293,7 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         constexpr uint32_t NO_CAST = MAT_SHADOWBLOB | MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_BLEND;
         VkPipeline bound = VK_NULL_HANDLE;
         for (const Pending& p : opaqueQ_) {
-            if (p.mat->flags & NO_CAST) continue;
+            if ((p.mat->flags & NO_CAST) || !(p.vis & VIS_OMBRE)) continue;   // WFS-82 : hors de la boîte d'ombre
             const bool masque = p.mat->flags & MAT_MASK;
             VkPipeline want = p.osOfs >= 0 ? (masque ? skinShadowMask_ : skinShadow_) : (masque ? shadowMaskPipe_ : shadowPipe_);   // WFS-63
             if (want != bound) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, want); bound = want; }
@@ -485,10 +485,10 @@ void Renderer::refletPass(VkCommandBuffer cb) {
     vkCmdDraw(cb, 3, 1, 0, 0);
     constexpr uint32_t SANS = MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_SHADOWBLOB | MAT_POOL;
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refOpaque_);
-    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS)) flushDraw(p);
+    for (const Pending& p : opaqueQ_) if (p.osOfs < 0 && !(p.mat->flags & SANS) && (p.vis & VIS_REFLET)) flushDraw(p);   // WFS-82
     VkPipeline lie = VK_NULL_HANDLE;
     for (const Pending& p : transparent_) {
-        if (p.mat->flags & SANS) continue;
+        if ((p.mat->flags & SANS) || !(p.vis & VIS_REFLET)) continue;   // WFS-82
         const VkPipeline voulu = (p.mat->flags & MAT_ADD) ? refAdd_ : refBlend_;
         if (voulu != lie) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
@@ -641,8 +641,27 @@ Material Renderer::makeMaterial(const Material& src, const Image* color, const I
     return m;
 }
 
+// WFS-82 : sphère englobante des sommets (boîte → sphère) ; aucun sommet : inconnue (jamais masquée)
+template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
+    if (v.empty()) return {};
+    vec3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
+    for (const V& s : v) { mn = {std::min(mn.x, s.px), std::min(mn.y, s.py), std::min(mn.z, s.pz)}; mx = {std::max(mx.x, s.px), std::max(mx.y, s.py), std::max(mx.z, s.pz)}; }
+    return masquage::deBoite(mn, mx);
+}
+
+// WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
+uint8_t Renderer::classer(const masquage::Sphere& s) {
+    if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE;
+    if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { masques_++; return 0; }
+    const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
+                      (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
+    if (!v) masques_++;
+    return v;
+}
+
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
+    { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
@@ -660,12 +679,14 @@ void Renderer::updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vect
     std::memcpy(m.vb.mapped, v.data(), v.size() * sizeof(Vertex));
     std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
     m.indexCount = (uint32_t)idx.size();
+    { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
 }
 
 void Renderer::destroy(Mesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
 
 SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx) {
     SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
+    { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r < 0 ? b.r : b.r * 1.5f; }   // WFS-82 : marge pour l'animation
     m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     return m;
@@ -763,6 +784,14 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         m.nuitA = {0, 0, 0, 1};   // passe de reflet : pas de route mouillée ni de reflet lu, rien sous le plan
         std::memcpy(refletUbo_[cur_].mapped, &m, sizeof(m));
     }
+    {   // WFS-82 : plans de la caméra, du miroir des reflets et de la boîte d'ombre ; fin du brouillard
+        fCam_ = masquage::depuis(u.viewProj);
+        mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
+        fReflet_ = masquage::depuis(fp.proj * fp.view * R);
+        fOmbre_ = masquage::depuis(u.shadowMat);
+        finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
+        masquesPrec_ = masques_; masques_ = 0;
+    }
     feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
@@ -795,6 +824,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
+    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)));   // WFS-82
+    if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     if (fx.nuit) feuxVoiture(m, world, fx);
     mat4 wr[4]; const bool anim = roues && m.nRoues == 4;   // WFS-60 : matrice de chaque roue (braquage, roulage)
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
@@ -804,6 +835,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = m.parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        p.vis = vis;   // WFS-82
         p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
@@ -822,7 +854,10 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || !m.indexCount) return;
+    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82
+    if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
+    p.vis = vis;
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
@@ -834,6 +869,8 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
 void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
                            const ApparencePersonnage* ap) {
     if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
+    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82 : avant de prendre une place
+    if (!vis) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);
     const VkDeviceSize ofs = OS_SLOT * (VkDeviceSize)skinUsed_++;
@@ -852,7 +889,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
-    p.osOfs = (int32_t)ofs;
+    p.osOfs = (int32_t)ofs; p.vis = vis;
     opaqueQ_.push_back(p);   // maillages à squelette : opaques (ou alpha découpé) seulement
 }
 
@@ -977,6 +1014,7 @@ void Renderer::endFrame() {
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
     VkPipeline lie = opaque_;
     for (const Pending& p : opaqueQ_) {
+        if (!(p.vis & VIS_CAM)) continue;   // WFS-82 : hors champ (gardé pour l'ombre ou le reflet)
         const VkPipeline voulu = p.osOfs >= 0 ? skinOpaque_ : opaque_;   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
@@ -985,6 +1023,7 @@ void Renderer::endFrame() {
     if (!transparent_.empty()) {
         VkPipeline lieT = VK_NULL_HANDLE;
         for (const Pending& p : transparent_) {
+            if (!(p.vis & VIS_CAM)) continue;   // WFS-82
             // WFS-09 : tache des phares (multiplicative), halos (additifs), sinon mélange alpha
             const VkPipeline voulu = (p.mat->flags & MAT_POOL) ? poolPipe_ : (p.mat->flags & MAT_ADD) ? addPipe_ : blend_;
             if (voulu != lieT) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lieT = voulu; }
