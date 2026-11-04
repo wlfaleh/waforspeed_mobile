@@ -2299,3 +2299,7 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-04 22:15:33 — tache utilisateur.md : PR en attente, ticket WFS-103 demandé et pris (Claude, session trafic)
 - Demande de l'utilisateur : regarder et fusionner les PR qui traînent. PR ouvertes : #77 (WFS-89), #79 (WFS-96), #76 (WFS-88, GEL iOS).
 - Le PO a créé WFS-103 (commit e7c1c9f) et me l'a attribué ; réponse écrite dans `tache utilisateur.md`. Les anciens tickets de ma session ne sont pas repris (ordre de l'utilisateur : « oublie le ticket »).
+
+### 2026-11-04 22:18:16 — WFS-103 : PR #77 (WFS-89) fusionnée (Claude, session trafic)
+- Synchronisée avec main (conflit de `.github/workflows/build.yml` : ligne des tests, `test_binarypack` et `test_conduite_libre` gardés), compilation et tests CPU de la CI OK en local, CI de la branche verte (run 41883025840), captures du salon regardées : rien de bloquant. Fusion fb50d09.
+- `TACHES.md` : WFS-89 ✅ (décision B, vrai réseau → WFS-92 ⏸) ; ligne dans `qa/Check.md`. Suite : PR #79 (WFS-96). #76 (WFS-88) non touchée (GEL iOS).
