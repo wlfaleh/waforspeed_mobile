@@ -25,3 +25,7 @@ description: Validation des tickets de WaForSpeed Mobile par le QA lead — rega
 - Rapport court dans `qa/rapports/WFS-XX.md` : verdict + tableau `| ANO-XX | Gravité | Capture | Ce qui ne va pas |`.
 - Les anomalies mineures restantes après les deux tours sont corrigées plus tard par des **US de correction créées par le PO**.
 - **Fusion avec VALIDÉ ou PASSABLE AVEC ANOMALIES MINEURES, jamais avec REFUSÉ ni À CORRIGER.**
+
+
+## Tickets fusionnés par confiance
+**Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire)** : développeur confiant à plus de 50% → il fusionne tout de suite (conditions et suite : `CLAUDE.md`, règle de fusion n°1). Dans `qa/Check.md` ils sont marqués « fusion par confiance » : même recette, faite après la fusion, sur `main`.

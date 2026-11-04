@@ -1689,3 +1689,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Fusion par confiance** (règle de l'utilisateur) : branche synchronisée avec `main` (WFS-60, WFS-41, WFS-74…), compilation et les 9 tests CPU de la CI OK en local, groupe `vitrines` relancé en local après la synchronisation (16 vitrines, garage, course SF90). Fusion `ade931a`, ajouté à `qa/Check.md`. Je suis la CI de `main`.
 - **Après WFS-60** : `convert_car.mjs` inchangé (roues séparées au chargement), donc pas de reconversion. 15 voitures sur 16 ont leurs 4 roues séparées. **GT86 : « roues non trouvées, modèle inchangé »** → à traiter par la détection de WFS-60 (pour le PO).
 - Taille de l'APK : relevée à la fin de la CI de `main`.
+
+### 2026-11-04 00:59:07 — PO : règle « confiance > 50% » propagée (po-scrum-master)
+- Déjà présente : `CLAUDE.md`, skill `waforspeed-natif`, `po-scrum-master.md`, `qa-lead.md`, `TACHES.md`. Ajoutée : définition de « Fini » de `TACHES.md`, `regles-de-gestion/README.md` (lu par les développeurs), skill `qa-lead`. À l'attribution, le PO rappelle la règle au développeur.
