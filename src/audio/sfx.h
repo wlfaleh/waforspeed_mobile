@@ -14,9 +14,10 @@ struct Course;
 
 enum class SfxId : uint8_t {
     Accident, Choc, Frottement, ContactDuel, QuasiContact,
-    BipDecompte, BipGo, BipCheckpoint, BipFin, BipDuel, Count
+    BipDecompte, BipGo, BipCheckpoint, BipFin, BipDuel, Garage, Carte, Count   // WFS-96 : sons d'interface
 };
 const char* sfxNom(SfxId id);
+void sfxInterface(SfxId id);   // WFS-96 : son demandé par un écran (joué au pas suivant par SfxEvenements)
 
 class SfxMixer {
 public:

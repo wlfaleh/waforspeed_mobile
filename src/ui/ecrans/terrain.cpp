@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <vector>
 #include "../../core/log.h"
 #include "../../core/system.h"
 #include "../../game/course_system.h"
@@ -15,6 +16,8 @@
 #include "../text.h"
 #include "reglages.h"
 #include "../../platform/manette.h"   // WFS-22
+#include "../../audio/sfx.h"          // WFS-96 : son du changement de carte
+#include "../../world/zones.h"        // WFS-96 : noms des quartiers
 
 namespace wfs {
 namespace ecrans {
@@ -165,6 +168,16 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
     }
 }
 
+// zoneNames du web : noms distincts des quartiers de la carte, dans l'ordre (un tour de ZONES[ground])
+std::vector<std::string> quartiers(const MapDef& m) {
+    std::vector<std::string> v;
+    for (int64_t i = 0; i < 12; i++) {
+        const std::string n = zoneName(m, i * ZONE_LEN, (int64_t)1 << 40);
+        if (std::find(v.begin(), v.end(), n) == v.end()) v.push_back(n);
+    }
+    return v;
+}
+
 class Terrain : public System {
 public:
     const char* name() const override { return "terrain"; }
@@ -230,14 +243,39 @@ public:
         const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
         r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(c.accent, 0.92f));
         ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
-        // .map-info : nom, description, longueur
-        const float ix = cx0 + 24 * k, iy = cy0 + ch - 128 * k;
+        // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
+        const std::vector<std::string> qs = quartiers(m);
+        const float pf = 12 * k, ph = 22 * k, pg = 6 * k, pmax = cw - 48 * k;
+        std::vector<float> pw; std::vector<int> pl; int nl = 1; float lx = 0;
+        for (const std::string& q : qs) {
+            const float w = ui::width(pf, q, 0.04f) + 20 * k;
+            if (lx > 0 && lx + w > pmax) { nl++; lx = 0; }
+            pw.push_back(w); pl.push_back(nl - 1); lx += w + pg;
+        }
+        // .map-info : nom, description, longueur, quartiers
+        const float ix = cx0 + 24 * k, iy = cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
         ui::text(r, ix, iy, 36 * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
         ui::text(r, ix, iy + 46 * k, 15 * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
         ui::text(r, ix, iy + 76 * k, 11 * k, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
         if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
         ui::text(r, ix, iy + 92 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
+        r.uiRect(ix - 10 * k, iy + 76 * k, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
+        const float qx = ix + std::max(ui::width(11 * k, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
+        r.uiRect(qx - 10 * k, iy + 76 * k, 2 * k, 38 * k, hex(c.accent));
+        ui::text(r, qx, iy + 76 * k, 11 * k, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        ui::text(r, qx, iy + 92 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
+        lx = 0;
+        for (size_t i = 0; i < qs.size(); i++) {
+            if (i > 0 && pl[i] != pl[i - 1]) lx = 0;
+            const float px0 = ix + lx, py0 = iy + 124 * k + pl[i] * (ph + pg);
+            const float sk = 4 * k, cr = 30 / 255.f, cg = 33 / 255.f, cb = 48 / 255.f, ca = 0.75f;   // skewX(-10deg)
+            const UiVertex q[4] = {{px0 + sk, py0, -1, -1, cr, cg, cb, ca}, {px0 + pw[i], py0, -1, -1, cr, cg, cb, ca},
+                                   {px0 + pw[i] - sk, py0 + ph, -1, -1, cr, cg, cb, ca}, {px0, py0 + ph, -1, -1, cr, cg, cb, ca}};
+            r.uiQuad(q);
+            ui::text(r, px0 + 10 * k, py0 + (ph - pf) / 2, pf, qs[i], hex(TEXTE), ui::GAUCHE, 0.04f, false);
+            lx += pw[i] + pg;
+        }
         // ---------- flèches (.map-arrow), grisées aux extrémités ----------
         const float ar = 26 * k, ay = cy0 + ch / 2;
         const float ax[2] = {cx0 - 18 * k - ar, cx0 + cw + 18 * k + ar};
@@ -286,7 +324,7 @@ public:
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités
         const int i = std::clamp(g_index + dir, 0, 3);
-        if (i != g_index) { g_index = i; WFS_LOG("terrain : carte %s (%02d / 04)", CARTES[i].id, i + 1); }
+        if (i != g_index) { g_index = i; sfxInterface(SfxId::Carte); WFS_LOG("terrain : carte %s (%02d / 04)", CARTES[i].id, i + 1); }
     }
     int doigt_ = -1;
     float x0_ = 0, y0_ = 0;
@@ -331,7 +369,7 @@ void benchTerrain(Game& g, Renderer& r, const std::string& out) {
         g.onTouch({id, x, y, true}); image(); g.onTouch({id, x, y, false}); image();
     };
     for (int i = 0; i < 30; i++) image();
-    for (int i = 0; i < 4; i++) WFS_LOG("terrain : %s ≈ %.2f km", CARTES[i].id, longueurKm(mapById(CARTES[i].id)));
+    for (int i = 0; i < 4; i++) WFS_LOG("terrain : %s ≈ %.2f km, %zu quartiers", CARTES[i].id, longueurKm(mapById(CARTES[i].id)), quartiers(mapById(CARTES[i].id)).size());
     g.allerA(Ecran::Terrain); image(); g.render(t);
     capture("terrain-0", "ville choisie, nuit par défaut");
     // glissé vers la gauche sur la vignette (carte suivante), puis deux appuis sur la flèche droite → circuit ; Jour
