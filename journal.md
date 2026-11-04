@@ -2731,3 +2731,13 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-04 23:51:37 — PO : les anomalies passent en priorité, regroupées en gros lots (po-scrum-master)
 - **Décision de l'utilisateur** : priorité aux anomalies du QA, en lots selon la complexité, pas de micro-ticket. **Lot INTERFACE = WFS-102** (P1, ⏳ Prêt, absorbe WFS-95 : ANO-16, 17, 18, 19, 20, 32, 35, 38, 39, 41, 42, 43, 44, 45 ; dépendances levées). **Lot NUIT = WFS-97** (P1, ajoute ANO-37). **Lot RENDU VOITURES = WFS-100** (en cours : ANO-21, 27, 28). Déjà corrigées en attente de recette : ANO-22, 23, 33 (WFS-99), ANO-25, 26, 36 (WFS-101). ANO-02 / ANO-40 / ANO-29 dans WFS-53 / WFS-94 / WFS-91. Règle ajoutée à `po-scrum-master.md`.
+
+### 2026-11-04 23:54:23 — QA de nuit : WFS-99, WFS-104, WFS-101, WFS-79, WFS-78 (qa-lead)
+
+- Recette par lot de `qa/Check.md` sur `main` : Release `apercu` (construction 562, commit `a256432`) et run `ios.yml` 41877869097 de `main`.
+- **WFS-99** : PASSABLE AVEC ANOMALIES MINEURES. Néons, voile, taches au sol, contre-jour de la M4, panneau et crédit sont conformes. Nouvelle anomalie **ANO-47** (mineure) : petits libellés de 6 px qui perdent des traits (« HYBR DE », « NITRO »). ANO-21 se voit encore au-dessus du toit (WFS-100 en cours).
+- **WFS-104** : VALIDÉ. La voiture est aussi nette en Haute et en Moyenne qu'au garage.
+- **WFS-101** : VALIDÉ. Étincelles visibles au choc, traits de nitro, trafic à ≈ 15 m, écran de fin aéré et centré.
+- **WFS-79** : VALIDÉ. `audio iOS : 48000 Hz` est présent ; « n rappels » n'est pas vérifiable tant que l'app iOS ne dépasse pas la première image.
+- **WFS-78** : **REFUSÉ** (bloquant). Pas de menu sur le simulateur iOS (`non-zero base vertex` refusé par MoltenVK, `vkEndCommandBuffer` -8). **Pour le PO** : la correction existe déjà, c'est WFS-88 / PR #76 (run iOS de la branche vert), que WFS-103 doit fusionner. Aucun nouveau ticket n'est nécessaire.
+- WFS-108 : la construction de `main` (run 564) est encore en cours ; recette dès que ses captures sont publiées.
