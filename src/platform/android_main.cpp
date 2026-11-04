@@ -17,6 +17,7 @@
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
+#include "manette_jeu.h"   // WFS-22 : manettes
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -100,6 +101,7 @@ static void onCmd(android_app* a, int32_t cmd) {
 
 static int32_t onInput(android_app* a, AInputEvent* e) {
     App& app = *static_cast<App*>(a->userData);
+    if (app.ready && manette::evenementAndroid(e)) return 1;   // WFS-22 : manette (un toucher rend la main au tactile)
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
     int32_t action = AMotionEvent_getAction(e), kind = action & AMOTION_EVENT_ACTION_MASK;
     size_t idx = (size_t)((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
@@ -160,7 +162,7 @@ void android_main(android_app* a) {
             if (g_margesNeuves.exchange(false))
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
-            else { app.game.update(dt); app.game.render(t - app.start); }
+            else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); app.game.render(t - app.start); }   // WFS-22 : manette
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
             if (app.fpsT0 == 0) app.fpsT0 = t;
             if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {

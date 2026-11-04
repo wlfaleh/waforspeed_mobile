@@ -27,9 +27,11 @@
 #include "../render/qualite_banc.h"
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
+#include "../render/bench_nuit.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
+#include "manette_jeu.h"   // WFS-22
 #include "../ui/ecrans/menu.h"
 #include "../ui/ecrans/pause.h"
 #include "../ui/ecrans/reglages.h"
@@ -93,6 +95,7 @@ int main(int argc, char** argv) {
         }
         return finir();
     }
+    if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
@@ -101,6 +104,7 @@ int main(int argc, char** argv) {
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
     }
+    if (banc == "manette") { manette::benchManette(g, r, out); return finir(); }   // WFS-22 : manettes (job texte)
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
     if (banc == "menu") { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
         ecrans::benchTerrain(g, r, out); ecrans::benchReglages(g, r, out); return finir(); }   // WFS-37, WFS-11, WFS-41

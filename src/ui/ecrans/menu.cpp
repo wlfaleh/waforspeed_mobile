@@ -14,6 +14,7 @@
 #include "reglages.h"
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
+#include "../../platform/manette.h"   // WFS-22 : focus de la manette
 
 namespace wfs {
 namespace ecrans {
@@ -116,6 +117,7 @@ public:
             const bool presse = i == presse_, grise = i == DUEL;   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
             const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + 6 * k);   // translateX(10px)
             g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * k, true};   // zone fixe : l'état pressé ne la déplace pas
+            manette::focus(g_zones[i]);   // WFS-22
             if (grise) a *= 0.45f;
             // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
             const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};

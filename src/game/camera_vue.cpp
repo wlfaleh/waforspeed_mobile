@@ -14,6 +14,7 @@
 #include "player.h"
 #include "ressenti.h"   // WFS-70 : secousse de la caméra après un choc
 #include "track.h"
+#include "../platform/manette.h"   // WFS-22 : bouton de vue masqué à la manette
 
 namespace wfs {
 
@@ -180,7 +181,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // bouton visible : vraie course en cours (comme le bouton « Menu » de WFS-39 : pas de fin, pas de scène du banc sans règles)
 bool boutonVisible(const GameView& g) {
     const Course* c = activeCourse();
-    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6;
+    return c && g.ecran == Ecran::Course && !g.sceneDediee && c->state != RaceState::Over && c->timeLeft < 1e6 && !manette::actif();   // WFS-22 : masqué à la manette
 }
 
 class Camera : public System {
