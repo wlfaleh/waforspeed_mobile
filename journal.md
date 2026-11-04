@@ -1973,3 +1973,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Captures** : rien ne manque de près ; reflets et ombres complets.
 - **Suite, PR #69, fusion par confiance** : en Basse, trafic en silhouette dès 25 m (accroche d'une ligne dans `traffic_system.cpp`). Nouvelle mesure de la Basse attendue sur `main`.
 - **Si la cible n'est toujours pas atteinte** : instancier les objets répétés (RG-04).
+
+### 2026-11-04 13:33:32 — WFS-84 : feux de nuit naturels, PR #70 en revue (Claude, agent 5)
+- **Constat** (`course-nuit-ville-stop` sur `main`) : feux stop = halos de 0,45 m de rayon (gros disques rouges qui débordent), halos des phares visibles autour d'une voiture vue de dos, grande ellipse rouge au sol.
+- **Fait** (zone E4, `src/render/renderer.cpp`) : `feuxVoiture` réécrit. Cœur net de 7 cm qui reste un point au loin + lueur douce de 0,24 m éteinte entre 60 et 120 m ; stop plus vif, même taille ; recul : petit feu blanc ; feu visible seulement de son côté ; reflet au sol réduit. Réglages groupés dans `feux::` (RG-06). Banc : capture `nuit-trafic-arriere` (`bench_nuit.cpp`). Aucune accroche hors zone ; lampadaires et double halo du trafic non touchés (WFS-81).
+- **Vérification** : compilation sans avertissement ; rendu non visible ici → fusion après CI verte et captures regardées.
+
