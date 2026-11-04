@@ -5,9 +5,10 @@
 name: Construction iOS
 
 on:
+  # seulement quand la cible iOS change (et à la demande) : un échec iOS ne colore pas chaque commit de main
   push:
     branches: [main, 'feature/**']
-    paths-ignore: ['**/*.md', 'qa/**', 'regles-de-gestion/**', '.claude/**', 'store/**']
+    paths: ['ios/**', 'src/platform/ios_main.mm', '.github/workflows/ios.yml']
   workflow_dispatch:
 
 permissions:
@@ -33,8 +34,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p mvk && cd mvk
-          gh release download "$MOLTENVK_VERSION" -R KhronosGroup/MoltenVK -p 'MoltenVK-ios.tar' \
-            || gh release download "$MOLTENVK_VERSION" -R KhronosGroup/MoltenVK -p 'MoltenVK-all.tar'
+          # noms des fichiers de la Release (ils ont changé selon les versions) : on prend celui d'iOS, sinon « all »
+          for v in "$MOLTENVK_VERSION" ""; do
+            noms=$(gh release view $v -R KhronosGroup/MoltenVK --json assets -q '.assets[].name' || true)
+            echo "MoltenVK ${v:-dernière} : $(echo $noms)"
+            f=$(echo "$noms" | grep -i -m1 'ios.*\.tar' || echo "$noms" | grep -i -m1 'all.*\.tar' || true)
+            [ -n "$f" ] && gh release download $v -R KhronosGroup/MoltenVK -p "$f" && break
+          done
+          ls -la
           for t in *.tar; do tar xf "$t"; done
           sim=$(find . -path '*static*' -path '*ios-arm64*simulator*' -name 'libMoltenVK.a' | head -1)
           dev=$(find . -path '*static*' -path '*ios-arm64*' ! -path '*simulator*' -name 'libMoltenVK.a' | head -1)
