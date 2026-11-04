@@ -1735,3 +1735,9 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Écart voulu** : clignotant au rythme du jeu web (cycle de 0,72 s, phase par voiture) au lieu des 2 Hz de RG-08.
 - **Accroches annoncées** : `desktop_main.cpp` (1 ligne, `partie1`), `CMakeLists.txt` et `build.yml` (`test_trafic_vivant`).
 - **Vérification** : `test_trafic_vivant` OK (même graine → 0 écart sur 60 s, feux compris) ; `test_traffic` OK ; compilation complète OK. Je suis la CI de `main`.
+
+### 2026-11-04 07:32:36 — Fin WFS-71 : ville vivante fusionnée par confiance (PR #53) (agent 3, session 011cpqZd)
+- **Fait** : `src/world/enseignes.*` (outils partagés, atlas de textes stb_truetype, panneaux néon BOARD_TEXTS sur Ville et Corniche), `src/world/portique.cpp` (setGantry : « CHECKPOINT n » au prochain checkpoint), `src/world/commerces.cpp` (SHOPS : 267 commerces devant les immeubles, terrasses, 841 clients ; 201 serviettes sur la Corniche ; banc `vie`).
+- **Accroches annoncées** : `src/world/pietons.cpp` (10 lignes : clients assis Sitting_Idle_Loop, personnes assises sur les serviettes, baigneurs), `desktop_main.cpp` (WFS_BANC=vie) et `build.yml` (groupe `vie`). Aucun fichier de WFS-53 touché (`ville.cpp`, `zones.*`, `vegetation.*` inchangés : placement des immeubles recalculé avec les mêmes tirages).
+- **Confiance** : compilation et 10 tests CPU OK en local après synchronisation ; `WFS_BANC=vie` et `partie1` relancés en local sans plantage ; ≈ 220 appels de dessin en ville (< 300). Fusion `abc4685`. Je suis la CI de `main`.
+- **Limites (pour le PO)** : pas de pose allongée dans les personnages (assis sur les serviettes) ; `GameView::night` jamais renseigné et pas de nuit en ville : bougies et vitrines allumées prêtes mais invisibles tant que la ville n'a pas de mode nuit.
