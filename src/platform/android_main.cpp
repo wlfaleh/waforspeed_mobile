@@ -58,6 +58,10 @@ static void initGraphics(App& app, android_app* a) {
     if (!app.game.init(app.renderer, "golf", "ville", ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }
     ecrans::chargement().fin();
     app.game.allerA(Ecran::Menu);   // WFS-38 : l'application s'ouvre sur le menu après le chargement
+    // WFS-74 : écran de chargement de WFS-35 au changement de carte (« Rouler »), étapes réelles, message rouge en cas d'échec
+    Game::demandes().debutChargement = [&app] { ecrans::chargement().debut(app.renderer, nowSeconds()); };
+    Game::demandes().progression = ecrans::Chargement::progression;
+    Game::demandes().finChargement = [](bool ok) { if (ok) ecrans::chargement().fin(); else ecrans::chargement().erreur(); };
     app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
     app.ready = true;
     app.last = nowSeconds();
@@ -147,8 +151,8 @@ void android_main(android_app* a) {
             double t = nowSeconds(), dt = t - app.last; app.last = t;
             if (g_margesNeuves.exchange(false))
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
-            app.game.update(dt);
-            app.game.render(t - app.start);
+            if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
+            else { app.game.update(dt); app.game.render(t - app.start); }
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
             if (app.fpsT0 == 0) app.fpsT0 = t;
             if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {

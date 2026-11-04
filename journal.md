@@ -1709,3 +1709,17 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - À réutiliser : `js/world/life.js` (`SHOPS`, `getShopMats`, `placeShop`, terrasses, `populatePeople`), `js/world/scene.js` (`setGantry`), `js/world/decor.js` (`BOARD_TEXTS`, `AD_TEXTS`, serviettes l. 51) ; personnages et poses de WFS-19 / WFS-72 (`models/people/`, `Sitting_*`).
 - **Retours de WFS-13 notés par le PO** : GT86 sans roues détectées par WFS-60 (« roues non trouvées, modèle inchangé ») ; Giulia et Elantra avec un motif de camouflage venant de la texture de peinture du modèle. À confirmer à la recette de nuit (`qa/Check.md`) ; ensuite regroupés dans une seule US de correction E5 (catalogue des voitures), pas de micro-ticket.
 - Surveillance : session trafic tient WFS-09, WFS-24, WFS-53, WFS-70 depuis 00:05-00:20 UTC sans branche poussée ; libérables par le PO après 24 h sans nouvelle.
+
+### 2026-11-04 07:18:04 — Début WFS-22 Plateformes : manettes, stores, iOS (Claude, session trafic) — attribué par le PO
+- **Ticket** : WFS-22 (absorbe WFS-23 manettes et WFS-25 stores), épic **E7**, P4 Basse. Branche `feature/waforspeed-22`. Règles : `regles-de-gestion/WFS-22.md` (+ `WFS-23.md`, `WFS-25.md`, ordre de travail RG-07 à RG-10 ajouté par le PO).
+- **Pourquoi lui** : seul ⏳ Prêt d'une épic libre (E7 : WFS-50 fusionné, simulateur MVP OK). E2 (WFS-53), E3 (WFS-70, WFS-24, WFS-67), E4 (WFS-09), E0 (WFS-74 en revue) occupés ; WFS-15 et WFS-71 recouvrent les fichiers de WFS-09 / WFS-53 ; E5, E6, E8 sans ticket prêt (WFS-75 attend WFS-70) ; `anno.md` sans anomalie 🆕.
+- **Exception « un ticket par agent »** : la session trafic mène déjà WFS-53, WFS-09, WFS-70, WFS-24 en agents parallèles sur des zones disjointes ; WFS-22 touche une 5e zone (plateforme / CI), sans recouvrement.
+- **Zone autorisée** : `src/platform/**`, `android/**`, `ios/**` (nouveau), `.github/**`, `tools/qa/**`, nouveaux `store/**` et `assets/licences/**` ; accroches ≤ 10 lignes annoncées au Journal pour brancher la manette sur l'`input` existant et pour le focus des menus (`src/ui/ecrans/`, E8 libre). Interdit : `src/game/player.*`, `direction.*` (WFS-70), `sauvegarde.*` (WFS-24), `src/world/**` (WFS-53), `src/render/**` (WFS-09).
+- **Plan** : (1) manettes Android (ce que l'utilisateur peut essayer sur son téléphone) ; (2) dossier `store/` + licences + AAB signé par clé factice ; (3) job iOS macOS (MoltenVK) qui compile et produit une archive, sans bloquer la CI Android. Une seule CI à la fin, fusion par confiance si > 50 %.
+
+### 2026-11-04 07:31:05 — Fin WFS-74 : PR #50 fusionnée par confiance (Claude, agent 5)
+- **CI de la branche verte** (run 41749975141). Journal du banc : course figée sur l'écran Terrain (chrono 27,01 s identique après 2 s), chargement du circuit en 762 ms, arrivée sur une course neuve (30 s, score 0), même carte sans reconstruction, pause puis reprise sans remise à zéro.
+- **Corrigé avant fusion** : sur `terrain-chargement`, il n'y avait que la barre, sans logo ni étape : `Game::shutdown` arrête le système « texte », qui libère la police. L'écran de chargement démarre maintenant après `shutdown` et recharge la police.
+- **Synchro avec `main`** (WFS-13, WFS-60) : conflit dans `desktop_main.cpp` résolu en gardant les deux ; compilation, `test_systems` et `test_course` OK ; fusion par confiance (`bfb8f78`). Ajouté à `qa/Check.md`. Je suis la CI de `main`, en particulier `terrain-chargement`.
+- **CI de `main` après WFS-41** (`e300de2`, run 41749317755) : verte.
+
