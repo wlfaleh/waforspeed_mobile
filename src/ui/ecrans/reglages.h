@@ -23,6 +23,7 @@ struct Reglages {
     int qualite = QUALITE_HAUTE;
     bool qualiteChoisie = false;   // WFS-15 : niveau choisi par le joueur (lu ou touché) → pas de rétrogradation automatique
     std::atomic<bool> son{true};   // lu par le thread audio (src/audio/audio_system.cpp)
+    std::atomic<bool> musique{true};   // WFS-76 : musique seule (l'ambiance reste)
 };
 Reglages& reglages();
 void appliquerQualiteNiveau(Renderer& r);   // WFS-15 : applique reglages().qualite (qualité automatique)
