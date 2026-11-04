@@ -96,6 +96,38 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             }
         }
     }
+    // WFS-60 : roues séparées (splitWheels du jeu web) : chaque matériau est redécoupé en une partie fixe et une partie
+    // par roue (mêmes sommets, indices regroupés) ; sans 4 roues trouvées, le modèle reste tel quel
+    {
+        std::vector<roues::Maillage> ms;
+        for (const ModelPart& p : out.parts) {
+            const uint32_t nv = (uint32_t)((&p == &out.parts.back() ? verts.size() : (size_t)(&p + 1)->vertexOffset) - (size_t)p.vertexOffset);
+            ms.push_back({&verts[(size_t)p.vertexOffset].px, 8, nv, &idx[p.firstIndex], p.indexCount,
+                          p.material < nMat && (raw[p.material].flags & MAT_WHEEL) != 0});
+        }
+        const roues::Decoupe d = roues::decouper(ms);
+        if (d.n == 4) {
+            std::vector<uint32_t> idx2; idx2.reserve(idx.size());
+            std::vector<ModelPart> parts2;
+            size_t tournent = 0;
+            for (size_t k = 0; k < out.parts.size(); k++) {
+                const ModelPart& p = out.parts[k];
+                for (int r = -1; r < 4; r++) {
+                    const uint32_t first = (uint32_t)idx2.size();
+                    for (uint32_t t = 0; t < p.indexCount / 3; t++)
+                        if (d.roueDuTriangle[k][t] == r) for (int j = 0; j < 3; j++) idx2.push_back(idx[p.firstIndex + t * 3 + j]);
+                    const uint32_t n = (uint32_t)idx2.size() - first;
+                    if (n) parts2.push_back({first, n, p.vertexOffset, p.material, r});
+                    if (r >= 0) tournent += n / 3;
+                }
+            }
+            idx.swap(idx2); out.parts.swap(parts2);
+            for (int k = 0; k < 4; k++) out.roues[k] = d.roues[k];
+            out.nRoues = 4;
+            WFS_LOG("%s : 4 roues séparées (rayon %.3f m, essieux z %.2f / %.2f), %zu triangles tournent (WFS-60)", path.c_str(),
+                    d.roues[0].rayon, d.roues[0].centre.z, d.roues[2].centre.z, tournent);
+        } else WFS_LOG("%s : roues non trouvées, modèle inchangé (WFS-60)", path.c_str());
+    }
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     out.ib = r.vk().uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);

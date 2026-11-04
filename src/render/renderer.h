@@ -4,6 +4,7 @@
 #include <vector>
 #include "vk.h"
 #include "../core/math.h"
+#include "../game/roues.h"   // WFS-60 : RoueModele, RouesPose
 #include "../core/gpu_logiciel.h"
 
 namespace wfs {
@@ -43,10 +44,11 @@ struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; };
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
 constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
 
-struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; };
+struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; };   // WFS-60 : roue 0-3, −1 = fixe
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     vec3 bmin, bmax; bool ok = false;
+    RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
 };
 
 struct FrameParams {
@@ -91,7 +93,7 @@ public:
 
     // image par image
     bool beginFrame(const FrameParams& fp);
-    void draw(const Model& m, const mat4& world, const vec3* paint = nullptr);
+    void draw(const Model& m, const mat4& world, const vec3* paint = nullptr, const RouesPose* roues = nullptr);   // WFS-60 : sans pose = rendu inchangé
     void draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth = 0);
     // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée

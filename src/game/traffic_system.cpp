@@ -126,7 +126,8 @@ public:
             const float L = (float)WEB_CARS[c.type].L, W = (float)WEB_CARS[c.type].W, k0 = L / CARS[mi].d.L;
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
-            r.draw(models_[mi], m * scale({k0, k0, k0}), &paint);
+            const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
+            r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
         }
     }
 

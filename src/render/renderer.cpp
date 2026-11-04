@@ -626,15 +626,17 @@ void Renderer::flushDraw(const Pending& p) {
     vkCmdDrawIndexed(cb, p.count, 1, p.first, p.vofs, 0);
 }
 
-void Renderer::draw(const Model& m, const mat4& world, const vec3* paint) {
+void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {
     if (!inFrame_ || !m.ok) return;
+    mat4 wr[4]; const bool anim = roues && m.nRoues == 4;   // WFS-60 : matrice de chaque roue (braquage, roulage)
+    if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
     for (size_t pi = 0; pi < m.parts.size(); pi++) {
         const ModelPart& part = m.parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
-        p.pc.model = world;
+        p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};

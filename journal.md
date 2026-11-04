@@ -1356,7 +1356,10 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 
 ### 2026-11-03 21:13:18 — Fin WFS-28 : fusionné sur ordre de l'utilisateur (PR #36) ; marqueur de conflit retiré du journal (agent 3, session 011cpqZd)
 - WFS-28 fusionné par l'utilisateur à 21:12:25, CI de la PR non terminée (Android ✅). Suivi déjà fait par l'agent 4 (`TACHES.md` ✅, `qa/Check.md`). Contrôle : la pipeline de `main` doit montrer les lignes `SFX bip-decompte`, `SFX bip-go`, `SFX quasi-contact`, `SFX accident`, `SFX bip-fin`… dans le journal du banc, et `test_audio` vert.
-- `journal.md` : une ligne orpheline `<<<<<<< HEAD` (sans `=======` ni `>>>>>>>`, aucun contenu en double) envoyée sur `main` avant l'entrée de 21:11:56 : ligne retirée, rien d'autre changé.
+- `journal.md` : une ligne orpheline `### 2026-11-04 00:52:11 — WFS-74 : chargement au changement de carte, course figée — PR #50 en revue (Claude, agent 5)
+- **Fait** : `Game::changerCarte` (zone E0) : écran de chargement branché par la plateforme via `Game::demandes()` (`debutChargement`, `progression`, `finChargement`), étapes réelles de `init`, voiture et peinture gardées, durée au journal ; même carte et même moment = pas de reconstruction. La course n'avance que sur l'écran Course (menu, garage, terrain : figée) ; Terrain → Course = course neuve.
+- **Accroches annoncées** : `src/game/course_system.cpp` (E3, 5 lignes : `onEcran`, test d'écran dans `collide`) ; `src/platform/android_main.cpp` (6 lignes : branchement du chargement, message rouge si échec) ; `src/platform/desktop_main.cpp` (3 lignes) ; nouveau `src/game/bench_changement_carte.*` (banc).
+- **Vérification** : compilation sans erreur, `test_systems` et `test_course` OK en local ; Android et captures : CI de la PR #50. Fusion après CI verte (noyau et Android non testables ici : confiance ≤ 50 %).
 
 ### 2026-11-03 21:14:33 — Début WFS-69 : CI banc en jobs parallèles, fin des builds inutiles (PO / Scrum Master)
 - Ticket : WFS-69 · épic E7 · P1 Urgent · attribué à agent 3 (session 011cpqZd) · branche `feature/waforspeed-69` · règles `regles-de-gestion/WFS-69.md`.
@@ -1643,3 +1646,41 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Zone : `src/game/game.{h,cpp}` ; accroches ≤ 10 lignes annoncées au Journal : `src/game/course_system.cpp` (E3, WFS-24 et WFS-70 en cours : synchroniser avec `main`), `src/ui/ecrans/chargement.cpp` / `terrain.cpp`, `src/platform/android_main.cpp` / `desktop_main.cpp`. Ne pas toucher la partie « volant » de `onTouch` / `drawControls` (WFS-70).
   - Critères : `terrain-chargement`, `terrain-arrivee` (décompte, chrono à zéro, voiture gardée), `terrain-fige-1/2` (chrono figé au journal), pause → reprise sans remise à zéro, autres captures inchangées.
   - Plan court : point d'extension de progression dans `Game` branché par la plateforme → écran WFS-35 pendant `init` → course neuve (Rejouer) → `CourseSystem` figé hors `Course` → scènes de banc → fusion (règle en vigueur), `qa/Check.md`.
+
+### 2026-11-04 00:51:56 — PO : plus de tickets simulateur (po-scrum-master)
+- **Décision de l'utilisateur** : le simulateur est hors objectif. Règle ajoutée à `po-scrum-master.md` : plus de création ni d'attribution de ticket simulateur (« Vérification simulateur EX » supprimée du processus du PO). Tickets déjà fusionnés ou en cours non touchés.
+
+### 2026-11-04 00:52:07 — WFS-13 : 16 voitures en revue (agent 3, session 011cpqZd)
+- **Fait** : `tools/convertir_voitures.sh` (16 conversions, `convert_car.mjs` inchangé, peinture trouvée partout) ; 16 `.wfm` + licences ; 16 entrées `CARS` et 16 `VOICES` (Model 3 : son citadine en attendant l'électrique) ; fiche Mustang ajoutée au garage ; job CI `vitrines`.
+- **Accroches annoncées** : `src/game/cars.h` (données + `TRAFIC_MODELES = 4`), `src/audio/engine_synth.cpp` (données), `src/game/traffic_system.cpp` (2 lignes : le trafic garde ses 4 modèles, sinon il chargerait les 20 ; variété : WFS-67), `desktop_main.cpp` + `build.yml` (groupe `vitrines`).
+- **Tailles (RG-16)** : p208 6,70 Mo · abarth 4,98 · tcross 6,01 · compass 8,42 · s3 6,31 · x5 7,24 · giulia 6,54 · a45 6,43 · model3 6,45 · corsa 4,83 · gt86 5,36 · elantra 5,98 · v60 2,54 · rrsport 6,01 · mustang 5,85 · sf90 7,40 → 92 Mo ; `assets/cars` 22 → 114 Mo ; APK de `main` avant : 31,4 Mo (après : relevé à la CI).
+- **Triangles** : compass 154 k, x5 138 k, model3 135 k, p208 132 k dépassent la cible de 120 k du joueur (versions `-lod` possibles plus tard).
+- **À regarder** : Giulia et Elantra ont un motif de camouflage venant de la texture de peinture de leur modèle.
+
+### 2026-11-04 00:52:19 — WFS-60 roues animées fusionné par confiance, PR #48 (Claude, agent 4)
+- **Fait** :
+  - `src/game/roues.*` porte `splitWheels`, `looksLikeWheel`, `rigWheels` et `animWheels` (`js/cars/models.js`) et les angles de `scene.js`.
+  - Le chargeur redécoupe chaque matériau en une partie fixe et une partie par roue. Les 4 voitures ont 4 roues chacune, **sans reconversion des `.wfm`** (la Golf et la 911 n'ont aucun matériau marqué « roue »).
+  - Les jantes de la 911, fusionnées avec le chrome, sont récupérées dans le cylindre de chaque roue ; les étriers sont exclus (règle des 10/12 du tour).
+  - Rendu : `draw(model, world, paint, RouesPose*)`. Sans pose, rien ne change (garage, duel).
+- **Accroches annoncées** :
+  - `src/render/renderer.h` et `renderer.cpp` : API et matrice par roue, environ 8 lignes ;
+  - `src/game/game.cpp` : 2 lignes ;
+  - `src/game/traffic_system.cpp` : 2 lignes ;
+  - `src/platform/desktop_main.cpp` : 2 lignes, groupe `partie2` ;
+  - `CMakeLists.txt` et `build.yml` : `test_roues`.
+  - Nouveau fichier `src/game/roues_banc.*` pour le banc. `player.*` n'a pas été touché (angle recalculé depuis `steer` et `speed`).
+- **Vérification** :
+  - `test_roues` OK sur les 4 `.wfm` : rayons 0,323 à 0,344 m ; entre 10 931 et 25 778 triangles tournent selon la voiture ; symétrie, roulage, braquage, Ackermann et pose nulle = identité.
+  - Compilation complète et `test_systems` OK.
+  - Fusion par confiance (environ 60 %) : je suis la CI de `main` et je corrige tout de suite si une capture est cassée.
+- **Limite** : dans le modèle source de la 911, les roues avant sont braquées (7,6 cm d'écart en z entre gauche et droite).
+
+### 2026-11-04 00:54:33 — Début WFS-67 Trafic vivant (Claude, agent 4) — attribué par le PO
+- **Cérémonie de fin de ticket** : WFS-60 fusionné par confiance (PR #48) → **WFS-67** (seule dépendance WFS-60) passe de « En attente » à Prêt, puis attribué. WFS-75 reste en attente de WFS-70.
+- **Ticket** : WFS-67 — Trafic vivant (clignotants, feux stop, accidents contournés avec détresse et fumée, variété des modèles, version légère au-delà de 50 m), épic **E3**, P3 Moyenne. Branche `feature/waforspeed-67`. Règles : `regles-de-gestion/WFS-67.md` (précisions RG-07 à RG-12 ajoutées).
+- **Pourquoi lui** : aucun Prêt dans une épic libre. WFS-15 (E4) recouvre `renderer.cpp` / `post*` / `scene*` de WFS-09 ; WFS-71 (E2) recouvre `ville.cpp` de WFS-53 ; WFS-22 (E7, P4, iOS) ne se voit pas sur le téléphone. WFS-67 vient d'être débloqué, se voit en permanence en course, et ses fichiers sont disjoints de WFS-70 et WFS-24.
+- **Exception « un ticket actif par épic »** (E3 : WFS-70, WFS-24, WFS-67) accordée car les fichiers sont disjoints.
+- **Zone autorisée** : `src/game/traffic.*` (ajout d'état seulement : `freine`, `recul` ; pas de réécriture, signatures publiques de `HitEvent` / `TrafficEvents` inchangées car WFS-70 les lit), `src/game/traffic_system.*` (dessin : émissifs, tirage des modèles, version légère), nouveau `tests/test_trafic_vivant.cpp` ; accroches ≤ 10 lignes annoncées : `src/game/cars.h` (`TRAFIC_MODELES`, `LOD_CAR_M`), `desktop_main.cpp` + `build.yml` (scènes `trafic-*`, hors job `ecrans-2400`). **Interdit** : `renderer.*`, shaders (WFS-09), `roues.*`, `direction.*`, `player.*`, `course*.cpp` (WFS-70 / WFS-24), `sauvegarde.*`, `camera_*`.
+- **Critères** : captures `trafic-clignotant`, `trafic-freinage`, `trafic-accident` ; ≥ 3 modèles / couleurs visibles en course ; banc `0 écart(s)` ; ≤ 300 appels de dessin ; coût avant / après au Journal ; test CPU même graine → même trafic.
+- **Plan** : état `freine` → émissifs feux stop / clignotants 2 Hz / détresse → fumée WFS-65 sur accident → tirage modèle + peinture par graine → version légère > 50 m → test + scènes de banc → une CI, fusion par confiance si > 50 %.
