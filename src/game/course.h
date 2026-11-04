@@ -25,6 +25,7 @@ struct Course {
     int lastCount = -1;                     // dernier chiffre affiché (3, 2, 1, puis 0 = « GO »)
     double goShown = 0;                     // « GO » reste affiché 0,7 s après le départ (setTimeout du jeu web)
     double timeScale = 1, slowmoT = 0;      // ralenti après un accident (main.js du jeu web)
+    double duelFinish = 0;                  // WFS-21 : > 0 = duel (mode 'duel') : arrivée à FINISH, pas de chrono ni checkpoint
 
     // resetRace('play') + startRace() : 30 s, compte à rebours de 3 s (la nitro est remise à 0,4 par Player::reset)
     void reset();

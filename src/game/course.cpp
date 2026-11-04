@@ -11,6 +11,7 @@ void Course::reset() {
     combo = 0; comboTimer = 0; nearCount = 0; maxKmh = 0; overTimer = 0; accidents = 0;
     bumps = 0; scrapes = 0; lastImpact = 0;   // WFS-28
     lastCount = -1; goShown = 0; timeScale = 1; slowmoT = 0;
+    duelFinish = 0;   // WFS-21 : course solo par défaut
 }
 
 // quasi-contact (boucle des voitures de update()) : combo +1 si le précédent date de moins de 3 s
@@ -67,7 +68,11 @@ void Course::step(double dt, const Player& pl, Traffic* traffic, double playerPo
         if (n != lastCount) lastCount = n;
         if (clock >= 0) { state = RaceState::Play; goShown = 0.7; }
     }
-    if (playing) {
+    if (playing && duelFinish > 0) {   // WFS-21 : raceTime = max(0, trafficClock) ; dist ≥ FINISH → finishDuel()
+        raceTime = std::max(0.0, clock);
+        maxKmh = std::max(maxKmh, kmh(pl.speed));
+        if (pl.dist >= duelFinish) state = RaceState::Over;
+    } else if (playing) {
         raceTime += dt;
         maxKmh = std::max(maxKmh, kmh(pl.speed));
         timeLeft -= dt;

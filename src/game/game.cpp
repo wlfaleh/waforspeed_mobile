@@ -4,6 +4,7 @@
 #include "../core/log.h"
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
+#include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
 
 namespace wfs {
 
@@ -258,6 +259,7 @@ void Game::render(double time) {
     }
     float aspect = (float)r_->width() / (float)std::max(1u, r_->height());
     float fov = (camMode == 0 ? 58.f : 62.f) + (float)std::min(player_.kmh() / 300.0, 1.0) * 8.f;
+    const bool vueInterieure = cameraVue(track_, player_, *carDef_, carM, camMode, ecran_, (float)std::clamp(time - lastTime_, 0.0, 0.1), eye, look, fov);   // WFS-66
 
     FrameParams fp;
     fp.view = lookAt(eye, look, {0, 1, 0});
@@ -285,7 +287,7 @@ void Game::render(double time) {
         r_->draw(c.road, roadMat_, I, (float)RW);
     }
     systemsRender(eye, look, fp.view, fp.proj, time);
-    if (!dediee || sd.joueur) {
+    if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
         r_->draw(car_, carM, &paint_);
