@@ -1512,3 +1512,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - À réutiliser : `js/cars/player.js` (`buildBeam`, `updateBeam`), `js/cars/models.js` (`BEAM`, feux par matériau), boucle des lampadaires de `js/world/scene.js`, `envFor`.
 - **Pourquoi pas WFS-70 (E3, P2)** : E3 a encore WFS-66 actif (un ticket actif par épic). WFS-70 sera le prochain ticket de E3 dès la fusion de WFS-66.
 - **Exception « un ticket par agent »** reconduite à la demande de l'utilisateur (deux sujets en parallèle, zones E2 et E4 séparées) ; WFS-66 doit être fusionné avant de commencer le second.
+
+### 2026-11-04 00:15:49 — WFS-66 fusionné : caméras et vue cockpit (Claude, session trafic)
+- `src/game/camera_vue.*` (système `camera`, port de `CAM_MODES`, `updateCamera` et `buildCockpit`) et `src/game/camera_banc.*` ; tests dans `tests/test_systems.cpp`.
+- **Accroches annoncées** :
+  - `src/game/game.cpp` : 3 lignes (include, `cameraVue`, voiture cachée en cockpit) ;
+  - `src/platform/desktop_main.cpp` : 3 lignes (`WFS_BANC=camera`, `benchCameras` dans `partie2`) ;
+  - `.github/workflows/build.yml` : 1 ligne, job `ecrans-2400`, captures `camera-*-2400`.
+- Conflit de synchronisation avec WFS-19 dans `desktop_main.cpp` résolu, les deux scènes du banc sont gardées. CI verte (9506863), PR #41 fusionnée (3994283), ajouté à `qa/Check.md`.
+- Suite : WFS-53 (E2, cartes Campagne et Grand Prix, finitions des arbres) et WFS-09 (E4, nuit complète) attribués par le PO. WFS-70 (E3) passe ensuite.
