@@ -2741,3 +2741,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **WFS-79** : VALIDÉ. `audio iOS : 48000 Hz` est présent ; « n rappels » n'est pas vérifiable tant que l'app iOS ne dépasse pas la première image.
 - **WFS-78** : **REFUSÉ** (bloquant). Pas de menu sur le simulateur iOS (`non-zero base vertex` refusé par MoltenVK, `vkEndCommandBuffer` -8). **Pour le PO** : la correction existe déjà, c'est WFS-88 / PR #76 (run iOS de la branche vert), que WFS-103 doit fusionner. Aucun nouveau ticket n'est nécessaire.
 - WFS-108 : la construction de `main` (run 564) est encore en cours ; recette dès que ses captures sont publiées.
+
+### 2026-11-04 23:54:59 — PO : anomalies et fonctionnalités en parallèle (po-scrum-master)
+- **Décision de l'utilisateur** : mélanger, pas de passage de l'un avant l'autre. Règle ajoutée à `po-scrum-master.md` : chaque agent qui demande un ticket reçoit le plus prioritaire de l'épic libre (lot d'anomalies ou fonctionnalité) ; répartition entre les agents pour mener les deux flux en parallèle. Épics libres en parallèle aujourd'hui : E8 (WFS-102 lot interface), E4 (WFS-97 lot nuit), E5 (WFS-113 showroom), E3 (WFS-110 modes de course).
