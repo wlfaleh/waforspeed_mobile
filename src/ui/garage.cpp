@@ -60,6 +60,7 @@ const Fiche FICHES[] = {
     {"gt86", "Coupé", "Petit coupé propulsion : léger, joueur et facile à faire glisser.", 0xFF1F4B, "rouge"},
     {"elantra", "Berline sport", "Berline coréenne affûtée sur circuit : vive et précise.", 0x00E5FF, "bleu"},
     {"v60", "Break sport", "Break suédois de 350 ch : rapide, sûr et stable.", 0x00E5FF, "bleu"},
+    {"mustang", "Muscle car", "V8 de 760 ch : la plus puissante, mais lourde à placer.", 0xFF6A00, "bleu"},
     {"rrsport", "Grand SUV", "SUV de luxe massif : imposant dans les chocs, lourd en virage.", 0xB6FF00, "noir"},
     {"gallardo", "Supercar cabriolet", "V10 à ciel ouvert : 4 roues motrices et plus de 320 km/h.", 0xB6FF00, "jaune"},
     {"sf90", "Hypercar hybride", "Hybride de 1030 ch : la plus rapide du garage, à manier avec soin.", 0xFF1F4B, "rouge"},
@@ -310,7 +311,7 @@ public:
             float px = x;
             for (int i = 0; i < CAR_COUNT; i++) {   // .car-dots : 30 × 8, active 54 px cyan
                 const bool on = i == index_;
-                const float w = (on ? 54 : 30) * k;
+                const float w = (CAR_COUNT > 10 ? (on ? 34 : 16) : (on ? 54 : 30)) * k;   // WFS-13 : 20 voitures sur une ligne
                 if (on) biseau(r, px - 2 * k, y - 2 * k, w + 4 * k, 12 * k, 4 * k, hex(ACCENT2, 0.25f * op));
                 biseau(r, px, y, w, 8 * k, 3 * k, on ? hex(ACCENT2, op) : hex(SURFACE2, op));
                 g_z.points[i] = {px, y - 10 * k, w, 28 * k};

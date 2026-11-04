@@ -22,6 +22,7 @@
 #include "../render/bench_squelette.h"
 #include "../world/pietons.h"
 #include "../render/bench_spots.h"
+#include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -31,6 +32,9 @@
 #include "../ui/ecrans/reglages.h"
 #include "../ui/ecrans/terrain.h"
 #include "../ui/garage.h"
+#include "../ui/text.h"
+#include "../game/cars.h"
+#include <cstring>
 
 
 namespace wfs {
@@ -65,12 +69,26 @@ int main(int argc, char** argv) {
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
     //   partie1 : chargement, vitrines, course, ombres, trafic, écran vide, scène dédiée, plage, effets (WFS-65)
-    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, projecteurs, personnages (WFS-63), encoche
+    //   partie2 : son, course (décompte / fin), HUD, menus, pause, duel, roues (WFS-60), projecteurs, personnages (WFS-63), encoche
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
+    if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
+        ui::chargerPolice(r);
+        for (int i = TRAFIC_MODELES; i < CAR_COUNT; i++) {
+            const char* id = CARS[i].id;
+            if (!g.init(r, id, "ville")) { WFS_ERR("chargement %s impossible", id); continue; }
+            g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png");
+            const bool garage = !std::strcmp(id, "p208") || !std::strcmp(id, "sf90"), course = !std::strcmp(id, "sf90");
+            if (garage) { g.allerA(Ecran::Garage); for (int k = 0; k < 40; k++) { g.update(1.0 / 60); if (k % 10 == 0) g.render(950 + k / 60.0); } g.render(951); g.render(951.01); r.capturePng(out + "/garage-" + id + ".png"); }
+            if (course) { g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true); for (int k = 0; k < 240; k++) { g.update(1.0 / 60); if (k % 8 == 0) g.render(960 + k / 60.0); } g.render(964); g.render(964.02); r.capturePng(out + "/course-" + std::string(id) + ".png"); g.setAutopilot(false); }
+            WFS_LOG("capture vitrine-%s-0%s%s", id, garage ? ", garage" : "", course ? ", course" : "");
+            g.shutdown();
+        }
+        return finir();
+    }
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
@@ -139,6 +157,7 @@ int main(int argc, char** argv) {
         ecrans::benchPause(g, r, out);         // WFS-39 : bouton Menu, pause, reprise, recommencer, quitter
         ecrans::benchGarage(g, r, out);        // WFS-11 : garage (plateau, fiche, peintures, voiture suivante, « Choisir »)
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
+        benchRoues(r, out);           // WFS-60 : roues animées (roues-arret-1/2, roues-roule, roues-virage)
         ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
         benchChangementCarte(g, r, out);       // WFS-74 : écran de chargement au changement de carte, course figée hors course
