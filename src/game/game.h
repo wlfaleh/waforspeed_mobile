@@ -1,6 +1,7 @@
 // WaForSpeed — la partie : piste, voiture du joueur, route générée par morceaux, caméra, commandes tactiles.
 #pragma once
 #include <map>
+#include <string>
 #include <vector>
 #include "player.h"
 #include "track.h"
@@ -64,6 +65,7 @@ private:
     // écran affiché ; par défaut Course tant que le menu (WFS-37) n'existe pas
     Ecran ecran_ = Ecran::Course, ecranDemande_ = Ecran::Course;
     bool demandeEcran_ = false;
+    std::string voitureDemandee_; vec3 peintureDemandee_{};   // WFS-11 : choix du garage (GameView::choisirVoiture)
     void appliquerEcran();
     void lacherCommandes();
     // systèmes enfichables (WFS-30, voir src/core/system.h)
