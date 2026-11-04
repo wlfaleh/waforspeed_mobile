@@ -1940,3 +1940,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroches annoncées** : `src/core/ecran.h` (2 lignes : `Ecran::Salon`) ; `src/ui/ecrans/menu.cpp` (5 lignes : « Duel en ligne » actif, banc `menu-bientot`) ; `src/platform/android_main.cpp` (2 lignes) ; `AndroidManifest.xml` (4 permissions) ; `CMakeLists.txt` (1 ligne : `reseau_udp.cpp` dans `test_duel`) ; `src/platform/desktop_main.cpp` (3 lignes) ; `.github/workflows/build.yml` (1 ligne : copies `-2400`). `game.cpp` n'a pas été modifié.
 - **Vérification locale** : `test_duel` étendu OK. Deux `TransportUdp` sur 127.0.0.1, horloges à 777 777 ms d'écart : salon vu puis plein, départ commun avec la même graine, `trafficClock` à 0 ms près, messages hostiles ignorés, `bye` immédiat, retrait à 3 s. Compilation sans erreur, sauf le JNI Android (non compilable ici). Fusion après CI verte et captures regardées.
 
+
+### 2026-11-04 12:56:57 — PO : 2 tickets urgents issus du test réel de l'utilisateur (po-scrum-master)
+- **WFS-84** (E4, P1) nuit : feux des voitures artificiels → petits feux nets + lueur douce (le double halo du trafic reste dans WFS-81, en cours). **WFS-85** (E3, P1) caméra de poursuite plus haute (vue « loin » du jeu web par défaut ; l'ancienne vue basse reste en option). Règles : `regles-de-gestion/WFS-84.md`, `WFS-85.md`. À attribuer en premier, en dehors de tout autre ticket.
