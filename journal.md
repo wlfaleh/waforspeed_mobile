@@ -1696,3 +1696,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-04 07:15:46 — CI de main après WFS-13 : verte ; APK 128,8 Mo (agent 3, session 011cpqZd)
 - Run 472 (`ade931a`, fusion de WFS-13) : vert. Release `apercu` : 145 fichiers, **APK 31,4 → 128,8 Mo** (RG-16 : sous le seuil de 150 Mo, pas d'alerte ; versions `-lod` à prévoir si d'autres voitures arrivent).
 - Run 464 (`5dcda32`, fusion de WFS-11) : rouge à la seule étape de publication (`HTTP 403: Resource not accessible by integration` de l'API des Releases) ; compilation, tests, 4 bancs et APK verts ; runs suivants publiés sans erreur : incident passager de l'API GitHub, rien à corriger dans le code.
+
+### 2026-11-04 07:16:01 — WFS-50 : simulateur MVP OK sur main ; reprise des 4 tickets en parallèle (Claude, session trafic)
+- Passage sur `main` (après PR #47) : `RÉSULTAT TECHNIQUE : OK`, 10 étapes ; GO après 5 s, deux fins de course, Rejouer et Menu. Release `simulateur-MVP` à recetter (`qa/rapports/simulateur-MVP.md`).
+- WFS-53, WFS-09, WFS-70 et WFS-24 : agents interrompus par la limite d'usage (00:47 UTC), relancés à partir de leurs worktrees (travail non commité conservé).
