@@ -4,26 +4,35 @@
 //   - mode immersif collant : barres d'état et de navigation masquées, qui reviennent un instant au balayage du bord,
 //     réappliqué au démarrage, à la reprise et à chaque retour du focus (onWindowFocusChanged) ;
 //   - écran toujours allumé pendant le jeu ;
-//   - image sous l'encoche (aussi dans le thème values-v28).
+//   - image sous l'encoche (aussi dans le thème values-v28) ;
+//   - manettes (WFS-22) : une manette connue qui se déconnecte est signalée au jeu (pause automatique en course).
 package com.waforspeed.game;
 
 import android.app.NativeActivity;
+import android.content.Context;
+import android.hardware.input.InputManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.DisplayCutout;
+import android.view.InputDevice;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import java.util.HashSet;
 
-public class JeuActivity extends NativeActivity {
+public class JeuActivity extends NativeActivity implements InputManager.InputDeviceListener {
 
     // la bibliothèque du jeu (déjà chargée par NativeActivity) doit l'être aussi par Java pour la fonction JNI ci-dessous
     static { System.loadLibrary("waforspeed"); }
 
     // marges de sécurité (WFS-51) : encoche / coins, en pixels de la fenêtre ; lues par la boucle de jeu (android_main)
     private static native void nativeMarges(int gauche, int haut, int droite, int bas);
+    // manettes (WFS-22) : une manette connue est partie (le jeu se met en pause s'il était piloté à la manette)
+    private static native void nativeManetteRetiree();
+    private final HashSet<Integer> manettes = new HashSet<>();
+    private InputManager entrees;
 
     @Override
     protected void onCreate(Bundle etat) {
@@ -55,7 +64,35 @@ public class JeuActivity extends NativeActivity {
     protected void onResume() {
         super.onResume();
         pleinEcran();
+        entrees = (InputManager) getSystemService(Context.INPUT_SERVICE);
+        if (entrees != null) {
+            entrees.registerInputDeviceListener(this, null);
+            manettes.clear();
+            for (int id : entrees.getInputDeviceIds()) onInputDeviceAdded(id);
+        }
     }
+
+    @Override
+    protected void onPause() {
+        if (entrees != null) entrees.unregisterInputDeviceListener(this);
+        super.onPause();
+    }
+
+    // ---------- manettes (WFS-22) : connexion / déconnexion à chaud ----------
+    private static boolean estManette(InputDevice d) {
+        if (d == null || d.isVirtual()) return false;
+        final int s = d.getSources();
+        return (s & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD || (s & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK;
+    }
+
+    @Override
+    public void onInputDeviceAdded(int id) { if (estManette(InputDevice.getDevice(id))) manettes.add(id); }
+
+    @Override
+    public void onInputDeviceRemoved(int id) { if (manettes.remove(id)) nativeManetteRetiree(); }
+
+    @Override
+    public void onInputDeviceChanged(int id) { onInputDeviceAdded(id); }
 
     @Override
     public void onWindowFocusChanged(boolean focus) {

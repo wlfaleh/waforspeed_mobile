@@ -1,0 +1,28 @@
+WaForSpeed — crédits (inclus dans l'application)
+
+Voitures (modèles 3D, Sketchfab) :
+  Volkswagen Golf 8 GTI : « Volkswagen Golf 8. GTI (A8) » par GT Cars: Hyperspeed (Sketchfab), CC BY 4.0
+  BMW M4 Competition : « 2021 BMW M4 Competition » par Ricy (Sketchfab), CC BY 4.0
+  Porsche 911 Carrera 4S : « (FREE) Porsche 911 Carrera 4S » par Karol Miklas (Sketchfab), CC BY-SA 4.0
+  Lamborghini Gallardo LP560-4 Spyder : « 2009 Lamborghini Gallardo LP560-4 Spyder » par Ddiaz Design (Sketchfab), CC BY 4.0
+  Peugeot 208 : « 2021 Peugeot 208 » par tonielpro520 (Sketchfab), CC BY 4.0
+  Abarth 500 : « Fiat Abarth 500 » par Luquita (Sketchfab), CC BY 4.0
+  Volkswagen T-Cross : « 2021 Volkswagen T-Cross 280 TSI » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0
+  Jeep Compass : « JEEP COMPASS 2021 » par fazt.3ds (Sketchfab), CC BY 4.0
+  Audi S3 berline : « 2014 Audi S3 Limousine » par tonielpro520 (Sketchfab), CC BY 4.0
+  BMW X5 : « 2024 BMW X5 xDrive40i » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0
+  Alfa Romeo Giulia Quadrifoglio : « Alfa Romeo Giulia Quadrifoglio » par ijiklvn (Sketchfab), CC BY 4.0
+  Mercedes-AMG A 45 : « Mercedes-Benz A45 AMG 2018 » par Lexyc16 (Sketchfab), CC BY-NC 4.0
+  Tesla Model 3 : « Tesla model 3 (free model) » par retro_player (Sketchfab), CC BY 4.0
+  Opel Corsa : « Opel Corsa 2020 » par Nieve5677 (Sketchfab), CC BY 4.0
+  Toyota GT86 : « Toyota GT86 3D Model (Free) » par Mpgs.studio3DModels (Sketchfab), CC BY 4.0
+  Hyundai Elantra N : « 2024 Hyundai Elantra N » par Ddiaz Design (Sketchfab), CC BY-NC 4.0
+  Volvo V60 Polestar : « Volvo V60 Polestar (2013) » par Myedsu (Sketchfab), CC BY 4.0
+  Land Rover Range Rover Sport : « Land Rover Range Rover Sport - 2023 » par Unn Interativa (Sketchfab), CC BY 4.0
+  Ford Mustang Shelby GT500 : « 2020 Ford Mustang Shelby GT500 » par Ddiaz Design (Sketchfab), CC BY-NC-SA 4.0
+  Ferrari SF90 XX Stradale : « Ferrari SF90 XX | www.vecarz.com » par vecarz (Sketchfab), CC BY 4.0
+
+Personnages : « Universal Base Characters » par Quaternius, CC0 1.0
+Sons des moteurs : nhaudio (CC BY), Ivan « qubodup » Gabovitch (CC BY-SA 3.0), mhad (CC0), Marianne Gagnon / SuperTuxKart (CC BY-SA 3.0)
+Police Rajdhani : Indian Type Foundry, SIL Open Font License 1.1
+Licences complètes : fichiers de ce dossier (licences/). Jeu gratuit (licences non commerciales).

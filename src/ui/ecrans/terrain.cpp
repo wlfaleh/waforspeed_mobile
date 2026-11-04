@@ -13,6 +13,7 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "reglages.h"
+#include "../../platform/manette.h"   // WFS-22
 
 namespace wfs {
 namespace ecrans {
@@ -271,6 +272,7 @@ public:
         const float rw = ui::width(tp, rt, 0.12f) + 56 * k + 26 * k, bw = ui::width(tp, bt, 0.12f) + 52 * k;
         const float rx = zr - rw, bx = rx - 10 * k - bw;
         g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
+        for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
         biseau(r, bx, by, bw, bh, 14 * k, hex(SURFACE2));   // .btn--ghost
         ui::text(r, bx + bw / 2, by + (bh - tp) / 2, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
         biseau(r, rx, by, rw, bh, 14 * k, hex(ACCENT));     // .btn--go avec la flèche
