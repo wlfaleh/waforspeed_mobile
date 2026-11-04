@@ -2026,3 +2026,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Autres pistes vérifiées, hors de cause** : MSAA identique ; voiture du joueur toujours en modèle complet (la silhouette ne concerne que le trafic) ; voiture du joueur jamais masquée par WFS-82 ; matériau et vernis identiques.
 - **Correctif** : `echelleRendu` avec un plancher de 0,6 en Moyenne et Haute, et une Basse fixe à 0,5. `test_qualite` est étendu. Au banc : échelle réelle par niveau au journal, et capture `voiture-course-haute` à comparer à `garage-golf`.
 - **Vérification** : tests et compilation OK. **Reste à confirmer sur le téléphone de l'utilisateur.**
+
+### 2026-11-04 14:15:50 — CI de main après WFS-84 : compilation, APK et bancs verts ; publication en échec (pas le code) (Claude, agent 5)
+- Run 41842506874 (`afd0816`, fusion de WFS-84) : android et les 7 bancs (nuit comprise) **verts** ; seul le job **publication** échoue : `release not found` puis `error checking for existing release: HTTP 403` sur la Release `apercu`. Même échec au run précédent (`ae7daef`, autre ticket) : problème d'accès à l'API GitHub ou de remplacement de la Release, pas une erreur de compilation ni de capture. La Release `apercu` est absente pour le moment (404).
+- Run suivant de `main` (41843628141) en cours : je regarde s'il republie `apercu`. Sinon, le PO ou l'utilisateur devront vérifier les droits du jeton de la CI.
