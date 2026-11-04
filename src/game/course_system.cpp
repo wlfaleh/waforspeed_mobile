@@ -9,6 +9,7 @@
 #include "../render/renderer.h"
 #include "../ui/text.h"
 #include "game.h"
+#include "sauvegarde.h"   // WFS-24 : record
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
 
@@ -40,7 +41,7 @@ public:
             restartReq_ = false;
             pl.reset(*pl.car);
             trafficRestart(pl.position);
-            course_.reset();
+            course_.reset(); nouveauRecord_ = false;
             WFS_LOG("course : nouvelle course (même graine de trafic)");
             return;
         }
@@ -50,6 +51,7 @@ public:
         if (course_.level != cp)
             WFS_LOG("course : checkpoint %d à %.1f s de course, +%.1f s, reste %.2f s, score %lld", course_.level, course_.raceTime,
                     Course::checkpointBonus(course_.level), course_.timeLeft, course_.score(pl));
+        if (before != RaceState::Over && course_.state == RaceState::Over) finCourse(pl);   // WFS-24 : record (endRace)
         if (before != RaceState::Over && course_.state == RaceState::Over)
             WFS_LOG("course : temps écoulé — score %lld, %.2f km, %d km/h max, %d quasi-contacts, %d checkpoints", course_.score(pl),
                     pl.dist * 0.006 / 1000, course_.maxKmh, course_.nearCount, course_.level);
@@ -102,6 +104,17 @@ private:
             r.uiRect(x + dx, y + h * i / N, w - biais, h / N + 0.5f, c);
         }
     }
+    // endRace du jeu web (WFS-24, RG-03 / RG-09) : record écrit seulement s'il est battu (s > best), puis enregistrement
+    // (thread de travail). Sauvegarde inactive (banc d'essai sans WFS_BANC=sauvegarde) : rien, captures inchangées.
+    void finCourse(const Player&) {
+        nouveauRecord_ = false;
+        Sauvegarde& s = sauvegarde();
+        if (!s.actif() || course_.duelFinish > 0) return;   // duel : pas de record solo
+        const long long sc = score_;   // score figé affiché sur l'écran de fin (dernière image de course)
+        nouveauRecord_ = s.battreRecord(sc);
+        WFS_LOG("course : score %lld, record %lld%s", sc, s.best, nouveauRecord_ ? " (NOUVEAU RECORD, enregistré)" : "");
+        s.enregistrer();
+    }
     void drawOver(Renderer& r, float W, float H, float u) {
         r.uiRect(0, 0, W, H, FOND);
         const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, py = 10 * u, ph = 80 * u;
@@ -113,6 +126,7 @@ private:
         // .score-big : orange --accent avec halo (--glow-accent)
         halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u, true);
         ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false, true);
+        if (sauvegarde().actif()) drawRecord(r, cx, py, u);   // WFS-24
         char kmh[32]; std::snprintf(kmh, sizeof kmh, "%d km/h", course_.maxKmh);
         const std::string vals[4] = {ui::decimal(km_, 2) + " km", kmh, ui::nombre(course_.nearCount), ui::nombre(course_.level)};
         const char* labs[4] = {"Distance", "Vitesse max", "Quasi-contacts", "Checkpoints"};
@@ -132,6 +146,21 @@ private:
         biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
         ui::text(r, menu_.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
     }
+    // WFS-24 : badge « NOUVEAU RECORD » (.badge #newBest du jeu web, sous le score ; accent orange, texte sombre, biais
+    // skewX(-10deg)) et ligne « RECORD » avec le meilleur score (.record du menu web), entre les stats et les boutons
+    void drawRecord(Renderer& r, float cx, float py, float u) {
+        if (nouveauRecord_) {
+            const std::string t = ui::majuscules("Nouveau record");
+            const float px = 3.6f * u, bw = ui::width(px, t, 0.12f) + 4.f * u, bh = 5.2f * u, by = py + 31.5f * u;
+            biseau(r, cx - bw / 2, by, bw, bh, bh * 0.176f, ui::ORANGE);   // tan(10°) × hauteur
+            ui::text(r, cx, by + 0.9f * u, px, t, {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false, true);
+        }
+        const std::string lab = ui::majuscules("Record"), val = ui::nombre(sauvegarde().best);
+        const float lw = ui::width(3.4f * u, lab, 0.16f), vw = ui::width(5.5f * u, val), gap = 2.5f * u, x0 = cx - (lw + gap + vw) / 2;
+        ui::text(r, x0, py + 52.6f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
+        ui::text(r, x0 + lw + gap, py + 51.4f * u, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
+    }
+    bool nouveauRecord_ = false;
     bool restartReq_ = false;
     long long score_ = 0; double km_ = 0;
     struct Bouton {
@@ -184,6 +213,45 @@ void benchCourseScene(Game& g, Renderer& r, const std::string& out) {
     WFS_LOG("capture course-fin : état %s, %d checkpoint(s), %d km/h max (score affiché = score à la fin, ci-dessus)",
             k->state == RaceState::Over ? "fin" : "en course", k->level, k->maxKmh);
     g.shutdown();
+}
+
+// WFS-24 : banc de la sauvegarde, lancé deux fois de suite sur le même chemin (propre au banc).
+// 1er lancement (fichier absent) : voiture m4, peinture rouge, course solo jusqu'à la fin → record battu, capture fin-record.
+// 2e lancement (fichier présent) : relecture au journal, vitrine de la voiture relue (capture sauvegarde-relue), puis le
+// fichier est effacé (remise à zéro : un lancement suivant repart du premier).
+void benchSauvegardeScene(Game& g, Renderer& r, const std::string& out, const std::string& chemin) {
+    Sauvegarde& s = sauvegarde();
+    std::FILE* f = std::fopen(chemin.c_str(), "rb");
+    const bool second = f != nullptr;
+    if (f) std::fclose(f);
+    s.charger(chemin);
+    if (second) {
+        WFS_LOG("SAUVEGARDE relue : car=%s paint=%s best=%lld", s.car.c_str(), s.peinture(s.car).c_str(), s.best);
+        if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); return; }
+        g.camMode = 2; g.orbit = 0.7f;
+        g.render(0); g.render(0); r.capturePng(out + "/sauvegarde-relue.png");
+        WFS_LOG("capture sauvegarde-relue : vitrine de la voiture relue (%s, peinture %s)", s.car.c_str(), s.peinture(s.car).c_str());
+        g.shutdown();
+        std::remove(chemin.c_str());
+        WFS_LOG("sauvegarde du banc effacée (%s) : le prochain lancement repart du premier", chemin.c_str());
+        return;
+    }
+    s.car = "m4"; s.paint["m4"] = "rouge";   // choix du « joueur » (≠ défauts golf / peinture d'origine)
+    courseBenchRules(true);
+    if (!g.init(r, s.car.c_str(), s.map.c_str())) { WFS_ERR("sauvegarde : chargement impossible"); courseBenchRules(false); return; }
+    const Course* k = activeCourse();
+    g.setAutopilot(true); g.camMode = 0;
+    double t = 600;
+    for (int i = 0; i < 60 * 14; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t); }   // décompte + 10 s de course
+    courseBenchSetTime(0.05);
+    for (int i = 0; i < 80; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); }
+    g.render(t); g.render(t + 0.01);
+    r.capturePng(out + "/fin-record.png");
+    WFS_LOG("capture fin-record : état %s, record %lld", k && k->state == RaceState::Over ? "fin" : "en course", s.best);
+    s.enregistrer(); s.attendre();
+    WFS_LOG("SAUVEGARDE écrite : car=%s paint=%s best=%lld (%s)", s.car.c_str(), s.peinture(s.car).c_str(), s.best, chemin.c_str());
+    g.shutdown();
+    courseBenchRules(false);
 }
 
 } // namespace wfs

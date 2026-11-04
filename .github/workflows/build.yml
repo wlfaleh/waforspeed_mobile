@@ -40,7 +40,7 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
@@ -51,6 +51,7 @@ jobs:
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
               mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
               WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
+              mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/   # WFS-24 : deux lancements
               # WFS-22 : manette (course pilotée par des entrées injectées, focus des menus, pause) ; journal du banc gardé
               mkdir -p manette && WFS_BANC=manette ./build/wfs_bench manette assets/ 2>&1 | grep -i "manette" | tee captures/manette-journal.txt && cp manette/manette-*.png captures/ ;;
             ecrans-2400)

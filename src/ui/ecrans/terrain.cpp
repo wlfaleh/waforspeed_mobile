@@ -9,6 +9,7 @@
 #include "../../core/system.h"
 #include "../../game/course_system.h"
 #include "../../game/game.h"
+#include "../../game/sauvegarde.h"   // WFS-24 : moment gardé
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
@@ -172,6 +173,7 @@ public:
         if (nouveau != Ecran::Terrain) { g_carte = g_prec = g_suiv = g_jour = g_nuit = g_retour = g_rouler = {}; return; }
         // carte en cours présélectionnée (pickMap garde MAP)
         for (int i = 0; i < 4; i++) if (g.map && std::string(g.map->id) == CARTES[i].id) g_index = i;
+        if (sauvegarde().actif()) g_nuitChoisie = sauvegarde().tod != "jour";   // WFS-24 : moment de la dernière course
     }
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {

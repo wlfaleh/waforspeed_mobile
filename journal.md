@@ -1774,3 +1774,51 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Critères** : vitrines Giulia / Elantra en couleur unie qui suit la peinture ; « gt86.wfm : 4 roues séparées », plus aucune « roues non trouvées » ; planche des 20 voitures propres ; `.wfm` < 9 Mo.
 - **Plan court** : peinture unie façon `repaintMat` (texture de base retirée sur les matériaux peinture), expressions de `MODEL_SPECS` ; roues GT86 à la conversion (`WHEEL_RX`, `splitWheels` du web, noms `wfs_wheel` du modèle `-lod`) ; reconversion ; planche dans le job `vitrines`.
 - Rappels : synchroniser avec `main` avant chaque push ; fusion par confiance > 50 % (ligne `qa/Check.md`, ✅, Journal), puis suivre la CI de `main`.
+
+### 2026-11-04 07:47:23 — WFS-15 qualité automatique et bloom, fusionné par confiance, PR #56 (Claude, agent 4)
+- **Fait** :
+  - `src/render/qualite_auto.*` porte `watchPerf` et `setQuality` du jeu web : résolution dynamique de 0,6 à 1 toutes les 2 s, rétrogradation unique sous 30 images/s, sauf choix du joueur. Testé par `test_qualite`.
+  - `qualite_systeme.cpp` mesure les vraies images/s en course et affiche le bandeau « Graphismes rapides — pour plus de fluidité ». Il est inactif au banc et en GPU logiciel.
+  - Bloom dans `post.frag` avec les valeurs `ENV.bloom` du jeu web, coupé en Basse.
+  - Banc `qualite-*` de nuit, avec appels de dessin et ms par niveau.
+- **Accroches annoncées** :
+  - `renderer.h` et `renderer.cpp` : `bloomForce`, `appelsDessin()`, paramètres du bloom, environ 8 lignes ;
+  - `src/ui/ecrans/reglages.*` (E8) : 7 lignes, `qualiteChoisie`, `appliquerQualiteNiveau`, bloom par niveau ; un conflit avec WFS-76 (musique) a été résolu en gardant les deux ;
+  - `desktop_main.cpp`, `CMakeLists.txt` et `build.yml`.
+- **Vérification** : `test_qualite` et compilation complète OK. L'étape de compilation de la CI de la branche (shaders compris) était verte avant la fusion.
+- **Non fait, reste pour un autre ticket** :
+  - petits décors coupés au-delà de 200 m (zone E2) ;
+  - voitures hors champ non dessinées ;
+  - `qualiteChoisie` vaut vrai dès qu'un fichier de réglages existe, même si seule la caméra a été changée.
+
+### 2026-11-04 07:49:55 — WFS-77 : 20 voitures corrigées, PR #57 en revue (Claude, agent 5)
+- **Causes** : Giulia : carte de normales de paillettes (256 px) étirée sur la peinture = camouflage ; Elantra : peinture presque miroir (rugosité 0,07) = taches claires ; GT86 : roues sans nom, mêlées aux matériaux « gum / silver / chrome » de la carrosserie ; **nouveau** : Giulia tournée de 1,84° dans le modèle d'origine (essieux de travers, révélé par `test_roues` étendu) ; A45 : feux arrière blancs.
+- **Fait** (zone E5) : `tools/convert_car.mjs` (peinture unie 0,45 / 0,32 sans texture comme `repaintMat` ; `WFS_ROUES=forme` : roues reconnues à leur forme, GT86 = 12 pièces ; feu arrière blanc → rouge) ; `tools/convertir_voitures.sh` (colonne « roues » avant les feux, car le motif de la Corsa contient des « | » ; Giulia à 178,16°) ; les 16 voitures de WFS-13 reconverties (toutes < 9 Mo) ; planche `vitrines-planche` (`src/ui/planche_voitures.*`).
+- **Accroches annoncées** : `src/platform/desktop_main.cpp` (2 lignes, groupe `vitrines`) ; `tests/test_roues.cpp` (2 lignes : les 20 voitures au lieu de 4).
+- **Vérification locale** : `test_roues` OK pour les 20 voitures (GT86 : 4 roues de 0,31 m) ; compilation sans avertissement. Golf, M4, 911 et Gallardo non reconverties (absentes du script). Rendu changé sur 16 voitures : fusion après CI verte et captures regardées.
+- **CI de `main` après WFS-74** : verte ; `terrain-chargement` affiche bien le logo et l'étape (correction confirmée).
+
+
+### 2026-11-04 07:50:06 — Captures de main regardées ; correctifs WFS-65 / WFS-67 fusionnés par confiance, PR #58 (Claude, agent 4)
+- **CI de `main` 1959ce3 (WFS-67)** : verte.
+- **Journal du banc** :
+  - nitro actif sur `nitro-lignes` : le correctif de la PR #52 marche ;
+  - clignotant et feux stop trouvés ;
+  - 5 couples modèle / couleur différents, dont 3 en silhouette ;
+  - accident à 0 km/h.
+- **Défauts vus sur les images** : la fumée des pneus formait des bandes à bord horizontal net (carrés de 2,4 m coupés par la route) ; la voiture percutée était hors du cadre de `trafic-accident` ; les feux étaient petits (voiture à 40 m).
+- **Corrigé (PR #58)** : centre de la fumée remonté au-dessus de la route ; recherche entre 8 et 25 m ; `trafic-accident` pris 0,5 s après le choc. Ajouté à `qa/Check.md`.
+- **CI de `main` de WFS-15** : en cours, suivie.
+
+### 2026-11-04 07:54:39 — WFS-24 fusionné par confiance (PR #54) : sauvegarde et progression (Claude, session trafic, agent WFS-24)
+- **Livré** : `src/game/sauvegarde.h/.cpp` (zone E3) : fichier `cle=valeur`, `version=1`, clés et défauts du jeu web (`waforspeed-best`, `car`, `paint-<id>`, `map`, `tod`, `quality` si choisie, `cam`, `muted`, `music`, `nick`, `km`, `steer`), valeurs validées (inconnue → défaut, fichier corrompu → défauts), écriture atomique (`.tmp` puis renommage) sur un thread de travail. `CourseSystem` : record écrit seulement s'il est battu, badge « NOUVEAU RECORD » et ligne « RECORD » sur l'écran de fin.
+- **Accroches annoncées (≤ 10 lignes chacune)** : `android_main.cpp` (chemin `internalDataPath/sauvegarde.txt`, `enregistrer()` sur `APP_CMD_PAUSE`, voiture / carte / moment au démarrage) ; `desktop_main.cpp` (banc `sauvegarde`) ; `game.cpp` (peinture gardée dans `setCar`, carte et moment enregistrés dans `changerCarte`) ; `menu.cpp` (record relu, 2 lignes) ; `garage.cpp` E5 (peintures relues, voiture et peinture enregistrées à « Choisir ») ; `reglages.cpp` E8 (caméra, qualité choisie, son, musique dans la sauvegarde commune ; l'ancien `reglages.txt` ne sert plus que si la sauvegarde est inactive) ; `terrain.cpp` E8 (moment relu) ; `build.yml` (test et double lancement du banc dans le job texte) ; `CMakeLists.txt` (`test_sauvegarde`).
+- **Écarts** : `cam` garde les vues natives (`poursuite` / `capot` / `cockpit`, « proche » du web accepté) ; `quality` en 3 niveaux (`low` / `medium` / `high`) ; la liste des 16 peintures est recopiée du garage (privée à `garage.cpp`). `steer` seulement stocké : le brancher au mode de direction revient à WFS-70, qui fusionnera en second (RG-10).
+- **Preuves** : CI verte (android, 5 bancs, publication) ; banc local partie1 identique à `main` au pixel près (27 captures) ; resynchronisé deux fois (WFS-15, WFS-67, WFS-71, WFS-74, WFS-76, correctifs WFS-65/67), compilation et 12 tests CPU passés avant fusion. Ajouté à `qa/Check.md`. CI de `main` suivie.
+
+### 2026-11-04 08:06:06 — Demande de ticket de la session trafic : aucun ticket attribuable (PO)
+- **Constat** : aucun ticket ⏳ Prêt. Occupées : E2 (WFS-53), E3 (WFS-70), E4 (WFS-09), E5 (WFS-77 en revue), E7 (WFS-22). En attente : WFS-18 (attend WFS-09), WFS-75 (attend WFS-70). Épics libres E0, E6, E8 sans besoin ouvert. `anno.md` sans anomalie 🆕, aucun rapport QA nouveau depuis WFS-63. WFS-64 reste suspendu (gel non reproduit).
+- **Décision** : rien d'attribué, aucun ticket artificiel créé. La session trafic tient déjà 4 tickets (WFS-53, WFS-09, WFS-70, WFS-22) : priorité à les finir. Fin de WFS-70 → WFS-75 (E8) passe ⏳ Prêt ; fin de WFS-09 → WFS-18 (E2, après WFS-53) passe ⏳ Prêt.
+
+### 2026-11-04 08:10:53 — CI de main après WFS-24 (Claude, session trafic, agent WFS-24)
+- Run 41795489550 (`be213ec`) : android, texte (`test_sauvegarde`, double banc `sauvegarde`), partie1, partie2, vitrines, vie, ecrans-2400 **verts**. Seule la **publication** a échoué : `HTTP 403: API rate limit exceeded` de GitHub pendant l'envoi des 168 captures (aucun lien avec le code). La prochaine construction de `main` republiera la Release d'aperçu.

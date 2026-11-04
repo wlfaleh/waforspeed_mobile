@@ -7,6 +7,7 @@
 #include "../../game/cars.h"
 #include "../../game/course_system.h"
 #include "../../game/game.h"
+#include "../../game/sauvegarde.h"   // WFS-24
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "chargement.h"
@@ -83,6 +84,7 @@ public:
         const bool fin = c && c->state == RaceState::Over;
         if (fin && !finVue_ && g.player && c->timeLeft < 1e6) g_best = std::max(g_best, c->score(*g.player));
         finVue_ = fin;
+        g_best = std::max(g_best, sauvegarde().best);   // WFS-24 : record gardé d'un lancement à l'autre
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
