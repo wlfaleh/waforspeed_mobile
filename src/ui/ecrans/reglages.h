@@ -22,6 +22,7 @@ struct Reglages {
     int camera = CAM_POURSUITE;
     int qualite = QUALITE_HAUTE;
     std::atomic<bool> son{true};   // lu par le thread audio (src/audio/audio_system.cpp)
+    std::atomic<bool> musique{true};   // WFS-76 : musique seule (l'ambiance reste)
 };
 Reglages& reglages();
 
