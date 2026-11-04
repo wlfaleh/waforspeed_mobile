@@ -1,5 +1,12 @@
 # QA WFS-27 : [MVP] HUD de course (vitesse, temps, score, checkpoint, nitro — texte, version réduite)
 
+## Constat après coup, recette de nuit (2026-11-04 18:34:47 UTC, qa-lead, accent qualité et design)
+
+**Anomalie bloquante transverse ANO-31** (vue sur toutes les captures de course de main, construction 547, `dade9be`) : commandes tactiles en
+disques plats sans icône ni libellé, couleurs contraires au skill (gaz vert, nitro cyan). Détail et correction proposée : `anno.md`, ANO-31.
+Ticket de correction prioritaire à créer par le PO. Le verdict d'origine de WFS-27 n'est pas rouvert (ticket terminé avant la liste `qa/Check.md`).
+
+
 **Verdict final : VALIDÉ** (banc d'essai PC), 2e passage (tour 2/2). ANO-11 et ANO-12 corrigées, aucune anomalie restante.
 
 > Remarque de procédure : la PR #16 a été fusionnée dans `main` (c68c460) **avant** ce verdict, par quelqu'un d'autre que le
