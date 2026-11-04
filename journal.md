@@ -2672,3 +2672,29 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Coordination** :
   - WFS-106 redécoupe le banc. Les nouvelles captures de WFS-93 partent avec `benchCartes`, quel que soit son job. En cas de conflit, garder les deux.
   - WFS-94 (Corniche, E2) attend la fin de WFS-93.
+
+### 2026-11-04 23:29:56 — Fin WFS-101 : étincelles, nitro, banc du trafic, écran de fin — PR #84 fusionnée par confiance (Copilot, session dc0cdd3f)
+- **Fait** (`src/render/effets_particules.*`, `effets_systeme.*`, `bench_effets.cpp` ; E3 : `src/game/traffic_system.cpp`, `course_system.cpp` ; `tests/test_effets.cpp`) :
+  - RG-01 (ANO-25) : étincelles de `emitSparks` (20 + impact × 80, 14 au frottement), point de contact de `contactAt` du jeu web (vitesse d'avant le choc), dessinées en un seul `drawQuads` additif ; taille = `sizeAttenuation` de three.js (côté = max(0,22 ; d × 3/360) / |proj(1,1)|) ; couleurs passées à l'écran par l'inverse exact d'ACES (`effets::versHdr`) ; aucune étincelle si « réduire les mouvements » ;
+  - RG-02 : traits de nitro α 0,35, vignette cyan sombre ;
+  - RG-03 (ANO-26) : `benchTraficVivant` place la voiture à 15 m dans la file voisine (`placeVoisine()`) ;
+  - RG-04 (ANO-36) : écran de fin avec record espacé (16 px / 12 px, panneau + 28 px), paire de boutons centrée ;
+  - RG-05 (ANO-20, `course_system.cpp` seulement) : `biseau()` en un seul quad.
+- **Cause du « feu blanc » (WFS-107, ANO-46)** : la fumée des pneus passe par l'ancien `hdr()` (`pow(v, 2,2) / (0,214 × EXPO)`), ≈ 4,6 fois trop claire ; gardée telle quelle dans WFS-101, corrigée par WFS-107.
+- **Vérification** : compilation sans avertissement ; 16 tests CPU + `verifier_licences.py` verts ; banc local regardé (`effets`, `trafic-vivant`, `course`).
+  - `choc-etincelles` **prise de côté** (vue vitrine perpendiculaire à la route, 8 images après le choc) : en poursuite, la Golf en tête-à-queue cachait le point de contact (0 pixel d'étincelle 2 images après le choc, mesuré avec et sans étincelles, secousse coupée) ; de côté : ≈ 2 200 pixels, gerbe orange et blanche entre les deux voitures, `46 étincelles émises au choc`.
+  - `accident-fumee` : 55 images au lieu de 63 pour garder le même instant ; capture identique à avant.
+  - `trafic-clignotant` 14,9 m, `trafic-freinage` 14,7 m (feux stop allumés), `trafic-accident` inchangée, `fin-record` espacée.
+- **Écarts** : nouvelle accroche `effetsCapDernierChoc()` (cap de la route au choc, pour cadrer la vue de côté) ; halo orange de `accident-fumee` = feux de détresse, déjà présent avant.
+- **Suite** : ligne ajoutée dans `qa/Check.md` ; ANO-25, ANO-26, ANO-36 notées « corrigées par WFS-101, recette QA à faire » dans `anno.md` (ANO-20 : reste WFS-102 pour les autres fichiers). WFS-109 passe ⏳ Prêt (consigne du PO). Je suis la CI de `main` (merge `a256432`). WFS-102 dépend aussi de WFS-101 : à débloquer par le PO quand ses autres dépendances seront finies.
+
+### 2026-11-04 23:29:57 — Début WFS-107 : supprimer le « feu blanc » au braquage (Copilot, session dc0cdd3f)
+- Réservé par le PO (23:13:25), démarré à la fusion de WFS-101 ; branche `feature/waforspeed-107` depuis `main` (`a256432`).
+- **Plan** (`regles-de-gestion/WFS-107.md`) :
+  1. RG-04 : fumée par `effets::versHdr` (inverse exact d'ACES) au lieu de `hdr()` : gris 0,25 à 0,40 à l'écran, opacité 0,45, mélange normal, aucun halo de bloom la nuit ;
+  2. RG-05 : bouffées rondes et douces (texture radiale), taille du `PointsMaterial` du jeu web (2,4 × tan(fov/2), note du PO) ;
+  3. RG-06 : aucune particule (fumée comprise) si « réduire les mouvements » ;
+  4. seuil : aucune fumée à 30 km/h ni sous 72 km/h au simple braquage ;
+  5. RG-07 : étincelles et nitro de WFS-101 inchangées ;
+  6. captures `braquage-gauche` / `braquage-droite` à 30, 120 et 250 km/h, jour et nuit (banc E4) ; test CPU du gris à l'écran.
+- **Zone** : `src/render/effets_*`, `bench_effets.cpp`, `tests/test_effets.cpp` ; accroche ≤ 10 lignes dans `desktop_main.cpp` (groupe du banc) annoncée ici si nécessaire.

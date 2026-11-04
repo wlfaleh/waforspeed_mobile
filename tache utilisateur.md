@@ -29,6 +29,7 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - j'ai tester le jeux ya un problème lorsque je clique sur les fleche ou j'essaye de tourner a gauche ou a droit ya une annimation bizzare et grave commme si ya du feux blanc dit au po et qa de voir le sujet
 ( PO : c'est créé — WFS-107 (E4, P1) : reproduire, nommer la cause (flash, vignette, étincelles, halo de roues…) et supprimer l'effet blanc au braquage ; captures « braquage-gauche » et « braquage-droite » pour le QA, qui les regarde à la prochaine recette de nuit. )
+( Copilot session dc0cdd3f : cause trouvée — reproduit au banc PC en braquant vers 120 km/h : ce n'est ni un flash ni la vignette, c'est la **fumée des pneus** (crissement au braquage) qui sort ≈ 4,6 fois trop claire (mauvaise conversion des couleurs vers l'éclairage HDR) : les bouffées grises deviennent des taches blanches lumineuses, avec un halo la nuit. Anomalie ANO-46 (bloquante) ; la correction est **WFS-107, que je fais maintenant** (fumée grise discrète comme le jeu web, bouffées rondes, aucune fumée à petite vitesse ni avec « réduire les mouvements », captures braquage-gauche / braquage-droite de jour et de nuit). Avant, WFS-101 (fusionné, PR #84) a rendu visibles les étincelles des chocs et les traits de la nitro sans toucher à cet effet. )
 
 
 - les button accélération frein turbo et flech sont trop petit  voir la possibilité de faire mieux
