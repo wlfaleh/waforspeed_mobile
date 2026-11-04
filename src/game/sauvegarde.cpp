@@ -33,7 +33,7 @@ static bool voitureExiste(const std::string& id) {
     return false;
 }
 static bool carteExiste(const std::string& id) { return id == mapById(id.c_str()).id; }   // mapById : MAPS[0] si inconnue
-static const char* CAMS[] = {"poursuite", "capot", "cockpit"};   // VUES de src/game/camera_vue.h (WFS-66)
+static const char* CAMS[] = {"poursuite", "capot", "cockpit", "proche"};   // VUES de src/game/camera_vue.h (WFS-66, WFS-85)
 static const char* QUALITES[] = {"low", "medium", "high"};         // quality du web (low / high) + niveau moyen (WFS-68)
 
 // cleanName du jeu web (js/net/duel.js) : caractères de contrôle retirés, espaces autour retirés, 14 caractères au plus
@@ -99,7 +99,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "map") { if (carteExiste(v)) map = v; }
         else if (k == "tod") { tod = v == "jour" ? "jour" : "nuit"; }
         else if (k == "quality") { for (const char* q : QUALITES) if (v == q) { quality = v; qualityChoisie = true; } }
-        else if (k == "cam") { for (const char* c : CAMS) if (v == c) cam = v; if (v == "proche") cam = "poursuite"; }   // « proche » du web
+        else if (k == "cam") { for (const char* c : CAMS) if (v == c) cam = v; if (v == "loin") cam = "poursuite"; }   // « loin » du web = poursuite (WFS-85)
         else if (k == "muted") { muted = v == "1"; }
         else if (k == "music") { music = v != "0"; }
         else if (k == "nick") { const std::string p = nettoyerPseudo(v); if (!p.empty()) nick = p; }
@@ -128,10 +128,10 @@ const PeintureDef* Sauvegarde::peintureChoisie(const std::string& carId) const {
 }
 
 int Sauvegarde::camIndex() const {
-    for (int i = 0; i < 3; i++) if (cam == CAMS[i]) return i;
+    for (int i = 0; i < 4; i++) if (cam == CAMS[i]) return i;
     return 0;
 }
-void Sauvegarde::setCamIndex(int i) { cam = CAMS[i >= 0 && i < 3 ? i : 0]; }
+void Sauvegarde::setCamIndex(int i) { cam = CAMS[i >= 0 && i < 4 ? i : 0]; }
 int Sauvegarde::qualiteIndex() const {
     for (int i = 0; i < 3; i++) if (quality == QUALITES[i]) return i;
     return 2;

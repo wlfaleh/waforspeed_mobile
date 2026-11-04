@@ -35,9 +35,12 @@ int main() {
     ok = ok && horsMode && enMode && tempsJeu > 179.9 && tempsJeu < 180.1;
     // WFS-66 : caméras du jeu web (CAM_MODES, cycleCamera, volant −braquage × 2,3, aiguille 2,2 − v / 300 × 4,4, fov)
     auto proche = [](double a, double b) { return std::fabs(a - b) < 1e-5; };
-    const bool cycle = vueApres(VueCamera::Poursuite) == VueCamera::Capot && vueApres(VueCamera::Capot) == VueCamera::Cockpit &&
-                       vueApres(VueCamera::Cockpit) == VueCamera::Poursuite;
-    const bool vues = proche(VUES[0].fov, 58) && proche(VUES[2].fov, 72) && VUES[2].cockpit && VUES[1].capot && !VUES[0].capot;
+    // WFS-85 : Poursuite (haute, 62°) → Proche (basse, 58°) → Capot → Cockpit
+    const bool cycle = vueApres(VueCamera::Poursuite) == VueCamera::Proche && vueApres(VueCamera::Proche) == VueCamera::Capot &&
+                       vueApres(VueCamera::Capot) == VueCamera::Cockpit && vueApres(VueCamera::Cockpit) == VueCamera::Poursuite;
+    const bool vues = proche(VUES[0].fov, 62) && proche(VUES[3].fov, 58) && proche(VUES[2].fov, 72) && VUES[2].cockpit && VUES[1].capot &&
+                      !VUES[0].capot && !VUES[3].capot && proche(POURSUITE_LOIN.dist, 8) && proche(POURSUITE_LOIN.h, 2.5) &&
+                      proche(POURSUITE_PROCHE.dist, 4.6) && proche(POURSUITE_PROCHE.h, 1.28);
     const bool aiguille = proche(aiguilleAngle(0), 2.2) && proche(aiguilleAngle(150), 0) && proche(aiguilleAngle(300), -2.2) &&
                           proche(aiguilleAngle(420), -2.2) && proche(aiguilleAngle(-150), 0);
     float vol = 0; for (int i = 0; i < 120; i++) vol = lisser(vol, volantCible(0.5), 1.f / 60, 14.f);   // 2 s de braquage à 0,5

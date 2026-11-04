@@ -39,9 +39,9 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
-struct Ligne { const char* libelle; int n; const char* choix[3]; };
+struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
 const Ligne LIGNES[6] = {
-    {"Caméra", 3, {VUES[0].nom, VUES[1].nom, VUES[2].nom}},   // vues de WFS-66 (CAM_MODES du web)
+    {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
     {"Son", 2, {"Activé", "Coupé", nullptr}},
     {"Musique", 2, {"Activée", "Coupée", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
@@ -50,7 +50,7 @@ const Ligne LIGNES[6] = {
 };
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, N_LIGNES = 6 };
 
-Zone g_bouton, g_fermer, g_choix[N_LIGNES][3];
+Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
 bool g_ouvert = false;
 
 // ---------------------------------------------------------------- sauvegarde simple (camera=, qualite=, son=)
@@ -112,6 +112,7 @@ void appliquerQualite(Renderer& r) {
     r.vk().renderScale = q == QUALITE_BASSE ? 0.5f : q == QUALITE_MOYENNE ? 0.75f : 1.f;
     r.forceNoShadows = q == QUALITE_BASSE;
     r.bloomForce = q == QUALITE_BASSE ? 0.f : 1.f;   // WFS-15 : bloom en Moyenne et Haute
+    r.qualiteBasse = q == QUALITE_BASSE;               // WFS-82 : petits objets coupés à 150 m
     r.resize();
     WFS_LOG("réglages : qualité %s (scène à %.0f %%, ombres %s)", LIGNES[L_QUALITE].choix[q], r.vk().renderScale * 100,
             r.forceNoShadows ? "coupées" : "actives");
@@ -199,7 +200,7 @@ private:
                  ui::GAUCHE, 0.22f, false);
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         float y = py + haut;
-        const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 2 * 6 * k) / 3);
+        const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
         for (int l = 0; l < N_LIGNES; l++) {
             r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
@@ -216,7 +217,7 @@ private:
                          ui::CENTRE, 0.08f, false);
                 bx += segW + 6 * k;
             }
-            for (int c = n; c < 3; c++) g_choix[l][c] = {};
+            for (int c = n; c < 4; c++) g_choix[l][c] = {};
             y += rowH + gap;
         }
         // .btn « Fermer » (orange, biais 14 px), à droite
