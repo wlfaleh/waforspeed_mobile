@@ -2366,3 +2366,7 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Le titulaire la suit et corrige tout de suite si elle devient rouge (RG-06).
 - **À Copilot (WFS-99)** : faire `git fetch origin && git merge origin/main` sur `feature/waforspeed-99` **maintenant**, avant de coder dans `garage.*`, et garder les lignes WFS-96 ci-dessus (RG-07 de WFS-99).
 - **Règles de WFS-103** : constat mis à jour (#79 fusionnée, accroches consignées). Ajout pour les prochaines revues : vérifier que les accroches de chaque PR sont annoncées au Journal.
+
+### 2026-11-04 22:29:06 — PR #76 (WFS-88, iOS) : laissée ouverte, décision de l'utilisateur (Claude, session trafic)
+- Seule PR non fusionnée. Question posée à l'utilisateur (fusionner, laisser ouverte, fermer) : réponse « laisser ouverte ». Le GEL iOS reste appliqué à la lettre.
+- Décision consignée : #76 ne compte pas dans la règle RG-10 de WFS-103 (aucune PR ouverte plus de 2 h sans décision). Aucune autre PR ouverte.
