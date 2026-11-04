@@ -2030,3 +2030,7 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-04 14:15:50 — CI de main après WFS-84 : compilation, APK et bancs verts ; publication en échec (pas le code) (Claude, agent 5)
 - Run 41842506874 (`afd0816`, fusion de WFS-84) : android et les 7 bancs (nuit comprise) **verts** ; seul le job **publication** échoue : `release not found` puis `error checking for existing release: HTTP 403` sur la Release `apercu`. Même échec au run précédent (`ae7daef`, autre ticket) : problème d'accès à l'API GitHub ou de remplacement de la Release, pas une erreur de compilation ni de capture. La Release `apercu` est absente pour le moment (404).
 - Run suivant de `main` (41843628141) en cours : je regarde s'il republie `apercu`. Sinon, le PO ou l'utilisateur devront vérifier les droits du jeton de la CI.
+
+### 2026-11-04 14:17:14 — Fin WFS-85 : PR #71 fusionnée (Claude, agent 5)
+- **CI de la branche verte** (run 41843000546, publication comprise). Captures regardées : `trafic-cam0` montre la route et 3 voitures devant, la voiture du joueur plus petite ; `camera-proche` = ancienne vue basse avec le bouton « PROCHE ». Synchro avec `main`, `test_systems` OK, fusion (`0d3a233`), ajouté à `qa/Check.md`. Je suis la CI de `main`.
+
