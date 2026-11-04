@@ -20,3 +20,11 @@ Donner de la vie au décor : cafés, restaurants et bars avec terrasses, portiqu
 
 ## Hors périmètre
 Piétons qui marchent (WFS-19), conducteurs (WFS-73), nouvelles cartes (WFS-53).
+
+## Zone et partage avec WFS-53 (PO, 2026-11-04, attribution à agent 3)
+WFS-53 (cartes Campagne et Grand Prix, même épic E2) est en cours en parallèle. Pour ne jamais modifier les mêmes fichiers :
+- RG-07 : code nouveau **uniquement dans de nouveaux fichiers** : `src/world/commerces.*` (RG-01, RG-02), `src/world/portique.*` (RG-03), `src/world/enseignes.*` (RG-04), assets sous `assets/world/vie/**`. `plage.cpp` (RG-06) est modifiable : WFS-53 n'y touche pas.
+- RG-08 : `ville.cpp`, `zones.*`, `vegetation.*` et tout fichier de carte de WFS-53 : **accroches de ≤ 10 lignes au total**, annoncées au Journal ; aucune refonte.
+- RG-09 : enseignes et portique sur **Ville et Corniche** ; le circuit Grand Prix n'existe pas encore sur `main` : l'API de `portique.*` / `enseignes.*` doit pouvoir être appelée par WFS-53 plus tard (une fonction par carte), sans l'appeler toi-même sur des fichiers de WFS-53.
+- RG-10 : la position des checkpoints vient de la course (E3, `src/game/course.h`) en **lecture seule** ; si un accès manque, l'ajouter par une accroche ≤ 10 lignes annoncée au Journal.
+- RG-11 : « du jeu qui fonctionne » : terrasses, portique et enseignes visibles sur les captures ; pas de fidélité au pixel.
