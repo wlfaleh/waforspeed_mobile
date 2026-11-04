@@ -1559,3 +1559,11 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Correction dans `tools/qa/emulateur.sh` (branche `feature/waforspeed-50`, e7f4777) : points d'appui calculés sur
   « Cibles de rendu : WxH (logique) » ; étape go en échec si « temps écoulé » arrive avant une vitesse > 0. Simulateur relancé
   sur la branche (scénario mvp).
+
+### 2026-11-04 00:36:06 — WFS-41 : terrain et réglages codés, PR #45 en revue (Claude, agent 5)
+- **Fait** : écran Terrain (`src/ui/ecrans/terrain.*`) : carrousel des 4 cartes (vignette façon `mapArt`, nom, description, longueur `mapLengthKm`), « 01 / 04 », glisser ou flèches, Jour / Nuit (nuit par défaut), Retour, Rouler (partie reconstruite sur la carte). Écran Réglages (`src/ui/ecrans/reglages.*`, WFS-68) depuis le menu et la pause : caméra Poursuite / Capot / Cockpit (`choisirVue` de WFS-66), graphismes Basse / Moyenne / Haute (échelle de scène 50 / 75 / 100 %, ombres), son Activé / Coupé ; enregistrés dans un fichier simple relu au démarrage. Menu : « Course solo » → Terrain ; record gardé entre les cartes.
+- **Accroches annoncées** : `src/game/game.*` (5 + 8 lignes) : `Game::demandes()` (carte et moment, `shutdown` + `init` au début de la mise à jour suivante) ; `src/audio/audio_system.cpp` (3 lignes, accord du PO) : sortie audio à zéro si son coupé ; `src/platform/desktop_main.cpp` (7 lignes) : bancs `benchTerrain` / `benchReglages` ; `.github/workflows/build.yml` (1 ligne) : captures `-2400` du groupe menu.
+- **Pour WFS-11 (agent 3)** : `menu.cpp` envoie « Course solo » vers `Ecran::Terrain` ; quand le garage arrive, garder Menu → Garage et faire Garage (« Valider ») → `Ecran::Terrain` (ordre du web : étape 1 garage, étape 2 terrain).
+- **Limites** : vibrations masquées (décision PO, ticket Android à créer) ; disposition gaucher des commandes non faite (ticket E0 nécessaire) ; pas d'écran de chargement pendant la reconstruction de carte ; « Nuit » visible seulement sur la plage (ville : WFS-09) ; la course n'est pas figée derrière l'écran Terrain (seulement derrière le menu, règle E3).
+- **Vérification** : compilation `-fsyntax-only -Wall` des 7 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
+
