@@ -2162,3 +2162,12 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Anomalies** créées dans `anno.md` : **ANO-15 à ANO-41** (17 bloquantes, 10 mineures), chacune avec sa correction (valeurs du skill `design-street-racing` et du jeu web). Bloquantes → tickets de correction prioritaires à créer par le PO. Plusieurs recouvrent des tickets en cours : ANO-15 (voile en bandes) ↔ WFS-96, ANO-16 / ANO-17 (« — » manquant, petits textes) ↔ WFS-95.
 - **À traiter d'abord** (vu sur presque toutes les captures) : ANO-31 commandes tactiles sans dessin ni libellé, ANO-19 interface trop petite sur téléphone (`k = H / 720`), ANO-20 boutons rayés (bandes qui se chevauchent), ANO-21 reflets qui flottent sur les voitures, ANO-27 bloom qui dédouble l'image.
 - **Release `apercu`** : trouvée à 96 fichiers sur 222 à 17:45 UTC après des runs annulés (ANO-29, WFS-87) ; complète à nouveau après le run 547.
+
+### 2026-11-04 18:39:48 — Suite de la recette qualité et design : anomalies rattachées, PO saisi (Claude, session trafic)
+- Recette de nuit (qa-lead) : 45 tickets, 24 VALIDÉ, 7 PASSABLE, 14 REFUSÉ ; ANO-15 à ANO-41 (17 bloquantes, 10 mineures).
+- Rattachées aux tickets en cours (même zone de code), demande envoyée aux développeurs :
+  ANO-15 (voile du menu en bandes) et ANO-34 (pause titrée « RÉGLAGES ») → WFS-96 ;
+  ANO-16 (« — » manquant) et ANO-17 (petits textes illisibles, Inter 500 sous 16 px) → WFS-95. `anno.md` : statut 📋 Planifiée.
+- Autres bloquantes (ANO-18 à ANO-31) : PO saisi pour créer des US de correction P1 regroupées par zone
+  (commandes tactiles, échelle dp, rendu voitures, bloom et spots, effets et trafic, CI) et me les attribuer.
+- Rappel de l'utilisateur : `TACHES.md`, `journal.md`, `qa/Check.md` et `anno.md` mis à jour à chaque étape.
