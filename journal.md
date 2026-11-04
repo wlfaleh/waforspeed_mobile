@@ -2171,3 +2171,28 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - Autres bloquantes (ANO-18 à ANO-31) : PO saisi pour créer des US de correction P1 regroupées par zone
   (commandes tactiles, échelle dp, rendu voitures, bloom et spots, effets et trafic, CI) et me les attribuer.
 - Rappel de l'utilisateur : `TACHES.md`, `journal.md`, `qa/Check.md` et `anno.md` mis à jour à chaque étape.
+
+### 2026-11-04 18:42:05 — PO : US de correction des bloquantes de la QA de nuit (ANO-18 à ANO-41), WFS-98 à WFS-101 attribués (po-scrum-master)
+Demande de Claude (session trafic). Regroupement **par zone de code** (pas par thème) pour que les tickets avancent en parallèle sans se toucher :
+- **WFS-98** (P1, E3 + E0 `game.cpp` + E5 `hud.*`) : ANO-31 commandes tactiles du web, ANO-24 HUD cockpit, **ANO-30 ajoutée ici** (la caméra de poursuite est dans `game.cpp`, même fichier que les commandes ; `camera_vue.cpp` aussi). Règles : `regles-de-gestion/WFS-98.md`.
+- **WFS-99** (P1, E5) : ANO-22, **ANO-23** (sol et projecteurs du garage : `garage.cpp` + `bench_spots.*`, contre-jour par un 4e `FrameParams::Spot`, sans shader), ANO-33. Règles : `regles-de-gestion/WFS-99.md`.
+- **WFS-100** (P1, E4) : ANO-21, ANO-28 et **ANO-27 (bloom)** : le bloom est dans `renderer.cpp` / `post.frag`, mêmes fichiers que les carrosseries ; séparé des projecteurs (garage, WFS-99). Règles : `regles-de-gestion/WFS-100.md`.
+- **WFS-101** (P1, E4 + E3) : ANO-25 effets, ANO-26 banc du trafic, ANO-36 (écran de fin, `course_system.cpp`). Règles : `regles-de-gestion/WFS-101.md`.
+- **WFS-102** (P1, E8) : ANO-19 échelle dp, ANO-18, ANO-20 (reste), ANO-32, ANO-35, ANO-38, ANO-39, ANO-41 ; **⏳ En attente** de WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 (l'échelle touche tous les fichiers d'interface). Règles : `regles-de-gestion/WFS-102.md`.
+- **ANO-20** (biseaux rayés) répartie par zone : chaque ticket passe `biseau()` en un seul `uiQuad` dans ses fichiers ; WFS-102 fait le reste et la fonction partagée.
+- **ANO-29** (Release `apercu` incomplète) **rattachée à WFS-91** (même zone `.github/**`, évite un micro-ticket) : RG-A1 / RG-A2 ajoutées à `regles-de-gestion/WFS-91.md`, critère ajouté dans `TACHES.md`. À l'attention de l'agent 5.
+- **ANO-40** rattachée à WFS-94 (même épic E2, banc `commerces.cpp` ajouté à sa zone). ANO-15 / ANO-34 → WFS-96, ANO-16 / ANO-17 → WFS-95 (déjà en cours).
+- **ANO-37** (nuit en ville trop claire) reste 🆕 : elle touche `nuit.cpp` (WFS-97) et `src/world/**` (WFS-93), tous deux en cours ; à planifier à leur fin.
+- Exceptions « plusieurs tickets par épic » : zones de fichiers disjointes écrites dans chaque fichier de règles (précédents WFS-13, WFS-90).
+
+### 2026-11-04 18:42:05 — Début WFS-98 Correction : commandes tactiles, HUD cockpit, caméra du demi-tour (Claude, session trafic)
+Épic E3 (+ E0 `game.cpp`, E5 `hud.*`), branche `feature/waforspeed-98`. Zone : `src/game/game.cpp` (commandes, caméra de poursuite), `direction.*`, `camera_vue.*`, `conduite_libre_banc.*`, nouveau `commandes_tactiles.*`, `src/ui/hud.*`. Critères : pédales GAZ / FREIN, nitro à anneau vert acide, volant dessiné (`.pedal`, `.nitro-touch`, `.steer-pad` du web) ; un seul compteur en cockpit ; caméra qui suit le cap (retard 3,4) au demi-tour. Plan : dessin dans `commandes_tactiles.cpp`, accroche dans `drawControls`, caméra d'après `updateCamera`.
+
+### 2026-11-04 18:42:05 — Début WFS-99 Correction : garage lisible (Claude, session trafic)
+Épic E5, branche `feature/waforspeed-99`. Zone : `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`. Critères : 3 taches de lumière au sol, liseré cyan, néons hors du texte, voile à gauche, 3/4 avant, panneau sans escalier. Plan : voile `uiQuad`, néons déplacés, sol #1A1C24 / 0,2 / 0,6, 4e projecteur, cap 0,6 + π.
+
+### 2026-11-04 18:42:05 — Début WFS-100 Correction : carrosseries propres et bloom sans fantômes (Claude, session trafic)
+Épic E4, branche `feature/waforspeed-100`. Zone : `src/render/renderer.cpp`, `vk.*`, `model_loader.*`, `qualite_*`, `shaders/scene*`, `post*`, `common.glsl`. Critères : plus de reflets flottants, peinture unie (Giulia, X5, Model 3), halo rond sans copies fantômes. Plan : couverture du pixel des opaques fins, spéculaire ≤ 4, peinture sans texture de base, bloom dual filter 5 niveaux à flou séparable 9 prises.
+
+### 2026-11-04 18:42:05 — Début WFS-101 Correction : étincelles, nitro, trafic du banc, écran de fin (Claude, session trafic)
+Épic E4 (+ E3), branche `feature/waforspeed-101`. Zone : `src/render/effets_*`, `bench_effets.*`, `src/game/traffic_system.cpp` (`benchTraficVivant`), `src/game/course_system.*`. Critères : gerbe d'étincelles, traits radiaux + vignette nitro, voiture du banc à 8-25 m, écran de fin record aéré. Plan : `emitSparks` / `drawFx` du web, banc à 15 m file voisine.

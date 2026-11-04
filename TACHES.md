@@ -183,6 +183,11 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-95 | Texte et bandeaux : caractères manquants (« — »), petits libellés lisibles, nom du quartier en course | E5 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-95` |  |  |
 | P2 Haute | WFS-96 | Menus : Showroom et « Ta voiture » ouvrent le garage, quartiers sur la carte du terrain, focus manette, voile sans bandes, sons d'interface | E8 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-96` |  |  |
 | P3 Moyenne | WFS-97 | Nuit du circuit : taches de lumière visibles sous les projecteurs | E4 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-97` |  |  |
+| P1 Urgent | WFS-98 | Correction : commandes tactiles du jeu web (GAZ / FREIN / NITRO / volant), HUD de la vue cockpit, caméra qui suit le demi-tour (ANO-31, ANO-24, ANO-30) | E3 (exception : 2e ticket E3, fichiers séparés de WFS-89 ; + E0 `game.cpp`, E5 `hud.*`) | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-98` |  |  |
+| P1 Urgent | WFS-99 | Correction : garage lisible (voile, néons à droite, taches de lumière au sol, voiture de 3/4 avant) (ANO-22, ANO-23, ANO-33) | E5 (exception : 2e ticket E5, fichiers séparés de WFS-95) | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-99` |  |  |
+| P1 Urgent | WFS-100 | Correction : carrosseries sans reflets flottants ni taches, bloom sans images fantômes (ANO-21, ANO-28, ANO-27) | E4 (exception : 2e ticket E4, fichiers séparés de WFS-97) | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-100` |  |  |
+| P1 Urgent | WFS-101 | Correction : étincelles et lignes de nitro visibles, trafic du banc de près, écran de fin aéré (ANO-25, ANO-26, ANO-36) | E4 (exception : 3e ticket E4, fichiers séparés ; + E3 `traffic_system.cpp`, `course_system.*`) | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-101` |  |  |
+| P1 Urgent | WFS-102 | Correction : interface à l'échelle du téléphone (dp, cibles 44 dp), biseaux d'un seul tenant, écrans lisibles (ANO-19, ANO-18, ANO-20, ANO-32, ANO-35, ANO-38, ANO-39, ANO-41) | E8 (+ E5, accroches E0 / E7) | ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 : mêmes fichiers) |  | WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101 | `feature/waforspeed-102` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -520,6 +525,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] job `endurance` vert sur `main` (≤ 15 min), artefact `captures-endurance`
 - [ ] `endurance-journal.txt` : ≥ 12 cycles, 4 cartes, jour et nuit, ≥ 4 retours d'arrière-plan, RSS final ≤ cycle 2 + 10 %, 0 erreur de validation (hors erreurs connues avec ticket)
 - [ ] `endurance-retour-*.png` : image correcte après chaque retour ; une capture de fin de course par carte ; autres jobs verts, APK publié
+- [ ] (ajout PO, ANO-29) Release `apercu` jamais incomplète : publication `cancel-in-progress: false`, anciens fichiers supprimés après l'envoi complet des nouveaux (RG-A1, RG-A2)
 
 **WFS-92 — Duel par Internet : pair PeerJS réel** · E3 · P2 Haute · ⏸ En attente de la décision de l'utilisateur sur l'ajout de libdatachannel 0.22.6 + Mbed TLS 3.6.2 dans `third_party/` (≈ 14 Mo, recommandation PO : autoriser) — branche `feature/waforspeed-92` (règles : `regles-de-gestion/WFS-92.md`). Zone : `src/game/reseau_peerjs.*`, `third_party/**` (nouvelles bibliothèques) ; accroches : `CMakeLists.txt`, `android/**` ≤ 10 lignes
 - [ ] APK : duel entre deux réseaux différents et contre le jeu web (vérifié par l'utilisateur)
@@ -531,6 +537,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-94 — Corniche : quartiers marina, rochers, village** · E2 · P3 Moyenne · ⏳ En attente (après WFS-93) — branche `feature/waforspeed-94` (règles : `regles-de-gestion/WFS-94.md`). Zone : `src/world/plage.cpp`, `cartes_banc.cpp`, nouveaux `src/world/plage_*.cpp`
 - [ ] `carte-plage-marina`, `-rochers`, `-village` : bateaux, bornes, villas, rochers, glissières visibles ; ≤ 300 appels de dessin
+- [ ] (ajout PO, ANO-40) `vie-portique` à 25 m (« CHECKPOINT 1 » lisible), `vie-plage` à 15 m (serviettes et baigneurs visibles)
 
 **WFS-95 — Texte et bandeaux** · E5 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-95` (règles : `regles-de-gestion/WFS-95.md`). Zone : `src/ui/text.*`, `src/ui/toasts.*`, `shaders/ui*`, `assets/fonts/**` ; interdit : `src/ui/garage.*`, `src/ui/ecrans/**`, `src/render/**`, `src/platform/**`
 - [ ] menu : « — » sous RECORD (plus de « ? »), « TA VOITURE » lisible ; capture `toast-quartier` : bandeau du nom du quartier à chaque changement de zone
@@ -540,6 +547,26 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-97 — Nuit du circuit : taches de lumière des projecteurs** · E4 · P3 Moyenne · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-97` (règles : `regles-de-gestion/WFS-97.md`). Zone : `src/render/nuit.cpp` ; interdit : `src/world/**`, `src/platform/**`, iOS
 - [ ] `carte-circuit-nuit`, `course-nuit-circuit-0` : taches froides visibles sous les mâts ; ville et plage de nuit sans surexposition
+
+**WFS-98 — Correction : commandes tactiles, HUD cockpit, caméra du demi-tour** · E3 (+ E0 `game.cpp`, E5 `hud.*`) · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-98` (règles : `regles-de-gestion/WFS-98.md`). Zone : `src/game/game.cpp` (commandes, caméra de poursuite), `direction.*`, `camera_vue.*`, `conduite_libre_banc.*`, nouveau `commandes_tactiles.*`, `src/ui/hud.*`
+- [ ] `hud-course`, `encoche-hud-2400` : pédales « GAZ » orange et « FREIN » rouge, nitro rond à anneau vert acide « NITRO », volant dessiné ; boutons du HUD sans rayures
+- [ ] `camera-cockpit` : un seul compteur, plus de disque cyan ; `conduite-demitour` : Golf entière au tiers bas, en travers
+
+**WFS-99 — Correction : garage lisible** · E5 · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-99` (règles : `regles-de-gestion/WFS-99.md`). Zone : `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`
+- [ ] `spots-sol`, `garage-0`, `garage-2` : 3 taches de lumière au sol, 911 noire détachée du fond (liseré cyan)
+- [ ] `garage-*` : aucun néon sur le texte, voile à gauche, voiture de 3/4 avant, panneau sans escalier
+
+**WFS-100 — Correction : carrosseries propres et bloom sans fantômes** · E4 · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-100` (règles : `regles-de-gestion/WFS-100.md`). Zone : `src/render/renderer.cpp`, `vk.*`, `model_loader.*`, `qualite_*`, `shaders/scene*`, `post*`, `common.glsl`
+- [ ] `vitrine-*`, `garage-peinture*`, `trafic-clignotant` : aucun trait brillant dans le vide ; Giulia, X5, Model 3 en peinture unie
+- [ ] `qualite-haute`, `qualite-moyenne`, `course-nuit-*` : halo rond et doux, aucune copie fantôme ni traînée
+
+**WFS-101 — Correction : étincelles, nitro, trafic du banc, écran de fin** · E4 (+ E3) · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-101` (règles : `regles-de-gestion/WFS-101.md`). Zone : `src/render/effets_*`, `bench_effets.*`, `src/game/traffic_system.cpp` (`benchTraficVivant`), `src/game/course_system.*`
+- [ ] `choc-etincelles` : gerbe orange et blanche ; `nitro-lignes` : traits en étoile + vignette cyan sombre
+- [ ] `trafic-clignotant`, `trafic-freinage` : voiture à 8-25 m ; `fin-record` : badge et record espacés
+
+**WFS-102 — Correction : interface à l'échelle du téléphone, biseaux, écrans lisibles** · E8 (+ E5, accroches E0 / E7) · P1 Urgent · ⏳ En attente (WFS-95, WFS-96, WFS-91, WFS-89, WFS-98, WFS-99, WFS-101) — branche `feature/waforspeed-102` (règles : `regles-de-gestion/WFS-102.md`). Zone : `src/ui/ecrans/**`, nouveau `src/ui/echelle.*`, une ligne `ui::echelle` par fichier d'interface, accroches `game.h` / `android_main.cpp`
+- [ ] `*-2400` : boutons ≥ 44 dp, libellés ≥ 12 dp ; 1280x720 inchangé ; aucun bouton rayé sur aucun écran
+- [ ] `terrain-*` : description sur fond sombre, sélection cyan ; `menu-0` aide juste ; `salon-*` carte centrale ; `chargement-erreur` « Réessayer »
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
