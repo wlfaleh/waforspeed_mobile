@@ -18,7 +18,11 @@ struct Geo { std::vector<Vertex> v; std::vector<uint32_t> i; };
 struct Out { Geo* bark; Geo* core; Geo* leaf; };
 
 // paramètres de vegBroadleaf (valeurs par défaut = jeu web)
-struct Broadleaf { float trunkR = 0.1f, trunkH = 0.42f, cw = 0.33f, ch = 0.27f, cy = 0.66f; int clusters = 6, cards = 11; };
+// uA / uB : u des deux écorces (texture de 2 texels par défaut) ; tk : luminosité de la teinte de l'espèce rapportée à celle
+// du matériau de feuillage (WFS-53 : plusieurs teintes du jeu web dans un seul matériau)
+struct Broadleaf { float trunkR = 0.1f, trunkH = 0.42f, cw = 0.33f, ch = 0.27f, cy = 0.66f; int clusters = 6, cards = 11; float uA = 0.25f, uB = 0.75f, tk = 1; };
+// écorce d'un tronc : u des deux couleurs (cases d'une palette)
+struct Ecorce { float uA, uB; };
 
 // feuillu : tronc, charpentières, bouquets de feuillage couverts de cartes ; b = pied de l'arbre, h = hauteur
 void broadleaf(const Out& o, vec3 b, float h, Mulberry32& R, const Broadleaf& p, bool lod);
@@ -32,6 +36,15 @@ void platane(Geo* bark, Geo* core, Geo* leaf[2], vec3 b, float itH, Mulberry32& 
 // b = pied, h = hauteur, yaw = direction de la courbure, lean = inclinaison ; renvoie le sommet du stipe (gaines, noix).
 // Le générateur aléatoire est celui du jeu web : Mulberry32(((h * 977) | 0) + ((rot * 1000) | 0)).
 vec3 palmier(Geo& bark, Geo& leaf, Geo& dead, vec3 b, float h, float yaw, float lean, Mulberry32& R, bool lod);
+
+// essences de la campagne et du circuit (WFS-53), port de life.js. Les options tirées au hasard par DECOR.tree (teinte,
+// clear, w) sont tirées par l'appelant, dans l'ordre du jeu web. tk : voir Broadleaf.
+void sapin(const Out& o, vec3 b, float h, Mulberry32& R, float tk, float clear, float w, Ecorce e, bool lod);            // vegFir
+void pin(const Out& o, vec3 b, float h, Mulberry32& R, float tk, bool umbrella, Ecorce bas, Ecorce haut, bool lod);    // vegPine
+void cypres(const Out& o, vec3 b, float h, Mulberry32& R, float tk, Ecorce e, bool lod);                               // vegCypress
+void sousBois(Geo& leaf, vec3 b, Mulberry32& R, float tk, bool fougere);                                               // vegUnder
+void touffe(Geo& leaf, vec3 b, float hgt, float yaw, float k);                                                          // vegTuft
+void cartesHaie(Geo& leaf, vec3 c, vec3 r, vec3 f, int side, float l, Mulberry32& R, float tk, bool lod);              // DECOR.hedge
 
 // couleurs du jeu web (sRGB 0..1, utilisées telles quelles par le jeu web)
 vec3 hex(uint32_t rgb);

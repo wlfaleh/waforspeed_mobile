@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include "../src/game/course.h"
+#include "../src/game/direction.h"   // WFS-70 : modes de direction (fonctions pures)
+#include "../src/game/ressenti.h"    // WFS-70 : secousse, flash, réduire les mouvements
 using namespace wfs;
 
 static int bad = 0;
@@ -99,6 +101,67 @@ int main(int argc, char** argv) {
         check(std::abs(pl.nitro - (0.4 - 0.26)) < 1e-4, "RG-07 nitro : 0,26 consommés en 1 s");
         pl.nitro = 0.005; pl.update(1.0 / 120, in, t, true);
         check(!pl.nitroOn, "RG-07 nitro inactive sous 0,01");
+    }
+    // WFS-70 RG-05 : le ralenti n'allonge pas le chrono (boucle de Game::update : scaleDt puis pas fixes de 1/120 s)
+    {
+        Player pl; pl.reset(carById("golf")); Course k; k.reset(); k.state = RaceState::Play; k.clock = 0; k.nextCp = 1e12;
+        k.accident();
+        const double reste0 = k.timeLeft, step = 1.0 / 120; double acc = 0, jeu = 0;
+        for (int f = 0; f < 60; f++) {   // 1 s réelle à 60 images/s
+            acc += k.scaleDt(1.0 / 60);
+            while (acc >= step) { k.step(step, pl, nullptr, 0, step / k.echelleDt); jeu += step; acc -= step; }
+        }
+        std::printf("  ralenti : 1 s réelle → chrono %.4f s, temps restant −%.4f s, temps de jeu %.4f s\n", k.raceTime, reste0 - k.timeLeft, jeu);
+        check(std::abs(k.raceTime - 1.0) < 0.03 && std::abs((reste0 - k.timeLeft) - 1.0) < 0.03 && jeu < 0.8,
+              "WFS-70 RG-05 : 1 s réelle de ralenti = 1 s de chrono (le temps de jeu, lui, est ralenti)");
+        Course w; w.reset(); w.state = RaceState::Play; w.nextCp = 1e12; w.step(0.01, pl, nullptr, 0);
+        check(std::abs(w.raceTime - 0.01) < 1e-12, "WFS-70 : sans chronoDt, chrono en temps de jeu (course de référence inchangée)");
+    }
+    // WFS-70 RG-02 à RG-04 : secousse, flash, « réduire les mouvements »
+    {
+        EtatRessenti e; Mulberry32 rng(1);
+        e.chocFort(false);
+        check(e.secousse == 0.9f && e.flash == 1.f, "WFS-70 RG-02 choc fort : secousse 0,9, flash 1");
+        EtatRessenti l; l.chocLeger(0.2, false);
+        check(std::abs(l.secousse - 0.55f) < 1e-6 && l.flash == 0.35f, "WFS-70 RG-02 choc léger : secousse 0,25 + impact × 1,5, flash 0,35");
+        EtatRessenti fr; fr.frottement(false); EtatRessenti bo; bo.bordure(false);
+        check(fr.secousse == 0.3f && fr.flash == 0.25f && bo.secousse == 0.12f, "WFS-70 RG-03 frottement 0,3 / 0,25, bordure 0,12");
+        const vec3 d = e.decalage(rng, false);
+        check(std::abs(d.x) <= 0.27f && std::abs(d.y) <= 0.18f && (d.x != 0 || d.y != 0), "WFS-70 secousse : décalage de la caméra borné (±0,27 ; ±0,18 m)");
+        e.avancer(0.2);
+        check(std::abs(e.secousse - 0.7f) < 1e-6 && std::abs(e.flash - 0.4f) < 1e-6, "WFS-70 décroissance : shake −dt, flash −3 dt");
+        EtatRessenti r; r.chocFort(true); r.chocLeger(0.5, true); r.frottement(true); r.bordure(true);
+        const vec3 z = e.decalage(rng, true);
+        check(r.secousse == 0 && r.flash == 1.f && z.x == 0 && z.y == 0 && z.z == 0,
+              "WFS-70 RG-04 réduire les mouvements : secousse nulle (flash gardé)");
+        reglagesRessenti().reduireMouvements = true;
+        Course k; k.reset(); k.accident();
+        check(k.timeScale == 1 && k.slowmoT == 0 && k.accidents == 1, "WFS-70 RG-04 réduire les mouvements : pas de ralenti");
+        reglagesRessenti().reduireMouvements = false;
+        k.reset(); k.accident();
+        check(k.timeScale == 0.35 && k.slowmoT == 0.5, "WFS-70 RG-02 ralenti à 35 % pendant 0,5 s (option désactivée)");
+    }
+    // WFS-70 RG-08 : modes de direction
+    {
+        check(reglagesRessenti().direction == ModeDirection::Glisser, "WFS-70 RG-08 mode par défaut : zone de glissement");
+        check(std::abs(braquageGlisser(100, 100 + 1280 * 0.06f, 1280) - 0.5f) < 1e-5f && braquageGlisser(100, 900, 1280) == 1.f,
+              "WFS-70 glissement : 6 % de la largeur = 0,5, butée à 1");
+        check(braquageFleches(true, false) == -1 && braquageFleches(false, true) == 1 && braquageFleches(false, false) == 0,
+              "WFS-70 flèches : consigne −1 / +1 / 0");
+        Track t; t.build(mapById("ville")); Player pl; pl.reset(carById("golf"));
+        DriveInput in; in.steer = braquageFleches(true, false);
+        for (int i = 0; i < 12; i++) pl.update(1.0 / 120, in, t, true);
+        const double monte = pl.steer;
+        for (int i = 0; i < 60; i++) pl.update(1.0 / 120, in, t, true);
+        const double plein = pl.steer;
+        in.steer = braquageFleches(false, false);
+        for (int i = 0; i < 60; i++) pl.update(1.0 / 120, in, t, true);
+        std::printf("  flèches : braquage %.3f après 0,1 s, %.3f après 0,6 s, %.3f 0,5 s après le relâchement\n", monte, plein, pl.steer);
+        check(monte < -0.2 && monte > -0.6 && plein == -1.0 && std::abs(pl.steer) < 1e-9,
+              "WFS-70 RG-08 flèches : braquage progressif vers −1, retour à 0 au relâchement");
+        Marges m; const BoutonsFleches b = boutonsFleches(1280, 720, m);
+        check(b.xg + b.c < b.xd && b.xg > 0 && b.y + b.c < 720 && dansZoneDirection(b.xd + b.c, 1280, m) &&
+              !flecheDroite(b.xg + b.c / 2, b) && flecheDroite(b.xd + b.c / 2, b), "WFS-70 flèches : deux boutons à gauche, dans la zone de direction");
     }
     if (bad) { std::printf("ÉCHEC (%d)\n", bad); return 1; }
     std::printf("OK\n");

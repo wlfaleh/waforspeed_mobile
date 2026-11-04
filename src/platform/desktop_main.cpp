@@ -16,12 +16,15 @@
 #include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
+#include "../game/ressenti.h"   // WFS-70 : ressenti de conduite (captures ressenti-*.png)
 #include "../game/sauvegarde.h"   // WFS-24
 #include "../game/traffic_system.h"
 #include "../ui/hud.h"
+#include "../ui/planche_voitures.h"
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 #include "../world/pietons.h"
+#include "../world/decor_carte.h"
 #include "../render/bench_spots.h"
 #include "../render/qualite_banc.h"
 #include "../game/roues_banc.h"
@@ -92,6 +95,7 @@ int main(int argc, char** argv) {
             WFS_LOG("capture vitrine-%s-0%s%s", id, garage ? ", garage" : "", course ? ", course" : "");
             g.shutdown();
         }
+        benchPlancheVoitures(g, r, out);   // WFS-77 : les 20 voitures en Turquoise, roues et peinture au journal
         return finir();
     }
     if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
@@ -99,6 +103,8 @@ int main(int argc, char** argv) {
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
+    if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
     }
@@ -157,6 +163,7 @@ int main(int argc, char** argv) {
             g.render(404); g.render(404.02); r.capturePng(out + "/carte-plage-" + mo + ".png"); g.shutdown();
         }
         unsetenv("WFS_MOMENT");
+        benchCartes(g, r, out);   // WFS-53 : cartes Campagne et Grand Prix (carte-campagne-*, carte-circuit-*)
         benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
         benchTraficVivant(g, r, out);    // WFS-67 : clignotant, feux stop, accident (trafic-clignotant / -freinage / -accident)
     }
@@ -178,6 +185,7 @@ int main(int argc, char** argv) {
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
         benchPietons(g, r, out);      // WFS-19 : piétons de la ville et de la plage (pietons-*.png)
+        benchRessenti(g, r, out);     // WFS-70 : choc, flèches, mouvements réduits (ressenti-*.png)
     }
     r.shutdown();
     vk.shutdown();

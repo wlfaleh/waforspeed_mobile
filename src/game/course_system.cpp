@@ -47,7 +47,7 @@ public:
         }
         if (g.ecran != Ecran::Course) return;   // WFS-38 / WFS-74 : course figée hors de l'écran Course (menu, garage, terrain…)
         const RaceState before = course_.state; const int cp = course_.level;
-        course_.step(dt, pl, activeTrafficMut(), pl.position);
+        course_.step(dt, pl, activeTrafficMut(), pl.position, dt / std::max(1e-6, course_.echelleDt));   // WFS-70 (RG-05) : chrono en temps réel
         if (course_.level != cp)
             WFS_LOG("course : checkpoint %d à %.1f s de course, +%.1f s, reste %.2f s, score %lld", course_.level, course_.raceTime,
                     Course::checkpointBonus(course_.level), course_.timeLeft, course_.score(pl));
@@ -176,6 +176,7 @@ const Course* activeCourse() { return CourseSystem::active_ ? &CourseSystem::act
 Course* activeCourseMut() { return CourseSystem::active_ ? &CourseSystem::active_->course_ : nullptr; }
 double courseScaleDt(double raw) { return CourseSystem::active_ && g_rules ? CourseSystem::active_->course_.scaleDt(raw) : raw; }
 void courseBenchRules(bool on) { g_rules = on; }
+bool courseBenchRulesOn() { return g_rules; }
 void courseBenchSetTime(double s) { if (auto* c = activeCourseMut()) c->timeLeft = s; }
 
 // banc d'essai : 1) course de référence (mêmes valeurs que le jeu web), 2) décompte « 3 » puis « GO »,

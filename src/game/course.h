@@ -25,6 +25,7 @@ struct Course {
     int lastCount = -1;                     // dernier chiffre affiché (3, 2, 1, puis 0 = « GO »)
     double goShown = 0;                     // « GO » reste affiché 0,7 s après le départ (setTimeout du jeu web)
     double timeScale = 1, slowmoT = 0;      // ralenti après un accident (main.js du jeu web)
+    double echelleDt = 1;                   // WFS-70 : échelle appliquée par le dernier scaleDt (temps de jeu / temps réel)
     double duelFinish = 0;                  // WFS-21 : > 0 = duel (mode 'duel') : arrivée à FINISH, pas de chrono ni checkpoint
 
     // resetRace('play') + startRace() : 30 s, compte à rebours de 3 s (la nitro est remise à 0,4 par Player::reset)
@@ -34,13 +35,15 @@ struct Course {
     // événements du jeu (mêmes effets que le jeu web)
     void nearMiss();                        // quasi-contact : combo, 250×combo points (la nitro est donnée par Traffic)
     void bump(double impact);               // petit choc : combo perdu au-delà de 0,08
-    void accident();                        // playerAccident : combo perdu, ralenti ×0,35 pendant 0,5 s
+    void accident();                        // playerAccident : combo perdu, ralenti ×0,35 pendant 0,5 s (sauf « réduire les mouvements », WFS-70)
     void crash(Player& pl, Track& t);       // décor percuté : recul de 300, vitesse MAX_SPEED/8, tête-à-queue
     void applyHits(const HitEvents& e);     // événements d'un pas de collision, dans l'ordre où ils sont arrivés
 
     // fin de update() du jeu web, après la conduite et les chocs : combo, compte à rebours, chrono, checkpoints, fin.
-    // traffic (facultatif) : +6 voitures à chaque checkpoint tant qu'il y en a moins de 110
-    void step(double dt, const Player& pl, Traffic* traffic, double playerPos);
+    // traffic (facultatif) : +6 voitures à chaque checkpoint tant qu'il y en a moins de 110.
+    // chronoDt (WFS-70, RG-05) : durée réelle du pas pour le chrono (raceTime, timeLeft) : le ralenti ne l'allonge pas ;
+    // < 0 : chrono en temps de jeu (dt), comme le jeu web
+    void step(double dt, const Player& pl, Traffic* traffic, double playerPos, double chronoDt = -1);
     // pendant le compte à rebours la voiture reste immobile (speed = 0 du jeu web)
     void hold(Player& pl) const;   // et la nitro ne bouge pas (nitroOn exige playing)
     // durée réelle → durée de jeu (ralenti après un accident, boucle de main.js)

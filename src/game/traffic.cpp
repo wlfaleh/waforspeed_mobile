@@ -200,7 +200,7 @@ HitEvents Traffic::collide(Player& pl, double dt) {
                 pl.playerX += side * (overlapX + 0.004); car.offset -= side * overlapX * 0.35 * pl.perf.mass;
                 pl.heading *= 0.5;
                 pl.speed *= 0.94; car.speed *= 0.97;
-                if (scrapeCd_ <= 0) { scrapeCd_ = 0.18; ev.scrapes++; ev.shake = std::max(ev.shake, 0.15f); }
+                if (scrapeCd_ <= 0) { scrapeCd_ = 0.18; ev.scrapes++; ev.shake = std::max(ev.shake, 0.3f); }   // WFS-70 (RG-03, RG-11) : frottement 0,3
             } else if (dz > 0) {
                 // on percute l'arrière : la voiture est poussée, on perd notre vitesse
                 const double rel = std::max(0.0, pl.speed - car.speed), impact = rel / MAX_SPEED, v0 = car.speed;

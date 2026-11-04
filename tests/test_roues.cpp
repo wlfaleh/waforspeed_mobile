@@ -34,7 +34,8 @@ static bool lire(const std::string& chemin, Wfm& w) {
 
 int main(int argc, char** argv) {
     const std::string dossier = argc > 1 ? argv[1] : "assets";
-    for (const char* id : {"golf", "m4", "p911", "gallardo"}) {
+    for (const char* id : {"golf", "m4", "p911", "gallardo", "p208", "abarth", "tcross", "compass", "s3", "x5", "giulia", "a45",   // WFS-77 : les 20
+                           "model3", "corsa", "gt86", "elantra", "v60", "rrsport", "mustang", "sf90"}) {
         Wfm w;
         if (!lire(dossier + "/cars/" + id + ".wfm", w)) { VERIFIE(false, "%s.wfm illisible", id); continue; }
         std::vector<roues::Maillage> ms;

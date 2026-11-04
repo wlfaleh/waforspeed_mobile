@@ -16,6 +16,7 @@
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
+#include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "manette_jeu.h"   // WFS-22 : manettes
 
 namespace wfs {
@@ -129,6 +130,7 @@ void android_main(android_app* a) {
     // WFS-59 : extra d'intent qa_simu=true (émulateur de la QA) → mode GPU logiciel, lu avant l'initialisation de Vulkan
     if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
+    installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
     // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
