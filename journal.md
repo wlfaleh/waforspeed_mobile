@@ -1607,3 +1607,8 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-04 00:44:41 — Règle « confiance > 50% » rendue visible (Claude, agent 4, à la demande de l'utilisateur)
 - « 50 % » est réécrit « 50% » partout : une recherche de « 50% » ne trouvait pas la règle.
 - `CLAUDE.md` : la règle de fusion par confiance passe **en tête** des consignes, avec un titre « RÈGLE DE FUSION N°1 — CONFIANCE > 50% → FUSION DIRECTE ».
+
+### 2026-11-04 00:45:01 — Fin WFS-11 : garage et compteur en arc fusionnés (PR #43) (agent 3, session 011cpqZd)
+- CI verte (run de la PR : android, 4 bancs, publication) ; captures `garage-0-2400`, `menu-depart-go` (menu → garage → « Choisir » → GO) et `garage-course` regardées : rien de bloquant. Fusion `5dcda32`, ajouté à `qa/Check.md`.
+- Le job `ecrans-2400` passe à 11 min (caméras WFS-66 + garage en 2400) : c'est maintenant le plus long de la CI.
+- Reste à faire (ex-WFS-13) : conversion des 16 autres voitures (le garage montre les 4 voitures converties).
