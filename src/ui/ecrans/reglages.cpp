@@ -1,4 +1,5 @@
 // WaForSpeed — écran de réglages (WFS-68 dans WFS-41) : voir reglages.h.
+#include "../../render/qualite_auto.h"   // WFS-104
 #include "reglages.h"
 #include <algorithm>
 #include <cmath>
@@ -117,7 +118,7 @@ void appliquerCamera() { choisirVue((VueCamera)reglages().camera); }   // WFS-66
 void appliquerQualite(Renderer& r) {
     if (r.gpuLogiciel()) return;
     const int q = reglages().qualite;
-    r.vk().renderScale = q == QUALITE_BASSE ? 0.5f : q == QUALITE_MOYENNE ? 0.75f : 1.f;
+    r.vk().renderScale = qualite::echelleRendu(q, 1.f);   // WFS-104 : Moyenne et Haute à 100 % (netteté du garage)
     r.forceNoShadows = q == QUALITE_BASSE;
     r.bloomForce = q == QUALITE_BASSE ? 0.f : 1.f;   // WFS-15 : bloom en Moyenne et Haute
     r.qualiteBasse = q == QUALITE_BASSE;               // WFS-82 : petits objets coupés à 150 m
