@@ -28,7 +28,10 @@ public:
         if (!g_rules) { course_.state = RaceState::Play; course_.clock = 0; course_.timeLeft = 1e9; course_.lastCount = 0; }
     }
     void shutdown(Renderer&) override { if (active_ == this) active_ = nullptr; }
-    void onEcran(Ecran a, Ecran n, const GameView&) override { if (a == Ecran::Menu && n == Ecran::Course) restartReq_ = true; }   // WFS-38 : départ du menu = « Rejouer »
+    void onEcran(Ecran a, Ecran n, const GameView&) override {
+        if ((a == Ecran::Menu || a == Ecran::Terrain) && n == Ecran::Course) restartReq_ = true;   // WFS-38 / WFS-74 : départ = « Rejouer »
+        if (a == Ecran::Course && n != Ecran::Course) WFS_LOG("course : figée (écran %s)", nomEcran(n));   // WFS-74, RG-09
+    }
 
     // après la conduite et les chocs du trafic (ordre 210 > 50) : fin de update() du jeu web
     void collide(double dt, Player& pl, const GameView& g) override {
@@ -40,7 +43,7 @@ public:
             WFS_LOG("course : nouvelle course (même graine de trafic)");
             return;
         }
-        if (g.ecran == Ecran::Menu) return;   // WFS-38 : course figée derrière le menu (pas de partie fantôme)
+        if (g.ecran != Ecran::Course) return;   // WFS-38 / WFS-74 : course figée hors de l'écran Course (menu, garage, terrain…)
         const RaceState before = course_.state; const int cp = course_.level;
         course_.step(dt, pl, activeTrafficMut(), pl.position);
         if (course_.level != cp)

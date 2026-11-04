@@ -13,6 +13,7 @@
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
 #include "../game/game.h"
+#include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
 #include "../game/duel_system.h"
 #include "../game/traffic_system.h"
@@ -69,6 +70,7 @@ int main(int argc, char** argv) {
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
@@ -139,6 +141,7 @@ int main(int argc, char** argv) {
         benchDuelScene(g, r, out);    // WFS-21 : duel, adversaire simulé (duel-course.png, duel-resultat.png)
         ecrans::benchTerrain(g, r, out);       // WFS-41 : choix du terrain et du moment, « Rouler » sur le circuit
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
+        benchChangementCarte(g, r, out);       // WFS-74 : écran de chargement au changement de carte, course figée hors course
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
