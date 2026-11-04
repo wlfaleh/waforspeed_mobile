@@ -395,32 +395,72 @@ void benchTraficVivant(Game& g, Renderer& r, const std::string& out) {
     double t = 800;
     auto image = [&](bool rendu) { g.update(1.0 / 60); t += 1.0 / 60; if (rendu) g.render(t); };
     auto devant = [&](const TrafficCar& c) { return s->track_->relZ(c.z - g.player().position) * M; };
-    // une voiture entre 8 et 25 m devant qui vérifie `cond`, cherchée pendant `secondes` au plus
-    auto cherche = [&](double secondes, auto cond) {
-        for (int i = 0; i < (int)(secondes * 60); i++) {
-            image(i % 8 == 0);
-            for (size_t k = 0; k < s->traffic_.cars.size(); k++) {
-                const TrafficCar& c = s->traffic_.cars[k]; const double dz = devant(c);
-                if (dz > 8 && dz < 25 && std::abs(c.offset - g.player().playerX) < 0.9 && cond(c, k)) return (int)k;   // assez près pour voir les feux
-            }
+    // WFS-101 (RG-03, ANO-26) : la voiture qui clignote puis freine est placée à 15 m devant la Golf, dans la file voisine
+    // (8 à 25 m exigés : feux nettement visibles), à sa vitesse ; les autres voitures de cette file proches sont
+    // avancées à 75 m et plus (aucune ne la gêne). Seul le placement change : clignotant et feux stop restent ceux du trafic.
+    auto placeVoisine = [&]() {
+        const Player& pl = g.player();
+        int fj = 0;
+        for (int l = 1; l < LANES; l++) if (std::abs(LANE_X[l] - pl.playerX) < std::abs(LANE_X[fj] - pl.playerX)) fj = l;
+        const int fv = fj == 1 ? 2 : 1;
+        int k = -1; double meilleur = -1e18;   // la plus proche derrière le joueur, hors champ (sinon la plus lointaine devant)
+        for (size_t i = 0; i < s->traffic_.cars.size(); i++) {
+            const TrafficCar& c = s->traffic_.cars[i];
+            if (c.crashed) continue;
+            const double dz = devant(c), note = dz < -20 ? 1e9 + dz : dz;
+            if (note > meilleur) { meilleur = note; k = (int)i; }
         }
-        return -1;
+        if (k < 0) return -1;
+        int j = 0;
+        for (size_t i = 0; i < s->traffic_.cars.size(); i++) {
+            TrafficCar& o = s->traffic_.cars[i];
+            const double dz = devant(o);
+            if ((int)i == k || o.crashed || dz < -8 || dz > 60) continue;
+            if (o.lane != fv && o.target != fv && std::abs(o.offset - LANE_X[fv]) > 0.45) continue;
+            o.z = s->track_->wrap(pl.position + PLAYER_Z + (75.0 + 12.0 * j++) / M);
+            o.prevDz = s->track_->relZ(o.z - pl.position);
+        }
+        TrafficCar& c = s->traffic_.cars[(size_t)k];
+        c.z = s->track_->wrap(pl.position + PLAYER_Z + 15.0 / M);
+        c.lane = c.target = fv; c.offset = c.prevOff = LANE_X[fv]; c.laneYaw = 0;
+        c.speed = c.want = pl.speed; c.signal = 0; c.pending = false; c.think = 6;
+        c.prevDz = s->track_->relZ(c.z - pl.position);
+        return k;
     };
     for (int i = 0; i < 120; i++) image(i % 8 == 0);
-    // clignotant : changement de file annoncé, au moment où le feu est allumé
-    int k = cherche(40, [&](const TrafficCar& c, size_t) { return !c.crashed && c.signal != 0 && clignotantAllume(t, c.rng); });
+    // clignotant : changement de file annoncé vers la file de la Golf, capturé au moment où le feu est allumé
+    int k = placeVoisine();
+    if (k >= 0) {
+        TrafficCar& c = s->traffic_.cars[(size_t)k];
+        int fj = 0;
+        for (int l = 1; l < LANES; l++) if (std::abs(LANE_X[l] - g.player().playerX) < std::abs(LANE_X[fj] - g.player().playerX)) fj = l;
+        c.pending = true; c.pendLane = fj; c.pendT = 1.2; c.signal = fj < c.lane ? -1 : 1;
+        for (int i = 0; i < 30 && !clignotantAllume(t, c.rng); i++) image(i % 8 == 0);   // allumé 0,38 s sur 0,72 s
+    }
     g.render(t); g.render(t);
     r.capturePng(out + "/trafic-clignotant.png");
-    if (k >= 0) { const TrafficCar& c = s->traffic_.cars[(size_t)k];
-        WFS_LOG("capture trafic-clignotant : voiture %d à %.1f m, clignotant %s, file %d → %d", k, devant(c), c.signal < 0 ? "gauche" : "droite", c.lane, c.pendLane); }
-    else WFS_LOG("capture trafic-clignotant : aucune voiture en train de changer de file trouvée en 40 s");
-    // freinage : feux stop allumés (décélération > 2 m/s²)
-    k = cherche(40, [&](const TrafficCar& c, size_t i) { return !c.crashed && i < s->feuxStop().size() && s->feuxStop()[i].freine(); });
+    if (k >= 0) { TrafficCar& c = s->traffic_.cars[(size_t)k];
+        WFS_LOG("capture trafic-clignotant : voiture %d à %.1f m, clignotant %s, file %d → %d", k, devant(c), c.signal < 0 ? "gauche" : "droite", c.lane, c.pendLane);
+        c.pending = false; c.signal = 0; c.think = 6; }   // changement de file annulé : pas d'accident avant les scènes suivantes
+    else WFS_LOG("capture trafic-clignotant : aucune voiture à placer");
+    // freinage : même placement, puis la voiture vise 55 % de sa vitesse (feux stop : décélération > 2 m/s²)
+    for (int i = 0; i < 30; i++) image(i % 8 == 0);
+    k = placeVoisine();
+    for (int i = 0; i < 6; i++) image(false);   // feux stop au repos (vitesse stable) avant le freinage
+    bool freine = false;
+    if (k >= 0) {
+        TrafficCar& c = s->traffic_.cars[(size_t)k];
+        c.want = c.speed * 0.55;
+        for (int i = 0; i < 30 && !(freine = (size_t)k < s->feuxStop().size() && s->feuxStop()[(size_t)k].freine()); i++) image(false);
+        for (int i = 0; i < 5; i++) image(false);   // ≈ 0,08 s de freinage : feux stop bien allumés, distance presque inchangée
+    }
     g.render(t); g.render(t);
     r.capturePng(out + "/trafic-freinage.png");
-    if (k >= 0) WFS_LOG("capture trafic-freinage : voiture %d à %.1f m, %.0f km/h, feux stop allumés", k, devant(s->traffic_.cars[(size_t)k]),
-                        s->traffic_.cars[(size_t)k].speed / MAX_SPEED * 260);
-    else WFS_LOG("capture trafic-freinage : aucune voiture qui freine trouvée en 40 s");
+    if (k >= 0) { TrafficCar& c = s->traffic_.cars[(size_t)k];
+        WFS_LOG("capture trafic-freinage : voiture %d à %.1f m, %.0f km/h, feux stop %s", k, devant(c), c.speed / MAX_SPEED * 260,
+                (size_t)k < s->feuxStop().size() && s->feuxStop()[(size_t)k].freine() ? "allumés" : (freine ? "éteints à la capture" : "jamais allumés"));
+        c.want = g.player().speed; }
+    else WFS_LOG("capture trafic-freinage : aucune voiture à placer");
     // variété : modèles et couleurs des voitures visibles, et combien sont en silhouette légère (au-delà de 50 m)
     {
         int vues = 0, loin = 0; std::vector<int> paires;
