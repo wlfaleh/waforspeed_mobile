@@ -2000,3 +2000,33 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Basse 346 → 331 : **cible de 300 non atteinte** ;
   - captures complètes, rien ne manque de près.
 - **Pour le PO** : le reste de la Basse vient des décors répétés (bâtiments, arbres, lampadaires, piétons), qui sont dans la zone monde (`src/world/**`, E2), interdite pendant WFS-18. RG-04 (instanciation) demande une API d'instanciation dans le renderer (E4) et son emploi dans le monde (E2). Je propose un ticket dédié quand E2 sera libre.
+
+### 2026-11-04 13:58:46 — Décision PO : WFS-82, cible Basse ≤ 300 assouplie (PO)
+- **Constat** (bilan agent 4) : Moyenne 607 → 337 (cible ≤ 450 atteinte), Basse 346 → 331 (cible ≤ 300 non atteinte, écart de 10 %).
+- **Décision** : WFS-82 reste ✅, critère Basse **assoupli à 331** (mention dans `TACHES.md`). Raisons : règle « du jeu qui marche, pas la perfection » ; 31 appels de dessin de plus ne se voient pas à l'écran ; l'instanciation (RG-04) coûte une API E4 + un chantier E2 (`src/world/**`, où WFS-81 est en cours), soit 1 à 2 jours sans gain visible.
+- **Pas de ticket créé maintenant.** L'instanciation des décors répétés (bâtiments, arbres, lampadaires, piétons) ne sera ouverte que si l'utilisateur signale des saccades en qualité Basse sur son téléphone (ticket E2 avec API E4, alors prioritaire).
+- **CI de `main` ae7daef** : seule la publication de la Release a échoué (« API rate limit exceeded » de GitHub) ; compilation, tests, APK et bancs verts. Pas une anomalie du code, rien à corriger.
+
+### 2026-11-04 13:58:47 — Début WFS-86 : voitures en course aussi belles qu'au garage (Claude, agent 4) — attribué par le PO
+- Ticket : WFS-86 (P1 Urgent), épic E4 (libre : WFS-82 et WFS-84 fusionnés), branche `feature/waforspeed-86`. Règles : `regles-de-gestion/WFS-86.md`. Seul ticket ⏳ Prêt restant ; l'agent 4 connaît la qualité / LOD (WFS-15, WFS-82).
+- Zone autorisée : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*`. Hors zone : réglages de qualité côté menu (`src/ui/ecrans/reglages.*`, WFS-80 en cours) et `src/game/traffic_system.cpp` (accroches ≤ 10 lignes annoncées au Journal seulement). Ne pas toucher à `feuxVoiture` (WFS-84) ni aux lampadaires (WFS-81).
+- Critères : cause notée au Journal (qualité réelle, échelle de rendu, MSAA, ombres/reflets/bloom, LOD du joueur, éclairage) ; voiture du joueur toujours en modèle complet ; course = garage en netteté et reflets en Moyenne/Haute ; Basse nette sans perte d'images/s ; téléphone en Moyenne ou Haute par défaut s'il tient 30 images/s ; capture course vs garage de la même voiture au banc.
+- Attention WFS-82 : le passage en silhouette du trafic (25 m en Basse) ne doit jamais toucher la voiture du joueur.
+- Plan court : comparer les réglages garage / course, corriger l'écart, capture côte à côte au banc, fusion par confiance si > 50 %.
+
+### 2026-11-04 13:58:51 — WFS-85 : caméra de poursuite plus haute, PR #71 en revue (Claude, agent 5)
+- **Fait** (zone E3) : `camera_vue.*` : la poursuite par défaut reprend `updateCamera` du jeu web en vue « loin » (8 m derrière, 2,5 m de haut, regard 14 m devant à 0,9 m, 62°) ; nouvelle vue Proche (ancienne vue basse : 4,6 m, 1,28 m, 58°) ; suivi lissé, champ de vision selon la vitesse, jamais sous la route ; constantes `POURSUITE_LOIN` / `POURSUITE_PROCHE`. Cycle Poursuite → Proche → Capot → Cockpit. `sauvegarde.cpp` : `cam=proche`. `camera_banc.cpp` : capture `camera-proche`. Tests `test_systems` et `test_sauvegarde` à jour.
+- **Accroche annoncée** : `src/ui/ecrans/reglages.cpp` (E8, 5 lignes : 4 vues dans la ligne « Caméra »).
+- **Vérification** : compilation et tests CPU OK ; captures (au moins 3 voitures devant) : CI de la PR #71.
+- **CI de `main` après WFS-84** : voir l'entrée suivante.
+
+
+### 2026-11-04 14:02:41 — WFS-86 voiture nette en course : cause trouvée, fusionné par confiance, PR #72 (Claude, agent 4)
+- **Cause (RG-01)** : la résolution dynamique de WFS-15, active en course seulement, baissait jusqu'à 0,6 sous 40 images/s. Cette valeur se **multipliait** à l'échelle du niveau, appliquée aux pixels physiques : Haute 60 %, Moyenne 45 %, Basse 30 % sur un téléphone lent. Le garage, vu avant la course, est à 100 %. D'où une voiture floue en course mais nette au garage. Le jeu web applique `resScale` à une densité déjà plafonnée (DPR ≤ 1,5 sur téléphone) et ne descend jamais sous environ 0,9 pixel CSS.
+- **Autres pistes vérifiées, hors de cause** : MSAA identique ; voiture du joueur toujours en modèle complet (la silhouette ne concerne que le trafic) ; voiture du joueur jamais masquée par WFS-82 ; matériau et vernis identiques.
+- **Correctif** : `echelleRendu` avec un plancher de 0,6 en Moyenne et Haute, et une Basse fixe à 0,5. `test_qualite` est étendu. Au banc : échelle réelle par niveau au journal, et capture `voiture-course-haute` à comparer à `garage-golf`.
+- **Vérification** : tests et compilation OK. **Reste à confirmer sur le téléphone de l'utilisateur.**
+
+### 2026-11-04 14:15:50 — CI de main après WFS-84 : compilation, APK et bancs verts ; publication en échec (pas le code) (Claude, agent 5)
+- Run 41842506874 (`afd0816`, fusion de WFS-84) : android et les 7 bancs (nuit comprise) **verts** ; seul le job **publication** échoue : `release not found` puis `error checking for existing release: HTTP 403` sur la Release `apercu`. Même échec au run précédent (`ae7daef`, autre ticket) : problème d'accès à l'API GitHub ou de remplacement de la Release, pas une erreur de compilation ni de capture. La Release `apercu` est absente pour le moment (404).
+- Run suivant de `main` (41843628141) en cours : je regarde s'il republie `apercu`. Sinon, le PO ou l'utilisateur devront vérifier les droits du jeton de la CI.
