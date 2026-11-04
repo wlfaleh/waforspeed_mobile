@@ -1643,3 +1643,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
   - Zone : `src/game/game.{h,cpp}` ; accroches ≤ 10 lignes annoncées au Journal : `src/game/course_system.cpp` (E3, WFS-24 et WFS-70 en cours : synchroniser avec `main`), `src/ui/ecrans/chargement.cpp` / `terrain.cpp`, `src/platform/android_main.cpp` / `desktop_main.cpp`. Ne pas toucher la partie « volant » de `onTouch` / `drawControls` (WFS-70).
   - Critères : `terrain-chargement`, `terrain-arrivee` (décompte, chrono à zéro, voiture gardée), `terrain-fige-1/2` (chrono figé au journal), pause → reprise sans remise à zéro, autres captures inchangées.
   - Plan court : point d'extension de progression dans `Game` branché par la plateforme → écran WFS-35 pendant `init` → course neuve (Rejouer) → `CourseSystem` figé hors `Course` → scènes de banc → fusion (règle en vigueur), `qa/Check.md`.
+
+### 2026-11-04 00:51:56 — PO : plus de tickets simulateur (po-scrum-master)
+- **Décision de l'utilisateur** : le simulateur est hors objectif. Règle ajoutée à `po-scrum-master.md` : plus de création ni d'attribution de ticket simulateur (« Vérification simulateur EX » supprimée du processus du PO). Tickets déjà fusionnés ou en cours non touchés.
