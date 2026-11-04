@@ -1502,3 +1502,13 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Accroche annoncée** : `src/platform/desktop_main.cpp` (include, `WFS_BANC=pietons`, `benchPietons` dans `partie2`, 3 lignes).
 - CI verte ; captures `pietons-*` de la CI identiques au banc local. PR #42 fusionnée (710c9fc) ; ajouté dans `qa/Check.md`. Toutes les captures de ville changent (piétons visibles).
 - Pour la suite : WFS-73 (conducteurs) n'attend plus WFS-19. Limite constatée : 16 instances à squelette par image (`SKIN_MAX_INSTANCES`), à relever par un ticket E0 si conducteurs et piétons doivent être affichés ensemble en plus grand nombre.
+
+### 2026-11-04 00:05:25 — WFS-53 et WFS-09 attribués à Claude (session trafic), deux sujets en parallèle (PO)
+- **WFS-53** — Cartes Campagne et Grand Prix + finitions des arbres, épic **E2**, P2 Haute (ticket prêt le plus prioritaire). Dépendances WFS-07, WFS-14, WFS-34 : toutes ✅. Branche `feature/waforspeed-53`. Règles : `regles-de-gestion/WFS-53.md` + `WFS-54.md` + `WFS-43.md` (périmètre élargi). Zone : `src/world/**`, `assets/world/**`, `shaders/world_*`.
+  - Critères : captures `carte-campagne-jour` / `-nuit` et Grand Prix (collines, champs, haies, fermes, éoliennes animées ; circuit) ; finitions des arbres de WFS-43 ; ≤ 300 appels de dessin ; autres cartes inchangées.
+  - À réutiliser : `js/world/decor.js` (`DECOR`, `ZONES`), `js/world/life.js` (`vegBroadleaf`, `vegPine`), `js/world/maps.js` (`envFor`) ; socle natif WFS-14 et `src/world/vegetation.*`.
+- **WFS-09** — Nuit complète : phares, éclairage public, route mouillée et reflets, épic **E4**, P3 Moyenne (plus petit numéro parmi les P3 de E4, épic libre). Dépendance WFS-07 ✅. Branche `feature/waforspeed-09`. Règles : `regles-de-gestion/WFS-09.md` + `WFS-16.md`. Zone : `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*` (`scene_skin.frag` à garder synchrone avec `scene.frag`).
+  - Critères : nuit = cône de phares sur la chaussée, feux arrière / stop, halos des lampadaires, route mouillée avec reflets ; jour sans faisceau ; campagne de nuit sans lampadaire ; coût GPU au Journal.
+  - À réutiliser : `js/cars/player.js` (`buildBeam`, `updateBeam`), `js/cars/models.js` (`BEAM`, feux par matériau), boucle des lampadaires de `js/world/scene.js`, `envFor`.
+- **Pourquoi pas WFS-70 (E3, P2)** : E3 a encore WFS-66 actif (un ticket actif par épic). WFS-70 sera le prochain ticket de E3 dès la fusion de WFS-66.
+- **Exception « un ticket par agent »** reconduite à la demande de l'utilisateur (deux sujets en parallèle, zones E2 et E4 séparées) ; WFS-66 doit être fusionné avant de commencer le second.
