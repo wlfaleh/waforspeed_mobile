@@ -2428,3 +2428,27 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   4. Écran de fin : marges de 16 px et 12 px, panneau agrandi de 28 px, chaque `biseau()` en un seul `uiQuad`.
 - **Coordination** : `trafic-clignotant` est aussi une capture critère de WFS-100. La rapprocher l'aide ; le signaler dans `qa/Check.md`.
 - **Suite** : le développeur crée et pousse tout de suite la branche `feature/waforspeed-101`. Il synchronise avec `main` avant chaque envoi. Fusion par confiance si elle dépasse 50 %, sinon attendre la CI verte et regarder les captures.
+
+### 2026-11-04 22:38:29 — Recette de nuit : WFS-98, WFS-96, WFS-89 ; anomalies vérifiées ; ANO-42 à ANO-45 (qa-lead)
+- **Captures** :
+  - WFS-98 : Release `apercu` de main (commit `f542093`, run 41920610966 vert).
+  - WFS-96 et WFS-89 : Releases des branches `apercu-waforspeed-96` (`d50a282`) et `apercu-waforspeed-89` (`ce35ded`). Les runs de main de leurs fusions (41924411860, 41924029885) étaient encore en cours, et `apercu` en était restée à `f542093`. Revue sur main à refaire quand la Release sera à jour.
+- **Verdicts** :
+  - **WFS-98 : PASSABLE AVEC ANOMALIES MINEURES**. Pédales GAZ / FREIN du web, nitro à anneau vert acide, volant vitré, gaucher en miroir, un seul compteur en cockpit, Golf entière au tiers bas pendant le demi-tour.
+  - **WFS-96 : VALIDÉ**. Showroom → garage → « Choisir » → menu, quartiers sur la carte, voile continu, titre PAUSE, focus manette.
+  - **WFS-89 : PASSABLE AVEC ANOMALIES MINEURES**. Périmètre de la décision B : saisie du code, Wi-Fi local, note « Sans Internet », relais simulé.
+- **Anomalies vérifiées (✅)** : ANO-24, ANO-30, ANO-31 (WFS-98) ; ANO-15, ANO-34 (WFS-96, sur les captures de la branche) ; ANO-01 (WFS-43/53), ANO-04 (WFS-48), ANO-10 (WFS-49), ANO-14 (WFS-57).
+- **Anomalies non rouvertes** :
+  - ANO-02 (ombres des arbres) : pas vérifiable, les arbres des captures sont à l'ombre des immeubles ; statut inchangé.
+  - ANO-20 : POURSUITE corrigé par WFS-98, mais MENU (`pause.cpp`) reste rayé ; statut inchangé, WFS-102.
+- **Nouvelles anomalies (toutes mineures, 🆕 dans `anno.md`)** :
+  - ANO-42 (WFS-41) : illustration du terrain en bandes, avec raccords sombres et nuages qui se chevauchent.
+  - ANO-43 (WFS-89) : touche effacer illisible.
+  - ANO-44 (WFS-89) : aide sous le code du salon absente.
+  - ANO-45 (WFS-98) : commandes tactiles visibles pendant le fondu du chargement et sous l'écran de fin.
+- **Pour le PO** :
+  - Le clavier du salon (touches ≈ 26 dp en 2400x1080) et les commandes de course (gaz ≈ 37 dp, nitro ≈ 39 dp) relèvent d'ANO-19 : à inclure dans WFS-102.
+  - Aucune nouvelle anomalie bloquante, donc aucun ticket de correction prioritaire.
+- **Non recetté** :
+  - WFS-99 (PR #81, fusionné à 22:32) : pas de Release `apercu-waforspeed-99`, et le run de main 41926218379 était en cours. Reste ☐ pour la prochaine recette.
+  - WFS-78 et WFS-79 : GEL iOS.
