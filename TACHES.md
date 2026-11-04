@@ -155,7 +155,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | WFS-60 ✅ | `feature/waforspeed-67` | #52 |  |
 | — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
 | P1 Urgent | WFS-69 | [STABLE] CI : banc d'essai en jobs parallèles (45 → ≈ 10 min), plus de builds inutiles ni annulés | E7 | ✅ Fusionné (QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | — | `feature/waforspeed-69` | [#37](https://github.com/wlfaleh/waforspeed_mobile/pull/37) |  |
-| P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | 🔧 En cours | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-70` |  |  |
+| P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-70` | [#51](https://github.com/wlfaleh/waforspeed_mobile/pull/51) |  |
 | P3 Moyenne | WFS-71 | Ville vivante : commerces et terrasses, portique 3D, enseignes | E2 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) (exception : 2e ticket E2, fichiers séparés de WFS-53 : nouveaux fichiers + accroches ≤ 10 lignes) | agent 3 (session 011cpqZd), 2026-11-04 | WFS-06 ✅ | `feature/waforspeed-71` |  |  |
 | P2 Haute | WFS-72 | Point d'extension : apparence des personnages (peau, cheveux, vêtements) | E0 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-63 ✅ | `feature/waforspeed-72` | #40 (fusionnée, 4314bf7) |  |
 | P3 Moyenne | WFS-73 | Conducteurs dans les voitures (siège mesuré au chargement, buste figé, joueur / trafic / duel) | E0 | ✅ Fusionné (QA de nuit à faire) |  | WFS-19 | `feature/waforspeed-73` | #42 (fusionnée, 710c9fc) |  |
@@ -388,8 +388,8 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-69 — [STABLE] CI : banc en jobs parallèles, fin des builds inutiles** · E7 · priorité P1 Urgent · ✅ Fusionné le 2026-11-03 (PR #37, QA de nuit : `qa/Check.md`) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-69.md`)
 - [ ] doc seule = aucun build ; un seul build par commit ; `main` jamais annulé
 
-**WFS-70 — Ressenti de conduite** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-70.md`)
-- [ ] choc = secousse + ralenti ; 2 modes de direction ; réduire les mouvements
+**WFS-70 — Ressenti de conduite** · E3 · priorité P2 Haute · ✅ Fusionné (par confiance, QA de nuit à faire), PR [#51](https://github.com/wlfaleh/waforspeed_mobile/pull/51) (règles : `regles-de-gestion/WFS-70.md`)
+- [x] choc = secousse + ralenti ; 2 modes de direction ; réduire les mouvements
 
 **WFS-71 — Ville vivante** · E2 · priorité P3 Moyenne · ✅ Fusionné (fusion par confiance, QA de nuit à faire) — agent 3 (session 011cpqZd), 2026-11-04, branche `feature/waforspeed-71` (règles : `regles-de-gestion/WFS-71.md`, section « Zone et partage avec WFS-53 »)
 - [ ] terrasses, portique, enseignes visibles
