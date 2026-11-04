@@ -1819,3 +1819,6 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 ### 2026-11-04 08:06:06 — Demande de ticket de la session trafic : aucun ticket attribuable (PO)
 - **Constat** : aucun ticket ⏳ Prêt. Occupées : E2 (WFS-53), E3 (WFS-70), E4 (WFS-09), E5 (WFS-77 en revue), E7 (WFS-22). En attente : WFS-18 (attend WFS-09), WFS-75 (attend WFS-70). Épics libres E0, E6, E8 sans besoin ouvert. `anno.md` sans anomalie 🆕, aucun rapport QA nouveau depuis WFS-63. WFS-64 reste suspendu (gel non reproduit).
 - **Décision** : rien d'attribué, aucun ticket artificiel créé. La session trafic tient déjà 4 tickets (WFS-53, WFS-09, WFS-70, WFS-22) : priorité à les finir. Fin de WFS-70 → WFS-75 (E8) passe ⏳ Prêt ; fin de WFS-09 → WFS-18 (E2, après WFS-53) passe ⏳ Prêt.
+
+### 2026-11-04 08:10:53 — CI de main après WFS-24 (Claude, session trafic, agent WFS-24)
+- Run 41795489550 (`be213ec`) : android, texte (`test_sauvegarde`, double banc `sauvegarde`), partie1, partie2, vitrines, vie, ecrans-2400 **verts**. Seule la **publication** a échoué : `HTTP 403: API rate limit exceeded` de GitHub pendant l'envoi des 168 captures (aucun lien avec le code). La prochaine construction de `main` republiera la Release d'aperçu.
