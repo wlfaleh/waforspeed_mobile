@@ -7,6 +7,8 @@
 #include <string>
 #include "../src/game/duel.h"
 #include "../src/game/reseau_udp.h"   // WFS-83
+#include "../src/game/reseau_peerjs.h"   // WFS-89
+#include "../src/game/binarypack.h"
 #include <chrono>
 #include <thread>
 #include "../src/game/player.h"
@@ -21,6 +23,93 @@ static int echecs = 0;
 static double msReel() { using namespace std::chrono; return duration<double, std::milli>(steady_clock::now().time_since_epoch()).count(); }
 static void attendre(int ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
 template <class F> static bool jusqua(F ok, int msMax) { for (int t = 0; t < msMax; t += 5) { if (ok()) return true; attendre(5); } return ok(); }
+// WFS-89 : duel par Internet sur un réseau PeerJS simulé (mêmes messages BinaryPack que le jeu web)
+static void testInternet() {
+    using namespace wfs::reseau;
+    auto net = std::make_shared<ReseauMemoire>();
+    Session a, b;
+    auto ta = std::make_unique<TransportPeerJs>(net->fabrique(), "K7QX"); TransportPeerJs* pa = ta.get();
+    VERIFIE(a.join(std::move(ta), "k7qx", true, "Alice", "golf", "bleu", "plage/nuit"), "Internet : création");
+    VERIFIE(pa->etat() == TransportPeerJs::Etat::Pret && pa->relais() && pa->monId() == "waforspeed-wfs-k7qx-v1", "Internet : le créateur devient le relais");
+    auto tb = std::make_unique<TransportPeerJs>(net->fabrique(), "k7qx"); TransportPeerJs* pb = tb.get();
+    VERIFIE(b.join(std::move(tb), "k7qx", false, "Bob", "m4", "", ""), "Internet : rejoindre");
+    VERIFIE(pb->etat() == TransportPeerJs::Etat::Pret && !pb->relais(), "Internet : ID-TAKEN → invité connecté au relais");
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));   // groupage de 30 ms
+    b.others(); a.others();
+    VERIFIE(a.others().size() == 1 && b.others().size() == 1, "Internet : les deux joueurs ne se voient pas (%zu / %zu)", a.others().size(), b.others().size());
+    if (b.others().size() == 1) {
+        const auto vus = b.others(); const auto& h = vus[0].f;
+        VERIFIE(str(h, "n") == "Alice" && str(h, "host") == "1" && str(h, "map") == "plage/nuit" && str(h, "car") == "golf", "Internet : présence de l'hôte vue par l'invité");
+    }
+    b.setReady(true); a.setReady(true);
+    bool partiA = false, partiB = false;
+    for (int i = 0; i < 100 && !(partiA && partiB); i++) {   // comme le jeu : les deux appareils lisent leur transport à chaque image
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        partiA = partiA || a.checkStart(); partiB = partiB || b.checkStart(); a.others(); b.others();
+    }
+    VERIFIE(partiA && partiB && a.seed() == b.seed(), "Internet : départ commun, même graine (%d %d)", partiA, partiB);
+    VERIFIE(std::abs(a.trafficClock() - b.trafficClock()) < 0.05, "Internet : horloge commune (%.3f / %.3f)", a.trafficClock(), b.trafficClock());
+    std::printf("duel Internet (PeerJS simulé) : relais, ID-TAKEN → invité, présences, départ commun, graine %u : OK\n", a.seed());
+
+    // un « navigateur » (jeu web) rejoint le relais : présence au format du jeu web (nombres, host null, ft null)
+    std::vector<std::vector<uint8_t>> recu;
+    auto web = net->fabrique()();
+    EvenementsPair ev; std::string webId;
+    ev.ouvert = [&](const std::string& id) { webId = id; };
+    ev.donnees = [&](const std::string&, std::vector<uint8_t> o) { recu.push_back(std::move(o)); };
+    web->ouvrir("", ev); web->connecter(idRelais("k7qx"));
+    wfs::bp::Valeur pr = wfs::bp::Valeur::objet();
+    pr.ajoute("n", wfs::bp::Valeur::texte("Web")); pr.ajoute("st", wfs::bp::Valeur::texte("lobby")); pr.ajoute("r", wfs::bp::Valeur::nombre(0));
+    pr.ajoute("d", wfs::bp::Valeur::nombre(1234)); pr.ajoute("x", wfs::bp::Valeur::nombre(-0.45)); pr.ajoute("ft", wfs::bp::Valeur::nul());
+    pr.ajoute("host", wfs::bp::Valeur::nul()); pr.ajoute("car", wfs::bp::Valeur::texte("p911"));
+    wfs::bp::Valeur m = wfs::bp::Valeur::objet(); m.ajoute("t", wfs::bp::Valeur::texte("p")); m.ajoute("presence", pr);
+    web->envoyer(idRelais("k7qx"), wfs::bp::pack(m));
+    bool vuWeb = false;
+    for (const auto& p : a.others()) if (str(p.f, "n") == "Web") vuWeb = num(p.f, "d") == 1234 && num(p.f, "x") == -0.45 && str(p.f, "car") == "p911" && str(p.f, "host") == "";
+    VERIFIE(vuWeb, "Internet : présence du jeu web lue par le relais natif");
+    bool listeOk = false;   // ce que le navigateur reçoit : {t:'all', list} avec host: true (booléen), map et tod séparés, nombres
+    for (const auto& o : recu) {
+        wfs::bp::Valeur v; if (!wfs::bp::unpack(o, v) || !v.champ("list")) continue;
+        for (const auto& l : v.champ("list")->tab)
+            if (l.tab.size() == 2 && l.tab[0].s == "waforspeed-wfs-k7qx-v1") {
+                const auto* h = l.tab[1].champ("host"); const auto* mp = l.tab[1].champ("map"); const auto* td = l.tab[1].champ("tod"); const auto* r = l.tab[1].champ("r");
+                listeOk = h && h->type == wfs::bp::Valeur::Booleen && h->b && mp && mp->s == "plage" && td && td->s == "nuit" && r && r->type == wfs::bp::Valeur::Nombre;
+            }
+    }
+    VERIFIE(listeOk, "Internet : liste du relais au format du jeu web");
+    // messages hostiles du « navigateur » : ignorés
+    web->envoyer(idRelais("k7qx"), {0xdd, 0x7f, 0xff, 0xff, 0xff}); web->envoyer(idRelais("k7qx"), {0x82, 0xc4}); web->envoyer(idRelais("k7qx"), wfs::bp::pack(wfs::bp::Valeur::texte("p")));
+    VERIFIE(a.others().size() == 2, "Internet : messages hostiles");
+    web->fermer();
+    VERIFIE(a.others().size() == 1, "Internet : départ du navigateur");
+    // l'invité part : le relais le retire ; le relais part : l'invité perd la connexion
+    b.leave();
+    VERIFIE(a.others().empty(), "Internet : départ de l'invité");
+    Session c; auto tc = std::make_unique<TransportPeerJs>(net->fabrique(), "k7qx"); TransportPeerJs* pc = tc.get();
+    c.join(std::move(tc), "k7qx", false, "Cleo", "golf", "", "");
+    VERIFIE(pc->etat() == TransportPeerJs::Etat::Pret, "Internet : nouvel invité");
+    a.leave();
+    VERIFIE(pc->etat() == TransportPeerJs::Etat::Perdu && c.others().empty(), "Internet : relais parti → connexion perdue");
+    c.leave();
+    // hors ligne : échec propre (note orange du salon), aucun plantage
+    net->horsLigne = true;
+    TransportPeerJs hors(net->fabrique(), "zz99");
+    VERIFIE(hors.etat() == TransportPeerJs::Etat::Echec, "Internet : hors ligne");
+    TransportPeerJs sansReseau(nullptr, "zz99");
+    VERIFIE(sansReseau.etat() == TransportPeerJs::Etat::Echec && sansReseau.peers().empty(), "Internet : version sans réseau PeerJS");
+    net->horsLigne = false;
+    // deux transports à la fois : l'adversaire arrive par Internet → Internet est gardé, le Wi-Fi local est quitté
+    auto salon = std::make_shared<SalonMemoire>();
+    Session d, e;
+    d.join(std::make_unique<TransportDouble>(std::make_unique<TransportMemoire>(salon, "D"), std::make_unique<TransportPeerJs>(net->fabrique(), "ab23")), "ab23", true, "Dan", "golf", "", "ville/jour");
+    e.join(std::make_unique<TransportPeerJs>(net->fabrique(), "ab23"), "ab23", false, "Eve", "golf", "", "");
+    std::this_thread::sleep_for(std::chrono::milliseconds(40)); e.others();
+    const auto vusD = d.others();
+    VERIFIE(vusD.size() == 1 && str(vusD[0].f, "n") == "Eve" && salon->joueurs.empty(), "Internet : double transport, Internet choisi");
+    d.leave(); e.leave();
+    std::printf("duel Internet : présence du jeu web lue, liste au format web, messages hostiles ignorés, départs, hors ligne, double transport : OK\n");
+}
+
 static void testReseau() {
     using namespace wfs::reseau;
     double avanceB = 0;   // l'horloge de B avance de 777 777 ms sur celle de A (appareils différents), + avanceB (test des 3 s)
@@ -187,6 +276,7 @@ int main() {
     a.leave(); b.updateGhosts(0.1);
     VERIFIE(b.ghosts().empty(), "joueur parti : fantôme retiré");
     testReseau();   // WFS-83
+    testInternet(); // WFS-89
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("duel : tout est OK\n");
     return 0;

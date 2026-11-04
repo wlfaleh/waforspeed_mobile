@@ -14,10 +14,12 @@
 #include "../render/renderer.h"
 #include "text.h"
 #include "../platform/manette.h"   // WFS-22
+#include "../audio/sfx.h"   // WFS-96 : son du changement de voiture
 
 namespace wfs {
 namespace ecrans {
 namespace {
+bool g_regarder = false;   // WFS-96 : garageFor = 'look'
 
 // jetons :root du jeu web (codes sRGB) : css/style.css
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
@@ -201,7 +203,8 @@ public:
             liberer();   // mémoire rendue pendant la course
             // « Choisir » : Garage → Menu → Course, appliqués avant l'image suivante (le menu n'est jamais dessiné) ;
             // l'entrée en course depuis le menu remet la course à zéro (même chemin que « Recommencer » de la pause)
-            if (nouveau == Ecran::Menu && choisi_) { choisi_ = false; g.allerA(Ecran::Terrain); }   // WFS-41 : étape 2, le terrain
+            if (nouveau == Ecran::Menu && choisi_ && !g_regarder) { g.allerA(Ecran::Terrain); }   // WFS-41 : étape 2, le terrain
+            choisi_ = g_regarder = false;   // WFS-96 : mode regarder → on reste au menu
         }
     }
 
@@ -460,7 +463,7 @@ private:
         r_->vk().waitIdle(); r_->destroy(voiture_); voiture_ = Model{}; charge_ = -1;
     }
     void aller(int i, int dir) {   // cycleCar / selectCar : nouvelle voiture, arrivée en glissant (gSlide = dir)
-        index_ = (i + CAR_COUNT) % CAR_COUNT; slide_ = (float)dir;
+        index_ = (i + CAR_COUNT) % CAR_COUNT; slide_ = (float)dir; sfxInterface(SfxId::Garage);   // WFS-96 : selectCar
         charger(index_);
         WFS_LOG("garage : %s %s (%s / %d)", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(), CAR_COUNT);
     }
@@ -476,6 +479,9 @@ private:
     int doigt_ = -1; bool glisse_ = false, choisi_ = false;
 };
 Garage* g_garage = nullptr;
+} // namespace
+void garageRegarder() { g_regarder = true; }
+namespace {
 
 class GarageEnregistre : public Garage {
 public:

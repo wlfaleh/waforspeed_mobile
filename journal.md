@@ -2284,3 +2284,85 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Synchroniser avec `main` (`git fetch origin && git merge origin/main`) avant chaque envoi et chaque CI.
   - Si la confiance dépasse 50 %, fusionner directement. Sinon, attendre la CI verte et regarder les captures.
   - Au moment de la fusion, ajouter une ligne dans `qa/Check.md`.
+
+### 2026-11-04 22:14:49 — Début WFS-103 — Revue et fusion des PR en attente, attribution à Claude (session trafic) (PO / Scrum Master)
+- **Ticket** : WFS-103, épic E7 (transverse, n'occupe pas l'épic : WFS-91 reste attribuable), P1 Urgent. Demande de l'utilisateur (`tache utilisateur.md`) : PR ouvertes depuis des heures.
+- **Exception assumée** : Claude (session trafic) a déjà WFS-96 🔧 (développement arrêté à la limite d'usage). WFS-103 couvre la fusion de sa PR #79 : WFS-96 n'est pas réattribué.
+- **Zone autorisée** : fichiers des PR revues (résolution de conflits seulement), `TACHES.md`, `qa/Check.md`, `journal.md`, `anno.md`. Aucune nouvelle fonctionnalité. #76 (WFS-88, iOS) : gel iOS, on n'y touche pas.
+- **Règles** : `regles-de-gestion/WFS-103.md` (RG-01 à RG-11).
+- **Plan court** :
+  1. #77 WFS-89 : synchroniser avec `main`, compiler, lancer les tests CPU, regarder CI et captures, puis fusionner la partie faite (décision B).
+  2. #79 WFS-96 : resynchroniser sur le nouveau `main`, mêmes vérifications, puis fusionner ce qui marche et lister les règles non faites.
+  3. Après chaque fusion : `TACHES.md`, `qa/Check.md`, Journal.
+- **Nouvelle règle permanente (RG-10)** : aucune PR ne reste ouverte plus de 2 h sans décision. La décision est : fusionnée, bloquée (au Journal) ou gel iOS.
+
+### 2026-11-04 22:15:33 — tache utilisateur.md : PR en attente, ticket WFS-103 demandé et pris (Claude, session trafic)
+- Demande de l'utilisateur : regarder et fusionner les PR qui traînent. PR ouvertes : #77 (WFS-89), #79 (WFS-96), #76 (WFS-88, GEL iOS).
+- Le PO a créé WFS-103 (commit e7c1c9f) et me l'a attribué ; réponse écrite dans `tache utilisateur.md`. Les anciens tickets de ma session ne sont pas repris (ordre de l'utilisateur : « oublie le ticket »).
+
+### 2026-11-04 22:18:16 — WFS-103 : PR #77 (WFS-89) fusionnée (Claude, session trafic)
+- Synchronisée avec main (conflit de `.github/workflows/build.yml` : ligne des tests, `test_binarypack` et `test_conduite_libre` gardés), compilation et tests CPU de la CI OK en local, CI de la branche verte (run 41883025840), captures du salon regardées : rien de bloquant. Fusion fb50d09.
+- `TACHES.md` : WFS-89 ✅ (décision B, vrai réseau → WFS-92 ⏸) ; ligne dans `qa/Check.md`. Suite : PR #79 (WFS-96). #76 (WFS-88) non touchée (GEL iOS).
+
+### 2026-11-04 22:20:27 — PR en attente : analyse et ticket WFS-103 (PO / Scrum Master)
+- **Demande** : ordre de l'utilisateur dans `tache utilisateur.md` (commits f58ad7b, a87df30), transmis par Copilot (session 0e5c192d).
+  - Les essais de fusion ont été faits en mémoire (`git merge-tree`), avec une compilation dans le dossier ignoré `build/`.
+  - Aucune branche ni aucune PR n'a été touchée.
+- **Pas de second ticket.** WFS-103 a été créé pendant l'analyse (22:14:49, e7c1c9f) pour la même demande, et attribué à Claude (session trafic). Je ne crée pas de doublon. L'attribution et l'ordre (#77 puis #79) restent tels quels.
+- **#77 (WFS-89, `feature/waforspeed-89`)**
+  - CI verte sur le commit de code ce35ded (run 41883025840, 18:02 → 18:22, APK `apercu-waforspeed-89`). Le dernier commit 02d8dc4 ne touche que des `.md` (`paths-ignore`), d'où « no checks » sur la PR.
+  - Retard : 29 commits sur `main`.
+  - Un seul conflit : la ligne « Tests CPU » de `.github/workflows/build.yml` (`test_binarypack` de #77 contre `test_conduite_libre` de WFS-90). `CMakeLists.txt` se fusionnait seul.
+  - Zone respectée : accroches annoncées à 17:57:26.
+  - Captures `salon-code-saisi`, `salon-internet`, `salon-hors-ligne` : rien de bloquant.
+  - La décision B (18:00:55) s'appliquait depuis 18:22, mais le titulaire (agent 5) était inactif depuis environ 4 h.
+  - Décision : fusionnable. **Fusionnée à 22:17:54 par WFS-103 (fb50d09)**. Le conflit est bien résolu : les deux tests sont dans `build.yml`.
+  - CI de `main` en cours (run 41924029885).
+- **#79 (WFS-96, `feature/waforspeed-96`)**
+  - CI verte (run 41890412176, 18:46 → 19:07, APK `apercu-waforspeed-96`).
+  - Retard : 30 commits. Se fusionne avec `main` f127cfd **sans conflit**.
+  - Zone respectée : `src/ui/ecrans/**`, plus les accroches permises par `WFS-96.md`. Ces accroches n'ont **jamais été annoncées** au Journal :
+    - `garage.cpp` / `garage.h` : mode « regarder » ;
+    - `sfx.*` : 2 sons ;
+    - `manette_jeu.cpp` : focus.
+  - Captures `menu-showroom`, `showroom-choisir`, `terrain-0`, `menu-0` : rien de bloquant.
+  - Aucun rapport QA ni ligne `qa/Check.md`. ANO-15 et ANO-34 sont planifiées pour WFS-96.
+  - **Décision : fusionnable maintenant** après synchronisation, compilation et tests CPU de la CI. Confiance du PO ≈ 85 % : fusion par confiance permise. Les accroches sont à annoncer dans l'entrée de fusion.
+- **Vérification du PO** sur l'arbre `main` + #79 + #77, fusionné en mémoire :
+  - le banc PC compile : salon, menu, terrain, pause, garage, sfx, manette_jeu, reseau_peerjs, binarypack, duel_system, game ;
+  - `test_binarypack`, `test_duel`, `test_conduite_libre` et `test_manette` passent.
+  - Cela ne remplace pas la vérification du titulaire (RG-04).
+- **#76 (WFS-88, iOS)** : **gel iOS**. Ni fusion, ni ticket, ni fermeture : la PR reste ouverte. CI verte, 35 commits de retard, sans conflit avec `main` à 22:20.
+- **Règles de WFS-103 complétées** (`regles-de-gestion/WFS-103.md`)
+  - RG-04 corrigée : les tests CPU sont la ligne « Tests CPU » de `build.yml`, **pas `ctest`**. `CMakeLists.txt` n'a aucun `add_test` : `ctest` ne lance rien.
+  - RG-03 : ajout du constat ci-dessus (#77 faite, #79 sans conflit, accroches à annoncer, WFS-99).
+- **Coordination avec WFS-99 (Copilot)**
+  - Copilot garde WFS-99 et ne prend pas WFS-103 : un ticket à la fois, et WFS-103 est déjà en cours.
+  - Dès la fusion de #79 : `git merge origin/main` sur `feature/waforspeed-99`, en gardant l'accroche « regarder » de `garage.*` (RG-07 de WFS-99).
+- **Si WFS-103 s'arrête** (aucun commit ni entrée au Journal pendant 2 h, RG-10) : le PO le remet en ⏳ Prêt et le donne au premier développeur libre.
+
+### 2026-11-04 22:20:57 — WFS-103 : PR #79 (WFS-96) fusionnée ; plus aucune PR en attente hors iOS (Claude, session trafic)
+- #79 resynchronisée avec main (après #77) sans conflit, compilation et tests CPU OK, CI de la branche verte (run 41890412176), captures `menu-0`, `menu-showroom`, `terrain-0`, `pause-0` regardées : rien de bloquant. Fusion 6863763.
+- WFS-96 ✅ dans `TACHES.md` ; ANO-15 et ANO-34 ✅ Corrigées dans `anno.md` ; ligne dans `qa/Check.md` ; réponse mise à jour dans `tache utilisateur.md`.
+- PR ouvertes restantes : #76 (WFS-88, GEL iOS, décision : laissée ouverte). WFS-103 reste 🔍 jusqu'à la CI verte de main.
+
+### 2026-11-04 22:21:38 — WFS-100 attribué à Claude (session trafic) (PO)
+- Ticket : WFS-100 — Correction : carrosseries propres et bloom sans fantômes (ANO-21, ANO-28, ANO-27) · E4 · P1 Urgent · branche `feature/waforspeed-100` · règles `regles-de-gestion/WFS-100.md`.
+- Choix : P1 prêt au plus petit numéro (WFS-100 avant WFS-101) ; E4 sans autre ticket actif (WFS-88 ⏸ gel iOS) ; zone disjointe de WFS-99 (Copilot, `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`). WFS-103 du même agent est transverse et ne reste qu'en attente de la CI de main : l'agent la clôt (✅) dès qu'elle est verte, avant de fusionner WFS-100.
+- Zone autorisée : `src/render/renderer.cpp`, `src/render/vk.*`, `src/render/model_loader.*`, `src/render/qualite_*`, `shaders/scene*`, `shaders/post*`, `shaders/common.glsl` ; `renderer.h` : ajout de champs ≤ 10 lignes annoncé au Journal.
+- Interdit : `nuit.cpp`, `bench_nuit.*` (WFS-97), `effets_*`, `bench_effets.*` (WFS-101), `bench_spots.*`, `src/ui/garage.*` (WFS-99), `shaders/ui*` (WFS-95), `src/platform/**`, `.github/**` (WFS-91), iOS.
+- Critères : aucun trait brillant flottant (vitrines, garage, `trafic-clignotant`) ; peinture unie Giulia / X5 / Model 3 ; bloom 5 niveaux à flou gaussien 9 prises, halo rond sans fantôme ni traînée la nuit ; `qualite-basse` inchangée ; ≤ +1,5 ms GPU en Moyenne ; tests CPU verts.
+- Plan : RG-01/02 (spéculaire plafonné à 4,0, couverture des pièces fines opaques) → RG-03 (`MAT_PAINT` = couleur choisie, texture ignorée) → RG-04 (bloom dual filter, CLAMP_TO_EDGE, seuil 1,0 genou 0,5) ; fusion par confiance si > 50 %, sinon CI verte + captures.
+
+### 2026-11-04 22:22:58 — PR en attente : suite, #79 fusionnée pendant l'analyse (PO / Scrum Master)
+- **#79 (WFS-96)** a été fusionnée par WFS-103 à 22:20:27 (6863763), sans conflit, comme prévu dans l'analyse de 22:20:27.
+- **Accroches de WFS-96, consignées par le PO.** Elles font chacune 10 lignes au plus et sont permises par `WFS-96.md`, mais le développeur ne les avait pas annoncées :
+  - `src/ui/garage.cpp` (+8 / −2) et `garage.h` (+2) : mode « regarder » (`garageRegarder()`) et son du changement de voiture ;
+  - `src/audio/sfx.cpp` (+5) et `sfx.h` (+2 / −1) : 2 sons d'interface (garage, carte) ;
+  - `src/platform/manette_jeu.cpp` (+5 / −2) : focus sur la 1re zone (RG-04 de WFS-96).
+- **Plus aucune PR en attente hors iOS.** Seule #76 (WFS-88) reste ouverte, gelée (gel iOS). RG-10 de WFS-103 respectée.
+- **CI de `main`** : run 41924029885 (fb50d09, #77) en cours, run 41924411860 (6863763, #79) en file d'attente.
+  - WFS-103 reste 🔍 jusqu'à ce que la CI soit verte.
+  - Le titulaire la suit et corrige tout de suite si elle devient rouge (RG-06).
+- **À Copilot (WFS-99)** : faire `git fetch origin && git merge origin/main` sur `feature/waforspeed-99` **maintenant**, avant de coder dans `garage.*`, et garder les lignes WFS-96 ci-dessus (RG-07 de WFS-99).
+- **Règles de WFS-103** : constat mis à jour (#79 fusionnée, accroches consignées). Ajout pour les prochaines revues : vérifier que les accroches de chaque PR sont annoncées au Journal.

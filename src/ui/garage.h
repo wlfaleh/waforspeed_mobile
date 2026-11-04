@@ -17,6 +17,8 @@ namespace ecrans {
 // centre du bouton du garage nommé (« choisir », « retour », « suivant », « precedent ») à la dernière image : touchers
 // simulés du banc d'essai (menu tactile, garage) ; false si le garage n'a pas encore été dessiné
 bool garageBouton(const char* nom, float& x, float& y);
+// WFS-96 : prochaine ouverture du garage en mode « regarder » (Showroom, Ta voiture) : « Choisir » ramène au menu
+void garageRegarder();
 // banc d'essai : captures garage-0/1/2 (3 angles), garage-m4 (voiture suivante), garage-peinture-0/1, garage-peintures
 // (planche des 16 peintures), garage-course (course avec la voiture et la peinture choisies), puis g.shutdown()
 void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::string& suffixe = "");
