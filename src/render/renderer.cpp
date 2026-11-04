@@ -930,11 +930,12 @@ void Renderer::haloSol(const vec3& c, const vec3& r, const vec3& f, float hr, fl
 // Le feu lui-même (matériau MAT_TAIL) s'allume aussi : émission plus forte au freinage (draw, plus haut).
 namespace feux {
 constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du jeu web (sans tonemapping) → passe HDR + ACES
-constexpr float COEUR = 0.07f, LUEUR = 0.24f;          // feu arrière : rayons du cœur et de la lueur (m)
+constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
 constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
-constexpr float I_LUEUR = 0.30f, I_LUEUR_STOP = 0.75f;
+constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
 constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.30f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.35f;
 constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
+constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
 constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
 constexpr float SOL_LARGEUR = 0.9f, SOL_LONGUEUR = 1.1f, SOL_RECUL = 0.45f;   // reflet sur la route (× largeur ; m ; m derrière)
@@ -963,7 +964,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     };
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
     for (int side : {-1, 1}) {
-        feu(w.transformPoint({side * F.arriereX, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge,
+        feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge,
             f.stop ? I_COEUR_STOP : I_COEUR, f.stop ? I_LUEUR_STOP : I_LUEUR);
         if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.05f}), arriere,
                          RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
