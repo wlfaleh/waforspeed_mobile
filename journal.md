@@ -2614,3 +2614,27 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - tirets 3, 4 et 7 → WFS-108 (🔍 PR #83) ;
   - tiret 5 → WFS-109 ;
   - tiret 6 → WFS-105 RG-06 (🔧).
+
+### 2026-11-04 23:14:38 — WFS-106 : règles complétées, quota de l'API (PO / Scrum Master)
+- **Constat** : le job `publication` du run 41926218379 n'était pas figé, il était limité par le quota de l'API.
+  - L'APK a été publié à 22:54:11.
+  - De 22:55:06 à 23:10:17, chaque lot de captures reçoit `HTTP 403: API rate limit exceeded for installation`.
+  - Le job finit vert à 23:10:19, avec 69 captures sur 229 non publiées (avertissement). La publication de `df708ac` (WFS-104) a attendu 16 min derrière lui.
+- **Cause** :
+  - `GITHUB_TOKEN` = 1 000 appels par heure pour tout le dépôt, et environ 500 écritures par heure ;
+  - `gh release upload --clobber` = 2 appels par capture, soit ≈ 470 appels par publication ;
+  - deux publications dans l'heure (branches ou `main`) épuisent le quota, **APK suivant compris** ;
+  - les nouvelles tentatives de WFS-87 (15 à 120 s) ne peuvent rien contre un quota horaire.
+- **Décision** : ajout de **RG-11** dans `regles-de-gestion/WFS-106.md`. Une attente comme celle-ci peut retenir l'APK de 16 min, et un APK refusé par le quota n'est pas publié du tout : c'est la même cause que « l'utilisateur teste une ancienne version ».
+  - L'APK passe toujours : ≈ 15 appels ; si le quota est épuisé, il attend la remise à zéro (`gh api rate_limit`, gratuit) au lieu d'échouer.
+  - Les captures gardent une réserve de 200 appels pour les APK.
+  - On n'envoie que les captures qui ont changé (empreintes sha256 lues par l'adresse publique `releases/download`, hors quota).
+  - Mesure du nombre d'appels au Journal.
+  - Un jeton à 5 000 appels par heure (secret à demander à l'utilisateur) seulement si cela ne suffit pas.
+- **RG-07 ajustée** : `timeout-minutes` de l'APK ≈ 60 min (il peut attendre le quota), captures ≈ 20 min.
+- **Plus rien à relancer** (vérifié à 23:16) :
+  - la publication de `c1f5bbb` est finie ;
+  - celle de `df708ac` (WFS-104, run 41928993894) a démarré à 23:13:07, après le quota remis à zéro ;
+  - l'APK est en ligne depuis 23:15:14, sous le titre « construction 559 », soit ≈ 23 min après la fusion de 22:52:16, ce qui montre encore le délai que corrige WFS-106 ;
+  - les captures étaient en cours d'envoi.
+- **Règle provisoire, jusqu'à la fusion de WFS-106** : un job `publication` de `main` rouge sur 403 se relance une heure après le premier 403 (`gh run rerun <run> --failed`). `TACHES.md` est à jour : RG-01 à RG-11, critère « quota ».
