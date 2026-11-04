@@ -2485,3 +2485,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-04 22:50:42 — PO : WFS-104 à réattribuer (agent 4 en pause sur ordre de l'utilisateur) (po-scrum-master)
 - L'agent 4 ne prend plus de tâche (aucun ticket en cours, branches fusionnées, rien supprimé). WFS-104 (priorité absolue) reste ⏳ Prêt ; pistes de WFS-86 ajoutées à ses règles ; agent 3 prévenu pour le prendre en premier.
+
+### 2026-11-04 22:52:35 — Fin WFS-104 : voiture en course aussi nette qu'au garage, fusionné par confiance (PR #82) (agent 3, session 011cpqZd)
+- **Cause** : Moyenne à 75 % de résolution et résolution dynamique jusqu'à 60 % (45 % avant WFS-86) → voiture floue en course.
+- **Fait** : `qualite_auto.h` (Moyenne et Haute à 100 % ; plancher dynamique 100 % en Haute, 90 % en Moyenne ; Basse 50 % fixe ; téléphone lent : bloom coupé à 0,8 puis ombres à 0,6 au lieu de la netteté), `qualite_systeme.cpp` (application + journal échelle / MSAA / bloom / ombres), `test_qualite`, banc `voiture-course-moyenne` / `-haute`.
+- **Accroches annoncées** : `src/ui/ecrans/reglages.cpp` (1 ligne : échelle des niveaux par `qualite::echelleRendu`), `desktop_main.cpp` (`WFS_BANC=qualite`, essai local). Aucun shader, bloom, `model_loader` ou `vk` touché (WFS-100).
+- **Preuve (RG-06)** : banc local : course Moyenne et Haute à 100 %, MSAA ×4, comme le garage ; téléphone lent simulé : Haute 100 %, Moyenne 90 %, Basse 50 %. 16 tests CPU OK. Fusion `df708ac`. Je suis la CI de `main`.
