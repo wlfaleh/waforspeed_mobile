@@ -1567,3 +1567,13 @@ fusionné. **Suite** : résultat du simulateur → qa-lead.
 - **Limites** : vibrations masquées (décision PO, ticket Android à créer) ; disposition gaucher des commandes non faite (ticket E0 nécessaire) ; pas d'écran de chargement pendant la reconstruction de carte ; « Nuit » visible seulement sur la plage (ville : WFS-09) ; la course n'est pas figée derrière l'écran Terrain (seulement derrière le menu, règle E3).
 - **Vérification** : compilation `-fsyntax-only -Wall` des 7 `.cpp` touchés sans erreur ; captures et APK : en attente de la CI.
 
+
+### 2026-11-04 00:39:55 — WFS-65 en revue, PR #46 ; WFS-21 suite en PR #44 (Claude, agent 4)
+- **WFS-65, fait** :
+  - Port de `particles.js` (`src/render/effets_particules.*`, testé par `test_effets`).
+  - Système d'effets en lecture seule (`src/render/effets_systeme.*`, ordre 350) : étincelles aux accidents, chocs et frottements ; fumée des pneus et des voitures accidentées (5 s) ; `drawFx` avec les lignes sous nitro, la vignette radiale et le flash rouge.
+  - Qualité basse en GPU logiciel : moitié moins de particules, pas de lignes.
+  - Banc : `choc-etincelles`, `accident-fumee`, `nitro-lignes`. Effets coupés dans les autres scènes du banc.
+- **Accroches annoncées** : `src/render/renderer.h` et `renderer.cpp` (`uiQuad`, 6 lignes, quadrilatère à couleurs par sommet) ; `src/platform/desktop_main.cpp` (2 lignes, groupe `partie1`) ; `CMakeLists.txt` et `.github/workflows/build.yml` (`test_effets`). Aucun fichier de WFS-09 touché (`scene.frag`, `post.frag`, `sky*`, `shadow*`).
+- **Écarts au texte de RG-04, par fidélité à `fx.js`** : flash rouge et non blanc, lignes de vitesse seulement sous nitro, vignette fonction de l'ambiance et du nitro (pas de la vitesse).
+- **WFS-21** : la PR #38 avait été fusionnée par un autre agent ; mon correctif suivant (classement trié par arrivée, pseudo du banc) est en PR #44, dont la CI tourne.
