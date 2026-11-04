@@ -47,10 +47,19 @@ if [ "$SCENARIO" = mvp ]; then
   # android_main.cpp « QA pret » / « QA ips=… vitesse=… » toutes les 5 s environ), jamais une durée fixe.
   MARQUE=0; ECHEC=""
   # attendre <nom> <motif grep -E> <délai max s> : cherche le motif après la dernière marque ; la marque passe sur la ligne trouvée
+  # 4e argument facultatif : motif d'échec ; s'il apparaît avant le motif attendu, l'étape échoue tout de suite
+  # (WFS-50 : « temps écoulé » avant une vitesse > 0 = le gaz n'a pas été reçu, l'avance automatique de fin ne compte pas)
   attendre() {
-    local nom="$1" motif="$2" max="$3" t=0 n mort=0
+    local nom="$1" motif="$2" max="$3" contre="${4:-}" t=0 n e mort=0
     while [ $t -lt "$max" ]; do
       n=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -nE "$motif" | head -1 | cut -d: -f1)
+      if [ -n "$contre" ]; then
+        e=$(tail -n +$((MARQUE + 1)) "$LIVE" | grep -nE "$contre" | head -1 | cut -d: -f1)
+        if [ -n "$e" ] && { [ -z "$n" ] || [ "$e" -lt "$n" ]; }; then
+          log "ÉCHEC étape $nom : « $contre » trouvé avant « $motif » — ligne $((MARQUE + e)) du journal du jeu : $(sed -n "$((MARQUE + e))p" "$LIVE" | tr -d '\r')"
+          ECHEC="$nom"; return 1
+        fi
+      fi
       if [ -n "$n" ]; then
         MARQUE=$((MARQUE + n))
         # heure de l'appareil et ligne du jeu trouvée : recoupement direct avec journal-jeu.txt (QA WFS58-2)
@@ -81,7 +90,7 @@ if [ "$SCENARIO" = mvp ]; then
     [ "$m" = "$PREC" ] && log "FIGÉE : $1 identique à la capture précédente"; PREC="$m"
   }
   # étape <nom> <motif> <délai> <capture> : attente, images présentées, capture ; échec = capture de preuve puis arrêt
-  etape() { if attendre "$1" "$2" "$3"; then images; capture "$4"; else capture "$4"; return 1; fi; }
+  etape() { if attendre "$1" "$2" "$3" "${5:-}"; then images; capture "$4"; else capture "$4"; return 1; fi; }
   parcours() {
     # délais max : 1 440 s d'étapes + 9 × 30 s d'images = 1 710 s ≈ 28,5 min ≤ 30 min (RG-07) ; jeu ≥ 1 image/s attendu avec WFS-59
     # 1re image du jeu (RG-04) : l'écran de chargement complet (texte et barre) est écrit par chargement.cpp
@@ -91,14 +100,20 @@ if [ "$SCENARIO" = mvp ]; then
     etape menu "Écran : course → menu" 180 02-menu || return 1               # chargement fini, menu (WFS-37)
     read W H < <(adb shell wm size | tail -1 | sed -E 's/.* ([0-9]+)x([0-9]+).*/\1 \2/' | awk '{ if ($1 < $2) print $2, $1; else print $1, $2 }')
     log "écran ${W}x${H} (paysage)"
+    # WFS-50 : la fenêtre du jeu peut être plus petite que l'écran (barre de navigation de l'émulateur affichée, ex.
+    # 2400x954 sur 2400x1080) ; les points d'appui suivent la taille logique annoncée par le jeu (« Cibles de rendu :
+    # WxH (logique) », dernière ligne), fenêtre posée en haut à gauche de l'écran paysage. Sans cela, le gaz (0,92 H
+    # de l'écran) tombait sous la fenêtre et la voiture restait à 0 km/h.
+    local fen; fen=$(grep -oE "Cibles de rendu : [0-9]+x[0-9]+ \(logique\)" "$LIVE" | tail -1 | grep -oE "[0-9]+x[0-9]+")
+    if [ -n "$fen" ]; then W=${fen%x*}; H=${fen#*x}; log "fenêtre du jeu ${W}x${H} (taille logique, points d'appui calculés dessus)"; fi
     coordonnees
     appui course-solo $SX $SY
     # 03 : juste après l'appui reçu (sans attendre d'images), 04 : le décompte une fois des images présentées (WFS58-3)
     if attendre course-solo "menu : « Course solo »" 60; then capture 03-appui-course-solo; else capture 03-appui-course-solo; return 1; fi
     etape decompte "course : nouvelle course" 60 04-decompte || return 1     # remise à zéro : décompte 3-2-1 (WFS-12)
     # « GO » n'est pas journalisé : gaz tenu, la voiture ne roule qu'après GO → première ligne « QA ips » à vitesse > 0
-    adb shell input motionevent DOWN $gx $gy
-    etape go "QA ips=.* vitesse=[1-9]" 300 05-go || { adb shell input motionevent UP $gx $gy; return 1; }
+    log "gaz tenu ${gx},${gy}"; adb shell input motionevent DOWN $gx $gy
+    etape go "QA ips=.* vitesse=[1-9]" 300 05-go "course : temps écoulé" || { adb shell input motionevent UP $gx $gy; return 1; }
     images; capture 06-course-hud; adb shell input motionevent UP $gx $gy
     etape fin "course : temps écoulé" 300 07-fin || return 1                # l'écran de fin s'affiche 0,9 s (temps de jeu) après
     appui rejouer $RX $RY
