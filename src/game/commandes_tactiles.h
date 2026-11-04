@@ -4,6 +4,7 @@
 // Aussi : primitives de dessin 2D à bords lissés (dessin2d), partagées avec le volant (direction.cpp) et les boutons du HUD
 // (camera_vue.cpp). Tout est dessiné en uiQuad / uiCircle (WFS-65) : frange d'un pixel pour lisser les bords, aucun shader.
 #pragma once
+#include <algorithm>
 #include <cmath>
 #include "../core/math.h"
 #include "../core/system.h"   // Marges
@@ -22,38 +23,50 @@ struct Cadre {
     float cy() const { return y + h / 2; }
 };
 
+// WFS-108 RG-01 / RG-04 : unité des commandes = 1 dp (1 px CSS du jeu web sur téléphone). Android : densité réelle de
+// l'écran (pixels de l'interface par dp, android_main.cpp) ; banc PC : écran de téléphone couché de 420 dp de haut.
+// Taille « Grande » = × 1,25 (gaz 100 dp de large). Bornée pour que la colonne nitro + frein tienne dans 62 % de la hauteur et
+// les pédales dans 40 % de la largeur (tablettes, petits écrans).
+inline float& densiteCommandes() { static float d = 0; return d; }   // pixels par dp ; 0 : inconnue (banc PC)
+inline bool& grandsBoutons() { static bool g = false; return g; }    // réglage « Boutons : Normaux / Grands » (sauvegarde)
+inline float uniteCommandes(float W, float H) {
+    const float d = densiteCommandes() > 0 ? densiteCommandes() : H / 420.f;
+    return std::min({d * (grandsBoutons() ? 1.25f : 1.f), H * 0.62f / 180.f, W * 0.40f / 190.f});
+}
+
 // place des commandes dessinées, pour un droitier (le gaucher passe par ecrans::miroirX) ; m = marges des commandes
-// (ecrans::margesCommandes) ; 1 px CSS = k = H / 720 pixels ; gouttières 16 px à droite et 14 px en bas (WFS-52) ;
-// coordonnées arrondies au pixel, tailles arrondies au-dessus (RG-05 : jamais moins que la taille CSS × k). Nitro : disque
+// (ecrans::margesCommandes) ; k = pixels par dp (uniteCommandes) ; gouttières 16 dp à droite et 14 dp en bas (WFS-52) ;
+// coordonnées arrondies au pixel, tailles arrondies au-dessus. Tailles du jeu web (téléphone couché) : gaz 64 × 120,
+// frein 84 × 88, nitro 68, écarts 10 ; WFS-108 RG-01 : gaz élargi à 80 dp (haut de la fourchette 64-80 dp du ticket). WFS-108 : le nitro passe au-dessus du frein (centré sur lui) : les pédales agrandies
+// tiennent en largeur, et les appuis des bancs (gaz à 0,89 W, frein à 0,66 W) restent sur leur commande. Nitro : disque
 // inscrit dans son cadre.
 struct DispositionCommandes { Cadre gaz, frein, nitro; float k = 1; };
 inline DispositionCommandes dispositionCommandes(float W, float H, const Marges& m) {
     DispositionCommandes d;
-    const float k = H / 720.f, bas = std::round(H - m.bas - 14 * k), ecart = std::round(10 * k);
-    const float gw = std::ceil(64 * k), gh = std::ceil(120 * k), fw = std::ceil(84 * k), fh = std::ceil(88 * k), n = std::ceil(68 * k);
+    const float k = uniteCommandes(W, H), bas = std::round(H - m.bas - 14 * k), ecart = std::round(10 * k);
+    const float gw = std::ceil(80 * k), gh = std::ceil(120 * k), fw = std::ceil(84 * k), fh = std::ceil(88 * k), n = std::ceil(68 * k);
     d.k = k;
     d.gaz = {std::round(W - m.droite - 16 * k) - gw, bas - gh, gw, gh};
     d.frein = {d.gaz.x - ecart - fw, bas - fh, fw, fh};
-    d.nitro = {d.frein.x - ecart - n, bas - n, n, n};
+    d.nitro = {std::round(d.frein.cx() - n / 2), d.frein.y - ecart - n, n, n};
     return d;
 }
 
-// commande sous un doigt posé en (x, y) (x déjà passé par ecrans::miroirX). RG-05 / RG-05 bis : chaque dessin est dans sa
-// zone, et la zone déborde du dessin pour le confort du pouce : au-dessus des pédales = gaz (le point (0,89 W ; 0,74 H) des
-// bancs reste au gaz), à gauche du nitro = frein (comme avant WFS-98), coin haut droit (au-dessus de 0,45 H, 0,53 H pour
-// un gaucher) = nitro hérité de l'ancien bouton (appui du banc nitro-lignes). Moitié gauche de l'écran : rien (direction).
+// commande sous un doigt posé en (x, y) (x déjà passé par ecrans::miroirX). Chaque dessin est dans sa zone, et la zone
+// déborde du dessin pour le confort du pouce (WFS-108 RG-01) : nitro = disque + 8 dp ; colonne du gaz (à droite du milieu
+// de l'écart frein-gaz) = gaz ; à gauche : sous le haut du frein (− 5 dp) = frein, au-dessus = gaz (le point (0,89 W ; 0,74 H)
+// des bancs reste au gaz) ; coin haut droit (au-dessus de 0,45 H, 0,53 H pour un gaucher) = nitro hérité de l'ancien bouton
+// (appui du banc nitro-lignes). Moitié gauche de l'écran : rien (direction).
 inline Commande commandeSous(float x, float y, float W, float H, const Marges& m, bool gaucher) {
     if (x <= W * 0.55f - m.droite) return Commande::Aucune;
     const DispositionCommandes d = dispositionCommandes(W, H, m);
-    const float k = d.k, rn = d.nitro.w / 2, dx = x - d.nitro.cx(), dy = y - d.nitro.cy();
+    const float k = d.k, rn = d.nitro.w / 2 + 8 * k, dx = x - d.nitro.cx(), dy = y - d.nitro.cy();
     if (dx * dx + dy * dy <= rn * rn) return Commande::Nitro;
     if (d.frein.contient(x, y)) return Commande::Frein;
     if (d.gaz.contient(x, y)) return Commande::Gaz;
     if (x > W * 0.80f - m.droite && y < H * (gaucher ? 0.53f : 0.45f)) return Commande::Nitro;
-    if (x < d.nitro.x - 24 * k) return Commande::Frein;
-    if (x < d.frein.x - 5 * k) return y >= d.nitro.y - 24 * k ? Commande::Nitro : Commande::Gaz;
-    if (x < d.gaz.x - 5 * k) return y >= d.frein.y - 24 * k ? Commande::Frein : Commande::Gaz;
-    return Commande::Gaz;
+    if (x >= (d.frein.x + d.frein.w + d.gaz.x) / 2) return Commande::Gaz;
+    return y >= d.frein.y - 5 * k ? Commande::Frein : Commande::Gaz;
 }
 
 // ---------- accroche de Game::drawControls ----------

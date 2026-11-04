@@ -16,6 +16,8 @@ using namespace wfs;
 static int bad = 0;
 static void check(bool ok, const char* what) { std::printf("%s : %s\n", what, ok ? "OK" : "ÉCHEC"); if (!ok) bad++; }
 
+int testCommandes();   // WFS-108
+
 int main(int argc, char** argv) {
     // 1. course automatique : identique au jeu web, ligne par ligne (tolérance nulle)
     std::ifstream f(argc > 1 ? argv[1] : "tests/course_web_ref.txt");
@@ -173,13 +175,13 @@ int main(int argc, char** argv) {
         bool tailles = true, zone = true, dessin = true, gaz = true, appuis = true;
         for (const EcranEssai& e : ecrans)
             for (const bool gaucher : {false, true}) {
-                const float W = e.W, H = e.H, k = H / 720.f;
+                const float W = e.W, H = e.H, k = H / 720.f;   // WFS-108 : les commandes en dp sont au moins à cette taille
                 const Marges m = gaucher ? Marges{e.m.droite, e.m.haut, e.m.gauche, e.m.bas} : e.m;   // ecrans::margesCommandes
                 const DispositionCommandes d = dispositionCommandes(W, H, m);
                 tailles = tailles && d.gaz.w >= 64 * k && d.gaz.h >= 120 * k && d.frein.w >= 84 * k && d.frein.h >= 88 * k &&
                           d.nitro.w >= 68 * k && d.nitro.h == d.nitro.w;
                 zone = zone && d.gaz.x + d.gaz.w <= W - m.droite && d.gaz.y + d.gaz.h <= H - m.bas && d.frein.y + d.frein.h <= H - m.bas &&
-                       d.nitro.y + d.nitro.h <= H - m.bas && d.nitro.x + d.nitro.w < d.frein.x && d.frein.x + d.frein.w < d.gaz.x &&
+                       d.nitro.y + d.nitro.h < d.frein.y && d.frein.x + d.frein.w < d.gaz.x &&   // WFS-108 : nitro au-dessus du frein
                        !dansZoneDirection(d.nitro.x, W, m);
                 // la zone de toucher peut déborder du dessin, jamais l'inverse : chaque point dessiné donne sa commande
                 auto couvre = [&](const Cadre& c, Commande attendue) {
@@ -217,6 +219,7 @@ int main(int argc, char** argv) {
         check(gaz, "WFS-98 RG-05 bis : (0,89 W ; 0,74 H) au gaz, (0,11 W ; 0,74 H) en gaucher");
         check(appuis, "WFS-98 : appuis des bancs (demi-tour au gaz, frein à 0,66 W, nitro du coin haut droit, rien à gauche)");
     }
+    bad += testCommandes();   // WFS-108 : commandes agrandies, frein / marche arrière, gyroscope (tests/test_commandes.cpp)
     if (bad) { std::printf("ÉCHEC (%d)\n", bad); return 1; }
     std::printf("OK\n");
     return 0;

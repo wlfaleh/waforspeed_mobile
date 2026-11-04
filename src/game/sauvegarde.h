@@ -56,6 +56,8 @@ public:
     int km = 4;                                // km : distance de duel (2, 4, 6 ou 10)
     std::string steer = "glisser";             // steer : mode de braquage (glisser / fleches), stocké seulement
     bool gaucher = false, vibrations = true;   // WFS-75 : commandes en miroir, vibrations (propres au jeu natif)
+    bool grandsBoutons = false;                // WFS-108 : boutons : normaux / grands (× 1,25)
+    int gyro = 0, gyroZone = 1;                // WFS-108 : gyroscope 0 coupé, 1 doux, 2 moyen, 3 fort ; zone morte 0..2
 
     ~Sauvegarde();
     // remet les défauts, puis lit le fichier ; vrai si un fichier valide a été lu. Rend la sauvegarde active.
