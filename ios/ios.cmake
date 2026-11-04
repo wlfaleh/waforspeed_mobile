@@ -22,6 +22,7 @@ target_compile_options(WaForSpeed PRIVATE ${WARN})
 set_source_files_properties(src/platform/ios_main.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
 target_link_libraries(WaForSpeed ${MOLTENVK_LIB} "-framework UIKit" "-framework Foundation" "-framework QuartzCore"
   "-framework Metal" "-framework IOSurface" "-framework CoreGraphics")
+target_link_libraries(WaForSpeed "-framework AudioToolbox" "-framework AVFAudio")   # WFS-79 : son (RemoteIO, session ambiante)
 set_target_properties(WaForSpeed PROPERTIES
   MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/ios/Info.plist.in
   MACOSX_BUNDLE_GUI_IDENTIFIER com.waforspeed.game
