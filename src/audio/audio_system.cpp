@@ -20,6 +20,9 @@
 #include "audio_out.h"
 #include "engine_synth.h"
 #include "sfx.h"   // WFS-28 : bruitages
+#include "musique.h"   // WFS-76 : musique et ambiance de la carte
+#include "../game/course_system.h"
+#include <cstdlib>
 
 namespace wfs {
 
@@ -34,7 +37,7 @@ class AudioSystem : public System {
 public:
     const char* name() const override { return "son"; }
 
-    void init(Renderer&, const GameView&) override {
+    void init(Renderer&, const GameView& g) override {
         for (int i = 0; i < SAMPLE_COUNT; i++) {
             std::vector<uint8_t> w;
             synths_[i] = std::make_unique<EngineSynth>();
@@ -43,10 +46,23 @@ public:
         }
         active_ = -1;
         const int rate = audioOutStart([this](float* out, int n) { const double now = nowSeconds(); renderInto(out, n, now); sfx_.mix(out, n, now);
+            // WFS-76 : musique et ambiance ; application en arrière-plan (plus d'images) : fondu vers le silence
+            gVie_ += ((now - vivant_.load() < 0.5 ? 1.f : 0.f) - gVie_) * 0.15f;
+            musique().mix(out, n, sfx_.master * gVie_); ambiance_.mix(out, n, sfx_.master * gVie_);
             if (!ecrans::reglages().son) std::fill(out, out + n, 0.f); });   // WFS-68 : réglage « Son : Coupé » (setMuted du web)
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
+        // WFS-76 : musique (une fois par lancement) et ambiance de la carte de cette partie (moment : WFS_MOMENT, comme la plage)
+        const char* mo = std::getenv("WFS_MOMENT");
+        musique().build((float)(rate ? rate : OUT_RATE));
+        ambiance_.build((float)(rate ? rate : OUT_RATE), g.map ? g.map->id : "ville", mo && std::strcmp(mo, "nuit") == 0);
+        vMusique_ = -1; ambActive_ = -1;
+        decider(g);
     }
+    // WFS-76 : l'application dessine encore (sinon fondu vers le silence) ; décision aussi à chaque image : en pause (plus
+    // d'update), un réglage « Musique » change le son tout de suite
+    void render(Renderer&, const GameView& g) override { vivant_ = nowSeconds(); decider(g); }
+    void onEcran(Ecran, Ecran, const GameView& g) override { decider(g); }      // WFS-76 : pause (plus d'update), menus
 
     void shutdown(Renderer&) override { audioOutStop(); }
 
@@ -66,6 +82,7 @@ public:
         s.targets.lastUpdate = nowSeconds();
         for (int i = 0; i < SAMPLE_COUNT; i++) if (i != idx) { synths_[i]->targets.loGain = 0; synths_[i]->targets.hiGain = 0; }
         active_ = idx;
+        decider(g);   // WFS-76
         sfx_.lastUpdate = nowSeconds(); events_.update(dt, g, sfx_);   // WFS-28 : un son par événement de la partie
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
@@ -78,6 +95,28 @@ public:
     }
 
 private:
+    // WFS-76 (RG-02 à RG-06) : musique « course » de « GO » à la fin de la course, « menu » partout ailleurs (menus, garage,
+    // terrain, réglages, pause, décompte, écran de fin) ; ambiance de la carte sur l'écran Course seulement ; journal (RG-08)
+    void decider(const GameView& g) {
+        const Course* c = activeCourse();
+        Variante v = g.ecran == Ecran::Course && !g.sceneDediee && c && c->state == RaceState::Play ? Variante::Course : Variante::Menu;
+        if (!ecrans::reglages().musique) v = Variante::Silence;
+        if ((int)v != vMusique_) {
+            vMusique_ = (int)v; musique().cible(v);
+            WFS_LOG("MUSIQUE %s", v == Variante::Course ? "course" : v == Variante::Menu ? "menu" : "coupée");
+        }
+        const int amb = g.ecran == Ecran::Course && !g.sceneDediee ? 1 : 0;
+        if (amb != ambActive_) {
+            ambActive_ = amb; ambiance_.active(amb);
+            if (!amb) WFS_LOG("AMBIANCE coupée");
+            else if (ambiance_.nuit()) WFS_LOG("AMBIANCE nuit (%s)", ambiance_.carte().c_str());
+            else WFS_LOG("AMBIANCE %s", ambiance_.carte().c_str());
+        }
+    }
+    Ambiance ambiance_;
+    int vMusique_ = -1, ambActive_ = -1;
+    std::atomic<double> vivant_{0};
+    float gVie_ = 0;   // thread audio seulement
     void renderInto(float* out, int n, double now) {
         const int a = active_;
         if (a < 0) { std::fill(out, out + n, 0.f); return; }
@@ -176,6 +215,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     }
     WFS_LOG("son : %.1f s enregistrées (%zu échantillons), crête %.2f, plus grand saut %.3f", g_rec.pcm.size() / (double)OUT_RATE, g_rec.pcm.size(), peak, jump);
     g.shutdown();
+    benchMusique(out);   // WFS-76 : musique-menu / musique-course / ambiance-<carte> (.wav + .png)
 }
 
 } // namespace wfs
