@@ -4,6 +4,8 @@
 // la place est libre (clignotant ~1 s avant), tiennent compte du joueur et contournent les voitures accidentées.
 // La simulation avance par pas fixes de 1/60 s à partir d'une graine : même graine → même trafic.
 #pragma once
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <vector>
@@ -54,6 +56,29 @@ struct TrafficCar {
     double prevDz = 0;
     double laneYaw = 0;                     // cap dû au changement de file (rad), pour l'affichage
 };
+
+// ---------- trafic vivant (WFS-67) : état d'affichage, calculé à partir de la simulation sans la modifier ----------
+// clignotants et feux de détresse (scene.js) : chaque voiture a son rythme, allumé 0,38 s sur 0,72 s
+inline bool clignotantAllume(double t, uint32_t rng) { return std::fmod(t + (rng % 997) / 997.0, 0.72) < 0.38; }
+// feux stop : décélération de plus de 2 m/s², gardés 0,4 s (pas de clignotement des feux à chaque pas)
+struct FeuxStop {
+    double prev = -1, tenue = 0;
+    bool freine() const { return tenue > 0; }
+    void maj(double speedUnits, double dt) {
+        if (prev >= 0 && dt > 0 && (prev - speedUnits) * M / dt > 2.0) tenue = 0.4; else tenue = std::max(0.0, tenue - dt);
+        prev = speedUnits;
+    }
+};
+// hauteurs des feux des 20 voitures du jeu web (js/cars/catalog.js : d.H, d.nose, d.tail), même ordre que WEB_CARS
+struct WebCarFeux { const char* id; float H, nose, tail; };
+inline const WebCarFeux WEB_FEUX[] = {
+    {"golf", 1.46f, 0.72f, 1.0f}, {"p208", 1.43f, 0.7f, 0.98f}, {"abarth", 1.49f, 0.72f, 1.0f}, {"tcross", 1.58f, 0.82f, 1.04f},
+    {"compass", 1.64f, 0.85f, 1.08f}, {"s3", 1.4f, 0.72f, 0.98f}, {"x5", 1.75f, 0.86f, 1.1f}, {"giulia", 1.43f, 0.7f, 0.97f},
+    {"m4", 1.39f, 0.68f, 0.96f}, {"p911", 1.3f, 0.66f, 0.95f}, {"a45", 1.42f, 0.72f, 1.0f}, {"model3", 1.44f, 0.72f, 0.98f},
+    {"corsa", 1.43f, 0.7f, 0.98f}, {"gt86", 1.29f, 0.66f, 0.95f}, {"elantra", 1.42f, 0.7f, 0.97f}, {"v60", 1.48f, 0.72f, 1.02f},
+    {"rrsport", 1.82f, 0.86f, 1.12f}, {"mustang", 1.38f, 0.68f, 0.96f}, {"gallardo", 1.18f, 0.62f, 0.92f}, {"sf90", 1.19f, 0.62f, 0.92f},
+};
+constexpr double LOD_CAR_M = 50;   // au-delà : silhouette légère (scene.js)
 
 // ce que le trafic doit savoir du joueur
 struct TrafficView { double position = 0, playerX = 0, speed = 0, myLen = 0; bool garage = false; };

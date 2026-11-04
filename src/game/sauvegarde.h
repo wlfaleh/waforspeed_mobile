@@ -48,8 +48,10 @@ public:
     std::string map = "ville";                 // map : carte
     std::string tod = "nuit";                  // tod : moment (jour / nuit)
     std::string quality = "high";              // quality : qualité graphique (low / medium / high : 3 niveaux, WFS-68)
+    bool qualityChoisie = false;               // clé quality présente (qualityChosen du web) : pas de qualité auto (WFS-15)
     std::string cam = "poursuite";             // cam : vue (poursuite / capot / cockpit = 0, 1, 2 : VUES de WFS-66)
     bool muted = false;                        // muted : son coupé
+    bool music = true;                         // music : musique (WFS-76, propre au jeu natif)
     std::string nick = "Pilote";               // nick : pseudo (14 caractères au plus)
     int km = 4;                                // km : distance de duel (2, 4, 6 ou 10)
     std::string steer = "glisser";             // steer : mode de braquage (glisser / fleches), stocké seulement

@@ -12,7 +12,7 @@ static int g_echecs = 0;
 #define VERIFIER(c) do { if (!(c)) { std::printf("ÉCHEC ligne %d : %s\n", __LINE__, #c); g_echecs++; } } while (0)
 
 static bool estDefaut(const Sauvegarde& s) {
-    return s.best == 0 && s.car == "golf" && s.paint.empty() && s.map == "ville" && s.tod == "nuit" && s.quality == "high" &&
+    return s.best == 0 && s.car == "golf" && s.paint.empty() && s.map == "ville" && s.tod == "nuit" && s.quality == "high" && !s.qualityChoisie && s.music &&
            s.cam == "poursuite" && !s.muted && s.nick == "Pilote" && s.km == 4 && s.steer == "glisser";
 }
 static std::string lireFichier(const std::string& p) {
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     {
         Sauvegarde s; s.charger(chemin);
         s.best = 48210; s.car = "m4"; s.paint["m4"] = "rouge"; s.paint["golf"] = "vert"; s.map = "circuit"; s.tod = "jour";
-        s.setQualiteIndex(0); s.setCamIndex(2); s.muted = true; s.nick = "Zoé"; s.km = 10; s.steer = "fleches";
+        s.setQualiteIndex(0); s.setCamIndex(2); s.muted = true; s.music = false; s.nick = "Zoé"; s.km = 10; s.steer = "fleches";
         s.enregistrer(); s.attendre();
         std::FILE* t = std::fopen((chemin + ".tmp").c_str(), "rb");
         VERIFIER(t == nullptr);   // le temporaire a été renommé
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         VERIFIER(s.best == 48210); VERIFIER(s.car == "m4"); VERIFIER(s.peinture("m4") == "rouge"); VERIFIER(s.peinture("golf") == "vert");
         VERIFIER(s.peinture("p911") == "gris");   // non choisie : peinture d'origine (myPaint)
         VERIFIER(s.map == "circuit"); VERIFIER(s.tod == "jour"); VERIFIER(s.quality == "low"); VERIFIER(s.cam == "cockpit");
-        VERIFIER(s.camIndex() == 2); VERIFIER(s.muted); VERIFIER(s.nick == "Zoé"); VERIFIER(s.km == 10); VERIFIER(s.steer == "fleches");
+        VERIFIER(s.camIndex() == 2); VERIFIER(s.muted); VERIFIER(!s.music); VERIFIER(s.qualityChoisie); VERIFIER(s.nick == "Zoé"); VERIFIER(s.km == 10); VERIFIER(s.steer == "fleches");
         // une seconde écriture remplace la première (dernière valeur gagnante)
         s.best = 50000; s.enregistrer(); s.car = "p911"; s.enregistrer(); s.attendre();
         Sauvegarde r; r.charger(chemin); VERIFIER(r.best == 50000); VERIFIER(r.car == "p911");

@@ -24,5 +24,7 @@ void trafficBenchPlace(double metres, double lat, double extraKmh, bool holdLane
 int trafficBenchCar();   // indice de la voiture visée par le dernier placement
 // scènes du banc d'essai du trafic (captures trafic-*.png), appelées par src/platform/desktop_main.cpp
 void benchTrafficScenes(Game& g, Renderer& r, const std::string& outDir);
+// WFS-67 : trafic vivant (captures trafic-clignotant.png, trafic-freinage.png, trafic-accident.png)
+void benchTraficVivant(Game& g, Renderer& r, const std::string& outDir);
 
 } // namespace wfs

@@ -39,14 +39,15 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[3]; };
-const Ligne LIGNES[3] = {
+const Ligne LIGNES[4] = {
     {"Caméra", 3, {VUES[0].nom, VUES[1].nom, VUES[2].nom}},   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
     {"Son", 2, {"Activé", "Coupé", nullptr}},
+    {"Musique", 2, {"Activée", "Coupée", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
 };
-enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2 };
+enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3 };
 
-Zone g_bouton, g_fermer, g_choix[3][3];
+Zone g_bouton, g_fermer, g_choix[4][3];
 bool g_ouvert = false;
 
 // ---------------------------------------------------------------- sauvegarde simple (camera=, qualite=, son=)
@@ -60,7 +61,9 @@ std::string fichier() {
 }
 bool lire() {
     if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : sauvegarde commune (cam, quality, muted)
-        reglages().camera = s.camIndex(); reglages().qualite = s.qualiteIndex(); reglages().son = !s.muted; return true;
+        Reglages& R = reglages(); R.camera = s.camIndex(); R.son = !s.muted; R.musique = s.music;
+        if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
+        return true;
     }
     const std::string f = fichier();
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "r");
@@ -69,8 +72,9 @@ bool lire() {
     char cle[32]; int v;
     while (std::fscanf(fp, " %31[^=]=%d", cle, &v) == 2) {
         if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
-        else if (!std::strcmp(cle, "qualite")) R.qualite = std::clamp(v, 0, 2);
+        else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
         else if (!std::strcmp(cle, "son")) R.son = v != 0;
+        else if (!std::strcmp(cle, "musique")) R.musique = v != 0;   // WFS-76
     }
     std::fclose(fp);
     WFS_LOG("réglages lus : caméra %d, qualité %d, son %d", R.camera, R.qualite, (int)R.son);
@@ -78,13 +82,15 @@ bool lire() {
 }
 void ecrire() {
     if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : écriture atomique sur le thread de travail
-        s.setCamIndex(reglages().camera); s.setQualiteIndex(reglages().qualite); s.muted = !reglages().son; s.enregistrer(); return;
+        const Reglages& R = reglages(); s.setCamIndex(R.camera); s.muted = !R.son; s.music = R.musique;
+        if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
+        s.enregistrer(); return;
     }
     const std::string f = fichier();
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "w");
     if (!fp) return;
     const Reglages& R = reglages();
-    std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\n", R.camera, R.qualite, (int)R.son);
+    std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\n", R.camera, R.qualite, (int)R.son, (int)R.musique);
     std::fclose(fp);
 }
 
@@ -96,13 +102,14 @@ void appliquerQualite(Renderer& r) {
     const int q = reglages().qualite;
     r.vk().renderScale = q == QUALITE_BASSE ? 0.5f : q == QUALITE_MOYENNE ? 0.75f : 1.f;
     r.forceNoShadows = q == QUALITE_BASSE;
+    r.bloomForce = q == QUALITE_BASSE ? 0.f : 1.f;   // WFS-15 : bloom en Moyenne et Haute
     r.resize();
     WFS_LOG("réglages : qualité %s (scène à %.0f %%, ombres %s)", LIGNES[L_QUALITE].choix[q], r.vk().renderScale * 100,
             r.forceNoShadows ? "coupées" : "actives");
 }
 int valeur(int ligne) {
     const Reglages& R = reglages();
-    return ligne == L_CAMERA ? R.camera : ligne == L_QUALITE ? R.qualite : (R.son ? 0 : 1);
+    return ligne == L_CAMERA ? R.camera : ligne == L_QUALITE ? R.qualite : ligne == L_SON ? (R.son ? 0 : 1) : (R.musique ? 0 : 1);
 }
 
 class EcranReglages : public System {
@@ -128,12 +135,12 @@ public:
         if (!t.down) { if (t.id == doigt_) doigt_ = -1; return true; }
         if (t.id == doigt_) return true;
         if (g_fermer.contient(t.x, t.y)) { g_ouvert = false; doigt_ = t.id; WFS_LOG("réglages : fermés"); return true; }
-        for (int l = 0; l < 3; l++) for (int c = 0; c < LIGNES[l].n; c++) {
+        for (int l = 0; l < 4; l++) for (int c = 0; c < LIGNES[l].n; c++) {
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
             Reglages& R = reglages();
             if (l == L_CAMERA) { R.camera = c; appliquerCamera(); }
-            else if (l == L_QUALITE) { R.qualite = c; if (r_) appliquerQualite(*r_); }
-            else R.son = c == 0;
+            else if (l == L_QUALITE) { R.qualite = c; R.qualiteChoisie = true; if (r_) appliquerQualite(*r_); }
+            else if (l == L_SON) R.son = c == 0; else R.musique = c == 0;
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
         }
@@ -164,7 +171,7 @@ private:
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
-        const float rowH = 64 * k, bh = 50 * k, ph = 150 * k + 3 * (rowH + 16 * k) + bh + 30 * k;
+        const float rowH = 64 * k, bh = 50 * k, ph = 150 * k + 4 * (rowH + 16 * k) + bh + 30 * k;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
@@ -173,7 +180,7 @@ private:
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         float y = py + 150 * k;
         const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 2 * 6 * k) / 3);
-        for (int l = 0; l < 3; l++) {
+        for (int l = 0; l < 4; l++) {
             r.uiRect(x0, y + rowH + 7 * k, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = LIGNES[l].n;
@@ -245,10 +252,13 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     for (int i = 0; i < 60; i++) image();
     capture("reglages-basse", "course en qualité basse");
     g.allerA(Ecran::Pause); image(); g.render(t); toucher(8, g_bouton);
-    toucher(9, g_choix[L_QUALITE][QUALITE_HAUTE]); toucher(10, g_fermer);
+    toucher(9, g_choix[L_QUALITE][QUALITE_HAUTE]); toucher(11, g_choix[L_MUSIQUE][1]);   // WFS-76 : « Musique : Coupée »
+    capture("reglages-musique", "musique coupée"); toucher(12, g_choix[L_MUSIQUE][0]); toucher(10, g_fermer);
     g.shutdown();
     courseBenchRules(false);
 }
+
+void appliquerQualiteNiveau(Renderer& r) { appliquerQualite(r); }   // WFS-15
 
 } // namespace ecrans
 
