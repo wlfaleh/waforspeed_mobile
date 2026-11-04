@@ -194,6 +194,9 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-104 | [PRIORITÉ ABSOLUE] Voiture en course : qualité identique au garage (2e passage, résolution 100 %, jamais sous le garage) | E4 (exception : 3e ticket E4, fichiers séparés de WFS-100 / WFS-101 : `qualite_*`, `masquage.*`) | 🔧 En cours | Claude (agent 3, session 011cpqZd), 2026-11-04 | WFS-86 ✅ | `feature/waforspeed-104` |  |  |
 | P1 Urgent | WFS-105 | [PRIORITAIRE] Caméra de poursuite : angle d'environ 40° (voir les voitures devant) | E3 | ⏳ Prêt |  | WFS-85 ✅ | `feature/waforspeed-105` |  |  |
 | P1 Urgent | WFS-106 | [STABLE] CI : publier l'APK de main (Release apercu) à chaque fusion | E7 | ⏳ Prêt |  | — | `feature/waforspeed-106` |  |  |
+| P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 | ⏳ Prêt |  | — | `feature/waforspeed-107` |  |  |
+| P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 | ⏳ Prêt |  | WFS-98 ✅ | `feature/waforspeed-108` |  |  |
+| P1 Urgent | WFS-109 | [URGENT] Feux de freinage réalistes (2e passage) | E4 | ⏳ En attente (après WFS-107, même épic) |  | WFS-84 ✅ | `feature/waforspeed-109` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -448,6 +451,15 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-106 — [STABLE] CI : publier l'APK de main** · E7 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-106.md`)
 - [ ] Release apercu = APK du dernier commit de main
+
+**WFS-107 — [URGENT] Bug animation « feu blanc » au braquage** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-107.md`)
+- [ ] voir les critères du fichier de règles
+
+**WFS-108 — [URGENT] Commandes tactiles plus grandes, frein / marche arrière, gyroscope** · E3 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-108.md`)
+- [ ] voir les critères du fichier de règles
+
+**WFS-109 — [URGENT] Feux de freinage réalistes** · E4 · priorité P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-109.md`)
+- [ ] voir les critères du fichier de règles
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant

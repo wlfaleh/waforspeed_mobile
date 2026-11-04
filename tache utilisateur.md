@@ -23,20 +23,27 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 
 
-- même pour ios il faut la regarder et la merger 
+- même pour ios il faut la regarder et la merger
+( PO : c'est fait côté planification — ordre ajouté à WFS-103 (RG-11) : l'agent de la revue regarde et fusionne la PR #76 (WFS-88, iOS) ; le gel iOS reste pour tout le reste. ) 
 
 
 - j'ai tester le jeux ya un problème lorsque je clique sur les fleche ou j'essaye de tourner a gauche ou a droit ya une annimation bizzare et grave commme si ya du feux blanc dit au po et qa de voir le sujet
+( PO : c'est créé — WFS-107 (E4, P1) : reproduire, nommer la cause (flash, vignette, étincelles, halo de roues…) et supprimer l'effet blanc au braquage ; captures  pour le QA, qui les regarde à la prochaine recette de nuit. )
 
 
-- les button accélération frein turbo et flech sont trop petit  voir la possibilité de faire mieux  
+- les button accélération frein turbo et flech sont trop petit  voir la possibilité de faire mieux
+( PO : c'est créé — WFS-108 (E3, P1) : boutons ≥ 48 dp (GAZ / FREIN plus grands), taille réglable. Regroupé avec le frein / marche arrière et le gyroscope dans un seul gros ticket. )  
 
 
-- le marche arrière et le frein a revoir 
+- le marche arrière et le frein a revoir
+( PO : c'est dans WFS-108 (RG-02) : frein maintenu à l'arrêt = marche arrière sans attendre ; comportement vérifié par test CPU et corrigé. ) 
 
-- feux de freinage est trop artificiel et loin de la réalité 
+- feux de freinage est trop artificiel et loin de la réalité
+( PO : c'est créé — WFS-109 (E4, P1) : 2e passage des feux de frein (zone du feu du modèle qui s'allume, pas de gros halo, transition douce). Il passe après WFS-107 (même épic). ) 
 
 
 - la camera pour le mode proche est catastrophique je vois pas la rue devant la voiture il faut zoomer un peux se sort sue je vois lavant de voiture avec clenaison de la camera
+( PO : c'est ajouté à WFS-105 (RG-06) : vue Proche reculée / zoomée, caméra inclinée vers le bas (≈ 20-25°), la rue devant la voiture visible ; une seule CI avec la poursuite à 40°. )
 
 - voir la possibilité dajouter aussi le mode gyroscope acec les fleches ou le glissage
+( PO : c'est dans WFS-108 (RG-03) : modes flèches, glissement et gyroscope (zone morte et sensibilité réglables), au choix dans les réglages. )
