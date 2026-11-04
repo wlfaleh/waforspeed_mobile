@@ -20,16 +20,24 @@ class Track;
 struct Player;
 struct CarDef;
 
-enum class VueCamera { Poursuite = 0, Capot = 1, Cockpit = 2 };
-constexpr int VUE_NOMBRE = 3;
+// WFS-85 : Proche ajoutée à la fin (les indices 0 à 2 des sauvegardes et des réglages restent valables)
+enum class VueCamera { Poursuite = 0, Capot = 1, Cockpit = 2, Proche = 3 };
+constexpr int VUE_NOMBRE = 4;
 
 // CAM_MODES du jeu web : 'proche' (poursuite, 58°), vue capot (hood), 'capot' / « Cockpit » (cockpit: true, 72°)
 struct VueDef { const char* id; const char* nom; float fov; bool capot; bool cockpit; };
 inline constexpr VueDef VUES[VUE_NOMBRE] = {
-    {"poursuite", "Poursuite", 58.f, false, false},
+    {"poursuite", "Poursuite", 62.f, false, false},   // WFS-85 : vue « loin » du jeu web (haute, on voit loin devant)
     {"capot", "Capot", 72.f, true, false},
     {"cockpit", "Cockpit", 72.f, true, true},
+    {"proche", "Proche", 58.f, false, false},         // WFS-85 : ancienne vue basse (« proche » du jeu web)
 };
+
+// WFS-85 : caméras de poursuite (CAM_MODES du jeu web, js/world/scene.js) : distance derrière la voiture, hauteur, regard
+// devant et hauteur du point visé (m). Constantes à ajuster après un essai sur téléphone (RG-05).
+struct Poursuite { float dist, h, ahead, lookH; };
+inline constexpr Poursuite POURSUITE_LOIN{8.f, 2.5f, 14.f, 0.9f}, POURSUITE_PROCHE{4.6f, 1.28f, 7.f, 0.78f};
+inline constexpr float SUIVI_OEIL = 14.f, SUIVI_REGARD = 16.f;   // lissage du suivi (/s), comme updateCamera du jeu web
 
 // vue choisie (mémorisée pour toute la session) ; vueSuivante = cycleCamera du jeu web
 VueCamera vueCamera();
@@ -37,7 +45,11 @@ void choisirVue(VueCamera v);
 VueCamera vueSuivante();
 
 // ---------- fonctions pures (vérifiées par tests/test_systems.cpp) ----------
-inline VueCamera vueApres(VueCamera v) { return (VueCamera)(((int)v + 1) % VUE_NOMBRE); }
+// cycle : Poursuite → Proche → Capot → Cockpit → Poursuite (WFS-85)
+inline VueCamera vueApres(VueCamera v) {
+    switch (v) { case VueCamera::Poursuite: return VueCamera::Proche; case VueCamera::Proche: return VueCamera::Capot;
+                 case VueCamera::Capot: return VueCamera::Cockpit; default: return VueCamera::Poursuite; }
+}
 // lissage d'une image : a += (b − a) × min(1, dt × vitesse)  (wheel.rotation.z du jeu web)
 inline float lisser(float a, float b, float dt, float vitesse) { return a + (b - a) * std::min(1.f, dt * vitesse); }
 // angle visé du volant : −braquage × 2,3
