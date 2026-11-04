@@ -13,6 +13,11 @@
 //   maillages : u32 materiau u32 nSommets u32 nIndices,
 //               sommets (pos3 normale3 uv2 = 32 octets), indices u32           × nMesh
 //   drapeaux : 1 peinture, 2 transparent, 4 feu arrière, 8 phare, 16 double face, 32 alpha découpé, 64 vitre, 128 roue
+//
+// WFS-77 : peinture unie métallisée (repaintMat du jeu web : métal 0,45, rugosité 0,32, ni texture de couleur, ni carte de
+// normales, de métal ou de rugosité, sans émission) : les motifs des modèles (camouflage, paillettes étirées) disparaissent.
+// WFS_ROUES=forme : pièces en forme de roue (rondes, posées au sol, sur un côté) regroupées à part avec le drapeau 128,
+// pour les modèles dont les roues n'ont pas de nom reconnaissable et partagent leur matériau avec la carrosserie (GT86).
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { MeshoptDecoder } from 'meshoptimizer';
@@ -99,6 +104,14 @@ const k = L / Math.max(b[5] - b[2], 1e-3), cx = (b[0] + b[3]) / 2, cz = (b[2] + 
 for (const p of list) for (let i = 0; i < p.pos.length; i += 3) { p.pos[i] = (p.pos[i] - cx) * k; p.pos[i + 1] = (p.pos[i + 1] - y0) * k; p.pos[i + 2] = (p.pos[i + 2] - cz) * k; }
 b = boxOf(list);
 
+// ---------- WFS-77 : roues reconnues à leur forme (looksLikeWheel du jeu web, en mètres, après la mise à l'échelle) ----------
+let nRouesForme = 0;
+if (process.env.WFS_ROUES === 'forme') for (const p of list) {
+  const bb = boxOf([p]), sx = bb[3] - bb[0], sy = bb[4] - bb[1], sz = bb[5] - bb[2], cxp = (bb[0] + bb[3]) / 2;
+  p.roue = bb[1] < 0.1 && sy > 0.35 && sy < 0.9 && Math.abs(sy - sz) < 0.05 && sx < 0.5 && Math.abs(cxp) > 0.3;
+  if (p.roue) nRouesForme++;
+}
+
 // ---------- textures ----------
 const texIndex = new Map(), texBlobs = [];
 async function tex(t, color) {
@@ -114,26 +127,38 @@ async function tex(t, color) {
 }
 
 // ---------- matériaux (regroupement des primitives par matériau) ----------
-const groups = new Map();   // matériau gltf -> primitives
-for (const p of list) { if (!groups.has(p.mat)) groups.set(p.mat, []); groups.get(p.mat).push(p); }
+const groups = new Map();   // clé (matériau gltf, ou matériau + « roue » pour WFS_ROUES=forme) -> primitives
+const cleRoue = new Map();
+for (const p of list) {
+  let k = p.mat;
+  if (p.roue) { if (!cleRoue.has(p.mat)) cleRoue.set(p.mat, { roue: true, mat: p.mat }); k = cleRoue.get(p.mat); }
+  if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p);
+}
 const mats = [], meshes = [];
-for (const [m, ps] of groups) {
-  const name = (m && m.getName()) || '', names = ps.map((p) => p.name).join(' ');
+for (const [cle, ps] of groups) {
+  const m = cle && cle.roue ? cle.mat : cle, estRoue = !!(cle && cle.roue);
+  const name = ((m && m.getName()) || '') + (estRoue ? ' (roue)' : ''), names = ps.map((p) => p.name).join(' ');
   let flags = 0;
   const all = (re) => re.test(name) || ps.every((p) => re.test(p.name));
-  if (rx.paint.test(name)) flags |= 1;
+  if (rx.paint.test(name) && !estRoue) flags |= 1;
   else if (all(rx.tail)) flags |= 4;
   else if (all(rx.head)) flags |= 8;
   if (m && m.getAlphaMode() === 'BLEND') flags |= 2;
   if (m && m.getAlphaMode() === 'MASK') flags |= 32;
   if (m && m.getDoubleSided()) flags |= 16;
   if (all(rx.glass)) flags |= 64 | 2;
-  if (all(rx.wheel)) flags |= 128;
+  if (all(rx.wheel) || estRoue) flags |= 128;
   const col = m ? m.getBaseColorFactor() : [0.8, 0.8, 0.8, 1];
   const em = m ? m.getEmissiveFactor() : [0, 0, 0];
+  const unie = (flags & 1) !== 0;   // WFS-77 : peinture unie métallisée (repaintMat)
+  // WFS-77 : feu arrière blanc sans texture (le moteur ne le teinte pas) → rouge des feux du jeu web (0xff2040), lueur faible
+  const feuBlanc = (flags & 4) && !(m && m.getBaseColorTexture()) && Math.min(col[0], col[1], col[2]) > 0.8;
+  if (feuBlanc) { col[0] = 1; col[1] = 0.0123; col[2] = 0.0513; em[0] = 0.4; em[1] = 0.005; em[2] = 0.02; }
   mats.push({
-    col, metal: m ? m.getMetallicFactor() : 0, rough: m ? m.getRoughnessFactor() : 0.6, em, cut: m ? m.getAlphaCutoff() : 0.5,
-    tC: await tex(m && m.getBaseColorTexture(), true), tN: await tex(m && m.getNormalTexture(), false), tMR: await tex(m && m.getMetallicRoughnessTexture(), false), flags, name,
+    col, metal: unie ? 0.45 : m ? m.getMetallicFactor() : 0, rough: unie ? 0.32 : m ? m.getRoughnessFactor() : 0.6, em: unie ? [0, 0, 0] : em,
+    cut: m ? m.getAlphaCutoff() : 0.5,
+    tC: unie ? -1 : await tex(m && m.getBaseColorTexture(), true), tN: unie ? -1 : await tex(m && m.getNormalTexture(), false),
+    tMR: unie ? -1 : await tex(m && m.getMetallicRoughnessTexture(), false), flags, name,
   });
   // fusion des primitives du matériau
   let nv = 0, ni = 0; for (const p of ps) { nv += p.pos.length / 3; ni += p.idx.length; }
@@ -159,4 +184,5 @@ for (const m of meshes) { u32(m.mat, m.v.length / 8, m.ix.length); parts.push(Bu
 fs.writeFileSync(out, Buffer.concat(parts));
 const tris = meshes.reduce((s, m) => s + m.ix.length / 3, 0);
 console.log(out.split('/').pop(), `${(fs.statSync(out).size / 1e6).toFixed(2)} Mo`, `${mats.length} matériaux`, `${texBlobs.length} textures`, `${Math.round(tris / 1000)}k triangles`,
-  `taille ${(b[3] - b[0]).toFixed(2)}×${(b[4] - b[1]).toFixed(2)}×${(b[5] - b[2]).toFixed(2)} m`, 'peinture:', mats.filter((m) => m.flags & 1).map((m) => m.name).join(',') || 'AUCUNE');
+  `taille ${(b[3] - b[0]).toFixed(2)}×${(b[4] - b[1]).toFixed(2)}×${(b[5] - b[2]).toFixed(2)} m`, 'peinture:', mats.filter((m) => m.flags & 1).map((m) => m.name).join(',') || 'AUCUNE',
+  ...(process.env.WFS_ROUES === 'forme' ? ['roues (forme):', `${nRouesForme} pièces`] : []));
