@@ -21,9 +21,11 @@ enum { QUALITE_BASSE = 0, QUALITE_MOYENNE = 1, QUALITE_HAUTE = 2 };
 struct Reglages {
     int camera = CAM_POURSUITE;
     int qualite = QUALITE_HAUTE;
+    bool qualiteChoisie = false;   // WFS-15 : niveau choisi par le joueur (lu ou touché) → pas de rétrogradation automatique
     std::atomic<bool> son{true};   // lu par le thread audio (src/audio/audio_system.cpp)
 };
 Reglages& reglages();
+void appliquerQualiteNiveau(Renderer& r);   // WFS-15 : applique reglages().qualite (qualité automatique)
 
 // panneau ouvert : le menu et la pause ne prennent plus les touchers
 bool reglagesOuverts();
