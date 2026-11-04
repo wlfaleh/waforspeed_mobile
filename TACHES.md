@@ -98,7 +98,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | 5 | WFS-10 | Sons de moteur (AAudio, régime et rapports) | E6 | ✅ Terminé | | WFS-30 | `feature/waforspeed-10` | #7 | ✅ VALIDÉ par qa-lead (d65cd1e, banc PC) — [rapport](qa/rapports/WFS-10.md) |
 | P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ✅ Fusionné (QA de nuit à faire ; 16 voitures à suivre) | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
 | 7 | WFS-12 | Règles de course : chrono, checkpoints, score, nitro, quasi-contacts | E3 | ✅ Terminé |  | WFS-08 | `feature/waforspeed-12` | PR #10 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-04) |
-| — | WFS-13 | Les 20 voitures et 16 peintures | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-13` |  |  |
+| P2 Haute | WFS-13 | Les 16 autres voitures (conversion, catalogue, sons, licences) — rouvert après WFS-11 | E5 | 🔧 En cours (exception : 2e ticket E5, fichiers séparés de WFS-60) | agent 3 (session 011cpqZd), 2026-11-04 | WFS-11 ✅ | `feature/waforspeed-13` |  |  |
 | 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
 | P3 Moyenne | WFS-15 | Qualité, performances et post-traitement (réglages téléphone, LOD, bloom, TAA, flou) | E4 | ⏳ Prêt |  | WFS-06, WFS-07, WFS-08 | `feature/waforspeed-15` |  |  |
 | — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
@@ -107,7 +107,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` | #42 (fusionnée, 710c9fc) |  |
 | — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
 | P2 Haute | WFS-21 | Mode duel en ligne (salon, même trafic, fantômes, classement, revanche) | E3 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | WFS-12 ✅ | `feature/waforspeed-21` | #38 (fusionnée, 41e7936) |  |
-| P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ En attente |  | WFS-29 | `feature/waforspeed-22` |  |  |
+| P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ⏳ Prêt |  | WFS-29 | `feature/waforspeed-22` |  |  |
 | — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
 | P3 Moyenne | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | 🔧 En cours (exception : 2e ticket E3, fichiers séparés de WFS-70) | Claude (session trafic), 2026-11-04 | WFS-12 | `feature/waforspeed-24` |  |  |
 | — | WFS-25 | Préparation des stores | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-25` |  |  |
@@ -340,9 +340,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-54 — Carte Grand Prix (circuit)** · E2 · priorité P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-54.md`) — ↪ fusionné dans WFS-53
 - [ ] `carte-circuit-jour` / `-nuit` : vibreurs, tribunes, murs de pneus, gravier ; ≤ 300 appels de dessin
 
-**WFS-13 — Les 20 voitures et 16 peintures** · E5 · priorité P3 Moyenne · ⏳ En attente — ↪ fusionné dans WFS-11
-- [ ] Toutes converties et vérifiées en vitrine
-- [ ] Taille de l'APK maîtrisée
+**WFS-13 — Les 16 autres voitures (rouvert après WFS-11)** · E5 · priorité P2 Haute · 🔧 En cours — agent 3 (session 011cpqZd), 2026-11-04, branche `feature/waforspeed-13` (règles : `regles-de-gestion/WFS-13.md`, section « Réouverture du 2026-11-04 »)
+- [ ] `vitrine-<id>-0` pour les 16 voitures : bon sens, 4 roues au sol, peinture, feux arrière non blancs
+- [ ] garage : 20 voitures ; `garage-<id>` sur 2 nouvelles ; course avec une nouvelle voiture sans plantage
+- [ ] tailles des `.wfm` et de l'APK au Journal ; autres captures inchangées
 
 **WFS-15 — Qualité, performances et post-traitement (réglages téléphone, LOD, bloom, TAA, flou)** · E4 · priorité P3 Moyenne · ⏳ Prêt
 - [ ] Niveaux bas / moyen / haut, choix automatique
@@ -422,7 +423,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-23 — Manettes de jeu** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22
 - [ ] Manettes Bluetooth Android
 
-**WFS-22 — Plateformes : iOS, manettes et préparation des stores** · E7 · priorité P4 Basse · ⏳ En attente
+**WFS-22 — Plateformes : iOS, manettes et préparation des stores** · E7 · priorité P4 Basse · ⏳ Prêt (WFS-29 ✅)
 - [ ] Construction iOS, test TestFlight
 
 **WFS-25 — Préparation des stores** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22
