@@ -411,6 +411,7 @@ public:
                 biseau(r, cx - 2 * k, yy + (paintH - s) / 2 - 2 * k, s + 4 * k, s + 4 * k, s * 0.18f, on ? hex(ACCENT2, op) : vec4{1, 1, 1, 0.08f * op});
                 biseau(r, cx, yy + (paintH - s) / 2, s, s, s * 0.18f, hex(PAINTS[i].hex, op));
                 g_z.peintures[i] = {cx - 4 * k, yy - 4 * k, s + 8 * k, paintH + 8 * k};
+                manette::focus(g_z.peintures[i]);   // WFS-80 : pastille au focus de la manette (A = toucher)
                 cx += s + 8 * k;
             }
             ui::text(r, cx + 6 * k, yy + 6 * k, 15 * k, PAINTS[peinture_[index_]].nom, hex(TEXTE, op), ui::GAUCHE, 0, false);

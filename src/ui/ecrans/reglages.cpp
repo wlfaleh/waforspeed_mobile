@@ -12,6 +12,10 @@
 #include "../../game/game.h"
 #include "../../game/traffic_system.h"   // WFS-75 : choc du banc (vibration coupée)
 #include "../../game/sauvegarde.h"   // WFS-24 : réglages dans la sauvegarde commune
+#include "../../game/ressenti.h"     // WFS-80 : direction et « réduire les mouvements » (WFS-70)
+#include "../../platform/manette.h"  // WFS-80 : focus de la manette
+#include "../../platform/manette_jeu.h"   // WFS-80 : banc (appliquer, focusCourant)
+#include <deque>
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../text.h"
@@ -40,15 +44,17 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
-const Ligne LIGNES[6] = {
+const Ligne LIGNES[8] = {
     {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
     {"Son", 2, {"Activé", "Coupé", nullptr}},
     {"Musique", 2, {"Activée", "Coupée", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
     {"Commandes", 2, {"Droitier", "Gaucher", nullptr}},   // WFS-75 : miroir des commandes tactiles
     {"Vibrations", 2, {"Activées", "Coupées", nullptr}},  // WFS-75 : vibrer() de WFS-70
+    {"Direction", 2, {"Glisser", "Flèches", nullptr}},     // WFS-80 : steerMode du web (ModeDirection de WFS-70)
+    {"Réduire les mouvements", 2, {"Non", "Oui", nullptr}},   // WFS-80 : reduceMotion du web
 };
-enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, N_LIGNES = 6 };
+enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7, N_LIGNES = 8 };
 
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
 bool g_ouvert = false;
@@ -63,19 +69,21 @@ std::string fichier() {
 #endif
 }
 bool lire() {
-    if (Sauvegarde& s = sauvegarde(); s.actif()) {   // WFS-24 : sauvegarde commune (cam, quality, muted)
+    const bool commune = sauvegarde().actif();
+    if (Sauvegarde& s = sauvegarde(); commune) {   // WFS-24 : sauvegarde commune (cam, quality, muted)
         Reglages& R = reglages(); R.camera = s.camIndex(); R.son = !s.muted; R.musique = s.music;
         R.gaucher = s.gaucher; R.vibrations = s.vibrations;   // WFS-75
         if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
-        return true;
     }
     const std::string f = fichier();
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "r");
-    if (!fp) return false;
+    if (!fp) return commune;
     Reglages& R = reglages();
     char cle[32]; int v;
     while (std::fscanf(fp, " %31[^=]=%d", cle, &v) == 2) {
-        if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
+        if (!std::strcmp(cle, "mouvements")) reglagesRessenti().reduireMouvements = v != 0;   // WFS-80 (RG-02)
+        else if (commune) continue;   // WFS-24 : les autres réglages viennent de la sauvegarde commune
+        else if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
         else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
         else if (!std::strcmp(cle, "son")) R.son = v != 0;
         else if (!std::strcmp(cle, "musique")) R.musique = v != 0;   // WFS-76
@@ -83,8 +91,8 @@ bool lire() {
         else if (!std::strcmp(cle, "vibrations")) R.vibrations = v != 0;
     }
     std::fclose(fp);
-    WFS_LOG("réglages lus : caméra %d, qualité %d, son %d, gaucher %d, vibrations %d", R.camera, R.qualite, (int)R.son, (int)R.gaucher,
-            (int)R.vibrations);
+    WFS_LOG("réglages lus : caméra %d, qualité %d, son %d, gaucher %d, vibrations %d, mouvements %d", R.camera, R.qualite, (int)R.son,
+            (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
     return true;
 }
 void ecrire() {
@@ -92,14 +100,14 @@ void ecrire() {
         const Reglages& R = reglages(); s.setCamIndex(R.camera); s.muted = !R.son; s.music = R.musique;
         s.gaucher = R.gaucher; s.vibrations = R.vibrations;   // WFS-75
         if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
-        s.enregistrer(); return;
+        s.enregistrer();   // WFS-80 : le fichier simple garde en plus « mouvements » (absent de la sauvegarde commune)
     }
     const std::string f = fichier();
     FILE* fp = f.empty() ? nullptr : std::fopen(f.c_str(), "w");
     if (!fp) return;
     const Reglages& R = reglages();
-    std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\n", R.camera, R.qualite, (int)R.son, (int)R.musique,
-                 (int)R.gaucher, (int)R.vibrations);
+    std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
+                 (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
     std::fclose(fp);
 }
 
@@ -125,6 +133,8 @@ int valeur(int ligne) {
     case L_SON: return R.son ? 0 : 1;
     case L_MUSIQUE: return R.musique ? 0 : 1;
     case L_COMMANDES: return R.gaucher ? 1 : 0;
+    case L_DIRECTION: return (int)reglagesRessenti().direction;
+    case L_MOUVEMENTS: return reglagesRessenti().reduireMouvements ? 1 : 0;
     default: return R.vibrations ? 0 : 1;
     }
 }
@@ -160,7 +170,10 @@ public:
             else if (l == L_SON) R.son = c == 0;
             else if (l == L_MUSIQUE) R.musique = c == 0;
             else if (l == L_COMMANDES) R.gaucher = c == 1;   // WFS-75 : lu à chaque toucher et à chaque image (miroirX)
-            else R.vibrations = c == 0;                      // WFS-75 : lu à chaque vibrer()
+            else if (l == L_VIBRATIONS) R.vibrations = c == 0;   // WFS-75 : lu à chaque vibrer()
+            else if (l == L_DIRECTION) {   // WFS-80 (RG-01) : sauvegarde (clé steer) et ressenti tout de suite
+                reglagesRessenti().direction = (ModeDirection)c; sauvegarde().steer = c ? "fleches" : "glisser";
+            } else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
         }
@@ -170,8 +183,12 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (!ui::fontReady() || g.sceneDediee || (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause)) return;
         const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
-        if (!g_ouvert) dessinerBouton(r, g, W, k);
-        else dessinerPanneau(r, g, W, H, k);
+        if (!g_ouvert) { dessinerBouton(r, g, W, k); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
+        // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
+        manette::zonesImage().clear();
+        dessinerPanneau(r, g, W, H, k);
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < LIGNES[l].n; c++) manette::focus(g_choix[l][c]);
+        manette::focus(g_fermer, true);
     }
 
 private:
@@ -191,8 +208,9 @@ private:
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
-        // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut
-        const float rowH = 50 * k, gap = 10 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
+        // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut ;
+        // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement)
+        const float rowH = 38 * k, gap = 7 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
@@ -213,7 +231,7 @@ private:
                     r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
                     r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
                 } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
-                ui::text(r, bx + segW / 2, y + (rowH - 18 * k) / 2, 18 * k, ui::majuscules(LIGNES[l].choix[c]), on ? hex(ACCENT2) : hex(TEXTE),
+                ui::text(r, bx + segW / 2, y + (rowH - 17 * k) / 2, 17 * k, ui::majuscules(LIGNES[l].choix[c]), on ? hex(ACCENT2) : hex(TEXTE),
                          ui::CENTRE, 0.08f, false);
                 bx += segW + 6 * k;
             }
@@ -238,6 +256,71 @@ private:
 Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 bool toucheReglages(float x, float y) { return g_ouvert || g_bouton.contient(x, y); }
+
+// WFS-80 : banc manette du garage (pastilles) et des réglages : le focus va à la zone visée par la croix (chemin le plus
+// court calculé avec manette::voisin, comme un joueur), A = toucher, B = retour
+static void benchManetteEcrans(Game& g, Renderer& r, const std::string& out) {
+    if (!g.init(r, "golf", "ville")) { WFS_ERR("manette (WFS-80) : chargement impossible"); return; }
+    g.setAutopilot(false); g.camMode = 0;
+    double t = 1500;
+    auto image = [&]() { manette::appliquer(g); g.update(1.0 / 60); t += 1.0 / 60; g.render(t); };
+    auto appui = [&](manette::Bouton b, int n = 4) { manette::bouton(b, true); image(); manette::bouton(b, false); for (int i = 0; i < n; i++) image(); };
+    auto capture = [&](const char* nom, const char* quoi) {
+        g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : écran %s, focus %d, %s", nom, nomEcran(g.ecran()), manette::focusCourant(), quoi);
+    };
+    auto aller = [&](int cible) {   // parcours en largeur sur les 4 directions de la croix
+        const std::vector<manette::Zone> z = manette::zonesPrecedentes();
+        const int dep = manette::focusCourant();
+        if (cible < 0 || cible >= (int)z.size() || dep < 0) { WFS_ERR("manette (WFS-80) : cible %d absente", cible); return; }
+        const int DX[4] = {1, -1, 0, 0}, DY[4] = {0, 0, 1, -1};
+        const manette::Bouton BT[4] = {manette::DROITE, manette::GAUCHE, manette::BAS, manette::HAUT};
+        std::vector<int> prec(z.size(), -2), coup(z.size(), -1);
+        std::deque<int> file{dep}; prec[dep] = -1;
+        while (!file.empty()) {
+            const int i = file.front(); file.pop_front();
+            for (int d = 0; d < 4; d++) { const int j = manette::voisin(z, i, DX[d], DY[d]); if (prec[j] == -2) { prec[j] = i; coup[j] = d; file.push_back(j); } }
+        }
+        if (prec[cible] == -2) { WFS_ERR("manette (WFS-80) : zone %d injoignable", cible); return; }
+        std::vector<int> chemin;
+        for (int i = cible; i != dep; i = prec[i]) chemin.insert(chemin.begin(), coup[i]);
+        for (int d : chemin) appui(BT[d], 1);
+    };
+    for (int i = 0; i < 30; i++) g.update(1.0 / 60);
+    // garage : zones choisir, retour, prev, next, puis les 16 pastilles ; A sur la 6e (index 5)
+    g.allerA(Ecran::Garage);
+    for (int i = 0; i < 40; i++) image();
+    appui(manette::SELECT);   // la manette prend la main (focus sur « Choisir »)
+    const size_t nz = manette::zonesPrecedentes().size();
+    WFS_LOG("manette (WFS-80) : garage, %zu zones de focus (20 attendues : 4 boutons + 16 pastilles)", nz);
+    if (nz == 20) {
+        aller(4 + 5);
+        WFS_LOG("manette (WFS-80) : focus sur la pastille %d", manette::focusCourant() - 4);
+        appui(manette::A, 12);
+        capture("manette-garage-peinture", "cadre sur la 6e pastille, peinture prise après A");
+    }
+    appui(manette::B, 40);
+    WFS_LOG("manette (WFS-80) : B dans le garage → écran %s", nomEcran(g.ecran()));
+    // menu : bouton « Réglages » (dernière zone déclarée), A → panneau ; « Direction : Flèches », A ; B → fermé
+    g.allerA(Ecran::Menu); for (int i = 0; i < 70; i++) image();
+    aller((int)manette::zonesPrecedentes().size() - 1);
+    appui(manette::A, 6);
+    WFS_LOG("manette (WFS-80) : A sur « Réglages » → panneau %s, %zu zones", g_ouvert ? "ouvert" : "fermé", manette::zonesPrecedentes().size());
+    int cible = -1;
+    const std::vector<manette::Zone>& z = manette::zonesPrecedentes();
+    const Zone& c = g_choix[L_DIRECTION][1];
+    for (int i = 0; i < (int)z.size(); i++) if (std::fabs(z[i].x - c.x) < 0.5f && std::fabs(z[i].y - c.y) < 0.5f) cible = i;
+    aller(cible);
+    appui(manette::A, 6);
+    WFS_LOG("manette (WFS-80) : A sur « Direction : Flèches » → direction %s, steer %s", reglagesRessenti().direction == ModeDirection::Fleches ? "Flèches" : "Glisser",
+            sauvegarde().steer.c_str());
+    capture("manette-reglages", "cadre sur « Flèches », réglage changé par A");
+    appui(manette::B, 6);
+    WFS_LOG("manette (WFS-80) : B dans les réglages → panneau %s, écran %s", g_ouvert ? "ouvert" : "fermé", nomEcran(g.ecran()));
+    manette::toucherEcran(); image();
+    reglagesRessenti() = {}; sauvegarde().steer = "glisser";   // banc : retour aux défauts
+    g.shutdown();
+}
 
 // banc d'essai (WFS-68) : touchers simulés ; reglages-menu, reglages-pause, puis qualité basse en course (reglages-basse)
 void benchReglages(Game& g, Renderer& r, const std::string& out) {
@@ -299,7 +382,25 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("réglages : choc du banc avec vibrations coupées : %d accident(s)", k->accidents - avant);
     }
     reglages().gaucher = false; reglages().vibrations = true;   // banc : retour aux défauts
+    // WFS-80 : « Direction : Flèches » et « Réduire les mouvements : Oui » depuis la pause (capture reglages), puis relecture
+    g.setAutopilot(true);
+    g.allerA(Ecran::Pause); image(); g.render(t); toucher(21, g_bouton);
+    toucher(22, g_choix[L_DIRECTION][1]);
+    WFS_LOG("réglages : direction du ressenti = %s, steer sauvegardé = %s (Flèches / fleches attendus)",
+            reglagesRessenti().direction == ModeDirection::Fleches ? "Flèches" : "Glisser", sauvegarde().steer.c_str());
+    toucher(23, g_choix[L_MOUVEMENTS][1]);
+    capture("reglages", "8 lignes : Direction Flèches, Réduire les mouvements Oui");
+    {   // relancement simulé : écriture du fichier des réglages, mouvements remis à Non, puis relecture
+        const std::string f = out + "/reglages-wfs80.txt";
+        setenv("WFS_REGLAGES", f.c_str(), 1);
+        ecrire(); reglagesRessenti().reduireMouvements = false; lire();
+        WFS_LOG("réglages : après relecture, réduire les mouvements = %s (Oui attendu)", reglagesRessenti().reduireMouvements ? "Oui" : "Non");
+        unsetenv("WFS_REGLAGES"); std::remove(f.c_str());
+    }
+    toucher(24, g_fermer);
+    reglagesRessenti() = {}; sauvegarde().steer = "glisser";   // banc : retour aux défauts
     g.shutdown();
+    benchManetteEcrans(g, r, out);
     courseBenchRules(false);
 }
 
