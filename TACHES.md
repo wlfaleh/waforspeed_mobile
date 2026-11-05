@@ -215,6 +215,8 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P3 Moyenne | WFS-122 | Duel entre amis, suite : derniers adversaires au salon (RG-05 bonus de WFS-112), salon à 4 joueurs vérifié en course | E3 (+ `src/ui/ecrans/salon.*`) | ⏳ En attente (E3 occupée par WFS-119 ; `salon.*` par WFS-102) |  | WFS-112 ✅, WFS-119, WFS-102 | `feature/waforspeed-122` |  |  |
 | P2 Haute | WFS-123 | Tenue sur téléphone : chauffe (état thermique d'Android → rétrogradation de qualité), 60 images/s stables sur écrans 90 / 120 Hz, 30 images/s dans les menus, performances soutenues | E7 (+ accroches ≤ 10 lignes `qualite_systeme.cpp` / `qualite_auto.h`) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-05 | WFS-15 ✅, WFS-86 ✅, WFS-104 ✅, WFS-29 ✅ | `feature/waforspeed-123` | #105 |  |
 | P3 Moyenne | WFS-124 | Sons de course, 2e passage : tic du chrono sous 8 s (plus aigu sur 3, 2, 1), bip de combo qui monte, « combo perdu » sur choc | E6 | ✅ Fusionné (par confiance, PR #104) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-28 ✅, WFS-96 ✅, WFS-120 ✅ | `feature/waforspeed-124` |  |  |
+| P2 Haute | WFS-125 | Records par mode (Checkpoint, Course à 5, Poursuite) et fantôme de ton record en Checkpoint | E3 (+ accroches `CMakeLists.txt` ≤ 3 lignes, `desktop_main.cpp` 1 ligne) | 🔧 En cours | Claude (session trafic), 2026-11-05 | WFS-24 ✅, WFS-110 ✅, WFS-119 ✅, WFS-21 ✅ | `feature/waforspeed-125` |  |  |
+| P2 Haute | WFS-126 | Rapport de plantage sur le téléphone (Partager au lancement suivant) + banc de chauffe dans la CI de nuit (suite de WFS-123) | E7 (+ accroches `src/core/log.h`, `CMakeLists.txt`) | ⏳ Prêt |  | WFS-29 ✅, WFS-114 ✅, WFS-123 ✅ | `feature/waforspeed-126` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
