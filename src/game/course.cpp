@@ -17,13 +17,13 @@ void Course::reset() {
 
 // quasi-contact (boucle des voitures de update()) : combo +1 si le précédent date de moins de 3 s
 void Course::nearMiss() {
-    combo = comboTimer > 0 ? combo + 1 : 1; comboTimer = 3;
-    bonus += 250LL * combo; nearCount++;
+    combo = comboTimer > 0 ? combo + 1 : 1; comboTimer = config().score.comboDuree;   // WFS-128 : 3 s
+    bonus += (long long)config().score.quasiContact * combo; nearCount++;   // WFS-128 : 250
 }
 
 // bump(impact) : petit choc, le combo est perdu au-delà de 0,08
 void Course::bump(double impact) {
-    if (impact > 0.08) { combo = 0; comboTimer = 0; }
+    if (impact > config().score.chocPerdCombo) { combo = 0; comboTimer = 0; }   // WFS-128 : 0,08
     bumps++; lastImpact = impact;   // WFS-28 : bruitage du petit choc (volume 0,4 + impact)
 }
 
@@ -55,7 +55,7 @@ void Course::applyHits(const HitEvents& e) {
 
 void Course::hold(Player& pl) const {
     if (state != RaceState::Count) return;
-    pl.speed = 0; pl.nitroOn = false; pl.nitro = 0.4;
+    pl.speed = 0; pl.nitroOn = false; pl.nitro = config().nitro.depart;   // WFS-128 : 0,4
 }
 
 // fin de update() du jeu web

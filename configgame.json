@@ -1,0 +1,86 @@
+{
+  "_aide": "Configuration de WaForSpeed (WFS-128). Une ligne par clé : configgame.README.md. Valeurs = jeu actuel.",
+  "score": {
+    "points_par_metre": 5,
+    "quasi_contact": 250,
+    "combo_duree": 3.0,
+    "choc_perd_combo": 0.08
+  },
+  "checkpoint": {
+    "depart": 60.0,
+    "bonus": 30.0,
+    "distance": 600.0
+  },
+  "nitro": {
+    "depart": 0.4,
+    "poussee": 1.6
+  },
+  "course5": {
+    "ordinateurs": 4,
+    "vitesse_facile": 0.8,
+    "vitesse_normale": 0.9,
+    "vitesse_difficile": 0.97,
+    "ecart_min": 1.2
+  },
+  "poursuite": {
+    "score_depart": 100,
+    "distance": 10.0,
+    "choc_trafic": 5,
+    "choc_glissiere": 3,
+    "choc_police": 10,
+    "colle_distance": 12.0,
+    "colle_periode": 1.0,
+    "police_depart": 2,
+    "police_max": 6,
+    "renfort": 2.0,
+    "densite_trafic": 2.5
+  },
+  "camera": {
+    "poursuite": {
+      "recul": 9.0,
+      "hauteur": 6.3,
+      "regard_devant": 14.0,
+      "regard_hauteur": -6.3,
+      "zoom": 66.0
+    },
+    "proche": {
+      "recul": 6.0,
+      "hauteur": 2.67,
+      "regard_devant": 7.0,
+      "regard_hauteur": -2.1,
+      "zoom": 60.0
+    },
+    "capot": {
+      "zoom": 72.0
+    },
+    "cockpit": {
+      "zoom": 72.0
+    },
+    "zoom_vitesse": 7.0,
+    "zoom_nitro": 6.0,
+    "suivi_oeil": 14.0,
+    "suivi_regard": 16.0
+  },
+  "trafic": {
+    "densite": 1.0
+  },
+  "conduite": {
+    "frein": 12.5,
+    "roulement": 0.35,
+    "trainee": 0.00042,
+    "frein_moteur": 0.9,
+    "adherence": 18.0,
+    "braquage_max": 0.6,
+    "braquage_vitesse": 14.0,
+    "braquage_entree": 4.0,
+    "braquage_sortie": 6.0,
+    "realignement": 3.0,
+    "cap_max": 0.5,
+    "hors_route": 7.0,
+    "vitesse_libre": 10.0,
+    "vitesse_recul": 3.0
+  },
+  "qualite": {
+    "plancher_moyenne": 0.9
+  }
+}

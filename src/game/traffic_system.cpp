@@ -36,7 +36,7 @@ public:
         shadow_ = r.makeMesh(v, {0, 1, 2, 0, 2, 3});
         // trafic de la carte (resetRace du jeu web) ; « Rejouer » (WFS-12) repart de la même graine.
         // Graine tirée au hasard à chaque course : avec le menu (WFS-11).
-        trafficN_ = g.map ? g.map->trafficN : 42; track_ = g.track;
+        trafficN_ = (int)std::lround((g.map ? g.map->trafficN : 42) * config().trafic.densite); track_ = g.track;   // WFS-128 : × trafic.densite (1)
         traffic_.reset(*g.track, seed_, trafficN_, g.player ? g.player->position : 0);
         stats_ = {};
         active_ = this;
