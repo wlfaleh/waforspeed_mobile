@@ -9,6 +9,7 @@
 #include <cstring>
 #include <fstream>
 #include <memory>
+#include <string>
 #include "../../third_party/stb/stb_image_write.h"
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -26,6 +27,8 @@
 #include "../game/traffic.h"           // WFS-121 : lecture seule (M, MAX_SPEED, TrafficCar)
 #include "../game/traffic_system.h"    // WFS-121 : activeTraffic(), activeTrafficStats() (lecture seule)
 #include "trafic_sons.h"               // WFS-121 : passages, klaxon, rumeur
+#include "garage_son.h"                // WFS-127 : showroom sonore
+#include "../ui/garage.h"              // WFS-127 : voiture affichée au garage (lecture seule)
 
 namespace wfs {
 
@@ -75,7 +78,9 @@ public:
     // à chaque pas de conduite : régime, rapport, charge → cibles du son
     void update(double dt, const GameView& g) override {
         const Player& pl = *g.player;
-        const EngineVoiceDef& voice = engineVoiceFor(g.car->id);
+        // WFS-127 (RG-01 / RG-02) : au garage, la voix de la voiture affichée ; ailleurs, celle de la voiture retenue
+        const char* montree = g.ecran == Ecran::Garage ? ecrans::garageVoitureAffichee() : nullptr;
+        const EngineVoiceDef& voice = engineVoiceFor(montree ? montree : g.car->id);
         int idx = 0;
         for (int i = 0; i < SAMPLE_COUNT; i++) if (std::strcmp(SAMPLES[i], voice.sample) == 0) idx = i;
         // pédale d'accélérateur : déduite de la conduite (le module ne lit que l'état du joueur) :
@@ -95,6 +100,7 @@ public:
             if (effets_.rupteurDebut) WFS_LOG("SFX rupteur");
             if (effets_.couper) { s.targets.hiGain = 0; s.targets.hiTau = 0.006f; }
         }
+        showroom(dt, g, montree, voice, s);   // WFS-127
         s.targets.lastUpdate = nowSeconds();
         for (int i = 0; i < SAMPLE_COUNT; i++) if (i != idx) { synths_[i]->targets.loGain = 0; synths_[i]->targets.hiGain = 0; }
         active_ = idx;
@@ -169,6 +175,30 @@ private:
     std::atomic<int> active_{-1};
     EngineModel model_;
     EffetsMoteur effets_;   // WFS-120
+    // WFS-127 : showroom sonore. Au garage, à l'ouverture et à chaque voiture montrée : démarreur (RG-03, pas pour la
+    // model3), puis coup de gaz et ralenti (RG-04) ; un changement rapide repart de zéro (RG-05) ; à la sortie, la voiture
+    // retenue reprend, sans démarreur (RG-06) ; journal du banc (RG-08)
+    std::string montree_;
+    float tGarage_ = 0, depuisDemarreur_ = 99;
+    void showroom(double dt, const GameView& g, const char* montree, const EngineVoiceDef& voice, EngineSynth& s) {
+        depuisDemarreur_ += (float)dt;
+        if (!montree) {
+            if (!montree_.empty()) { WFS_LOG("MOTEUR course %s (%s)", g.car->id, engineVoiceFor(g.car->id).sample); montree_.clear(); }
+            return;
+        }
+        const bool electrique = std::strcmp(montree, "model3") == 0;
+        if (montree_ != montree) {   // ouverture du garage ou autre voiture affichée
+            montree_ = montree; tGarage_ = 0;
+            WFS_LOG("MOTEUR garage %s (%s)", montree, voice.sample);
+            if (!electrique && depuisDemarreur_ >= garageson::ECART_DEMARREUR) { sfx_.play(SfxId::Demarreur, 4.f); depuisDemarreur_ = 0; }
+        }
+        tGarage_ += (float)dt;
+        const float t = electrique ? -1.f : tGarage_ - garageson::DEMARREUR;   // le coup de gaz part après le démarreur
+        const garageson::Cibles c = garageson::cibles(garageson::regimeGarage(t), garageson::chargeGarage(t), voice.pitch);
+        s.targets.rate = c.rate; s.targets.loGain = c.loGain; s.targets.loFreq = c.loFreq;
+        s.targets.hiGain = c.hiGain; s.targets.hiFreq = c.hiFreq; s.targets.hiTau = c.hiTau;
+        model_.rpm = garageson::regimeGarage(t);   // courbe du banc (moteur-courbe.png) cohérente avec ce qu'on entend
+    }
     SfxMixer sfx_; SfxEvenements events_;   // WFS-28 : bruitages (mélangés au moteur dans le rappel audio)
 };
 WFS_SYSTEM(AudioSystem, 300)

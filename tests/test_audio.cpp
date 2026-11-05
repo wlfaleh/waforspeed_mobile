@@ -10,6 +10,8 @@
 #include "../src/audio/sfx_synth.h"   // WFS-28
 #include "../src/audio/sfx_course.h"  // WFS-124
 #include "../src/audio/trafic_sons.h"  // WFS-121
+#include "../src/audio/garage_son.h"  // WFS-127
+#include <cstring>
 #include "../src/game/player.h"
 using namespace wfs;
 
@@ -244,5 +246,32 @@ int main(int argc, char** argv) {
         for (int n = 2; n <= COMBO_MAX_SON; n++) { std::vector<float> b; beep(b, R, frequenceCombo(n), 0, 0.08f); verifie("combo", b, false); }
         std::vector<float> pe; beep(pe, R, 440, 0, 0.1f); beep(pe, R, 330, 0.1f, 0.1f); verifie("combo-perdu", pe, false);
     }
-    return ok && okSfx && okEff && okTrafic && okCourse ? 0 : 1;
+    // WFS-127 : showroom sonore (RG-04, RG-09)
+    bool okGarage = true;
+    {
+        using namespace garageson;
+        auto cas = [&](const char* quoi, bool c) { std::printf("showroom : %-60s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okGarage = okGarage && c; };
+        cas("régime : 0,12 à 0 s, 0,65 à 0,30 s, 0,12 à 1,20 s",
+            std::abs(regimeGarage(0) - 0.12f) < 1e-4f && std::abs(regimeGarage(0.30f) - 0.65f) < 1e-3f && std::abs(regimeGarage(1.20f) - 0.12f) < 1e-3f);
+        bool monte = true, descend = true;
+        for (float t = 0.01f; t < 0.30f; t += 0.01f) monte = monte && regimeGarage(t) > regimeGarage(t - 0.01f);
+        for (float t = 0.31f; t <= 1.20f; t += 0.01f) descend = descend && regimeGarage(t) <= regimeGarage(t - 0.01f) + 1e-6f;
+        cas("régime : monte de 0 à 0,30 s, décroît de 0,30 à 1,20 s", monte && descend);
+        cas("avant le coup de gaz et après : ralenti", regimeGarage(-0.2f) == RALENTI && regimeGarage(3) == RALENTI);
+        cas("charge : pédale pendant la montée seulement", chargeGarage(0.1f) == 1 && chargeGarage(0.5f) == 0 && chargeGarage(-1) == 0);
+        const Cibles lo = cibles(RALENTI, 0, 1), hi = cibles(POINTE, 1, 1);
+        cas("cibles : le coup de gaz monte le son (vitesse de lecture, aigus)", hi.rate > lo.rate && hi.hiGain > lo.hiGain && lo.hiGain == 0);
+        int connues = 0;
+        for (int i = 0; i < CAR_COUNT; i++) connues += std::strcmp(engineVoiceFor(CARS[i].id).carId, CARS[i].id) == 0;
+        std::printf("showroom : %d voitures sur %d ont leur voix\n", connues, CAR_COUNT);
+        cas("les 20 voitures ont une voix connue", connues == CAR_COUNT);
+        using namespace sfx; const float R = 48000;
+        std::vector<float> d;   // même fabrication que SfxMixer::build (sfx.cpp)
+        for (int i = 0; i < 6; i++) noiseHit(d, (size_t)(i * 0.065f * R), R, 0.06f, 190, 1.4f, 0.45f, 120);
+        noiseHit(d, (size_t)(0.38f * R), R, 0.07f, 320, 1.0f, 0.7f, 140);
+        float pk = 0; for (float x : d) pk = std::max(pk, std::abs(x));
+        cas("démarreur : 0,45 s, |x| ≤ 1", std::abs(d.size() / R - 0.45f) < 0.005f && pk <= 1);
+        verifie("demarreur", d, false);
+    }
+    return ok && okSfx && okEff && okTrafic && okCourse && okGarage ? 0 : 1;
 }

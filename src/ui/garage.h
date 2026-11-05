@@ -19,6 +19,7 @@ namespace ecrans {
 bool garageBouton(const char* nom, float& x, float& y);
 // WFS-96 : prochaine ouverture du garage en mode « regarder » (Showroom, Ta voiture) : « Choisir » ramène au menu
 void garageRegarder();
+const char* garageVoitureAffichee();   // WFS-127 : identifiant de la voiture affichée (son du showroom), nullptr sans garage
 // banc d'essai : captures garage-0/1/2 (3 angles), garage-m4 (voiture suivante), garage-peinture-0/1, garage-peintures
 // (planche des 16 peintures), garage-course (course avec la voiture et la peinture choisies), puis g.shutdown()
 void benchGarage(Game& g, Renderer& r, const std::string& outDir, const std::string& suffixe = "");
