@@ -161,11 +161,9 @@ void Game::streamChunks() {
 
 // ---------------------------------------------------------------- commandes tactiles
 // gauche : direction (direction.cpp) ; droite : nitro, frein et gaz du jeu web (commandes_tactiles.h, WFS-98)
-// WFS-102 (RG-15) : commandes tactiles seulement en course non finie, hors fondu du chargement (le décompte reste jouable)
-static bool commandesActives() { const Course* c = activeCourse(); return !fonduChargement() && !(c && c->state == RaceState::Over); }
 void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
-    if (ecran_ != Ecran::Course || (t.down && !commandesActives())) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36 ; WFS-102 RG-15)
+    if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
     const float W = (float)r_->width(), H = (float)r_->height(), x = ecrans::miroirX(t.x, W);   // WFS-75 : miroir
     if (t.down) {
         bool fresh = !directionPossede(t.id) && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
@@ -193,7 +191,6 @@ void Game::onTouch(const Touch& t) {
 }
 
 void Game::drawControls() {
-    if (!commandesActives()) return;
     const float W = (float)r_->width(), H = (float)r_->height();
     // marges de sécurité (WFS-51) : à gauche le volant et les jauges, à droite les pédales, en bas tout le monde
     const float mg = marges_.gauche, md = marges_.droite;

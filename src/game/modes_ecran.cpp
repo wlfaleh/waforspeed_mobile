@@ -3,6 +3,7 @@
 // puces 2 / 4 / 6 / 10 km), Poursuite (« Bientôt », WFS-111) et Duel (→ salon). « Continuer » lance le parcours habituel
 // (garage, terrain, course) ; « Retour » referme le panneau. Le mode et la distance sont gardés dans la sauvegarde.
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include "../core/log.h"
@@ -34,11 +35,27 @@ struct Zone { float x = 0, y = 0, w = 0, h = 0; bool contient(float px, float py
 
 struct Carte { ModeCourse mode; const char* titre; const char* desc; bool dispo; };
 const Carte CARTES[4] = {
-    {ModeCourse::Checkpoint, "Checkpoint", "60 s au départ, +30 s à chaque checkpoint", true},
-    {ModeCourse::Course5, "Course à 5", "Toi contre 4 ordinateurs, sans trafic", true},
+    {ModeCourse::Checkpoint, "Checkpoint", "", true},   // description : descCarte (checkpoint.depart, checkpoint.bonus)
+    {ModeCourse::Course5, "Course à 5", "", true},      // description : descCarte (course5.ordinateurs)
     {ModeCourse::Poursuite, "Poursuite", "La police à tes trousses", true},   // WFS-111
     {ModeCourse::Duel, "Duel entre amis", "Défie un ami où qu'il soit, sans trafic", true},   // WFS-112
 };
+
+// nombre de secondes en français : « 60 », « 7,5 »
+static std::string secondes(double s) {
+    char b[16];
+    if (std::fabs(s - std::round(s)) < 1e-6) std::snprintf(b, sizeof b, "%.0f", s);
+    else { std::snprintf(b, sizeof b, "%.1f", s); for (char* q = b; *q; q++) if (*q == '.') *q = ','; }
+    return b;
+}
+// description d'une carte : les valeurs réglables (configgame.json) sont lues à chaque affichage, jamais recopiées
+static std::string descCarte(const Carte& c) {
+    if (c.mode == ModeCourse::Checkpoint)
+        return secondes(TEMPS_DEPART) + " s au départ, +" + secondes(TEMPS_CHECKPOINT) + " s à chaque checkpoint";
+    if (c.mode == ModeCourse::Course5)
+        return "Toi contre " + std::to_string(course5::ORDINATEURS) + (course5::ORDINATEURS > 1 ? " ordinateurs" : " ordinateur") + ", sans trafic";
+    return c.desc;
+}
 
 std::string modeCle(ModeCourse m) { return poursuite::cleMode(m); }   // WFS-119 : « poursuite » gardé
 
@@ -112,7 +129,7 @@ public:
             char num[8]; std::snprintf(num, sizeof num, "0%d", i + 1);
             ui::text(r, x + 2.4f * u, y0 + 3 * u, 2.4f * u, num, hex(c.dispo ? ACC2 : MUTE), ui::GAUCHE, 0.16f, false);
             ui::text(r, x + 2.4f * u, y0 + 8 * u, 4.6f * u, ui::majuscules(c.titre), hex(sel ? ACC : (c.dispo ? TXT : MUTE)), ui::GAUCHE, 0.02f, false, true);
-            descr(r, x + 2.4f * u, y0 + 16 * u, cw - 4.8f * u, 2.5f * u, c.desc, hex(MUTE));
+            descr(r, x + 2.4f * u, y0 + 16 * u, cw - 4.8f * u, 2.5f * u, descCarte(c), hex(MUTE));
             if (!c.dispo) {
                 r.uiRect(x + 2.4f * u, y0 + ch - 7 * u, 14 * u, 4.2f * u, hex(SURF2));
                 ui::text(r, x + 9.4f * u, y0 + ch - 6.2f * u, 2.4f * u, "BIENTÔT", hex(MUTE), ui::CENTRE, 0.14f, false);

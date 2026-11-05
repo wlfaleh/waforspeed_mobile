@@ -17,7 +17,8 @@
 
 namespace wfs {
 
-struct CamPoursuite { float dist, h, ahead, lookH; };   // = Poursuite de src/game/camera_vue.h
+struct CamPoursuite { float dist, h, ahead, lookH; };
+constexpr int SCORE_POURSUITE_MAX = 1000;   // borne de poursuite.score_depart, reprise par la relecture des records (sauvegarde)   // = Poursuite de src/game/camera_vue.h
 
 struct ConfigJeu {
     struct Score {

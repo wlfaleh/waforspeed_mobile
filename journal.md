@@ -3651,3 +3651,45 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Correctif : défauts de `src/core/configgame.h` = valeurs de l'utilisateur (accroche noyau de 3 lignes) ; `sauvegarde.cpp` : score de poursuite relu borné à 1000 au lieu de 100 (le record d'une poursuite à 1000 points était perdu au redémarrage : vrai défaut) ; tests adaptés (test_poursuite relatif au score de départ, test_systems, test_configgame, test_records).
 - Vérifié : 26 tests CPU, bancs records et course5 à 0 écart. Fusion d1fa824 (branche `fix/configgame-utilisateur`, hors ticket car CI de main cassée).
 - À suivre : poursuite en Basse +90 appels de dessin (cible 60, WFS-119 donnait +40), probablement la caméra plus proche ; signalé à WFS-134.
+
+### 2026-11-05 21:44:07 — configgame.json : analyse du lien dynamique des 68 clés, correctifs sur la branche fix/configgame-dynamique (Claude, session 0183bv2V)
+- **Demande de l'utilisateur** : vérifier que toutes les clés de `configgame.json` sont reliées dynamiquement au code, puis corriger tout de suite.
+- **Analyse** : 65 clés sur 68 étaient bien reliées, par des références vers `g_configJeu` ou par `config()`. Le fichier est relu à chaque `Game::init`, et aucune copie n'était figée au démarrage.
+- **Défauts trouvés** :
+  1. `qualite.plancher_moyenne` sans effet : `plancher()` renvoyait 0,9 en dur, et l'alias `PLANCHER` n'était jamais lu.
+  2. Les textes de l'écran des modes étaient figés : « 60 s au départ, +30 s » et « 4 ordinateurs ».
+  3. `test_configgame` imposait l'égalité entre le fichier et le code : toute retouche à la main de `configgame.json` cassait la CI (cas de `e23fa51`).
+  4. Doublons : borne 1000 recopiée dans `sauvegarde.cpp`, `VUES[].fov` jamais lu et différent de la config, commentaires de valeurs périmés.
+- **Fait** (commit 6b49595, branche `fix/configgame-dynamique`, poussée, **pas encore fusionnée**) :
+  - `plancher()` lit la config ;
+  - les descriptions des modes sont construites depuis la config ;
+  - `SCORE_POURSUITE_MAX` est partagé par la table et la sauvegarde ;
+  - `VUES[].fov` est supprimé, et `test_systems` lit la config ;
+  - `test_configgame` vérifie validité et bornes, et liste les différences avec le code sans échouer.
+- **Hors zone** : fichiers E0, E3, E4 et E8, touchés sur ordre direct de l'utilisateur (« change le nécessaire tout de suite »), sans ticket du PO.
+- **Vérification locale** : compilation et 26 tests CPU verts ; `test_configgame` avec le fichier du dépôt : OK, 0 différence.
+- **Non fait** : la preuve avec un fichier modifié (départ 45 s, bonus 20 s, 3 ordinateurs, plancher 0,7), interrompue par l'utilisateur ; la CI de la branche ; la fusion et la ligne `qa/Check.md`. Le nom « Course à 5 » reste fixe, même si le nombre d'ordinateurs est réglable de 1 à 4 : c'est une décision produit, à trancher par le PO.
+
+### 2026-11-05 21:55:59 — PR #122 fusionnée ; PR en cours synchronisées avec main (Claude, session 0183bv2V)
+- **PR #122** (configgame : toutes les clés reliées dynamiquement, test assoupli) **fusionnée** (3acd359), sur demande de l'utilisateur.
+  - Preuve avant fusion : avec un fichier modifié (départ 45 s, bonus 20 s, 3 ordinateurs, plancher 0,7), `test_configgame` est OK et liste 4 différences ; `parcours-mode` affiche « 45 s au départ, +20 s » et « 3 ordinateurs » ; parcours complet : 0 écart.
+- **PR #120** (WFS-142) : synchronisée (b937548), sans conflit ; 26 tests CPU verts.
+- **PR #119** (WFS-134, autre agent) : synchronisée par un commit de fusion (0538a40), sans réécriture de son historique. Deux conflits résolus en gardant les deux côtés :
+  - `qualite_auto.h` : `plancher()` garde la Basse de WFS-134 et lit la Moyenne dans la config ;
+  - `reglages.cpp` : la mise en page de WFS-102 est gardée, et la ligne « Rendu » de WFS-134 passe sous le panneau. Capture `reglages-menu` regardée.
+  - 26 tests CPU verts.
+- **À suivre** : la CI des trois branches et de `main`. L'auteur de WFS-134 doit vérifier l'emplacement de la ligne « Rendu ».
+
+### 2026-11-05 22:20:15 — WFS-102 annulé sur main (revert 741c998), sur ordre de l'utilisateur (Claude, session 0183bv2V)
+- **Constat de l'utilisateur** (captures du téléphone, 2400x1080) : l'écran de choix de voiture est cassé. Le titre et le panneau des statistiques sont par-dessus la voiture, et les boutons sont grossis.
+- **Cause** : WFS-102 (PR #118, a6303f5, fusionné à 21:27 UTC) a mis toute l'interface à l'échelle de la densité du téléphone (RG-01). Le banc PC tourne en densité 1, donc ses captures 1280 et 2400 ne montraient pas le résultat du téléphone.
+- **Fait** : revert de a6303f5 (22 fichiers, `echelle.*` supprimés), sans conflit. Compilation et 26 tests CPU verts. Capture `garage-m4` en 2400x1080 regardée : la voiture est dégagée et le panneau est en bas, comme avant WFS-102.
+- **Statut** : WFS-102 passe à « ⛔ ANNULÉ » dans `TACHES.md`. Les anomalies qu'il corrigeait (ANO-18, 19, 20, 32, 35, 38, 39, 41 à 45) sont de nouveau ouvertes.
+- **À prévoir** : la PR #119 (WFS-134) contient main avec WFS-102 (synchronisation 0538a40) ; elle devra être resynchronisée après cette annulation, pour garder sa ligne « Rendu » à la place d'avant WFS-102.
+- **Demande de l'utilisateur** : le QA et le PO doivent lui expliquer pourquoi WFS-102 a été fait et fusionné ainsi.
+
+### 2026-11-05 22:22:57 — WFS-102 : explication du QA à l'utilisateur (qa-lead)
+- **Demande** : l'utilisateur exige que le QA explique la casse du garage sur téléphone après WFS-102 (annulé, revert 741c998). Réponse écrite dans `tache utilisateur.md`.
+- **Constat (fait vérifié)** : le banc 2400 de la CI simulait bien la densité du téléphone (d = 2,625, RG-18 ; `ui::densite` de a6303f5). La capture `garage-m4-2400` de `apercu-waforspeed-102` (branche c7cb021, publiée à 21:23:59 UTC) montre déjà le garage cassé (titre, barre des voitures et statistiques sur la voiture, boutons grossis). La capture `apercu-waforspeed-134` est propre. L'entrée de 22:20:15 (« le banc tourne en densité 1 ») n'est vraie que pour les captures 1280.
+- **Causes** : (1) ma correction d'ANO-19 prescrivait une échelle globale sans exiger de mise en page par écran, et sans le garage dans les critères ; (2) ticket d'interface global fusionné avant toute QA (recette de nuit), la capture n'a été ouverte par personne avant la fusion ; (3) gravité « bloquante » donnée sur un chiffre (21 dp), sans gêne signalée par l'utilisateur.
+- **Changements de QA annoncés** : verdict QA obligatoire sur les captures de branche avant la fusion des tickets d'interface multi-écrans (demande au PO) ; comparaison avant/après de toutes les captures 2400 pour tout ticket d'interface ; chaque écran touché listé dans les corrections prescrites ; banc à une 2e densité (480 dpi) demandé au PO ; ANO-19 rouverte, à corriger écran par écran.

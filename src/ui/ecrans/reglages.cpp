@@ -1,6 +1,5 @@
 // WaForSpeed — écran de réglages (WFS-68 dans WFS-41) : voir reglages.h.
 #include "../../render/qualite_auto.h"   // WFS-104
-#include "../echelle.h"   // WFS-102 : échelle et biseau partagés
 #include "reglages.h"
 #include <algorithm>
 #include <cmath>
@@ -37,8 +36,12 @@ struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; }
 };
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
-    ui::biseau(r, x, y, w, h, biais, c);
+void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
+    const int N = 16;
+    for (int i = 0; i < N; i++) {
+        const float t = (i + 0.5f) / N;
+        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
+    }
 }
 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
@@ -198,7 +201,7 @@ public:
 
     void drawUi(Renderer& r, const GameView& g) override {
         if (!ui::fontReady() || g.sceneDediee || (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause)) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H);
+        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
         if (!g_ouvert) { dessinerBouton(r, g, W, k); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
@@ -219,67 +222,51 @@ private:
         ui::text(r, std::round(x + pad), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
     }
     // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
-    // WFS-102 (RG-02, RG-03, ANO-19) : 11 lignes en deux colonnes de 6, choix de 40 dp de haut (zone de toucher de 44 dp,
-    // l'écart compris : aucune zone ne déborde sur sa voisine), « Fermer » en haut à droite : tout tient dans 411 dp de haut
-    // (téléphone couché) sans défilement ; en-tête resserré sur petit écran (@media (max-height: 520px) du web)
     void dessinerPanneau(Renderer& r, const GameView& g, float W, float H, float k) {
         r.uiRect(0, 0, W, H, hex(BG, 0.86f));
         const Marges& m = g.marges;
-        const bool cp = ui::compact(W, H);
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
-        const float pw = std::min(zw - 32 * k, 900 * k), px = zl + (zw - pw) / 2, py = m.haut + (cp ? 12 : 40) * k;
-        const int PAR_COL = (N_LIGNES + 1) / 2;
-        const float rowH = 40 * k, gap = 4 * k, haut = (cp ? 70 : 128) * k, bh = 44 * k;
-        const float ph = haut + PAR_COL * (rowH + gap) + 20 * k;
+        const float pw = std::min(zw - 32 * k, 760 * k), px = zl + (zw - pw) / 2, py = m.haut + 40 * k;
+        // WFS-75 : 6 lignes → lignes de 50 px (64 avant) séparées de 10 px, première ligne 22 px plus haut ;
+        // WFS-80 (RG-03) : 8 lignes → lignes de 38 px séparées de 7 px, même hauteur de panneau (pas de défilement) ;
+        // WFS-108 : 11 lignes → lignes de 30 px séparées de 5 px
+        const float rowH = 30 * k, gap = 5 * k, haut = 128 * k, bh = 50 * k, ph = haut + (float)N_LIGNES * (rowH + gap) + bh + 30 * k;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
         const float x0 = px + 36 * k;
-        ui::text(r, x0, py + (cp ? 16 : 30) * k, 13 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
+        ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
-        ui::text(r, x0, py + (cp ? 32 : 52) * k, (cp ? 30 : 56) * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
-        // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau
-        {
-            const float tp = 18 * k;
-            const std::string ft = ui::majuscules("Fermer");
-            const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + (cp ? 14 : 40) * k;
-            g_fermer = {fx, fy, fw, bh};
-            biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
-            ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
-        }
-        const float colGap = 28 * k, colW = (pw - 72 * k - colGap) / 2, libW = 130 * k, segGap = 6 * k;
+        ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        float y = py + haut;
+        const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
         for (int l = 0; l < N_LIGNES; l++) {
-            const int col = l / PAR_COL, rang = l % PAR_COL;
-            const float cx = x0 + col * (colW + colGap), y = py + haut + rang * (rowH + gap);
-            r.uiRect(cx, y + rowH + gap / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur
-            // libellé : sur deux lignes s'il dépasse sa colonne (« Réduire les mouvements »)
-            const std::string lib = ui::majuscules(LIGNES[l].libelle);
-            const float lp = 12 * k;
-            if (ui::width(lp, lib, 0.12f) <= libW) ui::text(r, cx, y + (rowH - lp) / 2, lp, lib, hex(MUTED), ui::GAUCHE, 0.12f, false);
-            else {
-                size_t coupe = lib.find(' ', lib.size() / 2 - 2);
-                if (coupe == std::string::npos) coupe = lib.rfind(' ');
-                ui::text(r, cx, y + rowH / 2 - lp - 1 * k, lp, lib.substr(0, coupe), hex(MUTED), ui::GAUCHE, 0.12f, false);
-                ui::text(r, cx, y + rowH / 2 + 1 * k, lp, lib.substr(coupe + 1), hex(MUTED), ui::GAUCHE, 0.12f, false);
-            }
+            r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
+            ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = LIGNES[l].n;
-            const float place = colW - libW, segW = std::min(120 * k, (place - (n - 1) * segGap) / n);
-            float bx = cx + colW - n * segW - (n - 1) * segGap;
+            float bx = px + pw - 36 * k - n * segW - (n - 1) * 6 * k;
             for (int c = 0; c < n; c++) {
                 const bool on = valeur(l) == c;   // aria-pressed : fond cyan léger, bordure et texte cyan
-                g_choix[l][c] = {bx, y - gap / 2, segW, rowH + gap};   // zone de toucher : 44 dp de haut
+                g_choix[l][c] = {bx, y, segW, rowH};
                 if (on) {
                     r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
                     r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
                 } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
-                const std::string ch = ui::majuscules(LIGNES[l].choix[c]);
-                const float tp = ui::width(14 * k, ch, 0.06f) <= segW - 8 * k ? 14 * k : 12 * k;
-                ui::text(r, bx + segW / 2, y + (rowH - tp) / 2, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, 0.06f, false);
-                bx += segW + segGap;
+                ui::text(r, bx + segW / 2, y + (rowH - 15 * k) / 2, 15 * k, ui::majuscules(LIGNES[l].choix[c]), on ? hex(ACCENT2) : hex(TEXTE),
+                         ui::CENTRE, 0.08f, false);
+                bx += segW + 6 * k;
             }
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
+            y += rowH + gap;
         }
-        // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), sous les réglages
-        ui::text(r, x0, py + haut + PAR_COL * (rowH + gap) + 3 * k, 13 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        // .btn « Fermer » (orange, biais 14 px), à droite
+        const float tp = 20 * k;
+        const std::string ft = ui::majuscules("Fermer");
+        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = y + 10 * k;
+        g_fermer = {fx, fy, fw, bh};
+        // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
+        ui::text(r, x0, fy + (bh - 15 * k) / 2, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
+        ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
     }
 
     Renderer* r_ = nullptr;

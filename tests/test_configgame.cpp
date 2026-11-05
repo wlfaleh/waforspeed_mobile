@@ -96,15 +96,18 @@ int main(int argc, char** argv) {
         lireConfig(t, "police", c);
         cas("poursuite.police_depart > police_max : ramené à police_max", c.poursuite.policeDepart == 3 && c.poursuite.policeMax == 3);
     }
-    // RG-01 / RG-16 : le fichier du dépôt reprend le code à l'identique
+    // RG-01 / RG-16 : le fichier du dépôt est valide, toutes ses clés sont lues et dans leurs bornes. Il peut différer du code :
+    // c'est le fichier de réglage de l'utilisateur (e23fa51) ; les différences sont listées, jamais un échec.
     const char* chemin = argc > 1 ? argv[1] : "configgame.json";   // sans argument : ./configgame.json (racine du dépôt, CI)
     if (std::ifstream(chemin).good()) {
         std::ifstream f(chemin); std::stringstream ss; ss << f.rdbuf();
         ConfigJeu c; const BilanConfig b = lireConfig(ss.str(), chemin, c);
         for (const std::string& m : b.messages) std::printf("  %s\n", m.c_str());
         cas("configgame.json du dépôt : toutes les clés lues, 0 erreur", b.jsonValide && b.lues == N && b.erreurs == 0);
-        cas("configgame.json du dépôt = valeurs du code (sans modification, rien ne change)", configJson(c) == defauts);
-        cas("configgame.json du dépôt à jour (relancer test_configgame --ecrire . sinon)", ss.str() == defauts);
+        std::stringstream lu(configJson(c)), code(defauts); std::string a, d; int diff = 0;
+        while (std::getline(lu, a) && std::getline(code, d))
+            if (a != d) { diff++; std::printf("configuration : réglé dans le fichier : %s (code : %s)\n", a.c_str(), d.c_str()); }
+        std::printf("configuration : %d valeur(s) du fichier différente(s) du code (information, pas un échec)\n", diff);
     } else std::printf("configuration : %s absent : comparaison avec le fichier du dépôt sautée\n", chemin);
     std::printf("configuration : %d clés, %s\n", N, echecs ? "ÉCHEC" : "OK");
     return echecs ? 1 : 0;
