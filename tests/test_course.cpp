@@ -37,14 +37,23 @@ int main(int argc, char** argv) {
     if (diff) bad++;
 
     // 2. RG-01 départ, RG-02 checkpoints
-    Course c; c.reset();
+    Course c; c.reglesWeb = true; c.reset();   // règles du jeu web (référence) : 30 s, +max(5, 11 − n × 0,4)
     check(c.timeLeft == 30 && c.state == RaceState::Count && c.clock == -3, "RG-01 départ : 30 s, compte à rebours de 3 s");
-    check(Course::checkpointBonus(1) == 11.0, "RG-02 checkpoint 1 : +11 s");
-    check(std::abs(Course::checkpointBonus(10) - 7.4) < 1e-9 && Course::checkpointBonus(11) == 7.0,
+    check(Course::checkpointBonusWeb(1) == 11.0, "RG-02 checkpoint 1 : +11 s");
+    check(std::abs(Course::checkpointBonusWeb(10) - 7.4) < 1e-9 && Course::checkpointBonusWeb(11) == 7.0,
           "RG-02 checkpoint 10 : +7,4 s (11 − 9×0,4), checkpoint 11 : +7 s");
-    check(Course::checkpointBonus(30) == 5.0, "RG-02 plancher de 5 s");
-    {   // checkpoint réel : la voiture passe 600 m
+    check(Course::checkpointBonusWeb(30) == 5.0, "RG-02 plancher de 5 s");
+    {   // WFS-110 (RG-08) : mode Checkpoint : 60,0 s au départ, +30 s à chaque checkpoint
         Track t; t.build(mapById("ville")); Player pl; pl.reset(carById("golf")); Course k; k.reset();
+        check(k.timeLeft == 60.0 && Course::checkpointBonus(1) == 30.0 && Course::checkpointBonus(7) == 30.0, "WFS-110 RG-08 : départ 60 s, +30 s");
+        k.state = RaceState::Play; k.clock = 0; pl.dist = CHECK_DIST; k.step(0.01, pl, nullptr, 0);
+        check(k.level == 1 && std::abs(k.timeLeft - (60 - 0.01 + 30)) < 1e-9, "WFS-110 RG-08 : checkpoint 1 → +30 s");
+        pl.dist = 2 * CHECK_DIST; k.step(0.01, pl, nullptr, 0);
+        check(k.level == 2 && std::abs(k.timeLeft - (60 - 0.02 + 60)) < 1e-9, "WFS-110 RG-08 : checkpoint 2 → +30 s");
+        std::printf("mode Checkpoint (WFS-110) : 60,0 s au départ, +30 s à chaque checkpoint : OK\n");
+    }
+    {   // checkpoint réel : la voiture passe 600 m
+        Track t; t.build(mapById("ville")); Player pl; pl.reset(carById("golf")); Course k; k.reglesWeb = true; k.reset();
         k.state = RaceState::Play; k.clock = 0;
         pl.dist = CHECK_DIST; k.step(0.01, pl, nullptr, 0);
         check(k.level == 1 && std::abs(k.timeLeft - (30 - 0.01 + 11)) < 1e-9 && k.nextCp == 2 * CHECK_DIST, "RG-02 passage du checkpoint 1 : +11 s, level 1");

@@ -45,7 +45,7 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_binarypack && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_appui && ./build/test_masquage && ./build/test_conduite_libre && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_course5 && ./build/test_audio assets && ./build/test_duel && ./build/test_binarypack && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_appui && ./build/test_masquage && ./build/test_conduite_libre && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures
@@ -59,7 +59,8 @@ jobs:
               mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/   # WFS-24 : deux lancements
               # WFS-22 : manette (course pilotée par des entrées injectées, focus des menus, pause) ; journal du banc gardé
               mkdir -p manette && WFS_BANC=manette ./build/wfs_bench manette assets/ 2>&1 | grep -i "manette" | tee captures/manette-journal.txt && cp manette/manette-*.png captures/
-              WFS_BANC=vie ./build/wfs_bench captures assets/ ;;   # WFS-71 (job vie jusqu'à WFS-106)
+              WFS_BANC=vie ./build/wfs_bench captures assets/   # WFS-71 (job vie jusqu'à WFS-106)
+              WFS_BANC=course5 ./build/wfs_bench captures assets/ ;;   # WFS-110 : modes-choix, course5-grille, course5-course, course5-fin
             ecrans-2400)
               # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
               mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null

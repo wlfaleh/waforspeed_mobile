@@ -86,6 +86,7 @@ else()
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
+  add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp)   # WFS-110 : course à 5 voitures
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90

@@ -15,6 +15,8 @@ namespace wfs {
 
 enum class RaceState { Count, Play, Over };   // state du jeu web : 'count', 'play', 'over'
 
+constexpr double TEMPS_DEPART = 60, TEMPS_CHECKPOINT = 30;   // WFS-110 (RG-08)
+
 struct Course {
     RaceState state = RaceState::Count;
     double clock = -3;                      // trafficClock : < 0 pendant le compte à rebours
@@ -26,6 +28,7 @@ struct Course {
     double goShown = 0;                     // « GO » reste affiché 0,7 s après le départ (setTimeout du jeu web)
     double timeScale = 1, slowmoT = 0;      // ralenti après un accident (main.js du jeu web)
     double echelleDt = 1;                   // WFS-70 : échelle appliquée par le dernier scaleDt (temps de jeu / temps réel)
+    bool reglesWeb = false;                 // WFS-110 : vrai = chrono du jeu web (30 s, +max(5, 11 − n × 0,4)) : référence des tests
     double duelFinish = 0;                  // WFS-21 : > 0 = duel (mode 'duel') : arrivée à FINISH, pas de chrono ni checkpoint
 
     // resetRace('play') + startRace() : 30 s, compte à rebours de 3 s (la nitro est remise à 0,4 par Player::reset)
@@ -52,7 +55,9 @@ struct Course {
     long long score(const Player& pl) const { return std::max(0LL, (long long)std::floor(pl.dist * 0.006)) * 5 + bonus; }
     static int kmh(double speed) { return (int)std::floor(speed / MAX_SPEED * 260.0 + 0.5); }   // Math.round du jeu web
     // secondes ajoutées au checkpoint n (1 = premier) : add = max(5, 11 − level×0,4) avec level = n − 1
-    static double checkpointBonus(int n) { return std::max(5.0, 11.0 - (n - 1) * 0.4); }
+    // WFS-110 (RG-08) : mode Checkpoint : départ à 60 s, +30 s à chaque checkpoint
+    static double checkpointBonus(int) { return TEMPS_CHECKPOINT; }
+    static double checkpointBonusWeb(int n) { return std::max(5.0, 11.0 - (n - 1) * 0.4); }   // règle du jeu web (WFS-12)
     // texte du compte à rebours à afficher (« 3 », « 2 », « 1 », « GO », ou vide)
     std::string countText() const;
 };

@@ -9,6 +9,7 @@
 #include "../render/model_loader.h"
 #include "../render/effets_systeme.h"
 #include "../render/renderer.h"
+#include "course5.h"   // WFS-110
 #include "course_system.h"
 #include "game.h"
 
@@ -58,6 +59,8 @@ public:
         // règles de course (WFS-12) : voiture immobile pendant le compte à rebours, chocs seulement en course
         Course* course = activeCourseMut();
         if (course) course->hold(pl);
+        if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
+        if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
         const bool playing = !course || course->playing();
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
@@ -149,7 +152,8 @@ public:
     TrafficStats stats_;
     uint32_t seed_ = 0x5eed1u; int trafficN_ = 42; Track* track_ = nullptr;
     bool benchReq_ = false; double benchM_ = 0, benchLat_ = 0, benchKmh_ = 0; bool benchHold_ = false; int benchCar_ = -1;
-    bool pelotonReq_ = false, benchDense_ = false; double pelotonM_ = 0, denseT_ = 0;
+    bool pelotonReq_ = false, benchDense_ = false, vide_ = false;   // vide_ : WFS-110
+    double pelotonM_ = 0, denseT_ = 0;
 
 private:
     // ---------- trafic vivant (WFS-67) ----------

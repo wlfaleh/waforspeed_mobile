@@ -105,14 +105,18 @@ public:
             const float w = 200 * k, h = 112 * k, x = mg.gauche + gl, y = mg.haut + gt;
             r.uiRect(x, y, w, h, GLASS);
             label(r, x + pad, y + 10 * k, k, "Temps");
-            const bool bas = c->timeLeft < 8;   // .time-value.low
-            const std::string t = ui::decimal(std::max(0.0, c->timeLeft), 1);
+            const bool ligne = c->duelFinish > 0;   // WFS-110 : course à une ligne d'arrivée (course à 5, duel) : chrono et distance
+            const bool bas = !ligne && c->timeLeft < 8;   // .time-value.low
+            const std::string t = ligne ? ui::chrono(c->raceTime) : ui::decimal(std::max(0.0, c->timeLeft), 1);
             const float tp = 48 * k, ty = y + 26 * k;
             // WFS-48 : .time-value en italique (font-style: italic du web)
             halo(r, x + pad, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k, true);
             ui::text(r, x + pad, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false, true);
+            if (ligne) { label(r, x + pad, y + 80 * k, k, "Arrivée " + ui::decimal(std::max(0.0, c->duelFinish - pl.dist) * M / 1000, 2) + " km"); barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)std::clamp(pl.dist / c->duelFinish, 0.0, 1.0)); }
+            else {
             label(r, x + pad, y + 80 * k, k, "Checkpoint " + std::to_string(c->level + 1));
             barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)(1 - (c->nextCp - pl.dist) / CHECK_DIST));
+            }
         }
         // ---------- haut droite : score + combo (.p-score) ----------
         {

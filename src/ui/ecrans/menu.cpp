@@ -8,6 +8,7 @@
 #include "../../game/course_system.h"
 #include "../../game/game.h"
 #include "../../game/sauvegarde.h"   // WFS-24
+#include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "chargement.h"
@@ -63,6 +64,7 @@ public:
     // RG-05 : sur le menu, tout toucher est gardé (aucune commande de conduite).
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages
+        if (choixModeOuvert()) { doigt_ = -1; presse_ = -1; return false; }   // WFS-110 : panneau des modes par-dessus
         const int sous = choixSous(t.x, t.y);
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; presse_ = sous; }   // WFS-83 : « Duel en ligne » actif (plus grisé)
@@ -73,8 +75,8 @@ public:
         const int choix = presse_;
         doigt_ = -1; presse_ = -1;
         if (choix < 0 || sous != choix) return true;
-        if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); g.allerA(Ecran::Garage); }             // RG-03 ; WFS-11 : garage d'abord
-        else if (choix == DUEL) { WFS_LOG("menu : « Duel en ligne »"); g.allerA(Ecran::Salon); }   // WFS-83 : écran Salon
+        if (choix == SOLO) { WFS_LOG("menu : « Course solo »"); if (!ouvrirChoixMode()) g.allerA(Ecran::Garage); }   // WFS-110 : modes             // RG-03 ; WFS-11 : garage d'abord
+        else if (choix == DUEL) { WFS_LOG("menu : « Duel en ligne »"); modeCourse() = ModeCourse::Duel; g.allerA(Ecran::Salon); }   // WFS-83 : écran Salon
         else if (choix == SHOWROOM) { WFS_LOG("menu : « Showroom »"); garageRegarder(); g.allerA(Ecran::Garage); }   // WFS-96 (RG-01)
         else if (choix == TA_VOITURE) { WFS_LOG("menu : « Ta voiture »"); garageRegarder(); g.allerA(Ecran::Garage); }   // #myCarBtn
         return true;
