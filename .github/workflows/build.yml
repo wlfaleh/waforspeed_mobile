@@ -7,7 +7,8 @@
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
 #    WFS-106 : deux jobs. publication-apk part dès la fin du job android (APK en ligne ≈ 5 min après l'envoi) ;
-#    publication-captures part après le banc et n'envoie que les captures changées (quota de l'API : 1 000 appels/h)
+#    publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
+#    tous les jobs du dépôt, branches comprises ; les 200 derniers appels restent aux APK)
 # WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
 # du commit s'affichent sur la PR) ; sur main, aucun build annulé : chaque commit de code publie son APK.
 name: Construction WaForSpeed

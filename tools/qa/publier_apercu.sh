@@ -52,13 +52,17 @@ gh() {
 appels() { awk '{ s += $1 } END { print s + 0 }' "$APPELS_F"; }
 heure() { date -u -d "@$1" +%H:%M:%S; }
 
-QUOTA_RESTANT=""; QUOTA_REMISE=""
-lire_quota() {   # quota du jeton (GITHUB_TOKEN : 1 000 appels par heure pour tout le dépôt), lu sans le consommer
+QUOTA_RESTANT=""; QUOTA_REMISE=""; QUOTA_LIMITE=""
+# quota horaire de GITHUB_TOKEN, commun à tous les jobs du dépôt (403 « API rate limit exceeded for installation »), lu
+# sans le consommer. Juste seulement après un premier appel du jeton : avant, « rate_limit » donne celui d'un jeton neuf
+# (≈ 5 000 restants) même quand le dépôt n'en a plus que 220 (mesuré le 2026-11-05).
+lire_quota() {
     local s
-    s=$(gh api rate_limit --jq '"\(.resources.core.remaining) \(.resources.core.reset)"' 2>/dev/null) || return 1
-    read -r QUOTA_RESTANT QUOTA_REMISE <<< "$s"
+    s=$(gh api rate_limit --jq '"\(.resources.core.remaining) \(.resources.core.reset) \(.resources.core.limit)"' 2>/dev/null) || return 1
+    read -r QUOTA_RESTANT QUOTA_REMISE QUOTA_LIMITE <<< "$s"
     [[ "$QUOTA_RESTANT" =~ ^[0-9]+$ && "$QUOTA_REMISE" =~ ^[0-9]+$ ]]
 }
+afficher_quota() { echo "Quota de l'API : $QUOTA_RESTANT appels restants sur ${QUOTA_LIMITE:-?} (remise à zéro à $(heure "$QUOTA_REMISE") UTC)"; }
 attendre_remise() {   # RG-11 (APK) : attente de la remise à zéro du quota, écrite au journal du job
     local maintenant attente
     lire_quota || { QUOTA_RESTANT="?"; QUOTA_REMISE=$(( $(date +%s) + 60 )); }
@@ -150,11 +154,14 @@ publier_apk() {
     local paquets=("$APK_DIR/WaForSpeed.apk") envois=() p nom prov existants=0
     [ -s "$APK_DIR/WaForSpeed.aab" ] && paquets+=("$APK_DIR/WaForSpeed.aab")   # WFS-22 : AAB signé (Google Play)
     echo "APK : Release $tag, commit ${GITHUB_SHA::7} (construction ${GITHUB_RUN_NUMBER})"
-    if lire_quota; then
-        echo "Quota de l'API : $QUOTA_RESTANT appels restants (remise à zéro à $(heure "$QUOTA_REMISE") UTC)"
-        if [ "$QUOTA_RESTANT" -lt "$APPELS_APK" ]; then attendre_remise || { echo "::error::APK non publié : quota de l'API épuisé"; exit 1; }; fi
-    fi
     essayer "lecture de la Release $tag" lire_release || { echo "::error::APK non publié : Release $tag illisible"; exit 1; }
+    if lire_quota; then   # après le premier appel (voir lire_quota)
+        afficher_quota
+        if [ "$QUOTA_RESTANT" -lt "$APPELS_APK" ]; then
+            attendre_remise || { echo "::error::APK non publié : quota de l'API épuisé"; exit 1; }
+            essayer "lecture de la Release $tag" lire_release || { echo "::error::APK non publié : Release $tag illisible"; exit 1; }
+        fi
+    fi
     if [ "$existe" = 0 ]; then   # première publication de la branche : Release créée sans fichier, puis même chemin
         { essayer "création de la Release $tag" creer_release && essayer "lecture de la Release $tag" lire_release && [ "$existe" = 1 ]; } \
             || { echo "::error::APK non publié : création de la Release $tag impossible"; exit 1; }
@@ -224,8 +231,8 @@ publier_captures() {
     echo "Captures : Release $tag, commit ${GITHUB_SHA::7} (construction ${GITHUB_RUN_NUMBER}), banc : ${BANC:-?}"
     if [ ${#captures[@]} -eq 0 ]; then echo "::warning::aucune capture à publier (banc : ${BANC:-?})"; return 0; fi
     while read -r h f; do LOCAL["$(basename "$f")"]=$h; done < <(sha256sum "${captures[@]}")
-    lire_quota && echo "Quota de l'API : $QUOTA_RESTANT appels restants (remise à zéro à $(heure "$QUOTA_REMISE") UTC)"
     essayer "lecture de la Release $tag" lire_release || { echo "::warning::captures non publiées : Release $tag illisible"; return 0; }
+    lire_quota && afficher_quota   # après le premier appel (voir lire_quota)
     if [ "$existe" = 0 ]; then   # première publication de la branche : la Release vient du job de l'APK (attente hors quota)
         echo "Release $tag absente : attente de l'APK (job publication-apk), $ATTENTE_RELEASE s au plus"
         fin=$(( $(date +%s) + ATTENTE_RELEASE ))
@@ -321,7 +328,7 @@ publier_captures() {
     fi
     [ ${#ratees[@]} -gt 0 ] && echo "::warning::${#ratees[@]} capture(s) non publiée(s) (envoi en échec) : ${ratees[*]}"
     [ ${#non_tentees[@]} -gt 0 ] && echo "::warning::${#non_tentees[@]} capture(s) non envoyée(s) ($arret) : elles restent dans l'artefact du run"
-    lire_quota && reste=" ; quota restant : $QUOTA_RESTANT"
+    lire_quota && reste=" ; quota restant : $QUOTA_RESTANT sur ${QUOTA_LIMITE:-?}"
     echo "Captures : $envoyees envoyées, $inchangees inchangées, ${#ratees[@]} ratées, ${#non_tentees[@]} non envoyées, $retirees périmées retirées ; $(appels) appels à l'API$reste"
 }
 
