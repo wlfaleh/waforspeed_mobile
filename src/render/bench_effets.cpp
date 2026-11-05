@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "../core/log.h"
+#include "../game/camera_vue.h"
 #include "../game/commandes_tactiles.h"
 #include "../game/course_system.h"
 #include "../game/direction.h"
@@ -18,7 +19,8 @@ namespace wfs {
 namespace {
 
 // WFS-107 (RG-03) : braquage aux flèches sur route dégagée (trafic retiré à chaque image : la course en ajoute aux points
-// de passage), vue Proche, à 30, 120 et 250 km/h, de jour et de nuit : captures braquage-gauche-<vitesse>-<moment>.png
+// de passage), vue Proche (la caméra la plus près de la fumée : pire cas pour un voile), à 30, 120 et 250 km/h, de jour et
+// de nuit : captures braquage-gauche-<vitesse>-<moment>.png
 // puis braquage-droite-…, chacune après 0,5 s de flèche tenue. 30 et 120 km/h : élan au pilote automatique, virages en
 // roue libre (la vitesse reste près de la consigne) ; 250 km/h : la Golf plafonne vers 236 km/h sans nitro : élan
 // jusqu'à 233 km/h, puis nitro jusqu'à 250 (réserve de départ 0,4 : ≈ 1,5 s) par l'entrée manette, qui garde la voiture
@@ -26,7 +28,9 @@ namespace {
 // leur dessin (dispositionCommandes, boutonsFleches).
 void scenesBraquage(Game& g, Renderer& r, const std::string& out) {
     const ModeDirection direction = reglagesRessenti().direction;
+    const VueCamera vue = vueCamera();
     reglagesRessenti().direction = ModeDirection::Fleches;
+    choisirVue(VueCamera::Proche);
     enum { DOIGT_GAZ = 5, DOIGT_FLECHE = 6 };
     for (const char* moment : {"jour", "nuit"}) {
         setenv("WFS_MOMENT", moment, 1);
@@ -76,6 +80,7 @@ void scenesBraquage(Game& g, Renderer& r, const std::string& out) {
     }
     unsetenv("WFS_MOMENT");
     reglagesRessenti().direction = direction;
+    choisirVue(vue);
 }
 
 } // namespace
