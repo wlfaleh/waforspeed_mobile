@@ -44,6 +44,32 @@ public:
     float rpm = 0.12f, load = 0; int gear = 1; float shiftT = 0, shiftDip = 0;
 };
 
+// WFS-120 : pétarades au lever de pied, souffle du turbo au passage de rapport, rupteur à la vitesse de pointe.
+// Calcul seul (thread du jeu) : AudioSystem joue les sons demandés (SfxId::Petarade / Turbo) et coupe le son « en
+// charge » pendant le rupteur. Testé par tests/test_audio.cpp. Aucun effet pour une voiture électrique (model3).
+struct EffetsMoteur {
+    // réglages (RG-01 à RG-03, ajustables)
+    // pétarades : régime ≥ 0,60, ou vitesse ≥ 60 % de la pointe (en 4e / 5e le régime du modèle reste sous 0,60 : à 210 km/h
+    // en 5e il vaut 0,42), au-dessus de 30 km/h ; pause entre deux salves (s)
+    static constexpr float PETARADE_RPM = 0.60f, PETARADE_V = 0.60f, PETARADE_KMH = 30, PETARADE_PAUSE = 1.5f;
+    static constexpr float TURBO_PAUSE = 0.4f;
+    static constexpr float RUPTEUR_V = 0.97f, RUPTEUR_V_FIN = 0.95f, RUPTEUR_DELAI = 0.3f, RUPTEUR_PAS = 0.07f;
+    // sorties de la dernière étape
+    int claquements = 0;        // pétarades à jouer maintenant (0, 1…)
+    bool turbo = false;         // souffle à jouer maintenant
+    bool rupteurDebut = false;  // un épisode de rupteur commence (journal)
+    bool couper = false;        // rupteur : son « en charge » coupé pendant ce pas
+    bool rupteur = false;       // rupteur en cours
+    // v = vitesse / vitesse de pointe (0..1,25) ; enCourse = RaceState::Play
+    void update(double dt, float rpm, int gear, float v, bool throttle, float kmh, bool enCourse, bool electrique);
+private:
+    bool pied_ = false; int rapport_ = 1;
+    float depuisSalve_ = 99, depuisTurbo_ = 99, aFond_ = 0, pasRupteur_ = 0;
+    float prochains_[4] = {}; int attente_ = 0;   // claquements de la salve en cours (s avant chacun)
+    uint32_t alea_ = 0x9e3779b9u;
+    float hasard() { alea_ = alea_ * 1664525u + 1013904223u; return (alea_ >> 8) / 16777216.f; }
+};
+
 class EngineSynth {
 public:
     // échantillon mono 16 bits (WAV) ; rate de sortie (Hz)

@@ -1,0 +1,11 @@
+{
+  "name": "waforspeed-relais",
+  "private": true,
+  "type": "module",
+  "description": "Relais du Duel entre amis de WaForSpeed (WFS-112) : Cloudflare Workers, sans dépendance",
+  "scripts": {
+    "local": "node local.js",
+    "test": "node test/bout_en_bout.js",
+    "deployer": "npx wrangler deploy"
+  }
+}

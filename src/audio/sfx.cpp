@@ -7,6 +7,7 @@
 #include "../game/course_system.h"
 #include "../game/player.h"
 #include "sfx_synth.h"
+#include "trafic_sons.h"   // WFS-121
 
 namespace wfs {
 
@@ -24,6 +25,8 @@ const char* sfxNom(SfxId id) {
         case SfxId::BipDuel: return "bip-duel";
         case SfxId::Garage: return "garage"; case SfxId::Carte: return "carte";   // WFS-96
         case SfxId::Sirene: return "sirene";   // WFS-111
+        case SfxId::Petarade: return "petarade"; case SfxId::Turbo: return "turbo";   // WFS-120
+        case SfxId::Passage: return "passage"; case SfxId::Klaxon: return "klaxon";   // WFS-121
         default: return "?";
     }
 }
@@ -46,6 +49,12 @@ void SfxMixer::build(float rate) {
     auto& bd = sons_[(int)SfxId::BipDuel]; beep(bd, rate, 880, 0, 0.15f); beep(bd, rate, 1320, 0.15f, 0.15f); beep(bd, rate, 1760, 0.3f, 0.4f);
     noiseHit(sons_[(int)SfxId::Garage], 0, rate, 0.18f, 1400, 1.5f, 0.25f, 500); noiseHit(sons_[(int)SfxId::Carte], 0, rate, 0.12f, 1600, 1.4f, 0.2f, 500);   // WFS-96
     for (int i = 0; i < 4; i++) beep(sons_[(int)SfxId::Sirene], rate, i % 2 ? 960.f : 720.f, i * 0.25f, 0.25f);   // WFS-111 : sirène deux tons (1 s)
+    // WFS-120 (RG-01 / RG-02) : un claquement d'échappement (grave, sec) ; souffle du turbo (aigu qui descend)
+    noiseHit(sons_[(int)SfxId::Petarade], 0, rate, 0.05f, 380, 1.2f, 0.55f, 140);
+    noiseHit(sons_[(int)SfxId::Turbo], 0, rate, 0.22f, 2800, 0.8f, 0.25f, 1200);
+    // WFS-121 (RG-02 à RG-05) : passage d'une voiture (Doppler), klaxon du trafic, rumeur du trafic proche
+    sons_[(int)SfxId::Passage] = sonPassage(rate); sons_[(int)SfxId::Klaxon] = sonKlaxon(rate);
+    rumeur_ = boucleRumeur(rate); kRumeur_ = 1 - std::exp(-1 / (trafic::RUMEUR_TAU * rate));
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
     nitro_ = boucle(rate, 1.2f, 650, 0.7f, 0.6f);
@@ -82,6 +91,7 @@ void SfxMixer::mix(float* out, int n, double now) {
     queue_.store(q, std::memory_order_release);
     const bool actif = !muted_ && now - lastUpdate.load() < 0.25;   // jeu en pause (plus d'update) ou muet : silence
     const float cC = actif ? cibleCrissement_.load() : 0.f, cN = actif ? cibleNitro_.load() : 0.f, cF = actif ? 1.f : 0.f;
+    const float cR = actif ? cibleRumeur_.load() : 0.f;   // WFS-121
     for (int i = 0; i < n; i++) {
         fade_ += (cF - fade_) * kFade_;
         gCrissement_ += (cC - gCrissement_) * k_; gNitro_ += (cN - gNitro_) * k_;
@@ -95,6 +105,9 @@ void SfxMixer::mix(float* out, int n, double now) {
         if (gNitro_ > 1e-4f) s += nitro_[posNitro_] * gNitro_;
         if (++posCrissement_ >= crissement_.size()) posCrissement_ = 0;
         if (++posNitro_ >= nitro_.size()) posNitro_ = 0;
+        gRumeur_ += (cR - gRumeur_) * kRumeur_;   // WFS-121 : montée / descente en 0,5 s
+        if (gRumeur_ > 1e-4f) s += rumeur_[posRumeur_] * gRumeur_;
+        if (++posRumeur_ >= rumeur_.size()) posRumeur_ = 0;
         out[i] = std::clamp(out[i] + s * master * fade_, -1.f, 1.f);
     }
 }

@@ -81,6 +81,9 @@ else()
   add_executable(test_duel tests/test_duel.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-21
   add_executable(test_binarypack tests/test_binarypack.cpp src/game/binarypack.cpp)   # WFS-89 : messages de PeerJS
   target_link_libraries(test_duel Threads::Threads)
+  add_executable(test_relais tests/test_relais.cpp src/game/reseau_relais.cpp src/game/duel.cpp src/game/player.cpp src/game/track.cpp)   # WFS-112 : relais du duel entre amis
+  target_link_libraries(test_relais Threads::Threads)
+  target_compile_definitions(test_relais PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_effets tests/test_effets.cpp src/render/effets_particules.cpp)   # WFS-65
   add_executable(test_roues tests/test_roues.cpp src/game/roues.cpp)   # WFS-60
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
@@ -94,6 +97,6 @@ else()
   add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90
   add_executable(test_commandes tests/test_commandes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-108 : commandes tactiles
   target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)
-  add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
+  add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/audio/trafic_sons.cpp src/game/player.cpp src/game/track.cpp)   # WFS-121 : sons du trafic
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
 endif()

@@ -69,6 +69,9 @@ public:
     double nowMs() const override;            // horloge murale de l'appareil (Date.now() du jeu web)
     void leave() override;
     Etat etat() const { pomper(); return etat_; }
+    duel::Lien lien() const override {   // WFS-112 : état commun aux transports Internet
+        switch (etat()) { case Etat::Pret: return duel::Lien::Pret; case Etat::Echec: return duel::Lien::Echec; case Etat::Perdu: return duel::Lien::Perdu; default: return duel::Lien::Connexion; }
+    }
     bool relais() const { return relais_; }
     const std::string& monId() const { return monId_; }
 private:
@@ -101,18 +104,25 @@ bool lirePresenceWeb(const void* valeurBp, duel::Fields& out);  // objet BinaryP
 // ---------------------------------------------------------------- deux transports à la fois (RG-07 du ticket)
 // « Créer un salon » / « Rejoindre » ouvrent le Wi-Fi local (UDP) et Internet avec le même code : le premier qui voit un
 // second joueur est gardé, l'autre est quitté. Avant : présences envoyées aux deux, horloge du Wi-Fi local.
+// WFS-112 : Internet = relais WebSocket (TransportRelais, reseau_relais.h) ou PeerJS (WFS-89) ; lien, ping, validité du
+// code et reconnexion sont ceux d'Internet tant qu'il n'a pas été quitté.
 class TransportDouble : public duel::Transport {
 public:
-    TransportDouble(std::unique_ptr<duel::Transport> local, std::unique_ptr<TransportPeerJs> internet);
+    TransportDouble(std::unique_ptr<duel::Transport> local, std::unique_ptr<duel::Transport> internet);
     void presence(const duel::Fields& f) override;
     std::vector<duel::PeerView> peers() const override;
     double nowMs() const override;
     void leave() override;
-    const TransportPeerJs* internet() const { return internet_.get(); }
+    duel::Lien lien() const override { return choisi_ == 1 || !internet_ ? duel::Lien::Local : internet_->lien(); }
+    int pingMs() const override { return choisi_ == 1 || !internet_ ? -1 : internet_->pingMs(); }
+    std::string raison() const override { return internet_ ? internet_->raison() : std::string(); }
+    double expireDansMs() const override { return internet_ ? internet_->expireDansMs() : -1; }
+    double reconnexionRestanteMs() const override { return internet_ ? internet_->reconnexionRestanteMs() : -1; }
+    const duel::Transport* internet() const { return internet_.get(); }
     int choisi() const { return choisi_; }   // 0 : pas encore, 1 : Wi-Fi local, 2 : Internet
 private:
     mutable std::unique_ptr<duel::Transport> local_;
-    mutable std::unique_ptr<TransportPeerJs> internet_;
+    mutable std::unique_ptr<duel::Transport> internet_;
     mutable int choisi_ = 0;
 };
 

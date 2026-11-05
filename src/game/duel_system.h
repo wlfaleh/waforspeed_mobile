@@ -14,5 +14,9 @@ duel::Session& duelSession();   // session du joueur (un seul salon à la fois)
 // scènes du banc d'essai (captures duel-course.png, duel-resultat.png), appelées par src/platform/desktop_main.cpp :
 // salon en mémoire avec un adversaire simulé qui rejoue des messages de présence
 void benchDuelScene(Game& g, Renderer& r, const std::string& outDir);
+// WFS-112 (banc du duel entre amis) : arrivée forcée dès le départ ; centre des boutons « revanche » et « retour » de
+// l'écran de fin (faux tant qu'il n'est pas dessiné)
+void duelArriveeForcee(bool oui);
+bool duelBouton(const char* nom, float& x, float& y);
 
 } // namespace wfs
