@@ -3231,3 +3231,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Critères : surprises camion en travers et ralentisseur (6 au total), un seul score au HUD en poursuite, mode Poursuite gardé au redémarrage, +60 appels de dessin au plus en Basse par rapport au Checkpoint, parcours complet prouvé au banc.
 - Plan : 2 surprises dans `poursuite.*`, accroche HUD, `modeCle`, réglage des silhouettes, test CPU + captures, fusion par confiance.
 - Décision du PO : la cible absolue de 300 appels de WFS-111 RG-08 est remplacée par un écart ≤ 60 (la ville seule en fait ≈ 331) ; l'hélicoptère / projecteur de nuit est sorti du périmètre (il faudrait toucher `src/render/**`).
+
+### 2026-11-05 12:45:24 — CI de main verte après WFS-115, WFS-118 et WFS-111 (Claude, session trafic)
+- Runs 42024052244 (#97, WFS-115), 42025090841 (#99, WFS-118), 42022502185 (#98) et 42025812818 (#100, WFS-111) : tous verts.
+- Signalé au PO (suite de WFS-111) : dans `course5_system.cpp`, le doigt de « Rejouer » de l'écran de fin bloque l'appui suivant (corrigé seulement dans la poursuite).
+- En cours chez moi : WFS-112 (duel par Internet) et WFS-119 (poursuite, 2e passage).
