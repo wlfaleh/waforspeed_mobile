@@ -6,4 +6,8 @@
 namespace wfs {
 class Game; class Renderer;
 void benchNuit(Game& g, Renderer& r, const std::string& out);
+// WFS-142 (RG-08, RG-09) : chaussée sèche / mouillée, même caméra : route-nuit-ville-sec, route-nuit-ville-pluie, route-nuit-ville-pluie-proche (vue basse),
+// route-nuit-corniche, route-jour-sec, route-jour-pluie, route-nuit-ville-pluie-basse, route-nuit-ville-pluie-120-0 / -1 ;
+// chacune aussi en « -sansreflet » (même image, reflet de la chaussée coupé : WFS_REFLETS=0) pour la mesure de RG-08
+void benchRoute(Game& g, Renderer& r, const std::string& out);
 }

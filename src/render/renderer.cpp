@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <cstdlib>
+#include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #if defined(__APPLE__)
 #include <chrono>
 #endif
@@ -950,7 +952,10 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
     refletsOn_ = fp.mouille && fp.reflets;
     u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
-    u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, 0};
+    // WFS-142 (RG-04, RG-08) : w = force du reflet sur la chaussée (configgame) ; WFS_REFLETS=0 : −1, aucun reflet (mesure du banc)
+    const char* eR = std::getenv("WFS_REFLETS");
+    const bool sansReflet = eR && !std::strcmp(eR, "0");
+    u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, sansReflet ? -1.f : config().qualite.refletRouteMouillee};
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     if (refletsOn_) {
         FrameUBO m = u;

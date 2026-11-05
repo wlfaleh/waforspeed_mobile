@@ -236,7 +236,8 @@ void main() {
         for (int i = 0; i < 6; i++) rs += texture(reflTex, suv + vec2(0.0, (float(i) - 2.5) * 0.4 * spread)).rgb;
         env = rs / 6.0;
     }
-    col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
+    float kMesure = ((flags & F_ROAD) != 0u && F.nuitB.w < 0.0) ? 0.0 : 1.0;   // WFS-142 (RG-08) : WFS_REFLETS=0, route sans reflet
+    col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK * kMesure;   // WFS-100 RG-01 / RG-02
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
     if ((flags & F_PAINT) != 0u) {

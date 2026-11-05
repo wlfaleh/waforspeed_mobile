@@ -66,6 +66,7 @@ struct ConfigJeu {
     } conduite;
     struct Qualite {
         float plancherMoyenne = 0.9f;   // échelle de rendu la plus basse en qualité Moyenne (WFS-104)
+        float refletRouteMouillee = 1.f;   // WFS-142 (RG-04) : force du reflet de la scène sur la route mouillée (0 à 1,5)
     } qualite;
 };
 
