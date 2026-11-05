@@ -3577,3 +3577,31 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Fait** : `.claude/skills/agent-developer/SKILL.md` (profil expert, hiérarchie utilisateur > PO > QA > développeur, comportement attendu, méthode d'un ticket en 7 étapes, standards C++20 / moteur / jeu, Web et serveur, sécurité, tests, traitement des retours PO et QA, format de signalement d'un risque, interdits) et `references/checklist-livraison.md` (revue de son diff avant fusion).
 - **Accroches** : `CLAUDE.md` (1 ligne : charger le skill avant de développer), `waforspeed-natif/SKILL.md` (renvoi en tête), `po-scrum-master.md` (rappel du skill à chaque attribution).
 - **Vérification** : le skill est reconnu par Claude Code (liste des skills). Aucune règle existante changée : le skill renvoie aux règles de `CLAUDE.md` (autonomie, fusion par confiance, gel iOS, zones des épics). Aucun code du jeu touché, aucun ticket WFS.
+
+### 2026-11-05 20:59:08 — WFS-109 : feux de freinage réalistes fusionnés (Claude, session trafic, agent reprise WFS-109)
+- **Fait** (PR #117, commit de fusion 4469c5e, **fusion par confiance**, branche Copilot reprise telle quelle) :
+  - RG-13 / RG-14 : nouveau `src/render/feux_modele.h/.cpp`. Le matériau de feux avant + arrière est découpé au chargement : triangles au-delà de z = 0,4 L, pièce ≤ 0,5 m de haut, une seule pièce par modèle, verre rouge sans l'émissif blanc. **Liste vérifiée sur les 20 modèles** :
+    - découpés : golf (mat 13, 396 triangles), p911 (mat 9, 1636), model3 (mat 10, 438), rrsport (mat 19, 392) ;
+    - inchangés, ils ont déjà un MAT_TAIL valide : a45, giulia, m4, corsa ;
+    - refusés, pièce trop haute : tcross (0,94 m), x5 (0,87 m), v60 (0,56 m) ;
+    - sans candidat : les autres modèles, dont la gallardo, qui garde le petit halo de repli.
+  - RG-01, 02, 07, 08, 15 : le feu du modèle s'allume **de jour comme de nuit**. Joueur : bloc des feux de `nuit.cpp`, appelé aussi le jour. Trafic : `feuxProchaineVoiture` à chaque image. Transition linéaire de 80 ms (`feux_modele::transition`).
+    - **Valeurs choisies** (RG-06) : émission rouge (1 ; 0,02 ; 0,04). Position la nuit 1,6, inchangée depuis WFS-84. Stop 4,0, soit `0xff2040` × 2,5 du web × 1,6 comme `FEUX_HDR`. Rien le jour hors freinage (RG-15 a, qui prime sur le × 0,4 du web).
+    - Le jour, un modèle qui a sa pièce de feu n'a plus aucun halo à côté ; la Gallardo garde un petit halo court. La lueur de nuit est centrée sur la pièce du feu (`FeuxModele::arriereZ`). Le reflet sur la route reste de nuit seulement (RG-04).
+    - Le carré de 1,1 m × 7 du trafic de jour est supprimé.
+  - RG-03 : 3e feu stop (giulia, mat 40, repéré « étroit et centré ») allumé au freinage seulement ; feux de recul aussi le jour.
+  - RG-10 / ANO-48 : halos des clignotants et des feux de détresse avec `MAT.blinkHalo` du web (`0xff9a10`, opacité 0,95) converti par `effets::versHdr`, soit (1,87 ; 0,39 ; 0) au lieu de (7 ; 2,6 ; 0,07). Même conversion pour `haloBrake`. Taille 1,5 m inchangée.
+- **Accroches annoncées (≤ 10 lignes)** :
+  - `src/render/renderer.h` (2) : `ModelPart::feuArriere`, `FeuxVoiture::frein`, `FeuxModele::pieceArriere` / `arriereZ` ;
+  - `src/render/model_loader.cpp` (8) : appel de la découpe avant l'envoi des tampons, boîte du feu dans le bloc WFS-09 ;
+  - `CMakeLists.txt` (1) : `test_feux_modele` ;
+  - `src/platform/desktop_main.cpp` (2) : `benchFeuxFrein` dans le groupe nuit ;
+  - `src/render/nuit.cpp` : bloc des feux du joueur, plus 1 ligne au début de `render` ;
+  - aucune ligne de WFS-134 touchée dans `traffic_system.cpp` (choix silhouette / modèle) ni dans `poursuite_system.cpp`.
+- **Vérification** :
+  - compilation, 26 tests CPU OK, `WFS_BANC=parcours` local : 0 écart ;
+  - bancs `nuit`, `partie1a`, `partie1b` comparés à un build de `main` (46b548b) : seuls les feux changent (Golf, 911, trafic, halos orange) ; mêmes 182 appels de dessin en ville ;
+  - CI de branche, run 661 (42105045445) : android, publication et 11 bancs verts ; `texte` et `vitrines` rouges à cause du commit `configgame.json` (e23fa51) fait à la main sur main : `test_configgame` « dépôt = valeurs du code » ÉCHEC, records relus ; c'est hors de ma zone ;
+  - captures de `apercu-waforspeed-109` regardées : `feux-frein-jour`, `feux-frein-nuit`, `trafic-freinage`, `accident-fumee`.
+- **Limites** : les gyrophares de la police (ANO-56) sont dans WFS-141. Les silhouettes lointaines (`dessineLoin`, WFS-134) n'ont pas de feux. Le reflet rouge sur la route la nuit au freinage reste celui de WFS-84.
+
