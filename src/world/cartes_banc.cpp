@@ -24,6 +24,8 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         {"circuit", "jour", "Paddock", "carte-circuit-paddock"}, {"circuit", "jour", "Virages rapides", "carte-circuit-gravier"},
         {"circuit", "jour", "Section boisée", "carte-circuit-foret"},
         {"plage", "nuit", nullptr, "nuit-plage-corniche"}, {"plage", "jour", nullptr, "carte-plage-corniche"},   // WFS-81 : lampadaires « beach »
+        {"plage", "jour", "Port de plaisance", "carte-plage-marina"}, {"plage", "jour", "Côte rocheuse", "carte-plage-rochers"},
+        {"plage", "jour", "Village de pêcheurs", "carte-plage-village"},   // WFS-94 : quartiers de la Corniche
         {"ville", "jour", "Quartier résidentiel", "carte-ville-residentiel"}, {"ville", "jour", "Parc urbain", "carte-ville-parc"},
         {"ville", "jour", "Zone portuaire", "carte-ville-port"}};   // WFS-93 : quartiers de la ville
     for (const Cap& c : CAPS) {

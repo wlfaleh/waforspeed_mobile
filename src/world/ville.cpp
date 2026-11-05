@@ -28,6 +28,7 @@
 #include "../game/track.h"
 #include "../render/renderer.h"
 #include "../render/eclairage.h"   // WFS-09
+#include "../render/effets_particules.h"   // WFS-94 : effets::versHdr (fenêtres allumées)
 #include "../../third_party/stb/stb_image.h"
 #include "../core/platform.h"
 #include "decor_carte.h"
@@ -38,7 +39,7 @@
 namespace wfs {
 namespace {
 
-enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_COUNT };
+enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE, P_COUNT };   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
 enum Couleur {
@@ -107,8 +108,21 @@ void cylinder(Geo& g, vec3 base, float rad, float h, int n = 8) {
 }
 
 // façade d'immeuble : béton teinté, grille de fenêtres (2 par tuile), quelques vitres plus claires
-std::vector<uint8_t> facadeTexture(int variant, int& W, int& H) {
+// WFS-94 (RG-A2) : de nuit, couleurs de la texture de nuit du jeu web (makeTextures : fond #0d0f17, fenêtres éteintes
+// #161a26, haut de façade #07080c) : façades non éclairées, sombres même dans l'axe des phares
+std::vector<uint8_t> facadeTexture(int variant, int& W, int& H, bool nuit = false) {
     W = H = 256;
+    if (nuit) {
+        std::vector<uint8_t> px((size_t)W * H * 4);
+        for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) {
+            const float u = (x + 0.5f) / W * 2, v = (y + 0.5f) / H * 2, fu = u - (int)u, fv = v - (int)v;
+            const bool fen = fu > 0.16f && fu < 0.84f && fv > 0.22f && fv < 0.82f;
+            const uint32_t h = fen ? 0x161a26 : fv < 0.12f ? 0x07080c : 0x0d0f17;
+            uint8_t* p = &px[((size_t)y * W + x) * 4];
+            p[0] = (h >> 16) & 255; p[1] = (h >> 8) & 255; p[2] = h & 255; p[3] = 255;
+        }
+        return px;
+    }
     std::vector<uint8_t> px((size_t)W * H * 4);
     Mulberry32 R(77 + variant * 13);
     const float wall[2][3] = {{0.55f, 0.52f, 0.48f}, {0.36f, 0.38f, 0.42f}};
@@ -142,9 +156,10 @@ public:
         if (!active_) return;
         const char* dep = std::getenv("WFS_DEPART");   // banc d'essai : départ dans un quartier (segments)
         depart_ = dep ? std::atoll(dep) : 0;
+        { const char* mo = std::getenv("WFS_MOMENT"); nuit_ = mo && !std::strcmp(mo, "nuit"); }   // WFS-94 : comme traffic_system.cpp
         // matériaux
         for (int v = 0; v < 2; v++) {
-            int W, H; auto px = facadeTexture(v, W, H);
+            int W, H; auto px = facadeTexture(v, W, H, nuit_);
             facadeTex_[v] = r.vk().uploadTexture(px.data(), (uint32_t)W, (uint32_t)H, true);
             Material m; m.rough = 0.75f; m.metal = 0.f;
             mats_[P_FACADE_A + v] = r.makeMaterial(m, &facadeTex_[v], nullptr, nullptr);
@@ -154,6 +169,15 @@ public:
             mats_[p] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
         plain(P_METAL, {0.08f, 0.09f, 0.11f}, 0.45f, 0.8f);
+        {   // WFS-94 (RG-A3, RG-A4) : fenêtres allumées (petits quads émissifs), couleurs du jeu web converties par versHdr
+            const uint32_t cols[3] = {0x694b2d, 0x3e5569, 0x007f8c};   // chaud rgb(95-115, 68-82, 40-50), froid, sarcelle
+            for (int k = 0; k < 3; k++) {
+                Material m; m.color = {0, 0, 0, 1}; m.rough = 1;
+                m.emissive = effets::versHdr(vec3{((cols[k] >> 16) & 255) / 255.f, ((cols[k] >> 8) & 255) / 255.f, (cols[k] & 255) / 255.f}, 1.1f);
+                mats_[P_FEN_CHAUD + k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+            }
+        }
+        { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // comme le trottoir de Game
         initVegetation(r);
         plain(P_LAMP, {1.f, 0.95f, 0.85f}, 0.3f, 0.f, {0.6f, 0.55f, 0.45f});
         // couleurs unies : palette sRGB, éclairage du feuillage (MAT_VTINT, sans reflet), comme CarteDecor
@@ -212,6 +236,30 @@ public:
         mats_[P_CORE] = r.makeMaterial(mc, nullptr, nullptr, nullptr);
     }
 
+    // WFS-94 (RG-A3) : fenêtres allumées de la façade côté route (normale n, à hx du centre c), sur la grille de la texture
+    // (2 fenêtres par tuile, rangées calées sur ref : v = (ref − y) / tuile) ; tirage fixe par immeuble (mulberry32) :
+    // 24 % chaudes, 8 % froides, 1,5 % rares (moitié sarcelle, moitié orange #8c3b00 rangée avec les chaudes) ;
+    // rez-de-chaussée (< 3 m) laissé aux vitrines ; sens = −1 quand u de la face court vers −f (face de normale −r)
+    void fenetres(Geo out[P_COUNT], vec3 c, vec3 n, vec3 f, float hx, float len, float h, float tuile, float ref, uint32_t graine, float sens) const {
+        Mulberry32 R(31u + graine * 2654435761u);
+        const float cel = tuile / 2, ncol = std::floor(len / cel);
+        const vec3 up{0, 1, 0}, o = c + n * (hx + 0.04f);
+        for (int cy = 0;; cy++) {
+            const float yh = ref - (cy + 0.22f) * cel, yb = ref - (cy + 0.82f) * cel;
+            if (yb < 3.f) break;
+            if (yh > h - 0.3f) continue;
+            for (int cx = 0; cx < (int)ncol; cx++) {
+                const float q = (float)R.next();
+                const int part = q < 0.24f ? P_FEN_CHAUD : q < 0.32f ? P_FEN_FROID : q < 0.3275f ? P_FEN_RARE : q < 0.335f ? P_FEN_CHAUD : -1;
+                if (part < 0) continue;
+                const float z0 = sens * (-len / 2 + (cx + 0.16f) * cel), z1 = sens * (-len / 2 + (cx + 0.84f) * cel);   // sens : u de la face
+                const vec3 a = o + f * z0 + up * yb, b = o + f * z1 + up * yb, d = o + f * z1 + up * yh, e = o + f * z0 + up * yh;
+                if (dot(cross(b - a, d - a), n) > 0) quad(out[part], a, b, d, e, n, {0, 0}, {1, 0}, {1, 1}, {0, 1});
+                else quad(out[part], a, e, d, b, n, {0, 0}, {0, 1}, {1, 1}, {1, 0});
+            }
+        }
+    }
+
     // objet du plan (deco.items du jeu web) au segment absolu a (seg : son indice sur la piste, z : sa zone)
     void objet(Track& t, const ville::Objet& o, int64_t a, int64_t seg, const char* z, const carte::Pose& p, bool lod, Geo out[P_COUNT]) const {
         const float R = (float)RW, s = (float)o.side;
@@ -222,6 +270,7 @@ public:
             const carte::Pose pm = poseS(t, (double)a + o.len / SEG_M / 2);
             const vec3 c = pm.o + pm.r * (s * (R + SET_BACK + o.d / 2));
             Geo& fac = out[o.k == 1 || o.k == 2 ? P_FACADE_B : P_FACADE_A];   // TINTS : 0 et 3 chaudes, 1 et 2 froides
+            if (nuit_) fenetres(out, c, pm.r * -s, pm.f, o.d / 2, o.len, o.h, o.balcons ? 6.f : 4.f, o.balcons ? 301.f : o.h - 3.f, (uint32_t)(seg * 2 + (o.side > 0)), s > 0 ? -1.f : 1.f);
             if (!o.balcons) { box(fac, c, pm.r, pm.f, o.d / 2, o.len / 2, -3.f, o.h + 3.f, 4.f); break; }
             // résidentiel : étages de 3 m (rangées de fenêtres à partir de y = 1, 4, 7…) derrière les balcons (y = 4, 7…)
             box(fac, c, pm.r, pm.f, o.d / 2, o.len / 2, -3.f, o.h + 3.f, 6.f, 301.f);
@@ -339,6 +388,21 @@ public:
             const int64_t seg = ((a % L) + L) % L;   // la piste se répète (tours)
             const char* z = zoneId(*t.map(), seg, L);
             const carte::Pose p = carte::poseAt(t, a);
+            {   // WFS-94 (RG-06, ANO-49) : trottoir de RW + 4 à RW + 6 (GROUND.city : walk jusqu'à RW + 6), à 0,15 m, des deux
+                // côtés, dans tous les quartiers ; uv en mètres comme Game::buildChunkCpu (u latéral, v = segment · SEG_M) :
+                // les dalles continuent celles du trottoir de Game, sans jointure visible
+                const carte::Pose p1 = carte::poseAt(t, a + 1);
+                Geo& w = out[P_TROTTOIR];
+                const float v0 = (float)(a * SEG_M), v1 = (float)((a + 1) * SEG_M), R = (float)RW;
+                for (int s : {-1, 1}) {
+                    const uint32_t k = (uint32_t)w.v.size();
+                    auto som = [&](const carte::Pose& q, float lat, float v) { const vec3 x = carte::lateral(q, s * lat, 0.15f); w.v.push_back({x.x, x.y, x.z, 0, 1, 0, s * lat, v}); };
+                    som(p, R + 4, v0); som(p, R + 6, v0); som(p1, R + 6, v1); som(p1, R + 4, v1);
+                    const vec3 A{w.v[k].px, w.v[k].py, w.v[k].pz}, B{w.v[k + 1].px, w.v[k + 1].py, w.v[k + 1].pz}, C{w.v[k + 2].px, w.v[k + 2].py, w.v[k + 2].pz};
+                    if (cross(B - A, C - A).y >= 0) w.i.insert(w.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
+                    else w.i.insert(w.i.end(), {k, k + 2, k + 1, k, k + 3, k + 2});
+                }
+            }
             ville::Bande bd[2];
             if (const int nb = ville::bandes(z, bd)) {   // pelouse du parc, béton du port (des deux côtés, comme GROUND.city)
                 const carte::Pose p1 = carte::poseAt(t, a + 1);
@@ -432,7 +496,7 @@ public:
     }
 
 private:
-    bool active_ = false;
+    bool active_ = false, nuit_ = false;   // nuit_ : WFS-94
     const ville::Plan* plan_ = nullptr;
     int64_t depart_ = 0;   // banc d'essai : départ du joueur avancé de depart_ segments (WFS_DEPART)
     bool pilote_ = false;  // pilote automatique vu à l'image de temps piloteT_ (GameView::time)

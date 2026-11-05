@@ -55,7 +55,7 @@ public:
     const Texte& texte(const std::string& utf8) const;
     void detruire(Renderer& r);
     // matériau du néon d'une couleur (lettres en alpha découpé + émission), créé à la demande
-    const Material& materiau(Renderer& r, unsigned hex, float emission = 1.6f);
+    const Material& materiau(Renderer& r, unsigned hex, float emission = 1.6f, float seuil = 0.45f);
 private:
     std::vector<std::string> textes_;
     std::map<std::string, Texte> places_;

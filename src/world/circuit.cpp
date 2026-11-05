@@ -22,6 +22,9 @@ enum { T_TIRES = CarteDecor::T_CARTE, T_ADBOARD, T_STAND, T_PITWALL, T_GARAGE, T
 // l'atlas) par couleur, mêmes valeurs que C_AD0 + 2 · n + 1
 const char* const AD_TEXTS[4] = {"WAFORSPEED", "GRAND PRIX", "PNEUS 24/7", "TURBO"};
 const unsigned LETTRES[3] = {0xffffff, 0xffd23a, 0x101014};
+// WFS-94 (RG-07, ANO-51) : seuil alpha des lettres des panneaux du circuit abaissé (0,45 → 0,28) : de loin, les mipmaps
+// moyennées gardent les mots entiers au lieu de couper les lettres ; les enseignes de la ville gardent 0,45
+constexpr float SEUIL_PANNEAUX = 0.28f;
 constexpr int PART_LETTRES[4] = {P_TEXTE0, P_TEXTE0 + 1, P_TEXTE0 + 2, P_TEXTE0};
 
 // ligne de texte de l'atlas sur un plan vertical centré en c, lue selon x (horizontal, unitaire) ; lettres penchées
@@ -44,7 +47,7 @@ public:
         if (!active_) return;
         for (const char* t : AD_TEXTS) atlas_.ajouter(t);
         if (!atlas_.construire(r)) return;   // police absente : panneaux sans texte
-        for (int k = 0; k < 3; k++) mats_[P_TEXTE0 + k] = atlas_.materiau(r, LETTRES[k], 0.f);   // peinture : aucune émission
+        for (int k = 0; k < 3; k++) mats_[P_TEXTE0 + k] = atlas_.materiau(r, LETTRES[k], 0.f, SEUIL_PANNEAUX);   // peinture : aucune émission
         for (int k = 0; k < 4; k++) ad_[k] = atlas_.texte(AD_TEXTS[k]);
     }
 

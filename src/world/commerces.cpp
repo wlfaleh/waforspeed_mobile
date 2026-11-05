@@ -8,7 +8,9 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
+#include <string>
 #include <map>
 #include "../core/log.h"
 #include "../core/system.h"
@@ -261,23 +263,36 @@ void benchVie(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 60 * 40 && cible > 0 && g.player().dist / SEG < cible - 18; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t); }
         capture("vie-terrasse", t);
         const Course* c = activeCourse();
-        for (int i = 0; i < 60 * 60 && c && (c->nextCp - g.player().dist) * M > 130; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t); courseBenchSetTime(30); }
-        capture("vie-portique", t);
+        for (int i = 0; i < 60 * 60 && c && (c->nextCp - g.player().dist) * M > 25; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t); courseBenchSetTime(30); }
+        capture("vie-portique", t);   // WFS-94 (RG-A1, ANO-40) : à 25 m du portique « CHECKPOINT 1 »
         g.shutdown();
     }
     courseBenchRules(false);
     // Corniche de jour : serviettes, personnes assises, baigneurs ; de nuit : panneau néon
     for (const char* mo : {"jour", "nuit"}) {
         setenv("WFS_MOMENT", mo, 1);
+        const bool jour = !std::strcmp(mo, "jour");
+        // WFS-94 (RG-A1, ANO-40) : de jour, départ à côté de la première serviette proche de la route, caméra posée côté
+        // terre et tournée vers la mer : la plage (serviettes, baigneurs) à ≈ 15 m de la caméra
+        Track tr; tr.build(mapById("plage"));
+        if (jour) {
+            const int64_t L = (int64_t)tr.segmentCount();
+            for (const Serviette& sv : serviettes(*tr.map(), L)) if (sv.lat < (float)RW + 16) { setenv("WFS_DEPART", std::to_string((int64_t)sv.s - 20).c_str(), 1); break; }
+        }
         if (g.init(r, "golf", "plage")) {
             double t = 1300;
             g.setAutopilot(true); g.camMode = 1;
-            rouler(!std::strcmp(mo, "jour") ? 60 * 4 : 20, t);
-            capture(!std::strcmp(mo, "jour") ? "vie-plage" : "vie-enseigne-nuit", t);
+            rouler(jour ? 60 : 20, t);
+            if (jour) {
+                const TrackPoint q = tr.point(g.player().dist, 0);
+                g.camMode = 2; g.orbit = std::atan2(-(float)std::cos(q.th), -(float)std::sin(q.th));
+            }
+            capture(jour ? "vie-plage" : "vie-enseigne-nuit", t);
+            g.camMode = 1; unsetenv("WFS_DEPART");
             g.shutdown();
         }
     }
-    unsetenv("WFS_MOMENT");
+    unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 
 } // namespace wfs
