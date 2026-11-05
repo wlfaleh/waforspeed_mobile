@@ -90,6 +90,7 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"conduite.vitesse_libre", T::Reel, &ph.vLibre, 0, 40, "m/s", "conduite libre (demi-tour) sous cette vitesse"},
         {"conduite.vitesse_recul", T::Reel, &ph.vRecul, 0, 20, "m/s", "marche arrière enchaînée sous cette vitesse"},
         {"qualite.plancher_moyenne", T::Flottant, &c.qualite.plancherMoyenne, 0.5, 1, "× résolution", "résolution la plus basse en qualité Moyenne"},
+        {"qualite.reflet_route_mouillee", T::Flottant, &c.qualite.refletRouteMouillee, 0, 1.5, "×", "force du reflet de la rue sur la route mouillée (pluie)"},
     };
 }
 

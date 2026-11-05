@@ -78,5 +78,6 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `conduite.vitesse_libre` | conduite libre (demi-tour) sous cette vitesse | m/s | 0.0 | 40.0 | 10.0 |
 | `conduite.vitesse_recul` | marche arrière enchaînée sous cette vitesse | m/s | 0.0 | 20.0 | 3.0 |
 | `qualite.plancher_moyenne` | résolution la plus basse en qualité Moyenne | × résolution | 0.5 | 1.0 | 0.9 |
+| `qualite.reflet_route_mouillee` | force du reflet de la rue sur la route mouillée (pluie) ; 0 = aucun | × | 0.0 | 1.5 | 1.0 |
 
 Pas encore dans le fichier (tickets en cours sur ces zones) : taille et place des commandes tactiles (WFS-102), nombre de joueurs du duel et distances proposées (écrans de WFS-102). À ajouter quand ces tickets seront fusionnés.

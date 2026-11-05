@@ -152,7 +152,8 @@ void main() {
     if ((flags & F_MASK) != 0u && base.a < pc.params.z) discard;
 
     // ---------- surfaces procédurales (uv = mètres : x latéral, y le long de la route) ----------
-    bool wetRoad = false;   // WFS-16 : chaussée mouillée (nuit en ville et sur la corniche)
+    bool wetRoad = false;   // WFS-16 : chaussée mouillée ; WFS-142 (RG-01) : seulement quand il pleut
+    float flaque = 0.0;     // WFS-142 : part de flaque d'eau au pixel (0 à 1)
     if ((flags & F_ROAD) != 0u) {
         vec2 p = vUv;
         float grain = fbm(p * 3.1) * 0.6 + fbm(p * 23.0) * 0.4;
@@ -168,19 +169,25 @@ void main() {
         }
         float paint = max(edgeL, lane) * (0.75 + 0.25 * noise(p * 6.0));
         base.rgb = mix(asphalt, vec3(0.78, 0.78, 0.74), paint);
-        rough = mix(0.82 - grain * 0.15, 0.55, paint); metal = 0.0;
-        if (F.nuitA.x > 0.5) {   // WFS-16 : roadShader du jeu web (rnoise, trk, puddle) ; RG-01 rugosité 0,22, métal 0,4
+        // WFS-142 (RG-02) : asphalte sec, jour et nuit : mat (rugosité 0,75 à 0,9), lignes peintes 0,55, jamais métallique
+        rough = mix(0.9 - grain * 0.15, 0.55, paint); metal = 0.0;
+        if (F.nuitA.x > 0.5) {
+            // WFS-142 (RG-03) : asphalte mouillé (pluie). Le roadShader du jeu web (rugosité 0,22, métal 0,4, flaques à 0,02 sur
+            // ≈ 18 % de la chaussée) faisait un miroir : il n'est plus suivi. Ici : jamais métallique, rugosité 0,35 à 0,5, asphalte
+            // assombri par l'eau (× 0,8), flaques rares aux bords doux (≈ 8 % de la chaussée, seuil 0,66 à 0,8 au lieu de 0,6 à 0,7), hors traces de roues et
+            // hors peinture, rugosité ≥ 0,08
             wetRoad = true;
             vec2 w = vWorld.xz;
             float rn = rnoise(w * 0.11) * 0.62 + rnoise(w * 0.43 + 7.0) * 0.38;      // deux échelles, pas de motif répété
             float lane = fract((p.x + halfW) / (2.0 * halfW) * 3.0);                   // position dans la voie (0..1)
             float trk = exp(-pow((lane - 0.3) * 13.0, 2.0)) + exp(-pow((lane - 0.7) * 13.0, 2.0));   // traces de roues
-            float puddle = smoothstep(0.6, 0.7, rn - trk * 0.08) * F.nuitA.y;          // flaques (qualité haute)
-            base.rgb *= (0.9 + 0.2 * rnoise(w * 0.031 + 3.0)) * (1.0 - trk * 0.07) * mix(1.0, 0.5, puddle);   // réparations
-            rough = clamp(mix(0.22, 0.45, paint) * (0.8 + rn * 0.4) - trk * 0.08, 0.04, 1.0);
-            rough = mix(rough, 0.02, puddle);
-            metal = 0.4 * (1.0 - paint);
-            N = normalize(mix(N, normalize(vNrm), puddle));                             // flaque : surface miroir
+            float puddle = smoothstep(0.66, 0.8, rn) * (1.0 - min(trk, 1.0)) * (1.0 - paint) * F.nuitA.y;   // flaques (Haute)
+            base.rgb *= (0.9 + 0.2 * rnoise(w * 0.031 + 3.0)) * (1.0 - trk * 0.07) * mix(0.8, 0.72, puddle);   // eau (flaque à peine plus sombre : pas de « trou » noir), réparations
+            rough = clamp(mix(0.38, 0.5, paint) + (rn - 0.5) * 0.12 + trk * 0.04, 0.35, 0.5);   // traces de roues : un peu plus mates
+            rough = mix(rough, 0.08, puddle);
+            metal = 0.0;
+            flaque = puddle;
+            N = normalize(mix(N, normalize(vNrm), puddle * 0.7));                       // flaque : surface plus plane, pas un miroir
         }
     } else if ((flags & F_WALK) != 0u) {
         vec2 p = vUv;
@@ -214,6 +221,7 @@ void main() {
     float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
+    if (wetRoad) f0 = vec3(mix(0.04, 0.02, flaque));   // WFS-142 (RG-03) : eau des flaques f0 = 0,02
     vec3 Fs = F_Schlick(f0, VoH);
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
@@ -229,6 +237,9 @@ void main() {
     if (F.hemiSky.w > 0.5) skyAmb = mix(F.hemiGround.rgb, F.hemiSky.rgb, N.y * 0.5 + 0.5);
     vec3 Fe = f0 + (max(vec3(1.0 - rough), f0) - f0) * pow(1.0 - NoV, 5.0);
     if (vtint) Fe = vec3(0.0);   // pas de reflet du ciel sur les cartes vues en rasant ou de dos
+    // WFS-142 (RG-04) : chaussée : Fresnel plafonné à 0,25 (0,4 dans les flaques), même en vue rasante (caméra basse de course :
+    // NoV ≈ 0,05 au loin donnait Fe ≈ 0,78, un reflet presque total sur toute la route lointaine)
+    if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
     // le disque du soleil ne se reflète nettement que sur les surfaces lisses (sinon tache blanche sur la route)
     // pièces fines (WFS-42) : le ciel reflété, et surtout le disque du soleil (60 x l'intensité), suivent la rugosité
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
@@ -239,21 +250,29 @@ void main() {
     if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     if (wetRoad && F.nuitA.z > 0.5) {
-        // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran ; étiré à la
-        // verticale selon la rugosité (traînées des lumières sur l'asphalte mouillé), légèrement déformé par le relief
+        // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
+        // WFS-142 (RG-04) : il ne REMPLACE plus le reflet du ciel (avant : env = reflet, l'image nette de la rue sur toute la
+        // chaussée) : il s'y mélange, au plus 0,35 (0,45 dans les flaques) × la force réglée (configgame), et moitié moins au
+        // loin (20 à 80 m). Étalement vertical 8 % de la hauteur d'écran (2 % dans les flaques) au lieu de ≈ 1 % : traînées
+        // floues des lumières, aucun contour d'immeuble lisible. 12 lectures en tente, décalées d'un pixel à l'autre (bruit
+        // fixe à l'écran, aucun scintillement d'une image à l'autre) pour ne pas voir 12 copies.
         vec2 suv = gl_FragCoord.xy * F.nuitB.yz + N.xz * 0.01;
-        // WFS-134 (RG-08, ANO-66) : reflet étiré ×3 à la verticale et flouté (rugosité au moins 0,35, deux colonnes
-        // décalées) : l'enseigne ne ressemble plus à un panneau posé à plat ; atténué avec la distance
-        float spread = max(rough, 0.35) * 0.15;
-        vec3 rs = vec3(0.0);
-        for (int i = 0; i < 8; i++) {
-            float t = (float(i) - 3.5) / 3.5;
-            rs += texture(reflTex, suv + vec2((float(i & 1) - 0.5) * 0.25 * spread, t * 0.5 * spread)).rgb * (1.0 - 0.5 * t * t);
+        float spread = mix(0.08, 0.02, flaque);
+        float j0 = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));   // bruit entrelacé (IGN)
+        vec3 rs = vec3(0.0); float ws = 0.0;
+        for (int i = 0; i < 12; i++) {
+            float t = (float(i) + j0) / 12.0 - 0.5;                    // −0,5 .. 0,5
+            float wt = 1.0 - abs(t) * 1.6;                              // tente : le centre compte plus
+            vec2 o = vec2((fract(float(i) * 0.618) - 0.5) * spread * 0.15, t * spread);
+            rs += texture(reflTex, suv + o).rgb * wt; ws += wt;
         }
-        float dRef = length(F.camPos.xyz - vWorld);
-        env = rs / 6.286 * mix(1.0, 0.45, smoothstep(15.0, 90.0, dRef));
+        rs /= ws;
+        float dist = length(F.camPos.xyz - vWorld);
+        float wR = clamp(max(F.nuitB.w, 0.0) * (1.0 - rough), 0.0, mix(0.35, 0.45, flaque)) * mix(1.0, 0.5, smoothstep(20.0, 80.0, dist));
+        env = mix(env, rs, wR);
     }
-    col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
+    float kMesure = ((flags & F_ROAD) != 0u && F.nuitB.w < 0.0) ? 0.0 : 1.0;   // WFS-142 (RG-08) : WFS_REFLETS=0, route sans reflet
+    col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK * kMesure;   // WFS-100 RG-01 / RG-02
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
     if ((flags & F_PAINT) != 0u) {
