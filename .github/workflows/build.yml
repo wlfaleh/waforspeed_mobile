@@ -82,7 +82,7 @@ jobs:
   # couches de validation Vulkan ; en parallèle des bancs, aucune publication n'en dépend (RG-05, RG-13)
   endurance:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30   # banc ≈ 14 min avec la validation (llvmpipe), compilation comprise
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)

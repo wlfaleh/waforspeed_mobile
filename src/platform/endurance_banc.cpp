@@ -67,8 +67,8 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     double t = 3000, simule = 0;
     long images = 0;
     const double t0 = nowSeconds();
-    auto pas = [&](int n) {   // n pas de 1/60 s, une image rendue sur 12
-        for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; simule += 1.0 / 60; if (++images % 12 == 0) g.render(t); }
+    auto pas = [&](int n) {   // n pas de 1/60 s, une image rendue sur 16
+        for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; simule += 1.0 / 60; if (++images % 16 == 0) g.render(t); }
     };
     auto capture = [&](const std::string& nom) {
         g.render(t += 0.01); g.render(t += 0.01); r.capturePng(out + "/" + nom + ".png");
@@ -82,11 +82,10 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
         const double av = rssMo();
         g.shutdown(); r.shutdown(); vk.shutdown();                              // termGraphics
         if (!vk.init(nullptr, largeur, hauteur)) { WFS_ERR("endurance : Vulkan non recréé après le retour %d", retours + 1); return false; }
-        // DÉFAUT CONNU (tools/qa/validation_connues.txt, render pass de Renderer gardés après shutdown) : sur Android, le même
-        // Renderer est réinitialisé et plante. Le banc repart d'un Renderer neuf pour couvrir la suite du parcours ;
-        // WFS_ENDURANCE_ANDROID=1 reproduit exactement Android (même objet réinitialisé) pour vérifier la correction.
-        const char* a = std::getenv("WFS_ENDURANCE_ANDROID");
-        if (!(a && a[0] == '1')) { r.~Renderer(); new (&r) Renderer(); WFS_LOG("endurance : Renderer neuf (contournement du défaut connu)"); }
+        // ANO-52 : comme termGraphics d'android_main.cpp (RG-14), Renderer neuf après shutdown ; WFS_ENDURANCE_SANS_ANO52=1 garde le
+        // même objet réinitialisé (défaut d'origine, pour vérifier la correction durable de WFS-100)
+        const char* sans = std::getenv("WFS_ENDURANCE_SANS_ANO52");
+        if (!(sans && sans[0] == '1')) { r.~Renderer(); new (&r) Renderer(); WFS_LOG("endurance : Renderer neuf (ANO-52, comme android_main)"); }
         r.init(vk);                                                              // initGraphics
         ecrans::chargement().debut(r, nowSeconds());
         if (!g.init(r, voiture.c_str(), carte.c_str(), ecrans::Chargement::progression)) {
