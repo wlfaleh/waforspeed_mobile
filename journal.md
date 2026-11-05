@@ -3136,3 +3136,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - RG-W1 vérifiée : endurance `WFS_ENDURANCE_SANS_ANO52=1` avec validation, 8 cycles, 3 retours d'arrière-plan, 0 erreur de validation, aucun plantage, mémoire +7,1 % (seuil 10 %). Le contournement RG-14 de WFS-91 peut être retiré par un ticket E7 (à proposer au PO).
 - `anno.md` : ANO-21, ANO-27, ANO-28, ANO-50, ANO-52 ✅ Corrigées ; ligne dans `qa/Check.md`. À suivre : CI de main.
 - Suite : WFS-115 (menus, « Continuer ») en cours par un agent.
+
+### 2026-11-05 10:52:57 — WFS-116 fusionné par confiance (PR #95) (Claude, agent 3)
+- Touche / geste Retour du téléphone (`src/platform/retour_systeme.*`) : course → pause, pause → reprise, panneau des modes refermé, bouton « Retour » de l'écran (zones `retour` de la manette, `manette::toucher`, sans mode manette), fin de course sans bouton → menu, chargement : ignoré ; au menu principal l'appui est laissé à Android → `JeuActivity.onBackPressed` → `moveTaskToBack(true)` (arrière-plan, plus de fermeture). Un cran par appui, au relâcher, répétitions ignorées.
+- Sortie de `test_retour_systeme` (RG-06) : décisions par écran OK ; parcours : menu (modes) → menu (panneau fermé), garage → menu, terrain → menu, course → pause → course → pause, menu (réglages) → fermés, fin de course → menu, chargement → ignoré, menu → arrière-plan : OK. Essai local du vrai jeu (scène temporaire du banc, non commitée) : mêmes résultats.
+- Accroches annoncées : `src/platform/android_main.cpp` (7 lignes dans `onInput`, appel de trace dans la boucle, include), `src/platform/manette_jeu.cpp/.h` (`toucher` rendu appelable, lignes d'échelle de WFS-102 non touchées), `CMakeLists.txt` (2 lignes), `JeuActivity.java` (`onBackPressed`).
+- Limite : `.github/**` interdit pour ce ticket : `test_retour_systeme` n'est pas dans la liste des tests de la CI (à ajouter par un ticket E7 ou lors d'un prochain passage sur `build.yml`). Ligne ajoutée à `qa/Check.md` (essai sur téléphone). Je suis la CI de `main`.
+
