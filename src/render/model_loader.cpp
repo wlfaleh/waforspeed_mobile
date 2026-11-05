@@ -281,6 +281,36 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         out.partsLod = lodParts;
         WFS_LOG("%s : version allégée, %zu triangles (fondu de 64 à 72 m de la caméra, au-delà : seule, WFS-134)", path.c_str(), lodIdx.size() / 3);
     }
+    // WFS-134 (RG-11) : version « Basse lointaine » en 4 appels de dessin au plus : carrosserie (peinture), feux arrière,
+    // vitres, reste opaque en gris sombre ; même forme que la version allégée (ou complète), indices absolus à la suite.
+    // Remplace en qualité Basse la version allégée (au-delà de 60 m du joueur, avec fondu) : jamais de cubes.
+    {
+        const std::vector<ModelPart>& src = lodParts.empty() ? out.parts : out.partsLod;
+        int32_t matPeinture = -1, matVitre = -1, matFeu = -1;
+        std::vector<uint32_t> cat[4];   // 0 peinture, 1 feux arrière, 2 vitres, 3 reste opaque
+        for (const ModelPart& p : src) {
+            if (p.material >= raw.size()) continue;
+            const uint32_t f = raw[p.material].flags;
+            const int c = (f & MAT_PAINT) ? 0 : ((f & MAT_TAIL) || p.feuArriere == 1) ? 1 : (f & (MAT_GLASS | MAT_BLEND)) ? 2 : 3;
+            if (c == 0 && matPeinture < 0) matPeinture = (int32_t)p.material;
+            if (c == 1 && matFeu < 0) matFeu = (int32_t)p.material;
+            if (c == 2 && matVitre < 0 && (f & MAT_GLASS)) matVitre = (int32_t)p.material;
+            if (c == 2 && !(f & MAT_GLASS)) continue;   // pièces transparentes non vitrées (grilles, logos) : omises
+            for (uint32_t t = 0; t < p.indexCount; t++) cat[c].push_back(idx[p.firstIndex + t] + (uint32_t)p.vertexOffset);
+        }
+        if (matPeinture >= 0) {
+            const int32_t sombre = (int32_t)raw.size();
+            RawMat d{}; d.col[0] = d.col[1] = d.col[2] = linSrgb(0x1c); d.col[3] = 1; d.metal = 0.2f; d.rough = 0.6f; d.cut = 0.5f;
+            d.tC = d.tN = d.tMR = -1; d.flags = MAT_DOUBLE;
+            raw.push_back(d); partDetail.push_back(0); partFil.push_back(0);
+            const int32_t mats[4] = {matPeinture, matFeu >= 0 ? matFeu : sombre, matVitre >= 0 ? matVitre : sombre, sombre};
+            for (int c : {0, 3, 1, 2}) {
+                if (cat[c].empty()) continue;
+                out.partsBasse.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0)});
+                idx.insert(idx.end(), cat[c].begin(), cat[c].end());
+            }
+        }
+    }
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     out.ib = r.vk().uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
@@ -319,6 +349,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         const RawMat& m = raw[mi];
         Material mt;
         mt.detail = partDetail[mi];
+        if (mi < nMat && matMax[mi].x >= matMin[mi].x) { const vec3 e = matMax[mi] - matMin[mi]; mt.taille = std::max({e.x, e.y, e.z}); }   // WFS-134
         mt.filament = partFil[mi] && !(m.flags & (MAT_PAINT | MAT_BLEND | MAT_GLASS));
         mt.color = {m.col[0], m.col[1], m.col[2], m.col[3]};
         mt.metal = m.metal; mt.rough = m.rough; mt.cutoff = m.cut;

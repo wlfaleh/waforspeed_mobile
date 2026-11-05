@@ -27,6 +27,7 @@ struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
 struct Material {
     vec4 color{1, 1, 1, 1}; float metal = 0, rough = 0.6f, cutoff = 0.5f; vec3 emissive{0, 0, 0};
     float detail = 0;   // WFS-42 : épaisseur typique des triangles (m) quand la pièce est très fine (< 4 mm), sinon 0
+    float taille = 0;   // WFS-134 : plus grande dimension des pièces de ce matériau (m) ; 0 = inconnue
     bool filament = false;   // WFS-42 : pièce opaque faite de fils (baguettes, filets chromés) → dessinée en couverture partielle
     uint32_t flags = 0; VkDescriptorSet set = VK_NULL_HANDLE;
 };
@@ -58,6 +59,7 @@ struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
+    std::vector<ModelPart> partsBasse; // WFS-134 (RG-11) : 4 pièces au plus (peinture, feux, vitres, reste), qualité Basse au loin
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;

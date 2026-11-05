@@ -1065,7 +1065,11 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-134 (RG-11, RG-12) : version allégée au-delà de 60 m du joueur, sans saut : de 64 à 72 m de la caméra (≈ 56 à 64 m
     // du joueur, caméra de poursuite 8 m derrière), les deux versions sont dessinées en tramage écran complémentaire (fondu
     // de 8 m, scene.frag) ; jamais de cubes. t = 0 : complète, 1 : allégée
-    const float tLod = m.partsLod.empty() || fantome ? 0.f : std::clamp((depth - 64.f) / 8.f, 0.f, 1.f);
+    // Qualité Basse : au même endroit, version allégée en 4 pièces (partsBasse : moins d'appels de dessin)
+    const bool versBasse = qualiteBasse && !m.partsBasse.empty();
+    const std::vector<ModelPart>& loin = versBasse ? m.partsBasse : m.partsLod;
+    const float d0 = 64.f;
+    const float tLod = loin.empty() || fantome ? 0.f : std::clamp((depth - d0) / 8.f, 0.f, 1.f);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1083,6 +1087,10 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
         // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
         if (qualiteBasse && depth > 15.f && mat.detail > 0) continue;
+        // WFS-134 (RG-11) : Basse, au-delà de 15 m : petites pièces (< 30 cm : logos, rétroviseurs, grilles, pièces de
+        // l'habitacle) non dessinées, sauf feux, peinture et vitres (silhouette inchangée, moins d'appels de dessin)
+        if (qualiteBasse && depth > 15.f && mat.taille > 0 && mat.taille < 0.3f && !part.feuArriere &&
+            !(mat.flags & (MAT_TAIL | MAT_HEAD | MAT_PAINT | MAT_GLASS))) continue;
         if (fantome) {   // WFS-134 (RG-07) : toutes les pièces translucides (scene.frag, F_FANTOME), après les opaques
             p.pc.params.w = (float)(mat.flags | MAT_BLEND | MAT_FANTOME);
             transparent_.push_back(p);
@@ -1105,7 +1113,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     }
     };
     if (tLod < 1.f) emettre(m.parts, tLod > 0.f ? -(3.f + tLod) : 0.f);      // complète : pixels où le seuil ≥ t
-    if (tLod > 0.f) emettre(m.partsLod, tLod < 1.f ? -(1.f + tLod) : 0.f);   // allégée : pixels où le seuil < t
+    if (tLod > 0.f) emettre(loin, tLod < 1.f ? -(1.f + tLod) : 0.f);   // allégée : pixels où le seuil < t
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
