@@ -219,8 +219,9 @@ private:
         r.uiRect(px0, py0, pw, ph, SURFACE);
         const std::string sur = rows.size() == 1 ? "TON ADVERSAIRE A QUITTÉ LE DUEL" : roule ? "ARRIVÉ · TON ADVERSAIRE ROULE ENCORE" : "DUEL TERMINÉ";
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
-        const std::string titre = rows.size() == 1 ? "Arrivé" : rank == 1 ? "Victoire" : std::to_string(rank) + "e place";
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::majuscules(titre), rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
+        // WFS-102 (RG-08, ANO-35) : « 2e PLACE » (le « e » de l'ordinal reste en minuscule, jamais « 2E »)
+        const std::string titre = rows.size() == 1 ? "ARRIVÉ" : rank == 1 ? "VICTOIRE" : std::to_string(rank) + "e PLACE";
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, titre, rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(s.myFinish()), TEXTE, ui::CENTRE, 0.f, false, true);
         float y = py0 + 24 * u;
         const double lead = rows[0].done ? rows[0].ft : -1;

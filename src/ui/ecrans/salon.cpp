@@ -276,19 +276,34 @@ private:
             r.uiRect(cx, cy + ch - 3 * k, cw, 3 * k, suivante ? hex(ACCENT2) : pleine ? hex(ACCENT) : hex(SURFACE2));
             if (pleine) ui::text(r, cx + cw / 2, cy + 12 * k, 44 * k, ui::majuscules(g_saisie.substr(i, 1)), hex(TEXTE), ui::CENTRE, 0, false, true);
         }
+        // WFS-102 (RG-13, ANO-43) : touche « effacer » à droite des 4 cases, plus de deux fois plus large qu'une touche du
+        // clavier, icône retour arrière (pentagone pointé à gauche, croix) + « EFFACER », en blanc (le cyan est réservé à la sélection)
+        {
+            const float ex = x0 + 4 * (cw + 10 * k), ew = x0 + largeur - ex;
+            g_effacer = {ex, cy, ew, ch};
+            r.uiRect(ex, cy, ew, ch, hex(SURFACE2));
+            const vec4 c = hex(TEXTE);
+            const float iw = 22 * k, ih = 16 * k, ix = ex + (ew - iw) / 2, iy = cy + 14 * k, tr = 2 * k, p = 6 * k;
+            r.uiRect(ix + p, iy, iw - p, tr, c); r.uiRect(ix + p, iy + ih - tr, iw - p, tr, c); r.uiRect(ix + iw - tr, iy, tr, ih, c);
+            for (int j = 0; j < 8; j++) {   // pointe gauche : deux diagonales en petits carrés de 2 px
+                const float f = j / 7.f;
+                r.uiRect(ix + p * (1 - f) - tr / 2, iy + ih / 2 * f, tr, tr, c);
+                r.uiRect(ix + p * (1 - f) - tr / 2, iy + ih - tr - ih / 2 * f, tr, tr, c);
+            }
+            for (int j = 0; j < 6; j++) {   // croix de 6 px au centre du corps
+                const float f = j / 5.f, mx = ix + p + (iw - p) / 2 - 3 * k, my = iy + ih / 2 - 3 * k;
+                r.uiRect(mx + 6 * k * f - tr / 2, my + 6 * k * f - tr / 2, tr, tr, c);
+                r.uiRect(mx + 6 * k * f - tr / 2, my + 6 * k * (1 - f) - tr / 2, tr, tr, c);
+            }
+            ui::text(r, ex + ew / 2, cy + ch - 27 * k, 13 * k, "EFFACER", c, ui::CENTRE, 0.08f, false);
+        }
         const float ky = cy + ch + 18 * k;
         for (int i = 0; i < 32; i++) g_touches[i] = {};
-        for (int i = 0; i <= N; i++) {   // clavier : 31 caractères puis « effacer »
+        for (int i = 0; i < N; i++) {   // clavier : 31 caractères
             const float tx = x0 + (i % COLS) * (tk + gap), ty = ky + (i / COLS) * (tk + gap);
             r.uiRect(tx, ty, tk, tk, hex(SURFACE2));
-            if (i < N) {
-                g_touches[i] = {tx, ty, tk, tk};
-                ui::text(r, tx + tk / 2, ty + 11 * k, 22 * k, ui::majuscules(std::string(1, duel::CODE_CHARS[i])), hex(TEXTE), ui::CENTRE, 0, false);
-            } else {
-                g_effacer = {tx, ty, tk, tk};
-                r.uiRect(tx + 12 * k, ty + tk / 2 - 1.5f * k, tk - 24 * k, 3 * k, hex(ACCENT2));   // ← effacer
-                r.uiRect(tx + 12 * k, ty + tk / 2 - 6 * k, 3 * k, 12 * k, hex(ACCENT2));
-            }
+            g_touches[i] = {tx, ty, tk, tk};
+            ui::text(r, tx + tk / 2, ty + 11 * k, 22 * k, ui::majuscules(std::string(1, duel::CODE_CHARS[i])), hex(TEXTE), ui::CENTRE, 0, false);
         }
         const float ry = ky + 4 * (tk + gap) + 6 * k, rh = 50 * k;
         if (g_saisie.size() == 4) g_rejoindre = bouton(r, zr, ry, rh, k, "Rejoindre", true, true);
@@ -297,56 +312,68 @@ private:
 
     // #lobbyRoom : code, voiture, terrain, distance, joueurs, « Prêt », « Quitter le salon »
     void dessinerSalon(Renderer& r, const GameView& g, float zl, float zr, float y, float by, float bh, float k) {
+        const float zl0 = zl;
         const duel::Session& s = duelSession();
         g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {};
+        // WFS-102 (RG-09, ANO-38) : une carte centrale (720 px au plus) : code en 72 px et « Inviter », aide, lien ;
+        // voiture, terrain et distance dessous ; pilotes en liste sous le tout. Libellés 12 px, valeurs 18 px.
+        const float cl = std::max(zl, (zl + zr) / 2 - 360 * k), cr = std::min(zr, cl + 720 * k), pad = 20 * k;
+        const size_t nAutres = duelSession().others().size();   // hauteur de la carte : son contenu, jamais sous les boutons
+        const float hc = std::min(by - 14 * k - (y - 12 * k), (12 + 140 + 60 + 60 + 20 + 40.f * (1 + nAutres) + (nAutres ? 0 : 20) + 34) * k);
+        r.uiRect(cl, y - 12 * k, cr - cl, hc, GLASS);
+        r.uiRect(cl, y - 12 * k, 3 * k, hc, hex(ACCENT));
+        zl = cl + pad; zr = cr - pad;
         ui::text(r, zl, y, 12 * k, ui::majuscules("Code du salon"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         ui::text(r, zl, y + 16 * k, 72 * k, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
         const float cx = zl + ui::width(72 * k, ui::majuscules(s.code()), 0.18f) + 28 * k;
-        g_inviter = bouton(r, cx, y + 24 * k, 52 * k, k, "Inviter", true);
+        g_inviter = bouton(r, cx, y + 26 * k, 52 * k, k, "Inviter", true);
         const duel::Transport* tr = s.transport();
         std::string sous = reseau::lienInvitation(s.code());
         if (tr && tr->expireDansMs() >= 0) {
             const int mn = (int)std::ceil(tr->expireDansMs() / 60000);
             sous += mn > 0 ? " · code valable " + std::to_string(mn) + " min" : " · code expiré pour les nouveaux";
         }
-        ui::text(r, cx, y + 84 * k, 13 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
+        // WFS-102 (RG-14, ANO-44) : aide sous le code
+        ui::text(r, zl, y + 96 * k, 12 * k, "Donne ce code à ton adversaire : il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
+        ui::text(r, zl, y + 114 * k, 12 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
         // lignes .car-line
-        float ly = y + 112 * k;
+        float ly = y + 140 * k;
         auto ligne = [&](const char* lib, const std::string& val) {
-            ui::text(r, zl, ly + 6 * k, 12 * k, ui::majuscules(lib), hex(MUTED), ui::GAUCHE, 0.16f, false);
-            ui::text(r, zl + 150 * k, ly, 22 * k, val, hex(TEXTE), ui::GAUCHE, 0, false);
-            ly += 44 * k;
+            ui::text(r, zl, ly + 4 * k, 12 * k, ui::majuscules(lib), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, zl + 130 * k, ly, 18 * k, val, hex(TEXTE), ui::GAUCHE, 0, false);
+            ly += 30 * k;
         };
         const CarDef& cd = carById(g.car ? g.car->id : "golf");
         ligne("Ta voiture", std::string(cd.brand) + " " + cd.model);
         ligne("Terrain", libelleCarte(carteHote(s, g)));
-        // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change)
-        ui::text(r, zl, ly + 14 * k, 12 * k, ui::majuscules("Distance"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change) ; 44 px de haut au moins (RG-03)
+        ui::text(r, zl, ly + 15 * k, 12 * k, ui::majuscules("Distance"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         for (int i = 0; i < 4; i++) {
-            const float bw = 84 * k, bx = zl + 150 * k + i * (bw + 6 * k), bhh = 40 * k;
+            const float bw = 84 * k, bx = zl + 130 * k + i * (bw + 6 * k), bhh = 44 * k;
             const bool on = s.km() == duel::KMS[i];
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
             r.uiRect(bx, ly, bw, bhh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2, s.host() ? 1.f : 0.5f));
             if (on) r.uiRect(bx, ly + bhh - 3 * k, bw, 3 * k, hex(ACCENT2));
-            ui::text(r, bx + bw / 2, ly + 11 * k, 17 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(ACCENT2) : hex(TEXTE, s.host() ? 1.f : 0.5f), ui::CENTRE, 0.06f, false);
+            ui::text(r, bx + bw / 2, ly + 13 * k, 18 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(ACCENT2) : hex(TEXTE, s.host() ? 1.f : 0.5f), ui::CENTRE, 0.06f, false);
         }
-        // joueurs (#players) : à droite
-        const float px = std::max(zl + 620 * k, zr - 420 * k), pw = zr - px;
-        float py = y;
+        ly += 44 * k + 16 * k;
+        // joueurs (#players) : en liste sous le code et les réglages
+        const float px = zl, pw = zr - zl;
+        float py = ly;
         ui::text(r, px, py, 12 * k, ui::majuscules("Pilotes"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        py += 22 * k;
+        py += 20 * k;
         auto joueur = [&](const std::string& nom, bool pret, bool moi) {
-            r.uiRect(px, py, pw, 50 * k, GLASS);
-            r.uiRect(px, py, 3 * k, 50 * k, moi ? hex(ACCENT) : hex(ACCENT2));
-            ui::text(r, px + 16 * k, py + 14 * k, 20 * k, nom, moi ? hex(ACCENT) : hex(TEXTE), ui::GAUCHE, 0, false);
-            ui::text(r, px + pw - 16 * k, py + 17 * k, 14 * k, ui::majuscules(pret ? "Prêt" : "En salon"), pret ? hex(0xB6FF00) : hex(MUTED), ui::DROITE, 0.12f, false);
-            py += 58 * k;
+            r.uiRect(px, py, pw, 36 * k, hex(SURFACE2, 0.8f));
+            r.uiRect(px, py, 3 * k, 36 * k, moi ? hex(ACCENT) : hex(TEXTE, 0.6f));
+            ui::text(r, px + 14 * k, py + 9 * k, 18 * k, nom, moi ? hex(ACCENT) : hex(TEXTE), ui::GAUCHE, 0, false);
+            ui::text(r, px + pw - 14 * k, py + 12 * k, 13 * k, ui::majuscules(pret ? "Prêt" : "En salon"), pret ? hex(0xB6FF00) : hex(MUTED), ui::DROITE, 0.12f, false);
+            py += 40 * k;
         };
         joueur(s.nick() + " (toi)" + (s.host() ? " · hôte" : ""), s.status() == duel::Status::Ready, true);
         const auto os = s.others();
         for (const duel::PeerView& p : os) joueur(duel::peerName(p.f) + (duel::str(p.f, "host") == "1" ? " · hôte" : ""), duel::str(p.f, "st") == "ready", false);
-        if (os.empty()) ui::text(r, px + 16 * k, py + 4 * k, 15 * k, "En attente d'un adversaire…", hex(0xC9CDDA), ui::GAUCHE, 0, false);
+        if (os.empty()) { ui::text(r, px + 14 * k, py + 2 * k, 15 * k, "En attente d'un adversaire…", hex(0xC9CDDA), ui::GAUCHE, 0, false); py += 20 * k; }
         // WFS-112 : état du lien (RG-05 : ping, reconnexion) ; échec : message clair (code inconnu, expiré, complet…)
         if (const reseau::TransportDouble* dbl = doubleActuel()) {
             std::string net; bool warn = false;
@@ -365,11 +392,11 @@ private:
                     : "Serveur du duel injoignable : vérifie ta connexion Internet";
                 warn = true;
             }
-            ui::text(r, px + 16 * k, py + (os.empty() ? 34 : 4) * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
+            ui::text(r, px + 14 * k, py + 4 * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
         }
         // boutons
         const bool pret = s.status() == duel::Status::Ready;
-        g_pret = bouton(r, zl, by, bh, k, "Prêt", !pret);   // prêt : bouton clair souligné de cyan (une touche l'annule)
+        g_pret = bouton(r, zl0, by, bh, k, "Prêt", !pret);   // prêt : bouton clair souligné de cyan (une touche l'annule)
         if (pret) { r.uiRect(g_pret.x + 14 * k, by + bh - 3 * k, g_pret.w - 14 * k, 3 * k, hex(ACCENT2)); }
         g_quitter = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "Quitter le salon", false);
     }

@@ -16,6 +16,7 @@
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
+#include "../../game/ressenti.h"   // WFS-102 (RG-07) : aide selon le réglage Direction
 
 namespace wfs {
 namespace ecrans {
@@ -48,7 +49,7 @@ bool dansZone(const Zone& z, float x, float y) {
 int choixSous(float x, float y) { for (int i = 0; i < 4; i++) if (dansZone(g_zones[i], x, y)) return i; return -1; }
 const Choix CHOIX[3] = {   // section #menu de index.html, textes exacts
     {"Course solo", "Bats le chrono, frôle le trafic, enchaîne les checkpoints"},
-    {"Duel en ligne", "Défie un ami sur la même route, même trafic"},
+    {"Duel en ligne", "Défie un ami par Internet, sans trafic"},   // WFS-102 (RG-15b) : duel entre amis (WFS-112), sans trafic (WFS-110)
     {"Showroom", "Choisis ta voiture et sa couleur"},
 };
 
@@ -160,8 +161,13 @@ public:
         y += piedH + gap;
         // ---------- .intro.only-touch : aide des commandes tactiles ----------
         a = glisse(5, dx);
-        ui::text(r, m.x + dx, y, 16 * k, "Flèches à gauche : volant.", hex(INTRO, a), ui::GAUCHE, 0, false);
-        ui::text(r, m.x + dx, y + 22 * k, 16 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
+        // WFS-102 (RG-07, ANO-32) : aide juste selon le réglage Direction ; masquée à la manette (pas d'écran tactile utilisé)
+        if (!manette::actif()) {
+            if (reglagesRessenti().direction == ModeDirection::Fleches) {
+                ui::text(r, m.x + dx, y, 12 * k, "Flèches à gauche : volant.", hex(MUTED, a), ui::GAUCHE, 0, false);
+                ui::text(r, m.x + dx, y + 17 * k, 12 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(MUTED, a), ui::GAUCHE, 0, false);
+            } else ui::text(r, m.x + dx, y, 12 * k, "Glisse à gauche pour tourner. À droite : Gaz, Frein, Nitro.", hex(MUTED, a), ui::GAUCHE, 0, false);
+        }
     }
 private:
     double t0_ = -1;
