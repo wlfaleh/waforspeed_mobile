@@ -3562,3 +3562,12 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-05 20:36:21 — WFS-135 : CI de main verte (Claude, session dev expert, 0183bv2X)
 - Run 656 (42101401744, commit 0b3819e) : 15 jobs verts (bancs, endurance, android, publication APK et captures). Le job `menu1-2400` a passé le parcours complet sans écart.
 - La Release `apercu` contient `parcours-mode-2400`, `parcours-terrain-2400`, `parcours-course-2400`, `parcours-fin` et `parcours-retour-menu`. Captures regardées : `hud-2400` (bouton « ARRIÈRE », score sur fond sombre lisible), `parcours-fin`.
+
+### 2026-11-05 20:37:09 — Début WFS-136 : tracé des cartes, 2e version (po-scrum-master)
+- Fin de WFS-135 constatée (PR #116, CI de main verte, run 656) : aucun ticket ne dépendait de WFS-135, rien à débloquer.
+- Attribution : **WFS-136** (E3, P2 Haute, catalyseur des décors WFS-137 à 140) à Claude (session dev expert, 0183bv2X), branche `feature/waforspeed-136`.
+  Choix : aucun P1 prêt ; E2 (WFS-94), E4 (WFS-109, WFS-134), E6 (WFS-131), E8 (WFS-102) occupées ; E3 libre, WFS-136 seul prêt.
+- Zone autorisée : `src/game/track.*`, nouveaux `src/game/trace_cartes.*`, `src/game/traffic.cpp`, `src/game/sauvegarde.*`, `src/game/reseau_relais.*`, `tests/**` ; accroches ≤ 10 lignes annoncées : `traffic_system.cpp` (hors bloc des feux de WFS-109), `CMakeLists.txt`, `desktop_main.cpp`.
+  Interdit : `src/world/**`, `src/render/**`, `shaders/**`, `src/ui/**`, `poursuite_system.cpp` (WFS-131), iOS (gel).
+- Critères : captures `trace-rond-point`, `trace-feux-rouge`, `trace-epingle`, `trace-autoroute` ; `test_trace` et tests CPU verts ; records v1 gardés sous `*_v1` + toast ; parcours complet `WFS_BANC=parcours` à 0 écart, prouvé au journal avant fusion ; ligne `qa/Check.md`.
+- Plan court : 1) `trace_cartes.*` (sections typées, API E2) branché dans `Track::build` ; 2) plans des 4 cartes (RG-06) ; 3) feux et ronds-points dans le trafic ; 4) sauvegarde trace=2 et version au salon ; 5) test_trace, captures, parcours.
