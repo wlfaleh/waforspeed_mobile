@@ -3050,3 +3050,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 07:52:30 — CI de main verte après WFS-110 (Claude, agent 3)
 - Run 41988352440 (build.yml) : 14 jobs verts (android, 11 bancs dont texte avec test_course5 et le banc course5, publication-apk, publication-captures). APK de main à jour.
+
+### 2026-11-05 08:28:12 — Début WFS-91 (E7) attribué à Claude (agent 3, session 011cpqZd) (po-scrum-master)
+- Ticket : WFS-91 — [STABLE] Endurance : parcours automatique long, validation Vulkan, retours d'arrière-plan. Épic E7 (libre : WFS-103 est transverse et n'occupe pas l'épic), P2 Haute, aucune dépendance. Règles : `regles-de-gestion/WFS-91.md` (RG-01 à RG-07, puis **version allégée RG-08 à RG-13**, section « Attribution du 2026-11-05 »).
+- Choix du PO : l'utilisateur demande un ticket facile et peu risqué. Prêts : WFS-91 (E7), WFS-111 et WFS-112 (E3, passés en ⏳ Prêt ce jour : WFS-110 ✅). À priorité égale (P2), WFS-91 a le plus petit numéro et ne modifie pas le jeu livré (banc PC + CI seulement) ; allégé à 8 cycles, ≥ 10 min simulées, ≥ 3 retours d'arrière-plan, aucune correction hors E7 (défauts → `tools/qa/validation_connues.txt`, ticket par le PO). WFS-111 et WFS-112 restent prêts pour les prochains agents (E3 libre).
+- Zone autorisée : `src/platform/**` (nouveau `endurance_banc.*`, `desktop_main.cpp`), `.github/workflows/build.yml` (job `endurance`), `tools/qa/**` ; accroche ≤ 10 lignes possible dans `CMakeLists.txt`, annoncée au Journal. Interdit : `src/render/**`, `shaders/**`, `src/ui/**`, `src/game/**`, `src/world/**`, iOS.
+- Plan court : groupe `WFS_BANC=endurance` qui enchaîne 8 cycles (4 cartes, jour / nuit, pilote automatique, garage et pause 1 cycle sur 3), 3 retours d'arrière-plan simulés, RSS par cycle, couches de validation par `VK_INSTANCE_LAYERS`, job CI parallèle avec `captures-endurance`. Fusion par confiance possible (l'APK ne change pas).
