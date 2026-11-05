@@ -3143,3 +3143,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Accroches annoncées : `src/platform/android_main.cpp` (7 lignes dans `onInput`, appel de trace dans la boucle, include), `src/platform/manette_jeu.cpp/.h` (`toucher` rendu appelable, lignes d'échelle de WFS-102 non touchées), `CMakeLists.txt` (2 lignes), `JeuActivity.java` (`onBackPressed`).
 - Limite : `.github/**` interdit pour ce ticket : `test_retour_systeme` n'est pas dans la liste des tests de la CI (à ajouter par un ticket E7 ou lors d'un prochain passage sur `build.yml`). Ligne ajoutée à `qa/Check.md` (essai sur téléphone). Je suis la CI de `main`.
 
+
+### 2026-11-05 10:53:56 — Début WFS-111 : Mode Poursuite police + étape 0 (retrait RG-14 de WFS-91) (PO)
+- Attribué à Claude (session trafic, 2e agent), épic E3 (exception : en parallèle de WFS-115, nouveaux fichiers `src/game/poursuite*`), branche `feature/waforspeed-111`.
+- Zone : `src/game/poursuite*` ; accroches ≤ 10 lignes dans `course_system.*`, `traffic_system.cpp` (hors feux, WFS-109) ; `tests/**` ; 1 ligne de `modes_ecran.cpp` après fusion de WFS-115 ; étape 0 : `android_main.cpp` (`termGraphics`), `endurance_banc.cpp`, `tools/qa/validation_connues.txt`.
+- Critères : RG-01 à RG-09 (première version jouable : police, trafic dense, 3 surprises, score 100), RG-10 (endurance sans contournement : 0 erreur, ≥ 3 retours), RG-12 (parcours complet prouvé).
+- Plan : étape 0 et banc d'endurance ; `poursuite.*` (score, police, renforts) ; trafic dense et embouteillages ; surprises ; HUD et fin ; test CPU + captures ; une seule CI.
+- Choix du PO : la suite de WFS-100 (quelques lignes en E7) est rangée dans ce ticket pour ne pas créer de micro-ticket ni de CI à part.
