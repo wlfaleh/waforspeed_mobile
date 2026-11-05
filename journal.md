@@ -2866,3 +2866,16 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - le noter dans `qa/Check.md` (avant / après) pour que le QA ne le prenne pas pour une régression.
 - **Accepté aussi (zone `nuit.cpp`, RG-10)** : `decay = 2` pour les lampadaires et les projecteurs, comme au web (`PointLight(…, 26, 2)`). À vérifier : flaques et têtes de lampe toujours visibles.
 - **RG-05 sans objet pour `poolCool`** : on garde `lin`.
+
+### 2026-11-05 00:59:08 — WFS-93 fusionné (PR #89, fusion par confiance) : les 6 quartiers de la ville, texte des panneaux du circuit, vignes sur le coteau (Copilot, session 0e5c192d)
+- **Fusion** : PR #89, commit de fusion `1df6dc0`, branche synchronisée avec `main` juste avant (aucun conflit ; `main` n'apportait rien dans `src/world`). Vérifié en local après la synchronisation : compilation propre, 18 tests CPU verts (dont `test_commandes`, `test_appui`), licences, banc `cartes` ; avant la synchronisation : bancs `partie1` et `partie2` complets, aucune `[ERREUR]`.
+- **Ce qui est fait** (zone `src/world/**` seulement) :
+  - nouveau `ville_quartiers.h/.cpp` : plan unique de la ville, port de `generateDecor` (`city.centre`, `residentiel`, `parc`, `port`), mêmes pas et mêmes tirages `D()` que le web ; affaires = centre, vieux quartier = résidentiel ; partagé par `ville.cpp`, `commerces.cpp` et `enseignes.cpp` ;
+  - RG-07 : texte d'`AD_TEXTS` sur les panneaux du circuit, en italique, lisible des deux côtés (atlas `AtlasTextes`) ;
+  - RG-08 : rangs de vigne continus, posés sur le sol à chaque segment, effilement 0,6 : plus de marches ;
+  - captures `carte-ville-residentiel`, `-parc`, `-port` ajoutées dans `cartes_banc.cpp` (groupe `cartes`).
+- **Énumération partagée** : `P_TEXTE0..2` ajoutés aux morceaux de `decor_carte.h` (dans la zone `src/world`, aucun autre fichier touché).
+- **Collisions du décor (RG-06)** : lampadaires, arbres de rue et panneaux de la ville font un choc aux mêmes endroits que le web. C'est le premier ticket qui appelle `Course::crash` en jeu. **Décision** : le pilote automatique (démos du menu, du terrain, du salon, de la pause, des réglages et banc) n'en subit pas — le web n'a pas de pilote automatique et, sans cette exemption, la voiture du banc sortait de la route au tronçon 348, heurtait un lampadaire et restait au centre (captures `course-cam1-*` fausses). Le joueur, lui, heurte le décor comme au web.
+- **Appels de dessin** : ville 184 (centre ; 160 sur `main`), 185 (résidentiel), 130 (parc), 115 (port) ; circuit 83 → 110 (tribunes), 99 → 121 (forêt) ; campagne inchangée. Tous ≤ 300.
+- **Points connus, à prioriser par le PO** : bande d'herbe de 2 m (RW + 4 à RW + 6) entre le trottoir de Game et la ville, déjà sur `main` (le web a du trottoir jusqu'à RW + 6 : des terrasses y sont posées) ; la nuit, copies fantômes des textes lumineux (effet de traînée de `src/render`, aussi sur les projecteurs) ; texte lointain des panneaux morcelé (seuil alpha 0,45 sur les mipmaps) ; images par seconde réelles à mesurer sur le téléphone.
+- `TACHES.md` (WFS-93 ✅) et `qa/Check.md` (ligne WFS-93) mis à jour. WFS-94 (Corniche) n'attend plus WFS-93.
