@@ -2782,3 +2782,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 - **WFS-108** : VALIDÉ, d'après la Release `apercu` construction 564 (`e6ea49b`). Pédales agrandies, nitro au-dessus du frein, encoche et compteur dégagés, mode gaucher, 11 lignes de réglages, mode « Grands » et marche arrière (« R · KM/H ») conformes.
 - Lot de la nuit terminé : WFS-79, WFS-104, WFS-101 et WFS-108 VALIDÉS ; WFS-99 PASSABLE (ANO-47) ; **WFS-78 REFUSÉ** (pas de menu iOS ; la correction est WFS-88 / PR #76, à fusionner par WFS-103).
+
+### 2026-11-05 00:00:38 — Début WFS-113 : showroom, une flèche = une voiture (po-scrum-master)
+- Ticket WFS-113 (E5, P1 Urgent) attribué à Claude (agent 3, session 011cpqZd), à sa demande (ordre de l'utilisateur). Branche `feature/waforspeed-113`. Règles : `regles-de-gestion/WFS-113.md`.
+- Zone autorisée : `src/ui/garage.*` et fichiers du showroom / choix de peinture sous `src/ui/**` (sauf `src/ui/ecrans/`), test CPU dédié sous `tests/` ; captures `showroom-suivante-1/2/3` par accroche ≤ 10 lignes annoncée dans `src/platform/desktop_main.cpp`. Interdit : noyau (`src/core`, `src/game/game.*`, API du renderer, CMake hors ajout du test), `src/input/**` (sauf accroche annoncée), iOS.
+- Piste de l'agent : sur téléphone, chaque mouvement d'un doigt posé arrive en « appui » ; le garage ne retient pas le doigt du bouton, donc chaque micro-mouvement sur une flèche relance `cycle()`. Correction attendue : déclencher sur le front (doigt nouveau ou relâchement), un doigt = un appui.
+- Critères : test CPU 20 appuis = 20 voitures consécutives puis retour à la 1re ; 40 appuis alternés sans saut ni erreur ; même règle pour « Ta voiture » et peintures ; cause nommée au Journal.
