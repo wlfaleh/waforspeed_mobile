@@ -3031,3 +3031,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Liste des captures** : 257 noms avant (dernière publication de l'ancien script, `dcfa0ff`) et 257 après, **identiques** (diff vide ; sha256 de la liste triée : `0a4417deca94774f…`). Ce sont les 254 de la construction 572, plus `carte-ville-parc`, `carte-ville-port` et `carte-ville-residentiel` (WFS-93). Vérification : `gh release view apercu --json assets -q '.assets[].name' | grep -E '\.(png|txt)$' | sort | sha256sum`. La Release a un seul `empreintes-583-1.sha256`, et ses notes disent « construction 583, commit 0a88f80 (257/257 à jour) ».
 - Plus long job de banc : `partie2a`, 9:51. `menu-duel-2400` et `reglages-menu-2400` sont identiques au pixel près à ceux de la branche (« RECORD 955 »).
 - Reste à voir la **fusion n°2** (la prochaine fusion de code d'un agent) : je la suis et je la noterai ici.
+
+### 2026-11-05 07:20:13 — CI de main verte après WFS-104 et WFS-113 (agent 3, session 011cpqZd)
+- Run 569 (`d93abf1`, fusion de WFS-113) : vert, `test_appui` compris ; runs suivants de `main` (572 à 583) verts. Suivi des fusions par confiance de WFS-104 et WFS-113 terminé.
