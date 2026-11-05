@@ -90,9 +90,25 @@ double rssMo() {
 }
 
 // WFS-126 (RG-09) : relevé d'un cycle : RSS (anonyme / fichiers), tas de malloc, objets Vulkan vivants, trafic
-struct Releve { double rss = 0, anon = 0, fich = 0, tas = 0, tasReserve = 0, vkMo = 0; long vkMem = 0, tampons = 0, images = 0, pipelines = 0; int trafic = 0; };
+struct Releve { double rssBrut = 0, rss = 0, anon = 0, fich = 0, tas = 0, tasReserve = 0, vkMo = 0; long vkMem = 0, tampons = 0, images = 0, pipelines = 0; int trafic = 0; };
+double lireRss() {
+    double kb = 0;
+    if (FILE* f = std::fopen("/proc/self/status", "r")) {
+        char l[256];
+        while (std::fgets(l, sizeof l, f)) if (!std::strncmp(l, "VmRSS:", 6)) { kb = std::atof(l + 6); break; }
+        std::fclose(f);
+    }
+    return kb / 1024;
+}
+// RG-09 : le seuil porte sur la mémoire réellement utilisée. glibc (PC) garde les pages libérées dans ses zones (une par
+// thread des jobs) après chaque changement de carte, au lieu de les rendre au système comme l'allocateur d'Android (scudo) :
+// malloc_trim(0) les rend avant chaque relevé ; la RSS d'avant (« brute ») reste écrite au journal.
 Releve relever() {
     Releve m;
+    m.rssBrut = lireRss();
+#if defined(__linux__) && defined(__GLIBC__)
+    malloc_trim(0);
+#endif
     if (FILE* f = std::fopen("/proc/self/status", "r")) {
         char l[256];
         while (std::fgets(l, sizeof l, f)) {
@@ -114,9 +130,9 @@ Releve relever() {
     return m;
 }
 void journalReleve(int cy, const Releve& m) {
-    WFS_LOG("ENDURANCE cycle %d : RSS %.1f Mo, anonyme %.1f Mo, fichiers %.1f Mo, tas utilisé %.1f Mo (gardé par malloc %.1f Mo), "
+    WFS_LOG("ENDURANCE cycle %d : RSS %.1f Mo (brute avant malloc_trim %.1f Mo), anonyme %.1f Mo, fichiers %.1f Mo, tas utilisé %.1f Mo (gardé par malloc %.1f Mo), "
             "Vulkan %ld allocations (%.0f Mo alloués en tout), %ld tampons, %ld images, %ld pipelines, trafic %d voitures",
-            cy, m.rss, m.anon, m.fich, m.tas, m.tasReserve, m.vkMem, m.vkMo, m.tampons, m.images, m.pipelines, m.trafic);
+            cy, m.rss, m.rssBrut, m.anon, m.fich, m.tas, m.tasReserve, m.vkMem, m.vkMo, m.tampons, m.images, m.pipelines, m.trafic);
 }
 // pente (Mo par cycle) par moindres carrés sur les cycles [de, a]
 double pente(const double* v, int de, int a) {
@@ -191,12 +207,12 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     };
     double rss2 = 0, rssMax = 0;
     int pire = 0;
-    double vRss[CYCLES + 1] = {}, vTas[CYCLES + 1] = {}, vReserve[CYCLES + 1] = {}, vFich[CYCLES + 1] = {};   // RG-09 : un relevé par cycle
+    double vRss[CYCLES + 1] = {}, vTas[CYCLES + 1] = {}, vReserve[CYCLES + 1] = {}, vFich[CYCLES + 1] = {}, vBrut[CYCLES + 1] = {};   // RG-09 : un relevé par cycle
     for (int cy = 1; cy <= CYCLES; cy++) {
         carte = CARTES[(cy - 1) % 4]; nuit = cy > 4;   // 4 cartes de jour, puis les 4 de nuit
         const Releve rel = relever();
         journalReleve(cy, rel);
-        vRss[cy] = rel.rss; vTas[cy] = rel.tas; vReserve[cy] = rel.tasReserve; vFich[cy] = rel.fich;
+        vRss[cy] = rel.rss; vTas[cy] = rel.tas; vReserve[cy] = rel.tasReserve; vFich[cy] = rel.fich; vBrut[cy] = rel.rssBrut;
         const double rss = rel.rss;
         if (cy == 2) rss2 = rss;
         if (cy >= 3 && rss > rssMax) { rssMax = rss; pire = cy; }
@@ -246,7 +262,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
         }
         if (cy == 6 && !retourArrierePlan("au menu")) return 4;
     }
-    const double rssFin = rssMo();
+    const double rssFin = relever().rss;   // RG-09 : même mesure que les cycles (après malloc_trim)
     if (rssFin > rssMax) { rssMax = rssFin; pire = CYCLES + 1; }
     const double croissance = rss2 > 0 ? (rssMax - rss2) / rss2 * 100 : 0;
     WFS_LOG("endurance : bilan : %d cycles, %d retours d'arrière-plan, %.1f min de jeu simulé, %ld pas, %.0f s réelles", CYCLES, retours,
@@ -256,8 +272,8 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
             rss2, rssMax, pire, rssFin, croissance);
     journalReleve(CYCLES + 1, relever());   // relevé de fin (« cycle 9 »)
     // RG-09 (b) : pente par moindres carrés sur les cycles 2 à 8 (RSS, tas utilisé, tas gardé par malloc, fichiers)
-    WFS_LOG("endurance : pente (cycles 2 à 8) : RSS %+.2f Mo/cycle, tas utilisé %+.2f Mo/cycle, tas gardé %+.2f Mo/cycle, fichiers %+.2f Mo/cycle",
-            pente(vRss, 2, CYCLES), pente(vTas, 2, CYCLES), pente(vReserve, 2, CYCLES), pente(vFich, 2, CYCLES));
+    WFS_LOG("endurance : pente (cycles 2 à 8) : RSS %+.2f Mo/cycle (brute %+.2f), tas utilisé %+.2f Mo/cycle, tas gardé %+.2f Mo/cycle, fichiers %+.2f Mo/cycle",
+            pente(vRss, 2, CYCLES), pente(vBrut, 2, CYCLES), pente(vTas, 2, CYCLES), pente(vReserve, 2, CYCLES), pente(vFich, 2, CYCLES));
     g.setAutopilot(false);
     courseBenchRules(false);
     g.shutdown();
