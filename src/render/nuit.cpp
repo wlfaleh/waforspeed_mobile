@@ -85,7 +85,12 @@ public:
         if (!actif(g)) return;
         const bool haute = ecrans::reglages().qualite == ecrans::QUALITE_HAUTE;
         // ---------- RG-01 : envFor nuit (couleurs éclaircies comme la plage, WFS-14 : l'étalonnage du web n'est pas porté) ----------
-        const float k = 2.2f;
+        // WFS-97 (RG-04, ANO-37) : en ville et sur la corniche, on aurait dit le crépuscule (façades lavande) → ciel et
+        // brouillard moins éclaircis, hémisphère × 0,45 et lune × 0,4 : façades sombres, la voiture, les néons, les flaques
+        // et les reflets ressortent. Exposition (1,1) gardée : la baisser éteindrait aussi néons et flaques ; ambiance (0,7)
+        // gardée : elle ne règle que les reflets du ciel. Circuit (nuit bleutée voulue) et campagne inchangés.
+        const bool rue = ville_ || plage_;
+        const float k = rue ? 1.4f : 2.2f;
         uint32_t hor = 0x3a1a36, fog = 0x120d1d, hemiS = 0x46327a; float hemiI = 0.75f, fogFar = 540;
         if (plage_) { hor = 0x2b2240; fog = 0x141428; fogFar = 640; }
         if (campagne_) { hor = 0x1b2236; fog = 0x0d1218; hemiS = 0x3a4670; hemiI = 0.6f; }
@@ -93,9 +98,9 @@ public:
         if (ecrans::reglages().qualite == ecrans::QUALITE_BASSE) fogFar = std::min(fogFar, 420.f);
         fp.skyTop = linHex(0x04040a) * k; fp.skyHorizon = linHex(hor) * k; fp.ground = linHex(0x0a0a10) * k;
         fp.fogColor = linHex(fog) * k; fp.fogNear = 40; fp.fogFar = fogFar; fp.fogDensity = 0;
-        fp.hemiSky = linHex(hemiS); fp.hemiGround = linHex(0x08080e); fp.hemiIntensity = hemiI;
+        fp.hemiSky = linHex(hemiS); fp.hemiGround = linHex(0x08080e); fp.hemiIntensity = hemiI * (rue ? 0.45f : 1.f);
         // lune : 0,35 du jeu web (soleil 1,2 → 3,2 ici)
-        fp.sunDir = normalize(vec3{-0.4f, 0.8f, 0.3f}); fp.sunColor = linHex(0x8a96ff); fp.sunIntensity = 0.35f * 3.2f / 1.2f;
+        fp.sunDir = normalize(vec3{-0.4f, 0.8f, 0.3f}); fp.sunColor = linHex(0x8a96ff); fp.sunIntensity = 0.35f * 3.2f / 1.2f * (rue ? 0.4f : 1.f);
         fp.ambient = 0.7f; fp.exposure = 1.1f; fp.night = true; fp.shadows = false;
         // ---------- feux et route mouillée ----------
         fp.feux = true;
@@ -123,7 +128,8 @@ public:
             const Lampadaire& l = L[proches_[j].second];
             const TrackPoint q = g.track->point((double)(aP + proches_[j].first) * SEG, l.lat);
             FrameParams::Spot& s = fp.spots[fp.spotCount++];
-            s.pos = {(float)q.x, (float)q.y + l.y, (float)q.z}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 1;
+            // decay 2 comme PointLight(0xffb46b, 1.1, 26, 2) du jeu web (renderer.js) : lumière moins étalée (WFS-97, RG-10)
+            s.pos = {(float)q.x, (float)q.y + l.y, (float)q.z}; s.target = s.pos + vec3{0, -1, 0}; s.angle = PI; s.decay = 2;
             const bool stade = l.style == StyleLampadaire::Stade;
             s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
         }
@@ -164,6 +170,8 @@ public:
             const vec3 c{(float)a.x, (float)a.y + 0.04f, (float)a.z};
             const vec3 f = normalize(vec3{(float)(b.x - a.x), (float)(b.y - a.y), (float)(b.z - a.z)});
             const vec3 rr{(float)std::cos(a.th), 0, (float)std::sin(a.th)};
+            // × 2,2 : le jeu web ajoute la tache à l'asphalte éclairé avant sa courbe (pow 2,2) ; mesuré au banc (WFS-97), le
+            // cœur ressort ainsi comme au web dès que la chaussée reçoit la lumière (≈ × 1 ne laisse qu'un voile)
             r.haloSol(c, rr, f, R2, R2, col * 2.2f);
             // halo de la tête : seulement pour les lampadaires du décor (la corniche et le circuit n'ont pas encore de mât natif)
             if (l.style != StyleLampadaire::Ville) continue;
