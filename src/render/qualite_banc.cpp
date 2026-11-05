@@ -76,6 +76,8 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
                 else c.z = pos - (200 + 5.0 * (double)i) / M;
             }
         }
+        // de près (orbite 2,4 m comme voiture-course-haute) ; trafic et Basse : caméra de poursuite haute du joueur
+        if (!pr.trafic && pr.niveau == qualite::HAUTE) { g.camMode = 2; g.orbit = 2.4f; } else g.camMode = 1;
         for (int i = 0; i < 4; i++) g.render(914 + i / 60.0);
         r.capturePng(out + "/" + pr.nom + ".png");
         WFS_LOG("capture %s (WFS-134) : %s, %.0f km/h", pr.nom, qualite::ligneRendu().c_str(), g.player().kmh());
