@@ -197,7 +197,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P1 Urgent | WFS-107 | [URGENT] Bug : animation bizarre (« feu blanc ») quand on tourne à gauche ou à droite | E4 (exception : prend la place de WFS-101, mêmes fichiers `effets_*` ; séparés de WFS-100 / WFS-109) | 🔧 En cours — cause trouvée (fumée des pneus, `hdr()`) | Copilot (session dc0cdd3f), 2026-11-04 | WFS-101 ✅ | `feature/waforspeed-107` |  |  |
 | P1 Urgent | WFS-108 | [URGENT] Commandes tactiles : boutons plus grands, frein et marche arrière revus, option gyroscope | E3 (exception : 2e ticket E3, fichiers séparés de WFS-105, demande de l'utilisateur) | ✅ Fusionné (fusion par confiance après CI verte, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-98 ✅ | `feature/waforspeed-108` | #83 |  |
 | P1 Urgent | WFS-109 | [URGENT] Feux de freinage réalistes (2e passage) | E4 (exception : 3e ticket E4, blocs séparés : bloc des feux de `renderer.cpp`, que WFS-100 ne touche pas ; aucun fichier de WFS-107) | ⏳ Prêt (WFS-101 ✅ le 2026-11-04) |  | WFS-84 ✅, WFS-101 ✅ | `feature/waforspeed-109` |  |  |
-| P1 Urgent | WFS-113 | [URGENT] Showroom : les flèches sautent des voitures et l'écran bugue | E5 | 🔧 En cours | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-11 ✅ | `feature/waforspeed-113` |  |  |
+| P1 Urgent | WFS-113 | [URGENT] Showroom : les flèches sautent des voitures et l'écran bugue | E5 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-11 ✅ | `feature/waforspeed-113` |  |  |
 | P2 Haute | WFS-110 | Modes de course : Course à 5 voitures (1 joueur + 4 ordinateurs), Checkpoint à 60 s, duel sans trafic | E3 (+ accroche E8) | ⏳ Prêt |  | WFS-11 ✅, WFS-13 ✅, WFS-21 ✅ | `feature/waforspeed-110` |  |  |
 | P2 Haute | WFS-111 | Mode Poursuite police (score 100, 10 km, trafic dense, embouteillages, surprises) | E3 | ⏳ En attente | | WFS-110, WFS-67 ✅ | `feature/waforspeed-111` |  |  |
 | P2 Haute | WFS-112 | Duel entre amis par Internet : serveur de relais, code + lien d'invitation, reconnexion, mieux que le web | E3 (+ accroches E7, E8) | ⏳ En attente | | WFS-89 ✅, WFS-110 | `feature/waforspeed-112` |  |  |
@@ -474,7 +474,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] captures `jour-frein` (joueur), `trafic-freinage` (trafic, de jour) et `nuit-frein` : le feu du modèle lui-même s'allume en rouge vif, lueur courte, plus de grand disque plaqué
 - [ ] joueur et trafic identiques ; valeurs notées au Journal ; l'utilisateur valide sur téléphone
 
-**WFS-113 — [URGENT] Showroom : flèches qui sautent des voitures** · E5 · priorité P1 Urgent · 🔧 En cours — Claude (agent 3, session 011cpqZd), 2026-11-05, branche `feature/waforspeed-113` (règles : `regles-de-gestion/WFS-113.md`)
+**WFS-113 — [URGENT] Showroom : flèches qui sautent des voitures** · E5 · priorité P1 Urgent · ✅ Fusionné (fusion par confiance, QA de nuit à faire) — Claude (agent 3, session 011cpqZd), 2026-11-05, branche `feature/waforspeed-113` (règles : `regles-de-gestion/WFS-113.md`)
 - [ ] une flèche = une voiture, sans saut ni erreur
 
 **WFS-110 — Modes de course : 5 voitures, Checkpoint 60 s, duel sans trafic** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-110.md`)
