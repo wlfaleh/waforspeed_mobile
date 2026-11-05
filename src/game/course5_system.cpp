@@ -114,8 +114,9 @@ public:
         if (fini_ && overT_ >= 0.9) resultat(r, W, H, u, ls);
     }
     bool onTouch(const Touch& t, const GameView& g) override {
-        if (!actif_ || g.ecran != Ecran::Course || !fini_ || overT_ < 0.9) return false;
-        if (appui_.consomme(t.id, t.down)) return true;
+        if (g.ecran != Ecran::Course) return false;
+        if (appui_.consomme(t.id, t.down)) return true;   // WFS-119 (ANO-53) : relâcher de « Rejouer », déjà dans la course suivante
+        if (!actif_ || !fini_ || overT_ < 0.9) return false;
         if (!t.down) return true;
         if (rejouerZ_.contient(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("course à 5 : « Rejouer »"); rejouer_ = true; g.allerA(Ecran::Menu); }
         else if (menuZ_.contient(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("course à 5 : « Menu »"); g.allerA(Ecran::Menu); }

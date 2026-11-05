@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "parcours") { ui::chargerPolice(r); const int e = benchParcours(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-115
     if (banc == "chauffe") { ui::chargerPolice(r); const int e = chauffe::benchChauffe(g, r, out, statutChauffeSimule); finir(); return e > 0 ? 3 : 0; }   // WFS-123
-    if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); return finir(); }   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
+    if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)

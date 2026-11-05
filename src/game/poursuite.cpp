@@ -2,6 +2,7 @@
 #include "poursuite.h"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include "../core/math.h"
 
 namespace wfs {
@@ -25,6 +26,10 @@ void pas(Etat& e, double dt, double dPoliceM) {
     while (e.colle >= COLLE_S && !e.arrete) { e.colle -= COLLE_S; perdre(e, 1); }   // −1 par seconde collée
 }
 void arrivee(Etat& e, double distKm) { if (!e.arrete && !e.gagne && distKm >= KM_ARRIVEE && e.score >= 1) e.gagne = true; }
+int ralentisseur(Etat& e, double kmh) {
+    if (e.arrete || e.gagne || kmh <= RALENTISSEUR_KMH) return 0;
+    e.ralentisseurs++; const int avant = e.score; perdre(e, CHOC_RALENTISSEUR); return avant - e.score;
+}
 int policeVoulue(double distKm) { return std::min(POLICE_MAX, POLICE_DEPART + (int)std::floor(std::max(0.0, distKm) / RENFORT_KM)); }
 
 // ---------------------------------------------------------------- police
@@ -112,6 +117,8 @@ const char* bandeau(Surprise s) {
         case Surprise::Deboite: return "ATTENTION : VOITURE QUI DÉBOÎTE";
         case Surprise::Travaux: return "TRAVAUX : FILE FERMÉE";
         case Surprise::Accident: return "ACCIDENT DEVANT";
+        case Surprise::Camion: return "CAMION EN TRAVERS";
+        case Surprise::Ralentisseur: return "RALENTISSEUR";
         default: return "";
     }
 }
@@ -129,22 +136,44 @@ Programme programme(uint32_t graine, bool banc) {
         p.bouchons.push_back(b);
     }
     if (banc) { p.bouchons[0].km = 0.9; p.bouchons[0].longueurM = 400; p.bouchons[0].passage = 2; }   // captures : embouteillage à 0,9 km
-    // 6 surprises : les 4 types mélangés, puis 2 tirées au hasard ; une tous les 1,2 à 1,8 km dès 0,9 km
-    std::vector<Surprise> types = {Surprise::Barrage, Surprise::Deboite, Surprise::Travaux, Surprise::Accident};
-    for (int i = 3; i > 0; i--) std::swap(types[(size_t)i], types[(size_t)((int)(R.next() * (i + 1)) % (i + 1))]);
-    for (int i = 0; i < 2; i++) types.push_back((Surprise)((int)(R.next() * 4) % 4));
+    // 6 surprises : les 6 types mélangés (une fois chacun, WFS-119) ; une tous les 0,9 à 1,3 km dès 0,9 km
+    std::vector<Surprise> types;
+    for (int i = 0; i < TYPES_SURPRISE; i++) types.push_back((Surprise)i);
+    for (int i = TYPES_SURPRISE - 1; i > 0; i--) std::swap(types[(size_t)i], types[(size_t)((int)(R.next() * (i + 1)) % (i + 1))]);
     double km = 0.9;
     for (Surprise t : types) {
         Evenement e; e.km = km; e.type = t; e.file = (int)(R.next() * 3) % 3;
+        if (t == Surprise::Camion) e.file = fileLibreCamion(e.file);
         // pas de surprise dans un embouteillage
         for (int passe = 0; passe < 2; passe++)
             for (const Bouchon& b : p.bouchons) if (e.km > b.km - 0.25 && e.km < b.km + b.longueurM / 1000 + 0.1) e.km = b.km + b.longueurM / 1000 + 0.2;
+        if (banc && e.km < 2.4) e.km = 2.4;   // banc : la place des captures (barrage, ralentisseur, camion) reste libre
         if (e.km < KM_ARRIVEE - 0.3) p.surprises.push_back(e);
-        km = e.km + 1.2 + R.next() * 0.6;
+        km = e.km + 0.9 + R.next() * 0.4;
+    }
+    if (banc) {
+        p.surprises.insert(p.surprises.begin(), Evenement{BANC_CAMION_KM, Surprise::Camion, 2, false});
+        p.surprises.insert(p.surprises.begin(), Evenement{BANC_RALENTISSEUR_KM, Surprise::Ralentisseur, 0, false});
     }
     if (banc) p.surprises.insert(p.surprises.begin(), Evenement{0.45, Surprise::Barrage, 0, false});   // captures : barrage à 0,45 km
     return p;
 }
+
+// ---------------------------------------------------------------- camion en travers (WFS-119)
+const char* camionCar(const char* carJoueur) { return carJoueur && !std::strcmp(carJoueur, "x5") ? "rrsport" : "x5"; }
+int fileLibreCamion(int file) { return file == 1 ? 0 : file; }
+Travers camionTravers(int fileLibre, double longueurM, double largeurM) {
+    // à cheval sur la limite des 2 files couvertes (±RW/3) : la file libre (0 : gauche, 2 : droite) n'est pas touchée
+    Travers tv;
+    tv.xM = (fileLibre == 0 ? 1 : -1) * RW / 3;
+    tv.demiX = longueurM * CAMION_ECHELLE / 2;
+    tv.demiZ = largeurM * CAMION_ECHELLE / 2;
+    return tv;
+}
+
+// ---------------------------------------------------------------- mode gardé (WFS-119 RG-03)
+std::string cleMode(ModeCourse m) { return m == ModeCourse::Course5 ? "course5" : m == ModeCourse::Poursuite ? "poursuite" : "checkpoint"; }
+ModeCourse modeDeCle(const std::string& cle) { return cle == "course5" ? ModeCourse::Course5 : cle == "poursuite" ? ModeCourse::Poursuite : ModeCourse::Checkpoint; }
 
 } // namespace poursuite
 } // namespace wfs

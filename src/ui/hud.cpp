@@ -8,6 +8,7 @@
 #include "../game/camera_vue.h"           // WFS-98 : vue cockpit (etatCockpit)
 #include "../game/commandes_tactiles.h"   // WFS-98 : place des commandes (appuis du banc)
 #include "../game/course_system.h"
+#include "../game/course5.h"   // WFS-119 : modeCourse
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "ecrans/reglages.h"   // WFS-75 : miroirX (lecture seule)
@@ -119,7 +120,7 @@ public:
             }
         }
         // ---------- haut droite : score + combo (.p-score) ----------
-        {
+        if (modeCourse() != ModeCourse::Poursuite) {   // WFS-119 RG-02 : en poursuite, seul le score de poursuite est affiché
             const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
             r.uiRect(x, y, w, h, GLASS);
             const float xr = x + w - pad;

@@ -15,6 +15,7 @@
 #include "../ui/text.h"
 #include "course5.h"
 #include "game.h"
+#include "poursuite.h"   // WFS-119 : clé « poursuite » du mode
 #include "sauvegarde.h"
 
 namespace wfs {
@@ -38,7 +39,7 @@ const Carte CARTES[4] = {
     {ModeCourse::Duel, "Duel entre amis", "Défie un ami où qu'il soit, sans trafic", true},   // WFS-112
 };
 
-std::string modeCle(ModeCourse m) { return m == ModeCourse::Course5 ? "course5" : "checkpoint"; }
+std::string modeCle(ModeCourse m) { return poursuite::cleMode(m); }   // WFS-119 : « poursuite » gardé
 
 class ChoixMode : public System {
 public:
@@ -47,7 +48,7 @@ public:
         if (lu_ || !sauvegarde().actif()) return;   // mode et distance relus une fois de la sauvegarde (WFS-24)
         lu_ = true;
         const Sauvegarde& s = sauvegarde();
-        modeCourse() = s.mode == "course5" ? ModeCourse::Course5 : ModeCourse::Checkpoint;
+        modeCourse() = poursuite::modeDeCle(s.mode);   // WFS-119 : ancienne sauvegarde → Checkpoint
         kmCourse5() = s.km5;
         WFS_LOG("modes : sauvegarde relue (%s, %d km)", nomMode(modeCourse()), kmCourse5());
     }
@@ -83,7 +84,7 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_ouvert || g.ecran != Ecran::Menu || !ui::fontReady()) return;
-        if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 ? ModeCourse::Course5 : ModeCourse::Checkpoint; km_ = kmCourse5(); ouverture_ = false; }
+        if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); ouverture_ = false; }
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         r.uiRect(0, 0, W, H, hex(BG, 0.86f));
         const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;

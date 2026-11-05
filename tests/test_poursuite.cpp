@@ -3,7 +3,9 @@
 #include <cmath>
 #include <cstdio>
 #include <set>
+#include <string>
 #include "../src/game/poursuite.h"
+#include "../src/game/sauvegarde.h"   // WFS-119 : mode gardé
 using namespace wfs;
 using namespace wfs::poursuite;
 
@@ -66,9 +68,66 @@ int testPoursuite() {
         for (const Evenement& s : p.surprises) for (const Bouchon& b : p.bouchons) horsBouchon = horsBouchon && !(s.km > b.km - 0.25 && s.km < b.km + b.longueurM / 1000 + 0.1);
         VERIFIE(horsBouchon, "graine %u : surprise dans un embouteillage", g);
         VERIFIE(bouchonsOk, "graine %u : embouteillages", g);
-        VERIFIE(p.surprises.size() >= 4 && types.size() >= 3, "graine %u : %zu surprises, %zu types", g, p.surprises.size(), types.size());
+        VERIFIE(p.surprises.size() >= 6 && types.size() == 6, "graine %u : %zu surprises, %zu types", g, p.surprises.size(), types.size());
         VERIFIE(memes, "graine %u : même programme", g);
         std::printf("graine %u : 3 embouteillages, %zu surprises (%zu types) : %s\n", g, p.surprises.size(), types.size(), bouchonsOk && memes && types.size() >= 3 ? "OK" : "ÉCHEC");
+    }
+    // WFS-119 RG-01 : les 6 surprises (une fois chacune) sur 10 000 graines, hors embouteillage, avant l'arrivée
+    int sixTypes = 0, camionLibre = 0;
+    for (uint32_t g = 1; g <= 10000; g++) {
+        const Programme p = programme(g);
+        std::set<int> types; bool ok = true;
+        for (const Evenement& s : p.surprises) {
+            types.insert((int)s.type);
+            ok = ok && s.km < KM_ARRIVEE - 0.3;
+            if (s.type == Surprise::Camion) camionLibre += s.file == 0 || s.file == 2;
+        }
+        sixTypes += ok && p.surprises.size() == 6 && types.size() == 6;
+    }
+    VERIFIE(sixTypes == 10000, "6 surprises de 6 types : %d graines sur 10 000", sixTypes);
+    VERIFIE(camionLibre == 10000, "camion : file libre au bord (%d sur 10 000)", camionLibre);
+    VERIFIE(std::string(bandeau(Surprise::Camion)) == "CAMION EN TRAVERS" && std::string(bandeau(Surprise::Ralentisseur)) == "RALENTISSEUR", "bandeaux");
+    {   // programme du banc : ralentisseur et camion aux places des captures
+        const Programme b = programme(20261105u, true);
+        bool r = false, c = false;
+        for (const Evenement& s : b.surprises) { r = r || (s.type == Surprise::Ralentisseur && s.km == BANC_RALENTISSEUR_KM); c = c || (s.type == Surprise::Camion && s.km == BANC_CAMION_KM); }
+        VERIFIE(r && c, "banc : ralentisseur %d, camion %d", r, c);
+    }
+    std::printf("6 surprises (barrage, déboîte, travaux, accident, camion, ralentisseur) sur 10 000 graines : OK\n");
+    // camion en travers : x5 (rrsport si le joueur roule en x5), à cheval sur 2 files, la file libre n'est pas touchée
+    VERIFIE(std::string(camionCar("golf")) == "x5" && std::string(camionCar("x5")) == "rrsport", "modèle du camion");
+    VERIFIE(fileLibreCamion(1) == 0 && fileLibreCamion(0) == 0 && fileLibreCamion(2) == 2, "file libre du camion");
+    for (int libre : {0, 2}) {
+        const Travers tv = camionTravers(libre, 4.92, 2.0);
+        const double a = tv.xM - tv.demiX, b = tv.xM + tv.demiX;   // largeur couverte (m)
+        const double fl0 = FILES[libre] * RW - RW / 3, fl1 = FILES[libre] * RW + RW / 3;   // la file libre (5 m)
+        bool couvre = true;
+        for (int f = 0; f < 3; f++) if (f != libre) couvre = couvre && FILES[f] * RW > a && FILES[f] * RW < b;
+        VERIFIE(couvre, "camion (file libre %d) : les 2 autres files couvertes [%.1f ; %.1f] m", libre, a, b);
+        VERIFIE(b <= fl0 || a >= fl1, "camion (file libre %d) : la file libre [%.1f ; %.1f] m est touchée [%.1f ; %.1f]", libre, fl0, fl1, a, b);
+    }
+    std::printf("camion en travers : 2 files couvertes, une file libre : OK\n");
+    // ralentisseur : −3 au-dessus de 90 km/h, rien dessous
+    {
+        Etat r;
+        VERIFIE(ralentisseur(r, 89) == 0 && ralentisseur(r, 90) == 0 && r.score == 100, "ralentisseur à 89 / 90 km/h : %d", r.score);
+        VERIFIE(ralentisseur(r, 91) == 3 && r.score == 97 && r.ralentisseurs == 1, "ralentisseur à 91 km/h : %d", r.score);
+        VERIFIE(ralentisseur(r, 180) == 3 && r.score == 94, "ralentisseur à 180 km/h : %d", r.score);
+        std::printf("ralentisseur : −3 au-dessus de 90 km/h, rien dessous : OK\n");
+    }
+    // RG-03 : mode gardé : clé « poursuite » écrite puis relue ; ancienne sauvegarde → Checkpoint (aucun plantage)
+    {
+        VERIFIE(cleMode(ModeCourse::Poursuite) == "poursuite" && cleMode(ModeCourse::Course5) == "course5" && cleMode(ModeCourse::Checkpoint) == "checkpoint", "cleMode");
+        VERIFIE(modeDeCle("poursuite") == ModeCourse::Poursuite && modeDeCle("course5") == ModeCourse::Course5 && modeDeCle("checkpoint") == ModeCourse::Checkpoint, "modeDeCle");
+        Sauvegarde a; a.mode = cleMode(ModeCourse::Poursuite);
+        Sauvegarde b; const bool lu = b.lire(a.texte());
+        VERIFIE(lu && b.mode == "poursuite" && modeDeCle(b.mode) == ModeCourse::Poursuite, "sauvegarde relue : %s", b.mode.c_str());
+        Sauvegarde vieille; vieille.lire("version=1\ncar=m4\nkm5=6\n");
+        VERIFIE(modeDeCle(vieille.mode) == ModeCourse::Checkpoint, "ancienne sauvegarde sans mode : %s", vieille.mode.c_str());
+        Sauvegarde bizarre; bizarre.lire("version=1\nmode=helicoptere\n");
+        VERIFIE(modeDeCle(bizarre.mode) == ModeCourse::Checkpoint && bizarre.mode == "checkpoint", "mode inconnu : %s", bizarre.mode.c_str());
+        VERIFIE(modeDeCle("") == ModeCourse::Checkpoint, "clé vide");
+        std::printf("mode gardé : « poursuite » écrit et relu, ancienne sauvegarde → Checkpoint : OK\n");
     }
     if (echecs) std::printf("poursuite : %d échec(s)\n", echecs);
     else std::printf("poursuite police : tout est OK\n");
