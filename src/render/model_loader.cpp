@@ -167,6 +167,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     if (feuA.materiau >= 0) { tMin = feuA.bmin; tMax = feuA.bmax; }   // WFS-109 : position mesurée du feu découpé
     // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
+    out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
     out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;
     out.feux.avantY = hMax.y > hMin.y ? (hMin.y + hMax.y) * 0.5f : out.bmin.y + H * 0.41f;
     // centre latéral d'un feu : aux trois quarts de la demi-largeur des pièces des feux (bloc gauche + bloc droit)

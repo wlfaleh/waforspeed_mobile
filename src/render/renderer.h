@@ -52,7 +52,7 @@ struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32
 // WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le
 // modèle en a (lampY / headY de js/cars/models.js), sinon proportions des voitures du jeu web (d.tail − 0,25, d.nose − 0,12)
 // arriereX / avantX : écart latéral du centre de chaque feu (pièces des feux, sinon largeur / 2 − 0,18 / 0,3 du jeu web)
-struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0, arriereX = 0, avantX = 0; };
+struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0, arriereX = 0, avantX = 0; bool pieceArriere = false; float arriereZ = 0; };   // WFS-109 : feu arrière du modèle trouvé, arrière de sa pièce
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     vec3 bmin, bmax; bool ok = false;

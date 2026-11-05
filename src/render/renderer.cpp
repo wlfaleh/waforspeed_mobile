@@ -1166,11 +1166,15 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
     // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
     const float s = f.frein >= 0 ? std::clamp(f.frein, 0.f, 1.f) : (f.stop ? 1.f : 0.f);
-    const float iCoeur = f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : I_COEUR_STOP * s;
+    // RG-01 : le jour, un modèle qui a sa pièce de feu arrière (MAT_TAIL ou découpée) n'a aucun halo plaqué : seul le
+    // feu du modèle s'allume ; sans pièce de feu (Gallardo), petit halo court à la place du feu (repli de RG-08)
+    const float iCoeur = f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : F.pieceArriere ? 0.f : I_COEUR_STOP * s;
     const float iLueur = f.nuit ? I_LUEUR + (I_LUEUR_STOP - I_LUEUR) * s : I_LUEUR_STOP * s;
     for (int side : {-1, 1}) {
-        if (iCoeur > 0) feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge, iCoeur, iLueur);
-        if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.05f}), arriere,
+        // RG-01 : lueur courte centrée sur la pièce du feu (arrière du verre), plus sur le pare-chocs
+        const float zF = (F.pieceArriere ? F.arriereZ : F.arriere) + 0.04f;
+        if (iCoeur > 0) feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, zF}), arriere, COEUR, LUEUR, rouge, iCoeur, iLueur);
+        if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f}), arriere,
                          RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
         if (f.nuit) feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
     }
