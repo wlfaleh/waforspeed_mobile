@@ -72,3 +72,6 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 - Quand je clique sur un mode et que je clique sur continuer, il me montre la page menu
 ( PO : c'est créé — WFS-115 (E8, P1 urgent) : reproduire sur tous les chemins du menu, nommer la cause, faire avancer « Continuer » vers l'écran suivant. Je précise une limite : dans le code de main, l'écran du terrain a « Rouler » et pas « Continuer » ; si tu vois « Continuer », tu testes peut-être une ancienne version (WFS-106 : publication de l'APK de main en cours). )
 
+- Je clique sur course solo, je sélectionne le mode, et quand je clique sur continuer ça pète et me montre encore la page d'accueil du menu
+( PO : cause probable trouvée dans le code — « Continuer » ouvre bien le garage, mais le bouton « Choisir » du garage te renvoie à l'accueil au lieu du choix du terrain. Précisé dans WFS-115 : depuis un parcours de course, « Choisir » doit mener au terrain puis « Rouler ». Si ça plante vraiment (l'appli se ferme), l'agent le vérifiera avec les traces. )
+

@@ -3083,3 +3083,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 09:51:24 — PO : WFS-115 créé, « Continuer » ramène au menu (po-scrum-master)
 - Retour de l'utilisateur (`tache utilisateur.md`). Ticket P1 (E8) : reproduire sur tous les chemins du menu, nommer la cause, corriger la navigation ; vérifier aussi que l'utilisateur teste bien la dernière version (WFS-106). Règles : `regles-de-gestion/WFS-115.md`.
+
+### 2026-11-05 09:54:31 — PO : cause probable de WFS-115 (po-scrum-master)
+- Parcours de l'utilisateur : Course solo → mode → Continuer → garage → accueil. `modes_ecran.cpp` envoie vers le garage, `garage.cpp` « Choisir » fait `allerA(Ecran::Menu)` : il faut `Ecran::Terrain` quand le garage vient d'un parcours de course. Règles de WFS-115 mises à jour.
