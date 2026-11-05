@@ -3150,3 +3150,29 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Critères : RG-01 à RG-09 (première version jouable : police, trafic dense, 3 surprises, score 100), RG-10 (endurance sans contournement : 0 erreur, ≥ 3 retours), RG-12 (parcours complet prouvé).
 - Plan : étape 0 et banc d'endurance ; `poursuite.*` (score, police, renforts) ; trafic dense et embouteillages ; surprises ; HUD et fin ; test CPU + captures ; une seule CI.
 - Choix du PO : la suite de WFS-100 (quelques lignes en E7) est rangée dans ce ticket pour ne pas créer de micro-ticket ni de CI à part.
+
+### 2026-11-05 11:14:51 — CI de main verte après WFS-116 (Claude, agent 3)
+- Run 42014307375 (5b1f53a) : tous les jobs verts, dont `android` (retour_systeme.cpp, onInput, JeuActivity.onBackPressed compilés), endurance, bancs et publications. APK de main à jour : à essayer sur téléphone (geste Retour, voir la ligne WFS-116 de qa/Check.md).
+
+### 2026-11-05 11:15:19 — CI de main verte après WFS-100 (Claude, session trafic)
+- Run 42013871691 sur 9d50529 (PR #94) : tous les jobs verts ; run suivant 42014307375 (WFS-116) vert aussi. Aucune correction à faire.
+- En cours chez moi : WFS-115 (menus, « Continuer ») et WFS-111 (poursuite police, étape 0 : retrait du contournement ANO-52), branches poussées.
+
+### 2026-11-05 11:32:14 — WFS-117 créé et attribué à Claude (agent 3, session 011cpqZd) (PO)
+- Besoin : suite du point ouvert de WFS-116 ; `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont construits mais jamais lancés par la CI (liste écrite à la main dans `build.yml`) ; les tests futurs (WFS-111) seraient oubliés de même.
+- Début : WFS-117 (E7, P2 Haute, E7 libre : WFS-116 ✅, aucun ticket E7 actif), branche `feature/waforspeed-117`, règles `regles-de-gestion/WFS-117.md` (RG-01 à RG-07).
+- Zone : nouveau `tools/qa/tests_cpu.sh` (découverte automatique des `test_*`), étape « Test de la piste » de `.github/workflows/build.yml`, `tests/**` seulement pour réparer un test oublié (≤ 10 lignes). Interdit : `CMakeLists.txt`, reste de `build.yml`, `src/**`, iOS.
+- Critères : `[OK] test_retour_systeme` et `[OK] test_commandes` au journal du job `bench (texte)` de main, CI verte, un test en échec fait échouer l'étape.
+- Plan : script + 1 ligne dans build.yml, essai local, fusion par confiance, suivi de la CI de main.
+
+### 2026-11-05 11:33:59 — WFS-117 fusionné par confiance (PR #96) (Claude, agent 3)
+- `tools/qa/tests_cpu.sh <build>` lance tous les `build/test_*` (triés, arguments repris dans une table), « [OK] / [ÉCHEC] » par test et un résumé ; échec au premier test en échec ou si aucun test n'est trouvé. Étape « Test de la piste » de `build.yml` réduite à `bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py` (même condition `texte`).
+- Sortie locale (RG-06) : [OK] test_appui, test_audio, test_binarypack, test_cartes, test_commandes, test_conduite_libre, test_course, test_course5, test_duel, test_effets, test_manette, test_masquage, test_qualite, test_retour_systeme, test_roues, test_sauvegarde, test_systems, test_track, test_traffic, test_trafic_vivant — « tests CPU : 20 test(s) réussi(s) en 3 s ». Faux test en échec (non commité) : « [ÉCHEC] test_faux », code 1 ; dossier vide : « aucun test trouvé », code 1.
+- `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont maintenant lancés par la CI. Accroche : une ligne dans le skill `waforspeed-natif` (partie tests). Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
+
+
+### 2026-11-05 11:35:09 — PO : WFS-118 créé, APK à signature fixe (po-scrum-master)
+- Retour de l'utilisateur : conflit de package à chaque installation. Cause : `release` signé avec `signingConfigs.debug`, clé recréée à chaque build de la CI. Ticket P1 (E7) : clé de test fixe dans le dépôt, même empreinte de certificat à chaque build, une dernière désinstallation à prévoir. Règles : `regles-de-gestion/WFS-118.md`.
+
+### 2026-11-05 11:50:29 — CI de main verte après WFS-117 (Claude, agent 3)
+- Run 42019953814 (ab130bc) : tous les jobs verts. Job `banc-essai (texte)`, étape « Test de la piste » : `[OK] test_commandes`, `[OK] test_retour_systeme`, « tests CPU : 20 test(s) réussi(s) en 2 s ».

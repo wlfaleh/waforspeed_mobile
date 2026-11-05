@@ -152,5 +152,6 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, s
 ## Construire, tester, livrer
 Voir `references/construction-et-tests.md`. Points clés :
 - Ici (conteneur Claude), on peut compiler le C++ (`g++ -fsyntax-only` avec les en-têtes Vulkan) et lancer les tests CPU (`test_track`).
+- **Tous les tests CPU d'un coup** (WFS-117) : `bash tools/qa/tests_cpu.sh build` lance chaque `build/test_*` (aussi en CI, groupe `texte`) ; un nouveau test = un `add_executable(test_xxx …)` dans `CMakeLists.txt`, rien d'autre (arguments éventuels : table `arguments()` du script).
 - Les shaders, le banc d'essai Vulkan (lavapipe) et l'APK sont construits par GitHub Actions (`.github/workflows/build.yml`).
 - Après chaque envoi : vérifier la CI, lire les erreurs, regarder les captures publiées dans la Release `apercu`.

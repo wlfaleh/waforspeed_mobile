@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# WaForSpeed — tous les tests CPU (WFS-117) : lance chaque exécutable build/test_* (déclaré par add_executable dans
+# CMakeLists.txt), triés par nom ; un nouveau test est donc lancé par la CI sans rien ajouter ici (RG-07).
+# Usage : tools/qa/tests_cpu.sh <dossier de construction>   (à lancer depuis la racine du dépôt)
+# Sortie : « [OK] test_xxx (n s) » ou « [ÉCHEC] test_xxx », puis un résumé ; échec au premier test qui échoue,
+# ou si aucun test n'est trouvé.
+set -u
+BUILD=${1:-build}
+
+# RG-02 : arguments des tests qui en ont besoin (les autres sont lancés sans argument)
+arguments() {
+  case "$1" in
+    test_traffic) echo "tests/trafic_web_ref.txt" ;;
+    test_cartes)  echo "tests/cartes_web_ref.txt" ;;
+    test_course)  echo "tests/course_web_ref.txt" ;;
+    test_audio|test_roues) echo "assets" ;;
+    *) echo "" ;;
+  esac
+}
+# RG-05 : tests à ne pas lancer (chacun avec son commentaire et le ticket qui le répare) — aucun pour l'instant
+IGNORES=""
+
+n=0; debut=$(date +%s)
+for exe in $(ls -1 "$BUILD"/test_* 2>/dev/null | sort); do
+  [ -f "$exe" ] && [ -x "$exe" ] || continue
+  nom=$(basename "$exe")
+  case " $IGNORES " in *" $nom "*) echo "[IGNORÉ] $nom"; continue ;; esac
+  t0=$(date +%s)
+  # shellcheck disable=SC2046
+  if ! "$exe" $(arguments "$nom") > "${TMPDIR:-/tmp}/$nom.log" 2>&1; then
+    echo "[ÉCHEC] $nom"
+    tail -n 30 "${TMPDIR:-/tmp}/$nom.log"
+    echo "tests CPU : échec de $nom après $n test(s) réussi(s)"
+    exit 1
+  fi
+  echo "[OK] $nom ($(( $(date +%s) - t0 )) s)"
+  n=$((n + 1))
+done
+if [ "$n" -eq 0 ]; then echo "tests CPU : aucun test trouvé dans $BUILD"; exit 1; fi
+echo "tests CPU : $n test(s) réussi(s) en $(( $(date +%s) - debut )) s"
