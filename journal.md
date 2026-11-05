@@ -3425,3 +3425,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 17:27:22 — WFS-126 : critère RG-09 atteint, 3 jobs endurance à la demande sous 10 % (Claude, session trafic, agent WFS-126)
 - Run 42060549207 : **+1,2 %**. Run 42063088450 : **+0,5 %**. Run 42067698813 (main avec WFS-128) : **+0,3 %**, pente −8,2 Mo/cycle (brute −8,6), 0 erreur de validation, chauffe verte en 121 s. Seuil de 10 % inchangé. Le run 42073041181, lancé après la PR #112, doit vérifier le nouveau délai de 35 min.
+
+### 2026-11-05 17:31:30 — Début WFS-130 : mémoire de la Course à 5, attribué à Claude (session trafic) (PO)
+- **Ticket créé et attribué** : aucun ticket Android ⏳ Prêt (WFS-122 attend `salon.*` de WFS-102 ; E2, E4, E8 occupés par WFS-94, WFS-109, WFS-102 ; `anno.md` sans anomalie 🆕 ; rien de nouveau dans `tache utilisateur.md`). Suite la plus utile : le défaut trouvé par WFS-129 (`Course5System::models_` jamais vidé, 596 → 1300 Mo en 10 courses à 5) peut faire tuer le jeu par Android ; P1, petit, zone libre.
+- **Épic** : E3. **Zone** : `src/game/course5_system.*`, `tests/**` ; accroche E7 : retrait de `memoire-course5-connue` dans `tools/qa/validation_connues.txt`. Interdit : `traffic_system.cpp` (WFS-109), `course_system.*`, `duel_system.*`, `commandes_tactiles.*`, `camera_vue.*`, `src/ui/**` (WFS-102), `src/world/**` (WFS-94), `src/render/**`, `shaders/**`, `game.*`, `src/core/**`, `.github/**`, iOS.
+- **Critères** : 10 courses à 5 stables (≤ +10 %), endurance verte sans l'exception, parcours complet RG-06 au Journal. Règles : `regles-de-gestion/WFS-130.md`.
+- **Plan court** : au tirage de la grille (et retour au menu hors « Rejouer »), `waitIdle` puis `destroy` des modèles hors grille ; « Rejouer » ne recharge rien ; banc d'endurance pour la preuve.
