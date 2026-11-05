@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- WFS-129 (RG-02) : Android 11 et plus (bord à bord imposé par Android 15) : l'image occupe aussi la zone de
+         l'encoche sur tous les bords, dès la première image ; le jeu reçoit les marges sûres (JeuActivity, WFS-51) -->
+    <style name="Jeu" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">always</item>
+    </style>
+</resources>

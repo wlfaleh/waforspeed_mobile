@@ -2,17 +2,19 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.waforspeed.game'
-    compileSdk 34
+    compileSdk 35   // WFS-129 (RG-01) : Android 15, exigé par Google Play pour les nouvelles applications et les mises à jour
     ndkVersion '27.2.12479018'
 
     defaultConfig {
         applicationId 'com.waforspeed.game'
         minSdk 26
-        targetSdk 34
+        targetSdk 35   // WFS-129 (RG-01) ; minSdk 26 inchangé
         versionCode Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1')
         versionName "0.1.${System.getenv('GITHUB_RUN_NUMBER') ?: '0'}"
         ndk { abiFilters 'arm64-v8a', 'x86_64' }   // x86_64 : émulateur de la QA automatique
-        externalNativeBuild { cmake { arguments '-DANDROID_STL=c++_static', '-DCMAKE_BUILD_TYPE=Release' } }
+        // WFS-129 (RG-04) : segments LOAD de libwaforspeed.so alignés sur 16 Ko (téléphones à pages de 16 Ko, exigé par
+        // Google Play avec Android 15) : variable du NDK r27, qui ajoute -Wl,-z,max-page-size=16384 à l'édition des liens
+        externalNativeBuild { cmake { arguments '-DANDROID_STL=c++_static', '-DCMAKE_BUILD_TYPE=Release', '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON' } }
     }
     externalNativeBuild {
         cmake { path '../../CMakeLists.txt'; version '3.22.1' }
@@ -35,5 +37,6 @@ android {
         release { minifyEnabled false; signingConfig signingConfigs.test }
     }
     androidResources { noCompress 'wfm', 'wav' }
+    // WFS-129 (RG-04) : bibliothèques natives non compressées, alignées sur 16 Ko dans l'APK (vérifié par la CI : zipalign -P 16)
     packagingOptions { jniLibs { useLegacyPackaging false } }
 }

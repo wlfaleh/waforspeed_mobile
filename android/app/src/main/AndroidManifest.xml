@@ -18,7 +18,10 @@
         android:allowBackup="false"
         android:appCategory="game"
         android:isGame="true"
+        android:enableOnBackInvokedCallback="false"
         android:theme="@style/Jeu">
+        <!-- WFS-129 (RG-03) : SDK 35 sans retour prédictif : la touche / le geste Retour garde le comportement de WFS-116
+             (le jeu le prend d'abord, onBackPressed au menu principal : arrière-plan) -->
         <activity
             android:name=".JeuActivity"
             android:exported="true"
