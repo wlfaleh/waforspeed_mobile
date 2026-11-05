@@ -168,9 +168,9 @@ bool Renderer::init(VkCtx& vk) {
     ETAPE_RENDU("dispositions de pipeline et palettes d'os");
 
     createShadows();
+    ETAPE_RENDU("ombres");
 
-
-    ETAPE_RENDU("ombres");    // ---------- ressources par image en vol ----------
+    // ---------- ressources par image en vol ----------
     VkCommandBufferAllocateInfo cai{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     cai.commandPool = vk.pool; cai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; cai.commandBufferCount = 1;
     for (auto& r : fr_) {
