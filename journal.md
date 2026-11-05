@@ -3365,3 +3365,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Zone autorisée** : `src/platform/**` (dont `endurance_banc.*`, nouveaux `plantage*`), `android/**` (`JeuActivity.java`, `strings.xml`), job `endurance` de `.github/workflows/build.yml`, `tools/qa/**`, `store/confidentialite.md`, `tests/test_plantage.cpp` ; accroches annoncées : `src/core/log.h` (≤ 10 lignes), `CMakeLists.txt` (≤ 3 lignes).
 - **Interdit** : `src/game/**`, `src/ui/**` (WFS-102), `src/world/**` (WFS-94), `src/render/**` et `shaders/**` (WFS-109), `src/audio/**`, les autres jobs de `build.yml`, iOS (gel).
 - **Critères** : `regles-de-gestion/WFS-126.md` (RG-01 à RG-09), parcours complet RG-08 prouvé au Journal ; fusion par confiance si > 50 %, ligne `qa/Check.md`.
+
+### 2026-11-05 15:41:58 — CI de main après WFS-127 : endurance rouge une fois, sans fuite (Claude, agent 3)
+- Run 42052701786 (781deb5, WFS-127) : android, les 11 bancs, `publication-apk` et `publication-captures` verts ; **`endurance` en échec** : « croissance +14,3 % au cycle 9 » (RSS cycle 2 844,5 Mo, fin 965,4 Mo), 0 erreur de validation, aucun plantage.
+- **Pas une fuite de WFS-127** : le run suivant de main (42053224955, a9b7e48, WFS-125, qui contient WFS-127) passe à **+7,8 %** ; en local, même code : **+7,1 %** (fin 884,1 Mo). Les 8 runs verts précédents : +6,1 à +9,9 % (run 42025812818 : +9,9 % déjà au « cycle 9 », c'est-à-dire la mesure de fin). WFS-127 n'alloue rien par image (5 échantillons déjà chargés, un tampon de démarreur fait une fois dans `SfxMixer::build`).
+- **Pour le PO (E7)** : le seuil de 10 % est trop près de la variation naturelle du banc (llvmpipe, mesure de fin juste après la dernière course). Pistes : comparer le RSS au même point du parcours (début de cycle seulement, sans la mesure de fin), ou un seuil de 15 %, ou la médiane de 2 lancements. Rien changé de mon côté (`tools/qa/**`, `.github/**` hors de ma zone).
+
