@@ -121,6 +121,9 @@ int main(int argc, char** argv) {
     const bool menu1 = banc == "menu" || banc == "menu1", menu2 = banc == "menu" || banc == "menu2";   // WFS-106 : 2400x1080 en deux jobs
     if (menu1) { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
         ecrans::benchTerrain(g, r, out); }
+    // menu2 seul (job à part) : record de session que la course « fin-menu » de menu1 lui laissait (950 à 955 selon la
+    // machine), sinon reglages-menu et menu-duel montreraient le menu sans record (RG-08 : mêmes captures)
+    if (menu2 && !menu1) sauvegarde().best = 955;
     if (menu2) { ecrans::benchReglages(g, r, out); ecrans::benchSalon(g, r, out); }
     if (menu1 || menu2) return finir();   // WFS-37, WFS-11, WFS-41, WFS-83
     // WFS-106 : un morceau tourne sans WFS_BANC, sous son nom ou sous celui de sa partie (partie1 / partie2)
