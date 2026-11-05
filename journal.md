@@ -2986,3 +2986,27 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - fusionnée : commit `1c28ae5` ; la CI de la branche, redondante (même arbre que `main`), a été annulée pour économiser le quota ; aucune CI iOS déclenchée (aucun fichier `ios/**`, `ios_main.mm`, `ios.yml` touché).
 - **WFS-88** reste ⏸ (gel iOS, aucune autre suite iOS). **WFS-103** : #77, #79 et #76 fusionnées, plus aucune PR en attente (au PO de clore le ticket).
 - `qa/Check.md` : ligne WFS-88 / #76. `TACHES.md` : #76 notée fusionnée sur les lignes WFS-94, WFS-88 et WFS-103. Suite : code de WFS-94.
+
+### 2026-11-05 01:32:35 — WFS-109 : extension de zone accordée, découpe des feux arrière au chargement (PO)
+- **Demande** de Copilot (session dc0cdd3f), après lecture des `.wfm` :
+  - seuls a45, giulia, m4 et une petite pièce de la corsa ont `MAT_TAIL` ;
+  - la Golf (voiture du joueur par défaut) et la 911 n'ont qu'un matériau de feux, émissif blanc, pour l'avant et l'arrière : leurs feux arrière sont blancs la nuit et rien ne s'allume au freinage ;
+  - la Gallardo n'a aucun matériau de feu.
+- **Décision : OUI.** Sans découpe, RG-01 (le feu du modèle qui s'allume) est impossible sur la voiture du joueur et sur 3 des 4 modèles du trafic. Le coût est faible et le travail reste dans WFS-109 (pas de micro-ticket).
+- **Zone ajoutée** :
+  - nouveaux `src/render/feux_modele.cpp/.h`, pris par le `GLOB_RECURSE` de `CMakeLists.txt` ;
+  - accroche ≤ 10 lignes dans `model_loader.cpp` (zone de WFS-100) : appel de la découpe juste avant l'envoi des tampons (l. 138-139), et boîte du feu dans le bloc WFS-09 des feux (l. 145-168). Les matériaux, l. 170-185, restent à WFS-100 ;
+  - 1 ligne dans `renderer.h` : champ `ModelPart::feuArriere` ;
+  - 1 ligne de `CMakeLists.txt` pour un test CPU de la découpe (facultatif).
+- **Règles** (`regles-de-gestion/WFS-109.md`) :
+  - RG-13, la découpe :
+    - triangles au-delà de z = 0,4 L, derrière l'essieu arrière, donc sans les étriers ;
+    - pas de découpe si la pièce fait plus de 0,5 m de haut (contrôle de `lampAt` du web) ;
+    - une pièce de plus par modèle au plus, traitée comme `MAT_TAIL` (`0xff2040` × 0,4 / × 2,5), sans l'émissif blanc d'origine ;
+    - sa boîte donne la position du feu dans `m.feux` ;
+    - Gallardo : petit halo de repli.
+  - RG-14 : les feux arrière de la Golf et de la 911 deviennent rouges la nuit. C'est voulu ; à noter dans `qa/Check.md`. Budget : ≤ 300 appels de dessin.
+- **Réutilisation** : rien à reprendre pour la découpe. Le web classe les feux par nom (`MODEL_RX.tail`, `NOT_LAMP`, `js/cars/models.js` l. 13 et 208) et ne découpe pas les matériaux partagés. Les couleurs viennent du web (`setBrake` l. 261).
+- **Coordination** :
+  - RG-06 ajoutée à `regles-de-gestion/WFS-100.md` pour Claude (session trafic), dont la branche ne contient encore que le commit d'attribution ;
+  - PR #76 (WFS-88 : `vk.cpp`, `Renderer::init`) est fusionnée sur `main` : se synchroniser avant de pousser.
