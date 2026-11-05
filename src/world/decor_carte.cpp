@@ -317,7 +317,7 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
             const vec3 P[4] = {lateral(p0, -R, 0.012f), lateral(p0, R, 0.012f), lateral(p1, R, 0.012f), lateral(p1, -R, 0.012f)};
             const float U[4] = {0, 1, 1, 0}, V[4] = {v0, v0, v1, v1};
             for (int i = 0; i < 4; i++) g.v.push_back({P[i].x, P[i].y, P[i].z, 0, 1, 0, U[i], V[i]});
-            g.i.insert(g.i.end(), {k, k + 3, k + 1, k + 1, k + 3, k + 2});   // même ordre que la chaussée de Game
+            g.i.insert(g.i.end(), {k, k + 1, k + 3, k + 1, k + 2, k + 3});   // face vers le haut : sans MAT_ROAD, scene.frag retourne la normale des faces vues de dos (WFS-97, RG-08)
         }
         if (((a % L) + L) % L == 0)   // ligne de départ en damier
             for (int k = 0; k < 10; k++) {

@@ -1,5 +1,26 @@
 # QA WFS-58 : scénario simulateur `mvp` piloté par l'état du jeu (SIM-MVP-2, 3, 4)
 
+## QA après fusion, recette de nuit (2026-11-04 18:34:47 UTC, qa-lead, accent qualité et design)
+
+**Verdict : VALIDÉ**
+
+- Captures regardées : Release `apercu` (main, construction 547, commit `dade9be`, publiée après le run 41883566488), comparées à `apercu-waforspeed-80` (construction 537) : 189 captures identiques, 26 qui ne changent que par le trafic, les piétons ou le code de salon tiré au hasard.
+- Référence design : skill `design-street-racing` (tokens.md) et jeu web `waaps/waforspeed/` (css/style.css, index.html).
+- Aucune anomalie : rien à corriger.
+
+### Captures
+
+| Capture | Constat |
+|---|---|
+| `simulateur-MVP` (commit `2ac6ed5`) | `qa-01-chargement` lisible (logo, barre, « Construction de la route 10 % ») : WFS58-5 corrigée ; `qa-deroulement.txt` : `RÉSULTAT TECHNIQUE : OK`, fenêtre 2400x1080, gaz tenu |
+
+### Anomalies
+
+| ANO-XX | Gravité | Capture | Ce qui ne va pas |
+|---|---|---|---|
+| — | — | — | Aucune anomalie. |
+
+
 ## Tour 2 (2026-11-03 21:00 UTC)
 
 **Verdict : REFUSÉ** (émulateur Android), 2e passage. **Fusion interdite.** 1 anomalie bloquante (nouvelle, WFS58-5). Les 2 bloquantes et les 2 mineures du tour 1 sont corrigées.

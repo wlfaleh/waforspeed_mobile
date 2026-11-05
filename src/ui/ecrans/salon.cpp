@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <random>
+#include <thread>
 #include "../../core/log.h"
 #include "../../core/system.h"
 #include "../../game/cars.h"
@@ -14,6 +15,7 @@
 #include "../../game/game.h"
 #include "../../game/player.h"
 #include "../../game/reseau_udp.h"
+#include "../../game/reseau_peerjs.h"   // WFS-89 : duel par Internet
 #include "../../game/sauvegarde.h"
 #include "../../game/track.h"
 #include "../../render/renderer.h"
@@ -32,11 +34,27 @@ struct Zone {
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; }
 };
 Zone g_creer, g_retour, g_salons[4], g_pret, g_quitter, g_km[4];
+// WFS-89 : « Rejoindre avec un code » (4 cases, clavier des caractères de duel::CODE_CHARS, effacer, « Rejoindre »)
+Zone g_touches[32], g_effacer, g_rejoindre;
+std::string g_saisie;
+const reseau::TransportDouble* g_double = nullptr;   // transport du salon en cours (Wi-Fi local + Internet), si ouvert ici
+std::string g_doubleCode;
 std::vector<reseau::SalonOuvert> g_liste;          // salons affichés à la dernière image (touchés dans le même ordre)
 std::shared_ptr<reseau::Prise> g_priseEssai;      // banc d'essai : prise en boucle locale à la place de la prise commune
 bool g_depart = false;
 
 std::shared_ptr<reseau::Prise> prise() { return g_priseEssai ? g_priseEssai : reseau::priseCommune(); }
+
+// WFS-89 : salon ouvert à la fois sur le Wi-Fi local et par Internet (même code) ; le premier qui voit un adversaire gagne
+std::unique_ptr<duel::Transport> transportDouble(const std::string& code) {
+    auto d = std::make_unique<reseau::TransportDouble>(std::make_unique<reseau::TransportUdp>(prise(), code),
+                                                       std::make_unique<reseau::TransportPeerJs>(reseau::fabriquePair(), code));
+    g_double = d.get(); g_doubleCode = code;
+    return d;
+}
+const reseau::TransportDouble* doubleActuel() {
+    return duelSession().inRoom() && duelSession().code() == g_doubleCode ? g_double : nullptr;
+}
 
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
     const int N = 16;
@@ -126,9 +144,19 @@ public:
             if (g_retour.contient(t.x, t.y)) { WFS_LOG("salon : « Retour »"); g.allerA(Ecran::Menu); return true; }
             if (g_creer.contient(t.x, t.y)) {   // createRoom : code de 4 caractères, l'hôte choisit carte et distance
                 const std::string code = duel::makeCode(hasard);
-                s.join(std::make_unique<reseau::TransportUdp>(prise(), code), code, true, sv.nick, car, sv.peinture(car).c_str(), carteActuelle(g));
+                s.join(transportDouble(code), code, true, sv.nick, car, sv.peinture(car).c_str(), carteActuelle(g));
                 s.setKm(sv.km);
                 WFS_LOG("salon : « Créer un salon » %s (%s, %d km)", code.c_str(), carteActuelle(g).c_str(), s.km());
+                return true;
+            }
+            for (int i = 0; i < 32; i++)   // WFS-89 : saisie du code
+                if (g_touches[i].contient(t.x, t.y) && g_saisie.size() < 4) { g_saisie += duel::CODE_CHARS[i]; return true; }
+            if (g_effacer.contient(t.x, t.y)) { if (!g_saisie.empty()) g_saisie.pop_back(); return true; }
+            if (g_rejoindre.contient(t.x, t.y) && g_saisie.size() == 4) {
+                const std::string code = g_saisie;
+                s.join(transportDouble(code), code, false, sv.nick, car, sv.peinture(car).c_str(), "");
+                WFS_LOG("salon : « Rejoindre » avec le code %s (Wi-Fi local et Internet)", code.c_str());
+                g_saisie.clear();
                 return true;
             }
             for (size_t i = 0; i < g_liste.size() && i < 4; i++)
@@ -200,12 +228,45 @@ private:
                  reseau ? hex(0xC9CDDA) : hex(ACCENT), ui::GAUCHE, 0, false);
         g_creer = bouton(r, zl, by, bh, k, "Créer un salon", true);
         g_retour = bouton(r, g_creer.x + g_creer.w + 10 * k, by, bh, k, "Retour", false);
+        dessinerCode(r, zr, y, k);
+    }
+
+    // WFS-89 : « Rejoindre avec un code » (#codeIn / #joinBtn du jeu web) : 4 cases, clavier, effacer, « Rejoindre »
+    void dessinerCode(Renderer& r, float zr, float y, float k) {
+        const int N = (int)std::strlen(duel::CODE_CHARS), COLS = 8;
+        const float tk = 46 * k, gap = 6 * k, largeur = COLS * tk + (COLS - 1) * gap, x0 = zr - largeur;
+        ui::text(r, x0, y, 12 * k, ui::majuscules("Rejoindre avec un code"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        const float cw = 64 * k, ch = 72 * k, cy = y + 22 * k;
+        for (int i = 0; i < 4; i++) {   // les 4 cases
+            const float cx = x0 + i * (cw + 10 * k);
+            const bool pleine = i < (int)g_saisie.size(), suivante = i == (int)g_saisie.size();
+            r.uiRect(cx, cy, cw, ch, GLASS);
+            r.uiRect(cx, cy + ch - 3 * k, cw, 3 * k, suivante ? hex(ACCENT2) : pleine ? hex(ACCENT) : hex(SURFACE2));
+            if (pleine) ui::text(r, cx + cw / 2, cy + 12 * k, 44 * k, ui::majuscules(g_saisie.substr(i, 1)), hex(TEXTE), ui::CENTRE, 0, false, true);
+        }
+        const float ky = cy + ch + 18 * k;
+        for (int i = 0; i < 32; i++) g_touches[i] = {};
+        for (int i = 0; i <= N; i++) {   // clavier : 31 caractères puis « effacer »
+            const float tx = x0 + (i % COLS) * (tk + gap), ty = ky + (i / COLS) * (tk + gap);
+            r.uiRect(tx, ty, tk, tk, hex(SURFACE2));
+            if (i < N) {
+                g_touches[i] = {tx, ty, tk, tk};
+                ui::text(r, tx + tk / 2, ty + 11 * k, 22 * k, ui::majuscules(std::string(1, duel::CODE_CHARS[i])), hex(TEXTE), ui::CENTRE, 0, false);
+            } else {
+                g_effacer = {tx, ty, tk, tk};
+                r.uiRect(tx + 12 * k, ty + tk / 2 - 1.5f * k, tk - 24 * k, 3 * k, hex(ACCENT2));   // ← effacer
+                r.uiRect(tx + 12 * k, ty + tk / 2 - 6 * k, 3 * k, 12 * k, hex(ACCENT2));
+            }
+        }
+        const float ry = ky + 4 * (tk + gap) + 6 * k, rh = 50 * k;
+        if (g_saisie.size() == 4) g_rejoindre = bouton(r, zr, ry, rh, k, "Rejoindre", true, true);
+        else { g_rejoindre = {}; const Zone z = bouton(r, zr, ry, rh, k, "Rejoindre", false, true); r.uiRect(z.x, z.y, z.w, z.h, hex(BG, 0.5f)); }   // grisé
     }
 
     // #lobbyRoom : code, voiture, terrain, distance, joueurs, « Prêt », « Quitter le salon »
     void dessinerSalon(Renderer& r, const GameView& g, float zl, float zr, float y, float by, float bh, float k) {
         const duel::Session& s = duelSession();
-        g_creer = g_retour = {}; for (Zone& z : g_salons) z = {};
+        g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {};
         ui::text(r, zl, y, 12 * k, ui::majuscules("Code du salon"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         ui::text(r, zl, y + 16 * k, 72 * k, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // lignes .car-line
@@ -244,6 +305,19 @@ private:
         const auto os = s.others();
         for (const duel::PeerView& p : os) joueur(duel::peerName(p.f) + (duel::str(p.f, "host") == "1" ? " · hôte" : ""), duel::str(p.f, "st") == "ready", false);
         if (os.empty()) ui::text(r, px + 16 * k, py + 4 * k, 15 * k, "En attente d'un adversaire…", hex(0xC9CDDA), ui::GAUCHE, 0, false);
+        // WFS-89 : par où passe le duel (Wi-Fi local, Internet) ; sans Internet : note orange (.note.warn), le Wi-Fi local reste
+        if (const reseau::TransportDouble* dbl = doubleActuel()) {
+            std::string net; bool warn = false;
+            if (dbl->choisi() == 1) net = "Adversaire trouvé sur le Wi-Fi local";
+            else if (dbl->choisi() == 2) net = "Adversaire trouvé par Internet";
+            else {
+                const auto e = dbl->internet() ? dbl->internet()->etat() : reseau::TransportPeerJs::Etat::Echec;
+                if (e == reseau::TransportPeerJs::Etat::Pret) net = "Salon ouvert sur le Wi-Fi local et par Internet";
+                else if (e == reseau::TransportPeerJs::Etat::Connexion) net = "Connexion à Internet…";
+                else { net = "Sans Internet : le duel marche seulement sur le même Wi-Fi"; warn = true; }
+            }
+            ui::text(r, px + 16 * k, py + (os.empty() ? 34 : 4) * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
+        }
         // boutons
         const bool pret = s.status() == duel::Status::Ready;
         g_pret = bouton(r, zl, by, bh, k, "Prêt", !pret);   // prêt : bouton clair souligné de cyan (une touche l'annule)
@@ -320,6 +394,31 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     WFS_LOG("salon : moi graine %u, Nadia graine %u, trafficClock %.3f / %.3f s, %zu adversaire(s) vu(s), %d message(s) ignoré(s)",
             s.seed(), nadia.seed(), s.trafficClock(), nadia.trafficClock(), s.ghosts().size(), pa->ignores());
     duelSession().leave(); nadia.leave();
+    // ---------- WFS-89 : « Rejoindre avec un code » et duel par Internet (réseau PeerJS simulé, mêmes messages BinaryPack) ----------
+    g.setAutopilot(false);
+    g.allerA(Ecran::Salon); pas(20);
+    capture("salon-code", "bloc « Rejoindre avec un code » (4 cases vides, clavier)");
+    for (char c : std::string("k7qx")) {
+        const char* p = std::strchr(duel::CODE_CHARS, c);
+        if (p) { g.render(t); toucher(30, g_touches[p - duel::CODE_CHARS]); }
+    }
+    capture("salon-code-saisi", "code K7QX saisi, « Rejoindre » actif");
+    for (int i = 0; i < 4; i++) { g.render(t); toucher(31, g_effacer); }
+    auto net = std::make_shared<reseau::ReseauMemoire>();
+    reseau::installerFabriquePair(net->fabrique());
+    g.render(t); toucher(32, g_creer);
+    const std::string codeNet = duelSession().code();
+    duel::Session web;   // un second joueur qui passe par Internet (relais simulé), comme un navigateur du jeu web
+    web.join(std::make_unique<reseau::TransportPeerJs>(net->fabrique(), codeNet), codeNet, false, "Sam", "p911", "", "");
+    for (int i = 0; i < 6; i++) { std::this_thread::sleep_for(std::chrono::milliseconds(35)); web.others(); pas(5); }
+    capture("salon-internet", "adversaire arrivé par Internet, 2 pilotes");
+    WFS_LOG("salon : Internet, salon %s, %zu adversaire(s) vu(s)", codeNet.c_str(), duelSession().others().size());
+    duelSession().leave(); web.leave();
+    net->horsLigne = true;   // pas d'Internet : note orange, le Wi-Fi local reste
+    pas(5); g.render(t); toucher(33, g_creer); pas(10);
+    capture("salon-hors-ligne", "sans Internet : note orange, salon ouvert sur le Wi-Fi local");
+    duelSession().leave();
+    reseau::installerFabriquePair(nullptr);
     g_priseEssai = nullptr;
     sauvegarde().nick = nickAvant;
     g.shutdown();

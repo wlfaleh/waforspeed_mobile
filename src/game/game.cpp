@@ -9,6 +9,7 @@
 #include "../render/model_loader.h"
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
+#include "commandes_tactiles.h"   // WFS-98 : pédales et nitro du jeu web
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
@@ -157,19 +158,19 @@ void Game::streamChunks() {
 }
 
 // ---------------------------------------------------------------- commandes tactiles
-// gauche : glisser pour braquer ; droite : frein et accélérateur ; au-dessus de l'accélérateur : nitro
+// gauche : direction (direction.cpp) ; droite : nitro, frein et gaz du jeu web (commandes_tactiles.h, WFS-98)
 void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
     if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
-    const float W = (float)r_->width(), H = (float)r_->height();
-    const float md = ecrans::margesCommandes(marges_).droite, x = ecrans::miroirX(t.x, W), yn = ecrans::reglages().gaucher ? 0.53f : 0.45f;   // WFS-51 ; WFS-75 : miroir
+    const float W = (float)r_->width(), H = (float)r_->height(), x = ecrans::miroirX(t.x, W);   // WFS-75 : miroir
     if (t.down) {
         bool fresh = !directionPossede(t.id) && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
         if (directionToucher(t, fresh, W, H, marges_)) {}   // WFS-70 : volant ou flèches (direction.cpp)
-        else if (fresh) {
-            if (x > W * 0.80f - md && t.y < H * yn) nitroId_ = t.id;
-            else if (x > W * 0.78f - md) gasId_ = t.id;
-            else if (x > W * 0.55f - md) brakeId_ = t.id;
+        else if (fresh) switch (commandeSous(x, t.y, W, H, ecrans::margesCommandes(marges_), ecrans::reglages().gaucher)) {   // WFS-51
+            case Commande::Nitro: nitroId_ = t.id; break;
+            case Commande::Gaz: gasId_ = t.id; break;
+            case Commande::Frein: brakeId_ = t.id; break;
+            default: break;
         }
     } else {
         directionToucher(t, false, W, H, marges_);   // WFS-70
@@ -188,19 +189,16 @@ void Game::onTouch(const Touch& t) {
 }
 
 void Game::drawControls() {
-    const float W = (float)r_->width(), H = (float)r_->height(), u = H / 100.f;
+    const float W = (float)r_->width(), H = (float)r_->height();
     // marges de sécurité (WFS-51) : à gauche le volant et les jauges, à droite les pédales, en bas tout le monde
-    const float mg = marges_.gauche, mh = marges_.haut, md = marges_.droite, mb = marges_.bas;
+    const float mg = marges_.gauche, md = marges_.droite;
     if (montrerMarges) {   // banc d'essai : zone interdite marquée (encoche simulée)
         if (mg > 0) r_->uiRect(0, 0, mg, H, {1, 0.1f, 0.2f, 0.35f});
         if (md > 0) r_->uiRect(W - md, 0, md, H, {1, 0.1f, 0.2f, 0.35f});
     }
     directionDessiner(*r_, W, H, marges_);   // WFS-70 : volant virtuel ou flèches (direction.cpp)
-    const float mc = ecrans::margesCommandes(marges_).droite, yn = ecrans::reglages().gaucher ? 0.40f : 0.32f;   // WFS-75 : nitro sous les boutons du HUD
-    // pédales
-    r_->uiCircle(ecrans::miroirX(W * 0.89f - mc, W), H * 0.74f - mb, 11 * u, input_.gas ? vec4{0.1f, 1, 0.45f, 0.6f} : vec4{0.1f, 1, 0.45f, 0.22f});
-    r_->uiCircle(ecrans::miroirX(W * 0.70f - mc, W), H * 0.80f - mb, 8.5f * u, input_.brake ? vec4{1, 0.2f, 0.25f, 0.6f} : vec4{1, 0.2f, 0.25f, 0.22f});
-    r_->uiCircle(ecrans::miroirX(W * 0.90f - mc, W), H * yn, 6.5f * u, input_.nitro ? vec4{0.2f, 0.85f, 1, 0.7f} : vec4{0.2f, 0.85f, 1, 0.25f});
+    // WFS-98 : pédales GAZ / FREIN et bouton NITRO du jeu web ; le gaz ne s'enfonce que sous son propre doigt
+    commandesDessiner(*r_, W, H, marges_, {gasId_ >= 0, brakeId_ >= 0, nitroId_ >= 0, (float)player_.nitro, player_.nitroOn});
     // vitesse, nitro, temps, score : HUD de course (WFS-27, src/ui/hud.cpp ; marges : WFS-52)
 }
 
@@ -215,6 +213,7 @@ void Game::update(double dt) {
     const bool course = ecran_ == Ecran::Course;
     DriveInput in = course ? input_ : DriveInput{};     // hors course : aucune commande de conduite
     if (modeManette) in = course ? manette : DriveInput{};   // WFS-22 : la manette remplace le tactile
+    else if (course && r_ && gyroscopeActif()) in.steer = directionBraquage((float)r_->width());   // WFS-108 : inclinaison lue à chaque image
     in.gas = in.gas || latchGas_; in.brake = in.brake || latchBrake_; in.nitro = in.nitro || latchNitro_;
     if (latchNitro_) in.gas = true;
     latchGas_ = latchBrake_ = latchNitro_ = false;

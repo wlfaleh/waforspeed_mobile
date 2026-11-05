@@ -19,6 +19,7 @@
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "reseau_android.cpp"     // WFS-83 : verrou de diffusion du Wi-Fi (duel sur le réseau local)
 #include "manette_jeu.h"   // WFS-22 : manettes
+#include "gyroscope_android.cpp"   // WFS-108 : inclinaison du téléphone (gyroscope), densité de l'écran (dp)
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -133,6 +134,7 @@ void android_main(android_app* a) {
     jobs().start();
     installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
     installerReseauAndroid(a->activity->vm, a->activity->clazz);      // WFS-83 : verrou de diffusion du salon
+    gyroscopeAndroidDemarrer(a->looper);                               // WFS-108 : capteur d'inclinaison
     // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
@@ -161,6 +163,8 @@ void android_main(android_app* a) {
             }
             app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
             double t = nowSeconds(), dt = t - app.last; app.last = t;
+            gyroscopeAndroidLire(app.game.ecran() == Ecran::Course);   // WFS-108 : capteur actif en course seulement
+            densiteAndroid(a->config, (float)app.renderer.height(), (float)ANativeWindow_getHeight(a->window));   // WFS-108 : dp
             if (g_margesNeuves.exchange(false))
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge

@@ -1,4 +1,4 @@
-// WaForSpeed — banc d'essai des cartes Campagne et Grand Prix (WFS-53) : voir decor_carte.h.
+// WaForSpeed — banc d'essai des cartes Campagne et Grand Prix (WFS-53) et des quartiers de la Ville (WFS-93) : voir decor_carte.h.
 // Pilote automatique, caméra haute, comme la plage (carte-plage-*) : jour et nuit au départ, puis une capture de jour
 // au début de chaque autre zone (départ avancé par WFS_DEPART, lu par le système de la carte).
 #include <cstdio>
@@ -23,7 +23,9 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         {"circuit", "jour", nullptr, "carte-circuit-jour"}, {"circuit", "nuit", nullptr, "carte-circuit-nuit"},
         {"circuit", "jour", "Paddock", "carte-circuit-paddock"}, {"circuit", "jour", "Virages rapides", "carte-circuit-gravier"},
         {"circuit", "jour", "Section boisée", "carte-circuit-foret"},
-        {"plage", "nuit", nullptr, "nuit-plage-corniche"}, {"plage", "jour", nullptr, "carte-plage-corniche"}};   // WFS-81 : lampadaires « beach »
+        {"plage", "nuit", nullptr, "nuit-plage-corniche"}, {"plage", "jour", nullptr, "carte-plage-corniche"},   // WFS-81 : lampadaires « beach »
+        {"ville", "jour", "Quartier résidentiel", "carte-ville-residentiel"}, {"ville", "jour", "Parc urbain", "carte-ville-parc"},
+        {"ville", "jour", "Zone portuaire", "carte-ville-port"}};   // WFS-93 : quartiers de la ville
     for (const Cap& c : CAPS) {
         int64_t depart = 0;
         if (c.zone) {   // premier segment de la zone, + 40 (≈ 50 m) pour être dans le décor de la zone

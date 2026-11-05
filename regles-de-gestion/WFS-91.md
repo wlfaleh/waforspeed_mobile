@@ -58,6 +58,15 @@ validation Vulkan** sur le banc, et **corrige** ce qu'il trouve (petites correct
 - [ ] Une capture de fin de course par carte, sans défaut visible.
 - [ ] Les autres jobs de la CI inchangés et verts ; l'APK toujours publié.
 
+## Ajout du PO (2026-11-04) — ANO-29 : Release `apercu` jamais incomplète
+Rattachée à ce ticket (même zone `.github/**`, pas de micro-ticket) ; à faire dans la même PR.
+- RG-A1 : job de publication de `build.yml` : `concurrency` avec **`cancel-in-progress: false`** (un run de `main` qui publie
+  n'est jamais annulé par le suivant ; le suivant attend).
+- RG-A2 : les anciens fichiers de la Release `apercu` ne sont supprimés **qu'après l'envoi complet** des nouveaux (ou :
+  publication dans `apercu-tmp`, puis bascule en une seule étape) : à aucun moment la Release n'a moins de fichiers que la précédente.
+- Critère : - [ ] deux fusions rapprochées sur `main` : la Release `apercu` garde tous ses fichiers (APK + captures) pendant
+  toute la publication (nombre de fichiers noté au journal du job avant / après).
+
 ## Hors périmètre
 - Tests sur le simulateur Android (décision de l'utilisateur du 2026-11-04 : plus de simulateur).
 - Optimisations de performance (WFS-82 fait) ; refonte du rendu ; iOS (WFS-88).

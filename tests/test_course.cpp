@@ -10,10 +10,13 @@
 #include "../src/game/course.h"
 #include "../src/game/direction.h"   // WFS-70 : modes de direction (fonctions pures)
 #include "../src/game/ressenti.h"    // WFS-70 : secousse, flash, réduire les mouvements
+#include "../src/game/commandes_tactiles.h"   // WFS-98 : place des pédales et du nitro, commande sous un doigt
 using namespace wfs;
 
 static int bad = 0;
 static void check(bool ok, const char* what) { std::printf("%s : %s\n", what, ok ? "OK" : "ÉCHEC"); if (!ok) bad++; }
+
+int testCommandes();   // WFS-108
 
 int main(int argc, char** argv) {
     // 1. course automatique : identique au jeu web, ligne par ligne (tolérance nulle)
@@ -163,6 +166,60 @@ int main(int argc, char** argv) {
         check(b.xg + b.c < b.xd && b.xg > 0 && b.y + b.c < 720 && dansZoneDirection(b.xd + b.c, 1280, m) &&
               !flecheDroite(b.xg + b.c / 2, b) && flecheDroite(b.xd + b.c / 2, b), "WFS-70 flèches : deux boutons à gauche, dans la zone de direction");
     }
+    // WFS-98 RG-01, RG-03, RG-05, RG-05 bis : place des pédales et du nitro, commande sous chaque doigt (droitier et gaucher)
+    {
+        // banc = écran des bancs d'essai (720p, 2400 × 1080 avec encoche de 90 px à gauche, WFS_ENCOCHE)
+        struct EcranEssai { float W, H; Marges m; bool banc; };
+        const EcranEssai ecrans[] = {{1280, 720, {}, true}, {2400, 1080, {90, 0, 0, 0}, true}, {2400, 1080, {0, 0, 90, 0}, false},
+                                     {1778, 1000, {0, 0, 0, 24}, false}};
+        bool tailles = true, zone = true, dessin = true, gaz = true, appuis = true;
+        for (const EcranEssai& e : ecrans)
+            for (const bool gaucher : {false, true}) {
+                const float W = e.W, H = e.H, k = H / 720.f;   // WFS-108 : les commandes en dp sont au moins à cette taille
+                const Marges m = gaucher ? Marges{e.m.droite, e.m.haut, e.m.gauche, e.m.bas} : e.m;   // ecrans::margesCommandes
+                const DispositionCommandes d = dispositionCommandes(W, H, m);
+                tailles = tailles && d.gaz.w >= 64 * k && d.gaz.h >= 120 * k && d.frein.w >= 84 * k && d.frein.h >= 88 * k &&
+                          d.nitro.w >= 68 * k && d.nitro.h == d.nitro.w;
+                zone = zone && d.gaz.x + d.gaz.w <= W - m.droite && d.gaz.y + d.gaz.h <= H - m.bas && d.frein.y + d.frein.h <= H - m.bas &&
+                       d.nitro.y + d.nitro.h < d.frein.y && d.frein.x + d.frein.w < d.gaz.x &&   // WFS-108 : nitro au-dessus du frein
+                       !dansZoneDirection(d.nitro.x, W, m);
+                // la zone de toucher peut déborder du dessin, jamais l'inverse : chaque point dessiné donne sa commande
+                auto couvre = [&](const Cadre& c, Commande attendue) {
+                    for (int i = 0; i <= 8; i++)
+                        for (int j = 0; j <= 8; j++)
+                            if (commandeSous(c.x + 0.5f + (c.w - 1) * i / 8, c.y + 0.5f + (c.h - 1) * j / 8, W, H, m, gaucher) != attendue)
+                                return false;
+                    return true;
+                };
+                dessin = dessin && couvre(d.gaz, Commande::Gaz) && couvre(d.frein, Commande::Frein);
+                for (int i = 0; i < 16; i++)
+                    for (int j = 0; j <= 4; j++) {
+                        const float a = 2 * PI * i / 16, rho = (d.nitro.w / 2 - 0.5f) * j / 4;
+                        dessin = dessin && commandeSous(d.nitro.cx() + rho * std::sin(a), d.nitro.cy() + rho * std::cos(a), W, H, m, gaucher) ==
+                                               Commande::Nitro;
+                    }
+                // appui du gaz des bancs : (0,89 W ; 0,74 H), et (0,11 W ; 0,74 H) en gaucher, passé par ecrans::miroirX
+                const float xGaz = gaucher ? W - 0.11f * W : 0.89f * W;
+                gaz = gaz && commandeSous(xGaz, 0.74f * H, W, H, m, gaucher) == Commande::Gaz;
+                // autres appuis des bancs : demi-tour (0,9 W ; 0,8 H) au gaz, frein à 0,66 W, coin haut droit = nitro (nitro-lignes),
+                // moitié gauche = direction
+                if (e.banc)
+                    appuis = appuis && commandeSous(0.9f * W, 0.8f * H, W, H, m, gaucher) == Commande::Gaz &&
+                             commandeSous(0.66f * W, 0.8f * H, W, H, m, gaucher) == Commande::Frein &&
+                             commandeSous(0.9f * W, 0.32f * H, W, H, m, gaucher) == Commande::Nitro &&
+                             commandeSous(0.5f * W, 0.8f * H, W, H, m, gaucher) == Commande::Aucune;
+            }
+        const DispositionCommandes d = dispositionCommandes(1280, 720, Marges{});
+        std::printf("  720p : gaz [%g, %g] × [%g, %g], frein [%g, %g] × [%g, %g], nitro centre (%g, %g) r %g\n", d.gaz.x, d.gaz.x + d.gaz.w,
+                    d.gaz.y, d.gaz.y + d.gaz.h, d.frein.x, d.frein.x + d.frein.w, d.frein.y, d.frein.y + d.frein.h, d.nitro.cx(),
+                    d.nitro.cy(), d.nitro.w / 2);
+        check(tailles, "WFS-98 RG-01 / RG-03 : gaz ≥ 64 × 120, frein ≥ 84 × 88, nitro ≥ 68 px CSS × k");
+        check(zone, "WFS-98 RG-05 : pédales et nitro dans la zone sûre, sans chevauchement, hors de la zone de direction");
+        check(dessin, "WFS-98 RG-05 bis : tout point dessiné est dans la zone de sa commande (gaz, frein, disque du nitro)");
+        check(gaz, "WFS-98 RG-05 bis : (0,89 W ; 0,74 H) au gaz, (0,11 W ; 0,74 H) en gaucher");
+        check(appuis, "WFS-98 : appuis des bancs (demi-tour au gaz, frein à 0,66 W, nitro du coin haut droit, rien à gauche)");
+    }
+    bad += testCommandes();   // WFS-108 : commandes agrandies, frein / marche arrière, gyroscope (tests/test_commandes.cpp)
     if (bad) { std::printf("ÉCHEC (%d)\n", bad); return 1; }
     std::printf("OK\n");
     return 0;
