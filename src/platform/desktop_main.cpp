@@ -94,6 +94,7 @@ static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
     };
     g.allerA(Ecran::Course); g.setAutopilot(true); images(60 * 6);   // décompte puis course en pilote automatique
     attendu(g.ecran() == Ecran::Course && activeCourse() && activeCourse()->state == RaceState::Play, "course en cours");
+    ecarts += parcoursPauseRetour(g, t); g.setAutopilot(true); images(60);   // WFS-129 (RG-08) : pause par Retour, « Reprendre »
     g.setAutopilot(false);
     courseBenchSetTime(0.05);
     images(80);   // boutons de l'écran de fin actifs 0,9 s après la fin

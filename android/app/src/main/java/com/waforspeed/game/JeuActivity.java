@@ -4,7 +4,7 @@
 //   - mode immersif collant : barres d'état et de navigation masquées, qui reviennent un instant au balayage du bord,
 //     réappliqué au démarrage, à la reprise et à chaque retour du focus (onWindowFocusChanged) ;
 //   - écran toujours allumé pendant le jeu ;
-//   - image sous l'encoche (aussi dans le thème values-v28) ;
+//   - image sous l'encoche (aussi dans les thèmes values-v28 et values-v30) ; bord à bord d'Android 15 (WFS-129) ;
 //   - manettes (WFS-22) : une manette connue qui se déconnecte est signalée au jeu (pause automatique en course) ;
 //   - touche Retour au menu principal (WFS-116) : arrière-plan au lieu de fermer le jeu ;
 //   - duel entre amis (WFS-112) : lien d'invitation reçu (waforspeed://duel/<code>, au lancement ou jeu déjà ouvert),
@@ -56,6 +56,7 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     // WFS-126 : version de l'appli et déclencheur de test, donnés avant le démarrage du thread du jeu (plantage_android.cpp)
     private static native void nativeInfosPlantage(String version, int code, boolean declencheur);
     private final HashSet<Integer> manettes = new HashSet<>();
+    private String derniersEncarts = "";   // WFS-129 : dernières marges écrites au journal
     private InputManager entrees;
 
     // WFS-112 : dernier lien d'invitation reçu, pris une fois par le jeu (reseau_android.cpp, fil du jeu)
@@ -200,8 +201,12 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         Window w = getWindow();
         w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);   // écran toujours allumé
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // WFS-129 (RG-02) : Android 15 (SDK 35) impose le bord à bord ; ALWAYS (Android 11+) : image sous l'encoche sur
+            // tous les bords, comme SHORT_EDGES en paysage ; les écrans restent dans les marges sûres envoyées au jeu
             WindowManager.LayoutParams lp = w.getAttributes();
-            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            lp.layoutInDisplayCutoutMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             w.setAttributes(lp);
         }
         pleinEcran();
@@ -215,6 +220,12 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
                     if (c != null) { g = c.getSafeInsetLeft(); h = c.getSafeInsetTop(); d = c.getSafeInsetRight(); b = c.getSafeInsetBottom(); }
                 }
                 nativeMarges(g, h, d, b);
+                // WFS-129 (RG-02) : marges relevées dans le journal (logcat), une fois par changement
+                final String encarts = g + "/" + d + "/" + h + "/" + b;
+                if (!encarts.equals(derniersEncarts)) {
+                    derniersEncarts = encarts;
+                    Log.i("WaForSpeed", "ENCARTS g/d/h/b " + encarts + " px (fenêtre " + v.getWidth() + "x" + v.getHeight() + ", API " + Build.VERSION.SDK_INT + ")");
+                }
                 return v.onApplyWindowInsets(insets);
             }
         });

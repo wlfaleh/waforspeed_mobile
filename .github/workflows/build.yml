@@ -121,8 +121,9 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.7' }
-      - name: NDK et CMake Android
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" > /dev/null
+      # WFS-129 (RG-01) : SDK 35 (Android 15) installé s'il manque ; build-tools 35 pour « zipalign -P 16 » (RG-05)
+      - name: NDK, CMake et SDK 35 Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" "platforms;android-35" "build-tools;35.0.0" > /dev/null
       - name: Construction de l'APK et de l'AAB
         working-directory: android
         run: gradle --no-daemon assembleRelease bundleRelease
@@ -163,6 +164,15 @@ jobs:
           rm -f "$cle"
           jarsigner -verify WaForSpeed.aab | tail -1
           ls -la WaForSpeed.apk WaForSpeed.aab
+      # WFS-129 (RG-05) : chaque segment LOAD de chaque .so de l'APK et de l'AAB aligné sur 2**14 (llvm-objdump du NDK),
+      # et l'APK passe « zipalign -c -P 16 -v 4 » ; sinon le job est rouge (le jeu ne se chargerait pas sur un téléphone à
+      # pages de 16 Ko, et Google Play refuserait l'AAB)
+      - name: SDK 35 et pages de 16 Ko (bibliothèques natives et APK)
+        run: |
+          aapt2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$aapt2" dump badging WaForSpeed.apk | grep -E "^(package|sdkVersion|targetSdkVersion)" | tee sdk.txt
+          grep -q "targetSdkVersion:'35'" sdk.txt || { echo "::error::l'APK ne cible pas Android 15 (targetSdkVersion 35, WFS-129)"; exit 1; }
+          bash tools/qa/pages_16k.sh WaForSpeed.apk WaForSpeed.aab
       - uses: actions/upload-artifact@v4
         with:
           name: apk
