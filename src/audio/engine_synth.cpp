@@ -80,6 +80,39 @@ void EngineModel::update(double dt, double speed, double top, double maxSpeed, b
     out.hiFreq = 2200 + r * 6000;
 }
 
+// ---------------------------------------------------------------- pétarades, turbo, rupteur (WFS-120)
+void EffetsMoteur::update(double dt, float rpm, int gear, float v, bool throttle, float kmh, bool enCourse, bool electrique) {
+    const float fdt = (float)std::min(dt, 0.05);
+    claquements = 0; turbo = false; rupteurDebut = false; couper = false;
+    depuisSalve_ += fdt; depuisTurbo_ += fdt;
+    if (!enCourse || electrique) {   // RG-04 / RG-06 : rien hors course ni en électrique ; salve en cours abandonnée
+        attente_ = 0; rupteur = false; aFond_ = 0; pied_ = throttle; rapport_ = gear;
+        return;
+    }
+    // RG-01 : lever de pied à haut régime → salve de 2 à 4 claquements espacés de 60 à 110 ms
+    if (pied_ && !throttle && (rpm >= PETARADE_RPM || v >= PETARADE_V) && kmh >= PETARADE_KMH && depuisSalve_ >= PETARADE_PAUSE) {
+        const int n = 2 + (int)(hasard() * 3);   // 2, 3 ou 4
+        float t = 0;
+        for (int i = 0; i < n; i++) { prochains_[i] = t; t += 0.06f + hasard() * 0.05f; }
+        attente_ = n; depuisSalve_ = 0;
+    }
+    if (throttle) attente_ = 0;   // remise des gaz : la salve s'arrête
+    int restants = 0;
+    for (int i = 0; i < attente_; i++) {
+        prochains_[i] -= fdt;
+        if (prochains_[i] <= 0) claquements++; else prochains_[restants++] = prochains_[i];
+    }
+    attente_ = restants;
+    // RG-02 : passage au rapport supérieur en charge
+    if (gear > rapport_ && throttle && depuisTurbo_ >= TURBO_PAUSE) { turbo = true; depuisTurbo_ = 0; }
+    // RG-03 : à fond en 5e à la vitesse de pointe depuis plus de 0,3 s → coupures toutes les 70 ms
+    if (gear == 5 && throttle && v >= RUPTEUR_V) aFond_ += fdt; else aFond_ = 0;
+    if (!rupteur && aFond_ > RUPTEUR_DELAI) { rupteur = true; rupteurDebut = true; pasRupteur_ = 0; }
+    if (rupteur && (!throttle || v < RUPTEUR_V_FIN || gear < 5)) rupteur = false;
+    if (rupteur) { pasRupteur_ += fdt; couper = ((int)(pasRupteur_ / RUPTEUR_PAS)) % 2 == 1; }
+    pied_ = throttle; rapport_ = gear;
+}
+
 // ---------------------------------------------------------------- rendu
 bool EngineSynth::loadWav(const std::vector<uint8_t>& w) {
     // WAV PCM 16 bits mono (sons du jeu web) : on cherche les blocs « fmt » et « data »

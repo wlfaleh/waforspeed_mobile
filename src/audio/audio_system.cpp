@@ -79,6 +79,16 @@ public:
         const double top = MAX_SPEED * pl.perf.top * (pl.nitroOn ? pl.perf.nitroMult : 1);
         EngineSynth& s = *synths_[idx];
         model_.update(dt, pl.speed, top, MAX_SPEED, throttle, pl.nitroOn, true, voice.pitch, false, s.targets);
+        {   // WFS-120 : pétarades, turbo, rupteur (en course seulement, aucune pour la Model 3 électrique)
+            const Course* c = activeCourse();
+            const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee && c && c->state == RaceState::Play;
+            effets_.update(dt, model_.rpm, model_.gear, (float)(v / std::max(top * M, 1e-6)), throttle, (float)pl.kmh(), enCourse,
+                           std::strcmp(g.car->id, "model3") == 0);
+            for (int k = 0; k < effets_.claquements; k++) sfx_.play(SfxId::Petarade, 5.f);   // claquement court : crête 0,03 → audible sur le moteur
+            if (effets_.turbo) sfx_.play(SfxId::Turbo);
+            if (effets_.rupteurDebut) WFS_LOG("SFX rupteur");
+            if (effets_.couper) { s.targets.hiGain = 0; s.targets.hiTau = 0.006f; }
+        }
         s.targets.lastUpdate = nowSeconds();
         for (int i = 0; i < SAMPLE_COUNT; i++) if (i != idx) { synths_[i]->targets.loGain = 0; synths_[i]->targets.hiGain = 0; }
         active_ = idx;
@@ -90,6 +100,7 @@ public:
             const size_t at = g_rec.pcm.size(); g_rec.pcm.resize(at + (size_t)n);
             for (auto& x : synths_) x->targets.lastUpdate = 1e9;   // hors ligne : pas de « pause » détectée
             renderInto(g_rec.pcm.data() + at, n, 0);
+            sfx_.lastUpdate = 1e9; sfx_.mix(g_rec.pcm.data() + at, n, 1e9);   // WFS-120 (RG-07) : bruitages dans moteur.wav
             g_rec.frames.push_back({(float)g_rec.t, model_.rpm, model_.gear, model_.load, (float)pl.kmh(), throttle});
         }
     }
@@ -125,6 +136,7 @@ private:
     std::unique_ptr<EngineSynth> synths_[SAMPLE_COUNT];
     std::atomic<int> active_{-1};
     EngineModel model_;
+    EffetsMoteur effets_;   // WFS-120
     SfxMixer sfx_; SfxEvenements events_;   // WFS-28 : bruitages (mélangés au moteur dans le rappel audio)
 };
 WFS_SYSTEM(AudioSystem, 300)

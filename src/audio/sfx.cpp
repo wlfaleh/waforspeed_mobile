@@ -24,6 +24,7 @@ const char* sfxNom(SfxId id) {
         case SfxId::BipDuel: return "bip-duel";
         case SfxId::Garage: return "garage"; case SfxId::Carte: return "carte";   // WFS-96
         case SfxId::Sirene: return "sirene";   // WFS-111
+        case SfxId::Petarade: return "petarade"; case SfxId::Turbo: return "turbo";   // WFS-120
         default: return "?";
     }
 }
@@ -46,6 +47,9 @@ void SfxMixer::build(float rate) {
     auto& bd = sons_[(int)SfxId::BipDuel]; beep(bd, rate, 880, 0, 0.15f); beep(bd, rate, 1320, 0.15f, 0.15f); beep(bd, rate, 1760, 0.3f, 0.4f);
     noiseHit(sons_[(int)SfxId::Garage], 0, rate, 0.18f, 1400, 1.5f, 0.25f, 500); noiseHit(sons_[(int)SfxId::Carte], 0, rate, 0.12f, 1600, 1.4f, 0.2f, 500);   // WFS-96
     for (int i = 0; i < 4; i++) beep(sons_[(int)SfxId::Sirene], rate, i % 2 ? 960.f : 720.f, i * 0.25f, 0.25f);   // WFS-111 : sirène deux tons (1 s)
+    // WFS-120 (RG-01 / RG-02) : un claquement d'échappement (grave, sec) ; souffle du turbo (aigu qui descend)
+    noiseHit(sons_[(int)SfxId::Petarade], 0, rate, 0.05f, 380, 1.2f, 0.55f, 140);
+    noiseHit(sons_[(int)SfxId::Turbo], 0, rate, 0.22f, 2800, 0.8f, 0.25f, 1200);
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
     nitro_ = boucle(rate, 1.2f, 650, 0.7f, 0.6f);
