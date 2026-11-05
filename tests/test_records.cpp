@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         VERIFIER(a.lire("version=1\nwaforspeed-best=955\ncar=m4\npaint-m4=rouge\nmap=circuit\nmode=poursuite\n"));
         VERIFIER(a.best == 955 && a.car == "m4" && a.map == "circuit" && a.mode == "poursuite" && !a.aRecordCourse5() && !a.aRecordPoursuite());
         Sauvegarde m;   // clés mal formées : ignorées, pas de plantage
-        VERIFIER(m.lire("version=1\nrecord-course5=0;100\nrecord-poursuite=2;5;100\nrecord-course5=;\nrecord-poursuite=1;101;5\nrecord-course5=3\nrecord-poursuite=a;b;c\nwaforspeed-best=12\n"));
+        VERIFIER(m.lire("version=1\nrecord-course5=0;100\nrecord-poursuite=2;5;100\nrecord-course5=;\nrecord-poursuite=1;1001;5\nrecord-course5=3\nrecord-poursuite=a;b;c\nwaforspeed-best=12\n"));
         VERIFIER(!m.aRecordCourse5() && !m.aRecordPoursuite() && m.best == 12);
         Sauvegarde k; VERIFIER(k.lire("version=1\nrecord-course5=6;100\nrecord-course5=4;123456789\nrecord-poursuite=0;0;4520\n"));
         VERIFIER(k.rec5Place == 4 && k.rec5Ms == 123456789 && !k.recPVictoire && k.recPDistM == 4520);
