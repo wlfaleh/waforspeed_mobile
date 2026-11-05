@@ -214,6 +214,7 @@ public:
         for (const Police& p : police_) {
             const double rel = (p.rd - sP) * M;
             if (rel < -60 || rel > 300) continue;
+            if (r.qualiteBasse && std::abs(rel) > 90) continue;   // WFS-134 (RG-11) : Basse : police dessinée jusqu'à 90 m (coût)
             const TrackPoint q = g.track->point(p.rd, p.x * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)) * rotateX((float)q.slope);
             const CarDef& cd = carById(policeCar_);

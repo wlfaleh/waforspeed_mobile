@@ -128,7 +128,8 @@ public:
         }
         std::sort(vis, vis + n, [](const Vis& a, const Vis& b) { return a.dz < b.dz; });
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
-        n = std::min(n, dense ? 10 : 14);
+        n = std::min(n, dense ? 3 : r.qualiteBasse ? 6 : 14);   // WFS-134 (RG-11) : Basse : moins de voitures, jamais de cubes
+        if (r.qualiteBasse) while (n > 0 && vis[n - 1].dz * M > 120) n--;   // Basse : trafic dessiné jusqu'à 120 m
         for (int k = 0; k < n; k++) {
             const TrafficCar& c = *vis[k].c;
             const int mi = nativeModelFor(c.type);

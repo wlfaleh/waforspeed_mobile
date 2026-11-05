@@ -1030,7 +1030,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)));   // WFS-82
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     if (fx.nuit) feuxVoiture(m, world, fx);
-    mat4 wr[4]; const bool anim = roues && m.nRoues == 4;   // WFS-60 : matrice de chaque roue (braquage, roulage)
+    // WFS-134 (RG-11) : Basse, au-delà de 15 m : roues fixes (invisibles à cette distance), pièces regroupées ci-dessous
+    const bool basseLoin = qualiteBasse && length(world.transformPoint((m.bmin + m.bmax) * 0.5f) - camPos_) > 15.f;
+    mat4 wr[4]; const bool anim = roues && m.nRoues == 4 && !basseLoin;   // WFS-60 : matrice de chaque roue (braquage, roulage)
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
@@ -1038,12 +1040,18 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = m.parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
+        // WFS-60) dessinées en un seul appel
+        if (!anim) while (pi + 1 < m.parts.size() && m.parts[pi + 1].material == part.material && m.parts[pi + 1].vertexOffset == part.vertexOffset &&
+                          m.parts[pi + 1].firstIndex == p.first + p.count) p.count += m.parts[++pi].indexCount;
         p.vis = vis;   // WFS-82
         p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
+        // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
+        if (qualiteBasse && depth > 15.f && mat.detail > 0) continue;
         if (fantome) {   // WFS-134 (RG-07) : toutes les pièces translucides (scene.frag, F_FANTOME), après les opaques
             p.pc.params.w = (float)(mat.flags | MAT_BLEND | MAT_FANTOME);
             transparent_.push_back(p);
