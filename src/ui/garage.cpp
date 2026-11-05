@@ -1,5 +1,6 @@
 // WaForSpeed — garage (WFS-11, WFS-40) : voir garage.h.
 #include "garage.h"
+#include "echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -312,7 +313,7 @@ public:
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Garage || !ui::fontReady()) return;
         if (t0_ < 0) t0_ = g.time;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f, t = (float)(g.time - t0_);
+        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H), t = (float)(g.time - t0_);
         const Marges& mg = g.marges;
         const float gl = mg.gauche + 16 * k, gr = mg.droite + 16 * k, gt = mg.haut + 14 * k, gb = mg.bas + 14 * k;
         const CarDef& car = CARS[index_];

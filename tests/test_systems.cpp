@@ -38,11 +38,12 @@ int main() {
     // WFS-85 : Poursuite (haute) → Proche (basse) → Capot → Cockpit
     const bool cycle = vueApres(VueCamera::Poursuite) == VueCamera::Proche && vueApres(VueCamera::Proche) == VueCamera::Capot &&
                        vueApres(VueCamera::Capot) == VueCamera::Cockpit && vueApres(VueCamera::Cockpit) == VueCamera::Poursuite;
-    // WFS-105 : Poursuite 9 m × 6,3 m (66°), Proche 6 m × 2,67 m (60°), points visés sous la route ; capot et cockpit inchangés
-    const bool vues = proche(VUES[0].fov, 66) && proche(VUES[3].fov, 60) && proche(VUES[2].fov, 72) && VUES[2].cockpit && VUES[1].capot &&
+    // WFS-105 : Poursuite 9 m × 6,3 m (regard devant 10 m et zoom 64° : valeurs de l'utilisateur, e23fa51), Proche 6 m × 2,67 m (60°), points visés sous la route ; capot et cockpit inchangés
+    const auto& fovs = config().camera.fov;   // zoom de chaque vue : configgame (VUES[].fov supprimé, doublon jamais lu)
+    const bool vues = proche(fovs[0], 64) && proche(fovs[3], 60) && proche(fovs[2], 72) && proche(fovs[1], 72) && VUES[2].cockpit && VUES[1].capot &&
                       !VUES[0].capot && !VUES[3].capot && proche(POURSUITE_LOIN.dist, 9) && proche(POURSUITE_LOIN.h, 6.3) &&
                       proche(POURSUITE_PROCHE.dist, 6) && proche(POURSUITE_PROCHE.h, 2.67) && POURSUITE_LOIN.lookH < 0 &&
-                      POURSUITE_PROCHE.lookH < 0 && proche(POURSUITE_LOIN.ahead, 14) && proche(POURSUITE_PROCHE.ahead, 7);
+                      POURSUITE_PROCHE.lookH < 0 && proche(POURSUITE_LOIN.ahead, 10) && proche(POURSUITE_PROCHE.ahead, 7);
     // WFS-105 (RG-01, RG-06) : élévation à l'arrêt = atan(hauteur / distance) : Poursuite entre 30° et 40°, Proche entre 20° et 25°
     const double eLoin = std::atan2(POURSUITE_LOIN.h, POURSUITE_LOIN.dist) * 180 / M_PI,
                  eProche = std::atan2(POURSUITE_PROCHE.h, POURSUITE_PROCHE.dist) * 180 / M_PI;

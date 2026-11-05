@@ -28,7 +28,9 @@ struct Cadre {
 // Taille « Grande » = × 1,25 (gaz 100 dp de large). Bornée pour que la colonne nitro + frein tienne dans 62 % de la hauteur et
 // les pédales dans 40 % de la largeur (tablettes, petits écrans).
 inline float& densiteCommandes() { static float d = 0; return d; }   // pixels par dp ; 0 : inconnue (banc PC)
-inline bool& grandsBoutons() { static bool g = false; return g; }    // réglage « Boutons : Normaux / Grands » (sauvegarde)
+inline bool& grandsBoutons() { static bool g = false; return g; }
+// WFS-102 (RG-15) : fondu de l'écran de chargement en cours (posé par ecrans::Chargement) : commandes ni dessinées ni lues
+inline bool& fonduChargement() { static bool f = false; return f; }    // réglage « Boutons : Normaux / Grands » (sauvegarde)
 inline float uniteCommandes(float W, float H) {
     const float d = densiteCommandes() > 0 ? densiteCommandes() : H / 420.f;
     return std::min({d * (grandsBoutons() ? 1.25f : 1.f), H * 0.62f / 180.f, W * 0.40f / 190.f});
