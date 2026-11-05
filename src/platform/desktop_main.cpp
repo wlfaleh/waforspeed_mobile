@@ -40,6 +40,7 @@ namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out);
 #include "manette_jeu.h"   // WFS-22
 #include "endurance_banc.h"   // WFS-91
 #include "chauffe.h"   // WFS-123
+#include "plantage.h"   // WFS-126
 #include "../ui/ecrans/menu.h"
 #include "../ui/ecrans/pause.h"
 #include "../ui/ecrans/salon.h"
@@ -78,9 +79,53 @@ static int statutChauffeSimule() {
 
 using namespace wfs;
 
+// WFS-126 (RG-08) : fin du parcours complet de WFS_BANC=parcours, après celui de WFS-115 (qui s'arrête en course) :
+// course → fin → « Menu » (appui au doigt) → accueil ; avec WFS_PLANTAGE=1, plantage volontaire 3 s après l'accueil (RG-05).
+// Rend le nombre d'écarts.
+static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
+    courseBenchRules(true);
+    if (!g.init(r, "golf", "ville")) { courseBenchRules(false); WFS_ERR("parcours : chargement impossible (fin de course)"); return 1; }
+    g.setAutopilot(false); g.camMode = 0;
+    double t = 1700; int n = 0, ecarts = 0;
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; if (++n % 4 == 0) g.render(t); };
+    auto images = [&](int k) { for (int i = 0; i < k; i++) image(); };
+    auto attendu = [&](bool ok, const char* etape) {
+        if (ok) WFS_LOG("parcours : %s (attendu)", etape); else { ecarts++; WFS_ERR("parcours : %s → écran %s (ÉCHEC)", etape, nomEcran(g.ecran())); }
+    };
+    g.allerA(Ecran::Course); g.setAutopilot(true); images(60 * 6);   // décompte puis course en pilote automatique
+    attendu(g.ecran() == Ecran::Course && activeCourse() && activeCourse()->state == RaceState::Play, "course en cours");
+    g.setAutopilot(false);
+    courseBenchSetTime(0.05);
+    images(80);   // boutons de l'écran de fin actifs 0,9 s après la fin
+    attendu(activeCourse() && activeCourse()->state == RaceState::Over, "course → écran de fin");
+    g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/parcours-fin.png");
+    // « Menu » : à droite de « Rejouer » (CourseSystem::drawOver, WFS-57), avec ou sans la ligne « RECORD » (WFS-101)
+    const float W = (float)r.width(), H = (float)r.height(), u = H / 100, bw = 40 * u, bh = 10 * u;
+    const float mx = W / 2 - (bw + 2 * u + bw * 0.7f) / 2 + bw + 2 * u + bw * 0.35f;
+    for (float plus : {0.f, 28 * H / 720.f}) {
+        if (g.ecran() != Ecran::Course) break;
+        const float my = 10 * u + 60 * u + plus + bh / 2;
+        g.render(t);
+        g.onTouch({40, mx, my, true}); image(); g.onTouch({40, mx, my, false}); images(10);
+        WFS_LOG("parcours : écran de fin, appui sur « Menu » à (%.0f, %.0f) → écran %s", mx, my, nomEcran(g.ecran()));
+    }
+    attendu(g.ecran() == Ecran::Menu, "fin puis « Menu » → accueil");
+    images(60);
+    g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/parcours-retour-menu.png");
+    // RG-05 / RG-08 : déclencheur de test, 3 s après l'accueil
+    for (int i = 0; i < 60 * 5 && plantage::declencheurArme(); i++) { image(); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
+    courseBenchRules(false);
+    g.shutdown();
+    return ecarts;
+}
+
 int main(int argc, char** argv) {
     std::string out = argc > 1 ? argv[1] : "captures";
     if (argc > 2) g_root = argv[2];
+    // WFS-126 : gestionnaire de plantage (plantage.txt dans le dossier de sortie) ; rapport d'un lancement précédent renommé
+    plantage::installer(out.c_str(), std::getenv("GITHUB_SHA") ? std::getenv("GITHUB_SHA") : "banc PC (wfs_bench)", "PC, banc d'essai");
+    plantage::rapportPrecedent(out.c_str());
+    if (const char* p = std::getenv("WFS_PLANTAGE"); p && std::atoi(p) == 1) plantage::armerDeclencheur(true);   // RG-05
     jobs().start();
     VkCtx vk;
     // taille des captures (WFS_TAILLE=2400x1080 pour tester un grand écran), 1280x720 par défaut
@@ -103,6 +148,11 @@ int main(int argc, char** argv) {
     //   chargement : écran de chargement seul ; texte : planche de texte (course-cam0-0 seule) ; hud ; menu (menu1, menu2)
     const std::string banc = std::getenv("WFS_BANC") ? std::getenv("WFS_BANC") : "";
     auto finir = [&]() { r.shutdown(); vk.shutdown(); jobs().stop(); return 0; };
+    if (plantage::declencheurArme() && banc != "parcours") {   // WFS-126 (RG-05) : autre groupe avec WFS_PLANTAGE=1 : menu, puis plantage 3 s après
+        if (!g.init(r, "golf", "ville")) return 2;
+        g.allerA(Ecran::Menu);
+        for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
+    }
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
     if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
@@ -123,7 +173,12 @@ int main(int argc, char** argv) {
     if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
-    if (banc == "parcours") { ui::chargerPolice(r); const int e = benchParcours(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-115
+    if (banc == "parcours") {   // WFS-115 ; WFS-126 (RG-08) : parcours complet jusqu'au retour à l'accueil
+        ui::chargerPolice(r);
+        const int e = benchParcours(g, r, out) + parcoursFinMenu(g, r, out);
+        WFS_LOG("parcours complet : %d écart(s)%s", e, e ? " ÉCHEC" : " OK");
+        finir(); return e > 0 ? 3 : 0;
+    }
     if (banc == "chauffe") { ui::chargerPolice(r); const int e = chauffe::benchChauffe(g, r, out, statutChauffeSimule); finir(); return e > 0 ? 3 : 0; }   // WFS-123
     if (banc == "records") { ui::chargerPolice(r); const int e = benchRecords(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-125 : records par mode, fantôme (aussi à la fin du groupe vitrines)
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite

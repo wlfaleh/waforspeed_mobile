@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WaForSpeed</string>
+    <!-- WFS-126 (RG-04) : boîte du rapport de plantage, au lancement qui suit un plantage -->
+    <string name="plantage_titre">Le jeu s\'est fermé la dernière fois</string>
+    <string name="plantage_message">Un rapport a été préparé : il aide à corriger le problème. Tu peux le partager (WhatsApp, e-mail…). Rien n\'est envoyé sans ton accord.</string>
+    <string name="plantage_partager">Partager le rapport</string>
+    <string name="plantage_ignorer">Ignorer</string>
+    <string name="plantage_sujet">WaForSpeed — rapport de plantage v%1$s</string>
+    <string name="plantage_choisir">Partager le rapport</string>
 </resources>

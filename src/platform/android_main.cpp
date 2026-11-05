@@ -22,6 +22,7 @@
 #include "retour_systeme.h"   // WFS-116 : bouton / geste Retour du téléphone
 #include "gyroscope_android.cpp"   // WFS-108 : inclinaison du téléphone (gyroscope), densité de l'écran (dp)
 #include "chauffe_android.cpp"     // WFS-123 : état thermique, setFrameRate 60 (API 30+, dlsym)
+#include "plantage_android.cpp"    // WFS-126 : rapport de plantage (signaux, 200 dernières lignes, déclencheur de test)
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -138,6 +139,8 @@ void android_main(android_app* a) {
     a->onAppCmd = onCmd;
     a->onInputEvent = onInput;
     g_assets = a->activity->assetManager;
+    // WFS-126 (RG-01) : gestionnaire des signaux installé en premier (dossier interne de l'appli : plantage.txt)
+    plantageAndroidDemarrer(a->activity->internalDataPath ? a->activity->internalDataPath : ".");
     // WFS-59 : extra d'intent qa_simu=true (émulateur de la QA) → mode GPU logiciel, lu avant l'initialisation de Vulkan
     if (lireExtraQaSimu(a->activity->vm, a->activity->clazz)) activerModeGpuLogiciel("intent qa_simu=true");
     jobs().start();
@@ -173,6 +176,7 @@ void android_main(android_app* a) {
             }
             app.renderer.setViewSize((uint32_t)ANativeWindow_getWidth(a->window), (uint32_t)ANativeWindow_getHeight(a->window));
             double t = nowSeconds(), dt = t - app.last; app.last = t;
+            plantage::minuterieDeclencheur(dt, app.game.ecran() == Ecran::Menu);   // WFS-126 (RG-05) : APK de test seulement
             gyroscopeAndroidLire(app.game.ecran() == Ecran::Course);   // WFS-108 : capteur actif en course seulement
             densiteAndroid(a->config, (float)app.renderer.height(), (float)ANativeWindow_getHeight(a->window));   // WFS-108 : dp
             if (g_margesNeuves.exchange(false))

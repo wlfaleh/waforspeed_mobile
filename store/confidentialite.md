@@ -10,6 +10,10 @@ WaForSpeed ne collecte **aucune donnée personnelle**.
   score, environ dix fois par seconde) sont envoyés à l'autre joueur du salon, le temps de la partie. Rien n'est conservé
   après la fin du duel.
 - Manette : les entrées de la manette ne servent qu'à piloter, elles ne quittent pas l'appareil.
+- **Rapport de plantage** : si le jeu se ferme tout seul, un rapport technique (version du jeu, modèle du téléphone,
+  version d'Android, adresses du programme et dernières lignes du journal du jeu, sans donnée personnelle) est gardé
+  dans le dossier privé de l'application. Il n'est **jamais envoyé automatiquement** : au lancement suivant, le jeu
+  propose « Partager le rapport », et c'est toi qui choisis l'appli et le destinataire (ou « Ignorer »).
 - Aucune donnée n'est vendue ni partagée avec des tiers.
 
 Contact : à compléter par l'éditeur avant la publication (adresse de contact exigée par les deux stores).

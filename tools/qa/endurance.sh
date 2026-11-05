@@ -24,7 +24,7 @@ fi
 INCONNUES=$(wc -l < "$OUT/validation-inconnues.txt")
 FUITE_CONNUE=$(grep -c '^fuite-connue' "$CONNUES" 2>/dev/null || true)
 {
-  grep -E "endurance :|\[err" "$LOG"
+  grep -E "endurance :|ENDURANCE cycle|\[err" "$LOG"
   echo "---"
   echo "code de sortie du banc : $CODE"
   echo "erreurs de validation : $TOTAL (dont $((TOTAL - INCONNUES)) connues, $INCONNUES inconnues)"
