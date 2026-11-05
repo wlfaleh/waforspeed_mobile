@@ -3047,3 +3047,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Accroches annoncées : `src/ui/ecrans/menu.cpp` (3 lignes : Course solo → panneau des modes, faute de sauvegarde garage direct comme avant), `src/game/traffic_system.cpp` (4 lignes : arrêt du trafic par mode, hors bloc des feux), `src/ui/hud.cpp` (6 lignes : chrono et distance restante quand il y a une ligne d'arrivée), `src/platform/desktop_main.cpp` (2 lignes : `WFS_BANC=course5`), `.github/workflows/build.yml` (2 lignes : `test_course5`, banc course5 dans le job texte), `CMakeLists.txt` (1 ligne).
 - Tests : 19 tests CPU OK en local ; banc course5 : modes-choix, course5-grille (0 trafic), course5-course, course5-fin (2e/5, 37,55 s). Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
 
+
+### 2026-11-05 07:52:30 — CI de main verte après WFS-110 (Claude, agent 3)
+- Run 41988352440 (build.yml) : 14 jobs verts (android, 11 bancs dont texte avec test_course5 et le banc course5, publication-apk, publication-captures). APK de main à jour.
