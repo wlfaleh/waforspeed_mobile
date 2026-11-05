@@ -11,6 +11,7 @@
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../core/platform.h"
+#include "../core/configgame.h"   // WFS-128
 #include "../game/game.h"
 #include "../game/sauvegarde.h"   // WFS-24
 #include "../render/renderer.h"
@@ -150,6 +151,7 @@ void android_main(android_app* a) {
     chauffeAndroidDemarrer();                                          // WFS-123 : état thermique (API 30+)
     // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
+    configCheminTelephone(a->activity->externalDataPath ? a->activity->externalDataPath : "");   // WFS-128 : configgame.json posé sur le téléphone
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
     while (!a->destroyRequested) {

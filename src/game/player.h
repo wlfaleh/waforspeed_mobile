@@ -10,9 +10,14 @@ struct DriveInput { float steer = 0; bool gas = false, brake = false, nitro = fa
 
 // paramètres physiques du jeu web (PHYS)
 struct Phys {
-    static constexpr double brake = 12.5, roll = 0.35, drag = 0.00042, engineBrake = 0.9, grip = 18,
-        maxSteer = 0.6, steerV = 14, steerIn = 4, steerOut = 6, align = 3, maxHeading = 0.5, offRoad = 7,
-        vLibre = 10, vRecul = 3;   // WFS-90 : conduite libre sous 10 m/s (36 km/h) ; marche arrière enchaînée sous 3 m/s
+    // WFS-128 : valeurs de configgame.json (section conduite) ; défauts : brake 12,5, roll 0,35, drag 0,00042, engineBrake 0,9,
+    // grip 18, maxSteer 0,6, steerV 14, steerIn 4, steerOut 6, align 3, maxHeading 0,5, offRoad 7, vLibre 10, vRecul 3
+    // WFS-90 : conduite libre sous vLibre m/s (36 km/h) ; marche arrière enchaînée sous vRecul m/s
+    static inline const double &brake = g_configJeu.conduite.brake, &roll = g_configJeu.conduite.roll, &drag = g_configJeu.conduite.drag,
+        &engineBrake = g_configJeu.conduite.engineBrake, &grip = g_configJeu.conduite.grip, &maxSteer = g_configJeu.conduite.maxSteer,
+        &steerV = g_configJeu.conduite.steerV, &steerIn = g_configJeu.conduite.steerIn, &steerOut = g_configJeu.conduite.steerOut,
+        &align = g_configJeu.conduite.align, &maxHeading = g_configJeu.conduite.maxHeading, &offRoad = g_configJeu.conduite.offRoad,
+        &vLibre = g_configJeu.conduite.vLibre, &vRecul = g_configJeu.conduite.vRecul;
 };
 constexpr double CENTRIFUGAL = 0.2;
 constexpr double REV_MAX = -MAX_SPEED * 0.12, REV_ACC = MAX_SPEED * 0.1;

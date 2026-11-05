@@ -9,6 +9,7 @@
 #include <vector>
 #include "cars.h"
 #include "duel.h"
+#include "../core/configgame.h"   // WFS-128
 
 namespace wfs {
 
@@ -35,12 +36,12 @@ void benchCourse5(Game& g, Renderer& r, const std::string& outDir);
 
 namespace course5 {
 
-constexpr int ORDINATEURS = 4;
+inline const int& ORDINATEURS = g_configJeu.course5.ordinateurs;   // WFS-128 : 4
 enum Difficulte { FACILE = 0, NORMALE = 1, DIFFICILE = 2 };
-constexpr double FACTEUR_VITESSE[3] = {0.80, 0.90, 0.97};     // part de la vitesse de pointe visée (RG-04)
+inline const double (&FACTEUR_VITESSE)[3] = g_configJeu.course5.facteur;   // WFS-128 : 0,80 / 0,90 / 0,97 ;     // part de la vitesse de pointe visée (RG-04)
 constexpr Difficulte DIFFICULTE = NORMALE;                    // RG-04 : normale par défaut
 constexpr double FILES[3] = {-0.62, 0.0, 0.62};               // files (demi-largeurs de route), comme le trafic
-constexpr double ECART_MIN_M = 1.2;                           // jamais plus près que cela de la voiture de devant (m)
+inline const double& ECART_MIN_M = g_configJeu.course5.ecartMinM;   // WFS-128 : 1,2 ;                           // jamais plus près que cela de la voiture de devant (m)
 
 struct Ordinateur {
     std::string car; unsigned peinture = 0;   // voiture du catalogue, peinture (0xRRGGBB)

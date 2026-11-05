@@ -20,7 +20,7 @@ android {
         cmake { path '../../CMakeLists.txt'; version '3.22.1' }
     }
     sourceSets {
-        main { assets.srcDirs = ['../../assets'] }
+        main { assets.srcDirs = ['../../assets', "$buildDir/generated/configgame"] }   // WFS-128 : + configgame.json
     }
     // WFS-118 : clé de test fixe du dépôt (android/keystore.properties) au lieu de la clé de debug, recréée sur chaque
     // machine de la CI ; même signature à chaque build, l'APK s'installe par-dessus. Jamais pour le store (RG-03).
@@ -40,3 +40,7 @@ android {
     // WFS-129 (RG-04) : bibliothèques natives non compressées, alignées sur 16 Ko dans l'APK (vérifié par la CI : zipalign -P 16)
     packagingOptions { jniLibs { useLegacyPackaging false } }
 }
+
+// WFS-128 : configgame.json (racine du dépôt) copié dans des assets générés (jamais toute la racine dans l'APK)
+tasks.register('copierConfiggame', Copy) { from '../../configgame.json'; into "$buildDir/generated/configgame" }
+preBuild.dependsOn 'copierConfiggame'

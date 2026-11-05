@@ -15,7 +15,7 @@ namespace wfs {
 
 enum class RaceState { Count, Play, Over };   // state du jeu web : 'count', 'play', 'over'
 
-constexpr double TEMPS_DEPART = 60, TEMPS_CHECKPOINT = 30;   // WFS-110 (RG-08)
+inline const double &TEMPS_DEPART = g_configJeu.checkpoint.depart, &TEMPS_CHECKPOINT = g_configJeu.checkpoint.bonus;   // WFS-110 (RG-08) : 60 s, +30 s ; WFS-128
 
 struct Course {
     RaceState state = RaceState::Count;
@@ -52,7 +52,7 @@ struct Course {
     // durée réelle → durée de jeu (ralenti après un accident, boucle de main.js)
     double scaleDt(double raw);
 
-    long long score(const Player& pl) const { return std::max(0LL, (long long)std::floor(pl.dist * 0.006)) * 5 + bonus; }
+    long long score(const Player& pl) const { return std::max(0LL, (long long)std::floor(pl.dist * 0.006)) * config().score.pointsParMetre + bonus; }   // WFS-128 : 5 points par mètre
     static int kmh(double speed) { return (int)std::floor(speed / MAX_SPEED * 260.0 + 0.5); }   // Math.round du jeu web
     // secondes ajoutées au checkpoint n (1 = premier) : add = max(5, 11 − level×0,4) avec level = n − 1
     // WFS-110 (RG-08) : mode Checkpoint : départ à 60 s, +30 s à chaque checkpoint

@@ -9,7 +9,7 @@ static constexpr double PI_D = 3.14159265358979323846;
 void Player::reset(const CarDef& c) {
     car = &c; perf = carPerf(c);
     position = dist = playerX = speed = steer = heading = odo = 0;
-    latAcc = lonAcc = 0; nitro = 0.4; nitroOn = braking = reversing = false;
+    latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
 }
 
@@ -81,7 +81,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     else if (braking) speed = std::max(0.0, speed - (Phys::brake / M + resist) * dt);
     else if (accelerating && speed < 0) speed = std::min(0.0, speed + Phys::brake / M * dt);
     else if (accelerating) {
-        const double push = perf.a0 / M * (nitroOn ? 1.6 : 1) * std::max(0.0, 1 - std::pow(std::max(0.0, speed) / top, 2.2));
+        const double push = perf.a0 / M * (nitroOn ? config().nitro.poussee : 1) * std::max(0.0, 1 - std::pow(std::max(0.0, speed) / top, 2.2));
         speed += (push - resist * 0.35 - off) * dt;
     } else speed = speed < 0 ? std::min(0.0, speed + resist * dt) : std::max(0.0, speed - (resist + off) * dt);
     if (speed > top) speed = std::max(top, speed - MAX_SPEED * 0.4 * dt);
