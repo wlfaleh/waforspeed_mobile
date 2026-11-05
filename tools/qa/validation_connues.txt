@@ -20,4 +20,4 @@ pCreateInfos[0].renderPass Invalid VkRenderPass
 # jeu de descripteurs dont le binding 0 pointe une VkImageView nulle (image jamais créée ou détruite). Zone interdite pour
 # WFS-91 (src/render/**) : à planifier. Message exact :
 # « VUID-vkCmdDraw-None-08114 … the descriptor (VkDescriptorSet …, binding 0, index 0) is using imageView VkImageView 0x0[] that is invalid or has been destroyed »
-binding 0, index 0) is using imageView VkImageView 0x0[] that is invalid or has been destroyed
+# → corrigé par WFS-100 (RG-W2) : uiSetFontAtlas ne lie jamais de vue nulle (texture blanche) et text.cpp repointe l'interface avant de détruire l'atlas ; motif retiré.

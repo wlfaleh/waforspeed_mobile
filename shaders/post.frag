@@ -1,11 +1,60 @@
 #version 450
-// WaForSpeed — passe finale : exposition, tonemapping ACES, vignette, gamma, tramage
-layout(set = 0, binding = 0) uniform sampler2D hdr;
-layout(push_constant) uniform P { vec4 rot; vec4 params; } pc;   // params : x exposition, y sortie sRGB matérielle, z force du bloom, w seuil
+// WaForSpeed — passe finale : exposition, tonemapping ACES, vignette, gamma, tramage.
+// WFS-100 : le même shader sert aussi aux passes du bloom (pc.bloom.x ≠ 0), dessinées hors écran avant la passe finale.
+layout(set = 0, binding = 0) uniform sampler2D hdr;        // passe finale : scène HDR ; passes du bloom : image source
+layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : bloom remonté ; remontée : niveau inférieur
+// params : x exposition, y sortie sRGB matérielle, z force du bloom, w inutilisé
+// bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
+//                   y poids du niveau (remontée), z pas du flou en texels de la source / niveau inférieur présent (remontée)
+layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;
 layout(location = 0) in vec2 vUv;
 layout(location = 0) out vec4 outColor;
 vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+
+// WFS-100 (RG-04) : seuil 1,0 avec genou doux 0,5 (courbe quadratique entre 0,5 et 1,5, puis linéaire)
+vec3 seuilBloom(vec3 c) {
+    const float t = 1.0, k = 0.5;
+    float br = max(c.r, max(c.g, c.b));
+    float rq = clamp(br - t + k, 0.0, 2.0 * k);
+    rq = rq * rq / (4.0 * k);
+    return c * (max(rq, br - t) / max(br, 1e-4));
+}
+// flou gaussien séparable à 9 prises contiguës (UnrealBloomPass : getSeperableBlurMaterial), poids normalisés
+const float G9[5] = float[](0.2270270, 0.1945946, 0.1216216, 0.0540540, 0.0162162);
+
+vec4 passeBloom(int mode) {
+    vec2 px = 1.0 / vec2(textureSize(hdr, 0));
+    if (mode == 1) {
+        // seuil + réduction de moitié : 4 lectures bilinéaires à cheval sur 2 × 2 pixels → carré de 4 × 4 pixels sans trou ;
+        // chaque lecture est plafonnée et seuillée avant la moyenne (un pixel isolé très brillant ne fait pas de tache)
+        vec3 s = vec3(0.0);
+        for (int i = 0; i < 4; i++) {
+            vec2 o = vec2((i & 1) == 0 ? -1.0 : 1.0, (i & 2) == 0 ? -1.0 : 1.0) * px;
+            s += seuilBloom(min(texture(hdr, vUv + o).rgb * pc.params.x, vec3(24.0)));
+        }
+        return vec4(s * 0.25, 1.0);
+    }
+    if (mode == 2 || mode == 3) {
+        vec2 d = (mode == 2 ? vec2(px.x, 0.0) : vec2(0.0, px.y)) * pc.bloom.z;
+        vec3 s = texture(hdr, vUv).rgb * G9[0];
+        for (int i = 1; i < 5; i++) s += (texture(hdr, vUv + d * float(i)).rgb + texture(hdr, vUv - d * float(i)).rgb) * G9[i];
+        return vec4(s, 1.0);
+    }
+    // remontée : niveau flou × poids + niveau inférieur agrandi par un filtre en tente 3 × 3 (pas de marches ni de losanges)
+    vec3 s = texture(hdr, vUv).rgb * pc.bloom.y;
+    if (pc.bloom.z > 0.5) {
+        vec2 q = 1.0 / vec2(textureSize(bloomTex, 0));
+        vec3 u = vec3(0.0);
+        for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++)
+            u += texture(bloomTex, vUv + vec2(x, y) * q).rgb * float((2 - abs(x)) * (2 - abs(y)));
+        s += u / 16.0;
+    }
+    return vec4(s, 1.0);
+}
+
 void main() {
+    int mode = int(pc.bloom.x + 0.5);
+    if (mode != 0) { outColor = passeBloom(mode); return; }
     vec3 c = texture(hdr, vUv).rgb * pc.params.x;
     // léger halo autour des zones très lumineuses (soleil, reflets).
     // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
@@ -19,23 +68,9 @@ void main() {
         glow += max(min(s, vec3(24.0)) - 2.5, 0.0);
     }
     c += glow / 16.0 * 0.35;
-    // bloom (WFS-15, UnrealBloomPass du jeu web, force et seuil d'ENV.bloom) : halo large autour des feux, néons, phares.
-    // 2 couronnes de 8 lectures (rayons 1,6 % et 4,5 % de la hauteur) ; seule la part au-dessus du seuil de luminance
-    // brille ; force 0 (qualité basse) : rien n'est lu, image identique
-    if (pc.params.z > 0.0) {
-        vec2 k = vec2(float(textureSize(hdr, 0).y) / float(textureSize(hdr, 0).x), 1.0);
-        vec3 b = vec3(0.0); float poids = 0.0;
-        for (int anneau = 0; anneau < 2; anneau++) {
-            float rayon = anneau == 0 ? 0.016 : 0.045, w = anneau == 0 ? 1.0 : 0.6;
-            for (int i = 0; i < 8; i++) {
-                float a = (float(i) + 0.5 * float(anneau)) * 0.785398;
-                vec3 s = min(texture(hdr, vUv + vec2(cos(a), sin(a)) * rayon * k).rgb * pc.params.x, vec3(24.0));
-                float l = dot(s, vec3(0.2126, 0.7152, 0.0722));
-                b += s * (max(l - pc.params.w, 0.0) / max(l, 1e-4)) * w; poids += w;
-            }
-        }
-        c += b / poids * pc.params.z;
-    }
+    // bloom (WFS-15, WFS-100 : UnrealBloomPass du jeu web) : chaîne « dual filter » de 5 niveaux calculée avant cette passe
+    // (Renderer::passesBloom) ; force 0 (qualité basse, GPU logiciel) : rien n'est lu, image identique
+    if (pc.params.z > 0.0) c += texture(bloomTex, vUv).rgb * pc.params.z;
     c = aces(c);
     vec2 q = vUv - 0.5;
     c *= 1.0 - dot(q, q) * 0.35;

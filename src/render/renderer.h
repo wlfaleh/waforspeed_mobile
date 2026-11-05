@@ -80,6 +80,7 @@ struct FrameParams {
     // WFS-09 : feux des voitures allumés (nuit) ; WFS-16 : chaussée mouillée, flaques, reflets temps réel de la scène
     // (passe miroir autour du plan horizontal y = refletY, demi-résolution). Tout à faux le jour : rendu inchangé.
     bool feux = false, mouille = false, flaques = false, reflets = false; float refletY = 0;
+    float bloom = -1.f;   // WFS-100 : force du bloom de la scène (garage du jeu web : 0,55) ; < 0 : nuit 0,8, jour 0,3
 };
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
@@ -203,6 +204,7 @@ private:
     Buffer osBuf_[2]; VkDescriptorSet osSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
     int skinUsed_ = 0;
     VkSampler shadowSampler_ = VK_NULL_HANDLE;
+    struct Bloom; Bloom* bloom_ = nullptr;   // WFS-100 : chaîne du bloom « dual filter » (renderer.cpp)
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
