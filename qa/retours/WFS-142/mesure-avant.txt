@@ -1,0 +1,9 @@
+route-jour-pluie : luminance 0.0530 avec reflet, 0.0325 sans, rapport 1.63, netteté du reflet 1.58
+route-jour-sec : luminance 0.0891 avec reflet, 0.0763 sans, rapport 1.17, netteté du reflet 1.94
+route-nuit-corniche : luminance 0.0560 avec reflet, 0.0487 sans, rapport 1.15, netteté du reflet 1.32
+route-nuit-ville-pluie : luminance 0.0758 avec reflet, 0.0580 sans, rapport 1.31, netteté du reflet 2.42
+route-nuit-ville-pluie-120-0 : luminance 0.0680 avec reflet, 0.0410 sans, rapport 1.66, netteté du reflet 3.02
+route-nuit-ville-pluie-120-1 : luminance 0.0699 avec reflet, 0.0426 sans, rapport 1.64, netteté du reflet 3.07
+route-nuit-ville-pluie-basse : luminance 0.0660 avec reflet, 0.0651 sans, rapport 1.01, netteté du reflet 0.60
+route-nuit-ville-pluie-proche : luminance 0.1058 avec reflet, 0.0746 sans, rapport 1.42, netteté du reflet 5.92
+route-nuit-ville-sec : luminance 0.0614 avec reflet, 0.0611 sans, rapport 1.00, netteté du reflet 0.78
