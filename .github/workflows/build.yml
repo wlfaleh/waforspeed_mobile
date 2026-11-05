@@ -89,7 +89,7 @@ jobs:
     # sauté sur les envois de feature/** et claude/**
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20   # WFS-114 : ≤ 15 min de bout en bout (compilation ≈ 1 min, banc ≈ 8 min sur la CI, une image sur 30)
+    timeout-minutes: 25   # WFS-114 : ≤ 15 min de bout en bout (compilation ≈ 1 min, banc ≈ 8 min sur la CI, une image sur 30) ; WFS-126 : + chauffe ≤ 4 min la nuit
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)
@@ -98,6 +98,11 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
       - name: Endurance
         run: tools/qa/endurance.sh ./build/wfs_bench captures assets/
+      # WFS-126 (RG-07) : banc de la chauffe (WFS-123, ≈ 3 min) la nuit et à la demande seulement (le job de chaque fusion
+      # n'est pas allongé) ; journal et captures chauffe-bandeau / -fin / -retabli dans l'artefact du job
+      - name: Chauffe (banc WFS-123)
+        if: (success() || failure()) && github.event_name != 'push'
+        run: tools/qa/chauffe.sh ./build/wfs_bench captures assets/
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: captures-endurance, path: captures }

@@ -10,13 +10,19 @@
 //   - duel entre amis (WFS-112) : lien d'invitation reçu (waforspeed://duel/<code>, au lancement ou jeu déjà ouvert),
 //     lu par le jeu (prendreLienDuel) ; « Inviter » ouvre la feuille de partage d'Android (partagerTexte) ;
 //   - performances soutenues (WFS-123, RG-05) : Window.setSustainedPerformanceMode(true) à la reprise si le téléphone
-//     le permet (PowerManager.isSustainedPerformanceModeSupported), coupé à la mise en pause.
+//     le permet (PowerManager.isSustainedPerformanceModeSupported), coupé à la mise en pause ;
+//   - rapport de plantage (WFS-126) : plantage Java écrit dans plantage.txt (RG-03) ; au lancement suivant, boîte
+//     « Le jeu s'est fermé la dernière fois » avec « Partager le rapport » / « Ignorer » (RG-04) ; déclencheur de test
+//     `--ez wfs_plantage true`, APK de test seulement (RG-05). Le plantage natif est écrit par plantage.cpp.
 package com.waforspeed.game;
 
+import android.app.AlertDialog;
 import android.app.NativeActivity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.hardware.input.InputManager;
 import android.os.Build;
@@ -30,6 +36,12 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
 public class JeuActivity extends NativeActivity implements InputManager.InputDeviceListener {
@@ -41,6 +53,8 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     private static native void nativeMarges(int gauche, int haut, int droite, int bas);
     // manettes (WFS-22) : une manette connue est partie (le jeu se met en pause s'il était piloté à la manette)
     private static native void nativeManetteRetiree();
+    // WFS-126 : version de l'appli et déclencheur de test, donnés avant le démarrage du thread du jeu (plantage_android.cpp)
+    private static native void nativeInfosPlantage(String version, int code, boolean declencheur);
     private final HashSet<Integer> manettes = new HashSet<>();
     private InputManager entrees;
 
@@ -73,9 +87,115 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         });
     }
 
+    // ---------- rapport de plantage (WFS-126) ----------
+    private String versionNom = "?";
+    private int versionCode = 0;
+
+    @SuppressWarnings("deprecation")
+    private void lireVersion() {
+        try {
+            final PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+            versionNom = pi.versionName != null ? pi.versionName : "?";
+            versionCode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? (int) pi.getLongVersionCode() : pi.versionCode;
+        } catch (Exception e) { /* version inconnue : « ? » */ }
+    }
+
+    // RG-05 : APK de test seulement = pas installé par le Play Store (APK de la CI posé à la main ou par adb)
+    @SuppressWarnings("deprecation")
+    private boolean apkDeTest() {
+        String installeur = null;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) installeur = getPackageManager().getInstallSourceInfo(getPackageName()).getInstallingPackageName();
+            else installeur = getPackageManager().getInstallerPackageName(getPackageName());
+        } catch (Exception e) { /* inconnu : traité comme un APK de test */ }
+        return !"com.android.vending".equals(installeur);
+    }
+
+    // RG-03 : plantage Java → pile Java dans plantage.txt, puis le gestionnaire d'origine (fermeture habituelle d'Android)
+    private void installerPlantageJava() {
+        final Thread.UncaughtExceptionHandler origine = Thread.getDefaultUncaughtExceptionHandler();
+        final File fichier = new File(getFilesDir(), "plantage.txt");
+        final String entete = "WaForSpeed — rapport de plantage (Java)\nversion : " + versionNom + " (" + versionCode + ")\nappareil : "
+                + Build.MANUFACTURER + " " + Build.MODEL + ", Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n";
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                try (FileOutputStream f = new FileOutputStream(fichier)) {
+                    final StringWriter pile = new StringWriter();
+                    e.printStackTrace(new PrintWriter(pile));
+                    f.write((entete + "thread : " + t.getName() + "\npile Java :\n" + pile + "--- fin du rapport ---\n").getBytes(StandardCharsets.UTF_8));
+                } catch (Throwable ignore) { /* rien de plus à faire pendant un plantage */ }
+                if (origine != null) origine.uncaughtException(t, e);
+            }
+        });
+    }
+
+    // RG-04 : rapport du lancement précédent lu puis renommé en plantage-precedent.txt (un seul gardé) ; null s'il n'y en a pas
+    private String prendreRapportPrecedent() {
+        final File f = new File(getFilesDir(), "plantage.txt");
+        if (!f.exists()) return null;
+        String texte;
+        try (FileInputStream in = new FileInputStream(f)) {
+            final byte[] b = new byte[(int) Math.min(f.length(), 512 * 1024)];
+            int n = 0, k;
+            while (n < b.length && (k = in.read(b, n, b.length - n)) > 0) n += k;
+            texte = new String(b, 0, n, StandardCharsets.UTF_8);
+        } catch (Exception e) { texte = "(rapport illisible : " + e + ")"; }
+        final File precedent = new File(getFilesDir(), "plantage-precedent.txt");
+        if (precedent.exists() && !precedent.delete()) Log.w("WaForSpeed", "PLANTAGE ancien rapport non effacé");
+        final boolean ok = f.renameTo(precedent);
+        Log.i("WaForSpeed", "PLANTAGE rapport précédent trouvé (" + texte.length() + " caractères) → plantage-precedent.txt" + (ok ? "" : " (renommage impossible)"));
+        if (!ok && !f.delete()) Log.w("WaForSpeed", "PLANTAGE rapport non effacé");
+        return texte;
+    }
+
+    // RG-04 : boîte sombre avant le jeu (le jeu se charge derrière et va au menu) ; aucun envoi sans geste du joueur
+    private void proposerRapport(final String rapport) {
+        final AlertDialog boite = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle(R.string.plantage_titre)
+            .setMessage(R.string.plantage_message)
+            .setCancelable(true)
+            .setPositiveButton(R.string.plantage_partager, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface d, int which) {
+                    final Intent envoi = new Intent(Intent.ACTION_SEND);
+                    envoi.setType("text/plain");
+                    envoi.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.plantage_sujet, versionNom));
+                    envoi.putExtra(Intent.EXTRA_TEXT, rapport);
+                    try { startActivity(Intent.createChooser(envoi, getString(R.string.plantage_choisir))); }
+                    catch (ActivityNotFoundException e) { Log.w("WaForSpeed", "PLANTAGE aucune appli pour partager"); }
+                    Log.i("WaForSpeed", "PLANTAGE rapport : « Partager »");
+                }
+            })
+            .setNegativeButton(R.string.plantage_ignorer, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface d, int which) { Log.i("WaForSpeed", "PLANTAGE rapport : « Ignorer »"); }
+            })
+            .create();
+        boite.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface d) {   // boutons aux couleurs du jeu (orange, cyan)
+                boite.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getColor(R.color.orange));
+                boite.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getColor(R.color.cyan));
+            }
+        });
+        boite.show();
+    }
+
     @Override
     protected void onCreate(Bundle etat) {
+        // WFS-126 : avant super.onCreate (qui démarre le thread du jeu) : version, déclencheur de test, plantage Java,
+        // rapport du lancement précédent pris et renommé
+        lireVersion();
+        final Intent depart = getIntent();
+        final boolean demande = depart != null && depart.getBooleanExtra("wfs_plantage", false);
+        final boolean declencheur = demande && apkDeTest();
+        if (demande && !declencheur) Log.i("WaForSpeed", "PLANTAGE déclencheur ignoré (appli installée par le store)");
+        nativeInfosPlantage(versionNom, versionCode, declencheur);
+        installerPlantageJava();
+        final String rapport = prendreRapportPrecedent();
         super.onCreate(etat);
+        if (rapport != null) proposerRapport(rapport);
         lireLien(getIntent());   // WFS-112 : jeu lancé par le lien d'invitation
         Window w = getWindow();
         w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);   // écran toujours allumé
