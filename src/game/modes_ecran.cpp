@@ -9,6 +9,9 @@
 #include "../core/system.h"
 #include "../render/renderer.h"
 #include "../ui/appui.h"
+#include "../ui/ecrans/terrain.h"
+#include "../ui/garage.h"
+#include "course_system.h"
 #include "../ui/text.h"
 #include "course5.h"
 #include "game.h"
@@ -51,6 +54,13 @@ public:
     void onEcran(Ecran, Ecran nouveau, const GameView&) override { if (nouveau != Ecran::Menu) g_ouvert = false; }
     bool onTouch(const Touch& t, const GameView& g) override {
         if (!g_ouvert || g.ecran != Ecran::Menu) return false;
+        if (t.id == doigtBouton_ && !t.down) {   // WFS-115 : relâcher du doigt de « Continuer » / « Retour »
+            appui_.consomme(t.id, false);
+            const int b = bouton_; bouton_ = 0; doigtBouton_ = -1;
+            if (b == 1 && continuer_.contient(t.x, t.y)) valider(g);
+            else if (b == 2 && retour_.contient(t.x, t.y)) { WFS_LOG("modes : « Retour »"); g_ouvert = false; }
+            return true;
+        }
         if (appui_.consomme(t.id, t.down)) return true;
         if (!t.down) return true;
         for (int i = 0; i < 4; i++)
@@ -63,13 +73,17 @@ public:
         if (choix_ == ModeCourse::Course5)
             for (int i = 0; i < 4; i++)
                 if (kms_[i].contient(t.x, t.y)) { appui_.prendre(t.id); km_ = KMS[i]; WFS_LOG("modes : %d km", km_); return true; }
-        if (continuer_.contient(t.x, t.y)) { appui_.prendre(t.id); valider(g); return true; }
-        if (retour_.contient(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("modes : « Retour »"); g_ouvert = false; return true; }
+        // WFS-115 : « Continuer » et « Retour » agissent au relâcher, sur le bouton appuyé. Ils agissaient à l'appui : le
+        // panneau se fermait sous le doigt encore posé, et ses mouvements (Android : un appui par mouvement) arrivaient
+        // comme des appuis neufs à l'écran suivant — sur « Retour » du garage, juste sous « Continuer » en 20/9 : retour au
+        // menu — ou au menu lui-même (« Ta voiture », « Showroom » : garage en mode regarder, « Choisir » → menu)
+        if (continuer_.contient(t.x, t.y)) { appui_.prendre(t.id); bouton_ = 1; doigtBouton_ = t.id; return true; }
+        if (retour_.contient(t.x, t.y)) { appui_.prendre(t.id); bouton_ = 2; doigtBouton_ = t.id; return true; }
         return true;   // le panneau garde tous les touchers
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_ouvert || g.ecran != Ecran::Menu || !ui::fontReady()) return;
-        if (ouverture_) { choix_ = modeCourse() == ModeCourse::Course5 ? ModeCourse::Course5 : ModeCourse::Checkpoint; km_ = kmCourse5(); ouverture_ = false; }
+        if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 ? ModeCourse::Course5 : ModeCourse::Checkpoint; km_ = kmCourse5(); ouverture_ = false; }
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         r.uiRect(0, 0, W, H, hex(BG, 0.86f));
         const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;
@@ -143,12 +157,26 @@ private:
     }
     ModeCourse choix_ = ModeCourse::Checkpoint;
     int km_ = 4;
+    int bouton_ = 0, doigtBouton_ = -1;   // WFS-115 : bouton appuyé (1 Continuer, 2 Retour) et son doigt
     bool lu_ = false;
     Zone cartes_[4], kms_[4], continuer_, retour_;
     ui::FiltreAppui appui_;
 public:
     static bool ouverture_;
+    static ChoixMode* actif_;
+    // banc d'essai (WFS-115) : centre d'une zone du panneau (« continuer », « retour », « carte0 » à « carte3 », « km0 » à « km3 »)
+    bool centre(const std::string& nom, float& x, float& y) const {
+        const Zone* z = nom == "continuer" || nom == "continuer-droite" ? &continuer_ : nom == "retour" ? &retour_ : nullptr;
+        if (nom.size() == 6 && nom.compare(0, 5, "carte") == 0) z = &cartes_[(nom[5] - '0') & 3];
+        if (nom.size() == 3 && nom.compare(0, 2, "km") == 0) z = &kms_[(nom[2] - '0') & 3];
+        if (!z || z->w <= 0) return false;
+        x = z->x + z->w * (nom == "continuer-droite" ? 0.9f : 0.5f); y = z->y + z->h / 2;   // « -droite » : bord droit du bouton
+        return true;
+    }
+    ChoixMode() { actif_ = this; }
+    ~ChoixMode() override { if (actif_ == this) actif_ = nullptr; }
 };
+ChoixMode* ChoixMode::actif_ = nullptr;
 bool ChoixMode::ouverture_ = false;
 
 } // namespace
@@ -161,6 +189,113 @@ bool ouvrirChoixMode() {
 }
 bool choixModeOuvert() { return g_ouvert; }
 void choixModeBanc(bool force) { g_forceBanc = force; if (!force) g_ouvert = false; }
+
+// ---------- banc d'essai (WFS_BANC=parcours, WFS-115) ----------
+// Parcours complet au doigt, comme sur Android : chaque appui = un « down », quelques mouvements (« down » répétés du même
+// doigt, une image chacun), puis le « up ». Chemins : Duel → salon ; Showroom → garage → « Choisir » → menu ; Course à 5
+// (6 km) → garage → « Retour » (un cran : panneau des modes) → garage → « Choisir » → terrain (mode et km gardés) →
+// « Retour » → menu ; Course solo → Checkpoint → garage → « Choisir » → terrain → « Rouler » → course.
+// Captures parcours-mode, parcours-terrain, parcours-course. Rend le nombre d'écarts (0 = parcours conforme).
+int benchParcours(Game& g, Renderer& r, const std::string& out) {
+    courseBenchRules(true);
+    if (!g.init(r, "golf", "ville")) { courseBenchRules(false); WFS_ERR("parcours : chargement impossible"); return 1; }
+    g.setAutopilot(false); g.camMode = 0;
+    choixModeBanc(true);
+    double t = 1500;
+    int erreurs = 0, n = 0;
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; if (++n % 4 == 0) g.render(t); };   // une image dessinée sur 4
+    auto images = [&](int n) { for (int i = 0; i < n; i++) image(); };
+    auto capture = [&](const char* nom) {
+        g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : écran %s, mode %s, %d km", nom, nomEcran(g.ecran()), nomMode(modeCourse()), kmCourse5());
+    };
+    int doigt = 30;
+    auto appuyer = [&](float x, float y) {   // doigt Android : down, 6 mouvements, up (une image dessinée entre chaque)
+        const int id = doigt++;
+        g.render(t);   // zones posées à l'image dessinée juste avant l'appui
+        auto dessinee = [&]() { g.update(1.0 / 60); g.render(t += 1.0 / 60); };   // doigt posé ≈ 100 ms : 6 images dessinées
+        g.onTouch({id, x, y, true}); dessinee();
+        for (int k = 1; k <= 6; k++) { g.onTouch({id, x + 0.4f * k, y, true}); dessinee(); }
+        g.onTouch({id, x + 3, y, false}); dessinee();
+        images(3);
+    };
+    // doigt Android plus rapide que l'image : down, mouvements et up arrivent avant l'image suivante (même boucle d'entrées)
+    auto rafale = [&](float x, float y) {
+        const int id = doigt++;
+        g.render(t);
+        g.onTouch({id, x, y, true});
+        for (int k = 1; k <= 4; k++) g.onTouch({id, x + 0.4f * k, y, true});
+        g.onTouch({id, x + 2, y, false}); images(4);
+    };
+    auto attendu = [&](Ecran e, const char* etape) {
+        if (g.ecran() == e) { WFS_LOG("parcours : %s → écran %s (attendu)", etape, nomEcran(e)); return; }
+        erreurs++; WFS_ERR("parcours : %s → écran %s, attendu %s", etape, nomEcran(g.ecran()), nomEcran(e));
+    };
+    auto verifier = [&](bool ok, const char* quoi) { if (ok) WFS_LOG("parcours : %s (ok)", quoi); else { erreurs++; WFS_ERR("parcours : %s (ÉCHEC)", quoi); } };
+    auto panneau = [&](const char* zone, bool vite = false) {
+        float x, y;
+        if (!ChoixMode::actif_ || !ChoixMode::actif_->centre(zone, x, y)) { erreurs++; WFS_ERR("parcours : zone %s du panneau absente", zone); return; }
+        WFS_LOG("parcours : panneau « %s » à (%.0f, %.0f)", zone, x, y);
+        if (vite) rafale(x, y); else appuyer(x, y);
+    };
+    auto garage = [&](const char* bouton) {
+        float x = 0, y = 0;
+        for (int i = 0; i < 600 && !ecrans::garageBouton(bouton, x, y); i++) image();   // voiture chargée, panneau posé
+        images(30);
+        if (!ecrans::garageBouton(bouton, x, y)) { erreurs++; WFS_ERR("parcours : bouton %s du garage absent", bouton); return; }
+        float cx = 0, cy = 0, rx = 0, ry = 0; ecrans::garageBouton("choisir", cx, cy); ecrans::garageBouton("retour", rx, ry);
+        WFS_LOG("parcours : garage « Choisir » à (%.0f, %.0f), « Retour » à (%.0f, %.0f)", cx, cy, rx, ry);
+        appuyer(x, y);
+    };
+    auto soloOuvert = [&]() { ouvrirChoixMode(); images(10); verifier(choixModeOuvert(), "« Course solo » : panneau des modes ouvert"); };
+    g.allerA(Ecran::Menu); images(30);
+    // 1) Duel → salon
+    soloOuvert(); panneau("carte3"); panneau("continuer", true);   // appui rapide : tout dans la même boucle d'entrées
+    attendu(Ecran::Salon, "Duel puis « Continuer »");
+    g.allerA(Ecran::Menu); images(20);
+    // 2) Showroom (garage ouvert depuis le menu) : « Choisir » ramène au menu, comme avant
+    ecrans::garageRegarder(); g.allerA(Ecran::Garage); images(5);
+    garage("choisir");
+    attendu(Ecran::Menu, "Showroom puis « Choisir »");
+    verifier(!choixModeOuvert(), "Showroom : panneau des modes fermé au retour");
+    // 3) Course à 5, 6 km : Retour du garage = un cran (panneau des modes), puis Choisir → terrain, mode et km gardés
+    soloOuvert(); panneau("carte1"); panneau("km2"); panneau("continuer");
+    attendu(Ecran::Garage, "Course à 5 (6 km) puis « Continuer »");
+    garage("retour");
+    attendu(Ecran::Menu, "garage du parcours puis « Retour »");
+    verifier(choixModeOuvert(), "« Retour » du garage : panneau des modes rouvert (un seul cran)");
+    panneau("continuer");
+    attendu(Ecran::Garage, "« Continuer » de nouveau");
+    garage("choisir");
+    attendu(Ecran::Terrain, "garage du parcours puis « Choisir »");
+    verifier(modeCourse() == ModeCourse::Course5 && kmCourse5() == 6, "mode Course à 5 et 6 km gardés jusqu'au terrain");
+    images(20);
+    // 4) Course solo, Checkpoint : mode → garage → terrain → course
+    g.allerA(Ecran::Menu); images(20);
+    soloOuvert(); panneau("carte0"); images(5);
+    capture("parcours-mode");
+    panneau("continuer-droite");   // bord droit de « Continuer » : au-dessus de « Retour » du garage en 20/9 (cause de WFS-115)
+    attendu(Ecran::Garage, "Checkpoint puis « Continuer » (bord droit, doigt qui bouge)");
+    garage("choisir");
+    attendu(Ecran::Terrain, "garage du parcours puis « Choisir »");
+    verifier(modeCourse() == ModeCourse::Checkpoint, "mode Checkpoint gardé jusqu'au terrain");
+    images(20);
+    capture("parcours-terrain");
+    float rx = 0, ry = 0;
+    if (!ecrans::centreRouler(rx, ry)) { erreurs++; WFS_ERR("parcours : bouton « Rouler » absent"); }
+    else appuyer(rx, ry);
+    for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
+    attendu(Ecran::Course, "terrain puis « Rouler »");
+    g.setAutopilot(true); images(60 * 5);
+    capture("parcours-course");
+    g.setAutopilot(false);
+    WFS_LOG("parcours : %d écart(s)", erreurs);
+    choixModeBanc(false);
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
+    courseBenchRules(false);
+    g.shutdown();
+    return erreurs;
+}
 
 WFS_SYSTEM(ChoixMode, 458)   // interface (400-499) : par-dessus le menu (450), le salon (453) et la pause (455)
 
