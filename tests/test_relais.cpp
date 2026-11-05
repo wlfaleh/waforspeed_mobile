@@ -186,9 +186,10 @@ static void testBoutEnBout() {
     // 2) prêts → départ commun, même graine (même course)
     a.s.setReady(true); b.s.setReady(true);
     bool pa = false, pb = false;
-    jusqua([&] { pa = pa || a.s.checkStart(); pb = pb || b.s.checkStart(); return pa && pb; }, 3000);
-    VERIFIE(pa && pb && a.s.seed() == b.s.seed() && a.s.round() == 1 && b.s.round() == 1, "départ commun, même graine (%u / %u)", a.s.seed(), b.s.seed());
-    VERIFIE(std::abs(a.s.trafficClock() - b.s.trafficClock()) < 0.1, "même horloge de course (%.3f / %.3f)", a.s.trafficClock(), b.s.trafficClock());
+    jusqua([&] { pa = pa || a.s.checkStart(); pb = pb || b.s.checkStart(); return pa && pb; }, 10000);   // WFS-135 (ANO-61) : 10 s (CI chargée)
+    VERIFIE(pa && pb && a.s.seed() == b.s.seed() && a.s.round() == 1 && b.s.round() == 1, "départ commun, même graine (%u / %u ; partis %d / %d, manche %d / %d, horloge %.3f / %.3f)",
+            a.s.seed(), b.s.seed(), pa, pb, a.s.round(), b.s.round(), a.s.trafficClock(), b.s.trafficClock());
+    VERIFIE(std::abs(a.s.trafficClock() - b.s.trafficClock()) < 0.1, "même horloge de course (%.3f / %.3f, manche %d / %d)", a.s.trafficClock(), b.s.trafficClock(), a.s.round(), b.s.round());
 
     // 3) course : positions envoyées 10 fois par seconde, vues lissées chez l'autre
     a.pl.reset(carById("golf")); b.pl.reset(carById("m4"));
