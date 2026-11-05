@@ -13,6 +13,7 @@
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "text.h"
+#include "appui.h"   // WFS-113
 #include "../platform/manette.h"   // WFS-22
 #include "../audio/sfx.h"   // WFS-96 : son du changement de voiture
 
@@ -193,6 +194,7 @@ public:
 
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
         if (nouveau == Ecran::Garage) {   // openGarage : voiture de la partie, plateau au cap de départ, panneau qui glisse
+            appui_.vider();   // WFS-113 : aucun doigt retenu d'un écran précédent
             index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(),
@@ -264,6 +266,9 @@ public:
 
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Garage) return false;
+        // WFS-113 : un doigt = un appui. Le doigt qui a actionné un bouton est ignoré jusqu'à ce qu'il se relève
+        // (sur Android, ses micro-mouvements arrivent aussi comme des appuis : la flèche sautait des voitures)
+        if (appui_.consomme(t.id, t.down)) return true;
         if (t.down) {
             if (doigt_ >= 0 && t.id == doigt_) {   // glisser : tourner la voiture (0,01 rad par pixel)
                 if (glisse_) yaw_ = yaw0_ + (t.x - x0_) * 0.01f * (720.f / g.uiHeight);
@@ -271,12 +276,13 @@ public:
             }
             if (doigt_ >= 0) return true;
             // boutons : action à l'appui (comme les boutons de la pause)
-            if (g_z.prev.contient(t.x, t.y)) { cycle(-1); return true; }
-            if (g_z.next.contient(t.x, t.y)) { cycle(1); return true; }
-            for (int i = 0; i < CAR_COUNT; i++) if (g_z.points[i].contient(t.x, t.y)) { if (i != index_) aller(i, i > index_ ? 1 : -1); return true; }
+            if (g_z.prev.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(-1); return true; }
+            if (g_z.next.contient(t.x, t.y)) { appui_.prendre(t.id); cycle(1); return true; }
+            for (int i = 0; i < CAR_COUNT; i++) if (g_z.points[i].contient(t.x, t.y)) { appui_.prendre(t.id); if (i != index_) aller(i, i > index_ ? 1 : -1); return true; }
             for (int i = 0; i < NB_PEINTURES; i++)
-                if (g_z.peintures[i].contient(t.x, t.y)) { peinture_[index_] = i; WFS_LOG("garage : peinture %s", PAINTS[i].nom); return true; }
+                if (g_z.peintures[i].contient(t.x, t.y)) { appui_.prendre(t.id); peinture_[index_] = i; WFS_LOG("garage : peinture %s", PAINTS[i].nom); return true; }
             if (g_z.choisir.contient(t.x, t.y)) {
+                appui_.prendre(t.id);
                 if (!voiture_.ok) return true;   // « Chargement… » : bouton inactif
                 const CarDef& c = CARS[index_];
                 WFS_LOG("garage : « Choisir » %s %s, peinture %s", c.brand, c.model, PAINTS[peinture_[index_]].nom);
@@ -285,7 +291,7 @@ public:
                 choisi_ = true; g.allerA(Ecran::Menu);
                 return true;
             }
-            if (g_z.retour.contient(t.x, t.y)) { WFS_LOG("garage : « Retour »"); choisi_ = false; g.allerA(Ecran::Menu); return true; }
+            if (g_z.retour.contient(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("garage : « Retour »"); choisi_ = false; g.allerA(Ecran::Menu); return true; }
             doigt_ = t.id; glisse_ = true; x0_ = t.x; yaw0_ = yaw_; tAppui_ = g.time;   // gDrag
             return true;
         }
@@ -477,6 +483,7 @@ private:
     float yaw_ = CAP_DEPART, slide_ = 0, yaw0_ = 0, x0_ = 0;
     double t0_ = -1, tAppui_ = 0;
     int doigt_ = -1; bool glisse_ = false, choisi_ = false;
+    ui::FiltreAppui appui_;   // WFS-113 : un doigt = un appui
 };
 Garage* g_garage = nullptr;
 } // namespace
@@ -569,6 +576,19 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
     // « Retour » : du garage au menu sans changement
     g.allerA(Ecran::Garage); for (int i = 0; i < 30; i++) image();
     if (garageBouton("retour", x, y)) { toucher(15, x, y); for (int i = 0; i < 30; i++) image(); WFS_LOG("garage : « Retour » → écran %s", nomEcran(g.ecran())); }
+    g.allerA(Ecran::Garage); for (int i = 0; i < 30; i++) image();
+    // WFS-113 : 3 appuis sur « suivante », chacun avec des micro-mouvements du doigt (Android : ACTION_MOVE = appui) :
+    // exactement une voiture de plus à chaque appui (showroom-suivante-1/2/3)
+    for (int k = 1; k <= 3 && garageBouton("suivant", x, y); k++) {
+        const int avant = g_garage ? g_garage->index() : -1;
+        g.onTouch({20 + k, x, y, true});
+        for (int m = 0; m < 6; m++) { g.onTouch({20 + k, x + (m % 2 ? 2.f : -2.f), y + 1.f, true}); image(); }
+        g.onTouch({20 + k, x, y, false});
+        for (int i = 0; i < 40; i++) image();
+        capture("showroom-suivante-" + std::to_string(k), "une voiture de plus par appui malgré les micro-mouvements");
+        WFS_LOG("showroom (WFS-113) : appui %d sur « suivante » → %s (%d → %d)", k, g_garage ? CARS[g_garage->index()].model : "?", avant + 1,
+                g_garage ? g_garage->index() + 1 : 0);
+    }
     g.shutdown();
 }
 

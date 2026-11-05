@@ -44,7 +44,7 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
-        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_binarypack && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_masquage && ./build/test_conduite_libre && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
+        run: ./build/test_track && ./build/test_systems && ./build/test_traffic tests/trafic_web_ref.txt && ./build/test_cartes tests/cartes_web_ref.txt && ./build/test_course tests/course_web_ref.txt && ./build/test_audio assets && ./build/test_duel && ./build/test_binarypack && ./build/test_effets && ./build/test_roues assets && ./build/test_trafic_vivant && ./build/test_qualite && ./build/test_appui && ./build/test_masquage && ./build/test_conduite_libre && ./build/test_sauvegarde && ./build/test_manette && python3 tools/qa/verifier_licences.py   # WFS-22 : manettes, licences
       - name: Captures du rendu (${{ matrix.groupe }})
         run: |
           mkdir -p captures

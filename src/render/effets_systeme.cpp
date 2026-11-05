@@ -32,13 +32,6 @@ namespace {
 constexpr int NIV = 4;               // niveaux de fondu de la fumée (un appel de dessin chacun)
 constexpr float EXPO = 0.85f;        // exposition de la course (Game::render)
 
-// fumée : ancienne conversion couleur → HDR (ACES ≈ 0,214·x, juste près du noir seulement) ; remplacée par
-// effets::versHdr dans WFS-107 (fumée trop claire au braquage, « feu blanc »)
-vec3 hdr(const vec3& c) {
-    auto f = [](float v) { return std::pow(std::max(v, 0.f), 2.2f) / (0.214f * EXPO); };
-    return {f(c.x), f(c.y), f(c.z)};
-}
-
 // WFS-101 : voiture du trafic au contact du joueur juste après hitCar (qui l'a repoussée de 0,25 m) : la plus proche,
 // à moins de 1 m en long et de 0,6 m en travers au-delà du contact (emprise tournée de Traffic::collide) ;
 // nullptr : aucune (choc contre un décor). dz : écart en long (relZ, > 0 si elle est devant).
@@ -67,21 +60,24 @@ public:
         r_ = &r; parts_.vider(); g_parts = &parts_;
         actif_ = !r.vk().offscreen || g_banc;
         parts_.setReduit(r.gpuLogiciel());   // RG-05 : qualité basse (GPU logiciel) → moitié moins de particules
-        // texture radiale (TEXS.radial du jeu web) : blanc, alpha qui décroît du centre au bord
-        constexpr int T = 64;
+        // texture radiale (TEXS.radial du jeu web, 128 × 128) : blanc, alpha 1 au centre, 0,45 à 35 % du rayon, 0 au bord
+        // (WFS-107 RG-05 : bouffées rondes et douces ; avant : (1 − r)², plus dure au centre)
+        constexpr int T = 128;
         std::vector<uint8_t> px(T * T * 4);
         for (int y = 0; y < T; y++) for (int x = 0; x < T; x++) {
-            const float dx = (x + 0.5f) / T * 2 - 1, dy = (y + 0.5f) / T * 2 - 1, d = std::sqrt(dx * dx + dy * dy);
-            const float a = std::clamp(1 - d, 0.f, 1.f);
+            const float dx = (x + 0.5f) / T * 2 - 1, dy = (y + 0.5f) / T * 2 - 1;
             uint8_t* p = &px[(size_t)(y * T + x) * 4];
-            p[0] = p[1] = p[2] = 255; p[3] = (uint8_t)std::lround(a * a * 255);
+            p[0] = p[1] = p[2] = 255; p[3] = (uint8_t)std::lround(effets::radial(std::sqrt(dx * dx + dy * dy)) * 255);
         }
         tex_ = r.vk().uploadTexture(px.data(), T, T, false);
-        // fumée : albédo noir (pas d'éclairage), couleur par la lumière émise, transparence par la texture
+        // fumée : PointsMaterial du jeu web (non éclairé) : albédo noir et metal 1 → ni diffus, ni reflet du ciel, ni
+        // reflet du soleil (f0 = 0, rugosité 1) : seule la lumière émise reste (avec metal 0, le reflet ajoutait ≈ 0,01 à
+        // 0,03 en HDR, un quart de la couleur de jour). WFS-107 (RG-04) : couleur du jeu web convertie par versHdr (comme
+        // les étincelles de WFS-101) ; l'ancienne conversion (ACES ≈ 0,214·x) la rendait ≈ 4,5 fois trop claire : gris
+        // presque blanc à l'écran (« feu blanc » au braquage). Transparence 0,45 × texture, mélange normal.
         for (int k = 0; k < NIV; k++) {
-            Material m; m.color = {0, 0, 0, 0.45f}; m.rough = 1; m.metal = 0;
-            const float f = (k + 0.5f) / NIV;   // fondu moyen du niveau
-            m.emissive = hdr(vec3{0.32f, 0.32f, 0.352f} * f);
+            Material m; m.color = {0, 0, 0, 0.45f}; m.rough = 1; m.metal = 1;
+            m.emissive = effets::fumeeHdr((k + 0.5f) / NIV, EXPO);   // fondu moyen du niveau
             mats_[k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
             mats_[k].flags |= MAT_BLEND | MAT_DOUBLE;
             for (int b = 0; b < 2; b++) {   // réserve pleine (140 bouffées) : jamais réallouée pendant la partie
@@ -104,6 +100,7 @@ public:
     // pas fixe : déclencheurs (comme update.js / scene.js), puis mouvement des particules
     void update(double dtd, const GameView& g) override {
         if (!actif_ || !g.player || !g.track || g.sceneDediee) return;
+        parts_.setReduireMouvements(reglagesRessenti().reduireMouvements);   // WFS-107 (RG-06) : ni étincelle ni fumée
         const float dt = (float)dtd;
         const Player& pl = *g.player;
         const Course* c = activeCourse();
@@ -195,9 +192,11 @@ public:
         if (!etincelles_.empty()) r.drawQuads(etincelles_.data(), (int)etincelles_.size() / 4, matEtincelles_);
         const int b = buf_; buf_ ^= 1;   // double tampon : l'image précédente peut encore lire l'autre
         for (int k = 0; k < NIV; k++) { vtx_[k].clear(); idx_[k].clear(); }
-        // fumée : carré de 2,4 m face à la caméra ; centre remonté pour que son bas reste au-dessus de la route
-        // (sinon la route le coupe net : bandes à bord horizontal sur les captures)
-        const float taille = parts_.smoke().taille, hs = taille * 0.5f * std::abs(up.y);
+        // fumée : carré face à la caméra de 2,4 / proj[1][1] m (WFS-107 RG-05 : points de 2,4 avec sizeAttenuation du jeu
+        // web, même règle que les étincelles : ≈ 1,33 m en vue Proche (58°) ; avant : 2,4 m, ≈ 1,8 fois trop grand) ;
+        // centre remonté pour que son bas reste au-dessus de la route (sinon la route le coupe net : bandes à bord
+        // horizontal sur les captures)
+        const float taille = parts_.smoke().taille / p11, hs = taille * 0.5f * std::abs(up.y);
         for (auto q : parts_.smoke().p) {
             if (!q.vivante()) continue;
             q.p.y = std::max(q.p.y, q.floor + hs);

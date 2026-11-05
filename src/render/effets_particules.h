@@ -41,6 +41,19 @@ inline float versHdr(float c, float exposition) {
 }
 inline vec3 versHdr(const vec3& c, float exposition) { return {versHdr(c.x, exposition), versHdr(c.y, exposition), versHdr(c.z, exposition)}; }
 
+// WFS-107 (RG-04) : lumière émise par la fumée (couleur du jeu web × fondu, k du jeu web) : gris moyen des bouffées
+// (k = 0,25 à 0,40 → 0,32, bleu × 1,1) converti par versHdr, comme les étincelles : ressort à l'écran avec le gris du jeu
+// web, jamais blanc, sous le seuil du bloom de nuit
+inline vec3 fumeeHdr(float fondu, float exposition) { return versHdr(vec3{0.32f, 0.32f, 0.352f} * std::clamp(fondu, 0.f, 1.f), exposition); }
+
+// WFS-107 (RG-05) : texture des particules, TEXS.radial du jeu web (renderer.js) : dégradé blanc dont l'alpha vaut 1 au
+// centre (r = 0), 0,45 à r = 0,35 et 0 au bord (r = 1, r = distance au centre / demi-côté) ; rien au-delà (coins)
+inline float radial(float r) {
+    r = std::max(r, 0.f);
+    if (r >= 1) return 0;
+    return r < 0.35f ? 1.f - 0.55f * r / 0.35f : 0.45f * (1.f - r) / 0.65f;
+}
+
 struct Particule {
     float life = 0, max = 1;     // durée restante, durée totale (s)
     vec3 p{0, -999, 0}, v{};     // position (m), vitesse (m/s)
@@ -63,11 +76,15 @@ public:
     Particules();
     // qualité basse (RG-05) : moitié moins de particules émises
     void setReduit(bool r) { reduit_ = r; }
+    // WFS-107 (RG-06) : « réduire les mouvements » (reduceMotion du jeu web) : plus aucune particule émise, ni étincelle
+    // ni fumée (emit() du jeu web) ; celles déjà en vie finissent leur course
+    void setReduireMouvements(bool r) { reduireMouvements_ = r; }
     // étincelles au point de contact ; vel = vitesse du véhicule dans le monde (m/s) ; floor = hauteur du sol ;
-    // rend le nombre réellement émis (moitié en qualité basse)
+    // rend le nombre réellement émis (moitié en qualité basse, aucune si « réduire les mouvements »)
     int etincelles(const vec3& at, float floor, const vec3& vel, int count = 40);
-    // sol : hauteur de la route sous la bouffée (affichage : le carré ne passe pas sous la route) ; par défaut at.y − 0,5
-    void fumee(const vec3& at, int count = 2, float sol = -1e9f);
+    // sol : hauteur de la route sous la bouffée (affichage : le carré ne passe pas sous la route) ; par défaut at.y − 0,5 ;
+    // rend le nombre de bouffées émises
+    int fumee(const vec3& at, int count = 2, float sol = -1e9f);
     void update(float dt);
     void vider();
     const Reserve& sparks() const { return sparks_; }
@@ -78,7 +95,7 @@ private:
     float rnd();                     // [0, 1)
     int emit(Reserve& s, const vec3& at, float floor, int count, float spread, const vec3& base, int couleur, float life);
     Reserve sparks_, smoke_;
-    bool reduit_ = false;
+    bool reduit_ = false, reduireMouvements_ = false;
 };
 
 } // namespace wfs::effets
