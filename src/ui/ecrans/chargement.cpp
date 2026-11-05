@@ -9,8 +9,6 @@
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../text.h"
-#include "../echelle.h"   // WFS-102
-#include "../../game/commandes_tactiles.h"   // WFS-102 (RG-15) : fondu en cours
 
 namespace wfs {
 namespace ecrans {
@@ -21,18 +19,14 @@ static const unsigned BG = 0x0A0B10, SURFACE2 = 0x1E2130, TEXTE = 0xF2F4F8, MUTE
                       ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF;
 static const char* MESSAGE_ECHEC = "Le moteur 3D n'a pas pu démarrer sur cet appareil.";   // main.js boot()
 static float clampv(float v, float a, float b) { return std::max(a, std::min(b, v)); }
-// WFS-102 (RG-10) : bouton de l'écran d'erreur (zone posée à la dernière image), doigt qui le tient, demande, libellé
-static struct { float x = 0, y = 0, w = 0, h = 0; } g_reessayer;
-static int g_doigtErreur = -1; static bool g_reessai = false, g_quitter = false;
 
 MiseEnPage miseEnPage(float W, float H) {
     MiseEnPage m;
-    m.k = ui::echelle(W, H);   // WFS-102 (RG-01) : 1 px CSS = 1 dp (k = 1 en 1280x720)
+    m.k = H / 720.f;   // 1 px CSS = k pixels logiques (720 p de référence) : même aspect à 1280x720 et 2400x1080
     m.logo = clampv(0.14f * W / m.k, 64, 140) * m.k;                     // clamp(64px, 14vw, 140px)
     m.x = clampv(0.06f * W / m.k, 0, 96) * m.k + 16 * m.k;               // margin-left clamp(0, 6vw, 96px) + gouttière
     m.largeur = std::min(600 * m.k, W - m.x - 16 * m.k);                // max-width: 600px
     m.sur = 12 * m.k; m.gap = 22 * m.k; m.ligne = m.logo * 0.82f;
-    if (ui::compact(W, H)) { m.logo = 56 * m.k; m.gap = 10 * m.k; m.ligne = m.logo * 0.82f; }   // WFS-102 (RG-02) : téléphone couché
     m.hauteurBloc = m.sur + m.gap + 2 * m.ligne;
     return m;
 }
@@ -70,20 +64,6 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     const MiseEnPage m = miseEnPage(W, H);
     const float k = m.k, x = m.x, largeur = m.largeur, gap = m.gap;
     r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
-    // WFS-102 (RG-10, ANO-39) : reflets de .screen--loading : radial-gradient(120% 60% at 50% 110%, rgba(255,106,0,.14))
-    // et radial-gradient(80% 50% at 85% 100%, rgba(0,229,255,.10)), en éventails de quadrilatères à couleurs par sommet
-    auto reflet = [&](float cx, float cy, float rx, float ry, const vec4& c) {
-        const int N = 48;
-        for (int i = 0; i < N; i++) {
-            const float a0 = 6.2831853f * i / N, a1 = 6.2831853f * (i + 1) / N;
-            const UiVertex q[4] = {{cx, cy, -1, -1, c.x, c.y, c.z, c.w}, {cx, cy, -1, -1, c.x, c.y, c.z, c.w},
-                                   {cx + rx * std::cos(a1), cy + ry * std::sin(a1), -1, -1, c.x, c.y, c.z, 0},
-                                   {cx + rx * std::cos(a0), cy + ry * std::sin(a0), -1, -1, c.x, c.y, c.z, 0}};
-            r.uiQuad(q);
-        }
-    };
-    reflet(W * 0.5f, H * 1.1f, W * 1.2f, H * 0.6f, hex(ACCENT, 0.14f * op));
-    reflet(W * 0.85f, H * 1.0f, W * 0.8f, H * 0.5f, hex(ACCENT2, 0.10f * op));
     const float barre = 6 * k, txt = 19 * k;   // libellé : 19 px à 720 p (à 16 px, « 3D » se lisait « 30 »)
     const float total = m.hauteurBloc + gap + barre + 10 * k + txt;
     float y = std::max(16 * k, (H - total) / 2);
@@ -103,15 +83,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     y += barre + 10 * k;
     // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec
     if (!police) return;
-    if (erreur) {   // WFS-102 (RG-10) : message 16 px et bouton « Réessayer » (ou « Quitter » si le moteur ne peut pas repartir)
-        ui::text(r, x, y, 16 * k, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
-        const float tp = 20 * k, bh = 56 * k, by = y + 16 * k + 24 * k;
-        const std::string t = ui::majuscules(g_quitter ? "Quitter" : "Réessayer");
-        const float bw = ui::width(tp, t, 0.12f) + 56 * k;
-        g_reessayer = {x, by, bw, bh};
-        ui::biseau(r, x, by, bw, bh, 14 * k, hex(ACCENT, op));
-        ui::text(r, x + bw / 2, by + (bh - tp) / 2, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
-    }
+    if (erreur) ui::text(r, x, y, txt, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
     else ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
 }
 
@@ -156,11 +128,11 @@ static bool g_fonduArme = false, g_fonduParti = false; static double g_fonduT0 =
 void Chargement::fin() {
     etape(1, nullptr);   // 100 % : la dernière étape est finie
     WFS_LOG("chargement : total %s s", ui::decimal(nowSeconds() - t0_, 2).c_str());
-    g_fonduArme = true; g_fonduParti = false; fonduChargement() = true;   // WFS-102 (RG-15)
+    g_fonduArme = true; g_fonduParti = false;
 }
 
-void Chargement::erreur(bool quitter) {
-    erreur_ = true; g_quitter = quitter; g_reessai = false; g_doigtErreur = -1;
+void Chargement::erreur() {
+    erreur_ = true;
     WFS_ERR("chargement : échec à l'étape « %s » — %s", libelle_.c_str(), MESSAGE_ECHEC);
     dessiner();
 }
@@ -171,22 +143,6 @@ void Chargement::dessiner() {
     if (apresImage) apresImage(-1);
 }
 
-// WFS-102 (RG-10) : appui « au lever du doigt » sur le bouton de l'écran d'erreur (même règle que les autres écrans)
-bool Chargement::toucher(int id, float x, float y, bool down) {
-    if (!erreur_) return false;
-    const bool dans = x >= g_reessayer.x && x <= g_reessayer.x + g_reessayer.w && y >= g_reessayer.y && y <= g_reessayer.y + g_reessayer.h;
-    if (down) { if (g_doigtErreur < 0) g_doigtErreur = dans ? id : -2; return true; }
-    if (id == g_doigtErreur && dans) { g_reessai = true; WFS_LOG("chargement : « %s »", g_quitter ? "Quitter" : "Réessayer"); }
-    if (id == g_doigtErreur || g_doigtErreur == -2) g_doigtErreur = -1;
-    return true;
-}
-bool Chargement::reessaiDemande() {
-    if (!g_reessai) return false;
-    g_reessai = false;
-    if (!g_quitter) erreur_ = false;   // la plateforme relance le chargement
-    return true;
-}
-
 Chargement& chargement() { static Chargement c; return c; }
 
 // fondu de 300 ms (@keyframes screen-in) : commence à la première image de la scène après fin()
@@ -194,7 +150,7 @@ float opaciteFondu(double temps) {
     if (!g_fonduArme) return 0;
     if (!g_fonduParti) { g_fonduParti = true; g_fonduT0 = temps; }
     const double d = temps - g_fonduT0;
-    if (d < 0 || d >= 0.3) { g_fonduArme = false; fonduChargement() = false; return 0; }
+    if (d < 0 || d >= 0.3) { g_fonduArme = false; return 0; }
     return (float)(1 - d / 0.3);
 }
 
@@ -236,13 +192,6 @@ void benchChargement(Game& g, Renderer& r, const std::string& out, double depuis
     if (!g.init(r, "golf", "ville", Chargement::progression)) ch.erreur(); else WFS_ERR("chargement : l'échec attendu n'a pas eu lieu");
     racine(true);
     ch.apresImage = nullptr;
-    // WFS-102 (RG-10) : appui sur « Réessayer » (posé puis levé) → relance demandée, écran d'erreur quitté
-    {
-        const float bx = g_reessayer.x + g_reessayer.w / 2, by = g_reessayer.y + g_reessayer.h / 2;
-        ch.toucher(3, bx, by, true); ch.toucher(3, bx, by, false);
-        const bool demande = ch.reessaiDemande();
-        WFS_LOG("chargement : « Réessayer » %s, écran d'erreur %s", demande ? "demandé" : "NON demandé (ÉCHEC)", ch.enErreur() ? "encore affiché" : "quitté");
-    }
     g.shutdown();
 }
 
