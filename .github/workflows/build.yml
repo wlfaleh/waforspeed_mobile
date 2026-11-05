@@ -126,7 +126,7 @@ jobs:
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" "platforms;android-35" "build-tools;35.0.0" > /dev/null
       - name: Construction de l'APK et de l'AAB
         working-directory: android
-        run: gradle --no-daemon assembleRelease bundleRelease
+        run: gradle --no-daemon testReleaseUnitTest assembleRelease bundleRelease   # WFS-132 : + tests JUnit (MiseAJourTest)
       - name: Renommer
         run: cp android/app/build/outputs/apk/release/app-release.apk WaForSpeed.apk
       # WFS-118 (RG-05) : l'APK est signé avec la clé de test fixe du dépôt (android/waforspeed-test.keystore) ; la même
