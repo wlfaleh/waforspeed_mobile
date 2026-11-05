@@ -3651,3 +3651,21 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Correctif : défauts de `src/core/configgame.h` = valeurs de l'utilisateur (accroche noyau de 3 lignes) ; `sauvegarde.cpp` : score de poursuite relu borné à 1000 au lieu de 100 (le record d'une poursuite à 1000 points était perdu au redémarrage : vrai défaut) ; tests adaptés (test_poursuite relatif au score de départ, test_systems, test_configgame, test_records).
 - Vérifié : 26 tests CPU, bancs records et course5 à 0 écart. Fusion d1fa824 (branche `fix/configgame-utilisateur`, hors ticket car CI de main cassée).
 - À suivre : poursuite en Basse +90 appels de dessin (cible 60, WFS-119 donnait +40), probablement la caméra plus proche ; signalé à WFS-134.
+
+### 2026-11-05 21:44:07 — configgame.json : analyse du lien dynamique des 68 clés, correctifs sur la branche fix/configgame-dynamique (Claude, session 0183bv2V)
+- **Demande de l'utilisateur** : vérifier que toutes les clés de `configgame.json` sont reliées dynamiquement au code, puis corriger tout de suite.
+- **Analyse** : 65 clés sur 68 étaient bien reliées, par des références vers `g_configJeu` ou par `config()`. Le fichier est relu à chaque `Game::init`, et aucune copie n'était figée au démarrage.
+- **Défauts trouvés** :
+  1. `qualite.plancher_moyenne` sans effet : `plancher()` renvoyait 0,9 en dur, et l'alias `PLANCHER` n'était jamais lu.
+  2. Les textes de l'écran des modes étaient figés : « 60 s au départ, +30 s » et « 4 ordinateurs ».
+  3. `test_configgame` imposait l'égalité entre le fichier et le code : toute retouche à la main de `configgame.json` cassait la CI (cas de `e23fa51`).
+  4. Doublons : borne 1000 recopiée dans `sauvegarde.cpp`, `VUES[].fov` jamais lu et différent de la config, commentaires de valeurs périmés.
+- **Fait** (commit 6b49595, branche `fix/configgame-dynamique`, poussée, **pas encore fusionnée**) :
+  - `plancher()` lit la config ;
+  - les descriptions des modes sont construites depuis la config ;
+  - `SCORE_POURSUITE_MAX` est partagé par la table et la sauvegarde ;
+  - `VUES[].fov` est supprimé, et `test_systems` lit la config ;
+  - `test_configgame` vérifie validité et bornes, et liste les différences avec le code sans échouer.
+- **Hors zone** : fichiers E0, E3, E4 et E8, touchés sur ordre direct de l'utilisateur (« change le nécessaire tout de suite »), sans ticket du PO.
+- **Vérification locale** : compilation et 26 tests CPU verts ; `test_configgame` avec le fichier du dépôt : OK, 0 différence.
+- **Non fait** : la preuve avec un fichier modifié (départ 45 s, bonus 20 s, 3 ordinateurs, plancher 0,7), interrompue par l'utilisateur ; la CI de la branche ; la fusion et la ligne `qa/Check.md`. Le nom « Course à 5 » reste fixe, même si le nombre d'ordinateurs est réglable de 1 à 4 : c'est une décision produit, à trancher par le PO.
