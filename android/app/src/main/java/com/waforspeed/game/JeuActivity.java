@@ -14,6 +14,9 @@
 //   - rapport de plantage (WFS-126) : plantage Java écrit dans plantage.txt (RG-03) ; au lancement suivant, boîte
 //     « Le jeu s'est fermé la dernière fois » avec « Partager le rapport » / « Ignorer » (RG-04) ; déclencheur de test
 //     `--ez wfs_plantage true`, APK de test seulement (RG-05). Le plantage natif est écrit par plantage.cpp.
+//   - nouvelle version (WFS-132) : au lancement, Release `apercu` lue dans un thread d'arrière-plan (au plus toutes les
+//     6 h) ; boîte « Nouvelle version disponible » / « Télécharger » si la construction distante est plus récente
+//     (règle dans MiseAJour.java) ; déclencheur de test `--ez wfs_maj_test true` ; boutons de volume sur le son du jeu.
 package com.waforspeed.game;
 
 import android.app.AlertDialog;
@@ -22,12 +25,15 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.hardware.input.InputManager;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
@@ -39,7 +45,11 @@ import android.view.WindowManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.io.PrintWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -183,6 +193,104 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         boite.show();
     }
 
+    // ---------- nouvelle version de l'APK (WFS-132) ----------
+    private static final String MAJ_SOURCE = "https://api.github.com/repos/wlfaleh/waforspeed_mobile/releases/tags/apercu";
+    private static final long MAJ_ECART_MS = 6L * 3600 * 1000;   // RG-01 : au plus une fois toutes les 6 h
+    private static final long MAJ_FENETRE_MS = 8000;              // RG-06 : réponse montrée seulement dans les 8 s
+    private static final int MAJ_DELAI_MS = 5000;                 // RG-01 : connexion et lecture
+
+    // RG-01 / RG-06 : jamais sur le thread du jeu ni de l'interface ; le démarrage n'attend jamais la réponse
+    private void verifierMiseAJour(boolean plantageAffiche, boolean test) {
+        final SharedPreferences prefs = getSharedPreferences("wfs_maj", MODE_PRIVATE);
+        if (test) {   // RG-08 : boîte avec N = versionCode + 1, sans réseau
+            Log.i("WaForSpeed", "MISEAJOUR déclencheur de test");
+            proposerMiseAJour(new MiseAJour.Proposition(versionCode + 1, "0000000",
+                "https://github.com/wlfaleh/waforspeed_mobile/releases/download/apercu/WaForSpeed.apk"), prefs);
+            return;
+        }
+        if (plantageAffiche) { Log.i("WaForSpeed", "MISEAJOUR reportée (boîte de plantage affichée)"); return; }
+        if (versionCode == 1) { Log.i("WaForSpeed", "MISEAJOUR APK hors CI (versionCode 1) : aucune vérification"); return; }
+        final long maintenant = System.currentTimeMillis();
+        if (maintenant - prefs.getLong("derniere", 0) < MAJ_ECART_MS) { Log.i("WaForSpeed", "MISEAJOUR déjà vérifiée il y a moins de 6 h"); return; }
+        final long debut = SystemClock.elapsedRealtime();
+        final int code = versionCode;
+        final int ignoree = prefs.getInt("ignoree", 0);
+        final Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String raison;
+                try {
+                    final HttpURLConnection c = (HttpURLConnection) new URL(MAJ_SOURCE).openConnection();
+                    c.setConnectTimeout(MAJ_DELAI_MS);
+                    c.setReadTimeout(MAJ_DELAI_MS);
+                    c.setRequestProperty("Accept", "application/vnd.github+json");
+                    c.setRequestProperty("User-Agent", "WaForSpeed-Android");
+                    try {
+                        final int http = c.getResponseCode();
+                        if (http != 200) { Log.i("WaForSpeed", "MISEAJOUR erreur HTTP " + http); return; }
+                        final ByteArrayOutputStream tampon = new ByteArrayOutputStream();
+                        try (InputStream in = c.getInputStream()) {
+                            final byte[] b = new byte[16384];
+                            int k;
+                            while ((k = in.read(b)) > 0 && tampon.size() < 4 * 1024 * 1024) tampon.write(b, 0, k);
+                        }
+                        final MiseAJour.Proposition p = MiseAJour.analyser(new String(tampon.toByteArray(), StandardCharsets.UTF_8), code, ignoree);
+                        if (SystemClock.elapsedRealtime() - debut > MAJ_FENETRE_MS) { Log.i("WaForSpeed", "MISEAJOUR réponse trop tardive : au prochain lancement"); return; }
+                        prefs.edit().putLong("derniere", maintenant).apply();
+                        if (p == null) { Log.i("WaForSpeed", "MISEAJOUR rien à proposer (installée " + code + ", ignorée " + ignoree + ")"); return; }
+                        Log.i("WaForSpeed", "MISEAJOUR construction " + p.numero + " (" + p.commit + ") proposée, installée " + code);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() { if (!isFinishing() && !isDestroyed()) proposerMiseAJour(p, prefs); }
+                        });
+                    } finally { c.disconnect(); }
+                } catch (Exception e) {
+                    Log.i("WaForSpeed", "MISEAJOUR sans réseau ou réponse illisible : " + e.getClass().getSimpleName());
+                }
+            }
+        }, "wfs-miseajour");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    // RG-04 / RG-05 : boîte sombre comme celle du plantage ; « Plus tard », Retour ou toucher dehors : N mémorisée
+    private void proposerMiseAJour(final MiseAJour.Proposition p, final SharedPreferences prefs) {
+        final AlertDialog boite = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Nouvelle version disponible")
+            .setMessage("Construction " + p.numero + " (commit " + p.commit + "). Tu as la construction " + versionCode + ". Ta sauvegarde est gardée.")
+            .setCancelable(true)
+            .setPositiveButton("Télécharger", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface d, int which) {
+                    Log.i("WaForSpeed", "MISEAJOUR « Télécharger » " + p.numero);
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(p.adresseApk))); }
+                    catch (ActivityNotFoundException e) { Log.w("WaForSpeed", "MISEAJOUR aucun navigateur"); }
+                }
+            })
+            .setNegativeButton("Plus tard", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface d, int which) { plusTard(p, prefs); }
+            })
+            .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface d) { plusTard(p, prefs); }
+            })
+            .create();
+        boite.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface d) {   // boutons aux couleurs du jeu (orange, cyan)
+                boite.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getColor(R.color.orange));
+                boite.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getColor(R.color.cyan));
+            }
+        });
+        boite.show();
+    }
+
+    private static void plusTard(MiseAJour.Proposition p, SharedPreferences prefs) {
+        prefs.edit().putInt("ignoree", p.numero).apply();
+        Log.i("WaForSpeed", "MISEAJOUR « Plus tard » : construction " + p.numero + " ignorée");
+    }
+
     @Override
     protected void onCreate(Bundle etat) {
         // WFS-126 : avant super.onCreate (qui démarre le thread du jeu) : version, déclencheur de test, plantage Java,
@@ -197,6 +305,9 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
         final String rapport = prendreRapportPrecedent();
         super.onCreate(etat);
         if (rapport != null) proposerRapport(rapport);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);   // WFS-132 (RG-07) : boutons de volume sur le son du jeu
+        final boolean testMaj = depart != null && depart.getBooleanExtra("wfs_maj_test", false) && apkDeTest();
+        verifierMiseAJour(rapport != null, testMaj);   // WFS-132 (RG-01 à RG-06)
         lireLien(getIntent());   // WFS-112 : jeu lancé par le lien d'invitation
         Window w = getWindow();
         w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);   // écran toujours allumé
