@@ -74,4 +74,17 @@ inline std::vector<float> boucle(float rate, float dur, float freq, float q, flo
     return out;
 }
 
+// klaxon (WFS-76, rendu visible par WFS-121) : deux notes carrées adoucies (sol, si), volume 0,5 ; `distance` : passe-bande
+// 900 Hz (klaxon lointain de l'ambiance de la ville) ; sans : klaxon d'une voiture du trafic toute proche
+inline void klaxon(std::vector<float>& b, float rate, float debut, float dur, bool distance = true) {
+    constexpr float PI2 = 6.28318530718f;
+    const size_t a = (size_t)(debut * rate), n = (size_t)(dur * rate);
+    if (b.size() < a + n) b.resize(a + n, 0.f);
+    PasseBande f; f.regler(900, 0.9f, rate);
+    for (size_t i = 0; i < n; i++) {
+        const float t = (float)i / rate, sq = std::tanh(3 * std::sin(PI2 * 392 * t)) + std::tanh(3 * std::sin(PI2 * 494 * t));
+        b[a + i] += (distance ? f.run(sq) : sq) * 0.5f * fondu(i, n, rate) * std::min(1.f, t / 0.02f) * std::min(1.f, (dur - t) / 0.04f);
+    }
+}
+
 } // namespace wfs::sfx
