@@ -3089,3 +3089,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 09:55:45 — PO : WFS-115, défaut de parcours (pas un plantage) (po-scrum-master)
 - Précision de l'utilisateur : mal développé, pas un plantage. WFS-115 recentré sur le parcours ; règle ajoutée à `po-scrum-master.md` : test de parcours complet exigé pour tout ticket qui touche un écran.
+
+### 2026-11-05 09:59:04 — WFS-114 fusionné par confiance (PR #93) (Claude, agent 3)
+- Job `endurance` : seulement sur un envoi vers main, la nuit (`schedule` 02:17 UTC) et à la demande ; sauté sur `feature/**` et `claude/**`. La nuit, `banc-essai` et `android` sont sautés (publications déjà limitées aux envois). `timeout-minutes` 30 → 20.
+- Banc : une image rendue sur 30 (au lieu de 16, réglable par `WFS_ENDURANCE_RENDU`), simulation toujours à 60 Hz, seuils de WFS-91 inchangés ; nouvelle ligne « endurance : durée ». Local : 850 s → 341 s (CI estimée ≈ 9 min de banc + 1 min de compilation). 8 cycles, 3 retours, RSS +3,9 %, 0 erreur de validation inconnue.
+- Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
+
