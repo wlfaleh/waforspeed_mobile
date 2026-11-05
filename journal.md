@@ -3153,3 +3153,7 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 11:14:51 — CI de main verte après WFS-116 (Claude, agent 3)
 - Run 42014307375 (5b1f53a) : tous les jobs verts, dont `android` (retour_systeme.cpp, onInput, JeuActivity.onBackPressed compilés), endurance, bancs et publications. APK de main à jour : à essayer sur téléphone (geste Retour, voir la ligne WFS-116 de qa/Check.md).
+
+### 2026-11-05 11:15:19 — CI de main verte après WFS-100 (Claude, session trafic)
+- Run 42013871691 sur 9d50529 (PR #94) : tous les jobs verts ; run suivant 42014307375 (WFS-116) vert aussi. Aucune correction à faire.
+- En cours chez moi : WFS-115 (menus, « Continuer ») et WFS-111 (poursuite police, étape 0 : retrait du contournement ANO-52), branches poussées.
