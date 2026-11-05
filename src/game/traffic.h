@@ -78,7 +78,7 @@ inline const WebCarFeux WEB_FEUX[] = {
     {"corsa", 1.43f, 0.7f, 0.98f}, {"gt86", 1.29f, 0.66f, 0.95f}, {"elantra", 1.42f, 0.7f, 0.97f}, {"v60", 1.48f, 0.72f, 1.02f},
     {"rrsport", 1.82f, 0.86f, 1.12f}, {"mustang", 1.38f, 0.68f, 0.96f}, {"gallardo", 1.18f, 0.62f, 0.92f}, {"sf90", 1.19f, 0.62f, 0.92f},
 };
-constexpr double LOD_CAR_M = 50;   // au-delà : silhouette légère (scene.js)
+constexpr double LOD_CAR_M = 60;   // au-delà : silhouette légère (scene.js : 50 m) ; WFS-134 (RG-04) : modèle complet jusqu'à 60 m
 
 // ce que le trafic doit savoir du joueur
 struct TrafficView { double position = 0, playerX = 0, speed = 0, myLen = 0; bool garage = false; };

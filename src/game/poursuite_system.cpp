@@ -213,18 +213,15 @@ public:
         for (const Police& p : police_) {
             const double rel = (p.rd - sP) * M;
             if (rel < -60 || rel > 300) continue;
+            if (r.qualiteBasse && std::abs(rel) > 90) continue;   // WFS-134 (RG-11) : Basse : police dessinée jusqu'à 90 m (coût)
             const TrackPoint q = g.track->point(p.rd, p.x * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)) * rotateX((float)q.slope);
             const CarDef& cd = carById(policeCar_);
             const float L = cd.d.L, W = cd.d.W, H = cd.d.H;
-            // RG-08 : modèle complet de près (≤ 45 m ; qualité Basse : jamais, WFS-119), silhouette au-delà
-            // (2 appels de dessin)
-            const bool complet = !r.qualiteBasse && std::abs(rel) <= 45;   // WFS-119 RG-04 : Basse : silhouette seule
-            if (complet && modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
-            else {
-                r.draw(cube_, p.peinture == 0xf2f4f8 ? matBlanc_ : matBleuCaisse_, m * translate({0, 0.12f, 0}) * scale({W, H * 0.5f, L}));
-                r.draw(cube_, matVitre_, m * translate({0, 0.12f + H * 0.5f, L * 0.04f}) * scale({W * 0.82f, H * 0.4f, L * 0.5f}));
-            }
+            // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
+            // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
+            (void)L;
+            if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
             // barre lumineuse dessinée par le code : rouge à gauche, bleu à droite, halos alternés (WFS-119 RG-04 : en qualité
             // Basse, au-delà de 80 m, halos seuls)
             if (!r.qualiteBasse || std::abs(rel) <= 80) {
@@ -249,11 +246,8 @@ public:
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th + 1.5707963)) * rotateX((float)q.slope);
             const CarDef& cd = carById(camionCar_);
             const float E = CAMION_ECHELLE, L = cd.d.L * E, W = cd.d.W * E, H = cd.d.H * E;
-            if (!r.qualiteBasse && std::abs(rel) <= 80 && camionModele_.ok) { peintureCamion_ = lin(0xd8dade); r.draw(camionModele_, m * scale({E, E, E}), &peintureCamion_); }
-            else {
-                r.draw(cube_, matBlanc_, m * translate({0, 0.15f, 0}) * scale({W, H * 0.55f, L}));
-                r.draw(cube_, matVitre_, m * translate({0, 0.15f + H * 0.55f, L * 0.04f}) * scale({W * 0.84f, H * 0.38f, L * 0.55f}));
-            }
+            (void)L; (void)W; (void)H;   // WFS-134 (RG-11) : camion = vrai modèle partout (allégé au-delà de 60 m), jamais de cubes
+            if (camionModele_.ok) { peintureCamion_ = lin(0xd8dade); r.draw(camionModele_, m * scale({E, E, E}), &peintureCamion_); }
         }
         for (const Bande& b : bandes_) {   // WFS-119 : ralentisseur jaune (bandes noires hors qualité Basse) et 2 plots
             const double rel = (b.s - sP) * M;

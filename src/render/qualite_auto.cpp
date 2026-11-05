@@ -2,6 +2,7 @@
 #include "qualite_auto.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
 namespace wfs::qualite {
 
@@ -20,6 +21,17 @@ int Auto::image(double dt, bool enCourse) {
     if (echelle != prev) effet |= ECHELLE;
     if (!fait && !choixJoueur && niveau > BASSE && echelle <= 0.6f && fps < 30) { fait = true; niveau--; effet |= RETRO; }
     return effet;
+}
+
+// WFS-134 (RG-01) : « Rendu : Haute · 100 % · MSAA ×4 · 58 img/s · chauffe 0 »
+std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauffe) {
+    static const char* NOMS[3] = {"Basse", "Moyenne", "Haute"};
+    const char* nom = NOMS[niveau < BASSE ? BASSE : niveau > HAUTE ? HAUTE : niveau];
+    char ip[16];
+    if (ips >= 0) std::snprintf(ip, sizeof ip, "%.0f", ips); else std::snprintf(ip, sizeof ip, "--");
+    char b[128];
+    std::snprintf(b, sizeof b, "Rendu : %s · %.0f %% · MSAA ×%d · %s img/s · chauffe %d", nom, echelle * 100, msaa, ip, chauffe);
+    return b;
 }
 
 } // namespace wfs::qualite

@@ -44,6 +44,7 @@ public:
         const int avant = q;
         const bool horsCourse = g.ecran != Ecran::Course && g.ecran != Ecran::Pause;
         const int e = g_reg.pas(dt, n, enCourse, horsCourse, c ? c->raceTime : -1, q);
+        qualite::retenuChauffe = g_reg.choisi;   // WFS-134 (RG-02) : la chauffe baisse les coûts, jamais la netteté choisie
         if (e != chauffe::Regulateur::RIEN) {
             R.qualite = q;   // non enregistré (RG-02) : qualiteChoisie et la sauvegarde ne changent pas
             ecrans::appliquerQualiteNiveau(*r_);

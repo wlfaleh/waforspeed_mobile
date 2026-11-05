@@ -37,3 +37,6 @@ for v in "${VOITURES[@]}"; do
   else node convert_car.mjs "$WEB/models/$dossier/$dossier.json" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture"; fi
   cp "$WEB/models/$dossier/license.txt" "$RACINE/assets/licences/$id.txt"
 done
+# WFS-134 (RG-11, RG-12) : versions allégées (assets/cars/<id>.lod : indices seuls, 30 % des triangles au moins) des voitures
+# du trafic, de la police et du camion de la poursuite ; vues au-delà de 60 m, avec fondu (Renderer::draw)
+for id in golf m4 p911 gallardo p208 x5; do node alleger_voiture.mjs "$RACINE/assets/cars/$id.wfm" "$RACINE/assets/cars/$id.lod" 0.3; done

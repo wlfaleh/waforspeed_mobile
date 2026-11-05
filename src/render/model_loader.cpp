@@ -2,6 +2,8 @@
 // décodées en parallèle sur tous les cœurs, puis envoyées au GPU depuis le thread principal.
 #include "model_loader.h"
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstring>
 #include "../core/jobs.h"
 #include "../core/platform.h"
@@ -21,6 +23,67 @@ struct Reader {
     const uint8_t* take(size_t n) { if (p + n > end) { ok = false; return nullptr; } const uint8_t* r = p; p += n; return r; }
 };
 struct Decoded { std::vector<uint8_t> rgba; int w = 0, h = 0; bool srgb = true; };
+
+// WFS-134 (RG-06, ANO-67) : normales lissées au chargement (angle 40°), seulement si la carrosserie a des normales à
+// facettes. Pour chaque sommet : somme (pondérée par l'aire) des normales des faces qui touchent sa position et font
+// moins de 40° avec sa normale d'origine (les arêtes vives restent vives). Facettes = plus de 35 % des sommets à plus
+// de 10° de cette normale lissée (X5 : 37 % ; les autres voitures : 30 % au plus, inchangées).
+float lisserSiFacettes(Vertex* V, uint32_t nv, const uint32_t* I, uint32_t ni) {
+    if (nv < 3 || ni < 3) return 0;
+    // positions identiques (au 1/10 de mm) → même identifiant
+    std::vector<uint32_t> ordre(nv), pid(nv);
+    auto cle = [&](uint32_t v) {
+        return std::array<int64_t, 3>{std::llround(V[v].px * 1e4), std::llround(V[v].py * 1e4), std::llround(V[v].pz * 1e4)};
+    };
+    for (uint32_t v = 0; v < nv; v++) ordre[v] = v;
+    std::sort(ordre.begin(), ordre.end(), [&](uint32_t a, uint32_t b) { return cle(a) < cle(b); });
+    uint32_t np = 0;
+    for (uint32_t k = 0; k < nv; k++) { if (k && cle(ordre[k]) != cle(ordre[k - 1])) np++; pid[ordre[k]] = np; }
+    np++;
+    // faces de chaque position (tableau compact)
+    const uint32_t nf = ni / 3;
+    std::vector<vec3> fn(nf);
+    std::vector<uint32_t> debut(np + 1, 0), faces;
+    for (uint32_t t = 0; t < nf; t++) {
+        const uint32_t a = I[t * 3], b = I[t * 3 + 1], c = I[t * 3 + 2];
+        if (a >= nv || b >= nv || c >= nv) { fn[t] = {}; continue; }
+        const vec3 A{V[a].px, V[a].py, V[a].pz}, B{V[b].px, V[b].py, V[b].pz}, C{V[c].px, V[c].py, V[c].pz};
+        fn[t] = cross(B - A, C - A);
+        for (int k = 0; k < 3; k++) debut[pid[I[t * 3 + k]] + 1]++;
+    }
+    for (uint32_t q = 0; q < np; q++) debut[q + 1] += debut[q];
+    faces.resize(debut[np]);
+    std::vector<uint32_t> pos(debut.begin(), debut.end() - 1);
+    for (uint32_t t = 0; t < nf; t++) {
+        if (I[t * 3] >= nv || I[t * 3 + 1] >= nv || I[t * 3 + 2] >= nv) continue;
+        for (int k = 0; k < 3; k++) faces[pos[pid[I[t * 3 + k]]]++] = t;
+    }
+    const float c40 = std::cos(40.f * PI / 180.f), c10 = std::cos(10.f * PI / 180.f);
+    std::vector<vec3> lisse(nv);
+    uint32_t ecart = 0, n = 0;
+    for (uint32_t v = 0; v < nv; v++) {
+        vec3 n0{V[v].nx, V[v].ny, V[v].nz};
+        const float l0 = length(n0);
+        lisse[v] = n0;
+        if (l0 < 1e-9f) continue;
+        n0 = n0 * (1.f / l0);
+        vec3 s{};
+        for (uint32_t k = debut[pid[v]]; k < debut[pid[v] + 1]; k++) {
+            const vec3& f = fn[faces[k]];
+            const float lf = length(f);
+            if (lf > 1e-12f && dot(f, n0) > c40 * lf) s = s + f;
+        }
+        const float ls = length(s);
+        if (ls < 1e-12f) continue;
+        lisse[v] = s * (1.f / ls);
+        n++;
+        if (dot(lisse[v], n0) < c10) ecart++;
+    }
+    const float part = n ? (float)ecart / n : 0.f;
+    if (part > 0.35f) for (uint32_t v = 0; v < nv; v++) { V[v].nx = lisse[v].x; V[v].ny = lisse[v].y; V[v].nz = lisse[v].z; }
+    return part;
+}
+inline float linSrgb(unsigned c) { return std::pow(c / 255.f, 2.2f); }
 }
 
 bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
@@ -75,6 +138,11 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         size_t v0 = verts.size(), i0 = idx.size();
         verts.resize(v0 + nv); std::memcpy(&verts[v0], vp, (size_t)nv * sizeof(Vertex));
         idx.resize(i0 + ni); std::memcpy(&idx[i0], ip, (size_t)ni * 4);
+        if (mat < nMat && (raw[mat].flags & MAT_PAINT)) {   // WFS-134 (RG-06) : carrosserie à facettes → normales lissées
+            const float part = lisserSiFacettes(&verts[v0], nv, &idx[i0], ni);
+            if (part > 0.35f) WFS_LOG("%s : carrosserie à facettes (%.0f %% des sommets à plus de 10°) → normales lissées à 40° (WFS-134)",
+                                      path.c_str(), part * 100);
+        }
         out.parts.push_back(part);
         if (mat < nMat) for (uint32_t k = 0; k < nv; k++) {
             const Vertex& q = verts[v0 + k];
@@ -101,6 +169,28 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
                 std::nth_element(asp.begin(), asp.begin() + asp.size() / 2, asp.end());
                 if (med < 0.004f && asp[asp.size() / 2] > 8.f) partFil[mat] = true;
             }
+        }
+    }
+    // WFS-134 (RG-11, RG-12) : version allégée <id>.lod (tools/alleger_voiture.mjs) : nouveaux indices de chaque maillage,
+    // mêmes sommets et matériaux ; une pièce par maillage (roues fixes : la version allégée n'est vue qu'au-delà de 56 m)
+    std::vector<uint32_t> lodIdx; std::vector<ModelPart> lodParts;
+    {
+        std::vector<uint8_t> lf;
+        const std::string lodPath = path.size() > 4 ? path.substr(0, path.size() - 4) + ".lod" : path;
+        if (path.size() > 4 && path.compare(path.size() - 4, 4, ".wfm") == 0 && readAsset(lodPath, lf) && lf.size() >= 8 &&
+            std::memcmp(lf.data(), "WFL1", 4) == 0) {
+            Reader lr{lf.data() + 4, lf.data() + lf.size()};
+            const uint32_t n = lr.get<uint32_t>();
+            bool ok = n == out.parts.size();
+            for (uint32_t i = 0; ok && i < n; i++) {
+                const uint32_t ni = lr.get<uint32_t>();
+                const uint8_t* ip = lr.take((size_t)ni * 4);
+                if (!lr.ok) { ok = false; break; }
+                const ModelPart& full = out.parts[i];
+                lodParts.push_back({(uint32_t)lodIdx.size(), ni, full.vertexOffset, full.material});
+                const size_t i0 = lodIdx.size(); lodIdx.resize(i0 + ni); std::memcpy(&lodIdx[i0], ip, (size_t)ni * 4);
+            }
+            if (!ok) { lodIdx.clear(); lodParts.clear(); WFS_ERR("%s : version allégée illisible (ignorée)", lodPath.c_str()); }
         }
     }
     // WFS-60 : roues séparées (splitWheels du jeu web) : chaque matériau est redécoupé en une partie fixe et une partie
@@ -140,6 +230,87 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     for (uint32_t mi = 0; mi < nMat; mi++) fm[mi] = {raw[mi].flags, {raw[mi].em[0], raw[mi].em[1], raw[mi].em[2]}, matMin[mi], matMax[mi]};
     const feux_modele::Resultat feuA = feux_modele::decouper(idx, out.parts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);
     if (feuA.materiau >= 0) WFS_LOG("%s : feu arrière découpé dans le matériau %d, %u triangles (WFS-109)", path.c_str(), feuA.materiau, feuA.triangles);
+    if (!lodParts.empty()) feux_modele::decouper(lodIdx, lodParts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);   // WFS-134 : mêmes feux
+    // WFS-134 (RG-06, ANO-67) : tranches des portes (faces de carrosserie tournées vers l'avant ou l'arrière, sur les flancs,
+    // à mi-hauteur, hors pare-chocs) : dans une vraie voiture, c'est un jour sombre ; ici elles reflétaient le sol en beige
+    // (« trace beige verticale » de la Model 3). Elles passent dans une pièce à part, gris très sombre mat.
+    int32_t jour = -1;
+    auto tranches = [&](std::vector<uint32_t>& idx, std::vector<ModelPart>& parts) -> size_t {
+        const float hw = (out.bmax.x - out.bmin.x) * 0.5f, H = out.bmax.y - out.bmin.y, hl = (out.bmax.z - out.bmin.z) * 0.5f;
+        const float cx = (out.bmax.x + out.bmin.x) * 0.5f, cz = (out.bmax.z + out.bmin.z) * 0.5f;
+        size_t nJour = 0;
+        const size_t nParts = parts.size();
+        for (size_t k = 0; k < nParts; k++) {
+            ModelPart& p = parts[k];
+            if (p.roue >= 0 || p.material >= nMat || !(raw[p.material].flags & MAT_PAINT)) continue;
+            std::vector<uint32_t> garde, tranche;
+            for (uint32_t t = 0; t + 2 < p.indexCount; t += 3) {
+                const uint32_t* T = &idx[p.firstIndex + t];
+                const Vertex &a = verts[(size_t)p.vertexOffset + T[0]], &b = verts[(size_t)p.vertexOffset + T[1]], &c = verts[(size_t)p.vertexOffset + T[2]];
+                const vec3 A{a.px, a.py, a.pz}, B{b.px, b.py, b.pz}, C{c.px, c.py, c.pz};
+                vec3 n = cross(B - A, C - A); const float ln = length(n);
+                const vec3 m = (A + B + C) * (1.f / 3);
+                const bool bord = ln > 1e-12f && std::fabs(n.z) > 0.8f * ln && std::fabs(m.x - cx) > 0.75f * hw &&
+                                  m.y > out.bmin.y + 0.25f * H && m.y < out.bmin.y + 0.75f * H && std::fabs(m.z - cz) < 0.6f * hl;
+                for (int j = 0; j < 3; j++) (bord ? tranche : garde).push_back(T[j]);
+            }
+            if (tranche.empty()) continue;
+            if (jour < 0) {
+                jour = (int32_t)raw.size();
+                RawMat d{}; d.col[0] = d.col[1] = d.col[2] = linSrgb(0x16); d.col[3] = 1; d.metal = 0; d.rough = 0.7f; d.cut = 0.5f;
+                d.tC = d.tN = d.tMR = -1; d.flags = MAT_DOUBLE;
+                raw.push_back(d); partDetail.push_back(0); partFil.push_back(0);
+            }
+            // les deux listes reprennent la place des indices de la pièce (même nombre en tout)
+            std::copy(garde.begin(), garde.end(), idx.begin() + p.firstIndex);
+            std::copy(tranche.begin(), tranche.end(), idx.begin() + p.firstIndex + garde.size());
+            const ModelPart q{p.firstIndex + (uint32_t)garde.size(), (uint32_t)tranche.size(), p.vertexOffset, (uint32_t)jour, -1};
+            p.indexCount = (uint32_t)garde.size();   // (p n'est plus utilisé après push_back)
+            parts.push_back(q);
+            nJour += tranche.size() / 3;
+        }
+        return nJour;
+    };
+    if (const size_t nJour = tranches(idx, out.parts))
+        WFS_LOG("%s : %zu triangles de tranches de portes en gris sombre (WFS-134, ANO-67)", path.c_str(), nJour);
+    if (!lodParts.empty()) {   // WFS-134 : version allégée traitée pareil, puis mise à la suite dans le même tampon d'indices
+        tranches(lodIdx, lodParts);
+        const uint32_t base = (uint32_t)idx.size();
+        for (ModelPart& p : lodParts) p.firstIndex += base;
+        idx.insert(idx.end(), lodIdx.begin(), lodIdx.end());
+        out.partsLod = lodParts;
+        WFS_LOG("%s : version allégée, %zu triangles (fondu de 64 à 72 m de la caméra, au-delà : seule, WFS-134)", path.c_str(), lodIdx.size() / 3);
+    }
+    // WFS-134 (RG-11) : version « Basse lointaine » en 4 appels de dessin au plus : carrosserie (peinture), feux arrière,
+    // vitres, reste opaque en gris sombre ; même forme que la version allégée (ou complète), indices absolus à la suite.
+    // Remplace en qualité Basse la version allégée (au-delà de 60 m du joueur, avec fondu) : jamais de cubes.
+    {
+        const std::vector<ModelPart>& src = lodParts.empty() ? out.parts : out.partsLod;
+        int32_t matPeinture = -1, matVitre = -1, matFeu = -1;
+        std::vector<uint32_t> cat[4];   // 0 peinture, 1 feux arrière, 2 vitres, 3 reste opaque
+        for (const ModelPart& p : src) {
+            if (p.material >= raw.size()) continue;
+            const uint32_t f = raw[p.material].flags;
+            const int c = (f & MAT_PAINT) ? 0 : ((f & MAT_TAIL) || p.feuArriere == 1) ? 1 : (f & (MAT_GLASS | MAT_BLEND)) ? 2 : 3;
+            if (c == 0 && matPeinture < 0) matPeinture = (int32_t)p.material;
+            if (c == 1 && matFeu < 0) matFeu = (int32_t)p.material;
+            if (c == 2 && matVitre < 0 && (f & MAT_GLASS)) matVitre = (int32_t)p.material;
+            if (c == 2 && !(f & MAT_GLASS)) continue;   // pièces transparentes non vitrées (grilles, logos) : omises
+            for (uint32_t t = 0; t < p.indexCount; t++) cat[c].push_back(idx[p.firstIndex + t] + (uint32_t)p.vertexOffset);
+        }
+        if (matPeinture >= 0) {
+            const int32_t sombre = (int32_t)raw.size();
+            RawMat d{}; d.col[0] = d.col[1] = d.col[2] = linSrgb(0x1c); d.col[3] = 1; d.metal = 0.2f; d.rough = 0.6f; d.cut = 0.5f;
+            d.tC = d.tN = d.tMR = -1; d.flags = MAT_DOUBLE;
+            raw.push_back(d); partDetail.push_back(0); partFil.push_back(0);
+            const int32_t mats[4] = {matPeinture, matFeu >= 0 ? matFeu : sombre, matVitre >= 0 ? matVitre : sombre, sombre};
+            for (int c : {0, 3, 1, 2}) {
+                if (cat[c].empty()) continue;
+                out.partsBasse.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0)});
+                idx.insert(idx.end(), cat[c].begin(), cat[c].end());
+            }
+        }
+    }
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     out.ib = r.vk().uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
@@ -178,12 +349,23 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         const RawMat& m = raw[mi];
         Material mt;
         mt.detail = partDetail[mi];
+        if (mi < nMat && matMax[mi].x >= matMin[mi].x) { const vec3 e = matMax[mi] - matMin[mi]; mt.taille = std::max({e.x, e.y, e.z}); }   // WFS-134
         mt.filament = partFil[mi] && !(m.flags & (MAT_PAINT | MAT_BLEND | MAT_GLASS));
         mt.color = {m.col[0], m.col[1], m.col[2], m.col[3]};
         mt.metal = m.metal; mt.rough = m.rough; mt.cutoff = m.cut;
         mt.emissive = {m.em[0], m.em[1], m.em[2]};
         mt.flags = m.flags & ~(uint32_t)(MAT_HASNORMAL | MAT_HASMR);
         if (mt.flags & MAT_GLASS) mt.flags |= MAT_BLEND;
+        // WFS-134 (RG-06, ANO-67) : cabochon fin teinté rouge (feux arrière du X5, de l'Elantra, de la Mustang) : le verre
+        // du shader le rendait gris-beige (« plaque beige ») → feu rouge sombre #5A0A0E, par le matériau (pas le bloc des feux)
+        if ((m.flags & MAT_GLASS) && m.col[0] > 0.3f && m.col[1] < 0.1f && m.col[2] < 0.1f && m.col[3] < 0.5f) {
+            mt.flags &= ~(uint32_t)MAT_GLASS; mt.color = {linSrgb(0x5A), linSrgb(0x0A), linSrgb(0x0E), 0.9f}; mt.metal = 0; mt.rough = 0.2f;
+            WFS_LOG("%s : matériau %zu : cabochon rouge → feu rouge sombre #5A0A0E (WFS-134)", path.c_str(), mi);
+        }
+        // WFS-134 (RG-06) : émission blanche uniforme d'une pièce texturée (atlas des feux du X5 et de la Model 3 : la
+        // texture d'émission du modèle d'origine n'est pas convertie) → émission × texture (plus de taches beiges)
+        if (m.tC >= 0 && !(m.flags & (MAT_TAIL | MAT_HEAD | MAT_BLEND | MAT_PAINT)) && std::max({m.em[0], m.em[1], m.em[2]}) > 0.f)
+            mt.flags |= MAT_EMTEX;
         if (mt.flags & MAT_PAINT) { mt.rough = std::min(mt.rough, 0.45f); }
         out.mats.push_back(r.makeMaterial(mt, texAt(m.tC), texAt(m.tN), texAt(m.tMR)));
     }
@@ -192,6 +374,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
                                         out.mats[mi].filament ? ", fils en couverture partielle" : "");
     out.ok = true;
     WFS_LOG("%s : %u matériaux, %u textures, %zu triangles", path.c_str(), nMat, nTex, idx.size() / 3);
+    WFS_LOG("voiture : modèle complet, %zu triangles, aniso ×%.0f, mipmaps oui (%s, WFS-134)", idx.size() / 3, r.aniso(), path.c_str());
     return true;
 }
 

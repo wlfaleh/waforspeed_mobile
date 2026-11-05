@@ -2,7 +2,9 @@
 // Mesure les images/s réelles en course, ajuste la résolution de la scène et rétrograde une fois si besoin
 // (watchPerf du jeu web, logique dans qualite_auto.h) ; bandeau « Graphismes rapides — pour plus de fluidité ».
 // Inactif hors écran (banc d'essai : captures inchangées) et en mode GPU logiciel (WFS-59 gère déjà l'échelle).
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
@@ -18,14 +20,21 @@ namespace {
 
 qualite::Auto g_auto;   // gardé d'une partie à l'autre (Game::init est rappelé à chaque carte)
 double g_banniere = 0;  // WFS-123 : bandeau partagé avec la chauffe (bandeauGraphismesRapides)
+bool g_banniereChauffe = false;   // WFS-134 (RG-02) : bandeau « Qualité allégée (chauffe) » plutôt que « pour plus de fluidité »
+// WFS-134 (RG-01) : rendu réellement utilisé (ligne des Réglages, journal) : moteur, images/s lissées sur 1 s
+Renderer* g_r = nullptr;
+float g_ips = -1;            // −1 : pas encore mesuré (banc d'essai hors écran)
+double g_ipsT = 0; int g_ipsN = 0;
+std::string g_ligneVue;      // dernière ligne écrite au journal (sans les images/s)
 
 class QualiteSystem : public System {
 public:
     const char* name() const override { return "qualité"; }
 
     void init(Renderer& r, const GameView&) override {
-        r_ = &r; dernier_ = -1; effets_ = 0;
+        r_ = &r; g_r = &r; dernier_ = -1; effets_ = 0;
         actif_ = !r.vk().offscreen && !r.gpuLogiciel();
+        mesure_ = !r.vk().offscreen;   // WFS-134 (RG-01) : images/s mesurées sur le téléphone, même en GPU logiciel
         static bool annonce = false;
         if (actif_ && !annonce) {
             annonce = true;
@@ -37,11 +46,14 @@ public:
 
     // une mesure par image réellement affichée ; l'état « en course » = partie lancée (décompte fini), comme 'play'
     void render(Renderer&, const GameView& g) override {
-        if (!actif_) return;
+        if (!actif_ && !mesure_) return;
         const double t = nowSeconds();
         const double dt = dernier_ < 0 ? 0 : t - dernier_;
         dernier_ = t;
         if (dt <= 0 || dt > 1) return;   // reprise après une pause ou un chargement : pas de mesure
+        g_ipsT += dt; g_ipsN++;   // WFS-134 (RG-01) : images/s de la ligne « Rendu », tous écrans, sur 1 s
+        if (g_ipsT >= 1) { g_ips = (float)(g_ipsN / g_ipsT); g_ipsT = 0; g_ipsN = 0; }
+        if (!actif_) return;
         const ecrans::Reglages& R = ecrans::reglages();
         if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; }   // changé dans les réglages
         g_auto.choixJoueur = R.qualiteChoisie;
@@ -52,15 +64,18 @@ public:
     // changements appliqués hors de l'image (les cibles de rendu sont recréées)
     void update(double dt, const GameView&) override {
         if (g_banniere > 0) g_banniere -= dt;
+        journalRendu();   // WFS-134 (RG-01) : une ligne à chaque changement du rendu réel
         if (!actif_ || !effets_ || !r_) return;
         if (effets_ & qualite::Auto::RETRO) {
+            // WFS-134 (RG-02) : la netteté du niveau quitté est retenue (résolution et MSAA inchangés), seuls les coûts baissent
+            qualite::retenuAuto = std::max(qualite::retenuAuto, g_auto.niveau + 1);
             ecrans::reglages().qualite = g_auto.niveau;   // non enregistré : ce n'est pas un choix du joueur
             ecrans::appliquerQualiteNiveau(*r_);
-            g_banniere = 2.5;
+            g_banniere = 2.5; g_banniereChauffe = false;
             WFS_LOG("qualité : rétrogradation automatique au niveau %d (%.0f images/s à l'échelle 0,6)", g_auto.niveau, g_auto.fpsMesure);
         }
         const float avant = r_->vk().renderScale;
-        r_->vk().renderScale = qualite::echelleRendu(g_auto.niveau, g_auto.echelle);   // WFS-104 : jamais sous la netteté du garage
+        r_->vk().renderScale = qualite::echelleScene(g_auto.niveau, g_auto.echelle);   // WFS-104 / WFS-134 : jamais sous la netteté du garage
         if (r_->vk().renderScale != avant) r_->resize();
         // WFS-104 : téléphone lent → bloom puis ombres coupés, la résolution de la voiture ne bouge pas
         const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.echelle);
@@ -78,12 +93,24 @@ public:
         const float a = (float)std::min(1.0, g_banniere / 0.3);
         r.uiRect(x, y, w, h, {20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f * a});
         r.uiRect(x, y, 0.6f * u, h, {ui::CYAN.x, ui::CYAN.y, ui::CYAN.z, a});
-        ui::text(r, x + w / 2, y + 1.6f * u, 3.6f * u, "GRAPHISMES RAPIDES", {0.95f, 0.96f, 0.97f, a}, ui::CENTRE, 0.08f, false, true);
-        ui::text(r, x + w / 2, y + 6.0f * u, 2.6f * u, "pour plus de fluidité", {ui::CYAN.x, ui::CYAN.y, ui::CYAN.z, a}, ui::CENTRE, 0.f, false);
+        // WFS-134 (RG-02) : « Qualité allégée » : ombres, bloom et décor lointain baissent, la netteté de la voiture reste
+        ui::text(r, x + w / 2, y + 1.6f * u, 3.6f * u, "QUALITÉ ALLÉGÉE", {0.95f, 0.96f, 0.97f, a}, ui::CENTRE, 0.08f, false, true);
+        ui::text(r, x + w / 2, y + 6.0f * u, 2.6f * u, g_banniereChauffe ? "(chauffe)" : "pour plus de fluidité", {ui::CYAN.x, ui::CYAN.y, ui::CYAN.z, a},
+                 ui::CENTRE, 0.f, false);
     }
 
 private:
+    // WFS-134 (RG-01) : la ligne « Rendu » (sans les images/s, qui bougent sans cesse) écrite au journal quand elle change ;
+    // le journal est celui du rapport partagé de WFS-126
+    void journalRendu() {
+        if (!r_) return;
+        const std::string l = qualite::texteRendu(ecrans::reglages().qualite, r_->vk().renderScale, (int)r_->vk().msaa, -1, chauffeNiveau());
+        if (l == g_ligneVue) return;
+        g_ligneVue = l;
+        WFS_LOG("%s (netteté du niveau %d, %.0f images/s)", qualite::ligneRendu().c_str(), qualite::niveauNettete(ecrans::reglages().qualite), g_ips);
+    }
     Renderer* r_ = nullptr;
+    bool mesure_ = false;
     bool actif_ = false;
     double dernier_ = -1;
     int effets_ = 0;
@@ -91,5 +118,10 @@ private:
 WFS_SYSTEM(QualiteSystem, 360)
 
 } // namespace
-void bandeauGraphismesRapides() { g_banniere = 2.5; }   // WFS-123 (RG-02)
+void bandeauGraphismesRapides() { g_banniere = 2.5; g_banniereChauffe = true; }   // WFS-123 (RG-02) ; WFS-134 : « (chauffe) »
+// WFS-134 (RG-01) : rendu réellement utilisé, lu en direct
+std::string qualite::ligneRendu() {
+    if (!g_r) return "Rendu : --";
+    return texteRendu(ecrans::reglages().qualite, g_r->vk().renderScale, (int)g_r->vk().msaa, g_ips, chauffeNiveau());
+}
 } // namespace wfs

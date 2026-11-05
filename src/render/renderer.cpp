@@ -106,6 +106,7 @@ bool Renderer::init(VkCtx& vk) {
     sci.maxLod = 16.f;
     VkPhysicalDeviceFeatures f{}; vkGetPhysicalDeviceFeatures(vk.gpu, &f);
     if (f.samplerAnisotropy) { sci.anisotropyEnable = VK_TRUE; sci.maxAnisotropy = std::min(8.f, vk.props.limits.maxSamplerAnisotropy); }
+    aniso_ = sci.anisotropyEnable ? sci.maxAnisotropy : 1.f;   // WFS-134 (RG-04) : journal du chargement des voitures
     VK_OK(vkCreateSampler(d, &sci, nullptr, &sampler_));
     sci.anisotropyEnable = VK_FALSE; sci.maxLod = 0;
     sci.addressModeU = sci.addressModeV = sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -234,6 +235,12 @@ bool Renderer::init(VkCtx& vk) {
         Material t; t.flags = MAT_POOL | MAT_BLEND;
         t.color = {std::pow(0xff / 255.f, 2.2f), std::pow(0xf0 / 255.f, 2.2f), std::pow(0xdc / 255.f, 2.2f), 1};
         poolMat = makeMaterial(t, nullptr, nullptr, nullptr);
+    }
+    {   // WFS-134 (RG-05) : ombre de contact des voitures qui n'en dessinent pas (adversaires, duel, police) : même quad que Game
+        Material o; o.flags = MAT_SHADOWBLOB | MAT_BLEND; o.color = {0, 0, 0, 0.75f}; ombreMat_ = makeMaterial(o, nullptr, nullptr, nullptr);
+        std::vector<Vertex> v = {{-0.5f, 0.02f, -0.5f, 0, 1, 0, 0, 0}, {0.5f, 0.02f, -0.5f, 0, 1, 0, 1, 0},
+                                 {0.5f, 0.02f, 0.5f, 0, 1, 0, 1, 1}, {-0.5f, 0.02f, 0.5f, 0, 1, 0, 0, 1}};
+        ombreQuad_ = makeMesh(v, {0, 1, 2, 0, 2, 3});
     }
     ETAPE_RENDU("matériaux, fin de Renderer::init");
     return true;
@@ -975,6 +982,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         masquesPrec_ = masques_; masques_ = 0;
     }
     feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
+    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false;   // WFS-134
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear(); skinUsed_ = 0;
@@ -1037,6 +1045,14 @@ inline const vec3 VERRE{1.f, 0.0103f, 0.0513f};   // RG-13 : verre rouge du feu 
 
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {
     if (!inFrame_ || !m.ok) return;
+    // WFS-134 (RG-05, RG-07) : ombre de contact (≈ 1,1 × la longueur) si la voiture n'a pas déjà la sienne ; fantôme sans
+    const bool fantome = fantomeSuivant_, ombreDejaLa = ombreFaite_;
+    fantomeSuivant_ = false;
+    if (ombresContact_ && !fantome && !ombreDejaLa) {
+        const vec3 c = (m.bmin + m.bmax) * 0.5f, t = m.bmax - m.bmin;
+        draw(ombreQuad_, ombreMat_, world * translate({c.x, m.bmin.y, c.z}) * scale({t.x * 1.12f, 1.f, t.z * 1.1f}));
+    }
+    ombreFaite_ = false;
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
@@ -1045,20 +1061,46 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
     if (fx.nuit || stopK > 0 || fx.recul) feuxVoiture(m, world, fx);
-    mat4 wr[4]; const bool anim = roues && m.nRoues == 4;   // WFS-60 : matrice de chaque roue (braquage, roulage)
+    // WFS-134 (RG-11) : Basse, au-delà de 15 m : roues fixes (invisibles à cette distance), pièces regroupées ci-dessous
+    const bool basseLoin = qualiteBasse && length(world.transformPoint((m.bmin + m.bmax) * 0.5f) - camPos_) > 15.f;
+    mat4 wr[4]; const bool anim = roues && m.nRoues == 4 && !basseLoin;   // WFS-60 : matrice de chaque roue (braquage, roulage)
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
-    for (size_t pi = 0; pi < m.parts.size(); pi++) {
-        const ModelPart& part = m.parts[pi];
+    // WFS-134 (RG-11, RG-12) : version allégée au-delà de 60 m du joueur, sans saut : de 64 à 72 m de la caméra (≈ 56 à 64 m
+    // du joueur, caméra de poursuite 8 m derrière), les deux versions sont dessinées en tramage écran complémentaire (fondu
+    // de 8 m, scene.frag) ; jamais de cubes. t = 0 : complète, 1 : allégée
+    // Qualité Basse : au même endroit, version allégée en 4 pièces (partsBasse : moins d'appels de dessin)
+    const bool versBasse = qualiteBasse && !m.partsBasse.empty();
+    const std::vector<ModelPart>& loin = versBasse ? m.partsBasse : m.partsLod;
+    const float d0 = 64.f;
+    const float tLod = loin.empty() || fantome ? 0.f : std::clamp((depth - d0) / 8.f, 0.f, 1.f);
+    auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
+    for (size_t pi = 0; pi < parts.size(); pi++) {
+        const ModelPart& part = parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
+        // WFS-60) dessinées en un seul appel
+        if (!anim) while (pi + 1 < parts.size() && parts[pi + 1].material == part.material && parts[pi + 1].vertexOffset == part.vertexOffset && parts[pi + 1].feuArriere == part.feuArriere &&
+                          parts[pi + 1].firstIndex == p.first + p.count) p.count += parts[++pi].indexCount;
         p.vis = vis;   // WFS-82
         p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
-        p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
+        p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
+        // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
+        if (qualiteBasse && depth > 15.f && mat.detail > 0) continue;
+        // WFS-134 (RG-11) : Basse, au-delà de 15 m : petites pièces (< 30 cm : logos, rétroviseurs, grilles, pièces de
+        // l'habitacle) non dessinées, sauf feux, peinture et vitres (silhouette inchangée, moins d'appels de dessin)
+        if (qualiteBasse && depth > 15.f && mat.taille > 0 && mat.taille < 0.3f && !part.feuArriere &&
+            !(mat.flags & (MAT_TAIL | MAT_HEAD | MAT_PAINT | MAT_GLASS))) continue;
+        if (fantome) {   // WFS-134 (RG-07) : toutes les pièces translucides (scene.frag, F_FANTOME), après les opaques
+            p.pc.params.w = (float)(mat.flags | MAT_BLEND | MAT_FANTOME);
+            transparent_.push_back(p);
+            continue;
+        }
         // WFS-09 : pièces des feux (repérées par matériau) allumées la nuit : rouge (plus fort au freinage), phares blancs
         // WFS-109 : feu arrière découpé (RG-13) traité comme un MAT_TAIL : verre rouge, sans l'émissif blanc d'origine ;
         // 3e feu stop (RG-03) : éteint hors freinage ; stop : rouge vif de jour comme de nuit, transition de 80 ms (RG-02)
@@ -1074,6 +1116,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         } else if (mat.flags & MAT_BLEND) transparent_.push_back(p);
         else opaqueQ_.push_back(p);
     }
+    };
+    if (tLod < 1.f) emettre(m.parts, tLod > 0.f ? -(3.f + tLod) : 0.f);      // complète : pixels où le seuil ≥ t
+    if (tLod > 0.f) emettre(loin, tLod < 1.f ? -(1.f + tLod) : 0.f);   // allégée : pixels où le seuil < t
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
@@ -1085,8 +1130,8 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
-    // ombre de contact sous les voitures (RG-05) : plus légère quand les ombres du soleil sont actives
-    if (mat.flags & MAT_SHADOWBLOB) p.pc.color.w *= (shadowsOn_ ? 0.55f : night_ ? 0.7f : 0.62f) / 0.75f;
+    // ombre de contact sous les voitures (RG-05) ; WFS-134 (RG-05) : opacité 0,45 partout, ombre du soleil active ou non
+    if (mat.flags & MAT_SHADOWBLOB) { p.pc.color.w *= 0.45f / 0.75f; ombreFaite_ = true; } else ombreFaite_ = false;
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
 }
 
@@ -1380,6 +1425,7 @@ void Renderer::shutdown() {
     for (auto l : {frameLayout_, matLayout_, postLayout_}) vkDestroyDescriptorSetLayout(d, l, nullptr);
     vkDestroySampler(d, sampler_, nullptr); vkDestroySampler(d, clampSampler_, nullptr);
     vk_->destroy(white); vk_->destroy(flatNormal);
+    destroy(ombreQuad_);   // WFS-134
     // WFS-100 (RG-W1, ANO-52) : objet remis à neuf, pour qu'un init() sur le même Renderer recrée tout (retour d'arrière-plan)
     scenePass_ = finalPass_ = shadowPass_ = refletPass_ = VK_NULL_HANDLE;
     sceneFb_ = shadowFb_ = VK_NULL_HANDLE; finalFbs_.clear(); refletFb_[0] = refletFb_[1] = VK_NULL_HANDLE;

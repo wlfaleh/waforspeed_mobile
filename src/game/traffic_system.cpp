@@ -129,7 +129,8 @@ public:
         }
         std::sort(vis, vis + n, [](const Vis& a, const Vis& b) { return a.dz < b.dz; });
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
-        n = std::min(n, dense ? 10 : 14);
+        n = std::min(n, dense ? 3 : r.qualiteBasse ? 6 : 14);   // WFS-134 (RG-11) : Basse : moins de voitures, jamais de cubes
+        if (r.qualiteBasse) while (n > 0 && vis[n - 1].dz * M > 120) n--;   // Basse : trafic dessiné jusqu'à 120 m
         for (int k = 0; k < n; k++) {
             const TrafficCar& c = *vis[k].c;
             const int mi = nativeModelFor(c.type);
@@ -142,7 +143,8 @@ public:
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const size_t ci = (size_t)(&c - traffic_.cars.data());
             // WFS-67 : silhouette légère au-delà de 50 m ; WFS-82 : dès 25 m en qualité Basse (moins d'appels de dessin)
-            if (vis[k].dz * M > (r.qualiteBasse ? (dense ? 6.0 : 25.0) : LOD_CAR_M) || (dense && k >= 1)) { dessineLoin(r, c, m, L, W); continue; }   // WFS-111 : 10 voitures ; WFS-119 : 1 modèle complet au plus, à 6 m
+            // WFS-134 (RG-11) : jamais de cubes, à aucune distance : toujours le vrai modèle (version allégée au-delà de 60 m,
+            // avec fondu, choisie par Renderer::draw) ; en Basse, le coût se règle par le nombre et la distance (ci-dessus)
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
@@ -208,7 +210,8 @@ private:
         r.vk().destroy(haloTex_);
     }
     // silhouette : caisse (hauteur 0,55 H) et habitacle (0,82 W × 0,4 H × 0,5 L), à la couleur de la voiture
-    void dessineLoin(Renderer& r, const TrafficCar& c, const mat4& m, float L, float W) {
+    // WFS-134 (RG-11) : plus appelée (aucune voiture en cubes) ; gardée pour mémoire de l'ancienne silhouette
+    [[maybe_unused]] void dessineLoin(Renderer& r, const TrafficCar& c, const mat4& m, float L, float W) {
         const float H = WEB_FEUX[c.type].H;
         r.draw(cube_, loinPeint_[c.color], m * translate({0, 0.12f, 0}) * scale({W, H * 0.5f, L}));
         r.draw(cube_, loinVitre_, m * translate({0, 0.12f + H * 0.5f, L * 0.04f}) * scale({W * 0.82f, H * 0.4f, L * 0.5f}));

@@ -54,7 +54,7 @@ def main():
     if len(vs) != 20: manques.append(f"{len(vs)} voitures dans cars.h (20 attendues)")
     ids = {v["fichier"]: v for v in vs}
     for f in sorted((RACINE / "assets" / "cars").glob("*.wfm")):
-        v = ids.get(f"cars/{f.name}")
+        v = ids.get(f"cars/{f.name.replace('-lod.wfm', '.wfm')}")   # WFS-134 : version allégée = crédit de sa voiture
         if not v: manques.append(f"{f.name} : absent de CARS[] (pas de crédit)"); continue
         lic = LIC / f"{ALIAS.get(v['id'], v['id'])}.txt"
         if not lic.is_file() or lic.stat().st_size < 50: manques.append(f"{f.name} : licence {lic.name} absente")

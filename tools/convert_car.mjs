@@ -94,6 +94,8 @@ let list = prims.filter((p) => {
   const mn = (p.mat && p.mat.getName()) || '';
   return !(d[2] > 1.5 && d[0] < 0.002 * d[2] && d[1] > 0.4 * d[2] && /plane|shadow|ombre|ground|floor/i.test(p.name + ' ' + mn + ' Plane'));
 });
+// WFS-134 (RG-11) : WFS_EXCLURE=<regex> retire des pièces par nom de matériau (LOD du jeu web : silhouette « wfs_far »)
+if (process.env.WFS_EXCLURE) { const rx = new RegExp(process.env.WFS_EXCLURE); list = list.filter((p) => !rx.test((p.mat && p.mat.getName()) || '')); }
 
 // ---------- orientation, échelle, pose au sol ----------
 const rot = (deg) => { const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a); for (const p of list) for (const arr of [p.pos, p.nrm]) for (let i = 0; i < arr.length; i += 3) { const x = arr[i], z = arr[i + 2]; arr[i] = c * x + s * z; arr[i + 2] = -s * x + c * z; } };

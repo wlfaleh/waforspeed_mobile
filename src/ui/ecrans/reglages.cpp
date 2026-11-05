@@ -130,7 +130,7 @@ void appliquerCamera() { choisirVue((VueCamera)reglages().camera); }   // WFS-66
 void appliquerQualite(Renderer& r) {
     if (r.gpuLogiciel()) return;
     const int q = reglages().qualite;
-    r.vk().renderScale = qualite::echelleRendu(q, 1.f);   // WFS-104 : Moyenne et Haute à 100 % (netteté du garage)
+    r.vk().renderScale = qualite::echelleScene(q, 1.f);   // WFS-104 : Moyenne et Haute à 100 % ; WFS-134 : netteté retenue (chauffe)
     r.forceNoShadows = q == QUALITE_BASSE;
     r.bloomForce = q == QUALITE_BASSE ? 0.f : 1.f;   // WFS-15 : bloom en Moyenne et Haute
     r.qualiteBasse = q == QUALITE_BASSE;               // WFS-82 : petits objets coupés à 150 m
@@ -182,7 +182,7 @@ public:
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
             Reglages& R = reglages();
             if (l == L_CAMERA) { R.camera = c; appliquerCamera(); }
-            else if (l == L_QUALITE) { R.qualite = c; R.qualiteChoisie = true; if (r_) appliquerQualite(*r_); }
+            else if (l == L_QUALITE) { R.qualite = c; R.qualiteChoisie = true; qualite::oublierRetenus(); if (r_) appliquerQualite(*r_); }   // WFS-134
             else if (l == L_SON) R.son = c == 0;
             else if (l == L_MUSIQUE) R.musique = c == 0;
             else if (l == L_COMMANDES) R.gaucher = c == 1;   // WFS-75 : lu à chaque toucher et à chaque image (miroirX)
@@ -263,6 +263,8 @@ private:
         const std::string ft = ui::majuscules("Fermer");
         const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = y + 10 * k;
         g_fermer = {fx, fy, fw, bh};
+        // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
+        ui::text(r, x0, fy + (bh - 15 * k) / 2, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
         biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
         ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
     }

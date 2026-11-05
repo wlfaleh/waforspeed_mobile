@@ -20,7 +20,8 @@ layout(location = 0) out vec4 outColor;
 const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
            F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u,
-           F_POOL = 32768u, F_ADD = 65536u;   // WFS-09 : tache des phares (multiplicative), halo (additif)
+           F_POOL = 32768u, F_ADD = 65536u,   // WFS-09 : tache des phares (multiplicative), halo (additif)
+           F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u;   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -101,6 +102,14 @@ void main() {
     uint flags = uint(pc.params.w + 0.5);
     // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
     bool fine = pc.emissive.w > 0.0 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u;
+    // WFS-134 (RG-12) : fondu entre la voiture complète et sa version allégée (56 à 64 m) : tramage écran 4×4 complémentaire
+    // (emissive.w = −(1 + t) : pixel gardé si seuil < t ; −(3 + t) : gardé si seuil ≥ t)
+    if (pc.emissive.w < -0.5 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) {
+        ivec2 q = ivec2(gl_FragCoord.xy) & 3;
+        const float B[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+        float seuil = (B[q.y * 4 + q.x] + 0.5) / 16.0, w = -pc.emissive.w;
+        if (w < 2.5 ? seuil >= w - 1.0 : seuil < w - 3.0) discard;
+    }
     // WFS-16 : passe de reflet (vue miroir de la chaussée) : rien de ce qui est sous le plan
     if (F.nuitA.w > 0.5 && vWorld.y < F.nuitB.x - 0.05) discard;
     if ((flags & F_ADD) != 0u) {   // WFS-09 : halo des feux et des lampadaires (TEXS.radial du jeu web, mélange additif)
@@ -280,6 +289,8 @@ void main() {
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
     vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
+    // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
+    if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     if (wetRoad && F.nuitA.z > 0.5) {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
@@ -311,7 +322,10 @@ void main() {
         float Fc = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
         float acA = sqrt(0.03 * 0.03 * 0.03 * 0.03 + aaKernel);          // vernis : alpha 0,0009, élargi sur les arêtes
         float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0);        // disque du soleil reflété : seulement si net
-        vec3 vernis = (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
+        // WFS-134 (RG-06, ANO-67) : sous l'horizon, le vernis reflète la chaussée sombre, pas le sol clair du ciel (taches
+        // beiges des tranches de portes et des bas de caisse vus en rasant)
+        vec3 ciel = mix(skyColor(R, sunKc), F.groundCol.rgb * 0.3, smoothstep(0.0, -0.3, R.y));
+        vec3 vernis = (ciel * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
         col = col * (1.0 - Fc) + min(vernis, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
     }
     float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
@@ -320,7 +334,9 @@ void main() {
         col = albedo * 0.08 * skyAmb + min(skyColor(R) * F.misc.z * Fg + D_GGX(NoH, 0.0004) * 0.25 * sun * NoL, vec3(SPEC_MAX));   // WFS-100 RG-02
         alpha = clamp(0.55 + Fg, 0.0, 1.0);
     }
-    col += pc.emissive.rgb;
+    col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0));   // WFS-134 : émission × texture
+    // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
+    if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 
     // brouillard (perspective atmosphérique)
     float d = length(F.camPos.xyz - vWorld);
@@ -332,5 +348,13 @@ void main() {
     // énorme, voire NaN (normale nulle) ; on plafonne à 64 et on remplace NaN / infini par 0
     col = clamp(col, vec3(0.0), vec3(64.0));
     if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
+    // WFS-134 (RG-07, ANO-60) : fantôme du record : teinte cyan #00E5FF à 30 %, translucide (α 0,45), un peu lumineux
+    // pour rester visible de nuit
+    if ((flags & F_FANTOME) != 0u) {
+        const vec3 CYAN = vec3(0.0, 0.7835, 1.0);   // #00E5FF en linéaire
+        col = mix(col, CYAN * max(dot(col, vec3(0.2126, 0.7152, 0.0722)), 0.05) * 2.0, 0.3) + CYAN * 0.06;
+        outColor = vec4(col, clamp(alpha, 0.0, 1.0) * 0.45);
+        return;
+    }
     outColor = vec4(col, ((flags & F_BLEND) != 0u) ? alpha : 1.0);
 }
