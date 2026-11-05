@@ -1,5 +1,6 @@
 // WaForSpeed — texte de l'interface (WFS-26) : atlas SDF construit au démarrage avec stb_truetype.
 #include "text.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -17,9 +18,10 @@ namespace wfs {
 namespace ui {
 namespace {
 
-constexpr float BASE_PX = 48.f;          // taille de référence de l'atlas
-constexpr int PAD = 6, ATLAS = 1024;     // marge du champ de distance, côté de l'atlas
-constexpr unsigned char ONEDGE = 128;    // valeur du bord (0,5 dans le shader)
+constexpr float BASE_PX = 64.f;          // taille de référence de l'atlas (WFS-102 RG-17 : 48 → 64, traits fins plus nets)
+constexpr int PAD = 8, ATLAS = 1024;     // marge du champ de distance, côté de l'atlas (WFS-102 : glyphes de 64 px, tiennent encore en 1024)
+constexpr unsigned char ONEDGE = 128;
+constexpr float TAILLE_MIN = 8.f;        // WFS-102 (RG-16) : plus petite hauteur de texte affichée, en pixels réels    // valeur du bord (0,5 dans le shader)
 
 struct Glyph { float u0, v0, u1, v1, w, h, xoff, yoff, adv; };
 struct Font {
@@ -56,12 +58,17 @@ bool load(Renderer& r) {
     for (int c = 32; c < 127; c++) cps.push_back(c);
     for (int c = 160; c < 256; c++) cps.push_back(c);
     for (int c : {0x152, 0x153, 0x2019, 0x2026, 0x20AC, 0x202F}) cps.push_back(c);
+    // WFS-95 (RG-01) : tirets, guillemets anglais, puce, flèches et coche (seulement ceux que la police contient)
+    for (int c : {0x2014, 0x2013, 0x2018, 0x201C, 0x201D, 0x2022, 0x2192, 0x2190, 0x2713}) cps.push_back(c);
     std::vector<uint8_t> px((size_t)ATLAS * ATLAS, 0);
     int x = 1, y = 1, rowH = 0;
     for (int cp : cps) {
         int adv, lsb; stbtt_GetCodepointHMetrics(&F.info, cp, &adv, &lsb);
         Glyph g{}; g.adv = adv * F.scale;
-        if (!stbtt_FindGlyphIndex(&F.info, cp) && cp != 32 && cp != 160 && cp != 0x202F) continue;
+        if (!stbtt_FindGlyphIndex(&F.info, cp) && cp != 32 && cp != 160 && cp != 0x202F) {
+            if (cp > 0x2000) WFS_LOG("Police : caractère U+%04X absent de la police (repli « ? »)", cp);
+            continue;
+        }
         int w = 0, h = 0, xo = 0, yo = 0;
         unsigned char* sdf = stbtt_GetCodepointSDF(&F.info, F.scale, cp, PAD, ONEDGE, (float)ONEDGE / PAD, &w, &h, &xo, &yo);
         if (sdf) {
@@ -101,7 +108,11 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
     float pen = 0; int prev = 0;
     for (int cp : cps) {
         auto it = F.glyphs.find(cp);
-        if (it == F.glyphs.end()) it = F.glyphs.find('?');
+        if (it == F.glyphs.end()) {   // WFS-95 (RG-02) : caractère absent journalisé une fois, repli « ? »
+            static std::unordered_map<int, bool> signales;
+            if (r && !signales[cp]) { signales[cp] = true; WFS_WARN("Police : caractère U+%04X absent", cp); }
+            it = F.glyphs.find('?');
+        }
         if (it == F.glyphs.end()) continue;
         const Glyph& g = it->second;
         if (prev) pen += stbtt_GetCodepointKernAdvance(&F.info, prev, cp) * F.scale * s;
@@ -122,6 +133,7 @@ bool chargerPolice(Renderer& r) { return load(r); }
 
 float width(float px, const std::string& s, float spacing) {
     if (!F.ready) return 0;
+    px = std::max(px, TAILLE_MIN);
     float w = 0; run(nullptr, 0, 0, px, codepoints(s), {}, spacing, &w);
     return w;
 }
@@ -129,9 +141,11 @@ float width(float px, const std::string& s, float spacing) {
 void text(Renderer& r, float x, float y, float px, const std::string& s, const vec4& color, Align align, float spacing, bool ombre,
           bool italique) {
     if (!F.ready || s.empty()) return;
+    px = std::max(px, TAILLE_MIN);   // WFS-102 (RG-16, ANO-47) : jamais de texte sous 8 px réels
     auto cps = codepoints(s);
     float w = 0; run(nullptr, 0, 0, px, cps, {}, spacing, &w);
     if (align == CENTRE) x -= w * 0.5f; else if (align == DROITE) x -= w;
+    if (px <= 20) { x = std::round(x); y = std::round(y); }   // WFS-102 (RG-16) : petits libellés posés sur des pixels entiers
     const float pente = italique ? std::tan(ITALIQUE_DEG * 3.14159265f / 180.f) : 0.f;
     if (ombre) {   // contour sombre décalé : lisible sur la route et le ciel
         const float o = std::max(1.f, px * 0.05f);

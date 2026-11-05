@@ -11,11 +11,14 @@
 #include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../echelle.h"   // WFS-102
+#include "../../game/commandes_tactiles.h"   // WFS-102 : dessin2d (polygone d'un seul tenant)
 #include "chargement.h"
 #include "reglages.h"
 #include "terrain.h"
 #include "../garage.h"   // WFS-11
 #include "../../platform/manette.h"   // WFS-22 : focus de la manette
+#include "../../game/ressenti.h"   // WFS-102 (RG-07) : aide selon le réglage Direction
 
 namespace wfs {
 namespace ecrans {
@@ -48,7 +51,7 @@ bool dansZone(const Zone& z, float x, float y) {
 int choixSous(float x, float y) { for (int i = 0; i < 4; i++) if (dansZone(g_zones[i], x, y)) return i; return -1; }
 const Choix CHOIX[3] = {   // section #menu de index.html, textes exacts
     {"Course solo", "Bats le chrono, frôle le trafic, enchaîne les checkpoints"},
-    {"Duel en ligne", "Défie un ami où qu'il soit, sans trafic"},   // WFS-135 (ANO-63)
+    {"Duel en ligne", "Défie un ami où qu'il soit, sans trafic"},   // WFS-135 (ANO-63) ; WFS-102 (RG-15b) : même règle
     {"Showroom", "Choisis ta voiture et sa couleur"},
 };
 
@@ -107,7 +110,8 @@ public:
             r.uiQuad(q);
         }
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
-        const float itemH = 70 * k, listeH = 3 * itemH + 2 * 6 * k, piedH = 44 * k, aideH = 2 * 22 * k;
+        const bool cp = ui::compact(W, H);   // WFS-102 (RG-02) : téléphone couché (≤ 520 dp de haut) : choix de 52 dp
+        const float itemH = (cp ? 52 : 70) * k, ecart = (cp ? 4 : 6) * k, listeH = 3 * itemH + 2 * ecart, piedH = 44 * k, aideH = (cp ? 18 : 2 * 22) * k;
         const float total = m.hauteurBloc + gap + listeH + gap + piedH + gap + aideH;
         float y = std::max(24 * k, (H - total) / 2);
         // slide-in : 320 ms, de −36 px à 0, 40 ms de décalage entre les lignes
@@ -121,24 +125,23 @@ public:
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
             const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
-            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + 6 * k);   // translateX(10px)
+            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + ecart);   // translateX(10px)
             g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * k, true};   // zone fixe : l'état pressé ne la déplace pas
             manette::focus(g_zones[i]);   // WFS-22
             if (grise) a *= 0.45f;
             // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
             const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};
-            const int B = 10;
-            for (int b = 0; b < B; b++) {
-                const float tb = (b + 0.5f) / B;
-                r.uiRect(x, yi + itemH * b / B, lw - 14 * k * tb, itemH / B + 0.5f, fond);
+            {   // WFS-102 (RG-04, ANO-20) : un seul polygone (plus de bandes)
+                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * k, yi + itemH}, {x, yi + itemH}};
+                dessin2d::polygone(r, p, 4, dessin2d::uni(fond));
             }
             const bool solo = i == SOLO;   // #startBtn : barre et titre orange
             if (presse) {   // barre gauche cyan --accent-2 avec halo (0 0 12px rgba(0,229,255,.7))
                 for (int h = 3; h >= 1; h--) r.uiRect(x - 4 * k * h, yi - 2 * k * h, 3 * k + 8 * k * h, itemH + 4 * k * h, hex(ACCENT2, 0.12f * a));
                 r.uiRect(x, yi, 3 * k, itemH, hex(ACCENT2, a));
             } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
-            ui::text(r, x + 22 * k, yi + 12 * k, 26 * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
-            ui::text(r, x + 22 * k, yi + 44 * k, 13 * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
+            ui::text(r, x + 22 * k, yi + (cp ? 8 : 12) * k, (cp ? 21 : 26) * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
+            ui::text(r, x + 22 * k, yi + (cp ? 32 : 44) * k, (cp ? 12 : 13) * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------
@@ -160,8 +163,13 @@ public:
         y += piedH + gap;
         // ---------- .intro.only-touch : aide des commandes tactiles ----------
         a = glisse(5, dx);
-        ui::text(r, m.x + dx, y, 16 * k, "Flèches à gauche : volant.", hex(INTRO, a), ui::GAUCHE, 0, false);
-        ui::text(r, m.x + dx, y + 22 * k, 16 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
+        // WFS-102 (RG-07, ANO-32) : aide juste selon le réglage Direction ; masquée à la manette (pas d'écran tactile utilisé)
+        if (!manette::actif()) {
+            if (reglagesRessenti().direction == ModeDirection::Fleches) {
+                ui::text(r, m.x + dx, y, 12 * k, "Flèches à gauche : volant.", hex(MUTED, a), ui::GAUCHE, 0, false);
+                ui::text(r, m.x + dx, y + 17 * k, 12 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(MUTED, a), ui::GAUCHE, 0, false);
+            } else ui::text(r, m.x + dx, y, 12 * k, "Glisse à gauche pour tourner. À droite : Gaz, Frein, Nitro.", hex(MUTED, a), ui::GAUCHE, 0, false);
+        }
     }
 private:
     double t0_ = -1;

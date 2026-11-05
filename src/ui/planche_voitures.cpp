@@ -1,5 +1,6 @@
 // WaForSpeed — planche de contrôle des 20 voitures (WFS-77) : voir planche_voitures.h.
 #include "planche_voitures.h"
+#include "echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -35,7 +36,7 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_actif || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H);
         r.uiRect(0, H - 120 * k, W, 120 * k, {0.04f, 0.045f, 0.06f, 0.82f});
         ui::text(r, W / 2, H - 100 * k, 80 * k, ui::majuscules(g_nom), {1, 1, 1, 1}, ui::CENTRE, 0.02f, false);
     }

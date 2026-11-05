@@ -64,7 +64,7 @@ static void initGraphics(App& app, android_app* a) {
     const double tVk = nowSeconds();
     app.renderer.init(app.vk);
     ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
-    if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(); return; }   // WFS-24 : voiture et carte gardées
+    if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(true); return; }   // WFS-102 : « Quitter »   // WFS-24 : voiture et carte gardées
     ecrans::chargement().fin();
     app.game.allerA(Ecran::Menu);   // WFS-38 : l'application s'ouvre sur le menu après le chargement
     // WFS-74 : écran de chargement de WFS-35 au changement de carte (« Rouler »), étapes réelles, message rouge en cas d'échec
@@ -115,6 +115,10 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
         if (!app.ready) return 1;   // chargement : pris et ignoré (RG-03)
         return retourSysteme(app.game, act == AKEY_EVENT_ACTION_DOWN, AKeyEvent_getRepeatCount(e)) ? 1 : 0;
     }
+    if (ecrans::chargement().enErreur() && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-102 (RG-10) : bouton de l'écran d'erreur
+        const int32_t k = AMotionEvent_getAction(e) & AMOTION_EVENT_ACTION_MASK;
+        return ecrans::chargement().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
+    }
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
     int32_t action = AMotionEvent_getAction(e), kind = action & AMOTION_EVENT_ACTION_MASK;
     size_t idx = (size_t)((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
@@ -162,6 +166,10 @@ void android_main(android_app* a) {
             if (a->destroyRequested) break;
         }
         if (a->destroyRequested) break;
+        if (ecrans::chargement().reessaiDemande()) {   // WFS-102 (RG-10) : « Réessayer » (carte) ou « Quitter » (moteur)
+            if (app.ready) { Game::demandes().carte = sauvegarde().map; Game::demandes().nuit = sauvegarde().tod == "nuit"; }
+            else ANativeActivity_finish(a->activity);
+        }
         if (app.ready && app.focused) {
             // l'appli démarre souvent en portrait puis passe en paysage : la nouvelle taille et la rotation
             // n'arrivent pas toujours avec l'événement de changement ; on les vérifie régulièrement.
