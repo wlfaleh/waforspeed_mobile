@@ -3104,3 +3104,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - #77 (WFS-89, fb50d09) et #79 (WFS-96, 6863763) fusionnées par moi ; #76 (WFS-88, iOS) fusionnée le 2026-11-05 à 01:23 UTC (ordre de l'utilisateur, RG-12). Vérifié : 0 PR ouverte.
 - CI de main verte sur le dernier commit (run 42006825688, après WFS-114). WFS-103 et WFS-88 passés à ✅ dans `TACHES.md`.
 - WFS-100 : l'agent s'est arrêté (limite d'usage hebdomadaire) ; je reprends le ticket moi-même.
+
+### 2026-11-05 10:28:36 — WFS-100 repris par la session (agent arrêté par la limite hebdomadaire) (Claude, session trafic)
+- Travail de l'agent commité et poussé sur `feature/waforspeed-100`, synchronisé avec main, compilation et tests CPU OK.
+- Fait : RG-01 (plus d'élargissement du reflet, couverture du pixel pour les opaques fins), RG-02 (spéculaire ≤ 4,0 dans `scene.frag` et `scene_skin.frag`), RG-03 (peinture `MAT_PAINT` = couleur choisie, sans texture), RG-04 (bloom « dual filter » : seuil 1,0 genou 0,5, 5 niveaux, flou gaussien séparable à 9 prises, CLAMP_TO_EDGE, remontée en tente 3 × 3).
+- Accroche annoncée : `renderer.h` +2 lignes (`FrameParams::bloom`, pointeur `Bloom`).
+- En cours : bancs vitrines, qualité, nuit, garage comparés à main ; puis RG-W1 et RG-W2.
