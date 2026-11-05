@@ -33,7 +33,7 @@
     "nitro_fin": 500.0
   },
   "poursuite": {
-    "score_depart": 100,
+    "score_depart": 1000,
     "distance": 10.0,
     "choc_trafic": 5,
     "choc_glissiere": 3,
@@ -49,9 +49,9 @@
     "poursuite": {
       "recul": 9.0,
       "hauteur": 6.3,
-      "regard_devant": 14.0,
-      "regard_hauteur": -6.3,
-      "zoom": 66.0
+      "regard_devant": 10.0,
+      "regard_hauteur": -4.5,
+      "zoom": 64.0
     },
     "proche": {
       "recul": 6.0,
