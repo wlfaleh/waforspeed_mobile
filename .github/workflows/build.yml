@@ -78,6 +78,23 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: 'captures-${{ matrix.groupe }}', path: captures }
 
+  # WFS-91 : banc d'endurance (8 cycles, 4 cartes jour / nuit, garage, pause, 3 retours d'arrière-plan, mémoire) avec les
+  # couches de validation Vulkan ; en parallèle des bancs, aucune publication n'en dépend (RG-05, RG-13)
+  endurance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30   # banc ≈ 14 min avec la validation (llvmpipe), compilation comprise
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)
+        run: sudo apt-get update && sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers ninja-build
+      - name: Compilation
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
+      - name: Endurance
+        run: tools/qa/endurance.sh ./build/wfs_bench captures assets/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: captures-endurance, path: captures }
+
   android:
     runs-on: ubuntu-24.04
     steps:
