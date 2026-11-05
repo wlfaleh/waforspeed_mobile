@@ -3223,3 +3223,11 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - CI de main après #98 (run 42022502185) : android, endurance (sans contournement ANO-52), bancs et publication verts.
 - Captures `poursuite-*` maintenant prises de nuit (terrain « ville (nuit) »). En qualité Basse, 362 à 584 appels de dessin.
 - Pour la PO : `modeCle` (`modes_ecran.cpp`) enregistre « checkpoint » pour la Poursuite (le mode n'est pas gardé au redémarrage) ; le score de course du HUD reste affiché en poursuite (`src/ui/hud.cpp`) ; RG-08 ≤ 300 appels en Basse non atteint (la ville seule en fait déjà ≈ 331).
+
+### 2026-11-05 12:19:06 — Début WFS-119 : Poursuite police, 2e passage (PO)
+- Aucun ticket ⏳ Prêt attribuable (E2, E3, E4, E8 occupés ; anno.md sans anomalie 🆕 ; rien de neuf dans `tache utilisateur.md`). Ticket créé à partir des suites notées au Journal par l'agent WFS-111 (11:53:25 et 12:17:17) et du besoin de l'utilisateur (6 surprises validées le 2026-11-04).
+- Attribué à Claude (session trafic, agent WFS-119), épic E3 (exception : 2e ticket E3 actif à côté de WFS-112, fichiers séparés `src/game/poursuite*`), branche `feature/waforspeed-119`, règles `regles-de-gestion/WFS-119.md`.
+- Zone : `src/game/poursuite*`, `tests/test_poursuite.cpp`, `sauvegarde.*` si nécessaire ; accroches ≤ 10 lignes : `traffic_system.cpp` (hors feux), `hud.cpp` (≤ 3), `modes_ecran.cpp` (≤ 4), `desktop_main.cpp`, `CMakeLists.txt`. Interdit : fichiers de WFS-112 (duel*, salon*, reseau_*, serveur/, manifeste, JeuActivity), `src/render/**`, `shaders/**`, reste de `src/ui/**`, `src/world/**`, `.github/**`, `android/**`, iOS.
+- Critères : surprises camion en travers et ralentisseur (6 au total), un seul score au HUD en poursuite, mode Poursuite gardé au redémarrage, +60 appels de dessin au plus en Basse par rapport au Checkpoint, parcours complet prouvé au banc.
+- Plan : 2 surprises dans `poursuite.*`, accroche HUD, `modeCle`, réglage des silhouettes, test CPU + captures, fusion par confiance.
+- Décision du PO : la cible absolue de 300 appels de WFS-111 RG-08 est remplacée par un écart ≤ 60 (la ville seule en fait ≈ 331) ; l'hélicoptère / projecteur de nuit est sorti du périmètre (il faudrait toucher `src/render/**`).
