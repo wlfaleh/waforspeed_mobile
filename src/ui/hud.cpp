@@ -105,14 +105,18 @@ public:
             const float w = 200 * k, h = 112 * k, x = mg.gauche + gl, y = mg.haut + gt;
             r.uiRect(x, y, w, h, GLASS);
             label(r, x + pad, y + 10 * k, k, "Temps");
-            const bool bas = c->timeLeft < 8;   // .time-value.low
-            const std::string t = ui::decimal(std::max(0.0, c->timeLeft), 1);
+            const bool ligne = c->duelFinish > 0;   // WFS-110 : course à une ligne d'arrivée (course à 5, duel) : chrono et distance
+            const bool bas = !ligne && c->timeLeft < 8;   // .time-value.low
+            const std::string t = ligne ? ui::chrono(c->raceTime) : ui::decimal(std::max(0.0, c->timeLeft), 1);
             const float tp = 48 * k, ty = y + 26 * k;
             // WFS-48 : .time-value en italique (font-style: italic du web)
             halo(r, x + pad, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k, true);
             ui::text(r, x + pad, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false, true);
+            if (ligne) { label(r, x + pad, y + 80 * k, k, "Arrivée " + ui::decimal(std::max(0.0, c->duelFinish - pl.dist) * M / 1000, 2) + " km"); barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)std::clamp(pl.dist / c->duelFinish, 0.0, 1.0)); }
+            else {
             label(r, x + pad, y + 80 * k, k, "Checkpoint " + std::to_string(c->level + 1));
             barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)(1 - (c->nextCp - pl.dist) / CHECK_DIST));
+            }
         }
         // ---------- haut droite : score + combo (.p-score) ----------
         {
@@ -126,7 +130,7 @@ public:
                 ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
         }
         const int v = g_kmhForce >= 0 ? g_kmhForce : std::abs(Course::kmh(pl.speed));
-        const bool rouge = v > 300, arriere = pl.speed < -1 && g_kmhForce < 0;
+        const bool rouge = v > 300, arriere = (pl.speed < -1 || pl.reversing) && g_kmhForce < 0;   // WFS-108 : « R » dès le passage en marche arrière
         const int on = (int)std::lround(std::clamp(pl.nitro, 0.0, 1.0) * 10);   // cases de nitro allumées
         // ---------- vue cockpit (WFS-98, RG-06, ANO-24) : vitesse sous le temps ----------
         // le cadran du tableau de bord 3D donne déjà la vitesse : pas de compteur en arc ; chiffres 28 px et cases de nitro

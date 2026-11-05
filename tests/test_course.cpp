@@ -16,6 +16,8 @@ using namespace wfs;
 static int bad = 0;
 static void check(bool ok, const char* what) { std::printf("%s : %s\n", what, ok ? "OK" : "ÉCHEC"); if (!ok) bad++; }
 
+int testCommandes();   // WFS-108
+
 int main(int argc, char** argv) {
     // 1. course automatique : identique au jeu web, ligne par ligne (tolérance nulle)
     std::ifstream f(argc > 1 ? argv[1] : "tests/course_web_ref.txt");
@@ -35,14 +37,23 @@ int main(int argc, char** argv) {
     if (diff) bad++;
 
     // 2. RG-01 départ, RG-02 checkpoints
-    Course c; c.reset();
+    Course c; c.reglesWeb = true; c.reset();   // règles du jeu web (référence) : 30 s, +max(5, 11 − n × 0,4)
     check(c.timeLeft == 30 && c.state == RaceState::Count && c.clock == -3, "RG-01 départ : 30 s, compte à rebours de 3 s");
-    check(Course::checkpointBonus(1) == 11.0, "RG-02 checkpoint 1 : +11 s");
-    check(std::abs(Course::checkpointBonus(10) - 7.4) < 1e-9 && Course::checkpointBonus(11) == 7.0,
+    check(Course::checkpointBonusWeb(1) == 11.0, "RG-02 checkpoint 1 : +11 s");
+    check(std::abs(Course::checkpointBonusWeb(10) - 7.4) < 1e-9 && Course::checkpointBonusWeb(11) == 7.0,
           "RG-02 checkpoint 10 : +7,4 s (11 − 9×0,4), checkpoint 11 : +7 s");
-    check(Course::checkpointBonus(30) == 5.0, "RG-02 plancher de 5 s");
-    {   // checkpoint réel : la voiture passe 600 m
+    check(Course::checkpointBonusWeb(30) == 5.0, "RG-02 plancher de 5 s");
+    {   // WFS-110 (RG-08) : mode Checkpoint : 60,0 s au départ, +30 s à chaque checkpoint
         Track t; t.build(mapById("ville")); Player pl; pl.reset(carById("golf")); Course k; k.reset();
+        check(k.timeLeft == 60.0 && Course::checkpointBonus(1) == 30.0 && Course::checkpointBonus(7) == 30.0, "WFS-110 RG-08 : départ 60 s, +30 s");
+        k.state = RaceState::Play; k.clock = 0; pl.dist = CHECK_DIST; k.step(0.01, pl, nullptr, 0);
+        check(k.level == 1 && std::abs(k.timeLeft - (60 - 0.01 + 30)) < 1e-9, "WFS-110 RG-08 : checkpoint 1 → +30 s");
+        pl.dist = 2 * CHECK_DIST; k.step(0.01, pl, nullptr, 0);
+        check(k.level == 2 && std::abs(k.timeLeft - (60 - 0.02 + 60)) < 1e-9, "WFS-110 RG-08 : checkpoint 2 → +30 s");
+        std::printf("mode Checkpoint (WFS-110) : 60,0 s au départ, +30 s à chaque checkpoint : OK\n");
+    }
+    {   // checkpoint réel : la voiture passe 600 m
+        Track t; t.build(mapById("ville")); Player pl; pl.reset(carById("golf")); Course k; k.reglesWeb = true; k.reset();
         k.state = RaceState::Play; k.clock = 0;
         pl.dist = CHECK_DIST; k.step(0.01, pl, nullptr, 0);
         check(k.level == 1 && std::abs(k.timeLeft - (30 - 0.01 + 11)) < 1e-9 && k.nextCp == 2 * CHECK_DIST, "RG-02 passage du checkpoint 1 : +11 s, level 1");
@@ -173,13 +184,13 @@ int main(int argc, char** argv) {
         bool tailles = true, zone = true, dessin = true, gaz = true, appuis = true;
         for (const EcranEssai& e : ecrans)
             for (const bool gaucher : {false, true}) {
-                const float W = e.W, H = e.H, k = H / 720.f;
+                const float W = e.W, H = e.H, k = H / 720.f;   // WFS-108 : les commandes en dp sont au moins à cette taille
                 const Marges m = gaucher ? Marges{e.m.droite, e.m.haut, e.m.gauche, e.m.bas} : e.m;   // ecrans::margesCommandes
                 const DispositionCommandes d = dispositionCommandes(W, H, m);
                 tailles = tailles && d.gaz.w >= 64 * k && d.gaz.h >= 120 * k && d.frein.w >= 84 * k && d.frein.h >= 88 * k &&
                           d.nitro.w >= 68 * k && d.nitro.h == d.nitro.w;
                 zone = zone && d.gaz.x + d.gaz.w <= W - m.droite && d.gaz.y + d.gaz.h <= H - m.bas && d.frein.y + d.frein.h <= H - m.bas &&
-                       d.nitro.y + d.nitro.h <= H - m.bas && d.nitro.x + d.nitro.w < d.frein.x && d.frein.x + d.frein.w < d.gaz.x &&
+                       d.nitro.y + d.nitro.h < d.frein.y && d.frein.x + d.frein.w < d.gaz.x &&   // WFS-108 : nitro au-dessus du frein
                        !dansZoneDirection(d.nitro.x, W, m);
                 // la zone de toucher peut déborder du dessin, jamais l'inverse : chaque point dessiné donne sa commande
                 auto couvre = [&](const Cadre& c, Commande attendue) {
@@ -217,6 +228,7 @@ int main(int argc, char** argv) {
         check(gaz, "WFS-98 RG-05 bis : (0,89 W ; 0,74 H) au gaz, (0,11 W ; 0,74 H) en gaucher");
         check(appuis, "WFS-98 : appuis des bancs (demi-tour au gaz, frein à 0,66 W, nitro du coin haut droit, rien à gauche)");
     }
+    bad += testCommandes();   // WFS-108 : commandes agrandies, frein / marche arrière, gyroscope (tests/test_commandes.cpp)
     if (bad) { std::printf("ÉCHEC (%d)\n", bad); return 1; }
     std::printf("OK\n");
     return 0;

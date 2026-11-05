@@ -35,12 +35,18 @@ int main() {
     ok = ok && horsMode && enMode && tempsJeu > 179.9 && tempsJeu < 180.1;
     // WFS-66 : caméras du jeu web (CAM_MODES, cycleCamera, volant −braquage × 2,3, aiguille 2,2 − v / 300 × 4,4, fov)
     auto proche = [](double a, double b) { return std::fabs(a - b) < 1e-5; };
-    // WFS-85 : Poursuite (haute, 62°) → Proche (basse, 58°) → Capot → Cockpit
+    // WFS-85 : Poursuite (haute) → Proche (basse) → Capot → Cockpit
     const bool cycle = vueApres(VueCamera::Poursuite) == VueCamera::Proche && vueApres(VueCamera::Proche) == VueCamera::Capot &&
                        vueApres(VueCamera::Capot) == VueCamera::Cockpit && vueApres(VueCamera::Cockpit) == VueCamera::Poursuite;
-    const bool vues = proche(VUES[0].fov, 62) && proche(VUES[3].fov, 58) && proche(VUES[2].fov, 72) && VUES[2].cockpit && VUES[1].capot &&
-                      !VUES[0].capot && !VUES[3].capot && proche(POURSUITE_LOIN.dist, 8) && proche(POURSUITE_LOIN.h, 2.5) &&
-                      proche(POURSUITE_PROCHE.dist, 4.6) && proche(POURSUITE_PROCHE.h, 1.28);
+    // WFS-105 : Poursuite 9 m × 6,3 m (66°), Proche 6 m × 2,67 m (60°), points visés sous la route ; capot et cockpit inchangés
+    const bool vues = proche(VUES[0].fov, 66) && proche(VUES[3].fov, 60) && proche(VUES[2].fov, 72) && VUES[2].cockpit && VUES[1].capot &&
+                      !VUES[0].capot && !VUES[3].capot && proche(POURSUITE_LOIN.dist, 9) && proche(POURSUITE_LOIN.h, 6.3) &&
+                      proche(POURSUITE_PROCHE.dist, 6) && proche(POURSUITE_PROCHE.h, 2.67) && POURSUITE_LOIN.lookH < 0 &&
+                      POURSUITE_PROCHE.lookH < 0 && proche(POURSUITE_LOIN.ahead, 14) && proche(POURSUITE_PROCHE.ahead, 7);
+    // WFS-105 (RG-01, RG-06) : élévation à l'arrêt = atan(hauteur / distance) : Poursuite entre 30° et 40°, Proche entre 20° et 25°
+    const double eLoin = std::atan2(POURSUITE_LOIN.h, POURSUITE_LOIN.dist) * 180 / M_PI,
+                 eProche = std::atan2(POURSUITE_PROCHE.h, POURSUITE_PROCHE.dist) * 180 / M_PI;
+    const bool angles = eLoin >= 30 && eLoin <= 40 && eProche >= 20 && eProche <= 25;
     const bool aiguille = proche(aiguilleAngle(0), 2.2) && proche(aiguilleAngle(150), 0) && proche(aiguilleAngle(300), -2.2) &&
                           proche(aiguilleAngle(420), -2.2) && proche(aiguilleAngle(-150), 0);
     float vol = 0; for (int i = 0; i < 120; i++) vol = lisser(vol, volantCible(0.5), 1.f / 60, 14.f);   // 2 s de braquage à 0,5
@@ -48,8 +54,9 @@ int main() {
                         proche(lisser(0, 1, 0.5f, 14.f), 1);
     const bool fov = proche(fovVue(VueCamera::Cockpit, 0, false), 72) && proche(fovVue(VueCamera::Cockpit, 1, false), 79) &&
                      proche(fovVue(VueCamera::Cockpit, 2, true), 72 + 1.3 * 7 + 6) && proche(fovVue(VueCamera::Capot, 0.5, false), 75.5);
-    std::printf("caméras : cycle %s, vues %s, aiguille %s, volant %s, champ de vision %s\n", cycle ? "OK" : "ÉCHEC", vues ? "OK" : "ÉCHEC",
-                aiguille ? "OK" : "ÉCHEC", volant ? "OK" : "ÉCHEC", fov ? "OK" : "ÉCHEC");
-    ok = ok && cycle && vues && aiguille && volant && fov;
+    std::printf("caméras : cycle %s, vues %s, élévation %.1f° / %.1f° %s, aiguille %s, volant %s, champ de vision %s\n", cycle ? "OK" : "ÉCHEC",
+                vues ? "OK" : "ÉCHEC", eLoin, eProche, angles ? "OK" : "ÉCHEC", aiguille ? "OK" : "ÉCHEC", volant ? "OK" : "ÉCHEC",
+                fov ? "OK" : "ÉCHEC");
+    ok = ok && cycle && vues && angles && aiguille && volant && fov;
     return ok ? 0 : 1;
 }

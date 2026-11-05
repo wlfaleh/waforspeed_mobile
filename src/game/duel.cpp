@@ -261,42 +261,52 @@ void Session::updateGhosts(double dt) {
 // hitGhosts (js/game/update.js) : côte à côte = frottement et séparation progressive ; arrière = recul ou poussée,
 // selon la masse relative (kg / 1450). Le hasard du jeu web (cap ±0,06 quand on est percuté) est remplacé par une
 // valeur déterministe tirée de l'état (même effet moyen, rejouable dans les tests).
+// hitGhosts (une voiture) : contact entre ma voiture et une autre voiture (fantôme du duel ou ordinateur de la course à 5,
+// WFS-110 RG-05) ; effet seulement sur ma voiture, la plus lourde bouge moins
+ContactEvents contacter(double dt, Player& pl, const Track& t, const CarDef& me, Ghost& g) {
+    ContactEvents ev;
+    g.hitCd = std::max(0.0, g.hitCd - dt);
+    if (g.done) return ev;
+    const double myLen = me.d.L / M, myW = me.d.W / (2 * RW);
+    const CarDef& oc = carById(g.car.c_str());
+    const double oLen = oc.d.L / M, oW = oc.d.W / (2 * RW);
+    const double dz = g.rd - pl.dist, lat = std::abs(pl.playerX - g.x);
+    const double touchZ = (myLen + oLen) / 2, touchLat = myW + oW;
+    if (std::abs(dz) >= touchZ || lat >= touchLat) return ev;
+    const double sx = pl.playerX - g.x;
+    const int side = sx > 0 ? 1 : sx < 0 ? -1 : (g.x > 0 ? -1 : 1);
+    const double overlapZ = touchZ - std::abs(dz), overlapX = touchLat - lat;
+    const double oMass = oc.spec.kg / 1450.0, share = oMass / (oMass + pl.perf.mass);   // la plus lourde bouge moins
+    ev.side = side;
+    if (overlapX * RW < overlapZ * M * 0.7) {   // côte à côte : les carrosseries frottent et se repoussent
+        pl.playerX += side * std::min(overlapX * share * 2 + 0.003, dt * 2.5 + 0.004);
+        pl.heading += side * 0.06 * share; pl.speed *= 1 - 0.8 * dt;
+        if (g.hitCd <= 0) { g.hitCd = 0.2; ev.frottements++; }
+        return ev;
+    }
+    const double rel = std::abs(pl.speed - g.v), impact = rel / MAX_SPEED;
+    if (dz > 0) {   // je percute l'arrière de l'adversaire : je recule derrière lui et perds ma vitesse
+        pl.position = t.wrap(pl.position - overlapZ - 0.15 / M); pl.dist = std::max(0.0, pl.dist - overlapZ - 0.15 / M);
+        pl.speed = std::min(pl.speed, g.v + rel * (0.15 + 0.3 * (1 - share)));
+    } else {        // il me percute par l'arrière : je suis poussé vers l'avant
+        pl.speed = std::max(pl.speed, g.v * (0.6 + 0.4 * share));
+        const double r = std::sin(pl.dist * 12.9898 + g.rd * 78.233) * 0.5;   // ∈ [−0,5 ; 0,5] (Math.random() − 0,5)
+        pl.heading += r * 0.12 * std::min(1.0, impact * 4);
+    }
+    if (g.hitCd <= 0) {
+        g.hitCd = 0.35; ev.chocs++; ev.impact = std::max(ev.impact, impact);
+        if (impact * share > 0.22) { ev.accident = true; pl.accident(std::min(1.0, impact * share * 1.5), side); }
+    }
+    return ev;
+}
+
 ContactEvents Session::hitGhosts(double dt, Player& pl, const Track& t, const CarDef& me) {
     ContactEvents ev;
     if (st_ != Status::Race) return ev;
-    const double myLen = me.d.L / M, myW = me.d.W / (2 * RW);
     for (auto& [id, g] : ghosts_) {
-        g.hitCd = std::max(0.0, g.hitCd - dt);
-        if (g.done) continue;
-        const CarDef& oc = carById(g.car.c_str());
-        const double oLen = oc.d.L / M, oW = oc.d.W / (2 * RW);
-        const double dz = g.rd - pl.dist, lat = std::abs(pl.playerX - g.x);
-        const double touchZ = (myLen + oLen) / 2, touchLat = myW + oW;
-        if (std::abs(dz) >= touchZ || lat >= touchLat) continue;
-        const double sx = pl.playerX - g.x;
-        const int side = sx > 0 ? 1 : sx < 0 ? -1 : (g.x > 0 ? -1 : 1);
-        const double overlapZ = touchZ - std::abs(dz), overlapX = touchLat - lat;
-        const double oMass = oc.spec.kg / 1450.0, share = oMass / (oMass + pl.perf.mass);   // la plus lourde bouge moins
-        ev.side = side;
-        if (overlapX * RW < overlapZ * M * 0.7) {   // côte à côte : les carrosseries frottent et se repoussent
-            pl.playerX += side * std::min(overlapX * share * 2 + 0.003, dt * 2.5 + 0.004);
-            pl.heading += side * 0.06 * share; pl.speed *= 1 - 0.8 * dt;
-            if (g.hitCd <= 0) { g.hitCd = 0.2; ev.frottements++; }
-            continue;
-        }
-        const double rel = std::abs(pl.speed - g.v), impact = rel / MAX_SPEED;
-        if (dz > 0) {   // je percute l'arrière de l'adversaire : je recule derrière lui et perds ma vitesse
-            pl.position = t.wrap(pl.position - overlapZ - 0.15 / M); pl.dist = std::max(0.0, pl.dist - overlapZ - 0.15 / M);
-            pl.speed = std::min(pl.speed, g.v + rel * (0.15 + 0.3 * (1 - share)));
-        } else {        // il me percute par l'arrière : je suis poussé vers l'avant
-            pl.speed = std::max(pl.speed, g.v * (0.6 + 0.4 * share));
-            const double r = std::sin(pl.dist * 12.9898 + g.rd * 78.233) * 0.5;   // ∈ [−0,5 ; 0,5] (Math.random() − 0,5)
-            pl.heading += r * 0.12 * std::min(1.0, impact * 4);
-        }
-        if (g.hitCd <= 0) {
-            g.hitCd = 0.35; ev.chocs++; ev.impact = std::max(ev.impact, impact);
-            if (impact * share > 0.22) { ev.accident = true; pl.accident(std::min(1.0, impact * share * 1.5), side); }
-        }
+        const ContactEvents e = contacter(dt, pl, t, me, g);
+        ev.frottements += e.frottements; ev.chocs += e.chocs; ev.impact = std::max(ev.impact, e.impact);
+        ev.accident = ev.accident || e.accident; if (e.side) ev.side = e.side;
     }
     return ev;
 }

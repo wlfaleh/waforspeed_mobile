@@ -57,9 +57,15 @@ public:
             banniere_ = 2.5;
             WFS_LOG("qualité : rétrogradation automatique au niveau %d (%.0f images/s à l'échelle 0,6)", g_auto.niveau, g_auto.fpsMesure);
         }
-        r_->vk().renderScale = qualite::echelleRendu(g_auto.niveau, g_auto.echelle);   // WFS-86 : plancher (voiture nette en course)
-        r_->resize();
-        WFS_LOG("qualité : %.0f images/s → échelle dynamique %.2f (scène à %.0f %%)", g_auto.fpsMesure, g_auto.echelle, r_->vk().renderScale * 100);
+        const float avant = r_->vk().renderScale;
+        r_->vk().renderScale = qualite::echelleRendu(g_auto.niveau, g_auto.echelle);   // WFS-104 : jamais sous la netteté du garage
+        if (r_->vk().renderScale != avant) r_->resize();
+        // WFS-104 : téléphone lent → bloom puis ombres coupés, la résolution de la voiture ne bouge pas
+        const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.echelle);
+        r_->bloomForce = al.bloom ? qualite::bloomNiveau(g_auto.niveau) : 0.f;
+        r_->forceNoShadows = !al.ombres;
+        WFS_LOG("qualité : %.0f images/s → facteur dynamique %.2f (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s)", g_auto.fpsMesure,
+                g_auto.echelle, r_->vk().renderScale * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées");
         effets_ = 0;
     }
 

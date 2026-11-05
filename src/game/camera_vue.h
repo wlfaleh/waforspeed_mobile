@@ -29,16 +29,22 @@ constexpr int VUE_NOMBRE = 4;
 // CAM_MODES du jeu web : 'proche' (poursuite, 58°), vue capot (hood), 'capot' / « Cockpit » (cockpit: true, 72°)
 struct VueDef { const char* id; const char* nom; float fov; bool capot; bool cockpit; };
 inline constexpr VueDef VUES[VUE_NOMBRE] = {
-    {"poursuite", "Poursuite", 62.f, false, false},   // WFS-85 : vue « loin » du jeu web (haute, on voit loin devant)
+    {"poursuite", "Poursuite", 66.f, false, false},   // WFS-85 : vue « loin » du jeu web (62°) ; WFS-105 : caméra haute, 66°
     {"capot", "Capot", 72.f, true, false},
     {"cockpit", "Cockpit", 72.f, true, true},
-    {"proche", "Proche", 58.f, false, false},         // WFS-85 : ancienne vue basse (« proche » du jeu web)
+    {"proche", "Proche", 60.f, false, false},         // WFS-85 : « proche » du jeu web (58°) ; WFS-105 : un peu plus large, 60°
 };
 
 // WFS-85 : caméras de poursuite (CAM_MODES du jeu web, js/world/scene.js) : distance derrière la voiture, hauteur, regard
 // devant et hauteur du point visé (m). Constantes à ajuster après un essai sur téléphone (RG-05).
+// WFS-105 : caméras relevées à la demande de l'utilisateur (jeu web : 8 m × 2,5 m et 4,6 m × 1,28 m, ≈ 17° et 15°).
+//   Poursuite : 9 m derrière, 6,3 m de haut, soit 35° d'élévation à l'arrêt et ≈ 28° en course (la caméra recule avec la
+//   vitesse). 40° est écarté : l'horizon sortirait par le haut de l'image (RG-01).
+//   Proche : 6 m derrière, 2,67 m de haut (24°) : la rue se voit par-dessus le toit.
+//   Point visé SOUS la route (lookH < 0) : le regard reste tourné vers le virage qui arrive (ahead), mais la caméra
+//   s'incline vers le bas ; l'arrière de la voiture reste ainsi au-dessus du compteur (72 % de la hauteur), même à l'arrêt.
 struct Poursuite { float dist, h, ahead, lookH; };
-inline constexpr Poursuite POURSUITE_LOIN{8.f, 2.5f, 14.f, 0.9f}, POURSUITE_PROCHE{4.6f, 1.28f, 7.f, 0.78f};
+inline constexpr Poursuite POURSUITE_LOIN{9.f, 6.3f, 14.f, -6.3f}, POURSUITE_PROCHE{6.f, 2.67f, 7.f, -2.1f};
 inline constexpr float SUIVI_OEIL = 14.f, SUIVI_REGARD = 16.f;   // lissage du suivi (/s), comme updateCamera du jeu web
 
 // vue choisie (mémorisée pour toute la session) ; vueSuivante = cycleCamera du jeu web

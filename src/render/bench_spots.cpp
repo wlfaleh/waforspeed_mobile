@@ -46,9 +46,10 @@ void benchSpots(Renderer& r, const std::string& out) {
     const CarDef& car = carById("golf");
     Model voiture;
     if (!loadCarModel(r, car.file, voiture)) { WFS_ERR("spots-sol : voiture %s introuvable", car.file); return; }
-    // sol : CircleGeometry(30) couleur 0x101219, rugosité 0,22, métal 0,7 ; plateau : cylindre 3,6 × 0,08, 0x161925, 0,4, 0,6
+    // sol : CircleGeometry(30) ; WFS-99 (RG-03) : couleur 0x1A1C24, rugosité 0,6, métal 0,2 comme le garage (au lieu de
+    // 0x101219, 0,22, 0,7) pour que les taches des projecteurs se voient ; plateau : cylindre 3,6 × 0,08, 0x161925, 0,4, 0,6
     Mesh sol = disque(r, 30.f, 0.f, 0.f, 64), plateau = disque(r, 3.6f, 0.08f, 0.08f, 64);
-    Material ms; ms.color = {lin(0x101219).x, lin(0x101219).y, lin(0x101219).z, 1}; ms.rough = 0.22f; ms.metal = 0.7f;
+    Material ms; ms.color = {lin(0x1a1c24).x, lin(0x1a1c24).y, lin(0x1a1c24).z, 1}; ms.rough = 0.6f; ms.metal = 0.2f;
     Material mp; mp.color = {lin(0x161925).x, lin(0x161925).y, lin(0x161925).z, 1}; mp.rough = 0.4f; mp.metal = 0.6f;
     Material matSol = r.makeMaterial(ms, nullptr, nullptr, nullptr), matPlateau = r.makeMaterial(mp, nullptr, nullptr, nullptr);
     matSol.flags |= MAT_DOUBLE; matPlateau.flags |= MAT_DOUBLE;
@@ -76,7 +77,7 @@ void benchSpots(Renderer& r, const std::string& out) {
     for (int i = 0; i < 3; i++) fp.spots[i] = spots[i];
     fp.spotCount = 3;
 
-    const mat4 carM = translate({0, 0.08f, 0}) * rotateY(0.6f);   // gCar.position.y = 0,08 ; gYaw = 0,6
+    const mat4 carM = translate({0, 0.08f, 0}) * rotateY(0.6f + PI);   // gCar.position.y = 0,08 ; WFS-99 (RG-05) : 3/4 avant
     auto image = [&](const FrameParams& p) {
         if (!r.beginFrame(p)) return;
         r.draw(sol, matSol, mat4::identity());

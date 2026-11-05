@@ -58,6 +58,8 @@ static bool entier(const std::string& s, long long& v) {
 void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; quality = "high"; qualityChoisie = false; cam = "poursuite";
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
+    grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
+    mode = "checkpoint"; km5 = 4;                    // WFS-110
 }
 
 std::string Sauvegarde::texte() const {
@@ -71,6 +73,8 @@ std::string Sauvegarde::texte() const {
     o << "cam=" << cam << "\n";
     o << "muted=" << (muted ? 1 : 0) << "\n" << "music=" << (music ? 1 : 0) << "\n" << "nick=" << nick << "\n" << "km=" << km << "\n" << "steer=" << steer << "\n";
     o << "commandes=" << (gaucher ? "gaucher" : "droitier") << "\n" << "vibrations=" << (vibrations ? 1 : 0) << "\n";   // WFS-75
+    o << "boutons=" << (grandsBoutons ? "grands" : "normaux") << "\n" << "gyro=" << gyro << "\n" << "gyroZone=" << gyroZone << "\n";   // WFS-108
+    o << "mode=" << mode << "\n" << "km5=" << km5 << "\n";   // WFS-110
     return o.str();
 }
 
@@ -106,6 +110,11 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "km") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km = (int)n; }
         else if (k == "steer") { steer = v == "fleches" ? "fleches" : "glisser"; }
         else if (k == "commandes") { gaucher = v == "gaucher"; } else if (k == "vibrations") { vibrations = v != "0"; }   // WFS-75
+        else if (k == "boutons") { grandsBoutons = v == "grands"; }   // WFS-108
+        else if (k == "gyro") { if (entier(v, n) && n >= 0 && n <= 3) gyro = (int)n; }
+        else if (k == "gyroZone") { if (entier(v, n) && n >= 0 && n <= 2) gyroZone = (int)n; }
+        else if (k == "mode") { mode = v == "course5" ? "course5" : "checkpoint"; }   // WFS-110
+        else if (k == "km5") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km5 = (int)n; }
     }
     if (premiere) return false;   // fichier vide
     return true;

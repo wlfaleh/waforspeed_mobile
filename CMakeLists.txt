@@ -65,7 +65,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 else()
   find_package(Vulkan REQUIRED)
   find_package(Threads REQUIRED)
-  add_executable(wfs_bench ${ENGINE_SOURCES} src/platform/desktop_main.cpp)
+  add_executable(wfs_bench ${ENGINE_SOURCES} src/platform/desktop_main.cpp src/platform/endurance_banc.cpp)   # WFS-91 : banc d'endurance
   add_dependencies(wfs_bench shaders)
   target_include_directories(wfs_bench PRIVATE ${SHADER_OUT})
   target_compile_options(wfs_bench PRIVATE ${WARN})
@@ -75,7 +75,7 @@ else()
   add_executable(test_traffic tests/test_traffic.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
   add_executable(test_cartes tests/test_cartes.cpp src/game/track.cpp)   # WFS-14 : tracé des cartes = jeu web
   target_link_libraries(test_traffic Threads::Threads)
-  add_executable(test_course tests/test_course.cpp src/game/course.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
+  add_executable(test_course tests/test_course.cpp tests/test_commandes.cpp src/game/course.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)
   target_link_libraries(test_course Threads::Threads)
   add_executable(test_duel tests/test_duel.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-21
   add_executable(test_binarypack tests/test_binarypack.cpp src/game/binarypack.cpp)   # WFS-89 : messages de PeerJS
@@ -85,9 +85,13 @@ else()
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
+  add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
+  add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp)   # WFS-110 : course à 5 voitures
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90
+  add_executable(test_commandes tests/test_commandes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-108 : commandes tactiles
+  target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/game/player.cpp src/game/track.cpp)
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
 endif()

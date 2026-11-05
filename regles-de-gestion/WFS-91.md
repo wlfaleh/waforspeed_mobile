@@ -71,3 +71,43 @@ Rattachée à ce ticket (même zone `.github/**`, pas de micro-ticket) ; à fair
 - Tests sur le simulateur Android (décision de l'utilisateur du 2026-11-04 : plus de simulateur).
 - Optimisations de performance (WFS-82 fait) ; refonte du rendu ; iOS (WFS-88).
 - Corriger dans ce ticket un défaut situé dans une zone d'un ticket en cours (WFS-88, WFS-89) : remonté au PO.
+
+## Attribution du 2026-11-05 — version allégée (PO)
+Attribué à Claude (agent 3, session 011cpqZd), sur demande d'un ticket facile et peu risqué. Ces règles **remplacent** les
+valeurs de RG-01, RG-02, RG-05 et RG-06 ci-dessus quand elles diffèrent.
+- RG-08 : **au moins 8 cycles** (au lieu de 12), **≥ 10 min de temps de jeu simulé** (au lieu de 20), les 4 cartes et
+  jour / nuit toujours couverts ; Garage et Pause **un cycle sur trois** (inchangé). Rendu d'une image sur N, N libre.
+- RG-09 : **au moins 3 retours d'arrière-plan** (au lieu de 4), dont un en course et un au garage.
+- RG-10 : **aucune correction hors zone E7.** Les zones des tickets en cours sont interdites : `src/render/**` et `shaders/**`
+  (WFS-100, WFS-109), `src/ui/**`, `src/game/camera_vue.cpp`, `course_system.cpp`, `duel_system.cpp`, `commandes_tactiles.*`,
+  `src/game/game.*` (WFS-102), `src/world/**` (WFS-94). Tout défaut trouvé hors E7 (erreur de validation, fuite, plantage)
+  va dans `tools/qa/validation_connues.txt` (message exact, pile ou fichier, « à planifier ») et au Journal : **le PO crée le
+  ticket de correction**, le job ne doit pas échouer pour un défaut connu. Accroche ≤ 10 lignes autorisée seulement dans
+  `src/platform/desktop_main.cpp` (aiguillage `WFS_BANC=endurance`) et `CMakeLists.txt` (ajout de `endurance_banc.cpp` au
+  banc, si le `GLOB` ne le prend pas), à annoncer au Journal.
+- RG-11 : seuil de fuite (RG-03) inchangé : ≤ 10 % au-delà du RSS du cycle 2. Si le seuil n'est pas tenu à cause d'un
+  défaut hors E7 : liste des défauts connus (RG-10), le job passe en avertissement, pas en échec.
+- RG-12 : ANO-29 (RG-A1, RG-A2) : **déjà fait par WFS-87** (`cancel-in-progress: false` présent dans `build.yml`) ;
+  seulement vérifier, ne rien refaire.
+- RG-13 : le job `endurance` tourne **en parallèle** des bancs existants, ne bloque pas `publication-apk` ni
+  `publication-captures`, durée ≤ 15 min.
+
+**Pourquoi c'est un ticket facile** : nouveau fichier `src/platform/endurance_banc.*` qui enchaîne des scènes déjà écrites
+(`benchChangementCarte`, `ecrans::benchPause`, `ecrans::benchGarage`, `Game::setAutopilot`, `Game::allerA`), un job CI copié
+sur le modèle de WFS-69, aucune modification du jeu livré (l'APK ne change pas) : aucun risque pour le téléphone.
+
+## Ajout du PO (2026-11-05) — ANO-52 (bloquante) : plantage au retour d'arrière-plan
+Défaut trouvé par le banc : `Renderer::shutdown` laisse les handles pendants, `Renderer::init` sur le même objet réutilise
+des passes détruites → SIGSEGV. Décision du PO : **correction immédiate dans ce ticket, côté E7** (pas de micro-ticket, tu as
+déjà la reproduction), correction durable du renderer rangée dans le lot ouvert E4 (WFS-100, RG-W1).
+- RG-14 : dans `src/platform/android_main.cpp`, `termGraphics` (ou `initGraphics`) repart d'un **`Renderer` neuf** après
+  `app.renderer.shutdown()`, exactement comme le contournement du banc (ex. `app.renderer.~Renderer(); new (&app.renderer) Renderer();`
+  ou `app.renderer = Renderer{}` si le type l'accepte). Vérifier de même `VkCtx` et `Game` : s'ils gardent un état après
+  `shutdown`, même traitement (≤ 10 lignes au total, commentées « ANO-52 »). **Ne pas modifier `src/render/**`**.
+- RG-15 : le banc avec `WFS_ENDURANCE_ANDROID=1` (même objet, chemin Android exact, avec la correction RG-14 appliquée au
+  chemin commun) passe les retours d'arrière-plan à **0 erreur de validation et sans plantage** ; l'entrée ANO-52 de
+  `tools/qa/validation_connues.txt` est marquée « contournée côté plateforme (RG-14), correction durable WFS-100 ».
+- RG-16 : cette correction **change l'APK** : la fusion par confiance reste permise (changement de quelques lignes, vérifié au
+  banc), avec dans `qa/Check.md` : « ANO-52 : sur téléphone, mettre l'appli en arrière-plan en course puis revenir, 3 fois :
+  aucun plantage, la course reprend en pause ».
+- Critère : - [ ] ANO-52 : 3 retours d'arrière-plan en mode `WFS_ENDURANCE_ANDROID=1` sans plantage, 0 erreur de validation.

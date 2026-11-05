@@ -45,7 +45,9 @@ forment des marches (`carte-campagne-vignes`).
 ## Critères d'acceptation (captures du banc PC, groupe `cartes` existant)
 - [ ] nouvelles captures `carte-ville-residentiel`, `carte-ville-parc`, `carte-ville-port` (départ dans la zone, comme
   `cartes_banc.cpp` le fait pour la campagne) : immeubles bas + abribus ; grille, pelouse, arbres, bancs, fontaine ;
-  entrepôts, conteneurs colorés, grues ; `course-*` de la ville (départ au centre) inchangées
+  entrepôts, conteneurs colorés, grues ; `course-*` de la ville : aucune régression (voiture, route, HUD, lumière, trafic)
+  — précision du PO (2026-11-04) : `course-cam0-*` (tronçons < 448) gardent l'allure du centre-ville, immeubles replacés par
+  les tirages du web (RG-01) ; `course-cam1-*` (tronçons 451-826) montrent le quartier résidentiel ; commerces devant un immeuble
 - [ ] `carte-circuit-jour` / `-nuit` : texte lisible sur les panneaux publicitaires
 - [ ] `carte-campagne-vignes` : rangs de vignes réguliers, plus de marches
 - [ ] journal : appels de dessin ≤ 300 sur la ville, ≥ 30 im/s inchangé en qualité Basse ; tests CPU verts
@@ -56,5 +58,14 @@ Pluie RG-05 de WFS-18 : abandonnée par le PO (coût mesuré 0,008 ms, le web n'
 
 ## Zone de code
 `src/world/**` (nouveau fichier conseillé `src/world/ville_quartiers.cpp`, plus `ville.cpp`, `circuit.cpp`,
-`campagne.cpp`, `cartes_banc.cpp`). Interdit : `src/render/**` (WFS-97), `src/game/duel*`, `src/ui/ecrans/salon.*`
-(WFS-89), `src/platform/**` et `.github/**` (WFS-91 : ne pas toucher `desktop_main.cpp`, utiliser le groupe `cartes`).
+`campagne.cpp`, `cartes_banc.cpp`).
+
+**Interdit** (liste mise à jour par le PO le 2026-11-04, à l'attribution, d'après les tickets en cours) :
+- `src/render/**` et `shaders/**` : WFS-100, WFS-101 en cours, WFS-97 et WFS-107 en attente ;
+- `src/platform/**` et `.github/**` : WFS-106 en cours, qui redécoupe les groupes du banc. Ne pas toucher
+  `desktop_main.cpp` : ajouter les nouvelles captures dans `benchCartes` (`cartes_banc.cpp`). Le groupe `cartes` reste
+  valable (RG-09 de WFS-106) et chaque job de CI qui appelle `benchCartes` produira les nouvelles captures ;
+- `src/game/**` : WFS-105, WFS-108 ;
+- `src/ui/**`, fichiers du duel, iOS.
+
+Une modification nécessaire hors de cette zone se limite à une accroche de 10 lignes au plus, annoncée au Journal.
