@@ -18,6 +18,7 @@ enum class SfxId : uint8_t {
     Petarade, Turbo,   // WFS-120 : pétarade (un claquement), souffle du turbo
     Passage, Klaxon,   // WFS-121 : passage d'une voiture du trafic (Doppler), klaxon du trafic
     ChronoTic, ChronoUrgent, Combo2, Combo3, Combo4, Combo5, Combo6, ComboPerdu,   // WFS-124 : chrono sous 8 s, combos
+    Demarreur,   // WFS-127 : démarreur de la voiture montrée au garage
     Count
 };
 const char* sfxNom(SfxId id);

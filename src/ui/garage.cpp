@@ -608,6 +608,9 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
     g.shutdown();
 }
 
+// WFS-127 : voiture affichée au garage (lecture seule, son du showroom) ; nullptr si le garage n'existe pas
+const char* garageVoitureAffichee() { return g_garage ? CARS[g_garage->index()].id : nullptr; }
+
 } // namespace ecrans
 
 WFS_SYSTEM(ecrans::GarageEnregistre, 440)   // interface (400-499) : avant le menu (450)
