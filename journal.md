@@ -3444,3 +3444,23 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Critères** : sirène continue qui enfle (0,45 à 15 m, 0 à 150 m) et s'éteint en fondu, yelp sous 20 m (retour wail au-delà de 25 m), Doppler borné ± 12 %, jingle de fin, silence hors Poursuite ; test_audio étendu ; `sirene.wav` au banc ; parcours complet RG-11 au Journal.
 - **Réutilisation** : mécanique des boucles de `SfxMixer` (rumeur WFS-121), `beep` de `sfx_synth.h`, `plusProcheM` ; jeu web : rien à réutiliser (aucune sirène).
 - **Plan court** : boucle précalculée + lecture à pas variable (Doppler), gain lissé selon la distance, fonction `sfxSirene` appelée par pas depuis la poursuite, jingles à `fini_`, tests, banc, fusion par confiance.
+
+### 2026-11-05 18:03:34 — WFS-130 fusionné : la Course à 5 libère les modèles des ordinateurs hors de la grille (Claude, session trafic, agent WFS-130)
+- PR #113, commit de fusion 918e822, **fusion par confiance** (règle n° 1). Branche `feature/waforspeed-130` synchronisée avec main.
+- Cause : `Course5System::models_` gardait jusqu'à `Game::shutdown` les modèles complets de toutes les voitures tirées.
+  Correction (`src/game/course5_system.cpp`) : `libererHorsGrille()` au tirage d'une grille et au retour au menu hors « Rejouer » :
+  `r.vk().waitIdle()`, puis `Renderer::destroy(Model&)` des modèles absents de la grille courante (au plus 4 en mémoire, RG-01).
+  « Rejouer » retire la même grille : rien détruit ni rechargé (RG-02). Une voiture tirée de nouveau est rechargée par `update` (RG-03).
+  Seuls les modèles de `models_` sont touchés (RG-04). Nouveau journal au départ : `départ, n/4 ordinateurs avec leur modèle`.
+- **Accroche E7 (10 lignes retirées)** : `tools/qa/validation_connues.txt`, ligne `memoire-course5-connue` et ses commentaires (RG-05).
+  La Poursuite ne dépasse pas le seuil : aucune exception gardée.
+- Mesure (banc PC lavapipe, harnais local non livré : 10 Courses à 5 de suite au doigt, relevé au menu en début de cycle) :
+  - avant (main 667b254) : RSS 465 / 810 / 862 / 891 / 931 / 997 / 1014 / 941 / 1149 / 1132 Mo ; images Vulkan 106 / 191 / 231 / 234 / 251 / 251 / 271 / 271 / 312 / 313.
+  - après : RSS 468 / 714 / 619 / 606 / 658 / 668 / 698 / 686 / 767 / 704 Mo (fin 707) ; images Vulkan **106 à chaque cycle**.
+    Cycle 2 → cycle 10 : −1,5 % ; pire cycle (9) : +7,3 % (seuil 10 %).
+- Parcours RG-06 (même harnais, 0 écart) : accueil → Course solo → Course à 5 → Continuer → garage → Choisir → terrain → Rouler → course → fin
+  → « Rejouer » → fin → Menu → accueil → nouvelle Course à 5, puis 9 autres : **4/4 ordinateurs avec leur modèle à chacun des 11 départs** ;
+  aucun modèle libéré entre la 1re course et « Rejouer », `4 modèle(s) d'ordinateur libéré(s), 0 gardé(s)` à chaque « Menu ».
+- Job `endurance` local (`tools/qa/endurance.sh`, VK_LAYER_KHRONOS_validation, sans l'exception) : **sortie 0**, 0 erreur de validation,
+  cycles Checkpoint +0,8 %, cycle 10 (après la Course à 5) −6,9 %, parcours au doigt 0 écart. Tests CPU : 25 OK.
+- Suite : je suis la CI de main (job endurance).
