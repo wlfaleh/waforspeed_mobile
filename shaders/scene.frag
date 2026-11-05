@@ -13,7 +13,8 @@ layout(location = 0) out vec4 outColor;
 const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
            F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u,
-           F_POOL = 32768u, F_ADD = 65536u;   // WFS-09 : tache des phares (multiplicative), halo (additif)
+           F_POOL = 32768u, F_ADD = 65536u,   // WFS-09 : tache des phares (multiplicative), halo (additif)
+           F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u;   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -231,10 +232,16 @@ void main() {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran ; étiré à la
         // verticale selon la rugosité (traînées des lumières sur l'asphalte mouillé), légèrement déformé par le relief
         vec2 suv = gl_FragCoord.xy * F.nuitB.yz + N.xz * 0.01;
-        float spread = rough * 0.05;
+        // WFS-134 (RG-08, ANO-66) : reflet étiré ×3 à la verticale et flouté (rugosité au moins 0,35, deux colonnes
+        // décalées) : l'enseigne ne ressemble plus à un panneau posé à plat ; atténué avec la distance
+        float spread = max(rough, 0.35) * 0.15;
         vec3 rs = vec3(0.0);
-        for (int i = 0; i < 6; i++) rs += texture(reflTex, suv + vec2(0.0, (float(i) - 2.5) * 0.4 * spread)).rgb;
-        env = rs / 6.0;
+        for (int i = 0; i < 8; i++) {
+            float t = (float(i) - 3.5) / 3.5;
+            rs += texture(reflTex, suv + vec2((float(i & 1) - 0.5) * 0.25 * spread, t * 0.5 * spread)).rgb * (1.0 - 0.5 * t * t);
+        }
+        float dRef = length(F.camPos.xyz - vWorld);
+        env = rs / 6.286 * mix(1.0, 0.45, smoothstep(15.0, 90.0, dRef));
     }
     col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
 
@@ -252,7 +259,9 @@ void main() {
         col = albedo * 0.08 * skyAmb + min(skyColor(R) * F.misc.z * Fg + D_GGX(NoH, 0.0004) * 0.25 * sun * NoL, vec3(SPEC_MAX));   // WFS-100 RG-02
         alpha = clamp(0.55 + Fg, 0.0, 1.0);
     }
-    col += pc.emissive.rgb;
+    col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0));   // WFS-134 : émission × texture
+    // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
+    if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 
     // brouillard (perspective atmosphérique)
     float d = length(F.camPos.xyz - vWorld);
@@ -264,5 +273,13 @@ void main() {
     // énorme, voire NaN (normale nulle) ; on plafonne à 64 et on remplace NaN / infini par 0
     col = clamp(col, vec3(0.0), vec3(64.0));
     if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
+    // WFS-134 (RG-07, ANO-60) : fantôme du record : teinte cyan #00E5FF à 30 %, translucide (α 0,45), un peu lumineux
+    // pour rester visible de nuit
+    if ((flags & F_FANTOME) != 0u) {
+        const vec3 CYAN = vec3(0.0, 0.7835, 1.0);   // #00E5FF en linéaire
+        col = mix(col, CYAN * max(dot(col, vec3(0.2126, 0.7152, 0.0722)), 0.05) * 2.0, 0.3) + CYAN * 0.06;
+        outColor = vec4(col, clamp(alpha, 0.0, 1.0) * 0.45);
+        return;
+    }
     outColor = vec4(col, ((flags & F_BLEND) != 0u) ? alpha : 1.0);
 }

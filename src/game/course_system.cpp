@@ -100,6 +100,7 @@ public:
         fantYaw_ += (e.h - fantYaw_) * 0.15;
         const TrackPoint p = g.track->point(e.d, e.x * RW);
         const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + fantYaw_)) * rotateX((float)p.slope);
+        r.fantomeProchaineVoiture();   // WFS-134 (RG-07, ANO-60) : translucide, teinté cyan, sans ombre ni feux
         r.draw(fantModele_, m, &fantPeinture_);
     }
 

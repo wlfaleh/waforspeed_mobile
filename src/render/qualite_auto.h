@@ -4,6 +4,7 @@
 // inférieur une seule fois (« Graphismes rapides pour plus de fluidité »), sauf si le joueur a choisi lui-même.
 // Calcul seul (aucun appel Vulkan) : testé par tests/test_qualite.cpp.
 #pragma once
+#include <string>
 #include "../core/configgame.h"   // WFS-128
 
 namespace wfs::qualite {
@@ -11,7 +12,8 @@ namespace wfs::qualite {
 enum Niveau { BASSE = 0, MOYENNE = 1, HAUTE = 2 };
 // échelle de la scène 3D de chaque niveau (appliquerQualite de WFS-41) et force du bloom (coupé en Basse)
 // WFS-104 : la voiture en course a la netteté du garage : 100 % en Moyenne et Haute (Moyenne : 75 % avant)
-inline float echelleNiveau(int n) { return n == BASSE ? 0.5f : 1.f; }
+// WFS-134 (RG-03) : Basse à 75 % (50 % avant : voiture en escalier sur le téléphone)
+inline float echelleNiveau(int n) { return n == BASSE ? 0.75f : 1.f; }
 inline float bloomNiveau(int n) { return n == BASSE ? 0.f : 1.f; }
 // WFS-86 : échelle réelle de la scène = échelle du niveau × résolution dynamique, avec un plancher. Le jeu web applique
 // resScale à un nombre de pixels déjà plafonné (DPR ≤ 1,5 sur téléphone) : il ne descend jamais sous ≈ 0,9 pixel CSS.
@@ -19,7 +21,7 @@ inline float bloomNiveau(int n) { return n == BASSE ? 0.f : 1.f; }
 // WFS-104 (RG-02) : la résolution ne descend plus sous la netteté du garage : plancher 100 % en Haute, 90 % en Moyenne
 // (≈ 0,9 pixel CSS du jeu web) ; Basse fixe à 50 % (choix du joueur). Un téléphone trop lent perd d'autres coûts
 // (allegement : bloom puis ombres), jamais la netteté de la voiture.
-inline float plancher(int n) { return n == HAUTE ? 1.f : n == MOYENNE ? 0.9f : 0.5f; }
+inline float plancher(int n) { return n == HAUTE ? 1.f : n == MOYENNE ? 0.9f : echelleNiveau(BASSE); }
 inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 : 0,9 ;   // plancher de la Moyenne (WFS-86 : 0,6)
 inline float echelleRendu(int n, float dynamique) {
     if (n == BASSE) return echelleNiveau(BASSE);
@@ -35,6 +37,27 @@ inline Allegement allegement(int n, float dynamique) {
     a.bloom = dynamique > 0.8f + 1e-4f; a.ombres = dynamique > 0.6f + 1e-4f;
     return a;
 }
+
+// WFS-134 (RG-02) : pas de rétrogradation cachée. La rétrogradation automatique et la chauffe (WFS-123) baissent le
+// niveau des COÛTS (reglages().qualite : ombres, bloom, décor lointain, piétons, distance d'affichage), jamais la
+// netteté : résolution et MSAA de la scène restent ceux du niveau d'où l'on est descendu (niveau retenu ci-dessous).
+// retenuAuto : niveau d'avant la rétrogradation automatique (qualite_systeme.cpp) ; retenuChauffe : qualité choisie à
+// rétablir après la chauffe (Regulateur::choisi de WFS-123) ; −1 : aucune baisse en cours. Un choix du joueur dans les
+// réglages les remet à −1 (le niveau choisi devient la netteté).
+inline int retenuAuto = -1, retenuChauffe = -1;
+inline void oublierRetenus() { retenuAuto = retenuChauffe = -1; }
+// niveau dont la scène prend la résolution : jamais sous un niveau retenu
+inline int niveauNettete(int q) {
+    if (q < retenuAuto) q = retenuAuto;
+    if (q < retenuChauffe) q = retenuChauffe;
+    return q > HAUTE ? HAUTE : q;
+}
+inline float echelleScene(int q, float dynamique) { return echelleRendu(niveauNettete(q), dynamique); }
+
+// WFS-134 (RG-01) : ligne « Rendu : Haute · 100 % · MSAA ×4 · 58 img/s · chauffe 0 » (ips < 0 : pas encore mesuré)
+std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauffe);
+// ligne du rendu réellement utilisé, lue en direct (qualite_systeme.cpp) : Réglages, journal, rapport partagé
+std::string ligneRendu();
 
 // premier lancement (aucun réglage enregistré) : Haute comme le jeu web, Basse sur un GPU logiciel
 inline int niveauInitial(bool gpuLogiciel) { return gpuLogiciel ? BASSE : HAUTE; }

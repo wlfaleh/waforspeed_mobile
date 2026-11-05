@@ -287,6 +287,7 @@ void Game::render(double time) {
     for (auto& sy : systems_) if (sy->scene(fp, sd, view_)) { dediee = true; break; }
     view_.sceneDediee = dediee;
     if (dediee) { eye = fp.camPos; look = sd.cible; }
+    fp.ombresContact = !dediee;   // WFS-134 (RG-05) : ombre de contact sous chaque voiture en course (pas au garage)
     if (!r_->beginFrame(fp)) return;
 
     const mat4 I = mat4::identity();

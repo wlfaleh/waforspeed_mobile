@@ -45,6 +45,7 @@ public:
     Buffer uploadBuffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage);
     // texture RGBA8 avec mipmaps générés sur le GPU
     Image uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb);
+    void uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips);   // WFS-134 : repli sans blit
 
     VkInstance instance = VK_NULL_HANDLE;
     VkPhysicalDevice gpu = VK_NULL_HANDLE;

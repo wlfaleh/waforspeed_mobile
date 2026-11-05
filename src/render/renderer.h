@@ -18,6 +18,8 @@ enum MatFlags : uint32_t {
     // WFS-09 (moteur seulement, jamais dans un .wfm) : tache des phares (multiplie le sol : sol × (1 + tache)) et
     // halo additif (dégradé radial, couleur × intensité dans la normale du sommet)
     MAT_POOL = 32768, MAT_ADD = 65536,
+    MAT_FANTOME = 131072,   // WFS-134 (moteur seulement) : fantôme du record, translucide teinté cyan (scene.frag)
+    MAT_EMTEX = 262144,     // WFS-134 (moteur seulement) : émission × couleur de la texture (pièces texturées émissives)
 };
 
 struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
@@ -81,6 +83,9 @@ struct FrameParams {
     // (passe miroir autour du plan horizontal y = refletY, demi-résolution). Tout à faux le jour : rendu inchangé.
     bool feux = false, mouille = false, flaques = false, reflets = false; float refletY = 0;
     float bloom = -1.f;   // WFS-100 : force du bloom de la scène (garage du jeu web : 0,55) ; < 0 : nuit 0,8, jour 0,3
+    // WFS-134 (RG-05) : ombre de contact posée sous chaque voiture (draw(Model)) qui n'a pas déjà la sienne ; faux par
+    // défaut (garage, scènes dédiées : inchangés), vrai en course (Game::render)
+    bool ombresContact = false;
 };
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
@@ -125,6 +130,9 @@ public:
     // feux de la prochaine voiture dessinée par draw(Model) (la voiture du joueur : WFS-09, src/render/nuit.cpp) ;
     // remis à l'état de nuit de FrameParams::feux à chaque beginFrame
     void feuxProchaineVoiture(const FeuxVoiture& f) { feuxSuivant_ = f; feuxSuivantPose_ = true; }
+    // WFS-134 (RG-07, ANO-60) : la prochaine voiture dessinée par draw(Model) est le fantôme du record : translucide
+    // (α 0,45), teintée cyan, sans ombre de contact, sans feux
+    void fantomeProchaineVoiture() { fantomeSuivant_ = true; feuxProchaineVoiture(FeuxVoiture{}); }
     Material poolMat;   // WFS-09 : matériau de la tache des phares (couleur 0xfff0dc du jeu web)
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
@@ -145,6 +153,7 @@ public:
     // WFS-59 : mode GPU logiciel actif (émulateur de la QA : GPU SwiftShader / llvmpipe, ou intent qa_simu=true)
     bool gpuLogiciel() const { return modeGpuLogiciel(); }
     uint32_t shadowMapSize() const { return shadowSize_; }
+    float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
     struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 7; };
@@ -180,6 +189,7 @@ private:
     VkPipeline opaque_ = VK_NULL_HANDLE, blend_ = VK_NULL_HANDLE, sky_ = VK_NULL_HANDLE, post_ = VK_NULL_HANDLE, ui_ = VK_NULL_HANDLE;
     VkDescriptorPool pool_ = VK_NULL_HANDLE;
     VkSampler sampler_ = VK_NULL_HANDLE, clampSampler_ = VK_NULL_HANDLE;
+    float aniso_ = 1.f;
     VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
 
     static constexpr int FRAMES = 2;
@@ -223,6 +233,9 @@ private:
     Material haloMat_;
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
+    // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
+    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false;
+    Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;
     vec3 camPos_{};
     float exposure_ = 1;

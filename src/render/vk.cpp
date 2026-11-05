@@ -1,5 +1,7 @@
 #include "vk.h"
 #include <algorithm>
+#include <cmath>
+#include <vector>
 #include <cstring>
 #include "../core/gpu_logiciel.h"   // WFS-59
 #if defined(__ANDROID__)
@@ -310,14 +312,59 @@ static void barrier(VkCommandBuffer cb, VkImage img, uint32_t mip, uint32_t coun
     vkCmdPipelineBarrier(cb, srcS, dstS, 0, 0, nullptr, 0, nullptr, 1, &b);
 }
 
+// WFS-134 (RG-04) : chaîne de mipmaps par moyenne 2×2 (couleur sRGB moyennée en linéaire), tous les niveaux copiés d'un coup
+void VkCtx::uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips) {
+    std::vector<uint8_t> tout(rgba, rgba + (size_t)w * h * 4);
+    std::vector<VkBufferImageCopy> copies;
+    const bool srgb = img.format == VK_FORMAT_R8G8B8A8_SRGB;
+    auto versLin = [&](uint8_t c) { const float v = c / 255.f; return srgb ? std::pow(v, 2.2f) : v; };
+    auto versOct = [&](float v) { return (uint8_t)std::lround(std::clamp(srgb ? std::pow(v, 1 / 2.2f) : v, 0.f, 1.f) * 255.f); };
+    size_t ofs = 0; uint32_t mw = w, mh = h;
+    for (uint32_t i = 0; i < mips; i++) {
+        VkBufferImageCopy r{};
+        r.bufferOffset = ofs; r.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, i, 0, 1}; r.imageExtent = {mw, mh, 1};
+        copies.push_back(r);
+        if (i + 1 == mips) break;
+        const uint32_t nw = mw > 1 ? mw / 2 : 1, nh = mh > 1 ? mh / 2 : 1;
+        const size_t src = ofs; ofs += (size_t)mw * mh * 4;
+        tout.resize(ofs + (size_t)nw * nh * 4);
+        for (uint32_t y = 0; y < nh; y++) for (uint32_t x = 0; x < nw; x++) for (int c = 0; c < 4; c++) {
+            float s = 0;
+            for (uint32_t dy = 0; dy < 2; dy++) for (uint32_t dx = 0; dx < 2; dx++) {
+                const uint32_t sx = std::min(mw - 1, x * 2 + dx), sy = std::min(mh - 1, y * 2 + dy);
+                const uint8_t v = tout[src + ((size_t)sy * mw + sx) * 4 + c];
+                s += c == 3 ? v / 255.f : versLin(v);
+            }
+            tout[ofs + ((size_t)y * nw + x) * 4 + c] = c == 3 ? (uint8_t)std::lround(s / 4 * 255.f) : versOct(s / 4);
+        }
+        mw = nw; mh = nh;
+    }
+    Buffer staging = createBuffer(tout.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    std::memcpy(staging.mapped, tout.data(), tout.size());
+    VkCommandBuffer cb = beginOneShot();
+    barrier(cb, img.img, 0, mips, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkCmdCopyBufferToImage(cb, staging.buf, img.img, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (uint32_t)copies.size(), copies.data());
+    barrier(cb, img.img, 0, mips, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    endOneShot(cb);
+    destroy(staging);
+    static bool annonce = false;
+    if (!annonce) { annonce = true; WFS_LOG("textures : mipmaps calculés sur le CPU (GPU sans blit filtré, WFS-134)"); }
+}
+
 Image VkCtx::uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb) {
     VkFormat fmt = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
     VkFormatProperties fp; vkGetPhysicalDeviceFormatProperties(gpu, fmt, &fp);
     bool canBlit = (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) && (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT) &&
                    (fp.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
     uint32_t mips = 1;
-    if (canBlit) { uint32_t m = std::max(w, h); while (m > 1) { m >>= 1; mips++; } }
+    { uint32_t m = std::max(w, h); while (m > 1) { m >>= 1; mips++; } }
     Image img = createImage(w, h, mips, fmt, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    if (!canBlit) {   // WFS-134 (RG-04) : GPU sans blit filtré : mipmaps calculés sur le CPU (jamais de texture sans mipmaps)
+        uploadMipsCpu(img, rgba, w, h, mips);
+        return img;
+    }
     VkDeviceSize size = (VkDeviceSize)w * h * 4;
     Buffer staging = createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
     std::memcpy(staging.mapped, rgba, (size_t)size);
