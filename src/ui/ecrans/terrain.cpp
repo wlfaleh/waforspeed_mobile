@@ -220,7 +220,7 @@ public:
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));   // .screen--maps : fond nuit, la scène à peine visible derrière
         // ---------- .maps-head : sur-titre, titre, index « 01 / 04 » ----------
         const float hy = mg.haut + 26 * k;
-        ui::text(r, zl, hy, 13 * k, ui::majuscules("Étape 2 sur 2 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+        ui::text(r, zl, hy, 13 * k, ui::majuscules("Étape 3 sur 3 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
         ui::text(r, zl, hy + 20 * k, 44 * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
         const std::string tot = " / 04";
