@@ -3080,3 +3080,12 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Création** : WFS-114 (E7, P3) « CI : banc d'endurance ≤ 15 min, seulement sur `main`, la nuit et à la demande » — règles `regles-de-gestion/WFS-114.md` (RG-01 à RG-05). Sujet de CI pur : APK inchangé, risque faible, fusion par confiance permise.
 - **Début** : WFS-114, épic E7, Claude (agent 3, session 011cpqZd), branche `feature/waforspeed-114`. Zone : `.github/workflows/build.yml` (job `endurance`, `schedule`, une ligne `if:` par autre job), `tools/qa/endurance.sh`, `tools/qa/validation_connues.txt`, `src/platform/endurance_banc.*`. Plan : (1) `if:` + `schedule` + `workflow_dispatch` ; (2) cache de compilation ; (3) rendu 1 image sur N dans le banc sans baisser les seuils ; (4) ligne « durée » au journal ; (5) `timeout-minutes: 20`.
 - **Défaut VUID-vkCmdDraw-None-08114** (écran Terrain, vue d'image nulle, signalé dans WFS-91) : pas de nouveau ticket (règle des gros lots) ; rangé dans **WFS-100** (même zone `renderer.cpp`, RG-W2 ajoutée), risque réel sur les pilotes de téléphone.
+
+### 2026-11-05 09:51:24 — PO : WFS-115 créé, « Continuer » ramène au menu (po-scrum-master)
+- Retour de l'utilisateur (`tache utilisateur.md`). Ticket P1 (E8) : reproduire sur tous les chemins du menu, nommer la cause, corriger la navigation ; vérifier aussi que l'utilisateur teste bien la dernière version (WFS-106). Règles : `regles-de-gestion/WFS-115.md`.
+
+### 2026-11-05 09:54:31 — PO : cause probable de WFS-115 (po-scrum-master)
+- Parcours de l'utilisateur : Course solo → mode → Continuer → garage → accueil. `modes_ecran.cpp` envoie vers le garage, `garage.cpp` « Choisir » fait `allerA(Ecran::Menu)` : il faut `Ecran::Terrain` quand le garage vient d'un parcours de course. Règles de WFS-115 mises à jour.
+
+### 2026-11-05 09:55:45 — PO : WFS-115, défaut de parcours (pas un plantage) (po-scrum-master)
+- Précision de l'utilisateur : mal développé, pas un plantage. WFS-115 recentré sur le parcours ; règle ajoutée à `po-scrum-master.md` : test de parcours complet exigé pour tout ticket qui touche un écran.

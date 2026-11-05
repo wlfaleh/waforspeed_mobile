@@ -69,3 +69,9 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 - Cloudflare ok ; checkpoint de départ 60 sec et 30 sec de plus à chaque checkpoint ; ok pour les propositions de la poursuite police
 ( PO : c'est pris en compte — WFS-110 RG-08 : départ 60 s, +30 s à chaque checkpoint ; WFS-111 : valeurs validées ; WFS-112 : relais sur Cloudflare Workers (compte gratuit) : le développeur livre le code, le script de déploiement et un mode d'emploi en 5 lignes ; il te demandera de créer le compte et de déployer ou de lui donner un jeton d'API. )
 
+- Quand je clique sur un mode et que je clique sur continuer, il me montre la page menu
+( PO : c'est créé — WFS-115 (E8, P1 urgent) : reproduire sur tous les chemins du menu, nommer la cause, faire avancer « Continuer » vers l'écran suivant. Je précise une limite : dans le code de main, l'écran du terrain a « Rouler » et pas « Continuer » ; si tu vois « Continuer », tu testes peut-être une ancienne version (WFS-106 : publication de l'APK de main en cours). )
+
+- Je clique sur course solo, je sélectionne le mode, et quand je clique sur continuer ça pète et me montre encore la page d'accueil du menu
+( PO : cause probable trouvée dans le code — « Continuer » ouvre bien le garage, mais le bouton « Choisir » du garage te renvoie à l'accueil au lieu du choix du terrain. Précisé dans WFS-115 : depuis un parcours de course, « Choisir » doit mener au terrain puis « Rouler ». Si ça plante vraiment (l'appli se ferme), l'agent le vérifiera avec les traces. )
+( PO : d'accord, ce n'est pas un plantage mais un parcours mal enchaîné — corrigé dans WFS-115 ; règle ajoutée : chaque ticket qui touche un écran doit prouver le parcours complet avant fusion. )
