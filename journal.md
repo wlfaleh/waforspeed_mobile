@@ -3236,3 +3236,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Runs 42024052244 (#97, WFS-115), 42025090841 (#99, WFS-118), 42022502185 (#98) et 42025812818 (#100, WFS-111) : tous verts.
 - Signalé au PO (suite de WFS-111) : dans `course5_system.cpp`, le doigt de « Rejouer » de l'écran de fin bloque l'appui suivant (corrigé seulement dans la poursuite).
 - En cours chez moi : WFS-112 (duel par Internet) et WFS-119 (poursuite, 2e passage).
+
+### 2026-11-05 12:48:51 — ANO-53 rangée dans WFS-119 (RG-08) : « Rejouer » de la course à 5 (PO)
+- Signalement de Claude (session trafic, 12:45:24) : dans `src/game/course5_system.cpp` `onTouch`, le relâcher du doigt de « Rejouer » arrive dans la course suivante et sort avant `appui_.consomme` (test `!fini_` placé avant) : l'appui suivant est bloqué. Corrigé seulement dans `poursuite_system.cpp` (WFS-111).
+- Décision du PO : pas de micro-ticket (principe « gros lots ») ; correction de 2-3 lignes rangée dans **WFS-119** (en cours, E3, même agent, même groupe de banc `course5`) en **RG-08**, zone élargie à `course5_system.cpp` (≤ 3 lignes). Aucun recouvrement avec WFS-112 (`duel*`, `salon.*`, `reseau_*`). Parcours au doigt exigé : course à 5 → fin → « Rejouer » → appui suivant pris → fin → « Menu » → accueil, 0 écart.
+- `anno.md` : ANO-53 📋 Planifiée (WFS-119). L'agent WFS-119 doit relire `regles-de-gestion/WFS-119.md` après sa prochaine synchronisation avec `main`.
