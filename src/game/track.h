@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include "../core/math.h"
+#include "../core/configgame.h"   // WFS-128
 
 namespace wfs {
 
@@ -16,7 +17,7 @@ constexpr double SEG_M = SEG * M;                    // 1,2 m par segment
 constexpr double RW = 7.5;                           // demi-largeur de route (m)
 constexpr double CURVE_K = 0.003, ELEV = 0.5;
 constexpr int CH = 32;                               // segments par morceau de route (rendu)
-constexpr double CHECK_DIST = 100000.0;
+inline const double& CHECK_DIST = g_configJeu.checkpoint.distanceU;   // WFS-128 : 100 000 (600 m), configgame.json
 constexpr double KM = 1000.0 / 0.006;
 
 struct MapDef {

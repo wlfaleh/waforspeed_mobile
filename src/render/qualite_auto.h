@@ -4,6 +4,7 @@
 // inférieur une seule fois (« Graphismes rapides pour plus de fluidité »), sauf si le joueur a choisi lui-même.
 // Calcul seul (aucun appel Vulkan) : testé par tests/test_qualite.cpp.
 #pragma once
+#include "../core/configgame.h"   // WFS-128
 
 namespace wfs::qualite {
 
@@ -19,7 +20,7 @@ inline float bloomNiveau(int n) { return n == BASSE ? 0.f : 1.f; }
 // (≈ 0,9 pixel CSS du jeu web) ; Basse fixe à 50 % (choix du joueur). Un téléphone trop lent perd d'autres coûts
 // (allegement : bloom puis ombres), jamais la netteté de la voiture.
 inline float plancher(int n) { return n == HAUTE ? 1.f : n == MOYENNE ? 0.9f : 0.5f; }
-constexpr float PLANCHER = 0.9f;   // plancher de la Moyenne (WFS-86 : 0,6)
+inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 : 0,9 ;   // plancher de la Moyenne (WFS-86 : 0,6)
 inline float echelleRendu(int n, float dynamique) {
     if (n == BASSE) return echelleNiveau(BASSE);
     const float e = echelleNiveau(n) * dynamique, p = plancher(n);

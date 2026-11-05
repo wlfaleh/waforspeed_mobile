@@ -10,6 +10,7 @@
 #include <vector>
 #include "course5.h"   // WFS-119 : ModeCourse (clé de sauvegarde)
 #include "track.h"
+#include "../core/configgame.h"   // WFS-128
 
 namespace wfs {
 
@@ -31,16 +32,17 @@ void poursuiteBancFixe(bool oui);   // programme et graine fixes (captures stabl
 namespace poursuite {
 
 // ---- RG-01 / RG-02 : score
-constexpr int SCORE_DEPART = 100;
-constexpr double KM_ARRIVEE = 10;
-constexpr int CHOC_TRAFIC = 5, CHOC_GLISSIERE = 3, CHOC_POLICE = 10;
-constexpr double COLLE_M = 12, COLLE_S = 1;          // police à moins de 12 m pendant 1 s : −1 par seconde
+// WFS-128 : valeurs de configgame.json (section poursuite) ; défauts : score 100, 10 km, chocs 5 / 3 / 10, police à 12 m pendant 1 s
+inline const int& SCORE_DEPART = g_configJeu.poursuite.scoreDepart;
+inline const double& KM_ARRIVEE = g_configJeu.poursuite.kmArrivee;
+inline const int &CHOC_TRAFIC = g_configJeu.poursuite.chocTrafic, &CHOC_GLISSIERE = g_configJeu.poursuite.chocGlissiere, &CHOC_POLICE = g_configJeu.poursuite.chocPolice;
+inline const double &COLLE_M = g_configJeu.poursuite.colleM, &COLLE_S = g_configJeu.poursuite.colleS;          // police à moins de 12 m pendant 1 s : −1 par seconde
 constexpr double DELAI_CHOC = 1.0;                   // un même type de choc compte au plus une fois par seconde
 // ---- RG-03 : police
-constexpr int POLICE_DEPART = 2, POLICE_MAX = 6;
-constexpr double RENFORT_KM = 2;
+inline const int &POLICE_DEPART = g_configJeu.poursuite.policeDepart, &POLICE_MAX = g_configJeu.poursuite.policeMax;   // WFS-128 : 2, 6
+inline const double& RENFORT_KM = g_configJeu.poursuite.renfortKm;   // WFS-128 : 2
 // ---- RG-04 : trafic 2 à 3 fois plus dense, embouteillages de 300 à 600 m à 20-40 km/h
-constexpr double DENSITE = 2.5;
+inline const double& DENSITE = g_configJeu.poursuite.densite;   // WFS-128 : 2,5
 constexpr double FILES[3] = {-2.0 / 3.0, 0.0, 2.0 / 3.0};   // = LANE_X du trafic
 
 struct Etat {

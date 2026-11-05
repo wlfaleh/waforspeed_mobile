@@ -15,6 +15,7 @@
 #include <cmath>
 #include "../core/ecran.h"
 #include "../core/math.h"
+#include "../core/configgame.h"   // WFS-128
 
 namespace wfs {
 
@@ -43,9 +44,10 @@ inline constexpr VueDef VUES[VUE_NOMBRE] = {
 //   Proche : 6 m derrière, 2,67 m de haut (24°) : la rue se voit par-dessus le toit.
 //   Point visé SOUS la route (lookH < 0) : le regard reste tourné vers le virage qui arrive (ahead), mais la caméra
 //   s'incline vers le bas ; l'arrière de la voiture reste ainsi au-dessus du compteur (72 % de la hauteur), même à l'arrêt.
-struct Poursuite { float dist, h, ahead, lookH; };
-inline constexpr Poursuite POURSUITE_LOIN{9.f, 6.3f, 14.f, -6.3f}, POURSUITE_PROCHE{6.f, 2.67f, 7.f, -2.1f};
-inline constexpr float SUIVI_OEIL = 14.f, SUIVI_REGARD = 16.f;   // lissage du suivi (/s), comme updateCamera du jeu web
+// WFS-128 : valeurs de configgame.json (section camera) ; défauts : loin 9 / 6,3 / 14 / −6,3, proche 6 / 2,67 / 7 / −2,1, suivi 14 et 16
+using Poursuite = CamPoursuite;   // { dist, h, ahead, lookH }
+inline const Poursuite &POURSUITE_LOIN = g_configJeu.camera.loin, &POURSUITE_PROCHE = g_configJeu.camera.proche;
+inline const float &SUIVI_OEIL = g_configJeu.camera.suiviOeil, &SUIVI_REGARD = g_configJeu.camera.suiviRegard;   // lissage du suivi (/s), comme updateCamera du jeu web
 
 // vue choisie (mémorisée pour toute la session) ; vueSuivante = cycleCamera du jeu web
 VueCamera vueCamera();
@@ -66,7 +68,8 @@ inline float volantCible(double braquage) { return (float)(-braquage * 2.3); }
 inline float aiguilleAngle(double kmh) { return 2.2f - (float)(std::min(std::fabs(kmh), 300.0) / 300.0 * 4.4); }
 // champ de vision visé des vues capot et cockpit : C.fov + min(p, 1,3) × 7 + 6 en nitro (p = |vitesse| / MAX_SPEED)
 inline float fovVue(VueCamera v, double p, bool nitro) {
-    return VUES[(int)v].fov + (float)std::min(std::fabs(p), 1.3) * 7.f + (nitro ? 6.f : 0.f);
+    const auto& c = config().camera;   // WFS-128 : zoom de chaque vue (VUES[v].fov par défaut), +7° et +6° par défaut
+    return c.fov[(int)v] + (float)std::min(std::fabs(p), 1.3) * c.elargVitesse + (nitro ? c.elargNitro : 0.f);
 }
 
 // ---------- accroche de Game::render (WFS-66) ----------

@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../core/configgame.h"   // WFS-128
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>   // setenv (WFS-41)
@@ -26,6 +27,7 @@ static vec3 hexColor(unsigned h) {
 
 bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progression)(float, const char*)) {
     r_ = &r;
+    chargerConfig();   // WFS-128 : configgame.json lu à chaque partie (téléphone, APK ; PC : WFS_CONFIG ou ./configgame.json)
     if (r.gpuLogiciel()) {   // WFS-59 : émulateur de la QA → ombres du soleil coupées (dt et rendu : plafondDt, vk.cpp)
         r.forceNoShadows = true;
         WFS_LOG("mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %%, sans ombres)");
