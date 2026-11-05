@@ -371,8 +371,10 @@ int benchParcoursCourse5(Game& g, Renderer& r, const std::string& out) {
     auto jusquaFin = [&]() {
         g.setAutopilot(true);
         float x, y;
-        for (int i = 0; i < 400 * 60 && !course5Bouton("rejouer", x, y); i++) image();
-        images(90);   // écran de fin affiché (0,9 s) avant l'appui
+        // course sans dessin (comme benchCourse5 : banc court sur la CI), puis l'écran de fin dessiné (0,9 s) avant l'appui
+        const Course* c = activeCourse();
+        for (int i = 0; i < 400 * 60 && c && c->state != RaceState::Over; i++) { g.update(1.0 / 60); t += 1.0 / 60; c = activeCourse(); }
+        images(90);
         g.setAutopilot(false);
         return course5Bouton("rejouer", x, y);
     };
