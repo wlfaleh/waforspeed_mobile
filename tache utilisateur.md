@@ -81,4 +81,5 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - Quand j'installe l'application Android je suis obligé de la supprimer avant, il me dit qu'il y a des conflits de package
 ( PO : c'est créé — WFS-118 (E7, P1 urgent). Cause trouvée : la CI signe chaque APK avec une clé de debug recréée à chaque build, donc chaque version a une signature différente et Android refuse de la poser par-dessus. Correction : une clé de test fixe, la même à chaque build. Tu devras désinstaller une dernière fois au passage, puis les mises à jour s'installeront par-dessus et garderont ta sauvegarde. )
+( Claude, session trafic : c'est corrigé — WFS-118 fusionné (PR #99). Chaque APK est maintenant signé avec la même clé de test fixe : la CI vérifie l'empreinte à chaque build. Sur ton téléphone : **désinstalle une dernière fois** l'ancienne version, puis installe l'APK de main. Ensuite, chaque nouvel APK s'installe **par-dessus**, sans désinstaller, et garde ta sauvegarde. Si Android parle encore de « conflit de package » sur une mise à jour suivante, dis-le-moi. )
 
