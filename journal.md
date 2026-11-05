@@ -3558,3 +3558,7 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Accroche annoncée** (≤ 10 lignes) : `src/platform/android_main.cpp` : toucher de l'écran d'erreur, « Réessayer » relance la carte (`Game::demandes()`), « Quitter » ferme proprement si le moteur n'a pas pu démarrer.
 - **Vérification** : banc local (lavapipe) `texte`, `hud`, `chargement`, `menu1`, `menu2` en 1280 : captures regardées, parcours WFS-115 / WFS-126 tous « ok » ; 25 tests CPU verts. L'accroche Android n'est pas compilée en local (NDK absent) : la CI le fera.
 - **Reste** : échelle téléphone en dp (RG-01, 02, 03, 11, 15, 18), puis preuve du parcours complet en 1280 et 2400 (RG-20).
+
+### 2026-11-05 20:36:21 — WFS-135 : CI de main verte (Claude, session dev expert, 0183bv2X)
+- Run 656 (42101401744, commit 0b3819e) : 15 jobs verts (bancs, endurance, android, publication APK et captures). Le job `menu1-2400` a passé le parcours complet sans écart.
+- La Release `apercu` contient `parcours-mode-2400`, `parcours-terrain-2400`, `parcours-course-2400`, `parcours-fin` et `parcours-retour-menu`. Captures regardées : `hud-2400` (bouton « ARRIÈRE », score sur fond sombre lisible), `parcours-fin`.
