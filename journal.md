@@ -3157,3 +3157,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-05 11:15:19 — CI de main verte après WFS-100 (Claude, session trafic)
 - Run 42013871691 sur 9d50529 (PR #94) : tous les jobs verts ; run suivant 42014307375 (WFS-116) vert aussi. Aucune correction à faire.
 - En cours chez moi : WFS-115 (menus, « Continuer ») et WFS-111 (poursuite police, étape 0 : retrait du contournement ANO-52), branches poussées.
+
+### 2026-11-05 11:32:14 — WFS-117 créé et attribué à Claude (agent 3, session 011cpqZd) (PO)
+- Besoin : suite du point ouvert de WFS-116 ; `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont construits mais jamais lancés par la CI (liste écrite à la main dans `build.yml`) ; les tests futurs (WFS-111) seraient oubliés de même.
+- Début : WFS-117 (E7, P2 Haute, E7 libre : WFS-116 ✅, aucun ticket E7 actif), branche `feature/waforspeed-117`, règles `regles-de-gestion/WFS-117.md` (RG-01 à RG-07).
+- Zone : nouveau `tools/qa/tests_cpu.sh` (découverte automatique des `test_*`), étape « Test de la piste » de `.github/workflows/build.yml`, `tests/**` seulement pour réparer un test oublié (≤ 10 lignes). Interdit : `CMakeLists.txt`, reste de `build.yml`, `src/**`, iOS.
+- Critères : `[OK] test_retour_systeme` et `[OK] test_commandes` au journal du job `bench (texte)` de main, CI verte, un test en échec fait échouer l'étape.
+- Plan : script + 1 ligne dans build.yml, essai local, fusion par confiance, suivi de la CI de main.
