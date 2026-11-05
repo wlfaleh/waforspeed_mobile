@@ -2910,3 +2910,41 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - les taches du natif sont plus étalées qu'au web (dégradé en linéaire dans `scene.frag`, zone WFS-100) ;
   - pas encore vu sur téléphone.
 - `TACHES.md` (WFS-97 ✅), `qa/Check.md` (ligne WFS-97) et `anno.md` (ANO-37) mis à jour. Je suis la CI de `main`.
+
+### 2026-11-05 01:13:50 — WFS-109 attribué à Copilot (session dc0cdd3f) (PO)
+- **Ticket** : WFS-109 — [URGENT] Feux de freinage réalistes (2e passage) + halos orange des clignotants / feux de détresse trop gros (ANO-48). P1 Urgent. Branche `feature/waforspeed-109`, à créer et pousser tout de suite. Règles : `regles-de-gestion/WFS-109.md` (RG-01 à RG-12).
+- **Épic** : E4, avec une exception écrite. C'est le 2e ticket E4 actif, à côté de WFS-100 (Claude session trafic) : WFS-100 a la peinture, les fils fins et le bloom de `renderer.cpp`, WFS-109 le bloc des feux. S'y ajoute le bloc des feux de `traffic_system.cpp` (E3, libre, RG-12). Même pratique que WFS-65, WFS-97 et WFS-107.
+- **Pourquoi ce ticket** :
+  - c'est le seul ticket P1 prêt ;
+  - plainte directe de l'utilisateur après son essai sur téléphone (« feux de freinage trop artificiels ») ;
+  - on lui a annoncé que ce ticket démarrerait dès la fusion de WFS-101 (`tache utilisateur.md`) ;
+  - il contient aussi ANO-48, signalée par ce même développeur ;
+  - les épics libres n'ont que des tickets P2 : WFS-94 (E2) et WFS-110 (E3). WFS-91 ne peut pas être pris, E7 est occupé par WFS-106.
+- **Zone autorisée** :
+  - bloc des feux de `src/render/renderer.cpp` (`draw` : `feuxVoiture` / `MAT_TAIL` / `MAT_HEAD` ; `namespace feux`) ;
+  - `src/game/traffic_system.cpp` : couleurs de halo d'`initVivant`, `feux()`, ligne `feuxProchaineVoiture` ;
+  - `tests/test_trafic_vivant.cpp` ;
+  - bloc « feux du joueur » de `src/render/nuit.cpp` (RG-11, WFS-97 ✅) ;
+  - accroches de 10 lignes au plus, annoncées au Journal : `renderer.h` (`FeuxVoiture`) et `desktop_main.cpp` (captures) ;
+  - `#include "effets_particules.h"` permis pour `effets::versHdr`, sans modifier ce fichier.
+- **Interdit** : `shaders/**`, la peinture et le bloom de `renderer.cpp` (WFS-100), le reste de `nuit.cpp`, `src/render/effets_*`, `player.*`, `commandes_tactiles.*`, iOS.
+- **Critères** :
+  - `jour-frein`, `trafic-freinage` et `nuit-frein` : le feu du modèle lui-même s'allume en rouge vif, avec une lueur courte, et non plus un grand disque plaqué ;
+  - mêmes feux pour le joueur et le trafic ;
+  - valeurs notées au Journal ;
+  - `accident-fumee` et `trafic-clignotant` : halo orange de 1,5 m au plus, centré sur le feu (ANO-48) ;
+  - tests CPU verts ; l'utilisateur valide sur téléphone.
+- **Plan court** :
+  1. Porter `setLights` / `setBrake` du web (`js/cars/models.js` l. 261 et 472-482) : `0xff2040` × 2,5 au freinage, de jour comme de nuit ; × 0,4 le jour sans freinage.
+  2. Allumer aussi le jour les feux du joueur (bloc de `nuit.cpp`).
+  3. Halos comme au web : `haloBrake` 0,9 m, `haloTail` 0,55 m, clignotants `MAT.blinkHalo` 0xff9a10 0,95 (`js/cars/procedural.js` l. 428). Couleurs passées par `effets::versHdr` au lieu de `hexLin × 7`.
+  4. Test CPU et captures.
+  5. Fusion par confiance si la confiance dépasse 50 %, puis suivi de la CI de `main`.
+- **Autre décision du PO (demande de Copilot dc0cdd3f, RG-06 de WFS-97)** : le reste d'ANO-37 va dans **WFS-94** (E2), qui passe ⏳ Prêt (WFS-93 ✅) en P2 Haute, 3 jours. Ce reste, c'est les façades de la ville encore claires dans l'axe des phares et les fenêtres de nuit.
+  - Règles RG-A2 à RG-A5 :
+    - la nuit, façades aux couleurs de la texture de nuit du web (`js/world/renderer.js` `makeTextures` l. 85-99) ;
+    - fenêtres allumées : 24 % chaudes, 8 % froides, 1,5 % de couleurs rares, graine fixe ;
+    - jour inchangé ;
+    - zone : + `src/world/ville.cpp`.
+  - Le moteur n'a ni carte émissive ni matériau non éclairé (`scene.frag` ajoute une émission constante par matériau). Les fenêtres seront donc de petits quads émissifs regroupés (`effets::versHdr`), sans toucher à `renderer.*` ni à `shaders/**` (WFS-100).
+  - `anno.md` : ANO-37 → WFS-97 + WFS-94.
