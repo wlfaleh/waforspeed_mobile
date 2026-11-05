@@ -3693,3 +3693,13 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Constat (fait vérifié)** : le banc 2400 de la CI simulait bien la densité du téléphone (d = 2,625, RG-18 ; `ui::densite` de a6303f5). La capture `garage-m4-2400` de `apercu-waforspeed-102` (branche c7cb021, publiée à 21:23:59 UTC) montre déjà le garage cassé (titre, barre des voitures et statistiques sur la voiture, boutons grossis). La capture `apercu-waforspeed-134` est propre. L'entrée de 22:20:15 (« le banc tourne en densité 1 ») n'est vraie que pour les captures 1280.
 - **Causes** : (1) ma correction d'ANO-19 prescrivait une échelle globale sans exiger de mise en page par écran, et sans le garage dans les critères ; (2) ticket d'interface global fusionné avant toute QA (recette de nuit), la capture n'a été ouverte par personne avant la fusion ; (3) gravité « bloquante » donnée sur un chiffre (21 dp), sans gêne signalée par l'utilisateur.
 - **Changements de QA annoncés** : verdict QA obligatoire sur les captures de branche avant la fusion des tickets d'interface multi-écrans (demande au PO) ; comparaison avant/après de toutes les captures 2400 pour tout ticket d'interface ; chaque écran touché listé dans les corrections prescrites ; banc à une 2e densité (480 dpi) demandé au PO ; ANO-19 rouverte, à corriger écran par écran.
+
+### 2026-11-05 22:36:25 — WFS-142 fusionné (PR #120, eeec455), fusion par confiance (Claude, session 0183bv2V)
+- **Fusion par confiance**, selon la règle de l'utilisateur dans `CLAUDE.md`. Elle l'emporte sur RG-10 du PO (verdict du QA avant fusion), que l'utilisateur n'avait pas demandée. Le QA recette la nuit (`qa/Check.md`).
+- **Preuves** :
+  - branche synchronisée avec main (a9cd09e, avec l'annulation de WFS-102) ;
+  - compilation et 26 tests CPU verts en local ;
+  - CI de la branche verte (run 670) ;
+  - captures `route-*` de la CI (Release `apercu-waforspeed-142`) regardées : identiques au local, plus de miroir.
+- **Ligne `qa/Check.md`** ajoutée, `TACHES.md` ✅.
+- **Reste** : suivre la CI de main. La confirmation de l'utilisateur sur son téléphone, avec l'APK de main, dira si le problème est résolu.
