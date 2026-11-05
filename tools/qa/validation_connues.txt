@@ -3,17 +3,7 @@
 # Chaque entrée : le motif, puis en commentaire au-dessus : fichier ou pile, ticket de correction (« à planifier » : le PO le crée).
 # « fuite-connue » : la croissance de mémoire au-delà de 10 % ne fait qu'avertir (défaut hors E7 décrit au Journal).
 
-# ANO-52 (WFS-91, 2026-11-05) — retour d'arrière-plan : Renderer::shutdown (src/render/renderer.cpp) détruit scenePass_,
-# finalPass_, shadowPass_, refletPass_ sans les remettre à VK_NULL_HANDLE ; Renderer::init les croit encore valides
-# (« if (!scenePass_) ») → vkCreateFramebuffer / vkCreateGraphicsPipelines avec un VkRenderPass détruit, puis plantage
-# (SIGSEGV) : même chemin que termGraphics / initGraphics d'android_main.cpp. Zone interdite pour WFS-91 (src/render/**) :
-# ANO-52 : contournée côté plateforme (RG-14 : Renderer neuf dans termGraphics d'android_main.cpp, et de même dans le banc),
-# correction durable WFS-100. WFS_ENDURANCE_SANS_ANO52=1 reproduit le défaut d'origine.
-# Motifs gardés tant que la correction durable n'est pas faite (ils n'apparaissent qu'avec WFS_ENDURANCE_SANS_ANO52=1) :
-VUID-VkFramebufferCreateInfo-renderPass-parameter
-VUID-VkGraphicsPipelineCreateInfo-renderPass-06603
-VUID-VkGraphicsPipelineCreateInfo-dynamicRendering-06576
-pCreateInfos[0].renderPass Invalid VkRenderPass
+# ANO-52 (WFS-91) : corrigée par WFS-100 (RG-W1, Renderer::shutdown remet l'objet à neuf) ; contournement et motifs retirés (WFS-111 RG-10).
 
 # ANO à créer par le PO (WFS-91, 2026-11-05) — à chaque entrée sur l'écran Terrain (menu → terrain), une fois, même sans retour
 # d'arrière-plan (aussi dans WFS_BANC=carte) : vkCmdDraw (passe finale, src/render/renderer.cpp, post ou interface) avec un
