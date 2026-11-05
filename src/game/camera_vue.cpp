@@ -65,7 +65,7 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         g_suivi.distDyn += (distT - g_suivi.distDyn) * std::min(1.0, fdt * 2.5);
         const double t = std::clamp((std::abs(std::sin(pl.heading)) - 0.3) / 0.4, 0.0, 1.0), a = t * t * (3 - 2 * t);
         // demi-tour (RG-07) : recul ≥ 6 m, œil à 3 m au moins (≥ 2,5 m) et regard relevé de 0,8 m : la voiture, vue de plus
-        // haut, descend dans le tiers bas de l'image
+        // haut, descend dans le tiers bas de l'image (WFS-105 : planchers sans effet en Poursuite, déjà à 9 m et 6,3 m)
         const double dist = std::max(g_suivi.distDyn, g_suivi.distDyn + (6.0 - g_suivi.distDyn) * a);
         const double h = std::max((double)P.h, P.h + (3.0 - P.h) * a);
         const double hd = g_suivi.camHd, side = -pl.steer * 0.35 * std::min(1.0, p * 2);

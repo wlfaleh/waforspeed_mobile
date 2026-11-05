@@ -2722,3 +2722,147 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - CI de la branche verte (bancs partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit ; APK ; publication). Captures regardées : pédales et flèches agrandies sans chevauchement, réglages en 11 lignes, « R · KM/H » en marche arrière (frein maintenu 3,7 s → −16 km/h).
 - `commandes-grandes-gyro` : la voiture était bloquée par un accident du trafic pendant la capture (braquage 0,00 au journal) ; le pavé montre bien la consigne à droite. Journal du banc corrigé avant la fusion : il donne la consigne du gyroscope et signale le blocage.
 - Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`. Ensuite, arrêt : pas de nouveau ticket (ordre de l'utilisateur).
+
+### 2026-11-04 23:45:15 — PO : modes de jeu, duel entre amis, bug showroom (po-scrum-master)
+- **WFS-113** (E5, P1) bug flèches du showroom. **WFS-110** (E3, P2) Course à 5 voitures + Checkpoint 60 s + duel sans trafic. **WFS-111** (E3, P2) Poursuite police (après WFS-110). **WFS-112** (E3, P2) duel entre amis par Internet : serveur de relais, code + lien d'invitation ; **WFS-92 remplacé** (pas de bibliothèques tierces). Décision attendue de l'utilisateur : hébergement gratuit du relais (Cloudflare Workers recommandé). Commentaires du PO dans `tache utilisateur.md`.
+
+### 2026-11-04 23:48:25 — PO : décisions de l'utilisateur appliquées (po-scrum-master)
+- Cloudflare Workers accepté pour le relais du duel (WFS-112) ; Checkpoint : départ 60 s et +30 s par checkpoint (WFS-110 RG-08) ; valeurs de la poursuite police validées (WFS-111). Règles mises à jour.
+
+### 2026-11-04 23:51:37 — PO : les anomalies passent en priorité, regroupées en gros lots (po-scrum-master)
+- **Décision de l'utilisateur** : priorité aux anomalies du QA, en lots selon la complexité, pas de micro-ticket. **Lot INTERFACE = WFS-102** (P1, ⏳ Prêt, absorbe WFS-95 : ANO-16, 17, 18, 19, 20, 32, 35, 38, 39, 41, 42, 43, 44, 45 ; dépendances levées). **Lot NUIT = WFS-97** (P1, ajoute ANO-37). **Lot RENDU VOITURES = WFS-100** (en cours : ANO-21, 27, 28). Déjà corrigées en attente de recette : ANO-22, 23, 33 (WFS-99), ANO-25, 26, 36 (WFS-101). ANO-02 / ANO-40 / ANO-29 dans WFS-53 / WFS-94 / WFS-91. Règle ajoutée à `po-scrum-master.md`.
+
+### 2026-11-04 23:54:23 — QA de nuit : WFS-99, WFS-104, WFS-101, WFS-79, WFS-78 (qa-lead)
+
+- Recette par lot de `qa/Check.md` sur `main` : Release `apercu` (construction 562, commit `a256432`) et run `ios.yml` 41877869097 de `main`.
+- **WFS-99** : PASSABLE AVEC ANOMALIES MINEURES. Néons, voile, taches au sol, contre-jour de la M4, panneau et crédit sont conformes. Nouvelle anomalie **ANO-47** (mineure) : petits libellés de 6 px qui perdent des traits (« HYBR DE », « NITRO »). ANO-21 se voit encore au-dessus du toit (WFS-100 en cours).
+- **WFS-104** : VALIDÉ. La voiture est aussi nette en Haute et en Moyenne qu'au garage.
+- **WFS-101** : VALIDÉ. Étincelles visibles au choc, traits de nitro, trafic à ≈ 15 m, écran de fin aéré et centré.
+- **WFS-79** : VALIDÉ. `audio iOS : 48000 Hz` est présent ; « n rappels » n'est pas vérifiable tant que l'app iOS ne dépasse pas la première image.
+- **WFS-78** : **REFUSÉ** (bloquant). Pas de menu sur le simulateur iOS (`non-zero base vertex` refusé par MoltenVK, `vkEndCommandBuffer` -8). **Pour le PO** : la correction existe déjà, c'est WFS-88 / PR #76 (run iOS de la branche vert), que WFS-103 doit fusionner. Aucun nouveau ticket n'est nécessaire.
+- WFS-108 : la construction de `main` (run 564) est encore en cours ; recette dès que ses captures sont publiées.
+
+### 2026-11-04 23:54:59 — PO : anomalies et fonctionnalités en parallèle (po-scrum-master)
+- **Décision de l'utilisateur** : mélanger, pas de passage de l'un avant l'autre. Règle ajoutée à `po-scrum-master.md` : chaque agent qui demande un ticket reçoit le plus prioritaire de l'épic libre (lot d'anomalies ou fonctionnalité) ; répartition entre les agents pour mener les deux flux en parallèle. Épics libres en parallèle aujourd'hui : E8 (WFS-102 lot interface), E4 (WFS-97 lot nuit), E5 (WFS-113 showroom), E3 (WFS-110 modes de course).
+
+### 2026-11-04 23:55:43 — Fin WFS-105 : caméra de poursuite relevée (35°) et vue Proche qui montre la rue — PR #85 fusionnée par confiance (Copilot, session 1ef8d4d6)
+- **Fait** (`src/game/camera_vue.h`, commentaire dans `camera_vue.cpp`, `camera_banc.*`, `tests/test_systems.cpp`) :
+  - **Poursuite** (`POURSUITE_LOIN`) : 9 m derrière, 6,3 m de haut, regard à 14 m devant, point visé à −6,3 m (sous la route), champ de vision 66°. Avant : 8 m × 2,5 m, +0,9 m, 62°.
+  - **Proche** (`POURSUITE_PROCHE`) : 6 m derrière, 2,67 m de haut, regard à 7 m, point visé à −2,1 m, 60°. Avant : 4,6 m × 1,28 m, +0,78 m, 58°.
+  - **Inchangés (RG-04)** : capot, cockpit, suivi lissé, champ de vision selon la vitesse, « jamais sous la route » et suivi du demi-tour. Les planchers du demi-tour (6 m, 3 m) n'agissent plus en Poursuite, déjà au-dessus.
+  - **Banc caméra** :
+    - nouvelles captures pendant le décompte : `camera-poursuite-arret`, `camera-proche-arret` ;
+    - nouvelle capture `camera-poursuite-trafic` : 6 voitures placées à 16 / 23 / 30 / 42 / 55 / 68 m, sur les 3 files, à 92 % de la vitesse du joueur ;
+    - `camera-poursuite` reste au même instant (540 pas).
+- **Valeurs choisies (RG-05)** : choisies après des essais au banc local (lavapipe), en mesurant le recul et la hauteur réels derrière le suivi lissé.
+  - **Poursuite 35°** (calcul atan(6,3 / 9) ; 34° mesuré à l'arrêt, 27-29° en course, car la caméra recule avec la vitesse) :
+    - 30° et 33° essayés aussi (33° : 32° à l'arrêt, 26-28° en course) ; 35° est la plus haute des valeurs essayées qui garde l'horizon et la route lointaine dans l'image ;
+    - **40° écarté (RG-01)** : par calcul, l'horizon touche le haut de l'image avec 66° de champ et sort du cadre avec 62° : on ne voit plus loin devant ;
+    - **point visé sous la route (écart à RG-02)** : à +0,9 m, la voiture tomberait sous le compteur (≈ 92 % de la hauteur, par calcul). À −6,3 m, elle reste au-dessus du compteur (haut du compteur à ≈ 71,5 % ; `camera-poursuite-arret` regardée), et le regard reste tourné vers le virage, 14 m devant ;
+    - champ de vision porté à 66° (RG-02 autorise l'ajustement).
+  - **Proche 24°** (calcul ; 23° mesuré à l'arrêt, 17-18° en course) :
+    - 21° essayé aussi (5,6 m × 2,26 m) ; 24° retenu : la rue est bien visible par-dessus la voiture ;
+    - `camera-proche` à 134 km/h : la rue se voit par-dessus le toit, bien au-delà de 15 m (RG-06).
+  - **RG-03** :
+    - `camera-poursuite-trafic` : les 6 voitures (11,7 à 68,3 m) sont visibles, la route jusqu'à l'horizon ;
+    - `trafic-cam0` : les 3 voitures du peloton, et d'autres plus loin.
+  - **Portique de checkpoint** : poutre à ≈ 8,9 m de haut, au-dessus de la caméra (≤ 6,4 m), donc pas de conflit. Le code n'a ni tunnel ni pont.
+- **Vérification** :
+  - compilation sans avertissement ;
+  - après fusion de `main` : les 17 tests CPU (dont `test_commandes`) et `verifier_licences.py` passent ; `test_systems` donne 35,0° / 24,0° ;
+  - banc caméra regardé en 1280×720 et 2400×1080, avant et après la fusion de WFS-108 : voiture au-dessus du compteur, et les commandes agrandies ne gênent pas ;
+  - `trafic-cam0`, `course-cam0-0`, `conduite-demitour` et `conduite-contresens` regardés en local, avec un mode de banc temporaire non commité.
+- **Limites** :
+  - réglage choisi sur des captures PC : **l'utilisateur valide sur téléphone** (une ligne à changer dans `camera_vue.h`) ;
+  - les taches blanches près de la voiture sur `camera-poursuite-trafic` sont la fumée des pneus (ANO-46, corrigée par WFS-107) ;
+  - CI de la branche non attendue (fusion par confiance) : je suis la CI de `main` (`facefd2`).
+- **Suite** : ligne ajoutée dans `qa/Check.md`, statut ✅ dans `TACHES.md`, réponse dans `tache utilisateur.md`. Je demande le ticket suivant au PO.
+
+### 2026-11-04 23:59:34 — QA de nuit : WFS-108 validé, lot terminé (qa-lead)
+
+- **WFS-108** : VALIDÉ, d'après la Release `apercu` construction 564 (`e6ea49b`). Pédales agrandies, nitro au-dessus du frein, encoche et compteur dégagés, mode gaucher, 11 lignes de réglages, mode « Grands » et marche arrière (« R · KM/H ») conformes.
+- Lot de la nuit terminé : WFS-79, WFS-104, WFS-101 et WFS-108 VALIDÉS ; WFS-99 PASSABLE (ANO-47) ; **WFS-78 REFUSÉ** (pas de menu iOS ; la correction est WFS-88 / PR #76, à fusionner par WFS-103).
+
+### 2026-11-05 00:00:38 — Début WFS-113 : showroom, une flèche = une voiture (po-scrum-master)
+- Ticket WFS-113 (E5, P1 Urgent) attribué à Claude (agent 3, session 011cpqZd), à sa demande (ordre de l'utilisateur). Branche `feature/waforspeed-113`. Règles : `regles-de-gestion/WFS-113.md`.
+- Zone autorisée : `src/ui/garage.*` et fichiers du showroom / choix de peinture sous `src/ui/**` (sauf `src/ui/ecrans/`), test CPU dédié sous `tests/` ; captures `showroom-suivante-1/2/3` par accroche ≤ 10 lignes annoncée dans `src/platform/desktop_main.cpp`. Interdit : noyau (`src/core`, `src/game/game.*`, API du renderer, CMake hors ajout du test), `src/input/**` (sauf accroche annoncée), iOS.
+- Piste de l'agent : sur téléphone, chaque mouvement d'un doigt posé arrive en « appui » ; le garage ne retient pas le doigt du bouton, donc chaque micro-mouvement sur une flèche relance `cycle()`. Correction attendue : déclencher sur le front (doigt nouveau ou relâchement), un doigt = un appui.
+- Critères : test CPU 20 appuis = 20 voitures consécutives puis retour à la 1re ; 40 appuis alternés sans saut ni erreur ; même règle pour « Ta voiture » et peintures ; cause nommée au Journal.
+
+### 2026-11-05 00:04:01 — Fin WFS-113 : showroom, une flèche = exactement une voiture, fusionné par confiance (PR #86) (agent 3, session 011cpqZd)
+- **Cause (RG-01)** : sur Android, chaque mouvement d'un doigt posé (`ACTION_MOVE`) arrive comme un toucher « appuyé » (`Touch{down = true}`) ; les boutons du garage agissaient à l'appui sans retenir le doigt → chaque micro-mouvement sur une flèche relançait `cycle()` (1 appui + 6 micro-mouvements = 7 voitures, reproduit par le test). Même défaut pour « Choisir », « Retour », les points et les peintures.
+- **Fait** : `src/ui/appui.h` (filtre « un doigt = un appui ») utilisé par tous les boutons du garage ; `tests/test_appui.cpp` ; captures `showroom-suivante-1/2/3` à la fin de `benchGarage`.
+- **Accroches annoncées** : `CMakeLists.txt` (ajout de `test_appui`), `.github/workflows/build.yml` (`test_appui` dans la liste des tests).
+- **Vérification** : 17 tests CPU OK en local ; banc `garage` : Golf → M4 → 911 → Gallardo, aucune erreur ni avertissement. Fusion `d93abf1`. Je suis la CI de `main`.
+
+### 2026-11-05 00:06:49 — Début WFS-102 : lot anomalies INTERFACE, attribution à Copilot (session 1ef8d4d6) (PO / Scrum Master)
+- **Choix** : à la demande de Copilot (session 1ef8d4d6), libéré par WFS-105 (fusionné, PR #85). Tickets ⏳ Prêt les plus prioritaires : WFS-97 et WFS-109 (P1, E4 occupée par WFS-100 / WFS-107), **WFS-102 (P1, E8 libre)**, WFS-110 (P2, E3 libre). → **WFS-102**, lot d'anomalies (règle « anomalies et fonctionnalités en parallèle » : la fonctionnalité WFS-110 reste ⏳ Prêt pour le prochain agent). Aucune branche `feature/waforspeed-102` n'existait ; gel iOS respecté.
+- **Ticket** : WFS-102 (E8 + parties E5 `src/ui/*`, accroches E0 / E7), P1 Urgent, branche `feature/waforspeed-102`, règles `regles-de-gestion/WFS-102.md` (section « Attribution du 2026-11-05 » ajoutée) + `regles-de-gestion/WFS-95.md` (absorbé). Corrige ANO-16, 17, 18, 19, 20, 32, 35, 38, 39, 41, 42, 43, 44, 45 et **ANO-47** (rangée ce jour dans le lot, `anno.md` → 📋 Planifiée).
+- **Zone** : `src/ui/ecrans/**`, nouveau `src/ui/echelle.*`, `src/ui/text.*`, `toasts.*`, `hud.*`, `shaders/ui*`, `assets/fonts/**`, `garage.cpp` (échelle et petits libellés seulement), `camera_vue.cpp`, `course_system.cpp`, `duel_system.cpp` (résultat), `commandes_tactiles.*` (zones de toucher), `manette_jeu.cpp` ; accroches ≤ 10 lignes annoncées : `game.h`, `game.cpp` (`drawControls`), `android_main.cpp`. **Interdit** : `src/render/**` (WFS-100, WFS-107), `src/world/**` (WFS-93), `.github/**` et l'aiguillage du banc (WFS-106), navigation du garage et `appui.h` (WFS-113), iOS.
+- **Décisions du PO** (dans la fiche) : RG-16 (ANO-47 : aucun texte < 8 px réels, petits libellés au pixel entier) ; RG-17 (ANO-17 : d'abord un atlas plus fin, police Inter 500 seulement si cela ne suffit pas, licence OFL déclarée) ; RG-18 (densité : celle de WFS-108 sur Android ; banc PC d = 2,625 si largeur ≥ 2000 px, sinon 1 → captures 1280 à k = 1) ; RG-19 (capture `toast-quartier` dans `benchToasts`, sans toucher la CI). Le menu en 2400 s'appelle `menu-1` dans la CI (pas de `menu-0-2400`).
+- **Critères** : boutons ≥ 44 dp et texte ≥ 12 dp en 2400 ; aucun bouton rayé ; terrain sur fond sombre, sélection cyan, sans bandes ; « — » sous RECORD ; aide du menu juste ; salon en carte centrale, aide sous le code, touche effacer lisible ; « 2e PLACE » ; chargement aux reflets orange et cyan, « Réessayer » ; aucune commande tactile pendant le fondu ni à la fin ; « HYBRIDE » et « NITRO » entiers ; tests CPU verts.
+- **Plan** : 1) textes et caractères ; 2) couleurs et biseaux ; 3) échelle dp ; une seule CI à la fin ; fusion par confiance si > 50 %.
+- **Tableau remis à jour** (verdicts de la QA de nuit, 2026-11-04 23:54:23, et rapport WFS-108) : détail de **WFS-104** corrigé (resté « ⏳ Prêt » → ✅ Terminé, QA VALIDÉ) ; WFS-99 ✅ PASSABLE (ANO-47 → WFS-102) ; WFS-101, WFS-104, WFS-108, WFS-79 ✅ VALIDÉ ; WFS-78 ⛔ REFUSÉ (pas de menu iOS) : correction déjà portée par WFS-88 (PR #76, gel iOS), aucun nouveau ticket. WFS-113 fusionné entre-temps (PR #86) : E5 libre, `garage.cpp` libre pour les lignes d'échelle de WFS-102.
+
+### 2026-11-05 00:10:28 — WFS-106 : publication en deux jobs et banc en 11 jobs, CI de branche lancée (Copilot, session 6be876ef)
+- **Poussé** sur `feature/waforspeed-106` (fd4a668, synchronisée avec `main`) ; CI de branche : run 41939199188. Pas de fusion par confiance (CI non testable en local) : fusion après la CI verte, la vérification des captures, et quand aucune publication de `main` ne tourne.
+- **Banc** : `partie1` → `partie1a` / `partie1b`, `partie2` → `partie2a` / `partie2b` / `partie2c`, groupe `menu` en 2400 → `menu1-2400` / `menu2-2400`, `vie` lancé dans le job `texte` : 11 jobs (≤ 12). `WFS_BANC` inconnu = erreur (code 2). Sans `WFS_BANC`, tout le banc, dans le même ordre. **Pour les tickets qui ajoutent un groupe de banc** (WFS-89 `salon`, WFS-91 `endurance`…) : le déclarer dans `desktop_main.cpp` **avant** le contrôle « groupe inconnu », sinon le banc s'arrête en erreur.
+- **Publication** : `publication-apk` (après `android` seul, ≈ 10 appels, attend la remise à zéro du quota au lieu d'échouer, 70 min au plus) et `publication-captures` (après le banc, seulement les captures dont le sha256 a changé, fichier `empreintes-*.sha256` dans la Release, 200 appels gardés pour les APK, 20 min au plus, échec = avertissement).
+- **Essai à blanc** du script (faux `gh` / `curl` / `git`) : 70 contrôles passés (Release absente, remplacement, garde du commit plus récent, quota bas, limite secondaire, quota épuisé, réserve, transition sans fichier d'empreintes). `shellcheck` et `bash -n` passent.
+- **Limite connue** : une seule publication en attente par groupe de concurrence ; si une plus récente est remplacée par une plus ancienne (runs finis dans le désordre), relancer le job annulé avec `gh run rerun <run> --failed`. Sur une branche, un nouvel envoi annule tout le run, publication comprise (WFS-69, inchangé) ; sur `main`, rien n'est annulé.
+
+### 2026-11-05 00:11:18 — WFS-107 fusionné par confiance : plus de « feu blanc » au braquage (Copilot, session dc0cdd3f)
+- **Fusion** : PR #87, commit de fusion `e9cc93e` (branche synchronisée avec `main`, WFS-105 et WFS-113 compris ; compilation sans avertissement, 17 tests CPU dont `test_appui` : 0 échec ; licences OK). ANO-46 → « corrigée par WFS-107, recette QA à faire » ; ligne ajoutée à `qa/Check.md`.
+- **Cause** (RG-01) : fumée des pneus (crissement au-delà de 16,6 m/s² d'accélération latérale et de 72 km/h), convertie vers l'émissif HDR par `hdr()` avec un facteur ≈ 4,3 fois trop fort : gris de 0,67 à 0,79 à l'écran (presque blanc), voile sur toute la scène près de la caméra (`accident-fumee` de `main`).
+- **Correction** (`effets_particules.*`, `effets_systeme.cpp`) : `fumeeHdr(fondu)` = `versHdr(0,32 × fondu)` (couleur `c × k` du jeu web, gris 0,29 à 0,41 à l'écran) ; matériau `metal = 1` (avec albédo 0, seul l'émissif reste : la fumée ne réagit plus au soleil ni aux lampadaires) ; texture ronde `radial()` (profil de `TEXS.radial`) ; taille du jeu web (2,4 · tan 29° ≈ 1,33 m) ; `setReduireMouvements()` : aucune étincelle ni fumée émise, les particules vivantes finissent leur vie (RG-06). Luminance × exposition de la bouffée la plus claire ≈ 0,09, sous le seuil du bloom (0,46), vérifiée par test CPU (le bloom est coupé en GPU logiciel).
+- **Banc** (`bench_effets.cpp`) : 12 captures `braquage-{gauche,droite}-{30,120,250}-{jour,nuit}` en vue Proche (vue d'origine rendue ensuite), flèches tactiles tenues 0,5 s, trafic retiré à chaque image (la course en ajoute aux points de passage) ; 250 km/h atteint par élan au pilote automatique puis nitro par l'entrée manette (le pilote automatique coupe le nitro). Journal : 30 km/h → 0 bouffée (10,7 m/s²), 120 → 16 / 30, 250 → 26 / 37, 0 voiture.
+- **Vérifié en local** : captures avec et sans fumée (fumée sur 3 à 13 % de l'image, discrète, sans voile) ; `nitro-lignes` identique au pixel près à `main`, étincelles de `choc-etincelles` identiques.
+- **Hors ticket, signalé** : le gros halo orange des feux de détresse de la voiture accidentée (`accident-fumee`, `traffic_system.cpp`, WFS-67) existe déjà sur `main`, sans lien avec la fumée → à regarder dans WFS-109 (feux sans gros halo). Les lueurs jaunes de nuit sous la voiture sont le reflet des lampadaires sur la route mouillée.
+- **Ensuite** : suivi de la CI de `main` (fusion `e9cc93e`), puis ticket suivant demandé au PO.
+
+### 2026-11-05 00:12:07 — Début WFS-102 : interface à l'échelle du téléphone, biseaux d'un seul tenant, textes lisibles (Copilot, session 1ef8d4d6)
+- **Ticket** : WFS-102 (absorbe WFS-95), branche `feature/waforspeed-102` créée depuis `main` (`d3fc262`). Lot : ANO-16, 17, 18, 19, 20, 32, 35, 38, 39, 41, 42, 43, 44, 45 et 47.
+- **Plan** (ordre de la fiche) : 1) textes : atlas plus fin (`BASE_PX` 64, `PAD` 8), glyphes « — – ‘ “ ” • → ← ✓ ≈ », caractère absent journalisé une fois, positions au pixel, aide du menu selon Direction, « 2e PLACE », aide et touche « effacer » du salon, bandeau du quartier + capture `toast-quartier` ; 2) `ui::biseau` d'un seul `uiQuad` partagé (`src/ui/echelle.*`), terrain (sélection cyan, illustration sans bandes, ombre `.map-shade`), chargement (reflets, erreur 16 px + « Réessayer ») ; 3) échelle `ui::echelle(H)` en dp (densité de WFS-108, banc 2400 : d = 2,625), règles `@media` des petites hauteurs, cibles ≥ 44 dp, carte centrale du salon, commandes tactiles cachées hors course.
+- **Zone** : `src/ui/ecrans/**`, `src/ui/echelle.*` (nouveau), `src/ui/text.*`, `toasts.*`, `hud.*`, `shaders/ui*`, `assets/fonts/**` ; lignes d'échelle et petits libellés de `garage.cpp` ; `camera_vue.cpp`, `course_system.cpp` (échelle, bandeau), `duel_system.cpp` (résultat), `commandes_tactiles.*` (zones, libellé), `manette_jeu.cpp` (échelle).
+- **Accroches annoncées (≤ 10 lignes chacune)** : `src/game/game.cpp` (RG-15 : commandes tactiles dessinées et lues seulement en course non finie, sans fondu) ; `src/platform/android_main.cpp` (RG-10 : touchers transmis à l'écran d'erreur du chargement, « Réessayer » relance l'initialisation). Aucun nouveau champ `GameView` (RG-18).
+- **Vérification prévue** : 17 tests CPU + licences en local, banc 1280 et 2400 regardé, une seule CI à la fin ; fusion par confiance si confiance > 50 %.
+
+### 2026-11-05 00:19:32 — WFS-97 attribué à Copilot (session dc0cdd3f) (PO)
+- **Ticket** : WFS-97 — Lot anomalies NUIT : taches de lumière du circuit + façades de la ville trop claires (ANO-37). **Épic** : E4. Exception écrite : en parallèle de WFS-100 (🔧, Claude session trafic), fichier séparé. **P1 Urgent.** Branche `feature/waforspeed-97`. Règles : `regles-de-gestion/WFS-97.md` (RG-01 à RG-03, lot élargi ANO-37, précisions RG-04 à RG-07 du jour).
+- **Pourquoi lui** : WFS-107 est ✅ (PR #87) et l'agent n'a aucun ticket en cours. Prêts en P1 : WFS-97 et WFS-109 (E4, exceptions écrites). À égalité de priorité, le plus petit numéro l'emporte : WFS-97. C'est aussi un lot d'anomalies, dans un fichier que WFS-100 ne touche pas. Le même défaut de conversion des couleurs du web que WFS-107 se retrouve ici : `effets::versHdr` est à réutiliser. Les autres prêts : WFS-109 (P1, E4) reste prêt pour le prochain agent ; WFS-110 (P2, E3 libre) aussi ; WFS-91 (E7) attend WFS-106.
+- **Zone autorisée** :
+  - `src/render/nuit.cpp`, sauf le bloc « RG-04 : feux du joueur » à la fin de `render()`, réservé à l'accroche de WFS-109 ;
+  - `#include "effets_particules.h"` permis, sans modifier ce fichier ;
+  - accroche ≤ 10 lignes dans `src/platform/desktop_main.cpp`, seulement si une capture de nuit manque.
+- **Interdit** : `src/world/**` (WFS-93), `src/render/renderer.*` et `shaders/**` (WFS-100), le reste de `src/platform/**`, `src/game/**`, iOS.
+- **Critères** :
+  - `carte-circuit-nuit`, `course-nuit-circuit-0` : taches froides visibles sous les mâts ;
+  - `course-nuit-ville-*`, `nuit-plage-corniche` : façades sombres, plus de lavande ni de rose ; néons, flaques et reflets qui ressortent, sans surexposition ;
+  - captures de jour inchangées ; valeurs notées au Journal ; tests CPU verts.
+- **Plan court** :
+  1. Au banc de nuit, vérifier d'abord `fp.exposure` 1,1 (web 0,9), `fp.ambient` 0,7, l'éclaircissement ×2,2, et l'hémisphère (QA : ×0,45).
+  2. Taches `poolCool` et flaques à l'éclat du web, avec `effets::versHdr` à la place de `lin()`.
+  3. Captures de nuit avant / après au Journal, puis fusion selon la confiance.
+- **Hors périmètre** : fenêtres éclairées de la ville (web : `ENV.windowsLit`, `MAT.bld`, `TEXS.facade`). Elles se trouvent dans `src/world/ville.cpp`, zone de WFS-93 en cours. Elles iront au prochain lot E2 si le QA juge encore la ville trop claire après WFS-97.
+- **Signalement de Copilot dc0cdd3f (halo orange de `accident-fumee`)** :
+  - inscrit en **ANO-48** dans `anno.md`, au statut 📋 Planifiée ;
+  - rangé dans **WFS-109**, qui reste ⏳ Prêt, avec deux règles ajoutées :
+    - RG-10 : éclat du web `MAT.blinkHalo`, de couleur `0xff9a10`, opacité 0,95, additif, sans ×7 ; halo ≤ 1,5 m ; conversion par `effets::versHdr` ;
+    - RG-11 : dans `nuit.cpp`, l'accroche de WFS-109 est limitée au bloc des feux du joueur, et le second à fusionner résout le conflit ;
+  - critère ajouté à WFS-109 : captures `accident-fumee` et `trafic-clignotant`.
+
+### 2026-11-05 00:40:53 — WFS-97 : décision de périmètre, accroche d'une ligne dans `decor_carte.cpp` (PO)
+- **Question de Copilot (session dc0cdd3f)** : la « piste grise » du circuit de nuit ne vient pas du passage en linéaire de `poolCool` (au banc, `versHdr` ≈ `lin`, et le natif fait déjà × 2,2).
+- **Cause trouvée au banc** :
+  - la chaussée du circuit (`src/world/decor_carte.cpp` l. 320, WFS-53, `roadCircuit` sans `MAT_ROAD`) a l'ordre d'indices `{k, k+3, k+1, k+1, k+3, k+2}` ;
+  - la normale est donc retournée vers le bas par `scene.frag` ;
+  - l'asphalte ne reçoit ni lune, ni hémisphère, ni projecteurs, ni phares.
+- **Décision : option A acceptée.** Le développeur peut faire une accroche d'**une seule ligne** dans `decor_carte.cpp` (ordre `{k, k+1, k+3, k+1, k+2, k+3}`) dans WFS-97. Rien d'autre dans `src/world/**`. Il l'annonce au Journal avant la poussée.
+- **Pourquoi** : c'est la vraie cause, la correction tient en une ligne et elle a été essayée au banc de jour comme de nuit. Un ticket E2 séparé coûterait une CI de plus pour une ligne (interdit des micro-tickets), et WFS-97 livrerait des taches peu lisibles sur un asphalte noir.
+- **Coordination avec WFS-93 (Copilot session 0e5c192d, zone `src/world/**`)** : sa branche `feature/waforspeed-93` n'a encore que le commit d'attribution (16d7593). Le second à fusionner résout le conflit (une ligne).
+- **Changement de jour voulu (RG-09)** :
+  - l'asphalte du circuit est enfin éclairé par le soleil, comme `roadCircuit` en `MeshStandardMaterial` au web : banc (37, 44, 57) → (58, 61, 70) ;
+  - les captures de jour du circuit changent ; le critère « captures de jour inchangées » est corrigé dans `TACHES.md` et `regles-de-gestion/WFS-97.md` ;
+  - le noter dans `qa/Check.md` (avant / après) pour que le QA ne le prenne pas pour une régression.
+- **Accepté aussi (zone `nuit.cpp`, RG-10)** : `decay = 2` pour les lampadaires et les projecteurs, comme au web (`PointLight(…, 26, 2)`). À vérifier : flaques et têtes de lampe toujours visibles.
+- **RG-05 sans objet pour `poolCool`** : on garde `lin`.
