@@ -1,11 +1,13 @@
 # Construit le jeu à chaque envoi de code :
 #  - banc d'essai sur Linux (Vulkan logiciel lavapipe) : tests + captures d'écran du rendu (QA de chaque ticket),
-#    découpé en 4 jobs parallèles (WFS-69) : partie1, partie2, texte, ecrans-2400 (WFS_BANC de desktop_main.cpp)
+#    découpé en jobs parallèles (WFS-69), chacun ≤ 11 min depuis WFS-106 (WFS_BANC de desktop_main.cpp)
 #  - le test sur émulateur Android n'est plus lancé ici : voir simulateur.yml (vérification de fin d'épic)
 #  - APK Android (arm64) et AAB signé pour Google Play (WFS-22 : clé des secrets, sinon clé factice ; store/signature.md)
 #  - iOS : workflow à part (ios.yml), jamais bloquant pour celui-ci
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
+#    WFS-106 : deux jobs. publication-apk part dès la fin du job android (APK en ligne ≈ 5 min après l'envoi) ;
+#    publication-captures part après le banc et n'envoie que les captures changées (quota de l'API : 1 000 appels/h)
 # WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
 # du commit s'affichent sur la PR) ; sur main, aucun build annulé : chaque commit de code publie son APK.
 name: Construction WaForSpeed
@@ -31,7 +33,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        groupe: [partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit]   # nuit : WFS-09
+        # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
+        # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit]
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -45,7 +49,7 @@ jobs:
         run: |
           mkdir -p captures
           case "${{ matrix.groupe }}" in
-            partie1|partie2|vitrines|vie|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; vie : WFS-71 ; nuit : WFS-09
+            partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
             texte)
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
@@ -53,15 +57,20 @@ jobs:
               WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
               mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/   # WFS-24 : deux lancements
               # WFS-22 : manette (course pilotée par des entrées injectées, focus des menus, pause) ; journal du banc gardé
-              mkdir -p manette && WFS_BANC=manette ./build/wfs_bench manette assets/ 2>&1 | grep -i "manette" | tee captures/manette-journal.txt && cp manette/manette-*.png captures/ ;;
+              mkdir -p manette && WFS_BANC=manette ./build/wfs_bench manette assets/ 2>&1 | grep -i "manette" | tee captures/manette-journal.txt && cp manette/manette-*.png captures/
+              WFS_BANC=vie ./build/wfs_bench captures assets/ ;;   # WFS-71 (job vie jusqu'à WFS-106)
             ecrans-2400)
               # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
               mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
               for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
-              mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-66
-              mkdir -p menu && WFS_BANC=menu WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
-              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11, WFS-41, WFS-83
+              mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
+            menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
+              mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
+              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-11, WFS-41
+            menu2-2400)   # WFS-106 : 2e moitié du groupe menu en 2400x1080 (réglages, salon du duel)
+              mkdir -p menu && WFS_BANC=menu2 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/
+              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4
@@ -114,23 +123,48 @@ jobs:
             WaForSpeed.apk
             WaForSpeed.aab
 
-  publication:
-    needs: [banc-essai, android]
+  # WFS-106 RG-05 : l'APK part dès la fin du job android, sans attendre le banc ni les captures d'un autre commit ;
+  # un seul à la fois par branche, jamais annulé en cours de route (RG-07 : peut attendre la remise à zéro du quota, ≤ 60 min)
+  publication-apk:
+    needs: [android]
     runs-on: ubuntu-24.04
-    if: always() && needs.android.result == 'success' && github.event_name == 'push'
-    # une publication à la fois par branche, jamais annulée (main : chaque commit de code publie)
+    if: github.event_name == 'push'
+    timeout-minutes: 70
     concurrency:
-      group: publication-${{ github.ref }}
+      group: apercu-apk-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/download-artifact@v4
         with: { name: apk, path: dl/apk }
-      - uses: actions/download-artifact@v4
-        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
-      - name: Release d'aperçu (APK d'abord, jamais supprimée ; WFS-87)
+      - name: APK dans la Release d'aperçu (nom provisoire puis renommage, jamais de moment sans APK ; WFS-87, WFS-106)
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          PUBLIER: apk
+        run: bash tools/qa/publier_apercu.sh
+
+  # WFS-106 RG-06 : les captures après le banc (même partiel), seulement celles qui ont changé (RG-11) ; ne touchent jamais
+  # à l'APK, au tag ni au titre ; échec = avertissement, job vert (RG-03) ; 20 min au plus (RG-07)
+  publication-captures:
+    needs: [banc-essai]
+    runs-on: ubuntu-24.04
+    if: ${{ !cancelled() && github.event_name == 'push' }}
+    timeout-minutes: 20
+    concurrency:
+      group: apercu-captures-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/download-artifact@v4
+        continue-on-error: true   # aucun artefact (banc en échec) : le script le dit et finit vert
+        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
+      - name: Captures dans la Release d'aperçu (seulement celles qui ont changé ; WFS-106)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PUBLIER: captures
+          BANC: ${{ needs.banc-essai.result }}
         run: bash tools/qa/publier_apercu.sh
