@@ -88,9 +88,10 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 - Une US de configuration de l'application à partir d'un fichier JSON à la racine du projet (scores, compteurs, nombre de joueurs, espaces, angle et zoom des caméras…) ; carte blanche pour ajouter toutes les configurations possibles dans configgame.json
 ( PO : c'est créé — WFS-128 (E0, P2). Fichier « configgame.json » à la racine, avec toutes les valeurs actuelles du jeu (rien ne change au premier chargement), copié dans l'APK, avec en plus une surcharge sans reconstruire (un fichier posé sur le téléphone remplace celui de l'APK). Sections : score, checkpoint (60 s + 30 s), nitro, course à 5, joueurs, poursuite police, trafic et espaces, caméras (distance, hauteur, angle, zoom), commandes, conduite, qualité, duel. Valeurs bornées, jamais de plantage, aide . L'agent ajoute toute valeur utile qu'il trouve en dur dans le code. )
 
-- il faut améliorer la qualité des voitures dans les course il est catastrophique 
+- Il faut améliorer considérablement la qualité des voitures pendant les courses, car le rendu actuel est catastrophique.
 
-- il faut améliorer les feux freinage il faut que le feux sort comme le vrai feux de voiture
+- Il faut améliorer les feux de freinage pour qu’ils s’affichent et fonctionnent comme sur de vraies voitures, avec un rendu réaliste.
 
-- au po :on veut améliorer les 4 laps créer pour chaque maps une tâche didie ajouton des virage des montagne des rond point des feux des autoroute inspiré de vrai ville ou compagne sans les cité ajoute des cafe bar cadino garage centre commercial des animaux des beach party des bateaux des jeux de plage propose toi des améliorations aussi
+- Au niveau des PO : on veut améliorer les 4 laps existants. Créer une tâche dédiée pour chaque map. Ajouter des virages, des montagnes, des ronds-points, des feux de circulation et des autoroutes, en s’inspirant de vraies villes et campagnes sans citer de villes précises. Ajouter également des cafés, des bars, des casinos, des garages, des centres commerciaux, des animaux, des beach parties, des bateaux et des jeux de plage. Propose également d’autres améliorations.
+
 
