@@ -21,8 +21,8 @@ inline float bloomNiveau(int n) { return n == BASSE ? 0.f : 1.f; }
 // WFS-104 (RG-02) : la résolution ne descend plus sous la netteté du garage : plancher 100 % en Haute, 90 % en Moyenne
 // (≈ 0,9 pixel CSS du jeu web) ; Basse fixe à 50 % (choix du joueur). Un téléphone trop lent perd d'autres coûts
 // (allegement : bloom puis ombres), jamais la netteté de la voiture.
-inline float plancher(int n) { return n == HAUTE ? 1.f : n == MOYENNE ? 0.9f : echelleNiveau(BASSE); }
 inline const float& PLANCHER = g_configJeu.qualite.plancherMoyenne;   // WFS-128 : 0,9 ;   // plancher de la Moyenne (WFS-86 : 0,6)
+inline float plancher(int n) { return n == HAUTE ? 1.f : n == MOYENNE ? PLANCHER : echelleNiveau(BASSE); }   // Moyenne : qualite.plancher_moyenne ; Basse : WFS-134
 inline float echelleRendu(int n, float dynamique) {
     if (n == BASSE) return echelleNiveau(BASSE);
     const float e = echelleNiveau(n) * dynamique, p = plancher(n);

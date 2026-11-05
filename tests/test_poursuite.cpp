@@ -14,27 +14,27 @@ static int echecs = 0;
 
 int testPoursuite() {
     // RG-01 / RG-02 : score de départ 100, −5 au choc avec le trafic (une fois par seconde au plus), −3 glissière, −10 police
-    Etat e;
-    VERIFIE(e.score == 100, "score de départ %d", e.score);
-    chocTrafic(e); VERIFIE(e.score == 95, "choc trafic : %d (95 attendu)", e.score);
-    chocTrafic(e); VERIFIE(e.score == 95, "deuxième choc dans la même seconde : %d", e.score);
-    pas(e, 1.01, 100); chocTrafic(e); VERIFIE(e.score == 90, "choc trafic après 1 s : %d", e.score);
-    chocGlissiere(e); VERIFIE(e.score == 87, "glissière : %d", e.score);
-    chocPolice(e); VERIFIE(e.score == 77, "police : %d", e.score);
-    quasiContact(e); VERIFIE(e.score == 78, "quasi-contact : %d", e.score);
+    Etat e; const int D = e.score;   // score de départ de configgame.json (1000 depuis e23fa51), les écarts restent ceux de RG-02
+    VERIFIE(e.score == SCORE_DEPART && D > 25, "score de départ %d", e.score);
+    chocTrafic(e); VERIFIE(e.score == D - 5, "choc trafic : %d (D − 5 attendu)", e.score);
+    chocTrafic(e); VERIFIE(e.score == D - 5, "deuxième choc dans la même seconde : %d", e.score);
+    pas(e, 1.01, 100); chocTrafic(e); VERIFIE(e.score == D - 10, "choc trafic après 1 s : %d", e.score);
+    chocGlissiere(e); VERIFIE(e.score == D - 13, "glissière : %d", e.score);
+    chocPolice(e); VERIFIE(e.score == D - 23, "police : %d", e.score);
+    quasiContact(e); VERIFIE(e.score == D - 22, "quasi-contact : %d", e.score);
     // police collée à moins de 12 m : −1 par seconde ; éloignée : rien
     for (int i = 0; i < 120 * 3 + 2; i++) pas(e, 1.0 / 120, 8);   // 3 s (+ 2 pas : arrondis)
-    VERIFIE(e.score == 75, "3 s collée : %d (75 attendu)", e.score);
+    VERIFIE(e.score == D - 25, "3 s collée : %d (D − 25 attendu)", e.score);
     for (int i = 0; i < 120 * 3; i++) pas(e, 1.0 / 120, 30);
-    VERIFIE(e.score == 75, "3 s à 30 m : %d", e.score);
+    VERIFIE(e.score == D - 25, "3 s à 30 m : %d", e.score);
     std::printf("score : 100, −5 trafic, −3 glissière, −10 police, +1 quasi-contact, −1/s collée : OK\n");
     // arrêt à 0 : défaite immédiate, plus aucune victoire possible
-    for (int i = 0; i < 40 && !e.arrete; i++) { pas(e, 1.01, 100); chocTrafic(e); }
+    for (int i = 0; i < D && !e.arrete; i++) { pas(e, 1.01, 100); chocTrafic(e); }
     VERIFIE(e.arrete && e.score == 0, "arrêt à 0 (score %d)", e.score);
     arrivee(e, 10.5); VERIFIE(!e.gagne, "arrêté puis 10 km : pas de victoire");
     std::printf("score à 0 : ARRÊTÉ après %d chocs : OK\n", e.chocsTrafic);
     // victoire à 10 km avec au moins 1 point
-    Etat v; perdre(v, 99);
+    Etat v; perdre(v, v.score - 1);
     arrivee(v, 9.99); VERIFIE(!v.gagne, "9,99 km : pas encore");
     arrivee(v, 10.0); VERIFIE(v.gagne && v.score == 1, "10 km avec 1 point : victoire");
     std::printf("victoire à 10 km avec 1 point : OK\n");
@@ -110,9 +110,9 @@ int testPoursuite() {
     // ralentisseur : −3 au-dessus de 90 km/h, rien dessous
     {
         Etat r;
-        VERIFIE(ralentisseur(r, 89) == 0 && ralentisseur(r, 90) == 0 && r.score == 100, "ralentisseur à 89 / 90 km/h : %d", r.score);
-        VERIFIE(ralentisseur(r, 91) == 3 && r.score == 97 && r.ralentisseurs == 1, "ralentisseur à 91 km/h : %d", r.score);
-        VERIFIE(ralentisseur(r, 180) == 3 && r.score == 94, "ralentisseur à 180 km/h : %d", r.score);
+        VERIFIE(ralentisseur(r, 89) == 0 && ralentisseur(r, 90) == 0 && r.score == D, "ralentisseur à 89 / 90 km/h : %d", r.score);
+        VERIFIE(ralentisseur(r, 91) == 3 && r.score == D - 3 && r.ralentisseurs == 1, "ralentisseur à 91 km/h : %d", r.score);
+        VERIFIE(ralentisseur(r, 180) == 3 && r.score == D - 6, "ralentisseur à 180 km/h : %d", r.score);
         std::printf("ralentisseur : −3 au-dessus de 90 km/h, rien dessous : OK\n");
     }
     // RG-03 : mode gardé : clé « poursuite » écrite puis relue ; ancienne sauvegarde → Checkpoint (aucun plantage)

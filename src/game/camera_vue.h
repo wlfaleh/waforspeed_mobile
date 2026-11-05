@@ -28,12 +28,13 @@ enum class VueCamera { Poursuite = 0, Capot = 1, Cockpit = 2, Proche = 3 };
 constexpr int VUE_NOMBRE = 4;
 
 // CAM_MODES du jeu web : 'proche' (poursuite, 58°), vue capot (hood), 'capot' / « Cockpit » (cockpit: true, 72°)
-struct VueDef { const char* id; const char* nom; float fov; bool capot; bool cockpit; };
+// champ de vision de chaque vue : configgame.json (camera.*.zoom, ConfigJeu::Camera::fov, même ordre), lu par fovVue
+struct VueDef { const char* id; const char* nom; bool capot; bool cockpit; };
 inline constexpr VueDef VUES[VUE_NOMBRE] = {
-    {"poursuite", "Arrière", 66.f, false, false},   // WFS-135 (ANO-58) : affichée « Arrière », identifiant enregistré inchangé ; WFS-85 : vue « loin » du jeu web (62°) ; WFS-105 : caméra haute, 66°
-    {"capot", "Capot", 72.f, true, false},
-    {"cockpit", "Cockpit", 72.f, true, true},
-    {"proche", "Proche", 60.f, false, false},         // WFS-85 : « proche » du jeu web (58°) ; WFS-105 : un peu plus large, 60°
+    {"poursuite", "Arrière", false, false},   // WFS-135 (ANO-58) : affichée « Arrière », identifiant enregistré inchangé ; WFS-85 : vue « loin » du jeu web (62°) ; WFS-105 : caméra haute, 66°
+    {"capot", "Capot", true, false},
+    {"cockpit", "Cockpit", true, true},
+    {"proche", "Proche", false, false},         // WFS-85 : « proche » du jeu web (58°) ; WFS-105 : un peu plus large, 60°
 };
 
 // WFS-85 : caméras de poursuite (CAM_MODES du jeu web, js/world/scene.js) : distance derrière la voiture, hauteur, regard
@@ -44,7 +45,7 @@ inline constexpr VueDef VUES[VUE_NOMBRE] = {
 //   Proche : 6 m derrière, 2,67 m de haut (24°) : la rue se voit par-dessus le toit.
 //   Point visé SOUS la route (lookH < 0) : le regard reste tourné vers le virage qui arrive (ahead), mais la caméra
 //   s'incline vers le bas ; l'arrière de la voiture reste ainsi au-dessus du compteur (72 % de la hauteur), même à l'arrêt.
-// WFS-128 : valeurs de configgame.json (section camera) ; défauts : loin 9 / 6,3 / 14 / −6,3, proche 6 / 2,67 / 7 / −2,1, suivi 14 et 16
+// WFS-128 : valeurs de configgame.json (section camera) ; défauts du code dans ConfigJeu::Camera (src/core/configgame.h)
 using Poursuite = CamPoursuite;   // { dist, h, ahead, lookH }
 inline const Poursuite &POURSUITE_LOIN = g_configJeu.camera.loin, &POURSUITE_PROCHE = g_configJeu.camera.proche;
 inline const float &SUIVI_OEIL = g_configJeu.camera.suiviOeil, &SUIVI_REGARD = g_configJeu.camera.suiviRegard;   // lissage du suivi (/s), comme updateCamera du jeu web
@@ -68,7 +69,7 @@ inline float volantCible(double braquage) { return (float)(-braquage * 2.3); }
 inline float aiguilleAngle(double kmh) { return 2.2f - (float)(std::min(std::fabs(kmh), 300.0) / 300.0 * 4.4); }
 // champ de vision visé des vues capot et cockpit : C.fov + min(p, 1,3) × 7 + 6 en nitro (p = |vitesse| / MAX_SPEED)
 inline float fovVue(VueCamera v, double p, bool nitro) {
-    const auto& c = config().camera;   // WFS-128 : zoom de chaque vue (VUES[v].fov par défaut), +7° et +6° par défaut
+    const auto& c = config().camera;   // WFS-128 : zoom de chaque vue et élargissements (vitesse, nitro) : configgame.json
     return c.fov[(int)v] + (float)std::min(std::fabs(p), 1.3) * c.elargVitesse + (nitro ? c.elargNitro : 0.f);
 }
 

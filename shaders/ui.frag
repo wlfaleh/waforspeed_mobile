@@ -8,7 +8,9 @@ void main() {
     if (vUv.x >= 1.5) {   // caractère : champ de distance signé, bord net à toutes les tailles
         float d = texture(fontAtlas, vUv - vec2(2.0, 0.0)).r;
         float w = max(fwidth(d) * 0.75, 0.01);
-        a *= smoothstep(0.5 - w, 0.5 + w, d);
+        // WFS-102 (RG-17, ANO-17) : petits corps (fwidth grand) légèrement épaissis, aucun trait fin ne disparaît
+        float bord = 0.5 - min(w * 0.4, 0.06);
+        a *= smoothstep(bord - w, bord + w, d);
     } else if (vUv.x >= 0.0) {   // disque / anneau : uv dans [0,1]
         float r = length(vUv * 2.0 - 1.0);
         float w = fwidth(r);

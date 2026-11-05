@@ -1,5 +1,6 @@
 // WaForSpeed — choix du terrain et du moment (WFS-41) : voir terrain.h.
 #include "terrain.h"
+#include "../echelle.h"   // WFS-102 : échelle et biseau partagés
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -14,6 +15,7 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../../game/commandes_tactiles.h"   // WFS-102 : dessin2d (formes d'un seul tenant)
 #include "reglages.h"
 #include "../../platform/manette.h"   // WFS-22
 #include "../../audio/sfx.h"          // WFS-96 : son du changement de carte
@@ -45,12 +47,8 @@ Zone g_carte, g_prec, g_suiv, g_jour, g_nuit, g_retour, g_rouler;
 int g_index = 0;          // carte choisie (MAPS)
 bool g_nuitChoisie = true; // TOD du web : nuit par défaut
 
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
+    ui::biseau(r, x, y, w, h, biais, c);
 }
 // chevron < ou > (path « M15 4 7 12l8 8 » du web) en petits carrés
 void chevron(Renderer& r, float cx, float cy, float s, int dir, const vec4& c) {
@@ -59,6 +57,35 @@ void chevron(Renderer& r, float cx, float cy, float s, int dir, const vec4& c) {
         const float t = (float)i / N, dy = (t - 0.5f) * s, dx = (std::fabs(t - 0.5f) - 0.25f) * s * dir;
         r.uiRect(cx - dx - s * 0.06f, cy + dy - s * 0.06f, s * 0.13f, s * 0.13f, c);
     }
+}
+
+// WFS-102 (RG-12, ANO-42) : formes d'un seul tenant (plus de bandes) : dégradé vertical, polygone coupé à [x0, x1], ellipse
+void degradeV(Renderer& r, float x, float y, float w, float h, const vec4& a, const vec4& b) {
+    const UiVertex q[4] = {{x, y, -1, -1, a.x, a.y, a.z, a.w}, {x + w, y, -1, -1, a.x, a.y, a.z, a.w},
+                           {x + w, y + h, -1, -1, b.x, b.y, b.z, b.w}, {x, y + h, -1, -1, b.x, b.y, b.z, b.w}};
+    r.uiQuad(q);
+}
+// polygone convexe (sens horaire) coupé aux verticales x0 et x1 (Sutherland-Hodgman), teinte verticale
+void polygoneCoupe(Renderer& r, std::vector<vec2> p, float x0, float x1, const dessin2d::Teinte& t) {
+    for (int cote = 0; cote < 2; cote++) {
+        std::vector<vec2> o;
+        auto dedans = [&](const vec2& v) { return cote == 0 ? v.x >= x0 : v.x <= x1; };
+        const float xc = cote == 0 ? x0 : x1;
+        for (size_t i = 0; i < p.size(); i++) {
+            const vec2 a = p[i], b = p[(i + 1) % p.size()];
+            const bool da = dedans(a), db = dedans(b);
+            if (da) o.push_back(a);
+            if (da != db) { const float f = (xc - a.x) / (b.x - a.x); o.push_back({xc, a.y + (b.y - a.y) * f}); }
+        }
+        p = o;
+        if (p.size() < 3) return;
+    }
+    dessin2d::polygone(r, p.data(), (int)std::min<size_t>(p.size(), 64), t);
+}
+void ellipse(Renderer& r, float cx, float cy, float rx, float ry, const vec4& c) {
+    vec2 p[32];
+    for (int i = 0; i < 32; i++) { const float a = 6.2831853f * i / 32; p[i] = {cx + rx * std::cos(a), cy + ry * std::sin(a)}; }
+    dessin2d::polygone(r, p, 32, dessin2d::uni(c));
 }
 
 // ---------------------------------------------------------------- vignette (mapArt du web, en rectangles et disques)
@@ -71,17 +98,15 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
     const float sx = W / 400.f, sy = H / 250.f, HZ = Y + 150 * sy;
     auto px = [&](float v) { return X + v * sx; };
     auto py = [&](float v) { return Y + v * sy; };
-    // ciel : dégradé à 3 arrêts (0, 62 %, 100 %) en bandes
+    // ciel : dégradé à 3 arrêts (0, 62 %, 100 %) en deux quadrilatères (WFS-102 RG-12 : plus de bandes)
     unsigned ciel[3] = {nuit ? 0x05050Cu : 0x2F6CC0u, nuit ? 0x1A0F2Eu : 0x79B1E2u, nuit ? 0x43203Fu : 0xDCEBF5u};
     if (!nuit && idx == 0) ciel[2] = 0xE6E3DF;
     if (nuit && idx == 2) ciel[2] = 0x1D2640;
     if (nuit && idx == 1) ciel[2] = 0x3A2448;
-    const int NB = 30;
-    for (int i = 0; i < NB; i++) {
-        const float t = (i + 0.5f) / NB;
-        const vec4 col = t < 0.62f ? melange(hex(ciel[0]), hex(ciel[1]), t / 0.62f) : melange(hex(ciel[1]), hex(ciel[2]), (t - 0.62f) / 0.38f);
-        r.uiRect(X, Y + (HZ - Y) * i / NB, W, (HZ - Y) / NB + 0.5f, col);
-    }
+    const float y62 = Y + (HZ - Y) * 0.62f;
+    degradeV(r, X, Y, W, y62 - Y, hex(ciel[0]), hex(ciel[1]));
+    degradeV(r, X, y62, W, HZ - y62, hex(ciel[1]), hex(ciel[2]));
+    auto cielEn = [&](float yy) { const float t = (yy - Y) / (HZ - Y); return t < 0.62f ? melange(hex(ciel[0]), hex(ciel[1]), t / 0.62f) : melange(hex(ciel[1]), hex(ciel[2]), (t - 0.62f) / 0.38f); };
     // astres et nuages
     if (nuit) {
         if (idx != 0) for (int i = 0; i < 40; i++) { const float x = rnd() * 400, y = rnd() * 112; r.uiCircle(px(x), py(y), (0.5f + rnd()) * sx, hex(0xFFFFFF, 0.4f + rnd() * 0.6f)); }
@@ -93,9 +118,12 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
         const float sy0 = idx == 1 ? 108 : 52;
         for (int k = 3; k >= 1; k--) r.uiCircle(px(300), py(sy0), 18 * k * sx, hex(0xFFF3C4, 0.13f));
         r.uiCircle(px(300), py(sy0), 17 * sx, hex(0xFFF8E0));
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {   // WFS-102 (RG-12) : nuage = 3 ellipses opaques (blanc × 0,85 + ciel × 0,15)
             const float cx = 40 + rnd() * 320, cy = 30 + rnd() * 46, w = 40 + rnd() * 50;
-            for (float d : {-0.25f, 0.f, 0.25f}) r.uiCircle(px(cx + d * w), py(cy - (d == 0 ? 6 : 2)), (d == 0 ? 11 : 9) * sx, hex(0xFFFFFF, 0.85f));
+            const vec4 cc = melange(hex(0xFFFFFF), cielEn(py(cy)), 0.15f);
+            ellipse(r, px(cx), py(cy), w / 2 * sx, 9 * sy, cc);
+            ellipse(r, px(cx - w * 0.12f), py(cy - 6), w / 4 * sx, 9 * sy, cc);
+            ellipse(r, px(cx + w * 0.16f), py(cy - 4), w / 5 * sx, 8 * sy, cc);
         }
     }
     // décor de fond
@@ -133,19 +161,20 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
             for (int i = 0; i < 5; i++) r.uiCircle(px(172 + i * 14), py(103.5f), 3 * sx, hex(nuit ? 0xFF1F4B : 0x5B1020));
         }
     }
-    // sol et route en perspective (trapèze en bandes)
+    // sol et route en perspective : un dégradé et un trapèze chacun (WFS-102 RG-12 : plus de bandes) ; bords en trapèzes
     const vec4 sol = hex(nuit ? c.solNuit : c.solJour);
     if (idx != 1) r.uiRect(X, HZ, W, Y + H - HZ, sol);
     const float cx = idx == 1 ? 230 : 200, top = 6, bot = 190;
+    auto pt = [&](float x, float y) { return vec2{px(x), py(y)}; };
+    if (idx == 1)   // sable à droite de la route, à la plage
+        polygoneCoupe(r, {pt(cx - top - 10, 150), pt(400, 150), pt(400, 250), pt(cx - bot - 50, 250)}, X, X + W, dessin2d::uni(sol));
+    {
+        dessin2d::Teinte route{hex(nuit ? 0x1A1B24 : 0x5D6068), hex(nuit ? 0x0B0C12 : 0x3A3C42), py(150), py(250)};
+        polygoneCoupe(r, {pt(cx - top, 150), pt(cx + top, 150), pt(cx + bot, 250), pt(cx - bot, 250)}, X, X + W, route);
+    }
     const int NR = 40;
     for (int i = 0; i < NR; i++) {
         const float t = (i + 0.5f) / NR, y0 = 150 + 100.f * i / NR, demi = top + t * (bot - top);
-        if (idx == 1) {   // sable à droite de la route, à la plage
-            const float g0 = std::max(0.f, cx - demi - 40 * t - 10);
-            r.uiRect(px(g0), py(y0), (400 - g0) * sx, 100.f / NR * sy + 0.5f, sol);
-        }
-        const float x0 = std::max(0.f, cx - demi), x1 = std::min(400.f, cx + demi);
-        r.uiRect(px(x0), py(y0), (x1 - x0) * sx, 100.f / NR * sy + 0.5f, melange(hex(nuit ? 0x1A1B24 : 0x5D6068), hex(nuit ? 0x0B0C12 : 0x3A3C42), t));
         const float bord = (1.2f + 2 * t) * sx;
         if (idx == 3) {   // vibreurs rouge et blanc
             const vec4 v = ((int)(std::sqrt(t) * 9)) % 2 ? hex(0xF2F4F8) : hex(0xE2262B);
@@ -153,18 +182,20 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
             const float g0 = std::max(X, px(cx - demi) - e), d1 = std::min(X + W, px(cx + demi) + e);   // vibreurs gardés dans la vignette
             if (px(cx - demi) > g0) r.uiRect(g0, py(y0), px(cx - demi) - g0, 100.f / NR * sy + 0.5f, v);
             if (d1 > px(cx + demi)) r.uiRect(px(cx + demi), py(y0), d1 - px(cx + demi), 100.f / NR * sy + 0.5f, v);
-        } else {
-            const vec4 v = hex(nuit ? 0xC9CDDA : 0xF2F4F8, 0.8f);
-            if (cx - demi >= 0) r.uiRect(px(cx - demi), py(y0), bord, 100.f / NR * sy + 0.5f, v);
-            if (cx + demi <= 400) r.uiRect(px(cx + demi) - bord, py(y0), bord, 100.f / NR * sy + 0.5f, v);
         }
         if (((int)(std::pow(t, 1 / 2.2f) * 12)) % 2 == 0)   // tirets des voies (± 1/3)
             for (float l : {-1 / 3.f, 1 / 3.f}) r.uiRect(px(cx + l * demi) - bord / 2, py(y0), bord, 100.f / NR * sy + 0.5f, hex(0xF2F4F8, nuit ? 0.6f : 0.85f));
     }
+    if (idx != 3) {   // lignes de bord : un trapèze fin de chaque côté
+        const vec4 v = hex(nuit ? 0xC9CDDA : 0xF2F4F8, 0.8f);
+        const float b0 = 1.2f, b1 = 3.2f;
+        polygoneCoupe(r, {pt(cx - top, 150), pt(cx - top + b0, 150), pt(cx - bot + b1, 250), pt(cx - bot, 250)}, X, X + W, dessin2d::uni(v));
+        polygoneCoupe(r, {pt(cx + top - b0, 150), pt(cx + top, 150), pt(cx + bot, 250), pt(cx + bot - b1, 250)}, X, X + W, dessin2d::uni(v));
+    }
     if (nuit) {   // feux d'une voiture au loin et reflet de l'accent sur la chaussée mouillée
         r.uiCircle(px(cx - 3), py(174), 14 * sx, hex(0xFF1F4B, 0.16f));
         r.uiCircle(px(cx - 9), py(172), 2 * sx, hex(0xFF1F4B)); r.uiCircle(px(cx + 3), py(172), 2 * sx, hex(0xFF1F4B));
-        for (int i = 0; i < 12; i++) { const float t = (i + 0.5f) / 12; r.uiRect(px(cx - 3 - 23 * t), py(158 + 92 * i / 12.f), (6 + 46 * t) * sx, 92 / 12.f * sy + 0.5f, hex(c.accent, 0.14f)); }
+        polygoneCoupe(r, {pt(cx - 3, 158), pt(cx + 3, 158), pt(cx + 29, 250), pt(cx - 26, 250)}, X, X + W, dessin2d::uni(hex(c.accent, 0.14f)));   // reflet : un trapèze
     }
 }
 
@@ -191,7 +222,7 @@ public:
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Terrain) return false;
-        const float k = g.uiHeight / 720.f;
+        const float k = ui::echelle(g.uiWidth, g.uiHeight);
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; x0_ = t.x; y0_ = t.y; }
             return true;
@@ -214,35 +245,29 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Terrain || g.sceneDediee || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H);
         const Marges& mg = g.marges;
         const float zl = mg.gauche + 32 * k, zr = W - mg.droite - 32 * k, zw = zr - zl;
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));   // .screen--maps : fond nuit, la scène à peine visible derrière
         // ---------- .maps-head : sur-titre, titre, index « 01 / 04 » ----------
-        const float hy = mg.haut + 26 * k;
+        const bool cp = ui::compact(W, H);   // WFS-102 (RG-02) : téléphone couché : en-tête, informations et barre resserrés
+        const float hy = mg.haut + (cp ? 14 : 26) * k;
         ui::text(r, zl, hy, 13 * k, ui::majuscules("Étape 3 sur 3 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
-        ui::text(r, zl, hy + 20 * k, 44 * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        ui::text(r, zl, hy + 20 * k, (cp ? 28 : 44) * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
         const std::string tot = " / 04";
-        ui::text(r, zr, hy + 30 * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
-        ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + 22 * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
+        ui::text(r, zr, hy + (cp ? 22 : 30) * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
+        ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + (cp ? 14 : 22) * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
         // ---------- vignette de la carte (mapCard) ----------
-        const float bas = H - mg.bas - 24 * k - 56 * k, haut = hy + 84 * k;
-        const float chMax = bas - 34 * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * 1.9f), ch = std::min(chMax, cw / 1.6f);
+        const float bh = (cp ? 48 : 56) * k, by = H - mg.bas - (cp ? 12 : 24) * k - bh;
+        const float bas = by, haut = hy + (cp ? 56 : 84) * k;
+        const float chMax = bas - (cp ? 22 : 34) * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * 1.9f), ch = std::min(chMax, cw / 1.6f);
         const float cx0 = zl + (zw - cw) / 2, cy0 = haut;
         g_carte = {cx0, cy0, cw, ch};
         const Carte& c = CARTES[g_index];
         const MapDef& m = mapById(c.id);
-        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(c.accent));   // carte choisie : contour à l'accent de la carte
+        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(ACCENT2));   // WFS-102 (RG-06, ANO-41) : carte choisie, contour cyan
         vignette(r, cx0, cy0, cw, ch, g_index, g_nuitChoisie);
-        // .map-shade : dégradé sombre vers le bas, sous les textes
-        const int NS = 20;
-        for (int i = 0; i < NS; i++) { const float t = (i + 0.5f) / NS; r.uiRect(cx0, cy0 + ch * (0.45f + 0.55f * i / NS), cw, ch * 0.55f / NS + 0.5f, hex(BG, 0.85f * t)); }
-        // .map-sel « Choisi »
-        const std::string choisi = ui::majuscules("Choisi");
-        const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
-        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(c.accent, 0.92f));
-        ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
         // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
         const std::vector<std::string> qs = quartiers(m);
         const float pf = 12 * k, ph = 22 * k, pg = 6 * k, pmax = cw - 48 * k;
@@ -252,23 +277,40 @@ public:
             if (lx > 0 && lx + w > pmax) { nl++; lx = 0; }
             pw.push_back(w); pl.push_back(nl - 1); lx += w + pg;
         }
+        const float dPuce0 = (ui::compact(W, H) ? 96 : 124) * k, iyInfo = cy0 + ch - dPuce0 - (nl * (ph + pg) - pg) - 14 * k;
+        // .map-shade : dégradé sombre vers le bas, sous les textes
+        // WFS-102 (RG-05, ANO-18) : linear-gradient(180deg, transparent 30 %, rgba(10,11,16,.6) 52 %, .97 68 %, #0A0B10)
+        // petit écran : les informations montent plus haut dans la vignette, l'ombre aussi (arrêts 30 / 52 / 68 % ramenés
+        // de [30 %, 100 %] à [t0, 100 %], t0 un peu au-dessus du nom) : le texte reste toujours sur fond sombre
+        const float f = (iyInfo - cy0) / ch, t0 = std::clamp((f - 0.314f) / 0.686f - 0.02f, 0.f, 0.30f);   // arrêt 52 % (.6) au haut du nom
+        auto arret = [&](float a) { return t0 + (a - 0.30f) * (1 - t0) / 0.70f; };
+        degradeV(r, cx0, cy0 + ch * arret(0.30f), cw, ch * (arret(0.52f) - arret(0.30f)), hex(BG, 0), hex(BG, 0.6f));
+        degradeV(r, cx0, cy0 + ch * arret(0.52f), cw, ch * (arret(0.68f) - arret(0.52f)), hex(BG, 0.6f), hex(BG, 0.97f));
+        degradeV(r, cx0, cy0 + ch * arret(0.68f), cw, ch * (1 - arret(0.68f)), hex(BG, 0.97f), hex(BG, 1));
+        // .map-sel « Choisi »
+        const std::string choisi = ui::majuscules("Choisi");
+        const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
+        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(ACCENT2, 0.92f));   // WFS-102 (RG-06) : badge cyan
+        ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
         // .map-info : nom, description, longueur, quartiers
-        const float ix = cx0 + 24 * k, iy = cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
-        ui::text(r, ix, iy, 36 * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
-        ui::text(r, ix, iy + 46 * k, 15 * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
-        ui::text(r, ix, iy + 76 * k, 11 * k, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        // petit écran : nom 26 px, lignes rapprochées (dy : décalage de chaque ligne sous le nom)
+        const float dDesc = (cp ? 32 : 46) * k, dFait = (cp ? 54 : 76) * k, dPuce = (cp ? 96 : 124) * k;
+        const float ix = cx0 + 24 * k, iy = cy0 + ch - dPuce - (nl * (ph + pg) - pg) - 14 * k;
+        ui::text(r, ix, iy, (cp ? 26 : 36) * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
+        ui::text(r, ix, iy + dDesc, (cp ? 13 : 15) * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
+        ui::text(r, ix, iy + dFait, 11 * k, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
         if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
-        ui::text(r, ix, iy + 92 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
-        r.uiRect(ix - 10 * k, iy + 76 * k, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
+        ui::text(r, ix, iy + dFait + 16 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
+        r.uiRect(ix - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
         const float qx = ix + std::max(ui::width(11 * k, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
-        r.uiRect(qx - 10 * k, iy + 76 * k, 2 * k, 38 * k, hex(c.accent));
-        ui::text(r, qx, iy + 76 * k, 11 * k, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        ui::text(r, qx, iy + 92 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
+        r.uiRect(qx - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));
+        ui::text(r, qx, iy + dFait, 11 * k, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        ui::text(r, qx, iy + dFait + 16 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
         lx = 0;
         for (size_t i = 0; i < qs.size(); i++) {
             if (i > 0 && pl[i] != pl[i - 1]) lx = 0;
-            const float px0 = ix + lx, py0 = iy + 124 * k + pl[i] * (ph + pg);
+            const float px0 = ix + lx, py0 = iy + dPuce + pl[i] * (ph + pg);
             const float sk = 4 * k, cr = 30 / 255.f, cg = 33 / 255.f, cb = 48 / 255.f, ca = 0.75f;   // skewX(-10deg)
             const UiVertex q[4] = {{px0 + sk, py0, -1, -1, cr, cg, cb, ca}, {px0 + pw[i], py0, -1, -1, cr, cg, cb, ca},
                                    {px0 + pw[i] - sk, py0 + ph, -1, -1, cr, cg, cb, ca}, {px0, py0 + ph, -1, -1, cr, cg, cb, ca}};
@@ -287,7 +329,7 @@ public:
             chevron(r, ax[s] + (s == 0 ? -2 : 2) * k, ay, 18 * k, s == 0 ? -1 : 1, hex(TEXTE, actif ? 1.f : 0.3f));
         }
         // ---------- points (.map-dots) ----------
-        const float dy = cy0 + ch + 16 * k;
+        const float dy = cy0 + ch + (cp ? 9 : 16) * k;
         float dxp = zl + zw / 2 - (3 * 14 * k + 28 * k) / 2;
         for (int i = 0; i < 4; i++) {
             const float w = i == g_index ? 28 * k : 8 * k;
@@ -295,7 +337,7 @@ public:
             dxp += w + 6 * k;
         }
         // ---------- .maps-bar : Jour / Nuit (.tod-btn), Retour, Rouler ----------
-        const float by = H - mg.bas - 24 * k - 56 * k, bh = 56 * k, tw = 132 * k;
+        const float tw = (cp ? 116 : 132) * k;
         for (int s = 0; s < 2; s++) {
             const bool nuit = s == 1, on = nuit == g_nuitChoisie;
             const float x = zl + s * (tw + 6 * k);

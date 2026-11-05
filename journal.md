@@ -3617,3 +3617,55 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone autorisée : `scene.frag` / `scene_skin.frag` (bloc `F_ROAD` / `wetRoad`, `Fe` / `env` du sol, bloc du reflet seulement), `common.glsl`, `post.frag` (seuil du bloom), `renderer.cpp` (bloc des reflets l. 575-680 et 950-952 seulement), `nuit.cpp` (`mouille()`, ligne `fp.mouille/flaques/reflets`, flaques de lumière l. 156-175), `bench_nuit.*` ; accroches ≤ 10 lignes : `desktop_main.cpp`, `configgame.*`, `configgame.json`. Interdit : blocs de WFS-109 et WFS-134, `src/world/**`, `src/game/**`, `src/ui/**`, iOS.
 - Critères : RG-08 (mesure), RG-09 (captures avant / après), ANO-66, parcours complet à 0 écart, verdict `qa-lead` avant fusion (RG-10).
 - Plan court : 1) confirmer la cause au banc (captures `avant-*`, mesure) ; 2) météo → état de la chaussée ; 3) matériau sec / mouillé et reflet pondéré dans un bloc commun ; 4) bloom et flaques de lumière ; 5) captures après, planche, CI, `qa-lead`.
+
+### 2026-11-05 21:24:05 — WFS-142 : PR #120 ouverte, cause racine confirmée au banc (Claude, session 0183bv2V)
+- **Cause racine confirmée** (captures `avant-*` du banc `WFS_BANC=route`, même caméra, vue arrière et vue basse « Proche » comme la photo de l'utilisateur) : la liste du PO est juste. 1) `nuit.cpp` `mouille()` : route mouillée à chaque nuit en ville et sur la corniche. 2) `scene.frag` : métal 0,4 et rugosité 0,22 sur l'asphalte mouillé, flaques à 0,02 sur ≈ 18 % de la chaussée (calculé à partir du bruit `rnoise`). 3) Le reflet de la scène **remplaçait** le reflet du ciel avec ≈ 1 % d'étalement : immeubles et arbres nets dans la route. 4) Fresnel ≈ 0,78 en vue rasante.
+- **Fait** : route mouillée seulement sous la pluie (`meteo::pluieActive`, ou `WFS_METEO` au banc) ; métal 0 partout ; sec 0,75 à 0,9 ; mouillé 0,35 à 0,5, flaques ≈ 8 % aux bords doux, à 0,08 ; Fresnel de la chaussée ≤ 0,25 (0,4 dans les flaques) ; reflet mélangé (≤ 0,35, 0,45 dans les flaques, moitié au loin), étalé sur 8 % de l'écran ; force dans `configgame.json` (`qualite.reflet_route_mouillee`). Les deux shaders gardent des blocs identiques. Planches avant / après et mesures dans `qa/retours/WFS-142/`.
+- **Accroches annoncées (≤ 10 lignes)** : `src/core/configgame.h/.cpp`, `configgame.json`, `configgame.README.md` (1 clé) ; `desktop_main.cpp` (groupe `route`, et `benchRoute` ajouté au groupe `nuit`) ; nouveau `tools/qa/luminance_route.py` (mesure de RG-08).
+- **Vérification locale (lavapipe)** :
+  - captures avant / après regardées : plus d'immeubles ni d'arbres dans la route, nuit sèche mate, enseigne de la corniche plus reflétée (ANO-66) ; aucune régression sur `course-nuit-*` ni `nuit-trafic-arriere` ;
+  - netteté du reflet : vue basse sous la pluie 5,92 → 2,17 ; pluie en vue arrière 2,42 → 0,90 ;
+  - parcours complet : 0 écart ;
+  - tests CPU verts sauf `test_configgame`.
+- **Écarts signalés au PO** :
+  1) Rapport de luminance de RG-08 sous la pluie la nuit : 1,07 à 1,12, au lieu de 1,15 à 1,8. Avec les plafonds de RG-04, on ne peut pas atteindre 1,15 sans revenir au miroir. Sur `main`, il n'était que de 1,3 à 1,7, et non « > 2 » : c'est la netteté qui faisait le miroir.
+  2) Jour sec : 1,12, contre 1,17 avant, pour ≤ 1,10 attendu ; c'est le reflet du ciel en vue rasante, physiquement normal.
+  3) `test_configgame` échoue déjà sur `main` depuis `e23fa51` (commit de l'utilisateur) : `poursuite.score_depart` 1000 et la caméra de poursuite diffèrent des valeurs du code. `test_configgame --ecrire` les aurait écrasées : je ne l'ai pas fait. Décision attendue du PO : reporter ces valeurs dans le code, par un ticket E0.
+- **Limites** : le banc ne donne pas la mesure du coût GPU par passe. Nuit sèche : la passe de reflet est coupée, donc moins de travail. Pluie : 12 lectures au lieu de 6 par pixel de route. Le parcours complet est de jour. À essayer sur le téléphone : ville de nuit sous la pluie, corniche de nuit.
+
+### 2026-11-05 21:27:59 — Fin WFS-102 : fusionné (PR #118) (Claude, session dev 5bx)
+- **Fait** (morceau 3, échelle téléphone) : `ui::echelle(W, H)` = H / clamp(H / d, 360, 720) partout (`src/ui/echelle.*`) ; d = `densiteCommandes()` de WFS-108 sur Android, sur le banc 2,625 si la largeur est ≥ 2000 px, sinon 1 (captures 1280 à k = 1, RG-01, RG-18). Mise en page petit écran (≤ 520 dp de haut, RG-02) : menu (choix de 52 dp), réglages en 2 colonnes de 6 lignes de 44 dp avec « Fermer » en haut, salon (clavier sous le code, « Rejoindre » dans la barre du bas, pilotes à droite), terrain, compteur du HUD réduit à 70 %, bandeaux sous le score. Zones de toucher ≥ 44 dp (RG-03, RG-11), sans recouvrir le bouton voisin. Commandes tactiles seulement en course non finie et hors fondu du chargement (RG-15). Ombre du terrain calée sur le haut du nom.
+- **Accroches annoncées** (≤ 10 lignes) : `src/game/game.cpp` (4 lignes, `commandesActives`, RG-15) ; `src/game/commandes_tactiles.h` (`fonduChargement`) ; `src/platform/android_main.cpp` (10 lignes, écran d'erreur, déjà annoncée).
+- **Preuves (RG-20)** : banc local lavapipe, en 1280 et en 2400 : `WFS_BANC=parcours` « parcours complet : 0 écart(s) OK » ; `menu1` : menu → Course solo → garage → « Choisir » → terrain → « Rouler » → décompte « 3 » / « GO » → course → fin (« Rejouer » / « Menu ») → « Menu » → accueil, et Pause → « Reprendre » / « Recommencer » / « Quitter la course » → menu, sans échec ; appuis toujours au lever du doigt (`appui.h` non modifié). Captures regardées : menu, réglages, salon, terrain, garage, pause, fin, HUD, bandeaux, chargement (fondu sans commandes tactiles). CI de la branche : APK Android construit (l'accroche compile), tous les bancs verts sauf `texte` et `vitrines`.
+- **Limite / risque signalé au PO** : `texte` et `vitrines` sont rouges sur toutes les branches depuis le commit direct e23fa51 « Update configgame.json » sur `main` (`poursuite.score_depart` 100 → 1000, caméra poursuite) : `test_configgame` exige que le fichier égale les valeurs du code, et la relecture des records (`vitrines`) échoue aussi. C'est une décision de l'utilisateur : il faut un ticket E0 qui reporte ces valeurs dans le code (ou relance `test_configgame --ecrire .`). Hors de ma zone, rien n'a été touché.
+- **À tester sur téléphone** : taille réelle des boutons (≈ 7 mm), lisibilité des petits textes, bouton « Réessayer » de l'écran d'erreur (non testé sur un vrai appareil).
+
+
+### 2026-11-05 21:29:02 — WFS-143 créé : CI rouge depuis e23fa51 (po-scrum-master)
+- Demande de Claude (session dev 5bx) : depuis le commit direct de l'utilisateur e23fa51 (configgame.json : poursuite.score_depart 1000, caméra Poursuite regard_devant 10, regard_hauteur -4.5, zoom 64), CI rouge partout (`texte` : test_configgame ; `vitrines` : records relus après redémarrage).
+- Cause du job `vitrines` trouvée par le PO : `src/game/sauvegarde.cpp` l. 150 rejette un record de poursuite au score > 100 (`w[1] <= 100`).
+- Décision : valeurs de l'utilisateur = référence, le code s'aligne (JSON intouché). Ticket **WFS-143**, E0, **P1 Urgent**, ⏳ Prêt, aucune dépendance ; règles `regles-de-gestion/WFS-143.md` (RG-01 à RG-07). Accroche d'une ligne dans `sauvegarde.cpp` (zone de WFS-136 en cours) autorisée et à annoncer. Il bloque la validité de toutes les CI : à attribuer au prochain agent libre, avant tout autre ticket.
+
+### 2026-11-05 21:29:39 — CI de main rouge après la modification de configgame.json par l'utilisateur : corrigée (PR #121) (Claude, session trafic)
+- Cause : e23fa51 (utilisateur) passe `poursuite.score_depart` 100 → 1000 et la vue Poursuite (regard 14 → 10, hauteur −6,3 → −4,5, zoom 66 → 64), sans changer les défauts du code : `test_configgame` (job texte) et le banc records (job vitrines) rouges.
+- Correctif : défauts de `src/core/configgame.h` = valeurs de l'utilisateur (accroche noyau de 3 lignes) ; `sauvegarde.cpp` : score de poursuite relu borné à 1000 au lieu de 100 (le record d'une poursuite à 1000 points était perdu au redémarrage : vrai défaut) ; tests adaptés (test_poursuite relatif au score de départ, test_systems, test_configgame, test_records).
+- Vérifié : 26 tests CPU, bancs records et course5 à 0 écart. Fusion d1fa824 (branche `fix/configgame-utilisateur`, hors ticket car CI de main cassée).
+- À suivre : poursuite en Basse +90 appels de dessin (cible 60, WFS-119 donnait +40), probablement la caméra plus proche ; signalé à WFS-134.
+
+### 2026-11-05 21:44:07 — configgame.json : analyse du lien dynamique des 68 clés, correctifs sur la branche fix/configgame-dynamique (Claude, session 0183bv2V)
+- **Demande de l'utilisateur** : vérifier que toutes les clés de `configgame.json` sont reliées dynamiquement au code, puis corriger tout de suite.
+- **Analyse** : 65 clés sur 68 étaient bien reliées, par des références vers `g_configJeu` ou par `config()`. Le fichier est relu à chaque `Game::init`, et aucune copie n'était figée au démarrage.
+- **Défauts trouvés** :
+  1. `qualite.plancher_moyenne` sans effet : `plancher()` renvoyait 0,9 en dur, et l'alias `PLANCHER` n'était jamais lu.
+  2. Les textes de l'écran des modes étaient figés : « 60 s au départ, +30 s » et « 4 ordinateurs ».
+  3. `test_configgame` imposait l'égalité entre le fichier et le code : toute retouche à la main de `configgame.json` cassait la CI (cas de `e23fa51`).
+  4. Doublons : borne 1000 recopiée dans `sauvegarde.cpp`, `VUES[].fov` jamais lu et différent de la config, commentaires de valeurs périmés.
+- **Fait** (commit 6b49595, branche `fix/configgame-dynamique`, poussée, **pas encore fusionnée**) :
+  - `plancher()` lit la config ;
+  - les descriptions des modes sont construites depuis la config ;
+  - `SCORE_POURSUITE_MAX` est partagé par la table et la sauvegarde ;
+  - `VUES[].fov` est supprimé, et `test_systems` lit la config ;
+  - `test_configgame` vérifie validité et bornes, et liste les différences avec le code sans échouer.
+- **Hors zone** : fichiers E0, E3, E4 et E8, touchés sur ordre direct de l'utilisateur (« change le nécessaire tout de suite »), sans ticket du PO.
+- **Vérification locale** : compilation et 26 tests CPU verts ; `test_configgame` avec le fichier du dépôt : OK, 0 différence.
+- **Non fait** : la preuve avec un fichier modifié (départ 45 s, bonus 20 s, 3 ordinateurs, plancher 0,7), interrompue par l'utilisateur ; la CI de la branche ; la fusion et la ligne `qa/Check.md`. Le nom « Course à 5 » reste fixe, même si le nombre d'ordinateurs est réglable de 1 à 4 : c'est une décision produit, à trancher par le PO.
