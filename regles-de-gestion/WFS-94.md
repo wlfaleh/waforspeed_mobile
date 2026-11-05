@@ -122,3 +122,17 @@ trafic) sans activité depuis 2 h). Si #76 est déjà fusionnée, rien à faire.
   (WFS-106) ; noms et API de `zones.h` (lus par WFS-102 pour le bandeau du quartier) ; fichiers du duel ; tout autre
   travail iOS (gel iOS).
 - `decor_carte.cpp` l. 320 : garder l'ordre des indices `{k, k+1, k+3, k+1, k+2, k+3}` posé par WFS-97 (fusionné).
+
+## Reprise du 2026-11-05 (PO) — à lire en premier
+Sur demande de l'utilisateur, le ticket passe de Copilot (session 0e5c192d) à **Claude (session trafic, agent reprise)**,
+qui le démarre **à la fusion de WFS-109** (un ticket à la fois).
+- **État de la branche** `feature/waforspeed-94` : un seul commit, d42c3f0 (attribution, 01:17 UTC), déjà dans `main`.
+  **Fait** : étape 0 (PR #76, WFS-88, fusionnée en 1c28ae5, ligne `qa/Check.md` écrite, commit 23a1f00). **Aucun code**
+  du ticket n'a été écrit ; aucun fichier de `src/world/` n'a changé depuis. Reprendre la branche :
+  `git checkout feature/waforspeed-94 && git merge origin/main`. Ne pas supprimer la branche.
+- **Reste à faire** (une seule CI à la fin) : RG-01 à RG-05 (quartiers Corniche, Port de plaisance, Côte rocheuse, Village
+  de pêcheurs, primitives `villa`, `boat`, `rock`, `bollard`, `guard`), RG-A1 (ANO-40, captures de la plage), RG-A2 à
+  RG-A5 (ville de nuit), RG-06 (ANO-49, trottoir), RG-07 (ANO-51, panneaux du circuit). L'étape 0 est close.
+- **Ne pas anticiper WFS-136 à WFS-140** (nouveau tracé, casino, beach parties…) : WFS-94 garde le tracé actuel ; WFS-139
+  ajoutera la falaise et les animations de plage après lui.
+- Parcours complet (règle 000000) : `WFS_BANC=parcours` à 0 écart avant fusion, preuve au Journal.
