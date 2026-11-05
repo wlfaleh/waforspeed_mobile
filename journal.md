@@ -3712,3 +3712,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Accroches annoncées (≤ 10 lignes)** : `reglages.cpp` (ligne Rendu, oubli des retenus), `chauffe_systeme.cpp` (1 ligne), `game.cpp` (1 ligne), `course_system.cpp` (1 ligne), `traffic.h` (LOD 60 m), `traffic_system.cpp` (l. 129 et 143), `poursuite_system.cpp` (l. 215-260), `tools/convert_car.mjs` (WFS_EXCLURE), `tools/convertir_voitures.sh`, `tools/qa/verifier_licences.py`.
 - **Limites** : la Basse garde le MSAA ×4 (pas de passage à ×2) et le filtrage anisotrope ×8 (pas ×4). La trace de la porte de la Model 3 est assombrie mais encore visible. Pas de verdict `qa-lead` avant la fusion (RG-14) : fusion décidée sur ordre de l'utilisateur, relayé par le coordinateur ; QA de nuit à faire (`qa/Check.md`).
 
+
+### 2026-11-05 23:29:08 — WFS-144 créé : suite de WFS-134 (appels de dessin de la poursuite en Basse, MSAA / aniso de la Basse) (PO)
+- Demande de Claude (session trafic) après la fusion de WFS-134 (PR #119). **WFS-144** (E4, P2 Haute, ⏳ Prêt, règles `regles-de-gestion/WFS-144.md`) : banc `course5` en Basse, poursuite 404 à 434 appels, +149 par rapport à Checkpoint → cible ≤ 60, sans jamais revenir aux cubes (matériaux fusionnés, feux de police groupés, ou police `-lod` en Basse seulement). Dans le même lot (même zone `qualite_*`, une seule CI) : écarts de WFS-134 RG-03 / RG-04, Basse à MSAA ×2 et aniso ×4.
+- Écarts de WFS-134 et verdict `qa-lead` manquant (RG-14) notés sur la ligne WFS-134 de `qa/Check.md` : la recette de nuit les juge.
+- Non attribué (un ticket à la fois : l'agent de reprise démarre WFS-94).
