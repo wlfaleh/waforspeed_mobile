@@ -282,7 +282,7 @@ public:
         // WFS-102 (RG-05, ANO-18) : linear-gradient(180deg, transparent 30 %, rgba(10,11,16,.6) 52 %, .97 68 %, #0A0B10)
         // petit écran : les informations montent plus haut dans la vignette, l'ombre aussi (arrêts 30 / 52 / 68 % ramenés
         // de [30 %, 100 %] à [t0, 100 %], t0 un peu au-dessus du nom) : le texte reste toujours sur fond sombre
-        const float t0 = std::clamp((iyInfo - cy0) / ch - 0.12f, 0.f, 0.30f);
+        const float f = (iyInfo - cy0) / ch, t0 = std::clamp((f - 0.314f) / 0.686f - 0.02f, 0.f, 0.30f);   // arrêt 52 % (.6) au haut du nom
         auto arret = [&](float a) { return t0 + (a - 0.30f) * (1 - t0) / 0.70f; };
         degradeV(r, cx0, cy0 + ch * arret(0.30f), cw, ch * (arret(0.52f) - arret(0.30f)), hex(BG, 0), hex(BG, 0.6f));
         degradeV(r, cx0, cy0 + ch * arret(0.52f), cw, ch * (arret(0.68f) - arret(0.52f)), hex(BG, 0.6f), hex(BG, 0.97f));
