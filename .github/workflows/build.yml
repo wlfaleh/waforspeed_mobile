@@ -118,8 +118,18 @@ jobs:
         run: gradle --no-daemon assembleRelease bundleRelease
       - name: Renommer
         run: cp android/app/build/outputs/apk/release/app-release.apk WaForSpeed.apk
+      # WFS-118 (RG-05) : l'APK est signé avec la clé de test fixe du dépôt (android/waforspeed-test.keystore) ; la même
+      # empreinte à chaque build permet d'installer par-dessus. Empreinte différente de celle attendue = job rouge.
+      - name: Vérification de la signature de l'APK (même clé à chaque build)
+        run: |
+          attendue=00ee71cfe42fbe00c052a7a62aa29e1fef4f9f32079ee18f4ddde93770e11793
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$apksigner" verify --print-certs WaForSpeed.apk | tee signature.txt
+          empreinte=$(grep -m1 'certificate SHA-256 digest' signature.txt | awk '{print $NF}')
+          echo "Empreinte SHA-256 du certificat de l'APK : $empreinte (attendue : $attendue)"
+          [ "$empreinte" = "$attendue" ] || { echo "::error::APK signé avec une autre clé que la clé de test fixe (WFS-118)"; exit 1; }
       # WFS-22 (WFS-25 RG-02) : AAB pour Google Play, signé avec la clé de publication des secrets du dépôt ; sans secret,
-      # avec une clé factice jetable (vérifie la chaîne de signature). L'APK d'aperçu garde la signature de débogage.
+      # avec une clé factice jetable (vérifie la chaîne de signature). L'APK d'aperçu est signé avec la clé de test fixe (WFS-118).
       - name: Signature de l'AAB
         env:
           WFS_CLE_ANDROID: ${{ secrets.WFS_CLE_ANDROID }}

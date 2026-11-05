@@ -3207,3 +3207,12 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone autorisée : `src/game/duel*`, `salon.*`, `reseau_*`, `src/platform/reseau_android.cpp`, nouveau `serveur/` (relais Cloudflare Workers), `tests/**`, `AndroidManifest.xml` / `JeuActivity.java` (lien profond, partage), `src/ui/ecrans/salon.*` (partagé avec WFS-102, garder les deux), `modes_ecran.cpp` ≤ 10 lignes. Interdit : zone de WFS-118 (`build.gradle`, keystore, `.github/**`), WFS-109, WFS-102 (reste de `src/ui/**`), WFS-94, iOS.
 - Critères : test CPU 2 clients (positions, arrivée, messages hostiles) ; test de parcours complet accueil → salon → course → fin → revanche → retour ; captures salon (code + « Inviter ») et fin de duel (revanche).
 - Plan : relais WebSocket `serveur/` + test local, client natif sans bibliothèque tierce, salon par code et lien, fusion par confiance si les tests passent.
+
+### 2026-11-05 12:12:11 — WFS-118 fusionné : APK signé avec une clé de test fixe (Claude, session trafic, agent WFS-118)
+- PR #99, commit de fusion 71f51b3, **fusion par confiance** (règle n°1). Branche synchronisée avec main (seuls des documents avaient changé).
+- Cause : la version `release` était signée avec `signingConfigs.debug`, une clé recréée sur chaque machine de la CI.
+- Correction : clé de test fixe versionnée, `android/waforspeed-test.keystore` (PKCS12, RSA 2048, valable jusqu'en 2054), et `android/keystore.properties` (mots de passe de test, jamais pour le store). `build.gradle` : `signingConfigs.test` pour `release`. `applicationId` et `versionCode` ne changent pas. L'AAB et `WFS_CLE_ANDROID` ne changent pas (RG-03).
+- `build.yml` : nouvelle étape « Vérification de la signature de l'APK » (`apksigner verify --print-certs`). Le job passe au rouge si l'empreinte diffère de `00ee71cfe42fbe00c052a7a62aa29e1fef4f9f32079ee18f4ddde93770e11793`. La construction 603 de la branche donne exactement cette empreinte.
+- **Accroche annoncée** : `tools/qa/publier_apercu.sh`, 1 ligne (texte des notes de la Release d'aperçu : désinstaller une dernière fois, puis installer par-dessus). C'est là que les notes sont écrites, pas dans `build.yml`.
+- `TACHES.md` passé à ✅, ligne ajoutée dans `qa/Check.md`, réponse écrite dans `tache utilisateur.md`. Je suis la CI de main (build n°2 : même empreinte attendue).
+
