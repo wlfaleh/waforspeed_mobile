@@ -1177,10 +1177,16 @@ void Renderer::uiSetFontAtlas(const Image& atlas) {
         dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
         VK_OK(vkAllocateDescriptorSets(vk_->device, &dai, &fontSet_));
     }
-    VkDescriptorImageInfo ii{sampler_, atlas.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-    VkWriteDescriptorSet wr{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
-    wr.dstSet = fontSet_; wr.dstBinding = 0; wr.descriptorCount = 1; wr.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr.pImageInfo = &ii;
-    vkUpdateDescriptorSets(vk_->device, 1, &wr, 0, nullptr);
+    // WFS-100 (RG-W2, VUID-vkCmdDraw-None-08114) : jamais de vue nulle liée. Au redémarrage du moteur (changement de carte),
+    // l'atlas n'existe pas encore : texture blanche 1 × 1 en attendant. Binding 1 (bloom de postLayout_) : blanc aussi.
+    VkDescriptorImageInfo ii[2] = {{sampler_, atlas.view ? atlas.view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                                   {clampSampler_, white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
+    VkWriteDescriptorSet wr[2]{};
+    for (int k = 0; k < 2; k++) {
+        wr[k].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[k].dstSet = fontSet_; wr[k].dstBinding = (uint32_t)k;
+        wr[k].descriptorCount = 1; wr[k].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[k].pImageInfo = &ii[k];
+    }
+    vkUpdateDescriptorSets(vk_->device, 2, wr, 0, nullptr);
 }
 
 void Renderer::uiGlyph(float x, float y, float w, float h, float u0, float v0, float u1, float v1, const vec4& c, float biais) {
@@ -1347,6 +1353,18 @@ void Renderer::shutdown() {
     for (auto l : {frameLayout_, matLayout_, postLayout_}) vkDestroyDescriptorSetLayout(d, l, nullptr);
     vkDestroySampler(d, sampler_, nullptr); vkDestroySampler(d, clampSampler_, nullptr);
     vk_->destroy(white); vk_->destroy(flatNormal);
+    // WFS-100 (RG-W1, ANO-52) : objet remis à neuf, pour qu'un init() sur le même Renderer recrée tout (retour d'arrière-plan)
+    scenePass_ = finalPass_ = shadowPass_ = refletPass_ = VK_NULL_HANDLE;
+    sceneFb_ = shadowFb_ = VK_NULL_HANDLE; finalFbs_.clear(); refletFb_[0] = refletFb_[1] = VK_NULL_HANDLE;
+    frameLayout_ = matLayout_ = postLayout_ = osLayout_ = VK_NULL_HANDLE;
+    sceneLayout_ = postPLayout_ = skinLayout_ = VK_NULL_HANDLE;
+    opaque_ = blend_ = sky_ = post_ = ui_ = shadowPipe_ = shadowMaskPipe_ = skinOpaque_ = skinShadow_ = skinShadowMask_ = VK_NULL_HANDLE;
+    poolPipe_ = addPipe_ = refOpaque_ = refBlend_ = refSky_ = refAdd_ = VK_NULL_HANDLE;
+    pool_ = VK_NULL_HANDLE; sampler_ = clampSampler_ = shadowSampler_ = VK_NULL_HANDLE; tsPool_ = VK_NULL_HANDLE;
+    postSet_ = fontSet_ = VK_NULL_HANDLE; osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;
+    for (auto& r : fr_) { r.cb = VK_NULL_HANDLE; r.fence = VK_NULL_HANDLE; r.acquired = r.done = VK_NULL_HANDLE; r.frameSet = VK_NULL_HANDLE; }
+    modules_.clear(); transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear();
+    cur_ = 0; imageIndex_ = 0; inFrame_ = false; quadsUsed_ = 0; skinUsed_ = 0; tsWritten_[0] = tsWritten_[1] = false;
     vk_ = nullptr;
 }
 
