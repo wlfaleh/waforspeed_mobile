@@ -48,7 +48,7 @@ bool dansZone(const Zone& z, float x, float y) {
 int choixSous(float x, float y) { for (int i = 0; i < 4; i++) if (dansZone(g_zones[i], x, y)) return i; return -1; }
 const Choix CHOIX[3] = {   // section #menu de index.html, textes exacts
     {"Course solo", "Bats le chrono, frôle le trafic, enchaîne les checkpoints"},
-    {"Duel en ligne", "Défie un ami sur la même route, même trafic"},
+    {"Duel en ligne", "Défie un ami où qu'il soit, sans trafic"},   // WFS-135 (ANO-63)
     {"Showroom", "Choisis ta voiture et sa couleur"},
 };
 
