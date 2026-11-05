@@ -25,6 +25,16 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `course5.vitesse_normale` | vitesse visée par les ordinateurs, difficulté normale | × vitesse de pointe | 0.3 | 1.2 | 0.9 |
 | `course5.vitesse_difficile` | vitesse visée par les ordinateurs, difficulté difficile | × vitesse de pointe | 0.3 | 1.2 | 0.97 |
 | `course5.ecart_min` | les ordinateurs ne s'approchent jamais plus de la voiture de devant | m | 0.2 | 10.0 | 1.2 |
+| `course5.rattrapage_derriere` | ordinateur plus loin que ça derrière le joueur : il accélère (WFS-133) | m | 0.0 | 5000.0 | 150.0 |
+| `course5.rattrapage_devant` | ordinateur plus loin que ça devant le joueur : il ralentit | m | 0.0 | 5000.0 | 250.0 |
+| `course5.rattrapage_bonus` | vitesse visée en plus d'un ordinateur trop loin derrière | part de la vitesse | 0.0 | 0.5 | 0.08 |
+| `course5.rattrapage_malus` | vitesse visée en moins d'un ordinateur trop loin devant | part de la vitesse | 0.0 | 0.5 | 0.06 |
+| `course5.rattrapage_malus_facile` | même chose en difficulté facile | part de la vitesse | 0.0 | 0.5 | 0.1 |
+| `course5.aspiration_distance` | aspiration à moins de cette distance derrière une voiture | m | 0.0 | 100.0 | 25.0 |
+| `course5.aspiration_bonus` | vitesse visée en plus dans l'aspiration | part de la vitesse | 0.0 | 0.3 | 0.04 |
+| `course5.nitro_bonus` | vitesse en plus pendant la nitro d'un ordinateur | part de la vitesse | 0.0 | 0.5 | 0.15 |
+| `course5.nitro_duree` | durée de la nitro d'un ordinateur | s | 0.0 | 10.0 | 2.5 |
+| `course5.nitro_fin` | nitro permise avant l'arrivée à moins de cette distance | m | 0.0 | 5000.0 | 500.0 |
 | `poursuite.score_depart` | score au départ de la poursuite | points | 1 | 1000 | 100 |
 | `poursuite.distance` | distance à parcourir pour gagner | km | 1.0 | 50.0 | 10.0 |
 | `poursuite.choc_trafic` | points perdus sur un choc avec le trafic | points | 0 | 100 | 5 |

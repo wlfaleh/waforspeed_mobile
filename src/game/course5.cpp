@@ -22,6 +22,10 @@ const char* nomMode(ModeCourse m) {
 
 namespace course5 {
 
+Difficulte& difficulte() { static Difficulte d = NORMALE; return d; }
+const char* cleDifficulte(Difficulte d) { return d == FACILE ? "facile" : d == DIFFICILE ? "difficile" : "normale"; }
+Difficulte difficulteDeCle(const std::string& v) { return v == "facile" ? FACILE : v == "difficile" ? DIFFICILE : NORMALE; }
+
 // peintures du jeu web (PAINTS), tirées au hasard pour les ordinateurs
 static const unsigned PEINTURES[16] = {0xc9ccd2, 0x0f1014, 0x7b808a, 0xb3122b, 0x1d3f8f, 0xff6a00, 0xc8940a, 0x1f5a3c,
                                        0xe6e2d6, 0x141c3a, 0x0f3324, 0x5a0f1e, 0xb39a72, 0x4b2380, 0x0f8f8c, 0xe8b400};
@@ -41,6 +45,7 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
         o.g.car = c.id; o.g.name = c.model;
         o.varVitesse = 0.96 + R.next() * 0.06;   // petite variation à chaque course (RG-04)
         o.cible = MAX_SPEED * carPerf(c).top * FACTEUR_VITESSE[d] * o.varVitesse;
+        o.diff = d; o.nitros = NITROS[d];   // WFS-133 (RG-03 / RG-06)
         os.push_back(o);
     }
     return os;
@@ -54,6 +59,7 @@ void grille(std::vector<Ordinateur>& os, double sJoueur) {
         o.g.rd = sJoueur + (8.0 + 8.0 * (double)(k / 2)) / M;
         o.g.x = o.cibleX = FILES[o.file];
         o.g.v = 0; o.g.done = false; o.g.ft = 0; o.g.hitCd = 0;
+        o.nitros = NITROS[o.diff]; o.nitrosPrises = 0; o.nitroT = 0; o.aspiration = false;   // WFS-133
     }
 }
 
@@ -70,7 +76,17 @@ bool fileLibre(const std::vector<Voiture>& vs, size_t moi, double x, double s, d
 }
 } // namespace
 
+bool dansAspiration(const std::vector<Ordinateur>& os, double s, double x) {
+    for (const Ordinateur& o : os) {
+        if (std::abs(o.g.x - x) > 0.45) continue;
+        const double dz = (o.g.rd - s) * M;
+        if (dz > 0 && dz < g_configJeu.course5.aspirationM) return true;
+    }
+    return false;
+}
+
 void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur) {
+    const auto& C = g_configJeu.course5;
     std::vector<Voiture> vs;
     for (const Ordinateur& o : os) vs.push_back({o.g.rd, o.g.x, o.g.v, carById(o.car.c_str()).d.L});
     vs.push_back({sJoueur, xJoueur, vJoueur, 4.4});   // le joueur, que les ordinateurs évitent
@@ -78,7 +94,14 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         Ordinateur& o = os[k];
         const CarDef& c = carById(o.car.c_str());
         const double acc = carPerf(c).a0 / M * 0.9;   // a0 en m/s² → unités/s²
+        const double pointe = MAX_SPEED * carPerf(c).top, reste = (finish - o.g.rd) * M;
         double cible = o.cible;
+        // WFS-133 (RG-04) : rattrapage par rapport au joueur, sauf dans le dernier kilomètre
+        const double ecartJ = (o.g.rd - sJoueur) * M;
+        if (reste > DERNIER_KM_M && !o.g.done) {
+            if (ecartJ < -C.rattrapageDerriereM) cible *= 1 + C.rattrapageBonus;
+            else if (ecartJ > C.rattrapageDevantM) cible *= 1 - (o.diff == FACILE ? C.rattrapageMalusFacile : C.rattrapageMalus);
+        }
         // voiture la plus proche devant, dans ma file
         int devant = -1; double dzMin = 1e9;
         for (size_t i = 0; i < vs.size(); i++) {
@@ -86,6 +109,13 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
             const double dz = (vs[i].s - o.g.rd) * M;
             if (dz > 0 && dz < dzMin) { dzMin = dz; devant = (int)i; }
         }
+        // RG-05 : aspiration derrière une voiture (ordinateur ou joueur) de la même file ; jamais au-delà de la pointe
+        o.aspiration = devant >= 0 && dzMin < C.aspirationM;
+        if (o.aspiration) cible *= 1 + C.aspirationBonus;
+        cible = std::min(cible, pointe);
+        // RG-06 : nitro dans les 500 derniers mètres, à moins de 40 m d'une voiture devant
+        bool prendre = devant >= 0 && dzMin < 40 && reste < C.nitroFinM && reste > 0;
+        double plafond = 1e18;   // voiture suivie (sans file libre) : la nitro ne pousse jamais dedans
         if (devant >= 0 && dzMin < 30) {
             const Voiture& f = vs[(size_t)devant];
             if (f.v < cible * 0.98) {   // plus lente : dépasser par une file libre, sinon la suivre
@@ -95,11 +125,18 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
                     if (nf < 0 || nf > 2 || change) continue;
                     if (fileLibre(vs, k, FILES[nf], o.g.rd, 10, 22)) { o.file = nf; o.cibleX = FILES[nf]; change = true; }
                 }
+                // RG-06 : dépassement (file libre trouvée, voiture devant à moins de 30 m), lancé (pas dans la mêlée du départ)
+                prendre = prendre || (change && o.g.v > 0.8 * o.cible);
                 const double marge = (c.d.L + f.L) / 2 + ECART_MIN_M + 6;
-                if (!change && dzMin < marge + 12) cible = std::min(cible, f.v * (dzMin < marge ? 0.9 : 1.0));
+                if (!change && dzMin < marge + 12) plafond = f.v * (dzMin < marge ? 0.9 : 1.0);
             }
         }
-        if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + acc * dt);
+        if (prendre && plafond > 1e17 && o.nitros > 0 && o.nitroT <= 0 && !o.g.done) {   // jamais bloquée derrière
+            o.nitros--; o.nitrosPrises++; o.nitroT = C.nitroDuree;
+        }
+        if (o.nitroT > 0) { o.nitroT -= dt; cible *= 1 + C.nitroBonus; }
+        cible = std::min(cible, plafond);
+        if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + acc * (o.nitroT > 0 ? 1.6 : 1.0) * dt);
         else o.g.v = std::max(cible, o.g.v - acc * 1.6 * dt);
         o.g.x += std::clamp(o.cibleX - o.g.x, -0.9 * dt, 0.9 * dt);
         o.g.rd += o.g.v * dt;

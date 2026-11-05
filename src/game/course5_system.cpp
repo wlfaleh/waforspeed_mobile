@@ -72,12 +72,13 @@ public:
         if (c->duelFinish <= 0) {   // course remise à zéro (départ du menu, « Rejouer ») : nouvelle grille
             if (!graineFixe_) { graine_ = g_graineBanc ? g_graineBanc : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 17u; graineFixe_ = true; }
             c->duelFinish = kmCourse5() * duel::KM;
-            os_ = course5::tirer(graine_, pl.car->id);
+            os_ = course5::tirer(graine_, pl.car->id, course5::difficulte());   // WFS-133 (RG-03) : difficulté choisie
             course5::grille(os_, pl.dist);
             libererHorsGrille();   // WFS-130 (RG-01 / RG-02) : « Rejouer » retire les mêmes voitures, rien n'est détruit
             actif_ = true; fini_ = false; depart_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0; nouveauRecord_ = false;
             std::string noms; for (const auto& o : os_) noms += (noms.empty() ? "" : ", ") + o.car;
-            WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté normale)", graine_, kmCourse5(), noms.c_str());
+            WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté %s)", graine_, kmCourse5(), noms.c_str(),
+                    course5::cleDifficulte(course5::difficulte()));
         }
         if (!actif_ || c->state == RaceState::Count) return;   // décompte : tout le monde attend sur la grille
         if (!depart_ && c->state == RaceState::Play) {   // WFS-130 (RG-06) : ordinateurs prêts à être dessinés au départ
@@ -86,7 +87,18 @@ public:
             WFS_LOG("course à 5 : départ, %d/%zu ordinateurs avec leur modèle, %zu modèle(s) d'ordinateur en mémoire", prets, os_.size(), models_.size());
         }
         t_ = c->state == RaceState::Play ? c->raceTime : t_ + dt;
+        std::vector<int> nitros; for (const auto& o : os_) nitros.push_back(o.nitrosPrises);
         course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed);
+        for (size_t k = 0; k < os_.size(); k++)   // WFS-133 (RG-06) : nitro des ordinateurs (vitesse seule, rendu inchangé)
+            if (os_[k].nitrosPrises > nitros[k]) WFS_LOG("course5 : nitro de %s (%.2f km)", os_[k].nom.c_str(), os_[k].g.rd * M / 1000);
+        // WFS-133 (RG-05) : aspiration du joueur derrière un ordinateur (même file, moins de 25 m) : +4 % de vitesse visée,
+        // appliquée ici à la vitesse du joueur (player.* inchangé), bornée à 1,04 × sa vitesse de pointe
+        const bool asp = c->state == RaceState::Play && pl.speed > 0 && course5::dansAspiration(os_, pl.dist, pl.playerX);
+        if (asp) {
+            const double bonus = g_configJeu.course5.aspirationBonus, vmax = MAX_SPEED * pl.perf.top * (1 + bonus);
+            if (pl.speed < vmax) pl.speed = std::min(vmax, pl.speed * (1 + bonus * dt));
+        }
+        if (asp != aspJoueur_) { aspJoueur_ = asp; if (asp) WFS_LOG("course5 : aspiration du joueur"); }
         if (c->state == RaceState::Play)
             for (course5::Ordinateur& o : os_) {   // RG-05 : contacts comme au duel (hitGhosts)
                 const duel::ContactEvents e = duel::contacter(dt, pl, *g.track, *g.car, o.g);
@@ -234,7 +246,7 @@ private:
     std::vector<course5::Ordinateur> os_;
     std::map<std::string, Model> models_;
     std::map<std::string, vec3> peintures_;
-    bool actif_ = false, fini_ = false, depart_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false;
+    bool actif_ = false, fini_ = false, depart_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false, aspJoueur_ = false;
     uint32_t graine_ = 0;
     double ftJoueur_ = 0, overT_ = 0, t_ = 0;
     Zone rejouerZ_, menuZ_;
@@ -250,6 +262,8 @@ bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5S
 bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
 
 WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) et le duel (220)
+
+int benchParcoursCourse5(Game& g, Renderer& r, const std::string& out);   // WFS-133 : modes_ecran.cpp
 
 // ---------- banc d'essai (WFS_BANC=course5) ----------
 // 1) panneau des modes ouvert au menu, 2) grille de départ pendant le décompte, 3) course (4 ordinateurs, aucun trafic),
@@ -285,6 +299,7 @@ void benchCourse5(Game& g, Renderer& r, const std::string& out) {
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
     courseBenchRules(false);
     g.shutdown();
+    benchParcoursCourse5(g, r, out);   // WFS-133 (RG-10) : parcours complet avec la difficulté (modes_ecran.cpp)
 }
 
 } // namespace wfs

@@ -82,7 +82,7 @@ void Sauvegarde::defauts() {
     best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; quality = "high"; qualityChoisie = false; cam = "poursuite";
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
-    mode = "checkpoint"; km5 = 4;                    // WFS-110
+    mode = "checkpoint"; km5 = 4; diff5 = "normale";   // WFS-110 ; WFS-133
     rec5Place = 0; rec5Ms = 0; recPVictoire = false; recPScore = 0; recPDistM = -1;   // WFS-125 : records vides
 }
 
@@ -98,7 +98,7 @@ std::string Sauvegarde::texte() const {
     o << "muted=" << (muted ? 1 : 0) << "\n" << "music=" << (music ? 1 : 0) << "\n" << "nick=" << nick << "\n" << "km=" << km << "\n" << "steer=" << steer << "\n";
     o << "commandes=" << (gaucher ? "gaucher" : "droitier") << "\n" << "vibrations=" << (vibrations ? 1 : 0) << "\n";   // WFS-75
     o << "boutons=" << (grandsBoutons ? "grands" : "normaux") << "\n" << "gyro=" << gyro << "\n" << "gyroZone=" << gyroZone << "\n";   // WFS-108
-    o << "mode=" << mode << "\n" << "km5=" << km5 << "\n";   // WFS-110
+    o << "mode=" << mode << "\n" << "km5=" << km5 << "\n" << "diff5=" << diff5 << "\n";   // WFS-110 ; WFS-133
     if (aRecordCourse5()) o << "record-course5=" << rec5Place << ";" << rec5Ms << "\n";   // WFS-125 : absents tant que vides
     if (aRecordPoursuite()) o << "record-poursuite=" << (recPVictoire ? 1 : 0) << ";" << recPScore << ";" << recPDistM << "\n";
     return o.str();
@@ -141,6 +141,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "gyroZone") { if (entier(v, n) && n >= 0 && n <= 2) gyroZone = (int)n; }
         else if (k == "mode") { mode = v == "course5" || v == "poursuite" ? v : "checkpoint"; }   // WFS-110 ; WFS-119 : poursuite
         else if (k == "km5") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km5 = (int)n; }
+        else if (k == "diff5") { diff5 = v == "facile" || v == "difficile" ? v : "normale"; }   // WFS-133 : inconnue → normale
         else if (k == "record-course5") {   // WFS-125 : place 1..5, temps en ms
             long long w[2];
             if (entiers(v, w, 2) && w[0] >= 1 && w[0] <= 5) { rec5Place = (int)w[0]; rec5Ms = w[1]; }
