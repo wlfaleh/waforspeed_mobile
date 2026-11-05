@@ -18,6 +18,8 @@ on:
     branches: [main, 'feature/**', 'claude/**']
     paths-ignore: ['**/*.md', 'qa/**', 'regles-de-gestion/**', '.claude/**']
   workflow_dispatch:
+  schedule:
+    - cron: '17 2 * * *'   # WFS-114 : banc d'endurance chaque nuit sur main (seul job lancé la nuit)
 
 permissions:
   contents: write
@@ -30,6 +32,7 @@ concurrency:
 jobs:
   banc-essai:
     name: banc-essai (${{ matrix.groupe }})
+    if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -81,8 +84,11 @@ jobs:
   # WFS-91 : banc d'endurance (8 cycles, 4 cartes jour / nuit, garage, pause, 3 retours d'arrière-plan, mémoire) avec les
   # couches de validation Vulkan ; en parallèle des bancs, aucune publication n'en dépend (RG-05, RG-13)
   endurance:
+    # WFS-114 : seulement sur main (envoi), la nuit (schedule) et à la demande (workflow_dispatch, branches comprises) ;
+    # sauté sur les envois de feature/** et claude/**
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30   # banc ≈ 14 min avec la validation (llvmpipe), compilation comprise
+    timeout-minutes: 20   # WFS-114 : ≤ 15 min de bout en bout (compilation ≈ 1 min, banc ≈ 8 min sur la CI, une image sur 30)
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)
@@ -96,6 +102,7 @@ jobs:
         with: { name: captures-endurance, path: captures }
 
   android:
+    if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne (Release apercu non republiée)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
