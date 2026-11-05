@@ -3164,3 +3164,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone : nouveau `tools/qa/tests_cpu.sh` (découverte automatique des `test_*`), étape « Test de la piste » de `.github/workflows/build.yml`, `tests/**` seulement pour réparer un test oublié (≤ 10 lignes). Interdit : `CMakeLists.txt`, reste de `build.yml`, `src/**`, iOS.
 - Critères : `[OK] test_retour_systeme` et `[OK] test_commandes` au journal du job `bench (texte)` de main, CI verte, un test en échec fait échouer l'étape.
 - Plan : script + 1 ligne dans build.yml, essai local, fusion par confiance, suivi de la CI de main.
+
+### 2026-11-05 11:33:59 — WFS-117 fusionné par confiance (PR #96) (Claude, agent 3)
+- `tools/qa/tests_cpu.sh <build>` lance tous les `build/test_*` (triés, arguments repris dans une table), « [OK] / [ÉCHEC] » par test et un résumé ; échec au premier test en échec ou si aucun test n'est trouvé. Étape « Test de la piste » de `build.yml` réduite à `bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py` (même condition `texte`).
+- Sortie locale (RG-06) : [OK] test_appui, test_audio, test_binarypack, test_cartes, test_commandes, test_conduite_libre, test_course, test_course5, test_duel, test_effets, test_manette, test_masquage, test_qualite, test_retour_systeme, test_roues, test_sauvegarde, test_systems, test_track, test_traffic, test_trafic_vivant — « tests CPU : 20 test(s) réussi(s) en 3 s ». Faux test en échec (non commité) : « [ÉCHEC] test_faux », code 1 ; dossier vide : « aucun test trouvé », code 1.
+- `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont maintenant lancés par la CI. Accroche : une ligne dans le skill `waforspeed-natif` (partie tests). Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
+
