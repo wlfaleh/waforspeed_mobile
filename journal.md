@@ -3104,3 +3104,29 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - #77 (WFS-89, fb50d09) et #79 (WFS-96, 6863763) fusionnées par moi ; #76 (WFS-88, iOS) fusionnée le 2026-11-05 à 01:23 UTC (ordre de l'utilisateur, RG-12). Vérifié : 0 PR ouverte.
 - CI de main verte sur le dernier commit (run 42006825688, après WFS-114). WFS-103 et WFS-88 passés à ✅ dans `TACHES.md`.
 - WFS-100 : l'agent s'est arrêté (limite d'usage hebdomadaire) ; je reprends le ticket moi-même.
+
+### 2026-11-05 10:28:36 — WFS-100 repris par la session (agent arrêté par la limite hebdomadaire) (Claude, session trafic)
+- Travail de l'agent commité et poussé sur `feature/waforspeed-100`, synchronisé avec main, compilation et tests CPU OK.
+- Fait : RG-01 (plus d'élargissement du reflet, couverture du pixel pour les opaques fins), RG-02 (spéculaire ≤ 4,0 dans `scene.frag` et `scene_skin.frag`), RG-03 (peinture `MAT_PAINT` = couleur choisie, sans texture), RG-04 (bloom « dual filter » : seuil 1,0 genou 0,5, 5 niveaux, flou gaussien séparable à 9 prises, CLAMP_TO_EDGE, remontée en tente 3 × 3).
+- Accroche annoncée : `renderer.h` +2 lignes (`FrameParams::bloom`, pointeur `Bloom`).
+- En cours : bancs vitrines, qualité, nuit, garage comparés à main ; puis RG-W1 et RG-W2.
+
+### 2026-11-05 10:41:12 — WFS-100 en revue (PR #94) (Claude, session trafic)
+- RG-W2 : cause de `VUID-vkCmdDraw-None-08114` trouvée avec les couches de validation installées en local : le jeu de descripteurs de l'interface (`fontSet_`) lisait l'atlas de police détruit au changement de carte. Correction : texture blanche dans `uiSetFontAtlas` si l'atlas n'existe pas, et `text.cpp` repointe l'interface avant de détruire l'atlas (accroche d'une ligne). `WFS_BANC=carte` avec validation : 0 erreur (1 sur main). Motif retiré de `tools/qa/validation_connues.txt` (accroche E7 d'une ligne).
+- RG-W1 : `Renderer::shutdown` remet tous les handles à zéro ; vérification par l'endurance `WFS_ENDURANCE_SANS_ANO52=1` en cours.
+- Bancs comparés à main (vitrines, qualité, nuit, garage) : plus de points brillants au-dessus du toit au garage, halos ronds autour des projecteurs du circuit (plus d'étoile), plus de traînées blanches la nuit. À regarder : zones claires sur les portes de la Giulia (reflet du vernis), `qualite-basse` légèrement changée (plafond du spéculaire).
+- Gros changement du rendu : fusion après la CI verte de la branche et un regard sur ses captures.
+
+### 2026-11-05 10:44:08 — Début WFS-115 (PO, attribution à Claude (session trafic))
+- Ticket : WFS-115, « Continuer » après le choix d'un mode ramène au menu principal · E8 · P1 Urgent · branche `feature/waforspeed-115` · règles `regles-de-gestion/WFS-115.md`.
+- Exception PO : WFS-102 (E8) est déjà en cours ; WFS-115 passe en parallèle car le défaut est hors de `src/ui/ecrans/**` : `src/game/modes_ecran.cpp` (`valider` → `Ecran::Garage`) et la navigation de `src/ui/garage.cpp` (« Choisir » l. 291 → `Ecran::Menu`). Aucun fichier partagé avec WFS-102 (qui ne touche que les lignes d'échelle / libellés de `garage.cpp`).
+- Zone : `src/game/modes_ecran.cpp`, navigation de `src/ui/garage.cpp`, `tests/**`, accroches ≤ 10 lignes annoncées (`desktop_main.cpp` pour les captures `parcours-*`, `game.h` si besoin du drapeau). Interdit : `src/ui/ecrans/**`, `src/render/**`, `shaders/**`, `src/world/**`, `.github/**`, iOS.
+- Critères : test CPU menu → Course solo → mode → Continuer → garage → Choisir → terrain → Rouler → course, puis retour ; Duel → salon ; garage ouvert depuis le menu → « Choisir » ramène au menu ; cause nommée au journal ; captures `parcours-mode`, `parcours-terrain`, `parcours-course`.
+- Plan : drapeau « vient du parcours de course » posé par `modes_ecran.cpp`, lu par « Choisir » du garage (→ `Ecran::Terrain`), effacé par « Retour » ; test de parcours ; fusion par confiance si > 50 %.
+
+### 2026-11-05 10:46:17 — WFS-116 créé et attribué à Claude (agent 3, session 011cpqZd) (PO)
+- WFS-115 demandé en premier mais déjà pris par Claude (session trafic) à 10:44 : attribution annulée avant envoi.
+- Nouveau besoin trouvé dans le code : le geste / bouton « Retour » d'Android (source clavier système) n'est pas consommé par `onInput` → `NativeActivity` se ferme, course perdue. Sujet simple et très visible sur téléphone.
+- Début : WFS-116 (E7, P2 Haute, libre depuis WFS-114 ✅), branche `feature/waforspeed-116`, règles `regles-de-gestion/WFS-116.md` (RG-01 à RG-07).
+- Zone : `src/platform/retour_systeme.*` (nouveau), `android_main.cpp` (`onInput`), `manette_android.cpp`, `JeuActivity.java`, `tests/test_retour_systeme.cpp` ; accroches ≤ 10 lignes : `manette_jeu.cpp` / `manette.h`, `CMakeLists.txt`.
+- Plan : réutiliser la zone `retour` des écrans (B de la manette), test CPU de parcours complet, fusion par confiance, `qa/Check.md`.
