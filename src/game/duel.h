@@ -49,6 +49,9 @@ const char* peerCar(const Fields& f);                        // voiture connue, 
 struct PeerView { std::string id; Fields f; double updatedAt = 0; };   // updatedAt : ms (horloge du transport)
 
 // ---------- transport (RG-07) ----------
+// état du lien avec le salon (WFS-112) : Local (Wi-Fi local, mémoire : toujours là), connexion au relais, prêt,
+// reconnexion après une coupure (30 s), échec (code inconnu, expiré, plein, relais injoignable), perdu (30 s dépassées)
+enum class Lien { Local, Connexion, Pret, Reconnexion, Echec, Perdu };
 class Transport {
 public:
     virtual ~Transport() = default;
@@ -56,6 +59,12 @@ public:
     virtual std::vector<PeerView> peers() const = 0;          // les autres joueurs du salon
     virtual double nowMs() const = 0;                         // horloge commune (ms)
     virtual void leave() = 0;
+    // WFS-112 : lien avec le salon par Internet (relais) ; les transports locaux gardent ces valeurs par défaut
+    virtual Lien lien() const { return Lien::Local; }
+    virtual int pingMs() const { return -1; }                  // aller-retour mesuré (ms), −1 : inconnu
+    virtual std::string raison() const { return {}; }          // échec : inconnu, expire, plein, pris, injoignable, perdu
+    virtual double expireDansMs() const { return -1; }         // validité restante du code (ms), −1 : inconnue
+    virtual double reconnexionRestanteMs() const { return -1; }   // reconnexion : temps restant avant d'abandonner
 };
 
 // salon en mémoire : chaque client y écrit sa présence sous forme de texte (encode), lue et décodée par les autres
@@ -122,6 +131,7 @@ public:
     bool host() const { return host_; }
     const std::map<std::string, Ghost>& ghosts() const { return ghosts_; }
     std::vector<PeerView> others() const;
+    const Transport* transport() const { return t_.get(); }   // WFS-112 : état du lien, ping (salon, course)
     std::vector<BoardRow> board(double myDist) const;          // renderBoard : classement en direct
     std::vector<BoardRow> results() const;                     // renderDuelResult : temps d'arrivée puis distance
     int position(double myDist) const;                         // « Position n/N »

@@ -1,0 +1,14 @@
+# WaForSpeed — relais du « Duel entre amis » (WFS-112) : déploiement Cloudflare Workers (compte gratuit).
+# Mise en place : serveur/LISEZMOI.md. Adresse obtenue : https://waforspeed-relais.<ton-sous-domaine>.workers.dev
+name = "waforspeed-relais"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# une Durable Object par code de salon (gratuit : Durable Objects « SQLite », seules permises sur le plan gratuit)
+[[durable_objects.bindings]]
+name = "SALONS"
+class_name = "SalonDurable"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SalonDurable"]
