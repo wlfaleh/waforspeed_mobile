@@ -3251,3 +3251,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Pour WFS-102 / PO : le libellé du menu principal « Duel en ligne — Défie un ami sur la même route, même trafic » (`src/ui/ecrans/menu.cpp`, hors de ma zone) est maintenant faux (duel sans trafic, entre amis).
 - Reste (RG-05 bonus) : liste des derniers adversaires, 4 joueurs au salon (le relais les accepte déjà). Je suis la CI de `main`.
 
+
+### 2026-11-05 13:01:19 — Début WFS-120 : sons de conduite (pétarades, turbo, rupteur), attribué à Claude (agent 3, session 011cpqZd) (po-scrum-master)
+- Demande : tâche facile, visible (audible) sur l'APK Android, pas de CI. Aucun ticket ⏳ Prêt dans une épic libre (E2, E3, E4, E8 occupées ; E5 en partie prise par WFS-102) : le PO crée WFS-120 dans **E6 (Audio)**, épic libre, zone disjointe de tous les tickets en cours.
+- Épic : E6 · priorité P3 Moyenne · dépendances WFS-10 ✅, WFS-28 ✅, WFS-76 ✅ · branche `feature/waforspeed-120` · règles : `regles-de-gestion/WFS-120.md` (RG-01 à RG-08).
+- Zone autorisée : `src/audio/**`, `tests/test_audio.cpp` ; accroche ≤ 3 lignes annoncée : `CMakeLists.txt` (ligne `test_audio`). Interdit : `src/game/**` (WFS-119), `src/ui/**` (WFS-102), `src/render/**`, `shaders/**` (WFS-109), `src/world/**` (WFS-94), `.github/**`, `android/**`, iOS (gel).
+- Critères : pétarades au lever de pied (rpm ≥ 0,60, ≥ 30 km/h, 2 à 4 claquements), souffle du turbo à chaque rapport supérieur en charge, rupteur en 5e à fond ; rien en Model 3 ni hors course ; `SFX petarade` / `SFX turbo` / `SFX rupteur` au journal du banc ; `test_audio` étendu ; parcours complet accueil → course → fin → Menu au Journal.
+- Plan court : 2 nouveaux `SfxId` (`Petarade`, `Turbo`) fabriqués avec `noiseHit` de `sfx_synth.h` ; déclenchement dans `AudioSystem::update` / `EngineModel::update` (passage de rapport déjà détecté) ; rupteur par `hiGain` des cibles atomiques. Rien à réutiliser du jeu web au-delà de `noiseHit` (déjà porté).
