@@ -1,5 +1,6 @@
 // Effets de conduite (WFS-65) : particules identiques à js/world/particles.js — réserves de 220 étincelles et
 // 140 bouffées, réserve circulaire, durées, gravité, frottement, rebond des étincelles, fumée qui monte, qualité basse.
+// WFS-107 : « réduire les mouvements » (aucune particule), texture TEXS.radial, gris de la fumée à l'écran.
 // usage : test_effets
 #include <cmath>
 #include <cstdio>
@@ -82,6 +83,45 @@ int main() {
     Particules a, b; a.etincelles({0, 1, 0}, 0, {}, 10); b.etincelles({0, 1, 0}, 0, {}, 10);
     bool memes = true; for (size_t i = 0; i < 10; i++) memes &= a.sparks().p[i].v.x == b.sparks().p[i].v.x && a.sparks().p[i].max == b.sparks().p[i].max;
     VERIFIE(memes, "tirages non reproductibles");
+
+    // WFS-107 (RG-06) : « réduire les mouvements » : emit() du jeu web ne fait rien (reduceMotion) : ni étincelle ni
+    // fumée ; les particules déjà en vie finissent leur course ; le réglage retiré, l'émission reprend
+    Particules rm;
+    rm.fumee({0, 2, 0}, 2);
+    rm.setReduireMouvements(true);
+    const int et = rm.etincelles({0, 1, 0}, 0.5f, {0, 1, -20}, 50), fu = rm.fumee({0, 2, 0}, 2);
+    VERIFIE(et == 0 && fu == 0 && rm.sparks().vivantes() == 0 && rm.smoke().vivantes() == 2,
+            "réduire les mouvements : %d étincelles, %d bouffées émises (0 attendu), %d bouffées en vie (2)", et, fu, rm.smoke().vivantes());
+    rm.update(1.f / 60);
+    VERIFIE(rm.smoke().vivantes() == 2, "réduire les mouvements : les bouffées déjà en vie disparaissent");
+    rm.setReduireMouvements(false);
+    VERIFIE(rm.fumee({0, 2, 0}, 2) == 2 && rm.etincelles({0, 1, 0}, 0.5f, {}, 10) == 10, "réglage retiré : l'émission ne reprend pas");
+    std::printf("réduire les mouvements : aucune étincelle ni fumée émise, reprise ensuite : OK\n");
+
+    // WFS-107 (RG-05) : texture TEXS.radial du jeu web : alpha 1 au centre, 0,45 à 35 % du rayon, 0 au bord, décroissant
+    VERIFIE(radial(0) == 1 && std::abs(radial(0.35f) - 0.45f) < 1e-6f && radial(1) == 0 && radial(1.3f) == 0, "profil radial (1 ; 0,45 ; 0)");
+    VERIFIE(std::abs(radial(0.175f) - 0.725f) < 1e-6f && std::abs(radial(0.675f) - 0.225f) < 1e-6f, "profil radial linéaire entre les arrêts");
+    bool decroit = true; for (int i = 1; i <= 140; i++) decroit &= radial(i / 100.f) <= radial((i - 1) / 100.f);
+    VERIFIE(decroit, "profil radial non décroissant");
+    std::printf("texture radiale du jeu web (1 → 0,45 à r = 0,35 → 0 au bord) : OK\n");
+
+    // WFS-107 (RG-04) : couleur de la fumée à l'écran (sans mélange : ACES × 0,85, gamma 2,2) = celle du jeu web pour
+    // chaque fondu, jamais blanche (≤ 0,45 au plus clair, contre ≈ 0,79 avec l'ancienne conversion) ; lumière × exposition
+    // sous le seuil du bloom de nuit (0,46) : aucun halo
+    float pireFumee = 0, plusClair = 0, lumMax = 0;
+    for (int i = 0; i <= 100; i++) {
+        const float f = i / 100.f;
+        const vec3 h = fumeeHdr(f, 0.85f);
+        const float ecran[3] = {std::pow(aces(h.x * 0.85f), 1 / 2.2f), std::pow(aces(h.y * 0.85f), 1 / 2.2f), std::pow(aces(h.z * 0.85f), 1 / 2.2f)};
+        const float web[3] = {std::pow(aces(std::pow(0.32f * f, 2.2f)) / aces(1.6f), 1 / 2.2f), std::pow(aces(std::pow(0.32f * f, 2.2f)) / aces(1.6f), 1 / 2.2f),
+                              std::pow(aces(std::pow(0.352f * f, 2.2f)) / aces(1.6f), 1 / 2.2f)};
+        for (int j = 0; j < 3; j++) { pireFumee = std::max(pireFumee, std::abs(ecran[j] - web[j])); plusClair = std::max(plusClair, ecran[j]); }
+        lumMax = std::max(lumMax, (0.2126f * h.x + 0.7152f * h.y + 0.0722f * h.z) * 0.85f);
+    }
+    VERIFIE(pireFumee < 1e-3f, "fumée : écart avec l'écran du jeu web %.5f", pireFumee);
+    VERIFIE(plusClair <= 0.45f, "fumée trop claire à l'écran : %.3f (gris du jeu web ≤ 0,45)", plusClair);
+    VERIFIE(lumMax < 0.46f, "fumée au-dessus du seuil du bloom de nuit : %.3f", lumMax);
+    std::printf("fumée : gris du jeu web à l'écran (écart %.5f, au plus clair %.3f), sous le seuil du bloom (%.3f < 0,46) : OK\n", pireFumee, plusClair, lumMax);
 
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("effets : tout est OK\n");
