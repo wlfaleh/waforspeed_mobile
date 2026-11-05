@@ -14,6 +14,8 @@ namespace manette {
 // pause automatique si la manette part en course (RG-05)
 void appliquer(Game& g);
 int focusCourant();   // bouton qui a le focus dans les zones de l'image (−1 : aucun)
+struct Zone;
+void toucher(Game& g, const Zone& z);   // appui simulé au centre d'une zone (WFS-116 : touche Retour du téléphone)
 
 // banc d'essai (WFS_BANC=manette) : course pilotée par des entrées de manette injectées, focus des menus, pause
 void benchManette(Game& g, Renderer& r, const std::string& out);

@@ -5,7 +5,8 @@
 //     réappliqué au démarrage, à la reprise et à chaque retour du focus (onWindowFocusChanged) ;
 //   - écran toujours allumé pendant le jeu ;
 //   - image sous l'encoche (aussi dans le thème values-v28) ;
-//   - manettes (WFS-22) : une manette connue qui se déconnecte est signalée au jeu (pause automatique en course).
+//   - manettes (WFS-22) : une manette connue qui se déconnecte est signalée au jeu (pause automatique en course) ;
+//   - touche Retour au menu principal (WFS-116) : arrière-plan au lieu de fermer le jeu.
 package com.waforspeed.game;
 
 import android.app.NativeActivity;
@@ -58,6 +59,15 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
                 return v.onApplyWindowInsets(insets);
             }
         });
+    }
+
+    // WFS-116 (RG-04) : la touche / le geste Retour n'arrive ici qu'au menu principal (le jeu garde l'appui partout
+    // ailleurs : pause, reprise, bouton « Retour » de l'écran, retour_systeme.cpp) : le jeu passe en arrière-plan sans se
+    // fermer, comme le bouton Accueil (la sauvegarde est déjà écrite à la mise en arrière-plan)
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
     @Override

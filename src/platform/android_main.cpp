@@ -20,6 +20,7 @@
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "reseau_android.cpp"     // WFS-83 : verrou de diffusion du Wi-Fi (duel sur le réseau local)
 #include "manette_jeu.h"   // WFS-22 : manettes
+#include "retour_systeme.h"   // WFS-116 : bouton / geste Retour du téléphone
 #include "gyroscope_android.cpp"   // WFS-108 : inclinaison du téléphone (gyroscope), densité de l'écran (dp)
 
 namespace wfs {
@@ -108,6 +109,12 @@ static void onCmd(android_app* a, int32_t cmd) {
 static int32_t onInput(android_app* a, AInputEvent* e) {
     App& app = *static_cast<App*>(a->userData);
     if (app.ready && manette::evenementAndroid(e)) return 1;   // WFS-22 : manette (un toucher rend la main au tactile)
+    if (AInputEvent_getType(e) == AINPUT_EVENT_TYPE_KEY && AKeyEvent_getKeyCode(e) == AKEYCODE_BACK) {   // WFS-116 : Retour du téléphone
+        const int32_t act = AKeyEvent_getAction(e);
+        if (act != AKEY_EVENT_ACTION_DOWN && act != AKEY_EVENT_ACTION_UP) return 1;
+        if (!app.ready) return 1;   // chargement : pris et ignoré (RG-03)
+        return retourSysteme(app.game, act == AKEY_EVENT_ACTION_DOWN, AKeyEvent_getRepeatCount(e)) ? 1 : 0;
+    }
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
     int32_t action = AMotionEvent_getAction(e), kind = action & AMOTION_EVENT_ACTION_MASK;
     size_t idx = (size_t)((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
@@ -172,7 +179,7 @@ void android_main(android_app* a) {
             if (g_margesNeuves.exchange(false))
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
-            else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); app.game.render(t - app.start); }   // WFS-22 : manette
+            else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); retourSystemeApresImage(app.game); app.game.render(t - app.start); }   // WFS-22 : manette ; WFS-116
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
             if (app.fpsT0 == 0) app.fpsT0 = t;
             if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {
