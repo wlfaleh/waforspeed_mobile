@@ -3110,3 +3110,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Fait : RG-01 (plus d'élargissement du reflet, couverture du pixel pour les opaques fins), RG-02 (spéculaire ≤ 4,0 dans `scene.frag` et `scene_skin.frag`), RG-03 (peinture `MAT_PAINT` = couleur choisie, sans texture), RG-04 (bloom « dual filter » : seuil 1,0 genou 0,5, 5 niveaux, flou gaussien séparable à 9 prises, CLAMP_TO_EDGE, remontée en tente 3 × 3).
 - Accroche annoncée : `renderer.h` +2 lignes (`FrameParams::bloom`, pointeur `Bloom`).
 - En cours : bancs vitrines, qualité, nuit, garage comparés à main ; puis RG-W1 et RG-W2.
+
+### 2026-11-05 10:41:12 — WFS-100 en revue (PR #94) (Claude, session trafic)
+- RG-W2 : cause de `VUID-vkCmdDraw-None-08114` trouvée avec les couches de validation installées en local : le jeu de descripteurs de l'interface (`fontSet_`) lisait l'atlas de police détruit au changement de carte. Correction : texture blanche dans `uiSetFontAtlas` si l'atlas n'existe pas, et `text.cpp` repointe l'interface avant de détruire l'atlas (accroche d'une ligne). `WFS_BANC=carte` avec validation : 0 erreur (1 sur main). Motif retiré de `tools/qa/validation_connues.txt` (accroche E7 d'une ligne).
+- RG-W1 : `Renderer::shutdown` remet tous les handles à zéro ; vérification par l'endurance `WFS_ENDURANCE_SANS_ANO52=1` en cours.
+- Bancs comparés à main (vitrines, qualité, nuit, garage) : plus de points brillants au-dessus du toit au garage, halos ronds autour des projecteurs du circuit (plus d'étoile), plus de traînées blanches la nuit. À regarder : zones claires sur les portes de la Giulia (reflet du vernis), `qualite-basse` légèrement changée (plafond du spéculaire).
+- Gros changement du rendu : fusion après la CI verte de la branche et un regard sur ses captures.
