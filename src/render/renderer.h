@@ -48,11 +48,11 @@ struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; floa
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
 constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
 
-struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; };   // WFS-60 : roue 0-3, −1 = fixe
+struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; int8_t feuArriere = 0; };   // WFS-60 : roue 0-3, −1 = fixe ; WFS-109 : 1 feu arrière découpé, 2 3e feu stop
 // WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le
 // modèle en a (lampY / headY de js/cars/models.js), sinon proportions des voitures du jeu web (d.tail − 0,25, d.nose − 0,12)
 // arriereX / avantX : écart latéral du centre de chaque feu (pièces des feux, sinon largeur / 2 − 0,18 / 0,3 du jeu web)
-struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0, arriereX = 0, avantX = 0; };
+struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0, arriereX = 0, avantX = 0; bool pieceArriere = false; float arriereZ = 0; };   // WFS-109 : feu arrière du modèle trouvé, arrière de sa pièce
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     vec3 bmin, bmax; bool ok = false;
@@ -61,7 +61,7 @@ struct Model {
 };
 
 // WFS-09 : état des feux d'une voiture (setLights du jeu web : nuit, frein, recul)
-struct FeuxVoiture { bool nuit = false, stop = false, recul = false; };
+struct FeuxVoiture { bool nuit = false, stop = false, recul = false; float frein = -1; };   // WFS-109 : niveau 0-1 du stop (80 ms), < 0 : stop net
 
 struct FrameParams {
     mat4 view, proj; vec3 camPos;

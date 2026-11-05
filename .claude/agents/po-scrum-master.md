@@ -36,7 +36,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 4. Modifier **uniquement ces lignes**, commit « WFS-XX attribué à … », `git push` sur `main` (si refus : `git pull --rebase`
    puis recommencer à l'étape 2 — quelqu'un a peut-être pris l'épic entre-temps).
 5. Répondre à l'agent : le ticket, l'épic, la **zone de code autorisée**, les critères d'acceptation, les dépendances,
-   et lui rappeler : branche `feature/waforspeed-XX`, synchronisation avec `main`, QA par `qa-lead` avant fusion.
+   et lui rappeler : skill `agent-developer` à charger avant de coder, branche `feature/waforspeed-XX`, synchronisation avec `main`, QA par `qa-lead` avant fusion.
 6. S'il n'y a aucun ticket attribuable : le dire, expliquer ce qui bloque, et proposer de découper ou d'ajouter un ticket.
 
 ## 1 bis. Règles de gestion de chaque US (dossier `regles-de-gestion/`)

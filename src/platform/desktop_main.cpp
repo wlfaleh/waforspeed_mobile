@@ -34,6 +34,7 @@ namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out);
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
 #include "../render/bench_nuit.h"
+#include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
 #include "../render/renderer.h"
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
@@ -171,7 +172,7 @@ int main(int argc, char** argv) {
         benchPlancheVoitures(g, r, out); if (benchRecords(g, r, out) > 0) { finir(); return 3; }   // WFS-77 : les 20 voitures en Turquoise, roues et peinture au journal ; WFS-125 : records (job vitrines de la CI)
         return finir();
     }
-    if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
+    if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); return finir(); }   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "parcours") {   // WFS-115 ; WFS-126 (RG-08) : parcours complet jusqu'au retour à l'accueil
