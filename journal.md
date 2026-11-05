@@ -2976,3 +2976,13 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - **ANO-50** : copies fantômes, la nuit, des textes des panneaux du circuit et des projecteurs. Même cause qu'ANO-27 (bloom), rattachée à elle → 📋 WFS-100, sans règle nouvelle ;
   - **ANO-51** : texte lointain des panneaux du circuit morcelé (seuil alpha 0,45 sur les mipmaps) → 📋 WFS-94 (RG-07) ;
   - **point d** (images par seconde réelles de la ville sur téléphone) : pas de ticket ni d'anomalie, rien n'a été observé. Le contrôle est déjà dans la ligne WFS-93 de `qa/Check.md` (≥ 30 i/s en qualité Basse). Si l'utilisateur voit des saccades, le PO ouvre un lot « performance » en E4.
+
+### 2026-11-05 01:23:57 — WFS-94 étape 0 : PR #76 (WFS-88, iOS) fusionnée par confiance ; WFS-103 sans PR en attente (Copilot, session 0e5c192d)
+- **Branche `feature/waforspeed-94` poussée** dès l'attribution (règle 9), depuis `main` `d42c3f0`.
+- **PR #76 (WFS-88)** confiée par le PO (RG-10 / RG-12 de `WFS-103.md` : ordre de l'utilisateur « même pour ios il faut la regarder et la merger », seule exception au gel iOS) :
+  - diff relu : `renderer.cpp` (+42) et `vk.cpp` (+9), tout sous `#if defined(__APPLE__)` ; ailleurs, `ETAPE_RENDU` ne fait rien et `vkCmdDrawIndexed` reçoit `p.vofs` comme avant ;
+  - `git merge origin/main` dans `feature/waforspeed-88` : aucun conflit (`main` n'avait pas touché ces deux fichiers depuis la base) ; seul rangement : le commentaire « ressources par image en vol » remis sur sa propre ligne après `ETAPE_RENDU("ombres");` (commit `ba879cb`) ;
+  - compilation propre, 18 tests CPU verts, banc `cartes` : 10 captures identiques au pixel près à celles de WFS-93 (les 6 autres changent à cause de WFS-97, PR #90, déjà sur `main`) ;
+  - fusionnée : commit `1c28ae5` ; la CI de la branche, redondante (même arbre que `main`), a été annulée pour économiser le quota ; aucune CI iOS déclenchée (aucun fichier `ios/**`, `ios_main.mm`, `ios.yml` touché).
+- **WFS-88** reste ⏸ (gel iOS, aucune autre suite iOS). **WFS-103** : #77, #79 et #76 fusionnées, plus aucune PR en attente (au PO de clore le ticket).
+- `qa/Check.md` : ligne WFS-88 / #76. `TACHES.md` : #76 notée fusionnée sur les lignes WFS-94, WFS-88 et WFS-103. Suite : code de WFS-94.
