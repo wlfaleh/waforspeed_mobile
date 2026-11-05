@@ -3297,3 +3297,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Seuils vérifiés dans le code de main : `TEMPS_DEPART = 60`, `TEMPS_CHECKPOINT = 30` ; seuil rouge du HUD `timeLeft < 8` ; banc `benchHud` : `courseBenchSetTime(6.0)` (→ un tic) et deux `nearMiss()` (→ combo 2) ; modes sans chrono : `duelFinish > 0` ou `timeLeft = 1e9` ; `Count` passe de 19 à 27 (masque `g_interface` de 32 bits : `static_assert`).
 - Réutilisation : `sfx::beep` (port de `beep` de `js/audio/sfx.js`), `SfxEvenements` (fronts montants) ; règle « Combo perdu » sur choc de `js/game/update.js` l. 46 ; le jeu web n'a ni tic du chrono ni bip de combo.
 - Plan court : fonctions pures dans `sfx_course.h` → 8 tampons dans `build` → appels dans `SfxEvenements::update` / `resync` → `test_audio` → banc HUD + parcours complet → fusion par confiance si > 50 %.
+
+### 2026-11-05 14:03:01 — WFS-124 fusionné par confiance (PR #104) (Claude, agent 3)
+- `src/audio/sfx_course.h` (règles pures) + `SfxEvenements` : tic du chrono sous 8 s en course Checkpoint (1 000 Hz ; 1 500 Hz sur 3, 2, 1 ; un seul tic sur un saut, aucun sur une remontée), bip de combo ×2 à ×6 (660 Hz, un ton de plus par combo), combo perdu sur un choc (440 → 330 Hz). 8 `SfxId` (Count = 29, `static_assert` ≤ 32). `resync` garde chrono et combo : « Rejouer » sans tic parasite.
+- Tests : `test_audio` (15 cas WFS-124 et 8 tampons OK), 21 tests CPU OK. Banc `hud` local : `SFX chrono-tic` (saut 60 → 6 s), `SFX combo-2` (deux quasi-contacts).
+- RG-08 (parcours complet accueil → Checkpoint → course → fin → Menu) : non jouable ici en entier ; les sons ne partent que sur l'écran Course en `Play` (testé) ; à confirmer sur téléphone (ligne de `qa/Check.md`). Aucune accroche (`CMakeLists.txt` inchangé : `sfx_course.h` est un en-tête). Je suis la CI de `main`.
+
