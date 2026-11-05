@@ -31,6 +31,7 @@ const char* sfxNom(SfxId id) {
         case SfxId::ChronoTic: return "chrono-tic"; case SfxId::ChronoUrgent: return "chrono-urgent";   // WFS-124
         case SfxId::Combo2: return "combo-2"; case SfxId::Combo3: return "combo-3"; case SfxId::Combo4: return "combo-4";
         case SfxId::Combo5: return "combo-5"; case SfxId::Combo6: return "combo-6"; case SfxId::ComboPerdu: return "combo-perdu";
+        case SfxId::Demarreur: return "demarreur";   // WFS-127
         default: return "?";
     }
 }
@@ -63,6 +64,11 @@ void SfxMixer::build(float rate) {
     beep(sons_[(int)SfxId::ChronoUrgent], rate, 1500, 0, 0.09f);
     for (int n = 2; n <= sfxcourse::COMBO_MAX_SON; n++) beep(sons_[(int)SfxId::Combo2 + n - 2], rate, sfxcourse::frequenceCombo(n), 0, 0.08f);
     auto& perdu = sons_[(int)SfxId::ComboPerdu]; beep(perdu, rate, 440, 0, 0.1f); beep(perdu, rate, 330, 0.1f, 0.1f);
+    {   // WFS-127 (RG-03) : démarreur (0,45 s) : 6 tours de lanceur (grave, réguliers), puis le moteur qui prend
+        auto& d = sons_[(int)SfxId::Demarreur];
+        for (int i = 0; i < 6; i++) noiseHit(d, (size_t)(i * 0.065f * rate), rate, 0.06f, 190, 1.4f, 0.45f, 120);
+        noiseHit(d, (size_t)(0.38f * rate), rate, 0.07f, 320, 1.0f, 0.7f, 140);
+    }
     rumeur_ = boucleRumeur(rate); kRumeur_ = 1 - std::exp(-1 / (trafic::RUMEUR_TAU * rate));
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
