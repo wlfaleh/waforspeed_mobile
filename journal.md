@@ -3086,3 +3086,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 09:54:31 — PO : cause probable de WFS-115 (po-scrum-master)
 - Parcours de l'utilisateur : Course solo → mode → Continuer → garage → accueil. `modes_ecran.cpp` envoie vers le garage, `garage.cpp` « Choisir » fait `allerA(Ecran::Menu)` : il faut `Ecran::Terrain` quand le garage vient d'un parcours de course. Règles de WFS-115 mises à jour.
+
+### 2026-11-05 09:55:45 — PO : WFS-115, défaut de parcours (pas un plantage) (po-scrum-master)
+- Précision de l'utilisateur : mal développé, pas un plantage. WFS-115 recentré sur le parcours ; règle ajoutée à `po-scrum-master.md` : test de parcours complet exigé pour tout ticket qui touche un écran.

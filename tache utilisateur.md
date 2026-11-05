@@ -74,4 +74,4 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - Je clique sur course solo, je sélectionne le mode, et quand je clique sur continuer ça pète et me montre encore la page d'accueil du menu
 ( PO : cause probable trouvée dans le code — « Continuer » ouvre bien le garage, mais le bouton « Choisir » du garage te renvoie à l'accueil au lieu du choix du terrain. Précisé dans WFS-115 : depuis un parcours de course, « Choisir » doit mener au terrain puis « Rouler ». Si ça plante vraiment (l'appli se ferme), l'agent le vérifiera avec les traces. )
-
+( PO : d'accord, ce n'est pas un plantage mais un parcours mal enchaîné — corrigé dans WFS-115 ; règle ajoutée : chaque ticket qui touche un écran doit prouver le parcours complet avant fusion. )
