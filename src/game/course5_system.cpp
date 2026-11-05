@@ -51,7 +51,10 @@ public:
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
         // « Rejouer » : Course → Menu → Course (le menu n'est jamais dessiné), la course repart avec les mêmes ordinateurs
         if (ancien == Ecran::Course && nouveau == Ecran::Menu && rejouer_) g.allerA(Ecran::Course);
-        if (nouveau == Ecran::Menu && !rejouer_) { actif_ = false; graineFixe_ = false; }
+        if (nouveau == Ecran::Menu && !rejouer_) {
+            actif_ = false; graineFixe_ = false;
+            os_.clear(); libererHorsGrille();   // WFS-130 (RG-01) : retour au menu hors « Rejouer » : plus aucun ordinateur gardé
+        }
         if (nouveau == Ecran::Course) rejouer_ = false;
     }
     void update(double, const GameView&) override {
@@ -71,11 +74,17 @@ public:
             c->duelFinish = kmCourse5() * duel::KM;
             os_ = course5::tirer(graine_, pl.car->id);
             course5::grille(os_, pl.dist);
-            actif_ = true; fini_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0; nouveauRecord_ = false;
+            libererHorsGrille();   // WFS-130 (RG-01 / RG-02) : « Rejouer » retire les mêmes voitures, rien n'est détruit
+            actif_ = true; fini_ = false; depart_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0; nouveauRecord_ = false;
             std::string noms; for (const auto& o : os_) noms += (noms.empty() ? "" : ", ") + o.car;
             WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté normale)", graine_, kmCourse5(), noms.c_str());
         }
         if (!actif_ || c->state == RaceState::Count) return;   // décompte : tout le monde attend sur la grille
+        if (!depart_ && c->state == RaceState::Play) {   // WFS-130 (RG-06) : ordinateurs prêts à être dessinés au départ
+            depart_ = true;
+            int prets = 0; for (const auto& o : os_) { auto it = models_.find(o.car); prets += it != models_.end() && it->second.ok; }
+            WFS_LOG("course à 5 : départ, %d/%zu ordinateurs avec leur modèle, %zu modèle(s) d'ordinateur en mémoire", prets, os_.size(), models_.size());
+        }
         t_ = c->state == RaceState::Play ? c->raceTime : t_ + dt;
         course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed);
         if (c->state == RaceState::Play)
@@ -143,6 +152,18 @@ public:
     static Course5System* actif5;
 
 private:
+    // WFS-130 (RG-01 / RG-04) : détruit les modèles de models_ (et seulement eux : ni le joueur, ni le trafic, le duel ou
+    // le garage) qui ne sont pas dans la grille courante os_, après waitIdle (aucune image en vol ne s'en sert encore).
+    // RG-03 : une voiture retirée puis tirée de nouveau est rechargée par update (models_ ne la contient plus).
+    void libererHorsGrille() {
+        std::vector<std::string> aRetirer;
+        for (const auto& [id, m] : models_)
+            if (std::none_of(os_.begin(), os_.end(), [&](const course5::Ordinateur& o) { return o.car == id; })) aRetirer.push_back(id);
+        if (aRetirer.empty() || !r_) return;
+        r_->vk().waitIdle();
+        for (const std::string& id : aRetirer) { r_->destroy(models_[id]); models_.erase(id); peintures_.erase(id); }
+        WFS_LOG("course à 5 : %zu modèle(s) d'ordinateur libéré(s), %zu gardé(s)", aRetirer.size(), models_.size());
+    }
     // WFS-125 : « 1re place · 1:23.45 » ; « — » tant que le record est vide (RG-03)
     static std::string texteRecord() {
         const Sauvegarde& sv = sauvegarde();
@@ -213,7 +234,7 @@ private:
     std::vector<course5::Ordinateur> os_;
     std::map<std::string, Model> models_;
     std::map<std::string, vec3> peintures_;
-    bool actif_ = false, fini_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false;
+    bool actif_ = false, fini_ = false, depart_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false;
     uint32_t graine_ = 0;
     double ftJoueur_ = 0, overT_ = 0, t_ = 0;
     Zone rejouerZ_, menuZ_;
