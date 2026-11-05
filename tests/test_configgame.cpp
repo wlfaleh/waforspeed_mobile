@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     // une clé modifiée est prise ; les autres gardent le code
     {
         ConfigJeu c; std::string t = remplacer(defauts, "\"depart\": 60.0", "\"depart\": 90.0");
-        t = remplacer(t, "\"zoom\": 66.0", "\"zoom\": 75.5");
+        t = remplacer(t, "\"zoom\": 64.0", "\"zoom\": 75.5");
         const BilanConfig b = lireConfig(t, "modifié", c);
         cas("checkpoint.depart = 90 et camera.poursuite.zoom = 75,5 pris", c.checkpoint.depart == 90 && c.camera.fov[0] == 75.5f && b.erreurs == 0);
         cas("les autres clés gardent la valeur du code", c.checkpoint.bonus == 30 && c.camera.fov[3] == 60.f && c.conduite.grip == 18);
