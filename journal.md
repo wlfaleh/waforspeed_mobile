@@ -3342,3 +3342,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Critères** : démarreur 0,45 s + coup de gaz (régime 0,12 → 0,65 en 0,30 s → 0,12 en 0,90 s) de la voiture affichée à chaque flèche, sans superposition ; course avec la voiture choisie, rien de coincé ; `test_audio` (RG-09) ; parcours complet RG-10 au Journal.
 - **Plan court** : accesseur → détection du changement dans `AudioSystem::update` → voix de la voiture affichée + courbe `regimeGarage` → `SfxId::Demarreur` → tests → banc du parcours → fusion par confiance si > 50 %.
 - Rappel : branche `feature/waforspeed-127`, synchronisée avec `main` avant chaque push ; ligne `qa/Check.md` à la fusion (recette QA de nuit).
+
+### 2026-11-05 15:13:23 — WFS-127 fusionné par confiance (PR #107) (Claude, agent 3)
+- Showroom sonore : au garage, la voix de la voiture affichée (accesseur `ecrans::garageVoitureAffichee()`), démarreur `SfxId::Demarreur` (0,45 s, gain 4, pas pour la `model3`, au plus un par 0,25 s), puis coup de gaz 0,12 → 0,65 en 0,30 s → 0,12 en 0,90 s (`src/audio/garage_son.h`, fonctions pures) ; à la sortie, la voiture retenue reprend sans démarreur.
+- Accroches annoncées : `src/ui/garage.h` (1 ligne) et `src/ui/garage.cpp` (2 lignes en fin de fichier : l'accesseur ; navigation, échelle et dessin non touchés). `CMakeLists.txt` et `desktop_main.cpp` inchangés.
+- Tests : `test_audio` (8 cas WFS-127 OK : régime 0,12 / 0,65 / 0,12, montée puis descente, cibles, 20 voitures sur 20 ont leur voix, démarreur 0,45 s, |x| ≤ 1), 22 tests CPU OK.
+- RG-10 (parcours complet) : banc `garage` local (garage → voitures suivantes → « Choisir » → course) : `MOTEUR garage golf (audio/sport.wav)`, `m4 (audio/v8.wav)`, `p911 (audio/v8.wav)`, `gallardo`…, 9 `SFX demarreur` sur 10 voitures montrées (retour rapide à la Golf < 0,25 s : pas de démarreur, RG-05), `MOTEUR course golf (audio/sport.wav)` à la sortie ; aucun plantage. Le passage accueil / terrain / pause / Showroom n'est pas joué par ce banc : à confirmer sur téléphone (ligne de `qa/Check.md`). Je suis la CI de `main`.
+
