@@ -12,6 +12,7 @@
 #include "course5.h"   // WFS-110
 #include "course_system.h"
 #include "game.h"
+#include "poursuite.h"   // WFS-111
 
 namespace wfs {
 
@@ -61,6 +62,7 @@ public:
         if (course) course->hold(pl);
         if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
         if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
+        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
         const bool playing = !course || course->playing();
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
@@ -124,7 +126,8 @@ public:
             vis[n++] = {std::abs(dz), &c};
         }
         std::sort(vis, vis + n, [](const Vis& a, const Vis& b) { return a.dz < b.dz; });
-        n = std::min(n, 14);
+        const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
+        n = std::min(n, dense ? 10 : 14);
         for (int k = 0; k < n; k++) {
             const TrafficCar& c = *vis[k].c;
             const int mi = nativeModelFor(c.type);
@@ -137,7 +140,7 @@ public:
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const size_t ci = (size_t)(&c - traffic_.cars.data());
             // WFS-67 : silhouette légère au-delà de 50 m ; WFS-82 : dès 25 m en qualité Basse (moins d'appels de dessin)
-            if (vis[k].dz * M > (r.qualiteBasse ? 25.0 : LOD_CAR_M)) { dessineLoin(r, c, m, L, W); continue; }
+            if (vis[k].dz * M > (r.qualiteBasse ? (dense ? 12.0 : 25.0) : LOD_CAR_M)) { dessineLoin(r, c, m, L, W); continue; }   // WFS-111 : 10 voitures, 12 m
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60

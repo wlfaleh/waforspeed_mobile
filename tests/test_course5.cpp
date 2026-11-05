@@ -7,6 +7,7 @@
 #include "../src/game/course5.h"
 #include "../src/game/track.h"
 using namespace wfs;
+int testPoursuite();   // WFS-111 : tests/test_poursuite.cpp (même exécutable)
 
 static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
@@ -53,6 +54,7 @@ int main() {
     VERIFIE(ls.size() == 5 && ls[0].fini && !ls[1].fini && course5::position(ls) == 3, "classement (position %d/5)", course5::position(ls));
     std::printf("classement : arrivés puis distance, « Position %d/5 » : OK\n", course5::position(ls));
 
+    if (testPoursuite()) echecs++;   // WFS-111
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("course à 5 voitures : tout est OK\n");
     return 0;

@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <new>
 #include <string>
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -87,10 +86,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
         const double av = rssMo();
         g.shutdown(); r.shutdown(); vk.shutdown();                              // termGraphics
         if (!vk.init(nullptr, largeur, hauteur)) { WFS_ERR("endurance : Vulkan non recréé après le retour %d", retours + 1); return false; }
-        // ANO-52 : comme termGraphics d'android_main.cpp (RG-14), Renderer neuf après shutdown ; WFS_ENDURANCE_SANS_ANO52=1 garde le
-        // même objet réinitialisé (défaut d'origine, pour vérifier la correction durable de WFS-100)
-        const char* sans = std::getenv("WFS_ENDURANCE_SANS_ANO52");
-        if (!(sans && sans[0] == '1')) { r.~Renderer(); new (&r) Renderer(); WFS_LOG("endurance : Renderer neuf (ANO-52, comme android_main)"); }
+        // ANO-52 : même Renderer réinitialisé, comme termGraphics d'android_main.cpp (WFS-100 RG-W1, contournement retiré : WFS-111)
         r.init(vk);                                                              // initGraphics
         ecrans::chargement().debut(r, nowSeconds());
         if (!g.init(r, voiture.c_str(), carte.c_str(), ecrans::Chargement::progression)) {
