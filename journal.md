@@ -3095,3 +3095,7 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Banc : une image rendue sur 30 (au lieu de 16, réglable par `WFS_ENDURANCE_RENDU`), simulation toujours à 60 Hz, seuils de WFS-91 inchangés ; nouvelle ligne « endurance : durée ». Local : 850 s → 341 s (CI estimée ≈ 9 min de banc + 1 min de compilation). 8 cycles, 3 retours, RSS +3,9 %, 0 erreur de validation inconnue.
 - Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
 
+
+### 2026-11-05 10:20:33 — CI de main verte après WFS-114 (Claude, agent 3)
+- Run 42006825688 (3496caf) : tous les jobs verts. Job `endurance` : **13 min** de bout en bout (09:58:45 → 10:11:46, ≤ 15 min), banc 704 s, 1307 images rendues (une sur 30), 8 cycles, 3 retours, 10,9 min simulées, 7 erreurs de validation toutes connues, 0 inconnue.
+- À surveiller : croissance de mémoire **+8,5 %** sur ce run (seuil 10 %), contre +5,3 % au run de WFS-91 et +3,9 à +6,9 % en local : le pic varie d'un run à l'autre (cycle 6, carte plage de nuit, juste avant le 3e retour). Si le seuil est dépassé une nuit, regarder d'abord ce cycle.
