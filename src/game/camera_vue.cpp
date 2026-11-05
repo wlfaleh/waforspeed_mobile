@@ -1,6 +1,7 @@
 // WaForSpeed — caméras de course (WFS-66) : voir camera_vue.h.
 // Système « camera » (ordre 260) : cockpit dessiné par code (buildCockpit du jeu web) et bouton de vue en course (#camBtn).
 #include "camera_vue.h"
+#include "../ui/echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -279,11 +280,11 @@ public:
     // #camBtn : sous le bouton « Menu » de la course (WFS-39), même style (.cam-btn), libellé = nom de la vue
     void drawUi(Renderer& r, const GameView& g) override {
         if (!boutonVisible(g) || !ui::fontReady()) { g_bouton = {}; return; }
-        const float k = g.uiHeight / 720.f, h = 40 * k, ic = 18 * k, pad = 14 * k, gap = 6 * k, tp = 14 * k;
+        const float k = ui::echelle(g.uiWidth, g.uiHeight), h = 40 * k, ic = 18 * k, pad = 14 * k, gap = 6 * k, tp = 14 * k;
         const std::string t = ui::majuscules(VUES[(int)vueCamera()].nom);
         const float w = pad + ic + gap + ui::width(tp, t, 0.1f) + pad;
         const float x = g.marges.gauche + 16 * k, y = g.marges.haut + 14 * k + 112 * k + 10 * k + h + 8 * k;   // .hud-btns gap 8 px
-        g_bouton = {x, y, w, h};
+        g_bouton = {x, y - 2 * k, w, h + 4 * k};   // WFS-102 (RG-03) : zone de toucher de 44 dp (dessin de 40)
         biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, 8 * k, BORD);
         biseau(r, x, y, w, h, 8 * k, GLASS);
         const vec4 c = hex(TEXTE);

@@ -145,9 +145,9 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "record-course5") {   // WFS-125 : place 1..5, temps en ms
             long long w[2];
             if (entiers(v, w, 2) && w[0] >= 1 && w[0] <= 5) { rec5Place = (int)w[0]; rec5Ms = w[1]; }
-        } else if (k == "record-poursuite") {   // WFS-125 : victoire 0/1, score 0..100, distance en m
+        } else if (k == "record-poursuite") {   // WFS-125 : victoire 0/1, score 0..1000 (maximum de poursuite.score_depart dans configgame), distance en m
             long long w[3];
-            if (entiers(v, w, 3) && w[0] <= 1 && w[1] <= 100) { recPVictoire = w[0] == 1; recPScore = (int)w[1]; recPDistM = w[2]; }
+            if (entiers(v, w, 3) && w[0] <= 1 && w[1] <= 1000) { recPVictoire = w[0] == 1; recPScore = (int)w[1]; recPDistM = w[2]; }
         }
     }
     if (premiere) return false;   // fichier vide
