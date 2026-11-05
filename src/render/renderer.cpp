@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#if defined(__APPLE__)
+#include <chrono>
+#endif
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../../third_party/stb/stb_image_write.h"
@@ -73,9 +76,26 @@ static constexpr VkFormat HDR_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
 static constexpr size_t UI_MAX_VERTS = 6 * 8192;
 static constexpr int QUADS_MAX = 4096;   // WFS-09 : quads transitoires par image (halos, tache des phares)
 
+#if defined(__APPLE__)
+// WFS-88 : journal de chaque sous-étape de Renderer::init sur iOS (MoltenVK), temps en ms depuis la précédente
+static std::chrono::steady_clock::time_point g_etapeRendu;
+static void etapeRendu(const char* nom) {
+    const auto t = std::chrono::steady_clock::now();
+    WFS_LOG("iOS : rendu, %s %.0f ms", nom, std::chrono::duration<double, std::milli>(t - g_etapeRendu).count());
+    g_etapeRendu = t;
+}
+#define ETAPE_RENDU(nom) etapeRendu(nom)
+#else
+#define ETAPE_RENDU(nom) ((void)0)
+#endif
+
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
     VkDevice d = vk.device;
+#if defined(__APPLE__)
+    g_etapeRendu = std::chrono::steady_clock::now();
+    WFS_LOG("iOS : rendu, début de Renderer::init");
+#endif
 
     // ---------- échantillonneurs ----------
     VkSamplerCreateInfo sci{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
@@ -88,11 +108,13 @@ bool Renderer::init(VkCtx& vk) {
     sci.anisotropyEnable = VK_FALSE; sci.maxLod = 0;
     sci.addressModeU = sci.addressModeV = sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     VK_OK(vkCreateSampler(d, &sci, nullptr, &clampSampler_));
+    ETAPE_RENDU("échantillonneurs");
 
     // ---------- textures par défaut ----------
     uint8_t w[4] = {255, 255, 255, 255}, nrm[4] = {128, 128, 255, 255};
     white = vk.uploadTexture(w, 1, 1, false);
     flatNormal = vk.uploadTexture(nrm, 1, 1, false);
+    ETAPE_RENDU("textures par défaut (premier envoi au GPU)");
 
     // ---------- descripteurs ----------
     VkDescriptorSetLayoutBinding b0[3] = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
@@ -114,6 +136,7 @@ bool Renderer::init(VkCtx& vk) {
     pci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     pci.maxSets = 1024 + 16; pci.poolSizeCount = 3; pci.pPoolSizes = sizes;
     VK_OK(vkCreateDescriptorPool(d, &pci, nullptr, &pool_));
+    ETAPE_RENDU("descripteurs");
 
     VkPushConstantRange pcr{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC)};
     VkDescriptorSetLayout sl[2] = {frameLayout_, matLayout_};
@@ -142,8 +165,10 @@ bool Renderer::init(VkCtx& vk) {
     VkPushConstantRange ppr{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32};
     plci.setLayoutCount = 1; plci.pSetLayouts = &postLayout_; plci.pPushConstantRanges = &ppr;
     VK_OK(vkCreatePipelineLayout(d, &plci, nullptr, &postPLayout_));
+    ETAPE_RENDU("dispositions de pipeline et palettes d'os");
 
     createShadows();
+    ETAPE_RENDU("ombres");
 
     // ---------- ressources par image en vol ----------
     VkCommandBufferAllocateInfo cai{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
@@ -193,18 +218,22 @@ bool Renderer::init(VkCtx& vk) {
         }
         quadIb_ = vk.uploadBuffer(qi.data(), qi.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     }
+    ETAPE_RENDU("ressources par image");
     VkDescriptorSetAllocateInfo dai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
     dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &postLayout_;
     VK_OK(vkAllocateDescriptorSets(d, &dai, &postSet_));
 
     createTargets();
+    ETAPE_RENDU("cibles de rendu");
     createPipelines();
+    ETAPE_RENDU("pipelines");
     {   // WFS-09 : halos additifs ; tache des phares (MAT.headPool du jeu web : couleur 0xfff0dc, multiplicative)
         Material h; h.flags = MAT_ADD | MAT_BLEND; haloMat_ = makeMaterial(h, nullptr, nullptr, nullptr);
         Material t; t.flags = MAT_POOL | MAT_BLEND;
         t.color = {std::pow(0xff / 255.f, 2.2f), std::pow(0xf0 / 255.f, 2.2f), std::pow(0xdc / 255.f, 2.2f), 1};
         poolMat = makeMaterial(t, nullptr, nullptr, nullptr);
     }
+    ETAPE_RENDU("matériaux, fin de Renderer::init");
     return true;
 }
 
@@ -581,6 +610,7 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     gp.pViewportState = &vp; gp.pRasterizationState = &rs; gp.pMultisampleState = &ms; gp.pDepthStencilState = &ds;
     gp.pColorBlendState = &cbs; gp.pDynamicState = &dy; gp.layout = layout; gp.renderPass = rp; gp.subpass = 0;
     VkPipeline p; VK_OK(vkCreateGraphicsPipelines(vk_->device, VK_NULL_HANDLE, 1, &gp, nullptr, &p));
+    ETAPE_RENDU("un pipeline");   // WFS-88 : MoltenVK traduit les shaders en Metal ici
     return p;
 }
 
@@ -809,14 +839,24 @@ bool Renderer::beginFrame(const FrameParams& fp) {
 void Renderer::flushDraw(const Pending& p) {
     appels_++;   // WFS-15
     VkCommandBuffer cb = fr_[cur_].cb;
+#if defined(__APPLE__)
+    // WFS-88 : le GPU du simulateur iOS (famille Apple 2) refuse un sommet de base non nul (MoltenVK : VK_ERROR_FEATURE_NOT_PRESENT,
+    // puis vkEndCommandBuffer échoue) : le décalage passe dans l'adresse du tampon de sommets, même résultat
+    int32_t vofs = p.vofs;
+    VkDeviceSize vbOfs = 0;
+    if (vofs > 0) { vbOfs = (VkDeviceSize)vofs * (p.osOfs >= 0 ? sizeof(SkinVertex) : sizeof(Vertex)); vofs = 0; }
+    vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &vbOfs);
+#else
+    const int32_t vofs = p.vofs;
     VkDeviceSize zero = 0;
     vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &zero);
+#endif
     vkCmdBindIndexBuffer(cb, p.ib, 0, VK_INDEX_TYPE_UINT32);
     const VkPipelineLayout lay = p.osOfs >= 0 ? skinLayout_ : sceneLayout_;   // WFS-63 : palette d'os en set 2
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, lay, 1, 1, &p.mat->set, 0, nullptr);
     if (p.osOfs >= 0) { const uint32_t ofs = (uint32_t)p.osOfs; vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skinLayout_, 2, 1, &osSet_[cur_], 1, &ofs); }
     vkCmdPushConstants(cb, lay, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PC), &p.pc);
-    vkCmdDrawIndexed(cb, p.count, 1, p.first, p.vofs, 0);
+    vkCmdDrawIndexed(cb, p.count, 1, p.first, vofs, 0);
 }
 
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {

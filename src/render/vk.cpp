@@ -275,7 +275,16 @@ void VkCtx::endOneShot(VkCommandBuffer cb) {
     VkFenceCreateInfo fci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     VkFence f; VK_OK(vkCreateFence(device, &fci, nullptr, &f));
     VK_OK(vkQueueSubmit(queue, 1, &si, f));
+#if defined(__APPLE__)
+    {   // WFS-88 : attente bornée et journalisée (MoltenVK) : une attente sans fin ne laisse plus le journal muet
+        VkResult r; int s = 0;
+        while ((r = vkWaitForFences(device, 1, &f, VK_TRUE, 5000000000ull)) == VK_TIMEOUT)
+            WFS_LOG("iOS : envoi au GPU sans réponse depuis %d s (statut de la barrière %d)", s += 5, (int)vkGetFenceStatus(device, f));
+        if (r != VK_SUCCESS) WFS_ERR("iOS : attente de l'envoi au GPU : %d", (int)r);
+    }
+#else
     VK_OK(vkWaitForFences(device, 1, &f, VK_TRUE, UINT64_MAX));
+#endif
     vkDestroyFence(device, f, nullptr);
     vkFreeCommandBuffers(device, pool, 1, &cb);
 }
