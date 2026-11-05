@@ -91,6 +91,7 @@
     "vitesse_recul": 3.0
   },
   "qualite": {
-    "plancher_moyenne": 0.9
+    "plancher_moyenne": 0.9,
+    "reflet_route_mouillee": 1.0
   }
 }

@@ -24,6 +24,7 @@
 #include "eclairage.h"
 #include "renderer.h"
 #include "feux_modele.h"   // WFS-109
+#include "../world/meteo.h"   // WFS-142 (RG-01) : route mouillée seulement quand il pleut (lecture seule)
 
 namespace wfs {
 namespace {
@@ -65,7 +66,14 @@ public:
     }
 
     float phare() const { return campagne_ ? 3.f : 2.4f; }   // ENV.headlight
-    bool mouille() const { return ville_ || plage_; }        // WFS-16 RG-01
+    // WFS-142 (RG-01) : la chaussée n'est mouillée que s'il pleut (meteo::pluieActive : la ville la nuit), ou si le banc
+    // force la météo (WFS_METEO=pluie / sec). Avant : mouillée à chaque nuit en ville et sur la corniche, même sans pluie.
+    static int meteoForcee() {   // 1 pluie, 0 sec, -1 rien de forcé
+        const char* m = std::getenv("WFS_METEO");
+        if (!m) return -1;
+        return !std::strcmp(m, "pluie") ? 1 : !std::strcmp(m, "sec") ? 0 : -1;
+    }
+    bool mouille() const { const int f = meteoForcee(); return f >= 0 ? f == 1 : meteo::pluieActive(ville_ ? "ville" : "", nuit_); }
 
     bool actif(const GameView& g) const { return nuit_ && !g.sceneDediee && g.ecran != Ecran::Garage; }
 
@@ -83,7 +91,13 @@ public:
     }
 
     void ambiance(FrameParams& fp, const GameView& g) override {
-        if (!actif(g)) return;
+        if (!actif(g)) {   // WFS-142 (RG-09) : le jour, route mouillée seulement si le banc force la pluie (aucune pluie de jour en jeu)
+            if (!nuit_ && meteoForcee() == 1 && g.player && !g.sceneDediee && g.ecran != Ecran::Garage) {
+                fp.mouille = true; fp.flaques = fp.reflets = ecrans::reglages().qualite == ecrans::QUALITE_HAUTE;
+                fp.refletY = matriceJoueur(g).transformPoint({0, 0, 0}).y;
+            }
+            return;
+        }
         const bool haute = ecrans::reglages().qualite == ecrans::QUALITE_HAUTE;
         // ---------- RG-01 : envFor nuit (couleurs éclaircies comme la plage, WFS-14 : l'étalonnage du web n'est pas porté) ----------
         // WFS-97 (RG-04, ANO-37) : en ville et sur la corniche, on aurait dit le crépuscule (façades lavande) → ciel et

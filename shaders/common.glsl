@@ -25,7 +25,8 @@ layout(set = 0, binding = 0) uniform Frame {
     // WFS-09 / WFS-16 : nuit, route mouillée, reflets
     vec4 nuitA;       // x route mouillée (0/1), y flaques (0/1, qualité haute), z reflets temps réel lisibles (0/1),
                       // w 1 = passe de reflet (vue miroir : faces inversées, rien sous le plan)
-    vec4 nuitB;       // x hauteur du plan de reflet (m), y 1 / largeur, z 1 / hauteur de la scène (pixels)
+    vec4 nuitB;       // x hauteur du plan de reflet (m), y 1 / largeur, z 1 / hauteur de la scène (pixels),
+                      // w force du reflet de la route mouillée (WFS-142, configgame ; −1 = aucun reflet, mesure du banc)
 } F;
 layout(set = 0, binding = 1) uniform sampler2DShadow shadowMap;
 layout(set = 0, binding = 2) uniform sampler2D reflTex;   // WFS-16 : reflet de la scène sur la chaussée mouillée
