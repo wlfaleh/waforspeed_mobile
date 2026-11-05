@@ -8,7 +8,9 @@
 //   - manettes (WFS-22) : une manette connue qui se déconnecte est signalée au jeu (pause automatique en course) ;
 //   - touche Retour au menu principal (WFS-116) : arrière-plan au lieu de fermer le jeu ;
 //   - duel entre amis (WFS-112) : lien d'invitation reçu (waforspeed://duel/<code>, au lancement ou jeu déjà ouvert),
-//     lu par le jeu (prendreLienDuel) ; « Inviter » ouvre la feuille de partage d'Android (partagerTexte).
+//     lu par le jeu (prendreLienDuel) ; « Inviter » ouvre la feuille de partage d'Android (partagerTexte) ;
+//   - performances soutenues (WFS-123, RG-05) : Window.setSustainedPerformanceMode(true) à la reprise si le téléphone
+//     le permet (PowerManager.isSustainedPerformanceModeSupported), coupé à la mise en pause.
 package com.waforspeed.game;
 
 import android.app.NativeActivity;
@@ -19,6 +21,8 @@ import android.net.Uri;
 import android.hardware.input.InputManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
 import android.view.View;
@@ -109,6 +113,7 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     protected void onResume() {
         super.onResume();
         pleinEcran();
+        performancesSoutenues(true);   // WFS-123 (RG-05)
         entrees = (InputManager) getSystemService(Context.INPUT_SERVICE);
         if (entrees != null) {
             entrees.registerInputDeviceListener(this, null);
@@ -120,7 +125,19 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     @Override
     protected void onPause() {
         if (entrees != null) entrees.unregisterInputDeviceListener(this);
+        performancesSoutenues(false);   // WFS-123 (RG-05)
         super.onPause();
+    }
+
+    // WFS-123 (RG-05) : fréquences du processeur et du GPU tenues sur la durée (moins hautes, mais sans chute à la chauffe)
+    private void performancesSoutenues(boolean actif) {
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (pm == null || !pm.isSustainedPerformanceModeSupported()) {
+            if (actif) Log.i("WaForSpeed", "CHAUFFE performances soutenues non prises en charge par ce téléphone");
+            return;
+        }
+        getWindow().setSustainedPerformanceMode(actif);
+        Log.i("WaForSpeed", "CHAUFFE performances soutenues " + (actif ? "activées" : "coupées"));
     }
 
     // ---------- manettes (WFS-22) : connexion / déconnexion à chaud ----------

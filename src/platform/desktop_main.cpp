@@ -39,6 +39,7 @@ namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out);
 #include "../ui/ecrans/chargement.h"
 #include "manette_jeu.h"   // WFS-22
 #include "endurance_banc.h"   // WFS-91
+#include "chauffe.h"   // WFS-123
 #include "../ui/ecrans/menu.h"
 #include "../ui/ecrans/pause.h"
 #include "../ui/ecrans/salon.h"
@@ -64,6 +65,15 @@ double nowSeconds() {
     static auto t0 = steady_clock::now();
     return duration<double>(steady_clock::now() - t0).count();
 }
+// WFS-123 (RG-08) : état thermique simulé au banc : WFS_CHAUFFE=0|1|2 (aucune, modérée, sévère), à partir de
+// WFS_CHAUFFE_APRES=<s> de course (0 par défaut) ; relu à chaque appel (le banc de la chauffe le change en cours de route)
+static int statutChauffeSimule() {
+    const char* c = std::getenv("WFS_CHAUFFE");
+    const char* a = std::getenv("WFS_CHAUFFE_APRES");
+    if (!c || chauffe::tempsCourse() < (a ? std::atof(a) : 0.0)) return 0;
+    const int n = std::atoi(c);
+    return n >= 2 ? 3 : n == 1 ? 2 : 0;   // statut Android simulé : 3 sévère, 2 modéré, 0 aucun
+}
 }
 
 using namespace wfs;
@@ -81,6 +91,7 @@ int main(int argc, char** argv) {
     Renderer r; r.init(vk);
     Game g;
     courseBenchRules(false);   // WFS-12 : scènes existantes sans décompte ni fin (benchCourseScene les remet)
+    if (std::getenv("WFS_CHAUFFE")) chauffe::definirSource(statutChauffeSimule);   // WFS-123 : chauffe simulée pour tout le banc
     // WFS-69 : groupes de scènes lancés en parallèle par la CI (WFS_BANC) ; sans WFS_BANC, tout le banc comme avant.
     // WFS-106 : jobs de CI ≤ 11 min (durées mesurées) : partie1 = partie1a + partie1b, partie2 = partie2a + partie2b + partie2c,
     //   menu = menu1 + menu2 ; même ordre des scènes que dans le banc complet.
@@ -113,6 +124,7 @@ int main(int argc, char** argv) {
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "parcours") { ui::chargerPolice(r); const int e = benchParcours(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-115
+    if (banc == "chauffe") { ui::chargerPolice(r); const int e = chauffe::benchChauffe(g, r, out, statutChauffeSimule); finir(); return e > 0 ? 3 : 0; }   // WFS-123
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); return finir(); }   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
