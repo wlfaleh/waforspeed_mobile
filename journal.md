@@ -2948,3 +2948,31 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
     - zone : + `src/world/ville.cpp`.
   - Le moteur n'a ni carte émissive ni matériau non éclairé (`scene.frag` ajoute une émission constante par matériau). Les fenêtres seront donc de petits quads émissifs regroupés (`effets::versHdr`), sans toucher à `renderer.*` ni à `shaders/**` (WFS-100).
   - `anno.md` : ANO-37 → WFS-97 + WFS-94.
+
+### 2026-11-05 01:17:07 — PO : WFS-94 attribué à Copilot (session 0e5c192d) ; #76 confiée (RG-10) ; contrôle des branches (WFS-102, WFS-103, WFS-100) ; ANO-49 à ANO-51 (PO / Scrum Master)
+- **Fins prises en compte** : WFS-93 (PR #89, `1df6dc0`, suivi `760990f`) et WFS-97 (PR #90, `dcfa0ff`, suivi `50b1e6a`). E2 est libre et WFS-94 passe de ⏳ Prêt (01:13:50) à 🔧.
+- **WFS-94 attribué à Copilot (session 0e5c192d)**, E2, P2 Haute, branche `feature/waforspeed-94` à pousser tout de suite. Règles : `regles-de-gestion/WFS-94.md` (RG-01 à RG-05, RG-A1 à RG-A5, puis la section « Attribution du 2026-11-05 » : étape 0, RG-06 à RG-08).
+  - **Choix** : WFS-109, le seul P1 prêt, a été attribué à 01:13:50 à Copilot (session dc0cdd3f). Restent dans les épics libres deux tickets P2 : WFS-94 (E2) et WFS-110 (E3). À égalité, le plus petit numéro l'emporte, et le développeur connaît `src/world/**` (WFS-93). WFS-91 (E7) attend WFS-106 (PR #88). WFS-110 reste ⏳ Prêt pour le prochain agent.
+  - **Contenu** :
+    - Corniche : marina, rochers, village (RG-01 à RG-05) ;
+    - cadrage des captures du banc (ANO-40, RG-A1) ;
+    - façades et fenêtres de nuit de la ville (fin d'ANO-37, RG-A2 à RG-A5) ;
+    - **ajouts de cette attribution** : trottoir de la ville jusqu'à RW + 6 (ANO-49, RG-06 : `GROUND.city`, matériau `MAT_WALK`, sans toucher `WALK_W` de Game) et panneaux du circuit opaques comme `TEXS.ads` / `MAT.ads` du web (ANO-51, RG-07).
+  - **Zone** : `src/world/**` (`plage*.cpp`, `cartes_banc.cpp`, banc de `commerces.cpp`, `ville.cpp`, `ville_quartiers.*`, `enseignes.*`, `circuit.cpp`, `decor_carte.*`) ; `#include "effets_particules.h"` permis, sans le modifier.
+  - **Interdit** : le reste de `src/render/**` et `shaders/**` (WFS-100, WFS-109) ; `src/game/**` dont `WALK_W` (WFS-102) ; `src/ui/**` (WFS-102) ; `src/platform/**` et `.github/**` (WFS-106) ; noms et API de `zones.h` ; duel ; iOS hormis #76.
+  - **Critères** :
+    - `carte-plage-marina`, `-rochers`, `-village` et `carte-plage-corniche` ;
+    - `vie-portique`, `vie-plage` ;
+    - `course-nuit-ville-*` ;
+    - `carte-ville-*`, `course-cam0-*`, `vie-terrasse` (trottoir) ;
+    - `carte-circuit-jour` et `-nuit` (mots entiers) ;
+    - ≤ 300 appels de dessin, tests CPU verts.
+  - **Plan court** : étape 0 (#76) → trottoir et panneaux (petits) → 3 quartiers de la Corniche → façades de nuit → banc. Une seule CI, fusion par confiance si la confiance dépasse 50 %.
+- **WFS-103 / PR #76 (iOS)** : WFS-103 **n'est pas mis en pause**. Le gel iOS a une exception écrite pour #76, sur ordre explicite de l'utilisateur (2026-11-04 23:13:25). Claude (session trafic) n'a plus d'activité depuis 22:29:06, et l'échéance RG-10 (01:13:25) est dépassée. **#76 est donc confiée à Copilot (session 0e5c192d) comme étape 0 de WFS-94** : relecture (tout sous `__APPLE__`, Android inchangé), `git merge origin/main`, compilation, tests CPU, fusion par confiance, ligne `qa/Check.md`. La fusion reste sans conflit avec `main` `6e09c9f` (`git merge-tree`). WFS-88 reste ⏸, sans autre suite iOS.
+- **WFS-102** (Copilot 1ef8d4d6, attribué à 00:06:49, « Début » à 00:12:07) : aucune branche `feature/waforspeed-102` poussée à 01:17 (`git ls-remote`). Le ticket reste 🔧, car l'agent est actif depuis moins de 2 h. **Échéance : 02:10 UTC** ; s'il n'y a alors ni branche poussée ni nouvelle au Journal, le PO le remet en ⏳ Prêt. La **règle 9** de `TACHES.md` est complétée : branche poussée dans l'heure ; un ticket 🔧 sans branche 2 h après son attribution repasse en ⏳ Prêt (ordre de l'utilisateur).
+- **WFS-100** (Claude session trafic) : la branche est poussée, mais elle n'a que le commit d'attribution (22:21:38). Je la surveille (règle des 24 h). Une note ANO-50 est ajoutée à sa fiche. Après la fusion de #76, elle doit faire `git merge origin/main` avant de pousser son code.
+- **Anomalies** signalées par Copilot (session 0e5c192d) à la fin de WFS-93 (gravité à confirmer par le QA) :
+  - **ANO-49** : bande d'herbe de 2 m entre le trottoir de Game et la ville (RW + 4 → RW + 6) → 📋 WFS-94 (RG-06) ;
+  - **ANO-50** : copies fantômes, la nuit, des textes des panneaux du circuit et des projecteurs. Même cause qu'ANO-27 (bloom), rattachée à elle → 📋 WFS-100, sans règle nouvelle ;
+  - **ANO-51** : texte lointain des panneaux du circuit morcelé (seuil alpha 0,45 sur les mipmaps) → 📋 WFS-94 (RG-07) ;
+  - **point d** (images par seconde réelles de la ville sur téléphone) : pas de ticket ni d'anomalie, rien n'a été observé. Le contrôle est déjà dans la ligne WFS-93 de `qa/Check.md` (≥ 30 i/s en qualité Basse). Si l'utilisateur voit des saccades, le PO ouvre un lot « performance » en E4.
