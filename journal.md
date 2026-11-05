@@ -3640,3 +3640,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Limite / risque signalé au PO** : `texte` et `vitrines` sont rouges sur toutes les branches depuis le commit direct e23fa51 « Update configgame.json » sur `main` (`poursuite.score_depart` 100 → 1000, caméra poursuite) : `test_configgame` exige que le fichier égale les valeurs du code, et la relecture des records (`vitrines`) échoue aussi. C'est une décision de l'utilisateur : il faut un ticket E0 qui reporte ces valeurs dans le code (ou relance `test_configgame --ecrire .`). Hors de ma zone, rien n'a été touché.
 - **À tester sur téléphone** : taille réelle des boutons (≈ 7 mm), lisibilité des petits textes, bouton « Réessayer » de l'écran d'erreur (non testé sur un vrai appareil).
 
+
+### 2026-11-05 21:29:02 — WFS-143 créé : CI rouge depuis e23fa51 (po-scrum-master)
+- Demande de Claude (session dev 5bx) : depuis le commit direct de l'utilisateur e23fa51 (configgame.json : poursuite.score_depart 1000, caméra Poursuite regard_devant 10, regard_hauteur -4.5, zoom 64), CI rouge partout (`texte` : test_configgame ; `vitrines` : records relus après redémarrage).
+- Cause du job `vitrines` trouvée par le PO : `src/game/sauvegarde.cpp` l. 150 rejette un record de poursuite au score > 100 (`w[1] <= 100`).
+- Décision : valeurs de l'utilisateur = référence, le code s'aligne (JSON intouché). Ticket **WFS-143**, E0, **P1 Urgent**, ⏳ Prêt, aucune dépendance ; règles `regles-de-gestion/WFS-143.md` (RG-01 à RG-07). Accroche d'une ligne dans `sauvegarde.cpp` (zone de WFS-136 en cours) autorisée et à annoncer. Il bloque la validité de toutes les CI : à attribuer au prochain agent libre, avant tout autre ticket.
