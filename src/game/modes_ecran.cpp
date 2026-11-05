@@ -300,6 +300,8 @@ int benchParcours(Game& g, Renderer& r, const std::string& out) {
     return erreurs;
 }
 
+bool choixModeCentre(const std::string& zone, float& x, float& y) { return ChoixMode::actif_ && ChoixMode::actif_->centre(zone, x, y); }   // WFS-125
+
 WFS_SYSTEM(ChoixMode, 458)   // interface (400-499) : par-dessus le menu (450), le salon (453) et la pause (455)
 
 } // namespace wfs

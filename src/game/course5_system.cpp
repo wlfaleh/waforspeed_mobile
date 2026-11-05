@@ -71,7 +71,7 @@ public:
             c->duelFinish = kmCourse5() * duel::KM;
             os_ = course5::tirer(graine_, pl.car->id);
             course5::grille(os_, pl.dist);
-            actif_ = true; fini_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0;
+            actif_ = true; fini_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0; nouveauRecord_ = false;
             std::string noms; for (const auto& o : os_) noms += (noms.empty() ? "" : ", ") + o.car;
             WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté normale)", graine_, kmCourse5(), noms.c_str());
         }
@@ -88,6 +88,14 @@ public:
                 fini_ = true; ftJoueur_ = c->raceTime;
                 const auto ls = lignes(pl);
                 WFS_LOG("course à 5 : arrivée en %.2f s, position %d/5", ftJoueur_, course5::position(ls));
+                // WFS-125 (RG-02) : record Course à 5 (meilleure place, puis meilleur temps), écrit seulement s'il est battu
+                nouveauRecord_ = false;
+                Sauvegarde& sv = sauvegarde();
+                if (sv.actif()) {
+                    nouveauRecord_ = sv.battreRecordCourse5(course5::position(ls), (long long)std::llround(ftJoueur_ * 1000));
+                    WFS_LOG("course à 5 : record %s%s", texteRecord().c_str(), nouveauRecord_ ? " (NOUVEAU RECORD, enregistré)" : "");
+                    if (nouveauRecord_) sv.enregistrer();
+                }
             }
             overT_ += dt;
         }
@@ -123,7 +131,24 @@ public:
         return true;   // l'écran de fin garde tous les touchers
     }
 
+    // WFS-125 : banc d'essai (parcours RG-09)
+    bool bouton(const std::string& nom, float& x, float& y) const {
+        const Zone& z = nom == "rejouer" ? rejouerZ_ : menuZ_;
+        if (!actif_ || !fini_ || z.w <= 0) return false;
+        x = z.x + z.w / 2; y = z.y + z.h / 2; return true;
+    }
+    bool nouveauRecord() const { return nouveauRecord_; }
+    Course5System() { actif5 = this; }
+    ~Course5System() override { if (actif5 == this) actif5 = nullptr; }
+    static Course5System* actif5;
+
 private:
+    // WFS-125 : « 1re place · 1:23.45 » ; « — » tant que le record est vide (RG-03)
+    static std::string texteRecord() {
+        const Sauvegarde& sv = sauvegarde();
+        if (!sv.aRecordCourse5()) return "—";
+        return (sv.rec5Place == 1 ? std::string("1re") : std::to_string(sv.rec5Place) + "e") + " place · " + ui::chrono(sv.rec5Ms / 1000.0);
+    }
     std::vector<course5::Ligne> lignes(const Player& pl) const {
         const Course* c = activeCourse();
         const double fin = c ? c->duelFinish : kmCourse5() * duel::KM;
@@ -154,7 +179,8 @@ private:
     void resultat(Renderer& r, float W, float H, float u, const std::vector<course5::Ligne>& ls) {
         const int rang = course5::position(ls);
         r.uiRect(0, 0, W, H, FOND);
-        const float pw = 66 * u, ph = (34 + 6.5f * ls.size()) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
+        const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous le classement
+        const float pw = 66 * u, ph = (34 + 6.5f * ls.size() + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
         char sur[64]; std::snprintf(sur, sizeof sur, "COURSE À 5 · %d KM", kmCourse5());
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
@@ -175,6 +201,7 @@ private:
             y += 6.5f * u;
         }
         const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
+        if (rec) dessinerRecord(r, W / 2, y - 1 * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
         r.uiRect(rejouerZ_.x, by, bw, bh, ui::ORANGE);
         ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
@@ -186,14 +213,20 @@ private:
     std::vector<course5::Ordinateur> os_;
     std::map<std::string, Model> models_;
     std::map<std::string, vec3> peintures_;
-    bool actif_ = false, fini_ = false, rejouer_ = false, graineFixe_ = false;
+    bool actif_ = false, fini_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false;
     uint32_t graine_ = 0;
     double ftJoueur_ = 0, overT_ = 0, t_ = 0;
     Zone rejouerZ_, menuZ_;
     ui::FiltreAppui appui_;
 };
 
+Course5System* Course5System::actif5 = nullptr;
+
 } // namespace
+
+// WFS-125 : banc d'essai (parcours RG-09) : boutons de l'écran de fin, record battu
+bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5System::actif5 && Course5System::actif5->bouton(nom, x, y); }
+bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
 
 WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) et le duel (220)
 

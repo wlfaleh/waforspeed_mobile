@@ -189,6 +189,14 @@ public:
             if (!fini_) {
                 fini_ = true; ftJoueur_ = c->raceTime; arrivee(etat_, pl.dist * M / 1000);
                 WFS_LOG("poursuite : fin — %s, score %d, %.2f km, %.1f s", etat_.gagne ? "victoire" : "ARRÊTÉ", etat_.score, pl.dist * M / 1000, ftJoueur_);
+                // WFS-125 (RG-02) : record Poursuite (victoire > « ARRÊTÉ », puis score ou distance), écrit seulement s'il est battu
+                nouveauRecord_ = false;
+                Sauvegarde& sv = sauvegarde();
+                if (sv.actif()) {
+                    nouveauRecord_ = sv.battreRecordPoursuite(etat_.gagne, etat_.score, std::llround(pl.dist * M));
+                    WFS_LOG("poursuite : record %s%s", texteRecord().c_str(), nouveauRecord_ ? " (NOUVEAU RECORD, enregistré)" : "");
+                    if (nouveauRecord_) sv.enregistrer();
+                }
             }
             overT_ += dt;
         }
@@ -308,6 +316,13 @@ public:
     void bancScore(int score) { etat_.score = score; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
     float orbitAvant_ = 0;
     Zone rejouerZone() const { return rejouerZ_; }
+    bool nouveauRecord() const { return nouveauRecord_; }
+    // WFS-125 : « Victoire · 87 pts » ou « Arrêté · 3,42 km » ; « — » tant que le record est vide (RG-03)
+    static std::string texteRecord() {
+        const Sauvegarde& sv = sauvegarde();
+        if (!sv.aRecordPoursuite()) return "—";
+        return sv.recPVictoire ? "Victoire · " + std::to_string(sv.recPScore) + " pts" : "Arrêté · " + ui::decimal(sv.recPDistM / 1000.0, 2) + " km";
+    }
     Zone menuZone() const { return menuZ_; }
 
 private:
@@ -319,7 +334,7 @@ private:
         for (int i = 0; i < POLICE_DEPART; i++) { Police p = renfort(i, pl.dist, 0, graine_); p.rd = pl.dist - (22 + 14 * i) / M; police_.push_back(p); }
         const TrafficStats* st = activeTrafficStats();
         chocsVus_ = st ? st->bumps + st->accidents + st->scrapes : 0; quasiVus_ = st ? st->nearMisses : 0;
-        actif_ = true; fini_ = false; ftJoueur_ = 0; overT_ = 0; banT_ = 0; ban_.clear(); contreBord_ = false; sireneT_ = 0;
+        actif_ = true; fini_ = false; nouveauRecord_ = false; ftJoueur_ = 0; overT_ = 0; banT_ = 0; ban_.clear(); contreBord_ = false; sireneT_ = 0;
         WFS_LOG("poursuite : graine %u, %.0f km, score %d, %d voitures de police, %zu embouteillages, %zu surprises", graine_, KM_ARRIVEE,
                 etat_.score, POLICE_DEPART, prog_.bouchons.size(), prog_.surprises.size());
     }
@@ -478,7 +493,8 @@ private:
     // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu »
     void resultat(Renderer& r, float W, float H, float u) {
         r.uiRect(0, 0, W, H, FOND);
-        const float pw = 66 * u, ph = 58 * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
+        const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
+        const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, "POURSUITE POLICE · 10 KM", ui::CYAN, ui::CENTRE, 0.16f, false);
         const bool v = etat_.gagne;
@@ -494,6 +510,7 @@ private:
         ligne("Chocs trafic / glissière / police", std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice));
         ligne("Voitures de police", std::to_string(policeMobiles()));
         const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
+        if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
         r.uiRect(rejouerZ_.x, by, bw, bh, ui::ORANGE);
         ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
@@ -517,7 +534,7 @@ private:
     Etat etat_;
     uint32_t graine_ = 0;
     int chocsVus_ = 0, quasiVus_ = 0;
-    bool actif_ = false, fini_ = false, rejouer_ = false, contreBord_ = false;
+    bool actif_ = false, fini_ = false, rejouer_ = false, contreBord_ = false, nouveauRecord_ = false;
     double ftJoueur_ = 0, overT_ = 0, banT_ = 0, sireneT_ = 0;
     std::string ban_;
     Zone rejouerZ_, menuZ_;
@@ -528,6 +545,18 @@ PoursuiteSystem* PoursuiteSystem::actif = nullptr;
 } // namespace
 
 WFS_SYSTEM(PoursuiteSystem, 224)   // gameplay (200-299) : après la course (210), le duel (220) et la course à 5 (222)
+
+// WFS-125 : banc d'essai (parcours RG-09)
+bool poursuiteBouton(const std::string& nom, float& x, float& y) {
+    const PoursuiteSystem* s = PoursuiteSystem::actif;
+    if (!s) return false;
+    const Zone z = nom == "rejouer" ? s->rejouerZone() : s->menuZone();
+    if (z.w <= 0) return false;
+    x = z.x + z.w / 2; y = z.y + z.h / 2; return true;
+}
+bool poursuiteNouveauRecord() { return PoursuiteSystem::actif && PoursuiteSystem::actif->nouveauRecord(); }
+void poursuiteBancFin(int mode) { g_bancFin = mode; }
+void poursuiteBancFixe(bool oui) { g_banc = oui; }
 
 // ---------- banc d'essai (WFS_BANC=course5) ----------
 // police avec gyrophares derrière le joueur, bandeau de surprise (barrage), embouteillage, HUD du score, fin « ARRÊTÉ »

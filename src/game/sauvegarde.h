@@ -18,6 +18,7 @@
 // Tant que charger() n'a pas été appelé, actif() est faux : le banc d'essai garde ses captures (aucun record).
 #pragma once
 #include <condition_variable>
+#include <deque>
 #include <map>
 #include <mutex>
 #include <string>
@@ -60,6 +61,11 @@ public:
     int gyro = 0, gyroZone = 1;                // WFS-108 : gyroscope 0 coupé, 1 doux, 2 moyen, 3 fort ; zone morte 0..2
     std::string mode = "checkpoint";           // WFS-110 : mode de course (checkpoint / course5 / poursuite : WFS-119)
     int km5 = 4;                               // WFS-110 : distance de la course à 5 (2, 4, 6 ou 10 km)
+    // WFS-125 (RG-02) : records par mode ; place 0 / distance −1 = vide (« — », ancienne sauvegarde : RG-03).
+    // Checkpoint = best (clé waforspeed-best inchangée, RG-01) ; duel : aucun record.
+    int rec5Place = 0; long long rec5Ms = 0;            // record-course5=place;temps_ms
+    bool recPVictoire = false; int recPScore = 0;       // record-poursuite=victoire;score;distance_m
+    long long recPDistM = -1;
 
     ~Sauvegarde();
     // remet les défauts, puis lit le fichier ; vrai si un fichier valide a été lu. Rend la sauvegarde active.
@@ -77,6 +83,18 @@ public:
     bool lire(const std::string& contenu);       // défauts puis lecture ; faux (défauts) si le format est invalide
     // endRace du jeu web : record écrit seulement s'il est battu (s > best) ; vrai si battu
     bool battreRecord(long long score);
+    // WFS-125 (RG-02) : records Course à 5 (meilleure place, puis meilleur temps) et Poursuite (victoire > « ARRÊTÉ » ;
+    // entre victoires le plus haut score ; entre « ARRÊTÉ » la plus grande distance) ; écrits seulement s'ils sont battus
+    bool battreRecordCourse5(int place, long long tempsMs);
+    bool battreRecordPoursuite(bool victoire, int score, long long distanceM);
+    bool aRecordCourse5() const { return rec5Place > 0; }
+    bool aRecordPoursuite() const { return recPDistM >= 0; }
+    // WFS-125 (RG-05) : fichier binaire séparé (fantôme), écrit sur le même thread de travail (atomique) ; chemin à côté
+    // du fichier de la sauvegarde
+    void enregistrerFichier(const std::string& chemin, std::string contenu);
+    std::string cheminVoisin(const std::string& nom) const;
+    // WFS-125 : banc d'essai : sauvegarde de nouveau inactive (défauts), pour que les scènes suivantes gardent leurs captures
+    void desactiver();
     // peinture de la voiture : choisie si valide, sinon celle d'origine (myPaint du jeu web)
     std::string peinture(const std::string& carId) const;
     // peinture choisie par le joueur pour cette voiture (nullptr : jamais choisie, la voiture garde sa couleur d'origine)
@@ -95,8 +113,15 @@ private:
     std::condition_variable cv_;
     std::string aEcrire_, cheminAEcrire_;
     bool enAttente_ = false, enCours_ = false, quitter_ = false;
+    std::deque<std::pair<std::string, std::string>> fichiers_;   // WFS-125 : fichiers en attente (chemin, contenu)
     void boucleEcriture();
 };
+
+// WFS-125 (RG-02) : comparaisons des records (vrai si le nouveau résultat bat l'ancien ; ancien vide = toujours battu)
+namespace records {
+bool course5Bat(int place, long long ms, int ancPlace, long long ancMs);
+bool poursuiteBat(bool victoire, int score, long long distM, bool ancVictoire, int ancScore, long long ancDistM);
+}
 
 class Game;
 class Renderer;

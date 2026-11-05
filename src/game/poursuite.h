@@ -21,6 +21,12 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& outDir);
 // WFS-119 RG-08 (ANO-53) : parcours au doigt de la course à 5 : fin → « Rejouer » → nouvelle course → gaz pris → fin →
 // « Menu » (même doigt) → accueil ; capture course5-rejouer ; rend le nombre d'écarts
 int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& outDir);
+// WFS-125 (RG-09) : banc d'essai : boutons de l'écran de fin (« rejouer », « menu »), record battu, fin forcée
+// (1 = arrêté tout de suite, 2 = saut à 150 m de l'arrivée)
+bool poursuiteBouton(const std::string& nom, float& x, float& y);
+bool poursuiteNouveauRecord();
+void poursuiteBancFin(int mode);
+void poursuiteBancFixe(bool oui);   // programme et graine fixes (captures stables)
 
 namespace poursuite {
 
