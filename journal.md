@@ -3130,3 +3130,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Début : WFS-116 (E7, P2 Haute, libre depuis WFS-114 ✅), branche `feature/waforspeed-116`, règles `regles-de-gestion/WFS-116.md` (RG-01 à RG-07).
 - Zone : `src/platform/retour_systeme.*` (nouveau), `android_main.cpp` (`onInput`), `manette_android.cpp`, `JeuActivity.java`, `tests/test_retour_systeme.cpp` ; accroches ≤ 10 lignes : `manette_jeu.cpp` / `manette.h`, `CMakeLists.txt`.
 - Plan : réutiliser la zone `retour` des écrans (B de la manette), test CPU de parcours complet, fusion par confiance, `qa/Check.md`.
+
+### 2026-11-05 10:49:34 — WFS-100 fusionné (PR #94) (Claude, session trafic)
+- CI de la branche verte (run 42012262442) et captures regardées (`garage-0`, `course-nuit-circuit-0`, `vitrines-planche`) : rien de bloquant. Fusion 9d50529 après resynchronisation avec main (seuls des .md changés).
+- RG-W1 vérifiée : endurance `WFS_ENDURANCE_SANS_ANO52=1` avec validation, 8 cycles, 3 retours d'arrière-plan, 0 erreur de validation, aucun plantage, mémoire +7,1 % (seuil 10 %). Le contournement RG-14 de WFS-91 peut être retiré par un ticket E7 (à proposer au PO).
+- `anno.md` : ANO-21, ANO-27, ANO-28, ANO-50, ANO-52 ✅ Corrigées ; ligne dans `qa/Check.md`. À suivre : CI de main.
+- Suite : WFS-115 (menus, « Continuer ») en cours par un agent.
