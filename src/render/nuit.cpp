@@ -23,6 +23,7 @@
 #include "../ui/ecrans/reglages.h"
 #include "eclairage.h"
 #include "renderer.h"
+#include "feux_modele.h"   // WFS-109
 
 namespace wfs {
 namespace {
@@ -136,7 +137,7 @@ public:
     }
 
     void render(Renderer& r, const GameView& g) override {
-        if (!actif(g)) return;
+        if (!actif(g)) { if (!g.sceneDediee && g.ecran != Ecran::Garage) feuxJoueur(r, g); return; }   // WFS-109 : feux du joueur le jour
         Track& t = *g.track;
         const Player& p = *g.player;
         // ---------- RG-03 : tache des phares sur la route ----------
@@ -178,10 +179,18 @@ public:
             const TrackPoint hq = t.point(s, l.lat);
             r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, 1.1f, tete * 1.6f);
         }
-        // ---------- RG-04 : feux du joueur (dessiné juste après les systèmes par Game) ----------
-        FeuxVoiture fx; fx.nuit = true; fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1;
+        feuxJoueur(r, g);
+    }
+
+    // ---------- RG-04 : feux du joueur (dessiné juste après les systèmes par Game) ----------
+    // WFS-109 (RG-07, RG-11, RG-15) : de jour comme de nuit ; feu stop allumé et éteint en 80 ms (RG-02)
+    void feuxJoueur(Renderer& r, const GameView& g) {
+        const Player& p = *g.player;
+        stopK_ = feux_modele::transition(stopK_, p.braking, tFeux_ < 0 ? -1.f : (float)(g.time - tFeux_)); tFeux_ = g.time;
+        FeuxVoiture fx; fx.nuit = actif(g); fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;
         r.feuxProchaineVoiture(fx);
     }
+    float stopK_ = 0; double tFeux_ = -1;
 
     void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; }
 

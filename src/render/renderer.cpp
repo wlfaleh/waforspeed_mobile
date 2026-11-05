@@ -1006,6 +1006,30 @@ void Renderer::flushDraw(const Pending& p) {
     vkCmdDrawIndexed(cb, p.count, 1, p.first, vofs, 0);
 }
 
+// WFS-84 : feux de nuit naturels. Réglages en un seul endroit (RG-06), à ajuster après un essai sur téléphone.
+// Chaque feu = un point lumineux net (cœur, quelques cm, qui reste un point au loin) + une lueur douce d'environ
+// 2,5 × la taille du feu (jamais un disque géant), éteinte progressivement entre 60 et 120 m (RG-04) ; un feu ne
+// brille que du côté où on le voit (pas de halo de phare autour d'une voiture vue de dos, ni au-dessus du toit).
+// Le feu lui-même (matériau MAT_TAIL) s'allume aussi : émission plus forte au freinage (draw, plus haut).
+namespace feux {
+constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du jeu web (sans tonemapping) → passe HDR + ACES
+constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
+constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
+constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
+constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.30f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.35f;
+constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
+constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
+constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
+constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
+constexpr float SOL_LARGEUR = 0.9f, SOL_LONGUEUR = 1.1f, SOL_RECUL = 0.45f;   // reflet sur la route (× largeur ; m ; m derrière)
+constexpr float I_SOL = 0.07f, I_SOL_STOP = 0.18f, I_SOL_RECUL = 0.2f;        // tailGlow, tailGlowBrake, revGlow (atténués)
+// WFS-109 : émission du feu du modèle (× rouge) : position la nuit 1,6, stop 4 (= setBrake du web, 0xff2040 × 2,5 → × 1,6
+// pour la passe HDR, comme FEUX_HDR), éteint le jour hors freinage (RG-15 a) ; le niveau du stop passe de 0 à 1 en 80 ms
+constexpr float E_POSITION = 1.6f, E_STOP = 4.0f;
+inline float emissionArriere(bool position, float stop) { const float base = position ? E_POSITION : 0.f; return base + (E_STOP - base) * stop; }
+inline const vec3 VERRE{1.f, 0.0103f, 0.0513f};   // RG-13 : verre rouge du feu découpé (0xff2040 du web, linéaire)
+}
+
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {
     if (!inFrame_ || !m.ok) return;
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
@@ -1013,7 +1037,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     feuxSuivantPose_ = false;
     const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)));   // WFS-82
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
-    if (fx.nuit) feuxVoiture(m, world, fx);
+    // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
+    const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
+    if (fx.nuit || stopK > 0 || fx.recul) feuxVoiture(m, world, fx);
     mat4 wr[4]; const bool anim = roues && m.nRoues == 4;   // WFS-60 : matrice de chaque roue (braquage, roulage)
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
@@ -1029,7 +1055,13 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
         // WFS-09 : pièces des feux (repérées par matériau) allumées la nuit : rouge (plus fort au freinage), phares blancs
-        if (fx.nuit && (mat.flags & MAT_TAIL)) { const float k = fx.stop ? 4.f : 1.6f; p.pc.emissive.x += k; p.pc.emissive.y += k * 0.02f; p.pc.emissive.z += k * 0.04f; }
+        // WFS-109 : feu arrière découpé (RG-13) traité comme un MAT_TAIL : verre rouge, sans l'émissif blanc d'origine ;
+        // 3e feu stop (RG-03) : éteint hors freinage ; stop : rouge vif de jour comme de nuit, transition de 80 ms (RG-02)
+        if (part.feuArriere == 1) { p.pc.emissive = {0, 0, 0, p.pc.emissive.w}; p.pc.color = {p.pc.color.x * feux::VERRE.x, p.pc.color.y * feux::VERRE.y, p.pc.color.z * feux::VERRE.z, p.pc.color.w}; }
+        if ((mat.flags & MAT_TAIL) || part.feuArriere) {
+            const float k = feux::emissionArriere(fx.nuit && part.feuArriere != 2, stopK);
+            p.pc.emissive.x += k; p.pc.emissive.y += k * 0.02f; p.pc.emissive.z += k * 0.04f;
+        }
         if (fx.nuit && (mat.flags & MAT_HEAD)) { p.pc.emissive.x += 2.4f; p.pc.emissive.y += 2.2f; p.pc.emissive.z += 1.9f; }
         if (mat.filament) {   // WFS-42 : fils plus fins qu'un pixel → mélangés selon leur couverture, avant les vitres
             p.pc.params.w = (float)(mat.flags | MAT_BLEND); p.depth += 0.05f;
@@ -1110,24 +1142,6 @@ void Renderer::haloSol(const vec3& c, const vec3& r, const vec3& f, float hr, fl
     drawQuads(q, 1, haloMat_);
 }
 
-// WFS-84 : feux de nuit naturels. Réglages en un seul endroit (RG-06), à ajuster après un essai sur téléphone.
-// Chaque feu = un point lumineux net (cœur, quelques cm, qui reste un point au loin) + une lueur douce d'environ
-// 2,5 × la taille du feu (jamais un disque géant), éteinte progressivement entre 60 et 120 m (RG-04) ; un feu ne
-// brille que du côté où on le voit (pas de halo de phare autour d'une voiture vue de dos, ni au-dessus du toit).
-// Le feu lui-même (matériau MAT_TAIL) s'allume aussi : émission plus forte au freinage (draw, plus haut).
-namespace feux {
-constexpr float FEUX_HDR = 1.6f;                       // sprites additifs du jeu web (sans tonemapping) → passe HDR + ACES
-constexpr float COEUR = 0.07f, LUEUR = 0.20f;          // feu arrière : rayons du cœur et de la lueur (m)
-constexpr float I_COEUR = 2.0f, I_COEUR_STOP = 4.0f;   // intensités (× couleur linéaire) : le stop est plus vif, même taille (RG-02)
-constexpr float I_LUEUR = 0.25f, I_LUEUR_STOP = 0.5f;
-constexpr float PHARE_COEUR = 0.09f, PHARE_LUEUR = 0.30f, I_PHARE_COEUR = 2.4f, I_PHARE_LUEUR = 0.35f;
-constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, I_RECUL_LUEUR = 0.22f;   // feu blanc discret
-constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
-constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
-constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
-constexpr float SOL_LARGEUR = 0.9f, SOL_LONGUEUR = 1.1f, SOL_RECUL = 0.45f;   // reflet sur la route (× largeur ; m ; m derrière)
-constexpr float I_SOL = 0.07f, I_SOL_STOP = 0.18f, I_SOL_RECUL = 0.2f;        // tailGlow, tailGlowBrake, revGlow (atténués)
-}
 
 // setLights du jeu web (js/cars/models.js : tailGlow, tailGlowBrake, revGlow) revu pour un rendu naturel (WFS-84)
 void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) {
@@ -1150,17 +1164,21 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
         if (kl > 0.f) halo(p, lueur * ech, col * (iLueur * face * kl));
     };
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
+    // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
+    const float s = f.frein >= 0 ? std::clamp(f.frein, 0.f, 1.f) : (f.stop ? 1.f : 0.f);
+    const float iCoeur = f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : I_COEUR_STOP * s;
+    const float iLueur = f.nuit ? I_LUEUR + (I_LUEUR_STOP - I_LUEUR) * s : I_LUEUR_STOP * s;
     for (int side : {-1, 1}) {
-        feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge,
-            f.stop ? I_COEUR_STOP : I_COEUR, f.stop ? I_LUEUR_STOP : I_LUEUR);
+        if (iCoeur > 0) feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, F.arriere + 0.04f}), arriere, COEUR, LUEUR, rouge, iCoeur, iLueur);
         if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, F.arriere + 0.05f}), arriere,
                          RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
-        feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
+        if (f.nuit) feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
     }
+    if (!f.nuit) return;   // RG-04 : le jour, pas de reflet sur la route
     // reflet discret des feux sur la route, juste derrière la voiture (RG-05) ; aucun faisceau arrière
     const vec3 r = normalize(w.transformDir({1, 0, 0}));
     const vec3 c = w.transformPoint({0, 0.03f, F.arriere + SOL_RECUL});
-    const vec3 col = f.recul ? lin(0xdfe6ff, I_SOL_RECUL) : lin(0xff2040, f.stop ? I_SOL_STOP : I_SOL);
+    const vec3 col = f.recul ? lin(0xdfe6ff, I_SOL_RECUL) : lin(0xff2040, I_SOL + (I_SOL_STOP - I_SOL) * s);
     haloSol(c, r, arriere, F.largeur * SOL_LARGEUR * 0.5f * ech, SOL_LONGUEUR * 0.5f * ech, col);
 }
 
