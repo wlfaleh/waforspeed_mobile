@@ -20,9 +20,19 @@ android {
     sourceSets {
         main { assets.srcDirs = ['../../assets'] }
     }
+    // WFS-118 : clé de test fixe du dépôt (android/keystore.properties) au lieu de la clé de debug, recréée sur chaque
+    // machine de la CI ; même signature à chaque build, l'APK s'installe par-dessus. Jamais pour le store (RG-03).
+    signingConfigs {
+        test {
+            def p = new Properties()
+            file('../keystore.properties').withInputStream { p.load(it) }
+            storeFile file(p['storeFile']); storeType p['storeType']
+            storePassword p['storePassword']; keyAlias p['keyAlias']; keyPassword p['keyPassword']
+        }
+    }
     buildTypes {
         debug { debuggable true; jniDebuggable false }
-        release { minifyEnabled false; signingConfig signingConfigs.debug }
+        release { minifyEnabled false; signingConfig signingConfigs.test }
     }
     androidResources { noCompress 'wfm', 'wav' }
     packagingOptions { jniLibs { useLegacyPackaging false } }

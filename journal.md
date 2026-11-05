@@ -3207,3 +3207,27 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone autorisée : `src/game/duel*`, `salon.*`, `reseau_*`, `src/platform/reseau_android.cpp`, nouveau `serveur/` (relais Cloudflare Workers), `tests/**`, `AndroidManifest.xml` / `JeuActivity.java` (lien profond, partage), `src/ui/ecrans/salon.*` (partagé avec WFS-102, garder les deux), `modes_ecran.cpp` ≤ 10 lignes. Interdit : zone de WFS-118 (`build.gradle`, keystore, `.github/**`), WFS-109, WFS-102 (reste de `src/ui/**`), WFS-94, iOS.
 - Critères : test CPU 2 clients (positions, arrivée, messages hostiles) ; test de parcours complet accueil → salon → course → fin → revanche → retour ; captures salon (code + « Inviter ») et fin de duel (revanche).
 - Plan : relais WebSocket `serveur/` + test local, client natif sans bibliothèque tierce, salon par code et lien, fusion par confiance si les tests passent.
+
+### 2026-11-05 12:12:11 — WFS-118 fusionné : APK signé avec une clé de test fixe (Claude, session trafic, agent WFS-118)
+- PR #99, commit de fusion 71f51b3, **fusion par confiance** (règle n°1). Branche synchronisée avec main (seuls des documents avaient changé).
+- Cause : la version `release` était signée avec `signingConfigs.debug`, une clé recréée sur chaque machine de la CI.
+- Correction : clé de test fixe versionnée, `android/waforspeed-test.keystore` (PKCS12, RSA 2048, valable jusqu'en 2054), et `android/keystore.properties` (mots de passe de test, jamais pour le store). `build.gradle` : `signingConfigs.test` pour `release`. `applicationId` et `versionCode` ne changent pas. L'AAB et `WFS_CLE_ANDROID` ne changent pas (RG-03).
+- `build.yml` : nouvelle étape « Vérification de la signature de l'APK » (`apksigner verify --print-certs`). Le job passe au rouge si l'empreinte diffère de `00ee71cfe42fbe00c052a7a62aa29e1fef4f9f32079ee18f4ddde93770e11793`. La construction 603 de la branche donne exactement cette empreinte.
+- **Accroche annoncée** : `tools/qa/publier_apercu.sh`, 1 ligne (texte des notes de la Release d'aperçu : désinstaller une dernière fois, puis installer par-dessus). C'est là que les notes sont écrites, pas dans `build.yml`.
+- `TACHES.md` passé à ✅, ligne ajoutée dans `qa/Check.md`, réponse écrite dans `tache utilisateur.md`. Je suis la CI de main (build n°2 : même empreinte attendue).
+
+
+### 2026-11-05 12:17:17 — WFS-111 (suite) fusionné par confiance (PR #100) (Claude, session trafic, agent WFS-111)
+- WFS-115 fusionné (PR #97) : carte « Poursuite » passée à `dispo = true` dans `modes_ecran.cpp` (accroche d'une ligne, RG-11).
+- RG-12 prouvé au banc `course5` par de vrais touchers : accueil → Course solo (panneau des modes) → carte Poursuite → « Continuer » → garage → « Choisir » → terrain → « Rouler » → course de poursuite → fin (ARRÊTÉ, puis « Rejouer » et VICTOIRE à 10 km) → « Menu » → accueil : **0 écart**. `WFS_BANC=parcours` (WFS-115) : 0 écart. 20 tests CPU OK.
+- CI de main après #98 (run 42022502185) : android, endurance (sans contournement ANO-52), bancs et publication verts.
+- Captures `poursuite-*` maintenant prises de nuit (terrain « ville (nuit) »). En qualité Basse, 362 à 584 appels de dessin.
+- Pour la PO : `modeCle` (`modes_ecran.cpp`) enregistre « checkpoint » pour la Poursuite (le mode n'est pas gardé au redémarrage) ; le score de course du HUD reste affiché en poursuite (`src/ui/hud.cpp`) ; RG-08 ≤ 300 appels en Basse non atteint (la ville seule en fait déjà ≈ 331).
+
+### 2026-11-05 12:19:06 — Début WFS-119 : Poursuite police, 2e passage (PO)
+- Aucun ticket ⏳ Prêt attribuable (E2, E3, E4, E8 occupés ; anno.md sans anomalie 🆕 ; rien de neuf dans `tache utilisateur.md`). Ticket créé à partir des suites notées au Journal par l'agent WFS-111 (11:53:25 et 12:17:17) et du besoin de l'utilisateur (6 surprises validées le 2026-11-04).
+- Attribué à Claude (session trafic, agent WFS-119), épic E3 (exception : 2e ticket E3 actif à côté de WFS-112, fichiers séparés `src/game/poursuite*`), branche `feature/waforspeed-119`, règles `regles-de-gestion/WFS-119.md`.
+- Zone : `src/game/poursuite*`, `tests/test_poursuite.cpp`, `sauvegarde.*` si nécessaire ; accroches ≤ 10 lignes : `traffic_system.cpp` (hors feux), `hud.cpp` (≤ 3), `modes_ecran.cpp` (≤ 4), `desktop_main.cpp`, `CMakeLists.txt`. Interdit : fichiers de WFS-112 (duel*, salon*, reseau_*, serveur/, manifeste, JeuActivity), `src/render/**`, `shaders/**`, reste de `src/ui/**`, `src/world/**`, `.github/**`, `android/**`, iOS.
+- Critères : surprises camion en travers et ralentisseur (6 au total), un seul score au HUD en poursuite, mode Poursuite gardé au redémarrage, +60 appels de dessin au plus en Basse par rapport au Checkpoint, parcours complet prouvé au banc.
+- Plan : 2 surprises dans `poursuite.*`, accroche HUD, `modeCle`, réglage des silhouettes, test CPU + captures, fusion par confiance.
+- Décision du PO : la cible absolue de 300 appels de WFS-111 RG-08 est remplacée par un écart ≤ 60 (la ville seule en fait ≈ 331) ; l'hélicoptère / projecteur de nuit est sorti du périmètre (il faudrait toucher `src/render/**`).

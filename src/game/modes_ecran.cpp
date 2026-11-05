@@ -34,7 +34,7 @@ struct Carte { ModeCourse mode; const char* titre; const char* desc; bool dispo;
 const Carte CARTES[4] = {
     {ModeCourse::Checkpoint, "Checkpoint", "60 s au départ, +30 s à chaque checkpoint", true},
     {ModeCourse::Course5, "Course à 5", "Toi contre 4 ordinateurs, sans trafic", true},
-    {ModeCourse::Poursuite, "Poursuite", "La police à tes trousses", false},
+    {ModeCourse::Poursuite, "Poursuite", "La police à tes trousses", true},   // WFS-111
     {ModeCourse::Duel, "Duel entre amis", "Défie un ami où qu'il soit, sans trafic", true},   // WFS-112
 };
 
