@@ -23,13 +23,14 @@ size_t g_nbZones = 0;
 float g_zone0[2] = {};      // WFS-96 : taille de la 1re zone (changement de panneau sur le même écran)
 constexpr int DOIGT = 9000;  // identifiant des touchers simulés (aucun doigt réel n'a cet identifiant)
 
+} // namespace
+
+// appui simulé au centre d'une zone (A, B ; WFS-116 : touche Retour du téléphone)
 void toucher(Game& g, const Zone& z) {
     const float x = z.x + z.w / 2, y = z.y + z.h / 2;
     g.onTouch({DOIGT, x, y, true});
     g.onTouch({DOIGT, x, y, false});
 }
-
-} // namespace
 
 int focusCourant() { return g_focus; }
 
