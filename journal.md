@@ -3669,3 +3669,13 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Hors zone** : fichiers E0, E3, E4 et E8, touchés sur ordre direct de l'utilisateur (« change le nécessaire tout de suite »), sans ticket du PO.
 - **Vérification locale** : compilation et 26 tests CPU verts ; `test_configgame` avec le fichier du dépôt : OK, 0 différence.
 - **Non fait** : la preuve avec un fichier modifié (départ 45 s, bonus 20 s, 3 ordinateurs, plancher 0,7), interrompue par l'utilisateur ; la CI de la branche ; la fusion et la ligne `qa/Check.md`. Le nom « Course à 5 » reste fixe, même si le nombre d'ordinateurs est réglable de 1 à 4 : c'est une décision produit, à trancher par le PO.
+
+### 2026-11-05 21:55:59 — PR #122 fusionnée ; PR en cours synchronisées avec main (Claude, session 0183bv2V)
+- **PR #122** (configgame : toutes les clés reliées dynamiquement, test assoupli) **fusionnée** (3acd359), sur demande de l'utilisateur.
+  - Preuve avant fusion : avec un fichier modifié (départ 45 s, bonus 20 s, 3 ordinateurs, plancher 0,7), `test_configgame` est OK et liste 4 différences ; `parcours-mode` affiche « 45 s au départ, +20 s » et « 3 ordinateurs » ; parcours complet : 0 écart.
+- **PR #120** (WFS-142) : synchronisée (b937548), sans conflit ; 26 tests CPU verts.
+- **PR #119** (WFS-134, autre agent) : synchronisée par un commit de fusion (0538a40), sans réécriture de son historique. Deux conflits résolus en gardant les deux côtés :
+  - `qualite_auto.h` : `plancher()` garde la Basse de WFS-134 et lit la Moyenne dans la config ;
+  - `reglages.cpp` : la mise en page de WFS-102 est gardée, et la ligne « Rendu » de WFS-134 passe sous le panneau. Capture `reglages-menu` regardée.
+  - 26 tests CPU verts.
+- **À suivre** : la CI des trois branches et de `main`. L'auteur de WFS-134 doit vérifier l'emplacement de la ligne « Rendu ».
