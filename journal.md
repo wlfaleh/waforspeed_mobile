@@ -3170,3 +3170,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Sortie locale (RG-06) : [OK] test_appui, test_audio, test_binarypack, test_cartes, test_commandes, test_conduite_libre, test_course, test_course5, test_duel, test_effets, test_manette, test_masquage, test_qualite, test_retour_systeme, test_roues, test_sauvegarde, test_systems, test_track, test_traffic, test_trafic_vivant — « tests CPU : 20 test(s) réussi(s) en 3 s ». Faux test en échec (non commité) : « [ÉCHEC] test_faux », code 1 ; dossier vide : « aucun test trouvé », code 1.
 - `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont maintenant lancés par la CI. Accroche : une ligne dans le skill `waforspeed-natif` (partie tests). Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
 
+
+### 2026-11-05 11:35:09 — PO : WFS-118 créé, APK à signature fixe (po-scrum-master)
+- Retour de l'utilisateur : conflit de package à chaque installation. Cause : `release` signé avec `signingConfigs.debug`, clé recréée à chaque build de la CI. Ticket P1 (E7) : clé de test fixe dans le dépôt, même empreinte de certificat à chaque build, une dernière désinstallation à prévoir. Règles : `regles-de-gestion/WFS-118.md`.
