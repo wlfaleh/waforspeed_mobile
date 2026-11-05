@@ -35,7 +35,7 @@ const Carte CARTES[4] = {
     {ModeCourse::Checkpoint, "Checkpoint", "60 s au départ, +30 s à chaque checkpoint", true},
     {ModeCourse::Course5, "Course à 5", "Toi contre 4 ordinateurs, sans trafic", true},
     {ModeCourse::Poursuite, "Poursuite", "La police à tes trousses", false},
-    {ModeCourse::Duel, "Duel", "Défie un ami, sans trafic", true},
+    {ModeCourse::Duel, "Duel entre amis", "Défie un ami où qu'il soit, sans trafic", true},   // WFS-112
 };
 
 std::string modeCle(ModeCourse m) { return m == ModeCourse::Course5 ? "course5" : "checkpoint"; }
@@ -188,6 +188,8 @@ bool ouvrirChoixMode() {
     return true;
 }
 bool choixModeOuvert() { return g_ouvert; }
+// WFS-112 (banc du duel entre amis) : centre d'une zone du panneau des modes (voir ChoixMode::centre)
+bool choixModeZone(const std::string& nom, float& x, float& y) { return ChoixMode::actif_ && ChoixMode::actif_->centre(nom, x, y); }
 void choixModeBanc(bool force) { g_forceBanc = force; if (!force) g_ouvert = false; }
 
 // ---------- banc d'essai (WFS_BANC=parcours, WFS-115) ----------

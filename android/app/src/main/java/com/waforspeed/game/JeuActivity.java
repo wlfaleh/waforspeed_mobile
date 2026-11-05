@@ -6,11 +6,16 @@
 //   - écran toujours allumé pendant le jeu ;
 //   - image sous l'encoche (aussi dans le thème values-v28) ;
 //   - manettes (WFS-22) : une manette connue qui se déconnecte est signalée au jeu (pause automatique en course) ;
-//   - touche Retour au menu principal (WFS-116) : arrière-plan au lieu de fermer le jeu.
+//   - touche Retour au menu principal (WFS-116) : arrière-plan au lieu de fermer le jeu ;
+//   - duel entre amis (WFS-112) : lien d'invitation reçu (waforspeed://duel/<code>, au lancement ou jeu déjà ouvert),
+//     lu par le jeu (prendreLienDuel) ; « Inviter » ouvre la feuille de partage d'Android (partagerTexte).
 package com.waforspeed.game;
 
 import android.app.NativeActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.hardware.input.InputManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,9 +40,39 @@ public class JeuActivity extends NativeActivity implements InputManager.InputDev
     private final HashSet<Integer> manettes = new HashSet<>();
     private InputManager entrees;
 
+    // WFS-112 : dernier lien d'invitation reçu, pris une fois par le jeu (reseau_android.cpp, fil du jeu)
+    private static volatile String lienDuel = null;
+    public static String prendreLienDuel() { final String l = lienDuel; lienDuel = null; return l; }
+    private static void lireLien(Intent i) {
+        if (i == null) return;
+        final Uri u = i.getData();
+        if (u != null) lienDuel = u.toString();
+    }
+
+    @Override
+    protected void onNewIntent(Intent i) {   // jeu déjà ouvert (singleTask) : le lien arrive ici
+        super.onNewIntent(i);
+        setIntent(i);
+        lireLien(i);
+    }
+
+    // WFS-112 : « Inviter » (appelé par le jeu) : feuille de partage (WhatsApp, SMS…) avec le code et le lien
+    public void partagerTexte(final String texte) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final Intent envoi = new Intent(Intent.ACTION_SEND);
+                envoi.setType("text/plain");
+                envoi.putExtra(Intent.EXTRA_TEXT, texte);
+                try { startActivity(Intent.createChooser(envoi, "Inviter un ami")); } catch (ActivityNotFoundException e) { /* rien pour partager */ }
+            }
+        });
+    }
+
     @Override
     protected void onCreate(Bundle etat) {
         super.onCreate(etat);
+        lireLien(getIntent());   // WFS-112 : jeu lancé par le lien d'invitation
         Window w = getWindow();
         w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);   // écran toujours allumé
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

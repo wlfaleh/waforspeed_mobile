@@ -257,7 +257,7 @@ void TransportPeerJs::leave() {
 }
 
 // ---------------------------------------------------------------- deux transports à la fois
-TransportDouble::TransportDouble(std::unique_ptr<duel::Transport> local, std::unique_ptr<TransportPeerJs> internet)
+TransportDouble::TransportDouble(std::unique_ptr<duel::Transport> local, std::unique_ptr<duel::Transport> internet)
     : local_(std::move(local)), internet_(std::move(internet)) {}
 void TransportDouble::presence(const duel::Fields& f) {
     if (local_) local_->presence(f);
@@ -274,7 +274,7 @@ std::vector<duel::PeerView> TransportDouble::peers() const {
 }
 double TransportDouble::nowMs() const {
     if (choisi_ == 2 || !local_) return internet_ ? internet_->nowMs() : horlogeMurale();
-    if (internet_) internet_->etat();   // la file d'Internet continue d'être lue
+    if (internet_) internet_->lien();   // la file d'Internet continue d'être lue
     return local_->nowMs();
 }
 void TransportDouble::leave() {

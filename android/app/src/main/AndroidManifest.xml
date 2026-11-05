@@ -31,6 +31,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- WFS-112 : lien d'invitation du duel entre amis (waforspeed://duel/<code>, ouvert par la page du relais) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="waforspeed" android:host="duel" />
+            </intent-filter>
         </activity>
     </application>
 </manifest>
