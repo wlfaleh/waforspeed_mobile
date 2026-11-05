@@ -65,7 +65,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 else()
   find_package(Vulkan REQUIRED)
   find_package(Threads REQUIRED)
-  add_executable(wfs_bench ${ENGINE_SOURCES} src/platform/desktop_main.cpp)
+  add_executable(wfs_bench ${ENGINE_SOURCES} src/platform/desktop_main.cpp src/platform/endurance_banc.cpp)   # WFS-91 : banc d'endurance
   add_dependencies(wfs_bench shaders)
   target_include_directories(wfs_bench PRIVATE ${SHADER_OUT})
   target_compile_options(wfs_bench PRIVATE ${WARN})

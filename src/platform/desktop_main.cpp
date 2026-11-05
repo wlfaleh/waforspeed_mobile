@@ -36,6 +36,7 @@
 #include "../render/vk.h"
 #include "../ui/ecrans/chargement.h"
 #include "manette_jeu.h"   // WFS-22
+#include "endurance_banc.h"   // WFS-91
 #include "../ui/ecrans/menu.h"
 #include "../ui/ecrans/pause.h"
 #include "../ui/ecrans/salon.h"
@@ -108,6 +109,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
+    if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); return finir(); }   // WFS-110 : modes, course à 5
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)

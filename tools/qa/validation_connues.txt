@@ -1,0 +1,15 @@
+# WaForSpeed — erreurs de validation Vulkan et défauts connus du banc d'endurance (WFS-91, RG-06 / RG-10).
+# Une ligne = un identifiant VUID (ou un morceau exact du message) qui ne fait pas échouer le job « endurance ».
+# Chaque entrée : le motif, puis en commentaire au-dessus : fichier ou pile, ticket de correction (« à planifier » : le PO le crée).
+# « fuite-connue » : la croissance de mémoire au-delà de 10 % ne fait qu'avertir (défaut hors E7 décrit au Journal).
+
+# DÉFAUT 1 (WFS-91, 2026-11-05) — retour d'arrière-plan : Renderer::shutdown (src/render/renderer.cpp) détruit scenePass_,
+# finalPass_, shadowPass_, refletPass_ sans les remettre à VK_NULL_HANDLE ; Renderer::init les croit encore valides
+# (« if (!scenePass_) ») → vkCreateFramebuffer / vkCreateGraphicsPipelines avec un VkRenderPass détruit, puis plantage
+# (SIGSEGV) : même chemin que termGraphics / initGraphics d'android_main.cpp. Zone interdite pour WFS-91 (src/render/**) :
+# ticket de correction à planifier par le PO. Le banc contourne (Renderer neuf) ; WFS_ENDURANCE_ANDROID=1 le reproduit.
+# Motifs gardés tant que le défaut existe (ils n'apparaissent qu'avec WFS_ENDURANCE_ANDROID=1) :
+VUID-VkFramebufferCreateInfo-renderPass-parameter
+VUID-VkGraphicsPipelineCreateInfo-renderPass-06603
+VUID-VkGraphicsPipelineCreateInfo-dynamicRendering-06576
+pCreateInfos[0].renderPass Invalid VkRenderPass
