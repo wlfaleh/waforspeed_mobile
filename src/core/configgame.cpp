@@ -47,7 +47,7 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"course5.nitro_bonus", T::Reel, &c5.nitroBonus, 0, 0.5, "part de la vitesse", "vitesse en plus pendant la nitro d'un ordinateur"},
         {"course5.nitro_duree", T::Reel, &c5.nitroDuree, 0, 10, "s", "durée de la nitro d'un ordinateur"},
         {"course5.nitro_fin", T::Reel, &c5.nitroFinM, 0, 5000, "m", "nitro permise avant l'arrivée à moins de cette distance"},
-        {"poursuite.score_depart", T::Entier, &p.scoreDepart, 1, 1000, "points", "score au départ de la poursuite"},
+        {"poursuite.score_depart", T::Entier, &p.scoreDepart, 1, SCORE_POURSUITE_MAX, "points", "score au départ de la poursuite"},
         {"poursuite.distance", T::Reel, &p.kmArrivee, 1, 50, "km", "distance à parcourir pour gagner"},
         {"poursuite.choc_trafic", T::Entier, &p.chocTrafic, 0, 100, "points", "points perdus sur un choc avec le trafic"},
         {"poursuite.choc_glissiere", T::Entier, &p.chocGlissiere, 0, 100, "points", "points perdus sur un choc contre la glissière"},
