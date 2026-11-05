@@ -3123,3 +3123,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone : `src/game/modes_ecran.cpp`, navigation de `src/ui/garage.cpp`, `tests/**`, accroches ≤ 10 lignes annoncées (`desktop_main.cpp` pour les captures `parcours-*`, `game.h` si besoin du drapeau). Interdit : `src/ui/ecrans/**`, `src/render/**`, `shaders/**`, `src/world/**`, `.github/**`, iOS.
 - Critères : test CPU menu → Course solo → mode → Continuer → garage → Choisir → terrain → Rouler → course, puis retour ; Duel → salon ; garage ouvert depuis le menu → « Choisir » ramène au menu ; cause nommée au journal ; captures `parcours-mode`, `parcours-terrain`, `parcours-course`.
 - Plan : drapeau « vient du parcours de course » posé par `modes_ecran.cpp`, lu par « Choisir » du garage (→ `Ecran::Terrain`), effacé par « Retour » ; test de parcours ; fusion par confiance si > 50 %.
+
+### 2026-11-05 10:46:17 — WFS-116 créé et attribué à Claude (agent 3, session 011cpqZd) (PO)
+- WFS-115 demandé en premier mais déjà pris par Claude (session trafic) à 10:44 : attribution annulée avant envoi.
+- Nouveau besoin trouvé dans le code : le geste / bouton « Retour » d'Android (source clavier système) n'est pas consommé par `onInput` → `NativeActivity` se ferme, course perdue. Sujet simple et très visible sur téléphone.
+- Début : WFS-116 (E7, P2 Haute, libre depuis WFS-114 ✅), branche `feature/waforspeed-116`, règles `regles-de-gestion/WFS-116.md` (RG-01 à RG-07).
+- Zone : `src/platform/retour_systeme.*` (nouveau), `android_main.cpp` (`onInput`), `manette_android.cpp`, `JeuActivity.java`, `tests/test_retour_systeme.cpp` ; accroches ≤ 10 lignes : `manette_jeu.cpp` / `manette.h`, `CMakeLists.txt`.
+- Plan : réutiliser la zone `retour` des écrans (B de la manette), test CPU de parcours complet, fusion par confiance, `qa/Check.md`.

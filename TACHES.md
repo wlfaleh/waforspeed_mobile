@@ -206,6 +206,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-112 | Duel entre amis par Internet : serveur de relais, code + lien d'invitation, reconnexion, mieux que le web | E3 (+ accroches E7, E8) | ⏳ Prêt (WFS-110 ✅ le 2026-11-05) | | WFS-89 ✅, WFS-110 ✅ | `feature/waforspeed-112` |  |  |
 | P3 Moyenne | WFS-114 | CI : banc d'endurance ≤ 15 min, lancé seulement sur `main`, la nuit et à la demande (plus sur chaque branche) | E7 | ✅ Fusionné (par confiance, PR #93) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-91 ✅ | `feature/waforspeed-114` | #93 |  |
 | P1 Urgent | WFS-115 | [URGENT] Menus : « Continuer » après le choix d'un mode ramène au menu principal | E8 (exception : en parallèle de WFS-102, fichiers séparés : `src/game/modes_ecran.cpp`, navigation de `src/ui/garage.cpp`) | 🔧 En cours | Claude (session trafic), 2026-11-05 | — | `feature/waforspeed-115` |  |  |
+| P2 Haute | WFS-116 | Bouton / geste « Retour » du téléphone : recule d'un écran (course → pause) au lieu de fermer le jeu | E7 | 🔧 En cours | Claude (agent 3, session 011cpqZd), 2026-11-05 | — | `feature/waforspeed-116` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -497,6 +498,9 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-115 — [URGENT] Menus : « Continuer » ramène au menu** · E8 (exception : en parallèle de WFS-102, fichiers séparés) · priorité P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-05, branche `feature/waforspeed-115` (règles : `regles-de-gestion/WFS-115.md`). **Zone** : `src/game/modes_ecran.cpp` ; `src/ui/garage.cpp` **seulement** la navigation (`allerA`, drapeau « vient du parcours de course », boutons « Choisir » / « Retour ») ; `tests/**` (test CPU de parcours) ; captures `parcours-*` par accroche ≤ 10 lignes dans `desktop_main.cpp` (hors aiguillage `WFS_BANC`) ; accroche ≤ 10 lignes annoncée au Journal dans `src/game/game.h` si le drapeau de parcours doit y vivre. **Interdit** : `src/ui/ecrans/**` et les lignes d'échelle / libellés de `garage.cpp` (WFS-102), `src/render/**` et `shaders/**` (WFS-100, WFS-109), `src/world/**` (WFS-94), `.github/**`, iOS (gel)
 - [ ] menu → mode → terrain → course sans retour imprévu
+
+**WFS-116 — Bouton / geste « Retour » du téléphone** · E7 · priorité P2 Haute · 🔧 En cours — Claude (agent 3, session 011cpqZd), 2026-11-05, branche `feature/waforspeed-116` (règles : `regles-de-gestion/WFS-116.md`). Constat du PO : `AKEYCODE_BACK` hors manette non géré → `NativeActivity` se ferme (course perdue). Zone : nouveau `src/platform/retour_systeme.*`, `android_main.cpp` (`onInput`, ≤ 10 lignes), `manette_android.cpp`, `JeuActivity.java` (`onBackPressed` → `moveTaskToBack`), nouveau `tests/test_retour_systeme.cpp` (+ 1 ligne `CMakeLists.txt`) ; accroche ≤ 10 lignes dans `manette_jeu.cpp` / `manette.h` (réutiliser `toucher` et la zone `retour`, sans les lignes d'échelle de WFS-102). Interdit : `src/ui/**`, `src/game/**` (WFS-115), `src/render/**`, `shaders/**`, `src/world/**`, `.github/**`, iOS
+- [ ] test CPU de parcours avec « Retour » (RG-06) au journal ; en course Retour → pause ; au menu → arrière-plan sans fermeture
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
