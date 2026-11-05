@@ -8,6 +8,7 @@
 #include <vector>
 #include "../src/audio/engine_synth.h"
 #include "../src/audio/sfx_synth.h"   // WFS-28
+#include "../src/audio/trafic_sons.h"  // WFS-121
 #include "../src/game/player.h"
 using namespace wfs;
 
@@ -114,5 +115,105 @@ int main(int argc, char** argv) {
         EffetsMoteur f; for (int i = 0; i < 120; i++) f.update(1.0 / 120, 0.6f, 5, 0.85f, true, 220, true, false);
         effet("5e à fond sous la vitesse de pointe : pas de rupteur", !f.rupteur);
     }
-    return ok && okSfx && okEff ? 0 : 1;
+    // WFS-121 : sons du trafic — passages (RG-02), klaxon (RG-03), rumeur (RG-04), trafic nul (RG-01), tampons (RG-05)
+    bool okTrafic = true;
+    auto trafic = [&](const char* quoi, bool c) { std::printf("sons du trafic : %-56s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okTrafic = okTrafic && c; };
+    {
+        const double dt = 1.0 / 120;
+        // une voiture de +5 m à −5 m, vitesse relative v, décalée de lat ; renvoie le nombre de passages et le dernier gain
+        auto passe = [&](double v, double lat, float* gain = nullptr) {
+            TraficSons ts; std::vector<VoitureSon> cars(1); int n = 0;
+            cars[0].lat = lat; cars[0].vRelKmh = v; cars[0].longueurM = 4.5;
+            for (double t = 0, dz = 5; dz > -5; t += dt, dz -= v / 3.6 * dt) {
+                cars[0].dzM = dz;
+                const SonsDuPas s = ts.update(dt, true, cars, 150, 4.3, 0);
+                n += s.passages; if (s.passages && gain) *gain = s.gainPassage;
+            }
+            return n;
+        };
+        float g80 = 0, g160 = 0, gLat = 0;
+        trafic("voiture de +5 m à −5 m à 80 km/h relatifs : 1 passage", passe(80, 0, &g80) == 1);
+        trafic("volume à 80 km/h relatifs : 0,29 (0,20 à 40, 0,45 à 150)", std::abs(g80 - 0.2909f) < 0.002f);
+        passe(160, 0, &g160); passe(160, 0.8 * 0.999, &gLat);
+        trafic("volume à 160 km/h : 0,45 ; à 0,8 demi-largeur : moitié", std::abs(g160 - 0.45f) < 1e-4f && std::abs(gLat - 0.225f) < 0.002f);
+        trafic("vitesse relative 20 km/h : aucun passage", passe(20, 0) == 0);
+        trafic("voiture à 0,9 demi-largeur de côté : aucun passage", passe(80, 0.9) == 0);
+        {   // deux voitures qui passent à 0,1 s d'écart : un seul souffle (intervalle de 0,25 s)
+            TraficSons ts; std::vector<VoitureSon> cars(2); int n = 0;
+            for (auto& c : cars) c.vRelKmh = 100;
+            for (int i = 0; i < 120; i++) {
+                const double t = i * dt;
+                cars[0].dzM = 5 - 100 / 3.6 * t; cars[1].dzM = 5 - 100 / 3.6 * (t - 0.1);
+                n += ts.update(dt, true, cars, 150, 4.3, 0).passages;
+            }
+            trafic("2 voitures dans les 0,25 s : 1 seul passage", n == 1);
+        }
+        {   // voiture téléportée (réapparition du trafic loin devant) : pas de passage
+            TraficSons ts; std::vector<VoitureSon> cars(1); cars[0].vRelKmh = 100; int n = 0;
+            cars[0].dzM = 300; n += ts.update(dt, true, cars, 150, 4.3, 0).passages;
+            cars[0].dzM = -300; n += ts.update(dt, true, cars, 150, 4.3, 0).passages;
+            trafic("changement de signe loin du joueur (> 25 m) : aucun passage", n == 0);
+        }
+        // collage : voiture 3 m devant pare-chocs à pare-chocs, même file, joueur à 100 km/h, pendant `duree` secondes
+        auto colle = [&](double duree, double kmh = 100, double lat = 0) {
+            TraficSons ts; std::vector<VoitureSon> cars(1); int n = 0;
+            cars[0].dzM = 3 + (4.5 + 4.3) / 2; cars[0].lat = lat; cars[0].vRelKmh = 0;
+            for (double t = 0; t < duree; t += dt) n += ts.update(dt, true, cars, kmh, 4.3, 0).klaxon;
+            return n;
+        };
+        trafic("collage 1,6 s : 1 klaxon", colle(1.6) == 1);
+        trafic("collage 1 s : aucun klaxon", colle(1.0) == 0);
+        trafic("collage 5 s : 2 klaxons (au plus un toutes les 3 s)", colle(5.0) == 2);
+        trafic("collage à 20 km/h : aucun klaxon", colle(2.0, 20) == 0);
+        trafic("voiture dans la file voisine : aucun klaxon", colle(2.0, 100, 0.5) == 0);
+        {   // quasi-contacts : klaxon 0,15 s après, une fois sur deux environ (tirage reproductible), au plus un toutes les 3 s
+            TraficSons ts; std::vector<VoitureSon> none; int k = 0, q = 0; double premier = -1, quasiT = -1;
+            for (int i = 0; i < 120 * 60; i++) {
+                const double t = i * dt;
+                if (i % (120 * 4) == 60) { q++; if (quasiT < 0) quasiT = t; }   // un quasi-contact toutes les 4 s
+                const SonsDuPas s = ts.update(dt, true, none, 150, 4.3, q);
+                if (s.klaxon) { k++; if (premier < 0) premier = t; }
+            }
+            trafic("15 quasi-contacts : 4 à 11 klaxons (une fois sur deux)", k >= 4 && k <= 11);
+            TraficSons a, b; int ka = 0, kb = 0;
+            for (int i = 0; i < 1200; i++) { const int qq = i / 60; ka += a.update(dt, true, none, 150, 4.3, qq).klaxon; kb += b.update(dt, true, none, 150, 4.3, qq).klaxon; }
+            trafic("tirage reproductible (même suite à chaque partie)", ka == kb);
+            (void)premier; (void)quasiT;
+        }
+        {   // rumeur : 0,04 par voiture à moins de 40 m, plafonnée à 0,25
+            TraficSons ts; std::vector<VoitureSon> cars(10);
+            for (size_t i = 0; i < cars.size(); i++) cars[i].dzM = i < 3 ? 10.0 + i : 200.0;
+            const float r3 = ts.update(dt, true, cars, 150, 4.3, 0).rumeur;
+            for (auto& c : cars) c.dzM = -20;
+            const float r10 = ts.update(dt, true, cars, 150, 4.3, 0).rumeur;
+            trafic("rumeur : 3 voitures à moins de 40 m → 0,12 ; 10 → 0,25", std::abs(r3 - 0.12f) < 1e-5f && std::abs(r10 - 0.25f) < 1e-5f);
+            for (int i = 0; i < 130; i++) ts.update(dt, true, cars, 150, 4.3, 0);   // plus d'une seconde : rumeur 0,25 écrite au journal
+            // RG-01 / RG-06 : trafic nul ou hors course : aucun son, rumeur 0
+            int n = 0; float r = 1; bool log0 = false;
+            for (int i = 0; i < 240; i++) {
+                for (auto& c : cars) { c.dzM = 5 - i * 0.1; c.vRelKmh = 100; }
+                const SonsDuPas s = ts.update(dt, false, cars, 150, 4.3, i);
+                n += s.passages + s.klaxon; r = s.rumeur; log0 = log0 || (s.journalRumeur && s.rumeur == 0);
+            }
+            trafic("trafic nul / hors course : aucun son, rumeur 0 (écrite au journal)", n == 0 && r == 0 && log0);
+        }
+        const float R = 48000;
+        auto borne = [](const std::vector<float>& b) { float p = 0; for (float x : b) p = std::max(p, std::abs(x)); return p; };
+        const std::vector<float> pa = sonPassage(R), kl = sonKlaxon(R), ru = boucleRumeur(R);
+        verifie("passage", pa, false); verifie("klaxon", kl, false); verifie("rumeur", ru, true);
+        trafic("tampons Passage, Klaxon, rumeur non vides, |x| ≤ 1", !pa.empty() && !kl.empty() && !ru.empty() && borne(pa) <= 1 && borne(kl) <= 1 && borne(ru) <= 1);
+        {   // Doppler : la fréquence descend — rapport d'énergie 900 Hz / 350 Hz (Goertzel) plus grand au début qu'à la fin
+            auto energie = [&](size_t a, size_t e, float f) {
+                const double w = 2 * 3.14159265358979 * f / R, c = 2 * std::cos(w); double s1 = 0, s2 = 0;
+                for (size_t i = a; i < e; i++) { const double s0 = pa[i] + c * s1 - s2; s2 = s1; s1 = s0; }
+                return s1 * s1 + s2 * s2 - c * s1 * s2;
+            };
+            const size_t n = pa.size();
+            const double debut = energie(n / 10, n * 4 / 10, 900) / energie(n / 10, n * 4 / 10, 350);
+            const double fin = energie(n * 6 / 10, n, 900) / energie(n * 6 / 10, n, 350);
+            std::printf("passage : énergie 900 Hz / 350 Hz : %.2f au début, %.2f à la fin\n", debut, fin);
+            trafic("passage : fréquence qui descend (effet Doppler)", debut > fin * 2);
+        }
+    }
+    return ok && okSfx && okEff && okTrafic ? 0 : 1;
 }

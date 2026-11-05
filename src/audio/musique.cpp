@@ -127,16 +127,8 @@ void glisse(std::vector<float>& b, float rate, float debut, float dur, float f0,
     }
 }
 
-// klaxon lointain : deux notes carrées adoucies (sol, si) passées dans un passe-bande (la distance)
-void klaxon(std::vector<float>& b, float rate, float debut, float dur) {
-    const size_t a = (size_t)(debut * rate), n = (size_t)(dur * rate);
-    if (b.size() < a + n) b.resize(a + n, 0.f);
-    PasseBande f; f.regler(900, 0.9f, rate);
-    for (size_t i = 0; i < n; i++) {
-        const float t = (float)i / rate, sq = std::tanh(3 * std::sin(PI2 * 392 * t)) + std::tanh(3 * std::sin(PI2 * 494 * t));
-        b[a + i] += f.run(sq) * 0.5f * sfx::fondu(i, n, rate) * std::min(1.f, t / 0.02f) * std::min(1.f, (dur - t) / 0.04f);
-    }
-}
+// klaxon lointain : sfx::klaxon (sfx_synth.h, WFS-121 : partagé avec le klaxon du trafic), avec le filtre de distance
+using sfx::klaxon;
 
 void forme(const std::string& path, const std::vector<float>& pcm, size_t boucle) {
     const int W = 1200, H = 240, cy = H / 2;

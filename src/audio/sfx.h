@@ -15,7 +15,8 @@ struct Course;
 enum class SfxId : uint8_t {
     Accident, Choc, Frottement, ContactDuel, QuasiContact,
     BipDecompte, BipGo, BipCheckpoint, BipFin, BipDuel, Garage, Carte, Sirene,   // WFS-96 : sons d'interface ; WFS-111 : sirène
-    Petarade, Turbo, Count   // WFS-120 : pétarade (un claquement), souffle du turbo
+    Petarade, Turbo,   // WFS-120 : pétarade (un claquement), souffle du turbo
+    Passage, Klaxon, Count   // WFS-121 : passage d'une voiture du trafic (Doppler), klaxon du trafic
 };
 const char* sfxNom(SfxId id);
 void sfxInterface(SfxId id);   // WFS-96 : son demandé par un écran (joué au pas suivant par SfxEvenements)
@@ -25,6 +26,7 @@ public:
     void build(float rate);                      // calcule tous les sons (démarrage, hors du thread audio)
     void play(SfxId id, float gain = 1);         // thread du jeu : un son, une fois
     void setBoucles(float crissement, float nitro);   // thread du jeu : volume visé des sons continus (0..1)
+    void setRumeur(float g) { cibleRumeur_ = g; }   // WFS-121 (RG-04) : rumeur du trafic proche (0..0,25)
     void setMuted(bool m) { muted_ = m; }        // future option « Son » (setMuted du jeu web)
     // thread audio : ajoute les bruitages dans out ; now : horloge (sans nouvelles du jeu → silence, pause)
     void mix(float* out, int n, double now);
@@ -32,16 +34,17 @@ public:
     float master = 0.5f;                         // sfxGain du jeu web
     const std::vector<float>& tampon(SfxId id) const { return sons_[(int)id]; }
 private:
-    std::vector<float> sons_[(int)SfxId::Count], crissement_, nitro_;
+    std::vector<float> sons_[(int)SfxId::Count], crissement_, nitro_, rumeur_;
     struct Demande { uint8_t id; float gain; };
     static constexpr int FILE = 64, VOIX = 16;
     Demande file_[FILE];
     std::atomic<uint32_t> tete_{0}, queue_{0};
     struct Voix { const std::vector<float>* buf = nullptr; size_t pos = 0; float gain = 0; };
     Voix voix_[VOIX];
-    std::atomic<float> cibleCrissement_{0}, cibleNitro_{0};
+    std::atomic<float> cibleCrissement_{0}, cibleNitro_{0}, cibleRumeur_{0};
     std::atomic<bool> muted_{false};
     float gCrissement_ = 0, gNitro_ = 0, fade_ = 0, k_ = 0.001f, kFade_ = 0.001f;
+    float gRumeur_ = 0, kRumeur_ = 0.001f; size_t posRumeur_ = 0;   // WFS-121
     size_t posCrissement_ = 0, posNitro_ = 0;
     std::atomic<bool> pret_{false};
 };

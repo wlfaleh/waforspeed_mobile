@@ -23,6 +23,9 @@
 #include "musique.h"   // WFS-76 : musique et ambiance de la carte
 #include "../game/course_system.h"
 #include <cstdlib>
+#include "../game/traffic.h"           // WFS-121 : lecture seule (M, MAX_SPEED, TrafficCar)
+#include "../game/traffic_system.h"    // WFS-121 : activeTraffic(), activeTrafficStats() (lecture seule)
+#include "trafic_sons.h"               // WFS-121 : passages, klaxon, rumeur
 
 namespace wfs {
 
@@ -62,7 +65,10 @@ public:
     // WFS-76 : l'application dessine encore (sinon fondu vers le silence) ; décision aussi à chaque image : en pause (plus
     // d'update), un réglage « Musique » change le son tout de suite
     void render(Renderer&, const GameView& g) override { vivant_ = nowSeconds(); decider(g); }
-    void onEcran(Ecran, Ecran, const GameView& g) override { decider(g); }      // WFS-76 : pause (plus d'update), menus
+    void onEcran(Ecran, Ecran, const GameView& g) override {   // WFS-76 : pause (plus d'update), menus
+        decider(g);
+        if (g.ecran != Ecran::Course && rumeur_ > 0) { sfx_.setRumeur(0); rumeur_ = 0; traficSons_.reset(); WFS_LOG("rumeur 0.00"); }   // WFS-121 : aucun son coincé
+    }
 
     void shutdown(Renderer&) override { audioOutStop(); }
 
@@ -94,6 +100,7 @@ public:
         active_ = idx;
         decider(g);   // WFS-76
         sfx_.lastUpdate = nowSeconds(); events_.update(dt, g, sfx_);   // WFS-28 : un son par événement de la partie
+        sonsTrafic(dt, g);   // WFS-121
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
             const int n = (int)g_rec.acc; g_rec.acc -= n;
@@ -106,6 +113,31 @@ public:
     }
 
 private:
+    // WFS-121 : sons du trafic. RG-01 : trafic lu par activeTraffic() (lecture seule) ; RG-06 : écran Course, course en jeu
+    // (ou conduite libre, sans course) ; duel et course à 5 : le trafic est vide → aucun son
+    void sonsTrafic(double dt, const GameView& g) {
+        const Traffic* tr = activeTraffic();
+        const TrafficStats* st = activeTrafficStats();
+        const Course* c = activeCourse();
+        const bool actif = tr && st && g.track && g.ecran == Ecran::Course && !g.sceneDediee && (!c || c->state == RaceState::Play);
+        const Player& pl = *g.player;
+        voituresSon_.resize(actif ? tr->cars.size() : 0);
+        if (actif) for (size_t i = 0; i < tr->cars.size(); i++) {
+            const TrafficCar& tc = tr->cars[i];
+            VoitureSon& v = voituresSon_[i];
+            v.dzM = g.track->relZ(tc.z - (pl.position + PLAYER_Z)) * M;
+            v.lat = std::abs(tc.offset - pl.playerX);
+            v.vRelKmh = std::abs(pl.speed - tc.speed) / MAX_SPEED * 260.0;   // même conversion que Player::kmh()
+            v.longueurM = tc.len * M; v.accidentee = tc.crashed;
+        }
+        const SonsDuPas s = traficSons_.update(dt, actif, voituresSon_, pl.kmh(), webCarLength(pl.car->id, pl.car->d.L) * M,
+                                              st ? st->nearMisses : 0);
+        if (s.passages) sfx_.play(SfxId::Passage, s.gainPassage);
+        if (s.klaxon) sfx_.play(SfxId::Klaxon);
+        if (s.rumeur != rumeur_) { sfx_.setRumeur(s.rumeur); rumeur_ = s.rumeur; }
+        if (s.journalRumeur) WFS_LOG("rumeur %.2f", s.rumeur);
+    }
+    TraficSons traficSons_; std::vector<VoitureSon> voituresSon_; float rumeur_ = 0;
     // WFS-76 (RG-02 à RG-06) : musique « course » de « GO » à la fin de la course, « menu » partout ailleurs (menus, garage,
     // terrain, réglages, pause, décompte, écran de fin) ; ambiance de la carte sur l'écran Course seulement ; journal (RG-08)
     void decider(const GameView& g) {
@@ -226,6 +258,27 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("son t=%2ds : %3.0f km/h, rapport %d, régime %.2f, charge %.2f, pédale %s", lastS, f.kmh, f.gear, f.rpm, f.load, f.throttle ? "oui" : "non");
     }
     WFS_LOG("son : %.1f s enregistrées (%zu échantillons), crête %.2f, plus grand saut %.3f", g_rec.pcm.size() / (double)OUT_RATE, g_rec.pcm.size(), peak, jump);
+    {   // WFS-121 (critère « coller ») : le joueur se place 8 m derrière la voiture la plus entourée, à sa vitesse, et la
+        // suit 3 s dans sa file en dosant l'accélérateur (écart pare-chocs à pare-chocs gardé vers 3 m) → « SFX klaxon »
+        trafficBenchPlace(8, 0, 0, false);
+        g.update(1.0 / 60);
+        const int idx = trafficBenchCar();
+        const Traffic* tr = activeTraffic();
+        bool gaz = false; double ecartMin = 1e9, ecartMax = 0;
+        for (int i = 0; tr && idx >= 0 && idx < (int)tr->cars.size() && i < 3 * 60; i++) {
+            const Player& pl = g.player(); const TrafficCar& c = tr->cars[(size_t)idx];
+            const double ecart = c.prevDz * M - (c.len * M + webCarLength(pl.car->id, pl.car->d.L) * M) / 2;
+            ecartMin = std::min(ecartMin, ecart); ecartMax = std::max(ecartMax, ecart);
+            const bool veut = ecart > 3 || pl.speed < c.speed * 0.97;
+            if (veut != gaz) { g.onTouch(veut ? gasDown : gasUp); gaz = veut; }
+            const float st = clampf((float)((c.offset - pl.playerX) * 3 - pl.heading * 4), -1.f, 1.f);
+            g.onTouch({9, W * 0.18f + st * W * 0.12f, H * 0.72f, true});
+            g.update(1.0 / 60);
+        }
+        if (gaz) g.onTouch(gasUp);
+        g.onTouch({9, W * 0.18f, H * 0.72f, false});
+        WFS_LOG("son (WFS-121) : collage 3 s derrière la voiture %d, écart pare-chocs %.1f à %.1f m", idx, ecartMin, ecartMax);
+    }
     g.shutdown();
     benchMusique(out);   // WFS-76 : musique-menu / musique-course / ambiance-<carte> (.wav + .png)
 }
