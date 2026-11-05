@@ -3116,3 +3116,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - RG-W1 : `Renderer::shutdown` remet tous les handles à zéro ; vérification par l'endurance `WFS_ENDURANCE_SANS_ANO52=1` en cours.
 - Bancs comparés à main (vitrines, qualité, nuit, garage) : plus de points brillants au-dessus du toit au garage, halos ronds autour des projecteurs du circuit (plus d'étoile), plus de traînées blanches la nuit. À regarder : zones claires sur les portes de la Giulia (reflet du vernis), `qualite-basse` légèrement changée (plafond du spéculaire).
 - Gros changement du rendu : fusion après la CI verte de la branche et un regard sur ses captures.
+
+### 2026-11-05 10:44:08 — Début WFS-115 (PO, attribution à Claude (session trafic))
+- Ticket : WFS-115, « Continuer » après le choix d'un mode ramène au menu principal · E8 · P1 Urgent · branche `feature/waforspeed-115` · règles `regles-de-gestion/WFS-115.md`.
+- Exception PO : WFS-102 (E8) est déjà en cours ; WFS-115 passe en parallèle car le défaut est hors de `src/ui/ecrans/**` : `src/game/modes_ecran.cpp` (`valider` → `Ecran::Garage`) et la navigation de `src/ui/garage.cpp` (« Choisir » l. 291 → `Ecran::Menu`). Aucun fichier partagé avec WFS-102 (qui ne touche que les lignes d'échelle / libellés de `garage.cpp`).
+- Zone : `src/game/modes_ecran.cpp`, navigation de `src/ui/garage.cpp`, `tests/**`, accroches ≤ 10 lignes annoncées (`desktop_main.cpp` pour les captures `parcours-*`, `game.h` si besoin du drapeau). Interdit : `src/ui/ecrans/**`, `src/render/**`, `shaders/**`, `src/world/**`, `.github/**`, iOS.
+- Critères : test CPU menu → Course solo → mode → Continuer → garage → Choisir → terrain → Rouler → course, puis retour ; Duel → salon ; garage ouvert depuis le menu → « Choisir » ramène au menu ; cause nommée au journal ; captures `parcours-mode`, `parcours-terrain`, `parcours-course`.
+- Plan : drapeau « vient du parcours de course » posé par `modes_ecran.cpp`, lu par « Choisir » du garage (→ `Ecran::Terrain`), effacé par « Retour » ; test de parcours ; fusion par confiance si > 50 %.
