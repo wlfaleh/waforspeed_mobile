@@ -8,6 +8,7 @@
 #include <vector>
 #include "../src/audio/engine_synth.h"
 #include "../src/audio/sfx_synth.h"   // WFS-28
+#include "../src/audio/sfx_course.h"  // WFS-124
 #include "../src/audio/trafic_sons.h"  // WFS-121
 #include "../src/game/player.h"
 using namespace wfs;
@@ -215,5 +216,33 @@ int main(int argc, char** argv) {
             trafic("passage : fréquence qui descend (effet Doppler)", debut > fin * 2);
         }
     }
-    return ok && okSfx && okEff && okTrafic ? 0 : 1;
+    // WFS-124 : tic du chrono (RG-01 / RG-02), combo (RG-03), combo perdu (RG-04), tampons (RG-05)
+    bool okCourse = true;
+    {
+        using namespace sfxcourse;
+        auto cas = [&](const char* quoi, bool c) { std::printf("sons de course : %-56s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okCourse = okCourse && c; };
+        cas("chrono : actif en Checkpoint en jeu", chronoActif(true, 0, 30, true));
+        cas("chrono : inactif en duel / course à 5 / poursuite", !chronoActif(true, 2000, 30, true));
+        cas("chrono : inactif sans règles (1e9) et hors écran Course", !chronoActif(true, 0, 1e9, true) && !chronoActif(true, 0, 5, false));
+        cas("chrono : inactif hors jeu (décompte, fin)", !chronoActif(false, 0, 5, true));
+        cas("affiché : 6,0 → 6 ; 5,4 → 6 ; 0,2 → 1 ; −1 → 0", chronoAffiche(6.0) == 6 && chronoAffiche(5.4) == 6 && chronoAffiche(0.2) == 1 && chronoAffiche(-1) == 0);
+        int tics = 0, urgents = 0, a = chronoAffiche(10);
+        for (double t = 10; t > 0; t -= 1.0 / 60) { const Tic x = ticChrono(a, chronoAffiche(t)); tics += x == TIC; urgents += x == URGENT; a = chronoAffiche(t); }
+        cas("10 s → 0 : 5 tics (8 à 4) et 3 urgents (3, 2, 1)", tics == 5 && urgents == 3);
+        cas("saut de 60 à 6 : un seul tic", ticChrono(60, 6) == TIC);
+        cas("remontée (checkpoint 5 → 35) : aucun tic", ticChrono(5, 35) == AUCUN);
+        cas("au-dessus de 8 s (12 → 11) : aucun tic", ticChrono(12, 11) == AUCUN);
+        cas("combo 1 → 2 : son 2 ; 4 → 5 : son 5 ; 7 → 8 : son 6", sonCombo(1, 2) == 2 && sonCombo(4, 5) == 5 && sonCombo(7, 8) == 6);
+        cas("combo 0 → 1 et combo qui baisse : aucun son", sonCombo(0, 1) == 0 && sonCombo(3, 0) == 0);
+        cas("fréquences du combo : 660 Hz puis un ton de plus", std::abs(frequenceCombo(2) - 660) < 0.5f && std::abs(frequenceCombo(3) - 740.8f) < 1 && frequenceCombo(6) > frequenceCombo(5));
+        cas("combo 3 → 0 sur un choc : combo perdu", comboPerdu(3, 0, 4, 5));
+        cas("combo 3 → 0 sans choc (fin après 3 s) : rien", !comboPerdu(3, 0, 4, 4));
+        cas("combo 1 → 0 sur un choc : rien", !comboPerdu(1, 0, 4, 5));
+        using namespace sfx; const float R = 48000;
+        std::vector<float> tic; beep(tic, R, 1000, 0, 0.06f); verifie("chrono-tic", tic, false);
+        std::vector<float> urg; beep(urg, R, 1500, 0, 0.09f); verifie("chrono-urgent", urg, false);
+        for (int n = 2; n <= COMBO_MAX_SON; n++) { std::vector<float> b; beep(b, R, frequenceCombo(n), 0, 0.08f); verifie("combo", b, false); }
+        std::vector<float> pe; beep(pe, R, 440, 0, 0.1f); beep(pe, R, 330, 0.1f, 0.1f); verifie("combo-perdu", pe, false);
+    }
+    return ok && okSfx && okEff && okTrafic && okCourse ? 0 : 1;
 }

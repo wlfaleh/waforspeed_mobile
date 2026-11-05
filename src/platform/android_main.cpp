@@ -21,6 +21,7 @@
 #include "manette_jeu.h"   // WFS-22 : manettes
 #include "retour_systeme.h"   // WFS-116 : bouton / geste Retour du téléphone
 #include "gyroscope_android.cpp"   // WFS-108 : inclinaison du téléphone (gyroscope), densité de l'écran (dp)
+#include "chauffe_android.cpp"     // WFS-123 : état thermique, setFrameRate 60 (API 30+, dlsym)
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -86,7 +87,7 @@ static void termGraphics(App& app) {
 static void onCmd(android_app* a, int32_t cmd) {
     App& app = *static_cast<App*>(a->userData);
     switch (cmd) {
-        case APP_CMD_INIT_WINDOW: initGraphics(app, a); break;
+        case APP_CMD_INIT_WINDOW: chauffeAndroidFenetre(a->window); initGraphics(app, a); break;   // WFS-123 (RG-04)
         case APP_CMD_TERM_WINDOW: termGraphics(app); break;
         case APP_CMD_GAINED_FOCUS: app.focused = true; app.last = nowSeconds(); break;
         case APP_CMD_PAUSE:   // WFS-39 RG-04 : arrière-plan ou perte du focus en course → pause (web blur / visibilitychange)
@@ -143,6 +144,7 @@ void android_main(android_app* a) {
     installerVibrationAndroid(a->activity->vm, a->activity->clazz);   // WFS-70 : chocs → vibration
     installerReseauAndroid(a->activity->vm, a->activity->clazz);      // WFS-83 : verrou de diffusion du salon
     gyroscopeAndroidDemarrer(a->looper);                               // WFS-108 : capteur d'inclinaison
+    chauffeAndroidDemarrer();                                          // WFS-123 : état thermique (API 30+)
     // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
@@ -177,6 +179,12 @@ void android_main(android_app* a) {
                 app.game.setMarges({(float)g_marges[0], (float)g_marges[1], (float)g_marges[2], (float)g_marges[3]});
             if (ecrans::chargement().enErreur()) ecrans::chargement().dessiner();   // WFS-74 : carte non chargée, message rouge
             else { manette::verifierDeconnexion(); manette::appliquer(app.game); app.game.update(dt); retourSystemeApresImage(app.game); app.game.render(t - app.start); }   // WFS-22 : manette ; WFS-116
+            // WFS-123 (RG-06) : 30 images/s hors course (batterie), 60 en course : attente du reste de la période de l'image
+            // (la synchro FIFO tient déjà 60 sur un écran 60 Hz ; l'attente ne sert qu'aux menus et aux écrans plus rapides)
+            if (const double reste = t + 1.0 / chauffe::plafondCourant() - nowSeconds(); reste > 0.002) {
+                const timespec d{0, (long)((reste - 0.001) * 1e9)};
+                nanosleep(&d, nullptr);
+            }
             // mesure pour la QA : images par seconde, vitesse et distance toutes les 5 s (logcat « QA »)
             if (app.fpsT0 == 0) app.fpsT0 = t;
             if (++app.fpsFrames, t - app.fpsT0 >= 5.0) {

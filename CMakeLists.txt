@@ -45,6 +45,7 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/audio/*.cpp)
 list(APPEND ENGINE_SOURCES src/platform/manette.cpp src/platform/manette_jeu.cpp)   # WFS-22 : manettes (Android, banc)
 list(APPEND ENGINE_SOURCES src/platform/retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone (Android ; compilé aussi au banc)
+list(APPEND ENGINE_SOURCES src/platform/chauffe.cpp src/platform/chauffe_systeme.cpp)   # WFS-123 : chauffe, 30 / 60 images/s
 
 if(MSVC)
   set(WARN /W3)
@@ -89,6 +90,7 @@ else()
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
+  add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
