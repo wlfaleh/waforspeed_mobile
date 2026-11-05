@@ -3571,3 +3571,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   Interdit : `src/world/**`, `src/render/**`, `shaders/**`, `src/ui/**`, `poursuite_system.cpp` (WFS-131), iOS (gel).
 - Critères : captures `trace-rond-point`, `trace-feux-rouge`, `trace-epingle`, `trace-autoroute` ; `test_trace` et tests CPU verts ; records v1 gardés sous `*_v1` + toast ; parcours complet `WFS_BANC=parcours` à 0 écart, prouvé au journal avant fusion ; ligne `qa/Check.md`.
 - Plan court : 1) `trace_cartes.*` (sections typées, API E2) branché dans `Track::build` ; 2) plans des 4 cartes (RG-06) ; 3) feux et ronds-points dans le trafic ; 4) sauvegarde trace=2 et version au salon ; 5) test_trace, captures, parcours.
+
+### 2026-11-05 20:45:30 — Skill « agent-developer » installé dans .claude (Claude, session 0183bv2V)
+- **Demande de l'utilisateur** : un skill commun à tous les agents développeurs (niveau expert, 10 ans d'expérience minimum ; respect de l'utilisateur, du PO et de la QA).
+- **Fait** : `.claude/skills/agent-developer/SKILL.md` (profil expert, hiérarchie utilisateur > PO > QA > développeur, comportement attendu, méthode d'un ticket en 7 étapes, standards C++20 / moteur / jeu, Web et serveur, sécurité, tests, traitement des retours PO et QA, format de signalement d'un risque, interdits) et `references/checklist-livraison.md` (revue de son diff avant fusion).
+- **Accroches** : `CLAUDE.md` (1 ligne : charger le skill avant de développer), `waforspeed-natif/SKILL.md` (renvoi en tête), `po-scrum-master.md` (rappel du skill à chaque attribution).
+- **Vérification** : le skill est reconnu par Claude Code (liste des skills). Aucune règle existante changée : le skill renvoie aux règles de `CLAUDE.md` (autonomie, fusion par confiance, gel iOS, zones des épics). Aucun code du jeu touché, aucun ticket WFS.
