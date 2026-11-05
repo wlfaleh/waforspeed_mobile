@@ -2826,3 +2826,27 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Zone** : `src/ui/ecrans/**`, `src/ui/echelle.*` (nouveau), `src/ui/text.*`, `toasts.*`, `hud.*`, `shaders/ui*`, `assets/fonts/**` ; lignes d'échelle et petits libellés de `garage.cpp` ; `camera_vue.cpp`, `course_system.cpp` (échelle, bandeau), `duel_system.cpp` (résultat), `commandes_tactiles.*` (zones, libellé), `manette_jeu.cpp` (échelle).
 - **Accroches annoncées (≤ 10 lignes chacune)** : `src/game/game.cpp` (RG-15 : commandes tactiles dessinées et lues seulement en course non finie, sans fondu) ; `src/platform/android_main.cpp` (RG-10 : touchers transmis à l'écran d'erreur du chargement, « Réessayer » relance l'initialisation). Aucun nouveau champ `GameView` (RG-18).
 - **Vérification prévue** : 17 tests CPU + licences en local, banc 1280 et 2400 regardé, une seule CI à la fin ; fusion par confiance si confiance > 50 %.
+
+### 2026-11-05 00:19:32 — WFS-97 attribué à Copilot (session dc0cdd3f) (PO)
+- **Ticket** : WFS-97 — Lot anomalies NUIT : taches de lumière du circuit + façades de la ville trop claires (ANO-37). **Épic** : E4. Exception écrite : en parallèle de WFS-100 (🔧, Claude session trafic), fichier séparé. **P1 Urgent.** Branche `feature/waforspeed-97`. Règles : `regles-de-gestion/WFS-97.md` (RG-01 à RG-03, lot élargi ANO-37, précisions RG-04 à RG-07 du jour).
+- **Pourquoi lui** : WFS-107 est ✅ (PR #87) et l'agent n'a aucun ticket en cours. Prêts en P1 : WFS-97 et WFS-109 (E4, exceptions écrites). À égalité de priorité, le plus petit numéro l'emporte : WFS-97. C'est aussi un lot d'anomalies, dans un fichier que WFS-100 ne touche pas. Le même défaut de conversion des couleurs du web que WFS-107 se retrouve ici : `effets::versHdr` est à réutiliser. Les autres prêts : WFS-109 (P1, E4) reste prêt pour le prochain agent ; WFS-110 (P2, E3 libre) aussi ; WFS-91 (E7) attend WFS-106.
+- **Zone autorisée** :
+  - `src/render/nuit.cpp`, sauf le bloc « RG-04 : feux du joueur » à la fin de `render()`, réservé à l'accroche de WFS-109 ;
+  - `#include "effets_particules.h"` permis, sans modifier ce fichier ;
+  - accroche ≤ 10 lignes dans `src/platform/desktop_main.cpp`, seulement si une capture de nuit manque.
+- **Interdit** : `src/world/**` (WFS-93), `src/render/renderer.*` et `shaders/**` (WFS-100), le reste de `src/platform/**`, `src/game/**`, iOS.
+- **Critères** :
+  - `carte-circuit-nuit`, `course-nuit-circuit-0` : taches froides visibles sous les mâts ;
+  - `course-nuit-ville-*`, `nuit-plage-corniche` : façades sombres, plus de lavande ni de rose ; néons, flaques et reflets qui ressortent, sans surexposition ;
+  - captures de jour inchangées ; valeurs notées au Journal ; tests CPU verts.
+- **Plan court** :
+  1. Au banc de nuit, vérifier d'abord `fp.exposure` 1,1 (web 0,9), `fp.ambient` 0,7, l'éclaircissement ×2,2, et l'hémisphère (QA : ×0,45).
+  2. Taches `poolCool` et flaques à l'éclat du web, avec `effets::versHdr` à la place de `lin()`.
+  3. Captures de nuit avant / après au Journal, puis fusion selon la confiance.
+- **Hors périmètre** : fenêtres éclairées de la ville (web : `ENV.windowsLit`, `MAT.bld`, `TEXS.facade`). Elles se trouvent dans `src/world/ville.cpp`, zone de WFS-93 en cours. Elles iront au prochain lot E2 si le QA juge encore la ville trop claire après WFS-97.
+- **Signalement de Copilot dc0cdd3f (halo orange de `accident-fumee`)** :
+  - inscrit en **ANO-48** dans `anno.md`, au statut 📋 Planifiée ;
+  - rangé dans **WFS-109**, qui reste ⏳ Prêt, avec deux règles ajoutées :
+    - RG-10 : éclat du web `MAT.blinkHalo`, de couleur `0xff9a10`, opacité 0,95, additif, sans ×7 ; halo ≤ 1,5 m ; conversion par `effets::versHdr` ;
+    - RG-11 : dans `nuit.cpp`, l'accroche de WFS-109 est limitée au bloc des feux du joueur, et le second à fusionner résout le conflit ;
+  - critère ajouté à WFS-109 : captures `accident-fumee` et `trafic-clignotant`.
