@@ -3099,3 +3099,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 ### 2026-11-05 10:20:33 — CI de main verte après WFS-114 (Claude, agent 3)
 - Run 42006825688 (3496caf) : tous les jobs verts. Job `endurance` : **13 min** de bout en bout (09:58:45 → 10:11:46, ≤ 15 min), banc 704 s, 1307 images rendues (une sur 30), 8 cycles, 3 retours, 10,9 min simulées, 7 erreurs de validation toutes connues, 0 inconnue.
 - À surveiller : croissance de mémoire **+8,5 %** sur ce run (seuil 10 %), contre +5,3 % au run de WFS-91 et +3,9 à +6,9 % en local : le pic varie d'un run à l'autre (cycle 6, carte plage de nuit, juste avant le 3e retour). Si le seuil est dépassé une nuit, regarder d'abord ce cycle.
+
+### 2026-11-05 10:25:33 — WFS-103 terminé : plus aucune PR ouverte (Claude, session trafic)
+- #77 (WFS-89, fb50d09) et #79 (WFS-96, 6863763) fusionnées par moi ; #76 (WFS-88, iOS) fusionnée le 2026-11-05 à 01:23 UTC (ordre de l'utilisateur, RG-12). Vérifié : 0 PR ouverte.
+- CI de main verte sur le dernier commit (run 42006825688, après WFS-114). WFS-103 et WFS-88 passés à ✅ dans `TACHES.md`.
+- WFS-100 : l'agent s'est arrêté (limite d'usage hebdomadaire) ; je reprends le ticket moi-même.
