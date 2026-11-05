@@ -95,3 +95,19 @@ valeurs de RG-01, RG-02, RG-05 et RG-06 ci-dessus quand elles diffèrent.
 **Pourquoi c'est un ticket facile** : nouveau fichier `src/platform/endurance_banc.*` qui enchaîne des scènes déjà écrites
 (`benchChangementCarte`, `ecrans::benchPause`, `ecrans::benchGarage`, `Game::setAutopilot`, `Game::allerA`), un job CI copié
 sur le modèle de WFS-69, aucune modification du jeu livré (l'APK ne change pas) : aucun risque pour le téléphone.
+
+## Ajout du PO (2026-11-05) — ANO-52 (bloquante) : plantage au retour d'arrière-plan
+Défaut trouvé par le banc : `Renderer::shutdown` laisse les handles pendants, `Renderer::init` sur le même objet réutilise
+des passes détruites → SIGSEGV. Décision du PO : **correction immédiate dans ce ticket, côté E7** (pas de micro-ticket, tu as
+déjà la reproduction), correction durable du renderer rangée dans le lot ouvert E4 (WFS-100, RG-W1).
+- RG-14 : dans `src/platform/android_main.cpp`, `termGraphics` (ou `initGraphics`) repart d'un **`Renderer` neuf** après
+  `app.renderer.shutdown()`, exactement comme le contournement du banc (ex. `app.renderer.~Renderer(); new (&app.renderer) Renderer();`
+  ou `app.renderer = Renderer{}` si le type l'accepte). Vérifier de même `VkCtx` et `Game` : s'ils gardent un état après
+  `shutdown`, même traitement (≤ 10 lignes au total, commentées « ANO-52 »). **Ne pas modifier `src/render/**`**.
+- RG-15 : le banc avec `WFS_ENDURANCE_ANDROID=1` (même objet, chemin Android exact, avec la correction RG-14 appliquée au
+  chemin commun) passe les retours d'arrière-plan à **0 erreur de validation et sans plantage** ; l'entrée ANO-52 de
+  `tools/qa/validation_connues.txt` est marquée « contournée côté plateforme (RG-14), correction durable WFS-100 ».
+- RG-16 : cette correction **change l'APK** : la fusion par confiance reste permise (changement de quelques lignes, vérifié au
+  banc), avec dans `qa/Check.md` : « ANO-52 : sur téléphone, mettre l'appli en arrière-plan en course puis revenir, 3 fois :
+  aucun plantage, la course reprend en pause ».
+- Critère : - [ ] ANO-52 : 3 retours d'arrière-plan en mode `WFS_ENDURANCE_ANDROID=1` sans plantage, 0 erreur de validation.
