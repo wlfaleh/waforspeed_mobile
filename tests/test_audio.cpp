@@ -64,6 +64,55 @@ int main(int argc, char** argv) {
         std::vector<float> fin; beep(fin, R, 660, 0, 0.2f); beep(fin, R, 440, 0.2f, 0.2f); beep(fin, R, 330, 0.4f, 0.4f); verifie("bip-fin", fin, false);
         verifie("crissement", boucle(R, 1.0f, 2100, 7, 0.9f, 3400, 9), true);
         verifie("nitro", boucle(R, 1.2f, 650, 0.7f, 0.6f), true);
+        std::vector<float> pe; noiseHit(pe, 0, R, 0.05f, 380, 1.2f, 0.55f, 140); verifie("petarade", pe, false);   // WFS-120
+        std::vector<float> tu; noiseHit(tu, 0, R, 0.22f, 2800, 0.8f, 0.25f, 1200); verifie("turbo", tu, false);
     }
-    return ok && okSfx ? 0 : 1;
+    // WFS-120 : pétarades (RG-01), turbo (RG-02), rupteur (RG-03), voiture électrique (RG-04), hors course (RG-06)
+    bool okEff = true;
+    auto effet = [&](const char* quoi, bool c) { std::printf("effets moteur : %-52s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okEff = okEff && c; };
+    auto salve = [&](float rpm, float kmh, bool enCourse, bool elec, float v = 0.4f) {   // plein gaz 1 s puis lever de pied 0,6 s
+        EffetsMoteur e; int n = 0;
+        for (int i = 0; i < 60; i++) e.update(1.0 / 60, rpm, 3, v, true, kmh, enCourse, elec);
+        for (int i = 0; i < 36; i++) { e.update(1.0 / 60, rpm, 3, v, false, kmh, enCourse, elec); n += e.claquements; }
+        return n;
+    };
+    const int n7 = salve(0.7f, 120, true, false);
+    effet("lever de pied à régime 0,70 : 2 à 4 claquements", n7 >= 2 && n7 <= 4);
+    effet("lever de pied à régime 0,40 : aucun", salve(0.4f, 120, true, false) == 0);
+    effet("lever de pied sous 30 km/h : aucun", salve(0.7f, 20, true, false) == 0);
+    const int n5 = salve(0.42f, 210, true, false, 0.8f);
+    effet("lever de pied en 5e à 210 km/h (régime 0,42) : 2 à 4", n5 >= 2 && n5 <= 4);
+    effet("voiture électrique : aucun", salve(0.7f, 120, true, true) == 0);
+    effet("hors course : aucun", salve(0.7f, 120, false, false) == 0);
+    {   // deux levers de pied à 0,5 s d'écart : une seule salve (pause de 1,5 s)
+        EffetsMoteur e; int n = 0;
+        for (int k = 0; k < 2; k++) {
+            for (int i = 0; i < 15; i++) e.update(1.0 / 60, 0.7f, 4, 0.6f, true, 120, true, false);
+            for (int i = 0; i < 15; i++) { e.update(1.0 / 60, 0.7f, 4, 0.6f, false, 120, true, false); n += e.claquements; }
+        }
+        effet("deux levers de pied en 0,5 s : une seule salve (2 à 4)", n >= 2 && n <= 4);
+    }
+    {   // turbo : 2 → 3 en charge ; pas au rétrogradage ni pied levé ; pas deux fois en 0,4 s
+        EffetsMoteur e; int t = 0;
+        for (int i = 0; i < 60; i++) e.update(1.0 / 60, 0.9f, 2, 0.3f, true, 80, true, false);   // déjà en 2e depuis 1 s
+        e.update(1.0 / 60, 0.5f, 3, 0.35f, true, 80, true, false); t += e.turbo;
+        effet("passage 2 → 3 en charge : un souffle", t == 1);
+        e.update(1.0 / 60, 0.9f, 4, 0.55f, true, 120, true, false);
+        effet("passage 3 → 4 trop tôt (< 0,4 s) : rien", !e.turbo);
+        EffetsMoteur f; f.update(1.0 / 60, 0.9f, 3, 0.4f, false, 90, true, false); f.update(1.0 / 60, 0.5f, 4, 0.55f, false, 90, true, false);
+        effet("passage pied levé : rien", !f.turbo);
+        EffetsMoteur h; h.update(1.0 / 60, 0.9f, 2, 0.3f, true, 80, true, true); h.update(1.0 / 60, 0.5f, 3, 0.35f, true, 80, true, true);
+        effet("voiture électrique : pas de turbo", !h.turbo);
+    }
+    {   // rupteur : 5e, plein gaz à la vitesse de pointe ; coupures un pas de 70 ms sur deux ; fin au lever de pied
+        EffetsMoteur e; int debut = 0, coupes = 0, pas = 0;
+        for (int i = 0; i < 120; i++) { e.update(1.0 / 120, 0.63f, 5, 0.99f, true, 250, true, false); debut += e.rupteurDebut; if (e.rupteur) { pas++; coupes += e.couper; } }
+        effet("5e à fond à la vitesse de pointe : un épisode de rupteur", debut == 1 && e.rupteur);
+        effet("coupures environ un pas sur deux", pas > 0 && coupes > pas / 3 && coupes < pas * 2 / 3);
+        e.update(1.0 / 120, 0.6f, 5, 0.99f, false, 250, true, false);
+        effet("lever de pied : rupteur fini", !e.rupteur && !e.couper);
+        EffetsMoteur f; for (int i = 0; i < 120; i++) f.update(1.0 / 120, 0.6f, 5, 0.85f, true, 220, true, false);
+        effet("5e à fond sous la vitesse de pointe : pas de rupteur", !f.rupteur);
+    }
+    return ok && okSfx && okEff ? 0 : 1;
 }
