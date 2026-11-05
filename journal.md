@@ -3123,3 +3123,53 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone : `src/game/modes_ecran.cpp`, navigation de `src/ui/garage.cpp`, `tests/**`, accroches ≤ 10 lignes annoncées (`desktop_main.cpp` pour les captures `parcours-*`, `game.h` si besoin du drapeau). Interdit : `src/ui/ecrans/**`, `src/render/**`, `shaders/**`, `src/world/**`, `.github/**`, iOS.
 - Critères : test CPU menu → Course solo → mode → Continuer → garage → Choisir → terrain → Rouler → course, puis retour ; Duel → salon ; garage ouvert depuis le menu → « Choisir » ramène au menu ; cause nommée au journal ; captures `parcours-mode`, `parcours-terrain`, `parcours-course`.
 - Plan : drapeau « vient du parcours de course » posé par `modes_ecran.cpp`, lu par « Choisir » du garage (→ `Ecran::Terrain`), effacé par « Retour » ; test de parcours ; fusion par confiance si > 50 %.
+
+### 2026-11-05 10:46:17 — WFS-116 créé et attribué à Claude (agent 3, session 011cpqZd) (PO)
+- WFS-115 demandé en premier mais déjà pris par Claude (session trafic) à 10:44 : attribution annulée avant envoi.
+- Nouveau besoin trouvé dans le code : le geste / bouton « Retour » d'Android (source clavier système) n'est pas consommé par `onInput` → `NativeActivity` se ferme, course perdue. Sujet simple et très visible sur téléphone.
+- Début : WFS-116 (E7, P2 Haute, libre depuis WFS-114 ✅), branche `feature/waforspeed-116`, règles `regles-de-gestion/WFS-116.md` (RG-01 à RG-07).
+- Zone : `src/platform/retour_systeme.*` (nouveau), `android_main.cpp` (`onInput`), `manette_android.cpp`, `JeuActivity.java`, `tests/test_retour_systeme.cpp` ; accroches ≤ 10 lignes : `manette_jeu.cpp` / `manette.h`, `CMakeLists.txt`.
+- Plan : réutiliser la zone `retour` des écrans (B de la manette), test CPU de parcours complet, fusion par confiance, `qa/Check.md`.
+
+### 2026-11-05 10:49:34 — WFS-100 fusionné (PR #94) (Claude, session trafic)
+- CI de la branche verte (run 42012262442) et captures regardées (`garage-0`, `course-nuit-circuit-0`, `vitrines-planche`) : rien de bloquant. Fusion 9d50529 après resynchronisation avec main (seuls des .md changés).
+- RG-W1 vérifiée : endurance `WFS_ENDURANCE_SANS_ANO52=1` avec validation, 8 cycles, 3 retours d'arrière-plan, 0 erreur de validation, aucun plantage, mémoire +7,1 % (seuil 10 %). Le contournement RG-14 de WFS-91 peut être retiré par un ticket E7 (à proposer au PO).
+- `anno.md` : ANO-21, ANO-27, ANO-28, ANO-50, ANO-52 ✅ Corrigées ; ligne dans `qa/Check.md`. À suivre : CI de main.
+- Suite : WFS-115 (menus, « Continuer ») en cours par un agent.
+
+### 2026-11-05 10:52:57 — WFS-116 fusionné par confiance (PR #95) (Claude, agent 3)
+- Touche / geste Retour du téléphone (`src/platform/retour_systeme.*`) : course → pause, pause → reprise, panneau des modes refermé, bouton « Retour » de l'écran (zones `retour` de la manette, `manette::toucher`, sans mode manette), fin de course sans bouton → menu, chargement : ignoré ; au menu principal l'appui est laissé à Android → `JeuActivity.onBackPressed` → `moveTaskToBack(true)` (arrière-plan, plus de fermeture). Un cran par appui, au relâcher, répétitions ignorées.
+- Sortie de `test_retour_systeme` (RG-06) : décisions par écran OK ; parcours : menu (modes) → menu (panneau fermé), garage → menu, terrain → menu, course → pause → course → pause, menu (réglages) → fermés, fin de course → menu, chargement → ignoré, menu → arrière-plan : OK. Essai local du vrai jeu (scène temporaire du banc, non commitée) : mêmes résultats.
+- Accroches annoncées : `src/platform/android_main.cpp` (7 lignes dans `onInput`, appel de trace dans la boucle, include), `src/platform/manette_jeu.cpp/.h` (`toucher` rendu appelable, lignes d'échelle de WFS-102 non touchées), `CMakeLists.txt` (2 lignes), `JeuActivity.java` (`onBackPressed`).
+- Limite : `.github/**` interdit pour ce ticket : `test_retour_systeme` n'est pas dans la liste des tests de la CI (à ajouter par un ticket E7 ou lors d'un prochain passage sur `build.yml`). Ligne ajoutée à `qa/Check.md` (essai sur téléphone). Je suis la CI de `main`.
+
+
+### 2026-11-05 10:53:56 — Début WFS-111 : Mode Poursuite police + étape 0 (retrait RG-14 de WFS-91) (PO)
+- Attribué à Claude (session trafic, 2e agent), épic E3 (exception : en parallèle de WFS-115, nouveaux fichiers `src/game/poursuite*`), branche `feature/waforspeed-111`.
+- Zone : `src/game/poursuite*` ; accroches ≤ 10 lignes dans `course_system.*`, `traffic_system.cpp` (hors feux, WFS-109) ; `tests/**` ; 1 ligne de `modes_ecran.cpp` après fusion de WFS-115 ; étape 0 : `android_main.cpp` (`termGraphics`), `endurance_banc.cpp`, `tools/qa/validation_connues.txt`.
+- Critères : RG-01 à RG-09 (première version jouable : police, trafic dense, 3 surprises, score 100), RG-10 (endurance sans contournement : 0 erreur, ≥ 3 retours), RG-12 (parcours complet prouvé).
+- Plan : étape 0 et banc d'endurance ; `poursuite.*` (score, police, renforts) ; trafic dense et embouteillages ; surprises ; HUD et fin ; test CPU + captures ; une seule CI.
+- Choix du PO : la suite de WFS-100 (quelques lignes en E7) est rangée dans ce ticket pour ne pas créer de micro-ticket ni de CI à part.
+
+### 2026-11-05 11:14:51 — CI de main verte après WFS-116 (Claude, agent 3)
+- Run 42014307375 (5b1f53a) : tous les jobs verts, dont `android` (retour_systeme.cpp, onInput, JeuActivity.onBackPressed compilés), endurance, bancs et publications. APK de main à jour : à essayer sur téléphone (geste Retour, voir la ligne WFS-116 de qa/Check.md).
+
+### 2026-11-05 11:15:19 — CI de main verte après WFS-100 (Claude, session trafic)
+- Run 42013871691 sur 9d50529 (PR #94) : tous les jobs verts ; run suivant 42014307375 (WFS-116) vert aussi. Aucune correction à faire.
+- En cours chez moi : WFS-115 (menus, « Continuer ») et WFS-111 (poursuite police, étape 0 : retrait du contournement ANO-52), branches poussées.
+
+### 2026-11-05 11:32:14 — WFS-117 créé et attribué à Claude (agent 3, session 011cpqZd) (PO)
+- Besoin : suite du point ouvert de WFS-116 ; `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont construits mais jamais lancés par la CI (liste écrite à la main dans `build.yml`) ; les tests futurs (WFS-111) seraient oubliés de même.
+- Début : WFS-117 (E7, P2 Haute, E7 libre : WFS-116 ✅, aucun ticket E7 actif), branche `feature/waforspeed-117`, règles `regles-de-gestion/WFS-117.md` (RG-01 à RG-07).
+- Zone : nouveau `tools/qa/tests_cpu.sh` (découverte automatique des `test_*`), étape « Test de la piste » de `.github/workflows/build.yml`, `tests/**` seulement pour réparer un test oublié (≤ 10 lignes). Interdit : `CMakeLists.txt`, reste de `build.yml`, `src/**`, iOS.
+- Critères : `[OK] test_retour_systeme` et `[OK] test_commandes` au journal du job `bench (texte)` de main, CI verte, un test en échec fait échouer l'étape.
+- Plan : script + 1 ligne dans build.yml, essai local, fusion par confiance, suivi de la CI de main.
+
+### 2026-11-05 11:33:59 — WFS-117 fusionné par confiance (PR #96) (Claude, agent 3)
+- `tools/qa/tests_cpu.sh <build>` lance tous les `build/test_*` (triés, arguments repris dans une table), « [OK] / [ÉCHEC] » par test et un résumé ; échec au premier test en échec ou si aucun test n'est trouvé. Étape « Test de la piste » de `build.yml` réduite à `bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py` (même condition `texte`).
+- Sortie locale (RG-06) : [OK] test_appui, test_audio, test_binarypack, test_cartes, test_commandes, test_conduite_libre, test_course, test_course5, test_duel, test_effets, test_manette, test_masquage, test_qualite, test_retour_systeme, test_roues, test_sauvegarde, test_systems, test_track, test_traffic, test_trafic_vivant — « tests CPU : 20 test(s) réussi(s) en 3 s ». Faux test en échec (non commité) : « [ÉCHEC] test_faux », code 1 ; dossier vide : « aucun test trouvé », code 1.
+- `test_retour_systeme` (WFS-116) et `test_commandes` (WFS-108) sont maintenant lancés par la CI. Accroche : une ligne dans le skill `waforspeed-natif` (partie tests). Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
+
+
+### 2026-11-05 11:35:09 — PO : WFS-118 créé, APK à signature fixe (po-scrum-master)
+- Retour de l'utilisateur : conflit de package à chaque installation. Cause : `release` signé avec `signingConfigs.debug`, clé recréée à chaque build de la CI. Ticket P1 (E7) : clé de test fixe dans le dépôt, même empreinte de certificat à chaque build, une dernière désinstallation à prévoir. Règles : `regles-de-gestion/WFS-118.md`.
