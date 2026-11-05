@@ -91,6 +91,9 @@ struct BoardRow { std::string name; double d = 0; bool me = false, done = false;
 // effets d'un contact pour le son, les étincelles et les règles de course (bump / accident)
 struct ContactEvents { int frottements = 0, chocs = 0; double impact = 0; bool accident = false; int side = 0; };
 
+// contact entre ma voiture et une autre (fantôme du duel, ordinateur de la course à 5 : WFS-110) ; effet sur ma voiture
+ContactEvents contacter(double dt, Player& pl, const Track& t, const CarDef& me, Ghost& g);
+
 class Session {
 public:
     // joinRoom / createRoom : entre dans le salon `code` (host = créateur : il choisit carte et distance)

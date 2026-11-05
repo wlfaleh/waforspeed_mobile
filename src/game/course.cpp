@@ -8,7 +8,7 @@ namespace wfs {
 // resetRace('play') du jeu web (partie « règles ») puis startRace() : state = 'count'
 void Course::reset() {
     state = RaceState::Count; clock = -3;
-    timeLeft = 30; nextCp = CHECK_DIST; level = 0; bonus = 0; raceTime = 0;
+    timeLeft = reglesWeb ? 30 : TEMPS_DEPART; nextCp = CHECK_DIST;   // WFS-110 : 60 s (30 s pour la référence du jeu web) level = 0; bonus = 0; raceTime = 0;
     combo = 0; comboTimer = 0; nearCount = 0; maxKmh = 0; overTimer = 0; accidents = 0;
     bumps = 0; scrapes = 0; lastImpact = 0;   // WFS-28
     lastCount = -1; goShown = 0; timeScale = 1; slowmoT = 0; echelleDt = 1;
@@ -79,7 +79,7 @@ void Course::step(double dt, const Player& pl, Traffic* traffic, double playerPo
         maxKmh = std::max(maxKmh, kmh(pl.speed));
         timeLeft -= cdt;
         if (pl.dist >= nextCp) {
-            const double add = std::max(5.0, 11 - level * 0.4);
+            const double add = reglesWeb ? std::max(5.0, 11 - level * 0.4) : TEMPS_CHECKPOINT;   // WFS-110 (RG-08)
             timeLeft += add; level++; nextCp += CHECK_DIST;
             if (traffic && traffic->cars.size() < 110) traffic->addCars(6, playerPos);
         }
@@ -108,7 +108,8 @@ std::vector<std::string> simulateCourse(const char* mapId, const char* carId, ui
     static Track t; t.build(map);
     Player pl; pl.reset(carById(carId));
     Traffic tr; tr.parallel = false; tr.reset(t, seed, map.trafficN, 0);
-    Course c; c.reset();
+    Course c; c.reglesWeb = true;  // référence du jeu web (tests/course_web.cjs)
+    c.reset();
     const double dt = 1.0 / 120;
     const double myLen = webCarLength(pl.car->id, pl.car->d.L);
     int lastLevel = 0, accidents = 0, n = 0;
