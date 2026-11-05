@@ -222,6 +222,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-126 | Rapport de plantage sur le téléphone (Partager au lancement suivant) + banc de chauffe dans la CI de nuit (suite de WFS-123) + croissance lente de la mémoire du banc d'endurance (RG-09) | E7 (+ accroches `src/core/log.h` 10 lignes, `CMakeLists.txt` 2 lignes) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-126), 2026-11-05 | WFS-29 ✅, WFS-114 ✅, WFS-123 ✅ | `feature/waforspeed-126` → PR #109 |  |  |
 | P3 Moyenne | WFS-127 | Showroom sonore : chaque voiture montrée au garage fait entendre son moteur (démarreur, coup de gaz, ralenti) | E6 (+ accroches ≤ 6 lignes `src/ui/garage.*` accesseur, `CMakeLists.txt`, `desktop_main.cpp`) | ✅ Fusionné (par confiance, PR #107) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-10 ✅, WFS-13 ✅, WFS-96 ✅, WFS-113 ✅ | `feature/waforspeed-127` |  |  |
 | P3 Moyenne | WFS-131 | Sirène de police réaliste : vraie sirène continue (wail / yelp), plus forte quand la police approche, effet Doppler, jingles « ARRÊTÉ » / « ÉCHAPPÉ » | E6 (+ accroche E3 ≤ 10 lignes `src/game/poursuite_system.cpp`) | 🔧 En cours | Claude, agent 3 (session 011cpqZd), 2026-11-05 | WFS-111 ✅, WFS-119 ✅, WFS-121 ✅ | `feature/waforspeed-131` |  |  |
+| P2 Haute | WFS-132 | Le jeu annonce une nouvelle version de l'APK au lancement (« Télécharger » en un appui) + boutons de volume sur le son du jeu | E7 | 🔧 En cours | Claude (session trafic), 2026-11-05 | WFS-87 ✅, WFS-118 ✅, WFS-126 ✅ | `feature/waforspeed-132` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -554,6 +555,9 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] Sirène continue qui enfle / s'éteint selon la distance (15 m → 0,45 ; 150 m → 0), yelp sous 20 m, Doppler borné ± 12 %
 - [ ] Jingle ARRÊTÉ ou ÉCHAPPÉ à la fin, plus de sirène ensuite ni dans les autres modes
 - [ ] `test_audio` étendu (RG-10), `sirene.wav` au banc, parcours complet RG-11 au Journal
+
+**WFS-132 — Nouvelle version de l'APK annoncée au lancement + boutons de volume** · E7 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-05, branche `feature/waforspeed-132` (règles : `regles-de-gestion/WFS-132.md`). Zone : `android/**` (`JeuActivity.java`, nouveau `MiseAJour.java`, `android/app/src/test/**`, `build.gradle` : dépendance JUnit), `.github/workflows/build.yml` (étape `testReleaseUnitTest` du job `android`, ≤ 3 lignes). Interdit : `src/**`, `shaders/**`, `assets/**`, `tools/qa/publier_apercu.sh` (format du titre à garder), `ios/**` et `ios.yml` (gel)
+- [ ] `MiseAJourTest` (8 cas RG-08) vert au job `android` ; banc `parcours` 0 écart ; déclencheur `wfs_maj_test` → boîte « Nouvelle version disponible » (Télécharger / Plus tard) ; sans réseau : une ligne `MISEAJOUR`, aucune boîte ; boutons de volume = son du jeu
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant

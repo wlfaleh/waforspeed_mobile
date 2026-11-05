@@ -3464,3 +3464,11 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Job `endurance` local (`tools/qa/endurance.sh`, VK_LAYER_KHRONOS_validation, sans l'exception) : **sortie 0**, 0 erreur de validation,
   cycles Checkpoint +0,8 %, cycle 10 (après la Course à 5) −6,9 %, parcours au doigt 0 écart. Tests CPU : 25 OK.
 - Suite : je suis la CI de main (job endurance).
+
+### 2026-11-05 18:06:15 — WFS-132 créé et attribué à Claude (session trafic) : nouvelle version de l'APK annoncée au lancement (PO)
+- **Contexte** : WFS-130 fusionné (PR #113). Aucun ticket Android ⏳ Prêt : WFS-122 attend `salon.*` de WFS-102 ; E2 (WFS-94), E4 (WFS-109), E6 (WFS-131), E8 / partie de E5 (WFS-102) occupées ; `anno.md` sans anomalie 🆕 ; rien de nouveau dans `tache utilisateur.md`. E7 libre : l'utilisateur teste l'APK de main plusieurs fois par jour et va le chercher à la main sur GitHub.
+- **Ticket** : WFS-132 — le jeu annonce une construction plus récente de la Release `apercu` (« Télécharger » / « Plus tard ») + boutons de volume sur le son du jeu · E7 · P2 Haute · branche `feature/waforspeed-132` · règles `regles-de-gestion/WFS-132.md` (RG-01 à RG-09).
+- **Zone** : `android/**` (`JeuActivity.java`, nouveau `MiseAJour.java`, `android/app/src/test/**`, `build.gradle`), `.github/workflows/build.yml` (étape JUnit du job `android`, ≤ 3 lignes). Interdit : `src/**`, `shaders/**`, `assets/**`, `tools/qa/publier_apercu.sh`, iOS (gel).
+- **Critères** : JUnit (8 cas) vert dans la CI, banc `parcours` 0 écart, déclencheur `wfs_maj_test` → boîte, sans réseau aucune boîte, volume = son du jeu, marche à suivre dans `qa/Check.md`.
+- **Réutilisation** : boîte de plantage de WFS-126 (`JeuActivity.java`), format du titre `publier_apercu.sh` l. 113 ; jeu web : rien à réutiliser (pas d'APK).
+- **Plan court** : `MiseAJour.analyser` pure + tests, requête en arrière-plan (5 s, 6 h), boîte au lancement seulement, `setVolumeControlStream`, fusion par confiance si > 50 %.
