@@ -221,6 +221,7 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-125 | Records par mode (Checkpoint, Course à 5, Poursuite) et fantôme de ton record en Checkpoint | E3 (+ accroches `CMakeLists.txt` 1 ligne, `desktop_main.cpp` 2 lignes) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-125), 2026-11-05 | WFS-24 ✅, WFS-110 ✅, WFS-119 ✅, WFS-21 ✅ | `feature/waforspeed-125` → PR #108 |  |  |
 | P2 Haute | WFS-126 | Rapport de plantage sur le téléphone (Partager au lancement suivant) + banc de chauffe dans la CI de nuit (suite de WFS-123) + croissance lente de la mémoire du banc d'endurance (RG-09) | E7 (+ accroches `src/core/log.h` 10 lignes, `CMakeLists.txt` 2 lignes) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-126), 2026-11-05 | WFS-29 ✅, WFS-114 ✅, WFS-123 ✅ | `feature/waforspeed-126` → PR #109 |  |  |
 | P3 Moyenne | WFS-127 | Showroom sonore : chaque voiture montrée au garage fait entendre son moteur (démarreur, coup de gaz, ralenti) | E6 (+ accroches ≤ 6 lignes `src/ui/garage.*` accesseur, `CMakeLists.txt`, `desktop_main.cpp`) | ✅ Fusionné (par confiance, PR #107) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-10 ✅, WFS-13 ✅, WFS-96 ✅, WFS-113 ✅ | `feature/waforspeed-127` |  |  |
+| P3 Moyenne | WFS-131 | Sirène de police réaliste : vraie sirène continue (wail / yelp), plus forte quand la police approche, effet Doppler, jingles « ARRÊTÉ » / « ÉCHAPPÉ » | E6 (+ accroche E3 ≤ 10 lignes `src/game/poursuite_system.cpp`) | 🔧 En cours | Claude, agent 3 (session 011cpqZd), 2026-11-05 | WFS-111 ✅, WFS-119 ✅, WFS-121 ✅ | `feature/waforspeed-131` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -548,6 +549,11 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] 10 Courses à 5 de suite au banc PC : RSS et images Vulkan stables (≤ +10 %), chiffres au Journal
 - [ ] job `endurance` vert sans `memoire-course5-connue`, 0 erreur de validation
 - [ ] parcours complet RG-06 au Journal (4 ordinateurs visibles à chaque départ) ; tests CPU OK ; ligne `qa/Check.md`
+
+**WFS-131 — Sirène de police réaliste (wail / yelp, volume selon la distance, Doppler, jingles de fin)** · E6 · P3 Moyenne · 🔧 En cours — Claude, agent 3 (session 011cpqZd), 2026-11-05, branche `feature/waforspeed-131` (règles : `regles-de-gestion/WFS-131.md`). Zone : `src/audio/**` (nouveau `sirene_son.h`), `tests/test_audio.cpp` ; accroches ≤ 10 lignes annoncées au Journal : `src/game/poursuite_system.cpp` (ligne de la sirène l. 184-186 et ligne du jingle à `fini_`, RG-07), `CMakeLists.txt` ≤ 3 lignes. Interdit : le reste de `src/game/**` (WFS-130, WFS-109, WFS-102), `poursuite.cpp/.h`, `src/ui/**`, `src/render/**`, `shaders/**`, `src/world/**`, `src/platform/**`, `.github/**`, iOS (gel)
+- [ ] Sirène continue qui enfle / s'éteint selon la distance (15 m → 0,45 ; 150 m → 0), yelp sous 20 m, Doppler borné ± 12 %
+- [ ] Jingle ARRÊTÉ ou ÉCHAPPÉ à la fin, plus de sirène ensuite ni dans les autres modes
+- [ ] `test_audio` étendu (RG-10), `sirene.wav` au banc, parcours complet RG-11 au Journal
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
