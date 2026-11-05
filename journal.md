@@ -2850,3 +2850,19 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
     - RG-10 : éclat du web `MAT.blinkHalo`, de couleur `0xff9a10`, opacité 0,95, additif, sans ×7 ; halo ≤ 1,5 m ; conversion par `effets::versHdr` ;
     - RG-11 : dans `nuit.cpp`, l'accroche de WFS-109 est limitée au bloc des feux du joueur, et le second à fusionner résout le conflit ;
   - critère ajouté à WFS-109 : captures `accident-fumee` et `trafic-clignotant`.
+
+### 2026-11-05 00:40:53 — WFS-97 : décision de périmètre, accroche d'une ligne dans `decor_carte.cpp` (PO)
+- **Question de Copilot (session dc0cdd3f)** : la « piste grise » du circuit de nuit ne vient pas du passage en linéaire de `poolCool` (au banc, `versHdr` ≈ `lin`, et le natif fait déjà × 2,2).
+- **Cause trouvée au banc** :
+  - la chaussée du circuit (`src/world/decor_carte.cpp` l. 320, WFS-53, `roadCircuit` sans `MAT_ROAD`) a l'ordre d'indices `{k, k+3, k+1, k+1, k+3, k+2}` ;
+  - la normale est donc retournée vers le bas par `scene.frag` ;
+  - l'asphalte ne reçoit ni lune, ni hémisphère, ni projecteurs, ni phares.
+- **Décision : option A acceptée.** Le développeur peut faire une accroche d'**une seule ligne** dans `decor_carte.cpp` (ordre `{k, k+1, k+3, k+1, k+2, k+3}`) dans WFS-97. Rien d'autre dans `src/world/**`. Il l'annonce au Journal avant la poussée.
+- **Pourquoi** : c'est la vraie cause, la correction tient en une ligne et elle a été essayée au banc de jour comme de nuit. Un ticket E2 séparé coûterait une CI de plus pour une ligne (interdit des micro-tickets), et WFS-97 livrerait des taches peu lisibles sur un asphalte noir.
+- **Coordination avec WFS-93 (Copilot session 0e5c192d, zone `src/world/**`)** : sa branche `feature/waforspeed-93` n'a encore que le commit d'attribution (16d7593). Le second à fusionner résout le conflit (une ligne).
+- **Changement de jour voulu (RG-09)** :
+  - l'asphalte du circuit est enfin éclairé par le soleil, comme `roadCircuit` en `MeshStandardMaterial` au web : banc (37, 44, 57) → (58, 61, 70) ;
+  - les captures de jour du circuit changent ; le critère « captures de jour inchangées » est corrigé dans `TACHES.md` et `regles-de-gestion/WFS-97.md` ;
+  - le noter dans `qa/Check.md` (avant / après) pour que le QA ne le prenne pas pour une régression.
+- **Accepté aussi (zone `nuit.cpp`, RG-10)** : `decay = 2` pour les lampadaires et les projecteurs, comme au web (`PointLight(…, 26, 2)`). À vérifier : flaques et têtes de lampe toujours visibles.
+- **RG-05 sans objet pour `poolCool`** : on garde `lin`.
