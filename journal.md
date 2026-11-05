@@ -2722,3 +2722,58 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - CI de la branche verte (bancs partie1, partie2, texte, ecrans-2400, vitrines, vie, nuit ; APK ; publication). Captures regardées : pédales et flèches agrandies sans chevauchement, réglages en 11 lignes, « R · KM/H » en marche arrière (frein maintenu 3,7 s → −16 km/h).
 - `commandes-grandes-gyro` : la voiture était bloquée par un accident du trafic pendant la capture (braquage 0,00 au journal) ; le pavé montre bien la consigne à droite. Journal du banc corrigé avant la fusion : il donne la consigne du gyroscope et signale le blocage.
 - Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`. Ensuite, arrêt : pas de nouveau ticket (ordre de l'utilisateur).
+
+### 2026-11-04 23:45:15 — PO : modes de jeu, duel entre amis, bug showroom (po-scrum-master)
+- **WFS-113** (E5, P1) bug flèches du showroom. **WFS-110** (E3, P2) Course à 5 voitures + Checkpoint 60 s + duel sans trafic. **WFS-111** (E3, P2) Poursuite police (après WFS-110). **WFS-112** (E3, P2) duel entre amis par Internet : serveur de relais, code + lien d'invitation ; **WFS-92 remplacé** (pas de bibliothèques tierces). Décision attendue de l'utilisateur : hébergement gratuit du relais (Cloudflare Workers recommandé). Commentaires du PO dans `tache utilisateur.md`.
+
+### 2026-11-04 23:48:25 — PO : décisions de l'utilisateur appliquées (po-scrum-master)
+- Cloudflare Workers accepté pour le relais du duel (WFS-112) ; Checkpoint : départ 60 s et +30 s par checkpoint (WFS-110 RG-08) ; valeurs de la poursuite police validées (WFS-111). Règles mises à jour.
+
+### 2026-11-04 23:51:37 — PO : les anomalies passent en priorité, regroupées en gros lots (po-scrum-master)
+- **Décision de l'utilisateur** : priorité aux anomalies du QA, en lots selon la complexité, pas de micro-ticket. **Lot INTERFACE = WFS-102** (P1, ⏳ Prêt, absorbe WFS-95 : ANO-16, 17, 18, 19, 20, 32, 35, 38, 39, 41, 42, 43, 44, 45 ; dépendances levées). **Lot NUIT = WFS-97** (P1, ajoute ANO-37). **Lot RENDU VOITURES = WFS-100** (en cours : ANO-21, 27, 28). Déjà corrigées en attente de recette : ANO-22, 23, 33 (WFS-99), ANO-25, 26, 36 (WFS-101). ANO-02 / ANO-40 / ANO-29 dans WFS-53 / WFS-94 / WFS-91. Règle ajoutée à `po-scrum-master.md`.
+
+### 2026-11-04 23:54:23 — QA de nuit : WFS-99, WFS-104, WFS-101, WFS-79, WFS-78 (qa-lead)
+
+- Recette par lot de `qa/Check.md` sur `main` : Release `apercu` (construction 562, commit `a256432`) et run `ios.yml` 41877869097 de `main`.
+- **WFS-99** : PASSABLE AVEC ANOMALIES MINEURES. Néons, voile, taches au sol, contre-jour de la M4, panneau et crédit sont conformes. Nouvelle anomalie **ANO-47** (mineure) : petits libellés de 6 px qui perdent des traits (« HYBR DE », « NITRO »). ANO-21 se voit encore au-dessus du toit (WFS-100 en cours).
+- **WFS-104** : VALIDÉ. La voiture est aussi nette en Haute et en Moyenne qu'au garage.
+- **WFS-101** : VALIDÉ. Étincelles visibles au choc, traits de nitro, trafic à ≈ 15 m, écran de fin aéré et centré.
+- **WFS-79** : VALIDÉ. `audio iOS : 48000 Hz` est présent ; « n rappels » n'est pas vérifiable tant que l'app iOS ne dépasse pas la première image.
+- **WFS-78** : **REFUSÉ** (bloquant). Pas de menu sur le simulateur iOS (`non-zero base vertex` refusé par MoltenVK, `vkEndCommandBuffer` -8). **Pour le PO** : la correction existe déjà, c'est WFS-88 / PR #76 (run iOS de la branche vert), que WFS-103 doit fusionner. Aucun nouveau ticket n'est nécessaire.
+- WFS-108 : la construction de `main` (run 564) est encore en cours ; recette dès que ses captures sont publiées.
+
+### 2026-11-04 23:54:59 — PO : anomalies et fonctionnalités en parallèle (po-scrum-master)
+- **Décision de l'utilisateur** : mélanger, pas de passage de l'un avant l'autre. Règle ajoutée à `po-scrum-master.md` : chaque agent qui demande un ticket reçoit le plus prioritaire de l'épic libre (lot d'anomalies ou fonctionnalité) ; répartition entre les agents pour mener les deux flux en parallèle. Épics libres en parallèle aujourd'hui : E8 (WFS-102 lot interface), E4 (WFS-97 lot nuit), E5 (WFS-113 showroom), E3 (WFS-110 modes de course).
+
+### 2026-11-04 23:55:43 — Fin WFS-105 : caméra de poursuite relevée (35°) et vue Proche qui montre la rue — PR #85 fusionnée par confiance (Copilot, session 1ef8d4d6)
+- **Fait** (`src/game/camera_vue.h`, commentaire dans `camera_vue.cpp`, `camera_banc.*`, `tests/test_systems.cpp`) :
+  - **Poursuite** (`POURSUITE_LOIN`) : 9 m derrière, 6,3 m de haut, regard à 14 m devant, point visé à −6,3 m (sous la route), champ de vision 66°. Avant : 8 m × 2,5 m, +0,9 m, 62°.
+  - **Proche** (`POURSUITE_PROCHE`) : 6 m derrière, 2,67 m de haut, regard à 7 m, point visé à −2,1 m, 60°. Avant : 4,6 m × 1,28 m, +0,78 m, 58°.
+  - **Inchangés (RG-04)** : capot, cockpit, suivi lissé, champ de vision selon la vitesse, « jamais sous la route » et suivi du demi-tour. Les planchers du demi-tour (6 m, 3 m) n'agissent plus en Poursuite, déjà au-dessus.
+  - **Banc caméra** :
+    - nouvelles captures pendant le décompte : `camera-poursuite-arret`, `camera-proche-arret` ;
+    - nouvelle capture `camera-poursuite-trafic` : 6 voitures placées à 16 / 23 / 30 / 42 / 55 / 68 m, sur les 3 files, à 92 % de la vitesse du joueur ;
+    - `camera-poursuite` reste au même instant (540 pas).
+- **Valeurs choisies (RG-05)** : choisies après des essais au banc local (lavapipe), en mesurant le recul et la hauteur réels derrière le suivi lissé.
+  - **Poursuite 35°** (calcul atan(6,3 / 9) ; 34° mesuré à l'arrêt, 27-29° en course, car la caméra recule avec la vitesse) :
+    - 30° et 33° essayés aussi (33° : 32° à l'arrêt, 26-28° en course) ; 35° est la plus haute des valeurs essayées qui garde l'horizon et la route lointaine dans l'image ;
+    - **40° écarté (RG-01)** : par calcul, l'horizon touche le haut de l'image avec 66° de champ et sort du cadre avec 62° : on ne voit plus loin devant ;
+    - **point visé sous la route (écart à RG-02)** : à +0,9 m, la voiture tomberait sous le compteur (≈ 92 % de la hauteur, par calcul). À −6,3 m, elle reste au-dessus du compteur (haut du compteur à ≈ 71,5 % ; `camera-poursuite-arret` regardée), et le regard reste tourné vers le virage, 14 m devant ;
+    - champ de vision porté à 66° (RG-02 autorise l'ajustement).
+  - **Proche 24°** (calcul ; 23° mesuré à l'arrêt, 17-18° en course) :
+    - 21° essayé aussi (5,6 m × 2,26 m) ; 24° retenu : la rue est bien visible par-dessus la voiture ;
+    - `camera-proche` à 134 km/h : la rue se voit par-dessus le toit, bien au-delà de 15 m (RG-06).
+  - **RG-03** :
+    - `camera-poursuite-trafic` : les 6 voitures (11,7 à 68,3 m) sont visibles, la route jusqu'à l'horizon ;
+    - `trafic-cam0` : les 3 voitures du peloton, et d'autres plus loin.
+  - **Portique de checkpoint** : poutre à ≈ 8,9 m de haut, au-dessus de la caméra (≤ 6,4 m), donc pas de conflit. Le code n'a ni tunnel ni pont.
+- **Vérification** :
+  - compilation sans avertissement ;
+  - après fusion de `main` : les 17 tests CPU (dont `test_commandes`) et `verifier_licences.py` passent ; `test_systems` donne 35,0° / 24,0° ;
+  - banc caméra regardé en 1280×720 et 2400×1080, avant et après la fusion de WFS-108 : voiture au-dessus du compteur, et les commandes agrandies ne gênent pas ;
+  - `trafic-cam0`, `course-cam0-0`, `conduite-demitour` et `conduite-contresens` regardés en local, avec un mode de banc temporaire non commité.
+- **Limites** :
+  - réglage choisi sur des captures PC : **l'utilisateur valide sur téléphone** (une ligne à changer dans `camera_vue.h`) ;
+  - les taches blanches près de la voiture sur `camera-poursuite-trafic` sont la fumée des pneus (ANO-46, corrigée par WFS-107) ;
+  - CI de la branche non attendue (fusion par confiance) : je suis la CI de `main` (`facefd2`).
+- **Suite** : ligne ajoutée dans `qa/Check.md`, statut ✅ dans `TACHES.md`, réponse dans `tache utilisateur.md`. Je demande le ticket suivant au PO.

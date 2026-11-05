@@ -1,10 +1,14 @@
 // WaForSpeed — banc d'essai des caméras (WFS-66) : voir camera_banc.h.
 #include "camera_banc.h"
+#include <algorithm>
+#include <cstdio>
+#include <vector>
 #include "../core/log.h"
 #include "../render/renderer.h"
 #include "camera_vue.h"
 #include "course_system.h"
 #include "game.h"
+#include "traffic_system.h"   // WFS-105 : voitures placées devant pour camera-poursuite-trafic
 
 namespace wfs {
 
@@ -32,7 +36,14 @@ void benchCameras(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("caméras : appui sur le bouton (%.0f, %.0f) → vue %s", x, y, VUES[(int)vueCamera()].nom);
     };
     g.setAutopilot(true); g.camMode = 0;
-    rouler(60 * 9);                       // décompte (3 s) puis 6 s de course
+    // WFS-105 : à l'arrêt (décompte), voiture entière au-dessus du compteur, en Poursuite puis en Proche
+    rouler(90);
+    capture("camera-poursuite-arret");
+    choisirVue(VueCamera::Proche);
+    rouler(1);
+    capture("camera-proche-arret");
+    choisirVue(VueCamera::Poursuite);
+    rouler(60 * 9 - 91);                  // décompte (3 s) puis 6 s de course, comme avant WFS-105
     capture("camera-poursuite");
     appuyer(19);                          // WFS-85 : Poursuite (haute) → Proche (basse) → Capot → Cockpit
     rouler(30);
@@ -52,6 +63,41 @@ void benchCameras(Game& g, Renderer& r, const std::string& out) {
     g.onTouch({23, W * 0.29f, H * 0.70f, false}); g.onTouch({22, W * 0.89f, H * 0.74f, false});
     rouler(6);
     appuyer(24);   // le cycle revient à la poursuite
+    // WFS-105 (RG-03) : Poursuite dans le trafic : 6 voitures placées de 16 à 68 m devant, sur les 3 files, un peu plus
+    // lentes que le joueur ; au moins 4 doivent se voir, avec la route au loin
+    g.setAutopilot(true);
+    rouler(90);
+    if (Traffic* tr = activeTrafficMut()) {
+        const Player& pl = g.player();
+        std::vector<int> idx;
+        for (size_t i = 0; i < tr->cars.size(); i++) if (!tr->cars[i].crashed) idx.push_back((int)i);
+        auto devant = [&](int i) { const double d = tr->cars[(size_t)i].prevDz; return d < 0 ? d + 1e9 : d; };   // les plus proches devant d'abord
+        std::sort(idx.begin(), idx.end(), [&](int a, int b) { return devant(a) < devant(b); });
+        const double DISTANCE_M[6] = {16, 23, 30, 42, 55, 68};
+        const int VOIE[6] = {1, 0, 2, 1, 0, 2};
+        for (size_t k = 0; k < idx.size(); k++) {
+            TrafficCar& c = tr->cars[(size_t)idx[k]];
+            if (k >= 6) {   // les autres voitures proches passent loin derrière (hors champ) : aucune voiture superposée
+                if (c.prevDz * M > -12 && c.prevDz * M < 90) { c.z = pl.position - (150 + 10.0 * k) / M; c.prevDz = c.z - pl.position; }
+                continue;
+            }
+            c.z = pl.position + PLAYER_Z + DISTANCE_M[k] / M; c.prevDz = DISTANCE_M[k] / M;   // z ramené sur la piste par Traffic::step
+            c.lane = c.target = VOIE[k]; c.offset = c.prevOff = LANE_X[VOIE[k]]; c.laneYaw = 0; c.signal = 0; c.pending = false;
+            c.speed = c.want = pl.speed * 0.92; c.think = 6;   // pas de changement de file pendant la capture (comme WFS-101)
+        }
+        rouler(30);
+        capture("camera-poursuite-trafic");
+        int n = 0; std::string liste;
+        for (const TrafficCar& c : tr->cars) {
+            const double dz = c.prevDz * M;
+            if (dz <= 0 || dz >= 100) continue;
+            char b[48]; std::snprintf(b, sizeof b, "%s%.1f m (file %+.2f)", n ? ", " : "", dz, c.offset);
+            liste += b; n++;
+        }
+        WFS_LOG("camera-poursuite-trafic : %d voiture(s) entre 0 et 100 m devant : %s", n, liste.c_str());
+    } else {
+        WFS_ERR("caméras : trafic inactif, pas de capture camera-poursuite-trafic");
+    }
     g.shutdown();
     courseBenchRules(false);
     choisirVue(avant);
