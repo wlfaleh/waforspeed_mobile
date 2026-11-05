@@ -222,12 +222,8 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-126 | Rapport de plantage sur le téléphone (Partager au lancement suivant) + banc de chauffe dans la CI de nuit (suite de WFS-123) + croissance lente de la mémoire du banc d'endurance (RG-09) | E7 (+ accroches `src/core/log.h` 10 lignes, `CMakeLists.txt` 2 lignes) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-126), 2026-11-05 | WFS-29 ✅, WFS-114 ✅, WFS-123 ✅ | `feature/waforspeed-126` → PR #109 |  |  |
 | P3 Moyenne | WFS-127 | Showroom sonore : chaque voiture montrée au garage fait entendre son moteur (démarreur, coup de gaz, ralenti) | E6 (+ accroches ≤ 6 lignes `src/ui/garage.*` accesseur, `CMakeLists.txt`, `desktop_main.cpp`) | ✅ Fusionné (par confiance, PR #107) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-10 ✅, WFS-13 ✅, WFS-96 ✅, WFS-113 ✅ | `feature/waforspeed-127` |  |  |
 | P3 Moyenne | WFS-131 | Sirène de police réaliste : vraie sirène continue (wail / yelp), plus forte quand la police approche, effet Doppler, jingles « ARRÊTÉ » / « ÉCHAPPÉ » | E6 (+ accroche E3 ≤ 10 lignes `src/game/poursuite_system.cpp`) | 🔧 En cours | Claude, agent 3 (session 011cpqZd), 2026-11-05 | WFS-111 ✅, WFS-119 ✅, WFS-121 ✅ | `feature/waforspeed-131` |  |  |
-<<<<<<< Updated upstream
 | P2 Haute | WFS-132 | Le jeu annonce une nouvelle version de l'APK au lancement (« Télécharger » en un appui) + boutons de volume sur le son du jeu | E7 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-05 | WFS-87 ✅, WFS-118 ✅, WFS-126 ✅ | `feature/waforspeed-132` | PR #114 (fusion par confiance, 894208c) |  |
-=======
-| P2 Haute | WFS-132 | Le jeu annonce une nouvelle version de l'APK au lancement (« Télécharger » en un appui) + boutons de volume sur le son du jeu | E7 | 🔧 En cours | Claude (session trafic), 2026-11-05 | WFS-87 ✅, WFS-118 ✅, WFS-126 ✅ | `feature/waforspeed-132` |  |  |
 | P2 Haute | WFS-133 | Course à 5, 2e passage : choix de la difficulté (Facile / Normale / Difficile) + ordinateurs combatifs (rattrapage, aspiration, nitro) | E3 (+ accroche E0 ≤ 10 lignes `src/core/configgame.*`) | 🔧 En cours | Claude (session trafic), 2026-11-05 | WFS-110 ✅, WFS-125 ✅, WFS-128 ✅, WFS-130 ✅ | `feature/waforspeed-133` |  |  |
->>>>>>> Stashed changes
 
 ## Critères d'acceptation des tickets ouverts
 
