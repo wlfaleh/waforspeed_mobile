@@ -89,11 +89,16 @@ jobs:
     # sauté sur les envois de feature/** et claude/**
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 25   # WFS-114 : ≤ 15 min de bout en bout (compilation ≈ 1 min, banc ≈ 8 min sur la CI, une image sur 30) ; WFS-126 : + chauffe ≤ 4 min la nuit
+    timeout-minutes: 35   # WFS-114 : ≈ 15 min (compilation ≈ 1 min, banc 7 à 12 min sur la CI, une image sur 30) ; WFS-126 : + chauffe ≤ 4 min la nuit, et marge pour apt-get (jusqu'à 12 min vus le 2026-11-05)
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)
-        run: sudo apt-get update && sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers ninja-build
+        # WFS-126 : miroir Ubuntu parfois bloqué (run 42063069449 : apt-get update figé jusqu'à la fin du job) : 5 min au plus par essai, 2 essais
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers ninja-build && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
       - name: Compilation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
       - name: Endurance
