@@ -7,6 +7,7 @@
 #include "../game/course_system.h"
 #include "../game/player.h"
 #include "sfx_synth.h"
+#include "sfx_course.h"   // WFS-124
 #include "trafic_sons.h"   // WFS-121
 
 namespace wfs {
@@ -27,6 +28,9 @@ const char* sfxNom(SfxId id) {
         case SfxId::Sirene: return "sirene";   // WFS-111
         case SfxId::Petarade: return "petarade"; case SfxId::Turbo: return "turbo";   // WFS-120
         case SfxId::Passage: return "passage"; case SfxId::Klaxon: return "klaxon";   // WFS-121
+        case SfxId::ChronoTic: return "chrono-tic"; case SfxId::ChronoUrgent: return "chrono-urgent";   // WFS-124
+        case SfxId::Combo2: return "combo-2"; case SfxId::Combo3: return "combo-3"; case SfxId::Combo4: return "combo-4";
+        case SfxId::Combo5: return "combo-5"; case SfxId::Combo6: return "combo-6"; case SfxId::ComboPerdu: return "combo-perdu";
         default: return "?";
     }
 }
@@ -54,6 +58,11 @@ void SfxMixer::build(float rate) {
     noiseHit(sons_[(int)SfxId::Turbo], 0, rate, 0.22f, 2800, 0.8f, 0.25f, 1200);
     // WFS-121 (RG-02 à RG-05) : passage d'une voiture (Doppler), klaxon du trafic, rumeur du trafic proche
     sons_[(int)SfxId::Passage] = sonPassage(rate); sons_[(int)SfxId::Klaxon] = sonKlaxon(rate);
+    // WFS-124 : tic du chrono sous 8 s (plus aigu sur 3, 2, 1), bip du combo (un ton de plus par combo), combo perdu
+    beep(sons_[(int)SfxId::ChronoTic], rate, 1000, 0, 0.06f);
+    beep(sons_[(int)SfxId::ChronoUrgent], rate, 1500, 0, 0.09f);
+    for (int n = 2; n <= sfxcourse::COMBO_MAX_SON; n++) beep(sons_[(int)SfxId::Combo2 + n - 2], rate, sfxcourse::frequenceCombo(n), 0, 0.08f);
+    auto& perdu = sons_[(int)SfxId::ComboPerdu]; beep(perdu, rate, 440, 0, 0.1f); beep(perdu, rate, 330, 0.1f, 0.1f);
     rumeur_ = boucleRumeur(rate); kRumeur_ = 1 - std::exp(-1 / (trafic::RUMEUR_TAU * rate));
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
@@ -116,9 +125,11 @@ void SfxMixer::mix(float* out, int n, double now) {
 void SfxEvenements::resync(const Course& c) {
     c_ = &c; count_ = c.lastCount; level_ = c.level; accidents_ = c.accidents; near_ = c.nearCount;
     bumps_ = c.bumps; scrapes_ = c.scrapes; state_ = (int)c.state;
+    chrono_ = sfxcourse::chronoAffiche(c.timeLeft); combo_ = c.combo;   // WFS-124 (RG-07) : « Rejouer » sans tic parasite
 }
 
 static std::atomic<uint32_t> g_interface{0};   // WFS-96 : sons demandés par les écrans (un bit par son)
+static_assert((int)SfxId::Count <= 32, "g_interface : un bit par son, 32 au plus (WFS-124)");
 void sfxInterface(SfxId id) { g_interface.fetch_or(1u << (int)id); }
 void SfxEvenements::update(double, const GameView& g, SfxMixer& m) {
     for (uint32_t d = g_interface.exchange(0); d; d &= d - 1) m.play((SfxId)__builtin_ctz(d));
@@ -147,6 +158,19 @@ void SfxEvenements::update(double, const GameView& g, SfxMixer& m) {
     if (c->bumps > bumps_) m.play(SfxId::Choc, (float)(0.4 + c->lastImpact));
     if (c->scrapes > scrapes_) m.play(SfxId::Frottement);
     if (c->state == RaceState::Over && state_ != (int)RaceState::Over) m.play(SfxId::BipFin);
+    {   // WFS-124 : tic du chrono (RG-01 / RG-02), bip du combo (RG-03), combo perdu sur un choc (RG-04)
+        const int aff = sfxcourse::chronoAffiche(c->timeLeft);
+        if (sfxcourse::chronoActif(c->state == RaceState::Play, c->duelFinish, c->timeLeft, true)) {
+            const sfxcourse::Tic t = sfxcourse::ticChrono(chrono_, aff);
+            if (t != sfxcourse::AUCUN) m.play(t == sfxcourse::URGENT ? SfxId::ChronoUrgent : SfxId::ChronoTic);
+        }
+        chrono_ = aff;
+        if (c->state == RaceState::Play) {
+            if (const int n = sfxcourse::sonCombo(combo_, c->combo)) m.play((SfxId)((int)SfxId::Combo2 + n - 2));
+            if (sfxcourse::comboPerdu(combo_, c->combo, bumps_, c->bumps)) m.play(SfxId::ComboPerdu);
+        }
+        combo_ = c->combo;
+    }
     level_ = c->level; accidents_ = c->accidents; near_ = c->nearCount; bumps_ = c->bumps; scrapes_ = c->scrapes; state_ = (int)c->state;
 
     // crissements : mêmes conditions que la fumée de js/world/scene.js (skid) ; souffle de nitro tant qu'elle brûle

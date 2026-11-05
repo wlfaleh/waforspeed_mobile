@@ -16,7 +16,9 @@ enum class SfxId : uint8_t {
     Accident, Choc, Frottement, ContactDuel, QuasiContact,
     BipDecompte, BipGo, BipCheckpoint, BipFin, BipDuel, Garage, Carte, Sirene,   // WFS-96 : sons d'interface ; WFS-111 : sirène
     Petarade, Turbo,   // WFS-120 : pétarade (un claquement), souffle du turbo
-    Passage, Klaxon, Count   // WFS-121 : passage d'une voiture du trafic (Doppler), klaxon du trafic
+    Passage, Klaxon,   // WFS-121 : passage d'une voiture du trafic (Doppler), klaxon du trafic
+    ChronoTic, ChronoUrgent, Combo2, Combo3, Combo4, Combo5, Combo6, ComboPerdu,   // WFS-124 : chrono sous 8 s, combos
+    Count
 };
 const char* sfxNom(SfxId id);
 void sfxInterface(SfxId id);   // WFS-96 : son demandé par un écran (joué au pas suivant par SfxEvenements)
@@ -57,6 +59,7 @@ private:
     void resync(const Course& c);
     const Course* c_ = nullptr;
     int count_ = -1, level_ = 0, accidents_ = 0, near_ = 0, bumps_ = 0, scrapes_ = 0, state_ = 0;
+    int chrono_ = 0, combo_ = 0;   // WFS-124 : valeur entière affichée du chrono, combo au pas précédent
     bool crisse_ = false, nitro_ = false;
 };
 
