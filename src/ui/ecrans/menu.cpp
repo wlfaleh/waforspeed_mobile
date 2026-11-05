@@ -11,6 +11,8 @@
 #include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../echelle.h"   // WFS-102
+#include "../../game/commandes_tactiles.h"   // WFS-102 : dessin2d (polygone d'un seul tenant)
 #include "chargement.h"
 #include "reglages.h"
 #include "terrain.h"
@@ -128,10 +130,9 @@ public:
             if (grise) a *= 0.45f;
             // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
             const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};
-            const int B = 10;
-            for (int b = 0; b < B; b++) {
-                const float tb = (b + 0.5f) / B;
-                r.uiRect(x, yi + itemH * b / B, lw - 14 * k * tb, itemH / B + 0.5f, fond);
+            {   // WFS-102 (RG-04, ANO-20) : un seul polygone (plus de bandes)
+                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * k, yi + itemH}, {x, yi + itemH}};
+                dessin2d::polygone(r, p, 4, dessin2d::uni(fond));
             }
             const bool solo = i == SOLO;   // #startBtn : barre et titre orange
             if (presse) {   // barre gauche cyan --accent-2 avec halo (0 0 12px rgba(0,229,255,.7))

@@ -1,5 +1,6 @@
 // WaForSpeed — écran de réglages (WFS-68 dans WFS-41) : voir reglages.h.
 #include "../../render/qualite_auto.h"   // WFS-104
+#include "../echelle.h"   // WFS-102 : échelle et biseau partagés
 #include "reglages.h"
 #include <algorithm>
 #include <cmath>
@@ -36,12 +37,8 @@ struct Zone {
     float x = 0, y = 0, w = 0, h = 0;
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; }
 };
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
+    ui::biseau(r, x, y, w, h, biais, c);
 }
 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard

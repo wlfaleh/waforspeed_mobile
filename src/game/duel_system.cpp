@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <map>
+#include "../ui/echelle.h"   // WFS-102 : biseau des boutons du résultat
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../render/model_loader.h"
@@ -243,9 +244,9 @@ private:
         g_zones[0] = bx; g_zones[1] = by; g_zones[2] = bw; g_zones[3] = bh;
         g_zonesMenu[0] = bx + bw + gap; g_zonesMenu[1] = by; g_zonesMenu[2] = bw; g_zonesMenu[3] = bh;
         const bool attend = s.status() == duel::Status::Ready;
-        r.uiRect(revanche_.x, revanche_.y, bw, bh, ui::ORANGE);
+        ui::biseau(r, revanche_.x, revanche_.y, bw, bh, 14 * ui::echelle(W, H), ui::ORANGE);   // WFS-102 (RG-08) : biseau 14 px comme l'écran de fin
         ui::text(r, revanche_.x + bw / 2, by + 1.9f * u, 3.4f * u, attend ? "PRÊT…" : "REVANCHE", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        r.uiRect(menu_.x, menu_.y, bw, bh, vec4{1, 1, 1, 0.10f});
+        ui::biseau(r, menu_.x, menu_.y, bw, bh, 14 * ui::echelle(W, H), {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // .btn--ghost (#1E2130)
         ui::text(r, menu_.x + bw / 2, by + 1.9f * u, 3.4f * u, "RETOUR", TEXTE, ui::CENTRE, 0.08f, false);
     }
 

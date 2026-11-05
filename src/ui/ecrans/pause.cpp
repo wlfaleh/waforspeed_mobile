@@ -1,5 +1,6 @@
 // WaForSpeed — pause en course (WFS-39) : voir pause.h.
 #include "pause.h"
+#include "../echelle.h"   // WFS-102 : échelle et biseau partagés
 #include <algorithm>
 #include <cmath>
 #include "../../core/log.h"
@@ -30,12 +31,8 @@ enum { REPRENDRE = 0, RECOMMENCER = 1, QUITTER = 2 };
 const char* TEXTES[3] = {"Reprendre", "Recommencer", "Quitter la course"};   // index.html, #pause .actions
 
 // parallélogramme (clip-path des .btn / .cam-btn) en bandes horizontales : haut décalé à droite de `biais`
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
+    ui::biseau(r, x, y, w, h, biais, c);
 }
 
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles

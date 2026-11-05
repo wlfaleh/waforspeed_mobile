@@ -1,5 +1,6 @@
 // WaForSpeed — écran Salon du duel en ligne (WFS-83) : voir salon.h.
 #include "salon.h"
+#include "../echelle.h"   // WFS-102 : échelle et biseau partagés
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -62,12 +63,8 @@ const reseau::TransportDouble* doubleActuel() {
     return duelSession().inRoom() && duelSession().code() == g_doubleCode ? g_double : nullptr;
 }
 
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
+    ui::biseau(r, x, y, w, h, biais, c);
 }
 // bouton .btn (orange) ou .btn--ghost (surface) avec son texte en capitales ; renvoie la zone touchable
 Zone bouton(Renderer& r, float x, float y, float h, float k, const char* texte, bool plein, bool droite = false) {

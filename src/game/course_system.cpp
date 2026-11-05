@@ -1,5 +1,6 @@
 // WaForSpeed — module « course » (WFS-12) : voir course_system.h.
 #include "course_system.h"
+#include "../ui/echelle.h"   // WFS-102 : échelle et biseau partagés
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -154,10 +155,8 @@ private:
     }
     // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais), haut décalé à droite, bas à gauche ;
     // WFS-101 (RG-05, ANO-20) : un seul quadrilatère (plus de bandes horizontales ni de rayures)
-    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-        const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
-                               {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
-        r.uiQuad(q);
+    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
+        ui::biseau(r, x, y, w, h, biais, c);
     }
     // endRace du jeu web (WFS-24, RG-03 / RG-09) : record écrit seulement s'il est battu (s > best), puis enregistrement
     // (thread de travail). Sauvegarde inactive (banc d'essai sans WFS_BANC=sauvegarde) : rien, captures inchangées.
