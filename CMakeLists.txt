@@ -101,4 +101,5 @@ else()
   target_compile_definitions(test_commandes PRIVATE TEST_COMMANDES_SEUL)
   add_executable(test_audio tests/test_audio.cpp src/audio/engine_synth.cpp src/audio/trafic_sons.cpp src/game/player.cpp src/game/track.cpp)   # WFS-121 : sons du trafic
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
+  add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
 endif()

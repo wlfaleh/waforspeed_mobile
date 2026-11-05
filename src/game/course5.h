@@ -24,6 +24,11 @@ bool sansTrafic(bool enCourse);
 bool ouvrirChoixMode();
 bool choixModeOuvert();
 void choixModeBanc(bool force);
+// WFS-125 (RG-09) : banc d'essai : centre d'une zone du panneau des modes (« carte0 »…, « km0 »…, « continuer »), boutons
+// de l'écran de fin de la course à 5 (« rejouer », « menu ») et record battu à la dernière course à 5
+bool choixModeCentre(const std::string& zone, float& x, float& y);
+bool course5Bouton(const std::string& nom, float& x, float& y);
+bool course5NouveauRecord();
 class Game; class Renderer;
 // banc d'essai (WFS_BANC=course5) : modes-choix, course5-grille, course5-course, course5-fin
 void benchCourse5(Game& g, Renderer& r, const std::string& outDir);
