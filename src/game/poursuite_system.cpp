@@ -14,7 +14,9 @@
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "../ui/appui.h"
-#include "../ui/ecrans/reglages.h"   // banc : appels de dessin en qualité Basse
+#include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/terrain.h"   // RG-12 : « Rouler »
+#include "../ui/garage.h"           // RG-12 : « Choisir »   // banc : appels de dessin en qualité Basse
 #include "../ui/text.h"
 #include "course5.h"
 #include "course_system.h"
@@ -440,13 +442,52 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
                 s ? s->policeDerriere(g.player().dist) : 0, tr ? tr->cars.size() : (size_t)0, s ? s->bandeauActuel().c_str() : "", r.appelsDessin());
     };
     auto jusqua = [&](double km, int max) { for (int i = 0; i < max && g.player().dist * M / 1000 < km; i++) { g.update(1.0 / 60); if (i % 12 == 0) g.render(t += 0.2); } };
-    g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
     auto basse = [&](const char* ou) {   // RG-08 : appels de dessin de la même image en qualité Basse (téléphone), sans capture
         ecrans::Reglages& R = ecrans::reglages(); const int q0 = R.qualite;
         R.qualite = 0; ecrans::appliquerQualiteNiveau(r); g.render(t += 0.02); g.render(t += 0.02);
         WFS_LOG("poursuite (RG-08) : %s en qualité Basse : %u appels de dessin", ou, r.appelsDessin());
         R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     };
+    // RG-12 : parcours au doigt : accueil → « Course solo » (panneau des modes) → carte « Poursuite » → « Continuer » →
+    // garage → « Choisir » → terrain → « Rouler » → course de poursuite (la fin et « Menu » → accueil : plus bas)
+    int ecarts = 0, doigt = 60;
+    auto appuyer = [&](float x, float y) {   // doigt Android : down, 4 mouvements, up (une image dessinée entre chaque)
+        const int id = doigt++;
+        g.render(t += 1.0 / 60);
+        g.onTouch({id, x, y, true}); g.update(1.0 / 60); g.render(t += 1.0 / 60);
+        for (int k = 1; k <= 4; k++) { g.onTouch({id, x + 0.4f * k, y, true}); g.update(1.0 / 60); g.render(t += 1.0 / 60); }
+        g.onTouch({id, x + 2, y, false}); images(4, 2);
+    };
+    auto attendu = [&](Ecran e, const char* etape) {
+        if (g.ecran() == e) WFS_LOG("poursuite (parcours) : %s → écran %s (attendu)", etape, nomEcran(e));
+        else { ecarts++; WFS_ERR("poursuite (parcours) : %s → écran %s, attendu %s", etape, nomEcran(g.ecran()), nomEcran(e)); }
+    };
+    {   // cartes et « Continuer » du panneau des modes (mise en page de modes_ecran.cpp, marges nulles au banc)
+        const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f, cx = W / 2;
+        const float gap = 2.4f * u, cw = std::min(42 * u, (W - 8 * u - 3 * gap) / 4), x0 = cx - (4 * cw + 3 * gap) / 2;
+        g.allerA(Ecran::Menu); images(30, 10);
+        choixModeBanc(true); ouvrirChoixMode(); images(10, 5);
+        if (!choixModeOuvert()) { ecarts++; WFS_ERR("poursuite (parcours) : panneau des modes fermé"); }
+        appuyer(x0 + 2 * (cw + gap) + cw / 2, 26 * u + 17 * u);                         // carte 03 « Poursuite »
+        appuyer(x0 + 4 * cw + 3 * gap - 14 * u, H - 8 * u - 6 * u + 4 * u);               // « Continuer »
+        attendu(Ecran::Garage, "« Poursuite » puis « Continuer »");
+        if (modeCourse() != ModeCourse::Poursuite) { ecarts++; WFS_ERR("poursuite (parcours) : mode %s après « Continuer »", nomMode(modeCourse())); }
+        else WFS_LOG("poursuite (parcours) : mode %s retenu", nomMode(modeCourse()));
+        float x = 0, y = 0;
+        for (int i = 0; i < 600 && !ecrans::garageBouton("choisir", x, y); i++) images(1, 4);
+        images(30, 4);
+        if (ecrans::garageBouton("choisir", x, y)) appuyer(x, y); else { ecarts++; WFS_ERR("poursuite (parcours) : « Choisir » absent"); }
+        attendu(Ecran::Terrain, "garage puis « Choisir »");
+        images(20, 4);
+        if (ecrans::centreRouler(x, y)) appuyer(x, y); else { ecarts++; WFS_ERR("poursuite (parcours) : « Rouler » absent"); }
+        for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) images(1, 1);
+        attendu(Ecran::Course, "terrain puis « Rouler »");
+        choixModeBanc(false);
+        if (g.ecran() != Ecran::Course || modeCourse() != ModeCourse::Poursuite) {   // parcours raté : la suite des captures quand même
+            modeCourse() = ModeCourse::Poursuite; g.allerA(Ecran::Menu); images(2, 1); g.allerA(Ecran::Course); images(2, 1);
+        }
+    }
+    g.camMode = 0; g.setAutopilot(true);
     images(3 * 60, 8);        // décompte (3 s)
     for (int i = 0; i < 20 * 60; i++) { const Course* c = activeCourse(); if (c && c->raceTime >= 8.6) break; g.update(1.0 / 60); if (i % 12 == 0) g.render(t += 0.2); }
     // la 2e voiture de police tente de pousser (attaque de 7,6 à 10,6 s) : vue de devant, police derrière le joueur
@@ -483,7 +524,8 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     capture("poursuite-victoire");
     if (PoursuiteSystem* s2 = PoursuiteSystem::actif) toucher(s2->menuZone(), "Menu");
     images(10, 5);
-    WFS_LOG("poursuite (parcours) : fin → « Menu » → %s : %s", nomEcran(g.ecran()), g.ecran() == Ecran::Menu ? "OK" : "ÉCHEC");
+    attendu(Ecran::Menu, "fin puis « Menu »");
+    WFS_LOG("poursuite (parcours) : accueil → Course solo → Poursuite → Continuer → garage → Choisir → terrain → Rouler → poursuite → fin → Menu → accueil : %d écart(s) %s", ecarts, ecarts ? "ÉCHEC" : "OK");
     g.setAutopilot(false);
     g_banc = false; g_bancFin = 0;
     modeCourse() = ModeCourse::Checkpoint;
