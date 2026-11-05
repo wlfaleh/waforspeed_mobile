@@ -90,6 +90,7 @@ void unload(Renderer& r) {
     if (!F.ready) return;
     r.vk().waitIdle();
     r.vk().destroy(F.atlas);
+    r.uiSetFontAtlas(Image{});   // WFS-100 (RG-W2) : l'interface lit la texture blanche, jamais l'atlas détruit
     F.glyphs.clear(); F.ready = false;
 }
 

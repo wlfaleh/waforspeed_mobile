@@ -33,6 +33,8 @@ float fogAt(vec3 p) {
     return 1.0 - exp(-length(F.camPos.xyz - p) * F.fog.a);
 }
 
+// WFS-100 (RG-02) : plafond du spéculaire (valeur HDR) avant le bloom, pour toutes les surfaces
+const float SPEC_MAX = 4.0;
 float D_GGX(float NoH, float a) { float a2 = a * a; float d = NoH * NoH * (a2 - 1.0) + 1.0; return a2 / (PI * d * d); }
 float V_Smith(float NoV, float NoL, float a) {
     float k = a * 0.5; return 0.25 / max((NoV * (1.0 - k) + k) * (NoL * (1.0 - k) + k), 1e-4);
@@ -83,7 +85,7 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
         vec3 Fs = F_Schlick(f0, VoH);
         vec3 spec = noSpec ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;
-        sum += ((1.0 - Fs) * (1.0 - metal) * albedo / PI + spec) * F.spotCol[i].rgb * k;
+        sum += (1.0 - Fs) * (1.0 - metal) * albedo / PI * F.spotCol[i].rgb * k + min(spec * F.spotCol[i].rgb * k, vec3(SPEC_MAX));   // WFS-100 RG-02
     }
     return sum;
 }
@@ -129,6 +131,9 @@ void main() {
     bool face = gl_FrontFacing != (F.nuitA.w > 0.5);
     if (!face && !vtint && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) N = -N;
     vec4 base = texture(texColor, vUv) * pc.color;
+    // WFS-100 (RG-03, ANO-28) : carrosserie = couleur de peinture choisie × 1, sans la texture de couleur du modèle
+    // (js/cars/models.js : color.set(paint), carte de couleur retirée) ; vitres, feux, jantes et logos gardent leur texture
+    if ((flags & F_PAINT) != 0u) base = pc.color;
     if (vtint) base.rgb *= length(vNrm);
     // alpha découpé : la couverture est conservée dans les mipmaps lointains (le feuillage ne s'éclaircit pas au loin)
     if (vtint && (flags & F_MASK) != 0u) base.a *= 1.0 + max(textureQueryLod(texColor, vUv).x, 0.0) * 0.25;
@@ -191,14 +196,12 @@ void main() {
     vec3 dndx = dFdx(N), dndy = dFdy(N);
     float aaKernel = min(2.0 * 0.25 * (dot(dndx, dndx) + dot(dndy, dndy)), 0.18);
     // pièces très fines (WFS-42 : fils de la lunette, rayons de jante) : triangles plus petits qu'un pixel, que les
-    // dérivées ne voient pas → reflet du soleil élargi selon le rapport taille du pixel / finesse de la pièce
+    // dérivées ne voient pas. WFS-100 (RG-01, ANO-21) : plus d'élargissement du reflet (il étalait le soleil en traits
+    // brillants dans le vide) ; les opaques reçoivent le même facteur de couverture du pixel que les transparents
     float detailK = 1.0;   // part du pixel réellement couverte par la pièce (1 = pièce plus large qu'un pixel)
-    if (fine) {
-        float px = length(fwidth(vWorld));
-        float ratio = px / pc.emissive.w;
-        detailK = clamp(1.0 / ratio, 0.0, 1.0);
-        if ((flags & (F_PAINT | F_GLASS)) == 0u) aaKernel = max(aaKernel, clamp((ratio - 1.0) * 0.06, 0.0, 0.3));
-    }
+    if (fine) detailK = clamp(pc.emissive.w / max(length(fwidth(vWorld)), 1e-6), 0.0, 1.0);
+    // opaque : pas d'alpha → les reflets (soleil, ciel, vernis) sont atténués par la couverture ; transparent : alpha × couverture
+    float specK = (flags & F_BLEND) == 0u ? detailK : 1.0;
     float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
@@ -206,7 +209,8 @@ void main() {
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
     vec3 sun = F.sunColor.rgb * F.sunDir.w;
-    vec3 col = (diff + spec) * sun * NoL * sunShadow(vWorld, N);
+    float ombre = sunShadow(vWorld, N);
+    vec3 col = diff * sun * NoL * ombre + min(spec * sun * NoL * ombre, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
     col += spotLights(vWorld, N, V, albedo, f0, metal, a, vtint);   // WFS-45 (aucun si spotN = 0)
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement
@@ -232,19 +236,20 @@ void main() {
         for (int i = 0; i < 6; i++) rs += texture(reflTex, suv + vec2(0.0, (float(i) - 2.5) * 0.4 * spread)).rgb;
         env = rs / 6.0;
     }
-    col += albedo * (1.0 - metal) * skyAmb + env * Fe * F.misc.w * specOcc;
+    col += albedo * (1.0 - metal) * skyAmb + min(env * Fe * F.misc.w * specOcc, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
 
     // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
     if ((flags & F_PAINT) != 0u) {
         float Fc = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
         float acA = sqrt(0.03 * 0.03 * 0.03 * 0.03 + aaKernel);          // vernis : alpha 0,0009, élargi sur les arêtes
         float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0);        // disque du soleil reflété : seulement si net
-        col = col * (1.0 - Fc) + (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
+        vec3 vernis = (skyColor(R, sunKc) * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
+        col = col * (1.0 - Fc) + min(vernis, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
     }
     float alpha = base.a * detailK;   // pièce transparente plus fine qu'un pixel : couverture partielle (WFS-42)
     if ((flags & F_GLASS) != 0u) {
         float Fg = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
-        col = albedo * 0.08 * skyAmb + skyColor(R) * F.misc.z * Fg + D_GGX(NoH, 0.0004) * 0.25 * sun * NoL;
+        col = albedo * 0.08 * skyAmb + min(skyColor(R) * F.misc.z * Fg + D_GGX(NoH, 0.0004) * 0.25 * sun * NoL, vec3(SPEC_MAX));   // WFS-100 RG-02
         alpha = clamp(0.55 + Fg, 0.0, 1.0);
     }
     col += pc.emissive.rgb;
