@@ -23,7 +23,7 @@ gestion des couleurs), et `MAT.pool` est additif à l'opacité `poolK` = 1 la nu
 
 ## Critères d'acceptation
 - [ ] `carte-circuit-nuit`, `course-nuit-circuit-0` : taches de lumière froides visibles sur la piste sous les mâts
-- [ ] `course-nuit-ville-*`, `nuit-plage-corniche` : flaques visibles, pas de surexposition ; captures de jour inchangées
+- [ ] `course-nuit-ville-*`, `nuit-plage-corniche` : flaques visibles, pas de surexposition ; captures de jour inchangées, sauf l'asphalte du circuit enfin éclairé (RG-09, voulu)
 
 ## Hors périmètre
 Vraies lumières dynamiques par projecteur, ombres des projecteurs.
@@ -61,3 +61,22 @@ Vraies lumières dynamiques par projecteur, ombres des projecteurs.
   (sans modifier ce fichier) ; accroche ≤ 10 lignes dans `src/platform/desktop_main.cpp` seulement si une capture de nuit
   manque. Interdit : `src/world/**` (WFS-93), `src/render/renderer.*` et `shaders/**` (WFS-100), le reste de
   `src/platform/**` (WFS-106), `src/game/**`, iOS.
+
+## Décision du PO du 2026-11-05 (constat au banc de Copilot dc0cdd3f)
+- RG-08 (vraie cause de la « piste grise » du circuit, remplace la cause probable du Besoin) : la chaussée du circuit de
+  `src/world/decor_carte.cpp` (l. 320, `mats_[P_ROUTE]`, texture `roadCircuit` sans `MAT_ROAD`, WFS-53) reprend l'ordre
+  d'indices de la chaussée de Game `{k, k+3, k+1, k+1, k+3, k+2}`. Le culling est coupé et `scene.frag` retourne la normale
+  des faces vues de dos (sauf ROAD / WALK / GROUND) : la normale pointe vers le bas. L'asphalte ne reçoit donc ni la lune,
+  ni l'hémisphère, ni les projecteurs, ni les phares (piste noire au banc sans les taches).
+  **Accroche autorisée dans WFS-97** : cette seule ligne, ordre `{k, k+1, k+3, k+1, k+2, k+3}`, dans `decor_carte.cpp`
+  (zone E2 de WFS-93). Rien d'autre dans `src/world/**`. À annoncer au Journal avant la poussée. La branche de WFS-93
+  n'a encore aucun code (2026-11-05 00:40 UTC) : le second à fusionner résout le conflit (une ligne).
+- RG-09 (changement de jour voulu) : de jour, l'asphalte du circuit est enfin éclairé par le soleil, comme `roadCircuit` en
+  `MeshStandardMaterial` au web (banc : (37, 44, 57) → (58, 61, 70)). Les captures de jour du circuit (`carte-circuit-jour`,
+  `-paddock`, `-gravier`, `-foret`, courses de jour sur le circuit) changent : **c'est voulu**. Le noter dans `qa/Check.md`
+  avec les valeurs avant / après, pour que le QA ne le prenne pas pour une régression. Les autres captures de jour
+  restent inchangées.
+- RG-10 : lampadaires et projecteurs de nuit avec `decay = 2` comme au web (`PointLight(…, 26, 2)`). C'est dans la zone
+  (`nuit.cpp`) : accepté. Vérifier que les flaques et les têtes de lampe restent visibles, et noter les valeurs au Journal.
+- RG-05 sans objet pour `poolCool` (mesure du banc : `versHdr` ≈ `lin`, et le natif fait déjà × 2,2) : garder `lin`, sauf
+  écart mesuré ailleurs.
