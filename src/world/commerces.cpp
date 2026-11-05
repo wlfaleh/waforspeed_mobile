@@ -1,7 +1,8 @@
 // WaForSpeed — commerces et terrasses de la ville, serviettes de la Corniche (WFS-71) : port de js/world/life.js
 // (SHOPS, DECOR.shop, placeShop, terraceTables, DECOR.towel) et de beachLife (js/world/decor.js) du jeu web.
-// Les commerces sont posés devant les immeubles de la ville (même placement que src/world/ville.cpp, recalculé ici
-// avec les mêmes tirages) ; la graine de la carte fixe tout : identique à chaque partie (RG-01).
+// Les commerces et leurs clients attablés viennent du plan des quartiers de la ville (src/world/ville_quartiers.*,
+// placeShop de city.centre / residentiel, WFS-93), vitrine centrée sur la façade de l'immeuble ; la graine de la carte
+// fixe tout : identique à chaque partie (RG-01).
 // Dessin par morceaux de 4 × CH segments (≈ 150 m), autour du joueur seulement : quelques appels de dessin par morceau
 // (palette unie, vitrines, jour / nuit, textes des enseignes par couleur) (RG-05).
 #include <algorithm>
@@ -16,6 +17,7 @@
 #include "../game/player.h"
 #include "../game/track.h"
 #include "enseignes.h"
+#include "ville_quartiers.h"
 #include "zones.h"
 
 namespace wfs {
@@ -36,40 +38,12 @@ constexpr int NB_SHOPS = 10;
 // couleurs des serviettes (C2.flagC du jeu web : drapeaux vifs)
 const unsigned SERVIETTES[6] = {0xe2262b, 0x1d6fb8, 0xffd23a, 0x2f8f4f, 0xff6a00, 0xf4f4f0};
 
-struct Commerce { int64_t seg; int side; float len; int kind; };
+using Commerce = ville::Commerce;
 // terraceTables(lenM) : position des tables le long de la terrasse
 std::vector<float> tables(float len) { std::vector<float> out; for (float d = 1.4f; d < len - 1; d += 2.6f) out.push_back(d); return out; }
 
-// immeubles de la ville : mêmes tirages que place() de src/world/ville.cpp (graine × 31 + 7, côté −1 puis +1, pas de 11)
-struct Immeuble { int64_t seg; int side; float len; };
-std::vector<Immeuble> immeubles(const MapDef& map, int64_t len) {
-    std::vector<Immeuble> out;
-    Mulberry32 D(map.seed * 31 + 7);
-    for (int side : {-1, 1}) for (int64_t n = side < 0 ? 0 : 5; n < len - 11; n += 11) {
-        if (D.next() < 0.08) continue;
-        // ville.cpp : tall, len, depth, height, tint (5 tirages, dans l'ordre de l'initialisation)
-        D.next(); const float l = (float)(11 * SEG_M - 0.6 - D.next() * 2); D.next(); D.next(); D.next();
-        out.push_back({n, side, l});
-    }
-    return out;
-}
-// commerces (decor.js, city.centre / residentiel : D() < 0,5 puis D() < 0,4) devant ces immeubles
-const std::vector<Commerce>& commerces(const MapDef& map, int64_t len) {
-    static std::map<std::pair<uint32_t, int64_t>, std::vector<Commerce>> cache;
-    auto& out = cache[{map.seed, len}];
-    if (!out.empty() || std::strcmp(map.id, "ville")) return out;
-    Mulberry32 D(map.seed * 31 + 17);
-    const int centre[7] = {0, 1, 2, 3, 5, 7, 8}, resid[7] = {0, 1, 3, 4, 5, 6, 8};
-    for (const Immeuble& b : immeubles(map, len)) {
-        const char* z = zoneId(map, b.seg, len);
-        const bool c = !std::strcmp(z, "centre");
-        if (!c && std::strcmp(z, "residentiel")) continue;
-        if (D.next() >= (c ? 0.5 : 0.4)) continue;
-        const int kind = (c ? centre : resid)[(int)(D.next() * 7)];
-        out.push_back({b.seg, b.side, std::min(b.len - 2.5f, 11.f * (float)SEG_M - 2.5f), kind});
-    }
-    return out;
-}
+// commerces du plan de la ville (city.centre : D() < 0,5 ; city.residentiel : D() < 0,4), devant un immeuble
+const std::vector<Commerce>& commerces(const MapDef& map, int64_t len) { return ville::plan(map, len).commerces; }
 float sable(float lat) {   // GROUND.beach (corniche, côté mer) : sable de RW + 5 (0,05 m) à RW + 38 (−1,1 m)
     const float R = (float)RW, t = std::clamp((lat - (R + 5)) / 33.f, 0.f, 1.f);
     return 0.05f + (-1.1f - 0.05f) * t;
@@ -80,13 +54,16 @@ const std::vector<Client>& clientsTerrasses(const MapDef& map, int64_t len) {
     static std::map<std::pair<uint32_t, int64_t>, std::vector<Client>> cache;
     auto& out = cache[{map.seed, len}];
     if (!out.empty()) return out;
-    Mulberry32 D(map.seed * 31 + 19);
     const float face = (float)RW + 6.45f, tLat = face - 2.2f;
     for (const Commerce& c : commerces(map, len)) {
         if (!SHOPS[c.kind].terrasse) continue;
-        const double debut = c.seg + 0.3 / SEG_M;   // le commerce commence 0,3 m après le début de l'immeuble
-        for (float d : tables(c.len)) for (int sd : {-1, 1}) if (D.next() < 0.65)
-            out.push_back({debut + (d + sd * 0.62) / SEG_M, c.side * tLat, sd > 0 ? 0.f : PI, 0.15f + 0.05f});
+        const double debut = c.seg + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
+        int k = 0;   // placeShop : bit 2 · table + (sd > 0) = chaise occupée (tirage D() < 0,65 du plan)
+        for (float d : tables(c.len)) {
+            for (int sd : {-1, 1}) if (c.clients >> (k * 2 + (sd > 0 ? 1 : 0)) & 1u)
+                out.push_back({debut + (d + sd * 0.62) / SEG_M, c.side * tLat, sd > 0 ? 0.f : PI, 0.15f + 0.05f});
+            k++;
+        }
     }
     return out;
 }
@@ -146,7 +123,8 @@ public:
         vitreJour_ = r.makeMaterial(mv, nullptr, nullptr, nullptr);
         actif_ = true;
         g_premiereTerrasse = -1;
-        if (ville_) for (const Client& cl : clientsTerrasses(*g.map, len_)) if (cl.s > 40 && cl.lat > 0) { g_premiereTerrasse = cl.s; break; }
+        if (ville_) for (const Client& cl : clientsTerrasses(*g.map, len_))   // plus proche du départ, côté droit
+            if (cl.s > 40 && cl.lat > 0 && (g_premiereTerrasse < 0 || cl.s < g_premiereTerrasse)) g_premiereTerrasse = cl.s;
         WFS_LOG("vie : %zu commerces, %zu clients attablés, %zu serviettes (%s)", ville_ ? commerces(*g.map, len_).size() : 0,
                 ville_ ? clientsTerrasses(*g.map, len_).size() : 0, plage_ ? serviettes(*g.map, len_).size() : 0, g.map->id);
     }
@@ -190,7 +168,7 @@ private:
     void commerce(Track& t, const Commerce& c, int64_t abs, Geo& pal, Geo& vitre, Geo& jour, Geo& nuit, std::map<unsigned, Geo>& textes) {
         const Shop& sh = SHOPS[c.kind];
         const float s = (float)c.side, face = (float)RW + 6.45f, L = c.len;
-        const double debut = abs + 0.3 / SEG_M;
+        const double debut = abs + c.decal / SEG_M;   // vitrine centrée sur la façade de l'immeuble
         const Repere pm = repere(t, (debut + L / 2 / SEG_M) * SEG);
         const vec2 aw0 = palette_.uv(sh.aw0), aw1 = palette_.uv(sh.aw1), bg = palette_.uv(sh.bg);
         boite(pal, lateral(pm, s * (face - 0.06f), 0.15f), pm.r, pm.f, 0.08f, 3.1f, L * 0.9f, palette_.uv(0x2a2d33));

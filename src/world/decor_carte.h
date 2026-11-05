@@ -5,7 +5,8 @@
 //   - feuillage en cartes alpha découpées (atlas du jeu web, src/world/vegetation.*) : 2 matériaux (feuillus, conifères) ;
 //   - lampes et projecteurs (« neon » du jeu web) et chaussée du circuit (texture roadCircuit) : 1 maillage chacun ;
 //   - pales des éoliennes : 1 maillage par éolienne, tourné à chaque image (rotors de scene.js).
-// Au plus 5 appels de dessin par morceau (25 morceaux), en pratique 3 ou 4 : ≤ 300 au total avec la route (journal du banc).
+// Au plus 5 appels de dessin par morceau (25 morceaux), en pratique 3 ou 4, plus 3 au plus pour le texte des panneaux
+// publicitaires du circuit (WFS-93) : ≤ 300 au total avec la route (journal du banc).
 // Les bas-côtés partent du bord de la chaussée (GROUND du jeu web) : Game ne dessine ni son sol ni ses trottoirs.
 #pragma once
 #include <array>
@@ -24,7 +25,8 @@ class Game;
 namespace carte {
 
 using Geo = veg::Geo;
-enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_COUNT };
+// P_TEXTE0..2 : lettres des panneaux publicitaires du circuit (WFS-93), une part par couleur de lettres
+enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_TEXTE0, P_TEXTE1, P_TEXTE2, P_COUNT };
 constexpr int PAL_W = 128;                // cases de la palette
 constexpr int AHEAD = 22, BEHIND = 2;     // morceaux dessinés (comme la route de Game)
 constexpr double LOD_FAR_M = 200;         // au-delà : arbres allégés, petits objets non dessinés (SMALL_DECOR)

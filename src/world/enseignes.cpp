@@ -8,6 +8,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/track.h"
+#include "ville_quartiers.h"
 #include "zones.h"
 
 namespace wfs {
@@ -187,11 +188,14 @@ public:
         const bool ville = !std::strcmp(g.map->id, "ville"), plage = !std::strcmp(g.map->id, "plage");
         if (!ville && !plage) return;   // RG-09 : Ville et Corniche (Grand Prix : WFS-53)
         const int64_t len = (int64_t)g.track->segmentCount();
-        Mulberry32 D(g.map->seed * 31 + 23);
-        // ville : un panneau tous les 130 à 180 segments, côté tiré ; Corniche : côté terre tous les 180 segments
-        for (int64_t n = 60; n < len - 40; n += ville ? 130 + (int64_t)(D.next() * 50) : 180) {
-            if (n % 24 >= 10 && n % 24 <= 14) n += 6;   // pas sur un lampadaire (ville : tous les 24 segments, au 12e)
-            panneaux_.push_back({n, ville ? (D.next() < 0.5 ? -1 : 1) : -1, (int)(D.next() * NB_BOARDS)});
+        if (ville) {   // panneaux du plan des quartiers (city.centre : tous les 130 à 180 segments, côté tiré, pas sur un lampadaire)
+            for (const wfs::ville::Panneau& b : wfs::ville::plan(*g.map, len).panneaux) panneaux_.push_back({b.seg, b.side, b.texte});
+        } else {   // Corniche : côté terre tous les 180 segments
+            Mulberry32 D(g.map->seed * 31 + 23);
+            for (int64_t n = 60; n < len - 40; n += 180) {
+                if (n % 24 >= 10 && n % 24 <= 14) n += 6;   // pas sur un lampadaire
+                panneaux_.push_back({n, -1, (int)(D.next() * NB_BOARDS)});
+            }
         }
         for (auto& b : BOARD_TEXTS) atlas_.ajouter(b.first);
         if (!atlas_.construire(r)) { panneaux_.clear(); return; }
