@@ -208,7 +208,7 @@ private:
         // WFS-101 (RG-04, ANO-36) : avec la sauvegarde (ligne « RECORD », badge si battu), mise en page aérée : statistiques
         // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px
         const bool rec = sauvegarde().actif();
-        const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
+        const float s = ui::echelle(W, H), plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
         const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
         r.uiRect(px, py, pw, ph, SURFACE);
         r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
@@ -233,9 +233,9 @@ private:
         if (rec) dessinerRecord(r, cx, py + 31.5f * u, by - 12 * s, u, ui::nombre(sauvegarde().best), nouveauRecord_);   // WFS-24 ; WFS-125 : commun aux modes
         rejouer_ = {bx, by, bw, bh};
         menu_ = {bx + bw + gap, by, mw, bh}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
-        biseau(r, rejouer_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
+        biseau(r, rejouer_.x, by, bw, bh, 14 * s, ui::ORANGE);   // 14 px CSS (WFS-102 : en dp)
         ui::text(r, rejouer_.x + bw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
-        biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
+        biseau(r, menu_.x, by, mw, bh, 14 * s, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
         ui::text(r, menu_.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
     }
     bool nouveauRecord_ = false;

@@ -110,7 +110,8 @@ public:
             r.uiQuad(q);
         }
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
-        const float itemH = 70 * k, listeH = 3 * itemH + 2 * 6 * k, piedH = 44 * k, aideH = 2 * 22 * k;
+        const bool cp = ui::compact(W, H);   // WFS-102 (RG-02) : téléphone couché (≤ 520 dp de haut) : choix de 52 dp
+        const float itemH = (cp ? 52 : 70) * k, ecart = (cp ? 4 : 6) * k, listeH = 3 * itemH + 2 * ecart, piedH = 44 * k, aideH = (cp ? 18 : 2 * 22) * k;
         const float total = m.hauteurBloc + gap + listeH + gap + piedH + gap + aideH;
         float y = std::max(24 * k, (H - total) / 2);
         // slide-in : 320 ms, de −36 px à 0, 40 ms de décalage entre les lignes
@@ -124,7 +125,7 @@ public:
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
             const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
-            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + 6 * k);   // translateX(10px)
+            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + ecart);   // translateX(10px)
             g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * k, true};   // zone fixe : l'état pressé ne la déplace pas
             manette::focus(g_zones[i]);   // WFS-22
             if (grise) a *= 0.45f;
@@ -139,8 +140,8 @@ public:
                 for (int h = 3; h >= 1; h--) r.uiRect(x - 4 * k * h, yi - 2 * k * h, 3 * k + 8 * k * h, itemH + 4 * k * h, hex(ACCENT2, 0.12f * a));
                 r.uiRect(x, yi, 3 * k, itemH, hex(ACCENT2, a));
             } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
-            ui::text(r, x + 22 * k, yi + 12 * k, 26 * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
-            ui::text(r, x + 22 * k, yi + 44 * k, 13 * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
+            ui::text(r, x + 22 * k, yi + (cp ? 8 : 12) * k, (cp ? 21 : 26) * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
+            ui::text(r, x + 22 * k, yi + (cp ? 32 : 44) * k, (cp ? 12 : 13) * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------

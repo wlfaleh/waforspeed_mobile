@@ -212,18 +212,20 @@ public:
 
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Salon || g.sceneDediee || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H);
         const Marges& mg = g.marges;
         const float zl = mg.gauche + 32 * k, zr = W - mg.droite - 32 * k;
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));
         // en-tête (#lobby) : .eyebrow + .big
-        const float hy = mg.haut + 26 * k;
+        cp_ = ui::compact(W, H);   // WFS-102 (RG-02) : téléphone couché (411 dp de haut) : en-tête et marges resserrés
+        const float hy = mg.haut + (cp_ ? 14 : 26) * k;
         ui::text(r, zl, hy, 13 * k, ui::majuscules("Duel entre amis · 2 à 4 pilotes"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
-        ui::text(r, zl, hy + 20 * k, 44 * k, ui::majuscules("Duel"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        ui::text(r, zl, hy + 20 * k, (cp_ ? 28 : 44) * k, ui::majuscules("Duel"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         g_inviter = {};
-        const float by = H - mg.bas - 24 * k - 56 * k, bh = 56 * k;
-        if (duelSession().inRoom()) dessinerSalon(r, g, zl, zr, hy + 92 * k, by, bh, k);
-        else dessinerAccueil(r, zl, zr, hy + 92 * k, by, bh, k);
+        const float bh = (cp_ ? 48 : 56) * k, by = H - mg.bas - (cp_ ? 12 : 24) * k - bh;
+        const float y0 = hy + (cp_ ? 58 : 92) * k;
+        if (duelSession().inRoom()) dessinerSalon(r, g, zl, zr, y0, by, bh, k);
+        else dessinerAccueil(r, zl, zr, y0, by, bh, k);
     }
 
 private:
@@ -257,21 +259,21 @@ private:
         ui::text(r, zl, ly + 48 * k, 15 * k, "avec le lien ou le code.", hex(0xC9CDDA), ui::GAUCHE, 0, false);
         g_creer = bouton(r, zl, by, bh, k, "Créer un duel", true);
         g_retour = bouton(r, g_creer.x + g_creer.w + 10 * k, by, bh, k, "Retour", false);
-        dessinerCode(r, zr, y, k);
+        dessinerCode(r, zr, y, k, by, bh);
     }
 
     // WFS-89 : « Rejoindre avec un code » (#codeIn / #joinBtn du jeu web) : 4 cases, clavier, effacer, « Rejoindre »
-    void dessinerCode(Renderer& r, float zr, float y, float k) {
+    void dessinerCode(Renderer& r, float zr, float y, float k, float by, float bh) {
         const int N = (int)std::strlen(duel::CODE_CHARS), COLS = 8;
-        const float tk = 46 * k, gap = 6 * k, largeur = COLS * tk + (COLS - 1) * gap, x0 = zr - largeur;
+        const float tk = 46 * k, gap = (cp_ ? 4 : 6) * k, largeur = COLS * tk + (COLS - 1) * gap, x0 = zr - largeur;
         ui::text(r, x0, y, 12 * k, ui::majuscules("Rejoindre avec un code"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        const float cw = 64 * k, ch = 72 * k, cy = y + 22 * k;
+        const float cw = 64 * k, ch = (cp_ ? 52 : 72) * k, cy = y + 22 * k;
         for (int i = 0; i < 4; i++) {   // les 4 cases
             const float cx = x0 + i * (cw + 10 * k);
             const bool pleine = i < (int)g_saisie.size(), suivante = i == (int)g_saisie.size();
             r.uiRect(cx, cy, cw, ch, GLASS);
             r.uiRect(cx, cy + ch - 3 * k, cw, 3 * k, suivante ? hex(ACCENT2) : pleine ? hex(ACCENT) : hex(SURFACE2));
-            if (pleine) ui::text(r, cx + cw / 2, cy + 12 * k, 44 * k, ui::majuscules(g_saisie.substr(i, 1)), hex(TEXTE), ui::CENTRE, 0, false, true);
+            if (pleine) ui::text(r, cx + cw / 2, cy + (ch - (cp_ ? 36 : 44) * k) / 2, (cp_ ? 36 : 44) * k, ui::majuscules(g_saisie.substr(i, 1)), hex(TEXTE), ui::CENTRE, 0, false, true);
         }
         // WFS-102 (RG-13, ANO-43) : touche « effacer » à droite des 4 cases, plus de deux fois plus large qu'une touche du
         // clavier, icône retour arrière (pentagone pointé à gauche, croix) + « EFFACER », en blanc (le cyan est réservé à la sélection)
@@ -280,7 +282,7 @@ private:
             g_effacer = {ex, cy, ew, ch};
             r.uiRect(ex, cy, ew, ch, hex(SURFACE2));
             const vec4 c = hex(TEXTE);
-            const float iw = 22 * k, ih = 16 * k, ix = ex + (ew - iw) / 2, iy = cy + 14 * k, tr = 2 * k, p = 6 * k;
+            const float iw = 22 * k, ih = 16 * k, ix = ex + (ew - iw) / 2, iy = cy + (cp_ ? 8 : 14) * k, tr = 2 * k, p = 6 * k;
             r.uiRect(ix + p, iy, iw - p, tr, c); r.uiRect(ix + p, iy + ih - tr, iw - p, tr, c); r.uiRect(ix + iw - tr, iy, tr, ih, c);
             for (int j = 0; j < 8; j++) {   // pointe gauche : deux diagonales en petits carrés de 2 px
                 const float f = j / 7.f;
@@ -292,9 +294,9 @@ private:
                 r.uiRect(mx + 6 * k * f - tr / 2, my + 6 * k * f - tr / 2, tr, tr, c);
                 r.uiRect(mx + 6 * k * f - tr / 2, my + 6 * k * (1 - f) - tr / 2, tr, tr, c);
             }
-            ui::text(r, ex + ew / 2, cy + ch - 27 * k, 13 * k, "EFFACER", c, ui::CENTRE, 0.08f, false);
+            ui::text(r, ex + ew / 2, cy + ch - (cp_ ? 22 : 27) * k, 13 * k, "EFFACER", c, ui::CENTRE, 0.08f, false);
         }
-        const float ky = cy + ch + 18 * k;
+        const float ky = cy + ch + (cp_ ? 8 : 18) * k;
         for (int i = 0; i < 32; i++) g_touches[i] = {};
         for (int i = 0; i < N; i++) {   // clavier : 31 caractères
             const float tx = x0 + (i % COLS) * (tk + gap), ty = ky + (i / COLS) * (tk + gap);
@@ -302,7 +304,8 @@ private:
             g_touches[i] = {tx, ty, tk, tk};
             ui::text(r, tx + tk / 2, ty + 11 * k, 22 * k, ui::majuscules(std::string(1, duel::CODE_CHARS[i])), hex(TEXTE), ui::CENTRE, 0, false);
         }
-        const float ry = ky + 4 * (tk + gap) + 6 * k, rh = 50 * k;
+        // petit écran : « Rejoindre » dans la barre du bas, à droite (sous le clavier il n'y a plus la place)
+        const float ry = cp_ ? by : ky + 4 * (tk + gap) + 6 * k, rh = cp_ ? bh : 50 * k;
         if (g_saisie.size() == 4) g_rejoindre = bouton(r, zr, ry, rh, k, "Rejoindre", true, true);
         else { g_rejoindre = {}; const Zone z = bouton(r, zr, ry, rh, k, "Rejoindre", false, true); r.uiRect(z.x, z.y, z.w, z.h, hex(BG, 0.5f)); }   // grisé
     }
@@ -314,17 +317,19 @@ private:
         g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {};
         // WFS-102 (RG-09, ANO-38) : une carte centrale (720 px au plus) : code en 72 px et « Inviter », aide, lien ;
         // voiture, terrain et distance dessous ; pilotes en liste sous le tout. Libellés 12 px, valeurs 18 px.
-        const float cl = std::max(zl, (zl + zr) / 2 - 360 * k), cr = std::min(zr, cl + 720 * k), pad = 20 * k;
+        // petit écran : carte sur toute la largeur, pilotes dans une colonne à droite (tout tient au-dessus des boutons)
+        const float cl = cp_ ? zl : std::max(zl, (zl + zr) / 2 - 360 * k), cr = cp_ ? zr : std::min(zr, cl + 720 * k), pad = 20 * k;
         const size_t nAutres = duelSession().others().size();   // hauteur de la carte : son contenu, jamais sous les boutons
-        const float hc = std::min(by - 14 * k - (y - 12 * k), (12 + 140 + 60 + 60 + 20 + 40.f * (1 + nAutres) + (nAutres ? 0 : 20) + 34) * k);
+        const float hc = cp_ ? by - 10 * k - (y - 12 * k) : std::min(by - 14 * k - (y - 12 * k), (12 + 140 + 60 + 60 + 20 + 40.f * (1 + nAutres) + (nAutres ? 0 : 20) + 34) * k);
         r.uiRect(cl, y - 12 * k, cr - cl, hc, GLASS);
         r.uiRect(cl, y - 12 * k, 3 * k, hc, hex(ACCENT));
         zl = cl + pad; zr = cr - pad;
         ui::text(r, zl, y, 12 * k, ui::majuscules("Code du salon"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        ui::text(r, zl, y + 16 * k, 72 * k, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
+        const float cpx = (cp_ ? 48 : 72) * k;   // code : 72 px (48 sur petit écran)
+        ui::text(r, zl, y + 16 * k, cpx, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
-        const float cx = zl + ui::width(72 * k, ui::majuscules(s.code()), 0.18f) + 28 * k;
-        g_inviter = bouton(r, cx, y + 26 * k, 52 * k, k, "Inviter", true);
+        const float cx = zl + ui::width(cpx, ui::majuscules(s.code()), 0.18f) + 28 * k;
+        g_inviter = bouton(r, cx, y + (cp_ ? 14 : 26) * k, (cp_ ? 46 : 52) * k, k, "Inviter", true);
         const duel::Transport* tr = s.transport();
         std::string sous = reseau::lienInvitation(s.code());
         if (tr && tr->expireDansMs() >= 0) {
@@ -332,10 +337,15 @@ private:
             sous += mn > 0 ? " · code valable " + std::to_string(mn) + " min" : " · code expiré pour les nouveaux";
         }
         // WFS-102 (RG-14, ANO-44) : aide sous le code
-        ui::text(r, zl, y + 96 * k, 12 * k, "Donne ce code à ton adversaire : il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
-        ui::text(r, zl, y + 114 * k, 12 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
+        float ly = y + (cp_ ? 72 : 96) * k;
+        if (cp_) {   // deux lignes : la colonne des pilotes est à droite
+            ui::text(r, zl, ly, 12 * k, "Donne ce code à ton adversaire :", hex(MUTED), ui::GAUCHE, 0, false);
+            ui::text(r, zl, ly + 16 * k, 12 * k, "il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
+            ly += 16 * k;
+        } else ui::text(r, zl, ly, 12 * k, "Donne ce code à ton adversaire : il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
+        ui::text(r, zl, ly + 18 * k, 12 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
         // lignes .car-line
-        float ly = y + 140 * k;
+        ly += (cp_ ? 38 : 44) * k;
         auto ligne = [&](const char* lib, const std::string& val) {
             ui::text(r, zl, ly + 4 * k, 12 * k, ui::majuscules(lib), hex(MUTED), ui::GAUCHE, 0.16f, false);
             ui::text(r, zl + 130 * k, ly, 18 * k, val, hex(TEXTE), ui::GAUCHE, 0, false);
@@ -347,7 +357,7 @@ private:
         // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change) ; 44 px de haut au moins (RG-03)
         ui::text(r, zl, ly + 15 * k, 12 * k, ui::majuscules("Distance"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         for (int i = 0; i < 4; i++) {
-            const float bw = 84 * k, bx = zl + 130 * k + i * (bw + 6 * k), bhh = 44 * k;
+            const float bw = (cp_ ? 66 : 84) * k, bx = zl + 130 * k + i * (bw + 6 * k), bhh = 44 * k;
             const bool on = s.km() == duel::KMS[i];
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
             r.uiRect(bx, ly, bw, bhh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2, s.host() ? 1.f : 0.5f));
@@ -355,9 +365,9 @@ private:
             ui::text(r, bx + bw / 2, ly + 13 * k, 18 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(ACCENT2) : hex(TEXTE, s.host() ? 1.f : 0.5f), ui::CENTRE, 0.06f, false);
         }
         ly += 44 * k + 16 * k;
-        // joueurs (#players) : en liste sous le code et les réglages
-        const float px = zl, pw = zr - zl;
-        float py = ly;
+        // joueurs (#players) : en liste sous le code et les réglages (petit écran : colonne de droite)
+        const float px = cp_ ? zl + 130 * k + 4 * 72 * k + 24 * k : zl, pw = zr - px;
+        float py = cp_ ? y : ly;
         ui::text(r, px, py, 12 * k, ui::majuscules("Pilotes"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         py += 20 * k;
         auto joueur = [&](const std::string& nom, bool pret, bool moi) {
@@ -400,6 +410,7 @@ private:
 
     int doigt_ = -1;
     double attenteLien_ = 0;
+    bool cp_ = false;   // WFS-102 : petit écran (dessin de l'image en cours)
 };
 
 } // namespace

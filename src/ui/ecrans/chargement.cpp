@@ -10,6 +10,7 @@
 #include "../../render/renderer.h"
 #include "../text.h"
 #include "../echelle.h"   // WFS-102
+#include "../../game/commandes_tactiles.h"   // WFS-102 (RG-15) : fondu en cours
 
 namespace wfs {
 namespace ecrans {
@@ -31,6 +32,7 @@ MiseEnPage miseEnPage(float W, float H) {
     m.x = clampv(0.06f * W / m.k, 0, 96) * m.k + 16 * m.k;               // margin-left clamp(0, 6vw, 96px) + gouttière
     m.largeur = std::min(600 * m.k, W - m.x - 16 * m.k);                // max-width: 600px
     m.sur = 12 * m.k; m.gap = 22 * m.k; m.ligne = m.logo * 0.82f;
+    if (ui::compact(W, H)) { m.logo = 56 * m.k; m.gap = 10 * m.k; m.ligne = m.logo * 0.82f; }   // WFS-102 (RG-02) : téléphone couché
     m.hauteurBloc = m.sur + m.gap + 2 * m.ligne;
     return m;
 }
@@ -154,7 +156,7 @@ static bool g_fonduArme = false, g_fonduParti = false; static double g_fonduT0 =
 void Chargement::fin() {
     etape(1, nullptr);   // 100 % : la dernière étape est finie
     WFS_LOG("chargement : total %s s", ui::decimal(nowSeconds() - t0_, 2).c_str());
-    g_fonduArme = true; g_fonduParti = false;
+    g_fonduArme = true; g_fonduParti = false; fonduChargement() = true;   // WFS-102 (RG-15)
 }
 
 void Chargement::erreur(bool quitter) {
@@ -192,7 +194,7 @@ float opaciteFondu(double temps) {
     if (!g_fonduArme) return 0;
     if (!g_fonduParti) { g_fonduParti = true; g_fonduT0 = temps; }
     const double d = temps - g_fonduT0;
-    if (d < 0 || d >= 0.3) { g_fonduArme = false; return 0; }
+    if (d < 0 || d >= 0.3) { g_fonduArme = false; fonduChargement() = false; return 0; }
     return (float)(1 - d / 0.3);
 }
 

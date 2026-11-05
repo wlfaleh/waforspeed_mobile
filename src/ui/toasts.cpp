@@ -1,5 +1,6 @@
 // WaForSpeed — bandeaux de notification pendant la course (WFS-47) : voir toasts.h.
 #include "toasts.h"
+#include "echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <deque>
@@ -75,11 +76,12 @@ public:
         if (g_pile.empty()) return;
         // mêmes conditions que le HUD (WFS-27) : en course seulement
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f, u = H / 100.f;
+        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H), u = H / 100.f;
         // RG-05 : pile à droite, sous le score (top = gouttière + 110 px) ; bord droit à gauche du bouton Nitro
         // (cercle de 6,5 % de H en (0,90 W − marge droite ; 0,32 H), Game::drawControls) pour ne jamais le recouvrir
         const float xr = W * 0.90f - g.marges.droite - 6.5f * u - 12 * k;
-        float y = 14 * k + g.marges.haut + 110 * k;
+        // WFS-102 (RG-02) : petit écran : pile juste sous le panneau du score (3 bandeaux au-dessus du bouton Nitro)
+        float y = 14 * k + g.marges.haut + (ui::compact(W, H) ? 76 : 110) * k;
         const float tp = 18 * k, vp = 14 * k, padL = 14 * k, padR = 18 * k, padV = 8 * k, gap = 12 * k, h = padV * 2 + tp * 1.15f;
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;

@@ -239,15 +239,15 @@ private:
             y += 6.5f * u;
         }
         // boutons : la paire est centrée (WFS-57) ; zones de toucher = rectangles dessinés
-        const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
+        const float bw = 24 * u, bh = std::max(7 * u, ui::CIBLE_MIN * ui::echelle(W, H)), gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;   // WFS-102 (RG-03) : 44 dp au moins
         revanche_ = {bx, by, bw, bh}; menu_ = {bx + bw + gap, by, bw, bh};
         g_zones[0] = bx; g_zones[1] = by; g_zones[2] = bw; g_zones[3] = bh;
         g_zonesMenu[0] = bx + bw + gap; g_zonesMenu[1] = by; g_zonesMenu[2] = bw; g_zonesMenu[3] = bh;
         const bool attend = s.status() == duel::Status::Ready;
         ui::biseau(r, revanche_.x, revanche_.y, bw, bh, 14 * ui::echelle(W, H), ui::ORANGE);   // WFS-102 (RG-08) : biseau 14 px comme l'écran de fin
-        ui::text(r, revanche_.x + bw / 2, by + 1.9f * u, 3.4f * u, attend ? "PRÊT…" : "REVANCHE", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
+        ui::text(r, revanche_.x + bw / 2, by + (bh - 3.4f * u) / 2, 3.4f * u, attend ? "PRÊT…" : "REVANCHE", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
         ui::biseau(r, menu_.x, menu_.y, bw, bh, 14 * ui::echelle(W, H), {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // .btn--ghost (#1E2130)
-        ui::text(r, menu_.x + bw / 2, by + 1.9f * u, 3.4f * u, "RETOUR", TEXTE, ui::CENTRE, 0.08f, false);
+        ui::text(r, menu_.x + bw / 2, by + (bh - 3.4f * u) / 2, 3.4f * u, "RETOUR", TEXTE, ui::CENTRE, 0.08f, false);
     }
 
     Renderer* r_ = nullptr;
