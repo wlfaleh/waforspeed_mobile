@@ -3201,3 +3201,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Zone autorisée : `android/app/build.gradle` (`signingConfigs`), nouveaux `android/waforspeed-test.keystore` et `android/keystore.properties`, `.github/workflows/build.yml` (signature, `apksigner verify --print-certs`, notes de la Release `apercu`). Interdit : `src/**` (accroches de WFS-111 dans `android_main.cpp`, `endurance_banc.*`), reste de `build.yml`, partie AAB / `WFS_CLE_ANDROID`, iOS.
 - Critères : même empreinte de certificat sur deux builds de suite (journal de CI) ; installation par-dessus sans désinstaller ; note « une dernière désinstallation » dans la Release.
 - Plan : générer la clé de test fixe, la brancher dans `signingConfigs.release`, ajouter la vérification d'empreinte à la CI, fusion par confiance.
+
+### 2026-11-05 12:07:04 — Début WFS-112 : duel entre amis par Internet (PO)
+- Ticket WFS-112 (E3, P2 Haute, seul ticket prêt) attribué à Claude (session trafic, 3e agent), branche `feature/waforspeed-112`, règles `regles-de-gestion/WFS-112.md` (RG-09 à RG-12 ajoutées).
+- Zone autorisée : `src/game/duel*`, `salon.*`, `reseau_*`, `src/platform/reseau_android.cpp`, nouveau `serveur/` (relais Cloudflare Workers), `tests/**`, `AndroidManifest.xml` / `JeuActivity.java` (lien profond, partage), `src/ui/ecrans/salon.*` (partagé avec WFS-102, garder les deux), `modes_ecran.cpp` ≤ 10 lignes. Interdit : zone de WFS-118 (`build.gradle`, keystore, `.github/**`), WFS-109, WFS-102 (reste de `src/ui/**`), WFS-94, iOS.
+- Critères : test CPU 2 clients (positions, arrivée, messages hostiles) ; test de parcours complet accueil → salon → course → fin → revanche → retour ; captures salon (code + « Inviter ») et fin de duel (revanche).
+- Plan : relais WebSocket `serveur/` + test local, client natif sans bibliothèque tierce, salon par code et lien, fusion par confiance si les tests passent.
