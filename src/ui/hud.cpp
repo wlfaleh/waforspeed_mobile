@@ -122,10 +122,11 @@ public:
         // ---------- haut droite : score + combo (.p-score) ----------
         if (modeCourse() != ModeCourse::Poursuite) {   // WFS-119 RG-02 : en poursuite, seul le score de poursuite est affiché
             const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
-            r.uiRect(x, y, w, h, GLASS);
+            r.uiRect(x, y, w, h, hex(0x0A0B10, 0.85f));   // WFS-135 (ANO-64) : fond opaque, l'enseigne derrière ne se lit plus
             const float xr = x + w - pad;
             label(r, xr, y + 10 * k, k, "Score", ui::DROITE);
-            // WFS-48 : .score-value et .combo en italique
+            // WFS-48 : .score-value et .combo en italique ; WFS-135 : ombre de 2 px sous les chiffres
+            ui::text(r, xr, y + 26 * k + 2 * k, 34 * k, ui::nombre(c->score(pl)), vec4{0, 0, 0, 0.6f}, ui::DROITE, 0, false, true);
             ui::text(r, xr, y + 26 * k, 34 * k, ui::nombre(c->score(pl)), hex(TEXTE), ui::DROITE, 0, false, true);
             if (c->combo > 1)   // .combo : cyan, 16 px
                 ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false, true);

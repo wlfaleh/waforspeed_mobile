@@ -30,7 +30,7 @@ constexpr int VUE_NOMBRE = 4;
 // CAM_MODES du jeu web : 'proche' (poursuite, 58°), vue capot (hood), 'capot' / « Cockpit » (cockpit: true, 72°)
 struct VueDef { const char* id; const char* nom; float fov; bool capot; bool cockpit; };
 inline constexpr VueDef VUES[VUE_NOMBRE] = {
-    {"poursuite", "Poursuite", 66.f, false, false},   // WFS-85 : vue « loin » du jeu web (62°) ; WFS-105 : caméra haute, 66°
+    {"poursuite", "Arrière", 66.f, false, false},   // WFS-135 (ANO-58) : affichée « Arrière », identifiant enregistré inchangé ; WFS-85 : vue « loin » du jeu web (62°) ; WFS-105 : caméra haute, 66°
     {"capot", "Capot", 72.f, true, false},
     {"cockpit", "Cockpit", 72.f, true, true},
     {"proche", "Proche", 60.f, false, false},         // WFS-85 : « proche » du jeu web (58°) ; WFS-105 : un peu plus large, 60°
