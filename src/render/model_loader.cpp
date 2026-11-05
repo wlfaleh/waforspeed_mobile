@@ -7,6 +7,7 @@
 #include <cstring>
 #include "../core/jobs.h"
 #include "../core/platform.h"
+#include "feux_modele.h"   // WFS-109 : découpe des feux arrière (RG-13)
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG
@@ -202,6 +203,11 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
                     d.roues[0].rayon, d.roues[0].centre.z, d.roues[2].centre.z, tournent);
         } else WFS_LOG("%s : roues non trouvées, modèle inchangé (WFS-60)", path.c_str());
     }
+    // WFS-109 (RG-13, RG-03) : feux arrière découpés dans un matériau de feux avant + arrière ; 3e feu stop marqué
+    std::vector<feux_modele::Materiau> fm(nMat);
+    for (uint32_t mi = 0; mi < nMat; mi++) fm[mi] = {raw[mi].flags, {raw[mi].em[0], raw[mi].em[1], raw[mi].em[2]}, matMin[mi], matMax[mi]};
+    const feux_modele::Resultat feuA = feux_modele::decouper(idx, out.parts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);
+    if (feuA.materiau >= 0) WFS_LOG("%s : feu arrière découpé dans le matériau %d, %u triangles (WFS-109)", path.c_str(), feuA.materiau, feuA.triangles);
     // WFS-134 (RG-06, ANO-67) : tranches des portes (faces de carrosserie tournées vers l'avant ou l'arrière, sur les flancs,
     // à mi-hauteur, hors pare-chocs) : dans une vraie voiture, c'est un jour sombre ; ici elles reflétaient le sol en beige
     // (« trace beige verticale » de la Model 3). Elles passent dans une pièce à part, gris très sombre mat.
@@ -265,8 +271,10 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             b = {std::max(b.x, matMax[mi].x), std::max(b.y, matMax[mi].y), std::max(b.z, matMax[mi].z)};
         }
     }
+    if (feuA.materiau >= 0) { tMin = feuA.bmin; tMax = feuA.bmax; }   // WFS-109 : position mesurée du feu découpé
     // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
+    out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
     out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;
     out.feux.avantY = hMax.y > hMin.y ? (hMin.y + hMax.y) * 0.5f : out.bmin.y + H * 0.41f;
     // centre latéral d'un feu : aux trois quarts de la demi-largeur des pièces des feux (bloc gauche + bloc droit)

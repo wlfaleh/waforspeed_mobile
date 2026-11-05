@@ -9,6 +9,8 @@
 #include "../core/log.h"
 #include "../render/model_loader.h"
 #include "../render/effets_systeme.h"
+#include "../render/effets_particules.h"   // WFS-109 : effets::versHdr (halos du jeu web)
+#include "../render/feux_modele.h"         // WFS-109 : transition du feu stop
 #include "../render/renderer.h"
 #include "course5.h"   // WFS-110
 #include "course_system.h"
@@ -147,7 +149,7 @@ public:
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
-            if (nuit_) r.feuxProchaineVoiture({true, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, false});   // WFS-81 : un seul halo rouge
+            r.feuxProchaineVoiture(feuxDe(ci, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, g.time));   // WFS-81 ; WFS-109 : feu du modèle, jour et nuit
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
         }
         dessineHalos(r, g);   // WFS-67
@@ -191,15 +193,17 @@ private:
             uint8_t* p = &px[(size_t)(y * T + x) * 4]; p[0] = p[1] = p[2] = 255; p[3] = (uint8_t)std::lround(a * a * 255);
         }
         haloTex_ = r.vk().uploadTexture(px.data(), T, T, false);
-        // orange des clignotants (#ffa31a) et rouge des feux stop (haloBrake #ff2038), lumière émise vive (bien visible de jour)
-        const vec3 cols[2] = {hexLin(0xffa31a) * 7.f, hexLin(0xff2038) * 7.f};
+        // WFS-109 (RG-10, ANO-48) : orange des clignotants (MAT.blinkHalo #ff9a10, opacité 0,95, sans sur-intensité) et rouge
+        // des feux stop (haloBrake #ff2038) : éclat du jeu web converti par versHdr (plus de lumière × 7 amplifiée par le bloom)
+        auto web = [](uint32_t h) { return effets::versHdr(vec3{((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f}, 1.f); };
+        const vec3 cols[2] = {web(0xff9a10), web(0xff2038)};
         for (int c = 0; c < 2; c++) {
-            Material m; m.color = {0, 0, 0, 1}; m.rough = 1; m.emissive = cols[c];
+            Material m; m.color = {0, 0, 0, 0.95f}; m.rough = 1; m.emissive = cols[c];
             haloMat_[c] = r.makeMaterial(m, &haloTex_, nullptr, nullptr);
             haloMat_[c].flags |= MAT_BLEND | MAT_DOUBLE;
             for (int b = 0; b < 2; b++) { haloMesh_[b][c] = r.makeMesh(std::vector<Vertex>(64 * 4), std::vector<uint32_t>(64 * 6), true); haloMesh_[b][c].indexCount = 0; }
         }
-        stops_.clear(); halos_[0].clear(); halos_[1].clear();
+        stops_.clear(); halos_[0].clear(); halos_[1].clear(); niveaux_.clear();
     }
     void shutdownVivant(Renderer& r) {
         r.destroy(cube_);
@@ -228,8 +232,15 @@ private:
             if (allume)
                 for (float z : {L / 2 + 0.03f + 0.08f, -L / 2 - 0.03f - 0.08f})
                     halos_[0].push_back({m.transformPoint({side * (W / 2 - 0.05f), z > 0 ? f.tail - 0.22f : f.nose - 0.14f, z}), 1.5f});
-            if (!nuit_ && (freine || c.crashed)) halos_[1].push_back({m.transformPoint({side * (W / 2 - 0.28f), f.tail - 0.12f, L / 2 + 0.1f}), 1.1f});
         }
+        (void)freine;   // WFS-109 (RG-01) : plus de carré de halo plaqué à côté du feu ; le feu du modèle s'allume (feuxDe)
+    }
+    // WFS-109 : feux du modèle de la voiture ci (Renderer::feuxVoiture), stop avec la transition de 80 ms (RG-02)
+    FeuxVoiture feuxDe(size_t ci, bool stop, double t) {
+        if (niveaux_.size() != traffic_.cars.size()) niveaux_.assign(traffic_.cars.size(), {0.f, -1.0});
+        auto& [n, t0] = niveaux_[ci];
+        n = feux_modele::transition(n, stop, t0 < 0 ? -1.f : (float)(t - t0)); t0 = t;
+        return {nuit_, stop, false, n};
     }
     void dessineHalos(Renderer& r, const GameView& g) {
         const vec3 right{g.view.at(0, 0), g.view.at(0, 1), g.view.at(0, 2)}, up{g.view.at(1, 0), g.view.at(1, 1), g.view.at(1, 2)};
@@ -256,6 +267,7 @@ private:
     Image haloTex_; Material haloMat_[2]; Mesh haloMesh_[2][2]; int haloBuf_ = 0;
     std::vector<Halo> halos_[2];
     std::vector<FeuxStop> stops_;
+    std::vector<std::pair<float, double>> niveaux_;   // WFS-109 : niveau du stop de chaque voiture et heure de la dernière image
     bool nuit_ = false;   // WFS-81
 public:
     const std::vector<FeuxStop>& feuxStop() const { return stops_; }

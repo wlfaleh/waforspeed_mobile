@@ -1,0 +1,37 @@
+# Checklist de livraison — revue de son propre diff (agent développeur)
+
+À parcourir avant chaque fusion (et avant chaque demande de relecture). Une case non cochée = on ne fusionne pas,
+ou on écrit au Journal pourquoi elle ne s'applique pas.
+
+## Périmètre et décisions
+- [ ] Chaque critère d'acceptation et chaque RG de `regles-de-gestion/WFS-XX.md` est couvert, preuve à l'appui.
+- [ ] Rien de plus que le ticket : aucun texte, écran, option ou valeur de réglage non demandés.
+- [ ] Aucune décision de l'utilisateur, du PO ou de la QA contredite ; les anomalies liées (`anno.md`, rapports QA) traitées.
+- [ ] Seuls les fichiers de la zone de l'épic sont modifiés ; accroches ≤ 10 lignes annoncées au Journal.
+- [ ] Aucun fichier iOS touché (gel) ; aucun moteur ni bibliothèque tiers non autorisé.
+
+## Code
+- [ ] `git diff origin/main` relu ligne par ligne : pas de code mort, de trace de débogage, de `TODO` sans ticket.
+- [ ] Aucune allocation, E/S ou journal verbeux ajouté dans la boucle de course.
+- [ ] Threads : aucune donnée partagée en écriture entre le thread principal et `jobs()`.
+- [ ] Ressources GPU : créées une fois, détruites de façon différée (`Game::retire`), libérées dans `shutdown`.
+- [ ] Entrées externes (fichiers, JSON, sauvegarde, réseau) bornées et validées ; valeur par défaut si invalide, jamais de plantage.
+- [ ] Aucun secret, jeton ou donnée personnelle dans le code, la CI ou les journaux.
+- [ ] Sauvegarde et protocole réseau : version incrémentée et migration si le format change.
+- [ ] Commentaires en français, nom de la fonction JS d'origine pour chaque port du jeu web.
+
+## Preuves
+- [ ] Branche synchronisée : `git fetch origin && git merge origin/main`, conflits résolus en gardant les deux côtés.
+- [ ] Compilation locale propre, sans nouvel avertissement.
+- [ ] `bash tools/qa/tests_cpu.sh build` vert ; nouveau test pour chaque règle calculable ; test de non-régression pour chaque bug corrigé.
+- [ ] Serveur touché : `serveur/test` vert.
+- [ ] Captures du banc d'essai du ticket produites et **regardées** ; aucune autre capture dégradée.
+- [ ] Écran ou parcours touché : parcours complet (accueil → … → course → retour) prouvé au Journal (`WFS_BANC=parcours`, 0 écart).
+- [ ] Performance : coût mesuré et noté au Journal si le rendu ou la simulation change.
+
+## Livraison
+- [ ] Règle de fusion en vigueur appliquée (`CLAUDE.md` : confiance > 50 % → fusion directe, sinon CI verte et captures vues).
+- [ ] Ligne `qa/Check.md` (ticket, PR, date, mode de fusion, points à regarder sur les captures).
+- [ ] `TACHES.md` (ses lignes seulement) et `journal.md` (entrée datée à la seconde, `date -u`) envoyés sur `main`.
+- [ ] Réponse à l'utilisateur dans `tache utilisateur.md` si sa demande est concernée.
+- [ ] CI de `main` suivie après la fusion ; toute casse due au ticket corrigée en priorité.

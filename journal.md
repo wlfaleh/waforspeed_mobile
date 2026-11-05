@@ -3529,3 +3529,91 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Décision** : WFS-109 (🔧) et WFS-94 (🔧 Réservé, démarre à la fusion de WFS-109) attribués à **Claude (session trafic, agent reprise)**, sur les mêmes branches, l'un après l'autre. Sections « Reprise du 2026-11-05 » ajoutées à `regles-de-gestion/WFS-109.md` (tout reste à faire, numéros de ligne à jour, coordination avec WFS-134 ; WFS-100 fusionné) et `regles-de-gestion/WFS-94.md` (étape 0 close, tout le reste à faire). Échéance du premier commit de WFS-109 : 2026-11-06 19:36 UTC.
 - **Voitures en cubes** (nouvelle demande, urgente) : ajoutée à **WFS-134** en RG-11, à faire en premier. Causes : `traffic_system.cpp` l. 129 / 143 (`dessineLoin` dès 25 m en Basse, 6 m en poursuite Basse), `poursuite_system.cpp` l. 221-222 / 253 (police et camion toujours en cubes en Basse). Zone de WFS-134 élargie à ces lignes seulement (le bloc des feux de `traffic_system.cpp` reste à WFS-109).
 - Branches non supprimées. Réponses `( PO : … )` écrites sous les deux demandes.
+
+### 2026-11-05 19:58:19 — Début WFS-102 : réattribué à Claude (session dev 5bx) (PO)
+- **Ticket** : WFS-102 « Lot anomalies INTERFACE » (absorbe WFS-95), épic **E8**, P1 Urgent ; ticket prêt le plus prioritaire (seul P1 prêt ; E8 libre). Ex-Copilot session 1ef8d4d6, remis en Prêt à 19:15 faute de branche. Branche `feature/waforspeed-102` (repartir de `main`).
+- **Règles** : `regles-de-gestion/WFS-102.md` (RG-01 à RG-21, dont RG-20 nouveau : parcours complet prouvé au Journal) + `regles-de-gestion/WFS-95.md`.
+- **Zone autorisée** : `src/ui/ecrans/**`, nouveau `src/ui/echelle.*`, `src/ui/text.*`, `src/ui/toasts.*`, `shaders/ui*`, `assets/fonts/**`, `src/ui/hud.*`, `src/ui/garage.cpp` (échelle et petits libellés seulement), `src/game/camera_vue.cpp`, `course_system.cpp` (≤ 10 lignes), `duel_system.cpp` (écran de résultat), `commandes_tactiles.*`, `src/platform/manette_jeu.cpp` ; accroches ≤ 10 lignes annoncées : `game.h`, `game.cpp` (`drawControls`), `android_main.cpp`. Interdit : `src/render/**`, `src/world/**`, `.github/**`, navigation du garage et `appui.h`, iOS.
+- **Critères** : ANO-16 à 20, 32, 35, 38, 39, 41 à 45, 47 invisibles sur les captures 1280 et 2400 ; boutons ≥ 44 dp, texte ≥ 12 dp ; parcours complet inchangé ; tests CPU verts.
+- **Plan** : 1) textes et caractères ; 2) couleurs et biseaux (`ui::biseau` partagé) ; 3) échelle `ui::echelle` (densité de WFS-108) ; une seule CI ; fusion par confiance si > 50 %.
+- `tache utilisateur.md` relu : toutes les demandes ont une réponse.
+
+### 2026-11-05 20:02:01 — Début WFS-135, attribué à Claude (session dev expert, 0183bv2X) (po-scrum-master)
+- Ticket : WFS-135 — Lot rapide anomalies (ANO-55, 58, 61, 63, 64), épic E7, P2 Haute. Règles : `regles-de-gestion/WFS-135.md`.
+- Choix du PO : deux tickets prêts à égalité (P2) dans des épics libres, WFS-135 (anomalies, E7) et WFS-136 (fonctionnalité, E3) ; le plus petit numéro est pris (règle 00000 : WFS-136 reste prêt pour le prochain agent, en parallèle). E7 sans ticket actif.
+- Zone autorisée : `.github/workflows/build.yml` ; accroches ≤ 10 lignes annoncées au Journal : `src/ui/ecrans/menu.cpp`, `terrain.cpp`, `reglages.cpp` (E8, WFS-102 actif : textes seulement, synchroniser souvent), `src/game/camera_vue.h`, `src/ui/hud.cpp`, `tests/test_relais.cpp`. Interdit : `modes_ecran.cpp`, `course5*`, `sauvegarde.*`, `src/render/**`, `src/world/**`, `poursuite_system.cpp`, iOS.
+- Critères : 5 captures `parcours-*` dans la Release `apercu` ; textes du menu (« Défie un ami où qu'il soit, sans trafic ») et du terrain (« Étape 3 sur 3 ») ; vue « Arrière » (identifiant `poursuite` inchangé) ; panneau SCORE #0A0B10 α 0,85 + ombre 2 px ; test_relais 10/10 en local (attente 10 s) ; parcours complet `WFS_BANC=parcours` 0 écart ; ligne `qa/Check.md`.
+- Plan : textes et nom de la vue, panneau du score, délai du test du relais, boucle `cp` du job `menu1-2400` ; une seule CI ; fusion par confiance si > 50 %. Branche à pousser dans l'heure.
+
+### 2026-11-05 20:14:08 — WFS-135 fusionné (PR #116, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** : RG-01 : job `menu1-2400` : `menu/parcours-*.png` copiées en `-2400`, et lancement de `WFS_BANC=parcours`, qui publie `parcours-fin` et `parcours-retour-menu`. RG-02 : textes du menu (« Défie un ami où qu'il soit, sans trafic ») et du terrain (« Étape 3 sur 3 · Terrain »). RG-03 : `VUES[0].nom` devient « Arrière » ; le bouton du HUD, les Réglages et les journaux le lisent, et l'identifiant `poursuite` ne change pas. RG-04 : panneau SCORE sur fond #0A0B10 à 0,85, avec une ombre de 2 px. RG-05 : `test_relais` attend le départ commun 10 s et écrit la manche et l'horloge des deux joueurs en cas d'échec.
+- **Accroches annoncées (≤ 10 lignes chacune)** : `src/ui/ecrans/menu.cpp` (1), `src/ui/ecrans/terrain.cpp` (1), `src/game/camera_vue.h` (1), `src/ui/hud.cpp` (3), `tests/test_relais.cpp` (4). `reglages.cpp` n'a pas changé : il lit déjà `VUES[].nom`.
+- **Vérification locale** : compilation complète, 25 tests CPU OK. **`test_relais` lancé 10 fois de suite : 10 réussites sur 10.** `WFS_BANC=parcours` : 0 écart. Captures regardées : `menu-0`, `terrain-0` et `hud-combo` sont conformes.
+- **Limites** : le score de la poursuite est dessiné par `poursuite_system.cpp`, une zone interdite (WFS-131), avec son propre fond `SURFACE` ; il n'a pas été changé. Le job `menu1-2400` dure environ 1 min de plus. Suivi de la CI de `main` en cours.
+
+### 2026-11-05 20:24:50 — WFS-102 : morceaux 1 et 2 poussés sur la branche (Claude, session dev 5bx)
+- **Fait** (branche `feature/waforspeed-102`, synchronisée avec `main`, RG-21) :
+  - morceau 1, textes : atlas de police 64 px / marge 8 (`text.cpp`), « — » et glyphes de WFS-95 (→ ← ✓ absents de Rajdhani : journalisés une fois, repli « ? »), aucun texte sous 8 px réels, petits libellés posés au pixel entier, petits corps légèrement épaissis dans `shaders/ui.frag` ; aide du menu selon le réglage Direction (RG-07) ; « 2e PLACE » (RG-08) ; salon en carte centrale, aide sous le code (RG-09, RG-14), touche « Effacer » large et blanche (RG-13) ; bandeau du quartier en course et capture `toast-quartier` (WFS-95 RG-04, RG-19).
+  - morceau 2, couleurs et biseaux : `src/ui/echelle.*` (nouveau) avec `ui::biseau` d'un seul polygone, appelé par pause, terrain, réglages, salon, fin de course, résultat du duel et menu (RG-04, ANO-20) ; terrain : contour et badge cyan (RG-06), ombre `.map-shade` en 3 dégradés (RG-05), ciel, sol, route, nuages et reflet sans bandes (RG-12) ; chargement : reflets orange et cyan, bouton « Réessayer » (RG-10).
+- **Accroche annoncée** (≤ 10 lignes) : `src/platform/android_main.cpp` : toucher de l'écran d'erreur, « Réessayer » relance la carte (`Game::demandes()`), « Quitter » ferme proprement si le moteur n'a pas pu démarrer.
+- **Vérification** : banc local (lavapipe) `texte`, `hud`, `chargement`, `menu1`, `menu2` en 1280 : captures regardées, parcours WFS-115 / WFS-126 tous « ok » ; 25 tests CPU verts. L'accroche Android n'est pas compilée en local (NDK absent) : la CI le fera.
+- **Reste** : échelle téléphone en dp (RG-01, 02, 03, 11, 15, 18), puis preuve du parcours complet en 1280 et 2400 (RG-20).
+
+### 2026-11-05 20:36:21 — WFS-135 : CI de main verte (Claude, session dev expert, 0183bv2X)
+- Run 656 (42101401744, commit 0b3819e) : 15 jobs verts (bancs, endurance, android, publication APK et captures). Le job `menu1-2400` a passé le parcours complet sans écart.
+- La Release `apercu` contient `parcours-mode-2400`, `parcours-terrain-2400`, `parcours-course-2400`, `parcours-fin` et `parcours-retour-menu`. Captures regardées : `hud-2400` (bouton « ARRIÈRE », score sur fond sombre lisible), `parcours-fin`.
+
+### 2026-11-05 20:37:09 — Début WFS-136 : tracé des cartes, 2e version (po-scrum-master)
+- Fin de WFS-135 constatée (PR #116, CI de main verte, run 656) : aucun ticket ne dépendait de WFS-135, rien à débloquer.
+- Attribution : **WFS-136** (E3, P2 Haute, catalyseur des décors WFS-137 à 140) à Claude (session dev expert, 0183bv2X), branche `feature/waforspeed-136`.
+  Choix : aucun P1 prêt ; E2 (WFS-94), E4 (WFS-109, WFS-134), E6 (WFS-131), E8 (WFS-102) occupées ; E3 libre, WFS-136 seul prêt.
+- Zone autorisée : `src/game/track.*`, nouveaux `src/game/trace_cartes.*`, `src/game/traffic.cpp`, `src/game/sauvegarde.*`, `src/game/reseau_relais.*`, `tests/**` ; accroches ≤ 10 lignes annoncées : `traffic_system.cpp` (hors bloc des feux de WFS-109), `CMakeLists.txt`, `desktop_main.cpp`.
+  Interdit : `src/world/**`, `src/render/**`, `shaders/**`, `src/ui/**`, `poursuite_system.cpp` (WFS-131), iOS (gel).
+- Critères : captures `trace-rond-point`, `trace-feux-rouge`, `trace-epingle`, `trace-autoroute` ; `test_trace` et tests CPU verts ; records v1 gardés sous `*_v1` + toast ; parcours complet `WFS_BANC=parcours` à 0 écart, prouvé au journal avant fusion ; ligne `qa/Check.md`.
+- Plan court : 1) `trace_cartes.*` (sections typées, API E2) branché dans `Track::build` ; 2) plans des 4 cartes (RG-06) ; 3) feux et ronds-points dans le trafic ; 4) sauvegarde trace=2 et version au salon ; 5) test_trace, captures, parcours.
+
+### 2026-11-05 20:45:30 — Skill « agent-developer » installé dans .claude (Claude, session 0183bv2V)
+- **Demande de l'utilisateur** : un skill commun à tous les agents développeurs (niveau expert, 10 ans d'expérience minimum ; respect de l'utilisateur, du PO et de la QA).
+- **Fait** : `.claude/skills/agent-developer/SKILL.md` (profil expert, hiérarchie utilisateur > PO > QA > développeur, comportement attendu, méthode d'un ticket en 7 étapes, standards C++20 / moteur / jeu, Web et serveur, sécurité, tests, traitement des retours PO et QA, format de signalement d'un risque, interdits) et `references/checklist-livraison.md` (revue de son diff avant fusion).
+- **Accroches** : `CLAUDE.md` (1 ligne : charger le skill avant de développer), `waforspeed-natif/SKILL.md` (renvoi en tête), `po-scrum-master.md` (rappel du skill à chaque attribution).
+- **Vérification** : le skill est reconnu par Claude Code (liste des skills). Aucune règle existante changée : le skill renvoie aux règles de `CLAUDE.md` (autonomie, fusion par confiance, gel iOS, zones des épics). Aucun code du jeu touché, aucun ticket WFS.
+
+### 2026-11-05 20:59:08 — WFS-109 : feux de freinage réalistes fusionnés (Claude, session trafic, agent reprise WFS-109)
+- **Fait** (PR #117, commit de fusion 4469c5e, **fusion par confiance**, branche Copilot reprise telle quelle) :
+  - RG-13 / RG-14 : nouveau `src/render/feux_modele.h/.cpp`. Le matériau de feux avant + arrière est découpé au chargement : triangles au-delà de z = 0,4 L, pièce ≤ 0,5 m de haut, une seule pièce par modèle, verre rouge sans l'émissif blanc. **Liste vérifiée sur les 20 modèles** :
+    - découpés : golf (mat 13, 396 triangles), p911 (mat 9, 1636), model3 (mat 10, 438), rrsport (mat 19, 392) ;
+    - inchangés, ils ont déjà un MAT_TAIL valide : a45, giulia, m4, corsa ;
+    - refusés, pièce trop haute : tcross (0,94 m), x5 (0,87 m), v60 (0,56 m) ;
+    - sans candidat : les autres modèles, dont la gallardo, qui garde le petit halo de repli.
+  - RG-01, 02, 07, 08, 15 : le feu du modèle s'allume **de jour comme de nuit**. Joueur : bloc des feux de `nuit.cpp`, appelé aussi le jour. Trafic : `feuxProchaineVoiture` à chaque image. Transition linéaire de 80 ms (`feux_modele::transition`).
+    - **Valeurs choisies** (RG-06) : émission rouge (1 ; 0,02 ; 0,04). Position la nuit 1,6, inchangée depuis WFS-84. Stop 4,0, soit `0xff2040` × 2,5 du web × 1,6 comme `FEUX_HDR`. Rien le jour hors freinage (RG-15 a, qui prime sur le × 0,4 du web).
+    - Le jour, un modèle qui a sa pièce de feu n'a plus aucun halo à côté ; la Gallardo garde un petit halo court. La lueur de nuit est centrée sur la pièce du feu (`FeuxModele::arriereZ`). Le reflet sur la route reste de nuit seulement (RG-04).
+    - Le carré de 1,1 m × 7 du trafic de jour est supprimé.
+  - RG-03 : 3e feu stop (giulia, mat 40, repéré « étroit et centré ») allumé au freinage seulement ; feux de recul aussi le jour.
+  - RG-10 / ANO-48 : halos des clignotants et des feux de détresse avec `MAT.blinkHalo` du web (`0xff9a10`, opacité 0,95) converti par `effets::versHdr`, soit (1,87 ; 0,39 ; 0) au lieu de (7 ; 2,6 ; 0,07). Même conversion pour `haloBrake`. Taille 1,5 m inchangée.
+- **Accroches annoncées (≤ 10 lignes)** :
+  - `src/render/renderer.h` (2) : `ModelPart::feuArriere`, `FeuxVoiture::frein`, `FeuxModele::pieceArriere` / `arriereZ` ;
+  - `src/render/model_loader.cpp` (8) : appel de la découpe avant l'envoi des tampons, boîte du feu dans le bloc WFS-09 ;
+  - `CMakeLists.txt` (1) : `test_feux_modele` ;
+  - `src/platform/desktop_main.cpp` (2) : `benchFeuxFrein` dans le groupe nuit ;
+  - `src/render/nuit.cpp` : bloc des feux du joueur, plus 1 ligne au début de `render` ;
+  - aucune ligne de WFS-134 touchée dans `traffic_system.cpp` (choix silhouette / modèle) ni dans `poursuite_system.cpp`.
+- **Vérification** :
+  - compilation, 26 tests CPU OK, `WFS_BANC=parcours` local : 0 écart ;
+  - bancs `nuit`, `partie1a`, `partie1b` comparés à un build de `main` (46b548b) : seuls les feux changent (Golf, 911, trafic, halos orange) ; mêmes 182 appels de dessin en ville ;
+  - CI de branche, run 661 (42105045445) : android, publication et 11 bancs verts ; `texte` et `vitrines` rouges à cause du commit `configgame.json` (e23fa51) fait à la main sur main : `test_configgame` « dépôt = valeurs du code » ÉCHEC, records relus ; c'est hors de ma zone ;
+  - captures de `apercu-waforspeed-109` regardées : `feux-frein-jour`, `feux-frein-nuit`, `trafic-freinage`, `accident-fumee`.
+- **Limites** : les gyrophares de la police (ANO-56) sont dans WFS-141. Les silhouettes lointaines (`dessineLoin`, WFS-134) n'ont pas de feux. Le reflet rouge sur la route la nuit au freinage reste celui de WFS-84.
+
+### 2026-11-05 21:02:39 — Étude du besoin « rendu critique » : voitures lointaines et route de nuit miroir ; WFS-142 créé, WFS-134 durci (po-scrum-master)
+- **Besoin** (utilisateur, `tache utilisateur.md`, statut « critique ») : voitures lointaines en cubes, LOD trop brutal ; route de nuit = miroir ; exigence d'une cause réelle et de captures comparatives avant / après. Preuve ajoutée : `qa/retours/2026-11-05-route-nuit-miroir.jpg` (ville de nuit sous la pluie, 47 km/h).
+- **Point 1 (voitures)** : c'est WFS-134 (E4, P1, 🔧 Claude, session trafic), **pas encore fusionné** (branche : 2 commits de travail, dernier 19:41 UTC) : l'APK de l'utilisateur est celui de main, cubes encore présents. Règles ajoutées : RG-11 durcie (aucun cube à aucune distance), RG-12 transition progressive (hystérésis ±10 %, fondu 8 m, `-lod` ≥ 25 % des triangles), RG-13 captures `voiture-distance-*` et `voiture-lod-passage` avant / après, RG-14 pas de fusion par confiance (verdict `qa-lead` avant fusion). RG-08 (ANO-66) transférée à WFS-142.
+- **Point 2 (route)** : nouveau **WFS-142** (E4, P1 Urgent). Cause racine trouvée dans le code (PO + coordinateur) : `nuit.cpp` l. 67 route mouillée à chaque nuit ville / corniche sans pluie ; `scene.frag` l. 173 `metal = 0.4` ; l. 171-174 rugosité 0,22, flaques 0,02 ; l. 230-238 reflet de la scène en remplacement de l'environnement, `spread = rough * 0.05` ; l. 221 Fresnel ≈ 0,78 en vue rasante ; bloom qui amplifie (même bloc dans `scene_skin.frag`). Jeu web : mêmes valeurs fautives (`roadShader`), rien à porter. Critères chiffrés (rapport de luminance avec / sans reflet ≤ 1,10 au sec, 1,15 à 1,8 sous la pluie) et 6 captures avant / après (RG-09).
+- **Ordre et exception** : WFS-109 vient d'être fusionné (PR #117, 20:59) ; WFS-134 reste actif ; WFS-142 est un 2e ticket E4 actif, **exception documentée** (P1 critique demandé par l'utilisateur, agent libre) avec blocs séparés (RG-11 de WFS-142) ; conflit possible seulement avec WFS-134 dans le bloc du reflet : garder WFS-142. ANO-66 → WFS-142 (`anno.md`).
+- **Règle de fusion** pour WFS-134 et WFS-142 : pas de fusion par confiance (confiance ≤ 50 % tant que les captures ne sont pas vues) ; CI verte + captures avant / après regardées + verdict `qa-lead` avant fusion ; résolu seulement après confirmation de l'utilisateur sur téléphone.
+
+### 2026-11-05 21:02:39 — Début WFS-142 : route de nuit, fin de la chaussée miroir (po-scrum-master)
+- Attribution : **WFS-142** (E4, P1 Urgent) à Claude (session 0183bv2V), branche `feature/waforspeed-142`, règles `regles-de-gestion/WFS-142.md`. Choix : P1 le plus prioritaire, agent libre (aucun ticket en cours), exception E4 ci-dessus.
+- Zone autorisée : `scene.frag` / `scene_skin.frag` (bloc `F_ROAD` / `wetRoad`, `Fe` / `env` du sol, bloc du reflet seulement), `common.glsl`, `post.frag` (seuil du bloom), `renderer.cpp` (bloc des reflets l. 575-680 et 950-952 seulement), `nuit.cpp` (`mouille()`, ligne `fp.mouille/flaques/reflets`, flaques de lumière l. 156-175), `bench_nuit.*` ; accroches ≤ 10 lignes : `desktop_main.cpp`, `configgame.*`, `configgame.json`. Interdit : blocs de WFS-109 et WFS-134, `src/world/**`, `src/game/**`, `src/ui/**`, iOS.
+- Critères : RG-08 (mesure), RG-09 (captures avant / après), ANO-66, parcours complet à 0 écart, verdict `qa-lead` avant fusion (RG-10).
+- Plan court : 1) confirmer la cause au banc (captures `avant-*`, mesure) ; 2) météo → état de la chaussée ; 3) matériau sec / mouillé et reflet pondéré dans un bloc commun ; 4) bloom et flaques de lumière ; 5) captures après, planche, CI, `qa-lead`.
