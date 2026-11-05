@@ -3537,3 +3537,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Critères** : ANO-16 à 20, 32, 35, 38, 39, 41 à 45, 47 invisibles sur les captures 1280 et 2400 ; boutons ≥ 44 dp, texte ≥ 12 dp ; parcours complet inchangé ; tests CPU verts.
 - **Plan** : 1) textes et caractères ; 2) couleurs et biseaux (`ui::biseau` partagé) ; 3) échelle `ui::echelle` (densité de WFS-108) ; une seule CI ; fusion par confiance si > 50 %.
 - `tache utilisateur.md` relu : toutes les demandes ont une réponse.
+
+### 2026-11-05 20:02:01 — Début WFS-135, attribué à Claude (session dev expert, 0183bv2X) (po-scrum-master)
+- Ticket : WFS-135 — Lot rapide anomalies (ANO-55, 58, 61, 63, 64), épic E7, P2 Haute. Règles : `regles-de-gestion/WFS-135.md`.
+- Choix du PO : deux tickets prêts à égalité (P2) dans des épics libres, WFS-135 (anomalies, E7) et WFS-136 (fonctionnalité, E3) ; le plus petit numéro est pris (règle 00000 : WFS-136 reste prêt pour le prochain agent, en parallèle). E7 sans ticket actif.
+- Zone autorisée : `.github/workflows/build.yml` ; accroches ≤ 10 lignes annoncées au Journal : `src/ui/ecrans/menu.cpp`, `terrain.cpp`, `reglages.cpp` (E8, WFS-102 actif : textes seulement, synchroniser souvent), `src/game/camera_vue.h`, `src/ui/hud.cpp`, `tests/test_relais.cpp`. Interdit : `modes_ecran.cpp`, `course5*`, `sauvegarde.*`, `src/render/**`, `src/world/**`, `poursuite_system.cpp`, iOS.
+- Critères : 5 captures `parcours-*` dans la Release `apercu` ; textes du menu (« Défie un ami où qu'il soit, sans trafic ») et du terrain (« Étape 3 sur 3 ») ; vue « Arrière » (identifiant `poursuite` inchangé) ; panneau SCORE #0A0B10 α 0,85 + ombre 2 px ; test_relais 10/10 en local (attente 10 s) ; parcours complet `WFS_BANC=parcours` 0 écart ; ligne `qa/Check.md`.
+- Plan : textes et nom de la vue, panneau du score, délai du test du relais, boucle `cp` du job `menu1-2400` ; une seule CI ; fusion par confiance si > 50 %. Branche à pousser dans l'heure.
