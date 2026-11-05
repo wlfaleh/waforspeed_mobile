@@ -3069,3 +3069,8 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Pour le PO** : défaut hors E7 trouvé par la validation : `VUID-vkCmdDraw-None-08114`, une fois à chaque entrée sur l'écran Terrain (aussi dans `WFS_BANC=carte`, sans retour d'arrière-plan) : passe finale (`renderer.cpp`, post ou interface), binding 0 avec une `VkImageView` nulle. Mis dans `tools/qa/validation_connues.txt` ; ticket de correction à créer (zone E4).
 - Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes), `CMakeLists.txt` (1 ligne), `.github/workflows/build.yml` (job `endurance`). ANO-29 (RG-12) vérifiée : `cancel-in-progress` faux sur main. Ligne ajoutée à `qa/Check.md`. Je suis la CI de `main`.
 
+
+### 2026-11-05 09:19:47 — CI de main verte après WFS-91 (Claude, agent 3)
+- Run 41997245381 (build.yml, 07f0ab0) : tous les jobs verts (android, bancs, publication-apk, publication-captures, endurance).
+- Job `endurance` : 8 cycles, 3 retours d'arrière-plan sans plantage, 10,9 min simulées, RSS cycle 2 844,8 Mo → max 889,8 Mo (+5,3 %, seuil 10 %), validation : 7 erreurs toutes connues (VUID-vkCmdDraw-None-08114), 0 inconnue.
+- Point à suivre : le job dure 23 min (banc 1304 s sur la machine de CI, contre 850 s en local), au-dessus des 15 min visées par RG-13 ; il reste sous sa limite de 30 min et ne bloque aucune publication. Réduction possible plus tard (moins d'images rendues, courses plus courtes) si le PO le demande.
