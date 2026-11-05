@@ -166,9 +166,33 @@ protected:
             }
             break;
         }
-        case T_VINES: {
-            const Pose pm = poseAt(t, a + (int64_t)std::lround(it.l / SEG_M / 2));
-            box(S, lateral(pm, s * it.lat, gy(it.lat) - 0.05f), pm.r, pm.f, 0.7f, 1.2f, it.l, uv(C_VINE), 0, 0.6f);
+        case T_VINES: {   // rang de vigne : boîte de DECOR.vines (0,7 × 1,2 m, effilée de 0,6 en largeur et en longueur),
+            // posée sur le coteau à chaque tronçon (WFS-93) : le rang suit la pente et les virages, plus de marches
+            const float Ls = it.l / (float)SEG_M, e = 0.2f * Ls;   // longueur et retrait du dessus à chaque bout (tronçons)
+            const double sA = (double)a + (double)std::lround(Ls / 2) - Ls / 2.0, sB = sA + Ls;
+            double sb[24]; int n = 0;   // tronçons du bas : bouts du rang et tronçons entiers entre les deux
+            sb[n++] = sA;
+            for (int64_t k = (int64_t)std::floor(sA) + 1; k < sB && n < 23; k++) sb[n++] = (double)k;
+            sb[n++] = sB;
+            const float yb = gy(it.lat) - 0.05f, wb = 0.35f, wt = 0.21f, x0 = s * it.lat;
+            auto P = [&](double sg, float x, float dy) { const TrackPoint q = t.point(sg * SEG, x); return vec3{(float)q.x, (float)q.y + dy, (float)q.z}; };
+            vec3 B[24][2], T[24][2];   // [tronçon][côté −r, +r]
+            for (int i = 0; i < n; i++) {
+                const double st = sA + e + (sb[i] - sA) * (Ls - 2 * e) / Ls;   // dessus plus court : même fraction du rang
+                for (int k = 0; k < 2; k++) {
+                    const float sx = k ? 1.f : -1.f;
+                    B[i][k] = P(sb[i], x0 + sx * wb, gy(it.lat + s * sx * wb) - 0.05f);
+                    T[i][k] = P(st, x0 + sx * wt, yb + 1.2f);
+                }
+            }
+            const vec2 c = uv(C_VINE);   // ordre des sommets de box : normales vers l'extérieur
+            for (int i = 0; i + 1 < n; i++) {
+                quad(S, T[i][0], T[i][1], T[i + 1][1], T[i + 1][0], c);
+                quad(S, B[i][1], B[i + 1][1], T[i + 1][1], T[i][1], c);
+                quad(S, B[i + 1][0], B[i][0], T[i][0], T[i + 1][0], c);
+            }
+            quad(S, B[n - 1][1], B[n - 1][0], T[n - 1][0], T[n - 1][1], c);
+            quad(S, B[0][0], B[0][1], T[0][1], T[0][0], c);
             break;
         }
         default: break;
