@@ -1062,20 +1062,25 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
-    for (size_t pi = 0; pi < m.parts.size(); pi++) {
-        const ModelPart& part = m.parts[pi];
+    // WFS-134 (RG-11, RG-12) : version allégée au-delà de 60 m du joueur, sans saut : de 64 à 72 m de la caméra (≈ 56 à 64 m
+    // du joueur, caméra de poursuite 8 m derrière), les deux versions sont dessinées en tramage écran complémentaire (fondu
+    // de 8 m, scene.frag) ; jamais de cubes. t = 0 : complète, 1 : allégée
+    const float tLod = m.partsLod.empty() || fantome ? 0.f : std::clamp((depth - 64.f) / 8.f, 0.f, 1.f);
+    auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
+    for (size_t pi = 0; pi < parts.size(); pi++) {
+        const ModelPart& part = parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
         // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
         // WFS-60) dessinées en un seul appel
-        if (!anim) while (pi + 1 < m.parts.size() && m.parts[pi + 1].material == part.material && m.parts[pi + 1].vertexOffset == part.vertexOffset && m.parts[pi + 1].feuArriere == part.feuArriere &&
-                          m.parts[pi + 1].firstIndex == p.first + p.count) p.count += m.parts[++pi].indexCount;
+        if (!anim) while (pi + 1 < parts.size() && parts[pi + 1].material == part.material && parts[pi + 1].vertexOffset == part.vertexOffset && parts[pi + 1].feuArriere == part.feuArriere &&
+                          parts[pi + 1].firstIndex == p.first + p.count) p.count += parts[++pi].indexCount;
         p.vis = vis;   // WFS-82
         p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
-        p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
+        p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
         // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
         if (qualiteBasse && depth > 15.f && mat.detail > 0) continue;
         if (fantome) {   // WFS-134 (RG-07) : toutes les pièces translucides (scene.frag, F_FANTOME), après les opaques
@@ -1098,6 +1103,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         } else if (mat.flags & MAT_BLEND) transparent_.push_back(p);
         else opaqueQ_.push_back(p);
     }
+    };
+    if (tLod < 1.f) emettre(m.parts, tLod > 0.f ? -(3.f + tLod) : 0.f);      // complète : pixels où le seuil ≥ t
+    if (tLod > 0.f) emettre(m.partsLod, tLod < 1.f ? -(1.f + tLod) : 0.f);   // allégée : pixels où le seuil < t
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {

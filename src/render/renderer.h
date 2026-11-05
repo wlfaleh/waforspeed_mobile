@@ -57,6 +57,7 @@ struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32
 struct FeuxModele { float arriereY = 0, avantY = 0; float largeur = 0, avant = 0, arriere = 0, arriereX = 0, avantX = 0; bool pieceArriere = false; float arriereZ = 0; };   // WFS-109 : feu arrière du modèle trouvé, arrière de sa pièce
 struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
+    std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;

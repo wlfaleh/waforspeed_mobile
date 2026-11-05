@@ -102,6 +102,14 @@ void main() {
     uint flags = uint(pc.params.w + 0.5);
     // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
     bool fine = pc.emissive.w > 0.0 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u;
+    // WFS-134 (RG-12) : fondu entre la voiture complète et sa version allégée (56 à 64 m) : tramage écran 4×4 complémentaire
+    // (emissive.w = −(1 + t) : pixel gardé si seuil < t ; −(3 + t) : gardé si seuil ≥ t)
+    if (pc.emissive.w < -0.5 && (flags & (F_ROAD | F_WALK | F_GROUND)) == 0u) {
+        ivec2 q = ivec2(gl_FragCoord.xy) & 3;
+        const float B[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+        float seuil = (B[q.y * 4 + q.x] + 0.5) / 16.0, w = -pc.emissive.w;
+        if (w < 2.5 ? seuil >= w - 1.0 : seuil < w - 3.0) discard;
+    }
     // WFS-16 : passe de reflet (vue miroir de la chaussée) : rien de ce qui est sous le plan
     if (F.nuitA.w > 0.5 && vWorld.y < F.nuitB.x - 0.05) discard;
     if ((flags & F_ADD) != 0u) {   // WFS-09 : halo des feux et des lampadaires (TEXS.radial du jeu web, mélange additif)

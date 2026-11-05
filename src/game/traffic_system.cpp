@@ -1,6 +1,5 @@
 // WaForSpeed — module « trafic » (WFS-08) : voir traffic_system.h.
 #include "traffic_system.h"
-#include "../render/voitures_lod.h"   // WFS-134 (RG-11)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -144,8 +143,8 @@ public:
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const size_t ci = (size_t)(&c - traffic_.cars.data());
             // WFS-67 : silhouette légère au-delà de 50 m ; WFS-82 : dès 25 m en qualité Basse (moins d'appels de dessin)
-            // WFS-134 (RG-11) : jamais de cubes : modèle complet jusqu'à 60 m, version allégée (-lod du jeu web) jusqu'à 150 m
-            if (vis[k].dz * M > voitures_lod::COMPLET_M) { dessineLoin(r, c, m, L, W, vis[k].dz * M); continue; }
+            // WFS-134 (RG-11) : jamais de cubes, à aucune distance : toujours le vrai modèle (version allégée au-delà de 60 m,
+            // avec fondu, choisie par Renderer::draw) ; en Basse, le coût se règle par le nombre et la distance (ci-dessus)
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
@@ -211,13 +210,8 @@ private:
         r.vk().destroy(haloTex_);
     }
     // silhouette : caisse (hauteur 0,55 H) et habitacle (0,82 W × 0,4 H × 0,5 L), à la couleur de la voiture
-    vec3 loinPeinture_[TRAFFIC_PAINT_COUNT]{};   // WFS-134 : peinture gardée jusqu'à la fin de l'image (Renderer::draw)
-    void dessineLoin(Renderer& r, const TrafficCar& c, const mat4& m, float L, float W, double dzM) {
-        const int mi = nativeModelFor(c.type);   // WFS-134 (RG-11) : version allégée du même modèle, cubes au-delà de 150 m
-        if (const Model* lod = dzM <= voitures_lod::CUBES_M ? voitures_lod::modele(r, CARS[mi].id) : nullptr) {
-            loinPeinture_[c.color % TRAFFIC_PAINT_COUNT] = hexLin(TRAFFIC_PAINTS[c.color]);
-            r.draw(*lod, m * scale(vec3{1, 1, 1} * (L / CARS[mi].d.L)), &loinPeinture_[c.color % TRAFFIC_PAINT_COUNT]); return;
-        }
+    // WFS-134 (RG-11) : plus appelée (aucune voiture en cubes) ; gardée pour mémoire de l'ancienne silhouette
+    [[maybe_unused]] void dessineLoin(Renderer& r, const TrafficCar& c, const mat4& m, float L, float W) {
         const float H = WEB_FEUX[c.type].H;
         r.draw(cube_, loinPeint_[c.color], m * translate({0, 0.12f, 0}) * scale({W, H * 0.5f, L}));
         r.draw(cube_, loinVitre_, m * translate({0, 0.12f + H * 0.5f, L * 0.04f}) * scale({W * 0.82f, H * 0.4f, L * 0.5f}));

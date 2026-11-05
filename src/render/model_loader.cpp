@@ -171,6 +171,28 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             }
         }
     }
+    // WFS-134 (RG-11, RG-12) : version allégée <id>.lod (tools/alleger_voiture.mjs) : nouveaux indices de chaque maillage,
+    // mêmes sommets et matériaux ; une pièce par maillage (roues fixes : la version allégée n'est vue qu'au-delà de 56 m)
+    std::vector<uint32_t> lodIdx; std::vector<ModelPart> lodParts;
+    {
+        std::vector<uint8_t> lf;
+        const std::string lodPath = path.size() > 4 ? path.substr(0, path.size() - 4) + ".lod" : path;
+        if (path.size() > 4 && path.compare(path.size() - 4, 4, ".wfm") == 0 && readAsset(lodPath, lf) && lf.size() >= 8 &&
+            std::memcmp(lf.data(), "WFL1", 4) == 0) {
+            Reader lr{lf.data() + 4, lf.data() + lf.size()};
+            const uint32_t n = lr.get<uint32_t>();
+            bool ok = n == out.parts.size();
+            for (uint32_t i = 0; ok && i < n; i++) {
+                const uint32_t ni = lr.get<uint32_t>();
+                const uint8_t* ip = lr.take((size_t)ni * 4);
+                if (!lr.ok) { ok = false; break; }
+                const ModelPart& full = out.parts[i];
+                lodParts.push_back({(uint32_t)lodIdx.size(), ni, full.vertexOffset, full.material});
+                const size_t i0 = lodIdx.size(); lodIdx.resize(i0 + ni); std::memcpy(&lodIdx[i0], ip, (size_t)ni * 4);
+            }
+            if (!ok) { lodIdx.clear(); lodParts.clear(); WFS_ERR("%s : version allégée illisible (ignorée)", lodPath.c_str()); }
+        }
+    }
     // WFS-60 : roues séparées (splitWheels du jeu web) : chaque matériau est redécoupé en une partie fixe et une partie
     // par roue (mêmes sommets, indices regroupés) ; sans 4 roues trouvées, le modèle reste tel quel
     {
@@ -208,16 +230,18 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     for (uint32_t mi = 0; mi < nMat; mi++) fm[mi] = {raw[mi].flags, {raw[mi].em[0], raw[mi].em[1], raw[mi].em[2]}, matMin[mi], matMax[mi]};
     const feux_modele::Resultat feuA = feux_modele::decouper(idx, out.parts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);
     if (feuA.materiau >= 0) WFS_LOG("%s : feu arrière découpé dans le matériau %d, %u triangles (WFS-109)", path.c_str(), feuA.materiau, feuA.triangles);
+    if (!lodParts.empty()) feux_modele::decouper(lodIdx, lodParts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);   // WFS-134 : mêmes feux
     // WFS-134 (RG-06, ANO-67) : tranches des portes (faces de carrosserie tournées vers l'avant ou l'arrière, sur les flancs,
     // à mi-hauteur, hors pare-chocs) : dans une vraie voiture, c'est un jour sombre ; ici elles reflétaient le sol en beige
     // (« trace beige verticale » de la Model 3). Elles passent dans une pièce à part, gris très sombre mat.
-    {
+    int32_t jour = -1;
+    auto tranches = [&](std::vector<uint32_t>& idx, std::vector<ModelPart>& parts) -> size_t {
         const float hw = (out.bmax.x - out.bmin.x) * 0.5f, H = out.bmax.y - out.bmin.y, hl = (out.bmax.z - out.bmin.z) * 0.5f;
         const float cx = (out.bmax.x + out.bmin.x) * 0.5f, cz = (out.bmax.z + out.bmin.z) * 0.5f;
-        int32_t jour = -1; size_t nJour = 0;
-        const size_t nParts = out.parts.size();
+        size_t nJour = 0;
+        const size_t nParts = parts.size();
         for (size_t k = 0; k < nParts; k++) {
-            ModelPart& p = out.parts[k];
+            ModelPart& p = parts[k];
             if (p.roue >= 0 || p.material >= nMat || !(raw[p.material].flags & MAT_PAINT)) continue;
             std::vector<uint32_t> garde, tranche;
             for (uint32_t t = 0; t + 2 < p.indexCount; t += 3) {
@@ -241,11 +265,21 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             std::copy(garde.begin(), garde.end(), idx.begin() + p.firstIndex);
             std::copy(tranche.begin(), tranche.end(), idx.begin() + p.firstIndex + garde.size());
             const ModelPart q{p.firstIndex + (uint32_t)garde.size(), (uint32_t)tranche.size(), p.vertexOffset, (uint32_t)jour, -1};
-            p.indexCount = (uint32_t)garde.size();
-            out.parts.push_back(q);
+            p.indexCount = (uint32_t)garde.size();   // (p n'est plus utilisé après push_back)
+            parts.push_back(q);
             nJour += tranche.size() / 3;
         }
-        if (nJour) WFS_LOG("%s : %zu triangles de tranches de portes en gris sombre (WFS-134, ANO-67)", path.c_str(), nJour);
+        return nJour;
+    };
+    if (const size_t nJour = tranches(idx, out.parts))
+        WFS_LOG("%s : %zu triangles de tranches de portes en gris sombre (WFS-134, ANO-67)", path.c_str(), nJour);
+    if (!lodParts.empty()) {   // WFS-134 : version allégée traitée pareil, puis mise à la suite dans le même tampon d'indices
+        tranches(lodIdx, lodParts);
+        const uint32_t base = (uint32_t)idx.size();
+        for (ModelPart& p : lodParts) p.firstIndex += base;
+        idx.insert(idx.end(), lodIdx.begin(), lodIdx.end());
+        out.partsLod = lodParts;
+        WFS_LOG("%s : version allégée, %zu triangles (fondu de 64 à 72 m de la caméra, au-delà : seule, WFS-134)", path.c_str(), lodIdx.size() / 3);
     }
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);

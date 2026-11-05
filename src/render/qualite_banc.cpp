@@ -83,6 +83,41 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("capture %s (WFS-134) : %s, %.0f km/h", pr.nom, qualite::ligneRendu().c_str(), g.player().kmh());
         g.shutdown();
     }
+    // WFS-134 (RG-13) : la même voiture du trafic devant le joueur, à 10, 25, 50, 60, 80, 120 et 180 m, même caméra, Haute et
+    // Basse (voiture-distance-<m>[-basse]) ; passage complète → allégée à 56, 60 et 64 m (voiture-lod-passage-<m>)
+    {
+        auto placer = [&](double d) {
+            Traffic* tr = activeTrafficMut(); if (!tr) return;
+            const double pos = g.player().position;
+            for (size_t i = 0; i < tr->cars.size(); i++) {
+                TrafficCar& c = tr->cars[i];
+                c.crashed = false; c.speed = c.want = g.player().speed;
+                if (i == 0) { c.offset = c.prevOff = 0; c.z = pos + d / M; } else c.z = pos - (200 + 5.0 * (double)i) / M;
+            }
+        };
+        for (int niveau : {qualite::HAUTE, qualite::BASSE}) {
+            R.qualite = niveau; ecrans::appliquerQualiteNiveau(r);
+            if (!g.init(r, "golf", "ville")) break;
+            g.setAutopilot(true); g.camMode = 1;
+            for (int i = 0; i < 240; i++) { g.update(1.0 / 60); if (i % 8 == 0) g.render(940 + i / 60.0); }
+            g.setAutopilot(false);
+            const double D[] = {10, 25, 50, 60, 80, 120, 180};
+            for (double d : D) {
+                placer(d);
+                for (int i = 0; i < 3; i++) g.render(944 + i / 60.0);
+                const std::string nom = "voiture-distance-" + std::to_string((int)d) + (niveau == qualite::BASSE ? "-basse" : "");
+                r.capturePng(out + "/" + nom + ".png");
+                WFS_LOG("capture %s (WFS-134 RG-13) : voiture du trafic à %.0f m, %u appels de dessin", nom.c_str(), d, r.appelsDessin());
+            }
+            if (niveau == qualite::HAUTE) for (double d : {56.0, 60.0, 64.0}) {
+                placer(d);
+                for (int i = 0; i < 3; i++) g.render(946 + i / 60.0);
+                r.capturePng(out + "/voiture-lod-passage-" + std::to_string((int)d) + ".png");
+                WFS_LOG("capture voiture-lod-passage-%d (WFS-134 RG-12) : complète → allégée, fondu de 56 à 64 m du joueur", (int)d);
+            }
+            g.shutdown();
+        }
+    }
     // WFS-134 (demande de l'utilisateur : « jamais de cubes ») : poursuite en qualité Basse, trafic dense placé de 8 à 150 m
     // devant, police et trafic : vrais modèles à toute distance ; appels de dessin au journal
     {
