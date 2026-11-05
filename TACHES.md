@@ -222,7 +222,12 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-126 | Rapport de plantage sur le téléphone (Partager au lancement suivant) + banc de chauffe dans la CI de nuit (suite de WFS-123) + croissance lente de la mémoire du banc d'endurance (RG-09) | E7 (+ accroches `src/core/log.h` 10 lignes, `CMakeLists.txt` 2 lignes) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-126), 2026-11-05 | WFS-29 ✅, WFS-114 ✅, WFS-123 ✅ | `feature/waforspeed-126` → PR #109 |  |  |
 | P3 Moyenne | WFS-127 | Showroom sonore : chaque voiture montrée au garage fait entendre son moteur (démarreur, coup de gaz, ralenti) | E6 (+ accroches ≤ 6 lignes `src/ui/garage.*` accesseur, `CMakeLists.txt`, `desktop_main.cpp`) | ✅ Fusionné (par confiance, PR #107) | Claude (agent 3, session 011cpqZd), 2026-11-05 | WFS-10 ✅, WFS-13 ✅, WFS-96 ✅, WFS-113 ✅ | `feature/waforspeed-127` |  |  |
 | P3 Moyenne | WFS-131 | Sirène de police réaliste : vraie sirène continue (wail / yelp), plus forte quand la police approche, effet Doppler, jingles « ARRÊTÉ » / « ÉCHAPPÉ » | E6 (+ accroche E3 ≤ 10 lignes `src/game/poursuite_system.cpp`) | 🔧 En cours | Claude, agent 3 (session 011cpqZd), 2026-11-05 | WFS-111 ✅, WFS-119 ✅, WFS-121 ✅ | `feature/waforspeed-131` |  |  |
+<<<<<<< Updated upstream
 | P2 Haute | WFS-132 | Le jeu annonce une nouvelle version de l'APK au lancement (« Télécharger » en un appui) + boutons de volume sur le son du jeu | E7 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-05 | WFS-87 ✅, WFS-118 ✅, WFS-126 ✅ | `feature/waforspeed-132` | PR #114 (fusion par confiance, 894208c) |  |
+=======
+| P2 Haute | WFS-132 | Le jeu annonce une nouvelle version de l'APK au lancement (« Télécharger » en un appui) + boutons de volume sur le son du jeu | E7 | 🔧 En cours | Claude (session trafic), 2026-11-05 | WFS-87 ✅, WFS-118 ✅, WFS-126 ✅ | `feature/waforspeed-132` |  |  |
+| P2 Haute | WFS-133 | Course à 5, 2e passage : choix de la difficulté (Facile / Normale / Difficile) + ordinateurs combatifs (rattrapage, aspiration, nitro) | E3 (+ accroche E0 ≤ 10 lignes `src/core/configgame.*`) | 🔧 En cours | Claude (session trafic), 2026-11-05 | WFS-110 ✅, WFS-125 ✅, WFS-128 ✅, WFS-130 ✅ | `feature/waforspeed-133` |  |  |
+>>>>>>> Stashed changes
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -558,6 +563,11 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-132 — Nouvelle version de l'APK annoncée au lancement + boutons de volume** · E7 · P2 Haute · ✅ Fusionné (QA de nuit à faire), PR #114, commit 894208c — Claude (session trafic), 2026-11-05, branche `feature/waforspeed-132` (règles : `regles-de-gestion/WFS-132.md`). Zone : `android/**` (`JeuActivity.java`, nouveau `MiseAJour.java`, `android/app/src/test/**`, `build.gradle` : dépendance JUnit), `.github/workflows/build.yml` (étape `testReleaseUnitTest` du job `android`, ≤ 3 lignes). Interdit : `src/**`, `shaders/**`, `assets/**`, `tools/qa/publier_apercu.sh` (format du titre à garder), `ios/**` et `ios.yml` (gel)
 - [ ] `MiseAJourTest` (8 cas RG-08) vert au job `android` ; banc `parcours` 0 écart ; déclencheur `wfs_maj_test` → boîte « Nouvelle version disponible » (Télécharger / Plus tard) ; sans réseau : une ligne `MISEAJOUR`, aucune boîte ; boutons de volume = son du jeu
+
+**WFS-133 — Course à 5, 2e passage : difficulté au choix et ordinateurs combatifs** · E3 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-05, branche `feature/waforspeed-133` (règles : `regles-de-gestion/WFS-133.md`). Zone : `src/game/course5.*`, `src/game/course5_system.cpp`, `src/game/modes_ecran.cpp`, `src/game/sauvegarde.*` (clé `diff5`), `tests/test_course5.cpp` (et test de sauvegarde) ; accroches ≤ 10 lignes annoncées : `src/core/configgame.*`, `configgame.json`, `configgame.README.md`. Interdit : `src/game/traffic_system.cpp` (WFS-109), `src/game/poursuite_system.cpp` et `src/audio/**` (WFS-131), `course_system.*`, `duel_system.*`, `camera_vue.*`, `commandes_tactiles.*`, `src/ui/**` (WFS-102), `player.*`, `src/render/**`, `shaders/**`, `src/world/**` (WFS-94), `src/platform/**`, `android/**`, `.github/**`, iOS (gel)
+- [ ] `modes-choix` : 3 puces FACILE / NORMALE / DIFFICILE sous les distances, NORMALE par défaut, choix mémorisé (`diff5`)
+- [ ] test_course5 : Difficile plus rapide que Facile (même graine), rattrapage, aspiration, nitro bornée, 0 choc entre ordinateurs, tous arrivent
+- [ ] parcours complet RG-10 au Journal (Rejouer garde la difficulté), 0 écart ; ligne `qa/Check.md`
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
