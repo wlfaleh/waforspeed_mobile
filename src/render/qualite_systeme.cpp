@@ -7,6 +7,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/course_system.h"
+#include "../platform/chauffe.h"   // WFS-123 : chauffe (RG-02, RG-03)
 #include "../ui/ecrans/reglages.h"
 #include "../ui/text.h"
 #include "qualite_auto.h"
@@ -16,6 +17,7 @@ namespace wfs {
 namespace {
 
 qualite::Auto g_auto;   // gardé d'une partie à l'autre (Game::init est rappelé à chaque carte)
+double g_banniere = 0;  // WFS-123 : bandeau partagé avec la chauffe (bandeauGraphismesRapides)
 
 class QualiteSystem : public System {
 public:
@@ -44,17 +46,17 @@ public:
         if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; }   // changé dans les réglages
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
-        effets_ |= g_auto.image(dt, g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing());
+        effets_ |= g_auto.imageChauffe(dt, g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing(), chauffeNiveau());
     }
 
     // changements appliqués hors de l'image (les cibles de rendu sont recréées)
     void update(double dt, const GameView&) override {
-        if (banniere_ > 0) banniere_ -= dt;
+        if (g_banniere > 0) g_banniere -= dt;
         if (!actif_ || !effets_ || !r_) return;
         if (effets_ & qualite::Auto::RETRO) {
             ecrans::reglages().qualite = g_auto.niveau;   // non enregistré : ce n'est pas un choix du joueur
             ecrans::appliquerQualiteNiveau(*r_);
-            banniere_ = 2.5;
+            g_banniere = 2.5;
             WFS_LOG("qualité : rétrogradation automatique au niveau %d (%.0f images/s à l'échelle 0,6)", g_auto.niveau, g_auto.fpsMesure);
         }
         const float avant = r_->vk().renderScale;
@@ -71,9 +73,9 @@ public:
 
     // toast('Graphismes rapides', 'pour plus de fluidité', 'cp') du jeu web : bandeau en haut, liseré cyan
     void drawUi(Renderer& r, const GameView& g) override {
-        if (banniere_ <= 0 || !ui::fontReady() || g.ecran != Ecran::Course) return;
+        if (g_banniere <= 0 || !ui::fontReady() || g.ecran != Ecran::Course) return;
         const float u = g.uiHeight / 100.f, w = 46 * u, h = 10 * u, x = (g.uiWidth - w) / 2, y = g.marges.haut + 18 * u;
-        const float a = (float)std::min(1.0, banniere_ / 0.3);
+        const float a = (float)std::min(1.0, g_banniere / 0.3);
         r.uiRect(x, y, w, h, {20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f * a});
         r.uiRect(x, y, 0.6f * u, h, {ui::CYAN.x, ui::CYAN.y, ui::CYAN.z, a});
         ui::text(r, x + w / 2, y + 1.6f * u, 3.6f * u, "GRAPHISMES RAPIDES", {0.95f, 0.96f, 0.97f, a}, ui::CENTRE, 0.08f, false, true);
@@ -83,10 +85,11 @@ public:
 private:
     Renderer* r_ = nullptr;
     bool actif_ = false;
-    double dernier_ = -1, banniere_ = 0;
+    double dernier_ = -1;
     int effets_ = 0;
 };
 WFS_SYSTEM(QualiteSystem, 360)
 
 } // namespace
+void bandeauGraphismesRapides() { g_banniere = 2.5; }   // WFS-123 (RG-02)
 } // namespace wfs

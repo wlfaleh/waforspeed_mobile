@@ -48,6 +48,12 @@ struct Auto {
     enum Effet { RIEN = 0, ECHELLE = 1, RETRO = 2 };
     // une image de durée réelle `dt` (s) ; enCourse = état 'play' du jeu web ; renvoie ce qui a changé
     int image(double dt, bool enCourse);
+    // WFS-123 (RG-03) : chauffe modérée ou plus (chauffe ≥ 1) : la résolution dynamique ne remonte plus (aucun +0,1)
+    int imageChauffe(double dt, bool enCourse, int chauffe) {
+        const float e0 = echelle; int ef = image(dt, enCourse);
+        if (chauffe >= 1 && echelle > e0) { echelle = e0; ef &= ~ECHELLE; }
+        return ef;
+    }
     float fpsMesure = 0;          // dernière mesure sur 2 s (journal)
 };
 
