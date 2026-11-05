@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include "renderer.h"
 #include <algorithm>
 #include <cmath>
@@ -1029,7 +1028,6 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, mat.detail};   // w : finesse (WFS-42)
-        if (std::getenv("WFS_DBG_MAT")) { const int k = (int)part.material; p.pc.emissive = {(float)(k % 4) * 1.f, (float)((k / 4) % 4) * 1.f, (float)((k / 16) % 4) * 1.f, 0}; p.pc.color = {0, 0, 0, 1}; p.pc.params.x = 0; p.pc.params.y = 1; p.pc.params.w = (float)(mat.flags & ~(1u|64u)); }
         // WFS-09 : pièces des feux (repérées par matériau) allumées la nuit : rouge (plus fort au freinage), phares blancs
         if (fx.nuit && (mat.flags & MAT_TAIL)) { const float k = fx.stop ? 4.f : 1.6f; p.pc.emissive.x += k; p.pc.emissive.y += k * 0.02f; p.pc.emissive.z += k * 0.04f; }
         if (fx.nuit && (mat.flags & MAT_HEAD)) { p.pc.emissive.x += 2.4f; p.pc.emissive.y += 2.2f; p.pc.emissive.z += 1.9f; }
