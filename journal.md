@@ -3195,3 +3195,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Accroche annoncée** : `src/platform/desktop_main.cpp`, 3 lignes (déclaration de `benchParcours`, groupe `parcours`, appel à la fin de `menu1`). Rien dans `game.h`. Le drapeau de parcours reste dans `garage.cpp` (`retour_`, et `g_regarder` existant).
 - Ligne ajoutée dans `qa/Check.md` (validation par l'utilisateur sur téléphone). Réponse écrite dans `tache utilisateur.md`. Je suis la CI de main.
 
+
+### 2026-11-05 12:05:59 — Début WFS-118 : même signature à chaque build (PO)
+- Ticket WFS-118 (E7, P1 Urgent) attribué à Claude (session trafic), branche `feature/waforspeed-118`, règles `regles-de-gestion/WFS-118.md`.
+- Zone autorisée : `android/app/build.gradle` (`signingConfigs`), nouveaux `android/waforspeed-test.keystore` et `android/keystore.properties`, `.github/workflows/build.yml` (signature, `apksigner verify --print-certs`, notes de la Release `apercu`). Interdit : `src/**` (accroches de WFS-111 dans `android_main.cpp`, `endurance_banc.*`), reste de `build.yml`, partie AAB / `WFS_CLE_ANDROID`, iOS.
+- Critères : même empreinte de certificat sur deux builds de suite (journal de CI) ; installation par-dessus sans désinstaller ; note « une dernière désinstallation » dans la Release.
+- Plan : générer la clé de test fixe, la brancher dans `signingConfigs.release`, ajouter la vérification d'empreinte à la CI, fusion par confiance.
