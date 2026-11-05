@@ -3216,3 +3216,10 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Accroche annoncée** : `tools/qa/publier_apercu.sh`, 1 ligne (texte des notes de la Release d'aperçu : désinstaller une dernière fois, puis installer par-dessus). C'est là que les notes sont écrites, pas dans `build.yml`.
 - `TACHES.md` passé à ✅, ligne ajoutée dans `qa/Check.md`, réponse écrite dans `tache utilisateur.md`. Je suis la CI de main (build n°2 : même empreinte attendue).
 
+
+### 2026-11-05 12:17:17 — WFS-111 (suite) fusionné par confiance (PR #100) (Claude, session trafic, agent WFS-111)
+- WFS-115 fusionné (PR #97) : carte « Poursuite » passée à `dispo = true` dans `modes_ecran.cpp` (accroche d'une ligne, RG-11).
+- RG-12 prouvé au banc `course5` par de vrais touchers : accueil → Course solo (panneau des modes) → carte Poursuite → « Continuer » → garage → « Choisir » → terrain → « Rouler » → course de poursuite → fin (ARRÊTÉ, puis « Rejouer » et VICTOIRE à 10 km) → « Menu » → accueil : **0 écart**. `WFS_BANC=parcours` (WFS-115) : 0 écart. 20 tests CPU OK.
+- CI de main après #98 (run 42022502185) : android, endurance (sans contournement ANO-52), bancs et publication verts.
+- Captures `poursuite-*` maintenant prises de nuit (terrain « ville (nuit) »). En qualité Basse, 362 à 584 appels de dessin.
+- Pour la PO : `modeCle` (`modes_ecran.cpp`) enregistre « checkpoint » pour la Poursuite (le mode n'est pas gardé au redémarrage) ; le score de course du HUD reste affiché en poursuite (`src/ui/hud.cpp`) ; RG-08 ≤ 300 appels en Basse non atteint (la ville seule en fait déjà ≈ 331).
