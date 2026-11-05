@@ -10,6 +10,7 @@
 #include "../game/commandes_tactiles.h"   // WFS-99 : dessin2d (biseaux d'un seul tenant, traits lissés)
 #include "../game/game.h"
 #include "../game/sauvegarde.h"   // WFS-24 : voiture et peintures gardées
+#include "../game/course5.h"   // WFS-115 : « Retour » du parcours de course = panneau des modes
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "text.h"
@@ -195,6 +196,7 @@ public:
     void onEcran(Ecran ancien, Ecran nouveau, const GameView& g) override {
         if (nouveau == Ecran::Garage) {   // openGarage : voiture de la partie, plateau au cap de départ, panneau qui glisse
             appui_.vider();   // WFS-113 : aucun doigt retenu d'un écran précédent
+            bouton_ = 0; doigtBouton_ = -1;   // WFS-115
             index_ = indexDe(g.car); yaw_ = CAP_DEPART; slide_ = 0; t0_ = -1; doigt_ = -1;
             charger(index_);
             WFS_LOG("garage : %s %s (%s / %d), peinture %s", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(),
@@ -206,6 +208,10 @@ public:
             // « Choisir » : Garage → Menu → Course, appliqués avant l'image suivante (le menu n'est jamais dessiné) ;
             // l'entrée en course depuis le menu remet la course à zéro (même chemin que « Recommencer » de la pause)
             if (nouveau == Ecran::Menu && choisi_ && !g_regarder) { g.allerA(Ecran::Terrain); }   // WFS-41 : étape 2, le terrain
+            // WFS-115 (RG-03) : « Retour » du garage ouvert par le parcours de course = un seul cran, le panneau des modes
+            // (sans sauvegarde, banc d'essai, ouvrirChoixMode ne fait rien : le menu, comme avant)
+            if (nouveau == Ecran::Menu && !choisi_ && !g_regarder && retour_) ouvrirChoixMode();
+            retour_ = false;
             choisi_ = g_regarder = false;   // WFS-96 : mode regarder → on reste au menu
         }
     }
@@ -269,6 +275,15 @@ public:
         // WFS-113 : un doigt = un appui. Le doigt qui a actionné un bouton est ignoré jusqu'à ce qu'il se relève
         // (sur Android, ses micro-mouvements arrivent aussi comme des appuis : la flèche sautait des voitures)
         if (appui_.consomme(t.id, t.down)) return true;
+        // WFS-115 : « Choisir » et « Retour » agissent au relâcher, sur le bouton appuyé : le doigt est levé quand l'écran
+        // change, ses mouvements n'atteignent jamais l'écran suivant (ils y arrivaient comme des appuis neufs)
+        if (t.id == doigtBouton_) {
+            if (t.down) return true;
+            const int b = bouton_; bouton_ = 0; doigtBouton_ = -1;
+            if (b == 1 && g_z.choisir.contient(t.x, t.y)) choisir(g);
+            else if (b == 2 && g_z.retour.contient(t.x, t.y)) { WFS_LOG("garage : « Retour »"); choisi_ = false; retour_ = true; g.allerA(Ecran::Menu); }
+            return true;
+        }
         if (t.down) {
             if (doigt_ >= 0 && t.id == doigt_) {   // glisser : tourner la voiture (0,01 rad par pixel)
                 if (glisse_) yaw_ = yaw0_ + (t.x - x0_) * 0.01f * (720.f / g.uiHeight);
@@ -281,17 +296,8 @@ public:
             for (int i = 0; i < CAR_COUNT; i++) if (g_z.points[i].contient(t.x, t.y)) { appui_.prendre(t.id); if (i != index_) aller(i, i > index_ ? 1 : -1); return true; }
             for (int i = 0; i < NB_PEINTURES; i++)
                 if (g_z.peintures[i].contient(t.x, t.y)) { appui_.prendre(t.id); peinture_[index_] = i; WFS_LOG("garage : peinture %s", PAINTS[i].nom); return true; }
-            if (g_z.choisir.contient(t.x, t.y)) {
-                appui_.prendre(t.id);
-                if (!voiture_.ok) return true;   // « Chargement… » : bouton inactif
-                const CarDef& c = CARS[index_];
-                WFS_LOG("garage : « Choisir » %s %s, peinture %s", c.brand, c.model, PAINTS[peinture_[index_]].nom);
-                if (g.choisirVoiture) g.choisirVoiture(c.id, lin(PAINTS[peinture_[index_]].hex));
-                if (Sauvegarde& s = sauvegarde(); s.actif()) { s.car = c.id; s.paint[c.id] = PAINTS[peinture_[index_]].id; s.enregistrer(); }   // WFS-24
-                choisi_ = true; g.allerA(Ecran::Menu);
-                return true;
-            }
-            if (g_z.retour.contient(t.x, t.y)) { appui_.prendre(t.id); WFS_LOG("garage : « Retour »"); choisi_ = false; g.allerA(Ecran::Menu); return true; }
+            if (g_z.choisir.contient(t.x, t.y)) { bouton_ = 1; doigtBouton_ = t.id; return true; }   // WFS-115 : action au relâcher
+            if (g_z.retour.contient(t.x, t.y)) { bouton_ = 2; doigtBouton_ = t.id; return true; }
             doigt_ = t.id; glisse_ = true; x0_ = t.x; yaw0_ = yaw_; tAppui_ = g.time;   // gDrag
             return true;
         }
@@ -474,6 +480,15 @@ private:
         WFS_LOG("garage : %s %s (%s / %d)", CARS[index_].brand, CARS[index_].model, deuxChiffres(index_ + 1).c_str(), CAR_COUNT);
     }
     void cycle(int dir) { aller(index_ + dir, dir); }
+    // « Choisir » : voiture et peinture retenues ; parcours de course → terrain (via onEcran), Showroom → menu (WFS-96)
+    void choisir(const GameView& g) {
+        if (!voiture_.ok) return;   // « Chargement… » : bouton inactif
+        const CarDef& c = CARS[index_];
+        WFS_LOG("garage : « Choisir » %s %s, peinture %s", c.brand, c.model, PAINTS[peinture_[index_]].nom);
+        if (g.choisirVoiture) g.choisirVoiture(c.id, lin(PAINTS[peinture_[index_]].hex));
+        if (Sauvegarde& s = sauvegarde(); s.actif()) { s.car = c.id; s.paint[c.id] = PAINTS[peinture_[index_]].id; s.enregistrer(); }   // WFS-24
+        choisi_ = true; g.allerA(Ecran::Menu);
+    }
 
     Renderer* r_ = nullptr;
     Mesh sol_, plateau_, anneau_, barre_;
@@ -483,6 +498,7 @@ private:
     float yaw_ = CAP_DEPART, slide_ = 0, yaw0_ = 0, x0_ = 0;
     double t0_ = -1, tAppui_ = 0;
     int doigt_ = -1; bool glisse_ = false, choisi_ = false;
+    int bouton_ = 0, doigtBouton_ = -1; bool retour_ = false;   // WFS-115 : bouton appuyé (1 Choisir, 2 Retour) et son doigt
     ui::FiltreAppui appui_;   // WFS-113 : un doigt = un appui
 };
 Garage* g_garage = nullptr;

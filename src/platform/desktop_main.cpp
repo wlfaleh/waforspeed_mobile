@@ -14,6 +14,7 @@
 #include "../game/camera_banc.h"
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
+namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }   // WFS-115 (modes_ecran.cpp)
 #include "../game/poursuite.h"   // WFS-111
 #include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
@@ -111,6 +112,7 @@ int main(int argc, char** argv) {
     if (banc == "nuit") { benchNuit(g, r, out); return finir(); }   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
+    if (banc == "parcours") { ui::chargerPolice(r); const int e = benchParcours(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-115
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); return finir(); }   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
@@ -130,6 +132,7 @@ int main(int argc, char** argv) {
     // machine), sinon reglages-menu et menu-duel montreraient le menu sans record (RG-08 : mêmes captures)
     if (menu2 && !menu1) sauvegarde().best = 955;
     if (menu2) { ecrans::benchReglages(g, r, out); ecrans::benchSalon(g, r, out); }
+    if (menu1 && benchParcours(g, r, out) > 0) { finir(); return 3; }   // WFS-115 : parcours menu → mode → garage → terrain → course
     if (menu1 || menu2) return finir();   // WFS-37, WFS-11, WFS-41, WFS-83
     // WFS-106 : un morceau tourne sans WFS_BANC, sous son nom ou sous celui de sa partie (partie1 / partie2)
     auto morceau = [&](const char* nom, const char* partie) { return banc.empty() || banc == nom || banc == partie; };
