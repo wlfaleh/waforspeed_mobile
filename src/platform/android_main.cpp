@@ -1,5 +1,4 @@
 // WaForSpeed — point d'entrée Android (NativeActivity) : cycle de vie de la fenêtre, tactile, boucle de jeu.
-#include <new>   // ANO-52
 #include <android/asset_manager.h>
 #include <jni.h>
 #include <atomic>
@@ -79,9 +78,7 @@ static void termGraphics(App& app) {
     if (!app.ready) return;
     app.game.shutdown();
     app.renderer.shutdown();
-    // ANO-52 (WFS-91) : Renderer::shutdown ne remet pas ses handles à zéro ; le retour d'arrière-plan (initGraphics)
-    // repart donc d'un Renderer neuf, sinon init réutilise des render pass détruits et l'appli plante (correction durable : WFS-100)
-    app.renderer.~Renderer(); new (&app.renderer) Renderer();
+    // ANO-52 : Renderer::shutdown remet l'objet à neuf depuis WFS-100 (RG-W1) ; contournement retiré (WFS-111 RG-10)
     app.vk.shutdown();
     app.ready = false;
 }
