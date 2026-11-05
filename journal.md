@@ -3371,3 +3371,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - **Pas une fuite de WFS-127** : le run suivant de main (42053224955, a9b7e48, WFS-125, qui contient WFS-127) passe à **+7,8 %** ; en local, même code : **+7,1 %** (fin 884,1 Mo). Les 8 runs verts précédents : +6,1 à +9,9 % (run 42025812818 : +9,9 % déjà au « cycle 9 », c'est-à-dire la mesure de fin). WFS-127 n'alloue rien par image (5 échantillons déjà chargés, un tampon de démarreur fait une fois dans `SfxMixer::build`).
 - **Pour le PO (E7)** : le seuil de 10 % est trop près de la variation naturelle du banc (llvmpipe, mesure de fin juste après la dernière course). Pistes : comparer le RSS au même point du parcours (début de cycle seulement, sans la mesure de fin), ou un seuil de 15 %, ou la médiane de 2 lancements. Rien changé de mon côté (`tools/qa/**`, `.github/**` hors de ma zone).
 
+
+### 2026-11-05 15:51:02 — PO : WFS-128 créé, configgame.json (po-scrum-master)
+- Demande de l'utilisateur : tout régler par un fichier JSON à la racine. Ticket E0 (P2) : chargeur maison sans bibliothèque tierce, valeurs actuelles dans le fichier, surcharge sur le téléphone, bornes, journal, README des clés, 12 sections minimum ; carte blanche à l'agent pour d'autres clés. Règles : `regles-de-gestion/WFS-128.md`. Gel iOS respecté.
