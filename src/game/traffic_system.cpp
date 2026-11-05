@@ -140,7 +140,7 @@ public:
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));
             const size_t ci = (size_t)(&c - traffic_.cars.data());
             // WFS-67 : silhouette légère au-delà de 50 m ; WFS-82 : dès 25 m en qualité Basse (moins d'appels de dessin)
-            if (vis[k].dz * M > (r.qualiteBasse ? (dense ? 12.0 : 25.0) : LOD_CAR_M)) { dessineLoin(r, c, m, L, W); continue; }   // WFS-111 : 10 voitures, 12 m
+            if (vis[k].dz * M > (r.qualiteBasse ? (dense ? 6.0 : 25.0) : LOD_CAR_M) || (dense && k >= 1)) { dessineLoin(r, c, m, L, W); continue; }   // WFS-111 : 10 voitures ; WFS-119 : 1 modèle complet au plus, à 6 m
             feux(c, ci < stops_.size() && stops_[ci].freine(), m, L, W, g.time);       // WFS-67 : clignotants, détresse, feux stop
             const vec3 paint = hexLin(TRAFFIC_PAINTS[c.color]);
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60

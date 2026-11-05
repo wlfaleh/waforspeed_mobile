@@ -113,7 +113,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k == "boutons") { grandsBoutons = v == "grands"; }   // WFS-108
         else if (k == "gyro") { if (entier(v, n) && n >= 0 && n <= 3) gyro = (int)n; }
         else if (k == "gyroZone") { if (entier(v, n) && n >= 0 && n <= 2) gyroZone = (int)n; }
-        else if (k == "mode") { mode = v == "course5" ? "course5" : "checkpoint"; }   // WFS-110
+        else if (k == "mode") { mode = v == "course5" || v == "poursuite" ? v : "checkpoint"; }   // WFS-110 ; WFS-119 : poursuite
         else if (k == "km5") { if (entier(v, n) && (n == 2 || n == 4 || n == 6 || n == 10)) km5 = (int)n; }
     }
     if (premiere) return false;   // fichier vide
