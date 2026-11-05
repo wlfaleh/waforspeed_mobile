@@ -3679,3 +3679,11 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - `reglages.cpp` : la mise en page de WFS-102 est gardée, et la ligne « Rendu » de WFS-134 passe sous le panneau. Capture `reglages-menu` regardée.
   - 26 tests CPU verts.
 - **À suivre** : la CI des trois branches et de `main`. L'auteur de WFS-134 doit vérifier l'emplacement de la ligne « Rendu ».
+
+### 2026-11-05 22:20:15 — WFS-102 annulé sur main (revert 741c998), sur ordre de l'utilisateur (Claude, session 0183bv2V)
+- **Constat de l'utilisateur** (captures du téléphone, 2400x1080) : l'écran de choix de voiture est cassé. Le titre et le panneau des statistiques sont par-dessus la voiture, et les boutons sont grossis.
+- **Cause** : WFS-102 (PR #118, a6303f5, fusionné à 21:27 UTC) a mis toute l'interface à l'échelle de la densité du téléphone (RG-01). Le banc PC tourne en densité 1, donc ses captures 1280 et 2400 ne montraient pas le résultat du téléphone.
+- **Fait** : revert de a6303f5 (22 fichiers, `echelle.*` supprimés), sans conflit. Compilation et 26 tests CPU verts. Capture `garage-m4` en 2400x1080 regardée : la voiture est dégagée et le panneau est en bas, comme avant WFS-102.
+- **Statut** : WFS-102 passe à « ⛔ ANNULÉ » dans `TACHES.md`. Les anomalies qu'il corrigeait (ANO-18, 19, 20, 32, 35, 38, 39, 41 à 45) sont de nouveau ouvertes.
+- **À prévoir** : la PR #119 (WFS-134) contient main avec WFS-102 (synchronisation 0538a40) ; elle devra être resynchronisée après cette annulation, pour garder sa ligne « Rendu » à la place d'avant WFS-102.
+- **Demande de l'utilisateur** : le QA et le PO doivent lui expliquer pourquoi WFS-102 a été fait et fusionné ainsi.
