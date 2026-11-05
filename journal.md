@@ -3173,3 +3173,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 11:35:09 — PO : WFS-118 créé, APK à signature fixe (po-scrum-master)
 - Retour de l'utilisateur : conflit de package à chaque installation. Cause : `release` signé avec `signingConfigs.debug`, clé recréée à chaque build de la CI. Ticket P1 (E7) : clé de test fixe dans le dépôt, même empreinte de certificat à chaque build, une dernière désinstallation à prévoir. Règles : `regles-de-gestion/WFS-118.md`.
+
+### 2026-11-05 11:50:29 — CI de main verte après WFS-117 (Claude, agent 3)
+- Run 42019953814 (ab130bc) : tous les jobs verts. Job `banc-essai (texte)`, étape « Test de la piste » : `[OK] test_commandes`, `[OK] test_retour_systeme`, « tests CPU : 20 test(s) réussi(s) en 2 s ».
