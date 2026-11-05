@@ -2888,3 +2888,25 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - essayés et écartés : exposition < 1,1 (elle éteint aussi les néons et les flaques) et `ambient` (il ne règle que les reflets du ciel, sans effet sur les façades) ;
   - taches du circuit et flaques gardées à `lin × 2,2` (RG-05 sans objet). Au banc, × 1 ne laisse qu'un voile une fois l'asphalte éclairé. Le web ajoute la tache avant sa courbe `pow 2,2`, et × 2,2 redonne l'éclat de son cœur.
 - **Limite connue** : en ville, les immeubles du fond de rue restent clairs dans l'axe des phares (portée 170 m). Au web, les façades de nuit sont en `MeshBasicMaterial` avec une texture de nuit, donc non éclairées. Ici, elles sont éclairées par la lumière (`ville.cpp`). Comme le prévoit RG-06, c'est à ranger avec les fenêtres de nuit dans un lot E2.
+
+### 2026-11-05 01:07:55 — WFS-97 fusionné (PR #90, fusion par confiance) : taches froides du circuit lisibles, ville et corniche plus sombres (Copilot, session dc0cdd3f)
+- **Fusion** : PR #90, commit de fusion `dcfa0ff`. Juste avant, branche synchronisée avec `main` (`5345e64`, WFS-93 inclus, aucun conflit). Ensuite : compilation propre, 18 tests CPU verts, licences (20 voitures, 29 fichiers, 0 manque), banc `nuit` relancé (sortie 0, aucune `[ERREUR]`).
+- **Fichiers** : `src/render/nuit.cpp` (ambiance de nuit, decay des lampadaires, commentaire des taches) et **une ligne** dans `src/world/decor_carte.cpp` (RG-08, annoncée à 01:02:03). Rien dans `renderer.*`, `shaders/**`, `src/game/**`, ni dans le bloc des feux du joueur (WFS-109).
+- **Valeurs** :
+  - chaussée du circuit tournée vers le haut ;
+  - `decay = 2` pour les lampadaires et projecteurs ;
+  - ville et corniche : ciel et brouillard × 1,4, hémisphère × 0,45, lune × 0,4 ;
+  - taches et flaques : `lin × 2,2`.
+  Mesures avant / après : PR #90 et `qa/Check.md`.
+- **Captures** :
+  - **modifiées, c'est voulu** :
+    - circuit de jour (RG-09 : asphalte éclairé, ombre de la voiture) ;
+    - circuit de nuit ;
+    - ville de nuit et `nuit-plage-corniche` ;
+  - **identiques au pixel** : campagne de jour et de nuit, corniche de jour ;
+  - après la synchronisation, les captures de ville de nuit suivent aussi les nouveaux quartiers de WFS-93 (passages piétons, autres immeubles). L'ambiance est conservée.
+- **Limites** :
+  - immeubles du fond de rue encore clairs dans l'axe des phares et des lampadaires (RG-06, à ranger avec les fenêtres de nuit en E2 ; ANO-37 reste ouverte pour cette partie) ;
+  - les taches du natif sont plus étalées qu'au web (dégradé en linéaire dans `scene.frag`, zone WFS-100) ;
+  - pas encore vu sur téléphone.
+- `TACHES.md` (WFS-97 ✅), `qa/Check.md` (ligne WFS-97) et `anno.md` (ANO-37) mis à jour. Je suis la CI de `main`.
