@@ -1,6 +1,5 @@
 // WaForSpeed — HUD de course (WFS-27) : voir hud.h.
 #include "hud.h"
-#include "echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -34,9 +33,8 @@ void halo(Renderer& r, float x, float y, float px, const std::string& t, const v
 }
 // .label : capitales, espacement 0,16 em, gris ; 11 px du web portés à 13 px minimum et calés sur les pixels entiers
 // (à 11 px sur 720 p, « TEMPS » se lisait « IEMPS »)
-float g_labelMin = 0;   // WFS-102 (RG-16) : taille minimale des libellés (10 dp), posée à chaque image
 void label(Renderer& r, float x, float y, float k, const std::string& t, ui::Align a = ui::GAUCHE, const vec4* c = nullptr) {
-    const float px = std::round(std::max({13.f, 11 * k, g_labelMin}));   // WFS-102 (RG-16) : 10 dp au moins
+    const float px = std::round(std::max(13.f, 11 * k));
     ui::text(r, std::round(x), std::round(y), px, ui::majuscules(t), c ? *c : hex(MUTED), a, 0.16f, false);
 }
 // barre de progression dégradée cyan → orange (.cp-bar i), tranches bord à bord
@@ -97,8 +95,7 @@ public:
         // temps illimité = pas de vraie course (vitrines et scènes du banc sans règles de course, courseBenchRules(false))
         if (c->timeLeft > 1e6) return;
         const Player& pl = *g.player;
-        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H);   // WFS-102 : 1 px CSS = 1 dp
-        g_labelMin = 10 * ui::densite(W, H);
+        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;   // 1 px CSS = k pixels logiques (720 p de référence)
         const float gl = 16 * k, gt = 14 * k, pad = 14 * k;           // gouttières --gutter-*, marge intérieure .panel
         // WFS-52 : zone sûre (encoche, coins arrondis) = marges de view.marges (WFS-51) + gouttières de WFS-27 ;
         // marges à 0 : positions de WFS-27 inchangées
@@ -157,8 +154,6 @@ public:
         }
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
         {
-            // WFS-102 (RG-02) : téléphone couché (≤ 520 dp de haut) : compteur réduit à 70 % (Ø 133 dp), la voiture reste visible
-            const float k = ui::compact(W, H) ? 0.7f * ui::echelle(W, H) : ui::echelle(W, H);
             // centré dans la zone sûre (entre les marges gauche et droite)
             // WFS-46 : compteur en arc (Ø 190 px ≈ 26 % de la hauteur) ; lecture au centre ; nitro dans l'ouverture du bas
             const float cx = (mg.gauche + W - mg.droite) / 2, R = 95 * k, ccy = H - mg.bas - gt - R - 4 * k;

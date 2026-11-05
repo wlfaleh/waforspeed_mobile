@@ -1,6 +1,5 @@
 // WaForSpeed — pause en course (WFS-39) : voir pause.h.
 #include "pause.h"
-#include "../echelle.h"   // WFS-102 : échelle et biseau partagés
 #include <algorithm>
 #include <cmath>
 #include "../../core/log.h"
@@ -31,8 +30,12 @@ enum { REPRENDRE = 0, RECOMMENCER = 1, QUITTER = 2 };
 const char* TEXTES[3] = {"Reprendre", "Recommencer", "Quitter la course"};   // index.html, #pause .actions
 
 // parallélogramme (clip-path des .btn / .cam-btn) en bandes horizontales : haut décalé à droite de `biais`
-void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {   // WFS-102 (RG-04, ANO-20) : un seul polygone
-    ui::biseau(r, x, y, w, h, biais, c);
+void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
+    const int N = 16;
+    for (int i = 0; i < N; i++) {
+        const float t = (i + 0.5f) / N;
+        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
+    }
 }
 
 // bouton « Menu » visible : course réelle en cours (décompte ou course), pas l'écran de fin, pas les scènes du banc sans règles
@@ -71,7 +74,7 @@ public:
 
     void drawUi(Renderer& r, const GameView& g) override {
         if (!ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H);
+        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
         if (boutonVisible(g)) dessinerBouton(r, g, k);
         if (g.ecran == Ecran::Pause) dessinerPause(r, W, H, k);
     }
@@ -84,7 +87,7 @@ private:
         const std::string t = ui::majuscules("Menu");
         const float w = pad + ic + gap + ui::width(tp, t, 0.1f) + pad;
         const float x = g.marges.gauche + 16 * k, y = g.marges.haut + 14 * k + 112 * k + 10 * k;
-        g_menu = {x, y - 2 * k, w, h + 4 * k};   // WFS-102 (RG-03) : zone de toucher de 44 dp (dessin de 40)
+        g_menu = {x, y, w, h};
         biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, 8 * k, BORD);   // border 1px var(--border)
         biseau(r, x, y, w, h, 8 * k, GLASS);
         const vec4 o = hex(ACCENT);
@@ -102,7 +105,7 @@ private:
         ui::text(r, cx, H * 0.30f, 64 * k, ui::majuscules("Pause"), hex(TEXTE), ui::CENTRE, 0.02f, false);
         // boutons de l'écran de fin (WFS-38 / WFS-57) : hauteur 10 % de H, biais 14 px, texte 5 % de H, espacement 0,12 em,
         // largeur = texte + 2 × 28 px ; rangée centrée, 2 % de H d'écart
-        const float u = H / 100, bh = std::max(10 * u, ui::CIBLE_MIN * k), tp = 5 * u, gap = 2 * u;   // WFS-102 (RG-03) : 44 dp au moins
+        const float u = H / 100, bh = 10 * u, tp = 5 * u, gap = 2 * u;
         float wb[3], total = 2 * gap;
         for (int i = 0; i < 3; i++) { wb[i] = ui::width(tp, ui::majuscules(TEXTES[i]), 0.12f) + 56 * k; total += wb[i]; }
         float x = cx - total / 2;
@@ -110,7 +113,7 @@ private:
         for (int i = 0; i < 3; i++) {
             g_boutons[i] = {x, y, wb[i], bh}; manette::focus(g_boutons[i], i == REPRENDRE);   // WFS-22 : B = reprendre
             biseau(r, x, y, wb[i], bh, 14 * k, i == REPRENDRE ? hex(ACCENT) : hex(SURFACE2));
-            ui::text(r, x + wb[i] / 2, y + (bh - tp) / 2, tp, ui::majuscules(TEXTES[i]), i == REPRENDRE ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
+            ui::text(r, x + wb[i] / 2, y + 2.6f * u, tp, ui::majuscules(TEXTES[i]), i == REPRENDRE ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
             x += wb[i] + gap;
         }
     }

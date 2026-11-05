@@ -1,6 +1,5 @@
 // WaForSpeed — manettes de jeu (WFS-22 / WFS-23) : branchement sur la partie, focus des menus, banc d'essai.
 #include "manette_jeu.h"
-#include "../ui/echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>   // unsetenv
@@ -81,7 +80,7 @@ public:
         const std::vector<Zone>& z = zonesImage();
         if (actif() && g_focus >= 0 && g_focus < (int)z.size()) {
             const Zone& b = z[g_focus];
-            const float k = ui::echelle(g.uiWidth, g.uiHeight), e = 3 * k;
+            const float k = g.uiHeight / 720.f, e = 3 * k;
             for (int h = 3; h >= 1; h--) {   // halo : 0 0 12px rgba(0, 229, 255, .7)
                 const float m = e + 3 * k * h;
                 cadre(r, b.x - m, b.y - m, b.w + 2 * m, b.h + 2 * m, 3 * k, {0, 0.898f, 1, 0.12f});

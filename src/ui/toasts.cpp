@@ -1,6 +1,5 @@
 // WaForSpeed — bandeaux de notification pendant la course (WFS-47) : voir toasts.h.
 #include "toasts.h"
-#include "echelle.h"   // WFS-102 : échelle en dp
 #include <algorithm>
 #include <cmath>
 #include <deque>
@@ -9,9 +8,6 @@
 #include "../game/course_system.h"
 #include "../game/game.h"
 #include "../render/renderer.h"
-#include "../game/track.h"
-#include "../world/zones.h"   // WFS-95 (RG-04) : nom du quartier (lecture seule)
-#include <cstdlib>
 #include "text.h"
 
 namespace wfs {
@@ -38,22 +34,10 @@ public:
     const char* name() const override { return "Bandeaux"; }
 
     // après les règles de course (ordre 210) : compteurs de cette mise à jour comparés à ceux de la précédente
-    void update(double dt, const GameView& g) override {
+    void update(double dt, const GameView&) override {
         const Course* c = activeCourse();
         // RG-07 : pas de course, ou nouvelle course (Rejouer → décompte) : pile vidée, compteurs repris
-        if (!c || c->state == RaceState::Count || c->timeLeft > 1e6) { g_pile.clear(); garder(c); zone_ = -1; return; }
-        // WFS-95 (RG-04) : nouveau quartier (update.js l. 240, zoneSeen) : un bandeau par changement de zone, pas au départ
-        if (g.map && g.track && g.player && g.ecran == Ecran::Course && c->state != RaceState::Over) {
-            const int64_t L = (int64_t)g.track->segmentCount();
-            const int64_t a = L > 0 ? (((int64_t)std::floor(g.player->dist / SEG)) % L + L) % L : 0;
-            const int z = L > 0 ? zoneIndex(*g.map, a, L) : -1;
-            if (zone_ >= 0 && z >= 0 && z != zone_) {
-                const char* nom = zoneName(*g.map, a, L);
-                pousser({nom ? nom : "", "", CP});
-                WFS_LOG("bandeau : quartier « %s »", nom ? nom : "");
-            }
-            zone_ = z;
-        }
+        if (!c || c->state == RaceState::Count || c->timeLeft > 1e6) { g_pile.clear(); garder(c); return; }
         if (c->level > level_) {   // RG-02 : checkpoint (web : toast(`Checkpoint ${level}`, `+${add.toFixed(1)} s`, 'cp'))
             for (int n = level_ + 1; n <= c->level; n++)
                 pousser({"Checkpoint " + std::to_string(n), "+" + ui::decimal(Course::checkpointBonus(n), 1) + " s", CP});
@@ -76,12 +60,11 @@ public:
         if (g_pile.empty()) return;
         // mêmes conditions que le HUD (WFS-27) : en course seulement
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = ui::echelle(W, H), u = H / 100.f;
+        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f, u = H / 100.f;
         // RG-05 : pile à droite, sous le score (top = gouttière + 110 px) ; bord droit à gauche du bouton Nitro
         // (cercle de 6,5 % de H en (0,90 W − marge droite ; 0,32 H), Game::drawControls) pour ne jamais le recouvrir
         const float xr = W * 0.90f - g.marges.droite - 6.5f * u - 12 * k;
-        // WFS-102 (RG-02) : petit écran : pile juste sous le panneau du score (3 bandeaux au-dessus du bouton Nitro)
-        float y = 14 * k + g.marges.haut + (ui::compact(W, H) ? 76 : 110) * k;
+        float y = 14 * k + g.marges.haut + 110 * k;
         const float tp = 18 * k, vp = 14 * k, padL = 14 * k, padR = 18 * k, padV = 8 * k, gap = 12 * k, h = padV * 2 + tp * 1.15f;
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;
@@ -120,7 +103,7 @@ private:
         level_ = c ? c->level : 0; near_ = c ? c->nearCount : 0; accidents_ = c ? c->accidents : 0;
         combo_ = c ? c->combo : 0; timer_ = c ? c->comboTimer : 0;
     }
-    int level_ = 0, near_ = 0, accidents_ = 0, combo_ = 0, zone_ = -1;   // zone_ : quartier vu (WFS-95)
+    int level_ = 0, near_ = 0, accidents_ = 0, combo_ = 0;
     double timer_ = 0;
 };
 
@@ -156,27 +139,6 @@ void benchToasts(Game& g, Renderer& r, const std::string& out) {
     if (Course* c = activeCourseMut()) c->nearMiss();
     rouler(20);
     capture("toast-pile");
-    g.shutdown();
-    // WFS-95 (RG-04) / WFS-102 (RG-19) : nouveau quartier ; départ (WFS_DEPART) 30 tronçons avant la fin du 1er quartier
-    {
-        Track t; t.build(mapById("ville"));
-        const int64_t L = (int64_t)t.segmentCount();
-        int64_t fin = 1;
-        while (fin < L && zoneIndex(*t.map(), fin, L) == zoneIndex(*t.map(), 0, L)) fin++;
-        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, fin - 30)).c_str(), 1);
-    }
-    const bool ok = g.init(r, "golf", "ville");
-    unsetenv("WFS_DEPART");
-    if (!ok) { courseBenchRules(false); return; }
-    g.setAutopilot(true); g.camMode = 0;
-    rouler(60 * 3);   // décompte : aucun bandeau de quartier (premier quartier)
-    bool vu = false;
-    for (int i = 0; i < 60 * 12 && !vu; i++) {
-        rouler(1);
-        for (const Toast& b : g_pile) if (b.genre == CP && b.titre.rfind("Checkpoint", 0) != 0) vu = true;
-    }
-    rouler(20);
-    capture("toast-quartier");
     g.shutdown();
     courseBenchRules(false);
 }
