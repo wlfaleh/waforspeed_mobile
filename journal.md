@@ -3034,3 +3034,9 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 
 ### 2026-11-05 07:20:13 — CI de main verte après WFS-104 et WFS-113 (agent 3, session 011cpqZd)
 - Run 569 (`d93abf1`, fusion de WFS-113) : vert, `test_appui` compris ; runs suivants de `main` (572 à 583) verts. Suivi des fusions par confiance de WFS-104 et WFS-113 terminé.
+
+### 2026-11-05 07:20:55 — Début WFS-110 (E3) attribué à Claude (agent 3, session 011cpqZd) (po-scrum-master)
+- Ticket : WFS-110 — Modes de course : Course à 5 voitures (1 joueur + 4 ordinateurs), Checkpoint 60 s (+30 s par checkpoint), duel sans trafic. Épic E3, P2 Haute, dépendances WFS-11, WFS-13, WFS-21 toutes ✅. Règles : `regles-de-gestion/WFS-110.md` (RG-01 à RG-09).
+- Choix du PO : seuls WFS-91 (E7) et WFS-110 (E3) étaient prêts, tous deux P2 ; aucune anomalie 🆕 dans `anno.md`. WFS-110 est pris en premier car il débloque WFS-111 et WFS-112 et répond à une demande directe de l'utilisateur (ce qui se voit) ; WFS-91 reste prêt pour le prochain agent.
+- Zone autorisée : `src/game/**` sauf `game.*`, `tests/**` ; dans `traffic_system.cpp`, seulement l'arrêt du trafic par mode (pas le bloc des feux de WFS-109) ; accroches ≤ 10 lignes annoncées : `src/ui/ecrans/**` (WFS-102 en cours), `src/game/game.*`, `CMakeLists.txt`, `src/platform/desktop_main.cpp`. Interdit : `src/render/**`, `shaders/**`, `src/world/**`, iOS.
+- Plan court : constantes Checkpoint (60 s / +30 s) et test CPU ; tirage des 4 ordinateurs par graine ; suiveur de route simple sans choc entre ordinateurs ; trafic coupé en Course à 5 et en duel ; grille, classement n/5, écran de fin à 5 lignes ; choix du mode dans le menu. Fusion par confiance si > 50 %, ligne dans `qa/Check.md`.
