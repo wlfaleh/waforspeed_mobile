@@ -14,6 +14,12 @@
 #include "../render/vk.h"
 #include "../game/traffic_system.h"
 #include "../ui/ecrans/chargement.h"
+#include "../game/course5.h"      // WFS-129 (RG-07) : Course à 5, panneau des modes
+#include "../game/poursuite.h"    // WFS-129 (RG-07) : Poursuite
+#include "../ui/garage.h"
+#include "../ui/ecrans/terrain.h"
+#include "manette.h"              // zones de l'écran affiché (« Course solo », « Reprendre »)
+#include "retour_systeme.h"       // WFS-129 (RG-08) : touche Retour du téléphone
 #if defined(__linux__)
 #include <dlfcn.h>
 #include <malloc.h>
@@ -145,12 +151,106 @@ double pente(const double* v, int de, int a) {
 const char* CARTES[4] = {"ville", "plage", "campagne", "circuit"};
 const char* VOITURES[3] = {"m4", "p911", "golf"};
 const vec3 PEINTURES[3] = {{0.60f, 0.01f, 0.02f}, {0.01f, 0.05f, 0.27f}, {0.92f, 0.40f, 0.0f}};
-constexpr int CYCLES = 8;
-constexpr double COURSE_MAX = 78;   // s de course au plus par cycle (puis fin forcée : temps écoulé)
+constexpr int CYCLES_CHECKPOINT = 8;                // cycles 1 à 8 : Checkpoint, les 4 cartes de jour puis de nuit
+constexpr int CYCLE_COURSE5 = 9, CYCLE_POURSUITE = 10;   // WFS-129 (RG-07) : par vrais touchers
+constexpr int CYCLES = 10;
+constexpr double COURSE_MAX = 45;   // s de course au plus par cycle (puis fin forcée : temps écoulé) ; WFS-129 : 78 → 45 s, job ≤ 15 min avec les 2 cycles en plus
+constexpr double POURSUITE_SAUT = 25;   // s de poursuite avant le saut près de l'arrivée (fin par victoire, sauf arrêté avant)
+
+// WFS-129 (RG-07 / RG-08) : doigt Android au banc, comme benchParcours (modes_ecran.cpp) et benchRecords : down,
+// 6 mouvements, up, une image dessinée entre chaque ; `image` avance d'une image (rendu compris si demandé)
+struct Doigt {
+    Game& g;
+    double& t;
+    int id = 120;
+    int ecarts = 0;
+    const char* qui;
+    void image(bool dessin) { g.update(1.0 / 60); retourSystemeApresImage(g); t += 1.0 / 60; if (dessin) g.render(t); }
+    void images(int n) { for (int i = 0; i < n; i++) image(i % 4 == 3); }
+    void appuyer(float x, float y) {
+        const int d = id++;
+        g.render(t);   // zones posées à l'image dessinée juste avant l'appui
+        g.onTouch({d, x, y, true}); image(true);
+        for (int k = 1; k <= 6; k++) { g.onTouch({d, x + 0.4f * k, y, true}); image(true); }
+        g.onTouch({d, x + 3, y, false}); image(true);
+        images(3);
+    }
+    // écran de fin : appui court au centre du bouton
+    template <class F> void toucher(F trouver, const char* nom) {
+        float x = 0, y = 0;
+        g.render(t += 0.02);
+        if (!trouver(x, y)) { ecart("bouton « %s » absent", nom); return; }
+        const int d = id++;
+        g.render(t); g.onTouch({d, x, y, true}); images(2); g.onTouch({d, x, y, false}); images(4);
+        WFS_LOG("%s : toucher « %s » (%.0f, %.0f) → écran %s", qui, nom, x, y, nomEcran(g.ecran()));
+    }
+    template <class... A> void ecart(const char* f, A... a) {
+        ecarts++;
+        char b[256];
+        if constexpr (sizeof...(A) == 0) std::snprintf(b, sizeof b, "%s", f); else std::snprintf(b, sizeof b, f, a...);
+        WFS_ERR("%s : %s (ÉCHEC)", qui, b);
+    }
+    void attendu(Ecran e, const char* etape) {
+        if (g.ecran() == e) WFS_LOG("%s : %s → écran %s (attendu)", qui, etape, nomEcran(e));
+        else ecart("%s → écran %s, attendu %s", etape, nomEcran(g.ecran()), nomEcran(e));
+    }
+    // touche Retour du téléphone (onInput d'android_main.cpp : DOWN puis UP, sans répétition)
+    void retour() { retourSysteme(g, true, 0); image(true); retourSysteme(g, false, 0); images(6); }
+};
+
+// WFS-129 (RG-07) : accueil → « Course solo » → mode → « Continuer » → garage → « Choisir » → terrain → « Rouler » → course
+void jusquaCourse(Doigt& f, const char* carte, const char* km, ModeCourse m) {
+    Game& g = f.g;
+    g.allerA(Ecran::Menu); f.images(40);
+    const auto& z = manette::zonesPrecedentes();
+    if (z.empty()) { f.ecart("menu sans bouton"); return; }
+    f.appuyer(z[0].x + z[0].w * 0.4f, z[0].y + z[0].h * 0.5f);   // 1re zone du menu : « Course solo »
+    if (!choixModeOuvert()) f.ecart("« Course solo » : panneau des modes fermé");
+    float x = 0, y = 0;
+    for (const char* zone : {carte, km, "continuer"}) {
+        if (!zone) continue;
+        if (choixModeCentre(zone, x, y)) f.appuyer(x, y); else f.ecart("zone %s du panneau absente", zone);
+    }
+    f.attendu(Ecran::Garage, "mode puis « Continuer »");
+    for (int i = 0; i < 600 && !ecrans::garageBouton("choisir", x, y); i++) f.image(i % 4 == 3);   // voiture chargée
+    f.images(30);
+    if (ecrans::garageBouton("choisir", x, y)) f.appuyer(x, y); else f.ecart("« Choisir » du garage absent");
+    f.attendu(Ecran::Terrain, "garage puis « Choisir »");
+    f.images(20);
+    if (ecrans::centreRouler(x, y)) f.appuyer(x, y); else f.ecart("« Rouler » absent");
+    for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) f.image(i % 4 == 3);
+    f.attendu(Ecran::Course, "terrain puis « Rouler »");
+    if (modeCourse() != m) f.ecart("mode %s, attendu %s", nomMode(modeCourse()), nomMode(m));
+}
 
 } // namespace
 
 WFS_SYSTEM(EnduranceGarage, 445)   // n'existe que dans wfs_bench (src/platform n'est pas dans l'APK)
+
+namespace {
+// WFS-129 (RG-08) : « Reprendre » de l'écran de pause : zone marquée retour (touche B de la manette, WFS-22)
+void reprendre(Doigt& f) {
+    f.g.render(f.t += 0.02); f.g.render(f.t += 0.02);
+    for (const manette::Zone& z : manette::zonesPrecedentes())
+        if (z.retour) { f.appuyer(z.x + z.w / 2, z.y + z.h / 2); return; }
+    f.ecart("bouton « Reprendre » de la pause absent");
+}
+// en course : Retour du téléphone → pause, « Reprendre » au doigt → course
+void pauseParRetour(Doigt& f) {
+    f.attendu(Ecran::Course, "course avant l'appui sur Retour");
+    f.retour();
+    f.attendu(Ecran::Pause, "Retour du téléphone en course → pause");
+    f.images(30);
+    reprendre(f);
+    f.attendu(Ecran::Course, "pause puis « Reprendre » → course");
+}
+} // namespace
+
+int parcoursPauseRetour(Game& g, double& t) {
+    Doigt f{g, t, 200, 0, "parcours"};
+    pauseParRetour(f);
+    return f.ecarts;
+}
 
 int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsigned largeur, unsigned hauteur) {
     courseBenchRules(true);
@@ -205,21 +305,61 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
                 nuit ? "nuit" : "jour", voiture.c_str(), av, rssMo());
         return true;
     };
-    double rss2 = 0, rssMax = 0;
-    int pire = 0;
+    double rss2 = 0, rssMax = 0, rssMaxCp = 0;
+    int pire = 0, pireCp = 0, ecartsParcours = 0;
     double vRss[CYCLES + 1] = {}, vTas[CYCLES + 1] = {}, vReserve[CYCLES + 1] = {}, vFich[CYCLES + 1] = {}, vBrut[CYCLES + 1] = {};   // RG-09 : un relevé par cycle
     for (int cy = 1; cy <= CYCLES; cy++) {
-        carte = CARTES[(cy - 1) % 4]; nuit = cy > 4;   // 4 cartes de jour, puis les 4 de nuit
+        const bool checkpoint = cy <= CYCLES_CHECKPOINT;
+        if (checkpoint) { carte = CARTES[(cy - 1) % 4]; nuit = cy > 4; }   // 4 cartes de jour, puis les 4 de nuit
+        else nuit = false;   // WFS-129 : Course à 5 et Poursuite sur le terrain du moment (« Rouler » sans rien changer)
+        // WFS-129 (RG-06) : RSS relevée au même point de chaque cycle : accueil (menu), avant la course
+        g.setAutopilot(false);
+        g.allerA(Ecran::Menu); pas(30);
         const Releve rel = relever();
         journalReleve(cy, rel);
         vRss[cy] = rel.rss; vTas[cy] = rel.tas; vReserve[cy] = rel.tasReserve; vFich[cy] = rel.fich; vBrut[cy] = rel.rssBrut;
         const double rss = rel.rss;
         if (cy == 2) rss2 = rss;
         if (cy >= 3 && rss > rssMax) { rssMax = rss; pire = cy; }
+        // cycles 2 à 9 : relevés après des courses Checkpoint seulement (le 9 précède la Course à 5)
+        if (cy >= 3 && cy <= CYCLES_CHECKPOINT + 1 && rss > rssMaxCp) { rssMaxCp = rss; pireCp = cy; }
+        if (!checkpoint) {   // WFS-129 (RG-07) : Course à 5 (2 km) puis Poursuite, par vrais touchers
+            const bool c5 = cy == CYCLE_COURSE5;
+            WFS_LOG("endurance : cycle %d, %s, au doigt, RSS début de cycle %.1f Mo", cy, c5 ? "Course à 5 (2 km)" : "Poursuite", rss);
+            Doigt f{g, t, 300 + cy * 100, 0, "endurance (parcours)"};
+            choixModeBanc(true);   // panneau des modes sans sauvegarde (comme benchParcours)
+            jusquaCourse(f, c5 ? "carte1" : "carte2", c5 ? "km0" : nullptr, c5 ? ModeCourse::Course5 : ModeCourse::Poursuite);
+            g.setAutopilot(true);
+            double enCourse = 0;
+            bool pause = false, saut = false;
+            const Course* c = activeCourse();
+            while (c && c->state != RaceState::Over && enCourse < 150) {
+                pas(30); enCourse += 0.5; c = activeCourse();
+                if (!pause && enCourse >= 15 && g.ecran() == Ecran::Course && c && c->state != RaceState::Over) {   // RG-08 : pause par Retour
+                    pauseParRetour(f); g.setAutopilot(true); pause = true;
+                    WFS_LOG("endurance : cycle %d, Retour du téléphone → pause, « Reprendre » → course", cy);
+                }
+                if (!c5 && !saut && enCourse >= POURSUITE_SAUT) { poursuiteBancFin(2); saut = true; }   // près de l'arrivée
+            }
+            g.setAutopilot(false);
+            if (!(c && c->state == RaceState::Over)) f.ecart("course pas finie après %.0f s", enCourse);
+            f.images(90);   // écran de fin affiché (boutons actifs)
+            capture(std::string("endurance-fin-") + (c5 ? "course5" : "poursuite"));
+            WFS_LOG("endurance : cycle %d, fin de %s (%s), %.0f s de course, %.2f km, %.0f km/h", cy, c5 ? "la course à 5" : "la poursuite",
+                    c && c->state == RaceState::Over ? "arrivée" : "pas finie", c ? c->raceTime : 0.0, g.player().dist * M / 1000, g.player().kmh());
+            if (c5) f.toucher([](float& x, float& y) { return course5Bouton("menu", x, y); }, "Menu");
+            else f.toucher([](float& x, float& y) { return poursuiteBouton("menu", x, y); }, "Menu");
+            f.images(10);
+            f.attendu(Ecran::Menu, "fin puis « Menu » → accueil");
+            poursuiteBancFin(0);
+            choixModeBanc(false);
+            modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
+            ecartsParcours += f.ecarts;
+            WFS_LOG("endurance : cycle %d, parcours au doigt : %d écart(s)", cy, f.ecarts);
+            continue;
+        }
         WFS_LOG("endurance : cycle %d, carte %s, moment %s, RSS %.1f Mo", cy, carte.c_str(), nuit ? "nuit" : "jour", rss);
         // Menu → Terrain → « Rouler » (reconstruction de la partie sur la carte et le moment choisis)
-        g.setAutopilot(false);
-        g.allerA(Ecran::Menu); pas(30);
         g.allerA(Ecran::Terrain); pas(30);
         d.carte = carte; d.nuit = nuit;   // ce que fait « Rouler » (terrain.cpp)
         pas(1);
@@ -262,22 +402,33 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
         }
         if (cy == 6 && !retourArrierePlan("au menu")) return 4;
     }
-    const double rssFin = relever().rss;   // RG-09 : même mesure que les cycles (après malloc_trim)
-    if (rssFin > rssMax) { rssMax = rssFin; pire = CYCLES + 1; }
+    // WFS-129 (RG-06) : la mesure de fin (juste après la dernière course) est écrite mais ne compte plus pour le seuil
+    g.allerA(Ecran::Menu); pas(30);
+    const double rssFin = relever().rss;
     const double croissance = rss2 > 0 ? (rssMax - rss2) / rss2 * 100 : 0;
-    WFS_LOG("endurance : bilan : %d cycles, %d retours d'arrière-plan, %.1f min de jeu simulé, %ld pas, %.0f s réelles", CYCLES, retours,
-            simule / 60, images, nowSeconds() - t0);
+    const double croissanceCp = rss2 > 0 ? (rssMaxCp - rss2) / rss2 * 100 : 0;
+    WFS_LOG("endurance : bilan : %d cycles (%d Checkpoint, 1 Course à 5, 1 Poursuite), %d retours d'arrière-plan, %.1f min de jeu simulé, %ld pas, %.0f s réelles",
+            CYCLES, CYCLES_CHECKPOINT, retours, simule / 60, images, nowSeconds() - t0);
     WFS_LOG("endurance : durée : %.0f s réelles (%.1f min), %ld images rendues (une sur %ld)", nowSeconds() - t0, (nowSeconds() - t0) / 60, rendues, tous);
-    WFS_LOG("endurance : bilan mémoire : RSS cycle 2 %.1f Mo, maximum %.1f Mo (cycle %d), fin %.1f Mo, croissance %+.1f %% (seuil 10 %%)",
-            rss2, rssMax, pire, rssFin, croissance);
-    journalReleve(CYCLES + 1, relever());   // relevé de fin (« cycle 9 »)
-    // RG-09 (b) : pente par moindres carrés sur les cycles 2 à 8 (RSS, tas utilisé, tas gardé par malloc, fichiers)
-    WFS_LOG("endurance : pente (cycles 2 à 8) : RSS %+.2f Mo/cycle (brute %+.2f), tas utilisé %+.2f Mo/cycle, tas gardé %+.2f Mo/cycle, fichiers %+.2f Mo/cycle",
-            pente(vRss, 2, CYCLES), pente(vBrut, 2, CYCLES), pente(vTas, 2, CYCLES), pente(vReserve, 2, CYCLES), pente(vFich, 2, CYCLES));
+    WFS_LOG("endurance : bilan mémoire : RSS début de cycle : cycle 2 %.1f Mo, maximum %.1f Mo (cycle %d), croissance %+.1f %% (seuil 10 %%) ; "
+            "fin %.1f Mo (%+.1f %%, écrite seulement, ne compte plus)",
+            rss2, rssMax, pire, croissance, rssFin, rss2 > 0 ? (rssFin - rss2) / rss2 * 100 : 0.0);
+    WFS_LOG("endurance : bilan mémoire : dont cycles 2 à %d (après des courses Checkpoint) : maximum %.1f Mo (cycle %d), croissance %+.1f %% (seuil 10 %%) ; "
+            "cycle %d (après la Course à 5) : %.1f Mo, %+.1f %%", CYCLES_CHECKPOINT + 1, rssMaxCp, pireCp, croissanceCp, CYCLE_POURSUITE, vRss[CYCLE_POURSUITE],
+            rss2 > 0 ? (vRss[CYCLE_POURSUITE] - rss2) / rss2 * 100 : 0.0);
+    journalReleve(CYCLES + 1, relever());   // relevé de fin
+    // RG-09 (b) de WFS-126 : pente par moindres carrés sur les cycles 2 au dernier (RSS, tas utilisé, tas gardé par malloc, fichiers)
+    WFS_LOG("endurance : pente (cycles 2 à %d) : RSS %+.2f Mo/cycle (brute %+.2f), tas utilisé %+.2f Mo/cycle, tas gardé %+.2f Mo/cycle, fichiers %+.2f Mo/cycle",
+            CYCLES, pente(vRss, 2, CYCLES), pente(vBrut, 2, CYCLES), pente(vTas, 2, CYCLES), pente(vReserve, 2, CYCLES), pente(vFich, 2, CYCLES));
+    WFS_LOG("endurance : parcours au doigt (Course à 5, Poursuite) : %d écart(s)%s", ecartsParcours, ecartsParcours ? " ÉCHEC" : " OK");
     g.setAutopilot(false);
     courseBenchRules(false);
     g.shutdown();
-    if (croissance > 10) { WFS_ERR("endurance : fuite de mémoire : +%.1f %% au cycle %d (seuil 10 %%)", croissance, pire); return 3; }
+    if (croissanceCp > 10) { WFS_ERR("endurance : fuite de mémoire : +%.1f %% au cycle %d (seuil 10 %%)", croissanceCp, pireCp); return 3; }
+    if (ecartsParcours > 0) { WFS_ERR("endurance : parcours au doigt : %d écart(s)", ecartsParcours); return 5; }
+    // WFS-129 : au-delà de 10 % seulement après la Course à 5 / la Poursuite : code à part (6), pour que tools/qa/endurance.sh
+    // puisse le signaler comme défaut connu (memoire-course5-connue) sans jamais excuser une croissance des cycles Checkpoint
+    if (croissance > 10) { WFS_ERR("endurance : mémoire gardée après la Course à 5 / la Poursuite : +%.1f %% au cycle %d (seuil 10 %%)", croissance, pire); return 6; }
     return 0;
 }
 

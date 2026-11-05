@@ -21,7 +21,13 @@ Coché = prêt dans le dépôt ou produit par la CI. Non coché = à faire par l
 ## Google Play
 - [x] AAB signé produit par la CI (`WaForSpeed.aab` dans la Release d'aperçu ; clé factice tant que les secrets
       `WFS_CLE_*` ne sont pas fournis : `store/signature.md`)
-- [x] `targetSdk` 34, 64 bits (arm64-v8a ; x86_64 pour l'émulateur), Vulkan 1.0.3 exigé (`uses-feature`)
+- [x] `targetSdk` 35 et `compileSdk` 35 (Android 15, exigé par Google Play pour les nouvelles applications et les mises à
+      jour ; WFS-129, 2026-11-05), `minSdk` 26, 64 bits (arm64-v8a ; x86_64 pour l'émulateur), Vulkan 1.0.3 exigé (`uses-feature`)
+- [x] Pages mémoire de 16 Ko (WFS-129, 2026-11-05) : `libwaforspeed.so` construit avec `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES`
+      (NDK r27), bibliothèques non compressées ; la CI (job `android`) vérifie chaque segment `LOAD` (≥ `2**14`) de l'APK et
+      de l'AAB, et `zipalign -c -P 16 -v 4` (`tools/qa/pages_16k.sh`)
+- [x] Bord à bord d'Android 15 : plein écran immersif gardé, image sous l'encoche (`ALWAYS`), marges sûres envoyées au jeu ;
+      touche Retour comme WFS-116, sans retour prédictif (`enableOnBackInvokedCallback` à `false`)
 - [x] Paysage, plein écran, encoche, manettes (`android.hardware.gamepad` non exigé : le tactile suffit)
 - [ ] Fournir la clé de publication en secrets du dépôt (`WFS_CLE_ANDROID`, `WFS_CLE_MDP`, `WFS_CLE_ALIAS`, `WFS_CLE_ALIAS_MDP`)
 - [ ] Compte Google Play Console, fiche, questionnaire IARC, sécurité des données, test interne puis production

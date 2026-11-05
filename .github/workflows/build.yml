@@ -162,8 +162,12 @@ jobs:
       # WFS-129 (RG-05) : chaque segment LOAD de chaque .so de l'APK et de l'AAB aligné sur 2**14 (llvm-objdump du NDK),
       # et l'APK passe « zipalign -c -P 16 -v 4 » ; sinon le job est rouge (le jeu ne se chargerait pas sur un téléphone à
       # pages de 16 Ko, et Google Play refuserait l'AAB)
-      - name: Pages de 16 Ko (bibliothèques natives et APK)
-        run: bash tools/qa/pages_16k.sh WaForSpeed.apk WaForSpeed.aab
+      - name: SDK 35 et pages de 16 Ko (bibliothèques natives et APK)
+        run: |
+          aapt2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$aapt2" dump badging WaForSpeed.apk | grep -E "^(package|sdkVersion|targetSdkVersion)" | tee sdk.txt
+          grep -q "targetSdkVersion:'35'" sdk.txt || { echo "::error::l'APK ne cible pas Android 15 (targetSdkVersion 35, WFS-129)"; exit 1; }
+          bash tools/qa/pages_16k.sh WaForSpeed.apk WaForSpeed.aab
       - uses: actions/upload-artifact@v4
         with:
           name: apk

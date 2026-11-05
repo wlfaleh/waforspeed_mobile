@@ -2,6 +2,8 @@
 # Une ligne = un identifiant VUID (ou un morceau exact du message) qui ne fait pas échouer le job « endurance ».
 # Chaque entrée : le motif, puis en commentaire au-dessus : fichier ou pile, ticket de correction (« à planifier » : le PO le crée).
 # « fuite-connue » : la croissance de mémoire au-delà de 10 % ne fait qu'avertir (défaut hors E7 décrit au Journal).
+# « memoire-course5-connue » (WFS-129) : seulement le code 6 du banc (plus de 10 % après la Course à 5 / la Poursuite, cycles
+# Checkpoint sous le seuil) ne fait qu'avertir ; une croissance des cycles Checkpoint (code 3) reste un échec.
 
 # ANO-52 (WFS-91) : corrigée par WFS-100 (RG-W1, Renderer::shutdown remet l'objet à neuf) ; contournement et motifs retirés (WFS-111 RG-10).
 
@@ -11,3 +13,11 @@
 # WFS-91 (src/render/**) : à planifier. Message exact :
 # « VUID-vkCmdDraw-None-08114 … the descriptor (VkDescriptorSet …, binding 0, index 0) is using imageView VkImageView 0x0[] that is invalid or has been destroyed »
 # → corrigé par WFS-100 (RG-W2) : uiSetFontAtlas ne lie jamais de vue nulle (texture blanche) et text.cpp repointe l'interface avant de détruire l'atlas ; motif retiré.
+
+# Défaut à planifier par le PO (WFS-129, 2026-11-05, épic E3, src/game/course5_system.cpp, zone interdite pour E7) : les modèles
+# complets des 4 ordinateurs de la Course à 5 (Course5System::models_) sont chargés une fois et gardés jusqu'à Game::shutdown
+# (arrière-plan, fermeture), sans jamais en retirer : chaque nouvelle course à 5 tirant d'autres voitures en ajoute, jusqu'au
+# catalogue entier. Banc PC (lavapipe), 10 courses à 5 de suite : RSS 596 → 1300 Mo, 103 → 414 images Vulkan, puis palier.
+# Une seule course à 5 : +4 modèles, ≈ +170 Mo (+16,9 % au cycle 10). Correction attendue : libérer les modèles qui ne servent
+# plus quand la grille est tirée (ou au retour au menu). Retirer cette ligne une fois corrigé.
+memoire-course5-connue
