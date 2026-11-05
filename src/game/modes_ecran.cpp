@@ -25,6 +25,7 @@ namespace {
 bool g_ouvert = false;
 bool g_forceBanc = false;   // banc d'essai : panneau ouvert sans sauvegarde
 const int KMS[4] = {2, 4, 6, 10};
+const char* const DIFFS[3] = {"FACILE", "NORMALE", "DIFFICILE"};   // WFS-133 (RG-01) : indices de course5::Difficulte
 
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
 const unsigned BG = 0x0A0B10, SURF = 0x14161F, SURF2 = 0x1E2130, TXT = 0xF2F4F8, MUTE = 0x8A90A6, ACC = 0xFF6A00, ACC2 = 0x00E5FF;
@@ -50,7 +51,8 @@ public:
         const Sauvegarde& s = sauvegarde();
         modeCourse() = poursuite::modeDeCle(s.mode);   // WFS-119 : ancienne sauvegarde → Checkpoint
         kmCourse5() = s.km5;
-        WFS_LOG("modes : sauvegarde relue (%s, %d km)", nomMode(modeCourse()), kmCourse5());
+        course5::difficulte() = course5::difficulteDeCle(s.diff5);   // WFS-133 (RG-02) : inconnue → normale
+        WFS_LOG("modes : sauvegarde relue (%s, %d km, %s)", nomMode(modeCourse()), kmCourse5(), course5::cleDifficulte(course5::difficulte()));
     }
     void onEcran(Ecran, Ecran nouveau, const GameView&) override { if (nouveau != Ecran::Menu) g_ouvert = false; }
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -74,6 +76,12 @@ public:
         if (choix_ == ModeCourse::Course5)
             for (int i = 0; i < 4; i++)
                 if (kms_[i].contient(t.x, t.y)) { appui_.prendre(t.id); km_ = KMS[i]; WFS_LOG("modes : %d km", km_); return true; }
+        if (choix_ == ModeCourse::Course5)   // WFS-133 (RG-01) : difficulté
+            for (int i = 0; i < 3; i++)
+                if (diffs_[i].contient(t.x, t.y)) {
+                    appui_.prendre(t.id); diff_ = (course5::Difficulte)i;
+                    WFS_LOG("modes : difficulté %s", course5::cleDifficulte(diff_)); return true;
+                }
         // WFS-115 : « Continuer » et « Retour » agissent au relâcher, sur le bouton appuyé. Ils agissaient à l'appui : le
         // panneau se fermait sous le doigt encore posé, et ses mouvements (Android : un appui par mouvement) arrivaient
         // comme des appuis neufs à l'écran suivant — sur « Retour » du garage, juste sous « Continuer » en 20/9 : retour au
@@ -84,7 +92,7 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (!g_ouvert || g.ecran != Ecran::Menu || !ui::fontReady()) return;
-        if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); ouverture_ = false; }
+        if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); diff_ = course5::difficulte(); ouverture_ = false; }
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
         r.uiRect(0, 0, W, H, hex(BG, 0.86f));
         const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;
@@ -125,6 +133,20 @@ public:
                 ui::text(r, x + kw / 2, ky + 1.6f * u, 3.2f * u, t, sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
             }
         }
+        // WFS-133 (RG-01) : puces de difficulté sous les distances, même dessin, sélection cyan
+        const float dy = ky + kh + 2 * u;
+        for (auto& z : diffs_) z = {};
+        if (choix_ == ModeCourse::Course5) {
+            ui::text(r, x0, dy + 1.6f * u, 2.6f * u, "DIFFICULTÉ", hex(MUTE), ui::GAUCHE, 0.16f, false);
+            const float dw = 17 * u, dx0 = x0 + 17 * u;   // alignées sur les puces de distance
+            for (int i = 0; i < 3; i++) {
+                const float x = dx0 + i * (dw + 1.6f * u);
+                const bool sel = i == (int)diff_;
+                diffs_[i] = {x, dy, dw, kh};
+                r.uiRect(x, dy, dw, kh, sel ? hex(ACC2) : hex(SURF2));
+                ui::text(r, x + dw / 2, dy + 1.6f * u, 3.2f * u, DIFFS[i], sel ? hex(BG) : hex(TXT), ui::CENTRE, 0.06f, false);
+            }
+        }
         // « Retour » et « Continuer »
         const float bw = 28 * u, bh = 8 * u, by = H - g.marges.bas - bh - 6 * u;
         retour_ = {x0, by, bw, bh};
@@ -151,16 +173,20 @@ private:
     void valider(const GameView& g) {
         g_ouvert = false;
         if (choix_ == ModeCourse::Duel) { WFS_LOG("modes : « Continuer » → salon du duel"); g.allerA(Ecran::Salon); return; }
-        modeCourse() = choix_; kmCourse5() = km_;
-        if (sauvegarde().actif()) { sauvegarde().mode = modeCle(choix_); sauvegarde().km5 = km_; sauvegarde().enregistrer(); }
-        WFS_LOG("modes : « Continuer » → %s%s, garage", nomMode(choix_), choix_ == ModeCourse::Course5 ? (", " + std::to_string(km_) + " km").c_str() : "");
+        modeCourse() = choix_; kmCourse5() = km_; course5::difficulte() = diff_;   // WFS-133 : difficulté gardée
+        if (sauvegarde().actif()) {
+            sauvegarde().mode = modeCle(choix_); sauvegarde().km5 = km_; sauvegarde().diff5 = course5::cleDifficulte(diff_); sauvegarde().enregistrer();
+        }
+        WFS_LOG("modes : « Continuer » → %s%s, garage", nomMode(choix_),
+                choix_ == ModeCourse::Course5 ? (", " + std::to_string(km_) + " km, " + course5::cleDifficulte(diff_)).c_str() : "");
         g.allerA(Ecran::Garage);
     }
     ModeCourse choix_ = ModeCourse::Checkpoint;
     int km_ = 4;
+    course5::Difficulte diff_ = course5::NORMALE;   // WFS-133
     int bouton_ = 0, doigtBouton_ = -1;   // WFS-115 : bouton appuyé (1 Continuer, 2 Retour) et son doigt
     bool lu_ = false;
-    Zone cartes_[4], kms_[4], continuer_, retour_;
+    Zone cartes_[4], kms_[4], diffs_[3], continuer_, retour_;
     ui::FiltreAppui appui_;
 public:
     static bool ouverture_;
@@ -170,10 +196,12 @@ public:
         const Zone* z = nom == "continuer" || nom == "continuer-droite" ? &continuer_ : nom == "retour" ? &retour_ : nullptr;
         if (nom.size() == 6 && nom.compare(0, 5, "carte") == 0) z = &cartes_[(nom[5] - '0') & 3];
         if (nom.size() == 3 && nom.compare(0, 2, "km") == 0) z = &kms_[(nom[2] - '0') & 3];
+        if (nom.size() == 5 && nom.compare(0, 4, "diff") == 0 && nom[4] >= '0' && nom[4] <= '2') z = &diffs_[nom[4] - '0'];   // WFS-133
         if (!z || z->w <= 0) return false;
         x = z->x + z->w * (nom == "continuer-droite" ? 0.9f : 0.5f); y = z->y + z->h / 2;   // « -droite » : bord droit du bouton
         return true;
     }
+    course5::Difficulte diff() const { return diff_; }   // WFS-133 : difficulté affichée au panneau (banc)
     ChoixMode() { actif_ = this; }
     ~ChoixMode() override { if (actif_ == this) actif_ = nullptr; }
 };
@@ -301,6 +329,96 @@ int benchParcours(Game& g, Renderer& r, const std::string& out) {
 }
 
 bool choixModeCentre(const std::string& zone, float& x, float& y) { return ChoixMode::actif_ && ChoixMode::actif_->centre(zone, x, y); }   // WFS-125
+
+// ---------- WFS-133 (RG-10) : parcours complet de la course à 5 avec la difficulté (groupe course5) ----------
+// accueil → Course solo → Course à 5 → DIFFICILE → 4 KM → Continuer → garage → Choisir → terrain → Rouler → course → fin →
+// « Rejouer » (difficulté gardée) → fin → « Menu » → accueil → Course solo (DIFFICILE resélectionnée). Doigt Android
+// (down, mouvements, up) comme benchParcours. Capture parcours5-difficile. Rend le nombre d'écarts (0 = conforme).
+int benchParcoursCourse5(Game& g, Renderer& r, const std::string& out) {
+    courseBenchRules(true);
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 2; course5::difficulte() = course5::NORMALE;
+    if (!g.init(r, "golf", "ville")) { courseBenchRules(false); WFS_ERR("parcours course à 5 : chargement impossible"); return 1; }
+    g.setAutopilot(false); g.camMode = 0;
+    choixModeBanc(true);
+    double t = 2500;
+    int erreurs = 0, n = 0, doigt = 60;
+    auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; if (++n % 4 == 0) g.render(t); };
+    auto images = [&](int k) { for (int i = 0; i < k; i++) image(); };
+    auto appuyer = [&](float x, float y) {
+        const int id = doigt++;
+        g.render(t);
+        auto dessinee = [&]() { g.update(1.0 / 60); g.render(t += 1.0 / 60); };
+        g.onTouch({id, x, y, true}); dessinee();
+        for (int k = 1; k <= 6; k++) { g.onTouch({id, x + 0.4f * k, y, true}); dessinee(); }
+        g.onTouch({id, x + 3, y, false}); dessinee();
+        images(3);
+    };
+    auto etape = [&](bool ok, const char* quoi) {
+        if (ok) WFS_LOG("parcours course à 5 : %s (ok)", quoi); else { erreurs++; WFS_ERR("parcours course à 5 : %s (ÉCART)", quoi); }
+    };
+    auto panneau = [&](const char* zone) {
+        float x, y;
+        if (!ChoixMode::actif_ || !ChoixMode::actif_->centre(zone, x, y)) { erreurs++; WFS_ERR("parcours course à 5 : zone %s absente", zone); return; }
+        appuyer(x, y);
+    };
+    auto garage = [&](const char* bouton) {
+        float x = 0, y = 0;
+        for (int i = 0; i < 600 && !ecrans::garageBouton(bouton, x, y); i++) image();
+        images(30);
+        if (!ecrans::garageBouton(bouton, x, y)) { erreurs++; WFS_ERR("parcours course à 5 : bouton %s du garage absent", bouton); return; }
+        appuyer(x, y);
+    };
+    auto jusquaFin = [&]() {
+        g.setAutopilot(true);
+        float x, y;
+        // course sans dessin (comme benchCourse5 : banc court sur la CI), puis l'écran de fin dessiné (0,9 s) avant l'appui
+        const Course* c = activeCourse();
+        for (int i = 0; i < 400 * 60 && c && c->state != RaceState::Over; i++) { g.update(1.0 / 60); t += 1.0 / 60; c = activeCourse(); }
+        images(90);
+        g.setAutopilot(false);
+        return course5Bouton("rejouer", x, y);
+    };
+    auto finBouton = [&](const char* nom) {
+        float x, y;
+        if (!course5Bouton(nom, x, y)) { erreurs++; WFS_ERR("parcours course à 5 : bouton %s de la fin absent", nom); return; }
+        appuyer(x, y);
+    };
+    g.allerA(Ecran::Menu); images(30);
+    ouvrirChoixMode(); images(10);
+    etape(choixModeOuvert(), "accueil → « Course solo » : panneau des modes ouvert");
+    panneau("carte1"); panneau("diff2"); panneau("km1"); images(5);
+    g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/parcours5-difficile.png");
+    panneau("continuer");
+    etape(g.ecran() == Ecran::Garage, "Course à 5, DIFFICILE, 4 KM, « Continuer » → garage");
+    etape(course5::difficulte() == course5::DIFFICILE && kmCourse5() == 4 && modeCourse() == ModeCourse::Course5, "difficulté difficile et 4 km retenus");
+    garage("choisir");
+    etape(g.ecran() == Ecran::Terrain, "garage « Choisir » → terrain");
+    images(20);
+    float rx = 0, ry = 0;
+    if (!ecrans::centreRouler(rx, ry)) { erreurs++; WFS_ERR("parcours course à 5 : bouton « Rouler » absent"); } else appuyer(rx, ry);
+    for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
+    etape(g.ecran() == Ecran::Course, "terrain « Rouler » → course");
+    etape(jusquaFin(), "course de 4 km → écran de fin");
+    finBouton("rejouer");
+    images(10);
+    const Course* c = activeCourse();
+    etape(g.ecran() == Ecran::Course && c && c->state != RaceState::Over && course5::difficulte() == course5::DIFFICILE,
+          "« Rejouer » → nouvelle course, difficulté difficile gardée");
+    etape(jusquaFin(), "2e course → écran de fin");
+    finBouton("menu");
+    etape(g.ecran() == Ecran::Menu, "« Menu » → accueil");
+    images(20);
+    ouvrirChoixMode(); images(10);
+    float dx, dy;
+    etape(choixModeOuvert() && ChoixMode::actif_ && ChoixMode::actif_->diff() == course5::DIFFICILE && ChoixMode::actif_->centre("diff2", dx, dy),
+          "accueil → « Course solo » : DIFFICILE resélectionnée");
+    WFS_LOG("parcours course à 5 (RG-10) : %d écart(s) %s", erreurs, erreurs ? "ÉCHEC" : "OK");
+    choixModeBanc(false);
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4; course5::difficulte() = course5::NORMALE;
+    courseBenchRules(false);
+    g.shutdown();
+    return erreurs;
+}
 
 WFS_SYSTEM(ChoixMode, 458)   // interface (400-499) : par-dessus le menu (450), le salon (453) et la pause (455)
 

@@ -20,7 +20,17 @@
     "vitesse_facile": 0.8,
     "vitesse_normale": 0.9,
     "vitesse_difficile": 0.97,
-    "ecart_min": 1.2
+    "ecart_min": 1.2,
+    "rattrapage_derriere": 150.0,
+    "rattrapage_devant": 250.0,
+    "rattrapage_bonus": 0.08,
+    "rattrapage_malus": 0.06,
+    "rattrapage_malus_facile": 0.1,
+    "aspiration_distance": 25.0,
+    "aspiration_bonus": 0.04,
+    "nitro_bonus": 0.15,
+    "nitro_duree": 2.5,
+    "nitro_fin": 500.0
   },
   "poursuite": {
     "score_depart": 100,

@@ -61,6 +61,7 @@ public:
     int gyro = 0, gyroZone = 1;                // WFS-108 : gyroscope 0 coupé, 1 doux, 2 moyen, 3 fort ; zone morte 0..2
     std::string mode = "checkpoint";           // WFS-110 : mode de course (checkpoint / course5 / poursuite : WFS-119)
     int km5 = 4;                               // WFS-110 : distance de la course à 5 (2, 4, 6 ou 10 km)
+    std::string diff5 = "normale";             // WFS-133 (RG-02) : difficulté de la course à 5 (facile / normale / difficile)
     // WFS-125 (RG-02) : records par mode ; place 0 / distance −1 = vide (« — », ancienne sauvegarde : RG-03).
     // Checkpoint = best (clé waforspeed-best inchangée, RG-01) ; duel : aucun record.
     int rec5Place = 0; long long rec5Ms = 0;            // record-course5=place;temps_ms

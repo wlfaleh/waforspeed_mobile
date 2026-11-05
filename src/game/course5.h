@@ -39,7 +39,12 @@ namespace course5 {
 inline const int& ORDINATEURS = g_configJeu.course5.ordinateurs;   // WFS-128 : 4
 enum Difficulte { FACILE = 0, NORMALE = 1, DIFFICILE = 2 };
 inline const double (&FACTEUR_VITESSE)[3] = g_configJeu.course5.facteur;   // WFS-128 : 0,80 / 0,90 / 0,97 ;     // part de la vitesse de pointe visée (RG-04)
-constexpr Difficulte DIFFICULTE = NORMALE;                    // RG-04 : normale par défaut
+// WFS-133 (RG-01 à RG-03) : difficulté choisie au panneau des modes (normale par défaut), clé diff5 de la sauvegarde
+Difficulte& difficulte();
+const char* cleDifficulte(Difficulte d);            // « facile », « normale », « difficile »
+Difficulte difficulteDeCle(const std::string& v);   // valeur inconnue → NORMALE
+constexpr int NITROS[3] = {0, 1, 2};                // RG-06 : nitros par ordinateur (facile, normale, difficile)
+constexpr double DERNIER_KM_M = 1000;               // RG-04 : pas de rattrapage dans le dernier kilomètre
 constexpr double FILES[3] = {-0.62, 0.0, 0.62};               // files (demi-largeurs de route), comme le trafic
 inline const double& ECART_MIN_M = g_configJeu.course5.ecartMinM;   // WFS-128 : 1,2 ;                           // jamais plus près que cela de la voiture de devant (m)
 
@@ -49,16 +54,23 @@ struct Ordinateur {
     duel::Ghost g;                            // rd (distance, unités), x (latéral), v (vitesse), hitCd, done, ft (ms)
     double cible = 0, cibleX = 0, varVitesse = 1;
     int file = 1;
+    Difficulte diff = NORMALE;                // WFS-133 : difficulté du tirage
+    int nitros = 1, nitrosPrises = 0;         // RG-06 : nitros restantes, nitros utilisées
+    double nitroT = 0;                        // s de nitro restantes (0 : pas de nitro)
+    bool aspiration = false;                  // RG-05 : dans l'aspiration à ce pas
 };
 
 // RG-02 : 4 ordinateurs tirés au hasard parmi les 20 voitures (modèles différents entre eux et de celui du joueur),
 // peinture aléatoire ; même graine = même tirage
-std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d = DIFFICULTE);
+std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d = NORMALE);
 // RG-05 : grille de départ de 5 : le joueur derrière, les ordinateurs sur deux rangées devant lui
 void grille(std::vector<Ordinateur>& os, double sJoueur);
 // RG-04 : un pas de conduite des ordinateurs (dt en s) ; joueur : distance et écart latéral (les ordinateurs l'évitent) ;
-// arrivée à `finish` (unités) avec le temps de course (s)
+// arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
+// (RG-06 : nitrosPrises compte les nitros utilisées)
 void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur);
+// RG-05 : une voiture en (s, x) est dans l'aspiration d'une des voitures de `os` (même file, moins de aspirationM devant)
+bool dansAspiration(const std::vector<Ordinateur>& os, double s, double x);
 // RG-06 : classement (moi + les ordinateurs), comme renderBoard du duel : arrivés d'abord (par temps), puis par distance
 struct Ligne { std::string nom; double d = 0, ft = 0; bool moi = false, fini = false; };
 std::vector<Ligne> classement(const std::vector<Ordinateur>& os, const std::string& nomJoueur, double dJoueur, double ftJoueur, bool joueurFini, double finish);
