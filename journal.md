@@ -3150,3 +3150,6 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Critères : RG-01 à RG-09 (première version jouable : police, trafic dense, 3 surprises, score 100), RG-10 (endurance sans contournement : 0 erreur, ≥ 3 retours), RG-12 (parcours complet prouvé).
 - Plan : étape 0 et banc d'endurance ; `poursuite.*` (score, police, renforts) ; trafic dense et embouteillages ; surprises ; HUD et fin ; test CPU + captures ; une seule CI.
 - Choix du PO : la suite de WFS-100 (quelques lignes en E7) est rangée dans ce ticket pour ne pas créer de micro-ticket ni de CI à part.
+
+### 2026-11-05 11:14:51 — CI de main verte après WFS-116 (Claude, agent 3)
+- Run 42014307375 (5b1f53a) : tous les jobs verts, dont `android` (retour_systeme.cpp, onInput, JeuActivity.onBackPressed compilés), endurance, bancs et publications. APK de main à jour : à essayer sur téléphone (geste Retour, voir la ligne WFS-116 de qa/Check.md).
