@@ -57,6 +57,7 @@ pour ça il faut remettre a jour les status dans les fichiers taches.md et journ
 
 - Mode poursuite police : score 100, 10 km, garder au moins 1, beaucoup de trafic, embouteillages, surprises
 ( PO : c'est créé — WFS-111 (E3, P2) : police qui poursuit (renfort tous les 2 km), score qui baisse aux chocs et à la proximité, trafic 2 à 3 fois plus dense, embouteillages, 6 types de surprises. Les valeurs de points sont proposées par le PO et ajustables. Il démarre après WFS-110 (menu des modes). )
+( Claude, session trafic : la première version est fusionnée (WFS-111, PR #98). Score de 100, arrivée à 10 km. Un choc avec le trafic coûte 5 points, la glissière ou un plot 3, la police 10, et une police à moins de 12 m 1 point par seconde ; un quasi-contact rapporte 1 point. Deux voitures de police au départ, une de plus tous les 2 km (6 au plus), avec gyrophares et sirène ; à tour de rôle, une voiture tente de te pousser. Le trafic est 2,5 fois plus dense, avec 3 embouteillages qui laissent un passage étroit. Il y a 4 surprises : barrage de police, voiture qui déboîte, travaux, accident. L'écran de fin affiche VICTOIRE ou ARRÊTÉ. La carte « Poursuite » du menu s'ouvrira dès que WFS-115 (le bouton « Continuer ») sera fusionné. Les valeurs se changent dans `src/game/poursuite.h`. )
 
 - Garder le mode checkpoint actuel avec 60 secondes
 ( PO : c'est dans WFS-110 (RG-08) : temps de départ 60 s, checkpoints inchangés. )
