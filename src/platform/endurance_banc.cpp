@@ -67,8 +67,13 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     double t = 3000, simule = 0;
     long images = 0;
     const double t0 = nowSeconds();
-    auto pas = [&](int n) {   // n pas de 1/60 s, une image rendue sur 16
-        for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; simule += 1.0 / 60; if (++images % 16 == 0) g.render(t); }
+    // WFS-114 : une image rendue sur N (WFS_ENDURANCE_RENDU, 30 par défaut : deux par seconde de jeu) ; la simulation reste à 60 Hz.
+    // Le rendu sous les couches de validation coûte l'essentiel du temps du job (≤ 15 min, RG-02).
+    const char* rn = std::getenv("WFS_ENDURANCE_RENDU");
+    const long tous = rn && std::atoi(rn) > 0 ? std::atoi(rn) : 30;
+    long rendues = 0;
+    auto pas = [&](int n) {
+        for (int i = 0; i < n; i++) { g.update(1.0 / 60); t += 1.0 / 60; simule += 1.0 / 60; if (++images % tous == 0) { g.render(t); rendues++; } }
     };
     auto capture = [&](const std::string& nom) {
         g.render(t += 0.01); g.render(t += 0.01); r.capturePng(out + "/" + nom + ".png");
@@ -159,6 +164,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     const double croissance = rss2 > 0 ? (rssMax - rss2) / rss2 * 100 : 0;
     WFS_LOG("endurance : bilan : %d cycles, %d retours d'arrière-plan, %.1f min de jeu simulé, %ld pas, %.0f s réelles", CYCLES, retours,
             simule / 60, images, nowSeconds() - t0);
+    WFS_LOG("endurance : durée : %.0f s réelles (%.1f min), %ld images rendues (une sur %ld)", nowSeconds() - t0, (nowSeconds() - t0) / 60, rendues, tous);
     WFS_LOG("endurance : bilan mémoire : RSS cycle 2 %.1f Mo, maximum %.1f Mo (cycle %d), fin %.1f Mo, croissance %+.1f %% (seuil 10 %%)",
             rss2, rssMax, pire, rssFin, croissance);
     g.setAutopilot(false);
