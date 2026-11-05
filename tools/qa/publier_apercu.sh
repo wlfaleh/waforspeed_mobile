@@ -113,7 +113,7 @@ case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";;
 titre="Aperçu — construction ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7})"   # RG-04 : commit de l'APK
 EMPREINTES="empreintes-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT:-1}.sha256"   # nom unique : lu sans cache
 notes() {   # RG-04 : $1 = construction et commit d'où viennent les captures
-    printf '%s\n\n%s\n' "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME} ; commit de l'APK dans le titre." \
+    printf '%s\n\n%s\n' "APK Android de test (arm64). Installer : télécharger WaForSpeed.apk sur le téléphone, autoriser l'installation depuis cette source. Branche ${GITHUB_REF_NAME} ; commit de l'APK dans le titre. Signature fixe (WFS-118) : si ton téléphone refuse l'installation (« conflit de package »), désinstalle une dernière fois l'ancienne version ; ensuite chaque nouvel APK s'installe par-dessus et garde ta sauvegarde." \
         "Captures du banc d'essai : $1."
 }
 
