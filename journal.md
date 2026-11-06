@@ -4407,3 +4407,16 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - `hud.cpp` a 2 lignes ajoutées et non une seule : l'include est nécessaire.
   - Dans `toasts.cpp`, la variable locale `u` est retirée, car devenue inutile une fois la formule déplacée dans `toasts.h`. Aucun comportement retiré.
 - **Suite** : je suis la CI de `main` ; `qa/Check.md`, `TACHES.md` et `tache utilisateur.md` sont à jour.
+
+### 2026-11-06 12:09:35 — WFS-170 : fusionné (PR #131, e21145e) (Claude (session trafic))
+- **CI de branche** : run 42210053624 (d032f89, après WFS-169) tout vert, vitrines comprises ; captures RG-08 regardées : 911 grise (garage,
+  vitrines), Giulia sans bande et vitres teintées, S3 lunette unie (vitre en double retirée) et jantes grises, Model 3 sans trace beige, X5 / 208 /
+  Compass moins froissés, jantes du Compass grises, feux de la V60, GT86, Abarth, A45 rouges au freinage ; 15 autres voitures inchangées.
+- **Dernière synchro** : main avait reçu la mini-carte (WFS-173, `src/ui`, `src/game`, aucun fichier commun) : fusion de main, compilation,
+  31 tests CPU OK et banc local `vitrines-feux` (911, V60) avant la fusion ; la CI de main suivante couvre le reste.
+- **Reste / signalé au PO** : Model 3 bosselée (géométrie d'origine) ; halo rouge flottant à gauche des voitures freinées (`renderer.cpp`,
+  → WFS-171) ; Elantra : tache claire sur la porte arrière (voiture classée « bonne », non touchée).
+- **WFS-158** : la décision PO de 11:07 demandait de pousser mon travail local ; le push de `feature/waforspeed-158` a été **refusé par les
+  droits de la session** (consigne du coordinateur : ne rien pousser pour 158). Travail local à jour : branche locale `feature/waforspeed-158`
+  (commits 6c78a60, 5d9e379, fusion du ST-1 de 01Us6uCu gardé sous `test_fidelite_voitures_audit`, fusion de main, 3797449 ; 32 tests CPU OK).
+  Décision attendue : qui pousse cette branche.
