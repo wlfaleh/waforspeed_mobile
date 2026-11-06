@@ -4337,3 +4337,36 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Zone autorisée : fonctions de banc de `src/game/**` (`benchTrace`, bancs garage, poursuite, course à 5), `tests/**` ; accroches ≤ 10 lignes annoncées : `src/platform/desktop_main.cpp`, `.github/workflows/build.yml`. Interdit : règles de jeu, `src/render/**`, `src/ui/**` (aucune taille d'interface, ordre permanent), iOS (gel).
 - Critères (regles-de-gestion/WFS-172.md) : `garage-course(-2400)` voiture choisie en course après « Rouler » + 5 s ; `poursuite-camion` camion visible ; nouvelle `poursuite-police-basse` (police 10-30 m, gyrophares) ; `trace-feux-rouge` ≥ 2 voitures arrêtées, nombre au journal du banc ; autres captures inchangées ; parcours complet accueil → garage → course → fin → Menu → accueil, 0 écart ; tests CPU verts ; ligne `qa/Check.md`.
 - Plan court : ajuster le minutage / placement des 3 bancs, ajouter la capture police Basse, une seule CI.
+
+### 2026-11-06 11:38:09 — WFS-173 : code poussé (bafcfe8, synchronisé c4b2883), accroches annoncées (Claude (session 01Us6uCu))
+- **Branche** `feature/waforspeed-173` poussée à 11:22:14 UTC (commit de début d17c538), puis le code (bafcfe8), synchronisé avec main (c4b2883, qui apporte la correction de WFS-169 dans `course_system.cpp`).
+- **Fait** :
+  - `src/ui/minicarte.h` : calculs purs (place sans recouvrement, projection GPS et parcours, découpe Liang-Barsky au bord, abscisses ramenées).
+  - `src/ui/minicarte.cpp` : système `MiniCarte`, ordre 422, aucun `onTouch` ; tableaux fixes, aucune allocation par image ; `benchMiniCarte`.
+  - `tests/test_minicarte.cpp`.
+- **Choix technique** : la route est dessinée par une bande à onglets, sans recouvrement, et pas par `dessin2d::trait`. Ce dernier trace des traits opaques à bouts ronds : à 45 % d'opacité (RG-05), chaque jointure ferait un grain plus clair. La flèche du joueur reprend `dessin2d::polygone` / `contour`.
+- **Accroches annoncées** (toutes en lecture seule, aucune règle de jeu changée) :
+  - **E3, 6 lignes** :
+    - `course5.h` +1 : `course5Positions` ;
+    - `course5_system.cpp` +2 : membre `positions` et fonction ;
+    - `poursuite.h` +1 : `poursuitePolice` ;
+    - `poursuite_system.cpp` +2 : membre `police` et fonction, à côté de `policeMobiles` / `poursuiteBouton`.
+  - **`hud.cpp`, 2 lignes** : l'`#include "minicarte.h"` et l'appel de `benchMiniCarte` à la fin de `benchHud`. RG-10 en prévoyait une ; l'include est nécessaire. Le dessin du HUD n'est pas touché.
+  - **`toasts.h` +6 / `toasts.cpp` 3 lignes changées** : la place de la pile devient `bandeauxBordDroit` / `bandeauxHaut`, à la formule identique (RG-03 : la carte lit la même valeur) ; la variable `u`, devenue inutile, est retirée.
+  - **`CMakeLists.txt`, 1 ligne** (`test_minicarte`) ; **`build.yml`, 1 ligne** (groupe `ecrans-2400` : copie de `hud/minicarte-*.png` en `minicarte-*-2400.png`).
+- **Vérification locale** :
+  - Compilation g++ et clang sans avertissement ; 32 tests CPU OK. `test_minicarte` : 168 placements (7 écrans × boutons Normaux / Grands × droitier / gaucher × 3 marges × Checkpoint / Poursuite), 0 masqué, 0 recouvrement, 2 212 contrôles.
+  - Banc `hud` en 1280 :
+    - `minicarte-checkpoint` : GPS, 101 points, 1 914 sommets, côté 150 px, checkpoint cyan à 300 m ;
+    - `minicarte-ligne` : parcours de 4 km, 128 points, 2 466 sommets, 4 ordinateurs et le damier.
+  - Captures regardées : `hud-course`, `minicarte-*`, `toast-pile` (bandeaux à gauche de la carte) ; temps, score, compteur et commandes à leur place.
+- **En cours** : banc `parcours` en local, CI de la branche (captures 2400, `course5`, `poursuite`, `duel`).
+
+### 2026-11-06 12:00:36 — WFS-140 libéré et réattribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd) (po-scrum-master)
+- **Ticket** : WFS-140 — Grand Prix : épingle, chicanes, raidillon, feux de départ, tribunes pleines, paddock et garages des équipes, bars d'accueil, fan zone · E2 · P2 Haute · branche `feature/waforspeed-140` (existante, à reprendre telle quelle) · règles : `regles-de-gestion/WFS-140.md`.
+- **Libération** : attribué le 08:21 UTC à Claude (session dev expert, 0183bv2X). 3 h 40 après : la branche ne contient que le commit d'attribution b20b6b1 (aucun commit de travail), aucune entrée de cet agent au Journal depuis 08:18:34. Le même agent a déjà perdu WFS-169 à 10:41 faute de branche poussée, et n'a pas repris WFS-140 depuis (1 h 20). E2 porte 4 tickets P2 (dont la demande explicite de l'utilisateur sur les 4 cartes) bloqués derrière ce seul ticket inactif. Décision PO : application de l'esprit de la règle 9 (aucun travail poussé 2 h après l'attribution) ; aucun travail perdu. S'il a du travail local, il le signale au Journal et le confie à l'agent 5 (pas de double travail) ; il demande ensuite un autre ticket au PO.
+- **Choix** : seuls tickets ⏳ Prêt : WFS-137, 138, 139 (E2). E0 (WFS-149), E3 (WFS-172), E4 (WFS-170), E5 (WFS-173), E7 (WFS-145), E10 (WFS-158) occupées ; E6, E8 sans ticket Prêt (E8 : gel de la taille des boutons) ; E9, E11, E12, E13 attendent WFS-149 → 150 → 151 ; `anno.md` sans anomalie 🆕. WFS-140 reste le premier de E2 (seule carte déjà au tracé 2 en jeu, `circuit` dans `trace::CARTES_ACTIVES`).
+- **Zone autorisée** : `src/world/circuit.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures de cette carte) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp` (nouvelles captures) ; outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`) utilisés sans modification, sauf accroche ≤ 10 lignes annoncée.
+- **Interdit** : `src/game/**` (route, trafic ; WFS-172 en cours en E3), `ville*.cpp`, `campagne.cpp`, `plage.cpp` (autres cartes ; aussi touchés par WFS-145), `src/render/**` (WFS-170, 149), `shaders/**`, `src/ui/**` (WFS-173 ; taille des boutons gelée), `CMakeLists.txt` (WFS-149, 173), `.github/**` (WFS-145, 173), `src/world/pietons.*` (E11), iOS (gel).
+- **Critères** : captures `carte-circuit-depart` (feux allumés), `-epingle`, `-chicane`, `-raidillon`, `-paddock` (+ `-nuit`), caméra de course ; rien sur la chaussée, murs de l'épingle corrigés (`trace::rayonInterieur`) ; `qualite-*` sans baisse visible ; parcours complet `WFS_BANC=parcours` 0 écart sur cette carte ; ligne `qa/Check.md`.
+- **Plan** : pousser un commit de début dans l'heure, puis RG-01 à RG-05 et RG-C1 à C5 dans `circuit.cpp` en réutilisant le décor existant ; banc local ; fusion par confiance si > 50 %.
