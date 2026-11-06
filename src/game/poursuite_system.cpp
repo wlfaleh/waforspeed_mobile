@@ -46,7 +46,7 @@ double g_bancSautKm = 0;             // WFS-141 : banc : saut en avant du joueur
 // voiture existante repeinte (RG-03) : la 208 (la Golf si le joueur roule en 208)
 const char* policeCar(const Player* pl) { return pl && pl->car && !std::strcmp(pl->car->id, "p208") ? "golf" : "p208"; }
 
-const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
+const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
 const vec4 DANGER{1.f, 31 / 255.f, 75 / 255.f, 1}, BLEU{0.25f, 0.45f, 1.f, 1};
 vec3 lin(unsigned h) {
@@ -298,11 +298,12 @@ public:
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, pw - 4 * u, 0.6f * u, vec4{1, 1, 1, 0.12f});
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, (pw - 4 * u) * k, 0.6f * u, ui::ORANGE);
         if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
-            // WFS-141 (RG-02, ANO-57) : 5 % de la hauteur, à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 +
-            // 10 + 40 + 8 + 40 px de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route
-            const float k = H / 720.f, bh = BANDEAU_HAUTEUR * H, tp = bh * 0.56f, bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
-            r.uiRect(bx, by, ui::width(tp, ban_, 0.1f) + 2 * bh, bh, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
-            ui::text(r, bx + bh, by + (bh - tp) / 2, tp, ban_, TEXTE, ui::GAUCHE, 0.1f, false, true);
+            // WFS-141 (RG-02, ANO-57) : à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 + 10 + 40 + 8 + 40 px
+            // de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route ; effacé après
+            // 1,5 s. Taille inchangée (ordre permanent du 2026-11-06 sur la taille des textes : pas de passage à 5 %)
+            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, ban_, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
+            r.uiRect(bx, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
+            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, ban_, TEXTE, ui::CENTRE, 0.1f, false, true);
         }
     }
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -499,19 +500,34 @@ private:
     }
 
     // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu » ;
-    // WFS-141 (RG-03, ANO-59) : gabarit de la fin Checkpoint (dessinerEcranFin), statistiques en 2 rangées de 3
+    // WFS-141 (RG-03, ANO-59) : boutons parallélogrammes et liseré orange de la fin Checkpoint (biseauFin) ; tailles des
+    // boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
     void resultat(Renderer& r, float W, float H, float u) {
-        EcranFin e;
-        e.surTitre = "POURSUITE POLICE · 10 KM";
-        e.titre = etat_.gagne ? "VICTOIRE" : "ARRÊTÉ"; e.couleurTitre = etat_.gagne ? ui::ORANGE : DANGER;
-        e.parRangee = 3;
-        e.stats = {{"Score final", std::to_string(etat_.score)}, {"Temps", ui::chrono(ftJoueur_)}, {"Voitures de police", std::to_string(policeMobiles())},
-                   {"Chocs trafic", std::to_string(etat_.chocsTrafic)}, {"Chocs glissière", std::to_string(etat_.chocsGlissiere)},
-                   {"Chocs police", std::to_string(etat_.chocsPolice)}};
-        e.record = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD »
-        if (e.record) { e.valeurRecord = texteRecord(); e.nouveauRecord = nouveauRecord_; }
-        const BoutonsFin b = dessinerEcranFin(r, W, H, u, e);
-        rejouerZ_ = {b.rejouer.x, b.rejouer.y, b.rejouer.w, b.rejouer.h}; menuZ_ = {b.menu.x, b.menu.y, b.menu.w, b.menu.h};
+        r.uiRect(0, 0, W, H, FOND);
+        const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
+        const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
+        r.uiRect(px0, py0, pw, ph, SURFACE);
+        r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
+        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, "POURSUITE POLICE · 10 KM", ui::CYAN, ui::CENTRE, 0.16f, false);
+        const bool v = etat_.gagne;
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, v ? "VICTOIRE" : "ARRÊTÉ", v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
+        float y = py0 + 20 * u;
+        auto ligne = [&](const char* a, const std::string& b) {
+            ui::text(r, px0 + 6 * u, y, 3.4f * u, a, MUTED, ui::GAUCHE, 0.f, false);
+            ui::text(r, px0 + pw - 6 * u, y, 3.4f * u, b, TEXTE, ui::DROITE, 0.f, false, true);
+            y += 5.6f * u;
+        };
+        ligne("Score final", std::to_string(etat_.score));
+        ligne("Temps", ui::chrono(ftJoueur_));
+        ligne("Chocs trafic / glissière / police", std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice));
+        ligne("Voitures de police", std::to_string(policeMobiles()));
+        const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
+        if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
+        rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
+        biseauFin(r, rejouerZ_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);
+        ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
+        biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
+        ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
     }
 
     Renderer* r_ = nullptr;
@@ -750,7 +766,7 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
         images(90, 10);
         return c && c->state == RaceState::Over;
     };
-    // WFS-141 : place des boutons de l'écran de fin de la course à 5 lue sur l'écran dessiné (gabarit commun, course_system.cpp)
+    // WFS-141 : place des boutons de l'écran de fin de la course à 5 lue sur l’écran dessiné (course5Bouton) et non plus recalculée
     const float W = (float)r.width(), H = (float)r.height();
     const int doigt = 0;   // Android : le premier doigt posé a toujours l'identifiant 0
     auto toucher = [&](float x, float y, const char* nom) {

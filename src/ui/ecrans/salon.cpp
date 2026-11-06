@@ -686,8 +686,8 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     pas(5); g.render(t); toucher(33, g_creer);
     for (int i = 0; i < 110; i++) { std::this_thread::sleep_for(std::chrono::milliseconds(100)); pas(1); }
     capture("salon-hors-ligne", "sans Internet : serveur du duel injoignable (note orange), salon ouvert");
-    const void* lienAvant = doubleActuel(); g.render(t); toucher(34, g_reessayer);   // WFS-141 (RG-05, RG-06) : relais coupé → « Réessayer » → « Quitter le salon » → « Retour »
-    const bool relance = doubleActuel() && doubleActuel() != lienAvant && duelSession().inRoom();
+    const bool echec = g_reessayer.w > 0; g.render(t); toucher(34, g_reessayer);   // WFS-141 (RG-05, RG-06) : relais coupé → « Réessayer » → « Quitter le salon » → « Retour »
+    const bool relance = echec && doubleActuel() && doubleActuel()->lien() == duel::Lien::Connexion && duelSession().inRoom();   // nouvelle connexion en cours
     g.render(t); toucher(35, g_quitter); g.render(t); toucher(36, g_retour); pas(2);
     if (relance && g.ecran() == Ecran::Menu) WFS_LOG("salon (parcours) : relais coupé → Réessayer (connexion relancée) → Quitter → Retour → menu : 0 écart"); else WFS_ERR("salon (parcours) : relais coupé : Réessayer %s, écran %s après Retour", relance ? "ok" : "SANS EFFET", nomEcran(g.ecran()));
     duelSession().leave();

@@ -126,9 +126,8 @@ constexpr unsigned GYRO_ROUGE = 0xFF2D55, GYRO_BLEU = 0x2D7CFF;
 constexpr float HALO_GYRO = 1.5f;   // diamètre du halo / largeur de la lampe
 struct Gyrophare { bool rouge = false, bleu = false; };
 Gyrophare gyrophare(double t, int voiture);
-// RG-02 (ANO-57) : bandeau d'annonce effacé 1,5 s après l'annonce, haut de 5 % de l'écran
+// RG-02 (ANO-57) : bandeau d'annonce effacé 1,5 s après l'annonce (taille inchangée : ordre permanent du 2026-11-06)
 constexpr double BANDEAU_S = 1.5;
-constexpr float BANDEAU_HAUTEUR = 0.05f;
 // RG-03 (ANO-59) : titre de l'écran de fin de la course à 5 : « VICTOIRE », puis « 2e PLACE », « 3e PLACE »…
 std::string titrePlace(int rang);
 

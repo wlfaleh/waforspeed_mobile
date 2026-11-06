@@ -29,21 +29,6 @@ static bool g_rules = true;   // règles de course actives (voir courseBenchRule
 static const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1};    // --text #F2F4F8
 static const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};  // --surface #14161F
 
-// halo néon (text-shadow du web) : 12 copies transparentes du texte sur deux cercles autour de sa place
-static void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float esp, float rad, bool it = false) {
-    for (int k = 0; k < 12; k++) {
-        const float ang = k * 0.5235988f, d = rad * (k % 2 ? 1.f : 0.55f);
-        ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, esp, false, it);
-    }
-}
-// parallélogramme incliné (clip-path du bouton .btn : 14 px de biais), haut décalé à droite, bas à gauche ;
-// WFS-101 (RG-05, ANO-20) : un seul quadrilatère (plus de bandes horizontales ni de rayures)
-static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
-                           {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
-    r.uiQuad(q);
-}
-
 class CourseSystem : public System {
 public:
     const char* name() const override { return "course"; }
@@ -161,6 +146,16 @@ public:
     }
 
 private:
+    // halo néon (text-shadow du web) : 12 copies transparentes du texte sur deux cercles autour de sa place
+    static void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float esp, float rad, bool it = false) {
+        for (int k = 0; k < 12; k++) {
+            const float ang = k * 0.5235988f, d = rad * (k % 2 ? 1.f : 0.55f);
+            ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, esp, false, it);
+        }
+    }
+    // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais), haut décalé à droite, bas à gauche ;
+    // WFS-101 (RG-05, ANO-20) : un seul quadrilatère (plus de bandes horizontales ni de rayures)
+    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) { biseauFin(r, x, y, w, h, biais, c); }
     // endRace du jeu web (WFS-24, RG-03 / RG-09) : record écrit seulement s'il est battu (s > best), puis enregistrement
     // (thread de travail). Sauvegarde inactive (banc d'essai sans WFS_BANC=sauvegarde) : rien, captures inchangées.
     // WFS-125 (RG-01) : seule une course Checkpoint solo peut battre waforspeed-best : ni le duel, ni la course à 5, ni la
@@ -206,19 +201,40 @@ private:
         WFS_LOG("fantôme : terrain %s, record %lld, %s, %zu échantillons (%.1f s)", terrain.c_str(), lecture_.score, lecture_.car.c_str(),
                 lecture_.e.size(), lecture_.duree());
     }
-    // WFS-141 (RG-03) : gabarit commun des écrans de fin (dessinerEcranFin, plus bas), rempli pour la course Checkpoint
     void drawOver(Renderer& r, float W, float H, float u) {
-        EcranFin e;
-        e.surTitre = ui::majuscules("Temps écoulé");   // .eyebrow : cyan --accent-2, espacement 0,22 em
-        e.titre = ui::nombre(score_); e.couleurTitre = ui::ORANGE;   // .score-big : orange --accent avec halo (--glow-accent)
+        r.uiRect(0, 0, W, H, FOND);
+        // WFS-101 (RG-04, ANO-36) : avec la sauvegarde (ligne « RECORD », badge si battu), mise en page aérée : statistiques
+        // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px
+        const bool rec = sauvegarde().actif();
+        const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
+        const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, py = 10 * u, ph = 80 * u + plus;
+        r.uiRect(px, py, pw, ph, SURFACE);
+        r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
+        const float cx = W / 2;
+        // .eyebrow : cyan --accent-2, espacement 0,22 em
+        ui::text(r, cx, py + 6 * u, 4.2f * u, ui::majuscules("Temps écoulé"), ui::CYAN, ui::CENTRE, 0.22f, false);
+        // .score-big : orange --accent avec halo (--glow-accent)
+        halo(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), {1.f, 0.416f, 0.f, 0.08f}, ui::CENTRE, 0.02f, 0.8f * u, true);
+        ui::text(r, cx, py + 13 * u, 18 * u, ui::nombre(score_), ui::ORANGE, ui::CENTRE, 0.02f, false, true);
         char kmh[32]; std::snprintf(kmh, sizeof kmh, "%d km/h", course_.maxKmh);
-        e.stats = {{"Distance", ui::decimal(km_, 2) + " km"}, {"Vitesse max", kmh}, {"Quasi-contacts", ui::nombre(course_.nearCount)},
-                   {"Checkpoints", ui::nombre(course_.level)}};
-        e.record = sauvegarde().actif();   // WFS-24 ; WFS-125 : commun aux modes
-        if (e.record) { e.valeurRecord = ui::nombre(sauvegarde().best); e.nouveauRecord = nouveauRecord_; }
-        const BoutonsFin b = dessinerEcranFin(r, W, H, u, e);
-        rejouer_ = {b.rejouer.x, b.rejouer.y, b.rejouer.w, b.rejouer.h};
-        menu_ = {b.menu.x, b.menu.y, b.menu.w, b.menu.h}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
+        const std::string vals[4] = {ui::decimal(km_, 2) + " km", kmh, ui::nombre(course_.nearCount), ui::nombre(course_.level)};
+        const char* labs[4] = {"Distance", "Vitesse max", "Quasi-contacts", "Checkpoints"};
+        for (int i = 0; i < 4; i++) {
+            const float x = px + pw * (0.125f + 0.25f * i);
+            ui::text(r, x, py + 38 * u + dStats, 3.4f * u, ui::majuscules(labs[i]), ui::GRIS, ui::CENTRE, 0.16f);
+            ui::text(r, x, py + 43 * u + dStats, 6.5f * u, vals[i], ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
+        }
+        // bouton « Rejouer » (biseau orange, texte sombre)
+        const float bw = 40 * u, bh = 10 * u;
+        // WFS-57 (ANO-14) : paire « Rejouer » + « Menu » (0,7 × la largeur, 2 u d'écart) centrée sur le panneau
+        const float mw = bw * 0.7f, gap = 2 * u, bx = cx - (bw + gap + mw) / 2, by = py + 60 * u + plus;
+        if (rec) dessinerRecord(r, cx, py + 31.5f * u, by - 12 * s, u, ui::nombre(sauvegarde().best), nouveauRecord_);   // WFS-24 ; WFS-125 : commun aux modes
+        rejouer_ = {bx, by, bw, bh};
+        menu_ = {bx + bw + gap, by, mw, bh}; manette::focus(rejouer_); manette::focus(menu_, true);   // WFS-22 : focus de la manette
+        biseau(r, rejouer_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
+        ui::text(r, rejouer_.x + bw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
+        biseau(r, menu_.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
+        ui::text(r, menu_.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
     }
     bool nouveauRecord_ = false;
     bool restartReq_ = false;
@@ -260,54 +276,11 @@ void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, con
     ui::text(r, x0, y + 1.2f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
     ui::text(r, x0 + lw + gap, y, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
 }
-// WFS-141 (RG-03, ANO-59) : écran de fin commun aux 3 modes (voir course_system.h), mise en page de la fin Checkpoint
-// (WFS-21 / WFS-57 / WFS-101), déplacée ici depuis CourseSystem::drawOver sans changement pour la course Checkpoint
-BoutonsFin dessinerEcranFin(Renderer& r, float W, float H, float u, const EcranFin& e) {
-    r.uiRect(0, 0, W, H, FOND);
-    // WFS-101 (RG-04, ANO-36) : avec la sauvegarde (ligne « RECORD », badge si battu), mise en page aérée : statistiques
-    // 16 px (720 p) sous le badge, ligne « RECORD » 12 px au-dessus des boutons, panneau agrandi de 28 px
-    const bool rec = e.record;
-    const float s = H / 720.f, plus = rec ? 28 * s : 0, dStats = rec ? (31.5f + 5.2f) * u + 16 * s - 38 * u : 0;
-    // contenu du mode : rangées de statistiques (12,5 u l'une), puis classement en deux colonnes (5 u la ligne) ;
-    // au-delà d'une rangée (11,5 u), le panneau grandit d'autant et reste centré
-    const int par = std::max(1, e.parRangee), rangees = ((int)e.stats.size() + par - 1) / par, lc = ((int)e.lignes.size() + 1) / 2;
-    const float hStats = rangees ? rangees * 12.5f * u - 1 * u : 0, hContenu = hStats + (lc ? lc * 5 * u + (rangees ? 1 * u : 0) : 0);
-    const float plusC = std::max(0.f, hContenu - 11.5f * u);
-    const float pw = std::min(W * 0.86f, 120 * u), px = (W - pw) / 2, ph = 80 * u + plus + plusC;
-    const float py = plusC > 0 ? std::max(1 * u, (H - ph) / 2) : 10 * u;
-    r.uiRect(px, py, pw, ph, SURFACE);
-    r.uiRect(px, py, pw, 0.6f * u, ui::ORANGE);   // liseré néon : un seul accent par écran
-    const float cx = W / 2;
-    ui::text(r, cx, py + 6 * u, 4.2f * u, e.surTitre, ui::CYAN, ui::CENTRE, 0.22f, false);
-    const vec4 ch{e.couleurTitre.x, e.couleurTitre.y, e.couleurTitre.z, 0.08f};
-    halo(r, cx, py + 13 * u, 18 * u, e.titre, ch, ui::CENTRE, 0.02f, 0.8f * u, true);
-    ui::text(r, cx, py + 13 * u, 18 * u, e.titre, e.couleurTitre, ui::CENTRE, 0.02f, false, true);
-    for (size_t i = 0; i < e.stats.size(); i++) {
-        const int rg = (int)i / par, col = (int)i % par, n = std::min(par, (int)e.stats.size() - rg * par);
-        // n = 4 : px + pw × (0,125 + 0,25 × col), au bit près comme avant (capture course-fin inchangée)
-        const float x = px + pw * (0.5f / n + (float)col / n), dy = rg * 12.5f * u;
-        ui::text(r, x, py + 38 * u + dStats + dy, 3.4f * u, ui::majuscules(e.stats[i].libelle), ui::GRIS, ui::CENTRE, 0.16f);
-        ui::text(r, x, py + 43 * u + dStats + dy, 6.5f * u, e.stats[i].valeur, ui::BLANC, ui::CENTRE, 0.f, true, true);   // .stats dd (WFS-48)
-    }
-    const float yl = py + 38 * u + dStats + (rangees ? hStats + 1 * u : 0), cw = (pw - 12 * u) / 2;
-    for (size_t i = 0; i < e.lignes.size(); i++) {   // classement : 1 à 3 à gauche, 4 et 5 à droite
-        const float x = px + 4 * u + (i < (size_t)lc ? 0 : cw + 4 * u), y = yl + (i % lc) * 5 * u;
-        ui::text(r, x, y, 3.4f * u, e.lignes[i].gauche, e.lignes[i].cg, ui::GAUCHE, 0.f, false);
-        ui::text(r, x + cw, y, 3.4f * u, e.lignes[i].droite, e.lignes[i].cd, ui::DROITE, 0.f, false);
-    }
-    // bouton « Rejouer » (biseau orange, texte sombre)
-    const float bw = 40 * u, bh = 10 * u;
-    // WFS-57 (ANO-14) : paire « Rejouer » + « Menu » (0,7 × la largeur, 2 u d'écart) centrée sur le panneau
-    const float mw = bw * 0.7f, gap = 2 * u, bx = cx - (bw + gap + mw) / 2, by = py + 60 * u + plus + plusC;
-    if (rec) dessinerRecord(r, cx, py + 31.5f * u, by - 12 * s, u, e.valeurRecord, e.nouveauRecord);
-    BoutonsFin b;
-    b.rejouer = {bx, by, bw, bh};
-    b.menu = {bx + bw + gap, by, mw, bh};
-    biseau(r, b.rejouer.x, by, bw, bh, 14 * H / 720, ui::ORANGE);   // 14 px CSS (référence 720 p)
-    ui::text(r, b.rejouer.x + bw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Rejouer"), {10 / 255.f, 11 / 255.f, 16 / 255.f, 1}, ui::CENTRE, 0.12f, false);
-    biseau(r, b.menu.x, by, mw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // WFS-38 : « Menu » (.btn--ghost, #1E2130)
-    ui::text(r, b.menu.x + mw / 2, by + 2.6f * u, 5 * u, ui::majuscules("Menu"), TEXTE, ui::CENTRE, 0.12f, false);
-    return b;
+// WFS-141 : parallélogramme des boutons de l'écran de fin (avant : CourseSystem::biseau), commun aux 3 modes
+void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
+    const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
+                           {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
+    r.uiQuad(q);
 }
 WFS_SYSTEM(CourseSystem, 210)   // gameplay (200-299), après le trafic (50) dont il lit les chocs
 
