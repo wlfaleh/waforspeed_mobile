@@ -39,6 +39,8 @@ public:
     Image createImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, VkImageUsageFlags usage,
                       VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT, bool transient = false);
     void destroy(Image& i);
+    // WFS-144 : appelé à la destruction d'une vue d'image (le Renderer oublie les matériaux qui la lisent)
+    void (*vueDetruite)(void* ctx, VkImageView v) = nullptr; void* vueDetruiteCtx = nullptr;
     VkCommandBuffer beginOneShot();
     void endOneShot(VkCommandBuffer cb);
     // envoie des données dans un tampon local au GPU (via un tampon de transfert)

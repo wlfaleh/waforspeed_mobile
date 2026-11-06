@@ -221,7 +221,7 @@ public:
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
             (void)L;
-            if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
+            if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
             // barre lumineuse dessinée par le code : rouge à gauche, bleu à droite, halos alternés (WFS-119 RG-04 : en qualité
             // Basse, au-delà de 80 m, halos seuls)
             if (!r.qualiteBasse || std::abs(rel) <= 80) {
@@ -710,10 +710,11 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     {
         modeCourse() = ModeCourse::Checkpoint;
         g.allerA(Ecran::Course); images(3 * 60, 8);
-        int pire = -100000;
+        int pire = -100000; double kmMesure = -1; unsigned nMesure = 0;
         for (const Mesure& ms : mesures) {
             jusqua(ms.km, 60 * 60);
-            const unsigned n = appelsBasse();
+            // WFS-144 : mesures de la poursuite au même endroit (bouchon) : Checkpoint mesuré une fois à cet endroit, pas 50 m plus loin
+            const unsigned n = std::abs(ms.km - kmMesure) < 0.01 ? nMesure : (kmMesure = ms.km, nMesure = appelsBasse());
             const int ecart = (int)ms.appels - (int)n;
             pire = std::max(pire, ecart);
             WFS_LOG("poursuite (RG-04) : %s, %.2f km : poursuite %u, Checkpoint %u (%.2f km) : écart %+d", ms.ou, ms.km, ms.appels, n, g.player().dist * M / 1000, ecart);
