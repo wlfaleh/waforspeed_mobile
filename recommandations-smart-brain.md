@@ -1,16 +1,25 @@
-# Roadmap du week-end (7 et 8 novembre 2026) — 10 épics proposées (smart-brainstorming)
+# Recommandations Smart Brain
+
+Fichier de l'agent `smart-brainstorming`. **L'agent propose, il ne décide rien.** Il ne parle qu'avec l'utilisateur.
+L'utilisateur lit ces recommandations, choisit, et demande lui-même au PO ce qu'il veut faire.
+Les priorités P1 à P3 ci-dessous sont des **recommandations**, pas des décisions.
+Nouvelles recommandations ajoutées à la fin, chacune avec sa date.
+
+---
+
+## R01 — 2026-11-06 — Roadmap du week-end (7 et 8 novembre 2026) : 10 épics proposées
 
 Mode standard : diagnostic, brainstorming, priorisation. Session demandée par l'utilisateur le 2026-11-06.
-Ce sont des **propositions** : l'utilisateur choisit, puis le PO (`po-scrum-master`) crée les épics, les US et leur zone de code.
+Ce sont des **propositions** : l'utilisateur choisit et en parle au PO s'il le souhaite.
 
-## 1. Résumé et objectif
+### 1. Résumé et objectif
 WaForSpeed Mobile est un jeu de course « street racing » natif sur Android (C++20 / Vulkan). L'utilisateur le teste sur son téléphone.
 Il y a 4 cartes (Ville, Campagne, Corniche, Grand Prix) et 4 modes (Checkpoint, Course à 5, Poursuite police, Duel entre amis par
 Internet). Il y a aussi 20 voitures réelles, un garage, des records par mode, un fantôme, une mini-carte, la nuit et la météo.
 **Objectif** : choisir 10 épics à lancer ce week-end, avec plusieurs agents en parallèle, sans gêner l'axe Réalisme (E9 à E13) ni le
 décor des cartes (E2), déjà en cours.
 
-## 2. Diagnostic rapide
+### 2. Diagnostic rapide
 **Ce qui fonctionne déjà (faits, `TACHES.md`)** : le parcours complet, de l'accueil à la fin de course ; 4 modes jouables ; un duel
 par Internet avec serveur de relais (WFS-112) ; des voitures aux fiches réelles (`src/game/cars.h` : ch, 0-100, vitesse max, masse) ;
 du son riche (WFS-120, 121, 124, 131, 174) ; la tenue sur téléphone (WFS-123) ; l'annonce d'une nouvelle version de l'APK (WFS-132).
@@ -31,7 +40,7 @@ du son riche (WFS-120, 121, 124, 131, 174) ; la tenue sur téléphone (WFS-123) 
 **Ce qui manque pour une analyse fiable** : aucun retour de joueur autre que l'utilisateur, et aucune mesure d'usage. On ne sait pas
 quel mode il joue le plus, ni combien de temps.
 
-## 3. Tableau des 10 épics proposées
+### 3. Tableau des 10 épics proposées
 
 | ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
 |---|---|---|---|---|---|---|---|---|
@@ -48,27 +57,27 @@ quel mode il joue le plus, ni combien de temps.
 
 Impact et complexité : estimation qualitative, sans donnée d'usage.
 
-### Regroupement
+#### Regroupement
 - **Quick wins** : A04 (Défi du jour), A06 (Élimination), A09 (Confort et accessibilité).
 - **Structurantes** : A01 (Android validé), A02 (Première course guidée), A03 (Saison street), A05 (Records entre amis),
   A07 (Préparation mécanique), A08 (Ralenti et photo).
 - **Expérimentale** : A10 (Rivaux de la ville), à prototyper après A03.
 
-### Proposition d'ordre pour le week-end (à confirmer par le PO, selon les zones libres)
+#### Ordre proposé pour le week-end (simple suggestion)
 - **Samedi matin** : A01, qui tourne tout le week-end ; A02 ; A06.
 - **Samedi après-midi** : A03 (catalyseur de A10) et A09.
 - **Dimanche** : A04, A05 (après A04, même relais) et A08 ; A07 si une place se libère au garage (E5) ; A10 seulement si A03 est fusionnée.
 
-## 4. Top 3
+### 4. Top 3
 1. **A01 — Android validé.** C'est la seule épic qui sert ta priorité écrite (« le jeu qui fonctionne sur Android »), et elle débloque
    iOS. Sans elle, chaque nouvelle épic ajoute des écrans non recettés.
 2. **A02 — Première course guidée.** Les commandes ont demandé 3 passages. Un tutoriel règle la compréhension sans toucher la taille
    des boutons, qui est gelée.
 3. **A03 — Saison street.** C'est le plus grand manque de game design : le jeu est riche mais sans objectif. Elle prépare aussi A04 et A10.
 
-## 5. Risques et validations
+### 5. Risques et validations
 - **Zones de code** : E2 et E9 à E13 sont très occupées. A06 touche E3 (WFS-183 en cours). A07 touche le garage (E5, ANO-19).
-  Le PO doit placer chaque épic dans une zone libre ou créer une zone.
+  Point à signaler au PO si l'épic est retenue : il faut une zone de code libre pour chacune.
 - **Décision produit à trancher par l'utilisateur pour A03** : faut-il bloquer des voitures et des cartes déjà ouvertes aujourd'hui ?
 - **Hypothèses testables**
   - A02 : si une première course guidée explique gaz, frein, nitro et volant, alors un nouveau joueur finit sa 1re course sans
@@ -78,6 +87,68 @@ Impact et complexité : estimation qualitative, sans donnée d'usage.
   - A01 : si toutes les captures 2400 sont recettées avant la fin du week-end, alors l'utilisateur peut cocher « Android validé »
     sur sa liste.
 
-## 6. Prochaine étape
-L'utilisateur choisit les épics retenues et tranche la question de A03. Les lignes retenues partent ensuite au PO (`po-scrum-master`),
-qui crée les épics, les US, leurs règles de gestion et leurs zones, puis lance l'attribution.
+### 6. Prochaine étape
+L'utilisateur choisit les épics qu'il veut garder et tranche la question de A03. S'il le souhaite, il les demande ensuite au PO.
+
+**Recommandations de l'agent sur les deux questions** (l'utilisateur décide) :
+- Épics à garder : les 10, ou au minimum A01 à A03.
+- Pour A03 : ne pas bloquer ce qui est déjà ouvert ; les étoiles débloquent seulement des contenus nouveaux.
+---
+
+## R02 — 2026-11-06 — Court terme : aujourd'hui et demain matin
+
+Mode Diagnostic et Priorisation. L'agent propose, l'utilisateur décide. État relevé le 2026-11-06 vers 15:25 UTC
+(`TACHES.md`, date du dernier commit de chaque branche, `tache utilisateur.md`).
+
+### 1. Diagnostic rapide
+- **Observé** : 3 tickets urgents n'avancent plus.
+  - WFS-109 (feux de freinage) : dernier commit le 2026-11-05 à 20:36, soit environ 19 h.
+  - WFS-134 (voitures en cubes, « priorité absolue ») : dernier commit le 2026-11-05 à 22:44, soit environ 17 h.
+  - WFS-145 (CI de `main` rouge depuis WFS-94) : dernier commit le 2026-11-06 à 01:18, soit environ 14 h.
+- **Observé** : la CI de `main` est rouge (job `endurance`). Or la « fusion par confiance » demande à chaque développeur de suivre
+  la CI de `main` après sa fusion. Tant qu'elle est rouge, une nouvelle casse ne se voit pas.
+- **Observé** : WFS-109 (« feux de freinage », halos des clignotants) et WFS-182 (« halos de frein qui flottent ») touchent tous
+  deux les feux arrière. WFS-171 vient d'y être fusionné et WFS-158 change les dimensions des voitures. *Supposé* : risque de conflit
+  ou de travail en double sur le bloc des feux.
+- **Observé** : 10 tickets sont en cours en même temps, dont 4 sur le décor des cartes (E2), par exceptions du PO.
+- **Observé** : 3 questions te sont posées et attendent ta réponse dans `tache utilisateur.md`.
+  - La densité de ton téléphone, demandée par le QA pour simuler ton écran exactement.
+  - Veux-tu un réglage pour masquer la mini-carte ?
+  - Veux-tu une mini-carte plus zoomée en Poursuite ?
+
+### 2. Tableau
+
+| ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
+|---|---|---|---|---|---|---|---|---|
+| C01 | Technique / qualité | *Observé* : CI de `main` rouge depuis WFS-94 ; WFS-145 arrêté depuis environ 14 h | Remettre WFS-145 en route tout de suite et viser une CI verte avant toute fusion non urgente | Une casse nouvelle redevient visible tout de suite, avant d'arriver sur ton téléphone | Élevé | Moyen | P1 | Une pause des fusions est une règle de travail : à toi de décider si tu la veux, et pour combien de temps |
+| C02 | Technique / suivi | *Observé* : WFS-109 et WFS-134 sans commit depuis 17 à 19 h | Demander au PO de reprendre ou de réattribuer ces deux tickets, WFS-134 en premier (« priorité absolue ») | Les voitures en cubes et les feux de freinage avancent enfin | Élevé | Faible | P1 | WFS-134 exige le verdict du QA avant fusion (RG-14 du ticket) ; il faut donc prévoir le QA |
+| C03 | Organisation | *Observé* : WFS-109 et WFS-182 touchent les mêmes feux arrière, juste après WFS-171 et à côté de WFS-158 | Demander au PO si WFS-109 et WFS-182 doivent être réunis, ou faits l'un après l'autre | Moins de risque qu'une correction efface l'autre | Moyen | Faible | P1 | À vérifier par le PO dans les règles des deux tickets ; *supposé*, non confirmé |
+| C04 | UX / qualité | *Observé* : le QA attend la densité de ton téléphone | Répondre avec `adb shell wm density` (ou Réglages, puis Affichage) | Le banc d'essai montre exactement ton écran : moins de surprises comme le garage cassé | Moyen | Faible | P1 | Rien à coder : la réponse se donne dans `tache utilisateur.md` |
+| C05 | Retours joueur | *Observé* : tu es le seul joueur testeur, et beaucoup de tickets fusionnés n'ont pas été vérifiés | Un essai de 15 minutes sur l'APK de `main`, avec la liste du § 3, et tes remarques notées dans `tache utilisateur.md` | Les vrais défauts sont trouvés vite, classés par ton ressenti | Élevé | Faible | P1 | Faire l'essai après le vert de la CI (C01), sinon l'APK peut être instable |
+| C06 | UX / HUD | *Observé* : le réglage « masquer la mini-carte » et le zoom en Poursuite attendent ta réponse (WFS-173) | Les décider après ton essai (C05) : par exemple « masquer : oui / non » et « zoom Poursuite : oui / non » | Le HUD convient à ta façon de jouer | Faible | Faible | P2 | Petits tickets si tu dis oui ; ne touchent aucun bouton |
+| C07 | Organisation | *Observé* : 10 tickets en cours, 4 sur le décor (E2) | Ne pas ouvrir de nouvelle épic (R01) avant que C01 et C02 soient réglés ; démarrer R01 par A01 « Android validé » | Moins de conflits, plus de tickets finis | Moyen | Faible | P2 | Ralentit un peu les nouveautés du week-end |
+
+#### Regroupement
+- **À faire tout de suite, en quelques minutes pour toi** : C04, C06 (après l'essai), et les demandes au PO de C01, C02 et C03.
+- **Aujourd'hui** : C05, l'essai de 15 minutes.
+- **Avant le week-end** : C07, l'ordre de départ de R01.
+
+### 3. Liste d'essai de 15 minutes (C05), sur l'APK de `main`
+1. Lancement, chargement, menu : aucun texte coupé ni illisible.
+2. Garage : les 20 voitures défilent, aucune voiture en cubes, la fiche est lisible.
+3. Checkpoint de jour en Ville : commandes, HUD, mini-carte, fin, puis « Rejouer ».
+4. Course à 5 de nuit à la Corniche : feux de frein bien à leur place (WFS-171), aucun halo qui flotte.
+5. Poursuite en Campagne : police, sirène, mini-carte.
+6. Duel avec un ami, ou au moins l'écran Salon.
+7. Pause, puis le bouton Retour du téléphone, puis la sortie du jeu et le retour.
+8. Réglages : qualité Basse, puis une course. Les voitures doivent rester belles (WFS-134).
+9. Noter en une ligne chaque gêne, avec l'écran et le moment.
+
+### 4. Top 3
+1. **C01, CI verte** : sans elle, aucune fusion « par confiance » n'est vraiment contrôlée.
+2. **C02, reprendre WFS-134 et WFS-109** : ce sont tes demandes urgentes, et elles sont à l'arrêt.
+3. **C05, ton essai de 15 minutes** : c'est la seule vraie mesure du jeu dont dispose l'équipe.
+
+### 5. Ce que l'utilisateur décide (recommandation de l'agent entre parenthèses)
+- Faut-il mettre les fusions non urgentes en pause jusqu'au vert de la CI ? (Oui, seulement jusqu'au vert.)
+- Faut-il réunir WFS-109 et WFS-182 ? (Laisser le PO vérifier les règles des deux tickets avant de trancher.)
