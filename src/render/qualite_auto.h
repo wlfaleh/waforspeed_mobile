@@ -53,6 +53,12 @@ inline int niveauNettete(int q) {
     return q > HAUTE ? HAUTE : q;
 }
 inline float echelleScene(int q, float dynamique) { return echelleRendu(niveauNettete(q), dynamique); }
+// WFS-144 (RG-04, WFS-134 RG-03 / RG-04) : MSAA et anisotrope de la scène selon le niveau de netteté (q : qualité des coûts) ;
+// Basse : ×2 et ×4 ; Moyenne / Haute : ceux du GPU (msaaGpu ×4 ou ×1, anisoGpu ×8 au plus). x2 : le GPU accepte le MSAA ×2
+// (sinon ×4 gardé : lavapipe du banc). Netteté retenue (rétrogradation, chauffe) : ceux du niveau quitté.
+inline bool netteteBasse(int q) { return q == BASSE && niveauNettete(q) == BASSE; }
+inline int msaaScene(int q, int msaaGpu, bool x2) { return netteteBasse(q) && msaaGpu > 2 && x2 ? 2 : msaaGpu; }
+inline float anisoScene(int q, float anisoGpu) { return netteteBasse(q) && anisoGpu > 4.f ? 4.f : anisoGpu; }
 
 // WFS-134 (RG-01) : ligne « Rendu : Haute · 100 % · MSAA ×4 · 58 img/s · chauffe 0 » (ips < 0 : pas encore mesuré)
 std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauffe);

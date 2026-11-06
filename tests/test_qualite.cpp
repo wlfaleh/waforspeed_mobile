@@ -83,6 +83,15 @@ int main() {
     VERIFIE(a1.bloom && a1.ombres && !a8.bloom && a8.ombres && !a6.bloom && !a6.ombres && !aB.bloom && !aB.ombres, "allègement");
     std::printf("allègement : bloom coupé à 0,8, ombres à 0,6, résolution intacte : OK\n");
 
+    // WFS-144 (RG-04) : Basse à MSAA ×2 et anisotrope ×4 ; Moyenne / Haute inchangées ; netteté retenue ; GPU sans ×2 ou sans MSAA
+    oublierRetenus();
+    VERIFIE(msaaScene(BASSE, 4, true) == 2 && anisoScene(BASSE, 8) == 4.f, "Basse : MSAA ×2, aniso ×4");
+    VERIFIE(msaaScene(MOYENNE, 4, true) == 4 && msaaScene(HAUTE, 4, true) == 4 && anisoScene(MOYENNE, 8) == 8.f && anisoScene(HAUTE, 8) == 8.f, "Moyenne / Haute : ×4 / ×8");
+    VERIFIE(msaaScene(BASSE, 4, false) == 4 && msaaScene(BASSE, 1, true) == 1 && anisoScene(BASSE, 2) == 2.f, "GPU sans ×2, sans MSAA, aniso ×2");
+    retenuAuto = HAUTE; VERIFIE(msaaScene(BASSE, 4, true) == 4 && anisoScene(BASSE, 8) == 8.f, "Basse par rétrogradation : netteté de la Haute gardée");
+    oublierRetenus();
+    std::printf("netteté de la Basse (WFS-144) : MSAA ×2, aniso ×4, retenus respectés : OK\n");
+
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("qualité : tout est OK\n");
     return 0;

@@ -11,6 +11,8 @@
 #include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
+#include "../../game/direction.h"   // WFS-146 (RG-05) : réglages Direction et Gyroscope, dessin2d
 #include "chargement.h"
 #include "reglages.h"
 #include "terrain.h"
@@ -94,7 +96,11 @@ public:
         if (g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
         if (t0_ < 0) t0_ = g.time;
         const float W = g.uiWidth, H = g.uiHeight, t = (float)(g.time - t0_);
-        const MiseEnPage m = miseEnPage(W, H);
+        // WFS-147 (RG-01, RG-02, RG-06, ANO-17, ANO-19) : sur téléphone couché, mise en page propre au menu, dessinée en dp
+        // (k = pixels par dp), d'après celle de WFS-102 (6d3ed61) : logo de 56 dp, choix de 52 dp (titre 21 dp,
+        // description 14 dp), pied 40 dp, aide en 14 dp : 380 dp de haut en tout ; écran de bureau : inchangé
+        const bool cp = ui::petitEcran(W, H);
+        const MiseEnPage m = cp ? miseEnPagePetit(W, H, 56, 10) : miseEnPage(W, H);
         const float k = m.k, gap = m.gap;
         // .screen : fondu de 300 ms (screen-in) ; voile linear-gradient(100deg, .94 → .78 à 42 % → .12) ;
         // WFS-96 (RG-03) : dégradé par sommets (2 quadrilatères), plus de bandes visibles
@@ -107,9 +113,10 @@ public:
             r.uiQuad(q);
         }
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
-        const float itemH = 70 * k, listeH = 3 * itemH + 2 * 6 * k, piedH = 44 * k, aideH = 2 * 22 * k;
+        const float itemH = (cp ? 52 : 70) * k, ecart = (cp ? 4 : 6) * k, listeH = 3 * itemH + 2 * ecart, piedH = (cp ? 40 : 44) * k;
+        const float aideP = (cp ? 14 : 16) * k, aideL = (cp ? 18 : 22) * k, aideH = 2 * aideL;
         const float total = m.hauteurBloc + gap + listeH + gap + piedH + gap + aideH;
-        float y = std::max(24 * k, (H - total) / 2);
+        float y = std::max((cp ? 8 : 24) * k, (H - total) / 2);
         // slide-in : 320 ms, de −36 px à 0, 40 ms de décalage entre les lignes
         auto glisse = [&](int n, float& dx) { const float e = ease((t - 0.04f * n) / 0.32f); dx = -36 * k * (1 - e); return e * op; };
         float dx;
@@ -117,51 +124,55 @@ public:
         MiseEnPage ml = m; ml.x += dx;
         y = dessinerBlocLogo(r, ml, y, a);
         // ---------- .menu-list : 3 choix (.mitem) ----------
-        const float lw = std::min(460 * k, m.largeur);
+        const float lw = std::min((cp ? 312 : 460) * k, m.largeur);   // petit écran : la liste s'arrête avant la voiture
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
             const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
-            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + 6 * k);   // translateX(10px)
+            const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + ecart);   // translateX(10px)
             g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * k, true};   // zone fixe : l'état pressé ne la déplace pas
             manette::focus(g_zones[i]);   // WFS-22
             if (grise) a *= 0.45f;
             // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
             const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};
-            const int B = 10;
-            for (int b = 0; b < B; b++) {
-                const float tb = (b + 0.5f) / B;
-                r.uiRect(x, yi + itemH * b / B, lw - 14 * k * tb, itemH / B + 0.5f, fond);
+            {   // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 10 bandes translucides qui se chevauchaient)
+                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * k, yi + itemH}, {x, yi + itemH}};
+                dessin2d::polygone(r, p, 4, dessin2d::uni(fond));
             }
             const bool solo = i == SOLO;   // #startBtn : barre et titre orange
             if (presse) {   // barre gauche cyan --accent-2 avec halo (0 0 12px rgba(0,229,255,.7))
                 for (int h = 3; h >= 1; h--) r.uiRect(x - 4 * k * h, yi - 2 * k * h, 3 * k + 8 * k * h, itemH + 4 * k * h, hex(ACCENT2, 0.12f * a));
                 r.uiRect(x, yi, 3 * k, itemH, hex(ACCENT2, a));
             } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
-            ui::text(r, x + 22 * k, yi + 12 * k, 26 * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
-            ui::text(r, x + 22 * k, yi + 44 * k, 13 * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
+            ui::text(r, x + 22 * k, yi + (cp ? 7 : 12) * k, (cp ? 21 : 26) * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
+            ui::text(r, x + 22 * k, yi + (cp ? 31 : 44) * k, (cp ? 14 : 13) * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------
         a = glisse(4, dx);
         {
             const float x = m.x + dx;
-            ui::text(r, x, y, 11 * k, ui::majuscules("Record"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
-            ui::text(r, x, y + 16 * k, 22 * k, g_best > 0 ? ui::nombre(g_best) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
-            const float x2 = x + std::max(ui::width(22 * k, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(11 * k, "RECORD", 0.16f)) + 28 * k;
+            const float lp = (cp ? 12 : 11) * k, vp = (cp ? 20 : 22) * k, dv = (cp ? 15 : 16) * k;   // libellé, valeur
+            ui::text(r, x, y, lp, ui::majuscules("Record"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x, y + dv, vp, g_best > 0 ? ui::nombre(g_best) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
+            const float x2 = x + std::max(ui::width(vp, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(lp, "RECORD", 0.16f)) + 28 * k;
             const std::string nom = ui::majuscules(g.car ? g.car->model : "—");
-            ui::text(r, x2, y, 11 * k, ui::majuscules("Ta voiture"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
+            ui::text(r, x2, y, lp, ui::majuscules("Ta voiture"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
             const bool presse = presse_ == TA_VOITURE;   // #myCarBtn : appui = ouvre le garage (WFS-96)
-            ui::text(r, x2, y + 16 * k, 22 * k, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false);
-            const float nw = std::max(ui::width(22 * k, nom), ui::width(11 * k, "TA VOITURE", 0.16f));
-            r.uiRect(x2, y + 40 * k, ui::width(22 * k, nom), 2 * k, hex(ACCENT2, a));   // border-bottom cyan de .mycar strong
+            ui::text(r, x2, y + dv, vp, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false);
+            const float nw = std::max(ui::width(vp, nom), ui::width(lp, "TA VOITURE", 0.16f));
+            r.uiRect(x2, y + dv + vp + 2 * k, ui::width(vp, nom), 2 * k, hex(ACCENT2, a));   // border-bottom cyan de .mycar strong
             g_zones[TA_VOITURE] = {x2 - 6 * k, y - 6 * k, nw + 12 * k, piedH + 6 * k, 0, true};
             manette::focus(g_zones[TA_VOITURE]);
         }
         y += piedH + gap;
         // ---------- .intro.only-touch : aide des commandes tactiles ----------
         a = glisse(5, dx);
-        ui::text(r, m.x + dx, y, 16 * k, "Flèches à gauche : volant.", hex(INTRO, a), ui::GAUCHE, 0, false);
-        ui::text(r, m.x + dx, y + 22 * k, 16 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
+        // WFS-146 (RG-05, ANO-32) : la 1re ligne suit les réglages Direction et Gyroscope (taille, couleur, positions inchangées)
+        const bool fleches = reglagesRessenti().direction == ModeDirection::Fleches, gyro = gyroscopeActif();   // capteur présent et réglage non coupé
+        const char* volant = fleches ? (gyro ? "Flèches à gauche ou inclinaison : volant." : "Flèches à gauche : volant.")
+                                     : (gyro ? "Glisse à gauche ou incline le téléphone pour tourner." : "Glisse à gauche pour tourner.");
+        ui::text(r, m.x + dx, y, aideP, volant, hex(INTRO, a), ui::GAUCHE, 0, false);
+        ui::text(r, m.x + dx, y + aideL, aideP, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
     }
 private:
     double t0_ = -1;

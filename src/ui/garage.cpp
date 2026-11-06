@@ -334,10 +334,14 @@ public:
             const float np = std::min(84 * k, std::max(40 * k, W * 0.07f * 0.8f));
             ui::text(r, x, y, np, ui::majuscules(car.model), hex(TEXTE, op), ui::GAUCHE, 0, true, true);
             y += np * 1.0f + 8 * k;
+            // WFS-147 (ANO-47) : libellé de 13 px au moins (règle du HUD : 11 px du web portés à 13 px), calé au pixel entier
+            // (en 720p, le « I » de « HYBRIDE » tombait entre deux pixels et le « D » perdait son trait) ; dès 13 px
+            // (2400x1080 : 16,5 px), taille et place inchangées
             const std::string body = ui::majuscules(fi.body);
-            const float cw = ui::width(11 * k, body, 0.16f) + 20 * k;
+            const float cp = std::max(11 * k, 13.f), cy = cp > 11 * k ? (20 * k - cp) / 2 : 4 * k;
+            const float cw = ui::width(cp, body, 0.16f) + 20 * k;
             biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(ACCENT2, op));   // .chip : fond cyan, skewX(-10deg)
-            ui::text(r, x + 10 * k, y + 4 * k, 11 * k, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
+            ui::text(r, std::round(x + 10 * k), std::round(y + cy), cp, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
             ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, fi.tag, hex(TAG, op), ui::GAUCHE, 0, true);
             y += 20 * k + 14 * k;
             float px = x;

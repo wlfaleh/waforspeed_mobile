@@ -56,6 +56,9 @@ bool load(Renderer& r) {
     for (int c = 32; c < 127; c++) cps.push_back(c);
     for (int c = 160; c < 256; c++) cps.push_back(c);
     for (int c : {0x152, 0x153, 0x2019, 0x2026, 0x20AC, 0x202F}) cps.push_back(c);
+    // WFS-146 (RG-03, ANO-16) : tirets, guillemets anglais, puce, flèches, ≈ et coche, ajoutés APRÈS les autres pour que
+    // les glyphes déjà présents gardent leur place dans l'atlas (pixels des autres textes inchangés)
+    for (int c : {0x2014, 0x2013, 0x2018, 0x201C, 0x201D, 0x2022, 0x2192, 0x2190, 0x2248, 0x2713}) cps.push_back(c);
     std::vector<uint8_t> px((size_t)ATLAS * ATLAS, 0);
     int x = 1, y = 1, rowH = 0;
     for (int cp : cps) {
@@ -101,7 +104,11 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
     float pen = 0; int prev = 0;
     for (int cp : cps) {
         auto it = F.glyphs.find(cp);
-        if (it == F.glyphs.end()) it = F.glyphs.find('?');
+        if (it == F.glyphs.end()) {   // WFS-146 (RG-03, ANO-16) : caractère absent → espace (jamais « ? »), signalé une fois
+            static std::unordered_map<int, bool> signales;
+            if (r && !signales[cp]) { signales[cp] = true; WFS_WARN("Police : caractère U+%04X absent (remplacé par une espace)", cp); }
+            it = F.glyphs.find(' ');
+        }
         if (it == F.glyphs.end()) continue;
         const Glyph& g = it->second;
         if (prev) pen += stbtt_GetCodepointKernAdvance(&F.info, prev, cp) * F.scale * s;
