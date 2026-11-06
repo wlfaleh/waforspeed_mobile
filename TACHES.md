@@ -317,6 +317,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-192 | Voitures sans marque (2/4) : logos effacés ou remplacés sur les 20 modèles | E10 | ⏳ En attente (après WFS-191 et WFS-158, même épic) |  | WFS-191, WFS-158 | `feature/waforspeed-192` |  |  |
 | P3 Moyenne | WFS-193 | Voitures sans marque (3/4) : petites retouches de forme (calandre, feux, jantes), dimensions inchangées | E10 | ⏳ En attente (après WFS-192) |  | WFS-192 | `feature/waforspeed-193` |  |  |
 | P4 (conditionnelle) | WFS-194 | Voitures sans marque (4/4) : remplacer les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) | E10 | ⏳ En attente (décision de l'utilisateur : vendre le jeu, pubs ou achats) |  | décision de l'utilisateur, WFS-158 | `feature/waforspeed-194` |  |  |
+| P2 Haute | WFS-195 | [RÉALISME] Vue cockpit réaliste : volant en cuir et cockpit digital propres à chaque modèle (20 voitures), écran central avec la carte du circuit, vrais essuie-glaces (pluie) | E10 (+ E3 `camera_vue.*`) | ⏳ En attente (E10 occupée par WFS-158 ; découpage en 3 tickets d'une journée à l'attribution) |  | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-195` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -1016,6 +1017,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-194 — Voitures sans marque (4/4) : remplacer les 5 modèles non commerciaux** · E10 · P4 (conditionnelle) · ⏳ En attente (décision de l'utilisateur) (règles : `regles-de-gestion/WFS-194.md`)
 - [ ] 0 modèle NC ou ND dans `cars.h`
+
+**WFS-195 — Vue cockpit réaliste par modèle** · E10 (+ E3 `src/game/camera_vue.*`) · P2 Haute · ⏳ En attente (règles : `regles-de-gestion/WFS-195.md`, demande de l'utilisateur 2026-11-06). Graphisme réaliste obligatoire pour chaque partie.
+- [ ] `cockpit-<modele>-{jour,nuit,carte,pluie,braquage}` pour chaque voiture du lot : volant en cuir, combiné digital et écran central du vrai modèle ; carte du circuit avec la flèche du joueur ; essuie-glaces en marche sous la pluie
+- [ ] mesures de fidélité ≥ 99 %, coût mesuré en Basse, tests CPU et parcours complet verts
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
