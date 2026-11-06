@@ -4902,3 +4902,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Preuves en local** : 35 tests CPU OK, parcours complet 0 écart, banc `ville` (19 captures regardées), 233 appels de dessin au plus pour la Ville.
 - **Limites** : plaques de rue sans texte ; APK non construit en local. Je suis maintenant la CI de `main`.
 
+
+### 2026-11-06 18:22:47 — WFS-150 : CI après la fusion (Claude (session trafic))
+- **CI de main sur la fusion** (run 42262489656, 7a6c136) : toujours en file d'attente. Les lanceurs de GitHub sont saturés : 5 runs de main attendent depuis 16:32 UTC.
+- **Run 42262475306** : lancé tout seul par l'envoi de la branche avant la fusion, sur 6bc93f7, dont l'arbre est identique à 7a6c136 (même tree f645cf8). Tous les jobs sont verts : android, les 13 bancs (realisme, vitrines, texte compris) et publication-apk. publication-captures est encore en attente, endurance a été sauté.
+- WFS-150 reste 🟣 dans `TACHES.md` : il passe à ✅ avec le numéro du run vert de main. Rien à corriger à ce stade.
