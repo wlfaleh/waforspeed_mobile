@@ -11,8 +11,11 @@
 # normales renormalisées à chaque niveau) → compression de chaque niveau par les encodeurs libres (licence Apache-2.0,
 # téléchargés par encodeurs.sh) : astcenc 5.2.0 (Arm) pour ASTC, etc2comp (Google) pour ETC2 → contrôle de précision
 # (PSNR de chaque niveau décompressé contre le niveau d'origine) → écriture KTX2.
-# Refus (code de sortie 1, aucun fichier écrit pour la texture) sous 38 dB (couleur, ORM) ou 35 dB (normales) ; en ASTC,
-# un bloc trop grossier (6x6) est d'abord remplacé par un bloc plus fin (4x4) avant de refuser.
+# Refus sous 38 dB (couleur, ORM) ou 35 dB (normales). ASTC (format principal) : un bloc trop grossier (6x6) est d'abord
+# remplacé par un bloc plus fin (4x4) ; ASTC 4x4 refusé → texture refusée (code de sortie 1, aucun fichier écrit).
+# ETC2 (repli des GPU sans ASTC) n'a pas de bloc plus fin : refusé, il n'est pas écrit et ces GPU prennent la variante
+# RGBA8 (non compressée, aux pertes ASTC près) : jamais de texture sous le seuil sur l'écran. ETC2 module les trois canaux
+# ensemble dans un bloc 4×4 : normales et ORM (canaux indépendants) y passent rarement le seuil.
 # La variante RGBA8 (repli du PC sans ASTC ni ETC2) est l'ASTC DÉCOMPRESSÉ : le PC montre la même image que le téléphone.
 import argparse, math, os, pathlib, shutil, subprocess, sys, tempfile
 import numpy as np
@@ -193,13 +196,13 @@ def main():
         ok = min(p0, pc) >= seuil
         lignes.append((nom, a.type, 'etc2 rgba', p0, pc, ok, sum(len(d) for d, _ in res)))
         if ok: sorties['etc2'] = (ktx2.vk_format('etc2', srgb), [d for d, _ in res])
-        else: refus.append('etc2')
         if not refus:
             pathlib.Path(a.sortie).parent.mkdir(parents=True, exist_ok=True)
             for v, (f, niv) in sorties.items(): ktx2.ecrire(f'{a.sortie}.{v}.ktx2', f, w, h, niv)
     texte = ''.join(f'{n} | {t} | {v} | {w}x{h}, {len(refs)} niveaux | {o / 1024:.1f} Ko | niveau 0 {fmt_db(p0)} | chaîne {fmt_db(pc)} | '
                     f'seuil {seuil:.0f} dB | {"conforme" if ok else "REFUSÉ"}\n' for (n, t, v, p0, pc, ok, o) in lignes)
-    if refus: texte += f'{nom} | REFUSÉE : {", ".join(refus)} sous {seuil:.0f} dB, aucun fichier écrit\n'
+    if refus: texte += f'{nom} | REFUSÉE : ASTC 4x4 sous {seuil:.0f} dB, aucun fichier écrit\n'
+    elif 'etc2' not in sorties: texte += f'{nom} | ETC2 sous {seuil:.0f} dB : non écrit, repli RGBA8 sur les GPU sans ASTC\n'
     sys.stdout.write(texte)
     if a.rapport:
         with open(a.rapport, 'a', encoding='utf-8') as f: f.write(texte)

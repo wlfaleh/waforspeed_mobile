@@ -16,7 +16,8 @@ python3 tools/textures/convertir.py orm assets/textures/<dossier>/<nom>-orm ao.p
   `<nom>.astc.ktx2` (ASTC 6x6, ou 4x4 si 6x6 est trop imprécis), `<nom>.etc2.ktx2` (ETC2 RGBA, repli),
   `<nom>.rgba8.ktx2` (l'ASTC décompressé : repli du PC, même image que le téléphone).
 - **Précision (RG-03)** : PSNR de chaque niveau décompressé contre l'original, niveau 0 et chaîne entière ;
-  refus sous **38 dB** (couleur, ORM) ou **35 dB** (normales). Les décodeurs : astcenc (ASTC), `etc2.py` (ETC2, d'après la
+  refus sous **38 dB** (couleur, ORM) ou **35 dB** (normales) : ASTC passe en 4x4, puis la texture est refusée ; ETC2 refusé
+  n'est pas écrit (repli RGBA8 sur les GPU sans ASTC). Les décodeurs : astcenc (ASTC), `etc2.py` (ETC2, d'après la
   Khronos Data Format Specification 1.3).
 - **Normales** : convention du moteur « vert = +v » (bitangente de `src/render/mesh.h`) ; une source « OpenGL » (vert vers
   le haut : ambientCG `NormalGL`, Poly Haven `nor_gl`) est inversée par défaut, une source « DirectX » prend `--vert-bas`.
