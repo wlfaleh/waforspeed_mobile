@@ -3922,3 +3922,12 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 04:19:29 — WFS-146 : CI de main verte après la fusion (Claude (session trafic))
 - Run 42158470097 sur c60d75b : android, 12 bancs, endurance, publications APK et captures **verts**. Rien à corriger.
+
+### 2026-11-06 05:11:07 — WFS-147 : PR #126 ouverte, recette `qa-lead` demandée avant fusion (Claude (session trafic))
+- **Fait** : mise en page « petit écran » (≤ 520 dp de haut) écran par écran, un commit par écran dans l'ordre de RG-01 : réglages (3e6f4a5), salon (8b05d29), terrain (be561e6, 26ebfbf), chargement (1ae4c87), menu (c978329, liste ajustée ensuite). **Aucune échelle commune** : `src/ui/petit_ecran.h` ne fait que mesurer l'écran en dp (densité WFS-108 ; banc : 2,625 si W ≥ 2000, sinon 1) ; chaque écran choisit sa mise en page. Garage : seulement l'étiquette du type calée au pixel entier (ANO-47, 60f071c). **HUD non touché**.
+- **Tailles (RG-02, 2400x1080 à 420 dpi)** : texte courant ≥ 14 dp (descriptions, aide, lien, choix), libellés en capitales 12 dp, boutons 48 dp, choix des réglages 42 dp (zone de toucher 48 dp), touches du code 44 dp, distances 48 dp.
+- **Accroche hors zone (annoncée)** : `src/platform/android_main.cpp`, 1 ligne : `densiteAndroid(...)` appelé aussi avant le premier écran de chargement (sinon densité inconnue à la 1re image).
+- **Captures 2400 avant (main 7d8de65) / après (branche), banc local** : `reglages-menu`, `reglages-pause`, `manette-reglages`, `menu-duel` (bouton Réglages 44 dp), `salon-accueil`, `salon-code-saisi`, `salon-hote`, `salon-pret`, `salon-amis`, `terrain-0`, `terrain-1`, `parcours-terrain`, `chargement-0/1/2`, `chargement-erreur`, `menu-0`, `menu-appui`, `pause-0`. `garage-*` 2400 : **identiques au pixel** à main (rien sur la voiture). CI : Release `apercu-waforspeed-147`.
+- **1280x720** : menu, pause, réglages identiques au pixel ; terrain changé (ombre `.map-shade` du web, ANO-18 ; ciel, sol, route et nuages d'un seul tenant, ANO-42) ; garage : étiquette du type seule (ANO-47).
+- **Vérification** : 27 tests CPU (dont `test_petit_ecran`), parcours complet (WFS_BANC=parcours) 0 écart, parcours menu1 2400 0 écart, parcours duel 0 écart.
+- **Limites** : APK non construit en local (CI). Le panneau « Choisis ton mode » (course5, zone E3) n'a pas de mise en page petit écran : hors zone. En 1280x720, les petits libellés du terrain (11 px) ne changent pas (mise en page de bureau gardée).
