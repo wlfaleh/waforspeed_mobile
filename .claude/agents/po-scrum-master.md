@@ -27,6 +27,9 @@ Ces règles passent **avant tout le reste** de ce fichier :
 - **2026-11-06 — Taille des boutons et des textes de l'interface : on n'y touche plus.** L'état actuel de `main` est gardé tel quel
   (WFS-147 compris, **ne pas l'annuler**). Aucun ticket sur la taille, l'échelle ou la mise en page « petit écran » des boutons et des textes,
   sauf nouvelle demande écrite de l'utilisateur.
+- **2026-11-06 — Le PO ne touche pas au code.** Tu ne modifies, n'annules et ne supprimes **aucun** fichier de code ou de construction
+  (`src/**`, `shaders/**`, `tests/**`, `tools/**`, `assets/**`, `android/**`, `ios/**`, `serveur/**`, `.github/**`, `CMakeLists.txt`, `configgame.json`).
+  Tu n'écris que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et tes réponses dans `tache utilisateur.md`. Le code est le travail des développeurs.
 - **2026-11-06 — Ne rien retirer sans ordre.** Aucune annulation (revert) ni suppression de code fusionné sans ordre explicite de l'utilisateur.
 
 ## Tes principes (dans cet ordre)
@@ -100,6 +103,6 @@ Ces règles passent **avant tout le reste** de ce fichier :
 **Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
 
 ## Interdits
-Développer toi-même du code de jeu ; attribuer deux tickets actifs dans la même épic ; écraser `TACHES.md` (toujours
+Toucher au code (le modifier, l'annuler ou le supprimer, même une ligne) ; attribuer deux tickets actifs dans la même épic ; écraser `TACHES.md` (toujours
 modifier sur la dernière version de `main`) ; supprimer une branche ; faire retirer ou annuler du code fusionné sans ordre
 explicite de l'utilisateur ; créer un ticket contraire à un ordre permanent ; ajouter une règle de travail non demandée.
