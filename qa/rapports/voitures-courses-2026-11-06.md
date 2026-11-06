@@ -148,7 +148,7 @@ seulement. C'est ce que montre `course5-course` : le pilote est 1er, et la 911 e
 
 ## Anomalies relevées
 
-| ANO-? | Gravité | Preuve | Ce qui ne va pas |
+| ANO | Gravité | Preuve | Ce qui ne va pas |
 |---|---|---|---|
 | ANO-97 | Mineure | banc `mesure` (tableau ci-dessus) ; `cars.h` l. 72 | 0-100 du jeu = 0,74 × fiche du garage pour les 20 voitures (Golf 4,6 s pour 6,2 ; Compass 7,4 pour 9,5 ; SF90 1,6 pour 2,3) ; vitesse max à 94-97 % de la fiche |
 | ANO-98 | Mineure | banc `mesure` ; `player.cpp` (freinage `Phys::brake` seul) | freinage de 100 à 0 en 28 m pour les 20 voitures : la masse (de 1 035 à 2 330 kg) et l'adhérence ne comptent pas |
