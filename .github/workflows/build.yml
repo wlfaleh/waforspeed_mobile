@@ -55,6 +55,7 @@ jobs:
           mkdir -p captures
           case "${{ matrix.groupe }}" in
             partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit|realisme)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09 ; realisme : WFS-148
+              if [ "${{ matrix.groupe }}" = realisme ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi   # WFS-149 : KTX2 d'essai, rapport PSNR
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/
               # WFS-136 (accroche) : tracé 2 forcé sur les 4 cartes (rond-point, feu rouge, épingle, autoroute) ; un écart = rouge
               if [ "${{ matrix.groupe }}" = vitrines ]; then mkdir -p trace && WFS_BANC=trace ./build/wfs_bench trace assets/ && cp trace/trace-*.png captures/; fi ;;
