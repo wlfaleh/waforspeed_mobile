@@ -66,6 +66,7 @@ struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
     std::vector<ModelPart> partsBasse; // WFS-134 (RG-11) : 4 pièces au plus (peinture, feux, vitres, reste), qualité Basse au loin
+    int lotReste = -1;                  // WFS-182 (RG-07) : indice du lot « reste » dans partsBasse (police en Basse : couleur de livrée)
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;

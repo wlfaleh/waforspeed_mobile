@@ -338,6 +338,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             const int32_t mats[4] = {matPeinture, matFeu >= 0 ? matFeu : sombre, matVitre >= 0 ? matVitre : sombre, sombre};
             for (int c : {0, 3, 1, 2}) {
                 if (cat[c].empty()) continue;
+                if (c == 3) out.lotReste = (int)out.partsBasse.size();   // WFS-182 (RG-07)
                 out.partsBasse.push_back({(uint32_t)idx.size(), (uint32_t)cat[c].size(), 0, (uint32_t)mats[c], -1, (int8_t)(c == 1 && matFeu >= 0 && !(raw[matFeu].flags & MAT_TAIL) ? 1 : 0)});
                 idx.insert(idx.end(), cat[c].begin(), cat[c].end());
             }

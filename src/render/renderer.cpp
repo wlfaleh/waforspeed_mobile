@@ -1168,6 +1168,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         p.pc.model = anim && part.roue >= 0 ? wr[part.roue] : world;
         p.pc.color = mat.color;
         if (paint && (mat.flags & MAT_PAINT)) p.pc.color = {paint->x, paint->y, paint->z, 1};
+        // WFS-182 (RG-07, ANO-87) : police en Basse (lots) : le lot « reste » prend la couleur de la livrée, pas le gris sombre
+        if (lots && paint && &parts == &m.partsBasse && (int)pi == m.lotReste) p.pc.color = {paint->x, paint->y, paint->z, 1};
         p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
         p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, tramage != 0 ? tramage : mat.detail};   // w : finesse (WFS-42) ; WFS-134 : tramage (< 0)
         // WFS-134 (RG-11) : Basse : au-delà de 15 m, pièces très fines (< 4 mm : logos, grilles, fils) non dessinées
