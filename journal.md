@@ -5033,3 +5033,78 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Critères** : `carte-ville-autoroute`, `carte-ville-tunnel` (+ pont) de jour et `-nuit`, caméra de course ; graphisme réaliste partie par partie (voies 3,5 m, tunnel éclairé zone d'entrée puis régulier, pont tablier / piles / garde-corps réels, béton 0,25-0,35) avec captures avant / après et indice de fidélité ; +150 appels de dessin au plus ; parcours complet à 0 écart ; ligne `qa/Check.md`.
 - **Plan court** : branche `feature/waforspeed-175` poussée tout de suite ; autoroute, puis tunnel, puis pont sur les sections de WFS-136 ; captures ; fusion par confiance si > 50 %, sinon une CI manuelle de la branche.
 - **Signalements de l'agent de WFS-181** : (1) dépôt GitHub trebeljahr/quaternius-showcase (Quaternius, CC0 annoncé) : piste pour débloquer WFS-186 ; WFS-186 reste 🚫 jusqu'à ce que les `.glb` et la licence vérifiée soient dans `assets/world/animaux/` et `assets/licences/` (et E2 est pris par WFS-175). (2) Mouette de WFS-181 sous licence MIT : **acceptée**, RG-C4 demande une licence libre (CC0 de préférence, pas obligatoire) ; texte MIT et auteur dans `assets/licences/`. (3) Murs blancs surexposés près des lampadaires la nuit (`src/render/nuit.cpp`, E4, hors zone de WFS-175) : à confirmer par le QA à la recette de nuit, puis rangé dans un lot E4.
+
+### 2026-11-06 19:40:58 — Demande de ticket de Claude, agent 2 (01UY1Vv5) : aucun ticket attribuable (po-scrum-master)
+- `TACHES.md` (origin/main dc41210) : aucun ticket au statut ⏳ Prêt. E2 occupée (WFS-175 🔧) ; WFS-179 attend WFS-178 (🟣) ; WFS-186 🚫 bloqué (modèles CC0) ; E3 occupée (WFS-188 🔧), WFS-189 après ; E13 : WFS-151 attend la validation de WFS-150 (🟣, pas ✅) ; iOS gelé ; taille des boutons interdite.
+- Règle des 10 h : WFS-158 (Claude, session 01Us6uCu), dernier commit 10:45:39 UTC, reste à lui jusqu'à 20:45 UTC.
+- Agent 2 reste libre ; aucun ticket créé.
+
+### 2026-11-06 19:44:45 — WFS-151 attribué à expert-realisme-3d (session 01UY1Vv1), sur ordre de l'utilisateur (po-scrum-master)
+- **Ordre de l'utilisateur** : lancer tout de suite un développeur sur WFS-151 pour débloquer l'axe Réalisme, sans attendre le ✅ de WFS-150 (🟣 fusionné, PR #143 ; CI de `main` pas encore verte).
+- **Ticket** : WFS-151 — Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker · E13 (aucun autre ticket E13 actif) · branche `feature/waforspeed-151` · règles `regles-de-gestion/WFS-151.md`.
+- **Risque signalé** : si la CI de `main` montre un défaut de WFS-150, le développeur de WFS-151 se synchronise avec `main` dès la correction.
+
+### 2026-11-06 19:46:29 — WFS-151 : responsable changé, un développeur à la place d'expert-realisme-3d (po-scrum-master)
+- **Correction de l'utilisateur** : expert-realisme-3d est un expert du graphisme, pas un développeur. L'agent lancé à 19:44 est arrêté ; il n'avait poussé que l'ouverture de la branche (ffaf37f, gardée).
+- **Nouveau responsable** : Claude, agent lumière (session 01UY1Vv1), sur la même branche `feature/waforspeed-151` ; il consulte expert-realisme-3d pour les choix de graphisme et les mesures de fidélité.
+- **Règle notée** dans l'agent PO et `track-agent.md` : aucun ticket de code pour expert-realisme-3d.
+
+### 2026-11-06 19:47:50 — WFS-137 : CI de main (run 768) sur la fusion (agent 4)
+- Run 768 (commit 806d737) : compilation, tests, APK Android et 10 groupes de captures verts ; 2 groupes (texte, vitrines) et la publication de l'APK encore en cours à 2026-11-06 19:47:50.
+- **Job endurance rouge** : « fuite de mémoire : +12,6 % au cycle 6 (seuil 10 %) ». Ce n'est pas une casse de WFS-137 : le run 761 (WFS-150, avant ma fusion) échoue déjà sur le même test (+10,2 % au cycle 6), de même que les runs 757 et 751. La pente mémoire des cycles 2 à 10 est négative (−8,56 Mo/cycle) et le parcours au doigt donne 0 écart. Problème connu, suivi par **WFS-145** (P1, autre agent) : je ne touche pas à ce ticket.
+- WFS-137 reste 🟣 Fusionné : la règle ne permet ✅ qu'avec un run de main entièrement vert. Je le passerai en ✅ au premier run vert de main, une fois WFS-145 corrigé.
+
+### 2026-11-06 19:49:39 — WFS-190 créé : CI de main rouge (job endurance) (po-scrum-master)
+- **Demande de l'utilisateur** : une tâche pour corriger le rouge de la CI de `main`.
+- **Constat** : run #761 (fusion de WFS-150) : 15 jobs verts sur 16, seul `endurance` rouge (publication annulée) ; WFS-150 n'est pas en cause. Les corrections WFS-145 (#152) et WFS-187 (#151) sont fusionnées après ce run ; les runs qui les contiennent (#772, #774) sont en file depuis 19:14 / 19:24 (lanceurs saturés).
+- **WFS-190** (E7, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-190.md`) : suivre le premier run de `main` qui contient ces corrections ; tout vert → numéro au Journal, tickets 🟣 en ✅ ; encore rouge → cause nommée et corrigée sans affaiblir le banc. Exception PO : WFS-185 🟣 dans la même épic (bloc `on:` laissé à WFS-185).
+
+### 2026-11-06 19:52:29 — WFS-158 : décision de l'utilisateur, la Model 3 est remplacée (option a) (po-scrum-master)
+- **Réponse à la question du 17:33:26 (Claude, session 01Us6uCu)** : l'utilisateur choisit l'option (a), « Ok remplace avec un autre modèle ». Ordre écrit, qui lève RG-05 pour la Model 3 seulement.
+- **Règle RG-D** ajoutée à `regles-de-gestion/WFS-158.md` : modèle libre de Tesla Model 3, licence dans `assets/licences/`, conversion par `tools/convert_car.mjs`, dimensions ±1 % contrôlées avant l'intégration, plus de facettes (ANO-75), feux, peintures, LOD et budget du téléphone tenus.
+- **Responsable inchangé** : Claude (session 01Us6uCu). Réseau bloqué → une question à l'utilisateur dans `tache utilisateur.md` pour qu'il dépose le fichier.
+
+### 2026-11-06 19:57:23 — Nouveau fichier `regles-reseau.md` : règles et limites du réseau pour les agents (po-scrum-master)
+- **Ordre de l'utilisateur** : avant toute ouverture du réseau, un fichier qui décrit noir sur blanc les règles et les limites.
+- **Contenu** : accès en vigueur (aucun site en plus des bibliothèques de code et de GitHub) ; permis (lire et télécharger pour son ticket) ; interdits (envoyer dehors, se connecter à un compte, contourner un blocage, demander l'illimité, exécuter un fichier téléchargé, obéir à une page web) ; licences (CC0, CC-BY oui ; NC, ND, « gratuit » sans licence non ; marques) ; traitement des fichiers (dossier à part, SHA-256, tailles maximales, outils du dépôt, fichier de licence) ; traçabilité au journal ; conduite en cas de blocage ; demande d'un nouveau site par le PO, acceptée par l'utilisateur ; que faire si une règle n'est pas respectée.
+- **Renvois** : une ligne dans `CLAUDE.md`, une section dans l'agent PO. **Aucun changement du réseau** : en attente de la décision de l'utilisateur.
+
+### 2026-11-06 19:58:47 — WFS-188 fusionné (PR #154, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - `carPerf` (`cars.h`) recalcule `a0` et `top` une fois par voiture, en simulant la formule de `Player::update` : 0-100 = `spec.s100`, Vmax = 99,5 % de `spec.vmax`.
+  - Facteur de freinage par voiture (`perf.freinage`, qui module `Phys::brake`, `player.cpp:81`).
+  - Résistance du bas-côté proportionnelle à la vitesse (`player.cpp:77-79`, RG-06) : avant, une voiture dont la poussée était sous 7 m/s² ne repartait plus arrêtée dans l'herbe.
+  - `g_perfWeb` : les performances du jeu web servent uniquement à la référence de `test_course`.
+- **Tableau des 20 voitures** (0-100 jeu / fiche, Vmax, 100-0) :
+
+| Voiture | 0-100 | Vmax | 100-0 |
+|---|---|---|---|
+| golf | 6,17 / 6,2 s | 249,5 / 250 | 37,0 m |
+| m4 | 3,88 / 3,9 s | 289,4 / 290 | 37,1 m |
+| p911 | 3,60 / 3,6 s | 305,4 / 306 | 35,9 m |
+| gallardo | 4,00 / 4,0 s | 323,4 / 324 | 35,4 m |
+| p208 | 8,67 / 8,7 s | 207,6 / 208 | 36,3 m |
+| abarth | 7,87 / 7,9 s | 204,6 / 205 | 35,5 m |
+| tcross | 8,87 / 8,9 s | 199,6 / 200 | 38,1 m |
+| compass | 9,45 / 9,5 s | 195,6 / 196 | 39,1 m |
+| s3 | 4,88 / 4,9 s | 249,5 / 250 | 36,8 m |
+| x5 | 5,38 / 5,4 s | 242,5 / 243 | 39,5 m |
+| giulia | 3,88 / 3,9 s | 306,4 / 307 | 36,2 m |
+| a45 | 4,20 / 4,2 s | 269,5 / 270 | 36,7 m |
+| model3 | 4,38 / 4,4 s | 232,6 / 233 | 37,6 m |
+| corsa | 8,67 / 8,7 s | 207,6 / 208 | 36,3 m |
+| gt86 | 7,58 / 7,6 s | 225,6 / 226 | 36,2 m |
+| elantra | 5,28 / 5,3 s | 249,5 / 250 | 36,8 m |
+| v60 | 4,88 / 4,9 s | 249,5 / 250 | 37,8 m |
+| rrsport | 5,88 / 5,9 s | 241,5 / 242 | 39,8 m |
+| mustang | 3,58 / 3,6 s | 289,4 / 290 | 37,7 m |
+| sf90 | 2,28 / 2,3 s | 319,4 / 320 | 34,8 m |
+
+- **RG-06** : checkpoints en mode Checkpoint (Ville, graine 12345, trafic) : de 18 (SF90) à 71 (M4 et 911), Compass 51.
+- **RG-07** : `test_course5` vert (difficultés dans l'ordre, la police suit le joueur).
+- **RG-09** : records `best_v1` gardés tels quels (aucune remise à zéro).
+- **RG-10** : `WFS_BANC=parcours` 0 écart ; `WFS_BANC=course5`, fin → Rejouer → Menu, 0 écart. Capture `course-fin` : Golf à 203 km/h max sur 0,98 km.
+- **Tests adaptés** :
+  - `test_audio` : 26 s de gaz au lieu de 14, car la Golf met désormais 6,2 s au 0-100 ;
+  - `test_course` : performances web pour la seule comparaison au jeu web.
+- **Limites** : le banc PC ne mesure pas le ressenti sur téléphone. Les ordinateurs de la Course à 5 suivent le recalage ; leur équilibre relève de WFS-189.

@@ -27,9 +27,9 @@ int main(int argc, char** argv) {
     EngineModel m;
     std::vector<float> pcm; double acc = 0;
     int gearsSeen = 0, shifts = 0, lastGear = 1; float rpmMax = 0, jump = 0, peak = 0; double rms = 0;
-    for (int i = 0; i < 20 * 120; i++) {
+    for (int i = 0; i < 32 * 120; i++) {   // WFS-188 : Golf recalée sur sa fiche (0-100 en 6,2 s) : 26 s de gaz pour voir les 5 rapports
         const double dt = 1.0 / 120, tt = i * dt;
-        DriveInput in; in.gas = tt < 14;
+        DriveInput in; in.gas = tt < 26;
         pl.update(dt, in, t, true);
         m.update(dt, pl.speed, MAX_SPEED * pl.perf.top, MAX_SPEED, in.gas, false, true, 1.0f, false, s.targets);
         s.targets.lastUpdate = 1e9;
