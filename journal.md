@@ -4492,3 +4492,17 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Zone autorisée : `src/game/duel*`, `src/game/reseau_*`, `src/game/sauvegarde.*` (champ des derniers adversaires), `src/ui/ecrans/salon.*`, `tests/test_relais.cpp`, `serveur/` (si défaut à 4). Interdit : `poursuite*`, `course5_system.cpp`, `traffic_system.cpp`, `src/render/**`, `src/world/**`, iOS (gel). Ordre permanent du 2026-11-06 : aucune taille de bouton ne change ; les lignes « Derniers adversaires » reprennent le style et la taille déjà utilisés au salon.
 - Critères : captures `salon-derniers` (1280 et 2400, 3 noms, le plus récent en haut) et `duel-resultat-4` (classement 1 à 4) ; `test_relais` à 4 clients vert ; parcours RG-03 au Journal.
 - Règles : `regles-de-gestion/WFS-122.md`. Branche `feature/waforspeed-122`.
+
+### 2026-11-06 13:05:03 — WFS-122 fusionné (PR #139, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - RG-01 : `Sauvegarde::adversaires` (clé `adversaires=a|b|c`, 3 au plus, sans doublon, pseudos nettoyés), noté au départ de chaque manche (`duel_system.cpp`). Liste « Derniers adversaires » à l'accueil du salon ; toucher un nom crée un duel et ouvre « Inviter ».
+  - RG-02 : `Session::partants_` ; un partant qui quitte en course est classé « Parti » (`BoardRow::parti`) et la course des autres continue. Textes de l'écran de fin adaptés à 4 pilotes.
+  - RG-03 : banc `menu2`, parcours du duel avec 3 amis simulés : 4 pilotes au salon, course, classement 1 à 4, revanche à 4, retour, salon avec 3 noms, appui sur un nom → duel créé et « Inviter » ouvert. 0 écart en 1280 et en 2400.
+- **Tests** : `test_relais` : salon à 4 sur le relais local (graine, positions lissées à moins de 12 unités, classement identique chez les 4, revanche, départ en course), 5 fois sur 5 ; `test_sauvegarde` : champ `adversaires` ; 31 tests CPU OK.
+- **Accroches annoncées** :
+  - `.github/workflows/build.yml` : `duel-resultat-4` copié dans le groupe `menu2-2400` (1 ligne) ;
+  - `tests/test_sauvegarde.cpp` : bloc du champ `adversaires`, hors de la zone listée mais propre au champ de ce ticket.
+- **Limites** :
+  - les 3 noms d'une même manche sont rangés par identifiant ;
+  - la mention « Parti » n'a pas de capture, seulement le test ;
+  - pas de vrai téléphone : relais local seulement.
