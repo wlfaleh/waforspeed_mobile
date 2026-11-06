@@ -14,6 +14,7 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "reglages.h"
 #include "../../platform/manette.h"   // WFS-22
 #include "../../audio/sfx.h"          // WFS-96 : son du changement de carte
@@ -46,11 +47,8 @@ int g_index = 0;          // carte choisie (MAPS)
 bool g_nuitChoisie = true; // TOD du web : nuit par défaut
 
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+    // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
+    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
 // chevron < ou > (path « M15 4 7 12l8 8 » du web) en petits carrés
 void chevron(Renderer& r, float cx, float cy, float s, int dir, const vec4& c) {
@@ -233,7 +231,7 @@ public:
         g_carte = {cx0, cy0, cw, ch};
         const Carte& c = CARTES[g_index];
         const MapDef& m = mapById(c.id);
-        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(c.accent));   // carte choisie : contour à l'accent de la carte
+        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(ACCENT2));   // WFS-146 (RG-07, ANO-41) : carte choisie, contour cyan (sélection) pour toutes les cartes
         vignette(r, cx0, cy0, cw, ch, g_index, g_nuitChoisie);
         // .map-shade : dégradé sombre vers le bas, sous les textes
         const int NS = 20;
@@ -241,7 +239,7 @@ public:
         // .map-sel « Choisi »
         const std::string choisi = ui::majuscules("Choisi");
         const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
-        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(c.accent, 0.92f));
+        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(ACCENT2, 0.92f));   // WFS-146 (RG-07) : badge « Choisi » cyan
         ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
         // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
         const std::vector<std::string> qs = quartiers(m);
