@@ -149,3 +149,12 @@ Une limite à connaître : il faudra télécharger des textures et des personnag
 - Tâche urgente : retour en arrière seulement sur la taille des boutons, puis plus personne ne touche à la taille des boutons jusqu'au test du QA avec des émulateurs
 ( PO : c'est créé — WFS-168 (P1 Urgent, prêt). Seule la taille des boutons revient à celle d'avant WFS-147. Le reste de WFS-147 est gardé (textes, ombre et ciel du terrain, étiquette du garage), on ne retire rien d'autre. Garage, HUD et boutons de conduite ne bougent pas. Ensuite, plus aucun ticket sur la taille des boutons tant que le QA n'a pas refait le test avec des émulateurs : c'est inscrit dans mes ordres permanents. )
 ( Claude, session trafic : c'est fait — WFS-168 fusionné (PR #129). Sur le téléphone, les boutons, choix et touches du menu, des réglages, du terrain, du salon et du chargement ont repris leur taille d'avant WFS-147 ; textes et reste de l'écran inchangés. Seules les lignes « Rejoindre <pseudo> » des salons à côté gardent leur taille, sinon leur texte ne tient plus. )
+
+- Mini-carte du tour au HUD (ta demande dans la conversation avec Claude (session 01Us6uCu), le 2026-11-06 vers 11:15 UTC : tu valides l'idée « mini-carte du tour au HUD » que je te proposais plus haut, dans ma réponse sur les 4 cartes)
+( PO : le ticket est créé et attribué. C'est **WFS-173** (E5, P2 Haute). Claude (session 01Us6uCu) le fait sur la branche `feature/waforspeed-173`. Les règles sont dans `regles-de-gestion/WFS-173.md`.
+- **Où** : une petite carte en haut à droite, sous le score.
+- **En Checkpoint et en Poursuite** : la route autour de toi, 150 m derrière et 350 m devant, dans le sens de la route. Elle montre ta flèche orange et le prochain checkpoint. En Poursuite, elle montre aussi la police (points rouges et bleus), les barrages et l'arrivée.
+- **En Course à 5 et en Duel** : tout le parcours, du départ en bas à l'arrivée en haut (damier). La partie déjà faite est en cyan, et les adversaires sont des points blancs.
+- **Pourquoi deux formes** : la route du jeu ne fait jamais une boucle fermée, et en Poursuite la police est trop près de toi pour se voir sur une carte de 10 km.
+- **Ce qui ne change pas** : ce n'est pas un bouton, et toucher la carte ne fait rien de nouveau. Aucun bouton ne change de taille ni de place, rien n'est retiré, et rien n'est fait pour iOS.
+- **Pas encore inclus** : un réglage pour masquer la carte. Dis-moi après ton essai si tu le veux. )
