@@ -4039,3 +4039,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/world/circuit.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures du circuit) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : `src/game/**`, `ville*.cpp`, `campagne.cpp`, `plage.cpp` (WFS-145 y travaille), `src/render/**`, `shaders/**`, `src/ui/**`, iOS (gel).
 - **Critères** : captures `carte-circuit-depart` (feux allumés), `-epingle`, `-chicane`, `-raidillon`, `-paddock` (+ `-nuit`) ; rien sur la chaussée, aucun virage ni feu caché ; `qualite-*` sans baisse ; parcours complet 0 écart ; ligne `qa/Check.md`.
 - **Fusion** : règle de confiance > 50 % (CLAUDE.md).
+
+### 2026-11-06 08:23:44 — WFS-145 : décision RG-10 à RG-12, verdict mémoire sur la tendance (po-scrum-master)
+- Constat de la session dev 5bx : à la scène de référence (RG-08), un relevé isolé flotte de ±15 % après une course, sans pente ; RG-09 (a) inatteignable sur un maximum isolé.
+- Décision : verdict sur le tas utilisé à la référence, cycles 2 à 9 : échec si pente > +6 Mo/cycle **ou** médiane(7-9) > médiane(2-4) + 10 % (RG-10). Option « 3 relevés, minimum » refusée (coût CI).
+- Preuves (RG-11) : 2 passages verts, fuite volontaire 20 Mo/cycle → échec, fuite lente 5 Mo/cycle → échec. Livraison unique avec la Poursuite (RG-12).
