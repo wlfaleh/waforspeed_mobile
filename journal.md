@@ -5254,3 +5254,36 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Vérification (locale, lavapipe) : compilation, 35 tests CPU, licences ; parcours complet (`WFS_BANC=parcours`, sur la Ville) **0 écart** ; captures regardées : `carte-ville-casino` (+ `-nuit`), `carte-ville-centre-commercial` (+ `-nuit`), `carte-ville-garage` (+ `-nuit`), `carte-ville-chien`, `carte-ville-pigeons`.
 - Coût (appels de dessin en plus, mesurés) : casino +126 au plus (2 voitures de luxe ≈ 110, pigeons, morceaux), pigeons d'un carrefour +12, centre commercial +2 à +4 : sous le plafond de +150 (RG-C2).
 - Limites : en caméra de course, le casino se reconnaît surtout à sa marquise dorée et aux voitures ; l'enseigne « CASINO » de l'attique sort du cadre, celle de la marquise est petite. Pigeons : forme de la mouette mise à l'échelle (pas de modèle de pigeon accessible). Licence CC0 des chiens à reconfirmer sur quaternius.com (site bloqué). Rendu sur téléphone non vérifié.
+
+
+### 2026-11-06 21:13:20 — Fusion WFS-189 : Course à 5, départ, adversaires de la classe du joueur, nitro sans trafic (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #159, squash fbfc4f6, fusion par confiance. Fichiers : `src/game/course5.cpp` / `.h`, `course5_system.cpp`, `duel_system.cpp`, `tests/test_course5.cpp`, `tests/test_duel.cpp`, `CMakeLists.txt` (`player.cpp` ajouté aux sources de `test_course5`). **Accroche annoncée** (6 lignes, noyau) : `src/core/configgame.h` / `.cpp`, `configgame.json`, `configgame.README.md`, 2 clés `nitro.recharge_temps` (0,015) et `nitro.recharge_depassement` (0,10).
+- RG-01 : les adversaires sont tirés parmi les voitures à ±20 % de vitesse max de fiche (de 6 à 15 candidates selon la voiture du joueur ; jamais besoin de compléter).
+- RG-02 / bis / ter (arbitrages du PO de 20:57 et 21:06) :
+  - Vitesse visée = facteur × min(sa pointe, 1,10 × la pointe du joueur). Pointe = fiche × 0,995 (vitesse réelle, WFS-188). `carPerf().top` (≈ 1,07 × la fiche) n'est plus la pointe : depuis WFS-188, les ordinateurs visaient 0,98 × la fiche en Normale au lieu de 0,90.
+  - Les ordinateurs accélèrent avec la loi du joueur : poussée a0 × (1 − (v/top)^2,2) − 0,35 × (roulement + traînée).
+  - Ils ralentissent avant les virages serrés : dérive latérale cumulée de `player.cpp`, contre-braquage × 0,9, dérive tolérée 0,8 ; table par segment avec le freinage du joueur (`Phys::brake`), calculée une fois par piste.
+  - Calage sur 4 km de Ville, ordinateur à 100 % contre pilote automatique du joueur : Golf −0,7 %, Compass −2,1 %, M4 +1,9 %, 208 −1,9 % (tolérance ±3 %).
+- RG-03 :
+  - Grille rangée par 0-100 croissant, rangées à 8 m et 21 m devant le joueur (validé par le PO).
+  - Graine 20261105, à 4 s : au moins 96 % de la vitesse seul avec la Golf, 95 % avec la SF90 ; collé à moins de 8 m : 0,00 s et 0,71 s.
+- RG-04 / RG-05 :
+  - Recharge de +0,015/s, rien pendant la nitro, plafond 1.
+  - +0,10 par adversaire dépassé en Course à 5 : il compte une fois, puis de nouveau seulement s'il est repassé à plus de 10 m devant (sinon deux voitures roue dans roue remplissaient la jauge : jusqu'à 13 s de nitro).
+  - Duel : au temps seulement.
+- RG-02 / RG-06, tableau des places moyennes (protocole B du PO, Ville du jeu, 4 km, 5 graines, pilote automatique à fond sans nitro qui freine avant les virages serrés) :
+
+| Voiture | Facile | Normale | Difficile | Temps moyen (Normale) | Nitro sur 4 km (s) |
+|---|---|---|---|---|---|
+| SF90 (exception PO) | 1,0 | 1,0 | 1,0 | 62,1 s | 3,7 |
+| M4 | 1,2 | 1,8 | 2,0 | 69,1 s | 4,1 à 4,8 |
+| Mustang | 1,0 | 2,8 | 2,8 | 68,4 s | 4,4 à 5,8 |
+| Golf | 2,0 | 2,2 | 3,2 | 78,5 s | 4,6 à 5,0 |
+| X5 | 1,2 | 2,4 | 3,0 | 78,3 s | 4,6 à 4,9 |
+| 208 | 1,6 | 2,8 | 3,6 | 90,0 s | 5,2 à 5,9 |
+| Compass (exception PO) | 1,4 | 4,2 | 5,0 | 94,3 s | 4,7 à 5,4 |
+
+- Remarque : les ordinateurs ne prennent presque jamais leur nitro (WFS-133). C'était déjà le cas avant : 1 nitro sur 4 voitures à 10 km sur `main`, 0 maintenant ; elle n'arrive que dans les 500 derniers mètres, à moins de 40 m d'une voiture. Pas une régression, je ne change rien hors RG.
+- Vérification : 35 tests CPU verts (cmake local, avec un faux glslc et les en-têtes Vulkan téléchargés, seulement pour compiler les tests) ; syntaxe de `course5_system.cpp` et `duel_system.cpp` vérifiée.
+- Limites : banc Vulkan, captures `course5-*` et parcours RG-08 (Course à 5 en Compass, Duel) **non vérifiés en local** : je les vérifie sur la CI de `main`.
+
