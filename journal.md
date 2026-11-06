@@ -5379,3 +5379,58 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Accroches annoncées : `pietons.cpp` (3 lignes : personne à pied sur l'autoroute) ; `cartes_banc.cpp` (captures `carte-campagne-peage`, `-autoroute`, jour et nuit ; `WFS_CAMPAGNE_LIEU` pour l'essai local).
 - Mesures (indice) : voies 3,50 m, bande d'arrêt 2,50 m, bande dérasée 1,00 m : conformes (ICTAAL) ; marquage 15 cm et T1 3 / 10 m : conformes (charte 12-15 cm ; IISR) ; DBA 0,80 / 0,60 m : conforme (profil normalisé) ; hauteur libre du péage 5,50 m : conforme (≥ 4,75 m) ; enrobé 0,045 : conforme (0,04-0,07) ; cabines, auvent, panneaux : non mesurables (pas de plan type unique) ; dalles LED : teinte blanc neutre (≈ 4000-5000 K), non mesurée ; la lumière de nuit au sol passe par l'éclairage de nuit existant (style « Ville », chaud) : limite, un style LED demanderait un ticket E4 (`src/render`).
 - Vérification (locale, lavapipe) : compilation, 36 tests CPU, licences ; `WFS_BANC=campagne` 0 écart (son parcours va du départ au haut du col : il n'atteint pas l'autoroute, vérifiée par les captures) ; `WFS_BANC=parcours` 0 écart ; captures `carte-campagne-peage`, `carte-campagne-autoroute` (+ `-nuit`) regardées ; appels de dessin : 369 (péage) et 383 (autoroute, dont ≈ 110 pour 2 voitures en sens inverse).
+
+### 2026-11-06 21:45:39 — Contrôle des CI et du robot des statuts ; WFS-185 remis en 🟣 (po-scrum-master)
+- **Robot (WFS-196)** : `statuts.yml` et `tools/qa/statuts.py` sont sur `main` (21:20). Il n'a encore jamais tourné : il se déclenche à la fin d'un run de `build.yml` sur `main`, et aucun run de `main` n'est fini depuis sa fusion (#779 à #788 en file ou en cours).
+- **WFS-185** affichait « ✅ Terminé — run 777 » : le run 777 a été **annulé**, pas vert. Remis en 🟣 ; le robot posera le ✅ au premier run vert qui contient f152ff8.
+- **CI des branches** : un push sur une branche encore en retard sur `main` relance la CI (run #781, `feature/waforspeed-158`, 20:41), car GitHub lit le `build.yml` de la branche (ancien bloc `on:` avec `feature/**`). Cela s'arrête dès que chaque branche est synchronisée avec `main` (règle déjà en vigueur).
+- **File d'attente** : 8 runs de `main` en file ou en cours ; les runs remplacés par un plus récent sont annulés (777, 778) : le robot ne fait rien sur un run annulé, le suivant tranche.
+
+### 2026-11-06 21:47:00 — WFS-197 : avancement, accroches annoncées, CI de branche (Claude, agent 2 (01UY1Vv5))
+- Fait (branche `feature/waforspeed-197`, 4a52d55, synchronisée avec main) :
+  - Primitives du cockpit déplacées de `camera_vue.cpp` vers `src/render/vehicule_cockpit_geo.h` (partagées, pas recopiées).
+  - Nouveaux fichiers : `src/render/vehicule_cockpit.{h,cpp}` (géométrie par code, écrans dynamiques), `src/render/vehicule_cockpit_defs.cpp` (cotes des 4 modèles), `tests/test_cockpit.cpp`.
+  - Dans `camera_vue.cpp` : choix de l'intérieur par `CarDef::id`, hauteur d'œil du modèle, `EngineModel` avec les mêmes entrées que le son (vrais régime et rapport), essuie-glaces sur `meteo::pluieActive`, carte de la route (150 m derrière, 350 m devant), découpée par `minicarte::decouper` (appel en lecture).
+  - Banc `benchCockpit` : captures `cockpit-{golf,m4,p911,sf90}-{jour,braquage,carte,pluie,nuit}` et `cockpit-corsa`.
+- **Accroches annoncées** (≤ 10 lignes chacune) :
+  - `src/platform/desktop_main.cpp` : 4 lignes, banc `cockpit` et appel dans `partie2c` ; 6 lignes, parcours complet rejoué en vue Cockpit dans `cockpit/`, pour RG-09.
+  - `CMakeLists.txt` : 1 ligne, `test_cockpit`.
+- Cotes : `expert-realisme-3d` consulté, valeurs dans `vehicule_cockpit_defs.cpp`. Statuts : volants Ø Golf 370 / M4 370 / 911 375 mm (E / AC), SF90 355 mm (E). Combinés 244 × 91, 292 × 110, 5 cadrans 300 mm, écran courbe 380 × 143 mm (diagonales AC, format E). Écrans centraux 232 × 104, 244 × 91, 245 × 130 mm (AC / E). Balais Golf 650 / 450, M4 600 / 475 (AC), 911 525 mm (AC), SF90 NM. Positions, inclinaisons et hauteur d'œil : E (SAE J1100). **Indice de fidélité : non mesurable** : aucune fiche constructeur ouverte (réseau des agents), la plupart des cotes sont E ou AC.
+- **Choix à valider par le PO** :
+  1. Générations retenues : M4 d'avant restylage (volant rond, coutures M en bas) et 911 992.1, la seule avec les 5 cadrans et le compte-tours analogique (RG-04).
+  2. SF90 : la vraie voiture n'a **pas d'écran central** ; la carte est dans le tiers droit du combiné de 16 po (recommandation de l'expert) au lieu d'un écran inventé.
+  3. Gouttes sur le pare-brise : le jeu n'en a pas (pluie dessinée en traînées à l'écran) : seuls les balais (RG-06).
+  4. Profondeur des combinés reculée de 6 à 8 cm par rapport à l'estimation, pour que la jante reste devant l'écran.
+- Vérification : 37 tests CPU verts (dont `test_cockpit`, 28 vérifications : RG-01, 03, 04, 05, 06, 07 et charte du cuir). Syntaxe propre. **Rendu non vu en local** (pas de Vulkan ici) : confiance ≤ 50 % → une CI de branche lancée à la main (`workflow_dispatch`, branche synchronisée). Je regarde les captures avant de fusionner.
+
+
+### 2026-11-06 21:48:29 — WFS-158 : livraison 2 fusionnée par confiance (PR #162, e622b04) : ST-2, échelle et roues des voitures (arwa-2)
+- **Outil** : `tools/corriger_voitures.cpp` (cible CMake `corriger_voitures`), lancé par `convertir_voitures.sh` après la conversion. Il trouve les roues comme le moteur (`roues::decouper`) et applique, d'après `references/reel/voitures.json` :
+  1. l'échelle globale qui gagne des mesures de caisse (L, l, h, empattement), jamais par axe (RG-01) ;
+  2. les roues hors tolérance au diamètre de la fiche (échelle autour du centre ; disques et étriers suivent) ;
+  3. les voies hors tolérance remises à la fiche, si chaque roue bouge de 15 mm au plus sans sortir de la caisse ;
+  4. les 4 pneus au même niveau et la caisse vers la hauteur nominale (RG-02).
+  Il garde la combinaison qui gagne le plus de mesures sans en perdre aucune. Il est idempotent : un 2e passage ne change rien (vérifié). Seules les positions des sommets changent : matériaux, textures, normales, uv, indices et tangentes sont intacts, `correctifs_voitures.h` reste valable.
+- **Accroche CMake annoncée** : 2 lignes, cible `corriger_voitures`, à côté de `test_fidelite_voitures`.
+- **Rapport des corrections par voiture** (mesures conformes avant → après) :
+  - golf 5 → 8 / 8 : roues 656 → 637 mm, voie ar −19 mm ;
+  - m4 4 → 7 / 8 : roues av 688 → 675, ar 688 → 679 mm, voie ar −26 mm, caisse −6 mm ; la largeur +8,6 % reste (RG-05) ;
+  - p911 3 → 4 / 6 : roues ar 676 → 716 mm ; la largeur +5,2 % et l'empattement +1,7 % restent ;
+  - gallardo 4 → 7 / 8 : × 1,0085, voie av +22 mm ;
+  - p208 2 → 5 / 8 : × 0,9965, roues 629 → 621 mm ; les voies −105 mm (53 mm par roue) restent (RG-05) ;
+  - abarth 5 → 8 / 8 : roues 588 → 582 mm, voie av +16 mm ;
+  - compass 2 → 4 / 6 : × 1,009 ; les voies −152 / −126 mm restent (RG-05) ;
+  - s3 4 → 5 / 6 : × 1,0025, les 4 pneus posés (un pneu était à 14 mm du sol) ;
+  - x5 2 → 4 / 4 : × 1,008 ;
+  - a45 3 → 4 / 6 : × 0,994 ; les voies (16-18 mm par roue) restent ;
+  - corsa 2 → 3 / 6 : × 1,0015 ; les voies (19 mm par roue) restent ;
+  - gt86 4 → 7 / 8 : × 1,010, roues 633 → 625 mm, voie ar +26 mm ; l'empattement −1,6 % reste ;
+  - v60 4 → 7 / 8 : × 1,011, roues 639 → 679 mm, caisse +8 mm ;
+  - rrsport 4 → 5 / 5 : voie av −20 mm ;
+  - sf90 4 → 5 / 6 : voie av −21 mm ; la hauteur −2,7 % reste (RG-05) ;
+  - inchangées : tcross 4 / 8 (voies de 33 à 44 mm par roue, RG-05), giulia 8 / 8, elantra 6 / 8 (voie av refusée : la roue sortirait de la caisse), mustang 7 / 8 (voie ar, 20 mm par roue) ;
+  - model3 non touchée (remplacement RG-D en attente).
+- **Indice voitures** (`test_fidelite_voitures`) : 80 → 111 / 141 mesures conformes (56,7 % → 78,7 %) ; pneus posés 19 → 20 / 20. Les 99 % ne sont pas atteints : 6 modèles ont des proportions fausses (RG-05 : m4, p911, p208, tcross, model3, sf90), plus les voies de compass, a45, corsa, elantra et mustang. Cette liste va au PO pour la question du remplacement à l'utilisateur.
+- **Preuves** : captures locales du banc (lavapipe, 2400 × 1080), `vitrine-<id>-0` et `-feux` avant / après des 15 voitures, zooms sur les roues (911, M4, Golf, Gallardo, Abarth, V60, SF90). Aucune pièce étirée, aucun pneu enfoncé ni flottant, roues dans leur passage de roue, feux arrière allumés au freinage comme avant. 36 tests CPU OK.
+- **Prévenu pour WFS-182 (E4, feux)** : les zones de `ZONES_FEUX` (boîtes en mètres) restent valables : les feux des 15 voitures s'allument comme avant sur les captures `-feux`.
+- **Suite** : je suis la CI de main, puis RG-C (bas du hayon du X5 en dents de scie).

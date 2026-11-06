@@ -21,12 +21,12 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) ; suivi des runs noté sur main à 21:22 (783a874) | 🔴 P1 en cours ; suit aussi la CI de `main` : WFS-175 (🟣, PR #155) |
 | Claude, agent 1 (01UY1Vv2) |  |  | 179 : fusionnée 21:37 (PR #161) ; 176 : fusionnée 21:11 (PR #158) | ✅ libre ; suit la CI de `main` de WFS-176 et WFS-179 (🟣) |
-| Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran carte, essuie-glaces, Golf, M4, 911, SF90 | 197 : attribué à 21:27, branche à pousser | ⚠️ branche `feature/waforspeed-197` à pousser dans les 30 min ; ne suit plus la CI de main (WFS-189, WFS-196 : suivi repris par le PO, ordre de l'utilisateur) |
+| Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : intérieurs Golf, M4, 911, SF90, écran carte, essuie-glaces | 197 : 21:47 (4a52d55) | ✅ actif ; CI de branche lancée à la main (une fois, rendu) : captures `cockpit-*` à regarder avant la fusion |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraison 1 fusionnée (PR #157 : audit ST-1, plaques neutres RG-A) ; suite : ST-2 (échelle et roues), RG-C (X5) ; Model 3 (RG-D) en attente du fichier | 158 : 21:06 UTC (ac3b6dc + synchronisation 9e2dad3 sur la branche ; livraison 1 sur main e5fe674, PR #157) | 🔵 suit la CI de main (PR #157), puis ST-2 ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 et 2 fusionnées (PR #157 : audit ST-1, plaques neutres RG-A ; PR #162 : ST-2, échelle et roues de 15 voitures) ; suite : RG-C (X5), ST-3 ; Model 3 (RG-D) en attente du fichier | 158 : 21:47 (e622b04 sur main, PR #162 fusionnée par confiance) | 🔵 suit la CI de main (PR #157, #162), puis RG-C (hayon du X5) ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 21:17 (737fde2, synchronisée avec main), PR #156 | 🔀 En PR ; compilation + 37 tests CPU verts en local ; run 783 (sur e97571d) en cours ; banc réalisme local en cours |
 
 ## Agents de pilotage
