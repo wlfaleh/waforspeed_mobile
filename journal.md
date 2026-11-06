@@ -2757,3 +2757,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   - les plaques avant de l'Elantra, de la Mustang, de la M4 et de la SF90 (absentes du modèle) ;
   - les plaques de la Golf, de la Gallardo, du T-Cross, du X5 et de la GT86 (aucune plaque à part : à poser) ;
   - la Model 3 (RG-D).
+
+### 2026-11-06 22:40:30 — Méthode des dépôts GitHub publics étendue aux humains, animaux, bâtiments ; WFS-186 débloqué (po-scrum-master)
+- **Demande de l'utilisateur** : même méthode pour les modèles humains, animaux, bâtiments.
+- **Essais** (recherche de code GitHub, `license.txt` de Sketchfab) : vache 118, cheval 68, mouton 41, pigeon 31, personnage CC-BY 151, humain animé 34, bâtiment 364, immeuble 68 ; paquets CC0 Quaternius 2 424, Kenney 20 448.
+- **Fait** : fiche renommée `.claude/skills/waforspeed-natif/references/modeles-3d-github.md` (§ 5 : humains, animaux, bâtiments, végétation ; paquets stylisés seulement en provisoire, réalisme validé par expert-realisme-3d) ; renvois mis à jour. **WFS-186** (animaux de ferme) : 🚫 Bloqué → ⏳ Prêt. Section « Source des modèles » ajoutée à WFS-161 (bâtiments), 163 (végétation), 164 (humains).

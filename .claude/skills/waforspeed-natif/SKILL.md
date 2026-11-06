@@ -148,7 +148,7 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette de `assets/pe
 - Regrouper par matériau : un appel de dessin par matériau et par modèle.
 
 ### 5. Contenu et licences
-- Voitures : convertir un modèle glTF avec `tools/convert_car.mjs` (voir `references/ajouter-une-voiture.md`) ; trouver un modèle sous licence libre sans intervention de l'utilisateur : `references/modeles-voitures-github.md` (méthode du jeu web, dépôts GitHub publics).
+- Voitures : convertir un modèle glTF avec `tools/convert_car.mjs` (voir `references/ajouter-une-voiture.md`) ; trouver un modèle sous licence libre sans intervention de l'utilisateur : `references/modeles-3d-github.md` (méthode du jeu web, dépôts GitHub publics).
 - Copier la licence de chaque modèle dans `assets/licences/` et le crédit dans `CARS[]` (`src/game/cars.h`).
 - Ne jamais reprendre logo, nom ou visuel d'un jeu existant.
 

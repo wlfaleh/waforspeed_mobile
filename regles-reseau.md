@@ -28,7 +28,7 @@ Liste en vigueur, à recopier ici à chaque changement :
 3. Utiliser GitHub par les outils prévus (`mcp__github__*`, `git`) sur le dépôt du projet.
 4. **Chercher et lire des dépôts GitHub publics** (recherche de code `gh api -X GET search/code`, clone partiel en lecture seule par `git`)
    pour y trouver des modèles 3D, textures ou sons sous licence libre, comme le jeu web l'a fait pour ses 20 voitures. Méthode :
-   `.claude/skills/waforspeed-natif/references/modeles-voitures-github.md`. Mêmes règles que tout téléchargement (§ 4 à § 6) : licence
+   `.claude/skills/waforspeed-natif/references/modeles-3d-github.md`. Mêmes règles que tout téléchargement (§ 4 à § 6) : licence
    lue dans le `license.txt` du dépôt, dossier à part, rien exécuté, journal. Jamais d'écriture ni de commentaire sur ces dépôts.
 
 ## 3. Ce qu'un agent n'a PAS le droit de faire
