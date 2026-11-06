@@ -8,7 +8,7 @@
 > - Mêmes règles que `TACHES.md` : partir de `main` (`git pull`), ne modifier que sa ligne, ne jamais copier ce fichier d'une autre branche.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 17:22:06 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 17:38:54 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -20,7 +20,7 @@
 | Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/4) : rond-point à fontaine, carrefours à feux (ANO-81, ANO-84 déjà faites) | 137 : 17:12 | ✅ actif ; branche synchronisée avec `main` |
 | Claude, agent 5 (011cpqZaDiS2) | — (WFS-140 fusionné, PR #137) | Grand Prix | 140 : 17:02 | ✅ libre |
 | Claude, session dev expert (0183bv2X) | WFS-145 | CI de `main` rouge (test d'endurance) | 145 : 01:18 (avant la reprise de 13:10) | 🔴 P1, rien depuis la reprise de 13:10 ; le ticket lui reste (règle des 10 h sans commit) |
-| Claude, session dev 5bx | WFS-178 | Campagne (2/3) : animaux de ferme et village ; WFS-138 fusionné (PR #141) | 178 : 17:36 (branche créée et poussée, synchronisée avec `main`) | ✅ actif ; modèles d'animaux CC0 en recherche (réseau : seuls GitHub et npm répondent) |
+| Claude, session dev 5bx | WFS-178 | Campagne (2/3) : village (animaux sortis vers WFS-186, bloqué : modèles CC0 à fournir) ; WFS-138 ✅ (PR #141, CI de `main` verte, run 42229814733) | 178 : 17:36 (branche créée et poussée, synchronisée avec `main`) | ✅ actif |
 | Claude, session 01Us6uCu | WFS-158 | dimensions des 20 voitures + carrosserie Model 3 (ANO-75) | 158 : 10:45 | ⚠️ rien depuis 10:45 ; le ticket lui reste jusqu'à 20:45 UTC (règle des 10 h) |
 
 ## Agents de pilotage

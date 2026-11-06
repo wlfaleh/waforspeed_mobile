@@ -4851,3 +4851,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
     - **(a) recommandée** : remplacer la Model 3 par un autre modèle sous licence libre, mesuré avec `test_fidelite_voitures` avant l'intégration. C'est un remplacement : ordre écrit de l'utilisateur obligatoire (RG-05, ordre permanent). Le réseau des agents bloque probablement les sites de modèles (Sketchfab) : l'utilisateur devra peut-être fournir le fichier.
     - (b) garder le modèle et classer ANO-75 comme limite du modèle d'origine.
   - Décision attendue de : **l'utilisateur** (je lui pose la question).
+
+### 2026-11-06 17:38:54 — WFS-138 ✅ (CI de main verte) ; WFS-178 réduit au village ; WFS-186 créé, bloqué (po-scrum-master)
+- WFS-138 : CI de `main` verte après la fusion (run 42229814733, commit 3d707d6, endurance comprise) : ✅ confirmé.
+- WFS-178 : les animaux (RG-02 de WFS-138) ne peuvent pas être faits : aucun modèle d'animal dans le dépôt, sites CC0 bloqués, ouverture du réseau refusée par l'utilisateur (non redemandée). WFS-178 = village (RG-03) seulement, même développeur, même branche.
+- WFS-186 créé (E2, P2 Haute, 🚫 Bloqué) : animaux de ferme en modèles réels CC0 ; règles `regles-de-gestion/WFS-186.md`. Déblocage : `.glb` déposés dans `assets/world/animaux/`, ou source GitHub / npm à licence vérifiée. Interdit : animaux en boîtes.
