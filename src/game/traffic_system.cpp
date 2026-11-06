@@ -49,7 +49,7 @@ public:
 
     void shutdown(Renderer& r) override {
         for (auto& m : models_) r.destroy(m);
-        r.destroy(shadow_);
+        r.destroy(shadow_); r.destroy(shadowMat_);   // WFS-187 (accroche) : jeux de descripteurs rendus
         shutdownVivant(r);   // WFS-67
         if (active_ == this) active_ = nullptr;
     }
@@ -209,6 +209,8 @@ private:
         r.destroy(cube_);
         for (auto& b : haloMesh_) for (auto& m : b) r.destroy(m);
         r.vk().destroy(haloTex_);
+        for (Material& m : loinPeint_) r.destroy(m);
+        for (Material* m : {&loinVitre_, &haloMat_[0], &haloMat_[1]}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
     }
     // silhouette : caisse (hauteur 0,55 H) et habitacle (0,82 W × 0,4 H × 0,5 L), à la couleur de la voiture
     // WFS-134 (RG-11) : plus appelée (aucune voiture en cubes) ; gardée pour mémoire de l'ancienne silhouette

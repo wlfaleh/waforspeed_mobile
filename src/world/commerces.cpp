@@ -168,6 +168,7 @@ public:
         for (auto& gm : graveyard_) r.destroy(gm.second);
         graveyard_.clear();
         atlas_.detruire(r); palette_.detruire(r);
+        for (Material* m : {&vitreJour_, &vitreNuit_, &bougie_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         actif_ = false;
     }
 private:

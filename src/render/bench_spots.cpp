@@ -100,7 +100,7 @@ void benchSpots(Renderer& r, const std::string& out) {
         WFS_LOG("spots-sol : mesure du coût, %d projecteur(s) — fin", mesure.spotCount);
     }
     r.vk().waitIdle();
-    r.destroy(sol); r.destroy(plateau); r.destroy(voiture);
+    r.destroy(sol); r.destroy(plateau); r.destroy(voiture); r.destroy(matSol); r.destroy(matPlateau);   // WFS-187
 }
 
 } // namespace wfs

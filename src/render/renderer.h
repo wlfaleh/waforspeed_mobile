@@ -2,6 +2,7 @@
 #pragma once
 #include <cstddef>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "vk.h"
 #include "../core/math.h"
@@ -120,6 +121,7 @@ public:
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
     void destroy(Model& m);
+    void destroy(Material& m);   // WFS-187 (accroche E0) : rend le jeu de descripteurs du matériau (GPU arrêté sur ce jeu) ; vide : rien
     // WFS-63 : maillage à squelette (les maillages rigides ne changent pas)
     SkinnedMesh makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx);
     void destroy(SkinnedMesh& m);
@@ -216,6 +218,7 @@ private:
     VkSampler samplerBasse_ = VK_NULL_HANDLE; float anisoMax_ = 1.f; bool texBasse_ = false;
     struct MatTex { VkDescriptorSet set; VkImageView v[3]; };
     std::vector<MatTex> matTex_;
+    std::unordered_set<VkDescriptorSet> jeuxMat_;   // WFS-187 : jeux des matériaux vivants (copies d'un matériau : libéré une fois)
     VkShaderModule modScene_[6]{};   // scene.vert, scene.frag, sky.vert, sky.frag, scene_skin.vert, scene_skin.frag
     VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
 

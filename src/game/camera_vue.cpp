@@ -304,6 +304,7 @@ public:
 
     void shutdown(Renderer& r) override {
         for (Mesh* m : {&statique_, &cadran_, &anneau_, &aiguille_, &jante_, &branches_, &repere_}) r.destroy(*m);
+        for (Material* m : {&sombre_, &cuir_, &alu_, &cadranMat_, &cyan_, &orange_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         g_bouton = {}; g_ck = {};
     }
 

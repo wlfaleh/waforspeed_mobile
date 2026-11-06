@@ -134,11 +134,13 @@ public:
         if (essaiTente_) {
             r.vk().waitIdle();
             if (essaiCree_) { r.destroy(panneau_); r.destroy(bande_); }
+            r.destroy(essaiMat_);   // WFS-187 : jeu de descripteurs rendu
             for (ktx2::Texture& t : essaiTex_) { r.vk().destroy(t.image); t = ktx2::Texture{}; }
             essaiCree_ = essaiTente_ = false;
         }
         if (!cree_) return;
         for (Mesh& m : maillages_) r.destroy(m);
+        for (Material& m : mats_) r.destroy(m);   // WFS-187
         cree_ = false;
     }
 private:

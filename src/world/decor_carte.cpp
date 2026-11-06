@@ -384,6 +384,7 @@ void CarteDecor::shutdown(Renderer& r) {
     chunks_.clear();
     for (auto& gm : graveyard_) r.destroy(gm.second);
     graveyard_.clear();
+    for (Material& m : mats_) r.destroy(m);   // WFS-187 (accroche) : jeux de descripteurs rendus
     shutdownCarte(r);
     for (Image* im : {&palTex_, &leafTex_, &routeTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
     active_ = false;
