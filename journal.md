@@ -4851,3 +4851,72 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
     - **(a) recommandée** : remplacer la Model 3 par un autre modèle sous licence libre, mesuré avec `test_fidelite_voitures` avant l'intégration. C'est un remplacement : ordre écrit de l'utilisateur obligatoire (RG-05, ordre permanent). Le réseau des agents bloque probablement les sites de modèles (Sketchfab) : l'utilisateur devra peut-être fournir le fichier.
     - (b) garder le modèle et classer ANO-75 comme limite du modèle d'origine.
   - Décision attendue de : **l'utilisateur** (je lui pose la question).
+
+### 2026-11-06 17:38:54 — WFS-138 ✅ (CI de main verte) ; WFS-178 réduit au village ; WFS-186 créé, bloqué (po-scrum-master)
+- WFS-138 : CI de `main` verte après la fusion (run 42229814733, commit 3d707d6, endurance comprise) : ✅ confirmé.
+- WFS-178 : les animaux (RG-02 de WFS-138) ne peuvent pas être faits : aucun modèle d'animal dans le dépôt, sites CC0 bloqués, ouverture du réseau refusée par l'utilisateur (non redemandée). WFS-178 = village (RG-03) seulement, même développeur, même branche.
+- WFS-186 créé (E2, P2 Haute, 🚫 Bloqué) : animaux de ferme en modèles réels CC0 ; règles `regles-de-gestion/WFS-186.md`. Déblocage : `.glb` déposés dans `assets/world/animaux/`, ou source GitHub / npm à licence vérifiée. Interdit : animaux en boîtes.
+
+### 2026-11-06 17:41:34 — WFS-183 : Fin, fusion par confiance (PR #147, commit d719dba) (Claude (session trafic))
+- **Fait** : RG-01 (ANO-93) `Session::adversaires()` (`duel.cpp`) suit le classement de la manche (mieux classé d'abord, « Parti » en dernier), plus l'identifiant du relais ; `Sauvegarde::noterAdversaires` passe les noms en tête **dans l'ordre reçu** (le premier en haut ; relecture du fichier adaptée, même résultat) ; test ajouté dans `test_sauvegarde` (deux tirages du relais → même liste, « Parti » dernier, relu tel quel) ; attente du test existant mise à jour à la nouvelle règle. RG-02 (ANO-94) : job `texte` lance `WFS_BANC=menu2` en 1280 et publie `salon-derniers`, `duel-resultat-4`, `salon-hors-ligne`. RG-03 (ANO-90) : salon 1280 hors ligne, URL non dessinée, bandeau à y + 82 k (fin y + 110 k) ; aucune taille changée ; mise en page 2400 (petit écran) non touchée. RG-04 : au banc (`WFS_BANC` défini) graine 1234 pour la course à 5 ; en jeu, horloge comme avant.
+- **Accroches annoncées (≤ 10 lignes chacune)** : `src/game/duel_system.cpp` (4 lignes : adversaires notés de nouveau à chaque arrivée, sinon l'ordre du départ resterait) ; `.github/workflows/build.yml` (2 lignes, job texte) ; `src/game/course5_system.cpp` (3 lignes : include `<cstdlib>`, commentaire, ligne de la graine) ; `src/game/sauvegarde.h` (commentaire de `noterAdversaires`).
+- **Vérification** : 34 tests CPU OK après synchronisation avec main (WFS-150 compris). Parcours du duel (accueil → Duel entre amis → salon → créer → 3 amis → course → classement → revanche → course → retour → salon « Derniers adversaires ») : « conforme (0 écart(s)) » en 1280 (3 lancements, dont un après fusion de WFS-150) et en 2400. `salon-derniers` : NADIA / SAM / LOU en 1280 et 2400 ; deux lancements 1280 : aucun pixel à plus de 12/255 (fond flouté). `salon-hors-ligne` 1280 : bandeau y 200-227, texte suivant y 234, pas de chevauchement. `salon-hors-ligne-2400` contre main : seuls le code du salon tiré au hasard et l'URL qui le contient diffèrent. `minicarte-ligne` et `course5-rejouer` identiques au pixel sur deux lancements.
+- **Limites** : `duel-resultat-4` et `salon-hors-ligne` ne sont pas identiques d'un lancement à l'autre (code du salon et graine du duel au hasard, hors ticket). Le job `texte` dure le temps d'un parcours du duel en plus (≈ 5 min). Disque du conteneur plein (129 Mo libres) : mes constructions de référence effacées.
+
+### 2026-11-06 17:57:10 — Fin WFS-178 : fusionné par confiance (PR #148) (Claude, session dev 5bx)
+- **Fait** (`src/world/campagne.cpp`, village = RG-03 de WFS-138) :
+  - fontaine de pierre et massifs au centre du rond-point (îlot de 14 m, posé à gauche du milieu de l'anneau) ;
+  - feu tricolore aux deux poteaux de la ligne d'arrêt, lampes selon `trace::feuA` (dessinées à chaque image : 6 appels) ;
+  - café-terrasse (segment 1084, à droite) et bar (1088, à gauche) après le carrefour ; garage avec pompes (942, à droite) ; boulangerie (992, à gauche) ; supermarché et parking à l'entrée (602, à droite) ;
+  - enseignes par l'atlas de `enseignes.*`, éclairées la nuit (émission 1,1) ;
+  - maisons de pierre et tuile ; aucune maison, aucun arbre à la place d'un commerce, rien de haut dans les 60 m avant le feu et l'entrée du rond-point (RG-C1).
+- **Correctif de WFS-138** : sol de fond sous toute la carte (1 m sous le point le plus bas, 1 appel de dessin). Il comble les trous entre bandes de sol bornées qui ne se rejoignent pas : on y voyait le ciel (abords du rond-point, épingles).
+- **Animaux** : sortis dans WFS-186 (décision du PO). Les modèles CC0 (pack Farm Animals de Quaternius) sont sur opengameart.org et poly.pizza, inaccessibles d'ici ; l'utilisateur a refusé l'ouverture de l'accès ; aucun animal en boîtes.
+- **Accroche annoncée** : `src/world/decor_carte.h` et `decor_carte.cpp` (2 lignes, 3 teintes de pierre dans la palette commune).
+- **Preuves** (local, lavapipe) : 34 tests CPU verts ; `WFS_BANC=campagne` 0 écart ; `WFS_BANC=parcours` « 0 écart(s) OK » ; `WFS_BANC=cartes` code 0 ; captures village, rond-point et épingle regardées, de jour et de nuit.
+- **Incident corrigé avant envoi** : après un redémarrage de la session, mes 2 commits étaient sur `main` en local. Rien n'a été poussé sur `main` : les commits ont été replacés sur `feature/waforspeed-178` avant de pousser. Le commit 255207c ne contenait que `TACHES.md` et `track-agent.md` (script interrompu) : `qa/Check.md` et ce journal suivent dans ce commit.
+- **Limites** : bâtiments en boîtes avec la palette ; la capture du village compte environ 480 appels de dessin (piétons compris) ; garage, boulangerie et supermarché ne sont pas cadrés sur les captures.
+
+
+### 2026-11-06 17:57:35 — WFS-184 : CI de main vérifiée après la fusion (Claude, agent 2, session 01UY1Vv5)
+- Run 42254405827 (commit 021ba51) : les 14 jobs de construction, de banc, d'endurance et Android sont verts. `publication-apk` et `publication-captures` sont annulés, comme souvent quand une poussée plus récente sur main relance la publication. Ce n'est pas lié à WFS-184.
+- `texte` : `[OK] test_audio`, 33 tests CPU réussis.
+- `partie2a` (banc son) : `sirene.wav` dure 13 s, crête 0,20, plus grand saut 0,076. « SFX poursuite-arrete » à t=8 s (police à 5 m) puis « SFX poursuite-echappe » à t=11 s (police à 14 m), et la sirène revient à 0 après chaque fin. Pour `moteur.wav` : moteur au-dessus des bruitages (RMS 0,063 contre 0,016), plus grand saut 0,106, comme avant.
+- Parcours complet (banc `course5`, job `texte`) : « accueil → Course solo → Poursuite → Continuer → garage → Choisir → terrain → Rouler → poursuite → fin → Menu → accueil : 0 écart(s) OK ». Les deux jingles sont joués (arrestation, puis échappée après « Rejouer »), et la sirène revient à 0. Redémarrage : 0 écart.
+- Reste à faire par le QA de nuit : écouter `sirene.wav` et `moteur.wav` (`qa/Check.md`).
+
+### 2026-11-06 18:01:26 — WFS-180 : CI de main après la fusion (Claude, agent 1, session 01UY1Vv2)
+- Run 42255053955 (commit 7c8790b, fusion de WFS-180) : compilation, tests CPU (texte), APK et les 12 groupes banc-essai **verts** ; **endurance verte** (elle était rouge avant, WFS-145). Publication des captures et de l'APK en file d'attente GitHub au moment du contrôle : captures `carte-plage-fete*`, `-jeux*`, `-bateaux*` à regarder par le QA de nuit dans la Release `apercu`.
+
+### 2026-11-06 18:02:46 — Début WFS-185 : CI sur `main` seulement, attribué à Claude (agent 1, session 01UY1Vv2) (PO)
+- **Fin WFS-180** : CI de `main` verte (run 42255053955, endurance comprise) → ✅ Terminé ; **WFS-181** (E2, P2) passe en ⏳ Prêt.
+- **Choix** : WFS-185 (P1 Urgent) passe devant WFS-181 (P2). E7 a déjà WFS-145 🔧 (session 0183bv2X, repris à 13:10 UTC, moins de 10 h : pas de changement de développeur) ; exception PO, comme pour E2 / E4 / E0 (ordre de l'utilisateur « avancer vite sur plusieurs sujets ») : fichiers disjoints, `.github/workflows/**` ici contre `endurance_banc.*` / `tools/qa/**` pour WFS-145.
+- **Zone autorisée** : `.github/workflows/build.yml` (bloc `on:` et résumé du run), `.github/workflows/ios.yml` (bloc `on:` seulement, gel iOS). Interdit : jobs `endurance` / banc, `tools/qa/**`, tout autre fichier, retrait de job ou de Release.
+- **Critères** : `regles-de-gestion/WFS-185.md` RG-01 à RG-06 ; aucun run sur push de branche (vérifié sur la branche du ticket après fusion) ; run complet vert sur `main` avec commit et tickets au résumé ; nuit et `workflow_dispatch` (y compris sur une `feature/**`) gardés ; `paths-ignore` gardé.
+- **Plan** : modifier le bloc `on:` des deux fichiers, ajouter l'étape de résumé (commit + `WFS-XX` des messages), fusion par confiance si > 50 %, suivre le run de `main`, puis 🟣 → ✅ avec le numéro du run.
+
+### 2026-11-06 18:15:46 — WFS-137 fusionné par confiance (PR #150) (agent 4)
+- **RG-01, rond-point** : îlot (bordure, gazon, fontaine avec un jet animé, 3 platanes), panneaux bleus « sens giratoire » à l'entrée, amorces des deux branches sans route, immeubles le long des 4 branches. Chaque immeuble n'est gardé que s'il reste à plus de RW + 6 m de toute la route (± 360 m) : 12 éléments posés.
+- **RG-02, carrefours à feux (2 sur la carte)** : rue transversale de 9 m sans aucun objet (le plan retire les objets, commerces et panneaux), ligne d'arrêt, deux passages zébrés, mâts aux 4 coins avec optiques selon `trace::feuA`, plaques bleues sans nom, 4 piétons par carrefour qui traversent au rouge des voitures et attendent au vert.
+- **Accroches** (≤ 10 lignes) : `src/world/pietons.cpp` (7 lignes ajoutées, 3 modifiées ; la logique de traversée est dans `ville_quartiers.cpp`), `CMakeLists.txt` (1 ligne, `test_ville_lieux`). Nouveau test : `tests/test_ville_lieux.cpp`.
+- **Preuves en local** : 35 tests CPU OK, parcours complet 0 écart, banc `ville` (19 captures regardées), 233 appels de dessin au plus pour la Ville.
+- **Limites** : plaques de rue sans texte ; APK non construit en local. Je suis maintenant la CI de `main`.
+
+
+### 2026-11-06 18:22:47 — WFS-150 : CI après la fusion (Claude (session trafic))
+- **CI de main sur la fusion** (run 42262489656, 7a6c136) : toujours en file d'attente. Les lanceurs de GitHub sont saturés : 5 runs de main attendent depuis 16:32 UTC.
+- **Run 42262475306** : lancé tout seul par l'envoi de la branche avant la fusion, sur 6bc93f7, dont l'arbre est identique à 7a6c136 (même tree f645cf8). Tous les jobs sont verts : android, les 13 bancs (realisme, vitrines, texte compris) et publication-apk. publication-captures est encore en attente, endurance a été sauté.
+- WFS-150 reste 🟣 dans `TACHES.md` : il passe à ✅ avec le numéro du run vert de main. Rien à corriger à ce stade.
+
+### 2026-11-06 18:30:02 — WFS-145 en pause, WFS-187 créé et attribué : fuite de jeux de descripteurs (PO)
+- **Constat** (session dev expert 0183bv2X, banc d'endurance de WFS-145) : jeux de descripteurs vivants 360 → 981 (cycle 10) → 1 216, pool de 1 056 (`renderer.cpp:145`) ; 6 erreurs `vkAllocateDescriptorSets` au cycle 10 (Poursuite). Les `Material` de `makeMaterial` ne sont jamais libérés. Sur le téléphone : pool épuisé après quelques changements de carte sans relancer l'application.
+- **Décision** : option 2 retenue, variante refusée (elle cacherait une fuite réelle, contraire à RG-03 de WFS-145). Les jeux de descripteurs entrent au critère 1 de RG-13 (RG-15). WFS-145 ne se fusionne pas avant la correction (règle « Fusion » du ticket : banc `endurance` vert) : ⏸ En pause, branche poussée et gardée (RG-16).
+- **WFS-187 créé** (E4, P1 Urgent, `regles-de-gestion/WFS-187.md`) : `Renderer::destroy(Material&)` + libération des matériaux au `shutdown` et avant chaque `init`. **Attribué** à Claude (session dev expert, 0183bv2X), même agent que WFS-145 mis en pause, branche `feature/waforspeed-187`. E4 libre (WFS-182 fusionné). Zone : `src/render/**`, 1 ligne `renderer.h` (E0), appels de libération seulement dans les fichiers qui appellent `makeMaterial` (E2, E3, E5 garage, `scene_essai.cpp`). Interdit : banc et `tools/qa/**`, `maxSets`, aspect changé, iOS.
+- **Critères** : jeux vivants chaque cycle ≤ cycle 2 + 2 ; 0 erreur `vkAllocateDescriptorSets` ; captures inchangées ; `WFS_BANC=parcours` 0 écart. Ensuite : WFS-145 synchronisé avec `main`, banc `endurance` vert, fusion.
+
+### 2026-11-06 18:37:30 — Début WFS-181 : Corniche (3/3), attribué à Claude (session trafic) (PO)
+- **Demande** : Claude (session trafic), libre (WFS-150, WFS-182, WFS-183 🟣). Il demandait WFS-185 : **non attribuable**, déjà tenu par Claude (agent 1, 01UY1Vv2) depuis 18:02 UTC, branche poussée à 18:04 (règle des 10 h : le ticket lui reste).
+- **Choix** : WFS-181 (E2, P2 Haute, seul ticket ⏳ Prêt d'une épic libre ; E2 n'a aucun ticket 🔧 / 🔀 : WFS-137, WFS-178, WFS-139 en 🟣 ; WFS-145 ⏸). Dépendance WFS-180 ✅.
+- **Zone autorisée** : `src/world/plage.cpp`, `assets/world/**`, `assets/licences/**`, `src/world/cartes_banc.cpp` (captures Corniche) ; accroches ≤ 10 lignes annoncées : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : le reste de `src/game/**`, les fichiers des 3 autres cartes, `src/render/**`, `shaders/**`, `src/ui/**` (ordre permanent sur la taille des boutons), `.github/**` (WFS-185), iOS (gel).
+- **Critères** : RG-05 et RG-06 de `regles-de-gestion/WFS-139.md` (bars de plage « BEACH BAR » en paillotes, casino de station façade blanche et néons, cafés à terrasses, petite galerie vitrée, location de scooters ; mouettes en vol et posées, 2 dauphins qui sautent) + RG-C1 à RG-C5 ; graphisme réaliste partie par partie (`DA-realisme.md`, captures avant / après jour et nuit, indice de fidélité) ; `WFS_BANC=parcours` 0 écart ; ligne `qa/Check.md`.
+- **Plan court** : branche `feature/waforspeed-181` poussée tout de suite ; réutiliser `commerces.cpp`, `enseignes.*`, `decor_carte.*` et le travail de WFS-139 / WFS-180 dans `plage.cpp` ; se synchroniser avec `main` souvent (WFS-187 ajoute des appels de libération dans `src/world/**`).

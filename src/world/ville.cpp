@@ -44,7 +44,8 @@ enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
 enum Couleur {
     U_METAL, U_BANC, U_VITRE, U_PIERRE, U_EAU, U_ENTREPOT0, U_TOLE = U_ENTREPOT0 + 4, U_PORTE, U_CONT0, U_GRUE = U_CONT0 + 6,
-    U_CABINE, U_ZEBRA, U_DALLE, U_GARDE_CORPS, U_PELOUSE, U_BETON, U_CHENE2, U_CHENE, U_PIN, U_PIN_BAS, U_NB
+    U_CABINE, U_ZEBRA, U_DALLE, U_GARDE_CORPS, U_PELOUSE, U_BETON, U_CHENE2, U_CHENE, U_PIN, U_PIN_BAS,
+    U_BLEU, U_ASPHALTE, U_BORDURE, U_NB   // WFS-137 : panneaux et plaques bleus, rue transversale, bordures de l'îlot
 };
 constexpr uint32_t PALETTE[U_NB] = {
     0x3a3d44, 0x6b4a2e, 0xbfe8ff, 0xc9c4b8, 0x4aa3c7,
@@ -53,7 +54,8 @@ constexpr uint32_t PALETTE[U_NB] = {
     0xb8352a, 0x1f5f9a, 0xd8a12a, 0x3a7d44, 0x7a3fa0, 0xd06a1d,   // C2.cont
     0xd9a21b, 0xe8e8e8, 0xe9e9e6, 0xcfcac0, 0x3a3d42,             // grue, cabine, passage piéton, dalle, garde-corps
     0x4e7a34, 0x6e6e6a,                                           // GCOL2.park, GCOL2.concrete
-    0x5c4c3c, 0x4a3b2e, 0x8a5236, 0x4e4038};                      // BARK.oak2, oak, pine, pineLow (cases voisines)
+    0x5c4c3c, 0x4a3b2e, 0x8a5236, 0x4e4038,                       // BARK.oak2, oak, pine, pineLow (cases voisines)
+    0x1d5fb4, 0x3b3e43, 0xbdb9b0};                                // WFS-137 : bleu signalisation, asphalte, bordure
 vec2 uvc(int c) { return {(c + 0.5f) / (float)U_NB, 0.5f}; }
 
 // teintes du feuillage (VEG_TINT de life.js) : tilleuls sur le matériau des platanes, pins sur leur propre matériau
@@ -162,6 +164,13 @@ public:
             int W, H; auto px = facadeTexture(v, W, H, nuit_);
             facadeTex_[v] = r.vk().uploadTexture(px.data(), (uint32_t)W, (uint32_t)H, true);
             Material m; m.rough = 0.75f; m.metal = 0.f;
+            if (nuit_) {
+                // WFS-137 (RG-B, ANO-84) : la nuit, le jeu web dessine les façades en MeshBasicMaterial (sans éclairage) : la
+                // texture de nuit (fenêtres éteintes #161a26 sur #0d0f17) s'affiche telle quelle. Ici : émission × texture
+                // (MAT_EMTEX), facteur étalonné sur la couleur des fenêtres éteintes par versHdr (comme les fenêtres allumées)
+                const float c = 0x1a / 255.f, k = effets::versHdr(c, 1.1f) / std::pow(c, 2.2f);
+                m.emissive = {k, k, k}; m.flags |= MAT_EMTEX;
+            }
             mats_[P_FACADE_A + v] = r.makeMaterial(m, &facadeTex_[v], nullptr, nullptr);
         }
         auto plain = [&](Part p, vec3 c, float rough, float metal, vec3 em = {0, 0, 0}) {
@@ -192,7 +201,35 @@ public:
         mc.flags = MAT_MASK | MAT_DOUBLE | MAT_VTINT;
         mats_[P_CONIF] = r.makeMaterial(mc, leafTex_.img ? &leafTex_ : nullptr, nullptr, nullptr);
         // plan des quartiers (partagé avec les commerces et les enseignes) ; lampadaires pour la nuit (WFS-09)
-        plan_ = &ville::plan(*g.map, (int64_t)g.track->segmentCount());
+        plan_ = &ville::adapter(*g.map, *g.track);   // WFS-137 (RG-C1) : plan adapté aux sections du tracé 2 (inchangé au tracé 1)
+        {   // WFS-137 (RG-A, ANO-81) : segments bordés d'un immeuble, par côté (bit 0 gauche, bit 1 droite) : trottoir jusqu'à la façade
+            const int64_t L = (int64_t)plan_->objets.size();
+            bati_.assign((size_t)L, 0);
+            for (int64_t a = 0; a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE)
+                for (int64_t k = 0; k <= (int64_t)std::ceil(o.len / SEG_M); k++) bati_[(size_t)((a + k) % L)] |= o.side > 0 ? 2 : 1;
+        }
+        {   // WFS-137 : optiques des feux (éteinte : verre sombre ; LED allumées, comme la Corniche) et jet de la fontaine
+            Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
+            lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
+            const vec3 couleurs[3] = {{1.f, 0.04f, 0.02f}, {1.f, 0.42f, 0.01f}, {0.05f, 1.f, 0.45f}};
+            for (int k = 0; k < 3; k++) { ml.emissive = couleurs[k] * 6.f; lentille_[k] = r.makeMaterial(ml, nullptr, nullptr, nullptr); }
+            Material me; me.color = {0.78f, 0.9f, 1.f, 0.45f}; me.rough = 0.1f; me.flags = MAT_BLEND | MAT_DOUBLE;
+            if (nuit_) me.emissive = {0.05f, 0.07f, 0.09f};
+            eauJet_ = r.makeMaterial(me, nullptr, nullptr, nullptr);
+            if (!plan_->ronds.empty()) {   // gerbe : colonne de 1,6 m, puis corolle qui retombe dans la vasque (0,85 m)
+                Geo j;
+                carte::cyl(j, {0, 0, 0}, 0.07f, 1.6f, 8, {0, 0});
+                for (int k = 0; k < 16; k++) {
+                    const float a0 = 2 * PI * k / 16, a1 = 2 * PI * (k + 1) / 16;
+                    const vec3 hA{std::cos(a0) * 0.25f, 1.55f, std::sin(a0) * 0.25f}, hB{std::cos(a1) * 0.25f, 1.55f, std::sin(a1) * 0.25f};
+                    const vec3 bA{std::cos(a0) * 0.8f, 0.02f, std::sin(a0) * 0.8f}, bB{std::cos(a1) * 0.8f, 0.02f, std::sin(a1) * 0.8f};
+                    carte::tri(j, {0, 1.7f, 0}, hB, hA, {0, 0});
+                    carte::quad(j, hA, hB, bB, bA, {0, 0});
+                }
+                jet_ = r.makeMesh(j.v, j.i, false);
+            }
+        }
+        abordsRondPoint(*g.track);   // WFS-137 (RG-01)
         size_t nl = 0;
         for (size_t a = 0; a < plan_->objets.size(); a++) for (const ville::Objet& o : plan_->objets[a])
             if (o.t == ville::LAMPE) { lampadaires().push_back({(int64_t)a, o.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville}); nl++; }
@@ -396,8 +433,12 @@ public:
                 const float v0 = (float)(a * SEG_M), v1 = (float)((a + 1) * SEG_M), R = (float)RW;
                 for (int s : {-1, 1}) {
                     const uint32_t k = (uint32_t)w.v.size();
-                    auto som = [&](const carte::Pose& q, float lat, float v) { const vec3 x = carte::lateral(q, s * lat, 0.15f); w.v.push_back({x.x, x.y, x.z, 0, 1, 0, s * lat, v}); };
-                    som(p, R + 4, v0); som(p, R + 6, v0); som(p1, R + 6, v1); som(p1, R + 4, v1);
+                    // WFS-137 (RG-C1) : côté intérieur d'une courbe serrée, jamais au-delà de 90 % du rayon (comme Game)
+                    auto som = [&](const carte::Pose& q, int64_t sa, float lat, float v) {
+                        lat = std::min(lat, P.lim(sa, s)); const vec3 x = carte::lateral(q, s * lat, 0.15f); w.v.push_back({x.x, x.y, x.z, 0, 1, 0, s * lat, v}); };
+                    // WFS-137 (RG-A, ANO-81) : devant un immeuble, jusque sous sa façade (RW + 6,5 m) : plus d'herbe au pied
+                    const float bord = facade(a, s) ? R + FACADE_TROTTOIR : R + 6;
+                    som(p, a, R + 4, v0); som(p, a, bord, v0); som(p1, a + 1, bord, v1); som(p1, a + 1, R + 4, v1);
                     const vec3 A{w.v[k].px, w.v[k].py, w.v[k].pz}, B{w.v[k + 1].px, w.v[k + 1].py, w.v[k + 1].pz}, C{w.v[k + 2].px, w.v[k + 2].py, w.v[k + 2].pz};
                     if (cross(B - A, C - A).y >= 0) w.i.insert(w.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
                     else w.i.insert(w.i.end(), {k, k + 2, k + 1, k, k + 3, k + 2});
@@ -409,11 +450,129 @@ public:
                 const vec2 col = uvc(std::strcmp(z, "parc") ? U_BETON : U_PELOUSE);
                 for (int s : {-1, 1}) for (int i = 0; i < nb; i++) {
                     const ville::Bande& b = bd[i];
-                    carte::quadSol(out[P_UNI], carte::lateral(p, s * b.a, b.ya), carte::lateral(p1, s * b.a, b.ya),
-                                   carte::lateral(p1, s * b.b, b.yb), carte::lateral(p, s * b.b, b.yb), col);
+                    const float l0 = P.lim(a, s), l1 = P.lim(a + 1, s);   // WFS-137 (RG-C1) : côté intérieur des courbes serrées
+                    // WFS-137 (RG-A) : devant un immeuble, la pelouse ou le béton commencent derrière le trottoir prolongé
+                    const float ba = i == 0 && facade(a, s) ? std::max(b.a, (float)RW + FACADE_TROTTOIR) : b.a;
+                    if (ba >= std::min(l0, l1) || ba >= b.b) continue;
+                    carte::quadSol(out[P_UNI], carte::lateral(p, s * ba, b.ya), carte::lateral(p1, s * ba, b.ya),
+                                   carte::lateral(p1, s * std::min(b.b, l1), b.yb), carte::lateral(p, s * std::min(b.b, l0), b.yb), col);
                 }
             }
             for (const ville::Objet& o : P.objets[(size_t)seg]) objet(t, o, a, seg, z, p, lod, out);
+            lieux(t, a, seg, p, lod, out);   // WFS-137 : rond-point et carrefours du tracé 2
+        }
+    }
+
+    // WFS-137 (RG-01) : îlot du rond-point : bordure, gazon, fontaine (bassin, colonne, vasque ; le jet est animé dans
+    // render), trois platanes, panneaux bleus « sens giratoire » à l'entrée. (RG-02) carrefour à feux : ligne d'arrêt,
+    // passages zébrés de part et d'autre de la rue transversale (asphalte, 9 m, jusqu'à 40 m), mâts des feux aux 4 coins
+    // (les optiques, allumées selon trace::feuA, sont dessinées dans render), plaques de rue (bleues, sans nom).
+    void lieux(Track& t, int64_t a, int64_t seg, const carte::Pose& p, bool lod, Geo out[P_COUNT]) const {
+        const ville::Plan& P = *plan_;
+        const int64_t L = (int64_t)P.objets.size();
+        const float R = (float)RW;
+        Geo& U = out[P_UNI];
+        const vec3 up{0, 1, 0};
+        auto disque = [&](vec3 c, float rad, int n, vec2 uv) {   // disque horizontal, face vers le haut
+            for (int k = 0; k < n; k++) {
+                const float a0 = 2 * PI * k / n, a1 = 2 * PI * (k + 1) / n;
+                carte::tri(U, c, c + vec3{std::cos(a1), 0, std::sin(a1)} * rad, c + vec3{std::cos(a0), 0, std::sin(a0)} * rad, uv);
+            }
+        };
+        auto mod = [&](int64_t x) { return ((x % L) + L) % L; };
+        for (const ville::RondPoint& rp : P.ronds) {
+            if (seg == mod(rp.debut - (int64_t)(6 / SEG_M))) {   // panneaux « sens giratoire » des deux côtés, 6 m avant l'anneau
+                for (float sd : {-1.f, 1.f}) {
+                    const vec3 b = carte::lateral(p, sd * (R + 1.2f), 0.15f);
+                    carte::cyl(out[P_METAL], b, 0.04f, 2.3f, 6, {0, 0});
+                    const vec3 c = b + vec3{0, 2.3f, 0} - p.f * 0.06f;
+                    for (int k = 0; k < 16; k++) {   // disque bleu de 70 cm, face aux conducteurs qui arrivent
+                        const float a0 = 2 * PI * k / 16, a1 = 2 * PI * (k + 1) / 16;
+                        carte::tri(U, c, c + (p.r * std::cos(a0) + up * std::sin(a0)) * 0.35f, c + (p.r * std::cos(a1) + up * std::sin(a1)) * 0.35f, uvc(U_BLEU));
+                    }
+                    for (int k = 0; k < 3; k++) {   // trois flèches blanches qui tournent (sens giratoire)
+                        const float an = 2 * PI * k / 3 + 0.4f, ap = an + 0.7f;
+                        const vec3 q = c - p.f * 0.01f, d0 = p.r * std::cos(an) + up * std::sin(an), d1 = p.r * std::cos(ap) + up * std::sin(ap);
+                        carte::tri(U, q + d0 * 0.16f, q + d0 * 0.28f, q + d1 * 0.22f, uvc(U_ZEBRA));
+                    }
+                }
+            }
+            if (seg != mod(rp.centre)) continue;
+            const double c = t.segAt(a).curve;
+            const float kc = c > 0 ? 1.f : -1.f;
+            const vec3 ctr = p.o + p.r * (rp.rayon * kc);
+            const float ri = rp.rayon - R - 1.2f;   // 1,2 m de pavés entre la chaussée et la bordure
+            const size_t irp = (size_t)(&rp - P.ronds.data());
+            auto monde = [&](vec3 l) { return p.o + p.r * l.x + p.f * l.z + vec3{0, l.y, 0}; };
+            auto dir = [&](vec3 l) { return p.r * l.x + p.f * l.z; };
+            if (irp < abords_.size()) for (const Abord& ab : abords_[irp]) {
+                const vec3 c = monde(ab.c), u = dir(ab.u), n = dir(ab.n);
+                if (ab.k < 0) {   // amorce : asphalte (au ras de l'anneau) et ses deux bordures de trottoir
+                    const vec3 a0 = c + u * ab.a, a1 = c + u * (ab.a + ab.b);
+                    carte::quadSol(U, a0 - n * ab.h + vec3{0, 0.02f, 0}, a0 + n * ab.h + vec3{0, 0.02f, 0}, a1 + n * ab.h + vec3{0, 0.02f, 0}, a1 - n * ab.h + vec3{0, 0.02f, 0}, uvc(U_ASPHALTE));
+                    for (float sd : {-1.f, 1.f})
+                        carte::quadSol(out[P_TROTTOIR], a0 + n * (sd * ab.h) + vec3{0, 0.15f, 0}, a0 + n * (sd * (ab.h + 5)) + vec3{0, 0.15f, 0},
+                                       a1 + n * (sd * (ab.h + 5)) + vec3{0, 0.15f, 0}, a1 + n * (sd * ab.h) + vec3{0, 0.15f, 0}, {0, 0});
+                    continue;
+                }
+                Geo& fac = out[ab.k == 1 || ab.k == 2 ? P_FACADE_B : P_FACADE_A];   // immeuble : façade vers la branche (−n)
+                box(fac, c, n, u, ab.b, ab.a, -3.f, ab.h + 3.f, 4.f);
+                if (nuit_) fenetres(out, c, n * -1.f, u, ab.b, 2 * ab.a, ab.h, 4.f, ab.h - 3.f, (uint32_t)(rp.centre * 16 + ab.bras * 4 + (int)(&ab - abords_[irp].data())), 1.f);
+            }
+            if (ri < 2.5f) continue;
+            const vec3 b = ctr + vec3{0, 0.15f, 0};
+            carte::cyl(U, b, ri, 0.22f, 28, uvc(U_BORDURE));
+            disque(b + vec3{0, 0.225f, 0}, ri - 0.25f, 28, uvc(U_PELOUSE));   // gazon (la bordure de 25 cm reste visible)
+            const vec3 g = b + vec3{0, 0.22f, 0};
+            carte::cyl(U, g, 2.4f, 0.55f, 20, uvc(U_PIERRE));            // bassin (4,8 m)
+            disque(g + vec3{0, 0.57f, 0}, 2.15f, 20, uvc(U_EAU));       // eau du bassin
+            carte::cyl(U, g, 0.3f, 1.75f, 10, uvc(U_PIERRE));            // colonne
+            carte::cyl(U, g + vec3{0, 1.75f, 0}, 1.0f, 0.18f, 16, uvc(U_PIERRE));   // vasque
+            disque(g + vec3{0, 1.95f, 0}, 0.85f, 16, uvc(U_EAU));
+            Mulberry32 Rt((uint32_t)(rp.centre * 31 + 7));
+            Geo* leaf[2] = {&out[P_LEAF0], &out[P_LEAF1]};
+            for (int k = 0; k < 3; k++) {   // trois platanes autour du bassin, entre la fontaine et la bordure
+                const float an = 2 * PI * k / 3 + 0.5f, d = std::min(ri - 1.f, 3.9f);
+                veg::platane(&out[P_BARK], &out[P_CORE], leaf, g + vec3{std::cos(an) * d, 0, std::sin(an) * d}, 3.2f, Rt, lod);
+            }
+        }
+        for (const ville::Carrefour& cf : P.carrefours) {
+            const double dr = ville::RUE_TRANS_M / SEG_M;
+            auto bandes = [&](double s0, double s1) {   // passage zébré de s0 à s1 (segments), 8 bandes sur la largeur
+                const carte::Pose q0 = poseS(t, s0), q1 = poseS(t, s1);
+                for (int k = 0; k < 8; k++) {
+                    const float x0 = -R + 0.6f + k * (2 * R - 1.2f) / 8, x1 = x0 + 0.95f;
+                    carte::quadSol(U, carte::lateral(q0, x0, 0.015f), carte::lateral(q0, x1, 0.015f), carte::lateral(q1, x1, 0.015f), carte::lateral(q1, x0, 0.015f), uvc(U_ZEBRA));
+                }
+            };
+            auto mat = [&](const carte::Pose& q, float sd, float face) {   // mât du feu, caisson, plaque de rue (sur les mâts d'avant)
+                const vec3 b = carte::lateral(q, sd * (R + 0.8f), 0.15f);
+                carte::cyl(out[P_METAL], b, 0.07f, 3.6f, 8, {0, 0});
+                carte::box(out[P_METAL], b + q.f * (face * 0.12f), q.r, q.f, 0.32f, 0.95f, 0.22f, {0, 0}, 2.65f);
+                if (face < 0) carte::box(U, b + q.r * (sd * 0.5f), q.f, q.r, 0.04f, 0.25f, 0.9f, uvc(U_BLEU), 2.3f);   // plaque, le long de la rue
+            };
+            if (seg == mod(cf.ligne)) {
+                const double s0 = (double)a;
+                const carte::Pose q = poseS(t, s0);
+                carte::quadSol(U, carte::lateral(q, -R, 0.016f), carte::lateral(q, R, 0.016f),
+                               carte::lateral(poseS(t, s0 + 0.4 / SEG_M), R, 0.016f), carte::lateral(poseS(t, s0 + 0.4 / SEG_M), -R, 0.016f), uvc(U_ZEBRA));   // ligne d'arrêt
+                bandes(s0 + 0.9 / SEG_M, s0 + 3.2 / SEG_M);
+                for (float sd : {-1.f, 1.f}) mat(q, sd, -1.f);
+            }
+            if (seg == mod(cf.croise)) {
+                const double s0 = (double)a;
+                const carte::Pose q0 = poseS(t, s0 - dr), q1 = poseS(t, s0 + dr), qm = poseS(t, s0);
+                for (float sd : {-1.f, 1.f}) {   // rue transversale (asphalte), ligne médiane en tirets
+                    carte::quadSol(U, carte::lateral(q0, sd * R, 0.17f), carte::lateral(q1, sd * R, 0.17f), carte::lateral(q1, sd * (R + 40), 0.17f), carte::lateral(q0, sd * (R + 40), 0.17f), uvc(U_ASPHALTE));
+                    for (float x = R + 6; x < R + 39; x += 4)
+                        carte::quadSol(U, carte::lateral(qm, sd * x, 0.18f) - qm.f * 0.07f, carte::lateral(qm, sd * x, 0.18f) + qm.f * 0.07f,
+                                       carte::lateral(qm, sd * (x + 2), 0.18f) + qm.f * 0.07f, carte::lateral(qm, sd * (x + 2), 0.18f) - qm.f * 0.07f, uvc(U_ZEBRA));
+                }
+                const double sf = s0 + dr + 0.6 / SEG_M;   // après la rue : passage zébré et mâts des 2 autres coins
+                bandes(sf, sf + 2.3 / SEG_M);
+                const carte::Pose qf = poseS(t, sf + 2.6 / SEG_M);
+                for (float sd : {-1.f, 1.f}) mat(qf, sd, 1.f);
+            }
         }
     }
 
@@ -476,14 +635,112 @@ public:
         const mat4 I = mat4::identity();
         int draws = 0;
         for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) { r.draw(ch.m[p], mats_[p], I); draws++; }
+        draws += lieuxAnimes(r, g, aP);   // WFS-137
         lastDraws_ = draws;
         if (frame_ % 300 == 1) WFS_LOG("Ville : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
+    }
+
+    // WFS-137 (RG-01) : abords du rond-point, dans le repère de la route au centre de l'anneau (x : latéral, z : avant ; le même
+    // à chaque tour) : amorces des deux branches sans route (asphalte, 30 m) et immeubles le long des quatre branches, gardés
+    // seulement s'ils restent à plus de RW + 6 m de toute la route (± 360 m) : rien ne retombe sur l'entrée ni la sortie
+    void abordsRondPoint(Track& t) {
+        abords_.assign(plan_->ronds.size(), {});
+        const float R = (float)RW;
+        for (size_t i = 0; i < plan_->ronds.size(); i++) {
+            const ville::RondPoint& rp = plan_->ronds[i];
+            const carte::Pose pc = carte::poseAt(t, rp.centre), pe = carte::poseAt(t, rp.debut), ps = carte::poseAt(t, rp.fin);
+            const vec3 ctr = pc.o + pc.r * (rp.rayon * (t.segAt(rp.centre).curve > 0 ? 1.f : -1.f));
+            std::vector<vec3> route;
+            for (int64_t k = -300; k <= 300; k++) route.push_back(carte::poseAt(t, rp.centre + k).o);
+            auto libre = [&](vec3 q, float marge) {
+                for (const vec3& o : route) if ((o.x - q.x) * (o.x - q.x) + (o.z - q.z) * (o.z - q.z) < marge * marge) return false;
+                return true;
+            };
+            auto local = [&](vec3 w) { const vec3 d = w - pc.o; return vec3{dot(d, pc.r), d.y, dot(d, pc.f)}; };
+            auto localDir = [&](vec3 d) { return vec3{dot(d, pc.r), 0, dot(d, pc.f)}; };
+            const vec3 bras[4] = {pe.f * -1.f, ps.f, pe.f, ps.f * -1.f};   // entrée, sortie (route) ; deux amorces sans route
+            Mulberry32 D((uint32_t)(rp.centre * 7 + 3));
+            for (int b = 0; b < 4; b++) {
+                const vec3 u = bras[b], n{-u.z, 0, u.x};
+                const float r0 = rp.rayon + R - 0.5f;   // bord extérieur de l'anneau
+                if (b >= 2) {   // amorce : 30 m d'asphalte (largeur de la route), si elle ne touche aucune autre partie de la route
+                    bool ok = true;
+                    for (float d = r0 + 6; d <= r0 + 30 && ok; d += 3) ok = libre(ctr + u * d, 2 * R);
+                    if (ok) abords_[i].push_back({local(ctr), localDir(u), localDir(n), r0, 30, R, -1, b});
+                }
+                for (float sd : {-1.f, 1.f}) for (int k = 0; k < 2; k++) {   // deux immeubles de chaque côté de chaque branche
+                    const float len = 14 + (float)D.next() * 6, dep = 9 + (float)D.next() * 5, h = 12 + (float)D.next() * 18;
+                    const float along = r0 + 4 + k * 22 + len / 2, lat = R + SET_BACK + dep / 2;
+                    const vec3 c = ctr + u * along + n * (sd * lat);
+                    bool ok = libre(c, R + 6 + std::hypot(len, dep) / 2);
+                    if (ok) abords_[i].push_back({local(c), localDir(u), localDir(n * sd), len / 2, dep / 2, h, (int)(D.next() * 4), (int)b});
+                }
+            }
+            WFS_LOG("Ville (WFS-137) : rond-point au segment %lld (rayon %.1f m) : %zu amorces et immeubles aux abords",
+                    (long long)rp.centre, rp.rayon, abords_[i].size());
+        }
+    }
+
+    // WFS-137 : occurrence du segment seg (sur un tour) la plus proche du segment absolu aP
+    int64_t proche(int64_t seg, int64_t aP) const {
+        const int64_t L = (int64_t)plan_->objets.size();
+        int64_t x = aP - ((aP % L) + L) % L + seg;
+        if (x - aP > L / 2) x -= L; else if (aP - x > L / 2) x += L;
+        return x;
+    }
+
+    // WFS-137 (RG-02) : optiques des feux (rouge en haut), allumées selon trace::feuA, sur les 4 mâts du carrefour ; maillages
+    // construits à l'occurrence la plus proche du joueur (le tour change la position dans le monde). (RG-01) jet de la fontaine :
+    // gerbe translucide qui monte et retombe dans la vasque, hauteur animée
+    int lieuxAnimes(Renderer& r, const GameView& g, int64_t aP) {
+        Track& t = *g.track;
+        const ville::Plan& P = *plan_;
+        const float R = (float)RW;
+        int draws = 0;
+        optiques_.resize(P.carrefours.size());
+        for (size_t i = 0; i < P.carrefours.size(); i++) {
+            const ville::Carrefour& cf = P.carrefours[i];
+            const int64_t abs = proche(cf.ligne, aP);
+            if (std::abs(abs - aP) * SEG_M > 400) continue;
+            Optiques& op = optiques_[i];
+            if (op.abs != abs) {
+                for (Mesh& m : op.m) if (m.vb.buf) { graveyard_.push_back({frame_, m}); m = Mesh{}; }
+                op.abs = abs;
+                const double sf = (double)(abs + cf.croise - cf.ligne) + ville::RUE_TRANS_M / SEG_M + 2.9 / SEG_M;
+                t.pose(abs - 2); t.pose((int64_t)sf + 3);
+                const carte::Pose qa = poseS(t, (double)abs), qf = poseS(t, sf);
+                for (int k = 0; k < 3; k++) {   // optiques de 200 mm, face aux conducteurs (mâts d'avant : vers −f ; d'après : vers +f)
+                    Geo gk;
+                    for (const auto& [q, face] : {std::pair{qa, -1.f}, std::pair{qf, 1.f}})
+                        for (float sd : {-1.f, 1.f}) {
+                            const vec3 c = carte::lateral(q, sd * (R + 0.8f), 0.15f + 3.35f - 0.23f * k) + q.f * (face * 0.23f);
+                            carte::cylAxe(gk, c, q.f * face, 0.09f, 0.03f, 10, {0, 0});
+                        }
+                    op.m[k] = r.makeMesh(gk.v, gk.i, false);
+                }
+            }
+            const trace::Feu f = trace::feuA(cf.feu);
+            const int allume = f == trace::Feu::Rouge ? 0 : f == trace::Feu::Orange ? 1 : f == trace::Feu::Vert ? 2 : -1;
+            for (int k = 0; k < 3; k++) if (op.m[k].indexCount) { r.draw(op.m[k], k == allume ? lentille_[k] : lentilleEteinte_, mat4::identity()); draws++; }
+        }
+        if (jet_.indexCount) for (const ville::RondPoint& rp : P.ronds) {
+            const int64_t abs = proche(rp.centre, aP);
+            if (std::abs(abs - aP) * SEG_M > 300) continue;
+            const carte::Pose p = carte::poseAt(t, abs);
+            const vec3 ctr = p.o + p.r * (rp.rayon * (t.segAt(abs).curve > 0 ? 1.f : -1.f)) + vec3{0, 0.15f + 0.22f + 1.93f, 0};
+            const float h = 1.f + 0.12f * (float)std::sin(g.time * 3.1) + 0.05f * (float)std::sin(g.time * 11.7);
+            r.draw(jet_, eauJet_, translate(ctr) * scale({1, h, 1})); draws++;
+        }
+        return draws;
     }
 
     void shutdown(Renderer& r) override {
         if (!active_) return;
         WFS_LOG("Ville : %d appels de dessin à la dernière image", lastDraws_);
         r.vk().waitIdle();
+        for (Optiques& op : optiques_) for (Mesh& m : op.m) if (m.vb.buf) r.destroy(m);
+        optiques_.clear();
+        if (jet_.vb.buf) { r.destroy(jet_); jet_ = Mesh{}; }
         for (auto& [k, ch] : chunks_) for (Mesh& m : ch.m) if (m.vb.buf) r.destroy(m);
         chunks_.clear();
         for (auto& g : graveyard_) r.destroy(g.second);
@@ -496,6 +753,22 @@ public:
     }
 
 private:
+    static constexpr float FACADE_TROTTOIR = SET_BACK + 0.3f;   // WFS-137 : trottoir prolongé 30 cm sous la façade (pas de jour)
+    bool facade(int64_t a, int s) const {
+        if (bati_.empty()) return false;
+        const int64_t L = (int64_t)bati_.size();
+        return bati_[(size_t)(((a % L) + L) % L)] & (s > 0 ? 2 : 1);
+    }
+    std::vector<uint8_t> bati_;   // WFS-137 (ANO-81)
+    // WFS-137 (RG-01, RG-02) : optiques des feux (rouge, orange, vert) de chaque carrefour, jet de la fontaine (repère local)
+    struct Optiques { int64_t abs = INT64_MIN; Mesh m[3]{}; };
+    std::vector<Optiques> optiques_;
+    // abords d'un rond-point (repère de la route au centre de l'anneau) : amorce (bras = −1 : demi-longueur a = départ, b = longueur,
+    // h = demi-largeur) ou immeuble (a, b : demi-longueur et demi-profondeur, h : hauteur, k : teinte)
+    struct Abord { vec3 c, u, n; float a, b, h; int k, bras; };
+    std::vector<std::vector<Abord>> abords_;
+    Mesh jet_{};
+    Material lentilleEteinte_, lentille_[3], eauJet_;
     bool active_ = false, nuit_ = false;   // nuit_ : WFS-94
     const ville::Plan* plan_ = nullptr;
     int64_t depart_ = 0;   // banc d'essai : départ du joueur avancé de depart_ segments (WFS_DEPART)

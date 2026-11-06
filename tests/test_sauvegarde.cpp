@@ -91,11 +91,25 @@ int main(int argc, char** argv) {
         Sauvegarde s;
         VERIFIER(s.adversaires.empty() && s.texte().find("adversaires=") == std::string::npos);   // aucun duel : rien
         s.noterAdversaires({"Nadia"}); s.noterAdversaires({"Sam", "Lou"}); s.noterAdversaires({"Nadia", "Ka|rim"});
-        VERIFIER(s.adversaires.size() == 3 && s.adversaires[0] == "Ka rim" && s.adversaires[1] == "Nadia" && s.adversaires[2] == "Lou");
+        // WFS-183 : une manche passe en tête dans l'ordre reçu (classement) : Sam, Lou puis Nadia, Ka rim en haut
+        VERIFIER(s.adversaires.size() == 3 && s.adversaires[0] == "Nadia" && s.adversaires[1] == "Ka rim" && s.adversaires[2] == "Sam");
         Sauvegarde r; VERIFIER(r.lire(s.texte()));
         VERIFIER(r.adversaires == s.adversaires);
         Sauvegarde h; VERIFIER(h.lire("version=1\ntrace=2\nadversaires=" + std::string(500, 'x') + "|||Bob\n"));
         VERIFIER(h.adversaires.size() == 2 && h.adversaires[0].size() <= 14 && h.adversaires[1] == "Bob");   // pseudos bornés, vides ignorés
+    }
+    // WFS-183 (RG-01, ANO-93) : même manche → ordre du classement (mieux classé en haut, « Parti » en dernier), quel que soit
+    // l'ordre du départ (identifiant du relais) ; deux tirages du relais différents donnent la même liste
+    {
+        Sauvegarde a, b;
+        a.noterAdversaires({"Lou", "Nadia", "Sam"});   // départ, ordre de l'identifiant du relais (tirage 1)
+        b.noterAdversaires({"Sam", "Lou", "Nadia"});   // départ, autre tirage
+        a.noterAdversaires({"Nadia", "Sam", "Lou"}); b.noterAdversaires({"Nadia", "Sam", "Lou"});   // arrivée : classement
+        VERIFIER(a.adversaires == b.adversaires);
+        VERIFIER(a.adversaires.size() == 3 && a.adversaires[0] == "Nadia" && a.adversaires[1] == "Sam" && a.adversaires[2] == "Lou");
+        Sauvegarde c; c.noterAdversaires({"Sam", "Nadia", "Lou"});   // Lou « Parti » : dernier du classement
+        VERIFIER(c.adversaires.size() == 3 && c.adversaires[0] == "Sam" && c.adversaires[2] == "Lou");
+        Sauvegarde r; VERIFIER(r.lire(c.texte())); VERIFIER(r.adversaires == c.adversaires);   // ordre relu tel quel
     }
     std::printf(g_echecs ? "ÉCHEC (%d)\n" : "OK\n", g_echecs);
     return g_echecs ? 1 : 0;
