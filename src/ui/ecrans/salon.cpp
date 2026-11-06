@@ -23,6 +23,7 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 
 namespace wfs {
 bool choixModeZone(const std::string& nom, float& x, float& y);   // modes_ecran.cpp (WFS-112, banc d'essai)
@@ -63,11 +64,8 @@ const reseau::TransportDouble* doubleActuel() {
 }
 
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+    // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
+    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
 // bouton .btn (orange) ou .btn--ghost (surface) avec son texte en capitales ; renvoie la zone touchable
 Zone bouton(Renderer& r, float x, float y, float h, float k, const char* texte, bool plein, bool droite = false) {
@@ -286,8 +284,14 @@ private:
                 ui::text(r, tx + tk / 2, ty + 11 * k, 22 * k, ui::majuscules(std::string(1, duel::CODE_CHARS[i])), hex(TEXTE), ui::CENTRE, 0, false);
             } else {
                 g_effacer = {tx, ty, tk, tk};
-                r.uiRect(tx + 12 * k, ty + tk / 2 - 1.5f * k, tk - 24 * k, 3 * k, hex(ACCENT2));   // ← effacer
-                r.uiRect(tx + 12 * k, ty + tk / 2 - 6 * k, 3 * k, 12 * k, hex(ACCENT2));
+                // WFS-146 (RG-08, ANO-43) : icône « retour arrière » ⌫ lisible (pentagone pointé à gauche, croix), trait 2 px
+                // blanc #F2F4F8 (le cyan est réservé à la sélection) ; même touche, même place, même taille qu'avant
+                const float iw = 22 * k, ih = 16 * k, ix = tx + (tk - iw) / 2, iy = ty + (tk - ih) / 2, p = 6 * k, ep = 2 * k;
+                const vec2 penta[5] = {{ix, iy + ih / 2}, {ix + p, iy}, {ix + iw, iy}, {ix + iw, iy + ih}, {ix + p, iy + ih}};
+                dessin2d::contour(r, penta, 5, ep, hex(TEXTE));
+                const float mx = ix + p + (iw - p) / 2, my = iy + ih / 2, c = 3 * k;   // croix de 6 px au centre du corps
+                const vec2 d1[2] = {{mx - c, my - c}, {mx + c, my + c}}, d2[2] = {{mx - c, my + c}, {mx + c, my - c}};
+                dessin2d::trait(r, d1, 2, ep, hex(TEXTE)); dessin2d::trait(r, d2, 2, ep, hex(TEXTE));
             }
         }
         const float ry = ky + 4 * (tk + gap) + 6 * k, rh = 50 * k;
@@ -311,6 +315,8 @@ private:
             sous += mn > 0 ? " · code valable " + std::to_string(mn) + " min" : " · code expiré pour les nouveaux";
         }
         ui::text(r, cx, y + 84 * k, 13 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
+        // WFS-146 (RG-08, ANO-44) : aide de RG-07 de WFS-89 sous le code (12 px #8A90A6), dans l'espace libre avant les lignes
+        ui::text(r, zl, y + 96 * k, 12 * k, "Donne ce code à ton adversaire : il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
         // lignes .car-line
         float ly = y + 112 * k;
         auto ligne = [&](const char* lib, const std::string& val) {

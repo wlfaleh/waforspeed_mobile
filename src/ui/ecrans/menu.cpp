@@ -11,6 +11,7 @@
 #include "../../game/course5.h"   // WFS-110 : choix du mode
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../../game/direction.h"   // WFS-146 (RG-05) : réglages Direction et Gyroscope, dessin2d
 #include "chargement.h"
 #include "reglages.h"
 #include "terrain.h"
@@ -127,10 +128,9 @@ public:
             if (grise) a *= 0.45f;
             // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
             const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};
-            const int B = 10;
-            for (int b = 0; b < B; b++) {
-                const float tb = (b + 0.5f) / B;
-                r.uiRect(x, yi + itemH * b / B, lw - 14 * k * tb, itemH / B + 0.5f, fond);
+            {   // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 10 bandes translucides qui se chevauchaient)
+                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * k, yi + itemH}, {x, yi + itemH}};
+                dessin2d::polygone(r, p, 4, dessin2d::uni(fond));
             }
             const bool solo = i == SOLO;   // #startBtn : barre et titre orange
             if (presse) {   // barre gauche cyan --accent-2 avec halo (0 0 12px rgba(0,229,255,.7))
@@ -160,7 +160,11 @@ public:
         y += piedH + gap;
         // ---------- .intro.only-touch : aide des commandes tactiles ----------
         a = glisse(5, dx);
-        ui::text(r, m.x + dx, y, 16 * k, "Flèches à gauche : volant.", hex(INTRO, a), ui::GAUCHE, 0, false);
+        // WFS-146 (RG-05, ANO-32) : la 1re ligne suit les réglages Direction et Gyroscope (taille, couleur, positions inchangées)
+        const bool fleches = reglagesRessenti().direction == ModeDirection::Fleches, gyro = gyroscopeActif();   // capteur présent et réglage non coupé
+        const char* volant = fleches ? (gyro ? "Flèches à gauche ou inclinaison : volant." : "Flèches à gauche : volant.")
+                                     : (gyro ? "Glisse à gauche ou incline le téléphone pour tourner." : "Glisse à gauche pour tourner.");
+        ui::text(r, m.x + dx, y, 16 * k, volant, hex(INTRO, a), ui::GAUCHE, 0, false);
         ui::text(r, m.x + dx, y + 22 * k, 16 * k, "À droite : Gaz, Frein (à l'arrêt : marche arrière), Nitro.", hex(INTRO, a), ui::GAUCHE, 0, false);
     }
 private:

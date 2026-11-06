@@ -25,7 +25,11 @@ public:
     // fonction à passer à Game::init (appelée entre les étapes, sur l'écran de chargement de l'application)
     static void progression(float p, const char* libelle);
     void fin();          // 100 % (dernière image), total au journal, puis fondu de 300 ms par-dessus la scène
-    void erreur();       // échec : message rouge, l'écran reste affiché
+    void erreur(bool quitter = false);   // échec : message rouge + bouton « Réessayer » (« Quitter » : le moteur ne peut pas repartir)
+    // WFS-146 (RG-10) : toucher de la plateforme pendant l'écran d'erreur (vrai : gardé) ; reessaiDemande() : bouton
+    // relâché dessus, à traiter une fois (« Réessayer » : l'erreur est effacée, la plateforme relance le chargement)
+    bool toucher(int id, float x, float y, bool down);
+    bool reessaiDemande();
     void dessiner();     // redessine l'écran tel quel (ex. : écran d'erreur à chaque image)
     // banc d'essai : appelé après chaque image dessinée (n = numéro de l'étape, 0 = début)
     std::function<void(int n)> apresImage;
@@ -54,6 +58,8 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
 void benchChargement(Game& g, Renderer& r, const std::string& outDir, double depuis, void (*racine)(bool ok));
 // fondu en cours : opacité de l'écran de chargement à l'instant `temps` de la scène (0 = fini)
 float opaciteFondu(double temps);
+// WFS-146 (RG-09, ANO-45) : vrai du fin() du chargement à la fin du fondu (les commandes tactiles de conduite sont cachées)
+bool fonduEnCours();
 
 } // namespace ecrans
 } // namespace wfs
