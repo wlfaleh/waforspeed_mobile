@@ -4072,3 +4072,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Mineures** : ANO-77 (facettes 208, Compass), ANO-78 (feux de recul de la Golf hors des blocs), ANO-79 (plaques au nom de l'auteur du modèle), ANO-80 (capture `garage-course` et `poursuite-camion` à refaire au banc).
 - Toujours là : ANO-23, ANO-56, ANO-71 (reste d'ANO-67). Vérifiée : ANO-26.
 - **Bloquantes après fusion → tickets de correction prioritaires à créer par le PO** (ANO-72 à 76). Rapport : `qa/rapports/voitures-2026-11-06.md`.
+
+### 2026-11-06 08:35:39 — Recette de nuit, lot 4 : WFS-94 et WFS-148 PASSABLES, correctif #121 VALIDÉ (qa-lead)
+- Captures : construction 689 (eb8152a) pour WFS-94 et #121, construction 693 (0d923d5) pour WFS-148 ; avant : `apercu-waforspeed-134`.
+- **WFS-94 : PASSABLE AVEC ANOMALIES MINEURES** : ANO-81 (herbe devant les immeubles en retrait, reste d'ANO-49 passée « corrigée en partie »), ANO-82 (voiliers à sec), ANO-83 (pas de barque au village), ANO-84 (façades proches noires la nuit).
+- **WFS-148 : PASSABLE AVEC ANOMALIES MINEURES** : image du jeu inchangée (13 captures sur 14 identiques au pixel) ; ANO-85 (bouton Réglages sur les vues de mesure), ANO-86 (« 0.0 % » pour un domaine non mesurable). Pour le PO : 48 captures (et non 96) ; critère ≥ 99 % sans objet pour l'état zéro.
+- **Correctif #121 : VALIDÉ** (poursuite à 1000 points, caméra et record conformes à `configgame.json`).
+- **Vérifiées corrigées** : ANO-37, 40, 51. Reste le lot 1 (WFS-133, 144, 136).

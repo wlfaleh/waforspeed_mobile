@@ -34,10 +34,10 @@
 
 | ANO | Gravité | Capture | Ce qui ne va pas |
 |---|---|---|---|
-| ANO-? (1) | Mineure | `carte-ville-residentiel`, `course-cam0-1`, `carte-ville-parc` | Il reste une bande d'herbe entre le trottoir et les façades quand l'immeuble est en retrait (résidentiel côté gauche, centre côté droit avec une terrasse posée sur l'herbe, liseré vert au parc) |
-| ANO-? (2) | Mineure | `carte-plage-marina` | Les voiliers de la marina sont posés sur le quai gris, à sec, et non dans l'eau |
-| ANO-? (3) | Mineure | `carte-plage-village` | Aucune barque visible au village ; les maisons côté mer cachent la mer et les barques |
-| ANO-? (4) | Mineure | `course-nuit-ville-1`, `course-nuit-ville-haut`, `poursuite-police` | La nuit, les façades proches sont noires et unies (fenêtres éteintes invisibles) et peu de fenêtres sont allumées de près, bien moins d'une sur trois |
+| ANO-81 | Mineure | `carte-ville-residentiel`, `course-cam0-1`, `carte-ville-parc` | Il reste une bande d'herbe entre le trottoir et les façades quand l'immeuble est en retrait (résidentiel côté gauche, centre côté droit avec une terrasse posée sur l'herbe, liseré vert au parc) |
+| ANO-82 | Mineure | `carte-plage-marina` | Les voiliers de la marina sont posés sur le quai gris, à sec, et non dans l'eau |
+| ANO-83 | Mineure | `carte-plage-village` | Aucune barque visible au village ; les maisons côté mer cachent la mer et les barques |
+| ANO-84 | Mineure | `course-nuit-ville-1`, `course-nuit-ville-haut`, `poursuite-police` | La nuit, les façades proches sont noires et unies (fenêtres éteintes invisibles) et peu de fenêtres sont allumées de près, bien moins d'une sur trois |
 
 ### À essayer sur le téléphone (APK de `main`)
 
