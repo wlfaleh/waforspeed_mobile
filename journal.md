@@ -2777,3 +2777,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 22:56:42 — WFS-199 et WFS-164 : personnages du jeu pour les spectateurs, humains réalistes pour les conducteurs (po-scrum-master)
 - **Décision de l'utilisateur** : les spectateurs du Grand Prix utilisent les personnages déjà dans le jeu (vus de loin) ; les humains plus réalistes sont pour les conducteurs des voitures, vus de près.
 - **Fait** : WFS-199 RG-05 réécrite (aucune recherche de nouveaux humains) ; WFS-164 : section « Priorité d'usage » (conducteurs d'abord).
+
+### 2026-11-06 22:58:54 — README : lien direct vers la dernière APK (po-scrum-master)
+- **Demande de l'utilisateur** : un lien dans le README pour télécharger la dernière APK sans la chercher (pas de ticket).
+- **Fait** : lien `releases/download/apercu/WaForSpeed.apk` (adresse fixe, APK de `main`) et lien vers la page de la Release, en haut de `README.md`.
