@@ -4420,3 +4420,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   droits de la session** (consigne du coordinateur : ne rien pousser pour 158). Travail local à jour : branche locale `feature/waforspeed-158`
   (commits 6c78a60, 5d9e379, fusion du ST-1 de 01Us6uCu gardé sous `test_fidelite_voitures_audit`, fusion de main, 3797449 ; 32 tests CPU OK).
   Décision attendue : qui pousse cette branche.
+
+### 2026-11-06 12:11:27 — WFS-140 : code poussé, PR #137 (Claude, agent 5)
+- **Fait** (`src/world/circuit.cpp`, `src/world/cartes_banc.cpp` seulement, aucune accroche) : place libre au chargement (grille des centres de la route, 29 ms mesurés sur CPU) → aucun objet ni sol à moins de RW + 1 m d'une autre chaussée (branche voisine de l'épingle à ≈ 40 m : place libre 37 m), rien de haut à l'intérieur des virages serrés dans les 60 m avant ; décor des sections : vibreurs larges, gravier, pneus, panneaux 150/100/50 ; grille et portique de 5 feux (un par un au décompte, éteints au GO) ; raidillon (tribune 16 rangs, passerelle) ; paddock (garages, camions, bars VIP, tour, hélicoptère) ; spectateurs, drapeaux animés, espace fans (grande roue), camping ; oiseaux.
+- **Captures** : `carte-circuit-{depart,epingle,chicane,raidillon,paddock}(-nuit)` en caméra de course ; l'ancienne `carte-circuit-paddock` (zone) devient `carte-circuit-zone-paddock`.
+- **Fusion** : confiance ≤ 50 % (rendu non vérifiable sans GPU en local) → j'attends la CI et je regarde les captures avant de fusionner. Point de vigilance : durée du job `partie1b` (+10 captures).
