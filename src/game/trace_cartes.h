@@ -27,7 +27,7 @@ constexpr int VERSION = 2;   // version du tracé : sauvegarde (trace=2, trace-<
 // A7 (décision du PO, 2026-11-06) : activation carte par carte. Une carte absente garde exactement le tracé 1 du jeu web.
 // Chaque ticket de décor (WFS-137 Ville, WFS-138 Campagne, WFS-139 Corniche) ajoute sa carte sur CETTE ligne, dans le même
 // commit que son décor adapté aux sections serrées.
-inline constexpr const char* CARTES_ACTIVES[] = {"circuit"};
+inline constexpr const char* CARTES_ACTIVES[] = {"circuit", "campagne"};   // WFS-138 : campagne (col, vignes)
 bool carteActive(const char* id);              // dans CARTES_ACTIVES
 int versionCarte(const char* id);              // 2 si active (ou forcée au banc), sinon 1 : Track::build(map, versionCarte(id))
 void forcerTrace2(bool oui);                   // banc WFS_BANC=trace : tracé 2 sur les 4 cartes

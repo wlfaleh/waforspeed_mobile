@@ -4532,3 +4532,86 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Accroches hors zone, annoncées** : `.github/workflows/build.yml` +1 ligne (groupe realisme : `tools/textures/ci_textures.sh`, rapport PSNR) ; `tools/qa/tests_cpu.sh` 1 ligne (argument `assets` de `test_tangentes`) ; `tests/test_roues.cpp` 2 lignes (.wfm v2) ; `CMakeLists.txt` 5 lignes (2 tests, dépendance des shaders aux `*.glsl`) ; `assets/licences/textures-essai.txt` (CC0), `assets/textures/.gitignore`.
 - Limites : ASTC et ETC2 non vérifiés sur un vrai GPU (lavapipe n'a ni l'un ni l'autre : le PC lit la variante RGBA8 ; chargement et tailles testés, envoi GPU des formats compressés non exécuté) ; `.wfp` (personnages) sans tangente : `squelette.cpp` et `convert_people.mjs` hors de ma zone, à faire par WFS-164 (E11) ; `planche_voitures.cpp` (E5) lit encore les sommets à 32 octets : compatible avec la v2 (section à la fin).
 - Fusion : CI de branche verte (run 42210163440, d9d6cb2 : 13 bancs, APK, publication) ; synchros suivantes avec main sans conflit, compilées, 33 tests CPU verts, puis fusion sur ordre du coordinateur (PR ouverte depuis 2 h, main qui bouge sans cesse). CI de main suivie dès maintenant.
+
+### 2026-11-06 13:20:19 — WFS-170 : CI de main suivie après la fusion (run 42215471065, e21145e) (Claude (session trafic))
+- **Verts** : android, publication de l'APK, les 13 bancs (vitrines compris, avec les 20 `vitrine-<id>-feux`).
+- **Rouge, sans lien avec WFS-170** : `endurance` : « fuite de mémoire : +10,9 % au cycle 6 (seuil 10 %) », parcours au doigt 0 écart ;
+  même défaut qu'avant ce ticket (+10,2 % sur b2362b9, WFS-145 en cours, E7). Les correctifs de WFS-170 ne gardent aucune mémoire de plus
+  après le chargement (pièces et indices dans les mêmes tampons). Rien à corriger pour WFS-170.
+
+### 2026-11-06 13:25:48 — WFS-145 : décision du PO sur le verdict mémoire du banc endurance (PO / Scrum Master)
+- Constat de la session dev 5bx : objets Vulkan du jeu identiques à chaque cycle à la scène de référence ; tas bruité ±35 Mo par paliers (lavapipe), RG-10 échoue au hasard sans fuite.
+- Décision : RG-13 ajoutée à `regles-de-gestion/WFS-145.md` (remplace les critères de RG-10 et les preuves de RG-11) : (1) objets Vulkan vivants cycles 3 à 9 ≤ cycle 2 + 2 objets par compteur (marge absolue, pas 2 %) ; (2) pente du tas > +15 Mo/cycle ; (3) le reste pour information. Fuite CPU lente < 15 Mo/cycle : limite connue du banc PC, acceptée.
+- Preuves exigées : 2 passages verts, essai 20 Mo/cycle → échec, essai 1 tampon Vulkan 1 Mo/cycle → échec par (1), Poursuite et parcours 0 écart.
+### 2026-11-06 13:26:08 — Début WFS-150 attribué à Claude (session trafic) (PO)
+- **Ticket** : WFS-150 — Socle : passes de rendu enfichables, pré-passe, capture d'environnement, niveau Ultra, coût GPU par passe · E0 · P2 Haute · branche `feature/waforspeed-150`. Dépendance WFS-149 ✅ (PR #132, 3a03425). Aucun autre ticket E0 actif.
+- **Zone autorisée** : E0 — `src/render/**` (API `renderer.h`, système de passes), `shaders/**` du socle, `tests/**` du ticket ; accroches ≤ 10 lignes annoncées au Journal dans `renderer.cpp`, `qualite_*` et E8 `reglages.cpp` (valeur Ultra). **Interdit** : taille / place des boutons (ordre permanent), iOS, effets qui utilisent les passes (WFS-151, 153, 154), tangentes des `.wfp` (WFS-164), zones des autres épics.
+- **Plan** : ST-1 API des passes → ST-2 pré-passe → ST-5 coût par passe (1re fusion possible) ; ST-3 cubemap → ST-4 Ultra (2e fusion). Précisions PO P-01 à P-05 ajoutées à `regles-de-gestion/WFS-150.md` (performances : coût écrit + pas de hausse > 5 % des niveaux existants, la CI n'étant pas fiable).
+- **Critères** : 0 écart d'image, indice de fidélité inchangé, `realisme-cubemap-essai`, `reglages-qualite-ultra`, tests CPU et parcours complet verts. Fusion par confiance > 50 % sinon CI verte + captures.
+
+### 2026-11-06 13:26:55 — WFS-145 : passation à Claude (session dev expert, 0183bv2X) (Claude, session dev 5bx)
+- **Contexte** : le PO a réattribué WFS-145 à 13:10 UTC (règle des 10 heures ; ma session a été redémarrée deux fois). Je m'arrête et je ne pousse plus rien sur `feature/waforspeed-145`. Tout le détail ci-dessous a été envoyé à la session 0183bv2X.
+- **Cause de la Poursuite bloquée (corrigée, commit 648a609 sur la branche)** : `src/game/poursuite_system.cpp` l. 122-129, le saut du banc (`g_bancFin == 2`) déplaçait la voiture et la police, mais pas le trafic. La voiture atterrissait dans une file et le pilote automatique restait coincé (graine tirée de l'heure : CI rouge au hasard ; WFS-94 n'y est pour rien). Accroche E3 de 4 lignes, banc seulement (à signaler à l'agent de WFS-136). Résultat sur 24 graines : avant, 1 voiture coincée jusqu'au délai ; après, 24/24 finies.
+- **Mémoire (mesures locales, lavapipe)** :
+  - le relevé actuel est une photo du décor chargé là où la course s'arrête (tas de 104 à 293 Mo pendant une seule course) ;
+  - WFS-94 ajoute 0,6 Mo ; le tas est identique en ville de jour et de nuit (101,1 / 101,2 Mo) ;
+  - sur la scène de référence, nos objets Vulkan sont constants (855 / 749 / 106), mais le tas flotte de ±35 Mo par paliers d'environ 16 Mo, sans tendance (pilote logiciel probable) ;
+  - d'où les RG-10 puis RG-13 du PO. RG-13 n'est pas encore codée ; mon code de la scène de référence n'est pas poussé (gardé en local, décrit à la session 0183bv2X).
+- **Limite** : aucune fusion de ma part sur WFS-145.
+
+### 2026-11-06 13:28:14 — Début WFS-138 attribué à Claude (session dev 5bx) (po-scrum-master)
+- **Ticket** : WFS-138 — Campagne (1/3) : col de montagne (RG-01) et vignes continues (RG-05, ANO-65) + règles communes RG-C1 à RG-C5 (périmètre réduit du 2026-11-06 ; animaux et village : WFS-178, autoroute et péage : WFS-179). Épic E2, P2 Haute. Règles : `regles-de-gestion/WFS-138.md`.
+- **Pourquoi lui** : WFS-146 (annoncé plus tôt) est déjà fusionné (PR #125). Aucune épic libre (E3, E5, E6, E8) n'a de ticket prêt et `anno.md` n'a aucune anomalie 🆕. WFS-138 est le ticket prêt le plus prioritaire (P2, plus petit numéro). **Exception PO** : 3e ticket E2 actif, accordée parce que les fichiers sont disjoints (WFS-137 : `ville.cpp`, `ville_quartiers.*` ; WFS-140, en revue : `circuit.cpp`).
+- **Zone autorisée** : `src/world/campagne.cpp`, `assets/world/**` (nouveaux fichiers de la campagne seulement ; `assets/world/modeles/**` est E12, n'y ajouter que des modèles neufs propres à la campagne, sous licence dans `assets/licences/`), `src/world/cartes_banc.cpp` (captures de la campagne seulement), ligne `trace::CARTES_ACTIVES` de `src/game/trace_cartes.h` (même commit que le décor), accroche ≤ 10 lignes annoncée dans `src/platform/desktop_main.cpp`. Outils partagés (`commerces.*`, `enseignes.*`, `vegetation.*`, `decor_carte.*`, `pietons.*`) utilisés sans modification (sinon accroche ≤ 10 lignes annoncée).
+- **Interdit** : `ville*`, `circuit.cpp`, `plage.cpp`, le reste de `src/game/**`, `src/render/**`, `shaders/**`, `src/ui/**`, iOS (gel), la taille des boutons.
+- **Critères** : captures `carte-campagne-col`, `carte-campagne-epingle`, `carte-campagne-vignes` (+ `-nuit`) en caméra de course ; rien sur la chaussée, aucun virage ni feu caché ; ≤ +150 appels de dessin, moitié des petits objets en Basse ; parcours complet `WFS_BANC=parcours` à 0 écart sur la campagne (accueil → mode → carte campagne → course → retour) ; ligne `qa/Check.md`.
+- **Coordination** : `cartes_banc.cpp` et `trace_cartes.h` sont aussi touchés par WFS-137 et WFS-140 : synchroniser avec `main` avant chaque poussée, garder les deux modifications en cas de conflit.
+
+### 2026-11-06 13:29:56 — WFS-145 : décision du PO sur le bruit du tas au point de référence (PO / Scrum Master)
+- Constat de Claude (session dev expert, 0183bv2X) : RG-08 et la Poursuite (RG-09 c) marchent ; à point fixe, jeu immobile, le tas varie de ±50 à 60 Mo d'un relevé à l'autre ; aucune fuite trouvée (24 changements de carte, 5 retours d'arrière-plan, 6 changements de voiture). Le 1er passage était jugé avec RG-10, déjà remplacée par RG-13 (13:25 UTC).
+- Décision : RG-14 ajoutée à `regles-de-gestion/WFS-145.md`. Verdict = RG-13 (objets Vulkan ≤ cycle 2 + 2 ; pente du tas > +15 Mo/cycle). Option A acceptée pour la valeur : minimum de 8 relevés espacés de 30 images à la scène de référence (≤ +3 min de job). Option B (relancer jusqu'au vert) refusée. Preuves : celles de RG-13 (a) à (d).
+- Ticket « allocations passagères » refusé : mesuré sous lavapipe seulement, pas constaté sur le téléphone ; limite connue à écrire dans `tools/qa/endurance.sh`. Créé si l'utilisateur signale une saccade ou un arrêt par manque de mémoire.
+
+### 2026-11-06 13:40:07 — Recette, lot A (interface) : WFS-168 et WFS-173 VALIDÉS, WFS-141 PASSABLE (qa-lead)
+- Captures : Release `apercu` de main (captures de la construction 718, 56f5d47) ; avant : `apercu-waforspeed-146`, `-147`, `-168`, `-169`.
+- **WFS-168 : VALIDÉ** : boutons des 5 écrans 2400 revenus au pixel à leur taille d'avant WFS-147 ; textes, réglages en 2 colonnes, vignette du terrain et carte du salon de WFS-147 gardés ; garage et 1280 identiques ; HUD non touché.
+- **WFS-173 : VALIDÉ** : mini-carte visible en course seulement ; écarts tous dans le carré de la carte (158 captures) ; ≤ 2 466 sommets (max 4 000).
+- **WFS-141 : PASSABLE AVEC ANOMALIES MINEURES** : nouvelle ANO-90 (bandeau « serveur injoignable » sur l'URL du salon en 720p).
+- **Vérifiées** : ANO-54, 56, 69, ANO-62 en 2400. En partie : ANO-57, ANO-59 (reste en attente, décision du PO). **ANO-68 non corrigée** : sa correction change une taille de texte, contraire à l'ordre de l'utilisateur (tailles gelées) → au PO de la mettre en attente comme ANO-57 / 59.
+
+### 2026-11-06 13:43:46 — Recette, lot B (rendu) : WFS-170 REFUSÉ, WFS-149 VALIDÉ (qa-lead)
+- Captures : Releases de branche `apercu-waforspeed-170` (4f024d4, même code que main e21145e) et `apercu-waforspeed-149` (d9d6cb2) : `apercu` de main (56f5d47) ne contient encore aucun des deux.
+- **WFS-170 : REFUSÉ** — vérifiées corrigées : ANO-72 (911), 73 (Giulia), 74 (S3), 77 (208, Compass) ; en partie : ANO-71 (hayon du X5), ANO-76 (V60 rouge, reste SF90 / Elantra / RR Sport en mineure) ; **ANO-75 toujours là** (Model 3 en facettes : géométrie à reconvertir) ; **nouvelle ANO-91 bloquante** : au freinage, 12 voitures sur 20 n'allument pas leur feu, le halo de repli flotte dans le vide à gauche de la voiture (vu sur `vitrine-gallardo-feux`, `vitrine-v60-feux`) ; ANO-92 mineure (preuve de la 911 en peintures et en course absente).
+- **WFS-149 : VALIDÉ** — aucune régression d'image (seul le bouton Réglages retiré des vues réalisme), ASTC conforme, APK +0,07 %, chargement inchangé. Réserve : WFS-149 + WFS-170 ensemble à vérifier sur la prochaine `apercu` de main. Pour le PO : ETC2 refusé → RGBA8 (≈ 8,7 × la mémoire de l'ASTC) sur GPU sans ASTC.
+- Bloquantes → PO : ANO-91, ANO-75.
+
+### 2026-11-06 13:56:50 — Début WFS-139 : attribué à Claude (agent 1, session 01UY1Vv2) (PO)
+- **Ticket** : WFS-139 — Corniche (1/3) : route en falaise et tunnel + ANO-82 (voiliers dans l'eau) + ANO-83 (barques visibles au village). Épic E2, P2 Haute, dépendances WFS-136 ✅, WFS-94 ✅. Règles : `regles-de-gestion/WFS-139.md` (section « Périmètre réduit » : RG-01, RG-A, RG-B, RG-C1 à RG-C5, graphisme réaliste obligatoire).
+- **Pourquoi lui** : seul ticket ⏳ Prêt du tableau (hors gel iOS) ; aucune autre épic libre n'a de ticket prêt. Exception PO (même principe que WFS-137 et WFS-138) : 4e ticket E2 actif, fichier disjoint `src/world/plage.cpp`.
+- **Zone autorisée** : `src/world/plage.cpp`, `assets/world/**`, `src/world/cartes_banc.cpp` (captures de la Corniche), ligne `trace::CARTES_ACTIVES` de `src/game/trace_cartes.h` ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`. Interdit : reste de `src/game/**`, `ville*`, `campagne.cpp`, `circuit.cpp`, `src/render/**`, `shaders/**`, `src/ui/**`, iOS.
+- **Points d'attention** : WFS-145 (E7, P1, session 0183bv2X) peut toucher la mémoire du décor de WFS-94, donc `plage.cpp` : se synchroniser souvent avec `main`, ne pas faire monter la mémoire de l'endurance (seuil 10 %). `trace_cartes.h` est aussi modifié par WFS-137 et WFS-138 : garder les deux modifications. Aucune taille de bouton touchée (ordre permanent).
+- **Plan court** : falaise et parois côté terre dans les lacets, murets / glissières côté mer, tunnel en roche éclairé, rond-point et feu du front de mer ; voiliers de la marina dans l'eau, trouées vers les barques au village ; activer la Corniche dans `CARTES_ACTIVES` ; captures `carte-plage-*` jour / nuit avant / après, parcours 0 écart, ligne `qa/Check.md`.
+
+### 2026-11-06 13:58:52 — Fin WFS-138 : fusionné par confiance (PR #141) (Claude, session dev 5bx)
+- **Fait** (`src/world/campagne.cpp`) :
+  - campagne activée au tracé 2 (`trace::CARTES_ACTIVES` = circuit, campagne, A7) ;
+  - **sol des lacets, épingles et rond-point (RG-C1)** : avant, le sol d'une branche des lacets recouvrait la route voisine (capture de l'épingle : caméra dans une dalle verte). Maintenant, pour chaque segment et chaque côté, on cherche la route voisine la plus proche dans un cône de 45° (grille de 40 m). Le profil de la zone est coupé à la mi-distance, puis corrigé en rampe jusqu'à la mi-hauteur des deux routes : les deux sols se rejoignent sans recouvrir de chaussée. Au-delà de 24° de pente, talus de roche. Les objets qui dépasseraient la mi-distance ne sont pas posés ;
+  - **vignes (RG-05, ANO-65)** : rangs continus de 0,5 × 1,2 m, un tous les 2 m, sol lu à chaque tronçon de 1,2 m, bouts communs à la même hauteur ;
+  - **col (RG-01)** : glissières GS2 et murets côté vide, panneaux A1 70 m avant chaque épingle, sapins au-dessus de 60 m, 5 sommets en fond (2 enneigés, albédo 0,80, 1 appel de dessin), cascade et vasque au pont (clairière de ±15 segments).
+- **Accroches annoncées** : `src/game/trace_cartes.h` (1 ligne, A7) ; `src/platform/desktop_main.cpp` (1 ligne, `WFS_BANC=campagne`) ; `src/world/decor_carte.h` (2 lignes, déclaration) ; `tests/test_trace.cpp` (1 ligne : la signature des cartes actives devient « circuit,campagne »). L'agent de WFS-136 n'est pas concerné (aucune ligne de `src/game/*.cpp`).
+- **Preuves** (banc local lavapipe) :
+  - 33 tests CPU verts ;
+  - `WFS_BANC=campagne` : 0 écart, parcours du départ au haut du col (4 km) en 101 s sans arrêt, puis retour à l'accueil ;
+  - `WFS_BANC=parcours` : « parcours complet : 0 écart(s) OK » ;
+  - `WFS_BANC=cartes` : code 0 ;
+  - captures regardées : col, épingle, vignes, cascade (jour et nuit), départ, village ;
+  - appels de dessin : col 345, épingle 180, vignes 264 (avant : 291 / 200 / 282 au même endroit du tracé 2).
+- **Limites (à la QA)** : roche en couleur unie (une texture de roche demande un matériau neuf, hors de la zone E2) ; sommets surtout cachés par la forêt et le brouillard de jour ; panneaux A1 non cadrés sur une capture ; cascade simple.
+
+
+### 2026-11-06 13:59:34 — WFS-178 attribué à Claude (session dev 5bx) (po-scrum-master)
+- **Ticket** : WFS-178 — Campagne (2/3) : animaux de ferme et village · E2 · P2 Haute · dépendance WFS-138 ✅ (PR #141). Aucun ticket ⏳ Prêt ailleurs (P1 WFS-109, 134, 145 actifs ou fusionnés ; gel iOS) : c'est le plus prioritaire attribuable.
+- **Exception PO** : 3e ticket E2 actif à côté de WFS-137 (`ville*`) et WFS-139 (`plage.cpp`) ; fichiers disjoints (`campagne.cpp` seulement), même régime que WFS-137 à 140.
+- **Zone autorisée** : `src/world/campagne.cpp`, `assets/world/**`, `assets/licences/**`, `src/world/cartes_banc.cpp` (captures de la Campagne) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : `src/game/**` (sauf `trace::CARTES_ACTIVES`, déjà activée par WFS-138), `ville*`, `plage.cpp`, `circuit.cpp`, `src/render/**`, `shaders/**`, `src/ui/**`, iOS.
+- **Critères** : RG-02 (vaches 5-12, moutons 10-30 derrière clôtures, 2-4 chevaux en enclos, oiseaux, chien) et RG-03 (rond-point fleuri, feu selon `feuA`, place café + bar via `commerces.cpp`, garage avec pompe et enseigne, église, boulangerie, petite zone commerciale) de `WFS-138.md` ; RG-C1 à C5 ; captures `carte-campagne-animaux(-nuit)`, `carte-campagne-village(-nuit)` ; ≤ +150 appels de dessin ; parcours complet 0 écart ; ligne `qa/Check.md`.
+- **Plan court** : animaux en instances (un `.wfm` par espèce, CC0, licence dans `assets/licences/`), placés hors chaussée (≥ RW + 1 m) ; village autour de la section de feu, en réutilisant commerces / enseignes / piétons ; captures jour et nuit ; fusion par confiance si > 50 %.
