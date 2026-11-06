@@ -4421,12 +4421,6 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   (commits 6c78a60, 5d9e379, fusion du ST-1 de 01Us6uCu gardé sous `test_fidelite_voitures_audit`, fusion de main, 3797449 ; 32 tests CPU OK).
   Décision attendue : qui pousse cette branche.
 
-<<<<<<< HEAD
-### 2026-11-06 12:11:27 — WFS-140 : code poussé, PR #137 (Claude, agent 5)
-- **Fait** (`src/world/circuit.cpp`, `src/world/cartes_banc.cpp` seulement, aucune accroche) : place libre au chargement (grille des centres de la route, 29 ms mesurés sur CPU) → aucun objet ni sol à moins de RW + 1 m d'une autre chaussée (branche voisine de l'épingle à ≈ 40 m : place libre 37 m), rien de haut à l'intérieur des virages serrés dans les 60 m avant ; décor des sections : vibreurs larges, gravier, pneus, panneaux 150/100/50 ; grille et portique de 5 feux (un par un au décompte, éteints au GO) ; raidillon (tribune 16 rangs, passerelle) ; paddock (garages, camions, bars VIP, tour, hélicoptère) ; spectateurs, drapeaux animés, espace fans (grande roue), camping ; oiseaux.
-- **Captures** : `carte-circuit-{depart,epingle,chicane,raidillon,paddock}(-nuit)` en caméra de course ; l'ancienne `carte-circuit-paddock` (zone) devient `carte-circuit-zone-paddock`.
-- **Fusion** : confiance ≤ 50 % (rendu non vérifiable sans GPU en local) → j'attends la CI et je regarde les captures avant de fusionner. Point de vigilance : durée du job `partie1b` (+10 captures).
-=======
 ### 2026-11-06 12:11:26 — WFS-174 fusionné par confiance (PR #136) (Claude, agent 3)
 - Sons de la route : `src/audio/route_sons.h` (fonctions pures : cibles selon vitesse, position latérale, bord de la carte, pluie, nitro), boucles calculées une fois dans `SfxMixer::build` (vent grave / aigu mélangés selon la vitesse = filtre qui s'ouvre de 400 à 2 500 Hz, roulement 80-250 Hz, impulsion de bande rugueuse à 15-60 Hz, herbe 1-4 kHz à grains, eau 3-6 kHz ; ≈ 471 Ko à 48 kHz, aucune allocation dans le thread audio), lissage 95 % en 0,15 s, coupure hors course et « Son : Coupé ».
 - **Pour le PO — deux points d'interprétation (risque signalé, à arbitrer)** :
@@ -4437,4 +4431,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 12:11:28 — PO : cartes découpées en tickets d'une journée (po-scrum-master)
 - **Décision de l'utilisateur** : pas de micro-ticket, mais jamais plus d'une journée. Règle ajoutée à `po-scrum-master.md`. **Ville** : WFS-137 (rond-point, carrefours) + WFS-175 (autoroute, tunnel, pont) + WFS-176 (casino, centre commercial, cafés, bars, garages) + WFS-177 (pigeons, chiens, ANO-81, ANO-84). **Campagne** : WFS-138 (montagne, vignes) + WFS-178 (animaux, village) + WFS-179 (autoroute, péage). **Corniche** : WFS-139 (falaise, tunnel, ANO-82, ANO-83) + WFS-180 (beach parties, jeux, bateaux) + WFS-181 (bars de plage, casino de station, mouettes, dauphins). WFS-140 (Grand Prix, en cours) non touché. Agent 4 prévenu pour WFS-137.
->>>>>>> origin/main
+
+### 2026-11-06 12:11:27 — WFS-140 : code poussé, PR #137 (Claude, agent 5)
+- **Fait** (`src/world/circuit.cpp`, `src/world/cartes_banc.cpp` seulement, aucune accroche) : place libre au chargement (grille des centres de la route, 29 ms mesurés sur CPU) → aucun objet ni sol à moins de RW + 1 m d'une autre chaussée (branche voisine de l'épingle à ≈ 40 m : place libre 37 m), rien de haut à l'intérieur des virages serrés dans les 60 m avant ; décor des sections : vibreurs larges, gravier, pneus, panneaux 150/100/50 ; grille et portique de 5 feux (un par un au décompte, éteints au GO) ; raidillon (tribune 16 rangs, passerelle) ; paddock (garages, camions, bars VIP, tour, hélicoptère) ; spectateurs, drapeaux animés, espace fans (grande roue), camping ; oiseaux.
+- **Captures** : `carte-circuit-{depart,epingle,chicane,raidillon,paddock}(-nuit)` en caméra de course ; l'ancienne `carte-circuit-paddock` (zone) devient `carte-circuit-zone-paddock`.
+- **Fusion** : confiance ≤ 50 % (rendu non vérifiable sans GPU en local) → j'attends la CI et je regarde les captures avant de fusionner. Point de vigilance : durée du job `partie1b` (+10 captures).
