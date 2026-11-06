@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
         VERIFIER(s.lire("version=1\r\ncar=fusee\npaint-golf=fuchsia\npaint-fusee=rouge\nmap=lune\ntod=aube\nquality=ultra\ncam=drone\n"
                         "muted=oui\nnick=   \nkm=5\nsteer=volant\ndiff5=extreme\nwaforspeed-best=-3\nligne sans egal\ninconnue=1\n"));
         VERIFIER(estDefaut(s));
-        VERIFIER(s.lire("version=1\nwaforspeed-car=gallardo\nbest=12\nkm=2\nnick=\tUn pseudo beaucoup trop long\n"));
+        VERIFIER(s.lire("version=1\ntrace=2\nwaforspeed-car=gallardo\nbest=12\nkm=2\nnick=\tUn pseudo beaucoup trop long\n"));
         VERIFIER(s.car == "gallardo"); VERIFIER(s.best == 12); VERIFIER(s.km == 2);
         VERIFIER(s.nick == "Un pseudo beau");   // 14 caractères (cleanName du jeu web)
         VERIFIER(s.peinture("gallardo") == "jaune");

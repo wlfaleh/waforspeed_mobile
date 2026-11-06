@@ -35,7 +35,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     ecran_ = ecranDemande_ = Ecran::Course; demandeEcran_ = false;   // écran de départ (Menu quand WFS-37 existera)
     lacherCommandes();
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
-    track_.build(mapById(mapId));
+    track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
@@ -90,8 +90,10 @@ void Game::buildChunkCpu(int64_t c, ChunkCpu& out) {
         const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)V.size();
         for (int i = 0; i <= CH; i++) {
             const double s = (double)(a0 + i) * SEG;
+            const trace::Rayon ri = trace::rayonInterieur(track_, s);   // WFS-136 (accroche A1) : courbes serrées du tracé 2
             for (uint32_t k = 0; k < cols; k++) {
-                TrackPoint p = track_.point(s, prof[k].first);
+                const float lat = prof[k].first, lim = (float)(0.9 * (lat > 0 ? ri.droite : ri.gauche));
+                TrackPoint p = track_.point(s, ri.m < 60 && std::abs(lat) > lim ? (lat > 0 ? lim : -lim) : lat);   // bas-côté intérieur ≤ 90 % du rayon
                 V.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
             }
         }

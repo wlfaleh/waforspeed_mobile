@@ -13,7 +13,9 @@
 #include <thread>
 #include "../src/game/duel.h"
 #include "../src/game/player.h"
+#include "../src/game/trace_cartes.h"
 #include "../src/game/reseau_relais.h"
+#include "../src/game/trace_cartes.h"
 using namespace wfs;
 using namespace wfs::duel;
 using namespace wfs::reseau;
@@ -122,8 +124,8 @@ static void testTramesHostiles() {
     };
     for (const std::string& m : msgs) if (m.rfind("E|", 0) != 0) fm->aLire += trameServeur(1, m);
     // valeurs énormes : bornées par la session (RG-06)
-    fm->aLire += trameServeur(1, "P|rival1|6000|n=Rival;st=race;r=1;d=1e300;x=-999;v=1e9;h=77;b=9;ft=-3;car=inconnue");
-    for (int k = 0; k < 20; k++) fm->aLire += trameServeur(1, "P|j" + std::to_string(100000 + k) + "|6000|n=J;st=lobby");
+    fm->aLire += trameServeur(1, "P|rival1|6000|n=Rival;st=race;r=1;d=1e300;x=-999;v=1e9;h=77;b=9;ft=-3;car=inconnue;trace=" + trace::signature());
+    for (int k = 0; k < 20; k++) fm->aLire += trameServeur(1, "P|j" + std::to_string(100000 + k) + "|6000|n=J;st=lobby;trace=" + trace::signature());
     s.others();
     VERIFIE(s.others().size() == JOUEURS_MAX, "au plus %zu autres joueurs retenus (%zu)", JOUEURS_MAX, s.others().size());
     VERIFIE(tr->ignores() >= 13, "messages hostiles ignorés (%d)", tr->ignores());
@@ -139,15 +141,29 @@ static void testTramesHostiles() {
     a.join(std::move(ta), "ab23", false, "A", "golf", "", "");
     fm->aLire = reponse101(fm->envoye) + trameServeur(1, "OK|1000|2000");
     a.others();
-    fm->aLire += trameServeur(1, "P|rival1|1000|n=R;st=ready;r=0;host=1;km=2");
+    fm->aLire += trameServeur(1, "P|rival1|1000|n=R;st=ready;r=0;host=1;km=2;trace=" + trace::signature());
     a.setReady(true);
     VERIFIE(a.checkStart(), "départ face à un adversaire du relais");
-    fm->aLire += trameServeur(1, "P|rival1|1000|n=R;st=race;r=1;d=1e300;x=-999;v=1e9;h=77;b=9;ft=-3;car=inconnue");
+    fm->aLire += trameServeur(1, "P|rival1|1000|n=R;st=race;r=1;d=1e300;x=-999;v=1e9;h=77;b=9;ft=-3;car=inconnue;trace=" + trace::signature());
     a.updateGhosts(0.1);
     bool borne = false;
     for (const auto& [id, g] : a.ghosts()) borne = g.rd <= a.finish() + 1e-6 && g.x >= -2 && g.h <= 3.2 && g.b <= 2 && g.car == "golf";
     VERIFIE(borne, "fantôme borné (distance, écart, cap, voiture)");
     a.leave();
+
+    // WFS-136 (RG-07) : adversaire sur un autre tracé (ancienne version, sans champ « trace ») : « version », pas de course
+    Session v;
+    auto tv = std::make_unique<TransportRelais>(fab, AdresseRelais{"h", 80, false}, "cd45", false, [&] { return horloge; });
+    TransportRelais* trv = tv.get();
+    v.join(std::move(tv), "cd45", false, "V", "golf", "", "");
+    fm->aLire = reponse101(fm->envoye) + trameServeur(1, "OK|1000|2000");
+    v.others();
+    fm->aLire += trameServeur(1, "P|vieux1|1000|n=Vieux;st=ready;r=0;host=1;km=2");
+    v.setReady(true);
+    VERIFIE(!v.checkStart() && v.others().empty(), "autre tracé : pas de course");
+    VERIFIE(trv->lien() == Lien::Echec && trv->raison() == "version", "autre tracé : refus « version » (%s)", trv->raison().c_str());
+    std::printf("adversaire sur un autre tracé : refusé (« Mets ton jeu à jour ») : OK\n");
+    v.leave();
 }
 
 // ---------------------------------------------------------------- bout en bout avec le relais local (Node)

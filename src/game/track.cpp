@@ -30,9 +30,12 @@ void Track::addRoad(int enter, int hold, int leave, double curve, double y) {
     for (int n = 0; n < leave; n++) addSegment(easeInOut(curve, 0, (double)n / leave), easeInOut(startY, endY, (double)(enter + hold + n) / total));
 }
 
-void Track::build(const MapDef& map) {
+void Track::build(const MapDef& map, int version) {
     map_ = &map;
-    segs_.clear();
+    segs_.clear(); sections_.clear();
+    version_ = version == 2 ? 2 : 1;
+    if (version_ == 2) sections_ = trace::construire(*this, map);   // WFS-136 : tracé en sections (graine gardée pour le reste)
+    else {
     Mulberry32 R(map.seed);
     addRoad(30, 60, 30, 0, 0);
     for (int i = 0; i < map.sections; i++) {
@@ -50,6 +53,7 @@ void Track::build(const MapDef& map) {
     }
     addRoad(50, 50, 80, 0, -lastY() / SEG);
     addRoad(20, 30, 20, 0, 0);
+    }
     length_ = segs_.size() * SEG;
     fwd_.clear(); bwd_.clear();
     fwd_.push_back({0, segAt(0).y1 * M * ELEV, 0, 0});

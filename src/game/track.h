@@ -6,6 +6,7 @@
 #include <vector>
 #include "../core/math.h"
 #include "../core/configgame.h"   // WFS-128
+#include "trace_cartes.h"          // WFS-136 : sections typées du tracé 2
 
 namespace wfs {
 
@@ -33,7 +34,10 @@ struct TrackPoint { double x, y, z, th, slope; };
 
 class Track {
 public:
-    void build(const MapDef& map);
+    // version 1 : tracé du jeu web (courbes tirées au hasard, références des tests) ; 2 : tracé en sections (WFS-136)
+    void build(const MapDef& map, int version = 1);
+    int version() const { return version_; }
+    const std::vector<trace::Section>& sections() const { return sections_; }   // vide en version 1
     const Segment& segAt(int64_t a) const { int64_t n = (int64_t)segs_.size(); return segs_[(size_t)(((a % n) + n) % n)]; }
     const Segment& findSegment(double z) const { return segAt((int64_t)std::floor(z / SEG)); }
     double length() const { return length_; }
@@ -45,6 +49,9 @@ public:
     TrackPoint point(double s, double lat);
     size_t segmentCount() const { return segs_.size(); }
     const MapDef* map() const { return map_; }
+    // WFS-136 : utilisés par trace::construire (tracé 2) ; addRoad du jeu web, altitude de fin (unités)
+    void ajouterRoute(int enter, int hold, int leave, double curve, double y) { addRoad(enter, hold, leave, curve, y); }
+    double altitudeFin() const { return lastY(); }
 private:
     void addSegment(double curve, double y);
     void addRoad(int enter, int hold, int leave, double curve, double y);
@@ -52,6 +59,8 @@ private:
     std::vector<Segment> segs_;
     double length_ = 0;
     const MapDef* map_ = nullptr;
+    int version_ = 1;
+    std::vector<trace::Section> sections_;
     // poses : indices >= 0 dans fwd_, < 0 dans bwd_ (bwd_[0] = pose -1)
     std::vector<Pose> fwd_, bwd_;
 };

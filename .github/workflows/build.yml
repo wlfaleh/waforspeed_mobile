@@ -55,7 +55,9 @@ jobs:
           mkdir -p captures
           case "${{ matrix.groupe }}" in
             partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09
-              WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
+              WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/
+              # WFS-136 (accroche) : tracé 2 forcé sur les 4 cartes (rond-point, feu rouge, épingle, autoroute) ; un écart = rouge
+              if [ "${{ matrix.groupe }}" = vitrines ]; then mkdir -p trace && WFS_BANC=trace ./build/wfs_bench trace assets/ && cp trace/trace-*.png captures/; fi ;;
             texte)
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
               mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png

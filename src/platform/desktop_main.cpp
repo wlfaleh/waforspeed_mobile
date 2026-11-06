@@ -182,6 +182,7 @@ int main(int argc, char** argv) {
         WFS_LOG("parcours complet : %d écart(s)%s", e, e ? " ÉCHEC" : " OK");
         finir(); return e > 0 ? 3 : 0;
     }
+    if (banc == "trace") { ui::chargerPolice(r); const int e = trace::benchTrace(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-136 (accroche) : tracé 2
     if (banc == "chauffe") { ui::chargerPolice(r); const int e = chauffe::benchChauffe(g, r, out, statutChauffeSimule); finir(); return e > 0 ? 3 : 0; }   // WFS-123
     if (banc == "records") { ui::chargerPolice(r); const int e = benchRecords(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-125 : records par mode, fantôme (aussi à la fin du groupe vitrines)
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite

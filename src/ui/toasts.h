@@ -10,4 +10,6 @@ class Game;
 class Renderer;
 // banc d'essai : charge sa propre course (golf, ville), captures toast-checkpoint et toast-pile (dans outDir), puis g.shutdown()
 void benchToasts(Game& g, Renderer& r, const std::string& outDir);
+// WFS-136 (accroche A4) : pousse un bandeau dans la pile (genre 0 normal, 1 checkpoint, 2 mauvais), affiché en course
+namespace toasts { void pousser(const std::string& titre, const std::string& valeur, int genre); }
 } // namespace wfs
