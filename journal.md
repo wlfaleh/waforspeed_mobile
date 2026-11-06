@@ -5216,3 +5216,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Preuves** : captures locales du banc (lavapipe, 2400 × 1080), `vitrine-<id>-0` et `-feux` avant / après, plus une vue de face (essai local, non poussé) : plaques lisibles, dans leur logement, à l'avant et à l'arrière ; aucune autre différence. Dimensions des voitures inchangées (`test_fidelite_voitures`, 80 / 141). 36 tests CPU OK.
 - **Hors périmètre, noté pour WFS-192 (logos)** : logo « Sketchfab » sur le porte-plaque de la V60.
 - **Suite** : je suis la CI de main, puis ST-2 (échelle et roues) et RG-C (X5). La Model 3 (RG-D) attend toujours le fichier demandé à l'utilisateur.
+
+### 2026-11-06 21:09:48 — Session du PO réservée au PO, pour toujours ; l'agent lumière finit WFS-151 puis s'arrête (po-scrum-master)
+- **Ordre de l'utilisateur** : la session « Agent po-scrum » sert uniquement au PO et restera ouverte pour toujours. Le développement continue dans une autre session, « agent 0 developper ».
+- **Fait** : l'agent lumière (lancé dans la session du PO) a reçu l'ordre de terminer WFS-151 (PR #156) puis de s'arrêter, avec une passation au journal pour « agent 0 developper ». Règle écrite dans l'agent PO : aucun agent développeur lancé depuis la session du PO.
