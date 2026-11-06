@@ -5220,3 +5220,27 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 21:09:48 — Session du PO réservée au PO, pour toujours ; l'agent lumière finit WFS-151 puis s'arrête (po-scrum-master)
 - **Ordre de l'utilisateur** : la session « Agent po-scrum » sert uniquement au PO et restera ouverte pour toujours. Le développement continue dans une autre session, « agent 0 developper ».
 - **Fait** : l'agent lumière (lancé dans la session du PO) a reçu l'ordre de terminer WFS-151 (PR #156) puis de s'arrêter, avec une passation au journal pour « agent 0 developper ». Règle écrite dans l'agent PO : aucun agent développeur lancé depuis la session du PO.
+
+### 2026-11-06 21:11:14 — Fin WFS-176 : Ville (3/3), casino, centre commercial, garages, cafés, pigeons et chiens — fusion par confiance, PR #158 (Claude, agent 1, session 01UY1Vv2)
+- Fait :
+  - `ville_quartiers.*` (plan de la Ville, tracé 2) : lieux placés sur une ligne droite de rue, loin des carrefours (40 m), du rond-point (150 m), des courbes serrées (RG-C1) et entre eux (120 m), emprise vidée (immeubles, arbres, commerces, panneaux ; lampadaires et passages piétons gardés) : casino (Centre-ville, segment 20), centre commercial (Quartier d'affaires), 2 garages (Quartier résidentiel, Zone portuaire) ; 10 terrasses de plus (cafés, bars, restaurant, brasserie, glacier, bar à sushis de `commerces.cpp`) devant les immeubles à moins de 60 m des carrefours ; 13 promeneurs avec chien.
+  - `ville.cpp` :
+    - casino de 40 × 24 m, 14 m, en retrait derrière un parvis de pierre : pierre claire (albédo ≈ 0,48), pilastres tous les 4 m et bandeaux, vitrages en retrait de 0,35 m (fenêtres en profondeur, éclairés la nuit, 3000 K), corniche, chapiteaux et marquise dorés (métal, F0 de l'or), 3 marches de 17 / 30 cm et tapis, enseignes néon « CASINO » (attique et marquise, bornées), 2 voitures de luxe garées (SF90 rouge, Gallardo jaune : modèles du jeu), 2 lumières de nuit ;
+    - centre commercial de 80 × 26 m, 12 m : mur-rideau vitré (meneaux d'aluminium tous les 1,5 m), bandeau, auvent, enseignes « GALERIE DES ARCADES », « LUNA MODE », « ATELIER 7 », « MAISON VERTE » (noms inventés), parking d'une double rangée de places de 2,5 × 5 m (lignes de 10 cm) et allée de 6 m, 3 lumières de nuit ;
+    - 2 garages de 14 × 12,5 m, 6 m : baie de 4,5 × 3,6 m, rideau métallique levé (rouleau), sol en résine, pont élévateur à 2 colonnes de 3 m, porte vitrée du bureau, enseigne « GARAGE 88 », lumière intérieure la nuit ;
+    - pigeons : 5 groupes (2 par carrefour, 1 sur le parvis du casino), 6 oiseaux (3 en Basse), posés en picorant ; envol quand le joueur passe à moins de 10 m (battements, montée à 7 m en 3 s en s'éloignant de la route), retour 25 s plus tard ;
+    - chiens : shiba et husky qui marchent devant leur promeneur (8 poses de marche réglées sur la distance), laisse rouge de la main au collier.
+  - `assets/world/animaux/convertir_chiens.py` (nouveau) et `shiba.wfa`, `husky.wfa` : modèles Quaternius CC0 (pack « Ultimate Animated Animal Pack », copie du dépôt public benjaminpjones/catch-the-animal), poses calculées par habillage, licence `assets/licences/animaux-ville.txt`.
+- Accroches annoncées : `pietons.cpp` (1 ligne : promeneurs ajoutés en tête de liste) ; `cartes_banc.cpp` (captures de la Ville : casino, centre commercial, garage, chien, pigeons).
+- Correction pendant le ticket : premier parcours complet planté (SIGSEGV) : indice de segment négatif en vidant l'emprise du casino, tout près du départ (`(a0 + k) % L` négatif) ; corrigé, vérifié sous ASan (aucune erreur).
+- Mesures (indice) :
+  - places de parking 2,5 × 5 m : conforme (NF P 91-100 : 2,30-2,50 × 5,00 m) ;
+  - marches 17 / 30 cm (2h + g = 64 cm) : conforme (loi de Blondel 60-64 cm) ;
+  - pierre claire du casino, albédo ≈ 0,48 : conforme (charte 0,40-0,55) ; enrobé du parking ≈ 0,06 : conforme (asphalte neuf 0,04-0,07) ;
+  - pigeon biset : envergure 0,67 m, longueur 0,30 m : conforme (64-72 cm, 29-37 cm, Svensson 2015) ; forme reprise de la mouette (non mesurable : pas de modèle de pigeon accessible) ;
+  - shiba 0,39 m et husky 0,56 m au garrot : conforme (standards FCI 257 et 270) ;
+  - casino, centre commercial, garages : dimensions plausibles, non mesurables (bâtiments inventés, pas de référence unique) ;
+  - lumière des terrasses : celle de `commerces.cpp`, inchangée.
+- Vérification (locale, lavapipe) : compilation, 35 tests CPU, licences ; parcours complet (`WFS_BANC=parcours`, sur la Ville) **0 écart** ; captures regardées : `carte-ville-casino` (+ `-nuit`), `carte-ville-centre-commercial` (+ `-nuit`), `carte-ville-garage` (+ `-nuit`), `carte-ville-chien`, `carte-ville-pigeons`.
+- Coût (appels de dessin en plus, mesurés) : casino +126 au plus (2 voitures de luxe ≈ 110, pigeons, morceaux), pigeons d'un carrefour +12, centre commercial +2 à +4 : sous le plafond de +150 (RG-C2).
+- Limites : en caméra de course, le casino se reconnaît surtout à sa marquise dorée et aux voitures ; l'enseigne « CASINO » de l'attique sort du cadre, celle de la marquise est petite. Pigeons : forme de la mouette mise à l'échelle (pas de modèle de pigeon accessible). Licence CC0 des chiens à reconfirmer sur quaternius.com (site bloqué). Rendu sur téléphone non vérifié.
