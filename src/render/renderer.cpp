@@ -1,4 +1,6 @@
 #include "renderer.h"
+#include "mesh.h"   // WFS-149 : tangentes
+#include <chrono>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -723,8 +725,9 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         attr[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};
         attr[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12};
         attr[2] = {2, 0, VK_FORMAT_R32G32_SFLOAT, 24};
+        attr[3] = {3, 0, VK_FORMAT_R8G8B8A8_SNORM, 32};   // WFS-149 (RG-04) : tangente (format obligatoire des tampons de sommets)
         vi.vertexBindingDescriptionCount = 1; vi.pVertexBindingDescriptions = &bind;
-        vi.vertexAttributeDescriptionCount = 3; vi.pVertexAttributeDescriptions = attr;
+        vi.vertexAttributeDescriptionCount = 4; vi.pVertexAttributeDescriptions = attr;
     } else if (vertexKind == 3) {   // WFS-63 : sommet à squelette (position, normale, uv, 4 os, 4 poids)
         bind = {0, sizeof(SkinVertex), VK_VERTEX_INPUT_RATE_VERTEX};
         attr[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};
@@ -903,13 +906,24 @@ uint8_t Renderer::classer(const masquage::Sphere& s) {
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
+    // WFS-149 (RG-04) : géométrie générée (route, décor, charte…) sans tangentes : calculées ici, une fois, sur une copie
+    // (tampon réutilisé). updateMesh (halos, particules : jamais de carte de normales) n'en calcule pas.
+    static thread_local std::vector<Vertex> avecTangentes;
+    const Vertex* src = v.data();
+    if (idx.size() >= 3 && !tangentes::auMoinsUne(v.data(), v.size())) {
+        const auto t0 = std::chrono::steady_clock::now();
+        avecTangentes.assign(v.begin(), v.end());
+        tangentes::calculer(avecTangentes.data(), (uint32_t)v.size(), idx.data(), (uint32_t)idx.size());
+        src = avecTangentes.data();
+        tangentesMs_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count(); tangentesSommets_ += v.size();
+    }
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
-        if (!v.empty()) std::memcpy(m.vb.mapped, v.data(), v.size() * sizeof(Vertex));
+        if (!v.empty()) std::memcpy(m.vb.mapped, src, v.size() * sizeof(Vertex));
         if (!idx.empty()) std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
     } else {
-        m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        m.vb = vk_->uploadBuffer(src, v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     }
     return m;

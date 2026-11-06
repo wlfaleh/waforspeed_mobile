@@ -95,7 +95,8 @@ struct Ghost {
 enum class Status { Lobby, Ready, Race, Done };
 const char* statusText(Status s);                             // « lobby », « ready », « race », « done »
 
-struct BoardRow { std::string name; double d = 0; bool me = false, done = false; double ft = 0; };
+// parti (WFS-122 RG-02) : adversaire de la manche qui a quitté le salon en course (classé après ceux qui roulent)
+struct BoardRow { std::string name; double d = 0; bool me = false, done = false; double ft = 0; bool parti = false; };
 
 // effets d'un contact pour le son, les étincelles et les règles de course (bump / accident)
 struct ContactEvents { int frottements = 0, chocs = 0; double impact = 0; bool accident = false; int side = 0; };
@@ -136,6 +137,7 @@ public:
     std::vector<BoardRow> results() const;                     // renderDuelResult : temps d'arrivée puis distance
     int position(double myDist) const;                         // « Position n/N »
     double myFinish() const { return myFinish_; }              // s
+    std::vector<std::string> adversaires() const;              // WFS-122 (RG-01) : pseudos des adversaires de la manche
 
 private:
     void startRace();
@@ -147,6 +149,8 @@ private:
     Status st_ = Status::Lobby;
     double startMs_ = 0, presenceTimer_ = 0, myFinish_ = 0;
     std::map<std::string, Ghost> ghosts_;
+    struct Partant { std::string name; double d = 0; };
+    std::map<std::string, Partant> partants_;                  // WFS-122 (RG-02) : adversaires au départ de la manche
 };
 
 } // namespace duel
