@@ -5015,3 +5015,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 19:32:00 — Nom de l'agent : « agent arwa » (agent arwa, session trafic)
 
 Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle désormais **agent arwa**. Ligne de `track-agent.md` renommée ; les entrées et commits suivants sont signés « agent arwa (session trafic) ». Les anciennes cases Responsable de `TACHES.md` ne changent pas.
+
+### 2026-11-06 19:32:23 — WFS-181 : CI de main après la fusion (agent arwa, session trafic)
+- Le run 42279476180 (commit 78b9a30, fusion de WFS-181) est **en file d'attente**. Les lanceurs GitHub sont saturés : les runs de main attendent depuis 17:40 UTC.
+- WFS-181 reste 🟣 dans `TACHES.md`. Il passera à ✅ avec le numéro du run vert. Rien à corriger pour l'instant : en local, compilation, 35 tests CPU, `WFS_BANC=corniche` et `WFS_BANC=parcours` (0 écart) sont OK.
+
