@@ -17,6 +17,7 @@
 #include "../game/game.h"
 #include "../game/course_system.h"
 #include "../game/player.h"
+#include "../game/trace_cartes.h"   // WFS-139 (accroche)
 #include "../game/track.h"
 #include "enseignes.h"
 #include "ville_quartiers.h"
@@ -69,6 +70,14 @@ const std::vector<Client>& clientsTerrasses(const MapDef& map, int64_t len) {
     }
     return out;
 }
+// WFS-139 (accroche) : au tracé 2, la plage n'est qu'au bord de l'eau : ni lacets ni falaise (route à plus de 3 m), ni tunnel,
+// rond-point ou carrefour (serviettes et baigneurs tombaient sur les terrasses et les autres branches des lacets)
+static bool horsDeLaPlage(const MapDef& map, int64_t len, int64_t n) {
+    static std::map<std::pair<uint32_t, int64_t>, Track> pistes;
+    Track& t = pistes[{map.seed, len}]; if (!t.segmentCount()) t.build(map, trace::versionCarte(map.id));
+    const trace::Section* s = trace::sectionA(t, (double)n * SEG);
+    return s && (t.pose(n).y > 3 || s->type == trace::Type::Lacets || s->type == trace::Type::Tunnel || s->type == trace::Type::RondPoint || s->type == trace::Type::Feux);
+}
 const std::vector<Serviette>& serviettes(const MapDef& map, int64_t len) {
     static std::map<std::pair<uint32_t, int64_t>, std::vector<Serviette>> cache;
     auto& out = cache[{map.seed, len}];
@@ -76,7 +85,7 @@ const std::vector<Serviette>& serviettes(const MapDef& map, int64_t len) {
     Mulberry32 D(map.seed * 31 + 29);
     for (int64_t n = 2; n < len - 4; n += 4 + (int64_t)(D.next() * 5)) {
         if (std::strcmp(zoneId(map, n, len), "corniche")) continue;
-        if (D.next() >= 0.7) continue;
+        if (D.next() >= 0.7 || horsDeLaPlage(map, len, n)) continue;
         const float lat = (float)RW + 10 + (float)D.next() * 26, rot = ((float)D.next() - 0.5f) * 0.6f;
         out.push_back({(double)n, lat, rot, (int)(D.next() * 6)});
     }
@@ -89,7 +98,7 @@ const std::vector<Baigneur>& baigneurs(const MapDef& map, int64_t len) {
     Mulberry32 D(map.seed * 31 + 31);
     for (int64_t n = 4; n < len - 4; n += 5 + (int64_t)(D.next() * 8)) {
         if (std::strcmp(zoneId(map, n, len), "corniche")) continue;
-        if (D.next() >= 0.6) continue;
+        if (D.next() >= 0.6 || horsDeLaPlage(map, len, n)) continue;
         out.push_back({n + D.next() * 3, (float)RW + 47 + (float)D.next() * 12, (float)D.next() * 6});
     }
     return out;
