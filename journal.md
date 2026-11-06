@@ -4099,3 +4099,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - **WFS-148** : 48 captures acceptées, au lieu de 96 ; critère ≥ 99 % sans objet pour l'état zéro (il s'applique aux US suivantes).
   - **WFS-142** : RG-04 gardée ; les chiffres de RG-08 deviennent une mesure d'information. RG-10 : WFS-142 reste en attente de la confirmation de l'utilisateur sur téléphone.
 - Rien d'iOS (gel). Aucun code touché, rien retiré. Fichiers : `TACHES.md`, `anno.md` (statut / US), `regles-de-gestion/WFS-169.md` à `WFS-172.md`, ajouts dans WFS-136, 137, 139, 141, 142, 145, 148, 149, 158.
+
+### 2026-11-06 09:12:11 — Début WFS-170, attribué à Claude (session trafic) (po-scrum-master)
+- Ticket : WFS-170 [URGENT] correction des voitures (ANO-71 à 77), E4 (libre : WFS-134 et WFS-142 fusionnés), P1, branche `feature/waforspeed-170`, règles `regles-de-gestion/WFS-170.md`.
+- Décision PO : un ticket actif par agent, donc **WFS-158 passe en pause** (même agent, aucune branche distante) ; il reprend après la fusion de WFS-170.
+- Zone autorisée : `src/render/model_loader.cpp` (blocs matériaux, normales, tranches, cabochons), `src/render/feux_modele.*`, nouveau `src/render/correctifs_voitures.*` ; accroche banc ≤ 10 lignes annoncée (vues `vitrine-<id>-feux`). Interdit : bloc LOD de `model_loader.cpp`, `assets/cars/**` et `tools/convert_car.mjs` (WFS-158, aucun `.wfm` modifié), `src/ui/**`, `src/game/**`, `shaders/**`, iOS.
+- Séparation avec WFS-158 : WFS-170 fusionne en premier ; à la reprise, WFS-158 synchronise avec `main` et pose son accroche LOD dans une fonction à part, sans toucher les correctifs de chargement.
+- Critères : RG-01 à RG-09 (911 grise si « Gris », Giulia, S3, lissage Model 3 / X5 / 208 / Compass, feux arrière rouges sur 20 voitures, 15 voitures bonnes identiques, parcours accueil → garage → course → fin → Menu → accueil).
+- Fusion : confiance > 50 % seulement après avoir regardé les captures RG-08 de la branche (RG-10) ; captures `vitrine-*` sur la CI dépendantes de WFS-169 (CI de main rouge) : coder sans attendre.
