@@ -4447,3 +4447,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - `minicarte-ligne` : parcours, 128 points, 2 466 sommets.
   - Rien de recouvert : nitro, frein, gaz, score.
 - Rien à corriger pour WFS-173.
+
+### 2026-11-06 12:33:39 — Ordres de l'utilisateur : retrait du réalisme annulé (revert 03fac7f), règle des 10 heures pour changer de développeur (Claude, session 0183bv2a)
+- **Revert de 03fac7f** (« règle de réalisme mesuré oubliée pour les nouveaux tickets ») : l'utilisateur n'a pas voulu ce retrait. Le réel mesuré, fidélité 99 % (`regles-de-gestion/DA-realisme.md`) revient dans `CLAUDE.md`, `po-scrum-master.md`, les skills `agent-developer` (et sa check-list), `design-street-racing`, `waforspeed-natif`, `regles-de-gestion/README.md` et les règles de WFS-137 à 140. Journal gardé tel quel (historique). Aucun fichier de code touché.
+- **Nouvelle règle du PO** : il ne change jamais le développeur d'un ticket, sauf si ce développeur n'a rien poussé sur la branche depuis plus de 10 heures (remplace « réservation inactive > 24 h »). Inscrite aussi dans ses ordres permanents.
+- **À vérifier par les développeurs de WFS-175 à 181** : leurs règles ont été écrites sans réalisme mesuré ; le PO doit les compléter selon `DA-realisme.md`.
