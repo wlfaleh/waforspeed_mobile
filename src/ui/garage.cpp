@@ -17,6 +17,7 @@
 #include "appui.h"   // WFS-113
 #include "../platform/manette.h"   // WFS-22
 #include "../audio/sfx.h"   // WFS-96 : son du changement de voiture
+#include "ecrans/terrain.h"   // WFS-172 (banc) : « Rouler » après « Choisir »
 
 namespace wfs {
 namespace ecrans {
@@ -573,7 +574,7 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
     if (garageBouton("suivant", x, y)) { toucher(11, x, y); for (int i = 0; i < 60; i++) image(); capture("garage-suivant", "flèche suivante"); }
     // planche des 16 peintures (Golf)
     if (garageBouton("precedent", x, y)) { toucher(12, x, y); toucher(13, x, y); for (int i = 0; i < 30; i++) image(); }
-    {
+    auto planche = [&](const std::string& nom) {
         FrameParams fp; SceneDediee s; GameView v; v.ecran = Ecran::Garage; v.uiWidth = W; v.uiHeight = H;
         g_garage->scene(fp, s, v);
         const vec3 eye{0, 17, 9}, look{0, 0, 0.3f};
@@ -582,12 +583,18 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
         fp.fogNear = 30; fp.fogFar = 60;
         if (r.beginFrame(fp)) { g_garage->dessinerPlanche(r); r.endFrame(); }
         if (r.beginFrame(fp)) { g_garage->dessinerPlanche(r); r.endFrame(); }
-        r.capturePng(out + "/garage-peintures" + suf + ".png");
-        WFS_LOG("capture garage-peintures%s : 16 peintures sur la %s", suf.c_str(), CARS[g_garage->index()].model);
-    }
+        r.capturePng(out + "/" + nom + suf + ".png");
+        WFS_LOG("capture %s%s : 16 peintures sur la %s", nom.c_str(), suf.c_str(), CARS[g_garage->index()].model);
+    };
+    planche("garage-peintures");
     // « Choisir » : la Golf en Turquoise part en course (décompte puis course)
     if (garageBouton("choisir", x, y)) {
         toucher(14, x, y);
+        // WFS-172 (RG-01, ANO-80) : « Choisir » mène au terrain ; le banc appuie sur « Rouler » avant les 5 s de course
+        for (int i = 0; i < 20; i++) image();
+        g.render(t); float rx, ry;
+        if (centreRouler(rx, ry)) toucher(16, rx, ry); else WFS_ERR("garage : « Rouler » absent (écran %s)", nomEcran(g.ecran()));
+        for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
         g.setAutopilot(true);
         for (int i = 0; i < 60 * 5; i++) image();
         g.setAutopilot(false);
@@ -609,6 +616,20 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
         WFS_LOG("showroom (WFS-113) : appui %d sur « suivante » → %s (%d → %d)", k, g_garage ? CARS[g_garage->index()].model : "?", avant + 1,
                 g_garage ? g_garage->index() + 1 : 0);
     }
+    // WFS-182 (RG-04, ANO-92) : planche des 16 peintures sur la 911, puis la 911 en « Gris » en course (peinture appliquée)
+    for (int k = 0; k < CAR_COUNT && g_garage && std::strcmp(CARS[g_garage->index()].id, "p911") != 0 && garageBouton("suivant", x, y); k++) {
+        toucher(30, x, y); for (int i = 0; i < 40; i++) image();
+    }
+    if (g_garage && !std::strcmp(CARS[g_garage->index()].id, "p911")) {
+        planche("garage-peintures-p911");
+        g_garage->choisirPeinture(peintureParId("gris")); for (int i = 0; i < 12; i++) image();
+        float rx, ry;
+        if (garageBouton("choisir", x, y)) { toucher(31, x, y); for (int i = 0; i < 20; i++) image(); g.render(t); }
+        if (centreRouler(rx, ry)) toucher(32, rx, ry); else WFS_ERR("garage : « Rouler » absent pour la 911 (écran %s)", nomEcran(g.ecran()));
+        for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
+        g.setAutopilot(true); for (int i = 0; i < 60 * 5; i++) image(); g.setAutopilot(false);
+        capture("course-p911-gris", "Porsche 911 en Gris en course (WFS-182)");
+    } else WFS_ERR("garage : Porsche 911 introuvable au garage (WFS-182)");
     g.shutdown();
 }
 

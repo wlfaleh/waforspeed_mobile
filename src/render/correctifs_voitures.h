@@ -6,7 +6,8 @@
 //  - RG-02, RG-03 : vitres à points (carte de normales de sérigraphie, Giulia) ou noires rugueuses (camouflage de la S3) :
 //    verre teinté uni (MAT_GLASS) ;
 //  - RG-03, RG-06 : jantes blanc uni (S3) ou noyées dans le noir (Compass) : métal gris ;
-//  - RG-04 : feux arrière pris dans un matériau partagé blanc ou gris (V60, GT86, Abarth, A45) : pièces « feu arrière »
+//  - RG-04 : feux arrière pris dans un matériau partagé blanc ou gris (V60, GT86, Abarth, A45 ; WFS-182 : les 11 autres sans
+//    feu reconnu) : pièces « feu arrière »
 //    (verre rouge, allumées au freinage, WFS-109) ;
 //  - RG-05, RG-06 : carrosseries froissées (normales d'origine incohérentes : Model 3, X5, 208, Compass, et la bande claire
 //    de la Giulia) : normales recalculées depuis la géométrie, arêtes de plus de 40° gardées vives.
@@ -50,6 +51,19 @@ inline const ZoneFeu ZONES_FEUX[] = {
     {"abarth", 0, 1.00f, 0.40f, 0.66f, 0.92f, 1.50f},    // atlas blanc des feux arrière
     {"a45", 12, 1.00f, 0.40f, 0.74f, 1.00f, 1.79f},      // fond blanc des feux (rose pâle allumés)
     {"a45", 15, 1.00f, 0.40f, 0.74f, 1.00f, 1.79f},
+    // WFS-182 (RG-01, ANO-91 ; RG-03, reste d'ANO-76) : feux sans drapeau MAT_TAIL, ou matériau trop haut pour être pris
+    // entier (lunette, catadioptres du bouclier) : verre ou fond du bloc optique, dans la boîte du feu vue de l'arrière
+    {"gallardo", 6, 0.00f, 0.30f, 0.60f, 0.90f, 1.80f},  // verre fumé des feux (x 0,40-0,75, y 0,71-0,82)
+    {"p208", 12, 0.00f, 0.45f, 0.80f, 1.00f, 1.60f},     // verre des feux « griffes » (la lunette est au-dessus)
+    {"tcross", 10, 1.00f, 0.30f, 0.80f, 1.05f, 1.50f},   // intérieur des feux (matériau partagé avec les phares)
+    {"tcross", 1, 0.00f, 0.30f, 0.80f, 1.05f, 1.50f},    // verre des feux (la lunette est au-dessus)
+    {"compass", 11, 0.00f, 0.45f, 0.90f, 1.20f, 1.60f},  // verre des feux (lunette au-dessus, catadioptres en bas)
+    {"s3", 27, 0.00f, 0.30f, 0.70f, 1.00f, 1.60f},       // fond des feux (catadioptres du bouclier en bas)
+    {"x5", 12, 0.00f, 0.30f, 0.90f, 1.40f, 1.60f},       // verre rouge des feux en L
+    {"elantra", 17, 0.50f, 0.20f, 0.75f, 1.00f, 1.60f},  // verre du bandeau de feux (catadioptres en bas)
+    {"mustang", 23, 0.50f, 0.30f, 0.60f, 1.00f, 1.60f},  // verre des feux à trois barres
+    {"sf90", 14, 1.00f, 0.00f, 0.30f, 1.00f, 1.60f},     // fines barres rouges des feux (haut et bas de la poupe)
+    {"rrsport", 11, 0.00f, 0.30f, 1.00f, 1.30f, 1.60f},  // verre du bandeau (MAT_TAIL refusé : catadioptres plus bas)
 };
 // Part : ModelPart (firstIndex, indexCount, vertexOffset, material, feuArriere) ; pos(v) : position du sommet v ;
 // couleur(m) : couleur de base (gris) du matériau m, pour vérifier que c'est bien le matériau attendu. Rend le nombre

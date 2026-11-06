@@ -5,7 +5,7 @@ description: Règles du moteur natif de WaForSpeed Mobile (C++20 + Vulkan, Andro
 
 # WaForSpeed natif — règles du moteur
 
-Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dépôt est la seule référence ; l'aspect du monde 3D n'a pas d'exigence de réalisme mesuré (décision de l'utilisateur 2026-11-06).
+Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dépôt est la seule référence ; l'aspect du monde 3D suit le réel mesuré (`regles-de-gestion/DA-realisme.md`).
 **Pas de Unity, Godot, Unreal ni autre moteur de jeu** : moteur maison. Petites bibliothèques libres autorisées
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
@@ -22,8 +22,8 @@ Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dép
 4. **Toujours synchroniser la branche avec `main` avant de lancer une CI** : avant chaque `git push` de la branche, chaque PR et chaque lancement de workflow (`build.yml`, `simulateur.yml`…), faire `git fetch origin && git merge origin/main`, résoudre les conflits en gardant les deux modifications, recompiler / relancer les tests locaux, puis seulement pousser. Une CI lancée sur une branche en retard sur `main` ne compte pas (captures et verdict non valables).
    **Synchroniser avec `main` avant chaque validation et avant chaque demande de fusion** (`git fetch origin && git merge origin/main`),
    puis relancer tests / CI / captures.
-5. **PR** `WFS-XX : <titre>` vers `main`, statut 🔍. La CI publie l'APK du ticket dans la Release `apercu-waforspeed-XX`.
-5 bis. **Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire sur les règles de fusion ci-dessous)** : si le développeur est **confiant à plus de 50%** que son ticket fonctionne, il **fusionne directement**, sans attendre la fin de la CI ni les captures de sa branche. Conditions minimales, toujours : branche synchronisée avec `main` (`git fetch origin && git merge origin/main`), compilation et tests CPU passés en local, aucune modification hors de sa zone (sauf accroches ≤ 10 lignes annoncées au Journal). Au moment de la fusion : ligne obligatoire dans `qa/Check.md` (ticket, PR, date, « fusion par confiance », points à regarder), statut ✅ dans `TACHES.md`, entrée au Journal. Après la fusion, le développeur **suit la CI de `main`** : si elle est rouge ou si une capture est cassée par son ticket, il corrige **tout de suite**, en priorité sur tout le reste. Confiance ≤ 50% (gros changement du rendu ou du noyau, aucun moyen de tester en local, doute sur le résultat) : il attend la CI verte et regarde les captures avant de fusionner.
+5. **PR** `WFS-XX : <titre>` vers `main`, statut 🔀 En PR. Pas de CI de branche (règle de l'utilisateur du 2026-11-06) : après la fusion, statut 🟣 Fusionné, puis ✅ Terminé quand la CI de `main` est verte (numéro du run).
+5 bis. **Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire sur les règles de fusion ci-dessous)** : si le développeur est **confiant à plus de 50%** que son ticket fonctionne, il **fusionne directement**, sans attendre la fin de la CI ni les captures de sa branche. Conditions minimales, toujours : branche synchronisée avec `main` (`git fetch origin && git merge origin/main`), compilation et tests CPU passés en local, aucune modification hors de sa zone (sauf accroches ≤ 10 lignes annoncées au Journal). Au moment de la fusion : ligne obligatoire dans `qa/Check.md` (ticket, PR, date, « fusion par confiance », points à regarder), statut 🟣 Fusionné dans `TACHES.md` (✅ quand la CI de `main` est verte), entrée au Journal. Après la fusion, le développeur **suit la CI de `main`** : si elle est rouge ou si une capture est cassée par son ticket, il corrige **tout de suite**, en priorité sur tout le reste. Confiance ≤ 50% (gros changement du rendu ou du noyau, aucun moyen de tester en local, doute sur le résultat) : il lance **à la main, une seule fois**, la CI de sa branche (`workflow_dispatch` de `build.yml`, branche synchronisée avec `main`), attend qu'elle soit verte et regarde les captures avant de fusionner (règle de l’utilisateur, 2026-11-06 : seule CI de branche permise).
 6. **QA après chaque APK** : l'agent `qa-lead` regarde les captures, classe les anomalies et rend un verdict
    (`qa/rapports/WFS-XX.md`). `REFUSÉ` (anomalie bloquante) : corriger jusqu'à ce qu'il n'y en ait plus.
    `À CORRIGER` (mineures seulement) : corriger, deux tours au plus. `VALIDÉ`, ou `PASSABLE AVEC ANOMALIES MINEURES` après deux tours
@@ -124,7 +124,7 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette de `assets/pe
 ### 1. Précision et cohérence (CRITIQUE)
 - Mêmes graines (`Mulberry32`), mêmes unités (1 unité = 6 mm, `SEG` = 200, `RW` = 7,5 m) : ne pas les changer sans ticket E0.
 - Chaque règle chiffrée est vérifiée par un test (`tests/`) ; les réglages viennent du code et de `configgame.json`, pas de « à peu près ».
-- Monde 3D : aucune exigence de valeurs sourcées ni de fidélité au réel (décision de l'utilisateur 2026-11-06) ; un rendu qui fonctionne suffit.
+- Monde 3D : valeurs physiques sourcées, jamais inventées pour « faire joli » (`regles-de-gestion/DA-realisme.md`).
 
 ### 2. Threads et mémoire (CRITIQUE)
 - Le thread principal possède Vulkan et l'état du jeu. Les threads de `jobs()` ne font que du calcul CPU sur des données qu'ils possèdent

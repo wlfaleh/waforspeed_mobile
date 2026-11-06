@@ -1,0 +1,6 @@
+Texture d'essai du banc du réalisme (WFS-149) : tools/textures/essai/essai-couleur.png, essai-normale.png, essai-orm.png
+et leurs conversions KTX2 (assets/textures/essai/, produites par la CI, non livrées dans l'APK).
+Auteur : projet WaForSpeed (générées par tools/textures/essai/generer.py). Licence : CC0 1.0 Universel (domaine public),
+https://creativecommons.org/publicdomain/zero/1.0/
+Les teintes des carreaux reprennent, de façon approchée, les 16 premières cases de la charte ColorChecker (valeurs publiées,
+usage d'essai seulement, sans logo ni visuel de la charte).

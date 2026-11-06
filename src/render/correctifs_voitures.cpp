@@ -106,6 +106,13 @@ std::vector<std::string> corrigerMateriaux(const std::string& id, std::vector<Ma
     for (size_t i = 0; i < m.size(); i++) {
         MatBrut& x = m[i];
         const bool vitre = (x.flags & 64) != 0;
+        // WFS-182 (RG-03, reste d'ANO-76) : SF90 : barres des feux arrière en verre rouge transparent (alpha 0,35) et
+        // « métal » 1 : à peine visibles, l'éclat du stop disparaît dans la transparence → verre rouge opaque diélectrique
+        // (F0 ≈ 0,04, charte DA-realisme.md § 3 : jamais de verre métallique)
+        if (id == "sf90" && i == 14 && (x.flags & 2) && x.col[0] > 0.99f && x.col[1] < 0.01f && x.col[3] < 0.5f) {
+            x.col[3] = 1; x.flags &= ~2u; x.metal = 0; x.rough = 0.1f;
+            std::snprintf(b, sizeof b, "matériau %zu : barres des feux arrière → verre rouge opaque (WFS-182, RG-03)", i); fait.push_back(b);
+        }
         // RG-02 (ANO-73) : Giulia : vitre à carte de normales de sérigraphie (points de 64 px répétés : reflets en points)
         // et d'alpha 0 → verre teinté uni, sans carte de normales
         if (id == "giulia" && vitre && x.col[3] < 0.01f) {
