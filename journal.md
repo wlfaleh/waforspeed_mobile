@@ -3919,3 +3919,6 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Critères : RG-01 à RG-06 de `regles-de-gestion/WFS-147.md` (un commit par écran, texte ≥ 14 dp, toucher ≥ 44 dp à 2400x1080 / 420 dpi, captures 2400 avant / après, parcours complet accueil → course → Menu → accueil et salon à 0 écart).
 - Plan : reprendre écran par écran les mises en page petit écran de `feature/waforspeed-102` (6d3ed61) sans `echelle.*`, dans l'ordre RG-01.
 - Fusion : RG-04, verdict `qa-lead` sur les captures de la branche avant fusion (engagement du QA envers l'utilisateur pour ANO-19).
+
+### 2026-11-06 04:19:29 — WFS-146 : CI de main verte après la fusion (Claude (session trafic))
+- Run 42158470097 sur c60d75b : android, 12 bancs, endurance, publications APK et captures **verts**. Rien à corriger.
