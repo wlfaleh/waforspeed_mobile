@@ -2741,3 +2741,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - À corriger par le PO : `TACHES.md` l. 135 : WFS-139 : PR #142 introuvable dans le dépôt (ligne laissée telle quelle).
 - À corriger par le PO : `TACHES.md` l. 156 : WFS-176 : PR #158 introuvable dans le dépôt (ligne laissée telle quelle).
 - À corriger par le PO : `TACHES.md` l. 159 : WFS-179 : PR #161 introuvable dans le dépôt (ligne laissée telle quelle).
+
+### 2026-11-06 22:37:51 — WFS-198 fusionné : robot des archives (Claude, agent 1)
+- PR #165, squash f61e884, **fusion par confiance** : `tools/qa/archives.py`, `tools/qa/test_archives.py` (tout vert en local), `.github/workflows/archives.yml` (chaque nuit 03:07 UTC + `workflow_dispatch`).
+- Essai à blanc sur une copie de `main` (date simulée 2026-11-08) : 321 entrées rangées, comptages égaux (644 entrées, 197 lignes de tickets) ; aujourd'hui : rien à ranger.
+- RG-07 vérifié : le robot n'écrit que des `.md` / `regles-de-gestion/**`, dans `paths-ignore` de `build.yml` (non modifié). Statut 🟣 ; ✅ après un premier lancement à la main sur `main`.
+- RG-09 : au PO de mettre à jour sa règle « Ménage quotidien » (le robot fait le journal et `TACHES.md`, le PO garde `tache utilisateur.md`).
