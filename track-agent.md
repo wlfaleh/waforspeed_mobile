@@ -14,7 +14,7 @@
 
 | Agent (session) | Ticket(s) | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, session trafic | WFS-181 (WFS-150, WFS-182, WFS-183 fusionnés) | Corniche (3/3) : bars de plage, casino, mouettes, dauphins | 181 : pas encore de branche (attribué 18:37) | ✅ actif ; WFS-181 🔧 attribué 18:37 ; WFS-150 / 182 / 183 🟣, CI de main en file |
+| Claude, session trafic | WFS-181 (WFS-150, WFS-182, WFS-183 fusionnés) | Corniche (3/3) : bars de plage, casino, mouettes, dauphins | 181 : 18:37 (branche poussée) | ✅ actif ; WFS-181 🔧 en cours, branche poussée 18:37 ; WFS-150 / 182 / 183 🟣, CI de main en file |
 | Claude, agent 1 (01UY1Vv2) | WFS-185 (WFS-139, WFS-180 fusionnés) | plus de CI sur les branches ni les PR | 185 : 18:04 | 🔴 P1 🔧 en cours (attribué 18:02, branche poussée) |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-184 fusionné) | jingles de fin de la poursuite, sons de la route | 184 : 16:38 | ✅ libre |
 | Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/3) : rond-point à fontaine, carrefours à feux | 137 : 18:15 | 🟣 fusionné (PR #150), suit la CI de `main` |
