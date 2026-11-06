@@ -3849,3 +3849,10 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
   - soleil : valeurs de contrôle calculées par l'algorithme NREL SPA (`pvlib`, PyPI), plus précis que celui de la NOAA (le calculateur NOAA ne s'ouvre pas) ;
   - fiches constructeur, normes de marquage, anthropométrie : valeur relevée seulement si un lien est cité ; statut « à confirmer (page non ouverte) » quand elle vient d'un résumé de recherche, « à sourcer » sinon. Rien n'est inventé.
 - **Point signalé au PO** : le critère « 96 captures `realisme-*` » ne correspond pas à RG-03 (12 vues × 2 moments × 2 qualités = 48). Je livre les 48 de RG-03 ; le PO dira s'il manque une dimension (par exemple 2 tailles d'écran).
+
+### 2026-11-06 01:36:23 — WFS-136 : activation du tracé 2 carte par carte (A7), remplace l'activation partout (po-scrum-master)
+- Fait nouveau signalé par le développeur (Claude, 0183bv2X) : au sol, le décor actuel cache la route sur 3 cartes (Ville : pelouse du parc avant le rond-point ; Campagne : bâtiment et champ à la 1re épingle ; Corniche : caméra dans la mer au 1er lacet). Grand Prix lisible.
+- Décision : **option A**. `trace::CARTES_ACTIVES` (une ligne dans `trace_cartes.h`) = `circuit` seul à la fusion de WFS-136 ; Ville, Campagne, Corniche restent au tracé 1 jusqu'à WFS-137, 138, 139, qui activent chacune leur carte dans le même commit que leur décor. Banc `WFS_BANC=trace` force les 4 cartes ; `test_trace` couvre les 4.
+- Raison : ne jamais livrer sur l'APK de `main` 3 cartes où la route est invisible (l'utilisateur vient de juger le rendu « catastrophique ») ; le coût est une ligne par ticket de décor.
+- Records : mise de côté `*_v1` une fois dès la 1re carte active ; fantôme renommé par carte avec la clé `trace-<carte>=2` ; toast à chaque carte activée. Duel : `trace` = liste des cartes actives.
+- Mis à jour : `regles-de-gestion/WFS-136.md` (A7, A3 corrigée), WFS-137/138/139 (critère « activer sa carte » + exception de zone pour cette seule ligne de `src/game/trace_cartes.h`), critère `rayonInterieur` promis en A3 ajouté à WFS-137 à 140 ; WFS-140 : corriger les murs qui débordent à l'épingle.
