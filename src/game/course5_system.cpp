@@ -91,7 +91,7 @@ public:
         }
         t_ = c->state == RaceState::Play ? c->raceTime : t_ + dt;
         std::vector<int> nitros; for (const auto& o : os_) nitros.push_back(o.nitrosPrises);
-        course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed);
+        course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed, g.track);   // WFS-189 : virages
         if (c->state == RaceState::Play && !fini_) {   // WFS-189 (RG-04) : nitro rechargée au temps et aux dépassements
             const int n = depasses_.compter(os_, pl.dist);
             pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, n);

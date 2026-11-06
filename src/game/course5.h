@@ -11,6 +11,7 @@
 #include "cars.h"
 #include "duel.h"
 #include "../core/configgame.h"   // WFS-128
+#include "track.h"   // WFS-189 : virages (RG-02 bis)
 
 namespace wfs {
 
@@ -75,7 +76,15 @@ void grille(std::vector<Ordinateur>& os, double sJoueur);
 // RG-04 : un pas de conduite des ordinateurs (dt en s) ; joueur : distance et écart latéral (les ordinateurs l'évitent) ;
 // arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
 // (RG-06 : nitrosPrises compte les nitros utilisées)
-void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur);
+// WFS-189 (RG-02 bis) : `piste` donnée : les ordinateurs ralentissent avant les virages serrés (rond-point, épingle…) à la
+// vitesse où la voiture du joueur tient sa voie (plafondVirage), avec le freinage du joueur ; nullptr : sans virages
+void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur, const Track* piste = nullptr);
+constexpr double ECART_RANGEES_M = 13;    // WFS-189 (RG-03) : entre les deux rangées de la grille (m)
+constexpr double MARGE_VIRAGE = 0.9;      // WFS-189 (RG-02 bis) : part du cap max utilisée en courbe
+constexpr double DERIVE_MAX = 0.8;        // WFS-189 (RG-02 bis) : dérive latérale tolérée (largeurs de route) dans un virage
+constexpr double COURBURE_VIRAGE = 4;     // WFS-189 (RG-02 bis) : courbure au-delà de laquelle un segment compte comme virage
+constexpr double PLAFOND_JOUEUR = 1.10;   // WFS-189 (RG-02 ter) : vitesse visée ≤ facteur × 1,10 × pointe du joueur
+double vitesseVirage(const Track& t, double s);   // WFS-189 (RG-02 bis) : vitesse permise (unités/s) en s
 // RG-05 : une voiture en (s, x) est dans l'aspiration d'une des voitures de `os` (même file, moins de aspirationM devant)
 bool dansAspiration(const std::vector<Ordinateur>& os, double s, double x);
 // RG-06 : classement (moi + les ordinateurs), comme renderBoard du duel : arrivés d'abord (par temps), puis par distance

@@ -20,8 +20,10 @@ static int echecs = 0;
 // 1/120 s) ; ordinateurs de course5::avancer ; nitro du joueur prise si `nitro` (jauge > 0,5, comme simulateCourse) et
 // rechargée comme course5_system (RG-04). Sans contacts joueur / ordinateurs (les ordinateurs l'évitent).
 namespace {
-struct Simu { int place = 5; double temps = 0, nitroS = 0, jauge30 = 0; int depasses = 0, sous60a4s = 0; double colle = 0; bool fini = false; };
-Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char* carte, double km, bool nitro, bool recharge = true, int trace = 0) {
+struct Simu { int place = 5; double temps = 0, nitroS = 0, jauge30 = 0; int depasses = 0; double colle = 0; bool fini = false; };
+// freinVirage : le joueur simulé freine avant les virages serrés (comme un joueur qui ne sort pas de la route), à la même
+// vitesse permise que les ordinateurs (vitesseVirage, 30 m devant)
+Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char* carte, double km, bool nitro, bool recharge = true, int trace = 0, bool freinVirage = false) {
     static Track t; static std::string carteFaite;
     const int version = trace ? trace : trace::versionCarte(carte);   // 0 : tracé du jeu (2 en Ville)
     const std::string cle = std::string(carte) + std::to_string(version);
@@ -37,16 +39,16 @@ Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char
         DriveInput in; in.gas = true;
         in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
         in.nitro = nitro && pl.nitro > 0.5;
+        if (freinVirage && pl.speed > course5::vitesseVirage(t, pl.dist + 30 / M)) { in.gas = false; in.brake = true; in.nitro = false; }
         if (!r.fini) pl.update(dt, in, t, true);
         if (!r.fini && pl.nitroOn) r.nitroS += dt;
-        course5::avancer(os, dt, finish, tc, pl.dist, pl.playerX, pl.speed);
+        course5::avancer(os, dt, finish, tc, pl.dist, pl.playerX, pl.speed, &t);
         if (!r.fini) {
             const int n = suivi.compter(os, pl.dist);
             r.depasses += n;
             if (recharge) pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, n);
         }
         if (i + 1 == 120 * 30) r.jauge30 = pl.nitro;
-        if (i + 1 == 120 * 4) for (const auto& o : os) r.sous60a4s += o.g.v / MAX_SPEED * 260 < 60;
         if (tc <= 10)   // RG-03 : ordinateur à moins de 8 m (pare-chocs) derrière un autre, même file
             for (size_t a = 0; a < os.size(); a++) {
                 bool pres = false;
@@ -212,22 +214,36 @@ int main() {
         VERIFIE(horsClasse == 0, "%d adversaire(s) tiré(s) hors des candidats", horsClasse);
         std::printf("RG-01 : 20 voitures, 4 graines : adversaires toujours dans la classe (%d voiture(s) complétée(s)) : %s\n", completes, horsClasse ? "ÉCHEC" : "OK");
     }
-    // WFS-189 (RG-03) : grille rangée par vitesse max décroissante (devant = plus rapide, dans chaque file)
-    {
-        auto os = course5::tirer(20261105, "golf"); course5::grille(os, 0);
+    // WFS-189 (RG-03, arbitrage du PO 20:57) : grille rangée par 0-100 croissant (à égalité, vitesse max la plus forte
+    // devant) ; à 4 s du GO, chaque ordinateur roule à ≥ 90 % de sa vitesse seul sur la même route ; aucun ne reste plus
+    // de 2 s à moins de 8 m (pare-chocs) derrière un autre de sa file dans les 10 premières secondes. Graine du banc,
+    // avec la Golf et avec la SF90.
+    for (const char* joueur : {"golf", "sf90"}) {
+        auto os = course5::tirer(20261105, joueur); course5::grille(os, 0);
         bool range = true;
         for (const auto& a : os) for (const auto& b : os)
-            if (std::abs(a.g.x - b.g.x) < 0.45 && a.g.rd > b.g.rd) range = range && carById(a.car.c_str()).spec.vmax >= carById(b.car.c_str()).spec.vmax;
-        double rangeeAvant = 0; for (const auto& o : os) rangeeAvant = std::max(rangeeAvant, o.g.rd);
-        int vDevant = 1e9, vDerriere = 0;
-        for (const auto& o : os) { const int v = carById(o.car.c_str()).spec.vmax; if (o.g.rd == rangeeAvant) vDevant = std::min(vDevant, v); else vDerriere = std::max(vDerriere, v); }
-        VERIFIE(range && vDevant >= vDerriere, "grille : rangée de devant plus rapide que celle de derrière");
-        const Simu r = simuler("golf", course5::NORMALE, 20261105, "ville", 4, false);
-        std::printf("RG-03 : graine 20261105 : ");
-        for (const auto& o : os) std::printf("%s %d km/h à %.0f m (file %d) ; ", o.car.c_str(), carById(o.car.c_str()).spec.vmax, o.g.rd * M, o.file);
-        std::printf("\nRG-03 : à 4 s du GO : %d ordinateur(s) sous 60 km/h ; plus long « collé » à moins de 8 m derrière un autre : %.2f s\n", r.sous60a4s, r.colle);
-        VERIFIE(r.sous60a4s == 0, "RG-03 : %d ordinateur(s) sous 60 km/h à 4 s", r.sous60a4s);
-        VERIFIE(r.colle <= 2, "RG-03 : un ordinateur reste %.2f s à moins de 8 m derrière un autre", r.colle);
+            if (std::abs(a.g.x - b.g.x) < 0.45 && a.g.rd > b.g.rd) {
+                const CarSpec &A = carById(a.car.c_str()).spec, &B = carById(b.car.c_str()).spec;
+                range = range && (A.s100 < B.s100 || (A.s100 == B.s100 && A.vmax >= B.vmax));
+            }
+        VERIFIE(range, "RG-03 (%s) : dans chaque file, la voiture de devant a le meilleur 0-100", joueur);
+        static Track piste; static bool faite = false;
+        if (!faite) { piste.build(mapById("ville"), trace::versionCarte("ville")); faite = true; }
+        auto groupe = os; double pire = 1e9;
+        for (int i = 0; i < 480; i++) course5::avancer(groupe, 1.0 / 120, 4 * duel::KM, i / 120.0, -1e9, 0, 0, &piste);
+        std::printf("RG-03 (%s) : grille ", joueur);
+        for (size_t k = 0; k < os.size(); k++) {
+            std::vector<course5::Ordinateur> seul{os[k]};
+            for (int i = 0; i < 480; i++) course5::avancer(seul, 1.0 / 120, 4 * duel::KM, i / 120.0, -1e9, 0, 0, &piste);
+            const double part = groupe[k].g.v / std::max(1e-9, seul[0].g.v);
+            pire = std::min(pire, part);
+            std::printf("%s (%.1f s) à %.0f m file %d : %.0f km/h à 4 s, seul %.0f (%.0f %%) ; ", os[k].car.c_str(), carById(os[k].car.c_str()).spec.s100,
+                        os[k].g.rd * M, os[k].file, groupe[k].g.v / MAX_SPEED * 260, seul[0].g.v / MAX_SPEED * 260, part * 100);
+        }
+        const Simu r = simuler(joueur, course5::NORMALE, 20261105, "ville", 4, false);
+        std::printf("\nRG-03 (%s) : à 4 s, au moins %.0f %% de la vitesse seul ; plus long « collé » à moins de 8 m : %.2f s\n", joueur, pire * 100, r.colle);
+        VERIFIE(pire >= 0.90, "RG-03 (%s) : un ordinateur à %.0f %% de sa vitesse seul à 4 s", joueur, pire * 100);
+        VERIFIE(r.colle <= 2, "RG-03 (%s) : un ordinateur reste %.2f s à moins de 8 m derrière un autre", joueur, r.colle);
     }
     // WFS-189 (RG-04) : recharge de la nitro sans trafic
     {
@@ -255,18 +271,19 @@ int main() {
     {
         const char* voitures[] = {"sf90", "m4", "mustang", "golf", "x5", "p208", "compass"};
         const uint32_t graines[] = {1u, 1234u, 20261105u, 99u, 7u};
-        for (int trace : {0, 1}) {
-            std::printf("RG-02 : tracé %s : | voiture | Facile | Normale | Difficile | temps moyen (Normale) | nitro avec recharge (s, min-max) |\n", trace ? "1" : "du jeu");
+        for (int mode : {0, 1, 2}) {
+            const int trace = mode == 1 ? 1 : 0; const bool frein = mode == 2;
+            std::printf("RG-02 : %s : | voiture | Facile | Normale | Difficile | temps moyen (Normale) | nitro avec recharge (s, min-max) |\n", mode == 0 ? "tracé du jeu, pilote automatique" : mode == 1 ? "tracé 1, pilote automatique" : "tracé du jeu, joueur qui freine aux virages");
             for (const char* v : voitures) {
                 double place[3] = {0, 0, 0}, temps = 0, nMin = 1e9, nMax = 0;
                 for (int d = 0; d < 3; d++) for (uint32_t g : graines) {
-                    const Simu r = simuler(v, (course5::Difficulte)d, g, "ville", 4, false, true, trace);
+                    const Simu r = simuler(v, (course5::Difficulte)d, g, "ville", 4, false, true, trace, frein);
                     VERIFIE(r.fini, "%s : le joueur n'arrive pas", v);
                     place[d] += r.place / 5.0; if (d == 1) temps += r.temps / 5;
                 }
-                for (uint32_t g : graines) { const Simu r = simuler(v, course5::NORMALE, g, "ville", 4, true, true, trace); nMin = std::min(nMin, r.nitroS); nMax = std::max(nMax, r.nitroS); }
+                for (uint32_t g : graines) { const Simu r = simuler(v, course5::NORMALE, g, "ville", 4, true, true, trace, frein); nMin = std::min(nMin, r.nitroS); nMax = std::max(nMax, r.nitroS); }
                 std::printf("RG-02 : | %s | %.1f | %.1f | %.1f | %.1f s | %.1f à %.1f |\n", v, place[0], place[1], place[2], temps, nMin, nMax);
-                if (trace) continue;
+                if (mode != 0) continue;
                 VERIFIE(place[1] >= 1.5 && place[1] <= 3.5, "RG-02 : %s : place moyenne %.1f en Normale (1,5 à 3,5)", v, place[1]);
                 VERIFIE(place[0] <= 3.0, "RG-02 : %s : place moyenne %.1f en Facile (≤ 3,0)", v, place[0]);
                 VERIFIE(place[2] >= 2.0, "RG-02 : %s : place moyenne %.1f en Difficile (≥ 2,0)", v, place[2]);
