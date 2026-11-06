@@ -321,6 +321,7 @@ const Plan& adapter(const MapDef& map, const Track& t) {
             const uint8_t voie = voieSur(a, len);
             if (voie == TUNNEL || voie == PONT || (o.t != LAMPE && surRue(a, len))) return true;   // sous terre, ou au-dessus de l'eau : décor propre (RG-03)
             if (voie == AUTOROUTE && o.t != IMMEUBLE && o.t != ENTREPOT && o.t != CONTENEURS && o.t != GRUE) return true;   // pas de rue
+            if (voie == AUTOROUTE && o.side < 0) return true;   // WFS-175 : côté gauche = chaussée opposée, terre-plein et écran antibruit
             return o.t != ZEBRA && etendue(o) > limite(a, o.side, len);
         }), v.end());
         retires += n0 - v.size();
@@ -328,6 +329,12 @@ const Plan& adapter(const MapDef& map, const Track& t) {
         if (P.voie[(size_t)a] != RUE || surRue(a, 0.f)) h.clear();   // RG-02 : plus d'immeuble sur la rue transversale
         else h.erase(std::remove_if(h.begin(), h.end(), [&](const Choc& c) {
             return std::fabs(c.offset) * (float)RW + 1.f > limite(a, c.offset > 0 ? 1 : -1, 4.f); }), h.end());
+        {   // WFS-175 : glissière (droite) et séparateur en béton (gauche) de l'autoroute, piédroits du tunnel, parapets du pont
+            const float R = (float)RW, d = 0.05f;
+            const uint8_t vo = P.voie[(size_t)a];
+            if (vo == AUTOROUTE) { h.push_back({(R + 3.6f) / R, d}); h.push_back({-(R + 4.65f) / R, d}); }
+            else if (vo == TUNNEL || vo == PONT) { h.push_back({(R + 4.f) / R, d}); h.push_back({-(R + 4.f) / R, d}); }
+        }
     }
     const float facade = (float)RW + 6.5f + 4.f;   // commerces et panneaux : devant les façades
     const size_t nc = P.commerces.size(), np = P.panneaux.size();
