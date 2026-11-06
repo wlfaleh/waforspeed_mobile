@@ -4039,3 +4039,71 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/world/circuit.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures du circuit) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : `src/game/**`, `ville*.cpp`, `campagne.cpp`, `plage.cpp` (WFS-145 y travaille), `src/render/**`, `shaders/**`, `src/ui/**`, iOS (gel).
 - **Critères** : captures `carte-circuit-depart` (feux allumés), `-epingle`, `-chicane`, `-raidillon`, `-paddock` (+ `-nuit`) ; rien sur la chaussée, aucun virage ni feu caché ; `qualite-*` sans baisse ; parcours complet 0 écart ; ligne `qa/Check.md`.
 - **Fusion** : règle de confiance > 50 % (CLAUDE.md).
+
+### 2026-11-06 08:23:44 — WFS-145 : décision RG-10 à RG-12, verdict mémoire sur la tendance (po-scrum-master)
+- Constat de la session dev 5bx : à la scène de référence (RG-08), un relevé isolé flotte de ±15 % après une course, sans pente ; RG-09 (a) inatteignable sur un maximum isolé.
+- Décision : verdict sur le tas utilisé à la référence, cycles 2 à 9 : échec si pente > +6 Mo/cycle **ou** médiane(7-9) > médiane(2-4) + 10 % (RG-10). Option « 3 relevés, minimum » refusée (coût CI).
+- Preuves (RG-11) : 2 passages verts, fuite volontaire 20 Mo/cycle → échec, fuite lente 5 Mo/cycle → échec. Livraison unique avec la Poursuite (RG-12).
+
+### 2026-11-06 08:24:00 — Début WFS-158 : véhicules, dimensions exactes des 20 voitures (PO)
+- **Attribution** : WFS-158 — dimensions exactes (fiches constructeur ±1 %), assise, pièces manquantes, LOD 4 niveaux · E10 · P2 Haute · Claude (session trafic), 3e ticket sur ordre de l'utilisateur (« Prends autre sujet ») à côté de WFS-168 (E8) et WFS-141 (E3) · branche `feature/waforspeed-158` · règles `regles-de-gestion/WFS-158.md`, charte `DA-realisme.md`.
+- **Pourquoi lui** : seuls Prêt restants = WFS-137 à 139 (E2 occupée par WFS-140, un ticket actif par épic) ; E10 libre ; décision PO : WFS-148 fusionné (✅) vaut « validée » pour débloquer WFS-158 et WFS-149 (passé en ⏳ Prêt) ; si la QA de nuit refuse WFS-148, on ajuste le référentiel sans bloquer.
+- **Zone autorisée** : `assets/cars/**`, `tools/convert_car.mjs`, `src/render/vehicule_*`, `references/reel/voitures/**`, `tests/fidelite_voitures*` ; accroches ≤ 10 lignes annoncées : `src/render/model_loader.cpp` (LOD), `CMakeLists.txt` (test). **Interdit** : `src/ui/**` (WFS-168), `src/game/**` (WFS-141), `src/world/**` (WFS-140), `src/platform/**` (WFS-145), reste de `src/render/**` et `shaders/**` (WFS-142), matériaux (WFS-159), iOS (gel).
+- **Critères** : `test_fidelite_voitures` vert pour les 20 voitures (±1 % dimensions, roues, voies ; garde au sol ±1 cm ; plaque 520 × 110 mm) ; voitures posées sur leurs pneus, intérieurs visibles sur `garage-*` et `realisme-voiture-*` ; LOD 4 niveaux sans aucun cube ; rapport des corrections par voiture au Journal ; parcours complet accueil → garage → course → retour à 0 écart.
+- **Fusion** : changement de tous les modèles : CI verte + captures `garage-*` / `realisme-voiture-*` regardées avant fusion (pas de fusion par confiance sans ces captures), ligne `qa/Check.md`.
+
+### 2026-11-06 08:30:01 — Recette de nuit, lot 2 (interface) : WFS-135 VALIDÉ, WFS-146 PASSABLE, WFS-102 sans objet (qa-lead)
+- Captures : Release `apercu` de main (construction 693, 0d923d5), comparées à `apercu-waforspeed-134`, `-102`, `-146`.
+- **WFS-135 : VALIDÉ** ; **WFS-146 : PASSABLE AVEC ANOMALIES MINEURES** (nouvelles ANO-68 : aide du salon serrée en 720p ; ANO-69 : fin de la course à 5 à l'ancien style) ; **WFS-102 : annulé, sans objet** (garage 2400 identique au pixel à avant WFS-102, rien sur la voiture).
+- **Vérifiées corrigées** : ANO-16, 20, 32, 35, 39, 41, 43, 44, 45, 55, 58, 61, 63, 64.
+- Lots 1, 3, 4 et recette des voitures en cours. Rapports : `qa/rapports/WFS-135.md`, `WFS-146.md`, `WFS-102.md`.
+
+### 2026-11-06 08:33:12 — Recette de nuit, lot 3 (rendu) : WFS-142 VALIDÉ, WFS-109 et WFS-134 PASSABLES (qa-lead)
+- Captures : Release `apercu` de main (captures de la construction 689, eb8152a), comparées à `apercu-waforspeed-135`, `-109` et `qa/retours/WFS-142/`.
+- **WFS-142 : VALIDÉ** (plus de façade dans la route, nuit sèche mate, pluie en traînées floues ; écart chiffré RG-08 laissé au PO ; RG-10 : résolu seulement après l'essai de l'utilisateur sur téléphone).
+- **WFS-109 : PASSABLE AVEC ANOMALIES MINEURES** (nouvelle ANO-70 : tache ovale au sol derrière les voitures la nuit).
+- **WFS-134 : PASSABLE AVEC ANOMALIES MINEURES** (aucune voiture en cubes ; nouvelle ANO-71 : reste d'ANO-67 sur le X5 et la Model 3 ; ANO-67 passée à « corrigée en partie »).
+- **Vérifiées corrigées** : ANO-48, 60, 66. À refaire au banc : `poursuite-camion` (écran « ARRÊTÉ », camion non visible).
+
+### 2026-11-06 08:34:18 — Recette des 20 voitures (qualité et fonctionnement), demandée par l'utilisateur : REFUSÉ (qa-lead)
+- Captures : Release `apercu` de main (captures de la construction 689, eb8152a ; aucune Release plus récente, les commits suivants ne touchent pas aux voitures) ; journaux du banc : aucune erreur de chargement.
+- **Fonctionnement bon** : roues qui tournent et braquent, feux du joueur (stop, recul, clignotant), trafic sans voiture en cubes de 10 à 180 m, choc, nitro, caméras, course à 5, sauvegarde.
+- **15 voitures bonnes**, 5 avec un défaut bloquant (vérifiés aussi par moi sur `vitrine-*` / `garage-suivant`) : **ANO-72** peinture de la 911 non appliquée (« Gris » → noire) ; **ANO-73** Giulia, bande grise sur la porte et vitres opaques à points ; **ANO-74** S3, lunette en camouflage ; **ANO-75** Model 3, carrosserie froissée partout ; **ANO-76** feux arrière blancs sur la V60 (gris / roses sur 8 autres : mineure).
+- **Mineures** : ANO-77 (facettes 208, Compass), ANO-78 (feux de recul de la Golf hors des blocs), ANO-79 (plaques au nom de l'auteur du modèle), ANO-80 (capture `garage-course` et `poursuite-camion` à refaire au banc).
+- Toujours là : ANO-23, ANO-56, ANO-71 (reste d'ANO-67). Vérifiée : ANO-26.
+- **Bloquantes après fusion → tickets de correction prioritaires à créer par le PO** (ANO-72 à 76). Rapport : `qa/rapports/voitures-2026-11-06.md`.
+
+### 2026-11-06 08:35:39 — Recette de nuit, lot 4 : WFS-94 et WFS-148 PASSABLES, correctif #121 VALIDÉ (qa-lead)
+- Captures : construction 689 (eb8152a) pour WFS-94 et #121, construction 693 (0d923d5) pour WFS-148 ; avant : `apercu-waforspeed-134`.
+- **WFS-94 : PASSABLE AVEC ANOMALIES MINEURES** : ANO-81 (herbe devant les immeubles en retrait, reste d'ANO-49 passée « corrigée en partie »), ANO-82 (voiliers à sec), ANO-83 (pas de barque au village), ANO-84 (façades proches noires la nuit).
+- **WFS-148 : PASSABLE AVEC ANOMALIES MINEURES** : image du jeu inchangée (13 captures sur 14 identiques au pixel) ; ANO-85 (bouton Réglages sur les vues de mesure), ANO-86 (« 0.0 % » pour un domaine non mesurable). Pour le PO : 48 captures (et non 96) ; critère ≥ 99 % sans objet pour l'état zéro.
+- **Correctif #121 : VALIDÉ** (poursuite à 1000 points, caméra et record conformes à `configgame.json`).
+- **Vérifiées corrigées** : ANO-37, 40, 51. Reste le lot 1 (WFS-133, 144, 136).
+
+### 2026-11-06 08:54:17 — Recette de nuit, lot 1 : WFS-133 VALIDÉ, WFS-144 PASSABLE, WFS-136 REFUSÉ — CI de main rouge (qa-lead)
+- **WFS-133 : VALIDÉ** (puces de difficulté ; simulation de contrôle 720 courses par difficulté : la nitro sert en Normale et Difficile).
+- **WFS-144 : PASSABLE AVEC ANOMALIES MINEURES** (+45 appels de dessin en Basse, cible ≤ 60 ; ANO-87 : aucune capture de la police en Basse).
+- **WFS-136 : REFUSÉ** : **ANO-88 bloquante** — `benchRecords` (`course_system.cpp` l. 385) attend encore `best == 48210` alors que RG-07 met les records sous `*_v1` : job `vitrines` rouge sur main f77e204 (run 42186678130, vérifié), plus aucune `vitrine-*` ni `trace-*` publiée. Tracé vérifié au banc local `WFS_BANC=trace` (0 écart) : rond-point, épingle, autoroute, A7 conformes. ANO-89 mineure (file au feu rouge non visible sur `trace-feux-rouge`).
+- **Pour le PO** : endurance de main rouge sur f77e204 (+10,6 % au cycle 6, seuil 10 %, sans lien établi avec WFS-136 → WFS-145) ; A7.4 fait disparaître le record Checkpoint aussi sur les cartes au tracé inchangé.
+- Recette de nuit terminée : 11 tickets + recette des 20 voitures. Bloquantes après fusion → tickets prioritaires à créer par le PO : ANO-72 à 76 (voitures), ANO-88 (CI de main).
+
+### 2026-11-06 08:58:32 — Suites de la recette de nuit : WFS-169 à WFS-172 créés, 22 anomalies planifiées, décisions (PO)
+- **WFS-169** (E3, **P1 Urgent**, ANO-88) : CI de `main` rouge depuis WFS-136 (f77e204, run 42186678130, `benchRecords`). Le contrôle est aligné sur RG-07 (`best == 0`, `best_v1 == 48210`), la migration `*_v1` ne change pas. **Au développeur de WFS-136, Claude (session dev expert, 0183bv2X)**, tout de suite (règle « suivre la CI de main ») ; WFS-140 en pause. Sans branche `feature/waforspeed-169` poussée sous 2 h, réattribué au prochain agent. Exception PO : 2e ticket E3 actif à côté de WFS-141 (`benchRecords` seulement, WFS-141 n'a que la fin de course). Note : le journal donnait « session trafic » ; c'est la session dev expert 0183bv2X qui a fusionné WFS-136.
+- **WFS-170** (E4, **P1 Urgent**, ⏳ Prêt) : correction des voitures au chargement, sans toucher aux `.wfm` (WFS-158 y travaille). Partie A, matériaux : peinture de la 911 (ANO-72), Giulia (ANO-73), S3 (ANO-74), feux arrière rouges des 20 voitures (ANO-76). Partie B, normales : Model 3, X5, 208, Compass (ANO-75, 71, 77). Une seule CI. Captures de contrôle : `vitrine-<id>-0`, `garage-suivant(-2400)`, `garage-peintures`, nouvelles `vitrine-<id>-feux`. Elles ne seront publiées sur la CI qu'après WFS-169. Coordination avec WFS-158 : blocs séparés de `model_loader.cpp`.
+- **WFS-171** (E4, P3, après WFS-170) : lueur des feux au sol la nuit (ANO-70) et feux de recul de la Golf (ANO-78).
+- **WFS-172** (E3, P3, après WFS-169) : captures du banc qui ne prouvent pas leur critère (ANO-80, 87, 89).
+- **Mineures rattachées à des tickets existants** : ANO-68 → WFS-141 RG-07 (texte et écarts seulement, aucune taille de bouton) ; ANO-69 → WFS-141 RG-03 (déjà couverte) ; ANO-79 → WFS-158 ; ANO-81, 84 → WFS-137 ; ANO-82, 83 → WFS-139 ; ANO-85, 86 → WFS-149. ANO-68 à 89 passent en 📋 Planifiée dans `anno.md`.
+- **Décisions** :
+  - **Endurance de main** (+10,6 % au cycle 6 sur f77e204) : rattachée à WFS-145, qui vérifie aussi ce commit avec le verdict sur la tendance (RG-10). Pas de nouveau ticket.
+  - **A7.4 de WFS-136** : gardée telle quelle. Les records sont communs aux 4 cartes et l'utilisateur a été prévenu. Ils sont mis de côté, pas perdus.
+  - **WFS-148** : 48 captures acceptées, au lieu de 96 ; critère ≥ 99 % sans objet pour l'état zéro (il s'applique aux US suivantes).
+  - **WFS-142** : RG-04 gardée ; les chiffres de RG-08 deviennent une mesure d'information. RG-10 : WFS-142 reste en attente de la confirmation de l'utilisateur sur téléphone.
+- Rien d'iOS (gel). Aucun code touché, rien retiré. Fichiers : `TACHES.md`, `anno.md` (statut / US), `regles-de-gestion/WFS-169.md` à `WFS-172.md`, ajouts dans WFS-136, 137, 139, 141, 142, 145, 148, 149, 158.
+
+### 2026-11-06 09:12:11 — Début WFS-170, attribué à Claude (session trafic) (po-scrum-master)
+- Ticket : WFS-170 [URGENT] correction des voitures (ANO-71 à 77), E4 (libre : WFS-134 et WFS-142 fusionnés), P1, branche `feature/waforspeed-170`, règles `regles-de-gestion/WFS-170.md`.
+- Décision PO : un ticket actif par agent, donc **WFS-158 passe en pause** (même agent, aucune branche distante) ; il reprend après la fusion de WFS-170.
+- Zone autorisée : `src/render/model_loader.cpp` (blocs matériaux, normales, tranches, cabochons), `src/render/feux_modele.*`, nouveau `src/render/correctifs_voitures.*` ; accroche banc ≤ 10 lignes annoncée (vues `vitrine-<id>-feux`). Interdit : bloc LOD de `model_loader.cpp`, `assets/cars/**` et `tools/convert_car.mjs` (WFS-158, aucun `.wfm` modifié), `src/ui/**`, `src/game/**`, `shaders/**`, iOS.
+- Séparation avec WFS-158 : WFS-170 fusionne en premier ; à la reprise, WFS-158 synchronise avec `main` et pose son accroche LOD dans une fonction à part, sans toucher les correctifs de chargement.
+- Critères : RG-01 à RG-09 (911 grise si « Gris », Giulia, S3, lissage Model 3 / X5 / 208 / Compass, feux arrière rouges sur 20 voitures, 15 voitures bonnes identiques, parcours accueil → garage → course → fin → Menu → accueil).
+- Fusion : confiance > 50 % seulement après avoir regardé les captures RG-08 de la branche (RG-10) ; captures `vitrine-*` sur la CI dépendantes de WFS-169 (CI de main rouge) : coder sans attendre.
