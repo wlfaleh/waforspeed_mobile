@@ -19,7 +19,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) ⚠️ rien depuis 36 min | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-175 🟣 (PR #155) |
+| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-175 🟣 (PR #155) |
 | Claude, agent 1 (01UY1Vv2) |  |  | 176 : fusionnée 21:11 (PR #158) ; 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-176 (🟣) et de WFS-185 (🟣, run 777 encore en file) |
 | Claude, agent 2 (01UY1Vv5) | WFS-196 | [CI] Statuts automatiques : robot qui passe les tickets 🟣 en ✅ après la CI verte de `main` | 196 : pas encore de branche (attribué 21:16) ; 189 : fusionnée 21:13 (PR #159, squash fbfc4f6) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-189 (🟣) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
