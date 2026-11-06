@@ -36,7 +36,7 @@ static const char* SAMPLES[] = {"audio/sport.wav", "audio/v8.wav", "audio/citadi
 constexpr int SAMPLE_COUNT = sizeof(SAMPLES) / sizeof(SAMPLES[0]);
 constexpr int OUT_RATE = 48000;
 
-struct BenchRec { bool on = false; std::vector<float> pcm; std::vector<EngineFrame> frames; double acc = 0, t = 0; };
+struct BenchRec { bool on = false; std::vector<float> pcm; std::vector<EngineFrame> frames; double acc = 0, t = 0; double e2Moteur = 0, e2Sfx = 0; };   // WFS-174 : énergies moteur / bruitages
 static BenchRec g_rec;
 
 class AudioSystem : public System {
@@ -113,6 +113,7 @@ public:
             const size_t at = g_rec.pcm.size(); g_rec.pcm.resize(at + (size_t)n);
             for (auto& x : synths_) x->targets.lastUpdate = 1e9;   // hors ligne : pas de « pause » détectée
             renderInto(g_rec.pcm.data() + at, n, 0);
+            for (int k = 0; k < n; k++) g_rec.e2Moteur += (double)g_rec.pcm[at + k] * g_rec.pcm[at + k];   // WFS-174 (RG-08) : moteur seul
             sfx_.lastUpdate = 1e9; sfx_.mix(g_rec.pcm.data() + at, n, 1e9);   // WFS-120 (RG-07) : bruitages dans moteur.wav
             g_rec.frames.push_back({(float)g_rec.t, model_.rpm, model_.gear, model_.load, (float)pl.kmh(), throttle});
         }
@@ -317,6 +318,12 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("son t=%2ds : %3.0f km/h, rapport %d, régime %.2f, charge %.2f, pédale %s", lastS, f.kmh, f.gear, f.rpm, f.load, f.throttle ? "oui" : "non");
     }
     WFS_LOG("son : %.1f s enregistrées (%zu échantillons), crête %.2f, plus grand saut %.3f", g_rec.pcm.size() / (double)OUT_RATE, g_rec.pcm.size(), peak, jump);
+    {   // WFS-174 (RG-08) : le moteur reste au-dessus des bruitages (sons de la route compris) ; énergie des bruitages = total − moteur
+        double e2Total = 0; for (float x : g_rec.pcm) e2Total += (double)x * x;
+        const double nEch = std::max<double>(1, (double)g_rec.pcm.size());
+        const double rmsM = std::sqrt(g_rec.e2Moteur / nEch), rmsS = std::sqrt(std::max(0.0, e2Total - g_rec.e2Moteur) / nEch);
+        WFS_LOG("son : RMS moteur %.3f, RMS bruitages (route comprise) %.3f → moteur %s", rmsM, rmsS, rmsM >= rmsS ? "au-dessus" : "EN DESSOUS");
+    }
     {   // WFS-121 (critère « coller ») : le joueur se place 8 m derrière la voiture la plus entourée, à sa vitesse, et la
         // suit 3 s dans sa file en dosant l'accélérateur (écart pare-chocs à pare-chocs gardé vers 3 m) → « SFX klaxon »
         trafficBenchPlace(8, 0, 0, false);
