@@ -358,6 +358,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
     out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
     out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;
+    out.feux.recul = feuA.recul; out.feux.reculTrouve = feuA.reculTrouve;   // WFS-171 (RG-03) : recul dans le bloc découpé
     out.feux.avantY = hMax.y > hMin.y ? (hMin.y + hMax.y) * 0.5f : out.bmin.y + H * 0.41f;
     // centre latéral d'un feu : aux trois quarts de la demi-largeur des pièces des feux (bloc gauche + bloc droit)
     const float hw = out.feux.largeur * 0.5f;
