@@ -48,6 +48,9 @@ done
 CORR="$RACINE/build/corriger_voitures"
 if [ -x "$CORR" ]; then "$CORR" "$RACINE" "$@"
 else echo "⚠️  $CORR absent : construire la cible corriger_voitures (ninja -C build corriger_voitures), puis la lancer" >&2; exit 1; fi
+# WFS-158 (ST-3, M-04) : plaques européennes 520 × 110 mm des voitures dont la plaque est une pièce à part (après la
+# correction : la plaque est posée sur la caisse corrigée)
+node plaques_voitures.mjs "$@"
 # WFS-134 (RG-11, RG-12) : versions allégées (assets/cars/<id>.lod : indices seuls, 30 % des triangles au moins) des voitures
 # du trafic, de la police et du camion de la poursuite ; vues au-delà de 60 m, avec fondu (Renderer::draw)
 # (WFS-158 : avec une liste d'id, seules les voitures de la liste sont allégées)
