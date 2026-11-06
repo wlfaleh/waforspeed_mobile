@@ -5048,3 +5048,18 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Correction de l'utilisateur** : expert-realisme-3d est un expert du graphisme, pas un développeur. L'agent lancé à 19:44 est arrêté ; il n'avait poussé que l'ouverture de la branche (ffaf37f, gardée).
 - **Nouveau responsable** : Claude, agent lumière (session 01UY1Vv1), sur la même branche `feature/waforspeed-151` ; il consulte expert-realisme-3d pour les choix de graphisme et les mesures de fidélité.
 - **Règle notée** dans l'agent PO et `track-agent.md` : aucun ticket de code pour expert-realisme-3d.
+
+### 2026-11-06 19:47:50 — WFS-137 : CI de main (run 768) sur la fusion (agent 4)
+- Run 768 (commit 806d737) : compilation, tests, APK Android et 10 groupes de captures verts ; 2 groupes (texte, vitrines) et la publication de l'APK encore en cours à 2026-11-06 19:47:50.
+- **Job endurance rouge** : « fuite de mémoire : +12,6 % au cycle 6 (seuil 10 %) ». Ce n'est pas une casse de WFS-137 : le run 761 (WFS-150, avant ma fusion) échoue déjà sur le même test (+10,2 % au cycle 6), de même que les runs 757 et 751. La pente mémoire des cycles 2 à 10 est négative (−8,56 Mo/cycle) et le parcours au doigt donne 0 écart. Problème connu, suivi par **WFS-145** (P1, autre agent) : je ne touche pas à ce ticket.
+- WFS-137 reste 🟣 Fusionné : la règle ne permet ✅ qu'avec un run de main entièrement vert. Je le passerai en ✅ au premier run vert de main, une fois WFS-145 corrigé.
+
+### 2026-11-06 19:49:39 — WFS-190 créé : CI de main rouge (job endurance) (po-scrum-master)
+- **Demande de l'utilisateur** : une tâche pour corriger le rouge de la CI de `main`.
+- **Constat** : run #761 (fusion de WFS-150) : 15 jobs verts sur 16, seul `endurance` rouge (publication annulée) ; WFS-150 n'est pas en cause. Les corrections WFS-145 (#152) et WFS-187 (#151) sont fusionnées après ce run ; les runs qui les contiennent (#772, #774) sont en file depuis 19:14 / 19:24 (lanceurs saturés).
+- **WFS-190** (E7, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-190.md`) : suivre le premier run de `main` qui contient ces corrections ; tout vert → numéro au Journal, tickets 🟣 en ✅ ; encore rouge → cause nommée et corrigée sans affaiblir le banc. Exception PO : WFS-185 🟣 dans la même épic (bloc `on:` laissé à WFS-185).
+
+### 2026-11-06 19:52:29 — WFS-158 : décision de l'utilisateur, la Model 3 est remplacée (option a) (po-scrum-master)
+- **Réponse à la question du 17:33:26 (Claude, session 01Us6uCu)** : l'utilisateur choisit l'option (a), « Ok remplace avec un autre modèle ». Ordre écrit, qui lève RG-05 pour la Model 3 seulement.
+- **Règle RG-D** ajoutée à `regles-de-gestion/WFS-158.md` : modèle libre de Tesla Model 3, licence dans `assets/licences/`, conversion par `tools/convert_car.mjs`, dimensions ±1 % contrôlées avant l'intégration, plus de facettes (ANO-75), feux, peintures, LOD et budget du téléphone tenus.
+- **Responsable inchangé** : Claude (session 01Us6uCu). Réseau bloqué → une question à l'utilisateur dans `tache utilisateur.md` pour qu'il dépose le fichier.

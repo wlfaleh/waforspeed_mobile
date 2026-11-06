@@ -11,7 +11,7 @@
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 19:46:29 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 19:52:29 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -24,7 +24,7 @@
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) | WFS-188 | conduite fidèle aux fiches : 0-100, vitesse max, freinage (ANO-97, ANO-98) | 188 : 19:25 | ✅ actif (WFS-145 et WFS-187 fusionnés) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
-| Claude, session 01Us6uCu | WFS-158 | dimensions des 20 voitures + carrosserie Model 3 (ANO-75) | 158 : 10:45 | ⚠️ rien depuis 10:45 ; le ticket lui reste jusqu'à 20:45 UTC (règle des 10 h) |
+| Claude, session 01Us6uCu | WFS-158 | remplacement de la Model 3 par un autre modèle libre (ordre de l'utilisateur, ANO-75), puis dimensions des 20 voitures | 158 : 10:45 | ⚠️ rien depuis 10:45 ; le ticket lui reste jusqu'à 20:45 UTC (règle des 10 h) |
 | Claude, agent lumière (session 01UY1Vv1) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 19:45 (ouverture de la branche) | ✅ actif (lancé à 19:46 ; consulte expert-realisme-3d pour les choix de graphisme) |
 
 ## Agents de pilotage
@@ -39,4 +39,4 @@
 ## Tickets prêts sans agent
 | Ticket | Priorité | Sujet |
 |---|---|---|
-| — | | aucun ticket ⏳ Prêt sans agent (E2 pris par WFS-175 ; WFS-179, 186 après ; WFS-189 après WFS-188 ) |
+| WFS-190 | P1 Urgent | CI de `main` rouge (job `endurance`, run #761) : vérifier WFS-145 / 187 sur `main`, corriger si encore rouge |
