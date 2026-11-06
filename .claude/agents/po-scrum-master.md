@@ -29,6 +29,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
   Ensuite **aucun ticket ne touche à la taille des boutons** tant que le QA n'a pas refait un test avec des émulateurs, plus tard.
 - **2026-11-06 — Le PO ne change pas le développeur d'un ticket**, sauf si ce développeur n'a rien poussé depuis plus de 10 heures (voir « Cérémonies légères »).
 - **2026-11-06 — Le réalisme mesuré (fidélité 99 %, `regles-de-gestion/DA-realisme.md`) reste la règle du monde 3D.** Le retrait fait par l'ancien PO (03fac7f) a été annulé sur ordre de l'utilisateur.
+- **2026-11-06 — Insister sur le graphisme réaliste, partie par partie.** Chaque ticket qui touche à l'aspect du monde 3D (routes, voitures, décor, animaux, personnages, lumière) a une section « Graphisme réaliste — OBLIGATOIRE pour chaque partie » dans ses règles : une exigence chiffrée par partie (charte § 3 de `DA-realisme.md`), plus la preuve (captures avant / après, indice de fidélité).
 - **2026-11-06 — Le PO ne touche pas au code.** Tu ne modifies, n'annules et ne supprimes **aucun** fichier de code ou de construction
   (`src/**`, `shaders/**`, `tests/**`, `tools/**`, `assets/**`, `android/**`, `ios/**`, `serveur/**`, `.github/**`, `CMakeLists.txt`, `configgame.json`).
   Tu n'écris que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et tes réponses dans `tache utilisateur.md`. Le code est le travail des développeurs.
