@@ -5173,3 +5173,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session 01Us6uCu) » s'appelle 
 - **Critères** : RG-01 à RG-08 de `regles-de-gestion/WFS-189.md` ; test CPU RG-07 vert et tableau des places moyennes au Journal ; parcours complet Course à 5 et Duel (RG-08) ; ligne `qa/Check.md`.
 ### 2026-11-06 20:46:55 — PO : la règle de réalisme est gardée, maintenue et enrichie (po-scrum-master)
 - **Décision de l'utilisateur** : garder, maintenir et faire évoluer la règle du graphisme réaliste (fidélité 99 %, `DA-realisme.md`). Le retrait du PO précédent est bien annulé sur `main`. Les tickets découpés WFS-175 à 181 reçoivent la section « Graphisme réaliste — OBLIGATOIRE pour chaque partie » correspondant à leurs parties (reprise de WFS-137 à 139). Rôle de gardien de la charte ajouté à `po-scrum-master.md` (appliquer, enrichir après chaque recette, garder la cohérence avec « ça marche d'abord »).
+
+### 2026-11-06 20:51:12 — Correction : fichier de WFS-151 envoyé sur main par erreur, retiré (po-scrum-master)
+- **Erreur du PO** : le commit 870b373 (tickets WFS-191 à 194) a embarqué par `git add -A` le fichier `src/render/eclairage_unites.h`, travail en cours du développeur de WFS-151 qui partage le même dossier de travail. Aucun fichier de `main` ne l'utilisait (compilation de `main` non touchée).
+- **Correction** : fichier retiré de `main` ; il reste sur la branche `feature/waforspeed-151` avec le reste du travail (commit 76d422a, fait par erreur sur le `main` local et non envoyé, recopié sur la branche en aec6c93).
+- **Mesure** : le PO n'utilise plus `git add -A`, seulement la liste de ses fichiers.
