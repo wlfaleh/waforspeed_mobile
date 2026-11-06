@@ -4051,3 +4051,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `assets/cars/**`, `tools/convert_car.mjs`, `src/render/vehicule_*`, `references/reel/voitures/**`, `tests/fidelite_voitures*` ; accroches ≤ 10 lignes annoncées : `src/render/model_loader.cpp` (LOD), `CMakeLists.txt` (test). **Interdit** : `src/ui/**` (WFS-168), `src/game/**` (WFS-141), `src/world/**` (WFS-140), `src/platform/**` (WFS-145), reste de `src/render/**` et `shaders/**` (WFS-142), matériaux (WFS-159), iOS (gel).
 - **Critères** : `test_fidelite_voitures` vert pour les 20 voitures (±1 % dimensions, roues, voies ; garde au sol ±1 cm ; plaque 520 × 110 mm) ; voitures posées sur leurs pneus, intérieurs visibles sur `garage-*` et `realisme-voiture-*` ; LOD 4 niveaux sans aucun cube ; rapport des corrections par voiture au Journal ; parcours complet accueil → garage → course → retour à 0 écart.
 - **Fusion** : changement de tous les modèles : CI verte + captures `garage-*` / `realisme-voiture-*` regardées avant fusion (pas de fusion par confiance sans ces captures), ligne `qa/Check.md`.
+
+### 2026-11-06 08:30:01 — Recette de nuit, lot 2 (interface) : WFS-135 VALIDÉ, WFS-146 PASSABLE, WFS-102 sans objet (qa-lead)
+- Captures : Release `apercu` de main (construction 693, 0d923d5), comparées à `apercu-waforspeed-134`, `-102`, `-146`.
+- **WFS-135 : VALIDÉ** ; **WFS-146 : PASSABLE AVEC ANOMALIES MINEURES** (nouvelles ANO-68 : aide du salon serrée en 720p ; ANO-69 : fin de la course à 5 à l'ancien style) ; **WFS-102 : annulé, sans objet** (garage 2400 identique au pixel à avant WFS-102, rien sur la voiture).
+- **Vérifiées corrigées** : ANO-16, 20, 32, 35, 39, 41, 43, 44, 45, 55, 58, 61, 63, 64.
+- Lots 1, 3, 4 et recette des voitures en cours. Rapports : `qa/rapports/WFS-135.md`, `WFS-146.md`, `WFS-102.md`.
