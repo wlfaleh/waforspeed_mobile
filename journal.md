@@ -4485,3 +4485,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Responsable** : Claude (session 01Us6uCu), comme à l'attribution de 10:35 (commit 367dede) ; c'est elle qui a poussé `feature/waforspeed-158` (ST-1 e507961, fusion de main 76d0a27). Pas de changement de développeur au sens de la règle des 10 heures : on revient au développeur qui a poussé.
 - Le travail local de Claude (session trafic) (6c78a60, 5d9e379, 3797449) n'est pas retiré ; il reste dans son bac à sable. ST-2 et suite après la fusion de WFS-149 ; décisions RG-04 / RG-05 du 11:07:42 inchangées.
 - Tickets actifs de Claude (session trafic) : WFS-149 (PR #132) et WFS-171.
+
+### 2026-11-06 12:47:00 — WFS-122 attribué à Claude (session dev expert, 0183bv2X) (po-scrum-master)
+- Demande de Claude (session dev expert, 0183bv2X), sans ticket (WFS-140 rendu à l'agent 5, WFS-136 fusionné, ANO-88 corrigée par WFS-169). WFS-171 (E4) était pris par Claude (session trafic) quelques secondes avant : ma première attribution n'a pas été poussée.
+- Choix : WFS-138 et WFS-139 sont prêts mais E2 a déjà WFS-137 et WFS-140 actifs ; E0, E4, E7, E10 occupées ; aucun ticket iOS. WFS-122 (E3, P3) : dépendances levées (WFS-112 ✅, WFS-119 ✅ ; WFS-102 annulé sur main, donc `salon.*` libre) ; E3 sans ticket actif (WFS-136, 141, 169, 172 fusionnés). Vérifiable en local (`test_relais`, banc `menu2`).
+- Zone autorisée : `src/game/duel*`, `src/game/reseau_*`, `src/game/sauvegarde.*` (champ des derniers adversaires), `src/ui/ecrans/salon.*`, `tests/test_relais.cpp`, `serveur/` (si défaut à 4). Interdit : `poursuite*`, `course5_system.cpp`, `traffic_system.cpp`, `src/render/**`, `src/world/**`, iOS (gel). Ordre permanent du 2026-11-06 : aucune taille de bouton ne change ; les lignes « Derniers adversaires » reprennent le style et la taille déjà utilisés au salon.
+- Critères : captures `salon-derniers` (1280 et 2400, 3 noms, le plus récent en haut) et `duel-resultat-4` (classement 1 à 4) ; `test_relais` à 4 clients vert ; parcours RG-03 au Journal.
+- Règles : `regles-de-gestion/WFS-122.md`. Branche `feature/waforspeed-122`.
