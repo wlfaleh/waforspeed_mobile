@@ -162,6 +162,13 @@ public:
             int W, H; auto px = facadeTexture(v, W, H, nuit_);
             facadeTex_[v] = r.vk().uploadTexture(px.data(), (uint32_t)W, (uint32_t)H, true);
             Material m; m.rough = 0.75f; m.metal = 0.f;
+            if (nuit_) {
+                // WFS-137 (RG-B, ANO-84) : la nuit, le jeu web dessine les façades en MeshBasicMaterial (sans éclairage) : la
+                // texture de nuit (fenêtres éteintes #161a26 sur #0d0f17) s'affiche telle quelle. Ici : émission × texture
+                // (MAT_EMTEX), facteur étalonné sur la couleur des fenêtres éteintes par versHdr (comme les fenêtres allumées)
+                const float c = 0x1a / 255.f, k = effets::versHdr(c, 1.1f) / std::pow(c, 2.2f);
+                m.emissive = {k, k, k}; m.flags |= MAT_EMTEX;
+            }
             mats_[P_FACADE_A + v] = r.makeMaterial(m, &facadeTex_[v], nullptr, nullptr);
         }
         auto plain = [&](Part p, vec3 c, float rough, float metal, vec3 em = {0, 0, 0}) {
@@ -193,6 +200,12 @@ public:
         mats_[P_CONIF] = r.makeMaterial(mc, leafTex_.img ? &leafTex_ : nullptr, nullptr, nullptr);
         // plan des quartiers (partagé avec les commerces et les enseignes) ; lampadaires pour la nuit (WFS-09)
         plan_ = &ville::adapter(*g.map, *g.track);   // WFS-137 (RG-C1) : plan adapté aux sections du tracé 2 (inchangé au tracé 1)
+        {   // WFS-137 (RG-A, ANO-81) : segments bordés d'un immeuble, par côté (bit 0 gauche, bit 1 droite) : trottoir jusqu'à la façade
+            const int64_t L = (int64_t)plan_->objets.size();
+            bati_.assign((size_t)L, 0);
+            for (int64_t a = 0; a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE)
+                for (int64_t k = 0; k <= (int64_t)std::ceil(o.len / SEG_M); k++) bati_[(size_t)((a + k) % L)] |= o.side > 0 ? 2 : 1;
+        }
         size_t nl = 0;
         for (size_t a = 0; a < plan_->objets.size(); a++) for (const ville::Objet& o : plan_->objets[a])
             if (o.t == ville::LAMPE) { lampadaires().push_back({(int64_t)a, o.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville}); nl++; }
@@ -399,7 +412,9 @@ public:
                     // WFS-137 (RG-C1) : côté intérieur d'une courbe serrée, jamais au-delà de 90 % du rayon (comme Game)
                     auto som = [&](const carte::Pose& q, int64_t sa, float lat, float v) {
                         lat = std::min(lat, P.lim(sa, s)); const vec3 x = carte::lateral(q, s * lat, 0.15f); w.v.push_back({x.x, x.y, x.z, 0, 1, 0, s * lat, v}); };
-                    som(p, a, R + 4, v0); som(p, a, R + 6, v0); som(p1, a + 1, R + 6, v1); som(p1, a + 1, R + 4, v1);
+                    // WFS-137 (RG-A, ANO-81) : devant un immeuble, jusque sous sa façade (RW + 6,5 m) : plus d'herbe au pied
+                    const float bord = facade(a, s) ? R + FACADE_TROTTOIR : R + 6;
+                    som(p, a, R + 4, v0); som(p, a, bord, v0); som(p1, a + 1, bord, v1); som(p1, a + 1, R + 4, v1);
                     const vec3 A{w.v[k].px, w.v[k].py, w.v[k].pz}, B{w.v[k + 1].px, w.v[k + 1].py, w.v[k + 1].pz}, C{w.v[k + 2].px, w.v[k + 2].py, w.v[k + 2].pz};
                     if (cross(B - A, C - A).y >= 0) w.i.insert(w.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
                     else w.i.insert(w.i.end(), {k, k + 2, k + 1, k, k + 3, k + 2});
@@ -412,8 +427,10 @@ public:
                 for (int s : {-1, 1}) for (int i = 0; i < nb; i++) {
                     const ville::Bande& b = bd[i];
                     const float l0 = P.lim(a, s), l1 = P.lim(a + 1, s);   // WFS-137 (RG-C1) : côté intérieur des courbes serrées
-                    if (b.a >= std::min(l0, l1)) continue;
-                    carte::quadSol(out[P_UNI], carte::lateral(p, s * b.a, b.ya), carte::lateral(p1, s * b.a, b.ya),
+                    // WFS-137 (RG-A) : devant un immeuble, la pelouse ou le béton commencent derrière le trottoir prolongé
+                    const float ba = i == 0 && facade(a, s) ? std::max(b.a, (float)RW + FACADE_TROTTOIR) : b.a;
+                    if (ba >= std::min(l0, l1) || ba >= b.b) continue;
+                    carte::quadSol(out[P_UNI], carte::lateral(p, s * ba, b.ya), carte::lateral(p1, s * ba, b.ya),
                                    carte::lateral(p1, s * std::min(b.b, l1), b.yb), carte::lateral(p, s * std::min(b.b, l0), b.yb), col);
                 }
             }
@@ -500,6 +517,13 @@ public:
     }
 
 private:
+    static constexpr float FACADE_TROTTOIR = SET_BACK + 0.3f;   // WFS-137 : trottoir prolongé 30 cm sous la façade (pas de jour)
+    bool facade(int64_t a, int s) const {
+        if (bati_.empty()) return false;
+        const int64_t L = (int64_t)bati_.size();
+        return bati_[(size_t)(((a % L) + L) % L)] & (s > 0 ? 2 : 1);
+    }
+    std::vector<uint8_t> bati_;   // WFS-137 (ANO-81)
     bool active_ = false, nuit_ = false;   // nuit_ : WFS-94
     const ville::Plan* plan_ = nullptr;
     int64_t depart_ = 0;   // banc d'essai : départ du joueur avancé de depart_ segments (WFS_DEPART)
