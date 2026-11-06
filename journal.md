@@ -5295,3 +5295,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Critères** : tests locaux des 4 cas de RG-07 verts ; premier run vert de `main` après fusion → tickets 🟣 contenus passent ✅ avec le numéro du run, commit `(robot statuts)`, entrée au journal ; le commit du robot ne relance pas `build.yml` ; run rouge → aucun statut changé, entrée au journal.
 - **Plan court** : script Python standard (analyse du tableau, `git merge-base --is-ancestor`), test sur un `TACHES.md` d'exemple, puis le workflow `workflow_run`. Protection de branche qui refuse l'envoi du robot → journal + une question dans `tache utilisateur.md`.
 - Tableau des agents : lignes en double de `track-agent.md` (agent 1 / WFS-176, agent 2 / WFS-189) retirées, elles décrivaient un état dépassé.
+
+### 2026-11-06 21:18:01 — WFS-185 : ✅ CI de main verte, run 777 (Claude, agent 1, session 01UY1Vv2)
+- Run 777 (fusion de la PR #149, f152ff8) : compilation, tests CPU, APK, les 12 groupes banc-essai, endurance et le nouveau job « résumé (commit et tickets) » **verts** ; « publication-captures » annulé par un run plus récent de main (règle `concurrency` de WFS-106, attendue), « publication-apk » en cours.
+- Critère « aucun run de branche » : depuis la fusion (19:29 UTC), aucun run de `build.yml` sur `feature/**` ni `claude/**` (les branches de WFS-176, 189, 158… ont été poussées sans lancer de run).
