@@ -51,3 +51,14 @@ Le joueur ouvre l'application, arrive sur le menu (WFS-37), touche « Course sol
 ## Hors périmètre
 Garage (WFS-11/40), terrain et graine aléatoire (WFS-41), pause (WFS-39), duel (WFS-21), sauvegarde du record (WFS-24),
 animation d'attente du menu (voiture qui roule seule, `resetRace('menu', 7)` du web).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.4 | WFS-38 | [MVP] Menu tactile : appuis et départ de course, fin → Rejouer / Menu | E8 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-37, WFS-12 | `feature/waforspeed-38` | #27 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES tour 2/2 (ANO-14) — [rapport](qa/rapports/WFS-38.md) |
+
+Critères et notes de suivi :
+
+**WFS-38 — [MVP] Menu tactile : appuis et départ de course** · E8 · priorité 0.4 · ✅ Terminé (PR #27, PASSABLE, ANO-14) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-38.md`)
+- [ ] `menu-appui`, `menu-depart-3` / `menu-depart-go` (décompte de WFS-12), `menu-bientot`, `fin-menu` (Rejouer + Menu) puis `fin-retour-menu`
+- [ ] Android : ouverture sur le menu après le chargement ; autres captures inchangées, banc `0 écart(s)`

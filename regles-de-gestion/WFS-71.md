@@ -28,3 +28,13 @@ WFS-53 (cartes Campagne et Grand Prix, même épic E2) est en cours en parallèl
 - RG-09 : enseignes et portique sur **Ville et Corniche** ; le circuit Grand Prix n'existe pas encore sur `main` : l'API de `portique.*` / `enseignes.*` doit pouvoir être appelée par WFS-53 plus tard (une fonction par carte), sans l'appeler toi-même sur des fichiers de WFS-53.
 - RG-10 : la position des checkpoints vient de la course (E3, `src/game/course.h`) en **lecture seule** ; si un accès manque, l'ajouter par une accroche ≤ 10 lignes annoncée au Journal.
 - RG-11 : « du jeu qui fonctionne » : terrasses, portique et enseignes visibles sur les captures ; pas de fidélité au pixel.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-71 | Ville vivante : commerces et terrasses, portique 3D, enseignes | E2 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) (exception : 2e ticket E2, fichiers séparés de WFS-53 : nouveaux fichiers + accroches ≤ 10 lignes) | agent 3 (session 011cpqZd), 2026-11-04 | WFS-06 ✅ | `feature/waforspeed-71` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-71 — Ville vivante** · E2 · priorité P3 Moyenne · ✅ Fusionné (fusion par confiance, QA de nuit à faire) — agent 3 (session 011cpqZd), 2026-11-04, branche `feature/waforspeed-71` (règles : `regles-de-gestion/WFS-71.md`, section « Zone et partage avec WFS-53 »)
+- [ ] terrasses, portique, enseignes visibles

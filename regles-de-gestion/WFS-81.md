@@ -47,3 +47,13 @@ voiture du trafic qui freine reçoit **deux halos rouges** : le feu arrière du 
 
 ## Hors périmètre
 Lampadaires de la campagne, nouvelles formes de lampe, ombres portées des lampadaires, pluie (WFS-18).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-81 | Nuit corniche et circuit : vrais lampadaires, lumières alignées, feux du trafic sans double halo | E2 (+ accroche E3 `traffic_system.cpp`) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-81), 2026-11-04 | WFS-09 ✅, WFS-53 ✅, WFS-67 ✅ | `feature/waforspeed-81` | #75 |  |
+
+Critères et notes de suivi :
+
+**WFS-81 — Nuit corniche et circuit** · E2 · P3 Moyenne · ✅ Fusionné (QA de nuit à faire), PR #75 — Claude (session trafic, agent WFS-81), 2026-11-04, branche `feature/waforspeed-81` (règles : `regles-de-gestion/WFS-81.md`)
+- [ ] `nuit-plage-*` : poteaux sous chaque lumière ; `nuit-circuit-*` : lumière sous chaque mât ; trafic qui freine la nuit : un seul halo rouge par feu

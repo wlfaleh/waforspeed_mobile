@@ -50,3 +50,14 @@ Pas de finitions au-delà : ce qui compte, c'est que rien ne choque au garage ni
 ## Hors périmètre
 - Nouvelles voitures, nouveaux modèles, intérieurs détaillés, reflets (E4), sons des voitures (E6).
 - Toute modification du chargeur ou des shaders (E4), sauf accroche ≤ 10 lignes annoncée.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-77 | Les 20 voitures sans défaut visible (peinture unie Giulia et Elantra, roues de la GT86, contrôle des 20) | E5 | ✅ Fusionné (PR #57, sur ordre de l'utilisateur ; QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-13 ✅, WFS-60 ✅ | `feature/waforspeed-77` | [#57](https://github.com/wlfaleh/waforspeed_mobile/pull/57) |  |
+
+Critères et notes de suivi :
+
+**WFS-77 — Les 20 voitures sans défaut visible** · E5 · P2 Haute · ✅ Fusionné (PR #57, 0f77ae4, sur ordre de l'utilisateur ; QA de nuit à faire) — Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04, branche `feature/waforspeed-77` (règles : `regles-de-gestion/WFS-77.md`)
+- [ ] `vitrine-giulia-0` / `vitrine-elantra-0` : couleur unie, aucun camouflage ; la teinte suit la peinture choisie au garage
+- [ ] journal : « gt86.wfm : 4 roues séparées », plus aucune « roues non trouvées » ; `vitrines-planche` : 20 voitures propres (sens, 4 roues au sol, Turquoise) ; `.wfm` < 9 Mo

@@ -85,3 +85,16 @@ de tous les menus qui suivent (WFS-37 et suivants réutiliseront le logo et la m
 - Menu principal (WFS-37), écrans et navigation (WFS-36), garage (WFS-11).
 - Chargement en arrière-plan sur un autre thread (la progression par étapes suffit ; à revoir avec WFS-20 si le chargement dépasse 3 s).
 - Icône et nom de l'application, écran de démarrage système Android (WFS-29, E7).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.1 | WFS-35 | [MVP] Écran de chargement de l'application (logo, barre de progression, fondu) | E8 | ✅ Terminé |  | WFS-26 | `feature/waforspeed-35` | PR #12 (fusionnée) | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-10) |
+
+Critères et notes de suivi :
+
+**WFS-35 — Écran de chargement de l'application** · E8 · priorité 0.1 · ✅ Terminé (QA : PASSABLE AVEC ANOMALIES MINEURES, [rapport](qa/rapports/WFS-35.md)), PR #12 (règles : `regles-de-gestion/WFS-35.md`)
+- [ ] `chargement-0/1/2` : fond `#0A0B10`, sur-titre cyan, logo « WAFOR / SPEED » (SPEED orange), barre cyan → orange à 0 %, 20-70 %, 100 %, étape + « n % »
+- [ ] mêmes captures en 2400x1080 : bloc à gauche, rien de coupé ; `chargement-fondu` : ville visible à travers (fondu 300 ms)
+- [ ] `chargement-erreur` : « Le moteur 3D n'a pas pu démarrer sur cet appareil. » en rouge, pas de plantage
+- [ ] journal : durée de chaque étape + total, première image < 0,5 s ; autres captures inchangées

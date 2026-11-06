@@ -29,3 +29,14 @@ Route mouillée (WFS-16), bloom (WFS-17), réglages de qualité (WFS-15).
 
 ## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
 Ce ticket absorbe : WFS-16. **Lire et appliquer aussi** `regles-de-gestion/WFS-16.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-09 | Nuit complète : phares, éclairage public, route mouillée et reflets | E4 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-04 | WFS-07 | `feature/waforspeed-09` | PR #59 | QA de nuit : `qa/Check.md` |
+
+Critères et notes de suivi :
+
+**WFS-09 — Nuit complète : phares, éclairage public, route mouillée et reflets** · E4 · priorité P3 Moyenne · ✅ Fusionné (QA de nuit à faire) le 2026-11-04 par confiance (PR #59) — Claude (session trafic) (règles : `regles-de-gestion/WFS-09.md`, `regles-de-gestion/WFS-16.md`)
+- [ ] Phares réalistes (leçons de la version web)
+- [ ] Lampadaires, mode nuit par carte

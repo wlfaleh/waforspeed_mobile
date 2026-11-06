@@ -17,7 +17,7 @@ Lire ce qui touche au sujet, pas tout le dépôt :
 | Ce qui existe, ce qui est prévu, épics et zones | `TACHES.md` (rôles, épics, MVP, axe Réalisme, tableau) |
 | Règles d'une fonctionnalité existante | `regles-de-gestion/WFS-XX.md`, `regles-de-gestion/README.md` |
 | Défauts connus | `anno.md` (ANO-XX), `qa/rapports/WFS-XX.md`, `qa/Check.md` |
-| Historique des décisions | `journal.md` (chercher par mot-clé, ne pas tout lire) |
+| Historique des décisions | `journal.md` (2 derniers jours) et `journal/archive/` (chercher par mot-clé, ne pas tout lire) |
 | Aspect du monde 3D | `regles-de-gestion/DA-realisme.md` |
 | Interface (menus, HUD) | skill `design-street-racing` |
 | Réglages du jeu, contenus | `configgame.json`, `configgame.README.md` |

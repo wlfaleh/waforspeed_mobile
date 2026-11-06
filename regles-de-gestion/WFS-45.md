@@ -34,3 +34,15 @@ Ces spots servent aussi aux phares de nuit (WFS-09). Catalyseur pour E5 (garage)
 
 ## Hors périmètre
 Ombres des spots ; phares et lampadaires de nuit (WFS-09, qui réutilisera ces spots) ; scène du garage (WFS-11).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-45 | Lumières : projecteurs (spots), hémisphère, brouillard linéaire | E4 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-03 | — | `feature/waforspeed-45` | #35 |  |
+
+Critères et notes de suivi :
+
+**WFS-45 — Lumières : projecteurs (spots), hémisphère, brouillard linéaire** · E4 · priorité P2 Haute · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-03 (règles : `regles-de-gestion/WFS-45.md`)
+- [ ] Captures existantes identiques à `main` (0 spot par défaut)
+- [ ] Capture `spots-sol` : 3 taches orange / cyan / blanche aux bords adoucis, hémisphère bleutée, brouillard linéaire, voiture éclairée
+- [ ] Coût de la passe de scène ≤ +0,3 ms avec 3 spots (journal du banc)

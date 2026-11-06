@@ -19,3 +19,13 @@ Offrir les 3 vues du jeu web (poursuite, capot, cockpit avec volant et aiguille)
 
 ## Hors périmètre
 Intérieurs détaillés propres à chaque voiture.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-66 | Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-66` | #41 (fusionnée, 3994283) |  |
+
+Critères et notes de suivi :
+
+**WFS-66 — Caméras et vue cockpit (3 vues, volant, champ de vision selon la vitesse)** · E3 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-66.md`)
+- [ ] voir les critères du fichier de règles

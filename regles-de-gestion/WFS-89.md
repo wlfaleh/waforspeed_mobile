@@ -72,3 +72,15 @@ Ce ticket ajoute un **second transport** `duel::Transport` (à côté de `Transp
 - Serveur de mise en relation à nous, liste publique des salons par Internet (le web n'en a pas non plus en P2P).
 - Voix, chat, plus de 2 joueurs testés (le protocole le permet, non vérifié).
 - iOS (compilera plus tard ; ne pas casser `ios.yml` : transport désactivé sous `__APPLE__` si besoin).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-89 | Duel par Internet : salon par code à 4 caractères, compatible avec le jeu web (PeerJS) | E3 (+ accroches E8 `salon.*`, E0 `CMakeLists.txt`, E7 manifeste) | ✅ Fusionné (PR #77, revue WFS-103, décision B : duel Wi-Fi local, saisie du code, « Sans Internet » ; vrai réseau PeerJS → WFS-92 ⏸ ; QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-83 ✅, WFS-21 ✅ | `feature/waforspeed-89` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-89 — Duel par Internet (code à 4 caractères, compatible jeu web)** · E3 · P2 Haute · ✅ Fusionné (PR #77, fb50d09, revue WFS-103 ; WebRTC réel → WFS-92) — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-89` (règles : `regles-de-gestion/WFS-89.md`). Zone : `src/game/duel*`, `src/game/reseau_peerjs.*`, `src/game/binarypack.*`, `tests/**` ; accroches annoncées : `src/ui/ecrans/salon.*`, `CMakeLists.txt` ≤ 10 lignes, manifeste Android ≤ 2 lignes
+- [ ] `salon-code`, `salon-code-saisi` : bloc « Rejoindre avec un code », 4 cases, clavier à l'écran, « Rejoindre » actif à 4 caractères
+- [ ] `salon-internet` (relais simulé : 2 pilotes) et `salon-hors-ligne` (note orange, pas de plantage)
+- [ ] `test_binarypack` vert (octets de référence PeerJS) ; APK : duel entre deux réseaux différents et avec le jeu web (vérifié par l'utilisateur)

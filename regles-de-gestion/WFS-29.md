@@ -23,3 +23,14 @@ téléphone : nom « WaForSpeed » et icône au style du jeu. Ce n'est pas dans 
 
 ## Hors périmètre
 Manettes (WFS-23), iOS (WFS-22), fiches des stores (WFS-25).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.35 | WFS-29 | [MVP] Android : mode plein écran immersif, icône, nom | E7 | ✅ Terminé | | — | `feature/waforspeed-29` | #17 | ✅ VALIDÉ par qa-lead ([rapport](qa/rapports/WFS-29.md)) |
+
+Critères et notes de suivi :
+
+**WFS-29 — [MVP] Android : mode plein écran immersif, icône, nom** · E7 · priorité 0.35 · ✅ Terminé (règles : `regles-de-gestion/WFS-29.md`)
+- [ ] manifeste : `android:label="WaForSpeed"`, icône adaptative, thème plein écran ; appel immersif au démarrage et à `onWindowFocusChanged`
+- [ ] captures du banc PC inchangées (vérification à l'écran par WFS-50)

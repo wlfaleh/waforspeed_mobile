@@ -69,3 +69,14 @@ Pluie RG-05 de WFS-18 : abandonnée par le PO (coût mesuré 0,008 ms, le web n'
 - `src/ui/**`, fichiers du duel, iOS.
 
 Une modification nécessaire hors de cette zone se limite à une accroche de 10 lignes au plus, annoncée au Journal.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-93 | Ville : les 6 quartiers du jeu web (résidentiel, parc, port) + panneaux du circuit avec texte, vignes sans marches | E2 | ✅ Terminé (fusion par confiance, PR #89) | Copilot (session 0e5c192d), 2026-11-04 | — | `feature/waforspeed-93` | #89 | ⏳ Recette QA de nuit (`qa/Check.md`) |
+
+Critères et notes de suivi :
+
+**WFS-93 — Ville : 6 quartiers + finitions des cartes** · E2 · P2 Haute · ✅ Terminé (PR #89, fusion par confiance le 2026-11-05, commit de fusion 1df6dc0 ; QA de nuit à faire, `qa/Check.md`) — Copilot (session 0e5c192d), 2026-11-04 (après remise en ⏳ Prêt le 2026-11-04 : aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-93` (règles : `regles-de-gestion/WFS-93.md`). Zone : `src/world/**` (nouveau `ville_quartiers.cpp`, `ville.cpp`, `circuit.cpp`, `campagne.cpp`, `cartes_banc.cpp`) ; interdit : `src/render/**` et `shaders/**` (WFS-100, WFS-101), `src/platform/**` et `.github/**` (WFS-106 : captures dans le groupe `cartes` existant), `src/game/**` (WFS-105, WFS-108), `src/ui/**`, fichiers du duel, iOS
+- [ ] `carte-ville-residentiel`, `-parc`, `-port` : objets du quartier (abribus ; grille, bancs, fontaine ; entrepôts, conteneurs, grues) ; `course-*` sans régression : `course-cam0-*` centre-ville (immeubles replacés par les tirages du web), `course-cam1-*` quartier résidentiel (précision du PO, `WFS-93.md`)
+- [ ] `carte-circuit-jour` / `-nuit` : texte d'AD_TEXTS lisible sur les panneaux ; `carte-campagne-vignes` : rangs sans marches ; ≤ 300 appels de dessin

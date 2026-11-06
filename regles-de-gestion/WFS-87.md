@@ -41,3 +41,15 @@ Rien à réutiliser du jeu web (`wlfaleh/waaps` n'a pas de CI Android). Réutili
 ## Hors périmètre
 Supprimer les anciennes Releases d'aperçu des branches (action irréversible : à proposer à l'utilisateur au Journal,
 pas à faire) ; `simulateur.yml` ; iOS (`ios.yml`, WFS-78).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P1 Urgent | WFS-87 | [URGENT] CI : l'APK de `main` toujours publié (Release `apercu` fiable, plus de trou ni d'échec 403) | E7 (exception : 2e ticket E7, fichiers séparés de WFS-78) | ✅ Fusionné par l'utilisateur (PR #73, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04 | WFS-69 ✅ | `feature/waforspeed-87` | [#73](https://github.com/wlfaleh/waforspeed_mobile/pull/73) |  |
+
+Critères et notes de suivi :
+
+**WFS-87 — [URGENT] CI : APK de `main` toujours publié** · E7 · P1 Urgent · ✅ Fusionné par l'utilisateur (PR #73, 3b62e5f ; CI de main verte, run 41860181020) — Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), 2026-11-04, branche `feature/waforspeed-87` (règles : `regles-de-gestion/WFS-87.md`). Zone : `.github/workflows/build.yml` (job `publication`), `tools/qa/publier_apercu.sh` ; ne pas toucher `ios.yml`, `ios/**` (WFS-78).
+- [ ] CI de `main` après fusion : job `publication` vert, `releases/download/apercu/WaForSpeed.apk` répond
+- [ ] Release `apercu` sur le dernier commit, captures à la même adresse ; jamais de moment sans APK (plus de suppression avant création)
+- [ ] branche `feature/*` : `apercu-waforspeed-87` publiée

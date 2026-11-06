@@ -24,3 +24,13 @@ tri de visibilité fait sur les threads de travail.
 
 ## Hors périmètre
 Niveaux de qualité (WFS-15), nouveaux effets, mémoire des textures.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-20 | Performances : LOD, tri des objets visibles en parallèle | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-20` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-20 — Performances : LOD, tri des objets visibles en parallèle** · E4 · priorité P3 Moyenne · ⏳ Prêt — ↪ fusionné dans WFS-15
+- [ ] 60 i/s visés, mesures dans le journal

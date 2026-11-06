@@ -31,3 +31,13 @@ Ce ticket absorbe WFS-68 : **lire et appliquer aussi** `regles-de-gestion/WFS-68
 - Écran de fin : « NOUVEAU RECORD » quand le score bat le meilleur (`newBest`) et statistiques distance / vitesse max / quasi-contacts / checkpoints (`stDist`, `stSpeed`, `stNear`, `stCp`) ; la sauvegarde du record est dans WFS-24.
 - Pause : bouton « Recommencer » (`restartBtn`) en plus de « Reprendre » et « Quitter » (voir WFS-39).
 - Réglages : le choix du mode de direction vient de WFS-70.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-41 | Menus complets : choix du terrain et du moment, réglages (qualité, caméra, son, commandes) | E8 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-38 ✅ | `feature/waforspeed-41` | [#45](https://github.com/wlfaleh/waforspeed_mobile/pull/45) |  |
+
+Critères et notes de suivi :
+
+**WFS-41 — Menus complets : terrain, moment, réglages** · E8 · priorité P2 Haute · ✅ Fusionné le 2026-11-04 (PR #45, par confiance ; QA de nuit : `qa/Check.md`) — Claude (agent 5), 2026-11-03, branche `feature/waforspeed-41` (règles : `regles-de-gestion/WFS-41.md`)
+- [ ] `terrain-0` / `terrain-1` (carrousel, Jour / Nuit), `terrain-rouler` (course sur le circuit)

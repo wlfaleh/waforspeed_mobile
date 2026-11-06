@@ -21,6 +21,13 @@ Tu fais appliquer `regles-reseau.md`. Une demande de nouveau site passe par toi 
 ## Session du PO (ordre de l'utilisateur, 2026-11-06)
 La session « Agent po-scrum » (session 01UY1Vv1…) est **réservée au PO, pour toujours**. Tu n'y lances **aucun agent développeur** (ni sous-agent qui code, ni travail sur une branche `feature/**`) : un développeur travaille dans sa propre session (ex. « agent 0 developper »). Quand l'utilisateur demande de « lancer un dev », tu prépares le ticket (attribution, règles, passation au journal) pour la session de développement qu'il indique, ou tu lui proposes d'en ouvrir une. Dans ta session, tu ne modifies que les fichiers du PO (`TACHES.md`, `track-agent.md`, `journal.md`, `regles-de-gestion/**`, `anno.md`, `tache utilisateur.md`, règles), dans un worktree de `main`, jamais avec `git add -A`.
 
+## Ménage quotidien des documents (ordre de l'utilisateur, 2026-11-06)
+Au **premier appel de chaque jour** (UTC), dans ton worktree de `main` :
+1. `journal.md` : déplacer les entrées de plus de 2 jours dans `journal/archive/AAAA-MM-JJ.md` (un fichier par jour, ordre gardé, en-tête du journal gardé).
+2. `TACHES.md` : déplacer les lignes ✅ Terminé, ↪ fusionné dans un autre, annulé dans `archive/taches-terminees.md` ; raccourcir les cases trop longues (titre ≈ 90 caractères, statut en quelques mots avec la PR), en recopiant d'abord le texte long dans `regles-de-gestion/WFS-XX.md` (section « Suivi »). Garder les 10 colonnes : le robot des statuts les lit. Tickets 🟣 : toujours dans `TACHES.md` (le robot les passe en ✅).
+3. `tache utilisateur.md` : déplacer les demandes répondues et closes dans `archive/tache-utilisateur-repondu.md` ; garder en haut celles sans réponse ou qui attendent une réponse de l'utilisateur.
+4. Compter avant / après (entrées du journal, lignes de tickets, réponses) : **rien ne doit se perdre** ; entrée au journal.
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :
@@ -98,7 +105,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
    ticket E0 « point d'extension », prioritaire.
 5. **Prioriser** : (a) catalyseurs qui débloquent d'autres épics, (b) ce qui se voit le plus pour l'utilisateur,
    (c) la valeur divisée par l'effort ; garder **au moins une épic attribuable par agent disponible** (parallélisme).
-6. Numéroter à la suite (`WFS-31`, …), ajouter au tableau, aux critères et au Journal ; envoyer sur `main`.
+6. Numéroter à la suite (`WFS-31`, …), ajouter une ligne courte au tableau de `TACHES.md` (critères seulement dans `regles-de-gestion/WFS-XX.md`) et au Journal ; envoyer sur `main`.
 
 ## 3. Cérémonies légères
 - **Fin de ticket** : vérifier ✅ + rapport QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` ; passer en `⏳ Prêt` les tickets dont toutes les dépendances sont finies.

@@ -25,3 +25,14 @@ Workflow `.github/workflows/simulateur.yml` (WFS-31), scripts `tools/qa/**`. Rie
 
 ## Hors périmètre
 Garage, terrain, pause, duel, sauvegarde.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | 🔎 Fusionné (PR #47, correction du scénario : appuis sur la taille logique du jeu) ; parcours OK au run 41747781094 et sur `main` 14241f4 (Release `simulateur-MVP`, `RÉSULTAT TECHNIQUE : OK`, 10 étapes) ; recette `qa-lead` de nuit | Claude (session trafic), 2026-11-04 | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅, WFS-29 ✅, WFS-47 ✅, WFS-56 ✅, WFS-57 ✅, WFS-58 ✅, WFS-59 ✅ | `feature/waforspeed-50` |  | ⛔ REFUSÉ (SIM-MVP-1 à 4) — [rapport](qa/rapports/simulateur-MVP.md) |
+
+Critères et notes de suivi :
+
+**WFS-50 — [MVP] Vérification simulateur du MVP** · E7 · priorité P4 Basse · 🔎 Fusionné, PR #47 (REFUSÉ au 1er passage, [rapport](qa/rapports/simulateur-MVP.md) ; échec du 2e passage sur `main` b01ae36 : barre de navigation de l'émulateur affichée, gaz appuyé sous la fenêtre du jeu, corrigé dans `tools/qa/emulateur.sh` ; parcours complet OK au run 41747781094 ; relancé sur `main`, recette `qa-lead` de nuit) (règles : `regles-de-gestion/WFS-50.md`)
+- [ ] `simulateur.yml` (`epic=MVP`) : chargement → menu → Course solo → décompte → course + HUD → fin → Rejouer puis Menu ; paysage plein écran, aucun plantage
+- [ ] rapport `qa/rapports/simulateur-MVP.md` VALIDÉ par `qa-lead`

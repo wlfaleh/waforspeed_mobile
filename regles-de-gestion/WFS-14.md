@@ -26,3 +26,14 @@ Grand Prix (WFS-54) ne feront ensuite qu'ajouter leur ligne de table et leur dé
 
 ## Hors périmètre
 Décor campagne (WFS-53) et circuit (WFS-54), affichage du nom de zone (E5), sélecteur de carte (WFS-41), piétons (WFS-19), pluie (WFS-18).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 12 | WFS-14 | Cartes : socle multi-cartes et Corniche (plage) | E2 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-06 | `feature/waforspeed-14` | #19, #21 (fusionnées) | ✅ VALIDÉ tour 2/2 par qa-lead (e6eaa57) — [rapport](qa/rapports/WFS-14.md) |
+
+Critères et notes de suivi :
+
+**WFS-14 — Cartes : socle multi-cartes et Corniche (plage)** · E2 · priorité 12 · ✅ Terminé (règles : `regles-de-gestion/WFS-14.md`, redécoupé)
+- [ ] `carte-plage-jour` / `carte-plage-nuit` : océan, palmiers, parasols, sable, ambiance de la plage ; autres captures identiques
+- [ ] test de fidélité du tracé des 3 nouvelles cartes (0 écart) ; ≤ 300 appels de dessin

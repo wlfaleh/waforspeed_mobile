@@ -48,3 +48,14 @@ boutons : un seul ticket (décision PO 2026-11-04, pas de micro-ticket).
 
 ## Hors périmètre
 Remappage des boutons, manettes iOS, aide à l'écran des boutons (icônes A / B), défilement du panneau.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-80 | Manette (peintures, réglages au focus) + réglages « Direction » et « Réduire les mouvements » | E8 (+ accroche E5 `garage.cpp`) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-04 | WFS-22 ✅, WFS-75 ✅ | `feature/waforspeed-80` | #74 |  |
+
+Critères et notes de suivi :
+
+**WFS-80 — Manette au focus + réglages Direction et Réduire les mouvements** · E8 · P3 Moyenne · ✅ Fusionné (QA de nuit à faire), PR #74 — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-80` (règles : `regles-de-gestion/WFS-80.md`). Zone : `src/ui/ecrans/reglages.*` ; accroches ≤ 10 lignes annoncées dans `src/ui/garage.cpp` et, si besoin, `src/platform/manette_jeu.*`.
+- [ ] `reglages` : lignes « Direction » (Glisser / Flèches, clé `steer`) et « Réduire les mouvements » (Non / Oui) visibles ; le choix s'applique tout de suite (`reglagesRessenti()`) et survit au relancement
+- [ ] `manette-garage-peinture`, `manette-reglages` : cadre cyan, A applique, B retour ; captures tactiles inchangées

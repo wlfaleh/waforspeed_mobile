@@ -18,3 +18,13 @@ Un écran de réglages accessible depuis le menu et la pause : le joueur choisit
 
 ## Hors périmètre
 Détection automatique de la qualité (WFS-15).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-68 | Réglages : qualité, caméra, son, commandes | E8 | ↪ Fusionné dans WFS-41 |  | — | `feature/waforspeed-68` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-68 — Réglages : qualité, caméra, son, commandes** · E8 · priorité P3 Moyenne · ⏳ En attente (règles : `regles-de-gestion/WFS-68.md`) — ↪ fusionné dans WFS-41
+- [ ] voir les critères du fichier de règles
