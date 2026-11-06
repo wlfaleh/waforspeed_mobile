@@ -3,7 +3,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <map>
+#include <tuple>
 #include "../core/log.h"
+#include "../core/platform.h"   // WFS-199 : readAsset (sommets des personnages lus sur le processeur)
 #include "../core/system.h"
 #include "../game/course_system.h"
 #include "../game/game.h"
@@ -247,5 +250,176 @@ void benchPietons(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
 }
+
+// ---------------------------------------------------------------- WFS-199 : spectateurs (foule allégée, posée une fois)
+namespace foule {
+namespace {
+
+// sommets, indices, plages, os, palette et clips d'un .wfp (version 2, même lecture que chargerPersonnage) : rien n'est
+// envoyé au processeur graphique ; les textures sont sautées (le décor peint des couleurs unies)
+struct Brut { std::vector<SkinVertex> v; std::vector<uint32_t> idx; Personnage p; };
+
+bool lire(const char* chemin, Brut& b) {
+    std::vector<uint8_t> f;
+    if (!readAsset(chemin, f)) return false;
+    size_t o = 0; bool ok = true;
+    auto prendre = [&](size_t n) -> const uint8_t* { if (!ok || o + n > f.size()) { ok = false; return nullptr; } const uint8_t* q = f.data() + o; o += n; return q; };
+    auto u32 = [&]() { uint32_t v = 0; if (const uint8_t* q = prendre(4)) std::memcpy(&v, q, 4); return v; };
+    auto f32 = [&]() { float v = 0; if (const uint8_t* q = prendre(4)) std::memcpy(&v, q, 4); return v; };
+    auto nom = [&]() { const uint8_t* q = prendre(32); return q ? std::string((const char*)q, strnlen((const char*)q, 32)) : std::string(); };
+    const uint8_t* magie = prendre(4);
+    if (!magie || std::memcmp(magie, "WFP1", 4) != 0 || u32() != 2) return false;
+    for (uint32_t t = 0, n = u32(); ok && t < n; t++) prendre(u32());
+    f32(); f32(); b.p.hauteur = f32();
+    b.p.corps = {f32(), f32(), f32(), f32()};
+    const uint32_t nV = u32(), nI = u32(), nP = u32(), nO = u32(), nC = u32();
+    if (!ok || nV > 200000 || nI > 600000 || nO > 256) return false;
+    b.v.resize(nV); b.idx.resize(nI);
+    if (const uint8_t* q = prendre((size_t)nV * sizeof(SkinVertex))) std::memcpy(b.v.data(), q, (size_t)nV * sizeof(SkinVertex));
+    if (const uint8_t* q = prendre((size_t)nI * 4)) std::memcpy(b.idx.data(), q, (size_t)nI * 4);
+    b.p.plages.resize(nP);
+    for (Plage& pl : b.p.plages) { pl.nom = nom(); pl.premier = u32(); pl.nombre = u32(); }
+    b.p.os.resize(nO);
+    for (OsSquelette& os : b.p.os) {
+        os.nom = nom(); os.parent = (int32_t)u32();
+        float v[26]; for (float& x : v) x = f32();
+        os.t = {v[0], v[1], v[2]}; os.r = {v[3], v[4], v[5], v[6]}; os.s = {v[7], v[8], v[9]};
+        std::memcpy(os.bindInverse.m, v + 10, 64);
+    }
+    { const uint32_t nPal = u32(); if (!ok || nPal > (uint32_t)SKIN_MAX_OS) return false; b.p.palette.resize(nPal); }
+    for (int& x : b.p.palette) x = (int)u32();
+    b.p.clips.resize(nC);
+    for (ClipAnim& c : b.p.clips) {
+        c.nom = nom(); c.duree = f32();
+        c.canaux.resize(ok ? std::min<uint32_t>(u32(), 4096) : 0);
+        for (CanalAnim& k : c.canaux) {
+            k.os = (int)u32(); k.chemin = (int)u32();
+            const uint32_t n = u32();
+            if (!ok || n > 100000) { ok = false; break; }
+            k.temps.resize(n); k.valeurs.resize((size_t)n * (k.chemin == 1 ? 4 : 3));
+            for (float& x : k.temps) x = f32();
+            for (float& x : k.valeurs) x = f32();
+        }
+    }
+    for (size_t i = 0; ok && i < b.p.os.size(); i++) ok = b.p.os[i].parent < (int)i;
+    for (int x : b.p.palette) ok = ok && x >= 0 && x < (int)nO;
+    for (const ClipAnim& c : b.p.clips) for (const CanalAnim& k : c.canaux) ok = ok && k.os >= 0 && k.os < (int)nO && k.chemin >= 0 && k.chemin <= 2;
+    for (uint32_t i : b.idx) ok = ok && i < nV;
+    for (const SkinVertex& v : b.v) for (int k = 0; k < 4; k++) ok = ok && v.os[k] < b.p.palette.size();
+    return ok;
+}
+
+vec3 point(const mat4& m, vec3 p) {
+    return {m.at(0, 0) * p.x + m.at(0, 1) * p.y + m.at(0, 2) * p.z + m.at(0, 3), m.at(1, 0) * p.x + m.at(1, 1) * p.y + m.at(1, 2) * p.z + m.at(1, 3),
+            m.at(2, 0) * p.x + m.at(2, 1) * p.y + m.at(2, 2) * p.z + m.at(2, 3)};
+}
+vec3 direction(const mat4& m, vec3 p) {
+    return {m.at(0, 0) * p.x + m.at(0, 1) * p.y + m.at(0, 2) * p.z, m.at(1, 0) * p.x + m.at(1, 1) * p.y + m.at(1, 2) * p.z,
+            m.at(2, 0) * p.x + m.at(2, 1) * p.y + m.at(2, 2) * p.z};
+}
+
+// zone d'un sommet : bloc « WFS-72 » de scene_skin.frag (pedMaterial du jeu web), avec manches `manche` et bas long (1,9)
+Zone zoneDe(const SkinVertex& v, const vec4& corps, float manche) {
+    const float part = v.cloth[3];
+    if (part > 0.5f) return CHEVEUX;   // 1 yeux, 2 cheveux et sourcils : sombres
+    const float arm = v.cloth[0], y = v.cloth[1], leg = v.cloth[2], jambe = 1.9f;
+    const bool isArm = arm >= -0.5f, isLeg = leg >= -0.5f;
+    const float hd = std::sqrt(v.px * v.px + (v.pz - corps.z) * 1.15f * (v.pz - corps.z) * 1.15f), ny = y - corps.x;
+    const bool col = !(ny + 0.05f >= 0 && hd <= 0.085f + std::max(0.f, -ny) * 0.4f);
+    const bool haut = col && ny <= 0.05f && ((!isArm && !isLeg && y >= corps.y) || (isArm && arm <= manche));
+    const bool bas = !isArm && y <= corps.y + 0.001f && !(isLeg && leg >= jambe);
+    if (isLeg && leg >= 1.93f) return CHAUSSURES;
+    return haut ? HAUT : bas ? BAS : PEAU;
+}
+
+const char* const CLIPS[NB_POSES] = {"Sitting_Idle_Loop", "Sitting_Talking_Loop", "Idle_Loop", "Idle_Talking_Loop"};
+const char* const COIFF[2][COIFFURES] = {{"Hair_SimpleParted", "Hair_Buzzed", "Hair_Beard"}, {"Hair_Long", "Hair_Buns", "Hair_BuzzedFemale"}};
+
+// personnage allégé posé : plages « corps-2 » et coiffure « -2 » (version la plus légère du .wfp), sommets regroupés sur une
+// grille de `cellule` m en pose de liaison (un représentant par case et par partie : cheveux et peau ne fusionnent pas)
+Silhouette construire(const Brut& B, int sx, int coiffure, Pose pose, int variante, float cellule) {
+    Silhouette S;
+    std::map<std::tuple<int, int, int, int>, uint32_t> cases;
+    std::vector<uint32_t> rep;   // sommet d'origine de chaque sommet de la silhouette
+    for (const std::string& nom : {std::string("corps-2"), std::string(COIFF[sx][coiffure]) + "-2"}) {
+        const Plage* pl = plageParNom(B.p, nom);
+        if (!pl) continue;
+        for (uint32_t t = pl->premier; t + 2 < pl->premier + pl->nombre && t + 2 < B.idx.size(); t += 3) {
+            uint32_t tri[3];
+            for (int k = 0; k < 3; k++) {
+                const SkinVertex& v = B.v[B.idx[t + k]];
+                const auto cle = std::make_tuple((int)std::floor(v.px / cellule), (int)std::floor(v.py / cellule), (int)std::floor(v.pz / cellule), (int)(v.cloth[3] + 0.5f));
+                auto it = cases.find(cle);
+                if (it == cases.end()) { it = cases.emplace(cle, (uint32_t)rep.size()).first; rep.push_back(B.idx[t + k]); }
+                tri[k] = it->second;
+            }
+            if (tri[0] == tri[1] || tri[1] == tri[2] || tri[0] == tri[2]) continue;   // triangle écrasé par le regroupement
+            S.i.insert(S.i.end(), {tri[0], tri[1], tri[2]});
+        }
+    }
+    PoseSquelette ps; preparerPose(B.p, ps);
+    const int clip = clipParNom(B.p, CLIPS[pose]);
+    const double duree = clip >= 0 ? B.p.clips[(size_t)clip].duree : 0;
+    echantillonner(B.p, clip, duree * (variante + 0.37 * sx) / VARIANTES, ps);
+    const float manche = variante == 1 ? 1.95f : 0.45f;   // manches longues pour une variante sur trois
+    float bas = 1e9f, fesses = 1e9f, pieds = 1e9f;
+    for (uint32_t o : rep) {
+        const SkinVertex& v = B.v[o];
+        vec3 p{}, n{};
+        for (int k = 0; k < 4; k++) if (v.poids[k] > 0) {
+            const mat4& m = ps.palette[v.os[k]];
+            p += point(m, {v.px, v.py, v.pz}) * v.poids[k];
+            n += direction(m, {v.nx, v.ny, v.nz}) * v.poids[k];
+        }
+        S.v.push_back({p, normalize(n), zoneDe(v, B.p.corps, manche)});
+        bas = std::min(bas, p.y);
+        if (v.cloth[3] < 0.5f && v.cloth[0] < -0.5f && v.cloth[2] < 0.8f) fesses = std::min(fesses, p.y);   // tronc et haut des cuisses
+        if (v.cloth[2] >= 1.8f) pieds = std::min(pieds, p.y);
+    }
+    // repère : assis, fesses en y = 0 et centre du bassin en (0, 0) ; debout, pieds en y = 0, centré
+    const bool assis = pose == ASSIS_REPOS || pose == ASSIS_PARLE;
+    const float y0 = assis && fesses < 1e8f ? fesses : bas;
+    vec3 c{}; int nc = 0;
+    for (size_t k = 0; k < S.v.size(); k++) {
+        const SkinVertex& v = B.v[rep[k]];
+        const bool bassin = assis ? (v.cloth[3] < 0.5f && v.cloth[0] < -0.5f && S.v[k].p.y < y0 + 0.08f) : true;
+        if (bassin) { c += S.v[k].p; nc++; }
+    }
+    if (nc) c = c * (1.f / (float)nc);
+    for (Sommet& s : S.v) s.p = s.p - vec3{c.x, y0, c.z};
+    if (assis && pieds < 1e8f) S.assise = std::clamp(y0 - pieds, 0.3f, 0.6f);
+    return S;
+}
+
+struct Cache { std::vector<Silhouette> s; bool ok = false; };
+int indice(int sx, int coiffure, int pose, int variante, int proche) { return (((sx * COIFFURES + coiffure) * NB_POSES + pose) * VARIANTES + variante) * 2 + proche; }
+
+Cache batir() {
+    Cache c;
+    Brut b[2];
+    if (!lire("people/homme.wfp", b[0]) || !lire("people/femme.wfp", b[1])) { WFS_ERR("Spectateurs (WFS-199) : personnages illisibles (assets/people)"); return c; }
+    c.s.resize((size_t)indice(1, COIFFURES - 1, NB_POSES - 1, VARIANTES - 1, 1) + 1);
+    size_t tri[2] = {0, 0};
+    for (int sx = 0; sx < 2; sx++) for (int h = 0; h < COIFFURES; h++) for (int p = 0; p < NB_POSES; p++) for (int v = 0; v < VARIANTES; v++)
+        for (int pr = 0; pr < 2; pr++) {
+            Silhouette& S = c.s[(size_t)indice(sx, h, p, v, pr)];
+            S = construire(b[sx], sx, h, (Pose)p, v, pr ? 0.10f : 0.16f);
+            tri[pr] = std::max(tri[pr], S.i.size() / 3);
+        }
+    c.ok = true;
+    WFS_LOG("Spectateurs (WFS-199) : %zu silhouettes (homme, femme ; 4 poses ; %d instants), %zu triangles au plus de près, %zu de loin ; assise %.2f m",
+            c.s.size(), VARIANTES, tri[1], tri[0], c.s[(size_t)indice(0, 0, ASSIS_REPOS, 0, 1)].assise);
+    return c;
+}
+
+} // namespace
+
+const Silhouette* silhouette(bool femme, int coiffure, Pose pose, int variante, bool proche) {
+    static const Cache c = batir();   // une fois, au premier appel (initialisation sûre entre fils : morceaux construits en parallèle)
+    if (!c.ok) return nullptr;
+    return &c.s[(size_t)indice(femme ? 1 : 0, ((coiffure % COIFFURES) + COIFFURES) % COIFFURES, pose, ((variante % VARIANTES) + VARIANTES) % VARIANTES, proche ? 1 : 0)];
+}
+
+} // namespace foule
 
 } // namespace wfs

@@ -1,6 +1,7 @@
 // WaForSpeed — banc d'essai des cartes Campagne et Grand Prix (WFS-53) et des quartiers de la Ville (WFS-93) : voir decor_carte.h.
 // Pilote automatique, caméra haute, comme la plage (carte-plage-*) : jour et nuit au départ, puis une capture de jour
 // au début de chaque autre zone (départ avancé par WFS_DEPART, lu par le système de la carte).
+#include <chrono>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -67,6 +68,19 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         const Lieu LIEUX[] = {{"carte-circuit-depart", 0, 100}, {"carte-circuit-epingle", ep ? ep->debut - 60 : -1, 240},
                               {"carte-circuit-chicane", ch ? ch->debut - 45 : -1, 240}, {"carte-circuit-raidillon", mo ? mo->debut + 10 : -1, 240},
                               {"carte-circuit-paddock", 40, 240}};
+        // WFS-199 : tribunes de près (caméra vitrine tournée vers la tribune), jour et nuit ; WFS_TRIBUNES : ces 4 captures seules
+        const trace::Section* fx = nullptr; for (const trace::Section& s : S) if (s.type == trace::Type::Feux && s.depart && !fx) fx = &s;
+        for (int k = 0; k < 5; k++) if (const trace::Section* sc = k < 2 || k == 4 ? fx : ep) {   // 4 : départ en qualité Basse
+            const int64_t n = k < 2 ? sc->debut + 36 : (sc->debut + sc->fin) / 2; const int cote = k < 2 ? 1 : (sc->angle > 0 ? -1 : 1);
+            const TrackPoint a = t.point((double)n * SEG, 0), b = t.point((double)n * SEG, cote * 10.0);
+            setenv("WFS_MOMENT", k % 2 ? "nuit" : "jour", 1); setenv("WFS_DEPART", std::to_string(n).c_str(), 1);
+            r.qualiteBasse = k == 4; g.init(r, "golf", "circuit"); g.setAutopilot(false); g.camMode = 2; g.orbit = std::atan2(-(float)(b.x - a.x), -(float)(b.z - a.z));
+            for (int i = 0; i < 60; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+            const auto t0 = std::chrono::steady_clock::now(); g.render(404); g.render(404.02); const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count() / 2;
+            const std::string nom = std::string("carte-circuit-tribune-") + (k < 2 || k == 4 ? "depart" : "epingle") + (k % 2 ? "-nuit" : "") + (k == 4 ? "-basse" : "");
+            r.capturePng(out + "/" + nom + ".png"); WFS_LOG("capture %s : %u appels de dessin, %.0f ms par image", nom.c_str(), r.appelsDessin(), ms); g.shutdown(); r.qualiteBasse = false;
+        }
+        if (std::getenv("WFS_TRIBUNES")) return;
         for (const Lieu& l : LIEUX)
             for (const char* moment : {"jour", "nuit"}) {
                 if (l.depart < 0) { WFS_ERR("banc cartes (WFS-140) : section absente pour %s", l.nom); continue; }
