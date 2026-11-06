@@ -8,7 +8,7 @@ et **au plus tard avant de l'attribuer**. Le développeur le lit avant de coder 
 ## Ce qu'on réutilise (obligatoire à vérifier pour chaque US)
 Le code, les modèles 3D (`assets/cars/`, `assets/people/`), les sons (`assets/audio/`) et les systèmes **déjà présents dans ce dépôt** :
 chaque US cite les fichiers et fonctions à réutiliser ; ne jamais recréer ce qui existe. Il n'y a plus de version Web (décision de
-l'utilisateur, 2026-11-06). Pour l'aspect du monde 3D, la référence est le réel mesuré, fidélité 99 % : `DA-realisme.md`.
+l'utilisateur, 2026-11-06). Pour l'aspect du monde 3D, il n'y a plus d'exigence de réalisme mesuré (décision de l'utilisateur 2026-11-06).
 
 ## Modèle de fichier
 ```markdown

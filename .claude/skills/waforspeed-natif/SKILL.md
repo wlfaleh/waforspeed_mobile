@@ -5,7 +5,7 @@ description: Règles du moteur natif de WaForSpeed Mobile (C++20 + Vulkan, Andro
 
 # WaForSpeed natif — règles du moteur
 
-Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dépôt est la seule référence ; l'aspect du monde 3D suit le réel mesuré (`regles-de-gestion/DA-realisme.md`).
+Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dépôt est la seule référence ; l'aspect du monde 3D n'a pas d'exigence de réalisme mesuré (décision de l'utilisateur 2026-11-06).
 **Pas de Unity, Godot, Unreal ni autre moteur de jeu** : moteur maison. Petites bibliothèques libres autorisées
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
@@ -124,7 +124,7 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette de `assets/pe
 ### 1. Précision et cohérence (CRITIQUE)
 - Mêmes graines (`Mulberry32`), mêmes unités (1 unité = 6 mm, `SEG` = 200, `RW` = 7,5 m) : ne pas les changer sans ticket E0.
 - Chaque règle chiffrée est vérifiée par un test (`tests/`) ; les réglages viennent du code et de `configgame.json`, pas de « à peu près ».
-- Monde 3D : valeurs physiques sourcées, jamais inventées pour « faire joli » (`regles-de-gestion/DA-realisme.md`).
+- Monde 3D : aucune exigence de valeurs sourcées ni de fidélité au réel (décision de l'utilisateur 2026-11-06) ; un rendu qui fonctionne suffit.
 
 ### 2. Threads et mémoire (CRITIQUE)
 - Le thread principal possède Vulkan et l'état du jeu. Les threads de `jobs()` ne font que du calcul CPU sur des données qu'ils possèdent

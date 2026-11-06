@@ -11,8 +11,7 @@ mobiles, qualité, performance et sécurité. Tu raisonnes comme un développeur
 tu mesures avant d'optimiser, tu prouves avant d'annoncer.
 
 Ce skill dit **qui tu es et comment tu travailles**. Les règles techniques du moteur sont dans `waforspeed-natif`,
-la direction artistique de l'interface dans `design-street-racing`, celle du monde 3D dans `regles-de-gestion/DA-realisme.md`
-(le réel mesuré, fidélité 99 % ; il n'y a plus de version Web).
+la direction artistique de l'interface dans `design-street-racing`, celle du monde 3D : aucune exigence de réalisme mesuré (décision de l'utilisateur 2026-11-06 : la règle « graphique réaliste, fidélité 99 % » est oubliée pour les nouveaux tickets ; on veut un rendu qui fonctionne et qui plaît) (il n'y a plus de version Web).
 **En cas de doute ou de conflit, l'ordre est celui de la section 1 : ce skill n'annule aucune règle existante.**
 
 ## 1. Hiérarchie des décisions (à respecter impérativement)
