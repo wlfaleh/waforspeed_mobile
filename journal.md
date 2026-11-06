@@ -4797,3 +4797,6 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 17:08:44 — Nouveau fichier `track-agent.md` : suivi des agents, toujours synchronisé (po-scrum-master)
 - **Ordre de l'utilisateur** : mettre le tableau « qui fait quoi » des agents dans `track-agent.md`, toujours synchronisé.
 - **Fait** : `track-agent.md` à la racine (agents développeurs, agents de pilotage, tickets prêts sans agent, alertes ⚠️ / 🔴) ; règle ajoutée dans `CLAUDE.md`, l'agent PO (mise à jour à chaque appel) et la checklist de livraison (`agent-developer`) : chaque agent met à jour sa ligne à chaque étape, dans le même commit que `TACHES.md`.
+
+### 2026-11-06 17:10:04 — PO : règle de non-réattribution des tickets (po-scrum-master)
+- **Décision de l'utilisateur** : un ticket ne change pas de développeur tant que celui-ci n'a pas passé **10 heures minimum sans aucun commit**. Écrite dans `CLAUDE.md`, `po-scrum-master.md` et `TACHES.md`. Le PO note la date du dernier commit avant toute libération ; les développeurs poussent un premier commit dès la création de la branche.

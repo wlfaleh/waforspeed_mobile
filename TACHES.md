@@ -71,6 +71,8 @@ de jeu tiers. Organisation type Jira / Scrum :
 
 **Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du dépôt à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
+**Règle de non-réattribution (utilisateur, 2026-11-06)** : un ticket « 🔧 En cours » ne change pas de développeur avant **10 heures sans aucun commit** de celui-ci sur sa branche (le PO vérifie la date du dernier commit et la note au Journal).
+
 **Définition de « Fini »** (sauf fusion par confiance, voir ci-dessus : la CI et la recette viennent après la fusion) : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` (anomalies mineures restantes inscrites au tableau des anomalies), synchronisé, fusionné,
 Journal à jour.
 
