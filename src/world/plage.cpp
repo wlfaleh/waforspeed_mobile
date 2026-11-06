@@ -31,16 +31,74 @@
 #include "../game/track.h"
 #include "../render/eclairage.h"
 #include "../render/renderer.h"
+#include "enseignes.h"   // WFS-180 : vie::Baigneur (danseurs et joueurs pour les piétons), vie::hauteurSable
 #include "vegetation.h"
 #include "zones.h"
 
 namespace wfs {
+
+// ---------------------------------------------------------------- WFS-180 : lieux de la plage (fêtes, jeux)
+// Partagés avec les piétons (foule qui danse, joueurs de beach-volley) et les serviettes (pas posées dessus).
+namespace plage {
+struct Lieu { int64_t seg; bool fete; };   // centre du lieu (segment, sur un tour) ; côté mer, sur le sable
+struct Lieux { std::vector<Lieu> lieux; std::vector<vie::Baigneur> gens; bool fait = false; };
+constexpr float FETE_LAT = (float)RW + 21;   // centre de la piste de danse (sable : RW + 5 à RW + 38)
+constexpr float SCENE_LAT = (float)RW + 30;  // scène de 10 × 5 m, face à la route
+constexpr float VOLLEY_LAT = (float)RW + 22; // terrain de 16 × 8 m (FIVB), long côté le long de la route
+// segment de plage de sable, loin des virages serrés, de la falaise, du tunnel et des places (RG-C1)
+static bool plageLibre(Track& t, const MapDef& map, int64_t len, int64_t n) {
+    const char* z = zoneId(map, n, len);
+    if (std::strcmp(z, "corniche") && std::strcmp(z, "village")) return false;
+    const trace::Section* s = trace::sectionA(t, (double)(((n % len) + len) % len) * SEG);
+    if (s && (t.pose(n).y > 1 || s->type == trace::Type::Lacets || s->type == trace::Type::Tunnel ||
+              s->type == trace::Type::RondPoint || s->type == trace::Type::Feux)) return false;
+    return trace::rayonInterieur(t, (double)n * SEG).droite > 150;   // côté mer : pas l'intérieur d'une courbe serrée
+}
+const Lieux& lieux(const MapDef& map, int64_t len) {
+    static std::map<std::pair<uint32_t, int64_t>, Lieux> cache;
+    Lieux& L = cache[{map.seed, len}];
+    if (L.fait || std::strcmp(map.id, "plage")) return L;
+    L.fait = true;
+    Track t; t.build(map, trace::versionCarte(map.id));
+    if ((int64_t)t.segmentCount() != len) return L;
+    // lieux de 60 m (±25 segments) entièrement libres, espacés d'au moins 250 m : fête, jeux, fête, jeux, fête
+    int nf = 0, nj = 0;
+    for (int64_t n = 40; n < len - 40 && nf + nj < 5; n++) {
+        bool ok = true;
+        for (int64_t k = n - 25; k <= n + 25 && ok; k += 5) ok = plageLibre(t, map, len, k);
+        if (!ok) continue;
+        const bool fete = (nf + nj) % 2 == 0 ? nf < 3 : nj >= 2;
+        L.lieux.push_back({n, fete}); (fete ? nf : nj)++;
+        n += 210;
+    }
+    // foule (12 danseurs devant la scène, tournés vers elle) et joueurs (2 contre 2) ; Mulberry32 : mêmes places à chaque fois
+    Mulberry32 D(map.seed * 31 + 37);
+    for (const Lieu& l : L.lieux) {
+        if (l.fete) for (int k = 0; k < 12; k++)
+            L.gens.push_back({(double)l.seg + ((k % 6) - 2.5) * 1.6 / SEG_M + (D.next() - 0.5) * 0.6 / SEG_M,
+                              FETE_LAT - 3 + (k / 6) * 2.2f + (float)D.next() * 1.2f, 1.5708f + ((float)D.next() - 0.5f) * 0.8f});
+        else for (int k = 0; k < 4; k++)   // une équipe de chaque côté du filet (à ±4 m le long de la route)
+            L.gens.push_back({(double)l.seg + (k < 2 ? -4.0 : 4.0) / SEG_M, VOLLEY_LAT + (k % 2 ? 2.f : -2.f), k < 2 ? 0.f : 3.1416f});
+    }
+    WFS_LOG("Plage (WFS-180) : %d fête(s), %d terrain(s) de jeux, %zu personnes", nf, nj, L.gens.size());
+    return L;
+}
+// danseurs et joueurs : lus par les piétons (pietons.cpp)
+const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len) { return lieux(map, len).gens; }
+// segment occupé par une fête ou des jeux (± 35 m) : les serviettes n'y sont pas posées (commerces.cpp)
+bool occupe(const MapDef& map, int64_t len, int64_t n) {
+    for (const Lieu& l : lieux(map, len).lieux) { int64_t d = ((n - l.seg) % len + len) % len; if (d > len / 2) d = len - d; if (d < 30) return true; }
+    return false;
+}
+} // namespace plage
+
 namespace {
 
 constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et part propre (émissive) du stipe, de jour
 // P_NEON : boules des lampadaires (WFS-81) ; WFS-139 : P_ROC roche (texture), P_ACIER glissières, P_SODIUM luminaires du
-// tunnel, P_ROUTE chaussée de la rue transversale du carrefour, P_VOUTE roche de la voûte (lumière du ciel masquée)
-enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P_SODIUM, P_ROUTE, P_VOUTE, P_COUNT };
+// tunnel, P_ROUTE chaussée de la rue transversale du carrefour, P_VOUTE roche de la voûte (lumière du ciel masquée) ;
+// WFS-180 : P_GUIRL ampoules des guirlandes, P_FILET filet de beach-volley (transparent)
+enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P_SODIUM, P_ROUTE, P_VOUTE, P_GUIRL, P_FILET, P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
 constexpr float OCEAN_Y = -1.75f;     // niveau de la mer sous la route (le sable mouillé y plonge)
@@ -55,7 +113,12 @@ enum Col { C_PROM, C_SABLE, C_MOUILLE, C_DUNE, C_COLLINE, C_ROCHER, C_QUAI, C_HE
            C_MAT, C_ROC, C_ROC2, C_GLISS_P, C_GLISS, C_TRONC, C_PIN, C_FEUILLE, C_FEUILLE2,
            // WFS-139 : garrigue (maquis bas, albédo linéaire moyen 0,15 : bas de « herbe 0,15-0,25 »), caisson et mât du
            // feu (gris anthracite), ancre (acier peint), gazon
-           C_GARRIGUE, C_CAISSON, C_ANCRE, C_GAZON, C_NB };
+           C_GARRIGUE, C_CAISSON, C_ANCRE, C_GAZON,
+           // WFS-180 : planches de la scène (bois teinté), toile noire, enceintes, mât de guirlande (pin), pierres et bûches du
+           // feu, lignes du terrain (bleu FIVB), coque blanche (gelcoat), pont en teck, voile (dacron), vitres teintées, coques
+           // des pédalos et du toboggan (jaune, bleu, rouge), sable mouillé du château, combinaison du pilote de jet-ski
+           C_PLANCHE, C_TOILE, C_HP, C_MATBOIS, C_PIERRE, C_BUCHE, C_LIGNE, C_GELCOAT, C_TECK, C_DACRON, C_VITRE2,
+           C_JAUNE, C_BLEU, C_ROUGE, C_SABLE_M, C_COMBI, C_BALLON, C_PEAU, C_NB };
 const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c, 0x7d7a70, 0x9a958a, 0x5f6a3a,
                                 0xf2efe6, 0xf2efe6, veg::PALM_SHEATH, veg::PALM_COCO,
                                 0xe2262b, 0xffd23a, 0x1d8fb8, 0xffffff, 0xff6a00,
@@ -63,8 +126,10 @@ const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c
                                 0xf2e6c9, 0xe9c9a4, 0xf4dcd0, 0xd9e6ef, 0xf0e1a8, 0xe2d5c3, 0xb5532e, 0x2f5f8f, 0x6b6b6b, 0x1d2a38,
                                 0xd63a2a, 0x2a2c30, 0xf2f2f0, 0x1d3f8f, 0xb8352a, 0x2f6f5f, 0xf7f5ee, 0xe9e6dc, 0xd8d8d8,
                                 0x6f6b62, 0x8a857a, 0x8a8f96, 0xb8bec6, 0x6b4a2e, 0x2f5a2c, 0x3f6f2a, 0x557f34,
-                                0x787850, 0x2a2d31, 0x30343a, 0x5b7a37};
-constexpr int PAL_W = 64;   // cases de la palette (≥ C_NB)
+                                0x787850, 0x2a2d31, 0x30343a, 0x5b7a37,
+                                0x6b5238, 0x161618, 0x202022, 0x8a6a48, 0x8c877c, 0x4a3426, 0x2f6fc2, 0xeeeeea, 0x9a7650, 0xf2f0ea,
+                                0x24323c, 0xf2c21a, 0x1f63b8, 0xc8322a, 0xa8925f, 0x22262c, 0xf4e04a, 0xc69a76};
+constexpr int PAL_W = 128;   // cases de la palette (≥ C_NB) ; WFS-180 : 64 → 128
 static_assert(C_NB <= PAL_W, "palette trop petite");
 inline vec2 palUv(int c) { return {(c + 0.5f) / PAL_W, 0.5f}; }
 
@@ -240,6 +305,67 @@ void genererRoche(std::vector<uint8_t>& col, std::vector<uint8_t>& nrm, std::vec
     }
 }
 
+// ---------------------------------------------------------------- WFS-180 : bateaux (repère local : avant vers +Z)
+// coque lissée : sections de la poupe (largeur 0,85 du maître-bau) à l'étrave (pointe), bordé jusqu'au franc-bord, fond
+// en V jusqu'au tirant d'eau ; pont plat. L, B : longueur, maître-bau ; franc : franc-bord ; tirant : sous la flottaison
+void coque(Geo& g, float L, float B, float franc, float tirant, vec2 uvBord, vec2 uvPont) {
+    constexpr int N = 14;
+    auto demi = [&](float z) {   // demi-largeur à l'abscisse z (de −L/2 à +L/2)
+        const float z0 = -0.1f * L, h = B / 2;
+        if (z <= z0) return h * (0.85f + 0.15f * (z + L / 2) / (z0 + L / 2));
+        const float u = (z - z0) / (L / 2 - z0);
+        return h * std::sqrt(std::max(0.f, 1 - u * u));
+    };
+    for (int i = 0; i < N; i++) {
+        const float za = -L / 2 + L * i / N, zb = -L / 2 + L * (i + 1) / N, wa = demi(za), wb = demi(zb);
+        const float fa = franc + 0.15f * franc * (float)i / N, fb = franc + 0.15f * franc * (float)(i + 1) / N;   // tonture
+        for (float sd : {-1.f, 1.f}) {
+            quad(g, {sd * wa, fa, za}, {sd * wb, fb, zb}, {sd * wb * 0.8f, 0, zb}, {sd * wa * 0.8f, 0, za}, uvBord);
+            quad(g, {sd * wa * 0.8f, 0, za}, {sd * wb * 0.8f, 0, zb}, {0, -tirant, zb}, {0, -tirant, za}, uvBord);
+            quad(g, {0, fa, za}, {0, fb, zb}, {sd * wb, fb, zb}, {sd * wa, fa, za}, uvPont);
+        }
+    }
+    const float w = demi(-L / 2);   // tableau arrière
+    quad(g, {-w, franc, -L / 2}, {w, franc, -L / 2}, {w * 0.8f, 0, -L / 2}, {-w * 0.8f, 0, -L / 2}, uvBord);
+    tri(g, {-w * 0.8f, 0, -L / 2}, {w * 0.8f, 0, -L / 2}, {0, -tirant, -L / 2}, uvBord);
+}
+// voilier de croisière de 10 m (Bénéteau Oceanis 30.1 : 9,6 m, bau 3,4 m ; mât ≈ 14 m au-dessus de l'eau), voiles hissées
+void voilier(Geo& g) {
+    coque(g, 10.f, 3.4f, 1.1f, 0.6f, palUv(C_GELCOAT), palUv(C_TECK));
+    box(g, {0, 1.1f, -0.8f}, {1, 0, 0}, {0, 0, 1}, 1.1f, 1.9f, 0.6f, palUv(C_GELCOAT));   // rouf
+    box(g, {0, 1.25f, 0.35f}, {1, 0, 0}, {0, 0, 1}, 1.12f, 0.6f, 0.25f, palUv(C_VITRE2));  // hublots
+    cylinder(g, {0, 1.1f, 0.9f}, 0.07f, 13.f, 6, palUv(C_MAT));
+    tri(g, {0, 2.1f, 0.85f}, {0, 13.6f, 0.85f}, {0, 2.1f, -3.0f}, palUv(C_DACRON));       // grand-voile
+    tri(g, {0, 1.3f, 4.6f}, {0, 12.2f, 0.95f}, {0.2f, 1.6f, 1.2f}, palUv(C_DACRON));      // génois
+}
+// yacht à moteur de 18 m (bau 4,9 m, deux ponts)
+void yacht(Geo& g) {
+    coque(g, 18.f, 4.9f, 1.9f, 0.9f, palUv(C_GELCOAT), palUv(C_TECK));
+    box(g, {0, 1.9f, -1.5f}, {1, 0, 0}, {0, 0, 1}, 2.1f, 5.f, 2.2f, palUv(C_GELCOAT));
+    box(g, {0, 2.7f, 0.5f}, {1, 0, 0}, {0, 0, 1}, 2.13f, 2.6f, 0.9f, palUv(C_VITRE2));     // pare-brise et vitres
+    box(g, {0, 4.1f, -2.4f}, {1, 0, 0}, {0, 0, 1}, 1.6f, 2.8f, 1.6f, palUv(C_GELCOAT));
+    box(g, {0, 4.6f, -1.4f}, {1, 0, 0}, {0, 0, 1}, 1.62f, 1.4f, 0.7f, palUv(C_VITRE2));
+}
+// jet-ski (Sea-Doo GTI : 3,3 × 1,2 m, 1,1 m de haut) et son pilote (combinaison)
+void jetski(Geo& g) {
+    coque(g, 3.3f, 1.2f, 0.45f, 0.25f, palUv(C_GELCOAT), palUv(C_BLEU));
+    box(g, {0, 0.45f, -0.4f}, {1, 0, 0}, {0, 0, 1}, 0.28f, 0.7f, 0.32f, palUv(C_COMBI));   // selle
+    box(g, {0, 0.45f, 0.55f}, {1, 0, 0}, {0, 0, 1}, 0.4f, 0.35f, 0.35f, palUv(C_BLEU));    // capot
+    cylinder(g, {0, 0.77f, -0.35f}, 0.2f, 0.62f, 8, palUv(C_COMBI));                       // pilote (1,75 m, accroupi)
+    ball(g, {0, 1.55f, -0.25f}, {0.12f, 0.14f, 0.13f}, palUv(C_PEAU));
+    box(g, {0, 0.9f, 0.6f}, {1, 0, 0}, {0, 0, 1}, 0.35f, 0.04f, 0.04f, palUv(C_CAISSON));  // guidon
+}
+// paquebot (≈ 290 m, 32 m de large, 60 m au-dessus de l'eau), au large
+void paquebot(Geo& g) {
+    coque(g, 290.f, 32.f, 14.f, 8.f, palUv(C_GELCOAT), palUv(C_TECK));
+    for (int k = 0; k < 5; k++) box(g, {0, 14.f + k * 9.f, -20.f - k * 6.f}, {1, 0, 0}, {0, 0, 1}, 15.5f - k, 110.f - k * 14.f, 9.f, palUv(k % 2 ? C_VITRE2 : C_GELCOAT));
+    box(g, {0, 59.f, -60.f}, {1, 0, 0}, {0, 0, 1}, 4.f, 8.f, 9.f, palUv(C_ROUGE));          // cheminée
+}
+// sillage d'un jet-ski : écume en V, 18 m derrière (repère local, posé sur l'eau)
+void sillage(Geo& g) {
+    quad(g, {-0.6f, 0.03f, -1.6f}, {0.6f, 0.03f, -1.6f}, {4.5f, 0.03f, -19.f}, {-4.5f, 0.03f, -19.f}, {0, 0});
+}
+
 // banc d'essai : vue de dessus de la Corniche (décor compris), réglée par benchCorniche
 struct VueDessus { bool actif = false; vec3 oeil{}, cible{}, haut{0, 0, -1}; float fov = 50; } g_vueDessus;
 
@@ -275,6 +401,7 @@ public:
         { const char* dep = std::getenv("WFS_DEPART"); depart_ = dep ? std::atoll(dep) : 0; }   // WFS-94 : banc d'essai
         objets_.clear();
         place(*g.track);
+        initPlage(r, *g.track, *g.map);
     }
 
     // stipe (2 texels : BARK.palm / palm2), palmes (atlas du jeu web, case 2) vertes et sèches
@@ -332,6 +459,28 @@ public:
         lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
         const vec3 couleurs[3] = {{1.f, 0.04f, 0.02f}, {1.f, 0.42f, 0.01f}, {0.05f, 1.f, 0.45f}};
         for (int k = 0; k < 3; k++) { ml.emissive = couleurs[k] * 6.f; lentille_[k] = r.makeMaterial(ml, nullptr, nullptr, nullptr); }
+        // WFS-180 : ampoules des guirlandes (blanc chaud ≈ 2700 K, éteintes le jour : 0,3), filet (mailles noires : 45 % couvrant)
+        Material mg; mg.color = {0.9f, 0.85f, 0.7f, 1}; mg.rough = 0.3f; mg.flags = MAT_DOUBLE;
+        mg.emissive = vec3{1.f, 0.66f, 0.36f} * (night_ ? 4.f : 0.3f);
+        mats_[P_GUIRL] = r.makeMaterial(mg, nullptr, nullptr, nullptr);
+        Material mf; mf.color = {0.03f, 0.03f, 0.03f, 0.45f}; mf.rough = 0.8f; mf.flags = MAT_BLEND | MAT_DOUBLE;
+        mats_[P_FILET] = r.makeMaterial(mf, nullptr, nullptr, nullptr);
+        // gelcoat des coques (polyester : diélectrique lisse, rugosité 0,25), mêmes couleurs que la palette
+        Material mc; mc.rough = 0.3f; mc.flags = MAT_DOUBLE;
+        coqueMat_ = r.makeMaterial(mc, &palTex_, nullptr, nullptr);
+        // sillage : écume blanche (albédo ≈ 0,8), à moitié transparente
+        Material mw; mw.color = {0.8f, 0.82f, 0.84f, 0.55f}; mw.rough = 0.9f; mw.flags = MAT_BLEND | MAT_DOUBLE;
+        sillageMat_ = r.makeMaterial(mw, nullptr, nullptr, nullptr);
+        // faisceaux des lyres de la scène (la nuit : lumière ajoutée, couleur réglée par image), flamme du feu de camp
+        for (int k = 0; k < 3; k++) {
+            const vec3 c[3] = {{0.9f, 0.1f, 0.6f}, {0.1f, 0.4f, 1.f}, {0.2f, 1.f, 0.5f}};
+            Material mb; mb.color = {c[k].x * 0.12f, c[k].y * 0.12f, c[k].z * 0.12f, 1}; mb.flags = MAT_ADD | MAT_BLEND | MAT_DOUBLE;
+            faisceauMat_[k] = r.makeMaterial(mb, nullptr, nullptr, nullptr);
+            Material ml2; ml2.color = {0.1f, 0.1f, 0.1f, 1}; ml2.emissive = c[k] * 5.f; ml2.flags = MAT_DOUBLE;
+            lyreMat_[k] = r.makeMaterial(ml2, nullptr, nullptr, nullptr);
+        }
+        Material mfl; mfl.color = {0.1f, 0.05f, 0.f, 1}; mfl.emissive = vec3{1.f, 0.45f, 0.08f} * 6.f; mfl.flags = MAT_DOUBLE;   // ≈ 1800 K
+        flammeMat_ = r.makeMaterial(mfl, nullptr, nullptr, nullptr);
     }
 
     int64_t mod(int64_t n) const { return ((n % len_) + len_) % len_; }
@@ -496,6 +645,9 @@ public:
             return placeLibre(t, n, side, lat, ext, demi);
         };
         const size_t p0 = palms_.size(), u0 = umbrellas_.size(), l0 = lamps_.size(), o0 = objets_.size();
+        // WFS-180 : fêtes et jeux de plage : ni parasol ni objet côté mer (tour, villa, rocher) sur leur emprise
+        std::erase_if(umbrellas_, [&](const Umbrella& u) { return plage::occupe(map, len_, u.seg); });
+        std::erase_if(objets_, [&](const Objet& o) { return o.side > 0 && o.lat > R + 8 && o.t != O_BATEAU && plage::occupe(map, len_, o.seg); });
         std::erase_if(palms_, [&](const Palm& p) { return !garde(p.seg, p.lat > 0 ? 1 : -1, std::fabs(p.lat), 4.f, 3.f, true); });
         int k = 0;
         std::erase_if(umbrellas_, [&](const Umbrella& u) { return !garde(u.seg, 1, u.lat, 1.6f, 2.f, false) || (basse_ && (k++ & 1)); });
@@ -795,6 +947,182 @@ public:
         }
     }
 
+    // ---------------------------------------------------------------- WFS-180 : fêtes, jeux de plage, bateaux
+    // maillages des bateaux (une fois), flotte placée sur toute la mer libre, lumières de nuit des fêtes
+    void initPlage(Renderer& r, Track& t, const MapDef& map) {
+        auto fait = [&](void (*f)(Geo&), Mesh& m) { Geo g; f(g); m = r.makeMesh(g.v, g.i, false); };
+        fait(voilier, modeleBateau_[B_VOILIER]); fait(yacht, modeleBateau_[B_YACHT]); fait(jetski, modeleBateau_[B_JETSKI]);
+        fait(paquebot, modeleBateau_[B_PAQUEBOT]); fait(sillage, sillage_);
+        { Geo g; for (int k = 0; k < 10; k++) {   // faisceau : cône ouvert de 25 m, 1,8 m de rayon au bout (≈ 8°), le long de +Z
+            const float a0 = 2 * PI * k / 10, a1 = 2 * PI * (k + 1) / 10;
+            tri(g, {0, 0, 0}, {std::cos(a0) * 1.8f, std::sin(a0) * 1.8f, 25}, {std::cos(a1) * 1.8f, std::sin(a1) * 1.8f, 25}, {0, 0}); }
+          faisceau_ = r.makeMesh(g.v, g.i, false); }
+        { Geo g; cone(g, {0, 0, 0}, 0.35f, 1.f, 8, {0, 0}); cone(g, {0.15f, 0, 0.1f}, 0.2f, 0.7f, 6, {0, 0}); flamme_ = r.makeMesh(g.v, g.i, false); }
+        { Geo g; ball(g, {0, 0, 0}, {0.18f, 0.2f, 0.18f}, {0, 0}); lyre_ = r.makeMesh(g.v, g.i, false); }
+        bateaux_.clear();
+        const plage::Lieux& L = plage::lieux(map, len_);
+        Mulberry32 D(map.seed * 31 + 41);
+        auto d = [&]() { return (float)D.next(); };
+        const float R = (float)RW;
+        // mer libre au large du segment n : plage sans autre branche côté mer, ou falaise côté mer
+        auto large = [&](int64_t n) { const int k = formeCote(n, 1); return k == K_MER || (k == K_PLAGE && solA(n) != S_PLACE && touche_[(size_t)ix(n, 1)] > 1e8f && bordSol(t, n, 1) > 600); };
+        for (int64_t n = 30; n < len_; n += 70 + (int64_t)(d() * 90)) {   // voiliers et yachts tous les 85 à 190 m
+            const float u = d(), lat = R + 110 + d() * 480, rot = (d() - 0.5f) * 6.2832f, ph = d() * 6.2832f;
+            if (large(n)) bateaux_.push_back({u < 0.62f ? (int)B_VOILIER : (int)B_YACHT, n, lat, rot, ph});
+        }
+        if (large(len_ / 3)) bateaux_.push_back({B_PAQUEBOT, len_ / 3, 1150.f, 0.3f, 0.f});   // un paquebot au large
+        for (const plage::Lieu& l : L.lieux) for (int k = 0; k < 2; k++)   // 2 jet-skis devant chaque lieu (4 à 10 en tout)
+            if (large(l.seg)) { Bateau b{B_JETSKI, l.seg, R + 62 + k * 22 + d() * 8, 0.f, d() * 6.2832f}; b.base = l.seg; bateaux_.push_back(b); }
+        // nuit : projecteur au-dessus de la scène et feu de camp (lumières des 4 plus proches, nuit.cpp)
+        for (const plage::Lieu& l : L.lieux) if (l.fete) {
+            lampadaires().push_back({l.seg, plage::SCENE_LAT - 3.f, 6.f, StyleLampadaire::Ville});
+            lampadaires().push_back({mod(l.seg + (int64_t)(14 / SEG_M)), plage::FETE_LAT - 1, 1.2f, StyleLampadaire::Ville});
+        }
+        WFS_LOG("Plage (WFS-180) : %zu bateaux (voiliers, yachts, jet-skis, paquebot)", bateaux_.size());
+    }
+
+    // décor fixe d'une fête ou d'un terrain de jeux, posé dans le morceau qui contient son segment (repère du segment)
+    void decorLieux(Track& t, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        const plage::Lieux& L = plage::lieux(*t.map(), len_);
+        for (const plage::Lieu& l : L.lieux) {
+            if (mod(a) != mod(l.seg)) continue;
+            const Frame fr = frameAt(t, (double)a * SEG);
+            const vec3 X = fr.r, Z = fr.f, up{0, 1, 0};
+            auto S = [&](float lat, float al, float y) { return fr.o + X * lat + Z * al + up * (y + sableY(lat)); };   // sur le sable
+            auto E = [&](float lat, float al, float y) { vec3 q = fr.o + X * lat + Z * al; q.y = OCEAN_Y + y; return q; };   // sur l'eau
+            if (l.fete) {
+                const float sl = plage::SCENE_LAT, fl = plage::FETE_LAT;
+                box(out[P_UNI], S(sl, 0, 0), X, Z, 2.5f, 5.f, 1.f, palUv(C_PLANCHE));                // scène 10 × 5 m, 1 m
+                box(out[P_UNI], S(sl + 2.45f, 0, 1.f), X, Z, 0.05f, 5.f, 5.f, palUv(C_TOILE));        // fond de scène
+                box(out[P_UNI], S(sl - 0.3f, 0, 1.f), X, Z, 0.4f, 1.f, 1.05f, palUv(C_TOILE));        // table du DJ
+                for (float px : {-2.4f, 2.4f}) for (float pz : {-4.9f, 4.9f})                          // structure alu 29 cm
+                    box(out[P_ACIER], S(sl + px, pz, 0), X, Z, 0.145f, 0.145f, 6.2f, {0, 0});
+                for (float px : {-2.4f, 2.4f}) box(out[P_ACIER], S(sl + px, 0, 5.9f), X, Z, 0.145f, 5.05f, 0.29f, {0, 0});
+                for (float pz : {-4.9f, 4.9f}) box(out[P_ACIER], S(sl, pz, 5.9f), X, Z, 2.55f, 0.145f, 0.29f, {0, 0});
+                for (float pz : {-6.f, 6.f}) {                                                          // enceintes et caissons
+                    box(out[P_UNI], S(sl - 2.6f, pz, 0), X, Z, 0.35f, 0.35f, 1.8f, palUv(C_HP));
+                    box(out[P_UNI], S(sl - 2.6f, pz, 1.8f), X, Z, 0.3f, 0.4f, 1.1f, palUv(C_HP));
+                }
+                // guirlandes : 4 mâts de 4 m autour de la piste (20 × 12 m), ampoules tous les 0,8 m, flèche de 0,6 m
+                const vec2 mats[4] = {{fl - 6, -10}, {fl + 6, -10}, {fl + 6, 10}, {fl - 6, 10}};
+                for (const vec2& m : mats) cylinder(out[P_UNI], S(m.x, m.y, 0), 0.07f, 4.1f, 6, palUv(C_MATBOIS));
+                const int paires[6][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 2}, {1, 3}};
+                int k = 0;
+                for (const auto& pr : paires) {
+                    const vec3 A = S(mats[pr[0]].x, mats[pr[0]].y, 4.f), B = S(mats[pr[1]].x, mats[pr[1]].y, 4.f);
+                    const int n = (int)(length(B - A) / 0.8f);
+                    for (int i = 1; i < n; i++, k++) {
+                        if ((lod || basse_) && (k & 1)) continue;   // en Basse et au loin : une ampoule sur deux (RG-C2)
+                        const float u = (float)i / n;
+                        ball(out[P_GUIRL], A + (B - A) * u - up * (2.4f * u * (1 - u)), {0.05f, 0.06f, 0.05f}, {0, 0});
+                    }
+                }
+                // feu de camp (cercle de pierres de 1,4 m, trois bûches) ; flamme dessinée la nuit
+                for (int i = 0; i < 9; i++) { const float an = 2 * PI * i / 9; ball(out[P_UNI], S(fl - 1 + std::cos(an) * 0.7f, 14 + std::sin(an) * 0.7f, 0.05f), {0.16f, 0.12f, 0.15f}, palUv(C_PIERRE)); }
+                for (int i = 0; i < 3; i++) { const float an = 2 * PI * i / 3; const vec3 dr = X * std::cos(an) + Z * std::sin(an);
+                    box(out[P_UNI], S(fl - 1, 14, 0.05f), dr, cross(up, dr), 0.45f, 0.07f, 0.14f, palUv(C_BUCHE)); }
+            } else {
+                const float vl = plage::VOLLEY_LAT;
+                // terrain FIVB 16 × 8 m, lignes de 6 cm (règles officielles du beach-volley, art. 1.3)
+                auto ligne = [&](float l0, float a0, float l1, float a1) {
+                    const vec3 d = normalize(S(l1, a1, 0) - S(l0, a0, 0)), n = normalize(cross(up, d)) * 0.03f;
+                    quad(out[P_UNI], S(l0, a0, 0.01f) - n, S(l1, a1, 0.01f) - n, S(l1, a1, 0.01f) + n, S(l0, a0, 0.01f) + n, palUv(C_LIGNE));
+                };
+                ligne(vl - 4, -8, vl - 4, 8); ligne(vl + 4, -8, vl + 4, 8); ligne(vl - 4, -8, vl + 4, -8); ligne(vl - 4, 8, vl + 4, 8);
+                // filet : 8,5 m de long, 1 m de haut, bord supérieur à 2,43 m (hommes) ; poteaux de 2,55 m à 0,85 m des lignes
+                const float y0 = 2.43f - sableY(vl);   // hauteur prise au centre du terrain
+                quad(out[P_FILET], S(vl - 4.25f, 0, y0 - 1.f + sableY(vl) - sableY(vl - 4.25f)), S(vl + 4.25f, 0, y0 - 1.f + sableY(vl) - sableY(vl + 4.25f)),
+                     S(vl + 4.25f, 0, y0 + sableY(vl) - sableY(vl + 4.25f)), S(vl - 4.25f, 0, y0 + sableY(vl) - sableY(vl - 4.25f)), {0, 0});
+                box(out[P_UNI], S(vl, 0, 2.43f - 0.07f), X, Z, 4.25f, 0.01f, 0.07f, palUv(C_MUR));   // bande blanche de 7 cm
+                for (float sd : {-1.f, 1.f}) cylinder(out[P_UNI], S(vl + sd * 4.85f, 0, 0), 0.05f, 2.55f, 8, palUv(C_LIGNE));
+                ball(out[P_UNI], S(vl + 0.6f, 1.8f, 3.1f), {0.105f, 0.105f, 0.105f}, palUv(C_BALLON));   // ballon : 66-68 cm de tour
+                // château de sable au bord de l'eau
+                const vec3 cb = S((float)RW + 35.5f, -9, 0);
+                cone(out[P_UNI], cb, 0.9f, 0.45f, 12, palUv(C_SABLE_M));
+                for (int i = 0; i < 4; i++) { const float an = PI / 2 * i + 0.4f; cylinder(out[P_UNI], cb + vec3{std::cos(an) * 0.55f, 0.15f, std::sin(an) * 0.55f}, 0.13f, 0.32f, 8, palUv(C_SABLE_M)); }
+                cylinder(out[P_UNI], cb + vec3{0, 0.35f, 0}, 0.18f, 0.35f, 8, palUv(C_SABLE_M));
+                // pédalos (2,6 × 1,5 m : deux flotteurs, siège, toboggan) au bord de l'eau ; un seul en Basse
+                for (int i = 0; i < (basse_ ? 1 : 2); i++) {
+                    const float al = -4 + i * 3.4f, pl = (float)RW + 52;
+                    for (float sd : {-0.55f, 0.55f}) box(out[P_UNI], E(pl + sd, al, -0.15f), X, Z, 0.25f, 1.3f, 0.4f, palUv(i ? C_BLEU : C_JAUNE));
+                    box(out[P_UNI], E(pl, al - 0.3f, 0.25f), X, Z, 0.7f, 0.45f, 0.18f, palUv(C_GELCOAT));
+                    quad(out[P_UNI], E(pl - 0.3f, al + 0.6f, 1.3f), E(pl + 0.3f, al + 0.6f, 1.3f), E(pl + 0.3f, al + 1.4f, 0.3f), E(pl - 0.3f, al + 1.4f, 0.3f), palUv(C_ROUGE));
+                }
+                // toboggan gonflable sur l'eau (7 m, sommet à 3,5 m) : ponton, rampe, boudins latéraux
+                const float tl = (float)RW + 48, ta = 9;
+                box(out[P_UNI], E(tl, ta, -0.2f), X, Z, 1.6f, 3.5f, 0.8f, palUv(C_BLEU));
+                quad(out[P_UNI], E(tl - 1.2f, ta - 3.3f, 3.5f), E(tl + 1.2f, ta - 3.3f, 3.5f), E(tl + 1.2f, ta + 3.3f, 0.6f), E(tl - 1.2f, ta + 3.3f, 0.6f), palUv(C_JAUNE));
+                for (float sd : {-1.35f, 1.35f}) for (int i = 0; i < 7; i++) ball(out[P_UNI], E(tl + sd, ta - 3.f + i, 3.6f - i * 0.45f), {0.3f, 0.3f, 0.5f}, palUv(C_BLEU));
+                box(out[P_UNI], E(tl, ta - 3.6f, 0.6f), X, Z, 1.3f, 0.4f, 3.f, palUv(C_BLEU));   // tour d'accès
+            }
+        }
+    }
+
+    // repère d'un objet : axes x (droite), y (haut), z (avant), origine o
+    static mat4 repere(vec3 o, vec3 x, vec3 y, vec3 z) {
+        mat4 m = mat4::identity();
+        const vec3 c[4] = {x, y, z, o};
+        for (int j = 0; j < 4; j++) { m.at(0, j) = c[j].x; m.at(1, j) = c[j].y; m.at(2, j) = c[j].z; }
+        return m;
+    }
+    // bateaux sur la houle (période 6 s ; pilonnement ±0,25 m, roulis ±3°, tangage ±2° pour les petits, presque rien pour
+    // le paquebot), jet-skis qui longent la côte à ≈ 15 m/s ; faisceaux et flammes des fêtes la nuit
+    int dessineMer(Renderer& r, Track& t, int64_t segJ, double temps, bool t2) {
+        int draws = 0;
+        auto relatif = [&](int64_t seg) { int64_t d = ((seg - segJ) % len_ + len_) % len_; return d > len_ / 2 ? d - len_ : d; };
+        for (const Bateau& b : bateaux_) {
+            double sg = (double)b.seg; float sens = 1;
+            if (b.type == B_JETSKI) {   // aller-retour de ±60 m le long du rivage
+                const double w = 0.25, ph = temps * w + b.phase;
+                sg = (double)b.base + 60.0 / SEG_M * std::sin(ph); sens = std::cos(ph) >= 0 ? 1.f : -1.f;
+            }
+            const int64_t rel = relatif((int64_t)std::floor(sg));
+            const double portee = b.type == B_PAQUEBOT ? 2500 : 900;
+            if (rel * SEG_M < -200 || rel * SEG_M > portee) continue;
+            const double abs = (double)(segJ + rel) + (sg - std::floor(sg));
+            t.pose((int64_t)abs - 1); t.pose((int64_t)abs + 2);
+            const TrackPoint p = t.point(abs * SEG, b.lat);
+            const vec3 rr{(float)std::cos(p.th), 0, (float)std::sin(p.th)}, ff{(float)std::sin(p.th), 0, (float)-std::cos(p.th)};
+            const float rot = b.type == B_JETSKI ? (sens > 0 ? 0.f : PI) : b.rot;
+            const vec3 z = ff * std::cos(rot) + rr * std::sin(rot);
+            const float k = b.type == B_PAQUEBOT ? 0.05f : b.type == B_JETSKI ? 0.4f : 1.f;
+            const float ph = (float)temps * 1.047f + b.phase;   // 2π / 6 s
+            const vec3 up0{0, 1, 0}, x0 = cross(up0, z);
+            const vec3 up = normalize(up0 + x0 * (0.052f * k * std::sin(ph)) + z * (0.035f * k * std::sin(ph * 1.3f + 1)));
+            const vec3 x = normalize(cross(up, z)), zz = cross(x, up);
+            vec3 o{(float)p.x, (t2 ? 0.f : (float)p.y) + OCEAN_Y + 0.25f * k * std::sin(ph + 0.7f), (float)p.z};
+            r.draw(modeleBateau_[b.type], coqueMat_, repere(o, x, up, zz)); draws++;
+            if (b.type == B_JETSKI) { r.draw(sillage_, sillageMat_, repere(vec3{o.x, (t2 ? 0.f : (float)p.y) + OCEAN_Y, o.z}, cross(up0, z), up0, z)); draws++; }
+        }
+        // fête la plus proche devant le joueur : lyres colorées (jour et nuit), faisceaux qui balaient et flamme (nuit)
+        for (const plage::Lieu& l : plage::lieux(*t.map(), len_).lieux) {
+            if (!l.fete) continue;
+            const int64_t rel = relatif(l.seg);
+            if (rel * SEG_M < -60 || rel * SEG_M > 500) continue;
+            const int64_t abs = segJ + rel;
+            t.pose(abs - 1); t.pose(abs + 14);
+            const Frame fr = frameAt(t, (double)abs * SEG);
+            const float sl = plage::SCENE_LAT;
+            for (int i = 0; i < 4; i++) {
+                const float al = -3.6f + 2.4f * i;
+                const vec3 o = fr.o + fr.r * (sl - 2.4f) + fr.f * al + vec3{0, sableY(sl - 2.4f) + 5.6f, 0};
+                const int c = ((int)(temps * 0.5) + i) % 3;
+                r.draw(lyre_, lyreMat_[c], translate(o)); draws++;
+                if (!night_) continue;
+                const float a1 = (float)temps * 0.9f + i * 1.3f;   // balayage : vers la piste et le ciel
+                const vec3 z = normalize(fr.r * (-0.6f + 0.5f * std::sin(a1)) + fr.f * (0.6f * std::cos(a1 * 0.7f)) + vec3{0, -0.55f + 0.5f * std::sin(a1 * 0.5f), 0});
+                const vec3 x = normalize(cross(vec3{0, 1, 0}, z)), y = cross(z, x);
+                r.draw(faisceau_, faisceauMat_[c], repere(o, x, y, z)); draws++;
+            }
+            if (night_) {
+                const float f = 1 + 0.15f * std::sin((float)temps * 13) + 0.1f * std::sin((float)temps * 7.3f + 1);
+                const vec3 o = fr.o + fr.r * (plage::FETE_LAT - 1) + fr.f * 14.f + vec3{0, sableY(plage::FETE_LAT - 1) + 0.12f, 0};
+                r.draw(flamme_, flammeMat_, translate(o) * scale({1, f, 1})); draws++;
+            }
+        }
+        return draws;
+    }
+
     // géométrie d'un morceau (segments [c·CH, (c+1)·CH)) — appelée en parallèle, lit seulement la piste
     // profil de la voûte du tunnel (lat, y), du pied du piédroit droit au pied du piédroit gauche
     static int profilVoute(vec2 pts[24]) {
@@ -966,6 +1294,7 @@ public:
                 quad(out[P_OCEAN], Q(s0, m0), Q(s0, f0), Q(s1, f1), Q(s1, m1), {0, 0});
             }
             if (t2) decorFalaise(t, a, lod, out);
+            decorLieux(t, a, lod, out);   // WFS-180
         }
         const int64_t lap = (int64_t)std::floor((double)a0 / len) * len;
         auto inChunk = [&](int64_t seg, int64_t& abs) {
@@ -1053,6 +1382,7 @@ public:
             draws++;
         }
         draws += dessineLentilles(r, t, (int64_t)std::floor(g.player->dist / SEG));
+        draws += dessineMer(r, t, (int64_t)std::floor(g.player->dist / SEG), g.time, !trace::sections(t).empty());   // WFS-180
         lastDraws_ = draws;
         if (frame_ % 300 == 1) WFS_LOG("Plage : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
     }
@@ -1097,6 +1427,8 @@ public:
         chunks_.clear();
         for (auto& gm : graveyard_) r.destroy(gm.second);
         graveyard_.clear();
+        for (Mesh* m : {&modeleBateau_[0], &modeleBateau_[1], &modeleBateau_[2], &modeleBateau_[3], &sillage_, &faisceau_, &flamme_, &lyre_})
+            if (m->vb.buf) { r.destroy(*m); *m = Mesh{}; }   // WFS-180
         for (Lentilles& le : lentilles_) for (Mesh& m : le.m) if (m.vb.buf) r.destroy(m);
         lentilles_.clear();
         for (Image* im : {&palTex_, &leafTex_, &barkTex_, &rocTex_, &rocNrm_, &rocMr_}) if (im->img) r.vk().destroy(*im);
@@ -1118,6 +1450,12 @@ private:
     Material lentilleEteinte_, lentille_[3];
     struct Lentilles { int64_t abs = INT64_MIN; Mesh m[3]{}; };   // lampes rouge, orange, vert des deux têtes d'un feu
     std::vector<Lentilles> lentilles_;
+    // WFS-180 : bateaux animés (repère local, un maillage par type, dessiné à chaque instance), faisceaux, flammes
+    enum TypeBateau { B_VOILIER, B_YACHT, B_JETSKI, B_PAQUEBOT, B_NB };
+    struct Bateau { int type; int64_t seg; float lat, rot, phase; int64_t base = 0; };
+    std::vector<Bateau> bateaux_;
+    Mesh modeleBateau_[B_NB]{}, sillage_{}, faisceau_{}, flamme_{}, lyre_{};
+    Material coqueMat_, sillageMat_, faisceauMat_[3], lyreMat_[3], flammeMat_;
     int64_t len_ = 1, depart_ = 0;
     Material mats_[P_COUNT];
     Image palTex_{}, leafTex_{}, barkTex_{};
@@ -1153,13 +1491,18 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         const trace::Section* s = trace::sectionA(t, a * SEG);
         if (!std::strcmp(zoneName(mapById("plage"), a, L), "Village de pêcheurs") && s && s->type != trace::Type::Lacets && t.pose(a).y > 3) village = a + 40;
     }
+    int64_t fete = -1, jeux = -1;
+    for (const plage::Lieu& l : plage::lieux(mapById("plage"), L).lieux) { if (l.fete && fete < 0 && l.seg >= 60) fete = l.seg; if (!l.fete && jeux < 0 && l.seg >= 60) jeux = l.seg; }
     struct Lieu { const char* nom; int64_t depart; bool nuit; int images = 240; };
     const Lieu LIEUX[] = {
         {"carte-plage-falaise", la ? la->debut + 260 : -1, false}, {"carte-plage-falaise-nuit", la ? la->debut + 260 : -1, true},
         {"carte-plage-tunnel", tu ? tu->debut - 75 : -1, false}, {"carte-plage-tunnel-nuit", tu ? tu->debut - 75 : -1, true},
         {"carte-plage-tunnel-dedans", tu ? tu->debut + 30 : -1, false},
         {"carte-plage-rond-point", rp ? rp->debut - 70 : -1, false}, {"carte-plage-feu", fx ? fx->ligneArret - 30 : -1, false, 40},
-        {"carte-plage-marina", rp ? rp->fin + 30 : -1, false}, {"carte-plage-village", village, false}};
+        {"carte-plage-marina", rp ? rp->fin + 30 : -1, false}, {"carte-plage-village", village, false},
+        // WFS-180 : fête (jour, nuit), jeux de plage, bateaux et jet-skis
+        {"carte-plage-fete", fete >= 0 ? fete - 45 : -1, false, 60}, {"carte-plage-fete-nuit", fete >= 0 ? fete - 45 : -1, true, 60},
+        {"carte-plage-jeux", jeux >= 0 ? jeux - 40 : -1, false, 60}, {"carte-plage-bateaux", jeux >= 0 ? jeux + 30 : -1, false, 60}};
     for (const Lieu& l : LIEUX) {
         if (l.depart < 0) { WFS_ERR("banc Corniche : section absente pour %s", l.nom); continue; }
         setenv("WFS_MOMENT", l.nuit ? "nuit" : "jour", 1);
@@ -1187,6 +1530,25 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     };
     if (la) { dessus("carte-plage-lacets-dessus", la->debut + 150, la->debut + (la->fin - la->debut) / 2, 520); dessus("carte-plage-epingle-dessus", la->debut + 60, la->debut + 140, 110); }
     if (rp) dessus("carte-plage-rond-point-dessus", rp->debut - 20, (rp->debut + rp->fin) / 2, 110);
+    // WFS-180 : vues depuis la promenade (1,7 m au-dessus du trottoir, à RW + 3 m), tournées vers la fête, les jeux et la mer
+    auto promenade = [&](const char* nom, int64_t seg, float recul, float latCible, float hCible, bool nuit) {
+        if (seg < 0) { WFS_ERR("banc Corniche : lieu absent pour %s", nom); return; }
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, seg - 30)).c_str(), 1);
+        g.init(r, "golf", "plage"); g.setAutopilot(false); g.camMode = 0;
+        for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
+        const TrackPoint o = t.point(((double)seg - recul / SEG_M) * SEG, (float)RW + 3), c = t.point((double)seg * SEG, latCible);
+        g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + 1.85f, (float)o.z};
+        g_vueDessus.cible = {(float)c.x, (float)c.y + hCible, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = 55;
+        g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png");
+        g_vueDessus.actif = false;
+        WFS_LOG("capture %s : vue depuis la promenade", nom);
+        g.shutdown();
+    };
+    promenade("carte-plage-fete-vue", fete, 22, plage::SCENE_LAT, 1.5f, false);
+    promenade("carte-plage-fete-vue-nuit", fete, 22, plage::SCENE_LAT, 1.5f, true);
+    promenade("carte-plage-jeux-vue", jeux, 14, plage::VOLLEY_LAT + 8, 0.f, false);
+    promenade("carte-plage-bateaux-vue", jeux, 0, (float)RW + 250, -1.5f, false);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 

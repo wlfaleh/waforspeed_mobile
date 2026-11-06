@@ -24,6 +24,7 @@
 #include "zones.h"
 
 namespace wfs {
+namespace plage { bool occupe(const MapDef& map, int64_t len, int64_t n); }   // WFS-180 (plage.cpp)
 namespace vie {
 extern double g_premiereTerrasse;
 namespace {
@@ -76,7 +77,7 @@ static bool horsDeLaPlage(const MapDef& map, int64_t len, int64_t n) {
     static std::map<std::pair<uint32_t, int64_t>, Track> pistes;
     Track& t = pistes[{map.seed, len}]; if (!t.segmentCount()) t.build(map, trace::versionCarte(map.id));
     const trace::Section* s = trace::sectionA(t, (double)n * SEG);
-    return s && (t.pose(n).y > 3 || s->type == trace::Type::Lacets || s->type == trace::Type::Tunnel || s->type == trace::Type::RondPoint || s->type == trace::Type::Feux);
+    return plage::occupe(map, len, n) || (s && (t.pose(n).y > 3 || s->type == trace::Type::Lacets || s->type == trace::Type::Tunnel || s->type == trace::Type::RondPoint || s->type == trace::Type::Feux));   // WFS-180 : ni sur une fête ni sur les jeux
 }
 const std::vector<Serviette>& serviettes(const MapDef& map, int64_t len) {
     static std::map<std::pair<uint32_t, int64_t>, std::vector<Serviette>> cache;
