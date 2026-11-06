@@ -747,6 +747,8 @@ public:
         graveyard_.clear();
         for (Image& im : facadeTex_) r.vk().destroy(im);
         for (Image* im : {&leafTex_, &barkTex_, &palTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
+        for (Material& m : mats_) r.destroy(m);
+        for (Material* m : {&lentilleEteinte_, &lentille_[0], &lentille_[1], &lentille_[2], &eauJet_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         plan_ = nullptr;
         pilote_ = false;
         active_ = false;

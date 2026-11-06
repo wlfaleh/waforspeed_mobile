@@ -49,7 +49,7 @@ void benchRoues(Renderer& r, const std::string& out) {
     WFS_LOG("captures roues-* : %d roues, rayon %.3f m, roulage %.3f rad (%.0f°), braquage %.2f rad (int. %.3f, ext. %.3f)",
             m.nRoues, rayon, roule.roulage, roule.roulage * 180 / PI, virage.braquage, virage.braquage * 1.12f, virage.braquage * 0.9f);
     r.vk().waitIdle();
-    r.destroy(sol); r.destroy(m);
+    r.destroy(sol); r.destroy(m); r.destroy(matSol);   // WFS-187 : jeu de descripteurs rendu
 }
 
 } // namespace wfs

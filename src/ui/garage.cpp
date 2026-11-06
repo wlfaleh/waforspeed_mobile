@@ -191,6 +191,8 @@ public:
         r.vk().waitIdle();
         r.destroy(sol_); r.destroy(plateau_); r.destroy(anneau_); r.destroy(barre_);
         if (voiture_.ok) r.destroy(voiture_);
+        for (Material* m : {&matSol_, &matPlateau_, &matNeon_[0], &matNeon_[1], &matNeon_[2]}) r.destroy(*m);   // WFS-187 (accroche) : matAnneau_ = copie de matNeon_[0]
+        matAnneau_.set = VK_NULL_HANDLE;
         charge_ = -1;
     }
 

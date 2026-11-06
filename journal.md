@@ -4920,3 +4920,38 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/world/plage.cpp`, `assets/world/**`, `assets/licences/**`, `src/world/cartes_banc.cpp` (captures Corniche) ; accroches ≤ 10 lignes annoncées : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : le reste de `src/game/**`, les fichiers des 3 autres cartes, `src/render/**`, `shaders/**`, `src/ui/**` (ordre permanent sur la taille des boutons), `.github/**` (WFS-185), iOS (gel).
 - **Critères** : RG-05 et RG-06 de `regles-de-gestion/WFS-139.md` (bars de plage « BEACH BAR » en paillotes, casino de station façade blanche et néons, cafés à terrasses, petite galerie vitrée, location de scooters ; mouettes en vol et posées, 2 dauphins qui sautent) + RG-C1 à RG-C5 ; graphisme réaliste partie par partie (`DA-realisme.md`, captures avant / après jour et nuit, indice de fidélité) ; `WFS_BANC=parcours` 0 écart ; ligne `qa/Check.md`.
 - **Plan court** : branche `feature/waforspeed-181` poussée tout de suite ; réutiliser `commerces.cpp`, `enseignes.*`, `decor_carte.*` et le travail de WFS-139 / WFS-180 dans `plage.cpp` ; se synchroniser avec `main` souvent (WFS-187 ajoute des appels de libération dans `src/world/**`).
+
+### 2026-11-06 18:55:44 — WFS-140 : suivi de la CI de main après la fusion (Claude, agent 5)
+- Run de main sur ad4fa31 : 13 bancs verts, APK vert. Capture `carte-circuit-depart` (CI de la branche 92ebff1) : portique visible devant la grille, 5 feux rouges allumés (voiture arrêtée, sans décompte de course dans ce banc). De nuit, les feux saturent presque en blanc avec le bloom : mineur, noté pour la QA de nuit.
+- **Endurance rouge** (fuite mémoire +11,7 % au cycle 6, seuil 10 %) : ce n'est pas un effet net de WFS-140. Le maximum est au cycle 6, qui n'est pas le circuit (le circuit passe aux cycles 4 et 8, RSS 631 et 642 Mo). Juste avant ma fusion, main oscillait déjà autour du seuil : +9,8 % (021ba51), +10,0 % (7c8790b), +11,2 % (2effafa, déjà rouge). Ce banc est suivi par WFS-145. Un effet indirect du décor du circuit, chargé au cycle 4, n'est pas exclu : à vérifier par WFS-145.
+
+### 2026-11-06 19:00:04 — Recette des voitures dans les différents types de course, demandée par l'utilisateur : PASSABLE AVEC ANOMALIES MINEURES (qa-lead)
+- Sources : Release `apercu` de main (captures de 2effafa, construction 751), 16 tests CPU verts en local, `wfs_bench` local `WFS_BANC=course5` (0 écart), 4 bancs de mesure du QA hors dépôt (scratchpad).
+- **OK dans les 4 modes** (Checkpoint sur 4 terrains jour / nuit, Course à 5 en 3 difficultés, Poursuite, Duel à 2 et à 4) : voiture du garage qui roule (Golf, 911 grise, SF90, M4), gaz, frein, braquage, recul, nitro, roues, feux, chocs, fin de course, Rejouer, Menu ; les 20 voitures roulent sans blocage en simulation avec trafic. Non prouvé en image : Course à 5 / Poursuite / Duel avec une autre voiture que la Golf (code et simulation OK).
+- **Mesures** : 0-100 du jeu = 0,74 × la fiche (1,6 à 7,4 s) ; vitesse max 94-97 % de la fiche ; 100 → 0 en 28 m pour toutes.
+- **Nouvelles mineures** : ANO-97 (0-100 / vitesse max ≠ fiche), ANO-98 (freinage identique pour toutes), ANO-99 (voitures rapides bloquées 10 s derrière des lentes au départ de la Course à 5), ANO-100 (nitro jamais rechargée en Course à 5 et Duel), ANO-101 (adversaires sans rapport avec la voiture du joueur : SF90 toujours 1re, Compass 4e-5e même en Facile), ANO-102 (endurance rouge une fois sur deux sur un pic de la Corniche de nuit, pas une fuite → WFS-145).
+- Encore là : ANO-78. Inchangées, en attente : ANO-57, ANO-59. Un blocage à 9,89 km en Poursuite vu une fois au banc d'endurance, non reproduit : à essayer sur téléphone. Rapport : `qa/rapports/voitures-courses-2026-11-06.md`.
+
+### 2026-11-06 19:02:38 — Anomalies ANO-97 à ANO-102 (recette des voitures en course) rangées : WFS-188, WFS-189, WFS-145 (PO)
+- **WFS-188** (E3, P3, ⏳ Prêt, 1 jour) : conduite fidèle aux fiches (ANO-97 0-100 / vitesse max, ANO-98 freinage). Décision : on recale la physique (`carPerf`, `player.cpp`), pas les chiffres du garage ; 0-100 ±10 %, Vmax 98-101 %, 100 → 0 de 33 à 40 m selon masse et adhérence ; **jeu agréable, aucune voiture injouable** (Compass ≤ 10,5 s, ≥ 8 checkpoints) ; test CPU des 20 voitures.
+- **WFS-189** (E3, P3, ⏳ En attente de WFS-188, même épic, 1 jour) : Course à 5 (ANO-99 grille par vitesse max, ANO-101 adversaires à ±20 % de la vitesse max du joueur, place moyenne 1,5-3,5 en Normale) et nitro (ANO-100). **Décision de jeu ANO-100** : en Course à 5 et en Duel seulement, recharge +0,015/s (pleine en ≈ 67 s) et +0,10 par adversaire dépassé (Course à 5 seulement, équité du Duel) ; Checkpoint et Poursuite inchangés. Test CPU par voiture.
+- **ANO-102** → WFS-145 : RG-13 (critère 3, maximum sans effet ; critère 2 sur les minimums de RG-14) couvre déjà le pic de la Corniche de nuit ; RG-17 ajoute seulement la preuve du cycle 6 au Journal. WFS-145 reste à son développeur (en pause après WFS-187).
+- Rien d'iOS, aucun code touché, aucune suppression. `anno.md` : 6 ANO en 📋 Planifiée.
+
+### 2026-11-06 19:15:48 — WFS-187 fusionné (PR #151, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Cause** : les `Material` faits par `makeMaterial` n'étaient jamais rendus au pool de descripteurs. Seul `destroy(Model&)` libérait des jeux (`renderer.cpp:950`). Chaque chargement de carte refaisait les matériaux des systèmes : +130 à +240 jeux par cycle, jusqu'à épuiser le pool de 1 056 jeux (`vkAllocateDescriptorSets` en échec dans la Poursuite).
+- **Fait** :
+  - `Renderer::destroy(Material&)` et un registre `jeuxMat_` des jeux vivants : une copie d'un matériau (atlas recopié dans `mats_` à `campagne.cpp:63` et `circuit.cpp:82`, anneau du garage) n'est rendue qu'une fois ; `destroy(Model&)` passe par le même registre.
+  - Libération dans le `shutdown` de chaque système (appelé par `Game::shutdown` après `waitIdle`), plus les 4 matériaux de `Game`.
+- **Accroches annoncées (appels de libération seulement)** :
+  - `renderer.h` (2 lignes et un include) ;
+  - `game.cpp`, `poursuite_system.cpp`, `camera_vue.cpp`, `traffic_system.cpp`, `roues_banc.cpp` ;
+  - `ville.cpp`, `plage.cpp`, `campagne.cpp`, `circuit.cpp`, `decor_carte.cpp`, `commerces.cpp`, `enseignes.cpp`, `portique.cpp` ;
+  - `garage.cpp` ;
+  - `scene_essai.cpp`.
+- **Vérification** :
+  - banc d'endurance (binaire WFS-187 + banc de WFS-145), 2 passages : 238 jeux à chaque cycle (fin : 232), 0 erreur de validation, objets Vulkan stables, pente du tas −1,83 et +2,91 Mo/cycle, Poursuite arrivée, 0 écart, code 0 ;
+  - 34 captures `menu1` identiques au pixel près à main ;
+  - `WFS_BANC=parcours` : 0 écart ; 35 tests CPU OK.
+- **Incident de méthode** : pendant l'arbitrage de 18:28, l'agent PO a basculé mon dossier de travail sur `main`. Mes deux commits de WFS-145 (RG-08 à RG-15) ont donc été faits sur la copie locale de `main`, sans être poussés. Je les ai replacés sur `feature/waforspeed-145` (d3da912, f6444c7, poussés) et j'ai remis la copie locale de `main` à `origin/main`. Rien n'a été poussé à tort.
+- **Suite** : WFS-145 est resynchronisé avec main (avec WFS-187) ; banc d'endurance complet lancé, puis fusion.

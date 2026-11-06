@@ -92,6 +92,7 @@ protected:
         for (Mesh* m : {&feuMesh_, &roueMesh_, &roueNeon_, &oiseaux_}) if (m->vb.buf) { r.destroy(*m); *m = Mesh{}; }
         for (Mesh& m : drapeauMesh_) if (m.vb.buf) { r.destroy(m); m = Mesh{}; }
         drapeaux_.clear(); roues_.clear(); portique_ = -1; pret_ = false;
+        r.destroy(feuAllume_); r.destroy(feuEteint_);   // WFS-187 (accroche) : jeux de descripteurs rendus
     }
     const char* carteId() const override { return "circuit"; }
     Env env() const override { return {0xc4d8e8, 820, 0x1f2440, 0x0e1020, 640}; }
