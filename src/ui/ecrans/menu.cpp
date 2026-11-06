@@ -158,7 +158,7 @@ public:
             ui::text(r, x, y, lp, ui::majuscules("Record"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
             ui::text(r, x, y + dv, vp, g_best > 0 ? ui::nombre(g_best) : "—", hex(TEXTE, a), ui::GAUCHE, 0, false);
             const float x2 = x + std::max(ui::width(vp, g_best > 0 ? ui::nombre(g_best) : "—"), ui::width(lp, "RECORD", 0.16f)) + 28 * k;
-            const std::string nom = ui::majuscules(g.car ? g.car->model : "—");
+            const std::string nom = ui::majuscules(g.car ? modele(*g.car) : "—");
             ui::text(r, x2, y, lp, ui::majuscules("Ta voiture"), hex(MUTED, a), ui::GAUCHE, 0.16f, false);
             const bool presse = presse_ == TA_VOITURE;   // #myCarBtn : appui = ouvre le garage (WFS-96)
             ui::text(r, x2, y + dv, vp, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false);

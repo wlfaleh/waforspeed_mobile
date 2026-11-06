@@ -7,6 +7,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 - Les nombres s'écrivent avec un **point** (`0.5`, jamais `0,5`), comme en JSON.
 - Une clé absente, un mauvais type ou une valeur hors bornes : le jeu garde sa valeur et l'écrit au journal (`configuration : …` dans logcat). Un fichier cassé : toutes les valeurs du jeu. Le jeu ne plante jamais à cause du fichier.
 - Les clés qui commencent par `_` (comme `_aide`) sont des commentaires.
+- **Noms des voitures** (section `voitures`, WFS-191) : `marque` (1 à 16 caractères) et `modele` (1 à 24) de chaque voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu (garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). Un nom invalide : le nom par défaut et une ligne au journal.
 - Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans `src/core/configgame.cpp` (table `champs`), puis relancer cette commande.
 
 | Clé | Sens | Unité | Min | Max | Défaut |
@@ -37,7 +38,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `course5.nitro_bonus` | vitesse en plus pendant la nitro d'un ordinateur | part de la vitesse | 0.0 | 0.5 | 0.15 |
 | `course5.nitro_duree` | durée de la nitro d'un ordinateur | s | 0.0 | 10.0 | 2.5 |
 | `course5.nitro_fin` | nitro permise avant l'arrivée à moins de cette distance | m | 0.0 | 5000.0 | 500.0 |
-| `poursuite.score_depart` | score au départ de la poursuite | points | 1 | 1000 | 100 |
+| `poursuite.score_depart` | score au départ de la poursuite | points | 1 | 1000 | 1000 |
 | `poursuite.distance` | distance à parcourir pour gagner | km | 1.0 | 50.0 | 10.0 |
 | `poursuite.choc_trafic` | points perdus sur un choc avec le trafic | points | 0 | 100 | 5 |
 | `poursuite.choc_glissiere` | points perdus sur un choc contre la glissière | points | 0 | 100 | 3 |
@@ -50,9 +51,9 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `poursuite.densite_trafic` | trafic multiplié pendant la poursuite | × | 1.0 | 4.0 | 2.5 |
 | `camera.poursuite.recul` | vue Poursuite : distance derrière la voiture | m | 2.0 | 30.0 | 9.0 |
 | `camera.poursuite.hauteur` | vue Poursuite : hauteur de la caméra | m | 0.5 | 20.0 | 6.3 |
-| `camera.poursuite.regard_devant` | vue Poursuite : point visé devant la voiture | m | 0.0 | 40.0 | 14.0 |
-| `camera.poursuite.regard_hauteur` | vue Poursuite : hauteur du point visé (négatif : sous la route, caméra inclinée vers le bas) | m | -20.0 | 10.0 | -6.3 |
-| `camera.poursuite.zoom` | vue Poursuite : champ de vision (plus grand = plus large) | degrés | 30.0 | 110.0 | 66.0 |
+| `camera.poursuite.regard_devant` | vue Poursuite : point visé devant la voiture | m | 0.0 | 40.0 | 10.0 |
+| `camera.poursuite.regard_hauteur` | vue Poursuite : hauteur du point visé (négatif : sous la route, caméra inclinée vers le bas) | m | -20.0 | 10.0 | -4.5 |
+| `camera.poursuite.zoom` | vue Poursuite : champ de vision (plus grand = plus large) | degrés | 30.0 | 110.0 | 64.0 |
 | `camera.proche.recul` | vue Proche : distance derrière la voiture | m | 2.0 | 30.0 | 6.0 |
 | `camera.proche.hauteur` | vue Proche : hauteur de la caméra | m | 0.5 | 20.0 | 2.67 |
 | `camera.proche.regard_devant` | vue Proche : point visé devant la voiture | m | 0.0 | 40.0 | 7.0 |
@@ -80,6 +81,46 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `conduite.vitesse_libre` | conduite libre (demi-tour) sous cette vitesse | m/s | 0.0 | 40.0 | 10.0 |
 | `conduite.vitesse_recul` | marche arrière enchaînée sous cette vitesse | m/s | 0.0 | 20.0 | 3.0 |
 | `qualite.plancher_moyenne` | résolution la plus basse en qualité Moyenne | × résolution | 0.5 | 1.0 | 0.9 |
-| `qualite.reflet_route_mouillee` | force du reflet de la rue sur la route mouillée (pluie) ; 0 = aucun | × | 0.0 | 1.5 | 1.0 |
+| `qualite.reflet_route_mouillee` | force du reflet de la rue sur la route mouillée (pluie) | × | 0.0 | 1.5 | 1.0 |
+| `voitures.golf.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Vollmer" |
+| `voitures.golf.modele` | modèle affiché | caractères | 1 | 24 | "Gala 8 GTS" |
+| `voitures.m4.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Bavaro" |
+| `voitures.m4.modele` | modèle affiché | caractères | 1 | 24 | "R4 Competizione" |
+| `voitures.p911.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Pfeiler" |
+| `voitures.p911.modele` | modèle affiché | caractères | 1 | 24 | "9F S" |
+| `voitures.gallardo.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Toro" |
+| `voitures.gallardo.modele` | modèle affiché | caractères | 1 | 24 | "Ventura V10 Spyder" |
+| `voitures.p208.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Lionne" |
+| `voitures.p208.modele` | modèle affiché | caractères | 1 | 24 | "L2" |
+| `voitures.abarth.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Scorpio" |
+| `voitures.abarth.modele` | modèle affiché | caractères | 1 | 24 | "Cinquina" |
+| `voitures.tcross.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Vollmer" |
+| `voitures.tcross.modele` | modèle affiché | caractères | 1 | 24 | "Trek-X" |
+| `voitures.compass.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Ranger" |
+| `voitures.compass.modele` | modèle affiché | caractères | 1 | 24 | "Bussola" |
+| `voitures.s3.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Aurel" |
+| `voitures.s3.modele` | modèle affiché | caractères | 1 | 24 | "R3 berline" |
+| `voitures.x5.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Bavaro" |
+| `voitures.x5.modele` | modèle affiché | caractères | 1 | 24 | "XR5" |
+| `voitures.giulia.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Alvar" |
+| `voitures.giulia.modele` | modèle affiché | caractères | 1 | 24 | "Giuliva Trefoil" |
+| `voitures.a45.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Merkur" |
+| `voitures.a45.modele` | modèle affiché | caractères | 1 | 24 | "A-Sport 45" |
+| `voitures.model3.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Volta" |
+| `voitures.model3.modele` | modèle affiché | caractères | 1 | 24 | "E3" |
+| `voitures.corsa.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Orion" |
+| `voitures.corsa.modele` | modèle affiché | caractères | 1 | 24 | "Corsaire" |
+| `voitures.gt86.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Tamura" |
+| `voitures.gt86.modele` | modèle affiché | caractères | 1 | 24 | "Hachi" |
+| `voitures.elantra.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Hanseo" |
+| `voitures.elantra.modele` | modèle affiché | caractères | 1 | 24 | "Elanta R" |
+| `voitures.v60.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Valka" |
+| `voitures.v60.modele` | modèle affiché | caractères | 1 | 24 | "V6 Nordstern" |
+| `voitures.rrsport.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Highland" |
+| `voitures.rrsport.modele` | modèle affiché | caractères | 1 | 24 | "Sport" |
+| `voitures.mustang.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Stallion" |
+| `voitures.mustang.modele` | modèle affiché | caractères | 1 | 24 | "GT5" |
+| `voitures.sf90.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Cavallo" |
+| `voitures.sf90.modele` | modèle affiché | caractères | 1 | 24 | "SF-X" |
 
 Pas encore dans le fichier (tickets en cours sur ces zones) : taille et place des commandes tactiles (WFS-102), nombre de joueurs du duel et distances proposées (écrans de WFS-102). À ajouter quand ces tickets seront fusionnés.

@@ -95,5 +95,87 @@
   "qualite": {
     "plancher_moyenne": 0.9,
     "reflet_route_mouillee": 1.0
+  },
+  "voitures": {
+    "golf": {
+      "marque": "Vollmer",
+      "modele": "Gala 8 GTS"
+    },
+    "m4": {
+      "marque": "Bavaro",
+      "modele": "R4 Competizione"
+    },
+    "p911": {
+      "marque": "Pfeiler",
+      "modele": "9F S"
+    },
+    "gallardo": {
+      "marque": "Toro",
+      "modele": "Ventura V10 Spyder"
+    },
+    "p208": {
+      "marque": "Lionne",
+      "modele": "L2"
+    },
+    "abarth": {
+      "marque": "Scorpio",
+      "modele": "Cinquina"
+    },
+    "tcross": {
+      "marque": "Vollmer",
+      "modele": "Trek-X"
+    },
+    "compass": {
+      "marque": "Ranger",
+      "modele": "Bussola"
+    },
+    "s3": {
+      "marque": "Aurel",
+      "modele": "R3 berline"
+    },
+    "x5": {
+      "marque": "Bavaro",
+      "modele": "XR5"
+    },
+    "giulia": {
+      "marque": "Alvar",
+      "modele": "Giuliva Trefoil"
+    },
+    "a45": {
+      "marque": "Merkur",
+      "modele": "A-Sport 45"
+    },
+    "model3": {
+      "marque": "Volta",
+      "modele": "E3"
+    },
+    "corsa": {
+      "marque": "Orion",
+      "modele": "Corsaire"
+    },
+    "gt86": {
+      "marque": "Tamura",
+      "modele": "Hachi"
+    },
+    "elantra": {
+      "marque": "Hanseo",
+      "modele": "Elanta R"
+    },
+    "v60": {
+      "marque": "Valka",
+      "modele": "V6 Nordstern"
+    },
+    "rrsport": {
+      "marque": "Highland",
+      "modele": "Sport"
+    },
+    "mustang": {
+      "marque": "Stallion",
+      "modele": "GT5"
+    },
+    "sf90": {
+      "marque": "Cavallo",
+      "modele": "SF-X"
+    }
   }
 }

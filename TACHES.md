@@ -161,14 +161,14 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-188 | Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche de chaque … | E3 | 🟣 Fusionné (PR #154) | Claude (session dev expert, 0183bv2X) | — | `feature/waforspeed-188` | #154 |  |
 | P3 Moyenne | WFS-189 | Correction Course à 5 : départ sans bouchon, adversaires de la classe du joueur, nitro … | E3 (+ accroche … | 🟣 Fusionné (PR #159) | Claude, agent 2 (01UY1Vv5) | WFS-188 🟣 (code sur `main`) | `feature/waforspeed-189` | #159 |  |
 | P1 Urgent | WFS-190 | [CI ROUGE] Remettre la CI de `main` au vert de bout en bout : job `endurance` rouge au … | E7 (exception PO : WFS-185 🟣 … | 🔧 En cours | agent arwa (Claude, session trafic) | WFS-145 🟣, WFS-187 🟣 | `feature/waforspeed-190` |  |  |
-| P2 Haute | WFS-191 | Voitures sans marque (1/4) : noms inventés, réglables dans `configgame.json` (section `voitures`) | E3 (+ E0 `configgame.*`, E5 textes) | ⏳ Prêt |  | — | `feature/waforspeed-191` |  |  |
+| P2 Haute | WFS-191 | Voitures sans marque (1/4) : noms inventés, réglables dans `configgame.json` (section `voitures`) | E3 `cars.h` (+ E0 `configgame.*`, E5 textes ; exception PO 22:26 : 2e ticket E3, fichiers séparés de WFS-197) | 🟣 Fusionné (PR #164, 9c64bf6, fusion par confiance ; ✅ au premier run vert de main) | Claude, agent 5 (011cpqZaDiS2), 2026-11-06 22:26 UTC | — | `feature/waforspeed-191` |  |  |
 | P2 Haute | WFS-192 | Voitures sans marque (2/4) : logos effacés ou remplacés sur les 20 modèles | E10 | ⏳ En attente |  | WFS-191, WFS-158 | `feature/waforspeed-192` |  |  |
 | P3 Moyenne | WFS-193 | Voitures sans marque (3/4) : petites retouches de forme (calandre, feux, jantes) … | E10 | ⏳ En attente |  | WFS-192 | `feature/waforspeed-193` |  |  |
 | P4 (conditionnelle) | WFS-194 | Voitures sans marque (4/4) : remplacer les 5 modèles sous licence non commerciale … | E10 | ⏳ En attente |  | décision de l'utilisateur, WFS-158 | `feature/waforspeed-194` |  |  |
 | P2 Haute | WFS-195 | [RÉALISME] Vue cockpit réaliste : volant en cuir et cockpit digital propres à chaque … | E10 (+ E3 `camera_vue.*`) | ⏳ En attente |  | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-195` |  |  |
 | P1 Urgent | WFS-196 | [CI] Statuts automatiques : un robot passe les tickets 🟣 en ✅ (numéro du run) dès que la … | E7 (exception PO : WFS-185 🟣 … | 🟣 Fusionné (PR #160) | Claude, agent 2 (01UY1Vv5) | WFS-185 🟣 | `feature/waforspeed-196` | #160 |  |
 | P2 Haute | WFS-197 | [RÉALISME] Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central … | E3 `camera_vue.*` (exception … | 🔧 En cours | Claude, agent 2 (01UY1Vv5) | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-197` |  |  |
-| P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 | ⏳ Prêt |  | — | `feature/waforspeed-198` |  |  |
+| P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 (exception PO 22:32 : 2e ticket E7 à côté de WFS-190, fichiers nouveaux seulement, `build.yml` et `statuts.yml` interdits) | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 22:32 UTC | — | `feature/waforspeed-198` |  |  |
 
 ## Critères d'acceptation
 

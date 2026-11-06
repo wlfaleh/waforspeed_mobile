@@ -45,6 +45,29 @@ int main(int argc, char** argv) {
         cas("checkpoint.depart = 90 et camera.poursuite.zoom = 75,5 pris", c.checkpoint.depart == 90 && c.camera.fov[0] == 75.5f && b.erreurs == 0);
         cas("les autres clés gardent la valeur du code", c.checkpoint.bonus == 30 && c.camera.fov[3] == 60.f && c.conduite.grip == 18);
     }
+    // WFS-191 : noms des voitures (section « voitures ») : défaut, nom changé, noms invalides → défaut et message
+    {
+        ConfigJeu c; const BilanConfig b0 = lireConfig(defauts, "défauts", c);
+        cas("WFS-191 : 20 voitures, noms inventés par défaut (golf = Vollmer Gala 8 GTS)",
+            b0.erreurs == 0 && !std::strcmp(c.voitures.nom[0].marque, "Vollmer") && !std::strcmp(c.voitures.nom[0].modele, "Gala 8 GTS") &&
+            !std::strcmp(VOITURES_IDS[12], "model3") && !std::strcmp(c.voitures.nom[12].marque, "Volta"));
+        ConfigJeu d; std::string t = remplacer(defauts, "\"marque\": \"Volta\"", "\"marque\": \"Électra\"");
+        t = remplacer(t, "\"modele\": \"E3\"", "\"modele\": \"Série 3 Très-Long Modèle\"");   // 24 caractères, accents
+        const BilanConfig b1 = lireConfig(t, "nom changé", d);
+        cas("WFS-191 : nom changé sans reconstruire (Électra Série 3 Très-Long Modèle, 24 car.)",
+            b1.erreurs == 0 && !std::strcmp(d.voitures.nom[12].marque, "Électra") && !std::strcmp(d.voitures.nom[12].modele, "Série 3 Très-Long Modèle") &&
+            !std::strcmp(d.voitures.nom[0].marque, "Vollmer"));
+        ConfigJeu e; t = remplacer(defauts, "\"marque\": \"Volta\"", "\"marque\": \"Une marque bien trop longue\"");   // 27 > 16
+        t = remplacer(t, "\"modele\": \"E3\"", "\"modele\": 3");                                                  // mauvais type
+        t = remplacer(t, "\"marque\": \"Vollmer\"", "\"marque\": \"\"");                                       // vide
+        t = remplacer(t, "\"modele\": \"R4 Competizione\"", "\"modele\": \"R4 <script>\"");                   // caractères non permis
+        const BilanConfig b2 = lireConfig(t, "noms invalides", e);
+        int msgs = 0; for (const std::string& m : b2.messages) msgs += m.find("voitures.") == 0 && m.find("nom par défaut") != std::string::npos;
+        cas("WFS-191 : nom trop long, vide, mauvais type, caractère interdit → nom par défaut + message",
+            b2.jsonValide && b2.erreurs == 4 && msgs == 4 && !std::strcmp(e.voitures.nom[12].marque, "Volta") && !std::strcmp(e.voitures.nom[12].modele, "E3") &&
+            !std::strcmp(e.voitures.nom[0].marque, "Vollmer") && !std::strcmp(e.voitures.nom[1].modele, "R4 Competizione"));
+        for (const std::string& m : b2.messages) std::printf("  %s\n", m.c_str());
+    }
     // RG-02 : clé absente → valeur du code, compté et signalé
     {
         ConfigJeu c; const std::string t = remplacer(defauts, "\"quasi_contact\": 250,", "");
