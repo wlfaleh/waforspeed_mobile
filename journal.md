@@ -3860,3 +3860,23 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 ### 2026-11-06 01:37:43 — WFS-145 : décision du PO sur la mesure mémoire du banc endurance (PO / Scrum Master)
 - Constat de la session dev 5bx accepté : (1) Poursuite bloquée = saut du banc (`g_bancFin == 2`, `src/game/poursuite_system.cpp` l. 122-125) qui déplace voiture et police mais pas le trafic ; corrigé banc seulement, 24/24 graines finies. (2) Mémoire : pas de fuite de WFS-94 ; la mesure actuelle est une photo du décor chargé (104 à 293 Mo dans une même course), le seuil de 10 % est atteint au hasard.
 - Décision : RG-08 / RG-09 ajoutées à `regles-de-gestion/WFS-145.md`. Mesure au point canonique (scène de référence ville / jour / départ rechargée, retour au menu, chargements terminés), sans `shutdown` / `init` ; seuil 10 %, délai 150 s, 10 cycles et parcours au doigt inchangés. Preuves : 2 passages ≤ 9 %, essai de fuite volontaire détecté, accroche E3 annoncée avec prévenance de WFS-136.
+
+### 2026-11-06 01:39:35 — Pour WFS-145 : constats sur le banc d'endurance rouge après WFS-94 (Claude, session trafic, agent reprise)
+- **Mémoire, reproduite en local** (`tools/qa/endurance.sh`, couches de validation) :
+  - binaire de a722e6c : cycle 6 à 815,2 Mo contre 726,0 Mo au cycle 2, soit +12,3 % (code 3) ;
+  - binaire d'avant WFS-94 (f0aba48) : +6,3 % (780,2 contre 734,2 Mo).
+- **Le cycle 6 mesure la ville de nuit** (cycle 5), au menu, avant « Rouler » ; ce n'est pas la Corniche. Écarts par rapport à f0aba48 :
+  - allocations Vulkan : +162 (884 contre 722) ;
+  - tas malloc utilisé : +43 Mo (343,2 contre 299,8) ;
+  - anonyme : +34 Mo.
+  - Les seuls ajouts de WFS-94 la nuit en ville sont les fenêtres allumées de `src/world/ville.cpp` (`fenetres()`, 3 parts `P_FEN_*`, soit 3 maillages par morceau sur 25) et le trottoir (`P_TROTTOIR`, 1 maillage par morceau, présent aussi de jour).
+- **Paradoxe non résolu** : la géométrie est petite. Le journal ajouté donne 2,2 Mo de sommets pour toute la ville de nuit et 0,06 Mo d'indices pour les fenêtres. Le trottoir ajoute aussi 54 allocations de jour (cycle 2), sans hausse de RSS. Le coût par allocation n'est donc pas prouvé.
+- **Piste poussée sans PR** sur `fix/wfs94-endurance-fenetres` (96bb4ec) :
+  - les fenêtres passent en **un seul** maillage par morceau, `P_FEN` avec `MAT_EMTEX` et une palette de 4 couleurs (`fenTex_`) : 50 allocations de moins ;
+  - un journal de la taille de la géométrie par part est ajouté dans `render()` de `ville.cpp` et `plage.cpp` ;
+  - **non mesurée** : l'essai d'endurance a été arrêté au cycle 3.
+  - Essai à refaire en comparant ce binaire au même sans `fenetres()`.
+- **Poursuite bloquée à 9,87 km** (cycle 10) :
+  - elle se joue sur le **circuit** de nuit (« terrain : déjà chargée », dernier cycle Checkpoint) ; WFS-94 n'y change que le seuil alpha des lettres des panneaux (`AtlasTextes::materiau`), aucun objet ni collision ;
+  - en local, même code (4846763) : arrivée à 10,08 km en 25 s ;
+  - le blocage semble donc aléatoire : après le saut `poursuiteBancFin(2)`, il faudrait regarder les surprises et les embouteillages (« 6 surprises, 3 embouteillages ») de `src/game/poursuite_system.cpp`. Avec un score de départ de 1000, rien ne termine la course s'il est bloqué.
