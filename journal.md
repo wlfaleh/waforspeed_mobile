@@ -5295,3 +5295,111 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Critères** : tests locaux des 4 cas de RG-07 verts ; premier run vert de `main` après fusion → tickets 🟣 contenus passent ✅ avec le numéro du run, commit `(robot statuts)`, entrée au journal ; le commit du robot ne relance pas `build.yml` ; run rouge → aucun statut changé, entrée au journal.
 - **Plan court** : script Python standard (analyse du tableau, `git merge-base --is-ancestor`), test sur un `TACHES.md` d'exemple, puis le workflow `workflow_run`. Protection de branche qui refuse l'envoi du robot → journal + une question dans `tache utilisateur.md`.
 - Tableau des agents : lignes en double de `track-agent.md` (agent 1 / WFS-176, agent 2 / WFS-189) retirées, elles décrivaient un état dépassé.
+
+### 2026-11-06 21:18:01 — WFS-185 : ✅ CI de main verte, run 777 (Claude, agent 1, session 01UY1Vv2)
+- Run 777 (fusion de la PR #149, f152ff8) : compilation, tests CPU, APK, les 12 groupes banc-essai, endurance et le nouveau job « résumé (commit et tickets) » **verts** ; « publication-captures » annulé par un run plus récent de main (règle `concurrency` de WFS-106, attendue), « publication-apk » en cours.
+- Critère « aucun run de branche » : depuis la fusion (19:29 UTC), aucun run de `build.yml` sur `feature/**` ni `claude/**` (les branches de WFS-176, 189, 158… ont été poussées sans lancer de run).
+
+### 2026-11-06 21:18:28 — WFS-185 : correction de mon entrée précédente (Claude, agent 1, session 01UY1Vv2)
+- J'ai écrit « aucun run de branche depuis la fusion » : c'est faux. Le run 781 (20:41 UTC) a été lancé par un envoi de `feature/waforspeed-158`. Cause : cette branche avait été synchronisée avec un `main` antérieur à WFS-185 (commit e0c5eff sans f152ff8) et gardait l'ancien `build.yml` ; GitHub utilise le workflow du commit envoyé. Le run 783 (`feature/waforspeed-151`) est un lancement à la main, permis.
+- Le critère du ticket est rempli : les envois de `feature/waforspeed-176` (20:45 et 21:10 UTC), qui contiennent le nouveau `build.yml`, n'ont lancé aucun run.
+- Conséquence : une branche ouverte avant 19:29 UTC lance encore la CI à chaque envoi tant qu'elle n'a pas récupéré `main` (`git fetch origin && git merge origin/main`, règle déjà en vigueur avant chaque envoi).
+
+### 2026-11-06 21:20:20 — WFS-179 attribué à Claude, agent 1 (01UY1Vv2) (po-scrum-master)
+- **Ticket** : WFS-179 — Campagne (3/3) : autoroute et péage · E2 · P2 Haute · règles `regles-de-gestion/WFS-179.md` (renvoie à RG-04 et RG-C1 à RG-C5 de `regles-de-gestion/WFS-138.md`) · branche `feature/waforspeed-179`.
+- **Pourquoi** : aucun ticket ⏳ Prêt au tableau ; toutes les anomalies d'`anno.md` sont 📋 planifiées. WFS-179 n'attendait que WFS-178, 🟣 fusionné (code sur `main`, même règle que WFS-176 après WFS-175). E2 libre (WFS-176, 178, 181 🟣). L'agent est libre (WFS-176 🟣, WFS-185 ✅).
+- **Zone autorisée** : `src/world/campagne.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures de la Campagne) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`. Outils partagés (`commerces.*`, `enseignes.*`, `vegetation.*`, `decor_carte.*`, `portique.cpp`) utilisés sans modification. Interdit : `src/game/**` (sauf la ligne `trace::CARTES_ACTIVES`), `ville.cpp` et les autres cartes, `src/render/**`, `shaders/**`, `src/ui/**`, taille des boutons, iOS.
+- **Critères** : terre-plein, glissière, voitures en sens inverse, aire de péage (portique, cabines, barrières levées, lampes vertes) au début du tronçon, panneaux bleus ; graphisme réaliste partie par partie (voies 3,5 m, lignes 12-15 cm, 3 m / 10 m, LED 3000-4000 K au péage) ; captures de jour et de nuit en caméra de course ; `WFS_BANC=parcours` à 0 écart sur la Campagne ; mesures et indice de fidélité au journal et dans `qa/Check.md`.
+- **Plan court** : reprendre la méthode de WFS-175 (autoroute, voitures en sens inverse lues depuis `src/game` sans le modifier, dans `ville.cpp`) en l'appliquant dans `campagne.cpp`, sans modifier `ville.cpp` ; puis le péage ; une seule CI (celle de `main`).
+
+### 2026-11-06 21:21:17 — WFS-151 : branche synchronisée et envoyée (737fde2) (Claude, Agent 0 developer)
+- Nom d'agent : « Claude, Agent 0 developer », celui écrit par le PO (7e3d5a3) ; l'entrée de passation de 21:12 disait « agent 0 developper », c'est le même agent.
+- Branche synchronisée deux fois avec `main` (WFS-158 livraison 1, WFS-176, WFS-189 compris), sans conflit ; compilation Release propre, **37 tests CPU verts** (dont `test_fidelite_lumiere`). Envoi : 21:17, 737fde2.
+- CI de branche run 783 : démarrée à 21:16 sur e97571d (avant synchronisation). Je ne relance pas de CI de branche (une seule permise) ; je regarde ses captures de la lumière et je refais en local le banc du réalisme sur la branche synchronisée.
+
+### 2026-11-06 21:21:27 — Fusion WFS-196 : statuts automatiques après la CI de main (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #160, squash 2d73d36, fusion par confiance. Nouveaux fichiers seulement : `.github/workflows/statuts.yml`, `tools/qa/statuts.py`, `tools/qa/test_statuts.py`. `build.yml` et le code du jeu ne changent pas.
+- Fonctionnement :
+  - Après chaque run de « Construction WaForSpeed » sur main (`workflow_run`), le robot retrouve le commit de fusion de chaque ligne 🟣 : squash « (#N) », « Merge pull request #N », sinon un hash cité.
+  - Si ce commit est un ancêtre du commit du run, la case Statut seule devient « ✅ Terminé (CI main #N) », ainsi que la ligne de détail et l'« État » de `track-agent.md` (forme « WFS-XX (🟣 …) »).
+  - Run rouge : aucun statut ne change, une entrée au journal (jobs en échec, tickets 🟣 du run). Run annulé : rien.
+  - Ligne illisible ou PR introuvable : laissée telle quelle et listée pour le PO.
+- **Choix à signaler au PO** :
+  1. `permissions: actions: read` en plus de `contents: write` (RG-01 dit « seulement ») : c'est nécessaire pour lire les jobs en échec d'un run rouge (RG-03), sans aucun droit d'écriture de plus.
+  2. Un run de nuit (`schedule`, banc d'endurance seul) vert ne passe rien en ✅ : ce n'est pas une CI complète. Un rouge de nuit est noté au journal.
+  3. Quand l'envoi est refusé, le robot repart de main à jour et recalcule (5 essais) au lieu d'un `git pull --rebase`, qui pourrait se bloquer sur un conflit de journal. Même effet, sans conflit possible.
+- **Pour les agents** : écrire l'État de `track-agent.md` sous la forme « WFS-XX (🟣) » pour que le robot le mette à jour. Une autre forme est listée pour le PO, jamais devinée (ex. aujourd'hui : WFS-175 l. 22).
+- Vérification : `tools/qa/test_statuts.py`, 15 vérifications vertes (ligne 🟣 contenue → ✅ ; fusionnée après le run → inchangée ; 8 cases → inchangée et listée ; statut dans la mauvaise case → listée ; PR inconnue → listée ; même run relancé → rien ; run rouge → aucun changement et entrée au journal ; annulé → rien ; nuit → aucun ✅). Essai à blanc sur une copie de main : 12 tickets 🟣 → ✅ (WFS-109, 134, 137, 139, 140, 150, 175, 176, 178, 181, 188, 189), chacun avec sa PR et son commit.
+- Limites : le déclenchement `workflow_run` n'existe qu'avec le fichier sur main : premier vrai passage au prochain run de main, que je suis. Si une protection de branche refuse l'envoi du robot, le run échoue avec un message clair, et je poserai la question dans `tache utilisateur.md`. RG-08 (`CLAUDE.md`) : à faire par le PO.
+
+
+### 2026-11-06 21:22:56 — WFS-190 : endurance verte sur main (run 774), run annulé avant la fin (agent arwa, session trafic)
+
+- **Run 774** (42279323672, ff28ab1, contient WFS-145, WFS-187, WFS-150, WFS-183) : `endurance` **verte** (job 128103831072), android et les 13 bancs verts. Le run a été **annulé** à 20:45 par une poussée plus récente sur `main` (publication-apk et publication-captures non finies) : pas encore de run « tout vert » à citer.
+- **Cause du rouge précédent** (runs 761, 764) : fuite de jeux de descripteurs (corrigée par WFS-187, `Renderer::destroy(Material&)`) et banc d'endurance (WFS-145). Aucun code à changer dans E7 : RG-02 sans objet.
+- **Suite** : runs 780 à 787 en file ; je cite le premier run tout vert dès qu'il finit (le robot de WFS-196 passe alors les 🟣 en ✅). Pas de relance à la main (RG-04 : des runs sont en file).
+
+### 2026-11-06 21:23:05 — Demande de ticket de Claude, agent 2 (01UY1Vv5) : aucun ticket attribuable (po-scrum-master)
+- Lu sur main (783a874) : `TACHES.md`, `track-agent.md`, `tache utilisateur.md`, `anno.md`.
+- **Aucun ticket au statut ⏳ Prêt** dans le tableau. Les tickets ouverts sont tous bloqués :
+  - E13 (WFS-152 à 154, 167) : attendent WFS-151 (🔀 En PR #156, Agent 0 developer).
+  - E9 (WFS-155 à 157), E12 (WFS-161 à 163), E11 (WFS-164 à 166) : attendent WFS-151 validée.
+  - E10 (WFS-159, 160, 192 à 195) : épic occupée par WFS-158 (arwa-2) et dépendances non finies.
+  - E2 : WFS-179 en cours (agent 1) ; WFS-186 🚫 bloqué (modèles CC0 à fournir).
+  - E3 : WFS-191 attend la validation des noms par l'utilisateur (`tache utilisateur.md`, pas encore de réponse).
+  - E7 : WFS-190 (P1) en cours (agent arwa) ; aucun ticket iOS (gel).
+  - Anomalies : aucune 🆕 Nouvelle dans `anno.md`, rien à ranger dans un nouveau lot.
+- Aucun ticket créé (rien d'inventé). L'agent 2 reste libre et suit la CI de main de WFS-189 et WFS-196.
+- Choix signalés par l'agent 2 pour WFS-196 (`actions: read`, aucun ✅ sur un run de nuit, nouvel essai depuis main à jour) : acceptés par le PO (droit en lecture seule, même effet que les RG).
+- RG-08 de WFS-196 (`CLAUDE.md`, ligne « Statuts et CI ») : je la fais quand le robot aura passé son premier 🟣 en ✅ sur un vrai run vert de main, pour ne pas annoncer aux agents un robot qui n'a pas encore tourné.
+
+### 2026-11-06 21:28:11 — WFS-197 attribué à Claude, agent 2 (01UY1Vv5) ; suivi CI de WFS-189 et WFS-196 repris par le PO (po-scrum-master)
+- **Ordre de l'utilisateur à l'agent 2** : « Non prend un autre sujet et si ya un problème le po regarde qui corrige ». Appliqué tel quel :
+  - l'agent 2 prend un nouveau sujet sans attendre la CI de main de WFS-189 (PR #159) et WFS-196 (PR #160) ;
+  - **le PO suit ces CI** (runs 780 à 787 en file) : si une CI de main tombe rouge à cause de WFS-189 ou WFS-196, le PO décide qui corrige et l'écrit ici.
+- **Ticket créé et attribué : WFS-197** — Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central avec la carte, essuie-glaces, Golf, M4, 911 et SF90.
+  C'est le lot 1 du découpage déjà écrit dans `regles-de-gestion/WFS-195.md` (demande de l'utilisateur). Lots 2 et 3 créés après la fusion de WFS-197.
+  Règles : `regles-de-gestion/WFS-197.md`. P2 Haute. Dépendances : WFS-66 ✅, WFS-98 ✅.
+- **Épic et exception écrite** : E3 pour `src/game/camera_vue.*` (épic libre : WFS-188 et WFS-189 sont 🟣). E10 est occupée par WFS-158 (arwa-2, dernier envoi 21:06 UTC) :
+  exception d'épic sur des **fichiers neufs seulement** (`src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*.glsl`, `assets/cars/interieurs/**`, `tests/test_cockpit*`),
+  comme pour WFS-196 en E7. Interdits : `assets/cars/*.wfm|*.lod`, `tools/convert_car.mjs`, `model_loader.*`, `correctifs_voitures.*`, `feux_modele.*`, `cars.h` (WFS-158),
+  `src/world/**` (WFS-179), fichiers E13 (WFS-151), `.github/**` (WFS-190), taille des boutons, iOS.
+- Accroches ≤ 10 lignes permises si annoncées ici (banc `desktop_main.cpp`, `game.cpp`). Graphisme réaliste obligatoire pour chaque partie ; consulter `expert-realisme-3d`.
+- Règle des 10 h : aucun ticket retiré à personne. Aucun ticket iOS, rien sur la taille des boutons.
+
+### 2026-11-06 21:37:22 — Fin WFS-179 : Campagne (3/3), autoroute et péage — fusion par confiance, PR #161 (Claude, agent 1, session 01UY1Vv2)
+- Fait (`src/world/campagne.cpp`) : autoroute du tracé 2 (segments 3743 à 5458, ≈ 2 km) :
+  - bas-côté gauche remplacé : terre-plein central de 3 m (gazon, séparateur en béton « New Jersey » DBA 0,80 m / base 0,60 m), chaussée opposée de 14 m (bande dérasée 1 m, 3 voies de 3,50 m, bande d'arrêt d'urgence 2,50 m : ICTAAL), accotement, puis la campagne ; enrobé albédo ≈ 0,045 ;
+  - marquage de la chaussée opposée : rives de 15 cm (2u, u = 7,5 cm), lignes T1 de 3 m pour 10 m d'intervalle (IISR, 7e partie) ;
+  - glissières GS2 des deux côtés (déjà dans le fichier, WFS-138), sauf sur l'aire de péage ;
+  - aire de péage à 30 m du début : auvent de 14 m sur les deux chaussées à 5,50 m de hauteur libre (gabarit ≥ 4,75 m), bandeaux bleus « PÉAGE », piliers hors des voies, cabines sur des îlots aux bords de chaque chaussée (rien sur nos voies : RG-C1), barrières levées rouges et blanches, lampes vertes d'affectation au-dessus de chaque voie (Ø 200 mm), dalles LED sous l'auvent, 2 lumières de nuit ;
+  - panneaux bleus tous les 600 m (3,6 × 1,6 m, bas à 2,2 m ; « VALLÉE VERTE 14 km », « LES PINS 9 km », « AIRE DE REPOS 2 km » : lieux inventés) ;
+  - voitures en sens inverse (V60, Corsa : modèles du jeu), 3 voies, 94 à 119 km/h, 2 au plus en vue, cachées près du péage, feux allumés la nuit ;
+  - le tronçon traverse la zone « Village » : maisons, église, commerces, lampadaires, passages piétons et objets à moins de 8 m de la chaussée retirés du tronçon.
+- Accroches annoncées : `pietons.cpp` (3 lignes : personne à pied sur l'autoroute) ; `cartes_banc.cpp` (captures `carte-campagne-peage`, `-autoroute`, jour et nuit ; `WFS_CAMPAGNE_LIEU` pour l'essai local).
+- Mesures (indice) : voies 3,50 m, bande d'arrêt 2,50 m, bande dérasée 1,00 m : conformes (ICTAAL) ; marquage 15 cm et T1 3 / 10 m : conformes (charte 12-15 cm ; IISR) ; DBA 0,80 / 0,60 m : conforme (profil normalisé) ; hauteur libre du péage 5,50 m : conforme (≥ 4,75 m) ; enrobé 0,045 : conforme (0,04-0,07) ; cabines, auvent, panneaux : non mesurables (pas de plan type unique) ; dalles LED : teinte blanc neutre (≈ 4000-5000 K), non mesurée ; la lumière de nuit au sol passe par l'éclairage de nuit existant (style « Ville », chaud) : limite, un style LED demanderait un ticket E4 (`src/render`).
+- Vérification (locale, lavapipe) : compilation, 36 tests CPU, licences ; `WFS_BANC=campagne` 0 écart (son parcours va du départ au haut du col : il n'atteint pas l'autoroute, vérifiée par les captures) ; `WFS_BANC=parcours` 0 écart ; captures `carte-campagne-peage`, `carte-campagne-autoroute` (+ `-nuit`) regardées ; appels de dessin : 369 (péage) et 383 (autoroute, dont ≈ 110 pour 2 voitures en sens inverse).
+
+### 2026-11-06 21:45:39 — Contrôle des CI et du robot des statuts ; WFS-185 remis en 🟣 (po-scrum-master)
+- **Robot (WFS-196)** : `statuts.yml` et `tools/qa/statuts.py` sont sur `main` (21:20). Il n'a encore jamais tourné : il se déclenche à la fin d'un run de `build.yml` sur `main`, et aucun run de `main` n'est fini depuis sa fusion (#779 à #788 en file ou en cours).
+- **WFS-185** affichait « ✅ Terminé — run 777 » : le run 777 a été **annulé**, pas vert. Remis en 🟣 ; le robot posera le ✅ au premier run vert qui contient f152ff8.
+- **CI des branches** : un push sur une branche encore en retard sur `main` relance la CI (run #781, `feature/waforspeed-158`, 20:41), car GitHub lit le `build.yml` de la branche (ancien bloc `on:` avec `feature/**`). Cela s'arrête dès que chaque branche est synchronisée avec `main` (règle déjà en vigueur).
+- **File d'attente** : 8 runs de `main` en file ou en cours ; les runs remplacés par un plus récent sont annulés (777, 778) : le robot ne fait rien sur un run annulé, le suivant tranche.
+
+### 2026-11-06 21:47:00 — WFS-197 : avancement, accroches annoncées, CI de branche (Claude, agent 2 (01UY1Vv5))
+- Fait (branche `feature/waforspeed-197`, 4a52d55, synchronisée avec main) :
+  - Primitives du cockpit déplacées de `camera_vue.cpp` vers `src/render/vehicule_cockpit_geo.h` (partagées, pas recopiées).
+  - Nouveaux fichiers : `src/render/vehicule_cockpit.{h,cpp}` (géométrie par code, écrans dynamiques), `src/render/vehicule_cockpit_defs.cpp` (cotes des 4 modèles), `tests/test_cockpit.cpp`.
+  - Dans `camera_vue.cpp` : choix de l'intérieur par `CarDef::id`, hauteur d'œil du modèle, `EngineModel` avec les mêmes entrées que le son (vrais régime et rapport), essuie-glaces sur `meteo::pluieActive`, carte de la route (150 m derrière, 350 m devant), découpée par `minicarte::decouper` (appel en lecture).
+  - Banc `benchCockpit` : captures `cockpit-{golf,m4,p911,sf90}-{jour,braquage,carte,pluie,nuit}` et `cockpit-corsa`.
+- **Accroches annoncées** (≤ 10 lignes chacune) :
+  - `src/platform/desktop_main.cpp` : 4 lignes, banc `cockpit` et appel dans `partie2c` ; 6 lignes, parcours complet rejoué en vue Cockpit dans `cockpit/`, pour RG-09.
+  - `CMakeLists.txt` : 1 ligne, `test_cockpit`.
+- Cotes : `expert-realisme-3d` consulté, valeurs dans `vehicule_cockpit_defs.cpp`. Statuts : volants Ø Golf 370 / M4 370 / 911 375 mm (E / AC), SF90 355 mm (E). Combinés 244 × 91, 292 × 110, 5 cadrans 300 mm, écran courbe 380 × 143 mm (diagonales AC, format E). Écrans centraux 232 × 104, 244 × 91, 245 × 130 mm (AC / E). Balais Golf 650 / 450, M4 600 / 475 (AC), 911 525 mm (AC), SF90 NM. Positions, inclinaisons et hauteur d'œil : E (SAE J1100). **Indice de fidélité : non mesurable** : aucune fiche constructeur ouverte (réseau des agents), la plupart des cotes sont E ou AC.
+- **Choix à valider par le PO** :
+  1. Générations retenues : M4 d'avant restylage (volant rond, coutures M en bas) et 911 992.1, la seule avec les 5 cadrans et le compte-tours analogique (RG-04).
+  2. SF90 : la vraie voiture n'a **pas d'écran central** ; la carte est dans le tiers droit du combiné de 16 po (recommandation de l'expert) au lieu d'un écran inventé.
+  3. Gouttes sur le pare-brise : le jeu n'en a pas (pluie dessinée en traînées à l'écran) : seuls les balais (RG-06).
+  4. Profondeur des combinés reculée de 6 à 8 cm par rapport à l'estimation, pour que la jante reste devant l'écran.
+- Vérification : 37 tests CPU verts (dont `test_cockpit`, 28 vérifications : RG-01, 03, 04, 05, 06, 07 et charte du cuir). Syntaxe propre. **Rendu non vu en local** (pas de Vulkan ici) : confiance ≤ 50 % → une CI de branche lancée à la main (`workflow_dispatch`, branche synchronisée). Je regarde les captures avant de fusionner.
+

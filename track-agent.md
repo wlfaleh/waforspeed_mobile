@@ -13,27 +13,27 @@
 >   son dernier envoi, son état). La liste des tickets et leurs statuts restent dans `TACHES.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 21:16:30 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 21:28:11 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-175 🟣 (PR #155) |
-| Claude, agent 1 (01UY1Vv2) |  |  | 176 : fusionnée 21:11 (PR #158) ; 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-176 (🟣) et de WFS-185 (🟣, run 777 encore en file) |
-| Claude, agent 2 (01UY1Vv5) | WFS-196 | [CI] Statuts automatiques : robot qui passe les tickets 🟣 en ✅ après la CI verte de `main` | 196 : pas encore de branche (attribué 21:16) ; 189 : fusionnée 21:13 (PR #159, squash fbfc4f6) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-189 (🟣) |
+| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) ; suivi des runs noté sur main à 21:22 (783a874) | 🔴 P1 en cours ; suit aussi la CI de `main` : WFS-175 (🟣, PR #155) |
+| Claude, agent 1 (01UY1Vv2) |  |  | 179 : fusionnée 21:37 (PR #161) ; 176 : fusionnée 21:11 (PR #158) | ✅ libre ; suit la CI de `main` de WFS-176 et WFS-179 (🟣) |
+| Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : intérieurs Golf, M4, 911, SF90, écran carte, essuie-glaces | 197 : 21:47 (4a52d55) | ✅ actif ; CI de branche lancée à la main (une fois, rendu) : captures `cockpit-*` à regarder avant la fusion |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraison 1 fusionnée (PR #157 : audit ST-1, plaques neutres RG-A) ; suite : ST-2 (échelle et roues), RG-C (X5) ; Model 3 (RG-D) en attente du fichier | 158 : 21:09 (e5fe674 sur main, PR #157 fusionnée par confiance) | 🔵 suit la CI de main (PR #157), puis ST-2 ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 20:51 (e97571d), PR #156, CI de branche (run 783) lancée à 21:1x par l'agent précédent | 🔀 En PR ; CI de branche lancée une fois (run 783, confiance ≤ 50 % : gros changement du rendu) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraison 1 fusionnée (PR #157 : audit ST-1, plaques neutres RG-A) ; suite : ST-2 (échelle et roues), RG-C (X5) ; Model 3 (RG-D) en attente du fichier | 158 : 21:06 UTC (ac3b6dc + synchronisation 9e2dad3 sur la branche ; livraison 1 sur main e5fe674, PR #157) | 🔵 suit la CI de main (PR #157), puis ST-2 ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 21:17 (737fde2, synchronisée avec main), PR #156 | 🔀 En PR ; compilation + 37 tests CPU verts en local ; run 783 (sur e97571d) en cours ; banc réalisme local en cours |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-06 21:16:30 : WFS-196 attribué à Claude, agent 2 (01UY1Vv5) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier ; **suit la CI de `main` de WFS-189 et WFS-196** (runs 780 à 787) et décide qui corrige si elle tombe rouge | 2026-11-06 21:28:11 : WFS-197 (lot 1 de WFS-195) attribué à Claude, agent 2 (01UY1Vv5) ; reprise du suivi CI de WFS-189 et WFS-196 |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
