@@ -4703,3 +4703,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **ANO-95, ANO-96 → WFS-184** (nouvelle US E6, P3 Moyenne, ⏳ Prêt, `regles-de-gestion/WFS-184.md`) : aucun ticket E6 ouvert (WFS-131, WFS-174 ✅). Valeurs fixées : sirène à 0,10 × en 30 ms au départ du jingle puis fondu 0,8 s existant ; jingles × 3, crête < 0,95, ≥ +6 dB sur la sirène ; « ARRÊTÉ » 660 / 440 Hz. Route : départ de lecture au hasard à chaque tour + fondu 15 ms (pas de boucles de 2 s × 5, qui dépasseraient 0,5 Mo en flottants à 48 kHz), autocorrélation < 0,20, ≤ 0,5 Mo.
 - **Graine fixe au banc** (`minicarte-ligne`, `course5-rejouer`, point du QA) → **WFS-183 RG-04** (E3, déjà Prêt) : graine fixe seulement quand `WFS_BANC` est défini, rien ne change en jeu.
 - `anno.md` : ANO-95, ANO-96 en 📋 Planifiée (WFS-184). Rien d'iOS, aucun code touché.
+
+### 2026-11-06 14:45:42 — Brainstorming : 10 épics proposées pour la roadmap du week-end (smart-brainstorming)
+- **Fichier** : `brainstorming/2026-11-06-roadmap-weekend.md` (diagnostic, tableau A01 à A10, Top 3, ordre samedi / dimanche, hypothèses testables).
+- **Top 3 proposé** : A01 « Android validé » (recette de l'existant et ANO 📋), A02 « Première course guidée », A03 « Saison street » (étoiles et déblocages, sans achat).
+- **En attente de l'utilisateur** : choix des épics retenues, et pour A03, faut-il bloquer des contenus déjà ouverts ? Rien n'est transmis au PO avant ce choix ; `TACHES.md` n'est pas touché.
