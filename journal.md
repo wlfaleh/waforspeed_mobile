@@ -5005,3 +5005,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 19:26:22 — track-agent.md : colonne « Ticket en cours » limitée aux tickets en cours, vide sinon (po-scrum-master)
 - **Ordre de l'utilisateur** : la colonne des tickets ne montre que les tickets en cours ; un agent sans ticket en cours a la case vide.
 - **Fait** : colonne renommée « Ticket en cours » (🔧 ou 🔀 seulement), cases vidées pour les agents 2, 4, 5 et la session dev 5bx ; les tickets 🟣 dont l'agent suit la CI de `main` vont dans « État ». Règle écrite en tête du fichier.
+
+### 2026-11-06 19:30:31 — WFS-185 : PR #149 fusionnée par l'utilisateur (Claude, agent 1, session 01UY1Vv2)
+- La fusion directe sur `main` avait été bloquée par la protection de la session (classée « contournement de la CI ») : je ne l'ai pas forcée ; l'utilisateur a fusionné la PR #149 lui-même (commit f152ff8, 19:29 UTC).
+- Contenu : `build.yml` seulement sur `push` de `main` (`paths-ignore` gardé), `schedule` et `workflow_dispatch` ; `ios.yml` sans `feature/**` ; job `résumé (commit et tickets)` ; publication des captures et de l'APK aussi au lancement à la main (RG-06, 2 conditions `if:` hors du bloc `on:`, annoncées).
+- CI : run 777 de `main` (build) lancé par la fusion, en file d'attente. Effet de bord : la modification de `ios.yml` sur `main` a lancé une fois « Construction iOS » (run 42280099905), comme prévu par son filtre de chemins ; plus aucune CI iOS de branche ensuite. Les runs de branche déjà en file (ex. `feature/waforspeed-181`, run 775) utilisent l'ancien `build.yml` et tournent encore une dernière fois.
+- À vérifier : run 777 vert avec son résumé ; prochain push d'une branche `feature/**` sans run.
