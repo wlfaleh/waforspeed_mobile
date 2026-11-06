@@ -3,7 +3,7 @@
 ** RÈGLE IMPORTANT : il faut voir systématiquement le fichier tache utilisateur.md et répondre en cas de besoin à l'utilisateur
 
 Version native (C++20, Vulkan) du jeu WaForSpeed, pour Android puis iOS, portable sur consoles. Moteur maison, aucun moteur
-de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`). Organisation type Jira / Scrum :
+de jeu tiers. Organisation type Jira / Scrum :
 **épics** (une zone de code chacune), **tickets** WFS-XX priorisés, plusieurs agents en parallèle, en autonomie.
 
 ## Rôles
@@ -62,7 +62,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 
 10. **Autonomie (règle de l’utilisateur)** : les agents **ne demandent pas de confirmation à l’utilisateur** pour suivre le processus. Ils enchaînent seuls : demander un ticket au PO, créer la branche, lire les règles, coder, construire, fusionner selon la règle en vigueur, mettre à jour `TACHES.md`, `journal.md`, `qa/Check.md`, puis demander le ticket suivant. Pas de « je lance ? », « je continue ? » en fin de message : on agit, puis on rend compte. L’utilisateur n’est sollicité que pour un **vrai blocage** : décision produit que ni les règles de gestion ni le PO ne tranchent, accès ou droits manquants, action irréversible hors processus (supprimer, réécrire l’historique…). Dans ce cas : une seule question précise, avec une recommandation. Une question de règles ou de priorité se pose au PO (`po-scrum-master`), pas à l’utilisateur.
 
-**Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
+**Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du dépôt à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
 **Définition de « Fini »** (sauf fusion par confiance, voir ci-dessus : la CI et la recette viennent après la fusion) : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` (anomalies mineures restantes inscrites au tableau des anomalies), synchronisé, fusionné,
 Journal à jour.
@@ -73,7 +73,7 @@ Journal à jour.
 | E0 | Noyau partagé (catalyseur) | `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API), `CMakeLists.txt` | Stabiliser les points d'extension pour que les autres épics ajoutent des fichiers sans toucher au noyau. |
 | E1 | Socle moteur (livraison 1) | — | Terminé. |
 | E2 | Monde et décor | `src/world/**` (sauf fichiers E11 / E12 ci-dessous), `assets/world/**` (sauf `assets/world/modeles/**`), `shaders/world_*` | Ville, cartes, météo, piétons : tout ce qui entoure la route. |
-| E3 | Gameplay et simulation | `src/game/` sauf `game.*` (trafic, course, duel, sauvegarde), `tests/**` | Règles du jeu portées du jeu web, tests de fidélité. |
+| E3 | Gameplay et simulation | `src/game/` sauf `game.*` (trafic, course, duel, sauvegarde), `tests/**` | Règles du jeu, tests de fidélité. |
 | E4 | Rendu et performances | `src/render/**` (sauf `ui_*` et fichiers E9 à E13 ci-dessous), `shaders/scene.*` (orchestration ; `sky*`, `post*`, `shadow*` passent à E13 le 2026-11-06) | Ombres, nuit, reflets, post-traitement, qualité, LOD. |
 | E5 | Interface et contenu | `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*`, `assets/fonts/**` (`assets/cars/**` et `tools/convert_car.mjs` passent à E10 le 2026-11-06), `tools/convert_car.mjs` | Texte, menus, garage, HUD, voitures et peintures. |
 | E6 | Audio | `src/audio/**`, `assets/audio/**` | Moteur, bruitages. |
@@ -94,7 +94,7 @@ WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-57 (centra
 duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 
 ## Axe stratégique « Réalisme » (directive de l'utilisateur, 2026-11-05 et 2026-11-06) — priorité HAUTE
-La version Web **n'est plus la référence graphique**. Objectif : routes, voitures, personnages, environnements et lumière au plus près
+Il n'y a plus de version Web : le jeu natif est la seule référence. Objectif : routes, voitures, personnages, environnements et lumière au plus près
 du réel, **fidélité de 99 % mesurée** (part des mesures dans leur tolérance face à des données réelles sourcées), **jamais l'apparence au
 détriment de la précision**. Charte, analyse de l'existant, limitations, tolérances et règles communes RC-01 à RC-10 :
 **`regles-de-gestion/DA-realisme.md`** (à lire avant toute US de l'axe). Toutes les US de l'axe sont en **P2 Haute**.

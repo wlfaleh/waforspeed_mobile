@@ -3801,3 +3801,13 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
   - la demande de vérification par l'utilisateur à chaque fin de palier (ex-RC-11) ;
   - les lignes ajoutées dans `CLAUDE.md`, `.claude/agents/po-scrum-master.md` et `regles-de-gestion/README.md` (fichiers revenus à leur version d'avant faedcf0).
 - **Gardé** : les US WFS-148 à WFS-167, leurs règles de gestion, leurs mesures de fidélité (≥ 99 %, demandées par l'utilisateur) et l'ordre des dépendances. Attribution, QA et fusion : règles en vigueur de `CLAUDE.md`, inchangées.
+
+### 2026-11-06 01:07:53 — Version Web retirée de la mémoire du projet, sur ordre de l'utilisateur (po-scrum-master)
+- **Décision de l'utilisateur** : il n'y a plus de version Web. Elle a servi à gagner du temps et ne sert plus de référence. Le jeu natif est la seule référence ; l'aspect du monde 3D suit le réel mesuré (fidélité 99 %, `regles-de-gestion/DA-realisme.md`).
+- **Retiré** :
+  - le skill `waforspeed-3d` (dossier supprimé, reste dans l'historique git) ;
+  - toute mention du dépôt Web et de ses fichiers dans : `CLAUDE.md`, `README.md`, l'en-tête et les règles de `TACHES.md`, l'agent PO, les skills `agent-developer` (et sa checklist), `waforspeed-natif` (et ses références) et `design-street-racing`, ainsi que `regles-de-gestion/README.md` (modèle d'US) ;
+  - les sections « À réutiliser du jeu web » des tickets pas encore commencés (WFS-122, 137 à 141, 146, 148 à 167).
+- **`design-street-racing`** : ne s'applique plus qu'à l'interface (menus, HUD, garage, écrans) ; le monde 3D n'est plus concerné.
+- **WFS-137 à WFS-140, RG-C4** : animaux en modèles 3D réalistes sous licence libre, à la place des volumes simples.
+- **Non modifié** : l'historique (journal, tickets terminés, rapports QA, anomalies) et les commentaires du code, qui ne sont pas du ressort du PO.

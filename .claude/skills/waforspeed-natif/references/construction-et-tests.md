@@ -4,7 +4,6 @@
 - Compiler / vérifier le C++ : en-têtes Vulkan (`git clone --depth 1 https://github.com/KhronosGroup/Vulkan-Headers`) puis
   `g++ -std=c++20 -fsyntax-only -I<vulkan-headers>/include -I<dossier avec des .inc factices> src/...cpp`.
 - Tests CPU : `g++ -std=c++20 -O2 tests/test_track.cpp src/game/track.cpp src/game/player.cpp -o /tmp/tt && /tmp/tt`
-  (comparer avec le jeu web : script Node qui exécute `js/world/track.js` avec les mêmes paramètres).
 - Lancer des binaires téléchargés (glslang, Godot…) est bloqué : laisser la CI compiler les shaders.
 
 ## GitHub Actions (`build.yml`)
