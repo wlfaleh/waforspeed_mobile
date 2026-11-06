@@ -10,7 +10,7 @@
 #include "../render/renderer.h"
 #include "../ui/text.h"
 #include "course_system.h"
-#include "course5.h"   // WFS-112 : ouvrirChoixMode (« Retour » de la fin du duel)
+#include "course5.h"   // WFS-112 : ouvrirChoixMode (« Retour » de la fin du duel) ; WFS-189 : rechargerNitro
 #include "commandes_tactiles.h"   // WFS-146 (accroche, ANO-35) : dessin2d::biseau des boutons du résultat
 #include "game.h"
 #include "player.h"
@@ -91,6 +91,9 @@ public:
             if (c->playing()) {
                 const duel::ContactEvents e = s.hitGhosts(dt, pl, *g.track, *g.car);
                 if (e.accident) c->accident(); else if (e.chocs) c->bump(e.impact);
+                // WFS-189 (RG-04, RG-05) : sans trafic, la nitro se recharge au temps ; pas de bonus de dépassement en Duel
+                // (équité réseau) ; chaque téléphone le calcule pour son joueur, rien de plus n'est envoyé
+                if (pl.dist < s.finish()) pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, 0);
             }
             if (s.raceTick(dt, pl, c->raceTime))
                 WFS_LOG("duel : arrivée en %.2f s, position %d/%d", s.myFinish(), s.position(pl.dist), (int)s.board(pl.dist).size());

@@ -9,6 +9,7 @@
 #include "../src/game/reseau_udp.h"   // WFS-83
 #include "../src/game/reseau_peerjs.h"   // WFS-89
 #include "../src/game/binarypack.h"
+#include "../src/game/course5.h"   // WFS-189 : rechargerNitro (Duel sans trafic)
 #include <chrono>
 #include <thread>
 #include "../src/game/player.h"
@@ -277,6 +278,16 @@ int main() {
     VERIFIE(b.ghosts().empty(), "joueur parti : fantôme retiré");
     testReseau();   // WFS-83
     testInternet(); // WFS-89
+    {   // WFS-189 (RG-04, RG-05) : en Duel, nitro rechargée au temps seulement (pas de bonus de dépassement, équité réseau) ;
+        // les deux pilotes ont la même règle : même jauge après la même course, chacun la calcule chez lui
+        double j1 = config().nitro.depart, j2 = config().nitro.depart; const double dt = 1.0 / 120;
+        for (int i = 0; i < 120 * 30; i++) { j1 = course5::rechargerNitro(j1, false, dt, 0); j2 = course5::rechargerNitro(j2, false, dt, 0); }
+        double j3 = config().nitro.depart; for (int i = 0; i < 120 * 30; i++) j3 = course5::rechargerNitro(j3, i < 120 * 2, dt, 0);   // 2 s de nitro
+        std::printf("duel : nitro après 30 s : %.3f et %.3f (attendu %.3f) ; avec 2 s de nitro tenue : %.3f (rien pendant la nitro)\n",
+                    j1, j2, config().nitro.depart + 30 * config().nitro.rechargeTemps, j3);
+        VERIFIE(j1 == j2 && std::abs(j1 - (config().nitro.depart + 30 * config().nitro.rechargeTemps)) < 1e-6, "duel : recharge au temps");
+        VERIFIE(std::abs(j3 - (config().nitro.depart + 28 * config().nitro.rechargeTemps)) < 1e-6, "duel : pas de recharge pendant la nitro");
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("duel : tout est OK\n");
     return 0;
