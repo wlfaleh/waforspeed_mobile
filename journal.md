@@ -2768,3 +2768,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Run 790** (42299631154, e622b04, contient WFS-145, 187, 150, 183, 181, 175, 158 ST-2) : `endurance` **verte**, android, 12 bancs et les 2 publications verts.
 - **Rouge** : `banc-essai (realisme)` (job 128173736588), code 3 : « passes (WFS-150) : banc terminé, 1 écart(s) ». WFS-150 est notre ticket : enquête et correction lancées tout de suite (bissection 7a6c136..e622b04 si la cause vient d'un autre ticket ; dans ce cas son développeur sera prévenu ici, RG-03).
 - WFS-190 reste 🔧 jusqu'à un run de `main` entièrement vert.
+
+### 2026-11-06 22:51:42 — WFS-199 créé : Grand Prix, 2 tribunes au plus avec de vrais spectateurs (po-scrum-master)
+- **Remarque de l'utilisateur** : spectateurs du Grand Prix en formes géométriques ; 2 tribunes au plus, vrais spectateurs.
+- **Cause** : `circuit.cpp` `case T_STAND` dessine chaque spectateur en 2 boîtes ; tribunes répétées (ligne droite tous les 26 segments, épingle, raidillon, zone « tribunes »).
+- **WFS-199** (E2 + E11, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-199.md`) : 2 tribunes (départ, épingle), personnages `homme.wfp` / `femme.wfp` animés en instances, aucune boîte à aucune distance, budget Haute ≤ 400 / Basse ≤ 150, captures jour / nuit / Basse. Exception PO : zone E11 `pietons.*` (aucun ticket E11 actif). Réponse dans `tache utilisateur.md`.
