@@ -358,9 +358,11 @@ private:
             const int mn = (int)std::ceil(tr->expireDansMs() / 60000);
             sous += mn > 0 ? " · code valable " + std::to_string(mn) + " min" : " · code expiré pour les nouveaux";
         }
-        ui::text(r, cx, y + 84 * k, 13 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
+        // WFS-183 (RG-03, ANO-90) : hors ligne, l'URL (inutile) n'est plus dessinée et le bandeau monte à y + 82 (fin à
+        // y + 110, avant « TA VOITURE » à y + 112) ; seule sa position change (tailles gelées)
+        if (!horsLigne()) ui::text(r, cx, y + 84 * k, 13 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
         // WFS-146 (RG-08, ANO-44) : aide de RG-07 de WFS-89 sous le code (12 px #8A90A6), dans l'espace libre avant les lignes
-        if (!bandeauHorsLigne(r, zl, y + 90 * k, k))
+        if (!bandeauHorsLigne(r, zl, y + 82 * k, k))
         ui::text(r, zl, y + 96 * k, 12 * k, "Donne ce code à ton adversaire : il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
         // lignes .car-line
         float ly = y + 112 * k;
