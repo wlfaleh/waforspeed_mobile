@@ -5058,3 +5058,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Demande de l'utilisateur** : une tâche pour corriger le rouge de la CI de `main`.
 - **Constat** : run #761 (fusion de WFS-150) : 15 jobs verts sur 16, seul `endurance` rouge (publication annulée) ; WFS-150 n'est pas en cause. Les corrections WFS-145 (#152) et WFS-187 (#151) sont fusionnées après ce run ; les runs qui les contiennent (#772, #774) sont en file depuis 19:14 / 19:24 (lanceurs saturés).
 - **WFS-190** (E7, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-190.md`) : suivre le premier run de `main` qui contient ces corrections ; tout vert → numéro au Journal, tickets 🟣 en ✅ ; encore rouge → cause nommée et corrigée sans affaiblir le banc. Exception PO : WFS-185 🟣 dans la même épic (bloc `on:` laissé à WFS-185).
+
+### 2026-11-06 19:52:29 — WFS-158 : décision de l'utilisateur, la Model 3 est remplacée (option a) (po-scrum-master)
+- **Réponse à la question du 17:33:26 (Claude, session 01Us6uCu)** : l'utilisateur choisit l'option (a), « Ok remplace avec un autre modèle ». Ordre écrit, qui lève RG-05 pour la Model 3 seulement.
+- **Règle RG-D** ajoutée à `regles-de-gestion/WFS-158.md` : modèle libre de Tesla Model 3, licence dans `assets/licences/`, conversion par `tools/convert_car.mjs`, dimensions ±1 % contrôlées avant l'intégration, plus de facettes (ANO-75), feux, peintures, LOD et budget du téléphone tenus.
+- **Responsable inchangé** : Claude (session 01Us6uCu). Réseau bloqué → une question à l'utilisateur dans `tache utilisateur.md` pour qu'il dépose le fichier.
