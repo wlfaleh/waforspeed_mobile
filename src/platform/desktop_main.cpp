@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>   // WFS-197 (accroche)
 #include <fstream>
 #include <string>
 #include <vector>
@@ -183,8 +184,13 @@ int main(int argc, char** argv) {
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "parcours") {   // WFS-115 ; WFS-126 (RG-08) : parcours complet jusqu'au retour à l'accueil
         ui::chargerPolice(r);
-        const int e = benchParcours(g, r, out) + parcoursFinMenu(g, r, out);
+        int e = benchParcours(g, r, out) + parcoursFinMenu(g, r, out);
         WFS_LOG("parcours complet : %d écart(s)%s", e, e ? " ÉCHEC" : " OK");
+        {   // WFS-197 (accroche, RG-09) : même parcours en vue Cockpit (intérieur de la voiture choisie), captures dans cockpit/
+            const VueCamera v = vueCamera(); choisirVue(VueCamera::Cockpit); std::filesystem::create_directories(out + "/cockpit");
+            const int ec = benchParcours(g, r, out + "/cockpit") + parcoursFinMenu(g, r, out + "/cockpit");
+            WFS_LOG("parcours complet en vue Cockpit (WFS-197) : %d écart(s)%s", ec, ec ? " ÉCHEC" : " OK"); choisirVue(v); e += ec;
+        }
         finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "trace") { ui::chargerPolice(r); const int e = trace::benchTrace(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-136 (accroche) : tracé 2
