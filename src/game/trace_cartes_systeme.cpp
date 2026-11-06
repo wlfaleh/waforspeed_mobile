@@ -132,18 +132,46 @@ int benchTrace(Game& g, Renderer& r, const std::string& out) {
             g.shutdown();
         } else ecarts++;
         if (aFx && (tv = aller("ville", fx.ligneArret, 22))) {
-            // attendre le rouge (3,4 s dedans : 1re voiture au milieu de la chaussée)
-            const Traffic* tr = activeTraffic(); double tp = 0; int n = 0;
-            while (tr && n++ < 60 * 60 && !(feuCarrefour(0, tr->sim, &tp) == Feu::Rouge && tp >= 3.4)) image(n);
-            int arretees = 0, travers = 0;
-            if (tr) for (const TrafficCar& c : tr->cars) {
-                if (c.cache) continue;
-                const double d = tv->relZ(c.z - fx.ligneArret * SEG) * M;
-                if (c.traverse >= 0) { travers++; WFS_LOG("trace : voiture en travers à %.1f m de la ligne, %.1f m du centre (joueur à %.1f m de la ligne)", d, c.offset * RW, tv->relZ(g.player().position - fx.ligneArret * SEG) * M); }
-                else if (d < 0 && d > -60 && c.speed * M < 0.5) arretees++;
+            // WFS-172 (RG-03, ANO-89) : à l'orange, 3 voitures du trafic (loin du joueur) sont placées 23 à 38 m derrière lui,
+            // dans les files de gauche et de droite, à 29 km/h : elles le dépassent et forment la file arrêtée à la ligne ;
+            // capture au rouge (3,4 s dedans au moins : 1re voiture en travers au milieu de la chaussée) avec au moins
+            // 2 voitures arrêtées avant la ligne
+            const Traffic* tr = activeTraffic(); double tp = 0; int n = 0, arretees = 0, travers = 0;
+            const double ligne = fx.ligneArret * SEG;
+            auto compter = [&](bool journal) {
+                arretees = travers = 0;
+                if (tr) for (const TrafficCar& c : tr->cars) {
+                    if (c.cache) continue;
+                    const double d = tv->relZ(c.z - ligne) * M;
+                    if (c.traverse >= 0) { travers++; if (journal) WFS_LOG("trace : voiture en travers à %.1f m de la ligne, %.1f m du centre (joueur à %.1f m de la ligne)", d, c.offset * RW, tv->relZ(g.player().position - ligne) * M); }
+                    else if (d < 0 && d > -60 && c.speed * M < 0.5) arretees++;
+                }
+            };
+            bool placees = false;
+            while (tr && n++ < 120 * 60) {
+                const Feu f = feuCarrefour(0, tr->sim, &tp);
+                if (!placees && f == Feu::Orange) {
+                    placees = true;
+                    const double dJ = tv->relZ(g.player().position - ligne) * M;
+                    const struct { int file; double m; } places[3] = {{0, dJ - 23}, {2, dJ - 28}, {0, dJ - 38}};
+                    int k = 0;
+                    for (TrafficCar& c : activeTrafficMut()->cars) {
+                        if (k == 3) break;
+                        if (c.traverse >= 0 || c.cache || c.crashed || std::abs(tv->relZ(c.z - g.player().position)) * M < 300) continue;
+                        c.z = tv->wrap(ligne + places[k].m / M); c.lane = c.target = places[k].file;
+                        c.offset = c.prevOff = LANE_X[places[k].file]; c.speed = 8 / M; c.think = 1e9; c.signal = 0; c.pending = false; c.laneYaw = 0;
+                        c.prevDz = tv->relZ(c.z - (g.player().position + PLAYER_Z));
+                        k++;
+                    }
+                    WFS_LOG("trace : orange : %d voiture(s) placée(s) derrière le joueur (%.1f m de la ligne)", k, dJ);
+                }
+                if (f == Feu::Rouge && tp >= 3.4) { compter(false); if (arretees >= 2 && travers > 0) break; }
+                image(n);
             }
+            compter(true);
             WFS_LOG("trace : feu rouge (%.1f s) : %d voiture(s) arrêtée(s) avant la ligne, %d en travers", tp, arretees, travers);
             if (travers == 0) { ecarts++; WFS_ERR("trace : aucune voiture ne traverse au rouge"); }
+            if (arretees < 2) { ecarts++; WFS_ERR("trace : %d voiture(s) arrêtée(s) à la ligne, au moins 2 attendues", arretees); }
             capture("trace-feux-rouge");
             g.shutdown();
         } else ecarts++;

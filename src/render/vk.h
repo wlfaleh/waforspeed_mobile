@@ -5,6 +5,7 @@
 #define VK_USE_PLATFORM_ANDROID_KHR
 #endif
 #include <vulkan/vulkan.h>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 #include "../core/log.h"
@@ -19,6 +20,7 @@ struct Buffer { VkBuffer buf = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HAND
 struct Image {
     VkImage img = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE; VkImageView view = VK_NULL_HANDLE;
     VkFormat format = VK_FORMAT_UNDEFINED; uint32_t w = 0, h = 0, mips = 1;
+    size_t octetsTexture = 0;   // WFS-149 : octets comptés dans VkCtx::octetsTextures (textures envoyées seulement)
 };
 
 class VkCtx {
@@ -48,6 +50,12 @@ public:
     // texture RGBA8 avec mipmaps générés sur le GPU
     Image uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srgb);
     void uploadMipsCpu(Image& img, const uint8_t* rgba, uint32_t w, uint32_t h, uint32_t mips);   // WFS-134 : repli sans blit
+    // WFS-149 (RG-01) : texture dont TOUS les niveaux sont fournis (KTX2 : ASTC, ETC2 ou RGBA8), copiés tels quels
+    Image uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux);
+    // WFS-149 : le GPU sait échantillonner ce format avec filtre linéaire (fonctions ASTC / ETC2 activées à la création)
+    bool formatEchantillonnable(VkFormat fmt) const;
+    size_t octetsTextures = 0;   // WFS-149 : mémoire des textures envoyées (niveaux compris), journal et banc du réalisme
+    bool astc = false, etc2 = false;   // WFS-149 : textureCompressionASTC_LDR / textureCompressionETC2 activées
 
     VkInstance instance = VK_NULL_HANDLE;
     VkPhysicalDevice gpu = VK_NULL_HANDLE;

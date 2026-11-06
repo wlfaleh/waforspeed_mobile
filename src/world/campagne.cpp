@@ -6,16 +6,22 @@
 //     village : maisons colorées, église, lampadaires, passages piétons ; vignobles : vignes, cyprès, mas ;
 //   - ambiance envFor : jour brouillard #d3e0d0 à 820 m ; nuit sans lampadaires, brouillard #0d1218.
 // Placement généré par la graine de la carte (mulberry32(seed · 31 + 7)), dans l'ordre des tirages du jeu web.
+#include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <limits>
+#include <unordered_map>
+#include <vector>
 #include "../core/log.h"
 #include "decor_carte.h"
+#include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2 (lacets du col, pont)
 
 namespace wfs {
 namespace carte {
 namespace {
 
-enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POLE, T_SIGN, T_VILLA, T_CHURCH, T_ZEBRA, T_VINES };
+enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POLE, T_SIGN, T_VILLA, T_CHURCH, T_ZEBRA, T_VINES,
+       T_GLISS, T_MURET, T_DANGER, T_CASCADE };   // WFS-138 : glissière, muret, panneau A1, cascade
 
 class Campagne : public CarteDecor {
 public:
@@ -36,14 +42,24 @@ protected:
         out[1] = {R + 1.6f, R + 3, -0.05f, -0.4f, foret ? C_FOREST : C_DITCH};
         out[2] = {R + 3, R + 95, -0.4f, vignes ? 6.f : 0.2f, foret ? C_FOREST : vignes ? vine : village ? C_VERGE : field};
         out[3] = {R + 95, R + 220, vignes ? 6.f : 0.2f, vignes ? 26.f : 9.f, foret ? C_FOREST : C_FARHILL};
-        return 4;
+        return borner(a, s, out, 4);
     }
 
     void place(const char* z, int64_t z0, int64_t z1, Mulberry32& Dm) override {
+        if (libre_.empty()) { calculerLibre(); placerCol(); }
+        // WFS-138 (RG-C1) : un objet n'est posé que s'il tient avant la mi-distance de la route voisine (2 m de marge)
+        auto item = [&](int64_t n, const Item& it) {
+            const Libre* l = libreA(n, it.side);
+            if (l && it.lat + std::max(it.d, 2.f) + 2 > l->m) return;
+            // clairière de la cascade (RG-01) : rien entre la route et la paroi, sur ±15 segments (≈ 18 m)
+            if (aCascade_ && it.side == cascadeCote_ && std::llabs(n - cascadeSeg_) < 15) return;
+            CarteDecor::item(n, it);
+        };
         auto D = [&]() { return (float)Dm.next(); };
         auto fl = [](float v) { return (int64_t)std::floor(v); };
         const float R = (float)RW, SM = (float)SEG_M;
         auto tree = [&](int64_t n, int side, float lat, float h, int kind, float along) {
+            if (altitude(n) > 60) kind = K_PINE;   // WFS-138 (RG-01) : étage montagnard : les sapins remplacent les feuillus
             Item it; it.t = T_TREE; it.side = side; it.lat = lat; it.h = h; it.k = kind; it.along = along; item(n, it);
         };
         if (!std::strcmp(z, "champs")) {
@@ -79,7 +95,9 @@ protected:
             for (int64_t n = z0 + 40; n < z1; n += 120) { Item it; it.t = T_ZEBRA; item(n, it); }
         } else if (!std::strcmp(z, "vignes")) {
             for (int side : {-1, 1}) {
-                for (int64_t n = z0; n < z1; n += 12) for (int k = 0; k < 10; k++) { Item it; it.t = T_VINES; it.side = side; it.lat = R + 6 + k * 3.2f; it.l = 12 * SM - 0.6f; it.petit = true; item(n, it); }
+                // WFS-138 (RG-05, ANO-65) : rangs continus (blocs de 12 tronçons bord à bord, sans retrait ni trou), un tous les
+                // 2 m (écartement réel 1,5 à 2,5 m entre rangs palissés), 16 rangs de chaque côté
+                for (int64_t n = z0; n < z1; n += 12) for (int k = 0; k < 16; k++) { Item it; it.t = T_VINES; it.side = side; it.lat = R + 6 + k * 2.f; it.l = 12 * SM; it.petit = true; item(n, it); }
                 for (int64_t n = z0 + fl(D() * 10); n < z1; n += 14 + fl(D() * 10)) { const float h = 9 + D() * 4; tree(n, side, R + 3.5f, h, K_CYPRESS, 0); }
                 for (int64_t n = z0 + 80; n < z1; n += 200) { Item it; it.t = T_FARM; it.side = side; it.lat = R + 45 + D() * 20; it.k = 0; item(n, it); }
             }
@@ -166,33 +184,71 @@ protected:
             }
             break;
         }
-        case T_VINES: {   // rang de vigne : boîte de DECOR.vines (0,7 × 1,2 m, effilée de 0,6 en largeur et en longueur),
-            // posée sur le coteau à chaque tronçon (WFS-93) : le rang suit la pente et les virages, plus de marches
-            const float Ls = it.l / (float)SEG_M, e = 0.2f * Ls;   // longueur et retrait du dessus à chaque bout (tronçons)
-            const double sA = (double)a + (double)std::lround(Ls / 2) - Ls / 2.0, sB = sA + Ls;
-            double sb[24]; int n = 0;   // tronçons du bas : bouts du rang et tronçons entiers entre les deux
-            sb[n++] = sA;
-            for (int64_t k = (int64_t)std::floor(sA) + 1; k < sB && n < 23; k++) sb[n++] = (double)k;
-            sb[n++] = sB;
-            const float yb = gy(it.lat) - 0.05f, wb = 0.35f, wt = 0.21f, x0 = s * it.lat;
-            auto P = [&](double sg, float x, float dy) { const TrackPoint q = t.point(sg * SEG, x); return vec3{(float)q.x, (float)q.y + dy, (float)q.z}; };
-            vec3 B[24][2], T[24][2];   // [tronçon][côté −r, +r]
+        case T_VINES: {   // WFS-138 (RG-05, ANO-65) : rang de vigne palissé = bande continue de 0,5 m de large (0,4 m au sommet) et
+            // 1,2 m de haut, posée sur le sol à chaque tronçon (1,2 m, ≤ 2 m) des deux côtés du rang : elle suit la pente et les
+            // virages ; les blocs voisins partagent leurs bouts (même abscisse, même hauteur) : ni trou ni marche
+            const double sA = (double)a, sB = sA + it.l / (float)SEG_M;
+            const int n = (int)std::lround(sB - sA) + 1;
+            const float wb = 0.25f, wt = 0.2f, x0 = s * it.lat, H = 1.2f;
+            auto P = [&](double sg, float x, float y) { const TrackPoint q = t.point(sg * SEG, x); return vec3{(float)q.x, (float)q.y + y, (float)q.z}; };
+            const vec2 c = uv(C_VINE);
+            vec3 B0[2], T0[2];
             for (int i = 0; i < n; i++) {
-                const double st = sA + e + (sb[i] - sA) * (Ls - 2 * e) / Ls;   // dessus plus court : même fraction du rang
+                const double sg = sA + i;
+                // sol lu au segment de l'échantillon (profil de CE segment) : le bout commun de deux blocs a la même hauteur
+                const int64_t ag = (int64_t)sg;
+                auto gyS = [&](float lat) { return solY(zone(ag), ag, it.side, lat); };
+                const float yg = gyS(it.lat);
+                vec3 B1[2], T1[2];
                 for (int k = 0; k < 2; k++) {
                     const float sx = k ? 1.f : -1.f;
-                    B[i][k] = P(sb[i], x0 + sx * wb, gy(it.lat + s * sx * wb) - 0.05f);
-                    T[i][k] = P(st, x0 + sx * wt, yb + 1.2f);
+                    B1[k] = P(sg, x0 + sx * wb, gyS(it.lat + s * sx * wb) - 0.05f);
+                    T1[k] = P(sg, x0 + sx * wt, yg + H);
                 }
+                if (i > 0) {   // ordre des sommets de box : normales vers l'extérieur
+                    quad(S, T0[0], T0[1], T1[1], T1[0], c);
+                    quad(S, B0[1], B1[1], T1[1], T0[1], c);
+                    quad(S, B1[0], B0[0], T0[0], T1[0], c);
+                }
+                for (int k = 0; k < 2; k++) { B0[k] = B1[k]; T0[k] = T1[k]; }
             }
-            const vec2 c = uv(C_VINE);   // ordre des sommets de box : normales vers l'extérieur
-            for (int i = 0; i + 1 < n; i++) {
-                quad(S, T[i][0], T[i][1], T[i + 1][1], T[i + 1][0], c);
-                quad(S, B[i][1], B[i + 1][1], T[i + 1][1], T[i][1], c);
-                quad(S, B[i + 1][0], B[i][0], T[i][0], T[i + 1][0], c);
-            }
-            quad(S, B[n - 1][1], B[n - 1][0], T[n - 1][0], T[n - 1][1], c);
-            quad(S, B[0][0], B[0][1], T[0][1], T[0][0], c);
+            break;
+        }
+        case T_GLISS: {   // glissière simple (GS2) : lisse en acier galvanisé de 0,31 m, haut à 0,70 m, poteaux tous les 2,4 m
+            const Pose p1 = poseAt(t, a + 2);
+            const vec3 A = lateral(p, s * it.lat, 0.39f), B = lateral(p1, s * it.lat, 0.39f), up{0, 0.31f, 0};
+            const vec3 n = p.r * (-s * 0.03f);   // lisse : 3 cm d'épaisseur vers la route
+            quad(S, A + n, B + n, B + n + up, A + n + up, uv(C_STEEL));
+            quad(S, B, A, A + up, B + up, uv(C_STEEL));
+            box(S, lateral(p, s * (it.lat + 0.08f)), p.r, p.f, 0.1f, 0.7f, 0.1f, uv(C_STEEL));
+            break;
+        }
+        case T_MURET: {   // parapet de pierre dans l'épingle : 0,5 m de haut (≥ 0,45 m réglementaire de retenue), 0,4 m d'épaisseur
+            const Pose p1 = poseAt(t, a + 1);
+            const float x = s * it.lat, e = s * 0.4f;
+            const vec3 a0 = lateral(p, x), a1 = lateral(p, x + e), b0 = lateral(p1, x), b1 = lateral(p1, x + e), up{0, 0.5f, 0};
+            quad(S, a0 + up, b0 + up, b1 + up, a1 + up, uv(C_WALK));
+            if (s > 0) { quad(S, a0, b0, b0 + up, a0 + up, uv(C_WALK)); quad(S, b1, a1, a1 + up, b1 + up, uv(C_WALK)); }
+            else { quad(S, b0, a0, a0 + up, b0 + up, uv(C_WALK)); quad(S, a1, b1, b1 + up, a1 + up, uv(C_WALK)); }
+            break;
+        }
+        case T_DANGER: {   // panneau A1 (virage dangereux) en rase campagne : triangle de 1 m, bord rouge, bas à 1,5 m, face aux arrivants
+            const vec3 b = lateral(p, s * it.lat);
+            cyl(S, b, 0.04f, 2.4f, 6, uv(C_STEEL));
+            const vec3 c = b + vec3{0, 2.0f, 0} - p.f * 0.06f, rr = p.r * 0.5f, up{0, 0.866f, 0};
+            tri(S, c - rr - up * 0.33f, c + rr - up * 0.33f, c + up * 0.67f, uv(C_SIGNR));   // bord rouge (côté des arrivants : −f)
+            tri(S, c - rr * 0.7f - up * 0.23f - p.f * 0.01f, c + rr * 0.7f - up * 0.23f - p.f * 0.01f, c + up * 0.47f - p.f * 0.01f, uv(C_SIGNW));
+            tri(S, c + rr - up * 0.33f + p.f * 0.02f, c - rr - up * 0.33f + p.f * 0.02f, c + up * 0.67f + p.f * 0.02f, uv(C_METAL));   // dos
+            break;
+        }
+        case T_CASCADE: {   // cascade : paroi de roche de 16 m, chute d'eau de 3 m de large, vasque au pied (près du pont)
+            const vec3 b = lateral(p, s * it.lat, gy(it.lat) - 0.3f);
+            box(S, b + p.r * (s * 4.f), p.r, p.f, 6, 16, 22, uv(C_WALK));
+            const vec3 face = b + p.r * (s * 0.98f), up{0, 15.5f, 0}, w = p.f * 1.5f;
+            if (s > 0) quad(S, face - w, face + w, face + w + up, face - w + up, uv(C_WHITE));
+            else quad(S, face + w, face - w, face - w + up, face + w + up, uv(C_WHITE));
+            const vec3 v = b + vec3{0, 0.05f, 0};
+            quadSol(S, v - p.f * 4.f, v + p.f * 4.f, v + p.f * 4.f - p.r * (s * 6.f), v - p.f * 4.f - p.r * (s * 6.f), uv(C_GLASS));
             break;
         }
         default: break;
@@ -201,6 +257,9 @@ protected:
 
     // pales des éoliennes : objet séparé qui tourne (rotors de scene.js), un maillage par éolienne
     int animes(Renderer& r, const GameView& g, int64_t c0, int64_t c1) override {
+        int nS = 0;
+        if (!sommets_.empty() && !sommetsMesh_.indexCount) construireSommets(r);
+        if (sommetsMesh_.indexCount) { r.draw(sommetsMesh_, mats_[P_UNI], mat4::identity()); nS = 1; }   // WFS-138 : un appel
         if (rotors_.empty()) {
             for (const auto& [seg, it] : turbines_) {
                 Geo B;
@@ -232,15 +291,192 @@ protected:
             r.draw(rotors_[i], mats_[P_UNI], translate(hub) * rotateY(-p.th) * rotateZ(spin * (float)g.time));
             n++;
         }
-        return n;
+        return n + nS;
     }
 
     void shutdownCarte(Renderer& r) override {
         for (Mesh& m : rotors_) r.destroy(m);
         rotors_.clear(); turbines_.clear();
+        if (sommetsMesh_.vb.buf) r.destroy(sommetsMesh_);   // WFS-138
+        sommetsMesh_ = Mesh{}; sommets_.clear(); libre_.clear(); aCol_ = aCascade_ = false;
     }
 
 private:
+    // WFS-138 (RG-C1) : espace libre de chaque côté de chaque segment : m = mi-distance (m depuis l'axe) jusqu'à la route
+    // voisine la plus proche dans un cône de 45° autour du côté, h = mi-écart de hauteur (m, + : la voisine est plus haute)
+    struct Libre { float m = std::numeric_limits<float>::infinity(), h = 0; };
+    // WFS-138 (RG-C1) : profil de la zone coupé à la mi-distance de la route voisine (lacets du col, épingles, rond-point),
+    // hauteur corrigée en rampe depuis le bord de la chaussée (correction 0) jusqu'à la coupe (sol = mi-hauteur des deux
+    // routes) : le sol rejoint exactement celui de la voisine et ne recouvre jamais sa chaussée ; pente forte vers le haut :
+    // talus de roche (paroi côté montagne)
+    int borner(int64_t a, int s, Band out[6], int n) const {
+        const Libre* l = libreA(a, s);
+        if (!l || l->m >= out[n - 1].b) return n;
+        const float R = (float)RW, m = std::max(l->m, out[0].b + 0.5f);
+        int k = 0;
+        while (k < n && out[k].b < m) k++;
+        if (k == n) return n;
+        out[k].yb = out[k].ya + (out[k].yb - out[k].ya) * (m - out[k].a) / (out[k].b - out[k].a); out[k].b = m;
+        n = k + 1;
+        const float corr = l->h - out[k].yb, pente = corr / (m - R);
+        for (int i = 0; i < n; i++) { out[i].ya += corr * (out[i].a - R) / (m - R); out[i].yb += corr * (out[i].b - R) / (m - R); }
+        if (pente > 0.45f) for (int i = 1; i < n; i++) out[i].col = C_WALK;   // plus de 24° : la roche affleure (gris 0x8a8884, albédo ≈ 0,25)
+        return n;
+    }
+    std::vector<Libre> libre_;   // 2 par segment : [2a] gauche, [2a + 1] droite
+    const Libre* libreA(int64_t a, int side) const {
+        if (libre_.empty()) return nullptr;
+        const int64_t L = len(), k = ((a % L) + L) % L;
+        const Libre& l = libre_[(size_t)(2 * k + (side > 0))];
+        return std::isfinite(l.m) ? &l : nullptr;
+    }
+    void calculerLibre() {
+        Track& t = *track_;
+        const int64_t L = len();
+        const float R = (float)RW, PORTEE = 2 * (R + 220);   // au-delà, le profil normal (220 m) ne peut rien toucher
+        std::vector<vec3> P((size_t)L);
+        std::vector<Pose> Q((size_t)L);
+        for (int64_t a = 0; a < L; a++) { Q[(size_t)a] = poseAt(t, a); P[(size_t)a] = Q[(size_t)a].o; }
+        const float CELL = 40;
+        auto cle = [&](float x, float z) { return ((int64_t)std::floor(x / CELL) << 32) ^ ((int64_t)std::floor(z / CELL) & 0xffffffff); };
+        std::unordered_map<int64_t, std::vector<int64_t>> grille;
+        for (int64_t a = 0; a < L; a++) grille[cle(P[(size_t)a].x, P[(size_t)a].z)].push_back(a);
+        libre_.assign((size_t)(2 * L), Libre{});
+        const int NC = (int)std::ceil(PORTEE / CELL);
+        int limites = 0;
+        for (int64_t a = 0; a < L; a++) {
+            const vec3 o = P[(size_t)a]; const Pose& q = Q[(size_t)a];
+            const int64_t cx = (int64_t)std::floor(o.x / CELL), cz = (int64_t)std::floor(o.z / CELL);
+            for (int side = 0; side < 2; side++) {
+                const float sg = side ? 1.f : -1.f;
+                float best = PORTEE, dy = 0;
+                for (int ix = -NC; ix <= NC; ix++) for (int iz = -NC; iz <= NC; iz++) {
+                    const auto it = grille.find(((cx + ix) << 32) ^ ((cz + iz) & 0xffffffff));
+                    if (it == grille.end()) continue;
+                    for (int64_t b : it->second) {
+                        int64_t da = std::llabs(b - a); da = std::min(da, L - da);
+                        if (da < 12) continue;   // la route elle-même (≈ 14 m de part et d'autre)
+                        const vec3 d = P[(size_t)b] - o;
+                        const float proj = (d.x * q.r.x + d.z * q.r.z) * sg, along = d.x * q.f.x + d.z * q.f.z;
+                        if (proj <= 0 || std::fabs(along) > proj || proj >= best) continue;
+                        best = proj; dy = d.y;
+                    }
+                }
+                if (best < PORTEE) { libre_[(size_t)(2 * a + side)] = {best / 2, dy / 2}; limites++; }
+            }
+        }
+        // lissage sur ±4 segments (minimum de la distance) : bord du sol sans marches d'un segment à l'autre
+        std::vector<Libre> lisse = libre_;
+        for (int64_t a = 0; a < L; a++) for (int side = 0; side < 2; side++) {
+            Libre& d = lisse[(size_t)(2 * a + side)];
+            for (int k = -4; k <= 4; k++) {
+                const Libre& v = libre_[(size_t)(2 * (((a + k) % L + L) % L) + side)];
+                if (v.m < d.m) { d.m = v.m; d.h = v.h; }
+            }
+        }
+        libre_ = lisse;
+        WFS_LOG("campagne : espace libre calculé (%lld segments, %d côtés bornés par une route voisine)", (long long)L, limites);
+    }
+
+    // WFS-138 (RG-01) : altitude (m) d'un segment au-dessus du pied du col (début des lacets)
+    float altitude(int64_t n) const {
+        if (!aCol_) return 0;
+        const int64_t L = len();
+        return (float)track_->point((double)(((n % L) + L) % L) * SEG, 0).y - yPied_;
+    }
+    // décor du col (RG-01), posé une fois : glissières sur les branches et murets dans les épingles côté vide, panneaux A1
+    // 70 m avant chaque épingle, cascade au pont ; sommets du fond (maillage à part, animes)
+    void placerCol() {
+        Track& t = *track_;
+        const float R = (float)RW;
+        for (const trace::Section& sec : t.sections()) {
+            if (sec.type == trace::Type::Pont && !aCascade_) {   // cascade du côté libre le plus large, au milieu du pont
+                const int64_t m = (sec.debut + sec.fin) / 2;
+                const Libre* g = libreA(m, -1); const Libre* d = libreA(m, 1);
+                const int side = (!d || (g && g->m < d->m)) ? 1 : -1;
+                const Libre* l = libreA(m, side);
+                if (!l || l->m > R + 36) { Item it; it.t = T_CASCADE; it.side = side; it.lat = R + 14; CarteDecor::item(m, it); aCascade_ = true; cascadeSeg_ = m; cascadeCote_ = side;
+                    WFS_LOG("campagne : cascade au pont (segment %lld, côté %s)", (long long)m, side > 0 ? "droit" : "gauche"); }
+            }
+            if (sec.type != trace::Type::Lacets) continue;
+            aCol_ = true; yPied_ = (float)t.point((double)sec.debut * SEG, 0).y;
+            int64_t debutEp = -1, nEp = 0;
+            for (int64_t a = sec.debut; a < sec.fin; a++) {
+                const bool ep = std::abs(t.segAt(a).curve) > 10;
+                if (ep && debutEp < 0) {   // nouvelle épingle : panneau A1 70 m avant, à droite (sens de circulation)
+                    debutEp = a; nEp++;
+                    Item it; it.t = T_DANGER; it.side = 1; it.lat = R + 1.2f; it.petit = true; CarteDecor::item(a - (int64_t)(70 / SEG_M), it);
+                }
+                if (!ep) debutEp = -1;
+                for (int side : {-1, 1}) {
+                    const Libre* l = libreA(a, side);
+                    if (l && l->h > 1.5f) continue;   // côté montagne : talus de roche (profil)
+                    if (ep) { Item it; it.t = T_MURET; it.side = side; it.lat = R + 0.5f; item(a, it); }
+                    else if (a % 2 == 0) { Item it; it.t = T_GLISS; it.side = side; it.lat = R + 0.6f; it.petit = true; CarteDecor::item(a, it); }
+                }
+            }
+            WFS_LOG("campagne : col de %.0f m, %lld épingles balisées, pied à %.0f m", sec.denivele, (long long)nEp, yPied_);
+            placerSommets(sec);
+        }
+    }
+    // sommets du fond : au-delà de la dernière branche des lacets, du côté où le col monte, à plus de 400 m de toute route ;
+    // 2 enneigés (neige au-dessus de 70 % de la hauteur, albédo 0,80 : 0xe8e8e8)
+    struct Sommet { vec3 c; float r, h; bool neige; };
+    std::vector<Sommet> sommets_;
+    Mesh sommetsMesh_{};
+    void placerSommets(const trace::Section& sec) {
+        Track& t = *track_;
+        const int64_t L = len();
+        const vec3 a0 = poseAt(t, sec.debut).o, a1 = poseAt(t, sec.fin).o;
+        vec3 U = a1 - a0; U.y = 0; const float lu = std::sqrt(U.x * U.x + U.z * U.z); if (lu < 1) return; U = U * (1 / lu);
+        const vec3 V{-U.z, 0, U.x};
+        auto loinDesRoutes = [&](vec3 c, float r) {
+            for (int64_t a = 0; a < L; a += 4) { const vec3 o = poseAt(t, a).o; const float dx = o.x - c.x, dz = o.z - c.z; if (dx * dx + dz * dz < r * r) return false; }
+            return true;
+        };
+        Mulberry32 D(map().seed * 13 + 5);
+        const float base = a1.y - 40;
+        for (int k = 0; k < 60 && sommets_.size() < 5; k++) {   // candidats en éventail, de plus en plus loin
+            const float r = 220 + (float)D.next() * 160, h = 220 + (float)D.next() * 200, ang = ((float)D.next() - 0.5f) * 2.4f;
+            const float dist = r + 350 + k * 40.f;
+            const vec3 c = a1 + U * (std::cos(ang) * dist) + V * (std::sin(ang) * dist);
+            if (!loinDesRoutes(c, r + 250)) continue;
+            bool loinDesAutres = true;
+            for (const Sommet& o : sommets_) { const float dx = o.c.x - c.x, dz = o.c.z - c.z; if (dx * dx + dz * dz < (o.r + r) * (o.r + r) * 0.5f) loinDesAutres = false; }
+            if (!loinDesAutres) continue;
+            sommets_.push_back({{c.x, base, c.z}, r, h, false});
+        }
+        // les 2 plus hauts sont enneigés
+        std::vector<size_t> idx(sommets_.size()); for (size_t i = 0; i < idx.size(); i++) idx[i] = i;
+        std::sort(idx.begin(), idx.end(), [&](size_t x, size_t y) { return sommets_[x].h > sommets_[y].h; });
+        for (size_t i = 0; i < idx.size() && i < 2; i++) sommets_[idx[i]].neige = true;
+        WFS_LOG("campagne : %zu sommets en fond du col (2 enneigés)", sommets_.size());
+    }
+    void construireSommets(Renderer& r) {
+        Geo G;
+        Mulberry32 D(map().seed * 17 + 3);
+        for (const Sommet& m : sommets_) {   // tronc de cône irrégulier : forêt jusqu'à 35 %, roche, neige au-dessus de 70 %
+            const int N = 14;
+            float rr[N]; for (int i = 0; i < N; i++) rr[i] = 0.75f + 0.5f * (float)D.next();
+            const float paliers[4] = {0, 0.35f, 0.7f, 1};
+            for (int e = 0; e < 3; e++) {
+                const int col = e == 0 ? C_FOREST : e == 1 || !m.neige ? C_WALK : C_WHITE;
+                const float t0 = paliers[e], t1 = paliers[e + 1];
+                for (int i = 0; i < N; i++) {
+                    const float a0 = 2 * PI * i / N, a1 = 2 * PI * (i + 1) / N;
+                    auto P = [&](float ang, float tt, float k) { const float rad = m.r * (1 - tt) * k; return vec3{m.c.x + std::cos(ang) * rad, m.c.y + m.h * tt, m.c.z + std::sin(ang) * rad}; };
+                    const float k0 = rr[i], k1 = rr[(i + 1) % N];
+                    if (t1 >= 1) tri(G, P(a1, t0, k1), P(a0, t0, k0), vec3{m.c.x, m.c.y + m.h, m.c.z}, uv(col));
+                    else quad(G, P(a1, t0, k1), P(a0, t0, k0), P(a0, t1, k0), P(a1, t1, k1), uv(col));
+                }
+            }
+        }
+        if (!G.i.empty()) sommetsMesh_ = r.makeMesh(G.v, G.i);
+    }
+    bool aCol_ = false, aCascade_ = false;
+    int64_t cascadeSeg_ = -1; int cascadeCote_ = 0;
+    float yPied_ = 0;
+
     std::vector<std::pair<int64_t, Item>> turbines_;
     std::vector<Mesh> rotors_;
 };

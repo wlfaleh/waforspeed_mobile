@@ -3,6 +3,7 @@
 // panneau « CHECKPOINT n » lumineux des deux côtés. Placé au prochain checkpoint de la course (lecture seule de
 // activeCourse()->nextCp), reconstruit à chaque checkpoint passé. Ville et Corniche (RG-09) ; la fonction
 // construirePortique est indépendante de la carte (Grand Prix : WFS-53).
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <string>
@@ -10,6 +11,7 @@
 #include "../core/system.h"
 #include "../game/course_system.h"
 #include "../game/player.h"
+#include "../game/trace_cartes.h"   // WFS-139 (accroche)
 #include "../game/track.h"
 #include "enseignes.h"
 
@@ -87,7 +89,11 @@ private:
             mot("CHECKPOINT"); x += esp;
             for (char ch : num) mot(std::string(1, ch));
         }
-        fixe_ = r.makeMesh(B.v, B.i); lumiere_ = r.makeMesh(N.v, N.i); texte_ = r.makeMesh(T.v, T.i);
+        // WFS-139 (accroche) : tracé 2 : ni piliers ni poutre dans une courbe serrée (ils tomberaient sur la chaussée) ni dans
+        // un tunnel (voûte de 7,6 m) ; la bande au sol marque seule le checkpoint
+        const trace::Section* sec = trace::sectionA(t, s);
+        if (std::min({trace::rayonInterieur(t, s - 2500).m, trace::rayonInterieur(t, s).m, trace::rayonInterieur(t, s + 2500).m}) < 60 || (sec && sec->type == trace::Type::Tunnel)) { B = T = N = Geo{}; boite(N, lateral(p, 0, 0.02f), p.r, p.f, R * 2, 0.02f, 0.5f, {0, 0}); }
+        fixe_ = B.i.empty() ? Mesh{} : r.makeMesh(B.v, B.i); lumiere_ = r.makeMesh(N.v, N.i); texte_ = T.i.empty() ? Mesh{} : r.makeMesh(T.v, T.i);
         WFS_LOG("vie : portique « CHECKPOINT %d »", numero);
     }
     bool actif_ = false;
