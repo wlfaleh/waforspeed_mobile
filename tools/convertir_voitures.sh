@@ -27,10 +27,15 @@ VOITURES=(
   "mustang|ford-mustang|4.82|180|^fFord_MustangShelbyGT500RewardRecycled_2019Paint_Material1$||"
   "sf90|ferrari-sf90|4.85|180|^PLASTIC_INT_10$||"
 )
+# WFS-158 (RG-A, ANO-79) : plaques neutres de tools/plaques_neutres.mjs à la place des plaques au nom de l'auteur du modèle
+# (V60, A 45, Range Rover Sport) ; plaques remises au format européen 520 × 110 mm (la V60 l'est déjà : 515 × 110 mm)
+declare -A PLAQUE=( [a45]='^Material\.029$' [rrsport]='^material$' )
+declare -A TEXTURES=( [v60]='plate_tex|couleur=plaques/v60.png|normale=plaques/normale-plate.png'
+                      [a45]='Material.029|couleur=plaques/a45.png' [rrsport]='material|couleur=plaques/rrsport.png' )
 cd "$ICI"
 for v in "${VOITURES[@]}"; do
   IFS='|' read -r id dossier L rot peinture roues feux <<< "$v"
-  export WFS_ROUES="$roues"
+  export WFS_ROUES="$roues" WFS_PLAQUE="${PLAQUE[$id]:-}" WFS_TEXTURES="${TEXTURES[$id]:-}"
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   echo "== $id ($dossier)"
   if [ -n "$feux" ]; then node convert_car.mjs "$WEB/models/$dossier/$dossier.json" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture" "$feux"
@@ -39,4 +44,7 @@ for v in "${VOITURES[@]}"; do
 done
 # WFS-134 (RG-11, RG-12) : versions allégées (assets/cars/<id>.lod : indices seuls, 30 % des triangles au moins) des voitures
 # du trafic, de la police et du camion de la poursuite ; vues au-delà de 60 m, avec fondu (Renderer::draw)
-for id in golf m4 p911 gallardo p208 x5; do node alleger_voiture.mjs "$RACINE/assets/cars/$id.wfm" "$RACINE/assets/cars/$id.lod" 0.3; done
+# (WFS-158 : avec une liste d'id, seules les voitures de la liste sont allégées)
+for id in golf m4 p911 gallardo p208 x5; do
+  if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
+  node alleger_voiture.mjs "$RACINE/assets/cars/$id.wfm" "$RACINE/assets/cars/$id.lod" 0.3; done

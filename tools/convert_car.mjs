@@ -22,6 +22,9 @@
 // normales, de métal ou de rugosité, sans émission) : les motifs des modèles (camouflage, paillettes étirées) disparaissent.
 // WFS_ROUES=forme : pièces en forme de roue (rondes, posées au sol, sur un côté) regroupées à part avec le drapeau 128,
 // pour les modèles dont les roues n'ont pas de nom reconnaissable et partagent leur matériau avec la carrosserie (GT86).
+// WFS-158 (RG-A, M-04) : WFS_PLAQUE=<regex matériau> : plaques avant et arrière remises au format européen 520 × 110 mm ;
+// WFS_TEXTURES=« matériau|couleur=fichier[|normale=fichier] ; … » : images du dépôt à la place des textures d'un matériau
+// (plaques au nom de l'auteur du modèle, remplacées par les plaques neutres de tools/plaques_neutres.mjs).
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { MeshoptDecoder } from 'meshoptimizer';
@@ -111,6 +114,43 @@ const k = L / Math.max(b[5] - b[2], 1e-3), cx = (b[0] + b[3]) / 2, cz = (b[2] + 
 for (const p of list) for (let i = 0; i < p.pos.length; i += 3) { p.pos[i] = (p.pos[i] - cx) * k; p.pos[i + 1] = (p.pos[i + 1] - y0) * k; p.pos[i + 2] = (p.pos[i + 2] - cz) * k; }
 b = boxOf(list);
 
+// ---------- WFS-158 (RG-A, M-04) : plaques au format européen 520 × 110 mm ----------
+// Chaque plaque (avant : z < 0, arrière : z > 0) est étirée dans son propre plan, autour de son centre : largeur selon x,
+// hauteur selon la verticale du plan ; épaisseur, inclinaison et normales inchangées. Seules les pièces du matériau désigné
+// bougent (une plaque est une pièce rapportée : ce n'est pas une échelle par axe de la voiture, interdite par RG-01).
+const PLAQUE_L = 0.520, PLAQUE_H = 0.110;
+const plaquesMesurees = [];
+if (process.env.WFS_PLAQUE) {
+  const rxP = new RegExp(process.env.WFS_PLAQUE);
+  const dot = (a, c) => a[0] * c[0] + a[1] * c[1] + a[2] * c[2];
+  const unit = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+  for (const cote of [-1, 1]) {
+    const pts = [];
+    for (const p of list) if (rxP.test((p.mat && p.mat.getName()) || '')) for (let i = 0; i < p.pos.length / 3; i++) if (Math.sign(p.pos[i * 3 + 2]) === cote) pts.push([p, i]);
+    if (!pts.length) continue;
+    // normale du plan : faces avant et arrière de la plaque (|nz| > 0,5), retournées vers l'extérieur de la voiture
+    let n = [0, 0, 0];
+    for (const [p, i] of pts) { const nz = p.nrm[i * 3 + 2]; if (Math.abs(nz) > 0.5) { const sg = Math.sign(nz) === cote ? 1 : -1; for (let c = 0; c < 3; c++) n[c] += sg * p.nrm[i * 3 + c]; } }
+    n = unit(n);
+    const X = unit([1 - n[0] * n[0], -n[0] * n[1], -n[0] * n[2]]);                       // x projeté dans le plan
+    let U = unit([n[1] * X[2] - n[2] * X[1], n[2] * X[0] - n[0] * X[2], n[0] * X[1] - n[1] * X[0]]);
+    if (U[1] < 0) U = [-U[0], -U[1], -U[2]];                                                   // verticale du plan, vers le haut
+    const q = pts.map(([p, i]) => [p.pos[i * 3], p.pos[i * 3 + 1], p.pos[i * 3 + 2]]);
+    const lo = [0, 1, 2].map((c) => Math.min(...q.map((v) => v[c]))), hi = [0, 1, 2].map((c) => Math.max(...q.map((v) => v[c])));
+    const ctr = [0, 1, 2].map((c) => (lo[c] + hi[c]) / 2);
+    const a = q.map((v) => dot([v[0] - ctr[0], v[1] - ctr[1], v[2] - ctr[2]], X)), h = q.map((v) => dot([v[0] - ctr[0], v[1] - ctr[1], v[2] - ctr[2]], U));
+    const largeur = Math.max(...a) - Math.min(...a), hauteur = Math.max(...h) - Math.min(...h);
+    const sx = PLAQUE_L / largeur, sy = PLAQUE_H / hauteur, a0 = (Math.max(...a) + Math.min(...a)) / 2, h0 = (Math.max(...h) + Math.min(...h)) / 2;
+    pts.forEach(([p, i], j) => {
+      const d = [q[j][0] - ctr[0], q[j][1] - ctr[1], q[j][2] - ctr[2]], e = dot(d, n);
+      const na = a0 + (a[j] - a0) * sx, nh = h0 + (h[j] - h0) * sy;
+      for (let c = 0; c < 3; c++) p.pos[i * 3 + c] = ctr[c] + X[c] * na + U[c] * nh + n[c] * e;
+    });
+    plaquesMesurees.push(`${cote < 0 ? 'avant' : 'arrière'} ${(largeur * 1000).toFixed(0)}×${(hauteur * 1000).toFixed(0)} → ${PLAQUE_L * 1000}×${PLAQUE_H * 1000} mm`);
+  }
+  b = boxOf(list);
+}
+
 // ---------- WFS-77 : roues reconnues à leur forme (looksLikeWheel du jeu web, en mètres, après la mise à l'échelle) ----------
 let nRouesForme = 0;
 if (process.env.WFS_ROUES === 'forme') for (const p of list) {
@@ -120,16 +160,25 @@ if (process.env.WFS_ROUES === 'forme') for (const p of list) {
 }
 
 // ---------- textures ----------
+// WFS-158 (RG-A) : WFS_TEXTURES : une image du dépôt (chemin depuis tools/) prend la place de la texture du matériau, au même
+// rang : le nombre et l'ordre des textures et des matériaux ne changent pas (src/render/correctifs_voitures.h les désigne par rang)
+const remplacees = new Map();
+for (const r of (process.env.WFS_TEXTURES || '').split(';').map((x) => x.trim()).filter(Boolean)) {
+  const [mat, ...ops] = r.split('|'), o = {};
+  for (const op of ops) { const [cle, f] = op.split('='); o[cle] = f; }
+  remplacees.set(mat, o);
+}
 const texIndex = new Map(), texBlobs = [];
-async function tex(t, color) {
+async function tex(t, color, fichier) {
   if (!t) return -1;
-  if (texIndex.has(t)) return texIndex.get(t);
-  const img = t.getImage(); if (!img) return -1;
+  const cle = fichier ? `fichier:${fichier}` : t;
+  if (texIndex.has(cle)) return texIndex.get(cle);
+  const img = fichier ? fs.readFileSync(fichier) : t.getImage(); if (!img) return -1;
   let s = sharp(Buffer.from(img)), meta = await s.metadata();
   if ((meta.width || 0) > 1024 || (meta.height || 0) > 1024) s = s.resize(1024, 1024, { fit: 'inside' });
   const alpha = color && meta.hasAlpha;
   const buf = alpha ? await s.png({ compressionLevel: 9 }).toBuffer() : await s.jpeg({ quality: 88 }).toBuffer();
-  texBlobs.push(buf); texIndex.set(t, texBlobs.length - 1);
+  texBlobs.push(buf); texIndex.set(cle, texBlobs.length - 1);
   return texBlobs.length - 1;
 }
 
@@ -158,13 +207,14 @@ for (const [cle, ps] of groups) {
   const col = m ? m.getBaseColorFactor() : [0.8, 0.8, 0.8, 1];
   const em = m ? m.getEmissiveFactor() : [0, 0, 0];
   const unie = (flags & 1) !== 0;   // WFS-77 : peinture unie métallisée (repaintMat)
+  const rem = (!estRoue && remplacees.get((m && m.getName()) || '')) || {};   // WFS-158 (RG-A)
   // WFS-77 : feu arrière blanc sans texture (le moteur ne le teinte pas) → rouge des feux du jeu web (0xff2040), lueur faible
   const feuBlanc = (flags & 4) && !(m && m.getBaseColorTexture()) && Math.min(col[0], col[1], col[2]) > 0.8;
   if (feuBlanc) { col[0] = 1; col[1] = 0.0123; col[2] = 0.0513; em[0] = 0.4; em[1] = 0.005; em[2] = 0.02; }
   mats.push({
     col, metal: unie ? 0.45 : m ? m.getMetallicFactor() : 0, rough: unie ? 0.32 : m ? m.getRoughnessFactor() : 0.6, em: unie ? [0, 0, 0] : em,
     cut: m ? m.getAlphaCutoff() : 0.5,
-    tC: unie ? -1 : await tex(m && m.getBaseColorTexture(), true), tN: unie ? -1 : await tex(m && m.getNormalTexture(), false),
+    tC: unie ? -1 : await tex(m && m.getBaseColorTexture(), true, rem.couleur), tN: unie ? -1 : await tex(m && m.getNormalTexture(), false, rem.normale),
     tMR: unie ? -1 : await tex(m && m.getMetallicRoughnessTexture(), false), flags, name,
   });
   // fusion des primitives du matériau
@@ -195,4 +245,5 @@ fs.writeFileSync(out, Buffer.concat(parts));
 const tris = meshes.reduce((s, m) => s + m.ix.length / 3, 0);
 console.log(out.split('/').pop(), `${(fs.statSync(out).size / 1e6).toFixed(2)} Mo`, `${mats.length} matériaux`, `${texBlobs.length} textures`, `${Math.round(tris / 1000)}k triangles`,
   `taille ${(b[3] - b[0]).toFixed(2)}×${(b[4] - b[1]).toFixed(2)}×${(b[5] - b[2]).toFixed(2)} m`, 'peinture:', mats.filter((m) => m.flags & 1).map((m) => m.name).join(',') || 'AUCUNE',
-  ...(process.env.WFS_ROUES === 'forme' ? ['roues (forme):', `${nRouesForme} pièces`] : []), `tangentes : ${sansUv} sommets sans uv`);
+  ...(process.env.WFS_ROUES === 'forme' ? ['roues (forme):', `${nRouesForme} pièces`] : []), `tangentes : ${sansUv} sommets sans uv`,
+  ...(plaquesMesurees.length ? ['plaques :', plaquesMesurees.join(', ')] : []), ...(remplacees.size ? ['textures remplacées :', [...remplacees.keys()].join(', ')] : []));
