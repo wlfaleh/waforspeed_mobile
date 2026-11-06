@@ -11,6 +11,7 @@
 #include "../src/audio/sfx_course.h"  // WFS-124
 #include "../src/audio/trafic_sons.h"  // WFS-121
 #include "../src/audio/garage_son.h"  // WFS-127
+#include "../src/audio/route_sons.h"  // WFS-174
 #include "../src/audio/sirene_son.h"  // WFS-131
 #include <cstring>
 #include "../src/game/player.h"
@@ -324,6 +325,82 @@ int main(int argc, char** argv) {
         const std::vector<float> ja = jingleArrete(R), je = jingleEchappe(R);
         verifie("poursuite-arrete", ja, false); verifie("poursuite-echappe", je, false);
         cas("jingles : durées 0,50 s et 0,59 s (± 0,02)", std::abs(ja.size() / R - 0.50f) <= 0.02f && std::abs(je.size() / R - 0.59f) <= 0.02f);
+        // WFS-184 (ANO-95) : jingles de fin audibles
+        {
+            // RG-03 : « ARRÊTÉ » 660 puis 440 Hz (passages par zéro montants de l'onde triangle, au cœur de chaque note)
+            auto freqNote = [&](const std::vector<float>& b, float debut, float fin) {
+                const size_t a = (size_t)((debut + 0.01f) * R), z = (size_t)((fin - 0.01f) * R);
+                int n = 0; for (size_t i = a + 1; i < z && i < b.size(); i++) n += b[i - 1] < 0 && b[i] >= 0;
+                return n / ((z - a) / R);
+            };
+            const float fa1 = freqNote(ja, 0, 0.25f), fa2 = freqNote(ja, 0.25f, 0.5f);
+            const float fe1 = freqNote(je, 0, 0.12f), fe2 = freqNote(je, 0.12f, 0.24f), fe3 = freqNote(je, 0.24f, 0.59f);
+            std::printf("jingles : ARRÊTÉ %.0f / %.0f Hz ; ÉCHAPPÉ %.0f / %.0f / %.0f Hz\n", fa1, fa2, fe1, fe2, fe3);
+            cas("ARRÊTÉ : 660 puis 440 Hz (± 3 %), 0,25 s chacune", std::abs(fa1 - 660) < 20 && std::abs(fa2 - 440) < 13);
+            cas("ÉCHAPPÉ inchangé : 523 / 659 / 784 Hz (± 3 %)", std::abs(fe1 - 523) < 16 && std::abs(fe2 - 659) < 20 && std::abs(fe3 - 784) < 24);
+            float pkJ = 0, pk1 = 0; for (float x : ja) pkJ = std::max(pkJ, std::abs(x));
+            { std::vector<float> un; sfx::beep(un, R, 660, 0, 0.25f); sfx::beep(un, R, 440, 0.25f, 0.25f); for (float x : un) pk1 = std::max(pk1, std::abs(x)); }
+            std::printf("jingles : crête %.3f (× 1 : %.3f)\n", pkJ, pk1);
+            cas("jingles × 3 (crête × 3 par rapport au jingle × 1)", std::abs(pkJ / pk1 - GAIN_JINGLE) < 1e-3f);
+            // RG-01 : au départ du jingle (fin de course au même pas), gain × atténuation : ≤ 0,10 × la valeur de départ en 30 ms,
+            // linéaire (aucun clic), puis le fondu de 0,8 s finit ; sans jingle, l'atténuation reste à 1
+            const float pasFin = pasFinSirene(R), k = 1 - std::exp(-1 / (LISSAGE_S / 3 * R)), pasB = pasBaisseSirene(R);
+            float a = 1; for (int i = 0; i < (int)R; i++) a = attenuationSirene(a, false, pasB);
+            cas("pendant la poursuite (aucun jingle) : sirène non atténuée", a == 1);
+            float g = GAIN_PRES, effPrec = GAIN_PRES, pasMax = 0; int i = 0, fini = -1;
+            for (; i < (int)(2 * R); i++) {
+                g = suivreGainSirene(g, 0, true, k, pasFin); a = attenuationSirene(a, true, pasB);
+                const float eff = g * a; pasMax = std::max(pasMax, effPrec - eff); effPrec = eff;
+                if (i + 1 == (int)(BAISSE_JINGLE_S * R)) std::printf("sirène : 30 ms après le jingle : %.4f (départ %.2f, rapport %.3f)\n", eff, GAIN_PRES, eff / GAIN_PRES);
+                if (i + 1 == (int)(BAISSE_JINGLE_S * R)) cas("sirène ≤ 0,10 × sa valeur 30 ms après le départ du jingle", eff <= BAISSE_JINGLE * GAIN_PRES);
+                if (g <= 1e-4f && fini < 0) fini = i;
+            }
+            std::printf("sirène : avec jingle, plus grand pas %.6f, silence après %.3f s\n", pasMax, fini / R);
+            // pas par échantillon : celui de la baisse (0,9 × 0,45 en 30 ms) plus celui du fondu de fin (0,45 en 0,8 s), qui
+            // continue dessous
+            cas("baisse linéaire sans clic (pas ≤ 0,9 × 0,45 / 30 ms + 0,45 / 0,8 s, + 3 %), fin en ≤ 0,8 s",
+                pasMax <= (0.9f * GAIN_PRES / (BAISSE_JINGLE_S * R) + GAIN_PRES / (FIN_S * R)) * 1.03f && fini >= 0 && fini <= (int)(FIN_S * R) + 1);
+            // RG-02 : mélange simulé (master 0,5 du mixeur), police à 5 m et à 14 m : chaque note ≥ 6 dB au-dessus de la sirène,
+            // crête < 0,95. Pour comparer, le même calcul avant WFS-184 (sans baisse, jingles × 1, ARRÊTÉ 330 / 220 Hz).
+            const std::vector<float> yelp = boucleSirene(R, CYCLE_YELP);
+            struct Note { float debut, fin; };
+            auto melange = [&](const std::vector<float>& jingle, double distanceM, bool avant, const std::vector<Note>& notes, const char* nom) {
+                const float master = 0.5f, gj = avant ? 1 / GAIN_JINGLE : 1;
+                float gs = gainSirene(distanceM), at = 1, crete = 0, pire = 1e9f; size_t p = 0;
+                std::vector<float> sj(jingle.size()), ss(jingle.size());
+                // comme SfxMixer::mix : la sirène baisse dès la demande, le jingle part ATTENTE_JINGLE_S après (pas avant WFS-184)
+                const size_t attente = avant ? 0 : (size_t)(ATTENTE_JINGLE_S * R);
+                for (size_t n = 0; n < attente + jingle.size(); n++) {
+                    gs = suivreGainSirene(gs, 0, true, k, pasFin); at = avant ? 1 : attenuationSirene(at, true, pasB);
+                    const float sir = master * gs * at * yelp[p]; if (++p >= yelp.size()) p = 0;
+                    if (n < attente) { crete = std::max(crete, std::abs(sir)); continue; }
+                    const size_t j = n - attente;
+                    sj[j] = master * jingle[j] * gj; ss[j] = sir;
+                    crete = std::max(crete, std::abs(sj[j] + ss[j]));
+                }
+                std::printf("jingle %-8s police %4.1f m %s :", nom, distanceM, avant ? "(avant WFS-184)" : "              ");
+                for (const Note& no : notes) {
+                    double ej = 0, es = 0;
+                    for (size_t n = (size_t)(no.debut * R); n < (size_t)(no.fin * R) && n < sj.size(); n++) { ej += (double)sj[n] * sj[n]; es += (double)ss[n] * ss[n]; }
+                    const float db = (float)(10 * std::log10(ej / std::max(es, 1e-20)));
+                    pire = std::min(pire, db); std::printf(" %+.1f dB", db);
+                }
+                std::printf(" ; crête %.2f\n", crete);
+                return std::pair<float, float>{pire, crete};
+            };
+            const std::vector<Note> notesA{{0, 0.25f}, {0.25f, 0.5f}}, notesE{{0, 0.12f}, {0.12f, 0.24f}, {0.24f, 0.59f}};
+            std::vector<float> jaAvant; sfx::beep(jaAvant, R, 330, 0, 0.25f); sfx::beep(jaAvant, R, 220, 0.25f, 0.25f);
+            for (float& x : jaAvant) x *= GAIN_JINGLE;   // gj = 1/3 dans melange : jingle d'avant à son gain d'origine
+            std::vector<float> jeAvant = je;
+            melange(jaAvant, 5, true, notesA, "ARRÊTÉ"); melange(jeAvant, 14, true, notesE, "ÉCHAPPÉ");
+            float pireDb = 1e9f, pireCrete = 0;
+            for (double d : {5.0, 14.0}) {
+                const auto ra = melange(ja, d, false, notesA, "ARRÊTÉ"), re = melange(je, d, false, notesE, "ÉCHAPPÉ");
+                pireDb = std::min({pireDb, ra.first, re.first}); pireCrete = std::max({pireCrete, ra.second, re.second});
+            }
+            cas("chaque note du jingle ≥ +6 dB sur la sirène (police à 5 et 14 m)", pireDb >= 6);
+            cas("crête du mélange jingle + sirène < 0,95", pireCrete < 0.95f);
+        }
         // RG-05 : extinction en fin de course : de 0,45 à 0 (seuil de silence du mixeur) en 0,8 s au plus, sans saut
         {
             const float pasFin = pasFinSirene(R), k = 1 - std::exp(-1 / (LISSAGE_S / 3 * R));
@@ -355,5 +432,97 @@ int main(int argc, char** argv) {
             cas("journal : une ligne par seconde au plus (2 s → ≤ 3 lignes)", lignes >= 1 && lignes <= 3);
         }
     }
-    return ok && okSfx && okEff && okTrafic && okCourse && okGarage && okSirene ? 0 : 1;
+    // WFS-174 : sons de la route (RG-01 à RG-08)
+    bool okRoute = true;
+    {
+        using namespace route;
+        auto cas = [&](const char* quoi, bool c) { std::printf("route : %-62s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okRoute = okRoute && c; };
+        auto en = [](float kmh, float x = 0, bool pluie = false, bool nitro = false, bool course = true) {
+            Entree e; e.kmh = kmh; e.kmhMax = 250; e.playerX = x; e.edge = 1.6f; e.pluie = pluie; e.nitro = nitro; e.enCourse = course; return e;
+        };
+        cas("vent nul sous 40 km/h (0, 20, 40)", cibles(en(0)).vent == 0 && cibles(en(20)).vent == 0 && cibles(en(40)).vent == 0);
+        cas("vent 0,30 à la vitesse de pointe (avant le plafond de RG-08)", std::abs(ciblesBrutes(en(250)).vent - VENT_MAX) < 1e-5f);
+        cas("à la pointe sur route sèche : 0,30 + 0,18 ramenés à 0,45 ensemble", std::abs(cibles(en(250)).somme() - SOMME_MAX) < 1e-5f && std::abs(cibles(en(250)).vent / cibles(en(250)).roulement - VENT_MAX / ROULEMENT_MAX) < 1e-4f);
+        cas("vent qui croît avec le carré de la vitesse (100 < 150 < 200)", ciblesBrutes(en(100)).vent < ciblesBrutes(en(150)).vent && ciblesBrutes(en(150)).vent < ciblesBrutes(en(200)).vent
+            && ciblesBrutes(en(150)).vent - ciblesBrutes(en(100)).vent < ciblesBrutes(en(200)).vent - ciblesBrutes(en(150)).vent);
+        cas("nitro : vent + 20 %", std::abs(ciblesBrutes(en(200, 0, false, true)).vent - ciblesBrutes(en(200)).vent * VENT_NITRO) < 1e-5f);
+        cas("filtre du vent : fermé à 50 km/h, ouvert à la pointe", cibles(en(50)).ouverture == 0 && cibles(en(250)).ouverture == 1);
+        cas("roulement nul à l'arrêt, 0,18 à la pointe (avant le plafond)", cibles(en(0)).roulement == 0 && std::abs(ciblesBrutes(en(250)).roulement - ROULEMENT_MAX) < 1e-5f);
+        const Cibles b = cibles(en(120, 1.6f)), b2 = cibles(en(120, -1.7f)), h = cibles(en(120, 1.2f)), h2 = cibles(en(120, -1.01f));
+        cas("bord à |x| ≥ edge (1,6 et −1,7) : bande rugueuse, plus de roulement", b.bord > 0 && b.roulement == 0 && b2.bord > 0 && b.surface == Surface::Bord);
+        cas("bord : cadence de 15 à 60 Hz selon la vitesse", cibles(en(0.1f, 1.6f)).cadenceBord < 16 && std::abs(cibles(en(250, 1.6f)).cadenceBord - BORD_HZ_MAX) < 1e-3f);
+        cas("bord à l'arrêt : pas de bande rugueuse", cibles(en(1, 1.6f)).bord == 0);
+        cas("hors route à |x| > 1 (1,2 et −1,01) : herbe / gravier, plus de roulement", h.herbe > 0 && h.roulement == 0 && h2.herbe > 0 && h.surface == Surface::HorsRoute);
+        cas("sur la route (|x| = 1) : roulement, ni bord ni herbe", cibles(en(120, 1.0f)).roulement > 0 && cibles(en(120, 1.0f)).herbe == 0 && cibles(en(120, 1.0f)).bord == 0);
+        cas("eau seulement sous la pluie (0,20 à la pointe)", cibles(en(250)).eau == 0 && cibles(en(250, 0, true)).eau > 0 && cibles(en(0, 0, true)).eau == 0);
+        const Cibles off = cibles(en(200, 1.2f, true, true, false));
+        cas("silence hors course (pause, menus, garage, fin)", off.somme() == 0);
+        float pire = 0;
+        for (float kmh : {60.f, 150.f, 250.f, 320.f}) for (float x : {0.f, 1.2f, 1.6f}) for (bool p : {false, true}) for (bool n : {false, true})
+            pire = std::max(pire, cibles(en(kmh, x, p, n)).somme());
+        cas("somme des sons de la route ≤ 0,45 (vitesse, nitro, bord, herbe, pluie)", pire <= SOMME_MAX + 1e-5f);
+        // RG-08 : crête du mélange de la route seule (boucles de sfx.cpp, crête 1) au pire cas, battement de +15 % compris
+        // WFS-184 : le fondu à puissance constante (départ au hasard) peut monter jusqu'à √2 × la crête d'une boucle
+        cas("crête des sons de la route < 1,0 (≤ 0,45 × 1,15 × √2 sur des boucles de crête 1)", SOMME_MAX * (1 + BATTEMENT) * 1.41422f < 1.0f);
+        cas("lissage : 95 % de la cible en 0,15 s", [] { float g = 0; const float k = lissage(48000); for (int i = 0; i < (int)(0.15f * 48000); i++) g += (1 - g) * k; return g > 0.94f && g < 0.96f; }());
+        using namespace sfx; const float R = 48000;
+        std::vector<float> vg = boucle(R, 0.62f, VENT_GRAVE_HZ, 0.5f, 1), ro = boucle(R, 0.41f, 140, 0.8f, 1, 90, 0.9f), ea = boucle(R, 0.37f, 4500, 0.7f, 1);
+        verifie("route-vent", vg, true); verifie("route-roulement", ro, true); verifie("route-eau", ea, true);
+        const size_t octets = (size_t)((0.62f + 0.57f + 0.41f + 0.53f + 0.37f + 0.012f + RACCORD_S) * R) * sizeof(float);   // + table du fondu (WFS-184)
+        // WFS-184 (RG-04, RG-05, ANO-96) : départ au hasard à chaque tour, fondu enchaîné de 15 ms
+        {
+            auto normaliser = [](std::vector<float> b) { float pk = 0; for (float x : b) pk = std::max(pk, std::abs(x)); for (float& x : b) x /= pk; return b; };
+            // mêmes boucles que SfxMixer::build (sfx.cpp) ; l'herbe sans ses grains (même bruit de fond, même longueur)
+            struct B { const char* nom; std::vector<float> b; uint32_t graine; };
+            std::vector<B> bs{{"vent grave", normaliser(boucle(R, 0.62f, VENT_GRAVE_HZ, 0.5f, 1)), 0x51ED27u},
+                              {"vent aigu", normaliser(boucle(R, 0.57f, VENT_AIGU_HZ, 0.5f, 1, VENT_AIGU_HZ * 0.5f, 0.6f)), 0xA341316Cu},
+                              {"roulement", normaliser(boucle(R, 0.41f, 140, 0.8f, 1, 90, 0.9f)), 0xC8013EA4u},
+                              {"herbe", normaliser(boucle(R, 0.53f, 2000, 0.6f, 1, 3500, 0.8f)), 0xAD90777Du},
+                              {"eau", normaliser(boucle(R, 0.37f, 4500, 0.7f, 1)), 0x7E95761Eu}};
+            const std::vector<float> fondu = fonduBoucle(R, RACCORD_S);
+            cas("fondu enchaîné : 15 ms (720 échantillons à 48 kHz), de 0 à 1", fondu.size() == 721 && fondu.front() == 0 && std::abs(fondu.back() - 1) < 1e-6f);
+            const size_t N = (size_t)(12 * R);
+            // autocorrélation normalisée d'un signal au décalage L
+            auto autocorr = [](const std::vector<float>& y, size_t L) {
+                double xy = 0, xx = 0, yy = 0;
+                for (size_t i = 0; i + L < y.size(); i++) { xy += (double)y[i] * y[i + L]; xx += (double)y[i] * y[i]; yy += (double)y[i + L] * y[i + L]; }
+                return (float)(xy / std::sqrt(std::max(xx * yy, 1e-30)));
+            };
+            float pireBoucle = 0, creteFlux = 0;
+            for (auto& x : bs) {
+                LecteurAleatoire l(x.graine); std::vector<float> y(N), plain(N);
+                for (size_t i = 0; i < N; i++) { y[i] = l.lire(x.b, fondu); plain[i] = x.b[i % x.b.size()]; creteFlux = std::max(creteFlux, std::abs(y[i])); }
+                const float rA = autocorr(plain, x.b.size()), rN = autocorr(y, x.b.size());
+                std::printf("route : %-10s %.2f s : autocorrélation à la période %.2f avant, %.3f avec départ au hasard\n", x.nom, x.b.size() / R, rA, rN);
+                pireBoucle = std::max(pireBoucle, std::abs(rN));
+            }
+            cas("autocorrélation < 0,20 à la période de chacune des 5 boucles", pireBoucle < 0.20f);
+            cas("crête d'une boucle lue au hasard ≤ √2 (fondu à puissance constante)", creteFlux <= 1.41422f);
+            // mélange de la route sèche entre 150 et 210 km/h (vent grave / aigu selon l'ouverture, roulement), comme SfxMixer::mix
+            float pireMelange = 0;
+            for (float kmh : {150.f, 180.f, 210.f}) {
+                const Cibles c = cibles(en(kmh));
+                LecteurAleatoire l0(bs[0].graine), l1(bs[1].graine), l2(bs[2].graine);
+                std::vector<float> y(N);
+                for (size_t i = 0; i < N; i++)
+                    y[i] = c.vent * ((1 - c.ouverture) * l0.lire(bs[0].b, fondu) + c.ouverture * l1.lire(bs[1].b, fondu)) + c.roulement * l2.lire(bs[2].b, fondu);
+                std::printf("route : mélange à %3.0f km/h : autocorrélation", kmh);
+                for (const auto& x : bs) { const float r = autocorr(y, x.b.size()); pireMelange = std::max(pireMelange, std::abs(r)); std::printf(" %.3f", r); }
+                std::printf(" (périodes des 5 boucles)\n");
+            }
+            cas("mélange de la route 150-210 km/h : autocorrélation < 0,20 aux 5 périodes", pireMelange < 0.20f);
+            // raccord sans clic : signal lent (sinus de 3 Hz, la boucle ne finit pas sur une période entière : la lecture
+            // simple sauterait au raccord) ; avec le départ au hasard et le fondu, aucun saut > 0,05 entre deux échantillons
+            std::vector<float> lent((size_t)(0.41f * R));
+            for (size_t i = 0; i < lent.size(); i++) lent[i] = std::sin(6.28318530718f * 3 * (float)i / R);
+            LecteurAleatoire ll(0x1234u); float prec = ll.lire(lent, fondu), sautMax = 0;
+            for (size_t i = 1; i < N; i++) { const float y = ll.lire(lent, fondu); sautMax = std::max(sautMax, std::abs(y - prec)); prec = y; }
+            const float sautAvant = std::abs(lent.front() - lent.back());
+            std::printf("route : raccord d'un sinus de 3 Hz : saut %.3f en lecture simple, plus grand saut %.4f avec fondu\n", sautAvant, sautMax);
+            cas("aucun saut > 0,05 entre deux échantillons au raccord", sautMax <= 0.05f);
+        }
+        std::printf("route : mémoire des boucles %.0f Ko à 48 kHz\n", octets / 1024.0);
+        cas("mémoire des boucles ≤ 0,5 Mo (RG-09)", octets <= 512 * 1024);
+    }
+    return ok && okSfx && okEff && okTrafic && okCourse && okGarage && okSirene && okRoute ? 0 : 1;
 }

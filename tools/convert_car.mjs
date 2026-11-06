@@ -6,13 +6,17 @@
 // par matériau. Les textures WebP sont réencodées en JPEG (opaques) ou PNG (avec transparence), 1024 px max.
 //
 // Format .wfm (petit-boutiste) :
-//   'WFM1' u32 version=1 u32 nTex u32 nMat u32 nMesh f32 bbox[6]
+//   'WFM1' u32 version=2 u32 nTex u32 nMat u32 nMesh f32 bbox[6]   (WFS-149 : version 2 = version 1 + section 'TAN1')
 //   textures  : u32 octets, octets (jpg/png)                                   × nTex
 //   matériaux : f32 couleur[4] f32 metal f32 rugosite f32 emissif[3] f32 coupureAlpha
 //               i32 texCouleur i32 texNormale i32 texMetalRugo u32 drapeaux     × nMat
 //   maillages : u32 materiau u32 nSommets u32 nIndices,
 //               sommets (pos3 normale3 uv2 = 32 octets), indices u32           × nMesh
 //   drapeaux : 1 peinture, 2 transparent, 4 feu arrière, 8 phare, 16 double face, 32 alpha découpé, 64 vitre, 128 roue
+//   WFS-149 (RG-04) : 'TAN1' puis, maillage par maillage, nSommets × 4 octets signés (tangente x y z, signe w, × 127),
+//               calculés par tools/tangentes.mjs (même calcul que le moteur, src/render/mesh.cpp, type MikkTSpace). Les
+//               lecteurs de la version 1 lisent la version 2 sans changement (section après tout le reste) ; un .wfm
+//               version 1 reçoit ses tangentes au chargement (model_loader.cpp).
 //
 // WFS-77 : peinture unie métallisée (repaintMat du jeu web : métal 0,45, rugosité 0,32, ni texture de couleur, ni carte de
 // normales, de métal ou de rugosité, sans émission) : les motifs des modèles (camouflage, paillettes étirées) disparaissent.
@@ -23,6 +27,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { MeshoptDecoder } from 'meshoptimizer';
 import sharp from 'sharp';
 import fs from 'fs';
+import { tangentes } from './tangentes.mjs';   // WFS-149 (RG-04)
 
 const [,, inp, out, lenArg, rotArg, paintArg, tailArg] = process.argv;
 await MeshoptDecoder.ready;
@@ -179,12 +184,15 @@ const parts = [];
 const u32 = (...a) => parts.push(Buffer.from(new Uint32Array(a).buffer));
 const i32 = (...a) => parts.push(Buffer.from(new Int32Array(a).buffer));
 const f32 = (...a) => parts.push(Buffer.from(new Float32Array(a).buffer));
-parts.push(Buffer.from('WFM1')); u32(1, texBlobs.length, mats.length, meshes.length); f32(...b);
+parts.push(Buffer.from('WFM1')); u32(2, texBlobs.length, mats.length, meshes.length); f32(...b);   // WFS-149 : version 2
 for (const t of texBlobs) { u32(t.length); parts.push(t); }
 for (const m of mats) { f32(...m.col, m.metal, m.rough, ...m.em, m.cut); i32(m.tC, m.tN, m.tMR); u32(m.flags); }
 for (const m of meshes) { u32(m.mat, m.v.length / 8, m.ix.length); parts.push(Buffer.from(m.v.buffer)); parts.push(Buffer.from(m.ix.buffer)); }
+parts.push(Buffer.from('TAN1'));   // WFS-149 (RG-04) : tangentes, après les normales et l'orientation finales
+let sansUv = 0;
+for (const m of meshes) { const t = tangentes(m.v, 8, m.ix); sansUv += t.sans; parts.push(Buffer.from(t.octets.buffer)); }
 fs.writeFileSync(out, Buffer.concat(parts));
 const tris = meshes.reduce((s, m) => s + m.ix.length / 3, 0);
 console.log(out.split('/').pop(), `${(fs.statSync(out).size / 1e6).toFixed(2)} Mo`, `${mats.length} matériaux`, `${texBlobs.length} textures`, `${Math.round(tris / 1000)}k triangles`,
   `taille ${(b[3] - b[0]).toFixed(2)}×${(b[4] - b[1]).toFixed(2)}×${(b[5] - b[2]).toFixed(2)} m`, 'peinture:', mats.filter((m) => m.flags & 1).map((m) => m.name).join(',') || 'AUCUNE',
-  ...(process.env.WFS_ROUES === 'forme' ? ['roues (forme):', `${nRouesForme} pièces`] : []));
+  ...(process.env.WFS_ROUES === 'forme' ? ['roues (forme):', `${nRouesForme} pièces`] : []), `tangentes : ${sansUv} sommets sans uv`);

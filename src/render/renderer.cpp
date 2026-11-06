@@ -1,8 +1,11 @@
 #include "renderer.h"
+#include "mesh.h"   // WFS-149 : tangentes
+#include <chrono>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #if defined(__APPLE__)
@@ -722,8 +725,9 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
         attr[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};
         attr[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12};
         attr[2] = {2, 0, VK_FORMAT_R32G32_SFLOAT, 24};
+        attr[3] = {3, 0, VK_FORMAT_R8G8B8A8_SNORM, 32};   // WFS-149 (RG-04) : tangente (format obligatoire des tampons de sommets)
         vi.vertexBindingDescriptionCount = 1; vi.pVertexBindingDescriptions = &bind;
-        vi.vertexAttributeDescriptionCount = 3; vi.pVertexAttributeDescriptions = attr;
+        vi.vertexAttributeDescriptionCount = 4; vi.pVertexAttributeDescriptions = attr;
     } else if (vertexKind == 3) {   // WFS-63 : sommet à squelette (position, normale, uv, 4 os, 4 poids)
         bind = {0, sizeof(SkinVertex), VK_VERTEX_INPUT_RATE_VERTEX};
         attr[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};
@@ -902,13 +906,24 @@ uint8_t Renderer::classer(const masquage::Sphere& s) {
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
+    // WFS-149 (RG-04) : géométrie générée (route, décor, charte…) sans tangentes : calculées ici, une fois, sur une copie
+    // (tampon réutilisé). updateMesh (halos, particules : jamais de carte de normales) n'en calcule pas.
+    static thread_local std::vector<Vertex> avecTangentes;
+    const Vertex* src = v.data();
+    if (idx.size() >= 3 && !tangentes::auMoinsUne(v.data(), v.size())) {
+        const auto t0 = std::chrono::steady_clock::now();
+        avecTangentes.assign(v.begin(), v.end());
+        tangentes::calculer(avecTangentes.data(), (uint32_t)v.size(), idx.data(), (uint32_t)idx.size());
+        src = avecTangentes.data();
+        tangentesMs_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count(); tangentesSommets_ += v.size();
+    }
     if (dynamic) {
         m.vb = vk_->createBuffer(std::max<size_t>(v.size(), 1) * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
         m.ib = vk_->createBuffer(std::max<size_t>(idx.size(), 1) * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
-        if (!v.empty()) std::memcpy(m.vb.mapped, v.data(), v.size() * sizeof(Vertex));
+        if (!v.empty()) std::memcpy(m.vb.mapped, src, v.size() * sizeof(Vertex));
         if (!idx.empty()) std::memcpy(m.ib.mapped, idx.data(), idx.size() * 4);
     } else {
-        m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        m.vb = vk_->uploadBuffer(src, v.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     }
     return m;
@@ -1093,8 +1108,13 @@ constexpr float RECUL_COEUR = 0.05f, RECUL_LUEUR = 0.15f, I_RECUL_COEUR = 1.4f, 
 constexpr float RENTRE = 0.88f;                        // feux rapprochés du centre (le bord extérieur du feu dépassait)
 constexpr float POINT_MIN = 0.0011f;                   // rayon minimal du cœur = 0,0011 × distance : un point rouge au loin
 constexpr float LUEUR_DEBUT = 60.f, LUEUR_FIN = 120.f; // lueur pleine jusqu'à 60 m, éteinte à 120 m
-constexpr float SOL_LARGEUR = 0.9f, SOL_LONGUEUR = 1.1f, SOL_RECUL = 0.45f;   // reflet sur la route (× largeur ; m ; m derrière)
-constexpr float I_SOL = 0.07f, I_SOL_STOP = 0.18f, I_SOL_RECUL = 0.2f;        // tailGlow, tailGlowBrake, revGlow (atténués)
+// WFS-171 (RG-01, ANO-70) : lueur rouge au sol calculée (feux_modele::eclairementSol) sur une grille de SOL_NX × SOL_NZ
+// quads, du dessous du pare-chocs (fondu de SOL_SOUS m, caché par la caisse) jusqu'à SOL_PORTEE m derrière ; plus de
+// disque. Le recul n'a plus de quad blanc : sa lumière au sol est la vraie lumière du feu de recul (nuit.cpp).
+constexpr int SOL_NX = 8, SOL_NZ = 6;
+constexpr float SOL_SOUS = 0.25f, SOL_PORTEE = 2.6f, SOL_BORD = 0.45f;   // m ; SOL_BORD : marge de côté (m)
+constexpr float SOL_DISTANCE = 80.f;                                      // au-delà : < 1 % de la chaussée éclairée, pas dessinée
+inline const vec3 ROUGE_SOL{1.f, 0.03f, 0.005f};   // rouge CEE (R48 § 2.29 : y ≤ 0,335) d'un feu à ampoule : x ≈ 0,68, y ≈ 0,32
 // WFS-109 : émission du feu du modèle (× rouge) : position la nuit 1,6, stop 4 (= setBrake du web, 0xff2040 × 2,5 → × 1,6
 // pour la passe HDR, comme FEUX_HDR), éteint le jour hors freinage (RG-15 a) ; le niveau du stop passe de 0 à 1 en 80 ms
 constexpr float E_POSITION = 1.6f, E_STOP = 4.0f;
@@ -1276,24 +1296,47 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
     // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
     const float s = f.frein >= 0 ? std::clamp(f.frein, 0.f, 1.f) : (f.stop ? 1.f : 0.f);
-    // RG-01 : le jour, un modèle qui a sa pièce de feu arrière (MAT_TAIL ou découpée) n'a aucun halo plaqué : seul le
-    // feu du modèle s'allume ; sans pièce de feu (Gallardo), petit halo court à la place du feu (repli de RG-08)
-    const float iCoeur = f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : F.pieceArriere ? 0.f : I_COEUR_STOP * s;
+    // RG-01 : le jour, aucun halo plaqué : seul le feu du modèle s'allume. WFS-182 (RG-02) : sans pièce de feu reconnue,
+    // aucun halo, ni de jour ni de nuit (l'ancien repli aux proportions par défaut flottait dans le vide) ; le chargement
+    // écrit « feu non trouvé : <voiture> » au journal
+    const float iCoeur = F.pieceArriere && f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : 0.f;
     const float iLueur = f.nuit ? I_LUEUR + (I_LUEUR_STOP - I_LUEUR) * s : I_LUEUR_STOP * s;
     for (int side : {-1, 1}) {
         // RG-01 : lueur courte centrée sur la pièce du feu (arrière du verre), plus sur le pare-chocs
-        const float zF = (F.pieceArriere ? F.arriereZ : F.arriere) + 0.04f;
+        const float zF = F.arriereZ + 0.04f;   // WFS-171 : arrière de la pièce du feu, ou de la caisse à sa hauteur (repli)
         if (iCoeur > 0) feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, zF}), arriere, COEUR, LUEUR, rouge, iCoeur, iLueur);
-        if (f.recul) feu(w.transformPoint({side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f}), arriere,
-                         RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
+        // WFS-171 (RG-03, ANO-78) : feu de recul dans la partie intérieure basse du bloc découpé (mesurée au chargement),
+        // plus sur la tôle du hayon ; sans bloc mesuré, position d'avant
+        const vec3 pr = F.reculTrouve ? vec3{side * F.recul.x, F.recul.y, F.recul.z + 0.01f}
+                                      : vec3{side * std::max(0.15f, F.arriereX - 0.24f), F.arriereY - 0.04f, zF + 0.01f};
+        if (f.recul) feu(w.transformPoint(pr), arriere, RECUL_COEUR, RECUL_LUEUR, blanc, I_RECUL_COEUR, I_RECUL_LUEUR);
         if (f.nuit) feu(w.transformPoint({side * F.avantX, F.avantY, F.avant - 0.02f}), avant, PHARE_COEUR, PHARE_LUEUR, phare, I_PHARE_COEUR, I_PHARE_LUEUR);
     }
     if (!f.nuit) return;   // RG-04 : le jour, pas de reflet sur la route
-    // reflet discret des feux sur la route, juste derrière la voiture (RG-05) ; aucun faisceau arrière
-    const vec3 r = normalize(w.transformDir({1, 0, 0}));
-    const vec3 c = w.transformPoint({0, 0.03f, F.arriere + SOL_RECUL});
-    const vec3 col = f.recul ? lin(0xdfe6ff, I_SOL_RECUL) : lin(0xff2040, I_SOL + (I_SOL_STOP - I_SOL) * s);
-    haloSol(c, r, arriere, F.largeur * SOL_LARGEUR * 0.5f * ech, SOL_LONGUEUR * 0.5f * ech, col);
+    // WFS-171 (RG-02) : route mouillée avec reflets : seule la traînée floue du reflet de WFS-142, pas de lueur en plus
+    if (refletsOn_) return;
+    if (length(w.transformPoint({0, 0, F.arriere}) - camPos_) > SOL_DISTANCE) return;
+    // WFS-171 (RG-01) : lueur des deux feux sur la chaussée, collée au pare-chocs, bord progressif : éclairement réel
+    // (cd du feu × eclairementSol) changé en luminance d'asphalte, fenêtré à zéro sur les bords de la grille
+    using namespace feux_modele;
+    const float cd = CD_POSITION_SOL + (CD_STOP_SOL - CD_POSITION_SOL) * s;
+    const float h = std::max(0.3f, F.arriereY - m.bmin.y), xl = F.arriereX * RENTRE;
+    const float zG = (F.pieceArriere ? F.arriereZ : F.arriere - 0.1f);   // glace du feu (≈ 10 cm devant le pare-chocs)
+    const float hw = F.largeur * 0.5f + SOL_BORD, z0 = F.arriere - SOL_SOUS, z1 = F.arriere + SOL_PORTEE;
+    auto lisse = [](float a, float b, float x) { const float t = std::clamp((x - a) / (b - a), 0.f, 1.f); return t * t * (3 - 2 * t); };
+    Vertex v[SOL_NX * SOL_NZ * 4];
+    vec3 p[SOL_NZ + 1][SOL_NX + 1], col[SOL_NZ + 1][SOL_NX + 1];
+    for (int k = 0; k <= SOL_NZ; k++) for (int i = 0; i <= SOL_NX; i++) {
+        const float x = -hw + 2 * hw * i / SOL_NX, z = z0 + (z1 - z0) * k / SOL_NZ;
+        const float e = cd * (eclairementSol(z - zG, x - xl, h) + eclairementSol(z - zG, x + xl, h));
+        const float fen = lisse(z0, F.arriere, z) * lisse(z1, F.arriere + 0.5f, z) * lisse(hw, 0.35f * hw, std::abs(x));
+        p[k][i] = w.transformPoint({x, m.bmin.y + 0.03f, z});
+        col[k][i] = ROUGE_SOL * (luminanceSol(e) * fen);
+    }
+    int n = 0;
+    auto sommet = [&](int k, int i) { const vec3& q = p[k][i]; const vec3& c = col[k][i]; v[n++] = {q.x, q.y, q.z, c.x, c.y, c.z, 0.5f, 0.5f}; };
+    for (int k = 0; k < SOL_NZ; k++) for (int i = 0; i < SOL_NX; i++) { sommet(k, i); sommet(k, i + 1); sommet(k + 1, i + 1); sommet(k + 1, i); }
+    drawQuads(v, SOL_NX * SOL_NZ, haloMat_);   // uv au centre : dégradé radial du halo = 1, la couleur des sommets fait le profil
 }
 
 void Renderer::uiRect(float x, float y, float w, float h, const vec4& c) {

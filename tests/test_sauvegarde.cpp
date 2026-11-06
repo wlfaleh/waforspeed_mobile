@@ -86,6 +86,17 @@ int main(int argc, char** argv) {
         std::FILE* f = std::fopen(chemin.c_str(), "rb"); VERIFIER(f == nullptr); if (f) std::fclose(f);
     }
     std::remove(chemin.c_str());
+    // WFS-122 (RG-01) : derniers adversaires du duel : 3 au plus, le plus récent en tête, sans doublon, relus tels quels
+    {
+        Sauvegarde s;
+        VERIFIER(s.adversaires.empty() && s.texte().find("adversaires=") == std::string::npos);   // aucun duel : rien
+        s.noterAdversaires({"Nadia"}); s.noterAdversaires({"Sam", "Lou"}); s.noterAdversaires({"Nadia", "Ka|rim"});
+        VERIFIER(s.adversaires.size() == 3 && s.adversaires[0] == "Ka rim" && s.adversaires[1] == "Nadia" && s.adversaires[2] == "Lou");
+        Sauvegarde r; VERIFIER(r.lire(s.texte()));
+        VERIFIER(r.adversaires == s.adversaires);
+        Sauvegarde h; VERIFIER(h.lire("version=1\ntrace=2\nadversaires=" + std::string(500, 'x') + "|||Bob\n"));
+        VERIFIER(h.adversaires.size() == 2 && h.adversaires[0].size() <= 14 && h.adversaires[1] == "Bob");   // pseudos bornés, vides ignorés
+    }
     std::printf(g_echecs ? "ÉCHEC (%d)\n" : "OK\n", g_echecs);
     return g_echecs ? 1 : 0;
 }
