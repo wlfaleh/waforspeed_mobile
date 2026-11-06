@@ -5048,3 +5048,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Correction de l'utilisateur** : expert-realisme-3d est un expert du graphisme, pas un développeur. L'agent lancé à 19:44 est arrêté ; il n'avait poussé que l'ouverture de la branche (ffaf37f, gardée).
 - **Nouveau responsable** : Claude, agent lumière (session 01UY1Vv1), sur la même branche `feature/waforspeed-151` ; il consulte expert-realisme-3d pour les choix de graphisme et les mesures de fidélité.
 - **Règle notée** dans l'agent PO et `track-agent.md` : aucun ticket de code pour expert-realisme-3d.
+
+### 2026-11-06 19:47:50 — WFS-137 : CI de main (run 768) sur la fusion (agent 4)
+- Run 768 (commit 806d737) : compilation, tests, APK Android et 10 groupes de captures verts ; 2 groupes (texte, vitrines) et la publication de l'APK encore en cours à 2026-11-06 19:47:50.
+- **Job endurance rouge** : « fuite de mémoire : +12,6 % au cycle 6 (seuil 10 %) ». Ce n'est pas une casse de WFS-137 : le run 761 (WFS-150, avant ma fusion) échoue déjà sur le même test (+10,2 % au cycle 6), de même que les runs 757 et 751. La pente mémoire des cycles 2 à 10 est négative (−8,56 Mo/cycle) et le parcours au doigt donne 0 écart. Problème connu, suivi par **WFS-145** (P1, autre agent) : je ne touche pas à ce ticket.
+- WFS-137 reste 🟣 Fusionné : la règle ne permet ✅ qu'avec un run de main entièrement vert. Je le passerai en ✅ au premier run vert de main, une fois WFS-145 corrigé.
