@@ -76,7 +76,7 @@ void benchPlancheVoitures(Game& g, Renderer& r, const std::string& out) {
         const CarDef& c = CARS[i];
         if (!g.init(r, c.id, "ville")) { WFS_ERR("planche : %s impossible à charger", c.id); continue; }
         g.setAutopilot(false); g.camMode = 2; g.orbit = 0.7f;
-        g_actif = true; g_repeindre = true; g_nom = std::string(c.brand) + " " + c.model;
+        g_actif = true; g_repeindre = true; g_nom = std::string(marque(c)) + " " + modele(c);   // WFS-191
         for (int k = 0; k < 3; k++) { g.update(1.0 / 60); g.render(2000 + k / 60.0); }
         g.render(2001); g.render(2001.01);
         r.capturePng(tmp);

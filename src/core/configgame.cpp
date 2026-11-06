@@ -1,6 +1,7 @@
 // WaForSpeed — configuration du jeu par configgame.json (WFS-128) : voir configgame.h.
 #include "configgame.h"
 #include <cmath>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -13,7 +14,7 @@ namespace wfs {
 namespace {
 
 // ---------------------------------------------------------------- table des clés (une ligne par réglage, RG-08)
-enum class Type { Entier, Reel, Flottant };
+enum class Type { Entier, Reel, Flottant, Texte };   // Texte (WFS-191) : tampon char, min / max = nombre de caractères
 struct Champ {
     const char* cle; Type type; void* ptr; double min, max; const char* unite; const char* aide;
 };
@@ -95,6 +96,45 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"qualite.reflet_route_mouillee", T::Flottant, &c.qualite.refletRouteMouillee, 0, 1.5, "×", "force du reflet de la rue sur la route mouillée (pluie)"},
     };
 }
+// WFS-191 : section « voitures » : marque et modèle affichés de chaque voiture (clés « voitures.<id>.marque / .modele »)
+std::vector<Champ> champsVoitures(ConfigJeu& c) {
+    static std::string cles[VOITURES_NB * 2];   // textes des clés (la table garde des const char*)
+    std::vector<Champ> v;
+    for (int i = 0; i < VOITURES_NB; i++) {
+        cles[i * 2] = std::string("voitures.") + VOITURES_IDS[i] + ".marque";
+        cles[i * 2 + 1] = std::string("voitures.") + VOITURES_IDS[i] + ".modele";
+        v.push_back({cles[i * 2].c_str(), Type::Texte, c.voitures.nom[i].marque, 1, MARQUE_MAX, "caractères", "marque affichée (garage, menu, salon, course à 5)"});
+        v.push_back({cles[i * 2 + 1].c_str(), Type::Texte, c.voitures.nom[i].modele, 1, MODELE_MAX, "caractères", "modèle affiché"});
+    }
+    return v;
+}
+std::vector<Champ> tousChamps(ConfigJeu& c) { std::vector<Champ> v = champs(c), w = champsVoitures(c); v.insert(v.end(), w.begin(), w.end()); return v; }
+
+// texte d'une marque ou d'un modèle accepté (RG-08) : UTF-8 valide, longueur [min, max] en caractères ; lettres (accents
+// latins compris), chiffres, espace, « - » et « . » ; pas d'espace au début ni à la fin
+bool texteValide(const std::string& t, int mini, int maxi, std::string& raison) {
+    int n = 0;
+    for (size_t i = 0; i < t.size();) {
+        const unsigned char b = (unsigned char)t[i];
+        uint32_t cp = 0; int l = 0;
+        if (b < 0x80) { cp = b; l = 1; } else if ((b & 0xE0) == 0xC0) { cp = b & 0x1F; l = 2; } else if ((b & 0xF0) == 0xE0) { cp = b & 0x0F; l = 3; }
+        else { raison = "caractère non permis"; return false; }
+        if (i + l > t.size()) { raison = "texte UTF-8 invalide"; return false; }
+        for (int k = 1; k < l; k++) { const unsigned char c = (unsigned char)t[i + k]; if ((c & 0xC0) != 0x80) { raison = "texte UTF-8 invalide"; return false; } cp = (cp << 6) | (c & 0x3F); }
+        const bool ascii = (cp >= 'a' && cp <= 'z') || (cp >= 'A' && cp <= 'Z') || (cp >= '0' && cp <= '9') || cp == ' ' || cp == '-' || cp == '.';
+        const bool accent = cp >= 0xC0 && cp <= 0x24F && cp != 0xD7 && cp != 0xF7;   // lettres latines accentuées (sans × ÷)
+        if (!ascii && !accent) { raison = "caractère non permis"; return false; }
+        i += (size_t)l; n++;
+    }
+    if (n < mini || n > maxi) { raison = std::to_string(n) + " caractère(s), " + std::to_string(mini) + " à " + std::to_string(maxi) + " attendus"; return false; }
+    if (t.front() == ' ' || t.back() == ' ') { raison = "espace au début ou à la fin"; return false; }
+    return true;
+}
+std::string echapper(const char* t) {
+    std::string s = "\"";
+    for (const char* q = t; *q; q++) { if (*q == '"' || *q == '\\') s += '\\'; s += *q; }
+    return s + "\"";
+}
 
 double lireChamp(const Champ& f) {
     switch (f.type) {
@@ -117,7 +157,7 @@ void deduire(ConfigJeu& c) { c.checkpoint.distanceU = c.checkpoint.distanceM / 0
 // Objets, nombres, booléens, chaînes, tableaux (ignorés), null. Les nombres sont lus à la main, sans strtod / atof :
 // la langue du téléphone (virgule décimale) ne change rien (RG-16). Un nombre décimal « court » (au plus 15 chiffres,
 // exposant ≤ 22) est lu exactement comme le littéral du code (mantisse entière / puissance de 10 exacte).
-struct Valeur { enum { Nombre, Booleen, Autre } genre = Autre; double nombre = 0; };
+struct Valeur { enum { Nombre, Booleen, Autre, Texte } genre = Autre; double nombre = 0; std::string texte; };   // Texte : WFS-191
 struct Lecteur {
     const char* p; const char* fin; std::string erreur;
     std::map<std::string, Valeur> plat;   // « section.cle » → valeur
@@ -182,12 +222,12 @@ struct Lecteur {
                 return echec("« , » ou « ] » attendu");
             }
         }
-        if (*p == '"') { std::string s; if (!chaine(s)) return false; if (!chemin.empty() && chemin[0] != '_') plat[chemin] = {}; return true; }
-        if (fin - p >= 4 && !std::strncmp(p, "true", 4)) { p += 4; plat[chemin] = {Valeur::Booleen, 1}; return true; }
-        if (fin - p >= 5 && !std::strncmp(p, "false", 5)) { p += 5; plat[chemin] = {Valeur::Booleen, 0}; return true; }
+        if (*p == '"') { std::string s; if (!chaine(s)) return false; if (!chemin.empty() && chemin[0] != '_') plat[chemin] = {Valeur::Texte, 0, s}; return true; }
+        if (fin - p >= 4 && !std::strncmp(p, "true", 4)) { p += 4; plat[chemin] = {Valeur::Booleen, 1, {}}; return true; }
+        if (fin - p >= 5 && !std::strncmp(p, "false", 5)) { p += 5; plat[chemin] = {Valeur::Booleen, 0, {}}; return true; }
         if (fin - p >= 4 && !std::strncmp(p, "null", 4)) { p += 4; plat[chemin] = {}; return true; }
         double v; if (!nombre(v)) return false;
-        plat[chemin] = {Valeur::Nombre, v};
+        plat[chemin] = {Valeur::Nombre, v, {}};
         return true;
     }
 };
@@ -210,11 +250,15 @@ std::string ecrireNombre(double v, Type t) {
     return s;
 }
 
+// valeur d'une clé telle qu'écrite dans le fichier et le README (texte entre guillemets, nombre)
+std::string ecrireValeur(const Champ& f) { return f.type == Type::Texte ? echapper((const char*)f.ptr) : ecrireNombre(lireChamp(f), f.type); }
+std::string ecrireBorne(const Champ& f, double v) { return f.type == Type::Texte ? std::to_string((int)v) : ecrireNombre(v, f.type); }
+
 } // namespace
 
 BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJeu& c) {
     BilanConfig b; b.fichier = nom;
-    std::vector<Champ> fs = champs(c);
+    std::vector<Champ> fs = tousChamps(c);
     Lecteur l{texte.data(), texte.data() + texte.size(), {}, {}};
     l.blancs();
     const bool ok = l.p < l.fin && *l.p == '{' && l.valeur("", 0) && (l.blancs(), l.p == l.fin || l.echec("texte après la fin du JSON"));
@@ -228,8 +272,20 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
     b.jsonValide = true;
     for (const Champ& f : fs) {
         auto it = l.plat.find(f.cle);
-        if (it == l.plat.end()) { b.defauts++; b.messages.push_back(std::string(f.cle) + " absente : valeur du jeu (" + ecrireNombre(lireChamp(f), f.type) + ")"); continue; }
+        if (it == l.plat.end()) { b.defauts++; b.messages.push_back(std::string(f.cle) + " absente : valeur du jeu (" + ecrireValeur(f) + ")"); continue; }
         const Valeur v = it->second; l.plat.erase(it);
+        if (f.type == Type::Texte) {   // WFS-191 (RG-08) : marque ou modèle d'une voiture
+            std::string raison;
+            if (v.genre != Valeur::Texte) raison = "texte attendu";
+            else texteValide(v.texte, (int)f.min, (int)f.max, raison);
+            if (!raison.empty()) {
+                b.defauts++; b.erreurs++; b.messages.push_back(std::string(f.cle) + " : " + raison + " : nom par défaut (" + ecrireValeur(f) + ")");
+                continue;
+            }
+            std::snprintf((char*)f.ptr, (size_t)f.max * 4 + 1, "%s", v.texte.c_str());
+            b.lues++;
+            continue;
+        }
         const bool entier = f.type == Type::Entier;
         if (v.genre != Valeur::Nombre || (entier && v.nombre != std::floor(v.nombre))) {
             b.defauts++; b.erreurs++; b.messages.push_back(std::string(f.cle) + (entier ? " : nombre entier attendu" : " : nombre attendu") + ", valeur du jeu gardée");
@@ -247,7 +303,7 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
         if (cle.empty() || cle[0] == '_' || cle.find("._") != std::string::npos) continue;   // « _aide » : commentaires du fichier
         b.erreurs++; b.messages.push_back(cle + " : clé inconnue, sans effet");
     }
-    if (c.poursuite.policeDepart > c.poursuite.policeMax) {
+    if (c.poursuite.policeDepart > c.poursuite.policeMax) {   // (contrôle inchangé)
         b.messages.push_back("poursuite.police_depart > police_max : police_depart ramené à police_max");
         c.poursuite.policeDepart = c.poursuite.policeMax;
     }
@@ -287,11 +343,11 @@ BilanConfig chargerConfig() {
     return b;
 }
 
-int configNombreCles() { ConfigJeu c; return (int)champs(c).size(); }
+int configNombreCles() { ConfigJeu c; return (int)tousChamps(c).size(); }
 
 std::string configJson(const ConfigJeu& c0) {
     ConfigJeu c = c0;
-    const std::vector<Champ> fs = champs(c);
+    const std::vector<Champ> fs = tousChamps(c);
     std::string s = "{\n  \"_aide\": \"Configuration de WaForSpeed (WFS-128). Une ligne par clé : configgame.README.md. Valeurs = jeu actuel.\"";
     // « a.b.c » → objets a { b { c } } ; les clés d'une même section se suivent dans la table
     std::vector<std::string> ouverts;
@@ -309,7 +365,7 @@ std::string configJson(const ConfigJeu& c0) {
             ouverts.push_back(parts[ouverts.size()]); premier = true;
         }
         if (!premier) s += ",";
-        s += "\n" + retrait(ouverts.size()) + "\"" + cur + "\": " + ecrireNombre(lireChamp(f), f.type);
+        s += "\n" + retrait(ouverts.size()) + "\"" + cur + "\": " + ecrireValeur(f);
         premier = false;
     }
     while (!ouverts.empty()) { ouverts.pop_back(); s += "\n" + retrait(ouverts.size()) + "}"; }
@@ -318,7 +374,7 @@ std::string configJson(const ConfigJeu& c0) {
 
 std::string configReadme() {
     ConfigJeu c;
-    const std::vector<Champ> fs = champs(c);
+    const std::vector<Champ> fs = tousChamps(c);
     std::string s =
         "# configgame.json — réglages du jeu (WFS-128)\n\n"
         "Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au code**. Il est copié dans l'APK.\n\n"
@@ -330,12 +386,16 @@ std::string configReadme() {
         "- Une clé absente, un mauvais type ou une valeur hors bornes : le jeu garde sa valeur et l'écrit au journal "
         "(`configuration : …` dans logcat). Un fichier cassé : toutes les valeurs du jeu. Le jeu ne plante jamais à cause du fichier.\n"
         "- Les clés qui commencent par `_` (comme `_aide`) sont des commentaires.\n"
+        "- **Noms des voitures** (section `voitures`, WFS-191) : `marque` (1 à 16 caractères) et `modele` (1 à 24) de chaque "
+        "voiture, entre guillemets : lettres (accents compris), chiffres, espace, `-` et `.`. Ce sont les noms affichés dans le jeu "
+        "(garage, menu, salon, course à 5) ; l'identifiant (`golf`, `m4`…) ne change jamais (sauvegardes et records gardés). "
+        "Un nom invalide : le nom par défaut et une ligne au journal.\n"
         "- Ce README et le fichier sont fabriqués par `./build/test_configgame --ecrire` : ajouter une clé = une ligne dans "
         "`src/core/configgame.cpp` (table `champs`), puis relancer cette commande.\n\n"
         "| Clé | Sens | Unité | Min | Max | Défaut |\n|---|---|---|---|---|---|\n";
     for (const Champ& f : fs)
-        s += std::string("| `") + f.cle + "` | " + f.aide + " | " + f.unite + " | " + ecrireNombre(f.min, f.type) + " | " +
-             ecrireNombre(f.max, f.type) + " | " + ecrireNombre(lireChamp(f), f.type) + " |\n";
+        s += std::string("| `") + f.cle + "` | " + f.aide + " | " + f.unite + " | " + ecrireBorne(f, f.min) + " | " +
+             ecrireBorne(f, f.max) + " | " + ecrireValeur(f) + " |\n";
     s += "\nPas encore dans le fichier (tickets en cours sur ces zones) : taille et place des commandes tactiles (WFS-102), "
          "nombre de joueurs du duel et distances proposées (écrans de WFS-102). À ajouter quand ces tickets seront fusionnés.\n";
     return s;

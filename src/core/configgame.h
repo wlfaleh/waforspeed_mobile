@@ -18,6 +18,12 @@
 namespace wfs {
 
 struct CamPoursuite { float dist, h, ahead, lookH; };
+// WFS-191 : noms affichés des 20 voitures (section « voitures » : marque et modèle par id de src/game/cars.h, même ordre).
+// Textes UTF-8 de 1 à 16 caractères (marque) et de 1 à 24 (modèle) ; les tampons gardent la place des accents (4 octets).
+constexpr int VOITURES_NB = 20, MARQUE_MAX = 16, MODELE_MAX = 24;
+inline constexpr const char* VOITURES_IDS[VOITURES_NB] = {"golf", "m4", "p911", "gallardo", "p208", "abarth", "tcross", "compass", "s3", "x5",
+                                                         "giulia", "a45", "model3", "corsa", "gt86", "elantra", "v60", "rrsport", "mustang", "sf90"};
+struct NomVoiture { char marque[MARQUE_MAX * 4 + 1]; char modele[MODELE_MAX * 4 + 1]; };
 constexpr int SCORE_POURSUITE_MAX = 1000;   // borne de poursuite.score_depart, reprise par la relecture des records (sauvegarde)   // = Poursuite de src/game/camera_vue.h
 
 struct ConfigJeu {
@@ -66,6 +72,14 @@ struct ConfigJeu {
         double brake = 12.5, roll = 0.35, drag = 0.00042, engineBrake = 0.9, grip = 18, maxSteer = 0.6, steerV = 14,
                steerIn = 4, steerOut = 6, align = 3, maxHeading = 0.5, offRoad = 7, vLibre = 10, vRecul = 3;
     } conduite;
+    struct Voitures {   // WFS-191 : noms inventés par défaut (aucune marque ni aucun modèle réel affiché)
+        NomVoiture nom[VOITURES_NB] = {
+            {"Vollmer", "Gala 8 GTS"}, {"Bavaro", "R4 Competizione"}, {"Pfeiler", "9F S"}, {"Toro", "Ventura V10 Spyder"},
+            {"Lionne", "L2"}, {"Scorpio", "Cinquina"}, {"Vollmer", "Trek-X"}, {"Ranger", "Bussola"}, {"Aurel", "R3 berline"},
+            {"Bavaro", "XR5"}, {"Alvar", "Giuliva Trefoil"}, {"Merkur", "A-Sport 45"}, {"Volta", "E3"}, {"Orion", "Corsaire"},
+            {"Tamura", "Hachi"}, {"Hanseo", "Elanta R"}, {"Valka", "V6 Nordstern"}, {"Highland", "Sport"}, {"Stallion", "GT5"},
+            {"Cavallo", "SF-X"}};
+    } voitures;
     struct Qualite {
         float plancherMoyenne = 0.9f;   // échelle de rendu la plus basse en qualité Moyenne (WFS-104)
         float refletRouteMouillee = 1.f;   // WFS-142 (RG-04) : force du reflet de la scène sur la route mouillée (0 à 1,5)
