@@ -4793,3 +4793,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Run 42215719693 (57fac94) : `banc-essai (texte)` vert avec `[OK] test_audio` (31 tests CPU), android, bancs et `publication-apk` verts ; `publication-captures` annulé (run suivant de main parti, groupe de concurrence) ; **`endurance` rouge : +12,6 % au cycle 6** (0 erreur de validation, aucun plantage).
 - **Pas une fuite de WFS-174** : le ticket ajoute ≈ 471 Ko de boucles calculées une fois au démarrage (rien par image, rien par course) ; les 7 runs suivants de main, qui contiennent tous WFS-174 : +9,4 %, +7,9 %, +7,0 %, +6,2 %, +8,5 % (rouge ailleurs), +10,8 %, +9,6 %. La mesure du banc d'endurance varie de +6 à +13 % d'un run à l'autre (déjà signalé au PO après WFS-127) : le seuil de 10 % reste trop près du bruit ; à reprendre par un ticket E7 (PO).
 
+
+### 2026-11-06 17:08:44 — Nouveau fichier `track-agent.md` : suivi des agents, toujours synchronisé (po-scrum-master)
+- **Ordre de l'utilisateur** : mettre le tableau « qui fait quoi » des agents dans `track-agent.md`, toujours synchronisé.
+- **Fait** : `track-agent.md` à la racine (agents développeurs, agents de pilotage, tickets prêts sans agent, alertes ⚠️ / 🔴) ; règle ajoutée dans `CLAUDE.md`, l'agent PO (mise à jour à chaque appel) et la checklist de livraison (`agent-developer`) : chaque agent met à jour sa ligne à chaque étape, dans le même commit que `TACHES.md`.
