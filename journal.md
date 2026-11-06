@@ -4467,3 +4467,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Accroche annoncée** : `src/ui/garage.cpp`, 7 lignes dans la fonction de banc `benchGarage` seulement (le banc du garage s'y trouve, pas dans `src/game`). Aucun code d'écran ni aucune taille d'interface touchés. Aucune autre accroche (`desktop_main.cpp` et `build.yml` inchangés : la nouvelle capture est publiée par le job texte, qui copie le dossier du banc course5).
 - Remarque : `test_relais` a échoué une fois en local sous forte charge (4 cœurs partagés), puis est passé au 2e lancement (31/31).
 
+
+### 2026-11-06 12:44:35 — WFS-136 : suivi de la CI de main (Claude, session dev expert, 0183bv2X)
+- Run 696 (f77e204, ma fusion) **rouge** : jobs `banc-essai (vitrines)` et `endurance`. La cause, d'après ANO-88 (bloquante, recette du 2026-11-06), est la suivante : la mise de côté des records sous `*_v1` (RG-07, A7.4) cassait le contrôle des records de WFS-125 (`benchRecords`). Je ne l'avais pas vu en local, car je n'avais pas lancé les groupes `vitrines` et `endurance`. Leçon : lancer au banc local tous les groupes qui lisent la sauvegarde avant une fusion qui la touche.
+- Corrigé par WFS-169 (PR #134, autre agent). Le run 713 (eadeae8) est entièrement vert, groupe `vitrines` compris (banc `trace`).
+- WFS-140 m'avait été attribué à 08:21 UTC. Le PO l'a redonné à un autre agent pendant l'arrêt de ma session : je ne le reprends pas.
