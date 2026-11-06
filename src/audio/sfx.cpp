@@ -80,8 +80,9 @@ void SfxMixer::build(float rate) {
     posWail_ = posYelp_ = 0;
     sons_[(int)SfxId::PoursuiteArrete] = jingleArrete(rate); sons_[(int)SfxId::PoursuiteEchappe] = jingleEchappe(rate);
     kSirene_ = 1 - std::exp(-1 / (sirene::LISSAGE_S / 3 * rate));
-    pasFinSirene_ = pasFinSirene(rate); pasYelp_ = 1 / (sirene::FONDU_MODE_S * rate);
-    {   // WFS-174 : sons de la route (boucles courtes, durées différentes pour ne pas battre ensemble ; crête ramenée à 1)
+    pasFinSirene_ = pasFinSirene(rate); pasBaisse_ = pasBaisseSirene(rate); attSirene_ = 1; baisseSirene_ = false; pasYelp_ = 1 / (sirene::FONDU_MODE_S * rate);
+    {   // WFS-174 : sons de la route (boucles courtes, durées différentes pour ne pas battre ensemble ; crête ramenée à 1) ;
+        // WFS-184 (RG-04) : lues avec un départ au hasard à chaque tour (LecteurAleatoire), plus de motif qui revient
         auto normaliser = [](std::vector<float>& b) {
             float pk = 0; for (float x : b) pk = std::max(pk, std::abs(x));
             if (pk > 1e-6f) for (float& x : b) x /= pk;
@@ -104,7 +105,8 @@ void SfxMixer::build(float rate) {
         }
         eauB_ = boucle(rate, 0.37f, 4500, 0.7f, 1); normaliser(eauB_);   // RG-05 : 3-6 kHz
         kRoute_ = route::lissage(rate); rate_ = rate;
-        posVentG_ = posVentA_ = posRoulement_ = posHerbe_ = posEau_ = 0; posImpulsion_ = impulsionBord_.size();
+        fonduRoute_ = sfx::fonduBoucle(rate, route::RACCORD_S);   // WFS-184 (RG-04)
+        lVentG_.reset(); lVentA_.reset(); lRoulement_.reset(); lHerbe_.reset(); lEau_.reset(); posImpulsion_ = impulsionBord_.size();
     }
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
@@ -137,7 +139,11 @@ void SfxMixer::mix(float* out, int n, double now) {
             if (!voix_[i].buf) { libre = i; break; }
             if (voix_[i].pos > plusLoin) { plusLoin = voix_[i].pos; libre = i; }
         }
-        voix_[libre] = {&sons_[d.id], 0, d.gain};
+        // WFS-184 (RG-01, RG-02) : jingle de fin de poursuite → la sirène descend à 0,10 × sa valeur en 30 ms, et le jingle
+        // part au bout de ces 30 ms (sa 1re note passe alors au-dessus de la sirène, comme les suivantes)
+        const bool jingle = d.id == (uint8_t)SfxId::PoursuiteArrete || d.id == (uint8_t)SfxId::PoursuiteEchappe;
+        if (jingle) baisseSirene_ = true;
+        voix_[libre] = {&sons_[d.id], 0, d.gain, jingle ? (size_t)(sirene::ATTENTE_JINGLE_S * rate_) : 0};
     }
     queue_.store(q, std::memory_order_release);
     const bool actif = !muted_ && now - lastUpdate.load() < 0.25;   // jeu en pause (plus d'update) ou muet : silence
@@ -154,6 +160,7 @@ void SfxMixer::mix(float* out, int n, double now) {
         float s = 0;
         for (auto& v : voix_) {
             if (!v.buf) continue;
+            if (v.attente) { v.attente--; continue; }   // WFS-184 : jingle qui attend la baisse de la sirène
             s += (*v.buf)[v.pos] * v.gain;
             if (++v.pos >= v.buf->size()) v.buf = nullptr;
         }
@@ -168,28 +175,28 @@ void SfxMixer::mix(float* out, int n, double now) {
         gSirene_ = suivreGainSirene(gSirene_, cS, finS, kSirene_, pasFinSirene_);
         mixYelp_ += std::clamp(cY - mixYelp_, -pasYelp_, pasYelp_);
         pasSirene_ += (cD - pasSirene_) * k_;
+        if (gSirene_ <= 1e-4f) baisseSirene_ = false;   // WFS-184 : sirène muette → la prochaine poursuite repart à plein
+        attSirene_ = attenuationSirene(attSirene_, baisseSirene_, pasBaisse_);
         if (gSirene_ > 1e-4f) {
-            s += gSirene_ * ((1 - mixYelp_) * lireBoucle(boucleWail_, posWail_) + mixYelp_ * lireBoucle(boucleYelp_, posYelp_));
+            s += gSirene_ * attSirene_ * ((1 - mixYelp_) * lireBoucle(boucleWail_, posWail_) + mixYelp_ * lireBoucle(boucleYelp_, posYelp_));
             posWail_ = avancerBoucle(posWail_, pasSirene_, boucleWail_.size()); posYelp_ = avancerBoucle(posYelp_, pasSirene_, boucleYelp_.size());
         }
         {   // WFS-174 (RG-01 à RG-06) : sons de la route, cibles lissées (95 % en 0,15 s)
             gVent_ += (cV - gVent_) * kRoute_; gOuverture_ += (cO - gOuverture_) * kRoute_; gRoulement_ += (cRo - gRoulement_) * kRoute_;
             gBord_ += (cB - gBord_) * kRoute_; gHerbe_ += (cH - gHerbe_) * kRoute_; gEau_ += (cE - gEau_) * kRoute_; gCadence_ += (cCa - gCadence_) * kRoute_;
             if ((phaseBattement_ += route::BATTEMENT_HZ / rate_) >= 1) phaseBattement_ -= 1;
+            // WFS-184 (RG-04) : les 5 boucles sont lues à chaque échantillon (le tirage du départ suit le temps, pas le volume)
+            const float vG = lVentG_.lire(ventGrave_, fonduRoute_), vA = lVentA_.lire(ventAigu_, fonduRoute_);
+            const float ro = lRoulement_.lire(roulementB_, fonduRoute_), he = lHerbe_.lire(herbeB_, fonduRoute_), ea = lEau_.lire(eauB_, fonduRoute_);
             if (gVent_ > 1e-4f) {
                 const float battement = 1 + route::BATTEMENT * std::sin(6.28318530718f * phaseBattement_);
-                s += gVent_ * battement * ((1 - gOuverture_) * ventGrave_[posVentG_] + gOuverture_ * ventAigu_[posVentA_]);
+                s += gVent_ * battement * ((1 - gOuverture_) * vG + gOuverture_ * vA);
             }
-            if (gRoulement_ > 1e-4f) s += gRoulement_ * roulementB_[posRoulement_];
-            if (gHerbe_ > 1e-4f) s += gHerbe_ * herbeB_[posHerbe_];
-            if (gEau_ > 1e-4f) s += gEau_ * eauB_[posEau_];
+            if (gRoulement_ > 1e-4f) s += gRoulement_ * ro;
+            if (gHerbe_ > 1e-4f) s += gHerbe_ * he;
+            if (gEau_ > 1e-4f) s += gEau_ * ea;
             if ((phaseBord_ += gCadence_ / rate_) >= 1) { phaseBord_ -= 1; posImpulsion_ = 0; }   // un choc à chaque tour de cadence
             if (posImpulsion_ < impulsionBord_.size()) { if (gBord_ > 1e-4f) s += gBord_ * impulsionBord_[posImpulsion_]; posImpulsion_++; }
-            if (++posVentG_ >= ventGrave_.size()) posVentG_ = 0;
-            if (++posVentA_ >= ventAigu_.size()) posVentA_ = 0;
-            if (++posRoulement_ >= roulementB_.size()) posRoulement_ = 0;
-            if (++posHerbe_ >= herbeB_.size()) posHerbe_ = 0;
-            if (++posEau_ >= eauB_.size()) posEau_ = 0;
         }
         out[i] = std::clamp(out[i] + s * master * fade_, -1.f, 1.f);
     }
