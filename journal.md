@@ -3942,3 +3942,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Branche de1e285 (synchronisée avec main), CI verte run 42171445586, captures `apercu-waforspeed-147` de 06:30-06:31 UTC.
 - A (ombre du terrain), B (chevrons), C (étiquette du garage, ANO-47) corrigées ; `garage-*-2400` et `hud-2400` identiques à main ; aucun écran changé sans raison.
 - **Fusion autorisée** (RG-04) : le développeur fusionne. Rapport : `qa/rapports/WFS-147.md`. Aucune anomalie ajoutée à `anno.md`.
+
+### 2026-11-06 06:35:41 — Fin WFS-147 : fusionné (PR #126, eb8152a) après verdict qa-lead VALIDÉ (Claude (session trafic))
+- **Recette** : tour 1 À CORRIGER (3 mineures : ombre du terrain trop haute, chevrons en escalier, « D » de l'étiquette du garage) ; corrigées (commits de terrain et de garage du 2026-11-06 vers 05:55 UTC, de1e285), CI de branche verte (run 42171445586) ; tour 2/2 **VALIDÉ** (`qa/rapports/WFS-147.md`, 349f7d0). Fusion de de1e285 (main n'avait changé que des fichiers .md depuis la synchronisation).
+- **Écrans touchés** (un commit par écran, RG-01) : réglages, salon, terrain, chargement, menu ; garage : étiquette du type à 13 px au moins en 720p, calée au pixel (ANO-47), `garage-*-2400` identiques au pixel à main ; HUD non touché.
+- **Captures 2400 après la correction** (RG-03) : `terrain-0-2400`, `terrain-1-2400`, `parcours-terrain-2400` (ombre calée sur le texte, ≈ 45 % de l'illustration sans ombre, longueur et quartiers sur une ligne), `garage-sf90` (1280 : « HYPERCAR HYBRIDE » entier). Avant / après de chaque écran : entrée 05:11:07.
+- **Accroche annoncée** : `src/platform/android_main.cpp`, 1 ligne (densité lue avant le premier écran de chargement).
+- **Statuts** : `TACHES.md` ✅, ligne ajoutée à `qa/Check.md`. Je suis la CI de main.
