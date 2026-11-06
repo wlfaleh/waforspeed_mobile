@@ -288,11 +288,84 @@ static void testBoutEnBout() {
     if (r == 0) std::printf("serveur/test/bout_en_bout.js : OK\n");
 }
 
+// ---------------------------------------------------------------- WFS-122 (RG-02) : salon à 4 pilotes, bout en bout
+static void testQuatre() {
+    RelaisLocal relais;
+    if (!relais.demarrer(std::string(WFS_SOURCE_DIR) + "/serveur/local.js")) { std::printf("node absent : salon à 4 sauté\n"); return; }
+    const AdresseRelais adr{"127.0.0.1", relais.port(), false};
+    adresseRelais() = adr;
+    Joueur j[4];
+    const char* noms[4] = {"Alex", "Nadia", "Sam", "Lou"};
+    const char* cars[4] = {"golf", "m4", "p911", "corsa"};
+    const std::string code = makeCode([] { return (uint32_t)std::rand(); });
+    VERIFIE(j[0].join(adr, code, true, noms[0], cars[0]), "4 pilotes : création du duel %s", code.c_str());
+    j[0].s.setKm(2);
+    VERIFIE(jusqua([&] { return j[0].t->lien() == Lien::Pret; }, 3000), "4 pilotes : hôte connecté");
+    for (int i = 1; i < 4; i++) VERIFIE(j[i].join(adr, code, false, noms[i], cars[i]), "4 pilotes : %s rejoint", noms[i]);
+    auto tous = [&](auto f) { for (auto& x : j) f(x); };
+    const bool seVoient = jusqua([&] { bool ok = true; tous([&](Joueur& x) { const bool v3 = x.s.others().size() == 3; ok = ok && v3; }); return ok; }, 10000);   // chacun lit son lien à chaque tour
+    VERIFIE(seVoient, "4 pilotes : chacun voit les 3 autres (%zu / %zu / %zu / %zu)", j[0].s.others().size(), j[1].s.others().size(), j[2].s.others().size(), j[3].s.others().size());
+    // départ commun, même graine
+    tous([](Joueur& x) { x.s.setReady(true); });
+    bool parti[4] = {};
+    jusqua([&] { bool ok = true; for (int i = 0; i < 4; i++) { parti[i] = parti[i] || j[i].s.checkStart(); ok = ok && parti[i]; } return ok; }, 10000);
+    bool memeGraine = true; for (int i = 1; i < 4; i++) memeGraine = memeGraine && parti[i] && j[i].s.seed() == j[0].s.seed() && j[i].s.round() == 1;
+    VERIFIE(parti[0] && memeGraine, "4 pilotes : départ commun, même graine (%u)", j[0].s.seed());
+    // course : vitesses différentes ; chacun voit les 3 autres lissés
+    const double v[4] = {44, 40, 36, 32};
+    for (int i = 0; i < 4; i++) j[i].pl.reset(carById(cars[i]));
+    for (int k = 0; k < 90; k++) {
+        for (int i = 0; i < 4; i++) { j[i].pl.dist += v[i] / 60; j[i].pl.speed = v[i]; j[i].pl.playerX = -0.6 + 0.4 * i; j[i].s.raceTick(1.0 / 60, j[i].pl, k / 60.0); }
+        tous([](Joueur& x) { x.s.updateGhosts(1.0 / 60); });
+        attendre(16);
+    }
+    bool vus = true; double ecart = 0;
+    for (int i = 0; i < 4; i++) {
+        vus = vus && j[i].s.ghosts().size() == 3;
+        for (int q = 0; q < 4; q++) if (q != i && j[i].s.ghosts().count(j[q].t->monId())) ecart = std::max(ecart, std::abs(j[i].s.ghosts().at(j[q].t->monId()).rd - j[q].pl.dist));
+    }
+    VERIFIE(vus && ecart < 12, "4 pilotes : chacun voit les 3 autres, positions lissées (écart %.1f)", ecart);
+    VERIFIE(j[0].s.position(j[0].pl.dist) == 1 && j[3].s.position(j[3].pl.dist) == 4, "4 pilotes : classement en direct");
+    // arrivées dans l'ordre 0, 1, 2, 3 ; même classement 1 à 4 chez les 4
+    const double temps[4] = {40.0, 41.5, 43.0, 44.5};
+    for (int i = 0; i < 4; i++) { j[i].pl.dist = j[i].s.finish(); VERIFIE(j[i].s.raceTick(0.016, j[i].pl, temps[i]), "arrivée de %s", noms[i]); attendre(40); }
+    auto ordre = [&](const Joueur& x) { std::string o; for (const auto& r : x.s.results()) o += (r.me ? x.s.nick() : r.name) + (r.done ? "" : "?") + ","; return o; };
+    jusqua([&] { tous([](Joueur& x) { x.s.updateGhosts(0.016); }); bool ok = true; tous([&](Joueur& x) { const bool b1 = ordre(x) == "Alex,Nadia,Sam,Lou,"; ok = ok && b1; }); return ok; }, 3000);
+    bool meme = true; tous([&](Joueur& x) { meme = meme && ordre(x) == "Alex,Nadia,Sam,Lou,"; });
+    VERIFIE(meme, "4 pilotes : même classement 1 à 4 chez les 4 (%s / %s / %s / %s)", ordre(j[0]).c_str(), ordre(j[1]).c_str(), ordre(j[2]).c_str(), ordre(j[3]).c_str());
+    std::printf("salon à 4 : départ commun, positions lissées, classement 1 à 4 identique chez les 4 : OK\n");
+    // revanche à 4, puis Lou quitte en course : la course des 3 autres continue, Lou « parti » au classement
+    tous([](Joueur& x) { x.s.setReady(true); });
+    for (bool& p : parti) p = false;
+    jusqua([&] { bool ok = true; for (int i = 0; i < 4; i++) { parti[i] = parti[i] || j[i].s.checkStart(); ok = ok && parti[i]; } return ok; }, 10000);
+    bool m2 = true; for (int i = 0; i < 4; i++) m2 = m2 && parti[i] && j[i].s.round() == 2 && j[i].s.seed() == j[0].s.seed();
+    VERIFIE(m2, "4 pilotes : revanche, manche 2 commune");
+    for (int i = 0; i < 4; i++) { j[i].pl.reset(carById(cars[i])); }
+    for (int k = 0; k < 40; k++) {
+        for (int i = 0; i < 4; i++) { j[i].pl.dist += v[i] / 60; j[i].pl.speed = v[i]; j[i].s.raceTick(1.0 / 60, j[i].pl, k / 60.0); }
+        tous([](Joueur& x) { x.s.updateGhosts(1.0 / 60); });
+        attendre(16);
+    }
+    j[3].s.leave();
+    VERIFIE(jusqua([&] { return j[0].s.others().size() == 2 && j[1].s.others().size() == 2; }, 3000), "4 pilotes : départ de Lou vu par les autres");
+    for (int k = 0; k < 20; k++) { for (int i = 0; i < 3; i++) { j[i].pl.dist += v[i] / 60; j[i].s.raceTick(1.0 / 60, j[i].pl, 1 + k / 60.0); } for (int i = 0; i < 3; i++) j[i].s.updateGhosts(1.0 / 60); attendre(16); }
+    bool continuent = true; for (int i = 0; i < 3; i++) continuent = continuent && j[i].s.status() == Status::Race && j[i].s.ghosts().size() == 2;
+    VERIFIE(continuent, "4 pilotes : la course des 3 autres continue");
+    for (int i = 0; i < 3; i++) { j[i].pl.dist = j[i].s.finish(); j[i].s.raceTick(0.016, j[i].pl, temps[i]); attendre(40); }
+    jusqua([&] { for (int i = 0; i < 3; i++) j[i].s.updateGhosts(0.016); return ordre(j[2]) == "Alex,Nadia,Sam,Lou?,"; }, 3000);
+    const auto res = j[0].s.results();
+    VERIFIE(res.size() == 4 && res[3].parti && res[3].name == "Lou" && !res[2].parti, "4 pilotes : Lou « parti », classé 4e (%s)", ordre(j[0]).c_str());
+    std::printf("salon à 4 : revanche, un pilote qui part n'arrête pas les 3 autres (« parti ») : OK\n");
+    for (int i = 0; i < 3; i++) j[i].s.leave();
+    adresseRelais() = AdresseRelais{};
+}
+
 int main() {
     std::srand((unsigned)std::chrono::steady_clock::now().time_since_epoch().count());
     testLiens();
     testTramesHostiles();
     testBoutEnBout();
+    testQuatre();   // WFS-122
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("duel entre amis (relais) : tout est OK\n");
     return 0;

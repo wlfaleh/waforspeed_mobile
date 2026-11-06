@@ -82,7 +82,7 @@ jobs:
               mkdir -p parcours && WFS_BANC=parcours ./build/wfs_bench parcours assets/ && cp parcours/parcours-fin.png parcours/parcours-retour-menu.png captures/ ;;
             menu2-2400)   # WFS-106 : 2e moitié du groupe menu en 2400x1080 (réglages, salon du duel)
               mkdir -p menu && WFS_BANC=menu2 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/
-              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83
+              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png menu/duel-resultat-4.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83 ; WFS-122 (accroche) : duel-resultat-4
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4

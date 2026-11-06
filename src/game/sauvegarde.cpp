@@ -1,5 +1,6 @@
 // WaForSpeed — sauvegarde et progression (WFS-24) : voir sauvegarde.h.
 #include "sauvegarde.h"
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -86,7 +87,7 @@ void Sauvegarde::defauts() {
     mode = "checkpoint"; km5 = 4; diff5 = "normale";   // WFS-110 ; WFS-133
     rec5Place = 0; rec5Ms = 0; recPVictoire = false; recPScore = 0; recPDistM = -1;   // WFS-125 : records vides
     // WFS-136 (A7.4) : première installation = déjà sur le tracé 2 des cartes actives (rien à mettre de côté)
-    nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1;
+    nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1; adversaires.clear();
     for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
 }
 
@@ -107,6 +108,11 @@ std::string Sauvegarde::texte() const {
     if (aRecordPoursuite()) o << "record-poursuite=" << (recPVictoire ? 1 : 0) << ";" << recPScore << ";" << recPDistM << "\n";
     if (trace >= 2) o << "trace=" << trace << "\n";                       // WFS-136 (RG-07)
     for (const std::string& c : cartesV2) o << "trace-" << c << "=2\n";   // WFS-136 (A7.4)
+    if (!adversaires.empty()) {   // WFS-122 (RG-01)
+        o << "adversaires=";
+        for (size_t i = 0; i < adversaires.size(); i++) o << (i ? "|" : "") << adversaires[i];
+        o << "\n";
+    }
     for (const auto& [k, v] : anciens) o << k << "=" << v << "\n";        // records du tracé 1, gardés
     return o.str();
 }
@@ -134,6 +140,12 @@ bool Sauvegarde::lire(const std::string& contenu) {
         long long n = 0;
         // WFS-136 (RG-07) : version du tracé, anciennes clés *_v1 gardées, valeurs brutes des records du tracé 1
         if (k == "trace") { if (entier(v, n) && n >= 1 && n <= 99) traceLu = (int)n; continue; }
+        if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
+            std::vector<std::string> noms; size_t a = 0;
+            while (a <= v.size()) { const size_t b = std::min(v.find('|', a), v.size()); noms.push_back(v.substr(a, b - a)); a = b + 1; }
+            adversaires.clear(); noterAdversaires(std::vector<std::string>(noms.rbegin(), noms.rend()));
+            continue;
+        }
         if (k.rfind("trace-", 0) == 0) { const std::string c = k.substr(6); if (v == "2" && carteExiste(c)) cartesV2.insert(c); continue; }
         if (k.size() > 3 && k.compare(k.size() - 3, 3, "_v1") == 0 && k.size() < 40 && v.size() < 200) { anciens[k] = v; continue; }
         if (k == "best" || k == "record-course5" || k == "record-poursuite") v1[k] = v;
@@ -234,6 +246,18 @@ bool Sauvegarde::charger(const std::string& chemin) {
     if (ok && !cartesAActiver.empty()) { activerCartes(); enregistrer(); }   // WFS-136 (A7.4)
     WFS_LOG("sauvegarde : %s lue (%s) : car=%s best=%lld", chemin.c_str(), ok ? "valide" : "corrompue, défauts", car.c_str(), best);
     return ok;
+}
+
+// WFS-122 (RG-01) : chaque nom passe en tête (le dernier de la liste est le plus récent), sans doublon, 3 gardés
+void Sauvegarde::noterAdversaires(const std::vector<std::string>& noms) {
+    for (const std::string& n0 : noms) {
+        std::string n = nettoyerPseudo(n0);
+        for (char& c : n) if (c == '|') c = ' ';
+        if (n.empty()) continue;
+        adversaires.erase(std::remove(adversaires.begin(), adversaires.end(), n), adversaires.end());
+        adversaires.insert(adversaires.begin(), n);
+    }
+    if (adversaires.size() > 3) adversaires.resize(3);
 }
 
 // WFS-136 (A7.4) : cartes passées au tracé 2 depuis le dernier lancement : fantôme du tracé 1 renommé (jamais effacé)

@@ -4492,3 +4492,26 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Zone autorisée : `src/game/duel*`, `src/game/reseau_*`, `src/game/sauvegarde.*` (champ des derniers adversaires), `src/ui/ecrans/salon.*`, `tests/test_relais.cpp`, `serveur/` (si défaut à 4). Interdit : `poursuite*`, `course5_system.cpp`, `traffic_system.cpp`, `src/render/**`, `src/world/**`, iOS (gel). Ordre permanent du 2026-11-06 : aucune taille de bouton ne change ; les lignes « Derniers adversaires » reprennent le style et la taille déjà utilisés au salon.
 - Critères : captures `salon-derniers` (1280 et 2400, 3 noms, le plus récent en haut) et `duel-resultat-4` (classement 1 à 4) ; `test_relais` à 4 clients vert ; parcours RG-03 au Journal.
 - Règles : `regles-de-gestion/WFS-122.md`. Branche `feature/waforspeed-122`.
+
+### 2026-11-06 13:05:03 — WFS-122 fusionné (PR #139, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - RG-01 : `Sauvegarde::adversaires` (clé `adversaires=a|b|c`, 3 au plus, sans doublon, pseudos nettoyés), noté au départ de chaque manche (`duel_system.cpp`). Liste « Derniers adversaires » à l'accueil du salon ; toucher un nom crée un duel et ouvre « Inviter ».
+  - RG-02 : `Session::partants_` ; un partant qui quitte en course est classé « Parti » (`BoardRow::parti`) et la course des autres continue. Textes de l'écran de fin adaptés à 4 pilotes.
+  - RG-03 : banc `menu2`, parcours du duel avec 3 amis simulés : 4 pilotes au salon, course, classement 1 à 4, revanche à 4, retour, salon avec 3 noms, appui sur un nom → duel créé et « Inviter » ouvert. 0 écart en 1280 et en 2400.
+- **Tests** : `test_relais` : salon à 4 sur le relais local (graine, positions lissées à moins de 12 unités, classement identique chez les 4, revanche, départ en course), 5 fois sur 5 ; `test_sauvegarde` : champ `adversaires` ; 31 tests CPU OK.
+- **Accroches annoncées** :
+  - `.github/workflows/build.yml` : `duel-resultat-4` copié dans le groupe `menu2-2400` (1 ligne) ;
+  - `tests/test_sauvegarde.cpp` : bloc du champ `adversaires`, hors de la zone listée mais propre au champ de ce ticket.
+- **Limites** :
+  - les 3 noms d'une même manche sont rangés par identifiant ;
+  - la mention « Parti » n'a pas de capture, seulement le test ;
+  - pas de vrai téléphone : relais local seulement.
+
+### 2026-11-06 13:06:58 — WFS-145 réattribué à Claude (session dev expert, 0183bv2X) ; WFS-122 ne débloque rien (po-scrum-master)
+- **Fin WFS-122** : ✅ (PR #139). Aucun ticket n'en dépend : rien à passer en ⏳ Prêt.
+- **Choix** : seuls tickets ⏳ Prêt : WFS-138, 139 (E2, déjà 2 tickets actifs : WFS-137, 140). E0 (WFS-149), E4 (WFS-171), E10 (WFS-158) occupées ; E8 : taille des boutons gelée (ordre permanent) ; E9, E11, E12, E13 attendent WFS-150 / 151 ; iOS gelé ; `anno.md` sans anomalie 🆕.
+- **WFS-145 (E7, P1 Urgent)** : dernier envoi de la session dev 5bx sur `feature/waforspeed-145` le 2026-11-06 01:18:27 UTC (59e291c), soit plus de 10 h → libéré et réattribué selon l'ordre de l'utilisateur (règle des 10 heures). Le job `endurance` de `main` est toujours rouge (Poursuite bloquée à 9,89 km, run du 11:01 UTC) : la correction de la branche (648a609, `poursuite_system.cpp`, 4 lignes) n'est pas fusionnée.
+- **Reprise** : même branche, commits 648a609 et 59e291c gardés (rien n'est retiré) ; synchroniser avec `main` avant tout.
+- **Zone autorisée** : `src/platform/endurance_banc.cpp`, `tools/qa/endurance.sh` (RG-11) ; accroche E3 ≤ 10 lignes `src/game/poursuite_system.cpp` (déjà sur la branche, RG-09 c) ; `src/world/**` en lecture, accroche ≤ 10 lignes annoncée seulement si un objet est sur la chaussée (RG-02 ; E2 : WFS-137 `ville*`, WFS-140 `circuit.cpp` actifs, garder les deux modifications).
+- **Interdit** : `.github/**`, `tools/qa/validation_connues.txt`, seuils / délai / cycles du banc (RG-03), `src/render/**`, `shaders/**`, `src/ui/**` (taille des boutons gelée), `CMakeLists.txt`, iOS.
+- **Règles** : `regles-de-gestion/WFS-145.md` (RG-01 à RG-12 + ajout du PO). Vérifiable en local : `tools/qa/endurance.sh`, essais de fuite non commités.
