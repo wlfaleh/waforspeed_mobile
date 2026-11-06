@@ -4004,3 +4004,30 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/ui/ecrans/{reglages,salon,terrain,chargement,menu}.cpp`, seulement les valeurs de taille des boutons, choix et touches (hauteur, largeur, zone de toucher), reprises de `349f7d0`. **Interdit** : revert entier de WFS-147, textes, ombre / ciel du terrain, étiquette du garage, `src/ui/petit_ecran.h` et son test, garage, HUD, commandes tactiles de course, toute autre suppression de code, iOS.
 - **Critères** : captures 1280 et 2400 des 5 écrans avec les boutons d'avant WFS-147 ; reste de WFS-147 identique ; compilation, tests CPU et parcours complet accueil → course → Menu → accueil verts, prouvés au journal.
 - **Plan** : `git diff 349f7d0 eb8152a -- src/ui/ecrans/`, ne reprendre que les lignes de taille des boutons, compiler, tests, parcours, fusion selon la règle de confiance.
+
+### 2026-11-06 08:18:34 — WFS-136 fusionné (PR #128, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - `src/game/trace_cartes.*` : les 4 cartes en sections typées construites par `addRoad`. Ville 6 953 m, Corniche 5 413 m, Campagne 6 790 m, Grand Prix 6 191 m, soit +2 à +9 % du tracé 1. Pente de 8,7 % au plus.
+  - API du décor : `sections`, `sectionA`, `rayonInterieur`, `feuA`.
+  - Trafic : arrêt au feu rouge (14/3/10 s, décalé de 9 s par carrefour), 1 ou 2 voitures qui traversent au rouge, 40 km/h dans l'anneau, 60 km/h dans les épingles, autoroute +30 % de voitures et +15 % de vitesse. Tracé 1 inchangé (tests de référence du jeu web verts).
+  - Feu grillé sans choc : +50 et bandeau. Records mis de côté sous `*_v1` une seule fois, `trace-<carte>=2`, fantôme renommé.
+  - Duel : champ `trace` (cartes actives), refus « version ».
+- **A7 (PO)** : `trace::CARTES_ACTIVES = {"circuit"}`. Le banc `trace` force les 4 cartes. Jeu normal vérifié au banc : ville, plage et campagne au tracé 1, circuit au tracé 2. Grand Prix : 3,04 km en 60 s de pilote automatique.
+- **Accroches annoncées** (10 lignes au plus chacune) :
+  - `src/game/game.cpp` : construction par `versionCarte` (1 ligne) ; bas-côté intérieur limité à 90 % du rayon, seulement sous 60 m (3 lignes) ;
+  - `src/game/traffic_system.cpp` : voitures cachées non dessinées (1 ligne) ;
+  - `src/ui/toasts.h/.cpp` : `toasts::pousser` (8 lignes) ;
+  - `src/ui/ecrans/salon.cpp` : raison « version » (1 ligne, dans `etatLien` après la synchronisation avec main) ;
+  - `src/game/duel.cpp` : champ `trace` dans la présence et refus au départ (4 lignes) ;
+  - `src/platform/desktop_main.cpp` : banc `trace` (1 ligne) ;
+  - `CMakeLists.txt` : `test_trace` et boucle qui lie `trace_cartes.cpp` aux tests (9 lignes) ;
+  - `.github/workflows/build.yml` : banc `trace` dans le groupe `vitrines` (2 lignes).
+- **Tests mis au format du tracé 2** : fixtures de `test_records`, `test_sauvegarde` et `test_relais` (ajout de `trace=2` ou du champ `trace`). Les cas testés ne changent pas.
+- **Vérification** : 30 tests CPU OK ; `test_trace` (sections, pentes, rond-point refermé à 13,4–14,6 m, épingles de 150° ou plus sur 80 m au plus, feux : file de 3, 0 passage au rouge, 0 choc, déterminisme, records, duel) ; banc `trace` : 0 écart ; parcours complet : 0 écart. Captures regardées.
+- **Limites** :
+  - le décor de Ville, Campagne et Corniche cache la route dans les sections serrées, d'où leur maintien au tracé 1 (WFS-137 à 139) ;
+  - au Grand Prix, des murs débordent à l'épingle (WFS-140) ;
+  - l'entrée et la sortie du rond-point se chevauchent : la route est unique, large de 15 m ;
+  - au duel local (Wi-Fi), le refus bloque le départ sans afficher de message ;
+  - la densité de l'autoroute n'est donnée qu'au placement initial des voitures.
+- **Suite** : suivi de la CI de main.
