@@ -111,7 +111,7 @@ public:
         if (!g_ouvert || g.ecran != Ecran::Menu || !ui::fontReady()) return;
         if (ouverture_) { bouton_ = 0; doigtBouton_ = -1; choix_ = modeCourse() == ModeCourse::Course5 || modeCourse() == ModeCourse::Poursuite ? modeCourse() : ModeCourse::Checkpoint; km_ = kmCourse5(); diff_ = course5::difficulte(); ouverture_ = false; }
         const float W = g.uiWidth, H = g.uiHeight, u = H / 100.f;
-        r.uiRect(0, 0, W, H, hex(BG, 0.86f));
+        r.uiRect(0, 0, W, H, hex(BG, 0.92f));   // WFS-141 (RG-04, ANO-54) : voile #0A0B10 à 0,92 (le menu ne dessine plus ses textes dessous)
         const float L = g.marges.gauche, R = W - g.marges.droite, cx = (L + R) / 2;
         ui::text(r, cx, g.marges.haut + 7 * u, 2.6f * u, "NOUVELLE COURSE", hex(ACC2), ui::CENTRE, 0.16f, false);
         ui::text(r, cx, g.marges.haut + 11 * u, 8 * u, "CHOISIS TON MODE", hex(TXT), ui::CENTRE, 0.04f, false, true);

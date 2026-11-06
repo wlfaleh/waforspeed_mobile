@@ -27,6 +27,9 @@ void benchCourseScene(Game& g, Renderer& r, const std::string& outDir);
 // WFS-125 (RG-04) : badge « NOUVEAU RECORD » (haut yBadge, si nouveau) et ligne « RECORD » (bas `bas`) centrés sur cx,
 // mêmes styles pour les écrans de fin des 3 modes (Checkpoint, Course à 5, Poursuite)
 void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, const std::string& valeur, bool nouveau);
+// WFS-141 (RG-03, ANO-59) : bouton parallélogramme de l'écran de fin (clip-path du bouton .btn, biais de 14 px en 720 p),
+// celui de la fin Checkpoint, commun aux 3 modes (Course à 5 et Poursuite : mêmes boutons, tailles inchangées)
+void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c);
 // WFS-125 (RG-09) : banc des records et du fantôme (WFS_BANC=records, lancé aussi à la fin du groupe vitrines) :
 // captures records-fantome, records-poursuite, records-course5 ; rend le nombre d'écarts du parcours
 int benchRecords(Game& g, Renderer& r, const std::string& outDir);

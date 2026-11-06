@@ -175,5 +175,15 @@ Travers camionTravers(int fileLibre, double longueurM, double largeurM) {
 std::string cleMode(ModeCourse m) { return m == ModeCourse::Course5 ? "course5" : m == ModeCourse::Poursuite ? "poursuite" : "checkpoint"; }
 ModeCourse modeDeCle(const std::string& cle) { return cle == "course5" ? ModeCourse::Course5 : cle == "poursuite" ? ModeCourse::Poursuite : ModeCourse::Checkpoint; }
 
+// WFS-141 (RG-01) : 2 Hz = période de 0,5 s : rouge la 1re moitié, bleu la 2e (une voiture sur deux : l'inverse)
+Gyrophare gyrophare(double t, int voiture) {
+    const double ph = t - std::floor(t / 0.5) * 0.5;   // 0 ≤ ph < 0,5 (t négatif compris)
+    const bool premier = (ph < 0.25) != (voiture % 2 == 1);
+    Gyrophare g; g.rouge = premier; g.bleu = !premier;
+    return g;
+}
+// WFS-141 (RG-03) : « 2e PLACE » : le « e » reste minuscule (ui::majuscules le mettait en capitale, comme ANO-35)
+std::string titrePlace(int rang) { return rang <= 1 ? "VICTOIRE" : std::to_string(rang) + "e PLACE"; }
+
 } // namespace poursuite
 } // namespace wfs

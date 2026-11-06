@@ -155,11 +155,7 @@ private:
     }
     // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais), haut décalé à droite, bas à gauche ;
     // WFS-101 (RG-05, ANO-20) : un seul quadrilatère (plus de bandes horizontales ni de rayures)
-    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-        const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
-                               {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
-        r.uiQuad(q);
-    }
+    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) { biseauFin(r, x, y, w, h, biais, c); }
     // endRace du jeu web (WFS-24, RG-03 / RG-09) : record écrit seulement s'il est battu (s > best), puis enregistrement
     // (thread de travail). Sauvegarde inactive (banc d'essai sans WFS_BANC=sauvegarde) : rien, captures inchangées.
     // WFS-125 (RG-01) : seule une course Checkpoint solo peut battre waforspeed-best : ni le duel, ni la course à 5, ni la
@@ -279,6 +275,12 @@ void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, con
     const float y = bas - 5.5f * u;   // haut de la valeur (5,5 u) ; libellé (3,4 u) 1,2 u plus bas, comme avant
     ui::text(r, x0, y + 1.2f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
     ui::text(r, x0 + lw + gap, y, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
+}
+// WFS-141 : parallélogramme des boutons de l'écran de fin (avant : CourseSystem::biseau), commun aux 3 modes
+void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
+    const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
+                           {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
+    r.uiQuad(q);
 }
 WFS_SYSTEM(CourseSystem, 210)   // gameplay (200-299), après le trafic (50) dont il lit les chocs
 
