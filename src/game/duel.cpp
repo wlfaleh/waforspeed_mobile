@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include "player.h"
+#include "trace_cartes.h"   // WFS-136 (accroche A6) : version du tracé dans la présence
 
 namespace wfs::duel {
 
@@ -158,7 +159,8 @@ bool Session::join(std::unique_ptr<Transport> t, std::string_view code, bool hos
     nick_ = cleanName(nick); if (nick_.empty()) nick_ = "Pilote";
     car_ = car ? car : "golf"; paint_ = paint ? paint : ""; map_ = map;
     t_->presence({{"n", nick_}, {"st", "lobby"}, {"r", "0"}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"car", car_}, {"paint", paint_},
-                  {"host", host ? "1" : "0"}, {"map", host ? map_ : ""}, {"km", host ? std::to_string(km_) : ""}});
+                  {"host", host ? "1" : "0"}, {"map", host ? map_ : ""}, {"km", host ? std::to_string(km_) : ""},
+                  {"trace", trace::signature()}});   // WFS-136 (RG-07, A7.5) : cartes au tracé 2
     return true;
 }
 void Session::leave() {
@@ -195,6 +197,8 @@ bool Session::checkStart() {
     if (st_ != Status::Ready) return false;
     const auto os = others();
     if (os.empty()) return false;
+    // WFS-136 (RG-07) : adversaire sur un autre tracé (ou ancienne version sans champ « trace ») : pas de course
+    for (const PeerView& p : os) if (str(p.f, "trace") != trace::signature()) return false;
     int mx = round_;
     for (const PeerView& p : os) if (str(p.f, "st") == "ready") mx = std::max(mx, (int)clampd(num(p.f, "r"), 0, 1e6));
     if (mx > round_) { round_ = mx; t_->presence({{"r", std::to_string(round_)}}); }

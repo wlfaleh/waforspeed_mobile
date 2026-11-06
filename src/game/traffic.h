@@ -55,6 +55,10 @@ struct TrafficCar {
     bool pending = false; int pendLane = 0; double pendT = 0;
     double prevDz = 0;
     double laneYaw = 0;                     // cap dû au changement de file (rad), pour l'affichage
+    // WFS-136 (RG-03) : voiture qui traverse le carrefour à feux n° traverse (−1 : voiture normale), au rouge, de gauche
+    // à droite ; cachée (ni dessinée, ni touchée) le reste du temps
+    int traverse = -1, rangTraverse = 0;
+    bool cache = false;
 };
 
 // ---------- trafic vivant (WFS-67) : état d'affichage, calculé à partir de la simulation sans la modifier ----------
@@ -114,6 +118,8 @@ public:
     bool parallel = true;
 private:
     void findLeaders(const TrafficView& pv, int begin, int end);
+    void ajouterTrace2(int n, double playerPos);   // WFS-136 : voitures en plus sur l'autoroute, voitures qui traversent
+    void placerTraverse(TrafficCar& car) const;     // WFS-136 : position d'une voiture qui traverse (horloge des feux)
     Track* track_ = nullptr;
     std::vector<double> gap_, lead_;        // voiture de devant de chaque voiture (calculées avant le pas)
     double scrapeCd_ = 0;

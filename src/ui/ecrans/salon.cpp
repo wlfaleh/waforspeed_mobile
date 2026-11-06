@@ -469,6 +469,7 @@ private:
              : ra == "plein" ? "Ce salon est complet (4 pilotes)"
              : ra == "pris" ? "Code déjà pris : crée un nouveau duel"
              : ra == "perdu" ? "Connexion perdue : quitte le salon et recommence"
+             : ra == "version" ? "Mets ton jeu à jour : ton ami a une autre version des cartes"   // WFS-136 (accroche A5)
              : "Serveur du duel injoignable : vérifie ta connexion Internet";
     }
 
