@@ -168,7 +168,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-195 | [RÉALISME] Vue cockpit réaliste : volant en cuir et cockpit digital propres à chaque … | E10 (+ E3 `camera_vue.*`) | ⏳ En attente |  | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-195` |  |  |
 | P1 Urgent | WFS-196 | [CI] Statuts automatiques : un robot passe les tickets 🟣 en ✅ (numéro du run) dès que la … | E7 (exception PO : WFS-185 🟣 … | 🟣 Fusionné (PR #160) | Claude, agent 2 (01UY1Vv5) | WFS-185 🟣 | `feature/waforspeed-196` | #160 |  |
 | P2 Haute | WFS-197 | [RÉALISME] Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central … | E3 `camera_vue.*` (exception … | 🔧 En cours | Claude, agent 2 (01UY1Vv5) | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-197` |  |  |
-| P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 | ⏳ Prêt |  | — | `feature/waforspeed-198` |  |  |
+| P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 (exception PO 22:32 : 2e ticket E7 à côté de WFS-190, fichiers nouveaux seulement, `build.yml` et `statuts.yml` interdits) | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 22:32 UTC | — | `feature/waforspeed-198` |  |  |
 
 ## Critères d'acceptation
 
