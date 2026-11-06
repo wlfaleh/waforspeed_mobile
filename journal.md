@@ -5020,3 +5020,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - Le run 42279476180 (commit 78b9a30, fusion de WFS-181) est **en file d'attente**. Les lanceurs GitHub sont saturés : les runs de main attendent depuis 17:40 UTC.
 - WFS-181 reste 🟣 dans `TACHES.md`. Il passera à ✅ avec le numéro du run vert. Rien à corriger pour l'instant : en local, compilation, 35 tests CPU, `WFS_BANC=corniche` et `WFS_BANC=parcours` (0 écart) sont OK.
 
+
+### 2026-11-06 19:33:03 — Règle : fusion des PR en squash, nom de l'agent dans chaque titre de commit (po-scrum-master)
+- **Ordre de l'utilisateur** : fusion en squash ; chaque commit porte le nom de l'agent avec son titre.
+- **Écrit dans** : `CLAUDE.md`, `waforspeed-natif` (5 ter), checklist de livraison (`agent-developer`), agent PO, en-tête de `track-agent.md` (le nom à utiliser est celui de la colonne « Agent »).
+- **Format** : PR fusionnée en squash, titre `WFS-XX : <titre> (#PR) (<agent>)` ; tout commit finit par `(<agent>)`, synchronisations comprises (`git merge origin/main -m "Synchronisation avec main (<agent>)"`).
