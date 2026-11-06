@@ -154,6 +154,7 @@ public:
     }
 
     // WFS-125 : banc d'essai (parcours RG-09)
+    int positions(double* rd, int max) const { int n = 0; if (actif_) for (const auto& o : os_) if (n < max) rd[n++] = o.g.rd; return n; }   // WFS-173
     bool bouton(const std::string& nom, float& x, float& y) const {
         const Zone& z = nom == "rejouer" ? rejouerZ_ : menuZ_;
         if (!actif_ || !fini_ || z.w <= 0) return false;
@@ -262,6 +263,7 @@ Course5System* Course5System::actif5 = nullptr;
 
 // WFS-125 : banc d'essai (parcours RG-09) : boutons de l'écran de fin, record battu
 bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5System::actif5 && Course5System::actif5->bouton(nom, x, y); }
+int course5Positions(double* rd, int max) { return Course5System::actif5 ? Course5System::actif5->positions(rd, max) : 0; }   // WFS-173
 bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
 
 WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) et le duel (220)

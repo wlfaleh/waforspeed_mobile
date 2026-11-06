@@ -4324,3 +4324,86 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - **CI de main** : `banc-essai (vitrines)` est rouge à cause d'ANO-88 (WFS-169 en cours) et `endurance` à cause de WFS-145 : ces rouges ne viennent pas de ce ticket.
   - **Conflits possibles** : `CMakeLists.txt` avec WFS-149 (PR #132), `build.yml` avec WFS-145, `poursuite_system.cpp` avec WFS-172 (bancs). En cas de conflit, garder les deux modifications.
 - Fichiers : `TACHES.md` (lignes de WFS-173), ce Journal. Aucun code touché.
+
+### 2026-11-06 11:24:31 — WFS-169 : contrôle des records du banc aligné sur RG-07, fusion par confiance (Claude (session trafic))
+- Cause racine (ANO-88) : depuis WFS-136 (RG-07 / A7.4), `Sauvegarde::lire` met le record du tracé 1 de côté sous `best_v1` et remet `best` à 0 ; le contrôle RG-03 de `benchRecords` (WFS-125) attendait encore `best == 48210` → « ÉCHEC », `wfs_bench` code 3, groupe `vitrines` arrêté avant `WFS_BANC=trace`.
+- Correction (`src/game/course_system.cpp`, bloc RG-03 de `benchRecords` seulement) : attendu `best == 0`, `best_v1 == "48210"` (lu dans `Sauvegarde::anciens`, membre public : **aucun accesseur ajouté**, RG-03), `car == m4`, records course à 5 et poursuite vides ; message « ancienne sauvegarde relue sans perte (record mis de côté sous best_v1), records vides ». Migration `*_v1` de `sauvegarde.cpp` inchangée (RG-02). Aucun autre contrôle cassé par la même cause (recherche de `48210` dans `src/` et `tests/` : `test_records` et `test_sauvegarde` utilisent déjà `trace=2`).
+- Preuves locales (lavapipe) : `WFS_BANC=records` code 0 ; `WFS_BANC=vitrines` code 0, 0 « ÉCHEC », 16 `vitrine-*` ; `WFS_BANC=trace` code 0, « trace : 0 écart(s) », 9 `trace-*` ; tests CPU : 30 réussis.
+- RG-05, parcours complet au journal du banc : « accueil → Course solo → Checkpoint → Continuer → garage → Choisir → terrain → Rouler → course → fin « NOUVEAU RECORD » → Rejouer → course avec le fantôme → fin → Menu → accueil ; Poursuite → fin → Menu ; Course à 5 → fin → Menu → accueil : 0 écart(s) OK ».
+- Fusion par confiance : PR #134, commit de fusion eadeae8. Ligne `qa/Check.md` ajoutée. Suivi de la CI de main jusqu'au job `banc-essai (vitrines)` vert.
+
+### 2026-11-06 11:25:36 — Début WFS-172 : captures du banc qui prouvent leur critère (ANO-80, 87, 89), E3 (PO)
+- Attribué à Claude (session trafic), branche `feature/waforspeed-172`. WFS-169 ✅ (eadeae8) : dépendance levée, E3 libre (WFS-141 et WFS-169 fusionnés). L'agent garde WFS-170 et WFS-149 en revue (PR #131, #132), sur ordre de l'utilisateur « avancer vite ».
+- Zone autorisée : fonctions de banc de `src/game/**` (`benchTrace`, bancs garage, poursuite, course à 5), `tests/**` ; accroches ≤ 10 lignes annoncées : `src/platform/desktop_main.cpp`, `.github/workflows/build.yml`. Interdit : règles de jeu, `src/render/**`, `src/ui/**` (aucune taille d'interface, ordre permanent), iOS (gel).
+- Critères (regles-de-gestion/WFS-172.md) : `garage-course(-2400)` voiture choisie en course après « Rouler » + 5 s ; `poursuite-camion` camion visible ; nouvelle `poursuite-police-basse` (police 10-30 m, gyrophares) ; `trace-feux-rouge` ≥ 2 voitures arrêtées, nombre au journal du banc ; autres captures inchangées ; parcours complet accueil → garage → course → fin → Menu → accueil, 0 écart ; tests CPU verts ; ligne `qa/Check.md`.
+- Plan court : ajuster le minutage / placement des 3 bancs, ajouter la capture police Basse, une seule CI.
+
+### 2026-11-06 11:38:09 — WFS-173 : code poussé (bafcfe8, synchronisé c4b2883), accroches annoncées (Claude (session 01Us6uCu))
+- **Branche** `feature/waforspeed-173` poussée à 11:22:14 UTC (commit de début d17c538), puis le code (bafcfe8), synchronisé avec main (c4b2883, qui apporte la correction de WFS-169 dans `course_system.cpp`).
+- **Fait** :
+  - `src/ui/minicarte.h` : calculs purs (place sans recouvrement, projection GPS et parcours, découpe Liang-Barsky au bord, abscisses ramenées).
+  - `src/ui/minicarte.cpp` : système `MiniCarte`, ordre 422, aucun `onTouch` ; tableaux fixes, aucune allocation par image ; `benchMiniCarte`.
+  - `tests/test_minicarte.cpp`.
+- **Choix technique** : la route est dessinée par une bande à onglets, sans recouvrement, et pas par `dessin2d::trait`. Ce dernier trace des traits opaques à bouts ronds : à 45 % d'opacité (RG-05), chaque jointure ferait un grain plus clair. La flèche du joueur reprend `dessin2d::polygone` / `contour`.
+- **Accroches annoncées** (toutes en lecture seule, aucune règle de jeu changée) :
+  - **E3, 6 lignes** :
+    - `course5.h` +1 : `course5Positions` ;
+    - `course5_system.cpp` +2 : membre `positions` et fonction ;
+    - `poursuite.h` +1 : `poursuitePolice` ;
+    - `poursuite_system.cpp` +2 : membre `police` et fonction, à côté de `policeMobiles` / `poursuiteBouton`.
+  - **`hud.cpp`, 2 lignes** : l'`#include "minicarte.h"` et l'appel de `benchMiniCarte` à la fin de `benchHud`. RG-10 en prévoyait une ; l'include est nécessaire. Le dessin du HUD n'est pas touché.
+  - **`toasts.h` +6 / `toasts.cpp` 3 lignes changées** : la place de la pile devient `bandeauxBordDroit` / `bandeauxHaut`, à la formule identique (RG-03 : la carte lit la même valeur) ; la variable `u`, devenue inutile, est retirée.
+  - **`CMakeLists.txt`, 1 ligne** (`test_minicarte`) ; **`build.yml`, 1 ligne** (groupe `ecrans-2400` : copie de `hud/minicarte-*.png` en `minicarte-*-2400.png`).
+- **Vérification locale** :
+  - Compilation g++ et clang sans avertissement ; 32 tests CPU OK. `test_minicarte` : 168 placements (7 écrans × boutons Normaux / Grands × droitier / gaucher × 3 marges × Checkpoint / Poursuite), 0 masqué, 0 recouvrement, 2 212 contrôles.
+  - Banc `hud` en 1280 :
+    - `minicarte-checkpoint` : GPS, 101 points, 1 914 sommets, côté 150 px, checkpoint cyan à 300 m ;
+    - `minicarte-ligne` : parcours de 4 km, 128 points, 2 466 sommets, 4 ordinateurs et le damier.
+  - Captures regardées : `hud-course`, `minicarte-*`, `toast-pile` (bandeaux à gauche de la carte) ; temps, score, compteur et commandes à leur place.
+- **En cours** : banc `parcours` en local, CI de la branche (captures 2400, `course5`, `poursuite`, `duel`).
+
+### 2026-11-06 12:00:36 — WFS-140 libéré et réattribué à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd) (po-scrum-master)
+- **Ticket** : WFS-140 — Grand Prix : épingle, chicanes, raidillon, feux de départ, tribunes pleines, paddock et garages des équipes, bars d'accueil, fan zone · E2 · P2 Haute · branche `feature/waforspeed-140` (existante, à reprendre telle quelle) · règles : `regles-de-gestion/WFS-140.md`.
+- **Libération** : attribué le 08:21 UTC à Claude (session dev expert, 0183bv2X). 3 h 40 après : la branche ne contient que le commit d'attribution b20b6b1 (aucun commit de travail), aucune entrée de cet agent au Journal depuis 08:18:34. Le même agent a déjà perdu WFS-169 à 10:41 faute de branche poussée, et n'a pas repris WFS-140 depuis (1 h 20). E2 porte 4 tickets P2 (dont la demande explicite de l'utilisateur sur les 4 cartes) bloqués derrière ce seul ticket inactif. Décision PO : application de l'esprit de la règle 9 (aucun travail poussé 2 h après l'attribution) ; aucun travail perdu. S'il a du travail local, il le signale au Journal et le confie à l'agent 5 (pas de double travail) ; il demande ensuite un autre ticket au PO.
+- **Choix** : seuls tickets ⏳ Prêt : WFS-137, 138, 139 (E2). E0 (WFS-149), E3 (WFS-172), E4 (WFS-170), E5 (WFS-173), E7 (WFS-145), E10 (WFS-158) occupées ; E6, E8 sans ticket Prêt (E8 : gel de la taille des boutons) ; E9, E11, E12, E13 attendent WFS-149 → 150 → 151 ; `anno.md` sans anomalie 🆕. WFS-140 reste le premier de E2 (seule carte déjà au tracé 2 en jeu, `circuit` dans `trace::CARTES_ACTIVES`).
+- **Zone autorisée** : `src/world/circuit.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures de cette carte) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp` (nouvelles captures) ; outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`) utilisés sans modification, sauf accroche ≤ 10 lignes annoncée.
+- **Interdit** : `src/game/**` (route, trafic ; WFS-172 en cours en E3), `ville*.cpp`, `campagne.cpp`, `plage.cpp` (autres cartes ; aussi touchés par WFS-145), `src/render/**` (WFS-170, 149), `shaders/**`, `src/ui/**` (WFS-173 ; taille des boutons gelée), `CMakeLists.txt` (WFS-149, 173), `.github/**` (WFS-145, 173), `src/world/pietons.*` (E11), iOS (gel).
+- **Critères** : captures `carte-circuit-depart` (feux allumés), `-epingle`, `-chicane`, `-raidillon`, `-paddock` (+ `-nuit`), caméra de course ; rien sur la chaussée, murs de l'épingle corrigés (`trace::rayonInterieur`) ; `qualite-*` sans baisse visible ; parcours complet `WFS_BANC=parcours` 0 écart sur cette carte ; ligne `qa/Check.md`.
+- **Plan** : pousser un commit de début dans l'heure, puis RG-01 à RG-05 et RG-C1 à C5 dans `circuit.cpp` en réutilisant le décor existant ; banc local ; fusion par confiance si > 50 %.
+
+### 2026-11-06 12:01:41 — Début WFS-137 : décor de la Ville (Claude, agent 4) — attribué par le PO
+- **Ticket** : WFS-137 « Ville : rond-point à fontaine, carrefours à feux et piétons, autoroute urbaine, tunnel, pont, casino, centre commercial, cafés, bars, garages, pigeons », épic E2, P2 Haute. Dépendances WFS-136 ✅, WFS-94 ✅. Branche `feature/waforspeed-137`, **à pousser dans l'heure** (règle 9), donc avant 13:01 UTC. Règles : `regles-de-gestion/WFS-137.md` (RG-01 à RG-05, RG-C1 à RG-C5, ajouts RG-A / RG-B d'ANO-81 et ANO-84).
+- **Pourquoi ce ticket** : aucun ticket ⏳ Prêt dans une épic libre. E0 (WFS-149 en revue), E3 (WFS-172), E4 (WFS-170 en revue), E5 (WFS-173), E7 (WFS-145), E10 (WFS-158) sont occupées ; l'axe Réalisme (E9, E11, E12, E13) attend WFS-149 → 150 → 151 ; WFS-171 (feux la nuit) attend WFS-170 ; `anno.md` n'a aucune anomalie 🆕. Seuls WFS-137, 138, 139 (E2) sont prêts ; WFS-137 a le plus petit numéro.
+- **Exception PO (2e ticket E2 actif, fichiers séparés)** : WFS-140 (Grand Prix) vient d'être réattribué à Claude (agent 5) à 12:00:36 (entrée ci-dessus) et reste actif. Les deux tickets ne partagent aucun fichier de carte, par construction (chaque fichier de règles interdit les 3 autres cartes) : WFS-137 = `ville.cpp`, `ville_quartiers.*` ; WFS-140 = `circuit.cpp`. Fichiers communs, en ajouts seulement : `cartes_banc.cpp` (une fonction de captures par carte), la ligne `trace::CARTES_ACTIVES` de `src/game/trace_cartes.h`, `assets/world/**` (nouveaux fichiers nommés `ville_*`), accroche `desktop_main.cpp` ; en cas de conflit, garder les deux modifications. Sans cette exception, aucun agent disponible n'a de ticket (toutes les autres épics sont occupées ou en attente de WFS-149 → 151), et la demande de l'utilisateur sur les 4 cartes avance deux fois plus vite. WFS-145 (E7 + E2) ne touche aujourd'hui que `poursuite_system.cpp` ; si sa branche modifie `ville.cpp`, garder les deux modifications. WFS-138 et 139 restent ⏳ Prêt (pas de 3e ticket E2 actif).
+- **Zone de code autorisée** : `src/world/ville.cpp`, `src/world/ville_quartiers.*`, `assets/world/**` (sauf `assets/world/modeles/**`, zone E12), `src/world/cartes_banc.cpp` (captures de la Ville), la ligne `trace::CARTES_ACTIVES` de `src/game/trace_cartes.h` (même commit que le décor), `assets/licences/` (licences des animaux). Accroches ≤ 10 lignes, à annoncer au Journal : `src/platform/desktop_main.cpp` (captures), outils partagés `commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`. **Interdit** : le reste de `src/game/**`, `circuit.cpp`, `campagne.cpp`, `plage.cpp`, `src/render/**`, `shaders/**`, `src/ui/**` (taille des boutons gelée), iOS (gel), tout retrait de code.
+- **Critères** : captures `carte-ville-rond-point`, `-feux`, `-autoroute`, `-tunnel`, `-casino`, `-centre-commercial` (+ `-nuit`), caméra de course ; rien sur la chaussée, aucun virage ni feu caché, caméra jamais dans le décor ni dans l'eau ; `qualite-*` sans baisse visible, ≤ +150 appels de dessin ; ANO-81 (trottoir jusqu'aux façades) et ANO-84 (fenêtres la nuit) plus visibles sur leurs captures ; `WFS_BANC=parcours` 0 écart ; Ville ajoutée à `CARTES_ACTIVES` ; ligne `qa/Check.md`.
+- **Plan court** : 1) branche + commit de début poussés ; 2) placement à partir de `sectionA(z)`, `sections()`, `feuA(i)` (WFS-136) ; 3) rond-point et carrefours à feux (piétons de `pietons.*`), puis autoroute, tunnel, pont ; 4) casino, centre commercial, cafés / bars (`commerces.cpp`), garages, enseignes (`enseignes.*`) ; 5) pigeons ; 6) RG-A / RG-B ; 7) captures, synchronisation avec `main`, tests CPU, banc `parcours` ; 8) fusion par confiance si > 50 %.
+- Fichiers : `TACHES.md` (lignes de WFS-137), ce Journal. Aucun code touché, aucune branche créée ni supprimée.
+
+### 2026-11-06 12:02:20 — Début WFS-174 : sons de la route, attribué à Claude, agent 3 (session 011cpqZd) (po-scrum-master)
+- **Contexte** : l'agent 3 signale que WFS-131 (qui lui avait été attribué) a déjà été fait et fusionné par Claude (session 01Us6uCu), PR #133 ; la ligne de `TACHES.md` nomme déjà le bon responsable, rien à corriger. Il demande un nouveau sujet.
+- **Choix** : aucun ticket ⏳ Prêt attribuable. E0 (WFS-149), E2 (WFS-140, 137), E3 (WFS-172), E4 (WFS-170, 142, 134), E5 (WFS-173), E7 (WFS-145), E10 (WFS-158) occupées ; E8 sans ticket sûr (ordre permanent : personne ne touche à la taille des boutons) ; E9, E11, E12, E13 en attente de WFS-150 / 151. La suite de WFS-128 n'est pas attribuable : la section `commandes` touche la taille des boutons (gelée), `duel` / `joueurs` sont en E3 (occupée), et WFS-102 est annulé. **E6 est libre** : le PO crée WFS-174 (P3), sujet audible sur Android, zone `src/audio/**` séparée de tous les tickets actifs.
+- **Ticket** : WFS-174 · E6 · branche `feature/waforspeed-174` · règles `regles-de-gestion/WFS-174.md` (RG-01 à RG-10).
+- **Zone autorisée** : `src/audio/**`, `tests/test_audio.cpp` ; accroche ≤ 3 lignes `CMakeLists.txt` ; lecture seule `player.h`, `meteo.h`, `system.h`.
+- **Critères** : vent selon le carré de la vitesse (nul < 40 km/h, 0,30 au max), roulement des pneus, bande rugueuse à `|x| ≥ edge`, herbe / gravier à `|x| > 1`, chuintement sous la pluie, silence hors course ; crête < 1,0 ; tests CPU, banc audio, parcours complet au Journal ; aucune capture changée.
+- **Plan court** : module pur `route_sons.h` (cibles de volume, testé sur CPU) ; boucles calculées dans `SfxMixer::build` en réutilisant `boucle()` et le vent de `musique.cpp` ; cibles dans `SfxEvenements::update` ; banc audio ; fusion par confiance si > 50 %.
+
+### 2026-11-06 12:02:17 — Fin WFS-173 : mini-carte du parcours au HUD, fusionnée (PR #135, 56f5d47, fusion par confiance) (Claude (session 01Us6uCu))
+- **Livré** :
+  - `MiniCarte` (ordre 422) : carte GPS en Checkpoint et en Poursuite, parcours entier en Course à 5 et en Duel.
+  - Place calculée sans rien recouvrir ; aucun toucher ; tableaux fixes ; au plus 2 466 sommets mesurés (1 914 en GPS).
+  - Accroches annoncées à 11:38:09 (entrée « code poussé » du journal).
+- **Preuves (RG-11, RG-13)** :
+  - En local : bancs `hud` et `parcours` (« parcours complet : 0 écart(s) OK »).
+  - CI de branche (run 42211686406) : `texte` et `partie2a` vertes.
+    - `texte` : 31 tests CPU OK dont `test_minicarte` ; « parcours course à 5 (RG-10) : 0 écart » ; « poursuite (parcours) … → accueil : 0 écart » ; « parcours complet et redémarrage : 0 écart » ; « course à 5 (parcours) : fin → Rejouer → … → accueil : 0 écart ».
+    - `partie2a` : `minicarte-checkpoint` (GPS, 101 points, 1 914 sommets, côté 150 px, checkpoint à 300 m), `minicarte-ligne` (parcours, 128 points, 2 466 sommets, 5 objets), pause → reprise (chrono figé, carte de retour), « parcours duel : conforme (0 écart) ».
+  - Branche synchronisée avec main avant la fusion, 32 tests CPU OK en local.
+- **Captures regardées** :
+  - `hud-course`, `minicarte-checkpoint`, `minicarte-ligne`, `toast-pile` (bandeaux à gauche de la carte), `parcours-course` (carte présente), `parcours-fin` (pas de carte), `poursuite-police` (carte à 14 k du haut, à droite du HUD de la poursuite, barrage en carré rouge).
+  - Les captures 2400 (`minicarte-*-2400`, `hud-2400`) arrivent avec le job `ecrans-2400` : le QA les regarde la nuit.
+- **Limite signalée au PO** : en Poursuite, une police à moins de 20 m derrière le joueur passe sous la flèche. À l'échelle de RG-06 (500 m pour 130 px, soit 0,26 px/m), 20 m font 5 px. Proposition : un zoom plus serré en Poursuite (par exemple 250 m), si l'utilisateur le demande après son essai. Question posée dans `tache utilisateur.md`.
+- **Écart au ticket, dit franchement** :
+  - `hud.cpp` a 2 lignes ajoutées et non une seule : l'include est nécessaire.
+  - Dans `toasts.cpp`, la variable locale `u` est retirée, car devenue inutile une fois la formule déplacée dans `toasts.h`. Aucun comportement retiré.
+- **Suite** : je suis la CI de `main` ; `qa/Check.md`, `TACHES.md` et `tache utilisateur.md` sont à jour.
