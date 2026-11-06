@@ -5192,3 +5192,10 @@ Sur demande de l'utilisateur, l'agent « Claude (session 01Us6uCu) » s'appelle 
 ### 2026-11-06 20:56:01 — track-agent.md : seulement les agents, plus de liste de tickets (po-scrum-master)
 - **Remarque de l'utilisateur** : `track-agent.md` sert à suivre les agents, pas les tickets.
 - **Fait** : section « Tickets prêts sans agent » retirée ; règle écrite en tête du fichier et dans l'agent PO. Les tickets prêts restent dans `TACHES.md`.
+
+### 2026-11-06 20:57:42 — WFS-189 : arbitrages du PO sur RG-02 et RG-03 (po-scrum-master)
+- **Demande** : Claude, agent 2 (01UY1Vv5) mesure trois écarts entre les RG et la simulation (pilote automatique, 4 km, 5 graines ; tracé 1 identique à la recette QA, Golf 68,2 s).
+- **Conflit 1, tracé** : RG-02 se mesure sur la **Ville du jeu (tracé 2, WFS-136/137)**. Nouvelle RG-02 bis : les ordinateurs ralentissent dans les virages serrés, aux feux et au rond-point **avec le même plafond de vitesse que le pilote automatique du joueur** (calcul réutilisé, pas de nouvelle loi), zone `src/game/course5*`.
+- **Conflit 2, extrêmes** : RG-02 ter : vitesse visée = facteur (0,80 / 0,90 / 0,97) × **min(pointe de l'ordinateur, 1,10 × pointe du joueur)** (`carPerf().top`). **SF90** (la plus rapide du catalogue) : bornes basses de Normale (1,5) et Difficile (2,0) non appliquées, ≤ 3,0 en Facile seulement ; places notées au Journal. Les 6 autres voitures gardent RG-02 entière ; RG-06 (jamais dernière en moyenne en Facile) inchangée.
+- **Conflit 3, grille** : rangement par **0-100 de fiche croissant** (égalité : vitesse max la plus forte devant), au lieu de la vitesse max (ANO-99 : « par performance »). Critère « aucun ordinateur sous 60 km/h à 4 s » remplacé par : **à 4 s du GO, chaque ordinateur à ≥ 90 % de sa vitesse seule**, aux graines 20261105 (banc, Golf) et 20261105 avec la SF90 ; critère « pas plus de 2 s à moins de 8 m derrière un autre, 10 premières secondes » gardé.
+- Fichier : `regles-de-gestion/WFS-189.md` (RG-02, RG-02 bis, RG-02 ter, RG-03, RG-07, critères). Rien à remonter à l'utilisateur (équilibre de jeu, décision du PO). Ticket et développeur inchangés.
