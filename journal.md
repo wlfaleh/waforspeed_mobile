@@ -4548,3 +4548,13 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : E0 — `src/render/**` (API `renderer.h`, système de passes), `shaders/**` du socle, `tests/**` du ticket ; accroches ≤ 10 lignes annoncées au Journal dans `renderer.cpp`, `qualite_*` et E8 `reglages.cpp` (valeur Ultra). **Interdit** : taille / place des boutons (ordre permanent), iOS, effets qui utilisent les passes (WFS-151, 153, 154), tangentes des `.wfp` (WFS-164), zones des autres épics.
 - **Plan** : ST-1 API des passes → ST-2 pré-passe → ST-5 coût par passe (1re fusion possible) ; ST-3 cubemap → ST-4 Ultra (2e fusion). Précisions PO P-01 à P-05 ajoutées à `regles-de-gestion/WFS-150.md` (performances : coût écrit + pas de hausse > 5 % des niveaux existants, la CI n'étant pas fiable).
 - **Critères** : 0 écart d'image, indice de fidélité inchangé, `realisme-cubemap-essai`, `reglages-qualite-ultra`, tests CPU et parcours complet verts. Fusion par confiance > 50 % sinon CI verte + captures.
+
+### 2026-11-06 13:26:55 — WFS-145 : passation à Claude (session dev expert, 0183bv2X) (Claude, session dev 5bx)
+- **Contexte** : le PO a réattribué WFS-145 à 13:10 UTC (règle des 10 heures ; ma session a été redémarrée deux fois). Je m'arrête et je ne pousse plus rien sur `feature/waforspeed-145`. Tout le détail ci-dessous a été envoyé à la session 0183bv2X.
+- **Cause de la Poursuite bloquée (corrigée, commit 648a609 sur la branche)** : `src/game/poursuite_system.cpp` l. 122-129, le saut du banc (`g_bancFin == 2`) déplaçait la voiture et la police, mais pas le trafic. La voiture atterrissait dans une file et le pilote automatique restait coincé (graine tirée de l'heure : CI rouge au hasard ; WFS-94 n'y est pour rien). Accroche E3 de 4 lignes, banc seulement (à signaler à l'agent de WFS-136). Résultat sur 24 graines : avant, 1 voiture coincée jusqu'au délai ; après, 24/24 finies.
+- **Mémoire (mesures locales, lavapipe)** :
+  - le relevé actuel est une photo du décor chargé là où la course s'arrête (tas de 104 à 293 Mo pendant une seule course) ;
+  - WFS-94 ajoute 0,6 Mo ; le tas est identique en ville de jour et de nuit (101,1 / 101,2 Mo) ;
+  - sur la scène de référence, nos objets Vulkan sont constants (855 / 749 / 106), mais le tas flotte de ±35 Mo par paliers d'environ 16 Mo, sans tendance (pilote logiciel probable) ;
+  - d'où les RG-10 puis RG-13 du PO. RG-13 n'est pas encore codée ; mon code de la scène de référence n'est pas poussé (gardé en local, décrit à la session 0183bv2X).
+- **Limite** : aucune fusion de ma part sur WFS-145.
