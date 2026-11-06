@@ -34,6 +34,12 @@ constexpr double DOPPLER_MAX = 0.12;                  // facteur borné à 1 ± 
 constexpr double AUCUNE = 1e8;                        // distance ≥ AUCUNE : aucune police
 // RG-09 : journal
 constexpr float JOURNAL_ECART = 0.05f;
+// WFS-184 (RG-01, RG-02, ANO-95) : jingle de fin audible par-dessus la sirène qui s'éteint
+constexpr float BAISSE_JINGLE = 0.10f;                // au départ du jingle, la sirène descend à 0,10 × sa valeur courante…
+constexpr float BAISSE_JINGLE_S = 0.030f;             // … en 30 ms (rampe linéaire, sans clic) ; le fondu FIN_S finit
+constexpr float ATTENTE_JINGLE_S = BAISSE_JINGLE_S;   // le jingle part une fois la sirène baissée (sinon sa 1re note
+                                                      // joue sous la rampe de 30 ms : +0,9 dB au lieu de ≥ +6 dB, RG-02)
+constexpr float GAIN_JINGLE = 3;                      // jingles × 3 (beep : crête 0,12 → 0,36 ; × master 0,5 : 0,18)
 } // namespace sirene
 
 // ---------------------------------------------------------------- décisions (fonctions pures, testées)
@@ -65,6 +71,13 @@ inline float pasFinSirene(float rate) { return sirene::GAIN_PRES / (sirene::FIN_
 inline float suivreGainSirene(float g, float cible, bool fin, float k, float pasFin) {
     if (fin && cible < g) return std::max(cible, g - pasFin);
     return g + (cible - g) * k;
+}
+// WFS-184 (RG-01) : atténuation de la sirène pendant un jingle de fin, multipliée au gain de la sirène (le fondu FIN_S du
+// gain continue dessous : 0,10 × gain → 0 en FIN_S). baisse : un jingle a démarré ; sinon retour à 1 (la sirène est alors
+// déjà muette : SfxMixer ne lève la baisse qu'au silence). Pas par échantillon : 1 % de marge, comme pasFinSirene.
+inline float pasBaisseSirene(float rate) { return (1 - sirene::BAISSE_JINGLE) / (sirene::BAISSE_JINGLE_S * rate) * 1.01f; }
+inline float attenuationSirene(float a, bool baisse, float pas) {
+    return baisse ? std::max(sirene::BAISSE_JINGLE, a - pas) : std::min(1.f, a + pas);
 }
 // lecture fractionnaire d'une boucle (pas de lecture variable = Doppler), interpolation linéaire, raccord fin → début
 inline float lireBoucle(const std::vector<float>& b, double pos) {
@@ -100,16 +113,19 @@ inline std::vector<float> boucleSirene(float rate, float cycle) {
     if (p > 1e-6f) for (float& s : out) s *= CRETE / p;
     return out;
 }
-// RG-06 : « ARRÊTÉ » : deux notes graves descendantes, 330 puis 220 Hz, 0,25 s chacune (0,50 s)
+// RG-06 : « ARRÊTÉ » : deux notes descendantes, 0,25 s chacune (0,50 s) ; WFS-184 (RG-03) : une octave plus haut, 660 puis
+// 440 Hz (220 / 330 Hz passaient mal dans un haut-parleur de téléphone) ; WFS-184 (RG-02) : × GAIN_JINGLE
 inline std::vector<float> jingleArrete(float rate) {
     std::vector<float> b;
-    sfx::beep(b, rate, 330, 0, 0.25f); sfx::beep(b, rate, 220, 0.25f, 0.25f);
+    sfx::beep(b, rate, 660, 0, 0.25f); sfx::beep(b, rate, 440, 0.25f, 0.25f);
+    for (float& x : b) x *= sirene::GAIN_JINGLE;
     return b;
 }
 // RG-06 : « ÉCHAPPÉ » : arpège montant 523 / 659 / 784 Hz (do, mi, sol), 0,12 s chacune, la dernière tenue 0,35 s (0,59 s)
 inline std::vector<float> jingleEchappe(float rate) {
     std::vector<float> b;
     sfx::beep(b, rate, 523, 0, 0.12f); sfx::beep(b, rate, 659, 0.12f, 0.12f); sfx::beep(b, rate, 784, 0.24f, 0.35f);
+    for (float& x : b) x *= sirene::GAIN_JINGLE;   // WFS-184 (RG-02)
     return b;
 }
 
