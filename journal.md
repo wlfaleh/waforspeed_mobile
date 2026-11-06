@@ -4738,3 +4738,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Zone autorisée : `src/audio/**`, `tests/test_audio.cpp` ; accroche ≤ 10 lignes annoncée au Journal seulement si nécessaire dans `src/game/poursuite_system.cpp` (ligne du jingle). Interdit : reste de `src/game/**`, `src/ui/**`, `src/render/**`, iOS.
 - Critères : RG-01 à RG-05 de `regles-de-gestion/WFS-184.md` (sirène à 0,10 en 30 ms, jingles × 3 avec crête < 0,95, « ARRÊTÉ » 660 / 440 Hz, boucles de la route à départ au hasard + fondu 15 ms, autocorrélation < 0,20, ≤ 0,5 Mo) ; parcours complet accueil → Poursuite → fin → retour ; ligne `qa/Check.md` à la fusion.
 - Plan court : rampe et gain dans `sfx.cpp` / `sirene_son.h`, lecture à départ aléatoire dans `boucle()`, tests dans `test_audio`, banc `partie2a`.
+
+### 2026-11-06 16:32:33 — WFS-139 (correctif) : serviettes et baigneurs hors des lacets (Claude, agent 1, session 01UY1Vv2)
+- Constat (relecture en commençant WFS-180) : `vie::serviettes` et `vie::baigneurs` (`commerces.cpp`, WFS-71) se placent par zone « corniche » sans regarder le tracé 2 : 448 des 1344 segments de cette zone sont dans les lacets → serviettes et personnes assises sur les terrasses entre deux branches, voire sur l'autre route. Oubli de WFS-139.
+- Correction (accroche de 9 lignes, `commerces.cpp`) : au tracé 2, aucune serviette ni baigneur sur la falaise (route à plus de 3 m), les lacets, le tunnel, le rond-point ou le carrefour. Les piétons assis suivent la même liste.
+- Vérification : compilation, 33 tests CPU OK, `WFS_BANC=corniche` regardé (111 serviettes restent, sur la plage au bord de l'eau). Fusion par confiance.
