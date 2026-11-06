@@ -9,6 +9,8 @@
 #include "../core/log.h"
 #include "../core/math.h"
 #include "../game/track.h"
+#include "../game/trace_cartes.h"   // WFS-137 : sections du tracé 2
+#include <limits>
 #include "zones.h"
 
 namespace wfs {
@@ -197,9 +199,14 @@ private:
 
 } // namespace
 
+namespace {
+std::mutex g_verrou;
+std::map<std::pair<uint32_t, int64_t>, Plan> g_cache;
+}
+
 const Plan& plan(const MapDef& map, int64_t segCount) {
-    static std::mutex m;
-    static std::map<std::pair<uint32_t, int64_t>, Plan> cache;
+    std::mutex& m = g_verrou;
+    std::map<std::pair<uint32_t, int64_t>, Plan>& cache = g_cache;
     static const Plan vide;
     if (std::strcmp(map.id, "ville") || segCount <= 0) return vide;
     std::lock_guard<std::mutex> verrou(m);
@@ -210,6 +217,128 @@ const Plan& plan(const MapDef& map, int64_t segCount) {
     size_t nb = 0; for (auto& v : p.objets) nb += v.size();
     WFS_LOG("Ville : plan des quartiers, %zu objets, %zu commerces, %zu panneaux", nb, p.commerces.size(), p.panneaux.size());
     return p;
+}
+
+// ---------- WFS-137 : plan adapté au tracé 2 (RG-C1, RG-03) ----------
+float Plan::lim(int64_t a, int side) const {
+    const auto& v = side > 0 ? limD : limG;
+    if (v.empty()) return std::numeric_limits<float>::infinity();
+    const int64_t L = (int64_t)v.size();
+    return v[(size_t)(((a % L) + L) % L)];
+}
+
+float etendue(const Objet& o) {
+    const float R = (float)RW;
+    switch (o.t) {
+    case IMMEUBLE: return R + 6.5f + o.d;            // retrait des façades (SET_BACK de ville.cpp) + profondeur
+    case ENTREPOT: return o.lat + o.d;
+    case LAMPE: return R + 0.8f;                      // mât au bord du trottoir (le bras passe au-dessus de la chaussée)
+    case ZEBRA: return 0;                             // marquage sur la chaussée
+    case ARBRE_RUE: return o.lat + 3.f;               // houppier des platanes
+    case ARBRE: return o.lat + 4.f;
+    case CONTENEURS: return o.lat + o.k * 2.6f + 2.5f;
+    case GRUE: return o.lat + 8.f;                    // pieds et tête (la flèche passe au-dessus du quai)
+    case FONTAINE: return o.lat + 4.f;
+    default: return o.lat + 1.f;                      // abribus, bancs, grilles, grillages
+    }
+}
+
+const Plan& adapter(const MapDef& map, const Track& t) {
+    const int64_t L = (int64_t)t.segmentCount();
+    const Plan& p0 = plan(map, L);
+    if (p0.objets.empty()) return p0;
+    std::lock_guard<std::mutex> verrou(g_verrou);
+    Plan& P = g_cache[{map.seed, L}];
+    if (P.adapte) return P;
+    P.adapte = true;
+    const auto& secs = trace::sections(t);
+    if (secs.empty()) return P;   // tracé 1 du jeu web : plan inchangé
+    constexpr float INF = std::numeric_limits<float>::infinity();
+    // rayon intérieur de chaque segment (90 % du rayon des courbes de moins de 60 m, comme les bas-côtés de Game)
+    std::vector<float> rg((size_t)L, INF), rd((size_t)L, INF);
+    for (int64_t a = 0; a < L; a++) {
+        const trace::Rayon ri = trace::rayonInterieur(t, ((double)a + 0.5) * SEG);
+        if (ri.gauche < 60) rg[(size_t)a] = (float)(0.9 * ri.gauche);
+        if (ri.droite < 60) rd[(size_t)a] = (float)(0.9 * ri.droite);
+    }
+    // RG-C1 : rien ne cache un virage serré dans les 60 m qui le précèdent : limite = la plus petite des 60 m qui suivent
+    const int64_t av = (int64_t)std::ceil(60.0 / SEG_M);
+    P.limG.assign((size_t)L, INF); P.limD.assign((size_t)L, INF);
+    for (int64_t a = 0; a < L; a++) for (int64_t k = 0; k <= av; k++) {
+        const size_t b = (size_t)((a + k) % L);
+        P.limG[(size_t)a] = std::min(P.limG[(size_t)a], rg[b]); P.limD[(size_t)a] = std::min(P.limD[(size_t)a], rd[b]);
+    }
+    // rond-point : l'anneau (14 m) est si serré que les routes d'entrée et de sortie arrivent par son côté extérieur ; le décor
+    // posé de ce côté retomberait sur elles. De 60 m avant à 30 m après, décor limité au trottoir des deux côtés (RW + 6) ;
+    // l'îlot et les abords sont habillés à part (RG-01)
+    for (const trace::Section& s : secs) if (s.type == trace::Type::RondPoint)
+        for (int64_t a = s.debut - av; a < s.fin + av / 2; a++) {
+            const size_t b = (size_t)(((a % L) + L) % L);
+            P.limG[b] = std::min(P.limG[b], (float)RW + 6); P.limD[b] = std::min(P.limD[b], (float)RW + 6);
+        }
+    P.voie.assign((size_t)L, RUE);
+    for (const trace::Section& s : secs) {
+        const uint8_t v = s.type == trace::Type::Tunnel ? TUNNEL : s.type == trace::Type::Pont ? PONT : s.autoroute ? AUTOROUTE : RUE;
+        if (v != RUE) for (int64_t a = s.debut; a < s.fin; a++) P.voie[(size_t)(((a % L) + L) % L)] = v;
+    }
+    // RG-01, RG-02 : lieux du tracé 2 ; centre du rond-point = courbure la plus forte de l'anneau (comme la Corniche)
+    for (const trace::Section& s : secs) {
+        if (s.type == trace::Type::Feux && !s.depart)
+            P.carrefours.push_back({s.ligneArret, s.ligneArret + (int64_t)std::lround(trace::CARREFOUR_M / SEG_M), s.feu});
+        if (s.type != trace::Type::RondPoint) continue;
+        double cmax = 0; int64_t c0 = s.debut;
+        for (int64_t a = s.debut; a < s.fin; a++) if (std::abs(t.segAt(a).curve) > cmax) { cmax = std::abs(t.segAt(a).curve); c0 = a; }
+        int64_t c1 = c0; while (c1 < s.fin && std::abs(t.segAt(c1).curve) > cmax * 0.99) c1++;
+        P.ronds.push_back({(c0 + c1) / 2, s.debut, s.fin, cmax > 0 ? (float)(SEG_M / (cmax * CURVE_K)) : 14.f});
+    }
+    // rue transversale de chaque carrefour (RG-02) : rien de posé dessus, ni à 1,5 m de ses bords
+    const int64_t demiRue = (int64_t)std::ceil((RUE_TRANS_M + 1.5f) / SEG_M);
+    auto surRue = [&](int64_t a, float len) {
+        for (const Carrefour& c : P.carrefours) {
+            int64_t d = ((c.croise - a) % L + L) % L;   // segments de a jusqu'au passage
+            if (d <= (int64_t)std::ceil(len / SEG_M) + demiRue || d >= L - demiRue) return true;
+        }
+        return false;
+    };
+    // limite d'un côté sur une longueur (m) à partir du segment a : la plus petite des segments couverts
+    auto limite = [&](int64_t a, int side, float len) {
+        float m = INF;
+        for (int64_t k = 0; k <= (int64_t)std::ceil(len / SEG_M); k++) m = std::min(m, P.lim(a + k, side));
+        return m;
+    };
+    auto voieSur = [&](int64_t a, float len) {   // voie la plus « spéciale » sur la longueur
+        uint8_t v = RUE;
+        for (int64_t k = 0; k <= (int64_t)std::ceil(len / SEG_M); k++) v = std::max(v, P.voie[(size_t)((a + k) % L)]);
+        return v;
+    };
+    size_t retires = 0, avant = 0;
+    for (int64_t a = 0; a < L; a++) {
+        auto& v = P.objets[(size_t)a];
+        avant += v.size();
+        const size_t n0 = v.size();
+        v.erase(std::remove_if(v.begin(), v.end(), [&](const Objet& o) {
+            const float len = o.t == IMMEUBLE || o.t == ENTREPOT ? o.len : o.t == CONTENEURS ? 12.f : 4.f;
+            const uint8_t voie = voieSur(a, len);
+            if (voie == TUNNEL || voie == PONT || (o.t != LAMPE && surRue(a, len))) return true;   // sous terre, ou au-dessus de l'eau : décor propre (RG-03)
+            if (voie == AUTOROUTE && o.t != IMMEUBLE && o.t != ENTREPOT && o.t != CONTENEURS && o.t != GRUE) return true;   // pas de rue
+            return o.t != ZEBRA && etendue(o) > limite(a, o.side, len);
+        }), v.end());
+        retires += n0 - v.size();
+        auto& h = P.chocs[(size_t)a];
+        if (P.voie[(size_t)a] != RUE || surRue(a, 0.f)) h.clear();   // RG-02 : plus d'immeuble sur la rue transversale
+        else h.erase(std::remove_if(h.begin(), h.end(), [&](const Choc& c) {
+            return std::fabs(c.offset) * (float)RW + 1.f > limite(a, c.offset > 0 ? 1 : -1, 4.f); }), h.end());
+    }
+    const float facade = (float)RW + 6.5f + 4.f;   // commerces et panneaux : devant les façades
+    const size_t nc = P.commerces.size(), np = P.panneaux.size();
+    P.commerces.erase(std::remove_if(P.commerces.begin(), P.commerces.end(), [&](const Commerce& c) {
+        return voieSur(c.seg, c.len) != RUE || surRue(c.seg, c.len) || facade > limite(c.seg, c.side, c.len); }), P.commerces.end());
+    P.panneaux.erase(std::remove_if(P.panneaux.begin(), P.panneaux.end(), [&](const Panneau& b) {
+        return voieSur(b.seg, 6.f) != RUE || surRue(b.seg, 6.f) || facade > limite(b.seg, b.side, 6.f); }), P.panneaux.end());
+    WFS_LOG("Ville (WFS-137) : plan adapté au tracé 2 (%zu sections) : %zu / %zu objets, %zu commerces et %zu panneaux retirés "
+            "(courbes serrées, autoroute, tunnel, pont, rues des carrefours) ; %zu carrefour(s) à feux, %zu rond(s)-point(s)", secs.size(), retires, avant,
+            nc - P.commerces.size(), np - P.panneaux.size(), P.carrefours.size(), P.ronds.size());
+    return P;
 }
 
 int bandes(const char* zone, Bande out[2]) {
@@ -230,5 +359,23 @@ float solY(const char* zone, float lat) {
     return b[n - 1].yb;
 }
 
+std::vector<Passant> passants(const MapDef& map, const Track& t) {
+    std::vector<Passant> v;
+    for (const Carrefour& c : adapter(map, t).carrefours) for (int k = 0; k < 4; k++)
+        v.push_back({(double)c.ligne + (1.4 + 0.45 * k) / SEG_M, (k % 2 ? 1 : -1) * (RW + 1.2 + 0.5 * k), 1.25 + 0.1 * k, k % 2 ? -1 : 1, c.feu});
+    return v;
+}
+
+void traverser(double& lat, int& dir, bool& marche, float& yawRel, double& y, int feu, double v, double dt) {
+    const double but = dir * (RW + 1.2);
+    marche = std::fabs(lat) < RW + 0.6 || trace::feuA(feu) == trace::Feu::Rouge;   // sur la chaussée : on finit de traverser
+    if (marche) lat += (but > lat ? 1 : -1) * std::min(v * dt, std::fabs(but - lat));
+    if (std::fabs(but - lat) < 1e-3) { dir = -dir; marche = false; }   // arrivé : la prochaine fois, vers l'autre trottoir
+    // le personnage regarde vers +Z : π/2 relatif à la route = vers la droite (+latéral) ; à l'arrêt, face à la chaussée
+    yawRel = marche ? (but > lat ? 1.5708f : -1.5708f) : (lat > 0 ? -1.5708f : 1.5708f);
+    y = std::fabs(lat) < RW ? 0.02 : 0.15;   // chaussée, ou trottoir (0,15 m)
+}
+
 } // namespace ville
+
 } // namespace wfs

@@ -213,7 +213,7 @@ int benchTrace(Game& g, Renderer& r, const std::string& out) {
     forcerTrace2(false);
     // A7.6 : jeu normal : Ville au tracé 1, Grand Prix au tracé 2 ; course de 60 s en pilote automatique sur le Grand Prix
     WFS_LOG("trace : jeu normal : ville au tracé %d, plage %d, campagne %d, circuit %d", versionCarte("ville"), versionCarte("plage"), versionCarte("campagne"), versionCarte("circuit"));
-    if (versionCarte("ville") != 1 || versionCarte("circuit") != 2) ecarts++;
+    if (versionCarte("ville") != (carteActive("ville") ? 2 : 1) || versionCarte("circuit") != 2) ecarts++;   // WFS-137 : ville activée
     if (aller("circuit", 0, 0)) {
         g.modeManette = false; g.setAutopilot(true);
         images(60 * 60);
