@@ -383,10 +383,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     const float hw = out.feux.largeur * 0.5f;
     out.feux.arriereX = tMax.x > tMin.x ? std::clamp(std::max(tMax.x, -tMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.18f;
     out.feux.avantX = hMax.x > hMin.x ? std::clamp(std::max(hMax.x, -hMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.3f;
-    float dl = 0, zs = 0;   // WFS-171 : repli sans pièce de feu : halo posé sur l'arrière réel de la caisse, pas dans le vide
-    if (!out.feux.pieceArriere && feux_modele::arriereALaHauteur(verts.size(), posV, out.feux.arriereY, out.bmax.z, dl, zs)) {
-        out.feux.arriereX = std::max(0.2f, dl - 0.15f); out.feux.arriereZ = zs;
-    }
+    if (!out.feux.pieceArriere) WFS_LOG("feu non trouvé : %s (WFS-182 : aucun halo de frein)", idVoiture.c_str());
     for (size_t mi = 0; mi < raw.size(); mi++) {
         const RawMat& m = raw[mi];
         Material mt;
