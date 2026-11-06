@@ -4538,3 +4538,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Rouge, sans lien avec WFS-170** : `endurance` : « fuite de mémoire : +10,9 % au cycle 6 (seuil 10 %) », parcours au doigt 0 écart ;
   même défaut qu'avant ce ticket (+10,2 % sur b2362b9, WFS-145 en cours, E7). Les correctifs de WFS-170 ne gardent aucune mémoire de plus
   après le chargement (pièces et indices dans les mêmes tampons). Rien à corriger pour WFS-170.
+
+### 2026-11-06 13:25:48 — WFS-145 : décision du PO sur le verdict mémoire du banc endurance (PO / Scrum Master)
+- Constat de la session dev 5bx : objets Vulkan du jeu identiques à chaque cycle à la scène de référence ; tas bruité ±35 Mo par paliers (lavapipe), RG-10 échoue au hasard sans fuite.
+- Décision : RG-13 ajoutée à `regles-de-gestion/WFS-145.md` (remplace les critères de RG-10 et les preuves de RG-11) : (1) objets Vulkan vivants cycles 3 à 9 ≤ cycle 2 + 2 objets par compteur (marge absolue, pas 2 %) ; (2) pente du tas > +15 Mo/cycle ; (3) le reste pour information. Fuite CPU lente < 15 Mo/cycle : limite connue du banc PC, acceptée.
+- Preuves exigées : 2 passages verts, essai 20 Mo/cycle → échec, essai 1 tampon Vulkan 1 Mo/cycle → échec par (1), Poursuite et parcours 0 écart.
