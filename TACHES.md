@@ -293,7 +293,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-177 | Ville (4/4) : pigeons et chiens + anomalies ANO-81 (trottoir) et ANO-84 (fenêtres de nuit) | E2 | ⏳ En attente (après WFS-176, même carte et même épic) |  | WFS-176 | `feature/waforspeed-177` |  |  |
 | P2 Haute | WFS-178 | Campagne (2/3) : animaux de ferme et village (rond-point, feu, café, bar, garage) | E2 | 🔧 En cours (exception PO : ticket E2 à côté de WFS-137 (`ville*`) et WFS-139 (`plage.cpp`) ; fichier disjoint `campagne.cpp`) | Claude (session dev 5bx), 2026-11-06 13:59 UTC | WFS-138 ✅ | `feature/waforspeed-178` |  |  |
 | P2 Haute | WFS-179 | Campagne (3/3) : autoroute et péage | E2 | ⏳ En attente (après WFS-178, même carte et même épic) |  | WFS-178 | `feature/waforspeed-179` |  |  |
-| P2 Haute | WFS-180 | Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis | E2 | ⏳ En attente (après WFS-139, même carte et même épic) |  | WFS-139 | `feature/waforspeed-180` |  |  |
+| P2 Haute | WFS-180 | Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis | E2 | 🔧 En cours (exception PO : ticket E2 à côté de WFS-137 (`ville*`), WFS-140 (`circuit.cpp`) et WFS-178 (`campagne.cpp`) ; fichier disjoint `plage.cpp`, comme WFS-139) | Claude (agent 1, session 01UY1Vv2), 2026-11-06 14:42 UTC | WFS-139 ✅ | `feature/waforspeed-180` |  |  |
 | P2 Haute | WFS-181 | Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins | E2 | ⏳ En attente (après WFS-180, même carte et même épic) |  | WFS-180 | `feature/waforspeed-181` |  |  |
 | P1 Urgent | WFS-182 | [URGENT] Correction : halos de frein qui flottent à côté de la voiture, feu du modèle éteint sur 12 voitures (ANO-91, bloquante, recette WFS-170 `REFUSÉ`) + reste d'ANO-76 (SF90, Elantra, RR Sport) + ANO-92 + police presque noire en Basse (RG-07) | E4 (exception PO : 2e ticket E4 à côté de WFS-171, blocs séparés ; accroche ≤ 10 lignes `model_loader.cpp`, bloc des feux, coordination WFS-158) | 🔧 En cours | Claude (session trafic), 2026-11-06 14:26 UTC (WFS-171 fusionné, E4 libre ; WFS-150 E0 en parallèle, ordre de l'utilisateur « avancer vite ») | WFS-170 ✅ | `feature/waforspeed-182` |  |  |
 | P3 Moyenne | WFS-183 | Correction : ordre des derniers adversaires au salon, captures 1280 du duel, bandeau hors ligne en 720p (ANO-93, ANO-94, ANO-90) | E3 (+ accroche `build.yml`, bloc hors ligne de `salon.cpp`) | ⏳ Prêt |  | WFS-122 ✅ | `feature/waforspeed-183` |  |  |
@@ -686,7 +686,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-179 — Campagne (3/3) : autoroute et péage** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-178) (règles : `regles-de-gestion/WFS-179.md`, morceau de WFS-138)
 - [ ] voir WFS-138 (règles RG-04)
 
-**WFS-180 — Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-139) (règles : `regles-de-gestion/WFS-180.md`, morceau de WFS-139)
+**WFS-180 — Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis** · E2 · priorité P2 Haute · 🔧 En cours — Claude (agent 1, session 01UY1Vv2), 2026-11-06 14:42 UTC, branche `feature/waforspeed-180` (règles : `regles-de-gestion/WFS-180.md`, morceau de WFS-139)
 - [ ] voir WFS-139 (règles RG-02, RG-03, RG-04)
 
 **WFS-181 — Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-180) (règles : `regles-de-gestion/WFS-181.md`, morceau de WFS-139)
