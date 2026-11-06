@@ -18,7 +18,7 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 - [ ] Entrées externes (fichiers, JSON, sauvegarde, réseau) bornées et validées ; valeur par défaut si invalide, jamais de plantage.
 - [ ] Aucun secret, jeton ou donnée personnelle dans le code, la CI ou les journaux.
 - [ ] Sauvegarde et protocole réseau : version incrémentée et migration si le format change.
-- [ ] Commentaires en français ; source citée pour chaque constante physique (réalisme).
+- [ ] Commentaires en français ; valeur de chaque constante expliquée en commentaire.
 
 ## Preuves
 - [ ] Branche synchronisée : `git fetch origin && git merge origin/main`, conflits résolus en gardant les deux côtés.

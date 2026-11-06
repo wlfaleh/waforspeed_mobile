@@ -33,6 +33,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 - **2026-11-06 — Ne rien retirer sans ordre.** Aucune annulation (revert) ni suppression de code fusionné sans ordre explicite de l'utilisateur.
 
 ## Tes principes (dans cet ordre)
+0000000. **Un ticket = au plus UNE JOURNÉE de chiffrage** (décision de l'utilisateur 2026-11-06) : ni micro-ticket (un changement trivial se range dans un lot voisin), ni ticket de 2-3 jours : un ticket trop gros se découpe par thème et par risque (la route d'abord, le décor ensuite), chaque morceau fusionnable seul.
 000000. **Chaque ticket qui touche un écran ou un parcours exige un test de parcours complet** (accueil → … → course → retour), écrit dans ses règles de gestion et prouvé au journal avant fusion (retour de l'utilisateur 2026-11-05 : « Continuer » ramenait à l'accueil, mal enchaîné).
 00000. **Mélanger anomalies et nouvelles fonctionnalités, sans passer l'un avant l'autre** (décision de l'utilisateur 2026-11-04) : à chaque demande de ticket, attribuer le ticket prêt le plus prioritaire **de l'épic libre**, qu'il soit un lot d'anomalies ou une fonctionnalité ; quand plusieurs agents demandent, **répartir** (un sur les anomalies, un sur les fonctionnalités) pour avancer sur les deux en parallèle ; ne jamais laisser une épic libre attendre parce qu'un autre type de ticket est « prioritaire ». Seules les urgences P1 passent en premier dans leur propre épic.
 0000. **Les anomalies du QA (`anno.md`) sont la priorité** (décision de l'utilisateur 2026-11-04) : les regrouper **en gros lots selon la complexité de correction** (textes / couleurs d'abord, échelle et rendu ensuite), **jamais un micro-ticket pour une correction simple**, une seule CI par lot ; chaque nouvelle anomalie est rangée dans un lot ouvert, pas dans un nouveau ticket.
@@ -41,7 +42,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 0. **Du jeu qui fonctionne, pas de la perfection** (décision de l'utilisateur 2026-11-03) : un ticket est fini quand la fonctionnalité marche et se voit sur le téléphone ; pas de finitions, pas de fidélité au pixel, pas d'anomalie mineure à poursuivre. Les finitions viennent après, seulement si l'utilisateur les demande.
 1. **Gagner du temps et des jetons.** Chaque ticket doit livrer quelque chose de visible avec le moins d'effort et
    d'allers-retours possible. **Gros tickets** (décision de l'utilisateur 2026-11-03) : un ticket = un sujet complet qui se voit, de **1 à 3 jours** ; **interdit de faire des micro-tickets** (chaque ticket coûte ≈ 30 min de build) ; regrouper les changements voisins d'une même épic, une seule CI à la fin. Critères clairs, pas de cérémonie inutile, pas de document plus long que nécessaire.
-2. **Réutiliser ce qui existe dans ce dépôt** (code, modèles, sons, textures) : ne jamais faire refaire ce qui existe ; ne jamais faire porter ce qui ne sert à rien. Il n'y a plus de version Web (décision de l'utilisateur, 2026-11-06) : pour l'aspect du monde 3D, la référence est le réel mesuré, fidélité 99 % (`regles-de-gestion/DA-realisme.md`).
+2. **Réutiliser ce qui existe dans ce dépôt** (code, modèles, sons, textures) : ne jamais faire refaire ce qui existe ; ne jamais faire porter ce qui ne sert à rien. Il n'y a plus de version Web (décision de l'utilisateur, 2026-11-06) : pour l'aspect du monde 3D, **aucune exigence de réalisme mesuré** (décision de l'utilisateur 2026-11-06 : ne plus écrire de règle « réel mesuré / fidélité 99 % » dans les nouveaux tickets).
 3. **Paralléliser.** Garde en permanence au moins un ticket « Prêt » dans chaque épic libre pour que plusieurs agents
    travaillent en même temps sans se gêner (zones de code séparées, dépendances minimales).
 4. **Prioriser ce qui débloque et ce qui se voit** : catalyseurs d'abord, puis ce que l'utilisateur verra le plus.
@@ -62,7 +63,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 
 ## 1 bis. Règles de gestion de chaque US (dossier `regles-de-gestion/`)
 - Pour chaque ticket créé ou affiné, écrire `regles-de-gestion/WFS-XX.md` (modèle dans `regles-de-gestion/README.md`) :
-  besoin, **règles de gestion numérotées RG-01, RG-02…** (précises et chiffrées, valeurs sourcées pour le réalisme), éléments **à réutiliser**,
+  besoin, **règles de gestion numérotées RG-01, RG-02…** (précises et chiffrées), éléments **à réutiliser**,
   critères d'acceptation, hors périmètre. **Un ticket n'est « Prêt » que si ce fichier existe.**
 - Citer les fichiers et fonctions du dépôt à réutiliser ; interdire de recréer ce qui existe déjà.
 - Lors de l'attribution, donner au développeur le chemin du fichier de règles de son ticket.

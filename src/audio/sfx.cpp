@@ -10,6 +10,10 @@
 #include "sfx_synth.h"
 #include "sfx_course.h"   // WFS-124
 #include "trafic_sons.h"   // WFS-121
+#include "route_sons.h"   // WFS-174
+#include "../world/meteo.h"   // WFS-174 (RG-05) : pluieActive (lecture seule)
+#include <cstdlib>
+#include <cstring>
 #include "../ui/ecrans/reglages.h"   // WFS-131 (RG-05) : « Son : Coupé » (lecture seule)
 
 namespace wfs {
@@ -77,6 +81,31 @@ void SfxMixer::build(float rate) {
     sons_[(int)SfxId::PoursuiteArrete] = jingleArrete(rate); sons_[(int)SfxId::PoursuiteEchappe] = jingleEchappe(rate);
     kSirene_ = 1 - std::exp(-1 / (sirene::LISSAGE_S / 3 * rate));
     pasFinSirene_ = pasFinSirene(rate); pasYelp_ = 1 / (sirene::FONDU_MODE_S * rate);
+    {   // WFS-174 : sons de la route (boucles courtes, durées différentes pour ne pas battre ensemble ; crête ramenée à 1)
+        auto normaliser = [](std::vector<float>& b) {
+            float pk = 0; for (float x : b) pk = std::max(pk, std::abs(x));
+            if (pk > 1e-6f) for (float& x : b) x /= pk;
+        };
+        // RG-01 : vent = bruit large ; deux boucles (filtre fermé ≈ 400 Hz, ouvert ≈ 2 500 Hz) mélangées selon la vitesse
+        // (même générateur que le vent de la campagne, musique.cpp : bruit + passe-bande)
+        ventGrave_ = boucle(rate, 0.62f, route::VENT_GRAVE_HZ, 0.5f, 1); normaliser(ventGrave_);
+        ventAigu_ = boucle(rate, 0.57f, route::VENT_AIGU_HZ, 0.5f, 1, route::VENT_AIGU_HZ * 0.5f, 0.6f); normaliser(ventAigu_);
+        roulementB_ = boucle(rate, 0.41f, 140, 0.8f, 1, 90, 0.9f); normaliser(roulementB_);   // RG-02 : 80-250 Hz
+        impulsionBord_.clear(); noiseHit(impulsionBord_, 0, rate, 0.012f, 240, 1.2f, 1, 90); normaliser(impulsionBord_);   // RG-03 : un choc de la bande
+        herbeB_ = boucle(rate, 0.53f, 2000, 0.6f, 1, 3500, 0.8f);   // RG-04 : 1-4 kHz, crépitements (grains aléatoires, jamais au raccord)
+        {
+            Bruit br; br.s = 0xBADC0DEu;
+            std::vector<float> env(herbeB_.size(), 0.55f);
+            const size_t g = (size_t)(0.006f * rate);
+            for (size_t i = g; i + 2 * g < env.size(); i += (size_t)((0.004f + 0.008f * (br.next() * 0.5f + 0.5f)) * rate))
+                for (size_t k = 0; k < g; k++) env[i + k] += 0.45f * (1 - (float)k / (float)g);
+            for (size_t i = 0; i < herbeB_.size(); i++) herbeB_[i] *= env[i];
+            normaliser(herbeB_);
+        }
+        eauB_ = boucle(rate, 0.37f, 4500, 0.7f, 1); normaliser(eauB_);   // RG-05 : 3-6 kHz
+        kRoute_ = route::lissage(rate); rate_ = rate;
+        posVentG_ = posVentA_ = posRoulement_ = posHerbe_ = posEau_ = 0; posImpulsion_ = impulsionBord_.size();
+    }
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
     nitro_ = boucle(rate, 1.2f, 650, 0.7f, 0.6f);
@@ -116,6 +145,9 @@ void SfxMixer::mix(float* out, int n, double now) {
     const float cR = actif ? cibleRumeur_.load() : 0.f;   // WFS-121
     const float cS = actif ? cibleSirene_.load() : 0.f, cY = yelpSirene_.load() ? 1.f : 0.f, cD = dopplerSirene_.load();   // WFS-131
     const bool finS = finSirene_.load();
+    // WFS-174 : sons de la route (silence en pause ou muet, comme les autres boucles)
+    const float cV = actif ? cVent_.load() : 0.f, cO = cOuverture_.load(), cRo = actif ? cRoulement_.load() : 0.f;
+    const float cB = actif ? cBord_.load() : 0.f, cH = actif ? cHerbe_.load() : 0.f, cE = actif ? cEau_.load() : 0.f, cCa = cCadence_.load();
     for (int i = 0; i < n; i++) {
         fade_ += (cF - fade_) * kFade_;
         gCrissement_ += (cC - gCrissement_) * k_; gNitro_ += (cN - gNitro_) * k_;
@@ -139,6 +171,25 @@ void SfxMixer::mix(float* out, int n, double now) {
         if (gSirene_ > 1e-4f) {
             s += gSirene_ * ((1 - mixYelp_) * lireBoucle(boucleWail_, posWail_) + mixYelp_ * lireBoucle(boucleYelp_, posYelp_));
             posWail_ = avancerBoucle(posWail_, pasSirene_, boucleWail_.size()); posYelp_ = avancerBoucle(posYelp_, pasSirene_, boucleYelp_.size());
+        }
+        {   // WFS-174 (RG-01 à RG-06) : sons de la route, cibles lissées (95 % en 0,15 s)
+            gVent_ += (cV - gVent_) * kRoute_; gOuverture_ += (cO - gOuverture_) * kRoute_; gRoulement_ += (cRo - gRoulement_) * kRoute_;
+            gBord_ += (cB - gBord_) * kRoute_; gHerbe_ += (cH - gHerbe_) * kRoute_; gEau_ += (cE - gEau_) * kRoute_; gCadence_ += (cCa - gCadence_) * kRoute_;
+            if ((phaseBattement_ += route::BATTEMENT_HZ / rate_) >= 1) phaseBattement_ -= 1;
+            if (gVent_ > 1e-4f) {
+                const float battement = 1 + route::BATTEMENT * std::sin(6.28318530718f * phaseBattement_);
+                s += gVent_ * battement * ((1 - gOuverture_) * ventGrave_[posVentG_] + gOuverture_ * ventAigu_[posVentA_]);
+            }
+            if (gRoulement_ > 1e-4f) s += gRoulement_ * roulementB_[posRoulement_];
+            if (gHerbe_ > 1e-4f) s += gHerbe_ * herbeB_[posHerbe_];
+            if (gEau_ > 1e-4f) s += gEau_ * eauB_[posEau_];
+            if ((phaseBord_ += gCadence_ / rate_) >= 1) { phaseBord_ -= 1; posImpulsion_ = 0; }   // un choc à chaque tour de cadence
+            if (posImpulsion_ < impulsionBord_.size()) { if (gBord_ > 1e-4f) s += gBord_ * impulsionBord_[posImpulsion_]; posImpulsion_++; }
+            if (++posVentG_ >= ventGrave_.size()) posVentG_ = 0;
+            if (++posVentA_ >= ventAigu_.size()) posVentA_ = 0;
+            if (++posRoulement_ >= roulementB_.size()) posRoulement_ = 0;
+            if (++posHerbe_ >= herbeB_.size()) posHerbe_ = 0;
+            if (++posEau_ >= eauB_.size()) posEau_ = 0;
         }
         out[i] = std::clamp(out[i] + s * master * fade_, -1.f, 1.f);
     }
@@ -179,6 +230,7 @@ void SfxEvenements::update(double dt, const GameView& g, SfxMixer& m) {
         if (c) resync(*c);
         if (crisse_ || nitro_) m.setBoucles(0, 0);
         crisse_ = nitro_ = false;
+        if (route_) { m.setRoute({}); route_ = false; WFS_LOG("SFX route coupée"); }   // WFS-174 (RG-07) : menus, garage, pause
         return;
     }
     // nouvelle course (Course::reset) : compteurs remis à zéro → on repart sans son
@@ -224,6 +276,26 @@ void SfxEvenements::update(double dt, const GameView& g, SfxMixer& m) {
     if (nitro && !nitro_) WFS_LOG("SFX nitro");
     if (crisse != crisse_ || nitro != nitro_) m.setBoucles(crisse ? 0.35f : 0.f, nitro ? 0.4f : 0.f);
     crisse_ = crisse; nitro_ = nitro;
+
+    {   // WFS-174 : sons de la route (RG-01 à RG-07) ; en course seulement, toutes les courses ; « Son : Coupé » : setMuted / réglage
+        route::Entree e;
+        e.kmh = (float)std::abs(pl.kmh()); e.kmhMax = (float)(pl.perf.top * 260.0);
+        e.playerX = (float)pl.playerX; e.edge = (float)(g.map ? g.map->edge : 1.6);
+        e.nitro = pl.nitroOn;
+        const char* mo = std::getenv("WFS_MOMENT");
+        e.pluie = meteo::pluieActive(g.map ? g.map->id : nullptr, mo && std::strcmp(mo, "nuit") == 0);
+        e.enCourse = joue && ecrans::reglages().son;
+        const route::Cibles r = route::cibles(e);
+        m.setRoute(r);
+        const bool sonne = r.somme() > 0.005f;
+        journalRoute_ += dt;
+        if (sonne && (!route_ || journalRoute_ >= 1)) {   // RG-10 : une ligne par seconde au plus
+            WFS_LOG("SFX route vent %.2f roulement %.2f bord %.2f herbe %.2f eau %.2f (%.0f km/h, x %.2f)", r.vent, r.roulement, r.bord, r.herbe, r.eau, e.kmh, e.playerX);
+            journalRoute_ = 0;
+        }
+        if (!sonne && route_) WFS_LOG("SFX route coupée");
+        route_ = sonne;
+    }
 }
 
 } // namespace wfs

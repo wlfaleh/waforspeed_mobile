@@ -4387,3 +4387,54 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/audio/**`, `tests/test_audio.cpp` ; accroche ≤ 3 lignes `CMakeLists.txt` ; lecture seule `player.h`, `meteo.h`, `system.h`.
 - **Critères** : vent selon le carré de la vitesse (nul < 40 km/h, 0,30 au max), roulement des pneus, bande rugueuse à `|x| ≥ edge`, herbe / gravier à `|x| > 1`, chuintement sous la pluie, silence hors course ; crête < 1,0 ; tests CPU, banc audio, parcours complet au Journal ; aucune capture changée.
 - **Plan court** : module pur `route_sons.h` (cibles de volume, testé sur CPU) ; boucles calculées dans `SfxMixer::build` en réutilisant `boucle()` et le vent de `musique.cpp` ; cibles dans `SfxEvenements::update` ; banc audio ; fusion par confiance si > 50 %.
+
+### 2026-11-06 12:02:17 — Fin WFS-173 : mini-carte du parcours au HUD, fusionnée (PR #135, 56f5d47, fusion par confiance) (Claude (session 01Us6uCu))
+- **Livré** :
+  - `MiniCarte` (ordre 422) : carte GPS en Checkpoint et en Poursuite, parcours entier en Course à 5 et en Duel.
+  - Place calculée sans rien recouvrir ; aucun toucher ; tableaux fixes ; au plus 2 466 sommets mesurés (1 914 en GPS).
+  - Accroches annoncées à 11:38:09 (entrée « code poussé » du journal).
+- **Preuves (RG-11, RG-13)** :
+  - En local : bancs `hud` et `parcours` (« parcours complet : 0 écart(s) OK »).
+  - CI de branche (run 42211686406) : `texte` et `partie2a` vertes.
+    - `texte` : 31 tests CPU OK dont `test_minicarte` ; « parcours course à 5 (RG-10) : 0 écart » ; « poursuite (parcours) … → accueil : 0 écart » ; « parcours complet et redémarrage : 0 écart » ; « course à 5 (parcours) : fin → Rejouer → … → accueil : 0 écart ».
+    - `partie2a` : `minicarte-checkpoint` (GPS, 101 points, 1 914 sommets, côté 150 px, checkpoint à 300 m), `minicarte-ligne` (parcours, 128 points, 2 466 sommets, 5 objets), pause → reprise (chrono figé, carte de retour), « parcours duel : conforme (0 écart) ».
+  - Branche synchronisée avec main avant la fusion, 32 tests CPU OK en local.
+- **Captures regardées** :
+  - `hud-course`, `minicarte-checkpoint`, `minicarte-ligne`, `toast-pile` (bandeaux à gauche de la carte), `parcours-course` (carte présente), `parcours-fin` (pas de carte), `poursuite-police` (carte à 14 k du haut, à droite du HUD de la poursuite, barrage en carré rouge).
+  - Les captures 2400 (`minicarte-*-2400`, `hud-2400`) arrivent avec le job `ecrans-2400` : le QA les regarde la nuit.
+- **Limite signalée au PO** : en Poursuite, une police à moins de 20 m derrière le joueur passe sous la flèche. À l'échelle de RG-06 (500 m pour 130 px, soit 0,26 px/m), 20 m font 5 px. Proposition : un zoom plus serré en Poursuite (par exemple 250 m), si l'utilisateur le demande après son essai. Question posée dans `tache utilisateur.md`.
+- **Écart au ticket, dit franchement** :
+  - `hud.cpp` a 2 lignes ajoutées et non une seule : l'include est nécessaire.
+  - Dans `toasts.cpp`, la variable locale `u` est retirée, car devenue inutile une fois la formule déplacée dans `toasts.h`. Aucun comportement retiré.
+- **Suite** : je suis la CI de `main` ; `qa/Check.md`, `TACHES.md` et `tache utilisateur.md` sont à jour.
+
+### 2026-11-06 12:09:35 — WFS-170 : fusionné (PR #131, e21145e) (Claude (session trafic))
+- **CI de branche** : run 42210053624 (d032f89, après WFS-169) tout vert, vitrines comprises ; captures RG-08 regardées : 911 grise (garage,
+  vitrines), Giulia sans bande et vitres teintées, S3 lunette unie (vitre en double retirée) et jantes grises, Model 3 sans trace beige, X5 / 208 /
+  Compass moins froissés, jantes du Compass grises, feux de la V60, GT86, Abarth, A45 rouges au freinage ; 15 autres voitures inchangées.
+- **Dernière synchro** : main avait reçu la mini-carte (WFS-173, `src/ui`, `src/game`, aucun fichier commun) : fusion de main, compilation,
+  31 tests CPU OK et banc local `vitrines-feux` (911, V60) avant la fusion ; la CI de main suivante couvre le reste.
+- **Reste / signalé au PO** : Model 3 bosselée (géométrie d'origine) ; halo rouge flottant à gauche des voitures freinées (`renderer.cpp`,
+  → WFS-171) ; Elantra : tache claire sur la porte arrière (voiture classée « bonne », non touchée).
+- **WFS-158** : la décision PO de 11:07 demandait de pousser mon travail local ; le push de `feature/waforspeed-158` a été **refusé par les
+  droits de la session** (consigne du coordinateur : ne rien pousser pour 158). Travail local à jour : branche locale `feature/waforspeed-158`
+  (commits 6c78a60, 5d9e379, fusion du ST-1 de 01Us6uCu gardé sous `test_fidelite_voitures_audit`, fusion de main, 3797449 ; 32 tests CPU OK).
+  Décision attendue : qui pousse cette branche.
+
+### 2026-11-06 12:11:26 — WFS-174 fusionné par confiance (PR #136) (Claude, agent 3)
+- Sons de la route : `src/audio/route_sons.h` (fonctions pures : cibles selon vitesse, position latérale, bord de la carte, pluie, nitro), boucles calculées une fois dans `SfxMixer::build` (vent grave / aigu mélangés selon la vitesse = filtre qui s'ouvre de 400 à 2 500 Hz, roulement 80-250 Hz, impulsion de bande rugueuse à 15-60 Hz, herbe 1-4 kHz à grains, eau 3-6 kHz ; ≈ 471 Ko à 48 kHz, aucune allocation dans le thread audio), lissage 95 % en 0,15 s, coupure hors course et « Son : Coupé ».
+- **Pour le PO — deux points d'interprétation (risque signalé, à arbitrer)** :
+  - Constat : `map->edge` > 1 sur toutes les cartes (ville 1,7, plage 1,6, campagne 1,38, circuit 1,66), donc |x| > 1 (RG-04) arrive avant |x| ≥ edge (RG-03). Choix : herbe / gravier entre 1 et edge, bande rugueuse à partir de edge (seuil de la secousse de `ressenti.cpp`). Autre option : bande rugueuse juste après 1, herbe au-delà.
+  - Constat : à la pointe sur route sèche, vent 0,30 (RG-01) + roulement 0,18 (RG-02) = 0,48 > plafond 0,45 (RG-08). Choix : plafond prioritaire, les deux réduits ensemble de ≈ 6 % (`cibles()`, maxima vérifiés avant plafond par `ciblesBrutes()`). Autre option : roulement max 0,15.
+- Tests : `test_audio` (18 cas route OK : vent nul < 40 km/h, 0,30 à la pointe avant plafond, carré de la vitesse, nitro +20 %, filtre, roulement, bord à |x| ≥ edge, cadence 15-60 Hz, herbe à |x| > 1, eau sous la pluie seulement, silence hors course, somme ≤ 0,45, crête < 1, lissage, mémoire ≤ 0,5 Mo), 31 tests CPU OK.
+- Bancs : audio (ville de jour, plein gaz) : `SFX route vent 0.00 … 0.20 roulement … 0.15` de 7 à 207 km/h, crête 0,27, RMS moteur 0,063 / bruitages 0,015 (moteur au-dessus) ; RG-10 `parcours` (accueil → salon → garage → terrain → course en ville de nuit → pause → reprise → menu) : sans plantage, `eau 0.02 … 0.07` (pluie), pause : plus de mise à jour du jeu → mélangeur muet (règle commune aux boucles, `lastUpdate` < 0,25 s), `SFX route coupée` au retour au menu. Bord / herbe non joués par les bancs (pilote automatique au centre) : couverts par les tests CPU. Aucune accroche (`CMakeLists.txt` inchangé). Je suis la CI de `main`.
+
+### 2026-11-06 12:11:28 — PO : cartes découpées en tickets d'une journée (po-scrum-master)
+- **Décision de l'utilisateur** : pas de micro-ticket, mais jamais plus d'une journée. Règle ajoutée à `po-scrum-master.md`. **Ville** : WFS-137 (rond-point, carrefours) + WFS-175 (autoroute, tunnel, pont) + WFS-176 (casino, centre commercial, cafés, bars, garages) + WFS-177 (pigeons, chiens, ANO-81, ANO-84). **Campagne** : WFS-138 (montagne, vignes) + WFS-178 (animaux, village) + WFS-179 (autoroute, péage). **Corniche** : WFS-139 (falaise, tunnel, ANO-82, ANO-83) + WFS-180 (beach parties, jeux, bateaux) + WFS-181 (bars de plage, casino de station, mouettes, dauphins). WFS-140 (Grand Prix, en cours) non touché. Agent 4 prévenu pour WFS-137.
+
+### 2026-11-06 12:11:27 — WFS-140 : code poussé, PR #137 (Claude, agent 5)
+- **Fait** (`src/world/circuit.cpp`, `src/world/cartes_banc.cpp` seulement, aucune accroche) : place libre au chargement (grille des centres de la route, 29 ms mesurés sur CPU) → aucun objet ni sol à moins de RW + 1 m d'une autre chaussée (branche voisine de l'épingle à ≈ 40 m : place libre 37 m), rien de haut à l'intérieur des virages serrés dans les 60 m avant ; décor des sections : vibreurs larges, gravier, pneus, panneaux 150/100/50 ; grille et portique de 5 feux (un par un au décompte, éteints au GO) ; raidillon (tribune 16 rangs, passerelle) ; paddock (garages, camions, bars VIP, tour, hélicoptère) ; spectateurs, drapeaux animés, espace fans (grande roue), camping ; oiseaux.
+- **Captures** : `carte-circuit-{depart,epingle,chicane,raidillon,paddock}(-nuit)` en caméra de course ; l'ancienne `carte-circuit-paddock` (zone) devient `carte-circuit-zone-paddock`.
+- **Fusion** : confiance ≤ 50 % (rendu non vérifiable sans GPU en local) → j'attends la CI et je regarde les captures avant de fusionner. Point de vigilance : durée du job `partie1b` (+10 captures).
+### 2026-11-06 12:13:11 — PO : règle « graphique réaliste, fidélité 99 % » oubliée pour les nouveaux tickets (po-scrum-master)
+- **Décision de l'utilisateur** : plus d'exigence de réalisme mesuré. Retirée de `CLAUDE.md`, de `po-scrum-master.md`, des skills `agent-developer`, `design-street-racing`, `waforspeed-natif`, de `regles-de-gestion/README.md`, de la check-list de livraison et des règles de WFS-137 à 140 (RG-C4 animaux : proportions plausibles). Les nouveaux tickets (WFS-175 à 181) n'en parlent pas. Tickets de l'axe Réalisme (WFS-148 à 167) non touchés : décision demandée à l'utilisateur.

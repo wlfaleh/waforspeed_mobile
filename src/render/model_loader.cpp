@@ -7,6 +7,7 @@
 #include <cstring>
 #include "../core/jobs.h"
 #include "../core/platform.h"
+#include "correctifs_voitures.h"   // WFS-170 : correctifs des modèles au chargement (ANO-71 à 77)
 #include "feux_modele.h"   // WFS-109 : découpe des feux arrière (RG-13)
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -101,7 +102,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     std::vector<std::pair<const uint8_t*, uint32_t>> blobs(nTex);
     for (uint32_t i = 0; i < nTex; i++) { uint32_t n = rd.get<uint32_t>(); blobs[i] = {rd.take(n), n}; }
 
-    struct RawMat { float col[4], metal, rough, em[3], cut; int32_t tC, tN, tMR; uint32_t flags; };
+    using RawMat = correctifs::MatBrut;
     std::vector<RawMat> raw(nMat);
     for (auto& m : raw) {
         for (float& f : m.col) f = rd.get<float>();
@@ -110,6 +111,10 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         m.cut = rd.get<float>(); m.tC = rd.get<int32_t>(); m.tN = rd.get<int32_t>(); m.tMR = rd.get<int32_t>(); m.flags = rd.get<uint32_t>();
     }
     if (!rd.ok) { WFS_ERR("%s : fichier tronqué", path.c_str()); return false; }
+    // WFS-170 : correctifs des matériaux de cette voiture (vernis séparé, vitres, jantes, cabochons des feux arrière)
+    const std::string idVoiture = correctifs::idDe(path);
+    std::vector<uint8_t> retire;
+    for (const std::string& l : correctifs::corrigerMateriaux(idVoiture, raw, retire)) WFS_LOG("%s : %s (WFS-170)", path.c_str(), l.c_str());
 
     // espace colorimétrique : couleur = sRGB, normales / métal-rugosité = linéaire
     std::vector<Decoded> dec(nTex);
@@ -138,7 +143,11 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         size_t v0 = verts.size(), i0 = idx.size();
         verts.resize(v0 + nv); std::memcpy(&verts[v0], vp, (size_t)nv * sizeof(Vertex));
         idx.resize(i0 + ni); std::memcpy(&idx[i0], ip, (size_t)ni * 4);
-        if (mat < nMat && (raw[mat].flags & MAT_PAINT)) {   // WFS-134 (RG-06) : carrosserie à facettes → normales lissées
+        if (mat < nMat && (raw[mat].flags & MAT_PAINT) && correctifs::normalesARecalculer(idVoiture)) {   // WFS-170 (RG-05, RG-06)
+            const uint32_t n = correctifs::recalculerNormales(&verts[v0], nv, &idx[i0], ni);
+            WFS_LOG("%s : matériau %u : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), %u sommets changés de plus de 10° (WFS-170)",
+                    path.c_str(), mat, n);
+        } else if (mat < nMat && (raw[mat].flags & MAT_PAINT)) {   // WFS-134 (RG-06) : carrosserie à facettes → normales lissées
             const float part = lisserSiFacettes(&verts[v0], nv, &idx[i0], ni);
             if (part > 0.35f) WFS_LOG("%s : carrosserie à facettes (%.0f %% des sommets à plus de 10°) → normales lissées à 40° (WFS-134)",
                                       path.c_str(), part * 100);
@@ -231,6 +240,12 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     const feux_modele::Resultat feuA = feux_modele::decouper(idx, out.parts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);
     if (feuA.materiau >= 0) WFS_LOG("%s : feu arrière découpé dans le matériau %d, %u triangles (WFS-109)", path.c_str(), feuA.materiau, feuA.triangles);
     if (!lodParts.empty()) feux_modele::decouper(lodIdx, lodParts, [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; }, fm, out.bmax.z - out.bmin.z);   // WFS-134 : mêmes feux
+    {   // WFS-170 (RG-04) : feux arrière pris dans un matériau partagé (V60, GT86, Abarth, A45) → pièces « feu arrière »
+        auto pos = [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; };
+        auto gris = [&](uint32_t m) { return m < nMat ? raw[m].col[0] : -1.f; };
+        if (const uint32_t n = correctifs::marquerFeux(idVoiture, idx, out.parts, pos, gris)) WFS_LOG("%s : %u triangles de feux arrière marqués (WFS-170)", path.c_str(), n);
+        if (!lodParts.empty()) correctifs::marquerFeux(idVoiture, lodIdx, lodParts, pos, gris);
+    }
     // WFS-134 (RG-06, ANO-67) : tranches des portes (faces de carrosserie tournées vers l'avant ou l'arrière, sur les flancs,
     // à mi-hauteur, hors pare-chocs) : dans une vraie voiture, c'est un jour sombre ; ici elles reflétaient le sol en beige
     // (« trace beige verticale » de la Model 3). Elles passent dans une pièce à part, gris très sombre mat.
@@ -311,6 +326,9 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             }
         }
     }
+    // WFS-170 : matériaux retirés (vernis séparé de la 911…) : leurs pièces ne sont plus dessinées
+    for (std::vector<ModelPart>* l : {&out.parts, &out.partsLod, &out.partsBasse})
+        l->erase(std::remove_if(l->begin(), l->end(), [&](const ModelPart& p) { return p.material < retire.size() && retire[p.material]; }), l->end());
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     out.ib = r.vk().uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);

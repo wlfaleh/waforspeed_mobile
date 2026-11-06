@@ -1,13 +1,13 @@
 ---
 name: design-street-racing
-description: Direction artistique "street racing" de l'INTERFACE de WaForSpeed (menus, HUD, garage, écrans) — néons, vitesse, HUD agressif. À utiliser dès qu'on crée ou modifie un écran, un menu, un HUD, un composant d'interface, des couleurs d'interface, une typographie, des animations ou une mise en page. Ne s'applique PAS au monde 3D (routes, voitures, décor, lumière), qui suit le réel mesuré (regles-de-gestion/DA-realisme.md).
+description: Direction artistique "street racing" de l'INTERFACE de WaForSpeed (menus, HUD, garage, écrans) — néons, vitesse, HUD agressif. À utiliser dès qu'on crée ou modifie un écran, un menu, un HUD, un composant d'interface, des couleurs d'interface, une typographie, des animations ou une mise en page. Ne s'applique PAS au monde 3D (routes, voitures, décor, lumière), qui n'a aucune exigence de réalisme mesuré (voir CLAUDE.md).
 ---
 
 # Design Street Racing — WaForSpeed
 
 > **Interface seulement** : couleurs, contrastes et principes pour le HUD, les menus et le garage dessinés par le moteur (`Renderer::uiRect/uiCircle`, puis texte).
 > Reprendre les valeurs de `tokens.md` en couleurs linéaires dans le C++ (les exemples CSS de `tokens.md` ne servent que de notation des valeurs).
-> **Le monde 3D n'est pas concerné** : il suit le réel mesuré, fidélité 99 % (`regles-de-gestion/DA-realisme.md`).
+> **Le monde 3D n'est pas concerné** : il a aucune exigence de réalisme mesuré (décision de l'utilisateur 2026-11-06 : la règle « graphique réaliste, fidélité 99 % » est oubliée pour les nouveaux tickets ; on veut un rendu qui fonctionne et qui plaît).
 
 Ambiance de l'interface : sensation de vitesse permanente. L'interface doit donner l'impression d'un tableau de bord de voiture tunée et d'un menu de jeu de course arcade.
 
@@ -95,6 +95,6 @@ Règles :
 - [ ] Animations ≤ 350 ms et `prefers-reduced-motion` géré
 - [ ] Contrastes vérifiés, rendu correct à 375 px de large
 
-Le rendu 3D (voitures, décors, lumière, caméra) ne suit pas ce skill : voir `regles-de-gestion/DA-realisme.md`.
+Le rendu 3D (voitures, décors, lumière, caméra) ne suit pas ce skill (aucune exigence de réalisme mesuré, voir CLAUDE.md).
 
 Les tokens CSS prêts à copier et des exemples de composants sont dans `tokens.md`.
