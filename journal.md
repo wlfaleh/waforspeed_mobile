@@ -4979,3 +4979,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/game/cars.h` (`carPerf`), `src/game/player.cpp` (poussée, freinage), `tests/**`. **Interdit** : `src/game/game.*` (E0), chiffres `CarSpec` du garage, temps des checkpoints, `course5_system.cpp` (rapport 0,9 inchangé ; équilibre Course à 5 = WFS-189), `configgame.json`, taille des boutons, tout iOS.
 - **Critères** : test CPU des 20 voitures (0-100 ±10 %, Vmax 98-101 %, 100-0 de 33 à 40 m dans l'ordre RG-04, tableau au Journal) ; Compass 0-100 ≤ 10,5 s et 20 voitures ≥ 8 checkpoints en simulation Ville (sinon signaler au PO avant tout) ; tests CPU existants verts ; parcours complet RG-10 au Journal.
 - **Plan court** : 1) banc CPU des 20 voitures (état actuel) ; 2) recaler `a0` / `top` de `carPerf` ; 3) moduler `Phys::brake` par masse et adhérence ; 4) tests, parcours, fusion selon la règle en vigueur.
+
+### 2026-11-06 19:26:22 — track-agent.md : colonne « Ticket en cours » limitée aux tickets en cours, vide sinon (po-scrum-master)
+- **Ordre de l'utilisateur** : la colonne des tickets ne montre que les tickets en cours ; un agent sans ticket en cours a la case vide.
+- **Fait** : colonne renommée « Ticket en cours » (🔧 ou 🔀 seulement), cases vidées pour les agents 2, 4, 5 et la session dev 5bx ; les tickets 🟣 dont l'agent suit la CI de `main` vont dans « État ». Règle écrite en tête du fichier.
