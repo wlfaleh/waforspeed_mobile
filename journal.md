@@ -2873,3 +2873,11 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 23:30:14 — Statuts automatiques, CI main #794 (robot statuts)
 - Run rouge (push, commit f61e884), aucun statut changé. Job(s) en échec : endurance, banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
+
+### 2026-11-06 23:36:14 — WFS-199 fusionné : Grand Prix, 2 tribunes avec de vrais spectateurs (Claude, agent 1)
+- PR #168, squash f279a8c, **fusion par confiance** : `src/world/circuit.cpp` (E2), `src/world/pietons.*` (E11, exception du PO), accroche de 11 lignes annoncée dans `src/world/cartes_banc.cpp` (captures `carte-circuit-tribune-*`, `WFS_TRIBUNES` pour les lancer seules).
+- RG-01 : 2 tribunes (grille 6 rangs, épingle 4 rangs) ; ligne droite, raidillon (panneaux à la place), zone « tribunes » et paddock sans tribune ; tirages gardés (RG-06).
+- RG-02 / RG-05 : spectateurs = `homme.wfp` / `femme.wfp` lus sur le processeur, allégés (grille 10 cm de près, 16 cm de loin : ≈ 520 / 225 triangles), posés une fois (Sitting / Idle, repos ou bavardage, 3 instants), couleurs du pedMaterial, ajoutés aux morceaux du décor. **Aucune animation en continu** : le renderer n'anime que 16 instances par image et `src/render/**` est interdit au ticket ; les personnages n'ont ni clip d'applaudissements ni bras levés (RG-02 : « sinon repos, noté au journal »). Une foule animée demanderait des instances animées en grand nombre (ticket E0 à créer si le PO le veut).
+- RG-03 : rang 0,85 m, contremarche 0,42 m, assise mesurée 0,47 m, sièges (assise + dossier), allées d'escalier tous les 10 m, garde-corps, toit sur poteaux ; remplissage ≈ 82 %.
+- RG-04 (banc local, mêmes vues, `main` puis branche) : appels de dessin tribune-départ 642 → 603, -nuit 490 → 464, épingle 495 → 486, -nuit 370 → 364, départ en Basse 600 → 561 ; temps par image en rendu logiciel égal (304 → 322, 295 → 289, 246 → 253, 231 → 226, 304 → 292 ms) ; 381 spectateurs en Haute, 146 en Basse (plafonds 250 + 150 / 95 + 55).
+- Tests : 37 tests CPU verts, licences OK, banc des cartes complet, parcours complet 0 écart. Statut 🟣 ; ✅ au premier run vert de `main`.
