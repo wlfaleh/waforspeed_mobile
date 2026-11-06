@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <sstream>
 #include "../core/log.h"
+#include "../core/platform.h"   // nowSeconds
 #include "../core/system.h"
 #include "../game/game.h"
 #include "../game/trace_cartes.h"
@@ -152,7 +153,7 @@ void preparer(Game& g, Renderer& r, const char* carte, const char* moment, int d
     (void)g; (void)carte;
 }
 // rend des images jusqu'à ce qu'une sonde capturée soit en place (au plus 40 images), temps figé
-void attendreSonde(Game& g, double t) { for (int i = 0; i < 40 && !eclairage::sondeCapturePrete(); i++) g.render(t); for (int i = 0; i < 3; i++) g.render(t); }
+void attendreSonde(Game& g, double t) { attendreSondes(g, t); }
 
 // hauteur du soleil où le sol horizontal reçoit 100 000 lx du soleil seul (lum.soleil_midi.intensite, valeur typique)
 double hauteurMidi(double cible) {
@@ -167,6 +168,12 @@ LigneRapport ligne(const std::string& id, const std::string& grandeur, const std
 }
 
 } // namespace
+
+void attendreSondes(Game& g, double t) {
+    if (!eclairage::etat().actif) return;
+    for (int i = 0; i < 60 && !eclairage::sondeCapturePrete(); i++) g.render(t);
+    for (int i = 0; i < 3; i++) g.render(t);
+}
 
 int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Referentiel& R, reel::Rapport& rap, std::ostream& mes, std::ostream& infos) {
     using namespace lumiere;
@@ -372,6 +379,45 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
             } else erreurs++;
             g_l.mode = AUCUN; eclairage::forcer({});
         }
+    }
+    // ---------------- RG-06 : lampadaire de la Ville la nuit : éclairement de la chaussée sous la tête (DA-realisme.md § 3 : 10 à 30 lx)
+    {
+        preparer(g, r, "ville", "nuit", -1, ecrans::QUALITE_HAUTE);
+        g_l = EtatBanc{};
+        if (g.init(r, "golf", "ville")) {
+            g.allerA(ECRAN);
+            double eMax = -1;
+            for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) { g.render(t); eMax = std::max(eMax, eclairage::etat().eLampadaireSol); } }
+            const eclairage::Etat e = eclairage::etat();
+            if (eMax < 0) rap.nonMesurable("lumiere", "lum.lampadaire.sol", "éclairement sous un lampadaire", "aucun lampadaire allumé près du départ de la Ville");
+            else rap.ajouter(ligne("lum.lampadaire.sol", "RG-06 : éclairement de la chaussée sous un lampadaire de la Ville, la nuit (intensité du jeu convertie à EV100 4)",
+                                   fmt(eMax, 1) + " lx", "[10 ; 30] lx (DA-realisme.md § 3)", "± 10 %", eMax >= 9 && eMax <= 33, "conception",
+                                   "EV100 de la rue : " + fmt(e.ev, 2) + " (bornes de la nuit 3 à 5)"));
+            g.shutdown();
+        } else erreurs++;
+    }
+    // ---------------- RC-06 : coût de l'éclairage physique, même scène, même processus : sondes en place, puis rendu d'origine
+    // (Ville et Campagne, départ, jour, Basse / Moyenne / Haute ; 60 images chacune, scène figée)
+    mes << "  coût (ms par image, mur ; banc lavapipe : à comparer entre eux, pas à un téléphone) : carte | qualité | physique + IBL | origine | écart\n";
+    for (const char* carte : {"ville", "campagne"}) for (int q : {ecrans::QUALITE_BASSE, ecrans::QUALITE_MOYENNE, ecrans::QUALITE_HAUTE}) {
+        preparer(g, r, carte, "jour", -1, q);
+        g_l = EtatBanc{};
+        if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+        g.allerA(ECRAN);
+        for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+        attendreSondes(g, t);
+        double ms[2];
+        for (int k = 0; k < 2; k++) {
+            eclairage::desactiver(k == 1);
+            for (int i = 0; i < 3; i++) g.render(t);
+            const double t0 = nowSeconds();
+            for (int i = 0; i < 60; i++) g.render(t);
+            ms[k] = (nowSeconds() - t0) / 60 * 1000;
+        }
+        eclairage::desactiver(false);
+        const char* nq[3] = {"basse", "moyenne", "haute"};
+        mes << "  " << carte << " | " << nq[q] << " | " << fmt(ms[0], 1) << " | " << fmt(ms[1], 1) << " | " << fmt((ms[0] / ms[1] - 1) * 100, 1) << " %\n";
+        g.shutdown();
     }
     g_l = EtatBanc{};
     reglages.qualite = q0; ecrans::appliquerQualiteNiveau(r);

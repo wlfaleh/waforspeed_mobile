@@ -92,19 +92,17 @@ vec3 iblDiffus(vec3 n) {
            + F.iblSH[7].rgb * (1.092548 * x * z) + F.iblSH[8].rgb * (0.546274 * (x * x - y * y));
     return max(r, vec3(0.0));
 }
-// capture d'environnement en cours (WFS-150 : passe miroir sans plan de coupe) : rendue sans ambiance IBL (une réflexion)
-bool captureSonde() { return F.nuitA.w > 0.5 && F.nuitB.x < -1e29; }
 // RG-04 : en mode physique, ambiance (skyAmb) et reflets (env × Fe) viennent de la sonde : cube préfiltré GGX lu au niveau
 // de la rugosité, Fresnel intégré par la table BRDF du split-sum (Karis 2013). Plus de facteur d'ambiance ni d'occlusion
 // spéculaire arbitraires ; le plafond du Fresnel de la chaussée (WFS-142, RG-04 : jamais de route miroir) est gardé.
 void iblRemplacer(inout vec3 skyAmb, inout vec3 env, inout vec3 Fe, inout float specOcc, vec3 N, vec3 R, float NoV, float rough,
                   vec3 f0, uint flags, float flaque) {
     if (F.iblA.x < 0.5) return;
-    skyAmb = captureSonde() ? vec3(0.0) : iblDiffus(N);
+    skyAmb = iblDiffus(N);
+    specOcc = 1.0;
+    if ((flags & F_VTINT) != 0u) { Fe = vec3(0.0); env = vec3(0.0); return; }   // feuillage : Lambert sans reflet (pas de lecture)   // aussi dans les captures : rebonds de la lumière d'une capture à la suivante
     env = iblPrefiltre(R, clamp(rough, 0.0, 1.0));
     vec2 ab = texture(iblBrdf, vec2(clamp(NoV, 0.0, 1.0), clamp(rough, 0.0, 1.0))).rg;
     Fe = f0 * ab.x + ab.y;
     if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
-    if ((flags & F_VTINT) != 0u) Fe = vec3(0.0);
-    specOcc = 1.0;
 }

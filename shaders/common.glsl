@@ -35,7 +35,8 @@ layout(set = 0, binding = 2) uniform sampler2D reflTex;   // WFS-16 : reflet de 
 layout(set = 0, binding = 3) uniform samplerCube iblCubeA;   // WFS-151 : sondes préfiltrées GGX (A ancienne, B récente)
 layout(set = 0, binding = 4) uniform samplerCube iblCubeB;
 layout(set = 0, binding = 5) uniform sampler2D iblBrdf;      // WFS-151 : table BRDF du split-sum (NoV, rugosité)
-vec3 iblPrefiltre(vec3 d, float r) {   // WFS-151 : luminance pré-exposée de l'environnement, rugosité r
+vec3 iblPrefiltre(vec3 d, float r) {   // WFS-151 : luminance pré-exposée de l'environnement, rugosité r (une lecture hors mélange)
+    if (F.iblA.y > 0.999) return textureLod(iblCubeB, d, r * F.iblA.w).rgb * F.iblB.z;
     return mix(textureLod(iblCubeA, d, r * F.iblA.z).rgb * F.iblB.y, textureLod(iblCubeB, d, r * F.iblA.w).rgb * F.iblB.z, F.iblA.y);
 }
 

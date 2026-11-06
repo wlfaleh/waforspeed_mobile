@@ -26,8 +26,7 @@
 #include "renderer.h"
 #include "ktx2.h"   // WFS-149 : texture d'essai
 #include "bench_passes.h"   // WFS-150
-#include "eclairage_banc.h"   // WFS-151 (accroche E13) : lumière physique
-#include "eclairage_physique.h"
+#include "eclairage_banc.h"   // WFS-151 (accroche E13) : lumière physique, sondes
 #include "../../third_party/stb/stb_image.h"   // implémentation : model_loader.cpp
 
 namespace wfs {
@@ -256,8 +255,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     }
     reel::Referentiel R;
     if (!R.charger("references/reel")) { WFS_ERR("réalisme : référentiel illisible : %s", R.erreur.c_str()); return 1; }
-    if (std::getenv("WFS_LUMIERE_SEUL")) { reel::Rapport l; std::ostringstream m, i; const int e = benchLumiere(g, r, out, R, l, m, i);   // WFS-151 : essai local
-        std::ofstream(out + "/lumiere-fidelite.txt") << l.texte("WFS-151 : lumière physique (essai local)") << m.str() << i.str(); return e; }
+    if (std::getenv("WFS_LUMIERE_SEUL")) { reel::Rapport l; std::ostringstream m, i; const int e = benchLumiere(g, r, out, R, l, m, i); std::ofstream(out + "/lumiere-fidelite.txt") << l.texte("WFS-151 (essai local)") << m.str() << i.str(); return e; }   // WFS-151
     ecrans::Reglages& reglages = ecrans::reglages();
     const int q0 = reglages.qualite;
     std::ostringstream mesures;
@@ -288,6 +286,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             if (!g.init(r, "golf", v.carte)) { WFS_ERR("réalisme : %s : chargement de %s impossible", nom.c_str(), v.carte); erreurs++; continue; }
             g.setAutopilot(false); g.camMode = 0; g.allerA(ECRAN_BANC);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+            attendreSondes(g, t);   // WFS-151 : sondes IBL capturées et stables avant la mesure
             const double t0 = nowSeconds();
             for (int i = 0; i < 5; i++) g.render(t);   // scène figée : même temps, aucune mise à jour
             const double ms = (nowSeconds() - t0) / 5 * 1000;
@@ -481,8 +480,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                 rap.lignes.back().etat = Etat::NonMesurable;
             }
         }
-        rap.comparer(R, "photometrie", "lum.soleil_midi.intensite", lumiere::eclairementSoleilNormal(hj) * std::sin(reel::rad(hj)), 1, "lx",   // WFS-151 : soleil en lux (RG-01)
-                     std::string("éclairement du soleil au sol horizontal, ") + carte + " (h " + fmt(hj, 1) + "°, modèle de WFS-151)");
+        rap.comparer(R, "photometrie", "lum.soleil_midi.intensite", lumiere::eclairementSoleilNormal(hj) * std::sin(reel::rad(hj)), 1, "lx", std::string("éclairement du soleil au sol, ") + carte + " (WFS-151, RG-01)");
     }
     rap.nonMesurable("materiaux", "mat.*", "albédo, rugosité et F0 des surfaces du jeu", "matériaux procéduraux (scene.frag) : mesure dans l'image HDR non disponible (WFS-150) ; mesurés par WFS-155 (routes) et WFS-159 (véhicules)");
     rap.nonMesurable("anthropometrie", "humain.*", "tailles et proportions des piétons", "mesurées par WFS-164 (humains réalistes) sur les nouveaux modèles");

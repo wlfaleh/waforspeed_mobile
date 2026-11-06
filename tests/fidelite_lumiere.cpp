@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     VERIFIE(std::fabs(adapter(10, 15, 0.5) - (10 + 5 * (1 - std::exp(-1.0)))) < 1e-9, "adaptation vers le clair : τ = 0,5 s");
     VERIFIE(std::fabs(adapter(15, 10, 2.0) - (15 - 5 * (1 - std::exp(-1.0)))) < 1e-9, "adaptation vers le sombre : τ = 2 s");
     VERIFIE(adapter(10, 15, 0) == 10, "dt nul : aucune adaptation");
-    VERIFIE(EV_JOUR_MAX == 15 && EV_NUIT_MIN == -3 && EV_NUIT_MAX == 5, "bornes de l'exposition par moment");
+    VERIFIE(EV_JOUR_MAX == 15 && EV_NUIT_MIN == 3 && EV_NUIT_MAX == 5, "bornes de l'exposition par moment");
     {   // histogramme : 100 cellules de poids égal, log2 L = 0 … 99 ; bande 80 à 98,3 % : cellules 80 à 97 et 0,3 de la 98
         std::vector<Cellule> c; for (int i = 0; i < 100; i++) c.push_back({(double)i, 1});
         const double m = std::log2(moyenneHistogramme(c)), att = (1593 + 0.3 * 98) / 18.3;

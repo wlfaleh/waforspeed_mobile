@@ -7,7 +7,7 @@
 //   cd/m². Toutes les valeurs envoyées au GPU sont « pré-exposées » : × k = exposition(EV100) (eclairage_unites.h).
 // RG-02 : EV100 suivi par l'exposition automatique : histogramme des luminances de la sonde (moyenne pondérée au centre de
 //   la vue, bande 80 à 98,3 %), adaptation 0,5 s vers le clair et 2 s vers le sombre, bornée par moment (jour 10 à 15,
-//   nuit −3 à 5). Le post-traitement reçoit une exposition de 1 (fp.exposure) : même courbe ACES partout (RG-05).
+//   nuit 3 à 5). Le post-traitement reçoit une exposition de 1 (fp.exposure) : même courbe ACES partout (RG-05).
 // RG-03 : sondes : la capture d'environnement de WFS-150 (cubemap HDR) est relue sans arrêter le GPU (copie dans un
 //   tampon, lue deux images plus tard), puis, sur un fil de travail : irradiance en harmoniques sphériques (9
 //   coefficients), cube préfiltré GGX (un niveau par rugosité), carte des luminances pour l'exposition. La table BRDF
@@ -17,8 +17,9 @@
 //   première capture : sonde du ciel calculée sur le CPU (même modèle que sky.frag).
 // RG-04 : en mode physique, scene.frag et scene_skin.frag prennent l'ambiance et les reflets dans l'IBL (iblRemplacer,
 //   eclairage.glsl) ; fp.ambient vaut 1 (plus de facteur d'ambiance arbitraire) ; skyColor (reflets du vernis, des
-//   vitres) lit le cube préfiltré. Les captures elles-mêmes sont rendues sans ambiance IBL (une réflexion : pas de
-//   lumière du ciel entretenue dans un tunnel).
+//   vitres) lit le cube préfiltré. Les captures sont éclairées par les sondes en place : la lumière rebondit d'une
+//   capture à la suivante. Capture éclairée par une sonde lointaine (ou celle du ciel) : la même place est recapturée
+//   (2 fois au plus), pour que la lumière du dehors s'éteigne dans un tunnel (× albédo à chaque rebond, sans occlusion).
 // RG-06 : intensités artistiques (émissions, halos, projecteurs, brouillard de nuit) : luminance physique
 //   L = e × exposition d'origine / k(EV de référence du moment) ; elles suivent donc l'exposition comme le reste.
 #pragma once
@@ -54,6 +55,7 @@ struct Etat {
     double poidsB = 1;               // part de la sonde B dans le mélange
     double msTraitement = 0;         // dernier traitement CPU d'une sonde (ms)
     double luminanceMesuree = 0;     // cd/m², bande 80-98,3 % de l'histogramme (exposition automatique)
+    double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
 };
 const Etat& etat();
 

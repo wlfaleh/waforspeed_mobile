@@ -9,9 +9,12 @@
 #include <ostream>
 #include <string>
 #include "bench_realisme.h"
+#include "eclairage_physique.h"
 
 namespace wfs {
 class Game; class Renderer;
 // rend le nombre d'erreurs (scène impossible à charger, image HDR illisible)
 int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Referentiel& R, reel::Rapport& rap, std::ostream& mesures, std::ostream& infos);
+// rend des images (temps figé) jusqu'à ce que les sondes IBL soient capturées et stables (rebonds compris), 60 au plus
+void attendreSondes(Game& g, double t);
 }

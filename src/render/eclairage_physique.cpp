@@ -13,6 +13,7 @@
 #include "../game/trace_cartes.h"
 #include "../game/track.h"
 #include "../ui/ecrans/reglages.h"
+#include "eclairage.h"   // lampadaires (hauteur de la tête)
 #include "environnement.h"
 #include "passes.h"
 #include "qualite_auto.h"
@@ -34,7 +35,7 @@ struct CelluleDir { vec3 d; double log2L, omega; };
 
 // sonde prête pour le GPU (produite par le traitement CPU)
 struct Resultat {
-    Sh9 sh; float echelle = 1; int cote = 0, niveaux = 0; vec3 pos{}; bool capture = false; double ms = 0; int generation = 0;
+    Sh9 sh; float echelle = 1; int cote = 0, niveaux = 0; vec3 pos{}; bool capture = false; double ms = 0; int generation = 0; bool eclaireLoin = false;
     std::vector<uint16_t> donnees; std::vector<size_t> decalages;   // [niveau × 6 + face] en octets
     std::vector<CelluleDir> carte;                                 // luminances (exposition automatique)
 };
@@ -58,9 +59,10 @@ struct Etat_ {
     // sondes
     Sonde A, B, sondeCiel; double w = 1;
     vec3 dernierPoint{}; bool aucuneDemande = true; int typePrec = -1; bool forcerCapture = false;
+    bool eclaireLoin = false; int iterations = 0;   // RG-03 : rebonds par recaptures au même point (voir physique())
     // relecture
     int capturesVues = 0, faceVue = -1; double kFace[6]{}; bool relecture = false; int relectureImage = -1, relectureAttente = 0;
-    Buffer tampon; int coteRelu = 0; vec3 posRelue{}; int generationRelue = 0;
+    Buffer tampon; int coteRelu = 0; vec3 posRelue{}; int generationRelue = 0; bool loinRelu = false;
     // traitement
     std::atomic<bool> fini{false}; bool enCours = false; Resultat res;
     std::vector<Retrait> retraits;
@@ -269,6 +271,11 @@ public:
             Buffer t; Sonde s = envoyer(vk, img.cb, g.res, t); retirer(Image{}, t);
             const bool premiere = !g.B.capture;
             g.etat.msTraitement = g.res.ms; g.etat.sondesCapturees++;
+            // capture éclairée par une sonde lointaine (ou celle du ciel) : la même place est recapturée, éclairée cette fois par
+            // elle-même (un rebond de plus à chaque fois, 3 au plus) ; dans un tunnel, la lumière du dehors s'éteint ainsi par ρ³
+            if (g.res.eclaireLoin && g.iterations < 2) { g.forcerCapture = true; g.iterations++; g.dernierPoint = g.res.pos; } else g.iterations = 0;
+            WFS_LOG("éclairage (WFS-151) : sonde %d (%d px, %.1f ms CPU) en (%.1f %.1f %.1f), rebond %d, EV100 %.2f", g.etat.sondesCapturees, g.res.cote, g.res.ms,
+                    g.res.pos.x, g.res.pos.y, g.res.pos.z, g.iterations, g.ev);
             installer(std::move(s), premiere);
             if (premiere) g.recaler = true;
             g.res = Resultat{};
@@ -290,7 +297,7 @@ private:
         std::swap(b.oldLayout, b.newLayout); b.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT; b.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         vkCmdPipelineBarrier(img.cb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &b);
         g.relecture = true; g.relectureImage = img.image; g.relectureAttente = 2; g.coteRelu = N; g.posRelue = environnement::point();
-        g.generationRelue = g.generation;
+        g.generationRelue = g.generation; g.loinRelu = g.eclaireLoin;
     }
     void lireRelecture(VkCtx& vk) {
         g.relecture = false;
@@ -307,9 +314,9 @@ private:
         }
         vk.destroy(g.tampon);
         g.enCours = true; g.fini = false;
-        const vec3 pos = g.posRelue; const int gen = g.generationRelue;
-        if (synchrone()) { g.res = traiter(*cube, pos, true, true); g.res.generation = gen; g.fini = true; }
-        else jobs().run([cube, pos, gen] { g.res = traiter(*cube, pos, true, false); g.res.generation = gen; g.fini = true; });
+        const vec3 pos = g.posRelue; const int gen = g.generationRelue; const bool loin = g.loinRelu;
+        if (synchrone()) { g.res = traiter(*cube, pos, true, true); g.res.generation = gen; g.res.eclaireLoin = loin; g.fini = true; }
+        else jobs().run([cube, pos, gen, loin] { g.res = traiter(*cube, pos, true, false); g.res.generation = gen; g.res.eclaireLoin = loin; g.fini = true; });
     }
 };
 WFS_PASSE(SondesIbl, 10)   // étape Ecran, après la capture d'environnement (ordre 0)
@@ -332,9 +339,9 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 const Etat& etat() { return g.etat; }
 void forcer(const Forcage& f) { g.forc = f; }
 void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
-bool sondeCapturePrete() { return g.B.capture; }
+bool sondeCapturePrete() { return g.B.capture && !g.forcerCapture && !g.enCours && !g.relecture && !environnement::enCours(); }
 void remettreAZero() {
-    g.recaler = true; g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++;
+    g.recaler = true; g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
     if (g.A.gpu.img && g.A.gpu.img != g.B.gpu.img) retirer(g.A.gpu, Buffer{});
     if (g.B.gpu.img) retirer(g.B.gpu, Buffer{});
     g.A = Sonde{}; g.B = Sonde{};
@@ -409,7 +416,17 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     fp.sunDir = s; fp.sunIntensity = (float)(E * k); fp.sunColor = couleur;
     fp.ground = sol * (float)k; fp.fogColor = brume * (float)k;
     fp.exposure = 1; fp.ambient = 1;
-    for (int i = 0; i < std::clamp(fp.spotCount, 0, 8); i++) fp.spots[i].intensity *= (float)facteur;
+    g.etat.eLampadaireSol = -1;
+    for (int i = 0; i < std::clamp(fp.spotCount, 0, 8); i++) {
+        FrameParams::Spot& sp = fp.spots[i];
+        sp.intensity *= (float)facteur;
+        // RG-06 : éclairement au sol sous le premier lampadaire (lumière ponctuelle, tête à la hauteur déclarée par le décor) :
+        // E = intensité × π × (1 − h / portée)^décroissance × luminance de la couleur (Renderer::beginFrame, three.js r128) ÷ k
+        if (g.etat.eLampadaireSol < 0 && sp.angle >= PI - 1e-3f && sp.distance > 0 && !lampadaires().empty()) {
+            const double hl = lampadaires().front().y, c[3] = {sp.color.x, sp.color.y, sp.color.z};
+            g.etat.eLampadaireSol = sp.intensity * PI_L * std::pow(std::max(0.0, 1 - hl / sp.distance), sp.decay) * luminanceRgb(c) / k;
+        }
+    }
     g.k = k; g.facteur = facteur;
     g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), 0};
     // ---- RG-03 / ST-4 : sondes locales
@@ -426,7 +443,11 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.typePrec = type;
     if (!environnement::enCours() && !g.relecture && !g.enCours) {
         if (g.aucuneDemande || g.forcerCapture || length(point - g.dernierPoint) > esp) {
-            environnement::demander(point); g.dernierPoint = point; g.aucuneDemande = false; g.forcerCapture = false;
+            // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
+            // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
+            const vec3 p = g.forcerCapture && g.iterations > 0 ? g.dernierPoint : point;
+            g.eclaireLoin = !g.B.capture || length(g.B.pos - p) > 2.5f * (float)esp;
+            environnement::demander(p); g.dernierPoint = p; g.aucuneDemande = false; g.forcerCapture = false;
         }
     }
     g.imageActive = true;
@@ -462,6 +483,7 @@ void avantImage(VkCtx& vk, FrameUBO& u, VkDescriptorSet image, VkDescriptorSet r
         const vec3 p = g.pointPrec; const double dA = length(p - g.A.pos), dB = length(p - g.B.pos);
         const double cible = dA + dB > 1e-3 ? dA / (dA + dB) : 1.0;
         g.w += (cible - g.w) * (1.0 - std::exp(-g.dtImage / 0.3));
+        if (g.w > 0.999) g.w = 1;   // une seule lecture du cube dans les shaders hors mélange
     }
     u.iblA = {actif ? 1.f : 0.f, (float)w, (float)std::max(0, A.niveaux - 1), (float)std::max(0, B.niveaux - 1)};
     u.iblB = {(float)g.k, (float)(g.k / std::max(A.echelle, 1e-12f)), (float)(g.k / std::max(B.echelle, 1e-12f)), actif ? (float)g.facteur : 1.f};
