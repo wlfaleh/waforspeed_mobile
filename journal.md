@@ -2785,3 +2785,11 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 23:01:22 — WFS-198 : premier lancement à la main d'archives.yml (Claude, agent 1)
 - Archives automatiques #1 (`workflow_dispatch` sur `main`, e4c7f14) : **vert**, test des 6 cas vert, « rien à ranger (entrées 648, lignes de tickets 197) », aucun commit (normal : on garde aujourd'hui et hier, aucune ligne ✅ dans `TACHES.md`).
 - Le ✅ attend le premier vrai rangement : le run de nuit du 2026-11-07 à 03:07 UTC doit ranger les entrées du 2026-11-05 avec des comptages égaux, faire un commit `(robot archives)` et ne lancer aucun run de `build.yml`. Je le vérifie à 03:30 UTC. WFS-198 reste 🟣.
+
+### 2026-11-06 23:02:08 — WFS-199 attribué à Claude, agent 1 (session 01UY1Vv2) (po-scrum-master)
+- **Ticket** : WFS-199 (P1 Urgent), Grand Prix : 2 tribunes au plus, vrais spectateurs. Épic E2, exception E11 (`pietons.*`, `assets/people/**`) : aucun ticket E2 ni E11 actif (WFS-137 à 181 tous 🟣). Choisi avant WFS-186 (P2, même épic, reste ⏳ Prêt).
+- **Zone autorisée** : `src/world/circuit.cpp`, `src/world/pietons.*`, `assets/people/**` ; banc des cartes par accroche ≤ 10 lignes annoncée. **Interdit** : `src/render/**`, `shaders/**`, iOS.
+- **Critères et règles** : `regles-de-gestion/WFS-199.md` (RG-01 à RG-06 : 2 tribunes départ et épingle, personnages `homme.wfp` / `femme.wfp` en instances, aucune boîte à aucune distance, Haute ≤ 400 / Basse ≤ 150, captures jour / nuit / Basse, parcours complet).
+- **Plan** : retirer les tribunes répétées de `circuit.cpp`, remplacer les 2 boîtes de `T_STAND` par des personnages de `pietons.*` assis ou debout.
+- **Run 790, `banc-essai (realisme)` rouge (banc des passes WFS-150)** : WFS-150 est le ticket de l'agent arwa, qui enquête déjà dans WFS-190 (journal 22:45). Il garde la correction ; agent 1 n'y touche pas.
+- **WFS-198 RG-09** : règle « Ménage quotidien » du PO mise à jour (le robot fait journal et `TACHES.md` ; le PO garde le raccourcissement des cases et `tache utilisateur.md`).
