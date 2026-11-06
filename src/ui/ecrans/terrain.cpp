@@ -98,6 +98,7 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
     Mulberry32 R(m.seed * 7 + (nuit ? 3 : 1));
     auto rnd = [&]() { return (float)R.next(); };
     const float sx = W / 400.f, sy = H / 250.f, HZ = Y + 150 * sy;
+    const float sr = std::min(sx, sy);   // WFS-147 : rayon de la lune et du soleil (halo gardé dans la vignette élargie)
     auto px = [&](float v) { return X + v * sx; };
     auto py = [&](float v) { return Y + v * sy; };
     // ciel : dégradé à 3 arrêts (0, 62 %, 100 %, screens.js l. 209) en deux quadrilatères (WFS-147, ANO-42 : plus de bandes)
@@ -113,13 +114,13 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
     if (nuit) {
         if (idx != 0) for (int i = 0; i < 40; i++) { const float x = rnd() * 400, y = rnd() * 112; r.uiCircle(px(x), py(y), (0.5f + rnd()) * sx, hex(0xFFFFFF, 0.4f + rnd() * 0.6f)); }
         const float mx = idx == 1 ? 92 : 318;
-        for (int k = 3; k >= 1; k--) r.uiCircle(px(mx), py(46), 12 * k * sx, hex(0xFFF6D8, 0.10f));
-        r.uiCircle(px(mx), py(46), 13 * sx, hex(0xF4F1FF));
-        r.uiCircle(px(mx + 6), py(42), 11 * sx, hex(ciel[0], 0.35f));
+        for (int k = 3; k >= 1; k--) r.uiCircle(px(mx), py(46), 12 * k * sr, hex(0xFFF6D8, 0.10f));
+        r.uiCircle(px(mx), py(46), 13 * sr, hex(0xF4F1FF));
+        r.uiCircle(px(mx + 6), py(42), 11 * sr, hex(ciel[0], 0.35f));
     } else {
         const float sy0 = idx == 1 ? 108 : 52;
-        for (int k = 3; k >= 1; k--) r.uiCircle(px(300), py(sy0), 18 * k * sx, hex(0xFFF3C4, 0.13f));
-        r.uiCircle(px(300), py(sy0), 17 * sx, hex(0xFFF8E0));
+        for (int k = 3; k >= 1; k--) r.uiCircle(px(300), py(sy0), 18 * k * sr, hex(0xFFF3C4, 0.13f));
+        r.uiCircle(px(300), py(sy0), 17 * sr, hex(0xFFF8E0));
         for (int i = 0; i < 4; i++) {   // WFS-147 (ANO-42) : nuage = 3 ellipses opaques (blanc × 0,85 + ciel × 0,15, <g opacity=".85">)
             const float cx = 40 + rnd() * 320, cy = 30 + rnd() * 46, w = 40 + rnd() * 50;
             const vec4 cc = melange(hex(0xFFFFFF), cielEn(py(cy)), 0.15f);
