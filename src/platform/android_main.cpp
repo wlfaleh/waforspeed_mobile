@@ -63,6 +63,7 @@ static void initGraphics(App& app, android_app* a) {
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
     const double tVk = nowSeconds();
     app.renderer.init(app.vk);
+    densiteAndroid(a->config, (float)app.renderer.height(), (float)ANativeWindow_getHeight(a->window));   // WFS-147 : dp dès l'écran de chargement
     ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
     if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(true); return; }   // WFS-24 : voiture et carte gardées ; WFS-146 : « Quitter »
     ecrans::chargement().fin();

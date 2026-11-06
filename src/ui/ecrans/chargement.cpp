@@ -9,6 +9,7 @@
 #include "../../game/game.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 #include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau du bouton de l'écran d'erreur
 
 namespace wfs {
@@ -31,6 +32,17 @@ MiseEnPage miseEnPage(float W, float H) {
     m.x = clampv(0.06f * W / m.k, 0, 96) * m.k + 16 * m.k;               // margin-left clamp(0, 6vw, 96px) + gouttière
     m.largeur = std::min(600 * m.k, W - m.x - 16 * m.k);                // max-width: 600px
     m.sur = 12 * m.k; m.gap = 22 * m.k; m.ligne = m.logo * 0.82f;
+    m.hauteurBloc = m.sur + m.gap + 2 * m.ligne;
+    return m;
+}
+
+MiseEnPage miseEnPagePetit(float W, float H, float logoMax, float gap) {
+    MiseEnPage m;
+    m.k = ui::unitePetitEcran(W, H);
+    m.logo = clampv(0.14f * W / m.k, 56, logoMax) * m.k;
+    m.x = clampv(0.06f * W / m.k, 0, 96) * m.k + 16 * m.k;
+    m.largeur = std::min(600 * m.k, W - m.x - 16 * m.k);
+    m.sur = 12 * m.k; m.gap = gap * m.k; m.ligne = m.logo * 0.82f;
     m.hauteurBloc = m.sur + m.gap + 2 * m.ligne;
     return m;
 }
@@ -65,7 +77,9 @@ float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float op) {
 }
 
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float op) {
-    const MiseEnPage m = miseEnPage(W, H);
+    // WFS-147 (RG-01, RG-02) : téléphone couché : logo de 100 dp au plus, libellé de 19 dp, bouton de 48 dp (dp réels)
+    const bool cp = ui::petitEcran(W, H);
+    const MiseEnPage m = cp ? miseEnPagePetit(W, H, 100, 16) : miseEnPage(W, H);
     const float k = m.k, x = m.x, largeur = m.largeur, gap = m.gap;
     r.uiRect(0, 0, W, H, hex(BG, op));   // fond --bg plein écran
     // WFS-146 (RG-10, ANO-39) : reflets d'asphalte de .screen--loading, sans rien déplacer :
@@ -104,7 +118,7 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     if (!police) return;
     if (erreur) {   // WFS-146 (RG-10) : message inchangé (taille, place), puis bouton « Réessayer » (« Quitter » si le moteur ne repart pas)
         ui::text(r, x, y, txt, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
-        const float tp = 20 * k, bh = 56 * k, by = y + txt + 24 * k;
+        const float tp = 20 * k, bh = (cp ? 48 : 56) * k, by = y + txt + (cp ? 16 : 24) * k;
         const std::string t = ui::majuscules(g_quitter ? "Quitter" : "Réessayer");
         const float bw = ui::width(tp, t, 0.12f) + 56 * k;
         g_reessayer = {x, by, bw, bh};
