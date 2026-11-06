@@ -6,14 +6,9 @@ Un fichier par ticket : `WFS-XX.md`, **écrit par l'agent `po-scrum-master`** qu
 et **au plus tard avant de l'attribuer**. Le développeur le lit avant de coder ; le QA lead s'en sert pour juger.
 
 ## Ce qu'on réutilise (obligatoire à vérifier pour chaque US)
-Le jeu existe déjà en version navigateur dans le dépôt **`wlfaleh/waaps`**, dossier **`waforspeed/`** :
-- **Code de référence** : `js/` (règles du jeu, physique, trafic, décor, caméra, sons, interface). Le natif reprend
-  les **mêmes règles et les mêmes valeurs** : chaque US cite les fichiers et fonctions JS à porter.
-- **Modèles 3D déjà prêts** : `models/` (20 voitures réelles avec licences, versions allégées `-lod`, personnages
-  `models/people/`), à convertir avec `tools/convert_car.mjs` (voir skill `waforspeed-natif`) — **ne jamais en chercher
-  ou en créer de nouveaux si un modèle existe déjà**.
-- **Sons** : `audio/engines/` (déjà copiés dans `assets/audio/`).
-- **Leçons apprises** (ce que l'utilisateur a refusé ou validé) : skill `waforspeed-3d` (référence de la version web).
+Le code, les modèles 3D (`assets/cars/`, `assets/people/`), les sons (`assets/audio/`) et les systèmes **déjà présents dans ce dépôt** :
+chaque US cite les fichiers et fonctions à réutiliser ; ne jamais recréer ce qui existe. Il n'y a plus de version Web (décision de
+l'utilisateur, 2026-11-06). Pour l'aspect du monde 3D, la référence est le réel mesuré, fidélité 99 % : `DA-realisme.md`.
 
 ## Modèle de fichier
 ```markdown
@@ -24,11 +19,11 @@ Le jeu existe déjà en version navigateur dans le dépôt **`wlfaleh/waaps`**, 
 …
 
 ## Règles de gestion
-- RG-01 : <règle précise, chiffrée si possible (valeurs du jeu web)>
+- RG-01 : <règle précise, chiffrée si possible (valeurs sourcées)>
 - RG-02 : …
 
-## À réutiliser du jeu web (wlfaleh/waaps, waforspeed/)
-- Code : `js/…` → fonctions `…` (ce qu'on porte, ce qu'on adapte)
+## À réutiliser (dans ce dépôt)
+- Code : `src/…` → fonctions `…` (ce qu'on réutilise, ce qu'on adapte)
 - Modèles 3D / sons / textures : `models/…`, `audio/…`
 - Retours de l'utilisateur déjà connus : …
 

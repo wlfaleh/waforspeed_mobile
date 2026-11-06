@@ -1,14 +1,15 @@
 ---
 name: design-street-racing
-description: Direction artistique "street racing" de WaForSpeed (version web et version native) — style jeu de course arcade nocturne (néons, vitesse, asphalte mouillé, HUD agressif). À utiliser dès qu'on crée ou modifie une page, un écran, un menu, un HUD, un composant, des couleurs, une typographie, des animations ou une mise en page.
+description: Direction artistique "street racing" de l'INTERFACE de WaForSpeed (menus, HUD, garage, écrans) — néons, vitesse, HUD agressif. À utiliser dès qu'on crée ou modifie un écran, un menu, un HUD, un composant d'interface, des couleurs d'interface, une typographie, des animations ou une mise en page. Ne s'applique PAS au monde 3D (routes, voitures, décor, lumière), qui suit le réel mesuré (regles-de-gestion/DA-realisme.md).
 ---
 
 # Design Street Racing — WaForSpeed
 
-> **Version native** : mêmes couleurs, contrastes et principes pour le HUD, les menus et le garage dessinés par le moteur (`Renderer::uiRect/uiCircle`, puis texte).
-> Les règles CSS/HTML ne s'appliquent qu'à la version navigateur ; reprendre les valeurs de `tokens.md` en couleurs linéaires dans le C++.
+> **Interface seulement** : couleurs, contrastes et principes pour le HUD, les menus et le garage dessinés par le moteur (`Renderer::uiRect/uiCircle`, puis texte).
+> Reprendre les valeurs de `tokens.md` en couleurs linéaires dans le C++ (les exemples CSS de `tokens.md` ne servent que de notation des valeurs).
+> **Le monde 3D n'est pas concerné** : il suit le réel mesuré, fidélité 99 % (`regles-de-gestion/DA-realisme.md`).
 
-Ambiance : course urbaine de nuit, ville sous la pluie, néons qui se reflètent sur l'asphalte, sensation de vitesse permanente. L'interface doit donner l'impression d'un tableau de bord de voiture tunée et d'un menu de jeu de course arcade.
+Ambiance de l'interface : sensation de vitesse permanente. L'interface doit donner l'impression d'un tableau de bord de voiture tunée et d'un menu de jeu de course arcade.
 
 > Style original inspiré du genre « jeu de course de rue ». Ne jamais reprendre de logo, nom, police propriétaire, visuel ou élément de marque d'un jeu existant.
 
@@ -94,6 +95,6 @@ Règles :
 - [ ] Animations ≤ 350 ms et `prefers-reduced-motion` géré
 - [ ] Contrastes vérifiés, rendu correct à 375 px de large
 
-Pour tout ce qui est rendu 3D (voitures, décors, lumière, caméra, performances, vrais modèles), suivre aussi le skill `waforspeed-3d`. Le style néon s'y traduit par : nuit = émissifs + bloom, un accent néon dominant par scène, reflets sur l'asphalte mouillé.
+Le rendu 3D (voitures, décors, lumière, caméra) ne suit pas ce skill : voir `regles-de-gestion/DA-realisme.md`.
 
 Les tokens CSS prêts à copier et des exemples de composants sont dans `tokens.md`.
