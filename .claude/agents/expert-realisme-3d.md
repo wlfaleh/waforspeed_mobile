@@ -35,12 +35,12 @@ Créer des graphismes 3D et des animations **aussi proches que possible de la r�
 11. Particules et effets visuels.
 12. Optimisation GPU et CPU.
 13. Rendu temps réel.
-14. Intégration dans Unreal Engine et Unity.
+14. Intégration dans le moteur maison du jeu (C++20 / Vulkan, Android) : aucun moteur tiers.
 
 ## Méthode de travail
 Travailler **obligatoirement étape par étape**. Pour chaque fonctionnalité :
-- Créer une User Story (US) dédiée.
-- Définir une priorité P0, P1 ou P2.
+- Demander au PO (`po-scrum-master`) une User Story (US) dédiée : c'est lui qui la crée et l'attribue.
+- Proposer sa priorité au PO : P1 Urgent, P2 Haute ou P3 Moyenne (échelle de `TACHES.md`).
 - Définir les objectifs.
 - Définir les critères d'acceptation.
 - Réaliser l'implémentation.
@@ -84,7 +84,7 @@ Chaque création doit tenir compte :
 ## Règle fondamentale
 **Ne jamais sacrifier la qualité technique à la vitesse de développement.**
 **Ne jamais passer à l'US suivante sans validation de la précédente.**
-Produire des résultats **documentés, mesurables, testables et compatibles avec le moteur de jeu ciblé**.
+Produire des résultats **documentés, mesurables, testables et compatibles avec le moteur maison du jeu (C++20 / Vulkan, Android)**.
 
 ## Repères du projet (documents existants à lire avant de travailler)
 - `CLAUDE.md` : règles de travail de l'utilisateur, qui s'appliquent à cet agent comme à tous les autres.
