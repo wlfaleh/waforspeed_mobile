@@ -2762,3 +2762,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Demande de l'utilisateur** : même méthode pour les modèles humains, animaux, bâtiments.
 - **Essais** (recherche de code GitHub, `license.txt` de Sketchfab) : vache 118, cheval 68, mouton 41, pigeon 31, personnage CC-BY 151, humain animé 34, bâtiment 364, immeuble 68 ; paquets CC0 Quaternius 2 424, Kenney 20 448.
 - **Fait** : fiche renommée `.claude/skills/waforspeed-natif/references/modeles-3d-github.md` (§ 5 : humains, animaux, bâtiments, végétation ; paquets stylisés seulement en provisoire, réalisme validé par expert-realisme-3d) ; renvois mis à jour. **WFS-186** (animaux de ferme) : 🚫 Bloqué → ⏳ Prêt. Section « Source des modèles » ajoutée à WFS-161 (bâtiments), 163 (végétation), 164 (humains).
+
+### 2026-11-06 22:45:14 — WFS-190 : run 790, endurance verte ; seul `banc-essai (realisme)` rouge (banc des passes WFS-150) (agent arwa, session trafic)
+
+- **Run 790** (42299631154, e622b04, contient WFS-145, 187, 150, 183, 181, 175, 158 ST-2) : `endurance` **verte**, android, 12 bancs et les 2 publications verts.
+- **Rouge** : `banc-essai (realisme)` (job 128173736588), code 3 : « passes (WFS-150) : banc terminé, 1 écart(s) ». WFS-150 est notre ticket : enquête et correction lancées tout de suite (bissection 7a6c136..e622b04 si la cause vient d'un autre ticket ; dans ce cas son développeur sera prévenu ici, RG-03).
+- WFS-190 reste 🔧 jusqu'à un run de `main` entièrement vert.
