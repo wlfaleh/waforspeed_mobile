@@ -25,7 +25,7 @@
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
 | Claude, session 01Us6uCu | WFS-158 | remplacement de la Model 3 par un autre modèle libre (ordre de l'utilisateur, ANO-75), puis dimensions des 20 voitures | 158 : 10:45 | ⚠️ rien depuis 10:45 ; le ticket lui reste jusqu'à 20:45 UTC (règle des 10 h) |
-| Claude, agent lumière (session 01UY1Vv1) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 19:45 (ouverture de la branche) | ✅ actif (lancé à 19:46 ; consulte expert-realisme-3d pour les choix de graphisme) |
+| Claude, agent lumière (session 01UY1Vv1) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 20:22 (unités, exposition auto, sondes IBL, banc : 1er envoi) | ✅ actif : banc du réalisme en cours en local (lavapipe) |
 
 ## Agents de pilotage
 
