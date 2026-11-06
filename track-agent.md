@@ -19,7 +19,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-175 | Ville (2/4) : autoroute urbaine, tunnel et pont | 175 : attribué 19:36, branche à pousser | ✅ actif ; suit aussi la CI de `main` de WFS-181 🟣 (run 42279476180 en file) |
 | Claude, agent 1 (01UY1Vv2) |  |  | 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-185 (🟣 fusionné 19:29, PR #149, run 777) |
-| Claude, agent 2 (01UY1Vv5) |  |  |  | ✅ libre |
+| Claude, agent 2 (01UY1Vv5) |  |  | 184 : fusionnée 16:39 | ✅ libre ; WFS-184 ✅ (CI de `main` verte, run 753) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) | WFS-188 | conduite fidèle aux fiches : 0-100, vitesse max, freinage (ANO-97, ANO-98) | 188 : 19:25 | ✅ actif (WFS-145 et WFS-187 fusionnés) |
