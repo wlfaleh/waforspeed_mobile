@@ -328,6 +328,12 @@ public:
     int policeMobiles() const { int n = 0; for (const Police& p : police_) n += !p.fixe; return n; }
     int policeDerriere(double sJ) const { int n = 0; for (const Police& p : police_) n += !p.fixe && p.rd < sJ && (sJ - p.rd) * M < 40; return n; }
     const std::string& bandeauActuel() const { return ban_; }
+    // banc (WFS-172, RG-02) : voitures de police mobiles entre a et b m du joueur (sJ, xJ)
+    int policeEntre(double sJ, double xJ, double a, double b) const {
+        int n = 0;
+        for (const Police& p : police_) { const double d = plusProcheM({p}, sJ, xJ); n += d >= a && d <= b; }
+        return n;
+    }
     void bancScore(int score) { etat_.score = score; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
     float orbitAvant_ = 0;
     Zone rejouerZone() const { return rejouerZ_; }
@@ -662,6 +668,18 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     // la 2e voiture de police tente de pousser (attaque de 7,6 à 10,6 s) : vue de devant, police derrière le joueur
     if (const PoursuiteSystem* s = PoursuiteSystem::actif) { g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.5f; }
     capture("poursuite-police");
+    {   // WFS-172 (RG-02, ANO-87) : même vue en qualité Basse (téléphone), dessinée à la même heure (aucun pas de temps
+        // pour la caméra ni les animations) : la suite du banc est inchangée
+        ecrans::Reglages& R = ecrans::reglages(); const int q0 = R.qualite;
+        R.qualite = 0; ecrans::appliquerQualiteNiveau(r);
+        const PoursuiteSystem* s = PoursuiteSystem::actif;
+        const int n = s ? s->policeEntre(g.player().dist, g.player().playerX, 10, 30) : 0;
+        WFS_LOG("poursuite (banc) : qualité Basse : %d voiture(s) de police à 10-30 m", n);
+        if (n == 0) WFS_ERR("poursuite (banc) : aucune police à 10-30 m pour poursuite-police-basse");
+        g.render(t); g.render(t); r.capturePng(out + "/poursuite-police-basse.png");
+        WFS_LOG("capture poursuite-police-basse : %.2f km, police %d, %u appels de dessin", g.player().dist * M / 1000, s ? s->policeMobiles() : 0, r.appelsDessin());
+        R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
+    }
     g.camMode = 0; g.render(t += 0.02);
     basse("police au contact");
     jusqua(0.21, 60 * 60);    // barrage annoncé 260 m avant (0,45 km) ; WFS-141 (RG-02) : 20 m après l'annonce (bandeau de 1,5 s visible)
