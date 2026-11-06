@@ -2747,3 +2747,13 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Essai à blanc sur une copie de `main` (date simulée 2026-11-08) : 321 entrées rangées, comptages égaux (644 entrées, 197 lignes de tickets) ; aujourd'hui : rien à ranger.
 - RG-07 vérifié : le robot n'écrit que des `.md` / `regles-de-gestion/**`, dans `paths-ignore` de `build.yml` (non modifié). Statut 🟣 ; ✅ après un premier lancement à la main sur `main`.
 - RG-09 : au PO de mettre à jour sa règle « Ménage quotidien » (le robot fait le journal et `TACHES.md`, le PO garde `tache utilisateur.md`).
+
+### 2026-11-06 22:39:38 — WFS-158 : livraison 4 fusionnée par confiance (PR #166, edb17c0) : plaques arrière européennes de l'Elantra, la Mustang, la M4 et la SF90 (arwa-2)
+- **Plaques remplacées** : plaques de concession « ELANTRA N » (303 × 151 mm) et « FORD PERFORMANCE » avec logo Ford (304 × 136 mm), plaque du Texas de la M4 (267 × 131 mm), plaque italienne de la SF90 (320 × 87 mm). Elles deviennent des plaques françaises neutres de 520 × 110 mm : GN-623-YB, FM-509-GT, EB-944-KM, GF-190-XS.
+- **Outil** : `plaques_voitures.mjs` prend le plan de la plaque sur ses faces quand les normales des sommets sont inutilisables (SF90). Les 7 voitures de la livraison 3 ne bougent pas.
+- **Preuves** : captures locales `vitrine-<id>-feux` avant / après. Plaques lisibles, dans leur logement ; Mustang : devant les bandes ; SF90 : dans l'ombre du diffuseur, comme avant. Dimensions des voitures inchangées (111 / 141), 37 tests CPU OK.
+- **M-04, état** : 24 plaques au format sur 15 voitures (V60, A 45, RR Sport, 208, Abarth, Giulia, Compass, Corsa, 911, S3 : avant et arrière ; Elantra, Mustang, M4, SF90 : arrière seulement).
+- **Reste** :
+  - les plaques avant de l'Elantra, de la Mustang, de la M4 et de la SF90 (absentes du modèle) ;
+  - les plaques de la Golf, de la Gallardo, du T-Cross, du X5 et de la GT86 (aucune plaque à part : à poser) ;
+  - la Model 3 (RG-D).
