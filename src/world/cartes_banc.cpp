@@ -14,6 +14,7 @@
 #include "../game/track.h"
 #include "../render/renderer.h"
 #include "decor_carte.h"
+#include "ville_quartiers.h"   // WFS-176 : lieux de la Ville
 #include "zones.h"
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2
 
@@ -179,6 +180,17 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
             lieux.push_back({"carte-ville-fontaine", s.debut, -3, true, 1});   // à l'entrée de l'anneau, l'îlot devant à gauche
         }
+    }
+    {   // WFS-176 : casino, centre commercial, garages (jour et nuit), un promeneur et son chien, pigeons d'un carrefour
+        const ville::Plan& P = ville::adapter(mapById("ville"), t);
+        int ng = 0;
+        for (const ville::Lieu& l : P.lieux) {
+            if (l.t == ville::CASINO) lieux.push_back({"carte-ville-casino", l.seg, 16, true});
+            if (l.t == ville::CENTRE_COMMERCIAL) lieux.push_back({"carte-ville-centre-commercial", l.seg, 15, true});
+            if (l.t == ville::GARAGE && ng++ == 0) lieux.push_back({"carte-ville-garage", l.seg, 6, true});
+        }
+        if (!P.promeneurs.empty()) lieux.push_back({"carte-ville-chien", (int64_t)P.promeneurs[0].s, 12, false});
+        if (!P.carrefours.empty()) lieux.push_back({"carte-ville-pigeons", P.carrefours[0].croise - (int64_t)(15 / SEG_M), -20, false});
     }
     const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : un seul lieu (préfixe du nom)
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {

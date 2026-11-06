@@ -10,6 +10,7 @@
 #include "../core/math.h"
 #include "../game/track.h"
 #include "../game/trace_cartes.h"   // WFS-137 : sections du tracé 2
+#include "zones.h"   // WFS-176 : quartiers des lieux
 #include <limits>
 #include "zones.h"
 
@@ -243,6 +244,72 @@ float etendue(const Objet& o) {
     }
 }
 
+// WFS-176 (RG-04, RG-05 de WFS-137) : casino (Centre-ville), centre commercial (Quartier d'affaires), 2 garages (Quartier
+// résidentiel, Zone portuaire) sur une ligne droite de rue, loin des carrefours et des courbes serrées (RG-C1) ; emprise vidée ;
+// cafés et bars de plus près des carrefours ; promeneurs avec chien. Profondeurs : casino jusqu'à RW + 38, centre commercial
+// (parking devant) jusqu'à RW + 58, garage jusqu'à RW + 19.
+template <class FL, class FV, class FR>
+void lieuxVille(const MapDef& map, Plan& P, int64_t L, FL limite, FV voieSur, FR surRue) {
+    const float R = (float)RW;
+    struct Voulu { TypeLieu t; const char* zone; float len, prof; };
+    const Voulu V[] = {{CASINO, "Centre-ville", 40, R + 38}, {CENTRE_COMMERCIAL, "Quartier d'affaires", 80, R + 58},
+                       {GARAGE, "Quartier résidentiel", 14, R + 19}, {GARAGE, "Zone portuaire", 14, R + 19}};
+    auto libre = [&](int64_t a, int side, float len, float prof) {
+        if (voieSur(a, len + 40) != RUE || surRue(a - (int64_t)(40 / SEG_M), len + 80) || limite(a - (int64_t)(60 / SEG_M), side, len + 60) < prof) return false;
+        for (const Lieu& l : P.lieux) { int64_t d = ((a - l.seg) % L + L) % L; if (d > L / 2) d = L - d; if (d * SEG_M < 120) return false; }
+        for (const RondPoint& rp : P.ronds) { int64_t d = ((a - rp.centre) % L + L) % L; if (d > L / 2) d = L - d; if (d * SEG_M < 150) return false; }
+        return true;
+    };
+    for (const Voulu& v : V) {
+        for (int64_t a = 0; a < L; a++) {
+            if (std::strcmp(zoneName(map, a, L), v.zone) || std::strcmp(zoneName(map, a + (int64_t)(v.len / SEG_M), L), v.zone)) continue;
+            int side = 0;
+            for (int s : {1, -1}) if (!side && libre(a + 20, s, v.len, v.prof)) side = s;
+            if (!side) continue;
+            const int64_t a0 = a + 20, n = (int64_t)std::ceil(v.len / SEG_M);
+            P.lieux.push_back({v.t, a0 % L, side, v.len});
+            // emprise : plus d'immeuble ni d'objet de rue derrière le trottoir (lampadaires et passages piétons gardés)
+            for (int64_t k = -(int64_t)(30 / SEG_M); k <= n; k++) {
+                auto& o = P.objets[(size_t)((((a0 + k) % L) + L) % L)];   // a0 + k peut être négatif (lieu près du départ)
+                o.erase(std::remove_if(o.begin(), o.end(), [&](const Objet& x) {
+                    if (x.side != side || x.t == LAMPE || x.t == ZEBRA) return false;
+                    const float fin = (float)k * (float)SEG_M + (x.t == IMMEUBLE || x.t == ENTREPOT ? x.len : 4.f);
+                    return fin > 0 && k <= n;
+                }), o.end());
+            }
+            auto dans = [&](int64_t sg, float len, int sd) { const int64_t d = ((sg - a0) % L + L) % L; return sd == side && (d <= n || d >= L - (int64_t)std::ceil(len / SEG_M)); };
+            P.commerces.erase(std::remove_if(P.commerces.begin(), P.commerces.end(), [&](const Commerce& c) { return dans(c.seg, c.len, c.side); }), P.commerces.end());
+            P.panneaux.erase(std::remove_if(P.panneaux.begin(), P.panneaux.end(), [&](const Panneau& b) { return dans(b.seg, 6.f, b.side); }), P.panneaux.end());
+            break;
+        }
+    }
+    // cafés et bars près des carrefours : devant chaque immeuble à moins de 60 m du passage, sans commerce, une terrasse
+    // (café, restaurant, bar, brasserie, glacier, bar à sushis : SHOPS de commerces.cpp, tous avec terrasse)
+    static const int TERRASSES[6] = {0, 1, 2, 5, 6, 7};
+    Mulberry32 D(map.seed * 31 + 53);
+    size_t ajout = 0;
+    for (const Carrefour& c : P.carrefours) for (int64_t k = -(int64_t)(60 / SEG_M); k <= (int64_t)(60 / SEG_M); k++) {
+        const int64_t a = ((c.croise + k) % L + L) % L;
+        for (const Objet& o : P.objets[(size_t)a]) {
+            if (o.t != IMMEUBLE || o.len < 8) continue;
+            bool deja = false;
+            for (const Commerce& m : P.commerces) { int64_t d = ((m.seg - a) % L + L) % L; if (d > L / 2) d = L - d; if (m.side == o.side && d * SEG_M < o.len) deja = true; }
+            if (deja || voieSur(a, o.len) != RUE || surRue(a, o.len)) continue;
+            const float len = std::min(o.len - 2.f, 12.f);
+            P.commerces.push_back({a, o.side, len, TERRASSES[(int)(D.next() * 6) % 6], (uint32_t)(D.next() * 4096) | 0x5, (o.len - len) / 2});
+            ajout++;
+        }
+    }
+    // promeneurs avec chien : un toutes les 450 m environ, sur le trottoir (RW + 2,4), dans les rues (pas l'autoroute)
+    for (int64_t a = 100; a < L; a += 360 + (int64_t)(D.next() * 40)) {
+        if (P.voie[(size_t)a] != RUE) continue;
+        const int side = D.next() < 0.5 ? -1 : 1;
+        P.promeneurs.push_back({(double)a, side * (R + 2.4), 1.15 + D.next() * 0.25, D.next() < 0.5 ? -1 : 1, (int)P.promeneurs.size() % 2});
+    }
+    WFS_LOG("Ville (WFS-176) : %zu lieu(x) (casino, centre commercial, garages), %zu terrasses ajoutées près des carrefours, %zu promeneurs avec chien",
+            P.lieux.size(), ajout, P.promeneurs.size());
+}
+
 const Plan& adapter(const MapDef& map, const Track& t) {
     const int64_t L = (int64_t)t.segmentCount();
     const Plan& p0 = plan(map, L);
@@ -342,6 +409,7 @@ const Plan& adapter(const MapDef& map, const Track& t) {
         return voieSur(c.seg, c.len) != RUE || surRue(c.seg, c.len) || facade > limite(c.seg, c.side, c.len); }), P.commerces.end());
     P.panneaux.erase(std::remove_if(P.panneaux.begin(), P.panneaux.end(), [&](const Panneau& b) {
         return voieSur(b.seg, 6.f) != RUE || surRue(b.seg, 6.f) || facade > limite(b.seg, b.side, 6.f); }), P.panneaux.end());
+    lieuxVille(map, P, L, limite, voieSur, surRue);   // WFS-176
     WFS_LOG("Ville (WFS-137) : plan adapté au tracé 2 (%zu sections) : %zu / %zu objets, %zu commerces et %zu panneaux retirés "
             "(courbes serrées, autoroute, tunnel, pont, rues des carrefours) ; %zu carrefour(s) à feux, %zu rond(s)-point(s)", secs.size(), retires, avant,
             nc - P.commerces.size(), np - P.panneaux.size(), P.carrefours.size(), P.ronds.size());
@@ -365,6 +433,8 @@ float solY(const char* zone, float lat) {
     for (int i = 0; i < n; i++) if (lat <= b[i].b) return b[i].ya + (b[i].yb - b[i].ya) * (lat - b[i].a) / (b[i].b - b[i].a);
     return b[n - 1].yb;
 }
+
+const std::vector<Promeneur>& promeneurs(const MapDef& map, const Track& t) { return adapter(map, t).promeneurs; }
 
 std::vector<Passant> passants(const MapDef& map, const Track& t) {
     std::vector<Passant> v;
