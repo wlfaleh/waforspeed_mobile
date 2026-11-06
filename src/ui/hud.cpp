@@ -12,6 +12,7 @@
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "ecrans/reglages.h"   // WFS-75 : miroirX (lecture seule)
+#include "minicarte.h"         // WFS-173 : banc de la mini-carte
 #include "text.h"
 #include "toasts.h"
 
@@ -230,6 +231,7 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
     courseBenchRules(false);
     benchToasts(g, r, out);   // WFS-47 : bandeaux (toast-checkpoint, toast-pile)
+    benchMiniCarte(g, r, out);   // WFS-173 : minicarte-checkpoint, minicarte-ligne
 }
 
 } // namespace wfs

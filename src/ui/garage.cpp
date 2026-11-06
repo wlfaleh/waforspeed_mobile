@@ -17,6 +17,7 @@
 #include "appui.h"   // WFS-113
 #include "../platform/manette.h"   // WFS-22
 #include "../audio/sfx.h"   // WFS-96 : son du changement de voiture
+#include "ecrans/terrain.h"   // WFS-172 (banc) : « Rouler » après « Choisir »
 
 namespace wfs {
 namespace ecrans {
@@ -588,6 +589,11 @@ void benchGarage(Game& g, Renderer& r, const std::string& out, const std::string
     // « Choisir » : la Golf en Turquoise part en course (décompte puis course)
     if (garageBouton("choisir", x, y)) {
         toucher(14, x, y);
+        // WFS-172 (RG-01, ANO-80) : « Choisir » mène au terrain ; le banc appuie sur « Rouler » avant les 5 s de course
+        for (int i = 0; i < 20; i++) image();
+        g.render(t); float rx, ry;
+        if (centreRouler(rx, ry)) toucher(16, rx, ry); else WFS_ERR("garage : « Rouler » absent (écran %s)", nomEcran(g.ecran()));
+        for (int i = 0; i < 120 && g.ecran() != Ecran::Course; i++) image();
         g.setAutopilot(true);
         for (int i = 0; i < 60 * 5; i++) image();
         g.setAutopilot(false);

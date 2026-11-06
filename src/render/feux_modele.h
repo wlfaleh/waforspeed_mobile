@@ -16,6 +16,9 @@ namespace wfs {
 class Game; class Renderer;
 // WFS-109 (RG-15) : captures feux-frein-jour, feux-frein-nuit, feux-recul (voiture du joueur, caméra arrière)
 void benchFeuxFrein(Game& g, Renderer& r, const std::string& out);
+// WFS-170 (RG-04, RG-08) : vitrine-<id>-feux des 20 voitures : vue arrière de trois quarts, frein tenu (feux stop allumés),
+// de jour. WFS_VOITURES="id id …" (essai local) : ces voitures seulement, avec aussi leur vitrine-<id>-0.
+void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out);
 }
 
 namespace wfs::feux_modele {
