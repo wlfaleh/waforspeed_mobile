@@ -1,0 +1,3255 @@
+{
+ "fichier": "materiaux.json",
+ "description": "Matériaux physiques (albédo, rugosité, métal, F0) — WFS-148 RG-01 (d)",
+ "sources": {
+  "PB-MAT": {
+   "titre": "Physically Based — base de valeurs physiques (materials.json, schéma v2.2)",
+   "editeur": "A. Palmqvist et contributeurs",
+   "annee": "2026",
+   "lien": "https://github.com/AntonPalmqvist/physically-based-api/blob/main/deploy/v2/materials.json",
+   "licence": "CC0 1.0",
+   "acces": "ouvert",
+   "empreinte_sha256": "36dd2b5a5b3ca18615e557ff6fec0628a61030fbbc4f8d7cb5501b0713f16462",
+   "note": "chaque valeur garde ses références d'origine (champ « references » de la base), recopiées ci-dessous"
+  }
+ },
+ "mesures": [
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00117/"
+    },
+    {
+     "title": "Asphalt concrete",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Asphalt_concrete&oldid=1335472221"
+    },
+    {
+     "title": "Bitumen",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Bitumen&oldid=1336487797"
+    },
+    {
+     "title": "Refractive Index Measurements Of Diluted Bitumen Solutions",
+     "author": "Taylor, S. D., Czarnecki, J., & Masliyah, J.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0016236101000874",
+     "doi": "https://doi.org/10.1016/S0016-2361(01)00087-4",
+     "year": "2001"
+    }
+   ],
+   "nom_base": "Asphalt (Fresh)",
+   "id": "mat.asphalte_neuf.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.0429,
+    0.0414,
+    0.0401
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00117/"
+    },
+    {
+     "title": "Asphalt concrete",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Asphalt_concrete&oldid=1335472221"
+    },
+    {
+     "title": "Bitumen",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Bitumen&oldid=1336487797"
+    },
+    {
+     "title": "Refractive Index Measurements Of Diluted Bitumen Solutions",
+     "author": "Taylor, S. D., Czarnecki, J., & Masliyah, J.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0016236101000874",
+     "doi": "https://doi.org/10.1016/S0016-2361(01)00087-4",
+     "year": "2001"
+    }
+   ],
+   "nom_base": "Asphalt (Fresh)",
+   "id": "mat.asphalte_neuf.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00117/"
+    },
+    {
+     "title": "Asphalt concrete",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Asphalt_concrete&oldid=1335472221"
+    },
+    {
+     "title": "Bitumen",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Bitumen&oldid=1336487797"
+    },
+    {
+     "title": "Refractive Index Measurements Of Diluted Bitumen Solutions",
+     "author": "Taylor, S. D., Czarnecki, J., & Masliyah, J.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0016236101000874",
+     "doi": "https://doi.org/10.1016/S0016-2361(01)00087-4",
+     "year": "2001"
+    }
+   ],
+   "nom_base": "Asphalt (Fresh)",
+   "id": "mat.asphalte_neuf.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00117/"
+    },
+    {
+     "title": "Asphalt concrete",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Asphalt_concrete&oldid=1335472221"
+    },
+    {
+     "title": "Bitumen",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Bitumen&oldid=1336487797"
+    },
+    {
+     "title": "Refractive Index Measurements Of Diluted Bitumen Solutions",
+     "author": "Taylor, S. D., Czarnecki, J., & Masliyah, J.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0016236101000874",
+     "doi": "https://doi.org/10.1016/S0016-2361(01)00087-4",
+     "year": "2001"
+    }
+   ],
+   "nom_base": "Asphalt (Fresh)",
+   "id": "mat.asphalte_neuf.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.05325,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.6 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Concrete",
+   "id": "mat.beton.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.51,
+    0.51,
+    0.51
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Concrete",
+   "id": "mat.beton.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Concrete",
+   "id": "mat.beton.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Concrete",
+   "id": "mat.beton.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/brick/"
+    },
+    {
+     "title": "Brick",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Brick&oldid=1270653991"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Brick",
+   "id": "mat.brique.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.262,
+    0.095,
+    0.061
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/brick/"
+    },
+    {
+     "title": "Brick",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Brick&oldid=1270653991"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Brick",
+   "id": "mat.brique.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/brick/"
+    },
+    {
+     "title": "Brick",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Brick&oldid=1270653991"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Brick",
+   "id": "mat.brique.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 1.0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/brick/"
+    },
+    {
+     "title": "Brick",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Brick&oldid=1270653991"
+    },
+    {
+     "title": "Absorption (acoustics)",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Absorption_(acoustics)&oldid=1261130500"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Brick",
+   "id": "mat.brique.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/01110/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00633/"
+    },
+    {
+     "title": "The New Preferred Memory Color (PMC) Chart",
+     "author": "Luo, M. R.",
+     "url": "https://onlinelibrary.wiley.com/doi/full/10.1002/col.22940#col22940-sec-0002-title",
+     "doi": "https://doi.org/10.1002/col.22940",
+     "year": "2024"
+    }
+   ],
+   "nom_base": "Grass",
+   "id": "mat.herbe.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.105,
+    0.133,
+    0.041
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/01110/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00633/"
+    },
+    {
+     "title": "The New Preferred Memory Color (PMC) Chart",
+     "author": "Luo, M. R.",
+     "url": "https://onlinelibrary.wiley.com/doi/full/10.1002/col.22940#col22940-sec-0002-title",
+     "doi": "https://doi.org/10.1002/col.22940",
+     "year": "2024"
+    }
+   ],
+   "nom_base": "Grass",
+   "id": "mat.herbe.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/01110/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00633/"
+    },
+    {
+     "title": "The New Preferred Memory Color (PMC) Chart",
+     "author": "Luo, M. R.",
+     "url": "https://onlinelibrary.wiley.com/doi/full/10.1002/col.22940#col22940-sec-0002-title",
+     "doi": "https://doi.org/10.1002/col.22940",
+     "year": "2024"
+    }
+   ],
+   "nom_base": "Grass",
+   "id": "mat.herbe.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/01110/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00633/"
+    },
+    {
+     "title": "The New Preferred Memory Color (PMC) Chart",
+     "author": "Luo, M. R.",
+     "url": "https://onlinelibrary.wiley.com/doi/full/10.1002/col.22940#col22940-sec-0002-title",
+     "doi": "https://doi.org/10.1002/col.22940",
+     "year": "2024"
+    }
+   ],
+   "nom_base": "Grass",
+   "id": "mat.herbe.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00464/"
+    },
+    {
+     "title": "Sand",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sand&oldid=1250893848"
+    },
+    {
+     "title": "Density of Cement, Sand and Aggregate, Bulk Density of Aggregate",
+     "author": "Civil Lead",
+     "url": "https://www.civillead.com/density-of-cement-sand-and-aggregate/"
+    }
+   ],
+   "nom_base": "Sand",
+   "id": "mat.sable.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.44,
+    0.386,
+    0.23074
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00464/"
+    },
+    {
+     "title": "Sand",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sand&oldid=1250893848"
+    },
+    {
+     "title": "Density of Cement, Sand and Aggregate, Bulk Density of Aggregate",
+     "author": "Civil Lead",
+     "url": "https://www.civillead.com/density-of-cement-sand-and-aggregate/"
+    }
+   ],
+   "nom_base": "Sand",
+   "id": "mat.sable.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00464/"
+    },
+    {
+     "title": "Sand",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sand&oldid=1250893848"
+    },
+    {
+     "title": "Density of Cement, Sand and Aggregate, Bulk Density of Aggregate",
+     "author": "Civil Lead",
+     "url": "https://www.civillead.com/density-of-cement-sand-and-aggregate/"
+    }
+   ],
+   "nom_base": "Sand",
+   "id": "mat.sable.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 1.0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00464/"
+    },
+    {
+     "title": "Sand",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sand&oldid=1250893848"
+    },
+    {
+     "title": "Density of Cement, Sand and Aggregate, Bulk Density of Aggregate",
+     "author": "Civil Lead",
+     "url": "https://www.civillead.com/density-of-cement-sand-and-aggregate/"
+    }
+   ],
+   "nom_base": "Sand",
+   "id": "mat.sable.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=crystals&page=ice"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "KAYE, G. W. C., & EVANS, E. J.",
+     "url": "https://www.nature.com/articles/143080a0",
+     "doi": "https://doi.org/10.1038/143080a0",
+     "year": "1939"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Schneebeli, M., Zhou, X., Zhang, T., & Heggli, M.",
+     "url": "https://publica.fraunhofer.de/handle/publica/217278",
+     "doi": "https://doi.org/10.24406/publica-fhg-217278",
+     "year": "2008"
+    },
+    {
+     "title": "Microstructure and Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Heggli, M., Zhou, X., Zhang, T., Frei, E., & Schneebeli, M.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0165232X12000900",
+     "doi": "https://doi.org/10.1016/j.coldregions.2012.05.001",
+     "year": "2012"
+    }
+   ],
+   "nom_base": "Snow",
+   "id": "mat.neige.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.85,
+    0.85,
+    0.85
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=crystals&page=ice"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "KAYE, G. W. C., & EVANS, E. J.",
+     "url": "https://www.nature.com/articles/143080a0",
+     "doi": "https://doi.org/10.1038/143080a0",
+     "year": "1939"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Schneebeli, M., Zhou, X., Zhang, T., & Heggli, M.",
+     "url": "https://publica.fraunhofer.de/handle/publica/217278",
+     "doi": "https://doi.org/10.24406/publica-fhg-217278",
+     "year": "2008"
+    },
+    {
+     "title": "Microstructure and Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Heggli, M., Zhou, X., Zhang, T., Frei, E., & Schneebeli, M.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0165232X12000900",
+     "doi": "https://doi.org/10.1016/j.coldregions.2012.05.001",
+     "year": "2012"
+    }
+   ],
+   "nom_base": "Snow",
+   "id": "mat.neige.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=crystals&page=ice"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "KAYE, G. W. C., & EVANS, E. J.",
+     "url": "https://www.nature.com/articles/143080a0",
+     "doi": "https://doi.org/10.1038/143080a0",
+     "year": "1939"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Schneebeli, M., Zhou, X., Zhang, T., & Heggli, M.",
+     "url": "https://publica.fraunhofer.de/handle/publica/217278",
+     "doi": "https://doi.org/10.24406/publica-fhg-217278",
+     "year": "2008"
+    },
+    {
+     "title": "Microstructure and Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Heggli, M., Zhou, X., Zhang, T., Frei, E., & Schneebeli, M.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0165232X12000900",
+     "doi": "https://doi.org/10.1016/j.coldregions.2012.05.001",
+     "year": "2012"
+    }
+   ],
+   "nom_base": "Snow",
+   "id": "mat.neige.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Feeding a Physically Based Shading Model",
+     "author": "Lagarde, S.",
+     "url": "https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=crystals&page=ice"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "KAYE, G. W. C., & EVANS, E. J.",
+     "url": "https://www.nature.com/articles/143080a0",
+     "doi": "https://doi.org/10.1038/143080a0",
+     "year": "1939"
+    },
+    {
+     "title": "Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Schneebeli, M., Zhou, X., Zhang, T., & Heggli, M.",
+     "url": "https://publica.fraunhofer.de/handle/publica/217278",
+     "doi": "https://doi.org/10.24406/publica-fhg-217278",
+     "year": "2008"
+    },
+    {
+     "title": "Microstructure and Sound Absorption of Snow",
+     "author": "Maysenhölder, W., Heggli, M., Zhou, X., Zhang, T., Frei, E., & Schneebeli, M.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0165232X12000900",
+     "doi": "https://doi.org/10.1016/j.coldregions.2012.05.001",
+     "year": "2012"
+    }
+   ],
+   "nom_base": "Snow",
+   "id": "mat.neige.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.01799,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.3098 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Automotive Paint",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Automotive_paint&oldid=1270250557"
+    },
+    {
+     "title": "Acrylic Lacquers",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lacquer&oldid=1269195190#Acrylic_lacquers"
+    },
+    {
+     "title": "BRDF and gloss computation of polyurethane coatings from roughness measurements: Modelling and experimental validation",
+     "author": "Wittmann, B., Montmitonnet, P., Burr, A., Gauthier, C., Agassant, J-F. & Casoli, A.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0300944021001181?via%3Dihub",
+     "doi": "https://doi.org/10.1016/j.porgcoat.2021.106247",
+     "year": "2021"
+    },
+    {
+     "title": "High Refractive Index Aqueous Polyurethane Dispersion Coating Compositions",
+     "author": "Iwazumi, M., Schneider, A.",
+     "url": "https://patentscope.wipo.int/search/en/detail.jsf?docId=WO2011163461",
+     "year": "2011"
+    },
+    {
+     "title": "Metal Flake for Cars: History & 15 Things You Didn't Know",
+     "author": "Cande Shop",
+     "url": "https://thecandeshop.com/metal-flake-for-cars/"
+    },
+    {
+     "title": "Understanding Modern Automotive Paintwork",
+     "author": "Ultimate Finish The Detailing Company",
+     "url": "https://www.theultimatefinish.co.uk/car-care-blog/featured/paintwork/"
+    }
+   ],
+   "nom_base": "Car Paint",
+   "id": "mat.peinture_voiture.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.1,
+    0.1,
+    0.1
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Automotive Paint",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Automotive_paint&oldid=1270250557"
+    },
+    {
+     "title": "Acrylic Lacquers",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lacquer&oldid=1269195190#Acrylic_lacquers"
+    },
+    {
+     "title": "BRDF and gloss computation of polyurethane coatings from roughness measurements: Modelling and experimental validation",
+     "author": "Wittmann, B., Montmitonnet, P., Burr, A., Gauthier, C., Agassant, J-F. & Casoli, A.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0300944021001181?via%3Dihub",
+     "doi": "https://doi.org/10.1016/j.porgcoat.2021.106247",
+     "year": "2021"
+    },
+    {
+     "title": "High Refractive Index Aqueous Polyurethane Dispersion Coating Compositions",
+     "author": "Iwazumi, M., Schneider, A.",
+     "url": "https://patentscope.wipo.int/search/en/detail.jsf?docId=WO2011163461",
+     "year": "2011"
+    },
+    {
+     "title": "Metal Flake for Cars: History & 15 Things You Didn't Know",
+     "author": "Cande Shop",
+     "url": "https://thecandeshop.com/metal-flake-for-cars/"
+    },
+    {
+     "title": "Understanding Modern Automotive Paintwork",
+     "author": "Ultimate Finish The Detailing Company",
+     "url": "https://www.theultimatefinish.co.uk/car-care-blog/featured/paintwork/"
+    }
+   ],
+   "nom_base": "Car Paint",
+   "id": "mat.peinture_voiture.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Automotive Paint",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Automotive_paint&oldid=1270250557"
+    },
+    {
+     "title": "Acrylic Lacquers",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lacquer&oldid=1269195190#Acrylic_lacquers"
+    },
+    {
+     "title": "BRDF and gloss computation of polyurethane coatings from roughness measurements: Modelling and experimental validation",
+     "author": "Wittmann, B., Montmitonnet, P., Burr, A., Gauthier, C., Agassant, J-F. & Casoli, A.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0300944021001181?via%3Dihub",
+     "doi": "https://doi.org/10.1016/j.porgcoat.2021.106247",
+     "year": "2021"
+    },
+    {
+     "title": "High Refractive Index Aqueous Polyurethane Dispersion Coating Compositions",
+     "author": "Iwazumi, M., Schneider, A.",
+     "url": "https://patentscope.wipo.int/search/en/detail.jsf?docId=WO2011163461",
+     "year": "2011"
+    },
+    {
+     "title": "Metal Flake for Cars: History & 15 Things You Didn't Know",
+     "author": "Cande Shop",
+     "url": "https://thecandeshop.com/metal-flake-for-cars/"
+    },
+    {
+     "title": "Understanding Modern Automotive Paintwork",
+     "author": "Ultimate Finish The Detailing Company",
+     "url": "https://www.theultimatefinish.co.uk/car-care-blog/featured/paintwork/"
+    }
+   ],
+   "nom_base": "Car Paint",
+   "id": "mat.peinture_voiture.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Automotive Paint",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Automotive_paint&oldid=1270250557"
+    },
+    {
+     "title": "Acrylic Lacquers",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lacquer&oldid=1269195190#Acrylic_lacquers"
+    },
+    {
+     "title": "BRDF and gloss computation of polyurethane coatings from roughness measurements: Modelling and experimental validation",
+     "author": "Wittmann, B., Montmitonnet, P., Burr, A., Gauthier, C., Agassant, J-F. & Casoli, A.",
+     "url": "https://www.sciencedirect.com/science/article/abs/pii/S0300944021001181?via%3Dihub",
+     "doi": "https://doi.org/10.1016/j.porgcoat.2021.106247",
+     "year": "2021"
+    },
+    {
+     "title": "High Refractive Index Aqueous Polyurethane Dispersion Coating Compositions",
+     "author": "Iwazumi, M., Schneider, A.",
+     "url": "https://patentscope.wipo.int/search/en/detail.jsf?docId=WO2011163461",
+     "year": "2011"
+    },
+    {
+     "title": "Metal Flake for Cars: History & 15 Things You Didn't Know",
+     "author": "Cande Shop",
+     "url": "https://thecandeshop.com/metal-flake-for-cars/"
+    },
+    {
+     "title": "Understanding Modern Automotive Paintwork",
+     "author": "Ultimate Finish The Detailing Company",
+     "url": "https://www.theultimatefinish.co.uk/car-care-blog/featured/paintwork/"
+    }
+   ],
+   "nom_base": "Car Paint",
+   "id": "mat.peinture_voiture.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=glass&page=soda-lime-clear"
+    },
+    {
+     "title": "Soda-lime Glass",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Soda%E2%80%93lime_glass&oldid=1262726109"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Glass (Soda-lime)",
+   "id": "mat.verre.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.984,
+    0.995,
+    0.995
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=glass&page=soda-lime-clear"
+    },
+    {
+     "title": "Soda-lime Glass",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Soda%E2%80%93lime_glass&oldid=1262726109"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Glass (Soda-lime)",
+   "id": "mat.verre.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=glass&page=soda-lime-clear"
+    },
+    {
+     "title": "Soda-lime Glass",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Soda%E2%80%93lime_glass&oldid=1262726109"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Glass (Soda-lime)",
+   "id": "mat.verre.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=glass&page=soda-lime-clear"
+    },
+    {
+     "title": "Soda-lime Glass",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Soda%E2%80%93lime_glass&oldid=1262726109"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Absorption Coefficients",
+     "author": "Acoustic Materials & Technologies Ltd.",
+     "url": "https://www.acoustic.ua/st/web_absorption_data_eng.pdf"
+    }
+   ],
+   "nom_base": "Glass (Soda-lime)",
+   "id": "mat.verre.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04258,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.52 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=Cr&page=Sytchkova"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    }
+   ],
+   "nom_base": "Chromium",
+   "id": "mat.chrome.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.654,
+    0.685,
+    0.701
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=Cr&page=Sytchkova"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    }
+   ],
+   "nom_base": "Chromium",
+   "id": "mat.chrome.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 1,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=Cr&page=Sytchkova"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    }
+   ],
+   "nom_base": "Chromium",
+   "id": "mat.chrome.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/tire/"
+    },
+    {
+     "title": "Tire",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Tire&oldid=1274266449"
+    }
+   ],
+   "nom_base": "Tire",
+   "id": "mat.pneu.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.023,
+    0.023,
+    0.023
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/tire/"
+    },
+    {
+     "title": "Tire",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Tire&oldid=1274266449"
+    }
+   ],
+   "nom_base": "Tire",
+   "id": "mat.pneu.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/tire/"
+    },
+    {
+     "title": "Tire",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Tire&oldid=1274266449"
+    }
+   ],
+   "nom_base": "Tire",
+   "id": "mat.pneu.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.7,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/tire/"
+    },
+    {
+     "title": "Tire",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Tire&oldid=1274266449"
+    }
+   ],
+   "nom_base": "Tire",
+   "id": "mat.pneu.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    }
+   ],
+   "nom_base": "Skin I",
+   "id": "mat.peau_i.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.847,
+    0.638,
+    0.552
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    }
+   ],
+   "nom_base": "Skin I",
+   "id": "mat.peau_i.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    }
+   ],
+   "nom_base": "Skin I",
+   "id": "mat.peau_i.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    }
+   ],
+   "nom_base": "Skin I",
+   "id": "mat.peau_i.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.02778,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.4 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00490/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00403/"
+    }
+   ],
+   "nom_base": "Skin III",
+   "id": "mat.peau_iii.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.623,
+    0.433,
+    0.343
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00490/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00403/"
+    }
+   ],
+   "nom_base": "Skin III",
+   "id": "mat.peau_iii.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00490/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00403/"
+    }
+   ],
+   "nom_base": "Skin III",
+   "id": "mat.peau_iii.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00490/"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00403/"
+    }
+   ],
+   "nom_base": "Skin III",
+   "id": "mat.peau_iii.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.02778,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.4 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00414/"
+    }
+   ],
+   "nom_base": "Skin VI",
+   "id": "mat.peau_vi.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.09,
+    0.05,
+    0.02
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00414/"
+    }
+   ],
+   "nom_base": "Skin VI",
+   "id": "mat.peau_vi.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00414/"
+    }
+   ],
+   "nom_base": "Skin VI",
+   "id": "mat.peau_vi.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.5,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "A Practical Model for Subsurface Light Transport",
+     "author": "Jensen, H. W., Marschner, S. R., Levoy, M. & Hanrahan, P.",
+     "url": "https://dl.acm.org/doi/10.1145/383259.383319",
+     "doi": "https://doi.org/10.1145/383259.383319",
+     "year": "2001"
+    },
+    {
+     "title": "A Spectral BSSRDF for Shading Human Skin",
+     "author": "Donner, C., & Jensen, H. W.",
+     "url": "http://graphics.ucsd.edu/~henrik/papers/skin_bssrdf/skin_bssrdf.pdf",
+     "year": "2006"
+    },
+    {
+     "title": "Optical Properties of Human Skin",
+     "author": "Lister, T., Wright, P. A., & Chappell, P. H.",
+     "url": "https://www.spiedigitallibrary.org/journals/journal-of-biomedical-optics/volume-17/issue-9/090901/Optical-properties-of-human-skin/10.1117/1.JBO.17.9.090901.full",
+     "doi": "https://doi.org/10.1117/1.JBO.17.9.090901",
+     "year": "2012"
+    },
+    {
+     "title": "Biomechanical Properties of In Vivo Human Skin From Dynamic Optical Coherence Elastography",
+     "author": "Liang, X., & Boppart, S. A.",
+     "url": "https://ieeexplore.ieee.org/document/5282637",
+     "doi": "https://doi.org/10.1109/TBME.2009.2033464",
+     "year": "2010"
+    },
+    {
+     "title": "Next Generation Character Rendering",
+     "author": "Jimenez, J.",
+     "url": "https://www.iryoku.com/downloads/Next-Generation-Character-Rendering-v6.pptx"
+    },
+    {
+     "title": "Spectral Materials Database",
+     "author": "Jakubiec, J. A.",
+     "url": "https://spectraldb.com/measurements/00414/"
+    }
+   ],
+   "nom_base": "Skin VI",
+   "id": "mat.peau_vi.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.02778,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.4 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Gray Card",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Gray_card&oldid=1244084939"
+    },
+    {
+     "title": "New Color Specifications for ColorChecker SG and Classic Charts",
+     "url": "https://www.xrite.com/service-support/new_color_specifications_for_colorchecker_sg_and_classic_charts"
+    },
+    {
+     "title": "The Colorchecker Pages",
+     "url": "https://babelcolor.com/colorchecker.htm"
+    },
+    {
+     "title": "Colour Rendition Chart",
+     "author": "Colour Developers",
+     "url": "https://github.com/colour-science/colour-nuke/tree/master/colour_nuke/resources/images/ColorChecker2014"
+    }
+   ],
+   "nom_base": "Gray Card",
+   "id": "mat.charte_grise_18.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.18,
+    0.18,
+    0.18
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Gray Card",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Gray_card&oldid=1244084939"
+    },
+    {
+     "title": "New Color Specifications for ColorChecker SG and Classic Charts",
+     "url": "https://www.xrite.com/service-support/new_color_specifications_for_colorchecker_sg_and_classic_charts"
+    },
+    {
+     "title": "The Colorchecker Pages",
+     "url": "https://babelcolor.com/colorchecker.htm"
+    },
+    {
+     "title": "Colour Rendition Chart",
+     "author": "Colour Developers",
+     "url": "https://github.com/colour-science/colour-nuke/tree/master/colour_nuke/resources/images/ColorChecker2014"
+    }
+   ],
+   "nom_base": "Gray Card",
+   "id": "mat.charte_grise_18.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Gray Card",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Gray_card&oldid=1244084939"
+    },
+    {
+     "title": "New Color Specifications for ColorChecker SG and Classic Charts",
+     "url": "https://www.xrite.com/service-support/new_color_specifications_for_colorchecker_sg_and_classic_charts"
+    },
+    {
+     "title": "The Colorchecker Pages",
+     "url": "https://babelcolor.com/colorchecker.htm"
+    },
+    {
+     "title": "Colour Rendition Chart",
+     "author": "Colour Developers",
+     "url": "https://github.com/colour-science/colour-nuke/tree/master/colour_nuke/resources/images/ColorChecker2014"
+    }
+   ],
+   "nom_base": "Gray Card",
+   "id": "mat.charte_grise_18.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0.9,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Gray Card",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Gray_card&oldid=1244084939"
+    },
+    {
+     "title": "New Color Specifications for ColorChecker SG and Classic Charts",
+     "url": "https://www.xrite.com/service-support/new_color_specifications_for_colorchecker_sg_and_classic_charts"
+    },
+    {
+     "title": "The Colorchecker Pages",
+     "url": "https://babelcolor.com/colorchecker.htm"
+    },
+    {
+     "title": "Colour Rendition Chart",
+     "author": "Colour Developers",
+     "url": "https://github.com/colour-science/colour-nuke/tree/master/colour_nuke/resources/images/ColorChecker2014"
+    }
+   ],
+   "nom_base": "Gray Card",
+   "id": "mat.charte_grise_18.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Daimon-21.5C"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Hale"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Properties of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Properties_of_water&oldid=1274819143"
+    },
+    {
+     "title": "Color of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_of_water&oldid=1273446338"
+    },
+    {
+     "title": "List of Viscosities",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=List_of_viscosities&oldid=1256671906"
+    },
+    {
+     "title": "Surface tension",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Surface_tension&oldid=1304099149#Values"
+    },
+    {
+     "title": "Hybrido Viscosity Table",
+     "author": "RealFlow 10 Documentation",
+     "url": "https://nextlimitsupport.atlassian.net/wiki/spaces/rf2016docs/pages/5497120/Hybrido+Viscosity+Table"
+    },
+    {
+     "title": "Water - Dynamic (Absolute) and Kinematic Viscosity vs. Temperature and Pressure",
+     "url": "https://www.engineeringtoolbox.com/water-dynamic-kinematic-viscosity-d_596.html"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Compendium of Materials for Noise Control",
+     "author": "Hedeen, R. A.",
+     "url": "https://www.cdc.gov/niosh/docs/80-116/",
+     "doi": "https://doi.org/10.26616/NIOSHPUB80116",
+     "year": "1980"
+    },
+    {
+     "title": "Zoom Lens Design Using Liquid Lens for Laparoscope",
+     "author": "Seungwan, L., Minseog, C., Eunsung, L., Kyu-Dong, J., Jong-hyeon, C., & Woonbae, K.",
+     "url": "https://opg.optica.org/oe/abstract.cfm?URI=oe-21-2-1751",
+     "doi": "https://doi.org/10.1364/OE.21.001751",
+     "year": "2013"
+    },
+    {
+     "title": "The Optical Properties of Water",
+     "author": "Mobley, C. D.",
+     "url": "http://data.moby.mlml.sjsu.edu/mobyuncert/self_shading/docs/chapter43_optical_society_of_america_handbook_of_optics_i.pdf",
+     "year": "1995"
+    }
+   ],
+   "nom_base": "Water",
+   "id": "mat.eau.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.969,
+    0.996,
+    0.997
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Daimon-21.5C"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Hale"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Properties of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Properties_of_water&oldid=1274819143"
+    },
+    {
+     "title": "Color of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_of_water&oldid=1273446338"
+    },
+    {
+     "title": "List of Viscosities",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=List_of_viscosities&oldid=1256671906"
+    },
+    {
+     "title": "Surface tension",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Surface_tension&oldid=1304099149#Values"
+    },
+    {
+     "title": "Hybrido Viscosity Table",
+     "author": "RealFlow 10 Documentation",
+     "url": "https://nextlimitsupport.atlassian.net/wiki/spaces/rf2016docs/pages/5497120/Hybrido+Viscosity+Table"
+    },
+    {
+     "title": "Water - Dynamic (Absolute) and Kinematic Viscosity vs. Temperature and Pressure",
+     "url": "https://www.engineeringtoolbox.com/water-dynamic-kinematic-viscosity-d_596.html"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Compendium of Materials for Noise Control",
+     "author": "Hedeen, R. A.",
+     "url": "https://www.cdc.gov/niosh/docs/80-116/",
+     "doi": "https://doi.org/10.26616/NIOSHPUB80116",
+     "year": "1980"
+    },
+    {
+     "title": "Zoom Lens Design Using Liquid Lens for Laparoscope",
+     "author": "Seungwan, L., Minseog, C., Eunsung, L., Kyu-Dong, J., Jong-hyeon, C., & Woonbae, K.",
+     "url": "https://opg.optica.org/oe/abstract.cfm?URI=oe-21-2-1751",
+     "doi": "https://doi.org/10.1364/OE.21.001751",
+     "year": "2013"
+    },
+    {
+     "title": "The Optical Properties of Water",
+     "author": "Mobley, C. D.",
+     "url": "http://data.moby.mlml.sjsu.edu/mobyuncert/self_shading/docs/chapter43_optical_society_of_america_handbook_of_optics_i.pdf",
+     "year": "1995"
+    }
+   ],
+   "nom_base": "Water",
+   "id": "mat.eau.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Daimon-21.5C"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Hale"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Properties of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Properties_of_water&oldid=1274819143"
+    },
+    {
+     "title": "Color of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_of_water&oldid=1273446338"
+    },
+    {
+     "title": "List of Viscosities",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=List_of_viscosities&oldid=1256671906"
+    },
+    {
+     "title": "Surface tension",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Surface_tension&oldid=1304099149#Values"
+    },
+    {
+     "title": "Hybrido Viscosity Table",
+     "author": "RealFlow 10 Documentation",
+     "url": "https://nextlimitsupport.atlassian.net/wiki/spaces/rf2016docs/pages/5497120/Hybrido+Viscosity+Table"
+    },
+    {
+     "title": "Water - Dynamic (Absolute) and Kinematic Viscosity vs. Temperature and Pressure",
+     "url": "https://www.engineeringtoolbox.com/water-dynamic-kinematic-viscosity-d_596.html"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Compendium of Materials for Noise Control",
+     "author": "Hedeen, R. A.",
+     "url": "https://www.cdc.gov/niosh/docs/80-116/",
+     "doi": "https://doi.org/10.26616/NIOSHPUB80116",
+     "year": "1980"
+    },
+    {
+     "title": "Zoom Lens Design Using Liquid Lens for Laparoscope",
+     "author": "Seungwan, L., Minseog, C., Eunsung, L., Kyu-Dong, J., Jong-hyeon, C., & Woonbae, K.",
+     "url": "https://opg.optica.org/oe/abstract.cfm?URI=oe-21-2-1751",
+     "doi": "https://doi.org/10.1364/OE.21.001751",
+     "year": "2013"
+    },
+    {
+     "title": "The Optical Properties of Water",
+     "author": "Mobley, C. D.",
+     "url": "http://data.moby.mlml.sjsu.edu/mobyuncert/self_shading/docs/chapter43_optical_society_of_america_handbook_of_optics_i.pdf",
+     "year": "1995"
+    }
+   ],
+   "nom_base": "Water",
+   "id": "mat.eau.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Daimon-21.5C"
+    },
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=H2O&page=Hale"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Properties of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Properties_of_water&oldid=1274819143"
+    },
+    {
+     "title": "Color of Water",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_of_water&oldid=1273446338"
+    },
+    {
+     "title": "List of Viscosities",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=List_of_viscosities&oldid=1256671906"
+    },
+    {
+     "title": "Surface tension",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Surface_tension&oldid=1304099149#Values"
+    },
+    {
+     "title": "Hybrido Viscosity Table",
+     "author": "RealFlow 10 Documentation",
+     "url": "https://nextlimitsupport.atlassian.net/wiki/spaces/rf2016docs/pages/5497120/Hybrido+Viscosity+Table"
+    },
+    {
+     "title": "Water - Dynamic (Absolute) and Kinematic Viscosity vs. Temperature and Pressure",
+     "url": "https://www.engineeringtoolbox.com/water-dynamic-kinematic-viscosity-d_596.html"
+    },
+    {
+     "title": "Absorption coefficients of common building materials and finishes",
+     "author": "JCW Acoustic Supplies",
+     "url": "https://web.archive.org/web/20260510175255/https://www.acoustic-supplies.com/absorption-coefficient-chart/"
+    },
+    {
+     "title": "Compendium of Materials for Noise Control",
+     "author": "Hedeen, R. A.",
+     "url": "https://www.cdc.gov/niosh/docs/80-116/",
+     "doi": "https://doi.org/10.26616/NIOSHPUB80116",
+     "year": "1980"
+    },
+    {
+     "title": "Zoom Lens Design Using Liquid Lens for Laparoscope",
+     "author": "Seungwan, L., Minseog, C., Eunsung, L., Kyu-Dong, J., Jong-hyeon, C., & Woonbae, K.",
+     "url": "https://opg.optica.org/oe/abstract.cfm?URI=oe-21-2-1751",
+     "doi": "https://doi.org/10.1364/OE.21.001751",
+     "year": "2013"
+    },
+    {
+     "title": "The Optical Properties of Water",
+     "author": "Mobley, C. D.",
+     "url": "http://data.moby.mlml.sjsu.edu/mobyuncert/self_shading/docs/chapter43_optical_society_of_america_handbook_of_optics_i.pdf",
+     "year": "1995"
+    }
+   ],
+   "nom_base": "Water",
+   "id": "mat.eau.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.02032,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.3325 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=Al&page=Cheng"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Aluminium",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Aluminium&oldid=1271633189"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Mirror",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Mirror&oldid=1268984936"
+    }
+   ],
+   "nom_base": "Aluminum",
+   "id": "mat.aluminium.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.916,
+    0.923,
+    0.924
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=Al&page=Cheng"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Aluminium",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Aluminium&oldid=1271633189"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Mirror",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Mirror&oldid=1268984936"
+    }
+   ],
+   "nom_base": "Aluminum",
+   "id": "mat.aluminium.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 1,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=main&book=Al&page=Cheng"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Aluminium",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Aluminium&oldid=1271633189"
+    },
+    {
+     "title": "Density",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Density&oldid=1271894167"
+    },
+    {
+     "title": "Mirror",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Mirror&oldid=1268984936"
+    }
+   ],
+   "nom_base": "Aluminum",
+   "id": "mat.aluminium.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=metals&page=stainless_steel"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Stainless Steel",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Stainless_steel&oldid=1274079682"
+    }
+   ],
+   "nom_base": "Stainless Steel",
+   "id": "mat.acier_inox.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.669,
+    0.639,
+    0.598
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=metals&page=stainless_steel"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Stainless Steel",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Stainless_steel&oldid=1274079682"
+    }
+   ],
+   "nom_base": "Stainless Steel",
+   "id": "mat.acier_inox.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 1,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Refractive index database",
+     "author": "Polyanskiy, M. N.",
+     "url": "https://refractiveindex.info/?shelf=3d&book=metals&page=stainless_steel"
+    },
+    {
+     "title": "OpenPBR: Novel Features and Implementation Details",
+     "author": "Portsmouth, J., Kutz, P., & Hill, S.",
+     "url": "https://arxiv.org/pdf/2512.23696#appendix.D",
+     "doi": "https://doi.org/10.48550/arXiv.2512.23696",
+     "year": "2025"
+    },
+    {
+     "title": "Stainless Steel",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Stainless_steel&oldid=1274079682"
+    }
+   ],
+   "nom_base": "Stainless Steel",
+   "id": "mat.acier_inox.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/terracotta/"
+    },
+    {
+     "title": "Terracotta",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Terracotta&oldid=1334206131"
+    },
+    {
+     "title": "Technical Specifications - Darwen Terracotta",
+     "url": "https://www.darwenterracotta.com/technical-specifications"
+    },
+    {
+     "title": "All About Terracotta - Aurora Pots",
+     "author": "Tran, A.",
+     "url": "https://aurorapots.com/blogs/news/all-about-terracotta"
+    },
+    {
+     "title": "Technicial Data of Terracotta Facade Panels",
+     "url": "https://www.terracotta-panel.com/technicial-data-of-terracotta-facade-panels/"
+    }
+   ],
+   "nom_base": "Terracotta",
+   "id": "mat.terre_cuite.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.555,
+    0.212,
+    0.11
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/terracotta/"
+    },
+    {
+     "title": "Terracotta",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Terracotta&oldid=1334206131"
+    },
+    {
+     "title": "Technical Specifications - Darwen Terracotta",
+     "url": "https://www.darwenterracotta.com/technical-specifications"
+    },
+    {
+     "title": "All About Terracotta - Aurora Pots",
+     "author": "Tran, A.",
+     "url": "https://aurorapots.com/blogs/news/all-about-terracotta"
+    },
+    {
+     "title": "Technicial Data of Terracotta Facade Panels",
+     "url": "https://www.terracotta-panel.com/technicial-data-of-terracotta-facade-panels/"
+    }
+   ],
+   "nom_base": "Terracotta",
+   "id": "mat.terre_cuite.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/terracotta/"
+    },
+    {
+     "title": "Terracotta",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Terracotta&oldid=1334206131"
+    },
+    {
+     "title": "Technical Specifications - Darwen Terracotta",
+     "url": "https://www.darwenterracotta.com/technical-specifications"
+    },
+    {
+     "title": "All About Terracotta - Aurora Pots",
+     "author": "Tran, A.",
+     "url": "https://aurorapots.com/blogs/news/all-about-terracotta"
+    },
+    {
+     "title": "Technicial Data of Terracotta Facade Panels",
+     "url": "https://www.terracotta-panel.com/technicial-data-of-terracotta-facade-panels/"
+    }
+   ],
+   "nom_base": "Terracotta",
+   "id": "mat.terre_cuite.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 1.0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/terracotta/"
+    },
+    {
+     "title": "Terracotta",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Terracotta&oldid=1334206131"
+    },
+    {
+     "title": "Technical Specifications - Darwen Terracotta",
+     "url": "https://www.darwenterracotta.com/technical-specifications"
+    },
+    {
+     "title": "All About Terracotta - Aurora Pots",
+     "author": "Tran, A.",
+     "url": "https://aurorapots.com/blogs/news/all-about-terracotta"
+    },
+    {
+     "title": "Technicial Data of Terracotta Facade Panels",
+     "url": "https://www.terracotta-panel.com/technicial-data-of-terracotta-facade-panels/"
+    }
+   ],
+   "nom_base": "Terracotta",
+   "id": "mat.terre_cuite.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/rust/"
+    },
+    {
+     "title": "Rust",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Rust&oldid=1361494391"
+    }
+   ],
+   "nom_base": "Rust",
+   "id": "mat.rouille.albedo",
+   "domaine": "materiaux",
+   "grandeur": "albédo (couleur de base, sRGB linéaire)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.181,
+    0.057,
+    0.017
+   ],
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/rust/"
+    },
+    {
+     "title": "Rust",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Rust&oldid=1361494391"
+    }
+   ],
+   "nom_base": "Rust",
+   "id": "mat.rouille.metal",
+   "domaine": "materiaux",
+   "grandeur": "métal (0 ou 1)",
+   "unite": "-",
+   "valeur": 0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "verifie",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/rust/"
+    },
+    {
+     "title": "Rust",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Rust&oldid=1361494391"
+    }
+   ],
+   "nom_base": "Rust",
+   "id": "mat.rouille.rugosite",
+   "domaine": "materiaux",
+   "grandeur": "rugosité",
+   "unite": "-",
+   "valeur": 1.0,
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1,
+    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
+   }
+  },
+  {
+   "source": "PB-MAT",
+   "statut": "derive",
+   "references_origine": [
+    {
+     "title": "Spectrophotometer Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/materials/rust/"
+    },
+    {
+     "title": "Rust",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Rust&oldid=1361494391"
+    }
+   ],
+   "nom_base": "Rust",
+   "id": "mat.rouille.f0",
+   "domaine": "materiaux",
+   "grandeur": "F0 (réflexion de face, diélectrique)",
+   "unite": "-",
+   "valeur": 0.04,
+   "formule": "F0 = ((n − 1) / (n + 1))² avec n = 1.5 (indice de la base)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.005
+   }
+  }
+ ]
+}

@@ -3963,3 +3963,79 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Fait** : `.claude/agents/po-scrum-master.md` réécrit en tête : règle n°1 « tu exécutes les ordres de l'utilisateur » (ordre appliqué tel qu'écrit, ordres « on n'y touche plus » définitifs, jamais de suppression ni de revert de code fusionné sans ordre explicite, aucune règle de travail ajoutée sans demande, réponses respectueuses et courtes) et liste « Ordres permanents ».
 - **Ordres permanents inscrits** : (1) taille des boutons et des textes de l'interface : on n'y touche plus, `main` gardé tel quel, WFS-147 compris (pas d'annulation) ; (2) aucun retrait de code fusionné sans ordre.
 - **Rien d'autre n'a changé** : aucun code modifié, aucun revert envoyé (le retrait local de WFS-147 a été effacé avant tout envoi, sur ordre de l'utilisateur).
+
+### 2026-11-06 08:02:23 — Ordre permanent : le PO ne touche pas au code (Claude, session 0183bv2a)
+- Ordre de l'utilisateur inscrit dans `.claude/agents/po-scrum-master.md` : le PO ne modifie, n'annule ni ne supprime aucun fichier de code ou de construction ; il n'écrit que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et ses réponses dans `tache utilisateur.md`.
+
+### 2026-11-06 08:04:26 — Fin WFS-148 : référentiel du réel, banc de fidélité, état zéro de l'axe Réalisme (expert-realisme-3d)
+- **Fusion par confiance** : PR #127, commit de fusion 0d923d5 ; ligne dans `qa/Check.md` ; `TACHES.md` ✅. Je suis maintenant la CI de `main`.
+- **Livré**
+  - `references/reel/` : 8 fichiers JSON et `SOURCES.md`, 376 valeurs. Chacune a une source, une tolérance et un statut : 81 vérifiées dans un jeu de données téléchargé (empreinte SHA-256), 177 « à confirmer » (page de la source non ouverte), 23 « à sourcer » (aucune valeur fiable), le reste dérivé ou de conception. Extraction reproductible : `references/reel/outils/`.
+  - `soleil()` (équations NOAA, `src/render/bench_realisme.h`) et `test_fidelite_soleil` : 30 valeurs (10 cas) contre NREL SPA, plus grand écart 0,010° (tolérance 0,05°).
+  - `test_fidelite` : contrôle du référentiel (aucune valeur sans source ni tolérance), ΔE2000 contre colour-science, lecteur JSON borné, mesures géométriques (écarts « attendus », non bloquants, RG-08).
+  - `WFS_BANC=realisme` (job CI `realisme`) : 48 captures `realisme-*`, `realisme-etalon`, `realisme-fidelite.txt`, `realisme-mesures.txt`.
+- **État zéro chiffré** (indice = conformes / mesurables ; avant = après, WFS-148 ne change pas l'image)
+  - Soleil calculé (M-01) : **100 %** (30 / 30).
+  - Voitures (M-02) : **57,4 %** (81 / 141, 19 non mesurables). Longueur 20 / 20 (le convertisseur met chaque modèle à la longueur du catalogue) ; largeur 10 / 20 ; hauteur 10 / 20 (Abarth : boîte de 1,84 m pour 1,485 m réels) ; empattement 16 / 20 ; voies 11 / 34 ; roues 14 / 26.
+  - Routes (M-03) : **10 %** (1 / 10, 3 non mesurables). Voies de 5,0 et 4,55 m pour 3,50 m ; lignes discontinues 5,4 m / 12 m pour 3 m / 13 m (1,5 / 6,5 m en ville) ; bandes de passage piéton de 0,95 m pour 0,50 m ; seul l'intervalle (0,775 m) est conforme. Largeur des lignes : module u de l'IISR non lu, donc non mesurable.
+  - Couleurs (M-04) : **0 %** (0 / 24) ; ΔE2000 de 4,1 à 9,4 ; 3,2 en moyenne après balance des blancs et exposition (hors indice). Charte grise 18 % rendue à Y = 0,226 au lieu de 0,180 (exposition : 0 / 1).
+  - Soleil du jeu : **0 %** (0 / 4) ; hauteur de 48,1° sur les 4 cartes, contre 66 à 68° au moment proposé ; azimut non mesurable (pas de nord dans le monde).
+  - Photométrie : **50 %** (4 / 8) ; soleil à 5789 K (conforme, 5778 K) ; lumière de la lune très bleue, hors du domaine de McCamy ; lux et EV100 non mesurables (intensités sans unité).
+  - Matériaux, anthropométrie : non mesurables dans WFS-148 (prévus par WFS-155, 159, 164).
+- **Preuves locales** : 29 tests CPU verts ; parcours complet 0 écart ; anciennes captures `cartes` + `course-cam0-0` identiques au pixel entre main et la branche (20 / 20) ; banc réalisme lancé deux fois : 49 captures et rapport identiques. Coût du banc local : 6 min 35 s (lavapipe).
+- **Mesures (RG-06, lavapipe, ne représente pas un téléphone)** : de 122 à 169 ms par image en Basse et de 216 à 292 ms en Haute selon la carte ; passe de scène de 99 à 168 ms GPU ; mémoire du processus ≤ 776 Mo. Mémoire des textures non mesurable : pas de compteur dans `uploadTexture`, à ajouter par WFS-149.
+- **Points signalés au PO (décisions attendues, rien codé hors ticket)**
+  1. Le critère « 96 captures » ne correspond pas à RG-03 (12 × 2 × 2 = 48) : 48 livrées.
+  2. Azimut du soleil mesuré sur le ciel (Δaz × cos h) : près du zénith (cas à 88°), l'écart brut était de 0,065° pour 0,002° sur le ciel.
+  3. Les lieux, dates et heures de `lieux.json` sont des **propositions** (statut « conception ») à valider.
+  4. Source inaccessible (réseau de la session) : Wikipédia, Légifrance, Cerema (IISR), NOAA et sites constructeurs refusés. Les valeurs « à confirmer » demandent l'ouverture de ces pages (autoriser les hôtes, ou relecture humaine).
+  5. HDR avant tonemapping non mesurable : il faut une relecture de la cible HDR dans le Renderer (proposé pour WFS-150).
+  6. Les vues gardent le petit bouton « RÉGLAGES » du menu, en haut à droite.
+  7. `soleil()` est dans `bench_realisme.h` (zone du ticket) ; WFS-152 pourra le déplacer.
+### 2026-11-06 08:04:45 — WFS-168 créé : retour en arrière de la taille des boutons, sur ordre de l'utilisateur (Claude, session 0183bv2a)
+- **Ordre de l'utilisateur** : tâche urgente pour revenir en arrière **seulement sur la taille des boutons**, puis ne plus toucher à la taille des boutons jusqu'à un nouveau test du QA avec des émulateurs.
+- **Créé** : WFS-168 (E8 + E5, P1 Urgent, ⏳ Prêt), règles `regles-de-gestion/WFS-168.md` : boutons, choix et touches de réglages, salon, terrain, chargement et menu à leur taille d'avant WFS-147 (`349f7d0`) ; le reste de WFS-147 est gardé (textes, ANO-18, ANO-42, ANO-47, `petit_ecran.h`) ; pas de revert entier ; garage, HUD et commandes tactiles de course non touchés.
+- **Ordre permanent du PO mis à jour** (`.claude/agents/po-scrum-master.md`) : il remplace celui du matin (« garder WFS-147 tel quel ») ; après WFS-168, aucun ticket sur la taille des boutons tant que le QA n'a pas refait le test avec des émulateurs.
+- Aucun code modifié par le PO.
+
+### 2026-11-06 08:13:26 — Début WFS-168 : retour en arrière de la taille des boutons (PO, pour Claude session trafic)
+- **Ticket** : WFS-168, E8 (+ E5 `src/ui/**`), P1 Urgent, branche `feature/waforspeed-168`, règles `regles-de-gestion/WFS-168.md`.
+- **Exception PO** : l'agent a déjà WFS-141 en cours ; WFS-168 (P1, correction de son propre WFS-147) passe devant. WFS-141 n'est pas suspendu : il continue sur ses fichiers E3, mais **ne modifie pas `salon.cpp` ni `menu.cpp` avant la fusion de WFS-168** ; ensuite il fusionne `main` et garde les tailles de boutons de WFS-168 (aucune taille de bouton dans WFS-141, RG-05).
+- **Zone autorisée** : `src/ui/ecrans/{reglages,salon,terrain,chargement,menu}.cpp`, seulement les valeurs de taille des boutons, choix et touches (hauteur, largeur, zone de toucher), reprises de `349f7d0`. **Interdit** : revert entier de WFS-147, textes, ombre / ciel du terrain, étiquette du garage, `src/ui/petit_ecran.h` et son test, garage, HUD, commandes tactiles de course, toute autre suppression de code, iOS.
+- **Critères** : captures 1280 et 2400 des 5 écrans avec les boutons d'avant WFS-147 ; reste de WFS-147 identique ; compilation, tests CPU et parcours complet accueil → course → Menu → accueil verts, prouvés au journal.
+- **Plan** : `git diff 349f7d0 eb8152a -- src/ui/ecrans/`, ne reprendre que les lignes de taille des boutons, compiler, tests, parcours, fusion selon la règle de confiance.
+
+### 2026-11-06 08:18:34 — WFS-136 fusionné (PR #128, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - `src/game/trace_cartes.*` : les 4 cartes en sections typées construites par `addRoad`. Ville 6 953 m, Corniche 5 413 m, Campagne 6 790 m, Grand Prix 6 191 m, soit +2 à +9 % du tracé 1. Pente de 8,7 % au plus.
+  - API du décor : `sections`, `sectionA`, `rayonInterieur`, `feuA`.
+  - Trafic : arrêt au feu rouge (14/3/10 s, décalé de 9 s par carrefour), 1 ou 2 voitures qui traversent au rouge, 40 km/h dans l'anneau, 60 km/h dans les épingles, autoroute +30 % de voitures et +15 % de vitesse. Tracé 1 inchangé (tests de référence du jeu web verts).
+  - Feu grillé sans choc : +50 et bandeau. Records mis de côté sous `*_v1` une seule fois, `trace-<carte>=2`, fantôme renommé.
+  - Duel : champ `trace` (cartes actives), refus « version ».
+- **A7 (PO)** : `trace::CARTES_ACTIVES = {"circuit"}`. Le banc `trace` force les 4 cartes. Jeu normal vérifié au banc : ville, plage et campagne au tracé 1, circuit au tracé 2. Grand Prix : 3,04 km en 60 s de pilote automatique.
+- **Accroches annoncées** (10 lignes au plus chacune) :
+  - `src/game/game.cpp` : construction par `versionCarte` (1 ligne) ; bas-côté intérieur limité à 90 % du rayon, seulement sous 60 m (3 lignes) ;
+  - `src/game/traffic_system.cpp` : voitures cachées non dessinées (1 ligne) ;
+  - `src/ui/toasts.h/.cpp` : `toasts::pousser` (8 lignes) ;
+  - `src/ui/ecrans/salon.cpp` : raison « version » (1 ligne, dans `etatLien` après la synchronisation avec main) ;
+  - `src/game/duel.cpp` : champ `trace` dans la présence et refus au départ (4 lignes) ;
+  - `src/platform/desktop_main.cpp` : banc `trace` (1 ligne) ;
+  - `CMakeLists.txt` : `test_trace` et boucle qui lie `trace_cartes.cpp` aux tests (9 lignes) ;
+  - `.github/workflows/build.yml` : banc `trace` dans le groupe `vitrines` (2 lignes).
+- **Tests mis au format du tracé 2** : fixtures de `test_records`, `test_sauvegarde` et `test_relais` (ajout de `trace=2` ou du champ `trace`). Les cas testés ne changent pas.
+- **Vérification** : 30 tests CPU OK ; `test_trace` (sections, pentes, rond-point refermé à 13,4–14,6 m, épingles de 150° ou plus sur 80 m au plus, feux : file de 3, 0 passage au rouge, 0 choc, déterminisme, records, duel) ; banc `trace` : 0 écart ; parcours complet : 0 écart. Captures regardées.
+- **Limites** :
+  - le décor de Ville, Campagne et Corniche cache la route dans les sections serrées, d'où leur maintien au tracé 1 (WFS-137 à 139) ;
+  - au Grand Prix, des murs débordent à l'épingle (WFS-140) ;
+  - l'entrée et la sortie du rond-point se chevauchent : la route est unique, large de 15 m ;
+  - au duel local (Wi-Fi), le refus bloque le départ sans afficher de message ;
+  - la densité de l'autoroute n'est donnée qu'au placement initial des voitures.
+- **Suite** : suivi de la CI de main.
+
+### 2026-11-06 08:19:58 — WFS-137 à 139 débloqués ; WFS-140 attribué à Claude (session dev expert, 0183bv2X) (PO / Scrum Master)
+- **Déblocage** : WFS-136 ✅ (PR #128) et WFS-94 ✅ : WFS-137, 138, 139 et 140 passent en ⏳ Prêt. WFS-149 (E0) reste en attente : sa dépendance est « WFS-148 validée » (QA de nuit pas encore faite).
+- **Attribution** : WFS-140 — Grand Prix (épingle, chicanes, raidillon, feux de départ, tribunes, paddock, fan zone) · E2 · P2 Haute · branche `feature/waforspeed-140` · règles `regles-de-gestion/WFS-140.md`.
+- **Pourquoi lui et pas WFS-137** (même priorité) : le Grand Prix est la seule carte déjà au tracé 2 en jeu normal (`trace::CARTES_ACTIVES` = `circuit`, A7 de WFS-136) ; ses murs qui débordent à l'épingle se voient donc dès maintenant sur le téléphone, et il ne touche pas `trace_cartes.h` (A7.2 : Ville, Campagne, Corniche passent au tracé 2 avec leur décor). Une seule carte, vérifiable au banc PC (`carte-circuit-*`, `WFS_BANC=parcours`).
+- **Zone autorisée** : `src/world/circuit.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures du circuit) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : `src/game/**`, `ville*.cpp`, `campagne.cpp`, `plage.cpp` (WFS-145 y travaille), `src/render/**`, `shaders/**`, `src/ui/**`, iOS (gel).
+- **Critères** : captures `carte-circuit-depart` (feux allumés), `-epingle`, `-chicane`, `-raidillon`, `-paddock` (+ `-nuit`) ; rien sur la chaussée, aucun virage ni feu caché ; `qualite-*` sans baisse ; parcours complet 0 écart ; ligne `qa/Check.md`.
+- **Fusion** : règle de confiance > 50 % (CLAUDE.md).

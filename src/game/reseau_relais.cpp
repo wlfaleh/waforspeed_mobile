@@ -10,6 +10,7 @@
 #include <random>
 #include <thread>
 #include "../core/log.h"
+#include "trace_cartes.h"   // WFS-136 (RG-07) : version du tracé
 
 #include <cerrno>
 #include <fcntl.h>
@@ -430,7 +431,14 @@ void TransportRelais::presence(const duel::Fields& f) {
 std::vector<duel::PeerView> TransportRelais::peers() const {
     pomper();
     std::vector<duel::PeerView> out;
-    for (const auto& [id, j] : table_) { duel::PeerView p; p.id = id; p.f = j.f; p.updatedAt = j.maj; out.push_back(std::move(p)); }
+    for (const auto& [id, j] : table_) {
+        // WFS-136 (RG-07) : adversaire sur un autre tracé (ou version sans champ « trace ») : salon refusé, « version »
+        if (j.f.count("n") && duel::str(j.f, "trace") != trace::signature()) {
+            if (etat_ != duel::Lien::Echec) { etat_ = duel::Lien::Echec; raison_ = "version"; WFS_WARN("relais : adversaire sur un autre tracé (« %s ») : mets ton jeu à jour", duel::str(j.f, "trace").c_str()); }
+            continue;
+        }
+        duel::PeerView p; p.id = id; p.f = j.f; p.updatedAt = j.maj; out.push_back(std::move(p));
+    }
     return out;
 }
 void TransportRelais::leave() {

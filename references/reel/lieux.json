@@ -1,0 +1,232 @@
+{
+ "fichier": "lieux.json",
+ "description": "Lieux fictifs des 4 cartes : position, date et heure de chaque moment — WFS-148 RG-01 (g)",
+ "sources": {
+  "CONCEPTION-148": {
+   "titre": "Choix de conception de WFS-148 : lieux fictifs cohérents avec le décor de chaque carte (aucune ville nommée)",
+   "editeur": "WaForSpeed (expert-realisme-3d), d'après RG-01 (g) de regles-de-gestion/WFS-148.md",
+   "annee": "2026",
+   "lien": "regles-de-gestion/WFS-148.md",
+   "acces": "ouvert",
+   "note": "valeurs proposées, à valider par le PO : ce ne sont pas des données mesurées ; seule la latitude de la Corniche (43,5° N) est donnée par RG-01"
+  }
+ },
+ "mesures": [
+  {
+   "id": "lieu.plage.latitude",
+   "domaine": "lieux",
+   "grandeur": "latitude de la carte plage (Corniche : côte méditerranéenne (exemple de RG-01))",
+   "unite": "° N",
+   "valeur": 43.5,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.plage.longitude",
+   "domaine": "lieux",
+   "grandeur": "longitude de la carte plage (Corniche : côte méditerranéenne (exemple de RG-01))",
+   "unite": "° E",
+   "valeur": 7.0,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.plage.jour",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « jour » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T12:00:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.plage.nuit",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « nuit » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T21:30:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.campagne.latitude",
+   "domaine": "lieux",
+   "grandeur": "latitude de la carte campagne (Campagne : vignobles, cyprès, mas (Provence intérieure))",
+   "unite": "° N",
+   "valeur": 43.9,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.campagne.longitude",
+   "domaine": "lieux",
+   "grandeur": "longitude de la carte campagne (Campagne : vignobles, cyprès, mas (Provence intérieure))",
+   "unite": "° E",
+   "valeur": 5.0,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.campagne.jour",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « jour » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T12:00:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.campagne.nuit",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « nuit » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T21:30:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.ville.latitude",
+   "domaine": "lieux",
+   "grandeur": "latitude de la carte ville (Ville néon : grande ville du sud-est)",
+   "unite": "° N",
+   "valeur": 45.0,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.ville.longitude",
+   "domaine": "lieux",
+   "grandeur": "longitude de la carte ville (Ville néon : grande ville du sud-est)",
+   "unite": "° E",
+   "valeur": 5.0,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.ville.jour",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « jour » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T12:00:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.ville.nuit",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « nuit » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T21:30:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.circuit.latitude",
+   "domaine": "lieux",
+   "grandeur": "latitude de la carte circuit (Grand Prix : circuit du sud de la France)",
+   "unite": "° N",
+   "valeur": 44.0,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.circuit.longitude",
+   "domaine": "lieux",
+   "grandeur": "longitude de la carte circuit (Grand Prix : circuit du sud de la France)",
+   "unite": "° E",
+   "valeur": 4.5,
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   }
+  },
+  {
+   "id": "lieu.circuit.jour",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « jour » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T12:00:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  },
+  {
+   "id": "lieu.circuit.nuit",
+   "domaine": "lieux",
+   "grandeur": "date et heure du moment « nuit » (heure légale d'été = UTC + 2)",
+   "unite": "UTC",
+   "valeur": "2026-07-15T21:30:00",
+   "source": "CONCEPTION-148",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0
+   },
+   "note": "jour : 14 h heure légale ; nuit : 23 h 30 heure légale (soleil sous l'horizon)"
+  }
+ ]
+}

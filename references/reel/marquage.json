@@ -1,0 +1,276 @@
+{
+ "fichier": "marquage.json",
+ "description": "Normes de marquage et de voirie (France) — WFS-148 RG-01 (b)",
+ "sources": {
+  "IISR-7": {
+   "titre": "Instruction interministérielle sur la signalisation routière, 7e partie : marques sur chaussées (version consolidée du 2025-04-04)",
+   "editeur": "DSR / DGITM, copie Cerema",
+   "annee": "2025",
+   "lien": "https://equipementsdelaroute.cerema.fr/IMG/pdf/iisr_7epartie_vc_20250404.pdf",
+   "acces": "non_ouvert",
+   "note": "texte de référence ; PDF non ouvrable depuis la session (réseau) : les valeurs ci-dessous viennent de sources secondaires et restent « à confirmer » sur ce texte"
+  },
+  "SEC-T1": {
+   "titre": "Modulations des lignes discontinues (T1 : 3 m de trait, 13 m de période hors agglomération ; T3 : 3 m / 1,33 m) — sources secondaires",
+   "editeur": "codedelaroute.io (ligne d'annonce), franco.wiki (marquage d'une route de rase campagne en France)",
+   "annee": "2026 (consultation)",
+   "lien": "https://codedelaroute.io/blog/ligne-annonce/",
+   "acces": "non_ouvert",
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "GRANDLYON-PP": {
+   "titre": "Référentiel des espaces publics : passage piéton en carrefour (bandes de 50 cm, espacement préconisé 50 cm, 80 cm au plus)",
+   "editeur": "Métropole de Lyon, Lab des espaces publics",
+   "annee": "2017",
+   "lien": "https://labdesespacespublics.grandlyon.com/app/uploads/2024/07/2019-04-RFX-Passage-pietons-carrefour-MAJjuin2017.pdf",
+   "acces": "non_ouvert",
+   "note": "cite l'arrêté du 15 janvier 2007 ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "CODE-PP": {
+   "titre": "Passage pour piétons : bandes de 2,5 m de long en agglomération, 4 à 6 m hors agglomération (sites de code de la route)",
+   "editeur": "envoituresimone.com, ornikar.com",
+   "annee": "2026 (consultation)",
+   "lien": "https://www.envoituresimone.com/code-de-la-route/cours/autres-usagers/usagers-vulnerables/pietons/passage-pieton",
+   "acces": "non_ouvert",
+   "note": "source secondaire ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "MTE-VOIES": {
+   "titre": "Fiche emprise des routes : largeur des voies (routes nationales 3,50 m ; RD à 1 chaussée 3,00 m, à 2 chaussées 3,50 m)",
+   "editeur": "Ministère de la Transition écologique (DDT 74)",
+   "annee": "2026 (consultation)",
+   "lien": "https://piece-jointe-carto.developpement-durable.gouv.fr/REG074B/FONCIER_SOL/N_OCCUPATION_SOL/L_EMPRISE_ROUTE_R74/Fiche1-7-1.pdf",
+   "acces": "non_ouvert",
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  }
+ },
+ "mesures": [
+  {
+   "id": "route.voie.route_principale",
+   "grandeur": "largeur d'une voie, route principale hors agglomération",
+   "unite": "m",
+   "valeur": 3.5,
+   "source": "MTE-VOIES",
+   "statut": "a_confirmer",
+   "cartes": [
+    "campagne",
+    "plage"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.voie.agglomeration",
+   "grandeur": "largeur d'une voie en agglomération",
+   "unite": "m",
+   "valeur": null,
+   "source": "IISR-7",
+   "statut": "a_sourcer",
+   "cartes": [
+    "ville"
+   ],
+   "note": "aucune norme française d'agglomération trouvée (la charte du PO dit 3,0 m, sans source) ; le circuit (Grand Prix) relève des règles de la FIA, hors norme routière",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.t1.trait",
+   "grandeur": "ligne discontinue T1 (axiale), longueur du trait, hors agglomération",
+   "unite": "m",
+   "valeur": 3.0,
+   "source": "SEC-T1",
+   "statut": "a_confirmer",
+   "cartes": [
+    "campagne",
+    "plage"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.t1.periode",
+   "grandeur": "ligne discontinue T1, période trait + vide, hors agglomération",
+   "unite": "m",
+   "valeur": 13.0,
+   "source": "SEC-T1",
+   "statut": "a_confirmer",
+   "cartes": [
+    "campagne",
+    "plage"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.t1.trait_agglo",
+   "grandeur": "ligne discontinue T1, longueur du trait, en agglomération (valeurs « divisées par deux »)",
+   "unite": "m",
+   "valeur": 1.5,
+   "source": "SEC-T1",
+   "statut": "a_confirmer",
+   "cartes": [
+    "ville"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.t1.periode_agglo",
+   "grandeur": "ligne discontinue T1, période, en agglomération",
+   "unite": "m",
+   "valeur": 6.5,
+   "source": "SEC-T1",
+   "statut": "a_confirmer",
+   "cartes": [
+    "ville"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.t3.trait",
+   "grandeur": "ligne d'annonce T3, longueur du trait",
+   "unite": "m",
+   "valeur": 3.0,
+   "source": "SEC-T1",
+   "statut": "a_confirmer",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.t3.vide",
+   "grandeur": "ligne d'annonce T3, longueur du vide",
+   "unite": "m",
+   "valeur": 1.33,
+   "source": "SEC-T1",
+   "statut": "a_confirmer",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.ligne.largeur_axe",
+   "grandeur": "largeur de la ligne axiale T1 (2u, module u selon la route)",
+   "unite": "m",
+   "valeur": null,
+   "source": "IISR-7",
+   "statut": "a_sourcer",
+   "note": "la largeur 2u est citée, mais la valeur du module u (en cm) n'a pas pu être lue dans l'IISR",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.ligne.largeur_rive",
+   "grandeur": "largeur de la ligne de rive",
+   "unite": "m",
+   "valeur": null,
+   "source": "IISR-7",
+   "statut": "a_sourcer",
+   "note": "module u non lu (voir ci-dessus)",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.pieton.bande_largeur",
+   "grandeur": "passage piéton : largeur d'une bande",
+   "unite": "m",
+   "valeur": 0.5,
+   "source": "GRANDLYON-PP",
+   "statut": "a_confirmer",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.pieton.intervalle",
+   "grandeur": "passage piéton : intervalle entre bandes",
+   "unite": "m",
+   "min": 0.5,
+   "max": 0.8,
+   "source": "GRANDLYON-PP",
+   "statut": "a_confirmer",
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.pieton.bande_longueur_agglo",
+   "grandeur": "passage piéton : longueur des bandes en agglomération",
+   "unite": "m",
+   "valeur": 2.5,
+   "source": "CODE-PP",
+   "statut": "a_confirmer",
+   "cartes": [
+    "ville"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "route.pieton.bande_longueur_hors",
+   "grandeur": "passage piéton : longueur des bandes hors agglomération",
+   "unite": "m",
+   "min": 4.0,
+   "max": 6.0,
+   "source": "CODE-PP",
+   "statut": "a_confirmer",
+   "cartes": [
+    "campagne"
+   ],
+   "domaine": "routes",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  }
+ ]
+}

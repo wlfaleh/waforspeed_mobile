@@ -107,4 +107,17 @@ else()
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
   add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
+  add_executable(test_fidelite_soleil tests/fidelite_soleil.cpp)   # WFS-148 (RG-02) : soleil (NOAA) contre 10 valeurs de contrôle
+  add_executable(test_fidelite tests/fidelite_referentiel.cpp src/game/roues.cpp)   # WFS-148 (RG-01, RG-05) : référentiel du réel, mesures géométriques
+  target_compile_definitions(test_fidelite_soleil PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  target_compile_definitions(test_fidelite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
+  # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
+  get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+  foreach(cible IN LISTS cibles_wfs)
+    get_target_property(sources_cible ${cible} SOURCES)
+    if(sources_cible MATCHES "src/game/track.cpp" AND NOT sources_cible MATCHES "trace_cartes")
+      target_sources(${cible} PRIVATE src/game/trace_cartes.cpp)
+    endif()
+  endforeach()
 endif()
