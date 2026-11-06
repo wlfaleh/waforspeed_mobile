@@ -98,7 +98,10 @@ struct FrameParams {
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
 
+struct AccesRendu;   // WFS-150 : passes enfichables (src/render/passes.h), seules à lire l'intérieur du Renderer
+
 class Renderer {
+    friend struct AccesRendu;   // WFS-150 (RG-01) : ordonnanceur des passes, pré-passe, capture d'environnement
 public:
     bool init(VkCtx& vk);
     void shutdown();
@@ -264,6 +267,7 @@ private:
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
     double tangentesMs_ = 0; size_t tangentesSommets_ = 0;   // WFS-149
+    bool sansMasquage_ = false;   // WFS-150 (RG-03) : image d'une capture d'environnement : aucun objet masqué (6 directions)
 };
 
 } // namespace wfs

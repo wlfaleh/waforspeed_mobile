@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#if defined(__ANDROID__)
+#include <sys/system_properties.h>
+#endif
 
 namespace wfs::qualite {
 
@@ -12,7 +17,7 @@ int Auto::image(double dt, bool enCourse) {
     t += dt; n++;
     if (t < 2) return RIEN;
     const double fps = n / t; t = 0; n = 0;
-    fpsMesure = (float)fps;
+    fpsMesure = (float)fps; mesures++;
     int effet = RIEN;
     const float prev = echelle;
     // +(x).toFixed(2) : arrondi au centième (pas de dérive 0,6000001)
@@ -23,10 +28,26 @@ int Auto::image(double dt, bool enCourse) {
     return effet;
 }
 
+// WFS-150 (RG-05) : mode diagnostic, lu une fois
+bool modeDiagnostic() {
+    if (diagnosticForce) return true;
+    static const bool actif = [] {
+#if defined(__ANDROID__)
+        char v[PROP_VALUE_MAX] = {};
+        if (__system_property_get("debug.waforspeed.diagnostic", v) > 0) return std::strcmp(v, "1") == 0;
+        return false;
+#else
+        const char* e = std::getenv("WFS_DIAGNOSTIC");
+        return e && !std::strcmp(e, "1");
+#endif
+    }();
+    return actif;
+}
+
 // WFS-134 (RG-01) : « Rendu : Haute · 100 % · MSAA ×4 · 58 img/s · chauffe 0 »
 std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauffe) {
-    static const char* NOMS[3] = {"Basse", "Moyenne", "Haute"};
-    const char* nom = NOMS[niveau < BASSE ? BASSE : niveau > HAUTE ? HAUTE : niveau];
+    static const char* NOMS[4] = {"Basse", "Moyenne", "Haute", "Ultra"};   // WFS-150 : Ultra
+    const char* nom = NOMS[niveau < BASSE ? BASSE : niveau > ULTRA ? ULTRA : niveau];
     char ip[16];
     if (ips >= 0) std::snprintf(ip, sizeof ip, "%.0f", ips); else std::snprintf(ip, sizeof ip, "--");
     char b[128];
