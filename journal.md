@@ -2793,3 +2793,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Plan** : retirer les tribunes répétées de `circuit.cpp`, remplacer les 2 boîtes de `T_STAND` par des personnages de `pietons.*` assis ou debout.
 - **Run 790, `banc-essai (realisme)` rouge (banc des passes WFS-150)** : WFS-150 est le ticket de l'agent arwa, qui enquête déjà dans WFS-190 (journal 22:45). Il garde la correction ; agent 1 n'y touche pas.
 - **WFS-198 RG-09** : règle « Ménage quotidien » du PO mise à jour (le robot fait journal et `TACHES.md` ; le PO garde le raccourcissement des cases et `tache utilisateur.md`).
+
+### 2026-11-06 23:03:43 — Lignes signalées par le robot des statuts corrigées : WFS-139, 176, 179 (po-scrum-master)
+- **Signalement** (robot statuts, run #790) : PR #142, #158, #161 introuvables (fusions faites sans « (#NNN) » dans le titre du commit, donc sans squash).
+- **Correction** : la case Statut cite le dernier commit de code de chaque ticket sur `main`, que le robot sait lire : WFS-139 → 751ef19, WFS-176 → 9262b41, WFS-179 → 36108b0.
