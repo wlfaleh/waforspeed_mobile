@@ -3767,3 +3767,8 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 1) Décor des sections serrées : **autorisé**. Accroche ≤ 10 lignes dans `game.cpp` (`buildChunkCpu`), bas-côté intérieur limité à 90 % de `trace::rayonInterieur(s)` ; API `sections()`, `sectionA(z)`, `rayonInterieur(s)` pour WFS-137 à 140. Débord temporaire du décor de `src/world` accepté, noté en limite dans `qa/Check.md`, sans anomalie (le travail est déjà dans WFS-137 à 140, qui recevront le critère). Nouveau tracé activé (version 2).
 2) Toasts : **autorisé**. Accroche ≤ 10 lignes `toasts::pousser(titre, valeur, genre)` dans `src/ui/toasts.h/.cpp` ; +50 versé dans `activeCourse()->bonus` depuis `trace_cartes.cpp`.
 3) Duel : **autorisé**. Champ `trace=2` dans la présence (`reseau_relais.*`), refus `"version"` ; une ligne dans `salon.cpp` ; accroche ≤ 10 lignes dans `duel.cpp` `checkStart` seulement si `reseau_relais` ne suffit pas (champ absent = refus).
+
+### 2026-11-06 00:57:39 — Recette QA de nuit automatique (QA lead)
+- Sur ordre de l'utilisateur, la recette de `qa/Check.md` par le `qa-lead` est lancée **automatiquement chaque jour à 6 h 42, heure de Paris** (tâche planifiée « Recette QA de nuit (chaque jour) »), sans que l'utilisateur ait à la demander.
+- À chaque passage : toutes les lignes ☐ de `qa/Check.md` sont recettées sur les captures de `main`, avec rapports `qa/rapports/WFS-XX.md`, verdicts, anomalies mineures dans `anno.md`, bloquantes signalées au PO, puis une entrée au journal.
+- Les développeurs n'ont rien à changer : ils continuent d'ajouter leur ligne dans `qa/Check.md` au moment de chaque fusion.
