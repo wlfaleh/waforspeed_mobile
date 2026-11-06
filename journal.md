@@ -4691,3 +4691,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Critères : `carte-plage-fete` (+ `-nuit`), `carte-plage-jeux`, `carte-plage-bateaux` ; rien sur la chaussée ; `qualite-*` sans baisse ; parcours 0 écart ; mesures de fidélité au Journal et dans `qa/Check.md`.
 - Plan court : 2-3 fêtes sur le sable (foule `pietons.*`, scène, lumières de nuit, feu de camp) ; beach-volley (filet 2,43 m), ballons, pédalos, toboggan, château de sable, réutiliser parasols / serviettes de `commerces.cpp` ; voiliers, yachts, 2-4 jet-skis avec sillage et croisière au loin, sans reprendre la marina de WFS-94 ni les barques de WFS-139.
 - Priorité de l'agent : si la CI de `main` est rouge à cause de WFS-139, corriger WFS-139 d'abord.
+
+### 2026-11-06 14:44:09 — Recette, lot D (son) : WFS-131 et WFS-174 PASSABLES — recette du jour terminée (qa-lead)
+- Aucune `.wav` publiée (Releases sans son, artefacts en 403) : journaux CI de b2362b9 / 57fac94 et bancs reconstruits en local ; `test_audio` vert.
+- **WFS-131 : PASSABLE AVEC ANOMALIES MINEURES** — sirène sans écrêtage (crête 0,20) ni clic, wail 653-1 447 Hz, yelp 0,30 s, volume selon la distance, Doppler à 1 % de la théorie, extinction 0,79 s ; images de la poursuite identiques. ANO-95 : jingles de fin couverts par la sirène (−15 à −20 dB).
+- **WFS-174 : PASSABLE AVEC ANOMALIES MINEURES** — vent nul à l'arrêt puis monte avec la vitesse, pas d'écrêtage, moteur au-dessus, herbe et eau au journal ; bande rugueuse prouvée seulement par les tests CPU. ANO-96 : boucles de bruit trop courtes (0,37-0,62 s), motif qui peut s'entendre.
+- Pour le PO : `minicarte-ligne` et `course5-rejouer` tirent leur graine sur l'horloge (captures différentes à chaque lancement) → graine fixe au banc.
+- **Recette du 2026-11-06 après-midi terminée** : 10 tickets (WFS-168, 141, 173, 170, 149, 169, 172, 122, 131, 174) ; seul WFS-170 REFUSÉ (ANO-91, ANO-75 → WFS-182, WFS-158).
