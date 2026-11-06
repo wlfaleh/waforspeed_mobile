@@ -112,6 +112,12 @@ std::vector<std::string> corrigerMateriaux(const std::string& id, std::vector<Ma
             x.col[0] = x.col[1] = x.col[2] = 0.02f; x.col[3] = 0.6f; x.rough = 0.05f; x.tC = x.tN = -1;
             std::snprintf(b, sizeof b, "matériau %zu : vitre à points (carte de normales) → verre teinté uni (RG-02)", i); fait.push_back(b);
         }
+        // RG-03 (ANO-74) : S3 : lunette en double (vitre noire opaque, alpha 1, rugosité 1, posée sur la vitre teintée) : les
+        // deux couches se battent pour la profondeur, d'où le camouflage (essai : sans elle, lunette unie) → retirée
+        if (id == "s3" && vitre && x.col[3] > 0.99f && x.rough > 0.99f && std::max({x.col[0], x.col[1], x.col[2]}) < 0.001f) {
+            retirer[i] = 1; std::snprintf(b, sizeof b, "matériau %zu : vitre en double retirée (camouflage de la lunette, RG-03)", i); fait.push_back(b);
+            continue;
+        }
         // RG-03 (ANO-74) : S3 : vitres noires opaques et rugueuses (rugosité 1, alpha 1 : reflets en camouflage) → verre
         // teinté (rugosité 0,05 : charte DA-realisme.md § 3, verre 0-0,05)
         if (id == "s3" && vitre && x.rough > 0.5f) {
