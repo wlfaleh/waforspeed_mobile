@@ -2734,3 +2734,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Critères** : test local vert (6 cas RG-08) ; un `workflow_dispatch` sur `main` après fusion : archives faites, comptages égaux, commit `(robot archives)`, entrée au journal ; aucun run de `build.yml` déclenché ; ligne `qa/Check.md` ; 🟣 puis ✅.
 - **Plan court** : script `archives.py` + test sur fichiers d'exemple → workflow (03:07 UTC, dispatch, `contents: write`, concurrency sans annulation, rebase 5 fois) → fusion (squash) → un lancement à la main sur `main`, vérification des comptages.
 - **WFS-190** : reste à agent arwa (dernier envoi 20:40, moins de 10 h) ; relance par message seulement.
+
+### 2026-11-06 22:36:50 — Statuts automatiques, CI main #790 (robot statuts)
+- Run rouge (push, commit e622b04), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-140, WFS-150, WFS-175, WFS-178, WFS-181, WFS-188, WFS-189, WFS-196.
+- À corriger par le PO : `TACHES.md` l. 135 : WFS-139 : PR #142 introuvable dans le dépôt (ligne laissée telle quelle).
+- À corriger par le PO : `TACHES.md` l. 156 : WFS-176 : PR #158 introuvable dans le dépôt (ligne laissée telle quelle).
+- À corriger par le PO : `TACHES.md` l. 159 : WFS-179 : PR #161 introuvable dans le dépôt (ligne laissée telle quelle).
