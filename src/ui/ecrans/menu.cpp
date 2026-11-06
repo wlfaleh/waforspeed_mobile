@@ -112,6 +112,7 @@ public:
                                    {xs[i + 1], H, -1, -1, bg.x, bg.y, bg.z, as[i + 1]}, {xs[i], H, -1, -1, bg.x, bg.y, bg.z, as[i]}};
             r.uiQuad(q);
         }
+        if (choixModeOuvert()) return;   // WFS-141 (RG-04, ANO-54) : panneau des modes ouvert : ni textes ni aide du menu dessous
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
         // WFS-168 (RG-01) : taille des choix d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; textes en dp gardés
         const float kb = H / 720.f;
