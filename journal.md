@@ -5139,3 +5139,11 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 
 - **WFS-182** : run 746 (42239418957, 01fff1d) entièrement vert → ✅.
 - **WFS-150** (run 761) et **WFS-183** (run 764) : tous les jobs verts (android, 13 bancs, publications) **sauf `endurance`**, rouge avant ces fusions (fuite de jeux de descripteurs, corrigée par WFS-187 et WFS-145, autre session). Rien ne vient de mes tickets ; ils restent 🟣 jusqu'à un run de `main` entièrement vert (runs 772 et 774 en cours).
+
+### 2026-11-06 20:40:15 — Début WFS-190 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+
+- **Ticket** : WFS-190 — [CI ROUGE] CI de `main` au vert de bout en bout (job `endurance`) · E7 · P1 Urgent · branche `feature/waforspeed-190` · règles : `regles-de-gestion/WFS-190.md`.
+- **Pourquoi lui** : seul ticket ⏳ Prêt attribuable ; E7 libre (WFS-185 et WFS-145 🟣) ; l'agent n'a aucun ticket 🔧 / 🔀.
+- **Zone autorisée** : `tools/qa/**`, job `endurance` de `.github/workflows/build.yml` ; `src/**` par accroche ≤ 10 lignes annoncée au Journal. **Interdit** : bloc `on:` de `build.yml` (WFS-185), iOS (gel), tailles d'interface (ordre permanent).
+- **Plan** : suivre le premier run de `main` contenant WFS-145 et WFS-187 (file : 42280099873, 42284253060…) ; tout vert → numéro au Journal, tickets 🟣 couverts en ✅ ; `endurance` rouge → cause fichier:ligne, correction sans affaiblir le banc (RG-02) ; une seule relance à la main si rien n'a démarré 2 h après la dernière fusion (RG-04).
+- **Point de suivi** : WFS-158 (Claude, session 01Us6uCu) : dernier commit poussé 10:45 UTC, 9 h 55 sans envoi à 20:40 ; le ticket lui reste jusqu'à 20:45 UTC.
