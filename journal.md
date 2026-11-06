@@ -2842,3 +2842,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 23:17:03 — Statuts automatiques, CI main #791 (robot statuts)
 - Run rouge (push, commit 00bd580), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-196.
+
+### 2026-11-06 23:18:10 — Règle des US techniques ; WFS-200 devient une US technique (po-scrum-master)
+- **Ordre de l'utilisateur** : une US technique dédiée à la correction, et pour les tickets techniques le droit de lancer la CI de la branche pour corriger.
+- **Règle** (`CLAUDE.md`, `waforspeed-natif` 5 quater, agent PO) : US technique = titre `[TECHNIQUE]` (CI de `main` rouge, bancs, robots, outils, construction) ; CI de la branche permise autant de fois que nécessaire, une à la fois, chaque lancement au journal ; une CI de `main` rouge → US technique P1 tout de suite, confiée à un développeur libre.
+- **WFS-200** renommé `[TECHNIQUE]`, règle ajoutée à ses règles de gestion avec l'écart trouvé par Agent 0 (M-01 nuit face +X, −1,5 %, `bench_passes.cpp:223`).

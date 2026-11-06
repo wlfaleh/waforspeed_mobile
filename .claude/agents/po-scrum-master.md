@@ -29,6 +29,9 @@ Au **premier appel de chaque jour** (UTC), dans ton worktree de `main`.
 3. `tache utilisateur.md` : déplacer les demandes répondues et closes dans `archive/tache-utilisateur-repondu.md` ; garder en haut celles sans réponse ou qui attendent une réponse de l'utilisateur.
 4. Compter avant / après (entrées du journal, lignes de tickets, réponses) : **rien ne doit se perdre** ; entrée au journal.
 
+## US techniques (ordre de l'utilisateur, 2026-11-06 23:18 UTC)
+Une CI de `main` rouge → tu crées **tout de suite** une **US technique** P1 (titre `[TECHNIQUE] …`), avec ses règles dans `regles-de-gestion/WFS-XX.md`, et tu la confies à un développeur libre (en lui écrivant directement s'il est joignable). Son développeur peut lancer la CI de sa branche autant de fois que nécessaire, une à la fois (`CLAUDE.md`). Mêmes US techniques pour les bancs, robots, outils et la construction.
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :
