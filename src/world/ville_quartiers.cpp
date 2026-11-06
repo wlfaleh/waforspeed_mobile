@@ -281,6 +281,25 @@ const Plan& adapter(const MapDef& map, const Track& t) {
         const uint8_t v = s.type == trace::Type::Tunnel ? TUNNEL : s.type == trace::Type::Pont ? PONT : s.autoroute ? AUTOROUTE : RUE;
         if (v != RUE) for (int64_t a = s.debut; a < s.fin; a++) P.voie[(size_t)(((a % L) + L) % L)] = v;
     }
+    // RG-01, RG-02 : lieux du tracé 2 ; centre du rond-point = courbure la plus forte de l'anneau (comme la Corniche)
+    for (const trace::Section& s : secs) {
+        if (s.type == trace::Type::Feux && !s.depart)
+            P.carrefours.push_back({s.ligneArret, s.ligneArret + (int64_t)std::lround(trace::CARREFOUR_M / SEG_M), s.feu});
+        if (s.type != trace::Type::RondPoint) continue;
+        double cmax = 0; int64_t c0 = s.debut;
+        for (int64_t a = s.debut; a < s.fin; a++) if (std::abs(t.segAt(a).curve) > cmax) { cmax = std::abs(t.segAt(a).curve); c0 = a; }
+        int64_t c1 = c0; while (c1 < s.fin && std::abs(t.segAt(c1).curve) > cmax * 0.99) c1++;
+        P.ronds.push_back({(c0 + c1) / 2, s.debut, s.fin, cmax > 0 ? (float)(SEG_M / (cmax * CURVE_K)) : 14.f});
+    }
+    // rue transversale de chaque carrefour (RG-02) : rien de posé dessus, ni à 1,5 m de ses bords
+    const int64_t demiRue = (int64_t)std::ceil((RUE_TRANS_M + 1.5f) / SEG_M);
+    auto surRue = [&](int64_t a, float len) {
+        for (const Carrefour& c : P.carrefours) {
+            int64_t d = ((c.croise - a) % L + L) % L;   // segments de a jusqu'au passage
+            if (d <= (int64_t)std::ceil(len / SEG_M) + demiRue || d >= L - demiRue) return true;
+        }
+        return false;
+    };
     // limite d'un côté sur une longueur (m) à partir du segment a : la plus petite des segments couverts
     auto limite = [&](int64_t a, int side, float len) {
         float m = INF;
@@ -300,24 +319,25 @@ const Plan& adapter(const MapDef& map, const Track& t) {
         v.erase(std::remove_if(v.begin(), v.end(), [&](const Objet& o) {
             const float len = o.t == IMMEUBLE || o.t == ENTREPOT ? o.len : o.t == CONTENEURS ? 12.f : 4.f;
             const uint8_t voie = voieSur(a, len);
-            if (voie == TUNNEL || voie == PONT) return true;   // sous terre, ou au-dessus de l'eau : décor propre (RG-03)
+            if (voie == TUNNEL || voie == PONT || (o.t != LAMPE && surRue(a, len))) return true;   // sous terre, ou au-dessus de l'eau : décor propre (RG-03)
             if (voie == AUTOROUTE && o.t != IMMEUBLE && o.t != ENTREPOT && o.t != CONTENEURS && o.t != GRUE) return true;   // pas de rue
             return o.t != ZEBRA && etendue(o) > limite(a, o.side, len);
         }), v.end());
         retires += n0 - v.size();
         auto& h = P.chocs[(size_t)a];
-        if (P.voie[(size_t)a] != RUE) h.clear();
+        if (P.voie[(size_t)a] != RUE || surRue(a, 0.f)) h.clear();   // RG-02 : plus d'immeuble sur la rue transversale
         else h.erase(std::remove_if(h.begin(), h.end(), [&](const Choc& c) {
             return std::fabs(c.offset) * (float)RW + 1.f > limite(a, c.offset > 0 ? 1 : -1, 4.f); }), h.end());
     }
     const float facade = (float)RW + 6.5f + 4.f;   // commerces et panneaux : devant les façades
     const size_t nc = P.commerces.size(), np = P.panneaux.size();
     P.commerces.erase(std::remove_if(P.commerces.begin(), P.commerces.end(), [&](const Commerce& c) {
-        return voieSur(c.seg, c.len) != RUE || facade > limite(c.seg, c.side, c.len); }), P.commerces.end());
+        return voieSur(c.seg, c.len) != RUE || surRue(c.seg, c.len) || facade > limite(c.seg, c.side, c.len); }), P.commerces.end());
     P.panneaux.erase(std::remove_if(P.panneaux.begin(), P.panneaux.end(), [&](const Panneau& b) {
-        return voieSur(b.seg, 6.f) != RUE || facade > limite(b.seg, b.side, 6.f); }), P.panneaux.end());
+        return voieSur(b.seg, 6.f) != RUE || surRue(b.seg, 6.f) || facade > limite(b.seg, b.side, 6.f); }), P.panneaux.end());
     WFS_LOG("Ville (WFS-137) : plan adapté au tracé 2 (%zu sections) : %zu / %zu objets, %zu commerces et %zu panneaux retirés "
-            "(courbes serrées, autoroute, tunnel, pont)", secs.size(), retires, avant, nc - P.commerces.size(), np - P.panneaux.size());
+            "(courbes serrées, autoroute, tunnel, pont, rues des carrefours) ; %zu carrefour(s) à feux, %zu rond(s)-point(s)", secs.size(), retires, avant,
+            nc - P.commerces.size(), np - P.panneaux.size(), P.carrefours.size(), P.ronds.size());
     return P;
 }
 
@@ -339,5 +359,23 @@ float solY(const char* zone, float lat) {
     return b[n - 1].yb;
 }
 
+std::vector<Passant> passants(const MapDef& map, const Track& t) {
+    std::vector<Passant> v;
+    for (const Carrefour& c : adapter(map, t).carrefours) for (int k = 0; k < 4; k++)
+        v.push_back({(double)c.ligne + (1.4 + 0.45 * k) / SEG_M, (k % 2 ? 1 : -1) * (RW + 1.2 + 0.5 * k), 1.25 + 0.1 * k, k % 2 ? -1 : 1, c.feu});
+    return v;
+}
+
+void traverser(double& lat, int& dir, bool& marche, float& yawRel, double& y, int feu, double v, double dt) {
+    const double but = dir * (RW + 1.2);
+    marche = std::fabs(lat) < RW + 0.6 || trace::feuA(feu) == trace::Feu::Rouge;   // sur la chaussée : on finit de traverser
+    if (marche) lat += (but > lat ? 1 : -1) * std::min(v * dt, std::fabs(but - lat));
+    if (std::fabs(but - lat) < 1e-3) { dir = -dir; marche = false; }   // arrivé : la prochaine fois, vers l'autre trottoir
+    // le personnage regarde vers +Z : π/2 relatif à la route = vers la droite (+latéral) ; à l'arrêt, face à la chaussée
+    yawRel = marche ? (but > lat ? 1.5708f : -1.5708f) : (lat > 0 ? -1.5708f : 1.5708f);
+    y = std::fabs(lat) < RW ? 0.02 : 0.15;   // chaussée, ou trottoir (0,15 m)
+}
+
 } // namespace ville
+
 } // namespace wfs

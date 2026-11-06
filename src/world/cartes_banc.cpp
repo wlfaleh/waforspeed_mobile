@@ -170,7 +170,10 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-virage-" + std::to_string(++virages), s.debut, 35, false});
             lieux.push_back({"carte-ville-virage-" + std::to_string(virages) + "-haut", (s.debut + s.fin) / 2, 18, false, 1});   // au cœur du virage
         }
-        if (s.type == T::RondPoint) lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
+        if (s.type == T::RondPoint) {
+            lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
+            lieux.push_back({"carte-ville-fontaine", s.debut, -3, true, 1});   // à l'entrée de l'anneau, l'îlot devant à gauche
+        }
     }
     const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : un seul lieu (préfixe du nom)
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {
