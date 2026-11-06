@@ -4800,3 +4800,6 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 17:10:04 — PO : règle de non-réattribution des tickets (po-scrum-master)
 - **Décision de l'utilisateur** : un ticket ne change pas de développeur tant que celui-ci n'a pas passé **10 heures minimum sans aucun commit**. Écrite dans `CLAUDE.md`, `po-scrum-master.md` et `TACHES.md`. Le PO note la date du dernier commit avant toute libération ; les développeurs poussent un premier commit dès la création de la branche.
+
+### 2026-11-06 17:10:40 — PO : WFS-137 synchronisé avec l'agent 4, WFS-177 fusionné dans WFS-176 (po-scrum-master)
+- Réponse de l'agent 4 : tracé 2 de la Ville activé et décor adapté ; **ANO-81 et ANO-84 déjà faites** ; reste le rond-point à fontaine et les carrefours à feux (≈ ½ journée) ; il fusionne dès parcours à 0 écart. WFS-177 devenu trop petit : **pigeons et chiens repris par WFS-176**. Aucun ticket en cours modifié dans son état.
