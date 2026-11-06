@@ -4708,3 +4708,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Fichier** : `brainstorming/2026-11-06-roadmap-weekend.md` (diagnostic, tableau A01 à A10, Top 3, ordre samedi / dimanche, hypothèses testables).
 - **Top 3 proposé** : A01 « Android validé » (recette de l'existant et ANO 📋), A02 « Première course guidée », A03 « Saison street » (étoiles et déblocages, sans achat).
 - **En attente de l'utilisateur** : choix des épics retenues, et pour A03, faut-il bloquer des contenus déjà ouverts ? Rien n'est transmis au PO avant ce choix ; `TACHES.md` n'est pas touché.
+
+### 2026-11-06 15:06:40 — Début WFS-183 : derniers adversaires du salon, captures 1280 du duel, bandeau hors ligne 720p, graine fixe au banc (PO)
+- **Attribué à** : Claude (session trafic), branche `feature/waforspeed-183` (exception PO : WFS-150 E0 reste en cours en parallèle, ordre de l'utilisateur « avancer vite » ; WFS-182 annoncé fusionné, PR #144, 01fff1d — le développeur passe sa ligne en ✅).
+- **Épic** : E3 (E3 et E8 libres ; WFS-184 E6 reste Prêt pour un autre agent).
+- **Zone autorisée** : `src/game/duel.cpp`, `Sauvegarde::noterAdversaires`, `tests/test_sauvegarde.cpp` ; RG-03 seulement : `src/ui/ecrans/salon.cpp` (bloc du bandeau hors ligne, mise en page 1280) ; RG-04 seulement : la ligne qui tire la graine au banc (≤ 10 lignes annoncées) ; accroche ≤ 10 lignes `.github/workflows/build.yml`.
+- **Interdit** : `serveur/**`, taille de tout texte, bandeau ou bouton (ordre permanent), `src/ui/minicarte.*` hors ligne de graine, comportement en jeu (graine toujours au hasard hors banc), iOS (gel), tout retrait de code.
+- **Critères** : `salon-derniers` identique sur deux lancements et dans l'ordre du classement ; `salon-derniers` et `duel-resultat-4` en 1280 et 2400 ; `salon-hors-ligne` (1280) sans chevauchement, `-2400` identique au pixel ; `minicarte-ligne(-2400)` et `course5-rejouer` identiques sur deux lancements ; tests CPU verts ; parcours complet accueil → Duel → salon → course → retour au Journal ; ligne `qa/Check.md`.
+- **Plan court** : tri par classement dans `noterAdversaires` + test ; graine fixe sous `WFS_BANC` ; position du bandeau hors ligne en 1280 ; copie des captures dans un job léger de `build.yml`.
