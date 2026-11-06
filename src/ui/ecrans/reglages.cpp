@@ -22,6 +22,7 @@
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
 #include "../text.h"
+#include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
 
 namespace wfs {
 namespace ecrans {
@@ -198,11 +199,13 @@ public:
 
     void drawUi(Renderer& r, const GameView& g) override {
         if (!ui::fontReady() || g.sceneDediee || (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause)) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+        // WFS-147 (RG-01, RG-02, ANO-19) : sur téléphone couché, mise en page propre aux réglages, dessinée en dp
+        const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
+        const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
         if (!g_ouvert) { dessinerBouton(r, g, W, k); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
-        dessinerPanneau(r, g, W, H, k);
+        if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k);
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < LIGNES[l].n; c++) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
     }
@@ -264,6 +267,69 @@ private:
         ui::text(r, x0, fy + (bh - 15 * k) / 2, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
         biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
         ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
+    }
+
+    // WFS-147 (RG-01, RG-02, RG-06, ANO-19) : téléphone couché (k = pixels par dp). Reprise de la mise en page petit écran de
+    // WFS-102 (6d3ed61), sans échelle commune : 11 lignes en deux colonnes de 6, choix de 42 dp de haut (zone de toucher de
+    // 48 dp, l'écart compris, sans déborder sur la voisine), textes des choix en 14 dp, libellés en capitales 12 dp,
+    // « Fermer » en haut à droite (48 dp), ligne « Rendu » en bas (14 dp) : tout tient dans 400 dp de haut, sans défilement.
+    void dessinerPanneauPetit(Renderer& r, const GameView& g, float W, float H, float k) {
+        r.uiRect(0, 0, W, H, hex(BG, 0.86f));
+        const Marges& m = g.marges;
+        const float zl = m.gauche, zw = W - m.gauche - m.droite;
+        const int PAR_COL = (N_LIGNES + 1) / 2;
+        const float rowH = 42 * k, gap = 6 * k, haut = 66 * k, bh = 48 * k;
+        const float ph = haut + PAR_COL * (rowH + gap) + 36 * k;
+        const float pw = std::min(zw - 16 * k, 900 * k), px = zl + (zw - pw) / 2, py = std::max(m.haut + 4 * k, (H - ph) / 2);
+        r.uiRect(px, py, pw, ph, SURFACE);
+        r.uiRect(px, py, pw, 3 * k, hex(ACCENT2));   // liseré néon
+        const float x0 = px + 24 * k;
+        ui::text(r, x0, py + 14 * k, 12 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
+                 ui::GAUCHE, 0.22f, false);
+        ui::text(r, x0, py + 30 * k, 30 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        {   // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau
+            const float tp = 18 * k;
+            const std::string ft = ui::majuscules("Fermer");
+            const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
+            g_fermer = {fx, fy, fw, bh};
+            biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
+            ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
+        }
+        const float colGap = 24 * k, colW = (pw - 48 * k - colGap) / 2, libW = 104 * k, segGap = 6 * k;
+        for (int l = 0; l < N_LIGNES; l++) {
+            const int col = l / PAR_COL, rang = l % PAR_COL;
+            const float cx = x0 + col * (colW + colGap), y = py + haut + rang * (rowH + gap);
+            r.uiRect(cx, y + rowH + gap / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur
+            // libellé : sur deux lignes s'il dépasse sa place (« Réduire les mouvements », « Zone morte gyro »)
+            const std::string lib = ui::majuscules(LIGNES[l].libelle);
+            const float lp = 12 * k;
+            if (ui::width(lp, lib, 0.12f) <= libW) ui::text(r, cx, y + (rowH - lp) / 2, lp, lib, hex(MUTED), ui::GAUCHE, 0.12f, false);
+            else {
+                size_t coupe = lib.find(' ', lib.size() / 2 - 2);
+                if (coupe == std::string::npos) coupe = lib.rfind(' ');
+                ui::text(r, cx, y + rowH / 2 - lp - 1 * k, lp, lib.substr(0, coupe), hex(MUTED), ui::GAUCHE, 0.12f, false);
+                ui::text(r, cx, y + rowH / 2 + 1 * k, lp, lib.substr(coupe + 1), hex(MUTED), ui::GAUCHE, 0.12f, false);
+            }
+            const int n = LIGNES[l].n;
+            const float place = colW - libW, segW = std::min(120 * k, (place - 3 * segGap) / 4);   // même largeur pour 2 ou 4 choix
+            float bx = cx + colW - n * segW - (n - 1) * segGap;
+            for (int c = 0; c < n; c++) {
+                const bool on = valeur(l) == c;   // aria-pressed : fond cyan léger, bordure et texte cyan
+                g_choix[l][c] = {bx, y - gap / 2, segW, rowH + gap};   // zone de toucher : 48 dp de haut, jointive avec la voisine
+                if (on) {
+                    r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
+                    r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
+                } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
+                const std::string ch = ui::majuscules(LIGNES[l].choix[c]);
+                float tp = 14 * k, esp = 0.06f;
+                if (ui::width(tp, ch, esp) > segW - 6 * k) esp = 0;   // texte serré plutôt que plus petit (RG-02 : 14 dp)
+                ui::text(r, bx + segW / 2, y + (rowH - tp) / 2, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, esp, false);
+                bx += segW + segGap;
+            }
+            for (int c = n; c < 4; c++) g_choix[l][c] = {};
+        }
+        // WFS-134 (RG-01) : rendu réellement utilisé, sous les deux colonnes
+        ui::text(r, x0, py + ph - 26 * k, 14 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
     }
 
     Renderer* r_ = nullptr;

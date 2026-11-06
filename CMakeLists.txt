@@ -93,6 +93,7 @@ else()
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
+  add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
