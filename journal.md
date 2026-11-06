@@ -3793,3 +3793,11 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 - **Statut** : seule **WFS-148** (référentiel du réel et banc de fidélité, état zéro chiffré) est `⏳ Prêt`. Les 19 autres sont `⏳ En attente` de la validation de leurs dépendances. Affectation par profil d'agent (tableau de `TACHES.md`), attribution nominative à la demande des agents, comme d'habitude.
 - **Consignes mises à jour** : `CLAUDE.md`, `.claude/agents/po-scrum-master.md`, `regles-de-gestion/README.md` (le jeu web n'est plus la référence d'aspect).
 - **Numérotation** : WFS-145 à 147 ont été pris par un autre agent pendant la rédaction (endurance, lot interface) ; les US de l'axe sont donc **WFS-148 à WFS-167**.
+
+### 2026-11-06 01:02:24 — Axe Réalisme : retrait des règles de travail ajoutées sans demande (po-scrum-master)
+- **Remarque de l'utilisateur** : c'est lui qui dirige et qui fixe les règles de travail du QA et des développeurs. Le PO n'avait pas à en ajouter.
+- **Retiré** :
+  - « pas de fusion par confiance » et « verdict `qa-lead` avant fusion » pour l'axe Réalisme ;
+  - la demande de vérification par l'utilisateur à chaque fin de palier (ex-RC-11) ;
+  - les lignes ajoutées dans `CLAUDE.md`, `.claude/agents/po-scrum-master.md` et `regles-de-gestion/README.md` (fichiers revenus à leur version d'avant faedcf0).
+- **Gardé** : les US WFS-148 à WFS-167, leurs règles de gestion, leurs mesures de fidélité (≥ 99 %, demandées par l'utilisateur) et l'ordre des dépendances. Attribution, QA et fusion : règles en vigueur de `CLAUDE.md`, inchangées.

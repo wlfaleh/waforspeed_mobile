@@ -76,13 +76,10 @@ Quand **aucune donnée fiable n'existe**, la mesure est marquée « non mesurabl
 et on n'affirme pas de fidélité qu'on ne peut pas prouver.
 
 ## 5. Règles communes à toutes les US « Réalisme » (RC)
-- **RC-01 Étape par étape** : une US ne passe en `⏳ Prêt` que lorsque les US dont elle dépend sont **validées** (RC-03) ;
-  pas d'anticipation sur une base non validée. Une seule US par épic à la fois.
+- **RC-01 Ordre** : les US suivent l'ordre du § 7 (colonne « Dépend de » de `TACHES.md`). Attribution, QA et fusion : **règles de travail en vigueur de `CLAUDE.md`**, que cette charte ne modifie pas.
 - **RC-02 Avant / après** : captures du **banc de référence** (`realisme-*`, WFS-148) sur `main` et sur la branche, mêmes vues,
   mêmes réglages, jour et nuit, Basse et Haute, plus le **rapport de fidélité** chiffré `realisme-fidelite.txt` (avant / après).
-- **RC-03 Validation avant fusion (décision de l'utilisateur, 2026-11-06)** : pour ces US, **pas de fusion par confiance**.
-  Fusion seulement avec : CI verte, captures regardées, indice de fidélité ≥ 99 % (ou mesures non mesurables justifiées),
-  **verdict `VALIDÉ` du `qa-lead` sur les captures de la branche**. Ligne `qa/Check.md` à la fusion.
+- **RC-03 Rapport de fidélité** : chaque US joint son indice de fidélité (≥ 99 %, § 4) et ses captures avant / après au Journal et dans sa ligne de `qa/Check.md`.
 - **RC-04 Précision avant apparence** : interdit d'ajouter un facteur « pour faire joli » qui sort une valeur de sa plage
   physique (albédo, rugosité, intensité, couleur). Toute correction artistique est écrite au Journal avec sa raison et reste dans
   la plage sourcée. Chaque constante physique du code cite sa source (commentaire d'une ligne).
@@ -96,8 +93,7 @@ et on n'affirme pas de fidélité qu'on ne peut pas prouver.
 - **RC-09 Parcours** : le test de parcours complet (accueil → mode → garage → terrain → course → fin → retour) reste vert.
 - **RC-10 Interface** : le style « street racing » (`design-street-racing`) reste la règle **pour l'interface** (menus, HUD) ;
   pour le monde 3D, c'est cette charte (néons crédibles, pas arcade).
-- **RC-11 Fin de palier** : quand toutes les US d'un palier sont validées, le PO demande à l'utilisateur, dans
-  `tache utilisateur.md`, de regarder l'APK de `main` ; un refus de l'utilisateur crée une US de correction P1 dans ce palier.
+
 
 ## 6. Nouvelles épics (zones de code séparées)
 | Épic | Nom | Zone de code |
@@ -112,7 +108,7 @@ propres fichiers `references/reel/<domaine>/**` et `tests/fidelite_<domaine>*`. 
 jusqu'à sa fusion. Brancher une épic Réalisme dans une carte (`ville.cpp`, `plage.cpp`…) : accroche ≤ 10 lignes, annoncée au Journal.
 
 ## 7. Paliers, ordre de réalisation et affectation
-Chaque flèche = « validée avant de commencer la suivante » (RC-01, RC-03).
+Chaque flèche = « terminée avant de commencer la suivante » (ordre des dépendances).
 | Palier | US (épic), dans l'ordre | Pourquoi cet ordre | Profil d'agent |
 |---|---|---|---|
 | 0 — Référence et socle | **WFS-148** référentiel du réel + banc de fidélité → **WFS-149** textures, tangentes, shaders découpés → **WFS-150** passes, Ultra, budget GPU (E0) | on ne peut ni mesurer ni comparer sans référence ; aucun effet réaliste sans ce socle | agent moteur Vulkan |
@@ -121,10 +117,10 @@ Chaque flèche = « validée avant de commencer la suivante » (RC-01, RC-03).
 | 2 — Routes | **WFS-155** revêtements (après WFS-151) → **WFS-156** marquages et imperfections → **WFS-157** états de surface (après WFS-154) (E9) | la surface avant les détails, l'eau après les reflets | rendu matériaux / technical artist route |
 | 3 — Environnements | **WFS-161** architecture (après WFS-151) → **WFS-162** mobilier et signalisation → **WFS-163** végétation, terrain, mer (après WFS-153) (E12) | le bâti structure la ville ; la végétation a besoin des ombres | technical artist décor |
 | 4 — Personnages | **WFS-164** humains réalistes (après WFS-151) → **WFS-165** animations → **WFS-166** comportements de foule (E11) | modèle, puis mouvement, puis comportement | technical artist personnages, puis animation / gameplay |
-| 5 — Harmonisation | **WFS-167** validation finale par carte (E13, après toutes) | réglage d'ensemble mesuré, recette complète | agent rendu + recette `qa-lead` |
+| 5 — Harmonisation | **WFS-167** validation finale par carte (E13, après toutes) | réglage d'ensemble mesuré, recette complète | agent rendu |
 Seul **WFS-148** est `⏳ Prêt` aujourd'hui : c'est la première marche. L'attribution nominative se fait quand un agent demande
 un ticket au PO (règle du projet) ; le profil dit quel agent doit le prendre. Après le palier 0, jusqu'à 4 épics avancent en
-même temps (E10, E13, puis E9, E12, E11), chacune une US à la fois, chacune validée avant la suivante.
+même temps (E10, E13, puis E9, E12, E11), chacune une US à la fois, dans l'ordre des dépendances.
 
 ## 8. Résultat attendu (fin de l'axe)
 Indice de fidélité ≥ 99 % sur l'ensemble des mesures du référentiel, et, sur les vues de référence de jour, une capture qu'on

@@ -96,10 +96,9 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 ## Axe stratégique « Réalisme » (directive de l'utilisateur, 2026-11-05 et 2026-11-06) — priorité HAUTE
 La version Web **n'est plus la référence graphique**. Objectif : routes, voitures, personnages, environnements et lumière au plus près
 du réel, **fidélité de 99 % mesurée** (part des mesures dans leur tolérance face à des données réelles sourcées), **jamais l'apparence au
-détriment de la précision**. Charte, analyse de l'existant, limitations, tolérances et règles communes RC-01 à RC-11 :
+détriment de la précision**. Charte, analyse de l'existant, limitations, tolérances et règles communes RC-01 à RC-10 :
 **`regles-de-gestion/DA-realisme.md`** (à lire avant toute US de l'axe). Toutes les US de l'axe sont en **P2 Haute**.
-**Étape par étape** : une US par partie, implémentée, testée et **validée par le `qa-lead` avant la fusion** (pas de fusion par confiance
-pour cet axe, décision de l'utilisateur du 2026-11-06), et une US ne passe en `⏳ Prêt` que quand ses dépendances sont validées.
+**Étape par étape** : une US par partie, dans l'ordre des dépendances ci-dessous. Attribution, QA et fusion : règles de travail en vigueur (`CLAUDE.md`), inchangées.
 | Palier | US dans l'ordre (→ = validée avant la suivante) | Épic | Profil d'agent |
 |---|---|---|---|
 | 0 — Référence et socle | WFS-148 → WFS-149 → WFS-150 | E0 | moteur Vulkan |
@@ -108,8 +107,7 @@ pour cet axe, décision de l'utilisateur du 2026-11-06), et une US ne passe en `
 | 2 — Routes | WFS-155 (après WFS-151) → WFS-156 → WFS-157 (après WFS-154) | E9 | rendu matériaux / route |
 | 3 — Environnements | WFS-161 (après WFS-151) → WFS-162 → WFS-163 (après WFS-153) | E12 | technical artist décor |
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
-| 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu + recette `qa-lead` |
-Fin de chaque palier : le PO demande à l'utilisateur de regarder l'APK de `main` (`tache utilisateur.md`, RC-11).
+| 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
 ## Tableau (par numéro de ticket)
 
@@ -807,83 +805,83 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-148 — Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro** · E0 · P2 Haute · ⏳ Prêt · dépend de : — (règles : `regles-de-gestion/WFS-148.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-149 — Socle : textures compressées KTX2 (ASTC / ETC2) + mipmaps, tangentes MikkTSpace, shaders découpés par domaine** · E0 · P2 Haute · ⏳ En attente · dépend de : WFS-148 validée (règles : `regles-de-gestion/WFS-149.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-150 — Socle : passes de rendu enfichables, pré-passe, capture d'environnement, niveau Ultra, coût GPU par passe** · E0 · P2 Haute · ⏳ En attente · dépend de : WFS-149 validée (règles : `regles-de-gestion/WFS-150.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-151 — Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-150 validée (règles : `regles-de-gestion/WFS-151.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-152 — Lumière : ciel physique, soleil et lune calculés (NOAA), 6 moments + heure réelle, brouillard de distance** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-152.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-153 — Lumière : ombres en cascades à pénombre physique, ombres des lumières la nuit, occlusion ambiante, contact** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (après WFS-152, même épic) (règles : `regles-de-gestion/WFS-153.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-154 — Lumière : reflets d'écran (SSR), bloom par énergie, flou de mouvement par objet, TAA, phares de face** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-153 validée (règles : `regles-de-gestion/WFS-154.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-155 — Routes : revêtements réels scannés et calibrés par carte, usure, bordures, sans répétition visible** · E9 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-155.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-156 — Routes : marquages réglementaires usés et rétroréfléchissants, fissures, nids-de-poule, plaques, traces** · E9 · P2 Haute · ⏳ En attente · dépend de : WFS-155 validée (règles : `regles-de-gestion/WFS-156.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-157 — Routes : états de surface (sec, humide, mouillé, flaques, sable, feuilles), projections d'eau** · E9 · P2 Haute · ⏳ En attente · dépend de : WFS-156, WFS-154 validées (règles : `regles-de-gestion/WFS-157.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-158 — Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 %), assise, pièces manquantes, LOD 4 niveaux** · E10 · P2 Haute · ⏳ En attente · dépend de : WFS-148 validée, WFS-144 fusionnée (règles : `regles-de-gestion/WFS-158.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-159 — Véhicules : peinture multicouche (flocons, vernis), verre physique, métaux, pneus, phares à optique** · E10 · P2 Haute · ⏳ En attente · dépend de : WFS-158, WFS-151 validées (règles : `regles-de-gestion/WFS-159.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-160 — Véhicules : suspension visible (roulis, plongée), roues, salissures, gouttes, dégâts légers** · E10 · P2 Haute · ⏳ En attente · dépend de : WFS-159 validée (règles : `regles-de-gestion/WFS-160.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-161 — Environnements : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux scannés** · E12 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-161.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-162 — Environnements : signalisation réglementaire, feux tricolores, lampadaires réels, glissières, ponts, tunnels** · E12 · P2 Haute · ⏳ En attente · dépend de : WFS-161 validée (règles : `regles-de-gestion/WFS-162.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-163 — Environnements : végétation par espèce, herbe au vent, terrain mélangé, montagnes, mer à vagues physiques** · E12 · P2 Haute · ⏳ En attente · dépend de : WFS-162, WFS-153 validées (règles : `regles-de-gestion/WFS-163.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-164 — Personnages : humains réalistes, 12 morphotypes, vêtements par lieu, peau, cheveux, LOD** · E11 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-164.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-165 — Personnages : animations en capture de mouvement, mélanges, pieds au sol (IK), regard** · E11 · P2 Haute · ⏳ En attente · dépend de : WFS-164 validée (règles : `regles-de-gestion/WFS-165.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-166 — Personnages : comportements (trajets, feux, groupes, réactions, densité par lieu et heure, spectateurs)** · E11 · P2 Haute · ⏳ En attente · dépend de : WFS-165 validée (règles : `regles-de-gestion/WFS-166.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **WFS-167 — Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-148 à WFS-166 validées (règles : `regles-de-gestion/WFS-167.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
-- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts ; verdict `qa-lead` VALIDÉ sur la branche avant fusion
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

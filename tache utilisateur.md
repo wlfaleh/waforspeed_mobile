@@ -138,6 +138,8 @@ Si tu veux m'aider : la densité de ton téléphone (Réglages, Affichage, ou `a
    - Palier 1 : la lumière, d'abord, car tout se juge sous une lumière juste.
    - Paliers 2 à 4 : voitures et routes, puis décor, puis personnages.
    - Palier 5 : harmonisation finale.
-   Chaque US est validée par le QA avant fusion (pas de fusion « par confiance » pour cet axe), et la suivante ne démarre qu'après.
-4) **Maintenant** : seule WFS-148 est prête. Elle crée le référentiel et le banc de 12 vues fixes, et donne l'« état zéro » chiffré du jeu actuel. À chaque fin de palier, je te demanderai ici de regarder l'APK.
+   Les US suivent cet ordre ; l'attribution, la QA et la fusion restent celles de tes règles de travail (`CLAUDE.md`).
+4) **Maintenant** : seule WFS-148 est prête. Elle crée le référentiel et le banc de 12 vues fixes, et donne l'« état zéro » chiffré du jeu actuel.
 Une limite à connaître : il faudra télécharger des textures et des personnages sous licence libre. Si le réseau des agents bloque ces sites, je te le dirai. )
+
+( PO, correction : tu as raison, je n'avais pas à changer tes règles de travail. J'avais ajouté « pas de fusion par confiance » et « verdict du QA avant fusion » pour l'axe Réalisme, et une demande de vérification à chaque palier. Tout est retiré : `CLAUDE.md`, l'agent PO et `regles-de-gestion/README.md` sont revenus à ta version, et les US WFS-148 à WFS-167 suivent tes règles en vigueur. Les US, leurs mesures de fidélité et leur ordre restent. Je n'ajouterai plus de règle de travail sans que tu la demandes. )
