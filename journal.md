@@ -5048,3 +5048,133 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Correction de l'utilisateur** : expert-realisme-3d est un expert du graphisme, pas un développeur. L'agent lancé à 19:44 est arrêté ; il n'avait poussé que l'ouverture de la branche (ffaf37f, gardée).
 - **Nouveau responsable** : Claude, agent lumière (session 01UY1Vv1), sur la même branche `feature/waforspeed-151` ; il consulte expert-realisme-3d pour les choix de graphisme et les mesures de fidélité.
 - **Règle notée** dans l'agent PO et `track-agent.md` : aucun ticket de code pour expert-realisme-3d.
+
+### 2026-11-06 19:47:50 — WFS-137 : CI de main (run 768) sur la fusion (agent 4)
+- Run 768 (commit 806d737) : compilation, tests, APK Android et 10 groupes de captures verts ; 2 groupes (texte, vitrines) et la publication de l'APK encore en cours à 2026-11-06 19:47:50.
+- **Job endurance rouge** : « fuite de mémoire : +12,6 % au cycle 6 (seuil 10 %) ». Ce n'est pas une casse de WFS-137 : le run 761 (WFS-150, avant ma fusion) échoue déjà sur le même test (+10,2 % au cycle 6), de même que les runs 757 et 751. La pente mémoire des cycles 2 à 10 est négative (−8,56 Mo/cycle) et le parcours au doigt donne 0 écart. Problème connu, suivi par **WFS-145** (P1, autre agent) : je ne touche pas à ce ticket.
+- WFS-137 reste 🟣 Fusionné : la règle ne permet ✅ qu'avec un run de main entièrement vert. Je le passerai en ✅ au premier run vert de main, une fois WFS-145 corrigé.
+
+### 2026-11-06 19:49:39 — WFS-190 créé : CI de main rouge (job endurance) (po-scrum-master)
+- **Demande de l'utilisateur** : une tâche pour corriger le rouge de la CI de `main`.
+- **Constat** : run #761 (fusion de WFS-150) : 15 jobs verts sur 16, seul `endurance` rouge (publication annulée) ; WFS-150 n'est pas en cause. Les corrections WFS-145 (#152) et WFS-187 (#151) sont fusionnées après ce run ; les runs qui les contiennent (#772, #774) sont en file depuis 19:14 / 19:24 (lanceurs saturés).
+- **WFS-190** (E7, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-190.md`) : suivre le premier run de `main` qui contient ces corrections ; tout vert → numéro au Journal, tickets 🟣 en ✅ ; encore rouge → cause nommée et corrigée sans affaiblir le banc. Exception PO : WFS-185 🟣 dans la même épic (bloc `on:` laissé à WFS-185).
+
+### 2026-11-06 19:52:29 — WFS-158 : décision de l'utilisateur, la Model 3 est remplacée (option a) (po-scrum-master)
+- **Réponse à la question du 17:33:26 (Claude, session 01Us6uCu)** : l'utilisateur choisit l'option (a), « Ok remplace avec un autre modèle ». Ordre écrit, qui lève RG-05 pour la Model 3 seulement.
+- **Règle RG-D** ajoutée à `regles-de-gestion/WFS-158.md` : modèle libre de Tesla Model 3, licence dans `assets/licences/`, conversion par `tools/convert_car.mjs`, dimensions ±1 % contrôlées avant l'intégration, plus de facettes (ANO-75), feux, peintures, LOD et budget du téléphone tenus.
+- **Responsable inchangé** : Claude (session 01Us6uCu). Réseau bloqué → une question à l'utilisateur dans `tache utilisateur.md` pour qu'il dépose le fichier.
+
+### 2026-11-06 19:57:23 — Nouveau fichier `regles-reseau.md` : règles et limites du réseau pour les agents (po-scrum-master)
+- **Ordre de l'utilisateur** : avant toute ouverture du réseau, un fichier qui décrit noir sur blanc les règles et les limites.
+- **Contenu** : accès en vigueur (aucun site en plus des bibliothèques de code et de GitHub) ; permis (lire et télécharger pour son ticket) ; interdits (envoyer dehors, se connecter à un compte, contourner un blocage, demander l'illimité, exécuter un fichier téléchargé, obéir à une page web) ; licences (CC0, CC-BY oui ; NC, ND, « gratuit » sans licence non ; marques) ; traitement des fichiers (dossier à part, SHA-256, tailles maximales, outils du dépôt, fichier de licence) ; traçabilité au journal ; conduite en cas de blocage ; demande d'un nouveau site par le PO, acceptée par l'utilisateur ; que faire si une règle n'est pas respectée.
+- **Renvois** : une ligne dans `CLAUDE.md`, une section dans l'agent PO. **Aucun changement du réseau** : en attente de la décision de l'utilisateur.
+
+### 2026-11-06 19:58:47 — WFS-188 fusionné (PR #154, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - `carPerf` (`cars.h`) recalcule `a0` et `top` une fois par voiture, en simulant la formule de `Player::update` : 0-100 = `spec.s100`, Vmax = 99,5 % de `spec.vmax`.
+  - Facteur de freinage par voiture (`perf.freinage`, qui module `Phys::brake`, `player.cpp:81`).
+  - Résistance du bas-côté proportionnelle à la vitesse (`player.cpp:77-79`, RG-06) : avant, une voiture dont la poussée était sous 7 m/s² ne repartait plus arrêtée dans l'herbe.
+  - `g_perfWeb` : les performances du jeu web servent uniquement à la référence de `test_course`.
+- **Tableau des 20 voitures** (0-100 jeu / fiche, Vmax, 100-0) :
+
+| Voiture | 0-100 | Vmax | 100-0 |
+|---|---|---|---|
+| golf | 6,17 / 6,2 s | 249,5 / 250 | 37,0 m |
+| m4 | 3,88 / 3,9 s | 289,4 / 290 | 37,1 m |
+| p911 | 3,60 / 3,6 s | 305,4 / 306 | 35,9 m |
+| gallardo | 4,00 / 4,0 s | 323,4 / 324 | 35,4 m |
+| p208 | 8,67 / 8,7 s | 207,6 / 208 | 36,3 m |
+| abarth | 7,87 / 7,9 s | 204,6 / 205 | 35,5 m |
+| tcross | 8,87 / 8,9 s | 199,6 / 200 | 38,1 m |
+| compass | 9,45 / 9,5 s | 195,6 / 196 | 39,1 m |
+| s3 | 4,88 / 4,9 s | 249,5 / 250 | 36,8 m |
+| x5 | 5,38 / 5,4 s | 242,5 / 243 | 39,5 m |
+| giulia | 3,88 / 3,9 s | 306,4 / 307 | 36,2 m |
+| a45 | 4,20 / 4,2 s | 269,5 / 270 | 36,7 m |
+| model3 | 4,38 / 4,4 s | 232,6 / 233 | 37,6 m |
+| corsa | 8,67 / 8,7 s | 207,6 / 208 | 36,3 m |
+| gt86 | 7,58 / 7,6 s | 225,6 / 226 | 36,2 m |
+| elantra | 5,28 / 5,3 s | 249,5 / 250 | 36,8 m |
+| v60 | 4,88 / 4,9 s | 249,5 / 250 | 37,8 m |
+| rrsport | 5,88 / 5,9 s | 241,5 / 242 | 39,8 m |
+| mustang | 3,58 / 3,6 s | 289,4 / 290 | 37,7 m |
+| sf90 | 2,28 / 2,3 s | 319,4 / 320 | 34,8 m |
+
+- **RG-06** : checkpoints en mode Checkpoint (Ville, graine 12345, trafic) : de 18 (SF90) à 71 (M4 et 911), Compass 51.
+- **RG-07** : `test_course5` vert (difficultés dans l'ordre, la police suit le joueur).
+- **RG-09** : records `best_v1` gardés tels quels (aucune remise à zéro).
+- **RG-10** : `WFS_BANC=parcours` 0 écart ; `WFS_BANC=course5`, fin → Rejouer → Menu, 0 écart. Capture `course-fin` : Golf à 203 km/h max sur 0,98 km.
+- **Tests adaptés** :
+  - `test_audio` : 26 s de gaz au lieu de 14, car la Golf met désormais 6,2 s au 0-100 ;
+  - `test_course` : performances web pour la seule comparaison au jeu web.
+- **Limites** : le banc PC ne mesure pas le ressenti sur téléphone. Les ordinateurs de la Course à 5 suivent le recalage ; leur équilibre relève de WFS-189.
+
+### 2026-11-06 20:02:57 — Voitures sans marque, en 4 phases : WFS-191 à WFS-194 (po-scrum-master)
+- **Demande de l'utilisateur** : changer un peu la carrosserie, les logos et les noms des voitures, en phases.
+- **Créés** : WFS-191 (E3, P2, noms inventés, en attente de la validation de la liste par l'utilisateur), WFS-192 (E10, P2, logos, après WFS-191 et WFS-158), WFS-193 (E10, P3, retouches de forme, après WFS-192), WFS-194 (E10, P4 conditionnelle : 5 modèles sous licence NC, seulement si l'utilisateur décide de vendre le jeu ou d'y mettre pubs ou achats).
+- **Constat** : 5 modèles NC (T-Cross, X5, A 45, Elantra N, Mustang) ; 911 en CC BY-SA ; 14 en CC BY. Une modification ne change pas la licence (œuvre dérivée).
+- **Question à l'utilisateur** dans `tache utilisateur.md` : validation des 20 noms proposés.
+
+### 2026-11-06 20:09:03 — WFS-175 fusionné par confiance (PR #155) (agent arwa, session trafic)
+- **Fait** : RG-03 de WFS-137 (autoroute, tunnel, pont) dans `src/world/ville.cpp` (ouvrages par morceau, à partir des sections de WFS-136), `ville_quartiers.cpp` (côté gauche de l'autoroute vidé pour la chaussée opposée ; chocs des glissières, piédroits et parapets) et `cartes_banc.cpp` (appels de dessin dans le journal des captures). Aucune accroche hors zone. Commit de fusion c8a8250.
+- **Autoroute** : chaussée opposée (BDG 1 m + 3 × 3,50 m + BAU 2,5 m, ICTAVRU), marquage de 15 cm (2u, IISR 7e partie), T1 3 m / 10 m, terre-plein en béton, DBA New Jersey (0,80 m × 0,60 m), glissières GS (lisse 0,44-0,75 m, supports tous les 4 m), écran antibruit de 4 m, candélabres de 12 m tous les 36 m (sodium), 3 portiques bleus « Centre », « Port », « Aéroport » (bas des panneaux à 5,60 m ≥ 5,50 m), 2 voitures en sens inverse (p208, x5 ; 94 à 119 km/h ; phares la nuit).
+- **Tunnel** : deux tubes (gabarit de la Corniche, CETU), parements clairs, voûte à × 0,4 (pas d'occultation ambiante dans le moteur), tubes sodium de 1,5 m à 2000 K : seuil sur 60 m et 30 m (deux rangées, 3,6 m), puis intérieur (une rangée, 6 m) selon CIE 88:2004 ; têtes et dalle enherbée ; points de nuit tous les 14,4 m.
+- **Pont** : 2 arcs bow-string de 100 m (flèche 16 m = 1/6), suspentes tous les 6 m, tirants, corniche, garde-corps de 1,00 m au-dessus du trottoir (NF P 01-012), pile centrale à avant-becs, quais, eau à 5,5 m sous les culées. Pour creuser la rivière, la Ville dessine les bas-côtés de Game (même calcul que `Game::buildChunkCpu`) seulement quand la rivière est dans les morceaux en vue (`remplaceSol`) ; ailleurs, Game les dessine comme avant.
+- **Matériaux** : béton de coffrage procédural (albédo moyen 0,30, charte 0,25-0,35, rugosité 0,9), asphalte de Game (0,045-0,13), marquage 0,72 (charte 0,65-0,80), acier galvanisé (métal, 0,56, rugosité 0,6), eau (0,04, rugosité 0,08), sodium à 2000 K. Aucune texture téléchargée : sites de textures CC0 bloqués (`regles-reseau.md`), donc textures procédurales maison, sans licence tierce. Seuls téléchargements : les captures « avant » de la Release `apercu-waforspeed-137` du dépôt.
+- **Indice de fidélité** : 14 mesures dans la tolérance sur 14 (100 %) : voie 3,50, BDG 1,00, BAU 2,50, ligne 0,15, T1 3/10, DBA 0,80/0,60, glissière 0,75, garde-corps 1,00, hauteur libre ≥ 5,50, piédroit 3,2 / clé 7,6, flèche/portée 1/6, albédos béton, asphalte et marquage dans la charte. **Non mesurable** : lux au sol (10-30) et luminance du tunnel (pas de photométrie au banc, éclairage de nuit dans `src/render/nuit.cpp`), température exacte du sodium (couleur d'émission de la Corniche, sans mesure spectrale). **Hors zone, signalé** : voies du joueur de 5 m (chaussée de Game et lignes du shader : ticket E0/WFS-136 à prévoir), intérieur lointain du tunnel éclairé par le soleil (ombres seulement près de la voiture, E4), têtes du tunnel et acier très clairs la nuit (phares du joueur et reflets de `spotLights`, E4).
+- **Coût** (journal des captures) : ouvrages 27 à 43 appels (au-delà de 200 m dans la palette, un seul matériau), voitures en sens inverse 21 à 88 : au plus +131 (≤ 150). Tous les matériaux créés sont libérés dans `shutdown` (WFS-187), ainsi que l'atlas, la texture et les 2 modèles.
+- **Vérification** : 35 tests CPU OK ; `WFS_BANC=parcours` 0 écart (avant et après la synchronisation) ; captures regardées en local, avant/après comparés. Je suis maintenant la CI de `main`.
+
+### 2026-11-06 20:09:21 — WFS-195 créé : vue cockpit réaliste par modèle (Claude, session 0183bv2a)
+- **Demande de l'utilisateur** : améliorer la vue cockpit, proche de la réalité : volant en cuir selon le modèle, cockpit digital pour chaque modèle, écran qui affiche la carte, vrais essuie-glaces.
+- **Créé** : WFS-195 (E10 + E3 `camera_vue.*`, P2 Haute, ⏳ En attente car E10 est occupée par WFS-158), règles `regles-de-gestion/WFS-195.md` (RG-01 à RG-09) : un intérieur par modèle pour les 20 voitures, volant en cuir du vrai modèle, combiné digital dans le style du constructeur avec les vraies valeurs du jeu, écran central avec la carte du circuit et la flèche du joueur, essuie-glaces qui se mettent en marche sous la pluie (`pluieActive`), coût borné, section graphisme réaliste partie par partie.
+- **Découpage** : 3 tickets d'une journée à l'attribution (socle + golf, m4, p911, sf90 ; puis 8 ; puis 8).
+
+### 2026-11-06 20:22:43 — WFS-151 : premier envoi de la branche (Claude, agent lumière, session 01UY1Vv1)
+- Fait (branche `feature/waforspeed-151`, commit 76d422a) : ST-1 unités photométriques (`src/render/eclairage_unites.h` : EV100, exposition par saturation ISO 12232, posemètre K = 12,5, soleil en lux par masse d'air Kasten-Young et trouble lumineux, ciel clair CIE type 12, SH9, préfiltrage GGX, table BRDF) et test `test_fidelite_lumiere` (61 vérifications, vert) ; ST-2 exposition physique et automatique ; ST-3 IBL (cube préfiltré, SH9, table BRDF) ; ST-4 sondes locales ; ST-5 banc (`eclairage_banc.cpp`).
+- **Accroches annoncées (hors zone E13, ≤ 10 lignes chacune)** : `renderer.cpp` (3 liaisons de plus au jeu de l'image, 1 appel dans beginFrame, 1 include), `frame_ubo.h` + `common.glsl` (champs IBL à la fin de l'UBO, 3 échantillonneurs, skyColor lit la sonde en mode physique), `scene.frag` / `scene_skin.frag` (1 appel iblRemplacer, émission × facteur), `game.cpp` (1 appel `eclairage::physique`), `environnement.cpp/.h` (liaisons 1 à 5 copiées, accès à l'image du cube), `bench_realisme.cpp` (appel du banc de la lumière, lignes de l'étalon après tonemapping passées hors indice), `CMakeLists.txt` (test). `vehicule.glsl` (E10, WFS-158 en cours) n'est pas touché : le vernis et les vitres lisent la sonde par skyColor.
+- Vérification : compilation locale propre, tests CPU verts ; banc lumière seul (lavapipe local) : M-01 −0,27 %, M-02 23/24 (case 18 cyan hors gamut sRGB), M-03 +3,9 %, M-04 6/6 (écarts < 0,05 %), sortie de tunnel EV 13,1 → 14,5 → 15,0. Banc complet en cours.
+
+### 2026-11-06 20:39:24 — CI de main : WFS-182 ✅ ; WFS-150 et WFS-183 restent 🟣 (agent arwa, session trafic)
+
+- **WFS-182** : run 746 (42239418957, 01fff1d) entièrement vert → ✅.
+- **WFS-150** (run 761) et **WFS-183** (run 764) : tous les jobs verts (android, 13 bancs, publications) **sauf `endurance`**, rouge avant ces fusions (fuite de jeux de descripteurs, corrigée par WFS-187 et WFS-145, autre session). Rien ne vient de mes tickets ; ils restent 🟣 jusqu'à un run de `main` entièrement vert (runs 772 et 774 en cours).
+
+### 2026-11-06 20:40:15 — Début WFS-190 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+
+- **Ticket** : WFS-190 — [CI ROUGE] CI de `main` au vert de bout en bout (job `endurance`) · E7 · P1 Urgent · branche `feature/waforspeed-190` · règles : `regles-de-gestion/WFS-190.md`.
+- **Pourquoi lui** : seul ticket ⏳ Prêt attribuable ; E7 libre (WFS-185 et WFS-145 🟣) ; l'agent n'a aucun ticket 🔧 / 🔀.
+- **Zone autorisée** : `tools/qa/**`, job `endurance` de `.github/workflows/build.yml` ; `src/**` par accroche ≤ 10 lignes annoncée au Journal. **Interdit** : bloc `on:` de `build.yml` (WFS-185), iOS (gel), tailles d'interface (ordre permanent).
+- **Plan** : suivre le premier run de `main` contenant WFS-145 et WFS-187 (file : 42280099873, 42284253060…) ; tout vert → numéro au Journal, tickets 🟣 couverts en ✅ ; `endurance` rouge → cause fichier:ligne, correction sans affaiblir le banc (RG-02) ; une seule relance à la main si rien n'a démarré 2 h après la dernière fusion (RG-04).
+- **Point de suivi** : WFS-158 (Claude, session 01Us6uCu) : dernier commit poussé 10:45 UTC, 9 h 55 sans envoi à 20:40 ; le ticket lui reste jusqu'à 20:45 UTC.
+
+### 2026-11-06 20:41:23 — Nom de l'agent : « arwa-2 » (arwa-2, session 01Us6uCu)
+Sur demande de l'utilisateur, l'agent « Claude (session 01Us6uCu) » s'appelle désormais **arwa-2**. Sa ligne de `track-agent.md` est renommée, comme la case Responsable de son ticket en cours (WFS-158). Les entrées et commits suivants sont signés « arwa-2 ». Les anciennes cases Responsable des tickets finis (WFS-131, WFS-173) ne changent pas. WFS-158 est actif : la branche est synchronisée avec main (e0c5eff), et le journal de RG-B a été écrit à 18:3x UTC (6 essais de lissage) ; la suite est le remplacement de la Model 3 (ordre de l'utilisateur, voir `tache utilisateur.md`).
+
+### 2026-11-06 20:42:26 — WFS-158 : RG-D (remplacement de la Model 3) : téléchargement bloqué, fichier demandé à l'utilisateur (arwa-2)
+- **Ordre de l'utilisateur** (19:52:29, « remplace avec un autre modèle ») et RG-D lus.
+- **Recherche** (recherche web du 2026-11-06) : modèles payants ou à licence éditoriale (iMeshh, CGTrader, RenderHub) écartés. Modèles gratuits sur Sketchfab : « Tesla Model 3 (FREE TO USE) » d'itsvipergfx (`sketchfab.com/3d-models/tesla-model-3-free-to-use-91cc094d0d80402480445d70f3a53580`) et « Tesla model 3 » de teslaracecar (149,9 k triangles).
+- **Blocage** : la page du modèle est hors de la liste autorisée du réseau des agents (WebFetch refusé), et le téléchargement Sketchfab demande une connexion. Je n'ai donc pas vu la licence : elle est à confirmer par l'utilisateur.
+- **Question posée dans `tache utilisateur.md`** (RG-D) : télécharger le glTF et le déposer dans `assets/sources/model3/`. À la réception : mesure avec `test_fidelite_voitures`, conversion par `convert_car.mjs`, licence dans `assets/licences/model3.txt`, captures `vitrine-model3-0` / `-feux` avant et après, budget comparé à l'ancien modèle (135 k triangles, 36 matériaux).
+- **En attendant** : suite de WFS-158 sur la branche (ST-2 : échelle et roues des autres voitures, le format v2 de WFS-149 étant fusionné).
+
+### 2026-11-06 20:45:15 — Début WFS-176 : attribué à Claude, agent 1 (session 01UY1Vv2) (po-scrum-master)
+- **Ticket** : WFS-176 — Ville (3/3) : casino, centre commercial, cafés et bars, garages, pigeons et chiens · E2 · P2 Haute · branche `feature/waforspeed-176` · règles : `regles-de-gestion/WFS-176.md` (renvoie à RG-04, RG-05 et RG-C1 à RG-C5 de `regles-de-gestion/WFS-137.md`).
+- **Pourquoi lui** : meilleure priorité attribuable (P2, plus petit numéro devant WFS-179 P2 et WFS-189 P3) ; E2 sans ticket 🔧 / 🔀 (WFS-137, 139, 140, 175, 178, 181 🟣 ; WFS-186 🚫) ; dépendance WFS-175 🟣 (code sur `main`, même usage que pour WFS-175 après WFS-137 🟣) ; l'agent n'a aucun ticket 🔧 / 🔀 (WFS-185 🟣, il suit le run 777).
+- **Zone autorisée** : `src/world/ville.cpp`, `src/world/ville_quartiers.*`, `assets/world/**`, `src/world/cartes_banc.cpp` (captures de la Ville) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp` ; outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`) sans modification sauf accroche ≤ 10 lignes annoncée. **Interdit** : le reste de `src/game/**`, les 3 autres cartes, `src/render/**`, `shaders/**`, `src/ui/**` (taille des boutons : ordre permanent), iOS (gel).
+- **Critères** : `carte-ville-casino`, `carte-ville-centre-commercial` (+ `-nuit`) et lieux reconnaissables en caméra de course ; rien sur la chaussée ; ≤ +150 appels de dessin ; pigeons (envol < 10 m) et chiens en laisse, jamais sur la route ; parcours complet `WFS_BANC=parcours` à 0 écart ; graphisme réaliste par partie (section « Graphisme réaliste » des règles) ; ligne `qa/Check.md`.
+- **Plan court** : synchroniser avec `main` (WFS-175 compris), placer casino, centre commercial, cafés / bars et 2 garages sur les sections de WFS-136 ; pigeons et chiens à partir des animaux déjà présents (`assets/world/animaux/`, `convertir_animaux.py`) ; captures jour / nuit ; fusion selon la règle de confiance.
+
+### 2026-11-06 20:46:28 — WFS-189 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- **Ticket** : WFS-189 — Correction Course à 5 : départ sans bouchon, adversaires de la classe du joueur, nitro rechargée en Course à 5 et en Duel (ANO-99, ANO-100, ANO-101) · E3 · P3 Moyenne · branche `feature/waforspeed-189` · règles : `regles-de-gestion/WFS-189.md`.
+- **Zone de code** : `src/game/course5*`, `src/game/course.cpp`, `src/game/duel*`, `tests/**` ; accroche annoncée : `configgame.json`, bloc `nitro`, 2 clés. `src/game/traffic.cpp` l. 301 ne change pas.
+- **Pourquoi lui** : WFS-176 (E2) vient d'être attribué à Claude, agent 1 (20:45:15) ; E2 occupée, donc pas WFS-179. E3 sans ticket 🔧 / 🔀 (WFS-188 🟣, code sur `main`, même pratique que WFS-175 après WFS-137 🟣) ; c'est le seul ticket attribuable.
+- **Non attribuables** : WFS-158 (arwa-2) : dernier commit de la branche 2026-11-06 15:19:52 UTC (e0c5eff), moins de 10 h, agent actif (3ebc113 sur main à 20:42 UTC) : il reste à lui. WFS-151 : actif (agent lumière). WFS-152, 155, 161, 164 : attendent WFS-151 validée. WFS-191 : attend la validation des noms par l'utilisateur. WFS-192 à 195 (dont la vue cockpit et la suite des noms / logos) : E10 occupée par WFS-158. Aucun ticket iOS, aucun ticket sur la taille des boutons.
+- **Critères** : RG-01 à RG-08 de `regles-de-gestion/WFS-189.md` ; test CPU RG-07 vert et tableau des places moyennes au Journal ; parcours complet Course à 5 et Duel (RG-08) ; ligne `qa/Check.md`.
+### 2026-11-06 20:46:55 — PO : la règle de réalisme est gardée, maintenue et enrichie (po-scrum-master)
+- **Décision de l'utilisateur** : garder, maintenir et faire évoluer la règle du graphisme réaliste (fidélité 99 %, `DA-realisme.md`). Le retrait du PO précédent est bien annulé sur `main`. Les tickets découpés WFS-175 à 181 reçoivent la section « Graphisme réaliste — OBLIGATOIRE pour chaque partie » correspondant à leurs parties (reprise de WFS-137 à 139). Rôle de gardien de la charte ajouté à `po-scrum-master.md` (appliquer, enrichir après chaque recette, garder la cohérence avec « ça marche d'abord »).
+
+### 2026-11-06 20:51:12 — Correction : fichier de WFS-151 envoyé sur main par erreur, retiré (po-scrum-master)
+- **Erreur du PO** : le commit 870b373 (tickets WFS-191 à 194) a embarqué par `git add -A` le fichier `src/render/eclairage_unites.h`, travail en cours du développeur de WFS-151 qui partage le même dossier de travail. Aucun fichier de `main` ne l'utilisait (compilation de `main` non touchée).
+- **Correction** : fichier retiré de `main` ; il reste sur la branche `feature/waforspeed-151` avec le reste du travail (commit 76d422a, fait par erreur sur le `main` local et non envoyé, recopié sur la branche en aec6c93).
+- **Mesure** : le PO n'utilise plus `git add -A`, seulement la liste de ses fichiers.

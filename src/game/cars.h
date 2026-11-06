@@ -1,6 +1,10 @@
 // WaForSpeed — catalogue des voitures (repris de js/cars/catalog.js) et performances dérivées de la fiche réelle.
 #pragma once
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstring>
+#include "../core/configgame.h"   // WFS-188 : constantes de conduite (frottements, freinage)
 
 namespace wfs {
 
@@ -64,13 +68,78 @@ inline const CarDef& carById(const char* id) {
     return CARS[0];
 }
 
-// performances (identiques à carPerf() du jeu web)
-struct CarPerf { float top, a0, wb, acc, handling, mass, nitroMult, nitroGain, nitroBurn; };
+// performances. WFS-188 (RG-01 à RG-04) : recalées sur la fiche (CarSpec, inchangée) : la poussée a0 et le plafond top
+// sont calculés pour que le 0-100 mesuré en jeu (plein gaz, sans nitro, pas de 1/60 s) vaille spec.s100 et que la vitesse
+// atteinte sans nitro vaille 99,5 % de spec.vmax ; freinage = facteur de Phys::brake pour un 100 → 0 de 33 à 40 m selon
+// l'adhérence, la masse et la puissance. Même formule que Player::update (player.cpp), simulée ici une fois par voiture.
+// nitroMult (1,3), nitroGain, nitroBurn, handling, mass, acc : inchangés (carPerf() du jeu web).
+struct CarPerf { float top, a0, wb, acc, handling, mass, nitroMult, nitroGain, nitroBurn; float freinage = 1; bool referenceWeb = false; };
+// WFS-188 : vrai = performances du jeu web (carPerf() de js/cars/catalog.js, bas-côté plein) pour les tests de fidélité au
+// jeu web (test_course, course_web_ref.txt) ; le jeu utilise toujours les performances recalées sur la fiche
+inline bool g_perfWeb = false;
 inline float clampN(float v, float a, float b) { return v < a ? a : (v > b ? b : v); }
+namespace detail {
+constexpr double CP_M = 0.006, CP_MAX = 200.0 * 60.0, CP_DT = 1.0 / 60.0;   // = M, MAX_SPEED de track.h
+// 0-100 km/h (s) en plein gaz sans nitro, comme Player::update (accélération : poussée − 0,35 × résistance, sans frein moteur)
+inline double tempsCent(double a0, double topU) {
+    const auto& c = g_configJeu.conduite;
+    double v = 0, t = 0;
+    while (v * CP_M * 3.6 < 100 && t < 60) {
+        const double av = std::abs(v * CP_M), resist = (c.roll + c.drag * av * av) / CP_M;
+        const double push = a0 / CP_M * std::max(0.0, 1 - std::pow(std::max(0.0, v) / topU, 2.2));
+        v += (push - resist * 0.35) * CP_DT; t += CP_DT;
+    }
+    return t;
+}
+// 100 → 0 km/h (m), frein tenu : freinage puis, sous vRecul, la marche arrière qui enchaîne (comme Player::update)
+inline double distanceArret(double facteur) {
+    const auto& c = g_configJeu.conduite;
+    double v = 100 / 3.6 / CP_M, d = 0;
+    for (int i = 0; i < 6000 && v > 0; i++) {
+        const double av = std::abs(v * CP_M), resist = (c.roll + c.drag * av * av + c.engineBrake) / CP_M;
+        if (v * CP_M < c.vRecul) v -= CP_MAX * 0.1 * CP_DT;                 // REV_ACC
+        else v = std::max(0.0, v - (c.brake * facteur / CP_M + resist) * CP_DT);
+        d += std::max(0.0, v) * CP_M * CP_DT;
+    }
+    return d;
+}
+inline CarPerf etalonner(const CarDef& car) {
+    const CarSpec& s = car.spec;
+    const auto& c = g_configJeu.conduite;
+    CarPerf p{s.vmax / 260.f, (27.8f / s.s100) * 1.45f, car.d.wb, clampN((27.8f / s.s100) / 4.6f, 0.55f, 1.8f),
+              0.75f + car.grip * 0.05f, s.kg / 1450.f, 1.3f, 0.12f, 0.26f};
+    // vitesse visée (unités/s) : 99,5 % de la fiche ; plafond top tel que poussée = 0,35 × résistance à cette vitesse
+    const double ve = 0.995 * s.vmax / 3.6 / CP_M, vms = ve * CP_M;
+    double a0 = p.a0, topU = CP_MAX * p.top;
+    for (int it = 0; it < 12; it++) {
+        const double reste = 1 - 0.35 * (c.roll + c.drag * vms * vms) / a0;
+        topU = ve / std::pow(std::max(0.05, reste), 1 / 2.2);
+        const double t = tempsCent(a0, topU);
+        a0 *= t / s.s100;                                   // le temps varie comme 1 / a0
+    }
+    p.a0 = (float)a0; p.top = (float)(topU / CP_MAX);
+    // RG-04 : 100 → 0 visé de 33,3 à 40,3 m : adhérence (40 %), masse (35 %), puissance (25 %, les sportives freinent mieux)
+    const double gr = clampN((car.grip - 5) / 5.f, 0, 1), ma = clampN((s.kg - 1035) / 1295.f, 0, 1), pu = clampN((s.ch - 130) / 470.f, 0, 1);
+    const double cible = 33.3 + 7 * (0.4 * (1 - gr) + 0.35 * ma + 0.25 * (1 - pu));
+    double f = 1;
+    for (int it = 0; it < 12; it++) f *= distanceArret(f) / cible;
+    p.freinage = (float)f;
+    return p;
+}
+} // namespace detail
+
 inline CarPerf carPerf(const CarDef& c) {
-    const CarSpec& s = c.spec;
-    return {s.vmax / 260.f, (27.8f / s.s100) * 1.45f, c.d.wb, clampN((27.8f / s.s100) / 4.6f, 0.55f, 1.8f),
-            0.75f + c.grip * 0.05f, s.kg / 1450.f, 1.3f, 0.12f, 0.26f};
+    if (g_perfWeb) {   // performances du jeu web (référence des tests)
+        const CarSpec& s = c.spec;
+        CarPerf w{s.vmax / 260.f, (27.8f / s.s100) * 1.45f, c.d.wb, clampN((27.8f / s.s100) / 4.6f, 0.55f, 1.8f), 0.75f + c.grip * 0.05f, s.kg / 1450.f, 1.3f, 0.12f, 0.26f};
+        w.referenceWeb = true;
+        return w;
+    }
+    // une fois pour les 20 voitures du catalogue (initialisation statique sûre entre threads) ; autre fiche : calculée
+    static const auto table = [] { std::array<CarPerf, sizeof(CARS) / sizeof(CARS[0])> t{}; for (size_t i = 0; i < t.size(); i++) t[i] = detail::etalonner(CARS[i]); return t; }();
+    const size_t i = (size_t)(&c - CARS);
+    if (&c >= CARS && i < table.size()) return table[i];
+    return detail::etalonner(c);
 }
 
 } // namespace wfs
