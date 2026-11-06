@@ -2888,3 +2888,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Règles** : `regles-de-gestion/WFS-186.md` (RG-01 à RG-05, + RG-02 / RG-C4 de WFS-138) ; source : dépôts GitHub publics (`.claude/skills/waforspeed-natif/references/modeles-3d-github.md` § 5, piste CC0 `trebeljahr/quaternius-showcase`), licence lue dans le fichier de la source, journal (dépôt, licence, SHA-256) ; choix réaliste avec `expert-realisme-3d`.
 - **Critères** : troupeaux en modèles réels visibles de jour et de nuit, tailles réelles ±1 %, aucun animal sur la route, aucune boîte, parcours complet 0 écart, ligne `qa/Check.md`.
 - **WFS-199** : limite des poses fixes (16 instances animées par image, `SKIN_MAX_INSTANCES`) dite à l'utilisateur dans `tache utilisateur.md` ; aucun ticket E0 créé sans sa demande (il demandait de vrais spectateurs, c'est livré).
+
+### 2026-11-06 23:39:20 — Statuts automatiques, CI main #795 (robot statuts)
+- Run rouge (push, commit edb17c0), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
