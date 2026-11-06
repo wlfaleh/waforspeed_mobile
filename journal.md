@@ -2687,3 +2687,22 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Pourquoi fusion par confiance (> 50 %)** : run de branche 783 avec 15 jobs verts sur 16 (APK, tous les bancs de captures dont `realisme`, `nuit` et `vitrines`) ; le seul rouge, `endurance`, a sa cause nommée et corrigée, avec 0 erreur de validation et une mémoire stable en local ; 37 tests CPU verts sur la branche à jour de `main` ; banc réalisme local : lumière 100 % (34/34), photométrie 100 % (12/12), soleil 100 %, voitures 75,2 %, total 79,2 % (183/231). Les 3 erreurs du banc local viennent des textures d'essai KTX2, que seule la CI fabrique (`ci_textures.sh`) : elles ne viennent pas de WFS-151.
 - **Captures regardées (locales)** : sortie de tunnel progressive, voiture du tunnel sombre et sans reflet du ciel, chartes lisibles, route de nuit sèche (pas de miroir), corniche de nuit propre. **À surveiller, noté dans `qa/Check.md`** : ville de jour plus sombre (ciel gris-bleu, voiture à l'ombre), chaussée de la ville de nuit très orange, coût +12 à +22 % par image au banc (RC-06 ≤ 10 %, à mesurer sur téléphone).
 - **Suite** : je suis la CI de `main` sur 00bd580 ; ✅ seulement avec le numéro du run vert. Rouge à cause de WFS-151 → correction tout de suite.
+
+### 2026-11-06 22:22:12 — WFS-158 : livraison 3 fusionnée par confiance (PR #163, d00e19c) : ST-3, plaques européennes 520 × 110 mm sur 7 voitures (arwa-2)
+- **Outil** : `tools/plaques_voitures.mjs`, sur le `.wfm` (les 4 premières voitures ne se reconvertissent pas à l'identique), lancé par `convertir_voitures.sh` après la correction ST-2.
+  - Plaque remise à 520 × 110 mm dans son plan ; cadre à 550 × 140 mm.
+  - Plaque avancée devant la caisse si celle-ci la traverse (seuil : 5 % de sa surface, pour ignorer vis et crochets).
+  - Coordonnées de texture refaites à plat, plaque française neutre ajoutée à la fin des textures : les rangs existants ne changent pas, `correctifs_voitures.h` reste valable.
+  - Matériau blanc, opaque, sans carte de normales. Indices inchangés (les `.lod` restent valables), tangentes recalculées. Rejouable.
+- **Rapport par voiture** :
+  - 208 : DZ-418-HP (75), déjà au format, l'image remplace la plaque vide ;
+  - Abarth : BL-592-NE (06), arrière 521 × 115 → 520 × 110 mm ;
+  - Giulia : GA-731-RC (13), avant 521 × 114 et arrière 521 × 112 → 520 × 110 mm ; la plaque avant reste décalée à gauche, comme sur la vraie ;
+  - Compass : EK-266-LV (31), plaques 468 × 99 → 520 × 110 mm, cadres 495 × 126 → 550 × 140 mm ;
+  - Corsa : FC-850-MS (44), avant 542 × 103 et arrière 552 × 128 → 520 × 110 mm ; plaque avant avancée de 22 mm (le bouclier bombé la cachait en partie) ;
+  - 911 : HD-097-TZ (67), à la place de la plaque allemande « M UG 0104 » ; 511 × 115 et 508 × 120 → 520 × 110 mm ;
+  - S3 : CW-374-JN (59), à la place des plaques « ASSETTO CORSA » (nom d'un jeu du commerce) ; 487 × 115 → 520 × 110 mm, arrière avancée de 3 mm.
+- **Indice M-04** : 13 / 13 plaques au format sur ces voitures, plus les 6 de la livraison 1 (V60, A 45, RR Sport). Il reste 9 voitures dont la plaque n'est pas une pièce à part : Golf, Gallardo, T-Cross, X5, GT86, SF90, Elantra, Mustang, M4 (plaque américaine de 266 × 128 mm). Model 3 : remplacement en attente.
+- **Dimensions des voitures** : inchangées, `test_fidelite_voitures` identique (111 / 141) ; la correction ST-2 reste rejouable sans changement.
+- **Preuves** : captures locales (lavapipe, 2400 × 1080) des vitrines arrière avant / après et vues de face (essai local, non poussé) des 7 voitures : plaques lisibles, à l'endroit, dans leur logement. 37 tests CPU OK.
+- **Suite** : ST-3, plaques des 9 autres voitures (plaque à poser ou à découper dans la carrosserie).
