@@ -20,6 +20,8 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `checkpoint.distance` | distance entre deux checkpoints | m | 100.0 | 5000.0 | 600.0 |
 | `nitro.depart` | réserve de nitro au départ | réserve (0 à 1) | 0.0 | 1.0 | 0.4 |
 | `nitro.poussee` | accélération multipliée pendant la nitro | × | 1.0 | 4.0 | 1.6 |
+| `nitro.recharge_temps` | Course à 5 et Duel : recharge de la nitro par seconde de course | par s | 0.0 | 0.2 | 0.015 |
+| `nitro.recharge_depassement` | Course à 5 : recharge à chaque adversaire dépassé | réserve | 0.0 | 1.0 | 0.1 |
 | `course5.ordinateurs` | voitures pilotées par l'ordinateur (course à 5 : 4) | voitures | 1 | 4 | 4 |
 | `course5.vitesse_facile` | vitesse visée par les ordinateurs, difficulté facile | × vitesse de pointe | 0.3 | 1.2 | 0.8 |
 | `course5.vitesse_normale` | vitesse visée par les ordinateurs, difficulté normale | × vitesse de pointe | 0.3 | 1.2 | 0.9 |

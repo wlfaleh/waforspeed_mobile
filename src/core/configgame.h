@@ -35,6 +35,7 @@ struct ConfigJeu {
     struct Nitro {
         double depart = 0.4;    // réserve au départ (0 à 1)
         double poussee = 1.6;   // accélération multipliée pendant la nitro
+        double rechargeTemps = 0.015, rechargeDepassement = 0.10;   // WFS-189 (RG-04) : sans trafic, par seconde, par dépassement
     } nitro;
     struct Course5 {
         int ordinateurs = 4;                             // voitures pilotées par l'ordinateur
