@@ -13,14 +13,14 @@
 >   son dernier envoi, son état). La liste des tickets et leurs statuts restent dans `TACHES.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 22:32:10 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 23:02:08 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée, rien depuis 1 h 52) | 🔴 P1 en cours, ⚠️ branche sans envoi depuis plus de 2 h à 22:40 ; `endurance` toujours rouge sur `main` ; suit aussi la CI de WFS-175 (🟣, PR #155) |
-| Claude, agent 1 (01UY1Vv2) | WFS-198 | Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | 198 : fusionnée 22:36 (PR #165, squash f61e884) ; 179 : fusionnée 21:37 (PR #161) ; 176 : fusionnée 21:11 (PR #158) | 🟣 WFS-198 fusionné : attend un lancement à la main (`workflow_dispatch`) d'`archives.yml` sur `main` pour le ✅ ; WFS-185 ✅ (run 777) ; suit la CI de `main` de WFS-176 et WFS-179 (🟣, run 791 en cours) |
+| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout : `endurance` verte au run 790 ; reste `banc-essai (realisme)` rouge (banc des passes WFS-150, 1 écart), enquête en cours (journal 22:45) | 190 : 20:40 (rien poussé depuis 2 h 22) | 🔴 P1 en cours, ⚠️ branche sans envoi depuis plus de 2 h ; suit aussi la CI de WFS-175 et WFS-150 (🟣) |
+| Claude, agent 1 (01UY1Vv2) | WFS-199 | Grand Prix : 2 tribunes au plus, vrais spectateurs (personnages animés), plus aucune boîte | 199 : attribué 23:02, branche à pousser avant 23:32 ; 198 : fusionnée 22:36 (PR #165) ; 179 : PR #161 ; 176 : PR #158 | 🔴 P1 en cours ; WFS-198 🟣 (archives #1 vert à la main, ✅ au run de nuit de 03:07) ; suit la CI de `main` de WFS-176 et WFS-179 (🟣, runs 791 à 793) |
 | Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : intérieurs Golf, M4, 911, SF90, écran carte, essuie-glaces | 197 : 21:47 (4a52d55) | ✅ actif ; CI de branche lancée à la main (une fois, rendu) : captures `cockpit-*` à regarder avant la fusion |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6, 22:32 UTC) ; 140 : fusionnée (PR #137, ad4fa31) | 🟣 suit la CI de main sur 9c64bf6 (WFS-191) ; WFS-140 reste 🟣 (run 42257956758 rouge au seul `endurance`, WFS-190) ; libre ensuite |
@@ -33,13 +33,14 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
-| — | — | aucun ticket prêt sans agent ; WFS-152 à 167 (réalisme) attendent WFS-151 ✅ (🟣, PR #156) |
+| WFS-186 | E2 | prêt, mais E2 occupée par WFS-199 (P1) : un ticket actif par épic |
+| — | — | WFS-152 à 167 (réalisme) attendent WFS-151 ✅ (🟣, PR #156) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier ; **suit la CI de `main` de WFS-189 et WFS-196** et décide qui corrige si elle tombe rouge | 2026-11-06 22:32:10 : WFS-198 attribué à Claude, agent 1 (01UY1Vv2) (exception E7, aucun fichier commun avec WFS-190) ; plus aucun ticket prêt sans agent |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier ; **suit la CI de `main` de WFS-189 et WFS-196** et décide qui corrige si elle tombe rouge | 2026-11-06 23:02:08 : WFS-199 (P1, E2 + E11) attribué à Claude, agent 1 (01UY1Vv2) ; rouge `banc-essai (realisme)` du run 790 laissé à agent arwa (WFS-190 / WFS-150) ; règle « Ménage quotidien » mise à jour (WFS-198 RG-09) |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |

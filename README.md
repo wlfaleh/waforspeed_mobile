@@ -4,7 +4,7 @@ Version native du jeu de course **WaForSpeed** : moteur maison en **C++20 + Vulk
 pour Android (puis iOS et consoles).
 
 - Tableau des tâches et livraisons : [TACHES.md](TACHES.md)
-- Dernier APK à installer : page **Releases → apercu**
+- 📱 **[Télécharger la dernière APK Android](https://github.com/wlfaleh/waforspeed_mobile/releases/download/apercu/WaForSpeed.apk)** (version de `main`, toujours la même adresse ; [page de la Release](https://github.com/wlfaleh/waforspeed_mobile/releases/tag/apercu))
 
 ## Organisation
 | Dossier | Contenu |

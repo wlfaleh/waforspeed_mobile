@@ -2773,3 +2773,27 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Remarque de l'utilisateur** : spectateurs du Grand Prix en formes géométriques ; 2 tribunes au plus, vrais spectateurs.
 - **Cause** : `circuit.cpp` `case T_STAND` dessine chaque spectateur en 2 boîtes ; tribunes répétées (ligne droite tous les 26 segments, épingle, raidillon, zone « tribunes »).
 - **WFS-199** (E2 + E11, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-199.md`) : 2 tribunes (départ, épingle), personnages `homme.wfp` / `femme.wfp` animés en instances, aucune boîte à aucune distance, budget Haute ≤ 400 / Basse ≤ 150, captures jour / nuit / Basse. Exception PO : zone E11 `pietons.*` (aucun ticket E11 actif). Réponse dans `tache utilisateur.md`.
+
+### 2026-11-06 22:56:42 — WFS-199 et WFS-164 : personnages du jeu pour les spectateurs, humains réalistes pour les conducteurs (po-scrum-master)
+- **Décision de l'utilisateur** : les spectateurs du Grand Prix utilisent les personnages déjà dans le jeu (vus de loin) ; les humains plus réalistes sont pour les conducteurs des voitures, vus de près.
+- **Fait** : WFS-199 RG-05 réécrite (aucune recherche de nouveaux humains) ; WFS-164 : section « Priorité d'usage » (conducteurs d'abord).
+
+### 2026-11-06 22:58:54 — README : lien direct vers la dernière APK (po-scrum-master)
+- **Demande de l'utilisateur** : un lien dans le README pour télécharger la dernière APK sans la chercher (pas de ticket).
+- **Fait** : lien `releases/download/apercu/WaForSpeed.apk` (adresse fixe, APK de `main`) et lien vers la page de la Release, en haut de `README.md`.
+
+### 2026-11-06 23:01:22 — WFS-198 : premier lancement à la main d'archives.yml (Claude, agent 1)
+- Archives automatiques #1 (`workflow_dispatch` sur `main`, e4c7f14) : **vert**, test des 6 cas vert, « rien à ranger (entrées 648, lignes de tickets 197) », aucun commit (normal : on garde aujourd'hui et hier, aucune ligne ✅ dans `TACHES.md`).
+- Le ✅ attend le premier vrai rangement : le run de nuit du 2026-11-07 à 03:07 UTC doit ranger les entrées du 2026-11-05 avec des comptages égaux, faire un commit `(robot archives)` et ne lancer aucun run de `build.yml`. Je le vérifie à 03:30 UTC. WFS-198 reste 🟣.
+
+### 2026-11-06 23:02:08 — WFS-199 attribué à Claude, agent 1 (session 01UY1Vv2) (po-scrum-master)
+- **Ticket** : WFS-199 (P1 Urgent), Grand Prix : 2 tribunes au plus, vrais spectateurs. Épic E2, exception E11 (`pietons.*`, `assets/people/**`) : aucun ticket E2 ni E11 actif (WFS-137 à 181 tous 🟣). Choisi avant WFS-186 (P2, même épic, reste ⏳ Prêt).
+- **Zone autorisée** : `src/world/circuit.cpp`, `src/world/pietons.*`, `assets/people/**` ; banc des cartes par accroche ≤ 10 lignes annoncée. **Interdit** : `src/render/**`, `shaders/**`, iOS.
+- **Critères et règles** : `regles-de-gestion/WFS-199.md` (RG-01 à RG-06 : 2 tribunes départ et épingle, personnages `homme.wfp` / `femme.wfp` en instances, aucune boîte à aucune distance, Haute ≤ 400 / Basse ≤ 150, captures jour / nuit / Basse, parcours complet).
+- **Plan** : retirer les tribunes répétées de `circuit.cpp`, remplacer les 2 boîtes de `T_STAND` par des personnages de `pietons.*` assis ou debout.
+- **Run 790, `banc-essai (realisme)` rouge (banc des passes WFS-150)** : WFS-150 est le ticket de l'agent arwa, qui enquête déjà dans WFS-190 (journal 22:45). Il garde la correction ; agent 1 n'y touche pas.
+- **WFS-198 RG-09** : règle « Ménage quotidien » du PO mise à jour (le robot fait journal et `TACHES.md` ; le PO garde le raccourcissement des cases et `tache utilisateur.md`).
+
+### 2026-11-06 23:03:43 — Lignes signalées par le robot des statuts corrigées : WFS-139, 176, 179 (po-scrum-master)
+- **Signalement** (robot statuts, run #790) : PR #142, #158, #161 introuvables (fusions faites sans « (#NNN) » dans le titre du commit, donc sans squash).
+- **Correction** : la case Statut cite le dernier commit de code de chaque ticket sur `main`, que le robot sait lire : WFS-139 → 751ef19, WFS-176 → 9262b41, WFS-179 → 36108b0.
