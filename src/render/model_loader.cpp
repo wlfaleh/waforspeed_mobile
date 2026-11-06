@@ -9,6 +9,7 @@
 #include "../core/platform.h"
 #include "correctifs_voitures.h"   // WFS-170 : correctifs des modèles au chargement (ANO-71 à 77)
 #include "feux_modele.h"   // WFS-109 : découpe des feux arrière (RG-13)
+#include "mesh.h"          // WFS-149 : sommets versionnés, tangentes
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG
@@ -93,7 +94,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     Reader rd{file.data(), file.data() + file.size()};
     const uint8_t* magic = rd.take(4);
     if (!magic || std::memcmp(magic, "WFM1", 4) != 0) { WFS_ERR("%s : format inconnu", path.c_str()); return false; }
-    rd.get<uint32_t>();
+    const uint32_t version = rd.get<uint32_t>();   // WFS-149 : 2 = section des tangentes à la fin (mesh.h)
     uint32_t nTex = rd.get<uint32_t>(), nMat = rd.get<uint32_t>(), nMesh = rd.get<uint32_t>();
     float bb[6]; for (float& f : bb) f = rd.get<float>();
     out.bmin = {bb[0], bb[1], bb[2]}; out.bmax = {bb[3], bb[4], bb[5]};
@@ -136,12 +137,12 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     std::vector<vec3> matMin(nMat, vec3{1e9f, 1e9f, 1e9f}), matMax(nMat, vec3{-1e9f, -1e9f, -1e9f});   // WFS-09 : boîte de chaque matériau
     for (uint32_t i = 0; i < nMesh; i++) {
         uint32_t mat = rd.get<uint32_t>(), nv = rd.get<uint32_t>(), ni = rd.get<uint32_t>();
-        const uint8_t* vp = rd.take((size_t)nv * sizeof(Vertex));
+        const uint8_t* vp = rd.take((size_t)nv * tangentes::WFM_SOMMET_OCTETS);   // WFS-149 : 32 octets dans le fichier
         const uint8_t* ip = rd.take((size_t)ni * 4);
         if (!rd.ok) { WFS_ERR("%s : maillage tronqué", path.c_str()); return false; }
         ModelPart part{(uint32_t)idx.size(), ni, (int32_t)verts.size(), mat};
         size_t v0 = verts.size(), i0 = idx.size();
-        verts.resize(v0 + nv); std::memcpy(&verts[v0], vp, (size_t)nv * sizeof(Vertex));
+        verts.resize(v0 + nv); tangentes::copierSommetsWfm(vp, nv, &verts[v0]);
         idx.resize(i0 + ni); std::memcpy(&idx[i0], ip, (size_t)ni * 4);
         if (mat < nMat && (raw[mat].flags & MAT_PAINT) && correctifs::normalesARecalculer(idVoiture)) {   // WFS-170 (RG-05, RG-06)
             const uint32_t n = correctifs::recalculerNormales(&verts[v0], nv, &idx[i0], ni);
@@ -180,6 +181,22 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
             }
         }
     }
+    // WFS-149 (RG-04) : tangentes des sommets : section 'TAN1' d'un .wfm version 2, sinon (version 1) calculées ici, après le
+    // lissage des normales (repère cohérent avec les normales dessinées). Bloc séparé : seule lecture versionnée du .wfm.
+    {
+        const double t0 = nowSeconds();
+        std::vector<size_t> premiers; std::vector<uint32_t> nombres;
+        for (size_t k = 0; k < out.parts.size(); k++) {
+            premiers.push_back((size_t)out.parts[k].vertexOffset);
+            nombres.push_back((uint32_t)((k + 1 < out.parts.size() ? (size_t)out.parts[k + 1].vertexOffset : verts.size()) - premiers.back()));
+        }
+        const bool lues = version >= tangentes::WFM_VERSION_TANGENTES && tangentes::lireSectionTangentes(rd.p, rd.end, premiers, nombres, verts.data());
+        if (!lues) for (size_t k = 0; k < out.parts.size(); k++)
+            tangentes::calculer(&verts[premiers[k]], nombres[k], &idx[out.parts[k].firstIndex], out.parts[k].indexCount);
+        WFS_LOG("%s : version %u, tangentes %s (%zu sommets, %.1f ms, WFS-149)", path.c_str(), version,
+                lues ? "lues dans le fichier" : (version >= tangentes::WFM_VERSION_TANGENTES ? "illisibles, calculées" : "calculées au chargement"),
+                verts.size(), (nowSeconds() - t0) * 1000);
+    }
     // WFS-134 (RG-11, RG-12) : version allégée <id>.lod (tools/alleger_voiture.mjs) : nouveaux indices de chaque maillage,
     // mêmes sommets et matériaux ; une pièce par maillage (roues fixes : la version allégée n'est vue qu'au-delà de 56 m)
     std::vector<uint32_t> lodIdx; std::vector<ModelPart> lodParts;
@@ -208,7 +225,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         std::vector<roues::Maillage> ms;
         for (const ModelPart& p : out.parts) {
             const uint32_t nv = (uint32_t)((&p == &out.parts.back() ? verts.size() : (size_t)(&p + 1)->vertexOffset) - (size_t)p.vertexOffset);
-            ms.push_back({&verts[(size_t)p.vertexOffset].px, 8, nv, &idx[p.firstIndex], p.indexCount,
+            ms.push_back({&verts[(size_t)p.vertexOffset].px, sizeof(Vertex) / sizeof(float), nv, &idx[p.firstIndex], p.indexCount,
                           p.material < nMat && (raw[p.material].flags & MAT_WHEEL) != 0});
         }
         const roues::Decoupe d = roues::decouper(ms);
@@ -354,15 +371,19 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         }
     }
     if (feuA.materiau >= 0) { tMin = feuA.bmin; tMax = feuA.bmax; }   // WFS-109 : position mesurée du feu découpé
+    const auto posV = [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; };
+    if (!(tMax.y > tMin.y)) feux_modele::boiteFeuxMarques(idx, out.parts, posV, tMin, tMax);   // WFS-171 : feux marqués par WFS-170
     // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
     out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
     out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;
+    out.feux.recul = feuA.recul; out.feux.reculTrouve = feuA.reculTrouve;   // WFS-171 (RG-03) : recul dans le bloc découpé
     out.feux.avantY = hMax.y > hMin.y ? (hMin.y + hMax.y) * 0.5f : out.bmin.y + H * 0.41f;
     // centre latéral d'un feu : aux trois quarts de la demi-largeur des pièces des feux (bloc gauche + bloc droit)
     const float hw = out.feux.largeur * 0.5f;
     out.feux.arriereX = tMax.x > tMin.x ? std::clamp(std::max(tMax.x, -tMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.18f;
     out.feux.avantX = hMax.x > hMin.x ? std::clamp(std::max(hMax.x, -hMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.3f;
+    if (!out.feux.pieceArriere) WFS_LOG("feu non trouvé : %s (WFS-182 : aucun halo de frein)", idVoiture.c_str());
     for (size_t mi = 0; mi < raw.size(); mi++) {
         const RawMat& m = raw[mi];
         Material mt;

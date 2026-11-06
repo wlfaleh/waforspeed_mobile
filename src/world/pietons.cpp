@@ -13,6 +13,7 @@
 #include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
 
 namespace wfs {
+namespace plage { const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len); }   // WFS-180 (plage.cpp)
 namespace {
 
 // valeurs du jeu web (people.js)
@@ -87,6 +88,7 @@ public:
             for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
             for (const vie::Serviette& v : vie::serviettes(*g.map, L)) { P.s = v.s + 0.4; P.lat = v.lat; P.pose = 2; P.y = vie::hauteurSable(v.lat) + 0.03; P.yawRel = 1.5708f + v.rot; gens_.push_back(P); }
             P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
+            for (const vie::Baigneur& b : plage::gens(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 4; P.y = vie::hauteurSable(b.lat) + 0.02; P.yawRel = b.yaw; gens_.push_back(P); }   // WFS-180 : foule des fêtes, joueurs
         }
         if (gens_.empty()) return;
         if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0]) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1])) {
@@ -152,7 +154,7 @@ public:
             const double gy = P.y != 0 ? P.y : sol(side);
             // le personnage regarde vers +Z dans son repère : face au sens de la route = demi-tour (repère natif)
             float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
-            const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : L.idle;
+            const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : P.pose == 4 ? (i % 3 ? "Jog_Fwd_Loop" : "Idle_Talking_Loop") : L.idle;   // WFS-180 : on danse, on saute
             echantillonner(M, clipParNom(M, anim), P.t + P.ph / 6.283 * 1.333, pose);
             const mat4 monde = translate({(float)tp.x, (float)(tp.y + gy), (float)tp.z}) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
             const double dm = std::fabs(P.rel) * SEG_M;

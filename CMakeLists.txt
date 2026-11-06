@@ -24,11 +24,12 @@ set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 set(SHADER_OUT ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_OUT})
 set(SHADER_INCS)
-foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag)
+file(GLOB SHADER_GLSL CONFIGURE_DEPENDS ${SHADER_DIR}/*.glsl)   # WFS-149 (RG-05) : route, vehicule, decor, eclairage
+foreach(S scene.vert scene.frag sky.vert sky.frag post.vert post.frag ui.vert ui.frag shadow.vert shadow.frag scene_skin.vert shadow_skin.vert scene_skin.frag prepasse.frag plein_ecran.vert passe_essai.frag)   # WFS-150 : pré-passe, passe d'essai
   add_custom_command(
     OUTPUT ${SHADER_OUT}/${S}.inc
     COMMAND ${GLSLC} -O --target-env=vulkan1.0 -mfmt=num -I ${SHADER_DIR} -o ${SHADER_OUT}/${S}.inc ${SHADER_DIR}/${S}
-    DEPENDS ${SHADER_DIR}/${S} ${SHADER_DIR}/common.glsl
+    DEPENDS ${SHADER_DIR}/${S} ${SHADER_DIR}/common.glsl ${SHADER_GLSL}   # WFS-149 : fichiers inclus par domaine
     COMMENT "Shader ${S}")
   list(APPEND SHADER_INCS ${SHADER_OUT}/${S}.inc)
 endforeach()
@@ -100,6 +101,9 @@ else()
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
+  add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
+  add_executable(test_tangentes tests/test_tangentes.cpp src/render/mesh.cpp)   # WFS-149 (RG-04, M-02) : tangentes, .wfm versionnés
+  add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
   add_executable(test_conduite_libre tests/test_conduite_libre.cpp src/game/track.cpp src/game/player.cpp)   # WFS-90
   add_executable(test_commandes tests/test_commandes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-108 : commandes tactiles

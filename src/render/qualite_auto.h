@@ -9,7 +9,34 @@
 
 namespace wfs::qualite {
 
-enum Niveau { BASSE = 0, MOYENNE = 1, HAUTE = 2 };
+enum Niveau { BASSE = 0, MOYENNE = 1, HAUTE = 2, ULTRA = 3 };
+// WFS-150 (RG-04, P-01) : Ultra = une valeur de plus dans le choix « Graphismes » des Réglages. Les coûts de la partie
+// (reglages().qualite : ombres, bloom, décor, flaques, distance) restent ceux de la Haute (valeur 2) : Basse, Moyenne et
+// Haute gardent leur coût exact ; Ultra ajoute seulement les passes de qualiteMin ULTRA (src/render/passes.h) et la
+// capture d'environnement en 256 px. ultraChoisi = choix du joueur (clé « ultra=1 » de reglages.txt) ; il ne vaut que si
+// la qualité des coûts est Haute (une rétrogradation de chauffe ou automatique l'efface tant qu'elle dure).
+inline bool ultraChoisi = false;
+inline int niveauAffiche(int q) { return q == HAUTE && ultraChoisi ? ULTRA : q; }
+// RG-04 : Ultra proposé seulement si le téléphone tient la Haute (« banc de chauffe » en jeu) : en course, en Haute, sans
+// chauffe (niveau 0), au moins IPS_TENUE images/s sur MESURES_TENUE mesures de 2 s de suite (10 s). Une mesure sous le seuil
+// ou une chauffe remet la série à zéro. Une fois tenu (ou Ultra déjà choisi), Ultra reste proposé pour la session.
+constexpr float IPS_TENUE = 57.f;    // seuil de remontée de la résolution dynamique (watchPerf du jeu web)
+constexpr int MESURES_TENUE = 5;
+struct TenueUltra {
+    int suite = 0; bool tenue = false;
+    void mesure(float ips, int niveau, int chauffe) {
+        if (niveau == HAUTE && chauffe == 0 && ips >= IPS_TENUE) { if (++suite >= MESURES_TENUE) tenue = true; }
+        else suite = 0;
+    }
+};
+inline TenueUltra tenueUltra;
+inline bool ultraPropose() { return ultraChoisi || tenueUltra.tenue; }
+// RG-03 : côté de la cubemap d'environnement selon le niveau affiché (Moyenne : comme la Haute)
+inline int tailleCubemap(int niveau) { return niveau >= ULTRA ? 256 : niveau <= BASSE ? 64 : 128; }
+// RG-05 : mode diagnostic (coût GPU de chaque passe dans la ligne « Rendu » des Réglages) : WFS_DIAGNOSTIC=1 sur PC,
+// propriété Android debug.waforspeed.diagnostic=1 (adb shell setprop) ; coupé par défaut (captures inchangées)
+bool modeDiagnostic();
+inline bool diagnosticForce = false;   // banc d'essai : capture reglages-diagnostic
 // échelle de la scène 3D de chaque niveau (appliquerQualite de WFS-41) et force du bloom (coupé en Basse)
 // WFS-104 : la voiture en course a la netteté du garage : 100 % en Moyenne et Haute (Moyenne : 75 % avant)
 // WFS-134 (RG-03) : Basse à 75 % (50 % avant : voiture en escalier sur le téléphone)
@@ -85,6 +112,7 @@ struct Auto {
         return ef;
     }
     float fpsMesure = 0;          // dernière mesure sur 2 s (journal)
+    int mesures = 0;              // WFS-150 : nombre de mesures de 2 s faites (tenue de la Haute pour proposer Ultra)
 };
 
 } // namespace wfs::qualite

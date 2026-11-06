@@ -130,9 +130,16 @@ public:
         h.target = W.transformPoint({0, -0.5f, -60});
         h.color = linHex(0xfff1dd); h.intensity = phare(); h.distance = 170; h.angle = 0.7f; h.penumbra = 0.65f; h.decay = 1;
         if (g.player->reversing || g.player->speed < -1) {   // feu de recul (revLight)
+            // WFS-171 (RG-01, ANO-70) : lumière posée sur les feux (hauteur ≈ 0,6 H, ras du pare-chocs ; elle était 0,8 m
+            // derrière et 0,6 m de haut : disque blanc décollé), tournée vers l'arrière et 31° vers le bas, cône de 83°
+            // (la caisse n'est pas éclairée), bord doux. Intensité tirée de R23 (feux_modele.h, CD_RECUL_SOL = 40 cd par
+            // feu vers la chaussée) : 2 × 40 cd donnent ≈ 30 lux à 1 m derrière, 5 lux à 3 m, < 1 lux à 6 m ; avec
+            // l'étalon de 35 lux par unité, portée 8 m et décroissance 2 donnent 28, 6,6 et 0,5 lux (écart ≤ 30 % de 1 à 6 m).
+            // Couleur : ampoule à incandescence (≈ 3000 K), même blanc halogène que les phares (DA-realisme § 3).
             FrameParams::Spot& r = fp.spots[fp.spotCount++];
-            r.pos = W.transformPoint({0, 0.6f, d.L / 2 + 0.8f}); r.target = r.pos + vec3{0, -1, 0};
-            r.color = linHex(0xe8eeff); r.intensity = 2.2f; r.distance = 14; r.angle = PI; r.decay = 2;
+            r.pos = W.transformPoint({0, std::max(0.5f, d.H * 0.6f), d.L / 2 - 0.05f});
+            r.target = W.transformPoint({0, std::max(0.5f, d.H * 0.6f) - 0.6f, d.L / 2 + 0.95f});
+            r.color = linHex(0xfff1dd); r.intensity = 1.85f; r.distance = 8; r.angle = 1.45f; r.penumbra = 1; r.decay = 2;
         }
         const auto& L = lampadaires();
         const int64_t len = (int64_t)g.track->segmentCount(), aP = (int64_t)std::floor(g.player->dist / SEG);

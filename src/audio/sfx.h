@@ -54,7 +54,7 @@ private:
     static constexpr int FILE = 64, VOIX = 16;
     Demande file_[FILE];
     std::atomic<uint32_t> tete_{0}, queue_{0};
-    struct Voix { const std::vector<float>* buf = nullptr; size_t pos = 0; float gain = 0; };
+    struct Voix { const std::vector<float>* buf = nullptr; size_t pos = 0; float gain = 0; size_t attente = 0; };   // attente : WFS-184
     Voix voix_[VOIX];
     std::atomic<float> cibleCrissement_{0}, cibleNitro_{0}, cibleRumeur_{0};
     std::atomic<bool> muted_{false};
@@ -65,12 +65,16 @@ private:
     std::atomic<bool> yelpSirene_{false}, finSirene_{false};
     float gSirene_ = 0, mixYelp_ = 0, pasSirene_ = 1, kSirene_ = 0.001f, pasFinSirene_ = 0.001f, pasYelp_ = 0.001f;
     double posWail_ = 0, posYelp_ = 0;
+    float attSirene_ = 1, pasBaisse_ = 0.001f; bool baisseSirene_ = false;   // WFS-184 (RG-01) : sirène baissée pendant un jingle
     // WFS-174 : boucles de la route (≈ 2,5 s à 48 kHz, ≤ 0,5 Mo : RG-09) et leur état (thread audio seulement)
     std::vector<float> ventGrave_, ventAigu_, roulementB_, impulsionBord_, herbeB_, eauB_;
     std::atomic<float> cVent_{0}, cOuverture_{0}, cRoulement_{0}, cBord_{0}, cHerbe_{0}, cEau_{0}, cCadence_{15};
     float gVent_ = 0, gOuverture_ = 0, gRoulement_ = 0, gBord_ = 0, gHerbe_ = 0, gEau_ = 0, gCadence_ = 15, kRoute_ = 0.001f, rate_ = 48000;
     float phaseBattement_ = 0, phaseBord_ = 0;
-    size_t posVentG_ = 0, posVentA_ = 0, posRoulement_ = 0, posImpulsion_ = (size_t)-1, posHerbe_ = 0, posEau_ = 0;
+    size_t posImpulsion_ = (size_t)-1;
+    // WFS-184 (RG-04) : chaque boucle repart d'un point tiré au hasard à chaque tour, fondu de 15 ms (fonduRoute_)
+    std::vector<float> fonduRoute_;
+    sfx::LecteurAleatoire lVentG_{0x51ED27u}, lVentA_{0xA341316Cu}, lRoulement_{0xC8013EA4u}, lHerbe_{0xAD90777Du}, lEau_{0x7E95761Eu};
     std::atomic<bool> pret_{false};
 };
 

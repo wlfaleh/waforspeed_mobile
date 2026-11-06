@@ -76,12 +76,21 @@ int main(int argc, char** argv) {
     int nonMes = 0;
     for (const auto& l : rap.lignes) {
         if (l.domaine == "soleil") VERIFIE(l.etat == Etat::Conforme, "soleil : %s %s (réel %s)", l.id.c_str(), l.jeu.c_str(), l.reel.c_str());
+        // WFS-149 : les constantes des lignes sont lues dans shaders/route.glsl (découpage de scene.frag) : jamais perdues
+        if (l.domaine == "routes" && l.id == "route.lignes") VERIFIE(false, "routes non mesurables : %s", l.raison.c_str());
         if (l.domaine == "voitures" && l.id.find(".longueur") != std::string::npos) VERIFIE(l.etat != Etat::NonMesurable, "%s non mesurable : %s", l.id.c_str(), l.raison.c_str());
         nonMes += l.etat == Etat::NonMesurable;
     }
     VERIFIE(rap.lignes.size() > 150, "trop peu de mesures (%zu)", rap.lignes.size());
     for (const auto& [d, i] : rap.indices())
-        std::printf("état zéro (attendu) — %s : %.1f %% (%d / %d conformes, %d non mesurables)\n", d.c_str(), i.valeur(), i.conformes, i.conformes + i.nonConformes, i.nonMesurables);
+        std::printf("état zéro (attendu) — %s : %s (%d / %d conformes, %d non mesurables)\n", d.c_str(), i.enTexte().c_str(), i.conformes, i.conformes + i.nonConformes, i.nonMesurables);
+    {   // WFS-149 (RG-B, ANO-86) : domaine sans mesure possible → « non mesurable », jamais « 0.0 % »
+        Rapport r; r.nonMesurable("anthropometrie", "humain.*", "tailles", "modèles à venir");
+        const std::string t = r.texte("essai");
+        VERIFIE(t.find("anthropometrie : non mesurable") != std::string::npos && t.find("0.0 %") == std::string::npos,
+                "domaine sans mesure : « non mesurable » attendu dans le rapport");
+        VERIFIE(t.find("TOTAL : non mesurable") != std::string::npos, "total sans mesure : « non mesurable » attendu");
+    }
     if (argc > 2) {
         std::FILE* f = std::fopen(argv[2], "w");
         if (f) { const std::string t = rap.texte("WaForSpeed — mesures géométriques de fidélité (test_fidelite, WFS-148)"); std::fwrite(t.data(), 1, t.size(), f); std::fclose(f); }
