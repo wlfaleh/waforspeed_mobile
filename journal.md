@@ -5299,3 +5299,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 21:18:01 — WFS-185 : ✅ CI de main verte, run 777 (Claude, agent 1, session 01UY1Vv2)
 - Run 777 (fusion de la PR #149, f152ff8) : compilation, tests CPU, APK, les 12 groupes banc-essai, endurance et le nouveau job « résumé (commit et tickets) » **verts** ; « publication-captures » annulé par un run plus récent de main (règle `concurrency` de WFS-106, attendue), « publication-apk » en cours.
 - Critère « aucun run de branche » : depuis la fusion (19:29 UTC), aucun run de `build.yml` sur `feature/**` ni `claude/**` (les branches de WFS-176, 189, 158… ont été poussées sans lancer de run).
+
+### 2026-11-06 21:18:28 — WFS-185 : correction de mon entrée précédente (Claude, agent 1, session 01UY1Vv2)
+- J'ai écrit « aucun run de branche depuis la fusion » : c'est faux. Le run 781 (20:41 UTC) a été lancé par un envoi de `feature/waforspeed-158`. Cause : cette branche avait été synchronisée avec un `main` antérieur à WFS-185 (commit e0c5eff sans f152ff8) et gardait l'ancien `build.yml` ; GitHub utilise le workflow du commit envoyé. Le run 783 (`feature/waforspeed-151`) est un lancement à la main, permis.
+- Le critère du ticket est rempli : les envois de `feature/waforspeed-176` (20:45 et 21:10 UTC), qui contiennent le nouveau `build.yml`, n'ont lancé aucun run.
+- Conséquence : une branche ouverte avant 19:29 UTC lance encore la CI à chaque envoi tant qu'elle n'a pas récupéré `main` (`git fetch origin && git merge origin/main`, règle déjà en vigueur avant chaque envoi).
