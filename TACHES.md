@@ -261,7 +261,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-145 | [CI ROUGE] Job `endurance` de `main` en échec depuis WFS-94 (run 680) : Poursuite bloquée à 9,87 km à 0 km/h, 3 écarts au parcours, mémoire +10,7 % (seuil 10 %) | E7 (+ `src/world/**` E2, accroche ≤ 10 lignes E3 annoncée) | 🔧 En cours | Claude (session dev 5bx), 2026-11-06 00:56 UTC | WFS-94 ✅ | `feature/waforspeed-145` |  |  |
 | P1 Urgent | WFS-146 | Lot anomalies INTERFACE, 2e passage (1/2) : textes, « — », couleurs, biseaux, commandes tactiles, SANS changer l'échelle (ANO-16, 20, 32, 35, 39, 41, 43, 44, 45) — reprend les morceaux sûrs de WFS-102 | E8 (+ E5 `text.cpp`, `toasts.cpp`, `hud.cpp`, `shaders/ui*`) | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-06 02:38 UTC | — | `feature/waforspeed-146` | #125 |  |
 | P2 Haute | WFS-147 | Lot anomalies INTERFACE, 2e passage (2/2) : tailles lisibles sur téléphone, écran par écran, sans échelle globale, verdict QA avant fusion (ANO-17, 18, 19, 38, 42, 47) | E8 (+ E5 `src/ui/**`) | ✅ Fusionné (QA VALIDÉ avant fusion) | Claude (session trafic), 2026-11-06 04:11 UTC | WFS-146 ✅ | `feature/waforspeed-147` | #126 | VALIDÉ |
-| P2 Haute | WFS-148 | [RÉALISME 0.1] Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro | E0 (+ nouveaux `references/reel/**`, `tests/fidelite_*`, `src/render/bench_realisme.*`) | 🔧 En cours | expert-realisme-3d (session 0183bv2V), 2026-11-06 01:13 UTC | — | `feature/waforspeed-148` |  |  |
+| P2 Haute | WFS-148 | [RÉALISME 0.1] Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro | E0 (+ nouveaux `references/reel/**`, `tests/fidelite_*`, `src/render/bench_realisme.*`) | ✅ Terminé (fusion par confiance, QA de nuit à faire) | expert-realisme-3d (session 0183bv2V), 2026-11-06 01:13 UTC | — | `feature/waforspeed-148` | #127 | à recetter (`qa/Check.md`) |
 | P2 Haute | WFS-149 | [RÉALISME 0.2] Socle : textures compressées KTX2 (ASTC / ETC2) + mipmaps, tangentes MikkTSpace, shaders découpés par domaine | E0 | ⏳ En attente |  | WFS-148 validée | `feature/waforspeed-149` |  |  |
 | P2 Haute | WFS-150 | [RÉALISME 0.3] Socle : passes de rendu enfichables, pré-passe, capture d'environnement, niveau Ultra, coût GPU par passe | E0 | ⏳ En attente |  | WFS-149 validée | `feature/waforspeed-150` |  |  |
 | P2 Haute | WFS-151 | [RÉALISME 1.1] Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker | E13 | ⏳ En attente |  | WFS-150 validée | `feature/waforspeed-151` |  |  |
@@ -281,6 +281,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-165 | [RÉALISME 4.P2] Personnages : animations en capture de mouvement, mélanges, pieds au sol (IK), regard | E11 | ⏳ En attente |  | WFS-164 validée | `feature/waforspeed-165` |  |  |
 | P2 Haute | WFS-166 | [RÉALISME 4.P3] Personnages : comportements (trajets, feux, groupes, réactions, densité par lieu et heure, spectateurs) | E11 (+ lecture E3) | ⏳ En attente |  | WFS-165 validée | `feature/waforspeed-166` |  |  |
 | P2 Haute | WFS-167 | [RÉALISME 5] Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur | E13 | ⏳ En attente |  | WFS-148 à WFS-166 validées | `feature/waforspeed-167` |  |  |
+| P1 Urgent | WFS-168 | [URGENT] Retour en arrière de la taille des boutons d'avant WFS-147 (seulement la taille des boutons, le reste de WFS-147 gardé) ; ensuite plus personne ne touche à la taille des boutons jusqu'au test du QA avec émulateurs (ordre de l'utilisateur) | E8 (+ E5 `src/ui/**`) | ⏳ Prêt |  | — | `feature/waforspeed-168` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -803,7 +804,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] CI de `main` verte après la dernière fusion ; `TACHES.md`, `qa/Check.md`, Journal à jour pour WFS-89 et WFS-96
 - [ ] **Règle permanente** : aucune PR ouverte plus de 2 h sans décision (fusionnée, bloquée au Journal, ou gel iOS)
 
-**WFS-148 — Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro** · E0 · P2 Haute · 🔧 En cours — expert-realisme-3d (session 0183bv2V), 2026-11-06 01:13 UTC, branche `feature/waforspeed-148` · dépend de : — (règles : `regles-de-gestion/WFS-148.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+**WFS-148 — Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro** · E0 · P2 Haute · ✅ Terminé (PR #127, commit 0d923d5, fusion par confiance ; état zéro au Journal) — expert-realisme-3d (session 0183bv2V), 2026-11-06 01:13 UTC, branche `feature/waforspeed-148` · dépend de : — (règles : `regles-de-gestion/WFS-148.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
 - [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
@@ -882,6 +883,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-167 — Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-148 à WFS-166 validées (règles : `regles-de-gestion/WFS-167.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
 - [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-168 — [URGENT] Retour en arrière de la taille des boutons (ordre de l'utilisateur)** · E8 (+ E5) · P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-168.md`). Zone : `src/ui/ecrans/{reglages,salon,terrain,chargement,menu}.cpp`, seulement les valeurs de taille des boutons. Interdit : revert entier de WFS-147, textes, garage, HUD, commandes tactiles de course, toute autre suppression de code.
+- [ ] boutons, choix et touches à leur taille d'avant WFS-147 (`349f7d0`) sur les captures 1280 et 2400 de ces 5 écrans
+- [ ] le reste de WFS-147 identique (textes, ombre et ciel du terrain, étiquette du garage) ; tests CPU et parcours complet verts
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

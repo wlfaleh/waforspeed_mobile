@@ -3957,3 +3957,43 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Interdit** : `src/render/**`, `shaders/**`, `src/world/**`, `src/audio/**`, fichiers de WFS-136, lignes sirène / jingle de WFS-131, iOS (gel).
 - **Critères** : ceux de `regles-de-gestion/WFS-141.md` (gyrophares rouge puis bleu sans rose, bandeau petit à gauche, fins au gabarit Checkpoint « 2e PLACE », panneau des modes opaque, salon hors ligne lisible avec « Réessayer ») ; parcours complets RG-06 au Journal, `WFS_BANC=parcours` à 0 écart.
 - **Fusion** : règle en vigueur (confiance > 50 % → fusion directe ; ligne `qa/Check.md`, ✅, Journal ; suivi de la CI de main).
+
+### 2026-11-06 08:01:01 — PO remplacé sur ordre de l'utilisateur (Claude, session 0183bv2a)
+- **Ordre de l'utilisateur** : remplacer le PO par un PO qui exécute ses ordres, ne se moque pas de lui et ne commence pas par supprimer du code.
+- **Fait** : `.claude/agents/po-scrum-master.md` réécrit en tête : règle n°1 « tu exécutes les ordres de l'utilisateur » (ordre appliqué tel qu'écrit, ordres « on n'y touche plus » définitifs, jamais de suppression ni de revert de code fusionné sans ordre explicite, aucune règle de travail ajoutée sans demande, réponses respectueuses et courtes) et liste « Ordres permanents ».
+- **Ordres permanents inscrits** : (1) taille des boutons et des textes de l'interface : on n'y touche plus, `main` gardé tel quel, WFS-147 compris (pas d'annulation) ; (2) aucun retrait de code fusionné sans ordre.
+- **Rien d'autre n'a changé** : aucun code modifié, aucun revert envoyé (le retrait local de WFS-147 a été effacé avant tout envoi, sur ordre de l'utilisateur).
+
+### 2026-11-06 08:02:23 — Ordre permanent : le PO ne touche pas au code (Claude, session 0183bv2a)
+- Ordre de l'utilisateur inscrit dans `.claude/agents/po-scrum-master.md` : le PO ne modifie, n'annule ni ne supprime aucun fichier de code ou de construction ; il n'écrit que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et ses réponses dans `tache utilisateur.md`.
+
+### 2026-11-06 08:04:26 — Fin WFS-148 : référentiel du réel, banc de fidélité, état zéro de l'axe Réalisme (expert-realisme-3d)
+- **Fusion par confiance** : PR #127, commit de fusion 0d923d5 ; ligne dans `qa/Check.md` ; `TACHES.md` ✅. Je suis maintenant la CI de `main`.
+- **Livré**
+  - `references/reel/` : 8 fichiers JSON et `SOURCES.md`, 376 valeurs. Chacune a une source, une tolérance et un statut : 81 vérifiées dans un jeu de données téléchargé (empreinte SHA-256), 177 « à confirmer » (page de la source non ouverte), 23 « à sourcer » (aucune valeur fiable), le reste dérivé ou de conception. Extraction reproductible : `references/reel/outils/`.
+  - `soleil()` (équations NOAA, `src/render/bench_realisme.h`) et `test_fidelite_soleil` : 30 valeurs (10 cas) contre NREL SPA, plus grand écart 0,010° (tolérance 0,05°).
+  - `test_fidelite` : contrôle du référentiel (aucune valeur sans source ni tolérance), ΔE2000 contre colour-science, lecteur JSON borné, mesures géométriques (écarts « attendus », non bloquants, RG-08).
+  - `WFS_BANC=realisme` (job CI `realisme`) : 48 captures `realisme-*`, `realisme-etalon`, `realisme-fidelite.txt`, `realisme-mesures.txt`.
+- **État zéro chiffré** (indice = conformes / mesurables ; avant = après, WFS-148 ne change pas l'image)
+  - Soleil calculé (M-01) : **100 %** (30 / 30).
+  - Voitures (M-02) : **57,4 %** (81 / 141, 19 non mesurables). Longueur 20 / 20 (le convertisseur met chaque modèle à la longueur du catalogue) ; largeur 10 / 20 ; hauteur 10 / 20 (Abarth : boîte de 1,84 m pour 1,485 m réels) ; empattement 16 / 20 ; voies 11 / 34 ; roues 14 / 26.
+  - Routes (M-03) : **10 %** (1 / 10, 3 non mesurables). Voies de 5,0 et 4,55 m pour 3,50 m ; lignes discontinues 5,4 m / 12 m pour 3 m / 13 m (1,5 / 6,5 m en ville) ; bandes de passage piéton de 0,95 m pour 0,50 m ; seul l'intervalle (0,775 m) est conforme. Largeur des lignes : module u de l'IISR non lu, donc non mesurable.
+  - Couleurs (M-04) : **0 %** (0 / 24) ; ΔE2000 de 4,1 à 9,4 ; 3,2 en moyenne après balance des blancs et exposition (hors indice). Charte grise 18 % rendue à Y = 0,226 au lieu de 0,180 (exposition : 0 / 1).
+  - Soleil du jeu : **0 %** (0 / 4) ; hauteur de 48,1° sur les 4 cartes, contre 66 à 68° au moment proposé ; azimut non mesurable (pas de nord dans le monde).
+  - Photométrie : **50 %** (4 / 8) ; soleil à 5789 K (conforme, 5778 K) ; lumière de la lune très bleue, hors du domaine de McCamy ; lux et EV100 non mesurables (intensités sans unité).
+  - Matériaux, anthropométrie : non mesurables dans WFS-148 (prévus par WFS-155, 159, 164).
+- **Preuves locales** : 29 tests CPU verts ; parcours complet 0 écart ; anciennes captures `cartes` + `course-cam0-0` identiques au pixel entre main et la branche (20 / 20) ; banc réalisme lancé deux fois : 49 captures et rapport identiques. Coût du banc local : 6 min 35 s (lavapipe).
+- **Mesures (RG-06, lavapipe, ne représente pas un téléphone)** : de 122 à 169 ms par image en Basse et de 216 à 292 ms en Haute selon la carte ; passe de scène de 99 à 168 ms GPU ; mémoire du processus ≤ 776 Mo. Mémoire des textures non mesurable : pas de compteur dans `uploadTexture`, à ajouter par WFS-149.
+- **Points signalés au PO (décisions attendues, rien codé hors ticket)**
+  1. Le critère « 96 captures » ne correspond pas à RG-03 (12 × 2 × 2 = 48) : 48 livrées.
+  2. Azimut du soleil mesuré sur le ciel (Δaz × cos h) : près du zénith (cas à 88°), l'écart brut était de 0,065° pour 0,002° sur le ciel.
+  3. Les lieux, dates et heures de `lieux.json` sont des **propositions** (statut « conception ») à valider.
+  4. Source inaccessible (réseau de la session) : Wikipédia, Légifrance, Cerema (IISR), NOAA et sites constructeurs refusés. Les valeurs « à confirmer » demandent l'ouverture de ces pages (autoriser les hôtes, ou relecture humaine).
+  5. HDR avant tonemapping non mesurable : il faut une relecture de la cible HDR dans le Renderer (proposé pour WFS-150).
+  6. Les vues gardent le petit bouton « RÉGLAGES » du menu, en haut à droite.
+  7. `soleil()` est dans `bench_realisme.h` (zone du ticket) ; WFS-152 pourra le déplacer.
+### 2026-11-06 08:04:45 — WFS-168 créé : retour en arrière de la taille des boutons, sur ordre de l'utilisateur (Claude, session 0183bv2a)
+- **Ordre de l'utilisateur** : tâche urgente pour revenir en arrière **seulement sur la taille des boutons**, puis ne plus toucher à la taille des boutons jusqu'à un nouveau test du QA avec des émulateurs.
+- **Créé** : WFS-168 (E8 + E5, P1 Urgent, ⏳ Prêt), règles `regles-de-gestion/WFS-168.md` : boutons, choix et touches de réglages, salon, terrain, chargement et menu à leur taille d'avant WFS-147 (`349f7d0`) ; le reste de WFS-147 est gardé (textes, ANO-18, ANO-42, ANO-47, `petit_ecran.h`) ; pas de revert entier ; garage, HUD et commandes tactiles de course non touchés.
+- **Ordre permanent du PO mis à jour** (`.claude/agents/po-scrum-master.md`) : il remplace celui du matin (« garder WFS-147 tel quel ») ; après WFS-168, aucun ticket sur la taille des boutons tant que le QA n'a pas refait le test avec des émulateurs.
+- Aucun code modifié par le PO.
