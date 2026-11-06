@@ -26,12 +26,18 @@
 #include "../game/course_system.h"
 #include "../game/player.h"
 #include "../game/track.h"
+#include "../game/cars.h"          // WFS-175 : voitures en sens inverse
+#include "../game/roues.h"
+#include "../game/trace_cartes.h"   // WFS-175 : sections du tracé 2, bas-côtés (rayonInterieur)
+#include "../game/traffic.h"        // WFS-175 : TRAFFIC_PAINTS
+#include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "../render/eclairage.h"   // WFS-09
 #include "../render/effets_particules.h"   // WFS-94 : effets::versHdr (fenêtres allumées)
 #include "../../third_party/stb/stb_image.h"
 #include "../core/platform.h"
 #include "decor_carte.h"
+#include "enseignes.h"   // WFS-175 : atlas de textes (portiques)
 #include "vegetation.h"
 #include "ville_quartiers.h"
 #include "zones.h"
@@ -39,13 +45,15 @@
 namespace wfs {
 namespace {
 
-enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE, P_COUNT };   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
+enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE,
+           P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL, P_COUNT };   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
 enum Couleur {
     U_METAL, U_BANC, U_VITRE, U_PIERRE, U_EAU, U_ENTREPOT0, U_TOLE = U_ENTREPOT0 + 4, U_PORTE, U_CONT0, U_GRUE = U_CONT0 + 6,
     U_CABINE, U_ZEBRA, U_DALLE, U_GARDE_CORPS, U_PELOUSE, U_BETON, U_CHENE2, U_CHENE, U_PIN, U_PIN_BAS,
-    U_BLEU, U_ASPHALTE, U_BORDURE, U_NB   // WFS-137 : panneaux et plaques bleus, rue transversale, bordures de l'îlot
+    U_BLEU, U_ASPHALTE, U_BORDURE,   // WFS-137 : panneaux et plaques bleus, rue transversale, bordures de l'îlot
+    U_PEINTURE, U_CLAIR, U_BETON2, U_ACIER_LOIN, U_NB   // WFS-175 : marquage, parements du tunnel, béton (piles, lointain), acier au loin
 };
 constexpr uint32_t PALETTE[U_NB] = {
     0x3a3d44, 0x6b4a2e, 0xbfe8ff, 0xc9c4b8, 0x4aa3c7,
@@ -55,7 +63,10 @@ constexpr uint32_t PALETTE[U_NB] = {
     0xd9a21b, 0xe8e8e8, 0xe9e9e6, 0xcfcac0, 0x3a3d42,             // grue, cabine, passage piéton, dalle, garde-corps
     0x4e7a34, 0x6e6e6a,                                           // GCOL2.park, GCOL2.concrete
     0x5c4c3c, 0x4a3b2e, 0x8a5236, 0x4e4038,                       // BARK.oak2, oak, pine, pineLow (cases voisines)
-    0x1d5fb4, 0x3b3e43, 0xbdb9b0};                                // WFS-137 : bleu signalisation, asphalte, bordure
+    0x1d5fb4, 0x3b3e43, 0xbdb9b0,                                 // WFS-137 : bleu signalisation, asphalte, bordure
+    // WFS-175 : peinture routière blanche (sRGB 0xdcdcd6 → albédo ≈ 0,72, charte : marquage blanc 0,65-0,80), parement clair du tunnel (≈ 0,57),
+    // béton des piles (sRGB 0x908e89 → albédo ≈ 0,27, charte : béton 0,25-0,35)
+    0xdcdcd6, 0xc6c4bd, 0x908e89, 0x9a9ea3};   // acier galvanisé vu de loin (≈ 0,33, diffus : au-delà de 200 m)
 vec2 uvc(int c) { return {(c + 0.5f) / (float)U_NB, 0.5f}; }
 
 // teintes du feuillage (VEG_TINT de life.js) : tilleuls sur le matériau des platanes, pins sur leur propre matériau
@@ -230,6 +241,7 @@ public:
             }
         }
         abordsRondPoint(*g.track);   // WFS-137 (RG-01)
+        initOuvrages(r, *g.track);   // WFS-175
         size_t nl = 0;
         for (size_t a = 0; a < plan_->objets.size(); a++) for (const ville::Objet& o : plan_->objets[a])
             if (o.t == ville::LAMPE) { lampadaires().push_back({(int64_t)a, o.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville}); nl++; }
@@ -421,6 +433,7 @@ public:
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) const {
         const ville::Plan& P = *plan_;
         const int64_t L = (int64_t)P.objets.size(), a0 = c * CH, a1 = a0 + CH;
+        if (riv_.deb >= 0) solChunk(t, c, out[P_SOL]);   // WFS-175 : bas-côtés de Game, abaissés sous l'eau de la rivière
         for (int64_t a = a0; a < a1; a++) {
             const int64_t seg = ((a % L) + L) % L;   // la piste se répète (tours)
             const char* z = zoneId(*t.map(), seg, L);
@@ -431,7 +444,9 @@ public:
                 const carte::Pose p1 = carte::poseAt(t, a + 1);
                 Geo& w = out[P_TROTTOIR];
                 const float v0 = (float)(a * SEG_M), v1 = (float)((a + 1) * SEG_M), R = (float)RW;
+                const uint8_t vo = P.voie[(size_t)seg];   // WFS-175 : pas de trottoir sous la voûte, sur le pont, ni côté chaussée opposée
                 for (int s : {-1, 1}) {
+                    if (vo == ville::TUNNEL || vo == ville::PONT || (vo == ville::AUTOROUTE && s < 0)) continue;
                     const uint32_t k = (uint32_t)w.v.size();
                     // WFS-137 (RG-C1) : côté intérieur d'une courbe serrée, jamais au-delà de 90 % du rayon (comme Game)
                     auto som = [&](const carte::Pose& q, int64_t sa, float lat, float v) {
@@ -448,7 +463,9 @@ public:
             if (const int nb = ville::bandes(z, bd)) {   // pelouse du parc, béton du port (des deux côtés, comme GROUND.city)
                 const carte::Pose p1 = carte::poseAt(t, a + 1);
                 const vec2 col = uvc(std::strcmp(z, "parc") ? U_BETON : U_PELOUSE);
+                const uint8_t vo = P.voie[(size_t)seg];
                 for (int s : {-1, 1}) for (int i = 0; i < nb; i++) {
+                    if (vo != ville::RUE && (s < 0 || vo != ville::AUTOROUTE)) continue;   // WFS-175 : chaussée opposée, tunnel, rivière
                     const ville::Bande& b = bd[i];
                     const float l0 = P.lim(a, s), l1 = P.lim(a + 1, s);   // WFS-137 (RG-C1) : côté intérieur des courbes serrées
                     // WFS-137 (RG-A) : devant un immeuble, la pelouse ou le béton commencent derrière le trottoir prolongé
@@ -460,6 +477,27 @@ public:
             }
             for (const ville::Objet& o : P.objets[(size_t)seg]) objet(t, o, a, seg, z, p, lod, out);
             lieux(t, a, seg, p, lod, out);   // WFS-137 : rond-point et carrefours du tracé 2
+            if (!P.voie.empty() && P.voie[(size_t)seg] != ville::RUE) {   // WFS-175 : autoroute, tunnel, pont
+                if (!lod) ouvrages(t, a, seg, false, out);
+                else {   // au-delà de 200 m : béton, acier, asphalte et voûte dans la palette (un seul matériau), sans lettres
+                    Geo tmp[P_COUNT];
+                    ouvrages(t, a, seg, true, tmp);
+                    struct Fond { int part, couleur; float k; };
+                    const Fond fonds[] = {{P_BETON, U_BETON2, 1.f}, {P_VOUTE, U_BETON2, 0.4f}, {P_ACIER, U_ACIER_LOIN, 1.f}, {P_ROUTE, U_ASPHALTE, 1.f}};
+                    for (int q = 0; q < P_COUNT; q++) {
+                        if (q == P_TEXTE || tmp[q].i.empty()) continue;
+                        const Fond* f = nullptr;
+                        for (const Fond& x : fonds) if (x.part == q) f = &x;
+                        Geo& dst = f ? out[P_UNI] : out[q];
+                        const uint32_t base = (uint32_t)dst.v.size();
+                        for (Vertex w : tmp[q].v) {
+                            if (f) { w.u = uvc(f->couleur).x; w.v = uvc(f->couleur).y; w.nx *= f->k; w.ny *= f->k; w.nz *= f->k; }
+                            dst.v.push_back(w);
+                        }
+                        for (uint32_t i : tmp[q].i) dst.i.push_back(base + i);
+                    }
+                }
+            }
         }
     }
 
@@ -576,6 +614,461 @@ public:
         }
     }
 
+    // WFS-175 : sections du tracé 2 (tunnel, pont, autoroute), matériaux, portiques, candélabres, voitures en sens inverse
+    void initOuvrages(Renderer& r, Track& t) {
+        const int64_t L = (int64_t)plan_->objets.size();
+        auto mod = [&](int64_t x) { return ((x % L) + L) % L; };
+        bool vu = false;
+        int64_t auDeb = -1, auFin = -1;
+        for (const trace::Section& s : trace::sections(t)) {
+            if (s.type == trace::Type::Tunnel && tun_.first < 0) tun_ = {mod(s.debut), mod(s.fin)};
+            if (s.type == trace::Type::Pont && riv_.deb < 0) {
+                riv_.deb = mod(s.debut); riv_.fin = riv_.deb + (s.fin - s.debut);
+                const int64_t berge = (int64_t)std::lround(20 / SEG_M);   // 20 m de culée de chaque côté
+                riv_.d0 = riv_.deb + berge; riv_.d1 = riv_.fin - berge; riv_.mil = (riv_.deb + riv_.fin) / 2;
+                riv_.yw = (float)t.point((double)s.debut * SEG, 0).y - PONT_EAU;
+                if (riv_.d1 >= L) riv_ = Riviere{};   // pont à cheval sur la fin du tour : pas de rivière (n'arrive pas au tracé 2)
+            }
+            if (s.autoroute && !vu) { if (auDeb < 0) auDeb = s.debut; auFin = s.fin; }   // premier tronçon continu d'autoroute (tunnel compris)
+            else if (auDeb >= 0) vu = true;
+        }
+        if (auDeb >= 0) au_ = {mod(auDeb), mod(auDeb) + (auFin - auDeb)};
+        bool ouvrage = false;
+        for (uint8_t v : plan_->voie) ouvrage = ouvrage || v != ville::RUE;
+        if (!ouvrage) return;
+        {   // béton de coffrage (texture procédurale, 2,4 × 2,4 m) : albédo moyen ≈ 0,30 (charte : 0,25-0,35), joints de banches tous
+            // les 1,2 m, trous d'entretoises, nuances de prise ; rugosité 0,9, jamais métallique
+            constexpr int N = 256;
+            std::vector<uint8_t> px((size_t)N * N * 4);
+            Mulberry32 Rb(1750);
+            float bruit[32][32];
+            for (auto& l : bruit) for (float& b : l) b = (float)Rb.next();
+            auto lisse = [&](float x, float y) {   // bruit de valeur, périodique sur 32 cases
+                const int x0 = (int)std::floor(x), y0 = (int)std::floor(y); const float fx = x - x0, fy = y - y0;
+                auto B = [&](int i, int j) { return bruit[((j % 32) + 32) % 32][((i % 32) + 32) % 32]; };
+                const float sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+                return (B(x0, y0) * (1 - sx) + B(x0 + 1, y0) * sx) * (1 - sy) + (B(x0, y0 + 1) * (1 - sx) + B(x0 + 1, y0 + 1) * sx) * sy;
+            };
+            for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) {
+                const float u = (float)x / N * 32, v = (float)y / N * 32;
+                float a = 0.30f * (0.86f + 0.18f * lisse(u / 4, v / 4) + 0.08f * lisse(u * 2, v * 2) + 0.06f * (float)Rb.next() - 0.1f);
+                const int jx = x % (N / 2), jy = y % (N / 2);
+                if (jy < 2 || jx < 1) a *= 0.8f;                                                   // joints de banches (1,2 m)
+                const int tx = (x % (N / 2)) - N / 4, ty = (y % (N / 2)) - N / 4;
+                if (tx * tx + ty * ty < 9) a *= 0.55f;                                             // trou d'entretoise
+                const uint8_t c = (uint8_t)std::clamp(std::pow(std::max(a, 0.f), 1 / 2.2f) * 255.f + 0.5f, 0.f, 255.f);
+                uint8_t* q = &px[((size_t)y * N + x) * 4];
+                q[0] = c; q[1] = (uint8_t)std::max(0, c - 2); q[2] = (uint8_t)std::max(0, c - 5); q[3] = 255;
+            }
+            betonTex_ = r.vk().uploadTexture(px.data(), N, N, true);
+            // éclairé d'un seul côté (pas MAT_VTINT) : les lumières du tunnel n'éclairent pas la face extérieure des têtes
+            Material m; m.rough = 0.9f; m.flags = MAT_DOUBLE;
+            mats_[P_BETON] = r.makeMaterial(m, &betonTex_, nullptr, nullptr);
+            // voûte : le moteur n'a ni occultation ambiante ni éclairage d'environnement (DA-realisme.md § 1) ; sous la dalle, la
+            // lumière du ciel n'arrive pas : couleur × 0,4 (comme la voûte de la Corniche, × 0,3 sous la roche)
+            m.color = {0.4f, 0.4f, 0.4f, 1};
+            mats_[P_VOUTE] = r.makeMaterial(m, &betonTex_, nullptr, nullptr);
+        }
+        // acier galvanisé terni (glissières, portiques, arcs, mâts) : métal, albédo ≈ 0,56 (zinc terni), rugosité 0,6 (galvanisation
+        // à chaud vieillie, mate : moins de reflets des lampadaires sur les mâts la nuit)
+        { Material m; m.color = {0.56f, 0.57f, 0.58f, 1}; m.metal = 1; m.rough = 0.6f; m.flags = MAT_DOUBLE; mats_[P_ACIER] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
+        // luminaires au sodium haute pression ≈ 2000 K (DA-realisme.md : 1900-2200 K), allumés jour et nuit (tunnel)
+        { Material m; m.color = {0.2f, 0.2f, 0.2f, 1}; m.rough = 0.5f; m.flags = MAT_DOUBLE; m.emissive = vec3{1.f, 0.42f, 0.09f} * (nuit_ ? 3.f : 5.f);
+          mats_[P_SODIUM] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
+        { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // asphalte de Game
+        // eau de rivière : sombre (albédo ≈ 0,04), lisse (rugosité 0,08), F0 diélectrique 0,02 : le ciel s'y reflète
+        { Material m; m.color = {0.035f, 0.05f, 0.055f, 1}; m.rough = 0.08f; m.metal = 0; mats_[P_EAU] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
+        { Material m; m.flags = MAT_GROUND; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game
+        // portiques : 3 au plus sur l'autoroute, à 150 m du début puis tous les 420 m (pas dans les 60 m avant le tunnel)
+        static const char* const DIR[3][2] = {{"Centre", "Port"}, {"Port", "Aéroport"}, {"Aéroport", "Centre"}};
+        if (au_.first >= 0) {
+            for (int64_t sgm = au_.first + (int64_t)(150 / SEG_M); sgm < au_.second && portiques_.size() < 3; sgm += 5) {
+                bool ok = true;
+                for (int64_t k = -2; k <= (int64_t)(60 / SEG_M) && ok; k++) ok = plan_->voie[(size_t)mod(sgm + k)] == ville::AUTOROUTE;
+                if (!ok) continue;
+                const int i = (int)portiques_.size();
+                portiques_.push_back({mod(sgm), DIR[i][0], DIR[i][1]});
+                sgm += (int64_t)(420 / SEG_M) - 5;
+            }
+            for (int i = 0; i < 3; i++) for (const char* x : DIR[i]) atlas_.ajouter(x);
+            if (atlas_.construire(r)) texteMat_ = &atlas_.materiau(r, 0xf4f4f0, nuit_ ? 0.45f : 0.12f, 0.45f);
+            // voitures en sens inverse : deux modèles qui ne sont pas ceux du trafic (variété), version allégée au loin
+            for (int i = 0; i < 2; i++) if (!loadCarModel(r, i ? "cars/x5.wfm" : "cars/p208.wfm", autos_[i])) WFS_ERR("Ville : modèle du sens inverse introuvable");
+        }
+        // éclairage de nuit (nuit.cpp, les 4 plus proches) : candélabres de l'autoroute, du pont, points du tunnel tous les 14,4 m
+        for (int64_t a = 0; a < L; a++) {
+            const uint8_t v = plan_->voie[(size_t)a];
+            if (v == ville::AUTOROUTE && a % LAMPE_AR == 0 && !presPortique(a)) lampadaires().push_back({a, -((float)RW + AR_DBA - 2.5f), 11.8f, StyleLampadaire::Ville});
+            if (v == ville::PONT && a % LAMPE_PONT == 0) {
+                const float sd = ((a / LAMPE_PONT) % 2 == 0) ? 1.f : -1.f;
+                lampadaires().push_back({a, sd * ((float)RW + 4.25f - 1.3f), 7.4f, StyleLampadaire::Ville});
+            }
+        }
+        if (tun_.first >= 0) for (int64_t n = tun_.first + 21, k = 0; n < tun_.first + mod(tun_.second - tun_.first) - 21; n += 12, k++)
+            lampadaires().push_back({mod(n), (k % 2 ? 1.f : -1.f) * 1.8f, TUN_H - 0.4f, StyleLampadaire::Ville});
+        WFS_LOG("Ville (WFS-175) : autoroute %lld-%lld, tunnel %lld-%lld, pont %lld-%lld (eau à %.1f m), %zu portique(s)",
+                (long long)au_.first, (long long)au_.second, (long long)tun_.first, (long long)tun_.second, (long long)riv_.deb, (long long)riv_.fin,
+                riv_.yw, portiques_.size());
+    }
+
+    // WFS-175 : voitures en sens inverse sur la chaussée opposée (3 voies ; 94 à 119 km/h, la voie de gauche la plus rapide), à
+    // horaire fixe (même temps → même position), 2 au plus dans le champ (coût : ≈ 30 appels de dessin chacune) (−30 à 280 m) ; phares allumés la nuit (feux du modèle)
+    int sensInverse(Renderer& r, const GameView& g, int64_t aP) {
+        if (au_.first < 0 || !autos_[0].ok) return 0;
+        Track& t = *g.track;
+        const int64_t L = (int64_t)plan_->objets.size();
+        const double lon = (double)(au_.second - au_.first) * SEG_M;
+        int n = 0;
+        for (int i = 0; i < 18 && n < 2; i++) {
+            const int vi = i % 3;
+            const double v = vi == 0 ? 33.0 : vi == 1 ? 30.0 : 26.0;
+            const double m = lon - std::fmod(i * 83.0 + 29.0 * vi + v * g.time, lon);
+            const int64_t sl = au_.first + (int64_t)(m / SEG_M);
+            const double sA = (double)proche(sl % L, aP) + std::fmod(m, SEG_M) / SEG_M;
+            const double dz = (sA - g.player->dist / SEG) * SEG_M;
+            if (dz < -30 || dz > 280) continue;
+            const float lat = -((float)RW + 8.05f + 3.5f * vi);
+            t.pose((int64_t)sA - 1); t.pose((int64_t)sA + 2);
+            const TrackPoint p = t.point(sA * SEG, lat);
+            const Model& mo = autos_[i % 2];
+            const mat4 w = translate({(float)p.x, (float)p.y + 0.15f, (float)p.z}) * rotateY((float)-(p.th + PI)) * rotateX((float)-p.slope);
+            const vec3 paint = carte::linHex(TRAFFIC_PAINTS[(i * 5 + 2) % 9]);
+            const RouesPose rp = roues::poseTrafic(0, false, v * g.time / M, mo.nRoues ? mo.roues[0].rayon : roues::RW_DEFAUT);
+            FeuxVoiture f; f.nuit = nuit_;
+            r.feuxProchaineVoiture(f);
+            r.draw(mo, w, &paint, &rp);
+            n++; piecesInv_ += (int)mo.parts.size();   // borne haute des appels (version allégée au loin : moins)
+        }
+        return n;
+    }
+
+    // ======================================================================================================================
+    // WFS-175 (RG-03 de WFS-137) : autoroute urbaine, tunnel et pont du tracé 2. Dimensions réelles (source en commentaire) :
+    //   - autoroute : chaussée opposée de 3 voies de 3,50 m, bande dérasée de gauche 1,00 m, bande d'arrêt d'urgence 2,50 m
+    //     (ICTAVRU, voies rapides urbaines de type A) ; marquage de 15 cm (2u, u = 7,5 cm sur autoroute), lignes T1 de
+    //     3 m de trait pour 10 m d'intervalle entre les voies (IISR, 7e partie, art. 113 et 115) ; séparateur en béton
+    //     double face (DBA, profil « New Jersey » : 0,80 m de haut, 0,60 m à la base) ; glissière GS (lisse en W de 0,31 m,
+    //     haut à 0,75 m, supports tous les 4 m, NF EN 1317 / SETRA) ; écran antibruit de 4 m ; candélabres de 12 m tous les
+    //     36 m (interdistance ≈ 3 hauteurs) ; portiques de signalisation : 5,50 m de hauteur libre sous les panneaux (IISR,
+    //     5e partie), panneaux bleus de 4,6 × 2,2 m, lettres blanches de 0,55 m ;
+    //   - tunnel : deux tubes (un par sens), gabarit et voûte du tunnel de la Corniche (piédroits 3,2 m, clé 7,6 m, CETU),
+    //     parements clairs jusqu'à 3,2 m ; luminaires au sodium haute pression (≈ 2000 K), zone de seuil renforcée sur les
+    //     60 premiers mètres et 30 derniers (deux rangées, un tube de 1,5 m tous les 3,6 m), puis zone intérieure (une rangée,
+    //     un tube tous les 6 m) : éclairage de seuil plus fort que l'intérieur (CIE 88:2004) ;
+    //   - pont : deux arcs en acier (bow-string) de 100 m de portée et 16 m de flèche (rapport 1/6), suspentes tous les 6 m,
+    //     tirants en caisson ; tablier de 1,4 m (corniche à 0,25 m au-dessus du trottoir), garde-corps de 1,00 m au-dessus du
+    //     trottoir (NF P 01-012 : ≥ 1,00 m), pile centrale avec avant-becs, quais en béton, eau à 5,5 m sous les culées.
+    // ======================================================================================================================
+    static constexpr float TUN_PIED = 3.2f, TUN_H = 7.6f, TUN_DESSUS = 8.4f;   // piédroits, clé de voûte, dessus de la dalle (m)
+    static constexpr float AR_TPC = 4.f, AR_TPC_FIN = 5.3f, AR_DBA = 4.95f;     // terre-plein central : de RW + 4 à RW + 5,3 ; DBA au milieu
+    static constexpr float AR_OPP0 = 5.3f, AR_OPP1 = 19.3f;                      // chaussée opposée : BDG 1 + 3 × 3,5 + BAU 2,5 = 14 m
+    static constexpr float AR_GS_D = 3.6f, AR_GS_G = 19.6f, AR_ECRAN = 20.5f;    // glissières droite et gauche, écran antibruit
+    static constexpr float TUN_OPP_C = 12.3f, TUN_OPP_W = 7.3f;                  // tube opposé : centre −(RW + 12,3), demi-largeur
+    static constexpr float PONT_CORN = 4.45f, PONT_ARC = 5.f, PONT_SOUS = -1.25f, PONT_EAU = 5.5f, PONT_FLECHE = 16.f;
+    static constexpr int LAMPE_AR = 30, LAMPE_PONT = 25;                         // segments entre deux candélabres (36 m, 30 m)
+    static constexpr float TUILE_BETON = 2.4f;                                   // m par tuile de la texture du béton
+
+    // point de la route au segment (fractionnaire) s, latéral lat (m), hauteur y au-dessus de la chaussée
+    static vec3 Wp(Track& t, double s, float lat, float y) { const TrackPoint p = t.point(s * SEG, lat); return {(float)p.x, (float)p.y + y, (float)p.z}; }
+    // quad à normale calculée (côté avant = ordre a, b, c), longueur k de la normale (luminosité des matériaux MAT_VTINT)
+    static void quadN(Geo& g, vec3 a, vec3 b, vec3 c, vec3 d, vec2 ua, vec2 ub, vec2 uc, vec2 ud, float k = 1) {
+        vec3 n = cross(b - a, c - a); const float l = length(n);
+        n = l > 1e-9f ? n * (k / l) : vec3{0, k, 0};
+        const uint32_t i = (uint32_t)g.v.size();
+        for (auto [p, u] : {std::pair{a, ua}, {b, ub}, {c, uc}, {d, ud}}) g.v.push_back({p.x, p.y, p.z, n.x, n.y, n.z, u.x, u.y});
+        g.i.insert(g.i.end(), {i, i + 1, i + 2, i, i + 2, i + 3});
+    }
+    // profil transversal (lat, y) extrudé de s0 à s1 (segments) ; uv en mètres / tuile (u le long du profil, v le long de la route)
+    static void extrude(Track& t, Geo& g, double s0, double s1, const vec2* pr, int n, float tuile, float k) {
+        const float v0 = (float)std::fmod(s0 * SEG_M, 480.0) / tuile, v1 = v0 + (float)((s1 - s0) * SEG_M) / tuile;
+        float u = 0;
+        for (int i = 0; i + 1 < n; i++) {
+            const float l = std::hypot(pr[i + 1].x - pr[i].x, pr[i + 1].y - pr[i].y);
+            quadN(g, Wp(t, s0, pr[i].x, pr[i].y), Wp(t, s1, pr[i].x, pr[i].y), Wp(t, s1, pr[i + 1].x, pr[i + 1].y), Wp(t, s0, pr[i + 1].x, pr[i + 1].y),
+                  {u / tuile, v0}, {u / tuile, v1}, {(u + l) / tuile, v1}, {(u + l) / tuile, v0}, k);
+            u += l;
+        }
+    }
+    // profil d'un tube : pied du piédroit (c + w, 0), piédroit, voûte elliptique jusqu'à la clé (TUN_H), autre piédroit
+    static int profilTube(vec2 pts[24], float c, float w) {
+        int n = 0;
+        pts[n++] = {c + w, 0.f};
+        for (int k = 0; k <= 16; k++) { const float f = PI * k / 16; pts[n++] = {c + w * std::cos(f), TUN_PIED + (TUN_H - TUN_PIED) * std::sin(f)}; }
+        pts[n++] = {c - w, 0.f};
+        return n;
+    }
+    // hauteur de la voûte de notre tube au latéral lat
+    static float voute(float lat) { const float q = std::min(1.f, std::fabs(lat) / ((float)RW + 4.f)); return TUN_PIED + (TUN_H - TUN_PIED) * std::sqrt(1 - q * q); }
+
+    // rivière sous le pont : segments du tour (deb, fin : section ; d0, d1 : quais ; mil : pile centrale), niveau de l'eau (absolu)
+    struct Riviere { int64_t deb = -1, fin = -1, d0 = -1, d1 = -1, mil = -1; float yw = 0; };
+    bool dansRiviere(int64_t seg) const { return riv_.deb >= 0 && seg > riv_.d0 && seg < riv_.d1; }   // sol abaissé sous l'eau
+    // portique : segment, textes des deux panneaux (gauche, droite)
+    struct Portique { int64_t seg; const char* g; const char* d; };
+    bool presPortique(int64_t seg) const {   // candélabre à moins de 12 m d'un portique : retiré (pas de lanterne contre les panneaux)
+        for (const Portique& q : portiques_) if (std::llabs(q.seg - seg) * SEG_M < 12) return true;
+        return false;
+    }
+
+    // bas-côtés de Game (Game::buildChunkCpu, bande 2, même calcul au bit près : mêmes sommets, mêmes normales), sauf sous le pont
+    // où ils passent sous l'eau : dessinés par la Ville à la place de Game quand la rivière est en vue (remplaceSol)
+    void solChunk(Track& t, int64_t c, Geo& G) const {
+        const int64_t a0 = c * CH, L = (int64_t)plan_->objets.size();
+        const float R = (float)RW, WALK_W = 4.0f, CURB_H = 0.15f, GROUND_W = 260.f;
+        auto strip = [&](const std::vector<std::pair<float, float>>& prof) {
+            auto& V = G.v; auto& I = G.i;
+            const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)V.size();
+            for (int i = 0; i <= CH; i++) {
+                const double s = (double)(a0 + i) * SEG;
+                const trace::Rayon ri = trace::rayonInterieur(t, s);
+                const bool eau = dansRiviere((((a0 + i) % L) + L) % L);
+                for (uint32_t k = 0; k < cols; k++) {
+                    const float lat = prof[k].first, lim = (float)(0.9 * (lat > 0 ? ri.droite : ri.gauche));
+                    TrackPoint p = t.point(s, ri.m < 60 && std::abs(lat) > lim ? (lat > 0 ? lim : -lim) : lat);
+                    const float y = eau ? riv_.yw - 1.5f : (float)(p.y + prof[k].second);   // WFS-175 : lit de la rivière
+                    V.push_back({(float)p.x, y, (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
+                }
+            }
+            for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+                uint32_t q = base + i * cols + k;
+                I.insert(I.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
+            }
+        };
+        strip({{-R - WALK_W - GROUND_W, -6.f}, {-R - WALK_W - 80.f, -0.8f}, {-R - WALK_W - 20.f, 0.f}, {-R - WALK_W, CURB_H - 0.02f}});
+        strip({{R + WALK_W, CURB_H - 0.02f}, {R + WALK_W + 20.f, 0.f}, {R + WALK_W + 80.f, -0.8f}, {R + WALK_W + GROUND_W, -6.f}});
+        auto& V = G.v; auto& I = G.i;
+        for (auto& v : V) { v.nx = v.ny = v.nz = 0; }
+        for (size_t k = 0; k + 2 < I.size(); k += 3) {
+            Vertex &A = V[I[k]], &B = V[I[k + 1]], &C = V[I[k + 2]];
+            vec3 e1{B.px - A.px, B.py - A.py, B.pz - A.pz}, e2{C.px - A.px, C.py - A.py, C.pz - A.pz};
+            vec3 n = cross(e1, e2);
+            if (n.y < 0 && std::fabs(n.y) > 0.3f * length(n)) n = -n;
+            for (Vertex* x : {&A, &B, &C}) { x->nx += n.x; x->ny += n.y; x->nz += n.z; }
+        }
+        for (auto& v : V) { vec3 n = normalize({v.nx, v.ny, v.nz}); if (length(n) < 0.5f) n = {0, 1, 0}; v.nx = n.x; v.ny = n.y; v.nz = n.z; }
+    }
+
+    // ouvrages du segment a (seg : sur un tour) : appelé en parallèle, lit seulement la piste et le plan
+    void ouvrages(Track& t, int64_t a, int64_t seg, bool lod, Geo out[P_COUNT]) const {
+        const uint8_t vo = plan_->voie[(size_t)seg];
+        if (vo == ville::RUE) return;
+        const float R = (float)RW;
+        const double s0 = (double)a, s1 = (double)(a + 1);
+        const carte::Pose p = carte::poseAt(t, a);
+        const vec3 up{0, 1, 0};
+        Geo& U = out[P_UNI];
+        const double dist = (double)a * SEG_M;   // abscisse (m) : phase des tirets et des supports
+        auto chaque = [&](double pas) { return std::floor(dist / pas) != std::floor((dist + SEG_M) / pas); };   // un repère tous les « pas » m
+        // glissière GS : lisse en W (0,44 à 0,75 m) posée à y0, face vers la chaussée (dir = −1 : face vers la gauche), supports
+        auto glissiere = [&](float lat, float dir, float y0) {
+            static const vec2 Wl[5] = {{0, 0.44f}, {0.05f, 0.52f}, {0, 0.60f}, {0.05f, 0.67f}, {0, 0.75f}};
+            vec2 pr[5];
+            for (int i = 0; i < 5; i++) pr[i] = {lat - dir * Wl[i].x, y0 + Wl[i].y};
+            extrude(t, out[P_ACIER], s0, s1, pr, 5, 1.f, 1.f);
+            if (!lod && chaque(4.0)) carte::box(out[P_ACIER], Wp(t, s0, lat + dir * 0.12f, y0), p.r, p.f, 0.05f, 0.62f, 0.1f, {0, 0});
+        };
+        if (vo == ville::AUTOROUTE || vo == ville::TUNNEL) {
+            // chaussée opposée (asphalte de la route, sans le marquage du moteur : uv latéral hors des lignes) et son marquage
+            const float c0 = -(R + AR_OPP0), c1 = -(R + AR_OPP1), cm = (c0 + c1) / 2, y = 0.15f;
+            const vec3 A = Wp(t, s0, c0, y), B = Wp(t, s1, c0, y), C = Wp(t, s1, c1, y), D = Wp(t, s0, c1, y);
+            const float va = (float)dist, vb = (float)(dist + SEG_M);
+            quadN(out[P_ROUTE], A, B, C, D, {c0 - cm, va}, {c0 - cm, vb}, {c1 - cm, vb}, {c1 - cm, va});   // normale vers le haut
+            auto ligne = [&](float l0, float l1, double t0, double t1) {   // bande peinte de l0 à l1 (m), de t0 à t1 (segments)
+                carte::quadSol(U, Wp(t, t0, l0, y + 0.012f), Wp(t, t0, l1, y + 0.012f), Wp(t, t1, l1, y + 0.012f), Wp(t, t1, l0, y + 0.012f), uvc(U_PEINTURE));
+            };
+            ligne(-(R + 6.15f), -(R + 6.3f), s0, s1);       // rive gauche (côté terre-plein)
+            ligne(-(R + 16.8f), -(R + 16.95f), s0, s1);     // rive droite (bande d'arrêt d'urgence)
+            const double ph = std::fmod(dist, 13.0);          // T1 : 3 m peints, 10 m vides
+            if (ph < 3.0) {
+                const double fin = std::min(SEG_M, 3.0 - ph) / SEG_M;
+                for (float l : {R + 9.8f, R + 13.3f}) ligne(-(l - 0.075f), -(l + 0.075f), s0, s0 + fin);
+            } else if (ph + SEG_M > 13.0) {
+                const double deb = (13.0 - ph) / SEG_M;
+                for (float l : {R + 9.8f, R + 13.3f}) ligne(-(l - 0.075f), -(l + 0.075f), s0 + deb, s1);
+            }
+        }
+        if (vo == ville::AUTOROUTE) {
+            // terre-plein central en béton (dalle) et séparateur DBA « New Jersey » (0,80 m, base 0,60 m)
+            { const vec2 dalle[2] = {{-(R + AR_TPC), 0.15f}, {-(R + AR_TPC_FIN), 0.15f}}; extrude(t, out[P_BETON], s0, s1, dalle, 2, TUILE_BETON, 1.f); }
+            const float c = -(R + AR_DBA), b = 0.15f;
+            const vec2 dba[8] = {{c + 0.30f, b}, {c + 0.30f, b + 0.075f}, {c + 0.20f, b + 0.25f}, {c + 0.09f, b + 0.80f},
+                                 {c - 0.09f, b + 0.80f}, {c - 0.20f, b + 0.25f}, {c - 0.30f, b + 0.075f}, {c - 0.30f, b}};
+            extrude(t, out[P_BETON], s0, s1, dba, 8, TUILE_BETON, 1.f);
+            glissiere(R + AR_GS_D, 1.f, 0.15f);              // à droite, sur l'accotement, face à notre chaussée
+            glissiere(-(R + AR_GS_G), -1.f, 0.15f);          // à gauche, au bord de la bande d'arrêt opposée
+            // écran antibruit : voile de béton de 4 m, poteaux HEA tous les 4 m
+            const vec2 ecran[4] = {{-(R + AR_ECRAN - 0.1f), -0.4f}, {-(R + AR_ECRAN - 0.1f), 4.f}, {-(R + AR_ECRAN + 0.1f), 4.f}, {-(R + AR_ECRAN + 0.1f), -0.4f}};
+            extrude(t, out[P_BETON], s0, s1, ecran, 4, TUILE_BETON, 1.f);
+            if (!lod && chaque(4.0)) carte::box(out[P_ACIER], Wp(t, s0, -(R + AR_ECRAN - 0.2f), -0.2f), p.r, p.f, 0.16f, 4.3f, 0.16f, {0, 0});
+            // candélabre de 12 m sur le terre-plein, crosses de 2,6 m vers les deux chaussées, lanternes au sodium
+            if (seg % LAMPE_AR == 0 && !presPortique(seg)) {
+                const vec3 pied = Wp(t, s0, c, b + 0.8f);
+                carte::cyl(out[P_ACIER], pied, 0.11f, 11.2f, 8, {0, 0});
+                for (float sd : {1.f, -1.f}) {
+                    carte::box(out[P_ACIER], pied + p.r * (sd * 1.3f), p.r, p.f, 2.6f, 0.08f, 0.08f, {0, 0}, 11.f);
+                    carte::box(out[P_SODIUM], pied + p.r * (sd * 2.5f), p.r, p.f, 0.7f, 0.12f, 0.32f, {0, 0}, 10.88f);
+                }
+            }
+            for (const Portique& pq : portiques_) if (pq.seg == seg) portique(t, a, pq, out);
+        }
+        if (vo == ville::TUNNEL) {
+            const int64_t L = (int64_t)plan_->objets.size();
+            auto mod = [&](int64_t x) { return ((x % L) + L) % L; };
+            vec2 pts[24];
+            for (int tube = 0; tube < 2; tube++) {
+                const float cc = tube ? -(R + TUN_OPP_C) : 0.f, w = tube ? TUN_OPP_W : R + 4.f;
+                const int n = profilTube(pts, cc, w);
+                // parements clairs des piédroits (couleur de la palette, luminosité 0,5 : lumière du ciel masquée) ; voûte en béton
+                for (int cote : {0, n - 2}) {
+                    const size_t k0 = U.v.size();
+                    extrude(t, U, s0, s1, pts + cote, 2, TUILE_BETON, 0.5f);
+                    for (size_t k = k0; k < U.v.size(); k++) { U.v[k].u = uvc(U_CLAIR).x; U.v[k].v = uvc(U_CLAIR).y; }
+                }
+                extrude(t, out[P_VOUTE], s0, s1, pts + 1, n - 2, TUILE_BETON, 1.f);
+            }
+            // dalle de couverture enherbée et murs extérieurs de la tranchée couverte
+            const float gx = -(R + AR_ECRAN - 0.1f), dx = R + 4.8f;
+            carte::quadSol(U, Wp(t, s0, gx, TUN_DESSUS), Wp(t, s0, dx, TUN_DESSUS), Wp(t, s1, dx, TUN_DESSUS), Wp(t, s1, gx, TUN_DESSUS), uvc(U_PELOUSE));
+            for (float lx : {gx, dx}) { const vec2 mur[2] = {{lx, -0.6f}, {lx, TUN_DESSUS}}; extrude(t, out[P_BETON], s0, s1, mur, 2, TUILE_BETON, 1.f); }
+            // luminaires au sodium : seuil (60 m après l'entrée, 30 m avant la sortie) en deux rangées serrées, puis une rangée
+            const int64_t dE = mod(seg - tun_.first), dS = mod(tun_.second - 1 - seg);
+            const bool seuil = dE * SEG_M < 60 || dS * SEG_M < 30;
+            const bool pose = seuil ? chaque(3.6) : chaque(6.0);
+            const float rangs[2] = {seuil ? -1.8f : 0.f, 1.8f};
+            if (pose) for (int k = 0; k < (seuil ? 2 : 1); k++)
+                carte::box(out[P_SODIUM], Wp(t, s0 + 0.5, rangs[k], 0), p.r, p.f, 0.18f, 0.09f, 1.5f, {0, 0}, voute(rangs[k]) - 0.2f);
+            if (chaque(6.0)) carte::box(out[P_SODIUM], Wp(t, s0 + 0.5, -(R + TUN_OPP_C), 0), p.r, p.f, 0.18f, 0.09f, 1.5f, {0, 0}, TUN_H - 0.2f);
+            // têtes : voile entre les voûtes et le rectangle de la tranchée, à l'entrée (s0) et à la sortie (s1)
+            for (int bout : {0, 1}) {
+                if (bout == 0 ? seg != tun_.first : mod(seg + 1) != tun_.second) continue;
+                const double s = bout ? s1 : s0;
+                for (int tube = 0; tube < 2; tube++) {
+                    const float cc = tube ? -(R + TUN_OPP_C) : 0.f, w = tube ? TUN_OPP_W : R + 4.f;
+                    const int n = profilTube(pts, cc, w);
+                    for (int i = 1; i + 2 < n; i++) {
+                        const vec2 q0 = pts[i], q1 = pts[i + 1];
+                        quadN(out[P_BETON], Wp(t, s, q0.x, q0.y), Wp(t, s, q1.x, q1.y), Wp(t, s, q1.x, TUN_DESSUS), Wp(t, s, q0.x, TUN_DESSUS),
+                              {q0.x / TUILE_BETON, q0.y / TUILE_BETON}, {q1.x / TUILE_BETON, q1.y / TUILE_BETON},
+                              {q1.x / TUILE_BETON, TUN_DESSUS / TUILE_BETON}, {q0.x / TUILE_BETON, TUN_DESSUS / TUILE_BETON}, 1.f);
+                    }
+                }
+                for (const vec2 bd : {vec2{R + 4.f, dx}, vec2{-(R + 5.f), -(R + 4.f)}, vec2{gx, -(R + TUN_OPP_C + TUN_OPP_W)}})   // voiles pleins
+                    quadN(out[P_BETON], Wp(t, s, bd.x, -0.6f), Wp(t, s, bd.y, -0.6f), Wp(t, s, bd.y, TUN_DESSUS), Wp(t, s, bd.x, TUN_DESSUS),
+                          {bd.x / TUILE_BETON, 0}, {bd.y / TUILE_BETON, 0}, {bd.y / TUILE_BETON, TUN_DESSUS / TUILE_BETON}, {bd.x / TUILE_BETON, TUN_DESSUS / TUILE_BETON}, 1.f);
+                // bandeau de tête (couronnement) : 0,6 m au-dessus de la dalle
+                const vec2 cour[4] = {{gx - 0.3f, TUN_DESSUS}, {gx - 0.3f, TUN_DESSUS + 0.6f}, {dx + 0.3f, TUN_DESSUS + 0.6f}, {dx + 0.3f, TUN_DESSUS}};
+                quadN(out[P_BETON], Wp(t, s, cour[0].x, cour[0].y), Wp(t, s, cour[3].x, cour[3].y), Wp(t, s, cour[2].x, cour[2].y), Wp(t, s, cour[1].x, cour[1].y),
+                      {0, 0}, {(cour[3].x - cour[0].x) / TUILE_BETON, 0}, {(cour[3].x - cour[0].x) / TUILE_BETON, 0.25f}, {0, 0.25f}, 1.f);
+            }
+        }
+        if (vo == ville::PONT) {
+            // tablier : corniche (0,25 m au-dessus du trottoir), rive extérieure et sous-face, de chaque côté
+            for (float sd : {1.f, -1.f}) {
+                const vec2 corn[4] = {{sd * R + sd * 4.f, 0.15f}, {sd * (R + 4.f), 0.40f}, {sd * (R + PONT_CORN), 0.40f}, {sd * (R + PONT_CORN), PONT_SOUS}};
+                extrude(t, out[P_BETON], s0, s1, corn, 4, TUILE_BETON, 1.f);
+                // garde-corps : main courante à 1,15 m (1,00 m au-dessus du trottoir), lisse intermédiaire, montants tous les 2,4 m
+                const float lg = sd * (R + 4.25f);
+                carte::box(out[P_ACIER], Wp(t, s0 + 0.5, lg, 0), p.r, p.f, 0.06f, 0.06f, (float)SEG_M + 0.02f, {0, 0}, 1.10f);
+                carte::box(out[P_ACIER], Wp(t, s0 + 0.5, lg, 0), p.r, p.f, 0.03f, 0.03f, (float)SEG_M + 0.02f, {0, 0}, 0.75f);
+                if (!lod && seg % 2 == 0) carte::box(out[P_ACIER], Wp(t, s0, lg, 0), p.r, p.f, 0.05f, 0.75f, 0.05f, {0, 0}, 0.40f);
+                // candélabres de 8 m sur la corniche, en quinconce tous les 30 m (lanterne LED blanc chaud)
+                if (seg % LAMPE_PONT == 0 && ((seg / LAMPE_PONT) % 2 == 0) == (sd > 0)) {
+                    const vec3 pied = Wp(t, s0, sd * (R + 4.25f), 0.40f);
+                    carte::cyl(out[P_METAL], pied, 0.08f, 7.6f, 6, {0, 0});
+                    carte::box(out[P_METAL], pied - p.r * (sd * 0.7f), p.r, p.f, 1.4f, 0.06f, 0.06f, {0, 0}, 7.5f);
+                    carte::box(out[P_LAMP], pied - p.r * (sd * 1.3f), p.r, p.f, 0.6f, 0.1f, 0.3f, {0, 0}, 7.4f);
+                }
+            }
+            { const vec2 sous[2] = {{R + PONT_CORN, PONT_SOUS}, {-(R + PONT_CORN), PONT_SOUS}}; extrude(t, out[P_BETON], s0, s1, sous, 2, TUILE_BETON, 1.f); }
+            if (riv_.deb >= 0) {
+                const bool eau = seg >= riv_.d0 + 1 && seg < riv_.d1 - 1;
+                // eau de la rivière (niveau absolu), de la corniche jusqu'au bout des bas-côtés de Game
+                if (eau) for (float sd : {1.f, -1.f}) {
+                    auto Wa = [&](double s, float lat) { vec3 q = Wp(t, s, lat, 0); q.y = riv_.yw; return q; };
+                    carte::quadSol(out[P_EAU], Wa(s0, sd * (R + PONT_CORN)), Wa(s0, sd * (R + 264.f)), Wa(s1, sd * (R + 264.f)), Wa(s1, sd * (R + PONT_CORN)), {0, 0});
+                }
+                // quais : murs de béton face à l'eau, du fond jusqu'au profil des bas-côtés (Game : 0,13 / 0 / −0,8 / −6 m)
+                // (mur dans le plan du premier et du dernier segment noyés ; haut : bas-côtés du segment voisin, hors de l'eau, + 0,3 m)
+                for (int bout : {0, 1}) {
+                    if (seg != (bout ? riv_.d1 - 1 : riv_.d0 + 1)) continue;
+                    const double sh = bout ? s1 : s0 - 1;   // segment des bas-côtés restés à leur hauteur
+                    const vec2 prof[4] = {{R + 4.f, 0.13f}, {R + 24.f, 0.f}, {R + 84.f, -0.8f}, {R + 264.f, -6.f}};
+                    for (float sd : {1.f, -1.f}) for (int i = 0; i < 3; i++) {
+                        vec3 b0 = Wp(t, s0, sd * prof[i].x, 0), b1 = Wp(t, s0, sd * prof[i + 1].x, 0);
+                        const vec3 h0{b0.x, Wp(t, sh, sd * prof[i].x, prof[i].y).y + 0.3f, b0.z}, h1{b1.x, Wp(t, sh, sd * prof[i + 1].x, prof[i + 1].y).y + 0.3f, b1.z};
+                        b0.y = b1.y = riv_.yw - 0.6f;
+                        const float lu = (prof[i + 1].x - prof[i].x) / TUILE_BETON;
+                        quadN(out[P_BETON], b0, b1, h1, h0, {0, 0}, {lu, 0}, {lu, (h1.y - b1.y) / TUILE_BETON}, {0, (h0.y - b0.y) / TUILE_BETON}, 1.f);
+                    }
+                }
+                // pile centrale : voile sous le tablier, avant-becs arrondis, de l'eau jusqu'à la sous-face
+                if (seg == riv_.mil) {
+                    const vec3 c = Wp(t, s0, 0, 0);
+                    const float h = c.y + PONT_SOUS - (riv_.yw - 0.5f);
+                    const vec3 base{c.x, riv_.yw - 0.5f, c.z};
+                    carte::box(U, base, p.r, p.f, 2 * (R + 5.5f), h, 2.6f, uvc(U_BETON2));
+                    for (float sd : {1.f, -1.f}) carte::cyl(U, base + p.r * (sd * (R + 5.5f)), 1.3f, h, 12, uvc(U_BETON2));
+                }
+                // arcs bow-string de part et d'autre (portées d0 → mil → d1), tirants en caisson, suspentes tous les 6 m
+                const int64_t a0 = riv_.d0 + 1, a1 = riv_.d1 - 1;
+                if (seg >= a0 && seg < a1) {
+                    const bool premier = seg < riv_.mil;
+                    const double sp0 = (double)(premier ? a0 : riv_.mil), sp1 = (double)(premier ? riv_.mil : a1);
+                    auto yArc = [&](double sa) { const double u = std::clamp((sa - sp0) / (sp1 - sp0), 0.0, 1.0); return 0.6f + PONT_FLECHE * (float)(4 * u * (1 - u)); };
+                    const double sa0 = (double)seg, sa1 = sa0 + 1;   // abscisses sur le tour (arc) ; s0, s1 : absolues (position)
+                    for (float sd : {1.f, -1.f}) {
+                        const float lc = sd * (R + PONT_ARC);
+                        const vec2 tir[4] = {{lc - 0.45f, PONT_SOUS}, {lc - 0.45f, 0.6f}, {lc + 0.45f, 0.6f}, {lc + 0.45f, PONT_SOUS}};
+                        extrude(t, out[P_ACIER], s0, s1, tir, 4, 1.f, 1.f);
+                        const float y0 = yArc(sa0), y1 = yArc(sa1);
+                        const float hw = 0.45f, hh = 0.55f;
+                        const vec3 c00 = Wp(t, s0, lc - hw, y0 - hh), c01 = Wp(t, s0, lc + hw, y0 - hh), c02 = Wp(t, s0, lc + hw, y0 + hh), c03 = Wp(t, s0, lc - hw, y0 + hh);
+                        const vec3 c10 = Wp(t, s1, lc - hw, y1 - hh), c11 = Wp(t, s1, lc + hw, y1 - hh), c12 = Wp(t, s1, lc + hw, y1 + hh), c13 = Wp(t, s1, lc - hw, y1 + hh);
+                        const vec2 z{0, 0};
+                        quadN(out[P_ACIER], c03, c13, c12, c02, z, z, z, z);   // dessus
+                        quadN(out[P_ACIER], c00, c01, c11, c10, z, z, z, z);   // dessous
+                        quadN(out[P_ACIER], c00, c10, c13, c03, z, z, z, z);   // côté intérieur
+                        quadN(out[P_ACIER], c01, c02, c12, c11, z, z, z, z);   // côté extérieur
+                        if (!lod && seg % 5 == 0 && y0 > 2.f) carte::cyl(out[P_ACIER], Wp(t, s0, lc, 0.6f), 0.045f, y0 - hh - 0.6f, 6, {0, 0});
+                    }
+                }
+            }
+        }
+    }
+
+    // portique de signalisation : poteaux (à droite derrière la glissière, à gauche sur le terre-plein), poutre treillis,
+    // deux panneaux bleus de 4,6 × 2,2 m (bas à 5,6 m) au-dessus des voies, bordure et lettres blanches (atlas de textes)
+    void portique(Track& t, int64_t a, const Portique& pq, Geo out[P_COUNT]) const {
+        const float R = (float)RW;
+        const carte::Pose p = carte::poseAt(t, a);
+        const vec3 up{0, 1, 0};
+        Geo& U = out[P_UNI];
+        const float lg = -(R + AR_DBA), ld = R + 4.2f;
+        for (float lx : {lg, ld}) carte::cyl(out[P_ACIER], Wp(t, (double)a, lx, lx < 0 ? 0.95f : 0.15f), 0.22f, lx < 0 ? 6.75f : 7.55f, 10, {0, 0});
+        const vec3 mil = Wp(t, (double)a, (lg + ld) / 2, 0);
+        carte::box(out[P_ACIER], mil, p.r, p.f, ld - lg, 0.9f, 0.9f, {0, 0}, 6.7f);
+        int k = 0;
+        for (const char* txt : {pq.g, pq.d}) {
+            const float lc = k++ ? 3.75f : -3.75f;
+            const vec3 c = Wp(t, (double)a, lc, 0) - p.f * 0.55f;
+            carte::box(U, c, p.r, p.f, 4.6f, 2.2f, 0.12f, uvc(U_BLEU), 5.6f);
+            const vec3 face = c - p.f * 0.065f + up * 6.7f;
+            // listel blanc de 6 cm à 8 cm du bord
+            const float bw = 4.6f - 0.16f, bh = 2.2f - 0.16f, e = 0.06f;
+            for (int s = -1; s <= 1; s += 2) {
+                const vec3 hy = up * (s * (bh / 2 - e / 2)), hx = p.r * (s * (bw / 2 - e / 2));
+                carte::quad(U, face + hy - p.r * (bw / 2) - up * (e / 2), face + hy + p.r * (bw / 2) - up * (e / 2), face + hy + p.r * (bw / 2) + up * (e / 2), face + hy - p.r * (bw / 2) + up * (e / 2), uvc(U_PEINTURE));
+                carte::quad(U, face + hx - up * (bh / 2) - p.r * (e / 2), face + hx - up * (bh / 2) + p.r * (e / 2), face + hx + up * (bh / 2) + p.r * (e / 2), face + hx + up * (bh / 2) - p.r * (e / 2), uvc(U_PEINTURE));
+            }
+            const vie::Texte& T = atlas_.texte(txt);
+            if (T.ok) {
+                const float h = 0.55f / 0.62f, w = h * T.aspect;   // lettres de 0,55 m (la ligne de l'atlas a ≈ 38 % de marge)
+                const vec3 o = face - p.f * 0.01f, hx = p.r * (std::min(w, 4.2f) / 2), hy = up * (h * std::min(1.f, 4.2f / w) / 2);   // comme vie::plan
+                quadN(out[P_TEXTE], o - hx - hy, o + hx - hy, o + hx + hy, o - hx + hy, {T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0});
+            }
+        }
+    }
+
     // pilote automatique (démonstrations des écrans, banc d'essai) : Game l'appelle une fois par image, avant les pas de
     // conduite ; on note l'image pour que le décor ne l'arrête pas (le jeu web n'a pas de pilote automatique) : ses
     // trajectoires, donc les captures course-* et trafic-*, restent celles d'avant les collisions de la ville
@@ -633,10 +1126,19 @@ public:
             if (frame_ > it->first + 3) { r.destroy(it->second); it = graveyard_.erase(it); } else ++it;
         }
         const mat4 I = mat4::identity();
-        int draws = 0;
-        for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) { r.draw(ch.m[p], mats_[p], I); draws++; }
+        int draws = 0, ouv = 0;
+        for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) {
+            if (p == P_SOL && !solActif_) continue;     // WFS-175 : sol de Game, sauf quand la rivière est en vue
+            if (p == P_TEXTE && !texteMat_) continue;
+            // WFS-175 : asphalte de la chaussée opposée : demi-largeur de 100 m → aucune ligne du moteur (marquage dessiné à part)
+            r.draw(ch.m[p], p == P_TEXTE ? *texteMat_ : mats_[p], I, p == P_ROUTE ? 100.f : 0.f); draws++;
+            if (p >= P_BETON && p != P_SOL) ouv++;   // WFS-175 : coût des ouvrages (le sol remplace celui de Game, à coût égal)
+        }
         draws += lieuxAnimes(r, g, aP);   // WFS-137
-        lastDraws_ = draws;
+        piecesInv_ = 0;
+        const int inv = sensInverse(r, g, aP);   // WFS-175 : voitures (une par modèle ; leurs pièces sont comptées par le moteur)
+        draws += inv;
+        lastDraws_ = draws; lastOuv_ = ouv; lastInv_ = inv; lastPieces_ = piecesInv_;
         if (frame_ % 300 == 1) WFS_LOG("Ville : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
     }
 
@@ -736,7 +1238,7 @@ public:
 
     void shutdown(Renderer& r) override {
         if (!active_) return;
-        WFS_LOG("Ville : %d appels de dessin à la dernière image", lastDraws_);
+        WFS_LOG("Ville : %d appels de dessin à la dernière image (WFS-175 : %d pour les ouvrages, %d voiture(s) en sens inverse, ≤ %d pièces)", lastDraws_, lastOuv_, lastInv_, lastPieces_);
         r.vk().waitIdle();
         for (Optiques& op : optiques_) for (Mesh& m : op.m) if (m.vb.buf) r.destroy(m);
         optiques_.clear();
@@ -749,12 +1251,37 @@ public:
         for (Image* im : {&leafTex_, &barkTex_, &palTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
         for (Material& m : mats_) r.destroy(m);
         for (Material* m : {&lentilleEteinte_, &lentille_[0], &lentille_[1], &lentille_[2], &eauJet_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
+        // WFS-175 : matériaux des ouvrages (dans mats_, détruits ci-dessus ; P_TEXTE appartient à l'atlas), atlas, béton, voitures
+        atlas_.detruire(r); texteMat_ = nullptr;
+        if (betonTex_.img) { r.vk().destroy(betonTex_); betonTex_ = Image{}; }
+        for (Model& m : autos_) if (m.ok) { r.destroy(m); m = Model{}; }
+        portiques_.clear(); riv_ = Riviere{}; tun_ = {-1, -1}; au_ = {-1, -1}; solActif_ = false;
         plan_ = nullptr;
         pilote_ = false;
         active_ = false;
     }
 
+    // WFS-175 : la Ville dessine les bas-côtés de Game (au bit près) quand la rivière du pont est dans les morceaux en vue,
+    // pour les abaisser sous l'eau ; ailleurs, Game les dessine comme avant
+    bool remplaceSol(const GameView& g) const override {
+        solActif_ = false;
+        if (!active_ || !plan_ || riv_.deb < 0 || g.sceneDediee || !g.player) return false;
+        const int64_t aP = (int64_t)std::floor(g.player->dist / SEG), pc = aP / CH;
+        const int64_t x = proche(riv_.d0, aP), w0 = (pc - BEHIND) * CH, w1 = (pc + AHEAD + 1) * CH;
+        solActif_ = x + (riv_.d1 - riv_.d0) >= w0 && x <= w1;
+        return solActif_;
+    }
+
 private:
+    // WFS-175
+    Riviere riv_;
+    std::pair<int64_t, int64_t> tun_{-1, -1}, au_{-1, -1};   // tunnel, autoroute (segments du tour ; fin éventuellement > L)
+    std::vector<Portique> portiques_;
+    vie::AtlasTextes atlas_;
+    const Material* texteMat_ = nullptr;
+    Image betonTex_{};
+    Model autos_[2];
+    mutable bool solActif_ = false;
     static constexpr float FACADE_TROTTOIR = SET_BACK + 0.3f;   // WFS-137 : trottoir prolongé 30 cm sous la façade (pas de jour)
     bool facade(int64_t a, int s) const {
         if (bati_.empty()) return false;
@@ -782,7 +1309,7 @@ private:
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
-    int lastDraws_ = 0;
+    int lastDraws_ = 0, lastOuv_ = 0, lastInv_ = 0, lastPieces_ = 0, piecesInv_ = 0;
 };
 
 } // namespace

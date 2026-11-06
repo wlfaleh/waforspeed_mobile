@@ -191,7 +191,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         g.setAutopilot(false); g.camMode = l.cam; g.allerA(Ecran::Course);
         for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(500 + i / 60.0); }   // décompte : voiture arrêtée
         g.render(502); g.render(502.02); r.capturePng(out + "/" + nom + ".png");
-        WFS_LOG("capture %s : segment %lld, %.0f m avant, %.0f m", nom.c_str(), (long long)l.seg, l.avant, g.player().dist * M);
+        WFS_LOG("capture %s : segment %lld, %.0f m avant, %.0f m, %u appels de dessin", nom.c_str(), (long long)l.seg, l.avant, g.player().dist * M, r.appelsDessin());   // WFS-175 : coût
         g.shutdown();
     }
     courseBenchRules(false);
