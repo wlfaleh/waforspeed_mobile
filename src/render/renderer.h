@@ -1,5 +1,6 @@
 // WaForSpeed — moteur de rendu : passe de scène HDR (MSAA), passe finale (tonemapping + interface).
 #pragma once
+#include <cstddef>
 #include <string>
 #include <vector>
 #include "vk.h"
@@ -20,9 +21,13 @@ enum MatFlags : uint32_t {
     MAT_POOL = 32768, MAT_ADD = 65536,
     MAT_FANTOME = 131072,   // WFS-134 (moteur seulement) : fantôme du record, translucide teinté cyan (scene.frag)
     MAT_EMTEX = 262144,     // WFS-134 (moteur seulement) : émission × couleur de la texture (pièces texturées émissives)
+    MAT_TANGENTE = 524288,  // WFS-149 (moteur seulement) : carte de normales dans le repère tangent des sommets (sinon dérivées écran)
 };
 
-struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
+// WFS-149 (RG-04) : + tangente (xyz + signe de la bitangente), 4 octets signés normalisés (/127) ; nulle = sans tangente
+// (calculée par Renderer::makeMesh pour la géométrie générée, au chargement pour les voitures : src/render/mesh.h)
+struct Vertex { float px, py, pz, nx, ny, nz, u, v; int8_t tx = 0, ty = 0, tz = 0, tw = 0; };
+static_assert(sizeof(Vertex) == 36 && offsetof(Vertex, tx) == 32, "Vertex : 36 octets, tangente après les uv (WFS-149)");
 
 struct Material {
     vec4 color{1, 1, 1, 1}; float metal = 0, rough = 0.6f, cutoff = 0.5f; vec3 emissive{0, 0, 0};
@@ -159,6 +164,9 @@ public:
     // WFS-59 : mode GPU logiciel actif (émulateur de la QA : GPU SwiftShader / llvmpipe, ou intent qa_simu=true)
     bool gpuLogiciel() const { return modeGpuLogiciel(); }
     uint32_t shadowMapSize() const { return shadowSize_; }
+    // WFS-149 : coût cumulé du calcul des tangentes de la géométrie générée (makeMesh) : ms et sommets (banc du réalisme)
+    double tangentesMs() const { return tangentesMs_; }
+    size_t tangentesSommets() const { return tangentesSommets_; }
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
@@ -255,6 +263,7 @@ private:
     vec3 camPos_{};
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
+    double tangentesMs_ = 0; size_t tangentesSommets_ = 0;   // WFS-149
 };
 
 } // namespace wfs

@@ -75,6 +75,9 @@ bool VkCtx::init(ANativeWindow* win, uint32_t w, uint32_t h) {
     VkPhysicalDeviceFeatures supported{}; vkGetPhysicalDeviceFeatures(gpu, &supported);
     VkPhysicalDeviceFeatures feats{};
     feats.samplerAnisotropy = supported.samplerAnisotropy;
+    // WFS-149 (RG-01) : textures compressées ASTC (Android) et ETC2 (repli), si le GPU les a
+    feats.textureCompressionASTC_LDR = supported.textureCompressionASTC_LDR; astc = supported.textureCompressionASTC_LDR;
+    feats.textureCompressionETC2 = supported.textureCompressionETC2; etc2 = supported.textureCompressionETC2;
     VkDeviceCreateInfo dci{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     dci.queueCreateInfoCount = 1; dci.pQueueCreateInfos = &qci;
     dci.enabledExtensionCount = (uint32_t)dexts.size(); dci.ppEnabledExtensionNames = dexts.data();
@@ -255,6 +258,7 @@ Image VkCtx::createImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, Vk
 
 void VkCtx::destroy(Image& i) {
     if (i.view && vueDetruite) vueDetruite(vueDetruiteCtx, i.view);   // WFS-144
+    octetsTextures -= std::min(octetsTextures, i.octetsTexture);   // WFS-149
     if (i.view) vkDestroyImageView(device, i.view, nullptr);
     if (i.img) vkDestroyImage(device, i.img, nullptr);
     if (i.mem) vkFreeMemory(device, i.mem, nullptr);
@@ -362,6 +366,7 @@ Image VkCtx::uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srg
     uint32_t mips = 1;
     { uint32_t m = std::max(w, h); while (m > 1) { m >>= 1; mips++; } }
     Image img = createImage(w, h, mips, fmt, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    img.octetsTexture = (size_t)w * h * 4 * 4 / 3; octetsTextures += img.octetsTexture;   // WFS-149 : niveaux compris (≈ 4/3)
     if (!canBlit) {   // WFS-134 (RG-04) : GPU sans blit filtré : mipmaps calculés sur le CPU (jamais de texture sans mipmaps)
         uploadMipsCpu(img, rgba, w, h, mips);
         return img;
@@ -392,6 +397,46 @@ Image VkCtx::uploadTexture(const uint8_t* rgba, uint32_t w, uint32_t h, bool srg
             VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
     endOneShot(cb);
     destroy(staging);
+    return img;
+}
+
+bool VkCtx::formatEchantillonnable(VkFormat fmt) const {
+    const bool astcF = fmt >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK && fmt <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK;
+    const bool etc2F = fmt >= VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK && fmt <= VK_FORMAT_EAC_R11G11_SNORM_BLOCK;
+    if ((astcF && !astc) || (etc2F && !etc2)) return false;   // fonction non activée sur l'appareil : format interdit
+    VkFormatProperties fp; vkGetPhysicalDeviceFormatProperties(gpu, fmt, &fp);
+    const VkFormatFeatureFlags f = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+    return (fp.optimalTilingFeatures & f) == f;
+}
+
+// WFS-149 (RG-01) : niveaux fournis (KTX2) copiés d'un seul envoi : aucune mipmap calculée par le GPU (les formats
+// compressés ne se « blittent » pas, et l'outil les a filtrées en linéaire)
+Image VkCtx::uploadNiveaux(VkFormat fmt, uint32_t w, uint32_t h, const uint8_t* const* niveaux, const size_t* tailles, uint32_t nNiveaux) {
+    if (!nNiveaux || !w || !h) return Image{};
+    size_t total = 0;
+    for (uint32_t i = 0; i < nNiveaux; i++) total += (tailles[i] + 15) & ~(size_t)15;   // décalages alignés sur 16 octets (bloc)
+    Buffer staging = createBuffer(total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true);
+    std::vector<VkBufferImageCopy> copies;
+    size_t ofs = 0; uint32_t lw = w, lh = h;
+    for (uint32_t i = 0; i < nNiveaux; i++) {
+        std::memcpy((uint8_t*)staging.mapped + ofs, niveaux[i], tailles[i]);
+        VkBufferImageCopy r{};
+        r.bufferOffset = ofs; r.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, i, 0, 1}; r.imageExtent = {lw, lh, 1};
+        copies.push_back(r);
+        ofs += (tailles[i] + 15) & ~(size_t)15;
+        lw = lw > 1 ? lw / 2 : 1; lh = lh > 1 ? lh / 2 : 1;
+    }
+    Image img = createImage(w, h, nNiveaux, fmt, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    VkCommandBuffer cb = beginOneShot();
+    barrier(cb, img.img, 0, nNiveaux, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkCmdCopyBufferToImage(cb, staging.buf, img.img, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (uint32_t)copies.size(), copies.data());
+    barrier(cb, img.img, 0, nNiveaux, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    endOneShot(cb);
+    destroy(staging);
+    for (uint32_t i = 0; i < nNiveaux; i++) img.octetsTexture += tailles[i];
+    octetsTextures += img.octetsTexture;
     return img;
 }
 

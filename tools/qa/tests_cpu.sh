@@ -13,7 +13,7 @@ arguments() {
     test_traffic) echo "tests/trafic_web_ref.txt" ;;
     test_cartes)  echo "tests/cartes_web_ref.txt" ;;
     test_course)  echo "tests/course_web_ref.txt" ;;
-    test_audio|test_roues) echo "assets" ;;
+    test_audio|test_roues|test_tangentes) echo "assets" ;;   # WFS-149 : test_tangentes (Golf, M-02)
     *) echo "" ;;
   esac
 }

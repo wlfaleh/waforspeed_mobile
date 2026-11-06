@@ -372,7 +372,13 @@ public:
         LigneRapport l; l.domaine = domaine; l.id = id; l.grandeur = grandeur; l.raison = raison; lignes.push_back(l);
     }
     void ajouter(LigneRapport l) { lignes.push_back(std::move(l)); }
-    struct Indice { int conformes = 0, nonConformes = 0, nonMesurables = 0; double valeur() const { const int n = conformes + nonConformes; return n ? 100.0 * conformes / n : 0; } };
+    struct Indice {
+        int conformes = 0, nonConformes = 0, nonMesurables = 0;
+        bool mesurable() const { return conformes + nonConformes > 0; }   // WFS-149 (RG-B, ANO-86)
+        double valeur() const { const int n = conformes + nonConformes; return n ? 100.0 * conformes / n : 0; }
+        // WFS-149 (RG-B, ANO-86) : un domaine sans aucune mesure possible s'écrit « non mesurable », jamais « 0.0 % »
+        std::string enTexte() const { return mesurable() ? fmt(valeur(), 1) + " %" : std::string("non mesurable"); }
+    };
     std::map<std::string, Indice> indices() const {
         std::map<std::string, Indice> r;
         for (const auto& l : lignes) { Indice& i = r[l.domaine]; if (l.etat == Etat::Conforme) i.conformes++; else if (l.etat == Etat::NonConforme) i.nonConformes++; else i.nonMesurables++; }
@@ -385,11 +391,11 @@ public:
         o << "== Indices par domaine ==\n";
         Indice tout;
         for (const auto& [d, i] : indices()) {
-            o << "  " << d << " : " << fmt(i.valeur(), 1) << " % (" << i.conformes << " conformes / " << (i.conformes + i.nonConformes) << " mesurables, "
+            o << "  " << d << " : " << i.enTexte() << " (" << i.conformes << " conformes / " << (i.conformes + i.nonConformes) << " mesurables, "
               << i.nonMesurables << " non mesurables)\n";
             tout.conformes += i.conformes; tout.nonConformes += i.nonConformes; tout.nonMesurables += i.nonMesurables;
         }
-        o << "  TOTAL : " << fmt(tout.valeur(), 1) << " % (" << tout.conformes << " / " << (tout.conformes + tout.nonConformes) << ", " << tout.nonMesurables << " non mesurables)\n";
+        o << "  TOTAL : " << tout.enTexte() << " (" << tout.conformes << " / " << (tout.conformes + tout.nonConformes) << ", " << tout.nonMesurables << " non mesurables)\n";
         std::string dom;
         std::vector<LigneRapport> tri = lignes;   // une section par domaine (ordre d'ajout gardé dans chaque domaine)
         std::stable_sort(tri.begin(), tri.end(), [](const LigneRapport& a, const LigneRapport& b) { return a.domaine < b.domaine; });

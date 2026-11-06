@@ -29,7 +29,8 @@ static bool lire(const std::string& chemin, Wfm& w) {
         w.v.emplace_back(nv * 8); std::memcpy(w.v.back().data(), &b[o], nv * 32); o += nv * 32;
         w.i.emplace_back(ni); std::memcpy(w.i.back().data(), &b[o], ni * 4); o += ni * 4;
     }
-    return o == b.size();
+    // WFS-149 : .wfm version 2 = version 1 + section des tangentes 'TAN1' à la fin (src/render/mesh.h)
+    return o == b.size() || (o + 4 <= b.size() && std::memcmp(&b[o], "TAN1", 4) == 0);
 }
 
 int main(int argc, char** argv) {
