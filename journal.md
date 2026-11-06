@@ -5385,3 +5385,21 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-185** affichait « ✅ Terminé — run 777 » : le run 777 a été **annulé**, pas vert. Remis en 🟣 ; le robot posera le ✅ au premier run vert qui contient f152ff8.
 - **CI des branches** : un push sur une branche encore en retard sur `main` relance la CI (run #781, `feature/waforspeed-158`, 20:41), car GitHub lit le `build.yml` de la branche (ancien bloc `on:` avec `feature/**`). Cela s'arrête dès que chaque branche est synchronisée avec `main` (règle déjà en vigueur).
 - **File d'attente** : 8 runs de `main` en file ou en cours ; les runs remplacés par un plus récent sont annulés (777, 778) : le robot ne fait rien sur un run annulé, le suivant tranche.
+
+### 2026-11-06 21:47:00 — WFS-197 : avancement, accroches annoncées, CI de branche (Claude, agent 2 (01UY1Vv5))
+- Fait (branche `feature/waforspeed-197`, 4a52d55, synchronisée avec main) :
+  - Primitives du cockpit déplacées de `camera_vue.cpp` vers `src/render/vehicule_cockpit_geo.h` (partagées, pas recopiées).
+  - Nouveaux fichiers : `src/render/vehicule_cockpit.{h,cpp}` (géométrie par code, écrans dynamiques), `src/render/vehicule_cockpit_defs.cpp` (cotes des 4 modèles), `tests/test_cockpit.cpp`.
+  - Dans `camera_vue.cpp` : choix de l'intérieur par `CarDef::id`, hauteur d'œil du modèle, `EngineModel` avec les mêmes entrées que le son (vrais régime et rapport), essuie-glaces sur `meteo::pluieActive`, carte de la route (150 m derrière, 350 m devant), découpée par `minicarte::decouper` (appel en lecture).
+  - Banc `benchCockpit` : captures `cockpit-{golf,m4,p911,sf90}-{jour,braquage,carte,pluie,nuit}` et `cockpit-corsa`.
+- **Accroches annoncées** (≤ 10 lignes chacune) :
+  - `src/platform/desktop_main.cpp` : 4 lignes, banc `cockpit` et appel dans `partie2c` ; 6 lignes, parcours complet rejoué en vue Cockpit dans `cockpit/`, pour RG-09.
+  - `CMakeLists.txt` : 1 ligne, `test_cockpit`.
+- Cotes : `expert-realisme-3d` consulté, valeurs dans `vehicule_cockpit_defs.cpp`. Statuts : volants Ø Golf 370 / M4 370 / 911 375 mm (E / AC), SF90 355 mm (E). Combinés 244 × 91, 292 × 110, 5 cadrans 300 mm, écran courbe 380 × 143 mm (diagonales AC, format E). Écrans centraux 232 × 104, 244 × 91, 245 × 130 mm (AC / E). Balais Golf 650 / 450, M4 600 / 475 (AC), 911 525 mm (AC), SF90 NM. Positions, inclinaisons et hauteur d'œil : E (SAE J1100). **Indice de fidélité : non mesurable** : aucune fiche constructeur ouverte (réseau des agents), la plupart des cotes sont E ou AC.
+- **Choix à valider par le PO** :
+  1. Générations retenues : M4 d'avant restylage (volant rond, coutures M en bas) et 911 992.1, la seule avec les 5 cadrans et le compte-tours analogique (RG-04).
+  2. SF90 : la vraie voiture n'a **pas d'écran central** ; la carte est dans le tiers droit du combiné de 16 po (recommandation de l'expert) au lieu d'un écran inventé.
+  3. Gouttes sur le pare-brise : le jeu n'en a pas (pluie dessinée en traînées à l'écran) : seuls les balais (RG-06).
+  4. Profondeur des combinés reculée de 6 à 8 cm par rapport à l'estimation, pour que la jante reste devant l'écran.
+- Vérification : 37 tests CPU verts (dont `test_cockpit`, 28 vérifications : RG-01, 03, 04, 05, 06, 07 et charte du cuir). Syntaxe propre. **Rendu non vu en local** (pas de Vulkan ici) : confiance ≤ 50 % → une CI de branche lancée à la main (`workflow_dispatch`, branche synchronisée). Je regarde les captures avant de fusionner.
+
