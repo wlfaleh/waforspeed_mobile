@@ -3912,3 +3912,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - écarts sans rapport avec le ticket : fonds des `salon-*` et `duel-reseau-course*` (code de salon, joueurs et adversaire tirés au hasard : le banc main local diffère aussi de la Release de main sur toute l'image), 1 pixel de `camera-cockpit-2400` (2163,48), et quelques pixels de voiture des `garage-*` 1280 entre la Release de main et celle de la branche (absents du banc local, où ces captures sont identiques).
 - **RG-13** : captures `garage-*-2400` de la branche regardées (`garage-m4-2400` vue) : identiques à main.
 - **Limites** : APK non construit en local (pas de NDK) : compilation Android vérifiée par la CI (job android vert) ; bouton « Réessayer » essayé au banc seulement (« Réessayer » demandé, écran d'erreur quitté). L'aide du salon est serrée au-dessus de « TA VOITURE » (aucune place libre sans déplacer : WFS-147). « 2E PLACE » de la Course à 5 et de la Poursuite : ANO-59, WFS-141.
+
+### 2026-11-06 04:11:42 — Début WFS-147 : lot anomalies INTERFACE (2/2), tailles écran par écran (PO)
+- Ticket WFS-147, épic E8 (+ E5 `src/ui/**`), P2 Haute, attribué à Claude (session trafic) ; branche `feature/waforspeed-147`. Dépendance WFS-146 ✅ (PR #125).
+- Zone autorisée : `src/ui/**` (écrans réglages, salon, terrain, chargement, menu ; garage et HUD seulement si la capture 2400 reste propre), bancs de captures 2400 de l'interface, `tests/**` liés. Interdit : facteur d'échelle global / `echelle.*`, `src/render/**` (hors `ui_*`), `shaders/scene*`, `src/world/**`, `src/game/**` (hors accroche ≤ 10 lignes annoncée), iOS (gel).
+- Critères : RG-01 à RG-06 de `regles-de-gestion/WFS-147.md` (un commit par écran, texte ≥ 14 dp, toucher ≥ 44 dp à 2400x1080 / 420 dpi, captures 2400 avant / après, parcours complet accueil → course → Menu → accueil et salon à 0 écart).
+- Plan : reprendre écran par écran les mises en page petit écran de `feature/waforspeed-102` (6d3ed61) sans `echelle.*`, dans l'ordre RG-01.
+- Fusion : RG-04, verdict `qa-lead` sur les captures de la branche avant fusion (engagement du QA envers l'utilisateur pour ANO-19).
