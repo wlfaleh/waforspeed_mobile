@@ -16,10 +16,10 @@ if [ ! -x "$DEST/astcenc/bin/astcenc-avx2" ]; then
   echo "$ASTC_SHA  $DEST/astcenc.zip" | sha256sum -c --quiet
   rm -rf "$DEST/astcenc" && mkdir -p "$DEST/astcenc" && (cd "$DEST/astcenc" && unzip -q ../astcenc.zip) && chmod +x "$DEST"/astcenc/bin/*
 fi
-if [ ! -x "$DEST/etc2comp/EtcTool" ]; then
+if [ ! -x "$DEST/etc2comp/bin/EtcTool" ]; then
   rm -rf "$DEST/etc2comp" && git clone -q https://github.com/google/etc2comp.git "$DEST/etc2comp"
-  (cd "$DEST/etc2comp" && git checkout -q "$ETC_REV" &&
+  (cd "$DEST/etc2comp" && git checkout -q "$ETC_REV" && mkdir -p bin &&
    g++ -O2 -std=c++11 -pthread -w -include cstdint -include cstring -include cmath -IEtcLib/Etc -IEtcLib/EtcCodec -Ithird_party/lodepng \
-       EtcLib/Etc/*.cpp EtcLib/EtcCodec/*.cpp EtcTool/*.cpp third_party/lodepng/lodepng.cpp -o EtcTool)
+       EtcLib/Etc/*.cpp EtcLib/EtcCodec/*.cpp EtcTool/*.cpp third_party/lodepng/lodepng.cpp -o bin/EtcTool)
 fi
 echo "encodeurs prêts dans $DEST : astcenc 5.2.0, etc2comp $ETC_REV"

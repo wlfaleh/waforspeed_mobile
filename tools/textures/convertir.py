@@ -99,7 +99,7 @@ def preparer(typ, entrees, vert_bas=False):
 def encodeurs():
     racine = pathlib.Path(os.environ.get('WFS_ENCODEURS', ICI / '.encodeurs'))
     astc = racine / 'astcenc' / 'bin' / ('astcenc-avx2' if 'avx2' in open('/proc/cpuinfo').read() else 'astcenc-sse4.1')
-    etc = racine / 'etc2comp' / 'EtcTool'
+    etc = racine / 'etc2comp' / 'bin' / 'EtcTool'
     if not astc.is_file() or not etc.is_file(): sys.exit(f'encodeurs absents de {racine} : lancer tools/textures/encodeurs.sh')
     return str(astc), str(etc)
 
