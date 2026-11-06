@@ -418,6 +418,7 @@ protected:
         sommetsMesh_ = Mesh{}; sommets_.clear(); libre_.clear(); aCol_ = aCascade_ = false;
         atlas_.detruire(r); for (auto& T : txt_) T = {};   // WFS-178
         if (lampeMesh_.vb.buf) r.destroy(lampeMesh_);
+        for (int k = 0; k < 3; k++) { r.destroy(lampeOn_[k]); r.destroy(lampeOff_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
         lampeMesh_ = Mesh{}; fontaineSeg_ = feuSeg_ = -1; vigilance_.clear(); commerces_.clear();
         if (solFond_.vb.buf) r.destroy(solFond_);
         solFond_ = Mesh{};

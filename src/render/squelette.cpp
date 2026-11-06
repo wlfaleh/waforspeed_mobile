@@ -123,6 +123,7 @@ bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) 
 
 void detruirePersonnage(Renderer& r, Personnage& p) {
     r.destroy(p.maillage);
+    r.destroy(p.materiau);   // WFS-187 : jeu de descripteurs rendu
     for (Image& t : p.textures) if (t.img) r.vk().destroy(t);
     p = Personnage{};
 }

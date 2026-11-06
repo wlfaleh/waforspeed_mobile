@@ -310,6 +310,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-185 | [CI] Plus de CI sur les branches ni les PR : `build.yml` sur `main` seulement (+ nuit, à la main), résumé du run avec les tickets (règle de l'utilisateur du 2026-11-06) | E7 | 🔧 En cours (exception PO : 2e ticket E7 à côté de WFS-145, fichiers disjoints : `.github/workflows/**` ici, `endurance_banc.*` / `tools/qa/**` pour WFS-145 ; ordre de l'utilisateur « avancer vite sur plusieurs sujets ») | Claude (agent 1, session 01UY1Vv2), 2026-11-06 18:02 UTC | — | `feature/waforspeed-185` |  |  |
 | P3 Moyenne | WFS-184 | Correction son : jingles de fin de la poursuite audibles (sirène baissée d'un coup, jingles × 3, « ARRÊTÉ » 660 / 440 Hz) et sons de la route sans motif qui tourne (départ au hasard, fondu 15 ms) (ANO-95, ANO-96) | E6 | ✅ Terminé (fusion par confiance) | Claude (agent 2, session 01UY1Vv5), 2026-11-06 16:27 UTC | WFS-131 ✅, WFS-174 ✅ | `feature/waforspeed-184` | #145 |  |
 | P1 Urgent | WFS-187 | [URGENT] Fuite de jeux de descripteurs : `Renderer::destroy(Material&)` et libération des matériaux au `shutdown` / avant chaque `init` des systèmes (pool épuisé après quelques changements de carte, mesure WFS-145) | E4 (+ accroches annoncées : 1 ligne `renderer.h` E0, appels de libération seulement dans `src/world/**`, `src/game/**`, `src/ui/garage.cpp`, `src/core/scene_essai.cpp`) | 🔧 En cours | Claude (session dev expert, 0183bv2X), 2026-11-06 18:29 UTC (WFS-145 en pause, même agent) | — | `feature/waforspeed-187` |  |  |
+| P3 Moyenne | WFS-188 | Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche de chaque voiture, test CPU des 20 voitures, aucune voiture injouable (ANO-97, ANO-98) | E3 | ⏳ Prêt |  | — | `feature/waforspeed-188` |  |  |
+| P3 Moyenne | WFS-189 | Correction Course à 5 : départ sans bouchon, adversaires de la classe du joueur, nitro rechargée en Course à 5 et en Duel (ANO-99, ANO-100, ANO-101) | E3 (+ accroche `configgame.json`, 2 clés `nitro`) | ⏳ En attente (après WFS-188, même épic) |  | WFS-188 | `feature/waforspeed-189` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -984,6 +986,16 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-174 — Sons de la route : vent, roulement, bord de route, hors route, chaussée mouillée** · E6 · P3 Moyenne · ✅ Fusionné par confiance (PR #136, 2026-11-06) — Claude, agent 3 (session 011cpqZd), 2026-11-06 12:01 UTC, branche `feature/waforspeed-174` (règles : `regles-de-gestion/WFS-174.md`). Zone : `src/audio/**` (nouveau `route_sons.h` conseillé), `tests/test_audio.cpp` ; accroche ≤ 3 lignes annoncée : `CMakeLists.txt` ; lecture seule : `player.h`, `meteo.h`, `system.h`. Interdit : écrire dans `src/game/**` (WFS-172), `src/ui/**` (WFS-173), `src/ui/ecrans/**`, `src/render/**`, `shaders/**`, `src/world/**` (WFS-140), `src/platform/**` (WFS-145), `.github/**`, `android/**`, iOS (gel).
 - [ ] tests CPU : vent nul < 40 km/h et 0,30 au maximum, roulement nul à l'arrêt, bande à `|x| ≥ edge`, herbe à `|x| > 1`, eau seulement sous la pluie, silence hors course et en pause, crête < 1,0
 - [ ] banc audio : vent audible au plein gaz, volumes au journal (`SFX route …`), aucune saturation ; parcours complet (accueil → course → pause → fin → menu) au Journal, bancs `parcours` / `course5` à 0 écart ; aucune capture changée
+
+**WFS-188 — Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche (ANO-97, ANO-98)** · E3 · P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-188.md`). Zone : `src/game/cars.h` (`carPerf`), `src/game/player.cpp` (poussée, freinage), `tests/**`.
+- [ ] test CPU des 20 voitures : 0-100 à ±10 % de la fiche, vitesse max 98-101 %, 100 → 0 de 33 à 40 m selon masse et adhérence (RG-02 à RG-04, RG-08) ; tableau au Journal
+- [ ] jeu agréable (RG-06) : Compass 0-100 ≤ 10,5 s, 20 voitures ≥ 8 checkpoints en simulation Ville ; ordinateurs et police suivent (RG-07) ; tests CPU existants verts
+- [ ] parcours complet accueil → garage → Checkpoint → fin → Rejouer → Menu au Journal (RG-10)
+
+**WFS-189 — Correction Course à 5 : départ, adversaires, nitro sans trafic (ANO-99, ANO-100, ANO-101)** · E3 · P3 Moyenne · ⏳ En attente (après WFS-188) (règles : `regles-de-gestion/WFS-189.md`). Zone : `src/game/course5*`, `src/game/course.cpp`, `src/game/duel*`, `tests/**`, accroche `configgame.json` (bloc `nitro`).
+- [ ] adversaires à ±20 % de la vitesse max du joueur ; place moyenne 1,5 à 3,5 en Normale, ≤ 3,0 en Facile pour SF90, M4, Mustang, Golf, X5, 208, Compass (RG-01, RG-02, RG-07)
+- [ ] grille rangée par vitesse max, aucun ordinateur sous 60 km/h à 4 s (RG-03) ; nitro +0,015/s (+0,10 par dépassement en Course à 5) en Course à 5 et Duel seulement (RG-04)
+- [ ] parcours complet Course à 5 et Duel au Journal (RG-08)
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

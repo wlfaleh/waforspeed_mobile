@@ -97,6 +97,7 @@ public:
         if (camionModele_.ok) r.destroy(camionModele_);
         camionModele_ = Model{};
         r.destroy(cube_);
+        for (Material* m : {&matRouge_, &matBleu_, &matPlot_, &matBlanc_, &matBleuCaisse_, &matVitre_, &matJaune_, &matNoir_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         police_.clear(); plots_.clear(); actif_ = false;
         if (actif == this) actif = nullptr;
     }

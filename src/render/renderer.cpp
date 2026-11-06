@@ -871,6 +871,7 @@ Material Renderer::makeMaterial(const Material& src, const Image* color, const I
         {texBasse_ ? samplerBasse_ : sampler_, (normal && normal->view) ? normal->view : flatNormal.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
         {texBasse_ ? samplerBasse_ : sampler_, (mr && mr->view) ? mr->view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
     matTex_.push_back({m.set, {ii[0].imageView, ii[1].imageView, ii[2].imageView}});   // WFS-144 : netteté changeable
+    jeuxMat_.insert(m.set);   // WFS-187
     VkWriteDescriptorSet wr[3]{};
     for (uint32_t i = 0; i < 3; i++) {
         wr[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[i].dstSet = m.set; wr[i].dstBinding = i;
@@ -947,11 +948,24 @@ void Renderer::destroy(SkinnedMesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib);
 void Renderer::destroy(Model& m) {
     for (auto& mat : m.mats) if (mat.set) {
         std::erase_if(matTex_, [&](const MatTex& t) { return t.set == mat.set; });   // WFS-144
-        vkFreeDescriptorSets(vk_->device, pool_, 1, &mat.set);
+        if (jeuxMat_.erase(mat.set)) vkFreeDescriptorSets(vk_->device, pool_, 1, &mat.set);   // WFS-187 : une seule fois
     }
     for (auto& t : m.textures) vk_->destroy(t);
     vk_->destroy(m.vb); vk_->destroy(m.ib);
     m = Model{};
+}
+
+// WFS-187 (RG-01) : libère le jeu de descripteurs d'un matériau fait par makeMaterial (le pool a FREE_DESCRIPTOR_SET_BIT).
+// À appeler quand le GPU n'utilise plus ce jeu (shutdown des systèmes : Game::shutdown attend le GPU avant). Matériau vide
+// ou déjà libéré : sans effet. Les matériaux d'un Model sont libérés par destroy(Model&).
+// Une copie d'un matériau (atlas recopié dans mats_, anneau du garage…) partage le jeu : seul le premier appel le rend.
+void Renderer::destroy(Material& m) {
+    if (m.set == VK_NULL_HANDLE || !vk_ || !pool_) return;
+    if (jeuxMat_.erase(m.set)) {
+        std::erase_if(matTex_, [&](const MatTex& t) { return t.set == m.set; });
+        vkFreeDescriptorSets(vk_->device, pool_, 1, &m.set);
+    }
+    m.set = VK_NULL_HANDLE;
 }
 
 bool Renderer::beginFrame(const FrameParams& fp) {
@@ -1529,7 +1543,7 @@ void Renderer::shutdown() {
     for (auto l : {frameLayout_, matLayout_, postLayout_}) vkDestroyDescriptorSetLayout(d, l, nullptr);
     vkDestroySampler(d, sampler_, nullptr); vkDestroySampler(d, clampSampler_, nullptr);
     if (samplerBasse_) vkDestroySampler(d, samplerBasse_, nullptr);   // WFS-144
-    samplerBasse_ = VK_NULL_HANDLE; texBasse_ = false; matTex_.clear();
+    samplerBasse_ = VK_NULL_HANDLE; texBasse_ = false; matTex_.clear(); jeuxMat_.clear();   // WFS-187 : pool détruit
     vk_->vueDetruite = nullptr; vk_->vueDetruiteCtx = nullptr;
     vk_->msaa = msaaMax_;   // MSAA du GPU rendu tel quel (init suivant : retour d'arrière-plan)
     vk_->destroy(white); vk_->destroy(flatNormal);
