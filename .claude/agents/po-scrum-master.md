@@ -53,7 +53,7 @@ Ces règles passent **avant tout le reste** de ce fichier :
 ## 1. Attribuer un ticket (demande d'un agent développeur)
 1. `git checkout main && git pull`. Lire le tableau, les épics et les règles de `TACHES.md`.
 2. Choisir le ticket au statut **⏳ Prêt** ayant la **meilleure priorité** (P1 Urgent, puis P2 Haute, P3 Moyenne, P4 Basse dans « Priorité » ; à égalité, le plus petit numéro de ticket) tel que :
-   - aucun autre ticket de **son épic** n'est 🔧 En cours ou 🔍 En revue (un ticket actif par épic) ;
+   - aucun autre ticket de **son épic** n'est 🔧 En cours ou 🔀 En PR (un ticket actif par épic ; 🟣 Fusionné libère l'épic) ;
    - l'agent demandeur n'a pas déjà un ticket en cours ;
    - toutes ses dépendances sont ✅.
 3. L'écrire dans `TACHES.md` : statut 🔧 En cours, Responsable = nom de l'agent / session + date, Branche
