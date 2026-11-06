@@ -4937,3 +4937,21 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-189** (E3, P3, ⏳ En attente de WFS-188, même épic, 1 jour) : Course à 5 (ANO-99 grille par vitesse max, ANO-101 adversaires à ±20 % de la vitesse max du joueur, place moyenne 1,5-3,5 en Normale) et nitro (ANO-100). **Décision de jeu ANO-100** : en Course à 5 et en Duel seulement, recharge +0,015/s (pleine en ≈ 67 s) et +0,10 par adversaire dépassé (Course à 5 seulement, équité du Duel) ; Checkpoint et Poursuite inchangés. Test CPU par voiture.
 - **ANO-102** → WFS-145 : RG-13 (critère 3, maximum sans effet ; critère 2 sur les minimums de RG-14) couvre déjà le pic de la Corniche de nuit ; RG-17 ajoute seulement la preuve du cycle 6 au Journal. WFS-145 reste à son développeur (en pause après WFS-187).
 - Rien d'iOS, aucun code touché, aucune suppression. `anno.md` : 6 ANO en 📋 Planifiée.
+
+### 2026-11-06 19:15:48 — WFS-187 fusionné (PR #151, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Cause** : les `Material` faits par `makeMaterial` n'étaient jamais rendus au pool de descripteurs. Seul `destroy(Model&)` libérait des jeux (`renderer.cpp:950`). Chaque chargement de carte refaisait les matériaux des systèmes : +130 à +240 jeux par cycle, jusqu'à épuiser le pool de 1 056 jeux (`vkAllocateDescriptorSets` en échec dans la Poursuite).
+- **Fait** :
+  - `Renderer::destroy(Material&)` et un registre `jeuxMat_` des jeux vivants : une copie d'un matériau (atlas recopié dans `mats_` à `campagne.cpp:63` et `circuit.cpp:82`, anneau du garage) n'est rendue qu'une fois ; `destroy(Model&)` passe par le même registre.
+  - Libération dans le `shutdown` de chaque système (appelé par `Game::shutdown` après `waitIdle`), plus les 4 matériaux de `Game`.
+- **Accroches annoncées (appels de libération seulement)** :
+  - `renderer.h` (2 lignes et un include) ;
+  - `game.cpp`, `poursuite_system.cpp`, `camera_vue.cpp`, `traffic_system.cpp`, `roues_banc.cpp` ;
+  - `ville.cpp`, `plage.cpp`, `campagne.cpp`, `circuit.cpp`, `decor_carte.cpp`, `commerces.cpp`, `enseignes.cpp`, `portique.cpp` ;
+  - `garage.cpp` ;
+  - `scene_essai.cpp`.
+- **Vérification** :
+  - banc d'endurance (binaire WFS-187 + banc de WFS-145), 2 passages : 238 jeux à chaque cycle (fin : 232), 0 erreur de validation, objets Vulkan stables, pente du tas −1,83 et +2,91 Mo/cycle, Poursuite arrivée, 0 écart, code 0 ;
+  - 34 captures `menu1` identiques au pixel près à main ;
+  - `WFS_BANC=parcours` : 0 écart ; 35 tests CPU OK.
+- **Incident de méthode** : pendant l'arbitrage de 18:28, l'agent PO a basculé mon dossier de travail sur `main`. Mes deux commits de WFS-145 (RG-08 à RG-15) ont donc été faits sur la copie locale de `main`, sans être poussés. Je les ai replacés sur `feature/waforspeed-145` (d3da912, f6444c7, poussés) et j'ai remis la copie locale de `main` à `origin/main`. Rien n'a été poussé à tort.
+- **Suite** : WFS-145 est resynchronisé avec main (avec WFS-187) ; banc d'endurance complet lancé, puis fusion.
