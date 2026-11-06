@@ -11,7 +11,7 @@
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 20:46:28 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 20:52:55 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -41,3 +41,4 @@
 |---|---|---|
 | WFS-179 | P2 Haute | Campagne : autoroute et péage — E2 occupée par WFS-176 (un ticket actif par épic) |
 | WFS-191 | P2 Haute | attend la validation des noms par l'utilisateur |
+| WFS-196 | P1 Urgent | statuts automatiques 🟣 → ✅ après la CI de `main` (robot `statuts.yml`) |

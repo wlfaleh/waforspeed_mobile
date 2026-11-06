@@ -5178,3 +5178,7 @@ Sur demande de l'utilisateur, l'agent « Claude (session 01Us6uCu) » s'appelle 
 - **Erreur du PO** : le commit 870b373 (tickets WFS-191 à 194) a embarqué par `git add -A` le fichier `src/render/eclairage_unites.h`, travail en cours du développeur de WFS-151 qui partage le même dossier de travail. Aucun fichier de `main` ne l'utilisait (compilation de `main` non touchée).
 - **Correction** : fichier retiré de `main` ; il reste sur la branche `feature/waforspeed-151` avec le reste du travail (commit 76d422a, fait par erreur sur le `main` local et non envoyé, recopié sur la branche en aec6c93).
 - **Mesure** : le PO n'utilise plus `git add -A`, seulement la liste de ses fichiers.
+
+### 2026-11-06 20:52:55 — WFS-196 créé : statuts automatiques après la CI de main (po-scrum-master)
+- **Demande de l'utilisateur** : automatiser le passage des tickets en ✅ quand la CI termine.
+- **WFS-196** (E7, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-196.md`) : workflow `statuts.yml` sur `workflow_run` de `build.yml` (`main`) ; run vert → tickets 🟣 dont la fusion est dans le run passent ✅ « (CI main #N) » dans `TACHES.md` et `track-agent.md`, entrée au journal, commit « (robot statuts) » ; run rouge → aucun statut changé, entrée au journal ; ligne mal formée → listée, jamais devinée. Script `tools/qa/statuts.py` + test. Numéro 196 : WFS-195 est déjà pris (vue cockpit).
