@@ -2781,3 +2781,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 22:58:54 — README : lien direct vers la dernière APK (po-scrum-master)
 - **Demande de l'utilisateur** : un lien dans le README pour télécharger la dernière APK sans la chercher (pas de ticket).
 - **Fait** : lien `releases/download/apercu/WaForSpeed.apk` (adresse fixe, APK de `main`) et lien vers la page de la Release, en haut de `README.md`.
+
+### 2026-11-06 23:01:22 — WFS-198 : premier lancement à la main d'archives.yml (Claude, agent 1)
+- Archives automatiques #1 (`workflow_dispatch` sur `main`, e4c7f14) : **vert**, test des 6 cas vert, « rien à ranger (entrées 648, lignes de tickets 197) », aucun commit (normal : on garde aujourd'hui et hier, aucune ligne ✅ dans `TACHES.md`).
+- Le ✅ attend le premier vrai rangement : le run de nuit du 2026-11-07 à 03:07 UTC doit ranger les entrées du 2026-11-05 avec des comptages égaux, faire un commit `(robot archives)` et ne lancer aucun run de `build.yml`. Je le vérifie à 03:30 UTC. WFS-198 reste 🟣.
