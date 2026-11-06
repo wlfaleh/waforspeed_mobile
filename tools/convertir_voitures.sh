@@ -42,6 +42,12 @@ for v in "${VOITURES[@]}"; do
   else node convert_car.mjs "$WEB/models/$dossier/$dossier.json" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture"; fi
   cp "$WEB/models/$dossier/license.txt" "$RACINE/assets/licences/$id.txt"
 done
+# WFS-158 (ST-2, RG-01, RG-02) : échelle globale, diamètre des roues, voies et assise d'après le référentiel du réel
+# (references/reel/voitures.json) : tools/corriger_voitures.cpp, cible CMake « corriger_voitures » ; rejouable (une voiture
+# déjà corrigée ne bouge plus). Sans id : les 20 voitures (golf, m4, p911 et gallardo comprises).
+CORR="$RACINE/build/corriger_voitures"
+if [ -x "$CORR" ]; then "$CORR" "$RACINE" "$@"
+else echo "⚠️  $CORR absent : construire la cible corriger_voitures (ninja -C build corriger_voitures), puis la lancer" >&2; exit 1; fi
 # WFS-134 (RG-11, RG-12) : versions allégées (assets/cars/<id>.lod : indices seuls, 30 % des triangles au moins) des voitures
 # du trafic, de la police et du camion de la poursuite ; vues au-delà de 60 m, avec fondu (Renderer::draw)
 # (WFS-158 : avec une liste d'id, seules les voitures de la liste sont allégées)
