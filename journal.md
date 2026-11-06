@@ -4720,3 +4720,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 15:08:59 — Fichier `recommandations-smart-brain.md` créé ; l'agent propose sans décider (smart-brainstorming)
 - **Règle de l'utilisateur** : l'agent `smart-brainstorming` propose, c'est son travail. Il ne parle qu'avec l'utilisateur et ne prend aucune décision. C'est l'utilisateur qui lit, choisit et demande lui-même au PO.
 - **Fait** : la roadmap du week-end devient la recommandation R01 de `recommandations-smart-brain.md` (racine), au lieu de `brainstorming/2026-11-06-roadmap-weekend.md`. L'agent (§ 11) et son skill (§ 6, contrôle final) sont mis à jour : aucun contact avec le PO ni avec un autre agent ; les recommandations s'ajoutent à la fin de ce fichier (R01, R02…).
+
+### 2026-11-06 15:25:16 — Recommandation R02 : court terme (smart-brainstorming)
+- **Fichier** : `recommandations-smart-brain.md`, R02 (C01 à C07, liste d'essai de 15 min). Constats : CI de `main` rouge (WFS-145 sans commit depuis environ 14 h), WFS-134 et WFS-109 sans commit depuis 17 à 19 h, recouvrement possible de WFS-109 et WFS-182 sur les feux arrière, 3 questions qui attendent l'utilisateur.
+- Propositions seulement : rien n'est transmis au PO ; c'est l'utilisateur qui décide.
