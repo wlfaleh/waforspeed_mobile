@@ -4064,3 +4064,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-109 : PASSABLE AVEC ANOMALIES MINEURES** (nouvelle ANO-70 : tache ovale au sol derrière les voitures la nuit).
 - **WFS-134 : PASSABLE AVEC ANOMALIES MINEURES** (aucune voiture en cubes ; nouvelle ANO-71 : reste d'ANO-67 sur le X5 et la Model 3 ; ANO-67 passée à « corrigée en partie »).
 - **Vérifiées corrigées** : ANO-48, 60, 66. À refaire au banc : `poursuite-camion` (écran « ARRÊTÉ », camion non visible).
+
+### 2026-11-06 08:34:18 — Recette des 20 voitures (qualité et fonctionnement), demandée par l'utilisateur : REFUSÉ (qa-lead)
+- Captures : Release `apercu` de main (captures de la construction 689, eb8152a ; aucune Release plus récente, les commits suivants ne touchent pas aux voitures) ; journaux du banc : aucune erreur de chargement.
+- **Fonctionnement bon** : roues qui tournent et braquent, feux du joueur (stop, recul, clignotant), trafic sans voiture en cubes de 10 à 180 m, choc, nitro, caméras, course à 5, sauvegarde.
+- **15 voitures bonnes**, 5 avec un défaut bloquant (vérifiés aussi par moi sur `vitrine-*` / `garage-suivant`) : **ANO-72** peinture de la 911 non appliquée (« Gris » → noire) ; **ANO-73** Giulia, bande grise sur la porte et vitres opaques à points ; **ANO-74** S3, lunette en camouflage ; **ANO-75** Model 3, carrosserie froissée partout ; **ANO-76** feux arrière blancs sur la V60 (gris / roses sur 8 autres : mineure).
+- **Mineures** : ANO-77 (facettes 208, Compass), ANO-78 (feux de recul de la Golf hors des blocs), ANO-79 (plaques au nom de l'auteur du modèle), ANO-80 (capture `garage-course` et `poursuite-camion` à refaire au banc).
+- Toujours là : ANO-23, ANO-56, ANO-71 (reste d'ANO-67). Vérifiée : ANO-26.
+- **Bloquantes après fusion → tickets de correction prioritaires à créer par le PO** (ANO-72 à 76). Rapport : `qa/rapports/voitures-2026-11-06.md`.
