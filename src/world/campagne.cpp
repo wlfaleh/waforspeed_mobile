@@ -16,6 +16,10 @@
 #include "decor_carte.h"
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2 (lacets du col, pont)
 #include "enseignes.h"   // WFS-178 : textes des enseignes du village (atlas)
+#include "../game/traffic.h"        // WFS-179 : couleurs du trafic (voitures en sens inverse)
+#include "../game/roues.h"          // WFS-179 : roues des voitures en sens inverse
+#include "../render/eclairage.h"    // WFS-179 : lumières de nuit du péage
+#include "../render/model_loader.h" // WFS-179 : modèles des voitures en sens inverse
 
 namespace wfs {
 namespace carte {
@@ -23,7 +27,10 @@ namespace {
 
 enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POLE, T_SIGN, T_VILLA, T_CHURCH, T_ZEBRA, T_VINES,
        T_GLISS, T_MURET, T_DANGER, T_CASCADE,   // WFS-138 : glissière, muret, panneau A1, cascade
-       T_FONTAINE, T_FEU, T_COMMERCE };         // WFS-178 : rond-point fleuri, feu tricolore, commerces du village
+       T_FONTAINE, T_FEU, T_COMMERCE,           // WFS-178 : rond-point fleuri, feu tricolore, commerces du village
+       T_AUTO, T_PEAGE, T_PANNEAU_A };          // WFS-179 : autoroute (un par segment), aire de péage, panneau bleu
+// WFS-179 : textes des panneaux bleus de l'autoroute et du péage (noms de lieux inventés)
+const char* const PANNEAUX_A[4] = {"VALLÉE VERTE  14 km", "LES PINS  9 km", "AIRE DE REPOS  2 km", "PÉAGE"};
 // WFS-178 (RG-03) : commerces du village (it.k) et texte de leur enseigne (pas de vraie marque ni de vrai nom de lieu)
 enum { CO_CAFE, CO_BAR, CO_GARAGE, CO_BOULANGERIE, CO_SUPERMARCHE, CO_NB };
 const char* const ENSEIGNES[CO_NB] = {"CAFÉ", "BAR", "GARAGE", "BOULANGERIE", "SUPERMARCHÉ"};
@@ -58,10 +65,14 @@ public:
             lampeOff_[k] = r.makeMaterial(off, nullptr, nullptr, nullptr);
         }
         for (const char* t : ENSEIGNES) atlas_.ajouter(t);
+        for (const char* t : PANNEAUX_A) atlas_.ajouter(t);   // WFS-179
+        if (auDeb_ >= 0)   // WFS-179 : voitures en sens inverse (deux modèles qui ne sont pas ceux du trafic)
+            for (int i = 0; i < 2; i++) if (!loadCarModel(r, i ? "cars/corsa.wfm" : "cars/v60.wfm", autos_[i])) WFS_ERR("Campagne : modèle du sens inverse introuvable");
         if (!atlas_.construire(r)) return;   // police absente : enseignes sans texte
         // lettres blanches de jour ; la nuit, enseigne éclairée sans halo exagéré (émission modérée, pas de bloom fort)
         mats_[P_TEXTE0] = atlas_.materiau(r, 0xf4f1e8, night_ ? 1.1f : 0.f);
         for (int k = 0; k < CO_NB; k++) txt_[k] = atlas_.texte(ENSEIGNES[k]);
+        for (int k = 0; k < 4; k++) txtA_[k] = atlas_.texte(PANNEAUX_A[k]);   // WFS-179
     }
 
 protected:
@@ -75,6 +86,15 @@ protected:
         // fieldCol : couleur du champ tirée par bloc de 70 segments ; vineCol : rangs de terre tous les 3 segments
         const int field = C_FIELD0 + (int)(Mulberry32((uint32_t)((int)std::floor(a / 70.0) * 7 + (s > 0 ? 3 : 0))).next() * 6);
         const int vine = (int)std::floor(a / 3.0) % 2 ? C_VINE_A : C_VINE_B;
+        if (s < 0 && autoroute(a)) {   // WFS-179 : terre-plein central (3 m), chaussée opposée (14 m), accotement, puis la campagne
+            out[0] = {R, R + 3, 0, 0, C_VERGE};
+            out[1] = {R + 3, R + 17, 0.01f, 0.01f, C_PITLANE};   // enrobé (albédo ≈ 0,045 : asphalte neuf 0,04-0,07)
+            out[2] = {R + 17, R + 19, 0, -0.05f, C_VERGE};
+            out[3] = {R + 19, R + 21, -0.05f, -0.4f, foret ? C_FOREST : C_DITCH};
+            out[4] = {R + 21, R + 95, -0.4f, vignes ? 6.f : 0.2f, foret ? C_FOREST : vignes ? vine : field};
+            out[5] = {R + 95, R + 220, vignes ? 6.f : 0.2f, vignes ? 26.f : 9.f, foret ? C_FOREST : C_FARHILL};
+            return borner(a, s, out, 6);
+        }
         out[0] = {R, R + 1.6f, 0, -0.05f, village ? C_WALK : C_VERGE};
         out[1] = {R + 1.6f, R + 3, -0.05f, -0.4f, foret ? C_FOREST : C_DITCH};
         out[2] = {R + 3, R + 95, -0.4f, vignes ? 6.f : 0.2f, foret ? C_FOREST : vignes ? vine : village ? C_VERGE : field};
@@ -85,7 +105,13 @@ protected:
     void place(const char* z, int64_t z0, int64_t z1, Mulberry32& Dm) override {
         if (libre_.empty()) { calculerLibre(); placerCol(); }
         // WFS-138 (RG-C1) : un objet n'est posé que s'il tient avant la mi-distance de la route voisine (2 m de marge)
+        if (auDeb_ == -2) calculerAutoroute();   // WFS-179
         auto item = [&](int64_t n, const Item& it) {
+            // WFS-179 (RG-C1) : rien sur la chaussée opposée de l'autoroute ni sur l'aire de péage
+            if (autoroute(n) && ((it.side < 0 && it.lat < (float)RW + 21) || (aPeage(n) && it.lat < (float)RW + 8))) return;
+            // pas de village au bord d'une autoroute : ni maison, ni église, ni commerce, ni lampadaire, ni passage piéton, ni
+            // objet à moins de 8 m de la chaussée (clôture, poteau)
+            if (autoroute(n) && (it.t == T_VILLA || it.t == T_CHURCH || it.t == T_COMMERCE || it.t == T_LAMP || it.t == T_ZEBRA || it.lat < (float)RW + 8)) return;
             const Libre* l = libreA(n, it.side);
             if (l && it.lat + std::max(it.d, 2.f) + 2 > l->m) return;
             // WFS-178 : pas de maison ni d'arbre à la place d'un commerce du village (même côté, sur sa longueur + 4 m)
@@ -101,6 +127,19 @@ protected:
         auto D = [&]() { return (float)Dm.next(); };
         auto fl = [](float v) { return (int64_t)std::floor(v); };
         const float R = (float)RW, SM = (float)SEG_M;
+        // WFS-179 (RG-04) : autoroute : un objet par segment (marquage, séparateur), glissières (une lisse tous les 2 segments,
+        // des deux côtés, sauf sur l'aire de péage), aire de péage, panneaux bleus tous les 600 m
+        for (int64_t n = z0; n < z1; n++) {
+            if (!autoroute(n)) continue;
+            Item it; it.t = T_AUTO; it.side = -1; CarteDecor::item(n, it);
+            if (n % 2 == 0 && !aPeage(n)) {
+                Item g1; g1.t = T_GLISS; g1.side = 1; g1.lat = R + 1.0f; g1.petit = true; CarteDecor::item(n, g1);
+                Item g2; g2.t = T_GLISS; g2.side = -1; g2.lat = R + 17.3f; g2.petit = true; CarteDecor::item(n, g2);
+            }
+            if (n == auDeb_ + PEAGE_SEG) { Item pg; pg.t = T_PEAGE; pg.side = 1; CarteDecor::item(n, pg); }
+            const int64_t k = n - auDeb_ - (int64_t)(250 / SM);
+            if (k >= 0 && k % (int64_t)(600 / SM) == 0) { Item pa; pa.t = T_PANNEAU_A; pa.side = 1; pa.lat = R + 4.6f; pa.k = (int)(k / (int64_t)(600 / SM)) % 3; CarteDecor::item(n, pa); }
+        }
         auto tree = [&](int64_t n, int side, float lat, float h, int kind, float along) {
             if (altitude(n) > 60) kind = K_PINE;   // WFS-138 (RG-01) : étage montagnard : les sapins remplacent les feuillus
             Item it; it.t = T_TREE; it.side = side; it.lat = lat; it.h = h; it.k = kind; it.along = along; item(n, it);
@@ -147,7 +186,7 @@ protected:
         }
     }
 
-    void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool, Geo out[P_COUNT]) const override {
+    void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         Geo& S = out[P_UNI];
         const char* z = zone(a);
         const float s = (float)it.side;
@@ -316,6 +355,70 @@ protected:
             }
             break;
         }
+        case T_AUTO: {
+            // WFS-179 (RG-04) : chaussée opposée de 3 voies de 3,50 m (bande dérasée de gauche 1,00 m, bande d'arrêt d'urgence
+            // 2,50 m : ICTAAL, autoroutes de liaison), marquage de 15 cm (2u, u = 7,5 cm sur autoroute), lignes T1 de 3 m pour
+            // 10 m d'intervalle entre les voies (IISR, 7e partie, art. 113 et 115) ; séparateur en béton « New Jersey » (DBA :
+            // 0,80 m de haut, 0,60 m à la base) au milieu du terre-plein central de 3 m. Côté gauche (s = −1).
+            const Pose p1 = poseAt(t, a + 1);
+            const float R = (float)RW, y = 0.022f;
+            auto bande = [&](float l0, float l1, float f0, float f1) {   // bande peinte de l0 à l1 (m), de f0 à f1 (fraction du segment)
+                const vec3 A0 = lateral(p, -l0, y), A1 = lateral(p, -l1, y), B0 = lateral(p1, -l0, y), B1 = lateral(p1, -l1, y);
+                quadSol(S, A0 + (B0 - A0) * f0, A1 + (B1 - A1) * f0, A1 + (B1 - A1) * f1, A0 + (B0 - A0) * f1, uv(C_WHITE));
+            };
+            bande(R + 3.925f, R + 4.075f, 0, 1);    // rive côté terre-plein
+            bande(R + 14.425f, R + 14.575f, 0, 1);  // rive côté bande d'arrêt d'urgence
+            const double dist = (double)a * SEG_M, ph = std::fmod(dist, 13.0);
+            const float f0 = ph < 3.0 ? 0.f : (float)((13.0 - ph) / SEG_M), f1 = ph < 3.0 ? (float)std::min(1.0, (3.0 - ph) / SEG_M) : 1.f;
+            if (ph < 3.0 || ph + SEG_M > 13.0) for (float l : {R + 7.5f, R + 11.f}) bande(l - 0.075f, l + 0.075f, f0, f1);
+            const float c = R + 1.5f;   // séparateur : profil extrudé du segment a au segment a + 1
+            const vec2 dba[8] = {{c + 0.30f, 0}, {c + 0.30f, 0.075f}, {c + 0.20f, 0.25f}, {c + 0.09f, 0.80f},
+                                 {c - 0.09f, 0.80f}, {c - 0.20f, 0.25f}, {c - 0.30f, 0.075f}, {c - 0.30f, 0}};
+            for (int i = 0; i + 1 < 8; i++)
+                quad(S, lateral(p, -dba[i].x, dba[i].y), lateral(p1, -dba[i].x, dba[i].y), lateral(p1, -dba[i + 1].x, dba[i + 1].y), lateral(p, -dba[i + 1].x, dba[i + 1].y), uv(C_WALK));
+            break;
+        }
+        case T_PEAGE: {
+            // WFS-179 (RG-04) : aire de péage (début de l'autoroute) : auvent de 14 m sur les deux chaussées, 5,50 m de hauteur
+            // libre (≥ 4,75 m de gabarit routier + équipements), cabines de 1,4 × 2,6 m sur des îlots de 0,20 m aux bords de
+            // chaque chaussée (rien sur nos voies), barrières levées (lisse rouge et blanche de 3 m, relevée), bandeau bleu
+            // « PÉAGE », dalles LED sous l'auvent (lampes vertes des voies : animées, voir animes)
+            const float R = (float)RW, g = -(R + 18.f), d = R + 3.f, cg = (g + d) / 2, larg = d - g;
+            box(S, lateral(p, cg, 0), p.r, p.f, larg, 1.2f, 14.f, uv(C_WALL), 5.5f);                     // auvent
+            box(S, lateral(p, cg, 0) - p.f * 7.05f, p.r, p.f, larg, 0.9f, 0.1f, uv(C_SEAT0), 5.65f);      // bandeau bleu (face aux arrivants)
+            box(S, lateral(p, cg, 0) + p.f * 7.05f, p.r, p.f, larg, 0.9f, 0.1f, uv(C_SEAT0), 5.65f);      // et face au sens opposé
+            for (float lat : {R + 2.3f, -(R + 1.5f), -(R + 17.8f)}) for (float al : {-5.f, 5.f})
+                box(S, lateral(p, lat, 0) + p.f * al, p.r, p.f, 0.5f, 5.5f, 0.5f, uv(C_WALK));             // piliers
+            if (!lod) for (float lat : {-(R + 6.f), -(R + 12.f), -1.5f, 4.f})                              // dalles LED (4000 K)
+                for (float al : {-4.f, 0.f, 4.f}) box(out[P_NEON], lateral(p, lat, 0) + p.f * al, p.r, p.f, 1.2f, 0.06f, 0.6f, uv(C_LAMP_W), 5.44f);
+            struct Cab { float lat, dir; };   // cabine, côté où passe la voiture (dir : +1 vers la droite)
+            for (const Cab& cb : {Cab{R + 2.2f, -1.f}, Cab{-(R + 1.5f), 1.f}, Cab{-(R + 17.6f), 1.f}}) {
+                box(S, lateral(p, cb.lat, 0), p.r, p.f, 1.8f, 0.2f, 20.f, uv(C_WALK));                    // îlot
+                box(S, lateral(p, cb.lat, 0.2f), p.r, p.f, 1.4f, 2.6f, 2.6f, uv(C_WALL));                  // cabine
+                box(S, lateral(p, cb.lat, 1.2f), p.r, p.f, 1.42f, 0.9f, 2.0f, uv(C_GLASS));                // vitrages
+                const vec3 pied = lateral(p, cb.lat + cb.dir * 0.8f, 0.2f) - p.f * 1.8f;
+                box(S, pied, p.r, p.f, 0.3f, 1.0f, 0.3f, uv(C_STEEL));                                     // poteau de la barrière
+                for (int k = 0; k < 6; k++) box(S, pied + vec3{0, 1.0f + k * 0.5f, 0}, p.r, p.f, 0.08f, 0.5f, 0.08f, uv(k % 2 ? C_WHITE : C_RED));   // lisse levée
+            }
+            if (txtA_[3].ok) for (float sf : {-1.f, 1.f}) {   // « PÉAGE » en lettres blanches de 0,6 m sur les deux bandeaux
+                const vec3 c = lateral(p, R - 2.f, 6.1f) + p.f * (sf * 7.12f);
+                ligneTexte(out[P_TEXTE0], c, p.r * (-sf), 0.6f * txtA_[3].aspect / 0.62f, 0.6f / 0.62f, txtA_[3]);
+            }
+            break;
+        }
+        case T_PANNEAU_A: {
+            // WFS-179 : panneau bleu d'autoroute (D 21 / D 29 : fond bleu, lettres blanches ; 3,6 × 1,6 m, bas à 2,2 m), sur deux
+            // poteaux d'acier galvanisé, sur l'accotement de droite derrière la glissière
+            const float x = s * it.lat;
+            for (float al : {-1.2f, 1.2f}) box(S, lateral(p, x, 0) + p.f * al, p.r, p.f, 0.1f, 3.8f, 0.1f, uv(C_STEEL));
+            box(S, lateral(p, x, 0) - p.f * 0.08f, p.r, p.f, 3.6f, 1.6f, 0.08f, uv(C_SEAT0), 2.2f);
+            const vie::Texte& T = txtA_[std::clamp(it.k, 0, 2)];
+            if (T.ok) {
+                const float h = 0.45f / 0.62f, w = std::min(3.3f, h * T.aspect);
+                ligneTexte(out[P_TEXTE0], lateral(p, x, 3.0f) - p.f * 0.13f, p.r, w, w / T.aspect, T);
+            }
+            break;
+        }
         case T_GLISS: {   // glissière simple (GS2) : lisse en acier galvanisé de 0,31 m, haut à 0,70 m, poteaux tous les 2,4 m
             const Pose p1 = poseAt(t, a + 2);
             const vec3 A = lateral(p, s * it.lat, 0.39f), B = lateral(p1, s * it.lat, 0.39f), up{0, 0.31f, 0};
@@ -377,6 +480,7 @@ protected:
                 }
             }
         }
+        nS += autoroutesAnimes(r, g, c0, c1);   // WFS-179
         if (rotors_.empty()) {
             for (const auto& [seg, it] : turbines_) {
                 Geo B;
@@ -411,6 +515,49 @@ protected:
         return n + nS;
     }
 
+    // WFS-179 : lampes vertes d'affectation au-dessus de chaque voie du péage (Ø 200 mm, face aux arrivants des deux sens) ;
+    // voitures en sens inverse sur la chaussée opposée (3 voies, 94 à 119 km/h, la voie de gauche la plus rapide), à horaire
+    // fixe, 2 au plus dans le champ (−30 à 280 m), cachées à moins de 40 m du péage (elles y ralentiraient) ; feux la nuit
+    int autoroutesAnimes(Renderer& r, const GameView& g, int64_t c0, int64_t c1) {
+        if (auDeb_ < 0) return 0;
+        int n = 0;
+        Track& t = *g.track;
+        const float R = (float)RW;
+        int64_t a;
+        if (lampeMesh_.vb.buf && dansMorceau(auDeb_ + PEAGE_SEG, c0 * CH, (c1 + 1) * CH, a)) {
+            const Pose p = poseAt(t, a);
+            for (float lat : {-5.6f, -1.9f, 1.9f, 5.6f}) { r.draw(lampeMesh_, lampeOn_[2], translate(lateral(p, lat, 5.0f) - p.f * 7.12f) * rotateY(-p.th + PI)); n++; }
+            for (float lat : {R + 5.75f, R + 9.25f, R + 12.75f}) { r.draw(lampeMesh_, lampeOn_[2], translate(lateral(p, -lat, 5.0f) + p.f * 7.12f) * rotateY(-p.th)); n++; }
+        }
+        if (!autos_[0].ok) return n;
+        const int64_t L = len(), aP = (int64_t)std::floor(g.player->dist / SEG);
+        const double lon = (double)(auFin_ - auDeb_) * SEG_M;
+        int k = 0;
+        for (int i = 0; i < 18 && k < 2; i++) {
+            const int vi = i % 3;
+            const double v = vi == 0 ? 33.0 : vi == 1 ? 30.0 : 26.0;
+            const double m = lon - std::fmod(i * 83.0 + 29.0 * vi + v * g.time, lon);
+            const int64_t sl = auDeb_ + (int64_t)(m / SEG_M);
+            if (std::llabs(sl - (auDeb_ + PEAGE_SEG)) * SEG_M < 40) continue;
+            int64_t sA = aP - (((aP % L) + L) % L) + sl;
+            if (sA - aP > L / 2) sA -= L; else if (aP - sA > L / 2) sA += L;
+            const double sF = (double)sA + std::fmod(m, SEG_M) / SEG_M, dz = (sF - g.player->dist / SEG) * SEG_M;
+            if (dz < -30 || dz > 280) continue;
+            const float lat = -(R + 5.75f + 3.5f * vi);
+            t.pose((int64_t)sF - 1); t.pose((int64_t)sF + 2);
+            const TrackPoint q = t.point(sF * SEG, lat);
+            const Model& mo = autos_[i % 2];
+            const mat4 w = translate({(float)q.x, (float)q.y + 0.01f, (float)q.z}) * rotateY((float)-(q.th + PI)) * rotateX((float)q.slope);
+            const vec3 paint = linHex(TRAFFIC_PAINTS[(i * 5 + 2) % 9]);
+            const RouesPose rp = roues::poseTrafic(0, false, v * g.time / M, mo.nRoues ? mo.roues[0].rayon : roues::RW_DEFAUT);
+            FeuxVoiture f; f.nuit = night_;
+            r.feuxProchaineVoiture(f);
+            r.draw(mo, w, &paint, &rp);
+            k++; n += (int)mo.parts.size();
+        }
+        return n;
+    }
+
     void shutdownCarte(Renderer& r) override {
         for (Mesh& m : rotors_) r.destroy(m);
         rotors_.clear(); turbines_.clear();
@@ -420,6 +567,9 @@ protected:
         if (lampeMesh_.vb.buf) r.destroy(lampeMesh_);
         for (int k = 0; k < 3; k++) { r.destroy(lampeOn_[k]); r.destroy(lampeOff_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
         lampeMesh_ = Mesh{}; fontaineSeg_ = feuSeg_ = -1; vigilance_.clear(); commerces_.clear();
+        for (Model& m : autos_) if (m.ok) { r.destroy(m); m = Model{}; }   // WFS-179
+        for (auto& T : txtA_) T = {};
+        auDeb_ = -2; auFin_ = -1;
         if (solFond_.vb.buf) r.destroy(solFond_);
         solFond_ = Mesh{};
     }
@@ -432,6 +582,29 @@ private:
     // hauteur corrigée en rampe depuis le bord de la chaussée (correction 0) jusqu'à la coupe (sol = mi-hauteur des deux
     // routes) : le sol rejoint exactement celui de la voisine et ne recouvre jamais sa chaussée ; pente forte vers le haut :
     // talus de roche (paroi côté montagne)
+    // WFS-179 : tronçon d'autoroute du tracé 2 (sections autoroute contiguës), aire de péage à 30 m de son début
+    static constexpr int64_t PEAGE_SEG = 25;
+    void calculerAutoroute() {
+        auDeb_ = auFin_ = -1;
+        for (const trace::Section& sec : trace::sections(*track_)) if (sec.autoroute) {
+            if (auDeb_ < 0) auDeb_ = sec.debut;
+            auFin_ = sec.fin;
+        }
+        if (auDeb_ >= 0) for (int k = 0; k < 2; k++)   // nuit : lumière sous l'auvent (nuit.cpp, les 4 plus proches)
+            lampadaires().push_back({auDeb_ + PEAGE_SEG, k ? -((float)RW + 9.f) : 2.f, 5.4f, StyleLampadaire::Ville});
+        WFS_LOG("Campagne (WFS-179) : autoroute %lld-%lld, péage au segment %lld", (long long)auDeb_, (long long)auFin_, (long long)(auDeb_ + PEAGE_SEG));
+    }
+    bool autoroute(int64_t n) const {
+        if (auDeb_ < 0) return false;
+        const int64_t L = len(), m = ((n % L) + L) % L;
+        return m >= auDeb_ && m < auFin_;
+    }
+    bool aPeage(int64_t n) const {   // ±15 m autour de l'aire de péage
+        if (auDeb_ < 0) return false;
+        const int64_t L = len(), m = ((n % L) + L) % L;
+        return std::llabs(m - (auDeb_ + PEAGE_SEG)) * SEG_M < 15;
+    }
+
     int borner(int64_t a, int s, Band out[6], int n) const {
         const Libre* l = libreA(a, s);
         if (!l || l->m >= out[n - 1].b) return n;
@@ -629,6 +802,10 @@ private:
     std::vector<Emprise> commerces_;   // RG-C1 : segments à dégager dans les 60 m qui précèdent (feu, entrée du rond-point)
     vie::AtlasTextes atlas_; vie::Texte txt_[CO_NB];
     Mesh lampeMesh_{}; Material lampeOn_[3]{}, lampeOff_[3]{};
+    // WFS-179 : autoroute (segments du tour, −2 : pas encore calculé), voitures en sens inverse, textes des panneaux
+    int64_t auDeb_ = -2, auFin_ = -1;
+    Model autos_[2];
+    vie::Texte txtA_[4];
     // WFS-178 : sol de fond sous toute la carte (prairie, 1 m sous le point le plus bas de la route) : depuis que le sol
     // de chaque route s'arrête à mi-distance de sa voisine (WFS-138), il restait des trous entre deux bandes qui ne se
     // rejoignent pas (abords du rond-point, intérieur des épingles) : on y voyait le ciel ; on y voit maintenant le sol

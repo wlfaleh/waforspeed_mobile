@@ -109,13 +109,18 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     }
     int64_t vi = -1;
     for (int64_t a = 0; a < L && vi < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), "Vignobles")) vi = a + 40;
+    int64_t au = -1;   // WFS-179 : début de l'autoroute (aire de péage à 30 m), et 300 m plus loin (voitures en sens inverse)
+    for (const trace::Section& s : t.sections()) if (s.autoroute && au < 0) au = s.debut;
     WFS_LOG("banc campagne : %lld segments, lacets %lld → %lld (+%.0f m), 1re épingle %lld, vignes %lld", (long long)L, (long long)lac->debut,
             (long long)lac->fin, lac->denivele, (long long)ep, (long long)vi);
     struct Cap { const char* nom; int64_t seg; int cam; };
     const Cap caps[] = {{"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1},
                         {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0}, {"carte-campagne-vignes", vi, 0},
-                        {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0}};
+                        {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0},
+                        {"carte-campagne-peage", au >= 0 ? au : -1, 0}, {"carte-campagne-autoroute", au >= 0 ? au + (int64_t)(300 / SEG_M) : -1, 0}};   // WFS-179
+    const char* seule = std::getenv("WFS_CAMPAGNE_LIEU");   // WFS-179 : essai local d'un seul lieu (préfixe du nom)
     for (const char* mo : {"jour", "nuit"}) for (const Cap& c : caps) {
+        if (seule && std::string(c.nom).rfind(seule, 0) != 0) continue;
         if (c.seg < 0) { ecarts++; WFS_ERR("banc campagne : %s introuvable", c.nom); continue; }
         if (!std::strcmp(mo, "nuit") && c.cam == 1) continue;
         setenv("WFS_MOMENT", mo, 1);
