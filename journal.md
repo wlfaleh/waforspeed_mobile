@@ -2670,3 +2670,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 22:05:17 — WFS-191 : noms des voitures réglables dans configgame.json, ticket prêt (po-scrum-master)
 - **Décision de l'utilisateur** : au lieu de valider la liste des noms, les mettre en configuration dans `configgame.json`.
 - **Fait** : `regles-de-gestion/WFS-191.md` RG-06 à RG-09 (section `voitures`, défauts = noms inventés, changement sans reconstruire, contrôles 16 / 24 caractères, README régénéré, test CPU) ; exception PO : `src/core/configgame.*` (E0) pour cette section. WFS-191 passe ⏳ Prêt (dépendance retirée). Réponse dans `tache utilisateur.md`.
+
+### 2026-11-06 22:10:15 — WFS-198 créé : robot des archives chaque nuit (po-scrum-master)
+- **Demande de l'utilisateur** : automatiser la création des archives.
+- **WFS-198** (E7, P2 Haute, ⏳ Prêt, `regles-de-gestion/WFS-198.md`) : `archives.yml` chaque nuit à 03:07 UTC (+ lancement à la main) ; journal → `journal/archive/AAAA-MM-JJ.md` (plus de 2 jours) ; lignes ✅ / ↪ / annulées de `TACHES.md` → `archive/taches-terminees.md` (recopiées d'abord dans `regles-de-gestion/WFS-XX.md`) ; rien deviné ; comptage avant / après, sinon rien n'est envoyé ; `tache utilisateur.md` reste au PO ; commit « (robot archives) ».
