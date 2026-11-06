@@ -9,7 +9,7 @@
 //   - lecture des fichiers JSON du référentiel references/reel/ (lecteur borné : un fichier cassé donne une erreur,
 //     jamais un plantage) ;
 //   - mesures dans les données du jeu : dimensions des voitures (.wfm), largeurs et cycles des lignes de la route
-//     (constantes lues dans shaders/scene.frag et src/world/*.cpp) ;
+//     (constantes lues dans shaders/route.glsl, WFS-149 et src/world/*.cpp) ;
 //   - rapport de fidélité : valeur du jeu, valeur réelle, tolérance, conforme / non conforme / non mesurable, indice
 //     par domaine (part des mesures conformes, DA-realisme.md § 4).
 // Aucune valeur réelle n'est écrite ici : elles sont toutes dans references/reel/*.json, avec leur source (SOURCES.md).
@@ -459,7 +459,7 @@ inline MesureVoiture mesurerWfm(const std::string& chemin) {
     return r;
 }
 
-// route : constantes du dessin des lignes (shaders/scene.frag) et des passages piétons (src/world/ville.cpp, campagne.cpp)
+// route : constantes du dessin des lignes (shaders/route.glsl depuis WFS-149) et des passages piétons (src/world/ville.cpp, campagne.cpp)
 struct MesureRoute {
     bool lignes = false, pieton = false; std::string erreur;
     double periode = 0, trait = 0, largeurAxe = 0, largeurRive = 0, retraitRive = 0, diviseurVoies = 0;   // m (diviseur : sans unité)
@@ -489,7 +489,7 @@ inline MesureRoute mesurerRoute(const std::string& sceneFrag, const std::string&
     const bool d = chercher(sceneFrag, R"(float\(k\) \* halfW / ([0-9.]+))", m);
     if (d) r.diviseurVoies = std::stod(m[1]);
     r.lignes = a && b && c && d;
-    if (!r.lignes) r.erreur = "constantes des lignes introuvables dans shaders/scene.frag (code modifié : mettre à jour mesurerRoute)";
+    if (!r.lignes) r.erreur = "constantes des lignes introuvables dans shaders/route.glsl (code modifié : mettre à jour mesurerRoute)";
     r.pieton = passagePieton(villeCpp, "case ville::ZEBRA", r.bandeLargeur, r.intervalle, r.bandeLongueurSeg);
     if (!r.pieton) r.erreur += std::string(r.erreur.empty() ? "" : " ; ") + "passage piéton introuvable dans src/world/ville.cpp";
     return r;
@@ -566,8 +566,8 @@ inline void mesuresDonnees(const Referentiel& R, Rapport& rap, const std::string
     }
     // ---- routes (M-03) : constantes du dessin contre les normes
     std::string frag, ville;
-    const bool okF = lireTexte(racine + "/shaders/scene.frag", frag), okV = lireTexte(racine + "/src/world/ville.cpp", ville);
-    if (!okF || !okV) { rap.nonMesurable("routes", "route.*", "lignes et passages piétons", "shaders/scene.frag ou src/world/ville.cpp introuvable depuis " + racine); return; }
+    const bool okF = lireTexte(racine + "/shaders/route.glsl", frag), okV = lireTexte(racine + "/src/world/ville.cpp", ville);
+    if (!okF || !okV) { rap.nonMesurable("routes", "route.*", "lignes et passages piétons", "shaders/route.glsl ou src/world/ville.cpp introuvable depuis " + racine); return; }
     const MesureRoute m = mesurerRoute(frag, ville);
     if (m.lignes) {
         const double hw = 7.5;   // RW (src/game/track.h) : demi-largeur de chaussée passée au shader (Game::render)

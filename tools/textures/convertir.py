@@ -26,6 +26,7 @@ sys.path.insert(0, str(ICI))
 import etc2, ktx2   # noqa: E402
 
 SEUILS = {'couleur': 38.0, 'normale': 35.0, 'orm': 38.0}   # dB (RG-03)
+CONTROLE_ETC2 = []   # écart maximal (codes) entre etc2.py et le décodage d'etc2comp, par niveau
 
 # ---------------------------------------------------------------- lecture
 def lire_image(chemin):
@@ -138,11 +139,23 @@ def etc2_niveau(etctool, tmp, octets, srgb, typ, k):
     h, w = octets.shape[:2]
     src, dst = f'{tmp}/e{k}.png', f'{tmp}/e{k}.ktx'
     png(src, octets, w4=True)
-    lancer([etctool, src, '-format', 'SRGBA8' if srgb else 'RGBA8', '-effort', '100', '-errormetric', 'numeric', '-j', '1', '-output', dst])
+    ana = f'{tmp}/analyse{k}'
+    os.makedirs(ana, exist_ok=True)
+    lancer([etctool, src, '-format', 'SRGBA8' if srgb else 'RGBA8', '-effort', '100', '-errormetric', 'numeric', '-j', '1',
+            '-analyze', ana, '-output', dst])
     donnees = ktx1_donnees(dst)
     attendu = ((w + 3) // 4) * ((h + 3) // 4) * 16
     if len(donnees) != attendu: sys.exit(f'etc2comp : {len(donnees)} octets pour {w}x{h} ({attendu} attendus)')
-    return donnees, etc2.decoder(donnees, w, h)
+    dec = etc2.decoder(donnees, w, h)
+    # contrôle du décodeur etc2.py : image décodée par l'encodeur lui-même (-analyze → Decoded.png), au plus 1 code d'écart
+    # (arrondi de ses flottants) ; un décodeur faux donnerait des écarts de dizaines de codes
+    ref = pathlib.Path(ana) / 'Decoded.png'
+    if ref.is_file():
+        e = np.asarray(Image.open(ref).convert('RGBA'), np.int32)[:h, :w, :3]
+        ecart = int(np.max(np.abs(e - dec[..., :3].astype(np.int32)))) if e.shape[:2] == (h, w) else -1
+        CONTROLE_ETC2.append(ecart)
+        if ecart < 0 or ecart > 1: sys.exit(f'décodeur ETC2 (etc2.py) en désaccord avec etc2comp : écart {ecart} au niveau {k}')
+    return donnees, dec
 
 # ---------------------------------------------------------------- précision (RG-03)
 def psnr(ref, dec, alpha):
@@ -201,6 +214,7 @@ def main():
             for v, (f, niv) in sorties.items(): ktx2.ecrire(f'{a.sortie}.{v}.ktx2', f, w, h, niv)
     texte = ''.join(f'{n} | {t} | {v} | {w}x{h}, {len(refs)} niveaux | {o / 1024:.1f} Ko | niveau 0 {fmt_db(p0)} | chaîne {fmt_db(pc)} | '
                     f'seuil {seuil:.0f} dB | {"conforme" if ok else "REFUSÉ"}\n' for (n, t, v, p0, pc, ok, o) in lignes)
+    if CONTROLE_ETC2: texte += f'{nom} | décodeur ETC2 contrôlé contre etc2comp sur {len(CONTROLE_ETC2)} niveaux : écart maximal {max(CONTROLE_ETC2)} code\n'
     if refus: texte += f'{nom} | REFUSÉE : ASTC 4x4 sous {seuil:.0f} dB, aucun fichier écrit\n'
     elif 'etc2' not in sorties: texte += f'{nom} | ETC2 sous {seuil:.0f} dB : non écrit, repli RGBA8 sur les GPU sans ASTC\n'
     sys.stdout.write(texte)

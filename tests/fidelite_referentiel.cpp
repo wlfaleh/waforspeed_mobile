@@ -76,6 +76,8 @@ int main(int argc, char** argv) {
     int nonMes = 0;
     for (const auto& l : rap.lignes) {
         if (l.domaine == "soleil") VERIFIE(l.etat == Etat::Conforme, "soleil : %s %s (réel %s)", l.id.c_str(), l.jeu.c_str(), l.reel.c_str());
+        // WFS-149 : les constantes des lignes sont lues dans shaders/route.glsl (découpage de scene.frag) : jamais perdues
+        if (l.domaine == "routes" && l.id == "route.lignes") VERIFIE(false, "routes non mesurables : %s", l.raison.c_str());
         if (l.domaine == "voitures" && l.id.find(".longueur") != std::string::npos) VERIFIE(l.etat != Etat::NonMesurable, "%s non mesurable : %s", l.id.c_str(), l.raison.c_str());
         nonMes += l.etat == Etat::NonMesurable;
     }
