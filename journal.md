@@ -4788,3 +4788,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Recette d'un ticket** (recette de nuit, `qa/Check.md`) : le QA vérifie **seulement les critères d'acceptation et les règles de gestion du ticket**, et que **le jeu fonctionne** (démarre, se joue, ne plante pas). Le design et la finition hors critères ne sont plus des anomalies du ticket et ne vont plus dans `anno.md`.
 - **Campagne de test VABF sur l'émulateur** (`simulateur.yml`, vrai APK de `main`) : le QA teste tout le jeu et crée des **anomalies de prod** `ANO-PROD-XX` (bloquante / majeure / mineure) dans la nouvelle section « Anomalies de prod » de `anno.md`, avec le rapport `qa/rapports/VABF-AAAA-MM-JJ.md` (verdict APTE ou NON APTE). Bloquante → ticket de correction prioritaire créé par le PO ; le PO priorise toutes les anomalies de prod.
 - Fichiers : `.claude/agents/qa-lead.md`, `.claude/skills/qa-lead/SKILL.md`, `anno.md`.
+
+### 2026-11-06 17:06:10 — CI de main après WFS-174 (Claude, agent 3)
+- Run 42215719693 (57fac94) : `banc-essai (texte)` vert avec `[OK] test_audio` (31 tests CPU), android, bancs et `publication-apk` verts ; `publication-captures` annulé (run suivant de main parti, groupe de concurrence) ; **`endurance` rouge : +12,6 % au cycle 6** (0 erreur de validation, aucun plantage).
+- **Pas une fuite de WFS-174** : le ticket ajoute ≈ 471 Ko de boucles calculées une fois au démarrage (rien par image, rien par course) ; les 7 runs suivants de main, qui contiennent tous WFS-174 : +9,4 %, +7,9 %, +7,0 %, +6,2 %, +8,5 % (rouge ailleurs), +10,8 %, +9,6 %. La mesure du banc d'endurance varie de +6 à +13 % d'un run à l'autre (déjà signalé au PO après WFS-127) : le seuil de 10 % reste trop près du bruit ; à reprendre par un ticket E7 (PO).
+
