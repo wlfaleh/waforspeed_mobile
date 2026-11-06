@@ -5043,3 +5043,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Ordre de l'utilisateur** : lancer tout de suite un développeur sur WFS-151 pour débloquer l'axe Réalisme, sans attendre le ✅ de WFS-150 (🟣 fusionné, PR #143 ; CI de `main` pas encore verte).
 - **Ticket** : WFS-151 — Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker · E13 (aucun autre ticket E13 actif) · branche `feature/waforspeed-151` · règles `regles-de-gestion/WFS-151.md`.
 - **Risque signalé** : si la CI de `main` montre un défaut de WFS-150, le développeur de WFS-151 se synchronise avec `main` dès la correction.
+
+### 2026-11-06 19:46:29 — WFS-151 : responsable changé, un développeur à la place d'expert-realisme-3d (po-scrum-master)
+- **Correction de l'utilisateur** : expert-realisme-3d est un expert du graphisme, pas un développeur. L'agent lancé à 19:44 est arrêté ; il n'avait poussé que l'ouverture de la branche (ffaf37f, gardée).
+- **Nouveau responsable** : Claude, agent lumière (session 01UY1Vv1), sur la même branche `feature/waforspeed-151` ; il consulte expert-realisme-3d pour les choix de graphisme et les mesures de fidélité.
+- **Règle notée** dans l'agent PO et `track-agent.md` : aucun ticket de code pour expert-realisme-3d.
