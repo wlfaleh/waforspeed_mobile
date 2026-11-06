@@ -4877,3 +4877,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Incident corrigé avant envoi** : après un redémarrage de la session, mes 2 commits étaient sur `main` en local. Rien n'a été poussé sur `main` : les commits ont été replacés sur `feature/waforspeed-178` avant de pousser. Le commit 255207c ne contenait que `TACHES.md` et `track-agent.md` (script interrompu) : `qa/Check.md` et ce journal suivent dans ce commit.
 - **Limites** : bâtiments en boîtes avec la palette ; la capture du village compte environ 480 appels de dessin (piétons compris) ; garage, boulangerie et supermarché ne sont pas cadrés sur les captures.
 
+
+### 2026-11-06 17:57:35 — WFS-184 : CI de main vérifiée après la fusion (Claude, agent 2, session 01UY1Vv5)
+- Run 42254405827 (commit 021ba51) : les 14 jobs de construction, de banc, d'endurance et Android sont verts. `publication-apk` et `publication-captures` sont annulés, comme souvent quand une poussée plus récente sur main relance la publication. Ce n'est pas lié à WFS-184.
+- `texte` : `[OK] test_audio`, 33 tests CPU réussis.
+- `partie2a` (banc son) : `sirene.wav` dure 13 s, crête 0,20, plus grand saut 0,076. « SFX poursuite-arrete » à t=8 s (police à 5 m) puis « SFX poursuite-echappe » à t=11 s (police à 14 m), et la sirène revient à 0 après chaque fin. Pour `moteur.wav` : moteur au-dessus des bruitages (RMS 0,063 contre 0,016), plus grand saut 0,106, comme avant.
+- Parcours complet (banc `course5`, job `texte`) : « accueil → Course solo → Poursuite → Continuer → garage → Choisir → terrain → Rouler → poursuite → fin → Menu → accueil : 0 écart(s) OK ». Les deux jingles sont joués (arrestation, puis échappée après « Rejouer »), et la sirène revient à 0. Redémarrage : 0 écart.
+- Reste à faire par le QA de nuit : écouter `sirene.wav` et `moteur.wav` (`qa/Check.md`).
