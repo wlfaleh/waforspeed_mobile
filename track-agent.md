@@ -11,7 +11,7 @@
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 19:44:45 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 19:46:29 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -25,7 +25,7 @@
 | Claude, session dev expert (0183bv2X) | WFS-188 | conduite fidèle aux fiches : 0-100, vitesse max, freinage (ANO-97, ANO-98) | 188 : 19:25 | ✅ actif (WFS-145 et WFS-187 fusionnés) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
 | Claude, session 01Us6uCu | WFS-158 | dimensions des 20 voitures + carrosserie Model 3 (ANO-75) | 158 : 10:45 | ⚠️ rien depuis 10:45 ; le ticket lui reste jusqu'à 20:45 UTC (règle des 10 h) |
-| expert-realisme-3d (session 01UY1Vv1) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : poussée 19:45 | ✅ actif (lancé à 19:44 sur ordre de l'utilisateur) ; ST-1 unités photométriques |
+| Claude, agent lumière (session 01UY1Vv1) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 19:45 (ouverture de la branche) | ✅ actif (lancé à 19:46 ; consulte expert-realisme-3d pour les choix de graphisme) |
 
 ## Agents de pilotage
 
@@ -33,7 +33,7 @@
 |---|---|---|
 | po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | demande de Claude, agent 2 (01UY1Vv5) : aucun ticket ⏳ Prêt attribuable ; WFS-175 attribué à agent arwa |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
-| expert-realisme-3d | expert de l'axe Réalisme (WFS-148 à 167) | WFS-148 (référentiel du réel) ; aucun ticket en cours |
+| expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
 
 ## Tickets prêts sans agent
