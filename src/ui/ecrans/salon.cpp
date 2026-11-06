@@ -42,7 +42,7 @@ struct Zone {
 Zone g_creer, g_retour, g_salons[4], g_pret, g_quitter, g_km[4];
 // WFS-89 : « Rejoindre avec un code » (4 cases, clavier des caractères de duel::CODE_CHARS, effacer, « Rejoindre »)
 Zone g_touches[32], g_effacer, g_rejoindre;
-Zone g_inviter;   // WFS-112 : « Inviter » (partage du lien)
+Zone g_inviter, g_reessayer;   // WFS-112 : « Inviter » (partage du lien) ; WFS-141 : « Réessayer » (relais injoignable)
 std::string g_saisie;
 const reseau::TransportDouble* g_double = nullptr;   // transport du salon en cours (Wi-Fi local + Internet), si ouvert ici
 std::string g_doubleCode;
@@ -200,6 +200,11 @@ public:
             WFS_LOG("salon : « Inviter » (%s)", ok ? "partage ouvert" : "pas de partage sur cette plateforme");
             return true;
         }
+        if (g_reessayer.contient(t.x, t.y)) {   // WFS-141 (RG-05) : même salon, nouvelle connexion (Wi-Fi local et relais)
+            const std::string code = s.code(); const bool hote = s.host(); const int km = s.km();
+            s.leave(); s.join(transportDouble(code, hote), code, hote, sv.nick, car, sv.peinture(car).c_str(), hote ? carteActuelle(g) : ""); if (hote) s.setKm(km);
+            WFS_LOG("salon : « Réessayer » : nouvelle connexion au salon %s", code.c_str()); return true;
+        }
         if (g_pret.contient(t.x, t.y)) {
             s.setReady(s.status() != duel::Status::Ready);
             WFS_LOG("salon : %s", s.status() == duel::Status::Ready ? "prêt" : "plus prêt");
@@ -325,6 +330,7 @@ private:
         }
         ui::text(r, cx, y + 84 * k, 13 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
         // WFS-146 (RG-08, ANO-44) : aide de RG-07 de WFS-89 sous le code (12 px #8A90A6), dans l'espace libre avant les lignes
+        if (!bandeauHorsLigne(r, zl, y + 90 * k, k))
         ui::text(r, zl, y + 96 * k, 12 * k, "Donne ce code à ton adversaire : il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
         // lignes .car-line
         float ly = y + 112 * k;
@@ -369,10 +375,7 @@ private:
             ui::text(r, px + 16 * k, py + (os.empty() ? 34 : 4) * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
         }
         // boutons
-        const bool pret = s.status() == duel::Status::Ready;
-        g_pret = bouton(r, zl, by, bh, k, "Prêt", !pret);   // prêt : bouton clair souligné de cyan (une touche l'annule)
-        if (pret) { r.uiRect(g_pret.x + 14 * k, by + bh - 3 * k, g_pret.w - 14 * k, 3 * k, hex(ACCENT2)); }
-        g_quitter = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "Quitter le salon", false);
+        boutonsSalon(r, zl, by, bh, k);
     }
 
     // WFS-147 (RG-01, RG-02, RG-06, ANO-38) : salon sur téléphone couché (k = pixels par dp), d'après la carte de salon de
@@ -400,8 +403,9 @@ private:
         }
         // WFS-146 (RG-08, ANO-44) : aide de RG-07 de WFS-89 sous le code, sur deux lignes, puis le lien (14 dp)
         float ly = y + 74 * k;
+        if (!bandeauHorsLigne(r, xl, ly - 4 * k, k)) {
         ui::text(r, xl, ly, 14 * k, "Donne ce code à ton adversaire :", hex(MUTED), ui::GAUCHE, 0, false);
-        ui::text(r, xl, ly + 19 * k, 14 * k, "il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false);
+        ui::text(r, xl, ly + 19 * k, 14 * k, "il le tape dans « Rejoindre avec un code ».", hex(MUTED), ui::GAUCHE, 0, false); }
         ui::text(r, xl, ly + 38 * k, 14 * k, sous, hex(MUTED), ui::GAUCHE, 0, false);
         ly += 64 * k;
         // lignes .car-line : libellé 12 dp, valeur 18 dp
@@ -448,12 +452,25 @@ private:
             ui::text(r, px + 14 * k, py + 4 * k, 14 * k, net, warn ? hex(ACCENT) : hex(0xC9CDDA), ui::GAUCHE, 0, false);
         }
         // boutons
-        const bool pret = s.status() == duel::Status::Ready;
-        g_pret = bouton(r, zl, by, bh, k, "Prêt", !pret);   // prêt : bouton clair souligné de cyan (une touche l'annule)
-        if (pret) { r.uiRect(g_pret.x + 14 * k, by + bh - 3 * k, g_pret.w - 14 * k, 3 * k, hex(ACCENT2)); }
-        g_quitter = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "Quitter le salon", false);
+        boutonsSalon(r, zl, by, bh, k);
     }
 
+    // WFS-141 (RG-05, ANO-62) : relais injoignable ou lien perdu, sans adversaire sur le Wi-Fi : bandeau orange 16 dp sous le code, « Prêt » grisé, « Réessayer »
+    static bool horsLigne() { const auto* d = doubleActuel(); return d && d->choisi() != 1 && (d->lien() == duel::Lien::Echec || d->lien() == duel::Lien::Perdu); }
+    static bool bandeauHorsLigne(Renderer& r, float x, float y, float k) {
+        if (!horsLigne()) return false;
+        bool warn = false; const std::string msg = etatLien(*doubleActuel(), warn);
+        r.uiRect(x, y, ui::width(16 * k, msg) + 24 * k, 28 * k, hex(ACCENT));
+        ui::text(r, x + 12 * k, y + 6 * k, 16 * k, msg, hex(BG), ui::GAUCHE, 0, false); return true;
+    }
+    void boutonsSalon(Renderer& r, float zl, float by, float bh, float k) {
+        const bool pret = duelSession().status() == duel::Status::Ready, hl = horsLigne();
+        g_pret = bouton(r, zl, by, bh, k, "Prêt", !pret && !hl);   // prêt : bouton clair souligné de cyan (une touche l'annule)
+        if (pret && !hl) { r.uiRect(g_pret.x + 14 * k, by + bh - 3 * k, g_pret.w - 14 * k, 3 * k, hex(ACCENT2)); }
+        if (hl) { biseau(r, g_pret.x, by, g_pret.w, bh, 14 * k, hex(BG, 0.6f)); g_reessayer = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "Réessayer", true); } else g_reessayer = {};
+        const Zone z = hl ? g_reessayer : g_pret; if (hl) g_pret = {};   // grisé : sans effet
+        g_quitter = bouton(r, z.x + z.w + 10 * k, by, bh, k, "Quitter le salon", false);
+    }
     // WFS-112 : texte de l'état du lien (partagé par les deux mises en page du salon)
     static std::string etatLien(const reseau::TransportDouble& dbl, bool& warn) {
         warn = false;
@@ -669,6 +686,10 @@ void benchSalon(Game& g, Renderer& r, const std::string& out) {
     pas(5); g.render(t); toucher(33, g_creer);
     for (int i = 0; i < 110; i++) { std::this_thread::sleep_for(std::chrono::milliseconds(100)); pas(1); }
     capture("salon-hors-ligne", "sans Internet : serveur du duel injoignable (note orange), salon ouvert");
+    const void* lienAvant = doubleActuel(); g.render(t); toucher(34, g_reessayer);   // WFS-141 (RG-05, RG-06) : relais coupé → « Réessayer » → « Quitter le salon » → « Retour »
+    const bool relance = doubleActuel() && doubleActuel() != lienAvant && duelSession().inRoom();
+    g.render(t); toucher(35, g_quitter); g.render(t); toucher(36, g_retour); pas(2);
+    if (relance && g.ecran() == Ecran::Menu) WFS_LOG("salon (parcours) : relais coupé → Réessayer (connexion relancée) → Quitter → Retour → menu : 0 écart"); else WFS_ERR("salon (parcours) : relais coupé : Réessayer %s, écran %s après Retour", relance ? "ok" : "SANS EFFET", nomEcran(g.ecran()));
     duelSession().leave();
     reseau::adresseRelais() = avant;
     if (relaisOk) benchDuelAmis(g, r, out, t);

@@ -18,6 +18,7 @@
 #include "duel_system.h"
 #include "game.h"
 #include "player.h"
+#include "poursuite.h"   // WFS-141 : titrePlace
 #include "sauvegarde.h"
 #include "traffic.h"
 #include "traffic_system.h"
@@ -31,7 +32,7 @@ namespace {
 
 uint32_t g_graineBanc = 0;   // banc d'essai : tirage fixe (captures stables)
 
-const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
+const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
 vec3 lin(unsigned h) {
     auto c = [&](int sh) { return std::pow(((h >> sh) & 255) / 255.f, 2.2f); };
@@ -208,19 +209,14 @@ private:
             y += rh;
         }
     }
-    // RG-06 : écran de fin : place, temps, les 5 lignes (temps, écart ou distance), « Rejouer » et « Menu »
+    // RG-06 : écran de fin : place, temps, les 5 lignes (temps, écart ou distance), « Rejouer » et « Menu » ;
+    // WFS-141 (RG-03, ANO-59) : gabarit de la fin Checkpoint (dessinerEcranFin), « 2e PLACE » (jamais « 2E »)
     void resultat(Renderer& r, float W, float H, float u, const std::vector<course5::Ligne>& ls) {
         const int rang = course5::position(ls);
-        r.uiRect(0, 0, W, H, FOND);
-        const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous le classement
-        const float pw = 66 * u, ph = (34 + 6.5f * ls.size() + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        r.uiRect(px0, py0, pw, ph, SURFACE);
+        EcranFin e;
         char sur[64]; std::snprintf(sur, sizeof sur, "COURSE À 5 · %d KM", kmCourse5());
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
-        const std::string titre = rang == 1 ? "Victoire" : std::to_string(rang) + "e place";
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::majuscules(titre), rang == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
-        ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(ftJoueur_), TEXTE, ui::CENTRE, 0.f, false, true);
-        float y = py0 + 24 * u;
+        e.surTitre = sur;
+        e.titre = poursuite::titrePlace(rang); e.couleurTitre = rang == 1 ? ui::ORANGE : TEXTE;
         const double tete = ls[0].fini ? ls[0].ft : -1;
         for (size_t i = 0; i < ls.size(); i++) {
             const auto& l = ls[i];
@@ -229,17 +225,12 @@ private:
             else if (i == 0 || tete < 0) tm = ui::chrono(l.ft);
             else tm = "+" + ui::decimal(l.ft - tete, 1) + " s";
             const vec4 c = l.moi ? ui::ORANGE : TEXTE;
-            ui::text(r, px0 + 5 * u, y, 3.4f * u, std::to_string(i + 1) + ". " + l.nom, c, ui::GAUCHE, 0.f, false);
-            ui::text(r, px0 + pw - 5 * u, y, 3.4f * u, tm, l.fini ? c : MUTED, ui::DROITE, 0.f, false);
-            y += 6.5f * u;
+            e.lignes.push_back({std::to_string(i + 1) + ". " + l.nom, tm, c, l.fini ? c : MUTED});
         }
-        const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
-        if (rec) dessinerRecord(r, W / 2, y - 1 * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
-        rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
-        r.uiRect(rejouerZ_.x, by, bw, bh, ui::ORANGE);
-        ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        r.uiRect(menuZ_.x, by, bw, bh, vec4{1, 1, 1, 0.10f});
-        ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
+        e.record = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD »
+        if (e.record) { e.valeurRecord = texteRecord(); e.nouveauRecord = nouveauRecord_; }
+        const BoutonsFin b = dessinerEcranFin(r, W, H, u, e);
+        rejouerZ_ = {b.rejouer.x, b.rejouer.y, b.rejouer.w, b.rejouer.h}; menuZ_ = {b.menu.x, b.menu.y, b.menu.w, b.menu.h};
     }
 
     Renderer* r_ = nullptr;

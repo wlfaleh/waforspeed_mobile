@@ -129,6 +129,29 @@ int testPoursuite() {
         VERIFIE(modeDeCle("") == ModeCourse::Checkpoint, "clé vide");
         std::printf("mode gardé : « poursuite » écrit et relu, ancienne sauvegarde → Checkpoint : OK\n");
     }
+    // WFS-141 (RG-01, ANO-56) : gyrophares : rouge puis bleu à 2 Hz, jamais ensemble ni éteints ensemble ; voitures voisines
+    // en opposition ; halo de 1,5 × la largeur de la lampe au plus ; couleurs #FF2D55 et #2D7CFF
+    {
+        int rouges = 0, bleus = 0, changements = 0; bool avant = gyrophare(0.001, 0).rouge;
+        for (int i = 0; i < 1200; i++) {   // 10 s au pas de 1/120 s
+            const double t = (i + 0.5) / 120;
+            const Gyrophare a = gyrophare(t, 0), b = gyrophare(t, 1);
+            VERIFIE(a.rouge != a.bleu, "gyrophare : rouge et bleu %s à t = %.3f s", a.rouge ? "ensemble" : "éteints", t);
+            VERIFIE(a.rouge == b.bleu, "gyrophare : 2e voiture pas en opposition à t = %.3f s", t);
+            rouges += a.rouge; bleus += a.bleu;
+            if (a.rouge != avant) { changements++; avant = a.rouge; }
+        }
+        VERIFIE(rouges == 600 && bleus == 600, "gyrophare : %d images rouges, %d bleues sur 1200", rouges, bleus);
+        VERIFIE(changements == 39 || changements == 40, "gyrophare : %d changements en 10 s (2 Hz : 40)", changements);
+        VERIFIE(gyrophare(-0.1, 0).bleu && gyrophare(0.1, 0).rouge, "gyrophare : temps négatif");
+        VERIFIE(HALO_GYRO <= 1.5f && GYRO_ROUGE == 0xFF2D55u && GYRO_BLEU == 0x2D7CFFu, "gyrophare : halo %.2f, couleurs %06X / %06X", HALO_GYRO, GYRO_ROUGE, GYRO_BLEU);
+        std::printf("gyrophares : rouge puis bleu à 2 Hz, jamais ensemble, halo ≤ 1,5 × la lampe : OK\n");
+    }
+    // WFS-141 (RG-02, ANO-57) : bandeau d'annonce : 1,5 s, 5 % de la hauteur
+    VERIFIE(BANDEAU_S == 1.5 && BANDEAU_HAUTEUR == 0.05f, "bandeau : %.2f s, %.3f de la hauteur", BANDEAU_S, BANDEAU_HAUTEUR);
+    // WFS-141 (RG-03, ANO-59) : « 2e PLACE » (jamais « 2E »)
+    VERIFIE(titrePlace(1) == "VICTOIRE" && titrePlace(2) == "2e PLACE" && titrePlace(5) == "5e PLACE", "titre : %s / %s", titrePlace(1).c_str(), titrePlace(2).c_str());
+    std::printf("bandeau 1,5 s et 5 %% ; titres « VICTOIRE », « 2e PLACE » : OK\n");
     if (echecs) std::printf("poursuite : %d échec(s)\n", echecs);
     else std::printf("poursuite police : tout est OK\n");
     return echecs;

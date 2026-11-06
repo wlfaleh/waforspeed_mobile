@@ -11,6 +11,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
+#include "../render/effets_particules.h"   // WFS-141 : effets::versHdr (gyrophares)
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "../ui/appui.h"
@@ -41,10 +42,11 @@ using namespace poursuite;
 
 bool g_banc = false;                 // banc d'essai : programme fixe (captures stables)
 int g_bancFin = 0;                   // banc : 1 = arrêter tout de suite, 2 = sauter près de l'arrivée
+double g_bancSautKm = 0;             // WFS-141 : banc : saut en avant du joueur jusqu'à ce point (km)
 // voiture existante repeinte (RG-03) : la 208 (la Golf si le joueur roule en 208)
 const char* policeCar(const Player* pl) { return pl && pl->car && !std::strcmp(pl->car->id, "p208") ? "golf" : "p208"; }
 
-const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
+const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
 const vec4 DANGER{1.f, 31 / 255.f, 75 / 255.f, 1}, BLEU{0.25f, 0.45f, 1.f, 1};
 vec3 lin(unsigned h) {
@@ -76,8 +78,11 @@ public:
         }
         cube_ = r.makeMesh(v, idx);
         auto mat = [&](unsigned c, vec3 em, float rough) { Material m; const vec3 l = lin(c); m.color = {l.x, l.y, l.z, 1}; m.rough = rough; m.emissive = em; return r.makeMaterial(m, nullptr, nullptr, nullptr); };
-        matRouge_ = mat(0x200000, lin(0xff2038) * 6.f, 0.4f);
-        matBleu_ = mat(0x000020, lin(0x2050ff) * 6.f, 0.4f);
+        // WFS-141 (RG-01, ANO-56) : lampes allumées à leur couleur (versHdr, comme les clignotants de WFS-109), sans le × 6
+        auto web = [](unsigned h) { return effets::versHdr(vec3{((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f}, 1.f); };
+        matRouge_ = mat(0x200000, web(GYRO_ROUGE), 0.4f);
+        matBleu_ = mat(0x000020, web(GYRO_BLEU), 0.4f);
+        haloRouge_ = web(GYRO_ROUGE); haloBleu_ = web(GYRO_BLEU);
         matPlot_ = mat(0xff6a00, lin(0xff6a00) * 0.4f, 0.6f);
         matBlanc_ = mat(0xf2f4f8, {0, 0, 0}, 0.5f);
         matBleuCaisse_ = mat(0x14224a, {0, 0, 0}, 0.45f);
@@ -123,6 +128,11 @@ public:
             const double d = c->duelFinish - 150 / M - pl.dist;
             if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); for (Police& p : police_) p.rd += d; }
             g_bancFin = 0; distAvant_ = pl.dist;
+        }
+        if (g_bancSautKm > 0) {   // WFS-141 : banc : saut après le barrage et l'embouteillage (le pilote automatique y reste bloqué)
+            const double d = g_bancSautKm * duel::KM - pl.dist;
+            if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); }   // la police reste derrière et rattrape
+            g_bancSautKm = 0; distAvant_ = pl.dist;
         }
         Traffic* tr = activeTrafficMut();
         if (c->state == RaceState::Play) {
@@ -205,7 +215,6 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (!actif_ || g.sceneDediee || !g.player || !g.track) return;
         const double sP = g.player->dist;
-        const bool flash = std::fmod(g.time, 0.5) < 0.25;
         {   // banc : angle de la caméra « vitrine » placée devant la voiture (police visible derrière)
             const TrackPoint a = g.track->point(sP, 0), b = g.track->point(sP + 5 / M, 0);
             orbitAvant_ = (float)std::atan2(b.x - a.x, b.z - a.z);
@@ -224,13 +233,16 @@ public:
             if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
             // barre lumineuse dessinée par le code : rouge à gauche, bleu à droite, halos alternés (WFS-119 RG-04 : en qualité
             // Basse, au-delà de 80 m, halos seuls)
+            // WFS-141 (RG-01, ANO-56) : rouge puis bleu, jamais ensemble (lampe éteinte : verre sombre, sans halo) ; halo de
+            // 1,5 × la largeur de la lampe, couleur convertie par versHdr (avant : 1,4 m de demi-côté, × 4 : disque rose)
+            const Gyrophare gy = gyrophare(g.time, (int)(&p - police_.data()));
+            const float lampe = W * 0.32f, demi = HALO_GYRO * lampe / 2;
             if (!r.qualiteBasse || std::abs(rel) <= 80) {
-                r.draw(cube_, matRouge_, m * translate({-W * 0.17f, H - 0.02f, 0.1f}) * scale({W * 0.32f, 0.14f, 0.3f}));
-                r.draw(cube_, matBleu_, m * translate({W * 0.17f, H - 0.02f, 0.1f}) * scale({W * 0.32f, 0.14f, 0.3f}));
+                r.draw(cube_, gy.rouge ? matRouge_ : matVitre_, m * translate({-W * 0.17f, H - 0.02f, 0.1f}) * scale({lampe, 0.14f, 0.3f}));
+                r.draw(cube_, gy.bleu ? matBleu_ : matVitre_, m * translate({W * 0.17f, H - 0.02f, 0.1f}) * scale({lampe, 0.14f, 0.3f}));
             }
-            const bool a = flash ^ ((&p - police_.data()) % 2 == 1);
-            r.halo(m.transformPoint({-W * 0.17f, H + 0.14f, 0.1f}), a ? 1.4f : 0.5f, lin(0xff2038) * (a ? 4.f : 1.f));
-            r.halo(m.transformPoint({W * 0.17f, H + 0.14f, 0.1f}), a ? 0.5f : 1.4f, lin(0x2050ff) * (a ? 1.f : 4.f));
+            if (gy.rouge) r.halo(m.transformPoint({-W * 0.17f, H + 0.14f, 0.1f}), demi, haloRouge_);
+            if (gy.bleu) r.halo(m.transformPoint({W * 0.17f, H + 0.14f, 0.1f}), demi, haloBleu_);
         }
         for (const Plot& p : plots_) {   // RG-05 : travaux (plots orange)
             const double rel = (p.s - sP) * M;
@@ -286,9 +298,11 @@ public:
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, pw - 4 * u, 0.6f * u, vec4{1, 1, 1, 0.12f});
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, (pw - 4 * u) * k, 0.6f * u, ui::ORANGE);
         if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
-            const float bw = std::max(46 * u, ui::width(3.6f * u, ban_, 0.1f) + 8 * u), by = y0 + ph + 2 * u;
-            r.uiRect(cx - bw / 2, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
-            ui::text(r, cx, by + 1.7f * u, 3.6f * u, ban_, TEXTE, ui::CENTRE, 0.1f, false, true);
+            // WFS-141 (RG-02, ANO-57) : 5 % de la hauteur, à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 +
+            // 10 + 40 + 8 + 40 px de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route
+            const float k = H / 720.f, bh = BANDEAU_HAUTEUR * H, tp = bh * 0.56f, bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
+            r.uiRect(bx, by, ui::width(tp, ban_, 0.1f) + 2 * bh, bh, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
+            ui::text(r, bx + bh, by + (bh - tp) / 2, tp, ban_, TEXTE, ui::GAUCHE, 0.1f, false, true);
         }
     }
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -332,7 +346,7 @@ private:
         WFS_LOG("poursuite : graine %u, %.0f km, score %d, %d voitures de police, %zu embouteillages, %zu surprises", graine_, KM_ARRIVEE,
                 etat_.score, POLICE_DEPART, prog_.bouchons.size(), prog_.surprises.size());
     }
-    void annoncer(const std::string& t) { ban_ = t; banT_ = 4.0; }
+    void annoncer(const std::string& t) { ban_ = t; banT_ = BANDEAU_S; }   // WFS-141 (RG-02) : 1,5 s (avant : 4 s)
 
     // place une voiture du trafic loin du joueur (hors de vue) à la distance s, file f, vitesse v (unités/s)
     TrafficCar* deplacer(Traffic& tr, const Player& pl, Track& t, double s, int f, double v) {
@@ -484,37 +498,26 @@ private:
         }
     }
 
-    // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu »
+    // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu » ;
+    // WFS-141 (RG-03, ANO-59) : gabarit de la fin Checkpoint (dessinerEcranFin), statistiques en 2 rangées de 3
     void resultat(Renderer& r, float W, float H, float u) {
-        r.uiRect(0, 0, W, H, FOND);
-        const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
-        const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
-        r.uiRect(px0, py0, pw, ph, SURFACE);
-        ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, "POURSUITE POLICE · 10 KM", ui::CYAN, ui::CENTRE, 0.16f, false);
-        const bool v = etat_.gagne;
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, v ? "VICTOIRE" : "ARRÊTÉ", v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
-        float y = py0 + 20 * u;
-        auto ligne = [&](const char* a, const std::string& b) {
-            ui::text(r, px0 + 6 * u, y, 3.4f * u, a, MUTED, ui::GAUCHE, 0.f, false);
-            ui::text(r, px0 + pw - 6 * u, y, 3.4f * u, b, TEXTE, ui::DROITE, 0.f, false, true);
-            y += 5.6f * u;
-        };
-        ligne("Score final", std::to_string(etat_.score));
-        ligne("Temps", ui::chrono(ftJoueur_));
-        ligne("Chocs trafic / glissière / police", std::to_string(etat_.chocsTrafic) + " / " + std::to_string(etat_.chocsGlissiere) + " / " + std::to_string(etat_.chocsPolice));
-        ligne("Voitures de police", std::to_string(policeMobiles()));
-        const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
-        if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
-        rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
-        r.uiRect(rejouerZ_.x, by, bw, bh, ui::ORANGE);
-        ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        r.uiRect(menuZ_.x, by, bw, bh, vec4{1, 1, 1, 0.10f});
-        ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
+        EcranFin e;
+        e.surTitre = "POURSUITE POLICE · 10 KM";
+        e.titre = etat_.gagne ? "VICTOIRE" : "ARRÊTÉ"; e.couleurTitre = etat_.gagne ? ui::ORANGE : DANGER;
+        e.parRangee = 3;
+        e.stats = {{"Score final", std::to_string(etat_.score)}, {"Temps", ui::chrono(ftJoueur_)}, {"Voitures de police", std::to_string(policeMobiles())},
+                   {"Chocs trafic", std::to_string(etat_.chocsTrafic)}, {"Chocs glissière", std::to_string(etat_.chocsGlissiere)},
+                   {"Chocs police", std::to_string(etat_.chocsPolice)}};
+        e.record = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD »
+        if (e.record) { e.valeurRecord = texteRecord(); e.nouveauRecord = nouveauRecord_; }
+        const BoutonsFin b = dessinerEcranFin(r, W, H, u, e);
+        rejouerZ_ = {b.rejouer.x, b.rejouer.y, b.rejouer.w, b.rejouer.h}; menuZ_ = {b.menu.x, b.menu.y, b.menu.w, b.menu.h};
     }
 
     Renderer* r_ = nullptr;
     Model modele_; bool modeleEssaye_ = false; const char* policeCar_ = "p208";
     Mesh cube_; Material matRouge_, matBleu_, matPlot_, matBlanc_, matBleuCaisse_, matVitre_, matJaune_, matNoir_;
+    vec3 haloRouge_{}, haloBleu_{};   // WFS-141 : couleurs HDR des halos des gyrophares
     Model camionModele_; bool camionEssaye_ = false; const char* camionCar_ = "x5"; vec3 peintureCamion_{};   // WFS-119
     std::vector<Camion> camions_;
     std::vector<Bande> bandes_;
@@ -639,7 +642,7 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     capture("poursuite-police");
     g.camMode = 0; g.render(t += 0.02);
     basse("police au contact");
-    jusqua(0.33, 60 * 60);    // barrage annoncé 260 m avant (0,45 km)
+    jusqua(0.21, 60 * 60);    // barrage annoncé 260 m avant (0,45 km) ; WFS-141 (RG-02) : 20 m après l'annonce (bandeau de 1,5 s visible)
     capture("poursuite-surprise");
     jusqua(0.93, 60 * 60);    // embouteillage à 0,9 km
     capture("poursuite-bouchon");
@@ -649,12 +652,15 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     basse("HUD (police au contact, embouteillage)");
     // WFS-119 : ralentisseur puis camion en travers (score remis à 100 : l'embouteillage du banc l'a entamé)
     if (PoursuiteSystem* s0 = PoursuiteSystem::actif) { WFS_LOG("poursuite (banc) : score %d remis à %d", s0->etat().score, SCORE_DEPART); s0->bancScore(SCORE_DEPART); }
-    jusqua(BANC_RALENTISSEUR_KM - 0.045, 60 * 60);
+    // WFS-141 (RG-02) : le pilote automatique reste bloqué derrière le barrage (0,45 km) : saut à 150 m du ralentisseur
+    g_bancSautKm = BANC_RALENTISSEUR_KM - 0.15; images(2, 1);
+    WFS_LOG("poursuite (banc) : saut à %.2f km (ralentisseur à %.2f km)", g.player().dist * M / 1000, BANC_RALENTISSEUR_KM);
+    jusqua(BANC_RALENTISSEUR_KM - 0.018, 60 * 60);   // WFS-141 (RG-02) : capture à 18 m de l'obstacle (15 à 20 m)
     capture("poursuite-ralentisseur");
     basse("ralentisseur");
     jusqua(BANC_RALENTISSEUR_KM + 0.03, 20 * 60);
     if (const PoursuiteSystem* s0 = PoursuiteSystem::actif) WFS_LOG("poursuite (banc) : après le ralentisseur : score %d, %d ralentisseur(s) passé(s) trop vite", s0->etat().score, s0->etat().ralentisseurs);
-    jusqua(BANC_CAMION_KM - 0.026, 60 * 60);
+    jusqua(BANC_CAMION_KM - 0.018, 60 * 60);
     capture("poursuite-camion");
     basse("camion en travers");
     g_bancFin = 1; images(90, 10);
@@ -744,10 +750,8 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
         images(90, 10);
         return c && c->state == RaceState::Over;
     };
-    // place des boutons de l'écran de fin de la course à 5 (course5_system.cpp, resultat : 5 lignes, marges nulles au banc)
-    const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f;
-    const float ph = (34 + 6.5f * 5) * u, by = (H - ph) / 2 + ph - 7 * u - 3 * u + 3.5f * u;
-    const float xRejouer = W / 2 - 13.5f * u, xMenu = W / 2 + 13.5f * u;
+    // WFS-141 : place des boutons de l'écran de fin de la course à 5 lue sur l'écran dessiné (gabarit commun, course_system.cpp)
+    const float W = (float)r.width(), H = (float)r.height();
     const int doigt = 0;   // Android : le premier doigt posé a toujours l'identifiant 0
     auto toucher = [&](float x, float y, const char* nom) {
         g.onTouch({doigt, x, y, true}); images(2, 1); g.onTouch({doigt, x, y, false}); images(4, 2);
@@ -756,7 +760,9 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Menu); images(10, 5);
     g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
     if (!jusquaFin()) { ecarts++; WFS_ERR("course à 5 (parcours) : première course pas finie"); }
-    toucher(xRejouer, by, "Rejouer");
+    float bx = 0, by = 0;
+    if (!course5Bouton("rejouer", bx, by)) { ecarts++; WFS_ERR("course à 5 (parcours) : « Rejouer » absent"); }
+    toucher(bx, by, "Rejouer");
     const Course* c = activeCourse();
     if (g.ecran() != Ecran::Course || !c || c->state == RaceState::Over) { ecarts++; WFS_ERR("course à 5 (parcours) : « Rejouer » → pas de nouvelle course"); }
     else WFS_LOG("course à 5 (parcours) : « Rejouer » → nouvelle course");
@@ -774,7 +780,8 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
         g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/course5-rejouer.png");
         WFS_LOG("capture course5-rejouer : écran de fin de la 2e course (après « Rejouer »)");
     }
-    toucher(xMenu, by, "Menu");
+    if (!course5Bouton("menu", bx, by)) { ecarts++; WFS_ERR("course à 5 (parcours) : « Menu » absent"); }
+    toucher(bx, by, "Menu");
     if (g.ecran() != Ecran::Menu) { ecarts++; WFS_ERR("course à 5 (parcours) : « Menu » (même doigt que « Rejouer ») → écran %s, attendu menu", nomEcran(g.ecran())); }
     WFS_LOG("course à 5 (parcours) : fin → « Rejouer » → nouvelle course → gaz pris → fin → « Menu » → accueil : %d écart(s) %s", ecarts, ecarts ? "ÉCHEC" : "OK");
     g.setAutopilot(false);

@@ -119,5 +119,18 @@ Travers camionTravers(int fileLibre, double longueurM, double largeurM);
 std::string cleMode(ModeCourse m);
 ModeCourse modeDeCle(const std::string& cle);
 
+// ---- WFS-141 : rendu de la poursuite et des écrans de fin (calcul seul, testé par tests/test_poursuite.cpp)
+// RG-01 (ANO-56) : gyrophares : rouge #FF2D55 et bleu #2D7CFF allumés l'un après l'autre à 2 Hz (0,25 s chacun), jamais
+// ensemble (plus de rose) ; une voiture sur deux en opposition de phase ; halo de 1,5 × la largeur de la lampe
+constexpr unsigned GYRO_ROUGE = 0xFF2D55, GYRO_BLEU = 0x2D7CFF;
+constexpr float HALO_GYRO = 1.5f;   // diamètre du halo / largeur de la lampe
+struct Gyrophare { bool rouge = false, bleu = false; };
+Gyrophare gyrophare(double t, int voiture);
+// RG-02 (ANO-57) : bandeau d'annonce effacé 1,5 s après l'annonce, haut de 5 % de l'écran
+constexpr double BANDEAU_S = 1.5;
+constexpr float BANDEAU_HAUTEUR = 0.05f;
+// RG-03 (ANO-59) : titre de l'écran de fin de la course à 5 : « VICTOIRE », puis « 2e PLACE », « 3e PLACE »…
+std::string titrePlace(int rang);
+
 } // namespace poursuite
 } // namespace wfs
