@@ -20,7 +20,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) ; suivi des runs noté sur main à 21:22 (783a874) | 🔴 P1 en cours ; suit aussi la CI de `main` : WFS-175 (🟣, PR #155) |
-| Claude, agent 1 (01UY1Vv2) | WFS-179 | Campagne (3/3) : autoroute et péage | 179 : 21:21 (branche poussée) ; 176 : fusionnée 21:11 (PR #158) ; 185 : ✅ run 777 | 🔧 en cours ; suit aussi la CI de `main` : WFS-176 (🟣, contrôle 22:30) |
+| Claude, agent 1 (01UY1Vv2) |  |  | 179 : fusionnée 21:37 (PR #161) ; 176 : fusionnée 21:11 (PR #158) | ✅ libre ; suit la CI de `main` de WFS-176 et WFS-179 (🟣) |
 | Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran carte, essuie-glaces, Golf, M4, 911, SF90 | 197 : attribué à 21:27, branche à pousser | ⚠️ branche `feature/waforspeed-197` à pousser dans les 30 min ; ne suit plus la CI de main (WFS-189, WFS-196 : suivi repris par le PO, ordre de l'utilisateur) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |

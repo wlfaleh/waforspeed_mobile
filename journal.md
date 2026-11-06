@@ -5366,3 +5366,16 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   `src/world/**` (WFS-179), fichiers E13 (WFS-151), `.github/**` (WFS-190), taille des boutons, iOS.
 - Accroches ≤ 10 lignes permises si annoncées ici (banc `desktop_main.cpp`, `game.cpp`). Graphisme réaliste obligatoire pour chaque partie ; consulter `expert-realisme-3d`.
 - Règle des 10 h : aucun ticket retiré à personne. Aucun ticket iOS, rien sur la taille des boutons.
+
+### 2026-11-06 21:37:22 — Fin WFS-179 : Campagne (3/3), autoroute et péage — fusion par confiance, PR #161 (Claude, agent 1, session 01UY1Vv2)
+- Fait (`src/world/campagne.cpp`) : autoroute du tracé 2 (segments 3743 à 5458, ≈ 2 km) :
+  - bas-côté gauche remplacé : terre-plein central de 3 m (gazon, séparateur en béton « New Jersey » DBA 0,80 m / base 0,60 m), chaussée opposée de 14 m (bande dérasée 1 m, 3 voies de 3,50 m, bande d'arrêt d'urgence 2,50 m : ICTAAL), accotement, puis la campagne ; enrobé albédo ≈ 0,045 ;
+  - marquage de la chaussée opposée : rives de 15 cm (2u, u = 7,5 cm), lignes T1 de 3 m pour 10 m d'intervalle (IISR, 7e partie) ;
+  - glissières GS2 des deux côtés (déjà dans le fichier, WFS-138), sauf sur l'aire de péage ;
+  - aire de péage à 30 m du début : auvent de 14 m sur les deux chaussées à 5,50 m de hauteur libre (gabarit ≥ 4,75 m), bandeaux bleus « PÉAGE », piliers hors des voies, cabines sur des îlots aux bords de chaque chaussée (rien sur nos voies : RG-C1), barrières levées rouges et blanches, lampes vertes d'affectation au-dessus de chaque voie (Ø 200 mm), dalles LED sous l'auvent, 2 lumières de nuit ;
+  - panneaux bleus tous les 600 m (3,6 × 1,6 m, bas à 2,2 m ; « VALLÉE VERTE 14 km », « LES PINS 9 km », « AIRE DE REPOS 2 km » : lieux inventés) ;
+  - voitures en sens inverse (V60, Corsa : modèles du jeu), 3 voies, 94 à 119 km/h, 2 au plus en vue, cachées près du péage, feux allumés la nuit ;
+  - le tronçon traverse la zone « Village » : maisons, église, commerces, lampadaires, passages piétons et objets à moins de 8 m de la chaussée retirés du tronçon.
+- Accroches annoncées : `pietons.cpp` (3 lignes : personne à pied sur l'autoroute) ; `cartes_banc.cpp` (captures `carte-campagne-peage`, `-autoroute`, jour et nuit ; `WFS_CAMPAGNE_LIEU` pour l'essai local).
+- Mesures (indice) : voies 3,50 m, bande d'arrêt 2,50 m, bande dérasée 1,00 m : conformes (ICTAAL) ; marquage 15 cm et T1 3 / 10 m : conformes (charte 12-15 cm ; IISR) ; DBA 0,80 / 0,60 m : conforme (profil normalisé) ; hauteur libre du péage 5,50 m : conforme (≥ 4,75 m) ; enrobé 0,045 : conforme (0,04-0,07) ; cabines, auvent, panneaux : non mesurables (pas de plan type unique) ; dalles LED : teinte blanc neutre (≈ 4000-5000 K), non mesurée ; la lumière de nuit au sol passe par l'éclairage de nuit existant (style « Ville », chaud) : limite, un style LED demanderait un ticket E4 (`src/render`).
+- Vérification (locale, lavapipe) : compilation, 36 tests CPU, licences ; `WFS_BANC=campagne` 0 écart (son parcours va du départ au haut du col : il n'atteint pas l'autoroute, vérifiée par les captures) ; `WFS_BANC=parcours` 0 écart ; captures `carte-campagne-peage`, `carte-campagne-autoroute` (+ `-nuit`) regardées ; appels de dessin : 369 (péage) et 383 (autoroute, dont ≈ 110 pour 2 voitures en sens inverse).
