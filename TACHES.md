@@ -313,6 +313,10 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-188 | Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche de chaque voiture, test CPU des 20 voitures, aucune voiture injouable (ANO-97, ANO-98) | E3 | 🟣 Fusionné (PR #154, CI de main à valider) |  Claude (session dev expert, 0183bv2X), 2026-11-06 19:25 UTC | — | `feature/waforspeed-188` | #154 |  |
 | P3 Moyenne | WFS-189 | Correction Course à 5 : départ sans bouchon, adversaires de la classe du joueur, nitro rechargée en Course à 5 et en Duel (ANO-99, ANO-100, ANO-101) | E3 (+ accroche `configgame.json`, 2 clés `nitro`) | ⏳ En attente (après WFS-188, même épic) |  | WFS-188 | `feature/waforspeed-189` |  |  |
 | P1 Urgent | WFS-190 | [CI ROUGE] Remettre la CI de `main` au vert de bout en bout : job `endurance` rouge au run #761 (fusion de WFS-150), corrections WFS-145 / 187 à vérifier sur `main`, correction si encore rouge (demande de l'utilisateur) | E7 (exception PO : WFS-185 🟣 dans la même épic, bloc `on:` laissé à WFS-185) | ⏳ Prêt |  | WFS-145 🟣, WFS-187 🟣 | `feature/waforspeed-190` |  |  |
+| P2 Haute | WFS-191 | Voitures sans marque (1/4) : noms inventés pour les 20 voitures, `id` inchangés, crédits « modifié » | E3 (+ accroches E5 `garage.cpp`, textes) | ⏳ En attente (validation de la liste des noms par l'utilisateur, `tache utilisateur.md`) |  | validation de l'utilisateur | `feature/waforspeed-191` |  |  |
+| P2 Haute | WFS-192 | Voitures sans marque (2/4) : logos effacés ou remplacés sur les 20 modèles | E10 | ⏳ En attente (après WFS-191 et WFS-158, même épic) |  | WFS-191, WFS-158 | `feature/waforspeed-192` |  |  |
+| P3 Moyenne | WFS-193 | Voitures sans marque (3/4) : petites retouches de forme (calandre, feux, jantes), dimensions inchangées | E10 | ⏳ En attente (après WFS-192) |  | WFS-192 | `feature/waforspeed-193` |  |  |
+| P4 (conditionnelle) | WFS-194 | Voitures sans marque (4/4) : remplacer les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) | E10 | ⏳ En attente (décision de l'utilisateur : vendre le jeu, pubs ou achats) |  | décision de l'utilisateur, WFS-158 | `feature/waforspeed-194` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -1000,6 +1004,18 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-190 — [CI ROUGE] CI de `main` au vert de bout en bout (job `endurance`)** · E7 · P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-190.md`)
 - [ ] premier run de `main` tout vert avec WFS-145 et WFS-187 (numéro au Journal) ; sinon cause nommée et corrigée sans affaiblir le banc
+
+**WFS-191 — Voitures sans marque (1/4) : noms inventés** · E3 · P2 Haute · ⏳ En attente (validation des noms par l'utilisateur) (règles : `regles-de-gestion/WFS-191.md`)
+- [ ] 0 nom réel affiché ; `id` inchangés, ancienne sauvegarde relue ; crédits « modifié »
+
+**WFS-192 — Voitures sans marque (2/4) : logos effacés ou remplacés** · E10 · P2 Haute · ⏳ En attente (après WFS-191, WFS-158) (règles : `regles-de-gestion/WFS-192.md`)
+- [ ] 20 voitures sans logo lisible (face, arrière, 3/4) ; budget du téléphone tenu
+
+**WFS-193 — Voitures sans marque (3/4) : petites retouches de forme** · E10 · P3 Moyenne · ⏳ En attente (après WFS-192) (règles : `regles-de-gestion/WFS-193.md`)
+- [ ] 2 à 4 retouches par voiture, dimensions ±1 %
+
+**WFS-194 — Voitures sans marque (4/4) : remplacer les 5 modèles non commerciaux** · E10 · P4 (conditionnelle) · ⏳ En attente (décision de l'utilisateur) (règles : `regles-de-gestion/WFS-194.md`)
+- [ ] 0 modèle NC ou ND dans `cars.h`
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

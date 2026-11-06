@@ -5108,3 +5108,9 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
   - `test_audio` : 26 s de gaz au lieu de 14, car la Golf met désormais 6,2 s au 0-100 ;
   - `test_course` : performances web pour la seule comparaison au jeu web.
 - **Limites** : le banc PC ne mesure pas le ressenti sur téléphone. Les ordinateurs de la Course à 5 suivent le recalage ; leur équilibre relève de WFS-189.
+
+### 2026-11-06 20:02:57 — Voitures sans marque, en 4 phases : WFS-191 à WFS-194 (po-scrum-master)
+- **Demande de l'utilisateur** : changer un peu la carrosserie, les logos et les noms des voitures, en phases.
+- **Créés** : WFS-191 (E3, P2, noms inventés, en attente de la validation de la liste par l'utilisateur), WFS-192 (E10, P2, logos, après WFS-191 et WFS-158), WFS-193 (E10, P3, retouches de forme, après WFS-192), WFS-194 (E10, P4 conditionnelle : 5 modèles sous licence NC, seulement si l'utilisateur décide de vendre le jeu ou d'y mettre pubs ou achats).
+- **Constat** : 5 modèles NC (T-Cross, X5, A 45, Elantra N, Mustang) ; 911 en CC BY-SA ; 14 en CC BY. Une modification ne change pas la licence (œuvre dérivée).
+- **Question à l'utilisateur** dans `tache utilisateur.md` : validation des 20 noms proposés.

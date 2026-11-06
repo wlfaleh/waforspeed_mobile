@@ -11,7 +11,7 @@
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 19:52:29 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 20:02:57 UTC (po-scrum-master)
 
 ## Agents développeurs
 
