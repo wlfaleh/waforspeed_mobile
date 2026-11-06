@@ -4387,3 +4387,23 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/audio/**`, `tests/test_audio.cpp` ; accroche ≤ 3 lignes `CMakeLists.txt` ; lecture seule `player.h`, `meteo.h`, `system.h`.
 - **Critères** : vent selon le carré de la vitesse (nul < 40 km/h, 0,30 au max), roulement des pneus, bande rugueuse à `|x| ≥ edge`, herbe / gravier à `|x| > 1`, chuintement sous la pluie, silence hors course ; crête < 1,0 ; tests CPU, banc audio, parcours complet au Journal ; aucune capture changée.
 - **Plan court** : module pur `route_sons.h` (cibles de volume, testé sur CPU) ; boucles calculées dans `SfxMixer::build` en réutilisant `boucle()` et le vent de `musique.cpp` ; cibles dans `SfxEvenements::update` ; banc audio ; fusion par confiance si > 50 %.
+
+### 2026-11-06 12:02:17 — Fin WFS-173 : mini-carte du parcours au HUD, fusionnée (PR #135, 56f5d47, fusion par confiance) (Claude (session 01Us6uCu))
+- **Livré** :
+  - `MiniCarte` (ordre 422) : carte GPS en Checkpoint et en Poursuite, parcours entier en Course à 5 et en Duel.
+  - Place calculée sans rien recouvrir ; aucun toucher ; tableaux fixes ; au plus 2 466 sommets mesurés (1 914 en GPS).
+  - Accroches annoncées à 11:38:09 (entrée « code poussé » du journal).
+- **Preuves (RG-11, RG-13)** :
+  - En local : bancs `hud` et `parcours` (« parcours complet : 0 écart(s) OK »).
+  - CI de branche (run 42211686406) : `texte` et `partie2a` vertes.
+    - `texte` : 31 tests CPU OK dont `test_minicarte` ; « parcours course à 5 (RG-10) : 0 écart » ; « poursuite (parcours) … → accueil : 0 écart » ; « parcours complet et redémarrage : 0 écart » ; « course à 5 (parcours) : fin → Rejouer → … → accueil : 0 écart ».
+    - `partie2a` : `minicarte-checkpoint` (GPS, 101 points, 1 914 sommets, côté 150 px, checkpoint à 300 m), `minicarte-ligne` (parcours, 128 points, 2 466 sommets, 5 objets), pause → reprise (chrono figé, carte de retour), « parcours duel : conforme (0 écart) ».
+  - Branche synchronisée avec main avant la fusion, 32 tests CPU OK en local.
+- **Captures regardées** :
+  - `hud-course`, `minicarte-checkpoint`, `minicarte-ligne`, `toast-pile` (bandeaux à gauche de la carte), `parcours-course` (carte présente), `parcours-fin` (pas de carte), `poursuite-police` (carte à 14 k du haut, à droite du HUD de la poursuite, barrage en carré rouge).
+  - Les captures 2400 (`minicarte-*-2400`, `hud-2400`) arrivent avec le job `ecrans-2400` : le QA les regarde la nuit.
+- **Limite signalée au PO** : en Poursuite, une police à moins de 20 m derrière le joueur passe sous la flèche. À l'échelle de RG-06 (500 m pour 130 px, soit 0,26 px/m), 20 m font 5 px. Proposition : un zoom plus serré en Poursuite (par exemple 250 m), si l'utilisateur le demande après son essai. Question posée dans `tache utilisateur.md`.
+- **Écart au ticket, dit franchement** :
+  - `hud.cpp` a 2 lignes ajoutées et non une seule : l'include est nécessaire.
+  - Dans `toasts.cpp`, la variable locale `u` est retirée, car devenue inutile une fois la formule déplacée dans `toasts.h`. Aucun comportement retiré.
+- **Suite** : je suis la CI de `main` ; `qa/Check.md`, `TACHES.md` et `tache utilisateur.md` sont à jour.
