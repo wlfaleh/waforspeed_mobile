@@ -3839,3 +3839,13 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
   - scène d'étalonnage ;
   - rapport de fidélité ;
   - état zéro chiffré, avec une image du jeu inchangée.
+
+### 2026-11-06 01:17:57 — WFS-148 : plan, accroches et limites d'accès (expert-realisme-3d)
+- **Plan** (sous-tâches ST-1 à ST-6, dans l'ordre) : référentiel `references/reel/*.json` + `SOURCES.md` ; `soleil()` (équations solaires de la NOAA) dans `references/reel/soleil.h` et test `tests/fidelite_soleil.cpp` ; banc `src/render/bench_realisme.*` (12 vues × jour / nuit × Basse / Haute, scène d'étalonnage `realisme-etalon`) ; rapport `realisme-fidelite.txt` et mesures `realisme-mesures.txt` ; tests géométriques `tests/fidelite_*` ; état zéro au Journal.
+- **Accroches annoncées (≤ 10 lignes chacune)** : `CMakeLists.txt` (déclaration des tests `test_fidelite_*`) ; `src/platform/desktop_main.cpp` (groupe `WFS_BANC=realisme` : un include et une ligne) ; `.github/workflows/build.yml` (groupe `realisme` dans la matrice du banc et sa ligne de lancement).
+- **Limite d'accès (réseau de la session)** : Wikipédia, Légifrance, le calculateur de la NOAA et les sites des constructeurs ne s'ouvrent pas (hôtes refusés par le proxy). Accessibles : GitHub, PyPI, apt, et le moteur de recherche (résumés avec liens, pages non ouvertes). En conséquence :
+  - matériaux et photométrie : base Physically Based (CC0, dépôt GitHub, références par valeur) ;
+  - charte ColorChecker : valeurs publiées par X-Rite, reprises du jeu de données de `colour-science` (PyPI, BSD-3) ;
+  - soleil : valeurs de contrôle calculées par l'algorithme NREL SPA (`pvlib`, PyPI), plus précis que celui de la NOAA (le calculateur NOAA ne s'ouvre pas) ;
+  - fiches constructeur, normes de marquage, anthropométrie : valeur relevée seulement si un lien est cité ; statut « à confirmer (page non ouverte) » quand elle vient d'un résumé de recherche, « à sourcer » sinon. Rien n'est inventé.
+- **Point signalé au PO** : le critère « 96 captures `realisme-*` » ne correspond pas à RG-03 (12 vues × 2 moments × 2 qualités = 48). Je livre les 48 de RG-03 ; le PO dira s'il manque une dimension (par exemple 2 tailles d'écran).
