@@ -109,6 +109,12 @@ private:
 
 } // namespace
 
+// WFS-136 (accroche A4) : bandeau demandé par un autre module (feu grillé, nouveaux tracés) ; même pile, même style
+void toasts::pousser(const std::string& titre, const std::string& valeur, int genre) {
+    g_pile.push_front({titre, valeur, genre == 1 ? CP : genre == 2 ? BAD : NORMAL});
+    while (g_pile.size() > PILE_MAX) g_pile.pop_back();
+}
+
 WFS_SYSTEM(Toasts, 425)   // interface : après le HUD (420), avant le fondu du chargement (490)
 
 // banc d'essai : checkpoint seul, puis pile de 3 (accident, checkpoint, quasi-contact : le plus récent en haut)

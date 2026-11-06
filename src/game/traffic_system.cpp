@@ -123,6 +123,7 @@ public:
         struct Vis { double dz; const TrafficCar* c; };
         Vis vis[64]; int n = 0;
         for (const auto& c : traffic_.cars) {
+            if (c.cache) continue;   // WFS-136 (accroche) : voiture qui traverse, hors de son passage
             const double dz = t.relZ(c.z - pl.position);
             if (dz < -30 / M || dz > 300 / M || n >= 64) continue;
             vis[n++] = {std::abs(dz), &c};
