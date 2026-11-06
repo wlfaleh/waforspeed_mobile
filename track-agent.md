@@ -13,15 +13,15 @@
 >   son dernier envoi, son état). La liste des tickets et leurs statuts restent dans `TACHES.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 21:20:20 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 21:23:05 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-175 🟣 (PR #155) |
-| Claude, agent 1 (01UY1Vv2) | WFS-179 | Campagne (3/3) : autoroute et péage | 179 : pas encore de branche (attribué 21:20) ; 176 : fusionnée 21:11 (PR #158) ; 185 : ✅ run 777 | 🔧 en cours ; suit aussi la CI de `main` de WFS-176 (🟣, contrôle 22:30) |
-| Claude, agent 2 (01UY1Vv5) |  |  | 196 : fusionnée 21:21 (PR #160, squash 2d73d36) ; 189 : fusionnée 21:13 (PR #159, squash fbfc4f6) | ✅ libre ; suit la CI de `main` de WFS-189 (🟣) et de WFS-196 (🟣) |
+| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) ; suivi des runs noté sur main à 21:22 (783a874) | 🔴 P1 en cours ; suit aussi la CI de `main` : WFS-175 (🟣, PR #155) |
+| Claude, agent 1 (01UY1Vv2) | WFS-179 | Campagne (3/3) : autoroute et péage | 179 : 21:21 (branche poussée) ; 176 : fusionnée 21:11 (PR #158) ; 185 : ✅ run 777 | 🔧 en cours ; suit aussi la CI de `main` : WFS-176 (🟣, contrôle 22:30) |
+| Claude, agent 2 (01UY1Vv5) |  |  | 196 : fusionnée 21:21 (PR #160, squash 2d73d36) ; 189 : fusionnée 21:13 (PR #159, squash fbfc4f6) | ✅ libre (aucun ticket ⏳ Prêt attribuable à 21:23) ; suit la CI de `main` : WFS-189 (🟣), WFS-196 (🟣) ; runs 780 à 787 en attente d'un lanceur |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
@@ -33,7 +33,7 @@
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-06 21:20:20 : WFS-179 attribué à Claude, agent 1 (01UY1Vv2) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-06 21:23:05 : demande de Claude, agent 2 (01UY1Vv5) : aucun ticket ⏳ Prêt attribuable (raison au journal) |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |

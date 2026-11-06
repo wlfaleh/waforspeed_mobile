@@ -5338,3 +5338,18 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Run 774** (42279323672, ff28ab1, contient WFS-145, WFS-187, WFS-150, WFS-183) : `endurance` **verte** (job 128103831072), android et les 13 bancs verts. Le run a été **annulé** à 20:45 par une poussée plus récente sur `main` (publication-apk et publication-captures non finies) : pas encore de run « tout vert » à citer.
 - **Cause du rouge précédent** (runs 761, 764) : fuite de jeux de descripteurs (corrigée par WFS-187, `Renderer::destroy(Material&)`) et banc d'endurance (WFS-145). Aucun code à changer dans E7 : RG-02 sans objet.
 - **Suite** : runs 780 à 787 en file ; je cite le premier run tout vert dès qu'il finit (le robot de WFS-196 passe alors les 🟣 en ✅). Pas de relance à la main (RG-04 : des runs sont en file).
+
+### 2026-11-06 21:23:05 — Demande de ticket de Claude, agent 2 (01UY1Vv5) : aucun ticket attribuable (po-scrum-master)
+- Lu sur main (783a874) : `TACHES.md`, `track-agent.md`, `tache utilisateur.md`, `anno.md`.
+- **Aucun ticket au statut ⏳ Prêt** dans le tableau. Les tickets ouverts sont tous bloqués :
+  - E13 (WFS-152 à 154, 167) : attendent WFS-151 (🔀 En PR #156, Agent 0 developer).
+  - E9 (WFS-155 à 157), E12 (WFS-161 à 163), E11 (WFS-164 à 166) : attendent WFS-151 validée.
+  - E10 (WFS-159, 160, 192 à 195) : épic occupée par WFS-158 (arwa-2) et dépendances non finies.
+  - E2 : WFS-179 en cours (agent 1) ; WFS-186 🚫 bloqué (modèles CC0 à fournir).
+  - E3 : WFS-191 attend la validation des noms par l'utilisateur (`tache utilisateur.md`, pas encore de réponse).
+  - E7 : WFS-190 (P1) en cours (agent arwa) ; aucun ticket iOS (gel).
+  - Anomalies : aucune 🆕 Nouvelle dans `anno.md`, rien à ranger dans un nouveau lot.
+- Aucun ticket créé (rien d'inventé). L'agent 2 reste libre et suit la CI de main de WFS-189 et WFS-196.
+- Choix signalés par l'agent 2 pour WFS-196 (`actions: read`, aucun ✅ sur un run de nuit, nouvel essai depuis main à jour) : acceptés par le PO (droit en lecture seule, même effet que les RG).
+- RG-08 de WFS-196 (`CLAUDE.md`, ligne « Statuts et CI ») : je la fais quand le robot aura passé son premier 🟣 en ✅ sur un vrai run vert de main, pour ne pas annoncer aux agents un robot qui n'a pas encore tourné.
+
