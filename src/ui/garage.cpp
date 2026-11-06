@@ -337,7 +337,8 @@ public:
             const std::string body = ui::majuscules(fi.body);
             const float cw = ui::width(11 * k, body, 0.16f) + 20 * k;
             biseau(r, x, y, cw, 20 * k, 3.5f * k, hex(ACCENT2, op));   // .chip : fond cyan, skewX(-10deg)
-            ui::text(r, x + 10 * k, y + 4 * k, 11 * k, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
+            // WFS-147 (ANO-47) : libellé calé au pixel entier (en 720p, le « I » de « HYBRIDE » tombait entre deux pixels)
+            ui::text(r, std::round(x + 10 * k), std::round(y + 4 * k), 11 * k, body, hex(ON_ACCENT, op), ui::GAUCHE, 0.16f, false);
             ui::text(r, x + cw + 12 * k, y + 1 * k, 15 * k, fi.tag, hex(TAG, op), ui::GAUCHE, 0, true);
             y += 20 * k + 14 * k;
             float px = x;
