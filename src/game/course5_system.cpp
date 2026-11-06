@@ -76,7 +76,7 @@ public:
             if (!graineFixe_) { graine_ = g_graineBanc ? g_graineBanc : std::getenv("WFS_BANC") ? 1234u : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 17u; graineFixe_ = true; }
             c->duelFinish = kmCourse5() * duel::KM;
             os_ = course5::tirer(graine_, pl.car->id, course5::difficulte());   // WFS-133 (RG-03) : difficulté choisie
-            course5::grille(os_, pl.dist);
+            course5::grille(os_, pl.dist); depasses_.reset();
             libererHorsGrille();   // WFS-130 (RG-01 / RG-02) : « Rejouer » retire les mêmes voitures, rien n'est détruit
             actif_ = true; fini_ = false; depart_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0; nouveauRecord_ = false;
             std::string noms; for (const auto& o : os_) noms += (noms.empty() ? "" : ", ") + o.car;
@@ -91,7 +91,12 @@ public:
         }
         t_ = c->state == RaceState::Play ? c->raceTime : t_ + dt;
         std::vector<int> nitros; for (const auto& o : os_) nitros.push_back(o.nitrosPrises);
-        course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed);
+        course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed, g.track);   // WFS-189 : virages
+        if (c->state == RaceState::Play && !fini_) {   // WFS-189 (RG-04) : nitro rechargée au temps et aux dépassements
+            const int n = depasses_.compter(os_, pl.dist);
+            pl.nitro = course5::rechargerNitro(pl.nitro, pl.nitroOn, dt, n);
+            if (n) WFS_LOG("course5 : %d adversaire(s) dépassé(s), nitro %.2f", n, pl.nitro);
+        }
         for (size_t k = 0; k < os_.size(); k++)   // WFS-133 (RG-06) : nitro des ordinateurs (vitesse seule, rendu inchangé)
             if (os_[k].nitrosPrises > nitros[k]) WFS_LOG("course5 : nitro de %s (%.2f km)", os_[k].nom.c_str(), os_[k].g.rd * M / 1000);
         // WFS-133 (RG-05) : aspiration du joueur derrière un ordinateur (même file, moins de 25 m) : +4 % de vitesse visée,
@@ -253,6 +258,7 @@ private:
     std::map<std::string, Model> models_;
     std::map<std::string, vec3> peintures_;
     bool actif_ = false, fini_ = false, depart_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false, aspJoueur_ = false;
+    course5::SuiviDepassements depasses_;   // WFS-189 (RG-04) : dépassements du joueur
     uint32_t graine_ = 0;
     double ftJoueur_ = 0, overT_ = 0, t_ = 0;
     Zone rejouerZ_, menuZ_;

@@ -8,6 +8,7 @@
 #include "../game/course_system.h"
 #include "../game/game.h"
 #include "../game/track.h"
+#include "../game/trace_cartes.h"   // WFS-179
 #include "../render/squelette.h"
 #include "zones.h"
 #include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
@@ -83,6 +84,8 @@ public:
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
+        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville)
+        piste_ = g.track;   // WFS-179
         peupler(*g.map, (int64_t)g.track->segmentCount());
         {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
             const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;
@@ -205,7 +208,7 @@ private:
             } else if (plage_) {
                 walk(1, RW + 1, RW + 4.5, !std::strcmp(z, "rochers") ? 0.1 : 0.5);
                 walk(-1, RW + 0.8, RW + 2.6, !std::strcmp(z, "village") || !std::strcmp(z, "marina") ? 0.35 : 0.15);
-            } else if (campagne_ && !std::strcmp(z, "village")) {
+            } else if (campagne_ && !std::strcmp(z, "village") && !(piste_ && trace::sectionA(*piste_, (double)n * SEG) && trace::sectionA(*piste_, (double)n * SEG)->autoroute)) {   // WFS-179 : personne à pied sur l'autoroute
                 walk(-1, RW + 0.3, RW + 1.4, 0.25); walk(1, RW + 0.3, RW + 1.4, 0.25);
             } else if (circuit_ && !std::strcmp(z, "paddock")) {
                 if (rnd() < 0.35) { const double s2 = rnd(); ajouter((double)n, (A.next() < 0.5 ? -1 : 1) * (RW + 5 + s2 * 6), 3, A); }
@@ -219,6 +222,7 @@ private:
     int affiche_[256];
     double tPrec_ = 0;
     bool actif_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
+    const Track* piste_ = nullptr;   // WFS-179
 };
 
 } // namespace

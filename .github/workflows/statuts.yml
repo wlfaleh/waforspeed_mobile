@@ -1,0 +1,64 @@
+# WFS-196 : statuts automatiques des tickets. À la fin de chaque run de « Construction WaForSpeed » (build.yml) sur main, un
+# robot passe en « ✅ Terminé (CI main #N) » les tickets 🟣 Fusionné de TACHES.md dont la fusion est dans le commit du run
+# (run vert), ou note au journal le run rouge sans rien changer ; il ne devine jamais (ligne illisible → listée pour le PO).
+# Le script est tools/qa/statuts.py (test : tools/qa/test_statuts.py). Il ne modifie que TACHES.md, track-agent.md et
+# journal.md : ces .md sont dans paths-ignore de build.yml, et un envoi fait avec GITHUB_TOKEN ne lance aucun workflow :
+# le commit du robot ne relance pas la CI.
+name: Statuts automatiques
+
+on:
+  workflow_run:
+    workflows: ["Construction WaForSpeed"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write   # un commit « (robot statuts) » sur main
+  actions: read     # liste des jobs en échec d'un run rouge (RG-03)
+
+concurrency:
+  group: statuts-main
+  cancel-in-progress: false   # un seul run à la fois, aucun annulé : chaque run de build.yml est traité dans l'ordre
+
+jobs:
+  statuts:
+    runs-on: ubuntu-24.04
+    if: github.event.workflow_run.head_branch == 'main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0   # git merge-base --is-ancestor a besoin de tout l'historique
+
+      - name: Statuts des tickets (🟣 → ✅ si le run est vert)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          EVENEMENT: ${{ github.event.workflow_run.event }}
+        run: |
+          set -u
+          git config user.name "robot statuts"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # RG-03 : jobs en échec du run (vide si le run est vert)
+          JOBS=""
+          if [ "$CONCLUSION" != "success" ]; then
+            JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs?per_page=100" \
+                   --jq '[.jobs[] | select(.conclusion == "failure" or .conclusion == "timed_out") | .name] | join(", ")' || true)
+          fi
+          # RG-06 : un seul commit ; s'il croise un autre envoi, on repart de main à jour et on recalcule (5 essais)
+          for essai in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            python3 tools/qa/statuts.py --run-number "$RUN_NUMBER" --sha "$RUN_SHA" --conclusion "$CONCLUSION" \
+                    --evenement "$EVENEMENT" --jobs-en-echec "$JOBS" --depot .
+            if git diff --quiet -- TACHES.md track-agent.md journal.md; then echo "statuts : rien à envoyer"; exit 0; fi
+            git add TACHES.md track-agent.md journal.md
+            git commit -q -m "Statuts automatiques : CI main #$RUN_NUMBER ($CONCLUSION) (robot statuts)"
+            if git push -q origin HEAD:main; then echo "statuts : envoyé (essai $essai)"; exit 0; fi
+            echo "statuts : envoi refusé (essai $essai), nouvel essai"
+            sleep $((essai * 5))
+          done
+          echo "::error::statuts : envoi sur main refusé 5 fois (protection de branche ?) : statuts non mis à jour"
+          exit 1

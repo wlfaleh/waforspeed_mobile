@@ -32,6 +32,8 @@ std::vector<Champ> champs(ConfigJeu& c) {
         {"checkpoint.distance", T::Reel, &k.distanceM, 100, 5000, "m", "distance entre deux checkpoints"},
         {"nitro.depart", T::Reel, &n.depart, 0, 1, "réserve (0 à 1)", "réserve de nitro au départ"},
         {"nitro.poussee", T::Reel, &n.poussee, 1, 4, "×", "accélération multipliée pendant la nitro"},
+        {"nitro.recharge_temps", T::Reel, &n.rechargeTemps, 0, 0.2, "par s", "Course à 5 et Duel : recharge de la nitro par seconde de course"},   // WFS-189
+        {"nitro.recharge_depassement", T::Reel, &n.rechargeDepassement, 0, 1, "réserve", "Course à 5 : recharge à chaque adversaire dépassé"},   // WFS-189
         {"course5.ordinateurs", T::Entier, &c5.ordinateurs, 1, 4, "voitures", "voitures pilotées par l'ordinateur (course à 5 : 4)"},
         {"course5.vitesse_facile", T::Reel, &c5.facteur[0], 0.3, 1.2, "× vitesse de pointe", "vitesse visée par les ordinateurs, difficulté facile"},
         {"course5.vitesse_normale", T::Reel, &c5.facteur[1], 0.3, 1.2, "× vitesse de pointe", "vitesse visée par les ordinateurs, difficulté normale"},

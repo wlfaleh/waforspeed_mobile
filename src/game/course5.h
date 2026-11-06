@@ -4,12 +4,14 @@
 // et les contacts reprennent le duel (js/net/duel.js : DUEL_KMS, FINISH = km × 1000 / 0,006, hitGhosts ; WFS-21).
 // Calcul seul (aucun rendu) : testé par tests/test_course5.cpp.
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include "cars.h"
 #include "duel.h"
 #include "../core/configgame.h"   // WFS-128
+#include "track.h"   // WFS-189 : virages (RG-02 bis)
 
 namespace wfs {
 
@@ -61,21 +63,52 @@ struct Ordinateur {
     bool aspiration = false;                  // RG-05 : dans l'aspiration à ce pas
 };
 
-// RG-02 : 4 ordinateurs tirés au hasard parmi les 20 voitures (modèles différents entre eux et de celui du joueur),
-// peinture aléatoire ; même graine = même tirage
+// WFS-189 (RG-01) : vitesse max de fiche des adversaires à ± 20 % de celle du joueur
+constexpr double CLASSE_VMAX = 0.20;
+// WFS-189 (RG-01) : indices (CARS) des adversaires possibles du joueur : ceux de sa classe, complétés par les plus proches
+std::vector<int> candidats(const char* carJoueur);
+// RG-02 : 4 ordinateurs tirés au hasard (modèles différents entre eux et de celui du joueur), peinture aléatoire ; même
+// graine = même tirage. WFS-189 (RG-01) : parmi les candidats() de la voiture du joueur
 std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d = NORMALE);
-// RG-05 : grille de départ de 5 : le joueur derrière, les ordinateurs sur deux rangées devant lui
+// RG-05 : grille de départ de 5 : le joueur derrière, les ordinateurs sur deux rangées devant lui ; WFS-189 (RG-03) :
+// rangés par vitesse max décroissante (les plus rapides devant)
 void grille(std::vector<Ordinateur>& os, double sJoueur);
 // RG-04 : un pas de conduite des ordinateurs (dt en s) ; joueur : distance et écart latéral (les ordinateurs l'évitent) ;
 // arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
 // (RG-06 : nitrosPrises compte les nitros utilisées)
-void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur);
+// WFS-189 (RG-02 bis) : `piste` donnée : les ordinateurs ralentissent avant les virages serrés (rond-point, épingle…) à la
+// vitesse où la voiture du joueur reste sur la chaussée (vitesseVirage), avec le freinage du joueur ; nullptr : sans virages
+void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur, const Track* piste = nullptr);
+constexpr double ECART_RANGEES_M = 13;    // WFS-189 (RG-03) : entre les deux rangées de la grille (m)
+constexpr double MARGE_VIRAGE = 0.9;      // WFS-189 (RG-02 bis) : part du cap max utilisée en courbe
+constexpr double DERIVE_MAX = 0.8;        // WFS-189 (RG-02 bis) : dérive latérale tolérée (largeurs de route) dans un virage
+constexpr double COURBURE_VIRAGE = 4;     // WFS-189 (RG-02 bis) : courbure au-delà de laquelle un segment compte comme virage
+constexpr double PLAFOND_JOUEUR = 1.10;   // WFS-189 (RG-02 ter) : vitesse visée ≤ facteur × 1,10 × pointe du joueur
+double vitesseVirage(const Track& t, double s);   // WFS-189 (RG-02 bis) : vitesse permise (unités/s) en s
 // RG-05 : une voiture en (s, x) est dans l'aspiration d'une des voitures de `os` (même file, moins de aspirationM devant)
 bool dansAspiration(const std::vector<Ordinateur>& os, double s, double x);
 // RG-06 : classement (moi + les ordinateurs), comme renderBoard du duel : arrivés d'abord (par temps), puis par distance
 struct Ligne { std::string nom; double d = 0, ft = 0; bool moi = false, fini = false; };
 std::vector<Ligne> classement(const std::vector<Ordinateur>& os, const std::string& nomJoueur, double dJoueur, double ftJoueur, bool joueurFini, double finish);
 int position(const std::vector<Ligne>& lignes);   // « Position n/5 »
+
+// WFS-189 (RG-04, RG-05, ANO-100) : en Course à 5 et en Duel (sans trafic, donc sans la recharge de traffic.cpp), la jauge de
+// nitro du joueur se recharge au temps (+ config().nitro.rechargeTemps par seconde de course) et de
+// config().nitro.rechargeDepassement à chaque adversaire dépassé (Course à 5 seulement : l'appelant donne 0 en Duel).
+// Rien pendant que la nitro brûle ; plafond 1. Checkpoint et Poursuite n'appellent pas cette fonction.
+inline double rechargerNitro(double nitro, bool brule, double dt, int depasses) {
+    if (brule) return nitro;
+    const auto& n = g_configJeu.nitro;
+    return std::min(1.0, nitro + n.rechargeTemps * dt + n.rechargeDepassement * depasses);
+}
+// adversaires dépassés par le joueur : un ordinateur qui passe derrière lui compte une fois ; il ne compte de nouveau que
+// s'il est d'abord repassé à plus de REARMEMENT_M devant (deux voitures roue dans roue ne remplissent pas la jauge)
+constexpr double REARMEMENT_M = 10;
+struct SuiviDepassements {
+    std::vector<bool> arme;                                       // vrai : l'ordinateur k peut être dépassé (compté)
+    void reset() { arme.clear(); }                                // nouvelle grille (préparé au premier compter())
+    int compter(const std::vector<Ordinateur>& os, double sJoueur);   // dépassements à ce pas
+};
 
 } // namespace course5
 } // namespace wfs

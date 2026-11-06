@@ -5220,3 +5220,162 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 21:09:48 — Session du PO réservée au PO, pour toujours ; l'agent lumière finit WFS-151 puis s'arrête (po-scrum-master)
 - **Ordre de l'utilisateur** : la session « Agent po-scrum » sert uniquement au PO et restera ouverte pour toujours. Le développement continue dans une autre session, « agent 0 developper ».
 - **Fait** : l'agent lumière (lancé dans la session du PO) a reçu l'ordre de terminer WFS-151 (PR #156) puis de s'arrêter, avec une passation au journal pour « agent 0 developper ». Règle écrite dans l'agent PO : aucun agent développeur lancé depuis la session du PO.
+
+### 2026-11-06 21:13:00 — WFS-151 repris par Claude, Agent 0 developer (session 01UY1Vv2SSLK) ; agent lumière arrêté (po-scrum-master)
+- **Information de l'utilisateur** : WFS-151 est repris dans la session « Agent 0 developer ». Pour éviter deux développeurs sur la même branche, l'agent lumière (lancé dans la session du PO) est **arrêté**.
+- **État laissé** : branche `feature/waforspeed-151` (dernier envoi e97571d, 20:51), PR #156 ouverte, CI de la branche relancée à la main par l'agent lumière juste avant l'arrêt (run 783, à suivre). Passation : voir l'entrée de 20:55:52 et les règles `regles-de-gestion/WFS-151.md`.
+- **Attention pour Agent 0** : le dossier de travail de la session du PO a servi à l'agent lumière ; tout son travail est sur la branche distante, rien n'est à récupérer ailleurs.
+
+### 2026-11-06 21:13:34 — WFS-151 : passation de l'agent lumière (session du PO) à Claude, agent 0 developper (session 01UY1Vv2SSLKX4bCmA8vcJJc) (Claude, agent 0 developper)
+- **Ordre de l'utilisateur** (session « Agent 0 developer ») : l'agent 0 developper fait la passation et reprend WFS-151 (PR #156), l'agent lumière s'arrête (entrée PO du 21:09:48). Aucun autre ticket repris.
+- **État repris** : branche `feature/waforspeed-151` (dernier envoi 20:51, e97571d : ST-1 à ST-5 codés, banc lumière 100 % en local, indice 54,2 % → 68,3 %). PR #156 ouverte. CI de branche run 783 (`workflow_dispatch`, lancée une fois à 20:55) **encore en file d'attente**, et sur une branche alors en retard de 10 commits sur `main` : son verdict ne comptera pas (règle de synchronisation).
+- **Fait** : branche synchronisée avec `main` (« Synchronisation avec main (Claude, agent 0 developper) », sans conflit) ; compilation et tests CPU relancés en local.
+- **Suite** : si le local est vert, envoi de la branche synchronisée ; confiance ≤ 50 % (gros changement du rendu, risque de coût +12 à +22 % par image noté par l'agent lumière) → fusion seulement après une CI de branche verte et les captures regardées. Le run 783 étant la seule CI de branche permise, je l'attends ; s'il ne part pas ou n'est pas valable, je demande au PO l'arbitrage d'une relance sur la branche synchronisée.
+### 2026-11-06 21:11:14 — Fin WFS-176 : Ville (3/3), casino, centre commercial, garages, cafés, pigeons et chiens — fusion par confiance, PR #158 (Claude, agent 1, session 01UY1Vv2)
+- Fait :
+  - `ville_quartiers.*` (plan de la Ville, tracé 2) : lieux placés sur une ligne droite de rue, loin des carrefours (40 m), du rond-point (150 m), des courbes serrées (RG-C1) et entre eux (120 m), emprise vidée (immeubles, arbres, commerces, panneaux ; lampadaires et passages piétons gardés) : casino (Centre-ville, segment 20), centre commercial (Quartier d'affaires), 2 garages (Quartier résidentiel, Zone portuaire) ; 10 terrasses de plus (cafés, bars, restaurant, brasserie, glacier, bar à sushis de `commerces.cpp`) devant les immeubles à moins de 60 m des carrefours ; 13 promeneurs avec chien.
+  - `ville.cpp` :
+    - casino de 40 × 24 m, 14 m, en retrait derrière un parvis de pierre : pierre claire (albédo ≈ 0,48), pilastres tous les 4 m et bandeaux, vitrages en retrait de 0,35 m (fenêtres en profondeur, éclairés la nuit, 3000 K), corniche, chapiteaux et marquise dorés (métal, F0 de l'or), 3 marches de 17 / 30 cm et tapis, enseignes néon « CASINO » (attique et marquise, bornées), 2 voitures de luxe garées (SF90 rouge, Gallardo jaune : modèles du jeu), 2 lumières de nuit ;
+    - centre commercial de 80 × 26 m, 12 m : mur-rideau vitré (meneaux d'aluminium tous les 1,5 m), bandeau, auvent, enseignes « GALERIE DES ARCADES », « LUNA MODE », « ATELIER 7 », « MAISON VERTE » (noms inventés), parking d'une double rangée de places de 2,5 × 5 m (lignes de 10 cm) et allée de 6 m, 3 lumières de nuit ;
+    - 2 garages de 14 × 12,5 m, 6 m : baie de 4,5 × 3,6 m, rideau métallique levé (rouleau), sol en résine, pont élévateur à 2 colonnes de 3 m, porte vitrée du bureau, enseigne « GARAGE 88 », lumière intérieure la nuit ;
+    - pigeons : 5 groupes (2 par carrefour, 1 sur le parvis du casino), 6 oiseaux (3 en Basse), posés en picorant ; envol quand le joueur passe à moins de 10 m (battements, montée à 7 m en 3 s en s'éloignant de la route), retour 25 s plus tard ;
+    - chiens : shiba et husky qui marchent devant leur promeneur (8 poses de marche réglées sur la distance), laisse rouge de la main au collier.
+  - `assets/world/animaux/convertir_chiens.py` (nouveau) et `shiba.wfa`, `husky.wfa` : modèles Quaternius CC0 (pack « Ultimate Animated Animal Pack », copie du dépôt public benjaminpjones/catch-the-animal), poses calculées par habillage, licence `assets/licences/animaux-ville.txt`.
+- Accroches annoncées : `pietons.cpp` (1 ligne : promeneurs ajoutés en tête de liste) ; `cartes_banc.cpp` (captures de la Ville : casino, centre commercial, garage, chien, pigeons).
+- Correction pendant le ticket : premier parcours complet planté (SIGSEGV) : indice de segment négatif en vidant l'emprise du casino, tout près du départ (`(a0 + k) % L` négatif) ; corrigé, vérifié sous ASan (aucune erreur).
+- Mesures (indice) :
+  - places de parking 2,5 × 5 m : conforme (NF P 91-100 : 2,30-2,50 × 5,00 m) ;
+  - marches 17 / 30 cm (2h + g = 64 cm) : conforme (loi de Blondel 60-64 cm) ;
+  - pierre claire du casino, albédo ≈ 0,48 : conforme (charte 0,40-0,55) ; enrobé du parking ≈ 0,06 : conforme (asphalte neuf 0,04-0,07) ;
+  - pigeon biset : envergure 0,67 m, longueur 0,30 m : conforme (64-72 cm, 29-37 cm, Svensson 2015) ; forme reprise de la mouette (non mesurable : pas de modèle de pigeon accessible) ;
+  - shiba 0,39 m et husky 0,56 m au garrot : conforme (standards FCI 257 et 270) ;
+  - casino, centre commercial, garages : dimensions plausibles, non mesurables (bâtiments inventés, pas de référence unique) ;
+  - lumière des terrasses : celle de `commerces.cpp`, inchangée.
+- Vérification (locale, lavapipe) : compilation, 35 tests CPU, licences ; parcours complet (`WFS_BANC=parcours`, sur la Ville) **0 écart** ; captures regardées : `carte-ville-casino` (+ `-nuit`), `carte-ville-centre-commercial` (+ `-nuit`), `carte-ville-garage` (+ `-nuit`), `carte-ville-chien`, `carte-ville-pigeons`.
+- Coût (appels de dessin en plus, mesurés) : casino +126 au plus (2 voitures de luxe ≈ 110, pigeons, morceaux), pigeons d'un carrefour +12, centre commercial +2 à +4 : sous le plafond de +150 (RG-C2).
+- Limites : en caméra de course, le casino se reconnaît surtout à sa marquise dorée et aux voitures ; l'enseigne « CASINO » de l'attique sort du cadre, celle de la marquise est petite. Pigeons : forme de la mouette mise à l'échelle (pas de modèle de pigeon accessible). Licence CC0 des chiens à reconfirmer sur quaternius.com (site bloqué). Rendu sur téléphone non vérifié.
+
+
+### 2026-11-06 21:13:20 — Fusion WFS-189 : Course à 5, départ, adversaires de la classe du joueur, nitro sans trafic (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #159, squash fbfc4f6, fusion par confiance. Fichiers : `src/game/course5.cpp` / `.h`, `course5_system.cpp`, `duel_system.cpp`, `tests/test_course5.cpp`, `tests/test_duel.cpp`, `CMakeLists.txt` (`player.cpp` ajouté aux sources de `test_course5`). **Accroche annoncée** (6 lignes, noyau) : `src/core/configgame.h` / `.cpp`, `configgame.json`, `configgame.README.md`, 2 clés `nitro.recharge_temps` (0,015) et `nitro.recharge_depassement` (0,10).
+- RG-01 : les adversaires sont tirés parmi les voitures à ±20 % de vitesse max de fiche (de 6 à 15 candidates selon la voiture du joueur ; jamais besoin de compléter).
+- RG-02 / bis / ter (arbitrages du PO de 20:57 et 21:06) :
+  - Vitesse visée = facteur × min(sa pointe, 1,10 × la pointe du joueur). Pointe = fiche × 0,995 (vitesse réelle, WFS-188). `carPerf().top` (≈ 1,07 × la fiche) n'est plus la pointe : depuis WFS-188, les ordinateurs visaient 0,98 × la fiche en Normale au lieu de 0,90.
+  - Les ordinateurs accélèrent avec la loi du joueur : poussée a0 × (1 − (v/top)^2,2) − 0,35 × (roulement + traînée).
+  - Ils ralentissent avant les virages serrés : dérive latérale cumulée de `player.cpp`, contre-braquage × 0,9, dérive tolérée 0,8 ; table par segment avec le freinage du joueur (`Phys::brake`), calculée une fois par piste.
+  - Calage sur 4 km de Ville, ordinateur à 100 % contre pilote automatique du joueur : Golf −0,7 %, Compass −2,1 %, M4 +1,9 %, 208 −1,9 % (tolérance ±3 %).
+- RG-03 :
+  - Grille rangée par 0-100 croissant, rangées à 8 m et 21 m devant le joueur (validé par le PO).
+  - Graine 20261105, à 4 s : au moins 96 % de la vitesse seul avec la Golf, 95 % avec la SF90 ; collé à moins de 8 m : 0,00 s et 0,71 s.
+- RG-04 / RG-05 :
+  - Recharge de +0,015/s, rien pendant la nitro, plafond 1.
+  - +0,10 par adversaire dépassé en Course à 5 : il compte une fois, puis de nouveau seulement s'il est repassé à plus de 10 m devant (sinon deux voitures roue dans roue remplissaient la jauge : jusqu'à 13 s de nitro).
+  - Duel : au temps seulement.
+- RG-02 / RG-06, tableau des places moyennes (protocole B du PO, Ville du jeu, 4 km, 5 graines, pilote automatique à fond sans nitro qui freine avant les virages serrés) :
+
+| Voiture | Facile | Normale | Difficile | Temps moyen (Normale) | Nitro sur 4 km (s) |
+|---|---|---|---|---|---|
+| SF90 (exception PO) | 1,0 | 1,0 | 1,0 | 62,1 s | 3,7 |
+| M4 | 1,2 | 1,8 | 2,0 | 69,1 s | 4,1 à 4,8 |
+| Mustang | 1,0 | 2,8 | 2,8 | 68,4 s | 4,4 à 5,8 |
+| Golf | 2,0 | 2,2 | 3,2 | 78,5 s | 4,6 à 5,0 |
+| X5 | 1,2 | 2,4 | 3,0 | 78,3 s | 4,6 à 4,9 |
+| 208 | 1,6 | 2,8 | 3,6 | 90,0 s | 5,2 à 5,9 |
+| Compass (exception PO) | 1,4 | 4,2 | 5,0 | 94,3 s | 4,7 à 5,4 |
+
+- Remarque : les ordinateurs ne prennent presque jamais leur nitro (WFS-133). C'était déjà le cas avant : 1 nitro sur 4 voitures à 10 km sur `main`, 0 maintenant ; elle n'arrive que dans les 500 derniers mètres, à moins de 40 m d'une voiture. Pas une régression, je ne change rien hors RG.
+- Vérification : 35 tests CPU verts (cmake local, avec un faux glslc et les en-têtes Vulkan téléchargés, seulement pour compiler les tests) ; syntaxe de `course5_system.cpp` et `duel_system.cpp` vérifiée.
+- Limites : banc Vulkan, captures `course5-*` et parcours RG-08 (Course à 5 en Compass, Duel) **non vérifiés en local** : je les vérifie sur la CI de `main`.
+
+
+### 2026-11-06 21:16:30 — WFS-196 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- **Ticket** : WFS-196 — [CI] Statuts automatiques 🟣 → ✅ après la CI de `main` · E7 · P1 Urgent · règles `regles-de-gestion/WFS-196.md` · branche `feature/waforspeed-196`.
+- **Pourquoi lui, pourquoi ce ticket** : seul ticket ⏳ Prêt du tableau ; l'agent est libre (WFS-189 🟣, PR #159). Épic E7 : WFS-190 🔧 (agent arwa) ; l'exception écrite à la création du ticket s'applique (fichiers séparés, aucun recouvrement). Dépendance WFS-185 🟣 : seul le bloc `on:` de `build.yml` en dépend, et `build.yml` est interdit à ce ticket.
+- **Zone autorisée** : `.github/workflows/statuts.yml` (nouveau), `tools/qa/statuts.py`, `tools/qa/test_statuts.py`. Interdit : `build.yml` (WFS-185 / WFS-190), tout autre code, iOS.
+- **Critères** : tests locaux des 4 cas de RG-07 verts ; premier run vert de `main` après fusion → tickets 🟣 contenus passent ✅ avec le numéro du run, commit `(robot statuts)`, entrée au journal ; le commit du robot ne relance pas `build.yml` ; run rouge → aucun statut changé, entrée au journal.
+- **Plan court** : script Python standard (analyse du tableau, `git merge-base --is-ancestor`), test sur un `TACHES.md` d'exemple, puis le workflow `workflow_run`. Protection de branche qui refuse l'envoi du robot → journal + une question dans `tache utilisateur.md`.
+- Tableau des agents : lignes en double de `track-agent.md` (agent 1 / WFS-176, agent 2 / WFS-189) retirées, elles décrivaient un état dépassé.
+
+### 2026-11-06 21:18:01 — WFS-185 : ✅ CI de main verte, run 777 (Claude, agent 1, session 01UY1Vv2)
+- Run 777 (fusion de la PR #149, f152ff8) : compilation, tests CPU, APK, les 12 groupes banc-essai, endurance et le nouveau job « résumé (commit et tickets) » **verts** ; « publication-captures » annulé par un run plus récent de main (règle `concurrency` de WFS-106, attendue), « publication-apk » en cours.
+- Critère « aucun run de branche » : depuis la fusion (19:29 UTC), aucun run de `build.yml` sur `feature/**` ni `claude/**` (les branches de WFS-176, 189, 158… ont été poussées sans lancer de run).
+
+### 2026-11-06 21:18:28 — WFS-185 : correction de mon entrée précédente (Claude, agent 1, session 01UY1Vv2)
+- J'ai écrit « aucun run de branche depuis la fusion » : c'est faux. Le run 781 (20:41 UTC) a été lancé par un envoi de `feature/waforspeed-158`. Cause : cette branche avait été synchronisée avec un `main` antérieur à WFS-185 (commit e0c5eff sans f152ff8) et gardait l'ancien `build.yml` ; GitHub utilise le workflow du commit envoyé. Le run 783 (`feature/waforspeed-151`) est un lancement à la main, permis.
+- Le critère du ticket est rempli : les envois de `feature/waforspeed-176` (20:45 et 21:10 UTC), qui contiennent le nouveau `build.yml`, n'ont lancé aucun run.
+- Conséquence : une branche ouverte avant 19:29 UTC lance encore la CI à chaque envoi tant qu'elle n'a pas récupéré `main` (`git fetch origin && git merge origin/main`, règle déjà en vigueur avant chaque envoi).
+
+### 2026-11-06 21:20:20 — WFS-179 attribué à Claude, agent 1 (01UY1Vv2) (po-scrum-master)
+- **Ticket** : WFS-179 — Campagne (3/3) : autoroute et péage · E2 · P2 Haute · règles `regles-de-gestion/WFS-179.md` (renvoie à RG-04 et RG-C1 à RG-C5 de `regles-de-gestion/WFS-138.md`) · branche `feature/waforspeed-179`.
+- **Pourquoi** : aucun ticket ⏳ Prêt au tableau ; toutes les anomalies d'`anno.md` sont 📋 planifiées. WFS-179 n'attendait que WFS-178, 🟣 fusionné (code sur `main`, même règle que WFS-176 après WFS-175). E2 libre (WFS-176, 178, 181 🟣). L'agent est libre (WFS-176 🟣, WFS-185 ✅).
+- **Zone autorisée** : `src/world/campagne.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures de la Campagne) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`. Outils partagés (`commerces.*`, `enseignes.*`, `vegetation.*`, `decor_carte.*`, `portique.cpp`) utilisés sans modification. Interdit : `src/game/**` (sauf la ligne `trace::CARTES_ACTIVES`), `ville.cpp` et les autres cartes, `src/render/**`, `shaders/**`, `src/ui/**`, taille des boutons, iOS.
+- **Critères** : terre-plein, glissière, voitures en sens inverse, aire de péage (portique, cabines, barrières levées, lampes vertes) au début du tronçon, panneaux bleus ; graphisme réaliste partie par partie (voies 3,5 m, lignes 12-15 cm, 3 m / 10 m, LED 3000-4000 K au péage) ; captures de jour et de nuit en caméra de course ; `WFS_BANC=parcours` à 0 écart sur la Campagne ; mesures et indice de fidélité au journal et dans `qa/Check.md`.
+- **Plan court** : reprendre la méthode de WFS-175 (autoroute, voitures en sens inverse lues depuis `src/game` sans le modifier, dans `ville.cpp`) en l'appliquant dans `campagne.cpp`, sans modifier `ville.cpp` ; puis le péage ; une seule CI (celle de `main`).
+
+### 2026-11-06 21:21:17 — WFS-151 : branche synchronisée et envoyée (737fde2) (Claude, Agent 0 developer)
+- Nom d'agent : « Claude, Agent 0 developer », celui écrit par le PO (7e3d5a3) ; l'entrée de passation de 21:12 disait « agent 0 developper », c'est le même agent.
+- Branche synchronisée deux fois avec `main` (WFS-158 livraison 1, WFS-176, WFS-189 compris), sans conflit ; compilation Release propre, **37 tests CPU verts** (dont `test_fidelite_lumiere`). Envoi : 21:17, 737fde2.
+- CI de branche run 783 : démarrée à 21:16 sur e97571d (avant synchronisation). Je ne relance pas de CI de branche (une seule permise) ; je regarde ses captures de la lumière et je refais en local le banc du réalisme sur la branche synchronisée.
+
+### 2026-11-06 21:21:27 — Fusion WFS-196 : statuts automatiques après la CI de main (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #160, squash 2d73d36, fusion par confiance. Nouveaux fichiers seulement : `.github/workflows/statuts.yml`, `tools/qa/statuts.py`, `tools/qa/test_statuts.py`. `build.yml` et le code du jeu ne changent pas.
+- Fonctionnement :
+  - Après chaque run de « Construction WaForSpeed » sur main (`workflow_run`), le robot retrouve le commit de fusion de chaque ligne 🟣 : squash « (#N) », « Merge pull request #N », sinon un hash cité.
+  - Si ce commit est un ancêtre du commit du run, la case Statut seule devient « ✅ Terminé (CI main #N) », ainsi que la ligne de détail et l'« État » de `track-agent.md` (forme « WFS-XX (🟣 …) »).
+  - Run rouge : aucun statut ne change, une entrée au journal (jobs en échec, tickets 🟣 du run). Run annulé : rien.
+  - Ligne illisible ou PR introuvable : laissée telle quelle et listée pour le PO.
+- **Choix à signaler au PO** :
+  1. `permissions: actions: read` en plus de `contents: write` (RG-01 dit « seulement ») : c'est nécessaire pour lire les jobs en échec d'un run rouge (RG-03), sans aucun droit d'écriture de plus.
+  2. Un run de nuit (`schedule`, banc d'endurance seul) vert ne passe rien en ✅ : ce n'est pas une CI complète. Un rouge de nuit est noté au journal.
+  3. Quand l'envoi est refusé, le robot repart de main à jour et recalcule (5 essais) au lieu d'un `git pull --rebase`, qui pourrait se bloquer sur un conflit de journal. Même effet, sans conflit possible.
+- **Pour les agents** : écrire l'État de `track-agent.md` sous la forme « WFS-XX (🟣) » pour que le robot le mette à jour. Une autre forme est listée pour le PO, jamais devinée (ex. aujourd'hui : WFS-175 l. 22).
+- Vérification : `tools/qa/test_statuts.py`, 15 vérifications vertes (ligne 🟣 contenue → ✅ ; fusionnée après le run → inchangée ; 8 cases → inchangée et listée ; statut dans la mauvaise case → listée ; PR inconnue → listée ; même run relancé → rien ; run rouge → aucun changement et entrée au journal ; annulé → rien ; nuit → aucun ✅). Essai à blanc sur une copie de main : 12 tickets 🟣 → ✅ (WFS-109, 134, 137, 139, 140, 150, 175, 176, 178, 181, 188, 189), chacun avec sa PR et son commit.
+- Limites : le déclenchement `workflow_run` n'existe qu'avec le fichier sur main : premier vrai passage au prochain run de main, que je suis. Si une protection de branche refuse l'envoi du robot, le run échoue avec un message clair, et je poserai la question dans `tache utilisateur.md`. RG-08 (`CLAUDE.md`) : à faire par le PO.
+
+
+### 2026-11-06 21:22:56 — WFS-190 : endurance verte sur main (run 774), run annulé avant la fin (agent arwa, session trafic)
+
+- **Run 774** (42279323672, ff28ab1, contient WFS-145, WFS-187, WFS-150, WFS-183) : `endurance` **verte** (job 128103831072), android et les 13 bancs verts. Le run a été **annulé** à 20:45 par une poussée plus récente sur `main` (publication-apk et publication-captures non finies) : pas encore de run « tout vert » à citer.
+- **Cause du rouge précédent** (runs 761, 764) : fuite de jeux de descripteurs (corrigée par WFS-187, `Renderer::destroy(Material&)`) et banc d'endurance (WFS-145). Aucun code à changer dans E7 : RG-02 sans objet.
+- **Suite** : runs 780 à 787 en file ; je cite le premier run tout vert dès qu'il finit (le robot de WFS-196 passe alors les 🟣 en ✅). Pas de relance à la main (RG-04 : des runs sont en file).
+
+### 2026-11-06 21:23:05 — Demande de ticket de Claude, agent 2 (01UY1Vv5) : aucun ticket attribuable (po-scrum-master)
+- Lu sur main (783a874) : `TACHES.md`, `track-agent.md`, `tache utilisateur.md`, `anno.md`.
+- **Aucun ticket au statut ⏳ Prêt** dans le tableau. Les tickets ouverts sont tous bloqués :
+  - E13 (WFS-152 à 154, 167) : attendent WFS-151 (🔀 En PR #156, Agent 0 developer).
+  - E9 (WFS-155 à 157), E12 (WFS-161 à 163), E11 (WFS-164 à 166) : attendent WFS-151 validée.
+  - E10 (WFS-159, 160, 192 à 195) : épic occupée par WFS-158 (arwa-2) et dépendances non finies.
+  - E2 : WFS-179 en cours (agent 1) ; WFS-186 🚫 bloqué (modèles CC0 à fournir).
+  - E3 : WFS-191 attend la validation des noms par l'utilisateur (`tache utilisateur.md`, pas encore de réponse).
+  - E7 : WFS-190 (P1) en cours (agent arwa) ; aucun ticket iOS (gel).
+  - Anomalies : aucune 🆕 Nouvelle dans `anno.md`, rien à ranger dans un nouveau lot.
+- Aucun ticket créé (rien d'inventé). L'agent 2 reste libre et suit la CI de main de WFS-189 et WFS-196.
+- Choix signalés par l'agent 2 pour WFS-196 (`actions: read`, aucun ✅ sur un run de nuit, nouvel essai depuis main à jour) : acceptés par le PO (droit en lecture seule, même effet que les RG).
+- RG-08 de WFS-196 (`CLAUDE.md`, ligne « Statuts et CI ») : je la fais quand le robot aura passé son premier 🟣 en ✅ sur un vrai run vert de main, pour ne pas annoncer aux agents un robot qui n'a pas encore tourné.
+
+### 2026-11-06 21:28:11 — WFS-197 attribué à Claude, agent 2 (01UY1Vv5) ; suivi CI de WFS-189 et WFS-196 repris par le PO (po-scrum-master)
+- **Ordre de l'utilisateur à l'agent 2** : « Non prend un autre sujet et si ya un problème le po regarde qui corrige ». Appliqué tel quel :
+  - l'agent 2 prend un nouveau sujet sans attendre la CI de main de WFS-189 (PR #159) et WFS-196 (PR #160) ;
+  - **le PO suit ces CI** (runs 780 à 787 en file) : si une CI de main tombe rouge à cause de WFS-189 ou WFS-196, le PO décide qui corrige et l'écrit ici.
+- **Ticket créé et attribué : WFS-197** — Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central avec la carte, essuie-glaces, Golf, M4, 911 et SF90.
+  C'est le lot 1 du découpage déjà écrit dans `regles-de-gestion/WFS-195.md` (demande de l'utilisateur). Lots 2 et 3 créés après la fusion de WFS-197.
+  Règles : `regles-de-gestion/WFS-197.md`. P2 Haute. Dépendances : WFS-66 ✅, WFS-98 ✅.
+- **Épic et exception écrite** : E3 pour `src/game/camera_vue.*` (épic libre : WFS-188 et WFS-189 sont 🟣). E10 est occupée par WFS-158 (arwa-2, dernier envoi 21:06 UTC) :
+  exception d'épic sur des **fichiers neufs seulement** (`src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*.glsl`, `assets/cars/interieurs/**`, `tests/test_cockpit*`),
+  comme pour WFS-196 en E7. Interdits : `assets/cars/*.wfm|*.lod`, `tools/convert_car.mjs`, `model_loader.*`, `correctifs_voitures.*`, `feux_modele.*`, `cars.h` (WFS-158),
+  `src/world/**` (WFS-179), fichiers E13 (WFS-151), `.github/**` (WFS-190), taille des boutons, iOS.
+- Accroches ≤ 10 lignes permises si annoncées ici (banc `desktop_main.cpp`, `game.cpp`). Graphisme réaliste obligatoire pour chaque partie ; consulter `expert-realisme-3d`.
+- Règle des 10 h : aucun ticket retiré à personne. Aucun ticket iOS, rien sur la taille des boutons.
+
+### 2026-11-06 21:37:22 — Fin WFS-179 : Campagne (3/3), autoroute et péage — fusion par confiance, PR #161 (Claude, agent 1, session 01UY1Vv2)
+- Fait (`src/world/campagne.cpp`) : autoroute du tracé 2 (segments 3743 à 5458, ≈ 2 km) :
+  - bas-côté gauche remplacé : terre-plein central de 3 m (gazon, séparateur en béton « New Jersey » DBA 0,80 m / base 0,60 m), chaussée opposée de 14 m (bande dérasée 1 m, 3 voies de 3,50 m, bande d'arrêt d'urgence 2,50 m : ICTAAL), accotement, puis la campagne ; enrobé albédo ≈ 0,045 ;
+  - marquage de la chaussée opposée : rives de 15 cm (2u, u = 7,5 cm), lignes T1 de 3 m pour 10 m d'intervalle (IISR, 7e partie) ;
+  - glissières GS2 des deux côtés (déjà dans le fichier, WFS-138), sauf sur l'aire de péage ;
+  - aire de péage à 30 m du début : auvent de 14 m sur les deux chaussées à 5,50 m de hauteur libre (gabarit ≥ 4,75 m), bandeaux bleus « PÉAGE », piliers hors des voies, cabines sur des îlots aux bords de chaque chaussée (rien sur nos voies : RG-C1), barrières levées rouges et blanches, lampes vertes d'affectation au-dessus de chaque voie (Ø 200 mm), dalles LED sous l'auvent, 2 lumières de nuit ;
+  - panneaux bleus tous les 600 m (3,6 × 1,6 m, bas à 2,2 m ; « VALLÉE VERTE 14 km », « LES PINS 9 km », « AIRE DE REPOS 2 km » : lieux inventés) ;
+  - voitures en sens inverse (V60, Corsa : modèles du jeu), 3 voies, 94 à 119 km/h, 2 au plus en vue, cachées près du péage, feux allumés la nuit ;
+  - le tronçon traverse la zone « Village » : maisons, église, commerces, lampadaires, passages piétons et objets à moins de 8 m de la chaussée retirés du tronçon.
+- Accroches annoncées : `pietons.cpp` (3 lignes : personne à pied sur l'autoroute) ; `cartes_banc.cpp` (captures `carte-campagne-peage`, `-autoroute`, jour et nuit ; `WFS_CAMPAGNE_LIEU` pour l'essai local).
+- Mesures (indice) : voies 3,50 m, bande d'arrêt 2,50 m, bande dérasée 1,00 m : conformes (ICTAAL) ; marquage 15 cm et T1 3 / 10 m : conformes (charte 12-15 cm ; IISR) ; DBA 0,80 / 0,60 m : conforme (profil normalisé) ; hauteur libre du péage 5,50 m : conforme (≥ 4,75 m) ; enrobé 0,045 : conforme (0,04-0,07) ; cabines, auvent, panneaux : non mesurables (pas de plan type unique) ; dalles LED : teinte blanc neutre (≈ 4000-5000 K), non mesurée ; la lumière de nuit au sol passe par l'éclairage de nuit existant (style « Ville », chaud) : limite, un style LED demanderait un ticket E4 (`src/render`).
+- Vérification (locale, lavapipe) : compilation, 36 tests CPU, licences ; `WFS_BANC=campagne` 0 écart (son parcours va du départ au haut du col : il n'atteint pas l'autoroute, vérifiée par les captures) ; `WFS_BANC=parcours` 0 écart ; captures `carte-campagne-peage`, `carte-campagne-autoroute` (+ `-nuit`) regardées ; appels de dessin : 369 (péage) et 383 (autoroute, dont ≈ 110 pour 2 voitures en sens inverse).

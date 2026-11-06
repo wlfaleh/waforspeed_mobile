@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 #include "../core/math.h"
+#include "player.h"   // WFS-189 : Phys (roulement, traînée)
 #include "track.h"
 
 namespace wfs {
@@ -26,14 +27,35 @@ Difficulte& difficulte() { static Difficulte d = NORMALE; return d; }
 const char* cleDifficulte(Difficulte d) { return d == FACILE ? "facile" : d == DIFFICILE ? "difficile" : "normale"; }
 Difficulte difficulteDeCle(const std::string& v) { return v == "facile" ? FACILE : v == "difficile" ? DIFFICILE : NORMALE; }
 
+// WFS-189 (RG-02) : vitesse de pointe réelle d'une voiture (unités/s) : celle que le joueur atteint sans nitro, 99,5 % de la
+// fiche (étalonnage WFS-188, cars.h). Depuis WFS-188, carPerf().top est le plafond interne de la poussée (≈ 1,07 × la fiche),
+// plus la vitesse de pointe : les ordinateurs visaient 0,98 × la fiche en Normale au lieu de 0,90 (joueur toujours battu)
+static double vitessePointe(const CarDef& c) { return MAX_SPEED * 0.995 * c.spec.vmax / 260.0; }
+
 // peintures du jeu web (PAINTS), tirées au hasard pour les ordinateurs
 static const unsigned PEINTURES[16] = {0xc9ccd2, 0x0f1014, 0x7b808a, 0xb3122b, 0x1d3f8f, 0xff6a00, 0xc8940a, 0x1f5a3c,
                                        0xe6e2d6, 0x141c3a, 0x0f3324, 0x5a0f1e, 0xb39a72, 0x4b2380, 0x0f8f8c, 0xe8b400};
 
+std::vector<int> candidats(const char* carJoueur) {
+    // WFS-189 (RG-01, ANO-101) : voitures dont la vitesse max de fiche est à ± CLASSE_VMAX de celle du joueur ; moins de
+    // ORDINATEURS candidats : on complète avec les plus proches en vitesse max (écart croissant, puis ordre du catalogue)
+    const int vJ = carById(carJoueur).spec.vmax;
+    std::vector<int> autres, dans;
+    for (int i = 0; i < CAR_COUNT; i++) if (std::strcmp(CARS[i].id, carJoueur)) autres.push_back(i);
+    for (int i : autres) if (std::abs(CARS[i].spec.vmax - vJ) <= CLASSE_VMAX * vJ) dans.push_back(i);
+    if ((int)dans.size() >= ORDINATEURS) return dans;
+    std::stable_sort(autres.begin(), autres.end(), [&](int a, int b) { return std::abs(CARS[a].spec.vmax - vJ) < std::abs(CARS[b].spec.vmax - vJ); });
+    for (int i : autres) {
+        if ((int)dans.size() >= ORDINATEURS) break;
+        if (std::find(dans.begin(), dans.end(), i) == dans.end()) dans.push_back(i);
+    }
+    return dans;
+}
+
 std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d) {
     Mulberry32 R(graine);
-    std::vector<int> libres;
-    for (int i = 0; i < CAR_COUNT; i++) if (std::strcmp(CARS[i].id, carJoueur)) libres.push_back(i);
+    std::vector<int> libres = candidats(carJoueur);   // WFS-189 (RG-01) : adversaires de la classe du joueur
+    const CarDef& J = carById(carJoueur);
     std::vector<Ordinateur> os;
     for (int k = 0; k < ORDINATEURS; k++) {
         if (libres.empty()) for (int i = 0; i < CAR_COUNT; i++) libres.push_back(i);   // moins de 5 voitures : on répète
@@ -44,7 +66,9 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
         o.car = c.id; o.nom = c.model; o.peinture = PEINTURES[(int)(R.next() * 16) % 16];
         o.g.car = c.id; o.g.name = c.model;
         o.varVitesse = 0.96 + R.next() * 0.06;   // petite variation à chaque course (RG-04)
-        o.cible = MAX_SPEED * carPerf(c).top * FACTEUR_VITESSE[d] * o.varVitesse;
+        // WFS-189 (RG-02 ter) : facteur × min(sa pointe, 1,10 × pointe du joueur) : un adversaire plus rapide du haut de la
+        // classe reste battable ; un plus lent garde sa propre pointe. Pointes = vraies vitesses de pointe (vitessePointe)
+        o.cible = std::min(vitessePointe(c), PLAFOND_JOUEUR * vitessePointe(J)) * FACTEUR_VITESSE[d] * o.varVitesse;
         o.diff = d; o.nitros = NITROS[d];   // WFS-133 (RG-03 / RG-06)
         os.push_back(o);
     }
@@ -52,15 +76,80 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
 }
 
 void grille(std::vector<Ordinateur>& os, double sJoueur) {
-    // deux rangées de deux devant le joueur (8 m et 16 m), files gauche et droite
+    // deux rangées de deux devant le joueur (8 m et 8 + ECART_RANGEES_M), files gauche et droite. WFS-189 (RG-03, ANO-99, arbitrage du PO
+    // 20:57) : rangés par 0-100 de fiche croissant (à 0-100 égal, la plus forte vitesse max devant) : les plus vifs sur la
+    // rangée de devant (21 m), dans chaque file la voiture de devant accélère le plus : personne n'est bloqué au départ
+    std::stable_sort(os.begin(), os.end(), [](const Ordinateur& a, const Ordinateur& b) {
+        const CarSpec &A = carById(a.car.c_str()).spec, &B = carById(b.car.c_str()).spec;
+        return A.s100 != B.s100 ? A.s100 < B.s100 : A.vmax > B.vmax;
+    });
+    const size_t rangees = (os.size() + 1) / 2;
     for (size_t k = 0; k < os.size(); k++) {
         Ordinateur& o = os[k];
         o.file = k % 2 ? 2 : 0;
-        o.g.rd = sJoueur + (8.0 + 8.0 * (double)(k / 2)) / M;
+        // WFS-189 (RG-03) : rangées à 8 m et 21 m devant le joueur (avant : 8 et 16 m) : entre deux voitures d'une même
+        // file, plus de 8 m de pare-chocs à pare-chocs dès le départ (13 m − 4,9 m au plus de longueur)
+        o.g.rd = sJoueur + (8.0 + ECART_RANGEES_M * (double)(rangees - 1 - k / 2)) / M;
         o.g.x = o.cibleX = FILES[o.file];
         o.g.v = 0; o.g.done = false; o.g.ft = 0; o.g.hitCd = 0;
         o.nitros = NITROS[o.diff]; o.nitrosPrises = 0; o.nitroT = 0; o.aspiration = false;   // WFS-133
     }
+}
+
+// WFS-189 (RG-02 bis) : vitesse permise dans les virages, d'après la conduite du joueur (Player::update). En courbe, la voiture
+// dérive vers l'extérieur de 2 × CENTRIFUGAL × (v / MAX_SPEED)² × courbure (largeurs de route par seconde) ; en braquant,
+// le cap (au plus maxHeading − 0,0045 × v, borné à 0,16 rad) la ramène de v × sin(cap) / RW. Une courbe se passe à la
+// vitesse v si la dérive cumulée, contre-braquage au maximum (× MARGE_VIRAGE), reste sous DERIVE_MAX (bord de la chaussée
+// à 1 depuis le milieu de la voie) : une courbe courte se prend plus vite qu'une longue, comme pour le joueur.
+namespace {
+double derive(const Track& t, int64_t a, int64_t b, double vU) {   // dérive maximale sur les segments [a, b), vitesse vU (unités/s)
+    const double vms = vU * M, sp = std::min(vU / MAX_SPEED, 1.1), dtk = SEG / std::max(vU, 1e-6);
+    const double maxH = std::clamp((double)Phys::maxHeading - vms * 0.0045, 0.16, (double)Phys::maxHeading);
+    const double corr = MARGE_VIRAGE * vms * std::sin(maxH) / RW * dtk;
+    double S = 0, pire = 0;
+    for (int64_t k = a; k < b; k++) {
+        S += 2 * CENTRIFUGAL * sp * sp * t.segAt(k).curve * dtk;
+        S -= (S > 0 ? 1 : -1) * std::min(std::abs(S), corr);
+        pire = std::max(pire, std::abs(S));
+    }
+    return pire;
+}
+// table des vitesses permises par segment (unités/s), freinage anticipé (Phys::brake : le freinage du joueur) : un
+// ordinateur ralentit avant le virage, pas dedans. Calculée une fois par piste (préparation, hors du pas de course).
+struct TableVirages { const Track* t = nullptr; size_t n = 0; double longueur = 0; int version = 0; std::vector<float> v; };
+TableVirages g_virages;
+const std::vector<float>& virages(const Track& t) {
+    TableVirages& T = g_virages;
+    if (T.t == &t && T.n == t.segmentCount() && T.longueur == t.length() && T.version == t.version()) return T.v;
+    T.t = &t; T.n = t.segmentCount(); T.longueur = t.length(); T.version = t.version();
+    const double vMax = 1.6 * MAX_SPEED;   // vitesse bornée de Player
+    std::vector<double> v2(T.n, vMax * vMax);
+    // une « courbe » : segments consécutifs dont la courbure dépasse COURBURE_VIRAGE ; vitesse constante cherchée par
+    // dichotomie (la plus haute dont la dérive reste ≤ DERIVE_MAX), sur la courbe et les 40 segments qui suivent
+    const int64_t n = (int64_t)T.n;
+    for (int64_t k = 0; k < n;) {
+        if (std::abs(t.segAt(k).curve) < COURBURE_VIRAGE) { k++; continue; }
+        int64_t fin = k; while (fin < n && std::abs(t.segAt(fin).curve) >= COURBURE_VIRAGE) fin++;
+        double lo = 0.02 * MAX_SPEED, hi = vMax;
+        if (derive(t, k, fin + 40, hi) > DERIVE_MAX)
+            for (int i = 0; i < 30; i++) { const double mid = (lo + hi) / 2; (derive(t, k, fin + 40, mid) <= DERIVE_MAX ? lo : hi) = mid; }
+        else lo = hi;
+        for (int64_t j = k; j < fin; j++) v2[(size_t)j] = std::min(v2[(size_t)j], lo * lo);
+        k = fin;
+    }
+    const double b = Phys::brake / M;   // unités/s²
+    for (int tour = 0; tour < 2; tour++)   // la piste boucle : deux passes à rebours suffisent
+        for (size_t i = T.n; i-- > 0;) { const size_t j = (i + 1) % T.n; v2[i] = std::min(v2[i], v2[j] + 2 * b * SEG); }
+    T.v.assign(T.n, 0.f);
+    for (size_t k = 0; k < T.n; k++) T.v[k] = (float)std::sqrt(v2[k]);
+    return T.v;
+}
+} // namespace
+
+double vitesseVirage(const Track& t, double s) {
+    const std::vector<float>& v = virages(t);
+    const int64_t n = (int64_t)v.size(), k = (int64_t)std::floor(s / SEG);
+    return n ? v[(size_t)(((k % n) + n) % n)] : 1e18;
 }
 
 namespace {
@@ -85,7 +174,7 @@ bool dansAspiration(const std::vector<Ordinateur>& os, double s, double x) {
     return false;
 }
 
-void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur) {
+void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur, const Track* piste) {
     const auto& C = g_configJeu.course5;
     std::vector<Voiture> vs;
     for (const Ordinateur& o : os) vs.push_back({o.g.rd, o.g.x, o.g.v, carById(o.car.c_str()).d.L});
@@ -93,8 +182,15 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
     for (size_t k = 0; k < os.size(); k++) {
         Ordinateur& o = os[k];
         const CarDef& c = carById(o.car.c_str());
-        const double acc = carPerf(c).a0 / M * 0.9;   // a0 en m/s² → unités/s²
-        const double pointe = MAX_SPEED * carPerf(c).top, reste = (finish - o.g.rd) * M;
+        // WFS-189 (RG-02) : même loi que la voiture du joueur (Player::update, plein gaz : poussée a0 × (1 − (v / top)^2,2)
+        // moins 0,35 × (roulement + traînée)), pour que l'ordinateur accélère comme sa fiche (0-100 de WFS-188) ; avant :
+        // a0 × 0,9 constant (0-100 de la 208 en 6,7 s au lieu de 8,7 s : les petites voitures du joueur toujours distancées)
+        const CarPerf pf = carPerf(c);
+        const double topU = MAX_SPEED * pf.top, vms = std::max(0.0, o.g.v) * M;
+        const double pousse = pf.a0 / M * std::max(0.0, 1 - std::pow(std::max(0.0, o.g.v) / topU, 2.2));
+        const double freine = (Phys::roll + Phys::drag * vms * vms) / M * 0.35;
+        const double acc = std::max(0.02 / M, pousse - freine);
+        const double pointe = vitessePointe(c), reste = (finish - o.g.rd) * M;   // WFS-189 : vraie vitesse de pointe
         double cible = o.cible;
         // WFS-133 (RG-04) : rattrapage par rapport au joueur, sauf dans le dernier kilomètre
         const double ecartJ = (o.g.rd - sJoueur) * M;
@@ -136,8 +232,14 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         }
         if (o.nitroT > 0) { o.nitroT -= dt; cible *= 1 + C.nitroBonus; }
         cible = std::min(cible, plafond);
-        if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + acc * (o.nitroT > 0 ? 1.6 : 1.0) * dt);
-        else o.g.v = std::max(cible, o.g.v - acc * 1.6 * dt);
+        bool virageFrein = false;   // WFS-189 (RG-02 bis) : virage serré devant : vitesse permise, freinage du joueur
+        if (piste) {
+            const double vp = vitesseVirage(*piste, o.g.rd);
+            if (vp < cible) { cible = vp; virageFrein = o.g.v > vp; }
+        }
+        if (virageFrein) o.g.v = std::max(cible, o.g.v - (double)Phys::brake / M * dt);
+        else if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + (o.nitroT > 0 ? pousse * 1.6 - freine : acc) * dt);
+        else o.g.v = std::max(cible, o.g.v - pf.a0 / M * 0.9 * 1.6 * dt);   // ralentir : comme avant WFS-189 (a0 × 0,9 × 1,6)
         o.g.x += std::clamp(o.cibleX - o.g.x, -0.9 * dt, 0.9 * dt);
         o.g.rd += o.g.v * dt;
         if (!o.g.done && o.g.rd >= finish) { o.g.done = true; o.g.ft = raceTime * 1000; }
@@ -163,6 +265,16 @@ std::vector<Ligne> classement(const std::vector<Ordinateur>& os, const std::stri
         return a.d > b.d;
     });
     return ls;
+}
+int SuiviDepassements::compter(const std::vector<Ordinateur>& os, double sJoueur) {
+    if (arme.size() != os.size()) arme.assign(os.size(), true);   // grille : tous devant le joueur
+    int n = 0;
+    for (size_t k = 0; k < os.size(); k++) {
+        const double ecart = (os[k].g.rd - sJoueur) * M;   // > 0 : l'ordinateur est devant
+        if (arme[k] && ecart < 0) { n++; arme[k] = false; }      // dépassé
+        else if (!arme[k] && ecart > REARMEMENT_M) arme[k] = true;   // repassé devant franchement : un nouveau dépassement comptera
+    }
+    return n;
 }
 int position(const std::vector<Ligne>& ls) { for (size_t i = 0; i < ls.size(); i++) if (ls[i].moi) return (int)i + 1; return (int)ls.size(); }
 
