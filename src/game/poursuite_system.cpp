@@ -191,13 +191,19 @@ public:
             }
         }
         bouchons(pl, t, tr);
-        // sirène : toutes les secondes tant qu'une police est à moins de 80 m
-        sireneT_ -= dt;
-        if (sireneT_ <= 0 && plusProcheM(police_, pl.dist, pl.playerX) < 80 && c->state != RaceState::Over) { sireneT_ = 1.0; sfxInterface(SfxId::Sirene); }
+        {   // WFS-131 (RG-07) : sirène continue du module son : police mobile la plus proche (m) et vitesse vers le joueur (m/s)
+            double dSir = 1e9, vSir = 0;
+            for (const Police& p : police_) if (!p.fixe) {
+                const double dz = (p.rd - pl.dist) * M, dx = (p.x - pl.playerX) * RW, d = std::sqrt(dz * dz + dx * dx);
+                if (d < dSir) { dSir = d; vSir = (dz < 0 ? p.v - pl.speed : pl.speed - p.v) * M; }
+            }
+            sfxSirene(dSir, vSir);
+        }
         if (banT_ > 0) banT_ -= dt;
         if (c->state == RaceState::Over) {
             if (!fini_) {
                 fini_ = true; ftJoueur_ = c->raceTime; arrivee(etat_, pl.dist * M / 1000);
+                sfxInterface(etat_.gagne ? SfxId::PoursuiteEchappe : SfxId::PoursuiteArrete);   // WFS-131 (RG-06) : jingle de fin
                 WFS_LOG("poursuite : fin — %s, score %d, %.2f km, %.1f s", etat_.gagne ? "victoire" : "ARRÊTÉ", etat_.score, pl.dist * M / 1000, ftJoueur_);
                 // WFS-125 (RG-02) : record Poursuite (victoire > « ARRÊTÉ », puis score ou distance), écrit seulement s'il est battu
                 nouveauRecord_ = false;
