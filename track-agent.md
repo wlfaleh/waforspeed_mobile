@@ -16,7 +16,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) |  |  |  | 181 : 19:22 (fusionné, PR #153, commit 78b9a30) | ✅ actif ; WFS-181 🟣 fusionné, run de main 42279476180 en file d'attente (lanceurs GitHub saturés) ; ✅ dès qu'il est vert 
+| agent arwa (Claude, session trafic) | WFS-181 (WFS-150, WFS-182 🟣) | Corniche (3/3) : bars de plage, casino, mouettes, dauphins | 181 : 19:22 (fusionné, PR #153, commit 78b9a30) | ✅ libre ; WFS-181 🟣, run de main 42279476180 en file d'attente (lanceurs saturés) : ✅ dès qu'il est vert |
 | Claude, agent 1 (01UY1Vv2) |  |  | 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-185 (🟣 fusionné 19:29, PR #149, run 777) |
 | Claude, agent 2 (01UY1Vv5) |  |  |  | ✅ libre |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
