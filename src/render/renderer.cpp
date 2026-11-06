@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
+#include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #if defined(__APPLE__)
 #include <chrono>
@@ -61,15 +62,7 @@ static const uint32_t SPV_SCENE_SKIN_FRAG[] = {   // WFS-72
 static constexpr VkDeviceSize OS_PALETTE = sizeof(float) * 16 * SKIN_MAX_OS, OS_APPARENCE = sizeof(float) * 4 * 8;
 static constexpr VkDeviceSize OS_SLOT = (OS_PALETTE + OS_APPARENCE + 255) / 256 * 256;
 
-struct FrameUBO {
-    mat4 viewProj, invViewProj;
-    vec4 camPos, sunDir, sunColor, skyTop, skyHorizon, groundCol, fog, misc;
-    mat4 shadowMat; vec4 shadowP;
-    // WFS-45 : même ordre que shaders/common.glsl
-    vec4 camFwd, fogLin, hemiSky, hemiGround, spotN;
-    vec4 spotPos[8], spotDir[8], spotCol[8], spotCone[8];   // WFS-09 : 8 lumières
-    vec4 nuitA, nuitB;                                      // WFS-09 / WFS-16 : route mouillée, reflets
-};
+#include "frame_ubo.h"   // WFS-150 : FrameUBO déplacé tel quel (lu aussi par les passes enfichables, src/render/passes.cpp)
 
 // ombres du soleil (WFS-07, valeurs du jeu web : renderer.js applyEnv / stableShadow)
 static constexpr float SHADOW_HALF = 40.f;        // demi-largeur de la boîte (m)
@@ -242,6 +235,7 @@ bool Renderer::init(VkCtx& vk) {
     ETAPE_RENDU("cibles de rendu");
     createPipelines();
     ETAPE_RENDU("pipelines");
+    passes::creer(*this);   // WFS-150 (RG-01)
     {   // WFS-09 : halos additifs ; tache des phares (MAT.headPool du jeu web : couleur 0xfff0dc, multiplicative)
         Material h; h.flags = MAT_ADD | MAT_BLEND; haloMat_ = makeMaterial(h, nullptr, nullptr, nullptr);
         Material t; t.flags = MAT_POOL | MAT_BLEND;
@@ -514,7 +508,7 @@ void Renderer::createTargets() {
     sw_ = std::max(1u, (uint32_t)(lw_ * vk.renderScale)); sh_ = std::max(1u, (uint32_t)(lh_ * vk.renderScale));
     const bool ms = vk.msaa != VK_SAMPLE_COUNT_1_BIT;
 
-    hdr_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    hdr_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);   // WFS-150 : relue par le banc (HDR)
     if (ms) msaaColor_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
     depth_ = vk.createImage(sw_, sh_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
 
@@ -707,6 +701,7 @@ bool Renderer::resize() {
     const bool refaire = appliquerNettete();   // WFS-144 : MSAA / anisotrope du niveau (Basse : ×2 / ×4)
     createTargets();
     if (refaire) createScenePipelines();
+    passes::redimensionner(*this);   // WFS-150 : cibles des passes à la taille de la scène
     return true;
 }
 
@@ -895,7 +890,7 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
 uint8_t Renderer::classer(const masquage::Sphere& s) {
-    if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE;
+    if (s.r < 0 || sansMasquage_) return VIS_CAM | VIS_REFLET | VIS_OMBRE;   // WFS-150 : capture d'environnement
     if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { masques_++; return 0; }
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
                       (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
@@ -1061,6 +1056,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear(); skinUsed_ = 0;
     readShadowTiming();
+    passes::debutImage(*this);   // WFS-150 (RG-05) : coût des passes de l'image précédente sur ce tampon ; capture : aucun masquage
 
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -1394,6 +1390,7 @@ void Renderer::endFrame() {
     std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
     refletPass(r.cb);   // WFS-16 : reflet de la scène (route mouillée seulement)
     if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 2);
+    passes::avantScene(*this, r.cb);   // WFS-150 (RG-01) : ombres → pré-passe → passes d'écran (capture d'environnement)
     // passe de scène : ciel, objets opaques (dans l'ordre d'appel), puis transparents
     VkClearValue clears[3]{};
     clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};   // profondeur inversée : 0 = loin
@@ -1417,6 +1414,7 @@ void Renderer::endFrame() {
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
     }
+    passes::dansScene(*this, r.cb, EtapeRendu::Scene);   // WFS-150 : passes enfichables de la scène (opaques)
     // objets transparents (vitres) : du plus loin au plus proche
     if (!transparent_.empty()) {
         VkPipeline lieT = VK_NULL_HANDLE;
@@ -1428,10 +1426,12 @@ void Renderer::endFrame() {
             flushDraw(p);
         }
     }
+    passes::dansScene(*this, r.cb, EtapeRendu::Transparents);   // WFS-150
     vkCmdEndRenderPass(r.cb);
     if (bloom_) bloom_->dessiner(*this, r.cb);   // WFS-100 : chaîne du bloom, comptée avec la passe de scène
     // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène (+ bloom, WFS-100)
     if (tsPool_) { vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 3); tsWritten_[cur_] = true; }
+    passes::apresScene(*this, r.cb);   // WFS-150 : post-traitement enfichable (avant la passe finale)
 
     // passe finale : tonemapping puis interface
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
@@ -1501,6 +1501,7 @@ void Renderer::shutdown() {
     if (!vk_) return;
     VkDevice d = vk_->device;
     vk_->waitIdle();
+    passes::detruire(*this);   // WFS-150
     destroyTargets();
     if (bloom_) { bloom_->liberer(*this); delete bloom_; bloom_ = nullptr; }   // WFS-100
     for (auto& r : fr_) {

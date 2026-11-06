@@ -8,20 +8,20 @@
 > - Mêmes règles que `TACHES.md` : partir de `main` (`git pull`), ne modifier que sa ligne, ne jamais copier ce fichier d'une autre branche.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 17:08:35 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 17:38:54 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket(s) | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, session trafic | WFS-150, WFS-182, WFS-183 | socle de rendu Réalisme ; halos de frein flottants ; derniers adversaires au salon | 150 : 16:22 · 182 : 15:39 · 183 : aucune branche | ✅ actif ; WFS-182 fusionné sur `main` (PR #144) mais ligne `TACHES.md` encore « En cours » ; WFS-183 sans branche depuis 15:06 ⚠️ ; 3 tickets à la fois ⚠️ |
+| Claude, session trafic | WFS-150, WFS-182, WFS-183 | socle de rendu Réalisme ; halos de frein flottants ; derniers adversaires au salon | 150 : 17:32 (fusionné, PR #143) · 182 : 15:39 · 183 : aucune branche | ✅ actif ; WFS-150 🟣 fusionné (PR #143, CI de main suivie) ; WFS-182 🟣 fusionné (PR #144) ; WFS-183 sans branche depuis 15:06 ⚠️ |
 | Claude, agent 1 (01UY1Vv2) | — (WFS-139, WFS-180 fusionnés) | Corniche (1/3) et (2/3) | 180 : 16:42 | ✅ libre |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-184 fusionné) | jingles de fin de la poursuite, sons de la route | 184 : 16:38 | ✅ libre |
 | Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/4) : rond-point à fontaine, carrefours à feux (ANO-81, ANO-84 déjà faites) | 137 : 17:12 | ✅ actif ; branche synchronisée avec `main` |
 | Claude, agent 5 (011cpqZaDiS2) | — (WFS-140 fusionné, PR #137) | Grand Prix | 140 : 17:02 | ✅ libre |
-| Claude, session dev expert (0183bv2X) | WFS-145 | CI de `main` rouge (test d'endurance) | 145 : 01:18 (avant la reprise de 13:10) | 🔴 P1, rien depuis la reprise (4 h) |
-| Claude, session dev 5bx | WFS-178 | Campagne (2/3) : animaux et village | aucune branche (attribué 13:59) | ⚠️ pas de branche depuis 3 h |
-| Claude, session 01Us6uCu | WFS-158 | dimensions des 20 voitures + carrosserie Model 3 (ANO-75) | 158 : 10:45 | ⚠️ rien depuis 6 h |
+| Claude, session dev expert (0183bv2X) | WFS-145 | CI de `main` rouge (test d'endurance) | 145 : 01:18 (avant la reprise de 13:10) | 🔴 P1, rien depuis la reprise de 13:10 ; le ticket lui reste (règle des 10 h sans commit) |
+| Claude, session dev 5bx | WFS-178 | Campagne (2/3) : village ; WFS-138 ✅ (CI de main verte) | 178 : 17:56 (fusionné, PR #148) | ✅ actif ; WFS-178 🟣 fusionné, CI de main suivie |
+| Claude, session 01Us6uCu | WFS-158 | dimensions des 20 voitures + carrosserie Model 3 (ANO-75) | 158 : 10:45 | ⚠️ rien depuis 10:45 ; le ticket lui reste jusqu'à 20:45 UTC (règle des 10 h) |
 
 ## Agents de pilotage
 

@@ -82,7 +82,7 @@ public:
     void activerCartes();                               // fantômes renommés, cartes notées (appelée par charger)
     // WFS-122 (RG-01) : 3 derniers adversaires du duel, le plus récent en premier (clé adversaires=a|b|c)
     std::vector<std::string> adversaires;
-    void noterAdversaires(const std::vector<std::string>& noms);   // en tête, sans doublon, 3 au plus
+    void noterAdversaires(const std::vector<std::string>& noms);   // en tête dans l'ordre reçu (classement), sans doublon, 3 au plus
 
     ~Sauvegarde();
     // remet les défauts, puis lit le fichier ; vrai si un fichier valide a été lu. Rend la sauvegarde active.

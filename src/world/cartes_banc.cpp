@@ -25,7 +25,7 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
     struct Cap { const char* carte; const char* moment; const char* zone; const char* nom; };
     static const Cap CAPS[] = {
         {"campagne", "jour", nullptr, "carte-campagne-jour"}, {"campagne", "nuit", nullptr, "carte-campagne-nuit"},
-        {"campagne", "jour", "Forêt", "carte-campagne-foret"}, {"campagne", "jour", "Village", "carte-campagne-village"},
+        {"campagne", "jour", "Forêt", "carte-campagne-foret"},   // WFS-178 : village (feu, rond-point) : benchCampagne
         {"campagne", "jour", "Bois de pins", "carte-campagne-pins"},   // WFS-138 : vignes, col et épingle : benchCampagne (fin de la fonction)
         {"circuit", "jour", nullptr, "carte-circuit-jour"}, {"circuit", "nuit", nullptr, "carte-circuit-nuit"},
         {"circuit", "jour", "Paddock", "carte-circuit-zone-paddock"}, {"circuit", "jour", "Virages rapides", "carte-circuit-gravier"},
@@ -101,6 +101,11 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     for (int64_t a = lac->debut; a < lac->fin && haut < 0; a++) if (t.point((double)a * SEG, 0).y - y0 > 80 && std::abs(t.segAt(a).curve) < 1) haut = a;
     int64_t pont = -1;   // cascade : 30 m avant le milieu du pont
     for (const trace::Section& s : t.sections()) if (s.type == trace::Type::Pont && pont < 0) pont = (s.debut + s.fin) / 2 - (int64_t)(30 / SEG_M);
+    int64_t feu = -1, rp = -1;   // WFS-178 : 20 m avant la ligne d'arrêt du feu du village, 15 m avant l'entrée du rond-point
+    for (const trace::Section& s : t.sections()) {
+        if (s.type == trace::Type::Feux && !s.depart && feu < 0) feu = s.ligneArret - (int64_t)(20 / SEG_M);
+        if (s.type == trace::Type::RondPoint && rp < 0) rp = s.debut - (int64_t)(15 / SEG_M);
+    }
     int64_t vi = -1;
     for (int64_t a = 0; a < L && vi < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), "Vignobles")) vi = a + 40;
     WFS_LOG("banc campagne : %lld segments, lacets %lld → %lld (+%.0f m), 1re épingle %lld, vignes %lld", (long long)L, (long long)lac->debut,
@@ -108,7 +113,7 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     struct Cap { const char* nom; int64_t seg; int cam; };
     const Cap caps[] = {{"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1},
                         {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0}, {"carte-campagne-vignes", vi, 0},
-                        {"carte-campagne-cascade", pont, 0}};
+                        {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0}};
     for (const char* mo : {"jour", "nuit"}) for (const Cap& c : caps) {
         if (c.seg < 0) { ecarts++; WFS_ERR("banc campagne : %s introuvable", c.nom); continue; }
         if (!std::strcmp(mo, "nuit") && c.cam == 1) continue;

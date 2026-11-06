@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>   // WFS-183 : std::getenv (banc)
 #include <map>
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -71,7 +72,8 @@ public:
         Course* c = activeCourseMut();
         if (modeCourse() != ModeCourse::Course5 || g.ecran != Ecran::Course || !c || duelSession().inRoom()) { actif_ = false; return; }
         if (c->duelFinish <= 0) {   // course remise à zéro (départ du menu, « Rejouer ») : nouvelle grille
-            if (!graineFixe_) { graine_ = g_graineBanc ? g_graineBanc : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 17u; graineFixe_ = true; }
+            // WFS-183 (RG-04) : au banc (WFS_BANC défini) graine fixe 1234 (minicarte-ligne, course5-rejouer) ; en jeu, horloge
+            if (!graineFixe_) { graine_ = g_graineBanc ? g_graineBanc : std::getenv("WFS_BANC") ? 1234u : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 17u; graineFixe_ = true; }
             c->duelFinish = kmCourse5() * duel::KM;
             os_ = course5::tirer(graine_, pl.car->id, course5::difficulte());   // WFS-133 (RG-03) : difficulté choisie
             course5::grille(os_, pl.dist);

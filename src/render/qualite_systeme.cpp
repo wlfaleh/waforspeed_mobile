@@ -14,6 +14,7 @@
 #include "../ui/text.h"
 #include "qualite_auto.h"
 #include "renderer.h"
+#include "passes.h"   // WFS-150 (RG-05)
 
 namespace wfs {
 namespace {
@@ -59,6 +60,11 @@ public:
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
         effets_ |= g_auto.imageChauffe(dt, g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing(), chauffeNiveau());
+        if (g_auto.mesures != mesuresVues_) {   // WFS-150 (RG-04) : la Haute tient-elle (Ultra proposé) ?
+            mesuresVues_ = g_auto.mesures; const bool avant = qualite::tenueUltra.tenue;
+            qualite::tenueUltra.mesure(g_auto.fpsMesure, R.qualite, chauffeNiveau());
+            if (qualite::tenueUltra.tenue && !avant) WFS_LOG("qualité (WFS-150) : Haute tenue %d × 2 s à %.0f images/s ou plus : Ultra proposé", qualite::MESURES_TENUE, qualite::IPS_TENUE);
+        }
     }
 
     // changements appliqués hors de l'image (les cibles de rendu sont recréées)
@@ -104,7 +110,7 @@ private:
     // le journal est celui du rapport partagé de WFS-126
     void journalRendu() {
         if (!r_) return;
-        const std::string l = qualite::texteRendu(ecrans::reglages().qualite, r_->vk().renderScale, (int)r_->vk().msaa, -1, chauffeNiveau());
+        const std::string l = qualite::texteRendu(qualite::niveauAffiche(ecrans::reglages().qualite), r_->vk().renderScale, (int)r_->vk().msaa, -1, chauffeNiveau());
         if (l == g_ligneVue) return;
         g_ligneVue = l;
         WFS_LOG("%s (netteté du niveau %d, %.0f images/s)", qualite::ligneRendu().c_str(), qualite::niveauNettete(ecrans::reglages().qualite), g_ips);
@@ -114,6 +120,7 @@ private:
     bool actif_ = false;
     double dernier_ = -1;
     int effets_ = 0;
+    int mesuresVues_ = 0;   // WFS-150
 };
 WFS_SYSTEM(QualiteSystem, 360)
 
@@ -122,6 +129,7 @@ void bandeauGraphismesRapides() { g_banniere = 2.5; g_banniereChauffe = true; } 
 // WFS-134 (RG-01) : rendu réellement utilisé, lu en direct
 std::string qualite::ligneRendu() {
     if (!g_r) return "Rendu : --";
-    return texteRendu(ecrans::reglages().qualite, g_r->vk().renderScale, (int)g_r->vk().msaa, g_ips, chauffeNiveau());
+    const std::string l = texteRendu(niveauAffiche(ecrans::reglages().qualite), g_r->vk().renderScale, (int)g_r->vk().msaa, g_ips, chauffeNiveau());
+    return modeDiagnostic() ? l + " · " + passes::texteCouts(passes::coutsFenetre()) : l;   // WFS-150 (RG-05) : coût de chaque passe
 }
 } // namespace wfs

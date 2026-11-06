@@ -354,9 +354,13 @@ std::vector<BoardRow> Session::results() const {
     });
     return rows;
 }
+// WFS-183 (RG-01, ANO-93) : dans l'ordre du classement de la manche (mieux classé d'abord, « Parti » en dernier),
+// jamais dans l'ordre de l'identifiant du relais ; seuls les partants de la manche comptent
 std::vector<std::string> Session::adversaires() const {
     std::vector<std::string> n;
-    for (const auto& [id, pt] : partants_) n.push_back(pt.name);
+    std::map<std::string, bool> partant;
+    for (const auto& [id, pt] : partants_) partant[pt.name] = true;
+    for (const BoardRow& row : results()) if (!row.me && partant.count(row.name)) n.push_back(row.name);
     return n;
 }
 
