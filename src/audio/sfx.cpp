@@ -4,11 +4,13 @@
 #include <cmath>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../game/course5.h"   // WFS-131 : modeCourse() (lecture seule : jingles de la poursuite à la place de BipFin)
 #include "../game/course_system.h"
 #include "../game/player.h"
 #include "sfx_synth.h"
 #include "sfx_course.h"   // WFS-124
 #include "trafic_sons.h"   // WFS-121
+#include "../ui/ecrans/reglages.h"   // WFS-131 (RG-05) : « Son : Coupé » (lecture seule)
 
 namespace wfs {
 
@@ -25,13 +27,13 @@ const char* sfxNom(SfxId id) {
         case SfxId::BipFin: return "bip-fin";
         case SfxId::BipDuel: return "bip-duel";
         case SfxId::Garage: return "garage"; case SfxId::Carte: return "carte";   // WFS-96
-        case SfxId::Sirene: return "sirene";   // WFS-111
         case SfxId::Petarade: return "petarade"; case SfxId::Turbo: return "turbo";   // WFS-120
         case SfxId::Passage: return "passage"; case SfxId::Klaxon: return "klaxon";   // WFS-121
         case SfxId::ChronoTic: return "chrono-tic"; case SfxId::ChronoUrgent: return "chrono-urgent";   // WFS-124
         case SfxId::Combo2: return "combo-2"; case SfxId::Combo3: return "combo-3"; case SfxId::Combo4: return "combo-4";
         case SfxId::Combo5: return "combo-5"; case SfxId::Combo6: return "combo-6"; case SfxId::ComboPerdu: return "combo-perdu";
         case SfxId::Demarreur: return "demarreur";   // WFS-127
+        case SfxId::PoursuiteArrete: return "poursuite-arrete"; case SfxId::PoursuiteEchappe: return "poursuite-echappe";   // WFS-131
         default: return "?";
     }
 }
@@ -53,7 +55,6 @@ void SfxMixer::build(float rate) {
     auto& fin = sons_[(int)SfxId::BipFin]; beep(fin, rate, 660, 0, 0.2f); beep(fin, rate, 440, 0.2f, 0.2f); beep(fin, rate, 330, 0.4f, 0.4f);
     auto& bd = sons_[(int)SfxId::BipDuel]; beep(bd, rate, 880, 0, 0.15f); beep(bd, rate, 1320, 0.15f, 0.15f); beep(bd, rate, 1760, 0.3f, 0.4f);
     noiseHit(sons_[(int)SfxId::Garage], 0, rate, 0.18f, 1400, 1.5f, 0.25f, 500); noiseHit(sons_[(int)SfxId::Carte], 0, rate, 0.12f, 1600, 1.4f, 0.2f, 500);   // WFS-96
-    for (int i = 0; i < 4; i++) beep(sons_[(int)SfxId::Sirene], rate, i % 2 ? 960.f : 720.f, i * 0.25f, 0.25f);   // WFS-111 : sirène deux tons (1 s)
     // WFS-120 (RG-01 / RG-02) : un claquement d'échappement (grave, sec) ; souffle du turbo (aigu qui descend)
     noiseHit(sons_[(int)SfxId::Petarade], 0, rate, 0.05f, 380, 1.2f, 0.55f, 140);
     noiseHit(sons_[(int)SfxId::Turbo], 0, rate, 0.22f, 2800, 0.8f, 0.25f, 1200);
@@ -70,6 +71,12 @@ void SfxMixer::build(float rate) {
         noiseHit(d, (size_t)(0.38f * rate), rate, 0.07f, 320, 1.0f, 0.7f, 140);
     }
     rumeur_ = boucleRumeur(rate); kRumeur_ = 1 - std::exp(-1 / (trafic::RUMEUR_TAU * rate));
+    // WFS-131 : sirène (boucles wail et yelp, RG-01 / RG-02), jingles de fin de poursuite (RG-06), lissages (RG-02, RG-03, RG-05)
+    boucleWail_ = boucleSirene(rate, sirene::CYCLE_WAIL); boucleYelp_ = boucleSirene(rate, sirene::CYCLE_YELP);
+    posWail_ = posYelp_ = 0;
+    sons_[(int)SfxId::PoursuiteArrete] = jingleArrete(rate); sons_[(int)SfxId::PoursuiteEchappe] = jingleEchappe(rate);
+    kSirene_ = 1 - std::exp(-1 / (sirene::LISSAGE_S / 3 * rate));
+    pasFinSirene_ = pasFinSirene(rate); pasYelp_ = 1 / (sirene::FONDU_MODE_S * rate);
     // sons continus (nouveaux, absents du web) : crissement de pneus (bande aiguë étroite) et souffle de nitro (large, grave)
     crissement_ = boucle(rate, 1.0f, 2100, 7, 0.9f, 3400, 9);
     nitro_ = boucle(rate, 1.2f, 650, 0.7f, 0.6f);
@@ -107,6 +114,8 @@ void SfxMixer::mix(float* out, int n, double now) {
     const bool actif = !muted_ && now - lastUpdate.load() < 0.25;   // jeu en pause (plus d'update) ou muet : silence
     const float cC = actif ? cibleCrissement_.load() : 0.f, cN = actif ? cibleNitro_.load() : 0.f, cF = actif ? 1.f : 0.f;
     const float cR = actif ? cibleRumeur_.load() : 0.f;   // WFS-121
+    const float cS = actif ? cibleSirene_.load() : 0.f, cY = yelpSirene_.load() ? 1.f : 0.f, cD = dopplerSirene_.load();   // WFS-131
+    const bool finS = finSirene_.load();
     for (int i = 0; i < n; i++) {
         fade_ += (cF - fade_) * kFade_;
         gCrissement_ += (cC - gCrissement_) * k_; gNitro_ += (cN - gNitro_) * k_;
@@ -123,6 +132,14 @@ void SfxMixer::mix(float* out, int n, double now) {
         gRumeur_ += (cR - gRumeur_) * kRumeur_;   // WFS-121 : montée / descente en 0,5 s
         if (gRumeur_ > 1e-4f) s += rumeur_[posRumeur_] * gRumeur_;
         if (++posRumeur_ >= rumeur_.size()) posRumeur_ = 0;
+        // WFS-131 (RG-01 à RG-05, RG-08) : deux boucles précalculées, lues au pas du Doppler, fondu linéaire wail ↔ yelp
+        gSirene_ = suivreGainSirene(gSirene_, cS, finS, kSirene_, pasFinSirene_);
+        mixYelp_ += std::clamp(cY - mixYelp_, -pasYelp_, pasYelp_);
+        pasSirene_ += (cD - pasSirene_) * k_;
+        if (gSirene_ > 1e-4f) {
+            s += gSirene_ * ((1 - mixYelp_) * lireBoucle(boucleWail_, posWail_) + mixYelp_ * lireBoucle(boucleYelp_, posYelp_));
+            posWail_ = avancerBoucle(posWail_, pasSirene_, boucleWail_.size()); posYelp_ = avancerBoucle(posYelp_, pasSirene_, boucleYelp_.size());
+        }
         out[i] = std::clamp(out[i] + s * master * fade_, -1.f, 1.f);
     }
 }
@@ -137,10 +154,27 @@ void SfxEvenements::resync(const Course& c) {
 static std::atomic<uint32_t> g_interface{0};   // WFS-96 : sons demandés par les écrans (un bit par son)
 static_assert((int)SfxId::Count <= 32, "g_interface : un bit par son, 32 au plus (WFS-124)");
 void sfxInterface(SfxId id) { g_interface.fetch_or(1u << (int)id); }
-void SfxEvenements::update(double, const GameView& g, SfxMixer& m) {
+// WFS-131 (RG-07) : police la plus proche donnée par la poursuite. Thread du jeu seulement : à chaque pas, Game appelle
+// collide (la poursuite) puis update (SfxEvenements), qui lit puis efface l'appel
+static bool g_sireneAppel = false;
+static double g_sireneDistance = sirene::AUCUNE, g_sireneV = 0;
+void sfxSirene(double distanceM, double vRapprochementMs) { g_sireneAppel = true; g_sireneDistance = distanceM; g_sireneV = vRapprochementMs; }
+
+void SfxEvenements::update(double dt, const GameView& g, SfxMixer& m) {
     for (uint32_t d = g_interface.exchange(0); d; d &= d - 1) m.play((SfxId)__builtin_ctz(d));
     const Course* c = activeCourse();
     const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee;
+    {   // WFS-131 : sirène (RG-02 à RG-05) : en jeu → selon la police ; course finie → extinction ; sinon silence (RG-05)
+        const bool enJeu = enCourse && c && c->state == RaceState::Play && ecrans::reglages().son;
+        const bool fin = enCourse && c && c->state == RaceState::Over;
+        const CiblesSirene s = sirene_.update(dt, g_sireneAppel, g_sireneDistance, g_sireneV, enJeu, fin);
+        g_sireneAppel = false;
+        m.setSirene(s.gain, s.yelp, s.doppler, s.fin);
+        if (s.journal) {   // RG-09
+            if (s.distanceM < sirene::AUCUNE) WFS_LOG("sirene %s gain %.2f doppler %.2f police %.0f m", s.yelp ? "yelp" : "wail", s.gain, s.doppler, s.distanceM);
+            else WFS_LOG("sirene %s gain %.2f doppler %.2f police aucune", s.yelp ? "yelp" : "wail", s.gain, s.doppler);
+        }
+    }
     if (!c || !enCourse) {
         if (c) resync(*c);
         if (crisse_ || nitro_) m.setBoucles(0, 0);
@@ -163,7 +197,8 @@ void SfxEvenements::update(double, const GameView& g, SfxMixer& m) {
     if (c->nearCount > near_) m.play(SfxId::QuasiContact);
     if (c->bumps > bumps_) m.play(SfxId::Choc, (float)(0.4 + c->lastImpact));
     if (c->scrapes > scrapes_) m.play(SfxId::Frottement);
-    if (c->state == RaceState::Over && state_ != (int)RaceState::Over) m.play(SfxId::BipFin);
+    // WFS-131 (RG-06) : en Poursuite, le jingle « ARRÊTÉ » / « ÉCHAPPÉ » (demandé par la poursuite) remplace BipFin
+    if (c->state == RaceState::Over && state_ != (int)RaceState::Over && modeCourse() != ModeCourse::Poursuite) m.play(SfxId::BipFin);
     {   // WFS-124 : tic du chrono (RG-01 / RG-02), bip du combo (RG-03), combo perdu sur un choc (RG-04)
         const int aff = sfxcourse::chronoAffiche(c->timeLeft);
         if (sfxcourse::chronoActif(c->state == RaceState::Play, c->duelFinish, c->timeLeft, true)) {

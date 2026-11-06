@@ -11,6 +11,7 @@
 #include "../src/audio/sfx_course.h"  // WFS-124
 #include "../src/audio/trafic_sons.h"  // WFS-121
 #include "../src/audio/garage_son.h"  // WFS-127
+#include "../src/audio/sirene_son.h"  // WFS-131
 #include <cstring>
 #include "../src/game/player.h"
 using namespace wfs;
@@ -273,5 +274,86 @@ int main(int argc, char** argv) {
         cas("démarreur : 0,45 s, |x| ≤ 1", std::abs(d.size() / R - 0.45f) < 0.005f && pk <= 1);
         verifie("demarreur", d, false);
     }
-    return ok && okSfx && okEff && okTrafic && okCourse && okGarage ? 0 : 1;
+    // WFS-131 : sirène de la police (RG-01 à RG-06, RG-10)
+    bool okSirene = true;
+    {
+        using namespace sirene;
+        auto cas = [&](const char* quoi, bool c) { std::printf("sirène : %-62s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okSirene = okSirene && c; };
+        // RG-04 : Doppler
+        std::printf("sirène : Doppler 0 → %.4f, +30 m/s → %.4f, −30 m/s → %.4f, ±200 m/s → %.4f / %.4f\n",
+                    dopplerSirene(0), dopplerSirene(30), dopplerSirene(-30), dopplerSirene(200), dopplerSirene(-200));
+        cas("Doppler : 1 à l'arrêt, > 1 qui approche, < 1 qui s'éloigne", dopplerSirene(0) == 1 && dopplerSirene(30) > 1 && dopplerSirene(-30) < 1);
+        cas("Doppler : borné à 0,88 et 1,12 (±200 m/s, ≥ c, NaN → 1)",
+            std::abs(dopplerSirene(200) - 1.12f) < 1e-6f && std::abs(dopplerSirene(-200) - 0.88f) < 1e-6f && dopplerSirene(400) == dopplerSirene(200)
+            && dopplerSirene(NAN) == 1);
+        cas("Doppler : c / (c − v) entre les bornes (+30 m/s : 343 / 313)", std::abs(dopplerSirene(30) - 343.f / 313.f) < 1e-5f);
+        // RG-03 : volume selon la distance
+        std::printf("sirène : gain 10 m → %.3f, 82,5 m → %.3f, 150 m → %.3f, 200 m → %.3f\n", gainSirene(10), gainSirene(82.5), gainSirene(150), gainSirene(200));
+        cas("gain : 0,45 à 10 m, 0 à 200 m, ≈ 0,225 à 82,5 m (± 0,01)",
+            std::abs(gainSirene(10) - 0.45f) < 1e-6f && gainSirene(200) == 0 && std::abs(gainSirene(82.5) - 0.225f) <= 0.01f);
+        bool decroit = true; for (double d = 15; d < 150; d += 0.5) decroit = decroit && gainSirene(d + 0.5) <= gainSirene(d);
+        cas("gain : continu et décroissant de 15 à 150 m, 0 sans police (1e9, NaN)", decroit && gainSirene(AUCUNE) == 0 && gainSirene(NAN) == 0);
+        // RG-02 : hystérésis wail / yelp
+        cas("yelp à 19 m, wail à 26 m", yelpSirene(false, 19) && !yelpSirene(true, 26));
+        cas("22 m : yelp si on venait de 19 m, wail si on venait de 30 m", yelpSirene(yelpSirene(false, 19), 22) && !yelpSirene(yelpSirene(false, 30), 22));
+        // RG-01 / RG-02 : boucles
+        const float R = 48000;
+        for (const float cycle : {CYCLE_WAIL, CYCLE_YELP}) {
+            const std::vector<float> b = boucleSirene(R, cycle);
+            float pk = 0, sautMax = 0; for (size_t i = 1; i < b.size(); i++) { pk = std::max(pk, std::abs(b[i])); sautMax = std::max(sautMax, std::abs(b[i] - b[i - 1])); }
+            // raccord : le 1er échantillon prolonge la fin (extrapolation linéaire des 2 derniers), comme un échantillon ordinaire
+            const size_t n = b.size();
+            const float prolonge = 2 * b[n - 1] - b[n - 2], ecart = std::abs(b[0] - prolonge), saut = std::abs(b[0] - b[n - 1]);
+            std::printf("sirène : boucle %.2f s : %zu échantillons, crête %.2f, raccord : écart au prolongement %.4f, saut %.3f (saut max %.3f)\n",
+                        cycle, n, pk, ecart, saut, sautMax);
+            cas(cycle > 1 ? "boucle wail : 3,2 s, |x| ≤ 1, raccord sans saut (écart < 0,05)" : "boucle yelp : 0,30 s, |x| ≤ 1, raccord sans saut (écart < 0,05)",
+                std::abs(n / R - cycle) < 1e-3f && pk > 0.5f && pk <= 1 && ecart < 0.05f && saut <= sautMax * 1.01f);
+            // fréquence : passages par zéro montants sur 50 ms au début (≈ 650 Hz) et au milieu du cycle (≈ 1 450 Hz)
+            auto frequence = [&](size_t debut) {
+                const size_t m = (size_t)(0.05f * R) * (cycle > 1 ? 1 : 0) + (size_t)(0.004f * R) * (cycle > 1 ? 0 : 1);
+                int z = 0; for (size_t i = debut + 1; i < debut + m && i < n; i++) z += b[i - 1] < 0 && b[i] >= 0;
+                return z / (m / R);
+            };
+            if (cycle > 1) {
+                const float f0 = frequence(0), f1 = frequence(n / 2 - (size_t)(0.025f * R));
+                std::printf("sirène : wail : %.0f Hz au début, %.0f Hz à mi-cycle\n", f0, f1);
+                cas("wail : ≈ 650 Hz au début, ≈ 1 450 Hz à mi-cycle (± 5 %)", std::abs(f0 - 650) < 33 && std::abs(f1 - 1450) < 73);
+            }
+        }
+        // RG-06 : jingles
+        const std::vector<float> ja = jingleArrete(R), je = jingleEchappe(R);
+        verifie("poursuite-arrete", ja, false); verifie("poursuite-echappe", je, false);
+        cas("jingles : durées 0,50 s et 0,59 s (± 0,02)", std::abs(ja.size() / R - 0.50f) <= 0.02f && std::abs(je.size() / R - 0.59f) <= 0.02f);
+        // RG-05 : extinction en fin de course : de 0,45 à 0 (seuil de silence du mixeur) en 0,8 s au plus, sans saut
+        {
+            const float pasFin = pasFinSirene(R), k = 1 - std::exp(-1 / (LISSAGE_S / 3 * R));
+            float g = GAIN_PRES, pasMax = 0; int i = 0;
+            for (; g > 1e-4f && i < (int)(2 * R); i++) { const float avant = g; g = suivreGainSirene(g, 0, true, k, pasFin); pasMax = std::max(pasMax, avant - g); }
+            std::printf("sirène : extinction de fin : %.4f s (%d échantillons), plus grand pas %.7f\n", i / R, i, pasMax);
+            cas("fin de course : 0,45 → 0 en ≤ 0,8 s, linéaire (pas ≤ 0,45 / 0,8 s)", i <= (int)(FIN_S * R) + 1 && pasMax <= GAIN_PRES / (FIN_S * R) * 1.03f);
+            // RG-03 : lissage 0,3 s : 0 → 0,45 atteint 95 % en 0,3 s, aucun saut
+            g = 0; for (int j = 0; j < (int)(LISSAGE_S * R); j++) g = suivreGainSirene(g, GAIN_PRES, false, k, pasFin);
+            cas("montée lissée : 95 % du gain en 0,3 s", g >= 0.94f * GAIN_PRES && g <= GAIN_PRES);
+        }
+        // décisions par pas (RG-02, RG-03, RG-05, RG-09) : poursuite simulée à 120 pas par seconde
+        {
+            SireneSon s; const double dt = 1.0 / 120;
+            CiblesSirene c = s.update(dt, false, AUCUNE, 0, true, false);
+            cas("sans appel de la poursuite (autre mode, menus) : gain 0", c.gain == 0 && !c.fin);
+            c = s.update(dt, true, 82.5, 30, true, false);
+            cas("police à 82,5 m qui approche : gain 0,225, wail, Doppler > 1", std::abs(c.gain - 0.225f) < 0.01f && !c.yelp && c.doppler > 1);
+            c = s.update(dt, true, 82.5, 30, false, false);
+            cas("pas en jeu (décompte, son coupé) : gain 0", c.gain == 0);
+            c = s.update(dt, true, 19, 0, true, false); const bool y1 = c.yelp;
+            c = s.update(dt, true, 22, 0, true, false); const bool y2 = c.yelp;
+            c = s.update(dt, true, 26, 0, true, false);
+            cas("19 m → yelp, 22 m → yelp, 26 m → wail (pas après pas)", y1 && y2 && !c.yelp);
+            for (int i = 0; i < 130; i++) s.update(dt, true, 10, 0, true, false);   // plus d'une seconde : le gain est écrit au journal
+            c = s.update(dt, true, 10, -20, false, true);
+            cas("course finie : extinction (fin, gain visé 0), mode gardé, journal du retour à 0", c.fin && c.gain == 0 && c.yelp && c.journal);
+            int lignes = 0; for (int i = 0; i < 240; i++) lignes += s.update(dt, true, 150 - i * 0.5, 10, true, false).journal;
+            cas("journal : une ligne par seconde au plus (2 s → ≤ 3 lignes)", lignes >= 1 && lignes <= 3);
+        }
+    }
+    return ok && okSfx && okEff && okTrafic && okCourse && okGarage && okSirene ? 0 : 1;
 }
