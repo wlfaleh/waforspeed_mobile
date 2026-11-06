@@ -14,6 +14,8 @@
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
+#include "../petit_ecran.h"   // WFS-147 : téléphone couché (dp)
+#include "../../game/commandes_tactiles.h"   // WFS-146 : dessin2d::biseau (un seul polygone)
 #include "reglages.h"
 #include "../../platform/manette.h"   // WFS-22
 #include "../../audio/sfx.h"          // WFS-96 : son du changement de carte
@@ -46,19 +48,46 @@ int g_index = 0;          // carte choisie (MAPS)
 bool g_nuitChoisie = true; // TOD du web : nuit par défaut
 
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-    const int N = 16;
-    for (int i = 0; i < N; i++) {
-        const float t = (i + 0.5f) / N;
-        r.uiRect(x + biais * (1 - t), y + h * i / N, w - biais, h / N + 0.5f, c);
-    }
+    // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
+    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
-// chevron < ou > (path « M15 4 7 12l8 8 » du web) en petits carrés
+// chevron < ou > (path « M15 4 7 12l8 8 » du web) : WFS-147 (QA tour 1, B) : un trait lissé de s / 6 d'épaisseur
+// (3 dp pour la flèche de 18 dp), bouts ronds, au lieu de petits carrés en escalier ; couleur opaque (pas de
+// recouvrement visible aux jointures)
 void chevron(Renderer& r, float cx, float cy, float s, int dir, const vec4& c) {
-    const int N = 9;
-    for (int i = 0; i <= N; i++) {
-        const float t = (float)i / N, dy = (t - 0.5f) * s, dx = (std::fabs(t - 0.5f) - 0.25f) * s * dir;
-        r.uiRect(cx - dx - s * 0.06f, cy + dy - s * 0.06f, s * 0.13f, s * 0.13f, c);
+    const float a = 0.25f * s * dir, h = 0.5f * s;
+    const vec2 p[3] = {{cx - a, cy - h}, {cx + a, cy}, {cx - a, cy + h}};
+    dessin2d::trait(r, p, 3, s / 6, c);
+}
+
+// WFS-147 (ANO-42) : formes d'un seul tenant (plus de bandes), reprises de WFS-102 (1ddd3b6) : dégradé vertical,
+// polygone coupé à [x0, x1], ellipse
+void degradeV(Renderer& r, float x, float y, float w, float h, const vec4& a, const vec4& b) {
+    const UiVertex q[4] = {{x, y, -1, -1, a.x, a.y, a.z, a.w}, {x + w, y, -1, -1, a.x, a.y, a.z, a.w},
+                           {x + w, y + h, -1, -1, b.x, b.y, b.z, b.w}, {x, y + h, -1, -1, b.x, b.y, b.z, b.w}};
+    r.uiQuad(q);
+}
+// polygone convexe (sens horaire) coupé aux verticales x0 et x1 (Sutherland-Hodgman), teinte verticale
+void polygoneCoupe(Renderer& r, std::vector<vec2> p, float x0, float x1, const dessin2d::Teinte& t) {
+    for (int cote = 0; cote < 2; cote++) {
+        std::vector<vec2> o;
+        auto dedans = [&](const vec2& v) { return cote == 0 ? v.x >= x0 : v.x <= x1; };
+        const float xc = cote == 0 ? x0 : x1;
+        for (size_t i = 0; i < p.size(); i++) {
+            const vec2 a = p[i], b = p[(i + 1) % p.size()];
+            const bool da = dedans(a), db = dedans(b);
+            if (da) o.push_back(a);
+            if (da != db) { const float f = (xc - a.x) / (b.x - a.x); o.push_back({xc, a.y + (b.y - a.y) * f}); }
+        }
+        p = o;
+        if (p.size() < 3) return;
     }
+    dessin2d::polygone(r, p.data(), (int)std::min<size_t>(p.size(), 64), t);
+}
+void ellipse(Renderer& r, float cx, float cy, float rx, float ry, const vec4& c) {
+    vec2 p[32];
+    for (int i = 0; i < 32; i++) { const float a = 6.2831853f * i / 32; p[i] = {cx + rx * std::cos(a), cy + ry * std::sin(a)}; }
+    dessin2d::polygone(r, p, 32, dessin2d::uni(c));
 }
 
 // ---------------------------------------------------------------- vignette (mapArt du web, en rectangles et disques)
@@ -69,33 +98,35 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
     Mulberry32 R(m.seed * 7 + (nuit ? 3 : 1));
     auto rnd = [&]() { return (float)R.next(); };
     const float sx = W / 400.f, sy = H / 250.f, HZ = Y + 150 * sy;
+    const float sr = std::min(sx, sy);   // WFS-147 : rayon de la lune et du soleil (halo gardé dans la vignette élargie)
     auto px = [&](float v) { return X + v * sx; };
     auto py = [&](float v) { return Y + v * sy; };
-    // ciel : dégradé à 3 arrêts (0, 62 %, 100 %) en bandes
+    // ciel : dégradé à 3 arrêts (0, 62 %, 100 %, screens.js l. 209) en deux quadrilatères (WFS-147, ANO-42 : plus de bandes)
     unsigned ciel[3] = {nuit ? 0x05050Cu : 0x2F6CC0u, nuit ? 0x1A0F2Eu : 0x79B1E2u, nuit ? 0x43203Fu : 0xDCEBF5u};
     if (!nuit && idx == 0) ciel[2] = 0xE6E3DF;
     if (nuit && idx == 2) ciel[2] = 0x1D2640;
     if (nuit && idx == 1) ciel[2] = 0x3A2448;
-    const int NB = 30;
-    for (int i = 0; i < NB; i++) {
-        const float t = (i + 0.5f) / NB;
-        const vec4 col = t < 0.62f ? melange(hex(ciel[0]), hex(ciel[1]), t / 0.62f) : melange(hex(ciel[1]), hex(ciel[2]), (t - 0.62f) / 0.38f);
-        r.uiRect(X, Y + (HZ - Y) * i / NB, W, (HZ - Y) / NB + 0.5f, col);
-    }
+    const float y62 = Y + (HZ - Y) * 0.62f;
+    degradeV(r, X, Y, W, y62 - Y, hex(ciel[0]), hex(ciel[1]));
+    degradeV(r, X, y62, W, HZ - y62, hex(ciel[1]), hex(ciel[2]));
+    auto cielEn = [&](float yy) { const float t = (yy - Y) / (HZ - Y); return t < 0.62f ? melange(hex(ciel[0]), hex(ciel[1]), t / 0.62f) : melange(hex(ciel[1]), hex(ciel[2]), (t - 0.62f) / 0.38f); };
     // astres et nuages
     if (nuit) {
         if (idx != 0) for (int i = 0; i < 40; i++) { const float x = rnd() * 400, y = rnd() * 112; r.uiCircle(px(x), py(y), (0.5f + rnd()) * sx, hex(0xFFFFFF, 0.4f + rnd() * 0.6f)); }
         const float mx = idx == 1 ? 92 : 318;
-        for (int k = 3; k >= 1; k--) r.uiCircle(px(mx), py(46), 12 * k * sx, hex(0xFFF6D8, 0.10f));
-        r.uiCircle(px(mx), py(46), 13 * sx, hex(0xF4F1FF));
-        r.uiCircle(px(mx + 6), py(42), 11 * sx, hex(ciel[0], 0.35f));
+        for (int k = 3; k >= 1; k--) r.uiCircle(px(mx), py(46), 12 * k * sr, hex(0xFFF6D8, 0.10f));
+        r.uiCircle(px(mx), py(46), 13 * sr, hex(0xF4F1FF));
+        r.uiCircle(px(mx + 6), py(42), 11 * sr, hex(ciel[0], 0.35f));
     } else {
         const float sy0 = idx == 1 ? 108 : 52;
-        for (int k = 3; k >= 1; k--) r.uiCircle(px(300), py(sy0), 18 * k * sx, hex(0xFFF3C4, 0.13f));
-        r.uiCircle(px(300), py(sy0), 17 * sx, hex(0xFFF8E0));
-        for (int i = 0; i < 4; i++) {
+        for (int k = 3; k >= 1; k--) r.uiCircle(px(300), py(sy0), 18 * k * sr, hex(0xFFF3C4, 0.13f));
+        r.uiCircle(px(300), py(sy0), 17 * sr, hex(0xFFF8E0));
+        for (int i = 0; i < 4; i++) {   // WFS-147 (ANO-42) : nuage = 3 ellipses opaques (blanc × 0,85 + ciel × 0,15, <g opacity=".85">)
             const float cx = 40 + rnd() * 320, cy = 30 + rnd() * 46, w = 40 + rnd() * 50;
-            for (float d : {-0.25f, 0.f, 0.25f}) r.uiCircle(px(cx + d * w), py(cy - (d == 0 ? 6 : 2)), (d == 0 ? 11 : 9) * sx, hex(0xFFFFFF, 0.85f));
+            const vec4 cc = melange(hex(0xFFFFFF), cielEn(py(cy)), 0.15f);
+            ellipse(r, px(cx), py(cy), w / 2 * sx, 9 * sy, cc);
+            ellipse(r, px(cx - w * 0.12f), py(cy - 6), w / 4 * sx, 9 * sy, cc);
+            ellipse(r, px(cx + w * 0.16f), py(cy - 4), w / 5 * sx, 8 * sy, cc);
         }
     }
     // décor de fond
@@ -133,19 +164,20 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
             for (int i = 0; i < 5; i++) r.uiCircle(px(172 + i * 14), py(103.5f), 3 * sx, hex(nuit ? 0xFF1F4B : 0x5B1020));
         }
     }
-    // sol et route en perspective (trapèze en bandes)
+    // sol et route en perspective : un dégradé et un trapèze chacun (WFS-147, ANO-42 : plus de bandes) ; bords en trapèzes
     const vec4 sol = hex(nuit ? c.solNuit : c.solJour);
     if (idx != 1) r.uiRect(X, HZ, W, Y + H - HZ, sol);
     const float cx = idx == 1 ? 230 : 200, top = 6, bot = 190;
+    auto pt = [&](float x, float y) { return vec2{px(x), py(y)}; };
+    if (idx == 1)   // sable à droite de la route, à la plage
+        polygoneCoupe(r, {pt(cx - top - 10, 150), pt(400, 150), pt(400, 250), pt(cx - bot - 50, 250)}, X, X + W, dessin2d::uni(sol));
+    {
+        dessin2d::Teinte route{hex(nuit ? 0x1A1B24 : 0x5D6068), hex(nuit ? 0x0B0C12 : 0x3A3C42), py(150), py(250)};
+        polygoneCoupe(r, {pt(cx - top, 150), pt(cx + top, 150), pt(cx + bot, 250), pt(cx - bot, 250)}, X, X + W, route);
+    }
     const int NR = 40;
     for (int i = 0; i < NR; i++) {
         const float t = (i + 0.5f) / NR, y0 = 150 + 100.f * i / NR, demi = top + t * (bot - top);
-        if (idx == 1) {   // sable à droite de la route, à la plage
-            const float g0 = std::max(0.f, cx - demi - 40 * t - 10);
-            r.uiRect(px(g0), py(y0), (400 - g0) * sx, 100.f / NR * sy + 0.5f, sol);
-        }
-        const float x0 = std::max(0.f, cx - demi), x1 = std::min(400.f, cx + demi);
-        r.uiRect(px(x0), py(y0), (x1 - x0) * sx, 100.f / NR * sy + 0.5f, melange(hex(nuit ? 0x1A1B24 : 0x5D6068), hex(nuit ? 0x0B0C12 : 0x3A3C42), t));
         const float bord = (1.2f + 2 * t) * sx;
         if (idx == 3) {   // vibreurs rouge et blanc
             const vec4 v = ((int)(std::sqrt(t) * 9)) % 2 ? hex(0xF2F4F8) : hex(0xE2262B);
@@ -153,18 +185,20 @@ void vignette(Renderer& r, float X, float Y, float W, float H, int idx, bool nui
             const float g0 = std::max(X, px(cx - demi) - e), d1 = std::min(X + W, px(cx + demi) + e);   // vibreurs gardés dans la vignette
             if (px(cx - demi) > g0) r.uiRect(g0, py(y0), px(cx - demi) - g0, 100.f / NR * sy + 0.5f, v);
             if (d1 > px(cx + demi)) r.uiRect(px(cx + demi), py(y0), d1 - px(cx + demi), 100.f / NR * sy + 0.5f, v);
-        } else {
-            const vec4 v = hex(nuit ? 0xC9CDDA : 0xF2F4F8, 0.8f);
-            if (cx - demi >= 0) r.uiRect(px(cx - demi), py(y0), bord, 100.f / NR * sy + 0.5f, v);
-            if (cx + demi <= 400) r.uiRect(px(cx + demi) - bord, py(y0), bord, 100.f / NR * sy + 0.5f, v);
         }
         if (((int)(std::pow(t, 1 / 2.2f) * 12)) % 2 == 0)   // tirets des voies (± 1/3)
             for (float l : {-1 / 3.f, 1 / 3.f}) r.uiRect(px(cx + l * demi) - bord / 2, py(y0), bord, 100.f / NR * sy + 0.5f, hex(0xF2F4F8, nuit ? 0.6f : 0.85f));
     }
+    if (idx != 3) {   // lignes de bord : un trapèze fin de chaque côté
+        const vec4 v = hex(nuit ? 0xC9CDDA : 0xF2F4F8, 0.8f);
+        const float b0 = 1.2f, b1 = 3.2f;
+        polygoneCoupe(r, {pt(cx - top, 150), pt(cx - top + b0, 150), pt(cx - bot + b1, 250), pt(cx - bot, 250)}, X, X + W, dessin2d::uni(v));
+        polygoneCoupe(r, {pt(cx + top - b0, 150), pt(cx + top, 150), pt(cx + bot, 250), pt(cx + bot - b1, 250)}, X, X + W, dessin2d::uni(v));
+    }
     if (nuit) {   // feux d'une voiture au loin et reflet de l'accent sur la chaussée mouillée
         r.uiCircle(px(cx - 3), py(174), 14 * sx, hex(0xFF1F4B, 0.16f));
         r.uiCircle(px(cx - 9), py(172), 2 * sx, hex(0xFF1F4B)); r.uiCircle(px(cx + 3), py(172), 2 * sx, hex(0xFF1F4B));
-        for (int i = 0; i < 12; i++) { const float t = (i + 0.5f) / 12; r.uiRect(px(cx - 3 - 23 * t), py(158 + 92 * i / 12.f), (6 + 46 * t) * sx, 92 / 12.f * sy + 0.5f, hex(c.accent, 0.14f)); }
+        polygoneCoupe(r, {pt(cx - 3, 158), pt(cx + 3, 158), pt(cx + 29, 250), pt(cx - 26, 250)}, X, X + W, dessin2d::uni(hex(c.accent, 0.14f)));   // ANO-18 : reflet en un trapèze
     }
 }
 
@@ -191,7 +225,7 @@ public:
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Terrain) return false;
-        const float k = g.uiHeight / 720.f;
+        const float k = ui::petitEcran(g.uiWidth, g.uiHeight) ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f;   // WFS-147
         if (t.down) {
             if (doigt_ < 0) { doigt_ = t.id; x0_ = t.x; y0_ = t.y; }
             return true;
@@ -214,61 +248,93 @@ public:
     }
     void drawUi(Renderer& r, const GameView& g) override {
         if (g.ecran != Ecran::Terrain || g.sceneDediee || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
+        // WFS-147 (RG-01, RG-02, RG-06, ANO-19) : sur téléphone couché, mise en page propre au terrain, dessinée en dp
+        // (k = pixels par dp), d'après la mise en page petit écran de WFS-102 (6d3ed61) : en-tête et barre resserrés,
+        // informations de la carte rapprochées, textes ≥ 14 dp, libellés 12 dp, boutons de 48 dp
+        const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
+        const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
         const Marges& mg = g.marges;
-        const float zl = mg.gauche + 32 * k, zr = W - mg.droite - 32 * k, zw = zr - zl;
+        const float zl = mg.gauche + (cp ? 24 : 32) * k, zr = W - mg.droite - (cp ? 24 : 32) * k, zw = zr - zl;
         r.uiRect(0, 0, W, H, hex(BG, 0.94f));   // .screen--maps : fond nuit, la scène à peine visible derrière
         // ---------- .maps-head : sur-titre, titre, index « 01 / 04 » ----------
-        const float hy = mg.haut + 26 * k;
-        ui::text(r, zl, hy, 13 * k, ui::majuscules("Étape 3 sur 3 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
-        ui::text(r, zl, hy + 20 * k, 44 * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        const float hy = mg.haut + (cp ? 12 : 26) * k;
+        ui::text(r, zl, hy, (cp ? 12 : 13) * k, ui::majuscules("Étape 3 sur 3 · Terrain"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
+        ui::text(r, zl, hy + (cp ? 18 : 20) * k, (cp ? 28 : 44) * k, ui::majuscules("Choisis ton terrain"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         char idx[16]; std::snprintf(idx, sizeof idx, "%02d", g_index + 1);
         const std::string tot = " / 04";
-        ui::text(r, zr, hy + 30 * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
-        ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + 22 * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
+        ui::text(r, zr, hy + (cp ? 22 : 30) * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
+        ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + (cp ? 14 : 22) * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
         // ---------- vignette de la carte (mapCard) ----------
-        const float bas = H - mg.bas - 24 * k - 56 * k, haut = hy + 84 * k;
-        const float chMax = bas - 34 * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * 1.9f), ch = std::min(chMax, cw / 1.6f);
+        // WFS-168 (RG-01) : taille des boutons, des flèches et de Jour / Nuit d'avant WFS-147 (unité kb = H / 720, comme à
+        // 349f7d0) ; la mise en page (vignette, barre) reste celle de WFS-147 : les boutons se calent en bas de leur barre
+        const float kb = H / 720.f, bhPage = (cp ? 48 : 56) * k;
+        const float bh = 56 * kb, by = H - mg.bas - (cp ? 12 : 24) * k - bh;
+        const float bas = by + bh - bhPage, haut = hy + (cp ? 56 : 84) * k;
+        const float chMax = bas - (cp ? 18 : 34) * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * (cp ? 2.4f : 1.9f)), ch = std::min(chMax, cw / 1.6f);
+        // petit écran : vignette plus large que haute (2,4 : 1) pour que les quartiers tiennent sur une ligne
         const float cx0 = zl + (zw - cw) / 2, cy0 = haut;
         g_carte = {cx0, cy0, cw, ch};
         const Carte& c = CARTES[g_index];
         const MapDef& m = mapById(c.id);
-        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(c.accent));   // carte choisie : contour à l'accent de la carte
+        r.uiRect(cx0 - 2 * k, cy0 - 2 * k, cw + 4 * k, ch + 4 * k, hex(ACCENT2));   // WFS-146 (RG-07, ANO-41) : carte choisie, contour cyan (sélection) pour toutes les cartes
         vignette(r, cx0, cy0, cw, ch, g_index, g_nuitChoisie);
-        // .map-shade : dégradé sombre vers le bas, sous les textes
-        const int NS = 20;
-        for (int i = 0; i < NS; i++) { const float t = (i + 0.5f) / NS; r.uiRect(cx0, cy0 + ch * (0.45f + 0.55f * i / NS), cw, ch * 0.55f / NS + 0.5f, hex(BG, 0.85f * t)); }
-        // .map-sel « Choisi »
-        const std::string choisi = ui::majuscules("Choisi");
-        const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
-        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(c.accent, 0.92f));
-        ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
         // WFS-96 (RG-02) : quartiers (zoneNames du web) en pastilles (.map-zones), rangées en lignes dans la carte
         const std::vector<std::string> qs = quartiers(m);
-        const float pf = 12 * k, ph = 22 * k, pg = 6 * k, pmax = cw - 48 * k;
+        const float pf = (cp ? 13 : 12) * k, ph = (cp ? 24 : 22) * k, pg = 6 * k, pmax = cw - 48 * k;
         std::vector<float> pw; std::vector<int> pl; int nl = 1; float lx = 0;
         for (const std::string& q : qs) {
             const float w = ui::width(pf, q, 0.04f) + 20 * k;
             if (lx > 0 && lx + w > pmax) { nl++; lx = 0; }
             pw.push_back(w); pl.push_back(nl - 1); lx += w + pg;
         }
-        // .map-info : nom, description, longueur, quartiers
-        const float ix = cx0 + 24 * k, iy = cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
-        ui::text(r, ix, iy, 36 * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
-        ui::text(r, ix, iy + 46 * k, 15 * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
-        ui::text(r, ix, iy + 76 * k, 11 * k, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+        // .map-info : nom, description, longueur, quartiers (petit écran : nom 26 dp, description 14 dp, libellés 12 dp,
+        // lignes rapprochées ; dDesc, dFait, dPuce : décalage de chaque ligne sous le nom)
+        // petit écran (QA tour 1, A) : longueur et quartiers sur une seule ligne (libellé puis valeur), pour laisser
+        // l'illustration visible au-dessus du bloc de texte
+        const float dDesc = (cp ? 30 : 46) * k, dFait = (cp ? 52 : 76) * k, dPuce = (cp ? 80 : 124) * k, lf = (cp ? 12 : 11) * k;
+        const float ix = cx0 + 24 * k, iy = cp ? cy0 + ch - dPuce - (nl * (ph + pg) - pg) - 8 * k : cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
+        // .map-shade : linear-gradient(180deg, transparent 30 %, rgba(10,11,16,.6) 52 %, .97 68 %, #0A0B10) (style.css
+        // l. 519), en trois dégradés d'un seul tenant (WFS-147, ANO-18). Petit écran (QA tour 1, A) : l'ombre est calée
+        // sur le bloc de texte, pas sur la hauteur de la carte : transparente jusqu'à 32 dp au-dessus du nom, 0,6 en haut
+        // du nom, 0,97 en haut de la description, puis le fond ; bureau : arrêts du web (30 / 52 / 68 %)
+        float s0 = cy0 + ch * 0.30f, s1 = cy0 + ch * 0.52f, s2 = cy0 + ch * 0.68f;
+        if (cp) { s0 = std::max(cy0, iy - 32 * k); s1 = std::max(s0, iy); s2 = std::max(s1, iy + dDesc); }
+        degradeV(r, cx0, s0, cw, s1 - s0, hex(BG, 0), hex(BG, 0.6f));
+        degradeV(r, cx0, s1, cw, s2 - s1, hex(BG, 0.6f), hex(BG, 0.97f));
+        degradeV(r, cx0, s2, cw, cy0 + ch - s2, hex(BG, 0.97f), hex(BG, 1));
+        // .map-sel « Choisi »
+        const std::string choisi = ui::majuscules("Choisi");
+        const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
+        r.uiRect(cx0 + 16 * k, cy0 + 16 * k, sw, 28 * k, hex(ACCENT2, 0.92f));   // WFS-146 (RG-07) : badge « Choisi » cyan
+        ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
+        ui::text(r, ix, iy, (cp ? 26 : 36) * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
+        ui::text(r, ix, iy + dDesc, (cp ? 14 : 15) * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
         std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
         if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
-        ui::text(r, ix, iy + 92 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
-        r.uiRect(ix - 10 * k, iy + 76 * k, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
-        const float qx = ix + std::max(ui::width(11 * k, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
-        r.uiRect(qx - 10 * k, iy + 76 * k, 2 * k, 38 * k, hex(c.accent));
-        ui::text(r, qx, iy + 76 * k, 11 * k, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        ui::text(r, qx, iy + 92 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
+        if (cp) {   // .fact sur une ligne : bordure à l'accent, libellé 12 dp, valeur 20 dp sur la même ligne de base
+            const float fy = iy + dFait, vh = 20 * k, ly = fy + vh - lf - 2 * k;
+            float fx = ix;
+            for (int f = 0; f < 2; f++) {
+                const std::string lib = ui::majuscules(f == 0 ? "Longueur" : "Quartiers"), val = f == 0 ? km + " km" : std::to_string(qs.size());
+                r.uiRect(fx - 10 * k, fy - 1 * k, 2 * k, vh + 4 * k, hex(c.accent));
+                ui::text(r, fx, ly, lf, lib, hex(MUTED), ui::GAUCHE, 0.16f, false);
+                const float vx = fx + ui::width(lf, lib, 0.16f) + 10 * k;
+                ui::text(r, vx, fy, vh, val, hex(TEXTE), ui::GAUCHE, 0, true, true);
+                fx = vx + ui::width(vh, val) + 34 * k;
+            }
+        } else {
+            ui::text(r, ix, iy + dFait, lf, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, ix, iy + dFait + 16 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
+            r.uiRect(ix - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
+            const float qx = ix + std::max(ui::width(lf, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
+            r.uiRect(qx - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));
+            ui::text(r, qx, iy + dFait, lf, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, qx, iy + dFait + 16 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
+        }
         lx = 0;
         for (size_t i = 0; i < qs.size(); i++) {
             if (i > 0 && pl[i] != pl[i - 1]) lx = 0;
-            const float px0 = ix + lx, py0 = iy + 124 * k + pl[i] * (ph + pg);
+            const float px0 = ix + lx, py0 = iy + dPuce + pl[i] * (ph + pg);
             const float sk = 4 * k, cr = 30 / 255.f, cg = 33 / 255.f, cb = 48 / 255.f, ca = 0.75f;   // skewX(-10deg)
             const UiVertex q[4] = {{px0 + sk, py0, -1, -1, cr, cg, cb, ca}, {px0 + pw[i], py0, -1, -1, cr, cg, cb, ca},
                                    {px0 + pw[i] - sk, py0 + ph, -1, -1, cr, cg, cb, ca}, {px0, py0 + ph, -1, -1, cr, cg, cb, ca}};
@@ -277,17 +343,18 @@ public:
             lx += pw[i] + pg;
         }
         // ---------- flèches (.map-arrow), grisées aux extrémités ----------
-        const float ar = 26 * k, ay = cy0 + ch / 2;
+        const float ar = 26 * kb, ay = cy0 + ch / 2;   // WFS-168 : flèche d'avant WFS-147
         const float ax[2] = {cx0 - 18 * k - ar, cx0 + cw + 18 * k + ar};
         for (int s = 0; s < 2; s++) {
             const bool actif = s == 0 ? g_index > 0 : g_index < 3;
-            (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * k, ay - ar - 10 * k, 2 * ar + 20 * k, 2 * ar + 20 * k} : Zone{};
-            r.uiCircle(ax[s], ay, ar + k, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
+            (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * kb, ay - ar - 10 * kb, 2 * ar + 20 * kb, 2 * ar + 20 * kb} : Zone{};
+            r.uiCircle(ax[s], ay, ar + kb, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
             r.uiCircle(ax[s], ay, ar, hex(SURFACE2, actif ? 0.95f : 0.5f));
-            chevron(r, ax[s] + (s == 0 ? -2 : 2) * k, ay, 18 * k, s == 0 ? -1 : 1, hex(TEXTE, actif ? 1.f : 0.3f));
+            // grisé : couleur opaque équivalente (texte à 30 % sur le disque à 50 % sur le fond)
+            chevron(r, ax[s] + (s == 0 ? -2 : 2) * kb, ay, 18 * kb, s == 0 ? -1 : 1, actif ? hex(TEXTE) : melange(melange(hex(BG), hex(SURFACE2), 0.5f), hex(TEXTE), 0.3f));
         }
         // ---------- points (.map-dots) ----------
-        const float dy = cy0 + ch + 16 * k;
+        const float dy = cy0 + ch + (cp ? 7 : 16) * k;
         float dxp = zl + zw / 2 - (3 * 14 * k + 28 * k) / 2;
         for (int i = 0; i < 4; i++) {
             const float w = i == g_index ? 28 * k : 8 * k;
@@ -295,31 +362,31 @@ public:
             dxp += w + 6 * k;
         }
         // ---------- .maps-bar : Jour / Nuit (.tod-btn), Retour, Rouler ----------
-        const float by = H - mg.bas - 24 * k - 56 * k, bh = 56 * k, tw = 132 * k;
+        const float tw = 132 * kb;   // WFS-168 : largeur d'avant WFS-147
         for (int s = 0; s < 2; s++) {
             const bool nuit = s == 1, on = nuit == g_nuitChoisie;
             const float x = zl + s * (tw + 6 * k);
             (nuit ? g_nuit : g_jour) = {x, by, tw, bh};
             r.uiRect(x, by, tw, bh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2));
-            if (on) r.uiRect(x, by + bh - 3 * k, tw, 3 * k, hex(ACCENT2));
-            const float icx = x + 30 * k, icy = by + bh / 2;   // icône soleil / lune
-            if (!nuit) { r.uiCircle(icx, icy, 7 * k, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * k, icy + std::sin(a * 0.785f) * 12 * k, 1.6f * k, on ? hex(ACCENT2) : hex(TEXTE)); }
-            else { r.uiCircle(icx, icy, 9 * k, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * k, icy - 4 * k, 8 * k, on ? hex(0x0A2A33) : hex(SURFACE2)); }
-            ui::text(r, x + 52 * k, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
+            if (on) r.uiRect(x, by + bh - 3 * kb, tw, 3 * kb, hex(ACCENT2));
+            const float icx = x + 30 * kb, icy = by + bh / 2;   // icône soleil / lune (taille du bouton d'avant WFS-147)
+            if (!nuit) { r.uiCircle(icx, icy, 7 * kb, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, on ? hex(ACCENT2) : hex(TEXTE)); }
+            else { r.uiCircle(icx, icy, 9 * kb, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, on ? hex(0x0A2A33) : hex(SURFACE2)); }
+            ui::text(r, x + 52 * kb, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
         }
         const float tp = 20 * k;
         const std::string rt = ui::majuscules("Rouler"), bt = ui::majuscules("Retour");
-        const float rw = ui::width(tp, rt, 0.12f) + 56 * k + 26 * k, bw = ui::width(tp, bt, 0.12f) + 52 * k;
+        const float rw = ui::width(tp, rt, 0.12f) + 56 * kb + 26 * kb, bw = ui::width(tp, bt, 0.12f) + 52 * kb;
         const float rx = zr - rw, bx = rx - 10 * k - bw;
         g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
         for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
-        biseau(r, bx, by, bw, bh, 14 * k, hex(SURFACE2));   // .btn--ghost
+        biseau(r, bx, by, bw, bh, 14 * kb, hex(SURFACE2));   // .btn--ghost
         ui::text(r, bx + bw / 2, by + (bh - tp) / 2, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
-        biseau(r, rx, by, rw, bh, 14 * k, hex(ACCENT));     // .btn--go avec la flèche
-        ui::text(r, rx + 28 * k, by + (bh - tp) / 2, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
-        const float fx = rx + rw - 40 * k, fy = by + bh / 2;
-        r.uiRect(fx, fy - 1.5f * k, 16 * k, 3 * k, hex(BG));
-        chevron(r, fx + 13 * k, fy, 14 * k, 1, hex(BG));
+        biseau(r, rx, by, rw, bh, 14 * kb, hex(ACCENT));     // .btn--go avec la flèche
+        ui::text(r, rx + 28 * kb, by + (bh - tp) / 2, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
+        const float fx = rx + rw - 40 * kb, fy = by + bh / 2;
+        r.uiRect(fx, fy - 1.5f * kb, 16 * kb, 3 * kb, hex(BG));
+        chevron(r, fx + 13 * kb, fy, 14 * kb, 1, hex(BG));
     }
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include "player.h"
+#include "trace_cartes.h"   // WFS-136 (accroche A6) : version du tracé dans la présence
 
 namespace wfs::duel {
 
@@ -158,12 +159,13 @@ bool Session::join(std::unique_ptr<Transport> t, std::string_view code, bool hos
     nick_ = cleanName(nick); if (nick_.empty()) nick_ = "Pilote";
     car_ = car ? car : "golf"; paint_ = paint ? paint : ""; map_ = map;
     t_->presence({{"n", nick_}, {"st", "lobby"}, {"r", "0"}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"car", car_}, {"paint", paint_},
-                  {"host", host ? "1" : "0"}, {"map", host ? map_ : ""}, {"km", host ? std::to_string(km_) : ""}});
+                  {"host", host ? "1" : "0"}, {"map", host ? map_ : ""}, {"km", host ? std::to_string(km_) : ""},
+                  {"trace", trace::signature()}});   // WFS-136 (RG-07, A7.5) : cartes au tracé 2
     return true;
 }
 void Session::leave() {
     if (t_) t_->leave();
-    t_.reset(); code_.clear(); st_ = Status::Lobby; ghosts_.clear();
+    t_.reset(); code_.clear(); st_ = Status::Lobby; ghosts_.clear(); partants_.clear();
 }
 void Session::setKm(int km) {
     if (st_ == Status::Race || (t_ && !host_)) return;
@@ -195,6 +197,8 @@ bool Session::checkStart() {
     if (st_ != Status::Ready) return false;
     const auto os = others();
     if (os.empty()) return false;
+    // WFS-136 (RG-07) : adversaire sur un autre tracé (ou ancienne version sans champ « trace ») : pas de course
+    for (const PeerView& p : os) if (str(p.f, "trace") != trace::signature()) return false;
     int mx = round_;
     for (const PeerView& p : os) if (str(p.f, "st") == "ready") mx = std::max(mx, (int)clampd(num(p.f, "r"), 0, 1e6));
     if (mx > round_) { round_ = mx; t_->presence({{"r", std::to_string(round_)}}); }
@@ -208,6 +212,8 @@ bool Session::checkStart() {
 // startDuelRace : manche suivante, graine commune, horloge commune (départ = maintenant, compte à rebours de 3 s)
 void Session::startRace() {
     round_ += 1; st_ = Status::Race; myFinish_ = 0; presenceTimer_ = 0; ghosts_.clear();
+    partants_.clear();   // WFS-122 (RG-02) : qui prend le départ (un partant qui quitte en course reste au classement : « parti »)
+    for (const PeerView& p : others()) partants_[p.id] = {peerName(p.f), 0};
     startMs_ = t_->nowMs();
     t_->presence({{"st", "race"}, {"r", std::to_string(round_)}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"ft", ""}, {"car", car_}, {"paint", paint_}});
 }
@@ -254,6 +260,7 @@ void Session::updateGhosts(double dt) {
         g.paint = cleanName(str(p.f, "paint"));
         g.done = st == "done"; g.ft = clampd(num(p.f, "ft", 0), 0, 9e9);
         next[p.id] = g;
+        if (auto pt = partants_.find(p.id); pt != partants_.end()) pt->second.d = g.done ? fin : g.rd;   // dernière distance vue
     }
     ghosts_.swap(next);
 }
@@ -330,17 +337,27 @@ int Session::position(double myDist) const {
 // renderDuelResult : arrivés d'abord (par temps), puis ceux qui roulent (par distance)
 std::vector<BoardRow> Session::results() const {
     std::vector<BoardRow> rows{{nick_ + " (toi)", finish(), true, true, myFinish_ * 1000}};
+    std::map<std::string, bool> vus;
     for (const PeerView& p : others()) {
         const std::string st = str(p.f, "st");
         if ((int)num(p.f, "r", -1) != round_) continue;
+        vus[p.id] = true;
         if (st == "race") rows.push_back({peerName(p.f), clampd(num(p.f, "d"), 0, finish()), false, false, 0});
         else rows.push_back({peerName(p.f), finish(), false, true, clampd(num(p.f, "ft", 9e9), 0, 9e9)});
     }
+    // WFS-122 (RG-02) : partant qui a quitté le salon pendant la manche : « parti », à sa dernière distance vue
+    for (const auto& [id, pt] : partants_) if (!vus.count(id)) rows.push_back({pt.name, pt.d, false, false, 0, true});
     std::stable_sort(rows.begin(), rows.end(), [](const BoardRow& a, const BoardRow& b) {
         if (a.done != b.done) return a.done;
+        if (a.parti != b.parti) return b.parti;   // ceux qui roulent avant ceux qui sont partis
         return a.done ? a.ft < b.ft : a.d > b.d;
     });
     return rows;
+}
+std::vector<std::string> Session::adversaires() const {
+    std::vector<std::string> n;
+    for (const auto& [id, pt] : partants_) n.push_back(pt.name);
+    return n;
 }
 
 } // namespace wfs::duel

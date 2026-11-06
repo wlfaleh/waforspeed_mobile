@@ -36,7 +36,7 @@ static const char* SAMPLES[] = {"audio/sport.wav", "audio/v8.wav", "audio/citadi
 constexpr int SAMPLE_COUNT = sizeof(SAMPLES) / sizeof(SAMPLES[0]);
 constexpr int OUT_RATE = 48000;
 
-struct BenchRec { bool on = false; std::vector<float> pcm; std::vector<EngineFrame> frames; double acc = 0, t = 0; };
+struct BenchRec { bool on = false; std::vector<float> pcm; std::vector<EngineFrame> frames; double acc = 0, t = 0; double e2Moteur = 0, e2Sfx = 0; };   // WFS-174 : énergies moteur / bruitages
 static BenchRec g_rec;
 
 class AudioSystem : public System {
@@ -113,6 +113,7 @@ public:
             const size_t at = g_rec.pcm.size(); g_rec.pcm.resize(at + (size_t)n);
             for (auto& x : synths_) x->targets.lastUpdate = 1e9;   // hors ligne : pas de « pause » détectée
             renderInto(g_rec.pcm.data() + at, n, 0);
+            for (int k = 0; k < n; k++) g_rec.e2Moteur += (double)g_rec.pcm[at + k] * g_rec.pcm[at + k];   // WFS-174 (RG-08) : moteur seul
             sfx_.lastUpdate = 1e9; sfx_.mix(g_rec.pcm.data() + at, n, 1e9);   // WFS-120 (RG-07) : bruitages dans moteur.wav
             g_rec.frames.push_back({(float)g_rec.t, model_.rpm, model_.gear, model_.load, (float)pl.kmh(), throttle});
         }
@@ -247,6 +248,35 @@ static void writeCurve(const std::string& path, const std::vector<float>& pcm, c
     stbi_write_png(path.c_str(), W, H, 3, img.data(), W * 3);
 }
 
+// WFS-131 (RG-09) : sirene.wav, 6 s écoutées par le QA : une police arrive de 150 m (2 s), colle 2 s à 10 m (yelp), double
+// le joueur et s'éloigne (Doppler : plus aiguë en approchant, plus grave après) ; mixeur à part, mêmes décisions que la partie
+static void benchSirene(const std::string& out) {
+    SfxMixer m; m.build((float)OUT_RATE); m.lastUpdate = 1e9;   // hors ligne : pas de « pause » détectée
+    SireneSon dec; std::vector<float> pcm; double acc = 0;
+    constexpr double DT = 1.0 / 120, DX = 3.5;   // pas du jeu ; la police roule dans la file voisine (m)
+    int seconde = -1;
+    for (int i = 0; i < 6 * 120; i++) {
+        const double t = i * DT;
+        double dz, v;   // écart police − joueur le long de la route (m, < 0 : derrière) ; vitesse de rapprochement (m/s)
+        if (t < 2) { dz = -150 + 70 * t; v = 70; }                 // arrive de 150 m à 10 m
+        else if (t < 4) { dz = -10; v = 0; }                         // colle à 10 m
+        else { dz = -10 + 35 * (t - 4); v = dz < 0 ? 35 : -35; }     // double à 35 m/s, puis s'éloigne
+        const CiblesSirene c = dec.update(DT, true, std::hypot(dz, DX), v, true, false);
+        m.setSirene(c.gain, c.yelp, c.doppler, c.fin);
+        if ((int)t != seconde) {
+            seconde = (int)t;
+            WFS_LOG("son (WFS-131) : sirene.wav t=%ds : %s gain %.2f doppler %.2f police %.0f m", seconde, c.yelp ? "yelp" : "wail", c.gain, c.doppler, c.distanceM);
+        }
+        acc += DT * OUT_RATE; const int n = (int)acc; acc -= n;
+        const size_t at = pcm.size(); pcm.resize(at + (size_t)n, 0.f);
+        m.mix(pcm.data() + at, n, 1e9);
+    }
+    writeWav(out + "/sirene.wav", pcm, OUT_RATE);
+    float crete = 0, saut = 0;
+    for (size_t i = 1; i < pcm.size(); i++) { crete = std::max(crete, std::abs(pcm[i])); saut = std::max(saut, std::abs(pcm[i] - pcm[i - 1])); }
+    WFS_LOG("son (WFS-131) : sirene.wav : %.1f s, crête %.2f, plus grand saut %.3f", pcm.size() / (double)OUT_RATE, crete, saut);
+}
+
 void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     // scénario : ralenti 2 s, plein gaz 14 s (passages de rapports), lever de pied 4 s, freinage 3 s, gaz 5 s
     g.setAutopilot(false);
@@ -288,6 +318,12 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
         WFS_LOG("son t=%2ds : %3.0f km/h, rapport %d, régime %.2f, charge %.2f, pédale %s", lastS, f.kmh, f.gear, f.rpm, f.load, f.throttle ? "oui" : "non");
     }
     WFS_LOG("son : %.1f s enregistrées (%zu échantillons), crête %.2f, plus grand saut %.3f", g_rec.pcm.size() / (double)OUT_RATE, g_rec.pcm.size(), peak, jump);
+    {   // WFS-174 (RG-08) : le moteur reste au-dessus des bruitages (sons de la route compris) ; énergie des bruitages = total − moteur
+        double e2Total = 0; for (float x : g_rec.pcm) e2Total += (double)x * x;
+        const double nEch = std::max<double>(1, (double)g_rec.pcm.size());
+        const double rmsM = std::sqrt(g_rec.e2Moteur / nEch), rmsS = std::sqrt(std::max(0.0, e2Total - g_rec.e2Moteur) / nEch);
+        WFS_LOG("son : RMS moteur %.3f, RMS bruitages (route comprise) %.3f → moteur %s", rmsM, rmsS, rmsM >= rmsS ? "au-dessus" : "EN DESSOUS");
+    }
     {   // WFS-121 (critère « coller ») : le joueur se place 8 m derrière la voiture la plus entourée, à sa vitesse, et la
         // suit 3 s dans sa file en dosant l'accélérateur (écart pare-chocs à pare-chocs gardé vers 3 m) → « SFX klaxon »
         trafficBenchPlace(8, 0, 0, false);
@@ -311,6 +347,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     }
     g.shutdown();
     benchMusique(out);   // WFS-76 : musique-menu / musique-course / ambiance-<carte> (.wav + .png)
+    benchSirene(out);    // WFS-131 : sirene.wav
 }
 
 } // namespace wfs

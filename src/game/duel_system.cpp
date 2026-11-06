@@ -11,8 +11,10 @@
 #include "../ui/text.h"
 #include "course_system.h"
 #include "course5.h"   // WFS-112 : ouvrirChoixMode (« Retour » de la fin du duel)
+#include "commandes_tactiles.h"   // WFS-146 (accroche, ANO-35) : dessin2d::biseau des boutons du résultat
 #include "game.h"
 #include "player.h"
+#include "sauvegarde.h"   // WFS-122 (RG-01) : derniers adversaires
 #include "traffic_system.h"
 
 namespace wfs {
@@ -78,6 +80,8 @@ public:
             trafficRestartSeed(s.seed(), pl.position);
             if (c) { c->reset(); c->duelFinish = s.finish(); }
             overT_ = 0;
+            // WFS-122 (RG-01) : adversaires de la manche en tête des « Derniers adversaires » du salon
+            sauvegarde().noterAdversaires(s.adversaires()); sauvegarde().enregistrer();
             WFS_LOG("duel : manche %d, salon %s, graine %u, %d km", s.round(), s.code().c_str(), s.seed(), s.km());
             return;
         }
@@ -212,22 +216,24 @@ private:
     void resultat(Renderer& r, float W, float H, float u) {
         const duel::Session& s = g_session;
         const auto rows = s.results();
-        int rank = 1; bool roule = false;
-        for (size_t i = 0; i < rows.size(); i++) { if (rows[i].me) rank = (int)i + 1; if (!rows[i].done) roule = true; }
+        int rank = 1; bool roule = false; size_t presents = 0;   // WFS-122 : les adversaires partis ne roulent plus
+        for (size_t i = 0; i < rows.size(); i++) { if (rows[i].me) rank = (int)i + 1; if (!rows[i].done && !rows[i].parti) roule = true; if (!rows[i].parti) presents++; }
         r.uiRect(0, 0, W, H, FOND);
         const float pw = 64 * u, ph = (34 + 6.5f * rows.size()) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
-        const std::string sur = rows.size() == 1 ? "TON ADVERSAIRE A QUITTÉ LE DUEL" : roule ? "ARRIVÉ · TON ADVERSAIRE ROULE ENCORE" : "DUEL TERMINÉ";
+        const std::string sur = presents == 1 ? (rows.size() > 2 ? "TES ADVERSAIRES ONT QUITTÉ LE DUEL" : "TON ADVERSAIRE A QUITTÉ LE DUEL")
+                              : roule ? (presents > 2 ? "ARRIVÉ · LA COURSE CONTINUE" : "ARRIVÉ · TON ADVERSAIRE ROULE ENCORE") : "DUEL TERMINÉ";
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
-        const std::string titre = rows.size() == 1 ? "Arrivé" : rank == 1 ? "Victoire" : std::to_string(rank) + "e place";
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::majuscules(titre), rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
+        const std::string titre = presents == 1 ? "ARRIVÉ" : rank == 1 ? "VICTOIRE" : std::to_string(rank) + "e PLACE";   // WFS-146 (RG-06) : « 2e PLACE », jamais « 2E »
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, titre, rank == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(s.myFinish()), TEXTE, ui::CENTRE, 0.f, false, true);
         float y = py0 + 24 * u;
         const double lead = rows[0].done ? rows[0].ft : -1;
         for (size_t i = 0; i < rows.size(); i++) {
             const auto& row = rows[i];
             std::string tm;
-            if (!row.done) tm = ui::decimal(row.d * 0.006 / 1000, 2) + " km";
+            if (row.parti) tm = "Parti";   // WFS-122 (RG-02) : a quitté le salon pendant la manche
+            else if (!row.done) tm = ui::decimal(row.d * 0.006 / 1000, 2) + " km";
             else if (row.ft >= 9e9) tm = "Arrivé";
             else if (i == 0 || lead < 0) tm = ui::chrono(row.ft / 1000);
             else tm = "+" + ui::decimal((row.ft - lead) / 1000, 1) + " s";
@@ -242,9 +248,9 @@ private:
         g_zones[0] = bx; g_zones[1] = by; g_zones[2] = bw; g_zones[3] = bh;
         g_zonesMenu[0] = bx + bw + gap; g_zonesMenu[1] = by; g_zonesMenu[2] = bw; g_zonesMenu[3] = bh;
         const bool attend = s.status() == duel::Status::Ready;
-        r.uiRect(revanche_.x, revanche_.y, bw, bh, ui::ORANGE);
+        dessin2d::biseau(r, revanche_.x, revanche_.y, bw, bh, 14 * H / 720, dessin2d::uni(ui::ORANGE));   // WFS-146 (RG-06) : biseau 14 px de la fin solo
         ui::text(r, revanche_.x + bw / 2, by + 1.9f * u, 3.4f * u, attend ? "PRÊT…" : "REVANCHE", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        r.uiRect(menu_.x, menu_.y, bw, bh, vec4{1, 1, 1, 0.10f});
+        dessin2d::biseau(r, menu_.x, menu_.y, bw, bh, 14 * H / 720, dessin2d::uni({30 / 255.f, 33 / 255.f, 48 / 255.f, 1}));   // .btn--ghost (#1E2130), comme la fin solo
         ui::text(r, menu_.x + bw / 2, by + 1.9f * u, 3.4f * u, "RETOUR", TEXTE, ui::CENTRE, 0.08f, false);
     }
 

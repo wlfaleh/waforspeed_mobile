@@ -39,7 +39,7 @@ jobs:
       matrix:
         # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
         # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
-        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit]
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, realisme]   # WFS-148 : banc de référence du réalisme
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -54,8 +54,10 @@ jobs:
         run: |
           mkdir -p captures
           case "${{ matrix.groupe }}" in
-            partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09
-              WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/ ;;
+            partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit|realisme)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09 ; realisme : WFS-148
+              WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/
+              # WFS-136 (accroche) : tracé 2 forcé sur les 4 cartes (rond-point, feu rouge, épingle, autoroute) ; un écart = rouge
+              if [ "${{ matrix.groupe }}" = vitrines ]; then mkdir -p trace && WFS_BANC=trace ./build/wfs_bench trace assets/ && cp trace/trace-*.png captures/; fi ;;
             texte)
               # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
               mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
@@ -70,6 +72,7 @@ jobs:
               mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
               for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
+              for f in hud/minicarte-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-173 : minicarte-checkpoint-2400, minicarte-ligne-2400
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
             menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
               mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
@@ -78,7 +81,7 @@ jobs:
               mkdir -p parcours && WFS_BANC=parcours ./build/wfs_bench parcours assets/ && cp parcours/parcours-fin.png parcours/parcours-retour-menu.png captures/ ;;
             menu2-2400)   # WFS-106 : 2e moitié du groupe menu en 2400x1080 (réglages, salon du duel)
               mkdir -p menu && WFS_BANC=menu2 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/
-              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83
+              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png menu/duel-resultat-4.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83 ; WFS-122 (accroche) : duel-resultat-4
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4

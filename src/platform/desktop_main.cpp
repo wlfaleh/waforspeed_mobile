@@ -34,6 +34,7 @@ namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out);
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
 #include "../render/bench_nuit.h"
+#include "../render/bench_realisme.h"   // WFS-148 : banc de référence du réalisme
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -169,9 +170,11 @@ int main(int argc, char** argv) {
             WFS_LOG("capture vitrine-%s-0%s%s", id, garage ? ", garage" : "", course ? ", course" : "");
             g.shutdown();
         }
+        benchVitrinesFeux(g, r, out);   // WFS-170 (RG-08) : vitrine-<id>-feux des 20 voitures, feux stop allumés
         benchPlancheVoitures(g, r, out); if (benchRecords(g, r, out) > 0) { finir(); return 3; }   // WFS-77 : les 20 voitures en Turquoise, roues et peinture au journal ; WFS-125 : records (job vitrines de la CI)
         return finir();
     }
+    if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
     if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); benchRoute(g, r, out); return finir(); }   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
@@ -182,6 +185,7 @@ int main(int argc, char** argv) {
         WFS_LOG("parcours complet : %d écart(s)%s", e, e ? " ÉCHEC" : " OK");
         finir(); return e > 0 ? 3 : 0;
     }
+    if (banc == "trace") { ui::chargerPolice(r); const int e = trace::benchTrace(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-136 (accroche) : tracé 2
     if (banc == "chauffe") { ui::chargerPolice(r); const int e = chauffe::benchChauffe(g, r, out, statutChauffeSimule); finir(); return e > 0 ? 3 : 0; }   // WFS-123
     if (banc == "records") { ui::chargerPolice(r); const int e = benchRecords(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-125 : records par mode, fantôme (aussi à la fin du groupe vitrines)
     if (banc == "course5") { ui::chargerPolice(r); benchCourse5(g, r, out); benchPoursuite(g, r, out); if (benchCourse5Rejouer(g, r, out) > 0) { finir(); return 3; } return finir(); }   // WFS-119 : ANO-53   // WFS-110 : modes, course à 5 ; WFS-111 : poursuite
@@ -196,6 +200,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "manette") { manette::benchManette(g, r, out); return finir(); }   // WFS-22 : manettes (job texte)
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
+    if (banc == "realisme") { const int e = benchRealisme(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-148 : 12 vues, étalonnage, rapports
     const bool menu1 = banc == "menu" || banc == "menu1", menu2 = banc == "menu" || banc == "menu2";   // WFS-106 : 2400x1080 en deux jobs
     if (menu1) { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
         ecrans::benchTerrain(g, r, out); }

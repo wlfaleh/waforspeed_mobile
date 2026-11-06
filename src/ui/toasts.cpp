@@ -60,11 +60,11 @@ public:
         if (g_pile.empty()) return;
         // mêmes conditions que le HUD (WFS-27) : en course seulement
         if (!c || !g.player || g.ecran != Ecran::Course || g.sceneDediee || c->state == RaceState::Over || !ui::fontReady()) return;
-        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f, u = H / 100.f;
+        const float W = g.uiWidth, H = g.uiHeight, k = H / 720.f;
         // RG-05 : pile à droite, sous le score (top = gouttière + 110 px) ; bord droit à gauche du bouton Nitro
         // (cercle de 6,5 % de H en (0,90 W − marge droite ; 0,32 H), Game::drawControls) pour ne jamais le recouvrir
-        const float xr = W * 0.90f - g.marges.droite - 6.5f * u - 12 * k;
-        float y = 14 * k + g.marges.haut + 110 * k;
+        const float xr = bandeauxBordDroit(W, H, g.marges);   // WFS-173 : même formule, partagée avec la mini-carte
+        float y = bandeauxHaut(H, g.marges);
         const float tp = 18 * k, vp = 14 * k, padL = 14 * k, padR = 18 * k, padV = 8 * k, gap = 12 * k, h = padV * 2 + tp * 1.15f;
         for (auto it = g_pile.begin(); it != g_pile.end();) {
             if (it->naissance < 0) it->naissance = g.time;
@@ -108,6 +108,12 @@ private:
 };
 
 } // namespace
+
+// WFS-136 (accroche A4) : bandeau demandé par un autre module (feu grillé, nouveaux tracés) ; même pile, même style
+void toasts::pousser(const std::string& titre, const std::string& valeur, int genre) {
+    g_pile.push_front({titre, valeur, genre == 1 ? CP : genre == 2 ? BAD : NORMAL});
+    while (g_pile.size() > PILE_MAX) g_pile.pop_back();
+}
 
 WFS_SYSTEM(Toasts, 425)   // interface : après le HUD (420), avant le fondu du chargement (490)
 

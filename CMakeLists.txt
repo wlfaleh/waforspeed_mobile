@@ -93,6 +93,8 @@ else()
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
   add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
+  add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
+  add_executable(test_minicarte tests/test_minicarte.cpp)   # WFS-173 : place et projection de la mini-carte
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
   add_executable(test_configgame tests/test_configgame.cpp src/core/configgame.cpp)   # WFS-128 : configgame.json
@@ -106,4 +108,17 @@ else()
   add_executable(test_sauvegarde tests/test_sauvegarde.cpp src/game/sauvegarde.cpp src/game/track.cpp)   # WFS-24 (std::thread : glibc ≥ 2.34)
   add_executable(test_records tests/test_records.cpp src/game/sauvegarde.cpp src/game/fantome.cpp src/game/binarypack.cpp src/game/track.cpp)   # WFS-125 : records par mode, fantôme
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
+  add_executable(test_fidelite_soleil tests/fidelite_soleil.cpp)   # WFS-148 (RG-02) : soleil (NOAA) contre 10 valeurs de contrôle
+  add_executable(test_fidelite tests/fidelite_referentiel.cpp src/game/roues.cpp)   # WFS-148 (RG-01, RG-05) : référentiel du réel, mesures géométriques
+  target_compile_definitions(test_fidelite_soleil PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  target_compile_definitions(test_fidelite PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
+  # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
+  get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+  foreach(cible IN LISTS cibles_wfs)
+    get_target_property(sources_cible ${cible} SOURCES)
+    if(sources_cible MATCHES "src/game/track.cpp" AND NOT sources_cible MATCHES "trace_cartes")
+      target_sources(${cible} PRIVATE src/game/trace_cartes.cpp)
+    endif()
+  endforeach()
 endif()

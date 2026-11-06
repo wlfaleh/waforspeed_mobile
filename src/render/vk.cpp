@@ -254,6 +254,7 @@ Image VkCtx::createImage(uint32_t w, uint32_t h, uint32_t mips, VkFormat fmt, Vk
 }
 
 void VkCtx::destroy(Image& i) {
+    if (i.view && vueDetruite) vueDetruite(vueDetruiteCtx, i.view);   // WFS-144
     if (i.view) vkDestroyImageView(device, i.view, nullptr);
     if (i.img) vkDestroyImage(device, i.img, nullptr);
     if (i.mem) vkFreeMemory(device, i.mem, nullptr);

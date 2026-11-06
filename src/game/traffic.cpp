@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <numbers>
 #include "../core/jobs.h"
+#include "trace_cartes.h"
 
 namespace wfs {
 
@@ -23,6 +25,57 @@ void Traffic::reset(Track& track, uint32_t s, int n, double playerPos, bool menu
     clock = sim = menu ? 0 : -3;   // compte à rebours de 3 s avant le départ (trafficClock du jeu web)
     scrapeCd_ = 0;
     addCars(n, playerPos);
+    if (track.version() == 2) ajouterTrace2(n, playerPos);   // WFS-136 ; tracé 1 (jeu web) : rien ne change
+}
+
+// WFS-136 (RG-04) : +30 % de voitures sur l'autoroute (au prorata de sa longueur) ; (RG-03) 1 ou 2 voitures par carrefour
+// à feux, qui traversent au rouge. Tirages par graine (même graine → même trafic).
+void Traffic::ajouterTrace2(int n, double playerPos) {
+    const double L = track_->length(), La = trace::longueurAutoroute(*track_);
+    Mulberry32 R(seed * 2654435761u + 0x5bd1e995u);
+    const int extra = (int)std::lround(0.3 * n * La / std::max(L, 1.0));
+    for (int i = 0; i < extra; i++) {
+        addCars(1, playerPos);
+        // replacée sur un tronçon d'autoroute tiré au hasard (le reste de son tirage est gardé)
+        double u = R.next() * La;
+        for (const trace::Section& s : track_->sections()) {
+            if (!s.autoroute) continue;
+            const double l = s.finU() - s.debutU();
+            if (u < l) { cars.back().z = track_->wrap(s.debutU() + u); break; }
+            u -= l;
+        }
+        cars.back().prevDz = track_->relZ(cars.back().z - (playerPos + PLAYER_Z));
+    }
+    for (const trace::Section& s : track_->sections()) {
+        if (s.feu < 0 || s.depart) continue;
+        const int k = R.next() < 0.5 ? 1 : 2;
+        for (int j = 0; j < k; j++) {
+            TrafficCar c;
+            c.type = (int)std::floor(R.next() * WEB_CAR_COUNT);
+            c.len = WEB_CARS[c.type].L / M; c.w = WEB_CARS[c.type].W / (2 * RW);
+            c.color = (int)std::floor(R.next() * TRAFFIC_PAINT_COUNT);
+            c.rng = (uint32_t)(R.next() * 4294967296.0);
+            c.traverse = s.feu; c.rangTraverse = j;
+            c.z = track_->wrap(s.ligneArret * SEG + trace::CARREFOUR_M / M);
+            c.lane = c.target = 0; c.speed = c.want = 0; c.think = 1e9;
+            placerTraverse(c);
+            c.prevDz = track_->relZ(c.z - (playerPos + PLAYER_Z));
+            cars.push_back(c);
+        }
+    }
+}
+
+// position d'une voiture qui traverse, déduite de l'horloge du trafic (aucun état caché : toujours la même à la même heure)
+// rouge + 1 s (+ 1,6 s pour la 2e) : de 24 m à gauche du centre à 24 m à droite, à 36 km/h ; cachée hors du passage
+void Traffic::placerTraverse(TrafficCar& car) const {
+    constexpr double X0 = 3.2, VX = 10.0 / RW;   // demi-largeurs de route ; demi-largeurs par seconde (10 m/s)
+    double tp = 0;
+    const bool rouge = trace::feuCarrefour(car.traverse, sim, &tp) == trace::Feu::Rouge;
+    const double x = -X0 + VX * (tp - 1.0 - 1.6 * car.rangTraverse);
+    car.cache = !rouge || x < -X0 || x > X0;
+    car.offset = car.prevOff = car.cache ? -X0 : x;
+    car.laneYaw = std::numbers::pi / 2;   // de profil : nez vers la droite de la route
+    car.speed = 0; car.signal = 0;
 }
 
 // addCars(n) du jeu web
@@ -59,7 +112,7 @@ void Traffic::addCars(int n, double playerPos) {
 bool Traffic::laneFree(const TrafficCar& car, int lane, const TrafficView& pv) const {
     const double lx = LANE_X[lane];
     for (const auto& o : cars) {
-        if (&o == &car || (std::abs(o.offset - lx) > LANE_HALF && o.target != lane)) continue;
+        if (&o == &car || o.cache || (std::abs(o.offset - lx) > LANE_HALF && o.target != lane)) continue;
         const double dz = track_->relZ(o.z - car.z);
         if (dz >= 0 && dz < (o.len + car.len) / 2 + std::max(8 / M, (car.speed - o.speed) * 1.6)) return false;
         if (dz < 0 && -dz < (o.len + car.len) / 2 + std::max(10 / M, (o.speed - car.speed) * 2.2)) return false;
@@ -76,7 +129,7 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
         double gap = std::numeric_limits<double>::infinity(), leadSpeed = car.want;
         const double tx = LANE_X[car.target];
         for (const auto& o : cars) {
-            if (&o == &car) continue;
+            if (&o == &car || o.cache) continue;
             if (std::abs(o.offset - car.offset) > LANE_HALF && std::abs(o.offset - tx) > LANE_HALF) continue;
             const double dz = track_->relZ(o.z - car.z);
             if (dz <= 0) continue;
@@ -89,6 +142,16 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
                 const double g = dz - (pv.myLen + car.len) / 2;
                 if (g < gap) { gap = g; leadSpeed = pv.speed; }
             }
+        }
+        // WFS-136 (RG-03) : feu rouge (ou orange, s'il reste plus d'1 s de route avant la ligne) : la ligne d'arrêt est un
+        // obstacle arrêté ; la file se forme derrière la première voiture avec les règles habituelles (embouteillages WFS-111)
+        if (car.traverse < 0) for (const trace::Section& s : track_->sections()) {
+            if (s.feu < 0 || s.depart) continue;
+            const double dz = track_->relZ(s.ligneArret * SEG - car.z);
+            if (dz <= 0 || dz > 150 / M) continue;
+            const trace::Feu f = trace::feuCarrefour(s.feu, sim);
+            const double g = dz - car.len / 2;
+            if ((f == trace::Feu::Rouge || (f == trace::Feu::Orange && g > car.speed * 1.0)) && g < gap) { gap = g; leadSpeed = 0; }
         }
         gap_[(size_t)i] = gap; lead_[(size_t)i] = leadSpeed;
     }
@@ -120,11 +183,16 @@ void Traffic::step(double h, const TrafficView& pv) {
             car.z = track_->wrap(car.z + car.speed * h);
             continue;
         }
+        if (car.traverse >= 0) { placerTraverse(car); continue; }   // WFS-136 : traversée du carrefour au rouge
         if (!parallel) findLeaders(pv, (int)i, (int)i + 1);
         const double gap = gap_[i], leadSpeed = lead_[i];
+        // WFS-136 (RG-02, RG-04) : 40 km/h dans l'anneau, 60 km/h dans les épingles (aussi 30 m avant), +15 % sur l'autoroute ;
+        // tracé 1 : want = car.want (facteur 1, limite infinie), le calcul du jeu web est inchangé
+        const double want = track_->sections().empty() ? car.want
+            : std::min({car.want * trace::facteurTrafic(*track_, car.z), trace::vitesseTrafic(*track_, car.z), trace::vitesseTrafic(*track_, car.z + 30 / M)});
         // vitesse visée : sa vitesse de croisière, ou celle qui garde la distance de sécurité
         const double safe = SAFE_MIN + car.speed * SAFE_TIME;
-        double target = car.want;
+        double target = want;
         if (gap < safe) target = std::min(target, std::max(0.0, leadSpeed - (safe - gap) * 1.2));
         const double acc = target > car.speed ? MAX_SPEED * 0.1 : MAX_SPEED * 0.7;
         car.speed = std::max(0.0, car.speed + clampd(target - car.speed, -acc * h, acc * h));
@@ -134,7 +202,7 @@ void Traffic::step(double h, const TrafficView& pv) {
         if (car.think <= 0 && car.target == car.lane && !car.pending) {
             const double r = nextRand(car);
             car.think = 1.5 + r * 4;
-            const bool blocked = gap < safe * 1.6 && leadSpeed < car.want * 0.85;
+            const bool blocked = gap < safe * 1.6 && leadSpeed < want * 0.85;
             if (blocked || r < 0.12) {
                 const int dir = nextRand(car) < 0.5 ? -1 : 1;
                 // d'abord le clignotant, le changement de file vient ~1 s plus tard
@@ -188,9 +256,13 @@ HitEvents Traffic::collide(Player& pl, double dt) {
     const double pz = pl.position + PLAYER_Z;
     const double myLen = (me.d.L * ch + me.d.W * sh) / M, myW = (me.d.W * ch + me.d.L * sh) / (2 * RW);
     for (auto& car : cars) {
+        if (car.cache) continue;   // WFS-136 : voiture qui traverse, hors de son passage
         const double dz = track_->relZ(car.z - pz);
         const double lat = std::abs(pl.playerX - car.offset);
-        const double touchLat = myW + car.w, touchZ = (myLen + car.len) / 2;
+        // WFS-136 : une voiture qui traverse est de profil (longueur en travers de la route)
+        const bool travers = car.traverse >= 0 && !car.crashed;
+        const double cLen = travers ? car.w * 2 * RW / M : car.len, cW = travers ? car.len * M / (2 * RW) : car.w;
+        const double touchLat = myW + cW, touchZ = (myLen + cLen) / 2;
         if (lat < touchLat && std::abs(dz) < touchZ) {
             // ---------- hitCar ----------
             const int side = signi(pl.playerX - car.offset) ? signi(pl.playerX - car.offset) : 1;

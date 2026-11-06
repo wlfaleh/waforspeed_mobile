@@ -18,6 +18,7 @@
 #include "duel_system.h"
 #include "game.h"
 #include "player.h"
+#include "poursuite.h"   // WFS-141 : titrePlace
 #include "sauvegarde.h"
 #include "traffic.h"
 #include "traffic_system.h"
@@ -153,6 +154,7 @@ public:
     }
 
     // WFS-125 : banc d'essai (parcours RG-09)
+    int positions(double* rd, int max) const { int n = 0; if (actif_) for (const auto& o : os_) if (n < max) rd[n++] = o.g.rd; return n; }   // WFS-173
     bool bouton(const std::string& nom, float& x, float& y) const {
         const Zone& z = nom == "rejouer" ? rejouerZ_ : menuZ_;
         if (!actif_ || !fini_ || z.w <= 0) return false;
@@ -208,17 +210,19 @@ private:
             y += rh;
         }
     }
-    // RG-06 : écran de fin : place, temps, les 5 lignes (temps, écart ou distance), « Rejouer » et « Menu »
+    // RG-06 : écran de fin : place, temps, les 5 lignes (temps, écart ou distance), « Rejouer » et « Menu » ;
+    // WFS-141 (RG-03, ANO-59) : boutons parallélogrammes et liseré orange de la fin Checkpoint (biseauFin), « 2e PLACE »
+    // (jamais « 2E ») ; tailles des boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
     void resultat(Renderer& r, float W, float H, float u, const std::vector<course5::Ligne>& ls) {
         const int rang = course5::position(ls);
         r.uiRect(0, 0, W, H, FOND);
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous le classement
         const float pw = 66 * u, ph = (34 + 6.5f * ls.size() + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
+        r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
         char sur[64]; std::snprintf(sur, sizeof sur, "COURSE À 5 · %d KM", kmCourse5());
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, sur, ui::CYAN, ui::CENTRE, 0.16f, false);
-        const std::string titre = rang == 1 ? "Victoire" : std::to_string(rang) + "e place";
-        ui::text(r, W / 2, py0 + 7 * u, 9 * u, ui::majuscules(titre), rang == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
+        ui::text(r, W / 2, py0 + 7 * u, 9 * u, poursuite::titrePlace(rang), rang == 1 ? ui::ORANGE : TEXTE, ui::CENTRE, 0.04f, false, true);
         ui::text(r, W / 2, py0 + 17.5f * u, 4.2f * u, ui::chrono(ftJoueur_), TEXTE, ui::CENTRE, 0.f, false, true);
         float y = py0 + 24 * u;
         const double tete = ls[0].fini ? ls[0].ft : -1;
@@ -236,9 +240,9 @@ private:
         const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
         if (rec) dessinerRecord(r, W / 2, y - 1 * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
-        r.uiRect(rejouerZ_.x, by, bw, bh, ui::ORANGE);
+        biseauFin(r, rejouerZ_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);
         ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        r.uiRect(menuZ_.x, by, bw, bh, vec4{1, 1, 1, 0.10f});
+        biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
         ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
     }
 
@@ -259,6 +263,7 @@ Course5System* Course5System::actif5 = nullptr;
 
 // WFS-125 : banc d'essai (parcours RG-09) : boutons de l'écran de fin, record battu
 bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5System::actif5 && Course5System::actif5->bouton(nom, x, y); }
+int course5Positions(double* rd, int max) { return Course5System::actif5 ? Course5System::actif5->positions(rd, max) : 0; }   // WFS-173
 bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
 
 WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) et le duel (220)

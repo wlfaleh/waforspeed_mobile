@@ -25,6 +25,7 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& outDir);
 // WFS-125 (RG-09) : banc d'essai : boutons de l'écran de fin (« rejouer », « menu »), record battu, fin forcée
 // (1 = arrêté tout de suite, 2 = saut à 150 m de l'arrivée)
 bool poursuiteBouton(const std::string& nom, float& x, float& y);
+int poursuitePolice(double* rd, bool* fixe, int max);   // WFS-173 (RG-08) : police (distance en unités, barrage), lecture seule
 bool poursuiteNouveauRecord();
 void poursuiteBancFin(int mode);
 void poursuiteBancFixe(bool oui);   // programme et graine fixes (captures stables)
@@ -118,6 +119,18 @@ Travers camionTravers(int fileLibre, double longueurM, double largeurM);
 // inconnu ou absent (ancienne sauvegarde) : Checkpoint
 std::string cleMode(ModeCourse m);
 ModeCourse modeDeCle(const std::string& cle);
+
+// ---- WFS-141 : rendu de la poursuite et des écrans de fin (calcul seul, testé par tests/test_poursuite.cpp)
+// RG-01 (ANO-56) : gyrophares : rouge #FF2D55 et bleu #2D7CFF allumés l'un après l'autre à 2 Hz (0,25 s chacun), jamais
+// ensemble (plus de rose) ; une voiture sur deux en opposition de phase ; halo de 1,5 × la largeur de la lampe
+constexpr unsigned GYRO_ROUGE = 0xFF2D55, GYRO_BLEU = 0x2D7CFF;
+constexpr float HALO_GYRO = 1.5f;   // diamètre du halo / largeur de la lampe
+struct Gyrophare { bool rouge = false, bleu = false; };
+Gyrophare gyrophare(double t, int voiture);
+// RG-02 (ANO-57) : bandeau d'annonce effacé 1,5 s après l'annonce (taille inchangée : ordre permanent du 2026-11-06)
+constexpr double BANDEAU_S = 1.5;
+// RG-03 (ANO-59) : titre de l'écran de fin de la course à 5 : « VICTOIRE », puis « 2e PLACE », « 3e PLACE »…
+std::string titrePlace(int rang);
 
 } // namespace poursuite
 } // namespace wfs

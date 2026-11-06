@@ -155,11 +155,7 @@ private:
     }
     // parallélogramme incliné (clip-path du bouton .btn : 14 px de biais), haut décalé à droite, bas à gauche ;
     // WFS-101 (RG-05, ANO-20) : un seul quadrilatère (plus de bandes horizontales ni de rayures)
-    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
-        const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
-                               {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
-        r.uiQuad(q);
-    }
+    static void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) { biseauFin(r, x, y, w, h, biais, c); }
     // endRace du jeu web (WFS-24, RG-03 / RG-09) : record écrit seulement s'il est battu (s > best), puis enregistrement
     // (thread de travail). Sauvegarde inactive (banc d'essai sans WFS_BANC=sauvegarde) : rien, captures inchangées.
     // WFS-125 (RG-01) : seule une course Checkpoint solo peut battre waforspeed-best : ni le duel, ni la course à 5, ni la
@@ -280,6 +276,12 @@ void dessinerRecord(Renderer& r, float cx, float yBadge, float bas, float u, con
     ui::text(r, x0, y + 1.2f * u, 3.4f * u, lab, ui::GRIS, ui::GAUCHE, 0.16f);
     ui::text(r, x0 + lw + gap, y, 5.5f * u, val, TEXTE, ui::GAUCHE, 0.f, true, true);
 }
+// WFS-141 : parallélogramme des boutons de l'écran de fin (avant : CourseSystem::biseau), commun aux 3 modes
+void biseauFin(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
+    const UiVertex q[4] = {{x + biais, y, -1, -1, c.x, c.y, c.z, c.w}, {x + w, y, -1, -1, c.x, c.y, c.z, c.w},
+                           {x + w - biais, y + h, -1, -1, c.x, c.y, c.z, c.w}, {x, y + h, -1, -1, c.x, c.y, c.z, c.w}};
+    r.uiQuad(q);
+}
 WFS_SYSTEM(CourseSystem, 210)   // gameplay (200-299), après le trafic (50) dont il lit les chocs
 
 const Course* activeCourse() { return CourseSystem::active_ ? &CourseSystem::active_->course_ : nullptr; }
@@ -380,9 +382,13 @@ int benchRecords(Game& g, Renderer& r, const std::string& out) {
     {   // RG-03 : ancienne sauvegarde (sans les nouvelles clés) et clés mal formées
         Sauvegarde anc;
         const bool lu = anc.lire("version=1\nwaforspeed-best=48210\ncar=m4\nrecord-course5=x;12\nrecord-poursuite=1;2\n");
-        WFS_LOG("records : ancienne sauvegarde relue (%s) : best=%lld, course à 5 %s, poursuite %s", lu ? "valide" : "invalide", anc.best,
-                anc.aRecordCourse5() ? "rempli" : "—", anc.aRecordPoursuite() ? "rempli" : "—");
-        verifier(lu && anc.best == 48210 && anc.car == "m4" && !anc.aRecordCourse5() && !anc.aRecordPoursuite(), "ancienne sauvegarde relue sans perte, records vides");
+        // WFS-169 (ANO-88) : depuis WFS-136 (RG-07 / A7.4), le record du tracé 1 est mis de côté sous best_v1 (best repart de 0)
+        const auto v1 = anc.anciens.find("best_v1");
+        const std::string bestV1 = v1 != anc.anciens.end() ? v1->second : "—";
+        WFS_LOG("records : ancienne sauvegarde relue (%s) : best=%lld, best_v1=%s, course à 5 %s, poursuite %s", lu ? "valide" : "invalide", anc.best,
+                bestV1.c_str(), anc.aRecordCourse5() ? "rempli" : "—", anc.aRecordPoursuite() ? "rempli" : "—");
+        verifier(lu && anc.best == 0 && bestV1 == "48210" && anc.car == "m4" && !anc.aRecordCourse5() && !anc.aRecordPoursuite(),
+                 "ancienne sauvegarde relue sans perte (record mis de côté sous best_v1), records vides");
     }
     courseBenchRules(true);
     if (!g.init(r, "golf", "ville")) { WFS_ERR("records : chargement impossible"); s.desactiver(); courseBenchRules(false); return 1; }

@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
         VERIFIER(s.lire("version=1\r\ncar=fusee\npaint-golf=fuchsia\npaint-fusee=rouge\nmap=lune\ntod=aube\nquality=ultra\ncam=drone\n"
                         "muted=oui\nnick=   \nkm=5\nsteer=volant\ndiff5=extreme\nwaforspeed-best=-3\nligne sans egal\ninconnue=1\n"));
         VERIFIER(estDefaut(s));
-        VERIFIER(s.lire("version=1\nwaforspeed-car=gallardo\nbest=12\nkm=2\nnick=\tUn pseudo beaucoup trop long\n"));
+        VERIFIER(s.lire("version=1\ntrace=2\nwaforspeed-car=gallardo\nbest=12\nkm=2\nnick=\tUn pseudo beaucoup trop long\n"));
         VERIFIER(s.car == "gallardo"); VERIFIER(s.best == 12); VERIFIER(s.km == 2);
         VERIFIER(s.nick == "Un pseudo beau");   // 14 caractères (cleanName du jeu web)
         VERIFIER(s.peinture("gallardo") == "jaune");
@@ -86,6 +86,17 @@ int main(int argc, char** argv) {
         std::FILE* f = std::fopen(chemin.c_str(), "rb"); VERIFIER(f == nullptr); if (f) std::fclose(f);
     }
     std::remove(chemin.c_str());
+    // WFS-122 (RG-01) : derniers adversaires du duel : 3 au plus, le plus récent en tête, sans doublon, relus tels quels
+    {
+        Sauvegarde s;
+        VERIFIER(s.adversaires.empty() && s.texte().find("adversaires=") == std::string::npos);   // aucun duel : rien
+        s.noterAdversaires({"Nadia"}); s.noterAdversaires({"Sam", "Lou"}); s.noterAdversaires({"Nadia", "Ka|rim"});
+        VERIFIER(s.adversaires.size() == 3 && s.adversaires[0] == "Ka rim" && s.adversaires[1] == "Nadia" && s.adversaires[2] == "Lou");
+        Sauvegarde r; VERIFIER(r.lire(s.texte()));
+        VERIFIER(r.adversaires == s.adversaires);
+        Sauvegarde h; VERIFIER(h.lire("version=1\ntrace=2\nadversaires=" + std::string(500, 'x') + "|||Bob\n"));
+        VERIFIER(h.adversaires.size() == 2 && h.adversaires[0].size() <= 14 && h.adversaires[1] == "Bob");   // pseudos bornés, vides ignorés
+    }
     std::printf(g_echecs ? "ÉCHEC (%d)\n" : "OK\n", g_echecs);
     return g_echecs ? 1 : 0;
 }

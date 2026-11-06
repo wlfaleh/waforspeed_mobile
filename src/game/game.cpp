@@ -14,6 +14,7 @@
 #include "direction.h"       // WFS-70 : modes de direction (zone de glissement, flèches)
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
+#include "../ui/ecrans/chargement.h"   // WFS-146 (accroche, ANO-45) : fondu du chargement
 
 namespace wfs {
 
@@ -35,7 +36,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     ecran_ = ecranDemande_ = Ecran::Course; demandeEcran_ = false;   // écran de départ (Menu quand WFS-37 existera)
     lacherCommandes();
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
-    track_.build(mapById(mapId));
+    track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
     m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
@@ -90,8 +91,10 @@ void Game::buildChunkCpu(int64_t c, ChunkCpu& out) {
         const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)V.size();
         for (int i = 0; i <= CH; i++) {
             const double s = (double)(a0 + i) * SEG;
+            const trace::Rayon ri = trace::rayonInterieur(track_, s);   // WFS-136 (accroche A1) : courbes serrées du tracé 2
             for (uint32_t k = 0; k < cols; k++) {
-                TrackPoint p = track_.point(s, prof[k].first);
+                const float lat = prof[k].first, lim = (float)(0.9 * (lat > 0 ? ri.droite : ri.gauche));
+                TrackPoint p = track_.point(s, ri.m < 60 && std::abs(lat) > lim ? (lat > 0 ? lim : -lim) : lat);   // bas-côté intérieur ≤ 90 % du rayon
                 V.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
             }
         }
@@ -161,9 +164,11 @@ void Game::streamChunks() {
 
 // ---------------------------------------------------------------- commandes tactiles
 // gauche : direction (direction.cpp) ; droite : nitro, frein et gaz du jeu web (commandes_tactiles.h, WFS-98)
+// WFS-146 (RG-09, ANO-45) : commandes tactiles seulement en course non finie, hors fondu du chargement (#touch du web)
+static bool commandesActives() { const Course* c = activeCourse(); return !ecrans::fonduEnCours() && !(c && c->state == RaceState::Over); }
 void Game::onTouch(const Touch& t) {
     if (systemsTouch(t)) return;
-    if (ecran_ != Ecran::Course) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36)
+    if (ecran_ != Ecran::Course || (t.down && !commandesActives())) return;   // hors course : les touchers ne pilotent pas la voiture (WFS-36 ; WFS-146)
     const float W = (float)r_->width(), H = (float)r_->height(), x = ecrans::miroirX(t.x, W);   // WFS-75 : miroir
     if (t.down) {
         bool fresh = !directionPossede(t.id) && t.id != gasId_ && t.id != brakeId_ && t.id != nitroId_;
@@ -191,6 +196,7 @@ void Game::onTouch(const Touch& t) {
 }
 
 void Game::drawControls() {
+    if (!commandesActives()) return;   // WFS-146 (RG-09)
     const float W = (float)r_->width(), H = (float)r_->height();
     // marges de sécurité (WFS-51) : à gauche le volant et les jauges, à droite les pédales, en bas tout le monde
     const float mg = marges_.gauche, md = marges_.droite;

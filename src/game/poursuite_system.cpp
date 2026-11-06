@@ -11,6 +11,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
+#include "../render/effets_particules.h"   // WFS-141 : effets::versHdr (gyrophares)
 #include "../render/model_loader.h"
 #include "../render/renderer.h"
 #include "../ui/appui.h"
@@ -41,6 +42,7 @@ using namespace poursuite;
 
 bool g_banc = false;                 // banc d'essai : programme fixe (captures stables)
 int g_bancFin = 0;                   // banc : 1 = arrêter tout de suite, 2 = sauter près de l'arrivée
+double g_bancSautKm = 0;             // WFS-141 : banc : saut en avant du joueur jusqu'à ce point (km)
 // voiture existante repeinte (RG-03) : la 208 (la Golf si le joueur roule en 208)
 const char* policeCar(const Player* pl) { return pl && pl->car && !std::strcmp(pl->car->id, "p208") ? "golf" : "p208"; }
 
@@ -76,8 +78,11 @@ public:
         }
         cube_ = r.makeMesh(v, idx);
         auto mat = [&](unsigned c, vec3 em, float rough) { Material m; const vec3 l = lin(c); m.color = {l.x, l.y, l.z, 1}; m.rough = rough; m.emissive = em; return r.makeMaterial(m, nullptr, nullptr, nullptr); };
-        matRouge_ = mat(0x200000, lin(0xff2038) * 6.f, 0.4f);
-        matBleu_ = mat(0x000020, lin(0x2050ff) * 6.f, 0.4f);
+        // WFS-141 (RG-01, ANO-56) : lampes allumées à leur couleur (versHdr, comme les clignotants de WFS-109), sans le × 6
+        auto web = [](unsigned h) { return effets::versHdr(vec3{((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f}, 1.f); };
+        matRouge_ = mat(0x200000, web(GYRO_ROUGE), 0.4f);
+        matBleu_ = mat(0x000020, web(GYRO_BLEU), 0.4f);
+        haloRouge_ = web(GYRO_ROUGE); haloBleu_ = web(GYRO_BLEU);
         matPlot_ = mat(0xff6a00, lin(0xff6a00) * 0.4f, 0.6f);
         matBlanc_ = mat(0xf2f4f8, {0, 0, 0}, 0.5f);
         matBleuCaisse_ = mat(0x14224a, {0, 0, 0}, 0.45f);
@@ -127,6 +132,11 @@ public:
             if (Traffic* trs = activeTrafficMut())
                 for (TrafficCar& tc : trs->cars) if (const double rel = t.relZ(tc.z - pl.position) * M; rel > -40 && rel < 220) tc.z = t.wrap(tc.z + 400 / M);
             g_bancFin = 0; distAvant_ = pl.dist;
+        }
+        if (g_bancSautKm > 0) {   // WFS-141 : banc : saut après le barrage et l'embouteillage (le pilote automatique y reste bloqué)
+            const double d = g_bancSautKm * duel::KM - pl.dist;
+            if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); }   // la police reste derrière et rattrape
+            g_bancSautKm = 0; distAvant_ = pl.dist;
         }
         Traffic* tr = activeTrafficMut();
         if (c->state == RaceState::Play) {
@@ -185,13 +195,19 @@ public:
             }
         }
         bouchons(pl, t, tr);
-        // sirène : toutes les secondes tant qu'une police est à moins de 80 m
-        sireneT_ -= dt;
-        if (sireneT_ <= 0 && plusProcheM(police_, pl.dist, pl.playerX) < 80 && c->state != RaceState::Over) { sireneT_ = 1.0; sfxInterface(SfxId::Sirene); }
+        {   // WFS-131 (RG-07) : sirène continue du module son : police mobile la plus proche (m) et vitesse vers le joueur (m/s)
+            double dSir = 1e9, vSir = 0;
+            for (const Police& p : police_) if (!p.fixe) {
+                const double dz = (p.rd - pl.dist) * M, dx = (p.x - pl.playerX) * RW, d = std::sqrt(dz * dz + dx * dx);
+                if (d < dSir) { dSir = d; vSir = (dz < 0 ? p.v - pl.speed : pl.speed - p.v) * M; }
+            }
+            sfxSirene(dSir, vSir);
+        }
         if (banT_ > 0) banT_ -= dt;
         if (c->state == RaceState::Over) {
             if (!fini_) {
                 fini_ = true; ftJoueur_ = c->raceTime; arrivee(etat_, pl.dist * M / 1000);
+                sfxInterface(etat_.gagne ? SfxId::PoursuiteEchappe : SfxId::PoursuiteArrete);   // WFS-131 (RG-06) : jingle de fin
                 WFS_LOG("poursuite : fin — %s, score %d, %.2f km, %.1f s", etat_.gagne ? "victoire" : "ARRÊTÉ", etat_.score, pl.dist * M / 1000, ftJoueur_);
                 // WFS-125 (RG-02) : record Poursuite (victoire > « ARRÊTÉ », puis score ou distance), écrit seulement s'il est battu
                 nouveauRecord_ = false;
@@ -209,7 +225,6 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (!actif_ || g.sceneDediee || !g.player || !g.track) return;
         const double sP = g.player->dist;
-        const bool flash = std::fmod(g.time, 0.5) < 0.25;
         {   // banc : angle de la caméra « vitrine » placée devant la voiture (police visible derrière)
             const TrackPoint a = g.track->point(sP, 0), b = g.track->point(sP + 5 / M, 0);
             orbitAvant_ = (float)std::atan2(b.x - a.x, b.z - a.z);
@@ -225,16 +240,19 @@ public:
             // WFS-134 (RG-11, remplace RG-08 / WFS-119 RG-04) : jamais de cubes, Basse comprise : toujours le vrai modèle (version
             // allégée au-delà de 60 m, avec fondu, choisie par Renderer::draw) ; sans modèle chargé : rien plutôt qu'une boîte
             (void)L;
-            if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
+            if (modele_.ok && &p - police_.data() < 16) { peintures_[&p - police_.data()] = lin(p.peinture); r.lotsProchaineVoiture(); r.draw(modele_, m, &peintures_[&p - police_.data()]); }
             // barre lumineuse dessinée par le code : rouge à gauche, bleu à droite, halos alternés (WFS-119 RG-04 : en qualité
             // Basse, au-delà de 80 m, halos seuls)
+            // WFS-141 (RG-01, ANO-56) : rouge puis bleu, jamais ensemble (lampe éteinte : verre sombre, sans halo) ; halo de
+            // 1,5 × la largeur de la lampe, couleur convertie par versHdr (avant : 1,4 m de demi-côté, × 4 : disque rose)
+            const Gyrophare gy = gyrophare(g.time, (int)(&p - police_.data()));
+            const float lampe = W * 0.32f, demi = HALO_GYRO * lampe / 2;
             if (!r.qualiteBasse || std::abs(rel) <= 80) {
-                r.draw(cube_, matRouge_, m * translate({-W * 0.17f, H - 0.02f, 0.1f}) * scale({W * 0.32f, 0.14f, 0.3f}));
-                r.draw(cube_, matBleu_, m * translate({W * 0.17f, H - 0.02f, 0.1f}) * scale({W * 0.32f, 0.14f, 0.3f}));
+                r.draw(cube_, gy.rouge ? matRouge_ : matVitre_, m * translate({-W * 0.17f, H - 0.02f, 0.1f}) * scale({lampe, 0.14f, 0.3f}));
+                r.draw(cube_, gy.bleu ? matBleu_ : matVitre_, m * translate({W * 0.17f, H - 0.02f, 0.1f}) * scale({lampe, 0.14f, 0.3f}));
             }
-            const bool a = flash ^ ((&p - police_.data()) % 2 == 1);
-            r.halo(m.transformPoint({-W * 0.17f, H + 0.14f, 0.1f}), a ? 1.4f : 0.5f, lin(0xff2038) * (a ? 4.f : 1.f));
-            r.halo(m.transformPoint({W * 0.17f, H + 0.14f, 0.1f}), a ? 0.5f : 1.4f, lin(0x2050ff) * (a ? 1.f : 4.f));
+            if (gy.rouge) r.halo(m.transformPoint({-W * 0.17f, H + 0.14f, 0.1f}), demi, haloRouge_);
+            if (gy.bleu) r.halo(m.transformPoint({W * 0.17f, H + 0.14f, 0.1f}), demi, haloBleu_);
         }
         for (const Plot& p : plots_) {   // RG-05 : travaux (plots orange)
             const double rel = (p.s - sP) * M;
@@ -290,9 +308,12 @@ public:
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, pw - 4 * u, 0.6f * u, vec4{1, 1, 1, 0.12f});
         r.uiRect(cx - pw / 2 + 2 * u, y0 + ph - 1.8f * u, (pw - 4 * u) * k, 0.6f * u, ui::ORANGE);
         if (banT_ > 0 && !ban_.empty()) {   // RG-05 : bandeau court
-            const float bw = std::max(46 * u, ui::width(3.6f * u, ban_, 0.1f) + 8 * u), by = y0 + ph + 2 * u;
-            r.uiRect(cx - bw / 2, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
-            ui::text(r, cx, by + 1.7f * u, 3.6f * u, ban_, TEXTE, ui::CENTRE, 0.1f, false, true);
+            // WFS-141 (RG-02, ANO-57) : à gauche sous le chrono et les boutons « Menu » et de vue (14 + 112 + 10 + 40 + 8 + 40 px
+            // de 720, pause.cpp et camera_vue.cpp, + 10) : il ne cache plus l'obstacle, au centre de la route ; effacé après
+            // 1,5 s. Taille inchangée (ordre permanent du 2026-11-06 sur la taille des textes : pas de passage à 5 %)
+            const float k = H / 720.f, bw = std::max(46 * u, ui::width(3.6f * u, ban_, 0.1f) + 8 * u), bx = g.marges.gauche + 16 * k, by = g.marges.haut + 234 * k;
+            r.uiRect(bx, by, bw, 7 * u, vec4{DANGER.x, DANGER.y, DANGER.z, 0.88f});
+            ui::text(r, bx + bw / 2, by + 1.7f * u, 3.6f * u, ban_, TEXTE, ui::CENTRE, 0.1f, false, true);
         }
     }
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -309,8 +330,15 @@ public:
     const Etat& etat() const { return etat_; }
     bool fini() const { return fini_ && overT_ >= 0.9; }
     int policeMobiles() const { int n = 0; for (const Police& p : police_) n += !p.fixe; return n; }
+    int police(double* rd, bool* fixe, int max) const { int n = 0; if (actif_) for (const Police& p : police_) if (n < max) { rd[n] = p.rd; fixe[n++] = p.fixe; } return n; }   // WFS-173
     int policeDerriere(double sJ) const { int n = 0; for (const Police& p : police_) n += !p.fixe && p.rd < sJ && (sJ - p.rd) * M < 40; return n; }
     const std::string& bandeauActuel() const { return ban_; }
+    // banc (WFS-172, RG-02) : voitures de police mobiles entre a et b m du joueur (sJ, xJ)
+    int policeEntre(double sJ, double xJ, double a, double b) const {
+        int n = 0;
+        for (const Police& p : police_) { const double d = plusProcheM({p}, sJ, xJ); n += d >= a && d <= b; }
+        return n;
+    }
     void bancScore(int score) { etat_.score = score; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
     float orbitAvant_ = 0;
     Zone rejouerZone() const { return rejouerZ_; }
@@ -336,7 +364,7 @@ private:
         WFS_LOG("poursuite : graine %u, %.0f km, score %d, %d voitures de police, %zu embouteillages, %zu surprises", graine_, KM_ARRIVEE,
                 etat_.score, POLICE_DEPART, prog_.bouchons.size(), prog_.surprises.size());
     }
-    void annoncer(const std::string& t) { ban_ = t; banT_ = 4.0; }
+    void annoncer(const std::string& t) { ban_ = t; banT_ = BANDEAU_S; }   // WFS-141 (RG-02) : 1,5 s (avant : 4 s)
 
     // place une voiture du trafic loin du joueur (hors de vue) à la distance s, file f, vitesse v (unités/s)
     TrafficCar* deplacer(Traffic& tr, const Player& pl, Track& t, double s, int f, double v) {
@@ -488,12 +516,15 @@ private:
         }
     }
 
-    // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu »
+    // RG-07 : écran de fin : victoire (score final, temps) ou « ARRÊTÉ » ; « Rejouer » / « Menu » ;
+    // WFS-141 (RG-03, ANO-59) : boutons parallélogrammes et liseré orange de la fin Checkpoint (biseauFin) ; tailles des
+    // boutons et des textes inchangées (ordre permanent de l'utilisateur du 2026-11-06)
     void resultat(Renderer& r, float W, float H, float u) {
         r.uiRect(0, 0, W, H, FOND);
         const bool rec = sauvegarde().actif();   // WFS-125 (RG-04) : badge et ligne « RECORD » sous les lignes du résultat
         const float pw = 66 * u, ph = (58 + (rec ? 13 : 0)) * u, px0 = (W - pw) / 2, py0 = (H - ph) / 2;
         r.uiRect(px0, py0, pw, ph, SURFACE);
+        r.uiRect(px0, py0, pw, 0.6f * u, ui::ORANGE);   // WFS-141 : liseré néon de la fin Checkpoint
         ui::text(r, W / 2, py0 + 3 * u, 2.6f * u, "POURSUITE POLICE · 10 KM", ui::CYAN, ui::CENTRE, 0.16f, false);
         const bool v = etat_.gagne;
         ui::text(r, W / 2, py0 + 7 * u, 9 * u, v ? "VICTOIRE" : "ARRÊTÉ", v ? ui::ORANGE : DANGER, ui::CENTRE, 0.04f, false, true);
@@ -510,15 +541,16 @@ private:
         const float bw = 24 * u, bh = 7 * u, gap = 3 * u, by = py0 + ph - bh - 3 * u, bx = (W - (2 * bw + gap)) / 2;
         if (rec) dessinerRecord(r, W / 2, y + 0.5f * u, by - 2 * u, u, texteRecord(), nouveauRecord_);
         rejouerZ_ = {bx, by, bw, bh}; menuZ_ = {bx + bw + gap, by, bw, bh};
-        r.uiRect(rejouerZ_.x, by, bw, bh, ui::ORANGE);
+        biseauFin(r, rejouerZ_.x, by, bw, bh, 14 * H / 720, ui::ORANGE);
         ui::text(r, rejouerZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "REJOUER", vec4{0.04f, 0.04f, 0.06f, 1}, ui::CENTRE, 0.08f, false);
-        r.uiRect(menuZ_.x, by, bw, bh, vec4{1, 1, 1, 0.10f});
+        biseauFin(r, menuZ_.x, by, bw, bh, 14 * H / 720, {30 / 255.f, 33 / 255.f, 48 / 255.f, 1});   // « Menu » de la fin Checkpoint (#1E2130)
         ui::text(r, menuZ_.x + bw / 2, by + 1.9f * u, 3.4f * u, "MENU", TEXTE, ui::CENTRE, 0.08f, false);
     }
 
     Renderer* r_ = nullptr;
     Model modele_; bool modeleEssaye_ = false; const char* policeCar_ = "p208";
     Mesh cube_; Material matRouge_, matBleu_, matPlot_, matBlanc_, matBleuCaisse_, matVitre_, matJaune_, matNoir_;
+    vec3 haloRouge_{}, haloBleu_{};   // WFS-141 : couleurs HDR des halos des gyrophares
     Model camionModele_; bool camionEssaye_ = false; const char* camionCar_ = "x5"; vec3 peintureCamion_{};   // WFS-119
     std::vector<Camion> camions_;
     std::vector<Bande> bandes_;
@@ -545,6 +577,7 @@ PoursuiteSystem* PoursuiteSystem::actif = nullptr;
 WFS_SYSTEM(PoursuiteSystem, 224)   // gameplay (200-299) : après la course (210), le duel (220) et la course à 5 (222)
 
 // WFS-125 : banc d'essai (parcours RG-09)
+int poursuitePolice(double* rd, bool* fixe, int max) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->police(rd, fixe, max) : 0; }   // WFS-173
 bool poursuiteBouton(const std::string& nom, float& x, float& y) {
     const PoursuiteSystem* s = PoursuiteSystem::actif;
     if (!s) return false;
@@ -641,9 +674,21 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     // la 2e voiture de police tente de pousser (attaque de 7,6 à 10,6 s) : vue de devant, police derrière le joueur
     if (const PoursuiteSystem* s = PoursuiteSystem::actif) { g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.5f; }
     capture("poursuite-police");
+    {   // WFS-172 (RG-02, ANO-87) : même vue en qualité Basse (téléphone), dessinée à la même heure (aucun pas de temps
+        // pour la caméra ni les animations) : la suite du banc est inchangée
+        ecrans::Reglages& R = ecrans::reglages(); const int q0 = R.qualite;
+        R.qualite = 0; ecrans::appliquerQualiteNiveau(r);
+        const PoursuiteSystem* s = PoursuiteSystem::actif;
+        const int n = s ? s->policeEntre(g.player().dist, g.player().playerX, 10, 30) : 0;
+        WFS_LOG("poursuite (banc) : qualité Basse : %d voiture(s) de police à 10-30 m", n);
+        if (n == 0) WFS_ERR("poursuite (banc) : aucune police à 10-30 m pour poursuite-police-basse");
+        g.render(t); g.render(t); r.capturePng(out + "/poursuite-police-basse.png");
+        WFS_LOG("capture poursuite-police-basse : %.2f km, police %d, %u appels de dessin", g.player().dist * M / 1000, s ? s->policeMobiles() : 0, r.appelsDessin());
+        R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
+    }
     g.camMode = 0; g.render(t += 0.02);
     basse("police au contact");
-    jusqua(0.33, 60 * 60);    // barrage annoncé 260 m avant (0,45 km)
+    jusqua(0.21, 60 * 60);    // barrage annoncé 260 m avant (0,45 km) ; WFS-141 (RG-02) : 20 m après l'annonce (bandeau de 1,5 s visible)
     capture("poursuite-surprise");
     jusqua(0.93, 60 * 60);    // embouteillage à 0,9 km
     capture("poursuite-bouchon");
@@ -653,12 +698,15 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     basse("HUD (police au contact, embouteillage)");
     // WFS-119 : ralentisseur puis camion en travers (score remis à 100 : l'embouteillage du banc l'a entamé)
     if (PoursuiteSystem* s0 = PoursuiteSystem::actif) { WFS_LOG("poursuite (banc) : score %d remis à %d", s0->etat().score, SCORE_DEPART); s0->bancScore(SCORE_DEPART); }
-    jusqua(BANC_RALENTISSEUR_KM - 0.045, 60 * 60);
+    // WFS-141 (RG-02) : le pilote automatique reste bloqué derrière le barrage (0,45 km) : saut à 150 m du ralentisseur
+    g_bancSautKm = BANC_RALENTISSEUR_KM - 0.15; images(2, 1);
+    WFS_LOG("poursuite (banc) : saut à %.2f km (ralentisseur à %.2f km)", g.player().dist * M / 1000, BANC_RALENTISSEUR_KM);
+    jusqua(BANC_RALENTISSEUR_KM - 0.018, 60 * 60);   // WFS-141 (RG-02) : capture à 18 m de l'obstacle (15 à 20 m)
     capture("poursuite-ralentisseur");
     basse("ralentisseur");
     jusqua(BANC_RALENTISSEUR_KM + 0.03, 20 * 60);
     if (const PoursuiteSystem* s0 = PoursuiteSystem::actif) WFS_LOG("poursuite (banc) : après le ralentisseur : score %d, %d ralentisseur(s) passé(s) trop vite", s0->etat().score, s0->etat().ralentisseurs);
-    jusqua(BANC_CAMION_KM - 0.026, 60 * 60);
+    jusqua(BANC_CAMION_KM - 0.018, 60 * 60);
     capture("poursuite-camion");
     basse("camion en travers");
     g_bancFin = 1; images(90, 10);
@@ -714,10 +762,11 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
     {
         modeCourse() = ModeCourse::Checkpoint;
         g.allerA(Ecran::Course); images(3 * 60, 8);
-        int pire = -100000;
+        int pire = -100000; double kmMesure = -1; unsigned nMesure = 0;
         for (const Mesure& ms : mesures) {
             jusqua(ms.km, 60 * 60);
-            const unsigned n = appelsBasse();
+            // WFS-144 : mesures de la poursuite au même endroit (bouchon) : Checkpoint mesuré une fois à cet endroit, pas 50 m plus loin
+            const unsigned n = std::abs(ms.km - kmMesure) < 0.01 ? nMesure : (kmMesure = ms.km, nMesure = appelsBasse());
             const int ecart = (int)ms.appels - (int)n;
             pire = std::max(pire, ecart);
             WFS_LOG("poursuite (RG-04) : %s, %.2f km : poursuite %u, Checkpoint %u (%.2f km) : écart %+d", ms.ou, ms.km, ms.appels, n, g.player().dist * M / 1000, ecart);
@@ -747,10 +796,8 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
         images(90, 10);
         return c && c->state == RaceState::Over;
     };
-    // place des boutons de l'écran de fin de la course à 5 (course5_system.cpp, resultat : 5 lignes, marges nulles au banc)
-    const float W = (float)r.width(), H = (float)r.height(), u = H / 100.f;
-    const float ph = (34 + 6.5f * 5) * u, by = (H - ph) / 2 + ph - 7 * u - 3 * u + 3.5f * u;
-    const float xRejouer = W / 2 - 13.5f * u, xMenu = W / 2 + 13.5f * u;
+    // WFS-141 : place des boutons de l'écran de fin de la course à 5 lue sur l’écran dessiné (course5Bouton) et non plus recalculée
+    const float W = (float)r.width(), H = (float)r.height();
     const int doigt = 0;   // Android : le premier doigt posé a toujours l'identifiant 0
     auto toucher = [&](float x, float y, const char* nom) {
         g.onTouch({doigt, x, y, true}); images(2, 1); g.onTouch({doigt, x, y, false}); images(4, 2);
@@ -759,7 +806,9 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
     g.allerA(Ecran::Menu); images(10, 5);
     g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
     if (!jusquaFin()) { ecarts++; WFS_ERR("course à 5 (parcours) : première course pas finie"); }
-    toucher(xRejouer, by, "Rejouer");
+    float bx = 0, by = 0;
+    if (!course5Bouton("rejouer", bx, by)) { ecarts++; WFS_ERR("course à 5 (parcours) : « Rejouer » absent"); }
+    toucher(bx, by, "Rejouer");
     const Course* c = activeCourse();
     if (g.ecran() != Ecran::Course || !c || c->state == RaceState::Over) { ecarts++; WFS_ERR("course à 5 (parcours) : « Rejouer » → pas de nouvelle course"); }
     else WFS_LOG("course à 5 (parcours) : « Rejouer » → nouvelle course");
@@ -777,7 +826,8 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& out) {
         g.render(t += 0.02); g.render(t += 0.02); r.capturePng(out + "/course5-rejouer.png");
         WFS_LOG("capture course5-rejouer : écran de fin de la 2e course (après « Rejouer »)");
     }
-    toucher(xMenu, by, "Menu");
+    if (!course5Bouton("menu", bx, by)) { ecarts++; WFS_ERR("course à 5 (parcours) : « Menu » absent"); }
+    toucher(bx, by, "Menu");
     if (g.ecran() != Ecran::Menu) { ecarts++; WFS_ERR("course à 5 (parcours) : « Menu » (même doigt que « Rejouer ») → écran %s, attendu menu", nomEcran(g.ecran())); }
     WFS_LOG("course à 5 (parcours) : fin → « Rejouer » → nouvelle course → gaz pris → fin → « Menu » → accueil : %d écart(s) %s", ecarts, ecarts ? "ÉCHEC" : "OK");
     g.setAutopilot(false);

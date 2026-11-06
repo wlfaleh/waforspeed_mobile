@@ -1,5 +1,6 @@
 // WaForSpeed — sauvegarde et progression (WFS-24) : voir sauvegarde.h.
 #include "sauvegarde.h"
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -85,6 +86,9 @@ void Sauvegarde::defauts() {
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     mode = "checkpoint"; km5 = 4; diff5 = "normale";   // WFS-110 ; WFS-133
     rec5Place = 0; rec5Ms = 0; recPVictoire = false; recPScore = 0; recPDistM = -1;   // WFS-125 : records vides
+    // WFS-136 (A7.4) : première installation = déjà sur le tracé 2 des cartes actives (rien à mettre de côté)
+    nouveauxTraces = false; anciens.clear(); cartesV2.clear(); cartesAActiver.clear(); trace = 1; adversaires.clear();
+    for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
 }
 
 std::string Sauvegarde::texte() const {
@@ -102,6 +106,14 @@ std::string Sauvegarde::texte() const {
     o << "mode=" << mode << "\n" << "km5=" << km5 << "\n" << "diff5=" << diff5 << "\n";   // WFS-110 ; WFS-133
     if (aRecordCourse5()) o << "record-course5=" << rec5Place << ";" << rec5Ms << "\n";   // WFS-125 : absents tant que vides
     if (aRecordPoursuite()) o << "record-poursuite=" << (recPVictoire ? 1 : 0) << ";" << recPScore << ";" << recPDistM << "\n";
+    if (trace >= 2) o << "trace=" << trace << "\n";                       // WFS-136 (RG-07)
+    for (const std::string& c : cartesV2) o << "trace-" << c << "=2\n";   // WFS-136 (A7.4)
+    if (!adversaires.empty()) {   // WFS-122 (RG-01)
+        o << "adversaires=";
+        for (size_t i = 0; i < adversaires.size(); i++) o << (i ? "|" : "") << adversaires[i];
+        o << "\n";
+    }
+    for (const auto& [k, v] : anciens) o << k << "=" << v << "\n";        // records du tracé 1, gardés
     return o.str();
 }
 
@@ -110,6 +122,9 @@ bool Sauvegarde::lire(const std::string& contenu) {
     std::istringstream in(contenu);
     std::string ligne;
     bool premiere = true;
+    int traceLu = 1;   // WFS-136 : sans clé « trace », la sauvegarde date du tracé 1
+    cartesV2.clear();  // lues dans le fichier (clés trace-<carte>=2)
+    std::map<std::string, std::string> v1;   // records du tracé 1 lus tels quels (mis de côté si traceLu < 2)
     while (std::getline(in, ligne)) {
         if (!ligne.empty() && ligne.back() == '\r') ligne.pop_back();
         if (premiere) {   // RG-05 : version de format ; autre chose = fichier corrompu → défauts
@@ -123,6 +138,17 @@ bool Sauvegarde::lire(const std::string& contenu) {
         const std::string v = ligne.substr(eq + 1);
         if (k.rfind("waforspeed-", 0) == 0) k = k.substr(11);   // clés du web acceptées avec ou sans préfixe
         long long n = 0;
+        // WFS-136 (RG-07) : version du tracé, anciennes clés *_v1 gardées, valeurs brutes des records du tracé 1
+        if (k == "trace") { if (entier(v, n) && n >= 1 && n <= 99) traceLu = (int)n; continue; }
+        if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
+            std::vector<std::string> noms; size_t a = 0;
+            while (a <= v.size()) { const size_t b = std::min(v.find('|', a), v.size()); noms.push_back(v.substr(a, b - a)); a = b + 1; }
+            adversaires.clear(); noterAdversaires(std::vector<std::string>(noms.rbegin(), noms.rend()));
+            continue;
+        }
+        if (k.rfind("trace-", 0) == 0) { const std::string c = k.substr(6); if (v == "2" && carteExiste(c)) cartesV2.insert(c); continue; }
+        if (k.size() > 3 && k.compare(k.size() - 3, 3, "_v1") == 0 && k.size() < 40 && v.size() < 200) { anciens[k] = v; continue; }
+        if (k == "best" || k == "record-course5" || k == "record-poursuite") v1[k] = v;
         // RG-04 : chaque valeur est validée, une valeur inconnue garde le défaut de sa clé
         if (k == "best") { if (entier(v, n)) best = n; }
         else if (k == "car") { if (voitureExiste(v)) car = v; }
@@ -152,6 +178,16 @@ bool Sauvegarde::lire(const std::string& contenu) {
         }
     }
     if (premiere) return false;   // fichier vide
+    trace = traceLu;
+    bool active = false; for (const char* c : trace::CARTES_ACTIVES) { (void)c; active = true; }
+    if (active && traceLu < trace::VERSION) {   // WFS-136 (RG-07, A7.4) : records du tracé 1 mis de côté une fois, jamais effacés
+        for (const auto& [k, v] : v1) if (!anciens.count(k + "_v1")) anciens[k + "_v1"] = v;
+        best = 0; rec5Place = 0; rec5Ms = 0; recPVictoire = false; recPScore = 0; recPDistM = -1;
+        trace = trace::VERSION;
+        WFS_LOG("sauvegarde : nouveaux tracés (tracé %d → %d) : %zu record(s) mis de côté (*_v1)", traceLu, trace::VERSION, v1.size());
+    }
+    for (const char* c : trace::CARTES_ACTIVES) if (!cartesV2.count(c)) cartesAActiver.push_back(c);
+    nouveauxTraces = !cartesAActiver.empty();
     return true;
 }
 
@@ -199,13 +235,46 @@ bool Sauvegarde::charger(const std::string& chemin) {
     chemin_ = chemin; actif_ = true;
     defauts();
     std::FILE* f = std::fopen(chemin.c_str(), "rb");
-    if (!f) { WFS_LOG("sauvegarde : aucun fichier (%s) : valeurs par défaut", chemin.c_str()); return false; }
+    if (!f) {   // WFS-136 : première installation : déjà sur le tracé 2 des cartes actives (aucun record à mettre de côté)
+        for (const char* c : trace::CARTES_ACTIVES) { cartesV2.insert(c); trace = trace::VERSION; }
+        WFS_LOG("sauvegarde : aucun fichier (%s) : valeurs par défaut", chemin.c_str()); return false;
+    }
     std::string c; char buf[4096]; size_t n;
     while ((n = std::fread(buf, 1, sizeof buf, f)) > 0 && c.size() < (1u << 20)) c.append(buf, n);   // 1 Mo au plus
     std::fclose(f);
     const bool ok = lire(c);
+    if (ok && !cartesAActiver.empty()) { activerCartes(); enregistrer(); }   // WFS-136 (A7.4)
     WFS_LOG("sauvegarde : %s lue (%s) : car=%s best=%lld", chemin.c_str(), ok ? "valide" : "corrompue, défauts", car.c_str(), best);
     return ok;
+}
+
+// WFS-122 (RG-01) : chaque nom passe en tête (le dernier de la liste est le plus récent), sans doublon, 3 gardés
+void Sauvegarde::noterAdversaires(const std::vector<std::string>& noms) {
+    for (const std::string& n0 : noms) {
+        std::string n = nettoyerPseudo(n0);
+        for (char& c : n) if (c == '|') c = ' ';
+        if (n.empty()) continue;
+        adversaires.erase(std::remove(adversaires.begin(), adversaires.end(), n), adversaires.end());
+        adversaires.insert(adversaires.begin(), n);
+    }
+    if (adversaires.size() > 3) adversaires.resize(3);
+}
+
+// WFS-136 (A7.4) : cartes passées au tracé 2 depuis le dernier lancement : fantôme du tracé 1 renommé (jamais effacé)
+void Sauvegarde::activerCartes() {
+    for (const std::string& id : cartesAActiver) {
+        if (actif_ && !chemin_.empty()) {
+            const std::string a = cheminVoisin("fantome-" + id + ".bin"), b = cheminVoisin("fantome-" + id + "_v1.bin");
+            if (std::FILE* g = std::fopen(a.c_str(), "rb")) {
+                std::fclose(g);
+                std::FILE* h = std::fopen(b.c_str(), "rb");
+                if (h) std::fclose(h); else std::rename(a.c_str(), b.c_str());   // déjà mis de côté : rien n'est écrasé
+            }
+        }
+        cartesV2.insert(id);
+        WFS_LOG("sauvegarde : %s passe au tracé 2 (fantôme du tracé 1 mis de côté)", id.c_str());
+    }
+    cartesAActiver.clear();
 }
 
 bool ecrireAtomique(const std::string& chemin, const std::string& contenu) {

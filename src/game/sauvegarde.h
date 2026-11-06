@@ -20,9 +20,12 @@
 #include <condition_variable>
 #include <deque>
 #include <map>
+#include <set>
+#include <vector>
 #include <mutex>
 #include <string>
 #include <thread>
+#include "trace_cartes.h"   // WFS-136 : version du tracé
 
 namespace wfs {
 
@@ -67,6 +70,19 @@ public:
     int rec5Place = 0; long long rec5Ms = 0;            // record-course5=place;temps_ms
     bool recPVictoire = false; int recPScore = 0;       // record-poursuite=victoire;score;distance_m
     long long recPDistM = -1;
+    // WFS-136 (RG-07, A7.4) : version du tracé des records. Au premier lancement où une carte au moins est au tracé 2
+    // (trace::CARTES_ACTIVES), records mis de côté une seule fois sous des clés *_v1 (jamais effacés) et trace=2 écrit ;
+    // par carte, clé trace-<carte>=2 : à son passage au tracé 2, son fantôme est renommé fantome-<carte>_v1.bin et un
+    // toast « Nouveaux tracés » est montré au départ suivant (une fois par carte activée)
+    int trace = 1;
+    bool nouveauxTraces = false;                        // toast à montrer (pas écrit dans le fichier)
+    std::map<std::string, std::string> anciens;         // best_v1, record-course5_v1, record-poursuite_v1 (gardés tels quels)
+    std::set<std::string> cartesV2;                     // cartes déjà passées au tracé 2 (clés trace-<carte>=2)
+    std::vector<std::string> cartesAActiver;            // cartes actives pas encore passées (remplie par lire)
+    void activerCartes();                               // fantômes renommés, cartes notées (appelée par charger)
+    // WFS-122 (RG-01) : 3 derniers adversaires du duel, le plus récent en premier (clé adversaires=a|b|c)
+    std::vector<std::string> adversaires;
+    void noterAdversaires(const std::vector<std::string>& noms);   // en tête, sans doublon, 3 au plus
 
     ~Sauvegarde();
     // remet les défauts, puis lit le fichier ; vrai si un fichier valide a été lu. Rend la sauvegarde active.
