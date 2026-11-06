@@ -4532,3 +4532,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Accroches hors zone, annoncées** : `.github/workflows/build.yml` +1 ligne (groupe realisme : `tools/textures/ci_textures.sh`, rapport PSNR) ; `tools/qa/tests_cpu.sh` 1 ligne (argument `assets` de `test_tangentes`) ; `tests/test_roues.cpp` 2 lignes (.wfm v2) ; `CMakeLists.txt` 5 lignes (2 tests, dépendance des shaders aux `*.glsl`) ; `assets/licences/textures-essai.txt` (CC0), `assets/textures/.gitignore`.
 - Limites : ASTC et ETC2 non vérifiés sur un vrai GPU (lavapipe n'a ni l'un ni l'autre : le PC lit la variante RGBA8 ; chargement et tailles testés, envoi GPU des formats compressés non exécuté) ; `.wfp` (personnages) sans tangente : `squelette.cpp` et `convert_people.mjs` hors de ma zone, à faire par WFS-164 (E11) ; `planche_voitures.cpp` (E5) lit encore les sommets à 32 octets : compatible avec la v2 (section à la fin).
 - Fusion : CI de branche verte (run 42210163440, d9d6cb2 : 13 bancs, APK, publication) ; synchros suivantes avec main sans conflit, compilées, 33 tests CPU verts, puis fusion sur ordre du coordinateur (PR ouverte depuis 2 h, main qui bouge sans cesse). CI de main suivie dès maintenant.
+
+### 2026-11-06 13:20:19 — WFS-170 : CI de main suivie après la fusion (run 42215471065, e21145e) (Claude (session trafic))
+- **Verts** : android, publication de l'APK, les 13 bancs (vitrines compris, avec les 20 `vitrine-<id>-feux`).
+- **Rouge, sans lien avec WFS-170** : `endurance` : « fuite de mémoire : +10,9 % au cycle 6 (seuil 10 %) », parcours au doigt 0 écart ;
+  même défaut qu'avant ce ticket (+10,2 % sur b2362b9, WFS-145 en cours, E7). Les correctifs de WFS-170 ne gardent aucune mémoire de plus
+  après le chargement (pièces et indices dans les mêmes tampons). Rien à corriger pour WFS-170.
