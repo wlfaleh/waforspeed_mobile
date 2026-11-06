@@ -5332,3 +5332,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Vérification : `tools/qa/test_statuts.py`, 15 vérifications vertes (ligne 🟣 contenue → ✅ ; fusionnée après le run → inchangée ; 8 cases → inchangée et listée ; statut dans la mauvaise case → listée ; PR inconnue → listée ; même run relancé → rien ; run rouge → aucun changement et entrée au journal ; annulé → rien ; nuit → aucun ✅). Essai à blanc sur une copie de main : 12 tickets 🟣 → ✅ (WFS-109, 134, 137, 139, 140, 150, 175, 176, 178, 181, 188, 189), chacun avec sa PR et son commit.
 - Limites : le déclenchement `workflow_run` n'existe qu'avec le fichier sur main : premier vrai passage au prochain run de main, que je suis. Si une protection de branche refuse l'envoi du robot, le run échoue avec un message clair, et je poserai la question dans `tache utilisateur.md`. RG-08 (`CLAUDE.md`) : à faire par le PO.
 
+
+### 2026-11-06 21:22:56 — WFS-190 : endurance verte sur main (run 774), run annulé avant la fin (agent arwa, session trafic)
+
+- **Run 774** (42279323672, ff28ab1, contient WFS-145, WFS-187, WFS-150, WFS-183) : `endurance` **verte** (job 128103831072), android et les 13 bancs verts. Le run a été **annulé** à 20:45 par une poussée plus récente sur `main` (publication-apk et publication-captures non finies) : pas encore de run « tout vert » à citer.
+- **Cause du rouge précédent** (runs 761, 764) : fuite de jeux de descripteurs (corrigée par WFS-187, `Renderer::destroy(Material&)`) et banc d'endurance (WFS-145). Aucun code à changer dans E7 : RG-02 sans objet.
+- **Suite** : runs 780 à 787 en file ; je cite le premier run tout vert dès qu'il finit (le robot de WFS-196 passe alors les 🟣 en ✅). Pas de relance à la main (RG-04 : des runs sont en file).
