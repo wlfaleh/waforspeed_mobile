@@ -5403,3 +5403,34 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   4. Profondeur des combinés reculée de 6 à 8 cm par rapport à l'estimation, pour que la jante reste devant l'écran.
 - Vérification : 37 tests CPU verts (dont `test_cockpit`, 28 vérifications : RG-01, 03, 04, 05, 06, 07 et charte du cuir). Syntaxe propre. **Rendu non vu en local** (pas de Vulkan ici) : confiance ≤ 50 % → une CI de branche lancée à la main (`workflow_dispatch`, branche synchronisée). Je regarde les captures avant de fusionner.
 
+
+### 2026-11-06 21:48:29 — WFS-158 : livraison 2 fusionnée par confiance (PR #162, e622b04) : ST-2, échelle et roues des voitures (arwa-2)
+- **Outil** : `tools/corriger_voitures.cpp` (cible CMake `corriger_voitures`), lancé par `convertir_voitures.sh` après la conversion. Il trouve les roues comme le moteur (`roues::decouper`) et applique, d'après `references/reel/voitures.json` :
+  1. l'échelle globale qui gagne des mesures de caisse (L, l, h, empattement), jamais par axe (RG-01) ;
+  2. les roues hors tolérance au diamètre de la fiche (échelle autour du centre ; disques et étriers suivent) ;
+  3. les voies hors tolérance remises à la fiche, si chaque roue bouge de 15 mm au plus sans sortir de la caisse ;
+  4. les 4 pneus au même niveau et la caisse vers la hauteur nominale (RG-02).
+  Il garde la combinaison qui gagne le plus de mesures sans en perdre aucune. Il est idempotent : un 2e passage ne change rien (vérifié). Seules les positions des sommets changent : matériaux, textures, normales, uv, indices et tangentes sont intacts, `correctifs_voitures.h` reste valable.
+- **Accroche CMake annoncée** : 2 lignes, cible `corriger_voitures`, à côté de `test_fidelite_voitures`.
+- **Rapport des corrections par voiture** (mesures conformes avant → après) :
+  - golf 5 → 8 / 8 : roues 656 → 637 mm, voie ar −19 mm ;
+  - m4 4 → 7 / 8 : roues av 688 → 675, ar 688 → 679 mm, voie ar −26 mm, caisse −6 mm ; la largeur +8,6 % reste (RG-05) ;
+  - p911 3 → 4 / 6 : roues ar 676 → 716 mm ; la largeur +5,2 % et l'empattement +1,7 % restent ;
+  - gallardo 4 → 7 / 8 : × 1,0085, voie av +22 mm ;
+  - p208 2 → 5 / 8 : × 0,9965, roues 629 → 621 mm ; les voies −105 mm (53 mm par roue) restent (RG-05) ;
+  - abarth 5 → 8 / 8 : roues 588 → 582 mm, voie av +16 mm ;
+  - compass 2 → 4 / 6 : × 1,009 ; les voies −152 / −126 mm restent (RG-05) ;
+  - s3 4 → 5 / 6 : × 1,0025, les 4 pneus posés (un pneu était à 14 mm du sol) ;
+  - x5 2 → 4 / 4 : × 1,008 ;
+  - a45 3 → 4 / 6 : × 0,994 ; les voies (16-18 mm par roue) restent ;
+  - corsa 2 → 3 / 6 : × 1,0015 ; les voies (19 mm par roue) restent ;
+  - gt86 4 → 7 / 8 : × 1,010, roues 633 → 625 mm, voie ar +26 mm ; l'empattement −1,6 % reste ;
+  - v60 4 → 7 / 8 : × 1,011, roues 639 → 679 mm, caisse +8 mm ;
+  - rrsport 4 → 5 / 5 : voie av −20 mm ;
+  - sf90 4 → 5 / 6 : voie av −21 mm ; la hauteur −2,7 % reste (RG-05) ;
+  - inchangées : tcross 4 / 8 (voies de 33 à 44 mm par roue, RG-05), giulia 8 / 8, elantra 6 / 8 (voie av refusée : la roue sortirait de la caisse), mustang 7 / 8 (voie ar, 20 mm par roue) ;
+  - model3 non touchée (remplacement RG-D en attente).
+- **Indice voitures** (`test_fidelite_voitures`) : 80 → 111 / 141 mesures conformes (56,7 % → 78,7 %) ; pneus posés 19 → 20 / 20. Les 99 % ne sont pas atteints : 6 modèles ont des proportions fausses (RG-05 : m4, p911, p208, tcross, model3, sf90), plus les voies de compass, a45, corsa, elantra et mustang. Cette liste va au PO pour la question du remplacement à l'utilisateur.
+- **Preuves** : captures locales du banc (lavapipe, 2400 × 1080), `vitrine-<id>-0` et `-feux` avant / après des 15 voitures, zooms sur les roues (911, M4, Golf, Gallardo, Abarth, V60, SF90). Aucune pièce étirée, aucun pneu enfoncé ni flottant, roues dans leur passage de roue, feux arrière allumés au freinage comme avant. 36 tests CPU OK.
+- **Prévenu pour WFS-182 (E4, feux)** : les zones de `ZONES_FEUX` (boîtes en mètres) restent valables : les feux des 15 voitures s'allument comme avant sur les captures `-feux`.
+- **Suite** : je suis la CI de main, puis RG-C (bas du hayon du X5 en dents de scie).
