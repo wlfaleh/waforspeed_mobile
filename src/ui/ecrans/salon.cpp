@@ -475,7 +475,7 @@ private:
         const bool pret = duelSession().status() == duel::Status::Ready, hl = horsLigne();
         g_pret = bouton(r, zl, by, bh, k, "Prêt", !pret && !hl);   // prêt : bouton clair souligné de cyan (une touche l'annule)
         if (pret && !hl) { r.uiRect(g_pret.x + 14 * k, by + bh - 3 * k, g_pret.w - 14 * k, 3 * k, hex(ACCENT2)); }
-        if (hl) { biseau(r, g_pret.x, by, g_pret.w, bh, 14 * k, hex(BG, 0.6f)); g_reessayer = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "Réessayer", true); } else g_reessayer = {};
+        if (hl) { biseau(r, g_pret.x, by, g_pret.w, bh, 14 * g_kb, hex(BG, 0.6f)); g_reessayer = bouton(r, g_pret.x + g_pret.w + 10 * k, by, bh, k, "Réessayer", true); } else g_reessayer = {};
         const Zone z = hl ? g_reessayer : g_pret; if (hl) g_pret = {};   // grisé : sans effet
         g_quitter = bouton(r, z.x + z.w + 10 * k, by, bh, k, "Quitter le salon", false);
     }
