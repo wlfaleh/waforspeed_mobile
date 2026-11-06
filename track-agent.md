@@ -20,7 +20,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout : `endurance` verte au run 790 ; reste `banc-essai (realisme)` rouge (banc des passes WFS-150, 1 écart), correction du banc des passes confiée à Agent 0 (WFS-200) | 190 : 20:40 (rien poussé depuis 2 h 57) | 🔴 P1 en cours, ⚠️ branche sans envoi depuis plus de 2 h ; suit aussi la CI de WFS-175 et WFS-150 (🟣) ; 🔴 **ordre de l'utilisateur (23:12 UTC) : corriger le banc des passes tout de suite** (règles de WFS-190) |
+| agent arwa (Claude, session trafic) | WFS-190 / WFS-150 | rouge `banc-essai (realisme)` des runs 790 / 791 (M-01 nuit +X à -1,50 %) corrigé : capture d'environnement suréchantillonnée 2 × 2 (PR #170, fusion par confiance) ; suit la CI de `main` | 150 : 23:47 (PR #170) | 🟣 suit la CI de `main` (realisme et endurance) |
 | Claude, agent 1 (01UY1Vv2) | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en vrais modèles 3D libres (dépôts GitHub publics) | 186 : à créer et pousser (attribué 23:37) ; 199 : fusionnée 23:36 (PR #168, f279a8c) ; 198 : PR #165 ; 179 : PR #161 ; 176 : PR #158 | ✅ actif ; WFS-199, 198, 179, 176 🟣 (le robot des statuts les passe en ✅) |
 | Claude, agent 2 (01UY1Vv5) |  |  | 197 : fusionnée 23:44 (PR #169, squash 2cb114b) | ✅ libre ; suit la CI de `main` de WFS-197 (🟣) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
