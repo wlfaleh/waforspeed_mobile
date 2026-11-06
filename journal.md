@@ -2734,3 +2734,42 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Critères** : test local vert (6 cas RG-08) ; un `workflow_dispatch` sur `main` après fusion : archives faites, comptages égaux, commit `(robot archives)`, entrée au journal ; aucun run de `build.yml` déclenché ; ligne `qa/Check.md` ; 🟣 puis ✅.
 - **Plan court** : script `archives.py` + test sur fichiers d'exemple → workflow (03:07 UTC, dispatch, `contents: write`, concurrency sans annulation, rebase 5 fois) → fusion (squash) → un lancement à la main sur `main`, vérification des comptages.
 - **WFS-190** : reste à agent arwa (dernier envoi 20:40, moins de 10 h) ; relance par message seulement.
+
+### 2026-11-06 22:36:50 — Statuts automatiques, CI main #790 (robot statuts)
+- Run rouge (push, commit e622b04), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-140, WFS-150, WFS-175, WFS-178, WFS-181, WFS-188, WFS-189, WFS-196.
+- À corriger par le PO : `TACHES.md` l. 135 : WFS-139 : PR #142 introuvable dans le dépôt (ligne laissée telle quelle).
+- À corriger par le PO : `TACHES.md` l. 156 : WFS-176 : PR #158 introuvable dans le dépôt (ligne laissée telle quelle).
+- À corriger par le PO : `TACHES.md` l. 159 : WFS-179 : PR #161 introuvable dans le dépôt (ligne laissée telle quelle).
+
+### 2026-11-06 22:37:51 — WFS-198 fusionné : robot des archives (Claude, agent 1)
+- PR #165, squash f61e884, **fusion par confiance** : `tools/qa/archives.py`, `tools/qa/test_archives.py` (tout vert en local), `.github/workflows/archives.yml` (chaque nuit 03:07 UTC + `workflow_dispatch`).
+- Essai à blanc sur une copie de `main` (date simulée 2026-11-08) : 321 entrées rangées, comptages égaux (644 entrées, 197 lignes de tickets) ; aujourd'hui : rien à ranger.
+- RG-07 vérifié : le robot n'écrit que des `.md` / `regles-de-gestion/**`, dans `paths-ignore` de `build.yml` (non modifié). Statut 🟣 ; ✅ après un premier lancement à la main sur `main`.
+- RG-09 : au PO de mettre à jour sa règle « Ménage quotidien » (le robot fait le journal et `TACHES.md`, le PO garde `tache utilisateur.md`).
+
+### 2026-11-06 22:39:38 — WFS-158 : livraison 4 fusionnée par confiance (PR #166, edb17c0) : plaques arrière européennes de l'Elantra, la Mustang, la M4 et la SF90 (arwa-2)
+- **Plaques remplacées** : plaques de concession « ELANTRA N » (303 × 151 mm) et « FORD PERFORMANCE » avec logo Ford (304 × 136 mm), plaque du Texas de la M4 (267 × 131 mm), plaque italienne de la SF90 (320 × 87 mm). Elles deviennent des plaques françaises neutres de 520 × 110 mm : GN-623-YB, FM-509-GT, EB-944-KM, GF-190-XS.
+- **Outil** : `plaques_voitures.mjs` prend le plan de la plaque sur ses faces quand les normales des sommets sont inutilisables (SF90). Les 7 voitures de la livraison 3 ne bougent pas.
+- **Preuves** : captures locales `vitrine-<id>-feux` avant / après. Plaques lisibles, dans leur logement ; Mustang : devant les bandes ; SF90 : dans l'ombre du diffuseur, comme avant. Dimensions des voitures inchangées (111 / 141), 37 tests CPU OK.
+- **M-04, état** : 24 plaques au format sur 15 voitures (V60, A 45, RR Sport, 208, Abarth, Giulia, Compass, Corsa, 911, S3 : avant et arrière ; Elantra, Mustang, M4, SF90 : arrière seulement).
+- **Reste** :
+  - les plaques avant de l'Elantra, de la Mustang, de la M4 et de la SF90 (absentes du modèle) ;
+  - les plaques de la Golf, de la Gallardo, du T-Cross, du X5 et de la GT86 (aucune plaque à part : à poser) ;
+  - la Model 3 (RG-D).
+
+### 2026-11-06 22:40:30 — Méthode des dépôts GitHub publics étendue aux humains, animaux, bâtiments ; WFS-186 débloqué (po-scrum-master)
+- **Demande de l'utilisateur** : même méthode pour les modèles humains, animaux, bâtiments.
+- **Essais** (recherche de code GitHub, `license.txt` de Sketchfab) : vache 118, cheval 68, mouton 41, pigeon 31, personnage CC-BY 151, humain animé 34, bâtiment 364, immeuble 68 ; paquets CC0 Quaternius 2 424, Kenney 20 448.
+- **Fait** : fiche renommée `.claude/skills/waforspeed-natif/references/modeles-3d-github.md` (§ 5 : humains, animaux, bâtiments, végétation ; paquets stylisés seulement en provisoire, réalisme validé par expert-realisme-3d) ; renvois mis à jour. **WFS-186** (animaux de ferme) : 🚫 Bloqué → ⏳ Prêt. Section « Source des modèles » ajoutée à WFS-161 (bâtiments), 163 (végétation), 164 (humains).
+
+### 2026-11-06 22:45:14 — WFS-190 : run 790, endurance verte ; seul `banc-essai (realisme)` rouge (banc des passes WFS-150) (agent arwa, session trafic)
+
+- **Run 790** (42299631154, e622b04, contient WFS-145, 187, 150, 183, 181, 175, 158 ST-2) : `endurance` **verte**, android, 12 bancs et les 2 publications verts.
+- **Rouge** : `banc-essai (realisme)` (job 128173736588), code 3 : « passes (WFS-150) : banc terminé, 1 écart(s) ». WFS-150 est notre ticket : enquête et correction lancées tout de suite (bissection 7a6c136..e622b04 si la cause vient d'un autre ticket ; dans ce cas son développeur sera prévenu ici, RG-03).
+- WFS-190 reste 🔧 jusqu'à un run de `main` entièrement vert.
+
+### 2026-11-06 22:51:42 — WFS-199 créé : Grand Prix, 2 tribunes au plus avec de vrais spectateurs (po-scrum-master)
+- **Remarque de l'utilisateur** : spectateurs du Grand Prix en formes géométriques ; 2 tribunes au plus, vrais spectateurs.
+- **Cause** : `circuit.cpp` `case T_STAND` dessine chaque spectateur en 2 boîtes ; tribunes répétées (ligne droite tous les 26 segments, épingle, raidillon, zone « tribunes »).
+- **WFS-199** (E2 + E11, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-199.md`) : 2 tribunes (départ, épingle), personnages `homme.wfp` / `femme.wfp` animés en instances, aucune boîte à aucune distance, budget Haute ≤ 400 / Basse ≤ 150, captures jour / nuit / Basse. Exception PO : zone E11 `pietons.*` (aucun ticket E11 actif). Réponse dans `tache utilisateur.md`.

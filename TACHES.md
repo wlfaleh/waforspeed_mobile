@@ -142,7 +142,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-155 | [RÉALISME 2.R1] Routes : revêtements réels scannés et calibrés par carte, usure … | E9 (+ accroche `track.cpp`) | ⏳ En attente |  | WFS-151 validée | `feature/waforspeed-155` |  |  |
 | P2 Haute | WFS-156 | [RÉALISME 2.R2] Routes : marquages réglementaires usés et rétroréfléchissants, fissures … | E9 | ⏳ En attente |  | WFS-155 validée | `feature/waforspeed-156` |  |  |
 | P2 Haute | WFS-157 | [RÉALISME 2.R3] Routes : états de surface (sec, humide, mouillé, flaques, sable … | E9 (+ accroche `meteo.cpp`) | ⏳ En attente |  | WFS-156, WFS-154 validées | `feature/waforspeed-157` |  |  |
-| P2 Haute (**RG-B / ANO-75 en P1 Urgent**, à livrer en premier, PO 2026-11-06 14:26) | WFS-158 | [RÉALISME 2.V1] Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 … | E10 | 🔧 En cours | arwa-2 (Claude, session 01Us6uCu) | WFS-148 ✅ (fusionné, décision PO … | `feature/waforspeed-158` | #157 #162 #163 |  |
+| P2 Haute (**RG-B / ANO-75 en P1 Urgent**, à livrer en premier, PO 2026-11-06 14:26) | WFS-158 | [RÉALISME 2.V1] Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 … | E10 | 🔧 En cours | arwa-2 (Claude, session 01Us6uCu) | WFS-148 ✅ (fusionné, décision PO … | `feature/waforspeed-158` | #157 #162 #163 #166 |  |
 | P2 Haute | WFS-159 | [RÉALISME 2.V2] Véhicules : peinture multicouche (flocons, vernis), verre physique … | E10 | ⏳ En attente |  | WFS-158, WFS-151 validées | `feature/waforspeed-159` |  |  |
 | P2 Haute | WFS-160 | [RÉALISME 2.V3] Véhicules : suspension visible (roulis, plongée), roues, salissures … | E10 (+ lecture E3) | ⏳ En attente |  | WFS-159 validée | `feature/waforspeed-160` |  |  |
 | P2 Haute | WFS-161 | [RÉALISME 3.E1] Environnements : kit d'architecture (6 styles), fenêtres en profondeur … | E12 (+ accroches cartes) | ⏳ En attente |  | WFS-151 validée | `feature/waforspeed-161` |  |  |
@@ -155,7 +155,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-175 | Ville (2/4) : autoroute urbaine, tunnel et pont | E2 | 🟣 Fusionné (PR #155) | agent arwa (Claude, session trafic) | WFS-137 🟣 | `feature/waforspeed-175` | #155 |  |
 | P2 Haute | WFS-176 | Ville (3/3) : casino, centre commercial, cafés et bars, garages, pigeons et chiens | E2 | 🟣 Fusionné | Claude, agent 1 (session 01UY1Vv2) | WFS-175 🟣 (code sur `main`) | `feature/waforspeed-176` | #158 |  |
 | P2 Haute | WFS-178 | Campagne (2/3) : village (rond-point, feu, café, bar, garage) — animaux sortis vers … | E2 | 🟣 Fusionné par confiance (PR #148) | Claude (session dev 5bx) | WFS-138 ✅ | `feature/waforspeed-178` | #148 |  |
-| P2 Haute | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en modèles 3D réels CC0 | E2 | 🚫 Bloqué : modèles CC0 à fournir |  | WFS-178 ✅ | `feature/waforspeed-186` |  |  |
+| P2 Haute | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en modèles 3D réels CC0 | E2 | ⏳ Prêt (source trouvée : dépôts GitHub publics) |  | WFS-178 ✅ | `feature/waforspeed-186` |  |  |
 | P2 Haute | WFS-179 | Campagne (3/3) : autoroute et péage | E2 | 🟣 Fusionné | Claude, agent 1 (session 01UY1Vv2) | WFS-178 🟣 (code sur `main`) | `feature/waforspeed-179` | #161 |  |
 | P2 Haute | WFS-181 | Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins | E2 | 🟣 Fusionné (PR #153) | Claude (session trafic) | WFS-180 ✅ | `feature/waforspeed-181` | #153 |  |
 | P3 Moyenne | WFS-188 | Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche de chaque … | E3 | 🟣 Fusionné (PR #154) | Claude (session dev expert, 0183bv2X) | — | `feature/waforspeed-188` | #154 |  |
@@ -168,7 +168,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-195 | [RÉALISME] Vue cockpit réaliste : volant en cuir et cockpit digital propres à chaque … | E10 (+ E3 `camera_vue.*`) | ⏳ En attente |  | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-195` |  |  |
 | P1 Urgent | WFS-196 | [CI] Statuts automatiques : un robot passe les tickets 🟣 en ✅ (numéro du run) dès que la … | E7 (exception PO : WFS-185 🟣 … | 🟣 Fusionné (PR #160) | Claude, agent 2 (01UY1Vv5) | WFS-185 🟣 | `feature/waforspeed-196` | #160 |  |
 | P2 Haute | WFS-197 | [RÉALISME] Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central … | E3 `camera_vue.*` (exception … | 🔧 En cours | Claude, agent 2 (01UY1Vv5) | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-197` |  |  |
-| P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 (exception PO 22:32 : 2e ticket E7 à côté de WFS-190, fichiers nouveaux seulement, `build.yml` et `statuts.yml` interdits) | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 22:32 UTC | — | `feature/waforspeed-198` |  |  |
+| P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 (exception PO 22:32 : 2e ticket E7 à côté de WFS-190, fichiers nouveaux seulement, `build.yml` et `statuts.yml` interdits) | 🟣 Fusionné (PR #165, fusion par confiance) | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 22:32 UTC | — | `feature/waforspeed-198` | #165 |  |
+| P1 Urgent | WFS-199 | Grand Prix : 2 tribunes au plus, vrais spectateurs (personnages animés), plus aucune boîte | E2 (+ E11 `pietons.*`) | ⏳ Prêt |  | WFS-140 🟣 | `feature/waforspeed-199` |  |  |
 
 ## Critères d'acceptation
 

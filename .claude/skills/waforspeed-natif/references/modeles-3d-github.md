@@ -1,4 +1,4 @@
-# Trouver un vrai modèle de voiture sans intervention de l'utilisateur (méthode du jeu web)
+# Trouver un vrai modèle 3D (voitures, humains, animaux, bâtiments) sans intervention de l'utilisateur (méthode du jeu web)
 
 Méthode reprise du jeu web (`wlfaleh/waaps`, `.claude/skills/waforspeed-3d/references/modeles-voitures.md`), qui a trouvé ainsi
 ses 20 voitures (`waforspeed/models/README.md` : « tous trouvés dans des dépôts GitHub publics, avec leur licence d'origine (Sketchfab) »).
@@ -38,3 +38,23 @@ Si le modèle exact n'existe pas : le plus proche (même voiture, autre année) 
 - Conversion par `tools/convert_car.mjs` (ou `tools/convertir_voitures.sh`), comme les 20 voitures actuelles.
 - `assets/licences/<id>.txt` : texte d'origine + dépôt GitHub où il a été trouvé + ligne « Modifications for WaForSpeed ».
 - Journal : dépôt, chemin, lien Sketchfab, licence, auteur, SHA-256 du fichier source, taille avant / après (`regles-reseau.md` § 6).
+
+## 5. Même méthode pour les humains, les animaux, les bâtiments, la végétation (2026-11-06, demande de l'utilisateur)
+Recherche de code GitHub, puis étapes 2 à 4 (dossier à part, licence lue, conversion par les outils du dépôt, journal). Essais du 2026-11-06 :
+
+| Recherche (`gh api -X GET search/code -f q='…'`) | Résultats |
+|---|---|
+| `"cow" sketchfab filename:license.txt` / `"horse" …` / `"sheep" …` / `"pigeon" …` | 118 / 68 / 41 / 31 |
+| `"character" "CC-BY-4.0" sketchfab filename:license.txt` ; `"man" "rigged" sketchfab filename:license.txt` | 151 ; 34 |
+| `"building" sketchfab filename:license.txt` ; `"apartment" sketchfab filename:license.txt` | 364 ; 68 |
+| `quaternius CC0 filename:License.txt` (paquets CC0 de Quaternius : personnages, animations, animaux) | 2 424 |
+| `kenney.nl "CC0" filename:License.txt` ; `kenney "City Kit"` (paquets CC0 de Kenney : villes, bâtiments, mobilier) | 20 448 ; 3 576 |
+
+- Les piétons actuels du jeu viennent déjà de là : « Universal Base Characters » et « Universal Animation Library » de Quaternius, CC0
+  (`wlfaleh/waaps`, `waforspeed/models/people/license.txt`).
+- **Réalisme** : les paquets Quaternius et Kenney sont **stylisés (low-poly)** ; l'axe Réalisme (`regles-de-gestion/DA-realisme.md`, fidélité
+  99 %) demande des modèles réalistes : préférer les modèles Sketchfab réalistes (CC0 / CC BY) trouvés par `license.txt`, et faire valider le
+  choix par `expert-realisme-3d` (consultant) avant la conversion. Un modèle stylisé n'est permis que comme remplaçant provisoire, noté au journal.
+- **Animaux et humains animés** : vérifier qu'il y a un squelette et des animations (marche, repos) ou prévoir celles de Quaternius (CC0) ;
+  sinon le noter.
+- **Bâtiments** : vérifier l'échelle (1 unité = 1 m), le nombre de triangles et la taille des textures (budget du téléphone, `regles-reseau.md` § 5).
