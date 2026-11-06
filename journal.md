@@ -4979,3 +4979,72 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/game/cars.h` (`carPerf`), `src/game/player.cpp` (poussée, freinage), `tests/**`. **Interdit** : `src/game/game.*` (E0), chiffres `CarSpec` du garage, temps des checkpoints, `course5_system.cpp` (rapport 0,9 inchangé ; équilibre Course à 5 = WFS-189), `configgame.json`, taille des boutons, tout iOS.
 - **Critères** : test CPU des 20 voitures (0-100 ±10 %, Vmax 98-101 %, 100-0 de 33 à 40 m dans l'ordre RG-04, tableau au Journal) ; Compass 0-100 ≤ 10,5 s et 20 voitures ≥ 8 checkpoints en simulation Ville (sinon signaler au PO avant tout) ; tests CPU existants verts ; parcours complet RG-10 au Journal.
 - **Plan court** : 1) banc CPU des 20 voitures (état actuel) ; 2) recaler `a0` / `top` de `carPerf` ; 3) moduler `Phys::brake` par masse et adhérence ; 4) tests, parcours, fusion selon la règle en vigueur.
+### 2026-11-06 19:26:08 — WFS-181 : fusionné par confiance (PR #153, commit 78b9a30) (Claude (session trafic))
+- **RG-05, les lieux** : 8 établissements posés depuis les sections de WFS-136 (`plage::etablissements`). Ils sont sur le front de mer plat (zones corniche et village). Aucun n'est dans une section serrée, au feu ou dans les 60 m qui précèdent un virage ou un feu, ni à l'intérieur d'une courbe de moins de 150 m (RG-C1). Chacun est vérifié contre les autres branches (`placeLibre`).
+  - 3 paillotes « BEACH BAR » sur le sable : chaume, plancher de bois sur pilotis, comptoir de 1,10 m, tabourets, transats et parasols de paille, guirlande à 2700 K.
+  - 1 casino de station de 44 × 16 m : enduit blanc, pierre claire, portique à 4 colonnes, dôme de zinc, « CASINO » sur le toit et sur le portique, néons roses bornés.
+  - 2 cafés à terrasse (store à rayures, tables de bistrot), 1 galerie vitrée « GALERIE MARINE » (mur-rideau) et 1 location de scooters (6 scooters Vespa Primavera à la cote).
+  - Enseignes : atlas de `enseignes.cpp`. La nuit, les vitrines sont à 3000 K (4000 K pour la galerie). Les bars et le casino ont une lumière sodium (`lampadaires()`).
+  - Chaume et bois : textures calculées (CC0), car les sites de textures sont bloqués.
+  - Villas, pins et palmiers sont retirés de l'emprise des lieux. Serviettes et parasols sont retirés de celle des bars (`plage::occupe`). Deux palmiers sont ajoutés devant le casino.
+- **RG-06 / RG-C4, les animaux** : des modèles libres ont été trouvés sur GitHub (le clonage passe par le proxy). Les conversions sont dans `assets/world/animaux/` (135 Ko) et les licences dans `assets/licences/animaux-corniche.txt`.
+  - Mouette : `svartmc/seagull` (MIT, FBX à squelette). Le convertisseur `convertir_animaux.py` calcule les poses par habillage : 8 phases du battement, le plané et la pose posée. Mise à l'échelle et teintes du goéland leucophée : envergure 1,40 m, longueur 0,62 m.
+  - Dauphin : « Animated Fish Pack » de Quaternius (CC0, via `trebeljahr/quaternius-showcase`), 2,30 m.
+  - Comportement : 34 mouettes. Celles en vol suivent un virage incliné à 9-12 m/s et battent des ailes à 2,8 Hz avant de planer. 12 sont posées sur les rochers qui dépassent leurs voisins. Les 2 dauphins sautent toutes les 11 s, avec de l'écume à la sortie et à l'entrée. En Basse, une mouette sur deux et la moitié des petits objets.
+  - **Pour le PO** : le même dépôt CC0 (`trebeljahr/quaternius-showcase`, `public/glb/animals_pack` : vache, cheval, âne, cerf, renard…) peut débloquer **WFS-186** (animaux de ferme).
+- **Preuve (RG-C5)** : 20 nouvelles captures au banc Corniche, de jour et de nuit (`carte-plage-bar`, `-casino`, `-cafe`, `-galerie`, `-scooters`, chacune avec `-vue`, ainsi que `-mouettes`, `-mouettes-posees` et `-dauphins`). Les versions « avant » sont produites en local avec `WFS_PLAGE_AVANT=1`. Appels de dessin : +9 à +27 selon la vue (≤ +150). Falaise, tunnel, rond-point, marina, village et vues de dessus : 0 pixel d'écart. Les 35 tests CPU sont OK et `WFS_BANC=parcours` donne « 0 écart(s) OK ». Mesures et indice (17 / 17 sur les mesurables) : voir la ligne de `qa/Check.md`.
+- **Changement de capture d'un autre ticket** : `ambiance()` donne désormais la nuit aux vues de la promenade du banc (avant, elle était ignorée en scène dédiée). `carte-plage-fete-vue-nuit` (WFS-180) est maintenant vraiment de nuit. Les vues de jour et de dessus ne changent pas.
+- **Accroches** : aucune hors zone. Les fichiers touchés sont `src/world/plage.cpp`, `assets/world/animaux/**` et `assets/licences/animaux-corniche.txt`. L'appel de libération de WFS-187 est étendu au matériau du dauphin.
+- **Limites** :
+  - La mouette d'origine est en basse définition (142 triangles), et sa pose posée a les ailes repliées approximativement.
+  - Le vitrage de jour n'a pas de reflet réel.
+  - Sans rapport avec ce ticket et déjà présent avant : la nuit, les murs blancs proches d'un lampadaire sont surexposés (villas, scooters, galerie). La cause est dans `src/render/nuit.cpp` : anomalie à créer par le QA.
+  - APK non construit en local. Je suis maintenant la CI de `main`.
+
+
+### 2026-11-06 19:26:22 — track-agent.md : colonne « Ticket en cours » limitée aux tickets en cours, vide sinon (po-scrum-master)
+- **Ordre de l'utilisateur** : la colonne des tickets ne montre que les tickets en cours ; un agent sans ticket en cours a la case vide.
+- **Fait** : colonne renommée « Ticket en cours » (🔧 ou 🔀 seulement), cases vidées pour les agents 2, 4, 5 et la session dev 5bx ; les tickets 🟣 dont l'agent suit la CI de `main` vont dans « État ». Règle écrite en tête du fichier.
+
+### 2026-11-06 19:30:31 — WFS-185 : PR #149 fusionnée par l'utilisateur (Claude, agent 1, session 01UY1Vv2)
+- La fusion directe sur `main` avait été bloquée par la protection de la session (classée « contournement de la CI ») : je ne l'ai pas forcée ; l'utilisateur a fusionné la PR #149 lui-même (commit f152ff8, 19:29 UTC).
+- Contenu : `build.yml` seulement sur `push` de `main` (`paths-ignore` gardé), `schedule` et `workflow_dispatch` ; `ios.yml` sans `feature/**` ; job `résumé (commit et tickets)` ; publication des captures et de l'APK aussi au lancement à la main (RG-06, 2 conditions `if:` hors du bloc `on:`, annoncées).
+- CI : run 777 de `main` (build) lancé par la fusion, en file d'attente. Effet de bord : la modification de `ios.yml` sur `main` a lancé une fois « Construction iOS » (run 42280099905), comme prévu par son filtre de chemins ; plus aucune CI iOS de branche ensuite. Les runs de branche déjà en file (ex. `feature/waforspeed-181`, run 775) utilisent l'ancien `build.yml` et tournent encore une dernière fois.
+- À vérifier : run 777 vert avec son résumé ; prochain push d'une branche `feature/**` sans run.
+
+### 2026-11-06 19:32:00 — Nom de l'agent : « agent arwa » (agent arwa, session trafic)
+
+Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle désormais **agent arwa**. Ligne de `track-agent.md` renommée ; les entrées et commits suivants sont signés « agent arwa (session trafic) ». Les anciennes cases Responsable de `TACHES.md` ne changent pas.
+
+### 2026-11-06 19:32:23 — WFS-181 : CI de main après la fusion (agent arwa, session trafic)
+- Le run 42279476180 (commit 78b9a30, fusion de WFS-181) est **en file d'attente**. Les lanceurs GitHub sont saturés : les runs de main attendent depuis 17:40 UTC.
+- WFS-181 reste 🟣 dans `TACHES.md`. Il passera à ✅ avec le numéro du run vert. Rien à corriger pour l'instant : en local, compilation, 35 tests CPU, `WFS_BANC=corniche` et `WFS_BANC=parcours` (0 écart) sont OK.
+
+
+### 2026-11-06 19:33:03 — Règle : fusion des PR en squash, nom de l'agent dans chaque titre de commit (po-scrum-master)
+- **Ordre de l'utilisateur** : fusion en squash ; chaque commit porte le nom de l'agent avec son titre.
+- **Écrit dans** : `CLAUDE.md`, `waforspeed-natif` (5 ter), checklist de livraison (`agent-developer`), agent PO, en-tête de `track-agent.md` (le nom à utiliser est celui de la colonne « Agent »).
+- **Format** : PR fusionnée en squash, titre `WFS-XX : <titre> (#PR) (<agent>)` ; tout commit finit par `(<agent>)`, synchronisations comprises (`git merge origin/main -m "Synchronisation avec main (<agent>)"`).
+
+### 2026-11-06 19:34:45 — Début WFS-175 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- **Ticket** : WFS-175 — Ville (2/4) : autoroute urbaine, tunnel et pont · E2 · P2 Haute · règles : `regles-de-gestion/WFS-175.md` (= RG-03 et RG-C1 à RG-C5 de `WFS-137.md`).
+- **Pourquoi lui** : agent libre (WFS-150, 181, 182, 183 fusionnés). E2 sans ticket 🔧 / 🔀 (WFS-137, 178, 181 🟣). WFS-175 = plus petit numéro P2 attribuable ; dépendance WFS-137 🟣 (même pratique que WFS-180 après WFS-139 🟣). WFS-151 non attribué : dépend de WFS-150 « validée » (CI de `main` 42262489656 rouge, ordre « étape par étape, validée avant la suivante »).
+- **Zone autorisée** : `src/world/ville.cpp`, `src/world/ville_quartiers.*`, `assets/world/**`, `src/world/cartes_banc.cpp` ; accroche ≤ 10 lignes annoncée `src/platform/desktop_main.cpp` ; outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`) sans modification. **Interdit** : `src/game/**` (sauf la ligne `trace::CARTES_ACTIVES`), les 3 autres cartes, `src/render/**`, `shaders/**`, `src/ui/**` (et toute taille de bouton), iOS (gel).
+- **Critères** : `carte-ville-autoroute`, `carte-ville-tunnel` (+ pont) de jour et `-nuit`, caméra de course ; graphisme réaliste partie par partie (voies 3,5 m, tunnel éclairé zone d'entrée puis régulier, pont tablier / piles / garde-corps réels, béton 0,25-0,35) avec captures avant / après et indice de fidélité ; +150 appels de dessin au plus ; parcours complet à 0 écart ; ligne `qa/Check.md`.
+- **Plan court** : branche `feature/waforspeed-175` poussée tout de suite ; autoroute, puis tunnel, puis pont sur les sections de WFS-136 ; captures ; fusion par confiance si > 50 %, sinon une CI manuelle de la branche.
+- **Signalements de l'agent de WFS-181** : (1) dépôt GitHub trebeljahr/quaternius-showcase (Quaternius, CC0 annoncé) : piste pour débloquer WFS-186 ; WFS-186 reste 🚫 jusqu'à ce que les `.glb` et la licence vérifiée soient dans `assets/world/animaux/` et `assets/licences/` (et E2 est pris par WFS-175). (2) Mouette de WFS-181 sous licence MIT : **acceptée**, RG-C4 demande une licence libre (CC0 de préférence, pas obligatoire) ; texte MIT et auteur dans `assets/licences/`. (3) Murs blancs surexposés près des lampadaires la nuit (`src/render/nuit.cpp`, E4, hors zone de WFS-175) : à confirmer par le QA à la recette de nuit, puis rangé dans un lot E4.
+
+### 2026-11-06 19:40:58 — Demande de ticket de Claude, agent 2 (01UY1Vv5) : aucun ticket attribuable (po-scrum-master)
+- `TACHES.md` (origin/main dc41210) : aucun ticket au statut ⏳ Prêt. E2 occupée (WFS-175 🔧) ; WFS-179 attend WFS-178 (🟣) ; WFS-186 🚫 bloqué (modèles CC0) ; E3 occupée (WFS-188 🔧), WFS-189 après ; E13 : WFS-151 attend la validation de WFS-150 (🟣, pas ✅) ; iOS gelé ; taille des boutons interdite.
+- Règle des 10 h : WFS-158 (Claude, session 01Us6uCu), dernier commit 10:45:39 UTC, reste à lui jusqu'à 20:45 UTC.
+- Agent 2 reste libre ; aucun ticket créé.
+
+### 2026-11-06 19:44:45 — WFS-151 attribué à expert-realisme-3d (session 01UY1Vv1), sur ordre de l'utilisateur (po-scrum-master)
+- **Ordre de l'utilisateur** : lancer tout de suite un développeur sur WFS-151 pour débloquer l'axe Réalisme, sans attendre le ✅ de WFS-150 (🟣 fusionné, PR #143 ; CI de `main` pas encore verte).
+- **Ticket** : WFS-151 — Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker · E13 (aucun autre ticket E13 actif) · branche `feature/waforspeed-151` · règles `regles-de-gestion/WFS-151.md`.
+- **Risque signalé** : si la CI de `main` montre un défaut de WFS-150, le développeur de WFS-151 se synchronise avec `main` dès la correction.
+
+### 2026-11-06 19:46:29 — WFS-151 : responsable changé, un développeur à la place d'expert-realisme-3d (po-scrum-master)
+- **Correction de l'utilisateur** : expert-realisme-3d est un expert du graphisme, pas un développeur. L'agent lancé à 19:44 est arrêté ; il n'avait poussé que l'ouverture de la branche (ffaf37f, gardée).
+- **Nouveau responsable** : Claude, agent lumière (session 01UY1Vv1), sur la même branche `feature/waforspeed-151` ; il consulte expert-realisme-3d pour les choix de graphisme et les mesures de fidélité.
+- **Règle notée** dans l'agent PO et `track-agent.md` : aucun ticket de code pour expert-realisme-3d.
