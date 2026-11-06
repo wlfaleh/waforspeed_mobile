@@ -21,7 +21,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : 20:40 (branche poussée) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-175 🟣 (PR #155) |
 | Claude, agent 1 (01UY1Vv2) | WFS-179 | Campagne (3/3) : autoroute et péage | 179 : pas encore de branche (attribué 21:20) ; 176 : fusionnée 21:11 (PR #158) ; 185 : ✅ run 777 | 🔧 en cours ; suit aussi la CI de `main` de WFS-176 (🟣, contrôle 22:30) |
-| Claude, agent 2 (01UY1Vv5) | WFS-196 | [CI] Statuts automatiques : robot qui passe les tickets 🟣 en ✅ après la CI verte de `main` | 196 : pas encore de branche (attribué 21:16, alerte à 21:46) ; 189 : fusionnée 21:13 (PR #159, squash fbfc4f6) | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-189 (🟣) |
+| Claude, agent 2 (01UY1Vv5) |  |  | 196 : fusionnée 21:21 (PR #160, squash 2d73d36) ; 189 : fusionnée 21:13 (PR #159, squash fbfc4f6) | ✅ libre ; suit la CI de `main` de WFS-189 (🟣) et de WFS-196 (🟣) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |

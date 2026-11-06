@@ -5316,3 +5316,19 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Nom d'agent : « Claude, Agent 0 developer », celui écrit par le PO (7e3d5a3) ; l'entrée de passation de 21:12 disait « agent 0 developper », c'est le même agent.
 - Branche synchronisée deux fois avec `main` (WFS-158 livraison 1, WFS-176, WFS-189 compris), sans conflit ; compilation Release propre, **37 tests CPU verts** (dont `test_fidelite_lumiere`). Envoi : 21:17, 737fde2.
 - CI de branche run 783 : démarrée à 21:16 sur e97571d (avant synchronisation). Je ne relance pas de CI de branche (une seule permise) ; je regarde ses captures de la lumière et je refais en local le banc du réalisme sur la branche synchronisée.
+
+### 2026-11-06 21:21:27 — Fusion WFS-196 : statuts automatiques après la CI de main (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #160, squash 2d73d36, fusion par confiance. Nouveaux fichiers seulement : `.github/workflows/statuts.yml`, `tools/qa/statuts.py`, `tools/qa/test_statuts.py`. `build.yml` et le code du jeu ne changent pas.
+- Fonctionnement :
+  - Après chaque run de « Construction WaForSpeed » sur main (`workflow_run`), le robot retrouve le commit de fusion de chaque ligne 🟣 : squash « (#N) », « Merge pull request #N », sinon un hash cité.
+  - Si ce commit est un ancêtre du commit du run, la case Statut seule devient « ✅ Terminé (CI main #N) », ainsi que la ligne de détail et l'« État » de `track-agent.md` (forme « WFS-XX (🟣 …) »).
+  - Run rouge : aucun statut ne change, une entrée au journal (jobs en échec, tickets 🟣 du run). Run annulé : rien.
+  - Ligne illisible ou PR introuvable : laissée telle quelle et listée pour le PO.
+- **Choix à signaler au PO** :
+  1. `permissions: actions: read` en plus de `contents: write` (RG-01 dit « seulement ») : c'est nécessaire pour lire les jobs en échec d'un run rouge (RG-03), sans aucun droit d'écriture de plus.
+  2. Un run de nuit (`schedule`, banc d'endurance seul) vert ne passe rien en ✅ : ce n'est pas une CI complète. Un rouge de nuit est noté au journal.
+  3. Quand l'envoi est refusé, le robot repart de main à jour et recalcule (5 essais) au lieu d'un `git pull --rebase`, qui pourrait se bloquer sur un conflit de journal. Même effet, sans conflit possible.
+- **Pour les agents** : écrire l'État de `track-agent.md` sous la forme « WFS-XX (🟣) » pour que le robot le mette à jour. Une autre forme est listée pour le PO, jamais devinée (ex. aujourd'hui : WFS-175 l. 22).
+- Vérification : `tools/qa/test_statuts.py`, 15 vérifications vertes (ligne 🟣 contenue → ✅ ; fusionnée après le run → inchangée ; 8 cases → inchangée et listée ; statut dans la mauvaise case → listée ; PR inconnue → listée ; même run relancé → rien ; run rouge → aucun changement et entrée au journal ; annulé → rien ; nuit → aucun ✅). Essai à blanc sur une copie de main : 12 tickets 🟣 → ✅ (WFS-109, 134, 137, 139, 140, 150, 175, 176, 178, 181, 188, 189), chacun avec sa PR et son commit.
+- Limites : le déclenchement `workflow_run` n'existe qu'avec le fichier sur main : premier vrai passage au prochain run de main, que je suis. Si une protection de branche refuse l'envoi du robot, le run échoue avec un message clair, et je poserai la question dans `tache utilisateur.md`. RG-08 (`CLAUDE.md`) : à faire par le PO.
+
