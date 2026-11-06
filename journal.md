@@ -2847,3 +2847,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Ordre de l'utilisateur** : une US technique dédiée à la correction, et pour les tickets techniques le droit de lancer la CI de la branche pour corriger.
 - **Règle** (`CLAUDE.md`, `waforspeed-natif` 5 quater, agent PO) : US technique = titre `[TECHNIQUE]` (CI de `main` rouge, bancs, robots, outils, construction) ; CI de la branche permise autant de fois que nécessaire, une à la fois, chaque lancement au journal ; une CI de `main` rouge → US technique P1 tout de suite, confiée à un développeur libre.
 - **WFS-200** renommé `[TECHNIQUE]`, règle ajoutée à ses règles de gestion avec l'écart trouvé par Agent 0 (M-01 nuit face +X, −1,5 %, `bench_passes.cpp:223`).
+
+### 2026-11-06 23:20:44 — Règle : le développeur est libéré dès la fusion ; CI de main rouge → US technique « correction pipeline CI » (po-scrum-master)
+- **Ordre de l'utilisateur** : après la fusion on libère tout de suite le développeur et les CI ; la CI de `main` tourne ; verte → ticket ✅ Terminé (robot des statuts) ; rouge → US technique de correction de la pipeline CI.
+- **Écrit dans** : `CLAUDE.md` (fusion par confiance, statuts et CI, US techniques), `waforspeed-natif` (5 bis), agent PO, en-tête de `track-agent.md`. Le développeur du ticket fusionné n'est plus rappelé pour suivre ou corriger la CI de `main`.
+- **En cours** : WFS-200 est déjà l'US technique de correction du rouge du run #790 (Agent 0).
