@@ -5441,3 +5441,16 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Correction** (accroche d'une ligne, zone E13) : `VK_IMAGE_USAGE_TRANSFER_DST_BIT` ajouté à l'usage du cube (d4ea7f4).
 - **Preuve** : `tools/qa/endurance.sh` en local (lavapipe, couches de validation 1.3.275) : **0 erreur de validation**, code de sortie 0 ; mémoire : pente +2,9 Mo/cycle (seuil +15), RSS +6,7 % (seuil 10 %), objets Vulkan stables. 37 tests CPU verts après synchronisation avec `main` (WFS-158 ST-2 et WFS-196 compris) ; envoi 21:48, 4c6ab38.
 - **Limite** : les fichiers de captures de la CI (hébergés sur blob.core.windows.net) sont bloqués par le réseau des agents ; je ne contourne pas le blocage (`regles-reseau.md`). Je refais en local le banc du réalisme sur la branche corrigée pour regarder les captures avant de fusionner.
+
+### 2026-11-06 21:54:54 — WFS-158 : RG-C (ANO-71, bas du hayon du X5 en dents de scie) : défaut de la géométrie du modèle, signalé au PO (RG-05) (arwa-2)
+- **Diagnostic** sur `vitrine-x5-feux`, avec 3 essais locaux (rien de poussé) :
+  1. **Normales d'origine** (sans le recalcul de WFS-170) : les dents de scie sont là, plus froissées.
+  2. **Chevauchement** : 368 triangles de la pièce « palette » (maillage 15) touchent la peinture à moins de 4 mm. Une fois retirés, les dents de scie restent : ce n'est pas un conflit de profondeur.
+  3. **Retournement d'arêtes** : 3 479 arêtes de la peinture retournées pour réduire les angles dièdres, positions inchangées. Le haut du hayon est un peu plus lisse, mais la bande en dents de scie reste.
+- **Cause** : la surface du hayon est froissée dans le modèle source. On compte 270 arêtes vives (15° à 142°) sur 1,1 m × 0,3 m, là où la vraie tôle est lisse. Ni les normales ni la triangulation ne la rendent lisse sans remodeler la pièce.
+- **Pour le PO (RG-05)** : le X5 est impossible à corriger à partir du modèle existant. Je propose de le remplacer par un modèle libre de BMW X5 (G05), comme la Model 3 (RG-D).
+  - Je ne remplace rien sans l'accord de l'utilisateur.
+  - WFS-194 prévoit déjà le remplacement du X5 (licence non commerciale) : les deux peuvent se faire ensemble.
+  - Le réseau des agents bloque Sketchfab : il faudra que l'utilisateur dépose le fichier, comme pour la Model 3.
+- ANO-71 reste ouverte (mineure). Les autres mesures du X5 sont conformes (4 / 4, ST-2).
+- **Suite** : ST-3, plaques européennes 520 × 110 mm des 17 autres voitures (M-04).
