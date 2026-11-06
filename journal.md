@@ -3891,3 +3891,9 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 - **Parcours complet** de la poursuite (RG-05) : « parcours complet et redémarrage : 0 écart(s) OK » (CI et local).
 - **Accroches annoncées** : `src/game/poursuite_system.cpp`, 4 lignes (`r.lotsProchaineVoiture()` avant le dessin de la police ; mesure Checkpoint unique à chaque endroit dans `benchPoursuite`) ; `src/render/vk.h` / `vk.cpp` (rappel à la destruction d'une vue d'image, 3 lignes, zone E4).
 - **Limites** : MSAA ×2 non vérifiable sur le banc (lavapipe), à lire sur le téléphone dans la ligne « Rendu ». En Basse, la police de près a le reste de la carrosserie en gris sombre (version en lots), à juger par la QA de nuit.
+
+### 2026-11-06 02:38:16 — Début WFS-146 : lot anomalies INTERFACE 2e passage (1/2), attribué à Claude (session trafic) (PO)
+- **Ticket** : WFS-146, épic E8 (+ E5), P1 Urgent, aucune dépendance ; E8 libre (WFS-102 annulé, WFS-147 en attente de WFS-146). Règles : `regles-de-gestion/WFS-146.md` (RG-01 à RG-13).
+- **Zone autorisée** : `src/ui/ecrans/**`, `src/ui/text.cpp`, `src/ui/toasts.cpp`, `src/ui/hud.cpp`, `shaders/ui*`. **Interdit** : toute échelle / taille / position / mise en page, `src/ui/echelle.*`, `src/ui/reglages.cpp` hors accroche, `src/render/**`, `src/game/**`, `src/world/**`, iOS (gel).
+- **Critères** : ANO-16, 20, 32, 35, 39 (couleur), 41, 43, 44, 45 invisibles sur `menu-1`, `hud-course`, `encoche-hud-2400`, `terrain-1`, `duel-resultat`, `salon-code*`, `chargement-fondu-2400`, `course-fin` ; `garage-*-2400` identiques à `main` ; parcours complet 0 écart (`WFS_BANC=parcours`).
+- **Plan court** : reprendre de `feature/waforspeed-102` uniquement les morceaux texte / couleur / biseaux (jamais 6d3ed61, échelle dp) ; comparaison avant / après des captures listée au Journal (RG-12) ; fusion après CI verte et captures `garage-*-2400` de la branche regardées (RG-13).
