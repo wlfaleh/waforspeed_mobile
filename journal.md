@@ -4571,3 +4571,16 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Constat de Claude (session dev expert, 0183bv2X) : RG-08 et la Poursuite (RG-09 c) marchent ; à point fixe, jeu immobile, le tas varie de ±50 à 60 Mo d'un relevé à l'autre ; aucune fuite trouvée (24 changements de carte, 5 retours d'arrière-plan, 6 changements de voiture). Le 1er passage était jugé avec RG-10, déjà remplacée par RG-13 (13:25 UTC).
 - Décision : RG-14 ajoutée à `regles-de-gestion/WFS-145.md`. Verdict = RG-13 (objets Vulkan ≤ cycle 2 + 2 ; pente du tas > +15 Mo/cycle). Option A acceptée pour la valeur : minimum de 8 relevés espacés de 30 images à la scène de référence (≤ +3 min de job). Option B (relancer jusqu'au vert) refusée. Preuves : celles de RG-13 (a) à (d).
 - Ticket « allocations passagères » refusé : mesuré sous lavapipe seulement, pas constaté sur le téléphone ; limite connue à écrire dans `tools/qa/endurance.sh`. Créé si l'utilisateur signale une saccade ou un arrêt par manque de mémoire.
+
+### 2026-11-06 13:40:07 — Recette, lot A (interface) : WFS-168 et WFS-173 VALIDÉS, WFS-141 PASSABLE (qa-lead)
+- Captures : Release `apercu` de main (captures de la construction 718, 56f5d47) ; avant : `apercu-waforspeed-146`, `-147`, `-168`, `-169`.
+- **WFS-168 : VALIDÉ** : boutons des 5 écrans 2400 revenus au pixel à leur taille d'avant WFS-147 ; textes, réglages en 2 colonnes, vignette du terrain et carte du salon de WFS-147 gardés ; garage et 1280 identiques ; HUD non touché.
+- **WFS-173 : VALIDÉ** : mini-carte visible en course seulement ; écarts tous dans le carré de la carte (158 captures) ; ≤ 2 466 sommets (max 4 000).
+- **WFS-141 : PASSABLE AVEC ANOMALIES MINEURES** : nouvelle ANO-90 (bandeau « serveur injoignable » sur l'URL du salon en 720p).
+- **Vérifiées** : ANO-54, 56, 69, ANO-62 en 2400. En partie : ANO-57, ANO-59 (reste en attente, décision du PO). **ANO-68 non corrigée** : sa correction change une taille de texte, contraire à l'ordre de l'utilisateur (tailles gelées) → au PO de la mettre en attente comme ANO-57 / 59.
+
+### 2026-11-06 13:43:46 — Recette, lot B (rendu) : WFS-170 REFUSÉ, WFS-149 VALIDÉ (qa-lead)
+- Captures : Releases de branche `apercu-waforspeed-170` (4f024d4, même code que main e21145e) et `apercu-waforspeed-149` (d9d6cb2) : `apercu` de main (56f5d47) ne contient encore aucun des deux.
+- **WFS-170 : REFUSÉ** — vérifiées corrigées : ANO-72 (911), 73 (Giulia), 74 (S3), 77 (208, Compass) ; en partie : ANO-71 (hayon du X5), ANO-76 (V60 rouge, reste SF90 / Elantra / RR Sport en mineure) ; **ANO-75 toujours là** (Model 3 en facettes : géométrie à reconvertir) ; **nouvelle ANO-91 bloquante** : au freinage, 12 voitures sur 20 n'allument pas leur feu, le halo de repli flotte dans le vide à gauche de la voiture (vu sur `vitrine-gallardo-feux`, `vitrine-v60-feux`) ; ANO-92 mineure (preuve de la 911 en peintures et en course absente).
+- **WFS-149 : VALIDÉ** — aucune régression d'image (seul le bouton Réglages retiré des vues réalisme), ASTC conforme, APK +0,07 %, chargement inchangé. Réserve : WFS-149 + WFS-170 ensemble à vérifier sur la prochaine `apercu` de main. Pour le PO : ETC2 refusé → RGBA8 (≈ 8,7 × la mémoire de l'ASTC) sur GPU sans ASTC.
+- Bloquantes → PO : ANO-91, ANO-75.
