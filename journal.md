@@ -4031,3 +4031,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - au duel local (Wi-Fi), le refus bloque le départ sans afficher de message ;
   - la densité de l'autoroute n'est donnée qu'au placement initial des voitures.
 - **Suite** : suivi de la CI de main.
+
+### 2026-11-06 08:19:58 — WFS-137 à 139 débloqués ; WFS-140 attribué à Claude (session dev expert, 0183bv2X) (PO / Scrum Master)
+- **Déblocage** : WFS-136 ✅ (PR #128) et WFS-94 ✅ : WFS-137, 138, 139 et 140 passent en ⏳ Prêt. WFS-149 (E0) reste en attente : sa dépendance est « WFS-148 validée » (QA de nuit pas encore faite).
+- **Attribution** : WFS-140 — Grand Prix (épingle, chicanes, raidillon, feux de départ, tribunes, paddock, fan zone) · E2 · P2 Haute · branche `feature/waforspeed-140` · règles `regles-de-gestion/WFS-140.md`.
+- **Pourquoi lui et pas WFS-137** (même priorité) : le Grand Prix est la seule carte déjà au tracé 2 en jeu normal (`trace::CARTES_ACTIVES` = `circuit`, A7 de WFS-136) ; ses murs qui débordent à l'épingle se voient donc dès maintenant sur le téléphone, et il ne touche pas `trace_cartes.h` (A7.2 : Ville, Campagne, Corniche passent au tracé 2 avec leur décor). Une seule carte, vérifiable au banc PC (`carte-circuit-*`, `WFS_BANC=parcours`).
+- **Zone autorisée** : `src/world/circuit.cpp`, `assets/world/**` (sauf `assets/world/modeles/**`, E12), `src/world/cartes_banc.cpp` (captures du circuit) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : `src/game/**`, `ville*.cpp`, `campagne.cpp`, `plage.cpp` (WFS-145 y travaille), `src/render/**`, `shaders/**`, `src/ui/**`, iOS (gel).
+- **Critères** : captures `carte-circuit-depart` (feux allumés), `-epingle`, `-chicane`, `-raidillon`, `-paddock` (+ `-nuit`) ; rien sur la chaussée, aucun virage ni feu caché ; `qualite-*` sans baisse ; parcours complet 0 écart ; ligne `qa/Check.md`.
+- **Fusion** : règle de confiance > 50 % (CLAUDE.md).
