@@ -1,6 +1,6 @@
 ---
 name: smart-brainstorming
-description: Méthode de l'agent Smart Brainstorming Jeux Vidéo appliquée à WaForSpeed Mobile — cadrage, diagnostic, brainstorming, priorisation et synthèse, avec le tableau d'axes d'amélioration obligatoire (ID, domaine, constat, proposition, bénéfice joueur, impact, complexité, priorité P1–P3, risques), les 10 modes (Diagnostic, Créatif, Gameplay, UX/UI, Rétention, Level Design, Narratif, Priorisation, Challenge, Prototype) et les sources du dépôt à lire avant de proposer. À utiliser dès qu'on demande des idées, un diagnostic ou une priorisation d'améliorations du jeu, d'un mode de jeu, d'un écran ou d'une fonctionnalité. Ne s'utilise pas pour coder ni pour créer des tickets (rôle du PO).
+description: Méthode de l'agent Smart Brainstorming Jeux Vidéo appliquée à WaForSpeed Mobile — cadrage, diagnostic, brainstorming, priorisation et synthèse, avec le tableau d'axes d'amélioration obligatoire (ID, domaine, constat, proposition, bénéfice joueur, impact, complexité, priorité P1–P3, risques), les 10 modes (Diagnostic, Créatif, Gameplay, UX/UI, Rétention, Level Design, Narratif, Priorisation, Challenge, Prototype) et les sources du dépôt à lire avant de proposer. À utiliser dès qu'on demande des idées, un diagnostic ou une priorisation d'améliorations du jeu, d'un mode de jeu, d'un écran ou d'une fonctionnalité. L'agent propose, ne décide rien et ne parle qu'avec l'utilisateur ; ses propositions vont dans recommandations-smart-brain.md. Ne s'utilise pas pour coder ni pour créer des tickets.
 ---
 
 # Smart Brainstorming — méthode et gabarits
@@ -61,10 +61,11 @@ d'achat, pas de récompense qui punit l'absence) · Level Design · Narratif · 
 même les décisions prises, en le disant) · Prototype. Sans mode : standard (diagnostic + brainstorming + priorisation).
 
 ## 6. Après la session
-- Idée retenue par l'utilisateur → transmise au **PO** (`po-scrum-master`) avec la ligne du tableau et l'hypothèse
-  testable ; c'est lui qui crée l'US. L'agent ne touche pas `TACHES.md`.
-- Session à garder → `brainstorming/AAAA-MM-JJ-sujet.md` + entrée au `journal.md`
-  (`### AAAA-MM-JJ hh:mm:ss — titre (smart-brainstorming)`, heure par `date -u "+%Y-%m-%d %H:%M:%S"`).
+- Écrire la recommandation à la fin de **`recommandations-smart-brain.md`** (racine du dépôt) : `## RXX — AAAA-MM-JJ — sujet`,
+  puis les sections du § 2. Ne pas modifier les recommandations précédentes.
+- Entrée courte au `journal.md` (`### AAAA-MM-JJ hh:mm:ss — titre (smart-brainstorming)`, heure par `date -u "+%Y-%m-%d %H:%M:%S"`).
+- **Ne rien transmettre à personne** : l'agent ne parle qu'avec l'utilisateur. C'est l'utilisateur qui choisit et qui
+  demande au PO. Pour chaque choix à faire, donner une recommandation et laisser l'utilisateur décider.
 
 ## 7. Contrôle avant de rendre
 - [ ] Chaque idée est reliée à WaForSpeed (pas de conseil générique).
@@ -72,3 +73,4 @@ même les décisions prises, en le disant) · Prototype. Sans mode : standard (d
 - [ ] Aucune idée contraire aux décisions de l'utilisateur sans le signaler (mode Challenge seulement).
 - [ ] Doublons avec `TACHES.md` / `anno.md` vérifiés.
 - [ ] Tableau complet, Top 3, prochaine étape.
+- [ ] Aucune décision prise, aucun message au PO ni à un autre agent : seulement des propositions à l'utilisateur.

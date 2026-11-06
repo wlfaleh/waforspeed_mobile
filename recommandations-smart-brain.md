@@ -1,16 +1,25 @@
-# Roadmap du week-end (7 et 8 novembre 2026) — 10 épics proposées (smart-brainstorming)
+# Recommandations Smart Brain
+
+Fichier de l'agent `smart-brainstorming`. **L'agent propose, il ne décide rien.** Il ne parle qu'avec l'utilisateur.
+L'utilisateur lit ces recommandations, choisit, et demande lui-même au PO ce qu'il veut faire.
+Les priorités P1 à P3 ci-dessous sont des **recommandations**, pas des décisions.
+Nouvelles recommandations ajoutées à la fin, chacune avec sa date.
+
+---
+
+## R01 — 2026-11-06 — Roadmap du week-end (7 et 8 novembre 2026) : 10 épics proposées
 
 Mode standard : diagnostic, brainstorming, priorisation. Session demandée par l'utilisateur le 2026-11-06.
-Ce sont des **propositions** : l'utilisateur choisit, puis le PO (`po-scrum-master`) crée les épics, les US et leur zone de code.
+Ce sont des **propositions** : l'utilisateur choisit et en parle au PO s'il le souhaite.
 
-## 1. Résumé et objectif
+### 1. Résumé et objectif
 WaForSpeed Mobile est un jeu de course « street racing » natif sur Android (C++20 / Vulkan). L'utilisateur le teste sur son téléphone.
 Il y a 4 cartes (Ville, Campagne, Corniche, Grand Prix) et 4 modes (Checkpoint, Course à 5, Poursuite police, Duel entre amis par
 Internet). Il y a aussi 20 voitures réelles, un garage, des records par mode, un fantôme, une mini-carte, la nuit et la météo.
 **Objectif** : choisir 10 épics à lancer ce week-end, avec plusieurs agents en parallèle, sans gêner l'axe Réalisme (E9 à E13) ni le
 décor des cartes (E2), déjà en cours.
 
-## 2. Diagnostic rapide
+### 2. Diagnostic rapide
 **Ce qui fonctionne déjà (faits, `TACHES.md`)** : le parcours complet, de l'accueil à la fin de course ; 4 modes jouables ; un duel
 par Internet avec serveur de relais (WFS-112) ; des voitures aux fiches réelles (`src/game/cars.h` : ch, 0-100, vitesse max, masse) ;
 du son riche (WFS-120, 121, 124, 131, 174) ; la tenue sur téléphone (WFS-123) ; l'annonce d'une nouvelle version de l'APK (WFS-132).
@@ -31,7 +40,7 @@ du son riche (WFS-120, 121, 124, 131, 174) ; la tenue sur téléphone (WFS-123) 
 **Ce qui manque pour une analyse fiable** : aucun retour de joueur autre que l'utilisateur, et aucune mesure d'usage. On ne sait pas
 quel mode il joue le plus, ni combien de temps.
 
-## 3. Tableau des 10 épics proposées
+### 3. Tableau des 10 épics proposées
 
 | ID | Domaine | Constat / opportunité | Proposition d'amélioration | Bénéfice joueur | Impact | Complexité | Priorité | Risques / points à vérifier |
 |---|---|---|---|---|---|---|---|---|
@@ -48,27 +57,27 @@ quel mode il joue le plus, ni combien de temps.
 
 Impact et complexité : estimation qualitative, sans donnée d'usage.
 
-### Regroupement
+#### Regroupement
 - **Quick wins** : A04 (Défi du jour), A06 (Élimination), A09 (Confort et accessibilité).
 - **Structurantes** : A01 (Android validé), A02 (Première course guidée), A03 (Saison street), A05 (Records entre amis),
   A07 (Préparation mécanique), A08 (Ralenti et photo).
 - **Expérimentale** : A10 (Rivaux de la ville), à prototyper après A03.
 
-### Proposition d'ordre pour le week-end (à confirmer par le PO, selon les zones libres)
+#### Ordre proposé pour le week-end (simple suggestion)
 - **Samedi matin** : A01, qui tourne tout le week-end ; A02 ; A06.
 - **Samedi après-midi** : A03 (catalyseur de A10) et A09.
 - **Dimanche** : A04, A05 (après A04, même relais) et A08 ; A07 si une place se libère au garage (E5) ; A10 seulement si A03 est fusionnée.
 
-## 4. Top 3
+### 4. Top 3
 1. **A01 — Android validé.** C'est la seule épic qui sert ta priorité écrite (« le jeu qui fonctionne sur Android »), et elle débloque
    iOS. Sans elle, chaque nouvelle épic ajoute des écrans non recettés.
 2. **A02 — Première course guidée.** Les commandes ont demandé 3 passages. Un tutoriel règle la compréhension sans toucher la taille
    des boutons, qui est gelée.
 3. **A03 — Saison street.** C'est le plus grand manque de game design : le jeu est riche mais sans objectif. Elle prépare aussi A04 et A10.
 
-## 5. Risques et validations
+### 5. Risques et validations
 - **Zones de code** : E2 et E9 à E13 sont très occupées. A06 touche E3 (WFS-183 en cours). A07 touche le garage (E5, ANO-19).
-  Le PO doit placer chaque épic dans une zone libre ou créer une zone.
+  Point à signaler au PO si l'épic est retenue : il faut une zone de code libre pour chacune.
 - **Décision produit à trancher par l'utilisateur pour A03** : faut-il bloquer des voitures et des cartes déjà ouvertes aujourd'hui ?
 - **Hypothèses testables**
   - A02 : si une première course guidée explique gaz, frein, nitro et volant, alors un nouveau joueur finit sa 1re course sans
@@ -78,6 +87,9 @@ Impact et complexité : estimation qualitative, sans donnée d'usage.
   - A01 : si toutes les captures 2400 sont recettées avant la fin du week-end, alors l'utilisateur peut cocher « Android validé »
     sur sa liste.
 
-## 6. Prochaine étape
-L'utilisateur choisit les épics retenues et tranche la question de A03. Les lignes retenues partent ensuite au PO (`po-scrum-master`),
-qui crée les épics, les US, leurs règles de gestion et leurs zones, puis lance l'attribution.
+### 6. Prochaine étape
+L'utilisateur choisit les épics qu'il veut garder et tranche la question de A03. S'il le souhaite, il les demande ensuite au PO.
+
+**Recommandations de l'agent sur les deux questions** (l'utilisateur décide) :
+- Épics à garder : les 10, ou au minimum A01 à A03.
+- Pour A03 : ne pas bloquer ce qui est déjà ouvert ; les étoiles débloquent seulement des contenus nouveaux.
