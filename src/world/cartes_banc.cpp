@@ -1,6 +1,7 @@
 // WaForSpeed — banc d'essai des cartes Campagne et Grand Prix (WFS-53) et des quartiers de la Ville (WFS-93) : voir decor_carte.h.
 // Pilote automatique, caméra haute, comme la plage (carte-plage-*) : jour et nuit au départ, puis une capture de jour
 // au début de chaque autre zone (départ avancé par WFS_DEPART, lu par le système de la carte).
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -20,7 +21,7 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
     static const Cap CAPS[] = {
         {"campagne", "jour", nullptr, "carte-campagne-jour"}, {"campagne", "nuit", nullptr, "carte-campagne-nuit"},
         {"campagne", "jour", "Forêt", "carte-campagne-foret"}, {"campagne", "jour", "Village", "carte-campagne-village"},
-        {"campagne", "jour", "Vignobles", "carte-campagne-vignes"}, {"campagne", "jour", "Bois de pins", "carte-campagne-pins"},
+        {"campagne", "jour", "Bois de pins", "carte-campagne-pins"},   // WFS-138 : vignes, col et épingle : benchCampagne (fin de la fonction)
         {"circuit", "jour", nullptr, "carte-circuit-jour"}, {"circuit", "nuit", nullptr, "carte-circuit-nuit"},
         {"circuit", "jour", "Paddock", "carte-circuit-paddock"}, {"circuit", "jour", "Virages rapides", "carte-circuit-gravier"},
         {"circuit", "jour", "Section boisée", "carte-circuit-foret"},
@@ -47,11 +48,12 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    benchCampagne(g, r, out, false);   // WFS-138 : col, épingle, vignes au tracé 2 (jour, nuit), sans le parcours (job de la CI)
 }
 
 // WFS-138 (RG-C5) : campagne au tracé 2 : début du col (lacets), 1re épingle (40 m avant), vignes ; jour et nuit ;
 // caméra de course (voiture arrêtée après le décompte), plus une vue haute du col (-haut) pour juger le relief
-int benchCampagne(Game& g, Renderer& r, const std::string& out) {
+int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     int ecarts = 0;
     Track t; t.build(mapById("campagne"), trace::versionCarte("campagne"));
     const int64_t L = (int64_t)t.segmentCount();
@@ -60,13 +62,19 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out) {
     if (!lac) { WFS_ERR("banc campagne : pas de lacets (tracé %d)", trace::versionCarte("campagne")); return 1; }
     int64_t ep = -1;
     for (int64_t a = lac->debut; a < lac->fin && ep < 0; a++) if (std::abs(t.segAt(a).curve) > 10) ep = a;
+    int64_t haut = -1;   // col : 1er segment droit à plus de 80 m au-dessus du pied (étage des sapins, sommets en face)
+    const double y0 = t.point((double)lac->debut * SEG, 0).y;
+    for (int64_t a = lac->debut; a < lac->fin && haut < 0; a++) if (t.point((double)a * SEG, 0).y - y0 > 80 && std::abs(t.segAt(a).curve) < 1) haut = a;
+    int64_t pont = -1;   // cascade : 30 m avant le milieu du pont
+    for (const trace::Section& s : t.sections()) if (s.type == trace::Type::Pont && pont < 0) pont = (s.debut + s.fin) / 2 - (int64_t)(30 / SEG_M);
     int64_t vi = -1;
     for (int64_t a = 0; a < L && vi < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), "Vignobles")) vi = a + 40;
     WFS_LOG("banc campagne : %lld segments, lacets %lld → %lld (+%.0f m), 1re épingle %lld, vignes %lld", (long long)L, (long long)lac->debut,
             (long long)lac->fin, lac->denivele, (long long)ep, (long long)vi);
     struct Cap { const char* nom; int64_t seg; int cam; };
-    const Cap caps[] = {{"carte-campagne-col", lac->debut + 120, 0}, {"carte-campagne-col-haut", lac->debut + 120, 1},
-                        {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0}, {"carte-campagne-vignes", vi, 0}};
+    const Cap caps[] = {{"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1},
+                        {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0}, {"carte-campagne-vignes", vi, 0},
+                        {"carte-campagne-cascade", pont, 0}};
     for (const char* mo : {"jour", "nuit"}) for (const Cap& c : caps) {
         if (c.seg < 0) { ecarts++; WFS_ERR("banc campagne : %s introuvable", c.nom); continue; }
         if (!std::strcmp(mo, "nuit") && c.cam == 1) continue;
@@ -82,6 +90,28 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    // RG-C5 : la campagne se roule de bout en bout au tracé 2 : du départ jusqu'au haut du col (+ 200 m) en pilote
+    // automatique, sans jamais rester arrêté (décor sur la chaussée, caméra dans le décor), puis retour à l'accueil
+    if (!parcours) return ecarts;
+    if (g.init(r, "golf", "campagne")) {
+        g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course);
+        const double fin = (double)lac->fin * SEG + 200 / M;
+        double tps = 0, arret = 0, pire = 0; int images = 0;
+        while (g.player().dist < fin && tps < 400) {
+            g.update(1.0 / 60); tps += 1.0 / 60; if (++images % 120 == 0) g.render(600 + tps);
+            if (tps > 5 && g.player().kmh() < 5) { arret += 1.0 / 60; pire = std::max(pire, arret); } else arret = 0;
+        }
+        const bool arrive = g.player().dist >= fin;
+        g.render(600 + tps); g.render(600.02 + tps); r.capturePng(out + "/carte-campagne-haut-du-col.png");
+        g.setAutopilot(false); g.allerA(Ecran::Menu);
+        for (int i = 0; i < 30; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(700 + i / 60.0); }
+        const bool menu = g.ecran() == Ecran::Menu;
+        WFS_LOG("banc campagne : parcours départ → haut du col (%.2f km) %s en %.0f s, plus long arrêt %.1f s ; retour à l'accueil : %s",
+                fin * M / 1000, arrive ? "fait" : "PAS FAIT", tps, pire, menu ? "oui" : "NON");
+        if (!arrive || pire > 3 || !menu) { ecarts++; WFS_ERR("banc campagne : parcours en échec"); }
+        g.shutdown();
+    } else ecarts++;
+    WFS_LOG("banc campagne : %d écart(s) %s", ecarts, ecarts ? "ÉCHEC" : "OK");
     return ecarts;
 }
 

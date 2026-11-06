@@ -198,7 +198,7 @@ static void verifierRecords() {
     Sauvegarde w; w.lire("version=1\ntrace=2\nwaforspeed-best=700\n");
     VERIFIE(w.best == 700 && w.nouveauxTraces && w.cartesAActiver.size() == std::size(trace::CARTES_ACTIVES), "nouvelle carte : records gardés");
     // A7.1 : jeu normal : Ville au tracé 1, Grand Prix au tracé 2 ; banc : forcé partout
-    VERIFIE(trace::versionCarte("ville") == 1 && trace::versionCarte("circuit") == 2 && trace::signature() == "circuit", "cartes actives");
+    VERIFIE(trace::versionCarte("ville") == 1 && trace::versionCarte("circuit") == 2 && trace::versionCarte("campagne") == 2 && trace::signature() == "circuit,campagne", "cartes actives");   // WFS-138 : campagne activée
     trace::forcerTrace2(true); VERIFIE(trace::versionCarte("ville") == 2, "tracé 2 forcé au banc"); trace::forcerTrace2(false);
     Sauvegarde r; r.lire(tx); r.best = 900;
     VERIFIE(!r.nouveauxTraces && r.anciens["best_v1"] == "48210" && r.best == 900, "relecture : pas de 2e mise de côté");
