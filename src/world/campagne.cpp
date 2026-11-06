@@ -6,8 +6,12 @@
 //     village : maisons colorées, église, lampadaires, passages piétons ; vignobles : vignes, cyprès, mas ;
 //   - ambiance envFor : jour brouillard #d3e0d0 à 820 m ; nuit sans lampadaires, brouillard #0d1218.
 // Placement généré par la graine de la carte (mulberry32(seed · 31 + 7)), dans l'ordre des tirages du jeu web.
+#include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <limits>
+#include <unordered_map>
+#include <vector>
 #include "../core/log.h"
 #include "decor_carte.h"
 
@@ -36,10 +40,17 @@ protected:
         out[1] = {R + 1.6f, R + 3, -0.05f, -0.4f, foret ? C_FOREST : C_DITCH};
         out[2] = {R + 3, R + 95, -0.4f, vignes ? 6.f : 0.2f, foret ? C_FOREST : vignes ? vine : village ? C_VERGE : field};
         out[3] = {R + 95, R + 220, vignes ? 6.f : 0.2f, vignes ? 26.f : 9.f, foret ? C_FOREST : C_FARHILL};
-        return 4;
+        return borner(a, s, out, 4);
     }
 
     void place(const char* z, int64_t z0, int64_t z1, Mulberry32& Dm) override {
+        if (libre_.empty()) calculerLibre();
+        // WFS-138 (RG-C1) : un objet n'est posé que s'il tient avant la mi-distance de la route voisine (2 m de marge)
+        auto item = [&](int64_t n, const Item& it) {
+            const Libre* l = libreA(n, it.side);
+            if (l && it.lat + std::max(it.d, 2.f) + 2 > l->m) return;
+            CarteDecor::item(n, it);
+        };
         auto D = [&]() { return (float)Dm.next(); };
         auto fl = [](float v) { return (int64_t)std::floor(v); };
         const float R = (float)RW, SM = (float)SEG_M;
@@ -241,6 +252,82 @@ protected:
     }
 
 private:
+    // WFS-138 (RG-C1) : espace libre de chaque côté de chaque segment : m = mi-distance (m depuis l'axe) jusqu'à la route
+    // voisine la plus proche dans un cône de 45° autour du côté, h = mi-écart de hauteur (m, + : la voisine est plus haute)
+    struct Libre { float m = std::numeric_limits<float>::infinity(), h = 0; };
+    // WFS-138 (RG-C1) : profil de la zone coupé à la mi-distance de la route voisine (lacets du col, épingles, rond-point),
+    // hauteur corrigée en rampe depuis le bord de la chaussée (correction 0) jusqu'à la coupe (sol = mi-hauteur des deux
+    // routes) : le sol rejoint exactement celui de la voisine et ne recouvre jamais sa chaussée ; pente forte vers le haut :
+    // talus de roche (paroi côté montagne)
+    int borner(int64_t a, int s, Band out[6], int n) const {
+        const Libre* l = libreA(a, s);
+        if (!l || l->m >= out[n - 1].b) return n;
+        const float R = (float)RW, m = std::max(l->m, out[0].b + 0.5f);
+        int k = 0;
+        while (k < n && out[k].b < m) k++;
+        if (k == n) return n;
+        out[k].yb = out[k].ya + (out[k].yb - out[k].ya) * (m - out[k].a) / (out[k].b - out[k].a); out[k].b = m;
+        n = k + 1;
+        const float corr = l->h - out[k].yb, pente = corr / (m - R);
+        for (int i = 0; i < n; i++) { out[i].ya += corr * (out[i].a - R) / (m - R); out[i].yb += corr * (out[i].b - R) / (m - R); }
+        if (pente > 0.45f) for (int i = 1; i < n; i++) out[i].col = C_GRAVEL;   // plus de 24° : la roche affleure
+        return n;
+    }
+    std::vector<Libre> libre_;   // 2 par segment : [2a] gauche, [2a + 1] droite
+    const Libre* libreA(int64_t a, int side) const {
+        if (libre_.empty()) return nullptr;
+        const int64_t L = len(), k = ((a % L) + L) % L;
+        const Libre& l = libre_[(size_t)(2 * k + (side > 0))];
+        return std::isfinite(l.m) ? &l : nullptr;
+    }
+    void calculerLibre() {
+        Track& t = *track_;
+        const int64_t L = len();
+        const float R = (float)RW, PORTEE = 2 * (R + 220);   // au-delà, le profil normal (220 m) ne peut rien toucher
+        std::vector<vec3> P((size_t)L);
+        std::vector<Pose> Q((size_t)L);
+        for (int64_t a = 0; a < L; a++) { Q[(size_t)a] = poseAt(t, a); P[(size_t)a] = Q[(size_t)a].o; }
+        const float CELL = 40;
+        auto cle = [&](float x, float z) { return ((int64_t)std::floor(x / CELL) << 32) ^ ((int64_t)std::floor(z / CELL) & 0xffffffff); };
+        std::unordered_map<int64_t, std::vector<int64_t>> grille;
+        for (int64_t a = 0; a < L; a++) grille[cle(P[(size_t)a].x, P[(size_t)a].z)].push_back(a);
+        libre_.assign((size_t)(2 * L), Libre{});
+        const int NC = (int)std::ceil(PORTEE / CELL);
+        int limites = 0;
+        for (int64_t a = 0; a < L; a++) {
+            const vec3 o = P[(size_t)a]; const Pose& q = Q[(size_t)a];
+            const int64_t cx = (int64_t)std::floor(o.x / CELL), cz = (int64_t)std::floor(o.z / CELL);
+            for (int side = 0; side < 2; side++) {
+                const float sg = side ? 1.f : -1.f;
+                float best = PORTEE, dy = 0;
+                for (int ix = -NC; ix <= NC; ix++) for (int iz = -NC; iz <= NC; iz++) {
+                    const auto it = grille.find(((cx + ix) << 32) ^ ((cz + iz) & 0xffffffff));
+                    if (it == grille.end()) continue;
+                    for (int64_t b : it->second) {
+                        int64_t da = std::llabs(b - a); da = std::min(da, L - da);
+                        if (da < 12) continue;   // la route elle-même (≈ 14 m de part et d'autre)
+                        const vec3 d = P[(size_t)b] - o;
+                        const float proj = (d.x * q.r.x + d.z * q.r.z) * sg, along = d.x * q.f.x + d.z * q.f.z;
+                        if (proj <= 0 || std::fabs(along) > proj || proj >= best) continue;
+                        best = proj; dy = d.y;
+                    }
+                }
+                if (best < PORTEE) { libre_[(size_t)(2 * a + side)] = {best / 2, dy / 2}; limites++; }
+            }
+        }
+        // lissage sur ±4 segments (minimum de la distance) : bord du sol sans marches d'un segment à l'autre
+        std::vector<Libre> lisse = libre_;
+        for (int64_t a = 0; a < L; a++) for (int side = 0; side < 2; side++) {
+            Libre& d = lisse[(size_t)(2 * a + side)];
+            for (int k = -4; k <= 4; k++) {
+                const Libre& v = libre_[(size_t)(2 * (((a + k) % L + L) % L) + side)];
+                if (v.m < d.m) { d.m = v.m; d.h = v.h; }
+            }
+        }
+        libre_ = lisse;
+        WFS_LOG("campagne : espace libre calculé (%lld segments, %d côtés bornés par une route voisine)", (long long)L, limites);
+    }
+
     std::vector<std::pair<int64_t, Item>> turbines_;
     std::vector<Mesh> rotors_;
 };
