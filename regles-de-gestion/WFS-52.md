@@ -18,3 +18,13 @@ Le HUD de course (WFS-27) ne doit jamais passer sous l'encoche ni dans les coins
 
 ## Hors périmètre
 Commandes tactiles (WFS-51), menus (E8).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.435 | WFS-52 | HUD et notifications dans les marges de sécurité (encoche) | E5 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-51 ✅, WFS-27 ✅ | `feature/waforspeed-52` | #30 (fusionnée, 318ac8b) | ✅ VALIDÉ par qa-lead (d2b19dc) — [rapport](qa/rapports/WFS-52.md) |
+
+Critères et notes de suivi :
+
+**WFS-52 — HUD dans les marges de sécurité (encoche)** · E5 · priorité 0.435 · ✅ Terminé (PR #30 fusionnée, VALIDÉ) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-52.md`)
+- [ ] `encoche-hud` : aucun panneau du HUD dans la bande ; sans encoche, captures identiques

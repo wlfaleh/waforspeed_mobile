@@ -50,3 +50,14 @@ chargement, puis arriver sur une course neuve, au départ, avec le décompte.
 
 ## Hors périmètre
 - Chargement en tâche de fond pendant qu'on joue ; écran de chargement différent de WFS-35 ; disposition gaucher (WFS-75).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-74 | Changement de carte avec écran de chargement, course figée hors de l'écran Course | E0 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-41 ✅, WFS-35 ✅ | `feature/waforspeed-74` | [#50](https://github.com/wlfaleh/waforspeed_mobile/pull/50) |  |
+
+Critères et notes de suivi :
+
+**WFS-74 — Changement de carte avec écran de chargement, course figée hors de l'écran Course** · E0 · P2 Haute · ✅ Fusionné le 2026-11-04 (PR #50, par confiance ; QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-74.md`)
+- [ ] `terrain-chargement` (barre partielle + étape) puis `terrain-arrivee` (nouvelle carte, décompte, chrono et score à zéro, voiture du garage gardée)
+- [ ] `terrain-fige-1/2` : chrono et score identiques au journal derrière l'écran Terrain ; pause → reprise sans remise à zéro ; autres captures inchangées

@@ -30,3 +30,14 @@ blocage dure, le menu iOS ne s'affiche pas et le son iOS (WFS-79) ne peut pas ê
 - Son iOS (WFS-79) : se vérifie de lui-même une fois le menu atteint, pas de travail en plus ici.
 - Performances iOS, TestFlight, signature.
 - Zone : `src/render/**` (E4) ; accroche ≤ 10 lignes dans `ios/**` ou `ios.yml` permise si annoncée au Journal.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu (GEL iOS) ; **PR #76 fusionnée le 2026-11-05** (1c28ae5, fusion par confiance, étape 0 de WFS-94 ; ordre de l'utilisateur, `tache utilisateur.md`, 2026-11-04 : seule exception au GEL iOS, aucune autre suite iOS) | Claude (session trafic), 2026-11-04 | WFS-78 ✅ | `feature/waforspeed-88` | #76 |  |
+
+Critères et notes de suivi :
+
+**WFS-88 — iOS : `Renderer::init` ne se bloque plus** · E4 · P4 Basse · ⏸ Suspendu (GEL iOS) ; PR #76 à regarder et fusionner par WFS-103 (ordre de l'utilisateur, 2026-11-04) — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-88` (règles : `regles-de-gestion/WFS-88.md`). Zone : `src/render/**` (+ accroche ≤ 10 lignes `ios/**` / `ios.yml` annoncée)
+- [ ] `ios.yml` : « QA pret » atteint, `ios-menu.png` montre le menu
+- [ ] plus de trou de 60 s après l'étape vulkan ; CI Android verte, banc PC inchangé

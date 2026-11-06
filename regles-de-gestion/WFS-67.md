@@ -32,3 +32,13 @@ Le trafic doit avoir l'air vrai : clignotants avant un changement de file, feux 
 
 ## Hors périmètre
 Roues animées du trafic (faites par WFS-60), duel / sauvegarde (WFS-21, WFS-24), éclairage de nuit et halos (WFS-09), ressenti des chocs (WFS-70).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-67 | Trafic vivant (clignotants, feux, accidents contournés, variété des modèles) | E3 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | WFS-60 ✅ | `feature/waforspeed-67` | #52 |  |
+
+Critères et notes de suivi :
+
+**WFS-67 — Trafic vivant (clignotants, feux, accidents contournés, variété des modèles)** · E3 · priorité P3 Moyenne · ⏳ En attente (règles : `regles-de-gestion/WFS-67.md`)
+- [ ] voir les critères du fichier de règles

@@ -23,3 +23,13 @@ Calcul des angles (WFS-62), flou de roue, suspension / roulis.
 
 ## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
 Ce ticket absorbe : WFS-62. **Lire et appliquer aussi** `regles-de-gestion/WFS-62.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-61 | Roues animées : transformation par roue et animation (rotation, braquage) | E0 | ↪ Fusionné dans WFS-60 |  | — | `feature/waforspeed-61` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-61 — Roues animées : transformation par roue et animation (rotation, braquage)** · E0 · ↪ fusionné dans WFS-60 (règles : `regles-de-gestion/WFS-61.md`)
+- [ ] Rotation et braquage par roue dans l'API du rendu ; sans appel, rien ne change

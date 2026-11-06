@@ -23,3 +23,13 @@ Le jeu se joue à la manette Bluetooth sur Android : conduite, nitro, caméra, n
 
 ## Hors périmètre
 Vibration de la manette, remappage utilisateur, claviers.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-23 | Manettes de jeu | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-23` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-23 — Manettes de jeu** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22
+- [ ] Manettes Bluetooth Android

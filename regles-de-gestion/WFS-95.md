@@ -36,3 +36,13 @@ Nouvelle police, traduction, changement de mise en page des écrans (E8).
 ## Zone de code
 `src/ui/text.*`, `src/ui/toasts.*`, `shaders/ui*`, `assets/fonts/**`. Interdit : `src/ui/garage.*` (accroche de WFS-96),
 `src/ui/ecrans/**` (E8, WFS-96), `src/render/**` (WFS-97), `src/platform/**` (WFS-91), fichiers du duel (WFS-89).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-95 | Texte et bandeaux : caractères manquants (« — »), petits libellés lisibles, nom du quartier en course | E5 | ↪ Fusionné dans WFS-102 (lot anomalies interface) |  | — | `feature/waforspeed-95` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-95 — Texte et bandeaux** · E5 · P2 Haute · ⏳ Prêt — remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-95` (règles : `regles-de-gestion/WFS-95.md`). Zone : `src/ui/text.*`, `src/ui/toasts.*`, `shaders/ui*`, `assets/fonts/**` ; interdit : `src/ui/garage.*`, `src/ui/ecrans/**`, `src/render/**`, `src/platform/**` — ↪ fusionné dans WFS-102
+- [ ] menu : « — » sous RECORD (plus de « ? »), « TA VOITURE » lisible ; capture `toast-quartier` : bandeau du nom du quartier à chaque changement de zone

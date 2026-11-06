@@ -33,3 +33,14 @@ pas de serveur à nous).
 
 ## Hors périmètre
 iOS (gel), serveur PeerJS à nous, voix / vidéo.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans `third_party/`) | E3 | ⏸ Remplacé par WFS-112 (décision du PO : serveur de relais, pas de bibliothèques tierces de 14 Mo) |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-92 — Duel par Internet : pair PeerJS réel** · E3 · P2 Haute · ⏸ En attente de la décision de l'utilisateur sur l'ajout de libdatachannel 0.22.6 + Mbed TLS 3.6.2 dans `third_party/` (≈ 14 Mo, recommandation PO : autoriser) — branche `feature/waforspeed-92` (règles : `regles-de-gestion/WFS-92.md`). Zone : `src/game/reseau_peerjs.*`, `third_party/**` (nouvelles bibliothèques) ; accroches : `CMakeLists.txt`, `android/**` ≤ 10 lignes
+- [ ] APK : duel entre deux réseaux différents et contre le jeu web (vérifié par l'utilisateur)
+- [ ] sans Internet : note orange, aucun plantage ; CI verte, APK publié

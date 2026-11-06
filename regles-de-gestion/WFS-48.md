@@ -23,3 +23,13 @@ Natif : `src/ui/text.*` (WFS-26).
 
 ## Hors périmètre
 Vraie police italique (fichier de police supplémentaire).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-48 | Texte en italique (ANO-04) | E5 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-03 | WFS-26 | `feature/waforspeed-48` | [#33](https://github.com/wlfaleh/waforspeed_mobile/pull/33) |  |
+
+Critères et notes de suivi :
+
+**WFS-48 — Texte en italique (ANO-04)** · E5 · priorité P2 Haute · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — Claude (agent 5), 2026-11-03 (règles : `regles-de-gestion/WFS-48.md`)
+- [ ] décompte, écran de fin et HUD en italique (12°) ; `texte-essai-*` : ligne droite + ligne italique ; autres captures inchangées

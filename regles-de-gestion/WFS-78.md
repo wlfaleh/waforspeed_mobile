@@ -41,3 +41,13 @@ synchrone dans `viewDidLoad` + chemin hors écran).
 
 ## Hors périmètre
 TestFlight, signature réelle (action de l'utilisateur, `store/signature.md`), son iOS (WFS-79), manettes iOS, iPad.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-78 | iOS : affichage direct dans une surface Metal et démarrage jusqu'au menu | E7 (+ accroche E4 `vk.cpp`) | ✅ Fusionné, PR #64 — surface Metal OK, démarrage bloqué dans `Renderer::init` sur le simulateur | Claude (session trafic, agent WFS-78), 2026-11-04 | WFS-22 ✅ | `feature/waforspeed-78` | #64 | ⛔ REFUSÉ par qa-lead (QA de nuit : pas de menu iOS) — correction : WFS-88 (PR #76, fusion par WFS-103), aucun nouveau ticket — [rapport](qa/rapports/WFS-78.md) |
+
+Critères et notes de suivi :
+
+**WFS-78 — iOS : surface Metal et démarrage jusqu'au menu** · E7 · P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #64, 2ac79d4 — surface Metal créée (swapchain 2622x1206) ; « QA pret » pas encore atteint sur le simulateur (blocage dans `Renderer::init`, suite à donner par un ticket E4) — Claude (session trafic, agent WFS-78), 2026-11-04 (règles : `regles-de-gestion/WFS-78.md`)
+- [ ] run `ios.yml` vert : durées des étapes puis `QA pret` ; `ios-menu.png` = menu, `ios-course.png` = course ; surface Metal, plus de recopie PNG ; CI Android et banc inchangés

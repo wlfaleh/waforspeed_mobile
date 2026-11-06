@@ -42,3 +42,14 @@ montrent pas l'étape nommée (SIM-MVP-2), le script conclut « OK » alors que 
 
 ## Hors périmètre
 - La vitesse du jeu sur GPU logiciel (WFS-59), tout changement de `src/` ou `android/`, le rapport `simulateur-MVP.md` (WFS-50).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-58 | [MVP] Correction simulateur : scénario `mvp` piloté par l'état du jeu (SIM-MVP-2, 3, 4) | E7 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | Claude (session trafic), 2026-11-03 | — | `feature/waforspeed-58` | #32 |  |
+
+Critères et notes de suivi :
+
+**WFS-58 — [MVP] Correction simulateur : scénario piloté par l'état du jeu (SIM-MVP-2, 3, 4)** · E7 · priorité P4 Basse · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — Claude (session trafic), 2026-11-03 (règles : `regles-de-gestion/WFS-58.md`)
+- [ ] scénario `mvp` : chaque étape attend sa ligne du logcat (délai max), capture après présentation d'images, `ÉCHEC` au lieu d'un faux `OK` si une étape manque
+- [ ] `01-chargement` = barre du jeu sans barres système, `02-menu` = menu ; écran d'émulateur réduit (`wm size`) ; `scenario=conduite` inchangé

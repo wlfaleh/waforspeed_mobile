@@ -34,3 +34,14 @@ Flammes de nitro (rendu, autre épic) : seul le son est dans ce ticket.
 - RG-09 : s'il manque un compteur lisible (petits chocs, frottements), l'exposer par une **ligne d'accroche ≤ 10 lignes** dans `src/game/course.*`, annoncée au Journal ; rien d'autre hors `src/audio/**`.
 - RG-10 : sons générés une fois au démarrage (bruit blanc filtré passe-bande, enveloppe linéaire vers la fréquence finale, attaque et relâche ≥ 5 ms pour éviter les craquements) puis mixés dans le flux AAudio existant de WFS-10 (`audio_out_android.cpp`, `audio_system.cpp`) ; aucune allocation dans le rappel audio.
 - RG-11 : sur PC (banc), pas de sortie son : chaque déclenchement écrit une ligne `SFX <nom>` au journal ; enregistrement WAV hors ligne optionnel pour vérifier l'absence de craquement.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-28 | Bruitages : chocs, nitro, crissements, ambiance | E6 | ✅ Fusionné (ordre de l'utilisateur, QA de nuit à faire) | agent 3 (session 011cpqZd), 2026-11-03 | WFS-10 ✅, WFS-08 ✅ | `feature/waforspeed-28` | [#36](https://github.com/wlfaleh/waforspeed_mobile/pull/36) |  |
+
+Critères et notes de suivi :
+
+**WFS-28 — Bruitages : chocs, nitro, crissements, ambiance** · E6 · priorité P3 Moyenne · ✅ Fusionné le 2026-11-03 sur ordre de l'utilisateur (QA de nuit : `qa/Check.md`) — agent 3 (session 011cpqZd), 2026-11-03 (règles : `regles-de-gestion/WFS-28.md`)
+- [ ] journal du banc : chaque événement (accident, petit choc, frottement, quasi-contact, nitro, bips décompte / GO / checkpoint / fin, crissement) déclenche son son une seule fois
+- [ ] pas de craquement au début / à la fin des sons ; coupure en pause ; captures du banc inchangées, `0 écart(s)`

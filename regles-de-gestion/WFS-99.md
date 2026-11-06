@@ -46,3 +46,14 @@ Bloom du garage (WFS-100), mode regarder / Showroom (WFS-96), échelle dp (WFS-1
 `src/ui/garage.*`, `src/ui/planche_voitures.*`, `src/render/bench_spots.*`. **Interdit** : `src/ui/text.*`, `toasts.*`,
 `shaders/**` (WFS-95, WFS-100), `src/render/renderer.cpp`, `vk.*` (WFS-100), `src/render/nuit.cpp` (WFS-97),
 `src/ui/ecrans/**` (WFS-96), `src/platform/**`, `.github/**` (WFS-91), `src/ui/hud.*` (WFS-98).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P1 Urgent | WFS-99 | Correction : garage lisible (voile, néons à droite, taches de lumière au sol, voiture de 3/4 avant) (ANO-22, ANO-23, ANO-33) | E5 (exception : 2e ticket E5, fichiers séparés de WFS-95) | ✅ Terminé (fusion par confiance) | Copilot (session 0e5c192d), 2026-11-04 | — | `feature/waforspeed-99` | #81 | 🟡 PASSABLE AVEC ANOMALIES MINEURES (ANO-47 → WFS-102) — [rapport](qa/rapports/WFS-99.md) |
+
+Critères et notes de suivi :
+
+**WFS-99 — Correction : garage lisible** · E5 · P1 Urgent · ✅ Terminé (PR #81, fusion par confiance ; QA de nuit : **PASSABLE AVEC ANOMALIES MINEURES**, ANO-47 → WFS-102, [rapport](qa/rapports/WFS-99.md)) — Copilot (session 0e5c192d), 2026-11-04 (après remise en ⏳ Prêt le 2026-11-04 : aucune branche poussée depuis l'attribution à Claude (session trafic), ordre de l'utilisateur), branche `feature/waforspeed-99` (règles : `regles-de-gestion/WFS-99.md`). Zone : `src/ui/garage.*`, `planche_voitures.*`, `src/render/bench_spots.*`
+- [ ] `spots-sol`, `garage-0`, `garage-2` : 3 taches de lumière au sol, 911 noire détachée du fond (liseré cyan)
+- [ ] `garage-*` : aucun néon sur le texte, voile à gauche, voiture de 3/4 avant, panneau sans escalier

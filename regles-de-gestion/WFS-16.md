@@ -24,3 +24,13 @@ Le coût doit rester maîtrisé.
 
 ## Hors périmètre
 Pluie qui tombe (WFS-18), bloom (WFS-17).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-16 | Route mouillée avec reflets | E4 | ↪ Fusionné dans WFS-09 |  | — | `feature/waforspeed-16` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-16 — Route mouillée avec reflets** · E4 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-09
+- [ ] Reflets plausibles, coût maîtrisé

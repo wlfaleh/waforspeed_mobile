@@ -23,3 +23,15 @@ Le moteur n'affiche aucun texte. Menu, HUD, décompte, notifications et fin de c
 
 ## Hors périmètre
 Mise en page du HUD (WFS-27), écrans de menu (WFS-11), langues autres que le français.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 4 | WFS-26 | Rendu de texte (police, nombres, libellés) | E5 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-26` | PR #9 | ✅ VALIDÉ par qa-lead |
+
+Critères et notes de suivi :
+
+**WFS-26 — Rendu de texte (police, nombres, libellés)** · E5 · priorité 4 · ✅ Terminé (PR #9)
+- [ ] Police (licence libre) en atlas, texte en pixels logiques, accents français
+- [ ] Lisible sur 2400x1080 et petits écrans
+- [ ] Capture : texte d'essai net

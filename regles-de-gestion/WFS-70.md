@@ -28,3 +28,13 @@ Manettes de jeu (WFS-22), effets visuels (WFS-65).
 - RG-10 (vibration Android) : nouveau fichier `src/platform/vibration_android.cpp` (JNI `Vibrator`, motif `[90, 40, 120]` / 40 ms) + permission `VIBRATE` dans le manifeste (1 ligne) + accroche dans `android_main.cpp` ≤ 10 lignes ; sur PC, la vibration est seulement écrite au journal (`vibration 90-40-120`). Pas de conflit : WFS-50 (E7) ne touche que `tools/qa/**` et `simulateur.yml`.
 - RG-11 (existant à reprendre, ne pas refaire) : `traffic.cpp` calcule déjà `ev.shake` (0,9 / `0,25 + impact × 1,5` / 0,15 au frottement → porter à 0,3 selon RG-03) et `course.cpp` a déjà `timeScale = 0,35`, `slowmoT = 0,5` : brancher dessus (secousse appliquée à la caméra de `camera_vue.*`, flash par le HUD existant si disponible, sinon un rectangle blanc translucide `uiRect`).
 - Banc : scène `ressenti` avec captures `ressenti-choc` (secousse + flash visibles), `ressenti-fleches` (deux flèches à l'écran), `ressenti-reduit` (même choc, pas de secousse) ; tests dans `tests/` : chrono non allongé par le ralenti (RG-05), secousse nulle avec « réduire les mouvements ».
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-70 | Ressenti de conduite : modes de direction, chocs (secousse, ralenti, vibration), réduire les mouvements | E3 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-70` | [#51](https://github.com/wlfaleh/waforspeed_mobile/pull/51) |  |
+
+Critères et notes de suivi :
+
+**WFS-70 — Ressenti de conduite** · E3 · priorité P2 Haute · ✅ Fusionné (par confiance, QA de nuit à faire), PR [#51](https://github.com/wlfaleh/waforspeed_mobile/pull/51) (règles : `regles-de-gestion/WFS-70.md`)
+- [x] choc = secousse + ralenti ; 2 modes de direction ; réduire les mouvements
