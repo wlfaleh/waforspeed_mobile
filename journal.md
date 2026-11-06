@@ -2773,3 +2773,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Remarque de l'utilisateur** : spectateurs du Grand Prix en formes géométriques ; 2 tribunes au plus, vrais spectateurs.
 - **Cause** : `circuit.cpp` `case T_STAND` dessine chaque spectateur en 2 boîtes ; tribunes répétées (ligne droite tous les 26 segments, épingle, raidillon, zone « tribunes »).
 - **WFS-199** (E2 + E11, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-199.md`) : 2 tribunes (départ, épingle), personnages `homme.wfp` / `femme.wfp` animés en instances, aucune boîte à aucune distance, budget Haute ≤ 400 / Basse ≤ 150, captures jour / nuit / Basse. Exception PO : zone E11 `pietons.*` (aucun ticket E11 actif). Réponse dans `tache utilisateur.md`.
+
+### 2026-11-06 22:56:42 — WFS-199 et WFS-164 : personnages du jeu pour les spectateurs, humains réalistes pour les conducteurs (po-scrum-master)
+- **Décision de l'utilisateur** : les spectateurs du Grand Prix utilisent les personnages déjà dans le jeu (vus de loin) ; les humains plus réalistes sont pour les conducteurs des voitures, vus de près.
+- **Fait** : WFS-199 RG-05 réécrite (aucune recherche de nouveaux humains) ; WFS-164 : section « Priorité d'usage » (conducteurs d'abord).
