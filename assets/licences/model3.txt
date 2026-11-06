@@ -1,13 +1,20 @@
 Model Information:
-* title:	Tesla model 3 (free model)
-* source:	https://sketchfab.com/3d-models/tesla-model-3-free-model-32277501e715498a9538478f8e7b0e5b
-* author:	retro_player (https://sketchfab.com/brainplayerbrainplayernoob)
+* title:	Tesla 2018 Model 3
+* source:	https://sketchfab.com/3d-models/tesla-2018-model-3-5ef9b845aaf44203b6d04e2c677e444f
+* author:	Ameer Studio (https://sketchfab.com/uchiha.321abc)
 
 Model License:
 * license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 * requirements:	Author must be credited. Commercial use is allowed.
 
 If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
-This work is based on "Tesla model 3 (free model)" (https://sketchfab.com/3d-models/tesla-model-3-free-model-32277501e715498a9538478f8e7b0e5b) by retro_player (https://sketchfab.com/brainplayerbrainplayernoob) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+This work is based on "Tesla 2018 Model 3" (https://sketchfab.com/3d-models/tesla-2018-model-3-5ef9b845aaf44203b6d04e2c677e444f) by Ameer Studio (https://sketchfab.com/uchiha.321abc) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 
-Modifications for WaForSpeed: geometry simplified where needed (meshoptimizer, at most about 120 000 triangles), textures converted to WebP 1024 px, glass transmission replaced by simple transparency, everything embedded in a single glTF JSON file. The body colour is changed in game.
+Where it was found: public GitHub repository https://github.com/tomfanhm/tesla, folder public/gltf/tesla (license.txt above, as written by Sketchfab),
+read on 2026-11-06. scene.gltf SHA-256 80911d5818829504016cd899c2b7da119654c2928442522e5baf56e568d3e3b5,
+scene.bin SHA-256 c87f3de68f7ab18041e5388ca4fdee292a5a771e921e8fa464e9e4d4f7a818b7.
+
+Modifications for WaForSpeed: geometry simplified with meshoptimizer (684 315 → 160 805 triangles, bounded error, body paint 4 times
+finer), converted to the game's .wfm format (tools/convert_car.mjs), textures re-encoded (JPEG / PNG, 1024 px at most), scaled and
+wheels adjusted to the manufacturer's dimensions (tools/corriger_voitures.cpp), a neutral European number plate added
+(tools/plaques_voitures.mjs). The body colour is changed in game; body normals are recomputed at load.

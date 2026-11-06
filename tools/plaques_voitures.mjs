@@ -33,6 +33,7 @@ const VOITURES = {
   mustang: { plaque: 18, cadre: -1, numero: 'FM-509-GT', dep: '33' },
   m4: { plaque: 35, cadre: -1, numero: 'EB-944-KM', dep: '92' },
   sf90: { plaque: 9, cadre: -1, numero: 'GF-190-XS', dep: '06' },
+  model3: { plaque: 24, cadre: -1, numero: 'EY-317-TL', dep: '92' },   // WFS-158 (RG-D) : nouveau modèle, plaque arrière seule
 };
 
 function lire(chemin) {
