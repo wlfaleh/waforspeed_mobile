@@ -31,7 +31,7 @@ Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dép
    (anomalies restantes inscrites au tableau des anomalies `anno.md`, US de correction créées par le PO) : fusionner, puis statut ✅
    et entrée « Fin » au Journal.
 7. **Ne jamais supprimer de branche** (locale ou distante), même fusionnée : l'utilisateur s'en occupe.
-8. **Journal** (`journal.md`, nouvelles entrées à la fin) à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
+8. **Journal** (`journal.md`, nouvelles entrées à la fin ; il ne garde que les 2 derniers jours, archives dans `journal/archive/`, à ne pas relire sauf besoin précis) à chaque étape : fait / fichiers / vérification / limites. Ne jamais annoncer comme vérifié ce qui ne l'est pas.
    **Chaque entrée commence par la date et l’heure UTC complètes, jusqu’à la seconde** : `### AAAA-MM-JJ hh:mm:ss — titre (auteur)`, heure obtenue avec `date -u "+%Y-%m-%d %H:%M:%S"` au moment d’écrire, jamais devinée ni recopiée (une date seule, sans heure, est refusée).
 9. Livraison = 5 tickets terminés (APK de `main` dans la Release `apercu`). Langue : français partout.
 

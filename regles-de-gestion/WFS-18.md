@@ -30,3 +30,13 @@ Il pleut la nuit en ville : gouttes animées, ciel couvert, route mouillée avec
 Orage, vent, pluie sur le pare-brise, changement de météo en cours de course.
 
 > **Décision PO (2026-11-04)** : RG-05 (« désactivé en qualité basse si baisse sous 60 i/s ») **abandonnée** : coût mesuré 0,008 ms par image, le jeu web n'a pas cette règle. Aucun ticket.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-18 | Météo : pluie, flaques | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-18), 2026-11-04 | WFS-09 ✅ | `feature/waforspeed-18` | #66 |  |
+
+Critères et notes de suivi :
+
+**WFS-18 — Météo : pluie, flaques** · E2 · priorité P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #66 — Claude (session trafic, agent WFS-18), 2026-11-04, branche `feature/waforspeed-18` (règles : `regles-de-gestion/WFS-18.md`)
+- [ ] Pluie animée, route mouillée

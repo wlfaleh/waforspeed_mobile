@@ -111,3 +111,16 @@ déjà la reproduction), correction durable du renderer rangée dans le lot ouve
   banc), avec dans `qa/Check.md` : « ANO-52 : sur téléphone, mettre l'appli en arrière-plan en course puis revenir, 3 fois :
   aucun plantage, la course reprend en pause ».
 - Critère : - [ ] ANO-52 : 3 retours d'arrière-plan en mode `WFS_ENDURANCE_ANDROID=1` sans plantage, 0 erreur de validation.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-91 | [STABLE] Endurance : parcours automatique long sans plantage ni fuite, validation Vulkan à zéro erreur, retours d'arrière-plan | E7 | ✅ Fusionné (par confiance, PR #92 ; version allégée du PO, ANO-52 RG-14) | Claude (agent 3, session 011cpqZd), 2026-11-05 | — | `feature/waforspeed-91` | #92 |  |
+
+Critères et notes de suivi :
+
+**WFS-91 — [STABLE] Endurance : parcours long, validation Vulkan, retours d'arrière-plan** · E7 · P2 Haute · ✅ Fusionné par confiance (PR #92, 2026-11-05) — Claude (agent 3, session 011cpqZd), version allégée (section « Attribution du 2026-11-05 » des règles : 8 cycles, ≥ 10 min simulées, ≥ 3 retours, aucune correction hors E7). **+ ANO-52 (bloquante, 2026-11-05)** : correction immédiate du plantage au retour d'arrière-plan dans `android_main.cpp` (`Renderer` neuf après `shutdown`, RG-14 à RG-16) ; correction durable du renderer dans WFS-100 (RG-W1). Historique : remis en ⏳ Prêt le 2026-11-04 (aucune branche poussée depuis l'attribution à Claude (agent 5, session 011cpqZaDiS2unNJuwyaruGd), ordre de l'utilisateur ; « à démarrer dès WFS-89 fusionné » ne valait que pour l'agent 5, occupé par WFS-89 : aucune dépendance, zone disjointe de WFS-89), branche `feature/waforspeed-91` (règles : `regles-de-gestion/WFS-91.md`). Zone : `src/platform/**` (nouveau `endurance_banc.*`, `desktop_main.cpp`), `.github/workflows/build.yml` (job `endurance`), `tools/qa/**` ; corrections ailleurs : accroches ≤ 10 lignes annoncées, jamais dans les zones de tickets en cours
+- [ ] job `endurance` vert sur `main` (≤ 15 min), artefact `captures-endurance`
+- [ ] `endurance-journal.txt` : ≥ 12 cycles, 4 cartes, jour et nuit, ≥ 4 retours d'arrière-plan, RSS final ≤ cycle 2 + 10 %, 0 erreur de validation (hors erreurs connues avec ticket)
+- [ ] `endurance-retour-*.png` : image correcte après chaque retour ; une capture de fin de course par carte ; autres jobs verts, APK publié
+- [ ] (ajout PO, ANO-29) Release `apercu` jamais incomplète : publication `cancel-in-progress: false`, anciens fichiers supprimés après l'envoi complet des nouveaux (RG-A1, RG-A2)

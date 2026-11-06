@@ -33,3 +33,13 @@ Ce ticket débloque la mémorisation attendue par WFS-11 (voiture, peinture), WF
 - RG-10 : ne **pas** modifier les fichiers de WFS-70 (`src/game/direction.*`, `player.*`) : le champ `steer` est seulement stocké ; le brancher au mode de direction est une ligne d'accroche faite par celui des deux tickets qui fusionne en second.
 - RG-11 : banc : scène `WFS_BANC=sauvegarde` lancée deux fois dans le même job : 1er lancement écrit (voiture ≠ golf, peinture, record), le 2e journalise `SAUVEGARDE relue : car=… paint=… best=…` identiques ; capture `fin-record` (écran de fin avec « NOUVEAU RECORD »).
 - Rien à réutiliser côté modèles ni sons ; seulement les **noms de clés et défauts** du web (`js/ui/screens.js` `store()`), pour garder la même signification.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-24 | Sauvegarde et progression (records, voiture et réglages mémorisés) | E3 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-04 | WFS-12 | `feature/waforspeed-24` | [#54](https://github.com/wlfaleh/waforspeed_mobile/pull/54) |  |
+
+Critères et notes de suivi :
+
+**WFS-24 — Sauvegarde et progression** · E3 · priorité P3 Moyenne · ✅ Fusionné (QA de nuit à faire), PR #54 — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-24` (règles : `regles-de-gestion/WFS-24.md`)
+- [x] Meilleurs scores, voitures et réglages conservés

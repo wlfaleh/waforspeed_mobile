@@ -25,3 +25,14 @@ Les néons, phares et feux rayonnent (bloom), l'image est stable (anti-crénelag
 
 ## Hors périmètre
 Profondeur de champ, lens flare (le web a un `flare` du soleil, hors ticket sauf demande).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-17 | Post-traitement : bloom, TAA, flou de mouvement | E4 | ↪ Fusionné dans WFS-15 |  | — | `feature/waforspeed-17` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-17 — Post-traitement : bloom, TAA, flou de mouvement** · E4 · priorité P4 Basse · ⏳ En attente (règles : `regles-de-gestion/WFS-17.md`) — ↪ fusionné dans WFS-15
+- [ ] Activable selon la qualité
+- [ ] `vitrine-golf-0`, `vitrine-p911-1` : plus de lignes pointillées sur les jointures de carrosserie (reste de WFS-32, crénelage de géométrie lissé par le TAA)

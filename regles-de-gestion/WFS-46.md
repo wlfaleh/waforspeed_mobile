@@ -19,3 +19,13 @@ Remplacer le chiffre seul de la vitesse (WFS-27) par le compteur en arc du jeu w
 
 ## Hors périmètre
 Jauge circulaire du bouton Nitro tactile (commandes de `Game`, E0).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-46 | Compteur de vitesse en arc (zone rouge) | E5 | ↪ Fusionné dans WFS-11 |  | — | `feature/waforspeed-46` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-46 — Compteur de vitesse en arc** · E5 · priorité P2 Haute · ⏳ Prêt (règles : `regles-de-gestion/WFS-46.md`) — ↪ fusionné dans WFS-11
+- [ ] `hud-arc-120`, `hud-arc-320` (zone rouge) en 1280x720 et 2400x1080 ; banc `0 écart(s)`

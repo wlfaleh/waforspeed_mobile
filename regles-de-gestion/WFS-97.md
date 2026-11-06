@@ -80,3 +80,14 @@ Vraies lumières dynamiques par projecteur, ombres des projecteurs.
   (`nuit.cpp`) : accepté. Vérifier que les flaques et les têtes de lampe restent visibles, et noter les valeurs au Journal.
 - RG-05 sans objet pour `poolCool` (mesure du banc : `versHdr` ≈ `lin`, et le natif fait déjà × 2,2) : garder `lin`, sauf
   écart mesuré ailleurs.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P1 Urgent | WFS-97 | Lot anomalies NUIT : taches de lumière du circuit + façades de la ville trop claires (ANO-37) | E4 (exception : en parallèle de WFS-100, fichier séparé `nuit.cpp` ; bloc des feux du joueur laissé à WFS-109 ; + accroche d'une ligne E2 dans `decor_carte.cpp`, RG-08) | ✅ Terminé (fusion par confiance, PR #90) | Copilot (session dc0cdd3f), 2026-11-05 | — | `feature/waforspeed-97` | #90 | ⏳ Recette QA de nuit (`qa/Check.md`) |
+
+Critères et notes de suivi :
+
+**WFS-97 — Lot anomalies NUIT (circuit + ville, ANO-37)** · E4 (exception : en parallèle de WFS-100, fichier séparé) · P1 Urgent · ✅ Terminé (fusion par confiance, PR #90, `dcfa0ff`, 2026-11-05 ; recette QA de nuit à faire, `qa/Check.md`) — Copilot (session dc0cdd3f), 2026-11-05 (après remise en ⏳ Prêt le 2026-11-04 : aucune branche poussée depuis l'attribution à Claude (session trafic)), branche `feature/waforspeed-97` (règles : `regles-de-gestion/WFS-97.md`, précisions RG-04 à RG-07 du 2026-11-05). Zone : `src/render/nuit.cpp` (sauf le bloc « feux du joueur », réservé à WFS-109) ; `#include "effets_particules.h"` permis (`effets::versHdr`, sans modifier ce fichier) ; accroche ≤ 10 lignes dans `desktop_main.cpp` seulement si une capture de nuit manque ; **accroche d'une ligne autorisée le 2026-11-05 dans `src/world/decor_carte.cpp` l. 320** (ordre des indices de la chaussée du circuit, normale vers le haut : RG-08). Interdit : le reste de `src/world/**` (WFS-93), `src/render/renderer.*` et `shaders/**` (WFS-100), le reste de `src/platform/**`, `src/game/**`, iOS
+- [ ] `carte-circuit-nuit`, `course-nuit-circuit-0` : taches froides visibles sous les mâts ; ville et plage de nuit sans surexposition
+- [ ] `course-nuit-ville-*` : façades sombres (plus de lavande / rose), néons, flaques et reflets qui ressortent (ANO-37, RG-04) ; captures de jour inchangées, **sauf l'asphalte du circuit enfin éclairé par le soleil** (RG-09, voulu, valeurs avant / après dans `qa/Check.md`) ; valeurs notées au Journal ; tests CPU verts

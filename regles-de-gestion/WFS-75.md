@@ -33,3 +33,13 @@ et les fait marcher en course.
 
 ## Hors périmètre
 - Personnalisation libre de la position des commandes ; intensité de vibration.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-75 | Réglages : commandes gaucher et vibrations | E8 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic, agent WFS-75), 2026-11-04 | WFS-41 ✅, WFS-70 ✅ | `feature/waforspeed-75` | #65 |  |
+
+Critères et notes de suivi :
+
+**WFS-75 — Réglages : commandes gaucher et vibrations** · E8 · P3 Moyenne · ✅ Fusionné (QA de nuit à faire), PR #65, fusion par confiance — Claude (session trafic, agent WFS-75), 2026-11-04, branche `feature/waforspeed-75` (règles : `regles-de-gestion/WFS-75.md`)
+- [ ] `reglages-commandes` (Commandes + Vibrations) ; `course-gaucher` (volant à droite, pédales et nitro à gauche) ; vibrations coupées → `vibration ignorée (réglage)`

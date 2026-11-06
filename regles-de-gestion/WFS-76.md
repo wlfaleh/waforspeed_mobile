@@ -65,3 +65,13 @@ vivant dès l'ouverture, sans fichier lourd ni licence à gérer.
 - Vraie musique enregistrée, radio, plusieurs morceaux, curseurs de volume séparés.
 - Pluie (WFS-18, météo, pas encore faite) : son de pluie au ticket météo.
 - Son 3D positionnel des voitures du trafic.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P3 Moyenne | WFS-76 | Ambiances sonores par carte et musique (menu et course) | E6 | ✅ Fusionné (par confiance, QA de nuit à faire) | Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04 | WFS-10 ✅, WFS-28 ✅, WFS-41 ✅ | `feature/waforspeed-76` | [#55](https://github.com/wlfaleh/waforspeed_mobile/pull/55) |  |
+
+Critères et notes de suivi :
+
+**WFS-76 — Ambiances sonores par carte et musique (menu et course)** · E6 · P3 Moyenne · ✅ Fusionné le 2026-11-04 (PR #55, par confiance ; QA de nuit : `qa/Check.md`) — Claude (agent 5, session 011cpqZaDiS2u), 2026-11-04, branche `feature/waforspeed-76` (règles : `regles-de-gestion/WFS-76.md`)
+- [ ] journal `MUSIQUE menu|course` et `AMBIANCE <carte>|nuit` aux bons moments ; WAV + PNG du banc sans coupure (crête < 1,0) ; capture `reglages-musique` ; téléphone : musique au menu, ambiance ville ≠ plage, pas de craquement

@@ -26,8 +26,8 @@
 | Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraison 1 fusionnée (PR #157 : audit ST-1, plaques neutres RG-A) ; suite : ST-2 (échelle et roues), RG-C (X5) ; Model 3 (RG-D) en attente du fichier | 158 : 21:06 UTC (ac3b6dc + synchronisation 9e2dad3 sur la branche ; livraison 1 sur main e5fe674, PR #157) | 🔵 suit la CI de main (PR #157), puis ST-2 ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 21:17 (737fde2, synchronisée avec main), PR #156 | 🔀 En PR ; compilation + 37 tests CPU verts en local ; run 783 (sur e97571d) en cours ; banc réalisme local en cours |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 et 2 fusionnées (PR #157 : audit ST-1, plaques neutres RG-A ; PR #162 : ST-2, échelle et roues de 15 voitures) ; suite : RG-C (X5), ST-3 ; Model 3 (RG-D) en attente du fichier | 158 : 21:47 (e622b04 sur main, PR #162 fusionnée par confiance) | 🔵 suit la CI de main (PR #157, #162), puis RG-C (hayon du X5) ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 21:48 (4c6ab38, synchronisée avec main), PR #156 | 🔀 En PR ; endurance du run 783 corrigée (12 erreurs de validation → 0 en local) ; banc réalisme local en cours avant fusion |
 
 ## Agents de pilotage
 

@@ -14,7 +14,7 @@ Tu es le **QA lead** de WaForSpeed Mobile. Tu as **deux missions** (règle de l'
 
 ## A. Recette d'un ticket
 
-1. Lire le ticket `WFS-XX` et ses critères d'acceptation dans `TACHES.md`.
+1. Lire le ticket `WFS-XX` dans `TACHES.md` (tableau court) et ses critères d'acceptation dans `regles-de-gestion/WFS-XX.md` (règle de l'utilisateur, 2026-11-06 : les critères ne sont plus dans `TACHES.md`).
 2. Télécharger les captures de la Release `apercu-waforspeed-XX` :
    `https://github.com/wlfaleh/waforspeed_mobile/releases/download/apercu-waforspeed-XX/<fichier>.png`
    (émulateur : `qa-01-demarrage` … `qa-07-fin` ; banc d'essai : `vitrine-*`, `course-*`).
