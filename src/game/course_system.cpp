@@ -382,9 +382,13 @@ int benchRecords(Game& g, Renderer& r, const std::string& out) {
     {   // RG-03 : ancienne sauvegarde (sans les nouvelles clés) et clés mal formées
         Sauvegarde anc;
         const bool lu = anc.lire("version=1\nwaforspeed-best=48210\ncar=m4\nrecord-course5=x;12\nrecord-poursuite=1;2\n");
-        WFS_LOG("records : ancienne sauvegarde relue (%s) : best=%lld, course à 5 %s, poursuite %s", lu ? "valide" : "invalide", anc.best,
-                anc.aRecordCourse5() ? "rempli" : "—", anc.aRecordPoursuite() ? "rempli" : "—");
-        verifier(lu && anc.best == 48210 && anc.car == "m4" && !anc.aRecordCourse5() && !anc.aRecordPoursuite(), "ancienne sauvegarde relue sans perte, records vides");
+        // WFS-169 (ANO-88) : depuis WFS-136 (RG-07 / A7.4), le record du tracé 1 est mis de côté sous best_v1 (best repart de 0)
+        const auto v1 = anc.anciens.find("best_v1");
+        const std::string bestV1 = v1 != anc.anciens.end() ? v1->second : "—";
+        WFS_LOG("records : ancienne sauvegarde relue (%s) : best=%lld, best_v1=%s, course à 5 %s, poursuite %s", lu ? "valide" : "invalide", anc.best,
+                bestV1.c_str(), anc.aRecordCourse5() ? "rempli" : "—", anc.aRecordPoursuite() ? "rempli" : "—");
+        verifier(lu && anc.best == 0 && bestV1 == "48210" && anc.car == "m4" && !anc.aRecordCourse5() && !anc.aRecordPoursuite(),
+                 "ancienne sauvegarde relue sans perte (record mis de côté sous best_v1), records vides");
     }
     courseBenchRules(true);
     if (!g.init(r, "golf", "ville")) { WFS_ERR("records : chargement impossible"); s.desactiver(); courseBenchRules(false); return 1; }

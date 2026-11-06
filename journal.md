@@ -4263,3 +4263,71 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - E0, E3, E4, E7 et E10 sont occupées. E6, E5 et E8 sont libres, mais sans ticket Prêt. E9, E11, E12 et E13 attendent WFS-149 → 150 → 151, et `anno.md` n'a aucune anomalie 🆕. Je ne crée pas de ticket artificiel.
   - **Prochains déblocages** : WFS-172 (E3, P3) dès la fusion de WFS-169 ; WFS-171 (E4, P3) dès la fusion de WFS-170 ; WFS-169 libérable à 12:41 UTC s'il n'a toujours pas de branche poussée.
 - Fichiers : `TACHES.md` (lignes de WFS-158), `regles-de-gestion/WFS-158.md` (décisions RG-04 / RG-05), ce Journal. Aucun code touché, rien retiré.
+
+### 2026-11-06 11:20:54 — Nouveau besoin : WFS-173 « Mini-carte du parcours au HUD » créé (po-scrum-master)
+- **Origine** : ordre de l'utilisateur dans la conversation avec Claude (session 01Us6uCu), vers 11:15 UTC. Il choisit « mini-carte du tour au HUD », une des idées « à valider » de ma réponse sur les 4 cartes (`tache utilisateur.md`) : l'idée est **validée**. Demande et réponse ajoutées à `tache utilisateur.md`.
+- **Constats du code** :
+  - **Route** : elle ne reboucle jamais en 3D (`track.h`). Il n'y a donc pas de « tour » fermé.
+  - **Haut droite** : score en haut à droite, absent en Poursuite (WFS-119 RG-02) ; bandeaux à gauche de `0,90 W − 6,5 % H − 12 k` ; nitro au plus haut vers 0,46 H et à gauche de la colonne de la carte en 1280 et en 2400.
+  - **Haut gauche** : temps, Menu, vue et tableaux de la course à 5 et du duel occupent la colonne de gauche.
+  - **Positions des autres voitures** : les joueurs du duel sont déjà publics (`duelSession().ghosts()`) ; les ordinateurs de la course à 5 et la police sont privés (accroche E3 nécessaire).
+- **Décisions (épic, forme, périmètre)** :
+  - **Épic E5**, ticket unique de 1 à 2 jours, **P2 Haute** : visible, choisi par l'utilisateur.
+  - **Deux formes** :
+    - carte « GPS » de 500 m autour du joueur (150 m derrière, 350 m devant) en **Checkpoint** et en **Poursuite** : la police reste à 15-250 m, elle serait cachée à l'échelle de 10 km ;
+    - **parcours entier** en **Course à 5** et en **Duel**.
+  - **Place** : en haut à droite, 150 k de côté, sous le score à sa plus grande hauteur (116 k), à 14 k du haut en Poursuite.
+  - **Montrés** : adversaires, police et barrages, arrivée, prochain checkpoint. Le trafic, le fantôme et les repères du tracé 2 sont hors périmètre (le Grand Prix n'a ni feu ni rond-point).
+- **Ordres permanents respectés** :
+  - **Taille des boutons** : la carte n'est pas un bouton (aucun toucher pris). Aucun bouton ne change de taille ni de place : le test CPU le vérifie sur 7 écrans, en Normaux / Grands et droitier / gaucher.
+  - **Gel iOS** : aucun travail ni aucune CI iOS.
+  - **Ne rien retirer** : aucun code retiré.
+  - **Règles de travail** : aucune n'est ajoutée ; la fusion suit `CLAUDE.md`.
+- **Fichiers** : `regles-de-gestion/WFS-173.md` (RG-01 à RG-14), `TACHES.md` (tableau et critères), `tache utilisateur.md`, ce Journal. Aucun code touché.
+
+### 2026-11-06 11:20:54 — Début WFS-173 : attribué à Claude (session 01Us6uCu) (po-scrum-master)
+- **Ticket** : WFS-173, épic E5 (libre : aucun ticket E5 en cours ou en revue), P2 Haute, sans dépendance ouverte. L'agent n'a aucun autre ticket.
+- **Branche** : `feature/waforspeed-173`, à pousser dans l'heure (règle 9), donc avant 12:20 UTC.
+- **Règles** : `regles-de-gestion/WFS-173.md`.
+- **Zone de code autorisée** :
+  - **nouveaux fichiers** : `src/ui/minicarte.h` (calculs purs), `src/ui/minicarte.cpp` (système `MiniCarte`, ordre 422, et `benchMiniCarte`), `tests/test_minicarte.cpp` ;
+  - **accroches, à annoncer au Journal par le développeur** :
+    - E3, 10 lignes au plus au total : accesseurs en lecture seule `course5Positions` (`course5.h`, `course5_system.cpp`) et `poursuitePolice` (`poursuite.h`, `poursuite_system.cpp`), posés à côté de `course5Bouton` / `poursuiteBouton` ;
+    - 1 ligne à la fin de `benchHud` (`hud.cpp`) ;
+    - 1 ligne `CMakeLists.txt` (`test_minicarte`) ;
+    - 1 ligne `.github/workflows/build.yml` (groupe `ecrans-2400`, copie `minicarte-*-2400`) ;
+    - au besoin, une fonction de `toasts.h` qui expose le bord droit des bandeaux, sans changer leur place.
+- **Interdit** :
+  - taille ou place de tout bouton ;
+  - dessin existant de `hud.cpp`, `pause.cpp`, `camera_vue.cpp`, `commandes_tactiles.*` et `direction.*` ;
+  - `src/ui/ecrans/**`, `src/render/**` et les règles de jeu ;
+  - iOS ;
+  - tout retrait de code.
+- **Critères** :
+  - **carte GPS** : `hud-course`, `hud-2400`, `minicarte-checkpoint(-2400)` ;
+  - **parcours entier** : `course5-course`, `minicarte-ligne(-2400)`, `duel-course`, `course5-rejouer` ;
+  - **Poursuite** : `poursuite-police`, `poursuite-hud` ;
+  - **rien de recouvert** : `hud-combo`, `toast-pile`, `encoche-hud(-2400)`, `camera-*-2400` ; aucun autre élément de l'interface déplacé ni redimensionné (comparaison avec `main`) ;
+  - **pas de carte** en pause, sur les écrans de fin, les menus, au garage ;
+  - au journal du banc, ≤ 4 000 sommets et ≤ 128 points ;
+  - `test_minicarte` vert ;
+  - bancs `parcours` et `course5` à 0 écart, preuve au Journal ;
+  - ligne `qa/Check.md`.
+- **Plan court** :
+  1. branche et commit de début, poussés ;
+  2. `minicarte.h` : placement, projection et découpe, avec `test_minicarte` ;
+  3. système `MiniCarte`, d'abord la forme GPS (Checkpoint), puis le parcours entier (Course à 5, Duel), puis la Poursuite (accroches E3) ;
+  4. `benchMiniCarte` et la ligne de `build.yml` ;
+  5. synchronisation avec `main`, compilation, tests CPU, bancs `parcours` / `course5` ;
+  6. fusion selon `CLAUDE.md`.
+- **Points d'attention** :
+  - **CI de main** : `banc-essai (vitrines)` est rouge à cause d'ANO-88 (WFS-169 en cours) et `endurance` à cause de WFS-145 : ces rouges ne viennent pas de ce ticket.
+  - **Conflits possibles** : `CMakeLists.txt` avec WFS-149 (PR #132), `build.yml` avec WFS-145, `poursuite_system.cpp` avec WFS-172 (bancs). En cas de conflit, garder les deux modifications.
+- Fichiers : `TACHES.md` (lignes de WFS-173), ce Journal. Aucun code touché.
+
+### 2026-11-06 11:24:31 — WFS-169 : contrôle des records du banc aligné sur RG-07, fusion par confiance (Claude (session trafic))
+- Cause racine (ANO-88) : depuis WFS-136 (RG-07 / A7.4), `Sauvegarde::lire` met le record du tracé 1 de côté sous `best_v1` et remet `best` à 0 ; le contrôle RG-03 de `benchRecords` (WFS-125) attendait encore `best == 48210` → « ÉCHEC », `wfs_bench` code 3, groupe `vitrines` arrêté avant `WFS_BANC=trace`.
+- Correction (`src/game/course_system.cpp`, bloc RG-03 de `benchRecords` seulement) : attendu `best == 0`, `best_v1 == "48210"` (lu dans `Sauvegarde::anciens`, membre public : **aucun accesseur ajouté**, RG-03), `car == m4`, records course à 5 et poursuite vides ; message « ancienne sauvegarde relue sans perte (record mis de côté sous best_v1), records vides ». Migration `*_v1` de `sauvegarde.cpp` inchangée (RG-02). Aucun autre contrôle cassé par la même cause (recherche de `48210` dans `src/` et `tests/` : `test_records` et `test_sauvegarde` utilisent déjà `trace=2`).
+- Preuves locales (lavapipe) : `WFS_BANC=records` code 0 ; `WFS_BANC=vitrines` code 0, 0 « ÉCHEC », 16 `vitrine-*` ; `WFS_BANC=trace` code 0, « trace : 0 écart(s) », 9 `trace-*` ; tests CPU : 30 réussis.
+- RG-05, parcours complet au journal du banc : « accueil → Course solo → Checkpoint → Continuer → garage → Choisir → terrain → Rouler → course → fin « NOUVEAU RECORD » → Rejouer → course avec le fantôme → fin → Menu → accueil ; Poursuite → fin → Menu ; Course à 5 → fin → Menu → accueil : 0 écart(s) OK ».
+- Fusion par confiance : PR #134, commit de fusion eadeae8. Ligne `qa/Check.md` ajoutée. Suivi de la CI de main jusqu'au job `banc-essai (vitrines)` vert.
