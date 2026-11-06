@@ -5011,3 +5011,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Contenu : `build.yml` seulement sur `push` de `main` (`paths-ignore` gardé), `schedule` et `workflow_dispatch` ; `ios.yml` sans `feature/**` ; job `résumé (commit et tickets)` ; publication des captures et de l'APK aussi au lancement à la main (RG-06, 2 conditions `if:` hors du bloc `on:`, annoncées).
 - CI : run 777 de `main` (build) lancé par la fusion, en file d'attente. Effet de bord : la modification de `ios.yml` sur `main` a lancé une fois « Construction iOS » (run 42280099905), comme prévu par son filtre de chemins ; plus aucune CI iOS de branche ensuite. Les runs de branche déjà en file (ex. `feature/waforspeed-181`, run 775) utilisent l'ancien `build.yml` et tournent encore une dernière fois.
 - À vérifier : run 777 vert avec son résumé ; prochain push d'une branche `feature/**` sans run.
+
+### 2026-11-06 19:32:00 — Nom de l'agent : « agent arwa » (agent arwa, session trafic)
+
+Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle désormais **agent arwa**. Ligne de `track-agent.md` renommée ; les entrées et commits suivants sont signés « agent arwa (session trafic) ». Les anciennes cases Responsable de `TACHES.md` ne changent pas.

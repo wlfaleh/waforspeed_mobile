@@ -16,7 +16,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, session trafic |  |  |  | ✅ libre ; suit la CI de `main` de WFS-181 (🟣 fusionné 19:26, PR #153), WFS-150, 182 (🟣) |
+| agent arwa (Claude, session trafic) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-181 (🟣 fusionné 19:26, PR #153), WFS-150, 182 (🟣) |
 | Claude, agent 1 (01UY1Vv2) |  |  | 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-185 (🟣 fusionné 19:29, PR #149, run 777) |
 | Claude, agent 2 (01UY1Vv5) |  |  |  | ✅ libre |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
