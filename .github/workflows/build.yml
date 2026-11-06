@@ -5,7 +5,7 @@
 #  - APK Android (arm64) et AAB signé pour Google Play (WFS-22 : clé des secrets, sinon clé factice ; store/signature.md)
 #  - iOS : workflow à part (ios.yml), jamais bloquant pour celui-ci
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
-#      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (pour valider le ticket avant fusion)
+#      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (lancement à la main seulement, WFS-185)
 #    WFS-106 : deux jobs. publication-apk part dès la fin du job android (APK en ligne ≈ 5 min après l'envoi) ;
 #    publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
 #    tous les jobs du dépôt, branches comprises ; les 200 derniers appels restent aux APK)
@@ -13,9 +13,12 @@
 # du commit s'affichent sur la PR) ; sur main, aucun build annulé : chaque commit de code publie son APK.
 name: Construction WaForSpeed
 
+# WFS-185 (règle de l'utilisateur, 2026-11-06) : plus de CI sur les branches ni les PR (les lanceurs restent à main) ; le
+# développeur fusionne puis valide sur la CI de main. Une branche feature/** ne se construit plus qu'à la main
+# (workflow_dispatch, fusion à confiance ≤ 50 %), ses captures dans la Release apercu-waforspeed-XX.
 on:
   push:
-    branches: [main, 'feature/**', 'claude/**']
+    branches: [main]
     paths-ignore: ['**/*.md', 'qa/**', 'regles-de-gestion/**', '.claude/**']
   workflow_dispatch:
   schedule:
@@ -193,7 +196,7 @@ jobs:
   publication-apk:
     needs: [android]
     runs-on: ubuntu-24.04
-    if: github.event_name == 'push'
+    if: github.event_name != 'schedule'   # WFS-185 (RG-06) : envoi sur main ou lancement à la main
     timeout-minutes: 70
     concurrency:
       group: apercu-apk-${{ github.ref }}
@@ -215,7 +218,7 @@ jobs:
   publication-captures:
     needs: [banc-essai]
     runs-on: ubuntu-24.04
-    if: ${{ !cancelled() && github.event_name == 'push' }}
+    if: ${{ !cancelled() && github.event_name != 'schedule' }}   # WFS-185 (RG-06)
     timeout-minutes: 20
     concurrency:
       group: apercu-captures-${{ github.ref }}
@@ -233,3 +236,21 @@ jobs:
           PUBLIER: captures
           BANC: ${{ needs.banc-essai.result }}
         run: bash tools/qa/publier_apercu.sh
+
+  # WFS-185 (RG-03) : résumé du run : commit et tickets WFS-XX des messages de commit (pour passer son ticket en ✅ avec le run)
+  resume:
+    name: résumé (commit et tickets)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Commit et tickets du run
+        env:
+          COMMITS: ${{ toJson(github.event.commits) }}
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          tickets=$(printf '%s\n%s\n' "$COMMITS" "$HEAD_MSG" | grep -oE 'WFS-[0-9]+' | sort -u -t- -k2,2n | tr '\n' ' ')
+          {
+            echo "### Run ${{ github.run_number }} (id ${{ github.run_id }})"
+            echo "- commit : \`${GITHUB_SHA::7}\` sur \`${GITHUB_REF_NAME}\` (${{ github.event_name }})"
+            echo "- tickets : ${tickets:-aucun}"
+          } >> "$GITHUB_STEP_SUMMARY"
