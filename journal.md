@@ -4955,3 +4955,20 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - `WFS_BANC=parcours` : 0 écart ; 35 tests CPU OK.
 - **Incident de méthode** : pendant l'arbitrage de 18:28, l'agent PO a basculé mon dossier de travail sur `main`. Mes deux commits de WFS-145 (RG-08 à RG-15) ont donc été faits sur la copie locale de `main`, sans être poussés. Je les ai replacés sur `feature/waforspeed-145` (d3da912, f6444c7, poussés) et j'ai remis la copie locale de `main` à `origin/main`. Rien n'a été poussé à tort.
 - **Suite** : WFS-145 est resynchronisé avec main (avec WFS-187) ; banc d'endurance complet lancé, puis fusion.
+
+### 2026-11-06 19:24:46 — WFS-145 fusionné (PR #152, fusion par confiance, après WFS-187) (Claude, session dev expert, 0183bv2X)
+- **Causes** (RG-01) :
+  - **Poursuite bloquée** (session dev 5bx) : `poursuite_system.cpp` l. 127-133. Le saut du banc déplaçait la voiture et la police, pas le trafic. La voiture tombait dans une file, et l'issue dépendait de la graine (CI rouge au hasard).
+  - **Mémoire** : la mesure n'était pas canonique. À point fixe, le tas varie de ±50 Mo sous lavapipe. Une fois la mesure rendue canonique, elle a montré une vraie fuite de jeux de descripteurs, corrigée par WFS-187.
+- **Fait** :
+  - RG-08 : scène de référence (circuit puis ville de jour, Golf, accueil, 6 images de destruction différée), voiture et terrain du moment rendus.
+  - RG-13, RG-14, RG-15 : verdict sur les objets Vulkan (jeux de descripteurs compris, cycle 2 + 2 au plus) et sur la pente du minimum de 8 relevés du tas (+15 Mo/cycle au plus).
+  - Limites écrites dans `tools/qa/endurance.sh`.
+- **Preuves** (RG-13, RG-14) :
+  - (a) passages verts : avant WFS-187, pente +3,86 et +2,60 Mo/cycle ; avec WFS-187, 2 passages à −1,83 et +2,91, puis un passage final sur la branche synchronisée à +3,79. Minimums des cycles 2 à 10 de ce dernier : 256,3 / 235,6 / 193,5 / 239,4 / 375,2 / 203,6 / 237,4 / 276,7 / 283,8 Mo ;
+  - (b) fuite de 20 Mo/cycle (non commitée) : code 3, pente +26,3 ;
+  - (c) tampon Vulkan de 1 Mo/cycle (non commité) : code 3, allocations 859 contre 856 ;
+  - (d) Poursuite arrivée (10,07 à 10,10 km) à chaque passage, 0 écart au doigt, `WFS_BANC=parcours` 0 écart.
+- **Mesures sans fuite** (essais non commités) : 24 changements de carte, 5 retours d'arrière-plan, 6 changements de voiture, 4 courses longues sur la même carte : aucune croissance du tas ni des objets à la référence.
+- **Limite** : RG-11 (c) (fuite lente de 5 Mo/cycle) n'est plus exigée (RG-13). Elle n'est pas détectée par le banc PC (limite connue acceptée).
+- **CI de main**, run 746 (01fff1d, avant ce ticket) : tout vert, `endurance` compris. La panne de la Poursuite n'y était pas apparue, faute d'une graine qui la déclenche.
