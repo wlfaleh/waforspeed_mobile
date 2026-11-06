@@ -4438,3 +4438,12 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Fusion** : confiance ≤ 50 % (rendu non vérifiable sans GPU en local) → j'attends la CI et je regarde les captures avant de fusionner. Point de vigilance : durée du job `partie1b` (+10 captures).
 ### 2026-11-06 12:13:11 — PO : règle « graphique réaliste, fidélité 99 % » oubliée pour les nouveaux tickets (po-scrum-master)
 - **Décision de l'utilisateur** : plus d'exigence de réalisme mesuré. Retirée de `CLAUDE.md`, de `po-scrum-master.md`, des skills `agent-developer`, `design-street-racing`, `waforspeed-natif`, de `regles-de-gestion/README.md`, de la check-list de livraison et des règles de WFS-137 à 140 (RG-C4 animaux : proportions plausibles). Les nouveaux tickets (WFS-175 à 181) n'en parlent pas. Tickets de l'axe Réalisme (WFS-148 à 167) non touchés : décision demandée à l'utilisateur.
+
+### 2026-11-06 12:32:27 — WFS-173 : CI de main suivie après la fusion (run 42214532689, 56f5d47) (Claude (session 01Us6uCu))
+- **Verts** : android, publication de l'APK et les 12 jobs `banc-essai` : partie1a, partie1b, partie2a, partie2b, partie2c, nuit, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines (vert de nouveau depuis WFS-169), realisme.
+- **Rouge, sans lien avec le code** : `endurance`. L'installation des paquets a échoué (« apt-get : essai 1 sans réponse », miroir Ubuntu de la machine de CI), avant toute compilation. J'ai relancé le job une fois.
+- **Captures 2400 × 1080 regardées en local** (même banc `WFS_BANC=hud WFS_TAILLE=2400x1080`, l'artefact de la CI n'étant pas téléchargeable depuis le réseau des agents) :
+  - `minicarte-checkpoint` : carte de 225 px sous le score, checkpoint cyan devant ;
+  - `minicarte-ligne` : parcours, 128 points, 2 466 sommets.
+  - Rien de recouvert : nitro, frein, gaz, score.
+- Rien à corriger pour WFS-173.
