@@ -55,7 +55,8 @@ void creerCube(Renderer& r, int cote) {
     ii.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT; ii.imageType = VK_IMAGE_TYPE_2D; ii.format = HDR;
     ii.extent = {(uint32_t)cote, (uint32_t)cote, 1}; ii.mipLevels = 1; ii.arrayLayers = 6; ii.samples = VK_SAMPLE_COUNT_1_BIT;
     ii.tiling = VK_IMAGE_TILING_OPTIMAL;
-    ii.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    ii.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+             | VK_IMAGE_USAGE_TRANSFER_DST_BIT;   // WFS-151 : vkCmdClearColorImage du cube noir initial (VUID-vkCmdClearColorImage-image-00002, VUID-VkImageMemoryBarrier-oldLayout-01213)
     ii.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VK_OK(vkCreateImage(d, &ii, nullptr, &g.img));
     VkMemoryRequirements mr; vkGetImageMemoryRequirements(d, g.img, &mr);
