@@ -37,6 +37,13 @@ struct Choc { float offset, hit; };
 // WFS-137 (RG-01, RG-02) : lieux du tracé 2. Carrefour à feux : ligne d'arrêt, passage de la rue transversale (8 m après),
 // indice du feu (trace::feuA). Rond-point : segment du centre de l'anneau (courbure la plus forte), début et fin de la section
 struct Carrefour { int64_t ligne, croise; int feu; };
+// WFS-176 (RG-04 de WFS-137) : lieux du tracé 2 : casino, centre commercial, garages ; seg : début de la façade le long de la
+// route, len : longueur de la façade (m), side : côté. Leur emprise est vidée des immeubles, arbres, commerces et panneaux.
+enum TypeLieu : uint8_t { CASINO, CENTRE_COMMERCIAL, GARAGE };
+struct Lieu { TypeLieu t; int64_t seg; int side; float len; };
+// WFS-176 (RG-05) : promeneurs tenus par un chien en laisse (piétons de pietons.cpp, chien dessiné par la Ville) : même
+// marche que les autres piétons (s += dir · v / SEG_M · dt, sur un tour) ; chien : race 0 shiba, 1 husky
+struct Promeneur { double s, lat, v; int dir, race; };
 struct RondPoint { int64_t centre, debut, fin; float rayon; };
 constexpr float RUE_TRANS_M = 4.5f;   // demi-largeur de la rue transversale d'un carrefour (2 voies, 9 m)
 
@@ -52,6 +59,8 @@ struct Plan {
     std::vector<uint8_t> voie;   // 0 rue, 1 autoroute, 2 tunnel, 3 pont
     std::vector<Carrefour> carrefours;   // WFS-137 (RG-02)
     std::vector<RondPoint> ronds;        // WFS-137 (RG-01)
+    std::vector<Lieu> lieux;             // WFS-176 (RG-04)
+    std::vector<Promeneur> promeneurs;   // WFS-176 (RG-05)
     bool adapte = false;
     float lim(int64_t a, int side) const;   // limG / limD du segment a (ramené sur un tour) ; infini si non adapté
 };
@@ -70,6 +79,8 @@ const Plan& adapter(const MapDef& map, const Track& t);
 struct Passant { double s, lat, v; int dir, feu; };
 std::vector<Passant> passants(const MapDef& map, const Track& t);
 void traverser(double& lat, int& dir, bool& marche, float& yawRel, double& y, int feu, double v, double dt);
+// WFS-176 : promeneurs et leur chien (plan adapté ; vide au tracé 1 et hors de la Ville)
+const std::vector<Promeneur>& promeneurs(const MapDef& map, const Track& t);
 // extension latérale d'un objet (m depuis l'axe) : bord extérieur du volume (immeuble, arbre, grue…)
 float etendue(const Objet& o);
 

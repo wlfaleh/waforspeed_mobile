@@ -83,6 +83,7 @@ public:
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
+        if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville)
         peupler(*g.map, (int64_t)g.track->segmentCount());
         {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
             const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;

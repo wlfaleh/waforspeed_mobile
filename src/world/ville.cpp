@@ -46,14 +46,19 @@ namespace wfs {
 namespace {
 
 enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE,
-           P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL, P_COUNT };   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
+           P_BETON, P_VOUTE, P_ACIER, P_SODIUM, P_ROUTE, P_EAU, P_TEXTE, P_SOL,
+           P_OR, P_VERRE, P_TXT_A, P_TXT_B, P_COUNT };   // WFS-176 : dorures, vitrages, néons du casino (A) et des autres enseignes (B)   // WFS-175 : autoroute, tunnel, pont (P_TEXTE : matériau de l'atlas)   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
 enum Couleur {
     U_METAL, U_BANC, U_VITRE, U_PIERRE, U_EAU, U_ENTREPOT0, U_TOLE = U_ENTREPOT0 + 4, U_PORTE, U_CONT0, U_GRUE = U_CONT0 + 6,
     U_CABINE, U_ZEBRA, U_DALLE, U_GARDE_CORPS, U_PELOUSE, U_BETON, U_CHENE2, U_CHENE, U_PIN, U_PIN_BAS,
     U_BLEU, U_ASPHALTE, U_BORDURE,   // WFS-137 : panneaux et plaques bleus, rue transversale, bordures de l'îlot
-    U_PEINTURE, U_CLAIR, U_BETON2, U_ACIER_LOIN, U_NB   // WFS-175 : marquage, parements du tunnel, béton (piles, lointain), acier au loin
+    U_PEINTURE, U_CLAIR, U_BETON2, U_ACIER_LOIN,   // WFS-175 : marquage, parements du tunnel, béton (piles, lointain), acier au loin
+    // WFS-176 : pierre claire du casino, marches, tapis, enduit et sol des garages, pont élévateur, noir, pigeon (4 teintes),
+    // shiba et husky (6 teintes chacun, matériaux du modèle), laisse, enrobé du parking, aluminium des menuiseries
+    U_CREME, U_MARCHE, U_TAPIS, U_ENDUIT, U_SOL_GARAGE, U_PONT, U_NOIR, U_PIG0, U_SHI0 = U_PIG0 + 4, U_HUS0 = U_SHI0 + 6,
+    U_LAISSE = U_HUS0 + 6, U_PARKING, U_ALU, U_NB
 };
 constexpr uint32_t PALETTE[U_NB] = {
     0x3a3d44, 0x6b4a2e, 0xbfe8ff, 0xc9c4b8, 0x4aa3c7,
@@ -66,7 +71,17 @@ constexpr uint32_t PALETTE[U_NB] = {
     0x1d5fb4, 0x3b3e43, 0xbdb9b0,                                 // WFS-137 : bleu signalisation, asphalte, bordure
     // WFS-175 : peinture routière blanche (sRGB 0xdcdcd6 → albédo ≈ 0,72, charte : marquage blanc 0,65-0,80), parement clair du tunnel (≈ 0,57),
     // béton des piles (sRGB 0x908e89 → albédo ≈ 0,27, charte : béton 0,25-0,35)
-    0xdcdcd6, 0xc6c4bd, 0x908e89, 0x9a9ea3};   // acier galvanisé vu de loin (≈ 0,33, diffus : au-delà de 200 m)
+    0xdcdcd6, 0xc6c4bd, 0x908e89, 0x9a9ea3,   // acier galvanisé vu de loin (≈ 0,33, diffus : au-delà de 200 m)
+    // WFS-176 : pierre claire 0xc2b9a5 (albédo ≈ 0,48, charte : pierre claire 0,40-0,55), marches 0xb5ad9c (≈ 0,42), tapis
+    // rouge, enduit gris clair (≈ 0,47), sol de garage en résine (≈ 0,21), pont élévateur rouge-orangé, noir ;
+    // pigeon biset (Columba livia) : corps gris-bleu, ailes plus sombres, barres et queue gris foncé, bec ;
+    // shiba (roux, noir, crème, yeux) et husky (gris foncé, noir, blanc, yeux) : couleurs des matériaux du modèle Quaternius ;
+    // laisse rouge, enrobé du parking (≈ 0,06, charte : asphalte neuf 0,04-0,07), aluminium anodisé des menuiseries
+    0xc2b9a5, 0xb5ad9c, 0x7a1c22, 0xb9b6ae, 0x7d8085, 0xc2461e, 0x1a1b1e,
+    0x9aa0ac, 0x6e7480, 0x3a3d44, 0x2f2f33,
+    0x99703d, 0x2e2e2e, 0xe8dcc4, 0x0e0e0e, 0xeeeeee, 0x2a1d10,
+    0x47494a, 0x2e2e2e, 0xd9d9d4, 0x0e0e0e, 0xf0f0f0, 0x2a2a2a,
+    0xb02a2a, 0x45474b, 0xc8ccd0};
 vec2 uvc(int c) { return {(c + 0.5f) / (float)U_NB, 0.5f}; }
 
 // teintes du feuillage (VEG_TINT de life.js) : tilleuls sur le matériau des platanes, pins sur leur propre matériau
@@ -242,6 +257,7 @@ public:
         }
         abordsRondPoint(*g.track);   // WFS-137 (RG-01)
         initOuvrages(r, *g.track);   // WFS-175
+        initLieux(r, *g.track);      // WFS-176
         size_t nl = 0;
         for (size_t a = 0; a < plan_->objets.size(); a++) for (const ville::Objet& o : plan_->objets[a])
             if (o.t == ville::LAMPE) { lampadaires().push_back({(int64_t)a, o.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville}); nl++; }
@@ -477,6 +493,7 @@ public:
             }
             for (const ville::Objet& o : P.objets[(size_t)seg]) objet(t, o, a, seg, z, p, lod, out);
             lieux(t, a, seg, p, lod, out);   // WFS-137 : rond-point et carrefours du tracé 2
+            for (const ville::Lieu& l : P.lieux) if (l.seg == seg) lieuVille(t, a, l, lod, out);   // WFS-176
             if (!P.voie.empty() && P.voie[(size_t)seg] != ville::RUE) {   // WFS-175 : autoroute, tunnel, pont
                 if (!lod) ouvrages(t, a, seg, false, out);
                 else {   // au-delà de 200 m : béton, acier, asphalte et voûte dans la palette (un seul matériau), sans lettres
@@ -1096,6 +1113,270 @@ public:
             }
     }
 
+    // ==================================================================================================================
+    // WFS-176 (RG-04, RG-05 de WFS-137) : casino, centre commercial, garages, pigeons et chiens
+    // ==================================================================================================================
+    // poses figées .wfa (assets/world/animaux : mouette.wfa de WFS-181, shiba.wfa et husky.wfa de convertir_chiens.py) ;
+    // teintes : cases de la palette (couleurs[code de teinte du fichier])
+    bool chargerAnimal(Renderer& r, const char* chemin, const int* couleurs, int nCouleurs, std::vector<Mesh>& poses) {
+        std::vector<uint8_t> d;
+        if (!readAsset(chemin, d) || d.size() < 12 || std::memcmp(d.data(), "WFA1", 4)) { WFS_ERR("Animal illisible : %s", chemin); return false; }
+        uint32_t np = 0, nv = 0; std::memcpy(&np, &d[4], 4); std::memcpy(&nv, &d[8], 4);
+        if (np == 0 || np > 32 || nv == 0 || nv > 200000 || nv % 3 || d.size() < 12 + (size_t)nv + (size_t)np * nv * 24) { WFS_ERR("Animal invalide : %s", chemin); return false; }
+        std::vector<uint32_t> idx(nv);
+        for (uint32_t i = 0; i < nv; i++) idx[i] = i;
+        for (uint32_t p = 0; p < np; p++) {
+            std::vector<Vertex> v(nv);
+            const uint8_t* src = d.data() + 12 + nv + (size_t)p * nv * 24;
+            for (uint32_t i = 0; i < nv; i++) {
+                float f[6]; std::memcpy(f, src + (size_t)i * 24, 24);
+                const vec2 uv = uvc(couleurs[std::min<int>(d[12 + i], nCouleurs - 1)]);
+                v[i] = {f[0], f[1], f[2], f[3], f[4], f[5], uv.x, uv.y};
+            }
+            poses.push_back(r.makeMesh(v, idx, false));
+        }
+        return true;
+    }
+
+    int64_t modL(int64_t n) const { const int64_t L = (int64_t)plan_->objets.size(); return ((n % L) + L) % L; }
+    void initLieux(Renderer& r, Track& t) {
+        const ville::Plan& P = *plan_;
+        basse_ = r.qualiteBasse;
+        // dorures (laiton doré : métal, F0 ≈ (1,0 ; 0,78 ; 0,34) de l'or, rugosité 0,35), vitrages (verre clair : diélectrique
+        // lisse, F0 0,04 ; teinte sombre vue de jour ; la nuit, intérieur éclairé 3000 K)
+        Material mo; mo.color = {1.f, 0.78f, 0.34f, 1}; mo.metal = 1; mo.rough = 0.35f; mo.flags = MAT_DOUBLE;
+        mats_[P_OR] = r.makeMaterial(mo, nullptr, nullptr, nullptr);
+        Material mv; mv.color = {0.06f, 0.08f, 0.09f, 1}; mv.rough = 0.05f; mv.flags = MAT_DOUBLE;
+        if (nuit_) mv.emissive = vec3{1.f, 0.72f, 0.45f} * 0.9f;
+        mats_[P_VERRE] = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+        for (const char* x : {"CASINO", "GARAGE 88", "GALERIE DES ARCADES", "LUNA MODE", "ATELIER 7", "MAISON VERTE"}) atlasLieux_.ajouter(x);
+        if (!P.lieux.empty() && atlasLieux_.construire(r)) {
+            // néons bornés (pas de halo qui mange l'écran) : or-rose pour le casino, cyan pour les autres (design-street-racing)
+            enseigneMat_[0] = &atlasLieux_.materiau(r, 0xffb347, nuit_ ? 2.2f : 0.5f, 0.45f);
+            enseigneMat_[1] = &atlasLieux_.materiau(r, 0x00e5ff, nuit_ ? 1.8f : 0.35f, 0.45f);
+        }
+        for (const ville::Lieu& l : P.lieux) if (l.t == ville::CASINO && !luxe_[0].ok) {
+            if (!loadCarModel(r, "cars/sf90.wfm", luxe_[0]) || !loadCarModel(r, "cars/gallardo.wfm", luxe_[1])) WFS_ERR("Ville : voitures du casino introuvables");
+        }
+        // lumière de nuit (nuit.cpp, les 4 plus proches) : parvis du casino, parking du centre commercial, intérieur des garages
+        for (const ville::Lieu& l : P.lieux) {
+            const float s = (float)l.side;
+            if (l.t == ville::CASINO) for (float al : {10.f, 30.f}) lampadaires().push_back({modL(l.seg + (int64_t)(al / SEG_M)), s * ((float)RW + 9.f), 4.5f, StyleLampadaire::Ville});
+            if (l.t == ville::CENTRE_COMMERCIAL) for (float al : {15.f, 40.f, 65.f}) lampadaires().push_back({modL(l.seg + (int64_t)(al / SEG_M)), s * ((float)RW + 17.f), 8.f, StyleLampadaire::Ville});
+            if (l.t == ville::GARAGE) lampadaires().push_back({modL(l.seg + (int64_t)(7 / SEG_M)), s * ((float)RW + 12.f), 3.4f, StyleLampadaire::Ville});
+        }
+        // pigeons : 2 groupes à chaque carrefour (trottoir, 15 m avant et après le passage), 1 sur le parvis du casino ;
+        // forme de la mouette de WFS-181 à la taille du pigeon biset (envergure 0,67 m, longueur 0,32 m : × 0,48)
+        static const int PIG[4] = {U_PIG0, U_PIG0 + 1, U_PIG0 + 2, U_PIG0 + 3};
+        vols_.clear();
+        if (chargerAnimal(r, "world/animaux/mouette.wfa", PIG, 4, pigeon_) && pigeon_.size() >= 10) {
+            for (const ville::Carrefour& c : P.carrefours) for (int k = 0; k < 2; k++)
+                vols_.push_back({modL(c.croise + (k ? 1 : -1) * (int64_t)(15 / SEG_M)), (k ? 1.f : -1.f) * ((float)RW + 3.2f), 0.f});
+            for (const ville::Lieu& l : P.lieux) if (l.t == ville::CASINO) vols_.push_back({modL(l.seg + (int64_t)(6 / SEG_M)), (float)l.side * ((float)RW + 8.f), 0.f});
+        } else pigeon_.clear();
+        static const int SHI[6] = {U_SHI0, U_SHI0 + 1, U_SHI0 + 2, U_SHI0 + 3, U_SHI0 + 4, U_SHI0 + 5};
+        static const int HUS[6] = {U_HUS0, U_HUS0 + 1, U_HUS0 + 2, U_HUS0 + 3, U_HUS0 + 4, U_HUS0 + 5};
+        if (!P.promeneurs.empty() && (!chargerAnimal(r, "world/animaux/shiba.wfa", SHI, 6, chien_[0]) || !chargerAnimal(r, "world/animaux/husky.wfa", HUS, 6, chien_[1]))) { chien_[0].clear(); chien_[1].clear(); }
+        promS_.clear();
+        for (const ville::Promeneur& m : P.promeneurs) promS_.push_back(m.s);
+        { Geo g; carte::box(g, {0, 0, 0}, {1, 0, 0}, {0, 0, 1}, 0.012f, 0.012f, 1.f, uvc(U_LAISSE)); laisse_ = r.makeMesh(g.v, g.i, false); }   // laisse : 1 m le long de +Z
+        for (const ville::Lieu& l : P.lieux) WFS_LOG("Ville (WFS-176) : lieu %d au segment %lld, côté %d, %.0f m", (int)l.t, (long long)l.seg, l.side, l.len);
+        WFS_LOG("Ville (WFS-176) : %zu lieu(x), %zu groupe(s) de pigeons, %zu chien(s)%s", P.lieux.size(), vols_.size(), promS_.size(),
+                chien_[0].empty() ? " (modèles absents : chiens non dessinés)" : "");
+        (void)t;
+    }
+
+    // promeneurs : même marche que pietons.cpp (update : s += dir · v / SEG_M · dt en course), pour que le chien suive son maître
+    void update(double dt, const GameView& g) override {
+        if (!active_ || g.ecran != Ecran::Course || promS_.empty()) return;
+        const double len = (double)plan_->objets.size();
+        for (size_t i = 0; i < promS_.size(); i++) {
+            const ville::Promeneur& m = plan_->promeneurs[i];
+            promS_[i] += m.dir * m.v / SEG_M * dt;
+            if (promS_[i] >= len) promS_[i] -= len;
+            if (promS_[i] < 0) promS_[i] += len;
+        }
+    }
+
+    // géométrie fixe d'un lieu, dans le repère de la route au milieu de sa façade (lignes droites : RG-C1)
+    void lieuVille(Track& t, int64_t a, const ville::Lieu& l, bool lod, Geo out[P_COUNT]) const {
+        const float R = (float)RW, s = (float)l.side, demi = l.len / 2;
+        const carte::Pose pm = poseS(t, (double)a + demi / SEG_M);
+        const vec3 up{0, 1, 0}, X = pm.r * s, Z = pm.f;   // X : vers l'extérieur de la route
+        auto P = [&](float lat, float al, float y) { return pm.o + X * lat + Z * al + up * y; };
+        Geo& U = out[P_UNI];
+        // boîte : centre de la base (lat, al, y0), demi-tailles hx (selon X), hz (selon Z), hauteur h, couleur
+        auto bloc = [&](Geo& g, float lat, float al, float y0, float hx, float hz, float h, vec2 uv) {
+            carte::box(g, P(lat, al, 0), X, Z, 2 * hx, h, 2 * hz, uv, y0);
+        };
+        // enseigne : texte de l'atlas des lieux, centré en (lat, al, y), sur la face tournée vers la route, hauteur des lettres h
+        auto enseigne = [&](Geo& g, const char* txt, float lat, float al, float y, float h, float largeurMax) {
+            const vie::Texte& T = atlasLieux_.texte(txt);
+            if (!T.ok) return;
+            const float hl = h / 0.62f, w = std::min(hl * T.aspect, largeurMax), k = w / (hl * T.aspect);
+            const vec3 o = P(lat - 0.02f, al, y), hx = Z * (-s * w / 2), hy = up * (hl * k / 2), n = -X;
+            quad(g, o - hx - hy, o + hx - hy, o + hx + hy, o - hx + hy, n, {T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0});
+        };
+        switch (l.t) {
+        case ville::CASINO: {
+            // casino : 40 × 24 m, 14 m (3 niveaux), en retrait à RW + 12 derrière un parvis de pierre ; façade de pierre claire à
+            // pilastres (tous les 4 m) et bandeaux, vitrages en retrait de 0,35 m (fenêtres en profondeur), corniche et chapiteaux
+            // dorés, marquise dorée de 12 m au-dessus de 3 marches (17 / 30 cm : 2h + g = 64 cm, loi de Blondel) et d'un tapis
+            const float f0 = R + 12.f;
+            quad(U, P(R + 6.5f, -demi, 0.16f), P(R + 6.5f, demi, 0.16f), P(f0, demi, 0.16f), P(f0, -demi, 0.16f), up, uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE));
+            bloc(out[P_VERRE], f0 + 12.35f, 0, 0, 12.f, demi - 0.2f, 14.f, {0, 0});                     // vitrages (en retrait)
+            bloc(U, f0 + 12.f, 0, 0, 12.f, demi, 1.2f, uvc(U_CREME));                                    // soubassement
+            for (float y : {5.f, 9.6f}) bloc(U, f0 + 12.f, 0, y, 12.f, demi, 0.6f, uvc(U_CREME));       // bandeaux d'étage
+            bloc(U, f0 + 12.f, 0, 13.f, 12.f, demi, 1.f, uvc(U_CREME));                                  // attique
+            bloc(out[P_OR], f0 + 11.85f, 0, 14.f, 12.15f, demi + 0.15f, 0.45f, {0, 0});                  // corniche dorée
+            for (float al = -demi; al <= demi + 0.01f; al += 4.f) {
+                bloc(U, f0 + 12.f, al, 0, 12.f, 0.4f, 13.f, uvc(U_CREME));                               // pilastres
+                if (!lod) bloc(out[P_OR], f0 - 0.08f, al, 12.4f, 0.12f, 0.5f, 0.6f, {0, 0});             // chapiteaux
+            }
+            for (int k = 0; k < 3; k++)                                                                   // marches
+                bloc(U, f0 - 0.9f + k * 0.3f, 0, 0.16f, 0.9f - k * 0.3f, 6.f, 0.17f * (k + 1), uvc(U_MARCHE));
+            quad(U, P(f0 - 1.8f, -2.f, 0.69f), P(f0 - 1.8f, 2.f, 0.69f), P(f0, 2.f, 0.69f), P(f0, -2.f, 0.69f), up, uvc(U_TAPIS), uvc(U_TAPIS), uvc(U_TAPIS), uvc(U_TAPIS));
+            bloc(out[P_OR], f0 - 2.f, 0, 4.4f, 2.f, 6.f, 0.4f, {0, 0});                                   // marquise
+            for (float al : {-5.6f, 5.6f}) bloc(out[P_OR], f0 - 3.8f, al, 0.16f, 0.1f, 0.1f, 4.25f, {0, 0});   // poteaux de la marquise
+            enseigne(out[P_TXT_A], "CASINO", f0 - 0.4f, 0, 16.6f, 2.6f, 24.f);                            // néon sur l'attique
+            enseigne(out[P_TXT_A], "CASINO", f0 - 4.05f, 0, 4.6f, 0.75f, 7.f);                            // et sur le bandeau de la marquise
+            bloc(U, f0 + 0.3f, 0, 14.45f, 0.15f, 9.f, 3.3f, uvc(U_NOIR));                                 // fond de l'enseigne
+            break;
+        }
+        case ville::CENTRE_COMMERCIAL: {
+            // centre commercial : bâtiment de 80 × 26 m, 12 m, à RW + 31 ; parking d'une double rangée de places de 2,5 × 5 m
+            // (norme NF P 91-100) et d'une allée de 6 m ; mur-rideau vitré (meneaux d'aluminium tous les 1,5 m), bandeau, 4 enseignes
+            const float b0 = R + 31.f;
+            quad(U, P(R + 6.5f, -demi, 0.16f), P(R + 6.5f, demi, 0.16f), P(b0, demi, 0.16f), P(b0, -demi, 0.16f), up, uvc(U_PARKING), uvc(U_PARKING), uvc(U_PARKING), uvc(U_PARKING));
+            for (float r0 : {R + 9.f, R + 20.f}) {   // rangées de places : lignes blanches de 10 cm
+                for (float al = -demi + 2.5f; al <= demi - 2.5f + 0.01f; al += 2.5f)
+                    quad(U, P(r0, al - 0.05f, 0.17f), P(r0, al + 0.05f, 0.17f), P(r0 + 5.f, al + 0.05f, 0.17f), P(r0 + 5.f, al - 0.05f, 0.17f), up, uvc(U_PEINTURE), uvc(U_PEINTURE), uvc(U_PEINTURE), uvc(U_PEINTURE));
+            }
+            quad(U, P(R + 25.f, -demi, 0.18f), P(R + 25.f, demi, 0.18f), P(b0, demi, 0.18f), P(b0, -demi, 0.18f), up, uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE), uvc(U_MARCHE));   // parvis piéton
+            bloc(out[P_VERRE], b0 + 13.f, 0, 0, 13.f, demi, 9.f, {0, 0});
+            bloc(U, b0 + 13.f, 0, 9.f, 13.f, demi, 3.f, uvc(U_CLAIR));                                     // bandeau opaque
+            if (!lod) for (float al = -demi; al <= demi + 0.01f; al += 1.5f) bloc(U, b0 - 0.05f, al, 0, 0.06f, 0.05f, 9.f, uvc(U_ALU));
+            if (!lod) for (float y : {3.f, 6.f}) bloc(U, b0 - 0.05f, 0, y, 0.06f, demi, 0.08f, uvc(U_ALU));
+            bloc(U, b0 - 2.5f, 0, 4.f, 2.5f, 10.f, 0.35f, uvc(U_ALU));                                     // auvent de l'entrée
+            enseigne(out[P_TXT_B], "GALERIE DES ARCADES", b0 - 0.1f, 0, 10.5f, 1.6f, 40.f);
+            const char* boutiques[3] = {"LUNA MODE", "ATELIER 7", "MAISON VERTE"};
+            for (int k = 0; k < 3; k++) enseigne(out[P_TXT_B], boutiques[k], b0 - 0.1f, -26.f + k * 26.f + (k == 1 ? 14.f : 0.f), 7.5f, 0.7f, 10.f);
+            break;
+        }
+        case ville::GARAGE: {
+            // garage : 14 × 12,5 m, 6 m de haut, sur l'alignement des façades (RW + 6,5) ; rideau métallique levé (baie de
+            // 4,5 × 3,6 m, rouleau en haut), sol en résine, pont élévateur à 2 colonnes (3 m), enseigne « GARAGE 88 »
+            const float f0 = R + 6.5f, al0 = -2.f;   // baie centrée à 2 m avant le milieu
+            bloc(U, f0 + 12.3f, 0, 0, 0.2f, demi, 6.f, uvc(U_ENDUIT));                                     // mur du fond
+            for (float sd : {-1.f, 1.f}) bloc(U, f0 + 6.25f, sd * (demi - 0.2f), 0, 6.25f, 0.2f, 6.f, uvc(U_ENDUIT));   // pignons
+            bloc(U, f0 + 6.25f, 0, 5.8f, 6.25f, demi, 0.2f, uvc(U_ENDUIT));                                // toiture
+            bloc(U, f0 + 0.2f, (al0 - 2.25f - demi) / 2, 0, 0.2f, (demi + al0 - 2.25f) / 2, 6.f, uvc(U_ENDUIT));       // façade : trumeau gauche
+            bloc(U, f0 + 0.2f, (al0 + 2.25f + demi) / 2, 0, 0.2f, (demi - al0 - 2.25f) / 2, 6.f, uvc(U_ENDUIT));       // trumeau droit
+            bloc(U, f0 + 0.2f, al0, 3.6f, 0.2f, 2.25f, 2.4f, uvc(U_ENDUIT));                                // linteau
+            quad(U, P(f0, -demi, 0.17f), P(f0, demi, 0.17f), P(f0 + 12.1f, demi, 0.17f), P(f0 + 12.1f, -demi, 0.17f), up, uvc(U_SOL_GARAGE), uvc(U_SOL_GARAGE), uvc(U_SOL_GARAGE), uvc(U_SOL_GARAGE));
+            carte::cylAxe(out[P_ACIER], P(f0 + 0.6f, al0 - 2.3f, 3.95f), Z, 0.3f, 4.6f, 10, {0, 0});        // rouleau du rideau
+            bloc(out[P_ACIER], f0 + 6.5f, al0 - 1.6f, 0.17f, 0.18f, 0.18f, 3.f, {0, 0});                   // colonnes du pont
+            for (float sd : {-1.6f, 1.6f}) {
+                bloc(U, f0 + 6.5f, al0 + sd, 0.17f, 0.18f, 0.18f, 3.f, uvc(U_PONT));
+                if (!lod) bloc(U, f0 + 6.5f, al0 + sd * 0.55f, 1.1f, 0.9f, 0.06f, 0.08f, uvc(U_PONT));   // bras
+            }
+            bloc(U, f0 - 0.15f, al0, 3.7f, 0.12f, 2.6f, 1.1f, uvc(U_NOIR));                                 // fond de l'enseigne
+            enseigne(out[P_TXT_B], "GARAGE 88", f0 - 0.3f, al0, 4.25f, 0.65f, 4.8f);
+            bloc(out[P_VERRE], f0 + 0.25f, al0 + 4.6f, 0.17f, 0.05f, 0.9f, 2.2f, {0, 0});                    // porte vitrée du bureau
+            break;
+        }
+        }
+    }
+
+    // voitures garées devant le casino (modèles du jeu, allégés au loin), pigeons qui s'envolent quand le joueur passe à moins
+    // de 10 m, chiens en laisse qui suivent leur promeneur
+    int vieDesLieux(Renderer& r, const GameView& g, int64_t aP) {
+        Track& t = *g.track;
+        const int64_t L = (int64_t)plan_->objets.size();
+        int draws = 0;
+        const double jx = g.player->playerX * RW, jz = g.player->dist / SEG;   // joueur : latéral (m), segment
+        for (const ville::Lieu& l : plan_->lieux) {
+            if (l.t != ville::CASINO || !luxe_[0].ok) continue;
+            const int64_t a = proche(l.seg, aP);
+            if ((double)(a - aP) * SEG_M < -40 || (double)(a - aP) * SEG_M > 260) continue;
+            const vec3 couleurs[2] = {carte::linHex(0xb3000f), carte::linHex(0xe6b800)};   // rosso, giallo
+            for (int k = 0; k < 2; k++) {
+                const double sA = (double)a + (12.0 + 16.0 * k) / SEG_M;
+                t.pose((int64_t)sA - 1); t.pose((int64_t)sA + 2);
+                const TrackPoint p = t.point(sA * SEG, (float)l.side * ((float)RW + 8.4f));
+                const mat4 w = translate({(float)p.x, (float)p.y + 0.16f, (float)p.z}) * rotateY((float)-(p.th + PI));
+                const RouesPose rp = roues::poseTrafic(0, false, 0.0, luxe_[k].nRoues ? luxe_[k].roues[0].rayon : roues::RW_DEFAUT);
+                FeuxVoiture f; f.nuit = false;
+                r.feuxProchaineVoiture(f);
+                r.draw(luxe_[k], w, &couleurs[k], &rp);
+                draws += (int)luxe_[k].parts.size();
+            }
+        }
+        // pigeons : 6 par groupe, posés (pose 9) en picorant ; envol (poses 0-7, 6 battements/s) en s'éloignant de la route,
+        // montée à 7 m en 3 s ; retour au sol 25 s plus tard. En Basse : 3 par groupe (RG-C2)
+        const int n = basse_ ? 3 : 6;
+        for (Vol& v : vols_) {
+            const int64_t a = proche(v.seg, aP);
+            const double dz = (double)(a - aP) * SEG_M;
+            if (dz < -30 || dz > 160) continue;
+            const double dJ = std::hypot((double)(a - jz) * SEG_M, v.lat - jx);
+            if (dJ < 10 && g.time - v.envol > 25) v.envol = g.time;
+            const double te = g.time - v.envol;
+            if (te > 4 && te < 25) continue;   // partis
+            for (int i = 0; i < n; i++) {
+                Mulberry32 R((uint32_t)(v.seg * 7 + i * 131));
+                const float al = ((float)R.next() - 0.5f) * 3.f, dl = ((float)R.next() - 0.5f) * 1.6f, yaw = (float)R.next() * 6.283f, ph = (float)R.next() * 6.283f;
+                const double sA = (double)a + al / SEG_M;
+                t.pose((int64_t)sA - 1); t.pose((int64_t)sA + 2);
+                const float sd = v.lat > 0 ? 1.f : -1.f;
+                const bool vole = te >= 0 && te <= 4;
+                const float tv = vole ? (float)te : 0.f, mont = vole ? std::min(7.f, tv * 2.4f) : 0.f;
+                const TrackPoint p = t.point(sA * SEG, v.lat + dl + sd * tv * 3.f);
+                const vec3 rr{(float)std::cos(p.th), 0, (float)std::sin(p.th)}, ff{(float)std::sin(p.th), 0, (float)-std::cos(p.th)};
+                vec3 z = vole ? normalize(rr * sd + vec3{0, 0.5f, 0}) : ff * std::cos(yaw) + rr * std::sin(yaw);
+                vec3 y{0, 1, 0};
+                if (!vole) { const float pic = std::max(0.f, (float)std::sin(g.time * 2.2 + ph)) * 0.6f; z = normalize(z + y * (-pic)); }   // picore
+                const vec3 x = normalize(cross(y, z)); y = cross(z, x);
+                const float k = 0.48f;
+                const vec3 o{(float)p.x, (float)p.y + 0.16f + mont, (float)p.z};
+                const int idx = vole ? (int)(g.time * 6 * 8 + i) % 8 : 9;
+                r.draw(pigeon_[(size_t)idx], mats_[P_UNI], repere(o, x * k, y * k, z * k)); draws++;
+            }
+        }
+        // chiens : 1,3 m devant leur promeneur, côté façades ; pas de marche réglé sur la distance (cycle de 0,9 m)
+        if (!chien_[0].empty()) for (size_t i = 0; i < promS_.size(); i++) {
+            const ville::Promeneur& m = plan_->promeneurs[i];
+            double rel = promS_[i] - std::fmod(std::fmod((double)aP, (double)L) + L, (double)L);
+            if (rel > L / 2.0) rel -= L; if (rel < -L / 2.0) rel += L;
+            if (rel * SEG_M < -30 || rel * SEG_M > 120) continue;
+            const double sM = (double)aP + rel, sC = sM + m.dir * 1.3 / SEG_M;
+            t.pose((int64_t)std::min(sM, sC) - 1); t.pose((int64_t)std::max(sM, sC) + 2);
+            const float sd = m.lat > 0 ? 1.f : -1.f;
+            const TrackPoint pc = t.point(sC * SEG, (float)m.lat + sd * 0.6f), pmt = t.point(sM * SEG, (float)m.lat);
+            const vec3 ff{(float)std::sin(pc.th), 0, (float)-std::cos(pc.th)}, z = ff * (float)m.dir, y{0, 1, 0}, x = cross(y, z);
+            const vec3 oc{(float)pc.x, (float)pc.y + 0.15f, (float)pc.z};
+            const double parcours = std::fabs(promS_[i] - m.s) * SEG_M;
+            const int idx = g.ecran == Ecran::Course ? (int)(std::fmod(parcours / 0.9, 1.0) * 8) % 8 : 8;
+            const std::vector<Mesh>& C = chien_[m.race % 2];
+            r.draw(C[(size_t)std::min<int>(idx, (int)C.size() - 1)], mats_[P_UNI], repere(oc, x, y, z)); draws++;
+            // laisse : de la main du promeneur (≈ 0,8 m) au collier (≈ 0,45 m shiba, 0,6 m husky)
+            const vec3 main{(float)pmt.x, (float)pmt.y + 0.95f, (float)pmt.z};
+            const vec3 col = oc + z * (m.race % 2 ? 0.38f : 0.28f) + y * (m.race % 2 ? 0.55f : 0.4f);
+            const vec3 d = col - main; const float lg = length(d);
+            if (lg > 0.1f) {
+                const vec3 zl = d * (1.f / lg), xl = normalize(cross(std::fabs(zl.y) > 0.9f ? vec3{1, 0, 0} : vec3{0, 1, 0}, zl)), yl = cross(zl, xl);
+                r.draw(laisse_, mats_[P_UNI], repere(main, xl, yl, zl * lg)); draws++;
+            }
+        }
+        return draws;
+    }
+    static mat4 repere(vec3 o, vec3 x, vec3 y, vec3 z) {
+        mat4 m = mat4::identity();
+        const vec3 c[4] = {x, y, z, o};
+        for (int j = 0; j < 4; j++) { m.at(0, j) = c[j].x; m.at(1, j) = c[j].y; m.at(2, j) = c[j].z; }
+        return m;
+    }
+
     void render(Renderer& r, const GameView& g) override {
         if (!active_ || g.sceneDediee) return;   // scène dédiée (garage…) : pas de ville (WFS-44)
         frame_++;
@@ -1130,11 +1411,17 @@ public:
         for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) {
             if (p == P_SOL && !solActif_) continue;     // WFS-175 : sol de Game, sauf quand la rivière est en vue
             if (p == P_TEXTE && !texteMat_) continue;
+            if (p == P_TXT_A || p == P_TXT_B) {   // WFS-176 : enseignes des lieux (atlas à part)
+                if (enseigneMat_[p - P_TXT_A]) { r.draw(ch.m[p], *enseigneMat_[p - P_TXT_A], I); draws++; }
+                continue;
+            }
             // WFS-175 : asphalte de la chaussée opposée : demi-largeur de 100 m → aucune ligne du moteur (marquage dessiné à part)
             r.draw(ch.m[p], p == P_TEXTE ? *texteMat_ : mats_[p], I, p == P_ROUTE ? 100.f : 0.f); draws++;
             if (p >= P_BETON && p != P_SOL) ouv++;   // WFS-175 : coût des ouvrages (le sol remplace celui de Game, à coût égal)
         }
         draws += lieuxAnimes(r, g, aP);   // WFS-137
+        const int vie = vieDesLieux(r, g, aP);   // WFS-176 : voitures du casino (pièces), pigeons, chiens
+        draws += vie; lastVie_ = vie;
         piecesInv_ = 0;
         const int inv = sensInverse(r, g, aP);   // WFS-175 : voitures (une par modèle ; leurs pièces sont comptées par le moteur)
         draws += inv;
@@ -1238,7 +1525,7 @@ public:
 
     void shutdown(Renderer& r) override {
         if (!active_) return;
-        WFS_LOG("Ville : %d appels de dessin à la dernière image (WFS-175 : %d pour les ouvrages, %d voiture(s) en sens inverse, ≤ %d pièces)", lastDraws_, lastOuv_, lastInv_, lastPieces_);
+        WFS_LOG("Ville : %d appels de dessin à la dernière image (WFS-175 : %d pour les ouvrages, %d voiture(s) en sens inverse, ≤ %d pièces ; WFS-176 : %d pour les voitures du casino, pigeons et chiens)", lastDraws_, lastOuv_, lastInv_, lastPieces_, lastVie_);
         r.vk().waitIdle();
         for (Optiques& op : optiques_) for (Mesh& m : op.m) if (m.vb.buf) r.destroy(m);
         optiques_.clear();
@@ -1253,6 +1540,10 @@ public:
         for (Material* m : {&lentilleEteinte_, &lentille_[0], &lentille_[1], &lentille_[2], &eauJet_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         // WFS-175 : matériaux des ouvrages (dans mats_, détruits ci-dessus ; P_TEXTE appartient à l'atlas), atlas, béton, voitures
         atlas_.detruire(r); texteMat_ = nullptr;
+        atlasLieux_.detruire(r); enseigneMat_[0] = enseigneMat_[1] = nullptr;   // WFS-176
+        for (Model& m : luxe_) if (m.ok) { r.destroy(m); m = Model{}; }
+        for (std::vector<Mesh>* v : {&pigeon_, &chien_[0], &chien_[1]}) { for (Mesh& m : *v) if (m.vb.buf) r.destroy(m); v->clear(); }
+        if (laisse_.vb.buf) { r.destroy(laisse_); laisse_ = Mesh{}; }
         if (betonTex_.img) { r.vk().destroy(betonTex_); betonTex_ = Image{}; }
         for (Model& m : autos_) if (m.ok) { r.destroy(m); m = Model{}; }
         portiques_.clear(); riv_ = Riviere{}; tun_ = {-1, -1}; au_ = {-1, -1}; solActif_ = false;
@@ -1289,6 +1580,16 @@ private:
         return bati_[(size_t)(((a % L) + L) % L)] & (s > 0 ? 2 : 1);
     }
     std::vector<uint8_t> bati_;   // WFS-137 (ANO-81)
+    // WFS-176 : enseignes des lieux (atlas à part), voitures du casino, pigeons, chiens
+    vie::AtlasTextes atlasLieux_;
+    const Material* enseigneMat_[2] = {nullptr, nullptr};
+    Model luxe_[2];
+    std::vector<Mesh> pigeon_, chien_[2];
+    struct Vol { int64_t seg; float lat, along; double envol = -1e9; };   // groupe de pigeons : envol à l'instant envol
+    std::vector<Vol> vols_;
+    std::vector<double> promS_;   // abscisse (segments) de chaque promeneur, intégrée comme dans pietons.cpp
+    Mesh laisse_{};
+    bool basse_ = false;
     // WFS-137 (RG-01, RG-02) : optiques des feux (rouge, orange, vert) de chaque carrefour, jet de la fontaine (repère local)
     struct Optiques { int64_t abs = INT64_MIN; Mesh m[3]{}; };
     std::vector<Optiques> optiques_;
@@ -1309,7 +1610,7 @@ private:
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
-    int lastDraws_ = 0, lastOuv_ = 0, lastInv_ = 0, lastPieces_ = 0, piecesInv_ = 0;
+    int lastDraws_ = 0, lastOuv_ = 0, lastInv_ = 0, lastPieces_ = 0, piecesInv_ = 0, lastVie_ = 0;   // lastVie_ : WFS-176
 };
 
 } // namespace

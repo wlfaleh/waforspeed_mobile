@@ -1,0 +1,18 @@
+Animaux de la Ville (WFS-176, RG-05 de WFS-137) — assets/world/animaux/
+=====================================================================
+
+shiba.wfa — shiba inu, 1950 triangles, 9 poses (8 phases de la marche « Walk », 1 pose « Idle »)
+husky.wfa — husky de Sibérie, 1920 triangles, 9 poses (même découpage)
+  Modèles d'origine : ShibaInu.gltf et Husky.gltf de l'« Ultimate Animated Animal Pack » de Quaternius
+  (https://quaternius.com), copiés depuis le dossier models/glTF du dépôt public https://github.com/benjaminpjones/catch-the-animal
+  (jeu « Made with Three.js + Quaternius models »). Auteur : Quaternius (Tomás Laulhé).
+  Licence : CC0 1.0 Universel (domaine public), https://creativecommons.org/publicdomain/zero/1.0/
+  Modifications (assets/world/animaux/convertir_chiens.py) : poses calculées par habillage linéaire à partir du squelette
+  d'origine, mise à l'échelle à la hauteur au garrot de la race (shiba 0,39 m, standard FCI n° 257 ; husky 0,56 m, standard
+  FCI n° 270), teintes reprises des matériaux d'origine.
+  Remarque : le site quaternius.com n'est pas joignable depuis le réseau des agents ; la licence CC0 du pack est celle
+  annoncée par l'auteur pour toutes ses collections. À reconfirmer sur la page du pack.
+
+Pigeons de la Ville : forme de mouette.wfa (voir animaux-corniche.txt, licence MIT de svartmc/seagull), réduite à la taille
+du pigeon biset (envergure 0,67 m, longueur 0,32 m ; L. Svensson et al., « Le guide ornitho », Delachaux 2015) et peinte
+aux couleurs du pigeon dans ville.cpp.

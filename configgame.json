@@ -13,7 +13,9 @@
   },
   "nitro": {
     "depart": 0.4,
-    "poussee": 1.6
+    "poussee": 1.6,
+    "recharge_temps": 0.015,
+    "recharge_depassement": 0.1
   },
   "course5": {
     "ordinateurs": 4,
