@@ -1292,9 +1292,10 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const vec3 rouge = lin(0xff1a30, 1.f), blanc = lin(0xf4f6ff, 1.f), phare = lin(0xfff1d6, 1.f);
     // WFS-109 : niveau du stop (transition de 80 ms, RG-02) ; le jour, seule la lueur courte du stop et du recul (RG-04)
     const float s = f.frein >= 0 ? std::clamp(f.frein, 0.f, 1.f) : (f.stop ? 1.f : 0.f);
-    // RG-01 : le jour, un modèle qui a sa pièce de feu arrière (MAT_TAIL ou découpée) n'a aucun halo plaqué : seul le
-    // feu du modèle s'allume ; sans pièce de feu (Gallardo), petit halo court à la place du feu (repli de RG-08)
-    const float iCoeur = f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : F.pieceArriere ? 0.f : I_COEUR_STOP * s;
+    // RG-01 : le jour, aucun halo plaqué : seul le feu du modèle s'allume. WFS-182 (RG-02) : sans pièce de feu reconnue,
+    // aucun halo, ni de jour ni de nuit (l'ancien repli aux proportions par défaut flottait dans le vide) ; le chargement
+    // écrit « feu non trouvé : <voiture> » au journal
+    const float iCoeur = F.pieceArriere && f.nuit ? I_COEUR + (I_COEUR_STOP - I_COEUR) * s : 0.f;
     const float iLueur = f.nuit ? I_LUEUR + (I_LUEUR_STOP - I_LUEUR) * s : I_LUEUR_STOP * s;
     for (int side : {-1, 1}) {
         // RG-01 : lueur courte centrée sur la pièce du feu (arrière du verre), plus sur le pare-chocs
