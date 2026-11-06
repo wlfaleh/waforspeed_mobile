@@ -27,7 +27,7 @@
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraison 1 fusionnée (PR #157 : audit ST-1, plaques neutres RG-A) ; suite : ST-2 (échelle et roues), RG-C (X5) ; Model 3 (RG-D) en attente du fichier | 158 : 21:06 (e5fe674 sur main, PR #157 fusionnée par confiance) | 🔵 suit la CI de main (PR #157), puis ST-2 ; ⏸ RG-D : attend le fichier de la Model 3 (question à l'utilisateur) |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 21:17, PR #156, CI de branche (run 783) lancée une fois | 🔀 En PR ; CI de branche lancée une fois (run 783, confiance ≤ 50 % : gros changement du rendu) |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 21:17 (737fde2, synchronisée avec main), PR #156 | 🔀 En PR ; compilation + 37 tests CPU verts en local ; run 783 (sur e97571d) en cours ; banc réalisme local en cours |
 
 ## Agents de pilotage
 
