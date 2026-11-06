@@ -3957,3 +3957,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Interdit** : `src/render/**`, `shaders/**`, `src/world/**`, `src/audio/**`, fichiers de WFS-136, lignes sirène / jingle de WFS-131, iOS (gel).
 - **Critères** : ceux de `regles-de-gestion/WFS-141.md` (gyrophares rouge puis bleu sans rose, bandeau petit à gauche, fins au gabarit Checkpoint « 2e PLACE », panneau des modes opaque, salon hors ligne lisible avec « Réessayer ») ; parcours complets RG-06 au Journal, `WFS_BANC=parcours` à 0 écart.
 - **Fusion** : règle en vigueur (confiance > 50 % → fusion directe ; ligne `qa/Check.md`, ✅, Journal ; suivi de la CI de main).
+
+### 2026-11-06 08:01:01 — PO remplacé sur ordre de l'utilisateur (Claude, session 0183bv2a)
+- **Ordre de l'utilisateur** : remplacer le PO par un PO qui exécute ses ordres, ne se moque pas de lui et ne commence pas par supprimer du code.
+- **Fait** : `.claude/agents/po-scrum-master.md` réécrit en tête : règle n°1 « tu exécutes les ordres de l'utilisateur » (ordre appliqué tel qu'écrit, ordres « on n'y touche plus » définitifs, jamais de suppression ni de revert de code fusionné sans ordre explicite, aucune règle de travail ajoutée sans demande, réponses respectueuses et courtes) et liste « Ordres permanents ».
+- **Ordres permanents inscrits** : (1) taille des boutons et des textes de l'interface : on n'y touche plus, `main` gardé tel quel, WFS-147 compris (pas d'annulation) ; (2) aucun retrait de code fusionné sans ordre.
+- **Rien d'autre n'a changé** : aucun code modifié, aucun revert envoyé (le retrait local de WFS-147 a été effacé avant tout envoi, sur ordre de l'utilisateur).
