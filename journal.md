@@ -4162,3 +4162,6 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Coordination** : WFS-145 (E7) ajoute 4 lignes au saut du banc dans `poursuite_system.cpp` (l. 122-125), WFS-149 (E0) touche `CMakeLists.txt` : blocs différents, garder les deux en cas de conflit.
 - **Critères** : sirène continue qui enfle (0,45 à 15 m, 0 à 150 m) et s'éteint en fondu, yelp sous 20 m (wail au-delà de 25 m), Doppler borné ± 12 %, jingle de fin propre à la Poursuite (BipFin gardé ailleurs), silence hors Poursuite ; `test_audio` étendu (RG-10) ; `sirene.wav` au banc ; parcours complet RG-11 au Journal.
 - **Plan court** : boucle wail précalculée + lecture à pas variable (Doppler), gain lissé selon la distance, `sfxSirene(distanceM, vRapprochementMs)` appelée par pas depuis la poursuite, jingles à `fini_`, tests, banc, fusion selon la règle en vigueur.
+
+### 2026-11-06 10:03:45 — WFS-141 : CI de main après la fusion (Claude (session trafic))
+- Run 42197056242 (926604d) : android, endurance, publication-apk et 13 jobs banc-essai verts ; seul `banc-essai (vitrines)` est rouge : « records (parcours) : ancienne sauvegarde relue sans perte, records vides (ÉCHEC) », soit ANO-88 (WFS-136, sauvegarde), déjà rouge avant (run 42186678130, f77e204) et corrigée par WFS-169. Rien ne vient de WFS-141 : les parcours Poursuite et Course à 5 du même banc passent.
