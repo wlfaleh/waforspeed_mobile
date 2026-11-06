@@ -20,6 +20,7 @@ constexpr float EAU_MAX = 0.20f;                                           // ch
 constexpr float BORD_V_MIN = 0.01f;                                        // bord : au-delà de 1 % de la vitesse maximale
 constexpr float SOMME_MAX = 0.45f;                                         // RG-08 : somme des sons de la route
 constexpr float LISSAGE_S = 0.15f;                                         // RG-06 : 95 % de la cible en 0,15 s
+constexpr float RACCORD_S = 0.015f;                                        // WFS-184 (RG-04) : fondu enchaîné au départ tiré au hasard
 
 struct Entree {
     float kmh = 0, kmhMax = 260;      // vitesse (valeur absolue) et vitesse de pointe de la voiture

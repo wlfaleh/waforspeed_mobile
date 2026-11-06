@@ -74,6 +74,41 @@ inline std::vector<float> boucle(float rate, float dur, float freq, float q, flo
     return out;
 }
 
+// WFS-184 (RG-04, ANO-96) : lecture d'une boucle de bruit sans motif qui revient. À chaque tour, la lecture repart d'un point
+// tiré au hasard dans la boucle ; la fin du tour se fond dans le nouveau départ sur X échantillons (fondu à puissance
+// constante : deux bruits indépendants, cos² + sin² = 1, pas de creux de volume au raccord). f : table du fondu,
+// f[i] = sin(π/2 · i / X), i = 0..X (fonduBoucle, calculée une fois). Thread audio : aucune allocation, aucun verrou.
+inline std::vector<float> fonduBoucle(float rate, float duree) {
+    const size_t x = std::max<size_t>(1, (size_t)std::lround(duree * rate));
+    std::vector<float> f(x + 1);
+    for (size_t i = 0; i <= x; i++) f[i] = std::sin(1.57079632679f * (float)i / (float)x);
+    return f;
+}
+struct LecteurAleatoire {
+    size_t pos = 0, ancien = 0, k = (size_t)-1;   // k : pas du fondu en cours (-1 : aucun fondu)
+    Bruit br;
+    explicit LecteurAleatoire(uint32_t graine = 0x9E3779B9u) { br.s = graine ? graine : 1; }
+    void reset() { pos = 0; k = (size_t)-1; }
+    float lire(const std::vector<float>& b, const std::vector<float>& f) {
+        const size_t n = b.size(), X = f.size() - 1;
+        if (n < 2 * X + 2) { const float y = b[pos]; if (++pos >= n) pos = 0; return y; }   // boucle trop courte : lecture simple
+        float y;
+        if (k != (size_t)-1) {   // fin de l'ancien tour (qui s'éteint) + début du nouveau (qui monte)
+            y = b[ancien] * f[X - k] + b[pos] * f[k];
+            ancien++; pos++;
+            if (++k >= X) k = (size_t)-1;
+        } else {
+            y = b[pos++];
+        }
+        if (k == (size_t)-1 && pos + X >= n) {   // fin du tour : nouveau départ au hasard dans [0, n − 2X]
+            ancien = pos; k = 0;
+            pos = (size_t)((double)(br.next() * 0.5f + 0.5f) * (double)(n - 2 * X));
+            if (pos > n - 2 * X) pos = n - 2 * X;
+        }
+        return y;
+    }
+};
+
 // klaxon (WFS-76, rendu visible par WFS-121) : deux notes carrées adoucies (sol, si), volume 0,5 ; `distance` : passe-bande
 // 900 Hz (klaxon lointain de l'ambiance de la ville) ; sans : klaxon d'une voiture du trafic toute proche
 inline void klaxon(std::vector<float>& b, float rate, float debut, float dur, bool distance = true) {

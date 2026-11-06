@@ -4716,3 +4716,103 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Interdit** : `serveur/**`, taille de tout texte, bandeau ou bouton (ordre permanent), `src/ui/minicarte.*` hors ligne de graine, comportement en jeu (graine toujours au hasard hors banc), iOS (gel), tout retrait de code.
 - **Critères** : `salon-derniers` identique sur deux lancements et dans l'ordre du classement ; `salon-derniers` et `duel-resultat-4` en 1280 et 2400 ; `salon-hors-ligne` (1280) sans chevauchement, `-2400` identique au pixel ; `minicarte-ligne(-2400)` et `course5-rejouer` identiques sur deux lancements ; tests CPU verts ; parcours complet accueil → Duel → salon → course → retour au Journal ; ligne `qa/Check.md`.
 - **Plan court** : tri par classement dans `noterAdversaires` + test ; graine fixe sous `WFS_BANC` ; position du bandeau hors ligne en 1280 ; copie des captures dans un job léger de `build.yml`.
+
+### 2026-11-06 15:08:59 — Fichier `recommandations-smart-brain.md` créé ; l'agent propose sans décider (smart-brainstorming)
+- **Règle de l'utilisateur** : l'agent `smart-brainstorming` propose, c'est son travail. Il ne parle qu'avec l'utilisateur et ne prend aucune décision. C'est l'utilisateur qui lit, choisit et demande lui-même au PO.
+- **Fait** : la roadmap du week-end devient la recommandation R01 de `recommandations-smart-brain.md` (racine), au lieu de `brainstorming/2026-11-06-roadmap-weekend.md`. L'agent (§ 11) et son skill (§ 6, contrôle final) sont mis à jour : aucun contact avec le PO ni avec un autre agent ; les recommandations s'ajoutent à la fin de ce fichier (R01, R02…).
+
+### 2026-11-06 15:25:16 — Recommandation R02 : court terme (smart-brainstorming)
+- **Fichier** : `recommandations-smart-brain.md`, R02 (C01 à C07, liste d'essai de 15 min). Constats : CI de `main` rouge (WFS-145 sans commit depuis environ 14 h), WFS-134 et WFS-109 sans commit depuis 17 à 19 h, recouvrement possible de WFS-109 et WFS-182 sur les feux arrière, 3 questions qui attendent l'utilisateur.
+- Propositions seulement : rien n'est transmis au PO ; c'est l'utilisateur qui décide.
+
+### 2026-11-06 16:15:39 — WFS-139 : CI de main après la fusion (Claude, agent 1, session 01UY1Vv2)
+- Run 42236235345 (commit a5faca5) : compilation, tests CPU (job texte, test_trace compris), APK et les 12 groupes banc-essai **verts** ; captures publiées dans la Release `apercu` : `carte-plage-falaise`, `-tunnel`, `-marina`, `-feu` regardées, identiques aux captures locales.
+- Job `endurance` **rouge**, même échec qu'avant WFS-139 (WFS-145, en cours) : RSS +10,8 % au cycle 6 (seuil 10 %), avant +10,7 % ; pente -6,5 Mo/cycle (pas de fuite qui grandit), 0 erreur de validation, parcours au doigt 0 écart. La Corniche n'ajoute pas de croissance mesurable ; je laisse WFS-145 à sa session, sans toucher au banc. `publication-apk` annulé (remplacé par le run suivant de main).
+
+### 2026-11-06 16:27:14 — CI relancée sur les 2 PR ouvertes, à la demande de l'utilisateur (Claude, agent 1, session 01UY1Vv2)
+- PR #143 (WFS-150, 16 commits de retard) : `main` fusionnée sans conflit, commit 0761942 ; compilation et 34 tests CPU OK en local ; CI run 42252468883.
+- PR #137 (WFS-140, 85 commits de retard) : `main` fusionnée, un conflit dans `src/world/cartes_banc.cpp` (deux lignes identiques des deux côtés : include `trace_cartes.h` et `Track::build(…, versionCarte)`), les deux modifications gardées, captures du Grand Prix (WFS-140) et appels `benchCorniche` / `benchCampagne` (main) conservés ; commit 71fcda1 ; compilation et 33 tests CPU OK en local ; CI run 42252475029.
+- Rien d'autre n'est touché sur ces branches ; aucune fusion faite : elles restent à leurs développeurs (agent 5 pour WFS-140, session de WFS-150).
+### 2026-11-06 16:27:39 — Début WFS-184 : correction son, jingles de fin de la poursuite et sons de la route (PO)
+- Ticket : WFS-184 (E6, P3 Moyenne, ANO-95, ANO-96), attribué à Claude (agent 2, session 01UY1Vv5), branche `feature/waforspeed-184`. Seul ticket ⏳ Prêt ; E6 sans ticket actif.
+- Zone autorisée : `src/audio/**`, `tests/test_audio.cpp` ; accroche ≤ 10 lignes annoncée au Journal seulement si nécessaire dans `src/game/poursuite_system.cpp` (ligne du jingle). Interdit : reste de `src/game/**`, `src/ui/**`, `src/render/**`, iOS.
+- Critères : RG-01 à RG-05 de `regles-de-gestion/WFS-184.md` (sirène à 0,10 en 30 ms, jingles × 3 avec crête < 0,95, « ARRÊTÉ » 660 / 440 Hz, boucles de la route à départ au hasard + fondu 15 ms, autocorrélation < 0,20, ≤ 0,5 Mo) ; parcours complet accueil → Poursuite → fin → retour ; ligne `qa/Check.md` à la fusion.
+- Plan court : rampe et gain dans `sfx.cpp` / `sirene_son.h`, lecture à départ aléatoire dans `boucle()`, tests dans `test_audio`, banc `partie2a`.
+
+### 2026-11-06 16:32:33 — WFS-139 (correctif) : serviettes et baigneurs hors des lacets (Claude, agent 1, session 01UY1Vv2)
+- Constat (relecture en commençant WFS-180) : `vie::serviettes` et `vie::baigneurs` (`commerces.cpp`, WFS-71) se placent par zone « corniche » sans regarder le tracé 2 : 448 des 1344 segments de cette zone sont dans les lacets → serviettes et personnes assises sur les terrasses entre deux branches, voire sur l'autre route. Oubli de WFS-139.
+- Correction (accroche de 9 lignes, `commerces.cpp`) : au tracé 2, aucune serviette ni baigneur sur la falaise (route à plus de 3 m), les lacets, le tunnel, le rond-point ou le carrefour. Les piétons assis suivent la même liste.
+- Vérification : compilation, 33 tests CPU OK, `WFS_BANC=corniche` regardé (111 serviettes restent, sur la plage au bord de l'eau). Fusion par confiance.
+
+### 2026-11-06 16:39:44 — Fin WFS-184 : jingles de fin de la poursuite audibles, sons de la route sans motif (Claude, agent 2, session 01UY1Vv5)
+- Fait (PR #145, fusion par confiance, commit 021ba51) : `sirene_son.h` (baisse de la sirène, jingles × 3, « ARRÊTÉ » 660 / 440 Hz), `sfx.cpp` / `sfx.h` (baisse au départ du jingle, levée quand la sirène est muette ; boucles de la route lues par `LecteurAleatoire`), `sfx_synth.h` (`LecteurAleatoire`, `fonduBoucle`), `route_sons.h` (`RACCORD_S` = 15 ms), `audio_system.cpp` (banc `sirene.wav` : deux fins de poursuite, 13 s), `tests/test_audio.cpp`. Aucune accroche hors de `src/audio/**`.
+- Choix technique à signaler au PO (dans le cadre des RG) : le jingle part **30 ms après la demande**, une fois la sirène baissée. Avec RG-01 (30 ms) et RG-02 (× 3) seuls, la 1re note joue pendant la rampe et ne sort qu'à +0,9 dB (ARRÊTÉ) et −2,6 dB (ÉCHAPPÉ), pas +6 dB. Les durées des notes ne changent pas. Fondu de la route à puissance constante (cos / sin, sans creux de volume entre deux bruits indépendants) : crête possible √2 × une boucle, et la crête de la route reste < 1 (0,45 × 1,15 × √2 = 0,73).
+- Vérification : 33 tests CPU OK (cmake local avec faux glslc et en-têtes Vulkan téléchargés, pour compiler les tests seulement). `test_audio` : mon calcul refait la mesure du QA d'avant (−20,3 / −16,3 dB contre −19,8 / −15,8). Après correction : ARRÊTÉ +9,6 / +13,8 dB, ÉCHAPPÉ +8,2 / +9,8 / +14,7 dB à 5 m et à 14 m, crête du mélange 0,20 ; sirène à 0,096 × sa valeur au bout de 30 ms, éteinte en 0,79 s ; autocorrélation à la période des 5 boucles : 1,00 avant, moins de 0,02 après (boucles seules et mélange de 150 à 210 km/h) ; saut au raccord 0,003 ; mémoire 474 Ko. Le vrai `SfxMixer` a été lancé hors ligne (programme jetable, hors dépôt) : silence total après la fin, aucune sirène bloquée, route ≈ 0 d'autocorrélation, plus grand saut 0,039.
+- Limites : banc Vulkan (`partie2a`), `sirene.wav` / `moteur.wav` publiés et parcours complet accueil → Poursuite → fin → retour **non vérifiés en local**. Je les vérifie sur la CI de `main`.
+
+
+### 2026-11-06 16:40:45 — WFS-184 : choix technique noté ; aucun ticket prêt pour agent 2 (PO)
+- Pris en note (WFS-184, RG-02) : le jingle part 30 ms après la demande, une fois la sirène baissée, sinon la 1re note ne passait pas les +6 dB. Choix accepté dans le cadre des RG, à vérifier par le QA de nuit (`qa/Check.md`).
+- Demande de ticket de Claude (agent 2, session 01UY1Vv5) : **aucun ticket ⏳ Prêt** sur `origin/main`. Tout le reste est 🔧 En cours, ✅, gelé (iOS) ou ⏳ En attente de dépendances : WFS-151 à 167 attendent WFS-150 (E0, en cours) ; WFS-175 à 177 attendent WFS-137 ; WFS-179 attend WFS-178 ; WFS-181 attend WFS-180. Aucune anomalie 🆕 dans `anno.md`. Aucun ticket inventé.
+
+### 2026-11-06 16:43:37 — Fin WFS-180 : Corniche (2/3), fêtes, jeux de plage, bateaux et jet-skis — fusion par confiance, PR #146 (Claude, agent 1, session 01UY1Vv2)
+- Fait (`src/world/plage.cpp`) :
+  - lieux de la plage partagés (`plage::lieux`) : 3 fêtes et 2 terrains de jeux de 60 m, sur le sable « corniche » / « village », à plus de 150 m de rayon côté mer, hors falaise, lacets, tunnel, rond-point et carrefour (RG-C1), espacés de 250 m ;
+  - fête : scène 10 × 5 × 1 m, structure alu 29 cm de 6,2 m, fond de scène, table du DJ, 2 enceintes + caissons, guirlandes sur 4 mâts de 4 m (ampoules tous les 0,8 m, flèche 0,6 m ; 2700 K, allumées la nuit ; une sur deux en Basse et au loin), 4 lyres qui changent de couleur, faisceaux qui balaient la nuit, feu de camp (pierres, bûches, flamme ≈ 1800 K qui vacille la nuit), 2 lumières de nuit (scène, feu) ; foule de 12 danseurs par les piétons existants (WFS-19, animations `Jog_Fwd_Loop` / `Idle_Talking_Loop`, tenues de plage) ;
+  - jeux : terrain de beach-volley FIVB 16 × 8 m, lignes de 6 cm, filet de 8,5 × 1 m bord supérieur à 2,43 m, poteaux de 2,55 m à 0,85 m des lignes, ballon de 21 cm, 4 joueurs ; château de sable ; 2 pédalos (1 en Basse) ; toboggan gonflable (7 m, 3,5 m) sur l'eau ;
+  - bateaux : voiliers de 10 m (bau 3,4 m, mât 13 m, grand-voile et génois), yachts de 18 m (bau 4,9 m, deux ponts), 2 jet-skis de 3,3 × 1,2 m avec pilote et sillage devant chaque lieu (allers-retours de ±60 m à ≈ 15 m/s), paquebot de 290 × 32 m au large ; houle de 6 s : pilonnement ±0,25 m, roulis ±3°, tangage ±2° (×0,4 jet-ski, ×0,05 paquebot) ; un maillage par type, dessiné à chaque instance (RG-C2) ; 36 bateaux sur la carte, dessinés à moins de 900 m.
+- Accroches annoncées : `pietons.cpp` (3 lignes : déclaration, ajout de la foule et des joueurs, animation) ; `commerces.cpp` (2 lignes : pas de serviette ni de baigneur sur une fête ou un terrain).
+- Mesures : sable existant (non modifié) ; filet 2,43 m, terrain 16 × 8 m, lignes 5-8 cm, ballon 66-68 cm de tour : conformes aux règles FIVB (valeurs connues, page non consultable : réseau) ; dimensions des bateaux d'après les fiches des modèles cités en commentaire (à confirmer sur la source) ; ampoules 2700 K, flamme ≈ 1800 K : non mesurées au spectre ; personnes : modèles existants (1,55-1,95 m, WFS-19).
+- Vérification (locale, lavapipe) : compilation, 33 tests CPU OK ; `WFS_BANC=corniche` : `carte-plage-fete` (foule, scène, jet-ski visibles), `-fete-nuit` (guirlandes, lyres), `-jeux`, `-bateaux` et vues `*-vue` regardées ; appels de dessin de la Corniche : 162 au plus (102 avant, +60 ≤ +150).
+- Limites : en vue depuis la promenade (scène dédiée), les piétons ne sont pas dessinés : la foule ne se voit qu'en caméra de course ; modèles de bateaux faits dans le code (sites de modèles libres bloqués) ; faisceaux de nuit discrets ; parcours complet non relancé (il se joue sur la Ville, que ce ticket ne touche pas).
+
+### 2026-11-06 16:58:14 — Nouveaux statuts (🔀 En PR, 🟣 Fusionné, ✅ = CI de main verte) et fin de la CI des branches : WFS-185 (po-scrum-master)
+- **Ordre de l'utilisateur** : ajouter les statuts « En PR » et « Fusionné » ; « Terminé » seulement quand la CI de `main` valide le ticket ; les développeurs fusionnent puis valident sur la CI ; plus de CI sur les PR, qui occupent les lanceurs.
+- **Fait** : légende des statuts de `TACHES.md` (🔧 → 🔀 → 🟣 → ✅, case Statut toujours remplacée, jamais la case Responsable) ; une ligne dans `CLAUDE.md` ; `waforspeed-natif` (étapes 5 et 5 bis) et l'agent PO (🔍 → 🔀) alignés.
+- **Lignes corrigées** : WFS-109 et WFS-134 affichaient « 🔧 En cours » alors qu'ils étaient fusionnés (PR #117, #119) : « Fusionné » avait été écrit dans la case Responsable. Les deux passent en 🟣 Fusionné, responsable remis.
+- **WFS-185** (E7, P1, ⏳ Prêt) : `build.yml` ne se lance plus sur les branches ni sur les PR (`main`, nuit et lancement à la main seulement). Tant qu'il n'est pas fusionné, chaque push de branche lance encore la CI.
+- **Lignes déjà fusionnées** avant cette règle : libellé gardé (pas de réécriture en masse).
+
+### 2026-11-06 16:59:23 — Confiance ≤ 50 % : une CI de branche à la main, une seule fois (po-scrum-master)
+- **Décision de l'utilisateur** (réponse « Ok » à la proposition du PO) : pour une fusion à confiance ≤ 50 %, le développeur lance une fois, à la main (`workflow_dispatch`), la CI de sa branche synchronisée avec `main`, attend le vert et regarde les captures. Tous les autres tickets fusionnent puis valident sur la CI de `main`.
+- **Écrit dans** : `CLAUDE.md`, `waforspeed-natif` (5 bis), `regles-de-gestion/WFS-185.md` (RG-06 : `workflow_dispatch` sur une branche reste possible).
+
+### 2026-11-06 17:02:53 — WFS-140 fusionné (PR #137, fusion par confiance) (Claude, agent 5)
+- CI de la branche verte (tous les bancs, APK ; job `partie1b` en 7 min avec les 10 captures en plus). Captures regardées : épingle, chicane, raidillon, paddock et nuit corrects, rien sur la chaussée ; journal : 1181 objets des sections posés, 0 refusé ; 238 objets des zones refusés (sur une autre chaussée ou cachant un virage) ; 103 à 143 appels de dessin.
+- Défaut vu et corrigé avant la fusion : les 5 feux étaient derrière le boîtier et hors de l'image → portique 36 m devant la ligne, feux côté pilote, capture du départ voiture arrêtée.
+- Un autre agent (session 01UY1Vv2) avait poussé une synchronisation sur ma branche : gardée (conflits de commentaires seulement dans `cartes_banc.cpp`).
+- Ligne `qa/Check.md` ajoutée. Je suis la CI de `main`. WFS-137 / 138 / 139 (autres cartes) deviennent attribuables par le PO.
+
+### 2026-11-06 17:05:12 — Rôle du QA mis à jour sur demande de l'utilisateur (qa-lead)
+
+- **Recette d'un ticket** (recette de nuit, `qa/Check.md`) : le QA vérifie **seulement les critères d'acceptation et les règles de gestion du ticket**, et que **le jeu fonctionne** (démarre, se joue, ne plante pas). Le design et la finition hors critères ne sont plus des anomalies du ticket et ne vont plus dans `anno.md`.
+- **Campagne de test VABF sur l'émulateur** (`simulateur.yml`, vrai APK de `main`) : le QA teste tout le jeu et crée des **anomalies de prod** `ANO-PROD-XX` (bloquante / majeure / mineure) dans la nouvelle section « Anomalies de prod » de `anno.md`, avec le rapport `qa/rapports/VABF-AAAA-MM-JJ.md` (verdict APTE ou NON APTE). Bloquante → ticket de correction prioritaire créé par le PO ; le PO priorise toutes les anomalies de prod.
+- Fichiers : `.claude/agents/qa-lead.md`, `.claude/skills/qa-lead/SKILL.md`, `anno.md`.
+
+### 2026-11-06 17:06:10 — CI de main après WFS-174 (Claude, agent 3)
+- Run 42215719693 (57fac94) : `banc-essai (texte)` vert avec `[OK] test_audio` (31 tests CPU), android, bancs et `publication-apk` verts ; `publication-captures` annulé (run suivant de main parti, groupe de concurrence) ; **`endurance` rouge : +12,6 % au cycle 6** (0 erreur de validation, aucun plantage).
+- **Pas une fuite de WFS-174** : le ticket ajoute ≈ 471 Ko de boucles calculées une fois au démarrage (rien par image, rien par course) ; les 7 runs suivants de main, qui contiennent tous WFS-174 : +9,4 %, +7,9 %, +7,0 %, +6,2 %, +8,5 % (rouge ailleurs), +10,8 %, +9,6 %. La mesure du banc d'endurance varie de +6 à +13 % d'un run à l'autre (déjà signalé au PO après WFS-127) : le seuil de 10 % reste trop près du bruit ; à reprendre par un ticket E7 (PO).
+
+
+### 2026-11-06 17:08:44 — Nouveau fichier `track-agent.md` : suivi des agents, toujours synchronisé (po-scrum-master)
+- **Ordre de l'utilisateur** : mettre le tableau « qui fait quoi » des agents dans `track-agent.md`, toujours synchronisé.
+- **Fait** : `track-agent.md` à la racine (agents développeurs, agents de pilotage, tickets prêts sans agent, alertes ⚠️ / 🔴) ; règle ajoutée dans `CLAUDE.md`, l'agent PO (mise à jour à chaque appel) et la checklist de livraison (`agent-developer`) : chaque agent met à jour sa ligne à chaque étape, dans le même commit que `TACHES.md`.
+
+### 2026-11-06 17:10:04 — PO : règle de non-réattribution des tickets (po-scrum-master)
+- **Décision de l'utilisateur** : un ticket ne change pas de développeur tant que celui-ci n'a pas passé **10 heures minimum sans aucun commit**. Écrite dans `CLAUDE.md`, `po-scrum-master.md` et `TACHES.md`. Le PO note la date du dernier commit avant toute libération ; les développeurs poussent un premier commit dès la création de la branche.
+
+### 2026-11-06 17:10:40 — PO : WFS-137 synchronisé avec l'agent 4, WFS-177 fusionné dans WFS-176 (po-scrum-master)
+- Réponse de l'agent 4 : tracé 2 de la Ville activé et décor adapté ; **ANO-81 et ANO-84 déjà faites** ; reste le rond-point à fontaine et les carrefours à feux (≈ ½ journée) ; il fusionne dès parcours à 0 écart. WFS-177 devenu trop petit : **pigeons et chiens repris par WFS-176**. Aucun ticket en cours modifié dans son état.
+
+### 2026-11-06 17:12:47 — WFS-137 : périmètre réduit reçu, ANO-81 et ANO-84 déjà faites (agent 4)
+- J'ai lu les messages du PO à 2026-11-06 17:12:47, avec du retard. Le périmètre réduit me va : RG-01 (rond-point à fontaine), RG-02 (carrefours à feux et piétons), RG-C1 à C5.
+- Déjà fait sur `feature/waforspeed-137` : la Ville est au tracé 2 et figure dans `CARTES_ACTIVES` (circuit, campagne, plage, ville), décor adapté (rien sur la chaussée, virages serrés et rond-point dégagés), banc `WFS_BANC=ville`.
+- **ANO-81** (trottoir jusqu'aux façades) et **ANO-84** (grille des fenêtres éteintes visible la nuit) sont faites et vérifiées sur capture (`course-nuit-ville-1`). **PO : à retirer de WFS-177.**
+- Accroches annoncées (≤ 10 lignes) : `trace_cartes_systeme.cpp`, `tests/test_trace.cpp`, `desktop_main.cpp`, `decor_carte.h`. Suite : rond-point puis feux ; fusion dès que le parcours donne 0 écart.
+
+### 2026-11-06 17:14:52 — PO : ANO-81 et ANO-84 retirées de WFS-176/177, titres corrigés (po-scrum-master)
+- À la demande de l'agent 4 : titre de WFS-137 limité à rond-point à fontaine + carrefours à feux et piétons (+ ANO-81 et ANO-84 déjà corrigées, commit 071ef62) ; titre de WFS-177 corrigé (pigeons et chiens, repris par WFS-176) ; `anno.md` : ANO-81 et ANO-84 « corrigées dans WFS-137 », recette QA à faire.
+
+### 2026-11-06 17:22:06 — Statuts alignés sur la règle 🟣 / ✅ : WFS-139, 140, 180, 182 ; track-agent.md à jour (po-scrum-master)
+- WFS-182 était « 🔧 En cours » alors que sa PR #144 est fusionnée : passe en 🟣 Fusionné. WFS-139 (#142), WFS-140 (#137), WFS-180 (#146) affichaient ✅ sans run vert de `main` : 🟣 Fusionné, ✅ quand la CI de `main` sera verte.
+- Aucune réattribution : règle de l'utilisateur des 10 h sans commit (WFS-145, 158, 178 restent à leurs développeurs).

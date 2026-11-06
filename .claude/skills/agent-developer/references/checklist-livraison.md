@@ -33,5 +33,6 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 - [ ] Règle de fusion en vigueur appliquée (`CLAUDE.md` : confiance > 50 % → fusion directe, sinon CI verte et captures vues).
 - [ ] Ligne `qa/Check.md` (ticket, PR, date, mode de fusion, points à regarder sur les captures).
 - [ ] `TACHES.md` (ses lignes seulement) et `journal.md` (entrée datée à la seconde, `date -u`) envoyés sur `main`.
+- [ ] `track-agent.md` : sa ligne à jour (ticket, branche, dernier envoi, état), dans le même commit que `TACHES.md` (règle de l'utilisateur du 2026-11-06).
 - [ ] Réponse à l'utilisateur dans `tache utilisateur.md` si sa demande est concernée.
 - [ ] CI de `main` suivie après la fusion ; toute casse due au ticket corrigée en priorité.

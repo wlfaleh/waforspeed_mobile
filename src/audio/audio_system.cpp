@@ -248,20 +248,32 @@ static void writeCurve(const std::string& path, const std::vector<float>& pcm, c
     stbi_write_png(path.c_str(), W, H, 3, img.data(), W * 3);
 }
 
-// WFS-131 (RG-09) : sirene.wav, 6 s écoutées par le QA : une police arrive de 150 m (2 s), colle 2 s à 10 m (yelp), double
-// le joueur et s'éloigne (Doppler : plus aiguë en approchant, plus grave après) ; mixeur à part, mêmes décisions que la partie
+// WFS-131 (RG-09) : sirene.wav, écoutée par le QA : une police arrive de 150 m (2 s), colle 2 s à 10 m (yelp), double
+// le joueur et s'éloigne (Doppler : plus aiguë en approchant, plus grave après) ; mixeur à part, mêmes décisions que la partie.
+// WFS-184 (ANO-95) : puis deux fins de poursuite : police à 5 m → « ARRÊTÉ » (t = 8 s), police à 14 m → « ÉCHAPPÉ » (t = 11 s)
 static void benchSirene(const std::string& out) {
     SfxMixer m; m.build((float)OUT_RATE); m.lastUpdate = 1e9;   // hors ligne : pas de « pause » détectée
     SireneSon dec; std::vector<float> pcm; double acc = 0;
     constexpr double DT = 1.0 / 120, DX = 3.5;   // pas du jeu ; la police roule dans la file voisine (m)
     int seconde = -1;
-    for (int i = 0; i < 6 * 120; i++) {
+    // WFS-184 : fins de poursuite (début de la police collée, instant de la fin, distance, jingle)
+    struct FinBanc { double debut, fin, distanceM; SfxId jingle; const char* nom; };
+    const FinBanc fins[] = {{6, 8, 5, SfxId::PoursuiteArrete, "ARRÊTÉ"}, {9, 11, 14, SfxId::PoursuiteEchappe, "ÉCHAPPÉ"}};
+    for (int i = 0; i < 13 * 120; i++) {
         const double t = i * DT;
         double dz, v;   // écart police − joueur le long de la route (m, < 0 : derrière) ; vitesse de rapprochement (m/s)
         if (t < 2) { dz = -150 + 70 * t; v = 70; }                 // arrive de 150 m à 10 m
         else if (t < 4) { dz = -10; v = 0; }                         // colle à 10 m
         else { dz = -10 + 35 * (t - 4); v = dz < 0 ? 35 : -35; }     // double à 35 m/s, puis s'éloigne
-        const CiblesSirene c = dec.update(DT, true, std::hypot(dz, DX), v, true, false);
+        bool enJeu = t < 6, fin = false, appel = t < 6;   // de 12 à 13 s : plus de poursuite (aucun appel)
+        for (const FinBanc& f : fins) if (t >= f.debut && t < f.debut + 3) {
+            dz = -f.distanceM; v = 0; enJeu = t < f.fin; fin = !enJeu; appel = true;
+            if (i == (int)std::lround(f.fin / DT)) {   // même ordre que la partie : jingle demandé au pas où la course finit
+                m.play(f.jingle);
+                WFS_LOG("son (WFS-184) : sirene.wav t=%.0fs : fin de poursuite « %s », police à %.0f m", f.fin, f.nom, f.distanceM);
+            }
+        }
+        const CiblesSirene c = dec.update(DT, appel, appel ? std::hypot(dz, DX) : sirene::AUCUNE, v, enJeu, fin);
         m.setSirene(c.gain, c.yelp, c.doppler, c.fin);
         if ((int)t != seconde) {
             seconde = (int)t;
