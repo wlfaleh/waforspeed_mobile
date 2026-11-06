@@ -4,6 +4,7 @@
 // et les contacts reprennent le duel (js/net/duel.js : DUEL_KMS, FINISH = km × 1000 / 0,006, hitGhosts ; WFS-21).
 // Calcul seul (aucun rendu) : testé par tests/test_course5.cpp.
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -81,6 +82,24 @@ bool dansAspiration(const std::vector<Ordinateur>& os, double s, double x);
 struct Ligne { std::string nom; double d = 0, ft = 0; bool moi = false, fini = false; };
 std::vector<Ligne> classement(const std::vector<Ordinateur>& os, const std::string& nomJoueur, double dJoueur, double ftJoueur, bool joueurFini, double finish);
 int position(const std::vector<Ligne>& lignes);   // « Position n/5 »
+
+// WFS-189 (RG-04, RG-05, ANO-100) : en Course à 5 et en Duel (sans trafic, donc sans la recharge de traffic.cpp), la jauge de
+// nitro du joueur se recharge au temps (+ config().nitro.rechargeTemps par seconde de course) et de
+// config().nitro.rechargeDepassement à chaque adversaire dépassé (Course à 5 seulement : l'appelant donne 0 en Duel).
+// Rien pendant que la nitro brûle ; plafond 1. Checkpoint et Poursuite n'appellent pas cette fonction.
+inline double rechargerNitro(double nitro, bool brule, double dt, int depasses) {
+    if (brule) return nitro;
+    const auto& n = g_configJeu.nitro;
+    return std::min(1.0, nitro + n.rechargeTemps * dt + n.rechargeDepassement * depasses);
+}
+// adversaires dépassés par le joueur : un ordinateur qui passe derrière lui compte une fois ; il ne compte de nouveau que
+// s'il est d'abord repassé à plus de REARMEMENT_M devant (deux voitures roue dans roue ne remplissent pas la jauge)
+constexpr double REARMEMENT_M = 10;
+struct SuiviDepassements {
+    std::vector<bool> arme;                                       // vrai : l'ordinateur k peut être dépassé (compté)
+    void reset() { arme.clear(); }                                // nouvelle grille (préparé au premier compter())
+    int compter(const std::vector<Ordinateur>& os, double sJoueur);   // dépassements à ce pas
+};
 
 } // namespace course5
 } // namespace wfs

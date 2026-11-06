@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 #include "../core/math.h"
+#include "player.h"   // WFS-189 : Phys (roulement, traînée)
 #include "track.h"
 
 namespace wfs {
@@ -25,6 +26,11 @@ namespace course5 {
 Difficulte& difficulte() { static Difficulte d = NORMALE; return d; }
 const char* cleDifficulte(Difficulte d) { return d == FACILE ? "facile" : d == DIFFICILE ? "difficile" : "normale"; }
 Difficulte difficulteDeCle(const std::string& v) { return v == "facile" ? FACILE : v == "difficile" ? DIFFICILE : NORMALE; }
+
+// WFS-189 (RG-02) : vitesse de pointe réelle d'une voiture (unités/s) : celle que le joueur atteint sans nitro, 99,5 % de la
+// fiche (étalonnage WFS-188, cars.h). Depuis WFS-188, carPerf().top est le plafond interne de la poussée (≈ 1,07 × la fiche),
+// plus la vitesse de pointe : les ordinateurs visaient 0,98 × la fiche en Normale au lieu de 0,90 (joueur toujours battu)
+static double vitessePointe(const CarDef& c) { return MAX_SPEED * 0.995 * c.spec.vmax / 260.0; }
 
 // peintures du jeu web (PAINTS), tirées au hasard pour les ordinateurs
 static const unsigned PEINTURES[16] = {0xc9ccd2, 0x0f1014, 0x7b808a, 0xb3122b, 0x1d3f8f, 0xff6a00, 0xc8940a, 0x1f5a3c,
@@ -59,7 +65,7 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
         o.car = c.id; o.nom = c.model; o.peinture = PEINTURES[(int)(R.next() * 16) % 16];
         o.g.car = c.id; o.g.name = c.model;
         o.varVitesse = 0.96 + R.next() * 0.06;   // petite variation à chaque course (RG-04)
-        o.cible = MAX_SPEED * carPerf(c).top * FACTEUR_VITESSE[d] * o.varVitesse;
+        o.cible = vitessePointe(c) * FACTEUR_VITESSE[d] * o.varVitesse;   // WFS-189 : part de la vraie vitesse de pointe
         o.diff = d; o.nitros = NITROS[d];   // WFS-133 (RG-03 / RG-06)
         os.push_back(o);
     }
@@ -114,8 +120,15 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
     for (size_t k = 0; k < os.size(); k++) {
         Ordinateur& o = os[k];
         const CarDef& c = carById(o.car.c_str());
-        const double acc = carPerf(c).a0 / M * 0.9;   // a0 en m/s² → unités/s²
-        const double pointe = MAX_SPEED * carPerf(c).top, reste = (finish - o.g.rd) * M;
+        // WFS-189 (RG-02) : même loi que la voiture du joueur (Player::update, plein gaz : poussée a0 × (1 − (v / top)^2,2)
+        // moins 0,35 × (roulement + traînée)), pour que l'ordinateur accélère comme sa fiche (0-100 de WFS-188) ; avant :
+        // a0 × 0,9 constant (0-100 de la 208 en 6,7 s au lieu de 8,7 s : les petites voitures du joueur toujours distancées)
+        const CarPerf pf = carPerf(c);
+        const double topU = MAX_SPEED * pf.top, vms = std::max(0.0, o.g.v) * M;
+        const double pousse = pf.a0 / M * std::max(0.0, 1 - std::pow(std::max(0.0, o.g.v) / topU, 2.2));
+        const double freine = (Phys::roll + Phys::drag * vms * vms) / M * 0.35;
+        const double acc = std::max(0.02 / M, pousse - freine);
+        const double pointe = vitessePointe(c), reste = (finish - o.g.rd) * M;   // WFS-189 : vraie vitesse de pointe
         double cible = o.cible;
         // WFS-133 (RG-04) : rattrapage par rapport au joueur, sauf dans le dernier kilomètre
         const double ecartJ = (o.g.rd - sJoueur) * M;
@@ -157,8 +170,8 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         }
         if (o.nitroT > 0) { o.nitroT -= dt; cible *= 1 + C.nitroBonus; }
         cible = std::min(cible, plafond);
-        if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + acc * (o.nitroT > 0 ? 1.6 : 1.0) * dt);
-        else o.g.v = std::max(cible, o.g.v - acc * 1.6 * dt);
+        if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + (o.nitroT > 0 ? pousse * 1.6 - freine : acc) * dt);
+        else o.g.v = std::max(cible, o.g.v - pf.a0 / M * 0.9 * 1.6 * dt);   // ralentir : comme avant WFS-189 (a0 × 0,9 × 1,6)
         o.g.x += std::clamp(o.cibleX - o.g.x, -0.9 * dt, 0.9 * dt);
         o.g.rd += o.g.v * dt;
         if (!o.g.done && o.g.rd >= finish) { o.g.done = true; o.g.ft = raceTime * 1000; }
@@ -184,6 +197,16 @@ std::vector<Ligne> classement(const std::vector<Ordinateur>& os, const std::stri
         return a.d > b.d;
     });
     return ls;
+}
+int SuiviDepassements::compter(const std::vector<Ordinateur>& os, double sJoueur) {
+    if (arme.size() != os.size()) arme.assign(os.size(), true);   // grille : tous devant le joueur
+    int n = 0;
+    for (size_t k = 0; k < os.size(); k++) {
+        const double ecart = (os[k].g.rd - sJoueur) * M;   // > 0 : l'ordinateur est devant
+        if (arme[k] && ecart < 0) { n++; arme[k] = false; }      // dépassé
+        else if (!arme[k] && ecart > REARMEMENT_M) arme[k] = true;   // repassé devant franchement : un nouveau dépassement comptera
+    }
+    return n;
 }
 int position(const std::vector<Ligne>& ls) { for (size_t i = 0; i < ls.size(); i++) if (ls[i].moi) return (int)i + 1; return (int)ls.size(); }
 
