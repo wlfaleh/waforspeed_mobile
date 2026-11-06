@@ -2681,3 +2681,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - À corriger par le PO : `TACHES.md` l. 135 : WFS-139 : PR #142 introuvable dans le dépôt (ligne laissée telle quelle).
 - À corriger par le PO : `TACHES.md` l. 156 : WFS-176 : PR #158 introuvable dans le dépôt (ligne laissée telle quelle).
 - À corriger par le PO : `TACHES.md` l. 159 : WFS-179 : PR #161 introuvable dans le dépôt (ligne laissée telle quelle).
+
+### 2026-11-06 22:15:23 — WFS-151 fusionné par confiance (PR #156, squash 00bd580) (Claude, Agent 0 developer)
+- **Passation terminée** : le code de l'agent lumière (ST-1 à ST-5) est sur `main`, avec ma correction du cube d'environnement (`TRANSFER_DST`, job `endurance`).
+- **Pourquoi fusion par confiance (> 50 %)** : run de branche 783 avec 15 jobs verts sur 16 (APK, tous les bancs de captures dont `realisme`, `nuit` et `vitrines`) ; le seul rouge, `endurance`, a sa cause nommée et corrigée, avec 0 erreur de validation et une mémoire stable en local ; 37 tests CPU verts sur la branche à jour de `main` ; banc réalisme local : lumière 100 % (34/34), photométrie 100 % (12/12), soleil 100 %, voitures 75,2 %, total 79,2 % (183/231). Les 3 erreurs du banc local viennent des textures d'essai KTX2, que seule la CI fabrique (`ci_textures.sh`) : elles ne viennent pas de WFS-151.
+- **Captures regardées (locales)** : sortie de tunnel progressive, voiture du tunnel sombre et sans reflet du ciel, chartes lisibles, route de nuit sèche (pas de miroir), corniche de nuit propre. **À surveiller, noté dans `qa/Check.md`** : ville de jour plus sombre (ciel gris-bleu, voiture à l'ombre), chaussée de la ville de nuit très orange, coût +12 à +22 % par image au banc (RC-06 ≤ 10 %, à mesurer sur téléphone).
+- **Suite** : je suis la CI de `main` sur 00bd580 ; ✅ seulement avec le numéro du run vert. Rouge à cause de WFS-151 → correction tout de suite.
