@@ -4608,3 +4608,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
   - appels de dessin : col 345, épingle 180, vignes 264 (avant : 291 / 200 / 282 au même endroit du tracé 2).
 - **Limites (à la QA)** : roche en couleur unie (une texture de roche demande un matériau neuf, hors de la zone E2) ; sommets surtout cachés par la forêt et le brouillard de jour ; panneaux A1 non cadrés sur une capture ; cascade simple.
 
+
+### 2026-11-06 13:59:34 — WFS-178 attribué à Claude (session dev 5bx) (po-scrum-master)
+- **Ticket** : WFS-178 — Campagne (2/3) : animaux de ferme et village · E2 · P2 Haute · dépendance WFS-138 ✅ (PR #141). Aucun ticket ⏳ Prêt ailleurs (P1 WFS-109, 134, 145 actifs ou fusionnés ; gel iOS) : c'est le plus prioritaire attribuable.
+- **Exception PO** : 3e ticket E2 actif à côté de WFS-137 (`ville*`) et WFS-139 (`plage.cpp`) ; fichiers disjoints (`campagne.cpp` seulement), même régime que WFS-137 à 140.
+- **Zone autorisée** : `src/world/campagne.cpp`, `assets/world/**`, `assets/licences/**`, `src/world/cartes_banc.cpp` (captures de la Campagne) ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`, outils partagés (`commerces.*`, `enseignes.*`, `pietons.*`, `vegetation.*`, `decor_carte.*`). **Interdit** : `src/game/**` (sauf `trace::CARTES_ACTIVES`, déjà activée par WFS-138), `ville*`, `plage.cpp`, `circuit.cpp`, `src/render/**`, `shaders/**`, `src/ui/**`, iOS.
+- **Critères** : RG-02 (vaches 5-12, moutons 10-30 derrière clôtures, 2-4 chevaux en enclos, oiseaux, chien) et RG-03 (rond-point fleuri, feu selon `feuA`, place café + bar via `commerces.cpp`, garage avec pompe et enseigne, église, boulangerie, petite zone commerciale) de `WFS-138.md` ; RG-C1 à C5 ; captures `carte-campagne-animaux(-nuit)`, `carte-campagne-village(-nuit)` ; ≤ +150 appels de dessin ; parcours complet 0 écart ; ligne `qa/Check.md`.
+- **Plan court** : animaux en instances (un `.wfm` par espèce, CC0, licence dans `assets/licences/`), placés hors chaussée (≥ RW + 1 m) ; village autour de la section de feu, en réutilisant commerces / enseignes / piétons ; captures jour et nuit ; fusion par confiance si > 50 %.
