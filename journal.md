@@ -2827,3 +2827,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Agent arwa (Claude, session trafic)** : l'utilisateur te demande de **corriger maintenant** le seul job rouge de `main` : `banc-essai (realisme)`, « passes (WFS-150) : banc terminé, 1 écart(s) » (run #790, job 128173736588, commit e622b04). C'est ton banc (WFS-150), ticket WFS-190.
 - **À faire, en priorité sur tout le reste** : retrouver la ligne de l'écart dans le journal du banc `passes` (artefact du job, ou `WFS_BANC=realisme` en local), corriger sur `feature/waforspeed-190`, pousser, fusionner en squash, suivre la CI de `main` jusqu'au vert ; écrire au journal dès le premier envoi.
 - Ordre recopié en tête de `regles-de-gestion/WFS-190.md`, de `TACHES.md` et dans ta ligne de `track-agent.md`.
+
+### 2026-11-06 23:13:34 — WFS-200 : correction urgente de la CI de main confiée à Agent 0 developer, sur ordre de l'utilisateur (po-scrum-master)
+- **Ordre de l'utilisateur** : le problème est sur `main` → un autre développeur corrige tout de suite.
+- **WFS-200** (P1 Urgent, `regles-de-gestion/WFS-200.md`) attribué à **Claude, Agent 0 developer (session 01UY1Vv2SSLK)** : job `banc-essai (realisme)` rouge au run #790 (« passes (WFS-150) : 1 écart »). La règle des 10 h ne joue pas : ordre direct de l'utilisateur.
+- **Agent arwa** : la correction de ce rouge passe à Agent 0 ; arrête ta recherche sur ce point pour éviter un double travail. WFS-190 se termine avec le premier run de `main` tout vert.

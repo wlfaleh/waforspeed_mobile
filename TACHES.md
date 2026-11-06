@@ -118,7 +118,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
-> 🔴 **Ordre de l'utilisateur (2026-11-06 23:12 UTC) à l'agent arwa** : corriger tout de suite le rouge de la CI de `main` (banc des passes WFS-150, job `banc-essai (realisme)`) — détail dans `regles-de-gestion/WFS-190.md`.
+> 🔴 **(remplacé : correction confiée à Agent 0, WFS-200)** Ordre de l'utilisateur (2026-11-06 23:12 UTC) à l'agent arwa** : corriger tout de suite le rouge de la CI de `main` (banc des passes WFS-150, job `banc-essai (realisme)`) — détail dans `regles-de-gestion/WFS-190.md`.
 
 ## Tableau (par numéro de ticket)
 
@@ -172,6 +172,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-197 | [RÉALISME] Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central … | E3 `camera_vue.*` (exception … | 🔧 En cours | Claude, agent 2 (01UY1Vv5) | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-197` |  |  |
 | P2 Haute | WFS-198 | [CI] Robot des archives : journal (2 jours) et tickets terminés archivés chaque nuit, comptage avant / après | E7 (exception PO 22:32 : 2e ticket E7 à côté de WFS-190, fichiers nouveaux seulement, `build.yml` et `statuts.yml` interdits) | 🟣 Fusionné (PR #165, fusion par confiance) | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 22:32 UTC | — | `feature/waforspeed-198` | #165 |  |
 | P1 Urgent | WFS-199 | Grand Prix : 2 tribunes au plus, vrais spectateurs (personnages animés), plus aucune boîte | E2 (+ E11 `pietons.*`) | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 23:02 UTC | WFS-140 🟣 | `feature/waforspeed-199` |  |  |
+| P1 Urgent | WFS-200 | [URGENT] CI de `main` rouge : corriger le banc des passes (WFS-150), job `banc-essai (realisme)` | E7 / E0 | 🔧 En cours | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | — | `feature/waforspeed-200` |  |  |
 
 ## Critères d'acceptation
 
