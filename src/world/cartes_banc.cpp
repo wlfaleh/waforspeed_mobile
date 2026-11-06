@@ -67,7 +67,7 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
                 const std::string nom = std::string(l.nom) + (std::strcmp(moment, "nuit") ? "" : "-nuit");
                 setenv("WFS_MOMENT", moment, 1);
                 setenv("WFS_DEPART", std::to_string(l.depart).c_str(), 1);
-                g.init(r, "golf", "circuit"); g.setAutopilot(true); g.camMode = 0;
+                g.init(r, "golf", "circuit"); g.setAutopilot(l.images > 100); g.camMode = 0;   // départ : voiture arrêtée sur la grille
                 for (int i = 0; i < l.images; i++) { g.update(1.0 / 60); if (i % 60 == 0) g.render(400 + i / 60.0); }   // 4 rendus : temps du job
                 g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png");
                 WFS_LOG("capture %s : circuit, %s, caméra de course, départ %lld segments, %.0f m", nom.c_str(), moment, (long long)l.depart, g.player().dist * M);

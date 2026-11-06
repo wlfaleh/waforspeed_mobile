@@ -312,8 +312,8 @@ protected:
             const int64_t d = feux->debut, fin = std::min<int64_t>(d + 620, feux->fin + 600);
             reserver(d - 8, fin, 3);
             for (int k = 0; k < 10; k++) { Item it = objet(T_GRILLE, k % 2 ? 1 : -1, R * 0.5f); item(d + 4 + k * 7, it); }
-            portique_ = mod(d + 14);
-            { Item it = objet(T_PORTIQUE, 1, 0); item(d + 14, it); }
+            portique_ = mod(d + 30);
+            { Item it = objet(T_PORTIQUE, 1, 0); item(d + 30, it); }   // 36 m devant la ligne : visible depuis la grille
             const int pad = -1;   // paddock à gauche, tribunes à droite
             for (int64_t n = d; n < fin; n += 3) poser(n, objet(T_PITWALL, pad, R + 1.4f, true), true);
             { Item it = objet(T_TOUR, pad, R + 12); poser(d + 2, it, true); }
@@ -452,7 +452,7 @@ protected:
             const Pose p = poseAt(t, a);
             const int on = feuxAllumes();
             for (int k = 0; k < 5; k++) {
-                const vec3 c = lateral(p, (k - 2) * 1.0f, 7.25f) + p.f * 0.3f;
+                const vec3 c = lateral(p, (k - 2) * 1.0f, 7.25f) - p.f * 0.15f;   // face au pilote (devant le boîtier)
                 r.draw(feuMesh_, k < on ? feuAllume_ : feuEteint_, translate(c) * rotateY(-p.th));
                 n++;
             }
