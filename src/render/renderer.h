@@ -2,6 +2,7 @@
 #pragma once
 #include <cstddef>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "vk.h"
 #include "../core/math.h"
@@ -99,7 +100,10 @@ struct FrameParams {
 
 struct UiVertex { float x, y, u, v, r, g, b, a; };
 
+struct AccesRendu;   // WFS-150 : passes enfichables (src/render/passes.h), seules à lire l'intérieur du Renderer
+
 class Renderer {
+    friend struct AccesRendu;   // WFS-150 (RG-01) : ordonnanceur des passes, pré-passe, capture d'environnement
 public:
     bool init(VkCtx& vk);
     void shutdown();
@@ -117,6 +121,7 @@ public:
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
     void destroy(Model& m);
+    void destroy(Material& m);   // WFS-187 (accroche E0) : rend le jeu de descripteurs du matériau (GPU arrêté sur ce jeu) ; vide : rien
     // WFS-63 : maillage à squelette (les maillages rigides ne changent pas)
     SkinnedMesh makeSkinnedMesh(const std::vector<SkinVertex>& v, const std::vector<uint32_t>& idx);
     void destroy(SkinnedMesh& m);
@@ -213,6 +218,7 @@ private:
     VkSampler samplerBasse_ = VK_NULL_HANDLE; float anisoMax_ = 1.f; bool texBasse_ = false;
     struct MatTex { VkDescriptorSet set; VkImageView v[3]; };
     std::vector<MatTex> matTex_;
+    std::unordered_set<VkDescriptorSet> jeuxMat_;   // WFS-187 : jeux des matériaux vivants (copies d'un matériau : libéré une fois)
     VkShaderModule modScene_[6]{};   // scene.vert, scene.frag, sky.vert, sky.frag, scene_skin.vert, scene_skin.frag
     VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
 
@@ -265,6 +271,7 @@ private:
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
     double tangentesMs_ = 0; size_t tangentesSommets_ = 0;   // WFS-149
+    bool sansMasquage_ = false;   // WFS-150 (RG-03) : image d'une capture d'environnement : aucun objet masqué (6 directions)
 };
 
 } // namespace wfs

@@ -25,6 +25,7 @@
 #include "../world/zones.h"
 #include "renderer.h"
 #include "ktx2.h"   // WFS-149 : texture d'essai
+#include "bench_passes.h"   // WFS-150
 #include "../../third_party/stb/stb_image.h"   // implémentation : model_loader.cpp
 
 namespace wfs {
@@ -133,11 +134,13 @@ public:
         if (essaiTente_) {
             r.vk().waitIdle();
             if (essaiCree_) { r.destroy(panneau_); r.destroy(bande_); }
+            r.destroy(essaiMat_);   // WFS-187 : jeu de descripteurs rendu
             for (ktx2::Texture& t : essaiTex_) { r.vk().destroy(t.image); t = ktx2::Texture{}; }
             essaiCree_ = essaiTente_ = false;
         }
         if (!cree_) return;
         for (Mesh& m : maillages_) r.destroy(m);
+        for (Material& m : mats_) r.destroy(m);   // WFS-187
         cree_ = false;
     }
 private:
@@ -244,6 +247,11 @@ std::string carteDuLieu(const char* carte) { return std::string("lieu.") + carte
 int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     using reel::Etat; using reel::LigneRapport; using reel::fmt;
     int erreurs = 0;
+    if (std::getenv("WFS_PASSES_SEUL")) {   // WFS-150 : essai local du seul banc des passes (passes-mesures.txt)
+        std::ostringstream m, i; const int e = benchPasses(g, r, out, m, i);
+        std::ofstream(out + "/passes-mesures.txt") << m.str() << "\n" << i.str();
+        return e;
+    }
     reel::Referentiel R;
     if (!R.charger("references/reel")) { WFS_ERR("réalisme : référentiel illisible : %s", R.erreur.c_str()); return 1; }
     ecrans::Reglages& reglages = ecrans::reglages();
@@ -435,6 +443,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     g_banc = EtatBanc{};   // système inactif : plus rien ne change dans les images suivantes
     reglages.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    erreurs += benchPasses(g, r, out, mesures, infos);   // WFS-150 : passes, pré-passe, capture d'environnement, Ultra (après toutes les vues)
 
     // ---------------- soleil et lumière du jeu contre le lieu et le moment de chaque carte (lieux.json)
     for (const char* carte : {"ville", "campagne", "plage", "circuit"}) {

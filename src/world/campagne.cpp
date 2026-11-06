@@ -15,17 +15,54 @@
 #include "../core/log.h"
 #include "decor_carte.h"
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2 (lacets du col, pont)
+#include "enseignes.h"   // WFS-178 : textes des enseignes du village (atlas)
 
 namespace wfs {
 namespace carte {
 namespace {
 
 enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POLE, T_SIGN, T_VILLA, T_CHURCH, T_ZEBRA, T_VINES,
-       T_GLISS, T_MURET, T_DANGER, T_CASCADE };   // WFS-138 : glissière, muret, panneau A1, cascade
+       T_GLISS, T_MURET, T_DANGER, T_CASCADE,   // WFS-138 : glissière, muret, panneau A1, cascade
+       T_FONTAINE, T_FEU, T_COMMERCE };         // WFS-178 : rond-point fleuri, feu tricolore, commerces du village
+// WFS-178 (RG-03) : commerces du village (it.k) et texte de leur enseigne (pas de vraie marque ni de vrai nom de lieu)
+enum { CO_CAFE, CO_BAR, CO_GARAGE, CO_BOULANGERIE, CO_SUPERMARCHE, CO_NB };
+const char* const ENSEIGNES[CO_NB] = {"CAFÉ", "BAR", "GARAGE", "BOULANGERIE", "SUPERMARCHÉ"};
+// ligne de texte de l'atlas sur un plan vertical centré en c, lue selon x (comme circuit.cpp, sans italique)
+void ligneTexte(Geo& g, vec3 c, vec3 x, float w, float h, const vie::Texte& T) {
+    const vec3 up{0, 1, 0}, n = cross(x, up), hx = x * (w / 2), hy = up * (h / 2);
+    const vec3 P[4] = {c - hx - hy, c + hx - hy, c + hx + hy, c - hx + hy};
+    const vec2 U[4] = {{T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0}};
+    const uint32_t k = (uint32_t)g.v.size();
+    for (int i = 0; i < 4; i++) g.v.push_back({P[i].x, P[i].y, P[i].z, n.x, n.y, n.z, U[i].x, U[i].y});
+    g.i.insert(g.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
+}
 
 class Campagne : public CarteDecor {
 public:
     const char* name() const override { return "campagne"; }
+    // WFS-178 : atlas des enseignes (lettres blanches, néon doux la nuit) et feux tricolores (lampes allumées / éteintes)
+    void init(Renderer& r, const GameView& g) override {
+        CarteDecor::init(r, g);
+        for (auto& T : txt_) T = {};
+        if (!active_) return;
+        {   // tête du feu : une lampe de Ø 200 mm (disque à 12 côtés, face −z), dessinée 3 fois par feu
+            Geo G; const int N = 12;
+            for (int i = 0; i < N; i++) { const float a0 = 2 * PI * i / N, a1 = 2 * PI * (i + 1) / N;
+                tri(G, {0, 0, 0}, {0.1f * std::cos(a1), 0.1f * std::sin(a1), 0}, {0.1f * std::cos(a0), 0.1f * std::sin(a0), 0}, uv(C_CHECK_B)); }
+            lampeMesh_ = r.makeMesh(G.v, G.i);
+        }
+        const uint32_t COUL[3] = {0xff2a1a, 0xffa000, 0x30ff70};   // rouge, orange (ambre), vert (LED de feu tricolore)
+        for (int k = 0; k < 3; k++) {
+            Material on; on.rough = 0.3f; on.flags = MAT_DOUBLE; on.emissive = linHex(COUL[k]) * 3.f; lampeOn_[k] = r.makeMaterial(on, nullptr, nullptr, nullptr);
+            Material off; off.color = {linHex(COUL[k]).x * 0.06f, linHex(COUL[k]).y * 0.06f, linHex(COUL[k]).z * 0.06f, 1}; off.rough = 0.4f; off.flags = MAT_DOUBLE;
+            lampeOff_[k] = r.makeMaterial(off, nullptr, nullptr, nullptr);
+        }
+        for (const char* t : ENSEIGNES) atlas_.ajouter(t);
+        if (!atlas_.construire(r)) return;   // police absente : enseignes sans texte
+        // lettres blanches de jour ; la nuit, enseigne éclairée sans halo exagéré (émission modérée, pas de bloom fort)
+        mats_[P_TEXTE0] = atlas_.materiau(r, 0xf4f1e8, night_ ? 1.1f : 0.f);
+        for (int k = 0; k < CO_NB; k++) txt_[k] = atlas_.texte(ENSEIGNES[k]);
+    }
 
 protected:
     const char* carteId() const override { return "campagne"; }
@@ -51,6 +88,12 @@ protected:
         auto item = [&](int64_t n, const Item& it) {
             const Libre* l = libreA(n, it.side);
             if (l && it.lat + std::max(it.d, 2.f) + 2 > l->m) return;
+            // WFS-178 : pas de maison ni d'arbre à la place d'un commerce du village (même côté, sur sa longueur + 4 m)
+            if (it.t == T_VILLA || it.t == T_TREE || it.t == T_LAMP)
+                for (const auto& [cs, cc, demi] : commerces_) if (cc == it.side && std::llabs(n - cs) <= demi) return;
+            // WFS-178 (RG-C1) : rien de haut près de la route dans les 60 m qui précèdent un feu ou l'entrée du rond-point
+            if ((it.t == T_VILLA || it.t == T_TREE || it.t == T_FARM || it.t == T_HEDGE) && it.lat < (float)RW + 14)
+                for (int64_t v : vigilance_) { const int64_t d = v - n; if (d >= 0 && d < 50) return; }
             // clairière de la cascade (RG-01) : rien entre la route et la paroi, sur ±15 segments (≈ 18 m)
             if (aCascade_ && it.side == cascadeCote_ && std::llabs(n - cascadeSeg_) < 15) return;
             CarteDecor::item(n, it);
@@ -159,11 +202,12 @@ protected:
         }
         case T_VILLA: {   // maison colorée : murs, fenêtres côté route, toit
             const vec3 o = lateral(p, s * (it.lat + it.d / 2), gy(it.lat + it.d / 2) - 0.2f);
-            const int wall = it.roof == 1 ? C_WALLS0 + it.col : C_WALLS0 + (it.col + 2) % 6;
+            // WFS-178 (RG-03) : maisons de village en pierre calcaire (albédo 0,39-0,49) et tuiles de terre cuite
+            const int wall = C_PIERRE0 + it.col % 3;
             box(S, o, p.r, p.f, it.d, it.h, it.w, uv(wall));
             for (int i = -1; i <= 1; i++) for (int fl = 0; fl < it.floors; fl++)
                 box(S, o + p.r * (-s * (it.d / 2 + 0.02f)) + p.f * (i * it.w * 0.3f) + vec3{0, 1 + fl * 2.6f, 0}, p.r, p.f, 0.06f, 1.3f, 1.2f, uv(C_GLASS));
-            toit(S, o + vec3{0, it.h + 0.9f, 0}, p.r, p.f, it.d * 1.05f, 1.8f, it.w * 1.05f, uv(C_ROOF0 + it.roof));
+            toit(S, o + vec3{0, it.h + 0.9f, 0}, p.r, p.f, it.d * 1.05f, 1.8f, it.w * 1.05f, uv(it.roof == 2 ? C_ROOF2 : C_ROOF0));
             break;
         }
         case T_CHURCH: {
@@ -214,6 +258,64 @@ protected:
             }
             break;
         }
+        case T_FONTAINE: {   // îlot du rond-point (rayon 14 m) : fontaine de pierre Ø 6 m, vasque, colonne, massifs de fleurs
+            const vec3 c = lateral(p, s * it.lat, gy(it.lat) - 0.05f);
+            cyl(S, c, 3.0f, 0.5f, 20, uv(C_PIERRE0));                       // bassin : margelle de 0,5 m
+            cyl(S, c + vec3{0, 0.42f, 0}, 2.75f, 0.1f, 20, uv(C_GLASS));     // eau
+            cyl(S, c, 0.35f, 2.4f, 10, uv(C_PIERRE0 + 1));                  // colonne
+            cyl(S, c + vec3{0, 2.2f, 0}, 1.0f, 0.25f, 14, uv(C_PIERRE0));   // vasque haute
+            for (int i = 0; i < 16; i++) {   // massifs : couronne de fleurs à 5-7 m du centre (rouge, jaune, blanc, mauve)
+                const float a = 2 * PI * i / 16, rr = 5.5f + (i % 2) * 1.2f;
+                const int col = i % 4 == 0 ? C_RED : i % 4 == 1 ? C_HAY : i % 4 == 2 ? C_WHITE : C_FLAG0 + 2;
+                box(S, c + vec3{std::cos(a) * rr, 0, std::sin(a) * rr}, p.r, p.f, 1.4f, 0.35f, 1.4f, uv(col));
+            }
+            break;
+        }
+        case T_FEU: {   // feu tricolore R11v : support de 3,2 m, boîtier 0,33 × 0,95 m (3 lampes Ø 200 mm), bas à 2,2 m
+            const vec3 b = lateral(p, s * it.lat);
+            cyl(S, b, 0.06f, 3.2f, 8, uv(C_POLE));
+            box(S, b + vec3{0, 2.2f, 0} + p.f * 0.12f, p.r, p.f, 0.33f, 0.95f, 0.2f, uv(C_METAL));
+            break;
+        }
+        case T_COMMERCE: {   // commerce du village : bâtiment en pierre, store, enseigne (texte de l'atlas), mobilier selon le métier
+            const float W = it.w, D = it.d, Hh = it.h;
+            const vec3 o = lateral(p, s * (it.lat + D / 2), gy(it.lat + D / 2) - 0.2f);
+            const vec3 face = p.r * (-s), avant = o + face * (D / 2);   // façade côté route
+            box(S, o, p.r, p.f, D, Hh, W, uv(it.k == CO_SUPERMARCHE || it.k == CO_GARAGE ? C_WALL2 : C_PIERRE0 + it.col % 3));
+            if (it.k != CO_SUPERMARCHE && it.k != CO_GARAGE) toit(S, o + vec3{0, Hh + 0.9f, 0}, p.r, p.f, D * 1.05f, 1.8f, W * 1.05f, uv(C_ROOF0));
+            for (int i = -1; i <= 1; i += 2)   // vitrines du rez-de-chaussée
+                box(S, avant + face * 0.02f + p.f * (i * W * 0.22f) + vec3{0, 0.5f, 0}, p.r, p.f, 0.06f, 2.0f, W * 0.3f, uv(C_GLASS));
+            const int store = it.k == CO_CAFE ? C_RED : it.k == CO_BAR ? C_GRASS : it.k == CO_BOULANGERIE ? C_HAY : C_METAL;
+            if (it.k <= CO_BAR || it.k == CO_BOULANGERIE) {   // store banne de 2,5 m à 2,6 m de haut
+                const vec3 a0 = avant + vec3{0, 3.0f, 0} - p.f * (W * 0.45f), a1 = avant + vec3{0, 3.0f, 0} + p.f * (W * 0.45f);
+                quad(S, a0, a1, a1 + face * 2.5f - vec3{0, 0.5f, 0}, a0 + face * 2.5f - vec3{0, 0.5f, 0}, uv(store));
+                quad(S, a1, a0, a0 + face * 2.5f - vec3{0, 0.5f, 0}, a1 + face * 2.5f - vec3{0, 0.5f, 0}, uv(store));
+            }
+            if (it.k <= CO_BAR) for (int i = 0; i < 4; i++) {   // terrasse : tables rondes Ø 0,7 m à 0,75 m, 2 chaises
+                const vec3 t0 = avant + face * (1.6f + (i % 2) * 1.6f) + p.f * ((i / 2 - 0.5f) * W * 0.4f) + vec3{0, 0, 0};
+                cyl(S, t0, 0.04f, 0.72f, 6, uv(C_METAL)); cyl(S, t0 + vec3{0, 0.72f, 0}, 0.35f, 0.03f, 10, uv(C_WHITE));
+                for (int k = -1; k <= 1; k += 2) box(S, t0 + p.f * (k * 0.6f), p.r, p.f, 0.42f, 0.45f, 0.42f, uv(C_WOOD));
+            }
+            if (it.k == CO_GARAGE) {   // auvent de station (4,5 m) et 2 pompes (0,6 × 1,8 m)
+                const vec3 st = avant + face * 5.f;
+                for (int k = -1; k <= 1; k += 2) { box(S, st + p.f * (k * 2.f), p.r, p.f, 0.6f, 1.8f, 0.4f, uv(C_RED)); cyl(S, st + p.f * (k * 4.5f), 0.15f, 4.5f, 8, uv(C_STEEL)); }
+                box(S, st + vec3{0, 4.5f, 0}, p.r, p.f, 5.f, 0.5f, 10.f, uv(C_WHITE));
+            }
+            if (it.k == CO_SUPERMARCHE) {   // parking : enrobé et places de 2,5 × 5 m (lignes de 12 cm)
+                const vec3 pk = avant + face * 9.f + vec3{0, 0.03f, 0};
+                quadSol(S, pk - p.f * 18.f - face * 7.f, pk + p.f * 18.f - face * 7.f, pk + p.f * 18.f + face * 7.f, pk - p.f * 18.f + face * 7.f, uv(C_PITLANE));
+                for (int k = -7; k <= 7; k++) { const vec3 l = pk + p.f * (k * 2.5f) + vec3{0, 0.01f, 0};
+                    quadSol(S, l - p.f * 0.06f - face * 7.f, l + p.f * 0.06f - face * 7.f, l + p.f * 0.06f - face * 2.f, l - p.f * 0.06f - face * 2.f, uv(C_WHITE)); }
+            }
+            const vie::Texte& T = txt_[it.k];
+            if (T.ok) {   // enseigne : lettres de 0,5 m (1 m au supermarché) au-dessus de la porte, côté route
+                const float hT = it.k == CO_SUPERMARCHE ? 1.0f : 0.5f, wT = std::min(W * 0.8f, hT * T.aspect);
+                const vec3 c = avant + face * 0.08f + vec3{0, it.k == CO_SUPERMARCHE ? Hh - 1.2f : 3.6f, 0};
+                box(S, c - face * 0.04f - vec3{0, hT * 0.6f, 0}, p.r, p.f, 0.06f, hT * 1.2f, wT + 0.4f, uv(it.k == CO_GARAGE ? C_RED : C_METAL));
+                ligneTexte(out[P_TEXTE0], c, p.f * s, wT, wT / T.aspect, T);
+            }
+            break;
+        }
         case T_GLISS: {   // glissière simple (GS2) : lisse en acier galvanisé de 0,31 m, haut à 0,70 m, poteaux tous les 2,4 m
             const Pose p1 = poseAt(t, a + 2);
             const vec3 A = lateral(p, s * it.lat, 0.39f), B = lateral(p1, s * it.lat, 0.39f), up{0, 0.31f, 0};
@@ -258,8 +360,23 @@ protected:
     // pales des éoliennes : objet séparé qui tourne (rotors de scene.js), un maillage par éolienne
     int animes(Renderer& r, const GameView& g, int64_t c0, int64_t c1) override {
         int nS = 0;
+        if (!solFond_.indexCount) construireSolFond(r);
+        if (solFond_.indexCount) { r.draw(solFond_, mats_[P_UNI], mat4::identity()); nS++; }   // WFS-178 : un appel
         if (!sommets_.empty() && !sommetsMesh_.indexCount) construireSommets(r);
         if (sommetsMesh_.indexCount) { r.draw(sommetsMesh_, mats_[P_UNI], mat4::identity()); nS = 1; }   // WFS-138 : un appel
+        if (feuSeg_ >= 0 && lampeMesh_.vb.buf) {   // WFS-178 : lampes du feu selon feuA (rouge en haut, orange, vert en bas)
+            int64_t a;
+            if (dansMorceau(feuSeg_, c0 * CH, (c1 + 1) * CH, a)) {
+                const Pose p = poseAt(*g.track, a);
+                const trace::Feu f = trace::feuA(feuIdx_);
+                const int allume = f == trace::Feu::Rouge ? 0 : f == trace::Feu::Orange ? 1 : f == trace::Feu::Vert ? 2 : -1;
+                for (int side : {-1, 1}) for (int k = 0; k < 3; k++) {
+                    const vec3 c = lateral(p, side * ((float)RW + 0.8f), 2.98f - k * 0.3f) + p.f * 0.01f;   // face aux arrivants (−f)
+                    r.draw(lampeMesh_, k == allume ? lampeOn_[k] : lampeOff_[k], translate(c) * rotateY(-p.th + PI));
+                    nS++;
+                }
+            }
+        }
         if (rotors_.empty()) {
             for (const auto& [seg, it] : turbines_) {
                 Geo B;
@@ -299,6 +416,12 @@ protected:
         rotors_.clear(); turbines_.clear();
         if (sommetsMesh_.vb.buf) r.destroy(sommetsMesh_);   // WFS-138
         sommetsMesh_ = Mesh{}; sommets_.clear(); libre_.clear(); aCol_ = aCascade_ = false;
+        atlas_.detruire(r); for (auto& T : txt_) T = {};   // WFS-178
+        if (lampeMesh_.vb.buf) r.destroy(lampeMesh_);
+        for (int k = 0; k < 3; k++) { r.destroy(lampeOn_[k]); r.destroy(lampeOff_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
+        lampeMesh_ = Mesh{}; fontaineSeg_ = feuSeg_ = -1; vigilance_.clear(); commerces_.clear();
+        if (solFond_.vb.buf) r.destroy(solFond_);
+        solFond_ = Mesh{};
     }
 
 private:
@@ -320,7 +443,9 @@ private:
         n = k + 1;
         const float corr = l->h - out[k].yb, pente = corr / (m - R);
         for (int i = 0; i < n; i++) { out[i].ya += corr * (out[i].a - R) / (m - R); out[i].yb += corr * (out[i].b - R) / (m - R); }
-        if (pente > 0.45f) for (int i = 1; i < n; i++) out[i].col = C_WALK;   // plus de 24° : la roche affleure (gris 0x8a8884, albédo ≈ 0,25)
+        // plus de 24° vers une route nettement plus haute (col) : la roche affleure (gris 0x8a8884, albédo ≈ 0,25) ;
+        // en terrain plat (rond-point, village), la rampe ne fait que rattraper le profil : l'herbe reste
+        if (pente > 0.45f && l->h > 2.5f) for (int i = 1; i < n; i++) out[i].col = C_WALK;
         return n;
     }
     std::vector<Libre> libre_;   // 2 par segment : [2a] gauche, [2a + 1] droite
@@ -398,6 +523,22 @@ private:
                 if (!l || l->m > R + 36) { Item it; it.t = T_CASCADE; it.side = side; it.lat = R + 14; CarteDecor::item(m, it); aCascade_ = true; cascadeSeg_ = m; cascadeCote_ = side;
                     WFS_LOG("campagne : cascade au pont (segment %lld, côté %s)", (long long)m, side > 0 ? "droit" : "gauche"); }
             }
+            if (sec.type == trace::Type::RondPoint && fontaineSeg_ < 0) {   // centre de l'anneau : à gauche du milieu
+                fontaineSeg_ = (sec.debut + sec.fin) / 2;
+                Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; CarteDecor::item(fontaineSeg_, it);
+                vigilance_.push_back(sec.debut);
+                // supermarché et parking à l'entrée du village (180 m avant le rond-point), garage 60 m après
+                commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);
+                commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
+                commerce(sec.fin + 100, -1, CO_BOULANGERIE, 9, 9, 6.f, 4);
+            }
+            if (sec.type == trace::Type::Feux && feuSeg_ < 0 && !sec.depart) {   // feu du village : un poteau de chaque côté
+                feuSeg_ = sec.ligneArret; feuIdx_ = sec.feu; vigilance_.push_back(sec.ligneArret);
+                for (int side : {-1, 1}) { Item it; it.t = T_FEU; it.side = side; it.lat = R + 0.8f; CarteDecor::item(feuSeg_, it); }
+                // place du village : café-terrasse et bar face à face, juste après le carrefour
+                commerce(sec.ligneArret + 20, 1, CO_CAFE, 11, 9, 7.f, 6);
+                commerce(sec.ligneArret + 24, -1, CO_BAR, 10, 9, 7.f, 6);
+            }
             if (sec.type != trace::Type::Lacets) continue;
             aCol_ = true; yPied_ = (float)t.point((double)sec.debut * SEG, 0).y;
             int64_t debutEp = -1, nEp = 0;
@@ -472,6 +613,34 @@ private:
             }
         }
         if (!G.i.empty()) sommetsMesh_ = r.makeMesh(G.v, G.i);
+    }
+    // WFS-178 : commerce du village au segment n, côté side, en retrait de « recul » m du bord de la chaussée
+    void commerce(int64_t n, int side, int k, float w, float d, float h, float recul) {
+        Item it; it.t = T_COMMERCE; it.side = side; it.k = k; it.w = w; it.d = d; it.h = h; it.lat = (float)RW + recul; it.col = k;
+        const Libre* l = libreA(n, side);
+        if (l && it.lat + d + 2 > l->m) { WFS_LOG("campagne : %s non posé (route voisine)", ENSEIGNES[k]); return; }
+        CarteDecor::item(n, it);
+        commerces_.push_back({n, side, (int64_t)std::ceil((w / 2 + 4) / SEG_M) + (k == CO_SUPERMARCHE ? 15 : 0)});   // + parking
+        WFS_LOG("campagne : %s au segment %lld, côté %s", ENSEIGNES[k], (long long)n, side > 0 ? "droit" : "gauche");
+    }
+    int64_t fontaineSeg_ = -1, feuSeg_ = -1; int feuIdx_ = 0;
+    std::vector<int64_t> vigilance_;
+    struct Emprise { int64_t seg; int side; int64_t demi; };   // segments occupés par un commerce (± demi)
+    std::vector<Emprise> commerces_;   // RG-C1 : segments à dégager dans les 60 m qui précèdent (feu, entrée du rond-point)
+    vie::AtlasTextes atlas_; vie::Texte txt_[CO_NB];
+    Mesh lampeMesh_{}; Material lampeOn_[3]{}, lampeOff_[3]{};
+    // WFS-178 : sol de fond sous toute la carte (prairie, 1 m sous le point le plus bas de la route) : depuis que le sol
+    // de chaque route s'arrête à mi-distance de sa voisine (WFS-138), il restait des trous entre deux bandes qui ne se
+    // rejoignent pas (abords du rond-point, intérieur des épingles) : on y voyait le ciel ; on y voit maintenant le sol
+    Mesh solFond_{};
+    void construireSolFond(Renderer& r) {
+        Track& t = *track_;
+        const int64_t L = len();
+        float x0 = 1e9f, x1 = -1e9f, z0 = 1e9f, z1 = -1e9f, y0 = 1e9f;
+        for (int64_t a = 0; a < L; a += 4) { const vec3 o = poseAt(t, a).o; x0 = std::min(x0, o.x); x1 = std::max(x1, o.x); z0 = std::min(z0, o.z); z1 = std::max(z1, o.z); y0 = std::min(y0, o.y); }
+        const float m = 1500, y = y0 - 1.0f;
+        Geo G; quadSol(G, {x0 - m, y, z0 - m}, {x1 + m, y, z0 - m}, {x1 + m, y, z1 + m}, {x0 - m, y, z1 + m}, uv(C_FARHILL));
+        solFond_ = r.makeMesh(G.v, G.i);
     }
     bool aCol_ = false, aCascade_ = false;
     int64_t cascadeSeg_ = -1; int cascadeCote_ = 0;

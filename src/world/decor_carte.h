@@ -139,7 +139,7 @@ enum Col {
     C_VINE, C_METAL, C_SIGNW, C_SIGNR, C_POLE, C_ZEBRA, C_STEEL, C_CHECK_W, C_CHECK_B, C_LAMP_W, C_LAMP_C,
     // circuit
     C_TIRE, C_TIRE_R, C_TIRE_W, C_STAND, C_STAND_BACK, C_STAND_ROOF, C_SEAT0, C_AD0 = C_SEAT0 + 4, C_MARSHAL = C_AD0 + 8, C_MARSHAL_TOP,
-    C_PITWALL, C_PITGLASS, C_GARAGE, C_GARAGE_DOOR, C_GARAGE0, C_FLAGPOLE = C_GARAGE0 + 6, C_FLAG0, C_NB = C_FLAG0 + 6
+    C_PITWALL, C_PITGLASS, C_GARAGE, C_GARAGE_DOOR, C_GARAGE0, C_FLAGPOLE = C_GARAGE0 + 6, C_FLAG0, C_PIERRE0 = C_FLAG0 + 6, C_NB = C_PIERRE0 + 3   // WFS-178 : 3 pierres calcaires
 };
 static_assert(C_NB <= PAL_W, "palette trop petite");
 
@@ -147,6 +147,7 @@ static_assert(C_NB <= PAL_W, "palette trop petite");
 
 // banc d'essai (WFS-53) : captures carte-campagne-* et carte-circuit-* (src/world/cartes_banc.cpp)
 void benchCartes(Game& g, Renderer& r, const std::string& out);
+void benchVille(Game& g, Renderer& r, const std::string& out);   // WFS-137 : lieux de la Ville au tracé 2 (appelé par benchCartes)
 // WFS-138 : campagne au tracé 2 : col, épingle, vignes, de jour et de nuit, caméra de course (carte-campagne-col…)
 int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours = true);   // parcours : départ → haut du col au pilote
 

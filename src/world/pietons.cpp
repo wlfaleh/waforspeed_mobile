@@ -11,8 +11,10 @@
 #include "../render/squelette.h"
 #include "zones.h"
 #include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
+#include "ville_quartiers.h"   // WFS-137 : piétons des passages zébrés
 
 namespace wfs {
+namespace plage { const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len); }   // WFS-180 (plage.cpp)
 namespace {
 
 // valeurs du jeu web (people.js)
@@ -42,7 +44,7 @@ struct Look {
 struct Personne {
     double s = 0, lat = 0, v = 1.1, ph = 0, dodge = 0, y = 0, t = 0; int pose = 0, dir = 1;
     bool look_ = false; Look look; double rel = 0;
-    bool assis = false, yawFixe = false; float yawRel = 0;   // WFS-71 : assis (Sitting_*) / orientation donnée par le décor
+    bool assis = false, yawFixe = false, marche = false; float yawRel = 0; int feu = -1;   // WFS-71 : assis / orientation du décor ; WFS-137 : passage zébré (pose 5)
 };
 
 // pedLook (people.js) : tirée une fois, déterministe selon la place de la personne dans la liste
@@ -87,7 +89,10 @@ public:
             for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
             for (const vie::Serviette& v : vie::serviettes(*g.map, L)) { P.s = v.s + 0.4; P.lat = v.lat; P.pose = 2; P.y = vie::hauteurSable(v.lat) + 0.03; P.yawRel = 1.5708f + v.rot; gens_.push_back(P); }
             P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
+            for (const vie::Baigneur& b : plage::gens(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 4; P.y = vie::hauteurSable(b.lat) + 0.02; P.yawRel = b.yaw; gens_.push_back(P); }   // WFS-180 : foule des fêtes, joueurs
         }
+        if (ville_) for (const ville::Passant& c : ville::passants(*g.map, *g.track)) {   // WFS-137 (RG-02) : piétons des passages zébrés
+            Personne P; P.s = c.s; P.lat = c.lat; P.v = c.v; P.dir = c.dir; P.feu = c.feu; P.pose = 5; P.yawFixe = true; P.y = 0.15; gens_.push_back(P); }
         if (gens_.empty()) return;
         if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0]) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1])) {
             WFS_ERR("Piétons indisponibles (assets/people) : aucun piéton affiché");   // pas de silhouettes de repli
@@ -109,6 +114,7 @@ public:
         const double len = (double)g.track->segmentCount();
         for (Personne& P : gens_) {
             if (P.pose == 0) { P.s += P.dir * P.v / SEG_M * dt; if (P.s >= len) P.s -= len; if (P.s < 0) P.s += len; }
+            if (P.pose == 5) ville::traverser(P.lat, P.dir, P.marche, P.yawRel, P.y, P.feu, P.v, dt);   // WFS-137 (RG-02) : au rouge des voitures
             const double rate = P.pose == 0 ? (P.v > 2.2 ? P.v / PED_JOG_SPEED : P.v / PED_WALK_SPEED) : 1.0;
             P.t += dt * rate / (P.look_ ? P.look.scale : 1.f);
         }
@@ -125,7 +131,7 @@ public:
             double rel = P.s - aMod; if (rel > len / 2) rel -= len; if (rel < -len / 2) rel += len;
             P.rel = rel;
             if (rel < PED_RANGE0 || rel > PED_RANGE1) continue;
-            const double sc = std::max(0.0, (rel >= 0 ? rel : -rel * 2.5) + std::fabs(P.lat) * 0.15 - (affiche_[i % 256] == i ? 6 : 0));
+            const double sc = std::max(0.0, (rel >= 0 ? rel : -rel * 2.5) + std::fabs(P.lat) * 0.15 - (affiche_[i % 256] == i ? 6 : 0) - (P.pose == 5 ? 30 : 0));   // WFS-137 : passage zébré en priorité
             int k = n < AFFICHES ? n++ : AFFICHES;   // insertion dans les AFFICHES meilleurs (sans allocation)
             if (k == AFFICHES) { if (sc >= cles[AFFICHES - 1]) continue; k = AFFICHES - 1; }
             while (k > 0 && cles[k - 1] > sc) { cles[k] = cles[k - 1]; choisis[k] = choisis[k - 1]; k--; }
@@ -152,7 +158,7 @@ public:
             const double gy = P.y != 0 ? P.y : sol(side);
             // le personnage regarde vers +Z dans son repère : face au sens de la route = demi-tour (repère natif)
             float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
-            const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : L.idle;
+            const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 || P.marche ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : P.pose == 4 ? (i % 3 ? "Jog_Fwd_Loop" : "Idle_Talking_Loop") : L.idle;   // WFS-180 : on danse, on saute
             echantillonner(M, clipParNom(M, anim), P.t + P.ph / 6.283 * 1.333, pose);
             const mat4 monde = translate({(float)tp.x, (float)(tp.y + gy), (float)tp.z}) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
             const double dm = std::fabs(P.rel) * SEG_M;

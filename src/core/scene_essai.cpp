@@ -39,7 +39,7 @@ public:
         mat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
         mat_.flags |= MAT_DOUBLE;
     }
-    void shutdown(Renderer& r) override { r.destroy(cube_); }
+    void shutdown(Renderer& r) override { r.destroy(cube_); r.destroy(mat_); }   // WFS-187 (accroche) : jeu de descripteurs rendu
 
     bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
         if (!g_actif) return false;

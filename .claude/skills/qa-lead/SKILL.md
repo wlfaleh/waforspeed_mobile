@@ -1,6 +1,6 @@
 ---
 name: qa-lead
-description: Validation des tickets de WaForSpeed Mobile par le QA lead — regarder les captures d'écran de l'APK (émulateur Android et banc d'essai) classer les anomalies (bloquante / mineure) et rendre le verdict VALIDÉ, À CORRIGER, PASSABLE AVEC ANOMALIES MINEURES ou REFUSÉ avant toute fusion. À utiliser quand on teste, valide ou fusionne un ticket.
+description: QA lead de WaForSpeed Mobile — (1) recette d'un ticket : vérifier seulement ses critères d'acceptation et règles de gestion, et que le jeu fonctionne, puis rendre le verdict VALIDÉ, À CORRIGER, PASSABLE AVEC ANOMALIES MINEURES ou REFUSÉ ; (2) campagne de test VABF sur l'émulateur Android : tester tout le jeu sur un vrai APK et créer les anomalies de prod (ANO-PROD-XX). À utiliser quand on teste, valide ou recette un ticket, ou qu'on lance une campagne VABF.
 ---
 
 # QA — regarder les captures
@@ -13,8 +13,10 @@ description: Validation des tickets de WaForSpeed Mobile par le QA lead — rega
   « Vérification simulateur EX » ; on lance le workflow `simulateur.yml` (entrée `epic`), puis le QA lead regarde les
   captures de la Release `simulateur-EX` (`qa-01-demarrage` … `qa-07-fin`, `qa-logcat.txt`) et écrit
   `qa/rapports/simulateur-EX.md` (orientation, tactile, démarrage, plantages sur un vrai APK).
-- Ce qu'on regarde : la fonctionnalité du ticket se voit et est correcte, l'image n'est pas déformée, la voiture est
-  visible, rien n'est cassé.
+- **Recette d'un ticket = critères d'acceptation + jeu qui fonctionne, rien d'autre** (règle de l'utilisateur, 2026-11-06) :
+  on vérifie chaque critère d'acceptation et chaque règle de gestion du ticket, puis que le jeu démarre, se joue et ne casse
+  pas. Le design et la finition hors critères ne sont **pas** des anomalies du ticket et ne vont pas dans `anno.md` :
+  ils sont relevés pendant la campagne VABF.
 - **Le QA décide de la gravité de chaque anomalie** :
   - **bloquante** (critère d'acceptation ou règle de gestion non respecté, plantage, écran noir, image cassée, régression) → **REFUSÉ** :
     le développeur corrige jusqu'à ce qu'il n'y ait plus d'anomalie bloquante ;
@@ -29,3 +31,12 @@ description: Validation des tickets de WaForSpeed Mobile par le QA lead — rega
 
 ## Tickets fusionnés par confiance
 **Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire)** : développeur confiant à plus de 50% → il fusionne tout de suite (conditions et suite : `CLAUDE.md`, règle de fusion n°1). Dans `qa/Check.md` ils sont marqués « fusion par confiance » : même recette, faite après la fusion, sur `main`.
+
+## Campagne de test VABF sur l'émulateur : anomalies de prod
+- **Quand** : fin d'épic (ticket « Vérification simulateur EX ») ou à la demande de l'utilisateur ou du PO.
+- **Comment** : workflow `simulateur.yml` sur `main`, Release `simulateur-EX` (`qa-*`, `qa-logcat.txt`). On teste **tout le
+  jeu** sur un vrai APK : démarrage, menus, garage, réglages, course, commandes au doigt, son, fin, plantages et lenteurs.
+- **Anomalies de prod** : chaque défaut va dans la section « Anomalies de prod » de `anno.md` (`ANO-PROD-XX`, gravité
+  bloquante / majeure / mineure, capture ou logcat, ticket d'origine si connu, statut `🆕 Nouvelle`). Bloquante → ticket de
+  correction prioritaire (créé par le PO) ; le PO priorise toutes les anomalies de prod.
+- **Rapport** `qa/rapports/VABF-AAAA-MM-JJ.md`, verdict **APTE** (aucune bloquante) ou **NON APTE**.

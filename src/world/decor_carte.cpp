@@ -32,6 +32,7 @@ std::array<uint32_t, PAL_W> palette() {
     set(C_GARAGE0, {0xc81e24, 0x1d3f8f, 0x2f8f4f, 0xff6a00, 0x101014, 0xffd23a});            // C2.garage
     set(C_FLAGPOLE, {0xd8d8d8});
     set(C_FLAG0, {0xe2262b, 0xffd23a, 0x1d8fb8, 0xffffff, 0x2f8f4f, 0xff6a00});              // C2.flagC
+    set(C_PIERRE0, {0xb3a68f, 0xa79a83, 0xc0b39b});   // WFS-178 : pierre calcaire, albédo linéaire 0,39 à 0,49 (charte : 0,40-0,55)
     return p;
 }
 
@@ -383,6 +384,7 @@ void CarteDecor::shutdown(Renderer& r) {
     chunks_.clear();
     for (auto& gm : graveyard_) r.destroy(gm.second);
     graveyard_.clear();
+    for (Material& m : mats_) r.destroy(m);   // WFS-187 (accroche) : jeux de descripteurs rendus
     shutdownCarte(r);
     for (Image* im : {&palTex_, &leafTex_, &routeTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
     active_ = false;

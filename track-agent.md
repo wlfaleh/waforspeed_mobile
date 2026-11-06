@@ -1,0 +1,42 @@
+# Suivi des agents — qui fait quoi
+
+> **Règle de l'utilisateur (2026-11-06)** : ce fichier est **toujours synchronisé** avec `main`.
+> - **Chaque agent développeur** met à jour **sa propre ligne** à chaque étape (ticket attribué, branche créée et poussée, PR ouverte,
+>   fusion, CI de `main` verte, ticket fini, agent libre) et l'envoie sur `main` **dans le même commit** que `TACHES.md`.
+> - **Le PO** remet tout le fichier à jour à chaque appel (attribution, point d'avancement) d'après `TACHES.md` et l'heure du dernier
+>   envoi de chaque branche (`git log -1 --format=%ci origin/feature/waforspeed-XX`), et met à jour « Dernière mise à jour ».
+> - Mêmes règles que `TACHES.md` : partir de `main` (`git pull`), ne modifier que sa ligne, ne jamais copier ce fichier d'une autre branche.
+> - **Colonne « Ticket en cours »** (règle de l'utilisateur, 2026-11-06) : seulement les tickets 🔧 En cours ou 🔀 En PR ; **vide** si l'agent n'en a
+>   aucun (les tickets 🟣 fusionnés ou ✅ terminés n'y figurent pas ; la CI de `main` suivie s'écrit dans « État »).
+> - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
+> - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
+
+**Dernière mise à jour** : 2026-11-06 20:40:15 UTC (po-scrum-master)
+
+## Agents développeurs
+
+| Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
+|---|---|---|---|---|
+| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout (job `endurance`) | 190 : attribué 20:40, branche à pousser | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-175 🟣 (PR #155) |
+| Claude, agent 1 (01UY1Vv2) |  |  | 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-185 (🟣 fusionné 19:29, PR #149, run 777) |
+| Claude, agent 2 (01UY1Vv5) |  |  | 184 : fusionnée 16:39 | ✅ libre ; WFS-184 ✅ (CI de `main` verte, run 753) |
+| Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
+| Claude, agent 5 (011cpqZaDiS2) |  |  |  | ✅ libre |
+| Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
+| Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | remplacement de la Model 3 par un autre modèle libre (ordre de l'utilisateur, ANO-75), puis dimensions des 20 voitures | 158 : ST-1 poussé (e507961), synchronisée avec main (e0c5eff) ; RG-B : 6 essais de lissage sans effet (journal 18:3x) | ⏸ RG-D (Model 3) : attend le fichier du modèle (téléchargement Sketchfab bloqué, question à l'utilisateur 20:5x) ; avance sur la suite de WFS-158 |
+| Claude, agent lumière (session 01UY1Vv1) | WFS-151 | Lumière : exposition physique, IBL préfiltrée, sondes, étalonnage charte grise / ColorChecker | 151 : 20:22 (unités, exposition auto, sondes IBL, banc : 1er envoi) | ✅ actif : banc du réalisme en cours en local (lavapipe) |
+
+## Agents de pilotage
+
+| Agent | Rôle | Dernière action |
+|---|---|---|
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 20:40 : WFS-190 attribué à agent arwa (Claude, session trafic) |
+| qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
+| expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
+| smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
+
+## Tickets prêts sans agent
+| Ticket | Priorité | Sujet |
+|---|---|---|
+| — | — | aucun ticket ⏳ Prêt attribuable (WFS-191 attend la validation des noms par l'utilisateur) |

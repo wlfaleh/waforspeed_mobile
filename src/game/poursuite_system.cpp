@@ -97,6 +97,7 @@ public:
         if (camionModele_.ok) r.destroy(camionModele_);
         camionModele_ = Model{};
         r.destroy(cube_);
+        for (Material* m : {&matRouge_, &matBleu_, &matPlot_, &matBlanc_, &matBleuCaisse_, &matVitre_, &matJaune_, &matNoir_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         police_.clear(); plots_.clear(); actif_ = false;
         if (actif == this) actif = nullptr;
     }
@@ -127,6 +128,10 @@ public:
         if (g_bancFin == 2) {   // banc : saut à 150 m de l'arrivée (capture de la victoire)
             const double d = c->duelFinish - 150 / M - pl.dist;
             if (d > 0) { pl.dist += d; pl.position = t.wrap(pl.position + d); for (Police& p : police_) p.rd += d; }
+            // WFS-145 : le trafic n'a pas sauté avec la voiture : celui de la zone d'arrivée (−40 à +220 m) passe 400 m plus
+            // loin, sinon la voiture atterrit dans une file et le pilote automatique du banc reste coincé (CI rouge au hasard)
+            if (Traffic* trs = activeTrafficMut())
+                for (TrafficCar& tc : trs->cars) if (const double rel = t.relZ(tc.z - pl.position) * M; rel > -40 && rel < 220) tc.z = t.wrap(tc.z + 400 / M);
             g_bancFin = 0; distAvant_ = pl.dist;
         }
         if (g_bancSautKm > 0) {   // WFS-141 : banc : saut après le barrage et l'embouteillage (le pilote automatique y reste bloqué)
