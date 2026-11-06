@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "../src/game/course.h"
+#include "../src/game/traffic.h"
 #include "../src/game/direction.h"   // WFS-70 : modes de direction (fonctions pures)
 #include "../src/game/ressenti.h"    // WFS-70 : secousse, flash, réduire les mouvements
 #include "../src/game/commandes_tactiles.h"   // WFS-98 : place des pédales et du nitro, commande sous un doigt
@@ -24,9 +25,11 @@ int main(int argc, char** argv) {
     if (!f) { std::printf("ÉCHEC : référence introuvable\n"); return 2; }
     std::vector<std::string> ref, got; std::string s;
     while (std::getline(f, s)) if (!s.empty()) ref.push_back(s);
+    g_perfWeb = true;   // WFS-188 : référence du jeu web = performances du jeu web (le jeu natif est recalé sur la fiche)
     for (auto [m, c, sd] : {std::tuple{"ville", "golf", 12345u}, std::tuple{"circuit", "m4", 777u}}) {
         auto v = simulateCourse(m, c, sd); got.insert(got.end(), v.begin(), v.end());
     }
+    g_perfWeb = false;
     int diff = 0;
     for (size_t k = 0; k < std::max(ref.size(), got.size()); k++) {
         const std::string a = k < got.size() ? got[k] : "(rien)", b = k < ref.size() ? ref[k] : "(rien)";
@@ -35,6 +38,34 @@ int main(int argc, char** argv) {
     }
     std::printf("course automatique : %zu lignes comparées au jeu web, %d écart(s)\n", ref.size(), diff);
     if (diff) bad++;
+
+    // WFS-188 (RG-06) : aucune voiture injouable : mode Checkpoint du jeu natif (60 s, +30 s par checkpoint), Ville, trafic,
+    // pilote automatique plein gaz (même conduite que simulateCourse), performances recalées : au moins 8 checkpoints
+    {
+        static Track tv; tv.build(mapById("ville"));
+        int pire = 1 << 30; const char* pireId = "";
+        std::printf("WFS-188 : checkpoints en mode Checkpoint (Ville, graine 12345) :");
+        for (const CarDef& car : CARS) {
+            Player pl; pl.reset(car);
+            Traffic tr; tr.parallel = false; tr.reset(tv, 12345, mapById("ville").trafficN, 0);
+            Course c; c.reset();
+            const double dt = 1.0 / 120, myLen = webCarLength(car.id, car.d.L);
+            for (int n = 0; c.state != RaceState::Over && n < 120 * 900; n++) {
+                DriveInput in; in.gas = true; in.steer = (pl.playerX < -0.08 ? 1.f : 0.f) - (pl.playerX > 0.08 ? 1.f : 0.f); in.nitro = pl.nitro > 0.5;
+                TrafficView pv; pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed; pv.myLen = myLen;
+                tr.advance(dt, pv);
+                const bool playing = c.playing();
+                pl.update(dt, in, tv, playing);
+                c.hold(pl);
+                if (playing) c.applyHits(tr.collide(pl, dt)); else tr.watch(pl);
+                c.step(dt, pl, &tr, pl.position);
+            }
+            std::printf(" %s %d,", car.id, c.level);
+            if (c.level < pire) { pire = c.level; pireId = car.id; }
+            if (c.level < 8) { std::printf("\nÉCHEC : %s ne passe que %d checkpoint(s) (8 au moins)\n", car.id, c.level); bad++; }
+        }
+        std::printf("\nWFS-188 : 20 voitures, au moins %d checkpoints (%s) : %s\n", pire, pireId, pire >= 8 ? "OK" : "ÉCHEC");
+    }
 
     // 2. RG-01 départ, RG-02 checkpoints
     Course c; c.reglesWeb = true; c.reset();   // règles du jeu web (référence) : 30 s, +max(5, 11 − n × 0,4)

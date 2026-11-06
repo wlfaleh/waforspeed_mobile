@@ -74,11 +74,13 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     braking = playing && !locked && in.brake && speed > 0 && !reversing;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
-    const double off = std::abs(playerX) > 1 ? Phys::offRoad / M : 0;
+    // WFS-188 (RG-06) : résistance du bas-côté proportionnelle à la vitesse (pleine dès 15 m/s) : à l'arrêt dans l'herbe,
+    // une voiture dont la poussée recalée est sous Phys::offRoad (Golf, Compass…) peut toujours repartir
+    const double off = std::abs(playerX) > 1 ? Phys::offRoad / M * (perf.referenceWeb ? 1.0 : std::min(1.0, av / 15.0)) : 0;
     if (!playing) speed = std::max(0.0, speed - resist * dt);
     else if (locked) speed = speed > 0 ? std::max(0.0, speed - Phys::brake * 0.5 / M * dt) : std::min(0.0, speed + Phys::brake * 0.5 / M * dt);
     else if (reversing) speed = std::max(REV_MAX, speed - REV_ACC * dt);
-    else if (braking) speed = std::max(0.0, speed - (Phys::brake / M + resist) * dt);
+    else if (braking) speed = std::max(0.0, speed - (Phys::brake * perf.freinage / M + resist) * dt);   // WFS-188 (RG-04) : selon la voiture
     else if (accelerating && speed < 0) speed = std::min(0.0, speed + Phys::brake / M * dt);
     else if (accelerating) {
         const double push = perf.a0 / M * (nitroOn ? config().nitro.poussee : 1) * std::max(0.0, 1 - std::pow(std::max(0.0, speed) / top, 2.2));
