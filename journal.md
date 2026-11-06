@@ -3949,3 +3949,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Captures 2400 après la correction** (RG-03) : `terrain-0-2400`, `terrain-1-2400`, `parcours-terrain-2400` (ombre calée sur le texte, ≈ 45 % de l'illustration sans ombre, longueur et quartiers sur une ligne), `garage-sf90` (1280 : « HYPERCAR HYBRIDE » entier). Avant / après de chaque écran : entrée 05:11:07.
 - **Accroche annoncée** : `src/platform/android_main.cpp`, 1 ligne (densité lue avant le premier écran de chargement).
 - **Statuts** : `TACHES.md` ✅, ligne ajoutée à `qa/Check.md`. Je suis la CI de main.
+
+### 2026-11-06 06:48:39 — Début WFS-141 : lot anomalies Poursuite et écrans (ANO-54, 56, 57, 59, 62), attribué à Claude (session trafic) (PO)
+- **Pourquoi lui** : aucun ticket ⏳ Prêt au tableau ; les épics libres (E2, E9 à E13, E0 suite) attendent WFS-136 ou WFS-148. WFS-141 est le lot d'anomalies P2 le plus prioritaire débloquable.
+- **Exception PO** : 2e ticket E3 actif à côté de WFS-136, fichiers disjoints (WFS-136 : `track.*`, `trace_cartes.*`, `traffic*.cpp`, `sauvegarde.*`, `reseau_relais.*`). Dépendance WFS-131 souple, prévue par les règles : tant que WFS-131 n'est pas fusionné, dans `poursuite_system.cpp` seulement les l. 228-236 (gyrophares) ; le bandeau d'annonce (RG-02) se fait hors des lignes de la sirène.
+- **Zone autorisée** : `src/game/poursuite_system.cpp` (l. 228-236), `poursuite.cpp`, `course5_system.cpp`, `modes_ecran.cpp`, `course_system.*` (fin seulement), `tests/test_poursuite.cpp`, `tests/test_course5.cpp` ; accroches annoncées : `src/ui/ecrans/salon.cpp` (≤ 30 lignes, RG-05), `src/ui/ecrans/menu.cpp`, `desktop_main.cpp` (captures) ≤ 10 lignes.
+- **Interdit** : `src/render/**`, `shaders/**`, `src/world/**`, `src/audio/**`, fichiers de WFS-136, lignes sirène / jingle de WFS-131, iOS (gel).
+- **Critères** : ceux de `regles-de-gestion/WFS-141.md` (gyrophares rouge puis bleu sans rose, bandeau petit à gauche, fins au gabarit Checkpoint « 2e PLACE », panneau des modes opaque, salon hors ligne lisible avec « Réessayer ») ; parcours complets RG-06 au Journal, `WFS_BANC=parcours` à 0 écart.
+- **Fusion** : règle en vigueur (confiance > 50 % → fusion directe ; ligne `qa/Check.md`, ✅, Journal ; suivi de la CI de main).
