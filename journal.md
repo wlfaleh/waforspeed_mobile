@@ -3717,3 +3717,28 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Demande de Claude (session trafic) après la fusion de WFS-134 (PR #119). **WFS-144** (E4, P2 Haute, ⏳ Prêt, règles `regles-de-gestion/WFS-144.md`) : banc `course5` en Basse, poursuite 404 à 434 appels, +149 par rapport à Checkpoint → cible ≤ 60, sans jamais revenir aux cubes (matériaux fusionnés, feux de police groupés, ou police `-lod` en Basse seulement). Dans le même lot (même zone `qualite_*`, une seule CI) : écarts de WFS-134 RG-03 / RG-04, Basse à MSAA ×2 et aniso ×4.
 - Écarts de WFS-134 et verdict `qa-lead` manquant (RG-14) notés sur la ligne WFS-134 de `qa/Check.md` : la recette de nuit les juge.
 - Non attribué (un ticket à la fois : l'agent de reprise démarre WFS-94).
+
+### 2026-11-06 00:18:55 — WFS-94 : quartiers de la Corniche, ville de nuit, trottoir, panneaux du circuit fusionnés (Claude, session trafic, agent reprise WFS-94)
+- **Fait** (PR #123, commit de fusion a722e6c, **fusion par confiance**, branche Copilot reprise) :
+  - RG-01 à RG-05 (`plage.cpp`) : 1 656 objets de `beach.corniche`, `marina`, `rochers` et `village` (decor.js : villa, tower, bollard, boat, rock, guard, tree), avec les pas et les tailles du web.
+    - Tirage à part (graine · 31 + 11) : les palmiers et parasols existants ne bougent pas.
+    - Tout est dessiné dans la palette `P_UNI` (passée à 64 cases) : aucun appel de dessin de plus, 133 sur la Corniche.
+    - La Corniche lit maintenant `WFS_DEPART` (banc d'essai). Nouvelles captures `carte-plage-marina`, `-rochers`, `-village` (`cartes_banc.cpp`).
+  - RG-A1 (ANO-40, banc de `commerces.cpp`) : `vie-portique` est prise à 25 m du portique (130 m avant). `vie-plage` part 20 segments avant la première serviette proche de la route, caméra posée côté terre et tournée vers la mer.
+  - RG-A2 à RG-A4 (ANO-37, `ville.cpp`) : la nuit, les façades prennent la texture de nuit du web (#0d0f17, fenêtres éteintes #161a26, haut #07080c).
+    - Les fenêtres allumées sont de petits quads émissifs sur la grille de la texture, côté route, au-dessus de 3 m.
+    - Tirage fixe par immeuble : 24 % chaudes (#694b2d), 8 % froides (#3e5569), 0,75 % sarcelle, 0,75 % orange (rangées avec les chaudes).
+    - Couleurs converties par `effets::versHdr` (exposition 1,1), en 3 matériaux.
+  - RG-06 (ANO-49) : trottoir `MAT_WALK` de RW + 4 à RW + 6, à 0,15 m, dans tous les quartiers, avec les uv en mètres de `Game::buildChunkCpu` ; `WALK_W` n'est pas touché.
+  - RG-07 (ANO-51) : `AtlasTextes::materiau` reçoit un seuil alpha (0,45 par défaut). Les panneaux du circuit passent à 0,28 ; les enseignes de la ville ne changent pas.
+- **Vérification** :
+  - 26 tests CPU OK ; `WFS_BANC=parcours` : 0 écart ;
+  - bancs `cartes`, `nuit` et `vie` comparés à un build de main (f0aba48) : campagne identique ; seuls changent la Corniche, la ville (trottoir, nuit) et les panneaux du circuit ;
+  - appels de dessin : ville de jour 209, ville de nuit 273 (185 avant), Corniche 133 ; on reste sous 300 ;
+  - CI de branche, run 679 (42130450012) : 12 bancs, android et publication verts ;
+  - captures de `apercu-waforspeed-94` regardées : `carte-plage-marina`, `carte-plage-village`, `course-nuit-ville-0`, `carte-ville-residentiel`.
+- **Limites** :
+  - Les vitrines du rez-de-chaussée éclairées la nuit (RG-A5, `shopLit`) ne sont pas faites.
+  - Sur `vie-plage`, la caméra de vitrine est à 1,7 m : les serviettes se voient comme de fines bandes de couleur.
+  - Aucune accroche hors zone : tout est dans `src/world/**`, et `effets_particules.h` est inclus sans être modifié.
+
