@@ -4782,3 +4782,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - Défaut vu et corrigé avant la fusion : les 5 feux étaient derrière le boîtier et hors de l'image → portique 36 m devant la ligne, feux côté pilote, capture du départ voiture arrêtée.
 - Un autre agent (session 01UY1Vv2) avait poussé une synchronisation sur ma branche : gardée (conflits de commentaires seulement dans `cartes_banc.cpp`).
 - Ligne `qa/Check.md` ajoutée. Je suis la CI de `main`. WFS-137 / 138 / 139 (autres cartes) deviennent attribuables par le PO.
+
+### 2026-11-06 17:05:12 — Rôle du QA mis à jour sur demande de l'utilisateur (qa-lead)
+
+- **Recette d'un ticket** (recette de nuit, `qa/Check.md`) : le QA vérifie **seulement les critères d'acceptation et les règles de gestion du ticket**, et que **le jeu fonctionne** (démarre, se joue, ne plante pas). Le design et la finition hors critères ne sont plus des anomalies du ticket et ne vont plus dans `anno.md`.
+- **Campagne de test VABF sur l'émulateur** (`simulateur.yml`, vrai APK de `main`) : le QA teste tout le jeu et crée des **anomalies de prod** `ANO-PROD-XX` (bloquante / majeure / mineure) dans la nouvelle section « Anomalies de prod » de `anno.md`, avec le rapport `qa/rapports/VABF-AAAA-MM-JJ.md` (verdict APTE ou NON APTE). Bloquante → ticket de correction prioritaire créé par le PO ; le PO priorise toutes les anomalies de prod.
+- Fichiers : `.claude/agents/qa-lead.md`, `.claude/skills/qa-lead/SKILL.md`, `anno.md`.
