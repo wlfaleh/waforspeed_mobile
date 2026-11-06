@@ -3827,3 +3827,15 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
   - « créer une US » devient « demander l'US au PO, qui la crée et l'attribue » ;
   - les priorités P0 / P1 / P2 deviennent P1 Urgent / P2 Haute / P3 Moyenne (échelle de `TACHES.md`) ;
   - « moteur de jeu ciblé » devient « moteur maison ».
+
+### 2026-11-06 01:13:23 — Début WFS-148, attribué à expert-realisme-3d (po-scrum-master)
+- **Ticket** : WFS-148, référentiel du réel et banc de fidélité (palier 0 de l'axe Réalisme), épic E0, P2 Haute. Règles : `regles-de-gestion/WFS-148.md`, charte `regles-de-gestion/DA-realisme.md`.
+- **Responsable** : agent `expert-realisme-3d` (session 0183bv2V), branche `feature/waforspeed-148`, lancé sur ordre de l'utilisateur (« Yes go »).
+- **Zone autorisée** : nouveaux fichiers `references/reel/**`, `tests/fidelite_*`, `src/render/bench_realisme.*` ; accroches ≤ 10 lignes (`CMakeLists.txt`, workflow de la CI), annoncées au Journal.
+- **Livrables** :
+  - référentiel sourcé ;
+  - soleil calculé (NOAA) et son test ;
+  - banc des 12 vues ;
+  - scène d'étalonnage ;
+  - rapport de fidélité ;
+  - état zéro chiffré, avec une image du jeu inchangée.
