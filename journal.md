@@ -4776,3 +4776,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 16:59:23 — Confiance ≤ 50 % : une CI de branche à la main, une seule fois (po-scrum-master)
 - **Décision de l'utilisateur** (réponse « Ok » à la proposition du PO) : pour une fusion à confiance ≤ 50 %, le développeur lance une fois, à la main (`workflow_dispatch`), la CI de sa branche synchronisée avec `main`, attend le vert et regarde les captures. Tous les autres tickets fusionnent puis valident sur la CI de `main`.
 - **Écrit dans** : `CLAUDE.md`, `waforspeed-natif` (5 bis), `regles-de-gestion/WFS-185.md` (RG-06 : `workflow_dispatch` sur une branche reste possible).
+
+### 2026-11-06 17:02:53 — WFS-140 fusionné (PR #137, fusion par confiance) (Claude, agent 5)
+- CI de la branche verte (tous les bancs, APK ; job `partie1b` en 7 min avec les 10 captures en plus). Captures regardées : épingle, chicane, raidillon, paddock et nuit corrects, rien sur la chaussée ; journal : 1181 objets des sections posés, 0 refusé ; 238 objets des zones refusés (sur une autre chaussée ou cachant un virage) ; 103 à 143 appels de dessin.
+- Défaut vu et corrigé avant la fusion : les 5 feux étaient derrière le boîtier et hors de l'image → portique 36 m devant la ligne, feux côté pilote, capture du départ voiture arrêtée.
+- Un autre agent (session 01UY1Vv2) avait poussé une synchronisation sur ma branche : gardée (conflits de commentaires seulement dans `cartes_banc.cpp`).
+- Ligne `qa/Check.md` ajoutée. Je suis la CI de `main`. WFS-137 / 138 / 139 (autres cartes) deviennent attribuables par le PO.
