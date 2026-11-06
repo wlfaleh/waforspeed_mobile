@@ -124,7 +124,7 @@ public:
         MiseEnPage ml = m; ml.x += dx;
         y = dessinerBlocLogo(r, ml, y, a);
         // ---------- .menu-list : 3 choix (.mitem) ----------
-        const float lw = std::min((cp ? 380 : 460) * k, m.largeur);   // petit écran : la liste s'arrête avant la voiture
+        const float lw = std::min((cp ? 312 : 460) * k, m.largeur);   // petit écran : la liste s'arrête avant la voiture
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
             const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
