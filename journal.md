@@ -3742,3 +3742,11 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
   - Sur `vie-plage`, la caméra de vitrine est à 1,7 m : les serviettes se voient comme de fines bandes de couleur.
   - Aucune accroche hors zone : tout est dans `src/world/**`, et `effets_particules.h` est inclus sans être modifié.
 
+
+### 2026-11-06 00:20:17 — Début WFS-144, attribué à Claude (session trafic) (po-scrum-master)
+- Ticket : **WFS-144** — Correction : appels de dessin de la poursuite en Basse + MSAA ×2 / aniso ×4 en Basse · E4 · P2 Haute · branche `feature/waforspeed-144` · règles `regles-de-gestion/WFS-144.md`.
+- Choix : WFS-143 (P1, E0) n'est pas attribué : son contenu est déjà sur `main` (d07f704 défauts = valeurs de l'utilisateur, 6b49595 borne `SCORE_POURSUITE_MAX` dans `sauvegarde.cpp`), fait hors ticket. Reste à vérifier par le PO / QA : CI de `main` verte (`texte`, `vitrines`) et RG-05 (6b49595 annonce un « test assoupli » : `test_configgame` doit toujours échouer si JSON et code divergent). WFS-143 sera clos sur cette preuve, pas réattribué. WFS-144 est donc le ticket prêt le plus prioritaire ; E4 n'a plus de ticket actif (WFS-109, 134, 142 fusionnés).
+- Zone autorisée : `src/render/**` (hors `ui_*`), `shaders/scene*`, `tests/test_qualite*` ; accroche ≤ 10 lignes annoncée : `src/game/poursuite_system.cpp` (choix du modèle de la police). Interdit : reste de `src/game/**`, `src/world/**`, `src/ui/**`, iOS (gel).
+- Critères : poursuite en Basse ≤ +60 appels de dessin par rapport à Checkpoint (au lieu de +149), jamais de cubes ; Basse à MSAA ×2 et aniso ×4 (conforme WFS-134) ; parcours complet accueil → Poursuite → fin → Menu à 0 écart, prouvé au Journal. Fusion par confiance permise si le banc `course5` local tient la cible.
+- **Budget à surveiller** : la ville de nuit est à **273 appels de dessin sur 300** après WFS-94 ; WFS-144 ne doit rien ajouter à la ville de nuit (mesure avant / après au Journal).
+- **Suite de WFS-94 notée, non attribuée** : RG-A5, vitrines du rez-de-chaussée éclairées la nuit (`shopLit`), non faite. À ranger dans le prochain ticket E2 (WFS-137, Ville) quand il sera prêt, sous contrainte du budget de 300 appels (vitrines par instanciation ou dans le maillage des façades, pas un appel par vitrine).
