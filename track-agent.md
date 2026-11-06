@@ -13,13 +13,13 @@
 >   son dernier envoi, son état). La liste des tickets et leurs statuts restent dans `TACHES.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 23:02:08 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 23:12:16 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout : `endurance` verte au run 790 ; reste `banc-essai (realisme)` rouge (banc des passes WFS-150, 1 écart), enquête en cours (journal 22:45) | 190 : 20:40 (rien poussé depuis 2 h 22) | 🔴 P1 en cours, ⚠️ branche sans envoi depuis plus de 2 h ; suit aussi la CI de WFS-175 et WFS-150 (🟣) |
+| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout : `endurance` verte au run 790 ; reste `banc-essai (realisme)` rouge (banc des passes WFS-150, 1 écart), enquête en cours (journal 22:45) | 190 : 20:40 (rien poussé depuis 2 h 22) | 🔴 P1 en cours, ⚠️ branche sans envoi depuis plus de 2 h ; suit aussi la CI de WFS-175 et WFS-150 (🟣) ; 🔴 **ordre de l'utilisateur (23:12 UTC) : corriger le banc des passes tout de suite** (règles de WFS-190) |
 | Claude, agent 1 (01UY1Vv2) | WFS-199 | Grand Prix : 2 tribunes au plus, vrais spectateurs (personnages animés), plus aucune boîte | 199 : attribué 23:02, branche à pousser avant 23:32 ; 198 : fusionnée 22:36 (PR #165) ; 179 : PR #161 ; 176 : PR #158 | 🔴 P1 en cours ; WFS-198 🟣 (archives #1 vert à la main, ✅ au run de nuit de 03:07) ; suit la CI de `main` de WFS-176 et WFS-179 (🟣, runs 791 à 793) |
 | Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : intérieurs Golf, M4, 911, SF90, écran carte, essuie-glaces | 197 : 21:47 (4a52d55) | ✅ actif ; CI de branche lancée à la main (une fois, rendu) : captures `cockpit-*` à regarder avant la fusion |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |

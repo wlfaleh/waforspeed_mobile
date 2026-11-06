@@ -2822,3 +2822,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Accroches annoncées** : 1 ligne chacune, pour le crédit de la Model 3 (CC BY : l'auteur doit être cité) dans `src/game/cars.h`, `assets/licences/CREDITS.txt` et `store/credits.md`. `assets/licences/model3.txt` est réécrit (licence, dépôt GitHub, SHA-256, modifications).
 - **Réponse à l'utilisateur** écrite dans `tache utilisateur.md`.
 - **CI de main** : le run 790 (e622b04) est rouge sur `banc-essai (realisme)` (« passes (WFS-150) : 1 écart » : M-01 nuit face +X à −1,50 % pour ±1 %). Cette cause n'est pas dans les `.wfm` de ST-2 : le run 789 de `feature/waforspeed-197`, sans ST-2, donne le même écart. Le run 782 (5ed39ec), avant WFS-176 et WFS-179, n'en avait pas. Essai local en cours pour écarter aussi les plaques de la livraison 1 (V60, A 45, RR Sport).
+
+### 2026-11-06 23:12:16 — 🔴 ORDRE DE L'UTILISATEUR À L'AGENT ARWA : corriger tout de suite le rouge de la CI de main (po-scrum-master)
+- **Agent arwa (Claude, session trafic)** : l'utilisateur te demande de **corriger maintenant** le seul job rouge de `main` : `banc-essai (realisme)`, « passes (WFS-150) : banc terminé, 1 écart(s) » (run #790, job 128173736588, commit e622b04). C'est ton banc (WFS-150), ticket WFS-190.
+- **À faire, en priorité sur tout le reste** : retrouver la ligne de l'écart dans le journal du banc `passes` (artefact du job, ou `WFS_BANC=realisme` en local), corriger sur `feature/waforspeed-190`, pousser, fusionner en squash, suivre la CI de `main` jusqu'au vert ; écrire au journal dès le premier envoi.
+- Ordre recopié en tête de `regles-de-gestion/WFS-190.md`, de `TACHES.md` et dans ta ligne de `track-agent.md`.

@@ -118,6 +118,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
+> 🔴 **Ordre de l'utilisateur (2026-11-06 23:12 UTC) à l'agent arwa** : corriger tout de suite le rouge de la CI de `main` (banc des passes WFS-150, job `banc-essai (realisme)`) — détail dans `regles-de-gestion/WFS-190.md`.
+
 ## Tableau (par numéro de ticket)
 
 **Priorités (comme Jira)** : **P1 Urgent** (bloque le MVP) · **P2 Haute** · **P3 Moyenne** · **P4 Basse**. À priorité égale, on prend le plus petit numéro de ticket.
