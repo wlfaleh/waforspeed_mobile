@@ -7,6 +7,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../core/system.h"
+#include "../game/trace_cartes.h"   // WFS-139 (accroche)
 #include "../game/track.h"
 #include "ville_quartiers.h"
 #include "zones.h"
@@ -192,9 +193,14 @@ public:
             for (const wfs::ville::Panneau& b : wfs::ville::plan(*g.map, len).panneaux) panneaux_.push_back({b.seg, b.side, b.texte});
         } else {   // Corniche : côté terre tous les 180 segments
             Mulberry32 D(g.map->seed * 31 + 23);
+            // WFS-139 (accroche) : tracé 2 : aucun panneau (8,6 m au-dessus du bas-côté) dans un virage serré, un tunnel, un
+            // rond-point ou un carrefour, ni dans les 60 m qui précèdent (il cacherait la route ou tomberait dessus)
+            auto gene = [&](int64_t n) { for (int64_t k = n - 50; k <= n + 10; k += 5) { const trace::Section* s = trace::sectionA(*g.track, (double)k * SEG);
+                if (trace::rayonInterieur(*g.track, (double)k * SEG).m < 100 || (s && (s->type == trace::Type::Tunnel || s->type == trace::Type::RondPoint || s->type == trace::Type::Feux || s->type == trace::Type::Lacets))) return true; } return false; };
             for (int64_t n = 60; n < len - 40; n += 180) {
                 if (n % 24 >= 10 && n % 24 <= 14) n += 6;   // pas sur un lampadaire
-                panneaux_.push_back({n, -1, (int)(D.next() * NB_BOARDS)});
+                const int texte = (int)(D.next() * NB_BOARDS);   // tirage gardé : les autres panneaux ne changent pas
+                if (!gene(n)) panneaux_.push_back({n, -1, texte});
             }
         }
         for (auto& b : BOARD_TEXTS) atlas_.ajouter(b.first);

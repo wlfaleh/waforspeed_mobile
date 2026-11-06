@@ -7,12 +7,15 @@
 #include <string>
 #include "../core/log.h"
 #include "../game/game.h"
+#include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu (tracé 2 des cartes actives)
 #include "../game/track.h"
 #include "../render/renderer.h"
 #include "decor_carte.h"
 #include "zones.h"
 
 namespace wfs {
+
+void benchCorniche(Game& g, Renderer& r, const std::string& out);   // WFS-139 (plage.cpp)
 
 void benchCartes(Game& g, Renderer& r, const std::string& out) {
     struct Cap { const char* carte; const char* moment; const char* zone; const char* nom; };
@@ -24,14 +27,13 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         {"circuit", "jour", "Paddock", "carte-circuit-paddock"}, {"circuit", "jour", "Virages rapides", "carte-circuit-gravier"},
         {"circuit", "jour", "Section boisée", "carte-circuit-foret"},
         {"plage", "nuit", nullptr, "nuit-plage-corniche"}, {"plage", "jour", nullptr, "carte-plage-corniche"},   // WFS-81 : lampadaires « beach »
-        {"plage", "jour", "Port de plaisance", "carte-plage-marina"}, {"plage", "jour", "Côte rocheuse", "carte-plage-rochers"},
-        {"plage", "jour", "Village de pêcheurs", "carte-plage-village"},   // WFS-94 : quartiers de la Corniche
+        {"plage", "jour", "Côte rocheuse", "carte-plage-rochers"},   // WFS-94 ; WFS-139 : marina et village dans benchCorniche
         {"ville", "jour", "Quartier résidentiel", "carte-ville-residentiel"}, {"ville", "jour", "Parc urbain", "carte-ville-parc"},
         {"ville", "jour", "Zone portuaire", "carte-ville-port"}};   // WFS-93 : quartiers de la ville
     for (const Cap& c : CAPS) {
         int64_t depart = 0;
         if (c.zone) {   // premier segment de la zone, + 40 (≈ 50 m) pour être dans le décor de la zone
-            Track t; t.build(mapById(c.carte));
+            Track t; t.build(mapById(c.carte), trace::versionCarte(c.carte));   // WFS-139 : même tracé que le jeu
             const int64_t L = (int64_t)t.segmentCount();
             depart = -1;
             for (int64_t a = 0; a < L && depart < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), c.zone)) depart = a + 40;
@@ -46,6 +48,7 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    benchCorniche(g, r, out);   // WFS-139 : Corniche au tracé 2, caméra de course (plage.cpp)
 }
 
 } // namespace wfs

@@ -15,6 +15,7 @@
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }   // WFS-115 (modes_ecran.cpp)
+namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out); }   // WFS-139 (plage.cpp)
 #include "../game/poursuite.h"   // WFS-111
 #include "../game/bench_changement_carte.h"
 #include "../game/course_system.h"
@@ -193,7 +194,8 @@ int main(int argc, char** argv) {
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
-    if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
+    if (banc == "cartes") { benchCartes(g, r, out); return finir(); }
+    if (banc == "corniche") { benchCorniche(g, r, out); return finir(); }   // WFS-139 : Corniche au tracé 2 seule (essai local)         // WFS-53 : cartes Campagne et Grand Prix seules
     if (banc == "ressenti") { benchRessenti(g, r, out); return finir(); }   // WFS-70 : ressenti de conduite seul
     if (banc == "sauvegarde") {   // WFS-24 : à lancer deux fois ; chemin propre au banc (WFS_SAUVEGARDE pour le forcer)
         benchSauvegardeScene(g, r, out, std::getenv("WFS_SAUVEGARDE") ? std::getenv("WFS_SAUVEGARDE") : out + "/sauvegarde-banc.txt"); return finir();
