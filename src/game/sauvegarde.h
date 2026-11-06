@@ -80,6 +80,9 @@ public:
     std::set<std::string> cartesV2;                     // cartes déjà passées au tracé 2 (clés trace-<carte>=2)
     std::vector<std::string> cartesAActiver;            // cartes actives pas encore passées (remplie par lire)
     void activerCartes();                               // fantômes renommés, cartes notées (appelée par charger)
+    // WFS-122 (RG-01) : 3 derniers adversaires du duel, le plus récent en premier (clé adversaires=a|b|c)
+    std::vector<std::string> adversaires;
+    void noterAdversaires(const std::vector<std::string>& noms);   // en tête, sans doublon, 3 au plus
 
     ~Sauvegarde();
     // remet les défauts, puis lit le fichier ; vrai si un fichier valide a été lu. Rend la sauvegarde active.
