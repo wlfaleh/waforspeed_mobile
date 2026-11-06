@@ -118,11 +118,13 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     if (!police) return;
     if (erreur) {   // WFS-146 (RG-10) : message inchangé (taille, place), puis bouton « Réessayer » (« Quitter » si le moteur ne repart pas)
         ui::text(r, x, y, txt, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
-        const float tp = 20 * k, bh = (cp ? 48 : 56) * k, by = y + txt + (cp ? 16 : 24) * k;
+        // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte en dp gardé
+        const float kb = H / 720.f;
+        const float tp = 20 * k, bh = 56 * kb, by = y + txt + (cp ? 16 : 24) * k;
         const std::string t = ui::majuscules(g_quitter ? "Quitter" : "Réessayer");
-        const float bw = ui::width(tp, t, 0.12f) + 56 * k;
+        const float bw = ui::width(tp, t, 0.12f) + 56 * kb;
         g_reessayer = {x, by, bw, bh};
-        dessin2d::biseau(r, x, by, bw, bh, 14 * k, dessin2d::uni(hex(ACCENT, op)));
+        dessin2d::biseau(r, x, by, bw, bh, 14 * kb, dessin2d::uni(hex(ACCENT, op)));
         ui::text(r, x + bw / 2, by + (bh - tp) / 2, tp, t, hex(BG, op), ui::CENTRE, 0.12f, false);
     }
     else ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
