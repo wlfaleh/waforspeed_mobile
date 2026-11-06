@@ -297,7 +297,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-181 | Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins | E2 | ⏳ En attente (après WFS-180, même carte et même épic) |  | WFS-180 | `feature/waforspeed-181` |  |  |
 | P1 Urgent | WFS-182 | [URGENT] Correction : halos de frein qui flottent à côté de la voiture, feu du modèle éteint sur 12 voitures (ANO-91, bloquante, recette WFS-170 `REFUSÉ`) + reste d'ANO-76 (SF90, Elantra, RR Sport) + ANO-92 + police presque noire en Basse (RG-07) | E4 (exception PO : 2e ticket E4 à côté de WFS-171, blocs séparés ; accroche ≤ 10 lignes `model_loader.cpp`, bloc des feux, coordination WFS-158) | 🔧 En cours | Claude (session trafic), 2026-11-06 14:26 UTC (WFS-171 fusionné, E4 libre ; WFS-150 E0 en parallèle, ordre de l'utilisateur « avancer vite ») | WFS-170 ✅ | `feature/waforspeed-182` |  |  |
 | P3 Moyenne | WFS-183 | Correction : ordre des derniers adversaires au salon, captures 1280 du duel, bandeau hors ligne en 720p (ANO-93, ANO-94, ANO-90) + graine fixe au banc pour `minicarte-ligne` et `course5-rejouer` (RG-04) | E3 (+ accroche `build.yml`, bloc hors ligne de `salon.cpp`) | 🔧 En cours (exception PO : la session trafic garde WFS-150 E0 en parallèle, ordre de l'utilisateur « avancer vite ») | Claude (session trafic), 2026-11-06 15:06 UTC | WFS-122 ✅ | `feature/waforspeed-183` |  |  |
-| P3 Moyenne | WFS-184 | Correction son : jingles de fin de la poursuite audibles (sirène baissée d'un coup, jingles × 3, « ARRÊTÉ » 660 / 440 Hz) et sons de la route sans motif qui tourne (départ au hasard, fondu 15 ms) (ANO-95, ANO-96) | E6 | ⏳ Prêt |  | WFS-131 ✅, WFS-174 ✅ | `feature/waforspeed-184` |  |  |
+| P3 Moyenne | WFS-184 | Correction son : jingles de fin de la poursuite audibles (sirène baissée d'un coup, jingles × 3, « ARRÊTÉ » 660 / 440 Hz) et sons de la route sans motif qui tourne (départ au hasard, fondu 15 ms) (ANO-95, ANO-96) | E6 | 🔧 En cours | Claude (agent 2, session 01UY1Vv5), 2026-11-06 16:27 UTC | WFS-131 ✅, WFS-174 ✅ | `feature/waforspeed-184` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -702,7 +702,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] `salon-hors-ligne` (1280) : bandeau sans chevauchement, URL masquée, aucune taille changée (RG-03, ANO-90)
 - [ ] `minicarte-ligne(-2400)` et `course5-rejouer` identiques au pixel sur deux lancements du banc ; en jeu, graine toujours au hasard (RG-04)
 
-**WFS-184 — Correction son : jingles de fin de la poursuite et sons de la route (ANO-95, ANO-96)** · E6 · P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-184.md`)
+**WFS-184 — Correction son : jingles de fin de la poursuite et sons de la route (ANO-95, ANO-96)** · E6 · P3 Moyenne · 🔧 En cours — Claude (agent 2, session 01UY1Vv5), 2026-11-06 16:27 UTC, branche `feature/waforspeed-184` (règles : `regles-de-gestion/WFS-184.md`)
 - [ ] sirène à 0,10 en 30 ms au jingle, jingles × 3 (≥ +6 dB sur la sirène, crête < 0,95), « ARRÊTÉ » 660 / 440 Hz
 - [ ] boucles de la route : départ au hasard + fondu 15 ms, autocorrélation < 0,20, ≤ 0,5 Mo ; parcours complet 0 écart
 
