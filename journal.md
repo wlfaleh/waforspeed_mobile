@@ -5189,3 +5189,6 @@ Sur demande de l'utilisateur, l'agent « Claude (session 01Us6uCu) » s'appelle 
 - Captures regardées : jour plus contrasté (ombres neutres, ciel bleu plus profond, ombre/soleil ≈ 18 comme le référentiel), nuit sans lumière bleue de « lune artistique » (lune physique 0,32 lx, 4 100 K), rue éclairée exposée à EV 3.
 - **Limite / risque** : coût +12 à +22 % par image au banc lavapipe (même scène, même processus ; RC-06 vise ≤ 10 % en Moyenne) : 1 lecture de cube + 1 de la table BRDF + SH9 par pixel. À mesurer sur téléphone ; si trop cher : table BRDF remplacée par son approximation analytique en Basse (à arbitrer par le PO).
 - Confiance ≤ 50 % (gros changement du rendu) : CI de la branche lancée une seule fois (`build.yml`, run 783) ; fusion après le vert et les captures.
+### 2026-11-06 20:56:01 — track-agent.md : seulement les agents, plus de liste de tickets (po-scrum-master)
+- **Remarque de l'utilisateur** : `track-agent.md` sert à suivre les agents, pas les tickets.
+- **Fait** : section « Tickets prêts sans agent » retirée ; règle écrite en tête du fichier et dans l'agent PO. Les tickets prêts restent dans `TACHES.md`.

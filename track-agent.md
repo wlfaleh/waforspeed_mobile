@@ -9,9 +9,11 @@
 > - **Colonne « Ticket en cours »** (règle de l'utilisateur, 2026-11-06) : seulement les tickets 🔧 En cours ou 🔀 En PR ; **vide** si l'agent n'en a
 >   aucun (les tickets 🟣 fusionnés ou ✅ terminés n'y figurent pas ; la CI de `main` suivie s'écrit dans « État »).
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
+> - **Ce fichier suit les agents, pas les tickets** (règle de l'utilisateur, 2026-11-06) : une ligne par agent (ce qu'il fait, sa branche,
+>   son dernier envoi, son état). La liste des tickets et leurs statuts restent dans `TACHES.md`.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 20:52:55 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 20:56:01 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -35,10 +37,3 @@
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
-
-## Tickets prêts sans agent
-| Ticket | Priorité | Sujet |
-|---|---|---|
-| WFS-179 | P2 Haute | Campagne : autoroute et péage — E2 occupée par WFS-176 (un ticket actif par épic) |
-| WFS-191 | P2 Haute | attend la validation des noms par l'utilisateur |
-| WFS-196 | P1 Urgent | statuts automatiques 🟣 → ✅ après la CI de `main` (robot `statuts.yml`) |
