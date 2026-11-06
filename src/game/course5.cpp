@@ -30,10 +30,25 @@ Difficulte difficulteDeCle(const std::string& v) { return v == "facile" ? FACILE
 static const unsigned PEINTURES[16] = {0xc9ccd2, 0x0f1014, 0x7b808a, 0xb3122b, 0x1d3f8f, 0xff6a00, 0xc8940a, 0x1f5a3c,
                                        0xe6e2d6, 0x141c3a, 0x0f3324, 0x5a0f1e, 0xb39a72, 0x4b2380, 0x0f8f8c, 0xe8b400};
 
+std::vector<int> candidats(const char* carJoueur) {
+    // WFS-189 (RG-01, ANO-101) : voitures dont la vitesse max de fiche est à ± CLASSE_VMAX de celle du joueur ; moins de
+    // ORDINATEURS candidats : on complète avec les plus proches en vitesse max (écart croissant, puis ordre du catalogue)
+    const int vJ = carById(carJoueur).spec.vmax;
+    std::vector<int> autres, dans;
+    for (int i = 0; i < CAR_COUNT; i++) if (std::strcmp(CARS[i].id, carJoueur)) autres.push_back(i);
+    for (int i : autres) if (std::abs(CARS[i].spec.vmax - vJ) <= CLASSE_VMAX * vJ) dans.push_back(i);
+    if ((int)dans.size() >= ORDINATEURS) return dans;
+    std::stable_sort(autres.begin(), autres.end(), [&](int a, int b) { return std::abs(CARS[a].spec.vmax - vJ) < std::abs(CARS[b].spec.vmax - vJ); });
+    for (int i : autres) {
+        if ((int)dans.size() >= ORDINATEURS) break;
+        if (std::find(dans.begin(), dans.end(), i) == dans.end()) dans.push_back(i);
+    }
+    return dans;
+}
+
 std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d) {
     Mulberry32 R(graine);
-    std::vector<int> libres;
-    for (int i = 0; i < CAR_COUNT; i++) if (std::strcmp(CARS[i].id, carJoueur)) libres.push_back(i);
+    std::vector<int> libres = candidats(carJoueur);   // WFS-189 (RG-01) : adversaires de la classe du joueur
     std::vector<Ordinateur> os;
     for (int k = 0; k < ORDINATEURS; k++) {
         if (libres.empty()) for (int i = 0; i < CAR_COUNT; i++) libres.push_back(i);   // moins de 5 voitures : on répète
@@ -52,11 +67,17 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
 }
 
 void grille(std::vector<Ordinateur>& os, double sJoueur) {
-    // deux rangées de deux devant le joueur (8 m et 16 m), files gauche et droite
+    // deux rangées de deux devant le joueur (8 m et 16 m), files gauche et droite. WFS-189 (RG-03, ANO-99) : rangés par
+    // vitesse max de fiche décroissante, les plus rapides sur la rangée de devant (16 m) : dans chaque file, la voiture de
+    // devant est la plus rapide, plus aucune voiture rapide bloquée derrière une lente au départ
+    std::stable_sort(os.begin(), os.end(), [](const Ordinateur& a, const Ordinateur& b) {
+        return carById(a.car.c_str()).spec.vmax > carById(b.car.c_str()).spec.vmax;
+    });
+    const size_t rangees = (os.size() + 1) / 2;
     for (size_t k = 0; k < os.size(); k++) {
         Ordinateur& o = os[k];
         o.file = k % 2 ? 2 : 0;
-        o.g.rd = sJoueur + (8.0 + 8.0 * (double)(k / 2)) / M;
+        o.g.rd = sJoueur + (8.0 + 8.0 * (double)(rangees - 1 - k / 2)) / M;
         o.g.x = o.cibleX = FILES[o.file];
         o.g.v = 0; o.g.done = false; o.g.ft = 0; o.g.hitCd = 0;
         o.nitros = NITROS[o.diff]; o.nitrosPrises = 0; o.nitroT = 0; o.aspiration = false;   // WFS-133

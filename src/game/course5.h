@@ -61,10 +61,15 @@ struct Ordinateur {
     bool aspiration = false;                  // RG-05 : dans l'aspiration à ce pas
 };
 
-// RG-02 : 4 ordinateurs tirés au hasard parmi les 20 voitures (modèles différents entre eux et de celui du joueur),
-// peinture aléatoire ; même graine = même tirage
+// WFS-189 (RG-01) : vitesse max de fiche des adversaires à ± 20 % de celle du joueur
+constexpr double CLASSE_VMAX = 0.20;
+// WFS-189 (RG-01) : indices (CARS) des adversaires possibles du joueur : ceux de sa classe, complétés par les plus proches
+std::vector<int> candidats(const char* carJoueur);
+// RG-02 : 4 ordinateurs tirés au hasard (modèles différents entre eux et de celui du joueur), peinture aléatoire ; même
+// graine = même tirage. WFS-189 (RG-01) : parmi les candidats() de la voiture du joueur
 std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d = NORMALE);
-// RG-05 : grille de départ de 5 : le joueur derrière, les ordinateurs sur deux rangées devant lui
+// RG-05 : grille de départ de 5 : le joueur derrière, les ordinateurs sur deux rangées devant lui ; WFS-189 (RG-03) :
+// rangés par vitesse max décroissante (les plus rapides devant)
 void grille(std::vector<Ordinateur>& os, double sJoueur);
 // RG-04 : un pas de conduite des ordinateurs (dt en s) ; joueur : distance et écart latéral (les ordinateurs l'évitent) ;
 // arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
