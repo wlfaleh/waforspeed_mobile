@@ -39,7 +39,8 @@
 namespace wfs {
 namespace {
 
-enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN_CHAUD, P_FEN_FROID, P_FEN_RARE, P_COUNT };   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
+constexpr int FEN_NB = 4;   // WFS-94 : couleurs des fenêtres allumées (palette de MAT_EMTEX)
+enum Part { P_FACADE_A, P_FACADE_B, P_METAL, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_LAMP, P_UNI, P_CONIF, P_TROTTOIR, P_FEN, P_COUNT };   // WFS-94 : trottoir (ANO-49), fenêtres allumées la nuit (ANO-37)
 
 // couleurs unies du jeu web (C2, DECOR.*, BLD_C, GCOL2, BARK) : palette d'une ligne, une case par couleur
 enum Couleur {
@@ -169,13 +170,21 @@ public:
             mats_[p] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
         plain(P_METAL, {0.08f, 0.09f, 0.11f}, 0.45f, 0.8f);
-        {   // WFS-94 (RG-A3, RG-A4) : fenêtres allumées (petits quads émissifs), couleurs du jeu web converties par versHdr
-            const uint32_t cols[3] = {0x694b2d, 0x3e5569, 0x007f8c};   // chaud rgb(95-115, 68-82, 40-50), froid, sarcelle
-            for (int k = 0; k < 3; k++) {
-                Material m; m.color = {0, 0, 0, 1}; m.rough = 1;
-                m.emissive = effets::versHdr(vec3{((cols[k] >> 16) & 255) / 255.f, ((cols[k] >> 8) & 255) / 255.f, (cols[k] & 255) / 255.f}, 1.1f);
-                mats_[P_FEN_CHAUD + k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+        {   // WFS-94 (RG-A3, RG-A4) : fenêtres allumées (petits quads émissifs) en UN seul matériau par morceau (endurance :
+            // chaque maillage coûte une allocation Vulkan) : émission × texture (MAT_EMTEX) d'une palette de 4 cases, couleurs du
+            // jeu web converties par versHdr ; couleur de base faible : presque pas éclairées par les phares
+            const uint32_t cols[FEN_NB] = {0x694b2d, 0x3e5569, 0x007f8c, 0x8c3b00};   // chaud rgb(95-115, 68-82, 40-50), froid, sarcelle, orange
+            vec3 e[FEN_NB]; float M = 1e-3f;
+            for (int k = 0; k < FEN_NB; k++) {
+                e[k] = effets::versHdr(vec3{((cols[k] >> 16) & 255) / 255.f, ((cols[k] >> 8) & 255) / 255.f, (cols[k] & 255) / 255.f}, 1.1f);
+                M = std::max({M, e[k].x, e[k].y, e[k].z});
             }
+            uint8_t px[FEN_NB * 4];
+            for (int k = 0; k < FEN_NB; k++) { px[k * 4] = (uint8_t)std::lround(e[k].x / M * 255); px[k * 4 + 1] = (uint8_t)std::lround(e[k].y / M * 255); px[k * 4 + 2] = (uint8_t)std::lround(e[k].z / M * 255); px[k * 4 + 3] = 255; }
+            fenTex_ = r.vk().uploadTexture(px, FEN_NB, 1, false);
+            constexpr float K = 0.05f;
+            Material m; m.color = {K, K, K, 1}; m.rough = 1; m.emissive = vec3{1, 1, 1} * (M / K); m.flags = MAT_EMTEX;
+            mats_[P_FEN] = r.makeMaterial(m, &fenTex_, nullptr, nullptr);
         }
         { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // comme le trottoir de Game
         initVegetation(r);
@@ -238,7 +247,7 @@ public:
 
     // WFS-94 (RG-A3) : fenêtres allumées de la façade côté route (normale n, à hx du centre c), sur la grille de la texture
     // (2 fenêtres par tuile, rangées calées sur ref : v = (ref − y) / tuile) ; tirage fixe par immeuble (mulberry32) :
-    // 24 % chaudes, 8 % froides, 1,5 % rares (moitié sarcelle, moitié orange #8c3b00 rangée avec les chaudes) ;
+    // 24 % chaudes, 8 % froides, 1,5 % rares (moitié sarcelle, moitié orange #8c3b00) ;
     // rez-de-chaussée (< 3 m) laissé aux vitrines ; sens = −1 quand u de la face court vers −f (face de normale −r)
     void fenetres(Geo out[P_COUNT], vec3 c, vec3 n, vec3 f, float hx, float len, float h, float tuile, float ref, uint32_t graine, float sens) const {
         Mulberry32 R(31u + graine * 2654435761u);
@@ -250,12 +259,13 @@ public:
             if (yh > h - 0.3f) continue;
             for (int cx = 0; cx < (int)ncol; cx++) {
                 const float q = (float)R.next();
-                const int part = q < 0.24f ? P_FEN_CHAUD : q < 0.32f ? P_FEN_FROID : q < 0.3275f ? P_FEN_RARE : q < 0.335f ? P_FEN_CHAUD : -1;
-                if (part < 0) continue;
+                const int k = q < 0.24f ? 0 : q < 0.32f ? 1 : q < 0.3275f ? 2 : q < 0.335f ? 3 : -1;   // chaude, froide, sarcelle, orange
+                if (k < 0) continue;
+                const vec2 u{(k + 0.5f) / FEN_NB, 0.5f};
                 const float z0 = sens * (-len / 2 + (cx + 0.16f) * cel), z1 = sens * (-len / 2 + (cx + 0.84f) * cel);   // sens : u de la face
                 const vec3 a = o + f * z0 + up * yb, b = o + f * z1 + up * yb, d = o + f * z1 + up * yh, e = o + f * z0 + up * yh;
-                if (dot(cross(b - a, d - a), n) > 0) quad(out[part], a, b, d, e, n, {0, 0}, {1, 0}, {1, 1}, {0, 1});
-                else quad(out[part], a, e, d, b, n, {0, 0}, {0, 1}, {1, 1}, {1, 0});
+                if (dot(cross(b - a, d - a), n) > 0) quad(out[P_FEN], a, b, d, e, n, u, u, u, u);
+                else quad(out[P_FEN], a, e, d, b, n, u, u, u, u);
             }
         }
     }
@@ -477,7 +487,12 @@ public:
         int draws = 0;
         for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) { r.draw(ch.m[p], mats_[p], I); draws++; }
         lastDraws_ = draws;
-        if (frame_ % 300 == 1) WFS_LOG("Ville : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
+        if (frame_ % 300 == 1) {   // WFS-94 : taille de la géométrie par part (mémoire du banc d'endurance)
+            size_t oct[P_COUNT] = {}, tot = 0;
+            for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) { oct[p] += (size_t)ch.m[p].indexCount * 4; tot += ch.m[p].vb.size; }
+            WFS_LOG("Ville : %d appels de dessin (%zu morceaux), sommets %.1f Mo, indices part par part :", draws, chunks_.size(), tot / 1048576.0);
+            for (int p = 0; p < P_COUNT; p++) if (oct[p]) WFS_LOG("  part %d : %.2f Mo d'indices", p, oct[p] / 1048576.0);
+        }
     }
 
     void shutdown(Renderer& r) override {
@@ -489,7 +504,7 @@ public:
         for (auto& g : graveyard_) r.destroy(g.second);
         graveyard_.clear();
         for (Image& im : facadeTex_) r.vk().destroy(im);
-        for (Image* im : {&leafTex_, &barkTex_, &palTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
+        for (Image* im : {&leafTex_, &barkTex_, &palTex_, &fenTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
         plan_ = nullptr;
         pilote_ = false;
         active_ = false;
@@ -502,7 +517,7 @@ private:
     bool pilote_ = false;  // pilote automatique vu à l'image de temps piloteT_ (GameView::time)
     double piloteT_ = 0;
     Material mats_[P_COUNT];
-    Image facadeTex_[2], leafTex_{}, barkTex_{}, palTex_{};
+    Image facadeTex_[2], leafTex_{}, barkTex_{}, palTex_{}, fenTex_{};   // fenTex_ : WFS-94
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;

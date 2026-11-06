@@ -477,7 +477,12 @@ public:
         int draws = 0;
         for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) { r.draw(ch.m[p], mats_[p], I); draws++; }
         lastDraws_ = draws;
-        if (frame_ % 300 == 1) WFS_LOG("Plage : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
+        if (frame_ % 300 == 1) {   // WFS-94 : taille de la géométrie par part (mémoire du banc d'endurance)
+            size_t oct[P_COUNT] = {}, tot = 0;
+            for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) { oct[p] += (size_t)ch.m[p].indexCount * 4; tot += ch.m[p].vb.size; }
+            WFS_LOG("Plage : %d appels de dessin (%zu morceaux), sommets %.1f Mo, indices part par part :", draws, chunks_.size(), tot / 1048576.0);
+            for (int p = 0; p < P_COUNT; p++) if (oct[p]) WFS_LOG("  part %d : %.2f Mo d'indices", p, oct[p] / 1048576.0);
+        }
     }
 
     void shutdown(Renderer& r) override {
