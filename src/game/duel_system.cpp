@@ -97,6 +97,10 @@ public:
         }
         s.updateGhosts(dt);
         if (s.status() == duel::Status::Done) overT_ += dt;
+        if (s.status() != duel::Status::Done) { arrives_ = -1; return; }
+        // WFS-183 (RG-01, ANO-93) : à chaque arrivée, derniers adversaires repris dans l'ordre du classement de la manche
+        int n = 0; for (const duel::BoardRow& row : s.results()) n += row.done || row.parti;
+        if (n != arrives_) { arrives_ = n; sauvegarde().noterAdversaires(s.adversaires()); sauvegarde().enregistrer(); }
     }
 
     // adversaires : vraie voiture à la place reçue, cap envoyé (lissé), sur la piste (scene.js : rivaux)
@@ -258,6 +262,7 @@ private:
     std::map<std::string, Model> models_;
     std::map<std::string, double> yaw_;
     double overT_ = 0;
+    int arrives_ = -1;   // WFS-183 : arrivés déjà notés dans « Derniers adversaires »
     Zone revanche_, menu_;
     int doigt_ = -1, bouton_ = 0;   // WFS-112 : bouton appuyé (1 Revanche, 2 Retour) et son doigt
 };

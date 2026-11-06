@@ -143,7 +143,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         if (k == "adversaires") {   // WFS-122 (RG-01) : pseudos nettoyés (comme nick), 3 au plus
             std::vector<std::string> noms; size_t a = 0;
             while (a <= v.size()) { const size_t b = std::min(v.find('|', a), v.size()); noms.push_back(v.substr(a, b - a)); a = b + 1; }
-            adversaires.clear(); noterAdversaires(std::vector<std::string>(noms.rbegin(), noms.rend()));
+            adversaires.clear(); noterAdversaires(noms);   // WFS-183 : ordre gardé (le premier en haut)
             continue;
         }
         if (k.rfind("trace-", 0) == 0) { const std::string c = k.substr(6); if (v == "2" && carteExiste(c)) cartesV2.insert(c); continue; }
@@ -248,9 +248,11 @@ bool Sauvegarde::charger(const std::string& chemin) {
     return ok;
 }
 
-// WFS-122 (RG-01) : chaque nom passe en tête (le dernier de la liste est le plus récent), sans doublon, 3 gardés
+// WFS-122 (RG-01) : les noms passent en tête, sans doublon, 3 gardés ;
+// WFS-183 (RG-01, ANO-93) : dans l'ordre reçu (classement de la manche : le premier nom finit en haut, « Parti » en dernier)
 void Sauvegarde::noterAdversaires(const std::vector<std::string>& noms) {
-    for (const std::string& n0 : noms) {
+    for (auto it = noms.rbegin(); it != noms.rend(); ++it) {
+        const std::string& n0 = *it;
         std::string n = nettoyerPseudo(n0);
         for (char& c : n) if (c == '|') c = ' ';
         if (n.empty()) continue;
