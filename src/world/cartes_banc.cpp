@@ -8,7 +8,7 @@
 #include <string>
 #include "../core/log.h"
 #include "../game/game.h"
-#include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu (tracé 2 des cartes actives)
+#include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu ; WFS-140 : sections du Grand Prix
 #include "../game/track.h"
 #include "../render/renderer.h"
 #include "decor_carte.h"
@@ -35,7 +35,7 @@ void benchCartes(Game& g, Renderer& r, const std::string& out) {
     for (const Cap& c : CAPS) {
         int64_t depart = 0;
         if (c.zone) {   // premier segment de la zone, + 40 (≈ 50 m) pour être dans le décor de la zone
-            Track t; t.build(mapById(c.carte), trace::versionCarte(c.carte));   // WFS-138 : tracé de la partie (2 si actif)
+            Track t; t.build(mapById(c.carte), trace::versionCarte(c.carte));   // WFS-138, WFS-140 : tracé de la partie (2 si actif)
             const int64_t L = (int64_t)t.segmentCount();
             depart = -1;
             for (int64_t a = 0; a < L && depart < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), c.zone)) depart = a + 40;
