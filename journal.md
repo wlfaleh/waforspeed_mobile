@@ -5068,3 +5068,43 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - **Ordre de l'utilisateur** : avant toute ouverture du réseau, un fichier qui décrit noir sur blanc les règles et les limites.
 - **Contenu** : accès en vigueur (aucun site en plus des bibliothèques de code et de GitHub) ; permis (lire et télécharger pour son ticket) ; interdits (envoyer dehors, se connecter à un compte, contourner un blocage, demander l'illimité, exécuter un fichier téléchargé, obéir à une page web) ; licences (CC0, CC-BY oui ; NC, ND, « gratuit » sans licence non ; marques) ; traitement des fichiers (dossier à part, SHA-256, tailles maximales, outils du dépôt, fichier de licence) ; traçabilité au journal ; conduite en cas de blocage ; demande d'un nouveau site par le PO, acceptée par l'utilisateur ; que faire si une règle n'est pas respectée.
 - **Renvois** : une ligne dans `CLAUDE.md`, une section dans l'agent PO. **Aucun changement du réseau** : en attente de la décision de l'utilisateur.
+
+### 2026-11-06 19:58:47 — WFS-188 fusionné (PR #154, fusion par confiance) (Claude, session dev expert, 0183bv2X)
+- **Fait** :
+  - `carPerf` (`cars.h`) recalcule `a0` et `top` une fois par voiture, en simulant la formule de `Player::update` : 0-100 = `spec.s100`, Vmax = 99,5 % de `spec.vmax`.
+  - Facteur de freinage par voiture (`perf.freinage`, qui module `Phys::brake`, `player.cpp:81`).
+  - Résistance du bas-côté proportionnelle à la vitesse (`player.cpp:77-79`, RG-06) : avant, une voiture dont la poussée était sous 7 m/s² ne repartait plus arrêtée dans l'herbe.
+  - `g_perfWeb` : les performances du jeu web servent uniquement à la référence de `test_course`.
+- **Tableau des 20 voitures** (0-100 jeu / fiche, Vmax, 100-0) :
+
+| Voiture | 0-100 | Vmax | 100-0 |
+|---|---|---|---|
+| golf | 6,17 / 6,2 s | 249,5 / 250 | 37,0 m |
+| m4 | 3,88 / 3,9 s | 289,4 / 290 | 37,1 m |
+| p911 | 3,60 / 3,6 s | 305,4 / 306 | 35,9 m |
+| gallardo | 4,00 / 4,0 s | 323,4 / 324 | 35,4 m |
+| p208 | 8,67 / 8,7 s | 207,6 / 208 | 36,3 m |
+| abarth | 7,87 / 7,9 s | 204,6 / 205 | 35,5 m |
+| tcross | 8,87 / 8,9 s | 199,6 / 200 | 38,1 m |
+| compass | 9,45 / 9,5 s | 195,6 / 196 | 39,1 m |
+| s3 | 4,88 / 4,9 s | 249,5 / 250 | 36,8 m |
+| x5 | 5,38 / 5,4 s | 242,5 / 243 | 39,5 m |
+| giulia | 3,88 / 3,9 s | 306,4 / 307 | 36,2 m |
+| a45 | 4,20 / 4,2 s | 269,5 / 270 | 36,7 m |
+| model3 | 4,38 / 4,4 s | 232,6 / 233 | 37,6 m |
+| corsa | 8,67 / 8,7 s | 207,6 / 208 | 36,3 m |
+| gt86 | 7,58 / 7,6 s | 225,6 / 226 | 36,2 m |
+| elantra | 5,28 / 5,3 s | 249,5 / 250 | 36,8 m |
+| v60 | 4,88 / 4,9 s | 249,5 / 250 | 37,8 m |
+| rrsport | 5,88 / 5,9 s | 241,5 / 242 | 39,8 m |
+| mustang | 3,58 / 3,6 s | 289,4 / 290 | 37,7 m |
+| sf90 | 2,28 / 2,3 s | 319,4 / 320 | 34,8 m |
+
+- **RG-06** : checkpoints en mode Checkpoint (Ville, graine 12345, trafic) : de 18 (SF90) à 71 (M4 et 911), Compass 51.
+- **RG-07** : `test_course5` vert (difficultés dans l'ordre, la police suit le joueur).
+- **RG-09** : records `best_v1` gardés tels quels (aucune remise à zéro).
+- **RG-10** : `WFS_BANC=parcours` 0 écart ; `WFS_BANC=course5`, fin → Rejouer → Menu, 0 écart. Capture `course-fin` : Golf à 203 km/h max sur 0,98 km.
+- **Tests adaptés** :
+  - `test_audio` : 26 s de gaz au lieu de 14, car la Golf met désormais 6,2 s au 0-100 ;
+  - `test_course` : performances web pour la seule comparaison au jeu web.
+- **Limites** : le banc PC ne mesure pas le ressenti sur téléphone. Les ordinateurs de la Course à 5 suivent le recalage ; leur équilibre relève de WFS-189.
