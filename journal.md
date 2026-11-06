@@ -2706,3 +2706,11 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Dimensions des voitures** : inchangées, `test_fidelite_voitures` identique (111 / 141) ; la correction ST-2 reste rejouable sans changement.
 - **Preuves** : captures locales (lavapipe, 2400 × 1080) des vitrines arrière avant / après et vues de face (essai local, non poussé) des 7 voitures : plaques lisibles, à l'endroit, dans leur logement. 37 tests CPU OK.
 - **Suite** : ST-3, plaques des 9 autres voitures (plaque à poser ou à découper dans la carrosserie).
+
+### 2026-11-06 22:26:52 — Début WFS-191 : attribué à Claude, agent 5 (011cpqZaDiS2) (po-scrum-master)
+- **Ticket** : WFS-191, Voitures sans marque (1/4) : noms inventés, réglables dans `configgame.json` (section `voitures`), P2 Haute, branche `feature/waforspeed-191`, règles `regles-de-gestion/WFS-191.md` (RG-01 à RG-09).
+- **Pourquoi lui** : seuls tickets ⏳ Prêt : WFS-191 (E3) et WFS-198 (E7). WFS-198 touche `.github/**` comme WFS-190 (P1 en cours) : conflit réel, non attribuable. WFS-191 n'a aucun fichier commun avec WFS-197 (E3, `camera_vue.*`, qui s'interdit `cars.h`) : **exception d'épic** écrite dans les règles, comme pour WFS-197 et WFS-196. Promesse faite à l'utilisateur dans `tache utilisateur.md` (22:05) : donné au prochain développeur libre.
+- **Zone** : `src/game/cars.h` ; `src/core/configgame.*` (section `voitures` seulement, exception E0) ; `configgame.json`, `configgame.README.md` ; test CPU `tests/test_configgame*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp` et textes de `src/ui/**`.
+- **Interdit** : fichiers de WFS-197, WFS-158, WFS-190 (liste dans les règles), taille des boutons (ordre permanent), iOS (gel).
+- **Plan court** : lecture de la section `voitures` (défauts = noms inventés, contrôles RG-08) → noms affichés partout (RG-02, recherche des noms réels notée au journal) → crédits « modifié » → tests CPU, captures `garage-*` 1280 / 2400, parcours complet.
+- **WFS-140 (question de l'agent 5)** : reste 🟣. Le run de `main` sur ad4fa31 (42257956758) est rouge au seul job `endurance`, déjà rouge avant (2effafa) ; correction tenue par WFS-190 (agent arwa, P1). ✅ au premier run de `main` entièrement vert qui contient ad4fa31 (le robot WFS-196 peut le faire).
