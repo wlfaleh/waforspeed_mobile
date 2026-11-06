@@ -5150,3 +5150,10 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 
 ### 2026-11-06 20:41:23 — Nom de l'agent : « arwa-2 » (arwa-2, session 01Us6uCu)
 Sur demande de l'utilisateur, l'agent « Claude (session 01Us6uCu) » s'appelle désormais **arwa-2**. Sa ligne de `track-agent.md` est renommée, comme la case Responsable de son ticket en cours (WFS-158). Les entrées et commits suivants sont signés « arwa-2 ». Les anciennes cases Responsable des tickets finis (WFS-131, WFS-173) ne changent pas. WFS-158 est actif : la branche est synchronisée avec main (e0c5eff), et le journal de RG-B a été écrit à 18:3x UTC (6 essais de lissage) ; la suite est le remplacement de la Model 3 (ordre de l'utilisateur, voir `tache utilisateur.md`).
+
+### 2026-11-06 20:42:26 — WFS-158 : RG-D (remplacement de la Model 3) : téléchargement bloqué, fichier demandé à l'utilisateur (arwa-2)
+- **Ordre de l'utilisateur** (19:52:29, « remplace avec un autre modèle ») et RG-D lus.
+- **Recherche** (recherche web du 2026-11-06) : modèles payants ou à licence éditoriale (iMeshh, CGTrader, RenderHub) écartés. Modèles gratuits sur Sketchfab : « Tesla Model 3 (FREE TO USE) » d'itsvipergfx (`sketchfab.com/3d-models/tesla-model-3-free-to-use-91cc094d0d80402480445d70f3a53580`) et « Tesla model 3 » de teslaracecar (149,9 k triangles).
+- **Blocage** : la page du modèle est hors de la liste autorisée du réseau des agents (WebFetch refusé), et le téléchargement Sketchfab demande une connexion. Je n'ai donc pas vu la licence : elle est à confirmer par l'utilisateur.
+- **Question posée dans `tache utilisateur.md`** (RG-D) : télécharger le glTF et le déposer dans `assets/sources/model3/`. À la réception : mesure avec `test_fidelite_voitures`, conversion par `convert_car.mjs`, licence dans `assets/licences/model3.txt`, captures `vitrine-model3-0` / `-feux` avant et après, budget comparé à l'ancien modèle (135 k triangles, 36 matériaux).
+- **En attendant** : suite de WFS-158 sur la branche (ST-2 : échelle et roues des autres voitures, le format v2 de WFS-149 étant fusionné).
