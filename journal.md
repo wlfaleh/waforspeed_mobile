@@ -2852,3 +2852,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Ordre de l'utilisateur** : après la fusion on libère tout de suite le développeur et les CI ; la CI de `main` tourne ; verte → ticket ✅ Terminé (robot des statuts) ; rouge → US technique de correction de la pipeline CI.
 - **Écrit dans** : `CLAUDE.md` (fusion par confiance, statuts et CI, US techniques), `waforspeed-natif` (5 bis), agent PO, en-tête de `track-agent.md`. Le développeur du ticket fusionné n'est plus rappelé pour suivre ou corriger la CI de `main`.
 - **En cours** : WFS-200 est déjà l'US technique de correction du rouge du run #790 (Agent 0).
+
+### 2026-11-06 23:22:55 — CI de main, run 790 rouge (banc-essai realisme) : WFS-158 hors de cause (arwa-2)
+- **Essai local du banc des passes** (`WFS_PASSES_SEUL=1 WFS_BANC=realisme`), deux fois sur le même code : une fois avec les `.wfm` de main, une fois avec ceux de la V60, de l'A 45 et du RR Sport d'avant la livraison 1 (5ed39ec). Les 12 valeurs M-01 sont **identiques au chiffre près** : les plaques ne changent rien à la capture d'environnement.
+- **Run 789** (`feature/waforspeed-197`, sans ST-2) : même écart que le run 790 (M-01 nuit face +X −1,50 %). Le run 782 (5ed39ec) n'avait aucun écart. Entre les deux, sur main : WFS-176 (casino au départ, à droite : face +X) et WFS-179.
+- **Pour le PO** : l'écart vient du décor, ou de la mesure M-01 de WFS-150 face au nouveau décor, pas des voitures. Je ne touche pas à ce banc (zone E0 / WFS-150).
