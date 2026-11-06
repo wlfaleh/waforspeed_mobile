@@ -159,11 +159,11 @@ const Texte& AtlasTextes::texte(const std::string& t) const {
     auto it = places_.find(t);
     return it == places_.end() ? vide : it->second;
 }
-const Material& AtlasTextes::materiau(Renderer& r, unsigned hex, float emission) {
+const Material& AtlasTextes::materiau(Renderer& r, unsigned hex, float emission, float seuil) {
     auto it = mats_.find(hex);
     if (it != mats_.end()) return it->second;
     Material m; const vec3 c = lin(hex);
-    m.color = {c.x, c.y, c.z, 1}; m.rough = 0.5f; m.emissive = c * emission; m.cutoff = 0.45f; m.flags = MAT_MASK | MAT_DOUBLE;
+    m.color = {c.x, c.y, c.z, 1}; m.rough = 0.5f; m.emissive = c * emission; m.cutoff = seuil; m.flags = MAT_MASK | MAT_DOUBLE;   // WFS-94 : seuil réglable (circuit)
     return mats_[hex] = r.makeMaterial(m, &img_, nullptr, nullptr);
 }
 void AtlasTextes::detruire(Renderer& r) { if (img_.img) r.vk().destroy(img_); img_ = Image{}; mats_.clear(); places_.clear(); textes_.clear(); }
