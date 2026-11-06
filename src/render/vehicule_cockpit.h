@@ -20,7 +20,9 @@ class Track;
 
 namespace wfs::cockpit {
 
-enum class Combine { VwDigital, BmwLive, Porsche5, FerrariIncurve };
+// WFS-201 : styles du lot 2 ; Aucun = pas de combiné derrière le volant (Model 3 : vitesse, rapport et carte sur l'écran central)
+enum class Combine { VwDigital, BmwLive, Porsche5, FerrariIncurve, MercedesMbux, AudiVirtual, AlfaCadrans, PeugeotICockpit, LamboCompteTours,
+                     FordDigital, Aucun };
 enum class Essuie { Paralleles, Opposition, Unique };
 
 struct InterieurDef {
@@ -44,8 +46,16 @@ struct InterieurDef {
     bool carbone;                    // inserts en carbone (M4, SF90)
     // essuie-glaces (RG-06) : disposition, longueur des balais côté conducteur et passager (m), arc de balayage (rad)
     Essuie essuie; float balaiG, balaiD, arc;
-    float oeilH;                     // hauteur de l'œil : part de la hauteur de la voiture (RG-07 ; cockpit commun : 0,74)
+    float assise;                    // WFS-201 (RG-07) : hauteur du coussin du siège au-dessus du sol (m) ; œil : hauteurOeil()
+    float meplatHaut = 0;            // WFS-201 : méplat en haut de la jante (208 : volant i-Cockpit, plat en haut et en bas)
+    bool molettes = false;           // WFS-201 : deux molettes sur les branches (Model 3)
 };
+
+// WFS-201 (RG-07) : hauteur des yeux assis d'ANSUR-II (references/reel/anthropometrie.json, humain.*.eyeheightsitting) :
+// moyenne des hommes (804,5 mm, n = 4082) et des femmes (747,7 mm, n = 1986) pondérée par l'effectif = 785,9 mm ; mesurée
+// dos droit, ramenée au dossier incliné de 25° des voitures de tourisme (SAE J1100, angle A40 de 20 à 30° : estimé)
+constexpr float OEIL_ASSIS_M = 0.7859f, DOSSIER_RAD = 25.f * PI / 180.f;
+inline float hauteurOeil(const InterieurDef& d) { return d.assise + OEIL_ASSIS_M * std::cos(DOSSIER_RAD); }
 
 // RG-01 : intérieur du modèle, nullptr pour une voiture qui garde le cockpit commun
 const InterieurDef* interieurPour(const char* carId);

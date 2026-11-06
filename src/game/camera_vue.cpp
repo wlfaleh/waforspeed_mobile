@@ -111,8 +111,9 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
     if (V.cockpit) {   // œil du conducteur (à gauche) : inner.localToWorld(−0,36 ; H × 0,74 ; −L × 0,02), regard 30 m devant
         // WFS-197 (RG-07) : voiture qui a son intérieur : hauteur d'œil du modèle (assise), même écart œil → regard
         const cockpit::InterieurDef* idef = cockpit::interieurPour(car.id);
-        const float h = idef ? idef->oeilH : 0.74f;
-        eyeL = {-0.36f, d.H * h, -d.L * 0.02f}; lookL = {-0.36f, d.H * (h - 0.08f), -d.L * 0.02f - 30.f};
+        // WFS-201 (RG-07) : œil = assise du modèle + hauteur des yeux assis d'ANSUR-II (cockpit commun : H × 0,74)
+        const float oeil = idef ? cockpit::hauteurOeil(*idef) : d.H * 0.74f;
+        eyeL = {-0.36f, oeil, -d.L * 0.02f}; lookL = {-0.36f, oeil - d.H * 0.08f, -d.L * 0.02f - 30.f};
     } else {           // capot : au milieu, devant le pare-brise, le capot reste dans le bas de l'image
         eyeL = {0.f, d.H * 0.84f, -d.L * 0.24f}; lookL = {0.f, d.H * 0.72f, -d.L * 0.24f - 30.f};
     }

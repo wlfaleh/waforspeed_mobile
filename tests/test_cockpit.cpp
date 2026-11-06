@@ -95,7 +95,7 @@ int main() {
     for (int i = 0; i < 4; i++) { arcs = arcs && interieur(i).arc >= 1.4f && interieur(i).arc <= 1.75f; balais = balais && interieur(i).balaiG >= interieur(i).balaiD && interieur(i).balaiG > 0.5f; }
     cas("arcs de 80 à 100° ; balai conducteur ≥ passager (Golf 650 / 450, M4 600 / 475)", arcs && balais && golf.balaiG == 0.650f && m4.balaiD == 0.475f);
     // RG-07 : œil plus bas dans la 911 et la SF90 que dans la Golf (assise du modèle)
-    cas("hauteur de l'œil : Golf > M4 > 911 > SF90", golf.oeilH > m4.oeilH && m4.oeilH > p911.oeilH && p911.oeilH > sf90.oeilH);
+    cas("hauteur de l'œil : Golf > M4 > 911 > SF90", hauteurOeil(golf) > hauteurOeil(m4) && hauteurOeil(m4) > hauteurOeil(p911) && hauteurOeil(p911) > hauteurOeil(sf90));
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
     return 0;

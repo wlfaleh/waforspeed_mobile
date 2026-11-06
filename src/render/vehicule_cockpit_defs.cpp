@@ -22,7 +22,7 @@ static const InterieurDef DEFS[] = {
      Combine::VwDigital, 0.244f, 0.091f, {0.f, -0.24f, -0.86f}, 0xdfe6ee, 0x0e1116, 0xff2a2a,
      0.232f, 0.104f, {0.33f, -0.24f, -0.74f}, -0.16f,
      -0.17f, -0.78f, -0.22f, -1.10f, 0x1c1d20, 0x232428, 0xbe141e, 0.f, 0.40f, false,
-     Essuie::Paralleles, 0.650f, 0.450f, 1.66f, 0.80f},
+     Essuie::Paralleles, 0.650f, 0.450f, 1.66f, 0.458f},
     // M4 Competition G82 (avant restylage) : volant M rond, épais, coutures M en bas (bleu clair, bleu foncé, rouge),
     // boutons M1 / M2 rouges, palettes ; Live Cockpit Professional 12,3 po (292 × 110 mm), écran central 10,25 po posé sur
     // la planche (244 × 91 mm), carbone et alu ; balais 600 / 475 mm
@@ -31,7 +31,7 @@ static const InterieurDef DEFS[] = {
      Combine::BmwLive, 0.292f, 0.110f, {0.f, -0.24f, -0.88f}, 0xe9eef4, 0x0d0f12, 0xe7222e,
      0.244f, 0.091f, {0.38f, -0.20f, -0.80f}, -0.15f,
      -0.18f, -0.80f, -0.22f, -1.15f, 0x141415, 0x1b1c1e, 0x101113, 0.f, 0.15f, true,
-     Essuie::Paralleles, 0.600f, 0.475f, 1.66f, 0.79f},
+     Essuie::Paralleles, 0.600f, 0.475f, 1.66f, 0.388f},
     // 911 Carrera 4S (992.1) : volant rond 3 branches fines (375 mm), 5 cadrans sous une visière (compte-tours analogique
     // au centre), écran PCM 10,9 po encastré à mi-hauteur (245 × 130 mm), planche plate et basse, alu brossé ; balai 525 mm
     {"p911", 0.375f, 0.036f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x6e7177, 0,
@@ -39,7 +39,7 @@ static const InterieurDef DEFS[] = {
      Combine::Porsche5, 0.300f, 0.100f, {0.f, -0.22f, -0.83f}, 0xf2f2f0, 0x0a0b0c, 0xe0201a,
      0.245f, 0.130f, {0.37f, -0.33f, -0.82f}, 0.f,
      -0.16f, -0.72f, -0.20f, -1.00f, 0x151516, 0x1c1c1e, 0xe9ebec, 1.f, 0.35f, false,
-     Essuie::Paralleles, 0.525f, 0.450f, 1.57f, 0.785f},
+     Essuie::Paralleles, 0.525f, 0.450f, 1.57f, 0.308f},
     // SF90 Stradale : volant à méplat, 2 branches larges qui portent les commandes (manettino rouge à droite, démarreur
     // en bas), très grandes palettes carbone ; un seul écran courbe 16 po derrière le volant (≈ 380 × 143 mm), pas d'écran
     // central : la carte est dans le tiers droit du combiné ; carbone et Alcantara ; essuie-glaces non mesurables (2 balais
@@ -49,7 +49,7 @@ static const InterieurDef DEFS[] = {
      Combine::FerrariIncurve, 0.380f, 0.143f, {0.f, -0.22f, -0.82f}, 0xf4f4f4, 0x090a0c, 0xff2b14,
      0.f, 0.f, {0.f, 0.f, 0.f}, 0.f,
      -0.15f, -0.70f, -0.25f, -1.30f, 0x121213, 0x18181a, 0x101113, 0.f, 0.15f, true,
-     Essuie::Paralleles, 0.600f, 0.500f, 1.57f, 0.775f},
+     Essuie::Paralleles, 0.600f, 0.500f, 1.57f, 0.238f},
 };
 
 const InterieurDef* interieurPour(const char* carId) {
