@@ -4441,7 +4441,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 12:32:27 — WFS-173 : CI de main suivie après la fusion (run 42214532689, 56f5d47) (Claude (session 01Us6uCu))
 - **Verts** : android, publication de l'APK et les 12 jobs `banc-essai` : partie1a, partie1b, partie2a, partie2b, partie2c, nuit, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines (vert de nouveau depuis WFS-169), realisme.
-- **Rouge, sans lien avec le code** : `endurance`. L'installation des paquets a échoué (« apt-get : essai 1 sans réponse », miroir Ubuntu de la machine de CI), avant toute compilation. J'ai relancé le job une fois.
+- **Rouge, sans lien avec le code** : `endurance`. L'installation des paquets a échoué (« apt-get : essai 1 sans réponse », miroir Ubuntu de la machine de CI), avant toute compilation. Relance refusée par GitHub tant que le run n'est pas fini (publication des captures en file) : à relancer ensuite, ou au prochain push sur `main`.
 - **Captures 2400 × 1080 regardées en local** (même banc `WFS_BANC=hud WFS_TAILLE=2400x1080`, l'artefact de la CI n'étant pas téléchargeable depuis le réseau des agents) :
   - `minicarte-checkpoint` : carte de 225 px sous le score, checkpoint cyan devant ;
   - `minicarte-ligne` : parcours, 128 points, 2 466 sommets.
