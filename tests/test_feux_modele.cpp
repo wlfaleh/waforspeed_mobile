@@ -1,6 +1,7 @@
 // Feux arrière des modèles (WFS-109) : découpe d'un matériau de feux avant + arrière (RG-13), modèle qui a déjà un feu
 // MAT_TAIL (inchangé), pièce trop haute (pas de découpe), 3e feu stop marqué (RG-03), transition de 80 ms (RG-02).
 // usage : test_feux_modele
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include "../src/render/feux_modele.h"
@@ -81,6 +82,39 @@ int main() {
         VERIFIE(std::abs(transition(1, false, 0.04f) - 0.5f) < 1e-4f, "lâché : à mi-chemin après 40 ms");
         VERIFIE(transition(0, true, -1) == 1.f && transition(1, false, 2.f) == 0.f, "première image / pause : niveau tout de suite");
         std::printf("transition du feu stop en 80 ms : OK\n");
+    }
+    {   // WFS-171 (RG-03) : feu de recul dans la partie intérieure basse du bloc découpé (bloc de la Golf : x 0,36 à 0,77)
+        Scene s; s.tri(0, 0, 0.5f, 0); s.tri(1, 0.7f, 0.7f, -2.0f);
+        for (float x : {0.41f, 0.5f, 0.6f, 0.72f}) { s.tri(1, x, 0.85f, 2.0f, 0.09f); s.tri(1, -x, 0.85f, 2.0f, 0.09f); }
+        s.mats[1].flags = 2 | 16; s.mats[1].emissif = {1, 1, 1};
+        const Resultat r = s.decoupe(L);
+        VERIFIE(r.reculTrouve, "recul : trouvé dans le bloc découpé");
+        VERIFIE(r.recul.x > 0.36f && r.recul.x < 0.45f, "recul : partie intérieure du bloc (x = %.3f, bloc 0,36 à 0,77)", r.recul.x);
+        VERIFIE(r.recul.y >= 0.85f && r.recul.y < 0.85f + 0.09f * 0.5f, "recul : moitié basse du bloc (y = %.3f)", r.recul.y);
+        VERIFIE(std::abs(r.recul.z - 2.0f) < 1e-4f, "recul : au ras de la glace (z = %.3f)", r.recul.z);
+        std::printf("feu de recul dans le bloc arrière : OK\n");
+    }
+    {   // WFS-171 (RG-01) : lueur au sol collée au pare-chocs, décroissance continue, rapports photométriques réels
+        const float h = 0.9f;
+        // maximum dans les 30 premiers cm derrière la glace (≈ 20 cm derrière le pare-chocs), puis décroissance continue
+        float avant = eclairementSol(0.3f, 0, h);
+        bool decroit = eclairementSol(0.f, 0, h) > 0.85f * avant;
+        for (float s = 0.4f; s <= 4.f; s += 0.1f) { const float e = eclairementSol(s, 0, h); decroit = decroit && e < avant; avant = e; }
+        VERIFIE(decroit, "lueur au sol : maximum au pare-chocs (≥ 85 %% dès la glace), puis décroissance continue (aucun anneau)");
+        VERIFIE(eclairementSol(-0.01f, 0, h) == 0.f, "lueur au sol : rien devant la glace du feu");
+        // pas de bord net : entre deux points à 10 cm, jamais plus de 15 % d'écart
+        float sautMax = 0;
+        for (float s = 0.1f; s < 3.f; s += 0.1f) sautMax = std::max(sautMax, 1 - eclairementSol(s + 0.1f, 0, h) / eclairementSol(s, 0, h));
+        VERIFIE(sautMax < 0.15f, "lueur au sol : pas de bord net (saut %.2f sur 10 cm)", sautMax);
+        // 30 cm derrière le pare-chocs, feux de position, 2 feux à ±0,5 m : ≈ 2 à 4 lux (≪ 20 lux d'une rue éclairée)
+        const float lux = CD_POSITION_SOL * (eclairementSol(0.4f, 0.5f, h) + eclairementSol(0.4f, -0.5f, h));
+        VERIFIE(lux > 1.f && lux < 6.f, "feux de position : %.1f lux au sol (attendu 1 à 6)", lux);
+        VERIFIE(CD_STOP_SOL >= 5 * CD_POSITION_SOL, "R7 : stop au moins 5 fois le feu de position");
+        VERIFIE(CD_RECUL_SOL >= 0 && CD_RECUL_SOL <= 600, "R23 : feu de recul ≤ 600 cd sous l'horizontale");
+        // luminance du stop au sol ≤ celle d'une chaussée sous un lampadaire de 20 lux × 2 (une lueur, pas un projecteur)
+        const float stopSol = luminanceSol(CD_STOP_SOL * 2 * eclairementSol(0.1f, 0.5f, h));
+        VERIFIE(stopSol < 2 * luminanceSol(20.f), "stop : luminance au sol %.4f, chaussée éclairée %.4f", stopSol, luminanceSol(20.f));
+        std::printf("lueur des feux au sol (R7, R23) : OK\n");
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("feux des modèles : tout est OK\n");
