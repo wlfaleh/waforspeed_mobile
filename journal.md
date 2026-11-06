@@ -3750,3 +3750,102 @@ Demande de Claude (session trafic). Regroupement **par zone de code** (pas par t
 - Critères : poursuite en Basse ≤ +60 appels de dessin par rapport à Checkpoint (au lieu de +149), jamais de cubes ; Basse à MSAA ×2 et aniso ×4 (conforme WFS-134) ; parcours complet accueil → Poursuite → fin → Menu à 0 écart, prouvé au Journal. Fusion par confiance permise si le banc `course5` local tient la cible.
 - **Budget à surveiller** : la ville de nuit est à **273 appels de dessin sur 300** après WFS-94 ; WFS-144 ne doit rien ajouter à la ville de nuit (mesure avant / après au Journal).
 - **Suite de WFS-94 notée, non attribuée** : RG-A5, vitrines du rez-de-chaussée éclairées la nuit (`shopLit`), non faite. À ranger dans le prochain ticket E2 (WFS-137, Ville) quand il sera prêt, sous contrainte du budget de 300 appels (vitrines par instanciation ou dans le maillage des façades, pas un appel par vitrine).
+
+
+### 2026-11-06 00:56:13 — Début WFS-145, attribué à Claude (session dev 5bx) ; WFS-143 clos ; WFS-146 et WFS-147 créés (po-scrum-master)
+- **WFS-143** passé ✅ : son contenu est sur `main` depuis la PR #121 (d1fa824 ; valeurs de l'utilisateur dans le code, borne des records de poursuite) ; CI de main verte ensuite (run 679, 1bf0514). Rien à attribuer.
+- **Nouvelle urgence trouvée par le PO** : la CI de `main` est **rouge** depuis WFS-94 (a722e6c, run 680, id 42135841534). Seul `endurance` échoue (code 3) ; ce job était **sauté** sur la branche de WFS-94. Cycle 10 (Poursuite) : pas finie après 148 s, **9,87 km, 0 km/h** (avant : arrivée en 25 s, 10,07 km) → 3 écarts au parcours ; mémoire **+10,7 %** (avant +8,7 %, seuil 10 %).
+- Ticket : **WFS-145** — [CI ROUGE] endurance de main · E7 · P1 Urgent · branche `feature/waforspeed-145` · règles `regles-de-gestion/WFS-145.md`. Pris par Claude (session dev 5bx) ; l'agent de WFS-94 (session trafic, maintenant sur WFS-144) n'a pas à le reprendre en double.
+- Zone autorisée : `src/platform/endurance_banc.*`, `tools/qa/**`, `src/world/**`, `tests/**` ; accroche ≤ 10 lignes annoncée si `src/game/**` (prévenir WFS-136). Interdit : affaiblir le banc, `src/render/**`, `src/ui/**`, iOS.
+- Critères : cause fichier:ligne au Journal ; `endurance` vert (Poursuite finie, 0 écart sur 10 cycles, mémoire ≤ 9 %) ; parcours complet 0 écart ; CI de `main` verte.
+- Plan court : rejouer le cycle Poursuite en local, regarder `endurance-fin-poursuite`, trouver l'objet de WFS-94 sur la route (ou la police coincée), le déplacer hors chaussée ; mesurer la mémoire du décor ajouté.
+- **Lot interface après l'annulation de WFS-102** : découpé en deux pour ne plus recasser le garage. **WFS-146** (E8, P1, ⏳ Prêt) : textes, « — », couleurs, biseaux, commandes tactiles, **sans toucher à l'échelle** (ANO-16, 20, 32, 35, 39, 41, 43, 44, 45), en reprenant les morceaux sûrs de la branche `feature/waforspeed-102`, captures `garage-*-2400` obligatoirement identiques. **WFS-147** (E8, P2, en attente de WFS-146) : tailles écran par écran (ANO-17, 18, 19, 38, 42, 47), **verdict `qa-lead` avant fusion** (demande du QA). `anno.md` mis à jour (WFS-102 → WFS-146 / WFS-147).
+- `tache utilisateur.md` relu : rien de nouveau sans réponse (la question sur WFS-102 a sa réponse du QA).
+
+### 2026-11-06 00:56:14 — WFS-136 : arbitrage du PO sur trois accroches hors zone (po-scrum-master)
+Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dans `regles-de-gestion/WFS-136.md` (Zone de code, A1 à A6) :
+1) Décor des sections serrées : **autorisé**. Accroche ≤ 10 lignes dans `game.cpp` (`buildChunkCpu`), bas-côté intérieur limité à 90 % de `trace::rayonInterieur(s)` ; API `sections()`, `sectionA(z)`, `rayonInterieur(s)` pour WFS-137 à 140. Débord temporaire du décor de `src/world` accepté, noté en limite dans `qa/Check.md`, sans anomalie (le travail est déjà dans WFS-137 à 140, qui recevront le critère). Nouveau tracé activé (version 2).
+2) Toasts : **autorisé**. Accroche ≤ 10 lignes `toasts::pousser(titre, valeur, genre)` dans `src/ui/toasts.h/.cpp` ; +50 versé dans `activeCourse()->bonus` depuis `trace_cartes.cpp`.
+3) Duel : **autorisé**. Champ `trace=2` dans la présence (`reseau_relais.*`), refus `"version"` ; une ligne dans `salon.cpp` ; accroche ≤ 10 lignes dans `duel.cpp` `checkStart` seulement si `reseau_relais` ne suffit pas (champ absent = refus).
+
+### 2026-11-06 00:57:39 — Recette QA de nuit automatique (QA lead)
+- Sur ordre de l'utilisateur, la recette de `qa/Check.md` par le `qa-lead` est lancée **automatiquement chaque jour à 6 h 42, heure de Paris** (tâche planifiée « Recette QA de nuit (chaque jour) »), sans que l'utilisateur ait à la demander.
+- À chaque passage : toutes les lignes ☐ de `qa/Check.md` sont recettées sur les captures de `main`, avec rapports `qa/rapports/WFS-XX.md`, verdicts, anomalies mineures dans `anno.md`, bloquantes signalées au PO, puis une entrée au journal.
+- Les développeurs n'ont rien à changer : ils continuent d'ajouter leur ligne dans `qa/Check.md` au moment de chaque fusion.
+### 2026-11-06 00:58:16 — Axe stratégique « Réalisme » : analyse, charte, 5 épics (E9 à E13) et 20 US (WFS-148 à WFS-167), priorité HAUTE (po-scrum-master)
+- **Demande de l'utilisateur** (2026-11-05, complétée le 2026-11-06) : le jeu natif dépasse la version Web, qui n'est plus la référence graphique. Il veut un rendu proche du réel (routes, voitures, personnages, environnements, éclairage, immersion), en **priorité HAUTE**. Méthode imposée : **étape par étape**, une US par partie, chaque US validée avant la suivante, **99 % de fidélité** mesurée contre des données réelles, jamais l'apparence au détriment de la précision.
+- **Analyse de l'existant** (code de `main`), détaillée dans `regles-de-gestion/DA-realisme.md` § 1 et 2 :
+  - un seul shader pour tout (`scene.frag`) ; ciel analytique à deux couleurs, sans IBL ; une seule carte d'ombre, sans ombres la nuit ni occlusion ;
+  - route 100 % procédurale ; textures RGBA8 non compressées ; sommets sans tangentes ;
+  - bâtiments en boîtes ; 2 personnages stylisés ; jour / nuit binaire ;
+  - aucune donnée de référence ni mesure de fidélité.
+- **Décisions du PO** :
+  - « 99 % » = part des mesures dans leur tolérance face au référentiel sourcé `references/reel/` (±1 % sur les dimensions, ±0,5° sur le soleil, ΔE2000 ≤ 2 sur les couleurs…) ; « non mesurable » permis seulement avec sa raison ;
+  - règles communes RC-01 à RC-11 : avant / après, validation `qa-lead` avant fusion (pas de fusion par confiance pour cet axe), précision avant apparence, tests automatiques, budget de performance, licences, taille de l'APK ≤ 200 Mo.
+- **Épics créées** (zones séparées) : E9 Routes, E10 Véhicules (reprend `assets/cars/**` et `convert_car.mjs` de E5), E11 Personnages (reprend `pietons.*`, `squelette.*`, `scene_skin*`), E12 Environnements (reprend `vegetation.*`), E13 Lumière et image (reprend `sky*`, `post*`, `shadow*` de E4). WFS-144 (E4, en cours) garde ses droits jusqu'à sa fusion.
+- **US créées** (P2 Haute, règles dans `regles-de-gestion/WFS-148.md` à `WFS-167.md`), par paliers :
+  - palier 0 : WFS-148 → 146 → 147 (E0) ;
+  - palier 1 : WFS-151 → 149 → 150 → 151 (E13) ;
+  - palier 2 : WFS-158 → 156 → 157 (E10) et WFS-155 → 153 → 154 (E9) ;
+  - palier 3 : WFS-161 → 159 → 160 (E12) ;
+  - palier 4 : WFS-164 → 162 → 163 (E11) ;
+  - palier 5 : WFS-167 (harmonisation finale).
+- **Statut** : seule **WFS-148** (référentiel du réel et banc de fidélité, état zéro chiffré) est `⏳ Prêt`. Les 19 autres sont `⏳ En attente` de la validation de leurs dépendances. Affectation par profil d'agent (tableau de `TACHES.md`), attribution nominative à la demande des agents, comme d'habitude.
+- **Consignes mises à jour** : `CLAUDE.md`, `.claude/agents/po-scrum-master.md`, `regles-de-gestion/README.md` (le jeu web n'est plus la référence d'aspect).
+- **Numérotation** : WFS-145 à 147 ont été pris par un autre agent pendant la rédaction (endurance, lot interface) ; les US de l'axe sont donc **WFS-148 à WFS-167**.
+
+### 2026-11-06 01:02:24 — Axe Réalisme : retrait des règles de travail ajoutées sans demande (po-scrum-master)
+- **Remarque de l'utilisateur** : c'est lui qui dirige et qui fixe les règles de travail du QA et des développeurs. Le PO n'avait pas à en ajouter.
+- **Retiré** :
+  - « pas de fusion par confiance » et « verdict `qa-lead` avant fusion » pour l'axe Réalisme ;
+  - la demande de vérification par l'utilisateur à chaque fin de palier (ex-RC-11) ;
+  - les lignes ajoutées dans `CLAUDE.md`, `.claude/agents/po-scrum-master.md` et `regles-de-gestion/README.md` (fichiers revenus à leur version d'avant faedcf0).
+- **Gardé** : les US WFS-148 à WFS-167, leurs règles de gestion, leurs mesures de fidélité (≥ 99 %, demandées par l'utilisateur) et l'ordre des dépendances. Attribution, QA et fusion : règles en vigueur de `CLAUDE.md`, inchangées.
+
+### 2026-11-06 01:07:53 — Version Web retirée de la mémoire du projet, sur ordre de l'utilisateur (po-scrum-master)
+- **Décision de l'utilisateur** : il n'y a plus de version Web. Elle a servi à gagner du temps et ne sert plus de référence. Le jeu natif est la seule référence ; l'aspect du monde 3D suit le réel mesuré (fidélité 99 %, `regles-de-gestion/DA-realisme.md`).
+- **Retiré** :
+  - le skill `waforspeed-3d` (dossier supprimé, reste dans l'historique git) ;
+  - toute mention du dépôt Web et de ses fichiers dans : `CLAUDE.md`, `README.md`, l'en-tête et les règles de `TACHES.md`, l'agent PO, les skills `agent-developer` (et sa checklist), `waforspeed-natif` (et ses références) et `design-street-racing`, ainsi que `regles-de-gestion/README.md` (modèle d'US) ;
+  - les sections « À réutiliser du jeu web » des tickets pas encore commencés (WFS-122, 137 à 141, 146, 148 à 167).
+- **`design-street-racing`** : ne s'applique plus qu'à l'interface (menus, HUD, garage, écrans) ; le monde 3D n'est plus concerné.
+- **WFS-137 à WFS-140, RG-C4** : animaux en modèles 3D réalistes sous licence libre, à la place des volumes simples.
+- **Non modifié** : l'historique (journal, tickets terminés, rapports QA, anomalies) et les commentaires du code, qui ne sont pas du ressort du PO.
+
+### 2026-11-06 01:10:42 — Agent `expert-realisme-3d` créé, sur demande de l'utilisateur (po-scrum-master)
+- **Fichier** : `.claude/agents/expert-realisme-3d.md` (AGENT IA — 3D REALISM EXPERT).
+- **Contenu** : le texte de l'utilisateur, repris tel quel (identité, objectif, domaines, méthode, exigence de réalisme, animation, optimisation, règle fondamentale). Le PO a seulement ajouté la liste des documents du projet à lire.
+- **Points à trancher par l'utilisateur, signalés sans rien changer** :
+  - « intégration Unity / Unreal » alors que `CLAUDE.md` interdit les moteurs tiers ;
+  - priorités P0 / P1 / P2 alors que `TACHES.md` utilise P1 à P4 ;
+  - « créer une US » alors que c'est le PO qui crée et attribue les tickets.
+
+### 2026-11-06 01:12:15 — Agent `expert-realisme-3d` adapté au projet, sur décision de l'utilisateur (po-scrum-master)
+- **Décision de l'utilisateur** : ce qui est interdit dans le projet est retiré de l'agent et remplacé par son équivalent.
+- **Changements** :
+  - « Intégration dans Unreal Engine et Unity » devient « intégration dans le moteur maison (C++20 / Vulkan, Android), aucun moteur tiers » ;
+  - « créer une US » devient « demander l'US au PO, qui la crée et l'attribue » ;
+  - les priorités P0 / P1 / P2 deviennent P1 Urgent / P2 Haute / P3 Moyenne (échelle de `TACHES.md`) ;
+  - « moteur de jeu ciblé » devient « moteur maison ».
+
+### 2026-11-06 01:13:23 — Début WFS-148, attribué à expert-realisme-3d (po-scrum-master)
+- **Ticket** : WFS-148, référentiel du réel et banc de fidélité (palier 0 de l'axe Réalisme), épic E0, P2 Haute. Règles : `regles-de-gestion/WFS-148.md`, charte `regles-de-gestion/DA-realisme.md`.
+- **Responsable** : agent `expert-realisme-3d` (session 0183bv2V), branche `feature/waforspeed-148`, lancé sur ordre de l'utilisateur (« Yes go »).
+- **Zone autorisée** : nouveaux fichiers `references/reel/**`, `tests/fidelite_*`, `src/render/bench_realisme.*` ; accroches ≤ 10 lignes (`CMakeLists.txt`, workflow de la CI), annoncées au Journal.
+- **Livrables** :
+  - référentiel sourcé ;
+  - soleil calculé (NOAA) et son test ;
+  - banc des 12 vues ;
+  - scène d'étalonnage ;
+  - rapport de fidélité ;
+  - état zéro chiffré, avec une image du jeu inchangée.
+
+### 2026-11-06 01:17:57 — WFS-148 : plan, accroches et limites d'accès (expert-realisme-3d)
+- **Plan** (sous-tâches ST-1 à ST-6, dans l'ordre) : référentiel `references/reel/*.json` + `SOURCES.md` ; `soleil()` (équations solaires de la NOAA) dans `references/reel/soleil.h` et test `tests/fidelite_soleil.cpp` ; banc `src/render/bench_realisme.*` (12 vues × jour / nuit × Basse / Haute, scène d'étalonnage `realisme-etalon`) ; rapport `realisme-fidelite.txt` et mesures `realisme-mesures.txt` ; tests géométriques `tests/fidelite_*` ; état zéro au Journal.
+- **Accroches annoncées (≤ 10 lignes chacune)** : `CMakeLists.txt` (déclaration des tests `test_fidelite_*`) ; `src/platform/desktop_main.cpp` (groupe `WFS_BANC=realisme` : un include et une ligne) ; `.github/workflows/build.yml` (groupe `realisme` dans la matrice du banc et sa ligne de lancement).
+- **Limite d'accès (réseau de la session)** : Wikipédia, Légifrance, le calculateur de la NOAA et les sites des constructeurs ne s'ouvrent pas (hôtes refusés par le proxy). Accessibles : GitHub, PyPI, apt, et le moteur de recherche (résumés avec liens, pages non ouvertes). En conséquence :
+  - matériaux et photométrie : base Physically Based (CC0, dépôt GitHub, références par valeur) ;
+  - charte ColorChecker : valeurs publiées par X-Rite, reprises du jeu de données de `colour-science` (PyPI, BSD-3) ;
+  - soleil : valeurs de contrôle calculées par l'algorithme NREL SPA (`pvlib`, PyPI), plus précis que celui de la NOAA (le calculateur NOAA ne s'ouvre pas) ;
+  - fiches constructeur, normes de marquage, anthropométrie : valeur relevée seulement si un lien est cité ; statut « à confirmer (page non ouverte) » quand elle vient d'un résumé de recherche, « à sourcer » sinon. Rien n'est inventé.
+- **Point signalé au PO** : le critère « 96 captures `realisme-*` » ne correspond pas à RG-03 (12 vues × 2 moments × 2 qualités = 48). Je livre les 48 de RG-03 ; le PO dira s'il manque une dimension (par exemple 2 tailles d'écran).

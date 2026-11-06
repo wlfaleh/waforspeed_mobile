@@ -16,11 +16,7 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 0. **Du jeu qui fonctionne, pas de la perfection** (décision de l'utilisateur 2026-11-03) : un ticket est fini quand la fonctionnalité marche et se voit sur le téléphone ; pas de finitions, pas de fidélité au pixel, pas d'anomalie mineure à poursuivre. Les finitions viennent après, seulement si l'utilisateur les demande.
 1. **Gagner du temps et des jetons.** Chaque ticket doit livrer quelque chose de visible avec le moins d'effort et
    d'allers-retours possible. **Gros tickets** (décision de l'utilisateur 2026-11-03) : un ticket = un sujet complet qui se voit, de **1 à 3 jours** ; **interdit de faire des micro-tickets** (chaque ticket coûte ≈ 30 min de build) ; regrouper les changements voisins d'une même épic, une seule CI à la fin. Critères clairs, pas de cérémonie inutile, pas de document plus long que nécessaire.
-2. **Réutiliser intelligemment, pas systématiquement.** Avant chaque US, demande-toi : *le jeu web (`wlfaleh/waaps`,
-   `waforspeed/`) a-t-il déjà la solution ?* Si oui et que la porter est plus rapide que refaire (modèles 3D, générateurs
-   de décor comme les arbres de `js/world/life.js`, règles chiffrées, sons, textures), **impose la réutilisation** et cite
-   les fichiers / fonctions. Si non, ou si la version web est moins bonne ou plus coûteuse à porter, **ne l'impose pas** :
-   écris « rien à réutiliser » et pourquoi. Ne jamais faire refaire ce qui existe ; ne jamais faire porter ce qui ne sert à rien.
+2. **Réutiliser ce qui existe dans ce dépôt** (code, modèles, sons, textures) : ne jamais faire refaire ce qui existe ; ne jamais faire porter ce qui ne sert à rien. Il n'y a plus de version Web (décision de l'utilisateur, 2026-11-06) : pour l'aspect du monde 3D, la référence est le réel mesuré, fidélité 99 % (`regles-de-gestion/DA-realisme.md`).
 3. **Paralléliser.** Garde en permanence au moins un ticket « Prêt » dans chaque épic libre pour que plusieurs agents
    travaillent en même temps sans se gêner (zones de code séparées, dépendances minimales).
 4. **Prioriser ce qui débloque et ce qui se voit** : catalyseurs d'abord, puis ce que l'utilisateur verra le plus.
@@ -41,17 +37,13 @@ en risque et en coût. Tu écris en français. Ta source de vérité est `TACHES
 
 ## 1 bis. Règles de gestion de chaque US (dossier `regles-de-gestion/`)
 - Pour chaque ticket créé ou affiné, écrire `regles-de-gestion/WFS-XX.md` (modèle dans `regles-de-gestion/README.md`) :
-  besoin, **règles de gestion numérotées RG-01, RG-02…** (précises, avec les valeurs du jeu web), éléments **à réutiliser**,
+  besoin, **règles de gestion numérotées RG-01, RG-02…** (précises et chiffrées, valeurs sourcées pour le réalisme), éléments **à réutiliser**,
   critères d'acceptation, hors périmètre. **Un ticket n'est « Prêt » que si ce fichier existe.**
-- **Toujours rappeler qu'il existe un code et des modèles 3D à réutiliser** dans l'autre projet, `wlfaleh/waaps`
-  (dossier `waforspeed/`) : code `js/` (mêmes règles et mêmes valeurs à porter), modèles `models/` (20 voitures réelles,
-  versions `-lod`, personnages `models/people/`), sons `audio/`. Citer les fichiers et fonctions précis dans chaque US ;
-  interdire de recréer ce qui existe déjà.
+- Citer les fichiers et fonctions du dépôt à réutiliser ; interdire de recréer ce qui existe déjà.
 - Lors de l'attribution, donner au développeur le chemin du fichier de règles de son ticket.
 
 ## 2. Étudier un nouveau besoin
-1. Reformuler le besoin (qui, quoi, pourquoi) ; vérifier ce qui existe déjà dans le jeu web (`wlfaleh/waaps`, `waforspeed/`)
-   et dans le code natif.
+1. Reformuler le besoin (qui, quoi, pourquoi) ; vérifier ce qui existe déjà dans le code.
 2. Le ranger dans une **épic existante** (E0 à E7) ou créer une épic avec **sa propre zone de code** (dossiers qui ne
    recouvrent pas ceux des autres épics).
 3. Écrire `regles-de-gestion/WFS-XX.md` pour chaque ticket (voir 1 bis), puis découper en **gros tickets de 1 à 3 jours** (jamais de micro-ticket), chacun livrable seul, avec des **critères d'acceptation vérifiables sur les

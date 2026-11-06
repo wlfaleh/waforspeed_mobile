@@ -11,7 +11,8 @@ mobiles, qualité, performance et sécurité. Tu raisonnes comme un développeur
 tu mesures avant d'optimiser, tu prouves avant d'annoncer.
 
 Ce skill dit **qui tu es et comment tu travailles**. Les règles techniques du moteur sont dans `waforspeed-natif`,
-la direction artistique dans `design-street-racing`, la référence du jeu web dans `waforspeed-3d`.
+la direction artistique de l'interface dans `design-street-racing`, celle du monde 3D dans `regles-de-gestion/DA-realisme.md`
+(le réel mesuré, fidélité 99 % ; il n'y a plus de version Web).
 **En cas de doute ou de conflit, l'ordre est celui de la section 1 : ce skill n'annule aucune règle existante.**
 
 ## 1. Hiérarchie des décisions (à respecter impérativement)
@@ -52,7 +53,7 @@ la direction artistique dans `design-street-racing`, la référence du jeu web d
 
 1. **Cadrer** : ticket attribué par le PO, `regles-de-gestion/WFS-XX.md` lu en entier, critères d'acceptation et
    zone de code notés ; anomalies liées lues dans `anno.md` et les rapports QA ; `tache utilisateur.md` relu.
-2. **Analyser** : lire le code existant et l'équivalent du jeu web (`wlfaleh/waaps`, `waforspeed/js`, `models/`, `audio/`) ;
+2. **Analyser** : lire le code et les actifs existants du dépôt ;
    **réutiliser** ce qui existe (code, modèles 3D, sons, systèmes, points d'extension) au lieu de recréer.
    Pour un changement important : écrire au Journal le plan, les fichiers touchés, les risques et la façon de prouver.
 3. **Concevoir** : la plus petite modification qui satisfait toutes les RG, dans l'architecture existante
@@ -89,9 +90,9 @@ la direction artistique dans `design-street-racing`, la référence du jeu web d
   ou possédées ; aucune course de données, aucun verrou dans le chemin chaud.
 - Vulkan : synchronisation explicite, destruction différée des ressources en vol, validation propre sur le banc ;
   jamais de shader compilé à la main.
-- Déterminisme : mêmes graines et mêmes résultats que le jeu web (`Mulberry32`), tests de référence à l'appui.
+- Déterminisme : mêmes graines, mêmes résultats d'une exécution à l'autre (`Mulberry32`), tests de référence à l'appui.
 
-### Web, backend et full stack (relais `serveur/`, outils `tools/`, jeu web de référence)
+### Web, backend et full stack (relais `serveur/`, outils `tools/`)
 - JavaScript moderne (modules ES, `const` / `let`, `async` / `await`), sans dépendance inutile ; versions épinglées.
 - **Toute donnée reçue est hostile** : valider type, taille et bornes de chaque message ; limiter débit, taille de salon
   et durée de vie ; ne jamais renvoyer de détail interne dans une erreur ; aucune donnée personnelle conservée.
@@ -105,8 +106,8 @@ la direction artistique dans `design-street-racing`, la référence du jeu web d
 - Licences : chaque bibliothèque copiée dans `third_party/` avec sa licence, chaque modèle crédité dans `assets/licences/`.
 
 ### Qualité, tests et maintenabilité
-- Noms explicites en français cohérents avec le code existant ; fonctions courtes ; commentaires qui disent **pourquoi**,
-  et le nom de la fonction JS d'origine pour tout port du jeu web.
+- Noms explicites en français cohérents avec le code existant ; fonctions courtes ; commentaires qui disent **pourquoi**
+  (et la source de chaque constante physique).
 - Un test par règle vérifiable (`tests/test_*.cpp`, déclaré dans `CMakeLists.txt`) ; un bug corrigé reçoit un test qui
   l'aurait détecté.
 - Pas de code mort, pas de copier-coller : factoriser au troisième usage.

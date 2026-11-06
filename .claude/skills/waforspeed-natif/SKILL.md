@@ -5,7 +5,7 @@ description: Règles du moteur natif de WaForSpeed Mobile (C++20 + Vulkan, Andro
 
 # WaForSpeed natif — règles du moteur
 
-Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier `waforspeed/`).
+Jeu de course de rue en 3D, moteur natif. Il n'y a plus de version Web : ce dépôt est la seule référence ; l'aspect du monde 3D suit le réel mesuré (`regles-de-gestion/DA-realisme.md`).
 **Pas de Unity, Godot, Unreal ni autre moteur de jeu** : moteur maison. Petites bibliothèques libres autorisées
 (stb ; plus tard SDL, Jolt… si utile), toujours copiées dans `third_party/` avec leur licence.
 
@@ -38,7 +38,7 @@ Jeu de course de rue en 3D, version native du jeu web (`wlfaleh/waaps`, dossier 
 Voir `references/architecture.md`. En bref :
 - `src/core` — `Jobs` (pool de threads + `parallelFor`), `Arena`/`Pool` (mémoire), `math.h`, `log.h`, `platform.h`.
 - `src/render` — `VkCtx` (instance, appareil, swapchain, utilitaires), `Renderer` (passe HDR MSAA → passe finale tonemapping + UI), `model_loader`.
-- `src/game` — `Track` (port exact de track.js), `Player` (port de update.js), `Game` (route par morceaux, caméra, tactile).
+- `src/game` — `Track` (tracé de la route), `Player` (conduite), `Game` (route par morceaux, caméra, tactile).
 - `src/platform` — `android_main.cpp` (NativeActivity), `desktop_main.cpp` (banc d'essai hors écran → PNG).
 
 ## Ajouter un module (systèmes enfichables, WFS-30)
@@ -54,7 +54,7 @@ Tout nouveau module (ville, météo, sons, interface, HUD…) est un **système*
 
 ## Écrans de l'application (point d'extension WFS-36)
 Un seul écran à la fois : `enum class Ecran { Chargement, Menu, Garage, Terrain, Course, Pause, Fin }` (`src/core/ecran.h`),
-équivalent de `state` du jeu web (`js/ui/screens.js`, `show(name)`).
+machine d'écrans de l'application.
 - **Lire** : `GameView::ecran` (dans `update`, `render`, `drawUi`, `onTouch`). Un menu ne dessine son interface que si
   `g.ecran == Ecran::Menu`, etc.
 - **Changer** : `g.allerA(Ecran::Garage)` depuis un système (ou `Game::allerA` pour la plateforme / le banc d'essai).
@@ -71,13 +71,13 @@ Un seul écran à la fois : `enum class Ecran { Chargement, Menu, Garage, Terrai
 ## Marges de sécurité de l'écran (point d'extension WFS-51)
 - `GameView::marges` (`Marges { gauche, haut, droite, bas }`, pixels de l'interface, 0 par défaut) : zone sûre (encoche,
   coins arrondis). **Toute interface** (HUD, menus, boutons) se place entre `gauche` et `uiWidth − droite`, `haut` et
-  `uiHeight − bas` (équivalent de `env(safe-area-inset-*)` du jeu web).
+  `uiHeight − bas`.
 - Android : `JeuActivity` lit `DisplayCutout.getSafeInset*` à chaque changement d'insets → JNI `nativeMarges` →
   `Game::setMarges` (boucle de `android_main`). Les commandes tactiles de `Game` et leurs zones de toucher sont déjà décalées.
 - Banc d'essai : `WFS_ENCOCHE=<px>` simule une encoche à gauche ; capture `encoche-course` (2400x1080, 90 px, bande marquée).
 
 ## Scène dédiée d'un écran (point d'extension WFS-44)
-Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), comme `renderGarage` du jeu web (`gScene`, `gCamera`) :
+Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), :
 - **Prendre la scène** : `bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override` — appelée par `Game::render`
   avant chaque image, dans l'ordre des systèmes ; le **premier** qui renvoie `true` prend l'image. Ne la prendre que pour
   son écran (`if (g.ecran != Ecran::Garage) return false;`).
@@ -92,9 +92,9 @@ Pour un écran qui a sa propre scène 3D (garage, choix du terrain…), comme `r
 - Exemple et test : `src/core/scene_essai.cpp` (inactif par défaut ; banc d'essai : capture `scene-dediee-vide`).
 
 ## Personnages animés par squelette (point d'extension WFS-63)
-Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, sans aucun personnage recréé.
-- **Données** : `tools/convert_people.mjs <personnage.json> <animations.json> <sortie.wfp>` convertit `models/people/homme.json`,
-  `femme.json` et `animations.json` du jeu web (Quaternius, CC0 : `assets/licences/personnages-quaternius.txt`) en
+Pour les piétons et conducteurs (WFS-19) : maillages à squelette de `assets/people/` (à remplacer par des humains réalistes : axe Réalisme).
+- **Données** : `tools/convert_people.mjs <personnage.json> <animations.json> <sortie.wfp>` convertit `homme.json`,
+  `femme.json` et `animations.json` (Quaternius, CC0 : `assets/licences/personnages-quaternius.txt`) en
   `assets/people/<nom>.wfp`. Le fichier contient le maillage (4 os + 4 poids par sommet), l'atlas couleur et les normales
   (1024 px), le squelette (65 os, palette de 62 os à poids), les 7 clips (`Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`…) et les
   plages d'indices : `corps-<lod>` et `<coiffure>-<lod>`, avec 3 niveaux de détail.
@@ -110,8 +110,8 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, s
     est ignorée.
   - Opaque seulement.
 - **Repère** : mètres, Y vers le haut, pieds en y = 0, le personnage regarde vers +Z.
-- **Apparence (WFS-72)** : dernier argument de `drawSkinned`, un `ApparencePersonnage*` (`renderer.h`). Il prend les
-  uniformes de `pedMaterial` du jeu web, en codes sRGB 0..1 : `peau` (multiplicateur), `cheveux`, `haut`, `bas`,
+- **Apparence (WFS-72)** : dernier argument de `drawSkinned`, un `ApparencePersonnage*` (`renderer.h`). Il prend des
+  uniformes en codes sRGB 0..1 : `peau` (multiplicateur), `cheveux`, `haut`, `bas`,
   `chaussures`, `maillot`, `vetement` = (manches, longueur du bas, habillé 0/1, 0), `corps` = `Personnage::corps` (cou, taille).
   `shaders/scene_skin.frag` (copie de `scene.frag` + bloc « WFS-72 ») peint peau, vêtements et cheveux selon l'attribut `_cloth`
   du `.wfp` (version 2). Sans apparence (`nullptr`) : texture seule. Les tenues sont tirées par `pedLook`, dans WFS-19.
@@ -121,10 +121,10 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, s
 
 
 
-### 1. Fidélité au jeu web (CRITIQUE)
-- Même piste, mêmes graines (`Mulberry32` identique à `mulberry32`), mêmes unités (1 unité = 6 mm, `SEG` = 200, `RW` = 7,5 m).
-- Toute fonction portée garde le nom de la fonction JS d'origine en commentaire et est vérifiée par un test (`tests/`).
-- Les valeurs de réglage (PHYS, carPerf, cartes, trafic) se recopient du JS, pas de « à peu près ».
+### 1. Précision et cohérence (CRITIQUE)
+- Mêmes graines (`Mulberry32`), mêmes unités (1 unité = 6 mm, `SEG` = 200, `RW` = 7,5 m) : ne pas les changer sans ticket E0.
+- Chaque règle chiffrée est vérifiée par un test (`tests/`) ; les réglages viennent du code et de `configgame.json`, pas de « à peu près ».
+- Monde 3D : valeurs physiques sourcées, jamais inventées pour « faire joli » (`regles-de-gestion/DA-realisme.md`).
 
 ### 2. Threads et mémoire (CRITIQUE)
 - Le thread principal possède Vulkan et l'état du jeu. Les threads de `jobs()` ne font que du calcul CPU sur des données qu'ils possèdent
@@ -147,7 +147,7 @@ Pour les piétons et conducteurs (WFS-19) : maillages à squelette du jeu web, s
 - Regrouper par matériau : un appel de dessin par matériau et par modèle.
 
 ### 5. Contenu et licences
-- Voitures : convertir depuis le jeu web avec `tools/convert_car.mjs` (voir `references/ajouter-une-voiture.md`).
+- Voitures : convertir un modèle glTF avec `tools/convert_car.mjs` (voir `references/ajouter-une-voiture.md`).
 - Copier la licence de chaque modèle dans `assets/licences/` et le crédit dans `CARS[]` (`src/game/cars.h`).
 - Ne jamais reprendre logo, nom ou visuel d'un jeu existant.
 

@@ -1,7 +1,7 @@
 # WaForSpeed Mobile
 
 Version native du jeu de course **WaForSpeed** : moteur maison en **C++20 + Vulkan**, sans moteur de jeu tiers,
-pour Android (puis iOS et consoles). Le contenu vient du jeu web (`wlfaleh/waaps`, dossier `waforspeed/`).
+pour Android (puis iOS et consoles).
 
 - Tableau des tâches et livraisons : [TACHES.md](TACHES.md)
 - Dernier APK à installer : page **Releases → apercu**
@@ -11,7 +11,7 @@ pour Android (puis iOS et consoles). Le contenu vient du jeu web (`wlfaleh/waaps
 |---|---|
 | `src/core` | journal, mémoire (arènes, réserves), système de tâches multi-thread, maths |
 | `src/render` | contexte Vulkan, rendu HDR/PBR, chargement des voitures |
-| `src/game` | piste (identique au jeu web), conduite, partie, commandes tactiles |
+| `src/game` | piste, conduite, partie, commandes tactiles |
 | `src/platform` | Android (NativeActivity) et banc d'essai bureau (captures hors écran) |
 | `shaders` | GLSL compilés en SPIR-V à la construction |
 | `assets` | voitures converties (`.wfm`), sons, licences |

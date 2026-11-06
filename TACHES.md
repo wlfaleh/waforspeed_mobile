@@ -3,7 +3,7 @@
 ** RÈGLE IMPORTANT : il faut voir systématiquement le fichier tache utilisateur.md et répondre en cas de besoin à l'utilisateur
 
 Version native (C++20, Vulkan) du jeu WaForSpeed, pour Android puis iOS, portable sur consoles. Moteur maison, aucun moteur
-de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`). Organisation type Jira / Scrum :
+de jeu tiers. Organisation type Jira / Scrum :
 **épics** (une zone de code chacune), **tickets** WFS-XX priorisés, plusieurs agents en parallèle, en autonomie.
 
 ## Rôles
@@ -62,7 +62,7 @@ de jeu tiers. Le contenu vient du jeu web `wlfaleh/waaps` (dossier `waforspeed/`
 
 10. **Autonomie (règle de l’utilisateur)** : les agents **ne demandent pas de confirmation à l’utilisateur** pour suivre le processus. Ils enchaînent seuls : demander un ticket au PO, créer la branche, lire les règles, coder, construire, fusionner selon la règle en vigueur, mettre à jour `TACHES.md`, `journal.md`, `qa/Check.md`, puis demander le ticket suivant. Pas de « je lance ? », « je continue ? » en fin de message : on agit, puis on rend compte. L’utilisateur n’est sollicité que pour un **vrai blocage** : décision produit que ni les règles de gestion ni le PO ne tranchent, accès ou droits manquants, action irréversible hors processus (supprimer, réécrire l’historique…). Dans ce cas : une seule question précise, avec une recommandation. Une question de règles ou de priorité se pose au PO (`po-scrum-master`), pas à l’utilisateur.
 
-**Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du jeu web à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
+**Définition de « Prêt »** : fichier `regles-de-gestion/WFS-XX.md` écrit par le PO (règles de gestion + éléments du dépôt à réutiliser), dépendances terminées, critères d'acceptation vérifiables sur captures, zone de code connue,
 taille ≤ 1 journée (sinon le PO découpe).
 **Définition de « Fini »** (sauf fusion par confiance, voir ci-dessus : la CI et la recette viennent après la fusion) : critères cochés, CI verte (banc d'essai, APK, émulateur), verdict QA `VALIDÉ` ou `PASSABLE AVEC ANOMALIES MINEURES` (anomalies mineures restantes inscrites au tableau des anomalies), synchronisé, fusionné,
 Journal à jour.
@@ -72,19 +72,42 @@ Journal à jour.
 |---|---|---|---|
 | E0 | Noyau partagé (catalyseur) | `src/core/**`, `src/game/game.*`, `src/render/renderer.h` (API), `CMakeLists.txt` | Stabiliser les points d'extension pour que les autres épics ajoutent des fichiers sans toucher au noyau. |
 | E1 | Socle moteur (livraison 1) | — | Terminé. |
-| E2 | Monde et décor | `src/world/**`, `assets/world/**`, `shaders/world_*` | Ville, cartes, météo, piétons : tout ce qui entoure la route. |
-| E3 | Gameplay et simulation | `src/game/` sauf `game.*` (trafic, course, duel, sauvegarde), `tests/**` | Règles du jeu portées du jeu web, tests de fidélité. |
-| E4 | Rendu et performances | `src/render/**` (sauf `ui_*`), `shaders/scene*`, `sky*`, `post*`, `shadow*` | Ombres, nuit, reflets, post-traitement, qualité, LOD. |
-| E5 | Interface et contenu | `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*`, `assets/fonts/**`, `assets/cars/**`, `tools/convert_car.mjs` | Texte, menus, garage, HUD, voitures et peintures. |
+| E2 | Monde et décor | `src/world/**` (sauf fichiers E11 / E12 ci-dessous), `assets/world/**` (sauf `assets/world/modeles/**`), `shaders/world_*` | Ville, cartes, météo, piétons : tout ce qui entoure la route. |
+| E3 | Gameplay et simulation | `src/game/` sauf `game.*` (trafic, course, duel, sauvegarde), `tests/**` | Règles du jeu, tests de fidélité. |
+| E4 | Rendu et performances | `src/render/**` (sauf `ui_*` et fichiers E9 à E13 ci-dessous), `shaders/scene.*` (orchestration ; `sky*`, `post*`, `shadow*` passent à E13 le 2026-11-06) | Ombres, nuit, reflets, post-traitement, qualité, LOD. |
+| E5 | Interface et contenu | `src/ui/**` (sauf `src/ui/ecrans/`), `shaders/ui*`, `assets/fonts/**` (`assets/cars/**` et `tools/convert_car.mjs` passent à E10 le 2026-11-06), `tools/convert_car.mjs` | Texte, menus, garage, HUD, voitures et peintures. |
 | E6 | Audio | `src/audio/**`, `assets/audio/**` | Moteur, bruitages. |
 | E7 | Plateformes et publication | `src/platform/**`, `android/**`, `ios/**`, `.github/**`, `tools/qa/**` | Android, iOS, manettes, stores, CI. |
 | E8 | Écrans et menus | `src/ui/ecrans/**` | Chargement de l'application, menu principal, navigation, pause, choix du terrain. |
+| E9 | Réalisme — Routes | `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `references/reel/routes/**`, `tests/fidelite_routes*` (+ accroches ≤ 10 lignes `src/game/track.cpp`) | Revêtements, marquages, imperfections, états de surface au plus près du réel (axe Réalisme, `regles-de-gestion/DA-realisme.md`). |
+| E10 | Réalisme — Véhicules | `shaders/vehicule*.glsl`, `src/render/vehicule_*`, `assets/cars/**`, `tools/convert_car.mjs`, `references/reel/voitures/**`, `tests/fidelite_voitures*` | Dimensions exactes, matériaux, dynamique visible des voitures. |
+| E11 | Réalisme — Personnages | `assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*` | Humains réalistes, animations, comportements de foule. |
+| E12 | Réalisme — Environnements | `src/world/archi_*`, `src/world/mobilier_*`, `src/world/vegetation.*`, `shaders/decor*.glsl`, `assets/textures/decor/**`, `assets/world/modeles/**`, `references/reel/decor/**`, `tests/fidelite_decor*` (+ accroches ≤ 10 lignes par carte) | Bâtiments, mobilier et signalisation, végétation, terrain, mer. |
+| E13 | Réalisme — Lumière et image | `shaders/eclairage*.glsl`, `shaders/sky*`, `post*`, `shadow*`, `src/render/eclairage_*`, `ibl_*`, `atmosphere_*`, `post_*`, `references/reel/lumiere/**`, `tests/fidelite_lumiere*` | Unités physiques, IBL, ciel et soleil calculés, cycle jour / nuit, ombres, reflets, post-traitement. |
+
+> Zones E9 à E13 créées le 2026-11-06 par le PO (axe Réalisme). Le ticket en cours WFS-144 (E4) garde ses droits sur ses fichiers jusqu'à sa fusion.
 
 ## MVP du 2026-11-03 (décision du PO, détail au Journal)
 Parcours jouable sur téléphone : **chargement → menu → Course solo → décompte → course (trafic, chrono, checkpoints, HUD,
 notifications) → fin → Rejouer / Menu**, en plein écran Android. **Décision de l'utilisateur (2026-11-03) : le MVP n'attend plus le simulateur ; l'utilisateur teste lui-même l'APK de `main` sur téléphone** (WFS-50, WFS-58 et WFS-64 sans urgence). Tickets marqués **[MVP]** (le tableau est trié par numéro de ticket ; la colonne « Priorité » donne l'urgence), dans l'ordre :
 WFS-35 → WFS-27 → WFS-37 → WFS-29 → WFS-38 → WFS-47 → WFS-57 (centrage fin, ANO-14) → WFS-56 (scénario simulateur) → WFS-58 + WFS-59 (corrections simulateur) → WFS-50 (vérification simulateur ; WFS-64 suspendu : le gel ne s'est pas reproduit, run 41719456821). Hors MVP : garage, terrain, pause,
 duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
+
+## Axe stratégique « Réalisme » (directive de l'utilisateur, 2026-11-05 et 2026-11-06) — priorité HAUTE
+Il n'y a plus de version Web : le jeu natif est la seule référence. Objectif : routes, voitures, personnages, environnements et lumière au plus près
+du réel, **fidélité de 99 % mesurée** (part des mesures dans leur tolérance face à des données réelles sourcées), **jamais l'apparence au
+détriment de la précision**. Charte, analyse de l'existant, limitations, tolérances et règles communes RC-01 à RC-10 :
+**`regles-de-gestion/DA-realisme.md`** (à lire avant toute US de l'axe). Toutes les US de l'axe sont en **P2 Haute**.
+**Étape par étape** : une US par partie, dans l'ordre des dépendances ci-dessous. Attribution, QA et fusion : règles de travail en vigueur (`CLAUDE.md`), inchangées.
+| Palier | US dans l'ordre (→ = validée avant la suivante) | Épic | Profil d'agent |
+|---|---|---|---|
+| 0 — Référence et socle | WFS-148 → WFS-149 → WFS-150 | E0 | moteur Vulkan |
+| 1 — Lumière | WFS-151 → WFS-152 → WFS-153 → WFS-154 | E13 | rendu / éclairage |
+| 2 — Véhicules | WFS-158 (dès WFS-148) → WFS-159 (après WFS-151) → WFS-160 | E10 | technical artist véhicules |
+| 2 — Routes | WFS-155 (après WFS-151) → WFS-156 → WFS-157 (après WFS-154) | E9 | rendu matériaux / route |
+| 3 — Environnements | WFS-161 (après WFS-151) → WFS-162 → WFS-163 (après WFS-153) | E12 | technical artist décor |
+| 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
+| 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
 ## Tableau (par numéro de ticket)
 
@@ -233,8 +256,31 @@ duel, sauvegarde, compteur en arc, italique, nuit, météo, bruitages.
 | P2 Haute | WFS-140 | Grand Prix : épingle, chicanes, raidillon, feux de départ, tribunes pleines, paddock et garages des équipes, bars d'accueil, fan zone | E2 | ⏳ En attente |  | WFS-136, WFS-94 | `feature/waforspeed-140` |  |  |
 | P2 Haute | WFS-141 | Lot anomalies Poursuite et écrans : gyrophares, bandeau d'annonce, fins Course à 5 / Poursuite au style Checkpoint, panneau des modes, salon hors ligne (ANO-54, 56, 57, 59, 62) | E3 (+ accroches E8 `salon.cpp`, `menu.cpp`) | ⏳ En attente (WFS-131 en cours : `poursuite_system.cpp`) |  | WFS-133 ✅, WFS-131 | `feature/waforspeed-141` |  |  |
 | P1 Urgent | WFS-142 | [CRITIQUE] Route de nuit : fin de la chaussée miroir — asphalte jamais métallique, sec par défaut (mouillé seulement sous la pluie), reflet de la scène pondéré et flou, Fresnel plafonné, bloom et flaques de lumière revus + ANO-66 ; captures avant / après, **pas de fusion par confiance** | E4 (exception : 2e ticket E4 actif à côté de WFS-134 ; WFS-109 fusionné le 2026-11-05 20:59 ; blocs séparés, RG-11) | ✅ Fusionné par confiance (PR #120, eeec455, 2026-11-05 ; QA de nuit : `qa/Check.md`) | Claude (session 0183bv2V), 2026-11-05 21:01 UTC | WFS-09 ✅, WFS-97 ✅, WFS-100 ✅ | `feature/waforspeed-142` | #120 | #120 | ⏳ Recette QA de nuit ; résolu quand l'utilisateur l'a confirmé sur son téléphone 
-| P1 Urgent | WFS-143 | [CI ROUGE] Reporter dans le code les valeurs de `configgame.json` de l'utilisateur (e23fa51 : score de poursuite 1000, caméra Poursuite 10 / -4.5 / zoom 64) et relire les records de poursuite > 100 (`sauvegarde.cpp` l. 150) | E0 | ⏳ Prêt |  | — | `feature/waforspeed-143` |  |  |
+| P1 Urgent | WFS-143 | [CI ROUGE] Reporter dans le code les valeurs de `configgame.json` de l'utilisateur (e23fa51 : score de poursuite 1000, caméra Poursuite 10 / -4.5 / zoom 64) et relire les records de poursuite > 100 (`sauvegarde.cpp` l. 150) | E0 | ✅ Terminé (contenu fusionné hors ticket par la PR #121, d1fa824 ; d07f704, 6b49595 ; CI de main verte au run 679) |  | — | `feature/waforspeed-143` | #121 |  |
 | P2 Haute | WFS-144 | Correction : poursuite en Basse trop chère en appels de dessin (+149 → ≤ 60 par rapport à Checkpoint : matériaux fusionnés, feux de police groupés ou police `-lod` en Basse, jamais de cubes) + Basse conforme à WFS-134 (MSAA ×2, aniso ×4) | E4 (+ accroche E3 `poursuite_system.cpp`) | 🔧 En cours | Claude (session trafic), 2026-11-06 00:19 UTC | WFS-134 ✅ | `feature/waforspeed-144` |  |  |
+| P1 Urgent | WFS-145 | [CI ROUGE] Job `endurance` de `main` en échec depuis WFS-94 (run 680) : Poursuite bloquée à 9,87 km à 0 km/h, 3 écarts au parcours, mémoire +10,7 % (seuil 10 %) | E7 (+ `src/world/**` E2, accroche ≤ 10 lignes E3 annoncée) | 🔧 En cours | Claude (session dev 5bx), 2026-11-06 00:56 UTC | WFS-94 ✅ | `feature/waforspeed-145` |  |  |
+| P1 Urgent | WFS-146 | Lot anomalies INTERFACE, 2e passage (1/2) : textes, « — », couleurs, biseaux, commandes tactiles, SANS changer l'échelle (ANO-16, 20, 32, 35, 39, 41, 43, 44, 45) — reprend les morceaux sûrs de WFS-102 | E8 (+ E5 `text.cpp`, `toasts.cpp`, `hud.cpp`, `shaders/ui*`) | ⏳ Prêt |  | — | `feature/waforspeed-146` |  |  |
+| P2 Haute | WFS-147 | Lot anomalies INTERFACE, 2e passage (2/2) : tailles lisibles sur téléphone, écran par écran, sans échelle globale, verdict QA avant fusion (ANO-17, 18, 19, 38, 42, 47) | E8 (+ E5 `src/ui/**`) | ⏳ En attente (WFS-146) |  | WFS-146 | `feature/waforspeed-147` |  |  |
+| P2 Haute | WFS-148 | [RÉALISME 0.1] Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro | E0 (+ nouveaux `references/reel/**`, `tests/fidelite_*`, `src/render/bench_realisme.*`) | 🔧 En cours | expert-realisme-3d (session 0183bv2V), 2026-11-06 01:13 UTC | — | `feature/waforspeed-148` |  |  |
+| P2 Haute | WFS-149 | [RÉALISME 0.2] Socle : textures compressées KTX2 (ASTC / ETC2) + mipmaps, tangentes MikkTSpace, shaders découpés par domaine | E0 | ⏳ En attente |  | WFS-148 validée | `feature/waforspeed-149` |  |  |
+| P2 Haute | WFS-150 | [RÉALISME 0.3] Socle : passes de rendu enfichables, pré-passe, capture d'environnement, niveau Ultra, coût GPU par passe | E0 | ⏳ En attente |  | WFS-149 validée | `feature/waforspeed-150` |  |  |
+| P2 Haute | WFS-151 | [RÉALISME 1.1] Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker | E13 | ⏳ En attente |  | WFS-150 validée | `feature/waforspeed-151` |  |  |
+| P2 Haute | WFS-152 | [RÉALISME 1.2] Lumière : ciel physique, soleil et lune calculés (NOAA), 6 moments + heure réelle, brouillard de distance | E13 (+ accroche E8 `terrain.cpp`) | ⏳ En attente |  | WFS-151 validée | `feature/waforspeed-152` |  |  |
+| P2 Haute | WFS-153 | [RÉALISME 1.3] Lumière : ombres en cascades à pénombre physique, ombres des lumières la nuit, occlusion ambiante, contact | E13 | ⏳ En attente |  | WFS-151 validée (après WFS-152, même épic) | `feature/waforspeed-153` |  |  |
+| P2 Haute | WFS-154 | [RÉALISME 1.4] Lumière : reflets d'écran (SSR), bloom par énergie, flou de mouvement par objet, TAA, phares de face | E13 | ⏳ En attente |  | WFS-153 validée | `feature/waforspeed-154` |  |  |
+| P2 Haute | WFS-155 | [RÉALISME 2.R1] Routes : revêtements réels scannés et calibrés par carte, usure, bordures, sans répétition visible | E9 (+ accroche `track.cpp`) | ⏳ En attente |  | WFS-151 validée | `feature/waforspeed-155` |  |  |
+| P2 Haute | WFS-156 | [RÉALISME 2.R2] Routes : marquages réglementaires usés et rétroréfléchissants, fissures, nids-de-poule, plaques, traces | E9 | ⏳ En attente |  | WFS-155 validée | `feature/waforspeed-156` |  |  |
+| P2 Haute | WFS-157 | [RÉALISME 2.R3] Routes : états de surface (sec, humide, mouillé, flaques, sable, feuilles), projections d'eau | E9 (+ accroche `meteo.cpp`) | ⏳ En attente |  | WFS-156, WFS-154 validées | `feature/waforspeed-157` |  |  |
+| P2 Haute | WFS-158 | [RÉALISME 2.V1] Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 %), assise, pièces manquantes, LOD 4 niveaux | E10 | ⏳ En attente |  | WFS-148 validée, WFS-144 fusionnée | `feature/waforspeed-158` |  |  |
+| P2 Haute | WFS-159 | [RÉALISME 2.V2] Véhicules : peinture multicouche (flocons, vernis), verre physique, métaux, pneus, phares à optique | E10 | ⏳ En attente |  | WFS-158, WFS-151 validées | `feature/waforspeed-159` |  |  |
+| P2 Haute | WFS-160 | [RÉALISME 2.V3] Véhicules : suspension visible (roulis, plongée), roues, salissures, gouttes, dégâts légers | E10 (+ lecture E3) | ⏳ En attente |  | WFS-159 validée | `feature/waforspeed-160` |  |  |
+| P2 Haute | WFS-161 | [RÉALISME 3.E1] Environnements : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux scannés | E12 (+ accroches cartes) | ⏳ En attente |  | WFS-151 validée | `feature/waforspeed-161` |  |  |
+| P2 Haute | WFS-162 | [RÉALISME 3.E2] Environnements : signalisation réglementaire, feux tricolores, lampadaires réels, glissières, ponts, tunnels | E12 | ⏳ En attente |  | WFS-161 validée | `feature/waforspeed-162` |  |  |
+| P2 Haute | WFS-163 | [RÉALISME 3.E3] Environnements : végétation par espèce, herbe au vent, terrain mélangé, montagnes, mer à vagues physiques | E12 | ⏳ En attente |  | WFS-162, WFS-153 validées | `feature/waforspeed-163` |  |  |
+| P2 Haute | WFS-164 | [RÉALISME 4.P1] Personnages : humains réalistes, 12 morphotypes, vêtements par lieu, peau, cheveux, LOD | E11 | ⏳ En attente |  | WFS-151 validée | `feature/waforspeed-164` |  |  |
+| P2 Haute | WFS-165 | [RÉALISME 4.P2] Personnages : animations en capture de mouvement, mélanges, pieds au sol (IK), regard | E11 | ⏳ En attente |  | WFS-164 validée | `feature/waforspeed-165` |  |  |
+| P2 Haute | WFS-166 | [RÉALISME 4.P3] Personnages : comportements (trajets, feux, groupes, réactions, densité par lieu et heure, spectateurs) | E11 (+ lecture E3) | ⏳ En attente |  | WFS-165 validée | `feature/waforspeed-166` |  |  |
+| P2 Haute | WFS-167 | [RÉALISME 5] Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur | E13 | ⏳ En attente |  | WFS-148 à WFS-166 validées | `feature/waforspeed-167` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -594,11 +640,20 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-142 — [CRITIQUE] Route de nuit : fin de la chaussée miroir** · E4 (exception : 2e ticket E4 actif à côté de WFS-134, WFS-109 fusionné ; blocs séparés) · P1 Urgent · 🔧 En cours — Claude (session 0183bv2V), 2026-11-05 21:01 UTC, branche `feature/waforspeed-142` (règles : `regles-de-gestion/WFS-142.md`, cause racine fichier:ligne, RG-01 à RG-12 ; preuve : `qa/retours/2026-11-05-route-nuit-miroir.jpg`). **Zone** : dans `shaders/scene.frag` et `shaders/scene_skin.frag` **seulement** le bloc `F_ROAD` / `wetRoad`, le `Fe` / `env` du sol et le bloc du reflet ; `shaders/common.glsl` ; `shaders/post.frag` (seuil du bloom) ; `src/render/renderer.cpp` **seulement** le bloc des reflets (l. 575-680, 950-952) ; `src/render/nuit.cpp` **seulement** `mouille()`, la ligne `fp.mouille / flaques / reflets` et les flaques de lumière (l. 156-175) ; `src/render/bench_nuit.*` ; `#include "meteo.h"` en lecture seule ; accroches ≤ 10 lignes annoncées : `desktop_main.cpp`, `configgame.*`, `configgame.json`. **Interdit** : bloc des feux de `renderer.cpp`, `feux_modele.*`, bloc des feux du joueur de `nuit.cpp`, `traffic_system.cpp` (WFS-109) ; le reste de `scene*.frag`, `qualite_*`, `vk.*`, `model_loader.cpp` (WFS-134) ; `src/world/**` (WFS-94), `src/game/**`, `src/ui/**`, iOS (gel). **Critères** : captures avant / après `route-nuit-ville-sec`, `route-nuit-ville-pluie`, `route-nuit-corniche`, `route-jour-sec`, `route-jour-pluie`, `route-nuit-ville-pluie-basse` ; rapport de luminance de la chaussée avec / sans reflet ≤ 1,10 au sec, 1,15 à 1,8 sous la pluie ; aucun immeuble lisible dans la route ; ANO-66 ; parcours complet à 0 écart. **Fusion** : pas de fusion par confiance ; CI verte + captures regardées + verdict `qa-lead` avant fusion ; résolu seulement après confirmation de l'utilisateur sur son téléphone.
 - [ ] gyrophares petits et alternés ; bandeau hors de l'obstacle ; fins au gabarit Checkpoint, « 2e PLACE » ; panneau des modes opaque ; salon hors ligne lisible ; parcours RG-06 0 écart
 
-**WFS-143 — [CI ROUGE] Valeurs de l'utilisateur dans le code + records de poursuite > 100** · E0 · P1 Urgent · ⏳ Prêt (créé le 2026-11-05 21:28 UTC à la demande de Claude (session dev 5bx) ; règles : `regles-de-gestion/WFS-143.md`). Zone : `src/core/configgame.*`, `tests/test_configgame.cpp`, `tests/test_records.cpp` ; accroches ≤ 10 lignes annoncées : `sauvegarde.cpp` l. 150, `course_system.cpp` (banc des records), `poursuite*.cpp`. Interdit : `configgame.json` (valeurs de l'utilisateur), `src/render/**`, `shaders/**`, `src/world/**`, iOS (gel). Fusion par confiance permise.
+**WFS-143 — [CI ROUGE] Valeurs de l'utilisateur dans le code + records de poursuite > 100** · E0 · P1 Urgent · ✅ Terminé (contenu fusionné par la PR #121 ; créé le 2026-11-05 21:28 UTC à la demande de Claude (session dev 5bx) ; règles : `regles-de-gestion/WFS-143.md`). Zone : `src/core/configgame.*`, `tests/test_configgame.cpp`, `tests/test_records.cpp` ; accroches ≤ 10 lignes annoncées : `sauvegarde.cpp` l. 150, `course_system.cpp` (banc des records), `poursuite*.cpp`. Interdit : `configgame.json` (valeurs de l'utilisateur), `src/render/**`, `shaders/**`, `src/world/**`, iOS (gel). Fusion par confiance permise.
 - [ ] CI de `main` verte (`texte`, `vitrines`) ; `configgame.json` inchangé ; défauts du code = JSON ; poursuite à 1000 ; parcours des records 0 écart prouvé au Journal
 
 **WFS-144 — Correction : appels de dessin de la poursuite en Basse + MSAA ×2 / aniso ×4 en Basse** · E4 · P2 Haute · 🔧 En cours — Claude (session trafic), 2026-11-06 00:19 UTC, branche `feature/waforspeed-144` (créé le 2026-11-05 à la demande de Claude (session trafic), suite de WFS-134 ; règles : `regles-de-gestion/WFS-144.md`). Zone : `src/render/**` (hors `ui_*`), `shaders/scene*`, `tests/test_qualite*` ; accroche ≤ 10 lignes : `poursuite_system.cpp` (choix du modèle de la police). Interdit : reste de `src/game/**`, `src/world/**`, `src/ui/**`, iOS (gel). Fusion par confiance permise si le banc `course5` local tient la cible.
 - [ ] Banc `course5` Basse : poursuite − Checkpoint ≤ 60 ; aucune police en cubes ; « Rendu » Basse = MSAA ×2, aniso ×4 ; parcours complet 0 écart au Journal
+
+**WFS-145 — [CI ROUGE] Job `endurance` de `main` en échec depuis WFS-94** · E7 · P1 Urgent · 🔧 En cours — Claude (session dev 5bx), 2026-11-06 00:56 UTC, branche `feature/waforspeed-145` (règles : `regles-de-gestion/WFS-145.md`). Zone : `src/platform/endurance_banc.*`, `tools/qa/**`, `src/world/**` (placement / mémoire du décor de WFS-94), `tests/**` ; accroche ≤ 10 lignes annoncée si la cause est dans `src/game/**`. Interdit : affaiblir le banc (150 s, seuil 10 %, `validation_connues.txt`), `src/render/**`, `src/ui/**`, iOS (gel).
+- [ ] cause au Journal (fichier:ligne) ; `endurance` vert : Poursuite finie, 0 écart sur 10 cycles, mémoire ≤ 9 % ; CI de `main` verte
+
+**WFS-146 — Lot anomalies INTERFACE, 2e passage (1/2) : textes et couleurs sans échelle** · E8 (+ E5) · P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-146.md`). Zone : `src/ui/ecrans/**`, `src/ui/text.cpp`, `toasts.cpp`, `hud.cpp`, `shaders/ui*`. Interdit : toute échelle / taille / mise en page, `src/ui/echelle.*`, `src/render/**`, `src/game/**`.
+- [ ] « — » au menu ; boutons sans lignes ; sélection cyan ; duel en parallélogrammes ; salon lisible ; `garage-*-2400` identiques à `main` ; parcours 0 écart
+
+**WFS-147 — Lot anomalies INTERFACE, 2e passage (2/2) : tailles écran par écran** · E8 (+ E5) · P2 Haute · ⏳ En attente de WFS-146 (règles : `regles-de-gestion/WFS-147.md`). Pas de fusion sans verdict `qa-lead`.
+- [ ] écrans lisibles en 2400 un par un ; garage propre ; QA VALIDÉ
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
@@ -747,6 +802,86 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] #76 (WFS-88, iOS) fusionnée : synchronisée avec `main`, compilation et tests CPU, ligne `qa/Check.md` (fusion par confiance), **avant** le code de WFS-100 dans `renderer.cpp` / `vk.cpp`
 - [ ] CI de `main` verte après la dernière fusion ; `TACHES.md`, `qa/Check.md`, Journal à jour pour WFS-89 et WFS-96
 - [ ] **Règle permanente** : aucune PR ouverte plus de 2 h sans décision (fusionnée, bloquée au Journal, ou gel iOS)
+
+**WFS-148 — Référentiel du réel et banc de fidélité : données sourcées, 12 vues de référence, mesures automatiques, état zéro** · E0 · P2 Haute · 🔧 En cours — expert-realisme-3d (session 0183bv2V), 2026-11-06 01:13 UTC, branche `feature/waforspeed-148` · dépend de : — (règles : `regles-de-gestion/WFS-148.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-149 — Socle : textures compressées KTX2 (ASTC / ETC2) + mipmaps, tangentes MikkTSpace, shaders découpés par domaine** · E0 · P2 Haute · ⏳ En attente · dépend de : WFS-148 validée (règles : `regles-de-gestion/WFS-149.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-150 — Socle : passes de rendu enfichables, pré-passe, capture d'environnement, niveau Ultra, coût GPU par passe** · E0 · P2 Haute · ⏳ En attente · dépend de : WFS-149 validée (règles : `regles-de-gestion/WFS-150.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-151 — Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-150 validée (règles : `regles-de-gestion/WFS-151.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-152 — Lumière : ciel physique, soleil et lune calculés (NOAA), 6 moments + heure réelle, brouillard de distance** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-152.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-153 — Lumière : ombres en cascades à pénombre physique, ombres des lumières la nuit, occlusion ambiante, contact** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (après WFS-152, même épic) (règles : `regles-de-gestion/WFS-153.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-154 — Lumière : reflets d'écran (SSR), bloom par énergie, flou de mouvement par objet, TAA, phares de face** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-153 validée (règles : `regles-de-gestion/WFS-154.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-155 — Routes : revêtements réels scannés et calibrés par carte, usure, bordures, sans répétition visible** · E9 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-155.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-156 — Routes : marquages réglementaires usés et rétroréfléchissants, fissures, nids-de-poule, plaques, traces** · E9 · P2 Haute · ⏳ En attente · dépend de : WFS-155 validée (règles : `regles-de-gestion/WFS-156.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-157 — Routes : états de surface (sec, humide, mouillé, flaques, sable, feuilles), projections d'eau** · E9 · P2 Haute · ⏳ En attente · dépend de : WFS-156, WFS-154 validées (règles : `regles-de-gestion/WFS-157.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-158 — Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 %), assise, pièces manquantes, LOD 4 niveaux** · E10 · P2 Haute · ⏳ En attente · dépend de : WFS-148 validée, WFS-144 fusionnée (règles : `regles-de-gestion/WFS-158.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-159 — Véhicules : peinture multicouche (flocons, vernis), verre physique, métaux, pneus, phares à optique** · E10 · P2 Haute · ⏳ En attente · dépend de : WFS-158, WFS-151 validées (règles : `regles-de-gestion/WFS-159.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-160 — Véhicules : suspension visible (roulis, plongée), roues, salissures, gouttes, dégâts légers** · E10 · P2 Haute · ⏳ En attente · dépend de : WFS-159 validée (règles : `regles-de-gestion/WFS-160.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-161 — Environnements : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux scannés** · E12 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-161.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-162 — Environnements : signalisation réglementaire, feux tricolores, lampadaires réels, glissières, ponts, tunnels** · E12 · P2 Haute · ⏳ En attente · dépend de : WFS-161 validée (règles : `regles-de-gestion/WFS-162.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-163 — Environnements : végétation par espèce, herbe au vent, terrain mélangé, montagnes, mer à vagues physiques** · E12 · P2 Haute · ⏳ En attente · dépend de : WFS-162, WFS-153 validées (règles : `regles-de-gestion/WFS-163.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-164 — Personnages : humains réalistes, 12 morphotypes, vêtements par lieu, peau, cheveux, LOD** · E11 · P2 Haute · ⏳ En attente · dépend de : WFS-151 validée (règles : `regles-de-gestion/WFS-164.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-165 — Personnages : animations en capture de mouvement, mélanges, pieds au sol (IK), regard** · E11 · P2 Haute · ⏳ En attente · dépend de : WFS-164 validée (règles : `regles-de-gestion/WFS-165.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-166 — Personnages : comportements (trajets, feux, groupes, réactions, densité par lieu et heure, spectateurs)** · E11 · P2 Haute · ⏳ En attente · dépend de : WFS-165 validée (règles : `regles-de-gestion/WFS-166.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-167 — Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-148 à WFS-166 validées (règles : `regles-de-gestion/WFS-167.md` ; charte : `regles-de-gestion/DA-realisme.md`)
+- [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
+- [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
