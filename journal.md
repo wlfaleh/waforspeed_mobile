@@ -4884,3 +4884,6 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - `partie2a` (banc son) : `sirene.wav` dure 13 s, crête 0,20, plus grand saut 0,076. « SFX poursuite-arrete » à t=8 s (police à 5 m) puis « SFX poursuite-echappe » à t=11 s (police à 14 m), et la sirène revient à 0 après chaque fin. Pour `moteur.wav` : moteur au-dessus des bruitages (RMS 0,063 contre 0,016), plus grand saut 0,106, comme avant.
 - Parcours complet (banc `course5`, job `texte`) : « accueil → Course solo → Poursuite → Continuer → garage → Choisir → terrain → Rouler → poursuite → fin → Menu → accueil : 0 écart(s) OK ». Les deux jingles sont joués (arrestation, puis échappée après « Rejouer »), et la sirène revient à 0. Redémarrage : 0 écart.
 - Reste à faire par le QA de nuit : écouter `sirene.wav` et `moteur.wav` (`qa/Check.md`).
+
+### 2026-11-06 18:01:26 — WFS-180 : CI de main après la fusion (Claude, agent 1, session 01UY1Vv2)
+- Run 42255053955 (commit 7c8790b, fusion de WFS-180) : compilation, tests CPU (texte), APK et les 12 groupes banc-essai **verts** ; **endurance verte** (elle était rouge avant, WFS-145). Publication des captures et de l'APK en file d'attente GitHub au moment du contrôle : captures `carte-plage-fete*`, `-jeux*`, `-bateaux*` à regarder par le QA de nuit dans la Release `apercu`.
