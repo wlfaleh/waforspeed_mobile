@@ -48,7 +48,7 @@ inline const CarDef CARS[] = {
     {"a45", "Mercedes-AMG", "A 45", "cars/a45.wfm", {381, 4.2f, 270, 1555}, 8, {4.36f, 1.78f, 1.42f, 0.33f, 2.7f}, 0x7b808a,
      "« Mercedes-Benz A45 AMG 2018 » par Lexyc16 (Sketchfab), CC BY-NC 4.0"},
     {"model3", "Tesla", "Model 3", "cars/model3.wfm", {440, 4.4f, 233, 1844}, 7, {4.69f, 1.85f, 1.44f, 0.34f, 2.88f}, 0xc9ccd2,
-     "« Tesla model 3 (free model) » par retro_player (Sketchfab), CC BY 4.0"},
+     "« Tesla 2018 Model 3 » par Ameer Studio (Sketchfab), CC BY 4.0"},
     {"corsa", "Opel", "Corsa", "cars/corsa.wfm", {130, 8.7f, 208, 1165}, 9, {4.06f, 1.77f, 1.43f, 0.32f, 2.54f}, 0xc8940a,
      "« Opel Corsa 2020 » par Nieve5677 (Sketchfab), CC BY 4.0"},
     {"gt86", "Toyota", "GT86", "cars/gt86.wfm", {200, 7.6f, 226, 1240}, 9, {4.24f, 1.78f, 1.29f, 0.32f, 2.57f}, 0xb3122b,
