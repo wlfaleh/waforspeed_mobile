@@ -5287,3 +5287,11 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Vérification : 35 tests CPU verts (cmake local, avec un faux glslc et les en-têtes Vulkan téléchargés, seulement pour compiler les tests) ; syntaxe de `course5_system.cpp` et `duel_system.cpp` vérifiée.
 - Limites : banc Vulkan, captures `course5-*` et parcours RG-08 (Course à 5 en Compass, Duel) **non vérifiés en local** : je les vérifie sur la CI de `main`.
 
+
+### 2026-11-06 21:16:30 — WFS-196 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- **Ticket** : WFS-196 — [CI] Statuts automatiques 🟣 → ✅ après la CI de `main` · E7 · P1 Urgent · règles `regles-de-gestion/WFS-196.md` · branche `feature/waforspeed-196`.
+- **Pourquoi lui, pourquoi ce ticket** : seul ticket ⏳ Prêt du tableau ; l'agent est libre (WFS-189 🟣, PR #159). Épic E7 : WFS-190 🔧 (agent arwa) ; l'exception écrite à la création du ticket s'applique (fichiers séparés, aucun recouvrement). Dépendance WFS-185 🟣 : seul le bloc `on:` de `build.yml` en dépend, et `build.yml` est interdit à ce ticket.
+- **Zone autorisée** : `.github/workflows/statuts.yml` (nouveau), `tools/qa/statuts.py`, `tools/qa/test_statuts.py`. Interdit : `build.yml` (WFS-185 / WFS-190), tout autre code, iOS.
+- **Critères** : tests locaux des 4 cas de RG-07 verts ; premier run vert de `main` après fusion → tickets 🟣 contenus passent ✅ avec le numéro du run, commit `(robot statuts)`, entrée au journal ; le commit du robot ne relance pas `build.yml` ; run rouge → aucun statut changé, entrée au journal.
+- **Plan court** : script Python standard (analyse du tableau, `git merge-base --is-ancestor`), test sur un `TACHES.md` d'exemple, puis le workflow `workflow_run`. Protection de branche qui refuse l'envoi du robot → journal + une question dans `tache utilisateur.md`.
+- Tableau des agents : lignes en double de `track-agent.md` (agent 1 / WFS-176, agent 2 / WFS-189) retirées, elles décrivaient un état dépassé.
