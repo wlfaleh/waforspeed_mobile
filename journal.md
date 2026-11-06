@@ -4772,3 +4772,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Lignes corrigées** : WFS-109 et WFS-134 affichaient « 🔧 En cours » alors qu'ils étaient fusionnés (PR #117, #119) : « Fusionné » avait été écrit dans la case Responsable. Les deux passent en 🟣 Fusionné, responsable remis.
 - **WFS-185** (E7, P1, ⏳ Prêt) : `build.yml` ne se lance plus sur les branches ni sur les PR (`main`, nuit et lancement à la main seulement). Tant qu'il n'est pas fusionné, chaque push de branche lance encore la CI.
 - **Lignes déjà fusionnées** avant cette règle : libellé gardé (pas de réécriture en masse).
+
+### 2026-11-06 16:59:23 — Confiance ≤ 50 % : une CI de branche à la main, une seule fois (po-scrum-master)
+- **Décision de l'utilisateur** (réponse « Ok » à la proposition du PO) : pour une fusion à confiance ≤ 50 %, le développeur lance une fois, à la main (`workflow_dispatch`), la CI de sa branche synchronisée avec `main`, attend le vert et regarde les captures. Tous les autres tickets fusionnent puis valident sur la CI de `main`.
+- **Écrit dans** : `CLAUDE.md`, `waforspeed-natif` (5 bis), `regles-de-gestion/WFS-185.md` (RG-06 : `workflow_dispatch` sur une branche reste possible).
