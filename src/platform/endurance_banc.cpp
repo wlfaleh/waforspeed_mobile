@@ -1,6 +1,7 @@
 // WaForSpeed — banc d'endurance (WFS-91) : voir endurance_banc.h.
 #include "endurance_banc.h"
 #include <cstdio>
+#include <utility>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -24,13 +25,17 @@
 #include <dlfcn.h>
 #include <malloc.h>
 #include <atomic>
+#include <map>
+#include <mutex>
 #include <vulkan/vulkan.h>
 
 // WFS-126 (RG-09) : compteurs Vulkan du banc, sans toucher src/render : wfs_bench appelle directement vkAllocateMemory,
 // vkCreateBuffer… (pas de table de fonctions) ; ces définitions de l'exécutable passent donc avant celles du chargeur
 // (libvulkan), qu'elles appellent ensuite (dlsym RTLD_NEXT). Compter seulement : aucun comportement ne change.
 namespace {
-std::atomic<long> g_vkMem{0}, g_vkOctets{0}, g_vkTampons{0}, g_vkImages{0}, g_vkPipelines{0};
+std::atomic<long> g_vkMem{0}, g_vkOctets{0}, g_vkTampons{0}, g_vkImages{0}, g_vkPipelines{0}, g_vkJeux{0};
+// WFS-145 : jeux de descripteurs vivants par pool (un pool détruit rend tous les siens)
+std::mutex g_poolsMutex; std::map<VkDescriptorPool, long> g_pools;
 template <class F> F suivante(const char* nom) { static_assert(sizeof(F) == sizeof(void*)); return reinterpret_cast<F>(dlsym(RTLD_NEXT, nom)); }
 } // namespace
 extern "C" {
@@ -67,6 +72,23 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateGraphicsPipelines(VkDevice d, VkPipelineC
 VKAPI_ATTR void VKAPI_CALL vkDestroyPipeline(VkDevice d, VkPipeline p, const VkAllocationCallbacks* a) {
     static auto f = suivante<PFN_vkDestroyPipeline>("vkDestroyPipeline"); if (p != VK_NULL_HANDLE) g_vkPipelines--; f(d, p, a);
 }
+VKAPI_ATTR VkResult VKAPI_CALL vkAllocateDescriptorSets(VkDevice d, const VkDescriptorSetAllocateInfo* i, VkDescriptorSet* s) {
+    static auto f = suivante<PFN_vkAllocateDescriptorSets>("vkAllocateDescriptorSets");
+    const VkResult r = f(d, i, s);
+    if (r == VK_SUCCESS) { std::lock_guard<std::mutex> l(g_poolsMutex); g_pools[i->descriptorPool] += i->descriptorSetCount; g_vkJeux += i->descriptorSetCount; }
+    return r;
+}
+VKAPI_ATTR VkResult VKAPI_CALL vkFreeDescriptorSets(VkDevice d, VkDescriptorPool p, uint32_t n, const VkDescriptorSet* s) {
+    static auto f = suivante<PFN_vkFreeDescriptorSets>("vkFreeDescriptorSets");
+    long k = 0; for (uint32_t i = 0; i < n; i++) k += s[i] != VK_NULL_HANDLE;
+    { std::lock_guard<std::mutex> l(g_poolsMutex); g_pools[p] -= k; g_vkJeux -= k; }
+    return f(d, p, n, s);
+}
+VKAPI_ATTR void VKAPI_CALL vkDestroyDescriptorPool(VkDevice d, VkDescriptorPool p, const VkAllocationCallbacks* a) {
+    static auto f = suivante<PFN_vkDestroyDescriptorPool>("vkDestroyDescriptorPool");
+    { std::lock_guard<std::mutex> l(g_poolsMutex); auto it = g_pools.find(p); if (it != g_pools.end()) { g_vkJeux -= it->second; g_pools.erase(it); } }
+    f(d, p, a);
+}
 } // extern "C"
 #endif
 
@@ -77,6 +99,9 @@ namespace {
 // garage du banc : « Choisir » sans toucher l'écran (GameView::choisirVoiture, comme garage.cpp), voiture et peinture
 const char* g_voiture = nullptr;
 vec3 g_peinture{};
+// WFS-145 (RG-08) : voiture du moment (rendue après le relevé à la scène de référence, qui reprend celle du cycle 1)
+const char* g_voitureCourante = "golf";
+vec3 g_peintureCourante{0.1f, 0.3f, 0.85f};
 class EnduranceGarage : public System {
 public:
     const char* name() const override { return "endurance-garage"; }
@@ -96,7 +121,7 @@ double rssMo() {
 }
 
 // WFS-126 (RG-09) : relevé d'un cycle : RSS (anonyme / fichiers), tas de malloc, objets Vulkan vivants, trafic
-struct Releve { double rssBrut = 0, rss = 0, anon = 0, fich = 0, tas = 0, tasReserve = 0, vkMo = 0; long vkMem = 0, tampons = 0, images = 0, pipelines = 0; int trafic = 0; };
+struct Releve { double rssBrut = 0, rss = 0, anon = 0, fich = 0, tas = 0, tasReserve = 0, vkMo = 0; long vkMem = 0, tampons = 0, images = 0, pipelines = 0, jeux = 0; int trafic = 0; };
 double lireRss() {
     double kb = 0;
     if (FILE* f = std::fopen("/proc/self/status", "r")) {
@@ -130,15 +155,15 @@ Releve relever() {
     m.tasReserve = (double)(mi.arena + mi.hblkhd) / (1024.0 * 1024.0);   // octets que malloc garde (libres compris)
 #endif
 #if defined(__linux__)
-    m.vkMem = g_vkMem; m.vkMo = g_vkOctets / (1024.0 * 1024.0); m.tampons = g_vkTampons; m.images = g_vkImages; m.pipelines = g_vkPipelines;
+    m.vkMem = g_vkMem; m.vkMo = g_vkOctets / (1024.0 * 1024.0); m.tampons = g_vkTampons; m.images = g_vkImages; m.pipelines = g_vkPipelines; m.jeux = g_vkJeux;
 #endif
     if (const Traffic* t = activeTraffic()) m.trafic = (int)t->cars.size();
     return m;
 }
 void journalReleve(int cy, const Releve& m) {
     WFS_LOG("ENDURANCE cycle %d : RSS %.1f Mo (brute avant malloc_trim %.1f Mo), anonyme %.1f Mo, fichiers %.1f Mo, tas utilisé %.1f Mo (gardé par malloc %.1f Mo), "
-            "Vulkan %ld allocations (%.0f Mo alloués en tout), %ld tampons, %ld images, %ld pipelines, trafic %d voitures",
-            cy, m.rss, m.rssBrut, m.anon, m.fich, m.tas, m.tasReserve, m.vkMem, m.vkMo, m.tampons, m.images, m.pipelines, m.trafic);
+            "Vulkan %ld allocations (%.0f Mo alloués en tout), %ld tampons, %ld images, %ld pipelines, trafic %d voitures, %ld jeux de descripteurs",
+            cy, m.rss, m.rssBrut, m.anon, m.fich, m.tas, m.tasReserve, m.vkMem, m.vkMo, m.tampons, m.images, m.pipelines, m.trafic, m.jeux);
 }
 // pente (Mo par cycle) par moindres carrés sur les cycles [de, a]
 double pente(const double* v, int de, int a) {
@@ -305,17 +330,45 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
                 nuit ? "nuit" : "jour", voiture.c_str(), av, rssMo());
         return true;
     };
+    // WFS-145 : 6 images dessinées après un chargement ajouté par la mesure : les ressources de la carte quittée (descripteurs
+    // compris) sont détruites 3 images plus tard ; sans cela, trois chargements rapprochés épuisent le pool de descripteurs
+    auto vider = [&]() { for (int i = 0; i < 6; i++) { g.update(1.0 / 60); t += 1.0 / 60; simule += 1.0 / 60; g.render(t); rendues++; } };
+    // WFS-145 (RG-08) : scène de référence, même chargement que le cycle 1 : ville de jour au départ, voiture du cycle 1
+    // (Golf), puis l'accueil, chargements de morceaux terminés. RG-14 : tas = minimum de 8 relevés espacés de 30 images
+    // (niveau de base, sans les allocations passagères) ; objets Vulkan relevés une fois. La voiture du moment est rendue.
+    auto releverReference = [&](int cy) {
+        g_voiture = "golf"; g_peinture = {0.1f, 0.3f, 0.85f};
+        // la partie ne recharge pas une carte déjà chargée (« Rouler » sur le même terrain) : un passage par une autre carte
+        // garantit le même chargement à chaque cycle (sinon, ville de jour au cycle 2 : 374 tampons de plus à la référence)
+        d.carte = "circuit"; d.nuit = false; pas(1); g.allerA(Ecran::Menu); pas(2); vider();
+        d.carte = "ville"; d.nuit = false;
+        pas(1);                                  // la partie recharge la carte au début de la mise à jour suivante
+        g.setAutopilot(false); g.allerA(Ecran::Menu);
+        pas(60); vider();                        // morceaux de route et décor chargés autour du départ, destructions faites
+        Releve base = relever();
+        double mn = base.tas, mx = base.tas;
+        std::string serie = std::to_string((int)std::lround(base.tas));
+        for (int i = 1; i < 8; i++) { pas(30); const double t8 = relever().tas; mn = std::min(mn, t8); mx = std::max(mx, t8); serie += " " + std::to_string((int)std::lround(t8)); }
+        WFS_LOG("endurance : cycle %d, scène de référence : tas utilisé (8 relevés, Mo) %s → minimum %.1f, maximum %.1f, écart %.1f Mo (information)",
+                cy, serie.c_str(), mn, mx, mx - mn);
+        base.tas = mn;
+        g_voiture = g_voitureCourante; g_peinture = g_peintureCourante; pas(2);   // voiture du moment rendue
+        return base;
+    };
     double rss2 = 0, rssMax = 0, rssMaxCp = 0;
     int pire = 0, pireCp = 0, ecartsParcours = 0;
+    long vVkAlloc[CYCLES + 1] = {}, vVkTampons[CYCLES + 1] = {}, vVkImages[CYCLES + 1] = {}, vVkPipelines[CYCLES + 1] = {};   // WFS-145 (RG-13)
     double vRss[CYCLES + 1] = {}, vTas[CYCLES + 1] = {}, vReserve[CYCLES + 1] = {}, vFich[CYCLES + 1] = {}, vBrut[CYCLES + 1] = {};   // RG-09 : un relevé par cycle
     for (int cy = 1; cy <= CYCLES; cy++) {
         const bool checkpoint = cy <= CYCLES_CHECKPOINT;
         if (checkpoint) { carte = CARTES[(cy - 1) % 4]; nuit = cy > 4; }   // 4 cartes de jour, puis les 4 de nuit
         else nuit = false;   // WFS-129 : Course à 5 et Poursuite sur le terrain du moment (« Rouler » sans rien changer)
-        // WFS-129 (RG-06) : RSS relevée au même point de chaque cycle : accueil (menu), avant la course
+        // WFS-145 (RG-08) : point de mesure canonique : scène de référence (ville, jour, départ) rechargée par la partie
+        // elle-même (comme « Rouler », sans shutdown ni init), retour au menu, chargements terminés, puis relevé
         g.setAutopilot(false);
-        g.allerA(Ecran::Menu); pas(30);
-        const Releve rel = relever();
+        const Releve rel = releverReference(cy);
+        vVkAlloc[cy] = rel.vkMem; vVkTampons[cy] = rel.tampons; vVkImages[cy] = rel.images; vVkPipelines[cy] = rel.pipelines;
+        if (!checkpoint) { d.carte = carte; d.nuit = false; pas(1); g.allerA(Ecran::Menu); pas(30); vider(); }   // terrain du moment rendu (scénario inchangé)
         journalReleve(cy, rel);
         vRss[cy] = rel.rss; vTas[cy] = rel.tas; vReserve[cy] = rel.tasReserve; vFich[cy] = rel.fich; vBrut[cy] = rel.rssBrut;
         const double rss = rel.rss;
@@ -395,6 +448,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
             g.allerA(Ecran::Garage); pas(40);
             const int k = (cy / 3 - 1) % 3;
             g_voiture = VOITURES[k]; g_peinture = PEINTURES[k];
+            g_voitureCourante = VOITURES[k]; g_peintureCourante = PEINTURES[k];
             pas(2);
             WFS_LOG("endurance : cycle %d, garage : voiture %s", cy, g.player().car ? g.player().car->id : "?");
             if (cy == 3 && !retourArrierePlan("au garage")) return 4;
@@ -402,9 +456,9 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
         }
         if (cy == 6 && !retourArrierePlan("au menu")) return 4;
     }
-    // WFS-129 (RG-06) : la mesure de fin (juste après la dernière course) est écrite mais ne compte plus pour le seuil
-    g.allerA(Ecran::Menu); pas(30);
-    const double rssFin = relever().rss;
+    // WFS-145 (RG-08) : relevé de fin (après la Poursuite) à la scène de référence ; RSS écrite pour information
+    const Releve relFin = releverReference(CYCLES + 1);
+    const double rssFin = relFin.rss;
     const double croissance = rss2 > 0 ? (rssMax - rss2) / rss2 * 100 : 0;
     const double croissanceCp = rss2 > 0 ? (rssMaxCp - rss2) / rss2 * 100 : 0;
     WFS_LOG("endurance : bilan : %d cycles (%d Checkpoint, 1 Course à 5, 1 Poursuite), %d retours d'arrière-plan, %.1f min de jeu simulé, %ld pas, %.0f s réelles",
@@ -421,14 +475,39 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     WFS_LOG("endurance : pente (cycles 2 à %d) : RSS %+.2f Mo/cycle (brute %+.2f), tas utilisé %+.2f Mo/cycle, tas gardé %+.2f Mo/cycle, fichiers %+.2f Mo/cycle",
             CYCLES, pente(vRss, 2, CYCLES), pente(vBrut, 2, CYCLES), pente(vTas, 2, CYCLES), pente(vReserve, 2, CYCLES), pente(vFich, 2, CYCLES));
     WFS_LOG("endurance : parcours au doigt (Course à 5, Poursuite) : %d écart(s)%s", ecartsParcours, ecartsParcours ? " ÉCHEC" : " OK");
+    // WFS-145 (RG-13, RG-14) : verdict à la scène de référence. Critère 1 (GPU) : chaque compteur d'objets Vulkan vivants du jeu
+    // (allocations, tampons, images, pipelines) des cycles 3 à 9 ≤ cycle 2 + 2 objets (code 3) ; cycle 10 et fin (après la
+    // Course à 5 / la Poursuite) : code 6. Critère 2 (CPU) : pente du tas utilisé (minimum de 8 relevés) des cycles 2 à 9
+    // > +15 Mo/cycle → code 3 ; des cycles 2 à 10 → code 6. RSS, médianes, maximum, ancienne croissance : information.
+    // Limite connue (RG-13, RG-14) : une fuite CPU lente (< 15 Mo/cycle) n'est pas détectée par le banc PC.
+    long* const compteurs[4] = {vVkAlloc, vVkTampons, vVkImages, vVkPipelines};
+    const char* const nomsVk[4] = {"allocations", "tampons", "images", "pipelines"};
+    auto depasseVk = [&](int de, int a, std::string& quoi) {
+        for (int k = 0; k < 4; k++) for (int c = de; c <= a; c++)
+            if (compteurs[k][c] > compteurs[k][2] + 2) { quoi = std::string(nomsVk[k]) + " " + std::to_string(compteurs[k][c]) + " au cycle " + std::to_string(c) + " (cycle 2 : " + std::to_string(compteurs[k][2]) + ")"; return true; }
+        return false;
+    };
+    const double penteCp = pente(vTas, 2, CYCLES_CHECKPOINT + 1), penteTout = pente(vTas, 2, CYCLES);
+    std::string vkCp, vkC5;
+    const bool fuiteVkCp = depasseVk(3, CYCLES_CHECKPOINT + 1, vkCp);
+    vVkAlloc[0] = relFin.vkMem; vVkTampons[0] = relFin.tampons; vVkImages[0] = relFin.images; vVkPipelines[0] = relFin.pipelines;   // case 0 : relevé de fin
+    const bool fuiteVkC5 = depasseVk(CYCLES, CYCLES, vkC5) || depasseVk(0, 0, vkC5);
+    std::string minis;
+    for (int c = 2; c <= CYCLES; c++) { char b[32]; std::snprintf(b, sizeof b, "%s%.1f", c > 2 ? " / " : "", vTas[c]); minis += b; }
+    WFS_LOG("endurance : verdict mémoire (RG-13, RG-14, scène de référence) : tas utilisé minimum cycles 2 à %d : %s Mo ; pente cycles 2 à %d %+.2f Mo/cycle, "
+            "2 à %d %+.2f Mo/cycle (seuil +15) ; objets Vulkan cycle 2 : %ld allocations, %ld tampons, %ld images, %ld pipelines (marge +2) : %s",
+            CYCLES, minis.c_str(), CYCLES_CHECKPOINT + 1, penteCp, CYCLES, penteTout, vVkAlloc[2], vVkTampons[2], vVkImages[2], vVkPipelines[2],
+            fuiteVkCp ? vkCp.c_str() : fuiteVkC5 ? vkC5.c_str() : "stables");
     g.setAutopilot(false);
     courseBenchRules(false);
     g.shutdown();
-    if (croissanceCp > 10) { WFS_ERR("endurance : fuite de mémoire : +%.1f %% au cycle %d (seuil 10 %%)", croissanceCp, pireCp); return 3; }
+    if (fuiteVkCp) { WFS_ERR("endurance : fuite d'objets Vulkan : %s (marge +2)", vkCp.c_str()); return 3; }
+    if (penteCp > 15) { WFS_ERR("endurance : fuite de mémoire : pente du tas %+.2f Mo/cycle (cycles 2 à %d, seuil +15)", penteCp, CYCLES_CHECKPOINT + 1); return 3; }
     if (ecartsParcours > 0) { WFS_ERR("endurance : parcours au doigt : %d écart(s)", ecartsParcours); return 5; }
-    // WFS-129 : au-delà de 10 % seulement après la Course à 5 / la Poursuite : code à part (6), pour que tools/qa/endurance.sh
-    // puisse le signaler comme défaut connu (memoire-course5-connue) sans jamais excuser une croissance des cycles Checkpoint
-    if (croissance > 10) { WFS_ERR("endurance : mémoire gardée après la Course à 5 / la Poursuite : +%.1f %% au cycle %d (seuil 10 %%)", croissance, pire); return 6; }
+    // WFS-129 : code à part (6) pour ce qui vient après la Course à 5 / la Poursuite (tools/qa/endurance.sh)
+    if (fuiteVkC5) { WFS_ERR("endurance : objets Vulkan gardés après la Course à 5 / la Poursuite : %s (marge +2)", vkC5.c_str()); return 6; }
+    if (penteTout > 15) { WFS_ERR("endurance : mémoire gardée après la Course à 5 / la Poursuite : pente %+.2f Mo/cycle (cycles 2 à %d, seuil +15)", penteTout, CYCLES); return 6; }
+    (void)croissance; (void)croissanceCp;
     return 0;
 }
 
