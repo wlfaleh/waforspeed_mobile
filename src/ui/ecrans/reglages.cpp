@@ -47,7 +47,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
 const Ligne LIGNES[11] = {
     {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
-    {"Graphismes", 3, {"Basse", "Moyenne", "Haute"}},
+    {"Graphismes", 3, {"Basse", "Moyenne", "Haute", "Ultra"}},   // WFS-150 (RG-04) : « Ultra » seulement si la Haute tient (nChoix)
     {"Son", 2, {"Activé", "Coupé", nullptr}},
     {"Musique", 2, {"Activée", "Coupée", nullptr}},   // WFS-76 : musique seule (l'ambiance reste)
     {"Commandes", 2, {"Droitier", "Gaucher", nullptr}},   // WFS-75 : miroir des commandes tactiles
@@ -62,6 +62,7 @@ enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L
        L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, N_LIGNES = 11 };
 
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
+int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
 
 // ---------------------------------------------------------------- sauvegarde simple (camera=, qualite=, son=)
@@ -88,6 +89,7 @@ bool lire() {
     char cle[32]; int v;
     while (std::fscanf(fp, " %31[^=]=%d", cle, &v) == 2) {
         if (!std::strcmp(cle, "mouvements")) reglagesRessenti().reduireMouvements = v != 0;   // WFS-80 (RG-02)
+        else if (!std::strcmp(cle, "ultra")) qualite::ultraChoisi = v != 0;   // WFS-150 : Ultra (absent de la sauvegarde commune)
         else if (commune) continue;   // WFS-24 : les autres réglages viennent de la sauvegarde commune
         else if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
         else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
@@ -118,7 +120,7 @@ void ecrire() {
     const Reglages& R = reglages();
     std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
                  (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
-    std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone);   // WFS-108
+    std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\nultra=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone, (int)qualite::ultraChoisi);   // WFS-108 ; WFS-150
     std::fclose(fp);
 }
 
@@ -140,7 +142,7 @@ int valeur(int ligne) {
     const Reglages& R = reglages();
     switch (ligne) {
     case L_CAMERA: return R.camera;
-    case L_QUALITE: return R.qualite;
+    case L_QUALITE: return qualite::niveauAffiche(R.qualite);   // WFS-150 : 3 = Ultra
     case L_SON: return R.son ? 0 : 1;
     case L_MUSIQUE: return R.musique ? 0 : 1;
     case L_COMMANDES: return R.gaucher ? 1 : 0;
@@ -176,11 +178,11 @@ public:
         if (!t.down) { if (t.id == doigt_) doigt_ = -1; return true; }
         if (t.id == doigt_) return true;
         if (g_fermer.contient(t.x, t.y)) { g_ouvert = false; doigt_ = t.id; WFS_LOG("réglages : fermés"); return true; }
-        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < LIGNES[l].n; c++) {
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) {
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
             Reglages& R = reglages();
             if (l == L_CAMERA) { R.camera = c; appliquerCamera(); }
-            else if (l == L_QUALITE) { R.qualite = c; R.qualiteChoisie = true; qualite::oublierRetenus(); if (r_) appliquerQualite(*r_); }   // WFS-134
+            else if (l == L_QUALITE) { qualite::ultraChoisi = c == qualite::ULTRA; R.qualite = std::min(c, (int)QUALITE_HAUTE); R.qualiteChoisie = true; qualite::oublierRetenus(); if (r_) appliquerQualite(*r_); }   // WFS-134
             else if (l == L_SON) R.son = c == 0;
             else if (l == L_MUSIQUE) R.musique = c == 0;
             else if (l == L_COMMANDES) R.gaucher = c == 1;   // WFS-75 : lu à chaque toucher et à chaque image (miroirX)
@@ -206,7 +208,7 @@ public:
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
         if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k);
-        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < LIGNES[l].n; c++) manette::focus(g_choix[l][c]);
+        for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
     }
 
@@ -243,7 +245,7 @@ private:
         for (int l = 0; l < N_LIGNES; l++) {
             r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
-            const int n = LIGNES[l].n;
+            const int n = nChoix(l);
             float bx = px + pw - 36 * k - n * segW - (n - 1) * 6 * k;
             for (int c = 0; c < n; c++) {
                 const bool on = valeur(l) == c;   // aria-pressed : fond cyan léger, bordure et texte cyan
@@ -314,7 +316,7 @@ private:
                 ui::text(r, cx, y + rowH / 2 - lp - 1 * k, lp, lib.substr(0, coupe), hex(MUTED), ui::GAUCHE, 0.12f, false);
                 ui::text(r, cx, y + rowH / 2 + 1 * k, lp, lib.substr(coupe + 1), hex(MUTED), ui::GAUCHE, 0.12f, false);
             }
-            const int n = LIGNES[l].n;
+            const int n = nChoix(l);
             // WFS-168 : largeur d'avant WFS-147 (panneau de 760 au plus, une colonne), bornée par la place de la colonne
             const float pwAvant = std::min(zw - 32 * kb, 760 * kb), segAvant = std::min(170 * kb, (pwAvant - 72 * kb - 190 * kb - 3 * 6 * kb) / 4);
             const float place = colW - libW, segW = std::min(segAvant, (place - 3 * segGap) / 4);   // même largeur pour 2 ou 4 choix
