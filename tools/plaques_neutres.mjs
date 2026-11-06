@@ -5,9 +5,11 @@
 // Chaque image reprend la place et le sens de la plaque d'origine dans sa texture (coordonnées de texture du modèle) : le
 // maillage n'est pas touché par l'image. Les PNG produits sont dans le dépôt (tools/plaques/), lus par convert_car.mjs
 // (WFS_TEXTURES) : la conversion ne dépend donc pas des polices de la machine.
-// usage : node plaques_neutres.mjs   (réécrit tools/plaques/*.png)
+// usage : node plaques_neutres.mjs   (réécrit tools/plaques/*.png) ; plaque(numero, dep) est aussi utilisée par
+// tools/plaques_voitures.mjs (WFS-158, ST-3 : plaques des autres voitures, coordonnées de texture refaites à plat)
 import sharp from 'sharp';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 const MM = 4;                       // pixels par millimètre de la plaque dessinée (2080 × 440)
 const L = 520, H = 110;             // plaque SIV (mm)
@@ -59,7 +61,7 @@ async function texte(t, couleur, boite, serrage) {
   return { input: img, left: x + Math.round((w - largeur) / 2), top: y };
 }
 
-async function plaque(numero, dep) {
+export async function plaque(numero, dep) {
   const fond = await sharp(Buffer.from(svgFond())).png().toBuffer();
   return sharp(fond).composite([
     await texte('F', '#FFFFFF', [8, 74, BANDE - 10, 22], 1),                         // pays : 22 mm, sous les étoiles
@@ -68,18 +70,21 @@ async function plaque(numero, dep) {
   ]).png().toBuffer();
 }
 
-fs.mkdirSync(new URL('./plaques/', import.meta.url), { recursive: true });
-for (const p of PLAQUES) {
-  const [u0, v0, u1, v1] = p.zone;
-  const x0 = Math.round(u0 * p.w), y0 = Math.round(v0 * p.h), w = Math.round(u1 * p.w) - x0, h = Math.round(v1 * p.h) - y0;
-  let image = sharp(await plaque(p.numero, p.dep)).resize(w, h, { fit: 'fill' });
-  if (p.retourne) image = image.flip();
-  const img = await sharp({ create: { width: p.w, height: p.h, channels: 3, background: '#F7F7F5' } })
-    .composite([{ input: await image.png().toBuffer(), left: x0, top: y0 }]).png({ compressionLevel: 9 }).toBuffer();
-  fs.writeFileSync(new URL(`./plaques/${p.id}.png`, import.meta.url), img);
-  console.log(`plaques/${p.id}.png`, `${p.w}×${p.h}`, `zone ${w}×${h} en (${x0}, ${y0})`, p.retourne ? 'retournée' : '', p.numero);
+// ligne de commande seulement (pas à l'import)
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  fs.mkdirSync(new URL('./plaques/', import.meta.url), { recursive: true });
+  for (const p of PLAQUES) {
+    const [u0, v0, u1, v1] = p.zone;
+    const x0 = Math.round(u0 * p.w), y0 = Math.round(v0 * p.h), w = Math.round(u1 * p.w) - x0, h = Math.round(v1 * p.h) - y0;
+    let image = sharp(await plaque(p.numero, p.dep)).resize(w, h, { fit: 'fill' });
+    if (p.retourne) image = image.flip();
+    const img = await sharp({ create: { width: p.w, height: p.h, channels: 3, background: '#F7F7F5' } })
+      .composite([{ input: await image.png().toBuffer(), left: x0, top: y0 }]).png({ compressionLevel: 9 }).toBuffer();
+    fs.writeFileSync(new URL(`./plaques/${p.id}.png`, import.meta.url), img);
+    console.log(`plaques/${p.id}.png`, `${p.w}×${p.h}`, `zone ${w}×${h} en (${x0}, ${y0})`, p.retourne ? 'retournée' : '', p.numero);
+  }
+  // carte de normales plate (la plaque d'origine de la V60 avait ses lettres en relief) : même taille que l'image d'origine
+  const plat = await sharp({ create: { width: 1024, height: 512, channels: 3, background: { r: 128, g: 128, b: 255 } } }).png({ compressionLevel: 9 }).toBuffer();
+  fs.writeFileSync(new URL('./plaques/normale-plate.png', import.meta.url), plat);
+  console.log('plaques/normale-plate.png 1024×512');
 }
-// carte de normales plate (la plaque d'origine de la V60 avait ses lettres en relief) : même taille que l'image d'origine
-const plat = await sharp({ create: { width: 1024, height: 512, channels: 3, background: { r: 128, g: 128, b: 255 } } }).png({ compressionLevel: 9 }).toBuffer();
-fs.writeFileSync(new URL('./plaques/normale-plate.png', import.meta.url), plat);
-console.log('plaques/normale-plate.png 1024×512');

@@ -372,7 +372,7 @@ private:
             ly += 44 * k;
         };
         const CarDef& cd = carById(g.car ? g.car->id : "golf");
-        ligne("Ta voiture", std::string(cd.brand) + " " + cd.model);
+        ligne("Ta voiture", std::string(marque(cd)) + " " + modele(cd));
         ligne("Terrain", libelleCarte(carteHote(s, g)));
         // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change)
         ui::text(r, zl, ly + 14 * k, 12 * k, ui::majuscules("Distance"), hex(MUTED), ui::GAUCHE, 0.16f, false);
@@ -448,7 +448,7 @@ private:
             ly += 30 * k;
         };
         const CarDef& cd = carById(g.car ? g.car->id : "golf");
-        ligne("Ta voiture", std::string(cd.brand) + " " + cd.model);
+        ligne("Ta voiture", std::string(marque(cd)) + " " + modele(cd));
         ligne("Terrain", libelleCarte(carteHote(s, g)));
         // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change) ; choix de 48 dp de haut (RG-02)
         // WFS-168 (RG-01) : choix de 84 x 40 d'avant WFS-147, bornés par la place de la colonne

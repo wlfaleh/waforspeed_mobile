@@ -26,3 +26,16 @@ pour donner du relief. Le jeu web le fait seulement sur ordinateur ; en natif, l
 
 ## Hors périmètre
 Phares et éclairage nocturne (WFS-09), niveaux de qualité (WFS-15), ombres des piétons.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 6 | WFS-07 | Ombres dynamiques du soleil | E4 | ✅ Terminé | Claude (session moteur-natif), 2026-11-02 | WFS-30 | `feature/waforspeed-07` | PR #11 | ✅ VALIDÉ par qa-lead |
+
+Critères et notes de suivi :
+
+**WFS-07 — Ombres dynamiques du soleil** · E4 · priorité 6 · ✅ Terminé (PR #11) (règles : `regles-de-gestion/WFS-07.md`)
+- [ ] `course-cam0-*` en jour : ombres nettes des voitures, immeubles et lampadaires sur chaussée et trottoirs
+- [ ] Deux captures à 1 m d'écart : bords d'ombre stables (calage sur la grille des texels)
+- [ ] Nuit : aucune ombre solaire, ombre de contact conservée
+- [ ] Journal du banc : passe d'ombre ≤ 3 ms ; test de fidélité inchangé

@@ -18,7 +18,7 @@ VOITURES=(
   "x5|bmw-x5|4.92|180|^CARPAINT$||"
   "giulia|alfa-giulia|4.64|178.16|^EXT_carpaint$||"   # WFS-77 : modèle d'origine tourné de 1,84° (essieux de travers)
   "a45|mercedes-a45|4.36|0|^Material\.004$||^Material\.013$"
-  "model3|tesla-model-3|4.69|180|^primary$||^breaklight_l$"
+  "model3|tesla-2018-model-3|4.69|auto|^primary$||^(breaklight_l|left_rear_light|right_rear_light)$"   # WFS-158 (RG-D) : autre source, voir MODELE3
   "corsa|opel-corsa|4.06|180|^body$||^(r_glass|r_lights)$"
   "gt86|toyota-gt86|4.24|180|^body\.001$|forme|"
   "elantra|hyundai-elantra-n|4.68|180|^HHyundai_ElantraNRewardRecycled_2022Paint_Material1$||"
@@ -32,16 +32,37 @@ VOITURES=(
 declare -A PLAQUE=( [a45]='^Material\.029$' [rrsport]='^material$' )
 declare -A TEXTURES=( [v60]='plate_tex|couleur=plaques/v60.png|normale=plaques/normale-plate.png'
                       [a45]='Material.029|couleur=plaques/a45.png' [rrsport]='material|couleur=plaques/rrsport.png' )
+# WFS-158 (RG-D, ordre de l'utilisateur du 2026-11-06 19:52) : la Model 3 vient d'un autre modèle, « Tesla 2018 Model 3 »
+# d'Ameer Studio (Sketchfab, CC BY 4.0), lu dans le dépôt GitHub public tomfanhm/tesla, dossier public/gltf/tesla
+# (scene.gltf SHA-256 80911d58…e3b5, scene.bin c87f3de6…18b7 ; méthode : .claude/skills/waforspeed-natif/references/
+# modeles-3d-github.md). Il n'est pas dans le jeu web : MODELE3=<dossier>/scene.gltf (clone partiel, hors du dépôt) ; trop
+# lourd (684 000 triangles), il est d'abord allégé par tools/simplifier_voiture.mjs (erreur bornée, peinture 4 fois plus fine).
+# Sa licence (assets/licences/model3.txt) est écrite à la main (dépôt GitHub et modifications), pas recopiée.
+declare -A SOURCE=( [model3]="${MODELE3:-}" )
 cd "$ICI"
 for v in "${VOITURES[@]}"; do
   IFS='|' read -r id dossier L rot peinture roues feux <<< "$v"
   export WFS_ROUES="$roues" WFS_PLAQUE="${PLAQUE[$id]:-}" WFS_TEXTURES="${TEXTURES[$id]:-}"
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   echo "== $id ($dossier)"
-  if [ -n "$feux" ]; then node convert_car.mjs "$WEB/models/$dossier/$dossier.json" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture" "$feux"
-  else node convert_car.mjs "$WEB/models/$dossier/$dossier.json" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture"; fi
-  cp "$WEB/models/$dossier/license.txt" "$RACINE/assets/licences/$id.txt"
+  src="$WEB/models/$dossier/$dossier.json"
+  if [ -n "${SOURCE[$id]+x}" ]; then
+    [ -f "${SOURCE[$id]}" ] || { echo "⚠️  $id : source absente (MODELE3=<dossier>/scene.gltf, voir plus haut)" >&2; exit 1; }
+    src="$(mktemp -d)/$id.glb"; node simplifier_voiture.mjs "${SOURCE[$id]}" "$src" "$peinture"
+  fi
+  if [ -n "$feux" ]; then node convert_car.mjs "$src" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture" "$feux"
+  else node convert_car.mjs "$src" "$RACINE/assets/cars/$id.wfm" "$L" "$rot" "$peinture"; fi
+  [ -n "${SOURCE[$id]+x}" ] || cp "$WEB/models/$dossier/license.txt" "$RACINE/assets/licences/$id.txt"
 done
+# WFS-158 (ST-2, RG-01, RG-02) : échelle globale, diamètre des roues, voies et assise d'après le référentiel du réel
+# (references/reel/voitures.json) : tools/corriger_voitures.cpp, cible CMake « corriger_voitures » ; rejouable (une voiture
+# déjà corrigée ne bouge plus). Sans id : les 20 voitures (golf, m4, p911 et gallardo comprises).
+CORR="$RACINE/build/corriger_voitures"
+if [ -x "$CORR" ]; then "$CORR" "$RACINE" "$@"
+else echo "⚠️  $CORR absent : construire la cible corriger_voitures (ninja -C build corriger_voitures), puis la lancer" >&2; exit 1; fi
+# WFS-158 (ST-3, M-04) : plaques européennes 520 × 110 mm des voitures dont la plaque est une pièce à part (après la
+# correction : la plaque est posée sur la caisse corrigée)
+node plaques_voitures.mjs "$@"
 # WFS-134 (RG-11, RG-12) : versions allégées (assets/cars/<id>.lod : indices seuls, 30 % des triangles au moins) des voitures
 # du trafic, de la police et du camion de la poursuite ; vues au-delà de 60 m, avec fondu (Renderer::draw)
 # (WFS-158 : avec une liste d'id, seules les voitures de la liste sont allégées)

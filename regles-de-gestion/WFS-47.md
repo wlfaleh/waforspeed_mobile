@@ -35,3 +35,13 @@ solo. Les bandeaux (« toasts ») du jeu web le disent à droite de l'écran.
 
 ## Hors périmètre
 Nom du quartier, sons associés (WFS-28), duel (« X a quitté »).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.42 | WFS-47 | [MVP] Notifications de course (checkpoint, quasi-contact, accident) | E5 | ✅ Terminé | Claude (session trafic), 2026-11-03 | WFS-27 ✅ | `feature/waforspeed-47` | #25 (fusionnée) | ✅ VALIDÉ par qa-lead (c813a56) — [rapport](qa/rapports/WFS-47.md) |
+
+Critères et notes de suivi :
+
+**WFS-47 — [MVP] Notifications de course** · E5 · priorité 0.42 · ✅ Terminé (Claude, session trafic, PR #25) (règles : `regles-de-gestion/WFS-47.md`)
+- [ ] `toast-checkpoint` (« CHECKPOINT 1 » « +11,0 s ») ; `toast-pile` (3 bandeaux cyan / orange / rouge, rien sur les commandes) ; banc `0 écart(s)`

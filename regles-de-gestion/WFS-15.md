@@ -60,3 +60,13 @@ seuils et rétrogradation unique) ; `js/world/scene.js` → `LOD_CAR_M = 50` (l.
 silhouette au-delà de 50 m), valeurs du bloom `ENV.bloom` (l. 294) ; `js/world/renderer.js` → `setupComposer`, `onResize`.
 Modèles : les versions `-lod` de `models/` déjà converties pour le trafic (WFS-13) ; sinon silhouette simple, ne pas
 reconvertir les 20 voitures.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-15 | Qualité, performances et post-traitement (réglages téléphone, LOD, bloom, TAA, flou) | E4 | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | WFS-06, WFS-07, WFS-08 | `feature/waforspeed-15` | #56 |  |
+
+Critères et notes de suivi :
+
+**WFS-15 — Qualité, performances et post-traitement (réglages téléphone, LOD, bloom, TAA, flou)** · E4 · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #56, QA de nuit : `qa/Check.md`) — Claude (agent 4, session 011cpqZan), 2026-11-04, branche `feature/waforspeed-15` (règles : `regles-de-gestion/WFS-15.md`, section « Recadrage du PO (2026-11-04) »)
+- [ ] Niveaux bas / moyen / haut, choix automatique

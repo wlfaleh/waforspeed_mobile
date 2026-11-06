@@ -32,7 +32,7 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 ## Livraison
 - [ ] Règle de fusion en vigueur appliquée (`CLAUDE.md` : confiance > 50 % → fusion directe, sinon CI verte et captures vues).
 - [ ] Ligne `qa/Check.md` (ticket, PR, date, mode de fusion, points à regarder sur les captures).
-- [ ] `TACHES.md` (ses lignes seulement) et `journal.md` (entrée datée à la seconde, `date -u`) envoyés sur `main`.
+- [ ] `TACHES.md` (ses lignes seulement, cases courtes ; critères et notes dans `regles-de-gestion/WFS-XX.md`) et `journal.md` (entrée datée à la seconde, `date -u`) envoyés sur `main`.
 - [ ] PR fusionnée **en squash** (`merge_method: "squash"`), titre `WFS-XX : <titre> (#PR) (<agent>)` ; chaque commit, synchronisations comprises, finit par `(<agent>)` (règle de l'utilisateur du 2026-11-06).
 - [ ] `track-agent.md` : sa ligne à jour (ticket, branche, dernier envoi, état), dans le même commit que `TACHES.md` (règle de l'utilisateur du 2026-11-06).
 - [ ] Réponse à l'utilisateur dans `tache utilisateur.md` si sa demande est concernée.

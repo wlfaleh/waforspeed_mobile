@@ -136,3 +136,18 @@ qui le démarre **à la fusion de WFS-109** (un ticket à la fois).
 - **Ne pas anticiper WFS-136 à WFS-140** (nouveau tracé, casino, beach parties…) : WFS-94 garde le tracé actuel ; WFS-139
   ajoutera la falaise et les animations de plage après lui.
 - Parcours complet (règle 000000) : `WFS_BANC=parcours` à 0 écart avant fusion, preuve au Journal.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-94 | Corniche : quartiers Port de plaisance, Côte rocheuse, Village de pêcheurs (villas, bateaux, rochers) + ville de nuit : façades sombres et fenêtres allumées (fin d'ANO-37) ; cadrage ANO-40 ; finitions de WFS-93 : trottoir de la ville jusqu'à RW + 6 m (ANO-49), texte lointain des panneaux du circuit (ANO-51) | E2 | ✅ Fusionné (QA de nuit à faire ; fusion par confiance, PR #123, commit a722e6c) | Claude (session trafic, agent reprise), 2026-11-05 (repris de Copilot sur demande de l'utilisateur) | WFS-93 ✅ | `feature/waforspeed-94` | #123 | ⏳ Recette QA de nuit (`qa/Check.md`) |
+
+Critères et notes de suivi :
+
+**WFS-94 — Corniche : quartiers marina, rochers, village + ville de nuit (fin d'ANO-37) + finitions de WFS-93 (ANO-49, ANO-51)** · E2 · P2 Haute · ✅ Fusionné (QA de nuit à faire), PR #123, commit a722e6c, 2026-11-06, fusion par confiance — Claude (session trafic, agent reprise), 2026-11-05 (repris de Copilot sur demande de l'utilisateur), ex-Copilot (session 0e5c192d), démarre à la fusion de WFS-109 ; branche `feature/waforspeed-94` reprise (seule l'étape 0, PR #76, a été faite ; aucun commit de code sur la branche, d42c3f0 d'attribution : section « Reprise du 2026-11-05 » des règles) (règles : `regles-de-gestion/WFS-94.md` : RG-A2 à RG-A5, puis section « Attribution du 2026-11-05 », RG-06 et RG-07). **Étape 0** : regarder et fusionner la PR #76 (WFS-88, iOS ; confiée par le PO, RG-10 de WFS-103), sauf si elle est déjà fusionnée. Zone : `src/world/**` (`plage.cpp`, nouveaux `src/world/plage_*.cpp`, `cartes_banc.cpp`, banc de `commerces.cpp` (ANO-40), `ville.cpp` (façades et fenêtres de nuit, trottoir), `ville_quartiers.*` (trottoir, ANO-49), `enseignes.*` / `circuit.cpp` (ANO-51), `decor_carte.*` pour les primitives) ; `#include "effets_particules.h"` permis, sans le modifier ; interdit : le reste de `src/render/**`, `shaders/**` (WFS-100, WFS-109), `src/game/**` dont `WALK_W` (accroches de WFS-102), `src/ui/**` (WFS-102), `src/platform/**` et `.github/**` (WFS-106), noms et API de `zones.h`, fichiers du duel, iOS (hormis la fusion de #76)
+- [ ] `carte-plage-marina`, `-rochers`, `-village` : bateaux, bornes, villas, rochers, glissières visibles ; ≤ 300 appels de dessin
+- [ ] (ajout PO, ANO-40) `vie-portique` à 25 m (« CHECKPOINT 1 » lisible), `vie-plage` à 15 m (serviettes et baigneurs visibles)
+- [ ] (ajout PO, ANO-37 fin) `course-nuit-ville-*` : façades sombres jusqu'au fond de rue, même dans l'axe des phares ; environ une fenêtre sur trois allumée (quads émissifs, RG-A4) ; captures de jour inchangées
+- [ ] (ANO-49) `carte-ville-residentiel`, `-parc`, `-port`, `course-cam0-*`, `vie-terrasse` : trottoir gris continu de la chaussée jusqu'aux façades (RW + 6 m), plus de bande d'herbe ; terrasses posées sur le trottoir
+- [ ] (ANO-51) `carte-circuit-jour`, `carte-circuit-nuit` : mots entiers sur les panneaux lointains (plus de lettres en morceaux) ; enseignes de la ville toujours nettes de près
+- [ ] #76 fusionnée (ou déjà fusionnée) avec sa ligne `qa/Check.md` ; tests CPU verts

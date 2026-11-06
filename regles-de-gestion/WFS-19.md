@@ -28,3 +28,12 @@ La ville et la plage sont peuplées de vrais personnages animés (marche, debout
 ## Hors périmètre
 Conducteurs (WFS-73) ; assis aux terrasses, allongés sur serviettes, baigneurs (WFS-71) ; campagne et paddock (après WFS-53) ; piétons qui traversent ou sont percutés, voix, foule dense.
 
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-19 | Personnages : piétons animés (ville et plage) | E2 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-06 ✅, WFS-63 ✅, WFS-72 ✅ | `feature/waforspeed-19` | #42 (fusionnée, 710c9fc) |  |
+
+Critères et notes de suivi :
+
+**WFS-19 — Personnages : piétons animés (ville et plage)** · E2 · priorité P2 Haute · ✅ Fusionné (PR #42, QA de nuit à faire) (Claude, session trafic, 2026-11-03), branche `feature/waforspeed-19` (règles : `regles-de-gestion/WFS-19.md`)
+- [ ] ville : piétons sur les trottoirs, poses variées ; plage : promeneurs ; deux instants : poses de marche différentes

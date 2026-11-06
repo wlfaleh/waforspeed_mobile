@@ -69,3 +69,14 @@ nouveau `src/game/commandes_tactiles.*`), `src/game/direction.*`, `src/game/came
 `src/ui/hud.*`. **Interdit** : `src/ui/text.*`, `toasts.*`, `shaders/ui*` (WFS-95), `src/ui/ecrans/**` (WFS-96 ;
 `ecrans::miroirX`, `reglages()` en lecture seule), `src/platform/**` et `.github/**` (WFS-91 : captures dans les bancs
 déjà branchés), `src/render/**` (WFS-97, WFS-100, WFS-101), fichiers du duel (WFS-89), `src/world/**` (WFS-93).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P1 Urgent | WFS-98 | Correction : commandes tactiles du jeu web (GAZ / FREIN / NITRO / volant), HUD de la vue cockpit, caméra qui suit le demi-tour (ANO-31, ANO-24, ANO-30) | E3 (exception : 2e ticket E3, fichiers séparés de WFS-89 ; + E0 `game.cpp`, E5 `hud.*`) | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Copilot (session 0e5c192d), 2026-11-04 | — | `feature/waforspeed-98` | #80 |  |
+
+Critères et notes de suivi :
+
+**WFS-98 — Correction : commandes tactiles, HUD cockpit, caméra du demi-tour** · E3 (+ E0 `game.cpp`, E5 `hud.*`) · P1 Urgent · ✅ Fusionné le 2026-11-04 par confiance (PR #80, QA de nuit : `qa/Check.md`) — Copilot (session 0e5c192d), 2026-11-04 (réattribué : aucune branche poussée depuis l'attribution à Claude (session trafic) à 18:42:05, ordre de l'utilisateur), branche `feature/waforspeed-98` (règles : `regles-de-gestion/WFS-98.md`). Zone : `src/game/game.cpp` (commandes, caméra de poursuite), `direction.*`, `camera_vue.*`, `camera_banc.*` (si besoin), `conduite_libre_banc.*`, nouveau `commandes_tactiles.*`, `src/ui/hud.*`
+- [ ] `hud-course`, `encoche-hud-2400` : pédales « GAZ » orange et « FREIN » rouge, nitro rond à anneau vert acide « NITRO », volant dessiné ; boutons du HUD sans rayures ; `hud-nitro` : gaz appuyé (remplissage orange) ; `course-gaucher` : commandes en miroir, gaz appuyé (RG-05 bis)
+- [ ] `camera-cockpit` : un seul compteur, plus de disque cyan ; `conduite-demitour` : Golf entière au tiers bas, en travers ; tests CPU verts

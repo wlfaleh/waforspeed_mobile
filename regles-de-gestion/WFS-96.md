@@ -46,3 +46,13 @@ Lobby du duel et garage du duel (WFS-89), nouveaux écrans, textes du garage aut
 (mode regarder), `src/platform/manette_jeu.cpp` (RG-04 ; fichier non touché par WFS-91), `src/audio/sfx.*` (2 sons).
 Interdit : `src/platform/desktop_main.cpp` et `.github/**` (WFS-91 : captures dans les bancs déjà branchés de `menu.cpp`,
 `terrain.cpp`, `reglages.cpp`), `src/render/**` (WFS-97), `src/ui/text.*` et `toasts.*` (WFS-95).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-96 | Menus : Showroom et « Ta voiture » ouvrent le garage, quartiers sur la carte du terrain, focus manette, voile sans bandes, sons d'interface | E8 | ✅ Fusionné (PR #79, revue WFS-103 ; ANO-15 et ANO-34 corrigées ; QA de nuit à faire) | Claude (session trafic), 2026-11-04 | — | `feature/waforspeed-96` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-96 — Menus : Showroom, quartiers du terrain, focus manette, voile, sons** · E8 · P2 Haute · ✅ Fusionné (PR #79, 6863763, revue WFS-103) — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-96` (règles : `regles-de-gestion/WFS-96.md`). Zone : `src/ui/ecrans/**` sauf `salon.*` ; accroches ≤ 10 lignes annoncées : `src/ui/garage.cpp`, `src/platform/manette_jeu.cpp`, `src/audio/sfx.*` ; interdit : `desktop_main.cpp`, `.github/**`, `src/render/**`, `src/ui/text.*`, `toasts.*`
+- [ ] `menu-showroom`, `showroom-choisir` : Showroom ouvre le garage, « Choisir » ramène au menu ; `terrain-0` : « Quartiers » et noms ; voile du menu sans rayures ; focus manette sur le 1er choix ; « SFX garage » / « SFX carte » au journal

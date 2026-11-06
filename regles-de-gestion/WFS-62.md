@@ -21,3 +21,13 @@ Quand la voiture roule, ses roues tournent ; quand elle s'arrête, elles s'arrê
 
 ## Hors périmètre
 Flou de roue à grande vitesse, suspension / roulis, fumée de pneus.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-62 | Roues animées (rotation selon la vitesse, braquage) | E3 | ↪ Fusionné dans WFS-60 (via WFS-61) |  | — | `feature/waforspeed-62` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-62 — Roues animées** · E3 · priorité P4 Basse · ↪ fusionné dans WFS-60 (via WFS-61) (règles : `regles-de-gestion/WFS-62.md`)
+- [ ] Roues immobiles à l'arrêt, qui tournent en roulant, avant braquées en virage

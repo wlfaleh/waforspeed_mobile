@@ -31,3 +31,13 @@ manque seulement la sortie de la plateforme.
 
 ## Hors périmètre
 Son spatial, AirPods / changement de sortie à chaud, réglage du volume système.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-79 | Son iOS (sortie Core Audio) | E6 (+ accroche E7 `ios.cmake`) | ✅ Terminé — PR #63 | Claude (session trafic, agent WFS-79), 2026-11-04 | WFS-22 ✅, WFS-76 ✅ | `feature/waforspeed-79` | #63 | ✅ VALIDÉ par qa-lead (QA de nuit) — [rapport](qa/rapports/WFS-79.md) |
+
+Critères et notes de suivi :
+
+**WFS-79 — Son iOS** · E6 · P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #63 — Claude (session trafic, agent WFS-79), 2026-11-04 (règles : `regles-de-gestion/WFS-79.md`)
+- [ ] journal du simulateur `audio iOS : 48000 Hz` puis `n rappels` > 0 ; son Android et WAV du banc inchangés

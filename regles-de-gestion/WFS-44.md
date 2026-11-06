@@ -33,3 +33,15 @@ toujours route + voiture du joueur : un système ne peut que dessiner en plus. C
 
 ## Hors périmètre
 Projecteurs et lumière hémisphère, brouillard linéaire (WFS-45) ; scène du garage elle-même (WFS-11).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.45 | WFS-44 | Point d'extension : scène dédiée par écran (caméra, fond, brouillard, ce que Game dessine) | E0 | ✅ Terminé |  | WFS-36 | `feature/waforspeed-44` | #15 (fusionnée) | ✅ VALIDÉ par qa-lead (b9771e0, [rapport](qa/rapports/WFS-44.md)) |
+
+Critères et notes de suivi :
+
+**WFS-44 — Point d'extension : scène dédiée par écran** · E0 · priorité 0.45 · ✅ Terminé (PR #15) (règles : `regles-de-gestion/WFS-44.md`)
+- [ ] Captures du banc identiques à `main` (aucune scène dédiée par défaut), tests à 0 écart
+- [ ] Capture `scene-dediee-vide` : fond uni `#07070c`, ni route, ni ville, ni trafic, ni voiture du joueur, ni commandes ; cube repère vu en FOV 36°
+- [ ] Doc du point d'extension dans le skill `waforspeed-natif`

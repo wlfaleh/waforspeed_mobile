@@ -1,9 +1,13 @@
 // WaForSpeed — catalogue des voitures (repris de js/cars/catalog.js) et performances dérivées de la fiche réelle.
+// WFS-191 : brand / model / credit gardent les noms d'origine des modèles 3D (licences, tools/qa/verifier_licences.py) ;
+// le joueur ne les lit jamais : l'écran affiche marque(c), modele(c) (section « voitures » de configgame.json, noms inventés
+// par défaut) et creditAffiche(c) (auteur, licence, « modèle modifié pour WaForSpeed »). Les id ne changent pas.
 #pragma once
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include "../core/configgame.h"   // WFS-188 : constantes de conduite (frottements, freinage)
 
 namespace wfs {
@@ -44,7 +48,7 @@ inline const CarDef CARS[] = {
     {"a45", "Mercedes-AMG", "A 45", "cars/a45.wfm", {381, 4.2f, 270, 1555}, 8, {4.36f, 1.78f, 1.42f, 0.33f, 2.7f}, 0x7b808a,
      "« Mercedes-Benz A45 AMG 2018 » par Lexyc16 (Sketchfab), CC BY-NC 4.0"},
     {"model3", "Tesla", "Model 3", "cars/model3.wfm", {440, 4.4f, 233, 1844}, 7, {4.69f, 1.85f, 1.44f, 0.34f, 2.88f}, 0xc9ccd2,
-     "« Tesla model 3 (free model) » par retro_player (Sketchfab), CC BY 4.0"},
+     "« Tesla 2018 Model 3 » par Ameer Studio (Sketchfab), CC BY 4.0"},
     {"corsa", "Opel", "Corsa", "cars/corsa.wfm", {130, 8.7f, 208, 1165}, 9, {4.06f, 1.77f, 1.43f, 0.32f, 2.54f}, 0xc8940a,
      "« Opel Corsa 2020 » par Nieve5677 (Sketchfab), CC BY 4.0"},
     {"gt86", "Toyota", "GT86", "cars/gt86.wfm", {200, 7.6f, 226, 1240}, 9, {4.24f, 1.78f, 1.29f, 0.32f, 2.57f}, 0xb3122b,
@@ -60,6 +64,24 @@ inline const CarDef CARS[] = {
     {"sf90", "Ferrari", "SF90 XX Stradale", "cars/sf90.wfm", {1030, 2.3f, 320, 1560}, 10, {4.85f, 1.97f, 1.19f, 0.35f, 2.65f}, 0xb3122b,
      "« Ferrari SF90 XX | www.vecarz.com » par vecarz (Sketchfab), CC BY 4.0"},
 };
+static_assert(sizeof(CARS) / sizeof(CARS[0]) == VOITURES_NB, "WFS-191 : une entrée « voitures » de configgame par voiture");
+
+// WFS-191 : noms affichés (configgame.json, section « voitures ») ; voiture hors du catalogue : chaîne vide
+inline const NomVoiture* nomVoiture(const CarDef& c) {
+    for (int i = 0; i < VOITURES_NB; i++) if (std::strcmp(VOITURES_IDS[i], c.id) == 0) return &config().voitures.nom[i];
+    return nullptr;
+}
+inline const char* marque(const CarDef& c) { const NomVoiture* n = nomVoiture(c); return n ? n->marque : ""; }
+inline const char* modele(const CarDef& c) { const NomVoiture* n = nomVoiture(c); return n ? n->modele : ""; }
+// crédit affiché (RG-03) : « Modèle 3D par <auteur> (<site>), <licence> · modèle modifié pour WaForSpeed », sans le titre
+// d'origine (qui nomme la vraie voiture : il reste dans assets/licences/ et store/credits.md, obligatoire pour CC-BY)
+inline std::string creditAffiche(const CarDef& c) {
+    const std::string cr = c.credit ? c.credit : "";
+    const size_t p = cr.find("» par ");
+    const std::string auteur = p == std::string::npos ? cr : cr.substr(p + std::strlen("» par "));
+    return "Modèle 3D par " + auteur + " · modèle modifié pour WaForSpeed";
+}
+
 constexpr int TRAFIC_MODELES = 4;   // WFS-13 : modèles chargés par le trafic (les 4 premières voitures), variété : WFS-67
 constexpr int CAR_COUNT = sizeof(CARS) / sizeof(CARS[0]);
 

@@ -33,3 +33,13 @@ Menu (WFS-37/38), fiche et peintures (WFS-40), les 16 autres voitures (WFS-13), 
 
 ## Périmètre élargi (décision de l'utilisateur 2026-11-03 : tickets plus gros, moins de builds)
 Ce ticket absorbe : WFS-40, WFS-13, WFS-46. **Lire et appliquer aussi** `regles-de-gestion/WFS-40.md`, `regles-de-gestion/WFS-13.md`, `regles-de-gestion/WFS-46.md` (toutes leurs règles et critères). Une seule branche, une seule CI à la fin ; livrer par morceaux sur la branche sans lancer de CI intermédiaire.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-11 | Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc | E5 | ✅ Fusionné (QA de nuit à faire ; 16 voitures à suivre) | agent 3 (session 011cpqZd), 2026-11-03 | WFS-45 ✅ (fusionné), WFS-26, WFS-36, WFS-44 ✅, WFS-27 ✅ | `feature/waforspeed-11` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-11 — Garage complet : plateau, 20 voitures, 16 peintures, fiche et compteur en arc** · E5 · priorité P2 Haute · ✅ Fusionné le 2026-11-04 (PR #43, QA de nuit : `qa/Check.md` ; étape 4, 16 voitures, à reprendre) — agent 3 (session 011cpqZd), 2026-11-03, branche `feature/waforspeed-11` (règles : `regles-de-gestion/WFS-11.md` + WFS-40, WFS-13, WFS-46)
+- [ ] `garage-*` : plateau, anneau néon, projecteurs, 3 angles ; `garage-golf` / `garage-m4` : changement de voiture, nom et index

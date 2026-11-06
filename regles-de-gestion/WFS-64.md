@@ -35,3 +35,14 @@ au logcat, sans plantage), savoir **où** (mise à jour du jeu, rendu, ou émula
 
 ## Hors périmètre
 - Réparer le rendu à 25 % ou le changer de valeur sans preuve ; le scénario `mvp` (WFS-58) ; le rapport `simulateur-MVP.md` (WFS-50).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu (non reproduit au run 41719456821 ; réactivé si un essai `simulateur.yml` sur `main` se fige de nouveau) |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-64 — Diagnostic : gel intermittent juste après le chargement sur le simulateur** · E0 · priorité P4 Basse · ⏸ Suspendu tant que le gel ne se reproduit pas (règles : `regles-de-gestion/WFS-64.md`)
+- [ ] gel reproduit puis expliqué par les lignes de diagnostic (mise à jour ou rendu) ; 3 essais `scenario=mvp` de suite sans gel
+- [ ] banc PC : captures identiques à `main`, `0 écart(s)`

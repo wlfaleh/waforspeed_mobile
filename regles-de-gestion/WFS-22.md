@@ -41,3 +41,13 @@ Ce ticket absorbe : WFS-23, WFS-25. **Lire et appliquer aussi** `regles-de-gesti
 - [ ] test CPU manette (zone morte 0,12, gâchettes, croix → `input`) ; capture de menu avec focus visible ; boutons tactiles masqués en mode manette
 - [ ] `store/` : icônes 512 / 1024 px, textes FR, crédits des 20 voitures ; chaque modèle livré a sa licence dans `assets/licences/` ; AAB signé (clé factice) produit par la CI
 - [ ] job iOS : compilation + archive produite, non bloquant ; CI Android verte, captures du banc inchangées (`0 écart(s)`)
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P4 Basse | WFS-22 | Plateformes : iOS, manettes et préparation des stores | E7 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-04 | WFS-29 ✅ | `feature/waforspeed-22` | #60, #62 |  |
+
+Critères et notes de suivi :
+
+**WFS-22 — Plateformes : iOS, manettes et préparation des stores** · E7 · priorité P4 Basse · ✅ Fusionné (QA de nuit à faire), PR #60 et #62 — Claude (session trafic), 2026-11-04, branche `feature/waforspeed-22` (règles : `regles-de-gestion/WFS-22.md`)
+- [ ] Construction iOS, test TestFlight

@@ -28,3 +28,13 @@ tolérer 1e-3 au lieu de 1e-9, ce qui masquerait de vrais écarts sur les cartes
 
 ## Hors périmètre
 - Tout changement du `PI` du noyau, de la physique ou du décor ; nouvelles cartes (WFS-53, WFS-54).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 12.05 | WFS-55 | Correction : PI en double dans le tracé de la route (test_cartes à 1e-9, captures renouvelées) | E3 | ✅ Terminé | Claude (session facile), 2026-11-03 | WFS-14 ✅ | `feature/waforspeed-55` | #26 (fusionnée) | ✅ fusion rapide (CI verte, banc non terminé) — recette de nuit : `qa/Check.md` |
+
+Critères et notes de suivi :
+
+**WFS-55 — Correction : PI en double dans le tracé** · E3 · priorité 12.05 · ✅ Terminé (PR #26) (règles : `regles-de-gestion/WFS-55.md`)
+- [ ] `test_cartes` en tolérance 1e-9 ; captures renouvelées listées, sans différence visible

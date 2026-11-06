@@ -43,3 +43,13 @@ pourvu que le shader les gère (couleur `swim`, seuil « habillé »).
 `src/render/renderer.h`, `src/render/renderer.cpp` (partie skinning uniquement), `src/render/squelette.*`,
 `src/render/bench_squelette.*`, `shaders/scene_skin.*`, `shaders/shadow_skin.*` si besoin, `tools/convert_people.mjs`,
 `assets/people/**`, `CMakeLists.txt` (liste des shaders), skill `waforspeed-natif`. E4 n'a aucun ticket actif : pas de conflit.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-72 | Point d'extension : apparence des personnages (peau, cheveux, vêtements) | E0 | ✅ Fusionné (QA de nuit à faire) | Claude (session trafic), 2026-11-03 | WFS-63 ✅ | `feature/waforspeed-72` | #40 (fusionnée, 4314bf7) |  |
+
+Critères et notes de suivi :
+
+**WFS-72 — Point d'extension : apparence des personnages** · E0 · priorité P2 Haute · ✅ Fusionné (PR #40, QA de nuit à faire) — Claude (session trafic), 2026-11-03, branche `feature/waforspeed-72` (règles : `regles-de-gestion/WFS-72.md`)
+- [ ] `squelette-tenue` : homme et femme habillés, peau / cheveux / haut / bas / chaussures distincts ; captures existantes identiques, banc `0 écart(s)`

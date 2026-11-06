@@ -44,3 +44,14 @@ Zone E8 : `src/ui/ecrans/**`. Accroches annoncées au Journal, ≤ 10 lignes cha
 
 ## Hors périmètre
 Appuis et navigation (WFS-38), réglages, sauvegarde du record (WFS-24 : record de la session seulement).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| 0.3 | WFS-37 | [MVP] Menu principal : affichage (logo, choix, record, ta voiture) | E8 | ✅ Terminé (fusionné sur ordre de l'utilisateur, QA après fusion) |  | WFS-35, WFS-36 | `feature/waforspeed-37` | PR #23 (fusionnée) | ⏳ QA après fusion |
+
+Critères et notes de suivi :
+
+**WFS-37 — [MVP] Menu principal : affichage** · E8 · priorité 0.3 · ✅ Terminé (PR #23, QA après fusion) (règles : `regles-de-gestion/WFS-37.md`)
+- [ ] `menu-0` / `menu-1` (720p, 2400x1080, sans planche de texte) : ville assombrie, logo, 3 choix, record « — », « Golf 8 GTI » ; `menu-anim`
+- [ ] aucune commande de conduite ni HUD sur le menu ; autres captures inchangées, banc `0 écart(s)`

@@ -45,3 +45,15 @@ Priorité relevée P4 → **P2 Haute** : sans roues qui tournent, la voiture « 
 
 ### Rappel : réutiliser, ne rien recréer
 `waaps/waforspeed/js/cars/models.js` → `splitWheels`, `looksLikeWheel`, `WHEEL_RX`, `animWheels(steerAngle, meters)` ; `js/world/scene.js` (≈ l. 208 et 238, appels `animWheels(yaw * 1.6, vitesse × dt)`) ; modèles `models/<voiture>/<voiture>.json` (mêmes sources que les `.wfm` actuels).
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| P2 Haute | WFS-60 | Roues animées : roues séparées dans les .wfm, rotation et braquage (absorbe WFS-61, WFS-62) | E5 (+ API E0) | ✅ Fusionné (fusion par confiance, QA de nuit à faire) | Claude (agent 4, session 011cpqZan), 2026-11-04 | — | `feature/waforspeed-60` | #48 |  |
+
+Critères et notes de suivi :
+
+**WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
+- [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
+- [ ] Rotation et braquage par roue dans l'API du rendu ; sans appel, rien ne change
+- [ ] Roues immobiles à l'arrêt, qui tournent en roulant, avant braquées en virage (joueur et trafic proche)

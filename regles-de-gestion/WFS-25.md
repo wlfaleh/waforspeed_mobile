@@ -23,3 +23,13 @@ Rassembler ce qu'exigent Google Play et l'App Store : icônes, signature, textes
 
 ## Hors périmètre
 Soumission effective aux stores, achats intégrés, publicité.
+
+## Suivi repris de `TACHES.md` (2026-11-06, réorganisation demandée par l'utilisateur)
+Ligne complète du tableau à cette date :
+
+| — | WFS-25 | Préparation des stores | E7 | ↪ Fusionné dans WFS-22 |  | — | `feature/waforspeed-25` |  |  |
+
+Critères et notes de suivi :
+
+**WFS-25 — Préparation des stores** · E7 · priorité P4 Basse · ⏳ En attente — ↪ fusionné dans WFS-22
+- [ ] Icônes, signature, fiches
