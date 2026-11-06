@@ -2838,3 +2838,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Ligne exacte de l'écart** (run #790, job 128173736588, identique au chiffre près en local) : « environnement (WFS-150) : M-01 nuit face +X : 0.0159 contre 0.0161 (-1.50 %) » (tolérance ± 1 %). Les 11 autres faces (jour et nuit), les tailles de capture et le parcours Ultra (5 / 5) sont conformes. Contrôle : `src/render/bench_passes.cpp:223` (`conformes < 6`).
 - Le même écart existe sur ma branche WFS-151 (même valeur) : WFS-151 n'en est pas la cause (le banc des passes tourne avec `eclairage::desactiver(true)`).
 - **Suite** : bissection en local (`WFS_PASSES_SEUL=1`) entre 7a6c136 (fusion de WFS-150) et `main`, pour nommer la cause (fichier:ligne). Puis correction de la cause, sans toucher au banc.
+
+### 2026-11-06 23:17:03 — Statuts automatiques, CI main #791 (robot statuts)
+- Run rouge (push, commit 00bd580), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-196.
