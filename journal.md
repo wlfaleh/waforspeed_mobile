@@ -4828,3 +4828,26 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Accroches annoncées** : `src/render/renderer.cpp` 10 lignes (include, creer, detruire, redimensionner, debutImage, avantScene, dansScene × 2, apresScene, classer sans masquage pendant une capture) + `FrameUBO` déplacé tel quel dans `frame_ubo.h` + `TRANSFER_SRC` sur la cible HDR (relecture du banc) ; `src/ui/ecrans/reglages.cpp` 10 lignes (valeur Ultra seulement : `nChoix`, libellé, valeur, toucher, clé `ultra`) ; `qualite_auto.h/.cpp`, `qualite_systeme.cpp` (Ultra, tenue, diagnostic) ; `CMakeLists.txt` 2 lignes (3 shaders, `test_passes`) ; `bench_realisme.cpp` (appel du banc des passes ; `WFS_PASSES_SEUL=1` : banc des passes seul en local).
 - **Fusion** : CI de branche verte (run 42237118353, d190142 ; run 42252468883 vert sur 0761942, synchro faite par une autre session), dernière synchro avec main sans conflit, compilée, 34 tests CPU OK. CI de main suivie maintenant.
 - Limites : coûts GPU de lavapipe seulement (aucun téléphone) ; Ultra n'ajoute encore aucun effet (WFS-151, 153, 154) ; passe finale (ACES + interface) non horodatée (après le dernier horodatage du Renderer).
+
+### 2026-11-06 17:33:26 — WFS-158 : RG-B (Model 3, ANO-75) : risque signalé, non corrigeable à partir du modèle existant (Claude (session 01Us6uCu))
+- **Reprise** : WFS-158 est de nouveau à moi (correction du PO, 12:46:38). Branche `feature/waforspeed-158` synchronisée avec main (e0c5eff, avec WFS-149 et WFS-170). Source de la Model 3 : `wlfaleh/waaps`, `waforspeed/models/tesla-model-3/tesla-model-3.json` (« Tesla model 3 (free model) », retro_player, CC-BY-4.0).
+- **Constats** (`vitrine-model3-0` et `vitrine-model3-feux` rendues en local, banc `vitrines-feux`) :
+  - La reconversion par `convert_car.mjs` reproduit l'actuel `model3.wfm` octet pour octet, en plus des tangentes de WFS-149. Le défaut est donc dans le modèle source et ne vient pas de la conversion.
+  - Les triangles sont bien orientés (0,1 % d'arêtes incohérentes). La coque noire `dvorright.0` n'y est pour rien (masquée : image identique). Les panneaux superposés ne couvrent que 0,42 m² sur 10,5.
+  - La peinture compte 17 597 positions, 28 512 sommets et 7 301 arêtes de bord. Elle est morcelée et pliée à l'échelle de ses propres triangles.
+- **Essais**, tous rendus et comparés à l'avant :
+  - (1) Taubin uniforme : glissements de 26 cm, rejeté ;
+  - (2) Taubin le long de la normale, plafond 15 mm, 10 et 30 passes ;
+  - (3) Laplacien cotangent le long de la normale, plafond 30 et 60 mm, 30 et 80 passes : déplacement médian 0,5 à 0,8 mm ;
+  - (4) normales soudées par position, arêtes vives à 60° et à 89° ;
+  - (5) normales d'origine sans le recalcul de WFS-170, en local seulement (`correctifs_voitures.cpp` remis tel quel, rien poussé) : pire, avec la trace beige ;
+  - (6) recalcul de WFS-170 (l'état actuel).
+  - Résultat : **aucun n'enlève les facettes** du pare-chocs arrière, de l'aile et de la porte arrière ; (1) à (3) ajoutent même une strie sombre sur la porte.
+- **Rien n'est poussé** pour RG-B : l'option de lissage essayée dans `convert_car.mjs` est retirée, car elle ne corrige rien. `model3.wfm` est inchangé.
+- **Risque signalé** :
+  - Constat : RG-B (« corriger à partir du modèle existant ») n'est pas réalisable par un traitement automatique ; il faudrait remodeler la carrosserie à la main.
+  - Conséquence : ANO-75 (bloquante) reste visible sur la Model 3 en course et au garage.
+  - Proposition :
+    - **(a) recommandée** : remplacer la Model 3 par un autre modèle sous licence libre, mesuré avec `test_fidelite_voitures` avant l'intégration. C'est un remplacement : ordre écrit de l'utilisateur obligatoire (RG-05, ordre permanent). Le réseau des agents bloque probablement les sites de modèles (Sketchfab) : l'utilisateur devra peut-être fournir le fichier.
+    - (b) garder le modèle et classer ANO-75 comme limite du modèle d'origine.
+  - Décision attendue de : **l'utilisateur** (je lui pose la question).
