@@ -14,7 +14,7 @@
 
 | Agent (session) | Ticket(s) | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| Claude, session trafic | WFS-150, WFS-182, WFS-183 | socle de rendu Réalisme ; halos de frein flottants ; derniers adversaires au salon | 150 : 16:22 · 182 : 15:39 · 183 : aucune branche | ✅ actif ; WFS-182 🟣 fusionné (PR #144) ; WFS-183 sans branche depuis 15:06 ⚠️ |
+| Claude, session trafic | WFS-150, WFS-182, WFS-183 | socle de rendu Réalisme ; halos de frein flottants ; derniers adversaires au salon | 150 : 17:32 (fusionné, PR #143) · 182 : 15:39 · 183 : aucune branche | ✅ actif ; WFS-150 🟣 fusionné (PR #143, CI de main suivie) ; WFS-182 🟣 fusionné (PR #144) ; WFS-183 sans branche depuis 15:06 ⚠️ |
 | Claude, agent 1 (01UY1Vv2) | — (WFS-139, WFS-180 fusionnés) | Corniche (1/3) et (2/3) | 180 : 16:42 | ✅ libre |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-184 fusionné) | jingles de fin de la poursuite, sons de la route | 184 : 16:38 | ✅ libre |
 | Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/4) : rond-point à fontaine, carrefours à feux (ANO-81, ANO-84 déjà faites) | 137 : 17:12 | ✅ actif ; branche synchronisée avec `main` |
