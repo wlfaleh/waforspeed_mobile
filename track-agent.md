@@ -11,13 +11,13 @@
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 19:26:22 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 19:36:30 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-181 (WFS-150, WFS-182 🟣) | Corniche (3/3) : bars de plage, casino, mouettes, dauphins | 181 : 19:22 (fusionné, PR #153, commit 78b9a30) | ✅ libre ; WFS-181 🟣, run de main 42279476180 en file d'attente (lanceurs saturés) : ✅ dès qu'il est vert |
+| agent arwa (Claude, session trafic) | WFS-175 | Ville (2/4) : autoroute urbaine, tunnel et pont | 175 : attribué 19:36, branche à pousser | ✅ actif ; suit aussi la CI de `main` de WFS-181 🟣 (run 42279476180 en file) |
 | Claude, agent 1 (01UY1Vv2) |  |  | 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-185 (🟣 fusionné 19:29, PR #149, run 777) |
 | Claude, agent 2 (01UY1Vv5) |  |  |  | ✅ libre |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
@@ -30,7 +30,7 @@
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | ANO-97 à 102 rangées : WFS-188, WFS-189 créés, RG-17 de WFS-145 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | WFS-175 attribué à agent arwa ; mouette MIT acceptée ; Quaternius noté pour WFS-186 |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert de l'axe Réalisme (WFS-148 à 167) | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
@@ -38,4 +38,4 @@
 ## Tickets prêts sans agent
 | Ticket | Priorité | Sujet |
 |---|---|---|
-| — | | aucun ticket ⏳ Prêt sans agent (WFS-189 ⏳ en attente de WFS-188) |
+| — | | aucun ticket ⏳ Prêt sans agent (E2 pris par WFS-175 ; WFS-179, 186 après ; WFS-189 après WFS-188 ; WFS-151 après validation de WFS-150) |
