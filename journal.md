@@ -4057,3 +4057,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-135 : VALIDÉ** ; **WFS-146 : PASSABLE AVEC ANOMALIES MINEURES** (nouvelles ANO-68 : aide du salon serrée en 720p ; ANO-69 : fin de la course à 5 à l'ancien style) ; **WFS-102 : annulé, sans objet** (garage 2400 identique au pixel à avant WFS-102, rien sur la voiture).
 - **Vérifiées corrigées** : ANO-16, 20, 32, 35, 39, 41, 43, 44, 45, 55, 58, 61, 63, 64.
 - Lots 1, 3, 4 et recette des voitures en cours. Rapports : `qa/rapports/WFS-135.md`, `WFS-146.md`, `WFS-102.md`.
+
+### 2026-11-06 08:33:12 — Recette de nuit, lot 3 (rendu) : WFS-142 VALIDÉ, WFS-109 et WFS-134 PASSABLES (qa-lead)
+- Captures : Release `apercu` de main (captures de la construction 689, eb8152a), comparées à `apercu-waforspeed-135`, `-109` et `qa/retours/WFS-142/`.
+- **WFS-142 : VALIDÉ** (plus de façade dans la route, nuit sèche mate, pluie en traînées floues ; écart chiffré RG-08 laissé au PO ; RG-10 : résolu seulement après l'essai de l'utilisateur sur téléphone).
+- **WFS-109 : PASSABLE AVEC ANOMALIES MINEURES** (nouvelle ANO-70 : tache ovale au sol derrière les voitures la nuit).
+- **WFS-134 : PASSABLE AVEC ANOMALIES MINEURES** (aucune voiture en cubes ; nouvelle ANO-71 : reste d'ANO-67 sur le X5 et la Model 3 ; ANO-67 passée à « corrigée en partie »).
+- **Vérifiées corrigées** : ANO-48, 60, 66. À refaire au banc : `poursuite-camion` (écran « ARRÊTÉ », camion non visible).
