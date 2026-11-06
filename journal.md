@@ -4578,3 +4578,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-173 : VALIDÉ** : mini-carte visible en course seulement ; écarts tous dans le carré de la carte (158 captures) ; ≤ 2 466 sommets (max 4 000).
 - **WFS-141 : PASSABLE AVEC ANOMALIES MINEURES** : nouvelle ANO-90 (bandeau « serveur injoignable » sur l'URL du salon en 720p).
 - **Vérifiées** : ANO-54, 56, 69, ANO-62 en 2400. En partie : ANO-57, ANO-59 (reste en attente, décision du PO). **ANO-68 non corrigée** : sa correction change une taille de texte, contraire à l'ordre de l'utilisateur (tailles gelées) → au PO de la mettre en attente comme ANO-57 / 59.
+
+### 2026-11-06 13:43:46 — Recette, lot B (rendu) : WFS-170 REFUSÉ, WFS-149 VALIDÉ (qa-lead)
+- Captures : Releases de branche `apercu-waforspeed-170` (4f024d4, même code que main e21145e) et `apercu-waforspeed-149` (d9d6cb2) : `apercu` de main (56f5d47) ne contient encore aucun des deux.
+- **WFS-170 : REFUSÉ** — vérifiées corrigées : ANO-72 (911), 73 (Giulia), 74 (S3), 77 (208, Compass) ; en partie : ANO-71 (hayon du X5), ANO-76 (V60 rouge, reste SF90 / Elantra / RR Sport en mineure) ; **ANO-75 toujours là** (Model 3 en facettes : géométrie à reconvertir) ; **nouvelle ANO-91 bloquante** : au freinage, 12 voitures sur 20 n'allument pas leur feu, le halo de repli flotte dans le vide à gauche de la voiture (vu sur `vitrine-gallardo-feux`, `vitrine-v60-feux`) ; ANO-92 mineure (preuve de la 911 en peintures et en course absente).
+- **WFS-149 : VALIDÉ** — aucune régression d'image (seul le bouton Réglages retiré des vues réalisme), ASTC conforme, APK +0,07 %, chargement inchangé. Réserve : WFS-149 + WFS-170 ensemble à vérifier sur la prochaine `apercu` de main. Pour le PO : ETC2 refusé → RGBA8 (≈ 8,7 × la mémoire de l'ASTC) sur GPU sans ASTC.
+- Bloquantes → PO : ANO-91, ANO-75.
