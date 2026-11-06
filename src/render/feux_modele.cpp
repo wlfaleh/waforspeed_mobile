@@ -1,7 +1,9 @@
 // WaForSpeed — banc d'essai des feux arrière (WFS-109, RG-15) : voir feux_modele.h.
 #include "feux_modele.h"
 #include <cstdlib>
+#include <sstream>
 #include "../core/log.h"
+#include "../game/cars.h"
 #include "../game/game.h"
 #include "../game/track.h"
 #include "renderer.h"
@@ -40,6 +42,31 @@ void benchFeuxFrein(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
     unsetenv("WFS_MOMENT");
+}
+
+
+void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
+    std::vector<std::string> ids;
+    const char* choix = std::getenv("WFS_VOITURES");
+    if (choix) { std::istringstream is(choix); std::string id; while (is >> id) ids.push_back(id); }
+    else for (const CarDef& c : CARS) ids.push_back(c.id);
+    unsetenv("WFS_MOMENT");
+    for (const std::string& id : ids) {
+        if (!g.init(r, id.c_str(), "ville")) { WFS_ERR("vitrine feux : chargement de %s impossible", id.c_str()); continue; }
+        if (choix) { g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png"); }
+        double t = 1300;
+        g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 120; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 8 == 0) g.render(t); }
+        g.setAutopilot(false);
+        const float W = (float)r.width(), H = (float)r.height();
+        g.onTouch({7, W * 0.66f, H * 0.8f, true});   // pédale de frein tenue : feux stop allumés (transition de 80 ms finie)
+        for (int i = 0; i < 12; i++) { g.update(1.0 / 60); t += 1.0 / 60; g.render(t); }
+        g.camMode = 2; g.orbit = 0.45f;              // vitrine, de trois quarts arrière
+        g.render(t + 0.001); g.render(t + 0.002); r.capturePng(out + "/vitrine-" + id + "-feux.png");
+        WFS_LOG("capture vitrine-%s-feux : frein %d (WFS-170)", id.c_str(), (int)g.player().braking);
+        g.onTouch({7, W * 0.66f, H * 0.8f, false});
+        g.shutdown();
+    }
 }
 
 } // namespace wfs

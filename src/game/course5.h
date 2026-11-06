@@ -29,6 +29,7 @@ void choixModeBanc(bool force);
 // de l'écran de fin de la course à 5 (« rejouer », « menu ») et record battu à la dernière course à 5
 bool choixModeCentre(const std::string& zone, float& x, float& y);
 bool course5Bouton(const std::string& nom, float& x, float& y);
+int course5Positions(double* rd, int max);   // WFS-173 (RG-08) : distance des ordinateurs (unités), lecture seule ; rend leur nombre
 bool course5NouveauRecord();
 class Game; class Renderer;
 // banc d'essai (WFS_BANC=course5) : modes-choix, course5-grille, course5-course, course5-fin
