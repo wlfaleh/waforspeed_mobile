@@ -4621,3 +4621,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-172 : VALIDÉ** — ANO-80, 87, 89 vérifiées (`apercu-waforspeed-172`).
 - **WFS-122 : PASSABLE AVEC ANOMALIES MINEURES** (aucune Release de branche : banc local `menu2` 1280 / 2400 0 écart, `test_relais` à 4 vert) : ANO-93 (ordre des derniers adversaires au hasard), ANO-94 (captures 1280 du duel jamais publiées par la CI).
 - **CI de main** : dernier run tout vert #713 (eadeae8). #718 rouge par le réseau du runner (apt, job `endurance`) ; #720 rouge par `endurance` seul (mémoire +10,9 % au cycle 6, mesure qui oscille autour du seuil : +7,8 à +10,9 %) → WFS-145.
+
+### 2026-11-06 14:04:52 — Point d'avancement et tickets de correction de la recette : WFS-182 (P1), WFS-183 (P3) (po-scrum-master)
+- **Contexte** : recette QA du 2026-11-06 : WFS-170 `REFUSÉ` (ANO-91 bloquante, ANO-75 toujours là), WFS-122 `PASSABLE` (ANO-93, 94). Aucune de ces anomalies n'avait de ticket.
+- **WFS-182** (E4, P1 Urgent, ⏳ Prêt) : halos de frein flottants et feu du modèle éteint sur 12 voitures (ANO-91), reste d'ANO-76 (SF90, Elantra, RR Sport), ANO-92. Exception PO : 2e ticket E4 à côté de WFS-171, blocs séparés ; accroche ≤ 10 lignes `model_loader.cpp` (bloc des feux), coordination WFS-158. **Prochain ticket attribué.**
+- **ANO-75** (Model 3, bloquante) et **ANO-71** (X5) : ajoutées à **WFS-158** (RG-B en premier, RG-C), car la cause est dans la géométrie (`tools/convert_car.mjs`, zone E10 de ce ticket).
+- **WFS-183** (E3, P3, ⏳ Prêt) : ANO-93, ANO-94.
+- **Ordre de priorité** : 1) WFS-145 (CI de main rouge, `endurance`) ; 2) WFS-182 ; 3) WFS-158 RG-B ; 4) fusion de WFS-140 (PR #137) ; 5) axe Réalisme WFS-150 → 151 ; 6) cartes WFS-137, 139, 178 en cours ; 7) WFS-183.
+- **À surveiller** : WFS-150 attribué à 13:26 UTC, branche pas encore poussée ; WFS-139 et 178 viennent d'être attribués.
