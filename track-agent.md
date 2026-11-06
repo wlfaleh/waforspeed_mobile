@@ -11,7 +11,7 @@
 > - **Nom de l'agent** : la colonne « Agent » donne le nom à mettre à la fin de chaque titre de commit, entre parenthèses (règle de l'utilisateur, 2026-11-06).
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 19:46:29 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 19:49:39 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -39,4 +39,4 @@
 ## Tickets prêts sans agent
 | Ticket | Priorité | Sujet |
 |---|---|---|
-| — | | aucun ticket ⏳ Prêt sans agent (E2 pris par WFS-175 ; WFS-179, 186 après ; WFS-189 après WFS-188 ) |
+| WFS-190 | P1 Urgent | CI de `main` rouge (job `endurance`, run #761) : vérifier WFS-145 / 187 sur `main`, corriger si encore rouge |

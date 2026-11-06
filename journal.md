@@ -5053,3 +5053,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - Run 768 (commit 806d737) : compilation, tests, APK Android et 10 groupes de captures verts ; 2 groupes (texte, vitrines) et la publication de l'APK encore en cours à 2026-11-06 19:47:50.
 - **Job endurance rouge** : « fuite de mémoire : +12,6 % au cycle 6 (seuil 10 %) ». Ce n'est pas une casse de WFS-137 : le run 761 (WFS-150, avant ma fusion) échoue déjà sur le même test (+10,2 % au cycle 6), de même que les runs 757 et 751. La pente mémoire des cycles 2 à 10 est négative (−8,56 Mo/cycle) et le parcours au doigt donne 0 écart. Problème connu, suivi par **WFS-145** (P1, autre agent) : je ne touche pas à ce ticket.
 - WFS-137 reste 🟣 Fusionné : la règle ne permet ✅ qu'avec un run de main entièrement vert. Je le passerai en ✅ au premier run vert de main, une fois WFS-145 corrigé.
+
+### 2026-11-06 19:49:39 — WFS-190 créé : CI de main rouge (job endurance) (po-scrum-master)
+- **Demande de l'utilisateur** : une tâche pour corriger le rouge de la CI de `main`.
+- **Constat** : run #761 (fusion de WFS-150) : 15 jobs verts sur 16, seul `endurance` rouge (publication annulée) ; WFS-150 n'est pas en cause. Les corrections WFS-145 (#152) et WFS-187 (#151) sont fusionnées après ce run ; les runs qui les contiennent (#772, #774) sont en file depuis 19:14 / 19:24 (lanceurs saturés).
+- **WFS-190** (E7, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-190.md`) : suivre le premier run de `main` qui contient ces corrections ; tout vert → numéro au Journal, tickets 🟣 en ✅ ; encore rouge → cause nommée et corrigée sans affaiblir le banc. Exception PO : WFS-185 🟣 dans la même épic (bloc `on:` laissé à WFS-185).

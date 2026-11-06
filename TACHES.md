@@ -312,6 +312,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-187 | [URGENT] Fuite de jeux de descripteurs : `Renderer::destroy(Material&)` et libération des matériaux au `shutdown` / avant chaque `init` des systèmes (pool épuisé après quelques changements de carte, mesure WFS-145) | E4 (+ accroches annoncées : 1 ligne `renderer.h` E0, appels de libération seulement dans `src/world/**`, `src/game/**`, `src/ui/garage.cpp`, `src/core/scene_essai.cpp`) | ✅ Fusionné (QA de nuit à faire) | Claude (session dev expert, 0183bv2X), 2026-11-06 18:29 UTC (WFS-145 en pause, même agent) | — | `feature/waforspeed-187` | #151 |  |
 | P3 Moyenne | WFS-188 | Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche de chaque voiture, test CPU des 20 voitures, aucune voiture injouable (ANO-97, ANO-98) | E3 | 🔧 En cours |  Claude (session dev expert, 0183bv2X), 2026-11-06 19:25 UTC | — | `feature/waforspeed-188` |  |  |
 | P3 Moyenne | WFS-189 | Correction Course à 5 : départ sans bouchon, adversaires de la classe du joueur, nitro rechargée en Course à 5 et en Duel (ANO-99, ANO-100, ANO-101) | E3 (+ accroche `configgame.json`, 2 clés `nitro`) | ⏳ En attente (après WFS-188, même épic) |  | WFS-188 | `feature/waforspeed-189` |  |  |
+| P1 Urgent | WFS-190 | [CI ROUGE] Remettre la CI de `main` au vert de bout en bout : job `endurance` rouge au run #761 (fusion de WFS-150), corrections WFS-145 / 187 à vérifier sur `main`, correction si encore rouge (demande de l'utilisateur) | E7 (exception PO : WFS-185 🟣 dans la même épic, bloc `on:` laissé à WFS-185) | ⏳ Prêt |  | WFS-145 🟣, WFS-187 🟣 | `feature/waforspeed-190` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -996,6 +997,9 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 - [ ] adversaires à ±20 % de la vitesse max du joueur ; place moyenne 1,5 à 3,5 en Normale, ≤ 3,0 en Facile pour SF90, M4, Mustang, Golf, X5, 208, Compass (RG-01, RG-02, RG-07)
 - [ ] grille rangée par vitesse max, aucun ordinateur sous 60 km/h à 4 s (RG-03) ; nitro +0,015/s (+0,10 par dépassement en Course à 5) en Course à 5 et Duel seulement (RG-04)
 - [ ] parcours complet Course à 5 et Duel au Journal (RG-08)
+
+**WFS-190 — [CI ROUGE] CI de `main` au vert de bout en bout (job `endurance`)** · E7 · P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-190.md`)
+- [ ] premier run de `main` tout vert avec WFS-145 et WFS-187 (numéro au Journal) ; sinon cause nommée et corrigée sans affaiblir le banc
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 
