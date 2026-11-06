@@ -2797,3 +2797,28 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 23:03:43 — Lignes signalées par le robot des statuts corrigées : WFS-139, 176, 179 (po-scrum-master)
 - **Signalement** (robot statuts, run #790) : PR #142, #158, #161 introuvables (fusions faites sans « (#NNN) » dans le titre du commit, donc sans squash).
 - **Correction** : la case Statut cite le dernier commit de code de chaque ticket sur `main`, que le robot sait lire : WFS-139 → 751ef19, WFS-176 → 9262b41, WFS-179 → 36108b0.
+
+### 2026-11-06 23:10:37 — WFS-158 : livraison 5 fusionnée par confiance (PR #167, aa9fdb9) : RG-D, la Model 3 remplacée, carrosserie sans facettes (ANO-75) (arwa-2)
+- **Méthode du PO** (modeles-3d-github.md), sans l'utilisateur. La recherche `"Tesla" "Model 3" filename:license.txt` donne 27 dépôts. Licences lues par clone partiel, en lecture seule, dans un bac à sable hors du dépôt :
+  - « Tesla 2018 Model 3 », Ameer Studio, CC-BY-4.0 : dans 9 dépôts ; **retenu** ;
+  - « Tesla Model 3 (free model) », retro_player, CC-BY-4.0 : c'est l'ancien modèle ;
+  - « Tesla Model 3 », iSteven : CC-BY-NC, refusé ;
+  - « Tesla Model 3 (not finished) », BlueMesh : modèle inachevé, écarté.
+- **Source** : dépôt public `tomfanhm/tesla`, dossier `public/gltf/tesla`, lien Sketchfab `sketchfab.com/3d-models/tesla-2018-model-3-5ef9b845aaf44203b6d04e2c677e444f`.
+  - SHA-256 `scene.gltf` 80911d5818829504016cd899c2b7da119654c2928442522e5baf56e568d3e3b5 ;
+  - SHA-256 `scene.bin` c87f3de68f7ab18041e5388ca4fdee292a5a771e921e8fa464e9e4d4f7a818b7 ;
+  - 21 Mo, 684 315 triangles. Rien d'exécuté : les fichiers sont lus par les outils du dépôt.
+- **Conversion** :
+  - `tools/simplifier_voiture.mjs` (nouveau) : 684 315 → 160 805 triangles (meshoptimizer, erreur 0,08 %, peinture 0,02 %, bords verrouillés) ;
+  - `convert_car.mjs` (orientation auto, peinture `primary`, feux `breaklight_l|left_rear_light|right_rear_light`) ;
+  - `corriger_voitures` (× 1,014, roues arrière 687 → 669 mm) et `plaques_voitures` (plaque arrière 525 × 150 → 520 × 110 mm, EY-317-TL).
+  - `convertir_voitures.sh` : source `MODELE3` hors du dépôt.
+- **Budget** : 7,1 Mo (avant 6,5 Mo), 161 k triangles (avant 135 k), 36 matériaux comme avant (mêmes appels de dessin).
+- **Preuves** : captures locales `vitrine-model3-0` / `-feux` ancien / nouveau, zooms, vue de face (essai local, non poussé).
+  - Pare-chocs arrière, ailes arrière et lèvre du coffre sont lisses ; ANO-75 est levée sur ces captures.
+  - Les feux arrière s'allument au freinage ; les phares restent blancs.
+  - Les normales recalculées au chargement (WFS-170, `normalesARecalculer`) sont **gardées** : essai sans elles, le reflet est froissé.
+- **Mesures** : 5 / 8 conformes (ancien modèle : 3 / 8). Le modèle source est trop large, comme l'ancien : largeur +5,2 %, voies +5,4 / +5,1 % (RG-05, au rapport). Indice voitures : 113 / 141 (80,1 %).
+- **Accroches annoncées** : 1 ligne chacune, pour le crédit de la Model 3 (CC BY : l'auteur doit être cité) dans `src/game/cars.h`, `assets/licences/CREDITS.txt` et `store/credits.md`. `assets/licences/model3.txt` est réécrit (licence, dépôt GitHub, SHA-256, modifications).
+- **Réponse à l'utilisateur** écrite dans `tache utilisateur.md`.
+- **CI de main** : le run 790 (e622b04) est rouge sur `banc-essai (realisme)` (« passes (WFS-150) : 1 écart » : M-01 nuit face +X à −1,50 % pour ±1 %). Cette cause n'est pas dans les `.wfm` de ST-2 : le run 789 de `feature/waforspeed-197`, sans ST-2, donne le même écart. Le run 782 (5ed39ec), avant WFS-176 et WFS-179, n'en avait pas. Essai local en cours pour écarter aussi les plaques de la livraison 1 (V60, A 45, RR Sport).
