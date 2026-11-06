@@ -9,7 +9,7 @@
 
 | Ce qui est permis | Ce qui est bloqué |
 |---|---|
-| GitHub (le dépôt `wlfaleh/waforspeed_mobile`, par les outils prévus) | tout autre site : Wikipédia, sites des constructeurs, Sketchfab, Poly Haven, ambientCG… |
+| GitHub : le dépôt `wlfaleh/waforspeed_mobile` (outils prévus) ; recherche et lecture des dépôts publics (§ 2.4) | tout autre site : Wikipédia, sites des constructeurs, Sketchfab, Poly Haven, ambientCG… |
 | dépôts de bibliothèques de code (npm, PyPI, apt…), pour construire le jeu | |
 
 La liste des sites autorisés est tenue dans les réglages de l'environnement cloud par l'utilisateur. **Aucun agent ne l'élargit lui-même.**
@@ -25,7 +25,11 @@ Liste en vigueur, à recopier ici à chaque changement :
    - modèles 3D, textures, sons, polices sous licence libre (§ 4) ;
    - données réelles pour le référentiel `references/reel/` (dimensions, normes, mesures), avec la source citée.
 2. Utiliser les dépôts de bibliothèques de code pour construire le jeu et ses outils, avec des versions fixées (jamais « la dernière »).
-3. Utiliser GitHub par les outils prévus (`mcp__github__*`, `git`), seulement sur le dépôt du projet.
+3. Utiliser GitHub par les outils prévus (`mcp__github__*`, `git`) sur le dépôt du projet.
+4. **Chercher et lire des dépôts GitHub publics** (recherche de code `gh api -X GET search/code`, clone partiel en lecture seule par `git`)
+   pour y trouver des modèles 3D, textures ou sons sous licence libre, comme le jeu web l'a fait pour ses 20 voitures. Méthode :
+   `.claude/skills/waforspeed-natif/references/modeles-voitures-github.md`. Mêmes règles que tout téléchargement (§ 4 à § 6) : licence
+   lue dans le `license.txt` du dépôt, dossier à part, rien exécuté, journal. Jamais d'écriture ni de commentaire sur ces dépôts.
 
 ## 3. Ce qu'un agent n'a PAS le droit de faire
 
