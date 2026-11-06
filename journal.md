@@ -3937,3 +3937,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Bon** : `garage-*-2400` et `hud-2400` **identiques au pixel** à main (rien sur la voiture, HUD non touché) ; réglages, salon, menu, chargement lisibles en 2400 (texte courant ≥ 14 dp, touches et choix ≥ 44 dp de pas) ; ANO-17, 19, 38, 42 corrigées sur les écrans du ticket ; écarts non prévus expliqués par le contenu tiré au hasard (course à 5, code du salon).
 - **Mineures (tour 1/2)** : A) ombre de la carte du terrain trop haute en 2400, route et tribune du Grand Prix invisibles ; B) chevrons des flèches du terrain en escalier ; C) ANO-47 à moitié : « HYBRI)E » sur `garage-sf90`.
 - **Suite** : pas de fusion ; le développeur corrige A, B, C et redemande la recette (tour 2/2). Rapport : `qa/rapports/WFS-147.md`. Aucune anomalie ajoutée à `anno.md` (seulement au verdict PASSABLE).
+
+### 2026-11-06 06:34:34 — WFS-147 : recette tour 2/2, verdict VALIDÉ (qa-lead)
+- Branche de1e285 (synchronisée avec main), CI verte run 42171445586, captures `apercu-waforspeed-147` de 06:30-06:31 UTC.
+- A (ombre du terrain), B (chevrons), C (étiquette du garage, ANO-47) corrigées ; `garage-*-2400` et `hud-2400` identiques à main ; aucun écran changé sans raison.
+- **Fusion autorisée** (RG-04) : le développeur fusionne. Rapport : `qa/rapports/WFS-147.md`. Aucune anomalie ajoutée à `anno.md`.
