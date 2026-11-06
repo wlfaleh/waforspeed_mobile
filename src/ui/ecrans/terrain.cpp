@@ -51,13 +51,13 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
     // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
     dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
-// chevron < ou > (path « M15 4 7 12l8 8 » du web) en petits carrés
+// chevron < ou > (path « M15 4 7 12l8 8 » du web) : WFS-147 (QA tour 1, B) : un trait lissé de s / 6 d'épaisseur
+// (3 dp pour la flèche de 18 dp), bouts ronds, au lieu de petits carrés en escalier ; couleur opaque (pas de
+// recouvrement visible aux jointures)
 void chevron(Renderer& r, float cx, float cy, float s, int dir, const vec4& c) {
-    const int N = 9;
-    for (int i = 0; i <= N; i++) {
-        const float t = (float)i / N, dy = (t - 0.5f) * s, dx = (std::fabs(t - 0.5f) - 0.25f) * s * dir;
-        r.uiRect(cx - dx - s * 0.06f, cy + dy - s * 0.06f, s * 0.13f, s * 0.13f, c);
-    }
+    const float a = 0.25f * s * dir, h = 0.5f * s;
+    const vec2 p[3] = {{cx - a, cy - h}, {cx + a, cy}, {cx - a, cy + h}};
+    dessin2d::trait(r, p, 3, s / 6, c);
 }
 
 // WFS-147 (ANO-42) : formes d'un seul tenant (plus de bandes), reprises de WFS-102 (1ddd3b6) : dégradé vertical,
@@ -267,7 +267,7 @@ public:
         // ---------- vignette de la carte (mapCard) ----------
         const float bh = (cp ? 48 : 56) * k, by = H - mg.bas - (cp ? 12 : 24) * k - bh;
         const float bas = by, haut = hy + (cp ? 56 : 84) * k;
-        const float chMax = bas - (cp ? 22 : 34) * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * (cp ? 2.4f : 1.9f)), ch = std::min(chMax, cw / 1.6f);
+        const float chMax = bas - (cp ? 18 : 34) * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * (cp ? 2.4f : 1.9f)), ch = std::min(chMax, cw / 1.6f);
         // petit écran : vignette plus large que haute (2,4 : 1) pour que les quartiers tiennent sur une ligne
         const float cx0 = zl + (zw - cw) / 2, cy0 = haut;
         g_carte = {cx0, cy0, cw, ch};
@@ -286,17 +286,19 @@ public:
         }
         // .map-info : nom, description, longueur, quartiers (petit écran : nom 26 dp, description 14 dp, libellés 12 dp,
         // lignes rapprochées ; dDesc, dFait, dPuce : décalage de chaque ligne sous le nom)
-        const float dDesc = (cp ? 30 : 46) * k, dFait = (cp ? 52 : 76) * k, dPuce = (cp ? 92 : 124) * k, lf = (cp ? 12 : 11) * k;
-        const float ix = cx0 + 24 * k, iy = cp ? cy0 + ch - dPuce - (nl * (ph + pg) - pg) - 12 * k : cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
+        // petit écran (QA tour 1, A) : longueur et quartiers sur une seule ligne (libellé puis valeur), pour laisser
+        // l'illustration visible au-dessus du bloc de texte
+        const float dDesc = (cp ? 30 : 46) * k, dFait = (cp ? 52 : 76) * k, dPuce = (cp ? 80 : 124) * k, lf = (cp ? 12 : 11) * k;
+        const float ix = cx0 + 24 * k, iy = cp ? cy0 + ch - dPuce - (nl * (ph + pg) - pg) - 8 * k : cy0 + ch - 128 * k - nl * (ph + pg) - 8 * k;
         // .map-shade : linear-gradient(180deg, transparent 30 %, rgba(10,11,16,.6) 52 %, .97 68 %, #0A0B10) (style.css
-        // l. 519), en trois dégradés d'un seul tenant (WFS-147, ANO-18) ; si le nom de la carte monte au-dessus de 70 %
-        // de la vignette (petit écran), les trois arrêts remontent d'autant : le nom, la description et les quartiers
-        // sont toujours sur le fond presque opaque (≥ 0,97), jamais sur l'illustration
-        const float monte = std::min(0.f, (iy - cy0) / ch - 0.02f - 0.68f);
-        auto arret = [&](float a) { return std::max(0.f, a + monte); };
-        degradeV(r, cx0, cy0 + ch * arret(0.30f), cw, ch * (arret(0.52f) - arret(0.30f)), hex(BG, 0), hex(BG, 0.6f));
-        degradeV(r, cx0, cy0 + ch * arret(0.52f), cw, ch * (arret(0.68f) - arret(0.52f)), hex(BG, 0.6f), hex(BG, 0.97f));
-        degradeV(r, cx0, cy0 + ch * arret(0.68f), cw, ch * (1 - arret(0.68f)), hex(BG, 0.97f), hex(BG, 1));
+        // l. 519), en trois dégradés d'un seul tenant (WFS-147, ANO-18). Petit écran (QA tour 1, A) : l'ombre est calée
+        // sur le bloc de texte, pas sur la hauteur de la carte : transparente jusqu'à 32 dp au-dessus du nom, 0,6 en haut
+        // du nom, 0,97 en haut de la description, puis le fond ; bureau : arrêts du web (30 / 52 / 68 %)
+        float s0 = cy0 + ch * 0.30f, s1 = cy0 + ch * 0.52f, s2 = cy0 + ch * 0.68f;
+        if (cp) { s0 = std::max(cy0, iy - 32 * k); s1 = std::max(s0, iy); s2 = std::max(s1, iy + dDesc); }
+        degradeV(r, cx0, s0, cw, s1 - s0, hex(BG, 0), hex(BG, 0.6f));
+        degradeV(r, cx0, s1, cw, s2 - s1, hex(BG, 0.6f), hex(BG, 0.97f));
+        degradeV(r, cx0, s2, cw, cy0 + ch - s2, hex(BG, 0.97f), hex(BG, 1));
         // .map-sel « Choisi »
         const std::string choisi = ui::majuscules("Choisi");
         const float sw = ui::width(13 * k, choisi, 0.12f) + 24 * k;
@@ -304,15 +306,28 @@ public:
         ui::text(r, cx0 + 28 * k, cy0 + 23 * k, 13 * k, choisi, hex(BG), ui::GAUCHE, 0.12f, false);
         ui::text(r, ix, iy, (cp ? 26 : 36) * k, ui::majuscules(m.name), hex(TEXTE), ui::GAUCHE, 0.02f, true, true);
         ui::text(r, ix, iy + dDesc, (cp ? 14 : 15) * k, c.desc, hex(0xC9CDDA), ui::GAUCHE, 0, true);
-        ui::text(r, ix, iy + dFait, lf, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         std::string km = ui::decimal(std::round(longueurKm(m) * 10) / 10, 1);
         if (km.size() > 2 && km.compare(km.size() - 2, 2, ",0") == 0) km.resize(km.size() - 2);
-        ui::text(r, ix, iy + dFait + 16 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
-        r.uiRect(ix - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
-        const float qx = ix + std::max(ui::width(lf, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
-        r.uiRect(qx - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));
-        ui::text(r, qx, iy + dFait, lf, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        ui::text(r, qx, iy + dFait + 16 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
+        if (cp) {   // .fact sur une ligne : bordure à l'accent, libellé 12 dp, valeur 20 dp sur la même ligne de base
+            const float fy = iy + dFait, vh = 20 * k, ly = fy + vh - lf - 2 * k;
+            float fx = ix;
+            for (int f = 0; f < 2; f++) {
+                const std::string lib = ui::majuscules(f == 0 ? "Longueur" : "Quartiers"), val = f == 0 ? km + " km" : std::to_string(qs.size());
+                r.uiRect(fx - 10 * k, fy - 1 * k, 2 * k, vh + 4 * k, hex(c.accent));
+                ui::text(r, fx, ly, lf, lib, hex(MUTED), ui::GAUCHE, 0.16f, false);
+                const float vx = fx + ui::width(lf, lib, 0.16f) + 10 * k;
+                ui::text(r, vx, fy, vh, val, hex(TEXTE), ui::GAUCHE, 0, true, true);
+                fx = vx + ui::width(vh, val) + 34 * k;
+            }
+        } else {
+            ui::text(r, ix, iy + dFait, lf, ui::majuscules("Longueur"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, ix, iy + dFait + 16 * k, 20 * k, km + " km", hex(TEXTE), ui::GAUCHE, 0, true, true);
+            r.uiRect(ix - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));   // .fact : bordure gauche à l'accent de la carte
+            const float qx = ix + std::max(ui::width(lf, "LONGUEUR", 0.16f), ui::width(20 * k, km + " km")) + 32 * k;
+            r.uiRect(qx - 10 * k, iy + dFait, 2 * k, 38 * k, hex(c.accent));
+            ui::text(r, qx, iy + dFait, lf, ui::majuscules("Quartiers"), hex(MUTED), ui::GAUCHE, 0.16f, false);
+            ui::text(r, qx, iy + dFait + 16 * k, 20 * k, std::to_string(qs.size()), hex(TEXTE), ui::GAUCHE, 0, true, true);
+        }
         lx = 0;
         for (size_t i = 0; i < qs.size(); i++) {
             if (i > 0 && pl[i] != pl[i - 1]) lx = 0;
@@ -332,10 +347,11 @@ public:
             (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * k, ay - ar - 10 * k, 2 * ar + 20 * k, 2 * ar + 20 * k} : Zone{};
             r.uiCircle(ax[s], ay, ar + k, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
             r.uiCircle(ax[s], ay, ar, hex(SURFACE2, actif ? 0.95f : 0.5f));
-            chevron(r, ax[s] + (s == 0 ? -2 : 2) * k, ay, 18 * k, s == 0 ? -1 : 1, hex(TEXTE, actif ? 1.f : 0.3f));
+            // grisé : couleur opaque équivalente (texte à 30 % sur le disque à 50 % sur le fond)
+            chevron(r, ax[s] + (s == 0 ? -2 : 2) * k, ay, 18 * k, s == 0 ? -1 : 1, actif ? hex(TEXTE) : melange(melange(hex(BG), hex(SURFACE2), 0.5f), hex(TEXTE), 0.3f));
         }
         // ---------- points (.map-dots) ----------
-        const float dy = cy0 + ch + (cp ? 9 : 16) * k;
+        const float dy = cy0 + ch + (cp ? 7 : 16) * k;
         float dxp = zl + zw / 2 - (3 * 14 * k + 28 * k) / 2;
         for (int i = 0; i < 4; i++) {
             const float w = i == g_index ? 28 * k : 8 * k;
