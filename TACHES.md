@@ -288,6 +288,14 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-172 | Correction : captures du banc qui ne prouvent pas leur critère — `garage-course`, `poursuite-camion`, `poursuite-police-basse`, `trace-feux-rouge` (ANO-80, ANO-87, ANO-89) | E3 | 🔧 En cours | Claude (session trafic), 2026-11-06 11:25 UTC (WFS-170, 149 en revue ; ordre de l'utilisateur « avancer vite ») | WFS-169 ✅ | `feature/waforspeed-172` |  |  |
 | P2 Haute | WFS-173 | Mini-carte du parcours au HUD (idée du PO validée par l'utilisateur le 2026-11-06) : route autour du joueur en Checkpoint et en Poursuite (checkpoint, police, barrages), parcours entier en Course à 5 et en Duel (adversaires, partie parcourue, arrivée) ; ce n'est pas un bouton, aucun bouton ne change | E5 (nouveaux `src/ui/minicarte.*`, `tests/test_minicarte.cpp` ; accroches annoncées : E3 ≤ 10 lignes `course5.h` / `course5_system.cpp` / `poursuite.h` / `poursuite_system.cpp`, 1 ligne `hud.cpp` (`benchHud`), 1 ligne `CMakeLists.txt`, 1 ligne `build.yml`) | 🔧 En cours | ✅ Fusionné (fusion par confiance, QA de nuit à faire), PR #135, commit 56f5d47 | — (WFS-27 ✅, WFS-52 ✅, WFS-110 ✅, WFS-112 ✅, WFS-119 ✅) | `feature/waforspeed-173` |  | #135 | QA de nuit : `qa/Check.md` 
 | P3 Moyenne | WFS-174 | Sons de la route : vent et roulement des pneus selon la vitesse, bande rugueuse au bord, herbe / gravier hors route, chuintement sur chaussée mouillée | E6 (+ accroche ≤ 3 lignes `CMakeLists.txt`) | ✅ Fusionné (par confiance, PR #136) | Claude, agent 3 (session 011cpqZd), 2026-11-06 12:01 UTC | — (WFS-28 ✅, WFS-76 ✅, WFS-121 ✅, WFS-131 ✅) | `feature/waforspeed-174` |  |  |
+| P3 Moyenne | WFS-174 | Sons de la route : vent et roulement des pneus selon la vitesse, bande rugueuse au bord, herbe / gravier hors route, chuintement sur chaussée mouillée | E6 (+ accroche ≤ 3 lignes `CMakeLists.txt`) | 🔧 En cours | Claude, agent 3 (session 011cpqZd), 2026-11-06 12:01 UTC | — (WFS-28 ✅, WFS-76 ✅, WFS-121 ✅, WFS-131 ✅) | `feature/waforspeed-174` |  |  |
+| P2 Haute | WFS-175 | Ville (2/4) : autoroute urbaine, tunnel et pont | E2 | ⏳ En attente (après WFS-137, même carte et même épic) |  | WFS-137 | `feature/waforspeed-175` |  |  |
+| P2 Haute | WFS-176 | Ville (3/4) : casino, centre commercial, cafés et bars, garages | E2 | ⏳ En attente (après WFS-175, même carte et même épic) |  | WFS-175 | `feature/waforspeed-176` |  |  |
+| P2 Haute | WFS-177 | Ville (4/4) : pigeons et chiens + anomalies ANO-81 (trottoir) et ANO-84 (fenêtres de nuit) | E2 | ⏳ En attente (après WFS-176, même carte et même épic) |  | WFS-176 | `feature/waforspeed-177` |  |  |
+| P2 Haute | WFS-178 | Campagne (2/3) : animaux de ferme et village (rond-point, feu, café, bar, garage) | E2 | ⏳ En attente (après WFS-138, même carte et même épic) |  | WFS-138 | `feature/waforspeed-178` |  |  |
+| P2 Haute | WFS-179 | Campagne (3/3) : autoroute et péage | E2 | ⏳ En attente (après WFS-178, même carte et même épic) |  | WFS-178 | `feature/waforspeed-179` |  |  |
+| P2 Haute | WFS-180 | Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis | E2 | ⏳ En attente (après WFS-139, même carte et même épic) |  | WFS-139 | `feature/waforspeed-180` |  |  |
+| P2 Haute | WFS-181 | Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins | E2 | ⏳ En attente (après WFS-180, même carte et même épic) |  | WFS-180 | `feature/waforspeed-181` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -661,6 +669,27 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 
 **WFS-147 — Lot anomalies INTERFACE, 2e passage (2/2) : tailles écran par écran** · E8 (+ E5) · P2 Haute · ✅ Fusionné (PR #126, commit eb8152a, `qa-lead` VALIDÉ au tour 2/2, `qa/rapports/WFS-147.md`) — Claude (session trafic), 2026-11-06 04:11 UTC, branche `feature/waforspeed-147` (WFS-146 ✅ ; règles : `regles-de-gestion/WFS-147.md`). Pas de fusion sans verdict `qa-lead`.
 - [ ] écrans lisibles en 2400 un par un ; garage propre ; QA VALIDÉ
+
+**WFS-175 — Ville (2/4) : autoroute urbaine, tunnel et pont** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-137) (règles : `regles-de-gestion/WFS-175.md`, morceau de WFS-137)
+- [ ] voir WFS-137 (règles RG-03)
+
+**WFS-176 — Ville (3/4) : casino, centre commercial, cafés et bars, garages** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-175) (règles : `regles-de-gestion/WFS-176.md`, morceau de WFS-137)
+- [ ] voir WFS-137 (règles RG-04)
+
+**WFS-177 — Ville (4/4) : pigeons et chiens + anomalies ANO-81 (trottoir) et ANO-84 (fenêtres de nuit)** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-176) (règles : `regles-de-gestion/WFS-177.md`, morceau de WFS-137)
+- [ ] voir WFS-137 (règles RG-05, RG-A, RG-B)
+
+**WFS-178 — Campagne (2/3) : animaux de ferme et village (rond-point, feu, café, bar, garage)** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-138) (règles : `regles-de-gestion/WFS-178.md`, morceau de WFS-138)
+- [ ] voir WFS-138 (règles RG-02, RG-03)
+
+**WFS-179 — Campagne (3/3) : autoroute et péage** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-178) (règles : `regles-de-gestion/WFS-179.md`, morceau de WFS-138)
+- [ ] voir WFS-138 (règles RG-04)
+
+**WFS-180 — Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-139) (règles : `regles-de-gestion/WFS-180.md`, morceau de WFS-139)
+- [ ] voir WFS-139 (règles RG-02, RG-03, RG-04)
+
+**WFS-181 — Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-180) (règles : `regles-de-gestion/WFS-181.md`, morceau de WFS-139)
+- [ ] voir WFS-139 (règles RG-05, RG-06)
 
 **WFS-60 — Roues animées : roues séparées, rotation et braquage (absorbe WFS-61, WFS-62)** · E5 (+ API E0) · priorité P2 Haute · ✅ Fusionné le 2026-11-04 par confiance (PR #48, QA de nuit : `qa/Check.md`) (règles : `regles-de-gestion/WFS-60.md`, `WFS-61.md`, `WFS-62.md`)
 - [ ] 4 roues distinctes (centre, rayon) par voiture ; voiture à l'arrêt identique à avant
