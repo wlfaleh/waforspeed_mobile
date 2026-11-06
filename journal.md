@@ -4079,3 +4079,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-148 : PASSABLE AVEC ANOMALIES MINEURES** : image du jeu inchangée (13 captures sur 14 identiques au pixel) ; ANO-85 (bouton Réglages sur les vues de mesure), ANO-86 (« 0.0 % » pour un domaine non mesurable). Pour le PO : 48 captures (et non 96) ; critère ≥ 99 % sans objet pour l'état zéro.
 - **Correctif #121 : VALIDÉ** (poursuite à 1000 points, caméra et record conformes à `configgame.json`).
 - **Vérifiées corrigées** : ANO-37, 40, 51. Reste le lot 1 (WFS-133, 144, 136).
+
+### 2026-11-06 08:54:17 — Recette de nuit, lot 1 : WFS-133 VALIDÉ, WFS-144 PASSABLE, WFS-136 REFUSÉ — CI de main rouge (qa-lead)
+- **WFS-133 : VALIDÉ** (puces de difficulté ; simulation de contrôle 720 courses par difficulté : la nitro sert en Normale et Difficile).
+- **WFS-144 : PASSABLE AVEC ANOMALIES MINEURES** (+45 appels de dessin en Basse, cible ≤ 60 ; ANO-87 : aucune capture de la police en Basse).
+- **WFS-136 : REFUSÉ** : **ANO-88 bloquante** — `benchRecords` (`course_system.cpp` l. 385) attend encore `best == 48210` alors que RG-07 met les records sous `*_v1` : job `vitrines` rouge sur main f77e204 (run 42186678130, vérifié), plus aucune `vitrine-*` ni `trace-*` publiée. Tracé vérifié au banc local `WFS_BANC=trace` (0 écart) : rond-point, épingle, autoroute, A7 conformes. ANO-89 mineure (file au feu rouge non visible sur `trace-feux-rouge`).
+- **Pour le PO** : endurance de main rouge sur f77e204 (+10,6 % au cycle 6, seuil 10 %, sans lien établi avec WFS-136 → WFS-145) ; A7.4 fait disparaître le record Checkpoint aussi sur les cartes au tracé inchangé.
+- Recette de nuit terminée : 11 tickets + recette des 20 voitures. Bloquantes après fusion → tickets prioritaires à créer par le PO : ANO-72 à 76 (voitures), ANO-88 (CI de main).
