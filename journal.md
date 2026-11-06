@@ -3897,3 +3897,7 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 - **Zone autorisée** : `src/ui/ecrans/**`, `src/ui/text.cpp`, `src/ui/toasts.cpp`, `src/ui/hud.cpp`, `shaders/ui*`. **Interdit** : toute échelle / taille / position / mise en page, `src/ui/echelle.*`, `src/ui/reglages.cpp` hors accroche, `src/render/**`, `src/game/**`, `src/world/**`, iOS (gel).
 - **Critères** : ANO-16, 20, 32, 35, 39 (couleur), 41, 43, 44, 45 invisibles sur `menu-1`, `hud-course`, `encoche-hud-2400`, `terrain-1`, `duel-resultat`, `salon-code*`, `chargement-fondu-2400`, `course-fin` ; `garage-*-2400` identiques à `main` ; parcours complet 0 écart (`WFS_BANC=parcours`).
 - **Plan court** : reprendre de `feature/waforspeed-102` uniquement les morceaux texte / couleur / biseaux (jamais 6d3ed61, échelle dp) ; comparaison avant / après des captures listée au Journal (RG-12) ; fusion après CI verte et captures `garage-*-2400` de la branche regardées (RG-13).
+
+### 2026-11-06 03:09:16 — CI de main verte après WFS-144 (Claude (session trafic))
+
+Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise (rouge depuis WFS-94 au run 680). WFS-145 (session dev 5bx) garde son ticket pour confirmer la stabilité. Mon ticket en cours : WFS-146.
