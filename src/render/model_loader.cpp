@@ -371,6 +371,8 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         }
     }
     if (feuA.materiau >= 0) { tMin = feuA.bmin; tMax = feuA.bmax; }   // WFS-109 : position mesurée du feu découpé
+    const auto posV = [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; };
+    if (!(tMax.y > tMin.y)) feux_modele::boiteFeuxMarques(idx, out.parts, posV, tMin, tMax);   // WFS-171 : feux marqués par WFS-170
     // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
     out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
@@ -381,6 +383,10 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     const float hw = out.feux.largeur * 0.5f;
     out.feux.arriereX = tMax.x > tMin.x ? std::clamp(std::max(tMax.x, -tMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.18f;
     out.feux.avantX = hMax.x > hMin.x ? std::clamp(std::max(hMax.x, -hMin.x) * 0.75f, 0.2f, hw - 0.1f) : hw - 0.3f;
+    float dl = 0, zs = 0;   // WFS-171 : repli sans pièce de feu : halo posé sur l'arrière réel de la caisse, pas dans le vide
+    if (!out.feux.pieceArriere && feux_modele::arriereALaHauteur(verts.size(), posV, out.feux.arriereY, out.bmax.z, dl, zs)) {
+        out.feux.arriereX = std::max(0.2f, dl - 0.15f); out.feux.arriereZ = zs;
+    }
     for (size_t mi = 0; mi < raw.size(); mi++) {
         const RawMat& m = raw[mi];
         Material mt;

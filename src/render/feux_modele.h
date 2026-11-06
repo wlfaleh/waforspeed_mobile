@@ -83,6 +83,33 @@ inline float transition(float niveau, bool stop, float dt) {
     return niveau < cible ? std::min(cible, niveau + pas) : std::max(cible, niveau - pas);
 }
 
+// WFS-171 (signalé par WFS-170) : boîte des pièces « feu arrière » marquées au chargement (correctifs de WFS-170 : V60,
+// GT86, Abarth, A45) : position mesurée du feu, comme la découpe ; sans elle, le halo de repli flottait hors de la caisse
+template <class Part, class Pos>
+void boiteFeuxMarques(const std::vector<uint32_t>& idx, const std::vector<Part>& parts, Pos pos, vec3& bmin, vec3& bmax) {
+    for (const Part& p : parts) {
+        if (p.feuArriere != PIECE_FEU_ARRIERE) continue;
+        for (uint32_t k = 0; k < p.indexCount; k++) {
+            const vec3 q = pos((size_t)p.vertexOffset + idx[p.firstIndex + k]);
+            bmin = {std::min(bmin.x, q.x), std::min(bmin.y, q.y), std::min(bmin.z, q.z)};
+            bmax = {std::max(bmax.x, q.x), std::max(bmax.y, q.y), std::max(bmax.z, q.z)};
+        }
+    }
+}
+// WFS-171 : repli sans pièce de feu (S3, X5, Mustang…) : arrière de la caisse à la hauteur des feux (±6 cm), dans les
+// 60 derniers cm : demi-largeur (sans les rétroviseurs, à l'avant) et surface arrière réelles, au lieu de la boîte
+// entière (largeur avec rétroviseurs, pare-chocs le plus en arrière) qui posait le halo dans le vide
+template <class Pos>
+bool arriereALaHauteur(size_t nv, Pos pos, float y, float zArr, float& demiLargeur, float& zSurface) {
+    demiLargeur = 0; zSurface = -1e9f;
+    for (size_t v = 0; v < nv; v++) {
+        const vec3 q = pos(v);
+        if (std::abs(q.y - y) > 0.06f || q.z < zArr - 0.6f) continue;
+        demiLargeur = std::max(demiLargeur, std::abs(q.x)); zSurface = std::max(zSurface, q.z);
+    }
+    return demiLargeur > 0.3f;
+}
+
 // RG-13 / RG-03 : découpe d'un modèle. Part : firstIndex, indexCount, vertexOffset, material, feuArriere (ModelPart) ;
 // pos(v) : position du sommet v (indice absolu). Au plus une pièce de plus par pièce du matériau choisi (même matériau,
 // mêmes tampons) ; un modèle qui a déjà un feu MAT_TAIL valide n'est pas découpé (son 3e feu stop est seulement marqué).

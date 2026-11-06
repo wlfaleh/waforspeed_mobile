@@ -1302,7 +1302,7 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const float iLueur = f.nuit ? I_LUEUR + (I_LUEUR_STOP - I_LUEUR) * s : I_LUEUR_STOP * s;
     for (int side : {-1, 1}) {
         // RG-01 : lueur courte centrée sur la pièce du feu (arrière du verre), plus sur le pare-chocs
-        const float zF = (F.pieceArriere ? F.arriereZ : F.arriere) + 0.04f;
+        const float zF = F.arriereZ + 0.04f;   // WFS-171 : arrière de la pièce du feu, ou de la caisse à sa hauteur (repli)
         if (iCoeur > 0) feu(w.transformPoint({side * F.arriereX * RENTRE, F.arriereY, zF}), arriere, COEUR, LUEUR, rouge, iCoeur, iLueur);
         // WFS-171 (RG-03, ANO-78) : feu de recul dans la partie intérieure basse du bloc découpé (mesurée au chargement),
         // plus sur la tôle du hayon ; sans bloc mesuré, position d'avant
