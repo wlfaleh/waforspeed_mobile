@@ -4135,3 +4135,30 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Vérification** : 30 tests CPU OK (nouveaux : alternance des gyrophares, 1,5 s, « 2e PLACE ») ; captures locales regardées : poursuite-police, -surprise, -hud, -ralentisseur, -camion, -arrete, records-poursuite, records-course5, course5-fin, modes-choix, parcours-mode, salon-hors-ligne (2400).
 - **Limites** : CI de branche non attendue (fusion par confiance). La CI de main est rouge à cause de WFS-136 (ANO-88, corrigée par WFS-169 dans une autre session) : si seul ce job échoue, cela ne vient pas de WFS-141. Je suis la CI de main.
 
+
+### 2026-11-06 09:44:57 — WFS-170 : correctifs codés, PR #131, risques signalés au PO (Claude (session trafic))
+- **Fait** (au chargement, aucun `.wfm` modifié, nouveau `src/render/correctifs_voitures.*`, accroches dans `model_loader.cpp` hors bloc LOD) :
+  911 (vernis séparé « coat » retiré + peinture unie métallisée de WFS-77 : « Gris » = grise) ; Giulia (bande claire = normales d'origine
+  retournées → normales recalculées ; vitre à carte de normales de sérigraphie → verre teinté uni) ; S3 (vitres noires rugueuses → verre
+  teinté ; jantes → aluminium gris) ; normales recalculées (arêtes > 40° gardées) pour Model 3, X5, 208, Compass, Giulia, journal
+  « normales lissées » ; jantes du Compass en métal gris ; feux arrière pris dans un matériau partagé (V60, GT86, Abarth, A45) → pièces
+  « feu arrière » rouges, allumées au freinage.
+- **Accroches annoncées** : `src/platform/desktop_main.cpp`, 2 lignes (appel de `benchVitrinesFeux` dans le groupe `vitrines`, groupe local
+  `vitrines-feux`) ; banc `benchVitrinesFeux` dans `src/render/feux_modele.cpp` : 20 vues `vitrine-<id>-feux` (frein tenu, 3/4 arrière).
+- **Vérification locale** : 30 tests CPU OK ; captures avant / après regardées (911, Giulia, S3, Compass, X5, 208, Model 3, V60, GT86, Abarth,
+  A45) ; Golf et Corsa identiques au pixel (`vitrine-*-0` et `-feux`).
+- **Risques signalés au PO** : (1) **Model 3** : la carrosserie reste bosselée : c'est la géométrie du modèle d'origine (8,5 % des arêtes à
+  plus de 40°, normales sans effet : essai avec normales plates identique) ; la trace beige a disparu. Proposition : remplacer le modèle
+  (WFS-158 RG-05, modèle sous licence libre à choisir par le PO). (2) Halo rouge qui flotte à gauche de plusieurs voitures freinées
+  (Gallardo, 208, Abarth, T-Cross, Compass, S3, GT86, V60 : `vitrine-<id>-feux`) : position des halos (`feuxVoiture`, `renderer.cpp`, hors zone)
+  → à joindre à WFS-171 (ANO-70). (3) Elantra, Mustang, SF90 : verres sombres au repos mais rouges au freinage : laissés tels quels.
+- **Reste** : CI de branche, puis fusion après WFS-169 (CI de main) ; ensuite reprise de WFS-158 (en pause, travail local non poussé).
+
+### 2026-11-06 09:55:07 — WFS-131 libéré (règle 9) et attribué à Claude (session 01Us6uCu) (po-scrum-master)
+- **Libération** : WFS-131 était « 🔧 En cours » chez Claude, agent 3 (session 011cpqZd), attribué le 2026-11-05 à 17:59:13. 16 h après, aucune branche `feature/waforspeed-131` sur le dépôt distant (`git ls-remote`), aucune entrée de cet agent au Journal depuis, aucun `sirene_son.h` sur aucune branche. Règle 9 de `TACHES.md` (ordre de l'utilisateur : ticket 🔧 sans branche 2 h après l'attribution remis en ⏳ Prêt), puis attribution dans la foulée.
+- **Choix** : aucun P1 / P2 attribuable : WFS-137, 138, 139 (⏳ Prêt) sont en E2, occupée par WFS-140 ; E0 (WFS-149), E3 (WFS-169), E4 (WFS-170), E7 (WFS-145), E10 (WFS-158) occupées ; les autres tickets sont ⏳ En attente. `anno.md` : aucune anomalie 🆕. WFS-131 (E6, P3) est le seul ticket attribuable ; l'agent n'a aucun ticket en cours.
+- **Ticket** : WFS-131 — Sirène de police réaliste (wail / yelp, volume selon la distance, Doppler, jingles ARRÊTÉ / ÉCHAPPÉ) · E6 · P3 Moyenne · branche `feature/waforspeed-131` (à créer et pousser par le développeur dans l'heure) · règles `regles-de-gestion/WFS-131.md` (RG-01 à RG-11, repères mis à jour dans la section « Réattribution du 2026-11-06 »).
+- **Zone autorisée** : `src/audio/**` (`sfx.h`, `sfx.cpp`, `audio_system.cpp`, nouveau `sirene_son.h`), `tests/test_audio.cpp` ; accroches ≤ 10 lignes annoncées : `src/game/poursuite_system.cpp` (ligne de la sirène l. 195-196 et ligne du jingle au `fini_ = true` l. 200, RG-07), `CMakeLists.txt` ≤ 3 lignes. **Interdit** : reste de `src/game/**`, `poursuite.cpp/.h`, `src/ui/**`, `src/render/**`, `shaders/**`, `src/world/**`, `src/platform/**`, `.github/**`, `configgame.json`, iOS (gel, `audio_out_ios.cpp` compris), taille des boutons (ordre permanent).
+- **Coordination** : WFS-145 (E7) ajoute 4 lignes au saut du banc dans `poursuite_system.cpp` (l. 122-125), WFS-149 (E0) touche `CMakeLists.txt` : blocs différents, garder les deux en cas de conflit.
+- **Critères** : sirène continue qui enfle (0,45 à 15 m, 0 à 150 m) et s'éteint en fondu, yelp sous 20 m (wail au-delà de 25 m), Doppler borné ± 12 %, jingle de fin propre à la Poursuite (BipFin gardé ailleurs), silence hors Poursuite ; `test_audio` étendu (RG-10) ; `sirene.wav` au banc ; parcours complet RG-11 au Journal.
+- **Plan court** : boucle wail précalculée + lecture à pas variable (Doppler), gain lissé selon la distance, `sfxSirene(distanceM, vRapprochementMs)` appelée par pas depuis la poursuite, jingles à `fini_`, tests, banc, fusion selon la règle en vigueur.
