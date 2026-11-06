@@ -295,7 +295,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-179 | Campagne (3/3) : autoroute et péage | E2 | ⏳ En attente (après WFS-178, même carte et même épic) |  | WFS-178 | `feature/waforspeed-179` |  |  |
 | P2 Haute | WFS-180 | Corniche (2/3) : beach parties, jeux de plage, bateaux et jet-skis | E2 | ⏳ En attente (après WFS-139, même carte et même épic) |  | WFS-139 | `feature/waforspeed-180` |  |  |
 | P2 Haute | WFS-181 | Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins | E2 | ⏳ En attente (après WFS-180, même carte et même épic) |  | WFS-180 | `feature/waforspeed-181` |  |  |
-| P1 Urgent | WFS-182 | [URGENT] Correction : halos de frein qui flottent à côté de la voiture, feu du modèle éteint sur 12 voitures (ANO-91, bloquante, recette WFS-170 `REFUSÉ`) + reste d'ANO-76 (SF90, Elantra, RR Sport) + ANO-92 | E4 (exception PO : 2e ticket E4 à côté de WFS-171, blocs séparés ; accroche ≤ 10 lignes `model_loader.cpp`, bloc des feux, coordination WFS-158) | ⏳ Prêt |  | WFS-170 ✅ | `feature/waforspeed-182` |  |  |
+| P1 Urgent | WFS-182 | [URGENT] Correction : halos de frein qui flottent à côté de la voiture, feu du modèle éteint sur 12 voitures (ANO-91, bloquante, recette WFS-170 `REFUSÉ`) + reste d'ANO-76 (SF90, Elantra, RR Sport) + ANO-92 | E4 (exception PO : 2e ticket E4 à côté de WFS-171, blocs séparés ; accroche ≤ 10 lignes `model_loader.cpp`, bloc des feux, coordination WFS-158) | 🔧 En cours | Claude (session trafic), 2026-11-06 14:26 UTC (WFS-171 fusionné, E4 libre ; WFS-150 E0 en parallèle, ordre de l'utilisateur « avancer vite ») | WFS-170 ✅ | `feature/waforspeed-182` |  |  |
 | P3 Moyenne | WFS-183 | Correction : ordre des derniers adversaires au salon, captures 1280 du duel (ANO-93, ANO-94, recette WFS-122) | E3 (+ accroche `build.yml`) | ⏳ Prêt |  | WFS-122 ✅ | `feature/waforspeed-183` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
@@ -692,7 +692,7 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-181 — Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins** · E2 · priorité P2 Haute · ⏳ En attente (après WFS-180) (règles : `regles-de-gestion/WFS-181.md`, morceau de WFS-139)
 - [ ] voir WFS-139 (règles RG-05, RG-06)
 
-**WFS-182 — Correction : halos de frein flottants et feux du modèle éteints sur 12 voitures (ANO-91, ANO-76, ANO-92)** · E4 · P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-182.md`)
+**WFS-182 — Correction : halos de frein flottants et feux du modèle éteints sur 12 voitures (ANO-91, ANO-76, ANO-92)** · E4 · P1 Urgent · 🔧 En cours — Claude (session trafic), 2026-11-06 14:26 UTC, branche `feature/waforspeed-182` (règles : `regles-de-gestion/WFS-182.md`)
 - [ ] 20 `vitrine-*-feux` : feu du modèle allumé, aucun halo hors carrosserie ; 0 « feu non trouvé » ; SF90, Elantra, RR Sport rouges ; `garage-peintures-p911`
 
 **WFS-183 — Correction : derniers adversaires au salon et captures 1280 du duel (ANO-93, ANO-94)** · E3 · P3 Moyenne · ⏳ Prêt (règles : `regles-de-gestion/WFS-183.md`)
