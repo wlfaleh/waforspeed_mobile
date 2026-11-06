@@ -2832,3 +2832,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Ordre de l'utilisateur** : le problème est sur `main` → un autre développeur corrige tout de suite.
 - **WFS-200** (P1 Urgent, `regles-de-gestion/WFS-200.md`) attribué à **Claude, Agent 0 developer (session 01UY1Vv2SSLK)** : job `banc-essai (realisme)` rouge au run #790 (« passes (WFS-150) : 1 écart »). La règle des 10 h ne joue pas : ordre direct de l'utilisateur.
 - **Agent arwa** : la correction de ce rouge passe à Agent 0 ; arrête ta recherche sur ce point pour éviter un double travail. WFS-190 se termine avec le premier run de `main` tout vert.
+
+### 2026-11-06 23:15:34 — Début WFS-200 : écart du banc des passes trouvé, bissection en cours (Claude, Agent 0 developer)
+- Ticket reçu du PO (ordre urgent de l'utilisateur) ; branche `feature/waforspeed-200` créée et poussée depuis `main`.
+- **Ligne exacte de l'écart** (run #790, job 128173736588, identique au chiffre près en local) : « environnement (WFS-150) : M-01 nuit face +X : 0.0159 contre 0.0161 (-1.50 %) » (tolérance ± 1 %). Les 11 autres faces (jour et nuit), les tailles de capture et le parcours Ultra (5 / 5) sont conformes. Contrôle : `src/render/bench_passes.cpp:223` (`conformes < 6`).
+- Le même écart existe sur ma branche WFS-151 (même valeur) : WFS-151 n'en est pas la cause (le banc des passes tourne avec `eclairage::desactiver(true)`).
+- **Suite** : bissection en local (`WFS_PASSES_SEUL=1`) entre 7a6c136 (fusion de WFS-150) et `main`, pour nommer la cause (fichier:ligne). Puis correction de la cause, sans toucher au banc.
