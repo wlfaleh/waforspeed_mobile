@@ -5,6 +5,8 @@
 Un fichier par ticket : `WFS-XX.md`, **écrit par l'agent `po-scrum-master`** quand il crée ou affine le ticket,
 et **au plus tard avant de l'attribuer**. Le développeur le lit avant de coder ; le QA lead s'en sert pour juger.
 
+> **Axe Réalisme (2026-11-05 / 06)** : pour l'aspect du monde 3D, le jeu web **n'est plus la référence** ; la référence est le réel mesuré (`DA-realisme.md`). Les US de l'axe ajoutent au modèle une section « Mesures de fidélité » et une section « Sous-tâches ».
+
 ## Ce qu'on réutilise (obligatoire à vérifier pour chaque US)
 Le jeu existe déjà en version navigateur dans le dépôt **`wlfaleh/waaps`**, dossier **`waforspeed/`** :
 - **Code de référence** : `js/` (règles du jeu, physique, trafic, décor, caméra, sons, interface). Le natif reprend

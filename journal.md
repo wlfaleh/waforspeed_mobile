@@ -3767,3 +3767,25 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 1) Décor des sections serrées : **autorisé**. Accroche ≤ 10 lignes dans `game.cpp` (`buildChunkCpu`), bas-côté intérieur limité à 90 % de `trace::rayonInterieur(s)` ; API `sections()`, `sectionA(z)`, `rayonInterieur(s)` pour WFS-137 à 140. Débord temporaire du décor de `src/world` accepté, noté en limite dans `qa/Check.md`, sans anomalie (le travail est déjà dans WFS-137 à 140, qui recevront le critère). Nouveau tracé activé (version 2).
 2) Toasts : **autorisé**. Accroche ≤ 10 lignes `toasts::pousser(titre, valeur, genre)` dans `src/ui/toasts.h/.cpp` ; +50 versé dans `activeCourse()->bonus` depuis `trace_cartes.cpp`.
 3) Duel : **autorisé**. Champ `trace=2` dans la présence (`reseau_relais.*`), refus `"version"` ; une ligne dans `salon.cpp` ; accroche ≤ 10 lignes dans `duel.cpp` `checkStart` seulement si `reseau_relais` ne suffit pas (champ absent = refus).
+
+### 2026-11-06 00:58:16 — Axe stratégique « Réalisme » : analyse, charte, 5 épics (E9 à E13) et 20 US (WFS-148 à WFS-167), priorité HAUTE (po-scrum-master)
+- **Demande de l'utilisateur** (2026-11-05, complétée le 2026-11-06) : le jeu natif dépasse la version Web, qui n'est plus la référence graphique. Il veut un rendu proche du réel (routes, voitures, personnages, environnements, éclairage, immersion), en **priorité HAUTE**. Méthode imposée : **étape par étape**, une US par partie, chaque US validée avant la suivante, **99 % de fidélité** mesurée contre des données réelles, jamais l'apparence au détriment de la précision.
+- **Analyse de l'existant** (code de `main`), détaillée dans `regles-de-gestion/DA-realisme.md` § 1 et 2 :
+  - un seul shader pour tout (`scene.frag`) ; ciel analytique à deux couleurs, sans IBL ; une seule carte d'ombre, sans ombres la nuit ni occlusion ;
+  - route 100 % procédurale ; textures RGBA8 non compressées ; sommets sans tangentes ;
+  - bâtiments en boîtes ; 2 personnages stylisés ; jour / nuit binaire ;
+  - aucune donnée de référence ni mesure de fidélité.
+- **Décisions du PO** :
+  - « 99 % » = part des mesures dans leur tolérance face au référentiel sourcé `references/reel/` (±1 % sur les dimensions, ±0,5° sur le soleil, ΔE2000 ≤ 2 sur les couleurs…) ; « non mesurable » permis seulement avec sa raison ;
+  - règles communes RC-01 à RC-11 : avant / après, validation `qa-lead` avant fusion (pas de fusion par confiance pour cet axe), précision avant apparence, tests automatiques, budget de performance, licences, taille de l'APK ≤ 200 Mo.
+- **Épics créées** (zones séparées) : E9 Routes, E10 Véhicules (reprend `assets/cars/**` et `convert_car.mjs` de E5), E11 Personnages (reprend `pietons.*`, `squelette.*`, `scene_skin*`), E12 Environnements (reprend `vegetation.*`), E13 Lumière et image (reprend `sky*`, `post*`, `shadow*` de E4). WFS-144 (E4, en cours) garde ses droits jusqu'à sa fusion.
+- **US créées** (P2 Haute, règles dans `regles-de-gestion/WFS-148.md` à `WFS-167.md`), par paliers :
+  - palier 0 : WFS-148 → 146 → 147 (E0) ;
+  - palier 1 : WFS-151 → 149 → 150 → 151 (E13) ;
+  - palier 2 : WFS-158 → 156 → 157 (E10) et WFS-155 → 153 → 154 (E9) ;
+  - palier 3 : WFS-161 → 159 → 160 (E12) ;
+  - palier 4 : WFS-164 → 162 → 163 (E11) ;
+  - palier 5 : WFS-167 (harmonisation finale).
+- **Statut** : seule **WFS-148** (référentiel du réel et banc de fidélité, état zéro chiffré) est `⏳ Prêt`. Les 19 autres sont `⏳ En attente` de la validation de leurs dépendances. Affectation par profil d'agent (tableau de `TACHES.md`), attribution nominative à la demande des agents, comme d'habitude.
+- **Consignes mises à jour** : `CLAUDE.md`, `.claude/agents/po-scrum-master.md`, `regles-de-gestion/README.md` (le jeu web n'est plus la référence d'aspect).
+- **Numérotation** : WFS-145 à 147 ont été pris par un autre agent pendant la rédaction (endurance, lot interface) ; les US de l'axe sont donc **WFS-148 à WFS-167**.
