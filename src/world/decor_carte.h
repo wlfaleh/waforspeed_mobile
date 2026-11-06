@@ -147,5 +147,6 @@ static_assert(C_NB <= PAL_W, "palette trop petite");
 
 // banc d'essai (WFS-53) : captures carte-campagne-* et carte-circuit-* (src/world/cartes_banc.cpp)
 void benchCartes(Game& g, Renderer& r, const std::string& out);
+void benchVille(Game& g, Renderer& r, const std::string& out);   // WFS-137 : lieux de la Ville au tracé 2 (appelé par benchCartes)
 
 } // namespace wfs

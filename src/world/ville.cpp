@@ -192,7 +192,7 @@ public:
         mc.flags = MAT_MASK | MAT_DOUBLE | MAT_VTINT;
         mats_[P_CONIF] = r.makeMaterial(mc, leafTex_.img ? &leafTex_ : nullptr, nullptr, nullptr);
         // plan des quartiers (partagé avec les commerces et les enseignes) ; lampadaires pour la nuit (WFS-09)
-        plan_ = &ville::plan(*g.map, (int64_t)g.track->segmentCount());
+        plan_ = &ville::adapter(*g.map, *g.track);   // WFS-137 (RG-C1) : plan adapté aux sections du tracé 2 (inchangé au tracé 1)
         size_t nl = 0;
         for (size_t a = 0; a < plan_->objets.size(); a++) for (const ville::Objet& o : plan_->objets[a])
             if (o.t == ville::LAMPE) { lampadaires().push_back({(int64_t)a, o.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville}); nl++; }
@@ -396,8 +396,10 @@ public:
                 const float v0 = (float)(a * SEG_M), v1 = (float)((a + 1) * SEG_M), R = (float)RW;
                 for (int s : {-1, 1}) {
                     const uint32_t k = (uint32_t)w.v.size();
-                    auto som = [&](const carte::Pose& q, float lat, float v) { const vec3 x = carte::lateral(q, s * lat, 0.15f); w.v.push_back({x.x, x.y, x.z, 0, 1, 0, s * lat, v}); };
-                    som(p, R + 4, v0); som(p, R + 6, v0); som(p1, R + 6, v1); som(p1, R + 4, v1);
+                    // WFS-137 (RG-C1) : côté intérieur d'une courbe serrée, jamais au-delà de 90 % du rayon (comme Game)
+                    auto som = [&](const carte::Pose& q, int64_t sa, float lat, float v) {
+                        lat = std::min(lat, P.lim(sa, s)); const vec3 x = carte::lateral(q, s * lat, 0.15f); w.v.push_back({x.x, x.y, x.z, 0, 1, 0, s * lat, v}); };
+                    som(p, a, R + 4, v0); som(p, a, R + 6, v0); som(p1, a + 1, R + 6, v1); som(p1, a + 1, R + 4, v1);
                     const vec3 A{w.v[k].px, w.v[k].py, w.v[k].pz}, B{w.v[k + 1].px, w.v[k + 1].py, w.v[k + 1].pz}, C{w.v[k + 2].px, w.v[k + 2].py, w.v[k + 2].pz};
                     if (cross(B - A, C - A).y >= 0) w.i.insert(w.i.end(), {k, k + 1, k + 2, k, k + 2, k + 3});
                     else w.i.insert(w.i.end(), {k, k + 2, k + 1, k, k + 3, k + 2});
@@ -409,8 +411,10 @@ public:
                 const vec2 col = uvc(std::strcmp(z, "parc") ? U_BETON : U_PELOUSE);
                 for (int s : {-1, 1}) for (int i = 0; i < nb; i++) {
                     const ville::Bande& b = bd[i];
+                    const float l0 = P.lim(a, s), l1 = P.lim(a + 1, s);   // WFS-137 (RG-C1) : côté intérieur des courbes serrées
+                    if (b.a >= std::min(l0, l1)) continue;
                     carte::quadSol(out[P_UNI], carte::lateral(p, s * b.a, b.ya), carte::lateral(p1, s * b.a, b.ya),
-                                   carte::lateral(p1, s * b.b, b.yb), carte::lateral(p, s * b.b, b.yb), col);
+                                   carte::lateral(p1, s * std::min(b.b, l1), b.yb), carte::lateral(p, s * std::min(b.b, l0), b.yb), col);
                 }
             }
             for (const ville::Objet& o : P.objets[(size_t)seg]) objet(t, o, a, seg, z, p, lod, out);
