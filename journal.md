@@ -3931,3 +3931,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **1280x720** : menu, pause, réglages identiques au pixel ; terrain changé (ombre `.map-shade` du web, ANO-18 ; ciel, sol, route et nuages d'un seul tenant, ANO-42) ; garage : étiquette du type seule (ANO-47).
 - **Vérification** : 27 tests CPU (dont `test_petit_ecran`), parcours complet (WFS_BANC=parcours) 0 écart, parcours menu1 2400 0 écart, parcours duel 0 écart.
 - **Limites** : APK non construit en local (CI). Le panneau « Choisis ton mode » (course5, zone E3) n'a pas de mise en page petit écran : hors zone. En 1280x720, les petits libellés du terrain (11 px) ne changent pas (mise en page de bureau gardée).
+
+### 2026-11-06 05:43:27 — WFS-147 : recette avant fusion, verdict À CORRIGER (tour 1/2) (qa-lead)
+- **Captures** : Release `apercu-waforspeed-147` (commit 6548063 / 88ea33d, run 42166830479) comparées au pixel avec `apercu` de `main` : 330 en commun, 278 identiques.
+- **Bon** : `garage-*-2400` et `hud-2400` **identiques au pixel** à main (rien sur la voiture, HUD non touché) ; réglages, salon, menu, chargement lisibles en 2400 (texte courant ≥ 14 dp, touches et choix ≥ 44 dp de pas) ; ANO-17, 19, 38, 42 corrigées sur les écrans du ticket ; écarts non prévus expliqués par le contenu tiré au hasard (course à 5, code du salon).
+- **Mineures (tour 1/2)** : A) ombre de la carte du terrain trop haute en 2400, route et tribune du Grand Prix invisibles ; B) chevrons des flèches du terrain en escalier ; C) ANO-47 à moitié : « HYBRI)E » sur `garage-sf90`.
+- **Suite** : pas de fusion ; le développeur corrige A, B, C et redemande la recette (tour 2/2). Rapport : `qa/rapports/WFS-147.md`. Aucune anomalie ajoutée à `anno.md` (seulement au verdict PASSABLE).
