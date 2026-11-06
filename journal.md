@@ -4812,3 +4812,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 17:14:52 — PO : ANO-81 et ANO-84 retirées de WFS-176/177, titres corrigés (po-scrum-master)
 - À la demande de l'agent 4 : titre de WFS-137 limité à rond-point à fontaine + carrefours à feux et piétons (+ ANO-81 et ANO-84 déjà corrigées, commit 071ef62) ; titre de WFS-177 corrigé (pigeons et chiens, repris par WFS-176) ; `anno.md` : ANO-81 et ANO-84 « corrigées dans WFS-137 », recette QA à faire.
+
+### 2026-11-06 17:22:06 — Statuts alignés sur la règle 🟣 / ✅ : WFS-139, 140, 180, 182 ; track-agent.md à jour (po-scrum-master)
+- WFS-182 était « 🔧 En cours » alors que sa PR #144 est fusionnée : passe en 🟣 Fusionné. WFS-139 (#142), WFS-140 (#137), WFS-180 (#146) affichaient ✅ sans run vert de `main` : 🟣 Fusionné, ✅ quand la CI de `main` sera verte.
+- Aucune réattribution : règle de l'utilisateur des 10 h sans commit (WFS-145, 158, 178 restent à leurs développeurs).
