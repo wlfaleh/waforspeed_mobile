@@ -4645,3 +4645,15 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : bloc des feux de `src/render/renderer.cpp`, `src/render/feux_modele.*`, bloc des feux de `src/game/traffic_system.cpp`, banc garage (capture `garage-peintures-p911`) ; accroche ≤ 10 lignes annoncée au Journal dans `src/render/model_loader.cpp` (bloc des feux seulement, WFS-158 y travaille). **Interdit** : `tools/convert_car.mjs`, les `.wfm`, interface, iOS (gel).
 - **Critères** : 20 `vitrine-*-feux` avec le feu du modèle rouge et aucun halo hors carrosserie ; 0 « feu non trouvé » ; SF90/Elantra/RR Sport feu visible ; `garage-peintures-p911` ; voitures non visées identiques au pixel ; tests CPU verts ; parcours complet accueil → course → retour 0 écart ; ligne `qa/Check.md`.
 - **Plan court** : position du halo depuis la boîte réelle de la pièce de feu, sinon découpe au chargement (WFS-109), sinon aucun halo + ligne au journal du banc.
+### 2026-11-06 14:27:21 — Suite de la recette des lots A, B, C : anomalies rangées et points tranchés (PO)
+- **WFS-170 REFUSÉ** : ANO-91 (halos de frein flottants, 12 voitures) → **WFS-182** (E4, P1 Urgent, ⏳ Prêt), contrôle sur les 20 `vitrine-<id>-feux` ; ANO-75 (Model 3 en facettes, bloquante) → **WFS-158 RG-B passée en P1 Urgent**, à livrer seule en premier, contrôle `vitrine-model3-0` / `-feux`. Mineures : ANO-71 → WFS-158 RG-C ; ANO-76 (SF90, Elantra, RR Sport) → WFS-182 RG-03 ; ANO-92 → WFS-182 RG-04. Section « Graphisme réaliste » ajoutée à WFS-182 et WFS-158.
+- **ANO-68** : ⏸ en attente du test QA avec émulateurs, comme ANO-57 / ANO-59 (sa correction change une taille de texte ; ordre de l'utilisateur 63dd043).
+- **ANO-90** → WFS-183 RG-03 (position du bandeau seulement, aucune taille ne change) ; ANO-93 → WFS-183 RG-01 ; ANO-94 → WFS-183 RG-02. WFS-183 reste P3.
+- **Points tranchés** :
+  - (a) WFS-149, ETC2 refusé : repli RGBA8 accepté sur GPU sans ASTC ; budget mémoire des textures fixé en ASTC 6x6, repli RGBA8 en sautant le 1er niveau de mipmap (≈ 2,2 × l'ASTC). Écrit dans WFS-155, 159, 161, 164.
+  - (b) police presque noire en Basse : WFS-182 RG-07 (livrée à son albédo en Basse, contrôle `poursuite-police-basse`).
+  - (c) WFS-122 RG-01 (liste au-dessus de « Créer un duel ») : écart accepté tel quel, on ne bouge aucun bouton (tailles et places gelées) ; à revoir après le test QA avec émulateurs, avec ANO-57 / 59 / 68.
+  - (d) endurance rouge sur #720 (+10,9 %, oscille de +7,8 à +10,9 %) : rattachée à WFS-145 (P1, en cours), seuil inchangé, preuve 3 runs verts d'affilée sur main.
+  - (e) réserve QA : WFS-182 RG-08, recette sur l'`apercu` de main avec WFS-149 + WFS-170 ensemble.
+- **Pour Claude (session trafic), WFS-182 en cours depuis 14:26** : RG-07 (police en Basse), RG-08 (recette sur l'`apercu` de main) et la section « Graphisme réaliste » sont ajoutées à `regles-de-gestion/WFS-182.md` : relire avant de coder. WFS-171 a déjà corrigé le halo des 4 voitures marquées par WFS-170 (V60, GT86, Abarth, A45) : WFS-182 traite les autres, contrôle sur les 20 `vitrine-<id>-feux`.
+- Rien d'iOS (gel).
