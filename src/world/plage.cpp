@@ -16,6 +16,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <iterator>
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -45,6 +46,13 @@ struct Lieux { std::vector<Lieu> lieux; std::vector<vie::Baigneur> gens; bool fa
 constexpr float FETE_LAT = (float)RW + 21;   // centre de la piste de danse (sable : RW + 5 à RW + 38)
 constexpr float SCENE_LAT = (float)RW + 30;  // scène de 10 × 5 m, face à la route
 constexpr float VOLLEY_LAT = (float)RW + 22; // terrain de 16 × 8 m (FIVB), long côté le long de la route
+// WFS-181 : établissements du front de mer (type, segment du centre sur un tour, côté, longueur le long de la route en m)
+enum TypeEtab { E_BAR, E_CAFE, E_CASINO, E_GALERIE, E_SCOOTERS, E_NB };
+struct Etab { int type; int64_t seg; int side; float longueur; int variante; };
+constexpr float ETAB_L[E_NB] = {14.f, 12.f, 44.f, 30.f, 10.f};
+constexpr float BAR_LAT = (float)RW + 11;    // centre du plancher de la paillote (sable de RW + 5 à RW + 38)
+constexpr float FACADE_LAT = (float)RW + 8;  // façade des bâtiments côté terre (trottoir jusqu'à RW + 4, terrasse devant)
+constexpr float DAUPHIN_P = 11.f, DAUPHIN_T = 1.1f;   // un saut toutes les 11 s, 1,1 s en l'air
 // segment de plage de sable, loin des virages serrés, de la falaise, du tunnel et des places (RG-C1)
 static bool plageLibre(Track& t, const MapDef& map, int64_t len, int64_t n) {
     const char* z = zoneId(map, n, len);
@@ -85,9 +93,62 @@ const Lieux& lieux(const MapDef& map, int64_t len) {
 }
 // danseurs et joueurs : lus par les piétons (pietons.cpp)
 const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len) { return lieux(map, len).gens; }
-// segment occupé par une fête ou des jeux (± 35 m) : les serviettes n'y sont pas posées (commerces.cpp)
+// ---------------------------------------------------------------- WFS-181 : établissements du front de mer (RG-05)
+// bars de plage en paillote (côté mer, sur le sable), casino de station, cafés à terrasse, galerie vitrée et location de
+// scooters (côté terre, façade à RW + 8 m) : posés sur les sections plates du front de mer, loin des virages serrés, des
+// places et du feu, et jamais dans les 60 m qui précèdent l'un d'eux (RG-C1). Banc d'essai : WFS_PLAGE_AVANT=1 les retire
+// (captures « avant » de la preuve, RG-C5).
+static bool sansEtabs() { const char* e = std::getenv("WFS_PLAGE_AVANT"); return e && *e == '1'; }
+static bool serre(const trace::Section* s) {
+    return s && (s->type == trace::Type::Epingle || s->type == trace::Type::Lacets || s->type == trace::Type::RondPoint ||
+                 s->type == trace::Type::Chicane || s->type == trace::Type::Feux || s->type == trace::Type::Tunnel ||
+                 (s->type == trace::Type::Virage && s->rayon <= 100));
+}
+static int64_t ecart(int64_t a, int64_t b, int64_t len) { int64_t d = ((a - b) % len + len) % len; return d > len / 2 ? len - d : d; }
+static bool feteA(const MapDef& map, int64_t len, int64_t n, int64_t marge) {
+    for (const Lieu& l : lieux(map, len).lieux) if (ecart(n, l.seg, len) < marge) return true;
+    return false;
+}
+// segment n libre pour un établissement du côté side : front de mer plat (corniche, village), aucune section serrée ni feu
+// sous lui ou dans les 60 m qui suivent, pas l'intérieur d'une courbe de moins de 150 m de rayon
+static bool etabLibre(Track& t, const MapDef& map, int64_t len, int64_t n, int side) {
+    const int64_t m = ((n % len) + len) % len;
+    const char* z = zoneId(map, m, len);
+    if (std::strcmp(z, "corniche") && std::strcmp(z, "village")) return false;
+    if (t.pose(m).y > 1) return false;
+    for (int64_t k = 0; k <= 50; k += 5) if (serre(trace::sectionA(t, (double)((m + k) % len) * SEG))) return false;
+    const trace::Rayon ri = trace::rayonInterieur(t, (double)m * SEG);
+    return (side > 0 ? ri.droite : ri.gauche) > 150;
+}
+int64_t demiEtab(const Etab& e) { return (int64_t)std::ceil((e.longueur / 2 + 6) / SEG_M); }
+const std::vector<Etab>& etablissements(const MapDef& map, int64_t len) {
+    static std::map<std::pair<uint32_t, int64_t>, std::pair<bool, std::vector<Etab>>> cache;
+    auto& [fait, E] = cache[{map.seed, len}];
+    if (fait || std::strcmp(map.id, "plage")) return E;
+    fait = true;
+    Track t; t.build(map, trace::versionCarte(map.id));
+    if ((int64_t)t.segmentCount() != len) return E;
+    // ordre le long de la route : bar, café, casino, bar, galerie, café, scooters, bar ; 45 m au moins entre deux
+    static const int ORDRE[] = {E_BAR, E_CAFE, E_CASINO, E_BAR, E_GALERIE, E_CAFE, E_SCOOTERS, E_BAR};
+    Mulberry32 D(map.seed * 31 + 43);
+    size_t i = 0;
+    for (int64_t n = 60; n < len - 60 && i < std::size(ORDRE); n++) {
+        const int ty = ORDRE[i], side = ty == E_BAR ? 1 : -1;
+        const Etab e{ty, n, side, ETAB_L[ty], (int)(D.next() * 4)};
+        const int64_t w = demiEtab(e);
+        bool ok = !(side > 0 && feteA(map, len, n, w + 30));   // bars : ni sur une fête ni sur les jeux (WFS-180)
+        for (int64_t k = n - w; k <= n + w && ok; k += 2) ok = etabLibre(t, map, len, k, side);
+        if (!ok) continue;
+        E.push_back(e); i++;
+        n += 2 * w + (int64_t)(45 / SEG_M);
+    }
+    WFS_LOG("Plage (WFS-181) : %zu établissements du front de mer (bars, café, casino, galerie, scooters)", E.size());
+    return E;
+}
+// segment occupé par une fête, des jeux (± 36 m) ou un bar de plage : ni serviette, ni parasol, ni objet côté mer
 bool occupe(const MapDef& map, int64_t len, int64_t n) {
-    for (const Lieu& l : lieux(map, len).lieux) { int64_t d = ((n - l.seg) % len + len) % len; if (d > len / 2) d = len - d; if (d < 30) return true; }
+    if (feteA(map, len, n, 30)) return true;
+    if (!sansEtabs()) for (const Etab& e : etablissements(map, len)) if (e.type == E_BAR && ecart(n, e.seg, len) < demiEtab(e) + 5) return true;
     return false;
 }
 } // namespace plage
@@ -98,7 +159,9 @@ constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et 
 // P_NEON : boules des lampadaires (WFS-81) ; WFS-139 : P_ROC roche (texture), P_ACIER glissières, P_SODIUM luminaires du
 // tunnel, P_ROUTE chaussée de la rue transversale du carrefour, P_VOUTE roche de la voûte (lumière du ciel masquée) ;
 // WFS-180 : P_GUIRL ampoules des guirlandes, P_FILET filet de beach-volley (transparent)
-enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P_SODIUM, P_ROUTE, P_VOUTE, P_GUIRL, P_FILET, P_COUNT };
+enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P_SODIUM, P_ROUTE, P_VOUTE, P_GUIRL, P_FILET,
+           // WFS-181 : chaume, bois, vitrages (3000 K, 4000 K la nuit), néon du casino, textes des enseignes (3 couleurs)
+           P_PAILLE, P_BOIS, P_VITRINE, P_VITRINE_F, P_NEONR, P_TXT_CHAUD, P_TXT_ROSE, P_TXT_FROID, P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
 constexpr float OCEAN_Y = -1.75f;     // niveau de la mer sous la route (le sable mouillé y plonge)
@@ -118,7 +181,14 @@ enum Col { C_PROM, C_SABLE, C_MOUILLE, C_DUNE, C_COLLINE, C_ROCHER, C_QUAI, C_HE
            // feu, lignes du terrain (bleu FIVB), coque blanche (gelcoat), pont en teck, voile (dacron), vitres teintées, coques
            // des pédalos et du toboggan (jaune, bleu, rouge), sable mouillé du château, combinaison du pilote de jet-ski
            C_PLANCHE, C_TOILE, C_HP, C_MATBOIS, C_PIERRE, C_BUCHE, C_LIGNE, C_GELCOAT, C_TECK, C_DACRON, C_VITRE2,
-           C_JAUNE, C_BLEU, C_ROUGE, C_SABLE_M, C_COMBI, C_BALLON, C_PEAU, C_NB };
+           C_JAUNE, C_BLEU, C_ROUGE, C_SABLE_M, C_COMBI, C_BALLON, C_PEAU,
+           // WFS-181 : enduit blanc (albédo linéaire 0,74), pierre claire des corniches (0,49 : « pierre claire 0,40-0,55 »),
+           // zinc patiné, aluminium anthracite, volets, toiles des stores, bois sombre des comptoirs, rotin, coussins,
+           // scooters (4 teintes), pneu (0,023 : « pneu » du référentiel), selle, dallage ; goéland leucophée : plumage
+           // blanc (0,79), manteau gris (0,34), pointes noires, bec jaune ; dauphin commun : dos gris foncé, ventre blanc
+           C_ENDUIT, C_PIERREB, C_ZINC, C_ALU, C_VOLET, C_STORE_B, C_STORE_R, C_TOILE_C, C_TECKF, C_ROTIN, C_COUSSIN0, C_COUSSIN1,
+           C_SCOOT0, C_SCOOT1, C_SCOOT2, C_SCOOT3, C_PNEU, C_SELLE, C_DALLE, C_GOEL_BLANC, C_GOEL_GRIS, C_GOEL_NOIR, C_GOEL_BEC,
+           C_DAUPH_DOS, C_DAUPH_VENTRE, C_NB };
 const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c, 0x7d7a70, 0x9a958a, 0x5f6a3a,
                                 0xf2efe6, 0xf2efe6, veg::PALM_SHEATH, veg::PALM_COCO,
                                 0xe2262b, 0xffd23a, 0x1d8fb8, 0xffffff, 0xff6a00,
@@ -128,7 +198,10 @@ const uint32_t PALETTE[C_NB] = {0xb8ab8c, 0xcdb683, 0xa38d60, 0x9aa65e, 0x7a8a4c
                                 0x6f6b62, 0x8a857a, 0x8a8f96, 0xb8bec6, 0x6b4a2e, 0x2f5a2c, 0x3f6f2a, 0x557f34,
                                 0x787850, 0x2a2d31, 0x30343a, 0x5b7a37,
                                 0x6b5238, 0x161618, 0x202022, 0x8a6a48, 0x8c877c, 0x4a3426, 0x2f6fc2, 0xeeeeea, 0x9a7650, 0xf2f0ea,
-                                0x24323c, 0xf2c21a, 0x1f63b8, 0xc8322a, 0xa8925f, 0x22262c, 0xf4e04a, 0xc69a76};
+                                0x24323c, 0xf2c21a, 0x1f63b8, 0xc8322a, 0xa8925f, 0x22262c, 0xf4e04a, 0xc69a76,
+                                0xe0ddd4, 0xc4bba8, 0x6d767c, 0x2c3035, 0x5e8a8c, 0x1f5f8b, 0x9b2a24, 0xece6d6, 0x5a4330, 0x9c7a4e,
+                                0xe9e2d0, 0x2f6f8f, 0xb3261e, 0xe8e8e4, 0x8fc9b0, 0x1c1d20, 0x2a2a2a, 0x2a2422, 0xbfb7a6,
+                                0xe6e6e2, 0x9aa1a7, 0x2b2b2d, 0xe3b52a, 0x3d434b, 0xd9d7d0};
 constexpr int PAL_W = 128;   // cases de la palette (≥ C_NB) ; WFS-180 : 64 → 128
 static_assert(C_NB <= PAL_W, "palette trop petite");
 inline vec2 palUv(int c) { return {(c + 0.5f) / PAL_W, 0.5f}; }
@@ -368,6 +441,10 @@ void sillage(Geo& g) {
 
 // banc d'essai : vue de dessus de la Corniche (décor compris), réglée par benchCorniche
 struct VueDessus { bool actif = false; vec3 oeil{}, cible{}, haut{0, 0, -1}; float fov = 50; } g_vueDessus;
+// WFS-181 : où regarder les animaux (banc d'essai) ; profondeur des bâtiments (m) ; textes des enseignes
+struct OuAnimaux { int64_t dauphinSeg = -1, rocherSeg = -1; float dauphinLat = 0, rocherLat = 0, rocherY = 0; } g_animaux;
+constexpr float PROF_ETAB[plage::E_NB] = {12.f, 9.f, 16.f, 14.f, 7.f};
+const char* const TEXTES_ETAB[] = {"BEACH BAR", "CASINO", "CAFÉ DU PORT", "CAFÉ DE LA PLAGE", "GALERIE MARINE", "LOCATION SCOOTERS"};
 
 class Plage : public System {
 public:
@@ -402,6 +479,7 @@ public:
         objets_.clear();
         place(*g.track);
         initPlage(r, *g.track, *g.map);
+        initEtabs(r, *g.track);   // WFS-181
     }
 
     // stipe (2 texels : BARK.palm / palm2), palmes (atlas du jeu web, case 2) vertes et sèches
@@ -626,6 +704,7 @@ public:
         }
         placeQuartiers(map, ranges);
         filtrer(t);
+        placerEtabs(t);   // WFS-181
         // éclairage de nuit (src/render/nuit.cpp) : lumière du jeu web (scene.js) à RW + 0,6, 5,6 m, côté du poteau
         for (const Lampe& l : lamps_) lampadaires().push_back({l.seg, l.side * (R + 0.6f), 5.6f, StyleLampadaire::Plage});
         WFS_LOG("Plage : %zu palmiers, %zu parasols, %zu lampadaires, %s", palms_.size(), umbrellas_.size(), lamps_.size(), night_ ? "nuit" : "jour");
@@ -933,7 +1012,7 @@ public:
 
     // ambiance de la plage (envFor) : brouillard plus loin de jour, nuit bleutée
     void ambiance(FrameParams& fp, const GameView& g) override {
-        if (!active_ || g.sceneDediee) return;
+        if (!active_ || (g.sceneDediee && !(g_vueDessus.actif && night_))) return;   // WFS-181 : vues de nuit du banc
         // Game : brouillard exponentiel 0,0009 pour la ville (fogFar 620 m du jeu web) → même rapport pour la plage
         if (!night_) {
             fp.fogColor = linHex(0xcfe3f0);
@@ -1123,6 +1202,528 @@ public:
         return draws;
     }
 
+    // ---------------------------------------------------------------- WFS-181 : établissements (RG-05), animaux (RG-06)
+    // établissements du tracé : gardés s'ils ne touchent aucune autre branche de la route (placeLibre) ; villas, pins et
+    // palmiers retirés de leur emprise ; 2 palmiers devant le casino ; lumière de nuit (nuit.cpp, sodium) aux bars et au casino
+    void placerEtabs(Track& t) {
+        etabs_.clear();
+        if (trace::sections(t).empty() || plage::sansEtabs()) return;
+        const float R = (float)RW;
+        for (const plage::Etab& e : plage::etablissements(*t.map(), len_)) {
+            const float demi = e.longueur / 2 + 1;
+            const bool ok = e.side > 0 ? placeLibre(t, e.seg, 1, plage::BAR_LAT - 6, 16.f, demi)
+                                       : placeLibre(t, e.seg, -1, R + 4, PROF_ETAB[e.type] + 4.5f, demi);
+            if (ok) etabs_.push_back(e); else WFS_LOG("Plage (WFS-181) : établissement %d au segment %lld retiré (autre branche)", e.type, (long long)e.seg);
+        }
+        size_t o0 = objets_.size(), p0 = palms_.size();
+        for (const plage::Etab& e : etabs_) {
+            const int64_t w = plage::demiEtab(e);
+            auto dans = [&](int64_t seg, float marge) { return plage::ecart(seg, e.seg, len_) < w + (int64_t)std::ceil(marge / SEG_M); };
+            std::erase_if(objets_, [&](const Objet& o) { return o.side == e.side && o.t != O_BATEAU && o.lat < R + 60 && dans(o.seg, std::max(o.w, o.h) * 0.5f + 2); });
+            if (e.side < 0) std::erase_if(palms_, [&](const Palm& p) { return p.lat < 0 && dans(p.seg, 3); });
+        }
+        for (const plage::Etab& e : etabs_) {
+            const int64_t m = mod(e.seg);
+            if (e.type == plage::E_CASINO) for (float al : {-e.longueur / 2 - 3.f, e.longueur / 2 + 3.f})
+                palms_.push_back({mod(m + (int64_t)std::lround(al / SEG_M)), -(R + 5.4f), al < 0 ? 9.5f : 10.5f, al < 0 ? 0.08f : -0.06f, al < 0 ? 1.1f : 4.2f});
+            if (e.side > 0) lampadaires().push_back({m, plage::BAR_LAT - 2.f, 2.4f, StyleLampadaire::Ville});
+            // casino : lumière du parvis au bord du trottoir (6 m de la façade) ; cafés, galerie et scooters : éclairés par
+            // leurs vitrines et leur enseigne (une lumière de rue de plus surexposait leurs murs, comme ceux des villas)
+            else if (e.type == plage::E_CASINO) lampadaires().push_back({m, -(R + 2.f), 6.5f, StyleLampadaire::Ville});
+        }
+        WFS_LOG("Plage (WFS-181) : %zu établissements posés ; %zu objets retirés de leur emprise ; %zu palmiers (avant : %zu)",
+                etabs_.size(), o0 - objets_.size(), palms_.size(), p0);
+    }
+
+    // textures calculées ici (sites de textures libres bloqués par le réseau des agents, comme la roche de WFS-139 ; œuvre du
+    // projet, CC0), 128 × 128, répétables : chaume (rangs de bottes, fibres le long de la pente, albédo linéaire moyen ≈ 0,30)
+    // et planches de bois patiné (planches de 15 cm, joints sombres, albédo ≈ 0,24)
+    static void genererMatieres(std::vector<uint8_t>& paille, std::vector<uint8_t>& bois) {
+        constexpr int N = 128;
+        paille.assign(N * N * 4, 255); bois.assign(N * N * 4, 255);
+        auto srgb = [](float l) { l = std::clamp(l, 0.f, 1.f); return (uint8_t)std::lround(255 * (l <= 0.0031308f ? 12.92f * l : 1.055f * std::pow(l, 1 / 2.4f) - 0.055f)); };
+        for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) {
+            const int k = (y * N + x) * 4;
+            const float fib = 0.6f * bruitValeur(x * 64.f / N, y * 4.f / N, 64, 31) + 0.4f * bruitValeur(x * 16.f / N, y * 2.f / N, 16, 32);
+            const float rang = (y % 16) / 15.f;   // 0 : haut d'un rang (sous le rang du dessus), 1 : bout des tiges
+            const float a = 0.30f * (0.7f + 0.6f * fib) * (0.78f + 0.3f * rang) * (y % 16 == 15 ? 0.6f : 1.f);
+            paille[k] = srgb(a * 1.2f); paille[k + 1] = srgb(a); paille[k + 2] = srgb(a * 0.6f);
+            const int pl = y / 16, jy = y % 16;
+            const float veine = 0.5f * bruitValeur(x * 4.f / N, pl * 2.3f + jy * 0.15f, 4, 40) + 0.5f * bruitValeur(x * 16.f / N, pl * 5.1f + jy * 0.4f, 16, 60);
+            const float teinte = 0.85f + 0.3f * bruitValeur((float)pl + 0.5f, 0.5f, 8, 77);
+            float b = 0.24f * teinte * (0.8f + 0.4f * veine);
+            if (jy == 0 || (x + pl * 37) % 64 == 0) b *= 0.35f;   // joints entre planches, bouts de planches
+            bois[k] = srgb(b * 1.25f); bois[k + 1] = srgb(b * 0.92f); bois[k + 2] = srgb(b * 0.62f);
+        }
+    }
+
+    void initEtabs(Renderer& r, Track& t) {
+        std::vector<uint8_t> pa, bo;
+        genererMatieres(pa, bo);
+        pailleTex_ = r.vk().uploadTexture(pa.data(), 128, 128, true);
+        boisTex_ = r.vk().uploadTexture(bo.data(), 128, 128, true);
+        Material mp; mp.rough = 0.95f; mp.flags = MAT_DOUBLE;   // chaume : diélectrique très rugueux
+        mats_[P_PAILLE] = r.makeMaterial(mp, &pailleTex_, nullptr, nullptr);
+        Material mb; mb.rough = 0.8f; mb.flags = MAT_DOUBLE;    // bois brut patiné
+        mats_[P_BOIS] = r.makeMaterial(mb, &boisTex_, nullptr, nullptr);
+        // vitrages : de jour verre (diélectrique, rugosité 0,08 ; teinte bleu-gris qui tient lieu du reflet du ciel, comme les vitrines de commerces.cpp) ; la nuit éclairés de l'intérieur, LED blanc
+        // chaud 3000 K (bars, cafés, casino) ou blanc neutre 4000 K (galerie) — DA-realisme.md : LED 3000-4000 K
+        for (int k = 0; k < 2; k++) {
+            Material mv; const vec3 cv = linHex(0x3b4a58); mv.color = {cv.x, cv.y, cv.z, 1}; mv.rough = 0.08f; mv.flags = MAT_DOUBLE;
+            if (night_) mv.emissive = (k ? vec3{1.f, 0.82f, 0.63f} : vec3{1.f, 0.71f, 0.42f}) * 0.75f;
+            mats_[k ? P_VITRINE_F : P_VITRINE] = r.makeMaterial(mv, nullptr, nullptr, nullptr);
+        }
+        // tubes néon du casino (rose-rouge, saturé et borné : 2,4 la nuit, 0,25 de jour)
+        Material mn; const vec3 c = linHex(0xff2a55); mn.color = {c.x, c.y, c.z, 1}; mn.rough = 0.3f; mn.flags = MAT_DOUBLE;
+        mn.emissive = c * (night_ ? 2.4f : 0.25f);
+        mats_[P_NEONR] = r.makeMaterial(mn, nullptr, nullptr, nullptr);
+        // enseignes : textes de l'atlas commun (enseignes.cpp, police du jeu), allumés la nuit
+        for (const char* s : TEXTES_ETAB) atlas_.ajouter(s);
+        if (atlas_.construire(r)) {
+            const float em = night_ ? 1.4f : 0.6f;
+            mats_[P_TXT_CHAUD] = atlas_.materiau(r, 0xffd9a0, em);
+            mats_[P_TXT_ROSE] = atlas_.materiau(r, 0xff3a6a, night_ ? 1.8f : 0.6f);
+            mats_[P_TXT_FROID] = atlas_.materiau(r, 0xe6f2ff, em);
+        }
+        Material md; md.rough = 0.35f; md.flags = MAT_DOUBLE;   // peau mouillée du dauphin : diélectrique lisse, jamais métallique
+        dauphinMat_ = r.makeMaterial(md, &palTex_, nullptr, nullptr);
+        initAnimaux(r, t);
+    }
+
+    // façade : vitre (quadrilatère tourné vers la route, normale −X), bas au centre c, largeur w selon la route, hauteur h
+    static void vitre(Geo& g, vec3 c, vec3 X, float w, float h) {
+        const vec3 x = normalize(cross(X, vec3{0, 1, 0})) * (w / 2), y{0, h, 0}, o = c - X * 0.03f;
+        quad(g, o - x, o + x, o + x + y, o - x + y, {0, 0});
+    }
+    // texte d'enseigne (atlas de enseignes.cpp) centré en c, hauteur h (réduite si plus large que wMax), lu depuis la route
+    void texte(Geo& g, const char* s, vec3 c, vec3 X, float h, float wMax) const {
+        const vie::Texte& T = atlas_.texte(s);
+        if (!T.ok) return;
+        float w = h * T.aspect;
+        if (w > wMax) { h *= wMax / w; w = wMax; }
+        const vec3 x = normalize(cross(X, vec3{0, 1, 0})) * (w / 2), y{0, h / 2, 0}, o = c - X * 0.04f;
+        quadUv(g, o - x - y, o + x - y, o + x + y, o - x + y, {T.u0, T.v1}, {T.u1, T.v1}, {T.u1, T.v0}, {T.u0, T.v0});
+    }
+    // boîte texturée (uv en mètres / tuile : côtés longueur × hauteur, dessus x × z)
+    static void boxUv(Geo& g, vec3 c, vec3 r, vec3 f, float hx, float hz, float h, float tuile) {
+        const vec3 up{0, 1, 0};
+        auto P = [&](float x, float y, float z) { return c + r * x + up * y + f * z; };
+        const float k = 1 / tuile, a = 2 * hx * k, b = 2 * hz * k, v = h * k;
+        quadUv(g, P(-hx, 0, -hz), P(hx, 0, -hz), P(hx, h, -hz), P(-hx, h, -hz), {0, 0}, {a, 0}, {a, v}, {0, v});
+        quadUv(g, P(hx, 0, -hz), P(hx, 0, hz), P(hx, h, hz), P(hx, h, -hz), {0, 0}, {b, 0}, {b, v}, {0, v});
+        quadUv(g, P(hx, 0, hz), P(-hx, 0, hz), P(-hx, h, hz), P(hx, h, hz), {0, 0}, {a, 0}, {a, v}, {0, v});
+        quadUv(g, P(-hx, 0, hz), P(-hx, 0, -hz), P(-hx, h, -hz), P(-hx, h, hz), {0, 0}, {b, 0}, {b, v}, {0, v});
+        quadUv(g, P(-hx, h, -hz), P(hx, h, -hz), P(hx, h, hz), P(-hx, h, hz), {0, 0}, {a, 0}, {a, b}, {0, b});
+    }
+    // ellipsoïde de demi-axes vectoriels (roues et carénages des scooters)
+    static void ellipsoide(Geo& g, vec3 c, vec3 ax, vec3 ay, vec3 az, vec2 uv) {
+        const int nu = 10, nv = 6;
+        auto P = [&](int i, int j) {
+            const float u = 2 * PI * i / nu, v = PI * j / nv;
+            return c + ax * (std::sin(v) * std::cos(u)) + ay * std::cos(v) + az * (std::sin(v) * std::sin(u));
+        };
+        for (int j = 0; j < nv; j++) for (int i = 0; i < nu; i++) {
+            const vec3 a = P(i, j), b = P(i + 1, j), cc = P(i + 1, j + 1), d = P(i, j + 1);
+            if (j > 0) tri(g, a, b, cc, uv);
+            if (j < nv - 1) tri(g, a, cc, d, uv);
+        }
+    }
+
+    // bar de plage en paillote : plancher de bois sur pilotis, poteaux de pin, toit de chaume en croupe, comptoir face à la
+    // route, tabourets, enseigne « BEACH BAR », guirlande sous l'avant-toit ; transats et parasols de paille côté mer.
+    // Hauteurs : comptoir 1,10 m (bar debout : 1,05-1,15 m), assise des tabourets 0,76 m, table basse 0,45 m, avant-toit 2,6 m
+    // au-dessus du plancher. La variante change la pente du toit, le nombre de transats et la couleur des coussins.
+    void paillote(Track& t, const plage::Etab& e, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        const Frame fr = frameAt(t, (double)a * SEG);
+        const vec3 X = fr.r, Z = fr.f, up{0, 1, 0};
+        const float L = e.longueur, D = 12.f, l0 = plage::BAR_LAT - D / 2, l1 = l0 + D;
+        const float yd = sableY(l0) + 0.35f, ye = yd + 2.6f, yr = ye + 1.5f + 0.25f * (e.variante % 3);
+        auto Q = [&](float lat, float al, float y) { return fr.o + X * lat + Z * al + up * y; };
+        boxUv(out[P_BOIS], Q(plage::BAR_LAT, 0, yd - 0.12f), X, Z, D / 2, L / 2, 0.12f, 1.2f);   // plancher
+        for (float pl : {l0 + 0.3f, plage::BAR_LAT, l1 - 0.3f}) for (float pa : {-L / 2 + 0.3f, 0.f, L / 2 - 0.3f}) {   // pilotis
+            const float ys = sableY(pl) - 0.3f;
+            cylinder(out[P_UNI], Q(pl, pa, ys), 0.09f, yd - 0.12f - ys, 6, palUv(C_MATBOIS));
+        }
+        // toit de chaume sur l'arrière (bar couvert : 8,5 m), débord de 0,6 m ; faîtage le long de la route
+        const float r0 = l0 + 3.5f - 0.6f, r1 = l1 + 0.6f, rc = (r0 + r1) / 2, hz = L / 2 - 0.5f + 0.6f, hx = (r1 - r0) / 2;
+        const float hf = std::max(0.5f, hz - hx);   // demi-longueur du faîtage
+        const vec3 A = Q(r0, -hz, ye), B = Q(r0, hz, ye), C = Q(r1, hz, ye), Dd = Q(r1, -hz, ye), F0 = Q(rc, -hf, yr), F1 = Q(rc, hf, yr);
+        const float pente = length(vec2{hx, yr - ye}) / 2.f;   // uv : 2 m par répétition
+        quadUv(out[P_PAILLE], A, B, F1, F0, {0, pente}, {hz, pente}, {hz - (hz - hf) / 2, 0}, {(hz - hf) / 2, 0});
+        quadUv(out[P_PAILLE], C, Dd, F0, F1, {0, pente}, {hz, pente}, {hz - (hz - hf) / 2, 0}, {(hz - hf) / 2, 0});
+        quadUv(out[P_PAILLE], B, C, F1, F1, {0, pente}, {hx, pente}, {hx / 2, 0}, {hx / 2, 0});
+        quadUv(out[P_PAILLE], Dd, A, F0, F0, {0, pente}, {hx, pente}, {hx / 2, 0}, {hx / 2, 0});
+        // épaisseur du chaume au bord (0,3 m)
+        for (auto [p, q] : {std::pair{A, B}, std::pair{B, C}, std::pair{C, Dd}, std::pair{Dd, A}})
+            quadUv(out[P_PAILLE], p - up * 0.3f, q - up * 0.3f, q, p, {0, 0.15f}, {length(vec2{q.x - p.x, q.z - p.z}) / 2, 0.15f}, {length(vec2{q.x - p.x, q.z - p.z}) / 2, 0}, {0, 0});
+        for (float pl : {r0 + 0.7f, r1 - 0.7f}) for (float pa : {-L / 2 + 0.9f, -L / 6, L / 6, L / 2 - 0.9f})   // poteaux de pin Ø 16 cm
+            cylinder(out[P_UNI], Q(pl, pa, yd), 0.08f, ye - yd - 0.2f, 6, palUv(C_MATBOIS));
+        boxUv(out[P_BOIS], Q(l1 - 0.3f, 0, yd), X, Z, 0.06f, L / 2 - 0.6f, 2.4f, 1.2f);   // cloison du fond (réserve)
+        // comptoir de 7 m : caisson de planches, plateau de bois sombre ; étagère et bouteilles derrière
+        const float lc = r0 + 1.6f;
+        boxUv(out[P_BOIS], Q(lc, 0, yd), X, Z, 0.3f, 3.5f, 1.05f, 1.2f);
+        box(out[P_UNI], Q(lc, 0, yd + 1.05f), X, Z, 0.36f, 3.6f, 0.05f, palUv(C_TECKF));
+        box(out[P_UNI], Q(lc + 2.2f, 0, yd), X, Z, 0.2f, 2.6f, 1.7f, palUv(C_TECKF));
+        if (!lod) for (int k = 0; k < 12; k++) if (!(basse_ && (k & 1)))
+            cylinder(out[P_UNI], Q(lc + 1.95f, -2.2f + k * 0.4f, yd + 1.72f), 0.04f, 0.3f, 6, palUv(k % 3 == 0 ? C_VITRE2 : k % 3 == 1 ? C_GOEL_BEC : C_COQUE0 + 2));
+        // tabourets côté route : pied d'acier, assise de bois à 0,76 m (une sur deux en Basse)
+        if (!lod) for (int k = 0; k < 7; k++) if (!(basse_ && (k & 1))) {
+            const vec3 b = Q(lc - 0.75f, -3.f + k * 1.f, yd);
+            cylinder(out[P_ACIER], b, 0.025f, 0.72f, 6, {0, 0});
+            cylinder(out[P_UNI], b + up * 0.72f, 0.18f, 0.05f, 10, palUv(C_TECKF));
+        }
+        // terrasse avant (non couverte) : tables basses et poufs
+        if (!lod) for (int k = 0; k < 3; k++) {
+            const vec3 b = Q(l0 + 1.4f, -4.f + k * 4.f, yd);
+            cylinder(out[P_UNI], b, 0.4f, 0.45f, 10, palUv(C_PLANCHE));
+            for (float s : {-0.85f, 0.85f}) if (!(basse_ && s > 0)) ball(out[P_UNI], b + Z * s + up * 0.2f, {0.32f, 0.22f, 0.32f}, palUv((e.variante & 1) ? C_COUSSIN1 : C_COUSSIN0));
+        }
+        // enseigne : planche suspendue sous l'avant-toit, « BEACH BAR » en lettres lumineuses, face à la route
+        boxUv(out[P_BOIS], Q(r0 + 0.1f, 0, ye - 0.95f), X, Z, 0.04f, 1.7f, 0.62f, 1.2f);
+        texte(out[P_TXT_CHAUD], "BEACH BAR", Q(r0 + 0.06f, 0, ye - 0.64f), X, 0.44f, 3.1f);
+        // guirlande d'ampoules (2700 K) le long de l'avant-toit, flèche de 0,25 m entre deux crochets de 2,8 m
+        for (int k = 0; k <= (int)(2 * hz / 0.7f); k++) {
+            if ((lod || basse_) && (k & 1)) continue;
+            const float al = -hz + k * 0.7f, u = std::fmod(al + hz, 2.8f) / 2.8f;
+            ball(out[P_GUIRL], Q(r0 + 0.15f, al, ye - 0.35f - 0.25f * 4 * u * (1 - u)), {0.05f, 0.06f, 0.05f}, {0, 0});
+        }
+        // côté mer : transats (1,9 × 0,7 m) et parasols de paille (Ø 2,4 m), sur le sable
+        if (!lod) for (int k = 0; k < 3 + e.variante % 2; k++) {
+            if (basse_ && (k & 1)) continue;
+            const float lat = l1 + 3.f + (k % 2) * 3.5f, al = -4.5f + k * 3.f;
+            const vec3 b = Q(lat, al, sableY(lat));
+            box(out[P_UNI], b + up * 0.05f, X, Z, 0.95f, 0.35f, 0.3f, palUv((k + e.variante) & 1 ? C_COUSSIN0 : C_COUSSIN1));
+            cylinder(out[P_UNI], b + Z * 0.9f, 0.03f, 2.4f, 6, palUv(C_MATBOIS));
+            cone(out[P_PAILLE], b + Z * 0.9f + up * 2.0f, 1.2f, 0.6f, 10, {0.4f, 0.55f});
+        }
+    }
+
+    // casino de station balnéaire (façade blanche d'enduit, pilastres et corniches de pierre claire, portique à 4 colonnes,
+    // dôme de zinc, « CASINO » en lettres lumineuses et tubes néon le long de la corniche) : 44 × 16 m, 13 m à la corniche,
+    // 11 travées de 4 m qui suivent la route. Rez-de-chaussée 5 m (baies de 2,0 × 3,4 m), étage 4 m, attique 3 m.
+    void casino(Track& t, const plage::Etab& e, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        const char* z = zoneId(*t.map(), a, len_);
+        const float L = e.longueur, D = PROF_ETAB[plage::E_CASINO], fl = plage::FACADE_LAT, H = 13.f, bw = L / 11;
+        const float y0 = solY(z, -1, fl) - 0.3f;
+        const vec3 up{0, 1, 0};
+        for (int k = 0; k < 11; k++) {
+            const float al = -L / 2 + bw * (k + 0.5f);
+            const Frame fr = frameAt(t, ((double)a + al / SEG_M) * SEG);
+            const vec3 X = fr.r * -1.f, Z = fr.f;
+            auto Q = [&](float lat, float y) { return fr.o + X * lat + up * y; };
+            box(out[P_UNI], Q(fl + D / 2, y0), X, Z, D / 2, bw / 2 + 0.03f, H + 0.3f, palUv(C_ENDUIT));
+            box(out[P_UNI], Q(fl - 0.1f, y0) - Z * (bw / 2), X, Z, 0.14f, 0.3f, H + 0.3f, palUv(C_PIERREB));   // pilastre
+            for (float yc : {5.f, 9.f}) box(out[P_UNI], Q(fl - 0.18f, y0 + yc), X, Z, 0.22f, bw / 2 + 0.04f, 0.32f, palUv(C_PIERREB));
+            box(out[P_UNI], Q(fl - 0.25f, y0 + H - 0.1f), X, Z, 0.32f, bw / 2 + 0.05f, 0.45f, palUv(C_PIERREB));   // corniche
+            box(out[P_UNI], Q(fl + 0.15f, y0 + H + 0.3f), X, Z, 0.15f, bw / 2 + 0.03f, 1.0f, palUv(C_PIERREB));   // balustrade
+            box(out[P_NEONR], Q(fl - 0.58f, y0 + H + 0.35f), X, Z, 0.03f, bw / 2, 0.06f, {0, 0});   // néon de la corniche
+            const bool porche = std::fabs(al) < 6.5f;
+            if (!porche) vitre(out[P_VITRINE], Q(fl, y0 + 1.0f), X, 2.0f, 3.4f);
+            else vitre(out[P_VITRINE], Q(fl, y0 + 0.4f), X, 2.4f, 3.9f);   // portes vitrées sous le portique
+            vitre(out[P_VITRINE], Q(fl, y0 + 6.1f), X, 1.4f, 2.3f);
+            vitre(out[P_VITRINE], Q(fl, y0 + 10.1f), X, 1.1f, 1.5f);
+            if (!lod) for (float yb : {y0 + 0.85f, y0 + 5.95f}) box(out[P_UNI], Q(fl - 0.1f, yb), X, Z, 0.12f, yb < y0 + 1 ? 1.15f : 0.85f, 0.12f, palUv(C_PIERREB));   // appuis
+        }
+        // portique : 4 colonnes de 6 m (Ø 0,7 m), entablement, « CASINO », néon ; 3 marches ; dôme de zinc sur le toit
+        const Frame fr = frameAt(t, (double)a * SEG);
+        const vec3 X = fr.r * -1.f, Z = fr.f;
+        auto Q = [&](float lat, float al, float y) { return fr.o + X * lat + Z * al + up * y; };
+        const float yp = y0 + 0.45f;
+        for (int k = 0; k < 3; k++) box(out[P_UNI], Q(fl - 3.6f + k * 0.35f, 0, y0 + 0.15f * k), X, Z, 0.35f + (2 - k) * 0.17f, 6.6f, 0.3f, palUv(C_PIERREB));
+        box(out[P_UNI], Q(fl - 1.8f, 0, y0), X, Z, 1.8f, 6.6f, 0.45f, palUv(C_PIERREB));
+        for (float pa : {-4.5f, -1.5f, 1.5f, 4.5f}) {
+            box(out[P_UNI], Q(fl - 3.1f, pa, yp), X, Z, 0.45f, 0.45f, 0.3f, palUv(C_PIERREB));
+            cylinder(out[P_UNI], Q(fl - 3.1f, pa, yp + 0.3f), 0.35f, 5.4f, 12, palUv(C_ENDUIT));
+            box(out[P_UNI], Q(fl - 3.1f, pa, yp + 5.7f), X, Z, 0.45f, 0.45f, 0.3f, palUv(C_PIERREB));
+        }
+        box(out[P_UNI], Q(fl - 1.75f, 0, yp + 6.f), X, Z, 1.85f, 6.3f, 1.2f, palUv(C_ENDUIT));
+        texte(out[P_TXT_ROSE], "CASINO", Q(fl - 3.62f, 0, yp + 6.6f), X, 0.85f, 8.f);
+        // grande enseigne sur le toit : lettres de 1,6 m au-dessus de la balustrade, sur un bandeau de pierre
+        box(out[P_UNI], Q(fl + 0.3f, 0, y0 + H + 1.3f), X, Z, 0.12f, 6.4f, 2.f, palUv(C_PIERREB));
+        texte(out[P_TXT_ROSE], "CASINO", Q(fl + 0.16f, 0, y0 + H + 2.3f), X, 1.6f, 12.f);
+        for (float yn : {yp + 6.04f, yp + 7.16f}) box(out[P_NEONR], Q(fl - 3.63f, 0, yn), X, Z, 0.03f, 6.2f, 0.05f, {0, 0});
+        ball(out[P_UNI], Q(fl + D / 2, 0, y0 + H + 0.3f), {5.f, 4.2f, 5.f}, palUv(C_ZINC));
+        cylinder(out[P_UNI], Q(fl + D / 2, 0, y0 + H + 4.3f), 0.5f, 1.4f, 8, palUv(C_ZINC));
+        // candélabres du parvis (fonte peinte, 4 m)
+        if (!lod) for (float pa : {-7.6f, 7.6f}) {
+            cylinder(out[P_UNI], Q((float)RW + 5.f, pa, solY(z, -1, (float)RW + 5.f)), 0.09f, 4.f, 8, palUv(C_ALU));
+            ball(out[P_NEON], Q((float)RW + 5.f, pa, solY(z, -1, (float)RW + 5.f) + 4.15f), {0.25f, 0.32f, 0.25f}, palUv(C_LAMPE));
+        }
+    }
+
+    // bâtiment de commerce côté terre (café, galerie, location) : corps d'enduit, toit, terrasse dallée devant la façade
+    // café : 12 × 9 m, 2 niveaux (7,2 m) ; vitrine de 2,6 m, store à rayures (avancée 2,2 m), tables de bistrot Ø 0,6 m à
+    // 0,74 m, chaises de rotin (assise 0,45 m) ; étage : fenêtres et volets ; toit de tuiles à deux pans
+    void cafe(Track& t, const plage::Etab& e, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        const char* z = zoneId(*t.map(), a, len_);
+        const Frame fr = frameAt(t, (double)a * SEG);
+        const vec3 X = fr.r * -1.f, Z = fr.f, up{0, 1, 0};
+        const float L = e.longueur, D = PROF_ETAB[plage::E_CAFE], fl = plage::FACADE_LAT, H = 7.2f, y0 = solY(z, -1, fl) - 0.3f;
+        auto Q = [&](float lat, float al, float y) { return fr.o + X * lat + Z * al + up * y; };
+        const int mur = C_MURV0 + (e.variante % 2 ? 1 : 4);   // ocre ou jaune paille (couleurs des villas de la Corniche)
+        box(out[P_UNI], Q(fl + D / 2, 0, y0), X, Z, D / 2, L / 2, H, palUv(mur));
+        const vec3 t0 = Q(fl + D / 2, 0, y0 + H), Aa = X * (D * 0.53f), Ff = Z * (L * 0.52f), Hh{0, 2.f, 0};
+        quad(out[P_UNI], t0 - Aa - Ff, t0 - Aa + Ff, t0 + Hh + Ff, t0 + Hh - Ff, palUv(C_TOIT0 + 1));
+        quad(out[P_UNI], t0 + Aa + Ff, t0 + Aa - Ff, t0 + Hh - Ff, t0 + Hh + Ff, palUv(C_TOIT0 + 1));
+        tri(out[P_UNI], t0 - Aa - Ff, t0 + Hh - Ff, t0 + Aa - Ff, palUv(mur)); tri(out[P_UNI], t0 + Aa + Ff, t0 + Hh + Ff, t0 - Aa + Ff, palUv(mur));
+        box(out[P_UNI], Q(((float)RW + 4.2f + fl) / 2, 0, y0), X, Z, (fl - (float)RW - 4.2f) / 2, L / 2, 0.35f, palUv(C_DALLE));
+        vitre(out[P_VITRINE], Q(fl, -0.6f, y0 + 0.75f), X, L - 3.2f, 2.6f);
+        vitre(out[P_VITRINE], Q(fl, L / 2 - 1.f, y0 + 0.4f), X, 1.f, 2.4f);   // porte
+        for (float pa : {-L / 2 + 0.8f, L / 2 - 1.55f, L / 2 - 0.45f}) box(out[P_UNI], Q(fl - 0.05f, pa, y0 + 0.4f), X, Z, 0.06f, 0.08f, 2.95f, palUv(C_ALU));
+        // store à rayures de 0,5 m (bleu ou rouge et écru), lambrequin de 0,25 m
+        const int st = e.variante & 2 ? C_STORE_R : C_STORE_B;
+        const int n = (int)(L / 0.5f);
+        for (int k = 0; k < n; k++) {
+            const float a0 = -L / 2 + k * 0.5f, a1 = a0 + 0.5f;
+            const vec2 uv = palUv(k & 1 ? C_TOILE_C : st);
+            quad(out[P_UNI], Q(fl, a0, y0 + 3.4f), Q(fl, a1, y0 + 3.4f), Q(fl - 2.2f, a1, y0 + 2.75f), Q(fl - 2.2f, a0, y0 + 2.75f), uv);
+            quad(out[P_UNI], Q(fl - 2.2f, a0, y0 + 2.75f), Q(fl - 2.2f, a1, y0 + 2.75f), Q(fl - 2.2f, a1, y0 + 2.5f), Q(fl - 2.2f, a0, y0 + 2.5f), uv);
+        }
+        box(out[P_UNI], Q(fl - 0.1f, 0, y0 + 3.5f), X, Z, 0.08f, std::min(L * 0.36f, 3.6f), 0.7f, palUv(C_ALU));
+        texte(out[P_TXT_CHAUD], e.variante % 2 ? "CAFÉ DE LA PLAGE" : "CAFÉ DU PORT", Q(fl - 0.19f, 0, y0 + 3.85f), X, 0.46f, std::min(L * 0.68f, 6.8f));
+        for (int k = 0; k < 3; k++) {   // étage : fenêtres de 1,2 × 1,6 m et volets ouverts
+            const float pa = -L / 3 + k * L / 3;
+            vitre(out[P_VITRINE], Q(fl, pa, y0 + 4.6f), X, 1.2f, 1.6f);
+            for (float s : {-0.95f, 0.95f}) box(out[P_UNI], Q(fl - 0.06f, pa + s, y0 + 4.6f), X, Z, 0.04f, 0.32f, 1.6f, palUv(C_VOLET));
+        }
+        if (lod) return;
+        // terrasse : 2 rangs de tables, sous et devant le store ; une table sur deux en Basse ; bougie la nuit
+        int k = 0;
+        for (float lt : {fl - 1.1f, fl - 2.7f}) for (float pa = -L / 2 + 1.2f; pa < L / 2 - 0.9f; pa += 1.8f, k++) {
+            if (basse_ && (k & 1)) continue;
+            const vec3 b = Q(lt, pa, solY(z, -1, lt) + 0.05f);
+            cylinder(out[P_UNI], b, 0.03f, 0.72f, 6, palUv(C_ALU));
+            cylinder(out[P_UNI], b + up * 0.72f, 0.3f, 0.03f, 12, palUv(C_MUR));
+            for (float s : {-0.55f, 0.55f}) {
+                const vec3 cp = b + Z * s;
+                box(out[P_UNI], cp, X, Z, 0.21f, 0.21f, 0.45f, palUv(C_ROTIN));
+                box(out[P_UNI], cp + Z * (s > 0 ? 0.19f : -0.19f) + up * 0.45f, X, Z, 0.21f, 0.025f, 0.42f, palUv(C_ROTIN));
+            }
+            if (night_) box(out[P_GUIRL], b + up * 0.75f, X, Z, 0.03f, 0.03f, 0.08f, {0, 0});
+        }
+    }
+    // galerie marchande vitrée : 30 × 14 m, 6,6 m ; mur-rideau (montants d'aluminium tous les 1,5 m, traverses à 3,1 et
+    // 6,0 m), auvent de 2,5 m sur poteaux, « GALERIE MARINE » ; bacs de plantes
+    void galerie(Track& t, const plage::Etab& e, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        const char* z = zoneId(*t.map(), a, len_);
+        const float L = e.longueur, D = PROF_ETAB[plage::E_GALERIE], fl = plage::FACADE_LAT, H = 6.6f, y0 = solY(z, -1, fl) - 0.3f;
+        const vec3 up{0, 1, 0};
+        for (int m = 0; m < 3; m++) {   // 3 modules de 10 m qui suivent la route
+            const float al = -L / 2 + 5.f + 10.f * m;
+            const Frame fr = frameAt(t, ((double)a + al / SEG_M) * SEG);
+            const vec3 X = fr.r * -1.f, Z = fr.f;
+            auto Q = [&](float lat, float pa, float y) { return fr.o + X * lat + Z * pa + up * y; };
+            box(out[P_UNI], Q(fl + D / 2 + 0.2f, 0, y0), X, Z, D / 2, 5.03f, H, palUv(C_ENDUIT));
+            vitre(out[P_VITRINE_F], Q(fl, 0, y0 + 0.45f), X, 10.f, 5.55f);
+            for (int k = 0; k <= 6; k++) box(out[P_UNI], Q(fl - 0.06f, -4.5f + k * 1.5f, y0 + 0.45f), X, Z, 0.06f, 0.04f, 5.6f, palUv(C_ALU));
+            for (float yt : {3.1f, 5.95f}) box(out[P_UNI], Q(fl - 0.06f, 0, y0 + yt), X, Z, 0.06f, 5.f, 0.08f, palUv(C_ALU));
+            box(out[P_UNI], Q(fl - 1.25f, 0, y0 + 6.05f), X, Z, 1.25f + 0.2f, 5.03f, 0.5f, palUv(C_ENDUIT));   // auvent
+            box(out[P_UNI], Q(fl - 2.3f, -4.6f, solY(z, -1, fl - 2.3f)), X, Z, 0.08f, 0.08f, y0 + 6.05f - solY(z, -1, fl - 2.3f), palUv(C_ALU));
+            if (!lod && !(basse_ && (m & 1))) {
+                box(out[P_UNI], Q(fl - 1.2f, 2.5f, solY(z, -1, fl - 1.2f)), X, Z, 0.4f, 0.8f, 0.5f, palUv(C_ALU));
+                ball(out[P_UNI], Q(fl - 1.2f, 2.5f, solY(z, -1, fl - 1.2f) + 0.75f), {0.5f, 0.45f, 0.8f}, palUv(C_FEUILLE));
+            }
+            if (m == 1) texte(out[P_TXT_FROID], "GALERIE MARINE", Q(fl - 2.71f, 0, y0 + 6.3f), X, 0.4f, 7.f);
+        }
+        const Frame fr = frameAt(t, (double)a * SEG);
+        const vec3 X = fr.r * -1.f, Z = fr.f;
+        for (float s : {-1.f, 1.f}) box(out[P_UNI], fr.o + X * (fl + D / 2) + Z * (s * L / 2) + up * y0, X, Z, D / 2 + 0.2f, 0.25f, H + 0.1f, palUv(C_ENDUIT));
+    }
+    // scooter de 125 cm³ à petites roues (Vespa Primavera 125, fiche Piaggio : 1 852 × 735 mm, selle à 790 mm, empattement
+    // 1 334 mm, roues de 12 pouces : jante 305 mm + pneu 110/70 → Ø 0,46 m) : 1,852 m hors tout (roue avant +0,897, carénage −0,955) ; base au sol, avant selon fw, droite selon rt
+    static void scooter(Geo& g, vec3 b, vec3 fw, vec3 rt, int col) {
+        const vec3 up{0, 1, 0};
+        for (float s : {-0.667f, 0.667f}) ellipsoide(g, b + fw * s + up * 0.23f, rt * 0.06f, up * 0.23f, fw * 0.23f, palUv(C_PNEU));
+        box(g, b + up * 0.26f, rt, fw, 0.17f, 0.36f, 0.06f, palUv(col));                       // plancher
+        ellipsoide(g, b - fw * 0.495f + up * 0.52f, rt * 0.33f, up * 0.24f, fw * 0.46f, palUv(col));   // carénage arrière (bout à −0,955 m)
+        box(g, b - fw * 0.36f + up * 0.70f, rt, fw, 0.16f, 0.33f, 0.09f, palUv(C_SELLE));      // selle (dessus à 0,79 m)
+        box(g, b + fw * 0.43f + up * 0.25f, rt, fw, 0.25f, 0.06f, 0.7f, palUv(col));            // tablier
+        ellipsoide(g, b + fw * 0.64f + up * 0.48f, rt * 0.1f, up * 0.1f, fw * 0.2f, palUv(col));    // garde-boue avant
+        box(g, b + fw * 0.5f + up * 0.95f, rt, fw, 0.3675f, 0.06f, 0.12f, palUv(col));         // guidon (largeur 0,735 m)
+    }
+    // location de scooters : boutique de 10 × 7 m (4,2 m), vitrine, rideau de fer roulé, enseigne ; 6 scooters garés devant
+    void scooters(Track& t, const plage::Etab& e, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        const char* z = zoneId(*t.map(), a, len_);
+        const Frame fr = frameAt(t, (double)a * SEG);
+        const vec3 X = fr.r * -1.f, Z = fr.f, up{0, 1, 0};
+        const float L = e.longueur, D = PROF_ETAB[plage::E_SCOOTERS], fl = plage::FACADE_LAT, y0 = solY(z, -1, fl) - 0.3f;
+        auto Q = [&](float lat, float al, float y) { return fr.o + X * lat + Z * al + up * y; };
+        box(out[P_UNI], Q(fl + D / 2, 0, y0), X, Z, D / 2, L / 2, 4.5f, palUv(C_MURV0 + 3));
+        box(out[P_UNI], Q(fl - 0.05f, 0, y0 + 4.5f), X, Z, 0.12f, L / 2 + 0.05f, 0.25f, palUv(C_MUR));
+        vitre(out[P_VITRINE], Q(fl, 0, y0 + 0.45f), X, L - 1.4f, 2.6f);
+        box(out[P_UNI], Q(fl - 0.12f, 0, y0 + 3.05f), X, Z, 0.12f, L / 2 - 0.6f, 0.35f, palUv(C_GLISS));   // rideau roulé
+        box(out[P_UNI], Q(fl - 0.1f, 0, y0 + 3.5f), X, Z, 0.06f, L / 2 - 0.7f, 0.75f, palUv(C_ALU));
+        texte(out[P_TXT_FROID], "LOCATION SCOOTERS", Q(fl - 0.17f, 0, y0 + 3.87f), X, 0.42f, L - 1.8f);
+        box(out[P_UNI], Q(((float)RW + 4.2f + fl) / 2, 0, y0), X, Z, (fl - (float)RW - 4.2f) / 2, L / 2 + 1.f, 0.35f, palUv(C_DALLE));
+        if (lod) return;
+        static const int COUL[4] = {C_SCOOT0, C_SCOOT1, C_SCOOT2, C_SCOOT3};
+        for (int k = 0; k < 6; k++) {
+            if (basse_ && (k & 1)) continue;
+            const float an = 0.45f + 0.08f * ((k * 7 + e.variante) % 3), pa = -L / 2 + 1.f + k * 1.6f;   // garés en épi, vers la route
+            const vec3 fw = normalize(X * -std::cos(an) + Z * std::sin(an)), rt = normalize(cross(fw, up));
+            scooter(out[P_UNI], Q(fl - 2.4f, pa, solY(z, -1, fl - 2.4f) + 0.05f), fw, rt, COUL[(k + e.variante + k / 2) % 4]);
+        }
+    }
+
+    void decorEtabs(Track& t, int64_t a, bool lod, Geo out[P_COUNT]) const {
+        for (const plage::Etab& e : etabs_) {
+            if (mod(a) != mod(e.seg)) continue;
+            switch (e.type) {
+            case plage::E_BAR: paillote(t, e, a, lod, out); break;
+            case plage::E_CASINO: casino(t, e, a, lod, out); break;
+            case plage::E_CAFE: cafe(t, e, a, lod, out); break;
+            case plage::E_GALERIE: galerie(t, e, a, lod, out); break;
+            default: scooters(t, e, a, lod, out); break;
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- animaux (RG-06, RG-C4)
+    // poses figées .wfa (assets/world/animaux, voir convertir_animaux.py) : mouette (goéland leucophée, 8 phases du
+    // battement, plané, posé ; envergure 1,40 m, longueur 0,62 m) et dauphin commun (2,30 m). Teintes : palette.
+    bool chargerAnimal(Renderer& r, const char* chemin, std::vector<Mesh>& poses) {
+        std::vector<uint8_t> d;
+        if (!readAsset(chemin, d) || d.size() < 12 || std::memcmp(d.data(), "WFA1", 4)) { WFS_ERR("Animal illisible : %s", chemin); return false; }
+        uint32_t np = 0, nv = 0; std::memcpy(&np, &d[4], 4); std::memcpy(&nv, &d[8], 4);
+        if (np == 0 || np > 32 || nv == 0 || nv > 200000 || nv % 3 || d.size() < 12 + (size_t)nv + (size_t)np * nv * 24) { WFS_ERR("Animal invalide : %s", chemin); return false; }
+        static const int COUL[6] = {C_GOEL_BLANC, C_GOEL_GRIS, C_GOEL_NOIR, C_GOEL_BEC, C_DAUPH_DOS, C_DAUPH_VENTRE};
+        std::vector<uint32_t> idx(nv);
+        for (uint32_t i = 0; i < nv; i++) idx[i] = i;
+        for (uint32_t p = 0; p < np; p++) {
+            std::vector<Vertex> v(nv);
+            const uint8_t* src = d.data() + 12 + nv + (size_t)p * nv * 24;
+            for (uint32_t i = 0; i < nv; i++) {
+                float f[6]; std::memcpy(f, src + (size_t)i * 24, 24);
+                const vec2 uv = palUv(COUL[std::min<int>(d[12 + i], 5)]);
+                v[i] = {f[0], f[1], f[2], f[3], f[4], f[5], uv.x, uv.y};
+            }
+            poses.push_back(r.makeMesh(v, idx, false));
+        }
+        return true;
+    }
+    void initAnimaux(Renderer& r, Track& t) {
+        oiseaux_.clear(); dauphins_.clear();
+        if (trace::sections(t).empty() || plage::sansEtabs()) return;
+        if (!chargerAnimal(r, "world/animaux/mouette.wfa", mouette_) || mouette_.size() < 10) return;
+        if (!chargerAnimal(r, "world/animaux/dauphin.wfa", dauphin_)) dauphin_.clear();
+        { Geo g; for (int k = 0; k < 14; k++) {   // écume des sauts : disque de rayon 1 sur l'eau
+            const float a0 = 2 * PI * k / 14, a1 = 2 * PI * (k + 1) / 14;
+            tri(g, {0, 0, 0}, {std::cos(a1), 0, std::sin(a1)}, {std::cos(a0), 0, std::sin(a0)}, {0, 0}); }
+          ecume_ = r.makeMesh(g.v, g.i, false); }
+        const MapDef& map = *t.map();
+        Mulberry32 D(map.seed * 31 + 47);
+        auto d = [&]() { return (float)D.next(); };
+        const float R = (float)RW;
+        // mouettes en vol au-dessus du rivage : cercles de 10 à 30 m, 8 à 20 m au-dessus de l'eau, 9 à 12 m/s (vol de croisière
+        // des goélands, C. J. Pennycuick, « Bird Flight Performance », 1989), toujours à plus de 12 m de la chaussée
+        auto groupe = [&](int64_t seg, int n) {
+            for (int k = 0; k < n; k++) {
+                Oiseau o; o.seg = mod(seg + (int64_t)((d() - 0.5f) * 40)); o.rayon = 10 + d() * 20;
+                o.lat = R + 12 + o.rayon + d() * 25; o.alt = 8 + d() * 12; o.phase = d() * 6.2832f; o.sens = d() < 0.5f ? 1.f : -1.f;
+                o.vitesse = 9 + d() * 3; oiseaux_.push_back(o);
+            }
+        };
+        for (const plage::Etab& e : etabs_) if (e.type == plage::E_BAR) groupe(e.seg, 3);
+        for (const plage::Lieu& l : plage::lieux(map, len_).lieux) groupe(l.seg, 2);
+        // posées sur les gros rochers de la côte rocheuse (un sur trois, 12 au plus), sur le sommet du rocher
+        int nr = 0;
+        for (const Objet& o : objets_) {
+            if (o.t != O_ROCHER || o.h < 2.f || nr >= 12 || d() > 0.34f) continue;
+            // dessus du rocher (boule de demi-hauteur 0,7 h, enterrée de 0,3 h) ; seulement s'il dépasse ses voisins (les rochers
+            // se chevauchent : sinon la mouette serait cachée dans un plus gros)
+            const float haut = solY(zoneId(map, o.seg, len_), 1, o.lat) + 0.4f * o.h;
+            bool cache = false;
+            for (const Objet& v : objets_) {
+                if (&v == &o || v.t != O_ROCHER || plage::ecart(v.seg, o.seg, len_) > 6) continue;
+                const float dl = v.lat - o.lat, da = (float)plage::ecart(v.seg, o.seg, len_) * (float)SEG_M;
+                if (dl * dl + da * da < 1.44f * v.h * v.h && solY(zoneId(map, v.seg, len_), 1, v.lat) + 0.4f * v.h > haut - 0.3f) { cache = true; break; }
+            }
+            if (cache) continue;
+            Oiseau b; b.seg = o.seg; b.lat = o.lat; b.pose = true; b.phase = d() * 6.2832f; b.yaw = d() * 6.2832f;
+            b.alt = haut;
+            oiseaux_.push_back(b); nr++;
+            if (nr % 4 == 1) groupe(o.seg, 1);
+        }
+        if (basse_) { int k = 0; std::erase_if(oiseaux_, [&](const Oiseau&) { return (k++ & 1) != 0; }); }   // Basse : une sur deux
+        // 2 dauphins au large (150 m du rivage), devant un bar de plage (ou la première fête), sur une mer libre
+        int64_t sd = -1, loin = -1;   // bar le plus loin des fêtes et des jeux (pédalos, toboggan)
+        for (const plage::Etab& e : etabs_) if (e.type == plage::E_BAR) {
+            int64_t m = INT64_MAX;
+            for (const plage::Lieu& l : plage::lieux(map, len_).lieux) m = std::min(m, plage::ecart(e.seg, l.seg, len_));
+            if (m > loin) { loin = m; sd = e.seg; }
+        }
+        if (sd < 0 && !plage::lieux(map, len_).lieux.empty()) sd = plage::lieux(map, len_).lieux.front().seg;
+        if (sd >= 0 && !dauphin_.empty() && formeCote(sd, 1) == K_PLAGE && touche_[(size_t)ix(sd, 1)] > 1e8f) {
+            dauphins_.push_back({sd, R + 150, 0.f}); dauphins_.push_back({sd, R + 152.5f, 0.35f});
+        }
+        g_animaux.dauphinSeg = dauphins_.empty() ? -1 : sd; g_animaux.dauphinLat = R + 151;
+        g_animaux.rocherSeg = -1;
+        for (const Oiseau& o : oiseaux_) if (o.pose) { g_animaux.rocherSeg = o.seg; g_animaux.rocherLat = o.lat; g_animaux.rocherY = o.alt; break; }
+        WFS_LOG("Plage (WFS-181) : %zu mouettes (%d posées), %zu dauphins", oiseaux_.size(),
+                (int)std::count_if(oiseaux_.begin(), oiseaux_.end(), [](const Oiseau& o) { return o.pose; }), dauphins_.size());
+    }
+    // vol : cercle à vitesse constante, virage incliné (tan φ = v² / (g R)), battements à 2,8 Hz (goéland : 2,5-3 Hz) pendant
+    // 2,2 s puis plané ; posées : la tête (le corps) tourne lentement. Dauphins : saut balistique toutes les 11 s, sortie à
+    // 5,4 m/s vers le haut et 5 m/s en avant (1,5 m de haut, 5,5 m de long, 1,1 s en l'air), corps dans l'axe de la vitesse,
+    // écume à la sortie et à l'entrée. Rien n'est dessiné à plus de 450 m (900 m pour les dauphins).
+    int dessineAnimaux(Renderer& r, Track& t, int64_t segJ, double temps) {
+        int draws = 0;
+        auto relatif = [&](int64_t seg) { int64_t dd = ((seg - segJ) % len_ + len_) % len_; return dd > len_ / 2 ? dd - len_ : dd; };
+        const vec3 up{0, 1, 0};
+        const float tt = (float)temps;
+        for (const Oiseau& o : oiseaux_) {
+            const int64_t rel = relatif(o.seg);
+            if (rel * SEG_M < -80 || rel * SEG_M > 450) continue;
+            const int64_t abs = segJ + rel;
+            t.pose(abs - 1); t.pose(abs + 2);
+            const Frame fr = frameAt(t, (double)abs * SEG);
+            if (o.pose) {
+                const float yaw = o.yaw + 0.5f * std::sin(tt * 0.25f + o.phase) + 0.25f * std::sin(tt * 0.61f + 2 * o.phase);
+                const vec3 z = fr.r * std::sin(yaw) + fr.f * std::cos(yaw), p = fr.o + fr.r * o.lat + up * o.alt;
+                r.draw(mouette_[9], mats_[P_UNI], repere(p, cross(up, z), up, z)); draws++;
+                continue;
+            }
+            const float th = o.phase + o.sens * o.vitesse / o.rayon * tt;
+            const vec3 c = fr.o + fr.r * o.lat;
+            vec3 p = c + (fr.r * std::cos(th) + fr.f * std::sin(th)) * o.rayon;
+            p.y = OCEAN_Y + o.alt + 0.8f * std::sin(0.3f * tt + o.phase);
+            const vec3 z = normalize((fr.r * -std::sin(th) + fr.f * std::cos(th)) * o.sens);
+            const float phi = std::atan(o.vitesse * o.vitesse / (9.81f * o.rayon));
+            vec3 vc = c - p; vc.y = 0; vc = normalize(vc);
+            const vec3 u = normalize(up * std::cos(phi) + vc * std::sin(phi)), x = normalize(cross(u, z)), y = cross(z, x);
+            const float cyc = std::fmod(tt + o.phase * 1.7f, 7.f);
+            const int idx = cyc < 2.2f ? (int)(std::fmod(tt * 2.8f + o.phase, 1.f) * 8) % 8 : 8;
+            r.draw(mouette_[idx], mats_[P_UNI], repere(p, x, y, z)); draws++;
+        }
+        for (const Dauphin& dp : dauphins_) {
+            const int64_t rel = relatif(dp.seg);
+            if (rel * SEG_M < -100 || rel * SEG_M > 900) continue;
+            const double tc = temps + dp.decal;
+            const float tl = (float)std::fmod(tc, (double)plage::DAUPHIN_P);
+            if (tl > plage::DAUPHIN_T + 0.6f) continue;
+            const int64_t k = (int64_t)std::floor(tc / plage::DAUPHIN_P);
+            const float base = (float)(((k * 7) % 9 + 9) % 9 - 4) * 6.f;   // chaque saut ailleurs, sur ± 24 m
+            const int64_t abs = segJ + rel;
+            t.pose(abs - 30); t.pose(abs + 30);
+            const Frame fr = frameAt(t, (double)abs * SEG);
+            auto Pt = [&](float al, float y) { vec3 q = fr.o + fr.r * dp.lat + fr.f * al; q.y = OCEAN_Y + y; return q; };
+            const float vy0 = 9.81f * plage::DAUPHIN_T / 2, vx = 5.f, x0 = base - vx * plage::DAUPHIN_T / 2;
+            if (tl <= plage::DAUPHIN_T) {
+                const float yc = -0.3f + vy0 * tl - 4.905f * tl * tl, vy = vy0 - 9.81f * tl;
+                const float pitch = std::atan2(vy, vx);
+                const vec3 z = normalize(fr.f * std::cos(pitch) + up * std::sin(pitch)), x = normalize(cross(up, z)), y = cross(z, x);
+                r.draw(dauphin_[0], dauphinMat_, repere(Pt(x0 + vx * tl, yc), x, y, z)); draws++;
+            }
+            for (int s = 0; s < 2; s++) {   // écume : sortie (0-0,5 s), entrée (T-0,05 à T+0,6 s)
+                const float age = s ? tl - (plage::DAUPHIN_T - 0.05f) : tl;
+                if (age < 0 || age > (s ? 0.65f : 0.5f)) continue;
+                const float rad = 0.4f + 1.8f * age;
+                r.draw(ecume_, sillageMat_, translate(Pt(s ? x0 + vx * plage::DAUPHIN_T : x0, 0.02f)) * scale({rad, 1, rad})); draws++;
+            }
+        }
+        return draws;
+    }
+
     // géométrie d'un morceau (segments [c·CH, (c+1)·CH)) — appelée en parallèle, lit seulement la piste
     // profil de la voûte du tunnel (lat, y), du pied du piédroit droit au pied du piédroit gauche
     static int profilVoute(vec2 pts[24]) {
@@ -1295,6 +1896,7 @@ public:
             }
             if (t2) decorFalaise(t, a, lod, out);
             decorLieux(t, a, lod, out);   // WFS-180
+            decorEtabs(t, a, lod, out);   // WFS-181
         }
         const int64_t lap = (int64_t)std::floor((double)a0 / len) * len;
         auto inChunk = [&](int64_t seg, int64_t& abs) {
@@ -1383,6 +1985,7 @@ public:
         }
         draws += dessineLentilles(r, t, (int64_t)std::floor(g.player->dist / SEG));
         draws += dessineMer(r, t, (int64_t)std::floor(g.player->dist / SEG), g.time, !trace::sections(t).empty());   // WFS-180
+        draws += dessineAnimaux(r, t, (int64_t)std::floor(g.player->dist / SEG), g.time);   // WFS-181
         lastDraws_ = draws;
         if (frame_ % 300 == 1) WFS_LOG("Plage : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
     }
@@ -1431,7 +2034,10 @@ public:
             if (m->vb.buf) { r.destroy(*m); *m = Mesh{}; }   // WFS-180
         for (Lentilles& le : lentilles_) for (Mesh& m : le.m) if (m.vb.buf) r.destroy(m);
         lentilles_.clear();
-        for (Image* im : {&palTex_, &leafTex_, &barkTex_, &rocTex_, &rocNrm_, &rocMr_}) if (im->img) r.vk().destroy(*im);
+        for (std::vector<Mesh>* v : {&mouette_, &dauphin_}) { for (Mesh& m : *v) if (m.vb.buf) r.destroy(m); v->clear(); }   // WFS-181
+        if (ecume_.vb.buf) { r.destroy(ecume_); ecume_ = Mesh{}; }
+        atlas_.detruire(r);
+        for (Image* im : {&palTex_, &leafTex_, &barkTex_, &rocTex_, &rocNrm_, &rocMr_, &pailleTex_, &boisTex_}) if (im->img) { r.vk().destroy(*im); *im = Image{}; }
         active_ = false;
     }
 
@@ -1456,6 +2062,15 @@ private:
     std::vector<Bateau> bateaux_;
     Mesh modeleBateau_[B_NB]{}, sillage_{}, faisceau_{}, flamme_{}, lyre_{};
     Material coqueMat_, sillageMat_, faisceauMat_[3], lyreMat_[3], flammeMat_;
+    // WFS-181 : établissements posés, textures de chaume et de bois, atlas des enseignes, animaux
+    std::vector<plage::Etab> etabs_;
+    Image pailleTex_{}, boisTex_{};
+    vie::AtlasTextes atlas_;
+    struct Oiseau { int64_t seg = 0; float lat = 0, alt = 0, rayon = 20, phase = 0, sens = 1, vitesse = 10, yaw = 0; bool pose = false; };
+    struct Dauphin { int64_t seg; float lat, decal; };
+    std::vector<Oiseau> oiseaux_; std::vector<Dauphin> dauphins_;
+    std::vector<Mesh> mouette_, dauphin_; Mesh ecume_{};
+    Material dauphinMat_;
     int64_t len_ = 1, depart_ = 0;
     Material mats_[P_COUNT];
     Image palTex_{}, leafTex_{}, barkTex_{};
@@ -1549,6 +2164,67 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     promenade("carte-plage-fete-vue-nuit", fete, 22, plage::SCENE_LAT, 1.5f, true);
     promenade("carte-plage-jeux-vue", jeux, 14, plage::VOLLEY_LAT + 8, 0.f, false);
     promenade("carte-plage-bateaux-vue", jeux, 0, (float)RW + 250, -1.5f, false);
+    // WFS-181 : bars de plage, casino, cafés, galerie, location de scooters (caméra de course, jour et nuit), mouettes
+    // (caméra de course au premier bar, vue de la promenade sur un rocher), dauphins (vue de la promenade, en plein saut).
+    // WFS_PLAGE_AVANT=1 : mêmes vues sans WFS-181, suffixe « -avant » (preuve avant / après, lancée en local)
+    const bool avant = plage::sansEtabs();
+    const std::string suf = avant ? "-avant" : "";
+    auto course = [&](const std::string& nom, int64_t depart, bool nuit) {
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, depart)).c_str(), 1);
+        g.init(r, "golf", "plage"); g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 60; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+        g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + suf + ".png");
+        WFS_LOG("capture %s%s : plage, caméra de course, départ %lld segments", nom.c_str(), suf.c_str(), (long long)depart);
+        g.shutdown();
+    };
+    const auto& E = plage::etablissements(mapById("plage"), L);
+    auto premier = [&](int type) { for (const plage::Etab& e : E) if (e.type == type) return e.seg; return (int64_t)-1; };
+    const struct { const char* nom; int type; } ETABS[] = {{"carte-plage-bar", plage::E_BAR}, {"carte-plage-casino", plage::E_CASINO},
+        {"carte-plage-cafe", plage::E_CAFE}, {"carte-plage-galerie", plage::E_GALERIE}, {"carte-plage-scooters", plage::E_SCOOTERS}};
+    for (const auto& et : ETABS) {
+        const int64_t sg = premier(et.type);
+        if (sg < 0) { WFS_ERR("banc Corniche : établissement absent pour %s", et.nom); continue; }
+        const int64_t dep = sg - (int64_t)((plage::ETAB_L[et.type] / 2 + 22) / SEG_M);   // 22 m avant le début du lieu
+        course(et.nom, dep, false); course(std::string(et.nom) + "-nuit", dep, true);
+    }
+    if (premier(plage::E_BAR) >= 0) { course("carte-plage-mouettes", premier(plage::E_BAR) - 30, false); course("carte-plage-mouettes-nuit", premier(plage::E_BAR) - 30, true); }
+    // positions des animaux : lues dans une partie avec WFS-181 (même en « avant »)
+    if (avant) unsetenv("WFS_PLAGE_AVANT");
+    setenv("WFS_MOMENT", "jour", 1); setenv("WFS_DEPART", "0", 1);
+    g.init(r, "golf", "plage"); const OuAnimaux ou = g_animaux; g.shutdown();
+    if (avant) setenv("WFS_PLAGE_AVANT", "1", 1);
+    auto vue = [&](const std::string& nom, int64_t seg, float recul, float alCible, float latCible, float hCible, bool nuit, double temps, float fov, float latOeil = (float)RW + 3) {
+        if (seg < 0) { WFS_ERR("banc Corniche : animal absent pour %s", nom.c_str()); return; }
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, seg - 30)).c_str(), 1);
+        g.init(r, "golf", "plage"); g.setAutopilot(false); g.camMode = 0;
+        for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(temps - 2 + i / 60.0); }
+        const TrackPoint o = t.point(((double)seg - recul / SEG_M) * SEG, latOeil), c = t.point(((double)seg + alCible / SEG_M) * SEG, latCible);
+        g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + 1.85f, (float)o.z};
+        g_vueDessus.cible = {(float)c.x, hCible, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = fov;
+        g.render(temps - 0.02); g.render(temps); r.capturePng(out + "/" + nom + suf + ".png");
+        g_vueDessus.actif = false;
+        WFS_LOG("capture %s%s : vue depuis la promenade", nom.c_str(), suf.c_str());
+        g.shutdown();
+    };
+    // vues de face depuis le trottoir d'en face (1,85 m), de jour et de nuit
+    for (const auto& et : ETABS) {
+        const int64_t sg = premier(et.type);
+        if (sg < 0) continue;
+        const bool bar = et.type == plage::E_BAR;
+        const float yv = (float)t.pose(sg).y + (bar ? 2.2f : 4.5f), lat = bar ? plage::BAR_LAT : -(plage::FACADE_LAT + 2);
+        const float rec = std::max(14.f, plage::ETAB_L[et.type] * 0.75f);
+        for (bool nuit : {false, true})
+            vue(std::string(et.nom) + "-vue" + (nuit ? "-nuit" : ""), sg, rec, 0, lat, yv, nuit, 404, 60, bar ? -((float)RW + 3) : (float)RW + 3);
+    }
+    if (ou.rocherSeg >= 0) {
+        const float yr = (float)t.pose(ou.rocherSeg).y + ou.rocherY + 0.25f;
+        vue("carte-plage-mouettes-posees", ou.rocherSeg, 12, 0, ou.rocherLat, yr, false, 404, 9);
+    }
+    // saut du premier dauphin au milieu de sa course (même calcul que dessineAnimaux : saut k = 37, 18 m plus loin)
+    vue("carte-plage-dauphins", ou.dauphinSeg, 30, 18, ou.dauphinLat, OCEAN_Y + 0.4f, false, 37 * plage::DAUPHIN_P + plage::DAUPHIN_T / 2, 14);
+    vue("carte-plage-dauphins-nuit", ou.dauphinSeg, 30, 18, ou.dauphinLat, OCEAN_Y + 0.4f, true, 37 * plage::DAUPHIN_P + plage::DAUPHIN_T / 2, 14);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 

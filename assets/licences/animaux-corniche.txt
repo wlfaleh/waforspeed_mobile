@@ -1,0 +1,40 @@
+Animaux de la Corniche (WFS-181, RG-06 de WFS-139) — assets/world/animaux/
+==========================================================================
+
+mouette.wfa — goéland (« seagull »), 142 triangles, 10 poses
+  Modèle d'origine : assets/seagull.fbx et assets/seagulltexture.jpg du dépôt https://github.com/svartmc/seagull
+  (commit ccc790bf22de26babc6a409e5bc3c6ee2cfa7409, 2021-10-11), auteur : svartmc (Arnaud Svart).
+  Licence : MIT (texte complet ci-dessous). Modifications : poses calculées par habillage linéaire à partir du squelette
+  d'origine (battement d'ailes, plané, posé), mise à l'échelle (envergure 1,40 m, longueur 0,62 m), teintes du goéland
+  leucophée (Larus michahellis) à la place de la texture d'origine (tête et queue blanches, manteau gris, pointes noires).
+
+  MIT License
+
+  Copyright (c) 2020 svartmc
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+dauphin.wfa — dauphin, 440 triangles, 1 pose
+  Modèle d'origine : « Dolphin » du pack « Animated Fish Pack » de Quaternius (https://quaternius.com/packs/animatedfish.html),
+  fichier public/glb/fish_pack/Dolphin.glb du dépôt https://github.com/trebeljahr/quaternius-showcase
+  (commit c06a6fa9a1b13576edf3bd62d7b52aba334f8fc0 ; LICENSES.md de ce dépôt : pack sous CC0-1.0).
+  Licence : CC0 1.0 (domaine public, https://creativecommons.org/publicdomain/zero/1.0/). Modifications : pose de repos,
+  mise à l'échelle (2,30 m, dauphin commun adulte), teintes dos gris foncé / ventre blanc.
+
+Conversion : python3 -I assets/world/animaux/convertir_animaux.py <seagull.fbx> <seagulltexture.jpg> <Dolphin.glb> assets/world/animaux
