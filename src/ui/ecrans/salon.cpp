@@ -68,12 +68,15 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
     // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
     dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(c));
 }
+// WFS-168 (RG-01) : unité de la taille des boutons d'avant WFS-147 (H / 720, comme à 349f7d0), fixée à chaque image
+float g_kb = 1;
 // bouton .btn (orange) ou .btn--ghost (surface) avec son texte en capitales ; renvoie la zone touchable
+// (texte en k ; marges et biais du bouton en g_kb : WFS-168)
 Zone bouton(Renderer& r, float x, float y, float h, float k, const char* texte, bool plein, bool droite = false) {
     const float tp = 20 * k;
     const std::string t = ui::majuscules(texte);
-    const float w = ui::width(tp, t, 0.12f) + 56 * k, x0 = droite ? x - w : x;
-    biseau(r, x0, y, w, h, 14 * k, plein ? hex(ACCENT) : hex(SURFACE2));
+    const float w = ui::width(tp, t, 0.12f) + 56 * g_kb, x0 = droite ? x - w : x;
+    biseau(r, x0, y, w, h, 14 * g_kb, plein ? hex(ACCENT) : hex(SURFACE2));
     ui::text(r, x0 + w / 2, y + (h - tp) / 2, tp, t, plein ? hex(BG) : hex(TEXTE), ui::CENTRE, 0.12f, false);
     return {x0, y, w, h};
 }
@@ -226,7 +229,9 @@ public:
         ui::text(r, zl, hy, (cp_ ? 12 : 13) * k, ui::majuscules("Duel entre amis · 2 à 4 pilotes"), hex(ACCENT2), ui::GAUCHE, 0.22f, false);
         ui::text(r, zl, hy + (cp_ ? 18 : 20) * k, (cp_ ? 28 : 44) * k, ui::majuscules("Duel"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
         g_inviter = {};
-        const float bh = (cp_ ? 48 : 56) * k, by = H - mg.bas - (cp_ ? 12 : 24) * k - bh;
+        // WFS-168 (RG-01) : boutons du bas à leur taille d'avant WFS-147, calés en bas de leur barre (même place)
+        g_kb = H / 720.f;
+        const float bh = 56 * g_kb, by = H - mg.bas - (cp_ ? 12 : 24) * k - bh;
         const float y0 = hy + (cp_ ? 56 : 92) * k;
         if (duelSession().inRoom()) { if (cp_) dessinerSalonPetit(r, g, zl, zr, y0, by, bh, k); else dessinerSalon(r, g, zl, zr, y0, by, bh, k); }
         else dessinerAccueil(r, zl, zr, y0, by, bh, k);
@@ -268,13 +273,14 @@ private:
     }
 
     // WFS-89 : « Rejoindre avec un code » (#codeIn / #joinBtn du jeu web) : 4 cases, clavier, effacer, « Rejoindre »
-    // WFS-147 (RG-02) : petit écran : touches de 44 dp (écart 4 dp), cases de 48 dp, « Rejoindre » dans la barre du bas
+    // WFS-147 (RG-02) : petit écran : écart des touches 4 dp, « Rejoindre » dans la barre du bas (sous le clavier il n'y a plus
+    // la place) ; WFS-168 : touches, cases et « Rejoindre » à leur taille d'avant WFS-147 (46, 64 x 72, 50)
     // (sous le clavier il n'y a plus la place), comme la mise en page petit écran de WFS-102
     void dessinerCode(Renderer& r, float zr, float y, float k, float by, float bh) {
         const int N = (int)std::strlen(duel::CODE_CHARS), COLS = 8;
-        const float tk = (cp_ ? 44 : 46) * k, gap = (cp_ ? 4 : 6) * k, largeur = COLS * tk + (COLS - 1) * gap, x0 = zr - largeur;
+        const float tk = 46 * g_kb, gap = (cp_ ? 4 : 6) * k, largeur = COLS * tk + (COLS - 1) * gap, x0 = zr - largeur;
         ui::text(r, x0, y, 12 * k, ui::majuscules("Rejoindre avec un code"), hex(MUTED), ui::GAUCHE, 0.16f, false);
-        const float cw = (cp_ ? 56 : 64) * k, ch = (cp_ ? 48 : 72) * k, cy = y + (cp_ ? 20 : 22) * k;
+        const float cw = 64 * g_kb, ch = 72 * g_kb, cy = y + (cp_ ? 20 : 22) * k;
         for (int i = 0; i < 4; i++) {   // les 4 cases
             const float cx = x0 + i * (cw + 10 * k);
             const bool pleine = i < (int)g_saisie.size(), suivante = i == (int)g_saisie.size();
@@ -303,7 +309,7 @@ private:
                 dessin2d::trait(r, d1, 2, ep, hex(TEXTE)); dessin2d::trait(r, d2, 2, ep, hex(TEXTE));
             }
         }
-        const float ry = cp_ ? by : ky + 4 * (tk + gap) + 6 * k, rh = cp_ ? bh : 50 * k;
+        const float rh = 50 * g_kb, ry = cp_ ? by + bh - rh : ky + 4 * (tk + gap) + 6 * k;   // WFS-168 : « Rejoindre » de 50 d'avant WFS-147
         if (g_saisie.size() == 4) g_rejoindre = bouton(r, zr, ry, rh, k, "Rejoindre", true, true);
         else { g_rejoindre = {}; const Zone z = bouton(r, zr, ry, rh, k, "Rejoindre", false, true); r.uiRect(z.x, z.y, z.w, z.h, hex(BG, 0.5f)); }   // grisé
     }
@@ -382,7 +388,8 @@ private:
     void dessinerSalonPetit(Renderer& r, const GameView& g, float zl, float zr, float y, float by, float bh, float k) {
         const duel::Session& s = duelSession();
         g_creer = g_retour = g_effacer = g_rejoindre = {}; for (Zone& z : g_salons) z = {}; for (Zone& z : g_touches) z = {};
-        const float pad = 20 * k, haut = y - 12 * k, hc = by - 12 * k - haut;
+        // WFS-168 : la carte garde sa hauteur de WFS-147 (barre du bas de 48 dp), seuls les boutons reprennent leur taille
+        const float pad = 20 * k, haut = y - 12 * k, hc = by + bh - 48 * k - 12 * k - haut;
         r.uiRect(zl, haut, zr - zl, hc, GLASS);
         r.uiRect(zl, haut, 3 * k, hc, hex(ACCENT));
         const float xl = zl + pad, xr = zr - pad, gauche = std::min(470 * k, (xr - xl) * 0.6f);   // colonne de gauche
@@ -391,7 +398,7 @@ private:
         ui::text(r, xl, y + 16 * k, cpx, ui::majuscules(s.code()), hex(ACCENT), ui::GAUCHE, 0.18f, false, true);
         // WFS-112 (RG-02) : « Inviter » à côté du code (partage du lien), lien et validité du code (RG-06 : 15 min)
         const float ix = xl + ui::width(cpx, ui::majuscules(s.code()), 0.18f) + 24 * k;
-        g_inviter = bouton(r, ix, y + 16 * k, 48 * k, k, "Inviter", true);
+        g_inviter = bouton(r, ix, y + 16 * k, 52 * g_kb, k, "Inviter", true);   // WFS-168 : hauteur d'avant WFS-147
         const duel::Transport* tr = s.transport();
         std::string sous = reseau::lienInvitation(s.code());
         if (tr && tr->expireDansMs() >= 0) {
@@ -414,14 +421,15 @@ private:
         ligne("Ta voiture", std::string(cd.brand) + " " + cd.model);
         ligne("Terrain", libelleCarte(carteHote(s, g)));
         // distance : 2 / 4 / 6 / 10 km (.km-row, l'hôte seul la change) ; choix de 48 dp de haut (RG-02)
-        const float bhh = 48 * k, bw = std::min(72 * k, (gauche - 110 * k - 18 * k) / 4);
+        // WFS-168 (RG-01) : choix de 84 x 40 d'avant WFS-147, bornés par la place de la colonne
+        const float bhh = 40 * g_kb, bw = std::min(84 * g_kb, (gauche - 110 * k - 18 * k) / 4);
         ui::text(r, xl, ly + (bhh - 12 * k) / 2, 12 * k, ui::majuscules("Distance"), hex(MUTED), ui::GAUCHE, 0.16f, false);
         for (int i = 0; i < 4; i++) {
             const float bx = xl + 110 * k + i * (bw + 6 * k);
             const bool on = s.km() == duel::KMS[i];
             g_km[i] = s.host() ? Zone{bx, ly, bw, bhh} : Zone{};
             r.uiRect(bx, ly, bw, bhh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2, s.host() ? 1.f : 0.5f));
-            if (on) r.uiRect(bx, ly + bhh - 3 * k, bw, 3 * k, hex(ACCENT2));
+            if (on) r.uiRect(bx, ly + bhh - 3 * g_kb, bw, 3 * g_kb, hex(ACCENT2));
             ui::text(r, bx + bw / 2, ly + (bhh - 18 * k) / 2, 18 * k, std::to_string(duel::KMS[i]) + " KM", on ? hex(ACCENT2) : hex(TEXTE, s.host() ? 1.f : 0.5f), ui::CENTRE, 0.04f, false);
         }
         // joueurs (#players) : colonne de droite de la carte

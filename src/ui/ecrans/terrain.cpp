@@ -265,8 +265,11 @@ public:
         ui::text(r, zr, hy + (cp ? 22 : 30) * k, 22 * k, tot, hex(MUTED), ui::DROITE, 0.04f, false);
         ui::text(r, zr - ui::width(22 * k, tot, 0.04f), hy + (cp ? 14 : 22) * k, 32 * k, idx, hex(ACCENT), ui::DROITE, 0.04f, false, true);
         // ---------- vignette de la carte (mapCard) ----------
-        const float bh = (cp ? 48 : 56) * k, by = H - mg.bas - (cp ? 12 : 24) * k - bh;
-        const float bas = by, haut = hy + (cp ? 56 : 84) * k;
+        // WFS-168 (RG-01) : taille des boutons, des flèches et de Jour / Nuit d'avant WFS-147 (unité kb = H / 720, comme à
+        // 349f7d0) ; la mise en page (vignette, barre) reste celle de WFS-147 : les boutons se calent en bas de leur barre
+        const float kb = H / 720.f, bhPage = (cp ? 48 : 56) * k;
+        const float bh = 56 * kb, by = H - mg.bas - (cp ? 12 : 24) * k - bh;
+        const float bas = by + bh - bhPage, haut = hy + (cp ? 56 : 84) * k;
         const float chMax = bas - (cp ? 18 : 34) * k - haut, cw = std::min(zw - 2 * 76 * k, chMax * (cp ? 2.4f : 1.9f)), ch = std::min(chMax, cw / 1.6f);
         // petit écran : vignette plus large que haute (2,4 : 1) pour que les quartiers tiennent sur une ligne
         const float cx0 = zl + (zw - cw) / 2, cy0 = haut;
@@ -340,15 +343,15 @@ public:
             lx += pw[i] + pg;
         }
         // ---------- flèches (.map-arrow), grisées aux extrémités ----------
-        const float ar = 26 * k, ay = cy0 + ch / 2;
+        const float ar = 26 * kb, ay = cy0 + ch / 2;   // WFS-168 : flèche d'avant WFS-147
         const float ax[2] = {cx0 - 18 * k - ar, cx0 + cw + 18 * k + ar};
         for (int s = 0; s < 2; s++) {
             const bool actif = s == 0 ? g_index > 0 : g_index < 3;
-            (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * k, ay - ar - 10 * k, 2 * ar + 20 * k, 2 * ar + 20 * k} : Zone{};
-            r.uiCircle(ax[s], ay, ar + k, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
+            (s == 0 ? g_prec : g_suiv) = actif ? Zone{ax[s] - ar - 10 * kb, ay - ar - 10 * kb, 2 * ar + 20 * kb, 2 * ar + 20 * kb} : Zone{};
+            r.uiCircle(ax[s], ay, ar + kb, hex(0xFFFFFF, actif ? 0.14f : 0.05f));
             r.uiCircle(ax[s], ay, ar, hex(SURFACE2, actif ? 0.95f : 0.5f));
             // grisé : couleur opaque équivalente (texte à 30 % sur le disque à 50 % sur le fond)
-            chevron(r, ax[s] + (s == 0 ? -2 : 2) * k, ay, 18 * k, s == 0 ? -1 : 1, actif ? hex(TEXTE) : melange(melange(hex(BG), hex(SURFACE2), 0.5f), hex(TEXTE), 0.3f));
+            chevron(r, ax[s] + (s == 0 ? -2 : 2) * kb, ay, 18 * kb, s == 0 ? -1 : 1, actif ? hex(TEXTE) : melange(melange(hex(BG), hex(SURFACE2), 0.5f), hex(TEXTE), 0.3f));
         }
         // ---------- points (.map-dots) ----------
         const float dy = cy0 + ch + (cp ? 7 : 16) * k;
@@ -359,31 +362,31 @@ public:
             dxp += w + 6 * k;
         }
         // ---------- .maps-bar : Jour / Nuit (.tod-btn), Retour, Rouler ----------
-        const float tw = (cp ? 120 : 132) * k;
+        const float tw = 132 * kb;   // WFS-168 : largeur d'avant WFS-147
         for (int s = 0; s < 2; s++) {
             const bool nuit = s == 1, on = nuit == g_nuitChoisie;
             const float x = zl + s * (tw + 6 * k);
             (nuit ? g_nuit : g_jour) = {x, by, tw, bh};
             r.uiRect(x, by, tw, bh, on ? hex(ACCENT2, 0.16f) : hex(SURFACE2));
-            if (on) r.uiRect(x, by + bh - 3 * k, tw, 3 * k, hex(ACCENT2));
-            const float icx = x + 30 * k, icy = by + bh / 2;   // icône soleil / lune
-            if (!nuit) { r.uiCircle(icx, icy, 7 * k, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * k, icy + std::sin(a * 0.785f) * 12 * k, 1.6f * k, on ? hex(ACCENT2) : hex(TEXTE)); }
-            else { r.uiCircle(icx, icy, 9 * k, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * k, icy - 4 * k, 8 * k, on ? hex(0x0A2A33) : hex(SURFACE2)); }
-            ui::text(r, x + 52 * k, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
+            if (on) r.uiRect(x, by + bh - 3 * kb, tw, 3 * kb, hex(ACCENT2));
+            const float icx = x + 30 * kb, icy = by + bh / 2;   // icône soleil / lune (taille du bouton d'avant WFS-147)
+            if (!nuit) { r.uiCircle(icx, icy, 7 * kb, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, on ? hex(ACCENT2) : hex(TEXTE)); }
+            else { r.uiCircle(icx, icy, 9 * kb, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, on ? hex(0x0A2A33) : hex(SURFACE2)); }
+            ui::text(r, x + 52 * kb, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
         }
         const float tp = 20 * k;
         const std::string rt = ui::majuscules("Rouler"), bt = ui::majuscules("Retour");
-        const float rw = ui::width(tp, rt, 0.12f) + 56 * k + 26 * k, bw = ui::width(tp, bt, 0.12f) + 52 * k;
+        const float rw = ui::width(tp, rt, 0.12f) + 56 * kb + 26 * kb, bw = ui::width(tp, bt, 0.12f) + 52 * kb;
         const float rx = zr - rw, bx = rx - 10 * k - bw;
         g_rouler = {rx, by, rw, bh}; g_retour = {bx, by, bw, bh};
         for (const Zone* z : {&g_rouler, &g_retour, &g_prec, &g_suiv, &g_jour, &g_nuit}) manette::focus(*z, z == &g_retour);   // WFS-22
-        biseau(r, bx, by, bw, bh, 14 * k, hex(SURFACE2));   // .btn--ghost
+        biseau(r, bx, by, bw, bh, 14 * kb, hex(SURFACE2));   // .btn--ghost
         ui::text(r, bx + bw / 2, by + (bh - tp) / 2, tp, bt, hex(TEXTE), ui::CENTRE, 0.12f, false);
-        biseau(r, rx, by, rw, bh, 14 * k, hex(ACCENT));     // .btn--go avec la flèche
-        ui::text(r, rx + 28 * k, by + (bh - tp) / 2, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
-        const float fx = rx + rw - 40 * k, fy = by + bh / 2;
-        r.uiRect(fx, fy - 1.5f * k, 16 * k, 3 * k, hex(BG));
-        chevron(r, fx + 13 * k, fy, 14 * k, 1, hex(BG));
+        biseau(r, rx, by, rw, bh, 14 * kb, hex(ACCENT));     // .btn--go avec la flèche
+        ui::text(r, rx + 28 * kb, by + (bh - tp) / 2, tp, rt, hex(BG), ui::GAUCHE, 0.12f, false);
+        const float fx = rx + rw - 40 * kb, fy = by + bh / 2;
+        r.uiRect(fx, fy - 1.5f * kb, 16 * kb, 3 * kb, hex(BG));
+        chevron(r, fx + 13 * kb, fy, 14 * kb, 1, hex(BG));
     }
 private:
     void pas(int dir) {   // stepMap du web : bornée aux extrémités
