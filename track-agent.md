@@ -26,7 +26,7 @@
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6, 22:32 UTC) ; 140 : fusionnée (PR #137, ad4fa31) | 🟣 suit la CI de main sur 9c64bf6 (WFS-191) ; WFS-140 reste 🟣 (run 42257956758 rouge au seul `endurance`, WFS-190) ; libre ensuite |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 00:09 (aa9fdb9 sur main, PR #167 fusionnée par confiance) | 🔵 suit la CI de main (PR #157 à #167) ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 23:09 (aa9fdb9 sur main, PR #167 fusionnée par confiance) | 🔵 suit la CI de main (PR #157 à #167) ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) |  | WFS-151 fusionné (PR #156, squash 00bd580, fusion par confiance) | 151 : 22:14, fusionnée | 🔵 suit la CI de `main` de WFS-151 (🟣) |
 
 ## Tickets prêts sans agent
