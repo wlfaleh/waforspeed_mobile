@@ -408,8 +408,9 @@ public:
             const uint8_t bits = (uint8_t)(s.type == trace::Type::Virage || s.type == trace::Type::Epingle ? (s.angle > 0 ? 2 : 1) : 3);
             for (int64_t n = s.debut - 50; n < s.fin; n++) cache_[(size_t)mod(n)] |= bits;   // 60 m avant, et dans le virage
         }
-        // éclairage de nuit du tunnel (nuit.cpp : les 4 plus proches) : un point toutes les 15 m, en quinconce
-        if (tunDeb_ >= 0) for (int64_t n = tunDeb_ + 4, k = 0; n < tunFin_; n += 12, k++)
+        // éclairage de nuit du tunnel (nuit.cpp : les 4 plus proches) : un point toutes les 15 m, en quinconce, à plus de 25 m
+        // des têtes (ces lumières ne sont pas masquées par la roche : près d'une tête, elles éclairaient sa face extérieure)
+        if (tunDeb_ >= 0) for (int64_t n = tunDeb_ + 21, k = 0; n < tunFin_ - 21; n += 12, k++)
             lampadaires().push_back({mod(n), (k % 2 ? 1.f : -1.f) * (TUNNEL_W - 1.5f), TUNNEL_H - 1.6f, StyleLampadaire::Ville});
         int voisins = 0; for (float v : touche_) voisins += v < 1e8f;
         WFS_LOG("Plage (WFS-139) : %zu sections, %d virages serrés, %d bas-côtés bornés par une autre branche, tunnel %lld-%lld, "
