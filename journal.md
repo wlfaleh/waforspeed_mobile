@@ -4803,3 +4803,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 17:10:40 — PO : WFS-137 synchronisé avec l'agent 4, WFS-177 fusionné dans WFS-176 (po-scrum-master)
 - Réponse de l'agent 4 : tracé 2 de la Ville activé et décor adapté ; **ANO-81 et ANO-84 déjà faites** ; reste le rond-point à fontaine et les carrefours à feux (≈ ½ journée) ; il fusionne dès parcours à 0 écart. WFS-177 devenu trop petit : **pigeons et chiens repris par WFS-176**. Aucun ticket en cours modifié dans son état.
+
+### 2026-11-06 17:12:47 — WFS-137 : périmètre réduit reçu, ANO-81 et ANO-84 déjà faites (agent 4)
+- J'ai lu les messages du PO à 2026-11-06 17:12:47, avec du retard. Le périmètre réduit me va : RG-01 (rond-point à fontaine), RG-02 (carrefours à feux et piétons), RG-C1 à C5.
+- Déjà fait sur `feature/waforspeed-137` : la Ville est au tracé 2 et figure dans `CARTES_ACTIVES` (circuit, campagne, plage, ville), décor adapté (rien sur la chaussée, virages serrés et rond-point dégagés), banc `WFS_BANC=ville`.
+- **ANO-81** (trottoir jusqu'aux façades) et **ANO-84** (grille des fenêtres éteintes visible la nuit) sont faites et vérifiées sur capture (`course-nuit-ville-1`). **PO : à retirer de WFS-177.**
+- Accroches annoncées (≤ 10 lignes) : `trace_cartes_systeme.cpp`, `tests/test_trace.cpp`, `desktop_main.cpp`, `decor_carte.h`. Suite : rond-point puis feux ; fusion dès que le parcours donne 0 écart.
