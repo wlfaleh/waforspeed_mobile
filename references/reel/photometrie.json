@@ -1,0 +1,619 @@
+{
+ "fichier": "photometrie.json",
+ "description": "Photométrie (lux, lm, K, EV100) — WFS-148 RG-01 (c)",
+ "sources": {
+  "PB-LUM": {
+   "titre": "Physically Based — base de valeurs physiques (lightsources.json, schéma v2.2)",
+   "editeur": "A. Palmqvist et contributeurs",
+   "annee": "2026",
+   "lien": "https://github.com/AntonPalmqvist/physically-based-api/blob/main/deploy/v2/lightsources.json",
+   "licence": "CC0 1.0",
+   "acces": "ouvert",
+   "empreinte_sha256": "f37beda9f5da931b0d4813d9d756733a2b58fc5f60dd618b554a471baf29c71e",
+   "note": "unités de la base : lx (lumières directionnelles et ciel), lm (projecteurs) ; références d'origine recopiées"
+  },
+  "EV100": {
+   "titre": "Définition de l'indice de lumination EV100 : E = 2,5 × 2^EV100 (constante de cellule C = 250 lx·s pour ISO 100)",
+   "editeur": "ISO 2720:1974 (constante d'étalonnage des posemètres à cellule incidente)",
+   "annee": "1974",
+   "lien": "https://www.iso.org/standard/7690.html",
+   "acces": "non_ouvert",
+   "note": "formule d'usage courant ; norme payante non ouverte : statut des valeurs converties « à confirmer »"
+  }
+ },
+ "mesures": [
+  {
+   "min": 400,
+   "max": 100000,
+   "typique": 100000,
+   "id": "lum.soleil_midi.intensite",
+   "domaine": "photometrie",
+   "grandeur": "éclairement du soleil seul, à midi, sol horizontal",
+   "unite": "lx",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sun / Midday",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Illuminance Meter Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/lightsources/sun/"
+    },
+    {
+     "title": "Color temperature",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_temperature&oldid=1272808359#The_Sun"
+    },
+    {
+     "title": "Sunlight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sunlight&oldid=1261635666#Measurement"
+    },
+    {
+     "title": "Daylight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Daylight&oldid=1254565053"
+    },
+    {
+     "title": "Radiometry and Photometry in Astronomy",
+     "author": "Schlyter, P.",
+     "url": "https://stjarnhimlen.se/comp/radfaq.html#10"
+    },
+    {
+     "title": "Sun Fact Sheet",
+     "author": "Williams, D. R.",
+     "url": "https://web.archive.org/web/20250629084019/https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html"
+    },
+    {
+     "title": "The Great Coincidence",
+     "author": "Jeffery, D.",
+     "url": "https://www.physics.unlv.edu/~jeffery/astro/moon/sun_moon_angular.html"
+    },
+    {
+     "title": "What Colour Is The Sun",
+     "author": "Hamilton, A.",
+     "url": "https://jila.colorado.edu/~ajsh/colour/Tspectrum.html"
+    }
+   ]
+  },
+  {
+   "valeur": 5778,
+   "id": "lum.soleil_midi.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sun / Midday",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "valeur": 3000,
+   "id": "lum.soleil_couchant.intensite",
+   "domaine": "photometrie",
+   "grandeur": "éclairement du soleil au coucher",
+   "unite": "lx",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sun / Sunset",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Illuminance Meter Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/lightsources/sun/"
+    },
+    {
+     "title": "Color temperature",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_temperature&oldid=1272808359#The_Sun"
+    },
+    {
+     "title": "Sunlight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sunlight&oldid=1261635666#Measurement"
+    },
+    {
+     "title": "Daylight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Daylight&oldid=1254565053"
+    },
+    {
+     "title": "Radiometry and Photometry in Astronomy",
+     "author": "Schlyter, P.",
+     "url": "https://stjarnhimlen.se/comp/radfaq.html#10"
+    },
+    {
+     "title": "Sun Fact Sheet",
+     "author": "Williams, D. R.",
+     "url": "https://web.archive.org/web/20250629084019/https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html"
+    },
+    {
+     "title": "The Great Coincidence",
+     "author": "Jeffery, D.",
+     "url": "https://www.physics.unlv.edu/~jeffery/astro/moon/sun_moon_angular.html"
+    },
+    {
+     "title": "What Colour Is The Sun",
+     "author": "Hamilton, A.",
+     "url": "https://jila.colorado.edu/~ajsh/colour/Tspectrum.html"
+    }
+   ]
+  },
+  {
+   "valeur": 2600,
+   "id": "lum.soleil_couchant.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sun / Sunset",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "valeur": 6000,
+   "id": "lum.ciel_clair.intensite",
+   "domaine": "photometrie",
+   "grandeur": "éclairement à l'ombre, ciel bleu clair à midi",
+   "unite": "lx",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sky / Clear",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Illuminance Meter Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/lightsources/sky-clear/"
+    },
+    {
+     "title": "Color temperature",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_temperature&oldid=1272808359"
+    },
+    {
+     "title": "Daylight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Daylight&oldid=1254565053"
+    },
+    {
+     "title": "Lux",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lux&oldid=1255787364"
+    },
+    {
+     "title": "Expedia's Best Blue Sky: Experiment and Results.",
+     "author": "Pegrum, H. M., Montgomery, R., Fox, N. P., Mountford, J. R., Salim, S., Woolliams, P. D., Pointer, M. R., Crane, L., & Chapman, M.",
+     "url": "https://eprintspublications.npl.co.uk/3518/",
+     "year": "2006"
+    },
+    {
+     "title": "Radiometry and Photometry in Astronomy",
+     "author": "Schlyter, P.",
+     "url": "https://stjarnhimlen.se/comp/radfaq.html#10"
+    },
+    {
+     "title": "Airglow",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Airglow&oldid=1273412803"
+    },
+    {
+     "title": "Starlight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Starlight&oldid=1234975010"
+    },
+    {
+     "title": "What Is Airglow? Why the Night Sky Is Never Truly Dark",
+     "author": "Helmenstine, A.",
+     "url": "https://sciencenotes.org/what-is-airglow/"
+    }
+   ]
+  },
+  {
+   "valeur": 10000,
+   "id": "lum.ciel_clair.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sky / Clear",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "min": 100,
+   "max": 2000,
+   "typique": 2000,
+   "id": "lum.ciel_couvert.intensite",
+   "domaine": "photometrie",
+   "grandeur": "éclairement, ciel couvert, de jour",
+   "unite": "lx",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sky / Overcast Day",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Illuminance Meter Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/lightsources/sky-clear/"
+    },
+    {
+     "title": "Color temperature",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_temperature&oldid=1272808359"
+    },
+    {
+     "title": "Daylight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Daylight&oldid=1254565053"
+    },
+    {
+     "title": "Lux",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lux&oldid=1255787364"
+    },
+    {
+     "title": "Expedia's Best Blue Sky: Experiment and Results.",
+     "author": "Pegrum, H. M., Montgomery, R., Fox, N. P., Mountford, J. R., Salim, S., Woolliams, P. D., Pointer, M. R., Crane, L., & Chapman, M.",
+     "url": "https://eprintspublications.npl.co.uk/3518/",
+     "year": "2006"
+    },
+    {
+     "title": "Radiometry and Photometry in Astronomy",
+     "author": "Schlyter, P.",
+     "url": "https://stjarnhimlen.se/comp/radfaq.html#10"
+    },
+    {
+     "title": "Airglow",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Airglow&oldid=1273412803"
+    },
+    {
+     "title": "Starlight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Starlight&oldid=1234975010"
+    },
+    {
+     "title": "What Is Airglow? Why the Night Sky Is Never Truly Dark",
+     "author": "Helmenstine, A.",
+     "url": "https://sciencenotes.org/what-is-airglow/"
+    }
+   ]
+  },
+  {
+   "valeur": 6500,
+   "id": "lum.ciel_couvert.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sky / Overcast Day",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "valeur": 0.002,
+   "id": "lum.nuit_sans_lune.intensite",
+   "domaine": "photometrie",
+   "grandeur": "éclairement, nuit claire sans lune",
+   "unite": "lx",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sky / Moonless Clear Night",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Illuminance Meter Measurement",
+     "author": "Palmqvist, A.",
+     "url": "https://github.com/AntonPalmqvist/physically-based-api/tree/main/data/lightsources/sky-clear/"
+    },
+    {
+     "title": "Color temperature",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Color_temperature&oldid=1272808359"
+    },
+    {
+     "title": "Daylight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Daylight&oldid=1254565053"
+    },
+    {
+     "title": "Lux",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Lux&oldid=1255787364"
+    },
+    {
+     "title": "Expedia's Best Blue Sky: Experiment and Results.",
+     "author": "Pegrum, H. M., Montgomery, R., Fox, N. P., Mountford, J. R., Salim, S., Woolliams, P. D., Pointer, M. R., Crane, L., & Chapman, M.",
+     "url": "https://eprintspublications.npl.co.uk/3518/",
+     "year": "2006"
+    },
+    {
+     "title": "Radiometry and Photometry in Astronomy",
+     "author": "Schlyter, P.",
+     "url": "https://stjarnhimlen.se/comp/radfaq.html#10"
+    },
+    {
+     "title": "Airglow",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Airglow&oldid=1273412803"
+    },
+    {
+     "title": "Starlight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Starlight&oldid=1234975010"
+    },
+    {
+     "title": "What Is Airglow? Why the Night Sky Is Never Truly Dark",
+     "author": "Helmenstine, A.",
+     "url": "https://sciencenotes.org/what-is-airglow/"
+    }
+   ]
+  },
+  {
+   "valeur": 6500,
+   "id": "lum.nuit_sans_lune.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Sky / Moonless Clear Night",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "valeur": 0.32,
+   "id": "lum.pleine_lune.intensite",
+   "domaine": "photometrie",
+   "grandeur": "éclairement de la pleine lune",
+   "unite": "lx",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Moon / Full",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Moonlight",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Moonlight&oldid=1276297475"
+    },
+    {
+     "title": "Moon",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Moon&oldid=1278171486"
+    },
+    {
+     "title": "Purkinje effect",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Purkinje_effect&oldid=1243343221"
+    },
+    {
+     "title": "CG Cinematography - Chapter 4: Light Categories",
+     "author": "Brejon de Lavergnée, C.",
+     "url": "https://chrisbrejon.com/cg-cinematography/chapter-4-light-categories/#moon"
+    },
+    {
+     "title": "By the Light of the Silvery Moon: Fact and Fiction",
+     "author": "Ciocca, M., & Wang, J.",
+     "url": "https://iopscience.iop.org/article/10.1088/0031-9120/48/3/360",
+     "year": "2013"
+    },
+    {
+     "title": "The Great Coincidence",
+     "author": "Jeffery, D.",
+     "url": "https://www.physics.unlv.edu/~jeffery/astro/moon/sun_moon_angular.html"
+    }
+   ]
+  },
+  {
+   "valeur": 4100,
+   "id": "lum.pleine_lune.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Moon / Full",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "min": 2000,
+   "max": 140000,
+   "typique": null,
+   "id": "lum.lampadaire_sodium.intensite",
+   "domaine": "photometrie",
+   "grandeur": "flux lumineux d'une lampe de lampadaire au sodium",
+   "unite": "lm",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Street Light / Sodium-vapor Lamp",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Sodium-vapor lamp",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Sodium-vapor_lamp&oldid=1275815249"
+    },
+    {
+     "title": "HPS (High Pressure Sodium) Light Bulbs",
+     "url": "https://www.1000bulbs.com/fil/categories/high-pressure-sodium-lamps"
+    }
+   ]
+  },
+  {
+   "min": 1000,
+   "max": 2000,
+   "typique": 1500,
+   "id": "lum.phare_halogene.intensite",
+   "domaine": "photometrie",
+   "grandeur": "flux lumineux d'un phare halogène (feu de croisement)",
+   "unite": "lm",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Car Headlight / Halogen",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Lab Tested Halogen Bulbs Chart",
+     "url": "https://www.bulbfacts.com/halogen-bulbs/chart/"
+    },
+    {
+     "title": "Lab Tested Aftermarket LED Kits Chart",
+     "url": "https://www.bulbfacts.com/led-kits/chart/"
+    },
+    {
+     "title": "Light Sources",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Headlamp&oldid=1274156171#Light_sources"
+    },
+    {
+     "title": "Light Source: A Quick Guide to Automotive Lighting",
+     "author": "Fuller, D.",
+     "url": "https://www.onallcylinders.com/2015/02/27/light-source-quick-guide-automotive-lighting/"
+    }
+   ]
+  },
+  {
+   "min": 3400,
+   "max": 4000,
+   "id": "lum.phare_halogene.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Car Headlight / Halogen",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "min": 2000,
+   "max": 5000,
+   "typique": 3000,
+   "id": "lum.phare_led.intensite",
+   "domaine": "photometrie",
+   "grandeur": "flux lumineux d'un phare à LED (feu de croisement)",
+   "unite": "lm",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Car Headlight / LED",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.05,
+    "regle": "DA-realisme.md § 4 (photométrie ± 5 %)"
+   },
+   "references_origine": [
+    {
+     "title": "Lab Tested Halogen Bulbs Chart",
+     "url": "https://www.bulbfacts.com/halogen-bulbs/chart/"
+    },
+    {
+     "title": "Lab Tested Aftermarket LED Kits Chart",
+     "url": "https://www.bulbfacts.com/led-kits/chart/"
+    },
+    {
+     "title": "Light Sources",
+     "author": "Wikipedia contributors",
+     "url": "https://en.wikipedia.org/w/index.php?title=Headlamp&oldid=1274156171#Light_sources"
+    },
+    {
+     "title": "Light Source: A Quick Guide to Automotive Lighting",
+     "author": "Fuller, D.",
+     "url": "https://www.onallcylinders.com/2015/02/27/light-source-quick-guide-automotive-lighting/"
+    }
+   ]
+  },
+  {
+   "min": 5000,
+   "max": 6000,
+   "id": "lum.phare_led.temperature",
+   "domaine": "photometrie",
+   "grandeur": "température de couleur proximale",
+   "unite": "K",
+   "source": "PB-LUM",
+   "statut": "verifie",
+   "nom_base": "Car Headlight / LED",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (± 100 K)"
+   }
+  },
+  {
+   "id": "lum.soleil_midi.ev100",
+   "domaine": "photometrie",
+   "grandeur": "EV100 d'une scène au soleil de midi (incident)",
+   "unite": "EV",
+   "valeur": 15.29,
+   "source": "EV100",
+   "statut": "a_confirmer",
+   "formule": "EV100 = log2(E / 2,5) avec E = 100000 lx (PB-LUM, Sun / Midday)",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.1
+   }
+  }
+ ]
+}

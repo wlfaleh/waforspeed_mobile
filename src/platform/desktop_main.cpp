@@ -34,6 +34,7 @@ namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out);
 #include "../game/roues_banc.h"
 #include "../render/bench_effets.h"
 #include "../render/bench_nuit.h"
+#include "../render/bench_realisme.h"   // WFS-148 : banc de référence du réalisme
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
 #include "../render/renderer.h"
 #include "../render/vk.h"
@@ -196,6 +197,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "manette") { manette::benchManette(g, r, out); return finir(); }   // WFS-22 : manettes (job texte)
     if (banc == "pietons") { benchPietons(g, r, out); return finir(); }       // WFS-19 : piétons seuls
+    if (banc == "realisme") { const int e = benchRealisme(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-148 : 12 vues, étalonnage, rapports
     const bool menu1 = banc == "menu" || banc == "menu1", menu2 = banc == "menu" || banc == "menu2";   // WFS-106 : 2400x1080 en deux jobs
     if (menu1) { ecrans::benchMenu(g, r, out); ecrans::benchMenuTactile(g, r, out); ecrans::benchPause(g, r, out); ecrans::benchGarage(g, r, out);
         ecrans::benchTerrain(g, r, out); }

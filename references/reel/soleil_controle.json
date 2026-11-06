@@ -1,0 +1,534 @@
+{
+ "fichier": "soleil_controle.json",
+ "description": "Position du soleil : 10 cas de contrôle — WFS-148 RG-02",
+ "sources": {
+  "NREL-SPA": {
+   "titre": "Solar Position Algorithm for Solar Radiation Applications (NREL/TP-560-34302), incertitude ± 0,0003°",
+   "editeur": "I. Reda et A. Andreas, National Renewable Energy Laboratory",
+   "annee": "2004",
+   "lien": "https://www.nrel.gov/docs/fy08osti/34302.pdf",
+   "acces": "non_ouvert",
+   "note": "valeurs calculées par pvlib 0.16.1 (solarposition.spa_python, BSD-3), ΔT = 67 s, 1013,25 hPa, 12 °C ; le calculateur de la NOAA (gml.noaa.gov/grad/solcalc) ne s'ouvre pas depuis la session : la SPA, plus précise que l'algorithme de la NOAA (± 0,0167°), sert de référence"
+  },
+  "NOAA-SOLCALC": {
+   "titre": "NOAA Solar Calculator — General Solar Position Calculations (équations du tableur)",
+   "editeur": "NOAA Global Monitoring Laboratory",
+   "annee": "2024",
+   "lien": "https://gml.noaa.gov/grad/solcalc/solareqns.PDF",
+   "acces": "non_ouvert",
+   "note": "équations de J. Meeus (Astronomical Algorithms, 1991) ; implantées dans soleil() (src/render/bench_realisme.h)"
+  }
+ },
+ "mesures": [
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 43.5,
+   "lon": 7.0,
+   "utc": "2026-06-21T12:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas01.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 69.2245
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 43.5,
+   "lon": 7.0,
+   "utc": "2026-06-21T12:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas01.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 69.2309
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 43.5,
+   "lon": 7.0,
+   "utc": "2026-06-21T12:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas01.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 197.15
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 43.5,
+   "lon": 7.0,
+   "utc": "2026-12-21T10:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas02.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 19.9393
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 43.5,
+   "lon": 7.0,
+   "utc": "2026-12-21T10:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas02.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 19.9849
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 43.5,
+   "lon": 7.0,
+   "utc": "2026-12-21T10:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas02.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 158.0623
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 45.0,
+   "lon": 5.0,
+   "utc": "2026-03-20T08:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas03.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 22.6461
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 45.0,
+   "lon": 5.0,
+   "utc": "2026-03-20T08:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas03.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 22.6859
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 45.0,
+   "lon": 5.0,
+   "utc": "2026-03-20T08:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas03.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 114.8489
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 0.0,
+   "lon": 0.0,
+   "utc": "2026-03-20T12:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas04.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 88.1403
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 0.0,
+   "lon": 0.0,
+   "utc": "2026-03-20T12:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas04.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 88.1408
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 0.0,
+   "lon": 0.0,
+   "utc": "2026-03-20T12:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas04.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 91.4002
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": -33.9,
+   "lon": 18.4,
+   "utc": "2026-01-15T14:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas05.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 47.5609
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": -33.9,
+   "lon": 18.4,
+   "utc": "2026-01-15T14:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas05.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 47.5762
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": -33.9,
+   "lon": 18.4,
+   "utc": "2026-01-15T14:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas05.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 275.3676
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 60.2,
+   "lon": 24.9,
+   "utc": "2026-07-01T15:30:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas06.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 26.5786
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 60.2,
+   "lon": 24.9,
+   "utc": "2026-07-01T15:30:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas06.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 26.612
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 60.2,
+   "lon": 24.9,
+   "utc": "2026-07-01T15:30:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas06.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 270.4692
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 40.7,
+   "lon": -74.0,
+   "utc": "2026-09-22T17:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas07.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 49.3315
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 40.7,
+   "lon": -74.0,
+   "utc": "2026-09-22T17:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas07.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 49.346
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 40.7,
+   "lon": -74.0,
+   "utc": "2026-09-22T17:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas07.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 184.3562
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 35.7,
+   "lon": 139.7,
+   "utc": "2026-04-10T03:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas08.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 61.9309
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 35.7,
+   "lon": 139.7,
+   "utc": "2026-04-10T03:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas08.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 61.9399
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 35.7,
+   "lon": 139.7,
+   "utc": "2026-04-10T03:00:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas08.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 189.2016
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": -23.5,
+   "lon": -46.6,
+   "utc": "2026-11-06T18:20:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas09.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 40.3316
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": -23.5,
+   "lon": -46.6,
+   "utc": "2026-11-06T18:20:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas09.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 40.3514
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": -23.5,
+   "lon": -46.6,
+   "utc": "2026-11-06T18:20:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas09.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 268.3634
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 51.5,
+   "lon": -0.1,
+   "utc": "2026-10-31T13:45:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas10.hauteur",
+   "domaine": "soleil",
+   "grandeur": "hauteur géométrique (sans réfraction)",
+   "unite": "°",
+   "valeur": 19.205
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 51.5,
+   "lon": -0.1,
+   "utc": "2026-10-31T13:45:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas10.hauteur_apparente",
+   "domaine": "soleil",
+   "grandeur": "hauteur apparente (réfraction)",
+   "unite": "°",
+   "valeur": 19.2525
+  },
+  {
+   "source": "NREL-SPA",
+   "statut": "verifie",
+   "lat": 51.5,
+   "lon": -0.1,
+   "utc": "2026-10-31T13:45:00",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.05,
+    "regle": "WFS-148 RG-02 (± 0,05°)"
+   },
+   "id": "soleil.cas10.azimut",
+   "domaine": "soleil",
+   "grandeur": "azimut (depuis le nord, vers l'est)",
+   "unite": "°",
+   "valeur": 211.1376
+  }
+ ]
+}

@@ -1,0 +1,301 @@
+{
+ "fichier": "anthropometrie.json",
+ "description": "Anthropométrie adulte — WFS-148 RG-01 (f)",
+ "sources": {
+  "ANSUR-II": {
+   "titre": "2012 Anthropometric Survey of U.S. Army Personnel (ANSUR II) : fichiers publics (NATICK/TR-15/007)",
+   "editeur": "U.S. Army Natick Soldier RD&E Center",
+   "annee": "2014",
+   "lien": "https://www.openlab.psu.edu/ansur2/",
+   "licence": "domaine public (gouvernement des États-Unis)",
+   "acces": "ouvert",
+   "empreintes_sha256": {
+    "hommes": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64",
+    "femmes": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a"
+   },
+   "note": "fichiers lus dans la copie github.com/senihberkay/US-Army-ANSUR-II (empreintes ci-contre) ; population militaire des États-Unis (pas la population française) : sert aux proportions et aux plages de taille"
+  }
+ },
+ "mesures": [
+  {
+   "id": "humain.hommes.stature",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), hommes",
+   "unite": "mm",
+   "valeur": 1756.2,
+   "ecart_type": 68.6,
+   "p5": 1647.2,
+   "p95": 1870.0,
+   "n": 4082,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.hommes.crotchheight",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de l'entrejambe, hommes",
+   "unite": "mm",
+   "valeur": 845.9,
+   "ecart_type": 46.5,
+   "p5": 771.0,
+   "p95": 925.0,
+   "n": 4082,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.hommes.acromialheight",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur des épaules (acromion), hommes",
+   "unite": "mm",
+   "valeur": 1440.7,
+   "ecart_type": 63.3,
+   "p5": 1339.0,
+   "p95": 1546.8,
+   "n": 4082,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.hommes.span",
+   "domaine": "anthropometrie",
+   "grandeur": "envergure, hommes",
+   "unite": "mm",
+   "valeur": 1814.2,
+   "ecart_type": 84.6,
+   "p5": 1679.2,
+   "p95": 1957.0,
+   "n": 4082,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.hommes.biacromialbreadth",
+   "domaine": "anthropometrie",
+   "grandeur": "largeur des épaules (biacromiale), hommes",
+   "unite": "mm",
+   "valeur": 415.7,
+   "ecart_type": 19.2,
+   "p5": 384.0,
+   "p95": 447.0,
+   "n": 4082,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.hommes.ratio_crotchheight",
+   "domaine": "anthropometrie",
+   "grandeur": "proportion entrejambe / taille, hommes",
+   "unite": "-",
+   "valeur": 0.4815,
+   "ecart_type": 0.0141,
+   "source": "ANSUR-II",
+   "statut": "derive",
+   "formule": "moyenne de crotchheight / stature par personne",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01
+   }
+  },
+  {
+   "id": "humain.hommes.ratio_acromialheight",
+   "domaine": "anthropometrie",
+   "grandeur": "proportion épaules / taille, hommes",
+   "unite": "-",
+   "valeur": 0.8203,
+   "ecart_type": 0.0096,
+   "source": "ANSUR-II",
+   "statut": "derive",
+   "formule": "moyenne de acromialheight / stature par personne",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01
+   }
+  },
+  {
+   "id": "humain.hommes.ratio_span",
+   "domaine": "anthropometrie",
+   "grandeur": "proportion envergure / taille, hommes",
+   "unite": "-",
+   "valeur": 1.033,
+   "ecart_type": 0.0274,
+   "source": "ANSUR-II",
+   "statut": "derive",
+   "formule": "moyenne de span / stature par personne",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01
+   }
+  },
+  {
+   "id": "humain.femmes.stature",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), femmes",
+   "unite": "mm",
+   "valeur": 1628.5,
+   "ecart_type": 64.2,
+   "p5": 1525.0,
+   "p95": 1740.0,
+   "n": 1986,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.femmes.crotchheight",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de l'entrejambe, femmes",
+   "unite": "mm",
+   "valeur": 782.3,
+   "ecart_type": 44.6,
+   "p5": 712.0,
+   "p95": 857.0,
+   "n": 1986,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.femmes.acromialheight",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur des épaules (acromion), femmes",
+   "unite": "mm",
+   "valeur": 1335.1,
+   "ecart_type": 58.1,
+   "p5": 1242.0,
+   "p95": 1434.0,
+   "n": 1986,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.femmes.span",
+   "domaine": "anthropometrie",
+   "grandeur": "envergure, femmes",
+   "unite": "mm",
+   "valeur": 1660.3,
+   "ecart_type": 83.0,
+   "p5": 1529.0,
+   "p95": 1803.7,
+   "n": 1986,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.femmes.biacromialbreadth",
+   "domaine": "anthropometrie",
+   "grandeur": "largeur des épaules (biacromiale), femmes",
+   "unite": "mm",
+   "valeur": 365.3,
+   "ecart_type": 18.3,
+   "p5": 335.0,
+   "p95": 396.0,
+   "n": 1986,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.femmes.ratio_crotchheight",
+   "domaine": "anthropometrie",
+   "grandeur": "proportion entrejambe / taille, femmes",
+   "unite": "-",
+   "valeur": 0.4802,
+   "ecart_type": 0.0151,
+   "source": "ANSUR-II",
+   "statut": "derive",
+   "formule": "moyenne de crotchheight / stature par personne",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01
+   }
+  },
+  {
+   "id": "humain.femmes.ratio_acromialheight",
+   "domaine": "anthropometrie",
+   "grandeur": "proportion épaules / taille, femmes",
+   "unite": "-",
+   "valeur": 0.8198,
+   "ecart_type": 0.0087,
+   "source": "ANSUR-II",
+   "statut": "derive",
+   "formule": "moyenne de acromialheight / stature par personne",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01
+   }
+  },
+  {
+   "id": "humain.femmes.ratio_span",
+   "domaine": "anthropometrie",
+   "grandeur": "proportion envergure / taille, femmes",
+   "unite": "-",
+   "valeur": 1.0195,
+   "ecart_type": 0.0292,
+   "source": "ANSUR-II",
+   "statut": "derive",
+   "formule": "moyenne de span / stature par personne",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01
+   }
+  },
+  {
+   "id": "humain.tete_sur_taille",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de la tête (vertex – menton) / taille",
+   "unite": "-",
+   "valeur": null,
+   "source": "ANSUR-II",
+   "statut": "a_sourcer",
+   "note": "les fichiers publics d'ANSUR II n'ont pas la hauteur vertex – menton ; la règle « 1/7,5 » de la charte n'a pas de source ouverte"
+  }
+ ]
+}
