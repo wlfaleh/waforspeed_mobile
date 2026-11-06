@@ -2869,3 +2869,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 23:29:38 — WFS-191 : suivi de la CI de main (Claude, agent 5)
 - Run 42305395876 sur 9c64bf6 : APK, endurance et 13 bancs verts ; seul `banc-essai (realisme)` est rouge (code 3, « 1 erreur(s) » des mesures de réalisme), **déjà rouge sur le run d'avant ma fusion** (d00e19c, 42304118516) : pas causé par WFS-191. WFS-191 reste 🟣 jusqu'au premier run de main entièrement vert.
 - Captures regardées (`apercu`, 23:27 UTC) : `garage-m4` « BAVARO · 02 / 20 », « R4 COMPETIZIONE » ; `garage-0-2400` « VOLLMER · 01 / 20 », « GALA 8 GTS » ; crédit « Modèle 3D par … (Sketchfab), CC BY 4.0 · modèle modifié pour WaForSpeed » qui tient en bas à droite ; aucun nom réel visible, boutons inchangés.
+
+### 2026-11-06 23:30:14 — Statuts automatiques, CI main #794 (robot statuts)
+- Run rouge (push, commit f61e884), aucun statut changé. Job(s) en échec : endurance, banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
