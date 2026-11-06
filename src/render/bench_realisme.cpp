@@ -24,6 +24,7 @@
 #include "../ui/ecrans/reglages.h"
 #include "../world/zones.h"
 #include "renderer.h"
+#include "ktx2.h"   // WFS-149 : texture d'essai
 #include "../../third_party/stb/stb_image.h"   // implémentation : model_loader.cpp
 
 namespace wfs {
@@ -53,9 +54,16 @@ const Vue VUES[] = {
     {"chaussee-1m5", "ville", nullptr, Choix::Depart, {6, -2.5f, 1.5f}, {16, -2.5f, 0}, 60, "chaussée vue à 1,5 m du sol"},
 };
 constexpr int PAS_AVANT_CAPTURE = 90;   // pas de simulation (1/60 s) avant la capture : chargement des morceaux, puis figé
+// WFS-149 (RG-A, ANO-85) : vues prises sans aucune interface. Écran Chargement : comme le Menu hors course (voiture immobile,
+// aucune commande, scène dessinée), mais aucun système n'y dessine d'interface (le Menu dessinait le bouton « RÉGLAGES »)
+constexpr Ecran ECRAN_BANC = Ecran::Chargement;
+// WFS-149 (RG-01) : texture d'essai KTX2 (tools/textures/essai) : panneau de 3 × 3 m au bord de la route, 8 m devant, et
+// bande de 3 m de large sur 80 m de chaussée (1 m de texture par mètre : 4 carreaux de 25 cm) pour juger mipmaps et anisotrope
+constexpr const char* ESSAI_TEXTURES[3] = {"textures/essai/essai-couleur", "textures/essai/essai-normale", "textures/essai/essai-orm"};
 
 struct EtatBanc {
     bool actif = false, etalon = false;
+    bool essai = false; std::string essaiInfo;   // WFS-149 : panneau de la texture d'essai KTX2 ; variantes chargées (rapport)
     Repere oeil, cible; float fov = 60;
     FrameParams lumiere; bool lumiereLue = false;   // lumière finale de la dernière image (après toutes les ambiances)
     mat4 view = mat4::identity(), proj = mat4::identity();
@@ -112,18 +120,74 @@ public:
         fp.camPos = oeil;
         g_banc.view = fp.view; g_banc.proj = fp.proj; g_banc.lumiere = fp; g_banc.lumiereLue = true;
     }
-    void render(Renderer& r, const GameView&) override {
-        if (!g_banc.actif || !cree_) return;
+    void render(Renderer& r, const GameView& g) override {
+        if (!g_banc.actif) return;
+        // texture d'essai : créée à la première image, quand le joueur est posé au départ demandé (WFS_DEPART)
+        if (g_banc.essai && !essaiTente_ && g.track && g.player) { essaiTente_ = true; creerEssai(r, g); }
         const mat4 I = mat4::identity();
+        if (essaiCree_) { r.draw(panneau_, essaiMat_, I); r.draw(bande_, essaiMat_, I); }
+        if (!cree_) return;
         for (int k = 0; k < 25; k++) r.draw(maillages_[k], mats_[k], I);
     }
     void shutdown(Renderer& r) override {
+        if (essaiTente_) {
+            r.vk().waitIdle();
+            if (essaiCree_) { r.destroy(panneau_); r.destroy(bande_); }
+            for (ktx2::Texture& t : essaiTex_) { r.vk().destroy(t.image); t = ktx2::Texture{}; }
+            essaiCree_ = essaiTente_ = false;
+        }
         if (!cree_) return;
         for (Mesh& m : maillages_) r.destroy(m);
         cree_ = false;
     }
 private:
+    // WFS-149 : panneau et bande de la texture d'essai (tangentes calculées par makeMesh : géométrie générée)
+    void creerEssai(Renderer& r, const GameView& g) {
+        const double s = g.player->dist;
+        std::ostringstream info;
+        for (int k = 0; k < 3; k++) {
+            if (!ktx2::chargerTexture(r.vk(), ESSAI_TEXTURES[k], essaiTex_[k])) {
+                info << ESSAI_TEXTURES[k] << " : absente (lancer tools/textures/ci_textures.sh)\n";
+                continue;
+            }
+            info << ESSAI_TEXTURES[k] << " : " << essaiTex_[k].variante << ", " << ktx2::nomFormat(essaiTex_[k].format) << ", "
+                 << essaiTex_[k].image.w << "x" << essaiTex_[k].image.h << ", " << essaiTex_[k].image.mips << " niveaux, "
+                 << reel::fmt(essaiTex_[k].octets / 1024.0, 1) << " Ko\n";
+        }
+        g_banc.essaiInfo = info.str();
+        if (!essaiTex_[0].ok) return;
+        auto P = [&](float a, float l, float h) { return pointRoute(*g.track, s, {a, l, h}); };
+        auto quad = [&](std::vector<Vertex>& v, std::vector<uint32_t>& ix, const vec3 c[4], const vec2 uv[4], const vec3& vers) {
+            const vec3 n = normalize(cross(c[1] - c[0], c[2] - c[0]));
+            const vec3 nn = dot(n, vers) >= 0 ? n : n * -1.f;   // normale tournée vers « vers » (caméra, ou le ciel)
+            const uint32_t b = (uint32_t)v.size();
+            for (int k = 0; k < 4; k++) v.push_back({c[k].x, c[k].y, c[k].z, nn.x, nn.y, nn.z, uv[k].x, uv[k].y});
+            // sens des triangles : face avant vers « vers » (scene.frag retourne la normale des faces arrière)
+            if (dot(n, vers) >= 0) ix.insert(ix.end(), {b, b + 1, b + 2, b, b + 2, b + 3}); else ix.insert(ix.end(), {b, b + 2, b + 1, b, b + 3, b + 2});
+        };
+        {   // panneau : l de 1,5 à 4,5 m, h de 0,2 à 3,2 m, à 8 m ; uv (0, 0) en haut à gauche vu de la caméra
+            std::vector<Vertex> v; std::vector<uint32_t> ix;
+            const vec3 c[4] = {P(8, 1.5f, 3.2f), P(8, 4.5f, 3.2f), P(8, 4.5f, 0.2f), P(8, 1.5f, 0.2f)};
+            const vec2 uv[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+            quad(v, ix, c, uv, P(-3, 4.2f, 1.7f) - P(8, 3, 1.7f));
+            panneau_ = r.makeMesh(v, ix);
+        }
+        {   // bande sur la chaussée : l de −1,5 à 1,5 m, a de 2 à 82 m, par tronçons de 2 m (suit la route)
+            std::vector<Vertex> v; std::vector<uint32_t> ix;
+            for (float a = 2; a < 82; a += 2) {
+                const vec3 c[4] = {P(a, -1.5f, SOL), P(a, 1.5f, SOL), P(a + 2, 1.5f, SOL), P(a + 2, -1.5f, SOL)};
+                const vec2 uv[4] = {{0, -a}, {3, -a}, {3, -a - 2}, {0, -a - 2}};
+                quad(v, ix, c, uv, vec3{0, 1, 0});
+            }
+            bande_ = r.makeMesh(v, ix);
+        }
+        Material m; m.color = {1, 1, 1, 1}; m.metal = 1; m.rough = 1;   // × ORM (G rugosité, B métal) : valeurs de la texture
+        m.flags = MAT_TANGENTE;   // + MAT_HASNORMAL / MAT_HASMR posés par makeMaterial (cartes présentes)
+        essaiMat_ = r.makeMaterial(m, &essaiTex_[0].image, essaiTex_[1].ok ? &essaiTex_[1].image : nullptr, essaiTex_[2].ok ? &essaiTex_[2].image : nullptr);
+        essaiCree_ = true;
+    }
     Mesh maillages_[25]; Material mats_[25]; bool cree_ = false;
+    ktx2::Texture essaiTex_[3]; Mesh panneau_, bande_; Material essaiMat_; bool essaiCree_ = false, essaiTente_ = false;
 };
 WFS_SYSTEM(RealismeBanc, 970)   // banc (900-999) : après toutes les ambiances (nuit 950, ciel couvert 960)
 
@@ -188,9 +252,10 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     mesures << "WaForSpeed — mesures du banc de référence du réalisme (WFS-148, RG-06)\n"
             << "Banc PC de la CI : Vulkan logiciel (lavapipe) : le « GPU » est le processeur de la machine ; ms et images/s ne\n"
             << "représentent PAS un téléphone, ils servent à comparer une US à l'autre sur la même machine (avant / après).\n"
-            << "Taille " << r.width() << "x" << r.height() << ". Mémoire textures : non mesurable (aucun compteur dans VkCtx::uploadTexture ;\n"
-            << "à ajouter par WFS-149) ; mémoire du processus (VmRSS, VmHWM) donnée à la place.\n\n"
-            << "== captures (5 images rendues, scène figée) ==\n  capture | ms par image (mur) | appels de dessin | objets masqués | VmRSS (Mo)\n";
+            << "Taille " << r.width() << "x" << r.height() << ". Mémoire textures : compteur VkCtx::octetsTextures (WFS-149 : textures envoyées,\n"
+            << "mipmaps comprises) ; mémoire du processus (VmRSS, VmHWM) en plus.\n\n"
+            << "== captures (5 images rendues, scène figée) ==\n  capture | ms par image (mur) | appels de dessin | objets masqués | VmRSS (Mo) | textures (Mo)"
+            << " | tangentes de la géométrie générée depuis le lancement (ms CPU, sommets)\n";
     struct Lumiere { vec3 soleilDir, soleilCouleur; float intensite, exposition, ambiance; bool ok = false; };
     std::map<std::string, Lumiere> lumieres;   // carte + moment → lumière du jeu (vue en Haute)
     g_banc = EtatBanc{}; g_banc.actif = true;
@@ -209,13 +274,14 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
             const std::string nom = std::string("realisme-") + v.nom + "-" + moment + "-" + qualites[q];
             if (!g.init(r, "golf", v.carte)) { WFS_ERR("réalisme : %s : chargement de %s impossible", nom.c_str(), v.carte); erreurs++; continue; }
-            g.setAutopilot(false); g.camMode = 0; g.allerA(Ecran::Menu);
+            g.setAutopilot(false); g.camMode = 0; g.allerA(ECRAN_BANC);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
             const double t0 = nowSeconds();
             for (int i = 0; i < 5; i++) g.render(t);   // scène figée : même temps, aucune mise à jour
             const double ms = (nowSeconds() - t0) / 5 * 1000;
             r.capturePng(out + "/" + nom + ".png");
-            mesures << "  " << nom << " | " << fmt(ms, 1) << " | " << r.appelsDessin() << " | " << r.objetsMasques() << " | " << fmt(memoireKo("VmRSS:") / 1024.0, 0) << "\n";
+            mesures << "  " << nom << " | " << fmt(ms, 1) << " | " << r.appelsDessin() << " | " << r.objetsMasques() << " | " << fmt(memoireKo("VmRSS:") / 1024.0, 0)
+                    << " | " << fmt(r.vk().octetsTextures / 1048576.0, 1) << " | " << fmt(r.tangentesMs(), 1) << " ms, " << r.tangentesSommets() << "\n";
             WFS_LOG("capture %s : %s, départ %lld segments (%s), %.0f m, %.1f ms par image, %u appels de dessin", nom.c_str(), v.carte, (long long)depart,
                     v.note, g.player().dist * M, ms, r.appelsDessin());
             if (q == 1 && g_banc.lumiereLue) {
@@ -234,7 +300,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
         g_banc.oeil = {-8, 0, 2}; g_banc.cible = {80, 0, 0.5f}; g_banc.fov = 60;
         if (!g.init(r, "golf", carte)) { erreurs++; continue; }
-        g.allerA(Ecran::Menu);
+        g.allerA(ECRAN_BANC);
         for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
         const double t0 = nowSeconds();
         for (int i = 0; i < 130; i++) g.render(t);
@@ -264,7 +330,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         reglages.qualite = ecrans::QUALITE_HAUTE; ecrans::appliquerQualiteNiveau(r);
         g_banc.etalon = true; g_banc.oeil = {CHARTE_A + 0.35f, 0, 3.2f}; g_banc.cible = {CHARTE_A + 0.35f, 0, 0}; g_banc.fov = 50;
         if (g.init(r, "golf", "campagne")) {   // en Ville, la chaussée du départ est à l'ombre des immeubles
-            g.allerA(Ecran::Menu);
+            g.allerA(ECRAN_BANC);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
             for (int i = 0; i < 3; i++) g.render(t);
             const std::string chemin = out + "/realisme-etalon.png";
@@ -341,6 +407,31 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         } else erreurs++;
         g_banc.etalon = false;
     }
+    // ---------------- WFS-149 (RG-01) : texture d'essai KTX2 (Campagne, ligne droite des Champs, jour) : Haute (anisotrope ×8),
+    // puis Basse (×4, WFS-144)
+    {
+        const Vue v{"texture-essai", "campagne", "Champs", Choix::LigneDroite, {-3, 4.2f, 1.7f}, {12, 1.8f, 1.0f}, 60, "texture d'essai KTX2"};
+        const int64_t depart = segmentDepart(v);
+        g_banc.essai = true; g_banc.fov = v.fov;
+        mesures << "\n== texture d'essai KTX2 (WFS-149) ==\n";
+        for (int q = 1; q >= 0 && depart >= 0; q--) {
+            setenv("WFS_MOMENT", "jour", 1); setenv("WFS_DEPART", std::to_string(depart).c_str(), 1);
+            reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
+            g_banc.oeil = v.oeil; g_banc.cible = v.cible;
+            if (!g.init(r, "golf", v.carte)) { erreurs++; continue; }
+            g.setAutopilot(false); g.camMode = 0; g.allerA(ECRAN_BANC);
+            for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+            for (int i = 0; i < 3; i++) g.render(t);
+            const std::string nom = std::string("realisme-texture-essai") + (q ? "" : "-basse");
+            r.capturePng(out + "/" + nom + ".png");
+            mesures << "  " << nom << " : anisotrope ×" << fmt(q ? r.aniso() : std::min(r.aniso(), 4.f), 0) << ", mémoire textures "
+                    << fmt(r.vk().octetsTextures / 1048576.0, 2) << " Mo\n" << g_banc.essaiInfo;
+            WFS_LOG("capture %s : texture d'essai KTX2, %s", nom.c_str(), g_banc.essaiInfo.empty() ? "aucune" : "chargée");
+            if (g_banc.essaiInfo.find("absente") != std::string::npos) { WFS_ERR("réalisme : texture d'essai KTX2 absente"); erreurs++; }
+            g.shutdown();
+        }
+        g_banc.essai = false;
+    }
     g_banc = EtatBanc{};   // système inactif : plus rien ne change dans les images suivantes
     reglages.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
@@ -369,7 +460,10 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             rap.comparer(R, "photometrie", idReel, tcpMcCamy(it->second.soleilCouleur), 1, "K",
                          std::string("température de couleur de la lumière directionnelle, ") + quoi + ", " + carte + " (McCamy 1992, couleur du jeu)");
             const double tcp = tcpMcCamy(it->second.soleilCouleur);
-            if (tcp < 2000 || tcp > 12500) rap.lignes.back().raison = "hors du domaine de validité de la formule de McCamy (2000 à 12 500 K) : couleur très saturée";
+            if (tcp < 2000 || tcp > 12500) {   // WFS-149 (RG-B, ANO-86) : hors du domaine de la formule → non mesurable (hors indice)
+                rap.lignes.back().raison = "hors du domaine de validité de la formule de McCamy (2000 à 12 500 K) : couleur très saturée";
+                rap.lignes.back().etat = Etat::NonMesurable;
+            }
         }
         rap.nonMesurable("photometrie", std::string("jeu.") + carte + ".eclairement", std::string("éclairement du soleil (lux), ") + carte,
                          "intensité du soleil du jeu sans unité (" + fmt(lj->second.intensite, 2) + ") et exposition " + fmt(lj->second.exposition, 2) + " sans EV100 : exposition physique à venir (WFS-151)");
@@ -390,7 +484,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     std::ofstream(out + "/realisme-fidelite.txt") << texte;
     std::ofstream(out + "/realisme-mesures.txt") << mesures.str();
     for (const auto& [d, i] : rap.indices())
-        WFS_LOG("réalisme : indice %s = %.1f %% (%d / %d conformes, %d non mesurables)", d.c_str(), i.valeur(), i.conformes, i.conformes + i.nonConformes, i.nonMesurables);
+        WFS_LOG("réalisme : indice %s = %s (%d / %d conformes, %d non mesurables)", d.c_str(), i.enTexte().c_str(), i.conformes, i.conformes + i.nonConformes, i.nonMesurables);
     WFS_LOG("réalisme : %zu mesures, rapports realisme-fidelite.txt et realisme-mesures.txt, %d erreur(s)", rap.lignes.size(), erreurs);
     return erreurs;
 }

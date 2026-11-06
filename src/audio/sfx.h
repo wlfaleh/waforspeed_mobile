@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 #include "sirene_son.h"   // WFS-131
+#include "route_sons.h"   // WFS-174
 
 namespace wfs {
 
@@ -37,6 +38,10 @@ public:
     void setRumeur(float g) { cibleRumeur_ = g; }   // WFS-121 (RG-04) : rumeur du trafic proche (0..0,25)
     // WFS-131 : sirène visée (gain 0..0,45, mode « yelp », facteur Doppler, extinction de fin de course)
     void setSirene(float gain, bool yelp, float doppler, bool fin) { cibleSirene_ = gain; yelpSirene_ = yelp; dopplerSirene_ = doppler; finSirene_ = fin; }
+    // WFS-174 : sons de la route visés (vent, roulement, bande rugueuse, herbe, eau : route_sons.h)
+    void setRoute(const route::Cibles& c) {
+        cVent_ = c.vent; cOuverture_ = c.ouverture; cRoulement_ = c.roulement; cBord_ = c.bord; cHerbe_ = c.herbe; cEau_ = c.eau; cCadence_ = c.cadenceBord;
+    }
     void setMuted(bool m) { muted_ = m; }        // future option « Son » (setMuted du jeu web)
     // thread audio : ajoute les bruitages dans out ; now : horloge (sans nouvelles du jeu → silence, pause)
     void mix(float* out, int n, double now);
@@ -60,6 +65,12 @@ private:
     std::atomic<bool> yelpSirene_{false}, finSirene_{false};
     float gSirene_ = 0, mixYelp_ = 0, pasSirene_ = 1, kSirene_ = 0.001f, pasFinSirene_ = 0.001f, pasYelp_ = 0.001f;
     double posWail_ = 0, posYelp_ = 0;
+    // WFS-174 : boucles de la route (≈ 2,5 s à 48 kHz, ≤ 0,5 Mo : RG-09) et leur état (thread audio seulement)
+    std::vector<float> ventGrave_, ventAigu_, roulementB_, impulsionBord_, herbeB_, eauB_;
+    std::atomic<float> cVent_{0}, cOuverture_{0}, cRoulement_{0}, cBord_{0}, cHerbe_{0}, cEau_{0}, cCadence_{15};
+    float gVent_ = 0, gOuverture_ = 0, gRoulement_ = 0, gBord_ = 0, gHerbe_ = 0, gEau_ = 0, gCadence_ = 15, kRoute_ = 0.001f, rate_ = 48000;
+    float phaseBattement_ = 0, phaseBord_ = 0;
+    size_t posVentG_ = 0, posVentA_ = 0, posRoulement_ = 0, posImpulsion_ = (size_t)-1, posHerbe_ = 0, posEau_ = 0;
     std::atomic<bool> pret_{false};
 };
 
@@ -74,6 +85,7 @@ private:
     int count_ = -1, level_ = 0, accidents_ = 0, near_ = 0, bumps_ = 0, scrapes_ = 0, state_ = 0;
     int chrono_ = 0, combo_ = 0;   // WFS-124 : valeur entière affichée du chrono, combo au pas précédent
     bool crisse_ = false, nitro_ = false;
+    bool route_ = false; double journalRoute_ = 0;   // WFS-174 : sons de la route en cours, dernière ligne de journal
 };
 
 } // namespace wfs

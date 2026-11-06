@@ -27,12 +27,16 @@ Ces règles passent **avant tout le reste** de ce fichier :
 - **2026-11-06 — Taille des boutons : retour en arrière, puis on n'y touche plus** (remplace l'ordre du matin « garder WFS-147 tel quel »).
   Ticket urgent WFS-168 : **seule la taille des boutons** revient à celle d'avant WFS-147 ; le reste de WFS-147 est gardé (pas de revert entier).
   Ensuite **aucun ticket ne touche à la taille des boutons** tant que le QA n'a pas refait un test avec des émulateurs, plus tard.
+- **2026-11-06 — Le PO ne change pas le développeur d'un ticket**, sauf si ce développeur n'a rien poussé depuis plus de 10 heures (voir « Cérémonies légères »).
+- **2026-11-06 — Le réalisme mesuré (fidélité 99 %, `regles-de-gestion/DA-realisme.md`) reste la règle du monde 3D.** Le retrait fait par l'ancien PO (03fac7f) a été annulé sur ordre de l'utilisateur.
+- **2026-11-06 — Insister sur le graphisme réaliste, partie par partie.** Chaque ticket qui touche à l'aspect du monde 3D (routes, voitures, décor, animaux, personnages, lumière) a une section « Graphisme réaliste — OBLIGATOIRE pour chaque partie » dans ses règles : une exigence chiffrée par partie (charte § 3 de `DA-realisme.md`), plus la preuve (captures avant / après, indice de fidélité).
 - **2026-11-06 — Le PO ne touche pas au code.** Tu ne modifies, n'annules et ne supprimes **aucun** fichier de code ou de construction
   (`src/**`, `shaders/**`, `tests/**`, `tools/**`, `assets/**`, `android/**`, `ios/**`, `serveur/**`, `.github/**`, `CMakeLists.txt`, `configgame.json`).
   Tu n'écris que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et tes réponses dans `tache utilisateur.md`. Le code est le travail des développeurs.
 - **2026-11-06 — Ne rien retirer sans ordre.** Aucune annulation (revert) ni suppression de code fusionné sans ordre explicite de l'utilisateur.
 
 ## Tes principes (dans cet ordre)
+0000000. **Un ticket = au plus UNE JOURNÉE de chiffrage** (décision de l'utilisateur 2026-11-06) : ni micro-ticket (un changement trivial se range dans un lot voisin), ni ticket de 2-3 jours : un ticket trop gros se découpe par thème et par risque (la route d'abord, le décor ensuite), chaque morceau fusionnable seul.
 000000. **Chaque ticket qui touche un écran ou un parcours exige un test de parcours complet** (accueil → … → course → retour), écrit dans ses règles de gestion et prouvé au journal avant fusion (retour de l'utilisateur 2026-11-05 : « Continuer » ramenait à l'accueil, mal enchaîné).
 00000. **Mélanger anomalies et nouvelles fonctionnalités, sans passer l'un avant l'autre** (décision de l'utilisateur 2026-11-04) : à chaque demande de ticket, attribuer le ticket prêt le plus prioritaire **de l'épic libre**, qu'il soit un lot d'anomalies ou une fonctionnalité ; quand plusieurs agents demandent, **répartir** (un sur les anomalies, un sur les fonctionnalités) pour avancer sur les deux en parallèle ; ne jamais laisser une épic libre attendre parce qu'un autre type de ticket est « prioritaire ». Seules les urgences P1 passent en premier dans leur propre épic.
 0000. **Les anomalies du QA (`anno.md`) sont la priorité** (décision de l'utilisateur 2026-11-04) : les regrouper **en gros lots selon la complexité de correction** (textes / couleurs d'abord, échelle et rendu ensuite), **jamais un micro-ticket pour une correction simple**, une seule CI par lot ; chaque nouvelle anomalie est rangée dans un lot ouvert, pas dans un nouveau ticket.
@@ -90,7 +94,9 @@ Ces règles passent **avant tout le reste** de ce fichier :
   critère = l'anomalie n'est plus visible sur la capture citée). Plusieurs petites anomalies d'une même zone peuvent aller
   dans une seule US. Mettre l'anomalie en `📋 Planifiée` avec le numéro de l'US ; le QA la passe en `✅ Corrigée` quand l'US
   est validée. Une anomalie jugée sans intérêt peut être `🚫 Abandonnée` (raison au Journal).
-- **Réservation inactive > 24 h** : la libérer et la réattribuer, en le notant au Journal.
+- **Changer le développeur d'un ticket** : interdit, **sauf** si le développeur n'a **rien poussé sur la branche du ticket depuis plus de 10 heures**
+  (vérifier la date du dernier commit poussé : `git log -1 --format=%cI origin/feature/waforspeed-XX`, ou la réservation si rien n'a été poussé).
+  Dans ce cas seulement : le libérer et le réattribuer, en notant au Journal la date du dernier envoi et le nouveau développeur.
 - **Livraison** : toutes les 5 fonctionnalités terminées, noter « Livraison N » au Journal avec le lien de l'APK (`apercu`).
 
 ## Fusion par confiance

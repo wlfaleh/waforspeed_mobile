@@ -11,6 +11,7 @@
 #include "../src/audio/sfx_course.h"  // WFS-124
 #include "../src/audio/trafic_sons.h"  // WFS-121
 #include "../src/audio/garage_son.h"  // WFS-127
+#include "../src/audio/route_sons.h"  // WFS-174
 #include "../src/audio/sirene_son.h"  // WFS-131
 #include <cstring>
 #include "../src/game/player.h"
@@ -355,5 +356,44 @@ int main(int argc, char** argv) {
             cas("journal : une ligne par seconde au plus (2 s → ≤ 3 lignes)", lignes >= 1 && lignes <= 3);
         }
     }
-    return ok && okSfx && okEff && okTrafic && okCourse && okGarage && okSirene ? 0 : 1;
+    // WFS-174 : sons de la route (RG-01 à RG-08)
+    bool okRoute = true;
+    {
+        using namespace route;
+        auto cas = [&](const char* quoi, bool c) { std::printf("route : %-62s → %s\n", quoi, c ? "OK" : "ÉCHEC"); okRoute = okRoute && c; };
+        auto en = [](float kmh, float x = 0, bool pluie = false, bool nitro = false, bool course = true) {
+            Entree e; e.kmh = kmh; e.kmhMax = 250; e.playerX = x; e.edge = 1.6f; e.pluie = pluie; e.nitro = nitro; e.enCourse = course; return e;
+        };
+        cas("vent nul sous 40 km/h (0, 20, 40)", cibles(en(0)).vent == 0 && cibles(en(20)).vent == 0 && cibles(en(40)).vent == 0);
+        cas("vent 0,30 à la vitesse de pointe (avant le plafond de RG-08)", std::abs(ciblesBrutes(en(250)).vent - VENT_MAX) < 1e-5f);
+        cas("à la pointe sur route sèche : 0,30 + 0,18 ramenés à 0,45 ensemble", std::abs(cibles(en(250)).somme() - SOMME_MAX) < 1e-5f && std::abs(cibles(en(250)).vent / cibles(en(250)).roulement - VENT_MAX / ROULEMENT_MAX) < 1e-4f);
+        cas("vent qui croît avec le carré de la vitesse (100 < 150 < 200)", ciblesBrutes(en(100)).vent < ciblesBrutes(en(150)).vent && ciblesBrutes(en(150)).vent < ciblesBrutes(en(200)).vent
+            && ciblesBrutes(en(150)).vent - ciblesBrutes(en(100)).vent < ciblesBrutes(en(200)).vent - ciblesBrutes(en(150)).vent);
+        cas("nitro : vent + 20 %", std::abs(ciblesBrutes(en(200, 0, false, true)).vent - ciblesBrutes(en(200)).vent * VENT_NITRO) < 1e-5f);
+        cas("filtre du vent : fermé à 50 km/h, ouvert à la pointe", cibles(en(50)).ouverture == 0 && cibles(en(250)).ouverture == 1);
+        cas("roulement nul à l'arrêt, 0,18 à la pointe (avant le plafond)", cibles(en(0)).roulement == 0 && std::abs(ciblesBrutes(en(250)).roulement - ROULEMENT_MAX) < 1e-5f);
+        const Cibles b = cibles(en(120, 1.6f)), b2 = cibles(en(120, -1.7f)), h = cibles(en(120, 1.2f)), h2 = cibles(en(120, -1.01f));
+        cas("bord à |x| ≥ edge (1,6 et −1,7) : bande rugueuse, plus de roulement", b.bord > 0 && b.roulement == 0 && b2.bord > 0 && b.surface == Surface::Bord);
+        cas("bord : cadence de 15 à 60 Hz selon la vitesse", cibles(en(0.1f, 1.6f)).cadenceBord < 16 && std::abs(cibles(en(250, 1.6f)).cadenceBord - BORD_HZ_MAX) < 1e-3f);
+        cas("bord à l'arrêt : pas de bande rugueuse", cibles(en(1, 1.6f)).bord == 0);
+        cas("hors route à |x| > 1 (1,2 et −1,01) : herbe / gravier, plus de roulement", h.herbe > 0 && h.roulement == 0 && h2.herbe > 0 && h.surface == Surface::HorsRoute);
+        cas("sur la route (|x| = 1) : roulement, ni bord ni herbe", cibles(en(120, 1.0f)).roulement > 0 && cibles(en(120, 1.0f)).herbe == 0 && cibles(en(120, 1.0f)).bord == 0);
+        cas("eau seulement sous la pluie (0,20 à la pointe)", cibles(en(250)).eau == 0 && cibles(en(250, 0, true)).eau > 0 && cibles(en(0, 0, true)).eau == 0);
+        const Cibles off = cibles(en(200, 1.2f, true, true, false));
+        cas("silence hors course (pause, menus, garage, fin)", off.somme() == 0);
+        float pire = 0;
+        for (float kmh : {60.f, 150.f, 250.f, 320.f}) for (float x : {0.f, 1.2f, 1.6f}) for (bool p : {false, true}) for (bool n : {false, true})
+            pire = std::max(pire, cibles(en(kmh, x, p, n)).somme());
+        cas("somme des sons de la route ≤ 0,45 (vitesse, nitro, bord, herbe, pluie)", pire <= SOMME_MAX + 1e-5f);
+        // RG-08 : crête du mélange de la route seule (boucles de sfx.cpp, crête 1) au pire cas, battement de +15 % compris
+        cas("crête des sons de la route < 1,0 (≤ 0,45 × 1,15 sur des boucles de crête 1)", SOMME_MAX * (1 + BATTEMENT) < 1.0f);
+        cas("lissage : 95 % de la cible en 0,15 s", [] { float g = 0; const float k = lissage(48000); for (int i = 0; i < (int)(0.15f * 48000); i++) g += (1 - g) * k; return g > 0.94f && g < 0.96f; }());
+        using namespace sfx; const float R = 48000;
+        std::vector<float> vg = boucle(R, 0.62f, VENT_GRAVE_HZ, 0.5f, 1), ro = boucle(R, 0.41f, 140, 0.8f, 1, 90, 0.9f), ea = boucle(R, 0.37f, 4500, 0.7f, 1);
+        verifie("route-vent", vg, true); verifie("route-roulement", ro, true); verifie("route-eau", ea, true);
+        const size_t octets = (size_t)((0.62f + 0.57f + 0.41f + 0.53f + 0.37f + 0.012f) * R) * sizeof(float);
+        std::printf("route : mémoire des boucles %.0f Ko à 48 kHz\n", octets / 1024.0);
+        cas("mémoire des boucles ≤ 0,5 Mo (RG-09)", octets <= 512 * 1024);
+    }
+    return ok && okSfx && okEff && okTrafic && okCourse && okGarage && okSirene && okRoute ? 0 : 1;
 }

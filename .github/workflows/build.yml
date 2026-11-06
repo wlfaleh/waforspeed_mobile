@@ -55,6 +55,7 @@ jobs:
           mkdir -p captures
           case "${{ matrix.groupe }}" in
             partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit|realisme)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09 ; realisme : WFS-148
+              if [ "${{ matrix.groupe }}" = realisme ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi   # WFS-149 : KTX2 d'essai, rapport PSNR
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/
               # WFS-136 (accroche) : tracé 2 forcé sur les 4 cartes (rond-point, feu rouge, épingle, autoroute) ; un écart = rouge
               if [ "${{ matrix.groupe }}" = vitrines ]; then mkdir -p trace && WFS_BANC=trace ./build/wfs_bench trace assets/ && cp trace/trace-*.png captures/; fi ;;
@@ -72,6 +73,7 @@ jobs:
               mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
               for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
+              for f in hud/minicarte-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-173 : minicarte-checkpoint-2400, minicarte-ligne-2400
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
             menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
               mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
@@ -80,7 +82,7 @@ jobs:
               mkdir -p parcours && WFS_BANC=parcours ./build/wfs_bench parcours assets/ && cp parcours/parcours-fin.png parcours/parcours-retour-menu.png captures/ ;;
             menu2-2400)   # WFS-106 : 2e moitié du groupe menu en 2400x1080 (réglages, salon du duel)
               mkdir -p menu && WFS_BANC=menu2 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/
-              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83
+              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png menu/duel-resultat-4.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83 ; WFS-122 (accroche) : duel-resultat-4
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4
