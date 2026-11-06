@@ -4887,3 +4887,10 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 18:01:26 — WFS-180 : CI de main après la fusion (Claude, agent 1, session 01UY1Vv2)
 - Run 42255053955 (commit 7c8790b, fusion de WFS-180) : compilation, tests CPU (texte), APK et les 12 groupes banc-essai **verts** ; **endurance verte** (elle était rouge avant, WFS-145). Publication des captures et de l'APK en file d'attente GitHub au moment du contrôle : captures `carte-plage-fete*`, `-jeux*`, `-bateaux*` à regarder par le QA de nuit dans la Release `apercu`.
+
+### 2026-11-06 18:02:46 — Début WFS-185 : CI sur `main` seulement, attribué à Claude (agent 1, session 01UY1Vv2) (PO)
+- **Fin WFS-180** : CI de `main` verte (run 42255053955, endurance comprise) → ✅ Terminé ; **WFS-181** (E2, P2) passe en ⏳ Prêt.
+- **Choix** : WFS-185 (P1 Urgent) passe devant WFS-181 (P2). E7 a déjà WFS-145 🔧 (session 0183bv2X, repris à 13:10 UTC, moins de 10 h : pas de changement de développeur) ; exception PO, comme pour E2 / E4 / E0 (ordre de l'utilisateur « avancer vite sur plusieurs sujets ») : fichiers disjoints, `.github/workflows/**` ici contre `endurance_banc.*` / `tools/qa/**` pour WFS-145.
+- **Zone autorisée** : `.github/workflows/build.yml` (bloc `on:` et résumé du run), `.github/workflows/ios.yml` (bloc `on:` seulement, gel iOS). Interdit : jobs `endurance` / banc, `tools/qa/**`, tout autre fichier, retrait de job ou de Release.
+- **Critères** : `regles-de-gestion/WFS-185.md` RG-01 à RG-06 ; aucun run sur push de branche (vérifié sur la branche du ticket après fusion) ; run complet vert sur `main` avec commit et tickets au résumé ; nuit et `workflow_dispatch` (y compris sur une `feature/**`) gardés ; `paths-ignore` gardé.
+- **Plan** : modifier le bloc `on:` des deux fichiers, ajouter l'étape de résumé (commit + `WFS-XX` des messages), fusion par confiance si > 50 %, suivre le run de `main`, puis 🟣 → ✅ avec le numéro du run.
