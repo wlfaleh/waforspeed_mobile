@@ -3811,3 +3811,11 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 - **`design-street-racing`** : ne s'applique plus qu'à l'interface (menus, HUD, garage, écrans) ; le monde 3D n'est plus concerné.
 - **WFS-137 à WFS-140, RG-C4** : animaux en modèles 3D réalistes sous licence libre, à la place des volumes simples.
 - **Non modifié** : l'historique (journal, tickets terminés, rapports QA, anomalies) et les commentaires du code, qui ne sont pas du ressort du PO.
+
+### 2026-11-06 01:10:42 — Agent `expert-realisme-3d` créé, sur demande de l'utilisateur (po-scrum-master)
+- **Fichier** : `.claude/agents/expert-realisme-3d.md` (AGENT IA — 3D REALISM EXPERT).
+- **Contenu** : le texte de l'utilisateur, repris tel quel (identité, objectif, domaines, méthode, exigence de réalisme, animation, optimisation, règle fondamentale). Le PO a seulement ajouté la liste des documents du projet à lire.
+- **Points à trancher par l'utilisateur, signalés sans rien changer** :
+  - « intégration Unity / Unreal » alors que `CLAUDE.md` interdit les moteurs tiers ;
+  - priorités P0 / P1 / P2 alors que `TACHES.md` utilise P1 à P4 ;
+  - « créer une US » alors que c'est le PO qui crée et attribue les tickets.
