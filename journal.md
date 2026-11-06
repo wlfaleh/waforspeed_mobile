@@ -4698,3 +4698,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **WFS-174 : PASSABLE AVEC ANOMALIES MINEURES** — vent nul à l'arrêt puis monte avec la vitesse, pas d'écrêtage, moteur au-dessus, herbe et eau au journal ; bande rugueuse prouvée seulement par les tests CPU. ANO-96 : boucles de bruit trop courtes (0,37-0,62 s), motif qui peut s'entendre.
 - Pour le PO : `minicarte-ligne` et `course5-rejouer` tirent leur graine sur l'horloge (captures différentes à chaque lancement) → graine fixe au banc.
 - **Recette du 2026-11-06 après-midi terminée** : 10 tickets (WFS-168, 141, 173, 170, 149, 169, 172, 122, 131, 174) ; seul WFS-170 REFUSÉ (ANO-91, ANO-75 → WFS-182, WFS-158).
+
+### 2026-11-06 14:45:28 — Priorisation des mineures du lot D (son) (PO)
+- **ANO-95, ANO-96 → WFS-184** (nouvelle US E6, P3 Moyenne, ⏳ Prêt, `regles-de-gestion/WFS-184.md`) : aucun ticket E6 ouvert (WFS-131, WFS-174 ✅). Valeurs fixées : sirène à 0,10 × en 30 ms au départ du jingle puis fondu 0,8 s existant ; jingles × 3, crête < 0,95, ≥ +6 dB sur la sirène ; « ARRÊTÉ » 660 / 440 Hz. Route : départ de lecture au hasard à chaque tour + fondu 15 ms (pas de boucles de 2 s × 5, qui dépasseraient 0,5 Mo en flottants à 48 kHz), autocorrélation < 0,20, ≤ 0,5 Mo.
+- **Graine fixe au banc** (`minicarte-ligne`, `course5-rejouer`, point du QA) → **WFS-183 RG-04** (E3, déjà Prêt) : graine fixe seulement quand `WFS_BANC` est défini, rien ne change en jeu.
+- `anno.md` : ANO-95, ANO-96 en 📋 Planifiée (WFS-184). Rien d'iOS, aucun code touché.
