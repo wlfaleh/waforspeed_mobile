@@ -357,7 +357,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     };
     double rss2 = 0, rssMax = 0, rssMaxCp = 0;
     int pire = 0, pireCp = 0, ecartsParcours = 0;
-    long vVkAlloc[CYCLES + 1] = {}, vVkTampons[CYCLES + 1] = {}, vVkImages[CYCLES + 1] = {}, vVkPipelines[CYCLES + 1] = {};   // WFS-145 (RG-13)
+    long vVkAlloc[CYCLES + 1] = {}, vVkTampons[CYCLES + 1] = {}, vVkImages[CYCLES + 1] = {}, vVkPipelines[CYCLES + 1] = {}, vVkJeux[CYCLES + 1] = {};   // WFS-145 (RG-13, RG-15)
     double vRss[CYCLES + 1] = {}, vTas[CYCLES + 1] = {}, vReserve[CYCLES + 1] = {}, vFich[CYCLES + 1] = {}, vBrut[CYCLES + 1] = {};   // RG-09 : un relevé par cycle
     for (int cy = 1; cy <= CYCLES; cy++) {
         const bool checkpoint = cy <= CYCLES_CHECKPOINT;
@@ -367,7 +367,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
         // elle-même (comme « Rouler », sans shutdown ni init), retour au menu, chargements terminés, puis relevé
         g.setAutopilot(false);
         const Releve rel = releverReference(cy);
-        vVkAlloc[cy] = rel.vkMem; vVkTampons[cy] = rel.tampons; vVkImages[cy] = rel.images; vVkPipelines[cy] = rel.pipelines;
+        vVkAlloc[cy] = rel.vkMem; vVkTampons[cy] = rel.tampons; vVkImages[cy] = rel.images; vVkPipelines[cy] = rel.pipelines; vVkJeux[cy] = rel.jeux;
         if (!checkpoint) { d.carte = carte; d.nuit = false; pas(1); g.allerA(Ecran::Menu); pas(30); vider(); }   // terrain du moment rendu (scénario inchangé)
         journalReleve(cy, rel);
         vRss[cy] = rel.rss; vTas[cy] = rel.tas; vReserve[cy] = rel.tasReserve; vFich[cy] = rel.fich; vBrut[cy] = rel.rssBrut;
@@ -480,23 +480,24 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     // Course à 5 / la Poursuite) : code 6. Critère 2 (CPU) : pente du tas utilisé (minimum de 8 relevés) des cycles 2 à 9
     // > +15 Mo/cycle → code 3 ; des cycles 2 à 10 → code 6. RSS, médianes, maximum, ancienne croissance : information.
     // Limite connue (RG-13, RG-14) : une fuite CPU lente (< 15 Mo/cycle) n'est pas détectée par le banc PC.
-    long* const compteurs[4] = {vVkAlloc, vVkTampons, vVkImages, vVkPipelines};
-    const char* const nomsVk[4] = {"allocations", "tampons", "images", "pipelines"};
+    // RG-15 : les jeux de descripteurs vivants entrent au critère 1
+    long* const compteurs[5] = {vVkAlloc, vVkTampons, vVkImages, vVkPipelines, vVkJeux};
+    const char* const nomsVk[5] = {"allocations", "tampons", "images", "pipelines", "jeux de descripteurs"};
     auto depasseVk = [&](int de, int a, std::string& quoi) {
-        for (int k = 0; k < 4; k++) for (int c = de; c <= a; c++)
+        for (int k = 0; k < 5; k++) for (int c = de; c <= a; c++)
             if (compteurs[k][c] > compteurs[k][2] + 2) { quoi = std::string(nomsVk[k]) + " " + std::to_string(compteurs[k][c]) + " au cycle " + std::to_string(c) + " (cycle 2 : " + std::to_string(compteurs[k][2]) + ")"; return true; }
         return false;
     };
     const double penteCp = pente(vTas, 2, CYCLES_CHECKPOINT + 1), penteTout = pente(vTas, 2, CYCLES);
     std::string vkCp, vkC5;
     const bool fuiteVkCp = depasseVk(3, CYCLES_CHECKPOINT + 1, vkCp);
-    vVkAlloc[0] = relFin.vkMem; vVkTampons[0] = relFin.tampons; vVkImages[0] = relFin.images; vVkPipelines[0] = relFin.pipelines;   // case 0 : relevé de fin
+    vVkAlloc[0] = relFin.vkMem; vVkTampons[0] = relFin.tampons; vVkImages[0] = relFin.images; vVkPipelines[0] = relFin.pipelines; vVkJeux[0] = relFin.jeux;   // case 0 : relevé de fin
     const bool fuiteVkC5 = depasseVk(CYCLES, CYCLES, vkC5) || depasseVk(0, 0, vkC5);
     std::string minis;
     for (int c = 2; c <= CYCLES; c++) { char b[32]; std::snprintf(b, sizeof b, "%s%.1f", c > 2 ? " / " : "", vTas[c]); minis += b; }
     WFS_LOG("endurance : verdict mémoire (RG-13, RG-14, scène de référence) : tas utilisé minimum cycles 2 à %d : %s Mo ; pente cycles 2 à %d %+.2f Mo/cycle, "
-            "2 à %d %+.2f Mo/cycle (seuil +15) ; objets Vulkan cycle 2 : %ld allocations, %ld tampons, %ld images, %ld pipelines (marge +2) : %s",
-            CYCLES, minis.c_str(), CYCLES_CHECKPOINT + 1, penteCp, CYCLES, penteTout, vVkAlloc[2], vVkTampons[2], vVkImages[2], vVkPipelines[2],
+            "2 à %d %+.2f Mo/cycle (seuil +15) ; objets Vulkan cycle 2 : %ld allocations, %ld tampons, %ld images, %ld pipelines, %ld jeux de descripteurs (marge +2) : %s",
+            CYCLES, minis.c_str(), CYCLES_CHECKPOINT + 1, penteCp, CYCLES, penteTout, vVkAlloc[2], vVkTampons[2], vVkImages[2], vVkPipelines[2], vVkJeux[2],
             fuiteVkCp ? vkCp.c_str() : fuiteVkC5 ? vkC5.c_str() : "stables");
     g.setAutopilot(false);
     courseBenchRules(false);

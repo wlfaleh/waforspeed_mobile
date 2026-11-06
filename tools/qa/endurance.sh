@@ -6,7 +6,7 @@
 # gardée après la Course à 5 (code 6, sauf ligne memoire-course5-connue) ou erreur de validation absente de
 # tools/qa/validation_connues.txt (une ligne = un identifiant VUID ou un morceau exact du message, # = commentaire).
 # WFS-145 (RG-08, RG-13, RG-14) : mémoire relevée à une scène de référence fixe (ville, jour, départ, Golf) à chaque cycle ;
-# code 3 / 6 si un compteur d'objets Vulkan (allocations, tampons, images, pipelines) dépasse le cycle 2 de plus de 2, ou si
+# code 3 / 6 si un compteur d'objets Vulkan (allocations, tampons, images, pipelines, jeux de descripteurs : RG-15) dépasse le cycle 2 de plus de 2, ou si
 # la pente du tas utilisé (minimum de 8 relevés espacés de 30 images) dépasse +15 Mo/cycle.
 # Limites connues (acceptées par le PO) : une fuite CPU lente (< 15 Mo/cycle) n'est pas détectée par le banc PC ; sous
 # lavapipe (pilote logiciel, mémoire « GPU » prise dans le tas du processus), le tas varie de 40 à 100 Mo d'un relevé à
