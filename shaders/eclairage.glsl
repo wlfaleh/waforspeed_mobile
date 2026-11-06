@@ -70,7 +70,7 @@ vec4 haloLumiere() {
     // dégradé radial 1 → 0,45 (35 % du rayon) → 0 ; couleur × intensité portée par la normale du sommet
     float r = length(vUv * 2.0 - 1.0);
     float k = r < 0.35 ? mix(1.0, 0.45, r / 0.35) : mix(0.45, 0.0, clamp((r - 0.35) / 0.65, 0.0, 1.0));
-    return vec4(max(vNrm, vec3(0.0)) * k * (1.0 - fogAt(vWorld)), 1.0);
+    return vec4(max(vNrm, vec3(0.0)) * k * (1.0 - fogAt(vWorld)) * F.iblB.w, 1.0);   // WFS-151 (RG-06) : suit l'exposition
 }
 
 // WFS-149 (RG-04) : carte de normales dans le repère tangent des sommets (MikkTSpace, src/render/mesh.h), drapeau
@@ -79,4 +79,32 @@ vec3 perturbTangente(vec3 N, vec4 t, vec3 tn) {
     vec3 T = normalize(t.xyz - N * dot(N, t.xyz));
     vec3 B = cross(N, T) * (t.w < 0.0 ? -1.0 : 1.0);
     return normalize(mat3(T, B, N) * tn);
+}
+
+// ---------------------------------------------------------------- WFS-151 : éclairage d'image (IBL, RG-03 et RG-04)
+// irradiance de la sonde : harmoniques sphériques d'ordre 2 (Ramamoorthi et Hanrahan 2001), coefficients déjà convolués
+// par le cosinus, divisés par π et pré-exposés sur le CPU (eclairage_physique.cpp) : albédo × iblDiffus(N) = diffus
+vec3 iblDiffus(vec3 n) {
+    float x = n.x, y = n.y, z = n.z;
+    vec3 r = F.iblSH[0].rgb * 0.282095
+           + F.iblSH[1].rgb * (0.488603 * y) + F.iblSH[2].rgb * (0.488603 * z) + F.iblSH[3].rgb * (0.488603 * x)
+           + F.iblSH[4].rgb * (1.092548 * x * y) + F.iblSH[5].rgb * (1.092548 * y * z) + F.iblSH[6].rgb * (0.315392 * (3.0 * z * z - 1.0))
+           + F.iblSH[7].rgb * (1.092548 * x * z) + F.iblSH[8].rgb * (0.546274 * (x * x - y * y));
+    return max(r, vec3(0.0));
+}
+// capture d'environnement en cours (WFS-150 : passe miroir sans plan de coupe) : rendue sans ambiance IBL (une réflexion)
+bool captureSonde() { return F.nuitA.w > 0.5 && F.nuitB.x < -1e29; }
+// RG-04 : en mode physique, ambiance (skyAmb) et reflets (env × Fe) viennent de la sonde : cube préfiltré GGX lu au niveau
+// de la rugosité, Fresnel intégré par la table BRDF du split-sum (Karis 2013). Plus de facteur d'ambiance ni d'occlusion
+// spéculaire arbitraires ; le plafond du Fresnel de la chaussée (WFS-142, RG-04 : jamais de route miroir) est gardé.
+void iblRemplacer(inout vec3 skyAmb, inout vec3 env, inout vec3 Fe, inout float specOcc, vec3 N, vec3 R, float NoV, float rough,
+                  vec3 f0, uint flags, float flaque) {
+    if (F.iblA.x < 0.5) return;
+    skyAmb = captureSonde() ? vec3(0.0) : iblDiffus(N);
+    env = iblPrefiltre(R, clamp(rough, 0.0, 1.0));
+    vec2 ab = texture(iblBrdf, vec2(clamp(NoV, 0.0, 1.0), clamp(rough, 0.0, 1.0))).rg;
+    Fe = f0 * ab.x + ab.y;
+    if ((flags & F_ROAD) != 0u) Fe = min(Fe, vec3(mix(0.25, 0.4, flaque)));
+    if ((flags & F_VTINT) != 0u) Fe = vec3(0.0);
+    specOcc = 1.0;
 }

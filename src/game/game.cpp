@@ -8,6 +8,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"   // nowSeconds (WFS-74)
 #include "../render/model_loader.h"
+#include "../render/eclairage_physique.h"   // WFS-151 (accroche E13)
 #include "course_system.h"   // WFS-12 : ralenti après un accident
 #include "camera_vue.h"      // WFS-66 : vues poursuite, capot, cockpit
 #include "commandes_tactiles.h"   // WFS-98 : pédales et nitro du jeu web
@@ -295,6 +296,7 @@ void Game::render(double time) {
     view_.sceneDediee = dediee;
     if (dediee) { eye = fp.camPos; look = sd.cible; }
     fp.ombresContact = !dediee;   // WFS-134 (RG-05) : ombre de contact sous chaque voiture en course (pas au garage)
+    eclairage::physique(fp, dediee, view_);   // WFS-151 (accroche E13) : unités physiques, exposition, sondes IBL
     if (!r_->beginFrame(fp)) return;
 
     const mat4 I = mat4::identity();

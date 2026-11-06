@@ -27,12 +27,21 @@ layout(set = 0, binding = 0) uniform Frame {
                       // w 1 = passe de reflet (vue miroir : faces inversées, rien sous le plan)
     vec4 nuitB;       // x hauteur du plan de reflet (m), y 1 / largeur, z 1 / hauteur de la scène (pixels),
                       // w force du reflet de la route mouillée (WFS-142, configgame ; −1 = aucun reflet, mesure du banc)
+    // WFS-151 (accroche E13) : SH9 d'irradiance / π pré-exposées ; iblA x actif, y poids de la sonde B, z/w niveau max A/B ;
+    vec4 iblSH[9]; vec4 iblA; vec4 iblB; vec4 cielP;   // iblB x k, y/z k / échelle A/B, w lumières artistiques ; cielP : eclairage_ciel.glsl
 } F;
 layout(set = 0, binding = 1) uniform sampler2DShadow shadowMap;
 layout(set = 0, binding = 2) uniform sampler2D reflTex;   // WFS-16 : reflet de la scène sur la chaussée mouillée
+layout(set = 0, binding = 3) uniform samplerCube iblCubeA;   // WFS-151 : sondes préfiltrées GGX (A ancienne, B récente)
+layout(set = 0, binding = 4) uniform samplerCube iblCubeB;
+layout(set = 0, binding = 5) uniform sampler2D iblBrdf;      // WFS-151 : table BRDF du split-sum (NoV, rugosité)
+vec3 iblPrefiltre(vec3 d, float r) {   // WFS-151 : luminance pré-exposée de l'environnement, rugosité r
+    return mix(textureLod(iblCubeA, d, r * F.iblA.z).rgb * F.iblB.y, textureLod(iblCubeB, d, r * F.iblA.w).rgb * F.iblB.z, F.iblA.y);
+}
 
 // ciel analytique : sert à la fois pour le fond et pour les reflets (voitures, vitres)
 vec3 skyColor(vec3 d, float sunK) {
+    if (F.iblA.x > 0.5) return iblPrefiltre(d, 0.0);   // WFS-151 (RG-04) : reflets de l'environnement réel (sonde)
     float h = clamp(d.y, -1.0, 1.0);
     vec3 col = mix(F.skyHorizon.rgb, F.skyTop.rgb, pow(clamp(h, 0.0, 1.0), 0.45));
     col = mix(col, F.groundCol.rgb * 0.6, smoothstep(0.0, -0.25, h));      // sous l'horizon : sol

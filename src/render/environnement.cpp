@@ -102,7 +102,7 @@ void creerFixes(Renderer& r) {
     si.magFilter = si.minFilter = VK_FILTER_LINEAR; si.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
     si.addressModeU = si.addressModeV = si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     VK_OK(vkCreateSampler(d, &si, nullptr, &g.smp));
-    VkDescriptorPoolSize tailles[2] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, IMAGES}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * IMAGES}};
+    VkDescriptorPoolSize tailles[2] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, IMAGES}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 5 * IMAGES}}   /* WFS-151 : + sondes IBL et table BRDF */;
     VkDescriptorPoolCreateInfo pi{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pi.maxSets = IMAGES; pi.poolSizeCount = 2; pi.pPoolSizes = tailles;
     VK_OK(vkCreateDescriptorPool(d, &pi, nullptr, &g.pool));
@@ -174,12 +174,12 @@ public:
             VkDescriptorBufferInfo bi{g.ubo[k].buf, 0, sizeof(FrameUBO)};
             VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
             w.dstSet = g.set[k]; w.dstBinding = 0; w.descriptorCount = 1; w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; w.pBufferInfo = &bi;
-            VkCopyDescriptorSet c[2]{};
-            for (uint32_t b = 1; b <= 2; b++) {
+            VkCopyDescriptorSet c[5]{};   // WFS-151 : liaisons 1 à 5 (ombre, reflet, sondes IBL A et B, table BRDF)
+            for (uint32_t b = 1; b <= 5; b++) {
                 c[b - 1].sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET; c[b - 1].srcSet = AccesRendu::setImage(r, k); c[b - 1].srcBinding = b;
                 c[b - 1].dstSet = g.set[k]; c[b - 1].dstBinding = b; c[b - 1].descriptorCount = 1;
             }
-            vkUpdateDescriptorSets(AccesRendu::vk(r).device, 1, &w, 2, c);
+            vkUpdateDescriptorSets(AccesRendu::vk(r).device, 1, &w, 5, c);
         }
         VkClearValue cl[2]{}; cl[0].color = {{0, 0, 0, 1}}; cl[1].depthStencil = {0.f, 0};
         VkRenderPassBeginInfo bi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
@@ -232,6 +232,7 @@ void invalider() { g.invalide = true; }
 int capturesFaites() { return g.captures; }
 VkImageView vueCube() { return g.cube; }
 VkSampler echantillonneur() { return g.smp; }
+VkImage image() { return g.img; }   // WFS-151 (accroche E13) : relecture asynchrone des sondes IBL
 
 bool lireFaces(Renderer& r, std::vector<float> faces[6], int& cote) {
     cote = g.cote;

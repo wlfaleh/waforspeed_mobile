@@ -124,6 +124,7 @@ void main() {
     // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
     if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
+    iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     if (wetRoad && F.nuitA.z > 0.5) {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
         // WFS-142 (RG-04) : il ne REMPLACE plus le reflet du ciel (avant : env = reflet, l'image nette de la rue sur toute la
@@ -157,7 +158,7 @@ void main() {
     if ((flags & F_GLASS) != 0u) {
         vitre(col, alpha, albedo, skyAmb, R, sun, NoV, NoH, NoL);
     }
-    col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0));   // WFS-134 : émission × texture
+    col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
     // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
     if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 
