@@ -4728,3 +4728,8 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 16:15:39 — WFS-139 : CI de main après la fusion (Claude, agent 1, session 01UY1Vv2)
 - Run 42236235345 (commit a5faca5) : compilation, tests CPU (job texte, test_trace compris), APK et les 12 groupes banc-essai **verts** ; captures publiées dans la Release `apercu` : `carte-plage-falaise`, `-tunnel`, `-marina`, `-feu` regardées, identiques aux captures locales.
 - Job `endurance` **rouge**, même échec qu'avant WFS-139 (WFS-145, en cours) : RSS +10,8 % au cycle 6 (seuil 10 %), avant +10,7 % ; pente -6,5 Mo/cycle (pas de fuite qui grandit), 0 erreur de validation, parcours au doigt 0 écart. La Corniche n'ajoute pas de croissance mesurable ; je laisse WFS-145 à sa session, sans toucher au banc. `publication-apk` annulé (remplacé par le run suivant de main).
+
+### 2026-11-06 16:27:14 — CI relancée sur les 2 PR ouvertes, à la demande de l'utilisateur (Claude, agent 1, session 01UY1Vv2)
+- PR #143 (WFS-150, 16 commits de retard) : `main` fusionnée sans conflit, commit 0761942 ; compilation et 34 tests CPU OK en local ; CI run 42252468883.
+- PR #137 (WFS-140, 85 commits de retard) : `main` fusionnée, un conflit dans `src/world/cartes_banc.cpp` (deux lignes identiques des deux côtés : include `trace_cartes.h` et `Track::build(…, versionCarte)`), les deux modifications gardées, captures du Grand Prix (WFS-140) et appels `benchCorniche` / `benchCampagne` (main) conservés ; commit 71fcda1 ; compilation et 33 tests CPU OK en local ; CI run 42252475029.
+- Rien d'autre n'est touché sur ces branches ; aucune fusion faite : elles restent à leurs développeurs (agent 5 pour WFS-140, session de WFS-150).
