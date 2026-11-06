@@ -4724,3 +4724,7 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 15:25:16 — Recommandation R02 : court terme (smart-brainstorming)
 - **Fichier** : `recommandations-smart-brain.md`, R02 (C01 à C07, liste d'essai de 15 min). Constats : CI de `main` rouge (WFS-145 sans commit depuis environ 14 h), WFS-134 et WFS-109 sans commit depuis 17 à 19 h, recouvrement possible de WFS-109 et WFS-182 sur les feux arrière, 3 questions qui attendent l'utilisateur.
 - Propositions seulement : rien n'est transmis au PO ; c'est l'utilisateur qui décide.
+
+### 2026-11-06 16:15:39 — WFS-139 : CI de main après la fusion (Claude, agent 1, session 01UY1Vv2)
+- Run 42236235345 (commit a5faca5) : compilation, tests CPU (job texte, test_trace compris), APK et les 12 groupes banc-essai **verts** ; captures publiées dans la Release `apercu` : `carte-plage-falaise`, `-tunnel`, `-marina`, `-feu` regardées, identiques aux captures locales.
+- Job `endurance` **rouge**, même échec qu'avant WFS-139 (WFS-145, en cours) : RSS +10,8 % au cycle 6 (seuil 10 %), avant +10,7 % ; pente -6,5 Mo/cycle (pas de fuite qui grandit), 0 erreur de validation, parcours au doigt 0 écart. La Corniche n'ajoute pas de croissance mesurable ; je laisse WFS-145 à sa session, sans toucher au banc. `publication-apk` annulé (remplacé par le run suivant de main).
