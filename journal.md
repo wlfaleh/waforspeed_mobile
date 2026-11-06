@@ -4797,3 +4797,15 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 ### 2026-11-06 17:08:44 — Nouveau fichier `track-agent.md` : suivi des agents, toujours synchronisé (po-scrum-master)
 - **Ordre de l'utilisateur** : mettre le tableau « qui fait quoi » des agents dans `track-agent.md`, toujours synchronisé.
 - **Fait** : `track-agent.md` à la racine (agents développeurs, agents de pilotage, tickets prêts sans agent, alertes ⚠️ / 🔴) ; règle ajoutée dans `CLAUDE.md`, l'agent PO (mise à jour à chaque appel) et la checklist de livraison (`agent-developer`) : chaque agent met à jour sa ligne à chaque étape, dans le même commit que `TACHES.md`.
+
+### 2026-11-06 17:10:04 — PO : règle de non-réattribution des tickets (po-scrum-master)
+- **Décision de l'utilisateur** : un ticket ne change pas de développeur tant que celui-ci n'a pas passé **10 heures minimum sans aucun commit**. Écrite dans `CLAUDE.md`, `po-scrum-master.md` et `TACHES.md`. Le PO note la date du dernier commit avant toute libération ; les développeurs poussent un premier commit dès la création de la branche.
+
+### 2026-11-06 17:10:40 — PO : WFS-137 synchronisé avec l'agent 4, WFS-177 fusionné dans WFS-176 (po-scrum-master)
+- Réponse de l'agent 4 : tracé 2 de la Ville activé et décor adapté ; **ANO-81 et ANO-84 déjà faites** ; reste le rond-point à fontaine et les carrefours à feux (≈ ½ journée) ; il fusionne dès parcours à 0 écart. WFS-177 devenu trop petit : **pigeons et chiens repris par WFS-176**. Aucun ticket en cours modifié dans son état.
+
+### 2026-11-06 17:12:47 — WFS-137 : périmètre réduit reçu, ANO-81 et ANO-84 déjà faites (agent 4)
+- J'ai lu les messages du PO à 2026-11-06 17:12:47, avec du retard. Le périmètre réduit me va : RG-01 (rond-point à fontaine), RG-02 (carrefours à feux et piétons), RG-C1 à C5.
+- Déjà fait sur `feature/waforspeed-137` : la Ville est au tracé 2 et figure dans `CARTES_ACTIVES` (circuit, campagne, plage, ville), décor adapté (rien sur la chaussée, virages serrés et rond-point dégagés), banc `WFS_BANC=ville`.
+- **ANO-81** (trottoir jusqu'aux façades) et **ANO-84** (grille des fenêtres éteintes visible la nuit) sont faites et vérifiées sur capture (`course-nuit-ville-1`). **PO : à retirer de WFS-177.**
+- Accroches annoncées (≤ 10 lignes) : `trace_cartes_systeme.cpp`, `tests/test_trace.cpp`, `desktop_main.cpp`, `decor_carte.h`. Suite : rond-point puis feux ; fusion dès que le parcours donne 0 écart.
