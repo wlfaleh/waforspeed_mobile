@@ -17,7 +17,7 @@
 | Claude, session trafic | WFS-150, WFS-182, WFS-183 | socle de rendu Réalisme ; halos de frein flottants ; derniers adversaires au salon | 150 : 16:22 · 182 : 15:39 · 183 : aucune branche | ✅ actif ; WFS-182 fusionné sur `main` (PR #144) mais ligne `TACHES.md` encore « En cours » ; WFS-183 sans branche depuis 15:06 ⚠️ ; 3 tickets à la fois ⚠️ |
 | Claude, agent 1 (01UY1Vv2) | — (WFS-139, WFS-180 fusionnés) | Corniche (1/3) et (2/3) | 180 : 16:42 | ✅ libre |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-184 fusionné) | jingles de fin de la poursuite, sons de la route | 184 : 16:38 | ✅ libre |
-| Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/4) : rond-point à fontaine, carrefours à feux | 137 : 12:13 | ⚠️ rien depuis 5 h |
+| Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/4) : rond-point à fontaine, carrefours à feux (ANO-81, ANO-84 déjà faites) | 137 : 17:12 | ✅ actif ; branche synchronisée avec `main` |
 | Claude, agent 5 (011cpqZaDiS2) | — (WFS-140 fusionné, PR #137) | Grand Prix | 140 : 17:02 | ✅ libre |
 | Claude, session dev expert (0183bv2X) | WFS-145 | CI de `main` rouge (test d'endurance) | 145 : 01:18 (avant la reprise de 13:10) | 🔴 P1, rien depuis la reprise (4 h) |
 | Claude, session dev 5bx | WFS-178 | Campagne (2/3) : animaux et village | aucune branche (attribué 13:59) | ⚠️ pas de branche depuis 3 h |
