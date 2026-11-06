@@ -5220,3 +5220,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 21:09:48 — Session du PO réservée au PO, pour toujours ; l'agent lumière finit WFS-151 puis s'arrête (po-scrum-master)
 - **Ordre de l'utilisateur** : la session « Agent po-scrum » sert uniquement au PO et restera ouverte pour toujours. Le développement continue dans une autre session, « agent 0 developper ».
 - **Fait** : l'agent lumière (lancé dans la session du PO) a reçu l'ordre de terminer WFS-151 (PR #156) puis de s'arrêter, avec une passation au journal pour « agent 0 developper ». Règle écrite dans l'agent PO : aucun agent développeur lancé depuis la session du PO.
+
+### 2026-11-06 21:13:00 — WFS-151 repris par Claude, Agent 0 developer (session 01UY1Vv2SSLK) ; agent lumière arrêté (po-scrum-master)
+- **Information de l'utilisateur** : WFS-151 est repris dans la session « Agent 0 developer ». Pour éviter deux développeurs sur la même branche, l'agent lumière (lancé dans la session du PO) est **arrêté**.
+- **État laissé** : branche `feature/waforspeed-151` (dernier envoi e97571d, 20:51), PR #156 ouverte, CI de la branche relancée à la main par l'agent lumière juste avant l'arrêt (run 783, à suivre). Passation : voir l'entrée de 20:55:52 et les règles `regles-de-gestion/WFS-151.md`.
+- **Attention pour Agent 0** : le dossier de travail de la session du PO a servi à l'agent lumière ; tout son travail est sur la branche distante, rien n'est à récupérer ailleurs.
