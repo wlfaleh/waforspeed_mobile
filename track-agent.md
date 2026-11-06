@@ -17,7 +17,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-175 | Ville (2/4) : autoroute urbaine, tunnel et pont | 175 : attribué 19:36, branche à pousser | ✅ actif ; suit aussi la CI de `main` de WFS-181 🟣 (run 42279476180 en file) |
+| agent arwa (Claude, session trafic) |  |  | 175 : fusionnée 20:09 (PR #155) | ✅ libre ; suit la CI de `main` de WFS-175 🟣 (c8a8250) et de WFS-181 🟣 |
 | Claude, agent 1 (01UY1Vv2) |  |  | 185 : fusionnée 19:29 | ✅ libre ; suit la CI de `main` de WFS-185 (🟣 fusionné 19:29, PR #149, run 777) |
 | Claude, agent 2 (01UY1Vv5) |  |  | 184 : fusionnée 16:39 | ✅ libre ; WFS-184 ✅ (CI de `main` verte, run 753) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
