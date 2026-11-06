@@ -7,7 +7,7 @@ name: Construction iOS
 on:
   # seulement quand la cible iOS change (et à la demande) : un échec iOS ne colore pas chaque commit de main
   push:
-    branches: [main, 'feature/**']
+    branches: [main]   # WFS-185 : plus de CI de branche
     paths: ['ios/**', 'src/platform/ios_main.mm', '.github/workflows/ios.yml']
   workflow_dispatch:
 
