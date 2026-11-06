@@ -14,6 +14,7 @@ namespace wfs::cockpit {
 namespace {
 
 constexpr float CX = 0.36f;   // centre de la voiture (repère de l'œil)
+constexpr float GRAIN = 12.f;   // répétitions du grain par mètre (motif de 8 cm, cellules de 2,6 mm : grain réel du cuir et du plastique)
 
 vec3 lin(unsigned h) {
     auto l = [](float c) { return std::pow(c, 2.2f); };
@@ -33,8 +34,8 @@ void extruder(Geo& g, const mat4& M, const std::vector<vec2>& profil, float x0, 
         if (l < 1e-5f) continue;
         const vec3 n = normalize(vec3{0, -d.y, d.x});   // profil parcouru du pare-brise vers le conducteur : normale vers le haut / l'œil
         const uint32_t b0 = (uint32_t)g.v.size();
-        ajouterUV(g, M, {x0, a.x, a.y}, n, x0, s); ajouterUV(g, M, {x1, a.x, a.y}, n, x1, s);
-        ajouterUV(g, M, {x1, b.x, b.y}, n, x1, s + l); ajouterUV(g, M, {x0, b.x, b.y}, n, x0, s + l);
+        ajouterUV(g, M, {x0, a.x, a.y}, n, x0 * GRAIN, s * GRAIN); ajouterUV(g, M, {x1, a.x, a.y}, n, x1 * GRAIN, s * GRAIN);
+        ajouterUV(g, M, {x1, b.x, b.y}, n, x1 * GRAIN, (s + l) * GRAIN); ajouterUV(g, M, {x0, b.x, b.y}, n, x0 * GRAIN, (s + l) * GRAIN);
         g.quad(b0, b0 + 1, b0 + 2, b0 + 3);
         s += l;
     }
@@ -89,7 +90,7 @@ void jante(Geo& g, const mat4& M, float R, float r, float meplat, float a0, floa
         for (int j = 0; j <= m; j++) {
             const float w = 2 * PI * j / m;
             const vec3 n3 = nr * std::cos(w) + vec3{0, 0, 1} * std::sin(w);
-            ajouterUV(g, M, vec3{c.x, c.y, 0} + n3 * r, n3, (a - a0) * R * 40.f, (float)j / m * 4.f);
+            ajouterUV(g, M, vec3{c.x, c.y, 0} + n3 * r, n3, (a - a0) * R * GRAIN, (float)j / m * 2 * PI * r * GRAIN);
         }
     }
     for (int k = 0; k < n; k++) for (int j = 0; j < m; j++) {
@@ -138,7 +139,7 @@ std::vector<uint8_t> grainCuir(int N) {
     std::vector<uint8_t> o((size_t)N * N * 4);
     for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) {
         auto H = [&](int i, int j) { return h[(size_t)((j + N) % N) * N + (i + N) % N]; };
-        const float dx = (H(x + 1, y) - H(x - 1, y)) * 2.2f, dy = (H(x, y + 1) - H(x, y - 1)) * 2.2f;
+        const float dx = (H(x + 1, y) - H(x - 1, y)) * 1.2f, dy = (H(x, y + 1) - H(x, y - 1)) * 1.2f;
         const vec3 n = normalize(vec3{-dx, -dy, 1});
         uint8_t* q = &o[((size_t)y * N + x) * 4];
         q[0] = (uint8_t)std::lround((n.x * 0.5f + 0.5f) * 255); q[1] = (uint8_t)std::lround((n.y * 0.5f + 0.5f) * 255);
@@ -149,7 +150,7 @@ std::vector<uint8_t> grainCuir(int N) {
 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -248,7 +249,15 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     mat(M_LAQUE, 0x0a0a0b, 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
     mat(M_BRANCHES, d.branchesCol, d.branchesCol > 0x505050 ? 0.35f : 0.3f, d.branchesCol > 0x505050 ? 1.f : 0.f);
     for (int k = 0; k < 3; k++) mat(M_COUTURE0 + k, d.couture[k] ? d.couture[k] : 0x202020, 0.7f, 0);
-    mat(M_REPERE, d.repereCol ? d.repereCol : 0x202020, 0.4f, 0);
+    // repères et commandes rouges (manettino, démarreur, boutons M, agrafe GTI) : plastique rouge satiné, teinte assombrie de
+    // moitié (la couleur vive de la marque, vue sous le ciel sans toit au-dessus, sortait rose)
+    {
+        const unsigned c = d.repereCol ? d.repereCol : 0x202020;
+        mat(M_REPERE, ((((c >> 16) & 255) / 2) << 16) | ((((c >> 8) & 255) / 2) << 8) | ((c & 255) / 2), 0.7f, 0);
+    }
+    mat(M_MOYEU, 0x1c1c1e, 0.85f, 0);                       // coussin du sac gonflable : plastique moussé (pièce sans uv : pas de grain)
+    // enjoliveurs des aérateurs : chrome satiné (mat.chrome, albédo 0,65-0,70) ; alu brossé sur la 911
+    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, 0.18f, 1.f);
     ecran(M_FOND_COMBINE, d.combineFond, 1.0f);
     ecran(M_FOND_ECRAN, 0x1b2430, 1.0f);
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
@@ -262,15 +271,22 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // l'écran central (z ≈ −0,86), puis la partie basse qui revient vers les genoux
     const float zFace = std::min(d.combinePos.z, d.ecranW > 0 ? d.ecranPos.z : d.combinePos.z) - 0.05f;
     {
-        Geo haut, face;
-        extruder(haut, I, {{Yb, Zb}, {Y + 0.005f, (Zb + Z) * 0.5f}, {Y, Z - 0.02f}, {Y - 0.035f, Z}}, x0, x1);
+        Geo haut, face, creux;
+        // devant le conducteur, la planche descend sous le combiné (creux) : l'écran, posé au-dessus, se voit dans l'ouverture
+        // haute du volant, sous sa visière ; ailleurs, le dessus de planche va du pare-brise à la lèvre
+        const float xa = d.combinePos.x - d.combineW * 0.5f - 0.03f, xb = d.combinePos.x + d.combineW * 0.5f + 0.03f;
+        const float Yc = std::min(Y, d.combinePos.y - d.combineH * 0.5f - 0.012f);
+        const std::vector<vec2> pHaut{{Yb, Zb}, {Y + 0.005f, (Zb + Z) * 0.5f}, {Y, Z - 0.02f}, {Y - 0.035f, Z}};
+        const std::vector<vec2> pCreux{{Yb, Zb}, {Yc, d.combinePos.z - 0.03f}, {Yc, Z - 0.02f}, {Yc - 0.03f, Z}};
+        extruder(haut, I, pHaut, x0, xa); extruder(haut, I, pHaut, xb, x1);
+        extruder(creux, I, pCreux, xa, xb);
         extruder(face, I, {{Y - 0.035f, Z}, {Y - 0.09f, zFace}, {Y - 0.42f, zFace}, {Y - 0.58f, zFace + 0.20f}}, x0, x1);
-        prend(haut, M_PLANCHE_HAUT); prend(face, M_PLANCHE_BAS);
+        prend(haut, M_PLANCHE_HAUT); prend(creux, M_PLANCHE_HAUT); prend(face, M_PLANCHE_BAS);
         // casquette (visière) du combiné : avance de la lèvre vers le conducteur au-dessus de l'écran
         Geo cas;
         const float cw = d.combineW * 0.5f + 0.03f, top = d.combinePos.y + d.combineH * 0.5f + 0.02f;
-        extruder(cas, I, {{Y, Z - 0.04f}, {std::max(Y, top) + 0.012f, d.combinePos.z + 0.04f}, {top, d.combinePos.z + 0.075f},
-                          {top - 0.02f, d.combinePos.z + 0.07f}}, d.combinePos.x - cw, d.combinePos.x + cw);
+        extruder(cas, I, {{Yb, d.combinePos.z - 0.10f}, {top + 0.015f, d.combinePos.z - 0.03f}, {top + 0.012f, d.combinePos.z + 0.07f},
+                          {top - 0.012f, d.combinePos.z + 0.075f}}, d.combinePos.x - cw, d.combinePos.x + cw);
         prend(cas, M_PLANCHE_HAUT);
         // jonc décoratif sur toute la largeur, sous la lèvre (alu brossé, carbone, ou liseré rouge de la Golf)
         Geo jonc;
@@ -284,7 +300,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const float ay = Y - 0.17f, az = zFace + 0.012f;
         for (float x : {x0 + 0.11f, x1 - 0.11f}) aerateur(cadre, lames, translate({x, ay, az}) * rotateX(-0.2f), 0.13f, rond ? 0.09f : 0.055f, rond);
         for (float x : {CX - 0.09f, CX + 0.09f}) aerateur(cadre, lames, translate({x, ay - 0.04f, az + 0.01f}) * rotateX(-0.2f), 0.11f, 0.045f, false);
-        prend(cadre, M_ACCENT); prend(lames, M_LAMES);
+        prend(cadre, M_CHROME); prend(lames, M_LAMES);
     }
     // console centrale et sélecteur
     {
@@ -296,14 +312,21 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     }
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
     {
-        Geo mont, pav, ret;
+        Geo mont, pav, ret, porte;
         const vec3 bas[2] = {{CX - 0.72f, Yb, Zb}, {CX + 0.72f, Yb, Zb}};
         const vec3 haut[2] = {{CX - 0.62f, 0.40f, -0.42f}, {CX + 0.62f, 0.40f, -0.42f}};
         for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
         boite(pav, translate({CX, 0.43f, -0.28f}), 1.40f, 0.04f, 0.32f);
-        boite(ret, translate({CX, 0.33f, -0.48f}) * rotateY(0.18f) * rotateX(-0.12f), 0.26f, 0.065f, 0.03f);
-        boite(ret, translate({CX, 0.38f, -0.47f}), 0.025f, 0.06f, 0.02f);
-        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE);
+        // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
+        boite(ret, translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f), 0.24f, 0.065f, 0.025f);
+        boite(ret, translate({CX - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
+        // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
+        for (float sx : {-1.f, 1.f}) {
+            const float x = CX + sx * 0.80f;
+            boite(porte, translate({x, Y - 0.32f, -0.30f}), 0.06f, 0.62f, 1.30f);
+            boite(porte, translate({x - sx * 0.04f, Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);
+        }
+        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(porte, M_PLANCHE_BAS);
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -324,7 +347,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const float R = d.volantD * 0.5f - d.janteEp * 0.5f, rt = d.janteEp * 0.5f;
         Geo ja, br, co[3], rep, pal, man;
         jante(ja, I, R, rt, d.meplat, 0, 2 * PI, 96, 14);
-        cylindre(ja, rotateX(PI / 2) * translate({0, -0.012f, 0}), 0.072f, 0.078f, 0.05f, 28);   // moyeu (coussin du sac gonflable)
+        Geo mo;
+        cylindre(mo, rotateX(PI / 2) * translate({0, -0.012f, 0}), 0.072f, 0.078f, 0.05f, 28);   // moyeu (coussin du sac gonflable)
         // branches : 3 (à 9 h, 3 h et 6 h) ou 2 (à 9 h et 3 h, SF90 : branches larges qui portent les commandes)
         const float hub = 0.07f;
         std::vector<float> angles = d.branches == 2 ? std::vector<float>{0.f, PI} : std::vector<float>{0.f, PI, -PI / 2};
@@ -352,7 +376,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             cylindre(man, translate({0.085f, -0.055f, 0.012f}) * rotateX(PI / 2), 0.022f, 0.022f, 0.016f, 20);
             if (d.demarreur) cylindre(man, translate({-0.085f, -0.055f, 0.010f}) * rotateX(PI / 2), 0.016f, 0.016f, 0.012f, 20);
         }
-        prend(ja, M_CUIR, true); prend(br, M_BRANCHES, true);
+        prend(ja, M_CUIR, true); prend(mo, M_MOYEU, true); prend(br, M_BRANCHES, true);
         for (int k = 0; k < 3; k++) prend(co[k], M_COUTURE0 + k, true);
         prend(rep, M_REPERE, true); prend(pal, d.carbone ? M_ACCENT : M_BRANCHES, true); prend(man, M_REPERE, true);
     }
