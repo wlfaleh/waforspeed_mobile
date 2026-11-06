@@ -281,6 +281,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-165 | [RÉALISME 4.P2] Personnages : animations en capture de mouvement, mélanges, pieds au sol (IK), regard | E11 | ⏳ En attente |  | WFS-164 validée | `feature/waforspeed-165` |  |  |
 | P2 Haute | WFS-166 | [RÉALISME 4.P3] Personnages : comportements (trajets, feux, groupes, réactions, densité par lieu et heure, spectateurs) | E11 (+ lecture E3) | ⏳ En attente |  | WFS-165 validée | `feature/waforspeed-166` |  |  |
 | P2 Haute | WFS-167 | [RÉALISME 5] Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur | E13 | ⏳ En attente |  | WFS-148 à WFS-166 validées | `feature/waforspeed-167` |  |  |
+| P1 Urgent | WFS-168 | [URGENT] Retour en arrière de la taille des boutons d'avant WFS-147 (seulement la taille des boutons, le reste de WFS-147 gardé) ; ensuite plus personne ne touche à la taille des boutons jusqu'au test du QA avec émulateurs (ordre de l'utilisateur) | E8 (+ E5 `src/ui/**`) | ⏳ Prêt |  | — | `feature/waforspeed-168` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -882,6 +883,10 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-167 — Harmonisation et validation finale par carte : rapport complet ≥ 99 %, recette, confirmation de l'utilisateur** · E13 · P2 Haute · ⏳ En attente · dépend de : WFS-148 à WFS-166 validées (règles : `regles-de-gestion/WFS-167.md` ; charte : `regles-de-gestion/DA-realisme.md`)
 - [ ] critères et mesures de fidélité du fichier de règles ; indice ≥ 99 % dans `realisme-fidelite.txt` (avant / après)
 - [ ] captures `realisme-*` avant / après regardées ; budget de performance tenu ; tests CPU et parcours complet verts
+
+**WFS-168 — [URGENT] Retour en arrière de la taille des boutons (ordre de l'utilisateur)** · E8 (+ E5) · P1 Urgent · ⏳ Prêt (règles : `regles-de-gestion/WFS-168.md`). Zone : `src/ui/ecrans/{reglages,salon,terrain,chargement,menu}.cpp`, seulement les valeurs de taille des boutons. Interdit : revert entier de WFS-147, textes, garage, HUD, commandes tactiles de course, toute autre suppression de code.
+- [ ] boutons, choix et touches à leur taille d'avant WFS-147 (`349f7d0`) sur les captures 1280 et 2400 de ces 5 écrans
+- [ ] le reste de WFS-147 identique (textes, ombre et ciel du terrain, étiquette du garage) ; tests CPU et parcours complet verts
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

@@ -24,9 +24,9 @@ Ces règles passent **avant tout le reste** de ce fichier :
 6. **Avant chaque action**, tu relis `tache utilisateur.md` et la liste « Ordres permanents » : si ton action contredit un ordre, tu ne la fais pas.
 
 ## Ordres permanents de l'utilisateur (à compléter à chaque nouvel ordre, avec la date)
-- **2026-11-06 — Taille des boutons et des textes de l'interface : on n'y touche plus.** L'état actuel de `main` est gardé tel quel
-  (WFS-147 compris, **ne pas l'annuler**). Aucun ticket sur la taille, l'échelle ou la mise en page « petit écran » des boutons et des textes,
-  sauf nouvelle demande écrite de l'utilisateur.
+- **2026-11-06 — Taille des boutons : retour en arrière, puis on n'y touche plus** (remplace l'ordre du matin « garder WFS-147 tel quel »).
+  Ticket urgent WFS-168 : **seule la taille des boutons** revient à celle d'avant WFS-147 ; le reste de WFS-147 est gardé (pas de revert entier).
+  Ensuite **aucun ticket ne touche à la taille des boutons** tant que le QA n'a pas refait un test avec des émulateurs, plus tard.
 - **2026-11-06 — Le PO ne touche pas au code.** Tu ne modifies, n'annules et ne supprimes **aucun** fichier de code ou de construction
   (`src/**`, `shaders/**`, `tests/**`, `tools/**`, `assets/**`, `android/**`, `ios/**`, `serveur/**`, `.github/**`, `CMakeLists.txt`, `configgame.json`).
   Tu n'écris que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et tes réponses dans `tache utilisateur.md`. Le code est le travail des développeurs.

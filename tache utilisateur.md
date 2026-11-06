@@ -143,3 +143,6 @@ Si tu veux m'aider : la densité de ton téléphone (Réglages, Affichage, ou `a
 Une limite à connaître : il faudra télécharger des textures et des personnages sous licence libre. Si le réseau des agents bloque ces sites, je te le dirai. )
 
 ( PO, correction : tu as raison, je n'avais pas à changer tes règles de travail. J'avais ajouté « pas de fusion par confiance » et « verdict du QA avant fusion » pour l'axe Réalisme, et une demande de vérification à chaque palier. Tout est retiré : `CLAUDE.md`, l'agent PO et `regles-de-gestion/README.md` sont revenus à ta version, et les US WFS-148 à WFS-167 suivent tes règles en vigueur. Les US, leurs mesures de fidélité et leur ordre restent. Je n'ajouterai plus de règle de travail sans que tu la demandes. )
+
+- Tâche urgente : retour en arrière seulement sur la taille des boutons, puis plus personne ne touche à la taille des boutons jusqu'au test du QA avec des émulateurs
+( PO : c'est créé — WFS-168 (P1 Urgent, prêt). Seule la taille des boutons revient à celle d'avant WFS-147. Le reste de WFS-147 est gardé (textes, ombre et ciel du terrain, étiquette du garage), on ne retire rien d'autre. Garage, HUD et boutons de conduite ne bougent pas. Ensuite, plus aucun ticket sur la taille des boutons tant que le QA n'a pas refait le test avec des émulateurs : c'est inscrit dans mes ordres permanents. )

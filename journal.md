@@ -3966,3 +3966,9 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 
 ### 2026-11-06 08:02:23 — Ordre permanent : le PO ne touche pas au code (Claude, session 0183bv2a)
 - Ordre de l'utilisateur inscrit dans `.claude/agents/po-scrum-master.md` : le PO ne modifie, n'annule ni ne supprime aucun fichier de code ou de construction ; il n'écrit que `TACHES.md`, `journal.md`, `anno.md`, `regles-de-gestion/**` et ses réponses dans `tache utilisateur.md`.
+
+### 2026-11-06 08:04:45 — WFS-168 créé : retour en arrière de la taille des boutons, sur ordre de l'utilisateur (Claude, session 0183bv2a)
+- **Ordre de l'utilisateur** : tâche urgente pour revenir en arrière **seulement sur la taille des boutons**, puis ne plus toucher à la taille des boutons jusqu'à un nouveau test du QA avec des émulateurs.
+- **Créé** : WFS-168 (E8 + E5, P1 Urgent, ⏳ Prêt), règles `regles-de-gestion/WFS-168.md` : boutons, choix et touches de réglages, salon, terrain, chargement et menu à leur taille d'avant WFS-147 (`349f7d0`) ; le reste de WFS-147 est gardé (textes, ANO-18, ANO-42, ANO-47, `petit_ecran.h`) ; pas de revert entier ; garage, HUD et commandes tactiles de course non touchés.
+- **Ordre permanent du PO mis à jour** (`.claude/agents/po-scrum-master.md`) : il remplace celui du matin (« garder WFS-147 tel quel ») ; après WFS-168, aucun ticket sur la taille des boutons tant que le QA n'a pas refait le test avec des émulateurs.
+- Aucun code modifié par le PO.
