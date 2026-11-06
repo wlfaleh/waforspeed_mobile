@@ -326,6 +326,7 @@ public:
     const Etat& etat() const { return etat_; }
     bool fini() const { return fini_ && overT_ >= 0.9; }
     int policeMobiles() const { int n = 0; for (const Police& p : police_) n += !p.fixe; return n; }
+    int police(double* rd, bool* fixe, int max) const { int n = 0; if (actif_) for (const Police& p : police_) if (n < max) { rd[n] = p.rd; fixe[n++] = p.fixe; } return n; }   // WFS-173
     int policeDerriere(double sJ) const { int n = 0; for (const Police& p : police_) n += !p.fixe && p.rd < sJ && (sJ - p.rd) * M < 40; return n; }
     const std::string& bandeauActuel() const { return ban_; }
     void bancScore(int score) { etat_.score = score; }   // banc (WFS-119) : score remis avant les captures camion / ralentisseur
@@ -566,6 +567,7 @@ PoursuiteSystem* PoursuiteSystem::actif = nullptr;
 WFS_SYSTEM(PoursuiteSystem, 224)   // gameplay (200-299) : après la course (210), le duel (220) et la course à 5 (222)
 
 // WFS-125 : banc d'essai (parcours RG-09)
+int poursuitePolice(double* rd, bool* fixe, int max) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->police(rd, fixe, max) : 0; }   // WFS-173
 bool poursuiteBouton(const std::string& nom, float& x, float& y) {
     const PoursuiteSystem* s = PoursuiteSystem::actif;
     if (!s) return false;

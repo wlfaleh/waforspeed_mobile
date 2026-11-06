@@ -25,6 +25,7 @@ int benchCourse5Rejouer(Game& g, Renderer& r, const std::string& outDir);
 // WFS-125 (RG-09) : banc d'essai : boutons de l'écran de fin (« rejouer », « menu »), record battu, fin forcée
 // (1 = arrêté tout de suite, 2 = saut à 150 m de l'arrivée)
 bool poursuiteBouton(const std::string& nom, float& x, float& y);
+int poursuitePolice(double* rd, bool* fixe, int max);   // WFS-173 (RG-08) : police (distance en unités, barrage), lecture seule
 bool poursuiteNouveauRecord();
 void poursuiteBancFin(int mode);
 void poursuiteBancFixe(bool oui);   // programme et graine fixes (captures stables)
