@@ -319,6 +319,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P4 (conditionnelle) | WFS-194 | Voitures sans marque (4/4) : remplacer les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) | E10 | ⏳ En attente (décision de l'utilisateur : vendre le jeu, pubs ou achats) |  | décision de l'utilisateur, WFS-158 | `feature/waforspeed-194` |  |  |
 | P2 Haute | WFS-195 | [RÉALISME] Vue cockpit réaliste : volant en cuir et cockpit digital propres à chaque modèle (20 voitures), écran central avec la carte du circuit, vrais essuie-glaces (pluie) | E10 (+ E3 `camera_vue.*`) | ⏳ En attente (E10 occupée par WFS-158 ; découpage en 3 tickets d'une journée à l'attribution) |  | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-195` |  |  |
 | P1 Urgent | WFS-196 | [CI] Statuts automatiques : un robot passe les tickets 🟣 en ✅ (numéro du run) dès que la CI de `main` est verte ; run rouge noté au journal (demande de l'utilisateur) | E7 (exception PO : WFS-185 🟣, WFS-190 dans la même épic, fichiers séparés `statuts.yml`, `tools/qa/statuts.py`) | 🟣 Fusionné (PR #160, squash 2d73d36, fusion par confiance, 2026-11-06 21:21 UTC ; ✅ posé par le robot lui-même au 1er run vert) | Claude, agent 2 (01UY1Vv5), 2026-11-06 21:16 UTC | WFS-185 🟣 | `feature/waforspeed-196` | #160 |  |
+| P2 Haute | WFS-197 | [RÉALISME] Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central avec la carte, essuie-glaces, Golf, M4, 911 et SF90 (lot 1 de WFS-195) | E3 `camera_vue.*` (exception PO : nouveaux fichiers E10 `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`, à part des fichiers de WFS-158) | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-06 21:27 UTC | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-197` |  |  |
 
 ## Critères d'acceptation des tickets ouverts
 
@@ -1019,12 +1020,16 @@ Origine : restes de « Fin WFS-32 » (rapport `qa/rapports/WFS-32.md`). Zone : `
 **WFS-194 — Voitures sans marque (4/4) : remplacer les 5 modèles non commerciaux** · E10 · P4 (conditionnelle) · ⏳ En attente (décision de l'utilisateur) (règles : `regles-de-gestion/WFS-194.md`)
 - [ ] 0 modèle NC ou ND dans `cars.h`
 
-**WFS-195 — Vue cockpit réaliste par modèle** · E10 (+ E3 `src/game/camera_vue.*`) · P2 Haute · ⏳ En attente (règles : `regles-de-gestion/WFS-195.md`, demande de l'utilisateur 2026-11-06). Graphisme réaliste obligatoire pour chaque partie.
+**WFS-195 — Vue cockpit réaliste par modèle** · E10 (+ E3 `src/game/camera_vue.*`) · P2 Haute · ⏳ En attente (règles : `regles-de-gestion/WFS-195.md`, demande de l'utilisateur 2026-11-06) ; **découpée** : lot 1 = WFS-197 (en cours), lots 2 et 3 créés après la fusion de WFS-197. Graphisme réaliste obligatoire pour chaque partie.
 - [ ] `cockpit-<modele>-{jour,nuit,carte,pluie,braquage}` pour chaque voiture du lot : volant en cuir, combiné digital et écran central du vrai modèle ; carte du circuit avec la flèche du joueur ; essuie-glaces en marche sous la pluie
 - [ ] mesures de fidélité ≥ 99 %, coût mesuré en Basse, tests CPU et parcours complet verts
 
 **WFS-196 — [CI] Statuts automatiques 🟣 → ✅ après la CI de `main`** · E7 · P1 Urgent · 🟣 Fusionné (PR #160, squash 2d73d36, 2026-11-06 21:21 UTC) — Claude, agent 2 (01UY1Vv5), 2026-11-06 21:16 UTC, branche `feature/waforspeed-196` (règles : `regles-de-gestion/WFS-196.md`)
 - [ ] robot `statuts.yml` : ✅ avec le numéro du run vert, rien sur un run rouge, lignes mal formées listées ; tests `test_statuts.py` verts
+
+**WFS-197 — Vue cockpit réaliste (1/3) : socle, écran carte, essuie-glaces, Golf, M4, 911, SF90** · E3 + exception E10 (fichiers neufs) · P2 Haute · 🔧 En cours — Claude, agent 2 (01UY1Vv5), 2026-11-06 21:27 UTC, branche `feature/waforspeed-197` (règles : `regles-de-gestion/WFS-197.md`). Graphisme réaliste obligatoire pour chaque partie.
+- [ ] `cockpit-{golf,m4,p911,sf90}-{jour,nuit,carte,pluie,braquage}` ; les 16 autres voitures gardent le cockpit actuel
+- [ ] mesures de fidélité ≥ 99 % (ou « non mesurable »), coût en Basse au Journal, tests CPU et parcours complet verts
 
 **Action de l'utilisateur (pas un ticket)** : TestFlight et vraie signature iOS / Play Store : compte Apple Developer et secrets de signature à fournir (procédure : `store/signature.md`).
 

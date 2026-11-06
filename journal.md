@@ -5353,3 +5353,16 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Choix signalés par l'agent 2 pour WFS-196 (`actions: read`, aucun ✅ sur un run de nuit, nouvel essai depuis main à jour) : acceptés par le PO (droit en lecture seule, même effet que les RG).
 - RG-08 de WFS-196 (`CLAUDE.md`, ligne « Statuts et CI ») : je la fais quand le robot aura passé son premier 🟣 en ✅ sur un vrai run vert de main, pour ne pas annoncer aux agents un robot qui n'a pas encore tourné.
 
+### 2026-11-06 21:28:11 — WFS-197 attribué à Claude, agent 2 (01UY1Vv5) ; suivi CI de WFS-189 et WFS-196 repris par le PO (po-scrum-master)
+- **Ordre de l'utilisateur à l'agent 2** : « Non prend un autre sujet et si ya un problème le po regarde qui corrige ». Appliqué tel quel :
+  - l'agent 2 prend un nouveau sujet sans attendre la CI de main de WFS-189 (PR #159) et WFS-196 (PR #160) ;
+  - **le PO suit ces CI** (runs 780 à 787 en file) : si une CI de main tombe rouge à cause de WFS-189 ou WFS-196, le PO décide qui corrige et l'écrit ici.
+- **Ticket créé et attribué : WFS-197** — Vue cockpit réaliste (1/3) : socle de l'intérieur par modèle, écran central avec la carte, essuie-glaces, Golf, M4, 911 et SF90.
+  C'est le lot 1 du découpage déjà écrit dans `regles-de-gestion/WFS-195.md` (demande de l'utilisateur). Lots 2 et 3 créés après la fusion de WFS-197.
+  Règles : `regles-de-gestion/WFS-197.md`. P2 Haute. Dépendances : WFS-66 ✅, WFS-98 ✅.
+- **Épic et exception écrite** : E3 pour `src/game/camera_vue.*` (épic libre : WFS-188 et WFS-189 sont 🟣). E10 est occupée par WFS-158 (arwa-2, dernier envoi 21:06 UTC) :
+  exception d'épic sur des **fichiers neufs seulement** (`src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*.glsl`, `assets/cars/interieurs/**`, `tests/test_cockpit*`),
+  comme pour WFS-196 en E7. Interdits : `assets/cars/*.wfm|*.lod`, `tools/convert_car.mjs`, `model_loader.*`, `correctifs_voitures.*`, `feux_modele.*`, `cars.h` (WFS-158),
+  `src/world/**` (WFS-179), fichiers E13 (WFS-151), `.github/**` (WFS-190), taille des boutons, iOS.
+- Accroches ≤ 10 lignes permises si annoncées ici (banc `desktop_main.cpp`, `game.cpp`). Graphisme réaliste obligatoire pour chaque partie ; consulter `expert-realisme-3d`.
+- Règle des 10 h : aucun ticket retiré à personne. Aucun ticket iOS, rien sur la taille des boutons.
