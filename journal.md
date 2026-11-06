@@ -2892,3 +2892,28 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 23:39:20 — Statuts automatiques, CI main #795 (robot statuts)
 - Run rouge (push, commit edb17c0), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
+
+### 2026-11-06 23:44:56 — Fusion WFS-197 : vue cockpit réaliste, lot 1 (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #169, squash 2cb114b, fusion par confiance.
+  - Intérieurs Golf, M4, 911 et SF90 : planche avec un creux sous la visière du combiné, aérateurs chromés (alu sur la 911), console, montants, rétroviseur, contre-portes.
+  - Volant du modèle : jante en D, grain du cuir en normal map, coutures M, boutons M1/M2, manettino, palettes.
+  - Combiné par marque, avec les vraies valeurs du jeu.
+  - Carte sur l'écran central ; pour la SF90, dans le combiné.
+  - Essuie-glaces sur la pluie de la météo.
+  - Hauteur d'œil par modèle.
+- CI de branche (run 789, la seule permise) : elle a montré trois défauts, corrigés depuis.
+  1. Combiné caché par le haut de la planche.
+  2. Nuit et pluie non lues : je lisais `GameView::night`, et le banc effaçait `WFS_MOMENT` ; la météo lit `WFS_MOMENT` à chaque image.
+  3. Moyeu trop clair (grain sans uv).
+  Les corrections ont été vérifiées **en local avec lavapipe** (mesa-vulkan-drivers et glslc installés dans le conteneur : même rendu logiciel que la CI), sans seconde CI de branche.
+  Le job `realisme` du run 789 était rouge à cause du banc des passes de WFS-150, déjà rouge sur main (WFS-200 en cours) : pas lié à ce ticket.
+- Mesures RG-08 (banc `cockpit`, 1280x720) :
+  - 27 à 32 appels de dessin par intérieur (cockpit commun : 7) ;
+  - 1,21 à 1,23 Mo par intérieur (maillages, écrans dynamiques, grain 256 × 256), construit une seule fois par voiture ;
+  - aucune allocation par image (tampons des écrans de capacité fixe).
+  - Fluidité en Basse **non mesurée sur téléphone** : +20 à +25 appels de dessin, sous la limite de 40.
+- RG-09 : `WFS_BANC=parcours` en local : « parcours complet : 0 écart(s) OK » et « parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK ».
+- Banc `cockpit`, durée en local : 4 min 30 s. Dans la CI, le job `partie2c` passera d'environ 3 à environ 9 minutes (la boucle d'attente des balais ne fait plus de rendu).
+- Fidélité : **non mesurable** (cotes E ou AC, sources au journal de 21:46 et dans `vehicule_cockpit_defs.cpp`). Pour passer en V : hauteur des yeux en position assise (ANSUR-II) dans `anthropometrie.json`, photos cotées depuis la place du conducteur, et deux sites de pièces à autoriser par le PO (`eurospares.co.uk`, `wipersizechart.com`).
+- Limites : boutons rouges de la SF90 un peu lilas (rien n'ombre l'habitacle sous le ciel) ; pas de gouttes sur le pare-brise (le jeu n'en a pas). Lots 2 et 3 : à créer par le PO.
+
