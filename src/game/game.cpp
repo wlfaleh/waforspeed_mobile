@@ -76,6 +76,7 @@ void Game::shutdown() {
     graveyard_.clear();
     r_->destroy(car_);
     r_->destroy(shadowQuad_);
+    for (Material* m : {&roadMat_, &walkMat_, &groundMat_, &shadowMat_}) r_->destroy(*m);   // WFS-187 : refaits à chaque init
     r_ = nullptr;
 }
 

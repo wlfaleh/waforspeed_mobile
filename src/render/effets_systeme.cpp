@@ -94,6 +94,8 @@ public:
     void shutdown(Renderer& r) override {
         for (auto& b : meshes_) for (auto& m : b) r.destroy(m);
         r.vk().destroy(tex_);
+        for (Material& m : mats_) r.destroy(m);
+        r.destroy(matEtincelles_);   // WFS-187 : jeux de descripteurs rendus
         if (g_parts == &parts_) g_parts = nullptr;
     }
 

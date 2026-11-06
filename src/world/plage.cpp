@@ -1427,6 +1427,9 @@ public:
         chunks_.clear();
         for (auto& gm : graveyard_) r.destroy(gm.second);
         graveyard_.clear();
+        for (Material& m : mats_) r.destroy(m);
+        for (Material* m : {&lentilleEteinte_, &lentille_[0], &lentille_[1], &lentille_[2], &coqueMat_, &sillageMat_, &flammeMat_}) r.destroy(*m);
+        for (int k = 0; k < 3; k++) { r.destroy(faisceauMat_[k]); r.destroy(lyreMat_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
         for (Mesh* m : {&modeleBateau_[0], &modeleBateau_[1], &modeleBateau_[2], &modeleBateau_[3], &sillage_, &faisceau_, &flamme_, &lyre_})
             if (m->vb.buf) { r.destroy(*m); *m = Mesh{}; }   // WFS-180
         for (Lentilles& le : lentilles_) for (Mesh& m : le.m) if (m.vb.buf) r.destroy(m);

@@ -54,7 +54,7 @@ public:
     void shutdown(Renderer& r) override {
         r.vk().waitIdle();
         liberer(r);
-        atlas_.detruire(r); palette_.detruire(r);
+        atlas_.detruire(r); palette_.detruire(r); r.destroy(neon_);   // WFS-187 (accroche) : jeux de descripteurs rendus
         actif_ = false;
     }
 private:

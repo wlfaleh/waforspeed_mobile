@@ -89,7 +89,7 @@ bool Palette::construire(Renderer& r) {
     materiau = r.makeMaterial(m, &img_, nullptr, nullptr);
     return img_.img != VK_NULL_HANDLE;
 }
-void Palette::detruire(Renderer& r) { if (img_.img) r.vk().destroy(img_); img_ = Image{}; couleurs_.clear(); }
+void Palette::detruire(Renderer& r) { r.destroy(materiau); if (img_.img) r.vk().destroy(img_); img_ = Image{}; couleurs_.clear(); }   // WFS-187 (accroche) : jeux de descripteurs rendus
 
 Material neon(Renderer& r, unsigned hex, float emission) {
     Material m; const vec3 c = lin(hex);
@@ -167,7 +167,7 @@ const Material& AtlasTextes::materiau(Renderer& r, unsigned hex, float emission,
     m.color = {c.x, c.y, c.z, 1}; m.rough = 0.5f; m.emissive = c * emission; m.cutoff = seuil; m.flags = MAT_MASK | MAT_DOUBLE;   // WFS-94 : seuil réglable (circuit)
     return mats_[hex] = r.makeMaterial(m, &img_, nullptr, nullptr);
 }
-void AtlasTextes::detruire(Renderer& r) { if (img_.img) r.vk().destroy(img_); img_ = Image{}; mats_.clear(); places_.clear(); textes_.clear(); }
+void AtlasTextes::detruire(Renderer& r) { for (auto& [h, m] : mats_) r.destroy(m); if (img_.img) r.vk().destroy(img_); img_ = Image{}; mats_.clear(); places_.clear(); textes_.clear(); }   // WFS-187 (accroche) : jeux de descripteurs rendus
 
 } // namespace vie
 
@@ -247,6 +247,7 @@ public:
         for (Mesh* m : {&mFixe_}) if (m->indexCount) r.destroy(*m);
         for (int i = 0; i < NB_BOARDS; i++) { if (mLumiere_[i].indexCount) r.destroy(mLumiere_[i]); if (mTexte_[i].indexCount) r.destroy(mTexte_[i]); }
         atlas_.detruire(r); palette_.detruire(r);
+        for (Material& m : neons_) r.destroy(m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         actif_ = false;
     }
 private:
