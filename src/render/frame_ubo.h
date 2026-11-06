@@ -14,6 +14,7 @@ struct FrameUBO {
     vec4 camFwd, fogLin, hemiSky, hemiGround, spotN;
     vec4 spotPos[8], spotDir[8], spotCol[8], spotCone[8];   // WFS-09 : 8 lumières
     vec4 nuitA, nuitB;                                      // WFS-09 / WFS-16 : route mouillée, reflets
+    vec4 iblSH[9], iblA, iblB, cielP;                       // WFS-151 (accroche E13) : IBL, exposition, ciel (common.glsl)
 };
 
 } // namespace wfs

@@ -26,6 +26,7 @@
 #include "renderer.h"
 #include "ktx2.h"   // WFS-149 : texture d'essai
 #include "bench_passes.h"   // WFS-150
+#include "eclairage_banc.h"   // WFS-151 (accroche E13) : lumière physique, sondes
 #include "../../third_party/stb/stb_image.h"   // implémentation : model_loader.cpp
 
 namespace wfs {
@@ -254,6 +255,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     }
     reel::Referentiel R;
     if (!R.charger("references/reel")) { WFS_ERR("réalisme : référentiel illisible : %s", R.erreur.c_str()); return 1; }
+    if (std::getenv("WFS_LUMIERE_SEUL")) { reel::Rapport l; std::ostringstream m, i; const int e = benchLumiere(g, r, out, R, l, m, i); std::ofstream(out + "/lumiere-fidelite.txt") << l.texte("WFS-151 (essai local)") << m.str() << i.str(); return e; }   // WFS-151
     ecrans::Reglages& reglages = ecrans::reglages();
     const int q0 = reglages.qualite;
     std::ostringstream mesures;
@@ -284,6 +286,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             if (!g.init(r, "golf", v.carte)) { WFS_ERR("réalisme : %s : chargement de %s impossible", nom.c_str(), v.carte); erreurs++; continue; }
             g.setAutopilot(false); g.camMode = 0; g.allerA(ECRAN_BANC);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+            attendreSondes(g, t);   // WFS-151 : sondes IBL capturées et stables avant la mesure
             const double t0 = nowSeconds();
             for (int i = 0; i < 5; i++) g.render(t);   // scène figée : même temps, aucune mise à jour
             const double ms = (nowSeconds() - t0) / 5 * 1000;
@@ -294,7 +297,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                     v.note, g.player().dist * M, ms, r.appelsDessin());
             if (q == 1 && g_banc.lumiereLue) {
                 Lumiere& l = lumieres[std::string(v.carte) + "." + moment];
-                if (!l.ok) l = {g_banc.lumiere.sunDir, g_banc.lumiere.sunColor, g_banc.lumiere.sunIntensity, g_banc.lumiere.exposure, g_banc.lumiere.ambient, true};
+                if (!l.ok) l = {g_banc.lumiere.sunDir, eclairage::etat().actif ? eclairage::etat().couleurSoleil : g_banc.lumiere.sunColor,   /* WFS-151 : couleur envoyée */ g_banc.lumiere.sunIntensity, g_banc.lumiere.exposure, g_banc.lumiere.ambient, true};
             }
             g.shutdown();
         }
@@ -380,6 +383,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                         // la mesure du référentiel est un triplet : comparaison écrite à la main (Y contre 0,18 ± 1 %)
                         rap.lignes.back().reel = "0.1800 (18 % de réflectance)"; rap.lignes.back().tolerance = "± 1.0 %";
                         rap.lignes.back().etat = std::fabs(xyz[1] - 0.18) <= 0.0018 ? Etat::Conforme : Etat::NonConforme; rap.lignes.back().raison.clear();
+                        if (eclairage::etat().actif) { rap.lignes.back().etat = Etat::NonMesurable; rap.lignes.back().raison = "après tonemapping (WFS-151) : hors indice ; M-01 mesurée en HDR à EV100 15 (domaine lumiere)"; }
                         continue;
                     }
                     const reel::Json* ref = R.mesure(id);
@@ -390,6 +394,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                     l.jeu = "L*a*b* " + fmt(mesure[k].L, 1) + " " + fmt(mesure[k].a, 1) + " " + fmt(mesure[k].b, 1) + " (sRGB " + fmt(s8[0], 0) + " " + fmt(s8[1], 0) + " " + fmt(s8[2], 0) + "), ΔE2000 " + fmt(dE, 2);
                     l.reel = "L*a*b* " + fmt(attendu.L, 2) + " " + fmt(attendu.a, 2) + " " + fmt(attendu.b, 2); l.tolerance = "ΔE2000 ≤ 2"; l.statutReel = ref->texte("statut");
                     l.etat = dE <= 2 ? Etat::Conforme : Etat::NonConforme;
+                    if (eclairage::etat().actif) { l.etat = Etat::NonMesurable; l.raison = "après tonemapping ACES (WFS-151, RG-05) : hors indice ; mesure avant tonemapping : domaine lumiere (M-02)"; }
                     rap.ajouter(l);
                 }
                 // information (hors indice) : écarts après balance des blancs et exposition corrigées sur la case 22 (neutre 5) :
@@ -443,7 +448,8 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     g_banc = EtatBanc{};   // système inactif : plus rien ne change dans les images suivantes
     reglages.qualite = q0; ecrans::appliquerQualiteNiveau(r);
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
-    erreurs += benchPasses(g, r, out, mesures, infos);   // WFS-150 : passes, pré-passe, capture d'environnement, Ultra (après toutes les vues)
+    eclairage::desactiver(true); erreurs += benchPasses(g, r, out, mesures, infos); eclairage::desactiver(false);   // WFS-150 : passes, pré-passe, capture, Ultra ; WFS-151 : sans sondes
+    erreurs += benchLumiere(g, r, out, R, rap, mesures, infos);   // WFS-151 : étalonnage HDR, ciel, tunnel
 
     // ---------------- soleil et lumière du jeu contre le lieu et le moment de chaque carte (lieux.json)
     for (const char* carte : {"ville", "campagne", "plage", "circuit"}) {
@@ -474,8 +480,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                 rap.lignes.back().etat = Etat::NonMesurable;
             }
         }
-        rap.nonMesurable("photometrie", std::string("jeu.") + carte + ".eclairement", std::string("éclairement du soleil (lux), ") + carte,
-                         "intensité du soleil du jeu sans unité (" + fmt(lj->second.intensite, 2) + ") et exposition " + fmt(lj->second.exposition, 2) + " sans EV100 : exposition physique à venir (WFS-151)");
+        rap.comparer(R, "photometrie", "lum.soleil_midi.intensite", lumiere::eclairementSoleilNormal(hj) * std::sin(reel::rad(hj)), 1, "lx", std::string("éclairement du soleil au sol, ") + carte + " (WFS-151, RG-01)");
     }
     rap.nonMesurable("materiaux", "mat.*", "albédo, rugosité et F0 des surfaces du jeu", "matériaux procéduraux (scene.frag) : mesure dans l'image HDR non disponible (WFS-150) ; mesurés par WFS-155 (routes) et WFS-159 (véhicules)");
     rap.nonMesurable("anthropometrie", "humain.*", "tailles et proportions des piétons", "mesurées par WFS-164 (humains réalistes) sur les nouveaux modèles");

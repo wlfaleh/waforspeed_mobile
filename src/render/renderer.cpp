@@ -8,6 +8,7 @@
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
+#include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #if defined(__APPLE__)
 #include <chrono>
@@ -125,11 +126,14 @@ bool Renderer::init(VkCtx& vk) {
     ETAPE_RENDU("textures par défaut (premier envoi au GPU)");
 
     // ---------- descripteurs ----------
-    VkDescriptorSetLayoutBinding b0[3] = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+    VkDescriptorSetLayoutBinding b0[6] = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
                                           {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},    // carte d'ombre
-                                          {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};   // reflet (WFS-16)
+                                          {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},    // reflet (WFS-16)
+                                          {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},    // WFS-151 : sondes IBL A, B
+                                          {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                          {5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};   // WFS-151 : table BRDF
     VkDescriptorSetLayoutCreateInfo lci{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-    lci.bindingCount = 3; lci.pBindings = b0;
+    lci.bindingCount = 6; lci.pBindings = b0;
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &frameLayout_));
     VkDescriptorSetLayoutBinding mb[3];
     for (uint32_t i = 0; i < 3; i++) mb[i] = {i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
@@ -138,7 +142,7 @@ bool Renderer::init(VkCtx& vk) {
     lci.bindingCount = 2; lci.pBindings = mb;   // WFS-100 : 0 = image source, 1 = bloom (passe finale) / niveau inférieur (remontée)
     VK_OK(vkCreateDescriptorSetLayout(d, &lci, nullptr, &postLayout_));
 
-    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16 + 48},
+    VkDescriptorPoolSize sizes[3] = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 8}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * 1024 + 16 + 48 + 12},   // WFS-151 : + 3 × 4 jeux de l'image
                                      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 4}};   // WFS-63 : palettes d'os
     VkDescriptorPoolCreateInfo pci{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -1046,6 +1050,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     const char* eR = std::getenv("WFS_REFLETS");
     const bool sansReflet = eR && !std::strcmp(eR, "0");
     u.nuitB = {fp.refletY, 1.f / (float)sw_, 1.f / (float)sh_, sansReflet ? -1.f : config().qualite.refletRouteMouillee};
+    eclairage::avantImage(vk, u, r.frameSet, refletSet_[cur_]);   // WFS-151 (accroche E13) : IBL, exposition, ciel
     std::memcpy(r.ubo.mapped, &u, sizeof(u));
     if (refletsOn_) {
         FrameUBO m = u;

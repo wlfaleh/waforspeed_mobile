@@ -36,6 +36,7 @@ int capturesFaites();     // captures complètes depuis le lancement (journal, b
 // cube pour les shaders (VK_IMAGE_VIEW_TYPE_CUBE, SHADER_READ_ONLY) ; VK_NULL_HANDLE avant la première capture
 VkImageView vueCube();
 VkSampler echantillonneur();
+VkImage image();   // WFS-151 : image cube (6 couches, SHADER_READ_ONLY) pour la relecture des sondes IBL
 
 // banc : relit les 6 faces (rgba flottants, face par face), GPU à l'arrêt
 bool lireFaces(Renderer& r, std::vector<float> faces[6], int& cote);
