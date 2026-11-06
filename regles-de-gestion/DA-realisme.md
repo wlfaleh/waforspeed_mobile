@@ -1,7 +1,6 @@
 # Direction artistique « Réalisme » — analyse, charte et feuille de route (PO, 2026-11-05)
 
-> **Directive de l'utilisateur (2026-11-05)** : le jeu natif a dépassé la version Web. **La version Web n'est plus la référence
-> graphique.** Nouvel axe stratégique : un rendu proche du réel (routes, voitures, personnages, environnements, éclairage,
+> **Directive de l'utilisateur (2026-11-05)** : le jeu natif est la seule référence ; **il n'y a plus de version Web** (décision du 2026-11-06). Nouvel axe stratégique : un rendu proche du réel (routes, voitures, personnages, environnements, éclairage,
 > immersion). Toutes les tâches de cet axe sont en **priorité HAUTE (P2 Haute)**.
 > **Complément de l'utilisateur (2026-11-06)** : avancer **étape par étape**, une US par partie, chaque US **implémentée, testée et
 > validée avant la suivante** ; fidélité visée **99 % du réel** quand les données le permettent ; **jamais l'apparence au détriment
@@ -17,9 +16,9 @@
 | Routes | Asphalte **100 % procédural** dans le shader (bruit fbm, grain, lignes calculées) ; WFS-142 a supprimé le miroir | Aucune texture scannée, aucune normale de relief, chaussée uniforme ; pas de fissures, plaques, rapiéçages, traces de pneus ; marquages sans usure ni rétroréflexion |
 | Textures | Une seule texture de décor (`assets/world/feuillage.png`) + façades générées en code ; envoi **RGBA8 non compressé** (`vk.h` `uploadTexture`) | Impossible d'ajouter des textures 2K sans exploser la mémoire du téléphone et la taille de l'APK |
 | Géométrie | Sommet `Vertex` de 32 octets (position, normale, uv), **sans tangente** (`renderer.h` l. 23) | Normal maps approximées, reliefs faux sous certains angles |
-| Véhicules | 20 vraies voitures du jeu web (114 Mo, glTF convertis en `.wfm`) ; LOD en cours (WFS-134) | Peinture sans flocons ni double couche, verre sans épaisseur, pneus et jantes lisses, intérieurs sommaires, pas de dynamique visible (roulis, plongée), pas de salissure |
+| Véhicules | 20 vraies voitures (114 Mo, glTF convertis en `.wfm`) ; LOD en cours (WFS-134) | Peinture sans flocons ni double couche, verre sans épaisseur, pneus et jantes lisses, intérieurs sommaires, pas de dynamique visible (roulis, plongée), pas de salissure |
 | Personnages | Quaternius « Universal Base Characters » CC0, **2 modèles stylisés low-poly** (homme / femme, 4,9 Mo), animations génériques | Style « jeu mobile », pas humain réaliste ; peu de variété ; comportements simples (marche) |
-| Environnements | Bâtiments = boîtes extrudées + façade procédurale ; arbres du jeu web ; mer et montagnes simples | Pas de profondeur de fenêtres, toits plats, mobilier urbain générique, panneaux non réglementaires, végétation peu variée, mer sans vagues |
+| Environnements | Bâtiments = boîtes extrudées + façade procédurale ; arbres simples ; mer et montagnes simples | Pas de profondeur de fenêtres, toits plats, mobilier urbain générique, panneaux non réglementaires, végétation peu variée, mer sans vagues |
 | Moments de la journée | Jour / nuit **binaire** | Pas d'aube, pas de lumière dorée, pas d'heure bleue, pas de nuages physiques, pas d'exposition qui s'adapte |
 | Mesure | Banc PC avec captures par ticket | **Aucune vue de référence fixe** pour comparer le réalisme avant / après, **aucune mesure du coût GPU par passe** |
 
@@ -39,8 +38,7 @@
 7. **Sources d'actifs et licences** : textures et modèles **CC0 de préférence** (ambientCG, Poly Haven, MakeHuman, Quaternius),
    CC-BY accepté avec crédit dans `assets/licences/`. Si le réseau de l'environnement bloque un site de téléchargement, c'est un
    **blocage d'accès** à signaler à l'utilisateur (une question, avec une recommandation), pas une raison de dessiner à la main.
-8. **Référence** : le jeu web n'est plus la référence graphique. On ne porte du web que ce qui atteint le niveau visé (règles de
-   jeu, modèles de voitures comme base) ; pour l'aspect, la référence est **la photo du réel** et les valeurs physiques ci-dessous.
+8. **Référence** : pour l'aspect, la référence est **la photo du réel** et les valeurs physiques ci-dessous, rien d'autre.
 
 ## 3. Charte du réel (valeurs de référence, à ±10 %)
 **Albédo (couleur de base, en linéaire)** : asphalte neuf 0,04-0,07 · asphalte usé 0,10-0,18 · béton de trottoir 0,25-0,35 ·
