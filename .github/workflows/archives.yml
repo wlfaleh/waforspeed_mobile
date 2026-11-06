@@ -1,0 +1,60 @@
+# WFS-198 : robot des archives. Chaque nuit à 03:07 UTC (après la CI de nuit de 02:17), et à la demande, il fait le ménage des
+# documents courts (règle de l'utilisateur, 2026-11-06) : entrées de journal.md de plus de 2 jours → journal/archive/AAAA-MM-JJ.md ;
+# lignes de TACHES.md ✅ / ↪ / annulé / abandonné → archive/taches-terminees.md (recopiées d'abord dans regles-de-gestion/WFS-XX.md).
+# Il ne devine jamais (ligne ou entrée illisible → laissée et listée pour le PO) et compte tout avant d'envoyer : un écart → rien
+# n'est envoyé, le run échoue. Script : tools/qa/archives.py (test : tools/qa/test_archives.py). tache utilisateur.md n'est pas
+# touché. Il n'écrit que des .md (paths-ignore de build.yml : '**/*.md', 'regles-de-gestion/**') et envoie avec GITHUB_TOKEN :
+# son commit ne relance pas la CI.
+name: Archives automatiques
+
+on:
+  schedule:
+    - cron: '7 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # un commit « (robot archives) » sur main
+
+concurrency:
+  group: archives-main
+  cancel-in-progress: false   # un seul run à la fois, aucun annulé
+
+jobs:
+  archives:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Test du robot (6 cas de RG-08)
+        run: python3 tools/qa/test_archives.py
+
+      - name: Ménage de journal.md et TACHES.md
+        run: |
+          set -u
+          git config user.name "robot archives"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FICHIERS="journal.md journal/archive archive TACHES.md regles-de-gestion"
+          # RG-07 : un seul commit ; s'il croise un autre envoi, on repart de main à jour et on recalcule (5 essais)
+          for essai in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            if ! python3 tools/qa/archives.py --depot . > sortie.txt; then
+              cat sortie.txt
+              { echo "### Robot des archives : écart de comptage, rien n'est envoyé"; echo; cat sortie.txt; } >> "$GITHUB_STEP_SUMMARY"
+              echo "::error::archives : écart de comptage, rien n'est envoyé"
+              exit 1
+            fi
+            cat sortie.txt
+            cat sortie.txt >> "$GITHUB_STEP_SUMMARY"
+            rm -f sortie.txt
+            git add -A -- $FICHIERS
+            if git diff --cached --quiet; then echo "archives : rien à envoyer"; exit 0; fi
+            git commit -q -m "Archives automatiques : ménage de journal.md et TACHES.md ($(date -u '+%Y-%m-%d')) (robot archives)"
+            if git push -q origin HEAD:main; then echo "archives : envoyé (essai $essai)"; exit 0; fi
+            echo "archives : envoi refusé (essai $essai), nouvel essai"
+            sleep $((essai * 5))
+          done
+          echo "::error::archives : envoi sur main refusé 5 fois (protection de branche ?) : rien n'est archivé"
+          echo "Envoi sur main refusé 5 fois (protection de branche ?) : le PO note au journal et pose une question à l'utilisateur." >> "$GITHUB_STEP_SUMMARY"
+          exit 1
