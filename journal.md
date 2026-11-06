@@ -4221,3 +4221,24 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Indice voitures** (mêmes 141 mesures connues) : avant 81 / 141 = 57,4 % (méthode de WFS-148, identique à l'état zéro) ; avec la mesure « fiche » 80 / 141 = 56,7 % : les antennes ne trompent plus la mesure, mais rien n'est encore corrigé. Il montera avec ST-2.
 - **Vérification locale** : compilation sans avertissement, 31 tests CPU OK (`test_fidelite_voitures` compris : il n'échoue que si un modèle ne se lit pas, s'il lui manque ses roues ou une mesure du référentiel ; les écarts au réel sont écrits, comme l'état zéro de WFS-148 ; ST-5 le rendra strict). Aucun .wfm réexporté (consigne du PO : attendre la fusion de WFS-149).
 - **Reste** : ST-2 (échelle globale et roues à la conversion, `tools/convert_car.mjs`) après la fusion de WFS-149 ; garde au sol (M-03) et plaque (M-04) : valeurs à sourcer dans `references/reel/voitures.json` (la garde au sol est déjà mesurée par l'outil) ; ST-3 (pièces manquantes, RG-A plaques neutres), ST-4 (LOD 4 niveaux), ST-5 (test strict). Le ticket reste à mon nom ; si je ne reprends pas avant 24 h, le PO peut le réattribuer : tout est sur la branche et dans cette entrée.
+
+### 2026-11-06 10:47:23 — WFS-158 : travail local laissé pour la session 01Us6uCu (Claude (session trafic))
+- **Rien n'est poussé** (décision PO 7d3c6cf). Travail local : branche `feature/waforspeed-158` du dépôt `/home/user/waforspeed_mobile` (commits
+  6c78a60 et 5d9e379, non poussés), worktree `scratchpad/wt158` de la session trafic. Si la nouvelle session n'y a pas accès, voici l'essentiel.
+- **Mesure affinée** (`src/render/vehicule_mesure.*`, lecteur `vehicule_wfm.h`) : largeur sans rétroviseurs et hauteur sans antenne par
+  profils en tranches de 1 cm + ouverture morphologique sur 40 cm (la règle « sommets sous 55 % » de WFS-148 garde les rétroviseurs bas de la M4,
+  de la 911, de l'Abarth) ; voies au milieu des bandes de roulement (face extérieure − demi-section ETRTO) ; braquage visible des roues ; garde au sol.
+- **Corrections** (`src/render/vehicule_correction.*`, outil `tests/fidelite_voitures_corriger.cpp`) : échelle globale (longueur comptée
+  double), roues avant braquées de la M4 (17°) et de la 911 (17°) redressées, diamètre de chaque roue (échelle uniforme ± 8 %), voies et
+  empattement (± 3 cm par roue, sans élargir la voiture), pneus posés au sol ; pièces : sous-caisse à la garde de la fiche, plaques 520 × 110 mm
+  (la plaque d'origine au nom de l'auteur est retirée : ANO-79), habitacle simple si vide, disques / étriers (détection peu fiable).
+- **Référentiel** : `references/reel/voitures/assise.json` + `SOURCES.md` (garde au sol des 20 voitures, plages relevées par recherche ;
+  Mustang GT500 à sourcer ; plaque).
+- **Résultat local** : indice voitures 57,4 % → 93,1 % (242 / 260). **Écarts de modèle (RG-05, à décider par le PO)** : M4 trop large (+3,6 %),
+  208 trop étroite (−3,8 %, voies −1,5 %), T-Cross (largeur −2,6 %, hauteur −3,9 %, voies), Compass (voies −9 %, 154 k triangles), S3 (+1,6 %),
+  Model 3 (largeur +5 %, hauteur −3 %, voies +3 %, géométrie froissée), Corsa (+1,4 %), X5 et SF90 (garde au sol 178 / 78 mm contre 212-221 / 120) :
+  proposition : remplacer ces modèles par d'autres sous licence libre, mesurés avec `test_fidelite_voitures` avant intégration.
+- **RG-04 (4 LOD à seuils en pixels)** : le choix du niveau est dans `Renderer::draw` (`renderer.cpp`, hors zone E10) : à arbitrer par le PO.
+  Fait côté actifs : versions allégées des 20 voitures (`alleger_voiture.mjs`, option `WFS_LOD_BORDS=libres`), +10 Mo d'APK.
+- **Compatibilité avec WFS-170** : les correctifs de WFS-170 sont désignés par indice de matériau ; les corrections de 158 gardent les indices
+  (un matériau ajouté à la fin) : vérifié en local, les 20 voitures corrigées s'affichent avec les correctifs de WFS-170.
