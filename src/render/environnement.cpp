@@ -14,6 +14,10 @@ namespace {
 
 constexpr VkFormat HDR = VK_FORMAT_R16G16B16A16_SFLOAT;   // = HDR_FORMAT du Renderer (passe de reflet compatible)
 constexpr int IMAGES = AccesRendu::images();               // = Renderer::FRAMES
+// suréchantillonnage de chaque face (correction de M-01, run 790) : la face est rendue à SUR × SUR fois sa taille, puis
+// réduite par un blit linéaire 2:1 (moyenne exacte de 2 × 2 texels) ; un texel de la cubemap vaut ainsi la luminance
+// moyenne de son angle solide, au lieu d'un seul échantillon en son centre (bords de vitrines éclairées la nuit : -1,5 %)
+constexpr int SUR = 2;
 
 struct Etat {
     // demande
@@ -23,9 +27,9 @@ struct Etat {
     // ressources (créées à la première capture)
     int cote = 0;
     VkImage img = VK_NULL_HANDLE; VkDeviceMemory mem = VK_NULL_HANDLE;
-    VkImageView cube = VK_NULL_HANDLE, faces[6]{};
-    Image profondeur;
-    VkFramebuffer fb[6]{};
+    VkImageView cube = VK_NULL_HANDLE;
+    Image rendu, profondeur;                 // cible de rendu d'une face (SUR × cote px), réduite ensuite dans le cube
+    VkFramebuffer fb = VK_NULL_HANDLE;
     VkSampler smp = VK_NULL_HANDLE;
     VkDescriptorPool pool = VK_NULL_HANDLE; VkDescriptorSet set[IMAGES]{};
     Buffer ubo[IMAGES];
@@ -36,13 +40,13 @@ Etat g;
 
 void libererCube(VkCtx& vk) {
     VkDevice d = vk.device;
-    for (VkFramebuffer& f : g.fb) { if (f) vkDestroyFramebuffer(d, f, nullptr); f = VK_NULL_HANDLE; }
-    for (VkImageView& v : g.faces) { if (v) vkDestroyImageView(d, v, nullptr); v = VK_NULL_HANDLE; }
+    if (g.fb) vkDestroyFramebuffer(d, g.fb, nullptr);
+    g.fb = VK_NULL_HANDLE;
     if (g.cube) vkDestroyImageView(d, g.cube, nullptr);
     if (g.img) vkDestroyImage(d, g.img, nullptr);
     if (g.mem) vkFreeMemory(d, g.mem, nullptr);
     g.cube = VK_NULL_HANDLE; g.img = VK_NULL_HANDLE; g.mem = VK_NULL_HANDLE;
-    vk.destroy(g.profondeur);
+    vk.destroy(g.rendu); vk.destroy(g.profondeur);
     g.cote = 0;
 }
 
@@ -67,15 +71,17 @@ void creerCube(Renderer& r, int cote) {
     VkImageViewCreateInfo vi{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     vi.image = g.img; vi.viewType = VK_IMAGE_VIEW_TYPE_CUBE; vi.format = HDR; vi.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 6};
     VK_OK(vkCreateImageView(d, &vi, nullptr, &g.cube));
-    g.profondeur = vk.createImage(cote, cote, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, true);
-    for (uint32_t f = 0; f < 6; f++) {
-        vi.viewType = VK_IMAGE_VIEW_TYPE_2D; vi.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, f, 1};
-        VK_OK(vkCreateImageView(d, &vi, nullptr, &g.faces[f]));
-        VkImageView v[2] = {g.faces[f], g.profondeur.view};
+    // une seule cible de rendu suréchantillonnée pour les 6 faces (une face par image) ; profondeur en mémoire transitoire
+    const uint32_t cs = (uint32_t)(cote * SUR);
+    g.rendu = vk.createImage(cs, cs, 1, HDR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+                           | VK_IMAGE_USAGE_SAMPLED_BIT);   // SAMPLED : fin de la passe de reflet en SHADER_READ_ONLY (VUID-VkImageMemoryBarrier-oldLayout-01211)
+    g.profondeur = vk.createImage(cs, cs, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, true);
+    {
+        VkImageView v[2] = {g.rendu.view, g.profondeur.view};
         VkFramebufferCreateInfo fi{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
         fi.renderPass = AccesRendu::passeReflet(r); fi.attachmentCount = 2; fi.pAttachments = v;
-        fi.width = fi.height = (uint32_t)cote; fi.layers = 1;
-        VK_OK(vkCreateFramebuffer(d, &fi, nullptr, &g.fb[f]));
+        fi.width = fi.height = cs; fi.layers = 1;
+        VK_OK(vkCreateFramebuffer(d, &fi, nullptr, &g.fb));
     }
     // lisible dès la création (cube noir) : les 6 couches en lecture seule
     VkCommandBuffer cb = vk.beginOneShot();
@@ -91,7 +97,8 @@ void creerCube(Renderer& r, int cote) {
     vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &b);
     vk.endOneShot(cb);
     g.cote = cote;
-    WFS_LOG("environnement (WFS-150) : cubemap HDR %dx%d × 6 (%.2f Mo)", cote, cote, cote * (double)cote * 6 * 8 / 1048576.0);
+    WFS_LOG("environnement (WFS-150) : cubemap HDR %dx%d × 6 (%.2f Mo), rendue à %ux%u (suréchantillonnage %d × %d, %.2f Mo de plus)", cote, cote,
+            cote * (double)cote * 6 * 8 / 1048576.0, cs, cs, SUR, SUR, cs * (double)cs * (8 + 4) / 1048576.0);
 }
 
 // ressources indépendantes de la taille : échantillonneur, tampons de l'image, descripteurs, pipelines en plus de ceux
@@ -133,6 +140,33 @@ void detruireTout(Renderer& r) {
 void signature(const FrameUBO& u, float s[16]) {
     const vec4* v[4] = {&u.sunDir, &u.sunColor, &u.skyTop, &u.fog};
     for (int i = 0; i < 4; i++) { s[4 * i] = v[i]->x; s[4 * i + 1] = v[i]->y; s[4 * i + 2] = v[i]->z; s[4 * i + 3] = v[i]->w; }
+}
+
+// réduction de la face rendue (cs × cs, SHADER_READ_ONLY en fin de passe) dans la couche f du cube : blit linéaire SUR:1,
+// soit la moyenne exacte de SUR × SUR texels pour SUR = 2 (format R16G16B16A16_SFLOAT : blit et filtre linéaire obligatoires)
+void reduire(VkCommandBuffer cb, int f, uint32_t cs) {
+    VkImageMemoryBarrier b[2]{};
+    for (VkImageMemoryBarrier& x : b) { x.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; x.srcQueueFamilyIndex = x.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; }
+    b[0].image = g.rendu.img; b[0].subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    b[0].oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; b[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    b[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; b[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    b[1].image = g.img; b[1].subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, (uint32_t)f, 1};   // couche lue par les images précédentes
+    b[1].oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; b[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    b[1].srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT; b[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, b);
+    VkImageBlit bl{};
+    bl.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}; bl.srcOffsets[1] = {(int32_t)cs, (int32_t)cs, 1};
+    bl.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, (uint32_t)f, 1}; bl.dstOffsets[1] = {g.cote, g.cote, 1};
+    vkCmdBlitImage(cb, g.rendu.img, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, g.img, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bl, VK_FILTER_LINEAR);
+    // couche prête pour les shaders (et la relecture des sondes, WFS-151) ; cible de rendu libre pour la face suivante
+    // (la passe suivante l'écrit après ce blit : dépendance transfert → sortie couleur)
+    b[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL; b[0].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    b[0].srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT; b[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    b[1].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL; b[1].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    b[1].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; b[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, b);
 }
 
 // passe d'écran (avant la scène) : une face de la capture demandée par image
@@ -184,11 +218,12 @@ public:
         }
         VkClearValue cl[2]{}; cl[0].color = {{0, 0, 0, 1}}; cl[1].depthStencil = {0.f, 0};
         VkRenderPassBeginInfo bi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-        bi.renderPass = AccesRendu::passeReflet(r); bi.framebuffer = g.fb[f];
-        bi.renderArea = {{0, 0}, {(uint32_t)g.cote, (uint32_t)g.cote}}; bi.clearValueCount = 2; bi.pClearValues = cl;
+        const uint32_t cs = (uint32_t)(g.cote * SUR);
+        bi.renderPass = AccesRendu::passeReflet(r); bi.framebuffer = g.fb;
+        bi.renderArea = {{0, 0}, {cs, cs}}; bi.clearValueCount = 2; bi.pClearValues = cl;
         VkCommandBuffer cb = img.cb;
         vkCmdBeginRenderPass(cb, &bi, VK_SUBPASS_CONTENTS_INLINE);
-        VkViewport vp{0, 0, (float)g.cote, (float)g.cote, 0, 1}; VkRect2D sc{{0, 0}, {(uint32_t)g.cote, (uint32_t)g.cote}};
+        VkViewport vp{0, 0, (float)cs, (float)cs, 0, 1}; VkRect2D sc{{0, 0}, {cs, cs}};
         vkCmdSetViewport(cb, 0, 1, &vp); vkCmdSetScissor(cb, 0, 1, &sc);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, AccesRendu::dispositionScene(r), 0, 1, &g.set[k], 0, nullptr);
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, AccesRendu::pipeline(r, 0));
@@ -207,6 +242,7 @@ public:
             AccesRendu::dessiner(r, p);
         }
         vkCmdEndRenderPass(cb);
+        reduire(cb, f, cs);
         if (++g.face >= 6) {
             g.face = -1; g.prete = true; g.captures++;
             WFS_LOG("environnement (WFS-150) : capture %d prête (%d px, point %.1f %.1f %.1f)", g.captures, g.cote, g.point.x, g.point.y, g.point.z);
