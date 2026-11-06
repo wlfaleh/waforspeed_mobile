@@ -2674,3 +2674,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-06 22:10:15 — WFS-198 créé : robot des archives chaque nuit (po-scrum-master)
 - **Demande de l'utilisateur** : automatiser la création des archives.
 - **WFS-198** (E7, P2 Haute, ⏳ Prêt, `regles-de-gestion/WFS-198.md`) : `archives.yml` chaque nuit à 03:07 UTC (+ lancement à la main) ; journal → `journal/archive/AAAA-MM-JJ.md` (plus de 2 jours) ; lignes ✅ / ↪ / annulées de `TACHES.md` → `archive/taches-terminees.md` (recopiées d'abord dans `regles-de-gestion/WFS-XX.md`) ; rien deviné ; comptage avant / après, sinon rien n'est envoyé ; `tache utilisateur.md` reste au PO ; commit « (robot archives) ».
+
+### 2026-11-06 22:10:27 — Statuts automatiques, CI main #782 (robot statuts)
+- Run rouge (push, commit 5ed39ec), aucun statut changé. Job(s) en échec : endurance.
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-140, WFS-150, WFS-175, WFS-178, WFS-181, WFS-188.
+- À corriger par le PO : `TACHES.md` l. 135 : WFS-139 : PR #142 introuvable dans le dépôt (ligne laissée telle quelle).
+- À corriger par le PO : `TACHES.md` l. 156 : WFS-176 : PR #158 introuvable dans le dépôt (ligne laissée telle quelle).
+- À corriger par le PO : `TACHES.md` l. 159 : WFS-179 : PR #161 introuvable dans le dépôt (ligne laissée telle quelle).
