@@ -25,7 +25,11 @@ public:
     // fonction à passer à Game::init (appelée entre les étapes, sur l'écran de chargement de l'application)
     static void progression(float p, const char* libelle);
     void fin();          // 100 % (dernière image), total au journal, puis fondu de 300 ms par-dessus la scène
-    void erreur();       // échec : message rouge, l'écran reste affiché
+    void erreur(bool quitter = false);   // échec : message rouge + bouton « Réessayer » (« Quitter » : le moteur ne peut pas repartir)
+    // WFS-146 (RG-10) : toucher de la plateforme pendant l'écran d'erreur (vrai : gardé) ; reessaiDemande() : bouton
+    // relâché dessus, à traiter une fois (« Réessayer » : l'erreur est effacée, la plateforme relance le chargement)
+    bool toucher(int id, float x, float y, bool down);
+    bool reessaiDemande();
     void dessiner();     // redessine l'écran tel quel (ex. : écran d'erreur à chaque image)
     // banc d'essai : appelé après chaque image dessinée (n = numéro de l'étape, 0 = début)
     std::function<void(int n)> apresImage;
@@ -45,6 +49,9 @@ Chargement& chargement();   // écran de chargement de l'application (un seul)
 // mise en page commune des écrans (.screen-inner du web) et bloc sur-titre + logo, partagés par le chargement et le menu (WFS-37)
 struct MiseEnPage { float k, logo, x, largeur, sur, gap, ligne, hauteurBloc; };
 MiseEnPage miseEnPage(float W, float H);
+// WFS-147 (RG-01, RG-02) : même bloc sur téléphone couché (ui::petitEcran), dessiné en dp (k = pixels par dp) :
+// logo de `logoMax` dp au plus, espaces resserrés ; chaque écran choisit lui-même de l'appeler (chargement, menu)
+MiseEnPage miseEnPagePetit(float W, float H, float logoMax, float gap);
 // dessine le sur-titre et le logo à partir de y (haut du bloc) ; renvoie y sous le logo + l'espace (gap) suivant
 float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float opacite);
 // dessin de l'écran (sans beginFrame / endFrame) : opacite de 0 à 1 (fondu)
@@ -54,6 +61,8 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
 void benchChargement(Game& g, Renderer& r, const std::string& outDir, double depuis, void (*racine)(bool ok));
 // fondu en cours : opacité de l'écran de chargement à l'instant `temps` de la scène (0 = fini)
 float opaciteFondu(double temps);
+// WFS-146 (RG-09, ANO-45) : vrai du fin() du chargement à la fin du fondu (les commandes tactiles de conduite sont cachées)
+bool fonduEnCours();
 
 } // namespace ecrans
 } // namespace wfs

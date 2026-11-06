@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #if defined(__APPLE__)
 #include <chrono>
@@ -106,8 +107,16 @@ bool Renderer::init(VkCtx& vk) {
     sci.maxLod = 16.f;
     VkPhysicalDeviceFeatures f{}; vkGetPhysicalDeviceFeatures(vk.gpu, &f);
     if (f.samplerAnisotropy) { sci.anisotropyEnable = VK_TRUE; sci.maxAnisotropy = std::min(8.f, vk.props.limits.maxSamplerAnisotropy); }
-    aniso_ = sci.anisotropyEnable ? sci.maxAnisotropy : 1.f;   // WFS-134 (RG-04) : journal du chargement des voitures
+    aniso_ = anisoMax_ = sci.anisotropyEnable ? sci.maxAnisotropy : 1.f;   // WFS-134 (RG-04) : journal du chargement des voitures
     VK_OK(vkCreateSampler(d, &sci, nullptr, &sampler_));
+    if (sci.anisotropyEnable && sci.maxAnisotropy > 4.f) {   // WFS-144 (RG-04) : anisotrope ×4 de la Basse
+        sci.maxAnisotropy = 4.f; VK_OK(vkCreateSampler(d, &sci, nullptr, &samplerBasse_));
+    }
+    msaaMax_ = vk.msaa;   // WFS-144 : MSAA choisi par vk.cpp (×4, ou ×1 : GPU logiciel), plafond de la netteté
+    vk.vueDetruiteCtx = this;   // WFS-144 : un matériau dont une texture est détruite n'est plus réécrit (vue invalide)
+    vk.vueDetruite = [](void* c, VkImageView v) {
+        std::erase_if(static_cast<Renderer*>(c)->matTex_, [v](const MatTex& t) { return t.v[0] == v || t.v[1] == v || t.v[2] == v; });
+    };
     sci.anisotropyEnable = VK_FALSE; sci.maxLod = 0;
     sci.addressModeU = sci.addressModeV = sci.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     VK_OK(vkCreateSampler(d, &sci, nullptr, &clampSampler_));
@@ -692,7 +701,9 @@ void Renderer::destroyTargets() {
 bool Renderer::resize() {
     vk_->waitIdle();
     destroyTargets();
+    const bool refaire = appliquerNettete();   // WFS-144 : MSAA / anisotrope du niveau (Basse : ×2 / ×4)
     createTargets();
+    if (refaire) createScenePipelines();
     return true;
 }
 
@@ -780,29 +791,73 @@ void Renderer::createPipelines() {
     VkShaderModule kv = mod(SPV_SKY_VERT, sizeof(SPV_SKY_VERT)), kf = mod(SPV_SKY_FRAG, sizeof(SPV_SKY_FRAG));
     VkShaderModule pv = mod(SPV_POST_VERT, sizeof(SPV_POST_VERT)), pf = mod(SPV_POST_FRAG, sizeof(SPV_POST_FRAG));
     VkShaderModule uv = mod(SPV_UI_VERT, sizeof(SPV_UI_VERT)), uf = mod(SPV_UI_FRAG, sizeof(SPV_UI_FRAG));
-    VkSampleCountFlagBits s = vk_->msaa;
-    opaque_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
-    blend_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_);
-    sky_ = makePipeline(kv, kf, 0, false, false, false, false, scenePass_, s, sceneLayout_);
+    VkShaderModule kv2 = mod(SPV_SCENE_SKIN_VERT, sizeof(SPV_SCENE_SKIN_VERT)), kh = mod(SPV_SHADOW_SKIN_VERT, sizeof(SPV_SHADOW_SKIN_VERT));
+    VkShaderModule kf2 = mod(SPV_SCENE_SKIN_FRAG, sizeof(SPV_SCENE_SKIN_FRAG));   // WFS-72 : vêtements (pedMaterial)
+    modScene_[0] = sv; modScene_[1] = sf; modScene_[2] = kv; modScene_[3] = kf; modScene_[4] = kv2; modScene_[5] = kf2;
+    createScenePipelines();   // WFS-144 : refaites quand le MSAA change (appliquerNettete)
     post_ = makePipeline(pv, pf, 0, false, false, false, false, finalPass_, VK_SAMPLE_COUNT_1_BIT, postPLayout_);
     ui_ = makePipeline(uv, uf, 2, true, true, false, false, finalPass_, VK_SAMPLE_COUNT_1_BIT, postPLayout_);
     VkShaderModule hv = mod(SPV_SHADOW_VERT, sizeof(SPV_SHADOW_VERT)), hf = mod(SPV_SHADOW_FRAG, sizeof(SPV_SHADOW_FRAG));
     shadowPipe_ = makePipeline(hv, VK_NULL_HANDLE, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
     shadowMaskPipe_ = makePipeline(hv, hf, 1, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, sceneLayout_, true);
     // WFS-63 : maillages à squelette (même scene.frag / shadow.frag que les objets rigides)
-    VkShaderModule kv2 = mod(SPV_SCENE_SKIN_VERT, sizeof(SPV_SCENE_SKIN_VERT)), kh = mod(SPV_SHADOW_SKIN_VERT, sizeof(SPV_SHADOW_SKIN_VERT));
-    VkShaderModule kf2 = mod(SPV_SCENE_SKIN_FRAG, sizeof(SPV_SCENE_SKIN_FRAG));   // WFS-72 : vêtements (pedMaterial)
-    skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);
     skinShadow_ = makePipeline(kh, VK_NULL_HANDLE, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
     skinShadowMask_ = makePipeline(kh, hf, 3, false, false, true, true, shadowPass_, VK_SAMPLE_COUNT_1_BIT, skinLayout_, true);
-    // WFS-09 : tache des phares (multiplicative) et halos (additifs) ; WFS-16 : passe de reflet (1 échantillon)
-    poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
-    addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
+    // WFS-16 : passe de reflet (1 échantillon)
     const VkSampleCountFlagBits s1 = VK_SAMPLE_COUNT_1_BIT;
     refOpaque_ = makePipeline(sv, sf, 1, false, false, true, true, refletPass_, s1, sceneLayout_);
     refBlend_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_);
     refSky_ = makePipeline(kv, kf, 0, false, false, false, false, refletPass_, s1, sceneLayout_);
     refAdd_ = makePipeline(sv, sf, 1, true, false, true, false, refletPass_, s1, sceneLayout_, false, 2);
+}
+
+// pipelines dessinés dans la passe de scène, au nombre d'échantillons du MSAA courant (vk.msaa)
+void Renderer::createScenePipelines() {
+    const VkShaderModule sv = modScene_[0], sf = modScene_[1], kv = modScene_[2], kf = modScene_[3], kv2 = modScene_[4], kf2 = modScene_[5];
+    const VkSampleCountFlagBits s = vk_->msaa;
+    opaque_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
+    blend_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_);
+    sky_ = makePipeline(kv, kf, 0, false, false, false, false, scenePass_, s, sceneLayout_);
+    skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);   // WFS-63
+    // WFS-09 : tache des phares (multiplicative) et halos (additifs)
+    poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
+    addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
+}
+
+// WFS-144 (RG-04, WFS-134 RG-03 / RG-04) : netteté de la Basse = MSAA ×2 et anisotrope ×4 ; Moyenne et Haute : MSAA ×4,
+// anisotrope ×8 (inchangés). Netteté retenue (WFS-134 RG-02) : une Basse due à la rétrogradation automatique ou à la chauffe
+// garde la netteté du niveau quitté. GPU sans MSAA ×2 (lavapipe du banc) : ×4 gardé. Appelé GPU à l'arrêt (resize).
+bool Renderer::appliquerNettete() {
+    const int q = qualiteBasse ? qualite::BASSE : qualite::HAUTE;
+    const bool basse = qualite::netteteBasse(q);
+    const VkSampleCountFlags sc = vk_->props.limits.framebufferColorSampleCounts & vk_->props.limits.framebufferDepthSampleCounts;
+    const VkSampleCountFlagBits ms = (VkSampleCountFlagBits)qualite::msaaScene(q, (int)msaaMax_, (sc & VK_SAMPLE_COUNT_2_BIT) != 0);
+    const bool texBasse = samplerBasse_ && qualite::anisoScene(q, anisoMax_) < anisoMax_;
+    const bool changeTex = texBasse != texBasse_;
+    if (changeTex) {   // échantillonneur de toutes les textures des matériaux réécrit
+        texBasse_ = texBasse; aniso_ = texBasse ? 4.f : anisoMax_;
+        const VkSampler smp = texBasse ? samplerBasse_ : sampler_;
+        for (const MatTex& t : matTex_) {
+            VkDescriptorImageInfo ii[3]; VkWriteDescriptorSet wr[3]{};
+            for (uint32_t i = 0; i < 3; i++) {
+                ii[i] = {smp, t.v[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+                wr[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[i].dstSet = t.set; wr[i].dstBinding = i;
+                wr[i].descriptorCount = 1; wr[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; wr[i].pImageInfo = &ii[i];
+            }
+            vkUpdateDescriptorSets(vk_->device, 3, wr, 0, nullptr);
+        }
+    }
+    const bool refaire = ms != vk_->msaa;
+    if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
+        VkDevice d = vk_->device;
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
+        scenePass_ = VK_NULL_HANDLE;
+        vk_->msaa = ms;
+    }
+    if (refaire || changeTex)
+        WFS_LOG("rendu (WFS-144) : netteté %s : MSAA ×%d, aniso ×%.0f", basse ? "Basse" : "Moyenne / Haute", (int)vk_->msaa, aniso_);
+    return refaire;
 }
 
 Material Renderer::makeMaterial(const Material& src, const Image* color, const Image* normal, const Image* mr) {
@@ -813,9 +868,10 @@ Material Renderer::makeMaterial(const Material& src, const Image* color, const I
     dai.descriptorPool = pool_; dai.descriptorSetCount = 1; dai.pSetLayouts = &matLayout_;
     VK_OK(vkAllocateDescriptorSets(vk_->device, &dai, &m.set));
     VkDescriptorImageInfo ii[3] = {
-        {sampler_, (color && color->view) ? color->view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-        {sampler_, (normal && normal->view) ? normal->view : flatNormal.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-        {sampler_, (mr && mr->view) ? mr->view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
+        {texBasse_ ? samplerBasse_ : sampler_, (color && color->view) ? color->view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+        {texBasse_ ? samplerBasse_ : sampler_, (normal && normal->view) ? normal->view : flatNormal.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+        {texBasse_ ? samplerBasse_ : sampler_, (mr && mr->view) ? mr->view : white.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}};
+    matTex_.push_back({m.set, {ii[0].imageView, ii[1].imageView, ii[2].imageView}});   // WFS-144 : netteté changeable
     VkWriteDescriptorSet wr[3]{};
     for (uint32_t i = 0; i < 3; i++) {
         wr[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; wr[i].dstSet = m.set; wr[i].dstBinding = i;
@@ -879,7 +935,10 @@ SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const st
 void Renderer::destroy(SkinnedMesh& m) { vk_->destroy(m.vb); vk_->destroy(m.ib); m.indexCount = 0; }
 
 void Renderer::destroy(Model& m) {
-    for (auto& mat : m.mats) if (mat.set) vkFreeDescriptorSets(vk_->device, pool_, 1, &mat.set);
+    for (auto& mat : m.mats) if (mat.set) {
+        std::erase_if(matTex_, [&](const MatTex& t) { return t.set == mat.set; });   // WFS-144
+        vkFreeDescriptorSets(vk_->device, pool_, 1, &mat.set);
+    }
     for (auto& t : m.textures) vk_->destroy(t);
     vk_->destroy(m.vb); vk_->destroy(m.ib);
     m = Model{};
@@ -1046,8 +1105,8 @@ inline const vec3 VERRE{1.f, 0.0103f, 0.0513f};   // RG-13 : verre rouge du feu 
 void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const RouesPose* roues) {
     if (!inFrame_ || !m.ok) return;
     // WFS-134 (RG-05, RG-07) : ombre de contact (≈ 1,1 × la longueur) si la voiture n'a pas déjà la sienne ; fantôme sans
-    const bool fantome = fantomeSuivant_, ombreDejaLa = ombreFaite_;
-    fantomeSuivant_ = false;
+    const bool fantome = fantomeSuivant_, ombreDejaLa = ombreFaite_, lots = lotsSuivant_ && qualiteBasse;
+    fantomeSuivant_ = false; lotsSuivant_ = false;
     if (ombresContact_ && !fantome && !ombreDejaLa) {
         const vec3 c = (m.bmin + m.bmax) * 0.5f, t = m.bmax - m.bmin;
         draw(ombreQuad_, ombreMat_, world * translate({c.x, m.bmin.y, c.z}) * scale({t.x * 1.12f, 1.f, t.z * 1.1f}));
@@ -1074,7 +1133,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     const bool versBasse = qualiteBasse && !m.partsBasse.empty();
     const std::vector<ModelPart>& loin = versBasse ? m.partsBasse : m.partsLod;
     const float d0 = 64.f;
-    const float tLod = loin.empty() || fantome ? 0.f : std::clamp((depth - d0) / 8.f, 0.f, 1.f);
+    // WFS-144 (RG-03 a) : voiture demandée en lots (police en Basse) : version en lots seule, à toute distance
+    const float tLod = loin.empty() || fantome ? 0.f : lots && versBasse ? 1.f : std::clamp((depth - d0) / 8.f, 0.f, 1.f);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1424,6 +1484,10 @@ void Renderer::shutdown() {
     vkDestroyDescriptorPool(d, pool_, nullptr);
     for (auto l : {frameLayout_, matLayout_, postLayout_}) vkDestroyDescriptorSetLayout(d, l, nullptr);
     vkDestroySampler(d, sampler_, nullptr); vkDestroySampler(d, clampSampler_, nullptr);
+    if (samplerBasse_) vkDestroySampler(d, samplerBasse_, nullptr);   // WFS-144
+    samplerBasse_ = VK_NULL_HANDLE; texBasse_ = false; matTex_.clear();
+    vk_->vueDetruite = nullptr; vk_->vueDetruiteCtx = nullptr;
+    vk_->msaa = msaaMax_;   // MSAA du GPU rendu tel quel (init suivant : retour d'arrière-plan)
     vk_->destroy(white); vk_->destroy(flatNormal);
     destroy(ombreQuad_);   // WFS-134
     // WFS-100 (RG-W1, ANO-52) : objet remis à neuf, pour qu'un init() sur le même Renderer recrée tout (retour d'arrière-plan)

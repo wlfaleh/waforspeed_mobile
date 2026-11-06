@@ -136,6 +136,9 @@ public:
     // WFS-134 (RG-07, ANO-60) : la prochaine voiture dessinée par draw(Model) est le fantôme du record : translucide
     // (α 0,45), teintée cyan, sans ombre de contact, sans feux
     void fantomeProchaineVoiture() { fantomeSuivant_ = true; feuxProchaineVoiture(FeuxVoiture{}); }
+    // WFS-144 (RG-03 a) : en qualité Basse, la prochaine voiture dessinée par draw(Model) prend sa version en lots de matériaux
+    // (partsBasse : peinture, feux, vitres, reste) à toute distance : police de la poursuite, moins d'appels de dessin, jamais de cubes
+    void lotsProchaineVoiture() { lotsSuivant_ = true; }
     Material poolMat;   // WFS-09 : matériau de la tache des phares (couleur 0xfff0dc du jeu web)
     void uiRect(float x, float y, float w, float h, const vec4& c);
     void uiCircle(float cx, float cy, float r, const vec4& c);
@@ -156,7 +159,7 @@ public:
     // WFS-59 : mode GPU logiciel actif (émulateur de la QA : GPU SwiftShader / llvmpipe, ou intent qa_simu=true)
     bool gpuLogiciel() const { return modeGpuLogiciel(); }
     uint32_t shadowMapSize() const { return shadowSize_; }
-    float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet)
+    float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
     struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 7; };
@@ -167,6 +170,8 @@ private:
     void createTargets();
     void destroyTargets();
     void createPipelines();
+    void createScenePipelines();   // WFS-144 : pipelines de la passe de scène (nombre d'échantillons vk.msaa)
+    bool appliquerNettete();       // WFS-144 (RG-04) : MSAA et anisotrope du niveau de netteté ; true : passe de scène à refaire
     VkPipeline makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
                             VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false, int melange = 0);
     void flushDraw(const Pending& d);
@@ -193,6 +198,13 @@ private:
     VkDescriptorPool pool_ = VK_NULL_HANDLE;
     VkSampler sampler_ = VK_NULL_HANDLE, clampSampler_ = VK_NULL_HANDLE;
     float aniso_ = 1.f;
+    // WFS-144 (RG-04) : netteté de la Basse (MSAA ×2, anisotrope ×4). msaaMax_ : MSAA du GPU (vk.cpp) ; samplerBasse_ : ×4 ;
+    // matTex_ : textures de chaque matériau, pour réécrire leur échantillonneur quand la netteté change
+    VkSampleCountFlagBits msaaMax_ = VK_SAMPLE_COUNT_1_BIT;
+    VkSampler samplerBasse_ = VK_NULL_HANDLE; float anisoMax_ = 1.f; bool texBasse_ = false;
+    struct MatTex { VkDescriptorSet set; VkImageView v[3]; };
+    std::vector<MatTex> matTex_;
+    VkShaderModule modScene_[6]{};   // scene.vert, scene.frag, sky.vert, sky.frag, scene_skin.vert, scene_skin.frag
     VkDescriptorSet postSet_ = VK_NULL_HANDLE, fontSet_ = VK_NULL_HANDLE;
 
     static constexpr int FRAMES = 2;
@@ -237,7 +249,7 @@ private:
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
     // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
-    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false;
+    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false;
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;
     vec3 camPos_{};

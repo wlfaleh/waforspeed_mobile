@@ -3849,3 +3849,111 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
   - soleil : valeurs de contrôle calculées par l'algorithme NREL SPA (`pvlib`, PyPI), plus précis que celui de la NOAA (le calculateur NOAA ne s'ouvre pas) ;
   - fiches constructeur, normes de marquage, anthropométrie : valeur relevée seulement si un lien est cité ; statut « à confirmer (page non ouverte) » quand elle vient d'un résumé de recherche, « à sourcer » sinon. Rien n'est inventé.
 - **Point signalé au PO** : le critère « 96 captures `realisme-*` » ne correspond pas à RG-03 (12 vues × 2 moments × 2 qualités = 48). Je livre les 48 de RG-03 ; le PO dira s'il manque une dimension (par exemple 2 tailles d'écran).
+
+### 2026-11-06 01:36:23 — WFS-136 : activation du tracé 2 carte par carte (A7), remplace l'activation partout (po-scrum-master)
+- Fait nouveau signalé par le développeur (Claude, 0183bv2X) : au sol, le décor actuel cache la route sur 3 cartes (Ville : pelouse du parc avant le rond-point ; Campagne : bâtiment et champ à la 1re épingle ; Corniche : caméra dans la mer au 1er lacet). Grand Prix lisible.
+- Décision : **option A**. `trace::CARTES_ACTIVES` (une ligne dans `trace_cartes.h`) = `circuit` seul à la fusion de WFS-136 ; Ville, Campagne, Corniche restent au tracé 1 jusqu'à WFS-137, 138, 139, qui activent chacune leur carte dans le même commit que leur décor. Banc `WFS_BANC=trace` force les 4 cartes ; `test_trace` couvre les 4.
+- Raison : ne jamais livrer sur l'APK de `main` 3 cartes où la route est invisible (l'utilisateur vient de juger le rendu « catastrophique ») ; le coût est une ligne par ticket de décor.
+- Records : mise de côté `*_v1` une fois dès la 1re carte active ; fantôme renommé par carte avec la clé `trace-<carte>=2` ; toast à chaque carte activée. Duel : `trace` = liste des cartes actives.
+- Mis à jour : `regles-de-gestion/WFS-136.md` (A7, A3 corrigée), WFS-137/138/139 (critère « activer sa carte » + exception de zone pour cette seule ligne de `src/game/trace_cartes.h`), critère `rayonInterieur` promis en A3 ajouté à WFS-137 à 140 ; WFS-140 : corriger les murs qui débordent à l'épingle.
+
+### 2026-11-06 01:37:43 — WFS-145 : décision du PO sur la mesure mémoire du banc endurance (PO / Scrum Master)
+- Constat de la session dev 5bx accepté : (1) Poursuite bloquée = saut du banc (`g_bancFin == 2`, `src/game/poursuite_system.cpp` l. 122-125) qui déplace voiture et police mais pas le trafic ; corrigé banc seulement, 24/24 graines finies. (2) Mémoire : pas de fuite de WFS-94 ; la mesure actuelle est une photo du décor chargé (104 à 293 Mo dans une même course), le seuil de 10 % est atteint au hasard.
+- Décision : RG-08 / RG-09 ajoutées à `regles-de-gestion/WFS-145.md`. Mesure au point canonique (scène de référence ville / jour / départ rechargée, retour au menu, chargements terminés), sans `shutdown` / `init` ; seuil 10 %, délai 150 s, 10 cycles et parcours au doigt inchangés. Preuves : 2 passages ≤ 9 %, essai de fuite volontaire détecté, accroche E3 annoncée avec prévenance de WFS-136.
+
+### 2026-11-06 01:39:35 — Pour WFS-145 : constats sur le banc d'endurance rouge après WFS-94 (Claude, session trafic, agent reprise)
+- **Mémoire, reproduite en local** (`tools/qa/endurance.sh`, couches de validation) :
+  - binaire de a722e6c : cycle 6 à 815,2 Mo contre 726,0 Mo au cycle 2, soit +12,3 % (code 3) ;
+  - binaire d'avant WFS-94 (f0aba48) : +6,3 % (780,2 contre 734,2 Mo).
+- **Le cycle 6 mesure la ville de nuit** (cycle 5), au menu, avant « Rouler » ; ce n'est pas la Corniche. Écarts par rapport à f0aba48 :
+  - allocations Vulkan : +162 (884 contre 722) ;
+  - tas malloc utilisé : +43 Mo (343,2 contre 299,8) ;
+  - anonyme : +34 Mo.
+  - Les seuls ajouts de WFS-94 la nuit en ville sont les fenêtres allumées de `src/world/ville.cpp` (`fenetres()`, 3 parts `P_FEN_*`, soit 3 maillages par morceau sur 25) et le trottoir (`P_TROTTOIR`, 1 maillage par morceau, présent aussi de jour).
+- **Paradoxe non résolu** : la géométrie est petite. Le journal ajouté donne 2,2 Mo de sommets pour toute la ville de nuit et 0,06 Mo d'indices pour les fenêtres. Le trottoir ajoute aussi 54 allocations de jour (cycle 2), sans hausse de RSS. Le coût par allocation n'est donc pas prouvé.
+- **Piste poussée sans PR** sur `fix/wfs94-endurance-fenetres` (96bb4ec) :
+  - les fenêtres passent en **un seul** maillage par morceau, `P_FEN` avec `MAT_EMTEX` et une palette de 4 couleurs (`fenTex_`) : 50 allocations de moins ;
+  - un journal de la taille de la géométrie par part est ajouté dans `render()` de `ville.cpp` et `plage.cpp` ;
+  - **non mesurée** : l'essai d'endurance a été arrêté au cycle 3.
+  - Essai à refaire en comparant ce binaire au même sans `fenetres()`.
+- **Poursuite bloquée à 9,87 km** (cycle 10) :
+  - elle se joue sur le **circuit** de nuit (« terrain : déjà chargée », dernier cycle Checkpoint) ; WFS-94 n'y change que le seuil alpha des lettres des panneaux (`AtlasTextes::materiau`), aucun objet ni collision ;
+  - en local, même code (4846763) : arrivée à 10,08 km en 25 s ;
+  - le blocage semble donc aléatoire : après le saut `poursuiteBancFin(2)`, il faudrait regarder les surprises et les embouteillages (« 6 surprises, 3 embouteillages ») de `src/game/poursuite_system.cpp`. Avec un score de départ de 1000, rien ne termine la course s'il est bloqué.
+
+### 2026-11-06 02:36:56 — WFS-144 fusionné : poursuite en Basse à +45 appels de dessin, Basse à MSAA ×2 et aniso ×4 (Claude, session trafic, agent WFS-144)
+- **PR #124**, commit de fusion `588146a`. CI de branche verte (run 42147314115 : android, 11 bancs, publications). Captures `poursuite-*` et `voiture-basse-poursuite` regardées : aucune voiture en cubes, police avec gyrophares.
+- **RG-03 a (matériaux fusionnés)** : en Basse, la police est dessinée à toute distance dans sa version en lots de matériaux de WFS-134 (`partsBasse` : peinture, feux, vitres, reste). C'est le vrai modèle, jamais des cubes (`Renderer::lotsProchaineVoiture`). Gain mesuré : −56 appels au bouchon (461 → 405), −16 au contact (501 → 485). Les autres niveaux ne changent pas.
+- **Cause de l'écart +149 / +164** : la moitié vient du banc. Trois mesures de la poursuite sont prises au bouchon, à 0,45 km, alors que Checkpoint était mesuré 50 à 70 m plus loin (0,50 et 0,52 km), dans un autre quartier où la ville coûte 55 appels de moins (relevé système par système : ville 173 contre 114 à 120). Checkpoint est maintenant mesuré une seule fois à chaque endroit.
+- **Mesures du banc `course5`, Basse (journal CI)** : contact +38 (main +54), bouchon +45 (main +101), HUD +39, ralentisseur +43, camion +15 → « écart maximal en qualité Basse : +45 appels de dessin (cible ≤ 60) : OK ». À endroit égal, main donne +101.
+- **RG-04** : la Basse passe à MSAA ×2 et aniso ×4. La passe de scène et ses 6 pipelines sont refaits quand le MSAA change ; l'échantillonneur des matériaux est réécrit quand l'aniso change. La netteté retenue de WFS-134 RG-02 est respectée. Test `test_qualite` ajouté (`msaaScene`, `anisoScene`). Si le GPU n'a pas de ×2, le MSAA reste à ×4 : c'est le cas de lavapipe, sur le banc (« netteté Basse : MSAA ×4, aniso ×4 »).
+- **Bancs `qualite` et `nuit` comparés à main** : Haute, Moyenne et nuit identiques au pixel près. La ville de nuit reste à 273 appels au plus (budget 300). En Basse, seules de petites différences de filtrage des textures.
+- **Parcours complet** de la poursuite (RG-05) : « parcours complet et redémarrage : 0 écart(s) OK » (CI et local).
+- **Accroches annoncées** : `src/game/poursuite_system.cpp`, 4 lignes (`r.lotsProchaineVoiture()` avant le dessin de la police ; mesure Checkpoint unique à chaque endroit dans `benchPoursuite`) ; `src/render/vk.h` / `vk.cpp` (rappel à la destruction d'une vue d'image, 3 lignes, zone E4).
+- **Limites** : MSAA ×2 non vérifiable sur le banc (lavapipe), à lire sur le téléphone dans la ligne « Rendu ». En Basse, la police de près a le reste de la carrosserie en gris sombre (version en lots), à juger par la QA de nuit.
+
+### 2026-11-06 02:38:16 — Début WFS-146 : lot anomalies INTERFACE 2e passage (1/2), attribué à Claude (session trafic) (PO)
+- **Ticket** : WFS-146, épic E8 (+ E5), P1 Urgent, aucune dépendance ; E8 libre (WFS-102 annulé, WFS-147 en attente de WFS-146). Règles : `regles-de-gestion/WFS-146.md` (RG-01 à RG-13).
+- **Zone autorisée** : `src/ui/ecrans/**`, `src/ui/text.cpp`, `src/ui/toasts.cpp`, `src/ui/hud.cpp`, `shaders/ui*`. **Interdit** : toute échelle / taille / position / mise en page, `src/ui/echelle.*`, `src/ui/reglages.cpp` hors accroche, `src/render/**`, `src/game/**`, `src/world/**`, iOS (gel).
+- **Critères** : ANO-16, 20, 32, 35, 39 (couleur), 41, 43, 44, 45 invisibles sur `menu-1`, `hud-course`, `encoche-hud-2400`, `terrain-1`, `duel-resultat`, `salon-code*`, `chargement-fondu-2400`, `course-fin` ; `garage-*-2400` identiques à `main` ; parcours complet 0 écart (`WFS_BANC=parcours`).
+- **Plan court** : reprendre de `feature/waforspeed-102` uniquement les morceaux texte / couleur / biseaux (jamais 6d3ed61, échelle dp) ; comparaison avant / après des captures listée au Journal (RG-12) ; fusion après CI verte et captures `garage-*-2400` de la branche regardées (RG-13).
+
+### 2026-11-06 03:09:16 — CI de main verte après WFS-144 (Claude (session trafic))
+
+Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise (rouge depuis WFS-94 au run 680). WFS-145 (session dev 5bx) garde son ticket pour confirmer la stabilité. Mon ticket en cours : WFS-146.
+
+### 2026-11-06 03:48:22 — WFS-146 fusionné : lot anomalies INTERFACE (1/2) sans changer l'échelle, PR #125 (Claude (session trafic))
+- **Fait** (repris de `feature/waforspeed-102`, morceaux 1 et 2 seulement, rien de 6d3ed61) : ANO-16 « — » et 9 autres glyphes ajoutés **à la fin** de l'atlas (glyphes existants à la même place, atlas à 48 px inchangé), caractère absent → espace ; ANO-20 biseaux d'un seul polygone (`pause.cpp`, `reglages.cpp`, `salon.cpp`, `terrain.cpp`, fond des choix de `menu.cpp`) ; ANO-32 aide du menu selon Direction / gyroscope ; ANO-35 « 2e PLACE » et boutons biseautés du duel ; ANO-39 reflets d'asphalte du chargement et bouton « Réessayer » (« Quitter » si le moteur ne démarre pas) ; ANO-41 sélection cyan au terrain ; ANO-43 touche ⌫ blanche ; ANO-44 aide sous le code du salon ; ANO-45 commandes tactiles cachées et inactives pendant le fondu du chargement et quand la course est finie. `k = H / 720` inchangé, aucune taille de police, position ni mise en page changée, pas de `src/ui/echelle.*`.
+- **Accroches hors zone (annoncées)** : `src/game/game.cpp` (5 lignes : `commandesActives()`, ANO-45), `src/game/duel_system.cpp` (5 lignes : titre et 2 biseaux, ANO-35), `src/platform/android_main.cpp` (9 lignes : toucher et action du bouton de l'écran d'erreur, RG-10). Nouvelle fonction `ecrans::fonduEnCours()` (`chargement.h`).
+- **Vérification** : 26 tests CPU OK ; **RG-11** `WFS_BANC=parcours` local : « parcours complet : 0 écart(s) OK » (et `menu1-2400` : 0 écart) ; CI de branche verte (run 42154454480).
+- **RG-12, captures comparées au pixel (main c. branche)** — banc local (groupes partie2a, partie2b, partie2c, chargement, chargement 2400, hud 2400, camera 2400, menu1 2400, menu2 2400, parcours) et Releases `apercu` (588146a) / `apercu-waforspeed-146` (92 captures `*-2400`, `menu-*`, `garage-*`, `hud-*`, `terrain-*`, `salon-*`, `reglages-*`), plus `course-fin`, `course5-fin`, `poursuite-arrete`, `duel-resultat`. Résultat :
+  - **identiques** : `garage-0/1/2/m4/peinture-0/peinture-1/peintures/suivant-2400`, `garage-p208`, `garage-sf90` (CI) et tous les `garage-*` 1280 en local sauf `garage-course` ;
+  - changements **seulement** aux pixels prévus : bouton MENU (boîte 15,135-99,177 en 1280 ; 22,202-149,266 en 2400) sur `hud-*`, `camera-*`, `pause-*`, `menu-depart-*`, `terrain-rouler*`, `reglages-basse`, `toast-*`, `ressenti-*`, `commandes-*`, `duel-course` ; boutons Retour / Rouler (bords) sur `terrain-0*`, `terrain-fige-*`, `garage-course*`, `parcours-terrain-2400` ; RÉGLAGES et fond des choix + aide sur `menu-*`, `parcours-mode-2400`, `showroom-choisir`, `pause-quitter`, `fin-retour-menu` ; panneau sur `reglages-*` ; cadre et badge sur `terrain-1*` ; reflets sur `chargement-*`, `terrain-chargement` ; commandes cachées sur `course-fin`, `fin-menu`, `course5-fin`, `poursuite-arrete`, `duel-resultat`, `chargement-fondu*` ; « — » sur `menu-1`, `texte-essai-*` ; ⌫ et aide sur `salon-*` ;
+  - écarts sans rapport avec le ticket : fonds des `salon-*` et `duel-reseau-course*` (code de salon, joueurs et adversaire tirés au hasard : le banc main local diffère aussi de la Release de main sur toute l'image), 1 pixel de `camera-cockpit-2400` (2163,48), et quelques pixels de voiture des `garage-*` 1280 entre la Release de main et celle de la branche (absents du banc local, où ces captures sont identiques).
+- **RG-13** : captures `garage-*-2400` de la branche regardées (`garage-m4-2400` vue) : identiques à main.
+- **Limites** : APK non construit en local (pas de NDK) : compilation Android vérifiée par la CI (job android vert) ; bouton « Réessayer » essayé au banc seulement (« Réessayer » demandé, écran d'erreur quitté). L'aide du salon est serrée au-dessus de « TA VOITURE » (aucune place libre sans déplacer : WFS-147). « 2E PLACE » de la Course à 5 et de la Poursuite : ANO-59, WFS-141.
+
+### 2026-11-06 04:11:42 — Début WFS-147 : lot anomalies INTERFACE (2/2), tailles écran par écran (PO)
+- Ticket WFS-147, épic E8 (+ E5 `src/ui/**`), P2 Haute, attribué à Claude (session trafic) ; branche `feature/waforspeed-147`. Dépendance WFS-146 ✅ (PR #125).
+- Zone autorisée : `src/ui/**` (écrans réglages, salon, terrain, chargement, menu ; garage et HUD seulement si la capture 2400 reste propre), bancs de captures 2400 de l'interface, `tests/**` liés. Interdit : facteur d'échelle global / `echelle.*`, `src/render/**` (hors `ui_*`), `shaders/scene*`, `src/world/**`, `src/game/**` (hors accroche ≤ 10 lignes annoncée), iOS (gel).
+- Critères : RG-01 à RG-06 de `regles-de-gestion/WFS-147.md` (un commit par écran, texte ≥ 14 dp, toucher ≥ 44 dp à 2400x1080 / 420 dpi, captures 2400 avant / après, parcours complet accueil → course → Menu → accueil et salon à 0 écart).
+- Plan : reprendre écran par écran les mises en page petit écran de `feature/waforspeed-102` (6d3ed61) sans `echelle.*`, dans l'ordre RG-01.
+- Fusion : RG-04, verdict `qa-lead` sur les captures de la branche avant fusion (engagement du QA envers l'utilisateur pour ANO-19).
+
+### 2026-11-06 04:19:29 — WFS-146 : CI de main verte après la fusion (Claude (session trafic))
+- Run 42158470097 sur c60d75b : android, 12 bancs, endurance, publications APK et captures **verts**. Rien à corriger.
+
+### 2026-11-06 05:11:07 — WFS-147 : PR #126 ouverte, recette `qa-lead` demandée avant fusion (Claude (session trafic))
+- **Fait** : mise en page « petit écran » (≤ 520 dp de haut) écran par écran, un commit par écran dans l'ordre de RG-01 : réglages (3e6f4a5), salon (8b05d29), terrain (be561e6, 26ebfbf), chargement (1ae4c87), menu (c978329, liste ajustée ensuite). **Aucune échelle commune** : `src/ui/petit_ecran.h` ne fait que mesurer l'écran en dp (densité WFS-108 ; banc : 2,625 si W ≥ 2000, sinon 1) ; chaque écran choisit sa mise en page. Garage : seulement l'étiquette du type calée au pixel entier (ANO-47, 60f071c). **HUD non touché**.
+- **Tailles (RG-02, 2400x1080 à 420 dpi)** : texte courant ≥ 14 dp (descriptions, aide, lien, choix), libellés en capitales 12 dp, boutons 48 dp, choix des réglages 42 dp (zone de toucher 48 dp), touches du code 44 dp, distances 48 dp.
+- **Accroche hors zone (annoncée)** : `src/platform/android_main.cpp`, 1 ligne : `densiteAndroid(...)` appelé aussi avant le premier écran de chargement (sinon densité inconnue à la 1re image).
+- **Captures 2400 avant (main 7d8de65) / après (branche), banc local** : `reglages-menu`, `reglages-pause`, `manette-reglages`, `menu-duel` (bouton Réglages 44 dp), `salon-accueil`, `salon-code-saisi`, `salon-hote`, `salon-pret`, `salon-amis`, `terrain-0`, `terrain-1`, `parcours-terrain`, `chargement-0/1/2`, `chargement-erreur`, `menu-0`, `menu-appui`, `pause-0`. `garage-*` 2400 : **identiques au pixel** à main (rien sur la voiture). CI : Release `apercu-waforspeed-147`.
+- **1280x720** : menu, pause, réglages identiques au pixel ; terrain changé (ombre `.map-shade` du web, ANO-18 ; ciel, sol, route et nuages d'un seul tenant, ANO-42) ; garage : étiquette du type seule (ANO-47).
+- **Vérification** : 27 tests CPU (dont `test_petit_ecran`), parcours complet (WFS_BANC=parcours) 0 écart, parcours menu1 2400 0 écart, parcours duel 0 écart.
+- **Limites** : APK non construit en local (CI). Le panneau « Choisis ton mode » (course5, zone E3) n'a pas de mise en page petit écran : hors zone. En 1280x720, les petits libellés du terrain (11 px) ne changent pas (mise en page de bureau gardée).
+
+### 2026-11-06 05:43:27 — WFS-147 : recette avant fusion, verdict À CORRIGER (tour 1/2) (qa-lead)
+- **Captures** : Release `apercu-waforspeed-147` (commit 6548063 / 88ea33d, run 42166830479) comparées au pixel avec `apercu` de `main` : 330 en commun, 278 identiques.
+- **Bon** : `garage-*-2400` et `hud-2400` **identiques au pixel** à main (rien sur la voiture, HUD non touché) ; réglages, salon, menu, chargement lisibles en 2400 (texte courant ≥ 14 dp, touches et choix ≥ 44 dp de pas) ; ANO-17, 19, 38, 42 corrigées sur les écrans du ticket ; écarts non prévus expliqués par le contenu tiré au hasard (course à 5, code du salon).
+- **Mineures (tour 1/2)** : A) ombre de la carte du terrain trop haute en 2400, route et tribune du Grand Prix invisibles ; B) chevrons des flèches du terrain en escalier ; C) ANO-47 à moitié : « HYBRI)E » sur `garage-sf90`.
+- **Suite** : pas de fusion ; le développeur corrige A, B, C et redemande la recette (tour 2/2). Rapport : `qa/rapports/WFS-147.md`. Aucune anomalie ajoutée à `anno.md` (seulement au verdict PASSABLE).
+
+### 2026-11-06 06:34:34 — WFS-147 : recette tour 2/2, verdict VALIDÉ (qa-lead)
+- Branche de1e285 (synchronisée avec main), CI verte run 42171445586, captures `apercu-waforspeed-147` de 06:30-06:31 UTC.
+- A (ombre du terrain), B (chevrons), C (étiquette du garage, ANO-47) corrigées ; `garage-*-2400` et `hud-2400` identiques à main ; aucun écran changé sans raison.
+- **Fusion autorisée** (RG-04) : le développeur fusionne. Rapport : `qa/rapports/WFS-147.md`. Aucune anomalie ajoutée à `anno.md`.
+
+### 2026-11-06 06:35:41 — Fin WFS-147 : fusionné (PR #126, eb8152a) après verdict qa-lead VALIDÉ (Claude (session trafic))
+- **Recette** : tour 1 À CORRIGER (3 mineures : ombre du terrain trop haute, chevrons en escalier, « D » de l'étiquette du garage) ; corrigées (commits de terrain et de garage du 2026-11-06 vers 05:55 UTC, de1e285), CI de branche verte (run 42171445586) ; tour 2/2 **VALIDÉ** (`qa/rapports/WFS-147.md`, 349f7d0). Fusion de de1e285 (main n'avait changé que des fichiers .md depuis la synchronisation).
+- **Écrans touchés** (un commit par écran, RG-01) : réglages, salon, terrain, chargement, menu ; garage : étiquette du type à 13 px au moins en 720p, calée au pixel (ANO-47), `garage-*-2400` identiques au pixel à main ; HUD non touché.
+- **Captures 2400 après la correction** (RG-03) : `terrain-0-2400`, `terrain-1-2400`, `parcours-terrain-2400` (ombre calée sur le texte, ≈ 45 % de l'illustration sans ombre, longueur et quartiers sur une ligne), `garage-sf90` (1280 : « HYPERCAR HYBRIDE » entier). Avant / après de chaque écran : entrée 05:11:07.
+- **Accroche annoncée** : `src/platform/android_main.cpp`, 1 ligne (densité lue avant le premier écran de chargement).
+- **Statuts** : `TACHES.md` ✅, ligne ajoutée à `qa/Check.md`. Je suis la CI de main.
+
+### 2026-11-06 06:48:39 — Début WFS-141 : lot anomalies Poursuite et écrans (ANO-54, 56, 57, 59, 62), attribué à Claude (session trafic) (PO)
+- **Pourquoi lui** : aucun ticket ⏳ Prêt au tableau ; les épics libres (E2, E9 à E13, E0 suite) attendent WFS-136 ou WFS-148. WFS-141 est le lot d'anomalies P2 le plus prioritaire débloquable.
+- **Exception PO** : 2e ticket E3 actif à côté de WFS-136, fichiers disjoints (WFS-136 : `track.*`, `trace_cartes.*`, `traffic*.cpp`, `sauvegarde.*`, `reseau_relais.*`). Dépendance WFS-131 souple, prévue par les règles : tant que WFS-131 n'est pas fusionné, dans `poursuite_system.cpp` seulement les l. 228-236 (gyrophares) ; le bandeau d'annonce (RG-02) se fait hors des lignes de la sirène.
+- **Zone autorisée** : `src/game/poursuite_system.cpp` (l. 228-236), `poursuite.cpp`, `course5_system.cpp`, `modes_ecran.cpp`, `course_system.*` (fin seulement), `tests/test_poursuite.cpp`, `tests/test_course5.cpp` ; accroches annoncées : `src/ui/ecrans/salon.cpp` (≤ 30 lignes, RG-05), `src/ui/ecrans/menu.cpp`, `desktop_main.cpp` (captures) ≤ 10 lignes.
+- **Interdit** : `src/render/**`, `shaders/**`, `src/world/**`, `src/audio/**`, fichiers de WFS-136, lignes sirène / jingle de WFS-131, iOS (gel).
+- **Critères** : ceux de `regles-de-gestion/WFS-141.md` (gyrophares rouge puis bleu sans rose, bandeau petit à gauche, fins au gabarit Checkpoint « 2e PLACE », panneau des modes opaque, salon hors ligne lisible avec « Réessayer ») ; parcours complets RG-06 au Journal, `WFS_BANC=parcours` à 0 écart.
+- **Fusion** : règle en vigueur (confiance > 50 % → fusion directe ; ligne `qa/Check.md`, ✅, Journal ; suivi de la CI de main).
