@@ -77,7 +77,7 @@ void grille(std::vector<Ordinateur>& os, double sJoueur);
 // arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
 // (RG-06 : nitrosPrises compte les nitros utilisées)
 // WFS-189 (RG-02 bis) : `piste` donnée : les ordinateurs ralentissent avant les virages serrés (rond-point, épingle…) à la
-// vitesse où la voiture du joueur tient sa voie (plafondVirage), avec le freinage du joueur ; nullptr : sans virages
+// vitesse où la voiture du joueur reste sur la chaussée (vitesseVirage), avec le freinage du joueur ; nullptr : sans virages
 void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur, const Track* piste = nullptr);
 constexpr double ECART_RANGEES_M = 13;    // WFS-189 (RG-03) : entre les deux rangées de la grille (m)
 constexpr double MARGE_VIRAGE = 0.9;      // WFS-189 (RG-02 bis) : part du cap max utilisée en courbe
