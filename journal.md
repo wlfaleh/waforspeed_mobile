@@ -5038,3 +5038,8 @@ Sur demande de l'utilisateur, l'agent « Claude (session trafic) » s'appelle d�
 - `TACHES.md` (origin/main dc41210) : aucun ticket au statut ⏳ Prêt. E2 occupée (WFS-175 🔧) ; WFS-179 attend WFS-178 (🟣) ; WFS-186 🚫 bloqué (modèles CC0) ; E3 occupée (WFS-188 🔧), WFS-189 après ; E13 : WFS-151 attend la validation de WFS-150 (🟣, pas ✅) ; iOS gelé ; taille des boutons interdite.
 - Règle des 10 h : WFS-158 (Claude, session 01Us6uCu), dernier commit 10:45:39 UTC, reste à lui jusqu'à 20:45 UTC.
 - Agent 2 reste libre ; aucun ticket créé.
+
+### 2026-11-06 19:44:45 — WFS-151 attribué à expert-realisme-3d (session 01UY1Vv1), sur ordre de l'utilisateur (po-scrum-master)
+- **Ordre de l'utilisateur** : lancer tout de suite un développeur sur WFS-151 pour débloquer l'axe Réalisme, sans attendre le ✅ de WFS-150 (🟣 fusionné, PR #143 ; CI de `main` pas encore verte).
+- **Ticket** : WFS-151 — Lumière : exposition physique (EV100, lux), IBL préfiltrée, sondes locales, étalonnage charte grise / ColorChecker · E13 (aucun autre ticket E13 actif) · branche `feature/waforspeed-151` · règles `regles-de-gestion/WFS-151.md`.
+- **Risque signalé** : si la CI de `main` montre un défaut de WFS-150, le développeur de WFS-151 se synchronise avec `main` dès la correction.
