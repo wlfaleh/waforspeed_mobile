@@ -331,11 +331,13 @@ public:
         {
             const float x = gl + std::clamp(W * 0.04f, 0.f, 64 * k);
             float y = gt + 8 * k;
-            const std::string eb = ui::majuscules(car.brand) + " · " + deuxChiffres(index_ + 1) + " / " + deuxChiffres(CAR_COUNT);
+            const std::string eb = ui::majuscules(marque(car)) + " · " + deuxChiffres(index_ + 1) + " / " + deuxChiffres(CAR_COUNT);
             ui::text(r, x, y, 12 * k, eb, hex(ACCENT2, op), ui::GAUCHE, 0.22f, false);
             y += 22 * k;
-            const float np = std::min(84 * k, std::max(40 * k, W * 0.07f * 0.8f));
-            ui::text(r, x, y, np, ui::majuscules(car.model), hex(TEXTE, op), ui::GAUCHE, 0, true, true);
+            float np = std::min(84 * k, std::max(40 * k, W * 0.07f * 0.8f));
+            const std::string nm = ui::majuscules(modele(car));   // WFS-191 : nom de configgame.json
+            if (const float nw = ui::width(np, nm); nw > W * 0.5f) np *= W * 0.5f / nw;   // WFS-191 (RG-08) : nom long réduit pour tenir
+            ui::text(r, x, y, np, nm, hex(TEXTE, op), ui::GAUCHE, 0, true, true);
             y += np * 1.0f + 8 * k;
             // WFS-147 (ANO-47) : libellé de 13 px au moins (règle du HUD : 11 px du web portés à 13 px), calé au pixel entier
             // (en 720p, le « I » de « HYBRIDE » tombait entre deux pixels et le « D » perdait son trait) ; dès 13 px
@@ -450,7 +452,7 @@ public:
         }
         // .show-credit : crédit du modèle (licence obligatoire), en bas à droite ; WFS-99 (RG-06, ANO-33) : capitales de
         // 10 px à 720p (taille 14 = capitales + jambages), #8A90A6, sous le panneau
-        ui::text(r, W - gr, H - gb - 17 * k, 14 * k, car.credit, hex(MUTED, op), ui::DROITE, 0, false);
+        ui::text(r, W - gr, H - gb - 17 * k, 14 * k, creditAffiche(car), hex(MUTED, op), ui::DROITE, 0, false);   // WFS-191 (RG-03)
         if (!voiture_.ok) {   // .show-loading
             const std::string l = "Chargement du modèle 3D…";
             const float lw = ui::width(14 * k, l, 0.08f) + 36 * k;

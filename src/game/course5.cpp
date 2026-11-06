@@ -63,8 +63,9 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
         const CarDef& c = CARS[libres[j]];
         libres.erase(libres.begin() + (long)j);
         Ordinateur o;
-        o.car = c.id; o.nom = c.model; o.peinture = PEINTURES[(int)(R.next() * 16) % 16];
-        o.g.car = c.id; o.g.name = c.model;
+        o.car = c.id; o.nom = modele(c);   // WFS-191 : nom de configgame.json
+        o.peinture = PEINTURES[(int)(R.next() * 16) % 16];
+        o.g.car = c.id; o.g.name = modele(c);
         o.varVitesse = 0.96 + R.next() * 0.06;   // petite variation à chaque course (RG-04)
         // WFS-189 (RG-02 ter) : facteur × min(sa pointe, 1,10 × pointe du joueur) : un adversaire plus rapide du haut de la
         // classe reste battable ; un plus lent garde sa propre pointe. Pointes = vraies vitesses de pointe (vitessePointe)
