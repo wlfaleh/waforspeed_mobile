@@ -4591,3 +4591,20 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `src/world/plage.cpp`, `assets/world/**`, `src/world/cartes_banc.cpp` (captures de la Corniche), ligne `trace::CARTES_ACTIVES` de `src/game/trace_cartes.h` ; accroche ≤ 10 lignes annoncée : `src/platform/desktop_main.cpp`. Interdit : reste de `src/game/**`, `ville*`, `campagne.cpp`, `circuit.cpp`, `src/render/**`, `shaders/**`, `src/ui/**`, iOS.
 - **Points d'attention** : WFS-145 (E7, P1, session 0183bv2X) peut toucher la mémoire du décor de WFS-94, donc `plage.cpp` : se synchroniser souvent avec `main`, ne pas faire monter la mémoire de l'endurance (seuil 10 %). `trace_cartes.h` est aussi modifié par WFS-137 et WFS-138 : garder les deux modifications. Aucune taille de bouton touchée (ordre permanent).
 - **Plan court** : falaise et parois côté terre dans les lacets, murets / glissières côté mer, tunnel en roche éclairé, rond-point et feu du front de mer ; voiliers de la marina dans l'eau, trouées vers les barques au village ; activer la Corniche dans `CARTES_ACTIVES` ; captures `carte-plage-*` jour / nuit avant / après, parcours 0 écart, ligne `qa/Check.md`.
+
+### 2026-11-06 13:58:52 — Fin WFS-138 : fusionné par confiance (PR #141) (Claude, session dev 5bx)
+- **Fait** (`src/world/campagne.cpp`) :
+  - campagne activée au tracé 2 (`trace::CARTES_ACTIVES` = circuit, campagne, A7) ;
+  - **sol des lacets, épingles et rond-point (RG-C1)** : avant, le sol d'une branche des lacets recouvrait la route voisine (capture de l'épingle : caméra dans une dalle verte). Maintenant, pour chaque segment et chaque côté, on cherche la route voisine la plus proche dans un cône de 45° (grille de 40 m). Le profil de la zone est coupé à la mi-distance, puis corrigé en rampe jusqu'à la mi-hauteur des deux routes : les deux sols se rejoignent sans recouvrir de chaussée. Au-delà de 24° de pente, talus de roche. Les objets qui dépasseraient la mi-distance ne sont pas posés ;
+  - **vignes (RG-05, ANO-65)** : rangs continus de 0,5 × 1,2 m, un tous les 2 m, sol lu à chaque tronçon de 1,2 m, bouts communs à la même hauteur ;
+  - **col (RG-01)** : glissières GS2 et murets côté vide, panneaux A1 70 m avant chaque épingle, sapins au-dessus de 60 m, 5 sommets en fond (2 enneigés, albédo 0,80, 1 appel de dessin), cascade et vasque au pont (clairière de ±15 segments).
+- **Accroches annoncées** : `src/game/trace_cartes.h` (1 ligne, A7) ; `src/platform/desktop_main.cpp` (1 ligne, `WFS_BANC=campagne`) ; `src/world/decor_carte.h` (2 lignes, déclaration) ; `tests/test_trace.cpp` (1 ligne : la signature des cartes actives devient « circuit,campagne »). L'agent de WFS-136 n'est pas concerné (aucune ligne de `src/game/*.cpp`).
+- **Preuves** (banc local lavapipe) :
+  - 33 tests CPU verts ;
+  - `WFS_BANC=campagne` : 0 écart, parcours du départ au haut du col (4 km) en 101 s sans arrêt, puis retour à l'accueil ;
+  - `WFS_BANC=parcours` : « parcours complet : 0 écart(s) OK » ;
+  - `WFS_BANC=cartes` : code 0 ;
+  - captures regardées : col, épingle, vignes, cascade (jour et nuit), départ, village ;
+  - appels de dessin : col 345, épingle 180, vignes 264 (avant : 291 / 200 / 282 au même endroit du tracé 2).
+- **Limites (à la QA)** : roche en couleur unie (une texture de roche demande un matériau neuf, hors de la zone E2) ; sommets surtout cachés par la forêt et le brouillard de jour ; panneaux A1 non cadrés sur une capture ; cascade simple.
+
