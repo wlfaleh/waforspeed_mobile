@@ -3819,3 +3819,11 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
   - « intégration Unity / Unreal » alors que `CLAUDE.md` interdit les moteurs tiers ;
   - priorités P0 / P1 / P2 alors que `TACHES.md` utilise P1 à P4 ;
   - « créer une US » alors que c'est le PO qui crée et attribue les tickets.
+
+### 2026-11-06 01:12:15 — Agent `expert-realisme-3d` adapté au projet, sur décision de l'utilisateur (po-scrum-master)
+- **Décision de l'utilisateur** : ce qui est interdit dans le projet est retiré de l'agent et remplacé par son équivalent.
+- **Changements** :
+  - « Intégration dans Unreal Engine et Unity » devient « intégration dans le moteur maison (C++20 / Vulkan, Android), aucun moteur tiers » ;
+  - « créer une US » devient « demander l'US au PO, qui la crée et l'attribue » ;
+  - les priorités P0 / P1 / P2 deviennent P1 Urgent / P2 Haute / P3 Moyenne (échelle de `TACHES.md`) ;
+  - « moteur de jeu ciblé » devient « moteur maison ».
