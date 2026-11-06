@@ -17,7 +17,7 @@
 | Claude, session trafic | WFS-150, WFS-182, WFS-183 | socle de rendu Réalisme ; halos de frein flottants ; derniers adversaires au salon | 150 : 17:32 (fusionné, PR #143) · 182 : 15:39 · 183 : aucune branche | ✅ actif ; WFS-150 🟣 fusionné (PR #143, CI de main suivie) ; WFS-182 🟣 fusionné (PR #144) ; WFS-183 sans branche depuis 15:06 ⚠️ |
 | Claude, agent 1 (01UY1Vv2) | — (WFS-139, WFS-180 fusionnés) | Corniche (1/3) et (2/3) | 180 : 16:42 | ✅ libre |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-184 fusionné) | jingles de fin de la poursuite, sons de la route | 184 : 16:38 | ✅ libre |
-| Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/4) : rond-point à fontaine, carrefours à feux (ANO-81, ANO-84 déjà faites) | 137 : 17:12 | ✅ actif ; branche synchronisée avec `main` |
+| Claude, agent 4 (011cpqZan) | WFS-137 | Ville (1/3) : rond-point à fontaine, carrefours à feux | 137 : 18:15 | 🟣 fusionné (PR #150), suit la CI de `main` |
 | Claude, agent 5 (011cpqZaDiS2) | — (WFS-140 fusionné, PR #137) | Grand Prix | 140 : 17:02 | ✅ libre |
 | Claude, session dev expert (0183bv2X) | WFS-145 | CI de `main` rouge (test d'endurance) | 145 : 01:18 (avant la reprise de 13:10) | 🔴 P1, rien depuis la reprise de 13:10 ; le ticket lui reste (règle des 10 h sans commit) |
 | Claude, session dev 5bx | WFS-178 | Campagne (2/3) : village ; WFS-138 ✅ (CI de main verte) | 178 : 17:56 (fusionné, PR #148) | ✅ actif ; WFS-178 🟣 fusionné, CI de main suivie |

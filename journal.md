@@ -4894,3 +4894,11 @@ Run 684 (42151395694, commit 588146a) : tous les jobs verts, endurance comprise 
 - **Zone autorisée** : `.github/workflows/build.yml` (bloc `on:` et résumé du run), `.github/workflows/ios.yml` (bloc `on:` seulement, gel iOS). Interdit : jobs `endurance` / banc, `tools/qa/**`, tout autre fichier, retrait de job ou de Release.
 - **Critères** : `regles-de-gestion/WFS-185.md` RG-01 à RG-06 ; aucun run sur push de branche (vérifié sur la branche du ticket après fusion) ; run complet vert sur `main` avec commit et tickets au résumé ; nuit et `workflow_dispatch` (y compris sur une `feature/**`) gardés ; `paths-ignore` gardé.
 - **Plan** : modifier le bloc `on:` des deux fichiers, ajouter l'étape de résumé (commit + `WFS-XX` des messages), fusion par confiance si > 50 %, suivre le run de `main`, puis 🟣 → ✅ avec le numéro du run.
+
+### 2026-11-06 18:15:46 — WFS-137 fusionné par confiance (PR #150) (agent 4)
+- **RG-01, rond-point** : îlot (bordure, gazon, fontaine avec un jet animé, 3 platanes), panneaux bleus « sens giratoire » à l'entrée, amorces des deux branches sans route, immeubles le long des 4 branches. Chaque immeuble n'est gardé que s'il reste à plus de RW + 6 m de toute la route (± 360 m) : 12 éléments posés.
+- **RG-02, carrefours à feux (2 sur la carte)** : rue transversale de 9 m sans aucun objet (le plan retire les objets, commerces et panneaux), ligne d'arrêt, deux passages zébrés, mâts aux 4 coins avec optiques selon `trace::feuA`, plaques bleues sans nom, 4 piétons par carrefour qui traversent au rouge des voitures et attendent au vert.
+- **Accroches** (≤ 10 lignes) : `src/world/pietons.cpp` (7 lignes ajoutées, 3 modifiées ; la logique de traversée est dans `ville_quartiers.cpp`), `CMakeLists.txt` (1 ligne, `test_ville_lieux`). Nouveau test : `tests/test_ville_lieux.cpp`.
+- **Preuves en local** : 35 tests CPU OK, parcours complet 0 écart, banc `ville` (19 captures regardées), 233 appels de dessin au plus pour la Ville.
+- **Limites** : plaques de rue sans texte ; APK non construit en local. Je suis maintenant la CI de `main`.
+
