@@ -3768,6 +3768,10 @@ Demande du développeur (session dev expert, 0183bv2X). Décisions, écrites dan
 2) Toasts : **autorisé**. Accroche ≤ 10 lignes `toasts::pousser(titre, valeur, genre)` dans `src/ui/toasts.h/.cpp` ; +50 versé dans `activeCourse()->bonus` depuis `trace_cartes.cpp`.
 3) Duel : **autorisé**. Champ `trace=2` dans la présence (`reseau_relais.*`), refus `"version"` ; une ligne dans `salon.cpp` ; accroche ≤ 10 lignes dans `duel.cpp` `checkStart` seulement si `reseau_relais` ne suffit pas (champ absent = refus).
 
+### 2026-11-06 00:57:39 — Recette QA de nuit automatique (QA lead)
+- Sur ordre de l'utilisateur, la recette de `qa/Check.md` par le `qa-lead` est lancée **automatiquement chaque jour à 6 h 42, heure de Paris** (tâche planifiée « Recette QA de nuit (chaque jour) »), sans que l'utilisateur ait à la demander.
+- À chaque passage : toutes les lignes ☐ de `qa/Check.md` sont recettées sur les captures de `main`, avec rapports `qa/rapports/WFS-XX.md`, verdicts, anomalies mineures dans `anno.md`, bloquantes signalées au PO, puis une entrée au journal.
+- Les développeurs n'ont rien à changer : ils continuent d'ajouter leur ligne dans `qa/Check.md` au moment de chaque fusion.
 ### 2026-11-06 00:58:16 — Axe stratégique « Réalisme » : analyse, charte, 5 épics (E9 à E13) et 20 US (WFS-148 à WFS-167), priorité HAUTE (po-scrum-master)
 - **Demande de l'utilisateur** (2026-11-05, complétée le 2026-11-06) : le jeu natif dépasse la version Web, qui n'est plus la référence graphique. Il veut un rendu proche du réel (routes, voitures, personnages, environnements, éclairage, immersion), en **priorité HAUTE**. Méthode imposée : **étape par étape**, une US par partie, chaque US validée avant la suivante, **99 % de fidélité** mesurée contre des données réelles, jamais l'apparence au détriment de la précision.
 - **Analyse de l'existant** (code de `main`), détaillée dans `regles-de-gestion/DA-realisme.md` § 1 et 2 :
