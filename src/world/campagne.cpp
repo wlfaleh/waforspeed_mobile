@@ -90,7 +90,9 @@ protected:
             for (int64_t n = z0 + 40; n < z1; n += 120) { Item it; it.t = T_ZEBRA; item(n, it); }
         } else if (!std::strcmp(z, "vignes")) {
             for (int side : {-1, 1}) {
-                for (int64_t n = z0; n < z1; n += 12) for (int k = 0; k < 10; k++) { Item it; it.t = T_VINES; it.side = side; it.lat = R + 6 + k * 3.2f; it.l = 12 * SM - 0.6f; it.petit = true; item(n, it); }
+                // WFS-138 (RG-05, ANO-65) : rangs continus (blocs de 12 tronçons bord à bord, sans retrait ni trou), un tous les
+                // 2 m (écartement réel 1,5 à 2,5 m entre rangs palissés), 16 rangs de chaque côté
+                for (int64_t n = z0; n < z1; n += 12) for (int k = 0; k < 16; k++) { Item it; it.t = T_VINES; it.side = side; it.lat = R + 6 + k * 2.f; it.l = 12 * SM; it.petit = true; item(n, it); }
                 for (int64_t n = z0 + fl(D() * 10); n < z1; n += 14 + fl(D() * 10)) { const float h = 9 + D() * 4; tree(n, side, R + 3.5f, h, K_CYPRESS, 0); }
                 for (int64_t n = z0 + 80; n < z1; n += 200) { Item it; it.t = T_FARM; it.side = side; it.lat = R + 45 + D() * 20; it.k = 0; item(n, it); }
             }
@@ -177,33 +179,34 @@ protected:
             }
             break;
         }
-        case T_VINES: {   // rang de vigne : boîte de DECOR.vines (0,7 × 1,2 m, effilée de 0,6 en largeur et en longueur),
-            // posée sur le coteau à chaque tronçon (WFS-93) : le rang suit la pente et les virages, plus de marches
-            const float Ls = it.l / (float)SEG_M, e = 0.2f * Ls;   // longueur et retrait du dessus à chaque bout (tronçons)
-            const double sA = (double)a + (double)std::lround(Ls / 2) - Ls / 2.0, sB = sA + Ls;
-            double sb[24]; int n = 0;   // tronçons du bas : bouts du rang et tronçons entiers entre les deux
-            sb[n++] = sA;
-            for (int64_t k = (int64_t)std::floor(sA) + 1; k < sB && n < 23; k++) sb[n++] = (double)k;
-            sb[n++] = sB;
-            const float yb = gy(it.lat) - 0.05f, wb = 0.35f, wt = 0.21f, x0 = s * it.lat;
-            auto P = [&](double sg, float x, float dy) { const TrackPoint q = t.point(sg * SEG, x); return vec3{(float)q.x, (float)q.y + dy, (float)q.z}; };
-            vec3 B[24][2], T[24][2];   // [tronçon][côté −r, +r]
+        case T_VINES: {   // WFS-138 (RG-05, ANO-65) : rang de vigne palissé = bande continue de 0,5 m de large (0,4 m au sommet) et
+            // 1,2 m de haut, posée sur le sol à chaque tronçon (1,2 m, ≤ 2 m) des deux côtés du rang : elle suit la pente et les
+            // virages ; les blocs voisins partagent leurs bouts (même abscisse, même hauteur) : ni trou ni marche
+            const double sA = (double)a, sB = sA + it.l / (float)SEG_M;
+            const int n = (int)std::lround(sB - sA) + 1;
+            const float wb = 0.25f, wt = 0.2f, x0 = s * it.lat, H = 1.2f;
+            auto P = [&](double sg, float x, float y) { const TrackPoint q = t.point(sg * SEG, x); return vec3{(float)q.x, (float)q.y + y, (float)q.z}; };
+            const vec2 c = uv(C_VINE);
+            vec3 B0[2], T0[2];
             for (int i = 0; i < n; i++) {
-                const double st = sA + e + (sb[i] - sA) * (Ls - 2 * e) / Ls;   // dessus plus court : même fraction du rang
+                const double sg = sA + i;
+                // sol lu au segment de l'échantillon (profil de CE segment) : le bout commun de deux blocs a la même hauteur
+                const int64_t ag = (int64_t)sg;
+                auto gyS = [&](float lat) { return solY(zone(ag), ag, it.side, lat); };
+                const float yg = gyS(it.lat);
+                vec3 B1[2], T1[2];
                 for (int k = 0; k < 2; k++) {
                     const float sx = k ? 1.f : -1.f;
-                    B[i][k] = P(sb[i], x0 + sx * wb, gy(it.lat + s * sx * wb) - 0.05f);
-                    T[i][k] = P(st, x0 + sx * wt, yb + 1.2f);
+                    B1[k] = P(sg, x0 + sx * wb, gyS(it.lat + s * sx * wb) - 0.05f);
+                    T1[k] = P(sg, x0 + sx * wt, yg + H);
                 }
+                if (i > 0) {   // ordre des sommets de box : normales vers l'extérieur
+                    quad(S, T0[0], T0[1], T1[1], T1[0], c);
+                    quad(S, B0[1], B1[1], T1[1], T0[1], c);
+                    quad(S, B1[0], B0[0], T0[0], T1[0], c);
+                }
+                for (int k = 0; k < 2; k++) { B0[k] = B1[k]; T0[k] = T1[k]; }
             }
-            const vec2 c = uv(C_VINE);   // ordre des sommets de box : normales vers l'extérieur
-            for (int i = 0; i + 1 < n; i++) {
-                quad(S, T[i][0], T[i][1], T[i + 1][1], T[i + 1][0], c);
-                quad(S, B[i][1], B[i + 1][1], T[i + 1][1], T[i][1], c);
-                quad(S, B[i + 1][0], B[i][0], T[i][0], T[i + 1][0], c);
-            }
-            quad(S, B[n - 1][1], B[n - 1][0], T[n - 1][0], T[n - 1][1], c);
-            quad(S, B[0][0], B[0][1], T[0][1], T[0][0], c);
             break;
         }
         default: break;
