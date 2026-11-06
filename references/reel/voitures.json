@@ -1,0 +1,2497 @@
+{
+ "fichier": "voitures.json",
+ "description": "Dimensions constructeur des 20 voitures du jeu — WFS-148 RG-01 (a)",
+ "sources": {
+  "FICHE-GOLF": {
+   "titre": "Volkswagen Golf 8 GTI : données techniques (Volkswagen Croatie) ; voies et pneus : auto-data.net",
+   "lien": "https://www.volkswagen.hr/golf/golf-gti/tehnicki-podaci/gti",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "hauteur 1454 (sans barres de toit, Volkswagen) à 1472 selon la source ; voies : https://www.auto-data.net/en/compare&carId1=52152&carId2=&carId3= ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-M4": {
+   "titre": "BMW M4 Competition (G82) : auto-data.net ; pneus : annonce carsales.com.au",
+   "lien": "https://www.auto-data.net/en/bmw-m4-g82-competition-3.0-510hp-m-xdrive-m-steptronic-43389",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "pneus : https://www.carsales.com.au/cars/details/2021-bmw-m4-competition-g82-auto/OAG-AD-26079341/ ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-P911": {
+   "titre": "Porsche 911 Carrera 4S (992) : autotijd.be ; pneus : autostw.com.au",
+   "lien": "https://autotijd.be/en/dimensions/porsche/911/carrera-4s-450-hp-awd",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "voies propres à la Carrera 4S non trouvées ; pneus : https://autostw.com.au/blogs/news/porsche-911-carrera-4s-tyre-size-guide-awd-wheel-specs-pcd-5x130-torque-autosport-tyreworld ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-GALLARDO": {
+   "titre": "Lamborghini Gallardo LP 560-4 Spyder : auto-data.net, lambocars.com",
+   "lien": "https://www.auto-data.net/en/lamborghini-gallardo-lp-560-4-spyder-5.2-v10-560hp-awd-17485",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "une source donne 1165 mm de haut (autre carrosserie probable) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-P208": {
+   "titre": "Peugeot 208 (P21, 2019-2023) : autotijd.be",
+   "lien": "https://autotijd.be/en/dimensions/peugeot/208-2019-2023",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "pneus de la 1.2 PureTech (205/45 R17 en option) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-ABARTH": {
+   "titre": "Abarth 595 : fiche technique Stellantis (2016) ; voies : cararac.com ; pneus : carsguide.com.au",
+   "lien": "https://www.media.stellantis.com/uploads/em/2016/ABARTH/Schde_tecniche/160607_Abarth_595_Technical-Specs_ENG.pdf",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "le modèle du jeu est une « Abarth 500 » : données de l'Abarth 595 (même carrosserie, à confirmer) ; pneus selon version (205/40 R17 en Competizione) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-TCROSS": {
+   "titre": "Volkswagen T-Cross (2019-2023) : Volkswagen UK, autotijd.be ; pneus : carsales.com.au",
+   "lien": "https://volkswagen.co.uk/en/new/t-cross/t-cross-dimensions.html",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "empattement 2551 (Volkswagen UK) ou 2563 (CarExpert) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-COMPASS": {
+   "titre": "Jeep Compass II (MP, restylée 2021) : autotijd.be, vehiclesizes.com, auto-data.net",
+   "lien": "https://autotijd.be/en/dimensions/jeep/compass-2021-2025",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "hauteur selon version (1657 : Trailhawk) ; pneus non trouvés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-S3": {
+   "titre": "Audi S3 Limousine (8V, 2013-2016) : angurten.de, encycarpedia.com, carexpert.co.nz",
+   "lien": "https://www.angurten.de/is/abmessungen/1472-S3+Limousine",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "deux jeux de valeurs selon la source ; voie arrière 60,1 in convertie ; pneus de la berline non confirmés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-X5": {
+   "titre": "BMW X5 (G05 LCI, 2023) xDrive40i : vehiclesizes.com",
+   "lien": "https://www.vehiclesizes.com/cars/bmw/x5/x5-g05-lci-facelift-2023-suv-2024",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "voies et pneus de la 40i restylée non trouvés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-GIULIA": {
+   "titre": "Alfa Romeo Giulia Quadrifoglio : guide d'achat Alfa Romeo Australie",
+   "lien": "https://tools.alfaromeo.com.au/vehicles/Giulia-Quadrifoglio-Buyers-Guide.pdf",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-A45": {
+   "titre": "Mercedes-AMG A 45 4MATIC (W176 restylée, 2015-2018) : paultan.org, auto-data.net",
+   "lien": "https://paultan.org/research/mercedes-benz/a-amg/w176-facelift/a-45-4matic-2016/",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "le modèle du jeu est daté de 2018 (W176) ; pneus non confirmés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-MODEL3": {
+   "titre": "Tesla Model 3 (2017-2023) : basenor.com, autotijd.be",
+   "lien": "https://www.basenor.com/pages/model-3-legacy-dimensions",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "longueur 4720 sur certaines versions ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-CORSA": {
+   "titre": "Opel Corsa F (2019-2023) : autotijd.be, cararac.com",
+   "lien": "https://autotijd.be/en/dimensions/opel/corsa-2020-2023",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "pneus selon version (non confirmés) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-GT86": {
+   "titre": "Toyota GT86 (2012-2020) : autotijd.be",
+   "lien": "https://autotijd.be/en/dimensions/toyota/gt86-2017-2020",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "hauteur 1320 sur certaines versions ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-ELANTRA": {
+   "titre": "Hyundai Elantra N (CN7 restylée, 2024) : auto-data.net, conceptcarz.com, edmunds.com",
+   "lien": "https://www.auto-data.net/en/hyundai-elantra-vii-cn7-facelift-2023-n-2.0-t-gdi-286hp-52432",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-V60": {
+   "titre": "Volvo V60 Polestar (2013-2015) : Volvo (assistance, tableau des dimensions), auto-data.net",
+   "lien": "https://www.auto-data.net/en/volvo-v60-i-facelift-2013-polestar-2.0-t6-367hp-awd-geartronic-23138",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "largeur 1865 ou 1899 (rétroviseurs rabattus) selon la source ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-RRSPORT": {
+   "titre": "Land Rover Range Rover Sport (L461, 2023) : vehiclesizes.com, carexpert.co.nz",
+   "lien": "https://www.vehiclesizes.com/cars/land-rover/range-rover-sport/range-rover-sport-iii-suv-2023",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "largeur rétroviseurs rabattus ; voie arrière et pneus (selon version) non trouvés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-MUSTANG": {
+   "titre": "Ford Mustang Shelby GT500 (2020) : encycarpedia.com, carsales.com.au ; pneus : tirewheelguide.com",
+   "lien": "https://www.encycarpedia.com/ford/20-mustang-shelby-gt500-coupe",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  },
+  "FICHE-SF90": {
+   "titre": "Ferrari SF90 XX Stradale : ferrari.com (article du record de Fiorano)",
+   "lien": "https://ferrari.com/en-EN/articles/the-ferrari-sf90-xx-stradale-sets-a-1-17309-lap-record-at-fiorano-for-a-road-going-car",
+   "acces": "non_ouvert",
+   "annee": "2026 (consultation)",
+   "note": "largeur 2014 (Ferrari) ou 2000 (concessionnaires) ; pneus de la XX non trouvés ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+  }
+ },
+ "mesures": [
+  {
+   "valeur": 4289,
+   "id": "voiture.golf.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1789,
+   "id": "voiture.golf.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1454,
+   "max": 1472,
+   "id": "voiture.golf.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2627,
+   "id": "voiture.golf.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1539,
+   "max": 1541,
+   "id": "voiture.golf.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1513,
+   "max": 1518,
+   "id": "voiture.golf.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.golf.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 225/40 R18",
+   "unite": "mm",
+   "valeur": 637.2,
+   "pneu": "225/40 R18",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.golf.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 225/40 R18",
+   "unite": "mm",
+   "valeur": 637.2,
+   "pneu": "225/40 R18",
+   "source": "FICHE-GOLF",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4794,
+   "id": "voiture.m4.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1887,
+   "id": "voiture.m4.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1393,
+   "max": 1394,
+   "id": "voiture.m4.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2857,
+   "id": "voiture.m4.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1617,
+   "id": "voiture.m4.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1605,
+   "id": "voiture.m4.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.m4.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 275/35 R19",
+   "unite": "mm",
+   "valeur": 675.1,
+   "pneu": "275/35 R19",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.m4.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 285/30 R20",
+   "unite": "mm",
+   "valeur": 679.0,
+   "pneu": "285/30 R20",
+   "source": "FICHE-M4",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4519,
+   "max": 4535,
+   "id": "voiture.p911.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-P911",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1852,
+   "id": "voiture.p911.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-P911",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1300,
+   "id": "voiture.p911.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-P911",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2450,
+   "id": "voiture.p911.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-P911",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": null,
+   "id": "voiture.p911.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-P911",
+   "statut": "a_sourcer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   },
+   "note": "valeur non trouvée dans les résultats de recherche"
+  },
+  {
+   "valeur": null,
+   "id": "voiture.p911.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-P911",
+   "statut": "a_sourcer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   },
+   "note": "valeur non trouvée dans les résultats de recherche"
+  },
+  {
+   "id": "voiture.p911.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 245/35 R20",
+   "unite": "mm",
+   "valeur": 679.5,
+   "pneu": "245/35 R20",
+   "source": "FICHE-P911",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.p911.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 305/30 R21",
+   "unite": "mm",
+   "valeur": 716.4,
+   "pneu": "305/30 R21",
+   "source": "FICHE-P911",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4345,
+   "id": "voiture.gallardo.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1900,
+   "id": "voiture.gallardo.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1184,
+   "id": "voiture.gallardo.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2560,
+   "id": "voiture.gallardo.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1632,
+   "id": "voiture.gallardo.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1597,
+   "id": "voiture.gallardo.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.gallardo.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 235/35 R19",
+   "unite": "mm",
+   "valeur": 647.1,
+   "pneu": "235/35 R19",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.gallardo.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 295/30 R19",
+   "unite": "mm",
+   "valeur": 659.6,
+   "pneu": "295/30 R19",
+   "source": "FICHE-GALLARDO",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4055,
+   "id": "voiture.p208.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1765,
+   "id": "voiture.p208.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1430,
+   "id": "voiture.p208.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2540,
+   "id": "voiture.p208.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1500,
+   "id": "voiture.p208.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1500,
+   "id": "voiture.p208.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.p208.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 195/55 R16",
+   "unite": "mm",
+   "valeur": 620.9,
+   "pneu": "195/55 R16",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.p208.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 195/55 R16",
+   "unite": "mm",
+   "valeur": 620.9,
+   "pneu": "195/55 R16",
+   "source": "FICHE-P208",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 3660,
+   "id": "voiture.abarth.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1627,
+   "id": "voiture.abarth.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1485,
+   "id": "voiture.abarth.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2300,
+   "id": "voiture.abarth.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1415,
+   "id": "voiture.abarth.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1408,
+   "id": "voiture.abarth.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.abarth.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 195/45 R16",
+   "unite": "mm",
+   "valeur": 581.9,
+   "pneu": "195/45 R16",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.abarth.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 195/45 R16",
+   "unite": "mm",
+   "valeur": 581.9,
+   "pneu": "195/45 R16",
+   "source": "FICHE-ABARTH",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4108,
+   "id": "voiture.tcross.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1760,
+   "id": "voiture.tcross.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1583,
+   "max": 1584,
+   "id": "voiture.tcross.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 2551,
+   "max": 2563,
+   "id": "voiture.tcross.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1526,
+   "max": 1534,
+   "id": "voiture.tcross.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1504,
+   "max": 1512,
+   "id": "voiture.tcross.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.tcross.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 205/60 R16",
+   "unite": "mm",
+   "valeur": 652.4,
+   "pneu": "205/60 R16",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.tcross.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 205/60 R16",
+   "unite": "mm",
+   "valeur": 652.4,
+   "pneu": "205/60 R16",
+   "source": "FICHE-TCROSS",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4394,
+   "max": 4404,
+   "id": "voiture.compass.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-COMPASS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1819,
+   "id": "voiture.compass.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-COMPASS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1624,
+   "max": 1657,
+   "id": "voiture.compass.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-COMPASS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2636,
+   "id": "voiture.compass.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-COMPASS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1542,
+   "max": 1550,
+   "id": "voiture.compass.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-COMPASS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1532,
+   "id": "voiture.compass.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-COMPASS",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.compass.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-COMPASS",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.compass.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-COMPASS",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4456,
+   "max": 4469,
+   "id": "voiture.s3.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-S3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1796,
+   "id": "voiture.s3.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-S3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1392,
+   "max": 1416,
+   "id": "voiture.s3.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-S3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 2631,
+   "max": 2637,
+   "id": "voiture.s3.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-S3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1555,
+   "id": "voiture.s3.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-S3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1527,
+   "id": "voiture.s3.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-S3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.s3.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-S3",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.s3.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-S3",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4935,
+   "id": "voiture.x5.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-X5",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2004,
+   "id": "voiture.x5.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-X5",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1762,
+   "max": 1765,
+   "id": "voiture.x5.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-X5",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2975,
+   "id": "voiture.x5.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-X5",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": null,
+   "id": "voiture.x5.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-X5",
+   "statut": "a_sourcer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   },
+   "note": "valeur non trouvée dans les résultats de recherche"
+  },
+  {
+   "valeur": null,
+   "id": "voiture.x5.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-X5",
+   "statut": "a_sourcer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   },
+   "note": "valeur non trouvée dans les résultats de recherche"
+  },
+  {
+   "id": "voiture.x5.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-X5",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.x5.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-X5",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4639,
+   "id": "voiture.giulia.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1873,
+   "id": "voiture.giulia.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1426,
+   "id": "voiture.giulia.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2820,
+   "id": "voiture.giulia.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1555,
+   "max": 1559,
+   "id": "voiture.giulia.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1607,
+   "id": "voiture.giulia.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.giulia.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 245/35 R19",
+   "unite": "mm",
+   "valeur": 654.1,
+   "pneu": "245/35 R19",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.giulia.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 285/30 R19",
+   "unite": "mm",
+   "valeur": 653.6,
+   "pneu": "285/30 R19",
+   "source": "FICHE-GIULIA",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4367,
+   "id": "voiture.a45.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-A45",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1780,
+   "id": "voiture.a45.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-A45",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1417,
+   "id": "voiture.a45.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-A45",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2699,
+   "id": "voiture.a45.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-A45",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1557,
+   "id": "voiture.a45.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-A45",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1561,
+   "id": "voiture.a45.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-A45",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.a45.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-A45",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.a45.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-A45",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4694,
+   "max": 4720,
+   "id": "voiture.model3.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1849,
+   "max": 1850,
+   "id": "voiture.model3.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1441,
+   "max": 1443,
+   "id": "voiture.model3.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2875,
+   "id": "voiture.model3.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1580,
+   "max": 1584,
+   "id": "voiture.model3.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1580,
+   "max": 1584,
+   "id": "voiture.model3.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.model3.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 235/45 R18",
+   "unite": "mm",
+   "valeur": 668.7,
+   "pneu": "235/45 R18",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.model3.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 235/45 R18",
+   "unite": "mm",
+   "valeur": 668.7,
+   "pneu": "235/45 R18",
+   "source": "FICHE-MODEL3",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4060,
+   "max": 4061,
+   "id": "voiture.corsa.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-CORSA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1765,
+   "id": "voiture.corsa.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-CORSA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1433,
+   "max": 1435,
+   "id": "voiture.corsa.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-CORSA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2538,
+   "id": "voiture.corsa.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-CORSA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1489,
+   "max": 1501,
+   "id": "voiture.corsa.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-CORSA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1488,
+   "max": 1500,
+   "id": "voiture.corsa.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-CORSA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.corsa.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-CORSA",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.corsa.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-CORSA",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4240,
+   "id": "voiture.gt86.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1775,
+   "id": "voiture.gt86.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1285,
+   "max": 1320,
+   "id": "voiture.gt86.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2570,
+   "id": "voiture.gt86.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1520,
+   "id": "voiture.gt86.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1540,
+   "id": "voiture.gt86.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.gt86.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 215/45 R17",
+   "unite": "mm",
+   "valeur": 625.3,
+   "pneu": "215/45 R17",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.gt86.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 215/45 R17",
+   "unite": "mm",
+   "valeur": 625.3,
+   "pneu": "215/45 R17",
+   "source": "FICHE-GT86",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4675,
+   "max": 4710,
+   "id": "voiture.elantra.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1825,
+   "max": 1826,
+   "id": "voiture.elantra.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1415,
+   "id": "voiture.elantra.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2720,
+   "id": "voiture.elantra.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1584,
+   "id": "voiture.elantra.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1579,
+   "id": "voiture.elantra.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.elantra.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 245/35 R19",
+   "unite": "mm",
+   "valeur": 654.1,
+   "pneu": "245/35 R19",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.elantra.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 245/35 R19",
+   "unite": "mm",
+   "valeur": 654.1,
+   "pneu": "245/35 R19",
+   "source": "FICHE-ELANTRA",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4635,
+   "id": "voiture.v60.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1865,
+   "max": 1899,
+   "id": "voiture.v60.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1484,
+   "id": "voiture.v60.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2776,
+   "id": "voiture.v60.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1578,
+   "max": 1588,
+   "id": "voiture.v60.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1575,
+   "max": 1585,
+   "id": "voiture.v60.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.v60.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 245/35 R20",
+   "unite": "mm",
+   "valeur": 679.5,
+   "pneu": "245/35 R20",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.v60.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 245/35 R20",
+   "unite": "mm",
+   "valeur": 679.5,
+   "pneu": "245/35 R20",
+   "source": "FICHE-V60",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4946,
+   "max": 4970,
+   "id": "voiture.rrsport.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-RRSPORT",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 2043,
+   "max": 2047,
+   "id": "voiture.rrsport.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-RRSPORT",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 1814,
+   "max": 1820,
+   "id": "voiture.rrsport.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-RRSPORT",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2997,
+   "id": "voiture.rrsport.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-RRSPORT",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1702,
+   "id": "voiture.rrsport.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-RRSPORT",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": null,
+   "id": "voiture.rrsport.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-RRSPORT",
+   "statut": "a_sourcer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   },
+   "note": "valeur non trouvée dans les résultats de recherche"
+  },
+  {
+   "id": "voiture.rrsport.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-RRSPORT",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.rrsport.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-RRSPORT",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 4813,
+   "max": 4831,
+   "id": "voiture.mustang.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1946,
+   "id": "voiture.mustang.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1379,
+   "id": "voiture.mustang.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 2718,
+   "max": 2720,
+   "id": "voiture.mustang.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1618,
+   "id": "voiture.mustang.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1633,
+   "id": "voiture.mustang.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.mustang.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (avant), 305/30 R20",
+   "unite": "mm",
+   "valeur": 691.0,
+   "pneu": "305/30 R20",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.mustang.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu (arrière), 315/30 R20",
+   "unite": "mm",
+   "valeur": 697.0,
+   "pneu": "315/30 R20",
+   "source": "FICHE-MUSTANG",
+   "statut": "a_confirmer",
+   "formule": "ETRTO : jante × 25,4 + 2 × largeur × série / 100",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 4850,
+   "id": "voiture.sf90.longueur",
+   "domaine": "voitures",
+   "grandeur": "longueur hors tout",
+   "unite": "mm",
+   "source": "FICHE-SF90",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "min": 2000,
+   "max": 2014,
+   "id": "voiture.sf90.largeur",
+   "domaine": "voitures",
+   "grandeur": "largeur sans rétroviseurs",
+   "unite": "mm",
+   "source": "FICHE-SF90",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1225,
+   "id": "voiture.sf90.hauteur",
+   "domaine": "voitures",
+   "grandeur": "hauteur",
+   "unite": "mm",
+   "source": "FICHE-SF90",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 2650,
+   "id": "voiture.sf90.empattement",
+   "domaine": "voitures",
+   "grandeur": "empattement",
+   "unite": "mm",
+   "source": "FICHE-SF90",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1683,
+   "id": "voiture.sf90.voie_av",
+   "domaine": "voitures",
+   "grandeur": "voie avant",
+   "unite": "mm",
+   "source": "FICHE-SF90",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "valeur": 1674,
+   "id": "voiture.sf90.voie_ar",
+   "domaine": "voitures",
+   "grandeur": "voie arrière",
+   "unite": "mm",
+   "source": "FICHE-SF90",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.sf90.roue_av",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-SF90",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "voiture.sf90.roue_ar",
+   "domaine": "voitures",
+   "grandeur": "diamètre extérieur du pneu",
+   "unite": "mm",
+   "valeur": null,
+   "source": "FICHE-SF90",
+   "statut": "a_sourcer",
+   "note": "dimension des pneus non trouvée",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  }
+ ]
+}

@@ -1,0 +1,1138 @@
+{
+ "fichier": "colorchecker.json",
+ "description": "Charte ColorChecker Classic 24 cases — WFS-148 RG-01 (e), RG-04",
+ "sources": {
+  "XRITE-2016": {
+   "titre": "New color specifications for ColorChecker SG and Classic Charts (valeurs CIE L*a*b* D50, 2°, après novembre 2014)",
+   "editeur": "X-Rite",
+   "annee": "2016",
+   "lien": "https://www.xrite.com/service-support/new_color_specifications_for_colorchecker_sg_and_classic_charts",
+   "acces": "non_ouvert",
+   "note": "valeurs lues dans le jeu de données de colour-science 0.4.7 (BSD-3), qui les reprend de X-Rite (2016) : DATA_COLORCHECKER24_AFTER_NOV2014_CIE_LAB"
+  },
+  "COLOUR-SCI": {
+   "titre": "colour-science 0.4.7 (conversions Lab → XYZ → sRGB, adaptation de Bradford, ΔE CIE 2000)",
+   "editeur": "Colour Developers",
+   "annee": "2026",
+   "lien": "https://pypi.org/project/colour-science/",
+   "licence": "BSD-3-Clause",
+   "acces": "ouvert"
+  }
+ },
+ "mesures": [
+  {
+   "id": "cc.01",
+   "domaine": "couleurs",
+   "grandeur": "case 1 « peau foncée » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    37.54,
+    14.37,
+    14.92
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.01.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 1 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.17368,
+    0.07879,
+    0.05286
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    116,
+    79,
+    65
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.02",
+   "domaine": "couleurs",
+   "grandeur": "case 2 « peau claire » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    64.66,
+    19.27,
+    17.5
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.02.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 2 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.55978,
+    0.27745,
+    0.21089
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    197,
+    144,
+    127
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.03",
+   "domaine": "couleurs",
+   "grandeur": "case 3 « ciel bleu » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    49.32,
+    -3.82,
+    -22.54
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.03.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 3 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.1042,
+    0.18892,
+    0.32893
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    91,
+    120,
+    155
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.04",
+   "domaine": "couleurs",
+   "grandeur": "case 4 « feuillage » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    43.46,
+    -12.74,
+    22.72
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.04.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 4 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.10574,
+    0.15075,
+    0.05084
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    91,
+    108,
+    64
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.05",
+   "domaine": "couleurs",
+   "grandeur": "case 5 « fleur bleue » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    54.94,
+    9.61,
+    -24.79
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.05.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 5 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.22744,
+    0.21241,
+    0.42645
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    131,
+    127,
+    175
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.06",
+   "domaine": "couleurs",
+   "grandeur": "case 6 « vert bleuté » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    70.48,
+    -32.26,
+    -0.37
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.06.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 6 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.11529,
+    0.50744,
+    0.41113
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    95,
+    189,
+    172
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.07",
+   "domaine": "couleurs",
+   "grandeur": "case 7 « orange » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    62.73,
+    35.83,
+    56.5
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.07.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 7 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.7459,
+    0.20214,
+    0.02987
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    224,
+    124,
+    48
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.08",
+   "domaine": "couleurs",
+   "grandeur": "case 8 « bleu violacé » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    39.43,
+    10.75,
+    -45.17
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.08.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 8 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.05874,
+    0.10118,
+    0.38775
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    69,
+    90,
+    167
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.09",
+   "domaine": "couleurs",
+   "grandeur": "case 9 « rouge moyen » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    50.57,
+    48.64,
+    16.67
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.09.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 9 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.56013,
+    0.08015,
+    0.11459
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    197,
+    80,
+    95
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.10",
+   "domaine": "couleurs",
+   "grandeur": "case 10 « violet » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    30.1,
+    22.54,
+    -20.87
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.10.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 10 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.10917,
+    0.042,
+    0.13814
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    93,
+    58,
+    104
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.11",
+   "domaine": "couleurs",
+   "grandeur": "case 11 « vert jaune » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    71.77,
+    -24.13,
+    58.19
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.11.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 11 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.33275,
+    0.49739,
+    0.0426
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    156,
+    187,
+    58
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.12",
+   "domaine": "couleurs",
+   "grandeur": "case 12 « jaune orangé » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    71.51,
+    18.24,
+    67.37
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.12.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 12 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.77104,
+    0.35792,
+    0.02045
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    227,
+    161,
+    39
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.13",
+   "domaine": "couleurs",
+   "grandeur": "case 13 « bleu » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    28.37,
+    15.42,
+    -49.8
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.13.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 13 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.02096,
+    0.04753,
+    0.28413
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    40,
+    62,
+    145
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.14",
+   "domaine": "couleurs",
+   "grandeur": "case 14 « vert » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    54.38,
+    -39.72,
+    32.27
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.14.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 14 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.04606,
+    0.29205,
+    0.06148
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    61,
+    147,
+    70
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.15",
+   "domaine": "couleurs",
+   "grandeur": "case 15 « rouge » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    42.43,
+    51.05,
+    28.62
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.15.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 15 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.44617,
+    0.03641,
+    0.04055
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    178,
+    54,
+    57
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.16",
+   "domaine": "couleurs",
+   "grandeur": "case 16 « jaune » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    81.8,
+    2.67,
+    80.41
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.16.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 16 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.84168,
+    0.57441,
+    0.00466
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    236,
+    200,
+    15
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.17",
+   "domaine": "couleurs",
+   "grandeur": "case 17 « magenta » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    50.63,
+    51.28,
+    -14.12
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.17.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 17 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.52234,
+    0.07782,
+    0.28931
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    191,
+    79,
+    146
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.18",
+   "domaine": "couleurs",
+   "grandeur": "case 18 « cyan » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    49.57,
+    -29.71,
+    -28.32
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.18.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 18 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    -0.04392,
+    0.23366,
+    0.37719
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    0,
+    133,
+    165
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.19",
+   "domaine": "couleurs",
+   "grandeur": "case 19 « blanc 9.5 » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    95.19,
+    -1.03,
+    2.93
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.19.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 19 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.87953,
+    0.88503,
+    0.83425
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    241,
+    242,
+    235
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.20",
+   "domaine": "couleurs",
+   "grandeur": "case 20 « neutre 8 » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    81.29,
+    -0.57,
+    0.44
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.20.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 20 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.58449,
+    0.59217,
+    0.58448
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    201,
+    202,
+    201
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.21",
+   "domaine": "couleurs",
+   "grandeur": "case 21 « neutre 6.5 » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    66.89,
+    -0.75,
+    -0.06
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.21.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 21 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.35769,
+    0.36708,
+    0.36527
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    161,
+    163,
+    163
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.22",
+   "domaine": "couleurs",
+   "grandeur": "case 22 « neutre 5 » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    50.76,
+    -0.13,
+    0.14
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.22.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 22 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.19009,
+    0.19087,
+    0.18981
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    121,
+    121,
+    121
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.23",
+   "domaine": "couleurs",
+   "grandeur": "case 23 « neutre 3.5 » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    35.63,
+    -0.46,
+    -0.48
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.23.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 23 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.08593,
+    0.08874,
+    0.0898
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    83,
+    84,
+    85
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  },
+  {
+   "id": "cc.24",
+   "domaine": "couleurs",
+   "grandeur": "case 24 « noir 2 » : CIE L*a*b* (D50, 2°)",
+   "unite": "L*a*b*",
+   "valeur": [
+    20.64,
+    0.07,
+    -0.46
+   ],
+   "source": "XRITE-2016",
+   "statut": "a_confirmer",
+   "note": "lu dans colour-science (copie publiée des valeurs de X-Rite) ; page de X-Rite non ouverte (réseau)",
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2,
+    "regle": "DA-realisme.md § 4 (ΔE2000 ≤ 2)"
+   }
+  },
+  {
+   "id": "cc.24.albedo",
+   "domaine": "couleurs",
+   "grandeur": "case 24 : albédo sRGB linéaire (D65, Bradford)",
+   "unite": "sRGB linéaire",
+   "valeur": [
+    0.03135,
+    0.0315,
+    0.03232
+   ],
+   "source": "COLOUR-SCI",
+   "statut": "derive",
+   "formule": "Lab D50 → XYZ D50 → Bradford → XYZ D65 → sRGB linéaire (colour-science)",
+   "srgb8": [
+    50,
+    50,
+    50
+   ],
+   "tolerance": {
+    "type": "deltaE2000",
+    "valeur": 2
+   }
+  }
+ ],
+ "controle_deltaE2000": [
+  {
+   "a": [
+    37.54,
+    14.37,
+    14.92
+   ],
+   "b": [
+    64.66,
+    19.27,
+    17.5
+   ],
+   "deltaE2000": 27.195
+  },
+  {
+   "a": [
+    49.32,
+    -3.82,
+    -22.54
+   ],
+   "b": [
+    28.37,
+    15.42,
+    -49.8
+   ],
+   "deltaE2000": 19.2956
+  },
+  {
+   "a": [
+    70.48,
+    -32.26,
+    -0.37
+   ],
+   "b": [
+    49.57,
+    -29.71,
+    -28.32
+   ],
+   "deltaE2000": 25.1189
+  },
+  {
+   "a": [
+    95.19,
+    -1.03,
+    2.93
+   ],
+   "b": [
+    20.64,
+    0.07,
+    -0.46
+   ],
+   "deltaE2000": 67.6595
+  },
+  {
+   "a": [
+    42.43,
+    51.05,
+    28.62
+   ],
+   "b": [
+    50.63,
+    51.28,
+    -14.12
+   ],
+   "deltaE2000": 22.6425
+  },
+  {
+   "a": [
+    62.73,
+    35.83,
+    56.5
+   ],
+   "b": [
+    71.51,
+    18.24,
+    67.37
+   ],
+   "deltaE2000": 14.5465
+  },
+  {
+   "a": [
+    43.46,
+    -12.74,
+    22.72
+   ],
+   "b": [
+    54.38,
+    -39.72,
+    32.27
+   ],
+   "deltaE2000": 16.3238
+  },
+  {
+   "a": [
+    81.29,
+    -0.57,
+    0.44
+   ],
+   "b": [
+    66.89,
+    -0.75,
+    -0.06
+   ],
+   "deltaE2000": 10.6397
+  }
+ ]
+}
