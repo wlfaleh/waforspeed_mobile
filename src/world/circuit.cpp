@@ -27,6 +27,7 @@
 #include "../render/eclairage.h"
 #include "decor_carte.h"
 #include "enseignes.h"   // AtlasTextes (WFS-71) : texte des panneaux publicitaires (WFS-93)
+#include "pietons.h"     // WFS-199 : spectateurs (personnages du jeu allégés, foule::silhouette)
 
 namespace wfs {
 namespace carte {
@@ -42,9 +43,18 @@ enum { TX_150, TX_100, TX_50, TX_VIP, TX_BAR, TX_FANS, TX_CAMPING, TX_PADDOCK };
 // couleurs des maillots du public : sièges, drapeaux et couleurs des équipes de la palette commune
 const int MAILLOTS[12] = {C_SEAT0, C_SEAT0 + 1, C_SEAT0 + 2, C_SEAT0 + 3, C_FLAG0, C_FLAG0 + 1, C_FLAG0 + 2, C_FLAG0 + 3,
                           C_FLAG0 + 4, C_FLAG0 + 5, C_GARAGE0 + 4, C_WOOD};
-constexpr int PEAU = C_WALLS0 + 1;   // teinte de peau (case 0xe9c9a4 de la palette)
 constexpr int64_t AVANT_VIRAGE = 50;   // 60 m (RG-C1)
 constexpr int MAX_DRAPEAUX = 16;       // drapeaux animés dessinés au plus (un appel de dessin chacun)
+// WFS-199 (RG-03) : tribune à l'échelle réelle : rang de 0,85 m, contremarche 0,42 m, muret avant de 0,9 m, sièges de 0,5 m
+// (assise 0,45 m), allée d'escalier tous les 10 m ; RG-04 : spectateurs au plus par tribune (Haute / Basse), 400 / 150 en tout
+constexpr float RANG = 0.85f, MARCHE = 0.42f, MURET = 0.9f, SIEGE = 0.5f, ALLEE = 1.2f, ENTRE_ALLEES = 10.f;
+constexpr int SPECTATEURS_MAX[2][2] = {{250, 150}, {95, 55}};   // [Basse][tribune 0 départ, 1 épingle]
+inline float hauteurRang(int k) { return MURET + k * MARCHE; }
+// couleurs des spectateurs (cases de la palette commune : rien d'ajouté)
+const int PEAUX[4] = {C_WALLS0 + 1, C_CHURCH + 10, C_WOOD, C_OAK + 3};
+const int CHEVEUX[5] = {C_OAK, C_OAK + 2, C_CHURCH + 9, C_WOOD + 9, C_TIRE + 3};
+const int BAS_[7] = {C_WOOD + 8, C_TIRE, C_WOOD + 6, C_WOOD + 7, C_VINE_A + 7, C_CHURCH + 5, C_VINE_A + 6};
+const int SOULIERS[3] = {C_TIRE, C_WOOD + 2, C_CHURCH + 5};
 
 // AD_TEXTS de js/world/decor.js : textes ; fond dans la palette (C_AD0 + 2 · n) ; lettres : une part (un matériau de
 // l'atlas) par couleur, mêmes valeurs que C_AD0 + 2 · n + 1
@@ -70,7 +80,7 @@ class Circuit : public CarteDecor {
 public:
     const char* name() const override { return "circuit"; }
     void init(Renderer& r, const GameView& g) override {
-        basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
+        basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = tribunes_ = spectateurs_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
         CarteDecor::init(r, g);
         for (auto& T : ad_) T = {};
         if (!active_) return;
@@ -135,7 +145,6 @@ protected:
             // si le mât est posé (pas sur une autre chaussée)
             if (poser(n, it)) lampadaires().push_back({((n % len()) + len()) % len(), side * (R + 4.f), 16.f, StyleLampadaire::Stade});
         };
-        auto stand = [&](int64_t n, int side, int rows) { Item it; it.t = T_STAND; it.side = side; it.lat = R + 14; it.l = 26 * SM - 1; it.k = rows; poser(n, it); };
         auto tree = [&](int64_t n, int side, float lat, float h, int kind, float along) {
             Item it; it.t = T_TREE; it.side = side; it.lat = lat; it.h = h; it.k = kind; it.along = along; poser(n, it);
         };
@@ -144,14 +153,15 @@ protected:
                 for (int64_t n = z0; n < z1; n += 4) tires(n, side, R + 5.6f);
                 for (int64_t n = z0; n < z1; n += 20) { Item it; it.t = T_ADBOARD; it.side = side; it.lat = R + 5.0f; it.col = (int)fl(D() * 4); poser(n, it); }
             }
-            for (int64_t n = z0; n < z1 - 26; n += 26) for (int side : {-1, 1}) if (D() < 0.9f) stand(n, side, 7 + (int)fl(D() * 6));
+            // WFS-199 (RG-01) : plus de tribune ici (2 au plus sur le tracé, posées par les sections) ; tirages gardés (RG-06)
+            for (int64_t n = z0; n < z1 - 26; n += 26) for (int k = 0; k < 2; k++) if (D() < 0.9f) (void)D();
             for (int64_t n = z0 + 10; n < z1; n += 34) lamp(n, (n / 34) % 2 ? 1 : -1);
         } else if (!std::strcmp(z, "paddock")) {
             const int side = D() < 0.5f ? -1 : 1;
             for (int64_t n = z0; n < z1; n += 3) { Item it; it.t = T_PITWALL; it.side = side; it.lat = R + 1.4f; it.petit = true; poser(n, it); }
             for (int64_t n = z0 + 2; n < z1 - 14; n += 14) { Item it; it.t = T_GARAGE; it.side = side; it.lat = R + 16; it.l = 14 * SM - 0.5f; it.col = (int)fl(D() * 6); poser(n, it); }
             for (int64_t n = z0; n < z1; n += 4) tires(n, -side, R + 5.6f);
-            for (int64_t n = z0; n < z1; n += 26) stand(n, -side, 5 + (int)fl(D() * 4));
+            for (int64_t n = z0; n < z1; n += 26) (void)D();   // WFS-199 (RG-01) : tribune retirée, tirage gardé
             for (int64_t n = z0 + 6; n < z1; n += 18) { Item it; it.t = T_FLAG; it.side = side; it.lat = R + 9; it.col = (int)fl(D() * 6); it.petit = true; poser(n, it); }
             for (int64_t n = z0 + 10; n < z1; n += 34) lamp(n, -side);
         } else if (!std::strcmp(z, "gravier")) {
@@ -174,6 +184,35 @@ protected:
         }
     }
 
+    // WFS-199 : places d'une tribune (rang k, position d le long de la tribune, occupée ?, tirage h) ; les allées restent libres ;
+    // remplissage ≈ 82 % (RG-03), moins si le plafond de la tribune l'impose (RG-04 : 400 / 150 en tout ; en Basse, places
+    // vides réparties sur tous les rangs), plafond jamais dépassé
+    template <class F> void sieges(const Item& it, F f) const {
+        const int plafond = SPECTATEURS_MAX[basse_ ? 1 : 0][it.col & 1];
+        auto parcourir = [&](auto g) {
+            for (int k = 0; k < it.k; k++) {
+                int i = 0;
+                for (float d = -it.l / 2 + 0.4f; d < it.l / 2 - 0.3f; d += SIEGE, i++) {
+                    bool allee = false;
+                    for (float x = -it.l / 2 + ENTRE_ALLEES; x < it.l / 2 - 3; x += ENTRE_ALLEES) allee = allee || std::fabs(d - x) < ALLEE * 0.5f + 0.2f;
+                    if (allee) continue;
+                    uint32_t h = (uint32_t)(i + 1) * 2654435761u ^ (uint32_t)(k + 7) * 40503u ^ (uint32_t)(it.col + 3) * 2246822519u;
+                    h ^= h >> 15; h *= 2246822519u; h ^= h >> 13;
+                    g(k, d, h);
+                }
+            }
+        };
+        int places = 0;
+        parcourir([&](int, float, uint32_t) { places++; });
+        const uint32_t taux = (uint32_t)std::min(82, places ? 100 * plafond / places : 0);
+        int n = 0;
+        parcourir([&](int k, float d, uint32_t h) {
+            const bool occupe = n < plafond && (h >> 3) % 100 < taux;
+            n += occupe;
+            f(k, d, occupe, h);
+        });
+    }
+
     // ---------------------------------------------------------------- WFS-140 : place libre et sections du tracé 2
     int64_t mod(int64_t a) const { const int64_t L = len(); return ((a % L) + L) % L; }
     // distance latérale libre (m depuis l'axe) du côté side au segment n : au-delà, on retombe à moins de RW + 1 m d'une
@@ -186,7 +225,7 @@ protected:
         switch (it.t) {
         case T_TREE: return std::max(2.f, it.h * 0.35f);
         case T_LAMP: return 1.f;
-        case T_STAND: return it.k * 0.9f + 2.f;
+        case T_STAND: return it.k * RANG + 2.f;
         case T_GARAGE: return 13.f;
         case T_ACCUEIL: return it.w + 1.f;
         case T_HELICO: return 14.f;
@@ -274,6 +313,7 @@ protected:
         int nbLibres = 0; for (float v : libre_) nbLibres += v < 1e8f;
         WFS_LOG("Circuit (WFS-140) : %zu sections, %d virages serrés, %d bas-côtés bornés par une autre chaussée", S.size(), serres, nbLibres);
         if (!S.empty()) placerSections(S);
+        WFS_LOG("Circuit (WFS-199) : %d tribune(s), %d spectateurs (personnages du jeu, aucune boîte)%s", tribunes_, spectateurs_, basse_ ? ", qualité Basse" : "");
         WFS_LOG("Circuit (WFS-140) : décor des sections : %d objets posés, %d refusés (place prise par une chaussée ou un virage)%s ; "
                 "portique au segment %lld, %zu drapeaux, %zu grande(s) roue(s)", posesSec_, refusesSec_, basse_ ? ", qualité Basse" : "",
                 (long long)portique_, drapeaux_.size(), roues_.size());
@@ -289,11 +329,14 @@ protected:
             if (poser(n, it, true)) lampadaires().push_back({mod(n), side * (R + 4.f), 16.f, StyleLampadaire::Stade});
         };
         auto pneus = [&](int64_t n0, int64_t n1, int side, float lat) { for (int64_t n = n0; n < n1; n += 4) poser(n, objet(T_TIRES, side, lat, true), true); };
-        auto tribune = [&](int64_t n, int side, float lat, int rangs) {
-            Item it = objet(T_STAND, side, lat); it.l = 26 * SM - 1; it.k = rangs;
+        // WFS-199 (RG-01) : 2 tribunes au plus : id 0 face à la grille de départ, 1 à l'extérieur de l'épingle
+        auto tribune = [&](int64_t n, int side, float lat, int rangs, int segs, int id) {
+            Item it = objet(T_STAND, side, lat); it.l = segs * SM - 1; it.k = rangs; it.col = id;
             if (!poser(n, it, true)) return;
+            tribunes_++;
+            sieges(it, [&](int, float, bool occupe, uint32_t) { spectateurs_ += occupe; });
             for (float d = 4; d < it.l - 2; d += 9)   // drapeaux agités au dernier rang (animes)
-                drapeaux_.push_back({mod(n + (int64_t)(d / SM)), side, lat + rangs * 0.9f - 0.6f, 0.6f + rangs * 0.55f + 0.5f, (int)(mod(n) + (int64_t)d) % 6});
+                drapeaux_.push_back({mod(n + (int64_t)(d / SM)), side, lat + (rangs - 1) * RANG + 0.1f, hauteurRang(rangs - 1) + 1.2f, (int)(mod(n) + (int64_t)d) % 6});
         };
         const trace::Section *feux = nullptr, *epingle = nullptr, *montee = nullptr;
         std::vector<const trace::Section*> chicanes, serres;
@@ -327,7 +370,7 @@ protected:
             }
             { Item h = objet(T_HELICO, pad, R + 58); poser(fin - 30, h, true); }
             for (int64_t n = d + 10; n < fin; n += 34) lampe(n, pad);
-            for (int64_t n = d - 4; n < fin - 26; n += 26) tribune(n, -pad, R + 14, 9 + (int)((n / 26) % 4));
+            tribune(d + 23, -pad, R + 14, 6, 26, 0);   // WFS-199 : grande tribune centrée sur la grille (d + 4 … d + 67)
             for (int64_t n = d; n < fin; n += 20) { Item a = objet(T_ADBOARD, -pad, R + 5); a.col = (int)((n / 20) % 4); poser(n, a, true); }
             pneus(d, fin, -pad, R + 5.6f);
         }
@@ -343,7 +386,7 @@ protected:
             }
             reserver(d - 20, epingle->fin + 20, ext < 0 ? 1 : 2);
             pneus(d - 20, epingle->fin + 20, ext, R + 16);
-            for (int64_t n = d; n < epingle->fin - 26; n += 26) tribune(n, ext, R + 22, 10);
+            tribune((d + epingle->fin) / 2 - 10, ext, R + 22, 4, 20, 1);   // WFS-199 : une tribune, au sommet de l'épingle
             { Item m = objet(T_MARSHAL, ext, R + 19, true); poser(d - 25, m, true); }
             lampe(d - 30, ext);
         }
@@ -361,7 +404,8 @@ protected:
         if (montee) {
             const int ext = montee->angle > 0 ? -1 : 1;
             reserver(montee->debut, montee->fin + 12, ext < 0 ? 1 : 2);
-            for (int64_t n = montee->debut + 20; n < montee->fin - 26; n += 26) tribune(n, ext, R + 12, 16);
+            // WFS-199 (RG-01) : plus de tribune dans la pente : panneaux publicitaires à la place
+            for (int64_t n = montee->debut + 20; n < montee->fin - 10; n += 20) { Item a = objet(T_ADBOARD, ext, R + 5); a.col = (int)((n / 20) % 4); poser(n, a, true); }
             pneus(montee->debut, montee->fin, ext, R + 5.6f);
             Item p = objet(T_PASSERELLE, 1, 0); p.col = 0; item(montee->fin, p);
             for (int64_t n = montee->debut + 10; n < montee->fin; n += 40) lampe(n, -ext);
@@ -517,30 +561,59 @@ protected:
             }
             break;
         }
-        case T_STAND: {   // tribune : gradins, spectateurs (bande de couleurs par rangée), mur du fond, toit
+        case T_STAND: {   // WFS-199 : tribune réelle (gradins, sièges, escaliers, garde-corps, toit sur poteaux) et vrais spectateurs
             const Pose pm = poseAt(t, a + (int64_t)std::lround(it.l / SEG_M / 2));
-            const vec3 base = lateral(pm, s * it.lat), out_ = pm.r * s;
-            for (int k = 0; k < it.k; k++) {
-                const vec3 o = base + out_ * (k * 0.9f);
-                box(S, o, pm.r, pm.f, 0.9f, 0.6f + k * 0.55f, it.l, uv(C_STAND));
-                box(S, o + vec3{0, 0.6f + k * 0.55f, 0}, pm.r, pm.f, 0.5f, 0.45f, it.l * 0.98f, uv(C_SEAT0 + (int)((((k + a) % 4) + 4) % 4)));
-                if (lod) continue;
-                // WFS-140 (RG-05) : tribune pleine de près : un spectateur assis tous les 0,9 m (1,8 m en Basse), maillot
-                // de couleur et tête, sur le gradin de son rang (de loin : la bande de couleur des sièges suffit)
-                const float pas = basse_ ? 1.8f : 0.9f;
-                const vec3 y0 = o + out_ * 0.15f + vec3{0, 0.6f + k * 0.55f + 0.3f, 0};
-                int i = 0;
-                for (float d = -it.l / 2 + 0.5f; d < it.l / 2 - 0.4f; d += pas, i++) {
-                    const uint32_t h = (uint32_t)(i * 2654435761u) ^ (uint32_t)(k * 40503u) ^ (uint32_t)(a * 97u);
-                    if (h % 11 == 0) continue;   // quelques places vides
-                    const vec3 q = y0 + pm.f * (d + (float)(h % 5) * 0.06f);
-                    box(S, q, pm.r, pm.f, 0.36f, 0.5f, 0.42f, uv(MAILLOTS[h % 12]));
-                    box(S, q + vec3{0, 0.5f, 0}, pm.r, pm.f, 0.2f, 0.24f, 0.2f, uv(PEAU));
-                }
+            const vec3 base = lateral(pm, s * it.lat), out_ = pm.r * s, up{0, 1, 0};
+            const float back = (it.k - 0.5f) * RANG, haut = hauteurRang(it.k - 1);
+            for (int k = 0; k < it.k; k++)   // gradins pleins (béton), du sol au dessus du rang
+                box(S, base + out_ * (k * RANG), pm.r, pm.f, RANG, hauteurRang(k), it.l, uv(C_STAND));
+            // allées d'escalier : une marche intermédiaire par rang (2 marches de 0,21 m par rang)
+            std::vector<float> allees;
+            for (float d = -it.l / 2 + ENTRE_ALLEES; d < it.l / 2 - 3; d += ENTRE_ALLEES) allees.push_back(d);
+            for (float d : allees)
+                for (int k = 0; k + 1 < it.k; k++)
+                    box(S, base + out_ * (k * RANG + RANG * 0.25f) + pm.f * d, pm.r, pm.f, RANG * 0.5f, hauteurRang(k) + MARCHE * 0.5f, ALLEE, uv(C_STAND_BACK));
+            // garde-corps : poteaux tous les 2 m sur le muret, main courante à 1 m
+            const vec3 avant = base - out_ * (RANG * 0.5f - 0.05f);
+            for (float d = -it.l / 2 + 0.2f; d <= it.l / 2; d += 2.f) box(S, avant + pm.f * d, pm.r, pm.f, 0.05f, 1.0f, 0.05f, uv(C_STEEL), MURET);
+            box(S, avant, pm.r, pm.f, 0.07f, 0.06f, it.l, uv(C_STEEL), MURET + 1.0f);
+            if (lod) {   // de loin : bande des sièges par rang (les spectateurs restent des personnages, version allégée)
+                for (int k = 0; k < it.k; k++)
+                    box(S, base + out_ * (k * RANG + 0.18f), pm.r, pm.f, 0.4f, 0.45f, it.l * 0.98f, uv(C_SEAT0 + (it.col * 2 + k) % 4), hauteurRang(k));
             }
-            const float back = it.k * 0.9f;
-            box(S, base + out_ * back, pm.r, pm.f, 0.4f, it.k * 0.55f + 4.5f, it.l, uv(C_STAND_BACK));
-            box(S, base + out_ * (back * 0.5f) + vec3{0, it.k * 0.55f + 4.5f, 0}, pm.r, pm.f, back + 2, 0.3f, it.l + 1, uv(C_STAND_ROOF));
+            // sièges (assise + dossier, couleur de la tribune) et spectateurs assis ou debout (RG-02)
+            const Pose& P = pm;
+            sieges(it, [&](int k, float d, bool occupe, uint32_t h) {
+                const vec3 q = base + out_ * (k * RANG + 0.12f) + P.f * d;   // place : arrière du rang, jambes vers la route
+                const float y = hauteurRang(k);
+                const foule::Silhouette* sil = nullptr;
+                const bool debout = occupe && h % 7 == 0;   // un spectateur sur sept debout devant sa place
+                if (occupe) sil = foule::silhouette(h & 1, (int)(h >> 1) % foule::COIFFURES,
+                                                    (foule::Pose)(debout ? foule::DEBOUT_REPOS + (h >> 3) % 2 : foule::ASSIS_REPOS + (h >> 3) % 2),
+                                                    (int)(h >> 4) % foule::VARIANTES, !lod);
+                const float assise = sil && !debout ? sil->assise : 0.45f;
+                if (!lod) {
+                    box(S, q, P.r, P.f, 0.42f, 0.06f, 0.44f, uv(C_SEAT0 + (it.col * 2 + k) % 4), y + assise - 0.06f);
+                    box(S, q + out_ * 0.2f, P.r, P.f, 0.05f, 0.42f, 0.44f, uv(C_SEAT0 + (it.col * 2 + k) % 4), y + assise);
+                }
+                if (!sil) return;
+                // repère du spectateur : face à la route (+z local → −out_), petit écart d'orientation, taille 0,95 à 1,05
+                const float yaw = ((float)((h >> 6) % 21) - 10.f) * 0.025f, ech = 0.95f + (float)((h >> 11) % 11) * 0.01f;
+                const vec3 ez = normalize(-out_ * std::cos(yaw) + P.f * std::sin(yaw)), ex = cross(up, ez);
+                const vec3 o = debout ? q - out_ * 0.45f + up * y : q + up * (y + assise);
+                const int c[5] = {PEAUX[(h >> 13) % 4], CHEVEUX[(h >> 15) % 5], MAILLOTS[(h >> 18) % 12], BAS_[(h >> 22) % 7], SOULIERS[(h >> 25) % 3]};
+                const uint32_t k0 = (uint32_t)S.v.size();
+                for (const foule::Sommet& v : sil->v) {
+                    const vec3 w = o + (ex * v.p.x + up * v.p.y + ez * v.p.z) * ech, n = ex * v.n.x + up * v.n.y + ez * v.n.z;
+                    const vec2 t2 = uv(c[v.zone]);
+                    S.v.push_back({w.x, w.y, w.z, n.x, n.y, n.z, t2.x, t2.y});
+                }
+                for (uint32_t i : sil->i) S.i.push_back(k0 + i);
+            });
+            // mur du fond, toit en porte-à-faux sur des poteaux avant (tous les 8 m, devant le garde-corps)
+            box(S, base + out_ * back, pm.r, pm.f, 0.3f, haut + 3.4f, it.l, uv(C_STAND_BACK));
+            box(S, base + out_ * ((back - RANG) * 0.5f), pm.r, pm.f, back + RANG + 0.6f, 0.25f, it.l + 1, uv(C_STAND_ROOF), haut + 3.2f);
+            for (float d = -it.l / 2 + 0.5f; d <= it.l / 2; d += 8.f) box(S, base - out_ * (RANG * 0.5f + 0.3f) + pm.f * d, pm.r, pm.f, 0.2f, haut + 3.2f, 0.2f, uv(C_STEEL));
             break;
         }
         case T_PITWALL:
@@ -706,7 +779,7 @@ private:
     // WFS-140
     vie::Texte tx_[8];   // TEXTES
     bool pret_ = false, basse_ = false;
-    int refuses_ = 0, refusesSec_ = 0, posesSec_ = 0;   // journal : objets refusés (décor des zones et des sections)
+    int refuses_ = 0, refusesSec_ = 0, posesSec_ = 0, tribunes_ = 0, spectateurs_ = 0;   // WFS-199 : tribunes et spectateurs posés   // journal : objets refusés (décor des zones et des sections)
     unsigned impair_ = 0;
     std::vector<float> libre_;                 // place libre de chaque côté de chaque segment (2 par segment)
     std::vector<uint8_t> reserve_, cache_, coin_;
