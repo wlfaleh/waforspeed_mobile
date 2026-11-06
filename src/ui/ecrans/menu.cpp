@@ -113,7 +113,9 @@ public:
             r.uiQuad(q);
         }
         // mise en page .screen-inner (gap 22 px) : bloc logo, liste, pied, aide tactile
-        const float itemH = (cp ? 52 : 70) * k, ecart = (cp ? 4 : 6) * k, listeH = 3 * itemH + 2 * ecart, piedH = (cp ? 40 : 44) * k;
+        // WFS-168 (RG-01) : taille des choix d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; textes en dp gardés
+        const float kb = H / 720.f;
+        const float itemH = 70 * kb, ecart = (cp ? 4 : 6) * k, listeH = 3 * itemH + 2 * ecart, piedH = (cp ? 40 : 44) * k;
         const float aideP = (cp ? 14 : 16) * k, aideL = (cp ? 18 : 22) * k, aideH = 2 * aideL;
         const float total = m.hauteurBloc + gap + listeH + gap + piedH + gap + aideH;
         float y = std::max((cp ? 8 : 24) * k, (H - total) / 2);
@@ -124,18 +126,18 @@ public:
         MiseEnPage ml = m; ml.x += dx;
         y = dessinerBlocLogo(r, ml, y, a);
         // ---------- .menu-list : 3 choix (.mitem) ----------
-        const float lw = std::min((cp ? 312 : 460) * k, m.largeur);   // petit écran : la liste s'arrête avant la voiture
+        const float lw = std::min(460 * kb, m.largeur);   // WFS-168 : largeur d'avant WFS-147
         for (int i = 0; i < 3; i++) {
             a = glisse(1 + i, dx);
             const bool presse = i == presse_, grise = false;   // WFS-83 : plus de choix grisé   // .mitem:hover/:active (WFS-38) ; .mitem:disabled (opacité .45)
             const float x = m.x + dx + (presse ? 10 * k : 0), yi = y + i * (itemH + ecart);   // translateX(10px)
-            g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * k, true};   // zone fixe : l'état pressé ne la déplace pas
+            g_zones[i] = {m.x + dx, yi, lw, itemH, 14 * kb, true};   // zone fixe : l'état pressé ne la déplace pas
             manette::focus(g_zones[i]);   // WFS-22
             if (grise) a *= 0.45f;
             // fond vitré en parallélogramme (clip-path : coin bas droit coupé de 14 px) ; pressé : rgba(30,33,48,.9)
             const vec4 fond = presse ? vec4{30 / 255.f, 33 / 255.f, 48 / 255.f, 0.9f * a} : vec4{GLASS.x, GLASS.y, GLASS.z, GLASS.w * a};
             {   // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 10 bandes translucides qui se chevauchaient)
-                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * k, yi + itemH}, {x, yi + itemH}};
+                const vec2 p[4] = {{x, yi}, {x + lw, yi}, {x + lw - 14 * kb, yi + itemH}, {x, yi + itemH}};
                 dessin2d::polygone(r, p, 4, dessin2d::uni(fond));
             }
             const bool solo = i == SOLO;   // #startBtn : barre et titre orange
@@ -143,8 +145,8 @@ public:
                 for (int h = 3; h >= 1; h--) r.uiRect(x - 4 * k * h, yi - 2 * k * h, 3 * k + 8 * k * h, itemH + 4 * k * h, hex(ACCENT2, 0.12f * a));
                 r.uiRect(x, yi, 3 * k, itemH, hex(ACCENT2, a));
             } else r.uiRect(x, yi, 3 * k, itemH, solo ? hex(ACCENT, a) : hex(SURFACE2, a));
-            ui::text(r, x + 22 * k, yi + (cp ? 7 : 12) * k, (cp ? 21 : 26) * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
-            ui::text(r, x + 22 * k, yi + (cp ? 31 : 44) * k, (cp ? 14 : 13) * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
+            ui::text(r, x + 22 * kb, yi + 12 * kb, (cp ? 21 : 26) * k, ui::majuscules(CHOIX[i].titre), solo ? hex(ACCENT, a) : hex(TEXTE, a), ui::GAUCHE, 0.04f, false);
+            ui::text(r, x + 22 * kb, yi + 44 * kb, (cp ? 14 : 13) * k, CHOIX[i].desc, hex(MUTED, a), ui::GAUCHE, 0, false);
         }
         y += listeH + gap;
         // ---------- .menu-foot : record + ta voiture ----------
@@ -161,7 +163,7 @@ public:
             ui::text(r, x2, y + dv, vp, nom, hex(presse ? ACCENT2 : TEXTE, a), ui::GAUCHE, 0, false);
             const float nw = std::max(ui::width(vp, nom), ui::width(lp, "TA VOITURE", 0.16f));
             r.uiRect(x2, y + dv + vp + 2 * k, ui::width(vp, nom), 2 * k, hex(ACCENT2, a));   // border-bottom cyan de .mycar strong
-            g_zones[TA_VOITURE] = {x2 - 6 * k, y - 6 * k, nw + 12 * k, piedH + 6 * k, 0, true};
+            g_zones[TA_VOITURE] = {x2 - 6 * kb, y - 6 * kb, nw + 12 * kb, 50 * kb, 0, true};   // WFS-168 : zone d'avant WFS-147 (44 + 6)
             manette::focus(g_zones[TA_VOITURE]);
         }
         y += piedH + gap;

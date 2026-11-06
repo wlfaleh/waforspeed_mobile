@@ -202,7 +202,7 @@ public:
         // WFS-147 (RG-01, RG-02, ANO-19) : sur téléphone couché, mise en page propre aux réglages, dessinée en dp
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
         const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
-        if (!g_ouvert) { dessinerBouton(r, g, W, k); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
+        if (!g_ouvert) { dessinerBouton(r, g, W, k, H / 720.f); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
         if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k);
@@ -212,13 +212,14 @@ public:
 
 private:
     // .cam-btn : vitré, bordure 1 px, biais 8 px, 44 px de haut, « RÉGLAGES » ; en haut à droite de la zone sûre
-    void dessinerBouton(Renderer& r, const GameView& g, float W, float k) {
-        const float h = 44 * k, tp = 15 * k, pad = 18 * k;
+    // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte et place gardés
+    void dessinerBouton(Renderer& r, const GameView& g, float W, float k, float kb) {
+        const float h = 44 * kb, tp = 15 * k, pad = 18 * kb;
         const std::string t = ui::majuscules("Réglages");
         const float w = pad + ui::width(tp, t, 0.12f) + pad, x = W - g.marges.droite - 16 * k - w, y = g.marges.haut + 14 * k;
         g_bouton = {x, y, w, h};
-        biseau(r, x - k, y - k, w + 2 * k, h + 2 * k, 8 * k, BORD);
-        biseau(r, x, y, w, h, 8 * k, GLASS);
+        biseau(r, x - kb, y - kb, w + 2 * kb, h + 2 * kb, 8 * kb, BORD);
+        biseau(r, x, y, w, h, 8 * kb, GLASS);
         ui::text(r, std::round(x + pad), std::round(y + (h - tp) / 2), tp, t, hex(ACCENT2), ui::GAUCHE, 0.12f, false);
     }
     // section .settings : voile, .eyebrow, .big « Réglages », lignes .set-row (libellé + boutons .seg), « Fermer »
@@ -278,7 +279,10 @@ private:
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
         const int PAR_COL = (N_LIGNES + 1) / 2;
-        const float rowH = 42 * k, gap = 6 * k, haut = 66 * k, bh = 48 * k;
+        // WFS-168 (RG-01) : taille des choix et de « Fermer » d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0 :
+        // choix de 30 x 170 au plus, « Fermer » de 50) ; lignes, colonnes et textes en dp gardés (choix centrés dans leur ligne)
+        const float kb = H / 720.f, choixH = 30 * kb;
+        const float rowH = 42 * k, gap = 6 * k, haut = 66 * k, bh = 50 * kb;
         const float ph = haut + PAR_COL * (rowH + gap) + 36 * k;
         const float pw = std::min(zw - 16 * k, 900 * k), px = zl + (zw - pw) / 2, py = std::max(m.haut + 4 * k, (H - ph) / 2);
         r.uiRect(px, py, pw, ph, SURFACE);
@@ -290,9 +294,9 @@ private:
         {   // .btn « Fermer » (orange, biais 14 px), en haut à droite du panneau
             const float tp = 18 * k;
             const std::string ft = ui::majuscules("Fermer");
-            const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
+            const float fw = ui::width(tp, ft, 0.12f) + 56 * kb, fx = px + pw - 24 * k - fw, fy = py + 10 * k;
             g_fermer = {fx, fy, fw, bh};
-            biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
+            biseau(r, fx, fy, fw, bh, 14 * kb, hex(ACCENT));
             ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
         }
         const float colGap = 24 * k, colW = (pw - 48 * k - colGap) / 2, libW = 104 * k, segGap = 6 * k;
@@ -311,19 +315,22 @@ private:
                 ui::text(r, cx, y + rowH / 2 + 1 * k, lp, lib.substr(coupe + 1), hex(MUTED), ui::GAUCHE, 0.12f, false);
             }
             const int n = LIGNES[l].n;
-            const float place = colW - libW, segW = std::min(120 * k, (place - 3 * segGap) / 4);   // même largeur pour 2 ou 4 choix
+            // WFS-168 : largeur d'avant WFS-147 (panneau de 760 au plus, une colonne), bornée par la place de la colonne
+            const float pwAvant = std::min(zw - 32 * kb, 760 * kb), segAvant = std::min(170 * kb, (pwAvant - 72 * kb - 190 * kb - 3 * 6 * kb) / 4);
+            const float place = colW - libW, segW = std::min(segAvant, (place - 3 * segGap) / 4);   // même largeur pour 2 ou 4 choix
+            const float cy = y + (rowH - choixH) / 2;   // choix centré dans sa ligne
             float bx = cx + colW - n * segW - (n - 1) * segGap;
             for (int c = 0; c < n; c++) {
                 const bool on = valeur(l) == c;   // aria-pressed : fond cyan léger, bordure et texte cyan
-                g_choix[l][c] = {bx, y - gap / 2, segW, rowH + gap};   // zone de toucher : 48 dp de haut, jointive avec la voisine
+                g_choix[l][c] = {bx, cy, segW, choixH};   // WFS-168 : zone de toucher d'avant WFS-147 (le choix lui-même)
                 if (on) {
-                    r.uiRect(bx, y, segW, rowH, hex(ACCENT2, 0.16f));
-                    r.uiRect(bx, y + rowH - 3 * k, segW, 3 * k, hex(ACCENT2));
-                } else r.uiRect(bx, y, segW, rowH, hex(SURFACE2));
+                    r.uiRect(bx, cy, segW, choixH, hex(ACCENT2, 0.16f));
+                    r.uiRect(bx, cy + choixH - 3 * kb, segW, 3 * kb, hex(ACCENT2));
+                } else r.uiRect(bx, cy, segW, choixH, hex(SURFACE2));
                 const std::string ch = ui::majuscules(LIGNES[l].choix[c]);
                 float tp = 14 * k, esp = 0.06f;
                 if (ui::width(tp, ch, esp) > segW - 6 * k) esp = 0;   // texte serré plutôt que plus petit (RG-02 : 14 dp)
-                ui::text(r, bx + segW / 2, y + (rowH - tp) / 2, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, esp, false);
+                ui::text(r, bx + segW / 2, cy + (choixH - tp) / 2, tp, ch, on ? hex(ACCENT2) : hex(TEXTE), ui::CENTRE, esp, false);
                 bx += segW + segGap;
             }
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
