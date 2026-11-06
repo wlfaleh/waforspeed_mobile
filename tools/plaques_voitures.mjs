@@ -28,6 +28,11 @@ const VOITURES = {
   corsa: { plaque: 0, cadre: -1, numero: 'FC-850-MS', dep: '44' },
   p911: { plaque: 11, cadre: -1, numero: 'HD-097-TZ', dep: '67' },
   s3: { plaque: 18, cadre: -1, numero: 'CW-374-JN', dep: '59' },
+  // plaques arrière américaines ou de concession (« ELANTRA N », « FORD PERFORMANCE », Texas) et italienne de la SF90
+  elantra: { plaque: 10, cadre: -1, numero: 'GN-623-YB', dep: '35' },
+  mustang: { plaque: 18, cadre: -1, numero: 'FM-509-GT', dep: '33' },
+  m4: { plaque: 35, cadre: -1, numero: 'EB-944-KM', dep: '92' },
+  sf90: { plaque: 9, cadre: -1, numero: 'GF-190-XS', dep: '06' },
 };
 
 function lire(chemin) {
@@ -71,6 +76,17 @@ const unit = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] 
 function repere(m, sommets, cote) {
   let n = [0, 0, 0];
   for (const i of sommets) { const nz = m.v[i * 8 + 5]; if (Math.abs(nz) > 0.5) { const sg = Math.sign(nz) === cote ? 1 : -1; for (let c = 0; c < 3; c++) n[c] += sg * m.v[i * 8 + 3 + c]; } }
+  if (Math.hypot(...n) < 0.5) {   // normales des sommets inutilisables (SF90) : normales des faces de la plaque
+    const dans = new Set(sommets); n = [0, 0, 0];
+    for (let t = 0; t + 2 < m.ix.length; t += 3) {
+      const c = [m.ix[t], m.ix[t + 1], m.ix[t + 2]]; if (!c.every((i) => dans.has(i))) continue;
+      const p = c.map((i) => [m.v[i * 8], m.v[i * 8 + 1], m.v[i * 8 + 2]]);
+      const e1 = [p[1][0] - p[0][0], p[1][1] - p[0][1], p[1][2] - p[0][2]], e2 = [p[2][0] - p[0][0], p[2][1] - p[0][1], p[2][2] - p[0][2]];
+      const f = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+      if (Math.abs(f[2]) < 0.5 * Math.hypot(...f)) continue;
+      const sg = Math.sign(f[2]) === cote ? 1 : -1; for (let q = 0; q < 3; q++) n[q] += sg * f[q];
+    }
+  }
   n = unit(n);
   const X = unit([1 - n[0] * n[0], -n[0] * n[1], -n[0] * n[2]]);
   let U = unit([n[1] * X[2] - n[2] * X[1], n[2] * X[0] - n[0] * X[2], n[0] * X[1] - n[1] * X[0]]);
