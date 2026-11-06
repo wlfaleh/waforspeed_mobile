@@ -391,7 +391,9 @@ public:
         }
         o << "  TOTAL : " << fmt(tout.valeur(), 1) << " % (" << tout.conformes << " / " << (tout.conformes + tout.nonConformes) << ", " << tout.nonMesurables << " non mesurables)\n";
         std::string dom;
-        for (const auto& l : lignes) {
+        std::vector<LigneRapport> tri = lignes;   // une section par domaine (ordre d'ajout gardé dans chaque domaine)
+        std::stable_sort(tri.begin(), tri.end(), [](const LigneRapport& a, const LigneRapport& b) { return a.domaine < b.domaine; });
+        for (const auto& l : tri) {
             if (l.domaine != dom) { dom = l.domaine; o << "\n== " << dom << " ==\n"; o << "  id | grandeur | jeu | réel | tolérance | état | statut de la valeur réelle\n"; }
             o << "  " << l.id << " | " << l.grandeur << " | " << (l.jeu.empty() ? "-" : l.jeu) << " | " << (l.reel.empty() ? "-" : l.reel) << " | "
               << (l.tolerance.empty() ? "-" : l.tolerance) << " | "

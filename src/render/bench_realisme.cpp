@@ -68,7 +68,7 @@ constexpr float CHARTE_A = 10, CASE = 0.30f, PAS = 0.35f, GRISE = 0.6f, GRISE_A 
 vec3 casePos(int k) {   // centre de la case k (0..23, ordre de la charte : 4 rangées de 6) ou de la charte grise (k = 24), repère route
     if (k == 24) return {GRISE_A, 0, 0};
     const int col = k % 6, rang = k / 6;
-    return {CHARTE_A - 1.5f * PAS + rang * PAS, -2.5f * PAS + col * PAS, 0};
+    return {CHARTE_A + 1.5f * PAS - rang * PAS, -2.5f * PAS + col * PAS, 0};   // rangée 1 de la charte en haut de l'image (vers l'avant)
 }
 
 vec3 pointRoute(Track& t, double s, const Repere& p) {
@@ -248,7 +248,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
 
-    // ---------------- RG-04 : scène d'étalonnage (Ville, jour, Haute, départ) : charte vue de dessus, 3,2 m au-dessus
+    // ---------------- RG-04 : scène d'étalonnage (Campagne, champs ouverts en plein soleil, jour, Haute, départ) : charte vue de dessus, 3,2 m au-dessus
     reel::Rapport rap;
     std::ostringstream infos;
     g_banc.albedos.clear();
@@ -263,7 +263,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         setenv("WFS_MOMENT", "jour", 1); unsetenv("WFS_DEPART");
         reglages.qualite = ecrans::QUALITE_HAUTE; ecrans::appliquerQualiteNiveau(r);
         g_banc.etalon = true; g_banc.oeil = {CHARTE_A + 0.35f, 0, 3.2f}; g_banc.cible = {CHARTE_A + 0.35f, 0, 0}; g_banc.fov = 50;
-        if (g.init(r, "golf", "ville")) {
+        if (g.init(r, "golf", "campagne")) {   // en Ville, la chaussée du départ est à l'ombre des immeubles
             g.allerA(Ecran::Menu);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
             for (int i = 0; i < 3; i++) g.render(t);
@@ -280,7 +280,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             if (!px) { rap.nonMesurable("couleurs", "cc.*", "charte rendue", "capture realisme-etalon.png illisible"); erreurs++; }
             else {
                 const double s = g.player().dist;
-                Track piste; piste.build(mapById("ville"));
+                Track piste; piste.build(mapById("campagne"));
                 std::vector<reel::Lab> mesure(25); std::vector<std::array<double, 3>> lin(25);
                 for (int k = 0; k < 25; k++) {
                     const vec3 c = casePos(k);
@@ -368,6 +368,8 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             if (it == lumieres.end()) { rap.nonMesurable("photometrie", std::string("jeu.") + carte, quoi, "lumière non relevée"); continue; }
             rap.comparer(R, "photometrie", idReel, tcpMcCamy(it->second.soleilCouleur), 1, "K",
                          std::string("température de couleur de la lumière directionnelle, ") + quoi + ", " + carte + " (McCamy 1992, couleur du jeu)");
+            const double tcp = tcpMcCamy(it->second.soleilCouleur);
+            if (tcp < 2000 || tcp > 12500) rap.lignes.back().raison = "hors du domaine de validité de la formule de McCamy (2000 à 12 500 K) : couleur très saturée";
         }
         rap.nonMesurable("photometrie", std::string("jeu.") + carte + ".eclairement", std::string("éclairement du soleil (lux), ") + carte,
                          "intensité du soleil du jeu sans unité (" + fmt(lj->second.intensite, 2) + ") et exposition " + fmt(lj->second.exposition, 2) + " sans EV100 : exposition physique à venir (WFS-151)");
