@@ -1,0 +1,119 @@
+route_enrobe-neuf-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 37.96 dB | chaîne 38.45 dB | seuil 38 dB | REFUSÉ
+route_enrobe-neuf-couleur | couleur | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 47.30 dB | chaîne 47.66 dB | seuil 38 dB | conforme
+route_enrobe-neuf-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 47.30 dB | chaîne 47.66 dB | seuil 38 dB | conforme
+route_enrobe-neuf-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 37.05 dB | chaîne 37.46 dB | seuil 38 dB | REFUSÉ
+route_enrobe-neuf-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-neuf-couleur | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-neuf-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 29.31 dB | chaîne 29.99 dB | seuil 35 dB | REFUSÉ
+route_enrobe-neuf-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 36.64 dB | chaîne 37.39 dB | seuil 35 dB | conforme
+route_enrobe-neuf-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 36.64 dB | chaîne 37.39 dB | seuil 35 dB | conforme
+route_enrobe-neuf-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 27.37 dB | chaîne 28.09 dB | seuil 35 dB | REFUSÉ
+route_enrobe-neuf-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-neuf-normale | ETC2 sous 35 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-neuf-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 36.05 dB | chaîne 36.67 dB | seuil 38 dB | REFUSÉ
+route_enrobe-neuf-orm | orm | astc 4x4 | 512x512, 10 niveaux | 341.4 Ko | niveau 0 42.76 dB | chaîne 43.32 dB | seuil 38 dB | conforme
+route_enrobe-neuf-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 42.76 dB | chaîne 43.32 dB | seuil 38 dB | conforme
+route_enrobe-neuf-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 32.62 dB | chaîne 33.13 dB | seuil 38 dB | REFUSÉ
+route_enrobe-neuf-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code
+route_enrobe-neuf-orm | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-use-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 35.46 dB | chaîne 35.43 dB | seuil 38 dB | REFUSÉ
+route_enrobe-use-couleur | couleur | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 41.63 dB | chaîne 41.54 dB | seuil 38 dB | conforme
+route_enrobe-use-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 41.63 dB | chaîne 41.54 dB | seuil 38 dB | conforme
+route_enrobe-use-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 35.46 dB | chaîne 35.29 dB | seuil 38 dB | REFUSÉ
+route_enrobe-use-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-use-couleur | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-use-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 23.40 dB | chaîne 23.79 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 29.64 dB | chaîne 30.27 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 20.93 dB | chaîne 21.46 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-use-normale | REFUSÉE : ASTC 4x4 sous 35 dB, aucun fichier écrit
+route_enrobe-use-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 28.89 dB | chaîne 28.55 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 34.63 dB | chaîne 34.75 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 25.24 dB | chaîne 25.36 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-use-normale | REFUSÉE : ASTC 4x4 sous 35 dB, aucun fichier écrit
+route_enrobe-use-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 34.12 dB | chaîne 32.79 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 39.47 dB | chaîne 38.80 dB | seuil 35 dB | conforme
+route_enrobe-use-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 39.47 dB | chaîne 38.80 dB | seuil 35 dB | conforme
+route_enrobe-use-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 29.46 dB | chaîne 29.00 dB | seuil 35 dB | REFUSÉ
+route_enrobe-use-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-use-normale | ETC2 sous 35 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-use-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 34.17 dB | chaîne 34.63 dB | seuil 38 dB | REFUSÉ
+route_enrobe-use-orm | orm | astc 4x4 | 512x512, 10 niveaux | 341.4 Ko | niveau 0 44.91 dB | chaîne 45.41 dB | seuil 38 dB | conforme
+route_enrobe-use-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 44.91 dB | chaîne 45.41 dB | seuil 38 dB | conforme
+route_enrobe-use-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 26.30 dB | chaîne 26.86 dB | seuil 38 dB | REFUSÉ
+route_enrobe-use-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code
+route_enrobe-use-orm | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-campagne-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 41.22 dB | chaîne 41.78 dB | seuil 38 dB | conforme
+route_enrobe-campagne-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 41.22 dB | chaîne 41.78 dB | seuil 38 dB | conforme
+route_enrobe-campagne-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 39.70 dB | chaîne 40.09 dB | seuil 38 dB | conforme
+route_enrobe-campagne-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-campagne-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 32.30 dB | chaîne 33.14 dB | seuil 35 dB | REFUSÉ
+route_enrobe-campagne-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 39.90 dB | chaîne 40.74 dB | seuil 35 dB | conforme
+route_enrobe-campagne-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 39.90 dB | chaîne 40.74 dB | seuil 35 dB | conforme
+route_enrobe-campagne-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 30.77 dB | chaîne 31.58 dB | seuil 35 dB | REFUSÉ
+route_enrobe-campagne-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-campagne-normale | ETC2 sous 35 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_enrobe-campagne-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 48.23 dB | chaîne 48.67 dB | seuil 38 dB | conforme
+route_enrobe-campagne-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 48.23 dB | chaîne 48.67 dB | seuil 38 dB | conforme
+route_enrobe-campagne-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 44.71 dB | chaîne 45.15 dB | seuil 38 dB | conforme
+route_enrobe-campagne-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code
+route_beton-circuit-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 39.53 dB | chaîne 40.20 dB | seuil 38 dB | conforme
+route_beton-circuit-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 39.53 dB | chaîne 40.20 dB | seuil 38 dB | conforme
+route_beton-circuit-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 38.29 dB | chaîne 38.84 dB | seuil 38 dB | conforme
+route_beton-circuit-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_beton-circuit-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 38.96 dB | chaîne 39.72 dB | seuil 35 dB | conforme
+route_beton-circuit-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 38.96 dB | chaîne 39.72 dB | seuil 35 dB | conforme
+route_beton-circuit-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 37.06 dB | chaîne 37.77 dB | seuil 35 dB | conforme
+route_beton-circuit-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_beton-circuit-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 41.15 dB | chaîne 41.64 dB | seuil 38 dB | conforme
+route_beton-circuit-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 41.15 dB | chaîne 41.64 dB | seuil 38 dB | conforme
+route_beton-circuit-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 37.76 dB | chaîne 38.11 dB | seuil 38 dB | REFUSÉ
+route_beton-circuit-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code
+route_beton-circuit-orm | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_beton-trottoir-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 36.54 dB | chaîne 36.94 dB | seuil 38 dB | REFUSÉ
+route_beton-trottoir-couleur | couleur | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 43.46 dB | chaîne 43.73 dB | seuil 38 dB | conforme
+route_beton-trottoir-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 43.46 dB | chaîne 43.73 dB | seuil 38 dB | conforme
+route_beton-trottoir-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 36.67 dB | chaîne 36.93 dB | seuil 38 dB | REFUSÉ
+route_beton-trottoir-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_beton-trottoir-couleur | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_beton-trottoir-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 30.28 dB | chaîne 31.05 dB | seuil 35 dB | REFUSÉ
+route_beton-trottoir-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 37.75 dB | chaîne 38.54 dB | seuil 35 dB | conforme
+route_beton-trottoir-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 37.75 dB | chaîne 38.54 dB | seuil 35 dB | conforme
+route_beton-trottoir-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 26.85 dB | chaîne 27.68 dB | seuil 35 dB | REFUSÉ
+route_beton-trottoir-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_beton-trottoir-normale | ETC2 sous 35 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_beton-trottoir-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 43.35 dB | chaîne 43.94 dB | seuil 38 dB | conforme
+route_beton-trottoir-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 43.35 dB | chaîne 43.94 dB | seuil 38 dB | conforme
+route_beton-trottoir-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 37.77 dB | chaîne 38.21 dB | seuil 38 dB | REFUSÉ
+route_beton-trottoir-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code
+route_beton-trottoir-orm | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_paves-granit-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 37.59 dB | chaîne 37.67 dB | seuil 38 dB | REFUSÉ
+route_paves-granit-couleur | couleur | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 45.66 dB | chaîne 45.61 dB | seuil 38 dB | conforme
+route_paves-granit-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 45.66 dB | chaîne 45.61 dB | seuil 38 dB | conforme
+route_paves-granit-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 37.79 dB | chaîne 37.78 dB | seuil 38 dB | REFUSÉ
+route_paves-granit-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_paves-granit-couleur | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_paves-granit-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 30.02 dB | chaîne 30.13 dB | seuil 35 dB | REFUSÉ
+route_paves-granit-normale | normale | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 36.02 dB | chaîne 36.17 dB | seuil 35 dB | conforme
+route_paves-granit-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 36.02 dB | chaîne 36.17 dB | seuil 35 dB | conforme
+route_paves-granit-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 27.55 dB | chaîne 27.61 dB | seuil 35 dB | REFUSÉ
+route_paves-granit-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_paves-granit-normale | ETC2 sous 35 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_paves-granit-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 50.07 dB | chaîne 49.93 dB | seuil 38 dB | conforme
+route_paves-granit-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 50.07 dB | chaîne 49.93 dB | seuil 38 dB | conforme
+route_paves-granit-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 42.91 dB | chaîne 42.54 dB | seuil 38 dB | conforme
+route_paves-granit-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code
+route_gravier-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 40.00 dB | chaîne 40.18 dB | seuil 38 dB | conforme
+route_gravier-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 40.00 dB | chaîne 40.18 dB | seuil 38 dB | conforme
+route_gravier-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 39.55 dB | chaîne 39.60 dB | seuil 38 dB | conforme
+route_gravier-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_gravier-normale | normale | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 36.46 dB | chaîne 35.68 dB | seuil 35 dB | conforme
+route_gravier-normale | normale | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 36.46 dB | chaîne 35.68 dB | seuil 35 dB | conforme
+route_gravier-normale | normale | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 32.97 dB | chaîne 32.38 dB | seuil 35 dB | REFUSÉ
+route_gravier-normale | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_gravier-normale | ETC2 sous 35 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
+route_gravier-orm | orm | astc 6x6 | 512x512, 10 niveaux | 154.7 Ko | niveau 0 54.61 dB | chaîne 54.34 dB | seuil 38 dB | conforme
+route_gravier-orm | orm | rgba8 (ASTC décompressé) | 512x512, 10 niveaux | 1365.3 Ko | niveau 0 54.61 dB | chaîne 54.34 dB | seuil 38 dB | conforme
+route_gravier-orm | orm | etc2 rgba | 512x512, 10 niveaux | 341.4 Ko | niveau 0 47.77 dB | chaîne 47.31 dB | seuil 38 dB | conforme
+route_gravier-orm | décodeur ETC2 contrôlé contre etc2comp sur 10 niveaux : écart maximal 0 code

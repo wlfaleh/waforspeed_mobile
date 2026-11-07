@@ -19,6 +19,7 @@ struct Etat {
     double temps = 0;
     double msEchantillon = 0;     // dernier coût CPU de echantillonner (toutes instances)
     bool tenue = false;           // WFS-72 : un homme et une femme habillés (deux tenues fixées en dur)
+    bool humains = false;         // WFS-209 : planche des 12 humains réalistes (assets/people/humains, MakeHuman CC0)
 } g_etat;
 
 // WFS-72 : deux tenues fixées en dur, valeurs prises dans les palettes de pedLook du jeu web (js/world/people.js :
@@ -64,6 +65,7 @@ public:
         if (!charge_) { charge_ = true; chargerPersonnage(r, "people/homme.wfp", homme_); }
         if (!homme_.ok) return;
         if (g_etat.tenue) { dessinerTenues(r); return; }
+        if (g_etat.humains) { dessinerHumains(r); return; }   // WFS-209 (accroche)
         const int n = std::clamp(g_etat.instances, 1, SKIN_MAX_INSTANCES);
         if ((int)poses_.size() < n) { poses_.resize((size_t)n); for (PoseSquelette& p : poses_) preparerPose(homme_, p); }
         const int clip = clipParNom(homme_, g_etat.clip);
@@ -86,7 +88,28 @@ public:
     void shutdown(Renderer& r) override {
         if (homme_.ok) detruirePersonnage(r, homme_);
         if (femme_.ok) detruirePersonnage(r, femme_);
-        charge_ = chargeF_ = false; poses_.clear();
+        for (Personnage& h : humains_) if (h.ok) detruirePersonnage(r, h);   // WFS-209
+        charge_ = chargeF_ = chargeH_ = false; poses_.clear();
+    }
+
+    // WFS-209 : les 12 humains réalistes en rangée (hommes h01-h06 puis femmes f01-f06), clip g_etat.clip, habillés (tenues de WFS-72)
+    void dessinerHumains(Renderer& r) {
+        static const char* const IDS[12] = {"h01", "h02", "h03", "h04", "h05", "h06", "f01", "f02", "f03", "f04", "f05", "f06"};
+        if (!chargeH_) {
+            chargeH_ = true;
+            for (int i = 0; i < 12; i++)
+                if (chargerPersonnage(r, std::string("people/humains/") + IDS[i] + ".wfp", humains_[i])) preparerPose(humains_[i], posesHumains_[i]);
+        }
+        const vec3 droite{std::cos(cap_), 0, std::sin(cap_)};
+        for (int i = 0; i < 12; i++) {
+            Personnage& h = humains_[i];
+            if (!h.ok) continue;
+            echantillonner(h, clipParNom(h, g_etat.clip), g_etat.temps + i * 0.21, posesHumains_[i]);
+            const mat4 monde = translate(base_ + droite * ((i - 5.5f) * 0.75f)) * rotateY(-cap_ + 3.14159265f);
+            const ApparencePersonnage a = tenue(i >= 6, h.corps);
+            if (const Plage* pl = plageParNom(h, "corps-0"))
+                r.drawSkinned(h.maillage, h.materiau, monde, posesHumains_[i].palette.data(), (int)posesHumains_[i].palette.size(), pl->premier, pl->nombre, &a);
+        }
     }
 
     // WFS-72 : homme et femme côte à côte, debout (Idle_Loop), habillés
@@ -107,6 +130,7 @@ public:
 
 private:
     Personnage homme_, femme_; std::vector<PoseSquelette> poses_; PoseSquelette poseH_, poseF_; bool charge_ = false, chargeF_ = false;
+    Personnage humains_[12]; PoseSquelette posesHumains_[12]; bool chargeH_ = false;   // WFS-209
     vec3 base_{}; float cap_ = 0;
 };
 } // namespace
@@ -132,6 +156,11 @@ void benchSquelette(Game& g, Renderer& r, const std::string& out) {
     g_etat.tenue = true;   // WFS-72 : homme et femme habillés
     capture("squelette-tenue", "Idle_Loop", 0.5, 1);
     g_etat.tenue = false;
+    // WFS-209 (accroche) : planche des 12 humains réalistes (debout, assis) : realisme-pietons-humains-*
+    g_etat.humains = true; g_etat.instances = 12;
+    capture("realisme-pietons-humains-debout", "Idle_Loop", 0.5, 12);
+    capture("realisme-pietons-humains-assis", "Sitting_Idle_Loop", 0.5, 12);
+    g_etat.humains = false; g_etat.instances = 1;
     const auto t0 = std::chrono::steady_clock::now();
     for (int i = 0; i < 20; i++) { g_etat.temps = 0.3 + i / 30.0; g.render(960 + i / 30.0); }
     const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count() / 20;

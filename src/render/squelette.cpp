@@ -62,7 +62,10 @@ bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) 
     Lecteur l{fichier.data(), fichier.data() + fichier.size()};
     const uint8_t* magie = l.prendre(4);
     // WFS-72 : version 2 (attribut _cloth par sommet, repères du corps) ; la version 1 de WFS-63 n'est plus lue
-    if (!magie || std::memcmp(magie, "WFP1", 4) != 0 || l.lire<uint32_t>() != 2) { WFS_ERR("%s : format inconnu (version 2 attendue)", chemin.c_str()); return false; }
+    // WFS-209 : version 3 = version 2 + tangente (4 flottants après l'uv, sommet de 84 octets) ; tangente lue et mise de côté
+    // (SkinVertex de 68 octets : le skinning ne la lit pas encore, WFS-211)
+    const uint32_t version = magie && std::memcmp(magie, "WFP1", 4) == 0 ? l.lire<uint32_t>() : 0;
+    if (version != 2 && version != 3) { WFS_ERR("%s : format inconnu (version 2 ou 3 attendue)", chemin.c_str()); return false; }
     const uint32_t nTex = l.lire<uint32_t>();
     std::vector<std::pair<const uint8_t*, uint32_t>> blobs(nTex);
     for (auto& b : blobs) { const uint32_t n = l.lire<uint32_t>(); b = {l.prendre(n), n}; }
@@ -71,7 +74,13 @@ bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) 
     { float c[4]; l.floats(c, 4); out.corps = {c[0], c[1], c[2], c[3]}; }   // uBody du jeu web
     const uint32_t nV = l.lire<uint32_t>(), nI = l.lire<uint32_t>(), nP = l.lire<uint32_t>(), nO = l.lire<uint32_t>(), nC = l.lire<uint32_t>();
     std::vector<SkinVertex> v(nV);
-    if (const uint8_t* b = l.prendre((size_t)nV * sizeof(SkinVertex))) std::memcpy(v.data(), b, (size_t)nV * sizeof(SkinVertex));
+    if (version == 2) { if (const uint8_t* b = l.prendre((size_t)nV * sizeof(SkinVertex))) std::memcpy(v.data(), b, (size_t)nV * sizeof(SkinVertex)); }
+    else if (const uint8_t* b = l.prendre((size_t)nV * 84)) {
+        for (uint32_t i = 0; i < nV; i++) {   // pos, normale, uv (32 octets) | tangente (16, mise de côté) | palette, poids, cloth (36)
+            std::memcpy(&v[i], b + (size_t)i * 84, 32);
+            std::memcpy(reinterpret_cast<uint8_t*>(&v[i]) + 32, b + (size_t)i * 84 + 48, 36);
+        }
+    }
     std::vector<uint32_t> idx(nI);
     if (const uint8_t* b = l.prendre((size_t)nI * 4)) std::memcpy(idx.data(), b, (size_t)nI * 4);
     out.plages.resize(nP);

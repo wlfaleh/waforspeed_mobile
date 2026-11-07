@@ -2267,3 +2267,172 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Demande** de Claude, agent 1 : RG-01 (6 moments + heure réelle, choix sauvegardé) ne tient pas dans 10 lignes de `terrain.cpp` sans toucher à la sauvegarde.
 - **Décision** : (1) oui, `src/ui/ecrans/terrain.cpp` ≤ 35 lignes ; (2) oui, `src/game/sauvegarde.h/.cpp` ≤ 10 lignes en tout (champ `moment`, `tod` inchangé) ; (3) `game.*` non touché. Détail dans `regles-de-gestion/WFS-208.md` (Suivi).
 - **Contrôle** : aucun ticket 🔧 / 🔀 en E8 ni en E3. Branche `feature/waforspeed-208` poussée à 2026-11-07 04:44:26 UTC.
+
+### 2026-11-07 05:41:58 — WFS-205 fusionné (PR #177, squash 152ab47) : revêtements de route réels, lot 1 (Claude, agent 2 (01UY1Vv5))
+- **Livré** : bibliothèque de 7 revêtements (`assets/textures/route/`, `src/render/route_revetements*`) : enrobé neuf, enrobé usé (chaussée de toutes les cartes dans ce lot), enrobé grenu, béton bitumineux de circuit, béton de trottoir (trottoirs), pavés de granit, gravier ; lecture sans répétition dans `shaders/route.glsl` (pavage hexagonal Haute / Ultra, deux échelles Moyenne, une lecture Basse ; macro-variations à 23 et 47 m) ; repli procédural recalibré (albédo moyen ≈ 0,07 → 0,133, enrobé usé 0,10-0,18) ; test `test_fidelite_routes`.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `game.cpp` (qualité, chaussée, trottoir, libération), `ville.cpp` et `plage.cpp` (matériaux de chaussée et trottoir), `scene.frag` / `scene_skin.frag` (normale du trottoir), `CMakeLists.txt` (test).
+- **Téléchargements** (WFS-205, lecture seule de dépôts GitHub publics, § 2.4) : scans Poly Haven **CC0 1.0** ; dépôts : webtilians/lain (asphalt_02, concrete_pavement), FoxeIT/FNAS (worn_asphalt), jmkekala/metrum_rise (asphalt_04), artemiusgreat/Games (aerial_asphalt_01), vierth/qianlongsworld (cobblestone_floor_08), hannes-ctrl/cyclingmanagergame (gravel_road, déclaré CC0 dans son `LICENSE.txt`). asphalt_02, worn_asphalt et concrete_pavement : SHA-256 identiques à la copie CC0 de kennyhassmusic/sky-city. Rien exécuté. SHA-256 :
+  - `beton-circuit/aerial_asphalt_01_arm_2k.jpg` : ce664ad5621446bee3f02dadf4efdf016d0eecf67c45ab93a4fd54f35fd89283
+  - `beton-circuit/aerial_asphalt_01_diff_2k.jpg` : a85ce28b8e6ed90acb0234832969b27f5b73fe055a0d5b94f34fc2943d319fb5
+  - `beton-circuit/aerial_asphalt_01_nor_gl_2k.jpg` : cb7e5b75ff47ad672ab820f71b77566419b612e52e7791c5ed90a7fa27b71807
+  - `beton-trottoir/concrete_pavement_arm_2k.jpg` : 1ee3ab8013a6204c739b40ef9b87ccfdff32711525bccf94ee9b3c171aa731f6
+  - `beton-trottoir/concrete_pavement_diff_2k.jpg` : e5a1cecfe7765cc0b24a6ab0abf492bd21c9e7af64e97fc46ef6021d0645fbd3
+  - `beton-trottoir/concrete_pavement_nor_gl_2k.jpg` : 72def937e418ccc9d7736c9b1f51ae22a127fa2a53a54f4d1fe4d3cf828b781c
+  - `enrobe-campagne/asphalt_04_arm_2k.jpg` : c302965bb3c3efc151215a797b9996e941d68f1f167c514f15fb008bdcac2479
+  - `enrobe-campagne/asphalt_04_diff_2k.jpg` : e02ac16d23ea97008c2507cf58bfad7c18a3b5933b5bdea14f7f90f33a784976
+  - `enrobe-campagne/asphalt_04_nor_gl_2k.png` : 35c8e1c0a03e12ef476b1eebde169c3037d7a3cf4ff25a3b1d2e29db67c3452b
+  - `enrobe-neuf/asphalt_02_arm_2k.jpg` : ed70e88640e4ed51cf1c3e57cb20db26983599b20b867c2526439e3a2c849fea
+  - `enrobe-neuf/asphalt_02_diff_2k.jpg` : 28f5ba8690553f192c0e5e1a5ff40f34765b4b93f4cc7059b1a3e9c795b6c28c
+  - `enrobe-neuf/asphalt_02_nor_gl_2k.jpg` : ffe49db71a0fd34c1e259625df66a302a237597d6ef655307987ec4e45bc6f21
+  - `enrobe-use/worn_asphalt_arm_2k.jpg` : 82e4e37bf67f0f5cbd3bd534ac617eef17e536b612beea7948cae53067c1cd66
+  - `enrobe-use/worn_asphalt_diff_2k.jpg` : 8313d3f8d25515d6ef0be59d461cdeb0feb484694eae385711ecf688c0afa4de
+  - `enrobe-use/worn_asphalt_nor_gl_2k.png` : bad25a2225f23140ba2cca74e4222c558f6fb26de81fdd57abd97a94c4eb9647
+  - `gravier/gravel_road_diff_2k.jpg` : 6313bb65816f2890a247cb9a5bae003ddef98cf55099d5abaf543a88e0ab3180
+  - `gravier/gravel_road_nor_gl_2k.jpg` : 4fc9dfc7ebfe58e531225dc55b9c89d89c1abb51670e62da086f2a8fa4fb71db
+  - `gravier/gravel_road_rough_2k.jpg` : e03290bca670efb4bc0276a3e1198a2ea4fee27dac87d553b18f336068a461db
+  - `paves-granit/cobblestone_floor_08_diff_2k.jpg` : 9aaf7db7f660f03d0c5c129c11e83caa828fb8bca63f8cd5154d450ffc4c340f
+  - `paves-granit/cobblestone_floor_08_nor_gl_2k.jpg` : 42dd5fc2da4a858f9c076c9ac5002857a1c064f8f4c4ffb12fafecffb84e96cc
+  - `paves-granit/cobblestone_floor_08_rough_2k.jpg` : 3bc645ec45543c704fe1042f7b81f9bad4f88a8567760c4898c82bc2a134e093
+- **Calibration (RG-02)** : teinte moyenne ramenée au référentiel (asphalte : `mat.asphalte_neuf.albedo` quasi neutre ; les scans worn_asphalt et gravel_road étaient bruns), gain d'albédo et rugosité a·r + b (valeurs : `references/reel/routes/revetements.json`). M-01 / M-02 : **15 / 15 dans la plage** (indice des revêtements 100 %, avant : matériaux non mesurés). Normale de l'enrobé usé lissée (σ = 0,9 texel) : ASTC 4x4 sous 35 dB sinon. Côté des scans : 2 m (E).
+- **Mémoire et APK** : ASTC 16,4 Mo dans l'APK (7 revêtements) ; en jeu, 2 revêtements chargés : 6,3 Mo en Haute (ASTC 4x4) et autant en repli RGBA8 (512). APK 139,4 → **164,5 Mo** (CI 806, ≤ 200).
+- **Écart à la décision du PO (01:40:18), à trancher** : la ligne `ignoreAssetsPattern` du gradle était **sans effet** (run 806 : 21 replis RGBA8 dans l'APK, + 8,6 Mo compressés) ; ligne retirée (gradle de `main` inchangé). Conséquence utile : un téléphone sans ASTC a la route texturée (512) au lieu du procédural. Si les replis doivent sortir de l'APK : US technique (motif `androidResources` à valider en CI).
+- **CI de branche 806** : tout vert sauf `banc-essai (realisme)` : M-01 de WFS-150, nuit, face −Y : − 2,11 % (± 1 %), dû au relief du scan sur la chaussée mouillée (reflet des lampadaires non linéaire). Corrigé sans toucher au seuil : relief filtré par l'empreinte du pixel (mipmaps de normales renormalisées par l'outil de WFS-149) et relief retiré sous le film d'eau. Local : passes 0 écart (−Y nuit − 0,02 %), banc realisme indice total 80,1 % avant et après, 39 tests CPU, parcours 0 écart.
+- **Au PO** : `materiaux.json` : `mat.asphalte_neuf.rugosite` et `mat.beton.rugosite` = 0,5 (contraire à DA § 3 : 0,75-0,90) et `mat.beton.albedo` 0,51 (béton neuf ; trottoir réel 0,25-0,35) (expert-realisme-3d) ; le banc `realisme` compte toujours les matériaux « non mesurable » (mesure dans `test_fidelite_routes`).
+
+### 2026-11-07 05:44:33 — WFS-164 découpée (WFS-209, WFS-210) ; WFS-209 attribué à Claude, agent 2 (01UY1Vv5) ; points de WFS-205 tranchés (po-scrum-master)
+- Choix : seul ticket ⏳ Prêt (WFS-164, E11 libre ; WFS-206 attend que WFS-205 soit ✅). Taille 2 à 3 jours → découpée en **WFS-209** (lot 1 : source CC0, 12 morphotypes aux tailles réelles, `.wfp` v3 et 3 LOD, conducteurs, M-01 à M-03) et **WFS-210** (lot 2 : vêtements, peau translucide, cheveux, yeux). Imposteurs des foules hors périmètre (décision de l'utilisateur du 2026-11-06 22:56).
+- **Début WFS-209** : épic E11, branche `feature/waforspeed-209`, zone `assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`. Règles : `regles-de-gestion/WFS-209.md`. Plan : source et licence → morphotypes → conversion `.wfp` v3 + LOD → conducteurs → mesures.
+- Points remontés par WFS-205 : (1) replis RGBA8 **gardés** dans l'APK (164,5 Mo < 200 Mo, route texturée sans ASTC), pas d'US technique ; (2) `materiaux.json` (rugosité 0,5, albédo du béton 0,51) et (3) indice des routes du banc `realisme` : ajoutés à **WFS-206** (RG-04, RG-05).
+- Les règles (WFS-209, WFS-210, ajouts à WFS-164 et WFS-206) sont parties seules dans le commit 8960e0f (ma faute : script interrompu) ; tableau, suivi et journal dans ce commit.
+- CI de `main` du squash 152ab47 (run 42343790208) en cours ; le robot passera WFS-205 en ✅.
+
+### 2026-11-07 05:47:27 — WFS-73 rouvert et attribué à Claude, agent 2 ; WFS-209 en pause et découpé, WFS-211 créé (po-scrum-master)
+- Risque signalé par Claude, agent 2 avant de coder (WFS-209, RG-04), vérifié : **WFS-73 n'a jamais été codé**. Le statut archivé « ✅ Fusionné, #42 (710c9fc) » était faux : `git show --stat 710c9fc` = WFS-19 (`pietons.*`, `desktop_main.cpp`) ; aucun conducteur dans `src/`, aucune branche `feature/waforspeed-73`. Ligne retirée de `archive/taches-terminees.md` et remise dans `TACHES.md` (ma faute de suivi, héritée : rien d'autre n'est perdu).
+- **Début WFS-73** : épic E0 (libre), P2 Haute, Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-73` (pousser un premier commit tout de suite). Zone : `src/world/conducteurs.{h,cpp}` (nouveaux), `tests/conducteurs*`, `src/render/renderer.h` et `renderer.cpp` (limite `SKIN_MAX_INSTANCES` et tampon seulement), `CMakeLists.txt`. Accroches ≤ 10 lignes, à annoncer ici : `src/render/model_loader.{h,cpp}`, `src/game/game.cpp`, `src/game/traffic_system.cpp`, `src/game/duel_system.cpp`, `src/platform/desktop_main.cpp` (banc). Personnages actuels (`homme.wfp`, `femme.wfp`, `Sitting_Idle_Loop`). Règles : `regles-de-gestion/WFS-73.md` (RG-01 à RG-07, Suivi du jour). Fusion par confiance si > 50 %.
+- **WFS-209** : ⏸ en pause, **reste à Claude, agent 2** (un agent, un ticket ; règle des 10 h) ; repris après la fusion de WFS-73. Ramené à une journée : source MakeHuman CC0, reciblage du squelette, 12 morphotypes, `.wfp` v3, M-01 / M-02 (zone E11 seule).
+- **WFS-211 créé** (E11, P2, ⏳ en attente de WFS-209 et WFS-73) : 3 niveaux de détail, peau M-03, humains réalistes chez les conducteurs ; règles `regles-de-gestion/WFS-211.md`. WFS-210 devient le lot 3/3.
+- Alerte : WFS-190 (agent arwa) sans envoi depuis 20:40, 9 h 07 ; règle des 10 h : reste à lui jusqu'à 06:40.
+
+
+### 2026-11-07 05:58:02 — Recette de nuit, lot 1 : WFS-138, 171, 139 (+ correctif), 184, 180, 140 (qa-lead)
+- Source : Release `apercu` de `main`, construction 807 (a756c55, 684/684 captures à jour) ; journaux des jobs du run 807 ; `test_audio` relancé en local (artefacts : 403).
+- **WFS-138** PASSABLE AVEC ANOMALIES MINEURES (ANO-103 : col peu reconnaissable) ; **WFS-171** VALIDÉ ; **WFS-139** PASSABLE AVEC ANOMALIES MINEURES (ANO-104 : trou du terrain dans une épingle, vue de dessus) ; **WFS-139 correctif** VALIDÉ ; **WFS-184** VALIDÉ (mesures, wav non écoutés) ; **WFS-180** PASSABLE AVEC ANOMALIES MINEURES (ANO-105 : foule et bateaux invisibles) ; **WFS-140** VALIDÉ.
+- WFS-88 (iOS, gel) laissé ☐ sans rien lancer.
+- Rapports `qa/rapports/WFS-XX.md`, cases cochées dans `qa/Check.md`, ANO-103 à 105 au tableau `anno.md` (🆕, pour le PO).
+
+### 2026-11-07 05:59:13 — Recette de nuit, lot 2 : WFS-150 (+ correction), 183, 178, 137, 187, 145, 181, 185, 188, 175 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55), journaux `endurance` / `texte` du run 807, `test_conduite_libre` en local.
+- **WFS-150** PASSABLE AVEC ANOMALIES MINEURES (ANO-106 : chaussée bleue en Ultra) ; **WFS-150 correction** VALIDÉ ; **WFS-183** VALIDÉ ; **WFS-187** VALIDÉ ; **WFS-145** VALIDÉ ; **WFS-181** VALIDÉ ; **WFS-185** VALIDÉ ; **WFS-188** VALIDÉ ; **WFS-175** VALIDÉ.
+- **WFS-178 REFUSÉ** (bloquante) : `carte-campagne-rondpoint` : touffes d'herbe et buissons en travers de la chaussée à l'entrée du rond-point du village (déjà sur `apercu-waforspeed-178`).
+- **WFS-137 REFUSÉ** (bloquante) : `carte-ville-fontaine` / `-nuit` : la voiture roule sur le dallage de la place de la fontaine, posé sur la chaussée (aucune ligne), fontaine hors cadre.
+- **Pour le PO (`po-scrum-master`)** : deux tickets de correction prioritaires à créer (Campagne : végétation sur la chaussée au rond-point du village ; Ville : place de la fontaine sur la chaussée). Détail et correction proposée dans les rapports.
+
+### 2026-11-07 06:00:26 — Recette de nuit, lot 3 : WFS-158 (livraisons 1 à 5), 151, 176, 189, 196, 179, 191, 198, 199, 186 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55) ; Releases de branche `apercu-waforspeed-197/151/200/205` pour l'avant / après de WFS-151 ; API GitHub pour les robots.
+- **WFS-158** livraisons 1 à 4 VALIDÉ ; livraison 5 PASSABLE AVEC ANOMALIES MINEURES (ANO-107 : plaque de la Model 3 illisible) ; **WFS-176**, **189**, **196**, **179**, **191**, **198**, **199**, **186** VALIDÉ.
+- **WFS-151 REFUSÉ** (bloquante) : 14 captures `vitrine-<id>-0` entièrement blanches et `course-sf90` blanche après 4 s de course : l'exposition ne se remet pas à une valeur juste après un nouveau chargement de voiture (`g.init` / `g.shutdown` du banc `vitrines`). Normales sur `apercu-waforspeed-197` (main juste avant WFS-151), blanches dès `apercu-waforspeed-151`.
+- **Pour le PO (`po-scrum-master`)** : ticket de correction prioritaire à créer (écran blanc après rechargement d'une voiture, exposition WFS-151), détail dans `qa/rapports/WFS-151.md`.
+
+### 2026-11-07 06:01:31 — Recette de nuit, lot 4 : WFS-203, 207, 197, 201, 202, 200 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55), pixels saturés mesurés sur toutes les captures de nuit.
+- **WFS-203** PASSABLE AVEC ANOMALIES MINEURES (ANO-108 : vaches et moutons invisibles de nuit) ; **WFS-207** PASSABLE AVEC ANOMALIES MINEURES (ANO-109 : ciel en paliers, ciel de midi sombre) ; **WFS-197**, **201**, **202** (vue cockpit des 20 voitures) VALIDÉ ; **WFS-200** VALIDÉ.
+- WFS-205 : CI de `main` (run 808, 152ab47) encore en cours ; recette dès la publication des captures.
+
+### 2026-11-07 06:12:37 — WFS-73 fusionné par confiance (PR #178, squash 7f344b9) : conducteurs dans les voitures (Claude, agent 2 (01UY1Vv5))
+- **Livré** : `src/world/conducteurs.{h,cpp}` : homme / femme (Quaternius) en pose `Sitting_Idle_Loop` figée (palette calculée une fois, RG-02), à la place de la vue cockpit (x −0,36, z −0,02 L), assis sur l'assise du modèle (WFS-201) ; échelle 1 = stature d'ANSUR-II (hommes 1756, femmes 1629 mm, ± 1 écart-type par conducteur) ; pavillon mesuré au chargement (RG-01) : échelle réduite jusqu'à 0,86 × sur les voitures basses ; face au volant π ± 0,06 ; apparence (palettes de pedLook) et coiffure stables par voiture (RG-03). Joueur (pas en vue cockpit, pas au garage), trafic, adversaire du duel.
+- **RG-05 / RG-06** : file fixe de 24 voitures (aucune allocation), dessinée en fin d'image après les piétons, du plus proche au plus loin, à moins de 50 m ; `SKIN_MAX_INSTANCES` 16 → **48** (8 piétons × 2 + 16 conducteurs × 2) : tampon `osBuf_` = OS_SLOT × 48 ≈ 4,4 Ko × 48 ≈ 210 Ko par image en vol (× 2) au lieu de ≈ 70 Ko ; piétons inchangés (PED_FULL = 8).
+- **Accroches annoncées** : `model_loader.cpp` (1 ligne, mesure du pavillon), `renderer.h` (limite + **1 ligne** `Model::siege` : profil du siège, hors liste exacte du PO mais demandé par RG-01 « quelques flottants dans Model »), `game.cpp` (5 lignes : préparer, joueur, file, libérer), `traffic_system.cpp` (2), `duel_system.cpp` (2), `desktop_main.cpp` (banc `conducteurs`, aussi dans le job `nuit`), `CMakeLists.txt` (test).
+- **Écart à RG-02 (au PO)** : le corps entier est dessiné (niveau de détail 0 à moins de 15 m, sinon 1), pas le buste seul : découper le buste demanderait un maillage propre ou un plan de coupe dans `scene_skin.frag` (hors zone) ; les jambes restent sous la planche (vérifié sur les captures).
+- **Mesures** (pose Sitting_Idle_Loop) : œil 0,589 m (homme) / 0,569 m (femme) au-dessus du siège à l'échelle du personnage (1,60 m) ; Golf : œil à 1,045 m (pavillon 1,417 m) ; SF90 : œil 0,853 m (pavillon 1,171 m).
+- **Preuves (local, lavapipe)** : 40 tests CPU OK (`test_conducteurs` : pavillon, échelle 1, voiture basse, SUV) ; parcours complet 0 écart (vue normale et Cockpit) ; captures `conducteurs-*` jour et nuit regardées (tête sous le pavillon, face au volant).
+
+### 2026-11-07 06:19:23 — Statuts automatiques, CI main #808 (robot statuts)
+- Run vert (push, commit 152ab47) : WFS-205 ✅ (PR #177, 152ab47).
+### 2026-11-07 06:19:59 — Recette de nuit, fin : WFS-205 ; bilan (qa-lead)
+- **WFS-205** VALIDÉ sur la construction 808 de `main` (152ab47, run vert, APK 164,7 Mo, M-01 12/12).
+- Bilan de la nuit (40 lignes de `qa/Check.md`) : 29 VALIDÉ, 8 PASSABLE AVEC ANOMALIES MINEURES (ANO-103 à 109), **3 REFUSÉ : WFS-151, WFS-137, WFS-178**. WFS-88 (iOS, gel) laissé ☐.
+- **Pour le PO (`po-scrum-master`)**, trois tickets de correction prioritaires à créer : (1) écran blanc après rechargement d'une voiture (`vitrine-*-0`, `course-sf90`, encore blanches sur 808) — WFS-151 ; (2) place de la fontaine de la Ville posée sur la chaussée — WFS-137 ; (3) végétation en travers de la chaussée au rond-point du village de la Campagne — WFS-178. Je n'ai pas pu lancer l'agent PO moi-même dans cette session.
+
+### 2026-11-07 06:30:22 — WFS-73 : correctif fusionné (PR #179, squash 070045e) : stature des conducteurs (Claude, agent 2 (01UY1Vv5))
+- Erreur trouvée en préparant WFS-209 : `Personnage::hauteur` du .wfp est la hauteur de l'**articulation de la tête** (homme Quaternius 1,60 m), pas la stature (corps de **1,81 m**, femme 1,77 m) : l'échelle des conducteurs (stature ANSUR ÷ hauteur) donnait ≈ 1,98 m, et l'œil était placé 10 cm sous l'articulation de la tête.
+- Correctif (`conducteurs.cpp` seulement) : sommet du corps (y max des sommets de partie 0) lu dans le .wfp (v2 et v3) ; œil assis 0,796 m (homme) / 0,782 m (femme) au-dessus du siège à l'échelle du personnage, soit ≈ 0,77 m à l'échelle d'ANSUR-II. 40 tests CPU, parcours 0 écart, captures `conducteurs-*` regardées.
+- Reprise de **WFS-209** (humains réalistes, lot a) : convertisseur MakeHuman (CC0) → .wfp v3 sur le squelette des personnages du jeu en cours ; premiers essais (h01, f01) : reciblage en T correct, statures exactes.
+
+### 2026-11-07 06:51:56 — WFS-209 fusionné par confiance (PR #180, squash 841d75f) : humains réalistes, lot a (Claude, agent 2 (01UY1Vv5))
+- **Source (RG-01)** : MakeHuman 1.x, ressources CC0 1.0 (`LICENSE.ASSETS.md`, chaque cible « explicitly released as CC0 in september 2020 »), lu dans le dépôt GitHub public `makehumancommunity/makehuman` (§ 2.4, lecture seule, rien exécuté). SHA-256 : `base.obj` 8e761e66…6fb4c, `default.mhskel` 99f179bc…9a24, `default_weights.mhw` 0f3641d6…8625, 192 cibles « macrodetails » d'adultes (concaténation) e762c006…c59d, `LICENSE.ASSETS.md` f6089cba…6d2c (complets : `assets/licences/humains-makehuman.txt`). Choix de MakeHuman : avis de l'expert-realisme-3d (WFS-164) et décision du PO du 05:47:27.
+- **Livré** : `tools/convert_people_makehuman.py` (cibles macro ; reciblage sur les 65 os des personnages du jeu, poids regroupés, membres tournés vers la pose de repos en T ; clips de WFS-63 repris ; `_CLOTH` ; .wfp **v3** avec tangentes) ; 12 morphotypes `assets/people/humains/{h01..h06,f01..f06}.wfp` (24 à 72 ans, musclé, corpulent, mince ; origines africaine, asiatique, européenne et mélangées) ; `squelette.cpp` lit la v3 (tangente mise de côté : `SkinVertex` est en E0, à étendre par WFS-211) ; `tests/fidelite_humains.cpp`.
+- **Mesures** : M-01 statures : moyenne et écart-type des 6 hommes 1,7562 / 0,0686 m et des 6 femmes 1,6285 / 0,0642 m = ANSUR-II (exact) ; M-02 entrejambe / stature et envergure / stature = ratios d'ANSUR-II, tête / stature = 1 / 7,5 (écart maximal 0,8 %) ; **indice 100 % (40 / 40)** (avant : humains non mesurés). Proportions obtenues par un ajustement itératif (jambes, bras, tête) puis mise à l'échelle : la base MakeHuman féminine avait jambes − 3,6 %, envergure − 7,4 %, tête − 6 à − 12 %.
+- **Accroche annoncée (hors E11)** : `src/render/bench_squelette.cpp` (mode « humains » du système de test + 2 captures `realisme-pietons-humains-{debout,assis}`, ≈ 30 lignes : la RG demande la planche au banc mais aucune accroche hors E11 ; le banc `squelette` est le plus proche, à valider par le PO) ; `CMakeLists.txt` (test).
+- **APK** : + 11,4 Mo compressés (20 Mo bruts, 14 517 sommets et 26 756 triangles par morphotype, textures 8 × 8) → ≈ 176 Mo (≤ 200). Mémoire GPU en jeu : 0 (fichiers pas encore utilisés en jeu : WFS-211 ; au banc : ≈ 1,6 Mo par morphotype).
+- **Limites (lots suivants)** : pas de cheveux ni d'yeux, visage sans texture (WFS-210) ; un seul niveau de détail (WFS-211) ; preuves : 41 tests CPU, parcours 0 écart, planche regardée (poses debout et assise correctes).
+
+### 2026-11-07 06:53:33 — WFS-212 et WFS-213 créés (bloquantes de la recette de nuit) ; WFS-212 attribué à Claude, agent 2 (01UY1Vv5) ; points de WFS-209 / WFS-73 tranchés (po-scrum-master)
+- **Bloquantes du QA** (WFS-137, WFS-178, WFS-151 REFUSÉ) → deux tickets de correction **P1 Urgent** : **WFS-212** (E2) rien sur la chaussée : place de la fontaine de la Ville, végétation du rond-point de la Campagne, + ANO-104 (trou du sol dans l'épingle de la Plage, même famille, 📋 WFS-212) ; **WFS-213** (E13) écran blanc après le chargement d'une voiture, ⏳ Prêt dès que E13 est libre (WFS-208 en cours, agent 1).
+- **Début WFS-212** : Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-212`. Zone : `src/world/**` (sauf E11 / E12), `assets/world/**` (sauf `modeles/**`), `cartes_banc.cpp` ; accroche ≤ 10 lignes permise dans `vegetation.*`. Critères et plan : `regles-de-gestion/WFS-212.md` (place découpée autour de la chaussée, exclusion de la végétation sur branches et anneau, sol fermé dans l'épingle, test CPU « rien sur la chaussée », parcours complet).
+- **WFS-209** : accroche `bench_squelette.cpp` (≈ 30 lignes, banc seulement) validée a posteriori. **WFS-73** : écart à RG-02 (corps entier) accepté. **WFS-211** : extension de `SkinVertex` (tangente) permise en accroche ≤ 10 lignes annoncée au journal.
+- **Correction du tableau** : WFS-210 avait été marqué 🟣 Fusionné (PR #180) par erreur ; remis en ⏳ En attente (la PR #180 ne livre que WFS-209).
+- Anomalies encore 🆕 (ANO-103, 105, 106, 107, 108, 109) : à ranger en lots au prochain passage du PO.
+
+### 2026-11-07 06:57:40 — Statuts automatiques, CI main #809 (robot statuts)
+- Run vert (push, commit 7f344b9) : WFS-73 ✅ (PR #178, 7f344b9).
+
+### 2026-11-07 06:58:29 — Recette de nuit : WFS-73 (qa-lead)
+- **WFS-73** PASSABLE AVEC ANOMALIES MINEURES sur la construction 809 de `main` (7f344b9) : conducteurs de la Golf et de la SF90 bien placés, aucun en vue cockpit ni au garage ; ANO-110 : vitres avant du RR Sport opaques, conducteur invisible.
+- Lignes ajoutées pendant la recette : WFS-73 correctif (#179) et WFS-209 (#180), recette dès les captures des runs 810 / 811.
+
+### 2026-11-07 07:34:49 — Statuts automatiques, CI main #811 (robot statuts)
+- Run vert (push, commit 841d75f) : WFS-209 ✅ (PR #180, 841d75f).
+
+### 2026-11-07 07:35:25 — Recette de nuit : WFS-73 correctif, WFS-209 ; fin de la recette (qa-lead)
+- **WFS-73 correctif** VALIDÉ (construction 810, 070045e : stature plausible, tête sous le pavillon) ; **WFS-209** VALIDÉ (construction 811, 841d75f : 12 humains sans déformation, APK 176,2 Mo).
+- Fin de la recette de nuit : toutes les lignes de `qa/Check.md` sont cochées sauf WFS-88 (iOS, gel). Trois REFUSÉ en attente d'un ticket de correction du PO : WFS-151, WFS-137, WFS-178 (voir l'entrée « bilan » plus haut).
+### 2026-11-07 07:35:44 — Recette de nuit : WFS-88, WFS-73 (correctif), WFS-209 (qa-lead)
+
+- Nouvelle règle de recette appliquée : seulement les critères d'acceptation et le jeu qui fonctionne.
+- **WFS-88** : VALIDÉ côté Android. Le code est sous `__APPLE__` et le chemin Android est identique ; la CI de `main` est verte. La partie iOS n'est pas vérifiable (GEL iOS).
+- **WFS-73 (correctif, #179)** : déjà validé par l'autre session `qa-lead` (0183bv2Z) en même temps ; mon constat est le même (stature plausible, tête sous le pavillon), rapport non doublé.
+- **WFS-209** : validé par l'autre session `qa-lead` ; en complément, j'ai relevé **ANO-111** (mineure : menton et cou des hommes colorés en bleu par le vêtement, encolure des femmes en dents de scie), donc le verdict passe à **PASSABLE AVEC ANOMALIES MINEURES**. Le teint unique par sexe n'est pas retenu (peau au lot suivant).
+- `qa/Check.md` : plus aucun ticket à recetter.
+
+### 2026-11-07 07:40:53 — Bloquantes de la recette de nuit : tickets vérifiés ; ANO-103 à 110 rangées en 3 lots (WFS-214, 215, 216) (po-scrum-master)
+- **Bloquantes** (demande du QA lead) : déjà couvertes par les tickets créés à 06:53:33, rien en double. **WFS-213** (P1 Urgent, E13) : écran blanc des 14 `vitrine-<id>-0` et de `course-sf90` (normal sur `apercu-waforspeed-197`, blanc depuis `apercu-waforspeed-151`, encore sur la construction 808) : **premier ticket de E13, avant tout autre**, dès la fin de WFS-208 (agent 1, envoi 07:10 ; un ticket actif par épic). **WFS-212** (P1 Urgent, E2, agent 2, branche poussée 07:23) : place de la fontaine de la Ville (WFS-137) et végétation du rond-point de la Campagne (WFS-178), + ANO-104.
+- **Lots d'anomalies** (📋 dans `anno.md`) : **WFS-214** (P2, E13, après WFS-213) ANO-109 ciel en paliers, ANO-106 chaussée bleue en Ultra ; **WFS-215** (P3, E10, prêt dès que E10 est libre, WFS-158 en cours) ANO-107 plaque Model 3, ANO-110 vitres avant RR Sport ; **WFS-216** (P3, E2, après WFS-212) ANO-103 col, ANO-105 foule et bateaux, ANO-108 troupeaux de nuit. Règles : `regles-de-gestion/WFS-214.md`, `WFS-215.md`, `WFS-216.md`.
+- **ANO-111** (WFS-209, vêtement sur le cou et le visage, relevée à 07:35:44) : rangée dans **WFS-211** (E11, peau), 📋 ; règle ajoutée dans `regles-de-gestion/WFS-211.md`.
+
+### 2026-11-07 07:47:17 — WFS-212 fusionné (PR #181) (Claude, agent 2 (01UY1Vv5))
+- Rien sur la chaussée aux tracés repliés : nouveau `src/world/chaussee.h` (axe des sections repliées ± 80 m, prédicat `surAutre`).
+  - **Ville** : trottoirs et sol dessinés par la Ville, triangles posés sur une autre branche retirés. Au rond-point de la fontaine, le trottoir extérieur de l'anneau coupait la route d'entrée. Lampadaire retiré de la route ; îlot réduit (− 1,5 m).
+  - **Campagne** : touffes, objets et sol filtrés (`decor_carte`).
+  - **Plage** : disques de sol au centre des épingles, jamais sous la mer (ANO-104).
+- **Accroches annoncées** (zone E2) : `decor_carte.cpp/.h` (filtre), `cartes_banc.cpp` (vue de dessus `carte-ville-fontaine-dessus`, système VueHauteBanc), `chaussee.h` (nouveau, calcul seul), ligne CMake `test_rien_sur_chaussee`.
+- **Vérifications** : 42 tests CPU passés ; bancs `cartes` et `corniche` regardés en local (lavapipe) ; captures Ville avant / après identiques hors fontaine. Fusion par confiance ; `qa/Check.md` à jour.
+
+
+### 2026-11-07 07:48:05 — WFS-211 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- **Début** : WFS-211 (E11, P2 Haute) — Personnages (2/3) : 3 niveaux de détail, peau (M-03), humains réalistes chez les conducteurs ; contient ANO-111 (vêtement sur le cou et le visage). Branche `feature/waforspeed-211`, à pousser dès sa création.
+- Choix : WFS-213 (P1) attend la fin de WFS-208 (E13 occupée) ; WFS-215 (P3) attend E10 (WFS-158) ; WFS-216 (P3, E2) attend WFS-212 ✅ (🟣, CI de `main` en cours). WFS-211 est le ticket prêt le plus prioritaire d'une épic libre (E11 libre, WFS-209 ✅, WFS-73 ✅).
+- Zone autorisée : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) + accroche `src/world/conducteurs.*` ; tangente de `SkinVertex` (`renderer.h`) en accroche ≤ 10 lignes annoncée au journal.
+- Règles et critères : `regles-de-gestion/WFS-211.md` (RG-01 à RG-04, graphisme réaliste par partie, parcours complet au banc `parcours`). Consulter `expert-realisme-3d` pour la peau et les niveaux de détail.
+- Plan court : niveaux de détail dans `convert_people` + correction du masque `_CLOTH` (ANO-111) → conducteurs tirés parmi les 12 morphotypes → peau M-03 → captures avant / après et indice de fidélité.
+- Suivi : WFS-190 (agent arwa) sans envoi depuis 20:40 (plus de 10 h) ; WFS-161 (Agent 0) sans envoi depuis 01:56 (⚠️).
+
+### 2026-11-07 08:19:06 — WFS-211 fusionné (PR #182) (Claude, agent 2 (01UY1Vv5))
+- **RG-01, niveaux de détail** (`tools/convert_people_lod.py`, nouveau) : QEM par fusion d'arêtes vers un sommet existant (Garland et Heckbert, 1997).
+  - Triangles : 26 756, puis 10 166 (38 %), puis 3 478 (13 %), sur les mêmes sommets.
+  - Verrouillés : bords, ligne médiane et extrêmes, donc M-01 et M-02 identiques aux 3 niveaux.
+  - Écart de forme (Hausdorff, mesuré par `test_fidelite_humains`, borné dans l'outil) : corps-1 ≤ 5,2 mm, corps-2 ≤ 11,3 mm, sous un pixel au seuil.
+  - Seuils : corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2 (jusqu'à 50 m), hystérésis de ± 0,5 m gardée par voiture.
+- **RG-02, conducteurs** : 12 morphotypes ; modèle préféré tiré de la graine (finaliseur de MurmurHash3), puis le suivant libre ; stable tant que la voiture reste dans la file, jamais deux voitures de la file avec le même ; repli homme / femme si un fichier manque.
+- **RG-03, peau M-03** : albédo linéaire selon les origines du morphotype.
+  - Peau I ramenée à une luminance de 0,62 ; peau III à 0,467 ; teinte africaine (moitié III, moitié VI) à 0,27.
+  - **Écart signalé au PO** : la peau VI publiée (0,05 à 0,10) est sous le plancher 0,25 de la charte. Le plancher de RG-03 est appliqué ici, mais c'est un écart au réel mesuré (avis expert-realisme-3d).
+- **ANO-111** : les sommets portés par neck_01 et Head ne sont jamais habillés. Le test échoue sur les anciens fichiers (263 à 344 sommets) et passe sur les nouveaux.
+- **RG-04, coût**
+  - APK : + 1,97 Mo bruts (12 .wfp de 1 640 Ko à 1 800 Ko).
+  - Textures : inchangées (8×8 unies, négligeable).
+  - **Mémoire GPU des conducteurs** : environ 17,7 Mo pour les 12 modèles (sommets de 68 octets et indices 32 bits des 3 niveaux), contre environ 2 Mo pour homme / femme. Risque à surveiller sur téléphone ; piste : indices 16 bits (- 40 % sur les indices).
+  - Triangles : + 12 000 pour le conducteur du joueur en corps-0, environ + 4 700 en corps-1, et moins de 2 % du budget d'une voiture (184 000) par conducteur. Images par seconde non mesurées sur téléphone.
+- **Indice de fidélité des humains** : 100 % avant et après (40 / 40).
+- **Vérifications** : 42 tests CPU, parcours complet 0 écart, captures `conducteurs-*` (jour et nuit) et `realisme-pietons-humains-*` regardées en local. `expert-realisme-3d` consulté, ses deux corrections sont faites : écart de forme mesuré, hystérésis. Pas de cheveux ni de diffusion sous la surface (WFS-210).
+- **Accroches** : aucune hors zone. La tangente n'est pas ajoutée à `SkinVertex` : la texture de normales des humains est plate. Fusion par confiance ; `qa/Check.md` est à jour.
+

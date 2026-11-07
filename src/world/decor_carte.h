@@ -9,6 +9,7 @@
 // publicitaires du circuit (WFS-93) : ≤ 300 au total avec la route (journal du banc).
 // Les bas-côtés partent du bord de la chaussée (GROUND du jeu web) : Game ne dessine ni son sol ni ses trottoirs.
 #pragma once
+#include "chaussee.h"   // WFS-212
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -110,6 +111,10 @@ protected:
     void touffes(Track& t, int64_t a, Geo out[P_COUNT]) const;
     // DECOR.lamp : lampadaire de ville (village) ou projecteur de circuit (flood)
     void lampe(const Pose& p, int side, bool flood, Geo out[P_COUNT]) const;
+    // WFS-212 (RG-02, RG-04) : le point q (monde) tombe-t-il sur la chaussée d'une AUTRE partie du tracé (axe à moins de RW + marge),
+    // autour d'un rond-point ou d'une épingle (anneau ± 80 m) ? la partie du tracé du segment a lui-même (± 30 m) est exclue
+    bool surAutreChaussee(const vec3& q, int64_t a, float marge) const;
+    bool procheSerre(int64_t a) const;   // segment a dans la zone d'un rond-point ou d'une épingle
 
     bool active_ = false, night_ = false;
     Track* track_ = nullptr;
@@ -121,6 +126,7 @@ protected:
 private:
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]);
     std::vector<std::vector<Item>> items_;   // objets de chaque segment de la piste
+    std::vector<chaussee::Axe> serres_;   // WFS-212 : axe de la route autour des sections repliées (chaussee.h)
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
     std::map<int64_t, Chunk> chunks_;
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;

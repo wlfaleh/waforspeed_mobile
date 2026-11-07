@@ -1,0 +1,375 @@
+{
+ "revetements": {
+  "enrobe-neuf": {
+   "scan": "Poly Haven « asphalt_02 » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.048,
+     1.032,
+     0.92
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.04,
+     0.07
+    ],
+    "avant": 0.1138,
+    "gain_k": 0.4946,
+    "apres": 0.0553,
+    "centile_1": 0.0134,
+    "centile_99": 0.2042
+   },
+   "rugosite": {
+    "plage": [
+     0.75,
+     0.9
+    ],
+    "avant": 0.7703,
+    "a": 0.5244,
+    "b": 0.421,
+    "apres": 0.825
+   },
+   "octets": {
+    "couleur": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 349984,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.0
+  },
+  "enrobe-use": {
+   "scan": "Poly Haven « worn_asphalt » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.429,
+     0.929,
+     0.642
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.1,
+     0.18
+    ],
+    "avant": 0.0462,
+    "gain_k": 3.0621,
+    "apres": 0.14,
+    "centile_1": 0.0607,
+    "centile_99": 0.4692
+   },
+   "rugosite": {
+    "plage": [
+     0.75,
+     0.9
+    ],
+    "avant": 0.875,
+    "a": 1.0,
+    "b": -0.05,
+    "apres": 0.825
+   },
+   "octets": {
+    "couleur": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 349984,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.9
+  },
+  "enrobe-campagne": {
+   "scan": "Poly Haven « asphalt_04 » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.064,
+     0.995,
+     0.942
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.08,
+     0.14
+    ],
+    "avant": 0.23,
+    "gain_k": 0.4792,
+    "apres": 0.11,
+    "centile_1": 0.0573,
+    "centile_99": 0.2399
+   },
+   "rugosite": {
+    "plage": [
+     0.82,
+     0.92
+    ],
+    "avant": 0.9316,
+    "a": 1.0,
+    "b": -0.0616,
+    "apres": 0.87
+   },
+   "octets": {
+    "couleur": {
+     "astc": 626736,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 158864,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.0
+  },
+  "beton-circuit": {
+   "scan": "Poly Haven « aerial_asphalt_01 » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.021,
+     0.938,
+     1.041
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.05,
+     0.09
+    ],
+    "avant": 0.1339,
+    "gain_k": 0.5019,
+    "apres": 0.07,
+    "centile_1": 0.0232,
+    "centile_99": 0.2091
+   },
+   "rugosite": {
+    "plage": [
+     0.72,
+     0.85
+    ],
+    "avant": 0.7754,
+    "a": 1.0,
+    "b": 0.0096,
+    "apres": 0.785
+   },
+   "octets": {
+    "couleur": {
+     "astc": 626736,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 626736,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 158864,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.0
+  },
+  "beton-trottoir": {
+   "scan": "Poly Haven « concrete_pavement » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.221,
+     1.007,
+     0.772
+    ],
+    "visee": [
+     1.04,
+     1.0,
+     0.96
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.25,
+     0.35
+    ],
+    "avant": 0.1841,
+    "gain_k": 1.6785,
+    "apres": 0.3,
+    "centile_1": 0.1098,
+    "centile_99": 0.4896
+   },
+   "rugosite": {
+    "plage": [
+     0.8,
+     0.95
+    ],
+    "avant": 0.8623,
+    "a": 1.0,
+    "b": 0.0127,
+    "apres": 0.875
+   },
+   "octets": {
+    "couleur": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 158864,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.0
+  },
+  "paves-granit": {
+   "scan": "Poly Haven « cobblestone_floor_08 » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.121,
+     1.022,
+     0.858
+    ],
+    "visee": [
+     1.06,
+     1.0,
+     0.94
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.2,
+     0.35
+    ],
+    "avant": 0.2789,
+    "gain_k": 1.0077,
+    "apres": 0.275,
+    "centile_1": 0.0383,
+    "centile_99": 0.5047
+   },
+   "rugosite": {
+    "plage": [
+     0.6,
+     0.8
+    ],
+    "avant": 0.5781,
+    "a": 0.42,
+    "b": 0.4572,
+    "apres": 0.7
+   },
+   "octets": {
+    "couleur": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 1398576,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 158864,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.0
+  },
+  "gravier": {
+   "scan": "Poly Haven « gravel_road » (CC0 1.0)",
+   "cote_m": 2.0,
+   "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.687,
+     0.866,
+     0.447
+    ],
+    "visee": [
+     1.1,
+     1.0,
+     0.9
+    ]
+   },
+   "albedo": {
+    "plage": [
+     0.2,
+     0.35
+    ],
+    "avant": 0.1156,
+    "gain_k": 2.3707,
+    "apres": 0.275,
+    "centile_1": 0.1753,
+    "centile_99": 0.4064
+   },
+   "rugosite": {
+    "plage": [
+     0.9,
+     1.0
+    ],
+    "avant": 0.9607,
+    "a": 1.0,
+    "b": -0.0107,
+    "apres": 0.95
+   },
+   "octets": {
+    "couleur": {
+     "astc": 626736,
+     "rgba8": 1398568
+    },
+    "normale": {
+     "astc": 626736,
+     "rgba8": 1398568
+    },
+    "orm": {
+     "astc": 158864,
+     "rgba8": 349968
+    }
+   },
+   "normale_flou_sigma_texels_1k": 0.0
+  }
+ }
+}
