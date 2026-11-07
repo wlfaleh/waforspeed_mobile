@@ -28,7 +28,7 @@
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 23:06 UTC (synchronisation avec main) | ✅ actif ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-200 | CI de `main` rouge : écart M-01 nuit face +X (−1,50 %) du banc des passes (la PR #170 de l'agent arwa vise le même écart) | 200 : 23:13 (attribution, rien poussé depuis) | 🔴 P1 en cours ; WFS-151 🟣 |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-200 | Cause de l'écart M-01 nommée (feuillage, WFS-176) ; main remis au vert par #170 (run 799) ; reste : vêtements en passe miroir (scene_skin.frag:104) | 200 : 00:52 (8f9a870), CI de branche run 802 | 🔧 en cours ; WFS-151 🟣 (endurance verte au run 797) |
 
 ## Tickets prêts sans agent
 

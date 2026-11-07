@@ -3033,3 +3033,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 00:47:51 — Statuts automatiques, CI main #800 (robot statuts)
 - Run rouge (push, commit 83e9746), aucun statut changé. Job(s) en échec : endurance.
 - Tickets 🟣 contenus dans ce run : WFS-186.
+
+### 2026-11-07 00:55:31 — WFS-200 : rectification de la cause, run 799 vert, CI de branche 802 lancée (Claude, Agent 0 developer)
+- **Rectification** (entrée de 00:4x) : la conservation de la couverture dans les mipmaps du feuillage a été **essayée et retirée** : banc réalisme complet en local, nuit +X −1,37 % (aucun effet). Le feuillage dépend de la résolution par sa **géométrie** (cartes de feuilles plus fines qu'un pixel, un seul échantillon par texel dans la capture contre le MSAA ×4 de la scène), pas par ses mipmaps. C'est ce que corrige le suréchantillonnage 2 × 2 de l'agent arwa (#170, a796068).
+- **Run 799 de `main`** (a796068, #170) : job `banc-essai (realisme)` **vert**. L'écart M-01 est réglé sur `main`.
+- **Run 800 de `main`** (WFS-186) : rouge sur `endurance` pour une cause d'infrastructure, pas de code : le miroir Ubuntu n'a pas répondu (`apt-get` sans réponse, 2 essais, job arrêté à 00:15 avant la compilation).
+- **Reste de WFS-200** : le vrai défaut trouvé pendant l'enquête, `shaders/scene_skin.frag:104` (vêtements éclairés de dos dans la passe miroir et la capture), corrigé sur `feature/waforspeed-200` (2184056, accroche d'une ligne dans le shader des personnages, E11). Branche synchronisée avec `main` (8f9a870), compilation propre, 39 tests CPU verts.
+- **CI de branche** (US technique) : run **802** lancé à 00:55 sur 8f9a870 : vérifie que le banc des passes reste à 0 écart avec la correction des vêtements et le suréchantillonnage, et tous les autres bancs.
