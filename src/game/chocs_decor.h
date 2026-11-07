@@ -16,6 +16,8 @@
 #include <cstdint>
 #include <vector>
 
+namespace wfs { class Track; }
+
 namespace wfs::chocs {
 
 enum class Forme : uint8_t { Cylindre, Boite };
@@ -76,6 +78,9 @@ private:
     double portee_ = 0;   // m : avance + étendue maximales (fenêtre de recherche)
 };
 inline Registre& registre() { static Registre r; return r; }
+// accroche des cartes (plage.cpp, decor_carte.cpp) : déclare un objet solide de leur décor au segment seg (tour), avec le même
+// filtre que leur dessin (objet sur une autre partie de la route ou dans un giratoire : ni dessiné ni solide) ; chocs_cartes.cpp
+void declarerObjet(Track& t, int64_t seg, const ObstacleRoute& o, bool filtrer = true);
 
 // ---------------------------------------------------------------- géométrie
 // voiture : rectangle orienté (centre cx, cz ; avant = (sin cap, −cos cap) ; demi-longueur hl, demi-largeur hw)
