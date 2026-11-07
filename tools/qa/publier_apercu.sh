@@ -110,6 +110,8 @@ essayer() {
 # ---------------------------------------------------------------- Release
 tag=apercu
 case "$GITHUB_REF_NAME" in feature/*) tag="apercu-${GITHUB_REF_NAME#feature/}";; claude/*) tag="apercu-${GITHUB_REF_NAME#claude/}";; esac
+# WFS-277 : Release choisie par l'appelant (photos de chaque fusion dans « apercu-fusion », les bancs du matin gardent « apercu »)
+[ -n "${TAG_APERCU:-}" ] && tag=$TAG_APERCU
 titre="Aperçu — construction ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7})"   # RG-04 : commit de l'APK
 EMPREINTES="empreintes-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT:-1}.sha256"   # nom unique : lu sans cache
 notes() {   # RG-04 : $1 = construction et commit d'où viennent les captures

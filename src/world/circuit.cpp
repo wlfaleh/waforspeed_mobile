@@ -29,6 +29,7 @@
 #include "enseignes.h"   // AtlasTextes (WFS-71) : texte des panneaux publicitaires (WFS-93)
 #include "pietons.h"     // WFS-199 : spectateurs (personnages du jeu allégés, foule::silhouette)
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : tribunes déclarées au son des lieux
+#include "../audio/parois_sons.h"      // WFS-275 (accroche) : murs des stands, garages, tribunes (écho)
 
 namespace wfs {
 namespace carte {
@@ -82,6 +83,7 @@ public:
     const char* name() const override { return "circuit"; }
     void init(Renderer& r, const GameView& g) override {
         basse_ = r.qualiteBasse; pret_ = false; refuses_ = refusesSec_ = posesSec_ = tribunes_ = spectateurs_ = 0; drapeaux_.clear(); roues_.clear(); portique_ = -1; impair_ = 0;   // WFS-140
+        parois::effacer("circuit");   // WFS-275 (accroche)
         CarteDecor::init(r, g);
         for (auto& T : ad_) T = {};
         if (!active_) return;
@@ -263,6 +265,9 @@ protected:
         if (basse_ && it.petit && section && (impair_++ & 1)) return false;
         item(n, it);
         refuses_--; if (section) { refusesSec_--; posesSec_++; }
+        if (it.t == T_PITWALL || it.t == T_GARAGE || it.t == T_STAND)   // WFS-275 (accroche) : murs qui renvoient le son (mur des stands vitré 2,7 m)
+            parois::declarer("circuit", len(), it.t == T_PITWALL ? n : n + (int64_t)std::lround(it.l / SEG_M / 2), it.side, it.lat,
+                             it.t == T_PITWALL ? 2.7f : it.t == T_GARAGE ? 7.f : hauteurRang(it.k - 1) + 2.f, it.t == T_PITWALL ? 3 * (float)SEG_M : it.l);
         return true;
     }
 
