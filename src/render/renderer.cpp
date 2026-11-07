@@ -1273,7 +1273,7 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
 }
 
 void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
-                           const ApparencePersonnage* ap) {
+                           const ApparencePersonnage* ap, float fondu) {
     if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
     const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82 : avant de prendre une place
     if (!vis) return;
@@ -1294,7 +1294,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     Pending p{m.vb.buf, m.ib.buf, first, count ? count : m.indexCount - first, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
-    p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
+    p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, fondu};   // WFS-257 : tramage du fondu (fonduLod), 0 sinon
     p.osOfs = (int32_t)ofs; p.vis = vis; p.i16 = m.i16;
     opaqueQ_.push_back(p);   // maillages à squelette : opaques (ou alpha découpé) seulement
 }
