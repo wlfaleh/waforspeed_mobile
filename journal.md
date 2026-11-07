@@ -3187,3 +3187,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:06:21 — ANO-114 (bloquante) : départ de la Course à 5 ; WFS-242 créé, priorité absolue (po-scrum-master)
 - **Vidéo de l'utilisateur (APK 840)** : pendant 3-2-1 la Golf du joueur traverse l'arrière de la voiture bleue ; voitures collées ; joueur toujours dernier ; chrono 0:05,5 figé puis 0:01,6 qui tourne pendant le compte à rebours, remis à 0:00,1 au GO ; pause pendant le départ mal reprise. Images dans `qa/retours/2026-11-07-depart-course5-*.jpg`.
 - **WFS-242** (E3, P1 Urgent, `regles-de-gestion/WFS-242.md`) : grille en quinconce sans chevauchement (test CPU), place du joueur variable, chrono figé jusqu'au GO, pause propre, même chose au Duel ; fichiers séparés de WFS-241 (`player.*`). Bandeau : WFS-241 et 242, puis 218 + 226, puis 224.
+
+### 2026-11-07 14:11:30 — Campagne VABF manuelle ouverte, APK 840 (agent qa lead)
+- Test manuel de l’utilisateur sur téléphone, APK `apercu` construction 840 (`9abffcb`). Rapport `qa/rapports/VABF-2026-11-07.md` ; anomalies dans `anno.md` (ANO-115 et suivantes) au fil des vidéos.
