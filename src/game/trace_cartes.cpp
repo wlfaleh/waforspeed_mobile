@@ -4,7 +4,10 @@
 #include "trace_cartes.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
+#include <tuple>
+#include <vector>
 #include <numbers>
 #include <string>
 #include "track.h"
@@ -46,6 +49,8 @@ struct Plan {
         t.ajouterRoute(e, tenue(angle, rayon, e, l), l, c, dh / M_PAR_Y);
     }
     static int transition(double rayon) { return rayon < 30 ? 4 : rayon < 60 ? 6 : 20; }
+    // cap tourné (rad) par courbe(angle, rayon, ·, e, l), au même arrondi que Track (somme des courbures × CURVE_K)
+    static double capCourbe(double angle, double rayon, int e, int l) { return (angle >= 0 ? 1 : -1) * SEG_M / rayon * (entree(e) + tenue(angle, rayon, e, l) + sortie(l)); }
 
     void ligne(double m, double dh = 0, Type ty = Type::Ligne, bool autoroute = false) {
         if (dh != 0 && ty == Type::Ligne) ty = dh > 0 ? Type::Montee : Type::Descente;
@@ -76,6 +81,7 @@ struct Plan {
     // rond-point (RG-02) : entrée à droite (90°, 25 m), ¾ de tour à gauche autour d'un îlot de 14 m, sortie à droite :
     // cap de sortie = cap d'entrée − 90° ; 2 amorces de branches pour le décor
     void rondPoint() {
+        if (!rondsPoints()) { carrefourSimple(); return; }   // WFS-283
         const int64_t d = ici();
         courbe(90, 25, 0, 6, 6);
         courbe(-270, 14, 0, 4, 4);
@@ -83,6 +89,47 @@ struct Plan {
         Section& s = ouvrir(Type::RondPoint, d); s.cote = 1; s.rayon = 14; s.angle = -90; s.branches = 2;
         fermer(s, 0);
     }
+    // WFS-283 (RG-02) : carrefour simple à la place du rond-point : virage de rue à gauche de RAYON_CARREFOUR_M (comme les virages
+    // serrés de la Ville), au cap net EXACT du rond-point (−90,28°, mêmes courbes) ; le rond-point tourne presque sur place
+    // (déplacement net < 0,1 m), ce virage avance et décale : les droites voisines en sont raccourcies (raccourcis(), en
+    // segments), la suite de la carte garde sa place à moins d'un demi-segment près (test_trace)
+    static constexpr double RAYON_CARREFOUR_M = 22;
+    static double capRondPoint() { return capCourbe(90, 25, 6, 6) + capCourbe(-270, 14, 4, 4) + capCourbe(90, 25, 6, 6); }
+    static int tenueCarrefour() { return tenue(capRondPoint() * 180 / PI, RAYON_CARREFOUR_M, 4, 4); }
+    static double courbureCarrefour() { return capRondPoint() / (CURVE_K * (entree(4) + tenueCarrefour() + sortie(4))); }
+    void carrefourSimple() {
+        const int64_t d = ici();
+        t.ajouterRoute(4, tenueCarrefour(), 4, courbureCarrefour(), 0);
+        Section& s = ouvrir(Type::Virage, d); s.cote = -1; s.rayon = RAYON_CARREFOUR_M; s.angle = capRondPoint() * 180 / PI; s.exRondPoint = true;
+        fermer(s, 0);
+    }
+    // segments à retirer à la droite d'avant (avant) et à celle d'après (apres) le carrefour simple : déplacement du virage
+    // (même intégration que Track::pose) moins celui du rond-point, dans le repère de l'entrée (avant) et de la sortie (après)
+    struct Raccourcis { int avant = 0, apres = 0; };
+    static Raccourcis raccourcis() {
+        if (rondsPoints()) return {};
+        auto deplacement = [](const std::vector<double>& courbes, double& x, double& z, double& th) {
+            x = 0; z = 0; th = 0;
+            for (double c : courbes) { x += std::sin(th) * SEG_M; z -= std::cos(th) * SEG_M; th += c * CURVE_K; }
+        };
+        auto courbes = [](int e, int h, int l, double c, std::vector<double>& v) {   // Track::addRoad (easeIn, puis easeInOut)
+            for (int n = 0; n < e; n++) { const double p = (double)n / e; v.push_back(c * p * p); }
+            for (int n = 0; n < h; n++) v.push_back(c);
+            for (int n = 0; n < l; n++) v.push_back(c + (0 - c) * (0.5 - 0.5 * std::cos(PI * n / l)));
+        };
+        std::vector<double> rp, cs;
+        for (const auto& [a, r, e] : {std::tuple{90.0, 25.0, 6}, {-270.0, 14.0, 4}, {90.0, 25.0, 6}})
+            courbes(e, tenue(a, r, e, e), e, (a >= 0 ? 1 : -1) * SEG_M / (r * CURVE_K), rp);
+        courbes(4, tenueCarrefour(), 4, courbureCarrefour(), cs);
+        double xr, zr, thr, xc, zc, thc; deplacement(rp, xr, zr, thr); deplacement(cs, xc, zc, thc);
+        // écart (x, z) = A · f + B · h, f = direction d'entrée (0, −1), h = direction de sortie (sin thc, −cos thc) : A segments
+        // à retirer avant, B après (règle de Cramer)
+        const double dx = xc - xr, dz = zc - zr, hx = std::sin(thc), hz = -std::cos(thc), det = 0 * hz - (-1) * hx;
+        const double A = (dx * hz - dz * hx) / det, B = (0 * dz - (-1) * dx) / det;
+        return {(int)std::lround(A / SEG_M), (int)std::lround(B / SEG_M)};
+    }
+    double avantCarrefour() const { return raccourcis().avant * SEG_M; }   // m retirés à la droite qui précède le rond-point
+    double apresCarrefour() const { return raccourcis().apres * SEG_M; }   // m retirés à celle qui le suit
     // carrefour à feux (RG-03) : ligne droite, ligne d'arrêt au milieu, passage des voitures 8 m plus loin
     void carrefour(double m = 120) {
         const int64_t d = ici();
@@ -120,9 +167,9 @@ void ville(Plan& p) {   // grande ville côtière en damier
     p.carrefour();                       // feu n° 0
     p.ligne(300);
     p.virage(-88, 22);                   // 2e virage serré
-    p.ligne(250);
-    p.rondPoint();                       // rond-point à fontaine
-    p.ligne(300);
+    p.ligne(250 - p.avantCarrefour());   // WFS-283 : raccourcie pour le carrefour simple
+    p.rondPoint();                       // rond-point à fontaine (WFS-283 : carrefour simple)
+    p.ligne(300 - p.apresCarrefour());
     p.virage(30, 150);
     p.ligne(200);
     p.pont(250);
@@ -152,9 +199,9 @@ void ville(Plan& p) {   // grande ville côtière en damier
 void corniche(Plan& p) {   // côte méditerranéenne : falaise, lacets, tunnel dans la roche
     p.ligne(200);
     p.virage(-30, 200);
-    p.ligne(250);
-    p.rondPoint();                       // entrée de la station
-    p.ligne(200);
+    p.ligne(250 - p.avantCarrefour());   // WFS-283 : raccourcie pour le carrefour simple
+    p.rondPoint();                       // entrée de la station (WFS-283 : carrefour simple)
+    p.ligne(200 - p.apresCarrefour());
     p.carrefour();                       // front de mer
     p.ligne(300);
     p.virage(45, 150);
@@ -177,9 +224,9 @@ void campagne(Plan& p) {   // vallée et col de montagne
     p.virage(35, 200);
     p.ligne(200);
     p.pont(150);                         // pont sur la rivière
-    p.ligne(200);
-    p.rondPoint();                       // rond-point du village
-    p.ligne(150);
+    p.ligne(200 - p.avantCarrefour());   // WFS-283 : raccourcie pour le carrefour simple
+    p.rondPoint();                       // rond-point du village (WFS-283 : carrefour simple)
+    p.ligne(150 - p.apresCarrefour());
     p.carrefour();                       // feu du village
     p.ligne(300);
     p.lacets(4, 470, 120, -1);           // col de 120 m, 4 épingles
@@ -226,7 +273,13 @@ const Track* g_piste = nullptr;
 double g_horloge = -3;
 } // namespace
 
-namespace { bool g_forcer = false; }
+namespace { bool g_forcer = false; int g_rondsPoints = -1; }   // WFS-283 : −1 = selon l'environnement
+bool rondsPoints() {
+    if (g_rondsPoints >= 0) return g_rondsPoints == 1;
+    const char* e = std::getenv("WFS_RONDS_POINTS"); const char* b = std::getenv("WFS_BANC");
+    return (e && !std::strcmp(e, "1")) || (b && !std::strcmp(b, "conduite"));
+}
+void forcerRondsPoints(bool oui) { g_rondsPoints = oui ? 1 : 0; }
 bool carteActive(const char* id) {
     for (const char* c : CARTES_ACTIVES) if (id && std::strcmp(c, id) == 0) return true;
     return false;
@@ -236,6 +289,7 @@ void forcerTrace2(bool oui) { g_forcer = oui; }
 std::string signature() {
     std::string s;
     for (const char* c : CARTES_ACTIVES) { if (!s.empty()) s += ','; s += c; }
+    if (!s.empty() && !rondsPoints()) s += ",sans-rond-point";   // WFS-283 : tracé sans rond-point (un APK d'avant n'a pas la même route) ; jamais de « ; » (séparateur des trames)
     return s.empty() ? "1" : s;
 }
 
