@@ -2540,3 +2540,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Bloqué** : les images sont stockées en Git LFS. Clone partiel en lecture seule (règles réseau § 2.4) : on obtient les pointeurs LFS, dont l'identifiant est bien l'empreinte SHA-256 annoncée, mais pas les images. L'API LFS répond **403 « access denied by the git proxy : dunkean/magna-urbis is not in this session's authorized repository set »**. L'ajout du dépôt aux sources de la session m'a été refusé. Je ne contourne pas (§ 3.3). **Question posée à l'utilisateur** : autoriser l'ajout de `dunkean/magna-urbis` en lecture à la session.
 - **En attendant** (repli autorisé par le PO à 01:48) : textures procédurales calibrées sur `materiaux.json`, **provisoires**, et salissures en pied de mur et coulures sous les appuis (RG-04), dans `decor.glsl`.
 - Aucun fichier téléchargé n'entre dans le dépôt (seulement des pointeurs de 131 octets, dans le bac à sable de la session).
+
+### 2026-11-07 09:35:31 — Statuts automatiques, CI main #815 (robot statuts)
+- Run vert (push, commit 6ddbeec) : WFS-208 ✅ (PR #183, 6ddbeec), WFS-211 ✅ (PR #182, abd8570).
