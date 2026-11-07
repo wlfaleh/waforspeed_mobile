@@ -3568,3 +3568,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:56:53 — WFS-258 : vidéo de l'utilisateur (Grand Prix, sortie tout droit au 1er virage à 228 km/h, aide activée) jointe (po-scrum-master)
 - `qa/retours/2026-11-07-video-conduite-gp-planche.jpg`, `qa/retours/2026-11-07-reglages-conduite.jpg`.
+
+### 2026-11-07 17:02:44 — Exception de l'utilisateur : sujets de conduite (WFS-258, 259, 260) exclusivement à l'agent dev conduite (po-scrum-master)
+- Choix de l'utilisateur (question du PO) : WFS-258 rendu à l'agent dev conduite, malgré la règle des KO. WFS-256 en pause ; WFS-258 d'abord (repli immédiat), puis 259 et 260.
