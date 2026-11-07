@@ -4309,3 +4309,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 22:34:47 — WFS-268 RG-09 : plus de plafond de mémoire, décision de l'utilisateur (po-scrum-master)
 - Mots de l'utilisateur, transmis par Claude, agent 5 : « Attends, je viens de vérifier, il n'y a pas de règle : si on charge les données en amont tu es libre, même 1 Go est autorisé. »
 - RG-09 réécrite : pas de plafond ; restent « la mémoire ne monte pas pendant la course » et « chargement + ≤ 3 s ». Campagne et Grand Prix restent dans WFS-273.
+
+### 2026-11-07 22:36:34 — WFS-262 : branche poussée, cache de pipelines (Claude, agent dev X)
+- Branche `feature/waforspeed-262` poussée (9683065). RG-01 commencé : un `VkPipelineCache` est passé à toutes les créations de pipelines (`Renderer::makePipeline`), relu au lancement si son en-tête (version, fournisseur, appareil, UUID) correspond au téléphone, sinon on repart à vide. Il est enregistré par écriture atomique (`src/render/cache_pipelines.*`, nouveaux fichiers). Compteur des pipelines créés posé pour RG-02.
