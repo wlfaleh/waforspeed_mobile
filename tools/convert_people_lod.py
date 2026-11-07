@@ -7,7 +7,8 @@
 #   - les sommets sont soudés par position (coutures d'uv : la texture des humains est unie, les normales sont lissées par position) ;
 #   - verrouillés (jamais retirés) : bords du maillage (yeux, bouche), sommets demandés par l'appelant (ligne médiane et
 #     extrêmes : M-01 et M-02 se mesurent dessus) ;
-#   - une fusion qui retourne un triangle ou en crée un dégénéré est refusée.
+#   - une fusion qui retourne un triangle ou en crée un dégénéré est refusée, ainsi que celle qui éloigne un sommet d'origine de
+#     plus de ecart_max de la surface simplifiée (écart de forme borné : aucun saut visible au seuil de distance).
 import heapq
 import numpy as np
 
@@ -25,8 +26,34 @@ def _quadriques(P, tri):
     return Q
 
 
-def simplifier(P, tri, cible, verrou=None):
-    """triangles (indices dans P) réduits à `cible` triangles au plus ; P : positions (n, 3) ; verrou : booléens (n,)"""
+def _dist_tris(Q, A, B, C):
+    """distance minimale de chaque point de Q (m, 3) aux triangles (A, B, C) (k, 3) : (m,) ; Ericson § 5.1.5, vectorisé"""
+    p = Q[:, None, :]; a, b, c = A[None], B[None], C[None]
+    ab, ac, ap = b - a, c - a, p - a
+    d1, d2 = (ab * ap).sum(-1), (ac * ap).sum(-1)
+    bp = p - b; d3, d4 = (ab * bp).sum(-1), (ac * bp).sum(-1)
+    cp = p - c; d5, d6 = (ab * cp).sum(-1), (ac * cp).sum(-1)
+    va, vb, vc = d3 * d6 - d5 * d4, d5 * d2 - d1 * d6, d1 * d4 - d3 * d2
+    den = np.where(np.abs(va + vb + vc) < 1e-30, 1e-30, va + vb + vc)
+    q = a + ab * (vb / den)[..., None] + ac * (vc / den)[..., None]   # intérieur
+    def choisir(m, val):
+        nonlocal q; q = np.where(m[..., None], val, q)
+    sb = np.where(np.abs((d4 - d3) + (d5 - d6)) < 1e-30, 1e-30, (d4 - d3) + (d5 - d6))
+    choisir((va <= 0) & (d4 - d3 >= 0) & (d5 - d6 >= 0), b + (c - b) * ((d4 - d3) / sb)[..., None])
+    s2 = np.where(np.abs(d2 - d6) < 1e-30, 1e-30, d2 - d6)
+    choisir((vb <= 0) & (d2 >= 0) & (d6 <= 0), a + ac * (d2 / s2)[..., None])
+    s1 = np.where(np.abs(d1 - d3) < 1e-30, 1e-30, d1 - d3)
+    choisir((vc <= 0) & (d1 >= 0) & (d3 <= 0), a + ab * (d1 / s1)[..., None])
+    choisir((d6 >= 0) & (d5 <= d6), np.broadcast_to(c, q.shape))
+    choisir((d3 >= 0) & (d4 <= d3), np.broadcast_to(b, q.shape))
+    choisir((d1 <= 0) & (d2 <= 0), np.broadcast_to(a, q.shape))
+    return np.linalg.norm(p - q, axis=-1).min(1)
+
+
+def simplifier(P, tri, cible, verrou=None, ecart_max=None):
+    """triangles (indices dans P) réduits à `cible` triangles au plus ; P : positions (n, 3) ; verrou : booléens (n,) ;
+    ecart_max (m) : une fusion est refusée si un sommet d'origine absorbé par les deux sommets de l'arête s'écarte de plus
+    de ecart_max des triangles qui entourent le sommet gardé (borne de l'écart de forme, WFS-211 RG-01)"""
     P = np.asarray(P, dtype=np.float64); tri = np.asarray(tri, dtype=np.int64)
     # soudure par position (au dixième de millimètre)
     cle = np.round(P / 1e-4).astype(np.int64)
@@ -49,6 +76,7 @@ def simplifier(P, tri, cible, verrou=None):
     vivant = np.ones(len(T), bool); nVivant = len(T)
     version = np.zeros(nU, np.int64)
     Ph = np.concatenate([Pu, np.ones((nU, 1))], 1)
+    absorbes = [[i] for i in range(nU)]   # sommets d'origine représentés par chaque sommet gardé
 
     def cout(a, b):   # a fusionné sur b (b reste)
         q = Q[a] + Q[b]; x = Ph[b]
@@ -72,6 +100,12 @@ def simplifier(P, tri, cible, verrou=None):
             l1 = np.linalg.norm(n1)
             if l1 < 1e-12 or n0 @ n1 <= 0.2 * np.linalg.norm(n0) * l1: return False
         # liaison : les voisins communs de a et b ne doivent être que les sommets opposés aux triangles de l'arête (variété)
+        if ecart_max is not None:   # forme : les sommets absorbés par a et b restent près de l'éventail de b après fusion
+            fan = [[b if v == a else v for v in T[f]] for f in (faces[a] | faces[b]) if b not in T[f] or a not in T[f]]
+            if fan:
+                F = np.array(fan)
+                pts = Pu[absorbes[a] + absorbes[b]]
+                if _dist_tris(pts, Pu[F[:, 0]], Pu[F[:, 1]], Pu[F[:, 2]]).max() > ecart_max: return False
         va = {v for f in faces[a] for v in T[f]} - {a}
         vb = {v for f in faces[b] for v in T[f]} - {b}
         opp = {v for f in faces[a] & faces[b] for v in T[f]} - {a, b}
@@ -89,6 +123,7 @@ def simplifier(P, tri, cible, verrou=None):
             T[f][T[f] == a] = b
             faces[b].add(f)
         faces[a] = set()
+        absorbes[b] += absorbes[a]; absorbes[a] = []
         Q[b] = Q[b] + Q[a]
         version[a] += 1; version[b] += 1
         voisins = {v for f in faces[b] for v in T[f]} - {b}

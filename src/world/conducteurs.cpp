@@ -186,7 +186,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
         const Placement P = placer(assise, cible, M.oeilRel, M.crane, mo.siege.x, mo.siege.w > 0.5f);
         const mat4 monde = e.monde * translate({mo.siege.y, P.oeilY, mo.siege.z}) * rotateY(lacet) * scale({P.echelle, P.echelle, P.echelle})
                            * translate({-M.oeil.x, -M.oeil.y, -M.oeil.z});
-        const int lod = g_humains ? niveauDetail(e.d2) : (e.d2 < 15.f * 15.f ? 0 : 1);
+        const int lod = g_humains ? g_attr.niveau(e.graine, e.d2) : (e.d2 < 15.f * 15.f ? 0 : 1);
         const Plage* c = M.corps[lod];
         r.drawSkinned(M.p.maillage, M.p.materiau, monde, M.pose.palette.data(), (int)M.pose.palette.size(), c->premier, c->nombre, &app);
         if (const Plage* h = M.coiffure[coiffure][lod])

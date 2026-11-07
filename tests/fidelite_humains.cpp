@@ -12,6 +12,8 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
+#include <map>
+#include <tuple>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -101,6 +103,56 @@ static Mesures mesurer(const Wfp& w, const std::vector<bool>& utilise = {}) {
     return {st, entre, x1 - x0, menton};
 }
 
+// WFS-211 : distance d'un point au triangle (a, b, c) (Ericson, Real-Time Collision Detection, § 5.1.5)
+struct V3 { double x, y, z; };
+static V3 sub(V3 a, V3 b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
+static double dot(V3 a, V3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+static V3 mad(V3 a, V3 d, double t) { return {a.x + d.x * t, a.y + d.y * t, a.z + d.z * t}; }
+static double distTri(V3 p, V3 a, V3 b, V3 c) {
+    const V3 ab = sub(b, a), ac = sub(c, a), ap = sub(p, a);
+    V3 q;
+    const double d1 = dot(ab, ap), d2 = dot(ac, ap);
+    const V3 bp = sub(p, b); const double d3 = dot(ab, bp), d4 = dot(ac, bp);
+    const V3 cp = sub(p, c); const double d5 = dot(ab, cp), d6 = dot(ac, cp);
+    const double vc = d1 * d4 - d3 * d2, vb = d5 * d2 - d1 * d6, va = d3 * d6 - d5 * d4;
+    if (d1 <= 0 && d2 <= 0) q = a;
+    else if (d3 >= 0 && d4 <= d3) q = b;
+    else if (d6 >= 0 && d5 <= d6) q = c;
+    else if (vc <= 0 && d1 >= 0 && d3 <= 0) q = mad(a, ab, d1 / (d1 - d3));
+    else if (vb <= 0 && d2 >= 0 && d6 <= 0) q = mad(a, ac, d2 / (d2 - d6));
+    else if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0) q = mad(b, sub(c, b), (d4 - d3) / ((d4 - d3) + (d5 - d6)));
+    else { const double den = 1 / (va + vb + vc); q = mad(mad(a, ab, vb * den), ac, vc * den); }
+    const V3 d = sub(p, q); return std::sqrt(dot(d, d));
+}
+// écart maximal (Hausdorff, sens corps-0 → niveau) : chaque sommet du niveau 0 à la surface du niveau allégé ; grille de 5 cm
+static double ecartForme(const Wfp& w, uint32_t a0, uint32_t n0, uint32_t a, uint32_t n) {
+    auto P = [&](uint32_t v) { return V3{w.P[v * 3], w.P[v * 3 + 1], w.P[v * 3 + 2]}; };
+    const double cel = 0.05;
+    std::map<std::tuple<int, int, int>, std::vector<uint32_t>> grille;   // triangles par case (boîte englobante)
+    for (uint32_t t = a; t + 2 < a + n; t += 3) {
+        V3 lo{1e9, 1e9, 1e9}, hi{-1e9, -1e9, -1e9};
+        for (int k = 0; k < 3; k++) { const V3 p = P(w.I[t + k]); lo = {std::min(lo.x, p.x), std::min(lo.y, p.y), std::min(lo.z, p.z)}; hi = {std::max(hi.x, p.x), std::max(hi.y, p.y), std::max(hi.z, p.z)}; }
+        for (int i = (int)std::floor(lo.x / cel); i <= (int)std::floor(hi.x / cel); i++)
+            for (int j = (int)std::floor(lo.y / cel); j <= (int)std::floor(hi.y / cel); j++)
+                for (int k = (int)std::floor(lo.z / cel); k <= (int)std::floor(hi.z / cel); k++) grille[{i, j, k}].push_back(t);
+    }
+    std::vector<bool> vu(w.nV, false); double pire = 0;
+    for (uint32_t i = a0; i < a0 + n0; i++) {
+        const uint32_t v = w.I[i]; if (vu[v]) continue; vu[v] = true;
+        const V3 p = P(v); double m = 1e9;
+        const int ci = (int)std::floor(p.x / cel), cj = (int)std::floor(p.y / cel), ck = (int)std::floor(p.z / cel);
+        for (int r = 0; r <= 8 && m > (r - 1) * cel; r++)   // anneau r : les cases plus loin sont à ≥ r × cel ; arrêt dès que m est sûr
+            for (int di = -r; di <= r; di++) for (int dj = -r; dj <= r; dj++) for (int dk = -r; dk <= r; dk++) {
+                if (std::max({std::abs(di), std::abs(dj), std::abs(dk)}) != r) continue;
+                const auto it = grille.find({ci + di, cj + dj, ck + dk});
+                if (it == grille.end()) continue;
+                for (uint32_t t : it->second) m = std::min(m, distTri(p, P(w.I[t]), P(w.I[t + 1]), P(w.I[t + 2])));
+            }
+        pire = std::max(pire, m);
+    }
+    return pire;
+}
+
 int main(int argc, char** argv) {
     const std::string depot = argc > 1 ? argv[1] : WFS_SOURCE_DIR, sortie = argc > 2 ? argv[2] : "";
     wfs::reel::Referentiel R;
@@ -141,7 +193,14 @@ int main(int argc, char** argv) {
                 niveaux++;
                 memes = memes && std::fabs(l.stature / m.stature - 1) < 0.005 && std::fabs(l.entrejambe / m.entrejambe - 1) < 0.005
                         && std::fabs(l.envergure / m.envergure - 1) < 0.005 && std::fabs(l.menton / m.menton - 1) < 0.005;
-                if (lod > 0) cas(id + " : corps-" + std::to_string(lod) + " allégé (" + std::to_string(n / 3) + " triangles)", n < w.plagesI[0].second * (lod == 1 ? 0.5 : 0.2));
+                if (lod > 0) {
+                    cas(id + " : corps-" + std::to_string(lod) + " allégé (" + std::to_string(n / 3) + " triangles)", n < w.plagesI[0].second * (lod == 1 ? 0.5 : 0.2));
+                    // RG-01 : aucun saut visible : écart de forme sous un pixel au seuil de bascule (champ vertical 60°, 1080 px :
+                    // 8,6 mm à 8 m, 21 mm à 20 m ; avis expert-realisme-3d)
+                    const double e = ecartForme(w, w.plagesI[0].first, w.plagesI[0].second, a, n), lim = lod == 1 ? 0.008 : 0.021;
+                    char t[96]; std::snprintf(t, sizeof t, " : corps-%d : écart de forme %.1f mm ≤ %.0f mm (un pixel au seuil)", lod, e * 1000, lim * 1000);
+                    cas(id + t, e <= lim);
+                }
             }
             cas(id + " : 3 niveaux de détail, M-01 et M-02 identiques à ± 0,5 % sur chacun", niveaux == 3 && memes);
             // ANO-111 : aucun sommet de la tête ni du cou dans la zone du haut (hauteur _cloth sous le col : cou + 5 cm)

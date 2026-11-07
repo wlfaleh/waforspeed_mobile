@@ -85,11 +85,25 @@ inline vec3 albedoPeau(int i) {
 }
 inline float luminance(const vec3& c) { return 0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z; }
 
+// RG-01 : niveau de détail selon la distance à la caméra (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2) ; vue Proche (≈ 6 m) : corps-0.
+// Hystérésis de ± 0,5 m autour de chaque seuil (precedent : niveau de l'image d'avant, −1 : aucun) : une voiture qui roule
+// autour d'un seuil ne change pas de niveau à chaque image (avis expert-realisme-3d)
+constexpr float LOD_M[2] = {8.f, 20.f}, LOD_HYST_M = 0.5f;
+inline int niveauDetail(float d2, int precedent = -1) {
+    const float d = std::sqrt(d2);
+    int n = d < LOD_M[0] ? 0 : d < LOD_M[1] ? 1 : 2;
+    if (precedent >= 0 && n != precedent) {   // on ne quitte le niveau précédent qu'une fois 0,5 m passé au-delà de son seuil
+        const float seuil = LOD_M[std::min(n, precedent)];
+        if (std::fabs(d - seuil) < LOD_HYST_M && std::abs(n - precedent) == 1) n = precedent;
+    }
+    return n;
+}
+
 // RG-02 : attribution stable des modèles aux voitures de la file (aucune allocation) : modèle préféré tiré de la graine ;
 // s'il est déjà porté par une voiture présente, le suivant libre (12 voitures distinctes au plus) ; une voiture garde son
 // modèle tant qu'elle reste dans la file (pas de changement à vue quand une autre arrive)
 struct Attribution {
-    uint32_t graine[FILE_MAX] = {}; int8_t modele[FILE_MAX] = {}; bool vu[FILE_MAX] = {}; int n = 0;
+    uint32_t graine[FILE_MAX] = {}; int8_t modele[FILE_MAX] = {}, lod[FILE_MAX] = {}; bool vu[FILE_MAX] = {}; int n = 0;
     static int prefere(uint32_t g) {   // finaliseur de MurmurHash3 : graines consécutives (trafic) bien mélangées
         g ^= g >> 16; g *= 0x85ebca6bu; g ^= g >> 13; g *= 0xc2b2ae35u; g ^= g >> 16;
         return (int)(g % NB_HUMAINS);
@@ -103,18 +117,19 @@ struct Attribution {
             for (int i = 0; i < n && !pris; i++) pris = modele[i] == c;
             if (!pris) { m = c; break; }
         }
-        if (n < FILE_MAX) { graine[n] = g; modele[n] = (int8_t)m; vu[n] = true; n++; }
+        if (n < FILE_MAX) { graine[n] = g; modele[n] = (int8_t)m; lod[n] = -1; vu[n] = true; n++; }
         return m;
+    }
+    int niveau(uint32_t g, float d2) {   // niveau de détail avec hystérésis, gardé par voiture
+        for (int i = 0; i < n; i++) if (graine[i] == g) return lod[i] = (int8_t)niveauDetail(d2, lod[i]);
+        return niveauDetail(d2);
     }
     void finImage() {   // oublie les voitures sorties de la file
         int k = 0;
-        for (int i = 0; i < n; i++) if (vu[i]) { graine[k] = graine[i]; modele[k] = modele[i]; vu[k] = false; k++; }
+        for (int i = 0; i < n; i++) if (vu[i]) { graine[k] = graine[i]; modele[k] = modele[i]; lod[k] = lod[i]; vu[k] = false; k++; }
         n = k;
     }
 };
-// RG-01 : niveau de détail selon la distance à la caméra (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2) ; vue Proche (≈ 6 m) : corps-0
-constexpr float LOD_M[2] = {8.f, 20.f};
-inline int niveauDetail(float d2) { return d2 < LOD_M[0] * LOD_M[0] ? 0 : d2 < LOD_M[1] * LOD_M[1] ? 1 : 2; }
 
 bool preparer(Renderer& r);      // charge homme / femme et la pose assise (Game::init)
 void liberer(Renderer& r);       // Game::shutdown

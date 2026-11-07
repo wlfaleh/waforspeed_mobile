@@ -30,6 +30,7 @@ sys.dont_write_bytecode = True   # aucun __pycache__ dans le dépôt
 sys.path.insert(0, str(ICI))
 from convert_people_lod import simplifier   # WFS-211 : niveaux de détail
 LOD_PART = (1.0, 0.38, 0.13)
+LOD_ECART = (0, 0.006, 0.016)   # écart de forme borné (m) : sous un pixel aux seuils 8 m et 20 m (champ 60°, 1080 px)
 
 # ---------------------------------------------------------------- morphotypes (RG-02)
 # sexe 0 femme / 1 homme ; âge en années ; musculature et poids 0..1 (0,5 moyen) ; origines (africaine, asiatique, européenne)
@@ -424,7 +425,7 @@ def ecrire_wfp(chemin, r, mh):
     # sommets ; verrouillés : ligne médiane (|x| < 8 mm : entrejambe, menton, M-02) et extrêmes (stature, envergure)
     verrou = np.abs(P[:, 0]) < 0.008
     for a in (P[:, 0].argmin(), P[:, 0].argmax(), P[:, 1].argmin(), P[:, 1].argmax()): verrou[a] = True
-    niveaux = [tri] + [simplifier(P, tri, int(len(tri) * f), verrou) for f in LOD_PART[1:]]
+    niveaux = [tri] + [simplifier(P, tri, int(len(tri) * f), verrou, e) for f, e in zip(LOD_PART[1:], LOD_ECART[1:])]
     plages, debut = [], 0
     for k, t in enumerate(niveaux):
         plages.append(('corps-%d' % k, debut, len(t) * 3)); debut += len(t) * 3

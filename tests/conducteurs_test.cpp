@@ -88,6 +88,12 @@ int main() {
         for (uint32_t g = 2; g < 26; g++) memes += Attribution::prefere(g) == Attribution::prefere(g + 1);
         cas("modèles préférés de deux graines voisines rarement égaux (" + std::to_string(memes) + " / 24)", memes <= 4);
     }
+    {   // RG-01 : hystérésis : autour de 8 m, le niveau ne bascule qu'à ± 0,5 m du seuil
+        Attribution A; A.choisir(7);
+        const int a = A.niveau(7, 7.9f * 7.9f), b = A.niveau(7, 8.2f * 8.2f), c = A.niveau(7, 7.8f * 7.8f), d = A.niveau(7, 8.6f * 8.6f), e = A.niveau(7, 8.3f * 8.3f);
+        cas("hystérésis : 7,9 → 8,2 → 7,8 m gardent corps-0 ; 8,6 m passe en corps-1 ; 8,3 m le garde", a == 0 && b == 0 && c == 0 && d == 1 && e == 1);
+        cas("hystérésis : saut direct de 5 à 30 m : corps-2 sans attendre", A.niveau(7, 5.f * 5.f) == 0 && A.niveau(7, 30.f * 30.f) == 2);
+    }
     cas("RG-01 : niveaux de détail : corps-0 en vue Proche (6 m), corps-1 à 12 m, corps-2 au-delà de 20 m",
         niveauDetail(36.f) == 0 && niveauDetail(144.f) == 1 && niveauDetail(30.f * 30.f) == 2);
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
