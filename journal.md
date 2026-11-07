@@ -4386,3 +4386,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 23:19:10 — Réponse obligatoire du développeur sous le commentaire du lead dev (po-scrum-master)
 - Règle de l'utilisateur : bien reçu, qui corrige, quoi, quand ; puis « corrigé dans <commit> ». CLAUDE.md, skill lead-dev, checklist. Demandé tout de suite à Agent 0 (PR #243) et à Claude, agent 2 (PR #244).
+
+### 2026-11-07 23:20:49 — WFS-283 : décisions du PO sur les tests de conduite et de la Course à 5 (po-scrum-master)
+- Question d'arwa-5 (WFS-283, rien encore poussé) : sans rond-point, `test_aide_direction` (« 3 sections serrées seulement »), `test_conduite` (« sans rond-point », RG-07 « 150 m avant le rond-point de la Ville ») et `test_course5` (RG-02 m4 Difficile 1,8 < 2,0 ; RG-06 sf90 nitro 2,7 à 4,2 s < 3) échouent.
+- **RG-06 (tests de conduite)** : la règle du ticket est appliquée telle qu'elle est écrite (« le leur laisser par l'interrupteur de RG-04 ») : `trace::forcerRondsPoints(true);` au début de `main()` des deux tests, 2 lignes au plus par fichier. Ronds-points, cas, noms, mesures et seuils gardés ; rien renommé ni affaibli ; `conduite_banc.*` et `aide_direction_banc.*` intouchés.
+- **Pour l'agent dev conduite (WFS-258)** : arwa-5 ajoutera cette accroche de 2 lignes dans `tests/test_aide_direction.cpp` et `tests/test_conduite.cpp` (début de `main()`). En synchronisant `feature/waforspeed-258` avec `main`, garder les deux modifications. Vos tests de conduite gardent leurs ronds-points (comme le banc GPU `conduite`) alors que le jeu n'en a plus.
+- **RG-07 (Course à 5)** : option (a) : adversaires réglés dans `src/game/course5.h` seulement (≤ 10 lignes, skill `expert-conduite`, partie adversaires), seuils de WFS-189 inchangés, tout `test_course5` vert, mesures avant / après au journal ; sinon arrêt et retour au PO.
+- Détail : `regles-de-gestion/WFS-283.md` (RG-06, RG-07, Suivi). Rappel à arwa-5 : pousser `feature/waforspeed-283` tout de suite.
