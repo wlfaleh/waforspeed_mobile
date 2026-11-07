@@ -59,14 +59,14 @@ int main() {
     cas("coût (RG-05) : 50 m au plus, file de 24 voitures", DISTANCE_MAX_M == 50.f && FILE_MAX == 24);
     cas("RG-06 : 48 instances à squelette (8 piétons × 2 + 16 conducteurs × 2)", SKIN_MAX_INSTANCES >= 16 + 2 * 16);
     // ---------------------------------------------------------------- WFS-211
-    {   // RG-03 (M-03) : albédo de la peau dans 0,25-0,65 pour les 12 morphotypes, ni blanc ni noir
+    {   // RG-03 (M-03) : albédo de la peau dans 0,05-0,65 (charte du 2026-11-07, WFS-210 : peau VI mesurée) pour les 12 morphotypes
         bool ok = true; float lmin = 1, lmax = 0;
         for (int i = 0; i < NB_HUMAINS; i++) {
             const vec3 a = albedoPeau(i); const float l = luminance(a);
             lmin = std::min(lmin, l); lmax = std::max(lmax, l);
-            ok = ok && l >= 0.25f && l <= 0.65f && a.x > a.y && a.y > a.z;   // teinte chaude (rouge > vert > bleu)
+            ok = ok && l >= 0.05f && l <= 0.65f && a.x > a.y && a.y > a.z;   // teinte chaude (rouge > vert > bleu)
         }
-        cas("M-03 : albédo de la peau des 12 morphotypes dans 0,25-0,65 (" + std::to_string(lmin).substr(0, 5) + " à " + std::to_string(lmax).substr(0, 5) + ")", ok);
+        cas("M-03 : albédo de la peau des 12 morphotypes dans 0,05-0,65 (" + std::to_string(lmin).substr(0, 5) + " à " + std::to_string(lmax).substr(0, 5) + ")", ok);
         cas("M-03 : teints variés (écart de luminance ≥ 0,25)", lmax - lmin >= 0.25f);
     }
     {   // RG-02 : voitures voisines jamais avec le même modèle, modèle stable par voiture

@@ -53,7 +53,7 @@ struct ApparencePersonnage {
     vec3 peau{1, 1, 1}, cheveux{}, haut{}, bas{}, chaussures{}, maillot{};
     vec4 vetement{0.45f, 1.9f, 1, 0}, corps{};
 };
-struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (pose de repos × 1,5)
+struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; bool i16 = false; };   // WFS-210 (RG-05) : indices 16 bits   // WFS-82 : sphère englobante (pose de repos × 1,5)
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
 constexpr int SKIN_MAX_INSTANCES = 48;    // instances animées par image (RG-05 de WFS-19 : 8 piétons × 2 ; WFS-73 RG-06 : + 16 conducteurs × 2)
 
@@ -177,7 +177,7 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 7; };
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 7; bool i16 = false; };
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4 };
     uint8_t classer(const masquage::Sphere& s);
