@@ -10,6 +10,7 @@
 #include "../core/system.h"               // Marges
 #include "../game/commandes_tactiles.h"   // Cadre, dispositionCommandes (lecture seule)
 #include "../game/direction.h"            // boutonsFleches (lecture seule)
+#include "hud.h"                          // WFS-245 : taille du panneau du temps (hud::TEMPS_L, TEMPS_H)
 #include "toasts.h"                       // bandeauxBordDroit, bandeauxHaut
 
 namespace wfs {
@@ -49,7 +50,7 @@ struct Obstacles { Cadre c[12]; int n = 0; void ajouter(const Cadre& x) { if (n 
 inline Obstacles obstacles(float W, float H, const Marges& m, bool poursuite, bool gaucher) {
     Obstacles o;
     const float k = H / 720.f, u = H / 100.f;
-    o.ajouter({m.gauche + 16 * k, m.haut + 14 * k, 200 * k, 112 * k});                       // temps (hud.cpp)
+    o.ajouter({m.gauche + 16 * k, m.haut + 14 * k, hud::TEMPS_L * k, hud::TEMPS_H * k});       // temps (hud.cpp ; WFS-245 : 236 × 84)
     if (!poursuite) o.ajouter({W - m.droite - 16 * k - 180 * k, m.haut + 14 * k, 180 * k, 92 * k});   // score, combo compris
     else {
         const float cx = (m.gauche + W - m.droite) / 2;                                       // HUD de la poursuite (poursuite_system.cpp)
