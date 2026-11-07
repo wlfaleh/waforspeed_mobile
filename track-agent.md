@@ -28,7 +28,7 @@
 | Claude, agent 5 (011cpqZaDiS2) |  | WFS-219 et 210 fusionnés | 219 : fusionnée 11:10 (PR #191) ; 210 : fusionnée (PR #185) | ✅ libre : WFS-239 (P1) attribuable ; décisions Mustang et remplaçants attendues de l'utilisateur |
 | Claude, session dev expert (0183bv2X) |  | libre (WFS-136, 122, 145, 187, 188 faits) | — | ✅ libre : WFS-239 (P1) attribuable |
 | Claude, session dev 5bx |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ✅ libre : WFS-239 (P1) attribuable |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes), attribué 13:36 ; WFS-158 🟣 (PR #157 à #202) | 235 : branche à pousser tout de suite ; 158 : 13:30 (PR #202 fusionnée) | 🔧 en cours |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes), attribué 13:36 ; WFS-158 🟣 (PR #157 à #202) | 235 : branche `feature/waforspeed-235` poussée 13:38:45 UTC ; 158 : 13:30 (PR #202 fusionnée) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits ; CI de branche run 822 avant fusion | 161 : 13:30 (28f5b54) | 🔧 en cours |
 
 ## Tickets prêts sans agent
