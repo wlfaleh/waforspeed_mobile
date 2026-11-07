@@ -2805,3 +2805,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Nouveau banc** `WFS_BANC=rondspoints` (`cartes_banc.cpp`, `desktop_main.cpp`) : course (15 m avant l'entrée), dessus, anneau ; jour et nuit ; Haute et `WFS_QUALITE_BASSE=1`.
 - **Vérifié en local** : tests CPU verts, parcours complet 0 écart, captures Haute et Basse regardées (rien sur la chaussée, raccords sans trou).
 - **Signalé, non corrigé (hors zone)** : à la Corniche, des piétons marchent sur l'îlot et traversent l'anneau (`pietons.*`, zone de WFS-222).
+
+### 2026-11-07 11:27:55 — 2e vidéo de nuit (départ, Campagne) : confirme WFS-218, 224, 226 ; WFS-226 RG-05 carrosseries visibles (po-scrum-master)
+- Planche : `qa/retours/2026-11-07-video-nuit-campagne-depart.jpg`. Un seul faisceau (WFS-218) ; boules grises au braquage à 206 et 235 km/h (WFS-224) ; adversaires et voiture du joueur en silhouettes noires avec seulement les feux arrière (WFS-226, **RG-05** ajoutée : carrosseries visibles la nuit). Lampadaires du village visibles au loin (WFS-225 : les autres poteaux).
