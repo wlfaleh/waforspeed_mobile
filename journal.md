@@ -3170,3 +3170,80 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Autres tickets prêts : WFS-230, 214 (E13, WFS-227) ; WFS-215, 232 (E10, WFS-235). Seul ticket prêt d'une épic libre : **WFS-240** (P3, E11, dépend de WFS-233 🟣).
 - Zone : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) + accroche ≤ 10 lignes `src/world/circuit.cpp` annoncée au journal. Interdit : iOS, fichiers de WFS-222, taille des boutons, nombre total de piétons.
 - Règles : `regles-de-gestion/WFS-240.md` (RG-01 poussettes, RG-02 enfants en tribune, RG-03 cheveux longs avec avis d'expert-realisme-3d, RG-04 cadence sourcée, RG-05 budget et parcours complet). Fusion par confiance > 50 % possible.
+
+### 2026-11-07 14:00:32 — APK 840 testé par l'utilisateur : « rien de corrigé » ; état réel et priorité absolue aux tickets de nuit (po-scrum-master)
+- **Vidéos** (Campagne de nuit, 2 × ≈ 14 s) : un seul faisceau, boules grises au freinage et au braquage, autres voitures sans phares, voiture du joueur en silhouette ; lampadaires de la Campagne enfin allumés (WFS-225) ; Réglages : « Basse · 75 % · MSAA ×2 · 23 img/s · chauffe 1 ».
+- **Ce que contient l'APK 840** (13:43 UTC, 9abffcb) : WFS-217 (aide à la direction, visible dans les Réglages), 221 (fluidité), 223 (ronds-points), 225 (Campagne de nuit). **Pas encore** : WFS-222 (performance, −50 % de piétons), fusionné à 13:52 → APK suivant. **Pas commencés** : WFS-218, 224, 226 (nuit), bloqués par l'épic E4 occupée.
+- **Décision PO** : exception d'épic, WFS-218 + 226 (un développeur, `nuit.cpp`) puis WFS-224 (`effets_*`) en parallèle de WFS-239 ; bandeau en tête de `TACHES.md`. Développeurs libres : agent arwa, agent 5, session dev expert, session dev 5bx (autre compte).
+
+### 2026-11-07 14:00:22 — WFS-240 : RG-04 (cadence) corrigée, décision du PO (po-scrum-master)
+- Constat de Claude, agent 4 (011cpqZan) : « ≤ 1,2 fois la cadence de l'adulte » et « sans glissement » sont incompatibles (même vitesse, foulée de l'enfant ≈ 0,6 fois celle de l'adulte) et contraires au réel (rapport réel ≈ 1,5 ; 4 ans ≈ 150 pas/min, Sutherland 1980, « à confirmer »). Mon erreur dans la règle.
+- Décision : proposition recommandée de l'agent 4 retenue. RG-04 devient « cadence de chaque âge à ± 10 % de la valeur réelle par âge, test CPU, sans glissement ; on ne baisse que si elle dépasse le réel ». Pas de pieds qui glissent, pas de nouveau clip adulte. Détail dans `regles-de-gestion/WFS-240.md` (Suivi).
+
+### 2026-11-07 14:03:34 — ANO-113 (bloquante) sur WFS-217 ; WFS-241 créé, priorité absolue (po-scrum-master)
+- **Essai de l'utilisateur (APK 840)** : aide à la direction désactivée = aucune différence ; activée = la voiture ne suit toujours pas les virages et ronds-points. WFS-217 passé ✅ par la CI mais critères non remplis sur téléphone.
+- **WFS-241** (E3, P1 Urgent, `regles-de-gestion/WFS-241.md`) : banc `aide` (3 joueurs simulés × 2 réglages × 6 virages), objectifs chiffrés, preuve vidéo, validation par l'utilisateur ; si le modèle « route qui tourne sous la voiture » l'empêche, proposition de conduite en coordonnées du monde au PO avant de la faire. Bandeau de `TACHES.md` : WFS-241, puis WFS-218 + 226, puis WFS-224.
+
+### 2026-11-07 14:06:21 — ANO-114 (bloquante) : départ de la Course à 5 ; WFS-242 créé, priorité absolue (po-scrum-master)
+- **Vidéo de l'utilisateur (APK 840)** : pendant 3-2-1 la Golf du joueur traverse l'arrière de la voiture bleue ; voitures collées ; joueur toujours dernier ; chrono 0:05,5 figé puis 0:01,6 qui tourne pendant le compte à rebours, remis à 0:00,1 au GO ; pause pendant le départ mal reprise. Images dans `qa/retours/2026-11-07-depart-course5-*.jpg`.
+- **WFS-242** (E3, P1 Urgent, `regles-de-gestion/WFS-242.md`) : grille en quinconce sans chevauchement (test CPU), place du joueur variable, chrono figé jusqu'au GO, pause propre, même chose au Duel ; fichiers séparés de WFS-241 (`player.*`). Bandeau : WFS-241 et 242, puis 218 + 226, puis 224.
+
+### 2026-11-07 14:11:30 — Campagne VABF manuelle ouverte, APK 840 (agent qa lead)
+- Test manuel de l’utilisateur sur téléphone, APK `apercu` construction 840 (`9abffcb`). Rapport `qa/rapports/VABF-2026-11-07.md` ; anomalies dans `anno.md` (ANO-115 et suivantes) au fil des vidéos.
+
+### 2026-11-07 14:14:46 — VABF APK 840 : 3 vidéos analysées, ANO-115 à ANO-118 créées (agent qa lead)
+- ANO-115 majeure (17-23 img/s en Basse), ANO-116 mineure (plaques rectangulaires sur la route), ANO-117 majeure (adversaires invisibles devant), ANO-118 mineure (étiquettes du HUD illisibles). Chrono 0:35.0 au départ : déjà dans ANO-114 / WFS-242. Rapport `qa/rapports/VABF-2026-11-07.md`. Au PO de prioriser.
+
+### 2026-11-07 14:16:26 — VABF APK 840 : vidéo 4 (nuit, rond-point), ANO-119 à ANO-124 (agent qa lead)
+- ANO-119 majeure (éclairage de nuit incohérent), ANO-120 à ANO-124 mineures (disques gris, SUPERMARCHÉ en miroir, lignes du nitro sur le HUD, commandes absentes au « 3 », îlot du rond-point traversé sans choc). Rapport `qa/rapports/VABF-2026-11-07.md`.
+
+### 2026-11-07 14:19:44 — WFS-218 attribué à agent arwa (Claude, session trafic) ; suites de WFS-222 (po-scrum-master)
+- **WFS-218** (P1, E4) : deux vrais phares de croisement du joueur. Exception PO (note du 14:00) : en parallèle de WFS-239 (agent 3, `qualite_banc.cpp` seul).
+  Zone : bloc des phares du joueur de `src/render/nuit.cpp` + spot du shader (accroche annoncée). Interdit : `qualite_banc.cpp`, phares des autres voitures (WFS-226),
+  lampadaires / exposition de nuit (E13), taille des boutons, iOS. Règles : `regles-de-gestion/WFS-218.md` (priorité P1, section « Graphisme réaliste » et parcours ajoutés).
+  Plan : position des optiques lue sur le modèle (méthode des feux arrière WFS-109 / 182), deux spots, coupure −0,57° relevée à droite, captures de nuit avant / après en Basse.
+  WFS-226 réservé au même développeur juste après.
+- **WFS-222 RG-07** : ordre « dans les rues » tenu (piétons −50 % sur les 4 cartes) ; « 498 au plus » était une erreur de calcul du PO (768 clients de terrasses comptés) ;
+  terrasses gardées, question à l'utilisateur. Carrés noirs : vérification par l'utilisateur sur l'APK qui contient WFS-222, US si ça reste. Culling des faces arrière :
+  US technique seulement si < 30 img/s en Haute sur cet APK.
+- `anno.md` : ANO-120 → WFS-224 ; ANO-115 → WFS-222 (à revérifier). ANO-116 à 119 et 121 à 124 : tri au prochain passage.
+
+### 2026-11-07 14:19:55 — Statuts automatiques, CI main #840 (robot statuts)
+- Run vert (workflow_dispatch, commit 9abffcb) : WFS-216 ✅ (PR #196, b097f86), WFS-221 ✅ (PR #193, 9db8673), WFS-225 ✅ (PR #194, 815fffa), WFS-236 ✅ (PR #199, 024f8b6), WFS-237 ✅ (PR #199, 024f8b6), WFS-238 ✅ (PR #201, 1dfba86).
+
+### 2026-11-07 14:21:39 — VABF : ANO-113 reproduite dans la vidéo 4, aide désactivée (agent qa lead)
+- Sur retour de l’utilisateur : au rond-point, la voiture tourne seule et freine seule de 240 à 70 km/h sans aucun appui, aide désactivée. Preuve ajoutée à ANO-113 (WFS-241) ; ANO-124 reformulée ; rapport corrigé.
+
+### 2026-11-07 14:23:19 — VABF 2026-11-07 : anomalies ANO-115 à ANO-124 priorisées, WFS-243 à WFS-245 créés (po-scrum-master)
+- Demande du QA (sur ordre de l'utilisateur), rapport `qa/rapports/VABF-2026-11-07.md`, APK 840 (9abffcb). Aucune bloquante nouvelle ; majeures d'abord.
+- Rattachées à des tickets existants (pas de doublon créé) : ANO-115 → WFS-222 (P1, fusionné **après** l'APK 840 : à vérifier sur le prochain APK, en Course à 5) ; ANO-119 → WFS-230 (P1, RG-07 lumière de lune homogène sol / arbres / carrosseries, RG-08 voiture du joueur visible) ; ANO-120 → WFS-224 (P1, même défaut) ; ANO-122 → WFS-224 (RG-05, même fichier `effets_systeme.cpp`) ; ANO-123 → WFS-242 (P1, RG-07 commandes visibles dès le « 3 », boutons inchangés) ; ANO-121 → WFS-231 (P2, RG-05 enseignes à l'endroit).
+- Créés : **WFS-243** (P2, E3, après WFS-241 / 242) ANO-117 adversaires invisibles + ANO-124 îlot du rond-point (à confirmer avec l'aide corrigée) ; **WFS-244** (P3, E9, prêt tout de suite) ANO-116 plaques sur la chaussée ; **WFS-245** (P3, E5, après WFS-234) ANO-118 étiquettes du HUD (taille des boutons exclue : ordre permanent).
+- Complément du QA (b4d5a92) : WFS-241 RG-07 ajoutée : aide désactivée = ni direction, ni freinage, ni nitro automatiques (preuve `v4-rond-point-sans-volant-planche.jpg`).
+- `anno.md` : statuts et colonne « US de correction » remplis ; `track-agent.md` à jour. Campagne VABF toujours ouverte.
+
+### 2026-11-07 14:25:25 — Skill / agent expert-conduite ; règle 🟡 « à valider par l'utilisateur » ; deux sessions de développeur ouvertes par le PO (po-scrum-master)
+- **Accord de l'utilisateur** pour : (1) un agent et un skill experts en conduite ; (2) le PO ouvre lui-même des sessions de développeur quand un P1 attend ; (3) les tickets nés d'un essai de l'utilisateur et les tickets de conduite restent 🟡 jusqu'à sa confirmation.
+- **Créés** : `.claude/skills/expert-conduite/SKILL.md` (modèle cible en coordonnées du monde, pneus, transfert de charge, moteur, boîte, freins, aides, banc `conduite` contre les fiches, ordre de travail), `.claude/agents/expert-conduite.md` ; statut 🟡 dans la légende de `TACHES.md` ; règles dans `CLAUDE.md` et l'agent PO.
+- **WFS-241** devient l'étape 1 du chantier « Conduite réaliste » (RG-04 tranchée : conduite en coordonnées du monde).
+- **Sessions ouvertes** (compte de l'utilisateur) : « Agent dev conduite » (session_01UY1Vv1HhvwRLyzGwJojas5) → WFS-241 ; « Agent dev course » (session_01UY1Vv1dqtmnzuHnjhy9VJz) → WFS-242 puis WFS-218 + 226. Reste libre et prioritaire : WFS-224.
+
+### 2026-11-07 14:28:39 — WFS-235 : arbitrage RG-02 / RG-05 (vue Cockpit), option A ; conflit d'attribution WFS-218 signalé (po-scrum-master)
+- **Question d'arwa-2** : la vraie géométrie de l'expert (pavillon, montants, rétroviseur d'une Golf) cache ≈ 25 % de l'image au-dessus de l'horizon, contre « < 15 % » demandé par RG-05.
+- **Décision : option A, vraie géométrie** (cotes de `expert-realisme-3d`, vraies matières, jamais d'aplat noir). Le « < 15 % » était un chiffre du PO : remplacé par un critère qui mesure l'ordre de l'utilisateur (« voir la rue ») : (1) fenêtre de la rue, horizon → +8°, ±15° autour de l'axe de la voiture : **0 % caché** ; (2) bande de la rue, horizon → +8°, toute la largeur : **≤ vraie voiture + 2 points** (le « ≤ 10 % » proposé n'est pas tenable : la glace réelle du rétroviseur en cache seule ≈ 12 %, calcul rapide du PO) ; (3) route visible jusqu'à l'horizon (RG-02) ; (4) part au-dessus de l'horizon au journal seulement. Banc `camera-cockpit`, regard Normal, 20 voitures × ligne droite / virage × jour / nuit. Détail : `regles-de-gestion/WFS-235.md` (RG-05 et « Suivi »).
+- **Conflit signalé (rien changé dans `TACHES.md`)** : WFS-218 attribué à agent arwa à 14:19, branche poussée à 14:20 (2d3c20e), puis réservé à l'agent dev course à 14:25 (après WFS-242). Règle des 10 h : à trancher par la session PO (01UY1Vv1). `track-agent.md` : lignes des deux nouvelles sessions rangées dans « Agents développeurs », heures d'envoi à jour.
+
+### 2026-11-07 14:30:34 — WFS-221, 222, 223, 225 remis en 🟡 À valider (utilisateur) (po-scrum-master)
+- Ces tickets viennent des vidéos de l'utilisateur d'aujourd'hui ; règle 🟡 (2026-11-07) appliquée après coup : ils ne restent pas ✅ sur la seule CI. ✅ quand l'utilisateur confirme sur l'APK de `main` (WFS-222 n'était pas encore dans l'APK 840).
+
+### 2026-11-07 14:33:14 — WFS-222 refusé par l'utilisateur (ANO-125) ; WFS-246 créé ; session « Agent dev perf » ouverte (po-scrum-master)
+- **Retour de l'utilisateur** : « 222 KO, à refaire » (APK 842, qui contient WFS-222). WFS-222 → ❌ Refusé ; anomalie ANO-125 (bloquante).
+- **Constat** (journal de WFS-222) : gain de ≈ 6 à 12 % seulement ; GPU = goulot (passe de scène ≈ 80 %), `cullMode` = NONE partout, shader de scène lourd pour tout le décor.
+- **WFS-246** (`[TECHNIQUE]`, P1, E4) : faces arrière, shaders par coût, résolution adaptative (viser 60 img/s), LOD au-delà de 150 m, ombres et capture allégées ; coût GPU ÷ 3 au banc ; ≥ 60 / 45 img/s sur le téléphone, validé par l'utilisateur.
+- **Session ouverte par le PO** : « Agent dev perf » (session_01UY1Vv56DjekCWRRAAjo4bp).
+
+### 2026-11-07 14:34:50 — Une session = un domaine : WFS-218 + 226 et 224 retirés de l'agent dev course ; session « Agent dev nuit » ouverte (po-scrum-master)
+- **Remarque de l'utilisateur** : ne pas réserver à l'agent dev course des tâches sans rapport avec la course.
+- **Fait** : agent dev course prévenu (seulement WFS-242, puis courses et modes) ; session **« Agent dev nuit »** (session_01UY1Vv46gFUTj96omGSDRJT) ouverte : WFS-218 + 226 (phares), puis WFS-224 (fumée des pneus). Règle « une session = un domaine » dans l'agent PO.
+
+### 2026-11-07 14:35:39 — Le PO ouvre des sessions de développeur sans demander l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** : le PO peut créer des sessions sans son accord. Écrit dans l'agent PO : ouverture dès qu'un ticket prêt n'a pas de développeur joignable ou qu'un nouveau domaine apparaît ; information de l'utilisateur après coup ; toujours une session = un domaine.
