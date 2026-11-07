@@ -361,6 +361,13 @@ double mesurerLuminance(const vec3& avant) {
 }
 
 int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qualite::HAUTE ? 60 : niveau >= qualite::MOYENNE ? 100 : 200; }
+// WFS-267 : depuis WFS-227, la carte d'ombre suit la CAMÉRA (cascades) : une sonde prise loin d'elle serait sans ombre (tunnel
+// « au soleil »). Capture seulement dans la sphère de la 1re cascade (tous les occultants proches y sont dessinés).
+bool sousLesOmbres(const FrameParams& fp, const vec3& p, int niveau) {
+    if (!fp.shadows || fp.night) return true;
+    const int nv = std::clamp(niveau, 1, 3); float c, r; ombres::sphereTranche(0, ombres::finCascade(0, ombres::nombre(nv), ombres::portee(nv)), c, r);
+    return length(p - (fp.camPos + normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)}) * c)) <= r;
+}
 
 } // namespace
 
@@ -568,7 +575,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.typePrec = type;
     // WFS-222 (RG-03) : captures suspendues par la baisse automatique, sauf la toute première (aucune sonde encore)
     if (!environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
-        if (g.aucuneDemande || g.forcerCapture || length(point - g.dernierPoint) > esp) {
+        if ((g.aucuneDemande || g.forcerCapture || length(point - g.dernierPoint) > esp) && sousLesOmbres(fp, g.forcerCapture && g.iterations > 0 ? g.dernierPoint : point, niveau)) {   // WFS-267
             // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
             const vec3 p = g.forcerCapture && g.iterations > 0 ? g.dernierPoint : point;
