@@ -108,6 +108,24 @@
    }
   },
   {
+   "id": "humain.hommes.eyeheightsitting",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur des yeux en position assise (au-dessus du siège), hommes",
+   "unite": "mm",
+   "valeur": 804.5,
+   "ecart_type": 33.2,
+   "p5": 750.0,
+   "p95": 860.0,
+   "n": 4082,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
    "id": "humain.hommes.ratio_crotchheight",
    "domaine": "anthropometrie",
    "grandeur": "proportion entrejambe / taille, hommes",
@@ -233,6 +251,24 @@
    "ecart_type": 18.3,
    "p5": 335.0,
    "p95": 396.0,
+   "n": 1986,
+   "source": "ANSUR-II",
+   "statut": "verifie",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %) sur la moyenne d'une foule"
+   }
+  },
+  {
+   "id": "humain.femmes.eyeheightsitting",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur des yeux en position assise (au-dessus du siège), femmes",
+   "unite": "mm",
+   "valeur": 747.7,
+   "ecart_type": 30.4,
+   "p5": 698.0,
+   "p95": 799.0,
    "n": 1986,
    "source": "ANSUR-II",
    "statut": "verifie",

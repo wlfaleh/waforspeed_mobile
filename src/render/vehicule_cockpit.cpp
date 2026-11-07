@@ -67,8 +67,16 @@ void barre(Geo& g, const mat4& M, vec3 a, vec3 b, float w, float t) {
 
 // jante du volant (plan xy, face +z vers le conducteur) : tube de rayon r autour d'un cercle de rayon R, aplati en bas
 // (méplat : la ligne médiane ne descend pas sous −R × (1 − meplat), raccord arrondi) ; uv pour le grain du cuir
-vec2 ligneJante(float a, float R, float meplat) {
+vec2 ligneJante(float a, float R, float meplat, float meplatHaut = 0) {
     vec2 p{std::cos(a) * R, std::sin(a) * R};
+    if (meplatHaut > 0) {   // WFS-201 : même raccord en haut (208)
+        const float haut = R * (1 - meplatHaut), raccord = R * 0.08f;
+        if (p.y > haut - raccord) {
+            const float t = std::clamp((p.y - (haut - raccord)) / (2 * raccord), 0.f, 1.f);
+            p.y = p.y + (haut - p.y) * t * t * (3 - 2 * t) * (p.y > haut ? 1.f : 0.5f);
+            if (p.y > haut) p.y = haut;
+        }
+    }
     if (meplat > 0) {
         const float bas = -R * (1 - meplat), raccord = R * 0.08f;
         if (p.y < bas + raccord) {   // fonction douce (min lissé) entre le cercle et la droite du méplat
@@ -79,11 +87,11 @@ vec2 ligneJante(float a, float R, float meplat) {
     }
     return p;
 }
-void jante(Geo& g, const mat4& M, float R, float r, float meplat, float a0, float a1, int n, int m) {
+void jante(Geo& g, const mat4& M, float R, float r, float meplat, float a0, float a1, int n, int m, float meplatHaut = 0) {
     const uint32_t b = (uint32_t)g.v.size();
     for (int k = 0; k <= n; k++) {
         const float a = a0 + (a1 - a0) * k / n;
-        const vec2 c = ligneJante(a, R, meplat), c2 = ligneJante(a + 0.01f, R, meplat);
+        const vec2 c = ligneJante(a, R, meplat, meplatHaut), c2 = ligneJante(a + 0.01f, R, meplat, meplatHaut);
         const vec2 t{c2.x - c.x, c2.y - c.y};
         const float tl = std::max(1e-6f, std::sqrt(t.x * t.x + t.y * t.y));
         const vec3 nr{t.y / tl, -t.x / tl, 0};   // normale dans le plan, vers l'extérieur
@@ -208,13 +216,22 @@ void arcBarres(Plan2D& allume, Plan2D& eteint, Plan2D& alerte, vec2 c, float ri,
     }
 }
 
+// WFS-201 : cadran à aiguille (arc de 270°, de 225° à −45°) : graduations (fond), zone rouge au-delà de `rouge` (alerte), aiguille
+// à la part `part` (actif), pivot au centre ; partagé par les combinés analogiques du lot 2 (Audi, Alfa, Lamborghini)
+void cadran(Plan2D& F, Plan2D& A, Plan2D& R, vec2 c, float r, float part, float rouge, int graduations, float epaisseur) {
+    arcBarres(F, F, R, c, r * 0.84f, r, PI * 1.25f, -PI * 0.25f, graduations, 1.f, rouge, epaisseur);
+    A.trait(c, PI * 1.25f - PI * 1.5f * std::clamp(part, 0.f, 1.f), -r * 0.12f, r * 0.90f, epaisseur * 1.3f);
+}
+// lettre « d » (marche avant) des voitures à boîte automatique sans rapports affichés (Model 3)
+constexpr uint8_t SEG_D = 0x5E;
+
 } // namespace
 
 // ---------------------------------------------------------------- construction
-void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, bool volant) {
+void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, int attache) {
     if (v.empty()) return;
     octets_ += v.size() * sizeof(Vertex) + i.size() * 4;
-    pieces_.push_back({r.makeMesh(v, i), mat, volant});
+    pieces_.push_back({r.makeMesh(v, i), mat, attache});
     v.clear(); i.clear();
 }
 
@@ -264,12 +281,13 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
     mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
     std::vector<Vertex> v; std::vector<uint32_t> i;
-    auto prend = [&](Geo& g, int m, bool volant = false) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, volant); g = Geo{}; };
+    auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
     const float Y = d.plancheY, Z = d.plancheZ, Yb = d.pareBriseY, Zb = d.pareBriseZ, x0 = CX - 0.78f, x1 = CX + 0.78f;
     // planche (profil y, z du pied du pare-brise vers le conducteur) : dessus, lèvre, face en retrait derrière le combiné et
     // l'écran central (z ≈ −0,86), puis la partie basse qui revient vers les genoux
-    const float zFace = std::min(d.combinePos.z, d.ecranW > 0 ? d.ecranPos.z : d.combinePos.z) - 0.05f;
+    const bool combine = d.combine != Combine::Aucun && d.combineW > 0;   // WFS-201 : Model 3 : aucun combiné derrière le volant
+    const float zFace = std::min(combine ? d.combinePos.z : d.ecranPos.z, d.ecranW > 0 ? d.ecranPos.z : d.combinePos.z) - 0.05f;
     {
         Geo haut, face, creux;
         // devant le conducteur, la planche descend sous le combiné (creux) : l'écran, posé au-dessus, se voit dans l'ouverture
@@ -278,8 +296,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const float Yc = std::min(Y, d.combinePos.y - d.combineH * 0.5f - 0.012f);
         const std::vector<vec2> pHaut{{Yb, Zb}, {Y + 0.005f, (Zb + Z) * 0.5f}, {Y, Z - 0.02f}, {Y - 0.035f, Z}};
         const std::vector<vec2> pCreux{{Yb, Zb}, {Yc, d.combinePos.z - 0.03f}, {Yc, Z - 0.02f}, {Yc - 0.03f, Z}};
-        extruder(haut, I, pHaut, x0, xa); extruder(haut, I, pHaut, xb, x1);
-        extruder(creux, I, pCreux, xa, xb);
+        if (combine) { extruder(haut, I, pHaut, x0, xa); extruder(haut, I, pHaut, xb, x1); extruder(creux, I, pCreux, xa, xb); }
+        else extruder(haut, I, pHaut, x0, x1);
         extruder(face, I, {{Y - 0.035f, Z}, {Y - 0.09f, zFace}, {Y - 0.42f, zFace}, {Y - 0.58f, zFace + 0.20f}}, x0, x1);
         prend(haut, M_PLANCHE_HAUT); prend(creux, M_PLANCHE_HAUT); prend(face, M_PLANCHE_BAS);
         // casquette (visière) du combiné : avance de la lèvre vers le conducteur au-dessus de l'écran
@@ -287,7 +305,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const float cw = d.combineW * 0.5f + 0.03f, top = d.combinePos.y + d.combineH * 0.5f + 0.02f;
         extruder(cas, I, {{Yb, d.combinePos.z - 0.10f}, {top + 0.015f, d.combinePos.z - 0.03f}, {top + 0.012f, d.combinePos.z + 0.07f},
                           {top - 0.012f, d.combinePos.z + 0.075f}}, d.combinePos.x - cw, d.combinePos.x + cw);
-        prend(cas, M_PLANCHE_HAUT);
+        if (combine) prend(cas, M_PLANCHE_HAUT); else cas = Geo{};
         // jonc décoratif sur toute la largeur, sous la lèvre (alu brossé, carbone, ou liseré rouge de la Golf)
         Geo jonc;
         boite(jonc, translate({CX, Y - 0.10f, zFace + 0.004f}), x1 - x0 - 0.04f, d.carbone ? 0.05f : 0.010f, 0.006f);
@@ -333,7 +351,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         Geo fc, cc, cadre, fe;
         plan(fc, versOeil(d.combinePos, 0), d.combineW, d.combineH);
         boite(cc, versOeil(d.combinePos, 0) * translate({0, 0, -0.008f}), d.combineW + 0.012f, d.combineH + 0.012f, 0.012f);
-        prend(fc, M_FOND_COMBINE); prend(cc, M_LAQUE);
+        if (combine) { prend(fc, M_FOND_COMBINE); prend(cc, M_LAQUE); } else { fc = Geo{}; cc = Geo{}; }
         if (d.ecranW > 0) {
             const mat4 E = versOeil(d.ecranPos, d.ecranLacet);
             boite(cadre, E * translate({0, 0, -0.010f}), d.ecranW + 0.016f, d.ecranH + 0.016f, 0.018f);
@@ -345,15 +363,15 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // volant (repère du volant : plan xy, +z vers le conducteur)
     {
         const float R = d.volantD * 0.5f - d.janteEp * 0.5f, rt = d.janteEp * 0.5f;
-        Geo ja, br, co[3], rep, pal, man;
-        jante(ja, I, R, rt, d.meplat, 0, 2 * PI, 96, 14);
+        Geo ja, br, co[3], rep, pal, man, mol;
+        jante(ja, I, R, rt, d.meplat, 0, 2 * PI, 96, 14, d.meplatHaut);
         Geo mo;
         cylindre(mo, rotateX(PI / 2) * translate({0, -0.012f, 0}), 0.072f, 0.078f, 0.05f, 28);   // moyeu (coussin du sac gonflable)
         // branches : 3 (à 9 h, 3 h et 6 h) ou 2 (à 9 h et 3 h, SF90 : branches larges qui portent les commandes)
         const float hub = 0.07f;
         std::vector<float> angles = d.branches == 2 ? std::vector<float>{0.f, PI} : std::vector<float>{0.f, PI, -PI / 2};
         for (float a : angles) {
-            const vec2 bout = ligneJante(a, R, d.meplat);
+            const vec2 bout = ligneJante(a, R, d.meplat, d.meplatHaut);
             const float l = std::sqrt(bout.x * bout.x + bout.y * bout.y) - hub;
             const float large = d.branches == 2 ? 0.060f : (a == -PI / 2 ? 0.032f : 0.040f);
             boite(br, rotateZ(a) * translate({hub + l * 0.5f, 0, -0.008f}), l, large, 0.016f);
@@ -368,17 +386,19 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         // repère : M4 (boutons M1 / M2 rouges sur les branches), Golf (agrafe GTI rouge sur la branche basse), SF90 (rouge à midi)
         if (d.repereCol) {
             if (coutures) for (float sx : {-1.f, 1.f}) boite(rep, translate({sx * 0.105f, 0.018f, 0.012f}), 0.022f, 0.014f, 0.008f);
-            else if (d.manettino) boite(rep, translate({0, R + rt * 0.2f, 0.004f}), 0.012f, rt * 2.1f, rt * 2.1f);
-            else boite(rep, translate({0, -R * 0.55f, 0.010f}), 0.045f, 0.012f, 0.004f);
+            else if (d.manettino || d.repereHaut) boite(rep, translate({0, R + rt * 0.2f, 0.004f}), 0.012f, rt * 2.1f, rt * 2.1f);
+            else if (!d.demarreur) boite(rep, translate({0, -R * 0.55f, 0.010f}), 0.045f, 0.012f, 0.004f);   // Giulia : le rouge est le démarreur
         }
         if (d.palettes) for (float sx : {-1.f, 1.f}) boite(pal, translate({sx * (R * 0.80f), 0.02f, -0.045f}) * rotateZ(sx * 0.15f), 0.055f, 0.13f, 0.006f);
-        if (d.manettino) {   // manettino en bas à droite, démarreur en bas à gauche (sur les branches)
-            cylindre(man, translate({0.085f, -0.055f, 0.012f}) * rotateX(PI / 2), 0.022f, 0.022f, 0.016f, 20);
-            if (d.demarreur) cylindre(man, translate({-0.085f, -0.055f, 0.010f}) * rotateX(PI / 2), 0.016f, 0.016f, 0.012f, 20);
-        }
+        // manettino en bas à droite, démarreur en bas à gauche (sur les branches) ; WFS-201 : démarreur seul (Giulia)
+        if (d.manettino) cylindre(man, translate({0.085f, -0.055f, 0.012f}) * rotateX(PI / 2), 0.022f, 0.022f, 0.016f, 20);
+        if (d.demarreur) cylindre(man, translate({-0.085f, -0.055f, 0.010f}) * rotateX(PI / 2), 0.016f, 0.016f, 0.012f, 20);
+        // WFS-201 : molettes (Model 3) : deux roulettes de commande sur les branches horizontales, caoutchouc sombre
+        if (d.molettes) for (float sx : {-1.f, 1.f}) cylindre(mol, translate({sx * 0.105f, 0.f, 0.014f}) * rotateZ(PI / 2), 0.011f, 0.011f, 0.010f, 16);
         prend(ja, M_CUIR, true); prend(mo, M_MOYEU, true); prend(br, M_BRANCHES, true);
         for (int k = 0; k < 3; k++) prend(co[k], M_COUTURE0 + k, true);
-        prend(rep, M_REPERE, true); prend(pal, d.carbone ? M_ACCENT : M_BRANCHES, true); prend(man, M_REPERE, true);
+        prend(rep, M_REPERE, true); prend(pal, d.carbone ? M_ACCENT : M_BRANCHES, d.palettesColonne ? 2 : 1); prend(man, M_REPERE, true);
+        prend(mol, M_LAMES, true);
     }
     // essuie-glaces : bras + balai, dans le repère du balai (x le long du bras, y vers le haut du pare-brise)
     {
@@ -428,7 +448,8 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
     const InterieurDef& d = *def_;
     for (int k : {D_ACTIF, D_FOND, D_ALERTE}) { dv_[k].clear(); di_[k].clear(); }
     Plan2D A{&dv_[D_ACTIF], &di_[D_ACTIF], 0.001f}, F{&dv_[D_FOND], &di_[D_FOND], 0.0008f}, R{&dv_[D_ALERTE], &di_[D_ALERTE], 0.001f};
-    const float W = d.combineW, H = d.combineH, kmh = (float)val.kmh;
+    const bool surEcran = d.combine == Combine::Aucun;   // WFS-201 : Model 3 : bande de gauche (34 %) de l'écran central
+    const float W = surEcran ? d.ecranW * 0.34f : d.combineW, H = surEcran ? d.ecranH * 0.90f : d.combineH, kmh = (float)val.kmh;
     const float vit = std::clamp(kmh / 320.f, 0.f, 1.f), reg = std::clamp(val.regime, 0.f, 1.f), nit = std::clamp(val.nitro, 0.f, 1.f);
     auto barreNitro = [&](float x0, float y0, float x1, float y1) {   // jauge de nitro horizontale
         F.rect(x0, y0, x1, y1); A.rect(x0, y0, x0 + (x1 - x0) * nit, y1);
@@ -480,8 +501,62 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         barreNitro(-W * 0.44f, -H * 0.30f, -W * 0.24f, -H * 0.24f);   // panneau gauche (véhicule) ; la carte est à droite
         break;
     }
+    case Combine::AudiVirtual: {   // Audi virtual cockpit, vue classique : vitesse à gauche, régime à droite (aiguilles), rapport au centre
+        const float rc = H * 0.46f;
+        cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
+        cadran(F, A, R, {W * 0.29f, 0}, rc, reg, 0.85f, 26, 0.0022f);
+        rapport(A, -H * 0.07f, H * 0.02f, H * 0.26f, val.rapport);
+        nombre(A, H * 0.30f, -H * 0.36f, H * 0.16f, (int)kmh, 3);
+        barreNitro(-W * 0.10f, -H * 0.44f, W * 0.10f, -H * 0.40f);
+        break;
     }
-    const mat4 M = cam * versOeil(d.combinePos, 0);
+    case Combine::AlfaCadrans: {   // Giulia QV : deux cadrans à aiguille dans leurs tunnels, petit écran au centre (rapport, vitesse)
+        const float rc = H * 0.46f;
+        cadran(F, A, R, {-W * 0.30f, 0}, rc, vit, 2.f, 24, 0.0024f);
+        cadran(F, A, R, {W * 0.30f, 0}, rc, reg, 0.82f, 24, 0.0024f);
+        F.rect(-W * 0.12f, -H * 0.40f, W * 0.12f, H * 0.40f);   // écran central du combiné
+        rapport(A, -H * 0.08f, -H * 0.02f, H * 0.28f, val.rapport);
+        nombre(A, W * 0.10f, -H * 0.34f, H * 0.14f, (int)kmh, 3);
+        break;
+    }
+    case Combine::PeugeotICockpit: {   // i-Cockpit 3D (208), vu au-dessus du volant : régime en barre en haut, vitesse et rapport au centre
+        const int n = 30;
+        for (int k = 0; k < n; k++) {
+            const float f = (k + 0.5f) / n, x = -W * 0.42f + W * 0.84f * f;
+            Plan2D& c = f <= reg ? (f >= 0.84f ? R : A) : F;
+            c.rect(x, H * 0.22f, x + W * 0.84f / n * 0.62f, H * 0.40f);
+        }
+        nombre(A, H * 0.30f, -H * 0.30f, H * 0.42f, (int)kmh, 3);
+        rapport(A, W * 0.28f, -H * 0.22f, H * 0.30f, val.rapport);
+        barreNitro(-W * 0.42f, -H * 0.36f, -W * 0.20f, -H * 0.30f);
+        break;
+    }
+    case Combine::LamboCompteTours: {   // Gallardo : grand compte-tours au centre (rapport numérique dedans), vitesse à droite, jauges à gauche
+        const float rc = H * 0.48f, rs = H * 0.30f;
+        cadran(F, A, R, {0, 0}, rc, reg, 0.86f, 30, 0.0026f);
+        rapport(A, -H * 0.06f, -rc * 0.62f, H * 0.20f, val.rapport);
+        cadran(F, A, R, {W * 0.33f, -H * 0.06f}, rs, vit, 2.f, 18, 0.0018f);
+        nombre(A, W * 0.33f + H * 0.14f, -H * 0.42f, H * 0.11f, (int)kmh, 3);
+        cadran(F, A, R, {-W * 0.33f, -H * 0.06f}, rs, nit, 2.f, 18, 0.0018f);   // jauge : réserve de nitro
+        break;
+    }
+    case Combine::FordDigital: {   // Shelby GT500 : compte-tours en arc sur toute la largeur, vitesse au centre, rapport à droite
+        const vec2 c{0, -H * 0.62f};
+        arcBarres(A, F, R, c, H * 0.90f, H * 1.05f, PI * 0.88f, PI * 0.12f, 46, reg, 0.86f, 0.0030f);
+        nombre(A, H * 0.32f, -H * 0.30f, H * 0.40f, (int)kmh, 3);
+        rapport(A, W * 0.30f, -H * 0.24f, H * 0.30f, val.rapport);
+        barreNitro(-W * 0.44f, -H * 0.40f, -W * 0.24f, -H * 0.34f);
+        break;
+    }
+    case Combine::Aucun: {   // Model 3 : pas de combiné ; bande de gauche de l'écran central : vitesse, « D » / « R », nitro
+        nombre(A, W * 0.30f, H * 0.02f, H * 0.32f, (int)kmh, 3);
+        chiffre(A, -W * 0.38f, H * 0.06f, H * 0.22f, val.rapport < 0 ? SEG_R : val.kmh < 1 ? SEG_N : SEG_D);
+        barreNitro(-W * 0.38f, -H * 0.30f, W * 0.30f, -H * 0.25f);
+        break;
+    }
+    }
+    const mat4 M = surEcran ? cam * versOeil(d.ecranPos, d.ecranLacet) * translate({-d.ecranW * 0.5f + W * 0.5f + 0.008f, 0, 0.0004f})
+                            : cam * versOeil(d.combinePos, 0);
     for (int k : {D_FOND, D_ACTIF, D_ALERTE}) {
         if (di_[k].empty()) continue;
         r.updateMesh(dyn_[k], dv_[k], di_[k]);
@@ -491,6 +566,7 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
 
 void Interieur::tailleCarte(float& w, float& h) const {
     if (!def_) { w = h = 0; return; }
+    if (def_->combine == Combine::Aucun) { w = def_->ecranW * 0.62f; h = def_->ecranH * 0.90f; return; }   // WFS-201 : Model 3
     if (def_->ecranW > 0) { w = def_->ecranW; h = def_->ecranH; return; }
     w = def_->combineW / 3 * 0.92f; h = def_->combineH * 0.86f;   // SF90 : tiers droit du combiné
 }
@@ -506,7 +582,9 @@ void Interieur::dessinerCarte(Renderer& r, const mat4& cam, const std::vector<ve
     const float y = -H / 2 + H * CARTE_JOUEUR_Y, s = H * 0.07f;
     Fl.quad({-s * 0.6f, y - s * 0.55f}, {0, y - s * 0.25f}, {s * 0.6f, y - s * 0.55f}, {0, y + s * 0.65f});
     (void)W;
-    const mat4 M = d.ecranW > 0 ? cam * versOeil(d.ecranPos, d.ecranLacet)
+    const mat4 M = d.combine == Combine::Aucun   // WFS-201 : Model 3 : partie droite de l'écran central
+                       ? cam * versOeil(d.ecranPos, d.ecranLacet) * translate({d.ecranW * 0.5f - W * 0.5f - 0.008f, 0, 0.0004f})
+                 : d.ecranW > 0 ? cam * versOeil(d.ecranPos, d.ecranLacet)
                                 : cam * versOeil(d.combinePos, 0) * translate({d.combineW / 3, 0, 0.0004f});   // SF90 : tiers droit du combiné
     for (int k : {D_ROUTE, D_FLECHE}) {
         if (di_[k].empty()) continue;
@@ -519,11 +597,11 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     if (!def_) return;
     const InterieurDef& d = *def_;
     appels_ = 0;
-    const mat4 vol = cam * translate(d.volantPos) * rotateX(d.volantIncl) * rotateZ(e.volant);
+    const mat4 colonne = cam * translate(d.volantPos) * rotateX(d.volantIncl), vol = colonne * rotateZ(e.volant);
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        r.draw(p.m, mats_[(size_t)m], p.volant ? vol : cam); appels_++;
+        r.draw(p.m, mats_[(size_t)m], p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {

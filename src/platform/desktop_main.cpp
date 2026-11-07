@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "vitrines-feux") { benchVitrinesFeux(g, r, out); return finir(); }   // WFS-170 : feux des voitures seuls (WFS_VOITURES : essai local)
     if (banc == "route") { benchRoute(g, r, out); return finir(); }   // WFS-142 : chaussée sèche / mouillée (essai local)
-    if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); benchRoute(g, r, out); return finir(); }   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
+    if (banc == "nuit") { benchNuit(g, r, out); benchFeuxFrein(g, r, out); benchRoute(g, r, out); benchCockpit(g, r, out, COCKPIT_LOT2A); return finir(); }   // WFS-201 (accroche) : cockpit lot 2, 1re moitié   // WFS-109 : feux-frein-jour / -nuit, feux-recul   // WFS-09 / WFS-16 : nuit, phares, lampadaires, route mouillée (course-nuit-*, job nuit de la CI)
     if (banc == "qualite") { ui::chargerPolice(r); benchQualite(g, r, out); ecrans::benchGarage(g, r, out); return finir(); }   // WFS-104 : course vs garage (essai local)
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "parcours") {   // WFS-115 ; WFS-126 (RG-08) : parcours complet jusqu'au retour à l'accueil
@@ -200,7 +200,11 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
-    if (banc == "cockpit") { benchCockpit(g, r, out); return finir(); }   // WFS-197 (accroche) : intérieurs par modèle seuls
+    if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 12 et la Corsa)
+        std::vector<std::string> v = COCKPIT_LOT1; v.insert(v.end(), COCKPIT_LOT2A.begin(), COCKPIT_LOT2A.end()); v.insert(v.end(), COCKPIT_LOT2B.begin(), COCKPIT_LOT2B.end());
+        if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
+        benchCockpit(g, r, out, v); return finir();
+    }
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
@@ -272,6 +276,7 @@ int main(int argc, char** argv) {
         // WFS-44 : un système de test prend la scène (fond uni #07070c, cube, caméra FOV 36°)
         activerSceneEssai(true); g.render(310); g.render(310.02); r.capturePng(out + "/scene-dediee-vide.png"); activerSceneEssai(false);
         g.shutdown();
+        benchCockpit(g, r, out, COCKPIT_LOT2B);   // WFS-201 (accroche) : cockpit lot 2, 2e moitié (Gallardo, Mustang, Model 3, X5)
     }
     if (partie1b) {
         // WFS-14 : carte Corniche (plage) de jour et de nuit, en pilote automatique, caméra haute
@@ -308,7 +313,7 @@ int main(int argc, char** argv) {
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
-        benchCockpit(g, r, out);      // WFS-197 (accroche) : intérieurs Golf, M4, 911, SF90 (cockpit-*.png)
+        benchCockpit(g, r, out, COCKPIT_LOT1);   // WFS-197 (accroche) : intérieurs Golf, M4, 911, SF90, Corsa (cockpit-*.png)
         benchPietons(g, r, out);      // WFS-19 : piétons de la ville et de la plage (pietons-*.png)
         benchRessenti(g, r, out);     // WFS-70 : choc, flèches, mouvements réduits (ressenti-*.png)
     }
