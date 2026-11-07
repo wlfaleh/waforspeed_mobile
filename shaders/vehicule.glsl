@@ -7,7 +7,7 @@ void fonduLod() {
     ivec2 q = ivec2(gl_FragCoord.xy) & 3;
     const float B[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
     float seuil = (B[q.y * 4 + q.x] + 0.5) / 16.0, w = -pc.emissive.w;
-    if (w < 2.5 ? seuil >= w - 1.0 : seuil < w - 3.0) discard;
+    if (!SANS_DISCARD && (w < 2.5 ? seuil >= w - 1.0 : seuil < w - 3.0)) discard;   // WFS-222
 }
 // WFS-09 : tache des phares sur la route (beamTex('pool') de js/cars/models.js) ; bloc F_POOL de main
 vec4 tachePhares() {

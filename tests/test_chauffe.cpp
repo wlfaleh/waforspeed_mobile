@@ -72,14 +72,15 @@ int main() {
     std::printf("retour au menu seulement, compte remis à zéro par la chauffe, choix du joueur gardé : OK\n");
 
     // RG-03 : chauffe modérée → la résolution dynamique ne remonte plus
+    // WFS-222 : 35 images/s (pas de 0,1 ; sous 30 images/s le pas est de 0,2, test_qualite)
     qualite::Auto a; a.choixJoueur = true;
-    for (int i = 0; i < 4 * 25; i++) a.imageChauffe(1.0 / 25, true, 0);
+    for (int i = 0; i < 4 * 35 + 2; i++) a.imageChauffe(1.0 / 35, true, 0);   // + 2 : arrondi de la somme des 1/35
     const float bas = a.echelle;
-    VERIFIE(std::fabs(bas - 0.8f) < 1e-6f, "25 images/s pendant 4 s : échelle 0,8 (%.2f)", bas);
+    VERIFIE(std::fabs(bas - 0.8f) < 1e-6f, "35 images/s pendant 4 s : échelle 0,8 (%.2f)", bas);
     int ef = 0;
     for (int i = 0; i < 10 * 60; i++) ef |= a.imageChauffe(1.0 / 60, true, 1);
     VERIFIE(a.echelle == bas && !(ef & qualite::Auto::ECHELLE), "chauffe 1 : échelle bloquée (%.2f)", a.echelle);
-    for (int i = 0; i < 3 * 25; i++) a.imageChauffe(1.0 / 25, true, 1);   // une mesure de 2 s (reste de la mesure précédente)
+    for (int i = 0; i < 3 * 35; i++) a.imageChauffe(1.0 / 35, true, 1);   // une mesure de 2 s (reste de la mesure précédente)
     VERIFIE(std::fabs(a.echelle - 0.7f) < 1e-6f, "chauffe 1 : l'échelle peut encore baisser (%.2f)", a.echelle);
     for (int i = 0; i < 6 * 60; i++) a.imageChauffe(1.0 / 60, true, 0);
     VERIFIE(a.echelle > 0.7f + 1e-6f, "sans chauffe : l'échelle remonte (%.2f)", a.echelle);

@@ -3081,3 +3081,105 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   4. RG-04 : réalisme, avec l'avis d'expert-realisme-3d ;
   5. RG-05 : preuves.
 - Zone : `src/game/camera_vue.*`, `camera_banc.cpp`, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`, plus une accroche annoncée dans `reglages.cpp`. Les blocs de WFS-221 ne sont pas touchés.
+
+### 2026-11-07 13:40:57 — WFS-233 fusionné par confiance (PR #203, squash 4761db5) (Claude, agent 3 (01UY1Vv3))
+- **Fait** :
+  - **8 enfants MakeHuman CC0** (garçon et fille de 4, 7, 10 et 14 ans) produits par `tools/convert_people_makehuman.py` étendu : poids d'âge du modificateur macro de MakeHuman, stature = médiane des courbes CDC 2000, proportions de l'enfant gardées, cheveux courts peints (+4 mm). Les 12 adultes régénérés sont identiques à l'octet près.
+  - **Familles** (`src/world/foule_familles.h`, `pietons.cpp`) : un marcheur adulte devient l'enfant d'un autre, donc le total ne change pas (RG-03). Part : Ville 10 %, Campagne 12 %, Corniche et Grand Prix 15 % (RG-02).
+  - **Main dans la main** à 4 et 7 ans : IK à 2 os ajoutée à `src/render/squelette.*`.
+- **Sources téléchargées** (lecture seule, rien exécuté, `regles-reseau.md` § 2.4) :
+  - github.com/makehumancommunity/makehuman : 48 cibles bébé / enfant (CC0), SHA-256 de leur concaténation 78bf3074…6e06 ;
+  - github.com/ewheeler/pygrowup : `statage.csv` des CDC 2000 (domaine public), SHA-256 ffc083df…0a09.
+- **Accroche hors zone E11**, demandée par RG-01 : `references/reel/anthropometrie.json` et `SOURCES.md` (entrées `enfant.*`, sources `CDC-2000` et `AVIS-233`).
+- **Avis de l'expert-realisme-3d** suivi :
+  - corps peu différenciés avant 14 ans ;
+  - écart de 0,65 m entre l'adulte et l'enfant, l'enfant 0,15 m devant ;
+  - vitesse de famille de 0,9 à 1,15 m/s ;
+  - IK à 2 os pour tenir la main ;
+  - nuque plus basse pour les cheveux peints.
+- **Vérifié en local** :
+  - 44 tests CPU OK ; `test_fidelite_humains` : indice 100 % (64 / 64), statures ± 1 % de la médiane CDC, tête et entrejambe dans les tolérances de l'expert ;
+  - licences : 0 manque ;
+  - parcours complet : 0 écart (vue normale et Cockpit) ;
+  - banc `pietons` (lavapipe) : captures `enfants-*` regardées en 3840x2160.
+- **Coût** :
+  - 1 appel de dessin par enfant (2 par adulte) ;
+  - IK : 4 recalculs de 65 os par famille visible ;
+  - aucune allocation par image (chaînes courtes) ;
+  - APK : +14,4 Mo (8 × 1,8 Mo).
+- **Limites, à décider par le PO** :
+  - pas de poussette (pas d'enfant de 0 à 3 ans) ;
+  - pas d'enfants en tribune (les spectateurs de WFS-199 sont des silhouettes figées) ;
+  - filles sans cheveux longs (il faudrait des maillages de cheveux MakeHuman) ;
+  - cadence de l'enfant calculée sans glissement des pieds : plus rapide que le réel à 4 ans (≈ 1,7 fois le clip) ;
+  - quand WFS-222 (PR #195) sera fusionné, sa baisse de 50 % des piétons s'appliquera avant la formation des familles : rien à changer ici.
+- **Suite** : agent libre, demande le ticket suivant au PO.
+
+### 2026-11-07 13:41:17 — Statuts automatiques, CI main #828 (robot statuts)
+- Run vert, annulé seulement à la publication (push, commit 8165d0c) : WFS-223 ✅ (PR #192, aabd139).
+
+### 2026-11-07 13:42:34 — Début WFS-239 : attribué à Claude, agent 3 (01UY1Vv3) ; WFS-240 créé (suite de WFS-233) (po-scrum-master)
+- **WFS-239** ([TECHNIQUE] P1, E4 par exception) : premier développeur libre qui demande. Épic E4 tenue par WFS-222 (agent arwa, PR #195), mais WFS-239 ne touche que `src/render/qualite_banc.cpp` (+ test neuf `tests/test_banc_placement.cpp`, 1 ligne CMake annoncée), hors fichiers de WFS-222 : exception écrite dans ses règles. Règles : `regles-de-gestion/WFS-239.md` (RG-01 cause d'abord, RG-02 placement ±0,5 m, RG-03 ligne `ERREUR placement`, RG-04 rien de retiré). US technique : CI de branche permise, une à la fois, chaque run au journal. Fusion par confiance > 50 % possible.
+- **Manques de WFS-233** (signalés par agent 3) : décision du PO, une US de suite **WFS-240** (P3 Moyenne, E11, prête) : (a) poussettes, (b) enfants en tribune du Grand Prix (accroche ≤ 10 lignes `circuit.cpp`), (c) cheveux longs des filles (avis expert-realisme-3d, maillages libres trouvés selon `regles-reseau.md` § 2.4, sans bloquer le ticket), (d) cadence de l'enfant de 4 ans ≤ 1,2 fois l'adulte. P3 : complément, ne passe pas devant les P1 / P2 prêts. Règles : `regles-de-gestion/WFS-240.md`.
+
+### 2026-11-07 13:43:04 — Début WFS-239 : banc qualité, voiture du trafic absente à 120 m en Basse (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-239` créée depuis `main` et poussée tout de suite. Zone : `src/render/qualite_banc.cpp` (+ test neuf éventuel). Règles : `regles-de-gestion/WFS-239.md`. Première étape : cause (RG-01), comparaison de main avec 42ce230.
+
+### 2026-11-07 13:53:10 — WFS-222 : fusionné (PR #195, squash d214919), profilage, piétons −50 %, erreurs du rendu corrigées (agent arwa, session trafic)
+- CI de branche n° 1 (run 831, 5a3713c) : **verte** (android, 13 bancs, endurance, publication) ; captures `apercu-waforspeed-222` regardées (`course-cam0-0`, `carte-ville-rond-point`) : rien de bloquant. Nouvelle synchronisation (conflit avec WFS-233 / WFS-158 dans `pietons.cpp` et `renderer.cpp`, les deux côtés gardés), tests CPU 44/44 et parcours 0 écart en local, puis fusion par confiance (squash).
+- **RG-07 (en premier, ordre de l'utilisateur)** : personnes à pied −50 % sur les 4 cartes (une sur deux des listes d'origine, mêmes places pour celles qui restent, `src/world/pietons.cpp`). Mesure (journal du jeu « Piétons (WFS-222) ») :
+  | Carte | À pied avant | À pied après | Assis / baigneurs (inchangés) | Total avant → après |
+  |---|---|---|---|---|
+  | Ville | 228 (13 promeneurs, 207 marcheurs, 8 passants) | 114 (6, 104, 4) | 768 clients attablés | 996 → 882 |
+  | Corniche | 220 | 110 | 153 | 373 → 263 |
+  | Campagne | 96 | 48 | 0 | 96 → 48 |
+  | Grand Prix | 145 | 72 | 0 | 145 → 72 |
+  **Signalé au PO** : les « 996 » de la Ville comptent 768 clients attablés, exclus par RG-07 ; « 498 au plus » n'est donc pas atteignable sans toucher aux terrasses (décision du PO). Coût : seuls les 8 plus proches sont dessinés (16 instances animées au plus), le nombre total ne coûte presque rien au processeur (Pietons.update 0,02 ms) ; en Basse, maillage complet à moins de 8 m seulement (16 m en Haute, inchangé) : 95 k → 80 k triangles.
+- **Erreur grossière cherchée** : APK en `assembleRelease` (pas debug), natif en `-DCMAKE_BUILD_TYPE=Release`, aucune couche de validation, vrai GPU (SwiftShader / llvmpipe seuls passent en mode logiciel), FIFO + 3 images, processeur ≈ 1 ms par image (le moteur n'est pas lent côté processeur, le jeu attend le GPU). **Trouvé côté GPU** (trois défauts de construction de la passe de scène, aucun ne se voit sur PC) :
+  1. tous les opaques passaient par un shader contenant `discard` (`shaders/scene.frag:37,68`, `shaders/vehicule.glsl:10`) : sur les GPU mobiles (Adreno : LRZ, Mali : early-ZS), un shader avec `discard` désactive le test de profondeur avant le shader → chaque pixel caché par une façade était calculé en entier (PBR, ombre 9 lectures, IBL, bruit de la route). Correction : constante de spécialisation `SANS_DISCARD` (`common.glsl`), pipelines `opaque_` / `skinOpaque_` sans discard, `opaqueDecoupe_` / `skinOpaqueDecoupe_` pour les seuls objets à découpe (alpha masqué, fondu des voitures) — `renderer.cpp` `aDecoupe` ;
+  2. opaques dessinés dans l'ordre d'appel et ciel plein écran en premier : maintenant du plus proche au plus loin (tri stable), ciel après les opaques dans les seuls pixels vides (`skyApres_`, test de profondeur) ;
+  3. pendant les 6 images de chaque capture d'environnement (toutes les 60 m en Haute, 200 m en Basse ; à 10 img/s et 180 km/h, près d'une image sur deux), plus AUCUN masquage dans la passe de scène et l'ombre (`classer`, `renderer.cpp`) : tout le décor chargé était dessiné. Correction : bit `VIS_CAPTURE` (la capture voit tout, les autres passes gardent leur masquage).
+- **Baisse automatique (RG-03)** : pas de 0,2 sous 30 img/s (bloom puis ombres coupés en 4 s au lieu de 8) ; au plancher, à tous les niveaux (Basse comprise) : reflets de la route mouillée coupés (`forceSansReflets`) et captures d'environnement suspendues (`eclairage::suspendreCaptures`, sondes en place gardées) ; jamais la résolution ni le MSAA (WFS-134). Tests : `test_qualite` (nouveau cas), `test_chauffe` (cas RG-03 passé à 35 img/s : il testait la chauffe, pas le pas).
+- **RG-01 : banc de profilage** `WFS_BANC=perf` (`src/render/bench_perf.cpp`, accroche 2 lignes dans `desktop_main.cpp`) : chaque système enveloppé par un chronomètre (sans toucher `game.cpp`), attente du GPU, appels, triangles par système, coût GPU des passes, pire image ; `WFS_AVANT_222=1` rend l'ancien chemin (comparaison sur le même binaire). Mesures 1280×720, 240 images après 180 de chauffe, lavapipe (le « GPU » du banc est le processeur : les ms d'image ne représentent pas un téléphone, seules les proportions comptent) :
+  | Carte | Qualité | Image avant → après (ms) | Processeur (ms, pire) | Appels | Triangles | GPU : scène / ombre / capture (ms) |
+  |---|---|---|---|---|---|---|
+  | Ville | Haute | 373,7 → 352,6 | 1,3 (51,8*) | 430 | 807 k | 280 / 42 / 38 |
+  | Ville | Basse | 216,3 → 190,8 | 0,9 (2,0) | 210 | 334 k | 160 / 2 / — |
+  | Corniche | Haute | 299,1 → 284,2 | 1,3 (51,8*) | 367 | 547 k | 222 / 31 / 32 |
+  | Corniche | Basse | 175,6 → 153,3 | 0,8 (2,8) | 224 | 241 k | 123 / 2 / — |
+  | Campagne | Haute | 277,2 → 275,7 | 1,0 (53,2*) | 261 | 483 k | 215 / 31 / 30 |
+  | Campagne | Basse | 165,4 → 152,0 | 0,6 (2,9) | 147 | 265 k | 121 / 2 / — |
+  | Grand Prix | Haute | 274,4 → 278,6 | 1,0 (62,4*) | 279 | 695 k | 217 / 31 / 32 |
+  | Grand Prix | Basse | 153,5 → 143,4 | 0,6 (5,1) | 152 | 254 k | 112 / 2 / — |
+  (*) pire image du processeur en Haute : traitement d'une sonde IBL fait sur le fil principal **au banc seulement** (`eclairage_physique.cpp:86`, `synchrone()` = `WFS_BANC`) ; sur le téléphone il tourne sur un fil de travail.
+  **3 postes les plus chers** (toutes cartes) : (1) passe de scène, `renderer.cpp` `endFrame` boucle des opaques + `shaders/scene.frag` (≈ 80 % du GPU) ; (2) passe d'ombre, `renderer.cpp` `shadowPass` (≈ 12 % en Haute) ; (3) capture d'environnement, `environnement.cpp` `CaptureEnvironnement::executer` (≈ 11 % en Haute, images de capture). Triangles de la scène, Ville Haute : piétons 95 k (8 personnes), décor de la Ville 94 k, trafic 78 k, commerces 25 k. Processeur : `Renderer::endFrame` 0,3-0,7 ms, `TrafficSystem.update` 0,09 ms : **budget processeur tenu partout (≤ 1,3 ms sur 16,6)**. Budget GPU : non mesurable au banc (lavapipe) : c'est la ligne « Rendu » du téléphone qui tranche (RG-06).
+- **RG-04 (pas de régression)** : 28 captures de la Ville (`WFS_BANC=ville`) comparées au pixel, même binaire, ancien / nouveau chemin : identiques avec le tri, le ciel après et les shaders sans discard ; les seuls écarts (≤ 58 pixels, objets au loin) viennent du point 3 : des objets au-delà de la distance de masquage n'apparaissaient que dans les images de capture (voulu, comme les autres images). Allégé volontairement : piétons à pied (moitié), maillage des piétons en Basse (8 / 30 m). Tests CPU 43/43, parcours complet 0 écart (local).
+- **Carrés noirs de la vidéo (Ville, Basse)** : cause non reproduite au banc (capture `perf-ville-basse` en 2340×1080 : arbres, façades et pigeons corrects). Hypothèse la plus probable : cartes de feuillage des platanes (alpha découpé `MAT_MASK`, `ville.cpp:289`) qui sortent noires et pleines sur le GPU du téléphone (texel lu (0,0,0,1) ou normale nulle → NaN → 0 dans `scene.frag`) ; autre candidat : pigeons qui s'envolent vers les façades (`ville.cpp:1393`). **Signalé au PO** : ticket de diagnostic sur téléphone (capture d'écran avec la qualité Haute puis Basse au même endroit) avant correction.
+- Accroches hors zone annoncées : `src/platform/desktop_main.cpp` (2 lignes : `WFS_BANC=perf`) ; `tests/test_qualite.cpp`, `tests/test_chauffe.cpp` (nouvelle règle du pas). `game.cpp`, `track.*`, `camera_vue.*`, boutons, iOS : non touchés.
+- Limites : aucun téléphone ici ; le gain réel (early-Z, tri, capture) ne se mesure qu'avec la ligne « Rendu » de l'APK de `main` (RG-06). Si la Haute reste sous 30 img/s, levier suivant proposé au PO : culture des faces arrière (`cullMode` = NONE pour tous les pipelines, `renderer.cpp` `makePipeline`) pour les matériaux sans `MAT_DOUBLE`, à vérifier capture par capture.
+- Suite : suivi de la CI de `main` sur d214919.
+
+### 2026-11-07 13:57:52 — WFS-236 : rattrapage des runs #818 à #825 fait (RG-06) (Claude, agent 4 (011cpqZan))
+- `workflow_dispatch` de `statuts.yml`, lancés un à un : #818 → **WFS-210 ✅** (« annulé seulement à la publication ») ; #820, #823 et #825 : rien à passer, leurs tickets étaient déjà ✅ ou pas encore 🟣.
+- Le robot a aussi traité tout seul les runs suivants, annulés seulement à la publication : #826 → WFS-158, 206, 217, 219, 220 ✅ ; #828 → WFS-223 ✅. Le correctif marche en vrai.
+- WFS-236 : tous les critères d'acceptation sont remplis. Le ticket passera en ✅ au prochain run vert de `main`. Je suis libre.
+
+
+### 2026-11-07 13:58:45 — Début WFS-240 : attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de l'agent 4, libre après WFS-236 (🟣, PR #199). Il réclame WFS-224 (promis à 11:48 dès la fusion de WFS-222). WFS-222 est bien 🟣 (PR #195), mais l'épic E4 est maintenant tenue par **WFS-239** (🔧, agent 3, attribué 13:42, dernier envoi 13:43) : un seul ticket actif par épic, pas de nouvelle exception. WFS-218, 224, 226 attendent la fusion de WFS-239 ; **WFS-224 sera proposé en premier** à ce moment.
+- Autres tickets prêts : WFS-230, 214 (E13, WFS-227) ; WFS-215, 232 (E10, WFS-235). Seul ticket prêt d'une épic libre : **WFS-240** (P3, E11, dépend de WFS-233 🟣).
+- Zone : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) + accroche ≤ 10 lignes `src/world/circuit.cpp` annoncée au journal. Interdit : iOS, fichiers de WFS-222, taille des boutons, nombre total de piétons.
+- Règles : `regles-de-gestion/WFS-240.md` (RG-01 poussettes, RG-02 enfants en tribune, RG-03 cheveux longs avec avis d'expert-realisme-3d, RG-04 cadence sourcée, RG-05 budget et parcours complet). Fusion par confiance > 50 % possible.
+
+### 2026-11-07 14:00:32 — APK 840 testé par l'utilisateur : « rien de corrigé » ; état réel et priorité absolue aux tickets de nuit (po-scrum-master)
+- **Vidéos** (Campagne de nuit, 2 × ≈ 14 s) : un seul faisceau, boules grises au freinage et au braquage, autres voitures sans phares, voiture du joueur en silhouette ; lampadaires de la Campagne enfin allumés (WFS-225) ; Réglages : « Basse · 75 % · MSAA ×2 · 23 img/s · chauffe 1 ».
+- **Ce que contient l'APK 840** (13:43 UTC, 9abffcb) : WFS-217 (aide à la direction, visible dans les Réglages), 221 (fluidité), 223 (ronds-points), 225 (Campagne de nuit). **Pas encore** : WFS-222 (performance, −50 % de piétons), fusionné à 13:52 → APK suivant. **Pas commencés** : WFS-218, 224, 226 (nuit), bloqués par l'épic E4 occupée.
+- **Décision PO** : exception d'épic, WFS-218 + 226 (un développeur, `nuit.cpp`) puis WFS-224 (`effets_*`) en parallèle de WFS-239 ; bandeau en tête de `TACHES.md`. Développeurs libres : agent arwa, agent 5, session dev expert, session dev 5bx (autre compte).
+
+### 2026-11-07 14:00:22 — WFS-240 : RG-04 (cadence) corrigée, décision du PO (po-scrum-master)
+- Constat de Claude, agent 4 (011cpqZan) : « ≤ 1,2 fois la cadence de l'adulte » et « sans glissement » sont incompatibles (même vitesse, foulée de l'enfant ≈ 0,6 fois celle de l'adulte) et contraires au réel (rapport réel ≈ 1,5 ; 4 ans ≈ 150 pas/min, Sutherland 1980, « à confirmer »). Mon erreur dans la règle.
+- Décision : proposition recommandée de l'agent 4 retenue. RG-04 devient « cadence de chaque âge à ± 10 % de la valeur réelle par âge, test CPU, sans glissement ; on ne baisse que si elle dépasse le réel ». Pas de pieds qui glissent, pas de nouveau clip adulte. Détail dans `regles-de-gestion/WFS-240.md` (Suivi).
+
+### 2026-11-07 14:03:34 — ANO-113 (bloquante) sur WFS-217 ; WFS-241 créé, priorité absolue (po-scrum-master)
+- **Essai de l'utilisateur (APK 840)** : aide à la direction désactivée = aucune différence ; activée = la voiture ne suit toujours pas les virages et ronds-points. WFS-217 passé ✅ par la CI mais critères non remplis sur téléphone.
+- **WFS-241** (E3, P1 Urgent, `regles-de-gestion/WFS-241.md`) : banc `aide` (3 joueurs simulés × 2 réglages × 6 virages), objectifs chiffrés, preuve vidéo, validation par l'utilisateur ; si le modèle « route qui tourne sous la voiture » l'empêche, proposition de conduite en coordonnées du monde au PO avant de la faire. Bandeau de `TACHES.md` : WFS-241, puis WFS-218 + 226, puis WFS-224.

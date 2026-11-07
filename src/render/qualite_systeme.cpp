@@ -15,6 +15,7 @@
 #include "qualite_auto.h"
 #include "renderer.h"
 #include "passes.h"   // WFS-150 (RG-05)
+#include "eclairage_physique.h"   // WFS-222 : captures suspendues
 
 namespace wfs {
 namespace {
@@ -87,8 +88,10 @@ public:
         const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.echelle);
         r_->bloomForce = al.bloom ? qualite::bloomNiveau(g_auto.niveau) : 0.f;
         r_->forceNoShadows = !al.ombres;
-        WFS_LOG("qualité : %.0f images/s → facteur dynamique %.2f (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s)", g_auto.fpsMesure,
-                g_auto.echelle, r_->vk().renderScale * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées");
+        r_->forceSansReflets = !al.reflets; eclairage::suspendreCaptures(!al.captures);   // WFS-222 (RG-03)
+        WFS_LOG("qualité : %.0f images/s → facteur dynamique %.2f (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s, reflets %s, captures %s)", g_auto.fpsMesure,
+                g_auto.echelle, r_->vk().renderScale * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées",
+                al.reflets ? "oui" : "coupés", al.captures ? "oui" : "suspendues");
         effets_ = 0;
     }
 
