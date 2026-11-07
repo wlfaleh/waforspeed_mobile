@@ -8,6 +8,7 @@
 #include "../core/log.h"
 #include "../core/platform.h"
 #include "../game/player.h"
+#include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
 #include "zones.h"
 
 namespace wfs {
@@ -125,6 +126,8 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     active_ = g.map && std::strcmp(g.map->id, carteId()) == 0;
     if (!active_) return;
     track_ = g.track;
+    // WFS-212 (RG-02) : axe de la route autour des ronds-points, épingles et lacets, pour n'y rien poser sur une autre branche
+    serres_ = chaussee::axes(*track_, {trace::Type::RondPoint, trace::Type::Epingle, trace::Type::Lacets});
     const char* m = std::getenv("WFS_MOMENT");   // banc d'essai et écran Terrain (WFS-41)
     night_ = m && std::strcmp(m, "nuit") == 0;
     const char* dep = std::getenv("WFS_DEPART");   // banc d'essai : zone choisie (segments)
@@ -268,6 +271,10 @@ void CarteDecor::arbre(Track& t, const Item& it, int64_t a, bool lod0, Geo out[P
     }
 }
 
+bool CarteDecor::procheSerre(int64_t a) const { return chaussee::proche(serres_, len(), a); }
+
+bool CarteDecor::surAutreChaussee(const vec3& q, int64_t a, float marge) const { return chaussee::surAutre(serres_, len(), q, a, marge); }
+
 void CarteDecor::touffes(Track& t, int64_t a, Geo out[P_COUNT]) const {
     static const vec3 CHAMPS[3] = {{1.05f, 1.05f, 0.7f}, {0.95f, 1, 0.65f}, {1.15f, 1.05f, 0.62f}};
     static const vec3 FORET[2] = {{0.7f, 0.85f, 0.65f}, {0.8f, 0.9f, 0.6f}};
@@ -286,6 +293,7 @@ void CarteDecor::touffes(Track& t, int64_t a, Geo out[P_COUNT]) const {
             const float hgt = (far ? 0.55f : 0.32f) + rnd(R) * 0.4f, yaw = rnd(R) * 3.14f;
             const vec3 col = cols[(int)(rnd(R) * nc)];
             const float j = 0.92f + rnd(R) * 0.16f; rnd(R);   // vCol(c, 1, R)
+            if (surAutreChaussee(c, a, 0.5f)) continue;   // WFS-212 (RG-02) : tirages faits, la touffe n'est pas posée
             veg::touffe(out[P_FEUILLU], c, hgt, yaw, j * tkOf(col, TINT_OAK[0]));
         }
     }
@@ -325,14 +333,32 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
                 const float x0 = -R + k * R / 5;
                 quadSol(out[P_UNI], lateral(p0, x0, 0.02f), lateral(p0, x0 + R / 5, 0.02f), lateral(p1, x0 + R / 5, 0.02f), lateral(p1, x0, 0.02f), uv(k % 2 ? C_CHECK_W : C_CHECK_B));
             }
+        const bool serre = procheSerre(a);   // WFS-212 : rond-point, épingle
         for (int s : {-1, 1}) {
             Band b[6] = {}; const int n = profil(z, a, s, b);
-            for (int i = 0; i < n; i++)
-                quadSol(out[P_UNI], lateral(p0, s * b[i].a, b[i].ya), lateral(p1, s * b[i].a, b[i].ya), lateral(p1, s * b[i].b, b[i].yb), lateral(p0, s * b[i].b, b[i].yb), uv(b[i].col));
+            for (int i = 0; i < n; i++) {
+                if (!serre) {
+                    quadSol(out[P_UNI], lateral(p0, s * b[i].a, b[i].ya), lateral(p1, s * b[i].a, b[i].ya), lateral(p1, s * b[i].b, b[i].yb), lateral(p0, s * b[i].b, b[i].yb), uv(b[i].col));
+                    continue;
+                }
+                // WFS-212 (RG-02) : bande découpée en pas de 1 m (même surface) jusqu'à RW + 40 m ; un pas posé sur une autre branche
+                // du tracé (rond-point, épingle) n'est pas dessiné : la chaussée reste nette
+                for (float x0 = b[i].a; x0 < b[i].b; ) {
+                    const float x1 = x0 < R + 40 ? std::min(b[i].b, x0 + 1.f) : b[i].b;
+                    auto y = [&](float x) { return b[i].ya + (b[i].yb - b[i].ya) * (x - b[i].a) / (b[i].b - b[i].a); };
+                    const vec3 m = (lateral(p0, s * x0) + lateral(p1, s * x1)) * 0.5f;
+                    if (!surAutreChaussee(m, a, 0.f))
+                        quadSol(out[P_UNI], lateral(p0, s * x0, y(x0)), lateral(p1, s * x0, y(x0)), lateral(p1, s * x1, y(x1)), lateral(p0, s * x1, y(x1)), uv(b[i].col));
+                    x0 = x1;
+                }
+            }
         }
         const Pose& p = p0;
         for (const Item& it : items_[(size_t)(((a % L) + L) % L)]) {
             if (lod && it.petit) continue;   // SMALL_DECOR : rien au loin
+            // WFS-212 (RG-02) : rien sur une autre branche du rond-point ni dans l'épingle (arbres : 1,5 m de marge, couronne)
+            const float latObj = it.t == T_LAMP ? R + 0.8f : it.lat;   // lampadaire : mât à RW + 0,8 m
+            if (it.t != T_VERGE && latObj > 0 && surAutreChaussee(lateral(p0, it.side * latObj) + p0.f * it.along, a, it.t == T_TREE ? 1.5f : 0.5f)) continue;
             if (it.t == T_TREE) arbre(t, it, a, lod, out);
             else if (it.t == T_VERGE) { if (!lod) touffes(t, a, out); }
             else if (it.t == T_LAMP) lampe(p, it.side, it.k != 0, out);
