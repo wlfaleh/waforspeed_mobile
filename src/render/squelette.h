@@ -50,5 +50,12 @@ const Plage* plageParNom(const Personnage& p, const std::string& nom);   // null
 void preparerPose(const Personnage& p, PoseSquelette& pose);
 // pose du clip `clip` à l'instant `temps` (s, en boucle sur la durée du clip) ; clip < 0 : pose de repos
 void echantillonner(const Personnage& p, int clip, double temps, PoseSquelette& pose);
+// WFS-233 : matrices du modèle et palette recalculées depuis les locales (t, r, s) de la pose (après une retouche des locales)
+void recalculerPose(const Personnage& p, PoseSquelette& pose);
+// WFS-233 : IK analytique à 2 os (épaule → coude → main) : la main va au point `cible` (repère du modèle, mètres), le coude reste
+// dans le plan qu'il avait après l'échantillonnage ; cible hors de portée : bras tendu vers elle. Appeler après echantillonner ;
+// aucune allocation. Renvoie false si un os est invalide (pose inchangée).
+bool atteindre(const Personnage& p, PoseSquelette& pose, int epaule, int coude, int main, const vec3& cible);
+int osParNom(const Personnage& p, const std::string& nom);   // -1 si absent
 
 } // namespace wfs

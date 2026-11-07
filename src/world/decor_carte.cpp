@@ -144,9 +144,9 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE | MAT_VTINT;
     mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
     // lampes : part propre (neonK du jeu web : 1 la nuit, 0,5 de jour)
-    Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE; // campagne : lampadaires éteints la nuit (envFor : lamps = false ; WFS-09 RG-06 : pas d'éclairage public)
-    const bool allumees = night_ && std::strcmp(carteId(), "campagne") != 0;
-    mn.emissive = linHex(0xfff0dc) * (allumees ? 2.f : night_ ? 0.05f : 0.5f);
+    // WFS-225 (RG-01) : lampes allumées la nuit sur toutes les cartes (la campagne les avait éteintes : envFor lamps = false du web)
+    Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE;
+    mn.emissive = linHex(0xfff0dc) * (night_ ? 2.f : 0.5f);
     mats_[P_NEON] = r.makeMaterial(mn, &palTex_, nullptr, nullptr);
     // feuillage : atlas du jeu web
     std::vector<uint8_t> png; int w = 0, h = 0, n = 0;
@@ -212,7 +212,7 @@ bool CarteDecor::dansMorceau(int64_t seg, int64_t a0, int64_t a1, int64_t& abs) 
 
 // envFor (maps.js) : brouillard plus loin de jour, nuit sans lampadaires (campagne) ou bleutée (circuit)
 void CarteDecor::ambiance(FrameParams& fp, const GameView& g) {
-    if (!active_ || g.sceneDediee) return;
+    if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
     const Env e = env();
     // Game : brouillard exponentiel 0,0009 pour la ville (fogFar 620 m du jeu web) → même rapport, comme la plage
     if (!night_) {
@@ -367,8 +367,20 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
     }
 }
 
+VueBancCarte g_vueCarte;
+
+// WFS-216 (RG-04) : vue libre du banc d'essai (même principe que la vue de dessus de la Corniche, plage.cpp)
+bool CarteDecor::scene(FrameParams& fp, SceneDediee& sd, const GameView& g) {
+    if (!active_ || !g_vueCarte.actif) return false;
+    fp.view = lookAt(g_vueCarte.oeil, g_vueCarte.cible, {0, 1, 0});
+    fp.proj = perspectiveVk(g_vueCarte.fov * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.5f);
+    fp.camPos = g_vueCarte.oeil; fp.hasFocus = false;
+    sd.route = true; sd.joueur = true; sd.cible = g_vueCarte.cible;
+    return true;
+}
+
 void CarteDecor::render(Renderer& r, const GameView& g) {
-    if (!active_ || g.sceneDediee) return;
+    if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
     frame_++;
     Track& t = *g.track;
     const int64_t pc = (int64_t)std::floor(g.player->dist / SEG) / CH;

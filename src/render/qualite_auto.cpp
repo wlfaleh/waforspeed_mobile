@@ -21,7 +21,9 @@ int Auto::image(double dt, bool enCourse) {
     int effet = RIEN;
     const float prev = echelle;
     // +(x).toFixed(2) : arrondi au centième (pas de dérive 0,6000001)
-    if (fps < 40 && echelle > 0.6f) echelle = std::max(0.6f, std::round((echelle - 0.1f) * 100) / 100);
+    // WFS-222 (RG-03) : sous 30 images/s, pas de 0,2 (allègement complet en 4 s au lieu de 8)
+    const float pas = fps < 30 ? 0.2f : 0.1f;
+    if (fps < 40 && echelle > 0.6f) echelle = std::max(0.6f, std::round((echelle - pas) * 100) / 100);
     else if (fps > 57 && echelle < 1.f) echelle = std::min(1.f, std::round((echelle + 0.1f) * 100) / 100);
     if (echelle != prev) effet |= ECHELLE;
     if (!fait && !choixJoueur && niveau > BASSE && echelle <= 0.6f && fps < 30) { fait = true; niveau--; effet |= RETRO; }

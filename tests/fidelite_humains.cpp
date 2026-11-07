@@ -19,6 +19,7 @@
 #include <vector>
 #include "../src/render/bench_realisme.h"
 #include "fidelite_humains_tenues.cpp"   // WFS-210 : tenues par lieu, peau VI
+#include "fidelite_humains_familles.cpp"   // WFS-233 : familles (règles de placement)
 
 #ifndef WFS_SOURCE_DIR
 #define WFS_SOURCE_DIR "."
@@ -227,6 +228,28 @@ int main(int argc, char** argv) {
         const wfs::reel::Json* m = R.mesure(std::string("humain.") + sexes[s] + ".stature");
         mesure(std::string(sexes[s]) + " : M-01 écart-type de la stature (m)", ec, m ? m->nombre("ecart_type", 0) / 1000 : 0, 0.01);
     }
+    // WFS-233 (RG-01) : 8 enfants (garçon g, fille f ; 4, 7, 10, 14 ans) : même format et même squelette que les adultes,
+    // 3 niveaux de détail ; M-01 stature = médiane CDC 2000 ± 1 % (cheveux peints de 4 mm retirés) ; proportions (tête,
+    // entrejambe) contre les valeurs de contrôle « à confirmer » de l'expert ; cuir chevelu peint (partie 2) sur la tête seulement
+    for (const char* id : {"e04g", "e04f", "e07g", "e07f", "e10g", "e10f", "e14g", "e14f"}) {
+        const std::string n = id; const int ageAns = std::stoi(n.substr(1, 2)), s = n[3] == 'g' ? 1 : 0;
+        Wfp w;
+        if (!lire(depot + "/assets/people/humains/" + n + ".wfp", w)) { cas(n + ".wfp lisible", false); continue; }
+        cas(n + " : version 3, squelette du jeu, palette ≤ 64, clips", w.version == 3 && w.os == jeu[s].os && w.parents == jeu[s].parents && w.nPal <= 64 && w.nClips == jeu[s].nClips);
+        int niveaux = 0;
+        for (int lod = 0; lod < 3; lod++) niveaux += std::find(w.plages.begin(), w.plages.end(), "corps-" + std::to_string(lod)) != w.plages.end();
+        cas(n + " : 3 niveaux de détail", niveaux == 3);
+        const Mesures m = mesurer(w);
+        const std::string age = std::to_string(ageAns) + "ans";
+        mesure(n + " : M-01 stature (m, CDC 2000 P50)", m.stature - 0.004, val(("enfant." + std::string(s ? "garcons" : "filles") + ".stature." + age).c_str()) / 1000, 0.01);
+        mesure(n + " : tête / stature (à confirmer)", (m.stature - m.menton) / m.stature, val(("enfant.tete_sur_taille." + age).c_str()), 0.08);
+        const double e = val(("enfant.entrejambe_sur_taille." + age).c_str());
+        mesure(n + " : entrejambe / stature (à confirmer, ± 0,02)", m.entrejambe / m.stature, e, e > 0 ? 0.02 / e : 0);
+        int cheveux = 0, bas = 0;
+        for (uint32_t v = 0; v < w.nV; v++) if (w.C[v * 4 + 3] > 1.5f) { cheveux++; if (w.P[v * 3 + 1] < w.corps[0]) bas++; }
+        cas(n + " : cheveux peints (" + std::to_string(cheveux) + " sommets), tous au-dessus du cou", cheveux > 100 && bas == 0);
+    }
+    if (familles_test::executer()) echecs++;   // WFS-233 (RG-02, RG-03)
     if (tenues_test::executer()) echecs++;   // WFS-210 (RG-01, RG-02)
     const double indice = mesures ? 100.0 * conformes / mesures : 0;
     std::printf("humains : indice de fidélité : %.1f %% (%d / %d mesures)\n", indice, conformes, mesures);

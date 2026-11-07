@@ -52,6 +52,21 @@ MORPHOTYPES = [
 ]
 STATURE = {1: (1.7562, 0.0686), 0: (1.6285, 0.0642)}   # ANSUR-II : humain.hommes / femmes.stature (m)
 
+# WFS-233 (RG-01) : 8 enfants, garçon (g) et fille (f) à 4, 7, 10 et 14 ans ; stature = médiane (P50) des courbes CDC 2000
+# stature-pour-âge (statage.csv, colonne M, à l'âge révolu + 0,5 mois ; references/reel/anthropometrie.json, enfant.*) ;
+# proportions : celles des cibles MakeHuman d'enfant (pas de ratio adulte imposé), mesurées et notées « à confirmer »
+ENFANTS = [
+    ('e04g', 1, 4, 0.50, 0.50, (0.0, 0.0, 1.0), 1.025105),
+    ('e04f', 0, 4, 0.50, 0.50, (1.0, 0.0, 0.0), 1.010339),
+    ('e07g', 1, 7, 0.50, 0.50, (0.0, 1.0, 0.0), 1.220305),
+    ('e07f', 0, 7, 0.50, 0.50, (0.0, 0.0, 1.0), 1.217617),
+    ('e10g', 1, 10, 0.50, 0.45, (0.6, 0.0, 0.4), 1.388234),
+    ('e10f', 0, 10, 0.50, 0.50, (0.0, 0.5, 0.5), 1.382112),
+    ('e14g', 1, 14, 0.50, 0.45, (1.0, 0.0, 0.0), 1.641418),
+    ('e14f', 0, 14, 0.45, 0.50, (0.0, 0.0, 1.0), 1.604777),
+]
+def est_enfant(nom): return nom.startswith('e')
+
 # ---------------------------------------------------------------- correspondance des os MakeHuman → os du jeu
 def os_du_jeu(nom_mh):
     """os du jeu (Quaternius) qui reçoit les poids de l'os MakeHuman"""
@@ -127,14 +142,26 @@ def interp3(v):
     """valeur 0..1 → poids (min, moyen, max) du modificateur macro de MakeHuman"""
     return (max(0.0, (0.5 - v) * 2), 1 - abs(v - 0.5) * 2, max(0.0, (v - 0.5) * 2))
 
+def poids_age(age):
+    """poids des cibles d'âge du modificateur macro de MakeHuman (human.py, _setAgeVals) ; curseur : 1 an → 0, 11 ans → 0,1875,
+    25 ans → 0,5, 90 ans → 1 (WFS-233 : enfants ; les adultes gardent exactement les poids de WFS-209)"""
+    if age >= 25:
+        av = min(1.0, (age - 25) / (90 - 25))   # 25 ans → jeune, 90 ans → âgé
+        return {'young': 1 - av, 'old': av}
+    c = (age - 1) / 10 * 0.1875 if age <= 11 else 0.1875 + (age - 11) / 14 * 0.3125
+    young = max(0.0, (c - 0.1875) * 3.2)
+    baby = max(0.0, 1 - c * 5.333)
+    child = max(0.0, min(1.0, 5.333 * c) - young)
+    return {k: v for k, v in (('baby', baby), ('child', child), ('young', young)) if v > 1e-6}
+
 def morpher(V0, dossier, sexe, age, muscle, poids, origines, cache):
     n = len(V0)
     def cible(nom):
         if nom not in cache: cache[nom] = lire_cible(dossier / 'targets' / nom, n)
         return cache[nom]
-    av = min(1.0, max(0.0, (age - 25) / (90 - 25)))   # 25 ans → jeune, 90 ans → âgé
-    ages = {'young': 1 - av, 'old': av}
-    sexes = {'female': 1 - sexe, 'male': float(sexe)}
+    ages = poids_age(age)
+    g = float(sexe) if age >= 14 else (0.55 if sexe else 0.45)   # WFS-233 : avant la puberté, corps peu différenciés (avis expert)
+    sexes = {'female': 1 - g, 'male': g}
     mus = dict(zip(('minmuscle', 'averagemuscle', 'maxmuscle'), interp3(muscle)))
     poi = dict(zip(('minweight', 'averageweight', 'maxweight'), interp3(poids)))
     V = V0.copy()
@@ -274,7 +301,7 @@ def convertir(mh, jeu, morpho, sortie, cache):
     J = {j: V[np.array(ix)].mean(0) for j, ix in sk['joints'].items()}
     corps = sorted({i for f in F for i, _ in f})
     sol = V[corps, 1].min(); haut = V[corps, 1].max()
-    stature = STATURE[sexe][0] + z * STATURE[sexe][1]
+    stature = z if est_enfant(nom) else STATURE[sexe][0] + z * STATURE[sexe][1]   # WFS-233 : stature CDC de l'enfant
     k = stature / (haut - sol)
     org = np.array([0.0, sol, 0.0])
     V = (V - org) * k
@@ -328,7 +355,8 @@ def convertir(mh, jeu, morpho, sortie, cache):
     Vp[sans] = V[sans]
     pos_os = np.array(pp)
     # M-02 : proportions d'ANSUR-II, puis M-01 : stature visée (échelle uniforme, pieds au sol)
-    Vp, pos_os = ajuster_proportions(Vp, pos_os, Ws, idx, sexe, noms, lambda X: normales_sommets(X, mh['F']), corps)
+    if not est_enfant(nom):   # WFS-233 : ratios d'adultes (ANSUR-II) seulement chez l'adulte
+        Vp, pos_os = ajuster_proportions(Vp, pos_os, Ws, idx, sexe, noms, lambda X: normales_sommets(X, mh['F']), corps)
     sol = float(Vp[corps, 1].min()); k2 = stature / (float(Vp[corps, 1].max()) - sol)
     Vp = (Vp - [0, sol, 0]) * k2; pos_os = (pos_os - [0, sol, 0]) * k2; pos_os[idx['root']] = 0
     return dict(nom=nom, sexe=sexe, V=Vp, W=Ws, O=O, Rq=Rq, pos=pos_os, clips=clips, nC=nC, stature=stature,
@@ -373,7 +401,7 @@ def maillage(r, mh):
     w = np.where((np.cross(N, Tv) * Bv).sum(1) < 0, -1.0, 1.0)
     return sv, tri, P, N, UV, np.concatenate([Tv, w[:, None]], 1)
 
-def attribut_cloth(r, P, Wv):
+def attribut_cloth(r, P, Wv, cheveux=None):
     """_cloth (bras, hauteur, jambe, partie) de chaque sommet (WFS-72)"""
     noms = [o['nom'] for o in r['O']]; idx = r['idx']; pos = r['pos']
     cl = np.full((len(P), 4), -1.0); cl[:, 1] = P[:, 1]; cl[:, 3] = 0.0
@@ -397,11 +425,30 @@ def attribut_cloth(r, P, Wv):
     # surtout par neck_01 et Head reçoivent une hauteur au-dessus du col (le shader et pietons.cpp les voient en peau)
     tete = Wv[:, idx['neck_01']] + Wv[:, idx['Head']] > 0.5
     cl[tete, 1] = np.maximum(cl[tete, 1], pos[idx['neck_01']][1] + 0.1)
+    if cheveux is not None: cl[cheveux, 3] = 2.0   # WFS-233 : cheveux courts peints (partie 2 : cheveux)
     return cl
+
+# WFS-233 : cuir chevelu des enfants (les humains MakeHuman du dépôt n'ont pas de maillage de cheveux) : sommets portés surtout
+# par l'os Head au-dessus d'une ligne qui monte de la nuque au front. Hauteur relative f entre la base du crâne (articulation
+# Head) et le sommet : 0,40 sur les côtés (au-dessus des oreilles), 0,75 au front, −0,10 à la nuque ; le visage regarde vers +z
+LIGNE_COTE, LIGNE_FRONT, LIGNE_NUQUE = 0.40, 0.75, -0.32   # nuque : avis expert-realisme-3d
+VOLUME_CHEVEUX = 0.004   # sommets du cuir chevelu poussés de 4 mm le long de la normale (épaisseur des cheveux courts)
+def cuir_chevelu(P, Wv, pos, idx):
+    tete = Wv[:, idx['Head']] > 0.5
+    base = pos[idx['Head']]
+    haut = float(P[tete, 1].max())
+    zav, zar = float(P[tete, 2].max()), float(P[tete, 2].min())
+    t = np.where(P[:, 2] >= base[2], (P[:, 2] - base[2]) / max(zav - base[2], 1e-6), -(base[2] - P[:, 2]) / max(base[2] - zar, 1e-6))
+    f = np.where(t >= 0, LIGNE_COTE + (LIGNE_FRONT - LIGNE_COTE) * t, LIGNE_COTE + (LIGNE_COTE - LIGNE_NUQUE) * t)
+    return tete & ((P[:, 1] - base[1]) > f * (haut - base[1]))
 
 def ecrire_wfp(chemin, r, mh):
     sv, tri, P, N, UV, TG = maillage(r, mh)
     Wfull = r['W'][sv[:, 0]]
+    cheveux = None
+    if est_enfant(r['nom']):   # WFS-233 : cuir chevelu peint et légèrement épaissi
+        cheveux = cuir_chevelu(P, Wfull, r['pos'], r['idx'])
+        P = P + N * (VOLUME_CHEVEUX * cheveux[:, None])
     # 4 poids au plus, renormalisés
     top = np.argsort(-Wfull, 1)[:, :4]
     wt = np.take_along_axis(Wfull, top, 1); wt /= np.maximum(wt.sum(1, keepdims=True), 1e-9)
@@ -409,7 +456,7 @@ def ecrire_wfp(chemin, r, mh):
     assert len(utilises) <= 64, len(utilises)
     vers_pal = {o: i for i, o in enumerate(utilises)}
     pal = np.vectorize(lambda o: vers_pal.get(int(o), 0))(top).astype(np.uint8)
-    cl = attribut_cloth(r, P, Wfull)
+    cl = attribut_cloth(r, P, Wfull, cheveux)
     O, Rq, pos, idx = r['O'], r['Rq'], r['pos'], r['idx']
     # repères du corps (comme les personnages du jeu) : cou = y de neck_01, taille = 80 % du bassin à spine_01, profondeur du cou
     cou, sp1, bas = pos[idx['neck_01']], pos[idx['spine_01']], pos[idx['pelvis']]
@@ -460,7 +507,7 @@ def main():
     pathlib.Path(a.sortie).mkdir(parents=True, exist_ok=True)
     cache = {}
     choix = [s for s in a.seulement.split(',') if s]
-    for m in MORPHOTYPES:
+    for m in MORPHOTYPES + ENFANTS:   # WFS-233 : enfants
         if choix and m[0] not in choix: continue
         r = convertir(mh, jeu, m, a.sortie, cache)
         s = ecrire_wfp(pathlib.Path(a.sortie) / (m[0] + '.wfp'), r, mh)

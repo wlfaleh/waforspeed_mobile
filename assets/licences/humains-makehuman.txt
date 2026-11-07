@@ -21,3 +21,11 @@ Modifications faites pour WaForSpeed (tools/convert_people_makehuman.py ; table 
 - proportions amenées aux ratios d'ANSUR-II (entrejambe, envergure) et tête à 1/7,5 de la stature ; stature à la moyenne et à
   l'écart-type d'ANSUR-II (6 hommes, 6 femmes) ;
 - attribut _cloth (WFS-72), tangentes ; texture de couleur unie (teinte de peau neutre), normales plates ; format .wfp version 3.
+
+WFS-233 (enfants) : assets/people/humains/e04g.wfp … e14f.wfp (garçons g et filles f de 4, 7, 10 et 14 ans), même source CC0 1.0
+(makehumancommunity/makehuman, LICENSE.ASSETS.md f6089cba…6d2c), mêmes base.obj, default.mhskel, default_weights.mhw que ci-dessus.
+  targets/macrodetails/*-baby*, *-child* : 48 cibles d'enfants (universal-*, african-*, asian-*, caucasian-*) : SHA-256 de leur
+                             concaténation (ordre alphabétique) 78bf3074f029b27cc7ee04c96dd01e9aa2ad266398cc2e632f708139d9a96e06
+Modifications (tools/convert_people_makehuman.py, ENFANTS) : poids d'âge du modificateur macro de MakeHuman (bébé, enfant, jeune) ;
+stature = médiane CDC 2000 (references/reel/anthropometrie.json, enfant.*) ; proportions des cibles d'enfant gardées (aucun ratio
+adulte imposé) ; cuir chevelu peint en cheveux courts (partie 2 de _cloth) et épaissi de 4 mm.

@@ -32,6 +32,12 @@ Au **premier appel de chaque jour** (UTC), dans ton worktree de `main`.
 ## US techniques (ordre de l'utilisateur, 2026-11-06 23:18 UTC)
 Une CI de `main` rouge → tu crées **tout de suite** une **US technique** P1 (titre `[TECHNIQUE] …`), avec ses règles dans `regles-de-gestion/WFS-XX.md`, et tu la confies à un développeur libre (en lui écrivant directement s'il est joignable). Son développeur peut lancer la CI de sa branche autant de fois que nécessaire, une à la fois (`CLAUDE.md`). Mêmes US techniques pour les bancs, robots, outils et la construction.
 
+## Jamais à court de tickets (ordre de l'utilisateur, 2026-11-07 12:51 UTC)
+Il y a toujours quelque chose à faire. Garde **au moins 8 tickets ⏳ Prêt** dans `TACHES.md`, répartis sur des épics différentes. Dès qu'il y en a moins,
+ou qu'un développeur demande un ticket et qu'aucun n'est prêt : **prends une partie du jeu** (une carte, un mode, les voitures, les piétons, la circulation,
+l'interface, la nuit, le son…), compare-la au réel (`regles-de-gestion/DA-realisme.md`, captures et vidéos de l'utilisateur dans `qa/retours/`) et crée
+des tickets de **rattrapage du réalisme** (avec règles de gestion et critères), puis attribue. Ne réponds jamais « aucun ticket disponible ».
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :

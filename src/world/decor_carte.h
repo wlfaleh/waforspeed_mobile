@@ -60,6 +60,11 @@ void cone(Geo& g, vec3 b, float rad, float h, int n, vec2 uv, float yaw = 0);
 // PRIM.roof (prisme à section en losange) centré en c : faîtage selon r (longueur L), hauteur H, largeur W selon f
 void toit(Geo& g, vec3 c, vec3 r, vec3 f, float L, float H, float W, vec2 uv);
 
+// WFS-216 (RG-01, RG-04) : vue libre du banc d'essai (montagne du col, épingle vue d'en haut) : œil, point visé, champ
+// vertical ; active, la carte dessine son décor dans la scène dédiée (route et voiture du joueur dessinées par Game)
+struct VueBancCarte { bool actif = false; vec3 oeil{}, cible{}; float fov = 55; };
+extern VueBancCarte g_vueCarte;
+
 // ---------- système de carte ----------
 class CarteDecor : public System {
 public:
@@ -69,6 +74,7 @@ public:
     void ambiance(FrameParams& fp, const GameView& g) override;
     void collide(double dt, Player& p, const GameView& g) override;
     void render(Renderer& r, const GameView& g) override;
+    bool scene(FrameParams& fp, SceneDediee& sd, const GameView& g) override;   // WFS-216 : vue libre du banc
     void shutdown(Renderer& r) override;
 
 protected:
