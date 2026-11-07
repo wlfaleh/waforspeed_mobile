@@ -201,8 +201,9 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
-    if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 12 et la Corsa)
+    if (banc == "cockpit") {   // WFS-197 / WFS-201 (accroche) : intérieurs par modèle seuls (les 20)
         std::vector<std::string> v = COCKPIT_LOT1; v.insert(v.end(), COCKPIT_LOT2A.begin(), COCKPIT_LOT2A.end()); v.insert(v.end(), COCKPIT_LOT2B.begin(), COCKPIT_LOT2B.end());
+        v.insert(v.end(), COCKPIT_LOT3A.begin(), COCKPIT_LOT3A.end()); v.insert(v.end(), COCKPIT_LOT3B.begin(), COCKPIT_LOT3B.end());   // WFS-202
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
     }
@@ -290,6 +291,7 @@ int main(int argc, char** argv) {
         benchCartes(g, r, out);   // WFS-53 : cartes Campagne et Grand Prix (carte-campagne-*, carte-circuit-*)
         benchEffets(g, r, out);   // WFS-65 : étincelles, fumée, lignes de vitesse (choc-etincelles, accident-fumee, nitro-lignes)
         benchTraficVivant(g, r, out);    // WFS-67 : clignotant, feux stop, accident (trafic-clignotant / -freinage / -accident)
+        benchCockpit(g, r, out, COCKPIT_LOT3A);   // WFS-202 (accroche) : cockpit lot 3, 1re moitié (Abarth, Compass, Elantra, GT86)
     }
     if (partie2a) {
         benchAudioScene(g, r, out);   // WFS-10 : son du moteur (moteur.wav, moteur-courbe.png)
@@ -309,6 +311,7 @@ int main(int argc, char** argv) {
         ecrans::benchReglages(g, r, out);      // WFS-68 : réglages depuis le menu et la pause, qualité basse
         benchChangementCarte(g, r, out);       // WFS-74 : écran de chargement au changement de carte, course figée hors course
         benchQualite(g, r, out);      // WFS-15 : qualité Basse / Moyenne / Haute de nuit, bloom, images/s simulées
+        benchCockpit(g, r, out, COCKPIT_LOT3B);   // WFS-202 (accroche) : cockpit lot 3, 2e moitié (Range Rover Sport, T-Cross, V60)
     }
     if (partie2c) {
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
