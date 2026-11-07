@@ -267,7 +267,7 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
             if (!g.init(r, "golf", "ville")) { WFS_ERR("HUD (WFS-245) : chargement impossible (%s)", nom); return; }
             choisirVue(cockpit ? VueCamera::Cockpit : VueCamera::Poursuite);
             g.setAutopilot(true); g.camMode = 0;
-            rouler(60 * 9);
+            rouler(60 * 5);   // décompte (3 s) puis 2 s de course : banc court (job de la CI)
             capture(nom);
             const float k = H / 720.f, lp = labelPx(k);
             // surface d'avant (calculée avec les tailles d'avant) : temps 200 × 112, score 180 × 70 ; vue Cockpit : panneau de la
