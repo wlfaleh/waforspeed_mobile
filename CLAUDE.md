@@ -32,10 +32,10 @@
 - **Ne jamais supprimer de branche** (locale ou distante) : c'est l'utilisateur qui gère les branches.
 - **Processus de fusion (règle en vigueur)** : le développeur **ne lance plus le `qa-lead`**. Après la construction, il fait un **contrôle rapide** :
   CI verte (compilation, tests, APK) et captures du banc d'essai PC regardées sans rien de bloquant → **il fusionne tout de suite**, puis ajoute
-  **obligatoirement** le ticket (WFS-XX, PR, date, points à regarder sur les captures) dans la liste de `qa/Check.md`, au moment de la fusion (un ticket fusionné absent de la liste ne sera jamais recetté). **L'utilisateur relance le `qa-lead` chaque nuit** sur `qa/Check.md` : recette par lot,
+  **obligatoirement** le ticket (WFS-XX, PR, date, points à regarder sur les captures) dans la liste de `qa/Check.md`, au moment de la fusion (un ticket fusionné absent de la liste ne sera jamais recetté). **L'utilisateur relance le `qa-lead` chaque matin** (règle de l'utilisateur, 2026-11-07 : QA du matin), après la fin du workflow des bancs du matin (`matin.yml`, 07:00 heure de Paris, fin ≈ 08:15), sur `qa/Check.md` et les captures de la Release `apercu` : recette par lot,
   rapports `qa/rapports/WFS-XX.md`, verdicts, anomalies créées dans `anno.md` (ANO-XX) ; bloquant → ticket de correction prioritaire. Le reste du
   processus ne change pas : le **PO** priorise les anomalies et crée les US de correction. Les paragraphes QA ci-dessous décrivent les verdicts et la gravité,
-  appliqués par le `qa-lead` lors de la recette de nuit (la fusion n'attend plus le verdict).
+  appliqués par le `qa-lead` lors de la recette du matin (la fusion n'attend plus le verdict).
 - **QA** : après chaque construction d'un ticket, **lancer l'agent `qa-lead`** : il regarde les captures du **banc d'essai PC** et rend le verdict
   (`qa/rapports/WFS-XX.md`). **Un développeur ne fait jamais la QA de son propre ticket** et n'écrit pas le rapport QA.
   Le **simulateur Android** n'est lancé qu'à la **fin de chaque épic** (ticket « Vérification simulateur EX » créé par le PO, workflow `simulateur.yml`).

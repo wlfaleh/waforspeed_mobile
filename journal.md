@@ -4003,3 +4003,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Vérifications** : jour pixel identique (`route-jour-sec` / `-pluie`, avec et sans reflet, avant et après) ; le crépuscule n'est pas touché (`fp.night` faux) ; 58 tests CPU OK ; `WFS_MOMENT=nuit WFS_BANC=parcours` 0 écart, vue normale et Cockpit. Indice de fidélité des voitures : le test CPU est inchangé et vert, la peinture de jour aussi.
 - **Coût GPU (RG-07)** : aucune passe en plus. La nuit, chaque pixel de peinture fait 3 points × projecteurs (8 au plus en Basse), sans GGX. Non mesuré au banc de chauffe ni sur téléphone (limite).
 - Fusion par confiance : PR #231, squash b21b9c8. Statut 🟣, puis 🟡 à valider par l'utilisateur. Réponse ajoutée dans `tache utilisateur.md` (vidéo de 11:27). Ligne ajoutée dans `qa/Check.md`.
+
+### 2026-11-07 20:17:53 — QA du matin : WFS-277 créé (agent expert ci), CLAUDE.md et qa-lead.md mis à jour (po-scrum-master)
+- Décision de l'utilisateur rapportée par l'agent expert ci. Bancs de captures chaque matin 07:00 Paris (matin.yml), QA après ≈ 08:15 ; build.yml de main réduit (compilation, tests, parcours, endurance, APK).
