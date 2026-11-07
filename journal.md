@@ -4473,3 +4473,14 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - roues fixes : la découpe ne connaît que 4 roues (`roues.*`, `model_loader`), hors de ma zone ; je propose un ticket du rendu ;
   - le trafic existant prend des virages de 22 m à 86 km/h : l'inclinaison atteint alors la borne de 45° ;
   - la Golf paraît bleutée dans l'épingle de la Corniche la nuit : ce n'est pas lié à ce ticket.
+
+### 2026-11-07 23:48:50 — WFS-262 refusé par le lead dev, PR #246 (lead-dev)
+- Revue de la PR #246 (Claude, agent dev X) : les 18 captures sont ouvertes. Réglages : la 2e ligne gagne « écart 4,7 ms · cadence 60 », sans aucun bouton déplacé. Ville Haute et Basse : images identiques. Les captures ne bloquent rien.
+- **Refusé** pour 5 points, détaillés dans la revue de la PR :
+  1. la description ne commence pas par « Agent : … » ;
+  2. RG-04 : la ligne « Cadence : Auto / 30 / 60 » est retirée sans accord écrit du PO, alors que le passage automatique à 30 img/s est livré sans moyen de revenir à 60 (la question de l'utilisateur sur le 30 reste ouverte) ;
+  3. RG-02 : les variantes MSAA et les qualités ne sont pas créées au chargement, et un changement de qualité en pause n'est pas compté ;
+  4. la cadence peut rester bloquée à 30 toute la session sur un téléphone sans horodatages GPU, et elle n'est pas remise à 60 au début de chaque course ;
+  5. le journal du développeur ne contient ni les accroches (, ) ni les résultats.
+- Statut WFS-262 : ↩️ Retour lead dev (PR #246) ;  mis à jour.
+- **Pour le PO** : décider par écrit si WFS-262 peut sortir sans la ligne « Cadence » (ticket d'interface séparé, E8) et si le 30 automatique peut être livré avant la réponse de l'utilisateur.
