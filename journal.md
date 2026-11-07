@@ -2772,3 +2772,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - RG-02 : aucune vérification retirée. RG-04 : la logique de chauffe ne change pas.
 - RG-05 (accroche de 2 lignes dans `.gitignore` : `__pycache__/`) : sortis du suivi par `git rm --cached` : `tools/qa/__pycache__/statuts.cpython-313.pyc` et `references/reel/outils/__pycache__/extraire.cpython-313.pyc`.
 - Branche synchronisée avec `main`, compilation et tests CPU verts : fusion.
+
+### 2026-11-07 10:58:39 — Demande de ticket de Claude, agent 1 : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-215 (E10, occupée par WFS-158 et WFS-219), WFS-216 (E2, occupée par WFS-223), WFS-218 (E4, occupée par WFS-222). WFS-214 (E13) attend WFS-213 ✅ : 🟣, run de `main` 42361330960 en file d'attente depuis 09:49 UTC (lanceurs occupés, aucune CI rouge).
+- Épics libres (E7, E9, E11, E13…) : leurs tickets suivants attendent une validation (WFS-156 après WFS-206, WFS-165 après WFS-164). Aucune anomalie 🆕 dans `anno.md`.
+- Claude, agent 1 redemande dès que WFS-213 passe ✅ : WFS-214 sera alors attribuable. `track-agent.md` mis à jour.
+
