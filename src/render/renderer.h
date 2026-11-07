@@ -187,6 +187,16 @@ public:
     // (enregistrement des passes et envoi) et triangles de la dernière image ; mesure seule, aucun effet sur le rendu
     struct ChronoImage { double attenteGpuMs = 0, finImageMs = 0; uint32_t triangles = 0; };
     const ChronoImage& chronoImage() const { return chronoPrec_; }
+    // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
+    double gpuImageMs() const { return gpuImageMs_; }
+    // WFS-246 (RG-06) : temps GPU de chaque passe (ms, lissé) ; mesuree = faux sans horodatages
+    static constexpr uint32_t HORODATAGES = 5;   // WFS-246 (RG-06) : horodatages par image (ombre, reflet, scène, fin de scène, fin de la passe finale)
+    struct GpuPasses { double ombre = 0, reflet = 0, scene = 0, post = 0; bool mesuree = false; };
+    const GpuPasses& gpuPasses() const { return gpuPasses_; }
+    // WFS-246 (RG-07) : résolution dynamique (0,1 à 1 de la capacité) sans recréer les cibles ; appliquée à l'image suivante
+    void echelleDynamique(float e);
+    float echelleDynamiqueActuelle() const { return echelleDyn_; }
+    uint32_t recreations() const { return recreations_; }   // WFS-246 : appels de resize()
     // objets en file pour la passe de scène (vus par la caméra) : appels et triangles, comptés par système au banc
     void fileScene(uint32_t& appels, uint32_t& triangles) const {
         appels = triangles = 0;
@@ -237,7 +247,9 @@ private:
     VkCtx* vk_ = nullptr;
     uint32_t lw_ = 0, lh_ = 0;   // taille logique (tampon)
     uint32_t vw_ = 0, vh_ = 0;   // taille d'affichage (fenêtre), 0 = identique
-    uint32_t sw_ = 0, sh_ = 0;   // taille de la scène 3D (logique × renderScale)
+    uint32_t sw_ = 0, sh_ = 0;   // zone dessinée de la scène 3D (WFS-246 : capacité × échelle dynamique, + 2 px)
+    uint32_t cw_ = 0, ch_ = 0;   // WFS-246 (RG-07) : taille des cibles de la scène (logique × renderScale), fixe en course
+    float echelleDyn_ = 1.f;     // WFS-246 : part de la capacité lue par la passe finale
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
     Image msaaColor_, depth_, hdr_;
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;
@@ -280,6 +292,11 @@ private:
     VkPipeline skinOpaque_ = VK_NULL_HANDLE, skinShadow_ = VK_NULL_HANDLE, skinShadowMask_ = VK_NULL_HANDLE;
     // WFS-222 : opaques avec découpe (shader avec discard) ; opaque_ et skinOpaque_ sont sans discard (early-Z)
     VkPipeline opaqueDecoupe_ = VK_NULL_HANDLE, skinOpaqueDecoupe_ = VK_NULL_HANDLE;
+    // WFS-246 (levier 1) : opaques fermés sans faces arrière (VK_CULL_MODE_BACK_BIT) ; MAT_DOUBLE (feuillage, panneaux
+    // fins), découpe et vitres gardent les deux faces. cullPipeline_ : mode de la prochaine makePipeline (0 aucun, 1 arrière)
+    VkPipeline opaqueCull_ = VK_NULL_HANDLE, skinOpaqueCull_ = VK_NULL_HANDLE;
+    int cullPipeline_ = 0;
+    bool facesArriere_ = true;   // retrait actif (WFS_FACES=0 au banc : désactivé, pour comparer)
     VkPipeline skyApres_ = VK_NULL_HANDLE;   // WFS-222 : ciel dessiné après les opaques, test de profondeur (pixels vides seulement)
     std::vector<uint32_t> ordreOpaques_;     // WFS-222 : opaques de la passe de scène, du plus proche au plus loin
     Buffer osBuf_[2]; VkDescriptorSet osSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
@@ -290,6 +307,9 @@ private:
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
+    double gpuImageMs_ = -1;   // WFS-246
+    GpuPasses gpuPasses_;      // WFS-246 (RG-06)
+    uint32_t recreations_ = 0;  // WFS-246 (RG-07)
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     // WFS-09 / WFS-16 : lumières de nuit et reflets
