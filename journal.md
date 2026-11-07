@@ -4285,3 +4285,104 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Exception de l'utilisateur à la règle « KO → nouvelle US, autre développeur » : WFS-268 repasse 🔧 En cours, même développeur, même branche `feature/waforspeed-268` ; 🟡 après la nouvelle fusion.
 - Règles ajoutées (`regles-de-gestion/WFS-268.md`) : RG-07 (−50 % de personnes, tirage stable, Ville et Corniche), RG-08 (kit, commerces, lieux, feux préparés au chargement, 0 maillage créé en course), RG-09 (≤ 120 Mo GPU de contenu fixe par carte, alerte au PO à 100 Mo), RG-10 (preuves).
 - Zone élargie : `archi_carte.*`, `commerces.cpp`, nombre de personnes seulement dans `pietons.cpp` / `foule_apparition.h` (personne n'y travaille : WFS-257 🟡 fusionné, WFS-266 non attribué). Trafic exclu (WFS-281, WFS-232).
+
+### 2026-11-07 22:29:47 — WFS-279 : PR #241 ouverte, captures pour le lead dev, revue demandée (arwa-5)
+- Nouvelle règle (lead dev, 2026-11-07) appliquée : `bash tools/qa/captures_pr.sh WFS-279 chargement:2400x1080` → 5 paires avant / après (`chargement-0/1/2`, `-erreur`, `-fondu`) dans `qa/pr/WFS-279/`, + 2 agrandissements du coin (« v0.1.912 » compilé avec `-DWFS_VERSION=0.1.912` ; « dev » à 1280×720) ; `pr.md` collé dans la description de la PR.
+- **CI de branche #888** (une seule fois, ligne Gradle non testable ici) : `compilation`, `android` et `publication-apk` verts ; APK `versionName='0.1.888'` (journal du job `android`).
+- Branche 2557b4a synchronisée avec `main` (la dernière synchronisation n'apporte aucun changement de code) : **62 tests CPU OK** ; parcours complet 0 écart (vue normale et Cockpit, mesuré avant la synchronisation, aucun code changé depuis).
+- Revue demandée à l'agent `lead-dev` (PR #241). Je ne fusionne pas moi-même (règle de l'utilisateur).
+
+### 2026-11-07 22:32:06 — Limite de 80 Mo du décor supprimée (décision de l'utilisateur) (po-scrum-master)
+- WFS-273 RG-02 : plus de seuil ; mémoire notée au journal seulement ; tout chargé avant la conduite, rien en course, repli si manque de mémoire. Règle ajoutée aux consignes du PO.
+
+### 2026-11-07 22:33:42 — Début WFS-262 : attribué à Claude, agent dev X (po-scrum-master)
+- Ticket : WFS-262 [TECHNIQUE] Performance 3 (cache de pipelines, variantes au chargement, cadence stable), P1, épic E4, règles `regles-de-gestion/WFS-262.md`. Demandé par l'agent dev X, libre après la fusion de WFS-246 (#229, ad94d9d, 🟡).
+- Ordre du bandeau : WFS-281 (n° 00) est du domaine trafic (skill `expert-conduite`, fichiers de WFS-232) : hors du domaine performance de cette session (une session = un domaine), il reste pour un développeur du trafic. WFS-273 dépend de WFS-268, rouvert à 22:28 pour agent 5, et touche les mêmes arbres : il attend. WFS-262 (prévu pour l'agent dev X à la suite de WFS-246) est pris en **exception PO**, en parallèle de WFS-268 (agent 5) et WFS-239 (agent 3), fichiers séparés.
+- Zone autorisée : création des pipelines et rendu (`src/render/**`, `shaders/**`), accroches ≤ 10 lignes au chargement et dans les réglages (ligne « Cadence »), `tests/**` du ticket. Interdit : `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.cpp`, `foule_apparition.h` (WFS-268), `qualite_banc.cpp` (WFS-239), `nuit.cpp`, `player.*`, `camera_vue.*`, `traffic*`, taille des boutons, `.github/**`, `tools/qa/**`, iOS.
+- Critères : 0 pipeline créé en course (compteur), chargement plus court au 2e lancement, écart type de la durée d'image au journal ; test de parcours complet ; 🟡 À valider (utilisateur) après fusion. Branche `feature/waforspeed-262`, premier commit poussé tout de suite.
+
+### 2026-11-07 22:34:20 — WFS-268 RG-09 : option B, tout préparé en Ville (po-scrum-master)
+- Alerte de Claude, agent 5 : Ville 162 Mo de contenu fixe préparé (décor 60,5 + immeubles du kit 101,3), Corniche 85 Mo.
+- Décision : **B** (niveaux 0, 1 et 2 des immeubles préparés au chargement), qui suit l'ordre de l'utilisateur « préparer dans le changement de map tous les détails » ; la limite de 120 Mo était celle du PO. RG-09 : Ville ≤ 170 Mo, Corniche ≤ 120 Mo, mémoire stable en course. Repli A si le téléphone manque de mémoire.
+- Correction du PO : RG-07 à RG-10 n'avaient pas été écrites dans `regles-de-gestion/WFS-268.md` au commit 34bd7d1 (erreur de mon script) ; elles le sont maintenant.
+
+### 2026-11-07 22:34:47 — WFS-268 RG-09 : plus de plafond de mémoire, décision de l'utilisateur (po-scrum-master)
+- Mots de l'utilisateur, transmis par Claude, agent 5 : « Attends, je viens de vérifier, il n'y a pas de règle : si on charge les données en amont tu es libre, même 1 Go est autorisé. »
+- RG-09 réécrite : pas de plafond ; restent « la mémoire ne monte pas pendant la course » et « chargement + ≤ 3 s ». Campagne et Grand Prix restent dans WFS-273.
+
+### 2026-11-07 22:36:34 — WFS-262 : branche poussée, cache de pipelines (Claude, agent dev X)
+- Branche `feature/waforspeed-262` poussée (9683065). RG-01 commencé : un `VkPipelineCache` est passé à toutes les créations de pipelines (`Renderer::makePipeline`), relu au lancement si son en-tête (version, fournisseur, appareil, UUID) correspond au téléphone, sinon on repart à vide. Il est enregistré par écriture atomique (`src/render/cache_pipelines.*`, nouveaux fichiers). Compteur des pipelines créés posé pour RG-02.
+
+### 2026-11-07 22:38:44 — Limite de mémoire : 1 Go par carte pour les données préparées au chargement (po-scrum-master)
+- Message du propriétaire, transmis par Claude, agent 5 (WFS-268), mots exacts : « Dis-lui ce message : le propriétaire t'a dit qu'on a une limite de 1 Go carrément pour une ville, donc arrête ton délire, et mets ça noir sur blanc dans les règles de gestion : la limite par ville en cas de chargement en amont, c'est 1 Go. »
+- Règle générale écrite dans `regles-de-gestion/README.md` (tous les tickets, les 4 cartes) : « Données préparées au chargement de la carte (en amont) : jusqu'à 1 Go de mémoire par carte. Décision du propriétaire, 2026-11-07. »
+- Reprise dans `WFS-268.md` (RG-09) et `WFS-273.md` (RG-02). Plafonds plus bas retirés : 120 Mo et 170 Mo (WFS-268, `track-agent.md`), 80 Mo (WFS-273). Mesures actuelles, toutes sous la limite : Ville ≈ 162 Mo, Corniche ≈ 85 Mo, Campagne ≈ 212 Mo, Grand Prix ≈ 196 Mo.
+
+### 2026-11-07 22:40:43 — Limite de 1 Go : précision « lors du chargement » (po-scrum-master)
+- Précision du propriétaire, transmise par le coordinateur, mots exacts : « Très important : on parle de lors du chargement. »
+- Règle reformulée dans `regles-de-gestion/README.md` (l. 8), `WFS-268.md` (RG-09) et `WFS-273.md` (RG-02) : « Lors du chargement de la carte (écran de chargement), on peut préparer en amont jusqu'à 1 Go de données en mémoire par carte : tout ce qui peut être préparé à ce moment-là doit l'être, pour que rien ne soit construit pendant la course. Décision du propriétaire, 2026-11-07. »
+
+### 2026-11-07 22:43:00 — WFS-283 créé : supprimer les ronds-points sur toutes les cartes ; WFS-248 ❌, ANO-158 (po-scrum-master)
+- Ordre de l'utilisateur. Carrefours simples à la place, dépendances (course, trafic, GPS, chocs) dans les RG ; code des giratoires gardé désactivé. Au premier développeur qui demande, pas dev Y ni agent 5.
+
+### 2026-11-07 22:49:51 — WFS-279 fusionné par le lead dev (lead-dev)
+- PR #241 (arwa-5), squash 08e611b. Demande : voir la version de l'APK en petit sur l'écran de chargement. 7 captures ouvertes (5 paires `chargement-*` + zooms 1280 « dev » et 2400 « v0.1.912 ») : seul le coin bas droit change, rien d'autre ne bouge (écran d'erreur et fondu compris). Code : source unique `versionName` → `-DWFS_VERSION` → `chargement.cpp`, « dev » sur PC ; `test_version_chargement` ajouté ; aucun fichier `.github/**`, `tools/qa/**` ni iOS. Statut 🟣. À surveiller sur l'APK de `main` : « v0.1.N » affiché (pas « dev »).
+
+### 2026-11-07 22:50:36 — WFS-279 : seconde revue du lead dev, même verdict, aucune fusion en double (lead-dev)
+- Revue de la PR #241 menée en parallèle d'une autre session `lead-dev` (01UY1Vv3), qui a fusionné à 22:49:30 (squash 08e611b) : je ne refusionne rien et ne touche ni à `TACHES.md` ni à `qa/Check.md`. Mon verdict aurait été le même : **ACCEPTÉ**.
+- Les 12 images de `qa/pr/WFS-279/` ouvertes une à une ; écart avant / après des JPG mesuré : **0 hors du coin bas droit** sur les 5 paires (écarts seulement dans le rectangle de la version).
+- **Point « à surveiller » de la ligne `qa/Check.md` levé** : l'APK de la CI de branche #888 (Release `apercu-waforspeed-279`, `WaForSpeed.apk`, SHA-256 3a28a8fb401cdf79a38e6dfd6ac005b1621069e17169d4b8598e6f7027204904, dépôt du projet ; lu sans rien lancer) contient la chaîne « 0.1.888 » dans `libwaforspeed.so` (arm64-v8a et x86_64) : la valeur de Gradle arrive bien jusqu'au code natif, l'APK de `main` affichera « v0.1.N », pas « dev ».
+- **Petit écran montré** : le banc 2400×1080 (420 dpi, 411 dp de haut) passe par la mise en page petit écran de WFS-147 (texte de 14 dp) ; banc relancé en local avec `-DWFS_VERSION=0.1.888` : « v0.1.888 » lisible en bas à droite, loin du bouton « Réessayer ».
+- Vérifié sur 2557b4a dans un dossier à part : 62 tests CPU OK (dont `test_version_chargement`) ; changer la version ne recompile que `chargement.cpp`. Parcours non relancé jusqu'au bout (9 min sur 2 cœurs, arrêté à l'écran de course, sans erreur) : on garde le 0 écart du journal d'arwa-5.
+- Pour le PO : deux sessions `lead-dev` ont fait la même revue en même temps ; un seul appel par PR suffit.
+
+### 2026-11-07 22:56:55 — WFS-276 refusé par le lead dev, PR #243 (lead-dev)
+- 48 paires avant / après ouvertes une par une. Image : demande de l'utilisateur tenue (paysage visible près des lampes au péage, au village et au rond-point ; flaques orange toujours plus claires ; Ville identique). Rien de cassé à l'œil.
+- Refus pour : (1) branche pas synchronisée avec main (base 4185263) ; (2) RG-01 : courbe globale par pixel à la place d'une adaptation spatiale, **décision du PO à prendre** (accepter ou non cet « équivalent », à écrire dans regles-de-gestion/WFS-276.md) ; (3) RG-05 : coût Basse / Haute non mesuré ; (4) aucune preuve de WFS-276 au journal ; (5) pas de captures de jour (RG-04) ; (6) commentaire du shader inexact (1/2 au lieu de 0,45 ; 1,85 IL au lieu de 1,17).
+- Détail : https://github.com/wlfaleh/waforspeed_mobile/pull/243#issuecomment-6714148711
+
+### 2026-11-07 22:57:54 — WFS-276 : courbe par pixel acceptée pour RG-01 (po-scrum-master)
+- Équivalent sourcé (loi de Stevens) de l'adaptation spatiale ; nuit, hors Ville. Le lead dev reste juge des images.
+
+### 2026-11-07 23:02:52 — Début WFS-283 : attribué à arwa-5 (po-scrum-master)
+- Ticket : WFS-283 [URGENT] supprimer les ronds-points sur toutes les cartes (ANO-158), P1, épic E2 (+ accroches E3, E5), règles `regles-de-gestion/WFS-283.md`. Demandé par arwa-5 (Claude, session 01Us6uCwsJ63), libre après WFS-279 (PR #241, squash 08e611b).
+- Choix : premier ticket du bandeau qui lui est permis (WFS-283 en tête depuis 22:43, ordre de l'utilisateur ; arwa-5 n'est ni dev Y ni agent 5). WFS-281 (n° 00) est du domaine trafic (`expert-conduite`, fichiers de WFS-232) : il reste à un développeur du trafic. E2 libre (WFS-249 🟡, WFS-271 non attribué). Ticket d'une journée, pas un ticket court : la priorité de l'utilisateur passe avant.
+- Zone (exception PO, détail dans les règles) : E2 `giratoire.*`, `ville*`, `campagne.cpp`, `plage.cpp`, `decor_carte.cpp`, `chaussee.h`, `enseignes.cpp`, `cartes_banc.cpp` ; accroches E3 `trace_cartes*`, `chocs_*`, `course5.h` ; E5 `navigation.h`, `minicarte.cpp`. En coordination : `traffic.*` / `test_trace.cpp` (arwa-3, WFS-232), `minicarte.cpp` (arwa-2, WFS-245), `test_chocs_cartes.cpp` (agent dev conduite, WFS-258). Interdit : fichiers de WFS-268 (`decor_carte.h`, `commerces.cpp`, `lots_decor*`, `game.*`), bancs de conduite, WFS-282, WFS-262, WFS-276, `.github/**`, `tools/qa/**`, iOS, taille des boutons.
+- Règles complétées : section « Graphisme réaliste » par partie (chaussée, marquages, trottoirs, décor ; charte § 3), bancs de captures (`rondspoints:1280x720`, `course5`, `hud:1280x720` filtré `minicarte-*`), le banc `rondspoints` garde les mêmes noms et places pour la paire avant / après.
+- Critères : plus aucun rond-point visible, carrefours propres jour et nuit, courses / Duel / Poursuite / trafic / GPS justes, tests CPU verts, **parcours complet 0 écart**, captures regardées par le `lead-dev` ; après fusion **🟡 À valider (utilisateur)**.
+- **WFS-271 ⏸ suspendu** : raccords des ronds-points, sans objet avec WFS-283 (rien annulé).
+- **WFS-278 🟣** : PR #240 fusionnée à 22:46:42 UTC par commit de fusion (84e1c4d), **pas en squash** (règle du 2026-11-06) ; écritures d'après fusion absentes : statut mis à jour par le PO. arwa-4 libre.
+- Agent 3 (WFS-239) : dernier envoi 13:43:04 UTC, 9 h 20 sans commit ; retrait possible seulement après 23:43 UTC.
+
+### 2026-11-07 23:04:45 — WFS-282 (RG-00) refusé par le lead dev, PR #244 (lead-dev)
+- 42 images ouvertes (21 paires, banc cockpit, Golf / SF90 / X5) et la capture de l'utilisateur. Mieux : champ de 72° en hauteur, plus de rue ; bande noire du toit de la SF90 disparue ; code des 3 fichiers identique au parent de 66fdd3d.
+- **Refus** : la planche de bord est transparente sur les 21 captures « après » : la route (gravier, lignes) se voit à travers, sous le volant (ex. `apres-cockpit-x5-braquage`). La demande de l'utilisateur (« remets le tableau de bord ») n'est donc pas remplie. Le bloc noir du rétroviseur reste (RG-03). Aucune entrée au journal du développeur pour les tests. Branche en retard de 3 commits.
+- **Pour le PO** : RG-00 (« repli seul ») ne remet pas la planche de bord, car le défaut existait déjà avant WFS-235. Il faut ajouter une règle « planche opaque » à WFS-282, et peut-être élargir la zone si la cause est hors de `vehicule_cockpit*`. Détail dans le commentaire de la PR #244.
+
+### 2026-11-07 23:06:38 — Nom de l'agent et description complète obligatoires dans chaque PR (po-scrum-master)
+- Règle de l'utilisateur : CLAUDE.md (Commits et fusions, point 3), skill lead-dev (point 7 : refus sinon), checklist ; `captures_pr.sh` exige `AGENT=` et écrit l'en-tête « Agent : … » et la section Description à remplir dans `pr.md`.
+
+### 2026-11-07 23:08:08 — ANO-155 annulée (agent qa lead)
+- L’utilisateur : « Folg » est la marque, « Folg 8 » le modèle ; « Folg Folg 8 » au salon du duel est voulu. Ligne d’anno.md et rapport VABF mis à jour, PO prévenu.
+
+### 2026-11-07 23:10:30 — VABF du 2026-11-07 priorisée : WFS-284 à WFS-287 créés (po-scrum-master)
+- Demande de l'agent qa lead (ordre de l'utilisateur « remonte direct »), rapport `qa/rapports/VABF-2026-11-07.md`, construction 883 (c9eda61).
+- **ANO-153** (ANR après « Course solo », majeure) → **WFS-284** P2, E7 (`android_main.cpp`, entrées lues pendant tout chargement). Aucun doublon (WFS-246 ne traite que la résolution).
+- **ANO-154** (moteur entièrement rechargé quand la surface est recréée, majeure) → **WFS-285** P2, E7, après WFS-284 (même fichier) ; repli actuel gardé (ANO-52, WFS-100), rien retiré.
+- **ANO-155** : annulée par l'utilisateur (« Folg Folg 8 » voulu), aucun ticket.
+- **ANO-156** (« FERMER » au milieu des Réglages) et **ANO-157** (duel à 4 : 0:00.0, cause probable `duelArriveeForcee` du banc) → un seul lot **WFS-286** P3, E8 ; tailles des boutons inchangées (ordre permanent).
+- **Banc émulateur rouge** (`tools/qa/emulateur.sh` : journal partagé entre essais, délais trop courts) → **WFS-287** [TECHNIQUE] P2, E7 : correction d'un rouge, permise par le gel de la CI ; diagnostic transmis à l'agent expert ci, attribution à la demande seulement.
+- Corrections vues sur la construction 883 notées au suivi de WFS-242 (ANO-114), WFS-230 (ANO-119), WFS-224 (ANO-122) ; statuts inchangés (à confirmer sur téléphone).
+- Bandeau des tickets prêts complété ; `anno.md` (Statut, US), `TACHES.md`, `track-agent.md` à jour.
+
+### 2026-11-07 23:11:34 — Règle : le lead dev relit le code et approuve la PR avant de fusionner (lead-dev)
+- Ordre de l'utilisateur (conversation). Skill `lead-dev` : étape 8 « Revue du code » (tout le diff), approbation GitHub (`APPROVE`, ou revue `COMMENT` « ✅ Approuvé par le lead dev » si même compte) obligatoire avant la fusion ; refus en `REQUEST_CHANGES`. Agent `lead-dev` et `CLAUDE.md` alignés. L'utilisateur règle aussi le dépôt sur « squash seulement » (Settings → Pull Requests).
+
+### 2026-11-07 23:13:48 — Règle : statut « ↩️ Retour lead dev » en cas de refus de PR (lead-dev)
+- Ordre de l'utilisateur (conversation) : quand le lead dev refuse une PR, il passe lui-même le ticket en « ↩️ Retour lead dev (PR #N) » dans `TACHES.md` et la ligne du développeur dans `track-agent.md`, pour que le développeur le voie ; le développeur corrige puis remet « 🔀 En PR #N ». Skill et agent `lead-dev`, `CLAUDE.md` (règle des statuts) mis à jour.
+
+### 2026-11-07 23:14:45 — WFS-282 : RG-06 planche de bord opaque ajoutée (après le refus du lead dev, PR #244) (po-scrum-master)
+- La route se voit à travers la planche de bord, défaut d'avant WFS-235 ; cause à trouver, accroche ≤ 30 lignes permise dans `renderer.*` / `shaders/scene*`. RG-00 et RG-06 livrés ensemble.
+
+### 2026-11-07 23:19:10 — Réponse obligatoire du développeur sous le commentaire du lead dev (po-scrum-master)
+- Règle de l'utilisateur : bien reçu, qui corrige, quoi, quand ; puis « corrigé dans <commit> ». CLAUDE.md, skill lead-dev, checklist. Demandé tout de suite à Agent 0 (PR #243) et à Claude, agent 2 (PR #244).
