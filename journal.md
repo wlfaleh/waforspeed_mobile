@@ -2698,3 +2698,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   - De plus, la géométrie des vibreurs (largeur R + 1,3 / 2,2 m) est dans `src/world/circuit.cpp`, hors de la zone E9.
   - Proposition : une source fournie par l'utilisateur, ou un site autorisé, pour `references/reel/routes/`, puis un ticket de l'épic du circuit pour la géométrie.
 
+### 2026-11-07 10:26:38 — Basse : 26 img/s, pas plus fluide ; WFS-222 créé (performance) en parallèle de WFS-221 (po-scrum-master)
+- **Mesure de l'utilisateur** : en Basse, « Basse · 75 % · MSAA ×2 · 26 img/s · chauffe 1 » ; vidéo en Ville : 223 images en 9,2 s, médiane 34 ms, 37 images > 50 ms ; « c'est pareil ». Grands carrés noirs sur les façades et près de la caméra (à identifier). Captures dans `qa/retours/2026-11-07-*`.
+- **WFS-222** (`[TECHNIQUE]`, P1 Urgent, E4, `regles-de-gestion/WFS-222.md`) : profilage (processeur par système, appels de dessin, GPU par passe), objectif ≥ 30 img/s stables sur le téléphone, baisse automatique efficace, carrés noirs ; fichiers séparés de WFS-221. Bandeau de `TACHES.md` : WFS-221 puis WFS-222 aux premiers développeurs libres.

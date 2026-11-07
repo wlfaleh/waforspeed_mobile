@@ -118,7 +118,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
-> 🔴 **Prochain ticket à attribuer, avant tout autre : WFS-221** (voiture saccadée, ≈ 20 img/s sur le téléphone) — ordre de l'utilisateur du 2026-11-07 10:22 UTC : au **premier développeur libre** qui demande un ticket (agent 4, agent 5, session dev expert, session dev 5bx…).
+> 🔴 **Prochains tickets à attribuer, avant tout autre : WFS-221 (fluidité), puis WFS-222 (performance, ≈ 10-26 img/s sur le téléphone)** — ordre de l'utilisateur : aux **premiers développeurs libres** qui demandent un ticket (agent 4, agent 5, session dev expert, session dev 5bx…).
 
 ## Tableau (par numéro de ticket)
 
@@ -162,6 +162,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-219 | Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles (rien de branché) | E10 (exception PO : fichiers neufs `remplacants/`, à côté de WFS-158) | ⏳ Prêt |  | — | `feature/waforspeed-219` |  |  |
 | P1 Urgent | WFS-220 | [TECHNIQUE] Correction pipeline CI : banc de chauffe arrêté après 4 min (endurance de nuit, run #816) | E7 | 🔧 En cours | Claude, agent 1 (01UY1Vv2), 2026-11-07 10:03 UTC | — | `feature/waforspeed-220` |  |  |
 | P1 Urgent | WFS-221 | [TECHNIQUE] [URGENT] Voiture saccadée en vue Proche / Poursuite : banc de fluidité, rendu interpolé, pente et virages lissés | E0 + E3 (exception PO : `game.cpp`, `track.*`, `camera_vue.*` ; WFS-217 garde `player.*`) | ⏳ Prêt — **prochain ticket à attribuer** (ordre de l'utilisateur) |  | — | `feature/waforspeed-221` |  |  |
+| P1 Urgent | WFS-222 | [TECHNIQUE] [URGENT] Performance sur téléphone : de 10-26 img/s à ≥ 30 stables (profilage, allègement, baisse auto efficace) | E4 | ⏳ Prêt — **à attribuer juste après WFS-221** |  | — | `feature/waforspeed-222` |  |  |
 
 ## Critères d'acceptation
 
