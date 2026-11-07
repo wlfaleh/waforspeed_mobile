@@ -3659,3 +3659,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   KM/H et NITRO **centrés sous les chiffres** dans l'arc (pas à droite : « R · KM/H » couperait l'arc), cases inchangées ; contraste ≥ 4,5 : 1 au pire
   (étiquettes `#A6ADC2` sur fond 0,85 ; arc : disque 0,72 et `#C4C9D6`). Surfaces par vue après ≤ avant ; aucun bouton ne bouge.
 - Détail chiffré : `regles-de-gestion/WFS-245.md` (RG-01, RG-04, Suivi du 2026-11-07 17:30). Zone : + cadre du temps dans `obstacles()` de `minicarte.h`.
+
+### 2026-11-07 17:33:20 — WFS-268 et WFS-269 créés (P1, tout préparer au chargement), ordre de l'utilisateur via smart-brainstorming (po-scrum-master)
+- Besoin (utilisateur) : le jeu rame, ralentit et chauffe ; tout préparer pendant le chargement de la carte.
+- Déjà couvert, renvoi sans doublon : résolution sans recréation → WFS-246 RG-07 ; cache de pipelines, variantes, envoi GPU et image d'échauffement → WFS-262 RG-01 à 03 ; reflets capturés au chargement → WFS-264 RG-01.
+- **WFS-268** (1/2, ≤ 1 jour) : décor fixe regroupé par tronçon et matériau, instances des objets identiques, ≤ 60 appels de dessin du décor en Ville, 0 création / allocation en course, chargement + ≤ 3 s. E4 avec exception PO (fichiers nouveaux , accroches ≤ 10 lignes, pas les lignes de WFS-246) pour démarrer tout de suite en parallèle de WFS-246. ⏳ Prêt, en tête de l'ordre de priorité ; proposé d'abord à Claude, agent 5 (libre), pas agent arwa.
+- **WFS-269** (2/2) : occlusion et lumière indirecte du décor fixe précalculées, un jeu par moment (WFS-152) ; WFS-229 gardé. ⏳ En attente de WFS-268 et de E13 (WFS-230).
+- WFS-265 RG-03 : instances du décor et décor regroupé renvoyés à WFS-268 (sans condition) ; rien retiré.
