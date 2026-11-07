@@ -66,7 +66,7 @@ def depot(d):
 
 def lancer(d, run, conclusion, numero=812, jobs=""):
     return statuts.main(["--run-number", str(numero), "--sha", run, "--conclusion", conclusion, "--depot", str(d),
-                         "--date", "2026-11-06 22:00:00", "--jobs-en-echec", jobs])
+                         "--date", "2026-11-06 22:00:00", "--jobs-en-echec", jobs, "--source", "matin"])
 
 
 # ---------------------------------------------------------------- WFS-236 : run annulé seulement à la publication
@@ -90,7 +90,7 @@ def lancer_annule(d, run, numero, texte_jobs):
     f = d / f"jobs-{numero}.json"
     f.write_text(texte_jobs, encoding="utf-8")
     return statuts.main(["--run-number", str(numero), "--sha", run, "--conclusion", "cancelled", "--depot", str(d),
-                         "--date", "2026-11-07 14:00:00", "--jobs-json", str(f)])
+                         "--date", "2026-11-07 14:00:00", "--jobs-json", str(f), "--source", "matin"])
 
 
 def tester_annule_a_la_publication():
@@ -194,6 +194,25 @@ def main():
                 "run annulé : rien")
         statuts.main(["--run-number", "815", "--sha", run, "--conclusion", "success", "--evenement", "schedule", "--depot", str(d)])
         verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES, "run de nuit (endurance seule) vert : aucun ✅")
+        # WFS-277 (option A) : run de fusion (build.yml) vert : tickets laissés en 🟣, rien au journal
+        avantJ = (d / "journal.md").read_text(encoding="utf-8")
+        statuts.main(["--run-number", "880", "--sha", run, "--conclusion", "success", "--depot", str(d), "--source", "fusion"])
+        verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES and (d / "journal.md").read_text(encoding="utf-8") == avantJ,
+                "(WFS-277) run de fusion vert : aucun ✅, rien au journal")
+        # WFS-277 : run de fusion rouge : noté au journal, aucun statut changé
+        statuts.main(["--run-number", "881", "--sha", run, "--conclusion", "failure", "--depot", str(d), "--source", "fusion",
+                      "--date", "2026-11-07 21:00:00", "--jobs-en-echec", "banc-essai (texte)"])
+        J = (d / "journal.md").read_text(encoding="utf-8")
+        verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES and "CI main #881 (robot statuts)" in J,
+                "(WFS-277) run de fusion rouge : journal, aucun statut changé")
+        # WFS-277 : bancs du matin verts, lancés par le planning (schedule) : WFS-11 du run → ✅ (bancs du matin #3)
+        statuts.main(["--run-number", "3", "--sha", run, "--conclusion", "success", "--evenement", "schedule", "--depot", str(d),
+                      "--source", "matin", "--libelle", "bancs du matin", "--date", "2026-11-08 03:10:00"])
+        T = (d / "TACHES.md").read_text(encoding="utf-8")
+        verifie("✅ Terminé (bancs du matin #3)" in T and "| 🟣 Fusionné (PR #12) |" in T,
+                "(WFS-277) bancs du matin verts (planning) : WFS-11 → ✅ (bancs du matin #3), WFS-12 inchangé")
+        verifie("Statuts automatiques, bancs du matin #3 (robot statuts)" in (d / "journal.md").read_text(encoding="utf-8"),
+                "(WFS-277) bancs du matin : entrée au journal")
     tester_annule_a_la_publication()
     print(f"statuts : {'tout est OK' if not echecs else str(echecs) + ' échec(s)'}")
     return 1 if echecs else 0

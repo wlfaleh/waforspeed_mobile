@@ -34,8 +34,13 @@ RE_HASH = re.compile(r"\b[0-9a-f]{7,40}\b")
 AUTEUR = "robot statuts"
 
 
+# WFS-277 (option A de l'utilisateur, 2026-11-07) : le ✅ vient des bancs du matin (matin.yml, --source matin) ; un run de fusion
+# vert (build.yml, --source fusion) ne change aucun statut (le ticket reste 🟣), un rouge est noté au journal comme avant.
+LIBELLE = "CI main"   # « CI main » (historique) ou « bancs du matin », selon le run traité (--libelle)
+
+
 def statut_termine(run_number):
-    return f"{VERT} Terminé (CI main #{run_number})"
+    return f"{VERT} Terminé ({LIBELLE} #{run_number})"
 
 
 # ---------------------------------------------------------------- git (lecture seule)
@@ -249,7 +254,7 @@ def maj_agents(agents, cles, run_number, R):
                 continue
             motif = re.compile(rf"{re.escape(cle)} \({VIOLET}[^()]*\)")
             if motif.search(nouveau):
-                nouveau = motif.sub(f"{cle} ({VERT} CI main #{run_number})", nouveau)
+                nouveau = motif.sub(f"{cle} ({VERT} {LIBELLE} #{run_number})", nouveau)
             elif re.search(rf"{re.escape(cle)}\b[^;]*{VIOLET}", nouveau):
                 R.a_corriger.append(("track-agent.md", n, f"{cle} : forme de l'État non reconnue"))
         if nouveau != etat:
@@ -273,7 +278,7 @@ def entree_journal(R, date, run_number, sha, conclusion, jobs_echec, evenement, 
         lignes.append("- Tickets 🟣 contenus dans ce run : " + (", ".join(R.violets_du_run) if R.violets_du_run else "aucun") + ".")
     for f, n, raison in R.a_corriger:
         lignes.append(f"- À corriger par le PO : `{f}` l. {n} : {raison} (ligne laissée telle quelle).")
-    return f"\n### {date} — Statuts automatiques, CI main #{run_number} ({AUTEUR})\n" + "\n".join(lignes) + "\n"
+    return f"\n### {date} — Statuts automatiques, {LIBELLE} #{run_number} ({AUTEUR})\n" + "\n".join(lignes) + "\n"
 
 
 def main(argv=None):
@@ -286,7 +291,12 @@ def main(argv=None):
     p.add_argument("--jobs-json", default=None, help="WFS-236 : fichier des jobs du run (API GitHub), pour un run annulé")
     p.add_argument("--depot", default=".")
     p.add_argument("--date", default=None)
+    p.add_argument("--source", choices=["fusion", "matin"], default="fusion",
+                   help="WFS-277 : fusion = run de build.yml (aucun ✅) ; matin = bancs du matin (✅ si vert, même lancé par le planning)")
+    p.add_argument("--libelle", default="CI main", help="WFS-277 : texte du statut ✅ et du journal (« bancs du matin »)")
     a = p.parse_args(argv)
+    global LIBELLE
+    LIBELLE = a.libelle
     depot = Path(a.depot)
     git = Git(depot)
     if not git.commit_existe(a.sha):
@@ -295,10 +305,11 @@ def main(argv=None):
     # RG-03 : annulé, sauté… : rien. Run de nuit (schedule) : seul le banc d'endurance tourne, ce n'est pas une CI complète :
     # un vert de nuit ne passe rien en ✅ ; un rouge de nuit est noté au journal.
     rouge = a.conclusion in ("failure", "timed_out", "startup_failure")
-    vert = a.conclusion == "success" and a.evenement != "schedule"
+    matin = a.source == "matin"
+    vert = a.conclusion == "success" and (matin or a.evenement != "schedule")
     # WFS-236 (RG-01, RG-02) : run annulé (hors nuit) dont seules les publications ont été annulées avant de démarrer → vert
     publication_annulee = False
-    if a.conclusion == "cancelled" and a.evenement != "schedule" and a.jobs_json:
+    if a.conclusion == "cancelled" and (matin or a.evenement != "schedule") and a.jobs_json:
         try:
             texte_jobs = Path(a.jobs_json).read_text(encoding="utf-8")
         except OSError:
@@ -307,6 +318,9 @@ def main(argv=None):
         vert = publication_annulee
         print(f"statuts : run #{a.run_number} annulé : " + ("seulement à la publication, traité comme vert" if vert
               else "un job de construction ou de test n'est pas vert, ou liste des jobs illisible : rien"))
+    if vert and not matin:   # WFS-277 (option A) : le run de fusion vert laisse les tickets en 🟣 ; les bancs du matin donnent le ✅
+        print(f"statuts : run de fusion #{a.run_number} vert : tickets laissés en 🟣, le ✅ viendra des bancs du matin (WFS-277)")
+        return 0
     if not rouge and not vert:
         print(f"statuts : run #{a.run_number} {a.conclusion} ({a.evenement}) : rien à faire")
         return 0
