@@ -3690,3 +3690,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Critères : décor ≤ 60 appels de dessin en Ville ; 0 création / allocation du décor en course sur 20 s ; captures ≤ 1 % d'écart (4 cartes, jour / nuit) ; chargement + ≤ 3 s ; chiffres RG-06 de WFS-246 avant / après ; parcours complet 4 cartes. Après fusion : 🟡 À valider (utilisateur).
 - CI : US technique, CI de branche permise autant que nécessaire, une à la fois, chaque run noté au journal.
 - Règles : `regles-de-gestion/WFS-268.md`.
+
+### 2026-11-07 17:39:18 — Recette, lot 5 (technique, performance) : 3 VALIDÉS, 3 PASSABLES, WFS-222 REFUSÉ ; CI de main rouge (QA-arwa)
+- **VALIDÉS** : WFS-220 (chauffe 129 s < 600 s sur #840), WFS-236 (`test_statuts.py` 39/39 ; #818, #826, #828 comptés verts à bon droit), WFS-250 (un seul job `compilation`, `verifier_compilation.sh` essayé).
+- **PASSABLES** : WFS-237 (fusions regroupées, 12 bancs verts) et WFS-238 (une issue #204, un commentaire par APK) — ANO-135 : la ligne « Tickets » de la notification et du résumé liste tous les WFS cités, pas seulement les fusionnés ; ANO-136 : numéro de l'issue #204 non noté dans `pipeline.md`. WFS-161 (banc `archi` local : 6 styles, fenêtres en retrait, 3 niveaux, indice 100 %) — ANO-137 : fenêtres de nuit en aplats saturés, pièces illisibles.
+- **WFS-222 : REFUSÉ** — RG-06 (≥ 30 img/s) refusé par l'utilisateur sur l'APK 842 : ANO-125, correction WFS-246 en cours ; RG-07 tenu (piétons à pied −50 %).
+- **CI de main rouge** : dernier vert #844 (ae49782) ; #852 (0ffe7d0) rouge au banc `realisme` (« 1 erreur », sans message) ; WFS-161 hors de cause (#849 vert) ; coupable probable WFS-227 (83b16fc) ou WFS-234 (bee2d1f) → US technique P1 « correction pipeline CI » à créer par le PO.
