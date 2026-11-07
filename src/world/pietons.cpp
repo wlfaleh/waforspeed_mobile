@@ -175,7 +175,7 @@ public:
     const char* name() const override { return "pietons"; }
 
     void init(Renderer& r, const GameView& g) override {
-        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; etat_.clear(); tPrec_ = 0;
+        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; etat_.clear(); tPrec_ = 0; premiere_ = true;
         if (!g.map || !g.track) return;
         const char* id = g.map->id;
         tenue::carte() = id;   // WFS-210 : tenue des conducteurs selon la carte
@@ -271,6 +271,8 @@ public:
             const double dm = rel * SEG_M;
             const float opMax = apparition::opaciteDistance(dm, PED_RANGE1 * SEG_M);
             if (!dansCadre(pv, g.proj, pos_[(size_t)i])) { apparition::avancerOpacite(etat_[(size_t)i], true, false, false, opMax, dt); continue; }
+            // 1re image de la partie (carte chargée, scène qui s'ouvre) : chacun est déjà à sa place, sans fondu
+            if (premiere_) apparition::avancerOpacite(etat_[(size_t)i], true, false, false, opMax, dt);
             const apparition::Etat& e = etat_[(size_t)i];
             candDe_[(size_t)i] = (int)cand_.size();
             cand_.push_back({i, -1, (float)std::fabs(dm), e.lieu == apparition::Lieu::Affichee && e.op > 0, e.lodPrec >= 0 ? 4 : 2});   // corps + coiffure (× 2 en fondu croisé)
@@ -280,6 +282,7 @@ public:
             if (f >= 0 && !gens_[(size_t)f].poussette) c.lien = candDe_[(size_t)f];
         }
         apparition::choisirPlaces(cand_, ordre_, INST_PIETONS, place_);
+        premiere_ = false;
         // 2. opacité et niveau de détail de chacun ; pose de ceux qu'on dessine (sans dessiner)
         Dessin d[DESSINES]; int nd = 0;
         int util[2] = {0, 0}, utilE[familles::NB_ENFANTS] = {};
@@ -662,6 +665,7 @@ private:
     std::vector<float> yaw_;
     std::vector<apparition::Candidat> cand_;
     std::vector<char> place_;
+    bool premiere_ = true;   // WFS-257 : 1re image de la partie
     int omis_ = 0, tirage_ = 0;   // WFS-222 (RG-07)
     double tPrec_ = 0;
     bool actif_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
