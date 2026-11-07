@@ -129,6 +129,10 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
         // assombri par l'eau (× 0,8), flaques rares aux bords doux (≈ 8 % de la chaussée, seuil 0,66 à 0,8 au lieu de 0,6 à 0,7), hors traces de roues et
         // hors peinture, rugosité ≥ 0,08
         wetRoad = true;
+        // WFS-205 : le film d'eau remplit la macrotexture : relief du scan retiré (grain de couleur gardé). Le reflet mouillé redevient
+        // celui de WFS-142 ; sans cela, reflet des lampadaires non linéaire en N, différent dans la capture d'environnement (M-01 de
+        // WFS-150, nuit, face −Y : − 2,1 % au run 806)
+        if (scan) { N = normalize(vNrm); lonN = 1.0; }
         vec2 w = vWorld.xz;
         float rn = rnoise(w * 0.11) * 0.62 + rnoise(w * 0.43 + 7.0) * 0.38;      // deux échelles, pas de motif répété
         float lane = fract((p.x + halfW) / (2.0 * halfW) * 3.0);                   // position dans la voie (0..1)
