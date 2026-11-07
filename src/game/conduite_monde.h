@@ -58,6 +58,10 @@ struct Etat {
     double r = 0;                      // vitesse de lacet (rad/s, + = à droite)
     double ax = 0, ay = 0;             // accélérations longitudinale / latérale lissées (m/s², transfert de charge)
     int rapport = 1; double regime = 0;   // rapport engagé (1..n, −1 marche arrière), régime moteur (tr/min)
+    // WFS-253 : aides au dernier pas (mesures du banc, voyant éventuel) : glissement des roues avant / arrière (0 = roule,
+    // 1 = bloquée au freinage ; > 0 aussi en patinage), ABS, antipatinage et ESP en action
+    double glissementAv = 0, glissementAr = 0;
+    bool absActif = false, tcActif = false, espActif = false;
     double u() const { return vx * std::sin(cap) - vz * std::cos(cap); }   // vitesse longitudinale (m/s, < 0 en arrière)
     double v() const { return vx * std::cos(cap) + vz * std::sin(cap); }   // vitesse latérale (m/s, + = vers la droite)
 };
@@ -68,6 +72,9 @@ struct Commande {
     double frein = 0;       // 0..1 (ABS)
     bool recul = false;     // marche arrière engagée (gaz = recul)
     double nitro = 1;       // multiplicateur de poussée (1 = sans nitro)
+    // WFS-253 : aides de la voiture, toujours activées dans le jeu (comme sur les 20 voitures réelles) ; désactivables
+    // seulement au banc pour les mesurer (aucun réglage nouveau pour le joueur sans l'accord du PO)
+    bool abs = true, antipatinage = true, esp = true;
 };
 
 struct Sol { double mu = 1, crr = CRR_ROUTE, pente = 0; };   // pente (rad) dans le sens de marche de la voiture

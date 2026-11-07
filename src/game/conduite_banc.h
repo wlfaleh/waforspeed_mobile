@@ -22,7 +22,7 @@
 namespace wfs::banc_conduite {
 
 struct Virage { const char* nom; const char* carte; double debutU, finU; double vitesse; };   // vitesse : 0 = vitesse normale du virage
-struct Mesure { double ecartMax = 0, capMax = 0, vMin = 1e9, vMax = 0, dGauche = 0, dDroite = 0; int sorties = 0; bool passe = false; };
+struct Mesure { double ecartMax = 0, capMax = 0, deriveMax = 0, vMin = 1e9, vMax = 0, dGauche = 0, dDroite = 0; int sorties = 0; bool passe = false; };
 enum class Cas { Lache, Ideale, AFond };
 inline const char* nomCas(Cas c) { return c == Cas::Lache ? "(a) volant lâché" : c == Cas::Ideale ? "(b) ligne idéale" : "(c) à fond G puis D"; }
 
@@ -92,6 +92,7 @@ inline Mesure rouler(const Virage& vg, Cas cas, Aide aide, bool monde, std::stri
         if (p.dist > vg.debutU - 20 / M) {
             m.ecartMax = std::max(m.ecartMax, std::abs(p.playerX * RW));
             m.capMax = std::max(m.capMax, std::abs(p.heading));
+            m.deriveMax = std::max(m.deriveMax, std::abs(std::atan2(p.monde.v(), std::max(std::abs(p.monde.u()), 1.0))));   // WFS-253 : angle de dérive
             if (std::abs(p.playerX) > 1) m.sorties++;
         }
         if (p.dist > vg.debutU && p.dist < vg.finU) { m.vMin = std::min(m.vMin, p.kmh()); m.vMax = std::max(m.vMax, p.kmh()); }
@@ -104,6 +105,103 @@ inline Mesure rouler(const Virage& vg, Cas cas, Aide aide, bool monde, std::stri
     m.passe = p.dist >= fin;
     g_conduiteMonde = avant;
     return m;
+}
+
+// ---------------------------------------------------------------- WFS-253 : mesures des aides (ABS, antipatinage, ESP)
+struct MesureAides {
+    double arret = 0, glisFrein = 0;               // ABS : 100 → 0 en ligne droite (m), glissement max des roues avant
+    double capFrein = 0;                            // ABS : cap gagné en freinant à fond, volant tourné (rad) : la voiture se dirige-t-elle ?
+    double cent = 0, patinage = 0;                  // antipatinage : 0-100 (s), glissement max des roues motrices
+    double rPic = 0, r1 = 0, r175 = 0, betaMax = 0; // ESP : sinus avec palier (FMVSS 126) : lacet max, à 1 s et 1,75 s après, dérive max
+    bool toupie = false;                            // tête-à-queue (dérive > 90°)
+};
+
+inline MesureAides mesurerAides(const CarDef& car, bool abs, bool tc, bool esp) {
+    using namespace physique;
+    const Params& p = params(car);
+    MesureAides m;
+    auto cmd = [&]() { Commande c; c.abs = abs; c.antipatinage = tc; c.esp = esp; return c; };
+    const double dt = 1.0 / 120;
+    {   // 100 → 0 km/h, frein à fond, volant droit
+        Etat e; e.vz = -100 / 3.6; Commande c = cmd(); c.frein = 1; Sol s;
+        for (int i = 0; i < 120 * 10 && e.u() > 0.01; i++) { const double z0 = e.z; pas(p, e, c, s, dt); m.arret += z0 - e.z; m.glisFrein = std::max(m.glisFrein, e.glissementAv); }
+    }
+    {   // freinage d'urgence en tournant : 100 km/h, volant tourné pour 0,4 g puis frein à fond pendant 1,5 s : cap gagné
+        Etat e; e.vz = -100 / 3.6; Commande c = cmd(); Sol s;
+        const double v = 100 / 3.6, d = p.L * 0.4 * G / (v * v) * 1.6;   // angle des roues (sous-virage compris, approché)
+        c.braquage = d;
+        for (int i = 0; i < 120 * 2; i++) { c.gaz = e.u() < v ? 0.3 : 0; pas(p, e, c, s, dt); }   // virage établi
+        const double cap0 = e.cap; c.gaz = 0; c.frein = 1;
+        for (int i = 0; i < 180 && e.u() > 1; i++) pas(p, e, c, s, dt);
+        m.capFrein = e.cap - cap0;
+    }
+    {   // 0-100 km/h plein gaz : temps et patinage des roues motrices
+        Etat e; Commande c = cmd(); c.gaz = 1; Sol s;
+        double t = 0;
+        for (; e.u() < 100 / 3.6 && t < 40; t += dt) {
+            pas(p, e, c, s, dt);
+            m.patinage = std::max(m.patinage, p.transmission == Transmission::Arriere ? e.glissementAr : std::max(e.glissementAv, e.glissementAr));
+        }
+        m.cent = t;
+    }
+    {   // ESP : « sinus avec palier » (NHTSA FMVSS 126, S7.9) à 80 km/h, sans gaz : sinus de 0,7 Hz, palier de 0,5 s au 2e sommet,
+        // amplitude 6,5 × l'angle qui donne 0,3 g en virage établi ; critères : lacet ≤ 35 % du pic 1 s après la fin, ≤ 20 % à 1,75 s
+        const double v = 80 / 3.6;
+        double d03 = 0;
+        {   // angle de roues pour 0,3 g établi à 80 km/h (volant qui monte lentement)
+            Etat e; e.vz = -v; Commande c = cmd(); Sol s;
+            for (int i = 0; i < 120 * 40; i++) {
+                c.braquage = d03; c.gaz = e.u() < v ? std::clamp((v - e.u()) * 2, 0.0, 1.0) : 0; pas(p, e, c, s, dt);
+                if (std::abs(e.u() * e.r) >= 0.3 * G) break;
+                d03 += 0.002 / 120;
+            }
+        }
+        const double A = std::min(6.5 * d03, p.braquageMax), f = 0.7, w = 2 * 3.14159265358979 * f;
+        Etat e; e.vz = -v; Commande c = cmd(); Sol s;
+        const double t1 = 0.75 / f, tFin = t1 + 0.5 + 0.25 / f;   // 3/4 de période, palier de 0,5 s, dernier quart
+        double t = 0;
+        for (int i = 0; t < tFin + 2.0; i++, t += dt) {
+            double dd;
+            if (t < 0.75 / f) dd = A * std::sin(w * t);
+            else if (t < 0.75 / f + 0.5) dd = -A;
+            else if (t < tFin) dd = A * std::sin(w * (t - 0.5));
+            else dd = 0;
+            c.braquage = dd;
+            pas(p, e, c, s, dt);
+            const double beta = std::atan2(e.v(), std::max(std::abs(e.u()), 1.0));
+            m.betaMax = std::max(m.betaMax, std::abs(beta));
+            if (std::abs(beta) > 3.14159265358979 / 2 || e.u() < 0) m.toupie = true;
+            if (t > 0.75 / f) m.rPic = std::max(m.rPic, std::abs(e.r));   // pic de lacet après le 1er sommet (comme la norme)
+            if (std::abs(t - (tFin + 1.0)) < dt / 2) m.r1 = std::abs(e.r);
+            if (std::abs(t - (tFin + 1.75)) < dt / 2) m.r175 = std::abs(e.r);
+        }
+    }
+    return m;
+}
+
+inline int mesurerAidesRapport(std::string& rapport) {
+    int ecarts = 0; char l[400];
+    auto ligne = [&](const char* s) { rapport += s; rapport += "\n"; };
+    ligne("## 6. Aides (WFS-253) : ABS, antipatinage, ESP activés (jeu) puis coupés un par un (banc seulement)");
+    ligne("| voiture | aides | 100-0 | glissement AV au freinage | cap gagné en freinant en virage | 0-100 | patinage au départ | ESP (FMVSS 126) : lacet 1 s / 1,75 s après | dérive max | verdict |");
+    ligne("|---|---|---|---|---|---|---|---|---|---|");
+    for (const char* id : {"golf", "mustang", "sf90", "rrsport"}) {
+        struct Cfg { const char* nom; bool abs, tc, esp; };
+        for (const Cfg& k : {Cfg{"toutes", true, true, true}, Cfg{"sans ABS", false, true, true}, Cfg{"sans antipatinage", true, false, true}, Cfg{"sans ESP", true, true, false}}) {
+            const MesureAides m = mesurerAides(carById(id), k.abs, k.tc, k.esp);
+            const double q1 = m.rPic > 0 ? m.r1 / m.rPic : 0, q175 = m.rPic > 0 ? m.r175 / m.rPic : 0;
+            std::string verdict = "mesure";
+            if (k.abs && k.tc && k.esp) {   // configuration du jeu : critères
+                const bool bon = m.arret >= 33 && m.arret <= 43 && m.glisFrein <= 0.25 && m.capFrein > 0.05 && q1 <= 0.35 && q175 <= 0.20 && !m.toupie;
+                if (!bon) ecarts++;
+                verdict = bon ? "OK" : "ÉCART";
+            }
+            std::snprintf(l, sizeof l, "| %s | %s | %.1f m | %.0f %% | %.2f rad | %.2f s | %.0f %% | %.0f %% / %.0f %% (pic %.2f rad/s) | %.1f°%s | %s |", id, k.nom, m.arret,
+                          m.glisFrein * 100, m.capFrein, m.cent, m.patinage * 100, q1 * 100, q175 * 100, m.rPic, m.betaMax * 57.2958, m.toupie ? " TÊTE-À-QUEUE" : "", verdict.c_str());
+            ligne(l);
+        }
+    }
+    return ecarts;
 }
 
 struct Fiche { const char* id; double cent, fiche100, vmax, ficheVmax, arret, ayMax, braquage; };
@@ -247,7 +345,8 @@ inline int mesurer(std::string& rapport) {
             ligne(l);
         }
     }
-    std::snprintf(l, sizeof l, "\nbanc de conduite (WFS-241) : %d écart(s)", ecarts); ligne(l);
+    ligne(""); ecarts += mesurerAidesRapport(rapport);   // WFS-253
+    std::snprintf(l, sizeof l, "\nbanc de conduite (WFS-241, WFS-253) : %d écart(s)", ecarts); ligne(l);
     return ecarts;
 }
 
