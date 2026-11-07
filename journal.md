@@ -3038,3 +3038,19 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Fait** : dernière étape du job `publication-apk` : `tools/qa/notifier_apk.sh` (fichier neuf de la zone E7 `tools/qa/`, appelé seulement par cette étape). Seulement sur `main` et seulement si ce run a publié l'APK (titre de la Release) ; commentaire `@wlfaleh` (construction, commit, tickets depuis le dernier run qui a tourné, lien fixe de l'APK, lien du run) dans l'issue fixe « 📱 Nouvel APK de main » (créée et épinglée la 1re fois) ; marque cachée = un seul commentaire par construction ; permissions du job `contents: write`, `issues: write`, `actions: read` ; échec = avertissement (`continue-on-error`, 2 min). Rien hors de GitHub.
 - **Vérifié en local** avec un faux `gh` : notification normale, issue neuve (création + épinglage), APK d'un autre run (rien), construction déjà annoncée (rien), panne (avertissement, code 0). **Pas de CI de branche** (l'étape y est sautée par construction) : la preuve vient du prochain APK de main.
 - **Essai réel du regroupement (WFS-237)** : cet envoi arrive pendant le run #837 : il doit attendre seul dans le groupe `build-main`.
+
+### 2026-11-07 13:30:38 — WFS-158 livraison 10 fusionnée (PR #202, fusion par confiance) : fin de ST-3, ticket 🟣 fusionné (arwa-2)
+- **Fait** : audit des pièces des 20 voitures. Détail dans `regles-de-gestion/WFS-158.md`, § « ST-3 — fin ».
+  - **Plaques** : avant et arrière sur les 20 voitures.
+  - **Intérieur vu par les vitres** : présent sur les 20 voitures (essai avec vitres transparentes, en local).
+  - **Dessous de caisse** : fermé entre les essieux, de 96 % à 100 %, et sombre.
+  - **Disques et étriers** : présents dans les modèles, souvent dans les pièces de la roue.
+- **Test** : `test_fidelite_voitures` vérifie maintenant aussi l'habitacle (≥ 300 triangles) et le dessous de caisse (fermé à 90 % au moins). Une A45 vidée (essai local) est refusée. 44 tests CPU OK.
+- **Pour le PO** :
+  1. **A45** : l'habitacle paraît gris clair et vide à travers les vitres. La cause est le verre, pas un manque de pièces : matériau 13, gris 0,91 à 25 % d'opacité, voile laiteux, alors que la vraie A45 a des vitres teintées sombres. À traiter dans **WFS-159** (verre physique).
+  2. **Étriers** : un étrier doit braquer avec la roue sans tourner avec elle. Or `roues::matrice` applique le braquage et le roulage ensemble (zone moteur). Pour ajouter des étriers, il faudrait une pièce « braquage seul » côté moteur (ticket E3 / E4 à créer si besoin).
+  3. **Écarts restants de WFS-158** :
+     - indice de fidélité : 114 / 141 (80,9 %), avec 27 écarts connus (RG-05 : M4, 911, 208, Model 3, SF90 ; voies que la caisse empêche d'élargir), listés dans le test ;
+     - RG-C (X5, bas du hayon) : prévu dans WFS-194 ;
+     - la voiture du trafic manque sur `voiture-distance-120-basse` depuis la synchronisation de midi : ce n'est pas lié à WFS-158 (voir l'entrée de 12:52).
+- **Statut** : 🟣 Fusionné. Toutes les sous-tâches sont livrées (ST-1 à ST-5, RG-A, RG-B, RG-D). Le robot passera le ticket en ✅ quand la CI de `main` sera verte. Je demande un ticket au PO.

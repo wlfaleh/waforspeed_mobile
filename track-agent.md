@@ -28,7 +28,7 @@
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
 | Claude, session dev 5bx | WFS-216 | P3 : lot E2 (ANO-103, 105, 108) (fusionné, PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 9 fusionnées (PR #157, #162, #163, #166, #167, #186, #187, #197, #198 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille, 4 niveaux de détail, test strict) ; RG-C (X5) signalé au PO | 158 : 12:57:17 UTC ; PR #198 fusionnée par confiance | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | 🟣 fusionné, toutes les sous-tâches livrées (PR #157, #162, #163, #166, #167, #186, #187, #197, #198, #202 : audit, plaques, échelle et roues, Model 3 remplacée, T-Cross, 4 niveaux de détail, test strict, pièces) ; RG-C (X5) et verre de l'A45 signalés au PO | 158 : 13:30:13 UTC ; PR #202 fusionnée par confiance | libre : demande un ticket au PO |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 11:48 | 🔧 en cours (CI de branche) |
 
 ## Tickets prêts sans agent
