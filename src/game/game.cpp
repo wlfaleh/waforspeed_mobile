@@ -273,7 +273,7 @@ struct Game::JoueurInterpole {
         Player& p = g.player_;
         p.position = a.position + dz * t; p.dist = mix(a.dist, b.dist); p.playerX = mix(a.playerX, b.playerX);
         p.heading = mix(a.heading, b.heading); p.spinYaw = mix(a.spinYaw, b.spinYaw); p.steer = mix(a.steer, b.steer);
-        p.odo = mix(a.odo, b.odo); p.speed = mix(a.speed, b.speed);
+        p.odo = mix(a.odo, b.odo); p.speed = mix(a.speed, b.speed); p.braquageRoues = mix(a.braquageRoues, b.braquageRoues);   // WFS-247
     }
     ~JoueurInterpole() { if (actif) { g.player_ = garde; g.interpole_ = false; } }
 };
@@ -372,7 +372,8 @@ void Game::render(double time) {
     if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
-        const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
+        RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
+        if (player_.modeleMonde()) rouesJoueur.braquage = (float)player_.braquageRoues;   // WFS-247 : angle appliqué (joueur + aide, WFS-241), pas le doigt
         r_->draw(car_, carM, &paint_, &rouesJoueur);
         if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
     }
