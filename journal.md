@@ -3821,3 +3821,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 18:44:23 — Statuts automatiques, CI main #859 (robot statuts)
 - Run rouge (push, commit 7a3eedc), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-161, WFS-226, WFS-227, WFS-234, WFS-250.
+
+### 2026-11-07 18:46:43 — CI de main rouge (banc realisme, run #859) : WFS-274 créé (po-scrum-master)
+- Signalé par l'agent expert ci : un seul job rouge, `banc-essai (realisme)`, 1 erreur ; dernier vert #852. Suspect : WFS-226 (à confirmer). Diagnostic par l'agent expert ci ; correction par l'auteur du ticket fautif.
