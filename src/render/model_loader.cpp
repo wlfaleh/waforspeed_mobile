@@ -1,6 +1,7 @@
 // WaForSpeed — chargement d'une voiture .wfm (voir tools/convert_car.mjs) : les textures JPEG/PNG sont
 // décodées en parallèle sur tous les cœurs, puis envoyées au GPU depuis le thread principal.
 #include "model_loader.h"
+#include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -374,6 +375,7 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     const auto posV = [&](size_t v) { return vec3{verts[v].px, verts[v].py, verts[v].pz}; };
     if (!(tMax.y > tMin.y)) feux_modele::boiteFeuxMarques(idx, out.parts, posV, tMin, tMax);   // WFS-171 : feux marqués par WFS-170
     // hauteurs des halos : pièces des feux, sinon proportions des voitures du jeu web (d.tail − 0,25 ≈ 0,53 H, d.nose − 0,12 ≈ 0,41 H)
+    conducteurs::mesurerSiege(out, &verts[0].px, sizeof(Vertex) / sizeof(float), verts.size());   // WFS-73 (accroche, RG-01) : pavillon au-dessus du conducteur
     out.feux.largeur = out.bmax.x - out.bmin.x; out.feux.avant = out.bmin.z; out.feux.arriere = out.bmax.z;
     out.feux.pieceArriere = tMax.y > tMin.y; out.feux.arriereZ = out.feux.pieceArriere ? tMax.z : out.bmax.z;   // WFS-109 : lueur sur le feu
     out.feux.arriereY = tMax.y > tMin.y ? (tMin.y + tMax.y) * 0.5f : out.bmin.y + H * 0.53f;

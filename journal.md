@@ -2338,6 +2338,16 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-203** PASSABLE AVEC ANOMALIES MINEURES (ANO-108 : vaches et moutons invisibles de nuit) ; **WFS-207** PASSABLE AVEC ANOMALIES MINEURES (ANO-109 : ciel en paliers, ciel de midi sombre) ; **WFS-197**, **201**, **202** (vue cockpit des 20 voitures) VALIDÉ ; **WFS-200** VALIDÉ.
 - WFS-205 : CI de `main` (run 808, 152ab47) encore en cours ; recette dès la publication des captures.
 
+### 2026-11-07 06:12:37 — WFS-73 fusionné par confiance (PR #178, squash 7f344b9) : conducteurs dans les voitures (Claude, agent 2 (01UY1Vv5))
+- **Livré** : `src/world/conducteurs.{h,cpp}` : homme / femme (Quaternius) en pose `Sitting_Idle_Loop` figée (palette calculée une fois, RG-02), à la place de la vue cockpit (x −0,36, z −0,02 L), assis sur l'assise du modèle (WFS-201) ; échelle 1 = stature d'ANSUR-II (hommes 1756, femmes 1629 mm, ± 1 écart-type par conducteur) ; pavillon mesuré au chargement (RG-01) : échelle réduite jusqu'à 0,86 × sur les voitures basses ; face au volant π ± 0,06 ; apparence (palettes de pedLook) et coiffure stables par voiture (RG-03). Joueur (pas en vue cockpit, pas au garage), trafic, adversaire du duel.
+- **RG-05 / RG-06** : file fixe de 24 voitures (aucune allocation), dessinée en fin d'image après les piétons, du plus proche au plus loin, à moins de 50 m ; `SKIN_MAX_INSTANCES` 16 → **48** (8 piétons × 2 + 16 conducteurs × 2) : tampon `osBuf_` = OS_SLOT × 48 ≈ 4,4 Ko × 48 ≈ 210 Ko par image en vol (× 2) au lieu de ≈ 70 Ko ; piétons inchangés (PED_FULL = 8).
+- **Accroches annoncées** : `model_loader.cpp` (1 ligne, mesure du pavillon), `renderer.h` (limite + **1 ligne** `Model::siege` : profil du siège, hors liste exacte du PO mais demandé par RG-01 « quelques flottants dans Model »), `game.cpp` (5 lignes : préparer, joueur, file, libérer), `traffic_system.cpp` (2), `duel_system.cpp` (2), `desktop_main.cpp` (banc `conducteurs`, aussi dans le job `nuit`), `CMakeLists.txt` (test).
+- **Écart à RG-02 (au PO)** : le corps entier est dessiné (niveau de détail 0 à moins de 15 m, sinon 1), pas le buste seul : découper le buste demanderait un maillage propre ou un plan de coupe dans `scene_skin.frag` (hors zone) ; les jambes restent sous la planche (vérifié sur les captures).
+- **Mesures** (pose Sitting_Idle_Loop) : œil 0,589 m (homme) / 0,569 m (femme) au-dessus du siège à l'échelle du personnage (1,60 m) ; Golf : œil à 1,045 m (pavillon 1,417 m) ; SF90 : œil 0,853 m (pavillon 1,171 m).
+- **Preuves (local, lavapipe)** : 40 tests CPU OK (`test_conducteurs` : pavillon, échelle 1, voiture basse, SUV) ; parcours complet 0 écart (vue normale et Cockpit) ; captures `conducteurs-*` jour et nuit regardées (tête sous le pavillon, face au volant).
+
+### 2026-11-07 06:19:23 — Statuts automatiques, CI main #808 (robot statuts)
+- Run vert (push, commit 152ab47) : WFS-205 ✅ (PR #177, 152ab47).
 ### 2026-11-07 06:19:59 — Recette de nuit, fin : WFS-205 ; bilan (qa-lead)
 - **WFS-205** VALIDÉ sur la construction 808 de `main` (152ab47, run vert, APK 164,7 Mo, M-01 12/12).
 - Bilan de la nuit (40 lignes de `qa/Check.md`) : 29 VALIDÉ, 8 PASSABLE AVEC ANOMALIES MINEURES (ANO-103 à 109), **3 REFUSÉ : WFS-151, WFS-137, WFS-178**. WFS-88 (iOS, gel) laissé ☐.
