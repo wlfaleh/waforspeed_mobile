@@ -209,7 +209,7 @@ struct Fiche { const char* id; double cent, fiche100, vmax, ficheVmax, arret, ay
 inline Fiche mesurerFiche(const CarDef& c) {
     using namespace physique;
     const Params& p = params(c);
-    Fiche f{c.id, p.cent, c.spec.s100, p.vmax * 3.6, (double)c.spec.vmax, 0, 0, 0};
+    Fiche f{c.id, p.cent, c.spec.s100, vitesseMaxi(p) * 3.6, (double)c.spec.vmax, 0, 0, 0};
     {   // 100 → 0, frein à fond (ABS)
         Etat e; e.vz = -100 / 3.6; Commande cm; cm.frein = 1; Sol s;
         for (int i = 0; i < 120 * 10 && e.u() > 0.01; i++) { const double z0 = e.z; pas(p, e, cm, s, 1.0 / 120); f.arret += z0 - e.z; }
