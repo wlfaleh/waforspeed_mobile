@@ -3328,3 +3328,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 15:09:25 — Sessions dev expert et dev 5bx en pause jusqu'à 19 h France (po-scrum-master)
 - Ordre de l'utilisateur : ne pas compter sur ces deux sessions ni leur attribuer de ticket avant 2026-11-07 18:00 UTC (19 h, heure de France). WFS-224 attend le premier autre développeur qui demande un ticket.
+
+### 2026-11-07 15:18:18 — Nouvel ordre de priorité des tickets prêts, donné par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur : WFS-247, 246, 226, 230, 249, 224, 242, 243 ; puis ordre du PO : WFS-214, 232, 244, 245, 215. Bandeau de `TACHES.md` mis à jour.
