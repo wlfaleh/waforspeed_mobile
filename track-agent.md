@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 16:00:00 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 16:01:45 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -30,7 +30,7 @@
 | Claude, session dev 5bx |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes), attribué 13:36 ; arbitrage RG-02 / RG-05 rendu 14:28 (option A, vraie géométrie) ; WFS-158 🟣 (PR #157 à #202) | 235 : 14:03 (9fb8cb9) ; 158 : 13:30 (PR #202 fusionnée) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; attribué 15:23 (1er de l'ordre de l'utilisateur) | 247 : branche à créer et pousser ; 161 : fusionnée 15:20 (4fe82c8) | 🔴 en cours (P1) |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) |  | WFS-241 fusionné (PR #211, squash 0ffe7d0), 🟡 à valider par l'utilisateur ; demande l'étape 2 au PO | 241 : fusionnée 15:59 | ✅ libre |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-253 | Conduite réaliste, étape 2 : aides réglées et mesurées (WFS-241 fusionné, 🟡 à valider par l'utilisateur) | 253 : branche à créer ; 241 : fusionnée 15:59 (0ffe7d0) | ✅ actif |
 
 ## Tickets prêts sans agent
 
