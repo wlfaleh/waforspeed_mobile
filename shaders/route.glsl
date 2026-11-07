@@ -96,7 +96,9 @@ vec2 macroRevetement(vec2 w) {
 const float BANDE_ROULEMENT_M = 0.9;     // M-03 : largeur d'une bande de roulement (0,8-1,0 m)
 const float ECARTEMENT_ROUES_M = 1.572;  // M-03 : écartement des deux bandes d'une voie = voie moyenne des voitures (voitures.json)
 const float BORDURE_LARGEUR_M = 0.30;    // M-04 : bloc de granit de la bordure (Ville), au bord du trottoir
-const float DEMI_CHAUSSEE_M = 7.5;       // RW (src/game/track.h) : le trottoir commence là (uv.x = latéral en mètres)
+const float DEMI_CHAUSSEE_M = 7.5;
+const float RACCORD_ALB_RECENT = 0.93;   // WFS-244 (RG-02) : enrobé repris récent / ancien, facteur d'albédo (voisin : 0,87 à 1,02)
+const float RACCORD_ALB_ANCIEN = 0.97;   //   écart ≤ 8 % avec la moyenne d'une voie (test_fidelite_routes)       // RW (src/game/track.h) : le trottoir commence là (uv.x = latéral en mètres)
 // pc.params.z = mode de lecture + 4 × carte (route::codeMateriau) ; carte : 0 Ville, 1 Campagne, 2 Corniche, 3 Grand Prix
 float modeLecture() { return mod(pc.params.z, 4.0); }
 int carteRoute() { return int(floor(pc.params.z / 4.0 + 0.01)); }
@@ -117,17 +119,30 @@ vec3 usureRoute(vec2 p, float halfW, int carte) {
     bande *= force * (0.75 + 0.25 * rnoise(p * vec2(0.6, 0.08)));
     float alb = mix(1.02, 0.87, bande), dr = mix(0.02, -0.05, bande), rel = mix(1.0, 0.8, bande);   // moyenne d'une voie ≤ 1 (avis expert)
     // raccords : une case de 37 m par voie
+    // WFS-244 (ANO-116) : les raccords de WFS-206 se voyaient comme des plaques rectangulaires à bords nets (albédo × 0,72,
+    // − 28 %, bords droits sans anticrénelage ; deux ou trois voies voisines dans la même case faisaient un rectangle sur toute
+    // la chaussée). Aspect réel (RG-02) : écart ≤ 8 % avec l'asphalte voisin, bords irréguliers (découpe à la scie reprise,
+    // bord effrité ± 12 cm), joint de bitume fondu à l'écran, une voie au plus. Voies 0 et 2 dans les cases paires, voie 1 dans
+    // les impaires (jamais deux voies voisines côte à côte), probabilité doublée : même nombre de raccords qu'avant (RG-03).
     float proba = carte == 0 ? 0.45 : carte == 1 ? 0.25 : carte == 2 ? 0.12 : 0.0;
     float cy = floor(p.y / 37.0);
     vec2 h = hash22(vec2(cy * 3.7 + k * 11.3, k * 1.9 + 4.0));
-    if (h.x < proba) {
-        float y0 = cy * 37.0 + h.y * 18.0, lg = 3.0 + fract(h.x * 91.7) * 12.0;
+    bool caseDeLaVoie = mod(cy + k, 2.0) < 0.5;
+    if (caseDeLaVoie && h.x < proba * 2.0) {
+        float hx = h.x / (proba * 2.0);                                       // 0..1 : tirages propres au raccord
+        float y0 = cy * 37.0 + h.y * 18.0, lg = 3.0 + fract(hx * 91.7) * 12.0;
         float x0 = c - voie * 0.5 + 0.3 + fract(h.y * 37.1) * 0.6, x1 = c + voie * 0.5 - 0.2 - fract(h.y * 53.3) * 0.8;
         float bord = min(min(p.x - x0, x1 - p.x), min(p.y - y0, y0 + lg - p.y));   // > 0 : dans le raccord
-        if (bord > 0.0) {
-            bool recent = fract(h.x * 13.1 + h.y * 5.3) < 0.5;
-            alb = recent ? 0.72 : 0.93; dr = recent ? -0.04 : 0.0; rel = recent ? 0.8 : 1.0;   // enrobé repris : pas encore usé
-            if (bord < 0.03) { alb = 0.45; dr = -0.35; rel = 0.2; }        // joint de bitume coulé : sombre et brillant
+        bord += (rnoise(p * 1.7 + h * 31.0) - 0.5) * 0.16 + (rnoise(p * 6.3 + 2.0) - 0.5) * 0.08;   // bord irrégulier (± 12 cm)
+        float pix = max(fwidth(bord), 1e-4);                                  // taille du pixel en mètres : bords anticrénelés
+        float dedans = smoothstep(-pix, pix, bord);
+        if (dedans > 0.0) {
+            bool recent = fract(hx * 13.1 + h.y * 5.3) < 0.5;
+            float a = recent ? RACCORD_ALB_RECENT : RACCORD_ALB_ANCIEN, d = recent ? -0.03 : 0.0, rl = recent ? 0.85 : 1.0;   // enrobé repris : pas encore usé
+            alb = mix(alb, a, dedans); dr = mix(dr, d, dedans); rel = mix(rel, rl, dedans);
+            // joint de bitume coulé (3 cm, sombre et brillant) : couvert au prorata du pixel, il s'efface au loin (pas de liseré)
+            float joint = (1.0 - smoothstep(0.03 - pix, 0.03 + pix, abs(bord))) * clamp(0.03 / pix, 0.0, 1.0);
+            alb = mix(alb, 0.6, joint); dr = mix(dr, -0.25, joint); rel = mix(rel, 0.3, joint);
         }
     }
     return vec3(alb, dr, rel);
