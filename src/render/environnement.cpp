@@ -21,7 +21,7 @@ constexpr int SUR = 2;
 
 struct Etat {
     // demande
-    vec3 point{}; int tailleVoulue = 0; int face = -1; bool prete = false; int captures = 0;
+    vec3 point{}; int tailleVoulue = 0; int face = -1; bool prete = false; int captures = 0; int attente = 0;   // WFS-267 : images attendues
     // suivi automatique de l'heure (signature de la lumière de l'image)
     bool suivi = false, invalide = false; vec3 suiviPoint{}; float signature[16]{}; bool signatureLue = false;
     // ressources (créées à la première capture)
@@ -186,6 +186,10 @@ public:
                 demander(g.suiviPoint);
             }
         }
+        // WFS-267 : depuis WFS-227, l'ombre suit la caméra (cascades) : une face prise hors de la 1re cascade serait sans ombre (tunnel
+        // « au soleil » dans les sondes) : elle attend que la caméra couvre le point (sphère de la cascade 0), 120 images au plus
+        const FrameUBO& u = img.ubo; const vec3 c = vec3{u.camPos.x, u.camPos.y, u.camPos.z} + vec3{u.camFwd.x, u.camFwd.y, u.camFwd.z} * u.ombreFin.x;
+        if (g.face >= 0 && u.shadowP.x > 0.5f && length(g.point - c) > u.ombreDemi.x && g.attente < 120) { g.attente++; return false; }
         return g.face >= 0;
     }
     void creer(Renderer& r) override { g.r = &r; }
@@ -256,7 +260,7 @@ WFS_PASSE(CaptureEnvironnement, 0)
 void demander(const vec3& p, int t) {
     if (t <= 0) t = qualite::tailleCubemap(qualite::niveauAffiche(ecrans::reglages().qualite));
     t = std::clamp(t, 16, 1024);
-    g.point = p; g.tailleVoulue = t; g.face = 0; g.prete = false;
+    g.point = p; g.tailleVoulue = t; g.face = 0; g.prete = false; g.attente = 0;
     if (g.r && g.cote != t) creerCube(*g.r, t);   // entre deux images (appel du thread de jeu), GPU attendu
 }
 bool enCours() { return g.face >= 0; }
