@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <map>
 #include <string>
+#include <vector>
 #include "../src/game/duel.h"
 #include "../src/game/sauvegarde.h"
 #include "../src/game/trace_cartes.h"
@@ -221,12 +222,55 @@ static void verifierDuel() {
     VERIFIE(parti, "duel : départ avec le même tracé");
 }
 
+// WFS-243 (RG-ANO-144) : trafic dans l'anneau des ronds-points (Ville, Campagne, Corniche) : 400 voitures pendant 2 min, aucune
+// carrosserie sur la couronne de pavés ni sur la rive intérieure (9,6 m du centre au moins), ni hors de l'anneau (18,5 m au plus) ;
+// centre de l'anneau : centre du cercle qui passe par trois points de l'axe du tracé dans l'anneau
+static void verifierAnneaux() {
+    for (const char* carte : {"ville", "campagne", "plage"}) {
+        static Track t; t.build(mapById(carte), trace::versionCarte(carte));
+        Traffic tr; tr.parallel = false; tr.reset(t, 4242, 400, 0, true);
+        struct A { int64_t e0, e1; double cx, cz; };
+        std::vector<A> as;
+        for (const trace::Section& s : t.sections()) {
+            if (s.type != trace::Type::RondPoint) continue;
+            const double c0 = t.segAt(s.debut + 2).curve; int64_t e0 = -1, e1 = -1;
+            for (int64_t a = s.debut + 1; a < s.fin; a++) if (t.segAt(a).curve * c0 < 0) { if (e0 < 0) e0 = a; e1 = a; }
+            const TrackPoint p1 = t.point(e0 * SEG, 0), p2 = t.point((e0 + e1) / 2 * SEG, 0), p3 = t.point(e1 * SEG, 0);
+            const double ax = p1.x, az = p1.z, bx = p2.x, bz = p2.z, cx = p3.x, cz = p3.z;
+            const double d = 2 * (ax * (bz - cz) + bx * (cz - az) + cx * (az - bz));
+            const double ux = ((ax * ax + az * az) * (bz - cz) + (bx * bx + bz * bz) * (cz - az) + (cx * cx + cz * cz) * (az - bz)) / d;
+            const double uz = ((ax * ax + az * az) * (cx - bx) + (bx * bx + bz * bz) * (ax - cx) + (cx * cx + cz * cz) * (bx - ax)) / d;
+            as.push_back({e0, e1, ux, uz});
+        }
+        TrafficView pv; pv.position = 0; pv.speed = 0; pv.myLen = 700;
+        int dans = 0, dehors = 0; double rMin = 1e9, rMax = 0;
+        for (int i = 0; i < 60 * 120; i++) {
+            tr.step(T_STEP, pv);
+            for (const TrafficCar& c : tr.cars) {
+                if (c.cache || c.crashed) continue;
+                const double a = t.wrap(c.z) / SEG;
+                for (const A& g : as) {
+                    if (a < g.e0 + 2 || a > g.e1 - 2) continue;   // dans l'anneau (hors des 2 premiers et derniers segments)
+                    const TrackPoint p = t.point(c.z, c.offset * RW);
+                    const double r = std::hypot(p.x - g.cx, p.z - g.cz), demi = c.w * RW;
+                    rMin = std::min(rMin, r - demi); rMax = std::max(rMax, r + demi); dans++;
+                    dehors += r - demi < 9.6 || r + demi > 18.5;
+                }
+            }
+        }
+        std::printf("WFS-243 ANO-144 : %-8s : %zu anneau(x), %d positions de voitures dans l'anneau, carrosseries entre %.2f et %.2f m du centre, %d dehors\n",
+                    carte, as.size(), dans, rMin, rMax, dehors);
+        VERIFIE(dans > 0 && dehors == 0, "WFS-243 ANO-144 : %s : %d position(s) sur la couronne ou hors de l'anneau (%.2f à %.2f m)", carte, dehors, rMin, rMax);
+    }
+}
+
 int main() {
     for (const char* id : {"ville", "plage", "campagne", "circuit"}) verifierCarte(id);
     verifierFeux();
     verifierDeterminisme();
     verifierRecords();
     verifierDuel();
+    verifierAnneaux();   // WFS-243
     if (echecs) { std::printf("test_trace : %d échec(s)\n", echecs); return 1; }
     std::printf("test_trace : OK\n");
     return 0;

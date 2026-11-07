@@ -918,14 +918,14 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 }
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
-uint8_t Renderer::classer(const masquage::Sphere& s) {
+uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     constexpr uint8_t CASC = 0xF0;   // WFS-227 : toutes les cascades d'ombre
     if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;
     // WFS-150 : image d'une capture d'environnement : tout objet reste en file pour la capture (6 directions) ;
     // WFS-222 : mais la passe de scène, l'ombre et le reflet de cette image gardent leur masquage (VIS_CAPTURE seul sinon)
     if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;   // banc : comparaison avec l'avant
     const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
-    if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
+    if (!sansDistance && length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
                       (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
     uint8_t c = 0;   // WFS-227 (accroche) : cascades d'ombre que l'objet touche (passe d'ombre : une tuile seulement si besoin)
@@ -1118,7 +1118,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         masquesPrec_ = masques_; masques_ = 0;
     }
     feuxNuit_ = FeuxVoiture{}; feuxNuit_.nuit = fp.feux; feuxSuivantPose_ = false;   // WFS-09
-    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false;   // WFS-134
+    ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false; adversaireSuivant_ = false;   // WFS-134 ; WFS-243
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
     focalePx_ = std::fabs(fp.proj.at(1, 1)) * (float)sh_ * 0.5f;   // WFS-158 (RG-04)
@@ -1192,7 +1192,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     if (!inFrame_ || !m.ok) return;
     // WFS-134 (RG-05, RG-07) : ombre de contact (≈ 1,1 × la longueur) si la voiture n'a pas déjà la sienne ; fantôme sans
     const bool fantome = fantomeSuivant_, ombreDejaLa = ombreFaite_, lots = lotsSuivant_ && qualiteBasse;
-    fantomeSuivant_ = false; lotsSuivant_ = false;
+    const bool adversaire = adversaireSuivant_;   // WFS-243 (ANO-117) : lu et remis à faux pour chaque voiture
+    fantomeSuivant_ = false; lotsSuivant_ = false; adversaireSuivant_ = false;
     if (ombresContact_ && !fantome && !ombreDejaLa) {
         const vec3 c = (m.bmin + m.bmax) * 0.5f, t = m.bmax - m.bmin;
         draw(ombreQuad_, ombreMat_, world * translate({c.x, m.bmin.y, c.z}) * scale({t.x * 1.12f, 1.f, t.z * 1.1f}));
@@ -1201,7 +1202,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     // WFS-09 : feux de cette voiture (le joueur : feuxProchaineVoiture ; les autres : état de nuit de l'image)
     const FeuxVoiture fx = feuxSuivantPose_ ? feuxSuivant_ : feuxNuit_;
     feuxSuivantPose_ = false;
-    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)));   // WFS-82
+    const uint8_t vis = classer(masquage::monde(world, masquage::deBoite(m.bmin, m.bmax)), adversaire);   // WFS-82 ; WFS-243 : adversaire sans limite de distance
     if (!vis) return;   // RG-06 : les feux disparaissent avec leur voiture, jamais seuls
     // WFS-109 (RG-07, RG-15) : de jour aussi, le feu du modèle s'allume au freinage et le feu de recul en marche arrière
     const float stopK = fx.frein >= 0 ? std::clamp(fx.frein, 0.f, 1.f) : (fx.stop ? 1.f : 0.f);
