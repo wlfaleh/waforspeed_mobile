@@ -252,8 +252,9 @@ std::string carteDuLieu(const char* carte) { return std::string("lieu.") + carte
 // chemin, donc les mêmes lignes dans le même ordre. Étape 6 (soleil du jeu) relit la lumière relevée à l'étape 0 : même partie.
 enum Etape { E_CAPTURES, E_COUT, E_ETALON, E_TEXTURE_KTX2, E_PASSES, E_LUMIERE, E_SOLEIL_DONNEES, NB_ETAPES };
 // partie de chaque étape, d'après les durées mesurées en local avec lavapipe (journal WFS-251) : partie 1 = captures, coût par carte,
-// lumière, soleil et données ; partie 2 = étalonnage, texture d'essai KTX2 (WFS-149 : seule la partie 2 la lit), passes (WFS-150)
-constexpr int PARTIE_DE[NB_ETAPES] = {1, 1, 2, 2, 2, 1, 1};
+// soleil et données ; partie 2 = étalonnage, texture d'essai KTX2 (WFS-149 : seule la partie 2 la lit), passes (WFS-150), lumière (WFS-151).
+// La lumière reste après les passes : sans elles, M-03 change à la 4e décimale (17,501 → 17,500), essai du journal WFS-251.
+constexpr int PARTIE_DE[NB_ETAPES] = {1, 1, 2, 2, 2, 2, 1};
 struct Morceau { bool fait = false; std::vector<reel::LigneRapport> lignes; std::string mesures, infos; };
 
 std::string echapper(const std::string& s) {
