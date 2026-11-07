@@ -2920,3 +2920,39 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Tickets ⏳ Prêt : WFS-218, 224, 226 (E4, épic de WFS-222) ; WFS-230 (P1) et WFS-214 (E13, occupée par WFS-227, agent 2, attribué 11:44, moins de 10 h) ; WFS-215 (E10, occupée par WFS-158, arwa-2). Épics libres (E0, E2, E3, E7, E9, E11) : aucun ticket prêt (suites en attente de validations).
 - Décision : **aucune attribution** ; WFS-230 n'est pas libre. Il sera proposé dès que WFS-227 est fusionné (🟣), ou WFS-218 / 224 / 226 dès que WFS-222 est fusionné.
 
+
+### 2026-11-07 12:51:21 — Règle « jamais à court de tickets » ; WFS-231 à 234 créés (bâtiments, deux-roues, enfants, navigation GPS) (po-scrum-master)
+- **Ordre de l'utilisateur** : le PO a toujours des tickets ; sinon il prend une partie du jeu et crée des tickets de rattrapage du réalisme. Écrit dans l'agent PO (au moins 8 tickets ⏳ Prêt, épics variées).
+- **Créés** : WFS-231 (E12 + E2, bâtiments 100 % avec portes / fenêtres / vitrines, après WFS-161) ; WFS-232 (E3 + E10, motos et scooters) ; WFS-233 (E11, enfants et familles, dans le −50 %) ; WFS-234 (E5, carte de navigation façon Google Maps / Waze). Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 12:52:18 — WFS-235 créé : vue Cockpit (barres noires, regard, réglage, réalisme) (po-scrum-master)
+- **Remarque de l'utilisateur** : en vue cockpit, grandes lignes noires qui cachent la rue ; revoir la direction de la caméra ; plus de réalisme.
+- **WFS-235** (E3 + E10, P1 Urgent, ⏳ Prêt) : cause des bandes noires sur les 20 voitures, œil et regard réels qui suivent le virage, champ 75-90°, réglage « Regard cockpit » (Bas / Normal / Haut) sans toucher aux boutons, matériaux et mouvement de tête réalistes, part cachée < 15 % au-dessus de l'horizon. Coordination avec WFS-221 (`camera_vue.*`).
+### 2026-11-07 12:52:52 — WFS-158 livraison 8 fusionnée (PR #197, fusion par confiance) : ST-4, 4 niveaux de détail des 20 voitures (arwa-2)
+- **Fait** : les 20 voitures ont 4 niveaux de détail : le modèle complet, puis 3 versions allégées dans `assets/cars/<id>.lod`. Avant, il y avait 2 niveaux, et seulement pour 6 voitures du trafic ; les 14 autres restaient complètes jusqu'à 200 m.
+- **Choix du niveau** : par la longueur de la voiture à l'écran, en pixels de la scène (`src/render/vehicule_lod.h`) :
+  - moins de 60 px → niveau 1 : ≈ 64 m pour une Golf en poursuite, l'ancien passage de WFS-134 ;
+  - moins de 36 px → niveau 2 : ≈ 105 m ;
+  - moins de 22 px → niveau 3 : ≈ 170 m.
+  Entre deux niveaux, le fondu tramé de WFS-134 garde le même rapport qu'avant. Il n'y a ni saut ni cube.
+- **Qualité Basse** : inchangée (version en 4 pièces au 1er seuil). Police en lots et fantôme : inchangés.
+- **Triangles gardés** (moyenne des 20 voitures) : niveau 1 ≈ 41 %, niveau 2 ≈ 16 %, niveau 3 ≈ 10 %. Exemple de la Golf : 110 074 → 38 328 → 17 687 → 8 207. Le détail par voiture est affiché par `test_vehicule_lod`.
+- **Fichiers .lod** : 9,8 Mo pour les 20 voitures (avant : 3,9 Mo pour 6). Indices en u16 quand le maillage a moins de 65 536 sommets.
+- **Outil** (`tools/alleger_voiture.mjs`, format `WFL2`, `WFL1` toujours lu) :
+  - meshoptimizer prend les normales en attributs. Sans cela, des plaques grises ou argentées apparaissaient sur la Model 3, le X5, la SF90 et l'Abarth ;
+  - l'erreur permise vaut un demi-pixel au seuil d'entrée de chaque niveau ;
+  - pour les pièces que meshoptimizer ne sait pas réduire (faces doublées, « soupes » de triangles : Corsa, Range Rover, Compass), une grille regroupe les sommets, séparés selon le sens de la normale ;
+  - feux et vitres gardent le niveau 1.
+  `tools/convertir_voitures.sh` allège maintenant les 20 voitures.
+- **Accroches annoncées** (zone E4, WFS-142 / WFS-222) :
+  - `src/render/renderer.cpp` : 1 include, 1 ligne dans `beginFrame` (`focalePx_`), le bloc du choix de la version allégée de `Renderer::draw(Model)` remplacé par 1 appel à `vehicule_lod::dessin`, et les 2 lignes d'émission. Les blocs des feux et des reflets ne sont pas touchés ;
+  - `src/render/renderer.h` : `Model::partsNiveaux` et `Renderer::focalePx_` ;
+  - `src/render/model_loader.cpp` : lecture et répartition des niveaux (12 lignes ajoutées, 21 retirées) ;
+  - `CMakeLists.txt` : `test_vehicule_lod`.
+  **WFS-222 (PR #195)** touche aussi `renderer.cpp` et `renderer.h`, mais pas ces lignes : aucun conflit attendu à la synchronisation.
+- **Vérifié en local** :
+  - 44 tests CPU OK ; licences : 0 manque ;
+  - vitrines des 20 voitures aux niveaux 1 et 3 forcés (essai local, rien de committé) : carrosserie propre au niveau 1. Au niveau 3, vu de près, il reste des bosses, invisibles à moins de 22 px ;
+  - banc `qualite` : `voiture-distance-*` et `voiture-lod-passage-*` regardées.
+- **Pour le PO** : `voiture-distance-120-basse` ne montre plus la voiture du trafic (842 appels de dessin, comme à 180 m) depuis ma synchronisation avec `main` de 12:00 UTC environ. C'est le même résultat avec les `.lod` de `main`, et la voiture était visible avant cette synchronisation, avec le même code de WFS-158 : la cause est dans `main`, pas dans WFS-158. Piste : le rendu interpolé du trafic ou la caméra de WFS-221, à vérifier.
+- **Suite de WFS-158** : ST-3 (étriers, intérieurs, sous-caisse), ST-5 (test strict).

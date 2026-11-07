@@ -137,7 +137,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-155 | [RÉALISME 2.R1] Routes : revêtements réels scannés et calibrés par carte, usure … | E9 (+ accroche `track.cpp`) | ⏳ En attente (découpée : lot 1 WFS-205 🔧, lot 2 WFS-206) |  | WFS-151 validée | `feature/waforspeed-155` |  |  |
 | P2 Haute | WFS-156 | [RÉALISME 2.R2] Routes : marquages réglementaires usés et rétroréfléchissants, fissures … | E9 | ⏳ En attente |  | WFS-206 validée (lot 2 de WFS-155) | `feature/waforspeed-156` |  |  |
 | P2 Haute | WFS-157 | [RÉALISME 2.R3] Routes : états de surface (sec, humide, mouillé, flaques, sable … | E9 (+ accroche `meteo.cpp`) | ⏳ En attente |  | WFS-156, WFS-154 validées | `feature/waforspeed-157` |  |  |
-| P2 Haute (**RG-B / ANO-75 en P1 Urgent**, à livrer en premier, PO 2026-11-06 14:26) | WFS-158 | [RÉALISME 2.V1] Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 … | E10 | 🔧 En cours | arwa-2 (Claude, session 01Us6uCu) | WFS-148 ✅ (fusionné, décision PO … | `feature/waforspeed-158` | #157 #162 #163 #166 #167 #186 #187 |  |
+| P2 Haute (**RG-B / ANO-75 en P1 Urgent**, à livrer en premier, PO 2026-11-06 14:26) | WFS-158 | [RÉALISME 2.V1] Véhicules : dimensions exactes des 20 voitures (fiches constructeur ±1 … | E10 | 🔧 En cours | arwa-2 (Claude, session 01Us6uCu) | WFS-148 ✅ (fusionné, décision PO … | `feature/waforspeed-158` | #157 #162 #163 #166 #167 #186 #187 #197 |  |
 | P2 Haute | WFS-159 | [RÉALISME 2.V2] Véhicules : peinture multicouche (flocons, vernis), verre physique … | E10 | ⏳ En attente |  | WFS-158, WFS-151 validées | `feature/waforspeed-159` |  |  |
 | P2 Haute | WFS-160 | [RÉALISME 2.V3] Véhicules : suspension visible (roulis, plongée), roues, salissures … | E10 (+ lecture E3) | ⏳ En attente |  | WFS-159 validée | `feature/waforspeed-160` |  |  |
 | P2 Haute | WFS-161 | [RÉALISME 3.E1] Environnements : kit d'architecture (6 styles), fenêtres en profondeur … | E12 (+ accroches cartes) | 🔧 En cours (CI de branche run 822) | Claude, Agent 0 developer (session 01UY1Vv2SSLK), 2026-11-07 01:46 UTC | WFS-151 ✅ | `feature/waforspeed-161` |  |  |
@@ -171,6 +171,11 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-228 | [RÉALISME 1.3b] Lumière (2/3) : ombres des phares et lampadaires la nuit, allumage selon l'éclairement | E13 (+ accroche E4 `nuit.cpp`) | ⏳ En attente |  | WFS-227 | `feature/waforspeed-228` |  |  |
 | P2 Haute | WFS-229 | [RÉALISME 1.3c] Lumière (3/3) : occlusion ambiante (GTAO), ombre de contact calculée sous les voitures | E13 | ⏳ En attente |  | WFS-227 | `feature/waforspeed-229` |  |  |
 | P1 Urgent | WFS-230 | Nuit sur route non éclairée : adaptation de l'œil, herbe et bas-côtés visibles au clair de lune | E13 | ⏳ Prêt (dès que E13 est libre) |  | WFS-225 🟣 | `feature/waforspeed-230` |  |  |
+| P2 Haute | WFS-231 | [RÉALISME] Bâtiments : 100 % avec portes, fenêtres et vitrines sur les 4 cartes | E12 + E2 | ⏳ En attente (après WFS-161) |  | WFS-161 | `feature/waforspeed-231` |  |  |
+| P2 Haute | WFS-232 | [RÉALISME] Deux-roues : motos et scooters dans le trafic et garés | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-232` |  |  |
+| P2 Haute | WFS-233 | [RÉALISME] Enfants et familles dans les rues | E11 | ⏳ Prêt |  | WFS-209 ✅, WFS-210 | `feature/waforspeed-233` |  |  |
+| P2 Haute | WFS-234 | Carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte | E5 | ⏳ Prêt |  | WFS-173 ✅ | `feature/waforspeed-234` |  |  |
+| P1 Urgent | WFS-235 | Vue Cockpit : voir la rue (plus de barres noires), regard réaliste qui suit la route, réglage « Regard cockpit », intérieurs plus réalistes | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-235` |  |  |
 
 ## Critères d'acceptation
 
