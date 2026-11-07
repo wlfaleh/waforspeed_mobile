@@ -2979,3 +2979,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Vérifié** : 44 tests CPU OK. En local, une Golf agrandie de 3 % et une M4 élargie de 3 % sont refusées (10 échecs).
 - **Garde au sol (M-03)** : le référentiel n'a pas de valeur. Elle est écrite au rapport, sans contrôle tant qu'elle n'est pas sourcée.
 - **Reste de WFS-158** : ST-3, avec les intérieurs des voitures qui en ont très peu (A45, V60, 208, 911, Corsa, GT86, Compass) et la sous-caisse sombre (GT86, V60, Compass, Corsa).
+
+### 2026-11-07 12:59:41 — Nouveau skill et agent « expert-ci » (po-scrum-master)
+- **Demande de l'utilisateur** : un skill d'agent expert CI, pour répondre à ses questions sur la pipeline et faire des travaux de correction, d'amélioration ou d'étude.
+- **Créés** : `.claude/skills/expert-ci/SKILL.md` (vérifier avant de répondre, pipeline en bref, règles de l'utilisateur, méthode de diagnostic, études, façon de répondre), `references/pipeline.md` (détail des workflows, jobs, robots, scripts), `references/historique.md` (rouges déjà vus et leurs corrections) ; agent `.claude/agents/expert-ci.md` ; une ligne dans `CLAUDE.md`.
