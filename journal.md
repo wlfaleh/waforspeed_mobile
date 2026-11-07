@@ -2494,3 +2494,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Captures regardées** (`archi-style-<nom>`, une par style, de face) : les 6 styles se reconnaissent. Triangles moyens au LOD 0 : 311 (villa) à 3 587 (méditerranéen, volets et encadrements) ; LOD 1 : 202 à 1 139.
 - **Restent** : textures (ST-4 : pierre, crépi, zinc, volets ; matériaux encore unis et provisoires), surexposition de nuit d'un mur clair face aux phares (à mesurer en ST-3, M-04).
 - **Suite** : ST-3, intérieurs de nuit (interior mapping, 2700-3000 K, fenêtres allumées selon l'heure).
+
+### 2026-11-07 09:05:01 — WFS-217 créé : guide auto (aide à la direction) corrigé et réglable (po-scrum-master)
+- **Remarque de l'utilisateur** : le guide auto est une catastrophe dans les virages et ronds-points ; le corriger et le rendre activable / désactivable dans les réglages.
+- **Constat** (`player.cpp` ≈ l. 41-58) : réalignement vers l'axe de la route, cap borné (0,5 → 0,16 rad avec la vitesse, rappel à 2,5 rad/s), force centrifuge ; l'axe tourne vite sur les tracés de WFS-136.
+- **WFS-217** (E3 + accroche E8, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-217.md`) : aide qui suit la tangente locale lissée, borne élargie selon la courbure, sans saut ; réglage « Aide à la direction » Activée (défaut) / Désactivée, sauvegardé, `configgame.json` `conduite.aide_direction` ; aucun bouton changé ; banc sur les 4 cartes. Réponse dans `tache utilisateur.md`.
