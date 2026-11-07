@@ -4148,3 +4148,92 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-243, cédez-le-passage (RG-ANO-144)** : ni ralentissement sans raison (a), ni trafic sur les autres branches (b) : la règle est sans objet tant qu'aucune voiture ne roule sur l'anneau en amont d'une entrée ; aucun code, aucun ticket. Noté dans `WFS-243.md` et ANO-144 (`anno.md`).
 - **Dossier partagé** (signalé par arwa-3) : le PO n'écrit que dans `/home/claude/wfs-main` (arbre de travail de `main`) ; ce dossier partage le `.git` du clone d'arwa-3 (`git worktree`), pas ses fichiers.
 - Envois vérifiés : 245 21:04, 278 20:59, 276 20:57, 267 20:04 (PR #232), 258 17:35 ⚠️, 239 13:43 ⚠️ (P1, aucun retrait avant 10 h : 23:43) ; 274 sans branche (rien à coder, à clore par l'agent arwa).
+
+### 2026-11-07 21:33:27 — WFS-267 : fusionné (PR #232, squash 466a4c8) ; libre (arwa-5)
+- **CI de branche run #876 verte** (13 bancs, endurance, APK) : `banc-essai (realisme)` **0 erreur** ; indices identiques au run vert #844 (lumière 69 / 69, soleil 30 / 30, photométrie 12 / 12, revêtements 14 / 14, voitures 109 / 141) + architecture 16 / 16 (WFS-161). Durée du job `realisme` : 68 min (#859 sans le correctif : 67 min ; limite 75 min : WFS-252 la réduit).
+- Branche synchronisée avant la fusion (WFS-235, 243, 249, 270, 275 compris) : 60 tests CPU OK, bloc tunnel local OK (12,96 → 14,06 → 14,65).
+- **WFS-274** (agent arwa) : même panne, corrigée ici ; à son agent de le clore « ↪ Regroupé avec WFS-267 ». La CI de `main` sur 466a4c8 dira si `main` repasse au vert (le robot des statuts passera WFS-267 et WFS-227 en ✅).
+- **Limite connue (signalée au PO)** : quand la caméra reste loin de la voiture plus de 120 images (vues libres de bancs), la sonde est prise comme avant WFS-267 (sans ombre) ; en jeu, cela n'arrive pas (poursuite, Cockpit, garage : point dans la cascade 0).
+- Ligne ajoutée à `qa/Check.md`. Je demande mon ticket suivant au PO.
+
+### 2026-11-07 21:37:22 — WFS-232 : recherche des deux-roues (RG-00, 45 min), 3 modèles CC BY 4.0, téléchargements (arwa-3)
+- **Méthode** : recherche de code GitHub (`"scooter" / "motorcycle" / "vespa" / marques… sketchfab filename:license.txt`), clones partiels en lecture seule dans `/tmp/bac`, rien exécuté, licence lue dans chaque `license.txt`.
+- **Refusés** :
+  - en licence NC-SA : Ducati Streetfighter V4 S, Yamaha YZF 2021, Honda CBR650R, Vespa Mandarinia ;
+  - en licence Sketchfab Standard : « Vespa Scooter » de Marina Belov ;
+  - modèles low-poly ;
+  - Vespa PX125 (alban, CC BY) : relevé photo avec l'éclairage figé dans la texture, matériau « unlit » ;
+  - fichiers Draco de `lxorb/mechanica` : le convertisseur ne lit pas Draco, j'ai pris les originaux ailleurs.
+- **Retenus (CC BY 4.0)** :
+
+  | id | modèle (auteur Sketchfab) | dépôt GitHub (commit) | fichiers, SHA-256 |
+  |---|---|---|---|
+  | scooter | OLA Electric Scooter (neshallads) | `Abhay-s-8/Portfolio` (fcd781b7), `models/ola_electric_scooter_red_color` | scene.gltf 4d9631288fa046e96578e9dd05e16a2a69e6502c935e981fb0ec50a1465e9ef7 ; scene.bin (4 065 328 o) ae11477528ab10f423028fe4be1c2408fbe0f0d5308db478b4d68d06d5dedcfa |
+  | routiere | Honda CB 750 F Super Sport 1970 (Alex.Ka.) | `p-shark/HCAM_project` (c23f055d), `ex09_project/WebContent/image/car/gltf/honda_cb750` | scene.gltf 9c52a72bdf0aca20b8dbb739f0fe8c057da5362f679509dbc3b4e4279537ec13 ; scene.bin (1 579 692 o) 45fb9788d13d0b64d5dca356a7af7d6abfb25fb078d607d3f3ae391df530f05b |
+  | sportive | Kawasaki ninja ZX-6R (valvetin) | `siddharth-vss/CAR-Camera-test` (ea5f593d), `static/kawasaki_ninja_zx-6r` | scene.gltf 0073d7af2b1c76412141729cd77d90aeaa03e191b3780c63ecb97f62c1fc7fa5 ; scene.bin (14 868 588 o) 450dfaa00d3d14147aa62aa76c949aa38b60d12f3dcabb9b8247d82ed1656a2d |
+
+  Le même `scene.bin` de la Honda est dans `KushinoAkira/BanhMi.EXE`, mais seulement comme pointeur LFS : il n'a pas été servi.
+- **Conversion** (branche `feature/waforspeed-232`, 2b6d2c9) :
+  - `.wfm` de 3,1, 2,1 et 5,3 Mo ; 63 k, 37 k et 107 k triangles (la sportive allégée de 335 k) ;
+  - niveaux de détail jusqu'à 3,7 k, 5,3 k et 10,5 k triangles ;
+  - `tools/convert_car.mjs` : nouvelle option `WFS_OPAQUE`, qui traite en alpha découpé les matériaux BLEND mal exportés par Sketchfab.
+- **Dimensions** : `references/reel/deux_roues.json`, statut `a_confirmer` (résumés du moteur de recherche). Écarts de longueur et d'empattement, en ± 1 % :
+  - scooter : 0 / +0,7 % ;
+  - routière : +0,5 % / −0,5 % ;
+  - sportive : −0,9 % / +0,9 % (les proportions du modèle diffèrent du vrai de 1,8 %, écart partagé).
+- **Limite** : roues fixes. La découpe des roues (`roues::decouper`, `model_loader`, `renderer` : 4 roues seulement) est hors de ma zone. Je le propose au PO comme ticket du rendu.
+
+### 2026-11-07 21:37:11 — WFS-279 (partie jeu) attribué à arwa-5 ; limite de WFS-267 sans ticket (po-scrum-master)
+- **Demande d'arwa-5** (libre après WFS-267 🟣, PR #232, squash 466a4c8), avec l'ordre de l'utilisateur qu'il a reçu (17:31 UTC) : « petites tâches ». Tickets prêts permis : WFS-273 (P1, E4, n° 0 du bandeau) et WFS-266 (P1, E11) sont des tickets d'une journée, pas des petites tâches : ils restent au premier développeur qui les demande ; WFS-269, WFS-214 (E13 tenue par WFS-276), WFS-262 à 265 (après WFS-273), WFS-215 (E10 en partie tenue par WFS-232) ne sont pas attribuables. **WFS-279 (partie jeu, P2, E8 libre)**, la plus petite : attribuée.
+- **Début de WFS-279** : branche `feature/waforspeed-279` (créée et poussée par arwa-5). Règles : `regles-de-gestion/WFS-279.md` (précisées ce soir).
+  - Zone : `src/ui/ecrans/chargement.*` ; accroches ≤ 10 lignes annoncées : `android/app/build.gradle` (passer `versionName` à CMake), `CMakeLists.txt` (définition de compilation, valeur fixe par défaut sur PC) ; test CPU dans `tests/**`.
+  - Interdit : `.github/**`, `tools/qa/**` (gel de la CI : RG-02, nom du fichier APK, reste à l'agent expert ci après le gel) ; nom et chemin de sortie de l'APK dans Gradle (`build.yml` l. 153 et `matin.yml` l. 171 copient `app-release.apk`) ; `versionCode` / `versionName` ; tailles des boutons ; iOS.
+  - Critères : version « v0.1.N » en petit sur l'écran de chargement (1280×720, 2400×1080, petit écran), rien d'autre ne bouge (captures `chargement-*` avant / après) ; une seule source (`versionName`) ; tests CPU ; parcours complet 0 écart ; ligne `qa/Check.md`.
+  - Plan court : définition `WFS_VERSION` (CMake, « dev » par défaut) ← argument de Gradle ; texte discret dans `dessinerChargement()` ; test CPU ; banc `chargement` en local.
+  - Après fusion : cycle normal 🟣 → ✅ (bancs du matin), pas de 🟡.
+- **Limite de WFS-267** (sonde sans ombre si la caméra reste loin de la voiture plus de 120 images, vues libres de bancs) : pas de ticket (aucun effet en jeu) ; noté dans `WFS-267.md`.
+- Envois vérifiés : 276 21:28, 232 21:28, 245 21:04, 278 20:59, 258 17:35 ⚠️ (P1, 4 h 01), 239 13:43 ⚠️ (P1, 7 h 53 ; aucun retrait avant 10 h : 23:43) ; 274 sans branche (à clore « ↪ WFS-267 » par l'agent arwa).
+
+### 2026-11-07 21:38:43 — Statuts automatiques, CI main #875 (robot statuts)
+- Run rouge (push, commit ebe798e), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-251, WFS-261, WFS-272.
+
+### 2026-11-07 21:44:57 — ANO-151 et WFS-281 : le jeu rame après 2 min (trafic) (po-scrum-master)
+- Signalement de Claude, agent 5 : l'utilisateur (APK de main 883, c9eda61) voit le jeu fluide la 1re minute puis ramer et saccader vers 2 min.
+- Mesure de l'agent 5 (banc perf, Ville, Haute) : TrafficSystem de 54 appels / 23 000 triangles au départ à 644 appels / 701 000 triangles après ≈ 2,8 min ; même montée avec `WFS_LOTS=0` : pas WFS-268, c'est le trafic (≈ 60 voitures dans la vue au lieu de ≈ 5).
+- Créés : **ANO-151** (bloquante, 📋 Planifiée) et **WFS-281** (P1, [TECHNIQUE] [URGENT], E3, règles `regles-de-gestion/WFS-281.md`), n° 00 du bandeau. Exception PO : mêmes fichiers que WFS-232 (arwa-3), en coordination. 🟡 après fusion (essai de l'utilisateur).
+- Non attribué (attribution seulement à la demande) : domaine trafic, skill `expert-conduite` ; **pas** l'agent 5 (domaine décor). Réponse à l'utilisateur dans `tache utilisateur.md`.
+
+### 2026-11-07 21:45:04 — Lead dev créé : captures obligatoires dans la PR, lui seul fusionne (po-scrum-master)
+- Règle de l'utilisateur après le refus de la vue Cockpit (WFS-235) : plus de fusion par confiance. Le développeur lance `tools/qa/captures_pr.sh` (banc d'essai PC, avant / après, ≥ 3 captures dans `qa/pr/WFS-XX/`), ouvre sa PR et appelle aussitôt l'agent `lead-dev`, qui regarde les images et fusionne ou refuse.
+- Fichiers : `.claude/skills/lead-dev/SKILL.md`, `.claude/agents/lead-dev.md`, `tools/qa/captures_pr.sh` ; `CLAUDE.md`, `po-scrum-master.md` (section « Captures demandées » dans chaque US), `qa-lead` et `waforspeed-natif` (ancienne règle barrée), checklist de livraison.
+- Pas de workflow GitHub sur les PR : interdit par la règle « pas de CI sur les PR » et par le gel de la CI ; l'automatisme passe par l'appel du lead dev dans la session du développeur.
+
+### 2026-11-07 21:59:41 — WFS-245 : livraison 1 fusionnée (PR #238, squash 5032e8b) : étiquettes et distance d'arrivée du HUD lisibles (arwa-2)
+- **Livraison 1, fusion par confiance** (PR #238, squash 5032e8b ; branche synchronisée avec `main` ; 61 tests CPU OK dont le nouveau `test_hud_lisible` ; parcours complet 0 écart ; banc `hud` en 2400 × 1080 regardé). **RG-09 (ANO-141, bandeau de la carte GPS), ajoutée par le PO à 17:48 UTC, vue après la fusion** : livraison 2 sur la même branche ; le ticket reste 🔧 jusqu'à elle, puis 🟡 À valider (utilisateur).
+- **Mesures RG-01** (arbitrage du PO du 17:30 UTC ; capitales et chiffres de Rajdhani Bold = 0,504 × la taille du texte ; capture 2400 × 1080, k = 1,5, 420 dpi = 16,5 px/mm) : capitales des étiquettes TEMPS, ARRIVÉE, CHECKPOINT n, SCORE, KM/H, NITRO **20,7 px (1,25 mm)**, avant 8,6 px (0,52 mm) ; chiffres de la distance d'arrivée **30,2 px (1,83 mm)**, avant 8,6 px (ils étaient dans l'étiquette) ; chiffres du score 30,2 px (avant 25,7) ; vitesse de la vue Cockpit 30,2 px (avant 21,2) ; chrono (36,3 px) et vitesse du compteur (33,3 px) inchangés.
+- **RG-02** : panneau du temps : ligne 1 « 0:06.0 TEMPS » (chrono puis l'étiquette sur sa ligne de base), ligne 2 « ARRIVÉE 1,92 KM » (distance en chiffres de 40, plus grands que l'étiquette ; en Course solo : « CHECKPOINT n »), ligne 3 la barre.
+- **RG-04, surfaces des panneaux** (px de référence au carré, écrites par le banc) : vue normale **32 424 après, 35 000 avant** (temps 200 × 112 → 236 × 84, score 180 × 70 inchangé) ; vue Cockpit **37 949 après, 38 795 avant** (+ panneau de la vitesse). Le panneau du temps est plus large (vers le ciel et les façades) et moins haut ; le bouton Menu et les boutons de caméra ne bougent pas.
+- **Contrastes** (WCAG 2.1, mélange en sRGB comme l'interface, au pire : fond blanc derrière) : étiquettes des panneaux #A6ADC2 sur 0x0A0B10 à 0,85 : **5,9 : 1** (avant 2,3 : 1) ; KM/H et NITRO du compteur sur son disque à 0,72 : **#D0D4DE, 4,8 : 1 sur du blanc** (voiture blanche derrière le compteur), 6,2 : 1 sur un béton clair ; le #C4C9D6 proposé ne donnait que 4,3 : 1 sur du blanc (choix permis par le PO s'il est mesuré ≥ 4,5 : 1). NITRO reste vert en nitro active.
+- **RG-03** : aucun bouton changé (volant, Gaz, Frein, Nitro, Menu, caméra : mêmes cadres, `commandes_tactiles` et `pause.cpp` non touchés) ; seul `obstacles()` de `minicarte.h` suit la nouvelle taille du panneau du temps (`hud::TEMPS_L`, `TEMPS_H`, constantes partagées dans `hud.h`).
+- **RG-05, captures** (banc `WFS_BANC=hud`, 2400 × 1080) : `hud-solo-jour`, `hud-solo-nuit`, `hud-course5-jour`, `hud-course5-nuit`, `hud-cockpit-jour`, `hud-cockpit-nuit` (nouvelles) ; `hud-course`, `hud-temps-bas`, `hud-nitro`, `hud-combo`, `hud-arc-120`, `hud-arc-320`, `encoche-hud` (existantes) ; avant : les mêmes captures du banc `hud` de `main` (`hud-course`, `hud-temps-bas`, `hud-nitro`, `hud-combo`, `hud-arc-*`, `encoche-hud`), et `cockpit-golf-jour` du banc `cockpit` pour la vue Cockpit.
+- **Limites** : pas d'essai sur téléphone (l'utilisateur confirme sur l'APK de `main`) ; la densité de 420 dpi est celle du téléphone de référence du projet : sur un 2340 × 1080 de 6,4 à 6,7 pouces (385 à 405 ppi), les textes sont un peu plus grands ; la ligne « Combo ×n » et le tableau des positions de la Course à 5 ne changent pas (hors périmètre d'ANO-118).
+
+### 2026-11-07 22:06:00 — WFS-279 (partie jeu) : version à l'écran de chargement, accroches annoncées, CI de branche #888 (arwa-5)
+- **Branche** `feature/waforspeed-279` (a3212c5, synchronisée avec `main` après WFS-245). Écran : `src/ui/ecrans/chargement.*` : « v0.1.N » en petit, couleur `MUTED`, coin bas droit (12 px à 720 p ; 14 dp sur téléphone, WFS-147), écran d'erreur compris ; mise en forme `texteVersion()` (vide → « dev », 24 caractères au plus).
+- **Accroches annoncées** : `android/app/build.gradle` (2 lignes : `"-DWFS_VERSION=${android.defaultConfig.versionName}"` ajouté aux arguments CMake, + 1 commentaire ; `versionName`, `versionCode` et le nom de sortie de l'APK inchangés) ; `CMakeLists.txt` (5 lignes : variable `WFS_VERSION` « dev » par défaut, définie seulement pour `chargement.cpp` et son test ; `add_executable(test_version_chargement …)`).
+- **Preuves locales** : captures `chargement-*` avant / après (1280×720 et 2400×1080) : seuls les pixels du coin de la version changent (79 et 593 pixels), ailleurs écart max 1 / 255 sur 1 ou 2 pixels (arrondi) ; avec `-DWFS_VERSION=0.1.912` : « v0.1.912 » lisible ; **62 tests CPU OK** (dont `test_version_chargement`) ; **parcours complet 0 écart** (vue normale et Cockpit).
+- **Non testable en local** : la construction Gradle (pas de SDK Android ici) → **CI de branche lancée une fois, run #888** (id 42418948201, `workflow_dispatch` de `build.yml`) : vérifie l'APK (argument passé par Gradle), les tests et le parcours `menu1-2400`.
+
+### 2026-11-07 22:06:27 — WFS-245 : arbitrage de RG-09 (ANO-141, bandeau de la carte GPS) pour la livraison 2 (po-scrum-master)
+- Question d'arwa-2 (session 01Us6uCu) : RG-09 impossible telle qu'écrite (consigne ≥ 18 px de capitales = taille 24 : 9 à 10 caractères sur 108 de large, coupés en « Virage s… »).
+- **Erreur du PO** : RG-09 recopiait les px du QA (lettres les plus hautes, « d » et accents, avec le flou des bords) sans la méthode. Règle retenue : **au moins 2 × la taille d'aujourd'hui**, mesure en capitales (RG-01, 0,504 × taille × k).
+- **Option A retenue** (cadre 150 × 150, boutons et flèche inchangés) : bandeau **56** (plafond 60, au lieu de 38) en 2 rangées ; distance **32** (réduite jusqu'à 28, seul « Maintenant ») ; consigne **20** sur **une** ligne de 142 (réduite jusqu'à 16, puis « … ») ; nom de rue **16** sur une étiquette de **18** (réduit jusqu'à 15). En 2400 : distance 24,2 px, consigne 15,1 px, nom 12,1 px (avant 11,3 / 7,6 / 6,0).
+- Calcul sur la police : toutes les consignes en 20 sauf « Au rond-point, Ne sortie » (18 à 18,5) et « Carrefour à feux, tout droit » (16) ; aucune coupée ; textes de WFS-234 non touchés (option B refusée), 1,5 × refusé (option C).
+- **Carte inchangée** : vue calculée avec 38 comme aujourd'hui ; le bandeau cache 18 de plus du haut de la carte (route visible devant ≈ 77 % d'aujourd'hui), accepté. Détail, captures demandées et preuves : `regles-de-gestion/WFS-245.md` (Suivi, 22:05:47) ; `anno.md` (ANO-141) renvoie à l'arbitrage.
+- Processus : PR #238 (livraison 1) fusionnée par confiance à 21:59:02, 3 min après l'envoi de la règle du lead dev (21:55:57) ; rien d'annulé (aucun ordre). La livraison 2 suit la règle du lead dev (captures, PR, agent `lead-dev` qui fusionne) ; après fusion 🟡 À valider (utilisateur).
+- Envois vérifiés : 279 22:02, 245 21:51, 232 21:46, 278 21:29, 276 21:28, 258 17:35 ⚠️ (P1, 4 h 30), 239 13:43 ⚠️ (P1, 8 h 22 ; aucun retrait avant 10 h : 23:43).
+
+### 2026-11-07 22:11:01 — Statuts automatiques, bancs du matin #2 (robot statuts)
+- Run rouge (workflow_dispatch, commit c9eda61), aucun statut changé. Job(s) en échec : banc (realisme-2), émulateur Android (information).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-257, WFS-244, WFS-250, WFS-251, WFS-252, WFS-277, WFS-261, WFS-270, WFS-272, WFS-275.
