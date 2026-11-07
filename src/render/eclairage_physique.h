@@ -75,6 +75,7 @@ struct Forcage {
     double hauteurSoleil = -100;     // ° ; < −90 : celle de la carte
     double ev = -100;                // EV100 fixe ; < −50 : exposition automatique
     double heureUtc = -100;          // WFS-207 : heure UTC du soleil (lieu et date fictifs) ; < −50 : celle du moment
+    bool sansNuages = false;         // WFS-208 : ciel clair (mesures de chromaticité M-03 de WFS-207)
     double azimutSoleil = -1000;     // WFS-207 : azimut forcé (°, du nord vers l'est ; étalon de WFS-151) ; < −500 : celui du soleil calculé
     bool abscisseForcee = false; double abscisse = 0;   // abscisse (unités de la piste) des sondes (tunnels, ponts)
     bool pointForce = false; vec3 point{};             // point des sondes (sinon la voiture)

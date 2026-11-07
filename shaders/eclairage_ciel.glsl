@@ -40,7 +40,8 @@ vec3 cielPhysique(vec3 d) {
     }
     if (F.cielP.y <= 0.0) {   // WFS-208 : nuages de jour (devant le soleil)
         float n = nuages(d, F.cielP.w);
-        vec3 nuage = F.sunColor.rgb * F.sunDir.w * (0.6 / 3.14159265) * (max(s.y, 0.05) + 0.35);
+        // soleil (albédo 0,6, lambertien) + lumière du ciel rediffusée : un nuage n'est jamais plus sombre que le ciel qui l'entoure
+        vec3 nuage = F.sunColor.rgb * F.sunDir.w * (0.6 / 3.14159265) * (max(s.y, 0.05) + 0.35) + col * 1.1;
         col = mix(col, nuage, n * 0.9);
     }
     return col;

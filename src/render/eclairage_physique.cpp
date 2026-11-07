@@ -487,7 +487,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         }
     }
     g.k = k; g.facteur = facteur;
-    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), lune ? (float)atmosphere::rad(astre.phase) : (float)couvertureNuages(gv)};   // WFS-208 : w = phase de la lune, ou couverture nuageuse de jour   // WFS-207 : w = angle de phase de la lune
+    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), lune ? (float)atmosphere::rad(astre.phase) : (g.forc.actif && g.forc.sansNuages ? 0.f : (float)couvertureNuages(gv))};   // WFS-208 : w = phase de la lune, ou couverture nuageuse de jour   // WFS-207 : w = angle de phase de la lune
     // ---- RG-03 / ST-4 : sondes locales
     const int niveau = qualite::niveauAffiche(ecrans::reglages().qualite);
     double esp = espacement(niveau);
