@@ -4408,3 +4408,26 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **(b) refusée** : `configgame.json` non touché (`course5.vitesse_difficile`, bloc `nitro`) : ce serait changer toutes les courses Difficile et la nitro du joueur, non demandé par l'utilisateur.
 - **Exception de fichier** : `tests/test_course5.cpp`, les deux seules vérifications (commentaire « WFS-283 RG-08 ») ; `course5.h` : aucun changement gardé. Tableau des 7 voitures avant / après au journal ; si une autre vérification échoue, arrêt et retour au PO.
 - Écrit dans `regles-de-gestion/WFS-283.md` (RG-08, Suivi) et `regles-de-gestion/WFS-189.md` (révision de RG-02 et RG-06, anciennes valeurs gardées). Rappel : `feature/waforspeed-283` toujours pas poussée à 2026-11-07 23:26:33.
+
+### 2026-11-07 23:27:31 — WFS-276 : mesures, tests et coût ; reprise après le refus du lead dev (PR #243) (Claude, Agent 0 developer)
+- **Correction** (`shaders/post.frag`, E13) : la nuit, les basses lumières sont relevées par pixel. Sous 0,08 (luminance exposée, ≈ 1,17 IL sous le gris moyen) : Y → 0,08 × (Y / 0,08)^0,45 ; au-dessus, rien ne change. Source : loi de Stevens (Stevens 1961 ; J. C. et S. S. Stevens 1963, exposant 0,33 à 0,5 aux faibles adaptations). Le PO l'accepte comme « équivalent sourcé » de RG-01 (Suivi de WFS-276.md). La Ville éclairée est exclue (RG-04) par le signe de `kVisionNuit` (`eclairage_physique.cpp`) ; aucune modification du renderer.
+- **Mesures** (banc `campagne` de nuit, Haute = Basse ; référence = main construit à côté ; pixels noirs = < 0,5 % du blanc sous l'horizon) :
+  - péage 50,0 → 0,0 % ; rond-point 17,0 → 0,0 % ; village 19,2 → 0,0 % ; autoroute 0,4 → 0,0 % ;
+  - saturés inchangés (≤ 0,03 %) ;
+  - flaque et paysage : 3,8 IL d'écart (7 IL dans la scène ; RG-02 : ≥ 2).
+- **Banc `nuit`**, référence contre branche, 64 captures :
+  - Ville, Course à 5, cockpit, conducteurs : **identiques** (0 pixel différent) ;
+  - Campagne, Corniche, circuit et Poursuite : seuls 1 à 15 % des pixels changés étaient clairs avant (> 70/255).
+- **Coût (RG-05)**, banc `perf`, Campagne de nuit, 300 images, lavapipe, deux passages alternés main / branche :
+  - Haute : 302,3 / 302,2 ms contre 308,0 / 305,5 ms ;
+  - Basse : 204,1 / 206,0 ms contre 213,5 / 204,6 ms ;
+  - écart moyen +1,5 % (Haute) et +1,9 % (Basse), sous la variation d'un passage à l'autre (±4 %) : coût non mesurable (une puissance par pixel, rien de spatial).
+- **Tests** : `test_fidelite_lumiere` (107 vérifications) : courbe continue et croissante, flaque / paysage ≥ 2 IL, constantes identiques dans le shader ; tests CPU 0 échec ; parcours 0 écart (normal et Cockpit).
+- **Refus du lead dev** (PR #243), points traités :
+  1. branche resynchronisée avec main (23ced58) ;
+  2. « équivalent » accepté par le PO ;
+  3. coût mesuré (ci-dessus) ;
+  4. cette entrée au journal ;
+  5. captures de jour ajoutées (banc `campagne` jour + nuit, `nuit`), régénérées sur la branche synchronisée ;
+  6. commentaire de `post.frag` corrigé (0,45 ; 1,17 IL ; 3,8 IL).
+  `DA-realisme.md` § 3 cite la source. Le lead dev est rappelé dès que les captures sont prêtes.
