@@ -74,7 +74,7 @@ public:
             return r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
         for (int s = 0; s < NS; s++)   // murs : appareil procédural (decor.glsl), albédo moyen = référentiel (M-03) ; brique pour l'industriel
-            mats_[S_MUR + s] = mat(s == (int)Style::Industriel ? ALB_BRIQUE : ALB_BETON, 1, 0.9f, 0, MAT_DOUBLE | MAT_FACADE, (float)APPAREIL[s]);
+            mats_[S_MUR + s] = mat(s == (int)Style::Industriel ? ALB_BRIQUE : ALB_BETON, 1, 0.9f, 0, MAT_DOUBLE | MAT_FACADE, 0.2f * (float)APPAREIL[s]);   // × 0,2 : sous l'alpha 1 (shadow.frag jette alpha < cutoff)
         mats_[S_TOIT + (int)Toit::Zinc] = mat(ALB_INOX, 0.6f, 0.45f, 1);
         mats_[S_TOIT + (int)Toit::Tuiles] = mat(ALB_TERRE_CUITE, 1, 0.8f, 0);
         mats_[S_TOIT + (int)Toit::Terrasse] = mat(ALB_BETON, 0.6f, 0.95f, 0);

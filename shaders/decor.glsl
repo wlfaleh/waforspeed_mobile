@@ -63,7 +63,7 @@ vec3 interieurFenetre(vec3 N, vec3 V, vec3 skyAmb) {
 // est dessiné ici. Règle de fidélité (M-03) : la moyenne de l'albédo sur la façade reste celle du référentiel (pc.color,
 // references/reel/materiaux.json) : la teinte du mortier est fixée et celle des pierres / briques est calculée pour compenser
 // la part des joints ; les variations d'une pierre à l'autre sont de moyenne nulle. uv en mètres (x le long du mur, y depuis
-// le sol). Type d'appareil dans pc.params.z : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton.
+// le sol). Type d'appareil dans pc.params.z × 5 : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton.
 const uint F_FACADE = 2097152u;
 const float MORTIER = 0.45;                   // albédo du mortier de chaux (gris clair)
 
@@ -83,7 +83,7 @@ float joint(vec2 p, float l, float h, float e, out vec2 id) {
 void surfaceFacade(inout vec4 base, inout float rough) {
     const vec3 ref = base.rgb;                // albédo moyen du référentiel
     const vec2 p = vUv;
-    const int type = int(pc.params.z + 0.5);
+    const int type = int(pc.params.z * 5.0 + 0.5);   // appareil × 0,2 (sous l'alpha 1 : l'ombre ne jette pas le mur)
     vec3 c = ref;
     if (type == 1 || type == 2) {
         // pierre de taille : assises de 0,40 m, blocs de 0,80 m, joints de 8 mm ; brique (module 22 × 6,5 cm + joints de

@@ -63,7 +63,7 @@ public:
             {   // ST-4 (repli PROVISOIRE) : appareil procédural (decor.glsl, surfaceFacade), albédo moyen = référentiel (M-03) ;
                 // type : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton
                 static const float TYPE[NB] = {1, 4, 0, 3, 2, 0};
-                Material m; m.color = {murC.x, murC.y, murC.z, 1}; m.rough = 0.9f; m.metal = 0; m.flags = MAT_DOUBLE | MAT_FACADE; m.cutoff = TYPE[s];
+                Material m; m.color = {murC.x, murC.y, murC.z, 1}; m.rough = 0.9f; m.metal = 0; m.flags = MAT_DOUBLE | MAT_FACADE; m.cutoff = 0.2f * TYPE[s];   // × 0,2 : sous l'alpha 1 (shadow.frag)
                 mats_[s][archi::MUR] = r.makeMaterial(m, nullptr, nullptr, nullptr);
             }
             mats_[s][archi::ENCADREMENT] = mat(beton, 0.8f, 0);
