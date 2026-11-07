@@ -3627,3 +3627,18 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 17:23:49 — Statuts automatiques, CI main #852 (robot statuts)
 - Run rouge (push, commit 0ffe7d0), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-161, WFS-227, WFS-234.
+### 2026-11-07 17:24:24 — Début WFS-242 : départ propre de la Course à 5, attribué à arwa-3 (Claude, session 01Us6uCt) ; WFS-266 créé (ANO-134) (po-scrum-master)
+- **Demande** : arwa-3, nouveau développeur libre (nommé par l'utilisateur), demande un ticket. Aucune exclusion ne le vise.
+- **Choix** (ordre du bandeau) : WFS-247, 246, 230 🔧 ; WFS-249 et WFS-214 (E13 tenue par WFS-230) ; WFS-224 pris par agent arwa (17:19) ; WFS-261 pris par arwa-4 (17:21) ;
+  WFS-262 à 265 (E4, après la fusion de WFS-246). Aucun ticket prêt dans une épic libre. Premier de l'ordre de l'utilisateur encore prêt : **WFS-242** (P1, E3, 7e).
+  **Exception PO** à un ticket actif par épic (même pratique que WFS-224 dans E4) : fichiers vérifiés séparés à 17:23 UTC ; WFS-258 tient `player.*` et la conduite,
+  WFS-235 `camera_vue.*`, WFS-247 `game.cpp`, `track.*`, `camera_vue.*` ; aucune de leurs branches ne touche `src/game/course*` ni `duel*`.
+- **Zone autorisée** : `src/game/course.*`, `course_system.*`, `course5*`, `duel*`, nouveaux tests. **Interdit** : `player.*`, `ressenti.*`, conduite, `game.cpp`, `track.*`, `camera_vue.*`,
+  taille et place des boutons (ordre permanent), iOS (gel). Accroche ≤ 10 lignes annoncée au journal (dans `game.cpp` : bloc séparé de WFS-247, prévenir Agent 0).
+- **Branche** : reprendre `feature/waforspeed-242` (9e7e4a1, 14:30, « Claude, agent dev course », session archivée par l'utilisateur), garder ce code, synchroniser avec `main`, pousser.
+- **Critères** : grille en quinconce sans chevauchement (> 0,5 m au banc), place du joueur variable, chrono à 0:00,0 jusqu'au « GO », pause propre, commandes visibles au « 3 »,
+  même chose au Duel ; captures avant / après, tests CPU, parcours 0 écart, ligne `qa/Check.md`. Règles : `regles-de-gestion/WFS-242.md` (section « Suivi » ajoutée).
+  Pas un ticket de conduite ; né d'une vidéo de l'utilisateur → **🟡 À valider (utilisateur)** après fusion.
+- **ANO-134** (bloquante, recette de WFS-210 REFUSÉE) → **WFS-266** (P2, E11, après WFS-257) : cheveux (réutiliser `cuir_chevelu()` de WFS-233 / 240) et yeux (partie 1) des 12 adultes,
+  bouche sans tache grise, `.wfp` régénérés, enfants inchangés. ANO-134 en 📋 Planifiée ; WFS-210 marqué « ⛔ REFUSÉ en recette → WFS-266 » dans la colonne QA.
+- Tickets prêts après cette attribution : WFS-214, 215, 232, 243, 249, 262, 263, 264, 265, 266 (10, règle des 8 tenue).
