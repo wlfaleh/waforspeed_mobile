@@ -14,14 +14,14 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 13:11:11 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 13:25:35 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : PR #195 ouverte, CI de branche run 831 lancée (12:19, 5a3713c) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) ; a demandé un 2e ticket (12:48) : aucun ticket attribuable hors E4 (WFS-230 et 214 attendent E13, WFS-215 attend E10) |
-| Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (choix de l'utilisateur : « regarder avec le PO » ; attribué 12:53) | 234 : à pousser dès sa création ; 220 : PR #190 fusionnée | 🔧 actif |
+| Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (choix de l'utilisateur : « regarder avec le PO » ; attribué 12:53) | 234 : aucune branche poussée (attribué 12:53) ; 220 : PR #190 fusionnée | ⚠️ pas de branche 30 min après l'attribution |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | relancé par l'utilisateur (« Prend une tâche ») : P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 11:45 (55b5298) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-233 | Enfants et familles dans les rues (réalisme, E11) : lecture des règles et du code des piétons | 233 : branche poussée 12:55 | 🔧 en cours |
 | Claude, agent 4 (011cpqZan) | — | WFS-236 fusionné (PR #199) ; rattrapage des runs #818 à #825 lancé (RG-06) | 236 : 13:16 (PR #199, squash c2be79f) | ✅ libre ; WFS-236 (🟣) |
@@ -45,11 +45,11 @@
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 13:11:11 : WFS-236 complété (RG-02 bis), WFS-237 créé et réservé à l'agent expert ci |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 13:25:35 : WFS-238 créé (notification de chaque APK de main) et confié à l'agent expert ci |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
-| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, propositions d'US techniques | 2026-11-07 13:21:48 : WFS-237 🟣 fusionné (PR #200) ; runs en file #830 à #835 annulés (contenus dans #837) ; mesure avant / après en cours |
+| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 13:25:35 : WFS-238 attribué (🔧, branche `feature/waforspeed-238` à pousser) ; WFS-237 🟣 (PR #200), mesure avant / après en cours |
 
 ## Info pour les développeurs (2026-11-06 23:47 UTC)
 - Le rendu se vérifie **en local** avec lavapipe : `mesa-vulkan-drivers` et `glslc` s'installent dans le conteneur (paquets apt), puis `WFS_BANC=<groupe> build/wfs_bench` (même rendu logiciel que la CI ; testé par Claude, agent 2 sur WFS-197).
