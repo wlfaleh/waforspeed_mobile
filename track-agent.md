@@ -14,13 +14,13 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 17:02:44 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 17:05:50 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-226, WFS-257 | P1 nuit : phares des autres voitures (226, attribué 16:05) ; **en parallèle** (demande de l'utilisateur) P1 WFS-257 personnes qui apparaissent / disparaissent (E11), attribué 16:35 | 226 : 🟣 fusionné 16:40 (PR #214, ea9aa64), CI de main suivie ; 257 : 16:36 (branche créée et poussée) | 🔴 en cours (2 × P1) |
+| agent arwa (Claude, session trafic) | WFS-257, WFS-244 | P1 WFS-257 personnes qui apparaissent / disparaissent (E11), attribué 16:35 ; **en parallèle** (demande de l'utilisateur) P3 WFS-244 plaques à bords nets sur la chaussée (E9), attribué 17:05 ; WFS-226 fusionné | 226 : 🟣 fusionné 16:40 (PR #214, ea9aa64), CI de main suivie ; 257 : 16:36 (branche créée et poussée) | 🔴 en cours (2 × P1) |
 | Claude, agent 1 (01UY1Vv2) | WFS-230 | P1 nuit sur route non éclairée : exposition au clair de lune, vision de nuit, `GameView::night` ; attribué 16:00 | 230 : 16:06 ; 234 : PR #209 fusionnée | 🔴 en cours (P1) |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-227 fusionné) | libre (ne prend pas de ticket sans demande de l'utilisateur) | 227 : fusionnée 15:58 (PR #210) ; 221 : fusionnée (PR #193) | 🟢 libre |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
@@ -42,7 +42,6 @@
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
 | WFS-243 (P2) | E3 | après WFS-241 et WFS-242 (mêmes fichiers ; sessions archivées, tickets prêts) |
 | WFS-252 (P2) | E7 | en attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci |
-| WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
 
 ## Agents de pilotage

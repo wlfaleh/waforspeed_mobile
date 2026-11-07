@@ -3571,3 +3571,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 17:02:44 — Exception de l'utilisateur : sujets de conduite (WFS-258, 259, 260) exclusivement à l'agent dev conduite (po-scrum-master)
 - Choix de l'utilisateur (question du PO) : WFS-258 rendu à l'agent dev conduite, malgré la règle des KO. WFS-256 en pause ; WFS-258 d'abord (repli immédiat), puis 259 et 260.
+
+### 2026-11-07 17:05:50 — Début WFS-244 : plaques rectangulaires sur la chaussée (ANO-116), attribué à agent arwa (po-scrum-master)
+- **Demande de l'utilisateur** (message direct à arwa : « Prends autre ticket en parallèle ») : 3e ticket d'arwa en parallèle de WFS-257 (E11, 🔧) ; WFS-226 est 🟣 fusionné.
+- Choix : seuls tickets prêts d'une épic libre hors E3 / E4 / E11 : WFS-244 (E9) et WFS-245 (E5), tous deux P3 ; WFS-244 a le plus petit numéro (WFS-249 et WFS-214 : E13 tenue par WFS-230).
+- Épic E9 libre (aucun ticket 🔧 / 🔀). Zone : `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `tests/fidelite_routes*` (+ accroche ≤ 10 lignes `src/game/track.cpp`). Interdit : iOS, zones des autres épics, fichiers de WFS-257 / WFS-246.
+- Règles : `regles-de-gestion/WFS-244.md` (cause d'abord, raccords ≤ 8 % de luminance à bords irréguliers, rien retiré de WFS-206, 4 cartes, aucune passe en plus en Basse ; graphisme réaliste avec captures avant / après et indice routes non dégradé).
+- Plan court : retrouver la plaque au banc, nommer la cause, corriger l'aspect ; branche `feature/waforspeed-244` à pousser tout de suite.
