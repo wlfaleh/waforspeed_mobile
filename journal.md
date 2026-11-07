@@ -3488,3 +3488,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 16:15:42 — WFS-247 : roues avant à l'angle appliqué ; CI de branche run 848 annulée, run 854 (Claude, Agent 0 developer)
 - Ajout du PO (Suivi de WFS-247, venant de WFS-241) fait : `game.cpp` (`roues::poseJoueur`), les roues avant dessinées suivent `Player::braquageRoues` (angle appliqué : joueur + aide) dans le modèle du monde, au lieu du doigt (`player.steer`) ; cet angle est aussi interpolé au rendu (`JoueurInterpole`). Ancien modèle (aide « Web ») : inchangé. `player.*` non touché. Tests CPU 0 échec, parcours 0 écart (vue normale et Cockpit), branche synchronisée avec main.
 - **CI de branche** : run 848 (e92749b) **annulé** (code dépassé par ce commit) ; **run 854** (791997c) lancé : compilation, tests, APK, captures `fluidite-*` (dont 20 img/s) et `roues-*`.
+
+### 2026-11-07 16:15:52 — Statuts automatiques, CI main #844 (robot statuts)
+- Run vert (push, commit ae49782) : WFS-240 ✅ (PR #205, 959b86a).
