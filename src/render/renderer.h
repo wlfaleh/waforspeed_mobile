@@ -291,6 +291,7 @@ private:
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
     double gpuImageMs_ = -1;   // WFS-246
+    float tailleMin_ = 0.003f, tailleMinBasse_ = 0.006f;   // WFS-246 (levier 4) : rayon / distance minimal (WFS_TAILLE_MIN=0 au banc : coupé)
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     // WFS-09 / WFS-16 : lumières de nuit et reflets
