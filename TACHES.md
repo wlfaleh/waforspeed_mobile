@@ -155,7 +155,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-210 | [RÉALISME 4.P1b] Personnages (3/3) : vêtements par lieu, peau translucide, cheveux et yeux | E11 | ✅ Terminé (CI main #818) | Claude, agent 5 (011cpqZaDiS2), 2026-11-07 08:40 UTC | WFS-209 ✅ | `feature/waforspeed-210` |  |  |
 | P1 Urgent | WFS-213 | Correction : écran blanc après le chargement d'une voiture (exposition de WFS-151) | E13 | ✅ Terminé (CI main #817) | Claude, agent 1 (01UY1Vv2), 2026-11-07 08:24 UTC | — | `feature/waforspeed-213` | #184 |  |
 | P2 Haute | WFS-214 | Correction (lot E13) : ciel en paliers, chaussée bleue en Ultra (ANO-109, ANO-106) | E13 | ⏳ Prêt (dès que E13 est libre) |  | WFS-213 | `feature/waforspeed-214` |  |  |
-| P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport (ANO-107, ANO-110) | E10 | ⏳ Prêt (dès que E10 est libre) |  | — | `feature/waforspeed-215` |  |  |
+| P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport, verre laiteux A45 (ANO-107, ANO-110) | E10 | ⏳ Prêt (après WFS-235, épic E10) |  | — | `feature/waforspeed-215` |  |  |
 | P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | 🟣 Fusionné | Claude, session dev 5bx, 2026-11-07 12:00 UTC | WFS-212 ✅ | `feature/waforspeed-216` | #196 |  |
 | P1 Urgent | WFS-217 | Conduite : corriger le « guide auto » (aide à la direction) dans les virages serrés et ronds-points + réglage Activée / Désactivée | E3 (+ accroche E8 `reglages.cpp`) | 🟣 Fusionné (PR #189, fusion par confiance, squash a63d209) | agent arwa (Claude, session trafic), 2026-11-07 09:48 UTC | — | `feature/waforspeed-217` | #189 |  |
 | P1 Urgent | WFS-218 | Phares du joueur : **deux** vrais feux de croisement (gauche et droit, coupure), plus une seule lampe au centre | E4 | ⏳ Prêt |  | — | `feature/waforspeed-218` |  |  |
@@ -172,13 +172,14 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-229 | [RÉALISME 1.3c] Lumière (3/3) : occlusion ambiante (GTAO), ombre de contact calculée sous les voitures | E13 | ⏳ En attente |  | WFS-227 | `feature/waforspeed-229` |  |  |
 | P1 Urgent | WFS-230 | Nuit sur route non éclairée : adaptation de l'œil, herbe et bas-côtés visibles au clair de lune | E13 | ⏳ Prêt (dès que E13 est libre) |  | WFS-225 🟣 | `feature/waforspeed-230` |  |  |
 | P2 Haute | WFS-231 | [RÉALISME] Bâtiments : 100 % avec portes, fenêtres et vitrines sur les 4 cartes | E12 + E2 | ⏳ En attente (après WFS-161) |  | WFS-161 | `feature/waforspeed-231` |  |  |
-| P2 Haute | WFS-232 | [RÉALISME] Deux-roues : motos et scooters dans le trafic et garés | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-232` |  |  |
+| P2 Haute | WFS-232 | [RÉALISME] Deux-roues : motos et scooters dans le trafic et garés | E3 + E10 | ⏳ Prêt (après WFS-235, épics E3 et E10) |  | — | `feature/waforspeed-232` |  |  |
 | P2 Haute | WFS-233 | [RÉALISME] Enfants et familles dans les rues | E11 | 🔧 En cours | Claude, agent 3 (01UY1Vv3), 2026-11-07 12:53 UTC | WFS-209 ✅, WFS-210 | `feature/waforspeed-233` |  |  |
 | P2 Haute | WFS-234 | Carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte | E5 | 🔧 En cours | Claude, agent 1 (01UY1Vv2), 2026-11-07 12:53 UTC | WFS-173 ✅ | `feature/waforspeed-234` |  |  |
-| P1 Urgent | WFS-235 | Vue Cockpit : voir la rue (plus de barres noires), regard réaliste qui suit la route, réglage « Regard cockpit », intérieurs plus réalistes | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-235` |  |  |
+| P1 Urgent | WFS-235 | Vue Cockpit : voir la rue (plus de barres noires), regard réaliste qui suit la route, réglage « Regard cockpit », intérieurs plus réalistes | E3 + E10 | 🔧 En cours | arwa-2 (Claude, session 01Us6uCu), 2026-11-07 13:36 UTC | — | `feature/waforspeed-235` |  |  |
 | P1 Urgent | WFS-236 | [TECHNIQUE] Robot des statuts : un run de main annulé seulement à la publication compte comme vert | E7 | 🟣 Fusionné (PR #199, fusion par confiance) | Claude, agent 4 (011cpqZan), 2026-11-07 13:05 UTC | — | `feature/waforspeed-236` | #199 |  |
 | P1 Urgent | WFS-237 | [TECHNIQUE] CI de main : un seul run pour les fusions rapprochées, installation des 12 bancs plus solide | E7 | 🟣 Fusionné (PR #200, squash 4b8711f ; mesure après quelques runs) | agent expert ci (session 01UY1Vv4), réservé 2026-11-07 13:11 UTC | WFS-236 | `feature/waforspeed-237` | #199 |  |
 | P1 Urgent | WFS-238 | [TECHNIQUE] Notification en temps réel à chaque APK de main publié (issue GitHub épinglée) | E7 | 🟣 Fusionné (PR #201, squash 9ffe4d4) | agent expert ci (session 01UY1Vv4), 2026-11-07 13:25 UTC | — | `feature/waforspeed-238` |  |  |
+| P1 Urgent | WFS-239 | [TECHNIQUE] Banc qualité : voiture du trafic absente à 120 m en Basse depuis WFS-221 ; placements contrôlés | E4 (exception PO : `qualite_banc.cpp` seul, hors fichiers de WFS-222) | ⏳ Prêt (premier développeur libre) |  | — | `feature/waforspeed-239` |  |  |
 
 ## Critères d'acceptation
 
