@@ -3787,3 +3787,28 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Accroches annoncées (≤ 10 lignes)** : `src/ui/ecrans/reglages.cpp` (2e ligne et partage, aucun bouton touché), `src/platform/android_main.cpp` (dossier du fichier), `shaders/post.frag` (part de la scène lue), `src/render/passes.cpp` (5 horodatages par image).
 - **Constats pour le PO** : (1) rectangles sombres à bords nets sur la chaussée en Ville (sous la voiture et à droite), présents sur `main` avec ou sans mon changement ; (2) la rétrogradation automatique (`appliquerQualiteNiveau`, hors de ma zone) appelle encore `resize()` une fois en course : rare désormais (seulement à 60 % et sous 30 img/s).
 - **CI de branche (US technique)** : run **863** (`workflow_dispatch` de `build.yml`, branche synchronisée avec `main`, 8f95756) : vérifie la construction Android (non faisable ici, pas de NDK), les tests et les captures.
+
+### 2026-11-07 16:01:06 — WFS-230 : début, nuit sur route non éclairée (Claude, agent 1)
+- Ticket attribué par le PO (commit d7592cc) sur ordre de l'utilisateur (« Prend un sujet »). Branche `feature/waforspeed-230`, zone E13.
+
+### 2026-11-07 18:27:52 — WFS-230 : nuit sur route non éclairée, prête à fusionner (Claude, agent 1)
+- **Cause** : la nuit, l'exposition suivait la luminance mesurée sur les sondes, que la tache des phares tirait vers EV 2 à 3. Le paysage au clair de lune (EV −4,4 à −2,6) sortait donc noir.
+- **Correction (zone E13)**, détail dans `regles-de-gestion/WFS-230.md` :
+  - posemètre incident sur l'éclairement reçu (lune, ciel et lampadaires) : EV −2 en rase campagne, mesure d'avant (EV 3 à 5) dans une rue éclairée d'au moins 3 lx, fondu entre les deux ;
+  - lumières artificielles bornées à EV 3 (adaptation locale) ;
+  - vision de nuit (Purkinje) dans `post.frag`, au moment Nuit seulement.
+  - Valeur choisie avec `expert-realisme-3d` et notée dans `DA-realisme.md` § 3.
+- **Accroches annoncées** :
+  - `src/game/game.cpp`, 1 ligne : `view_.night = fp.night` (RG-09) ;
+  - `src/render/renderer.cpp`, 1 ligne : `params.w` de la passe finale.
+- **Mesures** (luminance relative des bas-côtés hors phares, % du blanc ; pixels saturés hors interface) :
+  - Campagne de nuit : cascade 0,11 / 0,14 → 0,53 / 0,25 ; vaches 0,20 / 0,31 → 1,10 / 1,29 ; autoroute 0,27 / 0,26 → 1,93 / 1,11 ; col 0,10 / 0,62 → 0,49 / 1,33 ;
+  - pixels saturés : au plus 0,63 % (village), contre 0,40 % avant ; limite de 2 %.
+- **Ville et circuit de nuit** : banc `nuit` comparé à main construit à la base de fusion. Mêmes exposition et lampes, 0 % saturé. Seul changement voulu : les vitrines s'allument enfin la nuit (RG-09).
+- **Banc `realisme`** (main et branche côte à côte) :
+  - indice lumière 100 % (69 / 69) des deux côtés ;
+  - jour et heure bleue identiques ligne pour ligne ; seule la nuit change (Campagne : EV 3 → −2) ;
+  - code 3 et 116 lignes d'erreur aussi sur main : sans lien avec le ticket.
+- **Tests** : 55 tests CPU verts (`fidelite_lumiere` : 101 vérifications), parcours complet 0 écart, après synchronisation avec main (y compris WFS-226).
+- **Non fait localement** : capture `carte-campagne-nuit` du banc `cartes` (trop long en local) ; elle sort de la CI de main.
+- **Fusion par confiance**. Après la fusion : 🟡 À valider (utilisateur).
