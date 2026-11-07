@@ -118,8 +118,6 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
-> 🔴 **(remplacé : correction confiée à Agent 0, WFS-200)** Ordre de l'utilisateur (2026-11-06 23:12 UTC) à l'agent arwa** : corriger tout de suite le rouge de la CI de `main` (banc des passes WFS-150, job `banc-essai (realisme)`) — détail dans `regles-de-gestion/WFS-190.md`.
-
 ## Tableau (par numéro de ticket)
 
 **Priorités (comme Jira)** : **P1 Urgent** (bloque le MVP) · **P2 Haute** · **P3 Moyenne** · **P4 Basse**. À priorité égale, on prend le plus petit numéro de ticket.
@@ -148,7 +146,6 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-165 | [RÉALISME 4.P2] Personnages : animations en capture de mouvement, mélanges, pieds au sol … | E11 | ⏳ En attente |  | WFS-164 validée | `feature/waforspeed-165` |  |  |
 | P2 Haute | WFS-166 | [RÉALISME 4.P3] Personnages : comportements (trajets, feux, groupes, réactions, densité … | E11 (+ lecture E3) | ⏳ En attente |  | WFS-165 validée | `feature/waforspeed-166` |  |  |
 | P2 Haute | WFS-167 | [RÉALISME 5] Harmonisation et validation finale par carte : rapport complet ≥ 99 % … | E13 | ⏳ En attente |  | WFS-148 à WFS-166 validées | `feature/waforspeed-167` |  |  |
-| P1 Urgent | WFS-190 | [CI ROUGE] Remettre la CI de `main` au vert de bout en bout : job `endurance` rouge au … | E7 (exception PO : WFS-185 🟣 … | 🔧 En cours | agent arwa (Claude, session trafic) | WFS-145 🟣, WFS-187 🟣 | `feature/waforspeed-190` |  |  |
 | P2 Haute | WFS-192 | Voitures sans marque (2/4) : logos effacés ou remplacés sur les 20 modèles | E10 | ⏳ En attente |  | WFS-191, WFS-158 | `feature/waforspeed-192` |  |  |
 | P3 Moyenne | WFS-193 | Voitures sans marque (3/4) : petites retouches de forme (calandre, feux, jantes) … | E10 | ⏳ En attente |  | WFS-192 | `feature/waforspeed-193` |  |  |
 | P4 (conditionnelle) | WFS-194 | Voitures sans marque (4/4) : remplacer les 5 modèles sous licence non commerciale … | E10 | ⏳ En attente |  | décision de l'utilisateur, WFS-158 | `feature/waforspeed-194` |  |  |

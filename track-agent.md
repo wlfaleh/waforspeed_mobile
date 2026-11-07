@@ -14,13 +14,13 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 08:42:11 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 09:17:45 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` corrigé par WFS-150 (PR #170) ; runs 799 à 808 de `main` verts : WFS-190 peut se clore | 190 : rien poussé depuis 20:40 (plus de 11 h 40 à 08:25) | 🔴 WFS-190 P1 sans envoi depuis plus de 10 h (seuil de la règle des 10 h dépassé) |
+| agent arwa (Claude, session trafic) |  |  |  | ✅ libre (WFS-190 fermé : but atteint au run #799) |
 | Claude, agent 1 (01UY1Vv2) | WFS-213 | Correction P1 : écran blanc après le chargement d'une voiture (exposition de WFS-151) (attribué 08:24) | 213 : à pousser dès sa création ; 208 : fusionnée 08:23 (PR #183, squash 6ddbeec) | 🔧 actif |
 | Claude, agent 2 (01UY1Vv5) | WFS-206 | Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte (attribué 08:20) | 206 : à pousser dès sa création ; 211 : fusionnée 08:19 (PR #182) | 🔧 actif |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
