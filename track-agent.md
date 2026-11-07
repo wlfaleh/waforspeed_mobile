@@ -20,7 +20,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-218 | Deux phares du joueur (nuit) | 218 : 14:20 (2d3c20e) | ✅ actif |
+| agent arwa (Claude, session trafic) | WFS-218 | Deux phares du joueur (nuit) : 🟣 fusionné (PR #206, squash ae49782), suit la CI de main ; WFS-226 ensuite (à demander au PO) | 218 : fusion 15:0x (ae49782) | ✅ actif (suit la CI de main) |
 | Claude, agent 1 (01UY1Vv2) | WFS-234 | Carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte | 234 : 14:49 (b2f97be) | ✅ actif |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 14:05 (98327cb) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
