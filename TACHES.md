@@ -167,7 +167,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-224 | Correction : boules grises (fumée des pneus) qui sortent derrière la voiture quand on tourne | E4 | ⏳ Prêt |  | — | `feature/waforspeed-224` |  |  |
 | P1 Urgent | WFS-225 | Campagne de nuit : lampadaires allumés, nuit lisible (aujourd'hui tout noir) | E2 | 🔧 En cours | Claude, session dev 5bx, 2026-11-07 11:28 UTC | — | `feature/waforspeed-225` |  |  |
 | P1 Urgent | WFS-226 | Nuit : phares allumés sur toutes les autres voitures (trafic, adversaires, police) | E4 + E3 | ⏳ Prêt |  | — | `feature/waforspeed-226` |  |  |
-| P2 Haute | WFS-227 | [RÉALISME 1.3a] Lumière (1/3) : ombres du soleil en cascades stabilisées, pénombre physique | E13 | ⏳ Prêt (rendu par l'agent 2 sur ordre de l'utilisateur) |  | WFS-152 ✅ | `feature/waforspeed-227` |  |  |
+| P2 Haute | WFS-227 | [RÉALISME 1.3a] Lumière (1/3) : ombres du soleil en cascades stabilisées, pénombre physique | E13 | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 11:44 UTC | WFS-152 ✅ | `feature/waforspeed-227` |  |  |
 | P2 Haute | WFS-228 | [RÉALISME 1.3b] Lumière (2/3) : ombres des phares et lampadaires la nuit, allumage selon l'éclairement | E13 (+ accroche E4 `nuit.cpp`) | ⏳ En attente |  | WFS-227 | `feature/waforspeed-228` |  |  |
 | P2 Haute | WFS-229 | [RÉALISME 1.3c] Lumière (3/3) : occlusion ambiante (GTAO), ombre de contact calculée sous les voitures | E13 | ⏳ En attente |  | WFS-227 | `feature/waforspeed-229` |  |  |
 

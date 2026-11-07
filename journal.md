@@ -2859,3 +2859,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - WFS-227 (attribué à 11:31 par le PO, juste avant cet ordre) : **non commencé**, aucune branche créée. Il est remis à ⏳ Prêt, sans responsable ; le découpage de WFS-153 (227, 228, 229) est gardé.
 - L'agent 2 ne demande plus de ticket tant que l'utilisateur ne le relance pas.
 
+
+### 2026-11-07 11:44:49 — WFS-227 attribué à Claude, agent 2 (01UY1Vv5), relancé par l'utilisateur (po-scrum-master)
+- L'utilisateur relance l'agent 2 (« Prend une tâche »). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa, dernier envoi 11:15). WFS-215 (E10, WFS-158) et WFS-216 (E2, WFS-225) : épics occupées. WFS-214 (E13) attend WFS-213 ✅ (🟣).
+- **Début WFS-227** — épic E13 (libre : WFS-213 🟣), branche `feature/waforspeed-227`. Règles : `regles-de-gestion/WFS-227.md`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `src/render/bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `src/render/nuit.cpp`, iOS. Critères : cascades par niveau stabilisées avec fondu, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe, coût GPU au journal, parcours complet vert, ligne `qa/Check.md`. Graphisme vu avec `expert-realisme-3d`.
