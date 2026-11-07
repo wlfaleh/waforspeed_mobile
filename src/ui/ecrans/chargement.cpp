@@ -21,6 +21,9 @@ static const unsigned BG = 0x0A0B10, SURFACE2 = 0x1E2130, TEXTE = 0xF2F4F8, MUTE
                       ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF;
 static const char* MESSAGE_ECHEC = "Le moteur 3D n'a pas pu démarrer sur cet appareil.";   // main.js boot()
 static float clampv(float v, float a, float b) { return std::max(a, std::min(b, v)); }
+#ifndef WFS_VERSION
+#define WFS_VERSION "dev"   // WFS-279 : compilé sans CMake (valeur fixe du PC)
+#endif
 // WFS-146 (RG-10, ANO-39) : bouton de l'écran d'erreur (zone posée à la dernière image), doigt qui le tient, demande, libellé
 static struct { float x = 0, y = 0, w = 0, h = 0; } g_reessayer;
 static int g_doigtErreur = -1; static bool g_reessai = false, g_quitter = false;
@@ -116,6 +119,9 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     y += barre + 10 * k;
     // étape et pourcentage (renderLoadProgress : libellé + ' ' + n + ' %') ou message d'échec
     if (!police) return;
+    // WFS-279 (RG-01) : version en petit, couleur discrète, coin bas droit libre (rien d'autre ne bouge) ; 14 dp sur téléphone (WFS-147)
+    const float tv = (cp ? ui::TEXTE_MIN_DP : 12.f) * k;
+    ui::text(r, W - 16 * k, H - 16 * k - tv, tv, texteVersion(versionJeu()), hex(MUTED, op), ui::DROITE, 0.15f);
     if (erreur) {   // WFS-146 (RG-10) : message inchangé (taille, place), puis bouton « Réessayer » (« Quitter » si le moteur ne repart pas)
         ui::text(r, x, y, txt, MESSAGE_ECHEC, hex(DANGER, op), ui::GAUCHE);
         // WFS-168 (RG-01) : taille du bouton d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0) ; texte en dp gardé
@@ -129,6 +135,8 @@ void dessinerChargement(Renderer& r, float W, float H, float p, const std::strin
     }
     else ui::text(r, x, y, txt, libelle + " " + ui::nombre((long long)std::lround(clampv(p, 0, 1) * 100)) + " %", hex(MUTED, op), ui::GAUCHE);
 }
+
+const char* versionJeu() { return WFS_VERSION; }   // WFS-279
 
 // ---------------------------------------------------------------- écran plein (avant la scène)
 static void image(Renderer& r, float p, const std::string& lib, bool err) {
