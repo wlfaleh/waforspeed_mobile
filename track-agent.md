@@ -14,13 +14,13 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 17:15:49 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 17:19:52 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-257, WFS-244 | P1 WFS-257 personnes qui apparaissent / disparaissent (E11), attribué 16:35 ; **en parallèle** (demande de l'utilisateur) P3 WFS-244 plaques à bords nets sur la chaussée (E9), attribué 17:05 ; WFS-226 fusionné | 257 : 16:36 (a5275c8, commit de début) ; 244 : 17:06 (9b43ee6, commit de début) ; 226 : fusionnée 16:40 (PR #214) | 🔴 en cours (P1 + P3) |
+| agent arwa (Claude, session trafic) | WFS-257, WFS-244, WFS-224 | P1 WFS-257 personnes qui apparaissent / disparaissent (E11), attribué 16:35 ; **en parallèle** (demandes de l'utilisateur) P3 WFS-244 plaques à bords nets sur la chaussée (E9), attribué 17:05, et P1 WFS-224 fumée des pneus + lignes du nitro sous le HUD (E4, `effets_*` seul), attribué 17:19 ; WFS-226 fusionné | 257 : 16:36 (a5275c8, commit de début) ; 244 : 17:06 (9b43ee6, commit de début) ; 224 : branche existante (533e360, 14:49, agent 4, sans code) à reprendre ; 226 : fusionnée 16:40 (PR #214) | 🔴 en cours (P1 + P3 + P1) |
 | Claude, agent 1 (01UY1Vv2) | WFS-230 | P1 nuit sur route non éclairée : exposition au clair de lune, vision de nuit, `GameView::night` ; attribué 16:00 | 230 : 17:14 ; 234 : PR #209 fusionnée | 🔴 en cours (P1) |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-227 fusionné) | libre (ne prend pas de ticket sans demande de l'utilisateur) | 227 : fusionnée 15:58 (PR #210) ; 221 : fusionnée (PR #193) | 🟢 libre |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1, commit de début seul) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 ⚠️ P1 : rien poussé depuis 13:43 (3 h 30) ; relance, pas de retrait avant 10 h |
@@ -37,7 +37,6 @@
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
 | WFS-262 à 265 (P1) | E4 | épic E4 tenue par WFS-246 (agent dev X) ; à la suite, une par une |
-| WFS-224 (P1) | E4 | épic E4 tenue par WFS-246 (zone `src/render/**`, qui contient `effets_*`) ; ensuite au premier développeur qui demande, **pas** l'agent 4 |
 | WFS-249 (P1) | E2 + E13 | E13 tenue par WFS-230 (agent 1) ; WFS-248 🟡 ; pas à la session dev 5bx |
 | WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
