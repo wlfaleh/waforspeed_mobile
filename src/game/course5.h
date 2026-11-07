@@ -80,7 +80,16 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
 constexpr int PLACES = 5;
 constexpr double DECALAGE_M = 8, RANG_M = 2 * DECALAGE_M, RECUL_M = 3.5;
 struct Place { double s = 0, x = 0; int file = 0; };   // distance (unités ; < 0 : derrière la ligne), écart latéral (demi-largeurs), file
-Place placeGrille(int k);   // k = 0 (devant) … PLACES − 1 (derrière) ; hors bornes : ramené dans [0, PLACES − 1]
+// k = 0 (devant) … PLACES − 1 (derrière) ; hors bornes : ramené dans [0, PLACES − 1]. Rang k / 2 ; place paire à gauche, impaire
+// à droite et DECALAGE_M plus loin derrière (quinconce). En ligne : le Duel (duel.cpp) l'envoie dans la présence du départ
+inline Place placeGrille(int k) {
+    k = std::clamp(k, 0, PLACES - 1);
+    Place p;
+    p.file = k % 2 ? 2 : 0;
+    p.x = FILES[p.file];
+    p.s = -(RECUL_M + RANG_M * (k / 2) + DECALAGE_M * (k % 2)) / M;
+    return p;
+}
 // WFS-242 (RG-02) : place du joueur tirée au sort parmi les 5, d'après la graine de la course (même graine = même place)
 int tirerPlaceJoueur(uint32_t graine);
 // RG-05, WFS-242 (RG-01) : les ordinateurs prennent les places de la grille laissées par le joueur (placeJoueur ; < 0 : toutes

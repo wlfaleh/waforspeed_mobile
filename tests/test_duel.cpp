@@ -200,6 +200,11 @@ int main() {
         const bool d1 = i1.checkStart(), d2 = i2.checkStart(), d0 = h.checkStart();
         const int p0 = h.place(), p1 = i1.place(), p2 = i2.place();
         VERIFIE(d0 && d1 && d2 && p0 == 0 && ((p1 == 1 && p2 == 2) || (p1 == 2 && p2 == 1)), "WFS-242 RG-05 : 3 joueurs : places %d, %d, %d", p0, p1, p2);
+        // dès le départ (avant toute présence de course), chacun voit les autres à leur place de la grille, pas sur la ligne
+        s2->now += 10; i2.updateGhosts(1.0 / 60);
+        double vuH = 1e9, vuI = 1e9;
+        for (const auto& [id, gh] : i2.ghosts()) (id == "H" ? vuH : vuI) = gh.rd * M;
+        VERIFIE(std::abs(vuH + 3.5) < 0.01 && std::abs(vuI - (p1 == 1 ? -11.5 : -19.5)) < 0.01, "WFS-242 RG-05 : au départ, Jade voit Hugo à %.2f m et Ines à %.2f m", vuH, vuI);
         Player ph; ph.reset(carById("golf")); ph.dist = ph.position = -11.5 / M;   // 2e place de la grille
         h.raceTick(1.0 / 60, ph, 0);
         s2->now += 50; i1.updateGhosts(1.0 / 60);

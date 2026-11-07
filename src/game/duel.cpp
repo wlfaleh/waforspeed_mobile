@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <random>   // WFS-242 : jeton de la grille
+#include "course5.h"   // WFS-242 (RG-05) : places de la grille de départ
 #include "player.h"
 #include "trace_cartes.h"   // WFS-136 (accroche A6) : version du tracé dans la présence
 
@@ -227,7 +228,9 @@ void Session::startRace() {
             place_ += j < jeton_ || (j == jeton_ && peerName(p.f) < nick_);
         }
     startMs_ = t_->nowMs();
-    t_->presence({{"st", "race"}, {"r", std::to_string(round_)}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"ft", ""}, {"car", car_}, {"paint", paint_}});
+    const course5::Place pg = course5::placeGrille(place_);   // WFS-242 : les autres me voient tout de suite à ma place (pas de glissement)
+    t_->presence({{"st", "race"}, {"r", std::to_string(round_)}, {"d", std::to_string((long long)std::llround(pg.s))},
+                  {"x", fmt(std::round(pg.x * 1000) / 1000, 3)}, {"v", "0"}, {"ft", ""}, {"car", car_}, {"paint", paint_}});
 }
 double Session::trafficClock() const { return t_ ? (t_->nowMs() - startMs_) / 1000.0 - 3.0 : -3.0; }
 

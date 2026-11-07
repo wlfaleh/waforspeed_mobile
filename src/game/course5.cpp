@@ -76,16 +76,6 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
     return os;
 }
 
-Place placeGrille(int k) {
-    // WFS-242 (RG-01) : rang k / 2 ; place paire à gauche, impaire à droite et DECALAGE_M plus loin derrière (quinconce)
-    k = std::clamp(k, 0, PLACES - 1);
-    Place p;
-    p.file = k % 2 ? 2 : 0;
-    p.x = FILES[p.file];
-    p.s = -(RECUL_M + RANG_M * (k / 2) + DECALAGE_M * (k % 2)) / M;
-    return p;
-}
-
 void placerSurGrille(Player& pl, const Track& t, const Place& p) {
     // la conduite (modèle du monde ou d'avant) voit le changement de dist / playerX au pas suivant et y replace la voiture
     pl.dist = p.s; pl.position = t.wrap(p.s); pl.playerX = p.x;
