@@ -49,6 +49,7 @@ struct SonsDuPas {
     bool klaxon = false;
     float rumeur = 0;                          // volume visé de la boucle (0..0,25)
     bool journalRumeur = false;                // RG-07 : écrire « rumeur <gain> »
+    int voiturePassage = -1, voitureKlaxon = -1;   // WFS-272 (RG-06) : voiture (indice de VoitureSon) qui fait le son, −1 : inconnue
 };
 
 class TraficSons {

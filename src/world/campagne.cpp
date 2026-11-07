@@ -88,6 +88,7 @@ public:
         mats_[P_TEXTE0] = atlas_.materiau(r, 0xf4f1e8, night_ ? 1.1f : 0.f);
         for (int k = 0; k < CO_NB; k++) txt_[k] = atlas_.texte(ENSEIGNES[k]);
         for (int k = 0; k < 4; k++) txtA_[k] = atlas_.texte(PANNEAUX_A[k]);   // WFS-179
+        preparerDecor(r);   // WFS-268 (accroche) : décor fixe préparé ici, une fois les enseignes prêtes
     }
 
 protected:

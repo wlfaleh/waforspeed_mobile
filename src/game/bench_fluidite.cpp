@@ -152,13 +152,15 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                                   cam ? "Poursuite" : "Proche", fps, res.images, res.pas[0], res.pas[1], res.pas[2], res.pas[3], res.acoupMm, res.sautDeg, res.allerRetourCm, parS);
                     rap << l;
                     WFS_LOG("fluidite : %s", l);
-                    if (passe == 1 && (sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee)) {
-                        if (fps >= 30) pireApres[0] = std::max(pireApres[0], res.acoupMm); pireApres[1] = std::max(pireApres[1], res.sautDeg); pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
-                        // objectifs (RG-03, RG-08) comptés en ligne droite et en montée : en courbe, la trajectoire PHYSIQUE elle-même
-                        // n'est pas lisse (cap qui suit la courbure de chaque segment de 1,2 m, consigne de vitesse en tout ou rien) ;
-                        // la physique ne change pas (RG-02) : valeurs données pour information
+                    if (passe == 1) {
+                        // objectifs (RG-03, RG-08) : à-coup (30-90 img/s) et saut d'angle en ligne droite et en montée ; en courbe, la
+                        // trajectoire PHYSIQUE elle-même n'est pas lisse (cap qui suit la courbure) : à-coup et angle donnés pour information.
+                        // WFS-247 (ANO-139) : l'aller-retour voiture ↔ caméra (≤ 2 cm) est compté dans TOUS les scénarios, virages compris,
+                        // et à toutes les cadences (10 à 90 img/s)
                         const bool droite = sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee;
-                        if (droite && ((fps >= 30 && res.acoupMm >= 5) || res.sautDeg > 0.2 || res.allerRetourCm > 2)) manques++;   // WFS-247 : à-coup < 5 mm aux cadences de WFS-221 (30-90) ; aller-retour et angle à toutes
+                        if (droite) { if (fps >= 30) pireApres[0] = std::max(pireApres[0], res.acoupMm); pireApres[1] = std::max(pireApres[1], res.sautDeg); }
+                        pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
+                        if ((droite && ((fps >= 30 && res.acoupMm >= 5) || res.sautDeg > 0.2)) || res.allerRetourCm > 2) manques++;
                     }
                 }
     }
@@ -201,7 +203,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
     g.modeManette = false; g.manette = DriveInput{};
     Game::interpolation = true; Game::cameraTempsSimule = true; Track::penteLissee = true; g_cameraFiltreExact = true; choisirVue(VueCamera::Poursuite);
     char f[200];
-    std::snprintf(f, sizeof f, "après, ligne droite et montée, pire cas : à-coup %.2f mm à 30-90 img/s (objectif < 5), saut d'angle %.3f° (≤ 0,2), aller-retour %.2f cm (≤ 2) ; objectifs manqués : %d\n",
+    std::snprintf(f, sizeof f, "après, pire cas : à-coup %.2f mm (ligne droite et montée, 30-90 img/s ; objectif < 5), saut d'angle %.3f° (ligne droite et montée ; ≤ 0,2), aller-retour %.2f cm (tous scénarios, virages compris ; ≤ 2) ; objectifs manqués : %d\n",
                   pireApres[0], pireApres[1], pireApres[2], manques);
     rap << f;
     std::ofstream(out + "/fluidite.txt") << rap.str();
