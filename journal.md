@@ -4300,3 +4300,46 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Ordre du bandeau : WFS-281 (n° 00) est du domaine trafic (skill `expert-conduite`, fichiers de WFS-232) : hors du domaine performance de cette session (une session = un domaine), il reste pour un développeur du trafic. WFS-273 dépend de WFS-268, rouvert à 22:28 pour agent 5, et touche les mêmes arbres : il attend. WFS-262 (prévu pour l'agent dev X à la suite de WFS-246) est pris en **exception PO**, en parallèle de WFS-268 (agent 5) et WFS-239 (agent 3), fichiers séparés.
 - Zone autorisée : création des pipelines et rendu (`src/render/**`, `shaders/**`), accroches ≤ 10 lignes au chargement et dans les réglages (ligne « Cadence »), `tests/**` du ticket. Interdit : `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.cpp`, `foule_apparition.h` (WFS-268), `qualite_banc.cpp` (WFS-239), `nuit.cpp`, `player.*`, `camera_vue.*`, `traffic*`, taille des boutons, `.github/**`, `tools/qa/**`, iOS.
 - Critères : 0 pipeline créé en course (compteur), chargement plus court au 2e lancement, écart type de la durée d'image au journal ; test de parcours complet ; 🟡 À valider (utilisateur) après fusion. Branche `feature/waforspeed-262`, premier commit poussé tout de suite.
+
+### 2026-11-07 22:34:20 — WFS-268 RG-09 : option B, tout préparé en Ville (po-scrum-master)
+- Alerte de Claude, agent 5 : Ville 162 Mo de contenu fixe préparé (décor 60,5 + immeubles du kit 101,3), Corniche 85 Mo.
+- Décision : **B** (niveaux 0, 1 et 2 des immeubles préparés au chargement), qui suit l'ordre de l'utilisateur « préparer dans le changement de map tous les détails » ; la limite de 120 Mo était celle du PO. RG-09 : Ville ≤ 170 Mo, Corniche ≤ 120 Mo, mémoire stable en course. Repli A si le téléphone manque de mémoire.
+- Correction du PO : RG-07 à RG-10 n'avaient pas été écrites dans `regles-de-gestion/WFS-268.md` au commit 34bd7d1 (erreur de mon script) ; elles le sont maintenant.
+
+### 2026-11-07 22:34:47 — WFS-268 RG-09 : plus de plafond de mémoire, décision de l'utilisateur (po-scrum-master)
+- Mots de l'utilisateur, transmis par Claude, agent 5 : « Attends, je viens de vérifier, il n'y a pas de règle : si on charge les données en amont tu es libre, même 1 Go est autorisé. »
+- RG-09 réécrite : pas de plafond ; restent « la mémoire ne monte pas pendant la course » et « chargement + ≤ 3 s ». Campagne et Grand Prix restent dans WFS-273.
+
+### 2026-11-07 22:36:34 — WFS-262 : branche poussée, cache de pipelines (Claude, agent dev X)
+- Branche `feature/waforspeed-262` poussée (9683065). RG-01 commencé : un `VkPipelineCache` est passé à toutes les créations de pipelines (`Renderer::makePipeline`), relu au lancement si son en-tête (version, fournisseur, appareil, UUID) correspond au téléphone, sinon on repart à vide. Il est enregistré par écriture atomique (`src/render/cache_pipelines.*`, nouveaux fichiers). Compteur des pipelines créés posé pour RG-02.
+
+### 2026-11-07 22:38:44 — Limite de mémoire : 1 Go par carte pour les données préparées au chargement (po-scrum-master)
+- Message du propriétaire, transmis par Claude, agent 5 (WFS-268), mots exacts : « Dis-lui ce message : le propriétaire t'a dit qu'on a une limite de 1 Go carrément pour une ville, donc arrête ton délire, et mets ça noir sur blanc dans les règles de gestion : la limite par ville en cas de chargement en amont, c'est 1 Go. »
+- Règle générale écrite dans `regles-de-gestion/README.md` (tous les tickets, les 4 cartes) : « Données préparées au chargement de la carte (en amont) : jusqu'à 1 Go de mémoire par carte. Décision du propriétaire, 2026-11-07. »
+- Reprise dans `WFS-268.md` (RG-09) et `WFS-273.md` (RG-02). Plafonds plus bas retirés : 120 Mo et 170 Mo (WFS-268, `track-agent.md`), 80 Mo (WFS-273). Mesures actuelles, toutes sous la limite : Ville ≈ 162 Mo, Corniche ≈ 85 Mo, Campagne ≈ 212 Mo, Grand Prix ≈ 196 Mo.
+
+### 2026-11-07 22:40:43 — Limite de 1 Go : précision « lors du chargement » (po-scrum-master)
+- Précision du propriétaire, transmise par le coordinateur, mots exacts : « Très important : on parle de lors du chargement. »
+- Règle reformulée dans `regles-de-gestion/README.md` (l. 8), `WFS-268.md` (RG-09) et `WFS-273.md` (RG-02) : « Lors du chargement de la carte (écran de chargement), on peut préparer en amont jusqu'à 1 Go de données en mémoire par carte : tout ce qui peut être préparé à ce moment-là doit l'être, pour que rien ne soit construit pendant la course. Décision du propriétaire, 2026-11-07. »
+
+### 2026-11-07 22:43:00 — WFS-283 créé : supprimer les ronds-points sur toutes les cartes ; WFS-248 ❌, ANO-158 (po-scrum-master)
+- Ordre de l'utilisateur. Carrefours simples à la place, dépendances (course, trafic, GPS, chocs) dans les RG ; code des giratoires gardé désactivé. Au premier développeur qui demande, pas dev Y ni agent 5.
+
+### 2026-11-07 22:49:51 — WFS-279 fusionné par le lead dev (lead-dev)
+- PR #241 (arwa-5), squash 08e611b. Demande : voir la version de l'APK en petit sur l'écran de chargement. 7 captures ouvertes (5 paires `chargement-*` + zooms 1280 « dev » et 2400 « v0.1.912 ») : seul le coin bas droit change, rien d'autre ne bouge (écran d'erreur et fondu compris). Code : source unique `versionName` → `-DWFS_VERSION` → `chargement.cpp`, « dev » sur PC ; `test_version_chargement` ajouté ; aucun fichier `.github/**`, `tools/qa/**` ni iOS. Statut 🟣. À surveiller sur l'APK de `main` : « v0.1.N » affiché (pas « dev »).
+
+### 2026-11-07 22:50:36 — WFS-279 : seconde revue du lead dev, même verdict, aucune fusion en double (lead-dev)
+- Revue de la PR #241 menée en parallèle d'une autre session `lead-dev` (01UY1Vv3), qui a fusionné à 22:49:30 (squash 08e611b) : je ne refusionne rien et ne touche ni à `TACHES.md` ni à `qa/Check.md`. Mon verdict aurait été le même : **ACCEPTÉ**.
+- Les 12 images de `qa/pr/WFS-279/` ouvertes une à une ; écart avant / après des JPG mesuré : **0 hors du coin bas droit** sur les 5 paires (écarts seulement dans le rectangle de la version).
+- **Point « à surveiller » de la ligne `qa/Check.md` levé** : l'APK de la CI de branche #888 (Release `apercu-waforspeed-279`, `WaForSpeed.apk`, SHA-256 3a28a8fb401cdf79a38e6dfd6ac005b1621069e17169d4b8598e6f7027204904, dépôt du projet ; lu sans rien lancer) contient la chaîne « 0.1.888 » dans `libwaforspeed.so` (arm64-v8a et x86_64) : la valeur de Gradle arrive bien jusqu'au code natif, l'APK de `main` affichera « v0.1.N », pas « dev ».
+- **Petit écran montré** : le banc 2400×1080 (420 dpi, 411 dp de haut) passe par la mise en page petit écran de WFS-147 (texte de 14 dp) ; banc relancé en local avec `-DWFS_VERSION=0.1.888` : « v0.1.888 » lisible en bas à droite, loin du bouton « Réessayer ».
+- Vérifié sur 2557b4a dans un dossier à part : 62 tests CPU OK (dont `test_version_chargement`) ; changer la version ne recompile que `chargement.cpp`. Parcours non relancé jusqu'au bout (9 min sur 2 cœurs, arrêté à l'écran de course, sans erreur) : on garde le 0 écart du journal d'arwa-5.
+- Pour le PO : deux sessions `lead-dev` ont fait la même revue en même temps ; un seul appel par PR suffit.
+
+### 2026-11-07 22:56:55 — WFS-276 refusé par le lead dev, PR #243 (lead-dev)
+- 48 paires avant / après ouvertes une par une. Image : demande de l'utilisateur tenue (paysage visible près des lampes au péage, au village et au rond-point ; flaques orange toujours plus claires ; Ville identique). Rien de cassé à l'œil.
+- Refus pour : (1) branche pas synchronisée avec main (base 4185263) ; (2) RG-01 : courbe globale par pixel à la place d'une adaptation spatiale, **décision du PO à prendre** (accepter ou non cet « équivalent », à écrire dans regles-de-gestion/WFS-276.md) ; (3) RG-05 : coût Basse / Haute non mesuré ; (4) aucune preuve de WFS-276 au journal ; (5) pas de captures de jour (RG-04) ; (6) commentaire du shader inexact (1/2 au lieu de 0,45 ; 1,85 IL au lieu de 1,17).
+- Détail : https://github.com/wlfaleh/waforspeed_mobile/pull/243#issuecomment-6714148711
+
+### 2026-11-07 22:57:54 — WFS-276 : courbe par pixel acceptée pour RG-01 (po-scrum-master)
+- Équivalent sourcé (loi de Stevens) de l'adaptation spatiale ; nuit, hors Ville. Le lead dev reste juge des images.

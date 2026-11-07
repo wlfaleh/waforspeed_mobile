@@ -1179,8 +1179,11 @@ public:
             lieux::poser("plage", lieux::VAGUES, std::move(rivage));
         }
         parois::effacer("plage");   // WFS-275 (accroche) : paroi de roche côté montagne (face raide de 3,5 m, au milieu), villas
-        for (int64_t n = 0; n < len_; n++) if (formeCote(n, -1) == K_TERRE) parois::declarer("plage", len_, n, -1, (villagePerche(t, n) ? R + 22 : R + 4.6f) + 1.75f, hauteurParoi(n), (float)SEG_M);
-        for (const Objet& o : objets_) if (o.t == O_VILLA) parois::declarer("plage", len_, o.seg, o.side, o.lat, o.h, o.w);
+        // WFS-278 (accroche) : la roche masque aussi le son : obstacle de la face jusqu'au bout de la pente de garrigue (RW + 90), sans
+        // dépasser le bord du sol de cette branche (bordSol : 0,9 × rayon intérieur, mi-distance de la branche suivante) ; calcaire
+        for (int64_t n = 0; n < len_; n++) if (formeCote(n, -1) == K_TERRE) { const float x0 = villagePerche(t, n) ? R + 22 : R + 4.6f;
+            parois::declarer("plage", len_, n, -1, x0 + 1.75f, hauteurParoi(n), (float)SEG_M, std::max(3.5f, std::min(R + 90, bordSol(t, n, -1)) - x0), parois::ALPHA_PIERRE); }
+        for (const Objet& o : objets_) if (o.t == O_VILLA) parois::declarer("plage", len_, o.seg, o.side, o.lat, o.h, o.w, o.d, parois::ALPHA_DUR);
     }
 
     // décor fixe d'une fête ou d'un terrain de jeux, posé dans le morceau qui contient son segment (repère du segment)
