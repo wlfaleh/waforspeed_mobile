@@ -3127,3 +3127,13 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Fait** (`feature/waforspeed-161`, 502079a) : `src/world/archi_kit.h/.cpp` (6 styles, hauteurs RG-01, travées dans la plage du style avec murs de rive, modules de RDC / étage / toiture, ouvertures par travée et par niveau, linteau 0,2 m, trumeau 0,3 m) et `tests/archi_kit.cpp` (6 styles × 400 graines, 210 584 contrôles, 0 échec ; M-01 tenu). Le test a trouvé un défaut de règle, corrigé : certaines largeurs ne se découpent pas en travées de la plage → murs pleins de rive, comme un vrai bâtiment. 40 tests CPU verts ; branche synchronisée avec `main` (d213cd8).
 - **Exception de zone accordée par le PO** (01:48:17) : création de `references/reel/architecture.json` (hors zone E12), règles de `SOURCES.md`, `test_fidelite` vert. Textures : GitHub d'abord, sinon procédurales provisoires avec l'avis d'expert-realisme-3d.
 - **Suite** : ST-1 géométrie (`archi_geo.cpp` : murs percés, tableaux en retrait, appuis, corniches, toitures, édicules) et `architecture.json` (M-02).
+
+### 2026-11-07 01:56:34 — WFS-161 (ST-1) : référentiel d'architecture créé (exception de zone du PO) (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 60d12f1) : `references/reel/architecture.json` (11 valeurs) et 4 sources dans `SOURCES.md` :
+  - `conception` (RG-01) : RDC 3,5-4,5 m, étage 2,7-3,2 m, éclairage intérieur 2700-3000 K ;
+  - `a_confirmer` (textes cités, non ouvrables depuis la session : Légifrance et AFNOR bloqués) : hauteur sous plafond ≥ 2,20 m (décret 2002-120), garde-corps 1,00 m (NF P01-012), porte d'entrée 0,90 m / passage utile 0,83 m (arrêté du 24/12/2015) ;
+  - `a_sourcer` (valeur vide, « non mesurable ») : largeur, hauteur et allège courantes des fenêtres (M-02), luminance d'une fenêtre allumée la nuit (M-04). Aucune source ouverte : les plages du kit restent des choix à confirmer.
+- **Accroche annoncée** (1 ligne, hors E12, couverte par l'exception du PO) : `FICHIERS_REFERENTIEL` dans `src/render/bench_realisme.h`.
+- **Vérification** : `test_fidelite` vert (le fichier passe les contrôles du référentiel) ; `test_archi_kit` vérifie que les plages du kit sont celles du référentiel, et la cohérence étage minimal − plancher ≥ hauteur sous plafond ; 40 tests CPU verts ; branche synchronisée (bcdbfda).
+- **Limite** : M-02 et M-04 resteront « non mesurables » tant qu'aucune source ouverte ne donne ces valeurs.
+- **Suite** : géométrie du kit (`archi_geo.cpp` : murs percés, tableaux en retrait, appuis, corniches, toitures, édicules), puis les captures de banc.
