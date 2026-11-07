@@ -174,6 +174,12 @@ void echantillonner(const Personnage& p, int clip, double temps, PoseSquelette& 
             }
         }
     }
+    recalculerPose(p, pose);
+}
+
+void recalculerPose(const Personnage& p, PoseSquelette& pose) {
+    const size_t n = p.os.size();
+    if (pose.modele.size() != n || pose.palette.size() != p.palette.size()) return;
     for (size_t i = 0; i < n; i++) {   // parents avant enfants
         const mat4 local = trs(pose.t[i], pose.r[i], pose.s[i]);
         pose.modele[i] = p.os[i].parent < 0 ? local : pose.modele[(size_t)p.os[i].parent] * local;
@@ -182,6 +188,60 @@ void echantillonner(const Personnage& p, int clip, double temps, PoseSquelette& 
         const int o = p.palette[k];
         pose.palette[k] = pose.modele[(size_t)o] * p.os[(size_t)o].bindInverse;
     }
+}
+
+int osParNom(const Personnage& p, const std::string& nom) {
+    for (size_t i = 0; i < p.os.size(); i++) if (p.os[i].nom == nom) return (int)i;
+    return -1;
+}
+
+namespace {
+vec3 origine(const mat4& m) { return {m.at(0, 3), m.at(1, 3), m.at(2, 3)}; }
+Quat produit(const Quat& a, const Quat& b) {   // R(a) R(b)
+    return {a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y, a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+            a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w, a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z};
+}
+// tourne l'os `o` (rotation de l'espace du modèle qui amène la direction `de` sur `vers`) : la rotation est ramenée dans le
+// repère du parent (axe × transposée de sa rotation), puis appliquée avant la rotation locale
+void tourner(const Personnage& p, PoseSquelette& pose, int o, const vec3& de, const vec3& vers) {
+    const vec3 a = normalize(de), b = normalize(vers);
+    vec3 axe = cross(a, b);
+    const float s = length(axe), c = dot(a, b);
+    if (s < 1e-6f) return;   // déjà aligné (l'opposé exact n'arrive pas : coude dans son plan)
+    axe = axe * (1.f / s);
+    const int par = p.os[(size_t)o].parent;
+    if (par >= 0) {
+        const mat4& m = pose.modele[(size_t)par];
+        const vec3 c0 = normalize(vec3{m.at(0, 0), m.at(1, 0), m.at(2, 0)}), c1 = normalize(vec3{m.at(0, 1), m.at(1, 1), m.at(2, 1)}),
+                   c2 = normalize(vec3{m.at(0, 2), m.at(1, 2), m.at(2, 2)});
+        axe = {dot(c0, axe), dot(c1, axe), dot(c2, axe)};
+    }
+    const float ang = std::atan2(s, c), sh = std::sin(ang * 0.5f);
+    pose.r[(size_t)o] = normaliser(produit({axe.x * sh, axe.y * sh, axe.z * sh, std::cos(ang * 0.5f)}, pose.r[(size_t)o]));
+}
+} // namespace
+
+bool atteindre(const Personnage& p, PoseSquelette& pose, int epaule, int coude, int main, const vec3& cible) {
+    const int n = (int)p.os.size();
+    if (epaule < 0 || coude < 0 || main < 0 || epaule >= n || coude >= n || main >= n || pose.modele.size() != (size_t)n) return false;
+    const vec3 S = origine(pose.modele[(size_t)epaule]), E = origine(pose.modele[(size_t)coude]), H = origine(pose.modele[(size_t)main]);
+    const float a = length(E - S), b = length(H - E);
+    vec3 st = cible - S;
+    const float l = length(st);
+    if (a < 1e-4f || b < 1e-4f || l < 1e-4f) return false;
+    const vec3 u = st * (1.f / l);
+    const float d = clampf(l, std::fabs(a - b) + 1e-3f, (a + b) * 0.999f);
+    vec3 v = (E - S) - u * dot(E - S, u);   // plan du coude : celui de l'échantillonnage
+    if (length(v) < 1e-4f) v = cross(u, vec3{1, 0, 0});
+    v = normalize(v);
+    const float ca = clampf((a * a + d * d - b * b) / (2 * a * d), -1.f, 1.f), sa = std::sqrt(std::max(0.f, 1 - ca * ca));
+    const vec3 E2 = S + (u * ca + v * sa) * a;
+    tourner(p, pose, epaule, E - S, E2 - S);
+    recalculerPose(p, pose);
+    const vec3 E1 = origine(pose.modele[(size_t)coude]), H1 = origine(pose.modele[(size_t)main]);
+    tourner(p, pose, coude, H1 - E1, (S + u * d) - E1);
+    recalculerPose(p, pose);
+    return true;
 }
 
 } // namespace wfs
