@@ -39,6 +39,7 @@
 #include "enseignes.h"   // WFS-180 : vie::Baigneur (danseurs et joueurs pour les piétons), vie::hauteurSable
 #include "vegetation.h"
 #include "zones.h"
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : rivage déclaré au son des lieux
 
 namespace wfs {
 
@@ -1156,6 +1157,15 @@ public:
             lampadaires().push_back({mod(l.seg + (int64_t)(14 / SEG_M)), plage::FETE_LAT - 1, 1.2f, StyleLampadaire::Ville});
         }
         WFS_LOG("Plage (WFS-180) : %zu bateaux (voiliers, yachts, jet-skis, paquebot)", bateaux_.size());
+        {   // WFS-261 (accroche) : rivage tous les 24 m là où la mer est libre (son des vagues) : pied de la falaise, bord de l'eau
+            std::vector<lieux::Lieu> rivage;   // de la plage (RW + 46 : sable mouillé sous la mer), des rochers (RW + 40), quai du port
+            for (int64_t n = 0; n < len_; n += 20) if (large(n)) {
+                const char* z = zoneId(map, n, len_);
+                const float lat = formeCote(n, 1) == K_MER ? finFalaise(t, n) : !std::strcmp(z, "rochers") ? R + 40 : !std::strcmp(z, "marina") ? R + 7.2f : R + 46;
+                rivage.push_back({n, 0.f, lat, OCEAN_Y - (float)t.pose(n).y, 0});
+            }
+            lieux::poser("plage", lieux::VAGUES, std::move(rivage));
+        }
     }
 
     // décor fixe d'une fête ou d'un terrain de jeux, posé dans le morceau qui contient son segment (repère du segment)
