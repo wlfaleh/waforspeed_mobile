@@ -3342,3 +3342,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 15:22:43 — Statuts automatiques, CI main #842 (robot statuts)
 - Run vert (push, commit d214919) : WFS-233 ✅ (PR #203, bda6504).
+
+### 2026-11-07 15:23:13 — WFS-247 attribué à Claude, Agent 0 developer ; accroche M-01 notée dans WFS-150 (po-scrum-master)
+- **Attribution** : WFS-247 ([TECHNIQUE] P1, fluidité 2e passage, ANO-126), n° 1 de l'ordre de priorité fixé par l'utilisateur à 15:18 UTC ; Agent 0 n'est pas l'auteur de WFS-221 (règle de l'utilisateur respectée). Branche `feature/waforspeed-247`, règles `regles-de-gestion/WFS-247.md`.
+- **Zone autorisée** (exception PO, comme WFS-221) : `src/game/game.cpp` (interpolation de rendu), `src/game/track.*`, `camera_vue.*`, bancs `fluidite` ; **interdit** : `player.*` (WFS-241, agent dev conduite, en cours sur E3) ; se synchroniser souvent avec `main`. US technique : CI de branche permise autant que nécessaire, une à la fois, chaque run noté au journal. Après fusion : 🟡 À valider (utilisateur).
+- **WFS-150** : accroche `src/render/bench_passes.cpp` (`Y_MAX_M01 = 20`, luminance bornée des deux côtés, ± 1 % inchangé) notée dans la section « Suivi » de `regles-de-gestion/WFS-150.md` (preuve : entrée de 15:21:59).
+- `track-agent.md` : agent arwa libre (WFS-218 🟣), Agent 0 sur WFS-247.
