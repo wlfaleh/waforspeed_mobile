@@ -4513,3 +4513,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Tests** : 62 tests CPU verts (branche synchronisée avec main, 56de55a8) ; parcours complet en vue Cockpit 0 écart après la correction de la planche.
 - **Captures** : `captures_pr.sh` (AGENT renseigné), banc `cockpit`, Golf, SF90, X5 et Corsa, 28 paires avant / après dans `qa/pr/WFS-282/`. Planche opaque de jour et de nuit sur les 4 voitures.
 - **Réponse au lead dev** : sous sa revue dans la PR, point par point ; nouvelle revue demandée.
+
+### 2026-11-07 23:56:09 — WFS-282 fusionné par le lead dev, PR #244 (RG-00 + RG-06) (lead-dev)
+- **2e revue** : le développeur avait répondu point par point sous le refus (6714404122, 6714696812). **Approbation** : revue écrite dans la PR (en commentaire, car GitHub refuse l'approbation pour le même compte). **Fusion en squash** : dd41283.
+- **Captures** : les 28 paires de `qa/pr/WFS-282/` sont ouvertes (Golf, SF90, X5, Corsa ; jour, virage, braquage, carte, pluie, nuit, nuit-virage). La planche de bord est **opaque** sur les 28 « après » : la route ne se voit plus à travers. On retrouve la planche, le volant et la carrosserie d'avant WFS-235, avec plus de rue et des montants plus fins. Rien de pire qu'avant, et aucun bouton n'a bougé.
+- **Code** : diff lu en entier. Repli conforme au parent de 66fdd3d. Matériaux du cockpit en `MAT_DOUBLE` (`deuxFaces`, cockpit commun de `camera_vue.cpp`), en accord avec la règle des faces arrière de `renderer.cpp`. Champ de vision de configgame (72°), `test_regard_cockpit` adapté. Rien hors zone, rien sur iOS.
+- **Pour la PR suivante (RG-01 à RG-05)** : rétroviseur encore en bloc noir (RG-03), planche très sombre la nuit (RG-04), capture de la Plage de nuit en 2340 × 1080, gros plan de la Golf de jour, code mort `fovHorizontalCockpit` / `fovVerticalDepuisHorizontal`.
+- **Statut** : 🟡 RG-00 + RG-06 à valider par l'utilisateur ; RG-01 à RG-05 en cours (Claude, agent 2). Ligne ajoutée à `qa/Check.md`.
