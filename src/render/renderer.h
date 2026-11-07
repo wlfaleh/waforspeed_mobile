@@ -55,7 +55,7 @@ struct ApparencePersonnage {
 };
 struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (pose de repos × 1,5)
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
-constexpr int SKIN_MAX_INSTANCES = 16;    // instances animées par image (RG-05 de WFS-19 : 8 visées)
+constexpr int SKIN_MAX_INSTANCES = 48;    // instances animées par image (RG-05 de WFS-19 : 8 piétons × 2 ; WFS-73 RG-06 : + 16 conducteurs × 2)
 
 struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; int8_t feuArriere = 0; };   // WFS-60 : roue 0-3, −1 = fixe ; WFS-109 : 1 feu arrière découpé, 2 3e feu stop
 // WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le
@@ -70,6 +70,7 @@ struct Model {
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;
+    vec4 siege{};   // WFS-73 (RG-01) : y du pavillon au-dessus de la place du conducteur, x et z de la place, 1 si mesuré (conducteurs::mesurerSiege)
 };
 
 // WFS-09 : état des feux d'une voiture (setLights du jeu web : nuit, frein, recul)

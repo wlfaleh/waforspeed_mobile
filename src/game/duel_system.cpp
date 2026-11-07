@@ -16,6 +16,7 @@
 #include "player.h"
 #include "sauvegarde.h"   // WFS-122 (RG-01) : derniers adversaires
 #include "traffic_system.h"
+#include "../world/conducteurs.h"   // WFS-73 (accroche)
 
 namespace wfs {
 
@@ -122,6 +123,7 @@ public:
             const CarDef& cd = carById(gh.car.c_str());
             const vec3 paint = hexLin(cd.paint);
             r.draw(it->second, m, &paint);
+            conducteurs::ajouter(it->second, m, cd.id, (uint32_t)std::hash<std::string>{}(id) | 1u);   // WFS-73 (accroche) : adversaire
         }
     }
 
