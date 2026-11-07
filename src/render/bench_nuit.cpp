@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include "../core/log.h"
 #include "../core/platform.h"
+#include "../game/course5.h"         // WFS-226 : Course à 5, Poursuite de nuit
+#include "../game/course_system.h"
 #include "../game/game.h"
 #include "../game/track.h"
 #include "../game/ressenti.h"
@@ -74,6 +76,25 @@ void benchNuit(Game& g, Renderer& r, const std::string& out) {
         capture(base + "-face");
         g.shutdown();
     }
+    // WFS-226 (RG-04) : phares des autres voitures, qualité Basse : Ville, Campagne, Corniche (trafic dans les deux sens),
+    // Course à 5 (adversaires) et Poursuite (police) ; vue haute derrière, puis vue de face (voitures qui suivent, sens inverse)
+    struct Scene { const char* carte; const char* nom; ModeCourse mode; int images; };
+    const Scene scenes[] = {{"ville", "ville", ModeCourse::Checkpoint, 300}, {"campagne", "campagne", ModeCourse::Checkpoint, 300},
+                            {"plage", "corniche", ModeCourse::Checkpoint, 300}, {"ville", "course5", ModeCourse::Course5, 150},
+                            {"ville", "poursuite", ModeCourse::Poursuite, 600}};
+    for (const Scene& sc : scenes) {
+        modeCourse() = sc.mode; kmCourse5() = 2; courseBenchRules(true);
+        if (!g.init(r, "golf", sc.carte)) { WFS_ERR("nuit : chargement %s impossible", sc.carte); continue; }
+        const std::string base = std::string("phares-autres-") + sc.nom;
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 1;
+        for (int i = 0; i < sc.images; i++) image(i % 8 == 0);
+        capture(base + "-haut");
+        const Game::Vue v = g.calculerVue(t);
+        g.camMode = 2; g.orbit = std::atan2(v.fwd.x, v.fwd.z);
+        capture(base + "-face");
+        g.shutdown();
+    }
+    modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4; courseBenchRules(false);
     ecrans::reglages().qualite = ecrans::QUALITE_HAUTE;
     unsetenv("WFS_MOMENT");
 }

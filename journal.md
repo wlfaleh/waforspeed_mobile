@@ -3504,3 +3504,34 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:25:05 — ANO-129 / WFS-256 (chocs) et ANO-130 / WFS-257 (personnes qui apparaissent) créés (po-scrum-master)
 - Retours de l'utilisateur sur téléphone. WFS-256 (E3, physique) attribué à l'agent dev conduite, qui avait demandé un ticket (son domaine, hors fichiers tenus). WFS-257 (E11) ⏳ Prêt, ajouté à l'ordre de priorité juste après la liste de l'utilisateur.
+
+### 2026-11-07 16:35:47 — Début WFS-257 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- **Ticket** : WFS-257 (P1 Urgent, E11) — personnes qui apparaissent et disparaissent d'un coup (ANO-130). Règles : `regles-de-gestion/WFS-257.md`. Branche `feature/waforspeed-257` (premier commit à pousser tout de suite).
+- **Pourquoi lui, en plus de WFS-226** : l'utilisateur demande dans la session trafic d'avancer un autre sujet en parallèle (« Next » répété) ; exception à « un ticket par agent » sur cette demande. WFS-226 reste à lui (E4 + E3).
+- **Choix** : ticket prêt le plus prioritaire hors E3 / E4 ; WFS-249 (E13 tenue par WFS-230), WFS-224 (E4), WFS-242 (E3) non attribuables ; E11 libre (WFS-210, 233, 240 ✅).
+- **Zone autorisée** : `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, tests et banc E11. **Interdit** : `camera_vue.*`, `game.cpp`, trafic (`traffic_system.*`, hors bloc des feux de WFS-226 déjà autorisé pour l'autre ticket), fichiers de WFS-246 / 247 / 256, tailles d'interface, iOS (gel).
+- **Plan court** : RG-01 cause nommée au journal (suites de captures, 5 cartes) ; apparition / disparition hors de la vue ou en marchant ; fondu ≥ 0,5 s des niveaux de détail ; densité −50 % inchangée ; preuves avant / après (0 apparition visible), tests CPU, parcours 0 écart, `qa/Check.md`, 🟡 puis confirmation de l'utilisateur.
+
+### 2026-11-07 16:39:13 — WFS-226 : phares allumés sur toutes les autres voitures la nuit, fusion par confiance (PR #214, squash ea9aa64) (Claude, agent arwa)
+- **Méthode** : `Renderer::feuxVoiture` note chaque voiture dessinée la nuit, sauf le joueur (`FeuxVoiture::joueur`) : centre des optiques, axes, demi-écart, hauteur. Cela couvre le trafic, les adversaires (Course à 5, Duel), la police et le camion sans toucher à leurs systèmes : le bloc des feux de `traffic_system.cpp` n'a pas changé. `nuit.cpp` fait ensuite deux choses (RG-02) :
+  - les 2 voitures les plus proches (Basse), ou les 4 (sinon), à moins de 70 m, reçoivent un vrai feu de croisement : photométrie de WFS-218, paire LED en un projecteur, position prolongée d'une image ;
+  - les autres reçoivent la lumière au sol calculée avec la même répartition (`phares::eclairementSol`, à moins de 1 % du projecteur, vérifié par le test), dessinée après les systèmes de voitures.
+- **Accroches annoncées** :
+  - 12 projecteurs au lieu de 8 (`frame_ubo.h`, `common.glsl`, boucle d'`eclairage.glsl`, `FrameParams::SPOTS_MAX`, `renderer.cpp`, `eclairage_physique.cpp`) ;
+  - `renderer.cpp` : note des phares, 2 lignes ;
+  - `renderer.h` : `FeuxVoiture::joueur` et `Renderer::lumiereSol` (quads additifs) ;
+  - le shader saute les projecteurs de croisement hors faisceau (au-delà de 80°) ou hors portée.
+- **Photométrie (avis d'expert réalisme)** : étalement en azimut passé de (az / 18°)² à (az / 18°)⁴, soit 12 % à 30° et 2,5 % à 45°. C'est plus proche d'un vrai feu de croisement (bords latéraux raides). Avant, une voiture voisine à 2 m recevait trop de lumière sur son flanc. Crête par phare : 10 440 cd (halogène) et 20 880 cd (LED), dans l'ordre des vrais feux. Le flux ne change pas (1500 / 3000 lm pour la paire, ±5 %). Joueur : route à 10 m 6,7 lx, à 30 m 0,50 lx ; pied de mur proche 4,2 lx, à 3 m de haut 0,06 lx.
+- **Preuves locales** :
+  - captures nouvelles, en Basse : `phares-autres-ville/-campagne/-corniche/-course5/-poursuite-haut` et `-face`, comparées à main ;
+  - `route-jour-*` : 0 % d'écart ;
+  - 51 tests CPU verts ;
+  - parcours 0 écart, en vue normale et en Cockpit.
+- **Limites** :
+  - RG-05 (carrosseries visibles) n'est que partiellement traité (lumière des autres voitures, halos) : les reflets du ciel de nuit relèvent de l'exposition (E13) ;
+  - les 2 projecteurs de plus en Basse ont un coût GPU non mesuré au téléphone (budget de WFS-222) ;
+  - teinte LED pour toutes les autres voitures.
+- **Erreur d'outil, sans effet** : un appel de fusion visait par erreur la PR #208, déjà fusionnée à 15:31 par son auteur (WFS-248). GitHub a seulement renvoyé l'ancienne fusion ; rien n'a changé sur `main`.
+
+### 2026-11-07 16:40:06 — WFS-256 : exception de zone E2 accordée à l'agent dev conduite (po-scrum-master)
+- ≈ 25 lignes par carte (`solide(objet)`) dans `plage.cpp`, `campagne.cpp`, `circuit.cpp` + 3 lignes dans `decor_carte.*` : ajout seul, aucun dessin changé ; E2 libre.
