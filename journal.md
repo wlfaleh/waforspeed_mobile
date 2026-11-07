@@ -3711,3 +3711,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 17:44:07 — WFS-266 passé en P1 Urgent (po-scrum-master)
 - À la demande de QA-arwa : ANO-134 bloquante après fusion (RG-03 de WFS-210 non rempli) → WFS-266 **P1 Urgent** ; ordre gardé dans E11 (juste après WFS-257), non attribué tant qu'aucun développeur ne le demande.
+
+### 2026-11-07 17:47:42 — Recette, lot 1 (conduite) : 5 REFUSÉS, WFS-234 PASSABLE (QA-arwa)
+- Preuves : Release `apercu` 852 (0ffe7d0 : contient WFS-217, 221, 234, 241 ; pas WFS-253 ni 255, runs 853-858 annulés), avant : 844 ; 51 tests CPU verts en local.
+- **REFUSÉS**, chacun avec la bloquante déjà ouverte après le refus de l'utilisateur : WFS-217 (ANO-113 → ANO-131 / WFS-258), WFS-241 (ANO-131), WFS-221 (ANO-126), WFS-253 (ANO-132), WFS-255 (ANO-133 ; règles tenues aux tests, mais Son Coupé chez l'utilisateur : seules les vibrations ont pu être jugées).
+- **Nouvelles bloquantes, qui expliquent les refus** : **ANO-138** banc de conduite à 34-46 km/h seulement, direction trop vive à haute vitesse (à 228 km/h, 5 % du doigt prend toute l'adhérence) ; **ANO-139** allers-retours de la voiture devant la caméra en virage depuis WFS-241 (4,2 à 9,7 cm contre 0,1 à 0,8 avant), invisibles au banc de fluidité (virages et cadences < 30 img/s non comptés) ; **ANO-140** aide désactivée, volant lâché : tête-à-queue et marche arrière sur le bas-côté (dérive 52-58°).
+- **WFS-234 : PASSABLE AVEC ANOMALIES MINEURES** — carte GPS lisible, ANO-141 : texte du bandeau trop petit (consigne 9 px en 2400).
+- Bloquantes → PO : ANO-138, 139, 140 (à rattacher à WFS-258 / 259 / 247).
