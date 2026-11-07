@@ -3119,3 +3119,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   2. **Textures scannées CC0** (ST-4) : Poly Haven et ambientCG sont bloqués ; recherche dans les dépôts GitHub publics (`modeles-3d-github.md` § 5). Si rien de réaliste n'est trouvé : textures procédurales calibrées sur les albédos du référentiel (`materiaux.json`), signalé au PO.
   3. **Coût** : façades en relief = plus de triangles ; LOD 3 niveaux et imposteurs au-delà de 300 m (RG-05), mesure au banc avant / après.
 - **À noter pour WFS-200** : `shaders/decor.glsl` (`teinteVegetation`) multiplie l'alpha du feuillage par `1 + lod × 0,25` : le feuillage s'épaissit quand l'image est plus petite. C'est très probablement le mécanisme exact de l'écart M-01 (capture de 256 px plus dense que la scène) ; rien à faire tant que #170 tient le banc au vert.
+
+### 2026-11-07 01:48:17 — WFS-161 : arbitrages du PO (référentiel d'architecture, textures) (po-scrum-master)
+- `references/reel/architecture.json` autorisé (exception de zone ; règles de `SOURCES.md`). Textures : dépôts GitHub publics d'abord, sinon procédurales calibrées sur `materiaux.json`, provisoires. Écrit dans `regles-de-gestion/WFS-161.md`.
