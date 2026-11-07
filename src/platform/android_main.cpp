@@ -24,6 +24,7 @@
 #include "gyroscope_android.cpp"   // WFS-108 : inclinaison du téléphone (gyroscope), densité de l'écran (dp)
 #include "chauffe_android.cpp"     // WFS-123 : état thermique, setFrameRate 60 (API 30+, dlsym)
 #include "plantage_android.cpp"    // WFS-126 : rapport de plantage (signaux, 200 dernières lignes, déclencheur de test)
+#include "../render/qualite_auto.h"   // WFS-246 (accroche, RG-06) : dossier de rendu-mesure.txt
 
 namespace wfs {
 static AAssetManager* g_assets = nullptr;
@@ -157,6 +158,7 @@ void android_main(android_app* a) {
     // WFS-24 RG-08 : fichier privé de l'application ; moment gardé (lu par la plage, choix à l'écran : WFS-41)
     sauvegarde().charger(std::string(a->activity->internalDataPath ? a->activity->internalDataPath : ".") + "/sauvegarde.txt");
     configCheminTelephone(a->activity->externalDataPath ? a->activity->externalDataPath : "");   // WFS-128 : configgame.json posé sur le téléphone
+    qualite::dossierMesure = a->activity->externalDataPath ? a->activity->externalDataPath : "";   // WFS-246 (accroche, RG-06) : rendu-mesure.txt
     setenv("WFS_MOMENT", sauvegarde().tod.c_str(), 1);
     app.start = nowSeconds();
     while (!a->destroyRequested) {
