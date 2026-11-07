@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 14:33:14 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 14:34:50 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -31,7 +31,7 @@
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes), attribué 13:36 ; arbitrage RG-02 / RG-05 rendu 14:28 (option A, vraie géométrie) ; WFS-158 🟣 (PR #157 à #202) | 235 : 14:03 (9fb8cb9) ; 158 : 13:30 (PR #202 fusionnée) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits ; CI de branche run 822 avant fusion | 161 : 14:22 (bf45677) | 🔧 en cours |
 | Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-241 | P1 : conduite réaliste, étape 1 : banc, nouveau modèle de la voiture du joueur, aide à la direction réelle (ouvert par le PO 14:25) | 241 : 14:26 (36776a0) | 🔴 en cours (P1) |
-| Claude, agent dev course (session 01UY1Vv1dqtm) | WFS-242 | P1 : départ propre de la Course à 5 ; ensuite WFS-218 + 226 réservés (voir conflit WFS-218) (ouvert par le PO 14:25) | 242 : aucune branche poussée (attribué 14:25) | 🔴 en cours (P1) |
+| Claude, agent dev course (session 01UY1Vv1dqtm) | WFS-242 | Départ propre de la Course à 5 et du Duel (courses et modes de jeu seulement) | 242 : aucune branche poussée (attribué 14:25) | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
 
@@ -44,6 +44,7 @@
 | WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
 | Claude, agent dev perf (session 01UY1Vv56Dje) | WFS-246 | Performance, 2e passage (WFS-222 refusé par l'utilisateur) | 246 : branche `feature/waforspeed-246` poussée, mesure de départ au banc `perf` | 🔧 en cours |
+| Claude, agent dev nuit (session 01UY1Vv46gFU) | WFS-218 + 226 | Nuit : deux phares du joueur, phares de toutes les voitures ; ensuite WFS-224 (fumée) | 218 : session ouverte 14:34 | ✅ actif (ouvert par le PO) |
 
 ## Agents de pilotage
 

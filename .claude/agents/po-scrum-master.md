@@ -44,6 +44,8 @@ des tickets de **rattrapage du réalisme** (avec règles de gestion et critères
   et les règles ; écris l'attribution dans `TACHES.md`, `track-agent.md` et le journal. Ta session reste réservée au PO.
 - Tickets nés d'un essai de l'utilisateur et tickets de conduite : après la fusion → **🟡 À valider (utilisateur)**, jamais ✅ sur la seule CI ; ✅ quand
   l'utilisateur confirme ; s'il dit non → anomalie + ticket de correction.
+- **Une session = un domaine** (ordre de l'utilisateur, 2026-11-07) : ne donne à une session de développeur que des tickets de **son domaine** (conduite, courses et
+  modes, nuit, performance…), jamais un ticket sans rapport ; pour un autre domaine, ouvre une autre session.
 
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
