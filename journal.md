@@ -4100,3 +4100,42 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 21:07:21 — CI de journée / bancs du matin (PR #234) : règles mises à jour ; WFS-279 versions créé (po-scrum-master)
 - Décision de l'utilisateur rapportée par l'agent expert ci : ✅ par les bancs du matin (04:00), QA à 07:00, émulateur chaque matin, gel de la CI 2-3 jours. CLAUDE.md, qa-lead.md, po-scrum-master.md, tache utilisateur.md à jour.
+
+### 2026-11-07 21:23:51 — WFS-243 : adversaires visibles au loin, classement, îlot, trafic de l'anneau, voies des ordinateurs, fusionné (#239) (arwa-3)
+- **ANO-117, cause nommée** : `Renderer::draw(Model)` classe toute la voiture par `masquage::distanceMax` (WFS-82 RG-02). Rayon ≈ 2,4 m, sous 3 m : la voiture est coupée au-delà de 150 m en Basse et de 200 m en Haute. Ce n'est ni le classement, ni `rdRendu`, ni les modèles.
+- **ANO-117, correction** : accroche du rendu de 9 lignes, avec l'accord du PO (`renderer.h` l. 163, 221 et 330 ; `renderer.cpp` : `classer`, `beginFrame`, `draw(Model)`).
+  - Le drapeau `adversaireProchaineVoiture()` est remis à faux après chaque voiture et à chaque image.
+  - Il n'est appelé que pour les 4 adversaires de la Course à 5 et l'adversaire du Duel (accroche d'une ligne dans `duel_system.cpp`).
+  - Trafic, police, joueur, décor et `distanceMax` inchangés (RG-05).
+- **Banc `course5`** (Campagne, adversaires arrêtés, Haute et Basse) :
+
+  | cas | classement | dessiné (devant le joueur) | largeur en 2340 × 1080 | avant le ticket |
+  |---|---|---|---|---|
+  | 190 m (à 0,54 km) | 190,0 m | 190,0 m | 8,5 px | coupé en Basse (150 m) |
+  | 400 m (à 1,06 km) | 400,0 à 406,0 m | 400,0 à 406,0 m | 4,2 px | coupé en Basse et en Haute |
+
+  - Captures `-avant` / après regardées : à 190 m en Basse, la voiture apparaît au bout de la ligne droite ; à 400 m, les 4 voitures sont au bout de la ligne droite du village.
+  - À 0,54 km, une bosse cache la route au-delà de ≈ 250 m. La capture à 400 m est donc prise à 1,06 km, sur une ligne de vue dégagée cherchée sur le tracé.
+- **Coût** (condition du PO, moyenne de 30 images au banc lavapipe) :
+  - Haute, 400 m : 447 → 453 appels de dessin, 865 → 904 ms par image.
+  - Basse : les écarts entre deux séries (±50 000 triangles, à cause des captures d'environnement et des sondes) sont plus grands que le coût des 4 voitures, qui sont toutes au niveau de détail le plus léger.
+  - Le banc `perf` ne sait pas se mettre en Course à 5 et `bench_perf.cpp` est hors de ma zone : la mesure est donc dans le banc `course5`.
+- **RG-03 (classement)** : nouveau test, 3 × 60 s sur la Ville. La position affichée est égale à l'ordre réel à chacun des 21 600 pas ; 9 changements de place, vus au pas même.
+- **RG-04 (îlot)** : déjà solide depuis WFS-256. `test_chocs_cartes` arrête la voiture contre l'îlot à 30, 80 et 150 km/h, sur la Ville, la Campagne et la Corniche, avec les deux modèles de conduite. Rien changé.
+- **RG-ANO-144 (trafic de l'anneau)** :
+  - Cause : les files du trafic sont à ±5 m de l'axe (anneau de 14 m). Une voiture roulait donc sur la couronne de pavés et une autre hors de l'anneau.
+  - Correction (`traffic.*`, `FACTEUR_ANNEAU`) : files resserrées à ±2,25 m dans l'anneau, avec une rampe de 15 m ; pas de changement de file dans l'anneau ; voitures posées déjà resserrées. Tracé 1 inchangé : la référence du jeu web reste juste au bit près.
+  - Test, 400 voitures pendant 2 min, sur la Ville, la Campagne et la Corniche :
+    - avant : carrosseries de 7,66 à 20,34 m du centre ; environ 65 % des positions sur la couronne ou hors de l'anneau ;
+    - après : de 10,40 à 17,59 m, aucune dehors.
+  - Capture `rondpoint-plage-anneau-jour` regardée : la voiture du trafic est sur l'asphalte de l'anneau.
+  - **Cédez-le-passage non fait.** Tout le trafic suit le même trajet : entrée, ¾ de tour, sortie. Le quart d'anneau entre la sortie et l'entrée ne porte donc jamais de voiture, et aucune voiture n'arrive à l'entrée par l'anneau : la règle ne se déclencherait jamais. Je n'ai pas codé une règle qui ne fait rien. Proposition au PO : soit le trafic ralentit au cédez-le-passage, soit on attend d'avoir du trafic sur les autres branches.
+- **RG-ANO-150 (voies des ordinateurs)** :
+  - Règle codée : un changement de voie est gardé jusqu'à l'arrivée dans la nouvelle file, et au moins 2 s. Pas de retour vers la file quittée si une voiture y est à moins de 30 m.
+  - Test, code de `main` → après :
+    - cas « voiture lente devant, deux files libres » : 71 → 1 changement de voie ;
+    - 60 s de course à la Ville : 56,1 → 0,6 changement par ordinateur et par minute (pire cas : 91,2 → 1,2).
+  - Départ (WFS-242), vitesse et difficulté inchangés.
+- **Vérifié** : 60 tests CPU verts ; en local, bancs `course5` (« Rejouer » OK), `rondspoints` et `parcours` (0 écart, vue normale et Cockpit).
+- **Limites** : rien vu sur téléphone ; le coût en Basse n'est pas séparable du bruit du banc.
+- Fusion par confiance, squash 77e2b7f ; ligne `qa/Check.md` ; **🟡 À valider (utilisateur)**.
