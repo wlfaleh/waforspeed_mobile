@@ -23,10 +23,9 @@ int main() {
     // RG-01 : 4 intérieurs (lot 1), toutes les autres voitures gardent le cockpit commun
     std::set<std::string> avec;
     for (int i = 0; i < CAR_COUNT; i++) if (interieurPour(CARS[i].id)) avec.insert(CARS[i].id);
-    cas("lots 1 et 2 : Golf, M4, 911, SF90 + A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3, X5 ont leur intérieur",
-        avec == std::set<std::string>{"golf", "m4", "p911", "sf90", "a45", "s3", "giulia", "p208", "gallardo", "mustang", "model3", "x5"} && nombreInterieurs() == 12);
-    cas("les 8 voitures du lot 3 (dont la Corsa) gardent le cockpit commun ; id inconnu ou nul : commun",
-        CAR_COUNT - (int)avec.size() == 8 && !interieurPour("corsa") && !interieurPour("compass") && !interieurPour("inconnue") && !interieurPour(nullptr));
+    cas("lots 1 à 3 : les 20 voitures du catalogue ont leur intérieur (WFS-197, 201, 202)",
+        (int)avec.size() == CAR_COUNT && CAR_COUNT == 20 && nombreInterieurs() == 20);
+    cas("id inconnu ou nul : cockpit commun", !interieurPour("inconnue") && !interieurPour(nullptr));
     for (int i = 0; i < nombreInterieurs(); i++) {
         const InterieurDef& d = interieur(i);
         bool existe = false; for (int k = 0; k < CAR_COUNT; k++) existe = existe || !std::strcmp(CARS[k].id, d.car);
@@ -131,6 +130,36 @@ int main() {
         cas("œil : X5 > 208 > Golf ; Gallardo le plus bas", hauteurOeil(x5) > hauteurOeil(p208) && hauteurOeil(p208) > hauteurOeil(golf) && plusBas);
         cas("yeux assis d'ANSUR-II : 0,7859 m (hommes 804,5 et femmes 747,7 mm pondérés par l'effectif 4082 / 1986)",
             std::abs(OEIL_ASSIS_M - (804.5f * 4082 + 747.7f * 1986) / 6068 / 1000) < 0.0002f);
+    }
+    // ---------- WFS-202 : lot 3 (cotes de l'expert, génération du .wfm)
+    {
+        const InterieurDef &abarth = *interieurPour("abarth"), &compass = *interieurPour("compass"), &corsa = *interieurPour("corsa"),
+                           &elantra = *interieurPour("elantra"), &gt86 = *interieurPour("gt86"), &rrsport = *interieurPour("rrsport"),
+                           &tcross = *interieurPour("tcross"), &v60 = *interieurPour("v60");
+        cas("Ø des volants du lot 3 : Abarth 365, Compass 380, Corsa 365, Elantra 370, GT86 363,5, RR Sport 380, T-Cross 370, V60 375 mm",
+            abarth.volantD == 0.365f && compass.volantD == 0.380f && corsa.volantD == 0.365f && elantra.volantD == 0.370f
+            && gt86.volantD == 0.3635f && rrsport.volantD == 0.380f && tcross.volantD == 0.370f && v60.volantD == 0.375f);
+        cas("Abarth (2008-2015) : un seul cadran rond (l = h), pas d'écran central (carte dans le cadran)",
+            abarth.combine == Combine::FerrariIncurve && abarth.combineW == abarth.combineH && abarth.ecranW == 0 && abarth.meplat > 0);
+        cas("Range Rover Sport L461 : volant 3 branches (pas 4), palettes ; 3 branches pour tout le lot",
+            rrsport.branches == 3 && rrsport.palettes && compass.branches == 3 && corsa.branches == 3 && elantra.branches == 3
+            && gt86.branches == 3 && tcross.branches == 3 && v60.branches == 3 && abarth.branches == 3);
+        cas("Elantra N : boutons N bleus sur les branches, palettes ; combiné et écran sur une même vitre sans chevauchement",
+            elantra.boutonsBranches && elantra.repereCol == 0x0072ce && elantra.palettes
+            && elantra.ecranPos.x - elantra.ecranW / 2 >= elantra.combinePos.x + elantra.combineW / 2 - 0.001f && elantra.ecranLacet < 0);
+        cas("V60 P3 : écran 7 po (152 × 91 mm), pas le 9 po vertical ; combiné TFT 8 po",
+            std::abs(v60.ecranW - 0.152f) < 0.0016f && v60.ecranW > v60.ecranH && std::abs(v60.combineW - 0.190f) < 0.002f);
+        cas("combinés : VW (Compass, Corsa, T-Cross), Lamborghini (GT86), Audi (RR Sport), Ferrari (Elantra, V60)",
+            compass.combine == Combine::VwDigital && corsa.combine == Combine::VwDigital && tcross.combine == Combine::VwDigital
+            && gt86.combine == Combine::LamboCompteTours && rrsport.combine == Combine::AudiVirtual
+            && elantra.combine == Combine::FerrariIncurve && v60.combine == Combine::FerrariIncurve);
+        std::printf("cockpit : œil du lot 3 : RR Sport %.3f, Compass %.3f, T-Cross %.3f, V60 %.3f, Abarth %.3f, Corsa %.3f, Elantra %.3f, GT86 %.3f m\n",
+                    hauteurOeil(rrsport), hauteurOeil(compass), hauteurOeil(tcross), hauteurOeil(v60), hauteurOeil(abarth), hauteurOeil(corsa),
+                    hauteurOeil(elantra), hauteurOeil(gt86));
+        bool sousGt = true; for (int i = 0; i < nombreInterieurs(); i++) if (std::strcmp(interieur(i).car, "gallardo") && std::strcmp(interieur(i).car, "sf90") && std::strcmp(interieur(i).car, "p911"))
+            sousGt = sousGt && hauteurOeil(gt86) <= hauteurOeil(interieur(i)) + 1e-6f;
+        bool plusHaut = true; for (int i = 0; i < nombreInterieurs(); i++) plusHaut = plusHaut && hauteurOeil(rrsport) >= hauteurOeil(interieur(i)) - 1e-6f;
+        cas("œil : RR Sport le plus haut, Compass au-dessus des berlines, GT86 la plus basse hors supercars", plusHaut && hauteurOeil(compass) > hauteurOeil(golf) && sousGt);
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");

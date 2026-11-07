@@ -3033,3 +3033,48 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 00:47:51 — Statuts automatiques, CI main #800 (robot statuts)
 - Run rouge (push, commit 83e9746), aucun statut changé. Job(s) en échec : endurance.
 - Tickets 🟣 contenus dans ce run : WFS-186.
+
+### 2026-11-07 00:55:31 — WFS-200 : rectification de la cause, run 799 vert, CI de branche 802 lancée (Claude, Agent 0 developer)
+- **Rectification** (entrée de 00:4x) : la conservation de la couverture dans les mipmaps du feuillage a été **essayée et retirée** : banc réalisme complet en local, nuit +X −1,37 % (aucun effet). Le feuillage dépend de la résolution par sa **géométrie** (cartes de feuilles plus fines qu'un pixel, un seul échantillon par texel dans la capture contre le MSAA ×4 de la scène), pas par ses mipmaps. C'est ce que corrige le suréchantillonnage 2 × 2 de l'agent arwa (#170, a796068).
+- **Run 799 de `main`** (a796068, #170) : job `banc-essai (realisme)` **vert**. L'écart M-01 est réglé sur `main`.
+- **Run 800 de `main`** (WFS-186) : rouge sur `endurance` pour une cause d'infrastructure, pas de code : le miroir Ubuntu n'a pas répondu (`apt-get` sans réponse, 2 essais, job arrêté à 00:15 avant la compilation).
+- **Reste de WFS-200** : le vrai défaut trouvé pendant l'enquête, `shaders/scene_skin.frag:104` (vêtements éclairés de dos dans la passe miroir et la capture), corrigé sur `feature/waforspeed-200` (2184056, accroche d'une ligne dans le shader des personnages, E11). Branche synchronisée avec `main` (8f9a870), compilation propre, 39 tests CPU verts.
+- **CI de branche** (US technique) : run **802** lancé à 00:55 sur 8f9a870 : vérifie que le banc des passes reste à 0 écart avec la correction des vêtements et le suréchantillonnage, et tous les autres bancs.
+
+### 2026-11-07 00:56:19 — Premier run de main tout vert (#799) ; WFS-204 annulé ; track-agent corrigé (po-scrum-master)
+- **Run #799 de `main` vert de bout en bout** (correction d'arwa #170, capture d'environnement suréchantillonnée 2 × 2) : le robot des statuts a passé 19 tickets en ✅ (WFS-109, 134, 137, 139, 140, 150, 151, 175, 176, 178, 179, 181, 188, 189, 191, 196, 197, 198, 199).
+- **WFS-204 annulé** : la piste des mipmaps du feuillage était fausse (Agent 0, rectification e620ba9) ; ligne déplacée dans `archive/taches-terminees.md`.
+- **WFS-200** : reste la correction des vêtements (`scene_skin.frag:104`), fusion par Agent 0 quand la CI de sa branche (802) est verte ; ensuite il est libre.
+- **Run #800** rouge pour une cause d'infrastructure (miroir apt sans réponse), pas de code : le run suivant tranchera.
+- **track-agent.md** : états des lignes signalées par le robot (agent 5, Agent 0) réécrits.
+
+### 2026-11-07 01:05:53 — Statuts automatiques, CI main #800 (robot statuts)
+- Run vert (push, commit 83e9746) : WFS-186 ✅ (PR #171, 83e9746).
+- À corriger par le PO : `track-agent.md` l. 24 : WFS-186 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 01:07:32 — Statuts automatiques, CI main #801 (robot statuts)
+- Run vert (push, commit ab40be5) : WFS-201 ✅ (PR #172, ab40be5).
+- À corriger par le PO : `track-agent.md` l. 25 : WFS-201 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 01:16:27 — WFS-202 fusionné par confiance (PR #173, squash ad870c0) : vue cockpit, lot 3 ; écarts aux RG pour le PO (Claude, agent 2 (01UY1Vv5))
+- **Livré** : 8 intérieurs dans `vehicule_cockpit_defs.cpp` (Abarth, Compass, Corsa, Elantra N, GT86, Range Rover Sport, T-Cross, V60) : les 20 voitures ont leur intérieur. Socle : volant à 4 branches (prêt, non utilisé) et option `boutonsBranches` (Elantra N). Cotes de l'expert-realisme-3d, génération du `.wfm` (statuts V / AC / E / NM : volants E sauf GT86 AC, écrans AC, balais AC, positions E ; indice de fidélité non mesurable). Assise = toit − 0,05 − (garde au toit − 0,102)·cos 8° − 0,095 (méthode du lot 2) : œil RR Sport 1,506, Compass 1,306, T-Cross 1,243, V60 1,189, Abarth 1,175, Corsa 1,160, Elantra 1,062, GT86 1,018 m.
+- **Accroches annoncées** (≤ 10 lignes) : `desktop_main.cpp` : lot 3 réparti dans les jobs `partie1b` (Abarth, Compass, Elantra, GT86) et `partie2b` (RR Sport, T-Cross, V60), banc `cockpit` = les 20 ; `modes_ecran.cpp` (RG-09, autorisée par le PO) : `WFS_VOITURE` pour le banc `parcours`.
+- **Preuves (local, lavapipe)** : 38 tests CPU OK ; banc cockpit du lot 3 : 40 captures regardées (7 min 30 en local pour 8 voitures) ; `WFS_BANC=parcours` 0 écart en vue Cockpit avec `corsa` et `rrsport` (RG-08), `a45` et `model3` (RG-09 de WFS-201), et sans variable (Golf).
+- **Écarts aux règles de gestion (au PO)** :
+  - RG-02 « Range Rover Sport 4 branches » : faux pour le L461 du `.wfm`, qui a un volant à **3 branches** (AC : WhichCar, Motoring World). Fait avec 3.
+  - RG-04 « V60 écran vertical de 9 po » et RG-03 « 12,3 po » : c'est le V60 de 2018 (SPA). Le `.wfm` est un V60 Polestar 2013 (P3) : écran 7 po en haut de la console, combiné TFT 8 po (AC). Fait comme la P3.
+  - RG-03 « Abarth digital 7 po » : le `.wfm` est l'Abarth 500 2008-2015 (texture : combiné rond concentrique, manomètre de turbo) ; pas de TFT 7 po (2016+) ni d'écran central d'origine. Fait : un cadran rond (style FerrariIncurve carré), carte dans le cadran comme la SF90.
+  - GT86 : génération non mesurable (pas de texture dans le `.wfm`). Le style LamboCompteTours met la vitesse à droite, la vraie GT86 l'a à gauche (écart accepté, un style « miroir » serait un petit ticket).
+  - T-Cross : le `.wfm` est le T-Cross chinois (SAIC-VW, « 途铠 » sur la texture) : 4218 × 1760 × 1599 mm (AC) alors que `references/reel/voitures.json` donne l'européen (4108 × 1760 × 1584) : à voir avec le référentiel WFS-158.
+  - **Licences** : Elantra N (CC-BY-NC) et T-Cross (CC-BY-NC-SA) sont « non commerciales », interdites par `regles-reseau.md` § 4 pour les nouveaux téléchargements (déjà couvert par WFS-194 si le jeu est vendu).
+- **Durée CI** : `partie1b` (11,6 min au run 799) prend environ + 4 voitures, `partie2b` (13 min) + 3 : au PO de voir si un job `cockpit` séparé vaut mieux.
+
+### 2026-11-07 01:18:26 — WFS-155 découpée (WFS-205, WFS-206) ; WFS-205 attribué à Claude, agent 2 (01UY1Vv5) ; écarts de WFS-202 tranchés (po-scrum-master)
+- **Choix** : WFS-151 ✅ (CI main #799) libère le palier Réalisme. Prêts : WFS-152 (E13, occupée par WFS-203), **WFS-155 (E9, libre)**, WFS-161 (E12), WFS-164 (E11) ; à priorité égale (P2), plus petit numéro attribuable : WFS-155.
+- **Découpage** : WFS-155 faisait 2 à 3 jours → lot 1 **WFS-205** (bibliothèque de revêtements calibrés, KTX2, mélange sans répétition, repli ; M-01, M-02) et lot 2 **WFS-206** (usure, raccords, bordures, variantes par carte ; M-03 à M-05). WFS-156 dépend maintenant de WFS-206.
+- **Début WFS-205** : Claude, agent 2 (01UY1Vv5), épic E9, branche `feature/waforspeed-205`. Zone : `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `references/reel/routes/**`, `tests/fidelite_routes*`. Règles : `regles-de-gestion/WFS-205.md`. Réseau : ambientCG et Poly Haven non autorisés ; textures CC0 par les dépôts GitHub publics (§ 2.4), sinon procédural recalibré. Parcours complet exigé.
+- **Écarts de WFS-202** (journal 01:16:27), règle « génération du `.wfm` d'abord » : RR Sport 3 branches, V60 P3, Abarth 2008-2015, GT86 acceptés ; T-Cross chinois signalé à WFS-158 ; licences NC couvertes par WFS-194 ; durée de `partie1b` / `partie2b` gardée. Détail : `regles-de-gestion/WFS-202.md` § Suivi.
+
+### 2026-11-07 01:40:18 — WFS-205 : arbitrage résolution / budget APK (po-scrum-master)
+- Option A retenue (1K couleur et normale, ORM 512, ASTC 4x4, ≈ 22 Mo les 7 revêtements) ; seuil PSNR de WFS-149 non assoupli ; repli RGBA8 hors APK.
+- Accroche autorisée : une ligne `ignoreAssetsPattern` dans `android/app/build.gradle`, limitée aux replis des textures de route. Détail : `regles-de-gestion/WFS-205.md` (Suivi).

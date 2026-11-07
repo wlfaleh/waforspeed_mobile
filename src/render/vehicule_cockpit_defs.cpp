@@ -117,6 +117,75 @@ static const InterieurDef DEFS[] = {
      0.354f, 0.133f, {0.33f, -0.249f, -0.82f}, -0.30f,
      -0.22f, -0.82f, -0.28f, -1.20f, 0x1c1d20, 0x2a2b2e, 0xe9ebec, 1.f, 0.35f, false,
      Essuie::Paralleles, 0.650f, 0.500f, 1.62f, 0.677f},
+    // ---------- WFS-202 : lot 3 (génération du modèle .wfm du jeu, décision du PO ; cotes : expert-realisme-3d, 2026-11-07, journal ;
+    // assise = toit − 0,05 − (garde au toit − 0,102)·cos 8° − 0,095, même méthode que le lot 2)
+    // Abarth 500 (2008-2015, texture du .wfm : combiné rond concentrique) : volant épais à méplat ; un seul cadran rond (régime en
+    // anneau intérieur, vitesse en anneau extérieur, LCD au centre) ; pas d'écran central d'origine : carte dans le cadran (comme la
+    // SF90) ; façade verticale, alu ; balais 600 / 350 (AC)
+    {"abarth", 0.365f, 0.038f, 3, 0.15f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
+     {0.f, -0.30f, -0.72f}, -0.42f,
+     Combine::FerrariIncurve, 0.170f, 0.170f, {0.f, -0.21f, -0.82f}, 0xff4a1c, 0x0a0a0a, 0xe8101a,
+     0.f, 0.f, {0.f, 0.f, 0.f}, 0.f,
+     -0.16f, -0.72f, -0.20f, -1.05f, 0x1b1b1d, 0x232428, 0x8f9398, 1.f, 0.35f, false,
+     Essuie::Paralleles, 0.600f, 0.350f, 1.60f, 0.463f},
+    // Compass II restylée (2021) : gros volant rond ; combiné numérique 10,25 po ; écran Uconnect 5 de 10,1 po flottant au-dessus
+    // d'aérateurs fins ; bandeau cousu et filet métal ; position haute ; balais 600 / 450 (AC)
+    {"compass", 0.380f, 0.036f, 3, 0.f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x1d1d20, 0,
+     {0.f, -0.32f, -0.72f}, -0.43f,
+     Combine::VwDigital, 0.244f, 0.091f, {0.f, -0.24f, -0.87f}, 0xe6ecf2, 0x0b0d10, 0xe31b23,
+     0.218f, 0.136f, {0.36f, -0.13f, -0.80f}, 0.f,
+     -0.20f, -0.82f, -0.26f, -1.18f, 0x1c1d20, 0x2a2b2e, 0x8f9398, 1.f, 0.35f, false,
+     Essuie::Paralleles, 0.600f, 0.450f, 1.60f, 0.594f},
+    // Corsa F (2020) : combiné numérique 7 po sous une petite visière ; écran 7 po intégré haut entre les aérateurs ; bandeau noir
+    // laqué ; balais 600 / 400 (AC)
+    {"corsa", 0.365f, 0.034f, 3, 0.f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
+     {0.f, -0.31f, -0.74f}, -0.38f,
+     Combine::VwDigital, 0.155f, 0.087f, {0.f, -0.23f, -0.86f}, 0xe6ecf2, 0x0a0d10, 0xff3b30,
+     0.155f, 0.087f, {0.36f, -0.17f, -0.78f}, -0.10f,
+     -0.17f, -0.80f, -0.22f, -1.08f, 0x1c1d20, 0x232428, 0x101113, 0.f, 0.15f, false,
+     Essuie::Paralleles, 0.600f, 0.400f, 1.62f, 0.448f},
+    // Elantra N (CN7 restylée, 2024) : volant à palettes, 2 boutons N bleus en bas des branches ; combiné 10,25 po (compte-tours
+    // rond au centre, rapport dedans) et écran 10,25 po sur une même vitre tournée vers le conducteur ; fils bleus ; balais 600 / 450 (AC)
+    {"elantra", 0.370f, 0.037f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0x0072ce,
+     {0.f, -0.30f, -0.73f}, -0.36f,
+     Combine::FerrariIncurve, 0.244f, 0.091f, {0.f, -0.23f, -0.87f}, 0x9fd3ff, 0x0a0e16, 0xe0201a,
+     0.244f, 0.091f, {0.28f, -0.23f, -0.84f}, -0.17f,
+     -0.15f, -0.80f, -0.21f, -1.20f, 0x141415, 0x1b1c1e, 0x0072ce, 0.f, 0.40f, false,
+     Essuie::Paralleles, 0.600f, 0.450f, 1.60f, 0.350f, 0, false, false, false, true},
+    // GT86 (génération non mesurable, branches alu d'avant 2017) : très petit volant rond (363,5 mm, ± 1 % des deux générations) ;
+    // grand compte-tours au centre (le socle met la vitesse à droite, la vraie est à gauche : écart au journal) ; écran 6,1 po bas
+    // dans la console ; planche basse et plate ; balais 560 / 510 (AC)
+    {"gt86", 0.3635f, 0.034f, 3, 0.f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x8f9398, 0,
+     {0.f, -0.28f, -0.70f}, -0.30f,
+     Combine::LamboCompteTours, 0.300f, 0.120f, {0.f, -0.20f, -0.82f}, 0xf2f2f2, 0x0a0a0b, 0xe0201a,
+     0.135f, 0.076f, {0.36f, -0.26f, -0.74f}, 0.f,
+     -0.13f, -0.74f, -0.20f, -1.10f, 0x151516, 0x1c1c1e, 0x101113, 0.f, 0.15f, false,
+     Essuie::Paralleles, 0.560f, 0.510f, 1.55f, 0.306f},
+    // Range Rover Sport (L461, 2023) : volant 3 branches horizontales (RG-02 dit 4 : faux, journal), palettes ; combiné 13,7 po ;
+    // écran courbe flottant 13,1 po ; planche longue, alu ; position très haute ; balais 600 / 500 (AC)
+    {"rrsport", 0.380f, 0.038f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
+     {0.f, -0.33f, -0.72f}, -0.45f,
+     Combine::AudiVirtual, 0.326f, 0.122f, {0.f, -0.25f, -0.88f}, 0xe9eef4, 0x0d0f12, 0xd0021b,
+     0.290f, 0.163f, {0.36f, -0.26f, -0.80f}, 0.f,
+     -0.24f, -0.86f, -0.30f, -1.25f, 0x1c1d20, 0x2a2b2e, 0xe9ebec, 1.f, 0.35f, false,
+     Essuie::Paralleles, 0.600f, 0.500f, 1.62f, 0.794f},
+    // T-Cross (SAIC-VW, Chine, 2021) : volant VW famille Polo ; Active Info Display 10,25 po ; écran 8 po dans la planche ; plastique
+    // dur grainé ; balais 600 / 450 (AC, version européenne)
+    {"tcross", 0.370f, 0.034f, 3, 0.f, false, false, false, 0x3d3d3f, {0, 0, 0}, 0x2b2c30, 0,
+     {0.f, -0.31f, -0.74f}, -0.40f,
+     Combine::VwDigital, 0.244f, 0.091f, {0.f, -0.24f, -0.86f}, 0xdfe6ee, 0x0e1116, 0xff2a2a,
+     0.174f, 0.105f, {0.36f, -0.19f, -0.78f}, -0.10f,
+     -0.19f, -0.80f, -0.26f, -1.12f, 0x1c1d20, 0x232428, 0x101113, 0.f, 0.15f, false,
+     Essuie::Paralleles, 0.600f, 0.450f, 1.60f, 0.531f},
+    // V60 Polestar (P3, 2013) : volant à palettes ; Adaptive Digital Display TFT 8 po (thème Performance : compte-tours rouge au
+    // centre) ; écran 7 po sous une visière en haut de la console flottante (RG-04 « 9 po vertical » : V60 de 2018, journal) ;
+    // alu ; balais 650 / 500 (AC)
+    {"v60", 0.375f, 0.036f, 3, 0.f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x8f9398, 0,
+     {0.f, -0.31f, -0.75f}, -0.38f,
+     Combine::FerrariIncurve, 0.190f, 0.071f, {0.f, -0.23f, -0.87f}, 0xff3a2a, 0x0a0b0c, 0xff2b14,
+     0.152f, 0.091f, {0.36f, -0.12f, -0.86f}, 0.f,
+     -0.17f, -0.80f, -0.24f, -1.20f, 0x1a1a1c, 0x1c1c1e, 0xe9ebec, 1.f, 0.35f, false,
+     Essuie::Paralleles, 0.650f, 0.500f, 1.62f, 0.477f},
 };
 
 const InterieurDef* interieurPour(const char* carId) {
