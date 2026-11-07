@@ -3047,3 +3047,11 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-200** : reste la correction des vêtements (`scene_skin.frag:104`), fusion par Agent 0 quand la CI de sa branche (802) est verte ; ensuite il est libre.
 - **Run #800** rouge pour une cause d'infrastructure (miroir apt sans réponse), pas de code : le run suivant tranchera.
 - **track-agent.md** : états des lignes signalées par le robot (agent 5, Agent 0) réécrits.
+
+### 2026-11-07 01:05:53 — Statuts automatiques, CI main #800 (robot statuts)
+- Run vert (push, commit 83e9746) : WFS-186 ✅ (PR #171, 83e9746).
+- À corriger par le PO : `track-agent.md` l. 24 : WFS-186 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 01:07:32 — Statuts automatiques, CI main #801 (robot statuts)
+- Run vert (push, commit ab40be5) : WFS-201 ✅ (PR #172, ab40be5).
+- À corriger par le PO : `track-agent.md` l. 25 : WFS-201 : forme de l'État non reconnue (ligne laissée telle quelle).
