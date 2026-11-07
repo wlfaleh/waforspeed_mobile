@@ -2629,3 +2629,23 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Attribué à Claude, agent 1 (01UY1Vv2)**, libre après WFS-213 🟣. Zone permise : `tools/qa/**`, job `endurance` de `build.yml`, `src/platform/chauffe_systeme.cpp`, 1 ligne `.gitignore`. Branche `feature/waforspeed-220`. CI de branche permise autant que nécessaire, une à la fois (US technique).
 - Pourquoi pas WFS-214 : il dépend de WFS-213, encore 🟣 (run de `main` en cours) ; une US technique P1 passe avant les P2.
 - **WFS-216** : WFS-212 ✅ (CI main #813) → ⏳ Prêt (E2 libre). Prêts sans agent : WFS-218 (E4), WFS-219 (E10), WFS-216 (E2).
+
+### 2026-11-07 10:10:28 — WFS-161 (ST-5) : kit dans la Ville et la Campagne ; branche « buildings » pour les textures (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 0d78b8d, synchronisée a68543a) : système `archi-carte` à l'ordre 110, après toutes les cartes. **Accroches `src/world/campagne.cpp`** (4 lignes) : 116 maisons de village (`T_VILLA`) posées dans le kit, style village, sur le terrain (`solY`) ; boîte sautée si le kit est actif. La Ville avait déjà ses 580 immeubles.
+- **Vérification** : parcours complet **0 écart** (vue normale et vue Cockpit) ; 45 tests CPU verts ; banc `archi` sur la Campagne (116 bâtiments, 22 514 triangles au niveau 0 au total) ; capture de la Ville regardée.
+- **Branche `buildings`** (e3d6d39), créée à la demande de l'utilisateur (10:1x) : il y déposera les 18 textures Poly Haven dans `assets/textures/decor/sources/<nom>/` (`LISEZMOI.md` : noms et SHA-256). Je les reprendrai dans `feature/waforspeed-161` après vérification ; l'utilisateur supprimera ensuite la branche.
+- **Suite** : Corniche (`plage.cpp`, villas du village perché), captures des quartiers et banc réalisme, ST-6 (mesures), fusion.
+
+### 2026-11-07 10:12:43 — WFS-221 créé : voiture saccadée en vue Proche / Poursuite, US technique urgente (po-scrum-master)
+- **Retour de l'utilisateur** (essai sur téléphone) : en vue Proche et Poursuite, la voiture a un comportement bizarre, pas fluide.
+- **Causes probables (code de main)** : `game.cpp` ≈ 242-247, pas fixes de 1/120 s rendus sans interpolation (0, 1 ou 2 pas par image) ; `track.cpp:87`, pente par segment sans transition (bascule de la voiture à chaque segment) ; direction linéaire par morceaux.
+- **WFS-221** (`[TECHNIQUE]`, P1 Urgent, E0 + E3, ⏳ Prêt) : banc `fluidite` (temps d'image irréguliers 14-22 ms, mesures dans le repère caméra), rendu interpolé, route lissée, objectifs chiffrés, vidéo avant / après ; CI de branche permise (US technique). À attribuer au premier développeur libre, avant WFS-217.
+
+### 2026-11-07 10:20:00 — Vidéo de l'utilisateur analysée : ≈ 20 img/s et sauts de lacet ; WFS-221 complété (po-scrum-master)
+- **Vidéo** (enregistrement d'écran, 12 s, Poursuite, Campagne) : 240 images en 12 s (≈ 20 img/s, 12 à 30 selon la seconde ; 30 à 100 ms entre deux images) ; lacet de la voiture qui saute d'une image à l'autre dans le rond-point ; voiture qui flotte dans le cadre. Images extraites dans `qa/retours/2026-11-07-video-conduite-*.jpg` (la vidéo, 24 Mo, n'est pas mise dans le dépôt).
+- **WFS-221** : section « Constat sur la vidéo » et **RG-07** (cadence réelle sur téléphone : ≥ 30 img/s stables en Haute, ≥ 45 en Basse, coût par passe, ticket à part si gros changement de rendu).
+
+### 2026-11-07 10:22:06 — WFS-221 : prochain ticket attribué, au premier développeur libre (ordre de l'utilisateur) (po-scrum-master)
+- **Ordre de l'utilisateur** : un agent disponible prend WFS-221 (fluidité) ; Agent 0 reste sur WFS-161.
+- **Agents libres** : agent 4, agent 5 (WFS-210 fusionné), session dev expert, session dev 5bx (autre compte : pas de message direct possible). **Le premier qui demande un ticket au PO reçoit WFS-221, avant tout autre** (bandeau en tête de `TACHES.md`). Exception PO : E3 partagée avec WFS-217 (arwa), fichiers séparés (`game.cpp`, `track.*`, `camera_vue.*` pour WFS-221 ; `player.*` pour WFS-217).
+- **arwa-2 a repris WFS-158** (envoi à 09:47) : contrôle de 11:23 annulé, rien à découper.
