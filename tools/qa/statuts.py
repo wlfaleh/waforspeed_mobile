@@ -7,13 +7,18 @@ sans rien changer (RG-03) et liste pour le PO les lignes qu'il ne sait pas lire,
 
 Python 3, bibliothèque standard seulement (RG-07). Ne modifie que TACHES.md, track-agent.md et journal.md (RG-06).
 
+WFS-236 : un run de main « cancelled » dont seuls les jobs publication-* ont été annulés, avant d'avoir démarré, et dont
+tous les autres jobs sont verts compte comme vert (--jobs-json : liste des jobs du run, telle que la rend l'API GitHub).
+
 Usage :
   python3 tools/qa/statuts.py --run-number 812 --sha <commit du run> --conclusion success [--evenement push]
-                              [--jobs-en-echec "endurance,android"] [--depot .] [--date "AAAA-MM-JJ hh:mm:ss"]
+                              [--jobs-en-echec "endurance,android"] [--jobs-json jobs.json] [--depot .]
+                              [--date "AAAA-MM-JJ hh:mm:ss"]
 Code de sortie : 0 (fichiers modifiés ou non) ; 2 : erreur d'utilisation.
 """
 import argparse
 import datetime
+import json
 import re
 import subprocess
 import sys
@@ -95,6 +100,66 @@ def commit_de_fusion(cases, git, sha):
         if c:
             return c, f"commit {h}"
     return None, ("PR " + ", ".join("#" + p for p in prs) + " introuvable dans le dépôt") if prs else "ni PR ni commit cité"
+
+
+# ---------------------------------------------------------------- run annulé à la publication (WFS-236)
+PREFIXE_PUBLICATION = "publication-"
+
+
+def lire_jobs(texte):
+    """Jobs d'un run depuis la réponse de l'API (objet {"jobs": [...]}, liste, ou un objet JSON par ligne : gh api --paginate
+    --jq '.jobs[]'). None si le texte est vide ou illisible (RG-05 d)."""
+    texte = (texte or "").strip()
+    if not texte:
+        return None
+    try:
+        donnees = json.loads(texte)
+    except ValueError:
+        try:
+            donnees = [json.loads(l) for l in texte.splitlines() if l.strip()]
+        except ValueError:
+            return None
+    if isinstance(donnees, dict):
+        donnees = donnees.get("jobs")
+    if not isinstance(donnees, list) or not all(isinstance(j, dict) and isinstance(j.get("name"), str) for j in donnees):
+        return None
+    return donnees
+
+
+def publication_jamais_demarree(job):
+    """RG-02 bis : job publication-* annulé avant de démarrer : aucune étape, ou toutes ses étapes sautées (« skipped ») ou
+    jamais lancées (« queued » / « pending » sans conclusion). Une étape lancée (en cours, réussie, en échec, annulée) → False."""
+    if job.get("conclusion") not in ("cancelled", "skipped"):
+        return False
+    for e in job.get("steps") or []:
+        if not isinstance(e, dict):
+            return False
+        if e.get("conclusion") == "skipped":
+            continue
+        if e.get("status") in ("queued", "pending", "waiting") and e.get("conclusion") is None:
+            continue
+        return False
+    return True
+
+
+def annule_seulement_a_la_publication(jobs):
+    """RG-02 : vrai si tous les jobs hors publication-* sont « success » et que chaque publication-* est réussie ou annulée
+    avant d'avoir démarré (RG-02 bis), avec au moins une publication annulée et au moins un job de construction ; sinon
+    (job annulé, sauté, en échec, liste vide ou illisible) : faux (RG-03)."""
+    if not jobs:
+        return False
+    construction = [j for j in jobs if not j["name"].startswith(PREFIXE_PUBLICATION)]
+    publications = [j for j in jobs if j["name"].startswith(PREFIXE_PUBLICATION)]
+    if not construction or any(j.get("conclusion") != "success" for j in construction):
+        return False
+    annulees = 0
+    for j in publications:
+        if j.get("conclusion") == "success":
+            continue
+        if not publication_jamais_demarree(j):
+            return False
+        annulees += 1
+    return annulees > 0
 
 
 # ---------------------------------------------------------------- traitement
@@ -192,13 +257,15 @@ def maj_agents(agents, cles, run_number, R):
     return "".join(lignes)
 
 
-def entree_journal(R, date, run_number, sha, conclusion, jobs_echec, evenement):
-    """RG-03 / RG-05 : une entrée au journal par run traité (None : rien à écrire)."""
+def entree_journal(R, date, run_number, sha, conclusion, jobs_echec, evenement, publication_annulee=False):
+    """RG-03 / RG-05 : une entrée au journal par run traité (None : rien à écrire). publication_annulee (WFS-236, RG-02) :
+    run « cancelled » traité comme vert, annulé seulement à la publication."""
     lignes = []
     if conclusion == "success":
         if not R.termines and not R.a_corriger:
             return None
-        lignes.append(f"- Run vert ({evenement}, commit {sha[:7]}) : " + (
+        nature = "Run vert, annulé seulement à la publication" if publication_annulee else "Run vert"
+        lignes.append(f"- {nature} ({evenement}, commit {sha[:7]}) : " + (
             ", ".join(f"{c} ✅ ({p})" for c, p in R.termines) if R.termines else "aucun ticket 🟣 à passer en ✅") + ".")
     else:
         lignes.append(f"- Run rouge ({evenement}, commit {sha[:7]}), aucun statut changé. Job(s) en échec : "
@@ -216,6 +283,7 @@ def main(argv=None):
     p.add_argument("--conclusion", required=True)
     p.add_argument("--evenement", default="push")
     p.add_argument("--jobs-en-echec", default="")
+    p.add_argument("--jobs-json", default=None, help="WFS-236 : fichier des jobs du run (API GitHub), pour un run annulé")
     p.add_argument("--depot", default=".")
     p.add_argument("--date", default=None)
     a = p.parse_args(argv)
@@ -228,6 +296,17 @@ def main(argv=None):
     # un vert de nuit ne passe rien en ✅ ; un rouge de nuit est noté au journal.
     rouge = a.conclusion in ("failure", "timed_out", "startup_failure")
     vert = a.conclusion == "success" and a.evenement != "schedule"
+    # WFS-236 (RG-01, RG-02) : run annulé (hors nuit) dont seules les publications ont été annulées avant de démarrer → vert
+    publication_annulee = False
+    if a.conclusion == "cancelled" and a.evenement != "schedule" and a.jobs_json:
+        try:
+            texte_jobs = Path(a.jobs_json).read_text(encoding="utf-8")
+        except OSError:
+            texte_jobs = ""
+        publication_annulee = annule_seulement_a_la_publication(lire_jobs(texte_jobs))
+        vert = publication_annulee
+        print(f"statuts : run #{a.run_number} annulé : " + ("seulement à la publication, traité comme vert" if vert
+              else "un job de construction ou de test n'est pas vert, ou liste des jobs illisible : rien"))
     if not rouge and not vert:
         print(f"statuts : run #{a.run_number} {a.conclusion} ({a.evenement}) : rien à faire")
         return 0
@@ -237,7 +316,7 @@ def main(argv=None):
     R = traiter(taches, agents, git, a.sha, a.run_number, vert)
     date = a.date or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     jobs = [j.strip() for j in a.jobs_en_echec.split(",") if j.strip()]
-    entree = entree_journal(R, date, a.run_number, a.sha, "success" if vert else "failure", jobs, a.evenement)
+    entree = entree_journal(R, date, a.run_number, a.sha, "success" if vert else "failure", jobs, a.evenement, publication_annulee)
     if R.taches is not None and R.taches != taches:
         taches_f.write_text(R.taches, encoding="utf-8")
     if R.agents is not None and agents is not None and R.agents != agents:

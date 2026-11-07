@@ -2996,3 +2996,45 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Zone permise** : `tools/qa/statuts.py`, `tools/qa/test_statuts.py`, `.github/workflows/statuts.yml`. Aucun banc, seuil ni test affaibli.
 - **Attribution** : Claude, agent 4 (011cpqZan), libre et demandeur d'un ticket depuis 11:47 ; branche `feature/waforspeed-236`. Option RG-06 : rattrapage des runs #818 à #825. CI de branche permise (US technique, une à la fois).
 
+### 2026-11-07 13:11:11 — Propositions 1, 2 et 5 de l'agent expert ci prises en compte : WFS-236 complété, WFS-237 créé (po-scrum-master)
+- **Ordre de l'utilisateur** (à l'agent expert ci) : « Parle avec le PO pour prendre en compte tes propositions 1, 2 et 5, mais avant le PO tu dois valider ça avec l'agent Smart Brain ; si c'est OK pour lui, OK pour moi ». Smart Brain : OK aux trois, avec conditions. Noté dans `tache utilisateur.md`.
+- **1 → WFS-236** (en cours, Claude agent 4) : RG-02 bis (une publication ne compte « annulée » que si elle n'a démarré aucune étape ; arrêtée par son délai, à la main ou en cours → non vert) et test (e). L'agent 4 doit relire ses règles.
+- **2 + 5 → WFS-237** (P1, E7, `[TECHNIQUE]`) : groupe de concurrence unique `build-main` (`cancel-in-progress: false` gardé sur main, branches inchangées), résumé qui liste tous les commits et tickets depuis le dernier run de main terminé, bissection par l'expert CI en cas de rouge à plusieurs tickets ; job `banc-essai` : boucle d'installation du job `endurance` (`timeout 300`, 2 essais) et `timeout-minutes: 75` ; `pipeline.md` à jour. Règles `regles-de-gestion/WFS-237.md`.
+- **Attribution** : ⏳ En attente de WFS-236 (un ticket actif par épic E7) ; réservé à l'agent expert ci, qui l'a proposé et le commence dès WFS-236 🟣. Aucun banc, seuil ni test affaibli.
+
+### 2026-11-07 13:16:39 — WFS-236 fusionné par confiance (PR #199) (Claude, agent 4 (011cpqZan))
+- **Robot des statuts** (`tools/qa/statuts.py`) : un run de `main` « cancelled » (hors nuit) compte comme vert si tous les jobs hors `publication-*` sont « success » et si chaque `publication-*` a réussi ou a été annulée **avant de démarrer** (aucune étape, ou toutes sautées : RG-02 bis). Sinon rien (RG-03). Le journal précise « annulé seulement à la publication ».
+- **`statuts.yml`** : pour un run annulé, il lit les jobs (toutes les pages, avec leurs étapes) ; nouveau `workflow_dispatch` (entrée `run_id`) pour rattraper un run de `main` terminé (RG-06).
+- **Tests** : `tools/qa/test_statuts.py` : 39 vérifications OK (cas (a) à (e) de RG-05, liste vide, illisible ou absente, nuit annulée). Aucun banc, seuil, test ni job de `build.yml` touché (RG-04).
+- **Comparé au run réel #818** : construction et tests verts, `publication-apk` réussi, `publication-captures` annulé sans étape → compté vert.
+- **RG-06** : rattrapage de #818 lancé (run 42376181080 de `statuts.yml`) ; #820, #823 et #825 suivent un à un (GitHub ne garde qu'un run en attente par groupe de concurrence).
+- WFS-237 (agent expert ci) peut commencer : WFS-236 est 🟣.
+
+
+### 2026-11-07 13:17:12 — Règle de l'utilisateur : l'expert CI ne touche que la CI (agent expert ci)
+- **Consigne de l'utilisateur** : « Toi tu ne peux pas toucher le code source du jeu, tu touches que la partie CI. »
+- **Écrite** dans `.claude/agents/expert-ci.md` et `.claude/skills/expert-ci/SKILL.md` (§ 3) : seulement `.github/workflows/**` (hors `ios.yml`), `tools/qa/**` et la doc du skill ; un rouge dû au code du jeu est nommé au journal et le PO confie la correction à un développeur. WFS-237 reste dans cette zone (`build.yml`, `pipeline.md`).
+
+### 2026-11-07 13:19:42 — WFS-237 : développé, CI de branche lancée, fusion après WFS-236 (agent expert ci)
+- **Ordre de l'utilisateur** (« alors pourquoi tu veux attendre ») : développement commencé sans attendre WFS-236 ; aucun fichier en commun (WFS-236 : `statuts.py`, `statuts.yml` ; WFS-237 : `build.yml`). **La fusion attend WFS-236 🟣** (RG de dépendance : sinon les runs en attente remplacés resteraient « annulés » et bloqueraient les ✅). Deux tickets E7 en cours en même temps : exception demandée par l'utilisateur.
+- **Fait** (branche `feature/waforspeed-237`, ca97f82) : groupe de concurrence unique `build-main` (`cancel-in-progress: false` gardé), groupe à part `build-main-nuit` pour la nuit (un envoi n'annule jamais le banc de nuit en attente) ; job `banc-essai` : installation en 2 essais de 5 min (boucle du job endurance) et `timeout-minutes: 75` ; job `résumé` : tous les commits et tickets depuis le dernier run de main qui a tourné (`gh api compare`, permission `actions: read`), sinon « liste incomplète » ; `pipeline.md` à jour. Logique du résumé essayée en local avec un faux `gh` (liste complète et panne de l'API).
+- **CI de branche** : run **836** (lancement n° 1, à la main) : vérifie que GitHub accepte le fichier, la boucle d'installation et le délai des 12 bancs. Le regroupement sur main ne se vérifie que sur main, après fusion.
+
+### 2026-11-07 13:19:50 — Statuts automatiques, CI main #818 (robot statuts)
+- Run vert, annulé seulement à la publication (push, commit be33c2f) : WFS-210 ✅ (PR #185, be33c2f).
+
+### 2026-11-07 13:21:48 — WFS-237 fusionné (PR #200), essai en vrai sur main, mesure avant / après (agent expert ci)
+- **Ordre de l'utilisateur** : « tu vas essayer ça, tu checkes après quelques pipelines si vraiment ça aide la CI ou pas ». Fusion par confiance (squash `4b8711f`), WFS-236 déjà fusionné par agent 4 (#199, run 835). Run de branche 836 annulé (inutile après la fusion, lanceurs libérés).
+- **Runs en file de l'ancienne règle annulés** : #830, #832, #833, #834, #835 (chacun dans son propre groupe `build-<sha>`, ils auraient encore occupé les lanceurs pendant des heures). Ils sont tous ancêtres du run **#837** (`4b8711f`), qui les vérifie d'un coup ; le robot passera leurs tickets 🟣 en ✅ s'il est vert. Runs #828 (en cours) et #829 (démarré) laissés au bout. Relance possible d'un run annulé si besoin.
+- **Mesure « avant »** (runs de main #817 à #835, 2026-11-07 09:49 → 13:16 UTC) : 17 envois ; **1 run vert** (#817) ; 4 runs annulés à la publication (#818, #820, #823, #825) ; attente en file avant le 1er job ≈ **53 min** (#825) ; durée totale envoi → fin ≈ **1 h 48** (#825) ; 6 runs en file à 13:00.
+- **Mesure « après »** à faire sur les prochains runs de main : attente en file, durée envoi → fin, nombre de runs verts, tickets passés en ✅, rouges d'installation.
+
+### 2026-11-07 13:25:35 — WFS-238 créé (notification en temps réel de chaque APK de main) et confié à l'agent expert ci (po-scrum-master)
+- **Demande de l'utilisateur** (à l'agent expert ci, 2026-11-07) : « une notification pour chaque fichier APK disponible », en temps réel. Notée dans `tache utilisateur.md` avec la réponse.
+- **WFS-238** [TECHNIQUE] P1, E7 (libre : WFS-236 et WFS-237 🟣) : à la fin du job `publication-apk` (main seulement, APK publié), un commentaire dans une issue épinglée « 📱 Nouvel APK de main » mentionne @wlfaleh (numéro de construction, commit court, tickets, lien fixe de l'APK). `GITHUB_TOKEN`, `issues: write` au niveau du job, aucun envoi hors de GitHub, échec = avertissement. Règles : `regles-de-gestion/WFS-238.md` (RG-01 à RG-10).
+- **Attribué** à l'agent expert ci (session 01UY1Vv4), sa proposition ; zone : `build.yml` job `publication-apk`, au besoin `tools/qa/publier_apercu.sh`, `pipeline.md`. Branche `feature/waforspeed-238` à pousser dès sa création.
+
+### 2026-11-07 13:27:37 — WFS-238 fusionné (PR #201) : notification en temps réel de chaque APK de main (agent expert ci)
+- **Fait** : dernière étape du job `publication-apk` : `tools/qa/notifier_apk.sh` (fichier neuf de la zone E7 `tools/qa/`, appelé seulement par cette étape). Seulement sur `main` et seulement si ce run a publié l'APK (titre de la Release) ; commentaire `@wlfaleh` (construction, commit, tickets depuis le dernier run qui a tourné, lien fixe de l'APK, lien du run) dans l'issue fixe « 📱 Nouvel APK de main » (créée et épinglée la 1re fois) ; marque cachée = un seul commentaire par construction ; permissions du job `contents: write`, `issues: write`, `actions: read` ; échec = avertissement (`continue-on-error`, 2 min). Rien hors de GitHub.
+- **Vérifié en local** avec un faux `gh` : notification normale, issue neuve (création + épinglage), APK d'un autre run (rien), construction déjà annoncée (rien), panne (avertissement, code 0). **Pas de CI de branche** (l'étape y est sautée par construction) : la preuve vient du prochain APK de main.
+- **Essai réel du regroupement (WFS-237)** : cet envoi arrive pendant le run #837 : il doit attendre seul dans le groupe `build-main`.
