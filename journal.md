@@ -2523,3 +2523,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 09:17:55 — Statuts automatiques, CI main #816 (robot statuts)
 - Run rouge (schedule, commit 4d8bb7c), aucun statut changé. Job(s) en échec : endurance.
 - Tickets 🟣 contenus dans ce run : WFS-208, WFS-211.
+
+### 2026-11-07 09:25:42 — WFS-194 confirmé : le jeu pourra être vendu ou avoir pub / achats (décision de l'utilisateur) (po-scrum-master)
+- **Décision de l'utilisateur** : vente, publicité ou achats possibles (dit la veille ; confirmé ce matin). Les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) doivent être remplacés.
+- **WFS-194** : P4 conditionnelle → **P2 Haute**, dépendance « décision » retirée ; reste « après WFS-158 » (même épic E10). Voie par défaut : modèles CC0 / CC BY trouvés dans les dépôts GitHub publics (`modeles-3d-github.md`).
+- Note du PO : je n'avais pas retrouvé cette décision de la veille dans mes notes ; elle est maintenant écrite dans les règles du ticket.
