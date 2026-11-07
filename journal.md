@@ -2562,3 +2562,70 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:41:47 — WFS-161 : textures procédurales provisoires, l'utilisateur ne déposera pas les fichiers (po-scrum-master)
 - L'utilisateur n'a pas le temps de déposer les 18 textures CC0 de `dunkean/magna-urbis` (Git LFS illisible, aucune copie hors LFS dans 6 autres dépôts). Décision : textures procédurales calibrées, provisoires ; Agent 0 termine ST-4 / ST-5 et fusionne. Écrit dans `regles-de-gestion/WFS-161.md`.
+
+### 2026-11-07 09:45:27 — WFS-161 (ST-4 clos en procédural, ST-5 Ville) : décision du PO, immeubles du kit dans la Ville (Claude, Agent 0 developer)
+- **ST-4, décision du PO (09:41)** : l'utilisateur n'a pas le temps de déposer les fichiers. On garde les **textures procédurales calibrées sur `materiaux.json`, provisoires** ; mesures de texture « non mesurables » si besoin. Pour un ticket ultérieur (si une source sans LFS apparaît), les 18 fichiers Poly Haven (CC0, 1K) et leur SHA-256 :
+  - \`white_sandstone_bricks_diff_1k.jpg\` : \`b578317a0c92a314cf6e380803357fb6981d7487f82d225ccfd54914bea40c90\`
+  - \`white_sandstone_bricks_nor_gl_1k.png\` : \`8e5975fc7b3913d50243e342759449806747f31409e06490956845f721c0cf8b\`
+  - \`white_sandstone_bricks_rough_1k.png\` : \`80726ec17fb57ca03964b63da1ee4c851c3502d1d1ecdf490594a5c5dba758ad\`
+  - \`white_plaster_rough_01_diff_1k.jpg\` : \`8d3b209ec5bbcee3db7a883c6c2eee982b7c18a268e6f43766ee540c7c28ebcb\`
+  - \`white_plaster_rough_01_nor_gl_1k.png\` : \`db029b8cdb754eb503f0d29dd70ef4ea2615fafb9010bf25e6e9d065190f08e4\`
+  - \`white_plaster_rough_01_rough_1k.png\` : \`3a8f65bc373028e0bc1dec54cc2f1ffc213e169984d6f976f1cb49f7565eeb21\`
+  - \`stone_wall_diff_1k.jpg\` : \`390969aead48d9a10ac731a5e0af8761cc4ed89faa02ba775b913930b4398d87\`
+  - \`stone_wall_nor_gl_1k.png\` : \`003d0e9ae1f2411b400c088cc92be89e99b9febe74034a75d2a3a51fd0a7c5af\`
+  - \`stone_wall_rough_1k.png\` : \`b6d643665c3b55725c40d9af3e926c0067556da962c9c63594c358c2ea52734a\`
+  - \`brick_wall_001_diffuse_1k.jpg\` : \`6a1233ec0186703de830354d89f122991e61e67fb67e0846c7eaf6c5aefea902\`
+  - \`brick_wall_001_nor_gl_1k.png\` : \`0b51c30896a1706d8a5bb24448bcff791ec2e51458a90fef9498e61f74de9efe\`
+  - \`brick_wall_001_rough_1k.png\` : \`ee186ae7aeaf5857acc9efb34b16678b774dd5c28d43b208b6b7786fb646b6e8\`
+  - \`white_plaster_02_diff_1k.jpg\` : \`a1ebbe091bd1ae93d2abd5de8d69f9003a8d0ee6532bcf9a87c2492c97051f23\`
+  - \`white_plaster_02_nor_gl_1k.png\` : \`36ac2eec35a5678eda0c1ccfd81f6ab8a2e2fed0ca3e77d6e1d44e372e130450\`
+  - \`white_plaster_02_rough_1k.png\` : \`972b33f86442d3d4546f70c9e535d187f2b28d3f27788226563fe0aef671e707\`
+  - \`clay_roof_tiles_02_diff_1k.jpg\` : \`227a062b38b170e02c27eaa513dae45dc8bc893a62cbd8d0c08e2c32b381fc25\`
+  - \`clay_roof_tiles_02_nor_gl_1k.png\` : \`c7b859bf83efb4d431536337e737435e324d95a3c8cdf06f04e384c21e941809\`
+  - \`clay_roof_tiles_02_rough_1k.png\` : \`f1aa2cd527bf0afd67a60461fc7aa6a02ae637d3d9a72e10eed6feb8843a67e9\`
+  - Pages : polyhaven.com/a/white_sandstone_bricks, /white_plaster_rough_01, /stone_wall, /brick_wall_001, /white_plaster_02, /clay_roof_tiles_02 ; copie LFS : `dunkean/magna-urbis`, `assets/materials/buildings/`.
+- **ST-5 (en cours, Ville faite)** : nouveau système `src/world/archi_carte.h/.cpp` (zone E12). Les cartes posent leurs bâtiments à leur init. Le système les construit par morceaux de 48 segments, sur les fils de travail, au niveau de détail de leur distance (< 120 m complet, < 300 m allégé, au-delà volume seul), et les dessine en un appel par matériau et par morceau. Repli : `WFS_ARCHI=0` → anciennes boîtes.
+  - **Accroches annoncées dans `src/world/ville.cpp`** (7 lignes) : `#include`, 5 lignes à l'init (pose des 580 immeubles : résidentiels et < 20 m en classique, tours en moderne), 1 ligne dans `IMMEUBLE` (boîte sautée si le kit est actif).
+  - Albédos recopiés dans `archi_kit.h` (le dossier `references/` n'est pas dans l'APK) ; `test_archi_kit` vérifie qu'ils restent égaux au référentiel.
+  - **Coût** (banc Ville, lavapipe, même vue) : 1 275 → 1 380 appels de dessin (+105, ≈ +8 %) ; virage vu de haut : 1 314 → 1 395. Triangles : 903 452 pour les 580 immeubles s'ils étaient tous au niveau 0 ; en jeu, seuls les morceaux à moins de 120 m le sont.
+  - Capture `carte-ville-virage-1` regardée : façades percées, bandeaux du moderne, cafés et arbres de la rue devant.
+  - **Limites** : les vitrines des commerces (`commerces.cpp`) se superposent au rez-de-chaussée du kit (à harmoniser) ; au raccord du tour, un morceau peut manquer une image.
+- **Suite** : Corniche (`plage.cpp`) et Campagne, parcours complet et banc réalisme, puis ST-6 et fusion.
+
+### 2026-11-07 09:48:39 — Début WFS-217 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- Ticket : WFS-217 (P1 Urgent), « guide auto » corrigé dans les virages serrés, épingles et ronds-points + réglage « Aide à la direction : Activée / Désactivée » (Réglages du jeu seulement). Épic E3, libre (aucun ticket E3 actif). Branche `feature/waforspeed-217`.
+- Zone autorisée : `src/game/player.*`, banc de conduite dans `src/game/**` (E3), `tests/**` ; accroches ≤ 10 lignes annoncées au journal : `src/ui/ecrans/reglages.cpp` (E8), sauvegarde. Interdit : `configgame.json`, taille ou place des boutons (ordre permanent), iOS (gel), `game.*` / noyau.
+- Critères : `regles-de-gestion/WFS-217.md` (RG-01 à RG-06) : aide qui suit la tangente locale lissée, cap borné élargi selon la courbure, aucun saut de cap > 0,05 rad par image ; réglage enregistré, Activée par défaut ; désactivée = conduite libre ; ordinateur non touché ; banc sur 4 cartes, captures `conduite-epingle` et `conduite-rond-point`, parcours complet 0 écart, tests CPU.
+- Plan court : mesurer la cause au banc, corriger les trois aides de `player.cpp`, ajouter le réglage et sa sauvegarde, tests, captures, fusion (confiance > 50 % ou CI de branche à la main une fois), ligne `qa/Check.md`.
+
+### 2026-11-07 09:49:46 — WFS-213 fusionné : plus d'écran blanc après le chargement d'une voiture (Claude, agent 1)
+- PR #184, squash 941e475, **fusion par confiance**, zone E13 : `src/render/eclairage_physique.cpp`, `src/render/eclairage_exposition.h` (nouveau), `tests/fidelite_lumiere.cpp`.
+- **Cause** (banc `vitrines` reproduit : 14 vitrines sur 16 et `course-sf90` blanches, 50 % saturés) : `eclairage_physique.cpp`, `SondesIbl::lireRelecture` : une capture d'environnement (6 images, une face par image) dont des faces n'avaient jamais reçu leur exposition `kFace` (restée à 0, ramenée à 10⁻¹²) était relue ×10¹² : sonde à **1,36·10¹¹ cd/m²**, IBL énorme, EV bloqué à 15 → image blanche.
+- **Correction** : RG-02 k des faces remis à « inconnu » à chaque capture, capture abandonnée si une face n'a pas d'exposition connue ; sonde ou mesure non finie ou hors de 10⁻⁷ à 10⁵ cd/m² rejetée (dernière valeur juste gardée), EV jamais non fini ; RG-01 piste, carte ou voiture changée = nouvelle scène (sondes oubliées, EV à la valeur du moment, recalé sur la 1re mesure valide) ; RG-03 `eclairage_exposition.h` testé par `fidelite_lumiere` (3 cycles init / shutdown avec NaN, infini, 1,36·10¹¹ : EV toujours dans [10 ; 15]), 93 / 93.
+- Preuves locales : 16 `vitrine-*-0` + `course-sf90` normales (0 % saturés, luminance 0,11 à 0,13 ; `abarth`, `p208` identiques à avant) ; banc des cartes : **126 vues identiques à `main`** (même merge-base 65b00ed) ; réalisme lumière 69 / 69 ; parcours complet 0 écart ; 42 tests CPU. Statut 🟣.
+
+### 2026-11-07 09:53:43 — Le qa-lead de cette session s'appelle désormais QA-arwa (QA-arwa)
+- Demande de l'utilisateur : l'agent QA (`qa-lead`, session 01Us6uCubd) est nommé **QA-arwa**. Ligne mise à jour dans `track-agent.md` (agents de pilotage) ; ce nom termine désormais les titres de ses commits et signe ses entrées du journal.
+
+### 2026-11-07 09:55:42 — Archives automatiques (robot archives)
+- Journal : 0 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (aucun jour).
+- TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-73, WFS-205, WFS-208, WFS-209, WFS-211, WFS-212).
+
+### 2026-11-07 09:55:55 — WFS-210 fusionné (PR #185, squash be33c2f, fusion par confiance) (Claude, agent 5)
+- **Fait** : RG-01 tenues par lieu (`tenue::tenueLieu`, `src/world/pietons.h`) : Ville laine / robes, Corniche lin / coton et tenues d'été, Campagne jean / bleus de travail, Grand Prix combinaisons synthétiques et maillots ; couleurs et tissus selon l'avis `expert-realisme-3d` (2026-11-07). `scene_skin.frag` : peau (éclairage enveloppant par canal w = 0,45 / 0,18 / 0,10, pénombre rougeâtre, effacé au-delà de 15 m, F0 0,028), tissus (rugosité 0,60-0,93, reflet rasant Charlie, trame et plis sans scintillement), cheveux (Kajiya-Kay 2 lobes), yeux (cornée GGX F0 0,025). Piétons (tissu 0) inchangés.
+- **RG-02** : peau VI = PB-MAT `mat.peau_vi.albedo` (0,09 ; 0,05 ; 0,02), sources dans `references/reel/humains/peau.md` (Jensen 2001, Donner & Jensen 2006, Lister 2012) ; remplace le plancher 0,27. Avis expert non appliqué (proposé au PO) : tirage IV / V / VI par personne (aujourd'hui par morphotype).
+- **RG-05, mémoire GPU des humains** : 14 517 sommets × 68 o + 121 200 indices par morphotype ; avant 1,47 Mo × 12 = **17,7 Mo**, après (indices 16 bits) 1,23 Mo × 12 = **14,8 Mo** (−2,9 Mo, −16 %).
+- **Accroches annoncées** : A1 `src/world/conducteurs.cpp` (2 lignes : include, appel de `tenueLieu`) + `conducteurs.h` (1 ligne : albédo VI) ; A2 `src/render/renderer.h` (2 lignes : champs `i16`) + `renderer.cpp` (5 lignes : copie 16 bits, type d'index) ; `tests/conducteurs_test.cpp` (3 lignes : plage de la charte 0,05-0,65).
+- **Preuves (banc local, lavapipe + glslc installés)** : `realisme` avant / après : 320 mesures, indices identiques (lumière 100 %, photométrie 100 %, soleil 100 %, voitures 76,6 %, routes 10 %), 2 erreurs déjà présentes (textures KTX2 absentes en local) ; parcours complet 0 écart (vue normale et Cockpit) ; `test_fidelite_humains` : tenues OK, indice humains 100 % (40/40) ; captures `conducteurs-tenue-<carte>` sur les 4 cartes (chargement des conducteurs sur chaque carte sans erreur). Limite : habitacle très sombre à 6,5 m (éclairage intérieur, hors zone) : tenues peu lisibles sur les captures.
+
+### 2026-11-07 10:01:46 — Recette après fusion : WFS-212 et WFS-211 VALIDÉS (QA-arwa)
+- Captures : Release `apercu` de main, construction 815 (6ddbeec, CI verte, 42 tests CPU, parcours 0 écart).
+- **WFS-212 : VALIDÉ** — rien sur la chaussée : fontaine sur son îlot (Ville), aucune végétation sur le rond-point (Campagne), trou de l'épingle fermé (Plage). ANO-104 vérifiée ; les deux bloquantes de la recette de nuit (dallage de la place, buissons du rond-point) sont corrigées.
+- **WFS-211 : VALIDÉ** — conducteurs humains en vue Proche (jour / nuit), 12 `.wfp` à 3 niveaux, fidélité des humains ≥ 99 %, peau M-03. ANO-111 vérifiée. Non vérifiables au banc : conducteurs du trafic et du duel (couverts par `test_conducteurs`), vue Cockpit, passage entre niveaux, performances.
+- Remarques hors périmètre gardées pour la campagne VABF (dans les rapports) : coin bleuté des épingles vu de dessus, zones grises à côté des lacets, pointillés de l'anneau sur la route d'entrée, taches autour des yeux (à revoir avec WFS-210), teints identiques au banc des piétons.
+
+### 2026-11-07 10:03:57 — WFS-220 [TECHNIQUE] créé et attribué à Claude, agent 1 ; WFS-216 prêt (po-scrum-master)
+- **CI de `main` rouge** : run planifié #816 (42357352523, 08:53 UTC, commit 4d8bb7c), job `endurance`, étape « Chauffe (banc WFS-123) » : toutes les vérifications « (ok) », mais banc tué à 240 s (code 124) avant la capture `chauffe-retabli`. → **WFS-220** (E7, P1 Urgent, `regles-de-gestion/WFS-220.md`) : cause mesurée, aucune vérification retirée, endurance verte sur la branche puis sur `main`. Le `__pycache__` suivi par erreur dans `tools/qa` (signalé par agent 1) est rangé dans ce ticket (RG-05).
+- **Attribué à Claude, agent 1 (01UY1Vv2)**, libre après WFS-213 🟣. Zone permise : `tools/qa/**`, job `endurance` de `build.yml`, `src/platform/chauffe_systeme.cpp`, 1 ligne `.gitignore`. Branche `feature/waforspeed-220`. CI de branche permise autant que nécessaire, une à la fois (US technique).
+- Pourquoi pas WFS-214 : il dépend de WFS-213, encore 🟣 (run de `main` en cours) ; une US technique P1 passe avant les P2.
+- **WFS-216** : WFS-212 ✅ (CI main #813) → ⏳ Prêt (E2 libre). Prêts sans agent : WFS-218 (E4), WFS-219 (E10), WFS-216 (E2).

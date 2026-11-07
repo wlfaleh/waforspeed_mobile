@@ -79,7 +79,7 @@ constexpr float ORIGINES[NB_HUMAINS][3] = {{0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0, 
 //   africain : moitié teinte III, moitié teinte VI (mat.peau_vi.albedo), luminance 0,27 (la peau VI publiée, 0,05, est sous le
 //   plancher de la charte : le plancher fait foi, RG-03) ; mélange linéaire selon les origines du morphotype
 inline vec3 albedoPeau(int i) {
-    const vec3 afr{0.399f, 0.247f, 0.148f}, asi{0.623f, 0.433f, 0.343f}, eur{0.777f, 0.585f, 0.506f};
+    const vec3 afr{0.09f, 0.05f, 0.02f}, asi{0.623f, 0.433f, 0.343f}, eur{0.777f, 0.585f, 0.506f};   // WFS-210 (RG-02) : afr = peau VI mesurée (mat.peau_vi.albedo, references/reel/humains/peau.md)
     const float* o = ORIGINES[std::clamp(i, 0, NB_HUMAINS - 1)];
     return afr * o[0] + asi * o[1] + eur * o[2];
 }
