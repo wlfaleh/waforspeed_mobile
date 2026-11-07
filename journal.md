@@ -2752,3 +2752,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Zone autorisée** : `src/render/**` (E4), réglages de qualité et baisse automatique, `src/world/pietons.*` / décor (allègement au loin, accroches annoncées au journal), bancs. **Interdit** : `game.cpp`, `track.*`, `camera_vue.*` (WFS-221), taille des boutons (ordre permanent), iOS (gel).
 - **Critères** : regles-de-gestion/WFS-222.md (RG-07 piétons −50 % en premier, mesure avant / après ; RG-01 bis erreur grossière d'abord : APK debug, -O2/-O3, couches de validation, FIFO, un seul cœur ; profilage 3 postes ; ≥ 60 img/s Basse, ≥ 45 Haute ; carrés noirs ; pas de régression ; parcours 0 écart).
 - **Plan court** : piétons −50 % → vérifier la construction Release / validation → banc perf et profilage → leviers RG-03 → APK de main mesuré par l'utilisateur.
+
+### 2026-11-07 10:52:05 — Début WFS-223 : ronds-points, attribué à Claude, session dev 5bx (po-scrum-master)
+- **Ticket** : WFS-223 Ronds-points : défauts graphiques sur les 4 cartes (P1 Urgent, E2). Ticket prêt le plus prioritaire d'une épic libre (E2 sans ticket actif ; gel iOS respecté).
+- **Zone autorisée** : `src/world/**` des cartes (E2), `assets/world/**` hors `modeles/`, `shaders/world_*` ; marquages de route par accroche ≤ 10 lignes annoncée (E9 `route_*`). **Interdit** : `track.*`, `camera_vue.*`, `game.cpp` (WFS-221), `src/world/pietons.*` (WFS-222), `player.*`, iOS, taille des boutons.
+- **Critères** : regles-de-gestion/WFS-223.md (RG-01 inventaire et captures avant ; RG-02 marquages ; RG-03 îlot sans boîtes de couleur ; RG-04 raccords ; RG-05 rien sur la chaussée, appels de dessin tenus ; RG-06 captures avant / après, parcours 0 écart). Section « Graphisme réaliste » ajoutée (charte § 3).
+- **Plan court** : inventaire des ronds-points → marquages → îlot → raccords → captures et ligne `qa/Check.md`.
