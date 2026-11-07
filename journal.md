@@ -2713,3 +2713,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-206, accroche de 2 lignes dans `game.cpp` au lieu de `track.cpp`** : acceptée (≤ 10 lignes, annoncée au journal).
 - **M-05 (vibreurs du Grand Prix)** : reste « non mesurable » dans l'indice des routes ; aucun ticket créé maintenant. Aucun site n'est ajouté sans accord de l'utilisateur (`regles-reseau.md`). Si l'utilisateur fournit une source (ou accepte un site précis, présenté par le PO), le PO crée alors un ticket E2 (`src/world/circuit.cpp`) pour la géométrie, avec les valeurs dans `references/reel/routes/`.
 - **WFS-222** reste le prochain ticket à attribuer au premier développeur libre.
+
+### 2026-11-07 10:30:06 — −50 % de personnes dans les rues (WFS-222 RG-07) ; WFS-223 créé (ronds-points) (po-scrum-master)
+- **Ordres de l'utilisateur** : au moins 50 % de personnes en moins dans les rues ; une tâche pour corriger les défauts graphiques des ronds-points.
+- **WFS-222** : RG-07 (piétons −50 % sur toutes les cartes, Ville 996 → ≤ 498, en premier, mesure avant / après).
+- **WFS-223** (E2, P1 Urgent, ⏳ Prêt) : inventaire des ronds-points des 4 cartes, marquages réglementaires, îlot central, blocs de couleur remplacés, raccords ; captures avant / après. Bandeau de `TACHES.md` : 221, puis 222, puis 223. Réponse dans `tache utilisateur.md`.
