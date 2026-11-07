@@ -16,6 +16,8 @@
 #include "../render/squelette.h"
 #include "zones.h"
 #include "foule_familles.h"   // WFS-233 : enfants et familles
+#include "foule_poussette.h"   // WFS-240 : poussettes
+#include "vegetation.h"        // WFS-240 : géométrie (veg::Geo)
 #include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
 #include "ville_quartiers.h"   // WFS-137 : piétons des passages zébrés
 
@@ -55,6 +57,7 @@ struct Personne {
     bool assis = false, yawFixe = false, marche = false; float yawRel = 0; int feu = -1;   // WFS-71 : assis / orientation du décor ; WFS-137 : passage zébré (pose 5)
     double latMin = 0, latMax = 0;   // WFS-233 : bande du trottoir où la personne a été tirée (|lat|)
     int enfant = -1, famille = -1;   // WFS-233 : morphotype d'enfant (familles::ENFANTS) ; autre membre de la famille (indice)
+    bool poussette = false;          // WFS-240 (RG-01) : enfant assis dans la poussette que pousse son parent (pas de marche)
 };
 
 // pedLook (people.js) : tirée une fois, déterministe selon la place de la personne dans la liste
@@ -171,6 +174,7 @@ public:
     void shutdown(Renderer& r) override {
         for (Personnage& m : modeles_) if (m.ok) detruirePersonnage(r, m);
         for (Personnage& m : enfants_) if (m.ok) detruirePersonnage(r, m);   // WFS-233
+        detruirePoussettes(r);   // WFS-240
         gens_.clear(); actif_ = false; enfantsOk_ = false;
     }
 
@@ -230,6 +234,7 @@ public:
             const int i = choisis[k];
             Personne& P = gens_[(size_t)i];
             affiche_[i % 256] = i;
+            if (P.poussette) continue;   // WFS-240 : le petit est dessiné dans la poussette de son parent (plus bas)
             if (!P.look_) { P.look = P.enfant >= 0 ? lookEnfant(P, i) : pedLook(P, i, plage_); P.look_ = true; }
             const Look& L = P.look;
             const Personnage* M; PoseSquelette* pose;
@@ -267,6 +272,23 @@ public:
             if (E.enfant < 0 || E.famille < 0 || !familles::tientLaMain(E.enfant)) continue;
             for (int b = 0; b < nd; b++) if (d[b].i == E.famille) { tenirLaMain(d[b], d[a]); break; }
         }
+        // WFS-240 (RG-01) : poussettes : devant chaque parent dessiné dont l'enfant est dans la poussette ; mains sur la poignée
+        int nPous = 0;
+        for (int a = 0; a < nd && poussettesOk_; a++) {
+            const Personne& A = gens_[(size_t)d[a].i];
+            if (A.enfant >= 0 || A.famille < 0 || !gens_[(size_t)A.famille].poussette || nPous >= MAX_POUSSETTES) continue;
+            const mat4 rot = rotateY(d[a].yaw);
+            const vec3 avant = transformer(rot, {0, 0, 1});
+            const mat4 monde = translate(d[a].pos + avant * poussette::DEVANT_ADULTE) * rot;
+            for (bool gauche : {true, false}) {   // chaque main : le bras dont l'épaule est la plus proche de sa prise
+                const vec3 cible = transformer(monde, poussette::prise(gauche));
+                const Bras bg = bras(*d[a].M, true), bd = bras(*d[a].M, false);
+                auto d2 = [&](const Bras& b) { const vec3 e = epauleMonde(d[a], b); return (e.x - cible.x) * (e.x - cible.x) + (e.z - cible.z) * (e.z - cible.z); };
+                const Bras& b = d2(bg) < d2(bd) ? bg : bd;
+                atteindre(*d[a].M, *d[a].pose, b.epaule, b.coude, b.main, versModele(d[a], cible));
+            }
+            poussettes_[nPous++] = {monde, familles::fille(gens_[(size_t)A.famille].enfant)};
+        }
         char nom[48];
         for (int k = 0; k < nd; k++) {
             const Dessin& D = d[k];
@@ -276,6 +298,12 @@ public:
             if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, D.lod); coiffure = plageParNom(*D.M, nom); }
             for (const Plage* pl : {corps, coiffure})
                 if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app);
+        }
+        for (int k = 0; k < nPous; k++) {   // WFS-240 : poussette (tissu, métal, plastique) et petit assis dedans
+            for (int p = 0; p < poussette::NB_PARTIES; p++) if (pousMesh_[p].indexCount) r.draw(pousMesh_[p], pousMat_[p], poussettes_[k].monde);
+            const Mesh& b = petitMesh_[poussettes_[k].fille ? 1 : 0];
+            if (b.indexCount) r.draw(b, petitMat_, poussettes_[k].monde * translate({0, poussette::SIEGE_Y, poussette::SIEGE_Z})
+                                                   * scale({poussette::ECHELLE_PETIT, poussette::ECHELLE_PETIT, poussette::ECHELLE_PETIT}));
         }
         tPrec_ = g.time;
     }
@@ -356,16 +384,25 @@ private:
             return o >= 0 ? ps.modele[(size_t)o].at(1, 3) : 0.f;
         };
         const float ref = bassin(modeles_[0]);
+        char cad[160]; int nc = 0;
         for (int k = 0; k < familles::NB_ENFANTS; k++) {
             kBassin_[k] = ref > 0 ? bassin(enfants_[k]) / ref : 0.6f;
             for (PoseSquelette& ps : posesEnfants_[k]) preparerPose(enfants_[k], ps);
+            // WFS-240 (RG-04) : cadence à 1,0 m/s (pas/min) : multiplicateur du clip × 2 pas par boucle du clip de marche
+            const int c = clipParNom(enfants_[k], "Walk_Loop");
+            const double duree = c >= 0 ? enfants_[k].clips[(size_t)c].duree : 0;
+            if (duree > 0 && nc < (int)sizeof cad - 16) nc += std::snprintf(cad + nc, sizeof cad - (size_t)nc, " %s %.0f", familles::ENFANTS[k], familles::cadence(1.0, kBassin_[k]) * 2 / duree * 60);
         }
+        { const int c = clipParNom(modeles_[0], "Walk_Loop"); const double duree = c >= 0 ? modeles_[0].clips[(size_t)c].duree : 0;
+          WFS_LOG("Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) :%s ; adulte %.0f", cad, duree > 0 ? 1.0 / 1.1 * 2 / duree * 60 : 0.0); }
         std::vector<familles::Marcheur> m(gens_.size());
         for (size_t i = 0; i < gens_.size(); i++) {
             const Personne& P = gens_[i];
             m[i] = {P.s, P.lat, P.v, P.dir, P.latMin, P.latMax, (P.pose == 0 || P.pose == 3) && !P.assis && P.latMax > P.latMin && P.v < 2.2};
         }
         const std::vector<familles::Lien> liens = familles::former(m, (int)gens_.size(), part, (uint32_t)map.seed, SEG_M);
+        creerPoussettes(r);   // WFS-240
+        int nPoussettes = 0;
         int ages[4] = {0, 0, 0, 0};
         for (const familles::Lien& l : liens) {
             Personne& P = gens_[(size_t)l.parent]; Personne& E = gens_[(size_t)l.enfant];
@@ -374,21 +411,23 @@ private:
             E = P; E.s = m[(size_t)l.enfant].s; E.lat = m[(size_t)l.enfant].lat; E.ph = ph + 2.1; E.look_ = false;
             E.enfant = l.morpho; E.famille = l.parent; P.famille = l.enfant;
             ages[l.morpho / 2]++;
+            // WFS-240 (RG-01) : une famille sur 4 environ : l'enfant devient le petit de la poussette (même personne : total inchangé)
+            if (poussettesOk_ && poussette::avecPoussette((uint32_t)map.seed, (int)(&l - liens.data()))) { E.poussette = true; nPoussettes++; }
         }
         enfantsOk_ = true;
-        WFS_LOG("Enfants (WFS-233) : %zu familles sur %zu piétons (%.0f %% visés ; 4 ans %d, 7 ans %d, 10 ans %d, 14 ans %d)",
-                liens.size(), gens_.size(), part * 100, ages[0], ages[1], ages[2], ages[3]);
+        WFS_LOG("Enfants (WFS-233) : %zu familles sur %zu piétons (%.0f %% visés ; 4 ans %d, 7 ans %d, 10 ans %d, 14 ans %d) ; "
+                "WFS-240 : %d poussette(s)", liens.size(), gens_.size(), part * 100, ages[0], ages[1], ages[2], ages[3], nPoussettes);
     }
 
     // banc : la première famille de 4 ans et la première de 7 ans, à 7 et 11 m devant la voiture, côté droit, vers la caméra
     void placerFamillesBanc(double s0) {
         int places = 0;
-        for (int want : {0, 1}) {
+        for (int want : {0, 1, 2}) {   // WFS-240 : 2 = une famille avec poussette, à 9 m
             for (size_t i = 0; i < gens_.size(); i++) {
                 Personne& E = gens_[i];
-                if (E.enfant < 0 || E.famille < 0 || E.pose != 0 || familles::age(E.enfant) != (want ? 7 : 4)) continue;
+                if (E.enfant < 0 || E.famille < 0 || E.pose != 0 || E.poussette != (want == 2) || (want < 2 && familles::age(E.enfant) != (want ? 7 : 4))) continue;
                 Personne& P = gens_[(size_t)E.famille];
-                const double s = s0 + (want ? 11.0 : 7.0) / SEG_M, cote = 1;
+                const double s = s0 + (want == 2 ? 9.0 : want ? 11.0 : 7.0) / SEG_M, cote = 1;
                 P.dir = E.dir = -1; P.v = E.v = 0.95;
                 P.s = s; P.lat = cote * (RW + 1.5);
                 E.s = s - familles::AVANCE_M / SEG_M; E.lat = cote * (RW + 1.5 + familles::ECART_LAT_M);
@@ -396,6 +435,62 @@ private:
             }
         }
         WFS_LOG("Enfants (WFS-233, banc) : %d famille(s) placée(s) devant la voiture", places);
+    }
+
+    // WFS-240 (RG-01) : maillages de la poussette (une fois par partie), du petit (garçon, fille) ; matériaux réels :
+    // tissu polyester (sombre, mat), aluminium anodisé (métal), plastique noir des roues et de la poignée
+    static constexpr int MAX_POUSSETTES = 4;
+    struct Poussette { mat4 monde; bool fille; };
+    Poussette poussettes_[MAX_POUSSETTES];
+    Mesh pousMesh_[poussette::NB_PARTIES]{}, petitMesh_[2]{};
+    Material pousMat_[poussette::NB_PARTIES]{}, petitMat_{};
+    Image petitTex_{};
+    bool poussettesOk_ = false;
+
+    void creerPoussettes(Renderer& r) {
+        if (poussettesOk_) return;
+        veg::Geo g[poussette::NB_PARTIES];
+        const int tri = poussette::construire(g);
+        auto lin = [](uint32_t h) { return vec3{std::pow(((h >> 16) & 255) / 255.f, 2.2f), std::pow(((h >> 8) & 255) / 255.f, 2.2f), std::pow((h & 255) / 255.f, 2.2f)}; };
+        const uint32_t couleur[poussette::NB_PARTIES] = {0x2e3440, 0xb8bcc2, 0x18191b};
+        const float rugo[poussette::NB_PARTIES] = {0.92f, 0.35f, 0.6f}, metal[poussette::NB_PARTIES] = {0, 1, 0};
+        for (int p = 0; p < poussette::NB_PARTIES; p++) {
+            Material m; const vec3 c = lin(couleur[p]); m.color = {c.x, c.y, c.z, 1}; m.rough = rugo[p]; m.metal = metal[p]; m.flags = MAT_DOUBLE;
+            pousMat_[p] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+            if (!g[p].i.empty()) pousMesh_[p] = r.makeMesh(g[p].v, g[p].i, false);
+        }
+        // petit : palette de 6 cases (peau, cheveux, haut garçon, haut fille, bas, chaussures), zones de la silhouette
+        constexpr int NC = 6;
+        const uint32_t pal[NC] = {0xc8927a, 0x4b3527, 0x8fb8d4, 0xe3a3b6, 0x5d6d86, 0xeeeeee};
+        uint8_t px[NC * 4];
+        for (int k = 0; k < NC; k++) { px[k * 4] = (pal[k] >> 16) & 255; px[k * 4 + 1] = (pal[k] >> 8) & 255; px[k * 4 + 2] = pal[k] & 255; px[k * 4 + 3] = 255; }
+        petitTex_ = r.vk().uploadTexture(px, NC, 1, true);
+        Material mp; mp.rough = 0.85f; mp.flags = MAT_DOUBLE;
+        petitMat_ = r.makeMaterial(mp, &petitTex_, nullptr, nullptr);
+        int triPetit = 0;
+        for (int f = 0; f < 2; f++) {
+            const foule::Silhouette* sil = foule::silhouettePetit(f == 1);
+            if (!sil) continue;
+            std::vector<Vertex> v; v.reserve(sil->v.size());
+            for (const foule::Sommet& q : sil->v) {
+                const int c = q.zone == foule::PEAU ? 0 : q.zone == foule::CHEVEUX ? 1 : q.zone == foule::HAUT ? (f ? 3 : 2) : q.zone == foule::BAS ? 4 : 5;
+                v.push_back({q.p.x, q.p.y, q.p.z, q.n.x, q.n.y, q.n.z, (c + 0.5f) / NC, 0.5f});
+            }
+            petitMesh_[f] = r.makeMesh(v, sil->i, false);
+            triPetit = std::max(triPetit, (int)sil->i.size() / 3);
+        }
+        poussettesOk_ = pousMesh_[0].indexCount && petitMesh_[0].indexCount && petitMesh_[1].indexCount;
+        WFS_LOG("Poussettes (WFS-240) : %d triangles (tissu %zu, métal %zu, plastique %zu), petit assis %d triangles%s", tri,
+                g[0].i.size() / 3, g[1].i.size() / 3, g[2].i.size() / 3, triPetit, poussettesOk_ ? "" : " : indisponibles, aucune poussette");
+    }
+    void detruirePoussettes(Renderer& r) {
+        if (!pousMat_[0].set && !petitTex_.img) return;
+        for (Mesh& m : pousMesh_) if (m.vb.buf) { r.destroy(m); m = Mesh{}; }
+        for (Mesh& m : petitMesh_) if (m.vb.buf) { r.destroy(m); m = Mesh{}; }
+        for (Material& m : pousMat_) if (m.set) { r.destroy(m); m = Material{}; }
+        if (petitMat_.set) { r.destroy(petitMat_); petitMat_ = Material{}; }
+        if (petitTex_.img) { r.vk().destroy(petitTex_); petitTex_ = Image{}; }
+        poussettesOk_ = false;
     }
 
     std::vector<Personne> gens_;
@@ -670,6 +765,20 @@ Cache batirEnfants() {
 }
 
 } // namespace
+
+const Silhouette* silhouettePetit(bool fille) {   // WFS-240 (RG-01)
+    static const Cache c = [] {
+        Cache k; k.s.resize(2);
+        for (int f = 0; f < 2; f++) {
+            Brut b;
+            if (!lire(f ? "people/humains/e04f.wfp" : "people/humains/e04g.wfp", b)) { WFS_ERR("Poussettes (WFS-240) : petit illisible (people/humains/e04*.wfp)"); return Cache{}; }
+            k.s[(size_t)f] = construire(b, f, 0, ASSIS_REPOS, 0, 0.07f);
+        }
+        k.ok = true;
+        return k;
+    }();
+    return c.ok ? &c.s[fille ? 1 : 0] : nullptr;
+}
 
 const Silhouette* silhouetteEnfant(uint32_t h, Pose pose, int variante, bool proche) {
     static const Cache c = batirEnfants();

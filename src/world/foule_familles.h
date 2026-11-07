@@ -72,6 +72,12 @@ inline std::vector<Lien> former(std::vector<Marcheur>& m, int total, double part
 // cadence de l'animation de marche (multiplicateur du clip) : pas sans glissement, comme les adultes (v / 1,1 m/s), le clip
 // de l'enfant avançant déjà de `kBassin` fois la foulée adulte (translation de la racine mise à l'échelle du bassin)
 inline double cadence(double v, double kBassin) { return v / (1.1 * std::max(kBassin, 0.3)); }
+// WFS-240 (RG-04) : cadence réelle à 1,0 m/s (pas/min) à 4, 7, 10 et 14 ans : longueur de pas à cette vitesse ≈ 0,39 / 0,47 /
+// 0,53 / 0,62 m (Sutherland et al. 1980, Lythgo et al. 2009, estimations « à confirmer ») ; le jeu doit rester à ± 10 %
+// (cadence du clip = cadence(v, kBassin) × 2 pas par boucle du clip de marche)
+constexpr double CADENCE_REELLE_1MS[4] = {154, 128, 113, 97};
+constexpr double CADENCE_TOLERANCE = 0.10;
+inline double pasParMinute(double v, double kBassin, double dureeClip) { return dureeClip > 0 ? cadence(v, kBassin) * 2 / dureeClip * 60 : 0; }
 
 // teint de l'enfant = celui de son parent (pixel près) : le parent (homme.wfp / femme.wfp, Quaternius) a une peau
 // « texture × peau » ; la peau médiane de leur atlas (mains, médiane des texels mesurée pour WFS-233) vaut (169, 114, 80) en sRGB ;

@@ -98,5 +98,8 @@ inline bool enfantEnTribune(uint32_t h, bool assis, bool voisinAdulte) {
     return assis && voisinAdulte && ((h * 0x9E3779B1u) >> 12) % 1000 < ENFANTS_TRIBUNE_POUR_MILLE;
 }
 const Silhouette* silhouetteEnfant(uint32_t h, Pose pose, int variante, bool proche);
+// WFS-240 (RG-01) : petit assis dans une poussette (morphotype de 4 ans, garçon ou fille, assis au repos, de près) ; mise à
+// l'échelle de la poussette (poussette::ECHELLE_PETIT) par l'appelant
+const Silhouette* silhouettePetit(bool fille);
 } // namespace foule
 } // namespace wfs
