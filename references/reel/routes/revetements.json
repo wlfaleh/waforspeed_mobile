@@ -4,16 +4,28 @@
    "scan": "Poly Haven « asphalt_02 » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.048,
+     1.032,
+     0.92
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
    "albedo": {
     "plage": [
      0.04,
      0.07
     ],
     "avant": 0.1138,
-    "gain_k": 0.4831,
+    "gain_k": 0.4946,
     "apres": 0.0553,
     "centile_1": 0.0134,
-    "centile_99": 0.2041
+    "centile_99": 0.2042
    },
    "rugosite": {
     "plage": [
@@ -45,16 +57,28 @@
    "scan": "Poly Haven « worn_asphalt » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.429,
+     0.929,
+     0.642
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
    "albedo": {
     "plage": [
      0.1,
      0.18
     ],
     "avant": 0.0462,
-    "gain_k": 3.0276,
+    "gain_k": 3.0621,
     "apres": 0.14,
-    "centile_1": 0.0605,
-    "centile_99": 0.4787
+    "centile_1": 0.0607,
+    "centile_99": 0.4692
    },
    "rugosite": {
     "plage": [
@@ -86,13 +110,25 @@
    "scan": "Poly Haven « asphalt_04 » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.064,
+     0.995,
+     0.942
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
    "albedo": {
     "plage": [
      0.08,
      0.14
     ],
     "avant": 0.23,
-    "gain_k": 0.4782,
+    "gain_k": 0.4792,
     "apres": 0.11,
     "centile_1": 0.0573,
     "centile_99": 0.2399
@@ -127,13 +163,25 @@
    "scan": "Poly Haven « aerial_asphalt_01 » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.021,
+     0.938,
+     1.041
+    ],
+    "visee": [
+     1.034,
+     0.998,
+     0.967
+    ]
+   },
    "albedo": {
     "plage": [
      0.05,
      0.09
     ],
     "avant": 0.1339,
-    "gain_k": 0.5229,
+    "gain_k": 0.5019,
     "apres": 0.07,
     "centile_1": 0.0232,
     "centile_99": 0.2091
@@ -168,16 +216,28 @@
    "scan": "Poly Haven « concrete_pavement » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.221,
+     1.007,
+     0.772
+    ],
+    "visee": [
+     1.04,
+     1.0,
+     0.96
+    ]
+   },
    "albedo": {
     "plage": [
      0.25,
      0.35
     ],
     "avant": 0.1841,
-    "gain_k": 1.6298,
+    "gain_k": 1.6785,
     "apres": 0.3,
-    "centile_1": 0.1104,
-    "centile_99": 0.4889
+    "centile_1": 0.1098,
+    "centile_99": 0.4896
    },
    "rugosite": {
     "plage": [
@@ -209,16 +269,28 @@
    "scan": "Poly Haven « cobblestone_floor_08 » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.121,
+     1.022,
+     0.858
+    ],
+    "visee": [
+     1.06,
+     1.0,
+     0.94
+    ]
+   },
    "albedo": {
     "plage": [
      0.2,
      0.35
     ],
     "avant": 0.2789,
-    "gain_k": 0.9859,
+    "gain_k": 1.0077,
     "apres": 0.275,
-    "centile_1": 0.0384,
-    "centile_99": 0.5045
+    "centile_1": 0.0383,
+    "centile_99": 0.5047
    },
    "rugosite": {
     "plage": [
@@ -250,16 +322,28 @@
    "scan": "Poly Haven « gravel_road » (CC0 1.0)",
    "cote_m": 2.0,
    "statut_cote": "E",
+   "teinte": {
+    "scan": [
+     1.687,
+     0.866,
+     0.447
+    ],
+    "visee": [
+     1.1,
+     1.0,
+     0.9
+    ]
+   },
    "albedo": {
     "plage": [
      0.2,
      0.35
     ],
     "avant": 0.1156,
-    "gain_k": 2.3793,
+    "gain_k": 2.3707,
     "apres": 0.275,
-    "centile_1": 0.1763,
-    "centile_99": 0.3987
+    "centile_1": 0.1753,
+    "centile_99": 0.4064
    },
    "rugosite": {
     "plage": [
