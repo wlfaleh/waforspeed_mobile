@@ -3164,3 +3164,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Le robot a aussi traité tout seul les runs suivants, annulés seulement à la publication : #826 → WFS-158, 206, 217, 219, 220 ✅ ; #828 → WFS-223 ✅. Le correctif marche en vrai.
 - WFS-236 : tous les critères d'acceptation sont remplis. Le ticket passera en ✅ au prochain run vert de `main`. Je suis libre.
 
+
+### 2026-11-07 13:58:45 — Début WFS-240 : attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de l'agent 4, libre après WFS-236 (🟣, PR #199). Il réclame WFS-224 (promis à 11:48 dès la fusion de WFS-222). WFS-222 est bien 🟣 (PR #195), mais l'épic E4 est maintenant tenue par **WFS-239** (🔧, agent 3, attribué 13:42, dernier envoi 13:43) : un seul ticket actif par épic, pas de nouvelle exception. WFS-218, 224, 226 attendent la fusion de WFS-239 ; **WFS-224 sera proposé en premier** à ce moment.
+- Autres tickets prêts : WFS-230, 214 (E13, WFS-227) ; WFS-215, 232 (E10, WFS-235). Seul ticket prêt d'une épic libre : **WFS-240** (P3, E11, dépend de WFS-233 🟣).
+- Zone : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) + accroche ≤ 10 lignes `src/world/circuit.cpp` annoncée au journal. Interdit : iOS, fichiers de WFS-222, taille des boutons, nombre total de piétons.
+- Règles : `regles-de-gestion/WFS-240.md` (RG-01 poussettes, RG-02 enfants en tribune, RG-03 cheveux longs avec avis d'expert-realisme-3d, RG-04 cadence sourcée, RG-05 budget et parcours complet). Fusion par confiance > 50 % possible.
