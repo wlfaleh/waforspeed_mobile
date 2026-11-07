@@ -49,6 +49,27 @@ int main() {
                 const double aire = aireFacade(b.part[MUR], p.hauteur());
                 verifierQue(std::fabs(aire - attendu) <= 1e-3 * attendu, "aire du mur de façade = façade − ouvertures");
                 if (lod == 0) {
+                    // ST-2 : volets dans la façade, jamais devant une ouverture
+                    const Maillage& vo = b.part[VOLET];
+                    for (size_t i = 0; i + 2 < vo.i.size(); i += 3) {
+                        const vec3 c = (vo.v[vo.i[i]].p + vo.v[vo.i[i + 1]].p + vo.v[vo.i[i + 2]].p) * (1.f / 3);
+                        verifierQue(c.x > 0 && c.x < p.largeur, "volet dans la façade");
+                        for (const Baie& x : p.baies)
+                            verifierQue(!(c.x > x.x - x.l / 2 && c.x < x.x + x.l / 2 && c.y > x.y && c.y < x.y + x.h), "volet devant une ouverture");
+                    }
+                    if (p.style == Style::Mediterraneen) {
+                        bool fen = false; for (const Baie& x : p.baies) fen |= x.type == Ouverture::Fenetre;
+                        if (fen && p.travee >= 2.6f) verifierQue(vo.triangles() > 0, "ST-2 : volets du méditerranéen");
+                    }
+                    if (p.style == Style::Moderne && p.etages > 0) {   // bandeaux : nez de dalle en saillie de 0,1 m
+                        bool bandeau = false; for (const Sommet& v : b.part[ENCADREMENT].v) bandeau |= std::fabs(v.p.z - 0.1f) < 1e-4f && v.p.x < 1e-4f;
+                        verifierQue(bandeau, "ST-2 : bandeaux du moderne");
+                    }
+                    if (p.style == Style::Classique && p.etages >= 4) {   // balcons filants : garde-corps sur toute la façade au 2e étage
+                        float gauche = 1e9f, droite = -1e9f;
+                        for (const Sommet& v : b.part[METAL].v) if (std::fabs(v.p.y - (p.niveauY(2) + 1.0f)) < 1e-3f) { gauche = std::min(gauche, v.p.x); droite = std::max(droite, v.p.x); }
+                        verifierQue(droite - gauche > p.largeur - 0.3f, "ST-2 : balcon filant du classique d'une rive à l'autre");
+                    }
                     // M-01 : bas des vitres de deux étages successifs (même travée) espacés d'une hauteur d'étage à ± 1 %
                     for (const Baie& x : p.baies) for (const Baie& y : p.baies)
                         if (x.niveau >= 1 && y.niveau == x.niveau + 1 && x.travee == y.travee)

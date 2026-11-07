@@ -13,6 +13,14 @@ constexpr float GARDE_CORPS = 1.0f, GC_EP = 0.04f;    // garde-corps : 1,00 m (N
 constexpr float LOGGIA = 1.0f;        // profondeur d'une loggia (m)
 constexpr float ACROTERE = 0.5f, ACROTERE_EP = 0.2f;  // muret en rive de toiture-terrasse (m)
 constexpr float PENTE_ZINC = 35.f, PENTE_TUILES = 17.f, DEBORD_TUILES = 0.3f;   // degrés ; débord de toit (m)
+// ST-2 : traits des styles (RG-02)
+constexpr float CADRE = 0.1f, CADRE_SAILLIE = 0.03f;          // encadrement de baie (classique, méditerranéen)
+constexpr float VOLET_EP = 0.04f, VOLET_JEU = 0.02f;           // volets battants ouverts contre le mur (méditerranéen)
+constexpr float BANDEAU = 0.2f, BANDEAU_SAILLIE = 0.1f;        // nez de dalle à chaque étage (moderne)
+constexpr float MENEAU = 0.05f, PETITS_BOIS = 0.6f;            // meneau (moderne), pas de la grille des baies d'atelier (industriel)
+constexpr float GENOISE = 0.12f;                               // un rang de génoise (tuiles en débord sous l'égout)
+constexpr float FILANT_PROF = 0.6f;                            // balcon filant (classique)
+constexpr float VILLA_DEBORD = 0.8f, VILLA_DALLE = 0.3f;       // dalle de toit en débord (villa)
 
 // quad a b c d (ordre trigonométrique vu du côté de la normale n)
 void quad(Maillage& m, vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, vec2 ua, vec2 ub, vec2 uc, vec2 ud) {
@@ -55,6 +63,40 @@ float profondeurTableau(const Plan& p, const Baie& b) {
     return b.niveau > 0 && p.etage == Etage::Loggias ? LOGGIA : S.retrait;
 }
 
+bool balconFilant(const Plan& p, int niveau) {   // classique : balcon filant au 2e étage et au dernier (au moins 4 étages)
+    return p.style == Style::Classique && p.etages >= 4 && (niveau == 2 || niveau == p.etages);
+}
+
+// ST-2 : traits propres au style autour d'une baie (niveau de détail 0 seulement)
+void traits(const Plan& p, const Baie& b, float d, Batiment& out) {
+    const float x0 = b.x - b.l / 2, x1 = b.x + b.l / 2, y0 = b.y, y1 = b.y + b.h;
+    const bool fenetre = b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre;
+    Maillage& tab = out.part[ENCADREMENT];
+    if ((p.style == Style::Classique || p.style == Style::Mediterraneen) && fenetre && b.niveau > 0) {   // encadrement en saillie
+        pave(tab, x0 - CADRE, x0, y0, y1 + CADRE, 0, CADRE_SAILLIE);
+        pave(tab, x1, x1 + CADRE, y0, y1 + CADRE, 0, CADRE_SAILLIE);
+        pave(tab, x0, x1, y1, y1 + CADRE, 0, CADRE_SAILLIE);
+    }
+    if (p.style == Style::Mediterraneen && b.type == Ouverture::Fenetre) {   // volets battants ouverts, rabattus contre le mur
+        const float place = (p.travee - b.l) / 2 - CADRE - VOLET_JEU;   // mur libre de chaque côté (jusqu'au milieu du trumeau)
+        const float lv = std::min(b.l / 2, place);
+        if (lv > 0.2f) {
+            const float g0 = x0 - CADRE - VOLET_JEU, d0 = x1 + CADRE + VOLET_JEU;
+            pave(out.part[VOLET], g0 - lv, g0, y0, y1, CADRE_SAILLIE, CADRE_SAILLIE + VOLET_EP);
+            pave(out.part[VOLET], d0, d0 + lv, y0, y1, CADRE_SAILLIE, CADRE_SAILLIE + VOLET_EP);
+        }
+    }
+    if (b.type != Ouverture::Fenetre && b.type != Ouverture::PorteFenetre) return;
+    Maillage& met = out.part[METAL];
+    const float z = -d + 0.02f;   // devant la vitre
+    if (p.style == Style::Moderne && b.l > 1.2f) pave(met, b.x - MENEAU / 2, b.x + MENEAU / 2, y0, y1, z - 0.02f, z);   // meneau
+    if (p.style == Style::Industriel) {   // baie d'atelier : grille de petits bois
+        const int nx = std::max(2, (int)std::lround(b.l / PETITS_BOIS)), ny = std::max(2, (int)std::lround(b.h / PETITS_BOIS));
+        for (int i = 1; i < nx; i++) { const float x = x0 + b.l * i / nx; pave(met, x - 0.02f, x + 0.02f, y0, y1, z - 0.02f, z); }
+        for (int j = 1; j < ny; j++) { const float y = y0 + b.h * j / ny; pave(met, x0, x1, y - 0.02f, y + 0.02f, z - 0.02f, z); }
+    }
+}
+
 void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     const float x0 = b.x - b.l / 2, x1 = b.x + b.l / 2, y0 = b.y, y1 = b.y + b.h;
     const bool vitre = b.type == Ouverture::Fenetre || b.type == Ouverture::PorteFenetre || b.type == Ouverture::Vitrine;
@@ -79,7 +121,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     if (b.type == Ouverture::Fenetre)
         pave(tab, x0 - APPUI_DEBORD, x1 + APPUI_DEBORD, y0 - APPUI_EP, y0, -0.02f, APPUI_SAILLIE);
     // balcon : dalle + garde-corps de 1,00 m (porte-fenêtre ou fenêtre d'étage d'un plan à balcons)
-    if (b.balcon) {
+    if (b.balcon && !balconFilant(p, b.niveau)) {
         const float bx0 = x0 - BALCON_DEBORD, bx1 = x1 + BALCON_DEBORD, yb = p.niveauY(b.niveau);
         pave(tab, bx0, bx1, yb - BALCON_EP, yb, 0, BALCON_PROF);
         Maillage& gc = out.part[METAL];
@@ -89,6 +131,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     } else if (b.type == Ouverture::PorteFenetre && b.niveau > 0) {   // porte-fenêtre sans balcon : garde-corps dans le tableau
         pave(out.part[METAL], x0, x1, y0, y0 + GARDE_CORPS, -0.1f, -0.1f + GC_EP, false);
     }
+    traits(p, b, d, out);
 }
 
 // façade avant percée : par niveau, bandes de mur entre les ouvertures, au-dessus et au-dessous de chacune
@@ -114,12 +157,29 @@ void facade(const Plan& p, int lod, Batiment& out) {
     }
     rectZ(mur, 0, p.largeur, haut, p.hauteur(), 0, 1);   // bande sous la corniche
     for (const Baie& b : p.baies) ouverture(p, b, lod, out);
+    if (lod >= 1) return;
+    for (int n = 1; n <= p.etages; n++) {   // ST-2 : traits portés par les planchers
+        const float yb = p.niveauY(n);
+        if (p.style == Style::Moderne)   // nez de dalle : la dalle d'étage apparaît en bandeau sur toute la façade
+            pave(out.part[ENCADREMENT], 0, p.largeur, yb - BANDEAU / 2, yb + BANDEAU / 2, 0, BANDEAU_SAILLIE);
+        if (balconFilant(p, n)) {   // classique : balcon filant d'une rive à l'autre, garde-corps de 1,00 m
+            const float a = 0.1f, b = p.largeur - 0.1f;
+            pave(out.part[ENCADREMENT], a, b, yb - BALCON_EP, yb, 0, FILANT_PROF);
+            pave(out.part[METAL], a, b, yb, yb + GARDE_CORPS, FILANT_PROF - GC_EP, FILANT_PROF, false);
+            pave(out.part[METAL], a, a + GC_EP, yb, yb + GARDE_CORPS, 0, FILANT_PROF, false);
+            pave(out.part[METAL], b - GC_EP, b, yb, yb + GARDE_CORPS, 0, FILANT_PROF, false);
+        }
+    }
 }
 
 void toiture(const Plan& p, float D, int lod, Batiment& out) {
     const float H = p.hauteur(), L = p.largeur;
     Maillage& toit = out.part[TOIT];
     Maillage& mur = out.part[MUR];
+    if (p.toit == Toit::Terrasse && p.style == Style::Villa) {   // ST-2 : dalle de toit en débord sur les 4 côtés
+        pave(out.part[ENCADREMENT], -VILLA_DEBORD, L + VILLA_DEBORD, H, H + VILLA_DALLE, -D - VILLA_DEBORD, VILLA_DEBORD);
+        return;
+    }
     if (p.toit == Toit::Terrasse) {
         rectY(toit, 0, L, 0, -D, H, 1);
         // acrotère sur les 4 côtés (dessus seulement visible de loin)
@@ -154,6 +214,11 @@ void toiture(const Plan& p, float D, int lod, Batiment& out) {
         // (p1 − p0) × (p2 − p0) pointe vers +x : ordre direct pour le pignon droit, inversé pour le gauche
         if (s) mur.i.insert(mur.i.end(), {k, k + 1, k + 2}); else mur.i.insert(mur.i.end(), {k, k + 2, k + 1});
     }
+    if (p.toit == Toit::Tuiles && lod == 0) {   // ST-2 : génoise, deux rangs de tuiles en débord sous l'égout (avant et arrière)
+        pave(toit, 0, L, H - GENOISE, H, 0, GENOISE);
+        pave(toit, 0, L, H - 2 * GENOISE, H - GENOISE, 0, GENOISE / 2);
+        pave(toit, 0, L, H - GENOISE, H, -D - GENOISE, -D);
+    }
     if (deb > 0) {   // sous-face du débord (avant et arrière), vue d'en bas depuis la rue
         rectY(toit, -deb, L + deb, deb, 0, ye, -1);
         rectY(toit, -deb, L + deb, -D, -D - deb, ye, -1);
@@ -171,7 +236,7 @@ void construire(const Plan& p, float D, int lod, Batiment& out) {
     rectX(mur, 0, 0, -D, -SOCLE, H, -1);   // côtés et arrière (murs aveugles : mitoyens ou cours)
     rectX(mur, L, 0, -D, -SOCLE, H, 1);
     rectZ(mur, 0, L, -SOCLE, H, -D, -1);
-    if (p.corniche > 0) {   // corniche : bandeau en saillie sur la façade et en retour sur les côtés
+    if (p.corniche > 0 && p.toit != Toit::Tuiles) {   // corniche (sous les tuiles, c'est la génoise de la toiture qui en tient lieu)
         const float s = regles(p.style).saillieCorniche;
         pave(out.part[ENCADREMENT], -s, L + s, H - p.corniche, H, -D, s);
     }

@@ -20,7 +20,7 @@ struct Maillage {
 };
 
 // un maillage par matériau (un appel de dessin par matériau)
-enum Part : int { MUR, ENCADREMENT, VITRE, MENUISERIE, TOIT, METAL, NB_PARTS };
+enum Part : int { MUR, ENCADREMENT, VITRE, MENUISERIE, TOIT, METAL, VOLET, NB_PARTS };   // VOLET : ST-2, volets peints (méditerranéen)
 
 // niveaux de détail (RG-05) : 0 complet ; 1 tableaux et vitres gardés, sans appuis, balcons, garde-corps ni édicules ;
 // 2 volume seul (murs pleins, vitres peintes à plat sur la façade, toiture), pour le loin
