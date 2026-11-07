@@ -28,14 +28,57 @@ vec4 ombreContact() {
     float a = (1.0 - smoothstep(0.55, 1.0, q.x)) * (1.0 - smoothstep(0.6, 1.0, q.y));
     return vec4(0.0, 0.0, 0.0, a * pc.color.a);
 }
+// WFS-270 (RG-01, RG-02) : éclairement moyen de la chaussée autour de la voiture la nuit (phares, lampadaires), en lux
+// pré-exposés : 3 points au sol (4 m, 6,5 m et 10 m devant le centre de la voiture), lumières de l'image (E13, lecture seule).
+// Même valeur pour tous les pixels d'une voiture (branche cohérente) ; 0 de jour (aucun projecteur, et appel réservé à la nuit).
+vec3 eclairementRouteAutour() {
+    vec3 o = pc.model[3].xyz;
+    vec3 av = vec3(pc.model[2].x, 0.0, pc.model[2].z);   // avant du modèle = −Z local (phares en −L/2, nuit.cpp)
+    av = dot(av, av) > 1e-8 ? -normalize(av) : vec3(0.0, 0.0, 1.0);
+    int n = int(F.spotN.x + 0.5);
+    vec3 E = vec3(0.0);
+    const float DEVANT[3] = float[3](4.0, 6.5, 10.0);   // m devant le centre de la voiture
+    for (int j = 0; j < 3; j++) {
+        vec3 p = o + av * DEVANT[j] + vec3(0.0, 0.02, 0.0);
+        for (int i = 0; i < 12; i++) {
+            if (i >= n) break;
+            vec3 Lv = F.spotPos[i].xyz - p;
+            float d = length(Lv);
+            vec3 L = Lv / max(d, 1e-4);
+            float cosT = dot(L, -F.spotDir[i].xyz), NoL = max(L.y, 0.0);
+            bool croisement = F.spotCone[i].z > 0.5;
+            if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;
+            if (d < 2.0) continue;   // champ proche d'une optique (1/d² non borné) : pas un éclairement de la chaussée voisine
+            float range = F.spotPos[i].w, decay = F.spotDir[i].w;
+            float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
+            E += F.spotCol[i].rgb * (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
+        }
+    }
+    return E / 3.0;
+}
 // peinture : couche de vernis brillante par-dessus (reflets nets du ciel et du soleil)
 void vernisPeinture(inout vec3 col, vec3 R, vec3 sun, float NoV, float NoH, float NoL, float aaKernel, float specK) {
     float Fc = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
+    vec3 solNuit = vec3(0.0);   // WFS-270 : luminance de la chaussée éclairée autour de la voiture (0 de jour)
+    if (F.misc.y > 0.5) {
+        // WFS-270 (RG-02) : la nuit, la peinture reçoit aussi la lumière de la chaussée éclairée qui l'entoure : rebond du sol
+        // (asphalte usé ρ = 0,14, DA-realisme § 3 ; facteur de vue du sol (1 − N.y) / 2) et lumière diffusée par l'air humide
+        // et le décor proche (part isotrope K_DIFFUS, calée sur RG-02 : carrosserie / route entre 0,4 et 1,5, journal).
+        // Hors des lumières (aucun projecteur proche) : 0, la peinture garde le seul ciel de lune (iblDiffus), comme la route.
+        // Luminance de la chaussée compressée au-delà de L_SAT (pré-exposée) : sous plusieurs faisceaux proches (grille de
+        // départ en ville), la peinture ne sature pas en blanc ; elle garde sa teinte.
+        const float RHO_ROUTE = 0.14, K_DIFFUS = 2.0, L_SAT = 0.5;
+        vec3 Nc = normalize(R + normalize(F.camPos.xyz - vWorld));   // normale de la pièce (R = reflect(−V, N))
+        solNuit = RHO_ROUTE * eclairementRouteAutour() / PI;
+        solNuit /= 1.0 + dot(solNuit, vec3(0.2126, 0.7152, 0.0722)) / L_SAT;
+        col += pc.color.rgb * solNuit * (0.5 * (1.0 - Nc.y) + K_DIFFUS) * specK;
+    }
     float acA = sqrt(0.03 * 0.03 * 0.03 * 0.03 + aaKernel);          // vernis : alpha 0,0009, élargi sur les arêtes
     float sunKc = clamp(1.0 - sqrt(aaKernel) * 4.0, 0.0, 1.0);        // disque du soleil reflété : seulement si net
     // WFS-134 (RG-06, ANO-67) : sous l'horizon, le vernis reflète la chaussée sombre, pas le sol clair du ciel (taches
     // beiges des tranches de portes et des bas de caisse vus en rasant)
-    vec3 ciel = mix(skyColor(R, sunKc), F.groundCol.rgb * 0.3, smoothstep(0.0, -0.3, R.y));
+    // WFS-270 (RG-03) : la nuit, sous l'horizon, le vernis reflète la chaussée éclairée autour (bas de caisse, flancs)
+    vec3 ciel = mix(skyColor(R, sunKc), max(F.groundCol.rgb * 0.3, solNuit), smoothstep(0.0, -0.3, R.y));
     vec3 vernis = (ciel * F.misc.z * F.misc.w + D_GGX(NoH, acA) * V_Smith(NoV, NoL, acA) * sun * NoL) * Fc;
     col = col * (1.0 - Fc) + min(vernis, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
 }

@@ -1,0 +1,149 @@
+# Bancs du matin, chaque jour à 07:00 heure de Paris — WFS-252 / WFS-277 (décisions de l'utilisateur, 2026-11-07) :
+# « on lance les CI ensuite lui [la QA] il teste ». À chaque envoi sur main, build.yml ne garde que les tests CPU, le parcours complet,
+# l'endurance et l'APK ; ici, sur la dernière version de main :
+#  - tous les groupes de captures du banc d'essai PC (tools/qa/banc_groupe.sh, le même script que build.yml) ;
+#  - le banc du réalisme en deux parties (WFS-251) puis la fusion de ses rapports (identiques à ceux d'un banc complet) ;
+#  - la publication de toutes les captures dans la Release « apercu » (une seule publication : publier_apercu.sh retire les captures
+#    absentes du run), lues ensuite par la QA (qa-lead) pour la recette du matin.
+# Un écart (code 3), une partie absente ou une étape en double rend le run rouge. Artefacts gardés 30 jours.
+# GitHub ne connaît que l'heure UTC : deux déclencheurs (05:00 UTC = 07:00 en heure d'été, 06:00 UTC = 07:00 en heure d'hiver),
+# et le job « heure » ne laisse passer que celui qui tombe à 7 h à Paris. Lancement à la main possible (workflow_dispatch).
+name: Bancs du matin (captures, réalisme, QA)
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # 07:00 à Paris en heure d'été (UTC+2)
+    - cron: '0 6 * * *'   # 07:00 à Paris en heure d'hiver (UTC+1)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bancs-matin-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  heure:
+    runs-on: ubuntu-24.04
+    outputs:
+      lancer: ${{ steps.h.outputs.lancer }}
+    steps:
+      - id: h
+        name: 7 h à Paris ?
+        run: |
+          h=$(TZ=Europe/Paris date +%H)
+          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 07 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris)"
+          else echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : ce déclencheur n'est pas celui de 7 h (heure d'été / d'hiver), rien à faire"; fi
+
+  compilation:
+    needs: heure
+    if: needs.heure.outputs.lancer == 'oui'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel, compilateur de shaders)
+        # même boucle que build.yml (WFS-237) : 5 min au plus par essai, 2 essais
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - name: Compilation
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
+      - name: Archive (wfs_bench)
+        run: |
+          [ -x build/wfs_bench ] || { echo "::error::wfs_bench absent après la compilation"; exit 1; }
+          tar -cf compilation.tar -C build wfs_bench
+      - uses: actions/upload-artifact@v4
+        with: { name: compilation-matin, path: compilation.tar, retention-days: 1 }
+
+  banc:
+    name: banc (${{ matrix.groupe }})
+    needs: compilation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        # 14 groupes : ceux de build.yml jusqu'à WFS-252, le réalisme en deux parties (WFS-251), conduite et chocs à part (WFS-252)
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs, realisme-1, realisme-2]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel)
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y libvulkan1 mesa-vulkan-drivers && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - uses: actions/download-artifact@v4
+        with: { name: compilation-matin }
+      - name: Jeu compilé
+        run: mkdir -p build && tar -xf compilation.tar -C build && [ -x build/wfs_bench ]
+      - name: Captures (${{ matrix.groupe }})
+        run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: 'captures-${{ matrix.groupe }}', path: captures, retention-days: 30 }
+
+  fusion:
+    name: rapports du réalisme (fusion des deux parties)
+    needs: [compilation, banc]
+    if: ${{ !cancelled() && needs.compilation.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel)
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y libvulkan1 mesa-vulkan-drivers && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - uses: actions/download-artifact@v4
+        with: { name: compilation-matin }
+      - uses: actions/download-artifact@v4
+        with: { pattern: 'captures-realisme-*', path: parties }
+      - name: Fusion des deux parties (rapports finaux)
+        run: |
+          mkdir -p build captures && tar -xf compilation.tar -C build
+          for n in 1 2; do
+            f=parties/captures-realisme-$n/realisme-partie-$n.morceaux
+            [ -s "$f" ] || { echo "::error::$f absent : partie $n du banc du réalisme non terminée"; exit 1; }
+            cp "$f" captures/
+          done
+          WFS_BANC=realisme WFS_REALISME_PARTIE=fusion ./build/wfs_bench captures assets/
+          rm -f captures/*.morceaux
+          {
+            echo "### Banc du réalisme — run ${{ github.run_number }} (commit \`${GITHUB_SHA::7}\`)"
+            echo '```'; grep -E "^== |^  [a-zé ]+ : " captures/realisme-fidelite.txt | head -40 || true; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: captures-realisme, path: 'captures/*.txt', retention-days: 30 }
+
+  # toutes les captures du matin dans la Release « apercu » (lues par la QA) ; seulement celles qui ont changé (WFS-106) ;
+  # échec = avertissement ; même groupe de concurrence que l'ancienne publication de build.yml (une écriture à la fois)
+  publication-captures:
+    needs: [heure, banc, fusion]
+    if: ${{ !cancelled() && needs.heure.outputs.lancer == 'oui' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: { contents: write }
+    concurrency:
+      group: apercu-captures-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/download-artifact@v4
+        continue-on-error: true   # aucun artefact (banc en échec) : le script le dit et finit vert
+        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
+      - name: Captures dans la Release d'aperçu (seulement celles qui ont changé ; WFS-106)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PUBLIER: captures
+          BANC: ${{ needs.banc.result }}
+        run: bash tools/qa/publier_apercu.sh
