@@ -2502,3 +2502,12 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:09:28 — WFS-217 : réglage seulement dans le menu Réglages du jeu (po-scrum-master)
 - **Précision de l'utilisateur** : le joueur active ou désactive l'aide dans le menu Réglages ; pas de clé dans `configgame.json`. RG-03 réécrite, zone et critères ajustés.
+
+### 2026-11-07 09:13:12 — WFS-161 (ST-3) : intérieurs de nuit ; risque signalé sur les phares (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 09bfda6, synchronisée ee522b5) :
+  - `shaders/decor.glsl` (E12) : `interieurFenetre`, « interior mapping » (van Dongen, CGI 2008). Le regard est prolongé dans une pièce de 4 m derrière chaque vitre (murs, sol, plafond, meuble bas au hasard), sans triangle de plus. Nuit : lampe à 2850 K (`couleurTemperature` de WFS-151), murs à 31,8 cd/m² (E = 200 lx, ρ = 0,5 : **valeur de conception**, M-04 reste « non mesurable »), exposition physique ; 35 % de fenêtres allumées (conception, en attendant l'heure de WFS-152). Jour : 2 % de la lumière du ciel (facteur de lumière du jour) ; la vitre garde son reflet de l'IBL (mélange de Fresnel).
+  - **Accroches annoncées** : `MAT_INTERIEUR` dans `src/render/renderer.h` (1 ligne) ; `shaders/scene.frag` (2 lignes : appel de la pièce, émission de la vitre non ajoutée en surface).
+  - `archi_geo.cpp` : uv des vitres = largeur, allège, hauteur de la baie (dm) + position relative ; `test_archi_geo` : 4 481 814 contrôles, 0 échec ; 45 tests CPU verts.
+- **Captures regardées** : nuit, fenêtres allumées au hasard, pièces visibles, lumière chaude ; jour, vitres sombres, pièce dans l'ombre.
+- **Risque signalé au PO** (hors zone, rien modifié) : les murs clairs du banc sont presque blancs la nuit, même sans fenêtre allumée (essai `WFS_ARCHI_ALLUMEES=0`). Cause : le phare du joueur (`src/render/nuit.cpp:131`) est un projecteur à cône de 40°, portée 170 m, **sans coupure horizontale**. Il éclaire les façades jusqu'aux toits, alors qu'un feu de croisement coupe sous l'horizon. Proposition : un ticket pour le propriétaire des feux (coupure du faisceau). En attendant, les albédos provisoires des murs (ST-4) seront calibrés pour ne pas aggraver le défaut.
+- **Suite** : ST-4, matériaux (textures CC0 cherchées sur GitHub ; sinon procédurales calibrées, provisoires).
