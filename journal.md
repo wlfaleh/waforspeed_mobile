@@ -2963,3 +2963,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Zone : `src/ui/minicarte.*` et le HUD (E5, sauf `src/ui/ecrans/`). Règles : `regles-de-gestion/WFS-234.md` (RG-01 à RG-05). Aucun bouton ne change de taille ni de place (ordre permanent). Coût borné (WFS-222). Test de parcours complet.
 - Branche `feature/waforspeed-234`, premier commit poussé tout de suite.
 
+
+### 2026-11-07 12:53:54 — WFS-233 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
+- **Demande de l'utilisateur** : parler directement aux agents qui attendent. Agent 3 attendait un ticket (« aucun ticket prêt » à 11:52).
+- **Ticket** : WFS-233 [RÉALISME] Enfants et familles dans les rues · E11 (libre) · branche `feature/waforspeed-233` · règles `regles-de-gestion/WFS-233.md` (MakeHuman CC0 comme WFS-209, avec un adulte, jamais sur la route, dans le −50 % de WFS-222).
