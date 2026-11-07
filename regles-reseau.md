@@ -104,6 +104,9 @@ Un fichier téléchargé puis **rejeté** (licence, taille, qualité) se note au
 
 ## 8. Demander un nouveau site
 
+**Demandes refusées** (ne pas les reproposer) : `eurospares.co.uk`, `wipersizechart.com` (refus de l'utilisateur, 2026-11-07 08:51 UTC : essuie-glaces plausibles à la place des vrais).
+
+
 - La demande passe par le **PO**, qui la présente à l'utilisateur avec : le nom exact du site (pas d'étoile), le ticket qui en a besoin, ce qui
   y sera lu ou téléchargé, et la licence des contenus.
 - Seul l'utilisateur l'accepte (fiche d'approbation de l'environnement, ou réglages de l'environnement cloud).
