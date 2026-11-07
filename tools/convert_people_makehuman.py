@@ -26,6 +26,7 @@ import numpy as np
 from PIL import Image
 
 ICI = pathlib.Path(__file__).resolve().parent
+sys.dont_write_bytecode = True   # aucun __pycache__ dans le dépôt
 sys.path.insert(0, str(ICI))
 from convert_people_lod import simplifier   # WFS-211 : niveaux de détail
 LOD_PART = (1.0, 0.38, 0.13)

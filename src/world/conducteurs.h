@@ -1,6 +1,7 @@
 // WaForSpeed — WFS-73 : conducteurs dans les voitures (joueur, trafic, adversaire du duel).
 //
-// Personnages du jeu (assets/people/homme.wfp, femme.wfp, Quaternius CC0 : WFS-63, WFS-72), pose « Sitting_Idle_Loop » figée,
+// WFS-211 : humains réalistes (assets/people/humains, 12 morphotypes MakeHuman CC0 de WFS-209, 3 niveaux de détail) ; repli :
+// personnages du jeu (assets/people/homme.wfp, femme.wfp, Quaternius CC0 : WFS-63, WFS-72). Pose « Sitting_Idle_Loop » figée,
 // palette d'os calculée une fois (RG-02), dessinés par drawSkinned. Rien n'est créé : ni personnage, ni maillage.
 // Place (RG-01, RG-03, RG-07) : à la place de la vue cockpit (x = −0,36 ; z = −L × 0,02), assis sur l'assise du modèle (WFS-201) ;
 // échelle 1 = stature réelle d'ANSUR-II (hommes 1756, femmes 1629 mm, ± 1 écart-type par conducteur) ÷ hauteur du personnage,
@@ -63,6 +64,57 @@ inline Placement placer(float assise, float cibleRel, float oeilRel, float hautC
     if (toitMesure) P.oeilY = std::min(P.oeilY, toitY - GARDE_TOIT_M - k * hautCrane);
     return P;
 }
+
+// ---------------------------------------------------------------- WFS-211 : humains réalistes (MakeHuman, WFS-209)
+// RG-02 : modèle tiré parmi les 12 morphotypes (assets/people/humains/<id>.wfp), stable par voiture ; repli homme / femme du jeu
+constexpr int NB_HUMAINS = 12;
+constexpr const char* HUMAINS[NB_HUMAINS] = {"h01", "h02", "h03", "h04", "h05", "h06", "f01", "f02", "f03", "f04", "f05", "f06"};
+inline bool humaineFemme(int i) { return i >= 6; }
+// origines (africaine, asiatique, européenne) des morphotypes : MORPHOTYPES de tools/convert_people_makehuman.py
+constexpr float ORIGINES[NB_HUMAINS][3] = {{0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0.6f, 0, 0.4f}, {0, 0.5f, 0.5f},
+                                           {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0.3f, 0.3f, 0.4f}, {0.5f, 0, 0.5f}};
+// RG-03 (M-03) : albédo de la peau (sRGB linéaire), dans 0,25-0,65 (luminance, DA-realisme.md § 3) selon le teint :
+//   européen : peau I (references/reel/materiaux.json, mat.peau_i.albedo 0,847 0,638 0,552 ; luminance 0,676) ramenée à 0,62 ;
+//   asiatique : peau III (mat.peau_iii.albedo 0,623 0,433 0,343 ; luminance 0,467) ;
+//   africain : moitié teinte III, moitié teinte VI (mat.peau_vi.albedo), luminance 0,27 (la peau VI publiée, 0,05, est sous le
+//   plancher de la charte : le plancher fait foi, RG-03) ; mélange linéaire selon les origines du morphotype
+inline vec3 albedoPeau(int i) {
+    const vec3 afr{0.399f, 0.247f, 0.148f}, asi{0.623f, 0.433f, 0.343f}, eur{0.777f, 0.585f, 0.506f};
+    const float* o = ORIGINES[std::clamp(i, 0, NB_HUMAINS - 1)];
+    return afr * o[0] + asi * o[1] + eur * o[2];
+}
+inline float luminance(const vec3& c) { return 0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z; }
+
+// RG-02 : attribution stable des modèles aux voitures de la file (aucune allocation) : modèle préféré tiré de la graine ;
+// s'il est déjà porté par une voiture présente, le suivant libre (12 voitures distinctes au plus) ; une voiture garde son
+// modèle tant qu'elle reste dans la file (pas de changement à vue quand une autre arrive)
+struct Attribution {
+    uint32_t graine[FILE_MAX] = {}; int8_t modele[FILE_MAX] = {}; bool vu[FILE_MAX] = {}; int n = 0;
+    static int prefere(uint32_t g) {   // finaliseur de MurmurHash3 : graines consécutives (trafic) bien mélangées
+        g ^= g >> 16; g *= 0x85ebca6bu; g ^= g >> 13; g *= 0xc2b2ae35u; g ^= g >> 16;
+        return (int)(g % NB_HUMAINS);
+    }
+    int choisir(uint32_t g) {
+        for (int i = 0; i < n; i++) if (graine[i] == g) { vu[i] = true; return modele[i]; }
+        int m = prefere(g);
+        for (int k = 0; k < NB_HUMAINS; k++) {
+            const int c = (prefere(g) + k) % NB_HUMAINS;
+            bool pris = false;
+            for (int i = 0; i < n && !pris; i++) pris = modele[i] == c;
+            if (!pris) { m = c; break; }
+        }
+        if (n < FILE_MAX) { graine[n] = g; modele[n] = (int8_t)m; vu[n] = true; n++; }
+        return m;
+    }
+    void finImage() {   // oublie les voitures sorties de la file
+        int k = 0;
+        for (int i = 0; i < n; i++) if (vu[i]) { graine[k] = graine[i]; modele[k] = modele[i]; vu[k] = false; k++; }
+        n = k;
+    }
+};
+// RG-01 : niveau de détail selon la distance à la caméra (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2) ; vue Proche (≈ 6 m) : corps-0
+constexpr float LOD_M[2] = {8.f, 20.f};
+inline int niveauDetail(float d2) { return d2 < LOD_M[0] * LOD_M[0] ? 0 : d2 < LOD_M[1] * LOD_M[1] ? 1 : 2; }
 
 bool preparer(Renderer& r);      // charge homme / femme et la pose assise (Game::init)
 void liberer(Renderer& r);       // Game::shutdown
