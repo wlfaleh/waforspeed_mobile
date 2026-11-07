@@ -3448,3 +3448,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Zone : E13 (`src/render/eclairage_*`, `shaders/eclairage*.glsl`, `shaders/post*`, `tests/fidelite_lumiere*`, `references/reel/lumiere/**`) ; accroches ≤ 10 lignes annoncées (`shaders/decor*` pour RG-07, remplissage de `GameView::night` pour RG-09). Interdit : phares de `nuit.cpp`, `src/world/**`, iOS.
 - Point de l'agent 1 : `GameView::night` jamais rempli → ajouté en RG-09 de ce ticket (pas de micro-ticket).
 - Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-07 16:01:06 — WFS-230 : début, nuit sur route non éclairée (Claude, agent 1)
+- Ticket attribué par le PO (commit d7592cc) sur ordre de l'utilisateur (« Prend un sujet »). Branche `feature/waforspeed-230`, zone E13.
