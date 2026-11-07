@@ -3010,3 +3010,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **RG-06** : rattrapage de #818 lancé (run 42376181080 de `statuts.yml`) ; #820, #823 et #825 suivent un à un (GitHub ne garde qu'un run en attente par groupe de concurrence).
 - WFS-237 (agent expert ci) peut commencer : WFS-236 est 🟣.
 
+
+### 2026-11-07 13:17:12 — Règle de l'utilisateur : l'expert CI ne touche que la CI (agent expert ci)
+- **Consigne de l'utilisateur** : « Toi tu ne peux pas toucher le code source du jeu, tu touches que la partie CI. »
+- **Écrite** dans `.claude/agents/expert-ci.md` et `.claude/skills/expert-ci/SKILL.md` (§ 3) : seulement `.github/workflows/**` (hors `ios.yml`), `tools/qa/**` et la doc du skill ; un rouge dû au code du jeu est nommé au journal et le PO confie la correction à un développeur. WFS-237 reste dans cette zone (`build.yml`, `pipeline.md`).

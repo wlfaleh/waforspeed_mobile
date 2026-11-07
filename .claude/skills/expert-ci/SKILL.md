@@ -27,6 +27,7 @@ Tu obéis à `CLAUDE.md` (règles de l'utilisateur) : elles passent avant ce ski
 | `ios.yml` | changements iOS | **GEL iOS** : ne rien lancer ni modifier |
 
 ## 3. Règles de l'utilisateur qui concernent la CI (rappel ; texte exact dans `CLAUDE.md`)
+- 🚫 **Jamais le code du jeu (règle de l'utilisateur, 2026-11-07)** : l'expert CI ne touche **que la partie CI** : `.github/workflows/**` (sauf `ios.yml`, gel iOS), `tools/qa/**` et la documentation de son skill. Jamais `src/**`, `shaders/**`, `assets/**`, `android/**`, `CMakeLists.txt` ni aucun fichier du jeu. Si un rouge vient du code du jeu, il nomme la cause (fichier:ligne, ticket) au journal et le PO confie la correction à un développeur.
 - **Pas de CI sur les branches ni les PR** ; exceptions : confiance ≤ 50 % (une fois, à la main) ; **US technique** `[TECHNIQUE]` (autant que nécessaire, une à la fois, chaque lancement au journal).
 - Le développeur **fusionne en squash puis il est libéré** ; la CI de `main` tranche : verte → robot ✅ ; **rouge → US technique « correction pipeline CI » P1**, créée par le PO, confiée à un développeur libre.
 - **Ne jamais affaiblir un banc** pour faire passer : pas de seuil élargi sans preuve, pas d'ajout à `tools/qa/validation_connues.txt`, pas de job passé en avertissement, pas de test retiré. Une limite de temps peut changer si la mesure prouve que la machine CI est plus lente (ex. WFS-220 : `CHAUFFE_LIMITE`).
