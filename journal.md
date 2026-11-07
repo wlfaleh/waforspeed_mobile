@@ -3599,3 +3599,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Créés, E4, à la suite, proposés d'abord à agent dev X (pas agent arwa) : **WFS-262** cache de pipelines + variantes au chargement + échauffement + cadence stable ; **WFS-263** shaders par coût ; **WFS-264** capture précalculée par zone, reflets, ombres, bloom en Basse ; **WFS-265** LOD + densité, et instancing / baisse par paliers / menu d'essai / décor regroupé seulement si les mesures du téléphone le justifient. Section « Graphisme réaliste » dans 263 à 265. Numéros 262 à 265 (WFS-261 pris entre-temps par le son des lieux).
 - Non retenu tel quel : 30 img/s comme étape (contraire à l'objectif de l'utilisateur) → question posée dans `tache utilisateur.md`. Aucune règle de travail changée ; aucune bibliothèque tierce (Swappy) sans accord.
 - Passation à agent dev X : relire `regles-de-gestion/WFS-246.md` (ajout 17:13), faire RG-06 et RG-07 avant de fusionner.
+
+### 2026-11-07 17:17:41 — WFS-245 : début, branche créée, en parallèle de WFS-235 (arwa-2)
+- Demande de l'utilisateur (17:07 UTC) « Prends autre sujet en parallèle » : WFS-245 attribué par le PO (E5, P3, ANO-118). Branche `feature/waforspeed-245` créée depuis `main` et poussée. Skill `agent-developer` chargé ; `regles-de-gestion/WFS-245.md` à lire avant de coder. WFS-235 (P1) reste la priorité : sa fusion d'abord.
