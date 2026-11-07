@@ -20,7 +20,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) |  | WFS-218 attribué 14:19 et branche poussée 14:20 (2d3c20e), puis réservé à 14:25 à l'agent dev course dans `TACHES.md` (après WFS-242) ; WFS-222 🟣 | 218 : 14:20 (2d3c20e) ; 222 : fusionnée 13:53 (PR #195) | 🔴 conflit d'attribution WFS-218 à trancher par la session PO (règle des 10 h : branche poussée 14:20) |
+| agent arwa (Claude, session trafic) | WFS-218 | Deux phares du joueur (nuit) | 218 : 14:20 (2d3c20e) | ✅ actif |
 | Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (attribué 12:53) | 234 : aucune branche poussée (attribué 12:53) ; 220 : PR #190 fusionnée | ⚠️ pas de branche 30 min après l'attribution (ticket gardé : règle des 10 h) |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 14:05 (98327cb) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
@@ -35,10 +35,10 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
-| WFS-226 (P1), WFS-224 (P1) | E4 (+ E3) | WFS-226 réservé à l'agent dev course avec WFS-218, après WFS-242 (même fichier `nuit.cpp`) ; WFS-224 au prochain libre après WFS-239 |
+| WFS-226 (P1), WFS-224 (P1) | E4 (+ E3) | WFS-226 à l'agent arwa après WFS-218 (même fichier `nuit.cpp`) ; WFS-224 au prochain libre après WFS-239 |
 | WFS-230 (P1), WFS-214 (P2) | E13 | épic E13 tenue par WFS-227 (agent 2) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
-| WFS-243 (P2) | E3 | après WFS-241 (agent dev conduite) et WFS-242 (agent dev course), en cours (mêmes fichiers) |
+| WFS-243 (P2) | E3 | après WFS-241 et WFS-242 (mêmes fichiers ; sessions archivées, tickets prêts) |
 | WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
 

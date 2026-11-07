@@ -3254,3 +3254,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:37:13 — Les 4 sessions de développeur ouvertes par le PO sont archivées (décision de l'utilisateur) (po-scrum-master)
 - **Archivées** : « Agent dev conduite » (WFS-241, en lecture du code), « Agent dev course » (WFS-242, grille corrigée et compilée, tests en cours), « Agent dev perf » (WFS-246, au tout début), « Agent dev nuit » (WFS-218 + 226, branche créée, étude des phares).
 - **Tickets remis ⏳ Prêt**, responsable vidé : WFS-241, 242, 246, 218, 226, 224 ; les branches `feature/waforspeed-241 / 242 / 246 / 218` sont **gardées** (ce qui a été poussé reste, ce qui était seulement en local dans les sessions est perdu). Lignes retirées de `track-agent.md`. Bandeau de `TACHES.md` mis à jour.
+
+### 2026-11-07 14:37:35 — WFS-218 rendu à l'agent arwa (il l'avait pris à 14:19, avant la réservation du PO) (po-scrum-master)
+- Conflit corrigé : WFS-218 🔧 agent arwa (branche 2d3c20e) ; WFS-226 prêt, à lui donner après WFS-218 (même fichier). `track-agent.md` nettoyé des sessions archivées.
