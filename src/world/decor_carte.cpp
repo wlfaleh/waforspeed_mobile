@@ -144,9 +144,9 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     Material mu; mu.rough = 0.85f; mu.flags = MAT_DOUBLE | MAT_VTINT;
     mats_[P_UNI] = r.makeMaterial(mu, &palTex_, nullptr, nullptr);
     // lampes : part propre (neonK du jeu web : 1 la nuit, 0,5 de jour)
-    Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE; // campagne : lampadaires éteints la nuit (envFor : lamps = false ; WFS-09 RG-06 : pas d'éclairage public)
-    const bool allumees = night_ && std::strcmp(carteId(), "campagne") != 0;
-    mn.emissive = linHex(0xfff0dc) * (allumees ? 2.f : night_ ? 0.05f : 0.5f);
+    // WFS-225 (RG-01) : lampes allumées la nuit sur toutes les cartes (la campagne les avait éteintes : envFor lamps = false du web)
+    Material mn; mn.rough = 0.4f; mn.flags = MAT_DOUBLE;
+    mn.emissive = linHex(0xfff0dc) * (night_ ? 2.f : 0.5f);
     mats_[P_NEON] = r.makeMaterial(mn, &palTex_, nullptr, nullptr);
     // feuillage : atlas du jeu web
     std::vector<uint8_t> png; int w = 0, h = 0, n = 0;
