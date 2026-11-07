@@ -4353,3 +4353,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-271 ⏸ suspendu** : raccords des ronds-points, sans objet avec WFS-283 (rien annulé).
 - **WFS-278 🟣** : PR #240 fusionnée à 22:46:42 UTC par commit de fusion (84e1c4d), **pas en squash** (règle du 2026-11-06) ; écritures d'après fusion absentes : statut mis à jour par le PO. arwa-4 libre.
 - Agent 3 (WFS-239) : dernier envoi 13:43:04 UTC, 9 h 20 sans commit ; retrait possible seulement après 23:43 UTC.
+### 2026-11-07 23:04:45 — WFS-282 (RG-00) refusé par le lead dev, PR #244 (lead-dev)
+- 42 images ouvertes (21 paires, banc cockpit, Golf / SF90 / X5) et la capture de l'utilisateur. Mieux : champ de 72° en hauteur, plus de rue ; bande noire du toit de la SF90 disparue ; code des 3 fichiers identique au parent de 66fdd3d.
+- **Refus** : la planche de bord est transparente sur les 21 captures « après » : la route (gravier, lignes) se voit à travers, sous le volant (ex. `apres-cockpit-x5-braquage`). La demande de l'utilisateur (« remets le tableau de bord ») n'est donc pas remplie. Le bloc noir du rétroviseur reste (RG-03). Aucune entrée au journal du développeur pour les tests. Branche en retard de 3 commits.
+- **Pour le PO** : RG-00 (« repli seul ») ne remet pas la planche de bord, car le défaut existait déjà avant WFS-235. Il faut ajouter une règle « planche opaque » à WFS-282, et peut-être élargir la zone si la cause est hors de `vehicule_cockpit*`. Détail dans le commentaire de la PR #244.
