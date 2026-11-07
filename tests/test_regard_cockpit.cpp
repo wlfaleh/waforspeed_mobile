@@ -14,7 +14,7 @@ constexpr float DEG = 3.14159265f / 180.f;
 int main() {
     {   // RG-02 : champ horizontal de 85° à l'arrêt, 90° au plus ; vertical selon l'écran
         VERIFIE(std::fabs(fovHorizontalCockpit(0, false) - 85.f) < 1e-4f, "champ horizontal à l'arrêt : %.1f°", fovHorizontalCockpit(0, false));
-        VERIFIE(fovHorizontalCockpit(1.3, true) <= 90.f && fovHorizontalCockpit(1.3, true) >= 75.f, "champ horizontal en nitro à fond : %.1f°", fovHorizontalCockpit(1.3, true));
+        VERIFIE(fovHorizontalCockpit(1.3, true) == fovHorizontalCockpit(0, false), "champ fixe (ni vitesse ni nitro)");
         for (float aspect : {2400.f / 1080.f, 16.f / 9.f, 4.f / 3.f}) {
             const float v = fovVerticalDepuisHorizontal(85.f, aspect);
             // retour au champ horizontal : 2 atan(tan(v / 2) × aspect)
@@ -46,6 +46,8 @@ int main() {
         VERIFIE(droite.x < 0, "virage à droite : tête vers la gauche (%.3f m)", droite.x);
         const vec3 fort = mouvementTete(-100, 100);
         VERIFIE(std::fabs(fort.z) <= 0.03f + 1e-6f && std::fabs(fort.x) <= 0.02f + 1e-6f && fort.y == 0.f, "tête bornée (3 cm, 2 cm)");
+        const vec3 cou = decalageCou(12 * DEG);
+        VERIFIE(std::fabs(cou.x - 0.0187f) < 0.001f && cou.z > 0 && cou.z < 0.003f && decalageCou(0).x == 0.f, "cou : œil décalé de %.1f cm à 12°", cou.x * 100);
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("regard cockpit : OK\n");

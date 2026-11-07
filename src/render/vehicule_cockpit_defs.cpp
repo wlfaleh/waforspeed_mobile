@@ -18,7 +18,7 @@ static const InterieurDef DEFS[] = {
     // GTI rouge sur la branche basse, palettes DSG ; Digital Cockpit Pro 10,25 po (244 × 91 mm) et écran central 10 po
     // (232 × 104 mm) dans le même îlot, tourné de 9° vers le conducteur ; liseré rouge sur toute la largeur ; balais 650 / 450 mm
     {"golf", 0.370f, 0.034f, 3, 0.18f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x1a1a1c, 0xbe141e,
-     {0.f, -0.31f, -0.76f}, -0.38f,
+     {0.f, -0.33f, -0.76f}, -0.38f,   // WFS-235 : volant 2 cm plus bas (avis d'expert : le haut de la jante cachait une bande de route)
      Combine::VwDigital, 0.244f, 0.091f, {0.f, -0.24f, -0.86f}, 0xdfe6ee, 0x0e1116, 0xff2a2a,
      0.232f, 0.104f, {0.33f, -0.24f, -0.74f}, -0.16f,
      -0.17f, -0.78f, -0.22f, -1.10f, 0x1c1d20, 0x232428, 0xbe141e, 0.f, 0.40f, false,

@@ -59,6 +59,14 @@ struct InterieurDef {
 // dos droit, ramenée au dossier incliné de 25° des voitures de tourisme (SAE J1100, angle A40 de 20 à 30° : estimé)
 constexpr float OEIL_ASSIS_M = 0.7859f, DOSSIER_RAD = 25.f * PI / 180.f;
 inline float hauteurOeil(const InterieurDef& d) { return d.assise + OEIL_ASSIS_M * std::cos(DOSSIER_RAD); }
+// WFS-235 (RG-02) : bord bas du ciel de toit (haut du pare-brise) au-dessus de l'œil (m) : hauteur de la voiture − œil − 0,15 m
+// (tôle, garniture, galbe du pavillon au-dessus du pare-brise ; Golf : 1,46 − 1,154 − 0,15 = +0,16, avis d'expert-realisme-3d) ;
+// sans hauteur connue : +0,16 ; borné de +0,08 à +0,30. Pente du pare-brise (dy / dz) de la Golf : du pied (−0,22 ; −1,10) au
+// haut (+0,16 ; −0,52), 33° sur l'horizontale
+constexpr float PENTE_PARE_BRISE = 0.655f;
+inline float toitAuDessusOeil(const InterieurDef& d, float hauteurVoiture) {
+    return hauteurVoiture > 0 ? std::clamp(hauteurVoiture - hauteurOeil(d) - 0.15f, 0.08f, 0.30f) : 0.16f;
+}
 
 // RG-01 : intérieur du modèle, nullptr pour une voiture qui garde le cockpit commun
 const InterieurDef* interieurPour(const char* carId);
@@ -114,7 +122,7 @@ struct EtatInterieur {
 
 class Interieur {
 public:
-    bool construire(Renderer& r, const InterieurDef& d);
+    bool construire(Renderer& r, const InterieurDef& d, float hauteurVoiture = 0);   // WFS-235 : hauteur de la voiture (m, ciel de toit)
     void detruire(Renderer& r);
     bool pret() const { return def_ != nullptr; }
     const InterieurDef* def() const { return def_; }
@@ -139,6 +147,12 @@ private:
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
     std::vector<Vertex> dv_[5]; std::vector<uint32_t> di_[5];
     int appels_ = 0; size_t octets_ = 0;
+    float yToit_ = 0.16f, zToit_ = -0.52f;   // WFS-235 : haut du pare-brise (repère de l'œil : essuie-glaces, reflet)
+    Material refletMat_{};                   // WFS-235 (RG-04) : reflet de la planche dans le pare-brise (additif)
 };
+// WFS-235 (RG-04) : intensité du reflet de la planche dans le pare-brise, de jour (unités des halos, × lumières artistiques) :
+// réglée au banc pour ≈ 1,5 % de la luminance de la route au pied du pare-brise (0,3 à 3 % en vrai, avis d'expert :
+// R ≈ 0,15 (Fresnel du verre feuilleté à 55-63°) × albédo de la planche 0,045 × éclairement) ; 0 : pas de reflet
+extern float g_refletPlanche;
 
 } // namespace wfs::cockpit

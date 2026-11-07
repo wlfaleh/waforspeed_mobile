@@ -84,12 +84,11 @@ inline float fovVue(VueCamera v, double p, bool nitro) {
 enum class RegardCockpit { Bas = 0, Normal = 1, Haut = 2 };
 RegardCockpit regardCockpit();
 void choisirRegard(RegardCockpit r);
-// champ de vision HORIZONTAL de la vue Cockpit (RG-02 : 75 à 90°, vision d'un conducteur) : 85° à l'arrêt, + 4° à pleine vitesse,
-// + 2° en nitro, 90° au plus ; le champ vertical en découle selon la forme de l'écran (2400 × 1080 : ≈ 45°)
-constexpr float COCKPIT_FOV_H = 85.f, COCKPIT_FOV_H_VITESSE = 4.f, COCKPIT_FOV_H_NITRO = 2.f, COCKPIT_FOV_H_MAX = 90.f;
-inline float fovHorizontalCockpit(double p, bool nitro) {
-    return std::min(COCKPIT_FOV_H_MAX, COCKPIT_FOV_H + (float)std::min(std::fabs(p), 1.0) * COCKPIT_FOV_H_VITESSE + (nitro ? COCKPIT_FOV_H_NITRO : 0.f));
-}
+// champ de vision HORIZONTAL de la vue Cockpit (RG-02 : 75 à 90°, vision d'un conducteur) : 85°, fixe (avis d'expert :
+// un champ qui s'élargit avec la vitesse fait « respirer » la planche) ; le champ vertical en découle selon la forme de
+// l'écran (2400 × 1080 : ≈ 45°)
+constexpr float COCKPIT_FOV_H = 85.f;
+inline float fovHorizontalCockpit(double, bool) { return COCKPIT_FOV_H; }
 // champ vertical (°) d'un champ horizontal donné (°) sur un écran de rapport largeur / hauteur ; borné de 30 à 75°
 inline float fovVerticalDepuisHorizontal(float horizontalDeg, float aspect) {
     const float a = std::max(0.3f, aspect), h = horizontalDeg * 3.14159265f / 180.f;
@@ -110,6 +109,9 @@ inline float lacetVirage(float angleVersRoute) { return std::clamp(angleVersRout
 inline vec3 mouvementTete(double lonAcc, double latAcc) {
     return {(float)std::clamp(-latAcc * 0.002, -0.02, 0.02), 0.f, (float)std::clamp(lonAcc * 0.003, -0.03, 0.03)};
 }
+// la tête tourne autour du cou, 9 cm derrière les yeux (estimé, avis d'expert) : à 12° de lacet, l'œil glisse de ≈ 1,9 cm
+constexpr float COCKPIT_COU_M = 0.09f;
+inline vec3 decalageCou(float lacet) { return {COCKPIT_COU_M * std::sin(lacet), 0.f, COCKPIT_COU_M * (1.f - std::cos(lacet))}; }
 
 // ---------- accroche de Game::render (WFS-66) ----------
 // Appelée après la caméra de poursuite de Game (eye, look, fov déjà calculés). camMode 2 (vitrine) et écrans hors course
