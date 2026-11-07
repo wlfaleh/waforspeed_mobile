@@ -79,6 +79,11 @@ struct Forcage {
     bool pointForce = false; vec3 point{};             // point des sondes (sinon la voiture)
 };
 void forcer(const Forcage& f);
+// WFS-208 : moment de la journée (atmosphere::Moment : aube, matin, midi, heure dorée, heure bleue, nuit, heure réelle), choisi à
+// l'écran Terrain (sinon relu dans la sauvegarde) ; le temps écoulé repart de zéro ; accélération du temps (× 1 par défaut)
+void choisirMoment(int moment);
+int momentChoisi();
+void accelererTemps(double facteur);
 void desactiver(bool oui);            // banc avant / après : rendu d'origine (aucune conversion)
 bool sondeCapturePrete();             // au moins une capture traitée depuis la dernière remise à zéro
 void remettreAZero();                 // nouvelle scène : sondes oubliées, exposition recalée sur la prochaine mesure
