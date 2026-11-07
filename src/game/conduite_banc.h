@@ -185,8 +185,10 @@ inline int mesurerAidesRapport(std::string& rapport) {
     ligne("## 6. Aides (WFS-253) : ABS, antipatinage, ESP activés (jeu) puis coupés un par un (banc seulement)");
     ligne("| voiture | aides | 100-0 | glissement AV au freinage | cap gagné en freinant en virage | 0-100 | patinage au départ | ESP (FMVSS 126) : lacet 1 s / 1,75 s après | dérive max | verdict |");
     ligne("|---|---|---|---|---|---|---|---|---|---|");
+    int espUtile = 0;
     for (const char* id : {"golf", "mustang", "sf90", "rrsport"}) {
         struct Cfg { const char* nom; bool abs, tc, esp; };
+        MesureAides ref{};
         for (const Cfg& k : {Cfg{"toutes", true, true, true}, Cfg{"sans ABS", false, true, true}, Cfg{"sans antipatinage", true, false, true}, Cfg{"sans ESP", true, true, false}}) {
             const MesureAides m = mesurerAides(carById(id), k.abs, k.tc, k.esp);
             const double q1 = m.rPic > 0 ? m.r1 / m.rPic : 0, q175 = m.rPic > 0 ? m.r175 / m.rPic : 0;
@@ -195,12 +197,23 @@ inline int mesurerAidesRapport(std::string& rapport) {
                 const bool bon = m.arret >= 33 && m.arret <= 43 && m.glisFrein <= 0.25 && m.capFrein > 0.05 && q1 <= 0.35 && q175 <= 0.20 && !m.toupie;
                 if (!bon) ecarts++;
                 verdict = bon ? "OK" : "ÉCART";
+                ref = m;
+            } else {   // chaque aide sert à quelque chose : sans elle, la mesure est moins bonne (sinon : aide fictive)
+                bool bon = true;
+                if (!k.abs) bon = m.glisFrein >= 0.9 && m.arret > ref.arret && m.capFrein < ref.capFrein;
+                if (!k.tc) bon = m.patinage > ref.patinage;
+                if (!k.esp && (m.r1 > 0.35 * m.rPic || m.toupie || m.betaMax > ref.betaMax * 2)) espUtile++;
+                if (!bon) ecarts++;
+                verdict = !k.esp ? "mesure" : bon ? "OK (l'aide agit)" : "ÉCART (l'aide n'agit pas)";
             }
             std::snprintf(l, sizeof l, "| %s | %s | %.1f m | %.0f %% | %.2f rad | %.2f s | %.0f %% | %.0f %% / %.0f %% (pic %.2f rad/s) | %.1f°%s | %s |", id, k.nom, m.arret,
                           m.glisFrein * 100, m.capFrein, m.cent, m.patinage * 100, q1 * 100, q175 * 100, m.rPic, m.betaMax * 57.2958, m.toupie ? " TÊTE-À-QUEUE" : "", verdict.c_str());
             ligne(l);
         }
     }
+    if (espUtile == 0) ecarts++;
+    char f[160]; std::snprintf(f, sizeof f, "- ESP : sans lui, %d voiture(s) sur 4 échouent au sinus avec palier ou partent en tête-à-queue%s", espUtile, espUtile ? "" : " → ÉCART (l'ESP n'agit pas)");
+    ligne(f);
     return ecarts;
 }
 
@@ -264,8 +277,8 @@ inline int mesurer(std::string& rapport) {
             const Mesure av = rouler(vg, cas, aide, false), ap = rouler(vg, cas, aide, true);
             apres[(int)cas][ia] = ap;
             auto txt = [](const Mesure& m) {
-                char b[160]; std::snprintf(b, sizeof b, "écart %.1f m, %d hors route, cap %.2f, %.0f-%.0f km/h, %s%s", m.ecartMax, m.sorties, m.capMax, m.vMin > 1e8 ? 0 : m.vMin, m.vMax,
-                                           m.passe ? "passé" : "NON passé", "");
+                char b[200]; std::snprintf(b, sizeof b, "écart %.1f m, %d hors route, cap %.2f, dérive %.1f°, %.0f-%.0f km/h, %s", m.ecartMax, m.sorties, m.capMax,
+                                           m.deriveMax * 57.2958, m.vMin > 1e8 ? 0 : m.vMin, m.vMax, m.passe ? "passé" : "NON passé");
                 std::string s = b;
                 if (m.dGauche != 0 || m.dDroite != 0) { std::snprintf(b, sizeof b, ", à fond : %+.1f m à gauche puis %+.1f m", m.dGauche, m.dDroite); s += b; }
                 return s;
