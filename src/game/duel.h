@@ -26,6 +26,7 @@ constexpr const char* CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
 constexpr size_t NICK_MAX = 14;                              // pseudo ≤ 14 caractères
 constexpr size_t MSG_MAX = 512;                              // message plus long : refusé en entier
 constexpr double PRESENCE_DT = 0.1;                          // présence envoyée toutes les 0,1 s (RG-03)
+constexpr double D_GRILLE = -40 / M;                         // WFS-242 : distance reçue la plus petite (grille derrière la ligne)
 
 // hashStr du jeu web (FNV-1a 32 bits sur charCodeAt(0) de chaque caractère)
 uint32_t hashStr(std::string_view s);
@@ -142,6 +143,10 @@ public:
     std::vector<BoardRow> results() const;                     // renderDuelResult : temps d'arrivée puis distance
     int position(double myDist) const;                         // « Position n/N »
     double myFinish() const { return myFinish_; }              // s
+    // WFS-242 (RG-05) : ma place sur la grille de départ de la manche (0 = devant), la même vue de tous les téléphones : le
+    // créateur du salon devant, puis les autres par jeton croissant (nombre tiré à l'entrée dans le salon, envoyé dans la
+    // présence, clé « j ») ; à égalité, par pseudo
+    int place() const { return place_; }
     std::vector<std::string> adversaires() const;              // WFS-122 (RG-01) : pseudos des adversaires de la manche
 
 private:
@@ -153,6 +158,7 @@ private:
     int km_ = 4, round_ = 0;
     Status st_ = Status::Lobby;
     double startMs_ = 0, presenceTimer_ = 0, myFinish_ = 0;
+    uint32_t jeton_ = 0; int place_ = 0;                        // WFS-242 (RG-05) : place sur la grille
     std::map<std::string, Ghost> ghosts_;
     struct Partant { std::string name; double d = 0; };
     std::map<std::string, Partant> partants_;                  // WFS-122 (RG-02) : adversaires au départ de la manche

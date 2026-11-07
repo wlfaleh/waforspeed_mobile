@@ -7,7 +7,7 @@
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (lancement à la main seulement, WFS-185)
 #    WFS-106 : deux jobs. publication-apk part dès la fin du job android (APK en ligne ≈ 5 min après l'envoi) ;
-#    publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
+#    (WFS-277 : publication-captures est maintenant dans matin.yml, chaque matin) publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
 #    tous les jobs du dépôt, branches comprises ; les 200 derniers appels restent aux APK)
 # WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
 # du commit s'affichent sur la PR) ; WFS-237 : sur main, un run commencé va toujours au bout, mais les fusions arrivées pendant
@@ -70,13 +70,15 @@ jobs:
     if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne
     needs: compilation   # WFS-250
     runs-on: ubuntu-24.04
-    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme, run #825) + 2 × 5 min d'installation au pire, et marge
+    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme au run #825, sorti des envois par WFS-252) + 2 × 5 min d'installation au pire, et marge
     strategy:
       fail-fast: false
       matrix:
         # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
         # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
-        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, realisme]   # WFS-148 : banc de référence du réalisme
+        # WFS-277 (décision de l'utilisateur, 2026-11-07) : à chaque envoi, seulement les tests CPU et licences (texte) et le parcours complet
+        # du jeu (menu1-2400) ; tous les autres groupes, le réalisme compris, tournent chaque matin à 07:00 heure de Paris (matin.yml), suivis de la QA
+        groupe: [texte, menu1-2400]
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -95,44 +97,7 @@ jobs:
         # WFS-117 : tous les build/test_* (déclarés dans CMakeLists.txt) sont lancés par le script, sans liste à tenir ici
         run: bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py   # WFS-22 : licences
       - name: Captures du rendu (${{ matrix.groupe }})
-        run: |
-          mkdir -p captures
-          case "${{ matrix.groupe }}" in
-            partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit|realisme)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09 ; realisme : WFS-148
-              if [ "${{ matrix.groupe }}" = realisme ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi   # WFS-149 : KTX2 d'essai, rapport PSNR
-              WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/
-              # WFS-136 (accroche) : tracé 2 forcé sur les 4 cartes (rond-point, feu rouge, épingle, autoroute) ; un écart = rouge
-              if [ "${{ matrix.groupe }}" = vitrines ]; then mkdir -p trace && WFS_BANC=trace ./build/wfs_bench trace assets/ && cp trace/trace-*.png captures/; fi ;;
-            texte)
-              # planche de test du texte (WFS-26) en 1280x720 et 2400x1080
-              mkdir -p texte && WFS_BANC=texte WFS_TEXTE_ESSAI=1 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-1280.png
-              WFS_BANC=texte WFS_TEXTE_ESSAI=1 WFS_TAILLE=2400x1080 ./build/wfs_bench texte assets/ > /dev/null && cp texte/course-cam0-0.png captures/texte-essai-2400.png
-              mkdir -p sauv && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && WFS_BANC=sauvegarde ./build/wfs_bench sauv assets/ && cp sauv/fin-record.png sauv/sauvegarde-relue.png captures/   # WFS-24 : deux lancements
-              # WFS-22 : manette (course pilotée par des entrées injectées, focus des menus, pause) ; journal du banc gardé
-              mkdir -p manette && WFS_BANC=manette ./build/wfs_bench manette assets/ 2>&1 | grep -i "manette" | tee captures/manette-journal.txt && cp manette/manette-*.png captures/
-              WFS_BANC=vie ./build/wfs_bench captures assets/   # WFS-71 (job vie jusqu'à WFS-106)
-              # WFS-183 (accroche, RG-02, ANO-94) : parcours du duel en 1280x720 (salon-derniers, duel-resultat-4, salon-hors-ligne)
-              mkdir -p menu1280 && WFS_BANC=menu2 ./build/wfs_bench menu1280 assets/ > /dev/null && cp menu1280/salon-derniers.png menu1280/duel-resultat-4.png menu1280/salon-hors-ligne.png captures/
-              WFS_BANC=course5 ./build/wfs_bench captures assets/ ;;   # WFS-110 : modes-choix, course5-grille, course5-course, course5-fin
-            ecrans-2400)
-              # WFS-35 / WFS-49 : écran de chargement en 2400x1080, pris dans un lancement sans planche de texte (ANO-10)
-              mkdir -p chargement && WFS_BANC=chargement WFS_TAILLE=2400x1080 ./build/wfs_bench chargement assets/ > /dev/null
-              for f in chargement/chargement-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done
-              mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
-              for f in hud/minicarte-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-173 : minicarte-checkpoint-2400, minicarte-ligne-2400
-              mkdir -p fluidite && WFS_BANC=fluidite ./build/wfs_bench fluidite assets/ && cp fluidite/fluidite.txt fluidite/fluidite-*-0[0-5].png captures/   # WFS-221 (accroche) : à-coups avant / après (1280x720)
-              mkdir -p conduite && WFS_BANC=conduite ./build/wfs_bench conduite assets/ && cp conduite/conduite.txt conduite/conduite-*.png captures/   # WFS-241 (accroche) : banc de conduite, vidéos épingle / rond-point (1280x720)
-              mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
-            menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
-              mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
-              for f in menu/garage-*.png menu/terrain-0.png menu/terrain-1.png menu/terrain-rouler.png menu/parcours-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-11, WFS-41 ; WFS-135 (ANO-55) : parcours-mode / -terrain / -course
-              # WFS-135 (ANO-55) : parcours complet (WFS-126) jusqu'à la fin et au retour à l'accueil ; un écart = job rouge
-              mkdir -p parcours && WFS_BANC=parcours ./build/wfs_bench parcours assets/ && cp parcours/parcours-fin.png parcours/parcours-retour-menu.png captures/ ;;
-            menu2-2400)   # WFS-106 : 2e moitié du groupe menu en 2400x1080 (réglages, salon du duel)
-              mkdir -p menu && WFS_BANC=menu2 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/
-              for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png menu/duel-resultat-4.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83 ; WFS-122 (accroche) : duel-resultat-4
-          esac
-          ls -la captures
+        run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}   # WFS-277 : même script que matin.yml
       - uses: actions/upload-artifact@v4
         with: { name: 'captures-${{ matrix.groupe }}', path: captures }
 
@@ -276,29 +241,8 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
         run: bash tools/qa/notifier_apk.sh
 
-  # WFS-106 RG-06 : les captures après le banc (même partiel), seulement celles qui ont changé (RG-11) ; ne touchent jamais
-  # à l'APK, au tag ni au titre ; échec = avertissement, job vert (RG-03) ; 20 min au plus (RG-07)
-  publication-captures:
-    needs: [banc-essai]
-    runs-on: ubuntu-24.04
-    if: ${{ !cancelled() && github.event_name != 'schedule' }}   # WFS-185 (RG-06)
-    timeout-minutes: 20
-    concurrency:
-      group: apercu-captures-${{ github.ref }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/download-artifact@v4
-        continue-on-error: true   # aucun artefact (banc en échec) : le script le dit et finit vert
-        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
-      - name: Captures dans la Release d'aperçu (seulement celles qui ont changé ; WFS-106)
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          PUBLIER: captures
-          BANC: ${{ needs.banc-essai.result }}
-        run: bash tools/qa/publier_apercu.sh
+  # WFS-277 : plus de publication des captures à chaque envoi : matin.yml publie chaque matin toutes les captures d'un même commit
+  # (publier_apercu.sh retire les captures absentes du run : deux workflows qui publient s'effaceraient l'un l'autre)
 
   # WFS-185 (RG-03) : résumé du run : commit et tickets WFS-XX des messages de commit (pour passer son ticket en ✅ avec le run)
   resume:

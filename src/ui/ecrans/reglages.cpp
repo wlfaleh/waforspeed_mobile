@@ -13,6 +13,7 @@
 #include "../../game/game.h"
 #include "../../game/traffic_system.h"   // WFS-75 : choc du banc (vibration coupée)
 #include "../../game/sauvegarde.h"   // WFS-24 : réglages dans la sauvegarde commune
+#include "../../game/reseau_relais.h"   // WFS-246 (accroche) : partage de la mesure du rendu
 #include "../../game/ressenti.h"     // WFS-80 : direction et « réduire les mouvements » (WFS-70)
 #include "../../game/direction.h"    // WFS-108 : gyroscope, taille des boutons (commandes_tactiles.h)
 #include "../../platform/gyroscope.h"
@@ -63,7 +64,7 @@ const Ligne LIGNES[13] = {
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
        L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, N_LIGNES = 13 };
 
-Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
+Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager)
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
 
@@ -186,6 +187,7 @@ public:
         if (!t.down) { if (t.id == doigt_) doigt_ = -1; return true; }
         if (t.id == doigt_) return true;
         if (g_fermer.contient(t.x, t.y)) { g_ouvert = false; doigt_ = t.id; WFS_LOG("réglages : fermés"); return true; }
+        if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { doigt_ = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) {
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
             Reglages& R = reglages();
@@ -278,7 +280,10 @@ private:
         const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)L_AIDE * (rowH + gap) + 10 * k;
         g_fermer = {fx, fy, fw, bh};
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
-        ui::text(r, x0, fy + (bh - 15 * k) / 2, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »
+        ui::text(r, x0, lm.empty() ? fy + (bh - 15 * k) / 2 : fy + bh / 2 - 15 * k, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        if (!lm.empty()) { const float tm = std::min(12 * k, 12 * k * (fx - x0 - 8 * k) / std::max(ui::width(12 * k, lm, 0.f), 1.f)); g_mesure = {x0, fy, fx - x0 - 8 * k, bh};
+                           ui::text(r, x0, fy + bh / 2 + 1 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
         biseau(r, fx, fy, fw, bh, 14 * k, hex(ACCENT));
         ui::text(r, fx + fw / 2, fy + (bh - tp) / 2, tp, ft, hex(BG), ui::CENTRE, 0.12f, false);
     }
@@ -351,6 +356,9 @@ private:
         }
         // WFS-134 (RG-01) : rendu réellement utilisé, sous les deux colonnes
         ui::text(r, x0, py + ph - 26 * k, 14 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);
+        const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne sous le rendu (toucher : partager)
+        if (!lm.empty()) { const float tm = std::min(10 * k, 10 * k * (pw - 48 * k) / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, pw - 48 * k, 28 * k};
+                           ui::text(r, x0, py + ph - 11 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
     }
 
     Renderer* r_ = nullptr;

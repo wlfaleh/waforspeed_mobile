@@ -18,6 +18,8 @@
 #include <vector>
 #include "../core/system.h"
 #include "../game/track.h"
+#include "../game/chocs_decor.h"   // WFS-256 (accroche)
+#include "../render/lots_decor.h"   // WFS-268 : décor fixe préparé au chargement
 #include "../render/renderer.h"
 #include "giratoire.h"   // WFS-248 : giratoires reconstruits
 #include "vegetation.h"
@@ -31,6 +33,9 @@ using Geo = veg::Geo;
 enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_TEXTE0, P_TEXTE1, P_TEXTE2, P_COUNT };
 constexpr int PAL_W = 128;                // cases de la palette
 constexpr int AHEAD = 22, BEHIND = 2;     // morceaux dessinés (comme la route de Game)
+// WFS-268 (décision du PO, 2026-11-07 18:33 UTC) : Campagne et Grand Prix gardent l'ancienne gestion en course (un tour préparé
+// = 175 à 212 Mo GPU, trop pour un téléphone de 4 Go) jusqu'aux instances des arbres (WFS-273) ; true = décor préparé au chargement
+constexpr bool LOTS_CARTES_SOCLE = false;
 constexpr double LOD_FAR_M = 200;         // au-delà : arbres allégés, petits objets non dessinés (SMALL_DECOR)
 
 // bande de sol : de a à b (m depuis l'axe), hauteurs ya → yb, case de palette
@@ -98,6 +103,9 @@ protected:
     virtual void place(const char* zone, int64_t z0, int64_t z1, Mulberry32& D) = 0;
     // dessin d'un objet propre à la carte (appelé en parallèle : lit seulement la piste et les objets)
     virtual void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const = 0;
+    // WFS-256 (accroche) : formes de choc de l'objet (chocs_decor.h, 4 au plus), relevées sur son dessin ; 0 : rien de
+    // solide. Ici : arbres et lampadaires (communs) ; chaque carte ajoute ses objets (campagne.cpp, circuit.cpp)
+    virtual int solide(const Item& it, chocs::ObstacleRoute o[4]) const;
     // chaussée propre (circuit : texture roadCircuit) : false = celle de Game
     virtual bool routePropre() const { return false; }
     // dessins animés après les morceaux (rotors des éoliennes) ; morceaux c0..c1 chargés ; renvoie le nombre de dessins
@@ -133,6 +141,7 @@ protected:
     // WFS-248 : giratoires reconstruits (un par rond-point du tracé 2) et segment (tour) de leur centre
     std::vector<giratoire::Giratoire> gir_;
     std::vector<int64_t> girSeg_;
+    void preparerDecor(Renderer& r);   // WFS-268 : décor fixe préparé (fin de l'init de la carte)
     bool surGiratoire(const vec3& q, float marge) const { for (const giratoire::Giratoire& g : gir_) if (giratoire::dansOuvrage(g, q, marge)) return true; return false; }
 
 private:
@@ -140,7 +149,10 @@ private:
     std::vector<std::vector<Item>> items_;   // objets de chaque segment de la piste
     std::vector<chaussee::Axe> serres_;   // WFS-212 : axe de la route autour des sections repliées (chaussee.h)
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
-    std::map<int64_t, Chunk> chunks_;
+    std::map<int64_t, Chunk> chunks_;   // ancienne gestion (repli, lots::g_lotsDecor = false)
+    lots::DecorFixe lots_;   // WFS-268 : décor du tour 0, préparé au chargement
+    bool lotsTente_ = false;
+    int64_t limiteTour_ = INT64_MAX;   // WFS-268 : fin des morceaux (= len() pendant la préparation : dernier morceau borné au tour)
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
 };

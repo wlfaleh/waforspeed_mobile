@@ -22,6 +22,7 @@
 #include "../game/roues.h"          // WFS-179 : roues des voitures en sens inverse
 #include "../render/eclairage.h"    // WFS-179 : lumières de nuit du péage
 #include "../render/model_loader.h" // WFS-179 : modèles des voitures en sens inverse
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : troupeaux et fontaine déclarés au son des lieux
 
 namespace wfs {
 namespace carte {
@@ -60,7 +61,9 @@ public:
     // WFS-178 : atlas des enseignes (lettres blanches, néon doux la nuit) et feux tricolores (lampes allumées / éteintes)
     void init(Renderer& r, const GameView& g) override {
         betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1;   // WFS-186 : placés de nouveau par CarteDecor::init
+        fermesSon_.clear(); fontaineSon_.clear();   // WFS-261 (accroche)
         CarteDecor::init(r, g);
+        if (active_) { lieux::poser("campagne", lieux::FERME, fermesSon_); lieux::poser("campagne", lieux::FONTAINE, fontaineSon_); }   // WFS-261
         for (auto& T : txt_) T = {};
         if (!active_) return;
         {   // tête du feu : une lampe de Ø 200 mm (disque à 12 côtés, face −z), dessinée 3 fois par feu
@@ -85,6 +88,7 @@ public:
         mats_[P_TEXTE0] = atlas_.materiau(r, 0xf4f1e8, night_ ? 1.1f : 0.f);
         for (int k = 0; k < CO_NB; k++) txt_[k] = atlas_.texte(ENSEIGNES[k]);
         for (int k = 0; k < 4; k++) txtA_[k] = atlas_.texte(PANNEAUX_A[k]);   // WFS-179
+        preparerDecor(r);   // WFS-268 (accroche) : décor fixe préparé ici, une fois les enseignes prêtes
     }
 
 protected:
@@ -214,6 +218,34 @@ protected:
                 for (int64_t n = z0 + 80; n < z1; n += 200) { Item it; it.t = T_FARM; it.side = side; it.lat = R + 45 + D() * 20; it.k = 0; item(n, it); }
             }
         }
+    }
+
+    // ---------------------------------------------------------------- WFS-256 (accroche, autorisée par le PO : ajout seul)
+    // formes de choc des objets de la Campagne, relevées sur dessine() ci-dessous (box : largeur selon r, longueur selon f)
+    int solide(const Item& it, chocs::ObstacleRoute o[4]) const override {
+        if (const int n = CarteDecor::solide(it, o)) return n;   // arbres, lampadaires
+        using G = chocs::Genre; const float s = (float)it.side, R = (float)RW, SG = (float)SEG_M;
+        int n = 0;
+        auto bt = [&](float lat, float hx, float hz, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.forme = chocs::Forme::Boite; q.lat = lat; q.hx = hx; q.hz = hz; q.genre = g; q.along = al; };
+        auto cy = [&](float lat, float r, G g) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.lat = lat; q.r = r; q.genre = g; };
+        switch (it.t) {
+        case T_POLE: cy(s * it.lat, 0.14f, G::Poteau); break;
+        case T_SIGN: bt(s * it.lat, 0.05f, 0.05f, G::Poteau); break;
+        case T_J6: bt(s * it.lat, 0.06f, 0.06f, G::Poteau); break;
+        case T_DANGER: case T_FEU: cy(s * it.lat, it.t == T_FEU ? 0.06f : 0.04f, G::Poteau); break;
+        case T_PANNEAU_A: for (float al : {-1.2f, 1.2f}) bt(s * it.lat, 0.05f, 0.05f, G::Poteau, al); break;   // deux poteaux (panneau à 2,2 m)
+        case T_FENCE: bt(s * it.lat, 0.06f, 1.5f * SG, G::Mur); break;
+        case T_HEDGE: bt(s * it.lat, 0.55f, it.l / 2, G::Mur, it.l / 2); break;
+        case T_GLISS: bt(s * (it.lat - 0.015f), 0.03f, SG, G::Mur, SG); break;
+        case T_MURET: bt(s * (it.lat + 0.2f), 0.2f, SG / 2 + 0.05f, G::Mur, SG / 2); break;
+        case T_FARM: bt(s * it.lat, 4.f, 5.5f, G::Batiment); break;
+        case T_VILLA: case T_COMMERCE: bt(s * (it.lat + it.d / 2), it.d / 2, it.w / 2, G::Batiment); break;
+        case T_TURBINE: cy(s * it.lat, 1.f, G::Poteau); break;
+        case T_AUTO: bt(-(R + 1.5f), 0.3f, SG / 2 + 0.05f, G::Mur, SG / 2); break;   // séparateur béton DBA (côté gauche)
+        case T_PEAGE: for (float lat : {R + 2.3f, -(R + 1.5f)}) for (float al : {-5.f, 5.f}) bt(lat, 0.25f, 0.25f, G::Poteau, al); break;   // piliers
+        default: break;   // passages, vignes, cascade, fontaine (dans l'îlot), bottes, enclos : au loin ou sans relief
+        }
+        return n;
     }
 
     void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
@@ -807,6 +839,7 @@ private:
             if (sec.type == trace::Type::RondPoint && fontaineSeg_ < 0) {   // centre de l'anneau : à gauche du milieu
                 fontaineSeg_ = (sec.debut + sec.fin) / 2;
                 Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; it.ilot = true; CarteDecor::item(fontaineSeg_, it);
+                fontaineSon_.push_back({fontaineSeg_, 0.f, it.side * it.lat, 1.f, 0});   // WFS-261 (accroche) : son de la fontaine
                 // WFS-248 : le cédez-le-passage de WFS-223 (T_CEDEZ, en travers de toute la chaussée) est remplacé par celui du
                 // giratoire reconstruit (decor_carte.cpp, giratoire.cpp)
                 vigilance_.push_back(sec.debut);
@@ -918,6 +951,7 @@ private:
         WFS_LOG("campagne : %s au segment %lld, côté %s", ENSEIGNES[k], (long long)n, side > 0 ? "droit" : "gauche");
     }
     int64_t fontaineSeg_ = -1, feuSeg_ = -1; int feuIdx_ = 0;
+    std::vector<lieux::Lieu> fermesSon_, fontaineSon_;   // WFS-261 (accroche) : troupeaux (espèce) et fontaine, pour le son des lieux
     std::vector<int64_t> vigilance_;
     struct Emprise { int64_t seg; int side; int64_t demi; };   // segments occupés par un commerce (± demi)
     std::vector<Emprise> commerces_;   // RG-C1 : segments à dégager dans les 60 m qui précèdent (feu, entrée du rond-point)
@@ -1045,6 +1079,7 @@ private:
                     b.yaw = D() * 2 * PI; b.phase = D() * 16; b.ech = 0.99f + D() * 0.02f;   // RG-02 : taille réelle à ±1 %
                     betes_.push_back(b); i++;
                 }
+                if (betes_.size() > debut) fermesSon_.push_back({((c % len()) + len()) % len(), 0.f, side * (lat0 + prof / 2), 1.f, (uint8_t)esp});   // WFS-261 (accroche)
                 if (betes_.size() > debut) WFS_LOG("Campagne (WFS-186) : troupeau de %zu %s au segment %lld, côté %d", betes_.size() - debut,
                                                    esp == VACHE ? "vaches" : esp == CHEVAL ? "chevaux" : "moutons", (long long)c, side);
                 const int64_t m = ((c % len()) + len()) % len();
