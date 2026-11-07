@@ -4305,3 +4305,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Alerte de Claude, agent 5 : Ville 162 Mo de contenu fixe préparé (décor 60,5 + immeubles du kit 101,3), Corniche 85 Mo.
 - Décision : **B** (niveaux 0, 1 et 2 des immeubles préparés au chargement), qui suit l'ordre de l'utilisateur « préparer dans le changement de map tous les détails » ; la limite de 120 Mo était celle du PO. RG-09 : Ville ≤ 170 Mo, Corniche ≤ 120 Mo, mémoire stable en course. Repli A si le téléphone manque de mémoire.
 - Correction du PO : RG-07 à RG-10 n'avaient pas été écrites dans `regles-de-gestion/WFS-268.md` au commit 34bd7d1 (erreur de mon script) ; elles le sont maintenant.
+
+### 2026-11-07 22:34:47 — WFS-268 RG-09 : plus de plafond de mémoire, décision de l'utilisateur (po-scrum-master)
+- Mots de l'utilisateur, transmis par Claude, agent 5 : « Attends, je viens de vérifier, il n'y a pas de règle : si on charge les données en amont tu es libre, même 1 Go est autorisé. »
+- RG-09 réécrite : pas de plafond ; restent « la mémoire ne monte pas pendant la course » et « chargement + ≤ 3 s ». Campagne et Grand Prix restent dans WFS-273.
