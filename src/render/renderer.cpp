@@ -887,6 +887,7 @@ bool Renderer::appliquerNettete() {
 }
 
 Material Renderer::makeMaterial(const Material& src, const Image* color, const Image* normal, const Image* mr) {
+    creationsMateriaux_++;   // WFS-268 (RG-04)
     Material m = src;
     if (normal && normal->view) m.flags |= MAT_HASNORMAL;
     if (mr && mr->view) m.flags |= MAT_HASMR;
@@ -939,6 +940,7 @@ uint8_t Renderer::classer(const masquage::Sphere& s) {
 
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
     Mesh m; m.dynamic = dynamic; m.indexCount = (uint32_t)idx.size();
+    creationsMaillages_++;   // WFS-268 (RG-04)
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r; }   // WFS-82
     // WFS-149 (RG-04) : géométrie générée (route, décor, charte…) sans tangentes : calculées ici, une fois, sur une copie
     // (tampon réutilisé). updateMesh (halos, particules : jamais de carte de normales) n'en calcule pas.

@@ -272,6 +272,16 @@ public:
         for (size_t a = 0; a < plan_->objets.size(); a++) for (const ville::Objet& o : plan_->objets[a])
             if (o.t == ville::LAMPE) { lampadaires().push_back({(int64_t)a, o.side * ((float)RW - 1.6f), 7.1f, StyleLampadaire::Ville}); nl++; }
         WFS_LOG("Ville : %zu lampadaires%s", nl, depart_ ? " (départ avancé, banc d'essai)" : "");
+        if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
+            limiteTour_ = (int64_t)plan_->objets.size();
+            lots_.preparer(r, *g.track, P_COUNT, 4, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
+                Geo out[P_COUNT];
+                buildChunk(*g.track, c, lod, out);
+                for (int p = 0; p < P_COUNT; p++) { v[p] = std::move(out[p].v); i[p] = std::move(out[p].i); }
+            }, "ville");
+            limiteTour_ = INT64_MAX;
+            for (const ville::Carrefour& cf : plan_->carrefours) lieuxAnimes(r, g, cf.ligne);   // optiques des feux, tour 0 (rien n'est dessiné hors image)
+        }
     }
 
     // matériaux des arbres (WFS-34) : atlas de feuillage du jeu web, écorce en dégradé de 2 texels, cœur sombre.
@@ -459,7 +469,7 @@ public:
     // géométrie d'un morceau (segments [c*CH, (c+1)*CH)) — appelée en parallèle, lit seulement la piste et le plan
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) const {
         const ville::Plan& P = *plan_;
-        const int64_t L = (int64_t)P.objets.size(), a0 = c * CH, a1 = a0 + CH;
+        const int64_t L = (int64_t)P.objets.size(), a0 = c * CH, a1 = std::min(a0 + CH, limiteTour_);   // WFS-268 : borné au tour à la préparation
         solChunk(t, c, out[P_SOL]);   // WFS-175 : bas-côtés de Game, abaissés sous l'eau de la rivière ; WFS-212 : toujours (coupés au rond-point)
         trottoirChunk(t, c, out[P_TROTTOIR]);           // WFS-212 : trottoir de Game (bordure, RW à RW + 4), dessiné par la Ville
         for (int64_t a = a0; a < a1; a++) {
@@ -883,9 +893,10 @@ public:
         const int64_t a0 = c * CH;
         const float R = (float)RW, WALK_W = 4.0f, CURB_H = 0.15f;
         Geo G;
+        const int nCH = limiteTour_ == INT64_MAX ? CH : (int)std::min<int64_t>(CH, limiteTour_ - a0);   // WFS-268 : dernier morceau borné au tour (préparation)
         auto strip = [&](const std::vector<std::pair<float, float>>& prof) {
             const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)G.v.size();
-            for (int i = 0; i <= CH; i++) {
+            for (int i = 0; i <= nCH; i++) {
                 const double s = (double)(a0 + i) * SEG;
                 const trace::Rayon ri = trace::rayonInterieur(t, s);
                 for (uint32_t k = 0; k < cols; k++) {
@@ -894,7 +905,7 @@ public:
                     G.v.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
                 }
             }
-            for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+            for (int i = 0; i < nCH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
                 const uint32_t q = base + i * cols + k;
                 G.i.insert(G.i.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
             }
@@ -941,10 +952,11 @@ public:
     void solChunk(Track& t, int64_t c, Geo& G) const {
         const int64_t a0 = c * CH, L = (int64_t)plan_->objets.size();
         const float R = (float)RW, WALK_W = 4.0f, CURB_H = 0.15f, GROUND_W = 260.f;
+        const int nCH = limiteTour_ == INT64_MAX ? CH : (int)std::min<int64_t>(CH, limiteTour_ - a0);   // WFS-268 : dernier morceau borné au tour (préparation)
         auto strip = [&](const std::vector<std::pair<float, float>>& prof) {
             auto& V = G.v; auto& I = G.i;
             const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)V.size();
-            for (int i = 0; i <= CH; i++) {
+            for (int i = 0; i <= nCH; i++) {
                 const double s = (double)(a0 + i) * SEG;
                 const trace::Rayon ri = trace::rayonInterieur(t, s);
                 const bool eau = dansRiviere((((a0 + i) % L) + L) % L);
@@ -955,7 +967,7 @@ public:
                     V.push_back({(float)p.x, y, (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
                 }
             }
-            for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+            for (int i = 0; i < nCH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
                 uint32_t q = base + i * cols + k;
                 I.insert(I.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
             }
@@ -1502,6 +1514,24 @@ public:
         Track& t = *g.track;
         const int64_t aP = (int64_t)std::floor(g.player->dist / SEG), pc = aP / CH;
         auto lodOf = [&](int64_t c) { return (double)(c * CH - aP) * SEG_M > LOD_FAR_M; };
+        int draws = 0, ouv = 0;
+        // matériau d'une part (mêmes règles que l'ancienne gestion) ; nul : part non dessinée
+        auto matDe = [&](int p) -> const Material* {
+            if (p == P_SOL && !solActif_) return nullptr;     // WFS-175 : sol de Game, sauf quand la rivière est en vue
+            if (p == P_TEXTE) return texteMat_;
+            if (p == P_TXT_A || p == P_TXT_B) return enseigneMat_[p - P_TXT_A];   // WFS-176 : enseignes des lieux (atlas à part)
+            return &mats_[p];
+        };
+        if (lots::g_lotsDecor && lots_.pret()) {   // WFS-268 : blocs préparés au chargement, aucune création en course
+            lots_.dessiner(t, pc * CH, BEHIND * CH, (AHEAD + 1) * CH - 1, LOD_FAR_M, [&](int p, const Mesh& m, const mat4& M) {
+                const Material* mat = matDe(p);
+                if (!mat) return;
+                // WFS-175 : asphalte de la chaussée opposée : demi-largeur de 100 m → aucune ligne du moteur (marquage dessiné à part)
+                r.draw(m, *mat, M, p == P_ROUTE ? 100.f : 0.f); draws++;
+                if (p >= P_BETON && p != P_SOL && p != P_TXT_A && p != P_TXT_B) ouv++;
+            });
+            fixes_ = draws;   // appels du décor fixe (avant le masquage du renderer)
+        } else {   // ancienne gestion (repli) : morceaux construits en course
         for (auto it = chunks_.begin(); it != chunks_.end();) {
             // hors de vue, ou morceau allégé qui se rapproche : reconstruit en détail
             if (it->first < pc - BEHIND || it->first > pc + AHEAD || (it->second.lod && !lodOf(it->first))) {
@@ -1526,7 +1556,6 @@ public:
             if (frame_ > it->first + 3) { r.destroy(it->second); it = graveyard_.erase(it); } else ++it;
         }
         const mat4 I = mat4::identity();
-        int draws = 0, ouv = 0;
         for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) {
             if (p == P_SOL && !solActif_) continue;     // WFS-175 : sol de Game, sauf quand la rivière est en vue
             if (p == P_TEXTE && !texteMat_) continue;
@@ -1538,6 +1567,7 @@ public:
             r.draw(ch.m[p], p == P_TEXTE ? *texteMat_ : mats_[p], I, p == P_ROUTE ? 100.f : 0.f); draws++;
             if (p >= P_BETON && p != P_SOL) ouv++;   // WFS-175 : coût des ouvrages (le sol remplace celui de Game, à coût égal)
         }
+        }
         draws += lieuxAnimes(r, g, aP);   // WFS-137
         const int vie = vieDesLieux(r, g, aP);   // WFS-176 : voitures du casino (pièces), pigeons, chiens
         draws += vie; lastVie_ = vie;
@@ -1545,7 +1575,7 @@ public:
         const int inv = sensInverse(r, g, aP);   // WFS-175 : voitures (une par modèle ; leurs pièces sont comptées par le moteur)
         draws += inv;
         lastDraws_ = draws; lastOuv_ = ouv; lastInv_ = inv; lastPieces_ = piecesInv_;
-        if (frame_ % 300 == 1) WFS_LOG("Ville : %d appels de dessin (%zu morceaux)", draws, chunks_.size());
+        if (frame_ % 300 == 1) { unsigned long long cm, cmat; lots_.creationsEnCourse(r, cm, cmat); WFS_LOG("Ville : %d appels de dessin (%zu morceaux, %d blocs préparés : %d appels pour le décor fixe, avant masquage) ; créations en course (tout le jeu) : %llu maillages, %llu matériaux", draws, chunks_.size(), lots_.blocs(), fixes_, cm, cmat); }
     }
 
     // WFS-137 (RG-01) : abords du rond-point, dans le repère de la route au centre de l'anneau (x : latéral, z : avant ; le même
@@ -1615,8 +1645,12 @@ public:
         optiques_.resize(P.carrefours.size());
         for (size_t i = 0; i < P.carrefours.size(); i++) {
             const ville::Carrefour& cf = P.carrefours[i];
-            const int64_t abs = proche(cf.ligne, aP);
-            if (std::abs(abs - aP) * SEG_M > 400) continue;
+            const int64_t absJ = proche(cf.ligne, aP);
+            if (std::abs(absJ - aP) * SEG_M > 400) continue;
+            // WFS-268 : décor préparé : optiques construites une fois dans le tour 0 (init), dessinées avec la matrice du tour
+            const bool tour0 = lots::g_lotsDecor && lots_.pret();
+            const int64_t k = tour0 ? lots_.tourDe(absJ) : 0, abs = absJ - k * (int64_t)P.objets.size();
+            const mat4 M = tour0 ? lots_.matrice(t, k) : mat4::identity();
             Optiques& op = optiques_[i];
             if (op.abs != abs) {
                 for (Mesh& m : op.m) if (m.vb.buf) { graveyard_.push_back({frame_, m}); m = Mesh{}; }
@@ -1636,7 +1670,7 @@ public:
             }
             const trace::Feu f = trace::feuA(cf.feu);
             const int allume = f == trace::Feu::Rouge ? 0 : f == trace::Feu::Orange ? 1 : f == trace::Feu::Vert ? 2 : -1;
-            for (int k = 0; k < 3; k++) if (op.m[k].indexCount) { r.draw(op.m[k], k == allume ? lentille_[k] : lentilleEteinte_, mat4::identity()); draws++; }
+            for (int k = 0; k < 3; k++) if (op.m[k].indexCount) { r.draw(op.m[k], k == allume ? lentille_[k] : lentilleEteinte_, M); draws++; }
         }
         if (jet_.indexCount) for (const ville::RondPoint& rp : P.ronds) {
             const int64_t abs = proche(rp.centre, aP);
@@ -1658,6 +1692,7 @@ public:
         if (jet_.vb.buf) { r.destroy(jet_); jet_ = Mesh{}; }
         for (auto& [k, ch] : chunks_) for (Mesh& m : ch.m) if (m.vb.buf) r.destroy(m);
         chunks_.clear();
+        lots_.liberer(r);   // WFS-268
         for (auto& g : graveyard_) r.destroy(g.second);
         graveyard_.clear();
         for (Image& im : facadeTex_) r.vk().destroy(im);
@@ -1734,7 +1769,10 @@ private:
     Material mats_[P_COUNT];
     Image facadeTex_[2], leafTex_{}, barkTex_{}, palTex_{};
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
-    std::map<int64_t, Chunk> chunks_;
+    std::map<int64_t, Chunk> chunks_;   // ancienne gestion (repli, lots::g_lotsDecor = false)
+    lots::DecorFixe lots_;   // WFS-268 : décor du tour 0, préparé au chargement
+    int fixes_ = 0;   // WFS-268 : maillages du décor fixe envoyés à la dernière image
+    int64_t limiteTour_ = INT64_MAX;   // WFS-268 : fin des morceaux (longueur du tour pendant la préparation)
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
     int lastDraws_ = 0, lastOuv_ = 0, lastInv_ = 0, lastPieces_ = 0, piecesInv_ = 0, lastVie_ = 0;   // lastVie_ : WFS-176

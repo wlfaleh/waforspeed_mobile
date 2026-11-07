@@ -220,6 +220,15 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     size_t nb = 0; for (auto& v : items_) nb += v.size();
     WFS_LOG("Carte %s : %zu objets de décor, %zu zones", carteId(), nb, ranges.size());
     WFS_LOG("Carte %s : %s%s", carteId(), night_ ? "nuit" : "jour", depart_ ? " (départ avancé, banc d'essai)" : "");
+    if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
+        limiteTour_ = L;
+        lots_.preparer(r, *track_, P_COUNT, 4, [this](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
+            Geo out[P_COUNT];
+            buildChunk(*track_, c, lod, out);
+            for (int p = 0; p < P_COUNT; p++) { v[p] = std::move(out[p].v); i[p] = std::move(out[p].i); }
+        }, carteId());
+        limiteTour_ = INT64_MAX;
+    }
 }
 
 // WFS-256 (accroche) : objets communs : arbre (tronc de 25 à 30 cm de rayon ; cyprès 15 cm), lampadaire de village (mât de
@@ -350,7 +359,7 @@ void CarteDecor::lampe(const Pose& p, int s, bool flood, Geo out[P_COUNT]) const
 
 // ---------------------------------------------------------------- morceaux (buildChunk de renderer.js)
 void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
-    const int64_t a0 = c * CH, a1 = a0 + CH, L = len();
+    const int64_t a0 = c * CH, a1 = std::min(a0 + CH, limiteTour_), L = len();   // WFS-268 : borné au tour à la préparation
     const char* z = zone(a0);   // tout le morceau est dans la même zone (zones alignées sur les morceaux)
     const float R = (float)RW;
     for (int64_t a = a0; a < a1; a++) {
@@ -439,6 +448,14 @@ void CarteDecor::render(Renderer& r, const GameView& g) {
             it = chunks_.erase(it);
         } else ++it;
     }
+    if (lots::g_lotsDecor && lots_.pret()) {   // WFS-268 : blocs préparés au chargement, aucune création en course
+        int draws = lots_.dessiner(t, pc * CH, BEHIND * CH, (AHEAD + 1) * CH - 1, LOD_FAR_M,
+                                   [&](int p, const Mesh& m, const mat4& M) { r.draw(m, mats_[p], M); });
+        draws += animes(r, g, pc - BEHIND, pc + AHEAD);
+        lastDraws_ = draws;
+        if (frame_ % 300 == 1) { unsigned long long cm, cmat; lots_.creationsEnCourse(r, cm, cmat); WFS_LOG("Carte %s : %d appels de dessin (%d blocs préparés) ; créations en course (tout le jeu) : %llu maillages, %llu matériaux", carteId(), draws, lots_.blocs(), cm, cmat); }
+        return;
+    }
     std::vector<int64_t> missing; std::vector<char> lods;
     for (int64_t c = pc - BEHIND; c <= pc + AHEAD; c++) if (!chunks_.count(c)) { missing.push_back(c); lods.push_back(std::abs(c - pc) * CH * SEG_M > LOD_FAR_M); }
     if (!missing.empty()) {
@@ -468,6 +485,7 @@ void CarteDecor::shutdown(Renderer& r) {
     r.vk().waitIdle();
     for (auto& [k, ch] : chunks_) for (Mesh& m : ch.m) if (m.vb.buf) r.destroy(m);
     chunks_.clear();
+    lots_.liberer(r);   // WFS-268
     for (auto& gm : graveyard_) r.destroy(gm.second);
     graveyard_.clear();
     for (Material& m : mats_) r.destroy(m);   // WFS-187 (accroche) : jeux de descripteurs rendus

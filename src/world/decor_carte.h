@@ -19,6 +19,7 @@
 #include "../core/system.h"
 #include "../game/track.h"
 #include "../game/chocs_decor.h"   // WFS-256 (accroche)
+#include "../render/lots_decor.h"   // WFS-268 : décor fixe préparé au chargement
 #include "../render/renderer.h"
 #include "giratoire.h"   // WFS-248 : giratoires reconstruits
 #include "vegetation.h"
@@ -144,7 +145,9 @@ private:
     std::vector<std::vector<Item>> items_;   // objets de chaque segment de la piste
     std::vector<chaussee::Axe> serres_;   // WFS-212 : axe de la route autour des sections repliées (chaussee.h)
     struct Chunk { std::array<Mesh, P_COUNT> m{}; bool lod = false; };
-    std::map<int64_t, Chunk> chunks_;
+    std::map<int64_t, Chunk> chunks_;   // ancienne gestion (repli, lots::g_lotsDecor = false)
+    lots::DecorFixe lots_;   // WFS-268 : décor du tour 0, préparé au chargement
+    int64_t limiteTour_ = INT64_MAX;   // WFS-268 : fin des morceaux (= len() pendant la préparation : dernier morceau borné au tour)
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frame_ = 0;
 };
