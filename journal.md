@@ -3122,3 +3122,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 01:48:17 — WFS-161 : arbitrages du PO (référentiel d'architecture, textures) (po-scrum-master)
 - `references/reel/architecture.json` autorisé (exception de zone ; règles de `SOURCES.md`). Textures : dépôts GitHub publics d'abord, sinon procédurales calibrées sur `materiaux.json`, provisoires. Écrit dans `regles-de-gestion/WFS-161.md`.
+
+### 2026-11-07 01:52:42 — WFS-161 (ST-1) : règles d'assemblage poussées ; arbitrages du PO reçus (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 502079a) : `src/world/archi_kit.h/.cpp` (6 styles, hauteurs RG-01, travées dans la plage du style avec murs de rive, modules de RDC / étage / toiture, ouvertures par travée et par niveau, linteau 0,2 m, trumeau 0,3 m) et `tests/archi_kit.cpp` (6 styles × 400 graines, 210 584 contrôles, 0 échec ; M-01 tenu). Le test a trouvé un défaut de règle, corrigé : certaines largeurs ne se découpent pas en travées de la plage → murs pleins de rive, comme un vrai bâtiment. 40 tests CPU verts ; branche synchronisée avec `main` (d213cd8).
+- **Exception de zone accordée par le PO** (01:48:17) : création de `references/reel/architecture.json` (hors zone E12), règles de `SOURCES.md`, `test_fidelite` vert. Textures : GitHub d'abord, sinon procédurales provisoires avec l'avis d'expert-realisme-3d.
+- **Suite** : ST-1 géométrie (`archi_geo.cpp` : murs percés, tableaux en retrait, appuis, corniches, toitures, édicules) et `architecture.json` (M-02).
