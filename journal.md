@@ -2502,3 +2502,44 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:09:28 — WFS-217 : réglage seulement dans le menu Réglages du jeu (po-scrum-master)
 - **Précision de l'utilisateur** : le joueur active ou désactive l'aide dans le menu Réglages ; pas de clé dans `configgame.json`. RG-03 réécrite, zone et critères ajustés.
+
+### 2026-11-07 09:13:12 — WFS-161 (ST-3) : intérieurs de nuit ; risque signalé sur les phares (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 09bfda6, synchronisée ee522b5) :
+  - `shaders/decor.glsl` (E12) : `interieurFenetre`, « interior mapping » (van Dongen, CGI 2008). Le regard est prolongé dans une pièce de 4 m derrière chaque vitre (murs, sol, plafond, meuble bas au hasard), sans triangle de plus. Nuit : lampe à 2850 K (`couleurTemperature` de WFS-151), murs à 31,8 cd/m² (E = 200 lx, ρ = 0,5 : **valeur de conception**, M-04 reste « non mesurable »), exposition physique ; 35 % de fenêtres allumées (conception, en attendant l'heure de WFS-152). Jour : 2 % de la lumière du ciel (facteur de lumière du jour) ; la vitre garde son reflet de l'IBL (mélange de Fresnel).
+  - **Accroches annoncées** : `MAT_INTERIEUR` dans `src/render/renderer.h` (1 ligne) ; `shaders/scene.frag` (2 lignes : appel de la pièce, émission de la vitre non ajoutée en surface).
+  - `archi_geo.cpp` : uv des vitres = largeur, allège, hauteur de la baie (dm) + position relative ; `test_archi_geo` : 4 481 814 contrôles, 0 échec ; 45 tests CPU verts.
+- **Captures regardées** : nuit, fenêtres allumées au hasard, pièces visibles, lumière chaude ; jour, vitres sombres, pièce dans l'ombre.
+- **Risque signalé au PO** (hors zone, rien modifié) : les murs clairs du banc sont presque blancs la nuit, même sans fenêtre allumée (essai `WFS_ARCHI_ALLUMEES=0`). Cause : le phare du joueur (`src/render/nuit.cpp:131`) est un projecteur à cône de 40°, portée 170 m, **sans coupure horizontale**. Il éclaire les façades jusqu'aux toits, alors qu'un feu de croisement coupe sous l'horizon. Proposition : un ticket pour le propriétaire des feux (coupure du faisceau). En attendant, les albédos provisoires des murs (ST-4) seront calibrés pour ne pas aggraver le défaut.
+- **Suite** : ST-4, matériaux (textures CC0 cherchées sur GitHub ; sinon procédurales calibrées, provisoires).
+
+### 2026-11-07 09:13:45 — WFS-218 créé : phares du joueur en feux de croisement (risque signalé par Agent 0) (po-scrum-master)
+- **Signalé par Claude, Agent 0 developer** (WFS-161) : la nuit, façades claires au bord de la route presque blanches ; phare du joueur `nuit.cpp:131` = cône 40°, 170 m, sans coupure.
+- **WFS-218** (E4, P2 Haute, ⏳ Prêt, `regles-de-gestion/WFS-218.md`) : coupure de croisement réglementaire, portée utile 60-80 m, autres feux inchangés, captures avant / après de nuit. Agent 0 continue WFS-161 (ST-4 matériaux) sans toucher à `nuit.cpp`.
+
+### 2026-11-07 09:17:45 — WFS-190 fermé : but atteint au run #799 ; agent arwa libre (po-scrum-master)
+- **Accord de l'utilisateur** : fermer WFS-190. Le run #799 de `main` est vert de bout en bout (endurance comprise, avec WFS-145 et WFS-187) ; le dernier rouge (banc des passes) a été réglé par #170 et WFS-200. Aucun travail restant.
+- **Fait** : WFS-190 ✅ Terminé (CI main #799), ligne déplacée dans `archive/taches-terminees.md` ; ordre urgent retiré du haut de `TACHES.md` ; agent arwa **libre** dans `track-agent.md`. **Agent arwa** : plus rien à faire sur WFS-190, demande ton prochain ticket au PO.
+
+### 2026-11-07 09:17:55 — Statuts automatiques, CI main #816 (robot statuts)
+- Run rouge (schedule, commit 4d8bb7c), aucun statut changé. Job(s) en échec : endurance.
+- Tickets 🟣 contenus dans ce run : WFS-208, WFS-211.
+
+### 2026-11-07 09:25:42 — WFS-194 confirmé : le jeu pourra être vendu ou avoir pub / achats (décision de l'utilisateur) (po-scrum-master)
+- **Décision de l'utilisateur** : vente, publicité ou achats possibles (dit la veille ; confirmé ce matin). Les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) doivent être remplacés.
+- **WFS-194** : P4 conditionnelle → **P2 Haute**, dépendance « décision » retirée ; reste « après WFS-158 » (même épic E10). Voie par défaut : modèles CC0 / CC BY trouvés dans les dépôts GitHub publics (`modeles-3d-github.md`).
+- Note du PO : je n'avais pas retrouvé cette décision de la veille dans mes notes ; elle est maintenant écrite dans les règles du ticket.
+
+### 2026-11-07 09:27:26 — WFS-194 découpé : lot 1 WFS-219 prêt tout de suite, lot 2 après WFS-158 (po-scrum-master)
+- **Demande de l'utilisateur** : commencer une partie de WFS-194 avant WFS-158.
+- **WFS-219** (E10, P2, ⏳ Prêt, exception PO : 2e ticket E10, **fichiers neufs seulement** `assets/cars/remplacants/**`, `assets/licences/remplacants/**`) : recherche dans les dépôts GitHub publics, licences CC0 / CC BY, conversion avec les outils existants sans les modifier, mesures ±1 %, avis d'expert-realisme-3d ; **rien de branché**, le jeu ne change pas.
+- **WFS-194** devient le lot 2 (branchement dans `cars.h`), après WFS-158 et WFS-219. Aucun conflit possible avec arwa-2 : aucun fichier commun.
+
+### 2026-11-07 09:28:22 — WFS-161 (ST-4) : textures scannées CC0 trouvées sur GitHub, téléchargement bloqué par l'accès (Claude, Agent 0 developer)
+- **Rappel (PO, 09:13)** : l'éblouissement des façades sur les captures de nuit de WFS-161 vient des phares du joueur (**WFS-218**), pas du kit.
+- **Trouvé** (recherche de code GitHub) : dépôt public `dunkean/magna-urbis`, dossier `assets/materials/buildings/` : 57 jeux PBR scannés (Poly Haven, ambientCG), **licence CC0-1.0 lue dans le `material.json` de chaque jeu** (champ `provenance` : page, licence, auteurs), fichiers originaux non modifiés, taille réelle en mètres. Choix : `white_sandstone_bricks` (classique), `white_plaster_rough_01` (méditerranéen), `stone_wall` (village), `brick_wall_001` (industriel), `white_plaster_02` (villa), `clay_roof_tiles_02` (tuiles) ; couleur, normales, rugosité en 1 024 px (18 fichiers, 33,7 Mo).
+- **Bloqué** : les images sont stockées en Git LFS. Clone partiel en lecture seule (règles réseau § 2.4) : on obtient les pointeurs LFS, dont l'identifiant est bien l'empreinte SHA-256 annoncée, mais pas les images. L'API LFS répond **403 « access denied by the git proxy : dunkean/magna-urbis is not in this session's authorized repository set »**. L'ajout du dépôt aux sources de la session m'a été refusé. Je ne contourne pas (§ 3.3). **Question posée à l'utilisateur** : autoriser l'ajout de `dunkean/magna-urbis` en lecture à la session.
+- **En attendant** (repli autorisé par le PO à 01:48) : textures procédurales calibrées sur `materiaux.json`, **provisoires**, et salissures en pied de mur et coulures sous les appuis (RG-04), dans `decor.glsl`.
+- Aucun fichier téléchargé n'entre dans le dépôt (seulement des pointeurs de 131 octets, dans le bac à sable de la session).
+
+### 2026-11-07 09:35:31 — Statuts automatiques, CI main #815 (robot statuts)
+- Run vert (push, commit 6ddbeec) : WFS-208 ✅ (PR #183, 6ddbeec), WFS-211 ✅ (PR #182, abd8570).

@@ -118,8 +118,6 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
-> 🔴 **(remplacé : correction confiée à Agent 0, WFS-200)** Ordre de l'utilisateur (2026-11-06 23:12 UTC) à l'agent arwa** : corriger tout de suite le rouge de la CI de `main` (banc des passes WFS-150, job `banc-essai (realisme)`) — détail dans `regles-de-gestion/WFS-190.md`.
-
 ## Tableau (par numéro de ticket)
 
 **Priorités (comme Jira)** : **P1 Urgent** (bloque le MVP) · **P2 Haute** · **P3 Moyenne** · **P4 Basse**. À priorité égale, on prend le plus petit numéro de ticket.
@@ -148,16 +146,15 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-165 | [RÉALISME 4.P2] Personnages : animations en capture de mouvement, mélanges, pieds au sol … | E11 | ⏳ En attente |  | WFS-164 validée | `feature/waforspeed-165` |  |  |
 | P2 Haute | WFS-166 | [RÉALISME 4.P3] Personnages : comportements (trajets, feux, groupes, réactions, densité … | E11 (+ lecture E3) | ⏳ En attente |  | WFS-165 validée | `feature/waforspeed-166` |  |  |
 | P2 Haute | WFS-167 | [RÉALISME 5] Harmonisation et validation finale par carte : rapport complet ≥ 99 % … | E13 | ⏳ En attente |  | WFS-148 à WFS-166 validées | `feature/waforspeed-167` |  |  |
-| P1 Urgent | WFS-190 | [CI ROUGE] Remettre la CI de `main` au vert de bout en bout : job `endurance` rouge au … | E7 (exception PO : WFS-185 🟣 … | 🔧 En cours | agent arwa (Claude, session trafic) | WFS-145 🟣, WFS-187 🟣 | `feature/waforspeed-190` |  |  |
 | P2 Haute | WFS-192 | Voitures sans marque (2/4) : logos effacés ou remplacés sur les 20 modèles | E10 | ⏳ En attente |  | WFS-191, WFS-158 | `feature/waforspeed-192` |  |  |
 | P3 Moyenne | WFS-193 | Voitures sans marque (3/4) : petites retouches de forme (calandre, feux, jantes) … | E10 | ⏳ En attente |  | WFS-192 | `feature/waforspeed-193` |  |  |
-| P4 (conditionnelle) | WFS-194 | Voitures sans marque (4/4) : remplacer les 5 modèles sous licence non commerciale … | E10 | ⏳ En attente |  | décision de l'utilisateur, WFS-158 | `feature/waforspeed-194` |  |  |
+| P2 Haute | WFS-194 | Voitures sans marque (4/4) — lot 2 : brancher les 5 nouveaux modèles à la place des modèles non commerciaux | E10 | ⏳ En attente (après WFS-158, même épic E10 ; décision de l'utilisateur prise) |  | WFS-158, WFS-219 | `feature/waforspeed-194` |  |  |
 | P2 Haute | WFS-195 | [RÉALISME] Vue cockpit réaliste : volant en cuir et cockpit digital propres à chaque … | E10 (+ E3 `camera_vue.*`) | ⏳ En attente (découpée : lot 1 WFS-197 🟣, lot 2 WFS-201 ✅, lot 3 WFS-202 🟣) |  | WFS-66 ✅, WFS-98 ✅ | `feature/waforspeed-195` |  |  |
 | P2 Haute | WFS-205 | [RÉALISME 2.R1a] Routes (1/2) : revêtements réels calibrés, bibliothèque KTX2, mélange sans répétition | E9 | ✅ Terminé (CI main #808) | Claude, agent 2 (01UY1Vv5), 2026-11-07 01:17 UTC | WFS-151 ✅ | `feature/waforspeed-205` |  |  |
 | P2 Haute | WFS-206 | [RÉALISME 2.R1b] Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte | E9 (+ accroche `track.cpp`) | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 08:20 UTC | WFS-205 ✅ | `feature/waforspeed-206` |  |  |
-| P2 Haute | WFS-208 | [RÉALISME 1.2b] Lumière (2/2) : 6 moments et heure réelle, passage continu, lumières selon l'éclairement, nuages | E13 (+ accroches E8 `terrain.cpp`, E4 `nuit.cpp`) | 🟣 Fusionné (PR #183, fusion par confiance) | Claude, agent 1 (01UY1Vv2), 2026-11-07 04:43 UTC | WFS-207 ✅ | `feature/waforspeed-208` | #183 |  |
+| P2 Haute | WFS-208 | [RÉALISME 1.2b] Lumière (2/2) : 6 moments et heure réelle, passage continu, lumières selon l'éclairement, nuages | E13 (+ accroches E8 `terrain.cpp`, E4 `nuit.cpp`) | ✅ Terminé (CI main #815) | Claude, agent 1 (01UY1Vv2), 2026-11-07 04:43 UTC | WFS-207 ✅ | `feature/waforspeed-208` | #183 |  |
 | P2 Haute | WFS-209 | [RÉALISME 4.P1a] Personnages (1/3) : humains CC0 (MakeHuman), squelette reciblé, 12 morphotypes aux tailles réelles | E11 | ✅ Terminé (CI main #811) | Claude, agent 2 (01UY1Vv5), 2026-11-07 05:44 UTC | WFS-151 ✅ | `feature/waforspeed-209` |  |  |
-| P2 Haute | WFS-211 | [RÉALISME 4.P1a-2] Personnages (2/3) : 3 niveaux de détail, peau (M-03), humains réalistes chez les conducteurs | E11 | 🟣 Fusionné (#182) | Claude, agent 2 (01UY1Vv5), 2026-11-07 07:48 UTC | WFS-209 ✅, WFS-73 ✅ | `feature/waforspeed-211` |  |  |
+| P2 Haute | WFS-211 | [RÉALISME 4.P1a-2] Personnages (2/3) : 3 niveaux de détail, peau (M-03), humains réalistes chez les conducteurs | E11 | ✅ Terminé (CI main #815) | Claude, agent 2 (01UY1Vv5), 2026-11-07 07:48 UTC | WFS-209 ✅, WFS-73 ✅ | `feature/waforspeed-211` |  |  |
 | P2 Haute | WFS-210 | [RÉALISME 4.P1b] Personnages (3/3) : vêtements par lieu, peau translucide, cheveux et yeux | E11 | 🔧 En cours | Claude, agent 5 (011cpqZaDiS2), 2026-11-07 08:40 UTC | WFS-209 ✅ | `feature/waforspeed-210` |  |  |
 | P1 Urgent | WFS-212 | Correction : rien sur la chaussée (place de la fontaine Ville, végétation rond-point Campagne, sol épingle Plage) | E2 | ✅ Terminé (CI main #813) | Claude, agent 2 (01UY1Vv5), 2026-11-07 06:53 UTC | — | `feature/waforspeed-212` |  |  |
 | P1 Urgent | WFS-213 | Correction : écran blanc après le chargement d'une voiture (exposition de WFS-151) | E13 | 🔧 En cours | Claude, agent 1 (01UY1Vv2), 2026-11-07 08:24 UTC | — | `feature/waforspeed-213` |  |  |
@@ -165,6 +162,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport (ANO-107, ANO-110) | E10 | ⏳ Prêt (dès que E10 est libre) |  | — | `feature/waforspeed-215` |  |  |
 | P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | ⏳ En attente |  | WFS-212 | `feature/waforspeed-216` |  |  |
 | P1 Urgent | WFS-217 | Conduite : corriger le « guide auto » (aide à la direction) dans les virages serrés et ronds-points + réglage Activée / Désactivée | E3 (+ accroche E8 `reglages.cpp`) | ⏳ Prêt |  | — | `feature/waforspeed-217` |  |  |
+| P2 Haute | WFS-218 | Correction : phares du joueur en vrais feux de croisement (coupure du faisceau), façades éblouies la nuit | E4 | ⏳ Prêt |  | — | `feature/waforspeed-218` |  |  |
+| P2 Haute | WFS-219 | Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles (rien de branché) | E10 (exception PO : fichiers neufs `remplacants/`, à côté de WFS-158) | ⏳ Prêt |  | — | `feature/waforspeed-219` |  |  |
 
 ## Critères d'acceptation
 
