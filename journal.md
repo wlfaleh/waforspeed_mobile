@@ -2652,3 +2652,22 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 10:23:03 — WFS-221 : cadence réelle du téléphone de l'utilisateur = 10 img/s en Haute (po-scrum-master)
 - Capture des Réglages envoyée par l'utilisateur : « Rendu : Haute · 100 % · MSAA ×4 · 10 img/s · chauffe 1 » (`qa/retours/2026-11-07-reglages-rendu-10ips.jpg`). Ajoutée à WFS-221 comme point de départ ; la baisse automatique de qualité ne remonte pas la cadence, à vérifier (RG-07).
+
+### 2026-11-07 10:24:48 — WFS-158 : livraisons 6 et 7 fusionnées par confiance (PR #186, 3f6347e ; PR #187, 2d2d052) : plaques des 20 voitures, T-Cross à sa vraie taille (arwa-2)
+- **Reprise** : branche synchronisée et poussée à 09:47 UTC (e876436), moins de 11 h après le dernier commit.
+- **Livraison 6 (ST-3, M-04)** : `tools/plaques_voitures.mjs` pose une plaque là où le modèle n'en a pas.
+  - **Méthode** : rayons sur une grille de 11 × 5 points du rectangle de 520 × 110 mm, plan ajusté sur la surface la plus en avant du bouclier, plaque posée 3 mm devant, en double face. Hauteur de chaque plaque : sur le porte-plaque du modèle s'il y en a un (porte-plaques noirs de la Golf et de l'Elantra, logement du hayon du X5, porte-plaque gris de la GT86), sinon sur la zone la plus plate du bouclier.
+  - **Plaques de concession masquées** : « T-Cross » et « 途铠 » du T-Cross, dans l'atlas partagé du matériau 10 (42 triangles).
+  - **Plaques posées** : avant et arrière de la Golf (BJ-276-WC), de la Gallardo (DL-865-ZP), du T-Cross (FT-148-CX), du X5 (HB-530-RV) et de la GT86 (CG-861-PZ) ; avant de l'Elantra, de la Mustang, de la M4, de la SF90 et de la Model 3.
+  - **Résultat** : **les 20 voitures ont une plaque avant et une plaque arrière au format** (M-04 : 40 / 40).
+  - **Vide sous la plaque** : au plus 43 mm (SF90, devant ses entrées d'air), 6 à 18 mm ailleurs.
+  - **`.lod` refaits** pour la Golf, la M4, la Gallardo et le X5 : un maillage de plus, le moteur refuse un `.lod` au mauvais nombre de maillages.
+  - **2e passage de la correction ST-2 après les plaques** : la plaque allonge la voiture de quelques millimètres (longueur hors tout). GT86 × 0,9975 et Gallardo × 0,9995 ; 113 / 141 mesures gardées.
+- **Livraison 7 (note du PO de 01:17:53, signalement de WFS-202)** : le T-Cross du jeu est le T-Cross chinois à empattement long de SAIC-VW.
+  - **Choix** : le référentiel suit la version du modèle. `FICHE-TCROSS` : 4218 × 1760 × 1599 mm, empattement 2651, voies 1533 / 1512. Sources : autocango.com (fiche 2023 1.4T) et auto.ru (« T-Cross I (China Market) »), concordantes ; pages lues dans le résumé du moteur de recherche, non ouvertes.
+  - **Conversion** : reconverti à 4,218 m par `convertir_voitures.sh`, qui reproduit le fichier à l'identique.
+  - **Mesures** : 5 / 8 (avant 4 / 8 contre la fiche européenne) ; restent hauteur −2,8 % et voies −3 % (RG-05).
+- **Pour le PO** : la boîte de collision du T-Cross dans `src/game/cars.h` et `src/game/traffic.h` (4,11 m, zone E3) a 10 cm de moins que la carrosserie. À changer par un ticket E3 si besoin ; je n'y touche pas.
+- **Indice voitures** : 114 / 141 (80,9 %), pneus posés 20 / 20, 5 modèles aux proportions fausses (RG-05 : M4, 911, 208, Model 3, SF90).
+- **Preuves** : captures locales (lavapipe, 2400 × 1080) des vues de face et arrière, avant / après, des 10 voitures et du T-Cross ; 42 tests CPU OK.
+- **Suite** : ST-3 (étriers, intérieurs, sous-caisse), ST-4 (LOD 4 niveaux), ST-5 (test strict).
