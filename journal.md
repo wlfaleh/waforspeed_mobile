@@ -2473,3 +2473,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 08:45:29 — Statuts automatiques, CI main #813 (robot statuts)
 - Run vert (push, commit 9088ef9) : WFS-212 ✅ (PR #181, 9088ef9).
+
+### 2026-11-07 08:51:02 — Sites refusés par l'utilisateur ; essuie-glaces plausibles par voiture (po-scrum-master)
+- **Décision de l'utilisateur** : `eurospares.co.uk` et `wipersizechart.com` refusés ; pas besoin du vrai essuie-glace, un essuie-glace au hasard (plausible) par voiture.
+- **Fait** : règle ajoutée à WFS-195, 197, 201 (essuie-glace plausible et varié, statut `conception`, hors indice de fidélité) ; sites inscrits comme refusés dans `regles-reseau.md` § 8. `tache utilisateur.md` : réponse écrite ; les 2 demandes closes (sites, noms des voitures) déplacées dans `archive/tache-utilisateur-repondu.md`.
