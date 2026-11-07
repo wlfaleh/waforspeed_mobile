@@ -3535,3 +3535,30 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:40:06 — WFS-256 : exception de zone E2 accordée à l'agent dev conduite (po-scrum-master)
 - ≈ 25 lignes par carte (`solide(objet)`) dans `plage.cpp`, `campagne.cpp`, `circuit.cpp` + 3 lignes dans `decor_carte.*` : ajout seul, aucun dessin changé ; E2 libre.
+
+### 2026-11-07 16:51:25 — WFS-256 : inventaire et causes (RG-01), chocs faits sur la branche, CI de branche run 857 (Claude, agent dev conduite)
+- **Inventaire** (bord de la carte : la voiture ne dépasse pas 12,75 m de l'axe en Ville, 12 m à la Corniche, 10,35 m en Campagne, 12,45 m au Grand Prix ; tout objet au-delà est hors de portée) :
+  - **Ville** : lampadaires (RW + 0,8), platanes (RW + 3,6), abribus, bancs, grilles et grillages, arbres du parc, fontaines, poteaux des panneaux néon, mâts des feux, panneaux « sens giratoire », glissières et séparateur béton de l'autoroute, piédroits du tunnel, garde-corps du pont, immeubles (façades à RW + 6,5 : hors de portée) ;
+  - **Corniche** : palmiers, lampadaires, mâts des feux, bornes, glissières courtes et continue côté mer, pins et arbres, rochers, villas, piédroits du tunnel ;
+  - **Campagne** : lampadaires, poteaux, panneaux, balises J6, panneaux A1, feux, panneau bleu d'autoroute, clôtures, haies, glissières, murets, fermes, maisons, commerces, éoliennes, séparateur béton de l'autoroute, piliers du péage, arbres ;
+  - **Grand Prix** : murs de pneus, panneaux publicitaires, mur des stands, panneaux de freinage, pieds du portique de départ et de la passerelle, mâts des drapeaux, grillages, projecteurs, arbres ;
+  - **îlots des ronds-points** (Ville, Campagne, Corniche) ; voitures : trafic, adversaires (course à 5), police.
+- **Causes** : (1) hors de la Ville, **aucun** objet du bord n'avait de forme de choc ; (2) Ville : test hérité du jeu web (`ville.cpp` collide) sur le seul latéral, seulement hors de la chaussée, au-dessus de 1/6 de la vitesse maximale, ignoré au pilote, avec une remise en piste scriptée ; lampadaires, platanes et néons seulement ; (3) îlots des ronds-points sans forme (la voiture passait dessus) ; (4) adversaires et police (`duel::contacter`) : écart partiel par pas et, en conduite réelle, vitesse latérale gardée : la voiture rentrait dans l'autre (0,59 m mesuré) ; (5) le trafic, lui, ne se traverse pas (mesuré : 0 m à 60, 150 et 250 km/h).
+- **Fait** (branche `feature/waforspeed-256`) : `src/game/chocs_decor.h` (registre par segment, valable à chaque tour ; test continu tous les 10 cm ; réaction de corps rigide : glisse le long des murs, s'arrête contre les poteaux, restitution qui baisse avec la vitesse) ; `chocs_declaration.cpp` (Ville, îlots, mêmes filtres que le dessin : aucun mur invisible) ; `chocs_cartes.cpp` (système : règles de course : frottement, petit choc, accident à 50 km/h et plus) ; accroches autorisées par le PO : `plage.cpp` (+31), `campagne.cpp` (+28), `circuit.cpp` (+23), `decor_carte.*` (+28), `ville.cpp` (+1 : ancien test 1D coupé en conduite réelle) ; `player.cpp` : contrainte de contact entre voitures. Banc `WFS_BANC=chocs` (+ `desktop_main.cpp` 2 lignes, `build.yml` 1 ligne).
+- **Mesures (CPU)** : poteau de 10 cm à 300 km/h : pas traversé ; Ville : poteau, arbre, mobilier, mur, îlot arrêtés à 30 / 80 / 150 km/h ; îlots des 3 ronds-points arrêtés ; tours complets au pilote (Golf, SF90) sur les 4 cartes et lignes idéales des 6 virages : **0 choc** (aucun mur invisible) ; adversaire côte à côte : recouvrement 0,59 m → 0,000 m. 46 tests CPU OK.
+- **CI de branche run 857** (confiance ≤ 50 % : décor de la Corniche, de la Campagne et du Grand Prix déclaré au chargement, vérifiable seulement avec le GPU) : banc `chocs` des 4 cartes, parcours, captures.
+
+### 2026-11-07 16:52:32 — WFS-250 fusionné (PR #215) : le jeu compilé une seule fois par run (agent expert ci)
+- **Preuve** : CI de branche run 849 : 13 bancs et endurance verts sur l'archive ; job `compilation` 3 min (dont 2 min 30 de compilation) ; étape « Jeu compilé (archive vérifiée) » < 1 s par banc, au lieu de 1,5 à 3 min de compilation par banc avant (runs #828, #840) : ≈ 30 min de lanceur gagnées par run. Notification d'APK sautée sur la branche (WFS-238, RG-02 prouvée).
+- **Synchronisation** : ligne du banc conduite de WFS-241 (ajoutée à `build.yml` sur main) gardée ; elle utilise l'archive.
+- **À suivre** : durée du prochain run de main.
+
+### 2026-11-07 16:52:57 — WFS-241 et WFS-253 refusés par l'utilisateur (KO) : arrêt, WFS-256 suspendu (Claude, agent dev conduite)
+- L'utilisateur a répondu « KO » dans ma session, en désignant la conduite (WFS-241) et les freins / ABS / ESP (WFS-253) ; WFS-255 non cité. Pas de détail donné.
+- Règle des KO appliquée : je m'arrête ; le PO décide de la suite (anomalie, US de correction). WFS-256 (chocs) arrêté sans fusion : branche `feature/waforspeed-256` gardée (17c1334, 46 tests CPU OK) ; CI de branche run 857 annulée (base refusée).
+- Repli possible pour l'analyse : `g_conduiteMonde = false` (`src/game/player.h`) rend l'ancien modèle à la voiture du joueur.
+
+### 2026-11-07 16:53:37 — WFS-241 et WFS-253 refusés par l'utilisateur : ANO-131, ANO-132, WFS-258, WFS-259 (po-scrum-master)
+- Refus transmis par l'agent dev conduite (≈ 17:00 UTC). Règle des KO : nouvelles US, autre développeur. Détails demandés à l'utilisateur avant de coder (WFS-258, 259 ⏳ En attente).
+- WFS-255 (sons) non cité : reste 🟡. WFS-256 (chocs) repris par le même agent (ticket non refusé).
+- Repli possible : `g_conduiteMonde = false` (ancien modèle), décision de l'utilisateur demandée.

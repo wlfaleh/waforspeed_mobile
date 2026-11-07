@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 16:35:47 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 16:53:37 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -30,7 +30,7 @@
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes) ; test de la fenêtre de la rue sur les 20 intérieurs | 235 : 16:11 (haut du pare-brise, test des 20 intérieurs) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 15:41 (CI de branche run 848) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-256 | P1 : chocs avec tout ce qui se touche (ANO-129) ; WFS-241, 253, 255 🟡 | 256 : branche poussée 16:2x | 🔴 en cours (P1) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-256 | P1 chocs avec le décor et les voitures (reprise après le refus de WFS-241 et 253, qui partent à un autre développeur : WFS-258, 259) | 256 : 17c1334 (16:5x) | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
 
@@ -54,7 +54,7 @@
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 ; avis sur WFS-236 et 237 |
-| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 15:47 : **WFS-250** 🔧 (CI de branche run 849 en cours ; 250 : 15:45, 82b1f20) ; **WFS-251** 🔧 ensuite (exception de l'utilisateur : `bench_realisme.cpp` + accroche `desktop_main.cpp` seulement) ; WFS-252 réservé (après WFS-250 et 251) ; WFS-237 ✅ |
+| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 16:52:32 : WFS-250 🟣 fusionné (PR #215) ; WFS-251 🔧 (comparaison locale lavapipe en cours) ; WFS-252 ensuite |
 
 ## Info pour les développeurs (2026-11-06 23:47 UTC)
 - Le rendu se vérifie **en local** avec lavapipe : `mesa-vulkan-drivers` et `glslc` s'installent dans le conteneur (paquets apt), puis `WFS_BANC=<groupe> build/wfs_bench` (même rendu logiciel que la CI ; testé par Claude, agent 2 sur WFS-197).

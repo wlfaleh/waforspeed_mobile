@@ -38,9 +38,37 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  # WFS-250 : le jeu est compilé une seule fois par run (avant : 13 fois, une par banc et pour l'endurance) ; les bancs et
+  # l'endurance reçoivent une archive tar (droits d'exécution gardés) de wfs_bench et de tous les build/test_* (shaders inclus
+  # dans le binaire, CMakeLists.txt), avec la liste des tests pour vérifier à l'arrivée (tools/qa/verifier_compilation.sh)
+  compilation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel, compilateur de shaders)
+        # WFS-237 (RG-05) : 5 min au plus par essai, 2 essais (miroir Ubuntu parfois bloqué, WFS-126)
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - name: Compilation
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
+      - name: Archive (wfs_bench, tests, liste des tests)
+        run: |
+          cd build
+          ls -1 test_* | sort > liste-tests.txt
+          [ -x wfs_bench ] && [ -s liste-tests.txt ] || { echo "::error::wfs_bench ou tests absents après la compilation"; exit 1; }
+          tar -cf ../compilation.tar wfs_bench liste-tests.txt $(cat liste-tests.txt)
+          echo "Archive : wfs_bench et $(wc -l < liste-tests.txt) tests, $(du -h ../compilation.tar | cut -f1)"
+      - uses: actions/upload-artifact@v4
+        with: { name: compilation, path: compilation.tar, retention-days: 1 }
+
   banc-essai:
     name: banc-essai (${{ matrix.groupe }})
     if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne
+    needs: compilation   # WFS-250
     runs-on: ubuntu-24.04
     timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme, run #825) + 2 × 5 min d'installation au pire, et marge
     strategy:
@@ -58,8 +86,10 @@ jobs:
             timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
             [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
           done
-      - name: Compilation
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
+      - uses: actions/download-artifact@v4   # WFS-250 : jeu compilé une seule fois, par le job compilation
+        with: { name: compilation }
+      - name: Jeu compilé (archive du job compilation, vérifiée)
+        run: mkdir -p build && tar -xf compilation.tar -C build && bash tools/qa/verifier_compilation.sh build
       - name: Test de la piste (identique au jeu web)
         if: matrix.groupe == 'texte'
         # WFS-117 : tous les build/test_* (déclarés dans CMakeLists.txt) sont lancés par le script, sans liste à tenir ici
@@ -113,8 +143,9 @@ jobs:
     # WFS-114 : seulement sur main (envoi), la nuit (schedule) et à la demande (workflow_dispatch, branches comprises) ;
     # sauté sur les envois de feature/** et claude/**
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    needs: compilation   # WFS-250 : même binaire Release que les bancs (avant : --target wfs_bench, même réglage Release)
     runs-on: ubuntu-24.04
-    timeout-minutes: 35   # WFS-114 : ≈ 15 min (compilation ≈ 1 min, banc 7 à 12 min sur la CI, une image sur 30) ; WFS-126 : + chauffe ≤ 4 min la nuit, et marge pour apt-get (jusqu'à 12 min vus le 2026-11-05)
+    timeout-minutes: 35   # WFS-114 : ≈ 15 min (compilation ≈ 1 min, faite par le job compilation depuis WFS-250, banc 7 à 12 min sur la CI, une image sur 30) ; WFS-126 : + chauffe ≤ 4 min la nuit, et marge pour apt-get (jusqu'à 12 min vus le 2026-11-05)
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, couches de validation, compilateur de shaders)
@@ -124,8 +155,10 @@ jobs:
             timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers vulkan-validationlayers ninja-build && break
             [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
           done
-      - name: Compilation
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
+      - uses: actions/download-artifact@v4   # WFS-250
+        with: { name: compilation }
+      - name: Jeu compilé (archive du job compilation, vérifiée)
+        run: mkdir -p build && tar -xf compilation.tar -C build && bash tools/qa/verifier_compilation.sh build
       - name: Endurance
         run: tools/qa/endurance.sh ./build/wfs_bench captures assets/
       # WFS-126 (RG-07) : banc de la chauffe (WFS-123, ≈ 3 min) la nuit et à la demande seulement (le job de chaque fusion
