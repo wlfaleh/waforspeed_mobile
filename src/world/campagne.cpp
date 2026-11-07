@@ -150,7 +150,8 @@ protected:
                 archi::carte::poser(n, lateral(pv, s * it.lat, solY(z, n, it.side, it.lat) - 0.2f) - x * (it.w / 2), x, pv.r * -s, it.w, it.d, it.h, archi::Style::Village, (uint32_t)(n * 2 + (it.side > 0))); }
             if (it.t == T_VILLA || it.t == T_COMMERCE || it.t == T_CHURCH || it.t == T_FARM)   // WFS-275 (accroche) : façade côté route (écho)
                 parois::declarer("campagne", len(), n, it.side, it.t == T_CHURCH ? it.lat - 5 : it.t == T_FARM ? it.lat - 4 : it.lat,
-                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 18.f : it.t == T_FARM ? 11.f : it.w);
+                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 18.f : it.t == T_FARM ? 11.f : it.w,
+                                 it.t == T_CHURCH ? 10.f : it.t == T_FARM ? 8.f : std::max(it.d, 6.f), it.t == T_CHURCH ? parois::ALPHA_PIERRE : parois::ALPHA_DUR);   // WFS-278 : obstacle, matériau
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };
