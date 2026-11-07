@@ -3406,3 +3406,31 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Robot** : ✅ par #840 (4 tickets), #842 (1), #826 (4, annulé seulement à la publication, WFS-236).
 - **Reste lent** : #844 en cours depuis 56 min : lanceurs partagés avec les CI de branche #845 (WFS-241) et #849 (WFS-250). Suite : WFS-250 (compilation unique), WFS-251 / 252 (banc realisme en deux).
 - **Défaut mineur** : la liste des tickets du résumé et de la notification est trop large (tickets cités dans les commits de suivi, et run `workflow_dispatch` non compté comme base) ; l'utilisateur dit « pas grave » : non corrigé pour l'instant.
+
+### 2026-11-07 15:58:34 — WFS-227 fusionné (PR #210) : ombres du soleil en cascades, pénombre physique (Claude, agent 2 (01UY1Vv5))
+- **Cascades** (`src/render/eclairage_ombres.h`, calcul pur) : Ultra 4 jusqu'à 250 m, Haute 3 jusqu'à 200 m, Moyenne 2 jusqu'à 100 m.
+  - Sphères de rayon fixe, centre calé sur la grille des texels (stabilité prouvée par le test).
+  - Fondu sur les derniers 15 % de chaque cascade ; atlas 2×2 dans la carte de 2048.
+  - Texels en Haute : 5,4 / 18,5 / 70,8 cm.
+- **Pénombre** (`sunShadow`) : distance de l'occultant estimée par comparaisons à profondeur décalée (dichotomie entre 0,3 et 30 m), puis disque de Poisson de rayon ½ × distance × tan(0,53°), tourné par pixel. Biais exprimés en texels de la cascade.
+- **Coût** (lavapipe, même scène, temps GPU par image) :
+  - main : 440 ms (passe d'ombre 49 ms) ;
+  - Moyenne : 484 ms (+10 %, passe d'ombre 78 ms) ;
+  - Haute : 583 ms (+32 %, passe d'ombre 107 ms) ;
+  - Basse : ombres coupées, aucune perte.
+  - Objets limités à la tranche de leur cascade ; petits objets (< 2 texels) exclus des cascades grossières.
+- **Points pour le PO**
+  - (1) Basse reste sans ombre du soleil (RG-04, aucune perte), ce qui s'écarte de RG-01 (« 1 cascade en Basse ») : décision à écrire dans `regles-de-gestion/WFS-227.md`.
+  - (2) Carte d'ombre Android passée de 1024 à 2048 (+6 Mo, remplissage × 4) : à vérifier sur téléphone avec WFS-222 (P1, performance). Les mesures ci-dessus viennent de lavapipe, pas d'un GPU de téléphone.
+  - (3) La mesure du scintillement image par image (60 images, écart de luminance chiffré dans `realisme-fidelite.txt`) n'est pas faite. La stabilité est prouvée par le test CPU (décalage par texels entiers) et les captures du travelling.
+- **Immeubles (RG-03)**
+  - Avec le soleil réel de `ville-large`, aucune ombre d'immeuble ne se voit : elles tombent du côté caché.
+  - Vérifié avec un soleil bas forcé (essai local, retiré) : les immeubles portent bien de grandes ombres dans les cascades lointaines.
+- **Accroches annoncées**
+  - `shaders/common.glsl` et `src/render/frame_ubo.h` : champs des cascades.
+  - `src/render/renderer.cpp` et `.h` : matrices, passe par tuile, bits de cascade dans `vis` (16 << k, après `VIS_CAPTURE` de WFS-222), carte de 2048 sur Android.
+  - `shaders/shadow.vert` et `shadow_skin.vert`.
+  - `src/ui/ecrans/reglages.cpp` : `niveauOmbres`, 1 ligne.
+  - `src/platform/desktop_main.cpp` : banc `ombres`.
+- **Vérifications** : 48 tests CPU ; parcours 0 écart ; banc `realisme` (indices : lumière 100 %, revêtements 100 %, voitures 77,3 %, aucun en baisse) ; avis `expert-realisme-3d` pris en compte (point immeubles vérifié, autres points ci-dessus).
+
