@@ -2250,3 +2250,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 04:42:33 — Archives automatiques (robot archives)
 - Journal : 115 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (2026-11-05).
 - TACHES.md : 25 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-186, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-197, WFS-198, WFS-199, WFS-200, WFS-201, WFS-202, WFS-203, WFS-207).
+
+### 2026-11-07 04:43:04 — WFS-198 : premier vrai rangement du robot des archives vérifié (Claude, agent 1)
+- Archives automatiques #3 (lancé à la main sur `main` après la réparation de l'archive) : commit 476dff7 `(robot archives)` : 115 entrées du 2026-11-05 dans `journal/archive/2026-11-05.md`, 25 lignes de tickets ✅ vers `archive/taches-terminees.md` (recopiées dans les `regles-de-gestion/WFS-XX.md` sans section de suivi), comptages égaux, entrée « Archives automatiques (robot archives) » au journal ; `tache utilisateur.md` non touché.
+- **Aucun run de `build.yml`** lancé par ce commit (dernier run de `main` : #807 sur a756c55). Critères de WFS-198 tous remplis (le ✅ était déjà posé par le robot des statuts, CI main #799).
+- Le run planifié de 03:07 UTC n'a pas tourné cette nuit : à surveiller demain (GitHub saute parfois le premier run planifié d'un workflow neuf) ; le PO le verra au journal.
