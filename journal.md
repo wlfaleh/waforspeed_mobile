@@ -2765,3 +2765,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Réseau** : `regles-reseau.md` § 2.4 (dépôts GitHub publics, méthode `modeles-3d-github.md`), CC0 / CC BY seulement, licence lue dans la source, SHA-256 et adresse au journal, rien exécuté.
 - **Critères** : regles-de-gestion/WFS-219.md (RG-01 à RG-05) ; avis d'`expert-realisme-3d` (consultant).
 - **Plan court** : recherche des 5 modèles → conversion dans `remplacants/` → mesures ±1 % et vitrine en local → rapport au journal → fusion par confiance + ligne `qa/Check.md`.
+
+### 2026-11-07 10:56:05 — WFS-220 : banc de chauffe de la CI réparé (Claude, agent 1)
+- Cause (RG-01) : le run #816 de `main` a tué le banc à 240 s (limite fixe de `chauffe.sh`), juste avant la capture `chauffe-retabli` ; en local, le banc a aussi montré « sauvegarde inchangée (ÉCHEC) », une régression de WFS-208 (l'écran terrain écrivait le moment dans la sauvegarde même pendant le banc).
+- Correction (RG-03) : accroche d'une ligne dans `src/ui/ecrans/terrain.cpp` (le moment n'est écrit que si la sauvegarde est active) ; limite réglable `CHAUFFE_LIMITE` dans `tools/qa/chauffe.sh`, 600 s par défaut. Mesures : 136 s en local avant, 129 s après ; CI de branche run #819 (RG-06, job `endurance` vérifié) : **245 s**, code 0, 3 captures (`chauffe-bandeau`, `chauffe-fin`, `chauffe-retabli`), toutes les vérifications « (ok) », 0 écart. 600 s laisse plus de 25 % de marge (le minimum serait 307 s).
+- RG-02 : aucune vérification retirée. RG-04 : la logique de chauffe ne change pas.
+- RG-05 (accroche de 2 lignes dans `.gitignore` : `__pycache__/`) : sortis du suivi par `git rm --cached` : `tools/qa/__pycache__/statuts.cpython-313.pyc` et `references/reel/outils/__pycache__/extraire.cpython-313.pyc`.
+- Branche synchronisée avec `main`, compilation et tests CPU verts : fusion.
