@@ -58,7 +58,7 @@ struct ApparencePersonnage {
 };
 struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; bool i16 = false; };   // WFS-210 (RG-05) : indices 16 bits   // WFS-82 : sphère englobante (pose de repos × 1,5)
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
-constexpr int SKIN_MAX_INSTANCES = 48;    // instances animées par image (RG-05 de WFS-19 : 8 piétons × 2 ; WFS-73 RG-06 : + 16 conducteurs × 2)
+constexpr int SKIN_MAX_INSTANCES = 152;   // instances animées par image (WFS-73 RG-06 : 16 conducteurs × 2 ; WFS-257 : + 120 pour les piétons du cadre)
 
 struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; int8_t feuArriere = 0; };   // WFS-60 : roue 0-3, −1 = fixe ; WFS-109 : 1 feu arrière découpé, 2 3e feu stop
 // WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le
@@ -146,7 +146,7 @@ public:
     // WFS-63 : une instance animée (indices [first, first + count) du maillage), palette de `nOs` ≤ SKIN_MAX_OS matrices
     // (espace du modèle : pose courante × inverse de la pose de liaison) ; au-delà de SKIN_MAX_INSTANCES par image : ignorée
     void drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs,
-                     uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr);
+                     uint32_t first = 0, uint32_t count = 0, const ApparencePersonnage* apparence = nullptr, float fondu = 0);   // WFS-257 : fondu (tramage, pc.emissive.w)
     // WFS-09 : quads transitoires de l'image (4 sommets par quad, triangles 0-1-2 / 0-2-3), dessinés avec les objets
     // transparents ; nQuads ≤ 4096 par image. halo : quad face à la caméra (MAT_ADD), couleur linéaire × intensité ;
     // haloSol : quad couché (repère monde : centre c, axes r et f, demi-tailles), additif ; tache des phares : MAT_POOL
