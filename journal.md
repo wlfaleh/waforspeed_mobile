@@ -2920,3 +2920,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Tickets ⏳ Prêt : WFS-218, 224, 226 (E4, épic de WFS-222) ; WFS-230 (P1) et WFS-214 (E13, occupée par WFS-227, agent 2, attribué 11:44, moins de 10 h) ; WFS-215 (E10, occupée par WFS-158, arwa-2). Épics libres (E0, E2, E3, E7, E9, E11) : aucun ticket prêt (suites en attente de validations).
 - Décision : **aucune attribution** ; WFS-230 n'est pas libre. Il sera proposé dès que WFS-227 est fusionné (🟣), ou WFS-218 / 224 / 226 dès que WFS-222 est fusionné.
 
+
+### 2026-11-07 12:51:21 — Règle « jamais à court de tickets » ; WFS-231 à 234 créés (bâtiments, deux-roues, enfants, navigation GPS) (po-scrum-master)
+- **Ordre de l'utilisateur** : le PO a toujours des tickets ; sinon il prend une partie du jeu et crée des tickets de rattrapage du réalisme. Écrit dans l'agent PO (au moins 8 tickets ⏳ Prêt, épics variées).
+- **Créés** : WFS-231 (E12 + E2, bâtiments 100 % avec portes / fenêtres / vitrines, après WFS-161) ; WFS-232 (E3 + E10, motos et scooters) ; WFS-233 (E11, enfants et familles, dans le −50 %) ; WFS-234 (E5, carte de navigation façon Google Maps / Waze). Réponse dans `tache utilisateur.md`.
