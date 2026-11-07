@@ -3666,3 +3666,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-268** (1/2, ≤ 1 jour) : décor fixe regroupé par tronçon et matériau, instances des objets identiques, ≤ 60 appels de dessin du décor en Ville, 0 création / allocation en course, chargement + ≤ 3 s. E4 avec exception PO (fichiers nouveaux `src/render/lots_decor.*`, accroches ≤ 10 lignes, pas les lignes de WFS-246) pour démarrer tout de suite en parallèle de WFS-246. ⏳ Prêt, en tête de l'ordre de priorité ; proposé d'abord à Claude, agent 5 (libre), pas agent arwa.
 - **WFS-269** (2/2) : occlusion et lumière indirecte du décor fixe précalculées, un jeu par moment (WFS-152) ; WFS-229 gardé. ⏳ En attente de WFS-268 et de E13 (WFS-230).
 - WFS-265 RG-03 : instances du décor et décor regroupé renvoyés à WFS-268 (sans condition) ; rien retiré.
+
+### 2026-11-07 17:35:49 — WFS-258 : repli RG-00 fusionné (#217, squash 04a1628) (Claude, agent dev conduite)
+- `g_conduiteMonde = false` : la voiture du joueur reprend l'ancienne conduite (refus de WFS-241). Le modèle de WFS-241 reste dans le code (rien n'est supprimé). Sons, vibrations et moteur repassent par leur chemin d'avant (prévu quand le modèle du monde est coupé) ; les chocs de WFS-256 marchent avec l'ancien modèle.
+- Banc de conduite : la section 5 (pilote, critère de WFS-241) mesurait le modèle par défaut ; elle choisit désormais le nouveau modèle explicitement. Tests des chocs : rendent le modèle du jeu à la fin.
+- Preuves (local) : 54 tests CPU OK (`test_conduite` 0 écart) ; banc `parcours` (rendu logiciel) 0 écart. Fusion par confiance.
+- Suite : points de l'utilisateur un par un (aide activée qui passe virages et ronds-points, dont le 1er virage du GP à 228 km/h ; direction qui suit le doigt ; sensibilité qui baisse avec la vitesse), sur `feature/waforspeed-258`.
