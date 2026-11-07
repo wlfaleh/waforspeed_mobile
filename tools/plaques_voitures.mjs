@@ -29,11 +29,20 @@ const VOITURES = {
   p911: { plaque: 11, cadre: -1, numero: 'HD-097-TZ', dep: '67' },
   s3: { plaque: 18, cadre: -1, numero: 'CW-374-JN', dep: '59' },
   // plaques arrière américaines ou de concession (« ELANTRA N », « FORD PERFORMANCE », Texas) et italienne de la SF90
-  elantra: { plaque: 10, cadre: -1, numero: 'GN-623-YB', dep: '35' },
-  mustang: { plaque: 18, cadre: -1, numero: 'FM-509-GT', dep: '33' },
-  m4: { plaque: 35, cadre: -1, numero: 'EB-944-KM', dep: '92' },
-  sf90: { plaque: 9, cadre: -1, numero: 'GF-190-XS', dep: '06' },
-  model3: { plaque: 24, cadre: -1, numero: 'EY-317-TL', dep: '92' },   // WFS-158 (RG-D) : nouveau modèle, plaque arrière seule
+  // + plaque avant ajoutée (le modèle n'en a pas ; hauteur du centre choisie sur la surface la plus plate du bouclier)
+  elantra: { plaque: 10, cadre: -1, numero: 'GN-623-YB', dep: '35', ajouts: [{ cote: -1, y0: 0.44 }] },
+  mustang: { plaque: 18, cadre: -1, numero: 'FM-509-GT', dep: '33', ajouts: [{ cote: -1, y0: 0.44 }] },
+  m4: { plaque: 35, cadre: -1, numero: 'EB-944-KM', dep: '92', ajouts: [{ cote: -1, y0: 0.37 }] },
+  sf90: { plaque: 9, cadre: -1, numero: 'GF-190-XS', dep: '06', ajouts: [{ cote: -1, y0: 0.43 }] },
+  model3: { plaque: 24, cadre: -1, numero: 'EY-317-TL', dep: '92', ajouts: [{ cote: -1, y0: 0.44 }] },   // WFS-158 (RG-D) : nouveau modèle
+  // aucune plaque à part : plaques ajoutées sur les porte-plaques noirs (Golf), sur les plaques de concession « T-Cross » et
+  // « 途铠 » (masquées : atlas du modèle, matériau 10), dans le logement du hayon (X5), sur le porte-plaque gris (GT86)
+  golf: { plaque: -1, cadre: -1, numero: 'BJ-276-WC', dep: '38', ajouts: [{ cote: -1, y0: 0.471 }, { cote: 1, y0: 0.50 }] },
+  gallardo: { plaque: -1, cadre: -1, numero: 'DL-865-ZP', dep: '83', ajouts: [{ cote: -1, y0: 0.36 }, { cote: 1, y0: 0.37 }] },
+  tcross: { plaque: -1, cadre: -1, numero: 'FT-148-CX', dep: '57', ajouts: [{ cote: -1, y0: 0.4725 }, { cote: 1, y0: 0.802 }],
+            masquer: { maillage: 10, boites: [[-0.24, 0.24, 0.39, 0.555, -2.08, -2.02], [-0.25, 0.25, 0.72, 0.885, 1.92, 1.98]] } },
+  x5: { plaque: -1, cadre: -1, numero: 'HB-530-RV', dep: '78', ajouts: [{ cote: -1, y0: 0.56 }, { cote: 1, y0: 0.70 }] },
+  gt86: { plaque: -1, cadre: -1, numero: 'CG-861-PZ', dep: '69', ajouts: [{ cote: -1, y0: 0.54 }, { cote: 1, y0: 0.548 }] },
 };
 
 function lire(chemin) {
@@ -116,14 +125,87 @@ const cotes = (m) => {   // sommets de la plaque avant (z < 0) et arrière (z > 
 
 // avec une liste d'id (tools/convertir_voitures.sh) : seules celles du tableau ; les autres n'ont pas de plaque à part
 const ids = process.argv.slice(2).length ? process.argv.slice(2).filter((id) => VOITURES[id]) : Object.keys(VOITURES);
+// ---------- WFS-158 (ST-3) : plaque ajoutée là où le modèle n'en a pas (avant de l'Elantra, de la Golf…) ----------
+// Rayons lancés vers la voiture sur une grille de 11 × 5 points du rectangle de la plaque (centre x0, y0) : la surface la plus en
+// avant de la caisse (vitres et pièces transparentes exceptées) ; plan ajusté sur ces points (moindres carrés : z = a + b x + c y),
+// avancé pour passer 3 mm devant le point le plus en avant ; rectangle de 520 × 110 mm dans ce plan, double face, image de la plaque.
+function poserPlaque(f, cote, x0, y0, journal) {
+  const xs = [], hits = [];
+  for (let i = 0; i < 11; i++) for (let j = 0; j < 5; j++) xs.push([x0 - L / 2 + 0.01 + (L - 0.02) * i / 10, y0 - H / 2 + 0.01 + (H - 0.02) * j / 4]);
+  const cand = [];
+  f.maillages.forEach((m) => {
+    const dr = f.mats[m.mat].readUInt32LE(52);
+    if (dr & (2 | 64)) return;   // vitres, pièces transparentes
+    for (let t = 0; t + 2 < m.ix.length; t += 3) {
+      const P = [0, 1, 2].map((q) => [m.v[m.ix[t + q] * 8], m.v[m.ix[t + q] * 8 + 1], m.v[m.ix[t + q] * 8 + 2]]);
+      if (Math.max(...P.map((p) => p[0])) < x0 - L / 2 || Math.min(...P.map((p) => p[0])) > x0 + L / 2) continue;
+      if (Math.max(...P.map((p) => p[1])) < y0 - H / 2 || Math.min(...P.map((p) => p[1])) > y0 + H / 2) continue;
+      if (cote < 0 ? Math.min(...P.map((p) => p[2])) > 0 : Math.max(...P.map((p) => p[2])) < 0) continue;
+      cand.push(P);
+    }
+  });
+  for (const [x, y] of xs) {
+    let best = null;
+    for (const P of cand) {   // point dans le triangle projeté sur (x, y), z par les coordonnées barycentriques
+      const d = (P[1][1] - P[2][1]) * (P[0][0] - P[2][0]) + (P[2][0] - P[1][0]) * (P[0][1] - P[2][1]);
+      if (Math.abs(d) < 1e-12) continue;
+      const l0 = ((P[1][1] - P[2][1]) * (x - P[2][0]) + (P[2][0] - P[1][0]) * (y - P[2][1])) / d;
+      const l1 = ((P[2][1] - P[0][1]) * (x - P[2][0]) + (P[0][0] - P[2][0]) * (y - P[2][1])) / d, l2 = 1 - l0 - l1;
+      if (l0 < -1e-6 || l1 < -1e-6 || l2 < -1e-6) continue;
+      const z = l0 * P[0][2] + l1 * P[1][2] + l2 * P[2][2];
+      if (best === null || (cote < 0 ? z < best : z > best)) best = z;
+    }
+    if (best !== null) hits.push([x, y, best]);
+  }
+  if (hits.length < 30) { journal.push(`plaque ${cote < 0 ? 'avant' : 'arrière'} NON posée (${hits.length} / 55 points sur la caisse)`); return null; }
+  // surface « portante » : points à moins de 4 cm du plus en avant (les trous de calandre plus profonds ne comptent pas pour le plan)
+  const front = cote < 0 ? Math.min(...hits.map((h) => h[2])) : Math.max(...hits.map((h) => h[2]));
+  const port = hits.filter((h) => Math.abs(h[2] - front) <= 0.04);
+  // moindres carrés z = a + b (x − x0) + c (y − y0)
+  let S = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], R = [0, 0, 0];
+  for (const [x, y, z] of port) { const g = [1, x - x0, y - y0]; for (let i = 0; i < 3; i++) { R[i] += g[i] * z; for (let j = 0; j < 3; j++) S[i][j] += g[i] * g[j]; } }
+  const det3 = (M) => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+  const D = det3(S), sol = [0, 1, 2].map((k) => det3(S.map((row, i) => row.map((v, j) => (j === k ? R[i] : v)))) / D);
+  let [a, b, c] = sol;
+  // plan avancé : 3 mm devant le point le plus en avant de toute la grille
+  const ecart = hits.map(([x, y, z]) => z - (a + b * (x - x0) + c * (y - y0)));
+  a += cote < 0 ? Math.min(...ecart) - 0.003 : Math.max(...ecart) + 0.003;
+  const vide = Math.max(...port.map(([x, y, z]) => Math.abs(z - (a + b * (x - x0) + c * (y - y0)))));
+  // repère du plan : normale vers l'extérieur, X (x dans le plan), U (verticale du plan)
+  const n = unit(cote < 0 ? [b, c, -1] : [-b, -c, 1]);
+  const X = unit([1, 0, b]);
+  let U = unit([n[1] * X[2] - n[2] * X[1], n[2] * X[0] - n[0] * X[2], n[0] * X[1] - n[1] * X[0]]); if (U[1] < 0) U = U.map((q) => -q);
+  const P0 = [x0, y0, a];
+  const v = new Float32Array(4 * 8), ix = new Uint32Array([0, 1, 2, 0, 2, 3]);
+  [[-1, 1], [1, 1], [1, -1], [-1, -1]].forEach(([sx, sy], k) => {
+    for (let q = 0; q < 3; q++) v[k * 8 + q] = P0[q] + X[q] * sx * L / 2 + U[q] * sy * H / 2;
+    for (let q = 0; q < 3; q++) v[k * 8 + 3 + q] = n[q];
+    // vu de l'extérieur : la gauche est +x à l'avant, −x à l'arrière ; v = 0 en haut
+    v[k * 8 + 6] = cote < 0 ? (1 - sx) / 2 : (1 + sx) / 2; v[k * 8 + 7] = (1 - sy) / 2;
+  });
+  journal.push(`plaque ${cote < 0 ? 'avant' : 'arrière'} posée (centre x ${x0.toFixed(2)} y ${y0.toFixed(2)} z ${a.toFixed(3)}, inclinaison ${(Math.atan(c) * 180 / Math.PI).toFixed(1)}°, plus grand vide sous la plaque ${(vide * 1000).toFixed(0)} mm)`);
+  return { v, ix };
+}
+const matPlaque = (tex) => {   // blanc opaque, satiné, double face (couleur, métal, rugosité, émissif, coupure, textures, drapeaux)
+  const M = Buffer.alloc(56);
+  [1, 1, 1, 1, 0, 0.45, 0, 0, 0, 0.5].forEach((x, q) => M.writeFloatLE(x, q * 4));
+  M.writeInt32LE(tex, 40); M.writeInt32LE(-1, 44); M.writeInt32LE(-1, 48); M.writeUInt32LE(16, 52);
+  return M;
+};
+
 for (const id of ids) {
   const cfg = VOITURES[id];
   const chemin = new URL(`assets/cars/${id}.wfm`, RACINE);
   const f = lire(chemin);
-  const mp = f.maillages[cfg.plaque], journal = [];
-  if (!mp || mp.mat !== cfg.plaque) throw new Error(`${id} : maillage ${cfg.plaque} introuvable`);
-  const touches = new Set([cfg.plaque]);
+  const journal = [], touches = new Set();
   let change = false;
+  const img = await sharp(await plaque(cfg.numero, cfg.dep)).resize(1024, 256, { fit: 'fill' }).jpeg({ quality: 90 }).toBuffer();
+  let tImg = f.textures.findIndex((t) => Buffer.compare(t, img) === 0);
+  const texture = () => { if (tImg < 0) { f.textures.push(img); tImg = f.textures.length - 1; change = true; } return tImg; };
+  if (cfg.plaque >= 0) {
+  const mp = f.maillages[cfg.plaque];
+  if (!mp || mp.mat !== cfg.plaque) throw new Error(`${id} : maillage ${cfg.plaque} introuvable`);
+  touches.add(cfg.plaque);
   const sp = cotes(mp), sc = cfg.cadre >= 0 ? cotes(f.maillages[cfg.cadre]) : null;
   for (const cote of [-1, 1]) {
     const som = sp[cote];
@@ -183,20 +265,41 @@ for (const id of ids) {
     });
     journal.push(`plaque ${cote < 0 ? 'avant' : 'arrière'} ${avant} → ${(r2.largeur * 1000).toFixed(0)}×${(r2.hauteur * 1000).toFixed(0)} mm`);
   }
-  // image de la plaque, ajoutée à la fin (ou déjà là : dernière texture, posée par cet outil)
-  const img = await sharp(await plaque(cfg.numero, cfg.dep)).resize(1024, 256, { fit: 'fill' }).jpeg({ quality: 90 }).toBuffer();
+  // image de la plaque, ajoutée à la fin des textures (ou déjà là, posée par cet outil)
   const mat = mp.mat, M = f.mats[mat];
-  const tC = M.readInt32LE(40);
-  if (!(tC >= 0 && tC === f.textures.length - 1 && Buffer.compare(f.textures[tC], img) === 0)) {
-    f.textures.push(img);
-    M.writeInt32LE(f.textures.length - 1, 40); change = true;
-  }
+  const tP = texture();
+  if (M.readInt32LE(40) !== tP) { M.writeInt32LE(tP, 40); change = true; }
   // matériau : blanc opaque, sans normales, satiné (couleur 0-3, métal 4, rugosité 5, émissif 6-8, coupure 9, textures 10-12, drapeaux)
   const voulu = [1, 1, 1, 1, 0, 0.45];
   for (let q = 0; q < 6; q++) if (M.readFloatLE(q * 4) !== Math.fround(voulu[q])) { M.writeFloatLE(voulu[q], q * 4); change = true; }
   if (M.readInt32LE(44) !== -1) { M.writeInt32LE(-1, 44); change = true; }
   const dr = M.readUInt32LE(52), dr2 = dr & ~(2 | 32 | 64);   // ni transparent, ni découpé, ni vitre
   if (dr2 !== dr) { M.writeUInt32LE(dr2, 52); change = true; }
+  }
+  // pièces masquées (plaques de concession d'un atlas partagé) : triangles dont le centre est dans une boîte, rendus vides
+  if (cfg.masquer) {
+    const m = f.maillages[cfg.masquer.maillage]; let n = 0;
+    for (let t = 0; t + 2 < m.ix.length; t += 3) {
+      if (m.ix[t] === m.ix[t + 1] && m.ix[t] === m.ix[t + 2]) continue;
+      const c = [0, 1, 2].map((q) => (m.v[m.ix[t] * 8 + q] + m.v[m.ix[t + 1] * 8 + q] + m.v[m.ix[t + 2] * 8 + q]) / 3);
+      if (cfg.masquer.boites.some((B) => c[0] >= B[0] && c[0] <= B[1] && c[1] >= B[2] && c[1] <= B[3] && c[2] >= B[4] && c[2] <= B[5])) {
+        m.ix[t + 1] = m.ix[t]; m.ix[t + 2] = m.ix[t]; n++;
+      }
+    }
+    if (n) { change = true; journal.push(`${n} triangles de plaques de concession masqués`); }
+  }
+  // plaques ajoutées (cfg.ajouts : côté −1 avant / +1 arrière, centre x0, y0) : une seule fois (maillage de 4 sommets avec l'image)
+  for (const aj of cfg.ajouts || []) {
+    const deja = f.maillages.some((m) => m.v.length === 32 && f.mats[m.mat].readInt32LE(40) === tImg && tImg >= 0 && Math.sign(m.v[2]) === aj.cote);
+    if (deja) continue;
+    const q = poserPlaque(f, aj.cote, aj.x0 || 0, aj.y0, journal);
+    if (!q) { process.exitCode = 1; continue; }
+    const t = texture();
+    f.mats.push(matPlaque(t));
+    f.maillages.push({ mat: f.mats.length - 1, v: q.v, ix: q.ix });
+    if (f.tan) f.tan.push(null);
+    touches.add(f.maillages.length - 1); change = true;
+  }
   if (!change) { console.log(`${id} : déjà au format, inchangée`); continue; }
   if (f.tan) for (const k of touches) f.tan[k] = Buffer.from(tangentes(f.maillages[k].v, 8, f.maillages[k].ix).octets.buffer);
   // boîte
@@ -204,5 +307,5 @@ for (const id of ids) {
   for (const m of f.maillages) for (const i of m.ix) for (let c = 0; c < 3; c++) { const x = m.v[i * 8 + c]; bb[c] = Math.min(bb[c], x); bb[c + 3] = Math.max(bb[c + 3], x); }
   f.boite = bb;
   ecrire(chemin, f);
-  console.log(`${id} : ${journal.join(', ')} ; ${cfg.numero} (${cfg.dep}) ; texture ${f.textures.length - 1}`);
+  console.log(`${id} : ${journal.join(', ')} ; ${cfg.numero} (${cfg.dep}) ; texture ${tImg}`);
 }
