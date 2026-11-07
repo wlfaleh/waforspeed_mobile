@@ -302,7 +302,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         const double hs2 = 12;
         for (int vue = 0; vue < 2; vue++) {
             if (!g_l.piste) { erreurs++; break; }
-            const vec3 o = pointRoute(*g_l.piste, g_l.dist, 0, 0, 1.7f);
+            const vec3 o = pointRoute(*g_l.piste, g_l.dist, 0, 0, 300.f);   // WFS-207 : au-dessus des arbres (le soleil calculé change l'azimut visé)
             vec3 d = vue == 0 ? vec3{0, 1, 0} : normalize(lateral * (float)std::cos(hs2 * PI_L / 180) + vec3{0, (float)std::sin(hs2 * PI_L / 180), 0});
             g_l.oeil = o; g_l.cible = o + d * 10.f; g_l.haut = vue == 0 ? vec3{1, 0, 0} : vec3{0, 1, 0};
             for (int i = 0; i < 3; i++) g.render(t);

@@ -435,6 +435,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     fp.sunDir = s; fp.sunIntensity = (float)(E * k); fp.sunColor = couleur;
     fp.ground = sol * (float)k; fp.fogColor = brume * (float)k;
     fp.exposure = 1; fp.ambient = 1;
+    if (!nuit) { fp.skyTop = haut0; fp.skyHorizon = horizon0; }   // WFS-207 (RG-02) : teintes du ciel de l'atmosphère (sky.frag)
     g.etat.eLampadaireSol = -1;
     for (int i = 0; i < std::clamp(fp.spotCount, 0, 8); i++) {
         FrameParams::Spot& sp = fp.spots[i];
