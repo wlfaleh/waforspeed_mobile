@@ -81,7 +81,7 @@ bool poursuiteBat(bool victoire, int score, long long distM, bool ancVictoire, i
 } // namespace records
 
 void Sauvegarde::defauts() {
-    best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; quality = "high"; qualityChoisie = false; cam = "poursuite";
+    best = 0; car = "golf"; paint.clear(); map = "ville"; tod = "nuit"; moment.clear(); quality = "high"; qualityChoisie = false; cam = "poursuite";
     muted = false; music = true; nick = "Pilote"; km = 4; steer = "glisser"; gaucher = false; vibrations = true;
     grandsBoutons = false; gyro = 0; gyroZone = 1;   // WFS-108
     mode = "checkpoint"; km5 = 4; diff5 = "normale";   // WFS-110 ; WFS-133
@@ -98,6 +98,7 @@ std::string Sauvegarde::texte() const {
     o << "car=" << car << "\n";
     for (const auto& [id, p] : paint) o << "paint-" << id << "=" << p << "\n";
     o << "map=" << map << "\n" << "tod=" << tod << "\n";
+    if (!moment.empty()) o << "moment=" << moment << "\n";   // WFS-208
     if (qualityChoisie) o << "quality=" << quality << "\n";   // absente : qualité automatique (WFS-15)
     o << "cam=" << cam << "\n";
     o << "muted=" << (muted ? 1 : 0) << "\n" << "music=" << (music ? 1 : 0) << "\n" << "nick=" << nick << "\n" << "km=" << km << "\n" << "steer=" << steer << "\n";
@@ -155,6 +156,7 @@ bool Sauvegarde::lire(const std::string& contenu) {
         else if (k.rfind("paint-", 0) == 0) { const std::string id = k.substr(6); if (voitureExiste(id) && peintureDef(v)) paint[id] = v; }
         else if (k == "map") { if (carteExiste(v)) map = v; }
         else if (k == "tod") { tod = v == "jour" ? "jour" : "nuit"; }
+        else if (k == "moment") moment = v;   // WFS-208
         else if (k == "quality") { for (const char* q : QUALITES) if (v == q) { quality = v; qualityChoisie = true; } }
         else if (k == "cam") { for (const char* c : CAMS) if (v == c) cam = v; if (v == "loin") cam = "poursuite"; }   // « loin » du web = poursuite (WFS-85)
         else if (k == "muted") { muted = v == "1"; }

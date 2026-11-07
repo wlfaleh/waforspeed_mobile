@@ -51,6 +51,7 @@ public:
     std::map<std::string, std::string> paint;  // paint-<voiture> : peinture choisie (absente = peinture d'origine)
     std::string map = "ville";                 // map : carte
     std::string tod = "nuit";                  // tod : moment (jour / nuit)
+    std::string moment;                        // WFS-208 : aube, matin, midi, doree, reel, bleue, nuit ; vide : déduit de tod
     std::string quality = "high";              // quality : qualité graphique (low / medium / high : 3 niveaux, WFS-68)
     bool qualityChoisie = false;               // clé quality présente (qualityChosen du web) : pas de qualité auto (WFS-15)
     std::string cam = "poursuite";             // cam : vue (poursuite / capot / cockpit = 0, 1, 2 : VUES de WFS-66)

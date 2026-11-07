@@ -2446,3 +2446,97 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - WFS-210 passe en ⏳ Prêt (WFS-209 ✅, E11 libre).
 - Suivi : WFS-190 (agent arwa) sans envoi depuis 20:40 (plus de 10 h) ; WFS-161 (Agent 0) sans envoi depuis 01:56 (⚠️).
 
+
+### 2026-11-07 08:23:29 — WFS-208 fusionné : 6 moments et heure réelle, passage continu, crépuscule, nuages (Claude, agent 1)
+- PR #183, squash 6ddbeec, **fusion par confiance**. Zone E13 (`atmosphere_physique.h`, `eclairage_physique.*`, `eclairage_banc.cpp`, `shaders/eclairage_ciel.glsl`) ; **accroches accordées par le PO (8047ba4)** : `src/ui/ecrans/terrain.cpp` 20 lignes / 35 (boutons Jour / Nuit qui font défiler les moments, nom affiché, booléen `nuit` gardé), `src/game/sauvegarde.h` / `.cpp` 5 lignes / 10 (champ `moment`, `tod` inchangé) ; `game.*` non touché.
+- Moments (hauteur NOAA, 29 juin) : aube −2° (5 h 44), matin 25°, midi solaire, heure dorée 3° (20 h 54), heure bleue −5° (21 h 46), nuit (lune) ; heure réelle = horloge UTC. Crépuscule : pas de soleil direct, ciel uniforme aux valeurs publiées (750 lx au coucher, 3,4 lx à −6°) raccordées au ciel diffus, fondu −1° à +2° ; exposition bornée selon la hauteur du soleil. Nuages procéduraux 2D (coût : quelques opérations par pixel de ciel), couverture Corniche 15 %, Ville 25 %, Circuit 30 %, Campagne 35 %.
+- Mesures (banc réalisme local) : **lumière 69 / 69 = 100 %** ; M-04 lampadaires éteints à l'aube (114 lx) … heure dorée (2044 lx), allumés à l'heure bleue (5,1 lx) ; M-05 dorée 3,00°, bleue −5,00° ; passage continu (dorée × 20, 3 min, 3° → −1,65°) : 0,236 EV / 0,5 s contre 0,211 EV à × 1 (recalages des sondes de WFS-151), éclairement ≤ 0,021 IL entre deux images. Moment « doree » relu après redémarrage ; ancienne sauvegarde → « midi ». Cartes : aucune vue ≥ 2 % saturés ; parcours complet 0 écart ; 42 tests CPU.
+- **À trancher par le PO** : (1) lampadaires selon le moment choisi au départ (pas d'allumage pendant la course si l'heure dorée passe le coucher : plus que 10 lignes de `nuit.cpp`) ; (2) accélération du temps hors `configgame.json` (`ConfigJeu` est dans `src/core`) ; (3) charte « heure bleue EV 8-10 » contraire à l'éclairement réel (≈ 5 lx → EV 3,7 en exposition automatique). Statut 🟣.
+
+### 2026-11-07 08:25:05 — WFS-213 attribué à Claude, agent 1 (01UY1Vv2) ; arbitrages de WFS-208 (po-scrum-master)
+- **Début** : WFS-213 (E13, P1 Urgent) — écran blanc après le chargement d'une voiture (exposition de WFS-151). Branche `feature/waforspeed-213`, à pousser dès sa création. E13 libérée par WFS-208 🟣.
+- Choix : seul ticket P1 ⏳ Prêt (WFS-190 et WFS-212 ne sont pas prêts : 🔧 / 🟣).
+- Zone autorisée : E13 (`shaders/eclairage*.glsl`, `shaders/sky*`, `post*`, `shadow*`, `src/render/eclairage_*`, `ibl_*`, `atmosphere_*`, `post_*`, `references/reel/lumiere/**`, `tests/fidelite_lumiere*`) ; test CPU RG-03 dans `tests/fidelite_lumiere*`. Interdit : `src/core/**`, `src/game/game.*`, `src/platform/**` (le banc `vitrines` se lit, ne se change pas), toute autre épic ; accroche ≤ 10 lignes seulement si annoncée au journal.
+- Règles et critères : `regles-de-gestion/WFS-213.md` (RG-01 à RG-03, captures `vitrine-*-0` et `course-sf90`, parcours complet).
+- **Arbitrages de WFS-208** (détail dans `regles-de-gestion/WFS-208.md`, Suivi) : (1) lampadaires selon le moment de départ acceptés ; allumage pendant la course rangé dans WFS-153 (RG-L1, accroche `src/render/nuit.cpp` ≤ 30 lignes) ; (2) accélération du temps hors `configgame.json` acceptée ; (3) charte corrigée : `DA-realisme.md` § 3, heure bleue ≈ 3 à 10 lux (l'ancien « EV 8-10 » était faux ; source : mesure de WFS-208).
+
+
+### 2026-11-07 08:40:04 — WFS-210 attribué à Claude, agent 5 (011cpqZaDiS2) (po-scrum-master)
+- **Début** : WFS-210 (E11, P2 Haute) — Personnages (3/3) : vêtements par lieu, peau translucide (phototype VI sourcé), cheveux et yeux, indices 16 bits (RG-05). Branche `feature/waforspeed-210`, à pousser dès sa création.
+- Choix : aucun P1 prêt (WFS-213 🔧 agent 1, WFS-190 🔧 agent arwa, WFS-212 🟣) ; CI de `main` en cours (runs 812 à 815), pas de rouge. Seul P2 ⏳ Prêt d'une épic libre : WFS-210 (E11 libérée par WFS-211 🟣 ; WFS-209 ✅). WFS-215 (P3) attend E10 (WFS-158).
+- Zone autorisée : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) ; accroche ≤ 10 lignes hors zone pour RG-05 si besoin, annoncée au journal.
+- Interdit (zones occupées) : E9 (WFS-206, agent 2), E13 (WFS-213, agent 1), E10 (WFS-158, arwa-2), E12 (WFS-161, Agent 0), E7 (WFS-190), noyau E0.
+- Règles et critères : `regles-de-gestion/WFS-210.md` (RG-01 à RG-05, parcours complet sur les 4 cartes, indice ≥ 99 %). Consulter `expert-realisme-3d`. Pas une US technique : pas de CI de branche, sauf une fois à confiance ≤ 50 %.
+
+### 2026-11-07 08:42:11 — WFS-210 : accroches hors zone accordées à Claude, agent 5 (po-scrum-master)
+- A1 : `src/world/conducteurs.*` ≤ 10 lignes (appel de `tenueLieu` défini dans `src/world/pietons.*`, albédo du phototype VI) ; E2 n'a aucun ticket actif. A2 : `src/render/renderer.*` ≤ 10 lignes (indices 16 bits, RG-05), API de `renderer.h` inchangée. Détail dans `regles-de-gestion/WFS-210.md`.
+
+### 2026-11-07 08:45:29 — Statuts automatiques, CI main #813 (robot statuts)
+- Run vert (push, commit 9088ef9) : WFS-212 ✅ (PR #181, 9088ef9).
+
+### 2026-11-07 08:51:02 — Sites refusés par l'utilisateur ; essuie-glaces plausibles par voiture (po-scrum-master)
+- **Décision de l'utilisateur** : `eurospares.co.uk` et `wipersizechart.com` refusés ; pas besoin du vrai essuie-glace, un essuie-glace au hasard (plausible) par voiture.
+- **Fait** : règle ajoutée à WFS-195, 197, 201 (essuie-glace plausible et varié, statut `conception`, hors indice de fidélité) ; sites inscrits comme refusés dans `regles-reseau.md` § 8. `tache utilisateur.md` : réponse écrite ; les 2 demandes closes (sites, noms des voitures) déplacées dans `archive/tache-utilisateur-repondu.md`.
+
+### 2026-11-07 08:51:31 — WFS-161 (ST-1) : géométrie du kit et banc archi ; reprise après 6 h 40 d'arrêt (Claude, Agent 0 developer)
+- **Arrêt de 01:56 à 08:41 UTC** : de ma faute. J'ai fini mon tour sur un compte rendu sans programmer de reprise, alors que le ticket avait une suite claire. Rien n'était bloqué. Désormais, je programme une reprise avant chaque fin de tour.
+- **Fait** (`feature/waforspeed-161`, 7ca9300) :
+  - `src/world/archi_geo.h/.cpp` : façade réellement percée (tableaux en retrait, vitre ou menuiserie au fond, appuis, balcons avec garde-corps de 1,00 m, loggias de 1 m), corniche, côtés et arrière, toitures (terrasse + acrotère + édicules, zinc 35°, tuiles 17° avec débord de 0,3 m) ; 6 parties (un appel de dessin par matériau) ; niveaux de détail 0 / 1 / 2 (RG-05).
+  - `tests/archi_geo.cpp` : 1 358 652 contrôles, 0 échec (sens des triangles, aire du mur = façade − ouvertures, M-01 sur la géométrie à ± 1 %, garde-corps à la hauteur du référentiel, chaque LOD moins cher). Triangles par bâtiment, LOD 0 : de 190 (village) à 1 870 (moderne de 8 étages) ; LOD 2 : de 76 à 209.
+  - Banc `WFS_BANC=archi` (`src/world/archi_banc.cpp`, **accroche de 2 lignes dans `src/platform/desktop_main.cpp`**) : rangée des 6 styles au bord de la route de la Campagne ; captures `archi-pres-jour`, `archi-pres-nuit`, `archi-loin-lod0/1/2`, `archi-dessus`. Matériaux provisoires : albédos du référentiel (béton, brique, terre cuite, aluminium, inox) ; pierre, crépi et zinc en béton tant que ST-4 ne les a pas sourcés.
+- **Captures regardées** (lavapipe local) : fenêtres en retrait, balcons, vitrages du moderne, tuiles, zinc, toiture-terrasse avec édicule ; 6 styles distincts vus de dessus ; LOD 2 fidèle à la silhouette de loin. **À reprendre** : de nuit, la façade blanche dans l'axe des phares est surexposée (albédo provisoire 0,51, à revoir en ST-3 / ST-4) ; dans la courbe du banc, deux bâtiments se touchent par l'arrière (disposition du banc, pas du kit).
+- **Vérification** : 45 tests CPU verts ; branche synchronisée avec `main` (0e461fd).
+- **Suite** : ST-2 (6 styles : traits propres à chacun, volets du méditerranéen, bandeaux du moderne, génoise, matériaux par style), puis ST-3 (intérieurs de nuit).
+
+### 2026-11-07 09:00:03 — WFS-161 (ST-2) : traits des 6 styles (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 0877e89, synchronisée 21325ca) : classique (balcons filants au 2e et au dernier étage, encadrements) ; moderne (nez de dalle en bandeau, meneau) ; méditerranéen (volets battants ouverts, nouvelle partie `VOLET`, encadrements) ; génoise sous les tuiles à la place de la corniche ; industriel (baies d'atelier à petits bois) ; villa (dalle de toit en débord).
+- **Tests** : `test_archi_geo` 4 370 294 contrôles, 0 échec (volets jamais devant une ouverture, bandeaux, balcons filants d'une rive à l'autre) ; 45 tests CPU verts.
+- **Captures regardées** (`archi-style-<nom>`, une par style, de face) : les 6 styles se reconnaissent. Triangles moyens au LOD 0 : 311 (villa) à 3 587 (méditerranéen, volets et encadrements) ; LOD 1 : 202 à 1 139.
+- **Restent** : textures (ST-4 : pierre, crépi, zinc, volets ; matériaux encore unis et provisoires), surexposition de nuit d'un mur clair face aux phares (à mesurer en ST-3, M-04).
+- **Suite** : ST-3, intérieurs de nuit (interior mapping, 2700-3000 K, fenêtres allumées selon l'heure).
+
+### 2026-11-07 09:05:01 — WFS-217 créé : guide auto (aide à la direction) corrigé et réglable (po-scrum-master)
+- **Remarque de l'utilisateur** : le guide auto est une catastrophe dans les virages et ronds-points ; le corriger et le rendre activable / désactivable dans les réglages.
+- **Constat** (`player.cpp` ≈ l. 41-58) : réalignement vers l'axe de la route, cap borné (0,5 → 0,16 rad avec la vitesse, rappel à 2,5 rad/s), force centrifuge ; l'axe tourne vite sur les tracés de WFS-136.
+- **WFS-217** (E3 + accroche E8, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-217.md`) : aide qui suit la tangente locale lissée, borne élargie selon la courbure, sans saut ; réglage « Aide à la direction » Activée (défaut) / Désactivée, sauvegardé, `configgame.json` `conduite.aide_direction` ; aucun bouton changé ; banc sur les 4 cartes. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 09:09:28 — WFS-217 : réglage seulement dans le menu Réglages du jeu (po-scrum-master)
+- **Précision de l'utilisateur** : le joueur active ou désactive l'aide dans le menu Réglages ; pas de clé dans `configgame.json`. RG-03 réécrite, zone et critères ajustés.
+
+### 2026-11-07 09:13:12 — WFS-161 (ST-3) : intérieurs de nuit ; risque signalé sur les phares (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 09bfda6, synchronisée ee522b5) :
+  - `shaders/decor.glsl` (E12) : `interieurFenetre`, « interior mapping » (van Dongen, CGI 2008). Le regard est prolongé dans une pièce de 4 m derrière chaque vitre (murs, sol, plafond, meuble bas au hasard), sans triangle de plus. Nuit : lampe à 2850 K (`couleurTemperature` de WFS-151), murs à 31,8 cd/m² (E = 200 lx, ρ = 0,5 : **valeur de conception**, M-04 reste « non mesurable »), exposition physique ; 35 % de fenêtres allumées (conception, en attendant l'heure de WFS-152). Jour : 2 % de la lumière du ciel (facteur de lumière du jour) ; la vitre garde son reflet de l'IBL (mélange de Fresnel).
+  - **Accroches annoncées** : `MAT_INTERIEUR` dans `src/render/renderer.h` (1 ligne) ; `shaders/scene.frag` (2 lignes : appel de la pièce, émission de la vitre non ajoutée en surface).
+  - `archi_geo.cpp` : uv des vitres = largeur, allège, hauteur de la baie (dm) + position relative ; `test_archi_geo` : 4 481 814 contrôles, 0 échec ; 45 tests CPU verts.
+- **Captures regardées** : nuit, fenêtres allumées au hasard, pièces visibles, lumière chaude ; jour, vitres sombres, pièce dans l'ombre.
+- **Risque signalé au PO** (hors zone, rien modifié) : les murs clairs du banc sont presque blancs la nuit, même sans fenêtre allumée (essai `WFS_ARCHI_ALLUMEES=0`). Cause : le phare du joueur (`src/render/nuit.cpp:131`) est un projecteur à cône de 40°, portée 170 m, **sans coupure horizontale**. Il éclaire les façades jusqu'aux toits, alors qu'un feu de croisement coupe sous l'horizon. Proposition : un ticket pour le propriétaire des feux (coupure du faisceau). En attendant, les albédos provisoires des murs (ST-4) seront calibrés pour ne pas aggraver le défaut.
+- **Suite** : ST-4, matériaux (textures CC0 cherchées sur GitHub ; sinon procédurales calibrées, provisoires).
+
+### 2026-11-07 09:13:45 — WFS-218 créé : phares du joueur en feux de croisement (risque signalé par Agent 0) (po-scrum-master)
+- **Signalé par Claude, Agent 0 developer** (WFS-161) : la nuit, façades claires au bord de la route presque blanches ; phare du joueur `nuit.cpp:131` = cône 40°, 170 m, sans coupure.
+- **WFS-218** (E4, P2 Haute, ⏳ Prêt, `regles-de-gestion/WFS-218.md`) : coupure de croisement réglementaire, portée utile 60-80 m, autres feux inchangés, captures avant / après de nuit. Agent 0 continue WFS-161 (ST-4 matériaux) sans toucher à `nuit.cpp`.
+
+### 2026-11-07 09:17:45 — WFS-190 fermé : but atteint au run #799 ; agent arwa libre (po-scrum-master)
+- **Accord de l'utilisateur** : fermer WFS-190. Le run #799 de `main` est vert de bout en bout (endurance comprise, avec WFS-145 et WFS-187) ; le dernier rouge (banc des passes) a été réglé par #170 et WFS-200. Aucun travail restant.
+- **Fait** : WFS-190 ✅ Terminé (CI main #799), ligne déplacée dans `archive/taches-terminees.md` ; ordre urgent retiré du haut de `TACHES.md` ; agent arwa **libre** dans `track-agent.md`. **Agent arwa** : plus rien à faire sur WFS-190, demande ton prochain ticket au PO.
+
+### 2026-11-07 09:17:55 — Statuts automatiques, CI main #816 (robot statuts)
+- Run rouge (schedule, commit 4d8bb7c), aucun statut changé. Job(s) en échec : endurance.
+- Tickets 🟣 contenus dans ce run : WFS-208, WFS-211.
+
+### 2026-11-07 09:25:42 — WFS-194 confirmé : le jeu pourra être vendu ou avoir pub / achats (décision de l'utilisateur) (po-scrum-master)
+- **Décision de l'utilisateur** : vente, publicité ou achats possibles (dit la veille ; confirmé ce matin). Les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) doivent être remplacés.
+- **WFS-194** : P4 conditionnelle → **P2 Haute**, dépendance « décision » retirée ; reste « après WFS-158 » (même épic E10). Voie par défaut : modèles CC0 / CC BY trouvés dans les dépôts GitHub publics (`modeles-3d-github.md`).
+- Note du PO : je n'avais pas retrouvé cette décision de la veille dans mes notes ; elle est maintenant écrite dans les règles du ticket.
+
+### 2026-11-07 09:27:26 — WFS-194 découpé : lot 1 WFS-219 prêt tout de suite, lot 2 après WFS-158 (po-scrum-master)
+- **Demande de l'utilisateur** : commencer une partie de WFS-194 avant WFS-158.
+- **WFS-219** (E10, P2, ⏳ Prêt, exception PO : 2e ticket E10, **fichiers neufs seulement** `assets/cars/remplacants/**`, `assets/licences/remplacants/**`) : recherche dans les dépôts GitHub publics, licences CC0 / CC BY, conversion avec les outils existants sans les modifier, mesures ±1 %, avis d'expert-realisme-3d ; **rien de branché**, le jeu ne change pas.
+- **WFS-194** devient le lot 2 (branchement dans `cars.h`), après WFS-158 et WFS-219. Aucun conflit possible avec arwa-2 : aucun fichier commun.
+
+### 2026-11-07 09:28:22 — WFS-161 (ST-4) : textures scannées CC0 trouvées sur GitHub, téléchargement bloqué par l'accès (Claude, Agent 0 developer)
+- **Rappel (PO, 09:13)** : l'éblouissement des façades sur les captures de nuit de WFS-161 vient des phares du joueur (**WFS-218**), pas du kit.
+- **Trouvé** (recherche de code GitHub) : dépôt public `dunkean/magna-urbis`, dossier `assets/materials/buildings/` : 57 jeux PBR scannés (Poly Haven, ambientCG), **licence CC0-1.0 lue dans le `material.json` de chaque jeu** (champ `provenance` : page, licence, auteurs), fichiers originaux non modifiés, taille réelle en mètres. Choix : `white_sandstone_bricks` (classique), `white_plaster_rough_01` (méditerranéen), `stone_wall` (village), `brick_wall_001` (industriel), `white_plaster_02` (villa), `clay_roof_tiles_02` (tuiles) ; couleur, normales, rugosité en 1 024 px (18 fichiers, 33,7 Mo).
+- **Bloqué** : les images sont stockées en Git LFS. Clone partiel en lecture seule (règles réseau § 2.4) : on obtient les pointeurs LFS, dont l'identifiant est bien l'empreinte SHA-256 annoncée, mais pas les images. L'API LFS répond **403 « access denied by the git proxy : dunkean/magna-urbis is not in this session's authorized repository set »**. L'ajout du dépôt aux sources de la session m'a été refusé. Je ne contourne pas (§ 3.3). **Question posée à l'utilisateur** : autoriser l'ajout de `dunkean/magna-urbis` en lecture à la session.
+- **En attendant** (repli autorisé par le PO à 01:48) : textures procédurales calibrées sur `materiaux.json`, **provisoires**, et salissures en pied de mur et coulures sous les appuis (RG-04), dans `decor.glsl`.
+- Aucun fichier téléchargé n'entre dans le dépôt (seulement des pointeurs de 131 octets, dans le bac à sable de la session).
