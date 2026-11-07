@@ -1,4 +1,4 @@
-# Bancs du matin, chaque jour à 07:00 heure de Paris — WFS-252 / WFS-275 (décisions de l'utilisateur, 2026-11-07) :
+# Bancs du matin, chaque jour à 07:00 heure de Paris — WFS-252 / WFS-277 (décisions de l'utilisateur, 2026-11-07) :
 # « on lance les CI ensuite lui [la QA] il teste ». À chaque envoi sur main, build.yml ne garde que les tests CPU, le parcours complet,
 # l'endurance et l'APK ; ici, sur la dernière version de main :
 #  - tous les groupes de captures du banc d'essai PC (tools/qa/banc_groupe.sh, le même script que build.yml) ;

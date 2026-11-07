@@ -7,7 +7,7 @@
 #  - publie l'APK et les captures dans une Release d'aperçu (lien fixe) :
 #      main -> « apercu » ; feature/waforspeed-XX -> « apercu-waforspeed-XX » (lancement à la main seulement, WFS-185)
 #    WFS-106 : deux jobs. publication-apk part dès la fin du job android (APK en ligne ≈ 5 min après l'envoi) ;
-#    (WFS-275 : publication-captures est maintenant dans matin.yml, chaque matin) publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
+#    (WFS-277 : publication-captures est maintenant dans matin.yml, chaque matin) publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
 #    tous les jobs du dépôt, branches comprises ; les 200 derniers appels restent aux APK)
 # WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
 # du commit s'affichent sur la PR) ; WFS-237 : sur main, un run commencé va toujours au bout, mais les fusions arrivées pendant
@@ -76,7 +76,7 @@ jobs:
       matrix:
         # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
         # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
-        # WFS-275 (décision de l'utilisateur, 2026-11-07) : à chaque envoi, seulement les tests CPU et licences (texte) et le parcours complet
+        # WFS-277 (décision de l'utilisateur, 2026-11-07) : à chaque envoi, seulement les tests CPU et licences (texte) et le parcours complet
         # du jeu (menu1-2400) ; tous les autres groupes, le réalisme compris, tournent chaque matin à 07:00 heure de Paris (matin.yml), suivis de la QA
         groupe: [texte, menu1-2400]
     steps:
@@ -97,7 +97,7 @@ jobs:
         # WFS-117 : tous les build/test_* (déclarés dans CMakeLists.txt) sont lancés par le script, sans liste à tenir ici
         run: bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py   # WFS-22 : licences
       - name: Captures du rendu (${{ matrix.groupe }})
-        run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}   # WFS-275 : même script que matin.yml
+        run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}   # WFS-277 : même script que matin.yml
       - uses: actions/upload-artifact@v4
         with: { name: 'captures-${{ matrix.groupe }}', path: captures }
 
@@ -241,7 +241,7 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
         run: bash tools/qa/notifier_apk.sh
 
-  # WFS-275 : plus de publication des captures à chaque envoi : matin.yml publie chaque matin toutes les captures d'un même commit
+  # WFS-277 : plus de publication des captures à chaque envoi : matin.yml publie chaque matin toutes les captures d'un même commit
   # (publier_apercu.sh retire les captures absentes du run : deux workflows qui publient s'effaceraient l'un l'autre)
 
   # WFS-185 (RG-03) : résumé du run : commit et tickets WFS-XX des messages de commit (pour passer son ticket en ✅ avec le run)

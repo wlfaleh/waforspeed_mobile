@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# WaForSpeed — captures d'un groupe du banc d'essai PC (WFS-275) : le même script sert à build.yml (groupes lancés à chaque envoi)
+# WaForSpeed — captures d'un groupe du banc d'essai PC (WFS-277) : le même script sert à build.yml (groupes lancés à chaque envoi)
 # et à matin.yml (tous les groupes, chaque matin à 07:00 heure de Paris). Usage, depuis la racine du dépôt, jeu compilé dans build/ :
 #   bash tools/qa/banc_groupe.sh <groupe>      → captures/ (artefact captures-<groupe>)
 # Code de sortie : celui du banc (3 = un écart mesuré) ; groupe inconnu = 2. Contenu repris tel quel de build.yml (WFS-69 à WFS-256).

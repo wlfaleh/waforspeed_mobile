@@ -11,7 +11,7 @@
   - `compilation` (WFS-250) : le jeu est compilé **une seule fois** par run (apt-get en 2 essais, `cmake --build build`) ; archive tar `compilation`
     (`wfs_bench`, tous les `test_*`, `liste-tests.txt` ; shaders inclus dans le binaire), gardée 1 jour ; les 12 bancs et `endurance` en dépendent
     (`needs: compilation`), la décompressent et la vérifient (`tools/qa/verifier_compilation.sh` : binaire ou test manquant = rouge).
-  - `banc-essai (<groupe>)` × 2 (WFS-275) : `texte` (+ tests CPU `tools/qa/tests_cpu.sh`, licences) et `menu1-2400` (parcours complet du jeu) ;
+  - `banc-essai (<groupe>)` × 2 (WFS-277) : `texte` (+ tests CPU `tools/qa/tests_cpu.sh`, licences) et `menu1-2400` (parcours complet du jeu) ;
     captures par `tools/qa/banc_groupe.sh <groupe>` (même script que `matin.yml`) ; **plus de publication des captures** à chaque envoi.
   - `endurance` (35 min max) : couches de validation Vulkan, `tools/qa/endurance.sh` (cycles de course, mémoire, objets Vulkan ; verdict RG-13 / 14 / 17 de WFS-145),
     puis `tools/qa/chauffe.sh` (banc de chauffe WFS-123, limite `CHAUFFE_LIMITE`, 600 s par défaut, WFS-220) hors push.
@@ -26,7 +26,7 @@
     tourné** (envoi, terminé, non annulé ; `gh api .../compare`), sinon « liste incomplète » et les commits du dernier envoi.
   - `banc-essai` (WFS-237) : installation `apt-get` en 2 essais de 5 min au plus (comme `endurance`), `timeout-minutes: 75`.
   - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
-## matin.yml « Bancs du matin (captures, réalisme, QA) » (WFS-252, WFS-275)
+## matin.yml « Bancs du matin (captures, réalisme, QA) » (WFS-252, WFS-277)
 Chaque matin à **07:00 heure de Paris** (cron 05:00 et 06:00 UTC, le job `heure` garde celui qui tombe à 7 h) + à la main, sur la dernière version de main.
 `compilation` (wfs_bench) → `banc (<groupe>)` × 14 (`partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte`, `ecrans-2400`, `menu1-2400`,
 `menu2-2400`, `vitrines`, `nuit`, `conduite-chocs`, `realisme-1`, `realisme-2` ; `tools/qa/banc_groupe.sh`) → `fusion` (rapports du réalisme, WFS-251)
