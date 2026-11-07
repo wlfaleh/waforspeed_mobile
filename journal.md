@@ -3074,3 +3074,75 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Découpage** : WFS-155 faisait 2 à 3 jours → lot 1 **WFS-205** (bibliothèque de revêtements calibrés, KTX2, mélange sans répétition, repli ; M-01, M-02) et lot 2 **WFS-206** (usure, raccords, bordures, variantes par carte ; M-03 à M-05). WFS-156 dépend maintenant de WFS-206.
 - **Début WFS-205** : Claude, agent 2 (01UY1Vv5), épic E9, branche `feature/waforspeed-205`. Zone : `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `references/reel/routes/**`, `tests/fidelite_routes*`. Règles : `regles-de-gestion/WFS-205.md`. Réseau : ambientCG et Poly Haven non autorisés ; textures CC0 par les dépôts GitHub publics (§ 2.4), sinon procédural recalibré. Parcours complet exigé.
 - **Écarts de WFS-202** (journal 01:16:27), règle « génération du `.wfm` d'abord » : RR Sport 3 branches, V60 P3, Abarth 2008-2015, GT86 acceptés ; T-Cross chinois signalé à WFS-158 ; licences NC couvertes par WFS-194 ; durée de `partie1b` / `partie2b` gardée. Détail : `regles-de-gestion/WFS-202.md` § Suivi.
+
+### 2026-11-07 01:40:18 — WFS-205 : arbitrage résolution / budget APK (po-scrum-master)
+- Option A retenue (1K couleur et normale, ORM 512, ASTC 4x4, ≈ 22 Mo les 7 revêtements) ; seuil PSNR de WFS-149 non assoupli ; repli RGBA8 hors APK.
+- Accroche autorisée : une ligne `ignoreAssetsPattern` dans `android/app/build.gradle`, limitée aux replis des textures de route. Détail : `regles-de-gestion/WFS-205.md` (Suivi).
+
+### 2026-11-07 01:42:58 — WFS-203 fusionné : plus de nuit blanche (Campagne, Circuit, Corniche, Ville) (Claude, agent 1)
+- PR #174, squash e7b89ee, **fusion par confiance**, 7 lignes dans `src/render/eclairage_physique.cpp` (E13).
+- **Cause (RG-01)** : `src/render/eclairage_physique.cpp`, `SondesIbl::executer` (≈ l. 262, relecture de la capture d'environnement) : une capture demandée pendant la course de jour finissait après `remettreAZero()` (l. 344), pendant la course de nuit suivante au même départ (condition `length(point − dernierPoint) < 0,01` vraie) ; relue comme sonde de nuit, ses faces de jour donnaient **2621 cd/m²** (au lieu de 0,21 pour une vraie capture de nuit) : exposition automatique bloquée à EV100 5 (plafond de nuit) et IBL de jour la nuit → image blanche. Pas propre à la Campagne : toute course de nuit qui suit une course de jour au même point.
+- **Correction (RG-02, RG-03)** : `generationDemande` (scène de la demande) ; une capture demandée dans une autre scène est abandonnée et une autre est demandée. Aucun banc, seuil ni borne d'exposition touchés ; rien de WFS-150 / WFS-151 retiré ; `environnement.cpp` et `bench_passes.cpp` (WFS-200) non touchés.
+- **Chiffres (banc des cartes, `main` → branche, pixels saturés · luminance moyenne)** : `carte-campagne-nuit` 18,1 % · 0,620 → 0,0 % · 0,010 (EV100 5 → 3) ; `carte-circuit-nuit` 21,9 % → 0,0 % ; `-chicane-nuit` 49,5 % → 0,0 % ; `-paddock-nuit` 50,0 % → 0,0 % ; `nuit-plage-corniche` 24,7 % → 0,2 % ; `carte-plage-tunnel-nuit` 50,0 % → 0,0 % ; `carte-ville-rond-point-nuit` 47,1 % → 0,0 % ; `-fontaine-nuit` 35,5 % → 0,2 %. Les 38 autres captures de nuit (troupeaux compris) identiques.
+- **RG-04** : Ville, Circuit, Corniche : seules les vues touchées par le même défaut changent (blanches → nuit). Banc de nuit : seules les `route-*` changent (même sonde périmée, mais sous-exposée à EV 5 ; maintenant EV 3 : ex. `route-nuit-ville-pluie` 0,086 → 0,228 de luminance moyenne, 0 % saturé). Banc réalisme : `realisme-fidelite.txt` identique, mêmes 2 erreurs locales avant / après (textures d'essai KTX2 absentes en local, sans rapport).
+- Tests : 38 tests CPU, parcours complet 0 écart (vue normale et cockpit). Critère « troupeaux visibles de nuit » de WFS-186 vérifié. Statut 🟣.
+
+### 2026-11-07 01:43:47 — WFS-152 découpée (WFS-207, WFS-208) ; WFS-207 attribué à Claude, agent 1 (po-scrum-master)
+- **Début WFS-207** (E13, P2) : Lumière (1/2), soleil et lune calculés à l'écran, atmosphère physique précalculée, brouillard de distance. Responsable : Claude, agent 1 (session 01UY1Vv2), libre après WFS-203 🟣 (PR #174). Branche `feature/waforspeed-207`.
+- **Choix** : aucun ticket ⏳ Prêt ; WFS-152, WFS-161 et WFS-164 ont leurs dépendances finies (WFS-151 ✅ #799), tous P2 ; WFS-152 a le plus petit numéro et débloque WFS-153, 154, 157 et 163. E13 libre (WFS-203 🟣). Taille 2 à 3 jours : découpée en deux lots d'une journée (règle de l'utilisateur), règles dans `regles-de-gestion/WFS-207.md` et `WFS-208.md`.
+- **Zone permise** : `shaders/sky*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `atmosphere_*`, `ibl_*`, `references/reel/lumiere/**`, `tests/fidelite_lumiere*` ; accroche ≤ 10 lignes E4 (`scene.frag` / `renderer.cpp`) annoncée au journal. Interdit : noyau, CMake, `src/ui/**`, `nuit.cpp`, `.github/**`, iOS.
+- **Critères** : `realisme-ciel-*` avant / après, M-01 à M-03, indice ≥ 99 %, non-régression des nuits (WFS-203), budget RC-06, tests CPU et parcours complet verts.
+
+### 2026-11-07 01:45:02 — WFS-200 fusionné (PR #175, squash b08051c) ; agent libre (Claude, Agent 0 developer)
+- **CI de branche run 802** (US technique, 8f9a870 : correction des vêtements + suréchantillonnage de #170) : **tout vert**, dont `banc-essai (realisme)` (banc des passes à 0 écart) et `endurance`.
+- Branche resynchronisée avec `main` (9 commits, sans conflit), compilation propre, 39 tests CPU verts, puis PR #175 fusionnée en squash. Diff : 1 ligne, `shaders/scene_skin.frag:104` (accroche E11 annoncée le 2026-11-07 00:4x).
+- Décision du PO (option a) appliquée : seule la correction des vêtements est fusionnée ; l'écart M-01 est réglé sur `main` par #170 (run 799 vert) ; WFS-204 (piste des mipmaps, fausse) annulé par le PO.
+- Selon la nouvelle règle, je ne suis pas la CI de `main` : le robot des statuts passera WFS-200 en ✅. Agent libre, ticket suivant demandé au PO.
+
+### 2026-11-07 01:46:09 — WFS-161 attribué à Claude, Agent 0 developer (session 01UY1Vv2SSLK) ; WFS-164 prêt (po-scrum-master)
+- **Pourquoi lui** : libre après WFS-200 (PR #175, b08051c). E13 (WFS-207) et E9 (WFS-205) sont occupées ; E12 est libre et WFS-161 ne dépend que de WFS-151 ✅ (run 799). Plus petit numéro P2 attribuable.
+- **Ticket** : WFS-161 — [RÉALISME 3.E1] Environnements : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux · E12 · branche `feature/waforspeed-161` · règles `regles-de-gestion/WFS-161.md` (section « Source des modèles » : dépôts GitHub publics, `modeles-3d-github.md` § 5 ; réalisme validé par expert-realisme-3d, consultant).
+- **WFS-164** (humains réalistes, E11) passe ⏳ Prêt (WFS-151 ✅) ; priorité d'usage : conducteurs des voitures.
+
+### 2026-11-07 01:46:41 — Début WFS-161 : kit d'architecture réaliste (E12) (Claude, Agent 0 developer)
+- Ticket attribué par le PO (92cedac) ; branche `feature/waforspeed-161` créée depuis `main` et poussée.
+- Règles lues : `regles-de-gestion/WFS-161.md` (RG-01 à RG-05, M-01 à M-04, ST-1 à ST-6), charte `DA-realisme.md`, source des modèles (dépôts GitHub publics, CC0 / CC BY, `regles-reseau.md`).
+- **Plan** : ST-1 modules et règles d'assemblage (`src/world/archi_*`, test CPU des hauteurs d'étage M-01 et des ouvertures M-02) → ST-2 6 styles → ST-3 fenêtres en retrait et intérieurs de nuit (`shaders/decor*.glsl`) → ST-4 matériaux CC0 → ST-5 branchement dans les cartes (accroches ≤ 10 lignes annoncées) → ST-6 mesures. Chaque sous-tâche testée avant la suivante ; plan détaillé, fichiers et risques au journal après l'analyse du code existant (`ville.cpp` `box` / `facadeTexture`, `commerces.cpp`, `enseignes.cpp`).
+
+### 2026-11-07 01:47:56 — WFS-161 : analyse, plan détaillé et risques signalés (Claude, Agent 0 developer)
+- **Existant** : la Ville fait ses immeubles avec `box()` + `facadeTexture()` (`src/world/ville.cpp:114`, `:141`) : boîte de 4 côtés, grille de fenêtres peinte (2 par tuile de 4 m), toit plat ; la nuit, émission × texture. La Corniche (`plage.cpp`) et la Campagne (`campagne.cpp`, `decor_carte.cpp`) ont leurs propres boîtes et `carte::toit`. Shader de décor : `shaders/decor.glsl` (sol, végétation).
+- **Plan** (zone E12 : `src/world/archi_*`, `assets/textures/decor/**`, `shaders/decor*.glsl`) :
+  - ST-1 `src/world/archi_kit.h/.cpp` : règles pures (sans Vulkan) : style → hauteurs (RDC 3,5-4,5 m, étage 2,7-3,2 m), travées, ouvertures (fenêtre, allège, porte), modules (RDC commerce / porche / garage ; étage fenêtres / balcons / loggias ; corniche ; toiture zinc / tuiles / terrasse + édicules ; angles), assemblage par graine `Mulberry32` ; géométrie `archi_geo.cpp` (murs percés, tableaux de fenêtres en retrait, appuis, corniches, toitures), test CPU `test_archi` (M-01, M-02, invariants : hauteur totale, travées dans la largeur, aucun trou).
+  - ST-2 6 styles (tables de règles + matériaux) ; ST-3 vitres IBL et intérieurs de nuit (interior mapping dans `shaders/decor_interieur.glsl`, 2700-3000 K) ; ST-4 matériaux CC0 ; ST-5 accroches `ville.cpp` / `plage.cpp` / `campagne.cpp` (≤ 10 lignes, repli sur l'ancien code) ; ST-6 mesures dans `realisme-fidelite.txt`.
+- **Risques signalés au PO** :
+  1. **Référentiel** : `references/reel/` n'a aucune donnée d'architecture (hauteurs d'étage, fenêtres, portes, allèges). M-01 peut s'appuyer sur les plages de RG-01 ; M-02 et M-04 (luminance d'une fenêtre allumée) demandent des valeurs sourcées. Proposition : un fichier `references/reel/architecture.json` (zone du référentiel de WFS-148), sources trouvées sur GitHub seulement (seul site ouvert) ; ce qui n'a pas de source ouverte → « à confirmer » ou « non mesurable », comme le dit `SOURCES.md`.
+  2. **Textures scannées CC0** (ST-4) : Poly Haven et ambientCG sont bloqués ; recherche dans les dépôts GitHub publics (`modeles-3d-github.md` § 5). Si rien de réaliste n'est trouvé : textures procédurales calibrées sur les albédos du référentiel (`materiaux.json`), signalé au PO.
+  3. **Coût** : façades en relief = plus de triangles ; LOD 3 niveaux et imposteurs au-delà de 300 m (RG-05), mesure au banc avant / après.
+- **À noter pour WFS-200** : `shaders/decor.glsl` (`teinteVegetation`) multiplie l'alpha du feuillage par `1 + lod × 0,25` : le feuillage s'épaissit quand l'image est plus petite. C'est très probablement le mécanisme exact de l'écart M-01 (capture de 256 px plus dense que la scène) ; rien à faire tant que #170 tient le banc au vert.
+
+### 2026-11-07 01:48:17 — WFS-161 : arbitrages du PO (référentiel d'architecture, textures) (po-scrum-master)
+- `references/reel/architecture.json` autorisé (exception de zone ; règles de `SOURCES.md`). Textures : dépôts GitHub publics d'abord, sinon procédurales calibrées sur `materiaux.json`, provisoires. Écrit dans `regles-de-gestion/WFS-161.md`.
+
+### 2026-11-07 01:52:42 — WFS-161 (ST-1) : règles d'assemblage poussées ; arbitrages du PO reçus (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 502079a) : `src/world/archi_kit.h/.cpp` (6 styles, hauteurs RG-01, travées dans la plage du style avec murs de rive, modules de RDC / étage / toiture, ouvertures par travée et par niveau, linteau 0,2 m, trumeau 0,3 m) et `tests/archi_kit.cpp` (6 styles × 400 graines, 210 584 contrôles, 0 échec ; M-01 tenu). Le test a trouvé un défaut de règle, corrigé : certaines largeurs ne se découpent pas en travées de la plage → murs pleins de rive, comme un vrai bâtiment. 40 tests CPU verts ; branche synchronisée avec `main` (d213cd8).
+- **Exception de zone accordée par le PO** (01:48:17) : création de `references/reel/architecture.json` (hors zone E12), règles de `SOURCES.md`, `test_fidelite` vert. Textures : GitHub d'abord, sinon procédurales provisoires avec l'avis d'expert-realisme-3d.
+- **Suite** : ST-1 géométrie (`archi_geo.cpp` : murs percés, tableaux en retrait, appuis, corniches, toitures, édicules) et `architecture.json` (M-02).
+
+### 2026-11-07 01:56:34 — WFS-161 (ST-1) : référentiel d'architecture créé (exception de zone du PO) (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 60d12f1) : `references/reel/architecture.json` (11 valeurs) et 4 sources dans `SOURCES.md` :
+  - `conception` (RG-01) : RDC 3,5-4,5 m, étage 2,7-3,2 m, éclairage intérieur 2700-3000 K ;
+  - `a_confirmer` (textes cités, non ouvrables depuis la session : Légifrance et AFNOR bloqués) : hauteur sous plafond ≥ 2,20 m (décret 2002-120), garde-corps 1,00 m (NF P01-012), porte d'entrée 0,90 m / passage utile 0,83 m (arrêté du 24/12/2015) ;
+  - `a_sourcer` (valeur vide, « non mesurable ») : largeur, hauteur et allège courantes des fenêtres (M-02), luminance d'une fenêtre allumée la nuit (M-04). Aucune source ouverte : les plages du kit restent des choix à confirmer.
+- **Accroche annoncée** (1 ligne, hors E12, couverte par l'exception du PO) : `FICHIERS_REFERENTIEL` dans `src/render/bench_realisme.h`.
+- **Vérification** : `test_fidelite` vert (le fichier passe les contrôles du référentiel) ; `test_archi_kit` vérifie que les plages du kit sont celles du référentiel, et la cohérence étage minimal − plancher ≥ hauteur sous plafond ; 40 tests CPU verts ; branche synchronisée (bcdbfda).
+- **Limite** : M-02 et M-04 resteront « non mesurables » tant qu'aucune source ouverte ne donne ces valeurs.
+- **Suite** : géométrie du kit (`archi_geo.cpp` : murs percés, tableaux en retrait, appuis, corniches, toitures, édicules), puis les captures de banc.
+
+### 2026-11-07 02:00:55 — Statuts automatiques, CI main #803 (robot statuts)
+- Run vert (push, commit ad870c0) : WFS-202 ✅ (PR #173, ad870c0).
+
+### 2026-11-07 02:24:53 — Statuts automatiques, CI main #804 (robot statuts)
+- Run vert (push, commit e7b89ee) : WFS-203 ✅ (PR #174, e7b89ee).
+
+### 2026-11-07 02:44:16 — Statuts automatiques, CI main #805 (robot statuts)
+- Run vert (push, commit b08051c) : WFS-200 ✅ (PR #175, b08051c).
