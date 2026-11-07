@@ -223,7 +223,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-271 | Correction (lot E2, QA) : raccords des ronds-points (plaque sombre, traits blancs isolés, piéton sur l'îlot) (ANO-142, 143, 144) | E2 | ⏳ Prêt |  | WFS-248 🟡 | `feature/waforspeed-271` |  |  |
 | P2 Haute | WFS-272 | [RÉALISME] Son des autres voitures : adversaires, trafic et police placés (gauche / droite, Doppler) | E6 (+ lecture E3, accroches ≤ 10 lignes) | 🟣 Fusionné (#227, squash 9fe1b19) | arwa-4 (Claude, session 01Us6uCw), 2026-11-07 18:10 UTC | WFS-261 🟣 | `feature/waforspeed-272` | #227 |  |
 | P1 Urgent | WFS-273 | [TECHNIQUE] Tout préparer au chargement (suite) : instances des arbres (RG-02 de WFS-268) puis décor préparé en Campagne et Grand Prix | E4 (+ renderer et `scene.vert`, après WFS-246) | ⏳ Prêt (WFS-268 et WFS-246 fusionnés ; premier de E4) |  | WFS-268 et WFS-246 fusionnés ; **pas** agent arwa | `feature/waforspeed-273` |  |  |
-| P2 Haute | WFS-275 | [RÉALISME] Son : écho des façades, murs et falaise ; sons masqués par les immeubles ; CNOSSOS-EU vérifié | E6 (+ lecture E2 / E12, accroches ≤ 10 lignes par carte) | 🔧 En cours | arwa-4 (Claude, session 01Us6uCw), 2026-11-07 19:56 UTC | WFS-261 🟣, WFS-272 🟣 | `feature/waforspeed-275` |  |  |
+| P2 Haute | WFS-275 | [RÉALISME] Son : écho des façades, murs et falaise ; sons masqués par les immeubles ; CNOSSOS-EU vérifié | E6 (+ lecture E2 / E12, accroches ≤ 10 lignes par carte) | 🟣 Fusionné (#237, squash b009c48) | arwa-4 (Claude, session 01Us6uCw), 2026-11-07 19:56 UTC | WFS-261 🟣, WFS-272 🟣 | `feature/waforspeed-275` | #237 |  |
 
 ## Critères d'acceptation
 
