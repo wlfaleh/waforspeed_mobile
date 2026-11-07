@@ -3381,3 +3381,21 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 15:47:03 — WFS-251 confié à l'agent expert ci, exception de l'utilisateur (po-scrum-master)
 - Ordre de l'utilisateur à l'agent expert ci : « Tu as le droit exclusivement pour le toucher » (WFS-251). Exception à « pas l'expert CI » : WFS-251 🔧 En cours, agent expert ci (session 01UY1Vv4), **après WFS-250** (CI de branche run 849 ; dernier envoi feature/waforspeed-250 : 15:45:37, 82b1f20).
 - Zone : `src/render/bench_realisme.cpp` (+ `.h`), accroche ≤ 10 lignes `desktop_main.cpp`, outil de fusion ; rien d'autre dans `src/**`. Règles : `regles-de-gestion/WFS-251.md` (Suivi). WFS-251 retiré de l'ordre du PO des tickets prêts. WFS-252 reste réservé à l'expert CI après WFS-250 et 251.
+
+### 2026-11-07 14:49:55 — WFS-234 : début, carte de navigation façon GPS (Claude, agent 1)
+- Ticket attribué par le PO (commit d227651), départ validé par l'utilisateur. Branche `feature/waforspeed-234`, zone `src/ui/minicarte.*` et HUD.
+
+### 2026-11-07 15:49:59 — WFS-234 : carte de navigation façon GPS, prête à fusionner (Claude, agent 1)
+- **Fait (zone E5)** :
+  - `src/ui/navigation.h` (nouveau, calculs purs) : prochaine manœuvre lue dans le tracé 2 (virage, virage serré, épingle, lacets, chicane, rond-point et sa sortie, carrefour à feux, arrivée), distance arrondie comme un GPS, zoom selon la vitesse lissé, noms de rues inventés, terrain par zone, radars et travaux fictifs, bouchons ;
+  - `src/ui/minicarte.cpp` réécrit : carte orientée cap de la voiture, aplats, rues des carrefours et ronds-points, itinéraire en couleur, bandeau du prochain virage, nom de la rue, signalements en fondu. **Place inchangée** (`placer()` de WFS-173) : aucun bouton ne bouge, pas de toucher.
+- **Accroche** : 1 ligne dans `CMakeLists.txt` (`test_navigation`). Lecture seule de `eclairage::etat().nuit` : `GameView::night` n'est rempli par personne (constat, à signaler au PO).
+- **Écart au skill design-street-racing**, pour suivre RG-01 : la carte est claire le jour. Le bandeau reste en verre sombre avec liseré cyan.
+- **Coût (RG-04)** : 1 662 à 3 312 sommets par image (borne de 4 000), aucune allocation par image.
+- **Preuves (RG-05)** :
+  - `test_navigation` : 1 085 vérifications vertes (4 cartes : prochain virage et distance tous les 3 m sur 2 tours, contrôle par force brute, 3e sortie au rond-point, arrondis, zoom, noms, bouchons) ;
+  - 48 tests CPU verts ; `test_minicarte` (place) inchangé et vert ;
+  - parcours complet : 0 écart ;
+  - captures regardées en 1280×720 : `minicarte-checkpoint`, `minicarte-ligne` (mêmes noms que WFS-173 : la comparaison avant / après se fait avec les captures de `main`) et `minicarte-<ville|plage|campagne|circuit>-<jour|nuit>` (Checkpoint, Course à 5, Poursuite ; rond-point à 200 m sur 3 cartes, épingle sur le Grand Prix) ; le duel se voit dans `duel-course`. La CI les prend aussi en 2400×1080 (`-2400`).
+- **Banc** : `hud` passe à 7,5 min en local.
+- **Limites** : le texte du bandeau fait 10 px en 1280×720, lisible mais petit, car la carte garde 150 px. Radars et travaux sont fictifs, comme demandé par RG-03.
