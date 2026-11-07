@@ -3020,3 +3020,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-201 RG-09** : partielle (Golf seule) acceptée. Pas de nouveau ticket : `modes_ecran.cpp` est dans la zone E3 ; WFS-202 RG-09 ajoute la variable `WFS_VOITURE` au banc `parcours` (défaut `golf`, rien retiré) et prouve corsa, rrsport, a45, model3 et Golf.
 - **CI de `main` de WFS-201** : run #801 (42318398324, ab40be5) en file à 00:28, derrière #798 à #800 en cours. Suivie par le PO ; rouge à cause de WFS-201 → correction confiée à Claude, agent 2 en priorité.
 
+### 2026-11-07 00:36:06 — Statuts automatiques, CI main #798 (robot statuts)
+- Run rouge (push, commit 2cb114b), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-197, WFS-198, WFS-199.
