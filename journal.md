@@ -3504,3 +3504,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:25:05 — ANO-129 / WFS-256 (chocs) et ANO-130 / WFS-257 (personnes qui apparaissent) créés (po-scrum-master)
 - Retours de l'utilisateur sur téléphone. WFS-256 (E3, physique) attribué à l'agent dev conduite, qui avait demandé un ticket (son domaine, hors fichiers tenus). WFS-257 (E11) ⏳ Prêt, ajouté à l'ordre de priorité juste après la liste de l'utilisateur.
+
+### 2026-11-07 16:35:47 — Début WFS-257 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- **Ticket** : WFS-257 (P1 Urgent, E11) — personnes qui apparaissent et disparaissent d'un coup (ANO-130). Règles : `regles-de-gestion/WFS-257.md`. Branche `feature/waforspeed-257` (premier commit à pousser tout de suite).
+- **Pourquoi lui, en plus de WFS-226** : l'utilisateur demande dans la session trafic d'avancer un autre sujet en parallèle (« Next » répété) ; exception à « un ticket par agent » sur cette demande. WFS-226 reste à lui (E4 + E3).
+- **Choix** : ticket prêt le plus prioritaire hors E3 / E4 ; WFS-249 (E13 tenue par WFS-230), WFS-224 (E4), WFS-242 (E3) non attribuables ; E11 libre (WFS-210, 233, 240 ✅).
+- **Zone autorisée** : `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, tests et banc E11. **Interdit** : `camera_vue.*`, `game.cpp`, trafic (`traffic_system.*`, hors bloc des feux de WFS-226 déjà autorisé pour l'autre ticket), fichiers de WFS-246 / 247 / 256, tailles d'interface, iOS (gel).
+- **Plan court** : RG-01 cause nommée au journal (suites de captures, 5 cartes) ; apparition / disparition hors de la vue ou en marchant ; fondu ≥ 0,5 s des niveaux de détail ; densité −50 % inchangée ; preuves avant / après (0 apparition visible), tests CPU, parcours 0 écart, `qa/Check.md`, 🟡 puis confirmation de l'utilisateur.
