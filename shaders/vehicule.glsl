@@ -67,7 +67,7 @@ void vernisPeinture(inout vec3 col, vec3 R, vec3 sun, float NoV, float NoH, floa
         // Hors des lumières (aucun projecteur proche) : 0, la peinture garde le seul ciel de lune (iblDiffus), comme la route.
         // Luminance de la chaussée compressée au-delà de L_SAT (pré-exposée) : sous plusieurs faisceaux proches (grille de
         // départ en ville), la peinture ne sature pas en blanc ; elle garde sa teinte.
-        const float RHO_ROUTE = 0.14, K_DIFFUS = 2.5, L_SAT = 0.5;
+        const float RHO_ROUTE = 0.14, K_DIFFUS = 2.0, L_SAT = 0.5;
         vec3 Nc = normalize(R + normalize(F.camPos.xyz - vWorld));   // normale de la pièce (R = reflect(−V, N))
         solNuit = RHO_ROUTE * eclairementRouteAutour() / PI;
         solNuit /= 1.0 + dot(solNuit, vec3(0.2126, 0.7152, 0.0722)) / L_SAT;
