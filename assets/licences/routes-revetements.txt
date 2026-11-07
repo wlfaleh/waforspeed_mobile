@@ -9,7 +9,7 @@ Modifications faites pour WaForSpeed (references/reel/routes/outils/preparer.py,
 - albédo recalibré (RG-02) : gain k sur la couleur en linéaire (moyenne amenée au centre de la plage du réel) ;
 - rugosité : r' = a·r + b (canal G de l'ORM) ; métal mis à 0 ; ORM fait d'une seule carte de rugosité quand il n'y a pas d'ARM (occlusion 1) ;
 - réduction : couleur et normale 2048 → 1024, ORM → 512 (décision du PO, WFS-205, 2026-11-07 01:40:18) ; normales parfois lissées (σ) ;
-- KTX2 : tools/textures/convertir.py (ASTC, RGBA8 de repli réduit à 512 / 256, hors APK).
+- KTX2 : tools/textures/convertir.py (ASTC, RGBA8 de repli réduit à 512 / 256).
 
 enrobe-neuf : Poly Haven « asphalt_02 » (https://polyhaven.com/a/asphalt_02), copie de https://github.com/webtilians/lain (client/art/photoreal11/textures/asphalt_02/)
   asphalt_02_arm_2k.jpg : SHA-256 ed70e88640e4ed51cf1c3e57cb20db26983599b20b867c2526439e3a2c849fea, 1299186 octets

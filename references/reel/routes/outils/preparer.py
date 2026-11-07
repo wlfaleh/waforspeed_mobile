@@ -12,7 +12,7 @@
 #   3. réduction (décision du PO, WFS-205 Suivi 01:40:18) : couleur et normale 2K → 1K (moyenne 2×2 en linéaire ; normales
 #      renormalisées), ORM → 512 ; KTX2 par tools/textures/convertir.py (WFS-149) : ASTC 6x6, 4x4 si le PSNR est trop bas
 #      (cas des scans de chaussée : bruit fin) ;
-#   4. budget : ETC2 non gardé (refusé sous le seuil ; repli RGBA8) ; RGBA8 (banc PC, GPU sans ASTC, exclu de l'APK) gardé SANS
+#   4. budget : ETC2 non gardé (refusé sous le seuil ; repli RGBA8) ; RGBA8 (banc PC, GPU sans ASTC) gardé SANS
 #      son premier niveau (512 pour couleur et normale, 256 pour l'ORM : ≈ 4 mm par texel, un pixel du banc 1280 × 720 à 3 m) ;
 #   5. rapport : references/reel/routes/revetements.json (k, a, b, moyennes avant / après, fichiers et octets).
 # Écrit dans assets/textures/route/<id>/route_<id>-couleur|-normale|-orm.{astc,rgba8}.ktx2 (préfixe « route_ » : motif

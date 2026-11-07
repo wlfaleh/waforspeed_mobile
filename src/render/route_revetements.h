@@ -8,7 +8,7 @@
 // WFS-149 (recalibrée), jamais de plantage.
 // Qualité (RG-01, décision du PO 2026-11-07 01:40:18, budget de l'APK) : couleur et normale 1K en Ultra / Haute, 512 en Moyenne,
 // 256 en Basse (ORM : moitié) : niveaux de mipmaps sautés au chargement. ASTC 4x4 (6x6 sous le seuil PSNR : bruit fin des scans).
-// Repli RGBA8 (GPU sans ASTC, banc PC ; hors APK) : fichier déjà réduit à 512 (ORM 256) ; pas d'ETC2 (refusé sous le seuil).
+// Repli RGBA8 (GPU sans ASTC, banc PC ; dans l'APK : + 8,6 Mo) : fichier déjà réduit à 512 (ORM 256) ; pas d'ETC2 (refusé sous le seuil).
 // Textures partagées par tous les matériaux du même revêtement pendant une partie : un seul envoi au GPU.
 #pragma once
 #include <cstddef>

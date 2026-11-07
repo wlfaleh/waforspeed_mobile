@@ -37,7 +37,6 @@ android {
         release { minifyEnabled false; signingConfig signingConfigs.test }
     }
     androidResources { noCompress 'wfm', 'wav' }
-    androidResources { ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!route_*.rgba8.ktx2' }   // WFS-205 (accroche, PO 01:40) : motifs par défaut d'aapt + replis RGBA8 des routes hors APK
     // WFS-129 (RG-04) : bibliothèques natives non compressées, alignées sur 16 Ko dans l'APK (vérifié par la CI : zipalign -P 16)
     packagingOptions { jniLibs { useLegacyPackaging false } }
 }

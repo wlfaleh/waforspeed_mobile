@@ -17,9 +17,9 @@ Les variantes par carte, l'usure, les raccords et les bordures sont le lot 2 (WF
   `assets/licences/routes-revetements.txt` et journal de WFS-205.
 - Plages : `DA-realisme.md` § 3, `materiaux.json` et avis de l'expert-realisme-3d (statuts V / AC / E dans le journal).
 - Tailles (décision du PO, 2026-11-07 01:40:18) : couleur et normale 1K (Ultra / Haute), 512 (Moyenne), 256 (Basse) ; ORM moitié ;
-  ASTC 4x4 (le 6x6 reste sous le seuil PSNR de WFS-149 : bruit fin des scans) ; repli RGBA8 réduit à 512, hors APK.
+  ASTC 4x4 (le 6x6 reste sous le seuil PSNR de WFS-149 : bruit fin des scans) ; repli RGBA8 réduit à 512 (dans l'APK, + 8,6 Mo compressés : le motif d'exclusion du gradle était sans effet).
 - Lecture sans répétition (`shaders/route.glsl`, RG-03) : pavage hexagonal (Haute / Ultra), deux échelles (Moyenne), une lecture
   (Basse) ; macro-variations procédurales à 23 et 47 m ; trottoir (dalles) sans rotation, teinte par carreau.
-- Repli (RG-04) : sans carte (fichier absent, GPU sans ASTC sur téléphone), la surface procédurale de WFS-149, recalibrée sur
+- Repli (RG-04) : GPU sans ASTC : variante RGBA8 (512) ; sans aucune carte lisible, la surface procédurale de WFS-149, recalibrée sur
   l'enrobé usé (albédo moyen ≈ 0,13 au lieu de ≈ 0,07).
 - Vérification : `tests/fidelite_routes.cpp` (M-01, M-02, tailles, budget, indice de fidélité).
