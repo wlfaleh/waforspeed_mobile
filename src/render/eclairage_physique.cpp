@@ -11,6 +11,7 @@
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../game/player.h"
+#include "../game/sauvegarde.h"   // WFS-208 : moment de la dernière course (après un redémarrage)
 #include "../game/trace_cartes.h"
 #include "../game/track.h"
 #include "../ui/ecrans/reglages.h"
@@ -49,6 +50,9 @@ struct Retrait { int images; Image img; Buffer tampon; };
 struct Etat_ {
     bool desactive = false; Forcage forc; Etat etat;
     vec3 astreCache{0, -2, 0}; bool cielCalcule = false; atmosphere::Ciel atmo;   // WFS-207 : atmosphère de l'astre courant
+    // WFS-208 : moment choisi (écran Terrain) ou relu dans la sauvegarde, heures des moments (cache), temps écoulé (accéléré)
+    atmosphere::Moment moment = atmosphere::Moment::Midi; bool momentChoisi = false, momentLu = false;
+    double heureMoment[(int)atmosphere::Moment::NB] = {-100, -100, -100, -100, -100, -100, -100}, ecoule = 0, acceleration = 1;
     // image courante (physique → avantImage)
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
     // scène
@@ -345,6 +349,12 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 
 const Etat& etat() { return g.etat; }
 void forcer(const Forcage& f) { g.forc = f; }
+void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
+    g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
+    g.momentLu = false; g.ecoule = 0; g.heureMoment[(int)atmosphere::Moment::Reel] = -100;
+}
+int momentChoisi() { return (int)g.moment; }
+void accelererTemps(double f) { g.acceleration = std::max(0.0, f); }   // WFS-208 (RG-02)
 void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
 bool sondeCapturePrete() { return g.B.capture && !g.forcerCapture && !g.enCours && !g.relecture && !environnement::enCours(); }
 void remettreAZero() {
@@ -364,6 +374,12 @@ void irradiance(const vec3& n, double E[3]) {
     for (int q = 0; q < 3; q++) E[q] = a[q] * (1 - w) + b[q] * w;
 }
 
+// WFS-208 (RG-04) : couverture nuageuse de la carte (part du ciel couverte, été méditerranéen : littoral plus dégagé)
+double couvertureNuages(const GameView& gv) {
+    const char* id = gv.map ? gv.map->id : "";
+    return !std::strcmp(id, "plage") ? 0.15 : !std::strcmp(id, "ville") ? 0.25 : !std::strcmp(id, "circuit") ? 0.30 : 0.35;
+}
+
 void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.imageActive = false;
     if (dediee || g.desactive) { g.etat.actif = false; return; }
@@ -378,32 +394,56 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // ---- RG-01 : soleil (lune la nuit) en lux
     // WFS-207 (RG-01) : astre calculé pour le lieu et la date fictifs (atmosphere_physique.h) : soleil de la NOAA le jour
     // (heure forcée par le banc possible), lune de Meeus la nuit (sa fraction éclairée règle son éclairement)
-    const atmosphere::Astre astre = nuit ? atmosphere::lune(atmosphere::lieu().heureNuitUtc)
-                                         : atmosphere::soleil(g.forc.actif && g.forc.heureUtc > -50 ? g.forc.heureUtc : atmosphere::lieu().heureJourUtc);
-    vec3 s = !nuit && g.forc.actif && g.forc.azimutSoleil > -500 ? atmosphere::directionMonde(astre.hauteur, g.forc.azimutSoleil) : astre.dir;
+    // WFS-208 (RG-01, RG-02) : moment choisi (sinon celui de la sauvegarde) ; l'ambiance de la carte (jour / nuit) l'emporte
+    // si elle le contredit ; l'heure avance avec la course (× accélération, × 1 par défaut) ; heure réelle : horloge UTC
+    if (!g.momentChoisi && !g.momentLu && sauvegarde().actif()) {
+        g.moment = atmosphere::momentDepuisNom(sauvegarde().moment.empty() ? sauvegarde().tod.c_str() : sauvegarde().moment.c_str()); g.momentLu = true;
+    }
+    atmosphere::Moment mom = g.moment;
+    if (atmosphere::momentDeNuit(mom) != nuit) mom = nuit ? atmosphere::Moment::Nuit : atmosphere::Moment::Midi;
+    const bool lune = mom == atmosphere::Moment::Nuit;
+    g.ecoule += dt * g.acceleration / 3600.0;
+    double& hm = g.heureMoment[(int)mom];
+    if (hm < -50) {
+        if (mom == atmosphere::Moment::Reel) { const auto n = std::chrono::system_clock::now().time_since_epoch(); hm = std::fmod(std::chrono::duration<double>(n).count() / 3600.0, 24.0); }
+        else hm = atmosphere::heureMoment(mom);
+    }
+    const double heure = g.forc.actif && g.forc.heureUtc > -50 ? g.forc.heureUtc : hm + g.ecoule;
+    const atmosphere::Astre astre = lune ? atmosphere::lune(heure) : atmosphere::soleil(heure);
+    vec3 s = !lune && g.forc.actif && g.forc.azimutSoleil > -500 ? atmosphere::directionMonde(astre.hauteur, g.forc.azimutSoleil) : astre.dir;
     if (g.forc.actif && g.forc.hauteurSoleil > -90) {
         vec3 hz{s.x, 0, s.z}; hz = length(hz) > 1e-4f ? normalize(hz) : vec3{1, 0, 0};
         const float h = (float)(g.forc.hauteurSoleil * PI_L / 180.0);
         s = hz * std::cos(h) + vec3{0, std::sin(h), 0};
     }
     const double h = std::asin(std::clamp((double)s.y, -1.0, 1.0)) * 180.0 / PI_L;
-    const double E = nuit ? E_PLEINE_LUNE * astre.fraction * (astre.hauteur > 0 ? 1.0 : 0.0) : eclairementSoleilNormal(h);
+    const bool crep = !lune && h <= 0;   // WFS-208 : soleil sous l'horizon (aube, heure bleue) : ciel du crépuscule, pas de soleil direct
+    const double E = lune ? E_PLEINE_LUNE * astre.fraction * (astre.hauteur > 0 ? 1.0 : 0.0) : crep ? 0.0 : eclairementSoleilNormal(h);
     // WFS-207 (RG-02) : atmosphère calculée quand l'astre change de place (cache) : couleur du soleil au sol (transmittance),
     // teintes du ciel au zénith et à l'horizon, extinction au sol (brouillard)
-    if (length(s - g.astreCache) > 1e-5f || !g.cielCalcule) { g.astreCache = s; g.atmo = atmosphere::ciel(s); g.cielCalcule = true; }
+    // crépuscule : teintes de l'atmosphère au lever / coucher (soleil ramené à 0,5°, même azimut ; le soleil sous l'horizon n'éclaire plus le modèle)
+    const vec3 sAtmo = !lune && h < 0.5 ? atmosphere::directionMonde(0.5, astre.azimut) : s;
+    if (length(sAtmo - g.astreCache) > 1e-5f || !g.cielCalcule) { g.astreCache = sAtmo; g.atmo = atmosphere::ciel(sAtmo); g.cielCalcule = true; }
     const atmosphere::Ciel& A = g.atmo;
     double coul[3];
-    if (nuit) couleurTemperature(T_PLEINE_LUNE, coul);
+    if (lune || (nuit && crep)) couleurTemperature(T_PLEINE_LUNE, coul);
     else { const double y = std::max(luminanceRgb(A.soleil), 1e-9); for (int q = 0; q < 3; q++) coul[q] = A.soleil[q] / y; }
     const vec3 couleur{(float)coul[0], (float)coul[1], (float)coul[2]};
-    const double Ed = nuit ? E_NUIT_SANS_LUNE : eclairementCielDiffus(h);
-    if (std::fabs(h - g.hCache) > 1e-4) { g.hCache = h; g.kCache = cieFacteur(h); }
-    const double K = nuit ? 0 : g.kCache, Lnuit = nuit ? E_NUIT_SANS_LUNE / PI_L : 0;
+    // crépuscule raccordé au ciel diffus au coucher (aucun saut, RG-02) : valeurs publiées × E_ciel(0°) / 750 lx
+    // fondu entre le ciel du jour (CIE) et le ciel uniforme du crépuscule de −1° à +2° : aucune bascule au coucher (RG-02)
+    const double hj = std::max(h, 0.05), u = std::clamp((h + 1.0) / 3.0, 0.0, 1.0), w0 = u * u * (3 - 2 * u);
+    const double wj = lune ? 0.0 : w0 > 0.999 ? 1.0 : w0 < 0.001 ? 0.0 : w0;   // poids du ciel du jour (bords francs : pas de reste numérique)
+    const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) / 750.0;
+    const double Ed = lune ? E_NUIT_SANS_LUNE : wj * eclairementCielDiffus(hj) + (1 - wj) * Ecrep;
+    if (std::fabs(hj - g.hCache) > 1e-4) { g.hCache = hj; g.kCache = cieFacteur(hj); }
+    const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
     // ---- RG-02 : exposition (mesure sur les sondes, bornée par moment, adaptation de l'œil)
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
     const double Lmes = mesurerLuminance(g.avant);
     double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
-    cible = std::clamp(cible, nuit ? EV_NUIT_MIN : EV_JOUR_MIN, nuit ? EV_NUIT_MAX : EV_JOUR_MAX);
+    // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
+    const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
+    cible = std::clamp(cible, evMin, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
     if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
@@ -419,10 +459,10 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double Esol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;
     const vec3 sol = fp.ground * (float)(Esol / PI_L);   // couleur du sol du ciel = albédo
     vec3 brume;
-    if (!nuit) {   // brouillard de jour : teinte du jeu, luminance moyenne du ciel à 5° de hauteur (modèle)
-        double L5 = 0; const double z = 85 * PI_L / 180;
-        for (int j = 0; j < 16; j++) { const double a = 2 * PI_L * (j + 0.5) / 16, d[3] = {std::sin(z) * std::cos(a), std::cos(z), std::sin(z) * std::sin(a)}, ss[3] = {s.x, s.y, s.z}; L5 += K * cieRelative(d, ss) / 16; }
-        brume = horizon0 * (float)L5;   // WFS-207 (RG-03) : perspective aérienne au loin = couleur de l'horizon de la même atmosphère
+    if (!nuit) {   // brouillard de jour : teinte du jeu, luminance moyenne du ciel à 5° de hauteur (modèle) ; WFS-208 : + ciel du crépuscule
+        double L5 = 0; const double z = 85 * PI_L / 180; const vec3 sc = atmosphere::directionMonde(hj, astre.azimut);
+        for (int j = 0; j < 16; j++) { const double a = 2 * PI_L * (j + 0.5) / 16, d[3] = {std::sin(z) * std::cos(a), std::cos(z), std::sin(z) * std::sin(a)}, ss[3] = {sc.x, sc.y, sc.z}; L5 += K * cieRelative(d, ss) / 16; }
+        brume = horizon0 * (float)(L5 + Lnuit);   // WFS-207 (RG-03) : perspective aérienne au loin = couleur de l'horizon de la même atmosphère
         // brouillard de distance physique : le brouillard exponentiel des cartes prend l'extinction au sol de la même atmosphère
         // (Rayleigh + Mie + ozone, pondérée en luminance) ; un brouillard linéaire (pluie de meteo.cpp) reste tel quel
         if (fp.fogFar <= 0) fp.fogDensity = (float)A.extY;
@@ -448,7 +488,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         }
     }
     g.k = k; g.facteur = facteur;
-    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), nuit ? (float)atmosphere::rad(astre.phase) : 0.f};   // WFS-207 : w = angle de phase de la lune
+    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), lune ? (float)atmosphere::rad(astre.phase) : (g.forc.actif && g.forc.sansNuages ? 0.f : (float)couvertureNuages(gv))};   // WFS-208 : w = phase de la lune, ou couverture nuageuse de jour   // WFS-207 : w = angle de phase de la lune
     // ---- RG-03 / ST-4 : sondes locales
     const int niveau = qualite::niveauAffiche(ecrans::reglages().qualite);
     double esp = espacement(niveau);
@@ -476,7 +516,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     e.actif = true; e.nuit = nuit; e.hauteurSoleil = h; e.eSoleilNormal = E; e.eSoleilHorizontal = E * std::max(std::sin(h * PI_L / 180.0), 0.0);
     e.eCielDiffus = Ed; e.facteurCie = K; e.luminanceZenith = nuit ? Lnuit : K * cieF((90 - h) * PI_L / 180) * ciePhi(0);
     e.ev = g.ev; e.evCible = cible; e.k = k; e.facteurArtistique = facteur; e.couleurSoleil = couleur;
-    e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = nuit ? astre.phase : 0;   // WFS-207
+    e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = lune ? astre.phase : 0;   // WFS-207
+    e.moment = (int)mom; e.heureUtc = heure; e.eSol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;   // WFS-208
     e.sondeCaptureActive = g.B.capture; e.positionSonde = g.B.pos; e.poidsB = g.w; e.luminanceMesuree = Lmes;
 }
 

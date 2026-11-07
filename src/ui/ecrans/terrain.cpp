@@ -11,6 +11,8 @@
 #include "../../game/course_system.h"
 #include "../../game/game.h"
 #include "../../game/sauvegarde.h"   // WFS-24 : moment gardé
+#include "../../render/atmosphere_physique.h"   // WFS-208 : moments de la journée
+#include "../../render/eclairage_physique.h"     // WFS-208 : eclairage::choisirMoment
 #include "../../game/track.h"
 #include "../../render/renderer.h"
 #include "../text.h"
@@ -46,6 +48,12 @@ struct Zone {
 Zone g_carte, g_prec, g_suiv, g_jour, g_nuit, g_retour, g_rouler;
 int g_index = 0;          // carte choisie (MAPS)
 bool g_nuitChoisie = true; // TOD du web : nuit par défaut
+// WFS-208 : « Jour » fait défiler aube, matin, midi, heure dorée, heure réelle ; « Nuit » : heure bleue, nuit
+using atmosphere::Moment;
+Moment g_moment = Moment::Nuit;
+const Moment JOURS[5] = {Moment::Aube, Moment::Matin, Moment::Midi, Moment::Doree, Moment::Reel}, NUITS[2] = {Moment::Bleue, Moment::Nuit};
+const char* etiquette(Moment m) { static const char* const N[] = {"Aube", "Matin", "Midi", "Dorée", "Bleue", "Nuit", "Réelle"}; return N[(int)m]; }
+template <size_t N> Moment suivant(const Moment (&l)[N], Moment m, Moment defaut) { for (size_t i = 0; i < N; i++) if (l[i] == m) return l[(i + 1) % N]; return defaut; }
 
 void biseau(Renderer& r, float x, float y, float w, float h, float biais, const vec4& c) {
     // WFS-146 (RG-04, ANO-20) : un seul polygone (avant : 16 bandes translucides qui se chevauchaient → fines lignes sombres)
@@ -220,7 +228,10 @@ public:
         if (nouveau != Ecran::Terrain) { g_carte = g_prec = g_suiv = g_jour = g_nuit = g_retour = g_rouler = {}; return; }
         // carte en cours présélectionnée (pickMap garde MAP)
         for (int i = 0; i < 4; i++) if (g.map && std::string(g.map->id) == CARTES[i].id) g_index = i;
-        if (sauvegarde().actif()) g_nuitChoisie = sauvegarde().tod != "jour";   // WFS-24 : moment de la dernière course
+        if (sauvegarde().actif()) {   // WFS-24 : moment de la dernière course (WFS-208 : moment fin, sinon déduit de tod)
+            g_moment = atmosphere::momentDepuisNom(sauvegarde().moment.empty() ? sauvegarde().tod.c_str() : sauvegarde().moment.c_str());
+            g_nuitChoisie = atmosphere::momentDeNuit(g_moment);
+        }
     }
     // RG-02 : glisser sur la vignette = carte suivante / précédente ; appuis sur les flèches, Jour / Nuit, Retour, Rouler
     bool onTouch(const Touch& t, const GameView& g) override {
@@ -237,12 +248,13 @@ public:
         if (std::fabs(dx) > 30 * k) return true;
         if (g_prec.contient(t.x, t.y)) pas(-1);
         else if (g_suiv.contient(t.x, t.y)) pas(1);
-        else if (g_jour.contient(t.x, t.y)) { g_nuitChoisie = false; WFS_LOG("terrain : Jour"); }
-        else if (g_nuit.contient(t.x, t.y)) { g_nuitChoisie = true; WFS_LOG("terrain : Nuit"); }
+        else if (g_jour.contient(t.x, t.y)) { g_moment = g_nuitChoisie ? Moment::Midi : suivant(JOURS, g_moment, Moment::Midi); g_nuitChoisie = false; WFS_LOG("terrain : Jour (%s)", atmosphere::nomMoment(g_moment)); }
+        else if (g_nuit.contient(t.x, t.y)) { g_moment = g_nuitChoisie ? suivant(NUITS, g_moment, Moment::Nuit) : Moment::Nuit; g_nuitChoisie = true; WFS_LOG("terrain : Nuit (%s)", atmosphere::nomMoment(g_moment)); }
         else if (g_retour.contient(t.x, t.y)) { WFS_LOG("terrain : « Retour »"); g.allerA(Ecran::Menu); }
         else if (g_rouler.contient(t.x, t.y)) {   // RG-03 : la partie est reconstruite sur la carte choisie, puis la course
             WFS_LOG("terrain : « Rouler » sur %s (%s)", CARTES[g_index].id, g_nuitChoisie ? "nuit" : "jour");
             Game::demandes().carte = CARTES[g_index].id; Game::demandes().nuit = g_nuitChoisie;
+            eclairage::choisirMoment((int)g_moment); sauvegarde().moment = atmosphere::nomMoment(g_moment);   // WFS-208 (enregistré par Game::changerCarte)
         }
         return true;   // l'écran garde tous les touchers
     }
@@ -372,7 +384,7 @@ public:
             const float icx = x + 30 * kb, icy = by + bh / 2;   // icône soleil / lune (taille du bouton d'avant WFS-147)
             if (!nuit) { r.uiCircle(icx, icy, 7 * kb, on ? hex(ACCENT2) : hex(TEXTE)); for (int a = 0; a < 8; a++) r.uiCircle(icx + std::cos(a * 0.785f) * 12 * kb, icy + std::sin(a * 0.785f) * 12 * kb, 1.6f * kb, on ? hex(ACCENT2) : hex(TEXTE)); }
             else { r.uiCircle(icx, icy, 9 * kb, on ? hex(ACCENT2) : hex(TEXTE)); r.uiCircle(icx + 5 * kb, icy - 4 * kb, 8 * kb, on ? hex(0x0A2A33) : hex(SURFACE2)); }
-            ui::text(r, x + 52 * kb, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
+            ui::text(r, x + 52 * kb, by + (bh - 18 * k) / 2, 18 * k, ui::majuscules(on ? etiquette(g_moment) : nuit ? "Nuit" : "Jour"), on ? hex(ACCENT2) : hex(TEXTE), ui::GAUCHE, 0.08f, false);
         }
         const float tp = 20 * k;
         const std::string rt = ui::majuscules("Rouler"), bt = ui::majuscules("Retour");
