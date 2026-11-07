@@ -11,8 +11,9 @@
   - `compilation` (WFS-250) : le jeu est compilé **une seule fois** par run (apt-get en 2 essais, `cmake --build build`) ; archive tar `compilation`
     (`wfs_bench`, tous les `test_*`, `liste-tests.txt` ; shaders inclus dans le binaire), gardée 1 jour ; les 12 bancs et `endurance` en dépendent
     (`needs: compilation`), la décompressent et la vérifient (`tools/qa/verifier_compilation.sh` : binaire ou test manquant = rouge).
-  - `banc-essai (<groupe>)` × 12 : `partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte` (+ test de la piste), `ecrans-2400`, `menu1-2400`,
-    `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `realisme` (+ textures KTX2 `tools/textures/ci_textures.sh`) ; Vulkan logiciel ; `WFS_BANC=<groupe> ./build/wfs_bench captures assets/` ;
+  - `banc-essai (<groupe>)` × 13 : `partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte` (+ test de la piste), `ecrans-2400`, `menu1-2400`,
+    `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `realisme-1` et `realisme-2` (WFS-252 : `WFS_REALISME_PARTIE=1|2`, WFS-251 ; textures KTX2
+    `tools/textures/ci_textures.sh` dans `realisme-2` seulement) ; Vulkan logiciel ; `WFS_BANC=<groupe> ./build/wfs_bench captures assets/` ;
     artefact `captures-<groupe>`.
   - `endurance` (35 min max) : couches de validation Vulkan, `tools/qa/endurance.sh` (cycles de course, mémoire, objets Vulkan ; verdict RG-13 / 14 / 17 de WFS-145),
     puis `tools/qa/chauffe.sh` (banc de chauffe WFS-123, limite `CHAUFFE_LIMITE`, 600 s par défaut, WFS-220) hors push.
@@ -23,6 +24,8 @@
     `tools/qa/notifier_apk.sh` ajoute un commentaire `@wlfaleh` (construction, commit, tickets, lien de l'APK, lien du run) dans l'issue fixe
     « 📱 Nouvel APK de main » (créée et épinglée la première fois ; numéro à noter ici) ; un seul commentaire par construction (marque cachée) ;
     permissions du job : `contents: write`, `issues: write`, `actions: read` ; échec = `::warning::`, `continue-on-error`, 2 min au plus.
+  - `realisme-fusion` (WFS-252) : après les bancs ; assemble `realisme-fidelite.txt` et `realisme-mesures.txt` depuis les deux
+    `realisme-partie-N.morceaux` (`WFS_REALISME_PARTIE=fusion`) ; partie absente = rouge ; artefact `captures-realisme` (publié avec les captures).
   - `publication-captures` : seulement les captures qui ont changé ; un échec = avertissement (job vert).
   - `résumé (commit et tickets)` : commit et tickets `WFS-XX` du run ; sur main (WFS-237), **tous les commits depuis le dernier run de main qui a
     tourné** (envoi, terminé, non annulé ; `gh api .../compare`), sinon « liste incomplète » et les commits du dernier envoi.
