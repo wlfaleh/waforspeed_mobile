@@ -4484,3 +4484,19 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   5. le journal du développeur ne contient ni les accroches (`android_main.cpp`, `chauffe.h`) ni les résultats.
 - Statut WFS-262 : ↩️ Retour lead dev (PR #246) ; `track-agent.md` mis à jour.
 - **Pour le PO** : décider par écrit si WFS-262 peut sortir sans la ligne « Cadence » (ticket d'interface séparé, E8) et si le 30 automatique peut être livré avant la réponse de l'utilisateur.
+
+### 2026-11-07 23:49:38 — WFS-232 refusé par le lead dev (PR #245) (lead-dev)
+- **Revue** : 16 captures ouvertes une par une et agrandies, tout le diff lu, `test_trace` relancé sur la branche (e77870e) : OK. Revue écrite dans la PR (commentaire, GitHub refuse « changements demandés » pour le même compte) : https://github.com/wlfaleh/waforspeed_mobile/pull/245#pullrequestreview-5815621519
+- **Bien** : de jour, les 3 modèles se reconnaissent, pilotes casqués, mains au guidon ; inclinaison d'environ 20° vers l'intérieur de la courbe de 22 m ; parcours avant et après identiques ; licences et SHA-256 au journal.
+- **Défauts (chacun bloque)** :
+  1. la description de la PR ne commence pas par « Agent : arwa-3 (Claude, session 01Us6uCt) » ;
+  2. la nuit, de près, scooters et sportive brûlés en taches blanches (`pres-plage-nuit`, `pres-ville-nuit` : luminosité 232 / 255 la nuit contre 121 le jour) ;
+  3. RG-06 : pas de feu arrière sur la sportive (« feu non trouvé : sportive » au journal du banc) ;
+  4. RG-02 : pilotes limités à 4 et à 60 m alors que le trafic est dessiné jusqu'à 300 m : deux-roues sans pilote au loin, et un pilote qui apparaît d'un coup ;
+  5. roues fixes, alors que la règle « Graphisme réaliste » est obligatoire, sans décision écrite du PO ;
+  6. RG-05 : un deux-roues accidenté reste debout et tourne sur lui-même avec son pilote (la PR dit « renversé ») ;
+  7. le banc « de près » laisse deux scooters à 0,6 m l'un de l'autre dans la même file ;
+  8. captures manquantes : les « avant » (les rues existent sur `main`), une suite d'images dans le virage à la vitesse du trafic (jusqu'à 45°), une capture du trafic normal, le phare vu de face la nuit ;
+  9. RG-01 : hauteur de selle non prouvée (routière 0,88 m contre 0,79 à 0,81 m sur la fiche).
+- Statut WFS-232 : ↩️ Retour lead dev (PR #245) ; `track-agent.md` mis à jour.
+- **Pour le PO** : la règle « roues qui tournent » (obligatoire) et la zone (`roues.*` en lecture seule) se contredisent en partie. Une solution existe dans la zone (roues exportées à part et tournées dans `traffic_system` / `deux_roues`) ; sinon, il faut ta décision écrite dans `regles-de-gestion/WFS-232.md` et le ticket du rendu. À trancher aussi : 7 pilotes sur 10 sont des hommes.
