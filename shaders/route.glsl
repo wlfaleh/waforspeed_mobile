@@ -24,13 +24,14 @@ float rnoise(vec2 p) {
 //   0 (Basse) : une lecture.
 // Toujours : macro-variations procédurales à 23 et 47 m (périodes sans multiple commun) : albédo ± 12 %, rugosité ± 0,04.
 const float COTE_SCAN = 2.0;   // côté d'un scan en mètres (Poly Haven, E : references/reel/routes/revetements.json)
-struct Revet { vec3 albedo; vec3 n; float rough; float ao; };
+struct Revet { vec3 albedo; vec3 n; float rough; float ao; float lon; };   // lon : longueur moyenne des normales filtrées (Toksvig)
 vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx + p3.yz) * p3.zy); }
 Revet lire1(vec2 st, vec2 dx, vec2 dy, mat2 R) {
     Revet r;
     r.albedo = textureGrad(texColor, st, dx, dy).rgb;
     vec3 n = textureGrad(texNormal, st, dx, dy).xyz * 2.0 - 1.0;
     r.n = vec3(transpose(R) * n.xy, n.z);   // texture lue tournée de R : la pente revient dans le repère de la route
+    r.lon = length(n);                      // < 1 quand la mipmap moyenne des pentes différentes
     vec3 orm = textureGrad(texMR, st, dx, dy).rgb;
     r.ao = orm.r; r.rough = orm.g;
     return r;
@@ -47,7 +48,7 @@ Revet lireRevetement(vec2 uvM, float mode, bool joints) {
         Revet b = lire1(R * st * 0.41 + 0.37, R * dx * 0.41, R * dy * 0.41, R);
         float m = smoothstep(0.3, 0.7, rnoise(uvM * 0.043 + 11.0));
         Revet r; r.albedo = mix(a.albedo, b.albedo, m); r.n = normalize(mix(a.n, b.n, m));
-        r.rough = mix(a.rough, b.rough, m); r.ao = mix(a.ao, b.ao, m);
+        r.rough = mix(a.rough, b.rough, m); r.ao = mix(a.ao, b.ao, m); r.lon = mix(a.lon, b.lon, m);
         return r;
     }
     // Haute / Ultra : pavage hexagonal (grille triangulaire ; 3 sommets, poids barycentriques)
@@ -58,16 +59,23 @@ Revet lireRevetement(vec2 uvM, float mode, bool joints) {
     if (t.z > 0.0) { w = vec3(t.z, t.y, t.x); v1 = b0; v2 = b0 + vec2(0, 1); v3 = b0 + vec2(1, 0); }
     else { w = vec3(-t.z, 1.0 - t.y, 1.0 - t.x); v1 = b0 + vec2(1, 1); v2 = b0 + vec2(1, 0); v3 = b0 + vec2(0, 1); }
     w = pow(w, vec3(5.0)); w /= dot(w, vec3(1.0));   // poids accentués : le mélange ne délave pas le contraste
-    Revet r; r.albedo = vec3(0.0); r.n = vec3(0.0); r.rough = 0.0; r.ao = 0.0;
+    Revet r; r.albedo = vec3(0.0); r.n = vec3(0.0); r.rough = 0.0; r.ao = 0.0; r.lon = 0.0;
     vec2 vs[3] = vec2[3](v1, v2, v3);
     for (int k = 0; k < 3; k++) {
         vec2 h = hash22(vs[k]);
         mat2 R = rotation(h.x * 6.2831853);
         Revet e = lire1(R * st + h * 17.0, R * dx, R * dy, R);
-        r.albedo += e.albedo * w[k]; r.n += e.n * w[k]; r.rough += e.rough * w[k]; r.ao += e.ao * w[k];
+        r.albedo += e.albedo * w[k]; r.n += e.n * w[k]; r.rough += e.rough * w[k]; r.ao += e.ao * w[k]; r.lon += e.lon * w[k];
     }
     r.n = normalize(r.n);
     return r;
+}
+// Toksvig (2005) : une mipmap de normales moyenne des pentes différentes (longueur < 1) : la part perdue passe dans la rugosité
+// (α² += (1 − l) / l, α = rugosité²). Le reflet reste le même à toutes les distances et toutes les résolutions (scène, capture
+// d'environnement 256 px de WFS-150 : M-01 ± 1 % ; sans cela, grain de reflets de la chaussée mouillée qui diffère : − 2,2 %).
+float roughToksvig(float rough, float lon) {
+    float l = clamp(lon, 0.05, 1.0), v = (1.0 - l) / l;
+    return clamp(pow(pow(rough, 4.0) + v, 0.25), 0.0, 1.0);
 }
 // macro-variations (albédo × 1 ± 12 %, rugosité ± 0,04) en coordonnées monde : taches, zones refaites, sans motif à 100 m
 vec2 macroRevetement(vec2 w) {
@@ -80,13 +88,14 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
     vec2 p = vUv;
     uint fl = uint(pc.params.w + 0.5);
     bool scan = (fl & F_HASMR) != 0u;   // WFS-205 : cartes du revêtement présentes (sinon repli procédural, RG-04)
-    vec3 asphalt; float roughSec;
+    vec3 asphalt; float roughSec; float lonN = 1.0;
     if (scan) {
         Revet rv = lireRevetement(p, pc.params.z, false);
         vec2 mac = macroRevetement(vWorld.xz);
         asphalt = rv.albedo * mac.x;                                              // albédo recalibré à la conversion (RG-02)
         roughSec = clamp(rv.rough + mac.y, 0.0, 1.0);
         N = perturb(normalize(vNrm), vWorld, p, normalize(rv.n));
+        lonN = rv.lon;
     } else {
         // WFS-205 (RG-02, RG-04) : repli procédural recalibré sur l'enrobé usé (0,10-0,18 ; avant : 0,045-0,115, moyenne ≈ 0,07)
         float grain = fbm(p * 3.1) * 0.6 + fbm(p * 23.0) * 0.4;
@@ -105,7 +114,7 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
     float paint = max(edgeL, lane) * (0.75 + 0.25 * noise(p * 6.0));
     base.rgb = mix(asphalt, vec3(0.78, 0.78, 0.74), paint);
     // WFS-142 (RG-02) : asphalte sec, jour et nuit : mat (rugosité 0,75 à 0,9), lignes peintes 0,55, jamais métallique
-    rough = mix(roughSec, 0.55, paint); metal = 0.0;
+    rough = roughToksvig(mix(roughSec, 0.55, paint), mix(lonN, 1.0, paint)); metal = 0.0;
     if (F.nuitA.x > 0.5) {
         // WFS-142 (RG-03) : asphalte mouillé (pluie). Le roadShader du jeu web (rugosité 0,22, métal 0,4, flaques à 0,02 sur
         // ≈ 18 % de la chaussée) faisait un miroir : il n'est plus suivi. Ici : jamais métallique, rugosité 0,35 à 0,5, asphalte
@@ -120,6 +129,7 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
         base.rgb *= (0.9 + 0.2 * rnoise(w * 0.031 + 3.0)) * (1.0 - trk * 0.07) * mix(0.8, 0.72, puddle);   // eau (flaque à peine plus sombre : pas de « trou » noir), réparations
         rough = clamp(mix(0.38, 0.5, paint) + (rn - 0.5) * 0.12 + trk * 0.04, 0.35, 0.5);   // traces de roues : un peu plus mates
         rough = mix(rough, 0.08, puddle);
+        rough = roughToksvig(rough, mix(lonN, 1.0, puddle * 0.7));   // WFS-205 : flaque plus plane (comme N)
         metal = 0.0;
         flaque = puddle;
         N = normalize(mix(N, normalize(vNrm), puddle * 0.7));                       // flaque : surface plus plane, pas un miroir
@@ -132,7 +142,7 @@ void surfaceTrottoir(inout vec4 base, inout float rough, inout float metal, inou
         Revet rv = lireRevetement(p, pc.params.z, true);
         vec2 mac = macroRevetement(vWorld.xz);
         base.rgb = rv.albedo * mac.x * (0.94 + 0.12 * hash(floor(p / COTE_SCAN)));   // teinte par carreau : pas de motif répété
-        rough = clamp(rv.rough + mac.y, 0.0, 1.0); metal = 0.0;
+        rough = roughToksvig(clamp(rv.rough + mac.y, 0.0, 1.0), rv.lon); metal = 0.0;
         N = perturb(normalize(vNrm), vWorld, p, normalize(rv.n));
         return;
     }
