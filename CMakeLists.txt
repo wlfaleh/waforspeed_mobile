@@ -48,6 +48,10 @@ list(APPEND ENGINE_SOURCES src/platform/manette.cpp src/platform/manette_jeu.cpp
 list(APPEND ENGINE_SOURCES src/platform/retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone (Android ; compilé aussi au banc)
 list(APPEND ENGINE_SOURCES src/platform/chauffe.cpp src/platform/chauffe_systeme.cpp)   # WFS-123 : chauffe, 30 / 60 images/s
 list(APPEND ENGINE_SOURCES src/platform/plantage.cpp)   # WFS-126 : rapport de plantage (Android, banc)
+# WFS-279 : version de l'écran de chargement : versionName de android/app/build.gradle (seule source, -DWFS_VERSION) ;
+# PC, bancs et tests : « dev » (captures identiques d'un run à l'autre) ; seuls chargement.cpp et son test la reçoivent
+set(WFS_VERSION "dev" CACHE STRING "Version de l'APK affichée à l'écran de chargement (WFS-279)")
+set_source_files_properties(src/ui/ecrans/chargement.cpp tests/test_version_chargement.cpp PROPERTIES COMPILE_DEFINITIONS "WFS_VERSION=\"${WFS_VERSION}\"")
 
 if(MSVC)
   set(WARN /W3)
@@ -95,6 +99,7 @@ else()
   add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
   add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
+  add_executable(test_version_chargement tests/test_version_chargement.cpp)   # WFS-279 : version de l'écran de chargement
   add_executable(test_minicarte tests/test_minicarte.cpp)   # WFS-173 : place et projection de la mini-carte
   add_executable(test_course5 tests/test_course5.cpp src/game/course5.cpp tests/test_poursuite.cpp src/game/poursuite.cpp src/game/sauvegarde.cpp src/game/track.cpp src/game/player.cpp)   # WFS-110 : course à 5 voitures ; WFS-111 : poursuite ; WFS-119 : sauvegarde (mode gardé) ; WFS-189 : player.cpp (courses simulées)
   add_executable(test_retour_systeme tests/test_retour_systeme.cpp)   # WFS-116 : touche Retour du téléphone
