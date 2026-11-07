@@ -3718,3 +3718,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Nouvelles bloquantes, qui expliquent les refus** : **ANO-138** banc de conduite à 34-46 km/h seulement, direction trop vive à haute vitesse (à 228 km/h, 5 % du doigt prend toute l'adhérence) ; **ANO-139** allers-retours de la voiture devant la caméra en virage depuis WFS-241 (4,2 à 9,7 cm contre 0,1 à 0,8 avant), invisibles au banc de fluidité (virages et cadences < 30 img/s non comptés) ; **ANO-140** aide désactivée, volant lâché : tête-à-queue et marche arrière sur le bas-côté (dérive 52-58°).
 - **WFS-234 : PASSABLE AVEC ANOMALIES MINEURES** — carte GPS lisible, ANO-141 : texte du bandeau trop petit (consigne 9 px en 2400).
 - Bloquantes → PO : ANO-138, 139, 140 (à rattacher à WFS-258 / 259 / 247).
+
+### 2026-11-07 17:49:02 — Recette, lot 2 (routes, ronds-points, ombres) : WFS-206 et WFS-216 VALIDÉS, WFS-248 et WFS-227 PASSABLES (QA-arwa)
+- Preuves : `apercu` (captures de 844, ae49782 : 206, 223, 216) ; WFS-248 et WFS-227 sur bancs locaux `rondspoints` et `ombres` (main c443f2f) ; 51 tests CPU verts.
+- **WFS-206 : VALIDÉ** (usure, raccords, bordures, revêtement par carte ; indice « revetements » 100 %). **WFS-216 : VALIDÉ** (ANO-103, 105, 108 vérifiées). **WFS-223** : remplacé par WFS-248 (ANO-127 déjà ouverte).
+- **WFS-248 : PASSABLE** — anneau continu sur les 3 ronds-points ; ANO-142 (plaque plus sombre au raccord des branches en Ville, contraire à la réponse faite à l'utilisateur), ANO-143 (petits traits blancs isolés aux raccords), ANO-144 (trafic à cheval sur la rive, pas de cédez-le-passage, piéton sur l'îlot). Validation de l'utilisateur sur téléphone à venir.
+- **WFS-227 : PASSABLE** — cascades d'ombres en Haute / Moyenne ; ANO-145 (aucune ombre en Basse, RG-01 non tranchée), ANO-146 (absence de scintillement non chiffrée sur 60 images). Suspect du banc `realisme` rouge de main #852 (WFS-267).
