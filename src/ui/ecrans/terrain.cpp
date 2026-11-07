@@ -254,7 +254,7 @@ public:
         else if (g_rouler.contient(t.x, t.y)) {   // RG-03 : la partie est reconstruite sur la carte choisie, puis la course
             WFS_LOG("terrain : « Rouler » sur %s (%s)", CARTES[g_index].id, g_nuitChoisie ? "nuit" : "jour");
             Game::demandes().carte = CARTES[g_index].id; Game::demandes().nuit = g_nuitChoisie;
-            eclairage::choisirMoment((int)g_moment); sauvegarde().moment = atmosphere::nomMoment(g_moment);   // WFS-208 (enregistré par Game::changerCarte)
+            eclairage::choisirMoment((int)g_moment); if (sauvegarde().actif()) sauvegarde().moment = atmosphere::nomMoment(g_moment);   // WFS-208 (enregistré par Game::changerCarte)
         }
         return true;   // l'écran garde tous les touchers
     }
