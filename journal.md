@@ -4374,3 +4374,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Banc émulateur rouge** (`tools/qa/emulateur.sh` : journal partagé entre essais, délais trop courts) → **WFS-287** [TECHNIQUE] P2, E7 : correction d'un rouge, permise par le gel de la CI ; diagnostic transmis à l'agent expert ci, attribution à la demande seulement.
 - Corrections vues sur la construction 883 notées au suivi de WFS-242 (ANO-114), WFS-230 (ANO-119), WFS-224 (ANO-122) ; statuts inchangés (à confirmer sur téléphone).
 - Bandeau des tickets prêts complété ; `anno.md` (Statut, US), `TACHES.md`, `track-agent.md` à jour.
+
+### 2026-11-07 23:11:34 — Règle : le lead dev relit le code et approuve la PR avant de fusionner (lead-dev)
+- Ordre de l'utilisateur (conversation). Skill `lead-dev` : étape 8 « Revue du code » (tout le diff), approbation GitHub (`APPROVE`, ou revue `COMMENT` « ✅ Approuvé par le lead dev » si même compte) obligatoire avant la fusion ; refus en `REQUEST_CHANGES`. Agent `lead-dev` et `CLAUDE.md` alignés. L'utilisateur règle aussi le dépôt sur « squash seulement » (Settings → Pull Requests).
