@@ -125,6 +125,7 @@ public:
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
             const CarDef& cd = carById(gh.car.c_str());
             const vec3 paint = hexLin(cd.paint);
+            r.adversaireProchaineVoiture();   // WFS-243 (ANO-117, accroche) : visible jusqu'à 600 m, pas coupé à 150 / 200 m
             r.draw(it->second, m, &paint);
             conducteurs::ajouter(it->second, m, cd.id, (uint32_t)std::hash<std::string>{}(id) | 1u);   // WFS-73 (accroche) : adversaire
         }

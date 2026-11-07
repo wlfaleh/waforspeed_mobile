@@ -11,7 +11,9 @@ SERVEUR="${GITHUB_SERVER_URL:-https://github.com}"
 LIEN_APK="$SERVEUR/$GH_REPO/releases/download/apercu/WaForSpeed.apk"
 LIEN_RUN="$SERVEUR/$GH_REPO/actions/runs/$RUN_ID"
 COURT="${GITHUB_SHA::7}"
-MARQUE="<!-- wfs-apk-construction-$RUN_NUMBER -->"   # RG-03 : un seul commentaire par construction
+# WFS-277 : ORIGINE=matin pour l'APK des bancs du matin (même numéro que le dernier run de fusion, annoncé une fois de plus)
+ORIGINE="${ORIGINE:-}"
+MARQUE="<!-- wfs-apk-construction-$RUN_NUMBER${ORIGINE:+-$ORIGINE} -->"   # RG-03 : un seul commentaire par construction
 avert() { echo "::warning::notification de l'APK : $*"; exit 0; }
 
 # RG-02 : seulement si CE run a publié l'APK (le titre de la Release porte la construction et le commit de l'APK en ligne)
@@ -49,7 +51,8 @@ if gh api "repos/$GH_REPO/issues/$num/comments?per_page=100&sort=created&directi
     echo "Notification : construction $RUN_NUMBER déjà annoncée dans l'issue #$num"; exit 0
 fi
 
-message="$QUI 📱 **Nouvel APK de main disponible** : construction $RUN_NUMBER (\`$COURT\`)
+quoi="Nouvel APK de main disponible"; [ "$ORIGINE" = matin ] && quoi="APK du matin (bancs de 04:00)"
+message="$QUI 📱 **$quoi** : construction $RUN_NUMBER (\`$COURT\`)
 - Tickets : $tickets
 - Télécharger : $LIEN_APK
 - Run : $LIEN_RUN

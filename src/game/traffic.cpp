@@ -24,6 +24,14 @@ void Traffic::reset(Track& track, uint32_t s, int n, double playerPos, bool menu
     seed = s ? s : 1;
     clock = sim = menu ? 0 : -3;   // compte à rebours de 3 s avant le départ (trafficClock du jeu web)
     scrapeCd_ = 0;
+    // WFS-243 (RG-ANO-144) : anneaux des ronds-points du tracé 2 : la courbure y change de sens (comme giratoire::calculer)
+    anneaux_.clear();
+    for (const trace::Section& s : track.sections()) {
+        if (s.type != trace::Type::RondPoint || s.fin - s.debut < 20) continue;
+        const double c0 = track.segAt(s.debut + 2).curve; int64_t e0 = -1, e1 = -1;
+        for (int64_t a = s.debut + 1; a < s.fin; a++) if (track.segAt(a).curve * c0 < 0) { if (e0 < 0) e0 = a; e1 = a; }
+        if (e0 >= 0) anneaux_.push_back({e0, e1});
+    }
     addCars(n, playerPos);
     if (track.version() == 2) ajouterTrace2(n, playerPos);   // WFS-136 ; tracé 1 (jeu web) : rien ne change
 }
@@ -99,7 +107,7 @@ void Traffic::addCars(int n, double playerPos) {
         }
         c.color = (int)std::floor(R.next() * TRAFFIC_PAINT_COUNT);
         c.w = WEB_CARS[c.type].W / (2 * RW);
-        c.target = c.lane; c.offset = c.prevOff = LANE_X[c.lane];
+        c.target = c.lane; c.offset = c.prevOff = LANE_X[c.lane] * facteurVoie(z);   // WFS-243 : déjà resserrée si posée dans un anneau
         c.z = z; c.speed = c.want;
         c.rng = (uint32_t)(R.next() * 4294967296.0);
         c.think = 1 + R.next() * 4;
@@ -157,6 +165,18 @@ void Traffic::findLeaders(const TrafficView& pv, int begin, int end) {
     }
 }
 
+// WFS-243 (RG-ANO-144) : resserrement des files dans l'anneau des ronds-points, continu (rampes) ; 1 ailleurs (tracé 1 : toujours)
+double Traffic::facteurVoie(double z) const {
+    if (anneaux_.empty()) return 1;
+    const double a = track_->wrap(z) / SEG, rampe = RAMPE_ANNEAU_M / SEG_M;
+    for (const auto& [e0, e1] : anneaux_) {
+        if (a < e0 - rampe || a > e1 + 1 + rampe) continue;
+        const double t = a < e0 ? (e0 - a) / rampe : a > e1 + 1 ? (a - e1 - 1) / rampe : 0;   // 0 dans l'anneau, 1 au bout de la rampe
+        return FACTEUR_ANNEAU + (1 - FACTEUR_ANNEAU) * t;
+    }
+    return 1;
+}
+
 // stepTraffic(h) du jeu web.
 // Mode exact (parallel = false) : chaque voiture voit les voitures déjà avancées dans ce pas, comme en JS.
 // Mode parallèle : toutes les voitures de devant sont cherchées d'abord, sur tous les cœurs, à partir de l'état
@@ -199,7 +219,8 @@ void Traffic::step(double h, const TrafficView& pv) {
         if (gap < 0.8 / M) car.speed = std::min(car.speed, leadSpeed * 0.95);
         // envie de changer de file (bloqué derrière plus lent, ou de temps en temps)
         car.think -= h;
-        if (car.think <= 0 && car.target == car.lane && !car.pending) {
+        const double kv = facteurVoie(car.z);   // WFS-243 (RG-ANO-144) : files resserrées dans l'anneau, pas de changement de file
+        if (car.think <= 0 && car.target == car.lane && !car.pending && kv >= 1) {
             const double r = nextRand(car);
             car.think = 1.5 + r * 4;
             const bool blocked = gap < safe * 1.6 && leadSpeed < want * 0.85;
@@ -221,8 +242,8 @@ void Traffic::step(double h, const TrafficView& pv) {
             }
         }
         // abandonne le changement si la file se remplit, sinon glisse vers elle
-        if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - LANE_X[car.lane]) < 0.2) { car.target = car.lane; car.signal = 0; }
-        const double d = LANE_X[car.target] - car.offset;
+        if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - LANE_X[car.lane] * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
+        const double d = LANE_X[car.target] * kv - car.offset;
         const double move = clampd(d, -0.5 * h, 0.5 * h);
         car.offset += move;
         car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, 1e-3));

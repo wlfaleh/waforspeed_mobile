@@ -4089,3 +4089,117 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Corrections après l'avis d'expert** : cinq voitures dépassaient « réel + 2 points » à cause du rétroviseur commun (taille de la Golf, 7,5 cm sous le toit) : 911, Gallardo, SF90, GT86, 500 Abarth ; Mustang trop juste. Rétroviseur par modèle (`pavillonPour` : 500 : 215 × 65 mm ; 911 : 245 × 65 ; GT86 et Gallardo : 240 × 65 ; SF90 : 220 × 58 ; Mustang : 250 × 68, centres 5 à 7 cm sous le toit) et haut du pare-brise vu à 10° (Gallardo, SF90, comme les vraies). Après correction, les 20 voitures tiennent même la lecture stricte (bande la plus haute, virage compris, ≤ réel en ligne droite + 2 points).
 - **Au-dessus de l'horizon** (critère 4, sans seuil) : la vraie Golf est à **≈ 34 %** en ligne droite (montant réel vu d'un œil, 105 mm, et boîtier de caméra) ; l'« ≈ 25 % » donné plus tôt par l'expert était trop bas (correction de l'expert).
 - **Limites** : pas d'essai sur téléphone (à valider par l'utilisateur sur l'APK de `main`) ; même place latérale de l'œil (−0,36 m) pour les 20 voitures ; les montants de 65 mm sont plus fins que la silhouette réelle vue d'un œil (90 à 120 mm) : une marge, pas un défaut (avis d'expert) ; verre de l'A45 laissé à WFS-215 (il ne voile pas la vue cockpit).
+
+### 2026-11-07 21:06:14 — WFS-277 (2) fusionné (PR #234) : tableau journée / matin validé par l'utilisateur (agent expert ci)
+- **Décisions de l'utilisateur** : tous les bancs à 04:00 heure de Paris, émulateur inclus, APK aussi le matin ; QA à 07:00 ; option A (le ✅ vient des bancs du matin) ; au moins un banc avec photos à chaque fusion ; « commence tout de suite, c'est validé ». Avis de Smart Brain suivis : émulateur seulement informatif la 1re semaine (nouvel essai s'il échoue), message « Recette prête » avec verdict en tête, gel de la CI 2-3 jours après.
+- **build.yml (journée)** : compilation, tests CPU + licences, texte et menu1-2400 (photos dans `apercu-fusion`, `TAG_APERCU` dans publier_apercu.sh), endurance, APK + notification ; plus de lancement de nuit.
+- **matin.yml (04:00)** : compilation (jeu + tests), tests, 14 groupes (dont réalisme en 2 parties + fusion), endurance + chauffe, APK (numéro = dernier run de build.yml, versionCode jamais en recul) + notification « APK du matin » (`ORIGINE=matin`), émulateur (Release `simulateur-matin`, mise à jour sans suppression), captures dans `apercu`, message « 🧪 Recette QA prête » (`tools/qa/recette_prete.sh`).
+- **Robot des statuts (option A)** : statuts.yml suit build.yml et matin.yml ; `statuts.py --source fusion|matin --libelle` ; fusion verte → 🟣 gardé, matin vert → ✅ « (bancs du matin #N) » ; test_statuts 43/43 (4 nouveaux cas).
+- **Preuve** : 1er run de matin.yml (ancienne version) annulé ; nouveau run lancé à la main sur main (2026-11-07 21:06:14).
+- **Règles à mettre à jour par le PO** (CLAUDE.md, qa-lead.md) : statut ✅ par les bancs du matin ; QA à 07:00 après le message « Recette prête » ; émulateur chaque matin (plus seulement en fin d'épic).
+
+### 2026-11-07 21:07:21 — CI de journée / bancs du matin (PR #234) : règles mises à jour ; WFS-279 versions créé (po-scrum-master)
+- Décision de l'utilisateur rapportée par l'agent expert ci : ✅ par les bancs du matin (04:00), QA à 07:00, émulateur chaque matin, gel de la CI 2-3 jours. CLAUDE.md, qa-lead.md, po-scrum-master.md, tache utilisateur.md à jour.
+
+### 2026-11-07 21:23:51 — WFS-243 : adversaires visibles au loin, classement, îlot, trafic de l'anneau, voies des ordinateurs, fusionné (#239) (arwa-3)
+- **ANO-117, cause nommée** : `Renderer::draw(Model)` classe toute la voiture par `masquage::distanceMax` (WFS-82 RG-02). Rayon ≈ 2,4 m, sous 3 m : la voiture est coupée au-delà de 150 m en Basse et de 200 m en Haute. Ce n'est ni le classement, ni `rdRendu`, ni les modèles.
+- **ANO-117, correction** : accroche du rendu de 9 lignes, avec l'accord du PO (`renderer.h` l. 163, 221 et 330 ; `renderer.cpp` : `classer`, `beginFrame`, `draw(Model)`).
+  - Le drapeau `adversaireProchaineVoiture()` est remis à faux après chaque voiture et à chaque image.
+  - Il n'est appelé que pour les 4 adversaires de la Course à 5 et l'adversaire du Duel (accroche d'une ligne dans `duel_system.cpp`).
+  - Trafic, police, joueur, décor et `distanceMax` inchangés (RG-05).
+- **Banc `course5`** (Campagne, adversaires arrêtés, Haute et Basse) :
+
+  | cas | classement | dessiné (devant le joueur) | largeur en 2340 × 1080 | avant le ticket |
+  |---|---|---|---|---|
+  | 190 m (à 0,54 km) | 190,0 m | 190,0 m | 8,5 px | coupé en Basse (150 m) |
+  | 400 m (à 1,06 km) | 400,0 à 406,0 m | 400,0 à 406,0 m | 4,2 px | coupé en Basse et en Haute |
+
+  - Captures `-avant` / après regardées : à 190 m en Basse, la voiture apparaît au bout de la ligne droite ; à 400 m, les 4 voitures sont au bout de la ligne droite du village.
+  - À 0,54 km, une bosse cache la route au-delà de ≈ 250 m. La capture à 400 m est donc prise à 1,06 km, sur une ligne de vue dégagée cherchée sur le tracé.
+- **Coût** (condition du PO, moyenne de 30 images au banc lavapipe) :
+  - Haute, 400 m : 447 → 453 appels de dessin, 865 → 904 ms par image.
+  - Basse : les écarts entre deux séries (±50 000 triangles, à cause des captures d'environnement et des sondes) sont plus grands que le coût des 4 voitures, qui sont toutes au niveau de détail le plus léger.
+  - Le banc `perf` ne sait pas se mettre en Course à 5 et `bench_perf.cpp` est hors de ma zone : la mesure est donc dans le banc `course5`.
+- **RG-03 (classement)** : nouveau test, 3 × 60 s sur la Ville. La position affichée est égale à l'ordre réel à chacun des 21 600 pas ; 9 changements de place, vus au pas même.
+- **RG-04 (îlot)** : déjà solide depuis WFS-256. `test_chocs_cartes` arrête la voiture contre l'îlot à 30, 80 et 150 km/h, sur la Ville, la Campagne et la Corniche, avec les deux modèles de conduite. Rien changé.
+- **RG-ANO-144 (trafic de l'anneau)** :
+  - Cause : les files du trafic sont à ±5 m de l'axe (anneau de 14 m). Une voiture roulait donc sur la couronne de pavés et une autre hors de l'anneau.
+  - Correction (`traffic.*`, `FACTEUR_ANNEAU`) : files resserrées à ±2,25 m dans l'anneau, avec une rampe de 15 m ; pas de changement de file dans l'anneau ; voitures posées déjà resserrées. Tracé 1 inchangé : la référence du jeu web reste juste au bit près.
+  - Test, 400 voitures pendant 2 min, sur la Ville, la Campagne et la Corniche :
+    - avant : carrosseries de 7,66 à 20,34 m du centre ; environ 65 % des positions sur la couronne ou hors de l'anneau ;
+    - après : de 10,40 à 17,59 m, aucune dehors.
+  - Capture `rondpoint-plage-anneau-jour` regardée : la voiture du trafic est sur l'asphalte de l'anneau.
+  - **Cédez-le-passage non fait.** Tout le trafic suit le même trajet : entrée, ¾ de tour, sortie. Le quart d'anneau entre la sortie et l'entrée ne porte donc jamais de voiture, et aucune voiture n'arrive à l'entrée par l'anneau : la règle ne se déclencherait jamais. Je n'ai pas codé une règle qui ne fait rien. Proposition au PO : soit le trafic ralentit au cédez-le-passage, soit on attend d'avoir du trafic sur les autres branches.
+- **RG-ANO-150 (voies des ordinateurs)** :
+  - Règle codée : un changement de voie est gardé jusqu'à l'arrivée dans la nouvelle file, et au moins 2 s. Pas de retour vers la file quittée si une voiture y est à moins de 30 m.
+  - Test, code de `main` → après :
+    - cas « voiture lente devant, deux files libres » : 71 → 1 changement de voie ;
+    - 60 s de course à la Ville : 56,1 → 0,6 changement par ordinateur et par minute (pire cas : 91,2 → 1,2).
+  - Départ (WFS-242), vitesse et difficulté inchangés.
+- **Vérifié** : 60 tests CPU verts ; en local, bancs `course5` (« Rejouer » OK), `rondspoints` et `parcours` (0 écart, vue normale et Cockpit).
+- **Limites** : rien vu sur téléphone ; le coût en Basse n'est pas séparable du bruit du banc.
+- Fusion par confiance, squash 77e2b7f ; ligne `qa/Check.md` ; **🟡 À valider (utilisateur)**.
+
+### 2026-11-07 21:27:53 — WFS-232 découpé (WFS-280 créé) et attribué à arwa-3 ; cédez-le-passage de WFS-243 sans objet (po-scrum-master)
+- **Demande d'arwa-3** (libre après WFS-243 🟡, PR #239, squash 77e2b7f). Bandeau de 15:18 : n° 0 à 8 faits, en cours ou en attente d'une épic (WFS-269 : E13 tenue par WFS-276 ; WFS-273 : performance, autre domaine) ; ordre du PO : 270, 257 fusionnés, WFS-214 (E13 tenue) → **WFS-232** (deux-roues dans le trafic, P2), premier permis du domaine d'arwa-3 (courses, modes et trafic : `traffic.*` déjà touché dans WFS-243) ; E10 libérée par WFS-235 (🟡) et WFS-270 (🟣).
+- **Découpage** (un ticket = une journée) : WFS-232 (1/2) motos et scooters **dans le trafic** (3 modèles au moins, pilotes casqués, 10-15 % Ville / Corniche, 5 % Campagne, inclinaison φ = atan(v²/(g·R)), chocs, feux la nuit) ; **WFS-280** (2/2, créé, ⏳ en attente de WFS-232) garés et faufilement. Règles : `regles-de-gestion/WFS-232.md` (section « Découpage »), `regles-de-gestion/WFS-280.md`.
+- **Zone (exception PO, en parallèle de WFS-258)** : `traffic.*`, `traffic_system.*`, `deux_roues*` (nouveaux), `assets/cars/deux_roues/**`, `tools/convert_car.mjs`, `references/reel/**`, `tests/**` ; accroches ≤ 10 lignes annoncées (`conducteurs.*`, `vehicule_*`, `renderer.*`) ; interdits `player.*`, `conduite_*`, `aide_direction*`, `ressenti.*`, `camera_vue.*`, `game.cpp`, `.github/**` (gel de la CI), iOS. Réseau : GitHub public seulement (`regles-reseau.md` § 2.4), CC0 / CC BY, SHA-256 au journal ; moins de 3 modèles → le dire au PO.
+- Skills : `agent-developer`, `waforspeed-natif`, `expert-conduite`. Après la fusion → 🟡 À valider (utilisateur).
+- **WFS-243, cédez-le-passage (RG-ANO-144)** : ni ralentissement sans raison (a), ni trafic sur les autres branches (b) : la règle est sans objet tant qu'aucune voiture ne roule sur l'anneau en amont d'une entrée ; aucun code, aucun ticket. Noté dans `WFS-243.md` et ANO-144 (`anno.md`).
+- **Dossier partagé** (signalé par arwa-3) : le PO n'écrit que dans `/home/claude/wfs-main` (arbre de travail de `main`) ; ce dossier partage le `.git` du clone d'arwa-3 (`git worktree`), pas ses fichiers.
+- Envois vérifiés : 245 21:04, 278 20:59, 276 20:57, 267 20:04 (PR #232), 258 17:35 ⚠️, 239 13:43 ⚠️ (P1, aucun retrait avant 10 h : 23:43) ; 274 sans branche (rien à coder, à clore par l'agent arwa).
+
+### 2026-11-07 21:33:27 — WFS-267 : fusionné (PR #232, squash 466a4c8) ; libre (arwa-5)
+- **CI de branche run #876 verte** (13 bancs, endurance, APK) : `banc-essai (realisme)` **0 erreur** ; indices identiques au run vert #844 (lumière 69 / 69, soleil 30 / 30, photométrie 12 / 12, revêtements 14 / 14, voitures 109 / 141) + architecture 16 / 16 (WFS-161). Durée du job `realisme` : 68 min (#859 sans le correctif : 67 min ; limite 75 min : WFS-252 la réduit).
+- Branche synchronisée avant la fusion (WFS-235, 243, 249, 270, 275 compris) : 60 tests CPU OK, bloc tunnel local OK (12,96 → 14,06 → 14,65).
+- **WFS-274** (agent arwa) : même panne, corrigée ici ; à son agent de le clore « ↪ Regroupé avec WFS-267 ». La CI de `main` sur 466a4c8 dira si `main` repasse au vert (le robot des statuts passera WFS-267 et WFS-227 en ✅).
+- **Limite connue (signalée au PO)** : quand la caméra reste loin de la voiture plus de 120 images (vues libres de bancs), la sonde est prise comme avant WFS-267 (sans ombre) ; en jeu, cela n'arrive pas (poursuite, Cockpit, garage : point dans la cascade 0).
+- Ligne ajoutée à `qa/Check.md`. Je demande mon ticket suivant au PO.
+
+### 2026-11-07 21:37:22 — WFS-232 : recherche des deux-roues (RG-00, 45 min), 3 modèles CC BY 4.0, téléchargements (arwa-3)
+- **Méthode** : recherche de code GitHub (`"scooter" / "motorcycle" / "vespa" / marques… sketchfab filename:license.txt`), clones partiels en lecture seule dans `/tmp/bac`, rien exécuté, licence lue dans chaque `license.txt`.
+- **Refusés** :
+  - en licence NC-SA : Ducati Streetfighter V4 S, Yamaha YZF 2021, Honda CBR650R, Vespa Mandarinia ;
+  - en licence Sketchfab Standard : « Vespa Scooter » de Marina Belov ;
+  - modèles low-poly ;
+  - Vespa PX125 (alban, CC BY) : relevé photo avec l'éclairage figé dans la texture, matériau « unlit » ;
+  - fichiers Draco de `lxorb/mechanica` : le convertisseur ne lit pas Draco, j'ai pris les originaux ailleurs.
+- **Retenus (CC BY 4.0)** :
+
+  | id | modèle (auteur Sketchfab) | dépôt GitHub (commit) | fichiers, SHA-256 |
+  |---|---|---|---|
+  | scooter | OLA Electric Scooter (neshallads) | `Abhay-s-8/Portfolio` (fcd781b7), `models/ola_electric_scooter_red_color` | scene.gltf 4d9631288fa046e96578e9dd05e16a2a69e6502c935e981fb0ec50a1465e9ef7 ; scene.bin (4 065 328 o) ae11477528ab10f423028fe4be1c2408fbe0f0d5308db478b4d68d06d5dedcfa |
+  | routiere | Honda CB 750 F Super Sport 1970 (Alex.Ka.) | `p-shark/HCAM_project` (c23f055d), `ex09_project/WebContent/image/car/gltf/honda_cb750` | scene.gltf 9c52a72bdf0aca20b8dbb739f0fe8c057da5362f679509dbc3b4e4279537ec13 ; scene.bin (1 579 692 o) 45fb9788d13d0b64d5dca356a7af7d6abfb25fb078d607d3f3ae391df530f05b |
+  | sportive | Kawasaki ninja ZX-6R (valvetin) | `siddharth-vss/CAR-Camera-test` (ea5f593d), `static/kawasaki_ninja_zx-6r` | scene.gltf 0073d7af2b1c76412141729cd77d90aeaa03e191b3780c63ecb97f62c1fc7fa5 ; scene.bin (14 868 588 o) 450dfaa00d3d14147aa62aa76c949aa38b60d12f3dcabb9b8247d82ed1656a2d |
+
+  Le même `scene.bin` de la Honda est dans `KushinoAkira/BanhMi.EXE`, mais seulement comme pointeur LFS : il n'a pas été servi.
+- **Conversion** (branche `feature/waforspeed-232`, 2b6d2c9) :
+  - `.wfm` de 3,1, 2,1 et 5,3 Mo ; 63 k, 37 k et 107 k triangles (la sportive allégée de 335 k) ;
+  - niveaux de détail jusqu'à 3,7 k, 5,3 k et 10,5 k triangles ;
+  - `tools/convert_car.mjs` : nouvelle option `WFS_OPAQUE`, qui traite en alpha découpé les matériaux BLEND mal exportés par Sketchfab.
+- **Dimensions** : `references/reel/deux_roues.json`, statut `a_confirmer` (résumés du moteur de recherche). Écarts de longueur et d'empattement, en ± 1 % :
+  - scooter : 0 / +0,7 % ;
+  - routière : +0,5 % / −0,5 % ;
+  - sportive : −0,9 % / +0,9 % (les proportions du modèle diffèrent du vrai de 1,8 %, écart partagé).
+- **Limite** : roues fixes. La découpe des roues (`roues::decouper`, `model_loader`, `renderer` : 4 roues seulement) est hors de ma zone. Je le propose au PO comme ticket du rendu.
+
+### 2026-11-07 21:37:11 — WFS-279 (partie jeu) attribué à arwa-5 ; limite de WFS-267 sans ticket (po-scrum-master)
+- **Demande d'arwa-5** (libre après WFS-267 🟣, PR #232, squash 466a4c8), avec l'ordre de l'utilisateur qu'il a reçu (17:31 UTC) : « petites tâches ». Tickets prêts permis : WFS-273 (P1, E4, n° 0 du bandeau) et WFS-266 (P1, E11) sont des tickets d'une journée, pas des petites tâches : ils restent au premier développeur qui les demande ; WFS-269, WFS-214 (E13 tenue par WFS-276), WFS-262 à 265 (après WFS-273), WFS-215 (E10 en partie tenue par WFS-232) ne sont pas attribuables. **WFS-279 (partie jeu, P2, E8 libre)**, la plus petite : attribuée.
+- **Début de WFS-279** : branche `feature/waforspeed-279` (créée et poussée par arwa-5). Règles : `regles-de-gestion/WFS-279.md` (précisées ce soir).
+  - Zone : `src/ui/ecrans/chargement.*` ; accroches ≤ 10 lignes annoncées : `android/app/build.gradle` (passer `versionName` à CMake), `CMakeLists.txt` (définition de compilation, valeur fixe par défaut sur PC) ; test CPU dans `tests/**`.
+  - Interdit : `.github/**`, `tools/qa/**` (gel de la CI : RG-02, nom du fichier APK, reste à l'agent expert ci après le gel) ; nom et chemin de sortie de l'APK dans Gradle (`build.yml` l. 153 et `matin.yml` l. 171 copient `app-release.apk`) ; `versionCode` / `versionName` ; tailles des boutons ; iOS.
+  - Critères : version « v0.1.N » en petit sur l'écran de chargement (1280×720, 2400×1080, petit écran), rien d'autre ne bouge (captures `chargement-*` avant / après) ; une seule source (`versionName`) ; tests CPU ; parcours complet 0 écart ; ligne `qa/Check.md`.
+  - Plan court : définition `WFS_VERSION` (CMake, « dev » par défaut) ← argument de Gradle ; texte discret dans `dessinerChargement()` ; test CPU ; banc `chargement` en local.
+  - Après fusion : cycle normal 🟣 → ✅ (bancs du matin), pas de 🟡.
+- **Limite de WFS-267** (sonde sans ombre si la caméra reste loin de la voiture plus de 120 images, vues libres de bancs) : pas de ticket (aucun effet en jeu) ; noté dans `WFS-267.md`.
+- Envois vérifiés : 276 21:28, 232 21:28, 245 21:04, 278 20:59, 258 17:35 ⚠️ (P1, 4 h 01), 239 13:43 ⚠️ (P1, 7 h 53 ; aucun retrait avant 10 h : 23:43) ; 274 sans branche (à clore « ↪ WFS-267 » par l'agent arwa).
+
+### 2026-11-07 21:38:43 — Statuts automatiques, CI main #875 (robot statuts)
+- Run rouge (push, commit ebe798e), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-251, WFS-261, WFS-272.
+
+### 2026-11-07 21:44:57 — ANO-151 et WFS-281 : le jeu rame après 2 min (trafic) (po-scrum-master)
+- Signalement de Claude, agent 5 : l'utilisateur (APK de main 883, c9eda61) voit le jeu fluide la 1re minute puis ramer et saccader vers 2 min.
+- Mesure de l'agent 5 (banc perf, Ville, Haute) : TrafficSystem de 54 appels / 23 000 triangles au départ à 644 appels / 701 000 triangles après ≈ 2,8 min ; même montée avec `WFS_LOTS=0` : pas WFS-268, c'est le trafic (≈ 60 voitures dans la vue au lieu de ≈ 5).
+- Créés : **ANO-151** (bloquante, 📋 Planifiée) et **WFS-281** (P1, [TECHNIQUE] [URGENT], E3, règles `regles-de-gestion/WFS-281.md`), n° 00 du bandeau. Exception PO : mêmes fichiers que WFS-232 (arwa-3), en coordination. 🟡 après fusion (essai de l'utilisateur).
+- Non attribué (attribution seulement à la demande) : domaine trafic, skill `expert-conduite` ; **pas** l'agent 5 (domaine décor). Réponse à l'utilisateur dans `tache utilisateur.md`.
