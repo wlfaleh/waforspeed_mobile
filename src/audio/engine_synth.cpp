@@ -60,7 +60,24 @@ void EngineModel::update(double dt, double speed, double top, double maxSpeed, b
     rpm += (rpmT - rpm) * std::min(1.f, fdt * (up ? (throttle > 0 ? 9.f : 4.f) : (throttle > 0 ? 6.f : 2.5f)));
     rpm = std::clamp(rpm, 0.06f, 1.05f);
     shiftT = std::max(0.f, shiftT - fdt); shiftDip = std::max(0.f, shiftDip - fdt * 7);
+    cibles(v, active, pitch, nitro, electric, out);
+}
 
+void EngineModel::updateReel(double dt, double regimeTrMin, double regimeCoupure, int rapport, double vitesse, double top,
+                             bool throttleOn, bool nitro, bool active, float pitch, bool electric, EngineTargets& out) {
+    const float fdt = (float)std::min(dt, 0.05);
+    const float throttle = active && throttleOn ? 1.f : 0.f;
+    load += (throttle - load) * std::min(1.f, fdt * (throttle > 0 ? 10.f : 5.f));
+    const int g = std::max(1, rapport);   // marche arrière : son du 1er rapport
+    if (g > gear && throttle > 0) { shiftT = 0.16f; shiftDip = 1; }
+    gear = g;
+    const float rpmT = std::clamp((float)(regimeTrMin / std::max(regimeCoupure, 1.0)), 0.06f, 1.05f);
+    rpm += (rpmT - rpm) * std::min(1.f, fdt * 25.f);   // suit le régime réel (lissage de 40 ms : pas de saut audible)
+    shiftT = std::max(0.f, shiftT - fdt); shiftDip = std::max(0.f, shiftDip - fdt * 7);
+    cibles((float)std::min(1.25, std::abs(vitesse) / std::max(top, 1.0)), active, pitch, nitro, electric, out);
+}
+
+void EngineModel::cibles(float v, bool active, float pitch, bool nitro, bool electric, EngineTargets& out) {
     out.electric = electric;
     if (electric) {   // pas de moteur thermique : sifflement de l'onduleur qui monte avec la vitesse
         out.elecA = 180 + v * 1400; out.elecB = 90 + v * 700; out.elecFreq = 1800 + v * 2500;

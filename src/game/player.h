@@ -34,6 +34,9 @@ inline ReglagesConduite& reglagesConduite() { static ReglagesConduite r; return 
 // du monde (conduite_monde.h) ; false : ancien modèle « par rapport à l'axe de la route » (WFS-217), gardé comme repli interne
 // et pour les mesures « avant » du banc de conduite. L'ordinateur (Aide::Web) garde toujours la conduite du jeu web.
 inline bool g_conduiteMonde = true;
+// WFS-253 : ABS, antipatinage, ESP de la voiture du joueur : toujours activés dans le jeu ; le banc les coupe un par un pour les mesurer
+struct AidesVoiture { bool abs = true, antipatinage = true, esp = true; };
+inline AidesVoiture g_aidesVoiture;
 
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};

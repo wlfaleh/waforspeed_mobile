@@ -21,6 +21,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <mutex>
 #include "cars.h"
 
 namespace wfs::physique {
@@ -47,7 +48,7 @@ struct Params {
     Transmission transmission = Transmission::Avant; double partAvant = 1;   // intégrale : part du couple à l'avant
     double braquageMax = 0.52;                        // rad : angle des roues à fond, à l'arrêt (rayon de braquage)
     double partFreinAvant = 0.65;
-    double cent = 0, vmax = 0;                        // étalonnage : 0-100 (s) et vitesse maximale (m/s) obtenus
+    double cent = 0;                                  // étalonnage : 0-100 obtenu (s) ; vitesse maximale : vitesseMaxi() (banc)
 };
 
 // état de la voiture dans le monde. Repère du jeu (Track::pose) : avant = (sin cap, −cos cap), droite = (cos cap, sin cap) ;
@@ -58,6 +59,11 @@ struct Etat {
     double r = 0;                      // vitesse de lacet (rad/s, + = à droite)
     double ax = 0, ay = 0;             // accélérations longitudinale / latérale lissées (m/s², transfert de charge)
     int rapport = 1; double regime = 0;   // rapport engagé (1..n, −1 marche arrière), régime moteur (tr/min)
+    // WFS-253 : aides au dernier pas (mesures du banc, voyant éventuel) : glissement des roues avant / arrière (0 = roule,
+    // 1 = bloquée au freinage ; > 0 aussi en patinage), ABS, antipatinage et ESP en action
+    double glissementAv = 0, glissementAr = 0;
+    bool absActif = false, tcActif = false, espActif = false;
+    double sigmaAv = 0, sigmaAr = 0;   // WFS-255 (accroche) : glissement total normalisé de chaque essieu (> 1 : au-delà du pic, le pneu crisse)
     double u() const { return vx * std::sin(cap) - vz * std::cos(cap); }   // vitesse longitudinale (m/s, < 0 en arrière)
     double v() const { return vx * std::cos(cap) + vz * std::sin(cap); }   // vitesse latérale (m/s, + = vers la droite)
 };
@@ -68,6 +74,9 @@ struct Commande {
     double frein = 0;       // 0..1 (ABS)
     bool recul = false;     // marche arrière engagée (gaz = recul)
     double nitro = 1;       // multiplicateur de poussée (1 = sans nitro)
+    // WFS-253 : aides de la voiture, toujours activées dans le jeu (comme sur les 20 voitures réelles) ; désactivables
+    // seulement au banc pour les mesurer (aucun réglage nouveau pour le joueur sans l'accord du PO)
+    bool abs = true, antipatinage = true, esp = true;
 };
 
 struct Sol { double mu = 1, crr = CRR_ROUTE, pente = 0; };   // pente (rad) dans le sens de marche de la voiture
@@ -82,6 +91,23 @@ constexpr double PART_ROULIS_AVANT = 0.55;       // part du transfert de charge 
 constexpr double V_RECUL_MAX = 31 / 3.6;         // m/s : marche arrière (31 km/h au plus, comme REV_MAX du jeu)
 
 inline double sgn(double v) { return v > 0 ? 1.0 : (v < 0 ? -1.0 : 0.0); }
+
+// WFS-253 : pneus. Glissement longitudinal au pic : Pacejka, courbe « asphalte sec » (B 10, C 1,9, D 1, E 0,97 : pic à 18 %,
+// roue bloquée à 91 % du pic). ABS et antipatinage tiennent le glissement à 15 %, dans la bande de 10 à 20 % des ABS
+// (Bosch, « Automotive Handbook » : régulation autour du pic de la courbe adhérence / glissement).
+constexpr double K_PIC = 0.18, K_ABS = 0.15;
+// dérive au pic de la forme latérale : x = B·α tel que x − E(x − atan x) = tan(π / 2C) (formule magique), calculé une fois
+inline const double X_PIC = [] {
+    const double cible = std::tan(3.14159265358979323846 / (2 * C_PNEU));
+    double lo = 0, hi = 20;
+    for (int i = 0; i < 60; i++) { const double x = (lo + hi) / 2; ((x - E_PNEU * (x - std::atan(x))) < cible ? lo : hi) = x; }
+    return hi;
+}();
+// forme de la formule magique, normalisée (σ = 1 au pic : forme = 1 ; roue bloquée σ ≈ 5,6 : 0,89)
+inline double formeNormalisee(double sg) {
+    const double x = sg * X_PIC, phi = x - E_PNEU * (x - std::atan(x));
+    return std::sin(C_PNEU * std::atan(phi));
+}
 
 // valeurs usuelles par modèle (à confirmer, references/reel/SOURCES.md) : part du poids sur l'avant, transmission
 struct Usuel { const char* id; double avant; Transmission tr; double partAvant; };
@@ -99,14 +125,6 @@ inline constexpr Usuel USUELS[] = {
 inline double capacite(double mu, double Fz, double dT, double Fz0) {
     const double g = std::max(0.0, Fz / 2 + dT), d = std::max(0.0, Fz / 2 - dT);
     return mu * std::max(0.0, g * (1 - SENSIBILITE * g / Fz0) + d * (1 - SENSIBILITE * d / Fz0));
-}
-
-// force latérale d'un essieu (N, repère de la roue) : formule magique, raideur tirée de la charge, pic Dy (cercle d'adhérence)
-inline double forceLaterale(double alpha, double cy, double Fz, double D, double Dy) {
-    if (D <= 1 || Dy <= 0) return 0;
-    const double B = cy * Fz / (C_PNEU * D), ba = B * alpha;
-    const double phi = ba - E_PNEU * (ba - std::atan(ba));
-    return Dy * std::sin(C_PNEU * std::atan(phi));
 }
 
 // 0-100 km/h (s) en plein gaz sur le plat, même pas que la partie (1/120 s)
@@ -166,49 +184,82 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
         if (c.gaz <= 0 && u > 1) Fmoteur = 0.10 * Tp * p.G[g - 1] / p.rayonRoue * std::min(1.0, wb / p.wP);
     }
 
-    // ---------- forces longitudinales par essieu : moteur, freins (ABS), antipatinage ----------
-    const double part = p.transmission == Transmission::Avant ? 1.0 : p.transmission == Transmission::Arriere ? 0.0 : p.partAvant;
-    double Fxf = (Fdrive - Fmoteur * sgn(u)) * part, Fxr = (Fdrive - Fmoteur * sgn(u)) * (1 - part);
-    if (c.frein > 0 && au > 0.01) {
-        const double Fb = c.frein * 1.3 * mg;   // demande au-delà de l'adhérence : c'est l'ABS qui borne
-        Fxf -= sgn(u) * Fb * p.partFreinAvant; Fxr -= sgn(u) * Fb * (1 - p.partFreinAvant);
-    }
-    const double mt = c.frein > 0 ? 1.0 : p.muTraction;
-    // antipatinage et ESP (activés, comme sur les vraies voitures) : la poussée laisse à chaque essieu la force latérale que
-    // le virage lui demande (accélération latérale actuelle) ; l'ABS freine à fond mais garde au moins la moitié de
-    // l'adhérence pour tourner (la voiture reste dirigeable en freinant dans le virage)
-    const double ayAbs = std::abs(e.ay), needF = m * ayAbs * p.b / p.L, needR = m * ayAbs * p.a / p.L;
-    auto borne = [&](double Fx, double D, double Dl, double need) {
-        const bool frein = Fx * u < 0;   // force qui ralentit
-        const double res = frein ? std::min(need, 0.5 * D) : std::min(need, 0.95 * D), q = res / std::max(D, 1.0);
-        const double lim = 0.98 * Dl * mt * std::sqrt(std::max(0.0, 1 - q * q));
-        return std::clamp(Fx, -lim, lim);
-    };
-    Fxf = borne(Fxf, Df, Dlf, needF); Fxr = borne(Fxr, Dr, Dlr, needR);
-
-    // ---------- forces latérales (cercle d'adhérence : ce qui sert à freiner ou accélérer ne sert plus à tourner) ----------
-    auto reste = [](double D, double Fx, double Dl) { const double q = std::min(1.0, std::abs(Fx) / std::max(Dl, 1.0)); return D * std::sqrt(1 - q * q); };
-    const double Dyf = reste(Df, Fxf, Dlf * mt), Dyr = reste(Dr, Fxr, Dlr * mt);
+    // ---------- WFS-253 : pneus en glissement combiné, ABS, antipatinage, ESP ----------
+    // Chaque essieu a un glissement longitudinal κ (0 = la roue roule, 1 = bloquée) et une dérive α. Méthode du glissement
+    // normalisé (Pacejka, « Tyre and Vehicle Dynamics », 3e éd. 2012, § 4.3) : σx = κ / κ_PIC, σy = tan α / tan α_pic,
+    // σ = √(σx² + σy²) ; la force totale vaut D × forme(σ) (forme = 1 au pic, σ = 1) et se répartit selon σx / σ et σy / σ :
+    // ce qui sert à freiner ou à pousser ne sert plus à tourner, et une roue bloquée (σx ≈ 5,6) ne dirige presque plus.
     const double vfl = u * cd + (vl + p.a * e.r) * sd, vft = -u * sd + (vl + p.a * e.r) * cd;   // vitesse de la roue avant, repère de la roue
     const double af = -std::atan2(vft, std::max(std::abs(vfl), 0.5)), ar = -std::atan2(vl - p.b * e.r, std::max(au, 0.5));
-    const double Fyf = forceLaterale(af, p.cyAvant, Fzf, Df, Dyf), Fyr = forceLaterale(ar, p.cyArriere, Fzr, Dr, Dyr);
+    const double part = p.transmission == Transmission::Avant ? 1.0 : p.transmission == Transmission::Arriere ? 0.0 : p.partAvant;
+    double Fbf = 0, Fbr = 0;   // demande de freinage (N, ≥ 0)
+    if (c.frein > 0 && au > 0.01) { const double Fb = c.frein * 1.3 * mg; Fbf = Fb * p.partFreinAvant; Fbr = Fb * (1 - p.partFreinAvant); }
+    struct Essieu { double Fx = 0, Fy = 0, k = 0, sg = 0; bool abs = false, tc = false; };
+    auto essieu = [&](double moteur, double frein, double alpha, double cy, double Fz, double D, double Dl) {
+        Essieu r;
+        if (D <= 1) return r;
+        const double tp = std::tan(X_PIC * C_PNEU * D / std::max(cy * Fz, 1.0)), sy = std::tan(alpha) / std::max(tp, 1e-4);
+        // force (N) au glissement k (≥ 0), dans le sens de la demande ; mt : adhérence au départ étalonnée (poussée seulement)
+        auto forces = [&](double k, double mt, double& fy) {
+            const double sx = k / K_PIC, sg = std::hypot(sx, sy);
+            if (sg < 1e-9) { fy = 0; return 0.0; }
+            const double F = formeNormalisee(sg);
+            fy = D * F * sy / sg;
+            return Dl * mt * F * sx / sg;
+        };
+        const double sensU = u >= 0 ? 1.0 : -1.0;
+        const double dem = frein > 0 ? frein : std::abs(moteur), sensF = frein > 0 ? -sensU : (moteur >= 0 ? 1.0 : -1.0);
+        const bool freine = frein > 0;
+        const double mt = freine ? 1.0 : p.muTraction;
+        double kmax;
+        if (freine) kmax = c.abs ? K_ABS : 1.0;   // ABS : glissement tenu à 15 % (bande de 10 à 20 %) ; sans ABS : la roue se bloque
+        else {
+            kmax = c.antipatinage ? K_ABS : 1.0;   // antipatinage : même limite de glissement ; sans : les roues motrices patinent
+            // ESP, action sur le moteur (Bosch) : en virage, la poussée ne dépasse pas le pic du pneu (σ ≤ 1) : pas de sous-virage de puissance
+            if (c.esp && std::abs(sy) < 1) kmax = std::min(kmax, K_PIC * std::sqrt(1 - sy * sy));
+        }
+        double fy = 0, fx = dem > 0 ? forces(kmax, mt, fy) : 0;
+        if (dem <= 0) { forces(0, mt, fy); r.Fy = fy; r.sg = std::abs(sy); return r; }
+        if (fx <= dem) {   // demande au-delà de ce que le pneu donne à kmax : ABS ou antipatinage en action, ou roue bloquée / qui patine
+            r.k = kmax; r.abs = freine && c.abs; r.tc = !freine && c.antipatinage;
+            if (!freine && !c.antipatinage) {   // sans antipatinage : la roue patine d'autant plus que le couple dépasse l'adhérence
+                double f0 = 0; const double pic = forces(K_PIC, mt, f0);
+                r.k = std::clamp(K_PIC * dem / std::max(pic, 1.0), K_PIC, 1.0); fx = forces(r.k, mt, fy);
+            }
+        } else {           // glissement juste suffisant pour la demande (dichotomie : la force croît avec k jusqu'au pic)
+            double lo = 0, hi = kmax;
+            for (int it = 0; it < 18; it++) { const double mid = (lo + hi) / 2; double f2; (forces(mid, mt, f2) < dem ? lo : hi) = mid; }
+            r.k = hi; fx = forces(hi, mt, fy);
+        }
+        r.Fx = sensF * fx; r.Fy = fy; r.sg = std::hypot(r.k / K_PIC, sy);
+        return r;
+    };
+    const double moteurTotal = Fdrive - Fmoteur * sgn(u);
+    const Essieu ea = essieu(moteurTotal * part, Fbf, af, p.cyAvant, Fzf, Df, Dlf), eb = essieu(moteurTotal * (1 - part), Fbr, ar, p.cyArriere, Fzr, Dr, Dlr);
+    const double Fxf = ea.Fx, Fxr = eb.Fx, Fyf = ea.Fy, Fyr = eb.Fy;
+    e.glissementAv = ea.k; e.glissementAr = eb.k; e.sigmaAv = ea.sg; e.sigmaAr = eb.sg; e.absActif = ea.abs || eb.abs; e.tcActif = ea.tc || eb.tc; e.espActif = false;
 
     // ---------- somme des forces (repère de la voiture) ----------
     double Fx_esp = 0;   // freinage de l'ESP (N)
     double Fx = Fxf * cd - Fyf * sd + Fxr;
     const double Fy = Fxf * sd + Fyf * cd + Fyr;
     double Mz = p.a * (Fxf * sd + Fyf * cd) - p.b * Fyr;
-    // ESP (activé, comme sur les vraies voitures) : si la voiture tourne plus vite que ce que le volant et l'adhérence
-    // justifient (survirage, tête-à-queue qui commence), le freinage d'une roue avant extérieure crée un couple qui la redresse
-    // (approché : couple borné par 30 % du poids freiné sur une roue, à la demi-voie) ; il ralentit un peu la voiture
-    if (au > V_DYNAMIQUE) {
-        const double rRef = std::clamp(u * std::tan(d) / p.L, -p.mu * G / au, p.mu * G / au);
-        const double exces = std::abs(e.r) - std::abs(rRef) - 0.05, beta = std::atan2(vl, au);
-        if ((exces > 0 && e.r * rRef >= 0) || (std::abs(e.r) > 0.05 && e.r * rRef < 0) || (std::abs(beta) > 0.10 && beta * e.r < 0)) {
-            const double voulu = 10.0 * std::max(exces, std::abs(beta) - 0.06) * p.Iz, Fmax = 0.3 * mg;
-            const double Mesp = std::min(std::abs(voulu), Fmax * p.voie / 2);
-            Mz -= sgn(e.r) * Mesp;
-            Fx_esp = Mesp / (p.voie / 2) * sgn(u);
+    // ESP, action sur les freins (survirage) : lacet visé (Rajamani, « Vehicle Dynamics and Control », 2e éd. 2012, § 8.4) =
+    // celui du modèle bicyclette en régime établi, u·δ / (L + K_us·u²), borné par μ·g / u ; dérive bornée par atan(0,02 μ g)
+    // (≈ 11° sur route sèche). Au-delà, le freinage d'une roue avant extérieure crée le couple qui ramène le lacet (correcteur
+    // du premier ordre, constante de temps 0,1 s : réglage, pas un seuil), borné par l'adhérence de cette roue.
+    if (c.esp && au > V_DYNAMIQUE) {
+        const double mu = s.mu * p.mu, Caf = p.cyAvant * mg * p.b / p.L, Car = p.cyArriere * mg * p.a / p.L;
+        const double Kus = m / p.L * (p.b / Caf - p.a / Car);
+        double rT = std::clamp(u * d / (p.L + Kus * u * u), -mu * G / au, mu * G / au);
+        const double beta = std::atan2(vl, au), betaMax = std::atan(0.02 * mu * G);
+        if (std::abs(beta) > betaMax) rT *= std::max(0.0, 1 - (std::abs(beta) - betaMax) / betaMax);
+        const bool survire = (e.r * rT >= 0 && std::abs(e.r) > std::abs(rT)) || (e.r * rT < 0);
+        if (survire && std::abs(e.r - rT) > 1e-3) {
+            const double Mvoulu = -p.Iz * (e.r - rT) / 0.1, Mmax = 0.5 * Dlf * p.voie / 2;
+            const double Mesp = std::clamp(Mvoulu, -Mmax, Mmax);
+            Mz += Mesp; Fx_esp = std::abs(Mesp) / (p.voie / 2) * sgn(u);
+            e.espActif = std::abs(Mesp) > 0.02 * Mmax;
         }
     }
     const double resist = 0.5 * RHO_AIR * p.CdA * u * au + (au > 0.01 ? s.crr * mg * sgn(u) : 0);
@@ -281,19 +332,24 @@ inline Params etalonner(const CarDef& c) {
     }
     p.kPuissance = hi; calerCdA(p, vmax);
     p.cent = tempsCent(p);
-    {   // vitesse maximale obtenue : 3 min en plein gaz
-        Etat e; Commande cm; cm.gaz = 1; Sol s;
-        for (int i = 0; i < 120 * 180; i++) pas(p, e, cm, s, 1.0 / 120);
-        p.vmax = e.u();
-    }
     return p;
 }
 
-// une fois pour les 20 voitures du catalogue (initialisation statique sûre entre threads) ; autre fiche : calculée
+// vitesse maximale obtenue (m/s) : 3 min en plein gaz (banc seulement : trop long pour le chargement d'une partie)
+inline double vitesseMaxi(const Params& p) {
+    Etat e; Commande cm; cm.gaz = 1; Sol s;
+    for (int i = 0; i < 120 * 180; i++) pas(p, e, cm, s, 1.0 / 120);
+    return e.u();
+}
+
+// étalonnage d'une voiture du catalogue à sa première utilisation seulement (WFS-253 : ≈ 0,1 s par voiture sur PC ; les 20
+// d'un coup prendraient plusieurs secondes au téléphone), sûr entre threads ; autre fiche : calculée à chaque appel
 inline const Params& params(const CarDef& c) {
-    static const auto table = [] { std::array<Params, sizeof(CARS) / sizeof(CARS[0])> t{}; for (size_t i = 0; i < t.size(); i++) t[i] = etalonner(CARS[i]); return t; }();
+    constexpr size_t N = sizeof(CARS) / sizeof(CARS[0]);
+    static std::array<Params, N> table{};
+    static std::array<std::once_flag, N> faits;
     const size_t i = (size_t)(&c - CARS);
-    if (&c >= CARS && i < table.size()) return table[i];
+    if (&c >= CARS && i < N) { std::call_once(faits[i], [&] { table[i] = etalonner(CARS[i]); }); return table[i]; }
     thread_local Params autre; autre = etalonner(c); return autre;
 }
 

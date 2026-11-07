@@ -276,6 +276,7 @@ void Player::updateMonde(double dt, const DriveInput& in, Track& track, bool pla
     else if (braking || (accelerating && u < -0.05)) c.frein = 1;
     else if (accelerating) c.gaz = 1;
     c.nitro = nitroOn ? config().nitro.poussee : 1;
+    c.abs = g_aidesVoiture.abs; c.antipatinage = g_aidesVoiture.antipatinage; c.esp = g_aidesVoiture.esp;   // WFS-253
     physique::Sol sol;
     if (std::abs(playerX) > 1) { sol.mu = physique::MU_HERBE; sol.crr = physique::CRR_HERBE; }   // bas-côté
     sol.pente = track.pointLisse(dist, playerX * RW).slope * std::cos(heading);
