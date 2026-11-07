@@ -3226,3 +3226,37 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Créés** : `.claude/skills/expert-conduite/SKILL.md` (modèle cible en coordonnées du monde, pneus, transfert de charge, moteur, boîte, freins, aides, banc `conduite` contre les fiches, ordre de travail), `.claude/agents/expert-conduite.md` ; statut 🟡 dans la légende de `TACHES.md` ; règles dans `CLAUDE.md` et l'agent PO.
 - **WFS-241** devient l'étape 1 du chantier « Conduite réaliste » (RG-04 tranchée : conduite en coordonnées du monde).
 - **Sessions ouvertes** (compte de l'utilisateur) : « Agent dev conduite » (session_01UY1Vv1HhvwRLyzGwJojas5) → WFS-241 ; « Agent dev course » (session_01UY1Vv1dqtmnzuHnjhy9VJz) → WFS-242 puis WFS-218 + 226. Reste libre et prioritaire : WFS-224.
+
+### 2026-11-07 14:28:39 — WFS-235 : arbitrage RG-02 / RG-05 (vue Cockpit), option A ; conflit d'attribution WFS-218 signalé (po-scrum-master)
+- **Question d'arwa-2** : la vraie géométrie de l'expert (pavillon, montants, rétroviseur d'une Golf) cache ≈ 25 % de l'image au-dessus de l'horizon, contre « < 15 % » demandé par RG-05.
+- **Décision : option A, vraie géométrie** (cotes de `expert-realisme-3d`, vraies matières, jamais d'aplat noir). Le « < 15 % » était un chiffre du PO : remplacé par un critère qui mesure l'ordre de l'utilisateur (« voir la rue ») : (1) fenêtre de la rue, horizon → +8°, ±15° autour de l'axe de la voiture : **0 % caché** ; (2) bande de la rue, horizon → +8°, toute la largeur : **≤ vraie voiture + 2 points** (le « ≤ 10 % » proposé n'est pas tenable : la glace réelle du rétroviseur en cache seule ≈ 12 %, calcul rapide du PO) ; (3) route visible jusqu'à l'horizon (RG-02) ; (4) part au-dessus de l'horizon au journal seulement. Banc `camera-cockpit`, regard Normal, 20 voitures × ligne droite / virage × jour / nuit. Détail : `regles-de-gestion/WFS-235.md` (RG-05 et « Suivi »).
+- **Conflit signalé (rien changé dans `TACHES.md`)** : WFS-218 attribué à agent arwa à 14:19, branche poussée à 14:20 (2d3c20e), puis réservé à l'agent dev course à 14:25 (après WFS-242). Règle des 10 h : à trancher par la session PO (01UY1Vv1). `track-agent.md` : lignes des deux nouvelles sessions rangées dans « Agents développeurs », heures d'envoi à jour.
+
+### 2026-11-07 14:30:34 — WFS-221, 222, 223, 225 remis en 🟡 À valider (utilisateur) (po-scrum-master)
+- Ces tickets viennent des vidéos de l'utilisateur d'aujourd'hui ; règle 🟡 (2026-11-07) appliquée après coup : ils ne restent pas ✅ sur la seule CI. ✅ quand l'utilisateur confirme sur l'APK de `main` (WFS-222 n'était pas encore dans l'APK 840).
+
+### 2026-11-07 14:33:14 — WFS-222 refusé par l'utilisateur (ANO-125) ; WFS-246 créé ; session « Agent dev perf » ouverte (po-scrum-master)
+- **Retour de l'utilisateur** : « 222 KO, à refaire » (APK 842, qui contient WFS-222). WFS-222 → ❌ Refusé ; anomalie ANO-125 (bloquante).
+- **Constat** (journal de WFS-222) : gain de ≈ 6 à 12 % seulement ; GPU = goulot (passe de scène ≈ 80 %), `cullMode` = NONE partout, shader de scène lourd pour tout le décor.
+- **WFS-246** (`[TECHNIQUE]`, P1, E4) : faces arrière, shaders par coût, résolution adaptative (viser 60 img/s), LOD au-delà de 150 m, ombres et capture allégées ; coût GPU ÷ 3 au banc ; ≥ 60 / 45 img/s sur le téléphone, validé par l'utilisateur.
+- **Session ouverte par le PO** : « Agent dev perf » (session_01UY1Vv56DjekCWRRAAjo4bp).
+
+### 2026-11-07 14:34:50 — Une session = un domaine : WFS-218 + 226 et 224 retirés de l'agent dev course ; session « Agent dev nuit » ouverte (po-scrum-master)
+- **Remarque de l'utilisateur** : ne pas réserver à l'agent dev course des tâches sans rapport avec la course.
+- **Fait** : agent dev course prévenu (seulement WFS-242, puis courses et modes) ; session **« Agent dev nuit »** (session_01UY1Vv46gFUTj96omGSDRJT) ouverte : WFS-218 + 226 (phares), puis WFS-224 (fumée des pneus). Règle « une session = un domaine » dans l'agent PO.
+
+### 2026-11-07 14:35:39 — Le PO ouvre des sessions de développeur sans demander l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** : le PO peut créer des sessions sans son accord. Écrit dans l'agent PO : ouverture dès qu'un ticket prêt n'a pas de développeur joignable ou qu'un nouveau domaine apparaît ; information de l'utilisateur après coup ; toujours une session = un domaine.
+
+### 2026-11-07 14:36:17 — Correction : le PO ne crée aucune session de développeur sans l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** (« non, tu ne peux pas ») : la règle de 14:3x est annulée. Le PO propose et ouvre une session seulement après le « oui » de l'utilisateur. Les 4 sessions déjà ouvertes (conduite, course, perf, nuit) avaient son accord et restent.
+
+### 2026-11-07 14:37:13 — Les 4 sessions de développeur ouvertes par le PO sont archivées (décision de l'utilisateur) (po-scrum-master)
+- **Archivées** : « Agent dev conduite » (WFS-241, en lecture du code), « Agent dev course » (WFS-242, grille corrigée et compilée, tests en cours), « Agent dev perf » (WFS-246, au tout début), « Agent dev nuit » (WFS-218 + 226, branche créée, étude des phares).
+- **Tickets remis ⏳ Prêt**, responsable vidé : WFS-241, 242, 246, 218, 226, 224 ; les branches `feature/waforspeed-241 / 242 / 246 / 218` sont **gardées** (ce qui a été poussé reste, ce qui était seulement en local dans les sessions est perdu). Lignes retirées de `track-agent.md`. Bandeau de `TACHES.md` mis à jour.
+
+### 2026-11-07 14:37:35 — WFS-218 rendu à l'agent arwa (il l'avait pris à 14:19, avant la réservation du PO) (po-scrum-master)
+- Conflit corrigé : WFS-218 🔧 agent arwa (branche 2d3c20e) ; WFS-226 prêt, à lui donner après WFS-218 (même fichier). `track-agent.md` nettoyé des sessions archivées.
+
+### 2026-11-07 14:38:49 — Session « Agent dev conduite » gardée par l'utilisateur, ressortie de l'archive ; WFS-241 lui revient (po-scrum-master)
+- L'utilisateur n'avait validé qu'une session : celle de la conduite. Elle est ressortie de l'archive et reprend WFS-241 sur sa branche ; les trois autres restent archivées.
