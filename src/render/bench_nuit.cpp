@@ -1,5 +1,6 @@
 // WaForSpeed — scènes du banc d'essai de la nuit (WFS-09, WFS-16) : voir bench_nuit.h.
 #include "bench_nuit.h"
+#include <cmath>
 #include <cstdlib>
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -56,6 +57,24 @@ void benchNuit(Game& g, Renderer& r, const std::string& out) {
         }
         g.shutdown();
     }
+    // WFS-218 (RG-04) : feux de croisement du joueur en qualité Basse, Ville et Corniche : poursuite (route, façades du bord,
+    // coupure), poursuite haute (trottoirs, pieds de façade), puis vue de face à 6,5 m (les deux optiques allumées)
+    ecrans::reglages().qualite = ecrans::QUALITE_BASSE;
+    for (const char* carte : {"ville", "plage"}) {
+        if (!g.init(r, "golf", carte)) { WFS_ERR("nuit : chargement %s impossible", carte); continue; }
+        const std::string base = std::string("phares-basse-") + (std::string(carte) == "plage" ? "corniche" : "ville");
+        g.setAutopilot(true); g.camMode = 0;
+        for (int i = 0; i < 240; i++) image(i % 8 == 0);
+        capture(base + "-0");
+        g.camMode = 1;
+        for (int i = 0; i < 30; i++) image(i % 8 == 0);
+        capture(base + "-haut");
+        const Game::Vue v = g.calculerVue(t);
+        g.camMode = 2; g.orbit = std::atan2(v.fwd.x, v.fwd.z);
+        capture(base + "-face");
+        g.shutdown();
+    }
+    ecrans::reglages().qualite = ecrans::QUALITE_HAUTE;
     unsetenv("WFS_MOMENT");
 }
 

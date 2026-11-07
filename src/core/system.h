@@ -31,6 +31,7 @@ class Track;
 struct Player;
 struct MapDef;
 struct CarDef;
+struct Model;
 struct Touch;
 struct DriveInput;
 struct FrameParams;
@@ -52,6 +53,7 @@ struct GameView {
     Track* track = nullptr;            // piste (lecture : point(), pose(), findSegment() ; ne pas reconstruire)
     const Player* player = nullptr;    // voiture du joueur (position, vitesse, cap…)
     const CarDef* car = nullptr;       // fiche de la voiture du joueur
+    const Model* modele = nullptr;     // WFS-218 : modèle 3D de la voiture du joueur (lecture : position des optiques, feux)
     const MapDef* map = nullptr;       // carte en cours
     vec3 camPos{}, camTarget{};        // caméra de l'image en cours (render / drawUi)
     mat4 view = mat4::identity(), proj = mat4::identity();

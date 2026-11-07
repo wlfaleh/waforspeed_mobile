@@ -19,6 +19,7 @@
 #include "../core/system.h"
 #include "../game/track.h"
 #include "../render/renderer.h"
+#include "giratoire.h"   // WFS-248 : giratoires reconstruits
 #include "vegetation.h"
 
 namespace wfs {
@@ -90,7 +91,8 @@ public:
     enum { T_TREE, T_VERGE, T_LAMP, T_CARTE };
     enum Kind { K_ROUND, K_PINE, K_CYPRESS };
 protected:
-    struct Item { int t; int side = 1; float lat = 0, h = 0, w = 0, d = 0, l = 0, along = 0; int k = 0, roof = 0, floors = 0, col = 0; bool petit = false; };
+    struct Item { int t; int side = 1; float lat = 0, h = 0, w = 0, d = 0, l = 0, along = 0; int k = 0, roof = 0, floors = 0, col = 0; bool petit = false;
+                  bool ilot = false; };   // WFS-248 : objet de l'îlot d'un giratoire (seul objet permis sur l'ouvrage)
     void item(int64_t n, const Item& it) { items_[(size_t)(((n % len()) + len()) % len())].push_back(it); }
     // placement de tout le décor (generateDecor), une fois ; zones [z0, z1) de même zone
     virtual void place(const char* zone, int64_t z0, int64_t z1, Mulberry32& D) = 0;
@@ -128,6 +130,10 @@ protected:
     Image palTex_{}, leafTex_{}, routeTex_{};
     int lastDraws_ = 0;
     int64_t depart_ = 0;   // banc d'essai : départ du joueur avancé de depart_ segments (WFS_DEPART)
+    // WFS-248 : giratoires reconstruits (un par rond-point du tracé 2) et segment (tour) de leur centre
+    std::vector<giratoire::Giratoire> gir_;
+    std::vector<int64_t> girSeg_;
+    bool surGiratoire(const vec3& q, float marge) const { for (const giratoire::Giratoire& g : gir_) if (giratoire::dansOuvrage(g, q, marge)) return true; return false; }
 
 private:
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]);
