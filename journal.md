@@ -2470,3 +2470,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 08:42:11 — WFS-210 : accroches hors zone accordées à Claude, agent 5 (po-scrum-master)
 - A1 : `src/world/conducteurs.*` ≤ 10 lignes (appel de `tenueLieu` défini dans `src/world/pietons.*`, albédo du phototype VI) ; E2 n'a aucun ticket actif. A2 : `src/render/renderer.*` ≤ 10 lignes (indices 16 bits, RG-05), API de `renderer.h` inchangée. Détail dans `regles-de-gestion/WFS-210.md`.
+
+### 2026-11-07 08:45:29 — Statuts automatiques, CI main #813 (robot statuts)
+- Run vert (push, commit 9088ef9) : WFS-212 ✅ (PR #181, 9088ef9).
