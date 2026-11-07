@@ -3854,3 +3854,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 19:25:15 — WFS-274 : cause de la CI rouge trouvée, correction à l'agent arwa (po-scrum-master)
 - Agent 0 : `eclairage_banc.cpp:560`, sortie du tunnel sans adaptation visible ; tunnel trop clair depuis les phares (WFS-218 / 226). Correction par l'agent arwa (auteur) en priorité absolue, avant WFS-270. Aucun seuil du banc ne bouge.
 - WFS-247 fusionné (PR #223) par Agent 0, 🟡.
+
+### 2026-11-07 19:26:22 — WFS-252 : banc realisme en deux jobs, CI de branche run 868 (agent expert ci)
+- **Fait** (`feature/waforspeed-252`, 5ca65d6) : matrice `realisme` → `realisme-1` + `realisme-2` (`WFS_REALISME_PARTIE`, WFS-251) ; `ci_textures.sh` dans `realisme-2` seulement (partie qui lit la KTX2) ; nouveau job `realisme-fusion` (après les bancs : rapports finaux, partie absente = rouge, artefact `captures-realisme`) ; `publication-captures` attend aussi la fusion. Étape de fusion essayée en local : rapport identique au banc complet hors durées ; partie absente → code 3.
+- **Jobs** : 13 bancs + endurance en même temps au plus (+ android, résumé) : 16 ≤ 20 (limite des comptes gratuits ; à confirmer dans les réglages du compte).
+- **CI de branche run 868** (lancement n° 1) : vérifie les deux parties, la fusion, la publication et la durée du job le plus long.
