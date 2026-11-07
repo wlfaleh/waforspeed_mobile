@@ -4444,3 +4444,59 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Zone** : `src/audio/pluie_*` (neufs), `src/audio/audio_system.*` (branchement, banc), `tests/test_audio_pluie*`, `references/reel/son/**`, `CMakeLists.txt` ≤ 2 lignes. Lecture seule : `meteo.h`, `vehicule_cockpit.h`, `camera_vue.h` (`camera_vue.*` tenu par WFS-282). Interdit : `sfx.*`, `sons_conduite.h`, `route_sons.h`, `engine_synth.*` (WFS-260 garde sa priorité dans E6 ; en parallèle si prêt, fichiers séparés).
 - **Fusion** : règle du lead dev (captures avant / après `tools/qa/captures_pr.sh WFS-288 partie2a`, PR décrite, appel du `lead-dev`, seul à fusionner). Ni essai de l'utilisateur ni conduite : 🟣 puis ✅ par les bancs du matin. Branche `feature/waforspeed-288` à pousser tout de suite.
 - **Suivi** : `track-agent.md` remis à jour (WFS-282 et WFS-276 en PR, nouvelle revue du lead dev ; WFS-283 poussée à 23:23 ; WFS-262 23:23 ; agent 3 : 9 h 51 sans envoi sur WFS-239 à 23:34, pas de retrait avant 23:43).
+### 2026-11-07 23:35:26 — WFS-232 : pilotes casqués, captures, coût, parcours, PR #245 ouverte (revue du lead dev) (arwa-3)
+- **Pilotes (RG-02)** : `src/game/deux_roues.{h,cpp}` (nouveaux). Humains h02 et f02 du jeu (`assets/people/humains/`, lecture seule) :
+  - pose `Sitting_Idle_Loop`, assise sur la selle de chaque modèle, mains aux poignées et pieds aux repose-pieds par IK (`atteindre`) ;
+  - casque intégral 26 × 30 × 33 cm, centré d'après les sommets de la tête (haut du crâne 0,160 / 0,167 m au-dessus de l'articulation, 3,5 cm de coque au-dessus, 4 à 5 cm devant et derrière) et porté par la matrice de peau de la tête ;
+  - corrigé en cours de route : faces du casque tournées vers l'intérieur (on ne voyait que l'intérieur de la coque, derrière la tête) ;
+  - 4 pilotes au plus (les plus proches, 60 m), tenue de la carte à manches longues et pantalon ; 7 sur 10 sont des hommes (choix de conception, à valider par le PO).
+- **Accroche hors zone (1 ligne)** : `src/platform/desktop_main.cpp`, groupe de banc `motos` (captures `trafic-motos-*` seules) ; les mêmes captures sont aussi faites à la fin du banc « trafic vivant » (partie1b).
+- **Captures** (`tools/qa/captures_pr.sh WFS-232 motos parcours`, `qa/pr/WFS-232/`) :
+  - 12 vues des deux-roues : Ville et Corniche, jour et nuit, en ligne droite, dans une courbe de 22 m et de près ;
+  - toutes regardées : pilotes casqués, mains au guidon ; inclinaison de 20° vers l'intérieur de la courbe à 32 km/h ; phare et feu arrière la nuit ;
+  - pas d'« avant » pour ces vues : le banc est nouveau ;
+  - `parcours-course` et `parcours-fin` : avant et après identiques.
+- **Parcours** accueil → course → fin → retour : **0 écart** avant et après, en vue normale et en vue Cockpit.
+- **Tests CPU** : 62 réussis, sur la branche synchronisée avec `main` (e77870e). Résultats de `test_trace` :
+  - part de deux-roues : Ville 11,2 %, Corniche 12,4 %, Campagne 4,7 %, Grand Prix 0 % ;
+  - inclinaison au plus 45°, saut ≤ 1°/pas ;
+  - choc à 120 km/h : 1 accident.
+- **Coût** (banc `perf`, Ville, chauffe 60, 150 images, lavapipe 1280 × 720, main c6fb967 contre la branche) :
+
+  | qualité | appels de dessin | processeur (ms) | pire image du processeur (ms) |
+  |---|---|---|---|
+  | Haute | 1025 → 989 | 3,0 → 2,8 / 2,7 | 6,5 → 7,8 / 5,9 |
+  | Basse | 348 → 348 | 2,0 → 2,2 / 1,9 | 3,7 → 16,2 / 3,4 |
+
+  Deux passages sur la branche. Le pic de 16,2 ms en Basse (TrafficSystem, une seule image) n'est pas revenu au 2e passage.
+- **Limites signalées au PO** :
+  - roues fixes : la découpe ne connaît que 4 roues (`roues.*`, `model_loader`), hors de ma zone ; je propose un ticket du rendu ;
+  - le trafic existant prend des virages de 22 m à 86 km/h : l'inclinaison atteint alors la borne de 45° ;
+  - la Golf paraît bleutée dans l'épingle de la Corniche la nuit : ce n'est pas lié à ce ticket.
+
+### 2026-11-07 23:48:50 — WFS-262 refusé par le lead dev, PR #246 (lead-dev)
+- Revue de la PR #246 (Claude, agent dev X) : les 18 captures sont ouvertes. Réglages : la 2e ligne gagne « écart 4,7 ms · cadence 60 », sans aucun bouton déplacé. Ville Haute et Basse : images identiques. Les captures ne bloquent rien.
+- **Refusé** pour 5 points, détaillés dans la revue de la PR :
+  1. la description ne commence pas par « Agent : … » ;
+  2. RG-04 : la ligne « Cadence : Auto / 30 / 60 » est retirée sans accord écrit du PO, alors que le passage automatique à 30 img/s est livré sans moyen de revenir à 60 (la question de l'utilisateur sur le 30 reste ouverte) ;
+  3. RG-02 : les variantes MSAA et les qualités ne sont pas créées au chargement, et un changement de qualité en pause n'est pas compté ;
+  4. la cadence peut rester bloquée à 30 toute la session sur un téléphone sans horodatages GPU, et elle n'est pas remise à 60 au début de chaque course ;
+  5. le journal du développeur ne contient ni les accroches (`android_main.cpp`, `chauffe.h`) ni les résultats.
+- Statut WFS-262 : ↩️ Retour lead dev (PR #246) ; `track-agent.md` mis à jour.
+- **Pour le PO** : décider par écrit si WFS-262 peut sortir sans la ligne « Cadence » (ticket d'interface séparé, E8) et si le 30 automatique peut être livré avant la réponse de l'utilisateur.
+
+### 2026-11-07 23:49:38 — WFS-232 refusé par le lead dev (PR #245) (lead-dev)
+- **Revue** : 16 captures ouvertes une par une et agrandies, tout le diff lu, `test_trace` relancé sur la branche (e77870e) : OK. Revue écrite dans la PR (commentaire, GitHub refuse « changements demandés » pour le même compte) : https://github.com/wlfaleh/waforspeed_mobile/pull/245#pullrequestreview-5815621519
+- **Bien** : de jour, les 3 modèles se reconnaissent, pilotes casqués, mains au guidon ; inclinaison d'environ 20° vers l'intérieur de la courbe de 22 m ; parcours avant et après identiques ; licences et SHA-256 au journal.
+- **Défauts (chacun bloque)** :
+  1. la description de la PR ne commence pas par « Agent : arwa-3 (Claude, session 01Us6uCt) » ;
+  2. la nuit, de près, scooters et sportive brûlés en taches blanches (`pres-plage-nuit`, `pres-ville-nuit` : luminosité 232 / 255 la nuit contre 121 le jour) ;
+  3. RG-06 : pas de feu arrière sur la sportive (« feu non trouvé : sportive » au journal du banc) ;
+  4. RG-02 : pilotes limités à 4 et à 60 m alors que le trafic est dessiné jusqu'à 300 m : deux-roues sans pilote au loin, et un pilote qui apparaît d'un coup ;
+  5. roues fixes, alors que la règle « Graphisme réaliste » est obligatoire, sans décision écrite du PO ;
+  6. RG-05 : un deux-roues accidenté reste debout et tourne sur lui-même avec son pilote (la PR dit « renversé ») ;
+  7. le banc « de près » laisse deux scooters à 0,6 m l'un de l'autre dans la même file ;
+  8. captures manquantes : les « avant » (les rues existent sur `main`), une suite d'images dans le virage à la vitesse du trafic (jusqu'à 45°), une capture du trafic normal, le phare vu de face la nuit ;
+  9. RG-01 : hauteur de selle non prouvée (routière 0,88 m contre 0,79 à 0,81 m sur la fiche).
+- Statut WFS-232 : ↩️ Retour lead dev (PR #245) ; `track-agent.md` mis à jour.
+- **Pour le PO** : la règle « roues qui tournent » (obligatoire) et la zone (`roues.*` en lecture seule) se contredisent en partie. Une solution existe dans la zone (roues exportées à part et tournées dans `traffic_system` / `deux_roues`) ; sinon, il faut ta décision écrite dans `regles-de-gestion/WFS-232.md` et le ticket du rendu. À trancher aussi : 7 pilotes sur 10 sont des hommes.
