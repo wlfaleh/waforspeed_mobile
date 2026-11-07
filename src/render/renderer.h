@@ -58,7 +58,7 @@ struct ApparencePersonnage {
 };
 struct SkinnedMesh { Buffer vb, ib; uint32_t indexCount = 0; vec3 centre{}; float rayon = -1; bool i16 = false; };   // WFS-210 (RG-05) : indices 16 bits   // WFS-82 : sphère englobante (pose de repos × 1,5)
 constexpr int SKIN_MAX_OS = 64;           // matrices d'os par instance (taille de la palette du shader)
-constexpr int SKIN_MAX_INSTANCES = 112;   // instances animées par image (WFS-73 RG-06 : 16 conducteurs × 2 ; WFS-257 : + 80 pour les piétons du cadre)
+constexpr int SKIN_MAX_INSTANCES = 152;   // instances animées par image (WFS-73 RG-06 : 16 conducteurs × 2 ; WFS-257 : + 120 pour les piétons du cadre)
 
 struct ModelPart { uint32_t firstIndex, indexCount; int32_t vertexOffset; uint32_t material; int32_t roue = -1; int8_t feuArriere = 0; };   // WFS-60 : roue 0-3, −1 = fixe ; WFS-109 : 1 feu arrière découpé, 2 3e feu stop
 // WFS-09 : feux d'une voiture (repère du modèle : avant vers −z). Hauteurs mesurées sur les pièces des feux quand le

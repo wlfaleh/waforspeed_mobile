@@ -39,8 +39,8 @@ constexpr int PEOPLE_MAX = 220;        // life.js
 // sous les yeux du joueur à chaque changement des « 8 plus proches ». Désormais toute personne dans le cadre est dessinée :
 // INST_PIETONS instances (corps + coiffure = 2) pour les nouvelles venues, celles déjà affichées gardent toujours leur place ;
 // SKIN_MAX_INSTANCES (renderer.h) = 32 des conducteurs (WFS-73) + piétons
-constexpr int INST_PIETONS = 80;
-constexpr int DESSINES = 48;           // personnes dessinées par image au plus (tableaux)
+constexpr int INST_PIETONS = 120;   // 60 personnes : la Ville en montre jusqu'à 40 dans le cadre (banc WFS-257), marge pour les fondus croisés
+constexpr int DESSINES = 64;           // personnes dessinées par image au plus (tableaux)
 constexpr int POSES_ENFANT = 8;        // instances par morphotype d'enfant et par image (WFS-233 : 2)
 static_assert(INST_PIETONS + 32 <= SKIN_MAX_INSTANCES, "WFS-257 : places des piétons et des conducteurs");
 
