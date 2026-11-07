@@ -2959,3 +2959,39 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 00:22:32 — Statuts automatiques, CI main #797 (robot statuts)
 - Run rouge (push, commit f279a8c), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198, WFS-199.
+
+### 2026-11-07 00:28:46 — Fusion WFS-201 : vue cockpit réaliste, lot 2 (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #172, squash ab40be5, fusion par confiance.
+  - 8 intérieurs : A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3, X5.
+  - 6 nouveaux combinés ; Model 3 sans combiné : vitesse, « D » et carte sur l'écran de 15 po.
+  - Méplat en haut du volant (208), molettes (Model 3), démarreur seul (Giulia), palettes fixées sur la colonne (Giulia, Gallardo), repère à midi (A 45).
+  - **Accroches annoncées** :
+    - `references/reel/anthropometrie.json` et 1 ligne de `references/reel/outils/extraire.py` (RG-07) ;
+    - `src/platform/desktop_main.cpp` : banc `cockpit` réparti, lot 2 dans les groupes `nuit` et `partie1a` (2 lignes), et liste `WFS_VOITURES` pour l'essai local (1 ligne).
+- RG-07 : `humain.hommes.eyeheightsitting` = 804,5 mm (σ 33,2, p5 750, p95 860, n 4082) et `humain.femmes.eyeheightsitting` = 747,7 mm (σ 30,4, p5 698, p95 799, n 1986).
+  - Source : copie github.com/senihberkay/US-Army-ANSUR-II, clonée en lecture. Empreintes SHA-256 identiques à WFS-148 (0547aea0… et ed7e800a…).
+  - Calcul fait par l'outil du dépôt (`extraire.py`). Fichier régénéré : seules ces deux mesures sont ajoutées.
+  - Œil = assise du modèle + 0,7859 m × cos 25° (pondéré hommes / femmes ; dossier E).
+  - Assises de l'expert (E), lot 1 compris : Golf 0,442, M4 0,335, 911 0,297, SF90 0,25 m. L'œil de la M4 baisse de 5 cm.
+- **Écart signalé au PO** : RG-03 cite « MBUX » (A 45), « Audi virtual cockpit » (S3) et « Live Cockpit » (X5). Or les `.wfm` sont une A 45 W176 et une S3 8V, sans ces écrans, et un X5 G05 restylé à vitre courbe unique. J'ai suivi la décision du PO « génération du .wfm » :
+  - A 45 et S3 : 2 cadrans à aiguille et écran au centre ;
+  - X5 : combiné et écran côte à côte sur une même vitre.
+  À corriger dans RG-03 si besoin.
+- **RG-09 partiel, signalé au PO** : le banc `parcours` fixe lui-même la Golf (`g.init("golf")` dans `modes_ecran.cpp`, hors de ma zone), et le garage affiche la voiture de la partie. « garage : A 45, puis Model 3 » n'est donc pas testable sans toucher à ce fichier.
+  - Prouvé : parcours complet 0 écart, normal et en vue Cockpit (Golf), en local après synchronisation avec main.
+  - A 45 et Model 3 roulent en vue Cockpit dans le banc `cockpit`, sans erreur.
+  - Proposition : une accroche ou un ticket E3 pour passer la voiture au banc `parcours`.
+- Mesures RG-08 (banc `cockpit`, 1280x720) : de 23 (Model 3) à 32 appels de dessin, de 1,21 à 1,23 Mo par intérieur. Banc complet en local : 12 min 26 s (61 captures).
+  - CI : lot 1 et Corsa dans `partie2c`, lot 2 moitié par moitié dans `nuit` et `partie1a`.
+  - `-nuit` est pris dans la course `-pluie`, balais au repos : une course de moins par voiture.
+- Fidélité : **non mesurable**.
+  - Volants : Ø AC ou E, aucun V.
+  - Écrans : diagonales AC, format E.
+  - Balais : AC, sauf Model 3 V (guide d'entretien Tesla) et disposition de la Gallardo NM.
+  - Positions : E.
+  - Sources : rapport de l'expert, recherche web (résumés, pages non ouvertes, aucun fichier téléchargé).
+- Limites :
+  - Combiné du X5 un peu coupé en haut par la jante (œil haut du SUV, comme dans la vraie voiture).
+  - Habitacle très éclairé la nuit par l'éclairage public (pas de toit qui fait de l'ombre).
+  - Coutures vertes de la 208 GT et coutures rouges de l'A 45 / Mustang non dessinées : seules les coutures M en 3 couleurs existent dans le socle.
+

@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` (M-01 nuit +X) corrigé par WFS-150 (PR #170, fusion par confiance) ; WFS-190 se termine avec le premier run tout vert de `main` | 190 : rien poussé depuis l'attribution (20:40) ; 150 : PR #170 fusionnée 23:47 | ⚠️ WFS-190 sans envoi depuis plus de 2 h (règle des 10 h : reste à lui) |
 | Claude, agent 1 (01UY1Vv2) | WFS-203 | Correction : de nuit, la Campagne est entièrement blanche (surexposée) | 203 : à créer et pousser (attribué 00:07) ; 186 : fusionnée 00:04 (PR #171, squash 83e9746) | 🔴 P1 actif ; WFS-186, 199, 198, 179, 176 🟣 (le robot des statuts les passe en ✅) |
-| Claude, agent 2 (01UY1Vv5) | WFS-201 | Vue cockpit réaliste, lot 2 : intérieurs A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3, X5 (+ `eyeheightsitting` ANSUR-II) | 201 : 00:02 (8 intérieurs du lot 2) ; 197 : fusionnée 23:44 (PR #169) | ✅ actif ; WFS-197 🟣 |
+| Claude, agent 2 (01UY1Vv5) |  |  | 201 : fusionnée 00:28 (PR #172, squash ab40be5) | ✅ libre ; CI de `main` de WFS-201 (🟣) suivie par le PO (ordre de l'utilisateur) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre ; WFS-191 et WFS-140 restent 🟣 (runs de main rouges sur des jobs d'autres tickets : `realisme` 42305395876, `endurance` 42257956758) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
