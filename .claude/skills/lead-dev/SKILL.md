@@ -50,7 +50,10 @@ qu'aucune catastrophe visible n'arrive plus jusqu'à l'APK.
   ligne `qa/Check.md` (« fusion par le lead dev », captures regardées, points à surveiller), statut 🟣 (ou 🟡 si le ticket corrige un retour de
   l'utilisateur) dans `TACHES.md`, entrée au journal `### AAAA-MM-JJ hh:mm:ss — WFS-XX fusionné par le lead dev (lead-dev)`.
 - **REFUSÉ** → tu ne fusionnes pas ; tu écris dans la PR une revue `event: "REQUEST_CHANGES"` (ou `COMMENT` si GitHub la refuse pour le même compte), pied de page Claude Code, avec la liste numérotée de ce qui ne va pas, capture par capture,
-  et ce qu'il faut montrer à la prochaine revue ; entrée au journal. Le développeur corrige, régénère les captures, te rappelle.
+  et ce qu'il faut montrer à la prochaine revue ; entrée au journal. **Tout de suite après (règle de l'utilisateur, 2026-11-07)**, sur `main`
+  (`git pull`, seulement la ligne du ticket) : case Statut de `TACHES.md` → **« ↩️ Retour lead dev (PR #N) »**, et la ligne du développeur dans
+  `track-agent.md` → « ↩️ retour lead dev sur PR #N : à corriger », dans le même commit (`TACHES : WFS-XX retour lead dev (lead-dev)`), pour que
+  le développeur et le PO le voient. Le développeur corrige, régénère les captures, remet le statut en « 🔀 En PR #N » et te rappelle.
 - Au 3e refus sur la même PR, ou si le ticket lui-même est mal posé : tu préviens le PO (`po-scrum-master`).
 
 ## Interdits

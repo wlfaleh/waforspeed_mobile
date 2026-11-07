@@ -4377,3 +4377,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 23:11:34 — Règle : le lead dev relit le code et approuve la PR avant de fusionner (lead-dev)
 - Ordre de l'utilisateur (conversation). Skill `lead-dev` : étape 8 « Revue du code » (tout le diff), approbation GitHub (`APPROVE`, ou revue `COMMENT` « ✅ Approuvé par le lead dev » si même compte) obligatoire avant la fusion ; refus en `REQUEST_CHANGES`. Agent `lead-dev` et `CLAUDE.md` alignés. L'utilisateur règle aussi le dépôt sur « squash seulement » (Settings → Pull Requests).
+
+### 2026-11-07 23:13:48 — Règle : statut « ↩️ Retour lead dev » en cas de refus de PR (lead-dev)
+- Ordre de l'utilisateur (conversation) : quand le lead dev refuse une PR, il passe lui-même le ticket en « ↩️ Retour lead dev (PR #N) » dans `TACHES.md` et la ligne du développeur dans `track-agent.md`, pour que le développeur le voie ; le développeur corrige puis remet « 🔀 En PR #N ». Skill et agent `lead-dev`, `CLAUDE.md` (règle des statuts) mis à jour.
