@@ -2718,3 +2718,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Ordres de l'utilisateur** : au moins 50 % de personnes en moins dans les rues ; une tâche pour corriger les défauts graphiques des ronds-points.
 - **WFS-222** : RG-07 (piétons −50 % sur toutes les cartes, Ville 996 → ≤ 498, en premier, mesure avant / après).
 - **WFS-223** (E2, P1 Urgent, ⏳ Prêt) : inventaire des ronds-points des 4 cartes, marquages réglementaires, îlot central, blocs de couleur remplacés, raccords ; captures avant / après. Bandeau de `TACHES.md` : 221, puis 222, puis 223. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 10:30:51 — WFS-222 : le téléphone de l'utilisateur est puissant → objectif ≥ 60 img/s en Basse, ≥ 45 en Haute ; chercher une erreur grossière (po-scrum-master)
+- **Précision de l'utilisateur** : il joue à Call of Duty sans problème ; le matériel n'est pas en cause.
+- **WFS-222** : objectifs relevés (Basse ≥ 60, Haute ≥ 45 stables, aucune image > 33 ms) ; pistes d'erreur grossière à vérifier d'abord : APK « debug » (`debuggable true`), couches de validation, rendu logiciel, cadence d'affichage, un seul cœur, travail refait à chaque image, chauffe dès le départ.
