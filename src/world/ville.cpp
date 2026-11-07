@@ -562,6 +562,16 @@ public:
                     }
                 }
             }
+            {   // WFS-223 (RG-02) : ligne de cédez-le-passage (T'2) à l'entrée de l'anneau (la courbure change de sens) : traits de
+                // 0,50 m, intervalles de 0,50 m, 0,50 m d'épaisseur, en travers de la chaussée
+                int64_t e = -1;
+                for (int64_t k = rp.debut + 1; k < rp.fin && e < 0; k++) if (t.segAt(k).curve * t.segAt(rp.debut + 2).curve < 0) e = k;
+                if (e >= 0 && seg == mod(e)) {
+                    const carte::Pose q1 = poseS(t, (double)a + 0.5 / SEG_M);
+                    for (float x = -R + 0.25f; x + 0.5f <= R - 0.2f; x += 1.0f)
+                        carte::quadSol(U, carte::lateral(p, x, 0.016f), carte::lateral(p, x + 0.5f, 0.016f), carte::lateral(q1, x + 0.5f, 0.016f), carte::lateral(q1, x, 0.016f), uvc(U_ZEBRA));
+                }
+            }
             if (seg != mod(rp.centre)) continue;
             const double c = t.segAt(a).curve;
             const float kc = c > 0 ? 1.f : -1.f;

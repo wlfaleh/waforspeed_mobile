@@ -572,7 +572,7 @@ public:
         const int64_t L = len_;
         sol_.assign((size_t)L, S_PLAGE); cache_.assign((size_t)L, 0);
         touche_.assign((size_t)L * 2, 1e9f); autreY_.assign((size_t)L * 2, 0.f);
-        feux_.clear(); tunDeb_ = tunFin_ = rpSeg_ = rpDeb_ = rpFin_ = -1;
+        feux_.clear(); tunDeb_ = tunFin_ = rpSeg_ = rpDeb_ = rpFin_ = rpEntree_ = -1;
         const auto& S = trace::sections(t);
         if (S.empty()) return;   // tracé 1 : décor d'avant, inchangé
         // centres de la route (tour 1, avec la fin du tour 0 et le début du tour 2) dans une grille de 16 m
@@ -622,6 +622,8 @@ public:
                 for (int64_t n = s.debut; n < s.fin; n++) if (std::abs(t.segAt(n).curve) > cmax) { cmax = std::abs(t.segAt(n).curve); rpSeg_ = n; }
                 int64_t f = rpSeg_; while (f < s.fin && std::abs(t.segAt(f).curve) > cmax * 0.99) f++;
                 rpSeg_ = (rpSeg_ + f) / 2;
+                for (int64_t n = s.debut + 1; n < s.fin && rpEntree_ < 0; n++)   // WFS-223 : entrée de l'anneau (la courbure change de sens)
+                    if (t.segAt(n).curve * t.segAt(s.debut + 2).curve < 0) rpEntree_ = n;
             }
             if (s.type == trace::Type::Feux && !s.depart) {
                 const int64_t croise = s.ligneArret + (int64_t)std::lround(trace::CARREFOUR_M / SEG_M);
@@ -1841,6 +1843,16 @@ public:
                 }
             }
         }
+        if (rpEntree_ >= 0 && mod(a) == mod(rpEntree_)) {   // WFS-223 (RG-02) : ligne de cédez-le-passage (T'2) à l'entrée de
+            // l'anneau : traits de 0,50 m, intervalles de 0,50 m, 0,50 m d'épaisseur, enduit blanc (albédo 0,74)
+            const Pose& p0 = t.pose(a); const Pose& p1 = t.pose(a + 1);
+            auto L = [&](const Pose& q, float x) { return vec3{(float)(q.x + std::cos(q.th) * x), (float)q.y + 0.016f, (float)(q.z + std::sin(q.th) * x)}; };
+            const float R = (float)RW, e = 0.5f / (float)SEG_M;
+            for (float x = -R + 0.25f; x + 0.5f <= R - 0.2f; x += 1.0f) {
+                const vec3 a0 = L(p0, x), a1 = L(p0, x + 0.5f), b0 = a0 + (L(p1, x) - a0) * e, b1 = a1 + (L(p1, x + 0.5f) - a1) * e;
+                quad(out[P_UNI], a0, b0, b1, a1, palUv(C_ENDUIT));
+            }
+        }
         if (rpSeg_ >= 0 && mod(a) == mod(rpSeg_)) {   // îlot du rond-point : gazon, ancre géante, trois palmiers
             const Pose& p = t.pose(a);
             const double c = t.segAt(a).curve, rr = SEG_M / (std::abs(c) * CURVE_K), kc = c > 0 ? 1 : -1;
@@ -2092,7 +2104,7 @@ private:
     bool basse_ = false;
     std::vector<uint8_t> sol_, cache_;   // nature du sol (Sol), côtés à dégager (bit 1 : gauche, 2 : droite)
     std::vector<float> touche_, autreY_;   // [segment · 2 + (côté > 0)] : latéral où l'on touche une autre branche, son altitude
-    int64_t tunDeb_ = -1, tunFin_ = -1, rpSeg_ = -1, rpDeb_ = -1, rpFin_ = -1;
+    int64_t tunDeb_ = -1, tunFin_ = -1, rpSeg_ = -1, rpDeb_ = -1, rpFin_ = -1, rpEntree_ = -1;   // rpEntree_ : WFS-223
     struct Bouchon { int64_t seg; vec3 c; float r; int col; };   // WFS-212 : sol au centre d'une épingle
     std::vector<Bouchon> bouchons_;
     struct FeuDecor { int64_t ligne, croise; int feu; };
