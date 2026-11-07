@@ -464,16 +464,21 @@ void benchTrafficScenes(Game& g, Renderer& r, const std::string& out) {
 void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
     for (const char* carte : {"ville", "plage"}) {
         static Track piste; piste.build(mapById(carte), trace::versionCarte(carte));
-        int64_t courbe = -1;   // début de la 1re courbe serrée (rayon de 18 à 60 m tenu sur 20 m au moins) : inclinaison bien visible
-        for (int64_t a = 100; a + 20 < (int64_t)piste.segmentCount() && courbe < 0; a++) {
+        // début de la 1re courbe serrée (rayon de 18 à 60 m tenu sur 20 m au moins) : inclinaison bien visible ; rien de plus serré
+        // à moins de 60 m (pas l'anneau d'un rond-point ni un carrefour, rayon 14 m)
+        int64_t courbe = -1;
+        const int64_t TENUE = (int64_t)(20 / SEG_M), MARGE = (int64_t)(60 / SEG_M);
+        for (int64_t a = 100; a + TENUE + MARGE < (int64_t)piste.segmentCount() && courbe < 0; a++) {
             bool ok = true;
-            for (int64_t k = 0; k < (int64_t)(20 / SEG_M) && ok; k++) { const double kap = std::abs(piste.segAt(a + k).curve * CURVE_K / SEG_M); ok = kap > 1 / 60.0 && kap < 1 / 18.0; }
+            for (int64_t k = 0; k < TENUE && ok; k++) { const double kap = std::abs(piste.segAt(a + k).curve * CURVE_K / SEG_M); ok = kap > 1 / 60.0 && kap < 1 / 18.0; }
+            for (int64_t k = -MARGE; k < TENUE + MARGE && ok; k++) ok = std::abs(piste.segAt(a + k).curve * CURVE_K / SEG_M) < 1 / 18.0;
             if (ok) courbe = a;
         }
-        for (const char* moment : {"jour", "nuit"}) for (int vue = 0; vue < 3; vue++) {   // 0 : ligne droite, 1 : courbe, 2 : de près
-            if (vue == 1 && courbe < 0) continue;
+        // passe 0 : départ au début du tracé, ligne droite (vue 0) puis de près (vue 2) ; passe 1 : départ 6 m avant la courbe (vue 1)
+        for (const char* moment : {"jour", "nuit"}) for (int passe = 0; passe < 2; passe++) {
+            if (passe == 1 && courbe < 0) continue;
             setenv("WFS_MOMENT", moment, 1);
-            setenv("WFS_DEPART", std::to_string(vue != 1 ? 0 : std::max<int64_t>(0, courbe - (int64_t)(6 / SEG_M))).c_str(), 1);
+            setenv("WFS_DEPART", std::to_string(passe == 0 ? 0 : std::max<int64_t>(0, courbe - (int64_t)(6 / SEG_M))).c_str(), 1);
             if (!g.init(r, "golf", carte)) { WFS_ERR("deux-roues : chargement %s impossible", carte); continue; }
             TrafficSystem* s = TrafficSystem::active_;
             if (!s) { g.shutdown(); continue; }
@@ -481,41 +486,43 @@ void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
             double t = 900;
             for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(t += 0.5); }
             const Player& pl = g.player();
-            // une voiture de chaque modèle devient (ou reste) un deux-roues, posée devant le joueur, une par file
-            std::vector<size_t> pris;
-            for (int k = 0; k < DEUX_ROUES_COUNT; k++) {
-                size_t best = 0; double loin = -1;
-                for (size_t i = 0; i < s->traffic_.cars.size(); i++) {
-                    const TrafficCar& c = s->traffic_.cars[i];
-                    if (c.cache || c.crashed || std::find(pris.begin(), pris.end(), i) != pris.end()) continue;
-                    const double d = std::abs(s->track_->relZ(c.z - pl.position)) + (c.deuxRoues == k + 1 ? 1e7 : 0);
-                    if (d > loin) { loin = d; best = i; }
+            for (const int vue : passe == 0 ? std::vector<int>{0, 2} : std::vector<int>{1}) {   // 0 : ligne droite, 1 : courbe, 2 : de près
+                // une voiture de chaque modèle devient (ou reste) un deux-roues, posée devant le joueur, une par file
+                std::vector<size_t> pris;
+                for (int k = 0; k < DEUX_ROUES_COUNT; k++) {
+                    size_t best = 0; double loin = -1;
+                    for (size_t i = 0; i < s->traffic_.cars.size(); i++) {
+                        const TrafficCar& c = s->traffic_.cars[i];
+                        if (c.cache || c.crashed || std::find(pris.begin(), pris.end(), i) != pris.end()) continue;
+                        const double d = std::abs(s->track_->relZ(c.z - pl.position)) + (c.deuxRoues == k + 1 ? 1e7 : 0);
+                        if (d > loin) { loin = d; best = i; }
+                    }
+                    pris.push_back(best);
+                    TrafficCar& c = s->traffic_.cars[best];
+                    const int lane = vue == 2 ? (k == 0 ? 2 : k == 1 ? 0 : 1) : (k == 0 ? 2 : k == 1 ? 1 : 0);   // de près : la file du joueur (1) loin
+                    c.deuxRoues = k + 1; c.len = DEUX_ROUES[k].L / M; c.w = DEUX_ROUES[k].W / (2 * RW);
+                    c.z = c.zPrec = s->track_->wrap(pl.position + (vue == 0 ? 7.0 + 6.0 * k : vue == 1 ? 9.0 + 5.0 * k : k < 2 ? 4.5 : 10.0) / M);
+                    c.lane = c.target = lane; c.offset = c.prevOff = (LANE_X[lane] + DROITE_VOIE) * s->traffic_.facteurVoie(c.z);
+                    c.offPrec = c.offset; c.laneYaw = c.yawPrec = 0; c.pending = false; c.think = 1e9; c.signal = 0;
+                    // en courbe : vitesse d'une inclinaison de 20° au rayon local (v² = g·R·tan 20°), de 20 à 50 km/h
+                    const double kap = s->track_->findSegment(c.z).curve * CURVE_K / SEG_M;
+                    const double v = vue != 1 || !kap ? 30 / 3.6 : std::clamp(std::sqrt(9.81 / std::abs(kap) * std::tan(20 * 3.14159265 / 180)), 20 / 3.6, 50 / 3.6);
+                    c.speed = c.want = v / M;
+                    c.inclinaison = c.inclPrec = inclinaisonEquilibre(v, kap);
+                    c.prevDz = s->track_->relZ(c.z - pl.position);
                 }
-                pris.push_back(best);
-                TrafficCar& c = s->traffic_.cars[best];
-                const int lane = vue == 2 ? (k == 0 ? 2 : k == 1 ? 0 : 1) : (k == 0 ? 2 : k == 1 ? 1 : 0);   // de près : la file du joueur (1) loin
-                c.deuxRoues = k + 1; c.len = DEUX_ROUES[k].L / M; c.w = DEUX_ROUES[k].W / (2 * RW);
-                c.z = c.zPrec = s->track_->wrap(pl.position + (vue == 0 ? 7.0 + 6.0 * k : vue == 1 ? 9.0 + 5.0 * k : k < 2 ? 4.5 : 10.0) / M);
-                c.lane = c.target = lane; c.offset = c.prevOff = (LANE_X[lane] + DROITE_VOIE) * s->traffic_.facteurVoie(c.z);
-                c.offPrec = c.offset; c.laneYaw = c.yawPrec = 0; c.pending = false; c.think = 1e9; c.signal = 0;
-                // en courbe : vitesse d'une inclinaison de 20° au rayon local (v² = g·R·tan 20°), de 20 à 50 km/h
-                const double kap = s->track_->findSegment(c.z).curve * CURVE_K / SEG_M;
-                const double v = vue != 1 || !kap ? 30 / 3.6 : std::clamp(std::sqrt(9.81 / std::abs(kap) * std::tan(20 * 3.14159265 / 180)), 20 / 3.6, 50 / 3.6);
-                c.speed = c.want = v / M;
-                c.inclinaison = c.inclPrec = inclinaisonEquilibre(v, kap);
-                c.prevDz = s->track_->relZ(c.z - pl.position);
+                g.update(1.0 / 60); g.render(t += 1.0 / 60); g.render(t += 1.0 / 60);
+                const std::string nom = std::string("trafic-motos-") + (vue == 1 ? "virage-" : vue == 2 ? "pres-" : "") + carte + "-" + moment;
+                r.capturePng(out + "/" + nom + ".png");
+                for (size_t i : pris) {
+                    const TrafficCar& c = s->traffic_.cars[i];
+                    const double kap = s->track_->findSegment(c.z).curve * CURVE_K / SEG_M;
+                    WFS_LOG("capture %s : %s à %.1f m devant, %.0f km/h, rayon %s, inclinaison %.1f° (équilibre %.1f°)", nom.c_str(), DEUX_ROUES[c.deuxRoues - 1].id,
+                            s->track_->relZ(c.z - pl.position) * M, c.speed * M * 3.6, kap ? (std::to_string((int)std::lround(1 / std::abs(kap))) + " m").c_str() : "ligne droite",
+                            c.inclinaison * 180 / 3.14159265, inclinaisonEquilibre(c.speed * M, kap) * 180 / 3.14159265);
+                }
+                WFS_LOG("capture %s : %d pilote(s) casqué(s) dessiné(s), %u appels de dessin", nom.c_str(), deux_roues::dessinesDerniereImage(), r.appelsDessin());
             }
-            g.update(1.0 / 60); g.render(t += 1.0 / 60); g.render(t += 1.0 / 60);
-            const std::string nom = std::string("trafic-motos-") + (vue == 1 ? "virage-" : vue == 2 ? "pres-" : "") + carte + "-" + moment;
-            r.capturePng(out + "/" + nom + ".png");
-            for (size_t i : pris) {
-                const TrafficCar& c = s->traffic_.cars[i];
-                const double kap = s->track_->findSegment(c.z).curve * CURVE_K / SEG_M;
-                WFS_LOG("capture %s : %s à %.1f m devant, %.0f km/h, rayon %s, inclinaison %.1f° (équilibre %.1f°)", nom.c_str(), DEUX_ROUES[c.deuxRoues - 1].id,
-                        s->track_->relZ(c.z - pl.position) * M, c.speed * M * 3.6, kap ? (std::to_string((int)std::lround(1 / std::abs(kap))) + " m").c_str() : "ligne droite",
-                        c.inclinaison * 180 / 3.14159265, inclinaisonEquilibre(c.speed * M, kap) * 180 / 3.14159265);
-            }
-            WFS_LOG("capture %s : %d pilote(s) casqué(s) dessiné(s), %u appels de dessin", nom.c_str(), deux_roues::dessinesDerniereImage(), r.appelsDessin());
             g.shutdown();
         }
     }
