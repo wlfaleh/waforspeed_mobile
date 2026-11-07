@@ -3137,3 +3137,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Vérification** : `test_fidelite` vert (le fichier passe les contrôles du référentiel) ; `test_archi_kit` vérifie que les plages du kit sont celles du référentiel, et la cohérence étage minimal − plancher ≥ hauteur sous plafond ; 40 tests CPU verts ; branche synchronisée (bcdbfda).
 - **Limite** : M-02 et M-04 resteront « non mesurables » tant qu'aucune source ouverte ne donne ces valeurs.
 - **Suite** : géométrie du kit (`archi_geo.cpp` : murs percés, tableaux en retrait, appuis, corniches, toitures, édicules), puis les captures de banc.
+
+### 2026-11-07 02:00:55 — Statuts automatiques, CI main #803 (robot statuts)
+- Run vert (push, commit ad870c0) : WFS-202 ✅ (PR #173, ad870c0).
