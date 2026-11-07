@@ -197,7 +197,7 @@ std::string virgule(double v) { char b[24]; std::snprintf(b, sizeof b, "%.1f", v
 std::string qualite::ligneMesure() {
     const MesureImages::Stats st = g_mesure.stats();
     if (!st.images) return "";
-    std::string l = "Images (20 s) : méd. " + virgule(st.mediane) + " · 95 % " + virgule(st.p95) + " · 99 % " + virgule(st.p99) + " · σ " + virgule(st.ecartType) + " ms · cadence " + std::to_string(qualite::cadenceCourse) + " · > 33 ms : " +
+    std::string l = "Images (20 s) : méd. " + virgule(st.mediane) + " · 95 % " + virgule(st.p95) + " · 99 % " + virgule(st.p99) + " · écart " + virgule(st.ecartType) + " ms · cadence " + std::to_string(qualite::cadenceCourse) + " · > 33 ms : " +
                     std::to_string(st.plus33) + " · > 50 ms : " + std::to_string(st.plus50);
     if (g_r && g_r->gpuPasses().mesuree) {
         const Renderer::GpuPasses& p = g_r->gpuPasses();
