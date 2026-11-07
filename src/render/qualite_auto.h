@@ -57,9 +57,12 @@ inline float echelleRendu(int n, float dynamique) {
 }
 // WFS-104 : coûts baissés à la place de la résolution quand la résolution dynamique voudrait descendre
 // (facteur dynamique ≤ 0,8 : bloom coupé ; ≤ 0,6 : ombres du soleil coupées) ; rétablis quand les images/s remontent
-struct Allegement { bool bloom = true, ombres = true; };
+// WFS-222 (RG-03) : au plancher (≤ 0,6, sous 40 images/s), à tous les niveaux, Basse comprise : reflets de la route mouillée
+// coupés et captures d'environnement suspendues (les sondes en place restent : aucun saut de lumière) ; netteté intacte
+struct Allegement { bool bloom = true, ombres = true, reflets = true, captures = true; };
 inline Allegement allegement(int n, float dynamique) {
     Allegement a;
+    a.reflets = a.captures = dynamique > 0.6f + 1e-4f;
     if (n == BASSE) { a.bloom = false; a.ombres = false; return a; }   // réglages de la Basse (WFS-41)
     a.bloom = dynamique > 0.8f + 1e-4f; a.ombres = dynamique > 0.6f + 1e-4f;
     return a;

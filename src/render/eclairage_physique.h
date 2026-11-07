@@ -87,6 +87,7 @@ void choisirMoment(int moment);
 int momentChoisi();
 void accelererTemps(double facteur);
 void desactiver(bool oui);            // banc avant / après : rendu d'origine (aucune conversion)
+void suspendreCaptures(bool oui);     // WFS-222 (RG-03) : baisse automatique : aucune nouvelle capture (sondes en place gardées)
 bool sondeCapturePrete();             // au moins une capture traitée depuis la dernière remise à zéro
 void remettreAZero();                 // nouvelle scène : sondes oubliées, exposition recalée sur la prochaine mesure
 

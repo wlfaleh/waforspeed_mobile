@@ -30,6 +30,7 @@ namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out)
 #include "../ui/planche_voitures.h"
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
+#include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../world/pietons.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "../world/decor_carte.h"
@@ -161,6 +162,7 @@ int main(int argc, char** argv) {
         g.allerA(Ecran::Menu);
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
+    if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
     if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
