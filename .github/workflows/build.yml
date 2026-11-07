@@ -22,8 +22,8 @@ on:
     branches: [main]
     paths-ignore: ['**/*.md', 'qa/**', 'regles-de-gestion/**', '.claude/**']
   workflow_dispatch:
-  schedule:
-    - cron: '17 2 * * *'   # WFS-114 : banc d'endurance chaque nuit sur main (seul job lancé la nuit)
+  # WFS-277 (décision de l'utilisateur, 2026-11-07 : « la CI exécute tous les bancs à 4 h, émulateur inclus ») : plus de lancement
+  # de nuit ici ; l'endurance et la chauffe (WFS-114, WFS-123) tournent chaque matin à 04:00 heure de Paris dans matin.yml
 
 permissions:
   contents: write
@@ -241,8 +241,40 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
         run: bash tools/qa/notifier_apk.sh
 
-  # WFS-277 : plus de publication des captures à chaque envoi : matin.yml publie chaque matin toutes les captures d'un même commit
-  # (publier_apercu.sh retire les captures absentes du run : deux workflows qui publient s'effaceraient l'un l'autre)
+  # WFS-277 : photos de chaque fusion (texte, menu1-2400) dans une Release à part, « apercu-fusion » : la Release « apercu » ne
+  # reçoit que la publication complète des bancs du matin (publier_apercu.sh retire les captures absentes du run : deux workflows
+  # qui publient dans la même Release s'effaceraient l'un l'autre) ; échec = avertissement (comme avant), 20 min au plus
+  publication-captures:
+    needs: [banc-essai]
+    runs-on: ubuntu-24.04
+    if: ${{ !cancelled() && github.event_name != 'schedule' && github.ref == 'refs/heads/main' }}
+    timeout-minutes: 20
+    concurrency:
+      group: apercu-fusion-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Release « apercu-fusion » (créée la première fois)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view apercu-fusion > /dev/null 2>&1 || gh release create apercu-fusion --prerelease --target "$GITHUB_SHA" \
+            --title "Photos de la dernière fusion sur main" --notes "Photos des bancs texte et menu1-2400 de la dernière fusion (WFS-277). Toutes les photos : Release apercu, chaque matin." \
+            || echo "::warning::Release apercu-fusion non créée"
+      - uses: actions/download-artifact@v4
+        continue-on-error: true   # aucun artefact (banc en échec) : le script le dit et finit vert
+        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
+      - name: Photos de la fusion dans « apercu-fusion » (seulement celles qui ont changé ; WFS-106)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PUBLIER: captures
+          TAG_APERCU: apercu-fusion
+          BANC: ${{ needs.banc-essai.result }}
+        run: bash tools/qa/publier_apercu.sh
+
 
   # WFS-185 (RG-03) : résumé du run : commit et tickets WFS-XX des messages de commit (pour passer son ticket en ✅ avec le run)
   resume:
