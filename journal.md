@@ -2562,3 +2562,32 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:41:47 — WFS-161 : textures procédurales provisoires, l'utilisateur ne déposera pas les fichiers (po-scrum-master)
 - L'utilisateur n'a pas le temps de déposer les 18 textures CC0 de `dunkean/magna-urbis` (Git LFS illisible, aucune copie hors LFS dans 6 autres dépôts). Décision : textures procédurales calibrées, provisoires ; Agent 0 termine ST-4 / ST-5 et fusionne. Écrit dans `regles-de-gestion/WFS-161.md`.
+
+### 2026-11-07 09:45:27 — WFS-161 (ST-4 clos en procédural, ST-5 Ville) : décision du PO, immeubles du kit dans la Ville (Claude, Agent 0 developer)
+- **ST-4, décision du PO (09:41)** : l'utilisateur n'a pas le temps de déposer les fichiers. On garde les **textures procédurales calibrées sur `materiaux.json`, provisoires** ; mesures de texture « non mesurables » si besoin. Pour un ticket ultérieur (si une source sans LFS apparaît), les 18 fichiers Poly Haven (CC0, 1K) et leur SHA-256 :
+  - \`white_sandstone_bricks_diff_1k.jpg\` : \`b578317a0c92a314cf6e380803357fb6981d7487f82d225ccfd54914bea40c90\`
+  - \`white_sandstone_bricks_nor_gl_1k.png\` : \`8e5975fc7b3913d50243e342759449806747f31409e06490956845f721c0cf8b\`
+  - \`white_sandstone_bricks_rough_1k.png\` : \`80726ec17fb57ca03964b63da1ee4c851c3502d1d1ecdf490594a5c5dba758ad\`
+  - \`white_plaster_rough_01_diff_1k.jpg\` : \`8d3b209ec5bbcee3db7a883c6c2eee982b7c18a268e6f43766ee540c7c28ebcb\`
+  - \`white_plaster_rough_01_nor_gl_1k.png\` : \`db029b8cdb754eb503f0d29dd70ef4ea2615fafb9010bf25e6e9d065190f08e4\`
+  - \`white_plaster_rough_01_rough_1k.png\` : \`3a8f65bc373028e0bc1dec54cc2f1ffc213e169984d6f976f1cb49f7565eeb21\`
+  - \`stone_wall_diff_1k.jpg\` : \`390969aead48d9a10ac731a5e0af8761cc4ed89faa02ba775b913930b4398d87\`
+  - \`stone_wall_nor_gl_1k.png\` : \`003d0e9ae1f2411b400c088cc92be89e99b9febe74034a75d2a3a51fd0a7c5af\`
+  - \`stone_wall_rough_1k.png\` : \`b6d643665c3b55725c40d9af3e926c0067556da962c9c63594c358c2ea52734a\`
+  - \`brick_wall_001_diffuse_1k.jpg\` : \`6a1233ec0186703de830354d89f122991e61e67fb67e0846c7eaf6c5aefea902\`
+  - \`brick_wall_001_nor_gl_1k.png\` : \`0b51c30896a1706d8a5bb24448bcff791ec2e51458a90fef9498e61f74de9efe\`
+  - \`brick_wall_001_rough_1k.png\` : \`ee186ae7aeaf5857acc9efb34b16678b774dd5c28d43b208b6b7786fb646b6e8\`
+  - \`white_plaster_02_diff_1k.jpg\` : \`a1ebbe091bd1ae93d2abd5de8d69f9003a8d0ee6532bcf9a87c2492c97051f23\`
+  - \`white_plaster_02_nor_gl_1k.png\` : \`36ac2eec35a5678eda0c1ccfd81f6ab8a2e2fed0ca3e77d6e1d44e372e130450\`
+  - \`white_plaster_02_rough_1k.png\` : \`972b33f86442d3d4546f70c9e535d187f2b28d3f27788226563fe0aef671e707\`
+  - \`clay_roof_tiles_02_diff_1k.jpg\` : \`227a062b38b170e02c27eaa513dae45dc8bc893a62cbd8d0c08e2c32b381fc25\`
+  - \`clay_roof_tiles_02_nor_gl_1k.png\` : \`c7b859bf83efb4d431536337e737435e324d95a3c8cdf06f04e384c21e941809\`
+  - \`clay_roof_tiles_02_rough_1k.png\` : \`f1aa2cd527bf0afd67a60461fc7aa6a02ae637d3d9a72e10eed6feb8843a67e9\`
+  - Pages : polyhaven.com/a/white_sandstone_bricks, /white_plaster_rough_01, /stone_wall, /brick_wall_001, /white_plaster_02, /clay_roof_tiles_02 ; copie LFS : `dunkean/magna-urbis`, `assets/materials/buildings/`.
+- **ST-5 (en cours, Ville faite)** : nouveau système `src/world/archi_carte.h/.cpp` (zone E12). Les cartes posent leurs bâtiments à leur init. Le système les construit par morceaux de 48 segments, sur les fils de travail, au niveau de détail de leur distance (< 120 m complet, < 300 m allégé, au-delà volume seul), et les dessine en un appel par matériau et par morceau. Repli : `WFS_ARCHI=0` → anciennes boîtes.
+  - **Accroches annoncées dans `src/world/ville.cpp`** (7 lignes) : `#include`, 5 lignes à l'init (pose des 580 immeubles : résidentiels et < 20 m en classique, tours en moderne), 1 ligne dans `IMMEUBLE` (boîte sautée si le kit est actif).
+  - Albédos recopiés dans `archi_kit.h` (le dossier `references/` n'est pas dans l'APK) ; `test_archi_kit` vérifie qu'ils restent égaux au référentiel.
+  - **Coût** (banc Ville, lavapipe, même vue) : 1 275 → 1 380 appels de dessin (+105, ≈ +8 %) ; virage vu de haut : 1 314 → 1 395. Triangles : 903 452 pour les 580 immeubles s'ils étaient tous au niveau 0 ; en jeu, seuls les morceaux à moins de 120 m le sont.
+  - Capture `carte-ville-virage-1` regardée : façades percées, bandeaux du moderne, cafés et arbres de la rue devant.
+  - **Limites** : les vitrines des commerces (`commerces.cpp`) se superposent au rez-de-chaussée du kit (à harmoniser) ; au raccord du tour, un morceau peut manquer une image.
+- **Suite** : Corniche (`plage.cpp`) et Campagne, parcours complet et banc réalisme, puis ST-6 et fusion.
