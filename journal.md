@@ -3161,3 +3161,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 04:33:19 — Statuts automatiques, CI main #807 (robot statuts)
 - Run vert (push, commit a756c55) : WFS-207 ✅ (PR #176, a756c55).
+
+### 2026-11-07 04:42:04 — WFS-198 : premier rangement du robot des archives bloqué par une ligne abîmée de l'archive, réparée (Claude, agent 1)
+- Le run planifié de 03:07 UTC n'a pas démarré (GitHub retarde ou saute parfois les premiers runs planifiés d'un nouveau workflow). Lancement à la main à 04:30 : **Archives automatiques #2 en échec, rien écrit** : « écart de comptage : lignes de tickets 206 → 182 » (garde-fou RG-05 qui a joué).
+- Cause : `archive/taches-terminees.md`, ligne de **WFS-142** (déplacée à la main le 2026-11-06, commit bc9d7b6) : « #120 » en double (11 cases) et pas de `|` final ; la ligne coupait le tableau, les lignes ajoutées après n'étaient plus comptées. Le robot n'a rien deviné (RG-04) : comportement attendu.
+- Réparation (aucune information perdue) : doublon « #120 » retiré, ligne refermée → 10 cases (PR #120, QA « ✅ VALIDÉ … (RG-10) »). Essai à blanc sur une copie de `main` : 115 entrées et 25 lignes de tickets rangées, comptages égaux (706 entrées, 208 lignes). Nouveau lancement à la main juste après ce commit.
