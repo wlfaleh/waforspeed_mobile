@@ -33,6 +33,10 @@ layout(set = 0, binding = 0) uniform Frame {
                       // w force du reflet de la route mouillée (WFS-142, configgame ; −1 = aucun reflet, mesure du banc)
     // WFS-151 (accroche E13) : SH9 d'irradiance / π pré-exposées ; iblA x actif, y poids de la sonde B, z/w niveau max A/B ;
     vec4 iblSH[9]; vec4 iblA; vec4 iblB; vec4 cielP;   // iblB x k, y/z k / échelle A/B, w lumières artistiques ; cielP : eclairage_ciel.glsl
+    // WFS-227 (accroche E13) : cascades d'ombre du soleil (src/render/eclairage_ombres.h) : matrices monde → cascade, fin de chaque
+    // cascade le long du regard (m), demi-côté (m) ; ombreP x nombre de cascades, y qualité (1 Moyenne, 2 Haute, 3 Ultra),
+    // z côté d'une tuile de l'atlas (texels), w tan(0,53°) (pénombre)
+    mat4 ombreCasc[4]; vec4 ombreFin; vec4 ombreDemi; vec4 ombreP;
 } F;
 layout(set = 0, binding = 1) uniform sampler2DShadow shadowMap;
 layout(set = 0, binding = 2) uniform sampler2D reflTex;   // WFS-16 : reflet de la scène sur la chaussée mouillée
