@@ -323,7 +323,7 @@ private:
 WFS_SYSTEM(Camera, 260)
 
 // ---------- WFS-197 : banc d'essai des intérieurs (captures cockpit-<modèle>-{jour,braquage,carte,pluie,nuit}, cockpit-corsa) ----------
-void benchCockpit(Game& g, Renderer& r, const std::string& out) {
+void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vector<std::string>& voitures) {
     const VueCamera avant = vueCamera();
     const bool regles = courseBenchRulesOn();
     courseBenchRules(true);
@@ -350,8 +350,11 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out) {
         return true;
     };
     const float W = (float)r.width(), H = (float)r.height();
-    for (const char* car : {"golf", "m4", "p911", "sf90"}) {
-        const std::string c = std::string("cockpit-") + car;
+    for (const std::string& v : voitures) {
+        const char* car = v.c_str();
+        const std::string c = "cockpit-" + v;
+        // RG-01 : voiture sans intérieur propre (Corsa, lot 3) : une capture du cockpit commun, qui doit rester inchangé
+        if (!cockpit::interieurPour(car)) { if (course(car, "ville", false)) { rouler(90); capture(c); } continue; }
         if (course(car, "ville", false)) {
             rouler(90);
             capture(c + "-jour");
@@ -363,7 +366,7 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out) {
             capture(c + "-braquage");
             g.onTouch({32, W * 0.29f, H * 0.70f, false}); g.onTouch({31, W * 0.89f, H * 0.74f, false});
             g.setAutopilot(true);
-            rouler(60 * 3);   // la carte montre la route qui arrive (virages)
+            rouler(90);   // la carte montre la route qui arrive (virages)
             capture(c + "-carte");
         }
         if (course(car, "ville", true)) {   // pluie : la Ville de nuit (meteo::pluieActive) ; balais au milieu de leur course
@@ -372,13 +375,12 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out) {
             for (int k = 0; k < 240 && (g_ckEssuieT < 0.40f || g_ckEssuieT > 0.5f); k++) { g.update(1.0 / 60); t += 1.0 / 60; }
             (void)arc;
             capture(c + "-pluie");
-        }
-        if (course(car, "plage", true)) {   // nuit sans pluie : balais au repos
-            rouler(30);
+            // WFS-201 : nuit (même course : écrans de nuit, combiné lisible) quand les balais repassent au repos, entre deux balayages ;
+            // « hors pluie, balais à l'arrêt » se voit sur -jour (une course de moins par voiture : banc plus court)
+            for (int k = 0; k < 120 && g_ckEssuieT > 0.02f; k++) { g.update(1.0 / 60); t += 1.0 / 60; }
             capture(c + "-nuit");
         }
     }
-    if (course("corsa", "ville", false)) { rouler(90); capture("cockpit-corsa"); }   // RG-01 : cockpit commun inchangé
     g.shutdown();
     unsetenv("WFS_MOMENT");
     courseBenchRules(regles);

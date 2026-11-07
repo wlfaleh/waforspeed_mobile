@@ -228,10 +228,10 @@ constexpr uint8_t SEG_D = 0x5E;
 } // namespace
 
 // ---------------------------------------------------------------- construction
-void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, bool volant) {
+void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, int attache) {
     if (v.empty()) return;
     octets_ += v.size() * sizeof(Vertex) + i.size() * 4;
-    pieces_.push_back({r.makeMesh(v, i), mat, volant});
+    pieces_.push_back({r.makeMesh(v, i), mat, attache});
     v.clear(); i.clear();
 }
 
@@ -281,7 +281,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
     mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
     std::vector<Vertex> v; std::vector<uint32_t> i;
-    auto prend = [&](Geo& g, int m, bool volant = false) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, volant); g = Geo{}; };
+    auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
     const float Y = d.plancheY, Z = d.plancheZ, Yb = d.pareBriseY, Zb = d.pareBriseZ, x0 = CX - 0.78f, x1 = CX + 0.78f;
     // planche (profil y, z du pied du pare-brise vers le conducteur) : dessus, lèvre, face en retrait derrière le combiné et
@@ -386,8 +386,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         // repère : M4 (boutons M1 / M2 rouges sur les branches), Golf (agrafe GTI rouge sur la branche basse), SF90 (rouge à midi)
         if (d.repereCol) {
             if (coutures) for (float sx : {-1.f, 1.f}) boite(rep, translate({sx * 0.105f, 0.018f, 0.012f}), 0.022f, 0.014f, 0.008f);
-            else if (d.manettino) boite(rep, translate({0, R + rt * 0.2f, 0.004f}), 0.012f, rt * 2.1f, rt * 2.1f);
-            else boite(rep, translate({0, -R * 0.55f, 0.010f}), 0.045f, 0.012f, 0.004f);
+            else if (d.manettino || d.repereHaut) boite(rep, translate({0, R + rt * 0.2f, 0.004f}), 0.012f, rt * 2.1f, rt * 2.1f);
+            else if (!d.demarreur) boite(rep, translate({0, -R * 0.55f, 0.010f}), 0.045f, 0.012f, 0.004f);   // Giulia : le rouge est le démarreur
         }
         if (d.palettes) for (float sx : {-1.f, 1.f}) boite(pal, translate({sx * (R * 0.80f), 0.02f, -0.045f}) * rotateZ(sx * 0.15f), 0.055f, 0.13f, 0.006f);
         // manettino en bas à droite, démarreur en bas à gauche (sur les branches) ; WFS-201 : démarreur seul (Giulia)
@@ -397,7 +397,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         if (d.molettes) for (float sx : {-1.f, 1.f}) cylindre(mol, translate({sx * 0.105f, 0.f, 0.014f}) * rotateZ(PI / 2), 0.011f, 0.011f, 0.010f, 16);
         prend(ja, M_CUIR, true); prend(mo, M_MOYEU, true); prend(br, M_BRANCHES, true);
         for (int k = 0; k < 3; k++) prend(co[k], M_COUTURE0 + k, true);
-        prend(rep, M_REPERE, true); prend(pal, d.carbone ? M_ACCENT : M_BRANCHES, true); prend(man, M_REPERE, true); prend(mol, M_LAMES, true);
+        prend(rep, M_REPERE, true); prend(pal, d.carbone ? M_ACCENT : M_BRANCHES, d.palettesColonne ? 2 : 1); prend(man, M_REPERE, true);
+        prend(mol, M_LAMES, true);
     }
     // essuie-glaces : bras + balai, dans le repère du balai (x le long du bras, y vers le haut du pare-brise)
     {
@@ -500,14 +501,6 @@ void Interieur::dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& val
         barreNitro(-W * 0.44f, -H * 0.30f, -W * 0.24f, -H * 0.24f);   // panneau gauche (véhicule) ; la carte est à droite
         break;
     }
-    case Combine::MercedesMbux: {   // MBUX (A 45) : compte-tours rond à gauche (barres, rapport dedans), vitesse au centre, nitro à droite
-        const float rc = H * 0.44f; const vec2 c{-W * 0.27f, 0};
-        arcBarres(A, F, R, c, rc * 0.80f, rc, PI * 1.25f, -PI * 0.25f, 44, reg, 0.84f, 0.0024f);
-        rapport(A, c.x - H * 0.08f, -H * 0.13f, H * 0.28f, val.rapport);
-        nombre(A, W * 0.14f, -H * 0.12f, H * 0.32f, (int)kmh, 3);
-        barreNitro(W * 0.24f, -H * 0.30f, W * 0.44f, -H * 0.25f);
-        break;
-    }
     case Combine::AudiVirtual: {   // Audi virtual cockpit, vue classique : vitesse à gauche, régime à droite (aiguilles), rapport au centre
         const float rc = H * 0.46f;
         cadran(F, A, R, {-W * 0.29f, 0}, rc, vit, 2.f, 26, 0.0022f);
@@ -604,11 +597,11 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     if (!def_) return;
     const InterieurDef& d = *def_;
     appels_ = 0;
-    const mat4 vol = cam * translate(d.volantPos) * rotateX(d.volantIncl) * rotateZ(e.volant);
+    const mat4 colonne = cam * translate(d.volantPos) * rotateX(d.volantIncl), vol = colonne * rotateZ(e.volant);
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        r.draw(p.m, mats_[(size_t)m], p.volant ? vol : cam); appels_++;
+        r.draw(p.m, mats_[(size_t)m], p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {

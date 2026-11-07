@@ -21,7 +21,7 @@ class Track;
 namespace wfs::cockpit {
 
 // WFS-201 : styles du lot 2 ; Aucun = pas de combiné derrière le volant (Model 3 : vitesse, rapport et carte sur l'écran central)
-enum class Combine { VwDigital, BmwLive, Porsche5, FerrariIncurve, MercedesMbux, AudiVirtual, AlfaCadrans, PeugeotICockpit, LamboCompteTours,
+enum class Combine { VwDigital, BmwLive, Porsche5, FerrariIncurve, AudiVirtual, AlfaCadrans, PeugeotICockpit, LamboCompteTours,
                      FordDigital, Aucun };
 enum class Essuie { Paralleles, Opposition, Unique };
 
@@ -49,6 +49,8 @@ struct InterieurDef {
     float assise;                    // WFS-201 (RG-07) : hauteur du coussin du siège au-dessus du sol (m) ; œil : hauteurOeil()
     float meplatHaut = 0;            // WFS-201 : méplat en haut de la jante (208 : volant i-Cockpit, plat en haut et en bas)
     bool molettes = false;           // WFS-201 : deux molettes sur les branches (Model 3)
+    bool palettesColonne = false;    // WFS-201 : palettes fixées sur la colonne, elles ne tournent pas avec le volant (Giulia, Gallardo)
+    bool repereHaut = false;         // WFS-201 : repère de couleur à midi sur la jante (A 45)
 };
 
 // WFS-201 (RG-07) : hauteur des yeux assis d'ANSUR-II (references/reel/anthropometrie.json, humain.*.eyeheightsitting) :
@@ -122,8 +124,9 @@ public:
     int appels() const { return appels_; }   // RG-08 : appels de dessin de la dernière image
     size_t octets() const { return octets_; }   // RG-08 : mémoire des maillages et textures de l'intérieur
 private:
-    struct Piece { Mesh m; int mat; bool volant; };   // volant : attachée au volant (tourne avec lui)
-    void ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, bool volant);
+    // attache : 0 = habitacle (caméra), 1 = volant (tourne avec lui), 2 = colonne de direction (inclinée, ne tourne pas : WFS-201)
+    struct Piece { Mesh m; int mat; int attache; };
+    void ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_t>& i, int mat, int attache);
     void dessinerCombine(Renderer& r, const mat4& cam, const Valeurs& v);
     void dessinerCarte(Renderer& r, const mat4& cam, const std::vector<vec2>& route, vec2 joueur, double cap, bool nuit);
     const InterieurDef* def_ = nullptr;

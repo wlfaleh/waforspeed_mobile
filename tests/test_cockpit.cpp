@@ -23,9 +23,10 @@ int main() {
     // RG-01 : 4 intérieurs (lot 1), toutes les autres voitures gardent le cockpit commun
     std::set<std::string> avec;
     for (int i = 0; i < CAR_COUNT; i++) if (interieurPour(CARS[i].id)) avec.insert(CARS[i].id);
-    cas("lot 1 : Golf, M4, 911, SF90 ont leur intérieur", avec == std::set<std::string>{"golf", "m4", "p911", "sf90"} && nombreInterieurs() == 4);
-    cas("les 16 autres voitures (dont la Corsa) gardent le cockpit commun ; id inconnu ou nul : commun",
-        CAR_COUNT - (int)avec.size() == 16 && !interieurPour("corsa") && !interieurPour("inconnue") && !interieurPour(nullptr));
+    cas("lots 1 et 2 : Golf, M4, 911, SF90 + A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3, X5 ont leur intérieur",
+        avec == std::set<std::string>{"golf", "m4", "p911", "sf90", "a45", "s3", "giulia", "p208", "gallardo", "mustang", "model3", "x5"} && nombreInterieurs() == 12);
+    cas("les 8 voitures du lot 3 (dont la Corsa) gardent le cockpit commun ; id inconnu ou nul : commun",
+        CAR_COUNT - (int)avec.size() == 8 && !interieurPour("corsa") && !interieurPour("compass") && !interieurPour("inconnue") && !interieurPour(nullptr));
     for (int i = 0; i < nombreInterieurs(); i++) {
         const InterieurDef& d = interieur(i);
         bool existe = false; for (int k = 0; k < CAR_COUNT; k++) existe = existe || !std::strcmp(CARS[k].id, d.car);
@@ -36,16 +37,16 @@ int main() {
     cas("Ø des volants : Golf 370, M4 370, 911 375, SF90 355 mm (± 1 %)",
         std::abs(golf.volantD - 0.370f) <= 0.0037f && std::abs(m4.volantD - 0.370f) <= 0.0037f && std::abs(p911.volantD - 0.375f) <= 0.00375f
         && sf90.volantD >= 0.350f && sf90.volantD <= 0.360f);
-    bool janteOk = true; for (int i = 0; i < 4; i++) janteOk = janteOk && interieur(i).janteEp >= 0.033f && interieur(i).janteEp <= 0.040f;
+    bool janteOk = true; for (int i = 0; i < nombreInterieurs(); i++) janteOk = janteOk && interieur(i).janteEp >= 0.033f && interieur(i).janteEp <= 0.040f;
     cas("épaisseur des jantes de 33 à 40 mm", janteOk);
     cas("méplat : Golf et SF90 oui, M4 (avant restylage) et 911 non (volant rond)", golf.meplat > 0 && sf90.meplat > 0 && m4.meplat == 0 && p911.meplat == 0);
     cas("branches : 3 (Golf, M4, 911), 2 larges (SF90)", golf.branches == 3 && m4.branches == 3 && p911.branches == 3 && sf90.branches == 2);
     cas("M4 : coutures M (bleu clair, bleu foncé, rouge) et boutons M1/M2 rouges", m4.couture[0] && m4.couture[1] && m4.couture[2] && m4.repereCol);
     cas("SF90 : manettino et démarreur ; palettes sur les 4", sf90.manettino && sf90.demarreur && golf.palettes && m4.palettes && p911.palettes && sf90.palettes);
-    bool incl = true; for (int i = 0; i < 4; i++) incl = incl && interieur(i).volantIncl <= -0.29f && interieur(i).volantIncl >= -0.44f;
-    cas("inclinaison de la colonne de 17 à 25° (SAE J1100, angle A18)", incl);
+    bool incl = true; for (int i = 0; i < nombreInterieurs(); i++) incl = incl && interieur(i).volantIncl <= -0.29f && interieur(i).volantIncl >= -0.46f;
+    cas("inclinaison de la colonne de 17 à 26° (SAE J1100, angle A18 ; 208 et X5 : colonne plus droite)", incl);
     // charte du réel : cuir noir albédo linéaire 0,04-0,12 (le rendu ramène sous 0,04 à 0,045)
-    bool cuir = true; for (int i = 0; i < 4; i++) { const float y = lumLin(interieur(i).cuir); cuir = cuir && y >= 0.04f && y <= 0.12f; }
+    bool cuir = true; for (int i = 0; i < nombreInterieurs(); i++) { const float y = lumLin(interieur(i).cuir); cuir = cuir && y >= 0.04f && y <= 0.12f; }
     cas("cuir des volants dans la charte (albédo linéaire 0,04-0,12)", cuir);
     // RG-04 : combinés (types et tailles de l'expert : 244 × 91, 292 × 110, 5 cadrans 300 mm, écran courbe 380 mm)
     cas("combinés : VW Digital, BMW Live, Porsche 5 cadrans, Ferrari incurvé",
@@ -92,10 +93,45 @@ int main() {
         cas("angle de 0 à l'arc (1,66 rad), continu (≤ arc × π × cadence / 60 / 120 par pas)", amax > 1.64f && amax <= 1.66f && saut <= 1.66f * PI * 45 / 60 / 120 * 1.02f);
     }
     bool arcs = true, balais = true;
-    for (int i = 0; i < 4; i++) { arcs = arcs && interieur(i).arc >= 1.4f && interieur(i).arc <= 1.75f; balais = balais && interieur(i).balaiG >= interieur(i).balaiD && interieur(i).balaiG > 0.5f; }
+    for (int i = 0; i < nombreInterieurs(); i++) { arcs = arcs && interieur(i).arc >= 1.4f && interieur(i).arc <= 1.75f; balais = balais && interieur(i).balaiG >= interieur(i).balaiD && interieur(i).balaiG > 0.5f; }
     cas("arcs de 80 à 100° ; balai conducteur ≥ passager (Golf 650 / 450, M4 600 / 475)", arcs && balais && golf.balaiG == 0.650f && m4.balaiD == 0.475f);
     // RG-07 : œil plus bas dans la 911 et la SF90 que dans la Golf (assise du modèle)
     cas("hauteur de l'œil : Golf > M4 > 911 > SF90", hauteurOeil(golf) > hauteurOeil(m4) && hauteurOeil(m4) > hauteurOeil(p911) && hauteurOeil(p911) > hauteurOeil(sf90));
+    // ---------- WFS-201 : lot 2 (cotes de l'expert, génération du .wfm)
+    {
+        const InterieurDef &a45 = *interieurPour("a45"), &s3 = *interieurPour("s3"), &giulia = *interieurPour("giulia"), &p208 = *interieurPour("p208"),
+                           &gallardo = *interieurPour("gallardo"), &mustang = *interieurPour("mustang"), &model3 = *interieurPour("model3"), &x5 = *interieurPour("x5");
+        cas("Ø des volants du lot 2 : A 45 370, S3 359, Giulia 362, 208 350, Gallardo 360, Mustang 370, Model 3 350, X5 370 mm",
+            a45.volantD == 0.370f && s3.volantD == 0.359f && giulia.volantD == 0.362f && p208.volantD == 0.350f && gallardo.volantD == 0.360f
+            && mustang.volantD == 0.370f && model3.volantD == 0.350f && x5.volantD == 0.370f);
+        cas("208 : volant plat en haut et en bas ; méplat A 45, S3, Giulia ; Mustang, Gallardo, Model 3, X5 ronds",
+            p208.meplat > 0 && p208.meplatHaut > 0 && a45.meplat > 0 && s3.meplat > 0 && giulia.meplat > 0 && mustang.meplat == 0 && gallardo.meplat == 0
+            && model3.meplat == 0 && x5.meplat == 0 && golf.meplatHaut == 0);
+        cas("Model 3 : 2 branches, 2 molettes, sans palettes, sans combiné ; écran central 15 po (323 × 202 mm)",
+            model3.branches == 2 && model3.molettes && !model3.palettes && model3.combine == Combine::Aucun && model3.combineW == 0
+            && std::abs(model3.ecranW - 0.323f) < 0.0033f && std::abs(model3.ecranH - 0.202f) < 0.0021f);
+        cas("Giulia : démarreur rouge sur le volant, palettes fixées sur la colonne (Gallardo aussi) ; A 45 : repère à midi",
+            giulia.demarreur && !giulia.manettino && giulia.palettesColonne && gallardo.palettesColonne && !mustang.palettesColonne && a45.repereHaut);
+        cas("combinés : 2 cadrans (A 45, S3 : génération du .wfm), Alfa, i-Cockpit, Lamborghini, Ford, BMW (X5)",
+            a45.combine == Combine::AudiVirtual && s3.combine == Combine::AudiVirtual && giulia.combine == Combine::AlfaCadrans
+            && p208.combine == Combine::PeugeotICockpit && gallardo.combine == Combine::LamboCompteTours && mustang.combine == Combine::FordDigital
+            && x5.combine == Combine::BmwLive);
+        // 208 : combiné lu AU-DESSUS du volant : la ligne œil → bas du combiné passe au-dessus du haut de la jante
+        const float R = p208.volantD / 2, hautY = p208.volantPos.y + R * std::cos(p208.volantIncl), hautZ = p208.volantPos.z + R * std::sin(p208.volantIncl);
+        const float basY = p208.combinePos.y - p208.combineH / 2, ligne = basY * (hautZ / p208.combinePos.z);
+        std::printf("cockpit : 208 : haut de la jante y %.3f (z %.3f), ligne de vue vers le bas du combiné à cette profondeur y %.3f\n", hautY, hautZ, ligne);
+        cas("208 : combiné vu au-dessus de la jante (ligne de vue ≥ 1 cm plus haut que la jante)", ligne > hautY + 0.01f);
+        // X5 : combiné et écran côte à côte sur une même vitre, sans se chevaucher
+        cas("X5 : écran central à droite du combiné, sans chevauchement", x5.ecranPos.x - x5.ecranW / 2 >= x5.combinePos.x + x5.combineW / 2 - 0.001f);
+        // RG-06 / RG-07 : hauteurs d'œil (assise du modèle + yeux assis d'ANSUR-II) : X5 > 208 > Golf … > Gallardo
+        std::printf("cockpit : œil au-dessus du sol : X5 %.3f, 208 %.3f, Golf %.3f, Giulia %.3f, Mustang %.3f, Model 3 %.3f, A 45 %.3f, S3 %.3f, M4 %.3f, 911 %.3f, SF90 %.3f, Gallardo %.3f m\n",
+                    hauteurOeil(x5), hauteurOeil(p208), hauteurOeil(golf), hauteurOeil(giulia), hauteurOeil(mustang), hauteurOeil(model3), hauteurOeil(a45),
+                    hauteurOeil(s3), hauteurOeil(m4), hauteurOeil(p911), hauteurOeil(sf90), hauteurOeil(gallardo));
+        bool plusBas = true; for (int i = 0; i < nombreInterieurs(); i++) plusBas = plusBas && hauteurOeil(gallardo) <= hauteurOeil(interieur(i)) + 1e-6f;
+        cas("œil : X5 > 208 > Golf ; Gallardo le plus bas", hauteurOeil(x5) > hauteurOeil(p208) && hauteurOeil(p208) > hauteurOeil(golf) && plusBas);
+        cas("yeux assis d'ANSUR-II : 0,7859 m (hommes 804,5 et femmes 747,7 mm pondérés par l'effectif 4082 / 1986)",
+            std::abs(OEIL_ASSIS_M - (804.5f * 4082 + 747.7f * 1986) / 6068 / 1000) < 0.0002f);
+    }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("cockpit : tout est OK\n");
     return 0;
