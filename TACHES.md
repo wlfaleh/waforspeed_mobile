@@ -157,7 +157,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-175 | Ville (2/4) : autoroute urbaine, tunnel et pont | E2 | 🟣 Fusionné (PR #155) | agent arwa (Claude, session trafic) | WFS-137 🟣 | `feature/waforspeed-175` | #155 |  |
 | P2 Haute | WFS-176 | Ville (3/3) : casino, centre commercial, cafés et bars, garages, pigeons et chiens | E2 | 🟣 Fusionné (PR #158, commit 9262b41) | Claude, agent 1 (session 01UY1Vv2) | WFS-175 🟣 (code sur `main`) | `feature/waforspeed-176` | #158 |  |
 | P2 Haute | WFS-178 | Campagne (2/3) : village (rond-point, feu, café, bar, garage) — animaux sortis vers … | E2 | 🟣 Fusionné par confiance (PR #148) | Claude (session dev 5bx) | WFS-138 ✅ | `feature/waforspeed-178` | #148 |  |
-| P2 Haute | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en modèles 3D réels CC0 | E2 | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 23:37 UTC | WFS-178 ✅ | `feature/waforspeed-186` |  |  |
+| P2 Haute | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en modèles 3D réels CC0 | E2 | 🟣 Fusionné (PR #171, fusion par confiance) | Claude, agent 1 (session 01UY1Vv2), 2026-11-06 23:37 UTC | WFS-178 ✅ | `feature/waforspeed-186` | #171 |  |
 | P2 Haute | WFS-179 | Campagne (3/3) : autoroute et péage | E2 | 🟣 Fusionné (PR #161, commit 36108b0) | Claude, agent 1 (session 01UY1Vv2) | WFS-178 🟣 (code sur `main`) | `feature/waforspeed-179` | #161 |  |
 | P2 Haute | WFS-181 | Corniche (3/3) : bars de plage, casino de station, mouettes et dauphins | E2 | 🟣 Fusionné (PR #153) | Claude (session trafic) | WFS-180 ✅ | `feature/waforspeed-181` | #153 |  |
 | P3 Moyenne | WFS-188 | Correction conduite : 0-100, vitesse max et freinage fidèles à la fiche de chaque … | E3 | 🟣 Fusionné (PR #154) | Claude (session dev expert, 0183bv2X) | — | `feature/waforspeed-188` | #154 |  |
@@ -175,6 +175,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-200 | [TECHNIQUE] [URGENT] CI de `main` rouge : banc des passes (WFS-150), M-01 nuit face +X −1,5 % | E7 / E0 | 🔧 En cours | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | — | `feature/waforspeed-200` |  |  |
 | P2 Haute | WFS-201 | [RÉALISME] Vue cockpit réaliste (2/3) : intérieurs A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3 et X5 (lot 2 de WFS-195) | E3 `camera_vue.*` (exception PO 23:46 : mêmes fichiers que WFS-197, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**` ; accroche `references/reel/anthropometrie.json` au lot 2) | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-06 23:47 UTC | WFS-197 🟣 (code sur `main`) | `feature/waforspeed-201` |  |  |
 | P2 Haute | WFS-202 | [RÉALISME] Vue cockpit réaliste (3/3) : intérieurs 500 Abarth, Compass, Corsa, Elantra N, GT86, Range Rover Sport, T-Cross et V60 (lot 3 de WFS-195) | E3 `camera_vue.*` (exception PO 23:46 : mêmes fichiers que WFS-197, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`) | ⏳ En attente |  | WFS-201 | `feature/waforspeed-202` |  |  |
+| P1 Urgent | WFS-203 | Correction : de nuit, la Campagne est entièrement blanche (surexposée) | E13 (+ accroche E4 `nuit.cpp`) | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-07 00:07 UTC | — | `feature/waforspeed-203` |  |  |
 
 ## Critères d'acceptation
 

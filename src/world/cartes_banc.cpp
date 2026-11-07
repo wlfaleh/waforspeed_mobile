@@ -20,6 +20,7 @@
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2
 
 namespace wfs {
+namespace campagne { int64_t troupeau(int espece); }   // WFS-186 (campagne.cpp)
 
 void benchCorniche(Game& g, Renderer& r, const std::string& out);   // WFS-139 (plage.cpp)
 
@@ -127,8 +128,11 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     for (const trace::Section& s : t.sections()) if (s.autoroute && au < 0) au = s.debut;
     WFS_LOG("banc campagne : %lld segments, lacets %lld → %lld (+%.0f m), 1re épingle %lld, vignes %lld", (long long)L, (long long)lac->debut,
             (long long)lac->fin, lac->denivele, (long long)ep, (long long)vi);
+    int64_t tr[3] = {-1, -1, -1};   // WFS-186 : troupeaux (vaches, chevaux, moutons), caméra 25 m avant le premier de chaque espèce
+    if (g.init(r, "golf", "campagne")) { for (int e = 0; e < 3; e++) tr[e] = campagne::troupeau(e) >= 0 ? campagne::troupeau(e) - (int64_t)(25 / SEG_M) : -1; g.shutdown(); }
     struct Cap { const char* nom; int64_t seg; int cam; };
-    const Cap caps[] = {{"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1},
+    const Cap caps[] = {{"carte-campagne-vaches", tr[0], 0}, {"carte-campagne-chevaux", tr[1], 0}, {"carte-campagne-moutons", tr[2], 0},
+                        {"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1},
                         {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0}, {"carte-campagne-vignes", vi, 0},
                         {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0},
                         {"carte-campagne-peage", au >= 0 ? au : -1, 0}, {"carte-campagne-autoroute", au >= 0 ? au + (int64_t)(300 / SEG_M) : -1, 0}};   // WFS-179
