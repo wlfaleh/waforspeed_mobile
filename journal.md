@@ -2591,3 +2591,52 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   - Capture `carte-ville-virage-1` regardée : façades percées, bandeaux du moderne, cafés et arbres de la rue devant.
   - **Limites** : les vitrines des commerces (`commerces.cpp`) se superposent au rez-de-chaussée du kit (à harmoniser) ; au raccord du tour, un morceau peut manquer une image.
 - **Suite** : Corniche (`plage.cpp`) et Campagne, parcours complet et banc réalisme, puis ST-6 et fusion.
+
+### 2026-11-07 09:48:39 — Début WFS-217 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- Ticket : WFS-217 (P1 Urgent), « guide auto » corrigé dans les virages serrés, épingles et ronds-points + réglage « Aide à la direction : Activée / Désactivée » (Réglages du jeu seulement). Épic E3, libre (aucun ticket E3 actif). Branche `feature/waforspeed-217`.
+- Zone autorisée : `src/game/player.*`, banc de conduite dans `src/game/**` (E3), `tests/**` ; accroches ≤ 10 lignes annoncées au journal : `src/ui/ecrans/reglages.cpp` (E8), sauvegarde. Interdit : `configgame.json`, taille ou place des boutons (ordre permanent), iOS (gel), `game.*` / noyau.
+- Critères : `regles-de-gestion/WFS-217.md` (RG-01 à RG-06) : aide qui suit la tangente locale lissée, cap borné élargi selon la courbure, aucun saut de cap > 0,05 rad par image ; réglage enregistré, Activée par défaut ; désactivée = conduite libre ; ordinateur non touché ; banc sur 4 cartes, captures `conduite-epingle` et `conduite-rond-point`, parcours complet 0 écart, tests CPU.
+- Plan court : mesurer la cause au banc, corriger les trois aides de `player.cpp`, ajouter le réglage et sa sauvegarde, tests, captures, fusion (confiance > 50 % ou CI de branche à la main une fois), ligne `qa/Check.md`.
+
+### 2026-11-07 09:49:46 — WFS-213 fusionné : plus d'écran blanc après le chargement d'une voiture (Claude, agent 1)
+- PR #184, squash 941e475, **fusion par confiance**, zone E13 : `src/render/eclairage_physique.cpp`, `src/render/eclairage_exposition.h` (nouveau), `tests/fidelite_lumiere.cpp`.
+- **Cause** (banc `vitrines` reproduit : 14 vitrines sur 16 et `course-sf90` blanches, 50 % saturés) : `eclairage_physique.cpp`, `SondesIbl::lireRelecture` : une capture d'environnement (6 images, une face par image) dont des faces n'avaient jamais reçu leur exposition `kFace` (restée à 0, ramenée à 10⁻¹²) était relue ×10¹² : sonde à **1,36·10¹¹ cd/m²**, IBL énorme, EV bloqué à 15 → image blanche.
+- **Correction** : RG-02 k des faces remis à « inconnu » à chaque capture, capture abandonnée si une face n'a pas d'exposition connue ; sonde ou mesure non finie ou hors de 10⁻⁷ à 10⁵ cd/m² rejetée (dernière valeur juste gardée), EV jamais non fini ; RG-01 piste, carte ou voiture changée = nouvelle scène (sondes oubliées, EV à la valeur du moment, recalé sur la 1re mesure valide) ; RG-03 `eclairage_exposition.h` testé par `fidelite_lumiere` (3 cycles init / shutdown avec NaN, infini, 1,36·10¹¹ : EV toujours dans [10 ; 15]), 93 / 93.
+- Preuves locales : 16 `vitrine-*-0` + `course-sf90` normales (0 % saturés, luminance 0,11 à 0,13 ; `abarth`, `p208` identiques à avant) ; banc des cartes : **126 vues identiques à `main`** (même merge-base 65b00ed) ; réalisme lumière 69 / 69 ; parcours complet 0 écart ; 42 tests CPU. Statut 🟣.
+
+### 2026-11-07 09:53:43 — Le qa-lead de cette session s'appelle désormais QA-arwa (QA-arwa)
+- Demande de l'utilisateur : l'agent QA (`qa-lead`, session 01Us6uCubd) est nommé **QA-arwa**. Ligne mise à jour dans `track-agent.md` (agents de pilotage) ; ce nom termine désormais les titres de ses commits et signe ses entrées du journal.
+
+### 2026-11-07 09:55:42 — Archives automatiques (robot archives)
+- Journal : 0 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (aucun jour).
+- TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-73, WFS-205, WFS-208, WFS-209, WFS-211, WFS-212).
+
+### 2026-11-07 09:55:55 — WFS-210 fusionné (PR #185, squash be33c2f, fusion par confiance) (Claude, agent 5)
+- **Fait** : RG-01 tenues par lieu (`tenue::tenueLieu`, `src/world/pietons.h`) : Ville laine / robes, Corniche lin / coton et tenues d'été, Campagne jean / bleus de travail, Grand Prix combinaisons synthétiques et maillots ; couleurs et tissus selon l'avis `expert-realisme-3d` (2026-11-07). `scene_skin.frag` : peau (éclairage enveloppant par canal w = 0,45 / 0,18 / 0,10, pénombre rougeâtre, effacé au-delà de 15 m, F0 0,028), tissus (rugosité 0,60-0,93, reflet rasant Charlie, trame et plis sans scintillement), cheveux (Kajiya-Kay 2 lobes), yeux (cornée GGX F0 0,025). Piétons (tissu 0) inchangés.
+- **RG-02** : peau VI = PB-MAT `mat.peau_vi.albedo` (0,09 ; 0,05 ; 0,02), sources dans `references/reel/humains/peau.md` (Jensen 2001, Donner & Jensen 2006, Lister 2012) ; remplace le plancher 0,27. Avis expert non appliqué (proposé au PO) : tirage IV / V / VI par personne (aujourd'hui par morphotype).
+- **RG-05, mémoire GPU des humains** : 14 517 sommets × 68 o + 121 200 indices par morphotype ; avant 1,47 Mo × 12 = **17,7 Mo**, après (indices 16 bits) 1,23 Mo × 12 = **14,8 Mo** (−2,9 Mo, −16 %).
+- **Accroches annoncées** : A1 `src/world/conducteurs.cpp` (2 lignes : include, appel de `tenueLieu`) + `conducteurs.h` (1 ligne : albédo VI) ; A2 `src/render/renderer.h` (2 lignes : champs `i16`) + `renderer.cpp` (5 lignes : copie 16 bits, type d'index) ; `tests/conducteurs_test.cpp` (3 lignes : plage de la charte 0,05-0,65).
+- **Preuves (banc local, lavapipe + glslc installés)** : `realisme` avant / après : 320 mesures, indices identiques (lumière 100 %, photométrie 100 %, soleil 100 %, voitures 76,6 %, routes 10 %), 2 erreurs déjà présentes (textures KTX2 absentes en local) ; parcours complet 0 écart (vue normale et Cockpit) ; `test_fidelite_humains` : tenues OK, indice humains 100 % (40/40) ; captures `conducteurs-tenue-<carte>` sur les 4 cartes (chargement des conducteurs sur chaque carte sans erreur). Limite : habitacle très sombre à 6,5 m (éclairage intérieur, hors zone) : tenues peu lisibles sur les captures.
+
+### 2026-11-07 10:01:46 — Recette après fusion : WFS-212 et WFS-211 VALIDÉS (QA-arwa)
+- Captures : Release `apercu` de main, construction 815 (6ddbeec, CI verte, 42 tests CPU, parcours 0 écart).
+- **WFS-212 : VALIDÉ** — rien sur la chaussée : fontaine sur son îlot (Ville), aucune végétation sur le rond-point (Campagne), trou de l'épingle fermé (Plage). ANO-104 vérifiée ; les deux bloquantes de la recette de nuit (dallage de la place, buissons du rond-point) sont corrigées.
+- **WFS-211 : VALIDÉ** — conducteurs humains en vue Proche (jour / nuit), 12 `.wfp` à 3 niveaux, fidélité des humains ≥ 99 %, peau M-03. ANO-111 vérifiée. Non vérifiables au banc : conducteurs du trafic et du duel (couverts par `test_conducteurs`), vue Cockpit, passage entre niveaux, performances.
+- Remarques hors périmètre gardées pour la campagne VABF (dans les rapports) : coin bleuté des épingles vu de dessus, zones grises à côté des lacets, pointillés de l'anneau sur la route d'entrée, taches autour des yeux (à revoir avec WFS-210), teints identiques au banc des piétons.
+
+### 2026-11-07 10:03:57 — WFS-220 [TECHNIQUE] créé et attribué à Claude, agent 1 ; WFS-216 prêt (po-scrum-master)
+- **CI de `main` rouge** : run planifié #816 (42357352523, 08:53 UTC, commit 4d8bb7c), job `endurance`, étape « Chauffe (banc WFS-123) » : toutes les vérifications « (ok) », mais banc tué à 240 s (code 124) avant la capture `chauffe-retabli`. → **WFS-220** (E7, P1 Urgent, `regles-de-gestion/WFS-220.md`) : cause mesurée, aucune vérification retirée, endurance verte sur la branche puis sur `main`. Le `__pycache__` suivi par erreur dans `tools/qa` (signalé par agent 1) est rangé dans ce ticket (RG-05).
+- **Attribué à Claude, agent 1 (01UY1Vv2)**, libre après WFS-213 🟣. Zone permise : `tools/qa/**`, job `endurance` de `build.yml`, `src/platform/chauffe_systeme.cpp`, 1 ligne `.gitignore`. Branche `feature/waforspeed-220`. CI de branche permise autant que nécessaire, une à la fois (US technique).
+- Pourquoi pas WFS-214 : il dépend de WFS-213, encore 🟣 (run de `main` en cours) ; une US technique P1 passe avant les P2.
+- **WFS-216** : WFS-212 ✅ (CI main #813) → ⏳ Prêt (E2 libre). Prêts sans agent : WFS-218 (E4), WFS-219 (E10), WFS-216 (E2).
+
+### 2026-11-07 10:10:28 — WFS-161 (ST-5) : kit dans la Ville et la Campagne ; branche « buildings » pour les textures (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 0d78b8d, synchronisée a68543a) : système `archi-carte` à l'ordre 110, après toutes les cartes. **Accroches `src/world/campagne.cpp`** (4 lignes) : 116 maisons de village (`T_VILLA`) posées dans le kit, style village, sur le terrain (`solY`) ; boîte sautée si le kit est actif. La Ville avait déjà ses 580 immeubles.
+- **Vérification** : parcours complet **0 écart** (vue normale et vue Cockpit) ; 45 tests CPU verts ; banc `archi` sur la Campagne (116 bâtiments, 22 514 triangles au niveau 0 au total) ; capture de la Ville regardée.
+- **Branche `buildings`** (e3d6d39), créée à la demande de l'utilisateur (10:1x) : il y déposera les 18 textures Poly Haven dans `assets/textures/decor/sources/<nom>/` (`LISEZMOI.md` : noms et SHA-256). Je les reprendrai dans `feature/waforspeed-161` après vérification ; l'utilisateur supprimera ensuite la branche.
+- **Suite** : Corniche (`plage.cpp`, villas du village perché), captures des quartiers et banc réalisme, ST-6 (mesures), fusion.
+
+### 2026-11-07 10:12:43 — WFS-221 créé : voiture saccadée en vue Proche / Poursuite, US technique urgente (po-scrum-master)
+- **Retour de l'utilisateur** (essai sur téléphone) : en vue Proche et Poursuite, la voiture a un comportement bizarre, pas fluide.
+- **Causes probables (code de main)** : `game.cpp` ≈ 242-247, pas fixes de 1/120 s rendus sans interpolation (0, 1 ou 2 pas par image) ; `track.cpp:87`, pente par segment sans transition (bascule de la voiture à chaque segment) ; direction linéaire par morceaux.
+- **WFS-221** (`[TECHNIQUE]`, P1 Urgent, E0 + E3, ⏳ Prêt) : banc `fluidite` (temps d'image irréguliers 14-22 ms, mesures dans le repère caméra), rendu interpolé, route lissée, objectifs chiffrés, vidéo avant / après ; CI de branche permise (US technique). À attribuer au premier développeur libre, avant WFS-217.
