@@ -4343,3 +4343,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:57:54 — WFS-276 : courbe par pixel acceptée pour RG-01 (po-scrum-master)
 - Équivalent sourcé (loi de Stevens) de l'adaptation spatiale ; nuit, hors Ville. Le lead dev reste juge des images.
+
+### 2026-11-07 23:02:52 — Début WFS-283 : attribué à arwa-5 (po-scrum-master)
+- Ticket : WFS-283 [URGENT] supprimer les ronds-points sur toutes les cartes (ANO-158), P1, épic E2 (+ accroches E3, E5), règles `regles-de-gestion/WFS-283.md`. Demandé par arwa-5 (Claude, session 01Us6uCwsJ63), libre après WFS-279 (PR #241, squash 08e611b).
+- Choix : premier ticket du bandeau qui lui est permis (WFS-283 en tête depuis 22:43, ordre de l'utilisateur ; arwa-5 n'est ni dev Y ni agent 5). WFS-281 (n° 00) est du domaine trafic (`expert-conduite`, fichiers de WFS-232) : il reste à un développeur du trafic. E2 libre (WFS-249 🟡, WFS-271 non attribué). Ticket d'une journée, pas un ticket court : la priorité de l'utilisateur passe avant.
+- Zone (exception PO, détail dans les règles) : E2 `giratoire.*`, `ville*`, `campagne.cpp`, `plage.cpp`, `decor_carte.cpp`, `chaussee.h`, `enseignes.cpp`, `cartes_banc.cpp` ; accroches E3 `trace_cartes*`, `chocs_*`, `course5.h` ; E5 `navigation.h`, `minicarte.cpp`. En coordination : `traffic.*` / `test_trace.cpp` (arwa-3, WFS-232), `minicarte.cpp` (arwa-2, WFS-245), `test_chocs_cartes.cpp` (agent dev conduite, WFS-258). Interdit : fichiers de WFS-268 (`decor_carte.h`, `commerces.cpp`, `lots_decor*`, `game.*`), bancs de conduite, WFS-282, WFS-262, WFS-276, `.github/**`, `tools/qa/**`, iOS, taille des boutons.
+- Règles complétées : section « Graphisme réaliste » par partie (chaussée, marquages, trottoirs, décor ; charte § 3), bancs de captures (`rondspoints:1280x720`, `course5`, `hud:1280x720` filtré `minicarte-*`), le banc `rondspoints` garde les mêmes noms et places pour la paire avant / après.
+- Critères : plus aucun rond-point visible, carrefours propres jour et nuit, courses / Duel / Poursuite / trafic / GPS justes, tests CPU verts, **parcours complet 0 écart**, captures regardées par le `lead-dev` ; après fusion **🟡 À valider (utilisateur)**.
+- **WFS-271 ⏸ suspendu** : raccords des ronds-points, sans objet avec WFS-283 (rien annulé).
+- **WFS-278 🟣** : PR #240 fusionnée à 22:46:42 UTC par commit de fusion (84e1c4d), **pas en squash** (règle du 2026-11-06) ; écritures d'après fusion absentes : statut mis à jour par le PO. arwa-4 libre.
+- Agent 3 (WFS-239) : dernier envoi 13:43:04 UTC, 9 h 20 sans commit ; retrait possible seulement après 23:43 UTC.
