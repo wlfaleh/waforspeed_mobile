@@ -2267,3 +2267,34 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Demande** de Claude, agent 1 : RG-01 (6 moments + heure réelle, choix sauvegardé) ne tient pas dans 10 lignes de `terrain.cpp` sans toucher à la sauvegarde.
 - **Décision** : (1) oui, `src/ui/ecrans/terrain.cpp` ≤ 35 lignes ; (2) oui, `src/game/sauvegarde.h/.cpp` ≤ 10 lignes en tout (champ `moment`, `tod` inchangé) ; (3) `game.*` non touché. Détail dans `regles-de-gestion/WFS-208.md` (Suivi).
 - **Contrôle** : aucun ticket 🔧 / 🔀 en E8 ni en E3. Branche `feature/waforspeed-208` poussée à 2026-11-07 04:44:26 UTC.
+
+### 2026-11-07 05:41:58 — WFS-205 fusionné (PR #177, squash 152ab47) : revêtements de route réels, lot 1 (Claude, agent 2 (01UY1Vv5))
+- **Livré** : bibliothèque de 7 revêtements (`assets/textures/route/`, `src/render/route_revetements*`) : enrobé neuf, enrobé usé (chaussée de toutes les cartes dans ce lot), enrobé grenu, béton bitumineux de circuit, béton de trottoir (trottoirs), pavés de granit, gravier ; lecture sans répétition dans `shaders/route.glsl` (pavage hexagonal Haute / Ultra, deux échelles Moyenne, une lecture Basse ; macro-variations à 23 et 47 m) ; repli procédural recalibré (albédo moyen ≈ 0,07 → 0,133, enrobé usé 0,10-0,18) ; test `test_fidelite_routes`.
+- **Accroches annoncées** (≤ 10 lignes chacune) : `game.cpp` (qualité, chaussée, trottoir, libération), `ville.cpp` et `plage.cpp` (matériaux de chaussée et trottoir), `scene.frag` / `scene_skin.frag` (normale du trottoir), `CMakeLists.txt` (test).
+- **Téléchargements** (WFS-205, lecture seule de dépôts GitHub publics, § 2.4) : scans Poly Haven **CC0 1.0** ; dépôts : webtilians/lain (asphalt_02, concrete_pavement), FoxeIT/FNAS (worn_asphalt), jmkekala/metrum_rise (asphalt_04), artemiusgreat/Games (aerial_asphalt_01), vierth/qianlongsworld (cobblestone_floor_08), hannes-ctrl/cyclingmanagergame (gravel_road, déclaré CC0 dans son `LICENSE.txt`). asphalt_02, worn_asphalt et concrete_pavement : SHA-256 identiques à la copie CC0 de kennyhassmusic/sky-city. Rien exécuté. SHA-256 :
+  - `beton-circuit/aerial_asphalt_01_arm_2k.jpg` : ce664ad5621446bee3f02dadf4efdf016d0eecf67c45ab93a4fd54f35fd89283
+  - `beton-circuit/aerial_asphalt_01_diff_2k.jpg` : a85ce28b8e6ed90acb0234832969b27f5b73fe055a0d5b94f34fc2943d319fb5
+  - `beton-circuit/aerial_asphalt_01_nor_gl_2k.jpg` : cb7e5b75ff47ad672ab820f71b77566419b612e52e7791c5ed90a7fa27b71807
+  - `beton-trottoir/concrete_pavement_arm_2k.jpg` : 1ee3ab8013a6204c739b40ef9b87ccfdff32711525bccf94ee9b3c171aa731f6
+  - `beton-trottoir/concrete_pavement_diff_2k.jpg` : e5a1cecfe7765cc0b24a6ab0abf492bd21c9e7af64e97fc46ef6021d0645fbd3
+  - `beton-trottoir/concrete_pavement_nor_gl_2k.jpg` : 72def937e418ccc9d7736c9b1f51ae22a127fa2a53a54f4d1fe4d3cf828b781c
+  - `enrobe-campagne/asphalt_04_arm_2k.jpg` : c302965bb3c3efc151215a797b9996e941d68f1f167c514f15fb008bdcac2479
+  - `enrobe-campagne/asphalt_04_diff_2k.jpg` : e02ac16d23ea97008c2507cf58bfad7c18a3b5933b5bdea14f7f90f33a784976
+  - `enrobe-campagne/asphalt_04_nor_gl_2k.png` : 35c8e1c0a03e12ef476b1eebde169c3037d7a3cf4ff25a3b1d2e29db67c3452b
+  - `enrobe-neuf/asphalt_02_arm_2k.jpg` : ed70e88640e4ed51cf1c3e57cb20db26983599b20b867c2526439e3a2c849fea
+  - `enrobe-neuf/asphalt_02_diff_2k.jpg` : 28f5ba8690553f192c0e5e1a5ff40f34765b4b93f4cc7059b1a3e9c795b6c28c
+  - `enrobe-neuf/asphalt_02_nor_gl_2k.jpg` : ffe49db71a0fd34c1e259625df66a302a237597d6ef655307987ec4e45bc6f21
+  - `enrobe-use/worn_asphalt_arm_2k.jpg` : 82e4e37bf67f0f5cbd3bd534ac617eef17e536b612beea7948cae53067c1cd66
+  - `enrobe-use/worn_asphalt_diff_2k.jpg` : 8313d3f8d25515d6ef0be59d461cdeb0feb484694eae385711ecf688c0afa4de
+  - `enrobe-use/worn_asphalt_nor_gl_2k.png` : bad25a2225f23140ba2cca74e4222c558f6fb26de81fdd57abd97a94c4eb9647
+  - `gravier/gravel_road_diff_2k.jpg` : 6313bb65816f2890a247cb9a5bae003ddef98cf55099d5abaf543a88e0ab3180
+  - `gravier/gravel_road_nor_gl_2k.jpg` : 4fc9dfc7ebfe58e531225dc55b9c89d89c1abb51670e62da086f2a8fa4fb71db
+  - `gravier/gravel_road_rough_2k.jpg` : e03290bca670efb4bc0276a3e1198a2ea4fee27dac87d553b18f336068a461db
+  - `paves-granit/cobblestone_floor_08_diff_2k.jpg` : 9aaf7db7f660f03d0c5c129c11e83caa828fb8bca63f8cd5154d450ffc4c340f
+  - `paves-granit/cobblestone_floor_08_nor_gl_2k.jpg` : 42dd5fc2da4a858f9c076c9ac5002857a1c064f8f4c4ffb12fafecffb84e96cc
+  - `paves-granit/cobblestone_floor_08_rough_2k.jpg` : 3bc645ec45543c704fe1042f7b81f9bad4f88a8567760c4898c82bc2a134e093
+- **Calibration (RG-02)** : teinte moyenne ramenée au référentiel (asphalte : `mat.asphalte_neuf.albedo` quasi neutre ; les scans worn_asphalt et gravel_road étaient bruns), gain d'albédo et rugosité a·r + b (valeurs : `references/reel/routes/revetements.json`). M-01 / M-02 : **15 / 15 dans la plage** (indice des revêtements 100 %, avant : matériaux non mesurés). Normale de l'enrobé usé lissée (σ = 0,9 texel) : ASTC 4x4 sous 35 dB sinon. Côté des scans : 2 m (E).
+- **Mémoire et APK** : ASTC 16,4 Mo dans l'APK (7 revêtements) ; en jeu, 2 revêtements chargés : 6,3 Mo en Haute (ASTC 4x4) et autant en repli RGBA8 (512). APK 139,4 → **164,5 Mo** (CI 806, ≤ 200).
+- **Écart à la décision du PO (01:40:18), à trancher** : la ligne `ignoreAssetsPattern` du gradle était **sans effet** (run 806 : 21 replis RGBA8 dans l'APK, + 8,6 Mo compressés) ; ligne retirée (gradle de `main` inchangé). Conséquence utile : un téléphone sans ASTC a la route texturée (512) au lieu du procédural. Si les replis doivent sortir de l'APK : US technique (motif `androidResources` à valider en CI).
+- **CI de branche 806** : tout vert sauf `banc-essai (realisme)` : M-01 de WFS-150, nuit, face −Y : − 2,11 % (± 1 %), dû au relief du scan sur la chaussée mouillée (reflet des lampadaires non linéaire). Corrigé sans toucher au seuil : relief filtré par l'empreinte du pixel (mipmaps de normales renormalisées par l'outil de WFS-149) et relief retiré sous le film d'eau. Local : passes 0 écart (−Y nuit − 0,02 %), banc realisme indice total 80,1 % avant et après, 39 tests CPU, parcours 0 écart.
+- **Au PO** : `materiaux.json` : `mat.asphalte_neuf.rugosite` et `mat.beton.rugosite` = 0,5 (contraire à DA § 3 : 0,75-0,90) et `mat.beton.albedo` 0,51 (béton neuf ; trottoir réel 0,25-0,35) (expert-realisme-3d) ; le banc `realisme` compte toujours les matériaux « non mesurable » (mesure dans `test_fidelite_routes`).
