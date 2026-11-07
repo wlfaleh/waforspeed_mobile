@@ -1,0 +1,52 @@
+Revêtements de route réels (WFS-205, lot 1 de WFS-155) : assets/textures/route/<id>/route_<id>-couleur|-normale|-orm.{astc,rgba8}.ktx2
+
+Origine : scans de Poly Haven (https://polyhaven.com), licence CC0 1.0 Universel (domaine public) pour toutes leurs textures,
+https://creativecommons.org/publicdomain/zero/1.0/ . Le site polyhaven.com n'est pas autorisé au réseau des agents : chaque scan a été
+lu dans un dépôt GitHub public qui en garde une copie (regles-reseau.md § 2.4), fichiers d'origine en 2048 × 2048, SHA-256 ci-dessous.
+La licence du dépôt copiste (GPL, Apache…) couvre son code, pas ces fichiers CC0 qu'il ne fait que redistribuer.
+
+Modifications faites pour WaForSpeed (references/reel/routes/outils/preparer.py, valeurs dans references/reel/routes/revetements.json) :
+- albédo recalibré (RG-02) : gain k sur la couleur en linéaire (moyenne amenée au centre de la plage du réel) ;
+- rugosité : r' = a·r + b (canal G de l'ORM) ; métal mis à 0 ; ORM fait d'une seule carte de rugosité quand il n'y a pas d'ARM (occlusion 1) ;
+- réduction : couleur et normale 2048 → 1024, ORM → 512 (décision du PO, WFS-205, 2026-11-07 01:40:18) ; normales parfois lissées (σ) ;
+- KTX2 : tools/textures/convertir.py (ASTC, RGBA8 de repli réduit à 512 / 256, hors APK).
+
+enrobe-neuf : Poly Haven « asphalt_02 » (https://polyhaven.com/a/asphalt_02), copie de https://github.com/webtilians/lain (client/art/photoreal11/textures/asphalt_02/)
+  asphalt_02_arm_2k.jpg : SHA-256 ed70e88640e4ed51cf1c3e57cb20db26983599b20b867c2526439e3a2c849fea, 1299186 octets
+  asphalt_02_diff_2k.jpg : SHA-256 28f5ba8690553f192c0e5e1a5ff40f34765b4b93f4cc7059b1a3e9c795b6c28c, 3075676 octets
+  asphalt_02_nor_gl_2k.jpg : SHA-256 ffe49db71a0fd34c1e259625df66a302a237597d6ef655307987ec4e45bc6f21, 4943950 octets
+  vérification : mêmes octets que la copie CC0 de kennyhassmusic/sky-city (SourceArt/CC0/polyhaven, pointeurs LFS : SHA-256 identiques)
+  albédo 0.1138 → 0.0553 (k = 0.4831, plage 0.04-0.07) ; rugosité 0.7703 → 0.825 (a = 0.5244, b = 0.421, plage 0.75-0.9) ; normale lissée σ = 0.0 texel
+enrobe-use : Poly Haven « worn_asphalt » (https://polyhaven.com/a/worn_asphalt), copie de https://github.com/FoxeIT/FNAS (fnas/assety/textures/)
+  worn_asphalt_arm_2k.jpg : SHA-256 82e4e37bf67f0f5cbd3bd534ac617eef17e536b612beea7948cae53067c1cd66, 4385137 octets
+  worn_asphalt_diff_2k.jpg : SHA-256 8313d3f8d25515d6ef0be59d461cdeb0feb484694eae385711ecf688c0afa4de, 3573942 octets
+  worn_asphalt_nor_gl_2k.png : SHA-256 bad25a2225f23140ba2cca74e4222c558f6fb26de81fdd57abd97a94c4eb9647, 28117230 octets
+  vérification : mêmes octets (diff, arm) que la copie CC0 de kennyhassmusic/sky-city (pointeurs LFS : SHA-256 identiques)
+  albédo 0.0462 → 0.14 (k = 3.0276, plage 0.1-0.18) ; rugosité 0.875 → 0.825 (a = 1.0, b = -0.05, plage 0.75-0.9) ; normale lissée σ = 0.9 texel
+enrobe-campagne : Poly Haven « asphalt_04 » (https://polyhaven.com/a/asphalt_04), copie de https://github.com/jmkekala/metrum_rise (godot/assets/textures/road/asphalt_04/)
+  asphalt_04_arm_2k.jpg : SHA-256 c302965bb3c3efc151215a797b9996e941d68f1f167c514f15fb008bdcac2479, 2548131 octets
+  asphalt_04_diff_2k.jpg : SHA-256 e02ac16d23ea97008c2507cf58bfad7c18a3b5933b5bdea14f7f90f33a784976, 3999385 octets
+  asphalt_04_nor_gl_2k.png : SHA-256 35c8e1c0a03e12ef476b1eebde169c3037d7a3cf4ff25a3b1d2e29db67c3452b, 20716423 octets
+  albédo 0.23 → 0.11 (k = 0.4782, plage 0.08-0.14) ; rugosité 0.9316 → 0.87 (a = 1.0, b = -0.0616, plage 0.82-0.92) ; normale lissée σ = 0.0 texel
+beton-circuit : Poly Haven « aerial_asphalt_01 » (https://polyhaven.com/a/aerial_asphalt_01), copie de https://github.com/artemiusgreat/Games (godot/photo/textures/aerial_asphalt_01/)
+  aerial_asphalt_01_arm_2k.jpg : SHA-256 ce664ad5621446bee3f02dadf4efdf016d0eecf67c45ab93a4fd54f35fd89283, 806322 octets
+  aerial_asphalt_01_diff_2k.jpg : SHA-256 a85ce28b8e6ed90acb0234832969b27f5b73fe055a0d5b94f34fc2943d319fb5, 2802005 octets
+  aerial_asphalt_01_nor_gl_2k.jpg : SHA-256 cb7e5b75ff47ad672ab820f71b77566419b612e52e7791c5ed90a7fa27b71807, 2751902 octets
+  albédo 0.1339 → 0.07 (k = 0.5229, plage 0.05-0.09) ; rugosité 0.7754 → 0.785 (a = 1.0, b = 0.0096, plage 0.72-0.85) ; normale lissée σ = 0.0 texel
+beton-trottoir : Poly Haven « concrete_pavement » (https://polyhaven.com/a/concrete_pavement), copie de https://github.com/webtilians/lain (client/art/photoreal11/textures/concrete_pavement/)
+  concrete_pavement_arm_2k.jpg : SHA-256 1ee3ab8013a6204c739b40ef9b87ccfdff32711525bccf94ee9b3c171aa731f6, 3465289 octets
+  concrete_pavement_diff_2k.jpg : SHA-256 e5a1cecfe7765cc0b24a6ab0abf492bd21c9e7af64e97fc46ef6021d0645fbd3, 3817566 octets
+  concrete_pavement_nor_gl_2k.jpg : SHA-256 72def937e418ccc9d7736c9b1f51ae22a127fa2a53a54f4d1fe4d3cf828b781c, 5179971 octets
+  vérification : mêmes octets que la copie CC0 de kennyhassmusic/sky-city (pointeurs LFS : SHA-256 identiques)
+  albédo 0.1841 → 0.3 (k = 1.6298, plage 0.25-0.35) ; rugosité 0.8623 → 0.875 (a = 1.0, b = 0.0127, plage 0.8-0.95) ; normale lissée σ = 0.0 texel
+paves-granit : Poly Haven « cobblestone_floor_08 » (https://polyhaven.com/a/cobblestone_floor_08), copie de https://github.com/vierth/qianlongsworld (game/assets/textures/roads/cobblestone/)
+  cobblestone_floor_08_diff_2k.jpg : SHA-256 9aaf7db7f660f03d0c5c129c11e83caa828fb8bca63f8cd5154d450ffc4c340f, 2289909 octets
+  cobblestone_floor_08_nor_gl_2k.jpg : SHA-256 42dd5fc2da4a858f9c076c9ac5002857a1c064f8f4c4ffb12fafecffb84e96cc, 3948187 octets
+  cobblestone_floor_08_rough_2k.jpg : SHA-256 3bc645ec45543c704fe1042f7b81f9bad4f88a8567760c4898c82bc2a134e093, 1657928 octets
+  albédo 0.2789 → 0.275 (k = 0.9859, plage 0.2-0.35) ; rugosité 0.5781 → 0.7 (a = 0.42, b = 0.4572, plage 0.6-0.8) ; normale lissée σ = 0.0 texel
+gravier : Poly Haven « gravel_road » (https://polyhaven.com/a/gravel_road), copie de https://github.com/hannes-ctrl/cyclingmanagergame (viewer/assets/textures/gravel_road/)
+  gravel_road_diff_2k.jpg : SHA-256 6313bb65816f2890a247cb9a5bae003ddef98cf55099d5abaf543a88e0ab3180, 2871851 octets
+  gravel_road_nor_gl_2k.jpg : SHA-256 4fc9dfc7ebfe58e531225dc55b9c89d89c1abb51670e62da086f2a8fa4fb71db, 3613956 octets
+  gravel_road_rough_2k.jpg : SHA-256 e03290bca670efb4bc0276a3e1198a2ea4fee27dac87d553b18f336068a461db, 1203380 octets
+  vérification : le dépôt le déclare CC0 1.0 (viewer/assets/textures/LICENSE.txt : « Textures from Poly Haven, CC0 1.0 Universal »)
+  albédo 0.1156 → 0.275 (k = 2.3793, plage 0.2-0.35) ; rugosité 0.9607 → 0.95 (a = 1.0, b = -0.0107, plage 0.9-1.0) ; normale lissée σ = 0.0 texel
