@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "../src/world/foule_familles.h"
+#include "../src/world/foule_poussette.h"   // WFS-240 (RG-01)
 
 namespace familles_test {
 using namespace wfs::familles;
@@ -73,6 +74,27 @@ inline int executer() {
         const wfs::vec3 pe{0.6f, 0.45f, 0.36f}, e = peauEnfant(pe);
         const bool ok = std::fabs(e.x * 222 - pe.x * 169) < 1e-3 && std::fabs(e.y * 178 - pe.y * 114) < 1e-3 && std::fabs(e.z * 150 - pe.z * 80) < 1e-3;
         cas("teint de l'enfant = teint du parent (sRGB, au millième)", ok);
+    }
+    // WFS-240 (RG-01) : poussettes : ≈ 1 famille sur 4 (tirage déterministe), dimensions d'une poussette citadine
+    // (references/reel/humains/poussette.md, ± 5 %), longueur cohérente avec la géométrie ; le petit est l'enfant de la
+    // famille (aucune personne de plus : le total est vérifié plus haut par former())
+    {
+        namespace P = wfs::poussette;
+        int avec = 0;
+        const int N = 4000;
+        for (int l = 0; l < N; l++) avec += P::avecPoussette(1234u, l);
+        const double part = (double)avec / N;
+        cas("poussettes : " + std::to_string(avec) + " familles sur " + std::to_string(N) + " (≈ 25 % ± 3 %)", part > 0.22 && part < 0.28);
+        bool memes = true;
+        for (int l = 0; l < 200; l++) memes = memes && P::avecPoussette(77u, l) == P::avecPoussette(77u, l);
+        cas("poussettes : tirage déterministe pour une graine", memes);
+        auto dans = [](double v, double ref) { return std::fabs(v - ref) <= 0.05 * ref; };
+        const double longueur = P::ESSIEU_AVANT_Z + P::ROUE_AV - P::POIGNEE_Z;   // de la poignée à l'avant des roues avant
+        cas("poussette : longueur " + std::to_string(longueur).substr(0, 4) + " m (1,00 m ± 5 %)", dans(longueur, 1.00) && dans(P::LONGUEUR, 1.00));
+        cas("poussette : largeur 0,60 m ± 5 %, poignée à 1,00 m ± 5 %", dans(P::LARGEUR, 0.60) && dans(P::POIGNEE_Y, 1.00));
+        cas("poussette : roues arrière Ø 25 cm, avant Ø 18 cm ; assise du petit à 0,50 m", dans(2 * P::ROUE_AR, 0.25) && dans(2 * P::ROUE_AV, 0.18) && dans(P::SIEGE_Y, 0.50));
+        const wfs::vec3 g = P::prise(true), d = P::prise(false);
+        cas("poussette : deux mains sur la poignée, à 0,40 m l'une de l'autre", std::fabs(d.x - g.x - P::MAINS_ECART) < 1e-6 && g.y == P::POIGNEE_Y && d.z == P::POIGNEE_Z);
     }
     return echecs;
 }

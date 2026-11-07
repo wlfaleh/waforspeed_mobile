@@ -438,7 +438,7 @@ void Game::systemsInit() {
     auto entries = systemRegistry();
     std::stable_sort(entries.begin(), entries.end(), [](const SystemEntry& a, const SystemEntry& b) { return a.order < b.order; });
     view_ = GameView{};
-    view_.track = &track_; view_.player = &player_; view_.car = carDef_; view_.map = track_.map();
+    view_.track = &track_; view_.player = &player_; view_.car = carDef_; view_.map = track_.map(); view_.modele = &car_;   // WFS-218
     view_.uiWidth = (float)r_->width(); view_.uiHeight = (float)r_->height();
     view_.ecran = ecran_;
     view_.marges = marges_;
