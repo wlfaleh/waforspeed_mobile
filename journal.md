@@ -2499,3 +2499,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Remarque de l'utilisateur** : le guide auto est une catastrophe dans les virages et ronds-points ; le corriger et le rendre activable / désactivable dans les réglages.
 - **Constat** (`player.cpp` ≈ l. 41-58) : réalignement vers l'axe de la route, cap borné (0,5 → 0,16 rad avec la vitesse, rappel à 2,5 rad/s), force centrifuge ; l'axe tourne vite sur les tracés de WFS-136.
 - **WFS-217** (E3 + accroche E8, P1 Urgent, ⏳ Prêt, `regles-de-gestion/WFS-217.md`) : aide qui suit la tangente locale lissée, borne élargie selon la courbure, sans saut ; réglage « Aide à la direction » Activée (défaut) / Désactivée, sauvegardé, `configgame.json` `conduite.aide_direction` ; aucun bouton changé ; banc sur les 4 cartes. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 09:09:28 — WFS-217 : réglage seulement dans le menu Réglages du jeu (po-scrum-master)
+- **Précision de l'utilisateur** : le joueur active ou désactive l'aide dans le menu Réglages ; pas de clé dans `configgame.json`. RG-03 réécrite, zone et critères ajustés.
