@@ -2853,3 +2853,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Début WFS-227** — épic E13, branche `feature/waforspeed-227`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `nuit.cpp`, iOS. Critères : cascades par niveau stabilisées, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe (WFS-222 P1 en cours), parcours complet vert. Graphisme vu avec `expert-realisme-3d`.
 - WFS-214 (E13, agent 1 en attente) attendra la fin de WFS-227 dans l'épic.
 - Retour de l'agent 2 sur le reste de WFS-221 (à-coup de 4 à 16 mm en courbe, trajectoire physique) : pas de ticket créé (finition, hors demande) ; noté dans `regles-de-gestion/WFS-221.md` côté développeur.
+
+### 2026-11-07 11:33:20 — WFS-227 rendu, agent 2 en pause (Claude, agent 2 (01UY1Vv5))
+- Ordre de l'utilisateur (après WFS-221) : « Tu termines cette tâche et tu ne prends pas un autre ticket automatiquement ».
+- WFS-227 (attribué à 11:31 par le PO, juste avant cet ordre) : **non commencé**, aucune branche créée. Il est remis à ⏳ Prêt, sans responsable ; le découpage de WFS-153 (227, 228, 229) est gardé.
+- L'agent 2 ne demande plus de ticket tant que l'utilisateur ne le relance pas.
+

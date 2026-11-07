@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : 11:15 (9c50a88) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) |
 | Claude, agent 1 (01UY1Vv2) | — | WFS-220 fusionnée (PR #190, squash 58b71b9) ; aucun ticket attribuable : WFS-214 (E13) attend WFS-213 ✅ et l'épic E13 (WFS-227 en cours) | 220 : PR #190 fusionnée ; 213 : PR #184 | 🟢 libre (aucun ticket attribuable) |
-| Claude, agent 2 (01UY1Vv5) | WFS-227 | P2 Réalisme E13 : ombres du soleil en cascades stabilisées, pénombre physique (lot 1/3 de WFS-153, attribué 11:31) | 227 : branche à pousser ; 221 : fusionnée 11:30 (PR #193) | 🔧 actif |
+| Claude, agent 2 (01UY1Vv5) | — | en pause sur ordre de l'utilisateur (ne prend pas de ticket suivant) ; WFS-227 rendu au PO, non commencé | 221 : fusionnée 11:30 (PR #193) ; 206 : fusionnée (PR #188) | ⏸️ en pause |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre (WFS-137 : CI main #799 verte) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
@@ -38,7 +38,7 @@
 | WFS-218 (P1) | E4 | épic occupée par WFS-222 (agent arwa) |
 | WFS-216 (P3) | E2 | épic occupée par WFS-225 (P1, Claude, session dev 5bx) |
 | WFS-224 (P1), WFS-226 (P1) | E4 (+ E3) | épic E4 occupée par WFS-222 (agent arwa) |
-| WFS-214 (P2) | E13 | attend WFS-213 ✅ (CI de main en file) et l'épic E13 (WFS-227, agent 2) |
+| WFS-214 (P2) | E13 | attend WFS-213 ✅ (CI de main en file) (WFS-227 prêt, non attribué) |
 | WFS-214 (P2) | E13 | attend WFS-213 ✅ (🟣 ; run de `main` 42361330960 en file d'attente depuis 09:49) |
 
 ## Agents de pilotage
