@@ -3054,3 +3054,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
      - RG-C (X5, bas du hayon) : prévu dans WFS-194 ;
      - la voiture du trafic manque sur `voiture-distance-120-basse` depuis la synchronisation de midi : ce n'est pas lié à WFS-158 (voir l'entrée de 12:52).
 - **Statut** : 🟣 Fusionné. Toutes les sous-tâches sont livrées (ST-1 à ST-5, RG-A, RG-B, RG-D). Le robot passera le ticket en ✅ quand la CI de `main` sera verte. Je demande un ticket au PO.
+
+### 2026-11-07 13:37:48 — Ménage des pipelines sur ordre de l'utilisateur (agent expert ci)
+- **Ordre de l'utilisateur** : arrêter les pipelines en cours sauf ceux prêts à finir, garder seulement la CI des PR en cours, un seul pipeline de main.
+- **Arrêtés** (en attente, jamais démarrés) : #826 (WFS-219), #829 (configgame.json), #837 (WFS-237). Avant : #838 remplacé par #839 puis #839 par **#840** (groupe `build-main`, WFS-237).
+- **Gardés** : #827 (WFS-223, seul le banc realisme reste) et #828 (WFS-221, seule la publication des captures reste), presque finis ; **#831** (CI de la PR #195, WFS-222) ; **#840** (`workflow_dispatch` sur main, 9abffcb, 13:34) = **le seul pipeline de main** : il contient toutes les fusions (WFS-219, 225, 216, 158, 236, 237, 238…) ; vert → le robot passe leurs tickets 🟣 en ✅, et 1er APK annoncé par la notification (WFS-238).
