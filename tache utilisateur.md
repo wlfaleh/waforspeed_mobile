@@ -94,3 +94,6 @@ demande utilisateur :
 
 - On peut organiser le QA de nuit la matinée aussi : on lance les CI ensuite lui il teste (à l'agent expert ci, 2026-11-07 ≈ 20:20 UTC)
 ( PO : c'est noté — **WFS-277** (agent expert ci) : à chaque fusion, la CI de `main` ne fait plus que compilation, tests, parcours, endurance et APK ; **chaque matin à 7 h** (heure de France), tous les bancs de captures, publiées vers **8 h 15**. **Lancez le `qa-lead` à partir de 8 h 30** (heure de France). `CLAUDE.md` et `qa-lead.md` mis à jour (QA du matin). )
+
+- Tableau journée / matin validé (avec l'agent expert ci, 2026-11-07 ≈ 21:00 UTC)
+( PO : c'est appliqué dans `CLAUDE.md`, le `qa-lead` et mes consignes — **à chaque fusion** : compilation, tests, parcours, endurance, APK (le ticket reste 🟣) ; **à 4 h** (heure de France) : tous les bancs, le réalisme, l'émulateur ; s'ils sont verts, les tickets passent ✅ ; **à 7 h** : la QA, si « 🧪 Recette QA prête » est publié. **Gel de la CI 2 à 3 jours.** Numéro de version (nom de l'APK + écran de chargement) : **WFS-279** créé. )
