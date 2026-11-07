@@ -29,6 +29,9 @@
 #include "trafic_sons.h"               // WFS-121 : passages, klaxon, rumeur
 #include "garage_son.h"                // WFS-127 : showroom sonore
 #include "../ui/garage.h"              // WFS-127 : voiture affichée au garage (lecture seule)
+#include "ambiance_lieux.h"            // WFS-261 : son des lieux (sources placées, tunnels, stéréo)
+#include "../game/trace_cartes.h"      // WFS-261 : section sous la voiture (tunnel), lecture seule
+#include "../world/enseignes.h"        // WFS-261 : clients attablés des terrasses (vie::clientsTerrasses), lecture seule
 
 namespace wfs {
 
@@ -51,18 +54,20 @@ public:
             synths_[i]->setOutputRate(OUT_RATE);
         }
         active_ = -1;
-        const int rate = audioOutStart([this](float* out, int n) { const double now = nowSeconds(); renderInto(out, n, now); sfx_.mix(out, n, now);
-            // WFS-76 : musique et ambiance ; application en arrière-plan (plus d'images) : fondu vers le silence
-            gVie_ += ((now - vivant_.load() < 0.5 ? 1.f : 0.f) - gVie_) * 0.15f;
-            musique().mix(out, n, sfx_.master * gVie_); ambiance_.mix(out, n, sfx_.master * gVie_);
-            if (!ecrans::reglages().son) std::fill(out, out + n, 0.f); });   // WFS-68 : réglage « Son : Coupé » (setMuted du web)
+        // WFS-261 : tampons du rappel et son des lieux prêts AVANT l'ouverture du flux (aucune allocation dans le rappel)
+        const char* mo = std::getenv("WFS_MOMENT");
+        const bool nuit = mo && std::strcmp(mo, "nuit") == 0;
+        for (auto* b : {&blocMono_, &blocG_, &blocD_}) b->assign(BLOC, 0.f);
+        lieux_.build((float)OUT_RATE, nuit); tunnel_.build((float)OUT_RATE);
+        const int rate = audioOutStart([this](float* out, int n) { remplir(out, n); });
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
+        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); }   // WFS-261
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
         // WFS-76 : musique (une fois par lancement) et ambiance de la carte de cette partie (moment : WFS_MOMENT, comme la plage)
-        const char* mo = std::getenv("WFS_MOMENT");
         musique().build((float)(rate ? rate : OUT_RATE));
-        ambiance_.build((float)(rate ? rate : OUT_RATE), g.map ? g.map->id : "ville", mo && std::strcmp(mo, "nuit") == 0);
+        ambiance_.build((float)(rate ? rate : OUT_RATE), g.map ? g.map->id : "ville", nuit);
         vMusique_ = -1; ambActive_ = -1;
+        initLieux(g);   // WFS-261
         decider(g);
     }
     // WFS-76 : l'application dessine encore (sinon fondu vers le silence) ; décision aussi à chaque image : en pause (plus
@@ -110,6 +115,7 @@ public:
         decider(g);   // WFS-76
         sfx_.lastUpdate = nowSeconds(); events_.update(dt, g, sfx_);   // WFS-28 : un son par événement de la partie
         sonsTrafic(dt, g);   // WFS-121
+        sonsLieux(g);        // WFS-261
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
             const int n = (int)g_rec.acc; g_rec.acc -= n;
@@ -159,6 +165,8 @@ private:
             WFS_LOG("MUSIQUE %s", v == Variante::Course ? "course" : v == Variante::Menu ? "menu" : "coupée");
         }
         const int amb = g.ecran == Ecran::Course && !g.sceneDediee ? 1 : 0;
+        lieuxActifs_ = amb; lieux_.active(amb);   // WFS-261 : sources placées et écho comme l'ambiance (écran Course seulement)
+        if (!amb) tunnel_.dedans(false);
         if (amb != ambActive_) {
             ambActive_ = amb; ambiance_.active(amb);
             if (!amb) WFS_LOG("AMBIANCE coupée");
@@ -168,6 +176,85 @@ private:
     }
     Ambiance ambiance_;
     int vMusique_ = -1, ambActive_ = -1;
+    // WFS-261 (RG-01) : rappel audio. Le son d'avant (moteur, bruitages, musique, ambiance) est calculé en mono comme avant, par
+    // blocs de BLOC trames ; l'écho du tunnel (moteur, vent, trafic : avant musique et ambiance) et les sources placées
+    // s'ajoutent à gauche et à droite ; le mono est recopié à l'égal dans les deux canaux. Aucune allocation, aucun verrou.
+    static constexpr int BLOC = 1024;
+    std::vector<float> blocMono_, blocG_, blocD_;
+    void remplir(float* out, int n) {
+        const double now = nowSeconds();
+        const int canaux = audioOutCanaux();
+        // WFS-76 : application en arrière-plan (plus d'images) : fondu vers le silence (musique et ambiance)
+        gVie_ += ((now - vivant_.load() < 0.5 ? 1.f : 0.f) - gVie_) * 0.15f;
+        const float master = sfx_.master * gVie_;
+        for (int fait = 0; fait < n;) {
+            const int k = std::min(n - fait, BLOC);
+            float* m = blocMono_.data(); float* G = blocG_.data(); float* D = blocD_.data();
+            renderInto(m, k, now); sfx_.mix(m, k, now);
+            std::fill(G, G + k, 0.f); std::fill(D, D + k, 0.f);
+            tunnel_.process(m, G, D, k);   // RG-05
+            musique().mix(m, k, master); ambiance_.mix(m, k, master);
+            lieux_.mix(G, D, k, master);   // RG-02 à RG-04
+            lieux::entrelacer(m, G, D, out + (size_t)fait * (size_t)canaux, k, canaux);
+            fait += k;
+        }
+        if (!ecrans::reglages().son) std::fill(out, out + (size_t)n * (size_t)canaux, 0.f);   // WFS-68 : réglage « Son : Coupé »
+    }
+    // WFS-261 (RG-02) : sources de la carte : celles des cartes (registre lieux::, rempli à leur init, avant ce système) et les
+    // terrasses de la Ville (clients attablés, regroupés par terrasse) ; journal du banc : nombre de sources par type
+    lieux::SonsDesLieux lieux_; lieux::Tunnel tunnel_;
+    std::string carte_; bool lieuxActifs_ = false, tunnelLog_ = false, aPortee_[lieux::NB_TYPES] = {};
+    void initLieux(const GameView& g) {
+        carte_ = g.map ? g.map->id : ""; tunnelLog_ = false;
+        if (!g.map || !g.track) return;
+        if (carte_ == "ville") {
+            std::vector<lieux::Attable> cl;
+            for (const vie::Client& c : vie::clientsTerrasses(*g.map, (int64_t)g.track->segmentCount())) cl.push_back({c.s, c.lat});
+            lieux::poser("ville", lieux::TERRASSE, lieux::regrouperTerrasses(cl, (int64_t)g.track->segmentCount()));
+        }
+        char txt[160]; int k = 0;
+        for (int t = 0; t < lieux::NB_TYPES; t++)
+            k += std::snprintf(txt + k, sizeof txt - (size_t)k, "%s%s %zu", t ? ", " : "", lieux::nomType(t), lieux::lire(carte_, (lieux::Type)t).size());
+        WFS_LOG("LIEUX %s : %s", carte_.c_str(), txt);
+    }
+    // WFS-261 (RG-02 à RG-05) : à chaque pas, la source la plus proche de chaque type (copie du tour du joueur), vue depuis la
+    // tête du conducteur (position et cap lissés, comme la caméra) ; tunnel : section du tracé sous la voiture
+    void sonsLieux(const GameView& g) {
+        if (!lieuxActifs_ || !g.track || !g.player) {
+            for (int t = 0; t < lieux::NB_TYPES; t++) { lieux_.cible(t, {}); aPortee_[t] = false; }
+            tunnel_.dedans(false);
+            return;
+        }
+        const Player& pl = *g.player; Track& t = *g.track;
+        const TrackPoint P = t.pointLisse(pl.dist, pl.playerX * RW);
+        const double cap = P.th + pl.heading;
+        const vec3 ici{(float)P.x, (float)P.y + 1.2f, (float)P.z};
+        const float rx = (float)std::cos(cap), rz = (float)std::sin(cap), fx = (float)std::sin(cap), fz = (float)-std::cos(cap);
+        const int64_t aP = (int64_t)std::floor(pl.dist / SEG);
+        for (int ty = 0; ty < lieux::NB_TYPES; ty++) {
+            const std::vector<lieux::Lieu>& L = lieux::lire(carte_, (lieux::Type)ty);
+            float best = 1e30f; vec3 q{}; int var = 0;
+            for (const lieux::Lieu& l : L) {
+                const vec3 p = lieux::positionMonde(t, l, aP), d = p - ici;
+                const float d2 = dot(d, d);
+                if (d2 < best) { best = d2; q = p; var = l.variante; }
+            }
+            const float dist = std::sqrt(best);
+            const bool porte = !L.empty() && dist < lieux::FICHES[ty].portee;
+            const vec3 d = q - ici;
+            const float az = std::atan2(d.x * rx + d.z * rz, d.x * fx + d.z * fz);   // 0 devant, + à droite
+            if (porte != aPortee_[ty]) {   // journal du banc : une ligne quand une source entre ou sort de sa portée
+                aPortee_[ty] = porte;
+                if (porte) WFS_LOG("LIEU %s à portée : %.0f m, %.0f° (%s)", lieux::nomType(ty), dist, az * 57.2958f, az > 0 ? "droite" : "gauche");
+                else WFS_LOG("LIEU %s hors de portée", lieux::nomType(ty));
+            }
+            lieux_.cible(ty, porte ? lieux::spatialiser(dist, az, lieux::FICHES[ty]) : lieux::Gains{}, var);
+        }
+        const trace::Section* s = trace::sectionA(t, pl.dist);
+        const bool tun = s && s->type == trace::Type::Tunnel;
+        if (tun != tunnelLog_) { tunnelLog_ = tun; WFS_LOG("TUNNEL %s", tun ? "entrée (écho)" : "sortie"); }
+        tunnel_.dedans(tun);
+    }
     std::atomic<double> vivant_{0};
     float gVie_ = 0;   // thread audio seulement
     void renderInto(float* out, int n, double now) {
@@ -363,6 +450,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     g.shutdown();
     benchMusique(out);   // WFS-76 : musique-menu / musique-course / ambiance-<carte> (.wav + .png)
     benchSirene(out);    // WFS-131 : sirene.wav
+    lieux::benchLieux(out, g_rec.pcm);   // WFS-261 : lieu-<source>.wav / .png (stéréo), lieu-tunnel, coût
 }
 
 } // namespace wfs
