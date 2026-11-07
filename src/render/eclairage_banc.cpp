@@ -198,8 +198,8 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
         g_l.mode = ETALON; g_l.monde = false; g_l.oeilR = {CHARTE_A + 0.35f, 0, 3.2f}; g_l.cibleR = {CHARTE_A + 0.35f, 0, 0}; g_l.fov = 50;
         eclairage::Forcage f; f.actif = true; f.hauteurSoleil = hMidi; f.ev = 15; eclairage::forcer(f);
-        {   // soleil de l'étalon : azimut du soleil du jeu (Game::render : −0,45 ; −0,5), hauteur forcée
-            const vec3 hz = normalize(vec3{-0.45f, 0, -0.5f}); const float hr = (float)(hMidi * PI_L / 180);
+        {   // soleil de l'étalon : azimut du soleil calculé (WFS-207, atmosphere_physique.h), hauteur forcée
+            const vec3 sj = atmosphere::soleil(atmosphere::lieu().heureJourUtc).dir, hz = normalize(vec3{sj.x, 0, sj.z}); const float hr = (float)(hMidi * PI_L / 180);
             LumiereBanc::soleil_ = hz * std::cos(hr) + vec3{0, std::sin(hr), 0};
         }
         if (g.init(r, "golf", "campagne")) {

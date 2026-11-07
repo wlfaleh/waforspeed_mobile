@@ -30,8 +30,9 @@ inline double norm360(double a) { a = std::fmod(a, 360.0); return a < 0 ? a + 36
 
 // ---------------------------------------------------------------- lieu et date fictifs (lot 1 : deux moments)
 // Côte méditerranéenne (43,55° N, 7,02° E, comme la Corniche), 29 juin 2026 (pleine lune ce jour-là, Meeus chap. 49 :
-// vérifié par la fraction éclairée calculée ci-dessous) ; jour : 16 h 00 heure locale (UTC + 2) ; nuit : 0 h 30 le 30 juin.
-struct Lieu { double lat = 43.55, lon = 7.02; int annee = 2026, mois = 6, jour = 29; double heureJourUtc = 14.0, heureNuitUtc = 22.5; };
+// vérifié par la fraction éclairée calculée ci-dessous) ; jour : midi solaire (11 h 36 UTC, soleil à 69,7° : ≈ 100 000 lx au sol,
+// EV100 ≈ 15, comme l'étalon de WFS-151 ; RG-04) ; nuit : 0 h 30 le 30 juin (22 h 30 UTC). Les autres moments : WFS-208.
+struct Lieu { double lat = 43.55, lon = 7.02; int annee = 2026, mois = 6, jour = 29; double heureJourUtc = 11.6, heureNuitUtc = 22.5; };
 inline const Lieu& lieu() { static const Lieu l; return l; }
 
 // direction du monde d'un astre (hauteur, azimut en degrés) : nord = −Z, est = +X

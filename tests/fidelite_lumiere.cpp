@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
         const wfs::vec3 est = A::directionMonde(0, 90), nord = A::directionMonde(0, 0);
         VERIFIE(std::fabs(est.x - 1) < 1e-5 && std::fabs(nord.z + 1) < 1e-5, "repère du monde : est = +X, nord = −Z");
         const A::Astre so = A::soleil(A::lieu().heureJourUtc);
-        VERIFIE(so.hauteur > 40 && so.hauteur < 65 && so.azimut > 230 && so.azimut < 275, "soleil de 16 h (29 juin, 43,55° N) : h %.2f°, az %.2f°", so.hauteur, so.azimut);
+        VERIFIE(so.hauteur > 68 && so.hauteur < 71 && so.azimut > 170 && so.azimut < 190, "soleil de midi solaire (29 juin, 43,55° N) : h %.2f°, az %.2f°", so.hauteur, so.azimut);
         // pleine lune du 29 juin 2026 à 23 h 57 UTC (USNO, « Phases of the Moon ») : fraction éclairée ≈ 1 à 22 h 30 UTC
         const A::Astre lu = A::lune(A::lieu().heureNuitUtc);
         VERIFIE(lu.fraction > 0.98 && lu.hauteur > 5 && lu.hauteur < 30, "lune de 0 h 30 : fraction %.3f, h %.2f° (pleine lune basse au sud en été)", lu.fraction, lu.hauteur);
