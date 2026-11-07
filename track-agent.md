@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 14:23:19 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 14:25:25 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -41,11 +41,14 @@
 | WFS-241 (P1), WFS-242 (P1), puis WFS-243 (P2) | E3 | épic E3 libre : WFS-241 et WFS-242 au prochain développeur libre (priorité absolue) ; WFS-243 après eux (mêmes fichiers) |
 | WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-241 | Conduite réaliste, étape 1 : banc, nouveau modèle de la voiture du joueur, aide à la direction réelle | 241 : session ouverte 14:25 | ✅ actif (ouvert par le PO) |
+| Claude, agent dev course (session 01UY1Vv1dqtm) | WFS-242 | Départ propre de la Course à 5 ; ensuite WFS-218 + 226 (phares de nuit) | 242 : session ouverte 14:25 | ✅ actif (ouvert par le PO) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
+| expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
 | po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 14:23 : VABF du 2026-11-07 priorisée (ANO-115 à 124) : WFS-243, 244, 245 créés ; rattachements à WFS-222, 224, 230, 231, 241, 242 |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |

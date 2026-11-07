@@ -38,6 +38,13 @@ ou qu'un développeur demande un ticket et qu'aucun n'est prêt : **prends une p
 l'interface, la nuit, le son…), compare-la au réel (`regles-de-gestion/DA-realisme.md`, captures et vidéos de l'utilisateur dans `qa/retours/`) et crée
 des tickets de **rattrapage du réalisme** (avec règles de gestion et critères), puis attribue. Ne réponds jamais « aucun ticket disponible ».
 
+## Sessions de développeur et validation par l'utilisateur (ordre de l'utilisateur, 2026-11-07)
+- Quand un ticket **P1** attend et qu'aucun développeur joignable n'est libre, **ouvre toi-même une session de développeur** sur le compte de l'utilisateur
+  (outil `create_session`, dépôt `wlfaleh/waforspeed_mobile`, titre « Agent dev … »), avec un message de départ qui donne le ticket, les skills à charger
+  et les règles ; écris l'attribution dans `TACHES.md`, `track-agent.md` et le journal. Ta session reste réservée au PO.
+- Tickets nés d'un essai de l'utilisateur et tickets de conduite : après la fusion → **🟡 À valider (utilisateur)**, jamais ✅ sur la seule CI ; ✅ quand
+  l'utilisateur confirme ; s'il dit non → anomalie + ticket de correction.
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :

@@ -3220,3 +3220,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Créés : **WFS-243** (P2, E3, après WFS-241 / 242) ANO-117 adversaires invisibles + ANO-124 îlot du rond-point (à confirmer avec l'aide corrigée) ; **WFS-244** (P3, E9, prêt tout de suite) ANO-116 plaques sur la chaussée ; **WFS-245** (P3, E5, après WFS-234) ANO-118 étiquettes du HUD (taille des boutons exclue : ordre permanent).
 - Complément du QA (b4d5a92) : WFS-241 RG-07 ajoutée : aide désactivée = ni direction, ni freinage, ni nitro automatiques (preuve `v4-rond-point-sans-volant-planche.jpg`).
 - `anno.md` : statuts et colonne « US de correction » remplis ; `track-agent.md` à jour. Campagne VABF toujours ouverte.
+
+### 2026-11-07 14:25:25 — Skill / agent expert-conduite ; règle 🟡 « à valider par l'utilisateur » ; deux sessions de développeur ouvertes par le PO (po-scrum-master)
+- **Accord de l'utilisateur** pour : (1) un agent et un skill experts en conduite ; (2) le PO ouvre lui-même des sessions de développeur quand un P1 attend ; (3) les tickets nés d'un essai de l'utilisateur et les tickets de conduite restent 🟡 jusqu'à sa confirmation.
+- **Créés** : `.claude/skills/expert-conduite/SKILL.md` (modèle cible en coordonnées du monde, pneus, transfert de charge, moteur, boîte, freins, aides, banc `conduite` contre les fiches, ordre de travail), `.claude/agents/expert-conduite.md` ; statut 🟡 dans la légende de `TACHES.md` ; règles dans `CLAUDE.md` et l'agent PO.
+- **WFS-241** devient l'étape 1 du chantier « Conduite réaliste » (RG-04 tranchée : conduite en coordonnées du monde).
+- **Sessions ouvertes** (compte de l'utilisateur) : « Agent dev conduite » (session_01UY1Vv1HhvwRLyzGwJojas5) → WFS-241 ; « Agent dev course » (session_01UY1Vv1dqtmnzuHnjhy9VJz) → WFS-242 puis WFS-218 + 226. Reste libre et prioritaire : WFS-224.
