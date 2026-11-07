@@ -2,6 +2,7 @@
 // Unités du jeu web : position/dist en unités (6 mm), speed en unités/s, playerX en demi-largeurs de route.
 #pragma once
 #include "cars.h"
+#include "conduite_monde.h"   // WFS-241 : conduite en coordonnées du monde
 #include "track.h"
 
 namespace wfs {
@@ -29,6 +30,11 @@ enum class Aide : uint8_t { Web = 0, Activee = 1, Desactivee = 2 };
 struct ReglagesConduite { bool aideDirection = true; };   // Réglages (WFS-217 RG-02) : Activée par défaut, rien dans configgame.json
 inline ReglagesConduite& reglagesConduite() { static ReglagesConduite r; return r; }
 
+// WFS-241 : modèle de conduite de la voiture du joueur (aides Activee / Desactivee). true : conduite réaliste en coordonnées
+// du monde (conduite_monde.h) ; false : ancien modèle « par rapport à l'axe de la route » (WFS-217), gardé comme repli interne
+// et pour les mesures « avant » du banc de conduite. L'ordinateur (Aide::Web) garde toujours la conduite du jeu web.
+inline bool g_conduiteMonde = true;
+
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};
     double position = 0, dist = 0, playerX = 0, speed = 0, steer = 0, heading = 0;
@@ -45,8 +51,26 @@ struct Player {
     // WFS-217 : cap et position latérale de la voiture du joueur (aide Activee / Desactivee), voir player.cpp
     void guider(double dt, double yawRate, double v, bool locked, Track& track);
     double kmh() const { return speed / MAX_SPEED * 260.0; }
+    // WFS-241 : conduite en coordonnées du monde (voiture du joueur). La position réelle est dans `monde` ; dist, position,
+    // playerX, heading et speed en sont la projection sur la route (tracé lissé, Track::pointLisse), écrite à chaque pas :
+    // le rendu, la caméra, le trafic et la course les lisent comme avant. Un système qui les modifie (choc, remise en piste,
+    // départ) est pris en compte au pas suivant (la voiture est replacée dans le monde, sa vitesse gardée en direction).
+    bool modeleMonde() const { return aide != Aide::Web && g_conduiteMonde; }
+    physique::Etat monde{};
+    double braquageRoues = 0;   // angle des roues avant appliqué (rad, joueur + aide), modèle du monde
+    double aideRoues = 0;       // part de cet angle ajoutée par l'aide à la direction (rad)
+    // volant (−1..1) qui donne la courbure k (1/m) à la vitesse v (m/s), selon le modèle en cours (joueur simulé des bancs)
+    double braquagePour(double k, double v) const;
 private:
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
+    void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
+    void synchroniser(Track& track);
+    void projeter(Track& track);
+    double aider(double v, Track& track);
+    const physique::Params* cm_ = nullptr;
+    bool mondeOk_ = false, cibleOk_ = false;
+    double sDist_ = 0, sX_ = 0, sHead_ = 0, sSpeed_ = 0;   // dernière projection écrite (détection d'un changement extérieur)
+    double latCible_ = 0;      // aide : écart latéral (m) de la voie suivie, celui où le joueur a lâché le volant
 };
 
 } // namespace wfs
