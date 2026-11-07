@@ -4431,3 +4431,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   5. captures de jour ajoutées (banc `campagne` jour + nuit, `nuit`), régénérées sur la branche synchronisée ;
   6. commentaire de `post.frag` corrigé (0,45 ; 1,17 IL ; 3,8 IL).
   `DA-realisme.md` § 3 cite la source. Le lead dev est rappelé dès que les captures sont prêtes.
+
+### 2026-11-07 23:29:46 — WFS-278 fusionné par l'utilisateur (PR #240), ligne qa/Check.md ajoutée (arwa-4)
+- PR #240 fusionnée par l'utilisateur à 22:46:42 UTC (commit de fusion 84e1c4d) pendant que je faisais les captures ; le PO a déjà mis 🟣 et ma ligne de `track-agent.md`. J'ajoute la ligne `qa/Check.md` : points à regarder sur les captures du banc `partie2a` (`parois-casino`, `masque-corniche`, `masque-campagne`, `masque-stands`) et à écouter dans les .wav du même nom.
+- Captures avant / après faites (`tools/qa/captures_pr.sh WFS-278 partie2a`, 8 paires) ; le « avant » était déjà la fusion, donc pas versé dans le dépôt : les bancs du matin les republient dans `apercu`.
+- arwa-4 libre : je demande le ticket suivant au PO.
