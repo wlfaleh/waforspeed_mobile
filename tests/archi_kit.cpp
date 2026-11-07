@@ -64,6 +64,12 @@ int main() {
             verifierQue(ok, "plage du kit = plage du référentiel");
         };
         plage("archi.rdc.hauteur", H_RDC);
+        for (const Albedo& a : {ALB_BETON, ALB_BRIQUE, ALB_TERRE_CUITE, ALB_ALUMINIUM, ALB_INOX}) {   // albédos recopiés = référentiel
+            const wfs::reel::Json* m = R.mesure(a.id); const wfs::reel::Json* v = m ? m->get("valeur") : nullptr;
+            const bool ok = v && v->a.size() == 3 && std::fabs(v->a[0].n - a.r) < 1e-4 && std::fabs(v->a[1].n - a.g) < 1e-4 && std::fabs(v->a[2].n - a.b) < 1e-4;
+            std::printf("[%s] %s = référentiel\n", ok ? "OK" : "ÉCHEC", a.id);
+            verifierQue(ok, "albédo recopié dans archi_kit.h = valeur du référentiel");
+        }
         plage("archi.etage.hauteur", H_ETAGE);
         // cohérence : un étage de la plage laisse la hauteur sous plafond minimale sous un plancher de 0,3 m
         const wfs::reel::Json* hsp = R.mesure("archi.logement.hauteur_sous_plafond_min");

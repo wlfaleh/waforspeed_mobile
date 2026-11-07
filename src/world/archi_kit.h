@@ -72,6 +72,18 @@ struct Plan {
     float axe(int t) const { return rive + (t + 0.5f) * travee; }   // axe de la travée t, depuis le bord gauche
 };
 
+// albédos des matériaux (sRGB linéaire), recopiés de references/reel/materiaux.json (le dossier references/ n'est pas
+// embarqué dans l'APK) ; test_archi_kit vérifie qu'ils restent égaux au référentiel. Pierre, crépi, zinc : absents du
+// référentiel, béton à la place (PROVISOIRE, ST-4).
+struct Albedo { const char* id; float r, g, b; };
+inline constexpr Albedo ALB_BETON{"mat.beton.albedo", 0.51f, 0.51f, 0.51f};
+inline constexpr Albedo ALB_BRIQUE{"mat.brique.albedo", 0.262f, 0.095f, 0.061f};
+inline constexpr Albedo ALB_TERRE_CUITE{"mat.terre_cuite.albedo", 0.555f, 0.212f, 0.11f};
+inline constexpr Albedo ALB_ALUMINIUM{"mat.aluminium.albedo", 0.916f, 0.923f, 0.924f};
+inline constexpr Albedo ALB_INOX{"mat.acier_inox.albedo", 0.669f, 0.639f, 0.598f};
+// appareil de la façade de chaque style (decor.glsl, surfaceFacade) : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton
+inline constexpr int APPAREIL[(int)Style::Nombre] = {1, 4, 0, 3, 2, 0};
+
 // assemble une façade de largeur donnée, la plus proche possible de la hauteur voulue, dans les règles du style
 Plan assembler(Style s, float largeur, float hauteurVoulue, uint32_t graine);
 
