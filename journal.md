@@ -2606,3 +2606,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:53:43 — Le qa-lead de cette session s'appelle désormais QA-arwa (QA-arwa)
 - Demande de l'utilisateur : l'agent QA (`qa-lead`, session 01Us6uCubd) est nommé **QA-arwa**. Ligne mise à jour dans `track-agent.md` (agents de pilotage) ; ce nom termine désormais les titres de ses commits et signe ses entrées du journal.
+
+### 2026-11-07 09:55:42 — Archives automatiques (robot archives)
+- Journal : 0 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (aucun jour).
+- TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-73, WFS-205, WFS-208, WFS-209, WFS-211, WFS-212).
