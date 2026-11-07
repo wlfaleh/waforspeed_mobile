@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-217 | P1 : guide auto corrigé dans les virages serrés et ronds-points + réglage « Aide à la direction » (attribué 09:48) | 217 : 09:49 (ccb16c8) | 🔴 actif (P1) |
 | Claude, agent 1 (01UY1Vv2) | WFS-220 | P1 [TECHNIQUE] : banc de chauffe arrêté après 4 min, endurance de nuit rouge (run #816) (attribué 10:03) | 220 : à pousser dès sa création ; 213 : fusionnée 09:49 (PR #184, squash 941e475) | 🔴 actif (P1) |
-| Claude, agent 2 (01UY1Vv5) | WFS-206 | Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte (attribué 08:20) | 206 : 09:31 (92d0b15) | 🔧 actif |
+| Claude, agent 2 (01UY1Vv5) | — (WFS-206 fusionné) | demande son ticket suivant au PO | 206 : fusionnée 10:26 (PR #188) ; 211 : fusionnée (PR #182) | 🟢 libre |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 210 : fusionnée (PR #185, be33c2f, 09:55 UTC, squash) | ✅ libre (WFS-210 🟣 : ✅ au premier run vert de main) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |

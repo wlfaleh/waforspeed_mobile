@@ -2678,3 +2678,23 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Vérification** : 45 tests CPU verts ; parcours complet 0 écart (11:0x) ; branche synchronisée avec `main` (9c5d416).
 - **Confiance ≤ 50 %** (gros changement du rendu de trois cartes) : **CI de branche lancée une fois, run 822** (`workflow_dispatch`, 9c5d416). Fusion après le vert et les captures regardées.
 - **Branche `buildings`** : rien de déposé à 10:2x ; le ticket ne l'attend pas (décision du PO).
+
+### 2026-11-07 10:26:36 — WFS-206 fusionné (PR #188) (Claude, agent 2 (01UY1Vv5))
+- **RG-02, revêtement par carte** (`route_revetements`) : Ville et Corniche en enrobé usé, Campagne en enrobé grenu, Grand Prix en béton bitumineux de course. La carte va au shader dans `pc.params.z` (mode + 4 × carte).
+- **RG-01, usure** (`shaders/route.glsl`, fonctions usureRoute, riveRoute et bordureGranit)
+  - Bandes de roulement (M-03) : 0,9 m de large, écartement de 1,572 m (voie moyenne des 23 voies relevées dans voitures.json). Albédo × 0,87, rugosité − 0,05, relief à 80 % ; hors bandes, albédo × 1,02.
+  - Raccords de chantier par voie (Ville 45 %, Campagne 25 %, Corniche 12 %, circuit aucun), avec joint de bitume.
+  - Rives : terre à la Campagne, sable à la Corniche, caniveau à la Ville.
+  - Bordure de granit à la Ville (M-04) : 0,30 m sur 15 cm de haut.
+- **RG-04** : `materiaux.json` corrigé. Rugosité de l'asphalte et du béton 0,5 → 0,825 (plage 0,75-0,90) ; albédo du béton 0,51 → 0,30 (trottoir, plage 0,25-0,35).
+- **RG-05** : indice « revetements » dans `realisme-fidelite.txt`, à 100 % (14 / 14). Mesures communes au test et au banc dans `src/render/route_mesures.*`.
+- **Accroches annoncées**
+  - `src/game/game.cpp`, 2 lignes : `route::preparer(q, mapId)` et `route::chaussee()`. Elles remplacent l'accroche de `track.cpp` prévue par la règle, car c'est `Game::init` qui crée le matériau.
+  - `src/render/bench_realisme.cpp` : 7 lignes et un include.
+- **Avis expert-realisme-3d, appliqué** : la moyenne d'une voie reste ≤ 1 et le relief à 80 % dans les bandes. Mesuré de jour en Ville : luminance 112,0 → 110,4, grain 10,0 → 10,7. La Campagne est plus sombre (scan de l'enrobé grenu, dans sa plage).
+- **Vérifications** : 42 tests CPU ; parcours 0 écart ; banc `cartes` 4 cartes sans erreur ; banc `realisme` avant (binaire de main) et après, autres indices identiques. Les erreurs « texture d'essai absente » existent aussi sur main.
+- **Point ouvert pour le PO : M-05 (vibreurs)**
+  - Constat : le référentiel n'a aucune norme de vibreur, et aucune source n'est accessible avec le réseau permis (regles-reseau.md § 1).
+  - De plus, la géométrie des vibreurs (largeur R + 1,3 / 2,2 m) est dans `src/world/circuit.cpp`, hors de la zone E9.
+  - Proposition : une source fournie par l'utilisateur, ou un site autorisé, pour `references/reel/routes/`, puis un ticket de l'épic du circuit pour la géométrie.
+
