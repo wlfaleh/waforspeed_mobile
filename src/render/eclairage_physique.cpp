@@ -380,7 +380,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // (heure forcée par le banc possible), lune de Meeus la nuit (sa fraction éclairée règle son éclairement)
     const atmosphere::Astre astre = nuit ? atmosphere::lune(atmosphere::lieu().heureNuitUtc)
                                          : atmosphere::soleil(g.forc.actif && g.forc.heureUtc > -50 ? g.forc.heureUtc : atmosphere::lieu().heureJourUtc);
-    vec3 s = astre.dir;
+    vec3 s = !nuit && g.forc.actif && g.forc.azimutSoleil > -500 ? atmosphere::directionMonde(astre.hauteur, g.forc.azimutSoleil) : astre.dir;
     if (g.forc.actif && g.forc.hauteurSoleil > -90) {
         vec3 hz{s.x, 0, s.z}; hz = length(hz) > 1e-4f ? normalize(hz) : vec3{1, 0, 0};
         const float h = (float)(g.forc.hauteurSoleil * PI_L / 180.0);
