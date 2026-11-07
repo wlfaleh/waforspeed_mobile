@@ -2313,3 +2313,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-211 créé** (E11, P2, ⏳ en attente de WFS-209 et WFS-73) : 3 niveaux de détail, peau M-03, humains réalistes chez les conducteurs ; règles `regles-de-gestion/WFS-211.md`. WFS-210 devient le lot 3/3.
 - Alerte : WFS-190 (agent arwa) sans envoi depuis 20:40, 9 h 07 ; règle des 10 h : reste à lui jusqu'à 06:40.
 
+
+### 2026-11-07 05:58:02 — Recette de nuit, lot 1 : WFS-138, 171, 139 (+ correctif), 184, 180, 140 (qa-lead)
+- Source : Release `apercu` de `main`, construction 807 (a756c55, 684/684 captures à jour) ; journaux des jobs du run 807 ; `test_audio` relancé en local (artefacts : 403).
+- **WFS-138** PASSABLE AVEC ANOMALIES MINEURES (ANO-103 : col peu reconnaissable) ; **WFS-171** VALIDÉ ; **WFS-139** PASSABLE AVEC ANOMALIES MINEURES (ANO-104 : trou du terrain dans une épingle, vue de dessus) ; **WFS-139 correctif** VALIDÉ ; **WFS-184** VALIDÉ (mesures, wav non écoutés) ; **WFS-180** PASSABLE AVEC ANOMALIES MINEURES (ANO-105 : foule et bateaux invisibles) ; **WFS-140** VALIDÉ.
+- WFS-88 (iOS, gel) laissé ☐ sans rien lancer.
+- Rapports `qa/rapports/WFS-XX.md`, cases cochées dans `qa/Check.md`, ANO-103 à 105 au tableau `anno.md` (🆕, pour le PO).
