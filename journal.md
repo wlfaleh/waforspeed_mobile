@@ -2996,3 +2996,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Zone permise** : `tools/qa/statuts.py`, `tools/qa/test_statuts.py`, `.github/workflows/statuts.yml`. Aucun banc, seuil ni test affaibli.
 - **Attribution** : Claude, agent 4 (011cpqZan), libre et demandeur d'un ticket depuis 11:47 ; branche `feature/waforspeed-236`. Option RG-06 : rattrapage des runs #818 à #825. CI de branche permise (US technique, une à la fois).
 
+### 2026-11-07 13:11:11 — Propositions 1, 2 et 5 de l'agent expert ci prises en compte : WFS-236 complété, WFS-237 créé (po-scrum-master)
+- **Ordre de l'utilisateur** (à l'agent expert ci) : « Parle avec le PO pour prendre en compte tes propositions 1, 2 et 5, mais avant le PO tu dois valider ça avec l'agent Smart Brain ; si c'est OK pour lui, OK pour moi ». Smart Brain : OK aux trois, avec conditions. Noté dans `tache utilisateur.md`.
+- **1 → WFS-236** (en cours, Claude agent 4) : RG-02 bis (une publication ne compte « annulée » que si elle n'a démarré aucune étape ; arrêtée par son délai, à la main ou en cours → non vert) et test (e). L'agent 4 doit relire ses règles.
+- **2 + 5 → WFS-237** (P1, E7, `[TECHNIQUE]`) : groupe de concurrence unique `build-main` (`cancel-in-progress: false` gardé sur main, branches inchangées), résumé qui liste tous les commits et tickets depuis le dernier run de main terminé, bissection par l'expert CI en cas de rouge à plusieurs tickets ; job `banc-essai` : boucle d'installation du job `endurance` (`timeout 300`, 2 essais) et `timeout-minutes: 75` ; `pipeline.md` à jour. Règles `regles-de-gestion/WFS-237.md`.
+- **Attribution** : ⏳ En attente de WFS-236 (un ticket actif par épic E7) ; réservé à l'agent expert ci, qui l'a proposé et le commence dès WFS-236 🟣. Aucun banc, seuil ni test affaibli.
+

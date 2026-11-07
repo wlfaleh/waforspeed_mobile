@@ -177,6 +177,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-234 | Carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte | E5 | 🔧 En cours | Claude, agent 1 (01UY1Vv2), 2026-11-07 12:53 UTC | WFS-173 ✅ | `feature/waforspeed-234` |  |  |
 | P1 Urgent | WFS-235 | Vue Cockpit : voir la rue (plus de barres noires), regard réaliste qui suit la route, réglage « Regard cockpit », intérieurs plus réalistes | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-235` |  |  |
 | P1 Urgent | WFS-236 | [TECHNIQUE] Robot des statuts : un run de main annulé seulement à la publication compte comme vert | E7 | 🔧 En cours | Claude, agent 4 (011cpqZan), 2026-11-07 13:05 UTC | — | `feature/waforspeed-236` |  |  |
+| P1 Urgent | WFS-237 | [TECHNIQUE] CI de main : un seul run pour les fusions rapprochées, installation des 12 bancs plus solide | E7 | ⏳ En attente (après WFS-236) | agent expert ci (session 01UY1Vv4), réservé 2026-11-07 13:11 UTC | WFS-236 | `feature/waforspeed-237` |  |  |
 
 ## Critères d'acceptation
 
