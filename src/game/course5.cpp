@@ -76,22 +76,43 @@ std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte
     return os;
 }
 
-void grille(std::vector<Ordinateur>& os, double sJoueur) {
-    // deux rangées de deux devant le joueur (8 m et 8 + ECART_RANGEES_M), files gauche et droite. WFS-189 (RG-03, ANO-99, arbitrage du PO
-    // 20:57) : rangés par 0-100 de fiche croissant (à 0-100 égal, la plus forte vitesse max devant) : les plus vifs sur la
-    // rangée de devant (21 m), dans chaque file la voiture de devant accélère le plus : personne n'est bloqué au départ
+Place placeGrille(int k) {
+    // WFS-242 (RG-01) : rang k / 2 ; place paire à gauche, impaire à droite et DECALAGE_M plus loin derrière (quinconce)
+    k = std::clamp(k, 0, PLACES - 1);
+    Place p;
+    p.file = k % 2 ? 2 : 0;
+    p.x = FILES[p.file];
+    p.s = -(RECUL_M + RANG_M * (k / 2) + DECALAGE_M * (k % 2)) / M;
+    return p;
+}
+
+void placerSurGrille(Player& pl, const Track& t, const Place& p) {
+    // la conduite (modèle du monde ou d'avant) voit le changement de dist / playerX au pas suivant et y replace la voiture
+    pl.dist = p.s; pl.position = t.wrap(p.s); pl.playerX = p.x;
+    pl.heading = 0; pl.spinYaw = 0; pl.playerSpin = 0; pl.speed = 0; pl.steer = 0; pl.odo = 0;
+}
+
+int tirerPlaceJoueur(uint32_t graine) {
+    Mulberry32 R(graine ^ 0x9e3779b9u);   // autre suite que celle du tirage des ordinateurs (tirer)
+    return std::min(PLACES - 1, (int)(R.next() * PLACES));
+}
+
+void grille(std::vector<Ordinateur>& os, int placeJoueur) {
+    // WFS-189 (RG-03, ANO-99, arbitrage du PO 20:57) : rangés par 0-100 de fiche croissant (à 0-100 égal, la plus forte vitesse
+    // max devant) : les plus vifs devant ; dans chaque file, la voiture de devant accélère le plus : personne n'est bloqué au départ.
+    // WFS-242 (RG-01) : places de la grille derrière la ligne (placeGrille), sauf celle du joueur. Avant : les ordinateurs sur
+    // deux rangées 8 m et 21 m DEVANT le joueur, posé sur la ligne : il partait toujours dernier (ANO-114)
     std::stable_sort(os.begin(), os.end(), [](const Ordinateur& a, const Ordinateur& b) {
         const CarSpec &A = carById(a.car.c_str()).spec, &B = carById(b.car.c_str()).spec;
         return A.s100 != B.s100 ? A.s100 < B.s100 : A.vmax > B.vmax;
     });
-    const size_t rangees = (os.size() + 1) / 2;
-    for (size_t k = 0; k < os.size(); k++) {
-        Ordinateur& o = os[k];
-        o.file = k % 2 ? 2 : 0;
-        // WFS-189 (RG-03) : rangées à 8 m et 21 m devant le joueur (avant : 8 et 16 m) : entre deux voitures d'une même
-        // file, plus de 8 m de pare-chocs à pare-chocs dès le départ (13 m − 4,9 m au plus de longueur)
-        o.g.rd = sJoueur + (8.0 + ECART_RANGEES_M * (double)(rangees - 1 - k / 2)) / M;
-        o.g.x = o.cibleX = FILES[o.file];
+    int place = 0;
+    for (Ordinateur& o : os) {
+        if (place == placeJoueur) place++;
+        const Place p = placeGrille(place++);   // au plus 4 ordinateurs (configgame.json) : toujours une place libre
+        o.file = p.file;
+        o.g.rd = p.s; o.g.x = o.cibleX = p.x;
+        o.g.rdPrec = o.g.rd; o.g.xPrec = o.g.x;   // WFS-221 : aucun glissement dessiné depuis l'ancienne place
         o.g.v = 0; o.g.done = false; o.g.ft = 0; o.g.hitCd = 0;
         o.nitros = NITROS[o.diff]; o.nitrosPrises = 0; o.nitroT = 0; o.aspiration = false;   // WFS-133
     }
@@ -217,9 +238,10 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
             const Voiture& f = vs[(size_t)devant];
             if (f.v < cible * 0.98) {   // plus lente : dépasser par une file libre, sinon la suivre
                 bool change = false;
+                const bool garde = raceTime < GARDE_VOIE_S;   // WFS-242 (RG-03) : au départ, chacun garde sa voie et suit
                 for (int dir : {-1, 1}) {
                     const int nf = o.file + dir;
-                    if (nf < 0 || nf > 2 || change) continue;
+                    if (nf < 0 || nf > 2 || change || garde) continue;
                     if (fileLibre(vs, k, FILES[nf], o.g.rd, 10, 22)) { o.file = nf; o.cibleX = FILES[nf]; change = true; }
                 }
                 // RG-06 : dépassement (file libre trouvée, voiture devant à moins de 30 m), lancé (pas dans la mêlée du départ)
@@ -269,7 +291,10 @@ std::vector<Ligne> classement(const std::vector<Ordinateur>& os, const std::stri
     return ls;
 }
 int SuiviDepassements::compter(const std::vector<Ordinateur>& os, double sJoueur) {
-    if (arme.size() != os.size()) arme.assign(os.size(), true);   // grille : tous devant le joueur
+    if (arme.size() != os.size()) {   // nouvelle grille : seuls les ordinateurs partis devant le joueur pourront être « dépassés »
+        arme.resize(os.size());       // WFS-242 (RG-02) : un ordinateur parti derrière ne donne pas de nitro au premier pas
+        for (size_t k = 0; k < os.size(); k++) arme[k] = os[k].g.rd >= sJoueur;
+    }
     int n = 0;
     for (size_t k = 0; k < os.size(); k++) {
         const double ecart = (os[k].g.rd - sJoueur) * M;   // > 0 : l'ordinateur est devant

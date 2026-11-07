@@ -187,6 +187,27 @@ int main() {
     VERIFIE(sa && sb, "départ quand tous sont prêts (%d %d)", sa, sb);
     VERIFIE(a.round() == 1 && b.round() == 1 && a.seed() == b.seed() && a.seed() == raceSeed("k7qx", 1), "même manche, même graine");
     std::printf("salon : départ commun, manche %d, graine %u, %d km : OK\n", a.round(), a.seed(), a.km());
+    // WFS-242 (RG-05) : grille du duel : chaque joueur à sa place (créateur devant), la même vue de tous les téléphones ;
+    // la distance d'un adversaire sur la grille (derrière la ligne, négative) est lue telle quelle (avant : ramenée à 0)
+    {
+        VERIFIE(a.place() == 0 && b.place() == 1, "WFS-242 RG-05 : places : créateur %d, invité %d", a.place(), b.place());
+        auto s2 = std::make_shared<SalonMemoire>();
+        Session h, i1, i2;
+        h.join(std::make_unique<TransportMemoire>(s2, "H"), "m3qx", true, "Hugo", "golf", "", "ville");
+        i1.join(std::make_unique<TransportMemoire>(s2, "I"), "m3qx", false, "Ines", "m4", "", "");
+        i2.join(std::make_unique<TransportMemoire>(s2, "J"), "m3qx", false, "Jade", "p208", "", "");
+        h.setReady(true); i1.setReady(true); i2.setReady(true);
+        const bool d1 = i1.checkStart(), d2 = i2.checkStart(), d0 = h.checkStart();
+        const int p0 = h.place(), p1 = i1.place(), p2 = i2.place();
+        VERIFIE(d0 && d1 && d2 && p0 == 0 && ((p1 == 1 && p2 == 2) || (p1 == 2 && p2 == 1)), "WFS-242 RG-05 : 3 joueurs : places %d, %d, %d", p0, p1, p2);
+        Player ph; ph.reset(carById("golf")); ph.dist = ph.position = -11.5 / M;   // 2e place de la grille
+        h.raceTick(1.0 / 60, ph, 0);
+        s2->now += 50; i1.updateGhosts(1.0 / 60);
+        const auto it = i1.ghosts().begin();
+        const double vu = i1.ghosts().empty() ? 0 : it->second.rd * M;
+        VERIFIE(i1.ghosts().size() >= 1 && std::abs(vu + 11.5) < 0.01, "WFS-242 RG-05 : adversaire sur la grille vu à %.2f m (attendu −11,50)", vu);
+        std::printf("WFS-242 RG-05 : grille du duel : places %d / %d / %d (créateur devant), adversaire vu à %.2f m derrière la ligne : OK\n", p0, p1, p2, -vu);
+    }
 
     // critère 1 : deux instances, même graine → trafic identique image par image (mode exact et mode parallèle)
     for (int par = 0; par < 2; par++) {
