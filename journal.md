@@ -3294,3 +3294,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:55:05 — Plus d'attribution avant la demande du développeur ; réservations retirées (po-scrum-master)
 - **Ordre de l'utilisateur** : ne pas donner de sujet à un développeur avant qu'il le demande. Règle écrite dans l'agent PO.
 - **Annulé** : WFS-247 (session dev expert), WFS-248 (agent 5), réservations de WFS-226 et WFS-224 → ⏳ Prêt, sans responsable ; exclusions des KO gardées. Bandeau de `TACHES.md` = ordre de priorité seulement : 242, 246, 247, 248, 249, 226, 224.
+
+### 2026-11-07 14:55:44 — Correction : WFS-224 rendu à l'agent 4 (il l'avait demandé à 14:49) ; agent 1 a commencé WFS-234 (po-scrum-master)
+- Erreur du PO à 14:5x : en retirant les réservations, l'attribution régulière de WFS-224 à l'agent 4 (sur sa demande, 14:49:14) avait été effacée. Rétablie.
+- Agent 1 : branche `feature/waforspeed-234` poussée à 14:49 (b2f97be), ligne de `track-agent.md` à jour.
