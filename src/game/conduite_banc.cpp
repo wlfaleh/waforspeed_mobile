@@ -5,7 +5,7 @@
 //    tient que la vitesse du virage), aide activée puis désactivée ;
 //  - conduite-rond-point-aide-NN / conduite-rond-point-sans-aide-NN : rond-point de la Ville, même chose ;
 //  - conduite-rg07-NN : RG-07, aide désactivée, aucun appui à 240 km/h avant le rond-point de la Ville (SF90 lancée à fond
-//    puis tout lâché) : la voiture va tout droit, sans freinage ni nitro automatiques.
+//    sur la ligne idéale, puis tout lâché) : la voiture va tout droit, sans freinage ni nitro automatiques.
 // Vitesse, volant, angle des roues, écart et cap de chaque capture au journal du banc.
 #include <cstdio>
 #include <cstdlib>
@@ -55,7 +55,7 @@ int benchConduite(Game& g, Renderer& r, const std::string& out) {
         bool lache = false; double tLache = 0;
         for (; n < 60 * 90 && pris < nb; n++) {
             DriveInput in = joueurLigneIdeale(p, t, false);   // volant lâché : vitesse du virage tenue seulement
-            if (vd.rg07) { in = DriveInput{}; if (!lache) { in.gas = true; if (p.kmh() >= 240 || p.dist >= vg->debutU - 150 / M) { lache = true; tLache = temps; } } }
+            if (vd.rg07) { const DriveInput lancee = joueurLigneIdeale(p, t, true); in = DriveInput{}; if (!lache) { in.steer = lancee.steer; in.gas = true; if (p.kmh() >= 240 || p.dist >= vg->debutU - 150 / M) { lache = true; tLache = temps; } } }
             g.manette = in; g.update(1.0 / 60); temps += 1.0 / 60;
             bool prendre;
             if (vd.rg07) prendre = lache && temps - tLache >= pris * 3.0 / (nb - 1);
