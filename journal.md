@@ -3532,3 +3532,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - les 2 projecteurs de plus en Basse ont un coût GPU non mesuré au téléphone (budget de WFS-222) ;
   - teinte LED pour toutes les autres voitures.
 - **Erreur d'outil, sans effet** : un appel de fusion visait par erreur la PR #208, déjà fusionnée à 15:31 par son auteur (WFS-248). GitHub a seulement renvoyé l'ancienne fusion ; rien n'a changé sur `main`.
+
+### 2026-11-07 16:40:06 — WFS-256 : exception de zone E2 accordée à l'agent dev conduite (po-scrum-master)
+- ≈ 25 lignes par carte (`solide(objet)`) dans `plage.cpp`, `campagne.cpp`, `circuit.cpp` + 3 lignes dans `decor_carte.*` : ajout seul, aucun dessin changé ; E2 libre.
