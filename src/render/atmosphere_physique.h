@@ -18,6 +18,7 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <string>
 #include "../core/math.h"
 #include "bench_realisme.h"   // reel::soleil (NOAA), reel::jourJulien
 
@@ -82,6 +83,53 @@ inline Astre lune(double heureUtc) {
     a.phase = 180.0 - deg(psi); a.fraction = (1.0 + std::cos(rad(a.phase))) / 2.0;
     return a;
 }
+
+// ---------------------------------------------------------------- WFS-208 : moments de la journée (RG-01, M-05)
+// Chaque moment est une hauteur du soleil (le même jour, au même lieu) : l'heure UTC est retrouvée par la NOAA.
+//   aube : −2° le matin (crépuscule civil du matin) ; matin : 25° le matin ; midi : midi solaire (hauteur maximale) ;
+//   heure dorée : 3° le soir (milieu de 0° à 6°, définition courante des photographes, M-05) ; heure bleue : −5° le soir
+//   (milieu de −4° à −6°, M-05) ; nuit : 0 h 30 (lune) ; heure réelle : heure du téléphone (UTC), même lieu et même date.
+enum class Moment { Aube, Matin, Midi, Doree, Bleue, Nuit, Reel, NB };
+inline const char* nomMoment(Moment m) {
+    static const char* const N[] = {"aube", "matin", "midi", "doree", "bleue", "nuit", "reel"};
+    return (int)m >= 0 && m < Moment::NB ? N[(int)m] : "midi";
+}
+inline Moment momentDepuisNom(const char* n, Moment defaut = Moment::Midi) {
+    for (int k = 0; k < (int)Moment::NB; k++) if (n && std::string(n) == nomMoment((Moment)k)) return (Moment)k;
+    if (n && std::string(n) == "jour") return Moment::Midi;
+    if (n && std::string(n) == "nuit") return Moment::Nuit;
+    return defaut;
+}
+inline bool momentDeNuit(Moment m) { return m == Moment::Bleue || m == Moment::Nuit; }   // lumières de nuit de la carte
+inline double hauteurNoaa(double hu) { const Lieu& L = lieu(); return reel::soleil(L.lat, L.lon, L.annee, L.mois, L.jour, hu).hauteurApparente; }
+inline double midiSolaireUtc() { double best = 9; for (double hu = 9; hu <= 15; hu += 0.005) if (hauteurNoaa(hu) > hauteurNoaa(best)) best = hu; return best; }
+// heure UTC où le soleil passe à la hauteur cible, le matin (avant midi) ou le soir (après midi) ; dichotomie
+inline double heurePourHauteur(double cible, bool matin) {
+    const double m = midiSolaireUtc(); double a = matin ? m - 10 : m, b = matin ? m : m + 10;
+    for (int i = 0; i < 60; i++) { const double c = 0.5 * (a + b); const bool dessus = hauteurNoaa(c) > cible; if (matin) (dessus ? b : a) = c; else (dessus ? a : b) = c; }
+    return 0.5 * (a + b);
+}
+inline double heureMoment(Moment m) {
+    switch (m) {
+    case Moment::Aube: return heurePourHauteur(-2, true);
+    case Moment::Matin: return heurePourHauteur(25, true);
+    case Moment::Doree: return heurePourHauteur(3, false);
+    case Moment::Bleue: return heurePourHauteur(-5, false);
+    case Moment::Nuit: return lieu().heureNuitUtc;
+    default: return midiSolaireUtc();
+    }
+}
+// éclairement horizontal du ciel quand le soleil est sous l'horizon (crépuscule), lx : valeurs typiques publiées
+// (U.S. Naval Observatory / « Explanatory Supplement to the Astronomical Almanac » : ≈ 750 lx au coucher, ≈ 3,4 lx à la fin
+// du crépuscule civil (−6°), ≈ 0,008 lx à la fin du crépuscule nautique (−12°), ≈ 0,0007 lx (ciel étoilé) sous −18°),
+// interpolation logarithmique entre les points
+inline double eclairementCrepuscule(double h) {
+    static const double H[] = {0, -2, -4, -6, -8, -12, -18}, E[] = {750, 260, 40, 3.4, 0.5, 0.008, 0.0007};
+    if (h >= 0) return E[0];
+    for (int i = 0; i + 1 < 7; i++) if (h >= H[i + 1]) { const double t = (h - H[i]) / (H[i + 1] - H[i]); return std::exp(std::log(E[i]) + t * (std::log(E[i + 1]) - std::log(E[i]))); }
+    return E[6];
+}
+constexpr double SEUIL_LAMPADAIRES_LX = 50;   // RG-03 / M-04 : lampadaires allumés sous 50 lx au sol (cellule photoélectrique)
 
 // ---------------------------------------------------------------- atmosphère (Hillaire 2020, tableau 1)
 constexpr double R_SOL = 6360e3, R_HAUT = 6460e3;                                        // m
