@@ -111,15 +111,15 @@ float sunShadow(vec3 p, vec3 n) {
 float feuCroisement(vec3 w, vec3 D, float d, float range) {
     vec3 R = normalize(cross(D, vec3(0.0, 1.0, 0.0))), U = cross(R, D);
     float el = degrees(asin(clamp(dot(w, U), -1.0, 1.0))), az = degrees(atan(dot(w, R), dot(w, D)));
-    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.2) / 2.5, ah = az / 18.0;
+    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.2) / 2.5, ah = az / 18.0;   // WFS-226 : étalement en (az / 18)⁴
     float v = (el > -1.2 ? 1.0 : 1.0 / (1.0 + t * t)) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
-    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
+    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah * ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
 }
 vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     int n = int(F.spotN.x + 0.5);
     float NoV = max(dot(N, V), 1e-3);
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 12; i++) {   // WFS-226 : 12 projecteurs au plus
         if (i >= n) break;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
@@ -127,7 +127,7 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         float cosT = dot(L, -F.spotDir[i].xyz);
         float NoL = max(dot(N, L), 0.0);
         bool croisement = F.spotCone[i].z > 0.5;   // WFS-218
-        if ((!croisement && cosT <= F.spotCone[i].x) || NoL <= 0.0) continue;
+        if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;   // WFS-226 : hors faisceau
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
         float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
