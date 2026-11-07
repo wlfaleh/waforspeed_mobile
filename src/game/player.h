@@ -69,7 +69,8 @@ struct Player {
     // nombre, vitesse d'impact la plus forte (m/s, vers l'obstacle) et genre de l'objet touché
     struct ChocsDuPas { int n = 0; double impact = 0; chocs::Genre genre = chocs::Genre::Autre; } chocsDecor;
 private:
-    void heurter(double x0, double z0, double cap0);   // WFS-256 : test continu du pas, réaction
+    void heurter(Track& track, double x0, double z0, double cap0);   // WFS-256 : test continu du pas, réaction
+    std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
     void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
     void synchroniser(Track& track);

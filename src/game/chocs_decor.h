@@ -1,9 +1,8 @@
 // WaForSpeed — chocs de la voiture du joueur avec tout ce qui se touche (WFS-256, ANO-129). En-tête seul (lié partout où
 // player.cpp l'est, tests compris).
-//  - Registre des obstacles solides du décor, en coordonnées du monde (m) : cylindres (poteaux, lampadaires, arbres, feux,
-//    piles de portique) et boîtes orientées (bancs, abribus, murs, bâtiments, voitures garées). Chaque carte (systèmes du
-//    décor, src/world/**) déclare ses objets au chargement ; les objets qui bougent (voitures en sens inverse) sont remis à
-//    jour à chaque pas. Grille de 8 m : seuls les objets proches de la voiture sont testés.
+//  - Registre des obstacles solides du décor : cylindres (poteaux, lampadaires, arbres, feux, piles de portique) et boîtes
+//    orientées (bancs, abribus, murs, glissières, bâtiments). Chaque carte les déclare au chargement, par segment de la piste
+//    (chocs_cartes.cpp) ; seuls ceux des segments autour de la voiture sont placés dans le monde et testés à chaque pas.
 //  - Test continu : la voiture (rectangle orienté, longueur × largeur de la fiche) est testée tous les 10 cm le long du pas
 //    de 1/120 s (à 150 km/h : 4 positions par pas) : rien ne se traverse entre deux images (RG-02).
 //  - Réaction (RG-03) : impulsion d'un corps rigide au point de contact (coin le plus enfoncé), frottement 0,4 ; restitution
@@ -15,7 +14,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <unordered_map>
 #include <vector>
 
 namespace wfs::chocs {
@@ -35,46 +33,47 @@ struct Obstacle {
     double angle = 0;              // boîte : axe x de la boîte = (cos angle, sin angle) dans (x, z)
     Forme forme = Forme::Cylindre;
     Genre genre = Genre::Autre;
-    double vx = 0, vz = 0;         // vitesse (m/s) d'un obstacle qui bouge (voiture en sens inverse)
+    double vx = 0, vz = 0;         // vitesse (m/s) de l'obstacle (0 : décor fixe)
+};
+
+// obstacle déclaré par la carte, par rapport à la route (comme son décor) : segment de la piste (sur un tour), avance (m) le long
+// du segment, latéral (m, + à droite), forme et angle de la boîte par rapport à la direction de la route. La piste ne reboucle
+// pas dans le monde (Track::pose) : la position dans le monde est calculée autour de la voiture, à chaque pas, au tour où elle est.
+struct ObstacleRoute {
+    float along = 0, lat = 0;
+    float r = 0.15f, hx = 0.5f, hz = 0.5f, angle = 0;   // angle : 0 = boîte alignée sur la route (hx en travers, hz le long)
+    Forme forme = Forme::Cylindre;
+    Genre genre = Genre::Autre;
 };
 
 class Registre {
 public:
-    static constexpr double CASE = 8.0;
-    void vider() { fixes_.clear(); grille_.clear(); mobiles_.clear(); }
-    void ajouter(const Obstacle& o) {
-        const size_t i = fixes_.size(); fixes_.push_back(o);
-        const double e = etendue(o);
-        for (int cx = cell(o.x - e); cx <= cell(o.x + e); cx++)
-            for (int cz = cell(o.z - e); cz <= cell(o.z + e); cz++) grille_[cle(cx, cz)].push_back((uint32_t)i);
+    void vider() { parSeg_.clear(); n_ = 0; portee_ = 0; }
+    void preparer(int64_t segments) { parSeg_.assign((size_t)std::max<int64_t>(segments, 1), {}); n_ = 0; portee_ = 0; }
+    void ajouter(int64_t seg, const ObstacleRoute& o) {
+        if (parSeg_.empty()) return;
+        const int64_t L = (int64_t)parSeg_.size();
+        parSeg_[(size_t)(((seg % L) + L) % L)].push_back(o); n_++;
+        portee_ = std::max(portee_, (double)std::abs(o.along) + (o.forme == Forme::Cylindre ? o.r : std::hypot(o.hx, o.hz)));
     }
-    // obstacles qui bougent : la liste est remplacée à chaque pas par leur propriétaire (ordre du système)
-    std::vector<Obstacle>& mobiles() { return mobiles_; }
-    size_t taille() const { return fixes_.size(); }
-    bool mobilesVide() const { return mobiles_.empty(); }
-    // appelle f(obstacle) pour chaque obstacle qui peut toucher le disque (x, z, rayon)
-    template <class F> void autour(double x, double z, double rayon, F&& f) const {
-        for (int cx = cell(x - rayon); cx <= cell(x + rayon); cx++)
-            for (int cz = cell(z - rayon); cz <= cell(z + rayon); cz++) {
-                const auto it = grille_.find(cle(cx, cz));
-                if (it == grille_.end()) continue;
-                for (uint32_t i : it->second) {
-                    const Obstacle& o = fixes_[i];
-                    // un objet présent dans plusieurs cases n'est rendu qu'une fois : par la case de son centre, ou la 1re case visitée
-                    const int ox = std::clamp(cell(o.x), cell(x - rayon), cell(x + rayon)), oz = std::clamp(cell(o.z), cell(z - rayon), cell(z + rayon));
-                    if (ox != cx || oz != cz) continue;
-                    f(o);
-                }
+    size_t taille() const { return n_; }
+    // obstacles à moins de `rayon` m (le long de la route) de la distance d (unités du jeu), en coordonnées du monde
+    template <class T, class F> void autour(T& track, double d, double rayon, F&& f) const {
+        if (n_ == 0) return;
+        const int64_t L = (int64_t)parSeg_.size();
+        const double seg = 1.2;   // SEG_M (track.h) : 1,2 m par segment
+        const int64_t a0 = (int64_t)std::floor((d * 0.006 - rayon - portee_) / seg), a1 = (int64_t)std::floor((d * 0.006 + rayon + portee_) / seg);
+        for (int64_t a = a0; a <= a1; a++)
+            for (const ObstacleRoute& o : parSeg_[(size_t)(((a % L) + L) % L)]) {
+                const auto P = track.pointLisse(a * 200.0 + o.along / 0.006, o.lat);   // a × SEG + avance
+                Obstacle w; w.x = P.x; w.z = P.z; w.r = o.r; w.hx = o.hx; w.hz = o.hz; w.angle = P.th + o.angle; w.forme = o.forme; w.genre = o.genre;
+                f(w);
             }
-        for (const Obstacle& o : mobiles_) if (std::abs(o.x - x) < rayon + etendue(o) && std::abs(o.z - z) < rayon + etendue(o)) f(o);
     }
-    const std::vector<Obstacle>& tous() const { return fixes_; }
 private:
-    static double etendue(const Obstacle& o) { return o.forme == Forme::Cylindre ? o.r : std::hypot(o.hx, o.hz); }
-    static int cell(double v) { return (int)std::floor(v / CASE); }
-    static uint64_t cle(int cx, int cz) { return ((uint64_t)(uint32_t)cx << 32) | (uint32_t)cz; }
-    std::vector<Obstacle> fixes_, mobiles_;
-    std::unordered_map<uint64_t, std::vector<uint32_t>> grille_;
+    std::vector<std::vector<ObstacleRoute>> parSeg_;
+    size_t n_ = 0;
+    double portee_ = 0;   // m : avance + étendue maximales (fenêtre de recherche)
 };
 inline Registre& registre() { static Registre r; return r; }
 

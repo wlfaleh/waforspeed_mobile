@@ -21,12 +21,16 @@ struct Res { double capMax = 0, vMinApresChoc = 1e9, vAvant = 0, vApres = 0, pen
 
 // la Golf part à `kmh` sur la ligne droite de départ de la Ville, sans commande ; obstacle o posé à `devant` m, latéral `lat` m
 static Res essai(Track& t, double kmh, chocs::Obstacle o, double devant, double lat, bool poser = true) {
-    chocs::registre().vider();
+    chocs::registre().preparer((int64_t)t.segmentCount());
     Player p; p.reset(carById("golf")); p.aide = Aide::Desactivee;
     const double d0 = 50 / M; p.dist = d0; p.position = t.wrap(d0); p.speed = kmh / 3.6 / M;
-    const TrackPoint P = t.pointLisse(d0 + devant / M, lat);
-    o.x = P.x; o.z = P.z; if (o.forme == chocs::Forme::Boite) o.angle += P.th;
-    if (poser) chocs::registre().ajouter(o);
+    // déclaré comme une carte : segment, avance dans le segment, latéral, angle par rapport à la route
+    const double s = d0 + devant / M; const int64_t seg = (int64_t)std::floor(s / SEG);
+    chocs::ObstacleRoute q; q.along = (float)((s - seg * SEG) * M); q.lat = (float)lat; q.r = (float)o.r; q.hx = (float)o.hx; q.hz = (float)o.hz;
+    q.angle = (float)o.angle; q.forme = o.forme; q.genre = o.genre;
+    if (poser) chocs::registre().ajouter(seg, q);
+    const TrackPoint P = t.pointLisse(seg * SEG + q.along / M, lat);   // même placement que le registre (mesure de la pénétration)
+    o.x = P.x; o.z = P.z; o.angle = P.th + q.angle;
     Res r; r.vAvant = kmh;
     for (int n = 0; n < 120 * 6; n++) {
         const int n0 = p.chocsDecor.n;

@@ -220,24 +220,28 @@ void Player::synchroniser(Track& t) {
 
 // WFS-256 : test continu tous les 10 cm du déplacement du pas (rien ne se traverse, même à 300 km/h), puis réaction
 // d'un corps rigide (chocs_decor.h) au premier contact ; le reste du déplacement du pas est abandonné
-void Player::heurter(double x0, double z0, double cap0) {
+void Player::heurter(Track& track, double x0, double z0, double cap0) {
     const chocs::Registre& reg = chocs::registre();
-    if (reg.taille() == 0 && reg.mobilesVide()) return;
-    const double hl = car->d.L / 2, hw = car->d.W / 2, portee = std::hypot(hl, hw) + 0.2;
+    if (reg.taille() == 0) return;
+    const double hl = car->d.L / 2, hw = car->d.W / 2, pas = std::hypot(monde.x - x0, monde.z - z0);
+    // obstacles du voisinage (une fois par pas) : à moins de la demi-diagonale de la voiture + le déplacement du pas
+    obstaclesProches_.clear();
+    reg.autour(track, dist, std::hypot(hl, hw) + pas + 1.0, [&](const chocs::Obstacle& o) { obstaclesProches_.push_back(o); });
+    if (obstaclesProches_.empty()) return;
     const double x1 = monde.x, z1 = monde.z, cap1 = monde.cap;
-    const int n = std::max(1, (int)std::ceil(std::hypot(x1 - x0, z1 - z0) / 0.10));
+    const int n = std::max(1, (int)std::ceil(pas / 0.10));
     for (int k = 1; k <= n; k++) {
-        const double t = (double)k / n, cx = x0 + (x1 - x0) * t, cz = z0 + (z1 - z0) * t, cap = cap0 + (cap1 - cap0) * t;
+        const double t = (double)k / n, cap = cap0 + (cap1 - cap0) * t;
+        double px = x0 + (x1 - x0) * t, pz = z0 + (z1 - z0) * t;
         bool touche = false;
-        double px = cx, pz = cz;
-        reg.autour(cx, cz, portee, [&](const chocs::Obstacle& o) {
+        for (const chocs::Obstacle& o : obstaclesProches_) {
             const chocs::Contact c = chocs::contact(px, pz, cap, hl, hw, o);
-            if (!c.touche) return;
+            if (!c.touche) continue;
             if (!touche) { monde.x = px; monde.z = pz; monde.cap = cap; touche = true; }   // la voiture s'arrête au premier contact du pas
             const chocs::Reponse r = chocs::reagir(monde.x, monde.z, monde.vx, monde.vz, monde.r, cm_->masse, cm_->Iz, c, o);
             px = monde.x; pz = monde.z;
             if (r.choc) { chocsDecor.n++; if (r.impact > chocsDecor.impact) { chocsDecor.impact = r.impact; chocsDecor.genre = r.genre; } }
-        });
+        }
         if (touche) return;
     }
 }
@@ -306,7 +310,7 @@ void Player::updateMonde(double dt, const DriveInput& in, Track& track, bool pla
     sol.pente = track.pointLisse(dist, playerX * RW).slope * std::cos(heading);
     const double x0 = monde.x, z0 = monde.z, cap0 = monde.cap;
     physique::pas(P, monde, c, sol, dt);
-    heurter(x0, z0, cap0);   // WFS-256 : chocs avec le décor, sans rien traverser entre deux pas
+    heurter(track, x0, z0, cap0);   // WFS-256 : chocs avec le décor, sans rien traverser entre deux pas
     projeter(track);
 
     // glissière (bord de la carte) : la voiture glisse le long, sa vitesse vers l'extérieur est annulée, son cap redressé
