@@ -1,4 +1,5 @@
 // WaForSpeed — WFS-73 : conducteurs dans les voitures (voir conducteurs.h).
+#include "pietons.h"   // WFS-210 : tenue::tenueLieu
 #include "conducteurs.h"
 #include <algorithm>
 #include <cmath>
@@ -176,6 +177,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
             pm = &g_h[h]; sexe = humaineFemme(h) ? 1 : 0; stature = pm->stature;
             app.peau = peauApparence(albedoPeau(h));
         }
+        tenue::tenueLieu(tenue::carteCourante(), e.graine, sexe == 1, app);   // WFS-210 (RG-01) : tenue selon la carte (pietons.cpp)
         const Modele& M = *pm;
         app.corps = M.p.corps;
         // place : œil de la vue cockpit ; assise du modèle (WFS-201), sinon 0,42 m (berline) ; pavillon mesuré (RG-01)

@@ -2,6 +2,7 @@
 #include "pietons.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <map>
 #include <tuple>
@@ -84,6 +85,7 @@ public:
         gens_.clear(); actif_ = false;
         if (!g.map || !g.track) return;
         const char* id = g.map->id;
+        tenue::carte() = id;   // WFS-210 : tenue des conducteurs selon la carte
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
         if (!ville_ && !plage_ && !campagne_ && !circuit_) return;
@@ -249,6 +251,23 @@ void benchPietons(Game& g, Renderer& r, const std::string& out) {
         } else capture("pietons-plage");
         g.shutdown();
     }
+    // WFS-210 (RG-01) : conducteur vu de côté (vitrine à 6,5 m) sur les 4 cartes, de jour ; Ville aussi de nuit : tenue du lieu,
+    // peau, cheveux et yeux (conducteurs-tenue-<carte>[-nuit].png) ; tenue tirée au journal
+    struct Cas { const char* carte; const char* moment; };
+    for (const Cas& c : {Cas{"ville", "jour"}, Cas{"plage", "jour"}, Cas{"campagne", "jour"}, Cas{"circuit", "jour"}, Cas{"ville", "nuit"}}) {
+        setenv("WFS_MOMENT", c.moment, 1);
+        if (!g.init(r, "golf", c.carte)) { WFS_ERR("tenues : chargement %s impossible", c.carte); continue; }
+        g.setAutopilot(false); g.camMode = 2; g.orbit = 1.5708f;   // de côté, comme le banc des conducteurs (WFS-73)
+        double t = 1300;
+        for (int i = 0; i < 60; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); }
+        g.render(t); g.render(t + 0.01);
+        const std::string nom = std::string("conducteurs-tenue-") + c.carte + (std::strcmp(c.moment, "nuit") ? "" : "-nuit");
+        r.capturePng(out + "/" + nom + ".png");
+        ApparencePersonnage a; tenue::tenueLieu(c.carte, 1, false, a);
+        WFS_LOG("capture %s : tenue du lieu %s (tissu %d, manches %.2f, jambes %.2f)", nom.c_str(), tenue::carteCourante(), (int)a.vetement.w, a.vetement.x, a.vetement.y);
+        g.shutdown();
+    }
+    unsetenv("WFS_MOMENT");
 }
 
 // ---------------------------------------------------------------- WFS-199 : spectateurs (foule allégée, posée une fois)

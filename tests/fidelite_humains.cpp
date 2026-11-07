@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 #include "../src/render/bench_realisme.h"
+#include "fidelite_humains_tenues.cpp"   // WFS-210 : tenues par lieu, peau VI
 
 #ifndef WFS_SOURCE_DIR
 #define WFS_SOURCE_DIR "."
@@ -226,6 +227,7 @@ int main(int argc, char** argv) {
         const wfs::reel::Json* m = R.mesure(std::string("humain.") + sexes[s] + ".stature");
         mesure(std::string(sexes[s]) + " : M-01 écart-type de la stature (m)", ec, m ? m->nombre("ecart_type", 0) / 1000 : 0, 0.01);
     }
+    if (tenues_test::executer()) echecs++;   // WFS-210 (RG-01, RG-02)
     const double indice = mesures ? 100.0 * conformes / mesures : 0;
     std::printf("humains : indice de fidélité : %.1f %% (%d / %d mesures)\n", indice, conformes, mesures);
     rapport << "indice de fidélité des humains : " << indice << " % (" << conformes << " / " << mesures << ")\n";
