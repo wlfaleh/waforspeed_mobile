@@ -2868,3 +2868,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Tickets ⏳ Prêt : WFS-218, 224, 226 (P1, E4 : occupée par WFS-222, agent arwa, dernier envoi 11:15) ; WFS-215 (P3, E10 : occupée par WFS-158, arwa-2, dernier envoi 10:43) ; WFS-216 (P3, E2 : occupée par WFS-225, session dev 5bx, dernier envoi 11:43). WFS-214 attend WFS-213 ✅ et l'épic E13 (WFS-227, agent 2, dernier envoi 11:45).
 - Suites Ville proposées par l'agent : WFS-175 et WFS-176 sont déjà ✅ (archive). Aucun ticket prêt dans les épics libres (E0, E3, E5, E6, E7, E8, E9, E11).
 - Aucun développeur n'a dépassé 10 h sans envoi : aucune réattribution. Agent 4 reste libre ; il sera servi dès qu'une épic se libère ou qu'un nouveau besoin de l'utilisateur est découpé.
+
+### 2026-11-07 11:48:23 — Statuts automatiques, CI main #817 (robot statuts)
+- Run vert (push, commit 941e475) : WFS-213 ✅ (PR #184, 941e475).
