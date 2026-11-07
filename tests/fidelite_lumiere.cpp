@@ -8,6 +8,7 @@
 #include "../src/render/bench_realisme.h"
 #include "../src/render/eclairage_unites.h"
 #include "../src/render/atmosphere_physique.h"   // WFS-207
+#include "../src/render/eclairage_exposition.h"   // WFS-213
 using namespace wfs::lumiere;
 
 #ifndef WFS_SOURCE_DIR
@@ -151,6 +152,27 @@ int main(int argc, char** argv) {
         VERIFIE(c10.soleil[0] > c10.soleil[1] && c10.soleil[1] > c10.soleil[2], "soleil à 10° rougi par la traversée de l'atmosphère");
         const double V = 3.912 / c45.extY / 1000;
         VERIFIE(V > 30 && V < 60, "visibilité météorologique %.1f km (aérosols τ = 0,09, trouble de Linke ≈ 2)", V);
+    }
+    // ---- WFS-213 (RG-03) : 3 enchaînements init / shutdown, mesures valides puis invalides (NaN, infini, sonde absurde de
+    // 1,36·10¹¹ cd/m² du banc vitrines) : l'EV reste dans les bornes du jour (10 à 15), jamais non fini
+    {
+        Exposition x;
+        const double nan = std::nan(""), inf = INFINITY;
+        for (int cycle = 0; cycle < 3; cycle++) {
+            x.nouvelleScene(false);   // init (voiture suivante)
+            VERIFIE(x.ev == EV_REF_JOUR && !x.init, "cycle %d : EV remis à la valeur du jour (%.2f)", cycle, x.ev);
+            for (double L : {nan, inf, 1.36e11, -1.0, 0.0}) {
+                x.image(L, EV_JOUR_MIN, EV_JOUR_MAX, 1.0 / 60);
+                VERIFIE(std::isfinite(x.ev) && x.ev >= EV_JOUR_MIN && x.ev <= EV_JOUR_MAX, "cycle %d : mesure %g : EV %.3f dans [10 ; 15]", cycle, L, x.ev);
+            }
+            x.image(3458, EV_JOUR_MIN, EV_JOUR_MAX, 1.0 / 60);   // première mesure valide : recalage direct
+            VERIFIE(std::fabs(x.ev - ev100Luminance(3458)) < 1e-9, "cycle %d : recalé sur la 1re mesure valide (EV %.3f)", cycle, x.ev);
+            for (int i = 0; i < 120; i++) x.image(i % 2 ? nan : 3000, EV_JOUR_MIN, EV_JOUR_MAX, 1.0 / 60);
+            VERIFIE(std::isfinite(x.ev) && x.ev >= EV_JOUR_MIN && x.ev <= EV_JOUR_MAX, "cycle %d : course mêlée de mesures invalides : EV %.3f", cycle, x.ev);
+        }
+        const double kBon[6] = {1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4}, kTrou[6] = {1e-4, 0, 1e-4, -1, 1e-4, 1e-4};
+        VERIFIE(kFacesValides(kBon) && !kFacesValides(kTrou), "capture : face sans exposition connue refusée");
+        VERIFIE(!luminanceValide(1.36e11) && !luminanceValide(nan) && luminanceValide(3458) && luminanceValide(0.0912), "sonde : luminance absurde ou non finie refusée");
     }
     std::printf("fidelite_lumiere : %d vérifications, %d échec(s)\n", verifs, echecs);
     return echecs ? 1 : 0;

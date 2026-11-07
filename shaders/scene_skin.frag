@@ -29,6 +29,34 @@ const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F
 #include "decor.glsl"       // E12 Environnements
 #include "vehicule.glsl"    // E10 Véhicules
 
+// ---------- WFS-210 : matériaux des personnages (avis expert-realisme-3d, 2026-11-07) ----------
+// tissus (TISSU_* de src/world/pietons.h) : rugosité, reflet rasant (« sheen » Charlie, Estevez-Kulla 2017) : intensité, rugosité
+const vec3 TISSUS[6] = vec3[6](vec3(0.90, 0.0, 0.5),   // aucun (tenues du jeu web : piétons)
+                               vec3(0.88, 0.25, 0.5),  // coton
+                               vec3(0.82, 0.45, 0.35), // laine de costume
+                               vec3(0.92, 0.15, 0.6),  // jean
+                               vec3(0.93, 0.12, 0.65), // lin d'été
+                               vec3(0.60, 0.10, 0.3)); // combinaison de course (aramide / satin)
+// relief de trame calculé sur la position de repos (colle au corps) : sergé à 45° (jean, 2 mm) ou toile (1,5 mm), plis
+// (6 cm) ; pente 0,15 / 0,10 ; s'efface quand la période passe sous 2 pixels (aucun scintillement)
+float hauteurTrame(vec3 b, int tissu, out float fondu) {
+    float per = tissu == 3 ? 0.002 : 0.0015;
+    float fw = length(fwidth(b));
+    fondu = clamp(1.0 - 2.0 * fw / per, 0.0, 1.0);
+    float u = tissu == 3 ? (b.x + b.y) : b.x, v = tissu == 3 ? (b.x - b.y) * 0.5 : b.y;
+    float trame = (sin(6.2831853 * u / per) + 0.6 * sin(6.2831853 * v / per)) * 0.15 * per / 6.2831853;
+    float plis = clamp(1.0 - 2.0 * fw / 0.06, 0.0, 1.0) * sin(6.2831853 * (b.y * 0.8 + b.z * 0.3) / 0.06 + 2.0 * sin(b.x * 40.0)) * 0.10 * 0.06 / 6.2831853;
+    return trame * fondu + plis;
+}
+// normale perturbée par une hauteur sans tangentes : gradient de surface (Mikkelsen 2010)
+vec3 bosseHauteur(vec3 N, vec3 p, float h) {
+    vec3 sx = dFdx(p), sy = dFdy(p);
+    vec3 r1 = cross(sy, N), r2 = cross(N, sx);
+    float det = dot(sx, r1);
+    vec3 g = sign(det) * (dFdx(h) * r1 + dFdy(h) * r2);
+    return normalize(abs(det) * N - g);
+}
+
 void main() {
     uint flags = uint(pc.params.w + 0.5);
     // finesse de la pièce (WFS-42) : seulement pour les voitures (emissive.w sert à la demi-largeur de route sinon)
@@ -68,6 +96,7 @@ void main() {
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
     if ((flags & F_HASNORMAL) != 0u) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
+    float peauK = 0.0, cheveuxK = 0.0, oeilK = 0.0, tissuK = 0.0, sheenI = 0.0, sheenR = 0.5;   // WFS-210
     if (B.look[0].w > 0.5) {   // ---------- WFS-72 : pedMaterial du jeu web (map_fragment, roughness, normal) ----------
         // le jeu web (three r128 sans décodage sRGB) travaille sur les codes sRGB de la texture et des couleurs : idem ici
         vec3 uSkin = B.look[0].rgb, uHair = B.look[1].rgb, uTop = B.look[2].rgb, uBottom = B.look[3].rgb,
@@ -100,9 +129,24 @@ void main() {
             col = uHair * (0.35 + lum * 1.25);                          // sourcils et cheveux : texture grise teintée
         }
         base.rgb = pow(max(col, vec3(0.0)), vec3(2.2));
-        rough = part < 0.5 ? mix(0.52, 0.9, cm) : (part < 1.5 ? 0.15 : 0.72);
+        // WFS-210 : rugosités mesurées (peau 0,5 PB-MAT ; tissus : TISSUS ; sclère 0,35 ; chaussures cuir 0,45)
+        int tissu = int(clamp(uCloth.w + 0.5, 0.0, 5.0));
+        vec3 tx = TISSUS[tissu];
+        float shoeK = part < 0.5 ? step(0.5, cm) * step(1.93, vCloth.z) * step(-0.5, vCloth.z) : 0.0;
+        float roughTissu = mix(tx.x, 0.45, shoeK);
+        rough = part < 0.5 ? mix(tissu > 0 ? 0.5 : 0.52, roughTissu, cm) : (part < 1.5 ? (tissu > 0 ? 0.35 : 0.15) : 0.72);   // piétons (tissu 0) : inchangé
+        peauK = part < 0.5 ? (1.0 - cm) * (tissu > 0 ? 1.0 : 0.0) : 0.0;
+        tissuK = part < 0.5 && tissu > 0 ? cm * (1.0 - shoeK) : 0.0;
+        cheveuxK = part > 1.5 && tissu > 0 ? 1.0 : 0.0;
+        oeilK = part >= 0.5 && part <= 1.5 && tissu > 0 ? 1.0 : 0.0;
+        sheenI = tx.y * tissuK; sheenR = tx.z;
         vec3 geo = normalize(vNrm) * (face ? 1.0 : -1.0);   // WFS-200 : même sens que N (ligne 61) : passe miroir et capture ont les faces inversées
         N = normalize(mix(N, geo, cm * 0.85));                            // tissus : pas les muscles du modèle nu
+        // WFS-210 : trame et plis des tissus (dérivées hors de toute branche par pixel) ; trame effacée → +0,05 de rugosité (Toksvig)
+        float fondu = 0.0;
+        float hT = hauteurTrame(vBind, tissu, fondu);
+        vec3 Nt = bosseHauteur(N, vWorld, hT);
+        if (tissuK > 0.0) { N = normalize(mix(N, Nt, tissuK)); rough = min(1.0, rough + 0.05 * (1.0 - fondu) * tissuK); }
     }
     if ((flags & F_MASK) != 0u && base.a < pc.params.z) discard;
 
@@ -135,13 +179,47 @@ void main() {
     float a = sqrt(max(rough * rough, 0.002) * max(rough * rough, 0.002) + aaKernel);
     vec3 albedo = base.rgb;
     vec3 f0 = mix(vec3(0.04), albedo, metal);
+    if (peauK > 0.0) f0 = mix(f0, vec3(0.028), peauK);   // WFS-210 : peau, indice 1,4
     if (wetRoad) f0 = vec3(mix(0.04, 0.02, flaque));   // WFS-142 (RG-03) : eau des flaques f0 = 0,02
     vec3 Fs = F_Schlick(f0, VoH);
     vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
     vec3 sun = F.sunColor.rgb * F.sunDir.w;
     float ombre = sunShadow(vWorld, N);
-    vec3 col = diff * sun * NoL * ombre + min(spec * sun * NoL * ombre, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
+    // WFS-210 : peau translucide (diffusion pré-intégrée approchée : éclairage enveloppant par canal, énergie conservée,
+    // pénombre rougeâtre au terminateur), effacée au-delà de 15 m ; cheveux (diffus doux) ; tissus (reflet rasant Charlie)
+    float dCam = length(F.camPos.xyz - vWorld);
+    vec3 lumDiff = vec3(NoL * ombre);
+    if (peauK > 0.0) {
+        vec3 w = vec3(0.45, 0.18, 0.10) * (1.0 - smoothstep(12.0, 15.0, dCam));
+        vec3 nlw = clamp((dot(N, L) + w) / (1.0 + w), 0.0, 1.0) / (1.0 + w);
+        lumDiff = mix(lumDiff, nlw * pow(vec3(ombre), vec3(1.0, 1.6, 2.2)), peauK);
+    }
+    if (cheveuxK > 0.0) lumDiff = mix(lumDiff, vec3(mix(0.25, 1.0, NoL) * ombre), cheveuxK);
+    vec3 col = diff * sun * lumDiff * (1.0 - 0.16 * sheenI) + min(spec * sun * NoL * ombre, vec3(SPEC_MAX)) * specK;   // WFS-100 RG-01 / RG-02
+    if (sheenI > 0.0) {   // Charlie : D = (2 + 1/a) sin(θh)^(1/a) / 2π ; visibilité de Neubelt
+        float ash = max(sheenR * sheenR, 0.07), sinH = sqrt(max(1.0 - NoH * NoH, 0.0));
+        float Dsh = (2.0 + 1.0 / ash) * pow(sinH, 1.0 / ash) / (2.0 * PI);
+        float Vsh = 1.0 / (4.0 * (NoL + NoV - NoL * NoV) + 1e-4);
+        col += mix(albedo, vec3(1.0), 0.5) * sheenI * Dsh * Vsh * NoL * sun * ombre;
+    }
+    if (cheveuxK > 0.0) {   // cheveux : Kajiya-Kay à 2 lobes (Scheuermann 2004), tangente = haut du personnage projeté sur le plan de la normale
+        vec3 U = normalize(mat3(pc.model) * vec3(0.0, 1.0, 0.0)), Fw = normalize(mat3(pc.model) * vec3(0.0, 0.0, 1.0));
+        float du = abs(dot(N, U));
+        vec3 T = normalize(mix(U - N * dot(N, U), Fw - N * dot(N, Fw), smoothstep(0.9, 0.99, du)) + 1e-5);
+        float bruit = 0.05 * sin(6.2831853 * vBind.y / 0.005 + 3.0 * sin(vBind.x * 900.0));
+        vec3 T1 = normalize(T + (0.08 + bruit) * N), T2 = normalize(T - (0.12 - bruit) * N);
+        float t1 = dot(T1, H), t2 = dot(T2, H);
+        float s1 = pow(sqrt(max(1.0 - t1 * t1, 0.0)), 90.0), s2 = pow(sqrt(max(1.0 - t2 * t2, 0.0)), 14.0);
+        vec3 kk = (vec3(0.15 * s1) + 0.40 * albedo * s2) * sun * NoL * ombre;
+        col += min(kk, vec3(SPEC_MAX)) * cheveuxK * (1.0 - smoothstep(8.0, 10.0, dCam));
+    }
+    if (oeilK > 0.0) {   // yeux : film de larmes / cornée (GGX lisse, F0 0,025), base × (1 − F)
+        float ac = mix(0.05, 0.10, smoothstep(1.5, 2.5, dCam));
+        float Fc = 0.025 + 0.975 * pow(1.0 - NoV, 5.0);
+        col *= mix(1.0, 1.0 - Fc, oeilK);
+        col += min(D_GGX(NoH, ac * ac) * V_Smith(NoV, NoL, ac * ac) * F_Schlick(vec3(0.025), VoH) * sun * NoL * ombre, vec3(SPEC_MAX)) * oeilK;
+    }
     col += spotLights(vWorld, N, V, albedo, f0, metal, a, vtint);   // WFS-45 (aucun si spotN = 0)
 
     // lumière ambiante : ciel (hémisphère) + reflets de l'environnement

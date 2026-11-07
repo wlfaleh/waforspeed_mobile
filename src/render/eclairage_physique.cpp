@@ -1,6 +1,7 @@
 // WaForSpeed — WFS-151 : éclairage physique, exposition automatique et sondes IBL (voir eclairage_physique.h).
 #include "atmosphere_physique.h"   // WFS-207 : astres calculés, atmosphère physique
 #include "eclairage_physique.h"
+#include "eclairage_exposition.h"   // WFS-213 : mesures et sondes valides (testé par fidelite_lumiere)
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -57,6 +58,7 @@ struct Etat_ {
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
     // scène
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
+    const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
     double ev = 15; bool evInit = false, recaler = true; double dtImage = 0; int generation = 0;
     double hCache = -1000, kCache = 0;
     // ciel (pour la sonde du ciel calculée sur le CPU)
@@ -67,7 +69,8 @@ struct Etat_ {
     vec3 dernierPoint{}; bool aucuneDemande = true; int typePrec = -1; bool forcerCapture = false;
     bool eclaireLoin = false; int iterations = 0;   // RG-03 : rebonds par recaptures au même point (voir physique())
     // relecture
-    int capturesVues = 0, faceVue = -1; double kFace[6]{}; bool relecture = false; int relectureImage = -1, relectureAttente = 0;
+    // WFS-213 (RG-02) : k de chaque face de la capture en cours (−1 : inconnu) ; copie pour la relecture
+    int capturesVues = 0, faceVue = -1; double kFace[6] = {-1, -1, -1, -1, -1, -1}, kRelu[6] = {-1, -1, -1, -1, -1, -1}; bool relecture = false; int relectureImage = -1, relectureAttente = 0;
     Buffer tampon; int coteRelu = 0; vec3 posRelue{}; int generationRelue = 0; bool loinRelu = false;
     int generationDemande = -1;   // WFS-203 : scène (generation) de la dernière capture demandée
     // traitement
@@ -271,7 +274,8 @@ public:
             // au même départ) a des faces rendues dans l'autre scène ; relue, elle donnait à la nuit des luminances de jour
             // (≈ 2600 cd/m² au lieu de ≈ 0,1) : exposition bloquée à EV100 5, image blanche. Elle est abandonnée, une autre est demandée.
             if (!g.relecture && environnement::image() && g.imageActive && length(environnement::point() - g.dernierPoint) < 0.01f &&
-                g.generationDemande == g.generation) lancerRelecture(vk, img);
+                g.generationDemande == g.generation) { lancerRelecture(vk, img); for (int f = 0; f < 6; f++) g.kRelu[f] = g.kFace[f]; }
+            for (double& x : g.kFace) x = -1;   // WFS-213 : la capture suivante enregistre ses propres k
         } else if (face > 0 && face != g.faceVue) { g.kFace[face - 1] = k; g.faceVue = face; }
         // 2. relecture lue deux images plus tard (barrière de cette image attendue par Renderer::beginFrame)
         if (g.relecture && img.image == g.relectureImage && --g.relectureAttente <= 0) lireRelecture(vk);
@@ -279,6 +283,13 @@ public:
         if (g.enCours && g.fini.load()) {
             g.enCours = false; g.fini = false;
             if (g.res.generation != g.generation) { g.res = Resultat{}; return; }   // scène changée pendant le traitement
+            // WFS-213 (RG-02) : sonde non finie ou absurde (luminance moyenne hors de 10⁻⁷ à 10⁵ cd/m², disque du soleil exclu des
+            // captures) : abandonnée, la dernière valeur juste est gardée, une autre capture est demandée
+            const double Lmoy = g.res.echelle > 0 ? 1.0 / g.res.echelle : -1;
+            if (!luminanceValide(Lmoy)) {
+                WFS_ERR("éclairage (WFS-213) : sonde abandonnée (luminance moyenne %.3g cd/m²)", Lmoy);
+                g.res = Resultat{}; g.aucuneDemande = true; return;
+            }
             Buffer t; Sonde s = envoyer(vk, img.cb, g.res, t); retirer(Image{}, t);
             const bool premiere = !g.B.capture;
             g.etat.msTraitement = g.res.ms; g.etat.sondesCapturees++;
@@ -318,8 +329,12 @@ private:
         int n = 1; while ((N >> (n - 1)) > 1) n++;
         cube->allouer(N, n);
         const uint16_t* s = static_cast<const uint16_t*>(g.tampon.mapped);
+        if (!kFacesValides(g.kRelu)) {   // WFS-213 (RG-02) : une face sans exposition connue
+            WFS_ERR("éclairage (WFS-213) : capture abandonnée (face sans exposition connue)");
+            vk.destroy(g.tampon); g.aucuneDemande = true; return;
+        }
         for (int f = 0; f < 6; f++) {
-            const float inv = (float)(1.0 / std::max(g.kFace[f], 1e-12));
+            const float inv = (float)(1.0 / g.kRelu[f]);
             float* o = cube->face(0, f).data();
             for (size_t i = 0; i < (size_t)N * N; i++) for (int q = 0; q < 3; q++) o[i * 3 + q] = passes::demiVersFloat(s[((size_t)f * N * N + i) * 4 + q]) * inv;
         }
@@ -387,7 +402,14 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double t = fp.time;
     double dt = g.tPrec < 0 ? 0 : t - g.tPrec;
     const vec3 point = g.forc.actif && g.forc.pointForce ? g.forc.point : fp.hasFocus ? fp.focus + vec3{0, 1.5f, 0} : fp.camPos;
-    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f) { remettreAZero(); g.init = true; dt = 0; }
+    // WFS-213 (RG-01) : nouvelle scène aussi quand la piste, la carte ou la voiture change (init, changement de carte ou de voiture) :
+    // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
+    const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
+    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
+        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; }
+        remettreAZero(); g.init = true; dt = 0;
+    }
+    g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
     dt = std::clamp(dt, 0.0, 0.25);
     g.tPrec = t; g.pointPrec = point; g.nuitPrec = fp.night;
     const bool nuit = fp.night;
@@ -439,7 +461,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
     // ---- RG-02 : exposition (mesure sur les sondes, bornée par moment, adaptation de l'œil)
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
-    const double Lmes = mesurerLuminance(g.avant);
+    double Lmes = mesurerLuminance(g.avant);
+    if (!luminanceValide(Lmes)) Lmes = 0;   // WFS-213 (RG-02) : mesure invalide : la dernière exposition juste est gardée
     double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
@@ -448,6 +471,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
     if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
     else g.ev = adapter(g.ev, cible, dt);
+    if (!std::isfinite(g.ev)) g.ev = std::clamp(nuit ? EV_REF_NUIT : EV_REF_JOUR, evMin, evMax);   // WFS-213 (RG-02) : jamais de valeur non finie
     g.dtImage = dt;
     const double k = exposition(g.ev);
     const double expOrig = fp.exposure;

@@ -943,7 +943,9 @@ SkinnedMesh Renderer::makeSkinnedMesh(const std::vector<SkinVertex>& v, const st
     SkinnedMesh m; m.indexCount = (uint32_t)idx.size();
     { const masquage::Sphere b = bornes(v); m.centre = b.c; m.rayon = b.r < 0 ? b.r : b.r * 1.5f; }   // WFS-82 : marge pour l'animation
     m.vb = vk_->uploadBuffer(v.data(), v.size() * sizeof(SkinVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    m.i16 = v.size() <= 65536;   // WFS-210 (RG-05) : moins de 65 536 sommets → indices 16 bits (mémoire GPU ÷ 2 pour les indices)
+    if (m.i16) { std::vector<uint16_t> c(idx.begin(), idx.end()); m.ib = vk_->uploadBuffer(c.data(), c.size() * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT); }
+    else m.ib = vk_->uploadBuffer(idx.data(), idx.size() * 4, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     return m;
 }
 
@@ -1100,7 +1102,7 @@ void Renderer::flushDraw(const Pending& p) {
     VkDeviceSize zero = 0;
     vkCmdBindVertexBuffers(cb, 0, 1, &p.vb, &zero);
 #endif
-    vkCmdBindIndexBuffer(cb, p.ib, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cb, p.ib, 0, p.i16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);   // WFS-210 (RG-05)
     const VkPipelineLayout lay = p.osOfs >= 0 ? skinLayout_ : sceneLayout_;   // WFS-63 : palette d'os en set 2
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, lay, 1, 1, &p.mat->set, 0, nullptr);
     if (p.osOfs >= 0) { const uint32_t ofs = (uint32_t)p.osOfs; vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skinLayout_, 2, 1, &osSet_[cur_], 1, &ofs); }
@@ -1253,7 +1255,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, 0};
-    p.osOfs = (int32_t)ofs; p.vis = vis;
+    p.osOfs = (int32_t)ofs; p.vis = vis; p.i16 = m.i16;
     opaqueQ_.push_back(p);   // maillages à squelette : opaques (ou alpha découpé) seulement
 }
 
