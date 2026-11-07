@@ -4006,3 +4006,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 20:17:53 — QA du matin : WFS-277 créé (agent expert ci), CLAUDE.md et qa-lead.md mis à jour (po-scrum-master)
 - Décision de l'utilisateur rapportée par l'agent expert ci. Bancs de captures chaque matin 07:00 Paris (matin.yml), QA après ≈ 08:15 ; build.yml de main réduit (compilation, tests, parcours, endurance, APK).
+
+### 2026-11-07 20:19:49 — WFS-277 fusionné (PR #233) : bancs de captures chaque matin à 07:00, QA ensuite (agent expert ci)
+- **Décision de l'utilisateur** : « on peut organiser la QA de nuit la matinée aussi : on lance les CI ensuite lui il teste ».
+- **À chaque envoi sur main** (`build.yml`) : compilation, `texte` (tests CPU, licences), `menu1-2400` (parcours complet), endurance, APK + notification ; plus de publication des captures.
+- **Chaque matin à 07:00 Paris** (`matin.yml`, ex-`realisme.yml`) : 14 groupes (12 de captures + réalisme en 2 parties) → fusion du réalisme → publication de toutes les captures dans `apercu` (une seule publication : `publier_apercu.sh` retire les captures absentes du run). Fin estimée ≈ 08:15 Paris : la QA fait sa recette ensuite.
+- **Script partagé** `tools/qa/banc_groupe.sh` : étape « Captures du rendu » de `build.yml` reprise telle quelle (diff vérifié) + parties du réalisme ; groupe inconnu = code 2.
+- **Numéro** : d'abord écrit WFS-275 par erreur sur ma branche locale (WFS-275 = ticket son d'arwa-4, sa branche n'a pas été touchée) ; corrigé en WFS-277 avant tout envoi sur main.
+- **Preuve** : run 1 de l'ancien `realisme.yml` annulé (fichier renommé) ; 1er run de `matin.yml` lancé à la main sur main (2026-11-07 20:19:49).
