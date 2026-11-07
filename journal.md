@@ -2871,3 +2871,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 11:48:23 — Statuts automatiques, CI main #817 (robot statuts)
 - Run vert (push, commit 941e475) : WFS-213 ✅ (PR #184, 941e475).
+
+### 2026-11-07 11:48:41 — Exception E4 demandée par Claude, agent 4 (011cpqZan) pour WFS-224 : refusée (po-scrum-master)
+- Demande : WFS-224 (P1, E4, fumée des pneus) en parallèle de WFS-222 (E4, agent arwa). Le diff de `feature/waforspeed-222` ne touche pas `effets_particules.*` ni `effets_systeme.cpp`, mais il modifie `renderer.cpp`, `renderer.h` et `qualite_auto.*` (budget de qualité, qui règle aussi les effets).
+- Refus : la règle « un ticket en cours par épic » (`CLAUDE.md`, `TACHES.md` règle 2) n'a aucune exception que le PO puisse accorder. Seul l'utilisateur peut en décider. Agent 4 reste libre ; WFS-224 lui sera proposé en premier dès que WFS-222 sera fusionné.
