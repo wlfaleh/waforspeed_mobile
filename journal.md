@@ -4294,3 +4294,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:32:06 — Limite de 80 Mo du décor supprimée (décision de l'utilisateur) (po-scrum-master)
 - WFS-273 RG-02 : plus de seuil ; mémoire notée au journal seulement ; tout chargé avant la conduite, rien en course, repli si manque de mémoire. Règle ajoutée aux consignes du PO.
+
+### 2026-11-07 22:33:42 — Début WFS-262 : attribué à Claude, agent dev X (po-scrum-master)
+- Ticket : WFS-262 [TECHNIQUE] Performance 3 (cache de pipelines, variantes au chargement, cadence stable), P1, épic E4, règles `regles-de-gestion/WFS-262.md`. Demandé par l'agent dev X, libre après la fusion de WFS-246 (#229, ad94d9d, 🟡).
+- Ordre du bandeau : WFS-281 (n° 00) est du domaine trafic (skill `expert-conduite`, fichiers de WFS-232) : hors du domaine performance de cette session (une session = un domaine), il reste pour un développeur du trafic. WFS-273 dépend de WFS-268, rouvert à 22:28 pour agent 5, et touche les mêmes arbres : il attend. WFS-262 (prévu pour l'agent dev X à la suite de WFS-246) est pris en **exception PO**, en parallèle de WFS-268 (agent 5) et WFS-239 (agent 3), fichiers séparés.
+- Zone autorisée : création des pipelines et rendu (`src/render/**`, `shaders/**`), accroches ≤ 10 lignes au chargement et dans les réglages (ligne « Cadence »), `tests/**` du ticket. Interdit : `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.cpp`, `foule_apparition.h` (WFS-268), `qualite_banc.cpp` (WFS-239), `nuit.cpp`, `player.*`, `camera_vue.*`, `traffic*`, taille des boutons, `.github/**`, `tools/qa/**`, iOS.
+- Critères : 0 pipeline créé en course (compteur), chargement plus court au 2e lancement, écart type de la durée d'image au journal ; test de parcours complet ; 🟡 À valider (utilisateur) après fusion. Branche `feature/waforspeed-262`, premier commit poussé tout de suite.
