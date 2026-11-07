@@ -1,19 +1,25 @@
-# Bancs du matin, chaque jour à 07:00 heure de Paris — WFS-252 / WFS-277 (décisions de l'utilisateur, 2026-11-07) :
-# « on lance les CI ensuite lui [la QA] il teste ». À chaque envoi sur main, build.yml ne garde que les tests CPU, le parcours complet,
-# l'endurance et l'APK ; ici, sur la dernière version de main :
-#  - tous les groupes de captures du banc d'essai PC (tools/qa/banc_groupe.sh, le même script que build.yml) ;
-#  - le banc du réalisme en deux parties (WFS-251) puis la fusion de ses rapports (identiques à ceux d'un banc complet) ;
-#  - la publication de toutes les captures dans la Release « apercu » (une seule publication : publier_apercu.sh retire les captures
-#    absentes du run), lues ensuite par la QA (qa-lead) pour la recette du matin.
-# Un écart (code 3), une partie absente ou une étape en double rend le run rouge. Artefacts gardés 30 jours.
-# GitHub ne connaît que l'heure UTC : deux déclencheurs (05:00 UTC = 07:00 en heure d'été, 06:00 UTC = 07:00 en heure d'hiver),
-# et le job « heure » ne laisse passer que celui qui tombe à 7 h à Paris. Lancement à la main possible (workflow_dispatch).
+# Bancs du matin, chaque jour à 04:00 heure de Paris — WFS-252 / WFS-277 (décisions de l'utilisateur, 2026-11-07 : « la CI exécute
+# tous les bancs à 4 h, émulateur inclus », QA à 7 h ; option A : le ✅ des tickets vient de ce run). Sur la dernière version de main :
+#  1-2. compilation (jeu et tests), tests CPU et licences ;
+#  3-4, 8-19. tous les groupes de captures du banc d'essai PC (tools/qa/banc_groupe.sh, le même script que build.yml), réalisme
+#        en deux parties (WFS-251) puis fusion de ses rapports (identiques à ceux d'un banc complet) ;
+#  5. endurance et chauffe (remplacent le banc de nuit de build.yml) ;
+#  6-7. APK et AAB, publication dans la Release « apercu » et notification « APK du matin » ;
+#  21. émulateur Android sur cet APK (parcours mvp) : à titre d'information la première semaine (un nouvel essai s'il échoue,
+#      jamais rouge), photos et journal dans la Release « simulateur-matin » ;
+#  22. publication de toutes les captures dans la Release « apercu » (une seule publication : publier_apercu.sh retire les captures
+#      absentes du run) ;
+#  23. statuts : robot statuts.yml (tickets 🟣 du run en ✅ si le run est vert) ;
+#  24. message « Recette prête » pour la QA (issue « 🧪 Recette QA du matin », mention de l'utilisateur).
+# Un écart (code 3), un test rouge ou une partie absente rend le run rouge. Artefacts gardés 30 jours.
+# GitHub ne connaît que l'heure UTC : deux déclencheurs (02:00 UTC = 04:00 en heure d'été, 03:00 UTC = 04:00 en heure d'hiver),
+# et le job « heure » ne laisse passer que celui qui tombe à 4 h à Paris. Lancement à la main possible (workflow_dispatch).
 name: Bancs du matin (captures, réalisme, QA)
 
 on:
   schedule:
-    - cron: '0 5 * * *'   # 07:00 à Paris en heure d'été (UTC+2)
-    - cron: '0 6 * * *'   # 07:00 à Paris en heure d'hiver (UTC+1)
+    - cron: '0 2 * * *'   # 04:00 à Paris en heure d'été (UTC+2)
+    - cron: '0 3 * * *'   # 04:00 à Paris en heure d'hiver (UTC+1)
   workflow_dispatch:
 
 permissions:
@@ -28,13 +34,24 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       lancer: ${{ steps.h.outputs.lancer }}
+      numero: ${{ steps.n.outputs.numero }}
     steps:
       - id: h
-        name: 7 h à Paris ?
+        name: 4 h à Paris ?
         run: |
           h=$(TZ=Europe/Paris date +%H)
-          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 07 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris)"
-          else echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : ce déclencheur n'est pas celui de 7 h (heure d'été / d'hiver), rien à faire"; fi
+          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 04 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris)"
+          else echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : ce déclencheur n'est pas celui de 4 h (heure d'été / d'hiver), rien à faire"; fi
+      # numéro de construction de l'APK du matin = celui du dernier run de build.yml : le versionCode Android (build.gradle :
+      # GITHUB_RUN_NUMBER) ne recule jamais, l'APK s'installe par-dessus celui de la veille et le suivant par-dessus lui
+      - id: n
+        name: Numéro de construction de l'APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/actions/workflows/build.yml/runs?per_page=1" --jq '.workflow_runs[0].run_number' 2>/dev/null || true)
+          case "$n" in ''|*[!0-9]*) echo "::error::numéro du dernier run de build.yml illisible ($n)"; exit 1;; esac
+          echo "numero=$n" >> "$GITHUB_OUTPUT"; echo "APK du matin : construction $n (dernier run de build.yml)"
 
   compilation:
     needs: heure
@@ -50,14 +67,36 @@ jobs:
             timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
             [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
           done
-      - name: Compilation
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build --target wfs_bench
-      - name: Archive (wfs_bench)
+      - name: Compilation (jeu et tests)
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
+      - name: Archive (wfs_bench, tests, liste des tests)
         run: |
-          [ -x build/wfs_bench ] || { echo "::error::wfs_bench absent après la compilation"; exit 1; }
-          tar -cf compilation.tar -C build wfs_bench
+          cd build
+          ls -1 test_* | sort > liste-tests.txt
+          [ -x wfs_bench ] && [ -s liste-tests.txt ] || { echo "::error::wfs_bench ou tests absents après la compilation"; exit 1; }
+          tar -cf ../compilation.tar wfs_bench liste-tests.txt $(cat liste-tests.txt)
       - uses: actions/upload-artifact@v4
         with: { name: compilation-matin, path: compilation.tar, retention-days: 1 }
+
+  tests:
+    name: tests CPU et licences
+    needs: compilation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (comme le groupe texte de build.yml)
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y libvulkan1 mesa-vulkan-drivers && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - uses: actions/download-artifact@v4
+        with: { name: compilation-matin }
+      - name: Tests CPU (tous les build/test_*) et licences
+        run: |
+          mkdir -p build && tar -xf compilation.tar -C build && bash tools/qa/verifier_compilation.sh build
+          bash tools/qa/tests_cpu.sh build && python3 tools/qa/verifier_licences.py
 
   banc:
     name: banc (${{ matrix.groupe }})
@@ -67,7 +106,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 14 groupes : ceux de build.yml jusqu'à WFS-252, le réalisme en deux parties (WFS-251), conduite et chocs à part (WFS-252)
         groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs, realisme-1, realisme-2]
     steps:
       - uses: actions/checkout@v4
@@ -79,13 +117,143 @@ jobs:
           done
       - uses: actions/download-artifact@v4
         with: { name: compilation-matin }
-      - name: Jeu compilé
-        run: mkdir -p build && tar -xf compilation.tar -C build && [ -x build/wfs_bench ]
+      - name: Jeu compilé (archive vérifiée)
+        run: mkdir -p build && tar -xf compilation.tar -C build && bash tools/qa/verifier_compilation.sh build
       - name: Captures (${{ matrix.groupe }})
         run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: 'captures-${{ matrix.groupe }}', path: captures, retention-days: 30 }
+
+  endurance:
+    name: endurance et chauffe
+    needs: compilation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils (Vulkan logiciel, couches de validation)
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y libvulkan1 mesa-vulkan-drivers vulkan-validationlayers && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
+      - uses: actions/download-artifact@v4
+        with: { name: compilation-matin }
+      - name: Jeu compilé (archive vérifiée)
+        run: mkdir -p build && tar -xf compilation.tar -C build && bash tools/qa/verifier_compilation.sh build
+      - name: Endurance (WFS-91)
+        run: tools/qa/endurance.sh ./build/wfs_bench captures assets/
+      - name: Chauffe (banc WFS-123)
+        if: success() || failure()
+        run: tools/qa/chauffe.sh ./build/wfs_bench captures assets/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: endurance-matin, path: captures, retention-days: 30 }
+
+  android:
+    needs: heure
+    if: needs.heure.outputs.lancer == 'oui'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: NDK, CMake et SDK 35 Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+      - name: Construction de l'APK et de l'AAB (construction du dernier run de build.yml)
+        working-directory: android
+        run: GITHUB_RUN_NUMBER=${{ needs.heure.outputs.numero }} gradle --no-daemon testReleaseUnitTest assembleRelease bundleRelease
+      - name: Renommer
+        run: cp android/app/build/outputs/apk/release/app-release.apk WaForSpeed.apk
+      - name: Vérification de la signature de l'APK (même clé à chaque build, WFS-118)
+        run: |
+          attendue=00ee71cfe42fbe00c052a7a62aa29e1fef4f9f32079ee18f4ddde93770e11793
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$apksigner" verify --print-certs WaForSpeed.apk | tee signature.txt
+          empreinte=$(grep -m1 'certificate SHA-256 digest' signature.txt | awk '{print $NF}')
+          [ "$empreinte" = "$attendue" ] || { echo "::error::APK signé avec une autre clé que la clé de test fixe (WFS-118)"; exit 1; }
+      - name: SDK 35 et pages de 16 Ko (APK, WFS-129)
+        run: |
+          aapt2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$aapt2" dump badging WaForSpeed.apk | grep -E "^(package|sdkVersion|targetSdkVersion)" | tee sdk.txt
+          grep -q "targetSdkVersion:'35'" sdk.txt || { echo "::error::l'APK ne cible pas Android 15 (WFS-129)"; exit 1; }
+          bash tools/qa/pages_16k.sh WaForSpeed.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: apk-matin, path: WaForSpeed.apk, retention-days: 30 }
+
+  publication-apk:
+    needs: [heure, android]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    permissions: { contents: write, issues: write, actions: read }
+    concurrency:
+      group: apercu-apk-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/download-artifact@v4
+        with: { name: apk-matin, path: dl/apk }
+      - name: APK du matin dans la Release d'aperçu (même chemin que build.yml)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PUBLIER: apk
+        run: GITHUB_RUN_NUMBER=${{ needs.heure.outputs.numero }} bash tools/qa/publier_apercu.sh
+      - name: Notification « APK du matin » (issue « 📱 Nouvel APK de main »)
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ needs.heure.outputs.numero }}
+          ORIGINE: matin
+        run: bash tools/qa/notifier_apk.sh
+
+  emulateur:
+    name: émulateur Android (information)
+    needs: android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    continue-on-error: true   # première semaine : à titre d'information, jamais rouge pour le run (Smart Brain, validé par l'utilisateur)
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: apk-matin }
+      - name: Activer KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Parcours mvp sur émulateur (un nouvel essai s'il échoue)
+        timeout-minutes: 45
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: './tools/qa/emulateur.sh WaForSpeed.apk qa-sortie mvp || { echo "::warning::émulateur, 1er essai en échec, nouvel essai"; ./tools/qa/emulateur.sh WaForSpeed.apk qa-sortie mvp; }'
+      - name: Release « simulateur-matin » (photos et journal, remplacés chaque matin)
+        if: always() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view simulateur-matin > /dev/null 2>&1 || gh release create simulateur-matin --prerelease --target "$GITHUB_SHA" \
+            --title "Émulateur Android — bancs du matin" --notes "Parcours mvp sur émulateur Android 14 (GPU logiciel), chaque matin (WFS-277)."
+          files=""; for f in qa-sortie/*; do [ -s "$f" ] && files="$files $f"; done
+          [ -n "$files" ] && gh release upload simulateur-matin $files --clobber || echo "::warning::aucune sortie de l'émulateur à publier"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: emulateur-matin, path: qa-sortie, retention-days: 30 }
 
   fusion:
     name: rapports du réalisme (fusion des deux parties)
@@ -115,16 +283,10 @@ jobs:
           done
           WFS_BANC=realisme WFS_REALISME_PARTIE=fusion ./build/wfs_bench captures assets/
           rm -f captures/*.morceaux
-          {
-            echo "### Banc du réalisme — run ${{ github.run_number }} (commit \`${GITHUB_SHA::7}\`)"
-            echo '```'; grep -E "^== |^  [a-zé ]+ : " captures/realisme-fidelite.txt | head -40 || true; echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: captures-realisme, path: 'captures/*.txt', retention-days: 30 }
 
-  # toutes les captures du matin dans la Release « apercu » (lues par la QA) ; seulement celles qui ont changé (WFS-106) ;
-  # échec = avertissement ; même groupe de concurrence que l'ancienne publication de build.yml (une écriture à la fois)
   publication-captures:
     needs: [heure, banc, fusion]
     if: ${{ !cancelled() && needs.heure.outputs.lancer == 'oui' && github.ref == 'refs/heads/main' }}
@@ -140,10 +302,37 @@ jobs:
       - uses: actions/download-artifact@v4
         continue-on-error: true   # aucun artefact (banc en échec) : le script le dit et finit vert
         with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
-      - name: Captures dans la Release d'aperçu (seulement celles qui ont changé ; WFS-106)
+      - name: Toutes les captures dans la Release « apercu » (seulement celles qui ont changé ; WFS-106)
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           PUBLIER: captures
           BANC: ${{ needs.banc.result }}
         run: bash tools/qa/publier_apercu.sh
+
+  recette:
+    name: message « Recette prête » pour la QA
+    needs: [heure, compilation, tests, banc, endurance, android, publication-apk, emulateur, fusion, publication-captures]
+    if: ${{ always() && needs.heure.outputs.lancer == 'oui' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: { contents: read, issues: write, actions: read }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Message dans l'issue « 🧪 Recette QA du matin »
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RESULTATS: |-
+            compilation : ${{ needs.compilation.result }}
+            tests CPU et licences : ${{ needs.tests.result }}
+            bancs de captures (14 groupes) : ${{ needs.banc.result }}
+            rapports du réalisme : ${{ needs.fusion.result }}
+            endurance et chauffe : ${{ needs.endurance.result }}
+            APK : ${{ needs.android.result }}
+            publication de l'APK : ${{ needs.publication-apk.result }}
+            publication des captures : ${{ needs.publication-captures.result }}
+            émulateur (information) : ${{ needs.emulateur.result }}
+        run: bash tools/qa/recette_prete.sh
