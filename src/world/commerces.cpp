@@ -19,6 +19,8 @@
 #include "../game/player.h"
 #include "../game/trace_cartes.h"   // WFS-139 (accroche)
 #include "../game/track.h"
+#include "../render/lots_decor.h"   // WFS-268 : interrupteur g_lotsDecor
+#include "../render/lots_decor_tour.h"   // WFS-268 : matrices des tours
 #include "enseignes.h"
 #include "ville_quartiers.h"
 #include "zones.h"
@@ -118,7 +120,7 @@ class Commerces : public System {
 public:
     const char* name() const override { return "commerces"; }
     void init(Renderer& r, const GameView& g) override {
-        actif_ = false;
+        actif_ = false; prepare_ = false;
         if (!g.map || !g.track) return;
         ville_ = !std::strcmp(g.map->id, "ville"); plage_ = !std::strcmp(g.map->id, "plage");
         if (!ville_ && !plage_) return;
@@ -137,6 +139,15 @@ public:
         g_premiereTerrasse = -1;
         if (ville_) for (const Client& cl : clientsTerrasses(*g.map, len_))   // plus proche du départ, côté droit
             if (cl.s > 40 && cl.lat > 0 && (g_premiereTerrasse < 0 || cl.s < g_premiereTerrasse)) g_premiereTerrasse = cl.s;
+        if (lots::g_lotsDecor) {   // WFS-268 (RG-08) : tous les morceaux du tour 0 préparés ici (écran de chargement)
+            for (const Shop& sh : SHOPS) if (ville_) atlas_.materiau(r, sh.fg, g.night ? 1.4f : 0.6f);   // matériaux des lettres : créés ici, pas en course
+            tours_.mesurer(*g.track);
+            limite_ = len_;
+            for (int64_t c = 0; c * GROUPE < len_; c++) construire(r, *g.track, c);
+            limite_ = INT64_MAX;
+            prepare_ = true;
+            WFS_LOG("vie (WFS-268) : %zu morceaux de commerces et serviettes préparés au chargement", morceaux_.size());
+        }
         WFS_LOG("vie : %zu commerces, %zu clients attablés, %zu serviettes (%s)", ville_ ? commerces(*g.map, len_).size() : 0,
                 ville_ ? clientsTerrasses(*g.map, len_).size() : 0, plage_ ? serviettes(*g.map, len_).size() : 0, g.map->id);
     }
@@ -145,6 +156,18 @@ public:
         frame_++;
         Track& t = *g.track;
         const int64_t aP = (int64_t)std::floor(g.player->dist / SEG), pc = aP / GROUPE;
+        if (prepare_) {   // WFS-268 : morceaux du tour 0 préparés, dessinés avec la matrice du tour ; même fenêtre ; aucune création
+            const int64_t a0 = (pc - ARRIERE) * GROUPE, a1 = (pc + AVANT + 1) * GROUPE - 1;
+            for (int64_t k = tours_.tourDe(a0); k <= tours_.tourDe(a1); k++) {
+                const mat4& M = tours_.matrice(t, k);
+                for (auto& [c, m] : morceaux_) {
+                    const int64_t s0 = k * len_ + c * GROUPE, s1 = k * len_ + std::min(len_, (c + 1) * GROUPE);
+                    if (s1 <= a0 || s0 > a1) continue;
+                    dessinerMorceau(r, g, m, M);
+                }
+            }
+            return;
+        }
         for (auto it = morceaux_.begin(); it != morceaux_.end();) {
             if (it->first < pc - ARRIERE || it->first > pc + AVANT) { cimetiere(it->second); it = morceaux_.erase(it); } else ++it;
         }
@@ -153,12 +176,7 @@ public:
             if (frame_ > it->first + 3) { r.destroy(it->second); it = graveyard_.erase(it); } else ++it;
         }
         const mat4 I = mat4::identity();
-        for (auto& [k, m] : morceaux_) {
-            if (m.pal.indexCount) r.draw(m.pal, palette_.materiau, I);
-            if (m.vitre.indexCount) r.draw(m.vitre, g.night ? vitreNuit_ : vitreJour_, I);
-            if (g.night ? m.nuit.indexCount : m.jour.indexCount) r.draw(g.night ? m.nuit : m.jour, g.night ? bougie_ : palette_.materiau, I);
-            for (auto& [coul, me] : m.textes) if (me.indexCount) r.draw(me, atlas_.materiau(r, coul, g.night ? 1.4f : 0.6f), I);
-        }
+        for (auto& [k, m] : morceaux_) dessinerMorceau(r, g, m, I);
     }
     void shutdown(Renderer& r) override {
         if (!actif_) return;
@@ -173,6 +191,12 @@ public:
     }
 private:
     struct Morceau { Mesh pal, vitre, jour, nuit; std::map<unsigned, Mesh> textes; };
+    void dessinerMorceau(Renderer& r, const GameView& g, Morceau& m, const mat4& M) {
+        if (m.pal.indexCount) r.draw(m.pal, palette_.materiau, M);
+        if (m.vitre.indexCount) r.draw(m.vitre, g.night ? vitreNuit_ : vitreJour_, M);
+        if (g.night ? m.nuit.indexCount : m.jour.indexCount) r.draw(g.night ? m.nuit : m.jour, g.night ? bougie_ : palette_.materiau, M);
+        for (auto& [coul, me] : m.textes) if (me.indexCount) r.draw(me, atlas_.materiau(r, coul, g.night ? 1.4f : 0.6f), M);
+    }
     void cimetiere(Morceau& m) {
         for (Mesh* x : {&m.pal, &m.vitre, &m.jour, &m.nuit}) if (x->indexCount) graveyard_.push_back({frame_, *x});
         for (auto& [c, x] : m.textes) if (x.indexCount) graveyard_.push_back({frame_, x});
@@ -223,7 +247,7 @@ private:
     }
     void construire(Renderer& r, Track& t, int64_t c) {
         Geo pal, vitre, jour, nuit; std::map<unsigned, Geo> textes;
-        const int64_t a0 = c * GROUPE, a1 = a0 + GROUPE;
+        const int64_t a0 = c * GROUPE, a1 = std::min(a0 + GROUPE, limite_);   // WFS-268 : borné au tour à la préparation
         const int64_t lap = (int64_t)std::floor((double)a0 / len_) * len_;
         auto dans = [&](int64_t seg, int64_t& abs) {
             for (int64_t L : {lap, lap + len_}) { const int64_t a = seg + L; if (a >= a0 && a < a1) { abs = a; return true; } }
@@ -243,6 +267,9 @@ private:
         for (auto& [coul, gg] : textes) mk(gg, m.textes[coul]);
     }
 
+    bool prepare_ = false;   // WFS-268
+    int64_t limite_ = INT64_MAX;
+    lots::MatricesTours tours_;
     bool actif_ = false, ville_ = false, plage_ = false;
     const MapDef* map_ = nullptr;
     int64_t len_ = 0;

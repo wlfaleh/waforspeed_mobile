@@ -186,7 +186,7 @@ public:
         piste_ = g.track;   // WFS-179
         const size_t nProm = gens_.size();
         peupler(*g.map, (int64_t)g.track->segmentCount());
-        const size_t nMarche = gens_.size();
+        size_t nMarche = gens_.size();
         {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
             const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;
             for (const vie::Client& c : vie::clientsTerrasses(*g.map, L)) { P.s = c.s; P.lat = c.lat; P.pose = 1; P.y = c.y; P.yawRel = c.yaw; gens_.push_back(P); }
@@ -194,10 +194,23 @@ public:
             P.assis = false; for (const vie::Baigneur& b : vie::baigneurs(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 3; P.y = -2.25; P.yawRel = b.yaw; gens_.push_back(P); }
             for (const vie::Baigneur& b : plage::gens(*g.map, L)) { P.s = b.s; P.lat = b.lat; P.pose = 4; P.y = vie::hauteurSable(b.lat) + 0.02; P.yawRel = b.yaw; gens_.push_back(P); }   // WFS-180 : foule des fêtes, joueurs
         }
-        const size_t nDecor = gens_.size();
+        size_t nDecor = gens_.size();
         if (ville_) for (const ville::Passant& c : ville::passants(*g.map, *g.track)) {   // WFS-137 (RG-02) : piétons des passages zébrés
             if (!garder()) continue;   // WFS-222 (RG-07)
             Personne P; P.s = c.s; P.lat = c.lat; P.v = c.v; P.dir = c.dir; P.feu = c.feu; P.pose = 5; P.yawFixe = true; P.y = 0.15; gens_.push_back(P); }
+        size_t avant268 = gens_.size();
+        if (ville_ || plage_) {   // WFS-268 (RG-07, ordre de l'utilisateur) : Ville et Corniche, une personne sur deux en moins (tirage
+            // stable : on garde celles de rang impair) ; les promeneurs avec chien (début de la liste) restent : la Ville dessine leur chien
+            size_t k = 0, j = nProm, m = nMarche, d = nDecor;
+            for (size_t i = nProm; i < gens_.size(); i++) {
+                if ((k++ % 2) == 1) gens_[j++] = gens_[i];
+                if (i + 1 == nMarche) m = j;   // bornes des groupes recomptées (journal de WFS-222)
+                if (i + 1 == nDecor) d = j;
+            }
+            if (nMarche == nProm) m = nProm;
+            if (nDecor == nProm) d = nProm;
+            gens_.resize(j); nMarche = m; nDecor = d;
+        }
         if (gens_.empty()) return;
         if (!chargerPersonnage(r, "people/homme.wfp", modeles_[0]) || !chargerPersonnage(r, "people/femme.wfp", modeles_[1])) {
             WFS_ERR("Piétons indisponibles (assets/people) : aucun piéton affiché");   // pas de silhouettes de repli
@@ -208,7 +221,7 @@ public:
         if (g_bancFamilles) placerFamillesBanc(g.player ? g.player->position / SEG : 0.0);
         actif_ = true;
         zoneDense();   // WFS-257 (banc)
-        WFS_LOG("Piétons : %zu personnes (%s)", gens_.size(), id);
+        WFS_LOG("Piétons : %zu personnes (%s) ; WFS-268 (RG-07) : %zu avant la moitié en moins", gens_.size(), id, avant268);
         // WFS-222 (RG-07) : détail (marcheurs, promeneurs et passants : moitié des tirages ; assis et baigneurs : inchangés)
         WFS_LOG("Piétons (WFS-222) : %zu à pied (promeneurs %zu, marcheurs %zu, passants %zu ; %d omis sur ordre de l'utilisateur), %zu assis ou baigneurs",
                 nProm + (nMarche - nProm) + (gens_.size() - nDecor), nProm, nMarche - nProm, gens_.size() - nDecor, omis_, nDecor - nMarche);

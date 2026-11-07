@@ -4,6 +4,8 @@
 // de y et décalé : monde(tour k) = R(k·θ) (x − p0) + q_k, avec p0 le début du tour 0, q_k le début du tour k et θ la
 // différence de cap entre le début du tour 1 et celui du tour 0 (signe vérifié sur un point du tour, convention de Track).
 #pragma once
+#include <array>
+#include <climits>
 #include <cmath>
 #include <cstdint>
 #include "../core/math.h"
@@ -43,5 +45,22 @@ inline mat4 matriceDuTour(Track& t, const Tour& tr, int64_t k) {
     // notre R : x' = c·x − s·z, z' = s·x + c·z ; rotateY(a) de math.h : x' = c·x + s·z, z' = −s·x + c·z → rotateY(−k·θ)
     return translate(qk) * rotateY((float)(-(double)k * tr.theta)) * translate(tr.p0 * -1.f);
 }
+
+// WFS-268 (RG-08) : matrices des tours pour les systèmes qui préparent leur contenu du tour 0 au chargement (immeubles du kit,
+// commerces) ; cache des 8 derniers tours, aucune allocation
+struct MatricesTours {
+    Tour tour{};
+    void mesurer(Track& t) { tour = mesurerTour(t); for (Case& c : cases_) c = Case{}; }
+    int64_t L() const { return tour.L; }
+    int64_t tourDe(int64_t a) const { const int64_t n = tour.L; return n <= 0 ? 0 : (a >= 0 ? a / n : -((-a + n - 1) / n)); }
+    const mat4& matrice(Track& t, int64_t k) {
+        Case& c = cases_[(size_t)(((k % 8) + 8) % 8)];
+        if (c.k != k) { c.k = k; c.m = matriceDuTour(t, tour, k); }
+        return c.m;
+    }
+private:
+    struct Case { int64_t k = INT64_MIN; mat4 m = mat4::identity(); };
+    std::array<Case, 8> cases_{};
+};
 
 } // namespace wfs::lots

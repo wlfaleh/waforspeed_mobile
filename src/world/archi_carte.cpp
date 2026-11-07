@@ -2,6 +2,7 @@
 #include "archi_carte.h"
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -13,6 +14,8 @@
 #include "../game/player.h"
 #include "../game/track.h"
 #include "../render/eclairage_unites.h"
+#include "../render/lots_decor.h"   // WFS-268 : interrupteur g_lotsDecor
+#include "../render/lots_decor_tour.h"   // WFS-268 : matrices des tours
 #include "../render/renderer.h"
 #include "archi_geo.h"
 
@@ -90,6 +93,8 @@ public:
             mats_[S_VITRE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         }
         pret_ = true;
+        // WFS-268 (RG-08) : Ville et Corniche : tous les morceaux, aux 3 niveaux de détail, préparés ici (écran de chargement)
+        if (lots::g_lotsDecor && g.map && (!std::strcmp(g.map->id, "ville") || !std::strcmp(g.map->id, "plage"))) preparerTout(r, *g.track);
         size_t tri = 0;
         for (const Bat& b : g_bats) { Batiment x; construire(b.plan, b.profondeur, 0, x); for (const Maillage& m : x.part) tri += m.triangles(); }
         WFS_LOG("archi (WFS-161) : %zu bâtiments du kit posés, %zu triangles au niveau de détail 0 (tous), nuit %s", g_bats.size(), tri, nuit ? "oui" : "non");
@@ -98,6 +103,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (!pret_ || g.sceneDediee || !g.player || !g.track) return;
         frame_++;
+        if (!prets_.empty()) { dessinerPrets(r, *g.track, (int64_t)std::floor(g.player->dist / SEG)); return; }   // WFS-268
         const int64_t L = std::max<int64_t>(1, (int64_t)g.track->segmentCount());
         const int64_t aP = ((int64_t)std::floor(g.player->dist / SEG) % L + L) % L;   // tours suivants : même plan (limite : le raccord du tour)
         auto lodVoulu = [&](int64_t c) {   // distance du joueur au morceau (m), au plus près
@@ -137,11 +143,57 @@ public:
         for (auto& x : cimetiere_) r.destroy(x.second);
         if (pret_) for (Material& m : mats_) r.destroy(m);
         morceaux_.clear(); cimetiere_.clear();
+        for (auto& niv : prets_) for (auto& m : niv) for (Mesh& x : m) if (x.indexCount) r.destroy(x);   // WFS-268
+        prets_.clear(); avecBat_.clear();
         pret_ = false;
         vider();   // la carte suivante pose ses propres bâtiments (ou aucun : anciennes boîtes)
     }
 
 private:
+    // WFS-268 (RG-08) : tous les morceaux du tour 0, aux 3 niveaux de détail, construits en parallèle puis envoyés au GPU une fois
+    void preparerTout(Renderer& r, Track& t) {
+        const auto t0 = std::chrono::steady_clock::now();
+        tours_.mesurer(t);
+        const int64_t L = std::max<int64_t>(1, (int64_t)t.segmentCount()), n = (L + MORCEAU - 1) / MORCEAU;
+        avecBat_.assign((size_t)n, 0);
+        for (const Bat& b : g_bats) if (b.seg >= 0 && b.seg / MORCEAU < n) avecBat_[(size_t)(b.seg / MORCEAU)] = 1;
+        std::vector<Cpu> cpu((size_t)n * 3);
+        jobs().parallelFor((int)cpu.size(), 1, [&](int b0, int e0) {   // construction pure (aucun Vulkan) sur les fils de travail
+            for (int i = b0; i < e0; i++) if (avecBat_[(size_t)(i / 3)]) for (const Bat& x : g_bats) if (x.seg / MORCEAU == i / 3) ajouter(x, i % 3, cpu[(size_t)i]);
+        });
+        prets_.assign((size_t)n, {});
+        size_t sommets = 0, octets = 0, parNiveau[3] = {0, 0, 0};
+        for (int64_t c = 0; c < n; c++) for (int lod = 0; lod < 3; lod++) {
+            for (int s = 0; s < NB_SLOTS; s++) parNiveau[lod] += cpu[(size_t)(c * 3 + lod)].v[s].size();
+            Cpu& u = cpu[(size_t)(c * 3 + lod)];
+            for (int s = 0; s < NB_SLOTS; s++) if (!u.i[s].empty()) {
+                prets_[(size_t)c][(size_t)lod][(size_t)s] = r.makeMesh(u.v[s], u.i[s], false);
+                sommets += u.v[s].size(); octets += u.v[s].size() * sizeof(Vertex) + u.i[s].size() * 4;
+            }
+        }
+        WFS_LOG("archi (WFS-268) : %lld morceaux préparés au chargement (3 niveaux de détail), %zu sommets (niveaux 0/1/2 : %zu / %zu / %zu), %.1f Mo GPU, %.0f ms", (long long)n,
+                sommets, parNiveau[0], parNiveau[1], parNiveau[2], octets / 1048576.0, std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count());
+    }
+    // même fenêtre et mêmes niveaux de détail que la gestion par morceaux, pour chaque tour visible (matrice du tour) ; aucune création
+    void dessinerPrets(Renderer& r, Track& t, int64_t aAbs) {
+        const int64_t L = tours_.L(), a0 = aAbs - (int64_t)(VUE_ARRIERE_M / SEG_M), a1 = aAbs + (int64_t)(VUE_AVANT_M / SEG_M);
+        if (L <= 0) return;
+        for (int64_t k = tours_.tourDe(a0); k <= tours_.tourDe(a1); k++) {
+            const mat4& M = tours_.matrice(t, k);
+            const int64_t base = k * L;
+            for (int64_t c = 0; c < (int64_t)prets_.size(); c++) {
+                if (!avecBat_[(size_t)c]) continue;
+                const int64_t s0 = base + c * MORCEAU, s1 = base + std::min(L, (c + 1) * MORCEAU);
+                if (s1 <= a0 || s0 > a1) continue;
+                const double d = (aAbs < s0 ? (double)(s0 - aAbs) : aAbs >= s1 ? (double)(aAbs - s1) : 0.0) * SEG_M;
+                const int lod = d < LOD0_M ? 0 : d < LOD1_M ? 1 : 2;
+                for (int s = 0; s < NB_SLOTS; s++) { const Mesh& m = prets_[(size_t)c][(size_t)lod][(size_t)s]; if (m.indexCount) r.draw(m, mats_[s], M); }
+            }
+        }
+    }
+    std::vector<std::array<std::array<Mesh, NB_SLOTS>, 3>> prets_;   // WFS-268 : [morceau][niveau][matériau]
+    std::vector<char> avecBat_;
+    lots::MatricesTours tours_;
     struct Morceau { int lod = 0; std::array<Mesh, NB_SLOTS> m{}; };
     bool parMorceau(int64_t c) const { for (const Bat& b : g_bats) if (b.seg / MORCEAU == c) return true; return false; }
     bool pret_ = false;
