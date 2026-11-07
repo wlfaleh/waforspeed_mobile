@@ -4,7 +4,7 @@
 layout(set = 0, binding = 0) uniform sampler2D hdr;        // passe finale : scène HDR ; passes du bloom : image source
 layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : bloom remonté ; remontée : niveau inférieur
 // params : x exposition, y sortie sRGB matérielle, z force du bloom, w exposition physique k la nuit (WFS-230 : vision de nuit ;
-//          0 de jour : image inchangée)
+//          0 de jour : image inchangée ; WFS-276 : négative dans la Ville = sans relèvement des basses lumières)
 // bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
 //                   y poids du niveau (remontée), z pas du flou en texels de la source / niveau inférieur présent (remontée)
 layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;
@@ -92,8 +92,8 @@ void main() {
     int mode = int(pc.bloom.x + 0.5);
     if (mode != 0) { outColor = passeBloom(mode); return; }
     vec2 uvS = vUv * (pc.bloom.w > 0.0 ? pc.bloom.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
-    vec3 c = visionNuit(texture(hdr, uvS).rgb, pc.params.w) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
-    c = basseLumiereNuit(c, pc.params.w);   // WFS-276 : basses lumières de la nuit relevées (rien de jour)
+    vec3 c = visionNuit(texture(hdr, uvS).rgb, abs(pc.params.w)) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
+    c = basseLumiereNuit(c, pc.params.w);   // WFS-276 : basses lumières de la nuit relevées (rien de jour ; params.w < 0 : Ville, rien)
     // léger halo autour des zones très lumineuses (soleil, reflets).
     // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
     // carré de 8 × 8 pixels sans trou (WFS-32 : l'ancienne grille de 5 × 5 lectures espacées de 3 pixels transformait
