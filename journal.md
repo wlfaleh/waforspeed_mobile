@@ -2597,3 +2597,107 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Zone autorisée : `src/game/player.*`, banc de conduite dans `src/game/**` (E3), `tests/**` ; accroches ≤ 10 lignes annoncées au journal : `src/ui/ecrans/reglages.cpp` (E8), sauvegarde. Interdit : `configgame.json`, taille ou place des boutons (ordre permanent), iOS (gel), `game.*` / noyau.
 - Critères : `regles-de-gestion/WFS-217.md` (RG-01 à RG-06) : aide qui suit la tangente locale lissée, cap borné élargi selon la courbure, aucun saut de cap > 0,05 rad par image ; réglage enregistré, Activée par défaut ; désactivée = conduite libre ; ordinateur non touché ; banc sur 4 cartes, captures `conduite-epingle` et `conduite-rond-point`, parcours complet 0 écart, tests CPU.
 - Plan court : mesurer la cause au banc, corriger les trois aides de `player.cpp`, ajouter le réglage et sa sauvegarde, tests, captures, fusion (confiance > 50 % ou CI de branche à la main une fois), ligne `qa/Check.md`.
+
+### 2026-11-07 09:49:46 — WFS-213 fusionné : plus d'écran blanc après le chargement d'une voiture (Claude, agent 1)
+- PR #184, squash 941e475, **fusion par confiance**, zone E13 : `src/render/eclairage_physique.cpp`, `src/render/eclairage_exposition.h` (nouveau), `tests/fidelite_lumiere.cpp`.
+- **Cause** (banc `vitrines` reproduit : 14 vitrines sur 16 et `course-sf90` blanches, 50 % saturés) : `eclairage_physique.cpp`, `SondesIbl::lireRelecture` : une capture d'environnement (6 images, une face par image) dont des faces n'avaient jamais reçu leur exposition `kFace` (restée à 0, ramenée à 10⁻¹²) était relue ×10¹² : sonde à **1,36·10¹¹ cd/m²**, IBL énorme, EV bloqué à 15 → image blanche.
+- **Correction** : RG-02 k des faces remis à « inconnu » à chaque capture, capture abandonnée si une face n'a pas d'exposition connue ; sonde ou mesure non finie ou hors de 10⁻⁷ à 10⁵ cd/m² rejetée (dernière valeur juste gardée), EV jamais non fini ; RG-01 piste, carte ou voiture changée = nouvelle scène (sondes oubliées, EV à la valeur du moment, recalé sur la 1re mesure valide) ; RG-03 `eclairage_exposition.h` testé par `fidelite_lumiere` (3 cycles init / shutdown avec NaN, infini, 1,36·10¹¹ : EV toujours dans [10 ; 15]), 93 / 93.
+- Preuves locales : 16 `vitrine-*-0` + `course-sf90` normales (0 % saturés, luminance 0,11 à 0,13 ; `abarth`, `p208` identiques à avant) ; banc des cartes : **126 vues identiques à `main`** (même merge-base 65b00ed) ; réalisme lumière 69 / 69 ; parcours complet 0 écart ; 42 tests CPU. Statut 🟣.
+
+### 2026-11-07 09:53:43 — Le qa-lead de cette session s'appelle désormais QA-arwa (QA-arwa)
+- Demande de l'utilisateur : l'agent QA (`qa-lead`, session 01Us6uCubd) est nommé **QA-arwa**. Ligne mise à jour dans `track-agent.md` (agents de pilotage) ; ce nom termine désormais les titres de ses commits et signe ses entrées du journal.
+
+### 2026-11-07 09:55:42 — Archives automatiques (robot archives)
+- Journal : 0 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (aucun jour).
+- TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-73, WFS-205, WFS-208, WFS-209, WFS-211, WFS-212).
+
+### 2026-11-07 09:55:55 — WFS-210 fusionné (PR #185, squash be33c2f, fusion par confiance) (Claude, agent 5)
+- **Fait** : RG-01 tenues par lieu (`tenue::tenueLieu`, `src/world/pietons.h`) : Ville laine / robes, Corniche lin / coton et tenues d'été, Campagne jean / bleus de travail, Grand Prix combinaisons synthétiques et maillots ; couleurs et tissus selon l'avis `expert-realisme-3d` (2026-11-07). `scene_skin.frag` : peau (éclairage enveloppant par canal w = 0,45 / 0,18 / 0,10, pénombre rougeâtre, effacé au-delà de 15 m, F0 0,028), tissus (rugosité 0,60-0,93, reflet rasant Charlie, trame et plis sans scintillement), cheveux (Kajiya-Kay 2 lobes), yeux (cornée GGX F0 0,025). Piétons (tissu 0) inchangés.
+- **RG-02** : peau VI = PB-MAT `mat.peau_vi.albedo` (0,09 ; 0,05 ; 0,02), sources dans `references/reel/humains/peau.md` (Jensen 2001, Donner & Jensen 2006, Lister 2012) ; remplace le plancher 0,27. Avis expert non appliqué (proposé au PO) : tirage IV / V / VI par personne (aujourd'hui par morphotype).
+- **RG-05, mémoire GPU des humains** : 14 517 sommets × 68 o + 121 200 indices par morphotype ; avant 1,47 Mo × 12 = **17,7 Mo**, après (indices 16 bits) 1,23 Mo × 12 = **14,8 Mo** (−2,9 Mo, −16 %).
+- **Accroches annoncées** : A1 `src/world/conducteurs.cpp` (2 lignes : include, appel de `tenueLieu`) + `conducteurs.h` (1 ligne : albédo VI) ; A2 `src/render/renderer.h` (2 lignes : champs `i16`) + `renderer.cpp` (5 lignes : copie 16 bits, type d'index) ; `tests/conducteurs_test.cpp` (3 lignes : plage de la charte 0,05-0,65).
+- **Preuves (banc local, lavapipe + glslc installés)** : `realisme` avant / après : 320 mesures, indices identiques (lumière 100 %, photométrie 100 %, soleil 100 %, voitures 76,6 %, routes 10 %), 2 erreurs déjà présentes (textures KTX2 absentes en local) ; parcours complet 0 écart (vue normale et Cockpit) ; `test_fidelite_humains` : tenues OK, indice humains 100 % (40/40) ; captures `conducteurs-tenue-<carte>` sur les 4 cartes (chargement des conducteurs sur chaque carte sans erreur). Limite : habitacle très sombre à 6,5 m (éclairage intérieur, hors zone) : tenues peu lisibles sur les captures.
+
+### 2026-11-07 10:01:46 — Recette après fusion : WFS-212 et WFS-211 VALIDÉS (QA-arwa)
+- Captures : Release `apercu` de main, construction 815 (6ddbeec, CI verte, 42 tests CPU, parcours 0 écart).
+- **WFS-212 : VALIDÉ** — rien sur la chaussée : fontaine sur son îlot (Ville), aucune végétation sur le rond-point (Campagne), trou de l'épingle fermé (Plage). ANO-104 vérifiée ; les deux bloquantes de la recette de nuit (dallage de la place, buissons du rond-point) sont corrigées.
+- **WFS-211 : VALIDÉ** — conducteurs humains en vue Proche (jour / nuit), 12 `.wfp` à 3 niveaux, fidélité des humains ≥ 99 %, peau M-03. ANO-111 vérifiée. Non vérifiables au banc : conducteurs du trafic et du duel (couverts par `test_conducteurs`), vue Cockpit, passage entre niveaux, performances.
+- Remarques hors périmètre gardées pour la campagne VABF (dans les rapports) : coin bleuté des épingles vu de dessus, zones grises à côté des lacets, pointillés de l'anneau sur la route d'entrée, taches autour des yeux (à revoir avec WFS-210), teints identiques au banc des piétons.
+
+### 2026-11-07 10:03:57 — WFS-220 [TECHNIQUE] créé et attribué à Claude, agent 1 ; WFS-216 prêt (po-scrum-master)
+- **CI de `main` rouge** : run planifié #816 (42357352523, 08:53 UTC, commit 4d8bb7c), job `endurance`, étape « Chauffe (banc WFS-123) » : toutes les vérifications « (ok) », mais banc tué à 240 s (code 124) avant la capture `chauffe-retabli`. → **WFS-220** (E7, P1 Urgent, `regles-de-gestion/WFS-220.md`) : cause mesurée, aucune vérification retirée, endurance verte sur la branche puis sur `main`. Le `__pycache__` suivi par erreur dans `tools/qa` (signalé par agent 1) est rangé dans ce ticket (RG-05).
+- **Attribué à Claude, agent 1 (01UY1Vv2)**, libre après WFS-213 🟣. Zone permise : `tools/qa/**`, job `endurance` de `build.yml`, `src/platform/chauffe_systeme.cpp`, 1 ligne `.gitignore`. Branche `feature/waforspeed-220`. CI de branche permise autant que nécessaire, une à la fois (US technique).
+- Pourquoi pas WFS-214 : il dépend de WFS-213, encore 🟣 (run de `main` en cours) ; une US technique P1 passe avant les P2.
+- **WFS-216** : WFS-212 ✅ (CI main #813) → ⏳ Prêt (E2 libre). Prêts sans agent : WFS-218 (E4), WFS-219 (E10), WFS-216 (E2).
+
+### 2026-11-07 10:10:28 — WFS-161 (ST-5) : kit dans la Ville et la Campagne ; branche « buildings » pour les textures (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 0d78b8d, synchronisée a68543a) : système `archi-carte` à l'ordre 110, après toutes les cartes. **Accroches `src/world/campagne.cpp`** (4 lignes) : 116 maisons de village (`T_VILLA`) posées dans le kit, style village, sur le terrain (`solY`) ; boîte sautée si le kit est actif. La Ville avait déjà ses 580 immeubles.
+- **Vérification** : parcours complet **0 écart** (vue normale et vue Cockpit) ; 45 tests CPU verts ; banc `archi` sur la Campagne (116 bâtiments, 22 514 triangles au niveau 0 au total) ; capture de la Ville regardée.
+- **Branche `buildings`** (e3d6d39), créée à la demande de l'utilisateur (10:1x) : il y déposera les 18 textures Poly Haven dans `assets/textures/decor/sources/<nom>/` (`LISEZMOI.md` : noms et SHA-256). Je les reprendrai dans `feature/waforspeed-161` après vérification ; l'utilisateur supprimera ensuite la branche.
+- **Suite** : Corniche (`plage.cpp`, villas du village perché), captures des quartiers et banc réalisme, ST-6 (mesures), fusion.
+
+### 2026-11-07 10:12:43 — WFS-221 créé : voiture saccadée en vue Proche / Poursuite, US technique urgente (po-scrum-master)
+- **Retour de l'utilisateur** (essai sur téléphone) : en vue Proche et Poursuite, la voiture a un comportement bizarre, pas fluide.
+- **Causes probables (code de main)** : `game.cpp` ≈ 242-247, pas fixes de 1/120 s rendus sans interpolation (0, 1 ou 2 pas par image) ; `track.cpp:87`, pente par segment sans transition (bascule de la voiture à chaque segment) ; direction linéaire par morceaux.
+- **WFS-221** (`[TECHNIQUE]`, P1 Urgent, E0 + E3, ⏳ Prêt) : banc `fluidite` (temps d'image irréguliers 14-22 ms, mesures dans le repère caméra), rendu interpolé, route lissée, objectifs chiffrés, vidéo avant / après ; CI de branche permise (US technique). À attribuer au premier développeur libre, avant WFS-217.
+
+### 2026-11-07 10:20:00 — Vidéo de l'utilisateur analysée : ≈ 20 img/s et sauts de lacet ; WFS-221 complété (po-scrum-master)
+- **Vidéo** (enregistrement d'écran, 12 s, Poursuite, Campagne) : 240 images en 12 s (≈ 20 img/s, 12 à 30 selon la seconde ; 30 à 100 ms entre deux images) ; lacet de la voiture qui saute d'une image à l'autre dans le rond-point ; voiture qui flotte dans le cadre. Images extraites dans `qa/retours/2026-11-07-video-conduite-*.jpg` (la vidéo, 24 Mo, n'est pas mise dans le dépôt).
+- **WFS-221** : section « Constat sur la vidéo » et **RG-07** (cadence réelle sur téléphone : ≥ 30 img/s stables en Haute, ≥ 45 en Basse, coût par passe, ticket à part si gros changement de rendu).
+
+### 2026-11-07 10:22:06 — WFS-221 : prochain ticket attribué, au premier développeur libre (ordre de l'utilisateur) (po-scrum-master)
+- **Ordre de l'utilisateur** : un agent disponible prend WFS-221 (fluidité) ; Agent 0 reste sur WFS-161.
+- **Agents libres** : agent 4, agent 5 (WFS-210 fusionné), session dev expert, session dev 5bx (autre compte : pas de message direct possible). **Le premier qui demande un ticket au PO reçoit WFS-221, avant tout autre** (bandeau en tête de `TACHES.md`). Exception PO : E3 partagée avec WFS-217 (arwa), fichiers séparés (`game.cpp`, `track.*`, `camera_vue.*` pour WFS-221 ; `player.*` pour WFS-217).
+- **arwa-2 a repris WFS-158** (envoi à 09:47) : contrôle de 11:23 annulé, rien à découper.
+
+### 2026-11-07 10:23:03 — WFS-221 : cadence réelle du téléphone de l'utilisateur = 10 img/s en Haute (po-scrum-master)
+- Capture des Réglages envoyée par l'utilisateur : « Rendu : Haute · 100 % · MSAA ×4 · 10 img/s · chauffe 1 » (`qa/retours/2026-11-07-reglages-rendu-10ips.jpg`). Ajoutée à WFS-221 comme point de départ ; la baisse automatique de qualité ne remonte pas la cadence, à vérifier (RG-07).
+
+### 2026-11-07 10:24:48 — WFS-158 : livraisons 6 et 7 fusionnées par confiance (PR #186, 3f6347e ; PR #187, 2d2d052) : plaques des 20 voitures, T-Cross à sa vraie taille (arwa-2)
+- **Reprise** : branche synchronisée et poussée à 09:47 UTC (e876436), moins de 11 h après le dernier commit.
+- **Livraison 6 (ST-3, M-04)** : `tools/plaques_voitures.mjs` pose une plaque là où le modèle n'en a pas.
+  - **Méthode** : rayons sur une grille de 11 × 5 points du rectangle de 520 × 110 mm, plan ajusté sur la surface la plus en avant du bouclier, plaque posée 3 mm devant, en double face. Hauteur de chaque plaque : sur le porte-plaque du modèle s'il y en a un (porte-plaques noirs de la Golf et de l'Elantra, logement du hayon du X5, porte-plaque gris de la GT86), sinon sur la zone la plus plate du bouclier.
+  - **Plaques de concession masquées** : « T-Cross » et « 途铠 » du T-Cross, dans l'atlas partagé du matériau 10 (42 triangles).
+  - **Plaques posées** : avant et arrière de la Golf (BJ-276-WC), de la Gallardo (DL-865-ZP), du T-Cross (FT-148-CX), du X5 (HB-530-RV) et de la GT86 (CG-861-PZ) ; avant de l'Elantra, de la Mustang, de la M4, de la SF90 et de la Model 3.
+  - **Résultat** : **les 20 voitures ont une plaque avant et une plaque arrière au format** (M-04 : 40 / 40).
+  - **Vide sous la plaque** : au plus 43 mm (SF90, devant ses entrées d'air), 6 à 18 mm ailleurs.
+  - **`.lod` refaits** pour la Golf, la M4, la Gallardo et le X5 : un maillage de plus, le moteur refuse un `.lod` au mauvais nombre de maillages.
+  - **2e passage de la correction ST-2 après les plaques** : la plaque allonge la voiture de quelques millimètres (longueur hors tout). GT86 × 0,9975 et Gallardo × 0,9995 ; 113 / 141 mesures gardées.
+- **Livraison 7 (note du PO de 01:17:53, signalement de WFS-202)** : le T-Cross du jeu est le T-Cross chinois à empattement long de SAIC-VW.
+  - **Choix** : le référentiel suit la version du modèle. `FICHE-TCROSS` : 4218 × 1760 × 1599 mm, empattement 2651, voies 1533 / 1512. Sources : autocango.com (fiche 2023 1.4T) et auto.ru (« T-Cross I (China Market) »), concordantes ; pages lues dans le résumé du moteur de recherche, non ouvertes.
+  - **Conversion** : reconverti à 4,218 m par `convertir_voitures.sh`, qui reproduit le fichier à l'identique.
+  - **Mesures** : 5 / 8 (avant 4 / 8 contre la fiche européenne) ; restent hauteur −2,8 % et voies −3 % (RG-05).
+- **Pour le PO** : la boîte de collision du T-Cross dans `src/game/cars.h` et `src/game/traffic.h` (4,11 m, zone E3) a 10 cm de moins que la carrosserie. À changer par un ticket E3 si besoin ; je n'y touche pas.
+- **Indice voitures** : 114 / 141 (80,9 %), pneus posés 20 / 20, 5 modèles aux proportions fausses (RG-05 : M4, 911, 208, Model 3, SF90).
+- **Preuves** : captures locales (lavapipe, 2400 × 1080) des vues de face et arrière, avant / après, des 10 voitures et du T-Cross ; 42 tests CPU OK.
+- **Suite** : ST-3 (étriers, intérieurs, sous-caisse), ST-4 (LOD 4 niveaux), ST-5 (test strict).
+
+### 2026-11-07 10:26:15 — WFS-161 (ST-5 Corniche, ST-6) : villas de la Corniche, mesures ; CI de branche run 822 (Claude, Agent 0 developer)
+- **ST-5 Corniche** (`feature/waforspeed-161`) : **accroche `src/world/plage.cpp`** (7 lignes) : les villas du village (`O_VILLA`) sont posées dans le kit en style méditerranéen (154 bâtiments) ; boîte sautée si le kit est actif. Banc `corniche` : village en façades méditerranéennes à volets. `carte-plage-falaise` est identique au pixel avec `WFS_ARCHI=0` : son défaut de caméra existait avant le kit.
+- **ST-6** : `src/world/archi_mesures.h` écrit le domaine « architecture » dans `realisme-fidelite.txt` (**accroche `src/render/bench_realisme.cpp`**, 2 lignes) : M-01 (RDC et étage des 6 styles), garde-corps, M-03 (béton, brique = référentiel), température des intérieurs 2850 K → **16 conformes / 16 mesurables (100 %)** ; M-02, M-04, pierre / crépi / zinc → 4 non mesurables (valeurs à sourcer). `test_archi_kit` le vérifie.
+- **Vérification** : 45 tests CPU verts ; parcours complet 0 écart (11:0x) ; branche synchronisée avec `main` (9c5d416).
+- **Confiance ≤ 50 %** (gros changement du rendu de trois cartes) : **CI de branche lancée une fois, run 822** (`workflow_dispatch`, 9c5d416). Fusion après le vert et les captures regardées.
+- **Branche `buildings`** : rien de déposé à 10:2x ; le ticket ne l'attend pas (décision du PO).
+
+### 2026-11-07 10:26:36 — WFS-206 fusionné (PR #188) (Claude, agent 2 (01UY1Vv5))
+- **RG-02, revêtement par carte** (`route_revetements`) : Ville et Corniche en enrobé usé, Campagne en enrobé grenu, Grand Prix en béton bitumineux de course. La carte va au shader dans `pc.params.z` (mode + 4 × carte).
+- **RG-01, usure** (`shaders/route.glsl`, fonctions usureRoute, riveRoute et bordureGranit)
+  - Bandes de roulement (M-03) : 0,9 m de large, écartement de 1,572 m (voie moyenne des 23 voies relevées dans voitures.json). Albédo × 0,87, rugosité − 0,05, relief à 80 % ; hors bandes, albédo × 1,02.
+  - Raccords de chantier par voie (Ville 45 %, Campagne 25 %, Corniche 12 %, circuit aucun), avec joint de bitume.
+  - Rives : terre à la Campagne, sable à la Corniche, caniveau à la Ville.
+  - Bordure de granit à la Ville (M-04) : 0,30 m sur 15 cm de haut.
+- **RG-04** : `materiaux.json` corrigé. Rugosité de l'asphalte et du béton 0,5 → 0,825 (plage 0,75-0,90) ; albédo du béton 0,51 → 0,30 (trottoir, plage 0,25-0,35).
+- **RG-05** : indice « revetements » dans `realisme-fidelite.txt`, à 100 % (14 / 14). Mesures communes au test et au banc dans `src/render/route_mesures.*`.
+- **Accroches annoncées**
+  - `src/game/game.cpp`, 2 lignes : `route::preparer(q, mapId)` et `route::chaussee()`. Elles remplacent l'accroche de `track.cpp` prévue par la règle, car c'est `Game::init` qui crée le matériau.
+  - `src/render/bench_realisme.cpp` : 7 lignes et un include.
+- **Avis expert-realisme-3d, appliqué** : la moyenne d'une voie reste ≤ 1 et le relief à 80 % dans les bandes. Mesuré de jour en Ville : luminance 112,0 → 110,4, grain 10,0 → 10,7. La Campagne est plus sombre (scan de l'enrobé grenu, dans sa plage).
+- **Vérifications** : 42 tests CPU ; parcours 0 écart ; banc `cartes` 4 cartes sans erreur ; banc `realisme` avant (binaire de main) et après, autres indices identiques. Les erreurs « texture d'essai absente » existent aussi sur main.
+- **Point ouvert pour le PO : M-05 (vibreurs)**
+  - Constat : le référentiel n'a aucune norme de vibreur, et aucune source n'est accessible avec le réseau permis (regles-reseau.md § 1).
+  - De plus, la géométrie des vibreurs (largeur R + 1,3 / 2,2 m) est dans `src/world/circuit.cpp`, hors de la zone E9.
+  - Proposition : une source fournie par l'utilisateur, ou un site autorisé, pour `references/reel/routes/`, puis un ticket de l'épic du circuit pour la géométrie.
+
+### 2026-11-07 10:26:38 — Basse : 26 img/s, pas plus fluide ; WFS-222 créé (performance) en parallèle de WFS-221 (po-scrum-master)
+- **Mesure de l'utilisateur** : en Basse, « Basse · 75 % · MSAA ×2 · 26 img/s · chauffe 1 » ; vidéo en Ville : 223 images en 9,2 s, médiane 34 ms, 37 images > 50 ms ; « c'est pareil ». Grands carrés noirs sur les façades et près de la caméra (à identifier). Captures dans `qa/retours/2026-11-07-*`.
+- **WFS-222** (`[TECHNIQUE]`, P1 Urgent, E4, `regles-de-gestion/WFS-222.md`) : profilage (processeur par système, appels de dessin, GPU par passe), objectif ≥ 30 img/s stables sur le téléphone, baisse automatique efficace, carrés noirs ; fichiers séparés de WFS-221. Bandeau de `TACHES.md` : WFS-221 puis WFS-222 aux premiers développeurs libres.

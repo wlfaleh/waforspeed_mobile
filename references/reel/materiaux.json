@@ -127,12 +127,13 @@
    "domaine": "materiaux",
    "grandeur": "rugosité",
    "unite": "-",
-   "valeur": 0.5,
+   "valeur": 0.825,
    "tolerance": {
     "type": "absolue",
-    "valeur": 0.1,
-    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
-   }
+    "valeur": 0.075,
+    "regle": "WFS-206 (RG-04) : plage de la charte pour une chaussée ou un béton secs, 0,75-0,90 (DA-realisme.md § 3 et § 4 ; avis de l'expert-realisme-3d, journal de WFS-205 : la valeur 0,5 de la base PB-MAT est celle d'un béton lissé ou ciré, pas d'une chaussée)"
+   },
+   "correction": "WFS-206 (2026-11-07) : 0,5 → 0,825 (milieu de 0,75-0,90)"
   },
   {
    "source": "PB-MAT",
@@ -209,15 +210,16 @@
    "grandeur": "albédo (couleur de base, sRGB linéaire)",
    "unite": "sRGB linéaire",
    "valeur": [
-    0.51,
-    0.51,
-    0.51
+    0.3,
+    0.3,
+    0.3
    ],
    "tolerance": {
     "type": "relative",
-    "valeur": 0.1,
-    "regle": "DA-realisme.md § 3 (valeur de référence à ± 10 %)"
-   }
+    "valeur": 0.1667,
+    "regle": "WFS-206 (RG-04) : béton de trottoir 0,25-0,35 (DA-realisme.md § 3 ; référentiel des revêtements references/reel/routes/revetements.json, WFS-205) ; 0,51 de la base PB-MAT = béton neuf clair, pas un trottoir patiné"
+   },
+   "correction": "WFS-206 (2026-11-07) : 0,51 → 0,30 (milieu de 0,25-0,35)"
   },
   {
    "source": "PB-MAT",
@@ -295,12 +297,13 @@
    "domaine": "materiaux",
    "grandeur": "rugosité",
    "unite": "-",
-   "valeur": 0.5,
+   "valeur": 0.825,
    "tolerance": {
     "type": "absolue",
-    "valeur": 0.1,
-    "regle": "DA-realisme.md § 4 (plage sourcée) : ± 0,1 faute de plage publiée"
-   }
+    "valeur": 0.075,
+    "regle": "WFS-206 (RG-04) : plage de la charte pour une chaussée ou un béton secs, 0,75-0,90 (DA-realisme.md § 3 et § 4 ; avis de l'expert-realisme-3d, journal de WFS-205 : la valeur 0,5 de la base PB-MAT est celle d'un béton lissé ou ciré, pas d'une chaussée)"
+   },
+   "correction": "WFS-206 (2026-11-07) : 0,5 → 0,825 (milieu de 0,75-0,90)"
   },
   {
    "source": "PB-MAT",

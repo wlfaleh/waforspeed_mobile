@@ -10,6 +10,7 @@
 // l'écran Menu (voiture immobile, aucune commande, aucun menu dessiné sans police chargée) ; trafic et piétons sont
 // figés : un nombre fixe de pas de simulation, puis plus aucun avant la capture (graines fixes : images reproductibles).
 #include "bench_realisme.h"
+#include "route_mesures.h"   // WFS-206 (RG-05)
 #include <array>
 #include <cstdlib>
 #include <sstream>
@@ -483,6 +484,12 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         rap.comparer(R, "photometrie", "lum.soleil_midi.intensite", lumiere::eclairementSoleilNormal(hj) * std::sin(reel::rad(hj)), 1, "lx", std::string("éclairement du soleil au sol, ") + carte + " (WFS-151, RG-01)");
     }
     rap.nonMesurable("materiaux", "mat.*", "albédo, rugosité et F0 des surfaces du jeu", "matériaux procéduraux (scene.frag) : mesure dans l'image HDR non disponible (WFS-150) ; mesurés par WFS-155 (routes) et WFS-159 (véhicules)");
+    for (const route::MesureRevetement& m : route::mesurerBibliotheque(".")) {   // WFS-206 (RG-05, accroche) : revêtements de route (M-01, M-02)
+        LigneRapport l; l.domaine = "revetements"; l.id = "route." + m.id; l.grandeur = m.grandeur + " (carte de couleur ou ORM, test_fidelite_routes)";
+        l.jeu = fmt(m.valeur, 4); l.reel = "plage " + fmt(m.min, 2) + "-" + fmt(m.max, 2) + " (references/reel/routes/revetements.json)"; l.tolerance = "plage";
+        l.statutReel = "verifie"; l.etat = m.dansPlage() && !m.metal ? Etat::Conforme : Etat::NonConforme;
+        rap.ajouter(l);
+    }
     rap.nonMesurable("anthropometrie", "humain.*", "tailles et proportions des piétons", "mesurées par WFS-164 (humains réalistes) sur les nouveaux modèles");
 
     // ---------------- mesures géométriques (voitures, routes) et soleil calculé : les mêmes que test_fidelite

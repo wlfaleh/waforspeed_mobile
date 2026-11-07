@@ -3,16 +3,76 @@
 // assets/people/*.wfp) animés par squelette (WFS-63), habillés par l'apparence de WFS-72. Aucune silhouette géométrique.
 // Système enfichable « Pietons » (ordre 106, après les décors ville 100 et plage 105).
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include "../core/math.h"
+#include "../render/renderer.h"   // WFS-210 : ApparencePersonnage
 
 namespace wfs {
 class Game;
 class Renderer;
 // banc d'essai : captures pietons-ville-0 / -1 (deux instants, poses de marche différentes) et pietons-plage, puis g.shutdown()
 void benchPietons(Game& g, Renderer& r, const std::string& outDir);
+
+// WFS-210 (RG-01) : tenue selon le lieu (carte en cours, lue par le système des piétons à chaque partie) : Ville (vestes,
+// costumes, robes), Corniche (chemises légères, tenues d'été), Campagne (tenues de travail), Grand Prix (supporters,
+// combinaisons). Remplace haut, bas, chaussures et la coupe (vetement : manches, jambes ; vetement.w = tissu, TISSU_*) ;
+// garde peau, cheveux et corps. Déterministe pour une graine donnée.
+namespace tenue {
+enum Tissu { TISSU_AUCUN = 0, TISSU_COTON, TISSU_LAINE, TISSU_JEAN, TISSU_LIN, TISSU_SYNTHETIQUE, NB_TISSUS };
+inline std::string& carte() { static std::string c = "ville"; return c; }   // carte en cours (écrite par les piétons)
+inline const char* carteCourante() { return carte().c_str(); }   // « ville » avant la première partie
+
+inline void tenueLieu(const char* carte, uint32_t graine, bool femme, ApparencePersonnage& app) {
+    Mulberry32 R(graine * 2246822519u + 0x210u);
+    auto r = [&]() { return (float)R.next(); };
+    auto hx = [](unsigned h) { return vec3{((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f}; };
+    auto pick = [&](const unsigned* a, int n) { return hx(a[std::min((int)(r() * (float)n), n - 1)]); };
+    const std::string c = carte ? carte : "ville";
+    float manches = 1.95f, jambes = 1.9f;   // longueurs du jeu web (pedLook) : 1,95 manches longues, 0,45 courtes ; 1,9 pantalon, 0,72 genou
+    int tissu = TISSU_COTON;
+    if (c == "plage") {   // Corniche : chemises légères et tenues d'été (lin, coton), shorts, robes d'été
+        static const unsigned HAUT[] = {0xe2ddd0, 0x8db3d1, 0xd98c74, 0x9cc3b5, 0xc9b48e, 0x2e3f5c, 0xd8d6cf};   // avis expert-realisme-3d
+        static const unsigned BAS[] = {0xe2ddd0, 0xc9b48e, 0x2e3f5c, 0x9cc3b5, 0x8e9196};
+        static const unsigned PIEDS[] = {0xc9a27a, 0x8a5a36, 0xdcdcd8, 0x40352e};
+        app.haut = pick(HAUT, 7); app.chaussures = pick(PIEDS, 4);
+        const bool robe = femme && r() < 0.4f;
+        app.bas = robe ? app.haut : pick(BAS, 5);
+        manches = r() < 0.7f ? 0.45f : (femme ? 0.12f : 1.95f);
+        jambes = robe ? 0.72f : (r() < 0.65f ? 0.72f : 1.9f);
+        tissu = r() < 0.5f ? TISSU_LIN : TISSU_COTON;
+    } else if (c == "campagne") {   // Campagne : tenues de travail (bleu de travail, toile kaki, chemise à carreaux unie, jean)
+        static const unsigned HAUT[] = {0x6b6a4a, 0x5a4636, 0x2f4a3a, 0x8a3b2e, 0x5e7391, 0xcfc6b0};   // avis expert-realisme-3d
+        static const unsigned BAS[] = {0x5e7391, 0x2f3b52, 0x6b6a4a, 0x5a4636};
+        static const unsigned PIEDS[] = {0x4a3020, 0x40352e, 0x5a3a22};
+        app.haut = pick(HAUT, 6); app.chaussures = pick(PIEDS, 3);
+        const bool combinaison = r() < 0.3f;   // bleu de travail d'une pièce
+        app.bas = combinaison ? app.haut : pick(BAS, 4);
+        manches = r() < 0.75f ? 1.95f : 0.45f;
+        tissu = combinaison ? TISSU_COTON : (r() < 0.6f ? TISSU_JEAN : TISSU_COTON);
+    } else if (c == "circuit") {   // Grand Prix : maillots de supporters aux couleurs des équipes, combinaisons de course
+        static const unsigned EQUIPES[] = {0xb3201c, 0xdcdcd8, 0x38383b, 0x1f4fa0, 0xe8c21a, 0xe8731e};   // avis expert-realisme-3d (aucun noir sous #303030)
+        static const unsigned BAS[] = {0x2b3a55, 0x363638, 0x3a4a66, 0x6b6f75};
+        app.haut = pick(EQUIPES, 6);
+        if (r() < 0.5f) { app.bas = app.haut; app.chaussures = hx(0x38383b); manches = 1.95f; jambes = 1.9f; tissu = TISSU_SYNTHETIQUE; }   // combinaison
+        else { app.bas = pick(BAS, 4); app.chaussures = hx(r() < 0.5f ? 0xdcdcd8 : 0x38383b); manches = 0.45f; tissu = TISSU_COTON; }
+    } else {   // Ville : vestes et costumes (laine), robes, tenues de ville
+        static const unsigned VESTE[] = {0x3a3d42, 0x2b3a55, 0x8e9196, 0xa8946f, 0x3a3d42};   // avis expert-realisme-3d
+        static const unsigned HAUT[] = {0xd8d6cf, 0x8e9196, 0x2b3a55, 0xa8946f, 0x3a3d42, 0x8db3d1};
+        static const unsigned ROBE[] = {0x3a3d42, 0x2b3a55, 0x8a3b2e, 0xa8946f, 0x2f4a3a};
+        static const unsigned BAS[] = {0x2f3b52, 0x3a3d42, 0x2b3a55, 0x8e9196};
+        const float t = r();
+        if (femme && t < 0.35f) { app.haut = app.bas = pick(ROBE, 5); jambes = 0.72f; manches = r() < 0.5f ? 1.95f : 0.45f; tissu = TISSU_COTON; }   // robe
+        else if (t < 0.7f) { app.haut = pick(VESTE, 5); app.bas = r() < 0.7f ? app.haut : pick(BAS, 4); manches = 1.95f; tissu = TISSU_LAINE; }   // veste, costume
+        else { app.haut = pick(HAUT, 6); app.bas = pick(BAS, 4); manches = r() < 0.5f ? 1.95f : 0.45f; tissu = r() < 0.4f ? TISSU_JEAN : TISSU_COTON; }
+        app.chaussures = hx(r() < 0.7f ? 0x38383b : 0x4a3020);
+    }
+    app.maillot = app.haut;
+    app.vetement = {manches, jambes, 1.f, (float)tissu};
+}
+} // namespace tenue
 
 // WFS-199 : spectateurs des tribunes. Les mêmes personnages (homme.wfp, femme.wfp), allégés (sommets regroupés sur une grille,
 // en pose de liaison) et posés une fois sur le processeur (Sitting_* / Idle_*, plusieurs instants du clip) : maillage fixe que
