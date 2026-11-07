@@ -3562,3 +3562,43 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Refus transmis par l'agent dev conduite (≈ 17:00 UTC). Règle des KO : nouvelles US, autre développeur. Détails demandés à l'utilisateur avant de coder (WFS-258, 259 ⏳ En attente).
 - WFS-255 (sons) non cité : reste 🟡. WFS-256 (chocs) repris par le même agent (ticket non refusé).
 - Repli possible : `g_conduiteMonde = false` (ancien modèle), décision de l'utilisateur demandée.
+
+### 2026-11-07 16:56:23 — Tous les sujets de l'expert conduite refusés ; WFS-258 en tout premier avec repli immédiat (po-scrum-master)
+- Retour de l'utilisateur recopié dans WFS-258 et 259. WFS-255 aussi refusé → ANO-133, WFS-260. WFS-258 ⏳ Prêt, RG-00 : remettre `g_conduiteMonde = false` tout de suite (fusion seule), puis corriger.
+
+### 2026-11-07 16:56:53 — WFS-258 : vidéo de l'utilisateur (Grand Prix, sortie tout droit au 1er virage à 228 km/h, aide activée) jointe (po-scrum-master)
+- `qa/retours/2026-11-07-video-conduite-gp-planche.jpg`, `qa/retours/2026-11-07-reglages-conduite.jpg`.
+
+### 2026-11-07 17:02:44 — Exception de l'utilisateur : sujets de conduite (WFS-258, 259, 260) exclusivement à l'agent dev conduite (po-scrum-master)
+- Choix de l'utilisateur (question du PO) : WFS-258 rendu à l'agent dev conduite, malgré la règle des KO. WFS-256 en pause ; WFS-258 d'abord (repli immédiat), puis 259 et 260.
+
+### 2026-11-07 17:05:50 — Début WFS-244 : plaques rectangulaires sur la chaussée (ANO-116), attribué à agent arwa (po-scrum-master)
+- **Demande de l'utilisateur** (message direct à arwa : « Prends autre ticket en parallèle ») : 3e ticket d'arwa en parallèle de WFS-257 (E11, 🔧) ; WFS-226 est 🟣 fusionné.
+- Choix : seuls tickets prêts d'une épic libre hors E3 / E4 / E11 : WFS-244 (E9) et WFS-245 (E5), tous deux P3 ; WFS-244 a le plus petit numéro (WFS-249 et WFS-214 : E13 tenue par WFS-230).
+- Épic E9 libre (aucun ticket 🔧 / 🔀). Zone : `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `tests/fidelite_routes*` (+ accroche ≤ 10 lignes `src/game/track.cpp`). Interdit : iOS, zones des autres épics, fichiers de WFS-257 / WFS-246.
+- Règles : `regles-de-gestion/WFS-244.md` (cause d'abord, raccords ≤ 8 % de luminance à bords irréguliers, rien retiré de WFS-206, 4 cartes, aucune passe en plus en Basse ; graphisme réaliste avec captures avant / après et indice routes non dégradé).
+- Plan court : retrouver la plaque au banc, nommer la cause, corriger l'aspect ; branche `feature/waforspeed-244` à pousser tout de suite.
+
+### 2026-11-07 17:13:29 — Début WFS-245 : étiquettes du HUD lisibles (ANO-118), attribué à arwa-2 en parallèle de WFS-235 ; WFS-261 créé (po-scrum-master)
+- **Demande de l'utilisateur** (message direct à arwa-2, 17:07 UTC : « Prends autre sujet en parallèle ») : 2e ticket d'arwa-2 en parallèle de WFS-235 (P1, E3 + E10, 🔧, fin proche, 🟡 après fusion), comme pour agent arwa (WFS-257, WFS-244).
+- **Choix** (ordre du bandeau, épics libres, hors E3 / E10 tenues par arwa-2) : WFS-249 et WFS-214 non attribuables (E13 tenue par WFS-230) ; WFS-224 (P1, E4) non attribuable (E4 tenue par WFS-246, zone `src/render/**` qui contient `effets_*`, même décision qu'à 17:05) ; WFS-242 / 243 / 232 / 215 (E3, E10) ; WFS-257, WFS-244 pris. Reste **WFS-245** (P3, E5) : E5 libre (WFS-234 🟣). Pas un ticket de conduite, pas iOS, pas un KO d'arwa-2.
+- **Zone autorisée** : `src/ui/**` sauf `src/ui/ecrans/` (E8), `shaders/ui*`, `assets/fonts/**`. **Interdit** : taille et place des boutons (ordre permanent du 2026-11-06), `minicarte.*` (WFS-234), lignes du nitro (WFS-224), fichiers de WFS-235, iOS (gel).
+- Règles : `regles-de-gestion/WFS-245.md` (RG-01 à RG-05, section Suivi ajoutée). Branche `feature/waforspeed-245` partie de `main`, séparée de celle de WFS-235. Après fusion : 🟡 À valider (utilisateur).
+- **Règle des 8 tickets prêts** : après cette attribution il en restait 7 → **WFS-261** créé (P2, E6, axe Réalisme, partie « le son ») : sortie stéréo Android, au moins 5 sons placés dans le monde (fontaine, vagues, tribunes, fermes, terrasses) avec baisse de 6 dB par doublement de distance, écho des tunnels ; rien retiré de WFS-76 ; fichiers séparés des sons de conduite (WFS-260 garde la priorité sur E6). Règles : `regles-de-gestion/WFS-261.md`. Ajouté en fin d'ordre du PO. Prêts : WFS-214, 215, 224, 232, 242, 243, 249, 261 (8).
+- Suivi : WFS-239 (agent 3) sans envoi depuis 13:43 (3 h 30, P1) : alerte dans `track-agent.md`, pas de retrait avant 10 h.
+
+### 2026-11-07 17:15:04 — Recette, lot 4 (personnages, nuit) : WFS-233 et WFS-240 VALIDÉS, WFS-210 et WFS-225 REFUSÉS (QA-arwa)
+- Captures : Release `apercu` de main, construction 844 (ae49782, CI verte, 45 tests CPU, parcours 0 écart) ; `test_fidelite_humains` (100 %) et `test_conducteurs` refaits en local.
+- **WFS-233 : VALIDÉ** (enfants main dans la main sur trottoir / promenade, 10-15 % des piétons, total inchangé). **WFS-240 : VALIDÉ** (poussettes, enfants en tribune, cheveux longs, cadence ± 10 %).
+- **WFS-210 : REFUSÉ** — **ANO-134 bloquante** : les 12 conducteurs réalistes n'ont ni cheveux ni yeux (aucune plage `Hair_*` dans les `.wfp`, vérifié ; partie yeux / cheveux jamais portée) : crânes nus, taches grises autour des yeux et de la bouche. Tenues par carte, peau et indices 16 bits conformes.
+- **WFS-225 : REFUSÉ** — lampadaires allumés au banc, mais herbe noire hors des phares (≈ 5/255) : ANO-128 (refus de l'utilisateur) toujours là, correction déjà prévue par WFS-249.
+- Bloquante → PO : ANO-134.
+### 2026-11-07 17:14:53 — Performance : constats de smart-brainstorming étudiés ; WFS-246 recentré, WFS-262 à 264 créés (po-scrum-master)
+- Origine : ordre de l'utilisateur (« demande au agent po-scrum »), transmis par smart-brainstorming (propose, ne décide pas). Constats vérifiés dans `main` : gains de WFS-222 mesurés sur lavapipe (non représentatif d'un GPU mobile à tuiles) ; `resize()` (waitIdle + recréation des cibles) à chaque changement de résolution en course ; aucun `VkPipelineCache` ; `cullMode` NONE ; temps GPU par passe déjà mesurés mais seulement au journal du jeu.
+- **WFS-246** (agent dev X, en cours, branche e79fa14 du 17:11 UTC gardée) : recentré à ≤ 1 journée = mesure sur le téléphone (RG-06 : médiane / 95 % / 99 %, images > 33 et > 50 ms, GPU par passe, fichier partageable), faces arrière (levier 1, + 20 voitures et échelles négatives), résolution sans `resize()` ni `waitIdle` en course, MSAA fixe (RG-07). RG-03 : « ÷ 3 au banc » retiré, le banc ne sert qu'à la non-régression ; objectifs du téléphone **inchangés** (≥ 60 Basse, ≥ 45 Haute).
+- Créés, E4, à la suite, proposés d'abord à agent dev X (pas agent arwa) : **WFS-262** cache de pipelines + variantes au chargement + échauffement + cadence stable ; **WFS-263** shaders par coût ; **WFS-264** capture précalculée par zone, reflets, ombres, bloom en Basse ; **WFS-265** LOD + densité, et instancing / baisse par paliers / menu d'essai / décor regroupé seulement si les mesures du téléphone le justifient. Section « Graphisme réaliste » dans 263 à 265. Numéros 262 à 265 (WFS-261 pris entre-temps par le son des lieux).
+- Non retenu tel quel : 30 img/s comme étape (contraire à l'objectif de l'utilisateur) → question posée dans `tache utilisateur.md`. Aucune règle de travail changée ; aucune bibliothèque tierce (Swappy) sans accord.
+- Passation à agent dev X : relire `regles-de-gestion/WFS-246.md` (ajout 17:13), faire RG-06 et RG-07 avant de fusionner.
+
+### 2026-11-07 17:17:41 — WFS-245 : début, branche créée, en parallèle de WFS-235 (arwa-2)
+- Demande de l'utilisateur (17:07 UTC) « Prends autre sujet en parallèle » : WFS-245 attribué par le PO (E5, P3, ANO-118). Branche `feature/waforspeed-245` créée depuis `main` et poussée. Skill `agent-developer` chargé ; `regles-de-gestion/WFS-245.md` à lire avant de coder. WFS-235 (P1) reste la priorité : sa fusion d'abord.
