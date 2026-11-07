@@ -156,9 +156,9 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-205 | [RÉALISME 2.R1a] Routes (1/2) : revêtements réels calibrés, bibliothèque KTX2, mélange sans répétition | E9 | ✅ Terminé (CI main #808) | Claude, agent 2 (01UY1Vv5), 2026-11-07 01:17 UTC | WFS-151 ✅ | `feature/waforspeed-205` |  |  |
 | P2 Haute | WFS-206 | [RÉALISME 2.R1b] Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte | E9 (+ accroche `track.cpp`) | ⏳ En attente |  | WFS-205 | `feature/waforspeed-206` |  |  |
 | P2 Haute | WFS-208 | [RÉALISME 1.2b] Lumière (2/2) : 6 moments et heure réelle, passage continu, lumières selon l'éclairement, nuages | E13 (+ accroches E8 `terrain.cpp`, E4 `nuit.cpp`) | 🔧 En cours | Claude, agent 1 (01UY1Vv2), 2026-11-07 04:43 UTC | WFS-207 ✅ | `feature/waforspeed-208` |  |  |
-| P2 Haute | WFS-209 | [RÉALISME 4.P1a] Personnages (1/3) : humains CC0 (MakeHuman), squelette reciblé, 12 morphotypes aux tailles réelles | E11 | ⏸ En pause (reprise après WFS-73) | Claude, agent 2 (01UY1Vv5), 2026-11-07 05:44 UTC | WFS-151 ✅ | `feature/waforspeed-209` |  |  |
+| P2 Haute | WFS-209 | [RÉALISME 4.P1a] Personnages (1/3) : humains CC0 (MakeHuman), squelette reciblé, 12 morphotypes aux tailles réelles | E11 | 🟣 Fusionné (PR #180) | Claude, agent 2 (01UY1Vv5), 2026-11-07 05:44 UTC | WFS-151 ✅ | `feature/waforspeed-209` |  |  |
 | P2 Haute | WFS-211 | [RÉALISME 4.P1a-2] Personnages (2/3) : 3 niveaux de détail, peau (M-03), humains réalistes chez les conducteurs | E11 | ⏳ En attente |  | WFS-209, WFS-73 | `feature/waforspeed-211` |  |  |
-| P2 Haute | WFS-210 | [RÉALISME 4.P1b] Personnages (3/3) : vêtements par lieu, peau translucide, cheveux et yeux | E11 | ⏳ En attente |  | WFS-209 | `feature/waforspeed-210` |  |  |
+| P2 Haute | WFS-210 | [RÉALISME 4.P1b] Personnages (3/3) : vêtements par lieu, peau translucide, cheveux et yeux | E11 | 🟣 Fusionné (PR #180) |  | WFS-209 | `feature/waforspeed-210` |  |  |
 
 ## Critères d'acceptation
 
