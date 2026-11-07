@@ -3,6 +3,7 @@
 #pragma once
 #include "cars.h"
 #include "conduite_monde.h"   // WFS-241 : conduite en coordonnées du monde
+#include "chocs_decor.h"      // WFS-256 : chocs avec le décor
 #include "track.h"
 
 namespace wfs {
@@ -64,7 +65,11 @@ struct Player {
     double aideRoues = 0;       // part de cet angle ajoutée par l'aide à la direction (rad)
     // volant (−1..1) qui donne la courbure k (1/m) à la vitesse v (m/s), selon le modèle en cours (joueur simulé des bancs)
     double braquagePour(double k, double v) const;
+    // WFS-256 : chocs avec le décor depuis la dernière lecture (lus et remis à zéro par le système chocs_decor.cpp) :
+    // nombre, vitesse d'impact la plus forte (m/s, vers l'obstacle) et genre de l'objet touché
+    struct ChocsDuPas { int n = 0; double impact = 0; chocs::Genre genre = chocs::Genre::Autre; } chocsDecor;
 private:
+    void heurter(double x0, double z0, double cap0);   // WFS-256 : test continu du pas, réaction
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
     void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
     void synchroniser(Track& track);
