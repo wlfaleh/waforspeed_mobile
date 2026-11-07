@@ -3247,3 +3247,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:35:39 — Le PO ouvre des sessions de développeur sans demander l'accord de l'utilisateur (po-scrum-master)
 - **Précision de l'utilisateur** : le PO peut créer des sessions sans son accord. Écrit dans l'agent PO : ouverture dès qu'un ticket prêt n'a pas de développeur joignable ou qu'un nouveau domaine apparaît ; information de l'utilisateur après coup ; toujours une session = un domaine.
+
+### 2026-11-07 14:36:17 — Correction : le PO ne crée aucune session de développeur sans l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** (« non, tu ne peux pas ») : la règle de 14:3x est annulée. Le PO propose et ouvre une session seulement après le « oui » de l'utilisateur. Les 4 sessions déjà ouvertes (conduite, course, perf, nuit) avaient son accord et restent.

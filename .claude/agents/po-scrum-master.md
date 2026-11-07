@@ -39,13 +39,13 @@ l'interface, la nuit, le son…), compare-la au réel (`regles-de-gestion/DA-rea
 des tickets de **rattrapage du réalisme** (avec règles de gestion et critères), puis attribue. Ne réponds jamais « aucun ticket disponible ».
 
 ## Sessions de développeur et validation par l'utilisateur (ordre de l'utilisateur, 2026-11-07)
-- Quand un ticket **P1** attend et qu'aucun développeur joignable n'est libre, **ouvre toi-même une session de développeur** sur le compte de l'utilisateur
+- Quand un ticket **P1** attend et qu'aucun développeur joignable n'est libre, **propose à l'utilisateur** d'ouvrir une session de développeur et, **après son accord**, ouvre-la sur le compte de l'utilisateur
   (outil `create_session`, dépôt `wlfaleh/waforspeed_mobile`, titre « Agent dev … »), avec un message de départ qui donne le ticket, les skills à charger
   et les règles ; écris l'attribution dans `TACHES.md`, `track-agent.md` et le journal. Ta session reste réservée au PO.
 - Tickets nés d'un essai de l'utilisateur et tickets de conduite : après la fusion → **🟡 À valider (utilisateur)**, jamais ✅ sur la seule CI ; ✅ quand
   l'utilisateur confirme ; s'il dit non → anomalie + ticket de correction.
-- **Sans demander l'accord** (précision de l'utilisateur, 2026-11-07 14:35 UTC) : tu ouvres une session de développeur dès qu'il en faut une (ticket prêt sans
-  développeur joignable, nouveau domaine), sans lui poser la question ; tu l'informes après, en une ligne.
+- **Toujours avec l'accord de l'utilisateur** (précision de l'utilisateur, 2026-11-07 14:36 UTC) : tu **ne crées jamais** une session de développeur sans son accord.
+  Tu lui proposes (domaine, ticket, raison) en une question ; tu ouvres la session seulement après son « oui ».
 - **Une session = un domaine** (ordre de l'utilisateur, 2026-11-07) : ne donne à une session de développeur que des tickets de **son domaine** (conduite, courses et
   modes, nuit, performance…), jamais un ticket sans rapport ; pour un autre domaine, ouvre une autre session.
 
