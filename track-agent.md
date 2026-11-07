@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 14:37:13 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 14:38:49 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -41,6 +41,7 @@
 | WFS-243 (P2) | E3 | après WFS-241 et WFS-242 (mêmes fichiers ; sessions archivées, tickets prêts) |
 | WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-241 | Conduite réaliste, étape 1 : banc, nouveau modèle de la voiture du joueur, aide à la direction réelle | 241 : 14:26, reprise 14:38 | ✅ actif (session gardée par l'utilisateur) |
 
 ## Agents de pilotage
 

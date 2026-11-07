@@ -3257,3 +3257,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:37:35 — WFS-218 rendu à l'agent arwa (il l'avait pris à 14:19, avant la réservation du PO) (po-scrum-master)
 - Conflit corrigé : WFS-218 🔧 agent arwa (branche 2d3c20e) ; WFS-226 prêt, à lui donner après WFS-218 (même fichier). `track-agent.md` nettoyé des sessions archivées.
+
+### 2026-11-07 14:38:49 — Session « Agent dev conduite » gardée par l'utilisateur, ressortie de l'archive ; WFS-241 lui revient (po-scrum-master)
+- L'utilisateur n'avait validé qu'une session : celle de la conduite. Elle est ressortie de l'archive et reprend WFS-241 sur sa branche ; les trois autres restent archivées.
