@@ -24,7 +24,7 @@
 | Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (choix de l'utilisateur : « regarder avec le PO » ; attribué 12:53) | 234 : à pousser dès sa création ; 220 : PR #190 fusionnée | 🔧 actif |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | relancé par l'utilisateur (« Prend une tâche ») : P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 11:45 (55b5298) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-233 | Enfants et familles dans les rues (réalisme, E11) : lecture des règles et du code des piétons | 233 : branche poussée 12:55 | 🔧 en cours |
-| Claude, agent 4 (011cpqZan) | WFS-236 | P1 [TECHNIQUE] : robot des statuts, un run de main annulé seulement à la publication compte comme vert (attribué 13:05) ; **à relire : RG-02 bis et test (e) ajoutés à 13:11** (publication annulée avant de démarrer seulement) | 236 : à pousser dès sa création ; 137 : fusionnée (PR #150) | 🔴 actif (P1) |
+| Claude, agent 4 (011cpqZan) | — | WFS-236 fusionné (PR #199) ; rattrapage des runs #818 à #825 lancé (RG-06) | 236 : 13:16 (PR #199, squash c2be79f) | ✅ libre ; WFS-236 (🟣) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
 | Claude, session dev 5bx | WFS-216 | P3 : lot E2 (ANO-103, 105, 108) (fusionné, PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre |

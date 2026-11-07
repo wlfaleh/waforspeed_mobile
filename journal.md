@@ -3002,3 +3002,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **2 + 5 → WFS-237** (P1, E7, `[TECHNIQUE]`) : groupe de concurrence unique `build-main` (`cancel-in-progress: false` gardé sur main, branches inchangées), résumé qui liste tous les commits et tickets depuis le dernier run de main terminé, bissection par l'expert CI en cas de rouge à plusieurs tickets ; job `banc-essai` : boucle d'installation du job `endurance` (`timeout 300`, 2 essais) et `timeout-minutes: 75` ; `pipeline.md` à jour. Règles `regles-de-gestion/WFS-237.md`.
 - **Attribution** : ⏳ En attente de WFS-236 (un ticket actif par épic E7) ; réservé à l'agent expert ci, qui l'a proposé et le commence dès WFS-236 🟣. Aucun banc, seuil ni test affaibli.
 
+### 2026-11-07 13:16:39 — WFS-236 fusionné par confiance (PR #199) (Claude, agent 4 (011cpqZan))
+- **Robot des statuts** (`tools/qa/statuts.py`) : un run de `main` « cancelled » (hors nuit) compte comme vert si tous les jobs hors `publication-*` sont « success » et si chaque `publication-*` a réussi ou a été annulée **avant de démarrer** (aucune étape, ou toutes sautées : RG-02 bis). Sinon rien (RG-03). Le journal précise « annulé seulement à la publication ».
+- **`statuts.yml`** : pour un run annulé, il lit les jobs (toutes les pages, avec leurs étapes) ; nouveau `workflow_dispatch` (entrée `run_id`) pour rattraper un run de `main` terminé (RG-06).
+- **Tests** : `tools/qa/test_statuts.py` : 39 vérifications OK (cas (a) à (e) de RG-05, liste vide, illisible ou absente, nuit annulée). Aucun banc, seuil, test ni job de `build.yml` touché (RG-04).
+- **Comparé au run réel #818** : construction et tests verts, `publication-apk` réussi, `publication-captures` annulé sans étape → compté vert.
+- **RG-06** : rattrapage de #818 lancé (run 42376181080 de `statuts.yml`) ; #820, #823 et #825 suivent un à un (GitHub ne garde qu'un run en attente par groupe de concurrence).
+- WFS-237 (agent expert ci) peut commencer : WFS-236 est 🟣.
+
