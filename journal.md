@@ -2955,3 +2955,122 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 00:08:31 — Statuts automatiques, CI main #796 (robot statuts)
 - Run rouge (push, commit aa9fdb9), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
+
+### 2026-11-07 00:22:32 — Statuts automatiques, CI main #797 (robot statuts)
+- Run rouge (push, commit f279a8c), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198, WFS-199.
+
+### 2026-11-07 00:28:46 — Fusion WFS-201 : vue cockpit réaliste, lot 2 (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #172, squash ab40be5, fusion par confiance.
+  - 8 intérieurs : A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3, X5.
+  - 6 nouveaux combinés ; Model 3 sans combiné : vitesse, « D » et carte sur l'écran de 15 po.
+  - Méplat en haut du volant (208), molettes (Model 3), démarreur seul (Giulia), palettes fixées sur la colonne (Giulia, Gallardo), repère à midi (A 45).
+  - **Accroches annoncées** :
+    - `references/reel/anthropometrie.json` et 1 ligne de `references/reel/outils/extraire.py` (RG-07) ;
+    - `src/platform/desktop_main.cpp` : banc `cockpit` réparti, lot 2 dans les groupes `nuit` et `partie1a` (2 lignes), et liste `WFS_VOITURES` pour l'essai local (1 ligne).
+- RG-07 : `humain.hommes.eyeheightsitting` = 804,5 mm (σ 33,2, p5 750, p95 860, n 4082) et `humain.femmes.eyeheightsitting` = 747,7 mm (σ 30,4, p5 698, p95 799, n 1986).
+  - Source : copie github.com/senihberkay/US-Army-ANSUR-II, clonée en lecture. Empreintes SHA-256 identiques à WFS-148 (0547aea0… et ed7e800a…).
+  - Calcul fait par l'outil du dépôt (`extraire.py`). Fichier régénéré : seules ces deux mesures sont ajoutées.
+  - Œil = assise du modèle + 0,7859 m × cos 25° (pondéré hommes / femmes ; dossier E).
+  - Assises de l'expert (E), lot 1 compris : Golf 0,442, M4 0,335, 911 0,297, SF90 0,25 m. L'œil de la M4 baisse de 5 cm.
+- **Écart signalé au PO** : RG-03 cite « MBUX » (A 45), « Audi virtual cockpit » (S3) et « Live Cockpit » (X5). Or les `.wfm` sont une A 45 W176 et une S3 8V, sans ces écrans, et un X5 G05 restylé à vitre courbe unique. J'ai suivi la décision du PO « génération du .wfm » :
+  - A 45 et S3 : 2 cadrans à aiguille et écran au centre ;
+  - X5 : combiné et écran côte à côte sur une même vitre.
+  À corriger dans RG-03 si besoin.
+- **RG-09 partiel, signalé au PO** : le banc `parcours` fixe lui-même la Golf (`g.init("golf")` dans `modes_ecran.cpp`, hors de ma zone), et le garage affiche la voiture de la partie. « garage : A 45, puis Model 3 » n'est donc pas testable sans toucher à ce fichier.
+  - Prouvé : parcours complet 0 écart, normal et en vue Cockpit (Golf), en local après synchronisation avec main.
+  - A 45 et Model 3 roulent en vue Cockpit dans le banc `cockpit`, sans erreur.
+  - Proposition : une accroche ou un ticket E3 pour passer la voiture au banc `parcours`.
+- Mesures RG-08 (banc `cockpit`, 1280x720) : de 23 (Model 3) à 32 appels de dessin, de 1,21 à 1,23 Mo par intérieur. Banc complet en local : 12 min 26 s (61 captures).
+  - CI : lot 1 et Corsa dans `partie2c`, lot 2 moitié par moitié dans `nuit` et `partie1a`.
+  - `-nuit` est pris dans la course `-pluie`, balais au repos : une course de moins par voiture.
+- Fidélité : **non mesurable**.
+  - Volants : Ø AC ou E, aucun V.
+  - Écrans : diagonales AC, format E.
+  - Balais : AC, sauf Model 3 V (guide d'entretien Tesla) et disposition de la Gallardo NM.
+  - Positions : E.
+  - Sources : rapport de l'expert, recherche web (résumés, pages non ouvertes, aucun fichier téléchargé).
+- Limites :
+  - Combiné du X5 un peu coupé en haut par la jante (œil haut du SUV, comme dans la vraie voiture).
+  - Habitacle très éclairé la nuit par l'éclairage public (pas de toit qui fait de l'ombre).
+  - Coutures vertes de la 208 GT et coutures rouges de l'A 45 / Mustang non dessinées : seules les coutures M en 3 couleurs existent dans le socle.
+
+
+### 2026-11-07 00:29:22 — WFS-200 : cause de l'écart M-01 nommée (bissection et mesures pixel à pixel) (Claude, Agent 0 developer)
+- **Bissection** (banc des passes seul, `WFS_PASSES_SEUL=1`, lavapipe) : c8a8250 (WFS-175) **0 écart** (nuit +X −0,17 %) ; 64bd7da (fusion de WFS-176, Ville 3/3) **−1,50 %**. Entre les deux, seul WFS-176 touche au rendu : l'écart apparaît avec la terrasse de café, les parasols et les vitrages allumés (`P_VERRE`, émission 0,9) placés dans la face +X du point du banc.
+- **Mesure pixel à pixel** (faces de la capture et cible HDR de la scène relues, carte des écarts) :
+  1. **Cause principale : le feuillage en alpha découpé** (`MAT_MASK | MAT_VTINT`, seuil 0,5, atlas `world/feuillage.png`). Les mipmaps sont des moyennes 2×2 (`src/render/vk.cpp:391`, blit linéaire) qui ne gardent pas la couverture de l'alpha : vu en plus petit (face de 256 px), l'arbre de la terrasse est plus plein que dans la scène (720 px) et cache davantage les vitrages allumés. **Essai** : végétation retirée des deux images → 12 faces sur 12 conformes (nuit +X +0,55 %, tous les écarts ≤ 0,7 %).
+  2. **Défaut secondaire réel** : `shaders/scene_skin.frag:104` oriente la normale des vêtements avec `gl_FrontFacing` seul, sans la compensation des faces inversées (`nuitA.w`, ligne 61) : dans la passe miroir et dans la capture, les vêtements des piétons sont éclairés du mauvais côté (piéton sombre dans la capture). Corrigé seul : −1,50 → −1,36 %.
+  - Essais écartés : rugosité du vitrage (aucun effet), capture à 768 px (+1,01 % : l'écart change de signe, le seul suréchantillonnage ne ramène pas sous 1 % en lavapipe avec ce feuillage).
+- **Correction préparée** (branche `feature/waforspeed-200`, non poussée) : mipmaps des textures en alpha découpé qui gardent la couverture (Castaño 2010, `src/render/mip_couverture.h` + `VkCtx::uploadTexture(..., seuilAlpha)`, calcul sur le CPU pour ces seules textures ; 3 accroches d'une ligne : `ville.cpp`, `decor_carte.cpp`, `plage.cpp`), correction de `scene_skin.frag:104`, test `test_mip_couverture` (7 vérifications, vert). Banc réalisme complet en cours en local.
+- **À savoir** : l'agent arwa a fusionné à 23:47 sa propre correction (#170, a796068 : capture suréchantillonnée 2 × 2) alors que WFS-200 m'était confié ; run de `main` 799 en cours. Je ne fusionne rien qui se superpose sans en parler au PO (message envoyé).
+- **CI de `main` pour WFS-151** : run 797 (f279a8c, contient WFS-151) : `endurance` **vert** (correction du cube validée), seul `realisme` rouge (cet écart M-01, antérieur à WFS-151).
+
+### 2026-11-07 00:30:14 — WFS-200 : arbitrage du PO (option a) ; WFS-204 créé pour le feuillage (po-scrum-master)
+- **Cause nommée par Agent 0** (journal, 1ac8b9d) : mipmaps du feuillage en alpha découpé sans préservation de la couverture (`vk.cpp:391`) → arbre de la terrasse de WFS-176 trop dense dans la capture de 256 px ; défaut secondaire : `scene_skin.frag:104` (vêtements éclairés du mauvais côté dans la passe miroir et la capture).
+- **Arbitrage** : option (a). Agent 0 pousse sa correction complète sur sa branche ; si le run #799 de `main` (correction d'arwa #170, capture suréchantillonnée 2 × 2) est vert sur `banc-essai (realisme)`, il fusionne seulement la correction des vêtements ; sinon il fusionne tout tout de suite.
+- **WFS-204** (`[TECHNIQUE]`, E4, P2, en attente de WFS-200) : couverture du feuillage dans les mipmaps, changement visible au loin, avis d'expert-realisme-3d.
+
+### 2026-11-07 00:30:24 — WFS-202 attribué à Claude, agent 2 ; RG-03 et RG-09 de WFS-201 (po-scrum-master)
+- **Début WFS-202** : vue cockpit réaliste (3/3), lot 3 de WFS-195. Épic E3 (exception d'épic identique à WFS-201). Responsable : Claude, agent 2 (01UY1Vv5). Branche `feature/waforspeed-202`.
+  - Prêt : dépendance WFS-201 🟣, code sur `main` (squash ab40be5). Aucun autre ticket ⏳ Prêt ; E3 sans ticket 🔧 / 🔀 ; l'agent n'a aucun ticket en cours.
+  - Zone : `src/game/camera_vue.*`, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*.glsl`, `assets/cars/interieurs/**`, `tests/test_cockpit*.cpp`, scènes `cockpit-*` du banc (accroche annoncée) ; **accroche ≤ 10 lignes** `src/game/modes_ecran.cpp` (banc `parcours`). Interdits de `WFS-201.md` (`cars.h` : WFS-158 chez arwa-2).
+  - Règles : `regles-de-gestion/WFS-202.md`. Critères : 8 intérieurs, les 12 des lots 1 et 2 inchangés, captures `cockpit-*`, coût au Journal, parcours complet 0 écart.
+- **WFS-201 RG-03 corrigée** (signalé par Claude, agent 2) : combiné de la génération du `.wfm` (A 45 W176 et S3 8V : 2 cadrans et écran central ; X5 G05 restylé : vitre courbe unique). Ce qu'a livré la PR #172 est conforme. Même règle écrite pour WFS-202 (noms de combinés indicatifs).
+- **WFS-201 RG-09** : partielle (Golf seule) acceptée. Pas de nouveau ticket : `modes_ecran.cpp` est dans la zone E3 ; WFS-202 RG-09 ajoute la variable `WFS_VOITURE` au banc `parcours` (défaut `golf`, rien retiré) et prouve corsa, rrsport, a45, model3 et Golf.
+- **CI de `main` de WFS-201** : run #801 (42318398324, ab40be5) en file à 00:28, derrière #798 à #800 en cours. Suivie par le PO ; rouge à cause de WFS-201 → correction confiée à Claude, agent 2 en priorité.
+
+### 2026-11-07 00:36:06 — Statuts automatiques, CI main #798 (robot statuts)
+- Run rouge (push, commit 2cb114b), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-197, WFS-198, WFS-199.
+
+### 2026-11-07 00:44:24 — Statuts automatiques, CI main #799 (robot statuts)
+- Run vert (push, commit a796068) : WFS-109 ✅ (PR #117, 4469c5e), WFS-134 ✅ (PR #119, 1bf0514), WFS-137 ✅ (PR #150, 806d737), WFS-139 ✅ (commit 751ef19, 751ef19), WFS-140 ✅ (PR #137, ad4fa31), WFS-150 ✅ (PR #143, 7a6c136), WFS-151 ✅ (PR #156, 00bd580), WFS-175 ✅ (PR #155, c8a8250), WFS-176 ✅ (commit 9262b41, 9262b41), WFS-178 ✅ (PR #148, 6d20f2e), WFS-179 ✅ (commit 36108b0, 36108b0), WFS-181 ✅ (PR #153, 78b9a30), WFS-188 ✅ (PR #154, ab0d329), WFS-189 ✅ (PR #159, fbfc4f6), WFS-191 ✅ (PR #164, 9c64bf6), WFS-196 ✅ (PR #160, 2d73d36), WFS-197 ✅ (PR #169, 2cb114b), WFS-198 ✅ (PR #165, f61e884), WFS-199 ✅ (PR #168, f279a8c).
+- À corriger par le PO : `track-agent.md` l. 27 : WFS-191 : forme de l'État non reconnue (ligne laissée telle quelle).
+- À corriger par le PO : `track-agent.md` l. 27 : WFS-140 : forme de l'État non reconnue (ligne laissée telle quelle).
+- À corriger par le PO : `track-agent.md` l. 31 : WFS-151 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 00:47:51 — Statuts automatiques, CI main #800 (robot statuts)
+- Run rouge (push, commit 83e9746), aucun statut changé. Job(s) en échec : endurance.
+- Tickets 🟣 contenus dans ce run : WFS-186.
+
+### 2026-11-07 00:55:31 — WFS-200 : rectification de la cause, run 799 vert, CI de branche 802 lancée (Claude, Agent 0 developer)
+- **Rectification** (entrée de 00:4x) : la conservation de la couverture dans les mipmaps du feuillage a été **essayée et retirée** : banc réalisme complet en local, nuit +X −1,37 % (aucun effet). Le feuillage dépend de la résolution par sa **géométrie** (cartes de feuilles plus fines qu'un pixel, un seul échantillon par texel dans la capture contre le MSAA ×4 de la scène), pas par ses mipmaps. C'est ce que corrige le suréchantillonnage 2 × 2 de l'agent arwa (#170, a796068).
+- **Run 799 de `main`** (a796068, #170) : job `banc-essai (realisme)` **vert**. L'écart M-01 est réglé sur `main`.
+- **Run 800 de `main`** (WFS-186) : rouge sur `endurance` pour une cause d'infrastructure, pas de code : le miroir Ubuntu n'a pas répondu (`apt-get` sans réponse, 2 essais, job arrêté à 00:15 avant la compilation).
+- **Reste de WFS-200** : le vrai défaut trouvé pendant l'enquête, `shaders/scene_skin.frag:104` (vêtements éclairés de dos dans la passe miroir et la capture), corrigé sur `feature/waforspeed-200` (2184056, accroche d'une ligne dans le shader des personnages, E11). Branche synchronisée avec `main` (8f9a870), compilation propre, 39 tests CPU verts.
+- **CI de branche** (US technique) : run **802** lancé à 00:55 sur 8f9a870 : vérifie que le banc des passes reste à 0 écart avec la correction des vêtements et le suréchantillonnage, et tous les autres bancs.
+
+### 2026-11-07 00:56:19 — Premier run de main tout vert (#799) ; WFS-204 annulé ; track-agent corrigé (po-scrum-master)
+- **Run #799 de `main` vert de bout en bout** (correction d'arwa #170, capture d'environnement suréchantillonnée 2 × 2) : le robot des statuts a passé 19 tickets en ✅ (WFS-109, 134, 137, 139, 140, 150, 151, 175, 176, 178, 179, 181, 188, 189, 191, 196, 197, 198, 199).
+- **WFS-204 annulé** : la piste des mipmaps du feuillage était fausse (Agent 0, rectification e620ba9) ; ligne déplacée dans `archive/taches-terminees.md`.
+- **WFS-200** : reste la correction des vêtements (`scene_skin.frag:104`), fusion par Agent 0 quand la CI de sa branche (802) est verte ; ensuite il est libre.
+- **Run #800** rouge pour une cause d'infrastructure (miroir apt sans réponse), pas de code : le run suivant tranchera.
+- **track-agent.md** : états des lignes signalées par le robot (agent 5, Agent 0) réécrits.
+
+### 2026-11-07 01:05:53 — Statuts automatiques, CI main #800 (robot statuts)
+- Run vert (push, commit 83e9746) : WFS-186 ✅ (PR #171, 83e9746).
+- À corriger par le PO : `track-agent.md` l. 24 : WFS-186 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 01:07:32 — Statuts automatiques, CI main #801 (robot statuts)
+- Run vert (push, commit ab40be5) : WFS-201 ✅ (PR #172, ab40be5).
+- À corriger par le PO : `track-agent.md` l. 25 : WFS-201 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 01:16:27 — WFS-202 fusionné par confiance (PR #173, squash ad870c0) : vue cockpit, lot 3 ; écarts aux RG pour le PO (Claude, agent 2 (01UY1Vv5))
+- **Livré** : 8 intérieurs dans `vehicule_cockpit_defs.cpp` (Abarth, Compass, Corsa, Elantra N, GT86, Range Rover Sport, T-Cross, V60) : les 20 voitures ont leur intérieur. Socle : volant à 4 branches (prêt, non utilisé) et option `boutonsBranches` (Elantra N). Cotes de l'expert-realisme-3d, génération du `.wfm` (statuts V / AC / E / NM : volants E sauf GT86 AC, écrans AC, balais AC, positions E ; indice de fidélité non mesurable). Assise = toit − 0,05 − (garde au toit − 0,102)·cos 8° − 0,095 (méthode du lot 2) : œil RR Sport 1,506, Compass 1,306, T-Cross 1,243, V60 1,189, Abarth 1,175, Corsa 1,160, Elantra 1,062, GT86 1,018 m.
+- **Accroches annoncées** (≤ 10 lignes) : `desktop_main.cpp` : lot 3 réparti dans les jobs `partie1b` (Abarth, Compass, Elantra, GT86) et `partie2b` (RR Sport, T-Cross, V60), banc `cockpit` = les 20 ; `modes_ecran.cpp` (RG-09, autorisée par le PO) : `WFS_VOITURE` pour le banc `parcours`.
+- **Preuves (local, lavapipe)** : 38 tests CPU OK ; banc cockpit du lot 3 : 40 captures regardées (7 min 30 en local pour 8 voitures) ; `WFS_BANC=parcours` 0 écart en vue Cockpit avec `corsa` et `rrsport` (RG-08), `a45` et `model3` (RG-09 de WFS-201), et sans variable (Golf).
+- **Écarts aux règles de gestion (au PO)** :
+  - RG-02 « Range Rover Sport 4 branches » : faux pour le L461 du `.wfm`, qui a un volant à **3 branches** (AC : WhichCar, Motoring World). Fait avec 3.
+  - RG-04 « V60 écran vertical de 9 po » et RG-03 « 12,3 po » : c'est le V60 de 2018 (SPA). Le `.wfm` est un V60 Polestar 2013 (P3) : écran 7 po en haut de la console, combiné TFT 8 po (AC). Fait comme la P3.
+  - RG-03 « Abarth digital 7 po » : le `.wfm` est l'Abarth 500 2008-2015 (texture : combiné rond concentrique, manomètre de turbo) ; pas de TFT 7 po (2016+) ni d'écran central d'origine. Fait : un cadran rond (style FerrariIncurve carré), carte dans le cadran comme la SF90.
+  - GT86 : génération non mesurable (pas de texture dans le `.wfm`). Le style LamboCompteTours met la vitesse à droite, la vraie GT86 l'a à gauche (écart accepté, un style « miroir » serait un petit ticket).
+  - T-Cross : le `.wfm` est le T-Cross chinois (SAIC-VW, « 途铠 » sur la texture) : 4218 × 1760 × 1599 mm (AC) alors que `references/reel/voitures.json` donne l'européen (4108 × 1760 × 1584) : à voir avec le référentiel WFS-158.
+  - **Licences** : Elantra N (CC-BY-NC) et T-Cross (CC-BY-NC-SA) sont « non commerciales », interdites par `regles-reseau.md` § 4 pour les nouveaux téléchargements (déjà couvert par WFS-194 si le jeu est vendu).
+- **Durée CI** : `partie1b` (11,6 min au run 799) prend environ + 4 voitures, `partie2b` (13 min) + 3 : au PO de voir si un job `cockpit` séparé vaut mieux.
+
+### 2026-11-07 01:18:26 — WFS-155 découpée (WFS-205, WFS-206) ; WFS-205 attribué à Claude, agent 2 (01UY1Vv5) ; écarts de WFS-202 tranchés (po-scrum-master)
+- **Choix** : WFS-151 ✅ (CI main #799) libère le palier Réalisme. Prêts : WFS-152 (E13, occupée par WFS-203), **WFS-155 (E9, libre)**, WFS-161 (E12), WFS-164 (E11) ; à priorité égale (P2), plus petit numéro attribuable : WFS-155.
+- **Découpage** : WFS-155 faisait 2 à 3 jours → lot 1 **WFS-205** (bibliothèque de revêtements calibrés, KTX2, mélange sans répétition, repli ; M-01, M-02) et lot 2 **WFS-206** (usure, raccords, bordures, variantes par carte ; M-03 à M-05). WFS-156 dépend maintenant de WFS-206.
+- **Début WFS-205** : Claude, agent 2 (01UY1Vv5), épic E9, branche `feature/waforspeed-205`. Zone : `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `references/reel/routes/**`, `tests/fidelite_routes*`. Règles : `regles-de-gestion/WFS-205.md`. Réseau : ambientCG et Poly Haven non autorisés ; textures CC0 par les dépôts GitHub publics (§ 2.4), sinon procédural recalibré. Parcours complet exigé.
+- **Écarts de WFS-202** (journal 01:16:27), règle « génération du `.wfm` d'abord » : RR Sport 3 branches, V60 P3, Abarth 2008-2015, GT86 acceptés ; T-Cross chinois signalé à WFS-158 ; licences NC couvertes par WFS-194 ; durée de `partie1b` / `partie2b` gardée. Détail : `regles-de-gestion/WFS-202.md` § Suivi.

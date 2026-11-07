@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <vector>
 #include "../core/ecran.h"
 #include "../core/math.h"
 #include "../core/configgame.h"   // WFS-128
@@ -88,7 +89,12 @@ struct EtatCockpit { bool actif = false; float volant = 0, aiguille = 2.2f, fov 
 const EtatCockpit& etatCockpit();
 // WFS-197 : banc d'essai des intérieurs par modèle (captures cockpit-*.png dans outDir), puis g.shutdown()
 class Game; class Renderer;
-void benchCockpit(Game& g, Renderer& r, const std::string& outDir);
+// WFS-201 : `voitures` : liste des voitures (lot 1 au job partie2c, lot 2 réparti entre les jobs nuit et partie1a, lot 3 entre partie1b et partie2b ; cockpit : toutes)
+void benchCockpit(Game& g, Renderer& r, const std::string& outDir, const std::vector<std::string>& voitures);
+// voitures des scènes du banc : lot 1 et la Corsa (cockpit commun), puis le lot 2 en deux moitiés
+inline const std::vector<std::string> COCKPIT_LOT1{"golf", "m4", "p911", "sf90", "corsa"}, COCKPIT_LOT2A{"a45", "s3", "giulia", "p208"},
+                                      COCKPIT_LOT2B{"gallardo", "mustang", "model3", "x5"},
+                                      COCKPIT_LOT3A{"abarth", "compass", "elantra", "gt86"}, COCKPIT_LOT3B{"rrsport", "tcross", "v60"};   // WFS-202 (Corsa : lot 1)
 // centre du bouton de vue posé à la dernière image (banc d'essai : appui simulé) ; false s'il n'est pas affiché
 bool boutonVue(float& cx, float& cy);
 
