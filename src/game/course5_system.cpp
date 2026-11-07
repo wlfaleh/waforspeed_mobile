@@ -38,6 +38,7 @@ bool g_vueDessusBanc = false;   // WFS-242 (RG-06) : banc d'essai : grille de d�
 // pas suivant ; puis journal, à chaque image, de la distance du classement, de la distance dessinée et de la largeur à l'écran
 std::vector<double> g_bancAdversaires; double g_bancJoueurM = 0; bool g_journalAdversaires = false;
 bool g_bancAvant = false;   // WFS-243 : banc : image « avant » (adversaires coupés par la distance, comme avant le ticket)
+bool g_figerBanc = false;   // WFS-243 : banc : ordinateurs arrêtés là où le banc les a posés
 
 const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
@@ -104,7 +105,7 @@ public:
             }
             g_bancAdversaires.clear();
         }
-        if (!actif_ || c->state == RaceState::Count || g_journalAdversaires) return;   // décompte : tout le monde attend sur la grille ; banc : figés
+        if (!actif_ || c->state == RaceState::Count || g_figerBanc) return;   // décompte : tout le monde attend sur la grille ; banc : figés
         if (!depart_ && c->state == RaceState::Play) {   // WFS-130 (RG-06) : ordinateurs prêts à être dessinés au départ
             depart_ = true;
             int prets = 0; for (const auto& o : os_) { auto it = models_.find(o.car); prets += it != models_.end() && it->second.ok; }
@@ -413,7 +414,7 @@ void benchCourse5(Game& g, Renderer& r, const std::string& out) {
         struct Cas { const char* nom; double joueurM; std::vector<double> ecarts; };
         const Cas CAS[] = {{"190m", 540, {190, 400, 402, 404}}, {"400m", 1060, {400, 402, 404, 406}}};
         for (const auto& [nom, joueurM, ecarts] : CAS) {
-            g_bancJoueurM = joueurM; g_bancAdversaires = ecarts;
+            g_bancJoueurM = joueurM; g_bancAdversaires = ecarts; g_figerBanc = true;
             g.update(1.0 / 60);   // placement (collide)
             g_journalAdversaires = true;
             g_bancAvant = true; capture((std::string("course5-adversaires-") + nom + "-" + q + "-avant").c_str()); g_bancAvant = false;
@@ -421,7 +422,19 @@ void benchCourse5(Game& g, Renderer& r, const std::string& out) {
             capture((std::string("course5-adversaires-") + nom + "-" + q).c_str());
             g_journalAdversaires = false;
             WFS_LOG("capture course5-adversaires-%s-%s : %u appels de dessin", nom, q, r.appelsDessin());
+            // coût (condition du PO) : 30 images sans puis avec les adversaires lointains : appels de dessin, triangles, temps
+            for (const bool sans : {true, false}) {
+                g_bancAvant = sans; double appels = 0, tri = 0, ms = 0; const int N = 30;
+                for (int i = 0; i < N; i++) {
+                    g.update(1.0 / 60); const double t0 = nowSeconds(); g.render(t += 1.0 / 60);
+                    ms += (nowSeconds() - t0) * 1000; appels += r.appelsDessin(); tri += r.chronoImage().triangles;
+                }
+                WFS_LOG("course à 5 : coût %s %s, %s : %.0f appels de dessin, %.0f triangles, %.1f ms par image (moyenne de %d images, banc)",
+                        nom, q, sans ? "sans les adversaires lointains (avant)" : "avec (après)", appels / N, tri / N, ms / N, N);
+            }
+            g_bancAvant = false;
         }
+        g_figerBanc = false;
         g.shutdown();
         r.qualiteBasse = avant;
     }

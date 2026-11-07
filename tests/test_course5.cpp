@@ -460,6 +460,36 @@ int main() {
         VERIFIE(pire <= 30, "WFS-243 ANO-150 : %.1f changements de voie par minute pour un ordinateur", pire);
     }
 
+    // WFS-243 (RG-03) : classement juste : 60 s de course sur la Ville (joueur au pilote automatique, à sa place de la grille), à
+    // chaque pas, la position affichée = 1 + nombre d'ordinateurs réellement devant lui sur la route ; un dépassement (dans un sens
+    // ou dans l'autre) se voit dans le tableau au pas même où il arrive (moins d'une seconde)
+    {
+        static Track t; static bool faite = false;
+        if (!faite) { t.build(mapById("ville"), trace::versionCarte("ville")); faite = true; }
+        int faux = 0, depassements = 0, pas = 0;
+        for (uint32_t g : {1u, 7u, 99u}) {
+            Player pl; pl.reset(carById("golf"));
+            auto os = course5::tirer(g, "golf");
+            const int place = std::min((int)os.size(), course5::tirerPlaceJoueur(g));
+            course5::grille(os, place); course5::placerSurGrille(pl, t, course5::placeGrille(place));
+            int avant = -1; const double dt = 1.0 / 120, fin = 4 * duel::KM;
+            for (int i = 0; i < 120 * 60; i++) {
+                DriveInput in; in.gas = true; in.nitro = pl.nitro > 0.5;
+                in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
+                pl.update(dt, in, t, true);
+                course5::avancer(os, dt, fin, (i + 1) * dt, pl.dist, pl.playerX, pl.speed, &t);
+                const int affichee = course5::position(course5::classement(os, "Pilote", pl.dist, 0, false, fin));
+                int reelle = 1; for (const auto& o : os) reelle += o.g.done || o.g.rd > pl.dist;
+                faux += affichee != reelle; pas++;
+                if (avant >= 0 && affichee != avant) depassements++;
+                avant = affichee;
+            }
+        }
+        std::printf("WFS-243 RG-03 : classement sur 3 × 60 s : %d pas sur %d où la position affichée diffère de l'ordre réel, %d changement(s) de place vus au pas même\n",
+                    faux, pas, depassements);
+        VERIFIE(faux == 0 && depassements > 0, "WFS-243 RG-03 : %d pas faux, %d dépassement(s)", faux, depassements);
+    }
+
     if (testPoursuite()) echecs++;   // WFS-111
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("course à 5 voitures : tout est OK\n");
