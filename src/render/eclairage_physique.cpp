@@ -542,7 +542,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     fp.exposure = 1; fp.ambient = 1;
     if (!nuit) { fp.skyTop = haut0; fp.skyHorizon = horizon0; }   // WFS-207 (RG-02) : teintes du ciel de l'atmosphère (sky.frag)
     g.etat.eLampadaireSol = -1;
-    for (int i = 0; i < std::clamp(fp.spotCount, 0, 8); i++) {
+    for (int i = 0; i < std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX); i++) {
         FrameParams::Spot& sp = fp.spots[i];
         sp.intensity *= (float)facteur;
         // RG-06 : éclairement au sol sous le premier lampadaire (lumière ponctuelle, tête à la hauteur déclarée par le décor) :

@@ -78,7 +78,7 @@ struct Model {
 };
 
 // WFS-09 : état des feux d'une voiture (setLights du jeu web : nuit, frein, recul)
-struct FeuxVoiture { bool nuit = false, stop = false, recul = false; float frein = -1; };   // WFS-109 : niveau 0-1 du stop (80 ms), < 0 : stop net
+struct FeuxVoiture { bool nuit = false, stop = false, recul = false; float frein = -1; bool joueur = false; };   // WFS-226 : joueur = phares déjà portés par nuit.cpp   // WFS-109 : niveau 0-1 du stop (80 ms), < 0 : stop net
 
 struct FrameParams {
     mat4 view, proj; vec3 camPos;
@@ -92,7 +92,8 @@ struct FrameParams {
     struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1;
                   bool croisement = false; };   // WFS-218 : feu de croisement (phares.h) : intensité en cd / LUX_PAR_UNITE, 1/d², coupure
     // WFS-09 : 8 au plus (phares, feu de recul, 4 lampadaires) ; angle ≥ PI = lumière ponctuelle (PointLight)
-    Spot spots[8]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
+    static constexpr int SPOTS_MAX = 12;                     // WFS-226 : 8 → 12 (phares des autres voitures)
+    Spot spots[SPOTS_MAX]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
     vec3 hemiSky{}, hemiGround{}; float hemiIntensity = 0;   // HemisphereLight ; 0 = ambiance du ciel actuelle
     float fogNear = 0, fogFar = 0;                           // fogFar > 0 : brouillard linéaire (Fog) au lieu de l'exponentiel
     // WFS-09 : feux des voitures allumés (nuit) ; WFS-16 : chaussée mouillée, flaques, reflets temps réel de la scène
@@ -147,6 +148,7 @@ public:
     void drawQuads(const Vertex* v, int nQuads, const Material& mat);
     void halo(const vec3& c, float taille, const vec3& couleur);
     void haloSol(const vec3& c, const vec3& r, const vec3& f, float demiR, float demiF, const vec3& couleur);
+    void lumiereSol(const Vertex* v, int nQuads) { drawQuads(v, nQuads, haloMat_); }   // WFS-226 : quads additifs, couleur des sommets (uv 0,5)
     // feux de la prochaine voiture dessinée par draw(Model) (la voiture du joueur : WFS-09, src/render/nuit.cpp) ;
     // remis à l'état de nuit de FrameParams::feux à chaque beginFrame
     void feuxProchaineVoiture(const FeuxVoiture& f) { feuxSuivant_ = f; feuxSuivantPose_ = true; }

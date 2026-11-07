@@ -165,6 +165,59 @@ public:
             const bool stade = l.style == StyleLampadaire::Stade;
             s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
         }
+        pharesAutres(fp, W.transformPoint({0, 0, 0}));
+    }
+
+    // ---------- WFS-226 (RG-01, RG-02) : vraies lumières des autres voitures les plus proches ----------
+    // Voitures notées à l'image précédente par Renderer::feuxVoiture (trafic, adversaires, police, camion) : les 2 (Basse) ou
+    // 4 plus proches du joueur, à moins de 70 m, reçoivent un feu de croisement réel (même photométrie que le joueur, paire
+    // LED en un projecteur au milieu des optiques, 10 cm devant, position prolongée d'une image). Les autres : lumière au sol calculée (lumiereSolAutres).
+    void pharesAutres(FrameParams& fp, const vec3& joueur) {
+        eclairants_.clear();
+        const int nMax = ecrans::reglages().qualite == ecrans::QUALITE_BASSE ? phares::AUTRES_ECLAIRANTS_BASSE : phares::AUTRES_ECLAIRANTS;
+        tri_.clear();
+        for (size_t i = 0; i < prec_.size(); i++) {
+            const float dist = length(prec_[i].centre - joueur);
+            if (dist < phares::AUTRES_PORTEE_SPOT) tri_.push_back({dist, i});
+        }
+        std::sort(tri_.begin(), tri_.end());
+        for (size_t k = 0; k < tri_.size() && (int)k < nMax && fp.spotCount < FrameParams::SPOTS_MAX; k++) {
+            const phares::PhareAutre& a = prec_[tri_[k].second];
+            // position de cette image : celle de l'image précédente + son déplacement depuis l'avant-dernière (voiture la
+            // plus proche à moins de 3 m) : sans cela, à 110 km/h, la lumière partait 0,5 m en arrière (flanc des voisines)
+            vec3 depl{}; float dMin = 3.f;
+            for (const phares::PhareAutre& b : prec2_) { const float dd = length(b.centre - a.centre); if (dd < dMin) { dMin = dd; depl = a.centre - b.centre; } }
+            FrameParams::Spot& h = fp.spots[fp.spotCount++];
+            h.pos = a.centre + depl + a.avant * 0.1f; h.target = h.pos + a.avant * 10.f;
+            h.color = phares::TEINTE_LED; h.intensity = 2 * phares::creteCd(true) / feux_modele::LUX_PAR_UNITE;
+            h.distance = 90; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
+            eclairants_.push_back(a.centre + depl);
+        }
+    }
+    // RG-02 : lumière des phares au sol pour les voitures sans vraie lumière (éclairement de phares::eclairementSol changé en
+    // luminance d'asphalte, ρ E / LUX_PAR_UNITE comme le rendu des projecteurs), grille couchée devant la voiture, bords fondus
+    void lumiereSolAutres(Renderer& r, const GameView& g) {
+        static constexpr float RANGS[] = {0.3f, 1.5f, 3.5f, 6.5f, 10.5f, 15.5f, 22.f, 30.f};
+        constexpr int NZ = 8, NX = 7; constexpr float DEMI = 7.f;
+        auto& A = phares::autres();
+        for (const phares::PhareAutre& a : A) {
+            bool eclaire = false;
+            for (const vec3& e : eclairants_) eclaire = eclaire || length(e - a.centre) < 2.5f;
+            if (eclaire || length(a.centre - g.camPos) > 160.f) continue;
+            Vertex v[(NZ - 1) * (NX - 1) * 4]; vec3 p[NZ][NX], c[NZ][NX];
+            const vec3 haut = normalize(cross(a.droite, a.avant));   // droite × avant = haut (avant vers −Z)
+            for (int k = 0; k < NZ; k++) for (int i = 0; i < NX; i++) {
+                const float x = -DEMI + 2 * DEMI * i / (NX - 1), z = RANGS[k];
+                const float fen = (1 - phares::lisse(DEMI * 0.5f, DEMI, std::abs(x))) * (1 - phares::lisse(RANGS[NZ - 3], RANGS[NZ - 1], z));
+                p[k][i] = a.sol + a.droite * x + a.avant * z + haut * 0.04f;
+                c[k][i] = phares::TEINTE_LED * (feux_modele::ALBEDO_ASPHALTE * phares::eclairementSol(x, z, a.demiEcart, a.hauteur) / feux_modele::LUX_PAR_UNITE * fen);
+            }
+            int n = 0;
+            auto sommet = [&](int k, int i) { const vec3& q = p[k][i]; const vec3& cc = c[k][i]; v[n++] = {q.x, q.y, q.z, cc.x, cc.y, cc.z, 0.5f, 0.5f}; };
+            for (int k = 0; k < NZ - 1; k++) for (int i = 0; i < NX - 1; i++) { sommet(k, i); sommet(k, i + 1); sommet(k + 1, i + 1); sommet(k + 1, i); }
+            r.lumiereSol(v, n / 4);
+        }
+        prec2_.swap(prec_); prec_.assign(A.begin(), A.end()); A.clear();
     }
 
     void render(Renderer& r, const GameView& g) override {
@@ -210,6 +263,7 @@ public:
             const TrackPoint hq = t.point(s, l.lat);
             r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, 1.1f, tete * 1.6f);
         }
+        lumiereSolAutres(r, g);   // WFS-226 : après le trafic, les adversaires et la police (systèmes d'ordre < 950)
         feuxJoueur(r, g);
     }
 
@@ -218,16 +272,19 @@ public:
     void feuxJoueur(Renderer& r, const GameView& g) {
         const Player& p = *g.player;
         stopK_ = feux_modele::transition(stopK_, p.braking, tFeux_ < 0 ? -1.f : (float)(g.time - tFeux_)); tFeux_ = g.time;
-        FeuxVoiture fx; fx.nuit = actif(g); fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;
+        FeuxVoiture fx; fx.nuit = actif(g); fx.joueur = true;   // WFS-226 : ses phares sont les deux projecteurs ci-dessus fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;
         r.feuxProchaineVoiture(fx);
     }
     float stopK_ = 0; double tFeux_ = -1;
 
-    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; }
+    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; prec_.clear(); prec2_.clear(); phares::autres().clear(); }
 
 private:
     bool nuit_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
     std::vector<std::pair<int64_t, size_t>> proches_;
+    std::vector<phares::PhareAutre> prec_, prec2_;   // WFS-226 : voitures notées à l'image précédente et à l'avant-dernière
+    std::vector<vec3> eclairants_;                   // WFS-226 : centres des voitures à vraie lumière cette image
+    std::vector<std::pair<float, size_t>> tri_;
 };
 
 } // namespace
