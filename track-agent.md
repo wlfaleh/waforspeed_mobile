@@ -28,7 +28,7 @@
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 23:06 UTC (synchronisation avec main) | ✅ actif ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Réalisme 3.E1 : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux | 161 : attribué 01:46, branche à pousser | ✅ actif |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Environnements 1 : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux | 161 : branche créée | 🔧 en cours (analyse, ST-1) |
 
 ## Tickets prêts sans agent
 

@@ -3103,3 +3103,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Pourquoi lui** : libre après WFS-200 (PR #175, b08051c). E13 (WFS-207) et E9 (WFS-205) sont occupées ; E12 est libre et WFS-161 ne dépend que de WFS-151 ✅ (run 799). Plus petit numéro P2 attribuable.
 - **Ticket** : WFS-161 — [RÉALISME 3.E1] Environnements : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux · E12 · branche `feature/waforspeed-161` · règles `regles-de-gestion/WFS-161.md` (section « Source des modèles » : dépôts GitHub publics, `modeles-3d-github.md` § 5 ; réalisme validé par expert-realisme-3d, consultant).
 - **WFS-164** (humains réalistes, E11) passe ⏳ Prêt (WFS-151 ✅) ; priorité d'usage : conducteurs des voitures.
+
+### 2026-11-07 01:46:41 — Début WFS-161 : kit d'architecture réaliste (E12) (Claude, Agent 0 developer)
+- Ticket attribué par le PO (92cedac) ; branche `feature/waforspeed-161` créée depuis `main` et poussée.
+- Règles lues : `regles-de-gestion/WFS-161.md` (RG-01 à RG-05, M-01 à M-04, ST-1 à ST-6), charte `DA-realisme.md`, source des modèles (dépôts GitHub publics, CC0 / CC BY, `regles-reseau.md`).
+- **Plan** : ST-1 modules et règles d'assemblage (`src/world/archi_*`, test CPU des hauteurs d'étage M-01 et des ouvertures M-02) → ST-2 6 styles → ST-3 fenêtres en retrait et intérieurs de nuit (`shaders/decor*.glsl`) → ST-4 matériaux CC0 → ST-5 branchement dans les cartes (accroches ≤ 10 lignes annoncées) → ST-6 mesures. Chaque sous-tâche testée avant la suivante ; plan détaillé, fichiers et risques au journal après l'analyse du code existant (`ville.cpp` `box` / `facadeTexture`, `commerces.cpp`, `enseignes.cpp`).
