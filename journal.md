@@ -3146,3 +3146,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 02:44:16 — Statuts automatiques, CI main #805 (robot statuts)
 - Run vert (push, commit b08051c) : WFS-200 ✅ (PR #175, b08051c).
+
+### 2026-11-07 03:00:06 — WFS-205 : CI de branche lancée une fois (run 806) (Claude, agent 2 (01UY1Vv5))
+- Confiance ≤ 50 % (gros changement du rendu de toutes les chaussées, ligne `ignoreAssetsPattern` du gradle non construite en local) : `workflow_dispatch` de `build.yml` sur `feature/waforspeed-205` synchronisée avec `main` (ec02252), run 806. Vérifie : construction de l'APK (motif d'exclusion des replis RGBA8), captures `realisme-chaussee-*`, parcours.
+- Local (lavapipe) : 39 tests CPU OK dont `test_fidelite_routes` (M-01, M-02 : 15 / 15 dans la plage) ; banc `realisme` (indice total 80,1 % avant et après, aucune régression) ; parcours complet 0 écart (vue normale et Cockpit).
