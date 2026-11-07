@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace wfs { class Track; }
+namespace wfs { class Track; struct MapDef; }
 
 namespace wfs::chocs {
 
@@ -56,9 +56,12 @@ public:
         if (parSeg_.empty()) return;
         const int64_t L = (int64_t)parSeg_.size();
         parSeg_[(size_t)(((seg % L) + L) % L)].push_back(o); n_++;
-        portee_ = std::max(portee_, (double)std::abs(o.along) + (o.forme == Forme::Cylindre ? o.r : std::hypot(o.hx, o.hz)));
+        // portée le long de la route : avance + latéral + étendue (dans un virage serré, un objet loin sur le côté — l'îlot d'un
+        // rond-point à 14 m — peut être tout près d'une voiture qui en est loin le long de la route)
+        portee_ = std::max(portee_, (double)std::abs(o.along) + std::abs(o.lat) + (o.forme == Forme::Cylindre ? o.r : std::hypot(o.hx, o.hz)));
     }
     size_t taille() const { return n_; }
+    const std::vector<std::vector<ObstacleRoute>>& parSegment() const { return parSeg_; }   // banc, tests
     // obstacles à moins de `rayon` m (le long de la route) de la distance d (unités du jeu), en coordonnées du monde
     template <class T, class F> void autour(T& track, double d, double rayon, F&& f) const {
         if (n_ == 0) return;
@@ -75,12 +78,15 @@ public:
 private:
     std::vector<std::vector<ObstacleRoute>> parSeg_;
     size_t n_ = 0;
-    double portee_ = 0;   // m : avance + étendue maximales (fenêtre de recherche)
+    double portee_ = 0;   // m : avance + latéral + étendue maximales (fenêtre de recherche)
 };
 inline Registre& registre() { static Registre r; return r; }
 // accroche des cartes (plage.cpp, decor_carte.cpp) : déclare un objet solide de leur décor au segment seg (tour), avec le même
 // filtre que leur dessin (objet sur une autre partie de la route ou dans un giratoire : ni dessiné ni solide) ; chocs_cartes.cpp
 void declarerObjet(Track& t, int64_t seg, const ObstacleRoute& o, bool filtrer = true);
+// registre préparé pour la piste, Ville et îlots des ronds-points déclarés (chocs_declaration.cpp)
+struct Declares { int ville = 0, ilots = 0; };
+Declares declarerCarte(Track& t, const MapDef& map);
 
 // ---------------------------------------------------------------- géométrie
 // voiture : rectangle orienté (centre cx, cz ; avant = (sin cap, −cos cap) ; demi-longueur hl, demi-largeur hw)
