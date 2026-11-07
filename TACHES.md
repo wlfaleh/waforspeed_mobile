@@ -183,6 +183,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-238 | [TECHNIQUE] Notification en temps réel à chaque APK de main publié (issue GitHub épinglée) | E7 | 🟣 Fusionné (PR #201, squash 9ffe4d4) | agent expert ci (session 01UY1Vv4), 2026-11-07 13:25 UTC | — | `feature/waforspeed-238` |  |  |
 | P1 Urgent | WFS-239 | [TECHNIQUE] Banc qualité : voiture du trafic absente à 120 m en Basse depuis WFS-221 ; placements contrôlés | E4 (exception PO : `qualite_banc.cpp` seul, hors fichiers de WFS-222) | 🔧 En cours | Claude, agent 3 (01UY1Vv3), 2026-11-07 13:42 UTC | — | `feature/waforspeed-239` |  |  |
 | P3 Moyenne | WFS-240 | [RÉALISME] Enfants (suite de WFS-233) : poussettes, enfants en tribune, cheveux longs, cadence de marche | E11 (+ accroche E2 `circuit.cpp`) | 🔧 En cours | Claude, agent 4 (011cpqZan), 2026-11-07 13:58 UTC | WFS-233 🟣 | `feature/waforspeed-240` |  |  |
+| P1 Urgent | WFS-241 | [URGENT] Correction de WFS-217 : aide désactivée sans effet, activée ne suit pas les virages et ronds-points (ANO-113) | E3 | ⏳ Prêt — **priorité absolue avec la nuit** |  | — | `feature/waforspeed-241` |  |  |
 
 ## Critères d'acceptation
 

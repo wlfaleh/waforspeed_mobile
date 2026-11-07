@@ -3179,3 +3179,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:00:22 — WFS-240 : RG-04 (cadence) corrigée, décision du PO (po-scrum-master)
 - Constat de Claude, agent 4 (011cpqZan) : « ≤ 1,2 fois la cadence de l'adulte » et « sans glissement » sont incompatibles (même vitesse, foulée de l'enfant ≈ 0,6 fois celle de l'adulte) et contraires au réel (rapport réel ≈ 1,5 ; 4 ans ≈ 150 pas/min, Sutherland 1980, « à confirmer »). Mon erreur dans la règle.
 - Décision : proposition recommandée de l'agent 4 retenue. RG-04 devient « cadence de chaque âge à ± 10 % de la valeur réelle par âge, test CPU, sans glissement ; on ne baisse que si elle dépasse le réel ». Pas de pieds qui glissent, pas de nouveau clip adulte. Détail dans `regles-de-gestion/WFS-240.md` (Suivi).
+
+### 2026-11-07 14:03:34 — ANO-113 (bloquante) sur WFS-217 ; WFS-241 créé, priorité absolue (po-scrum-master)
+- **Essai de l'utilisateur (APK 840)** : aide à la direction désactivée = aucune différence ; activée = la voiture ne suit toujours pas les virages et ronds-points. WFS-217 passé ✅ par la CI mais critères non remplis sur téléphone.
+- **WFS-241** (E3, P1 Urgent, `regles-de-gestion/WFS-241.md`) : banc `aide` (3 joueurs simulés × 2 réglages × 6 virages), objectifs chiffrés, preuve vidéo, validation par l'utilisateur ; si le modèle « route qui tourne sous la voiture » l'empêche, proposition de conduite en coordonnées du monde au PO avant de la faire. Bandeau de `TACHES.md` : WFS-241, puis WFS-218 + 226, puis WFS-224.
