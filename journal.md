@@ -3749,3 +3749,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - ANO-145 : **décision du PO** écrite dans `regles-de-gestion/WFS-227.md` (Basse sans cascade du soleil pour l'instant, performance d'abord ; coût d'une cascade mesuré dans WFS-264). ANO-146 → WFS-228 (mesure sur 60 images).
 - ANO-149 → WFS-194 (décision de l'utilisateur sur la dérogation toujours attendue, question de 11:12 UTC) ; ANO-71 (hayon du X5) rattachée à WFS-194.
 - `anno.md` : statut / US seulement ; `track-agent.md` remis à jour.
+
+### 2026-11-07 18:00:11 — Début WFS-270 : voiture du joueur noire la nuit (ANO-147) + preuves ANO-148, attribué à agent arwa (po-scrum-master)
+- Ticket **WFS-270** (P1 Urgent, E10), correction de WFS-226 REFUSÉ en recette (`qa/rapports/WFS-226.md`) ; développeur : **agent arwa (Claude, session trafic)**, auteur de WFS-226, à sa demande. Branche `feature/waforspeed-270` (premier commit poussé dès la création).
+- **Exception PO** : E10 est tenue par WFS-235 (arwa-2) ; WFS-270 ne touche que la peinture et le vernis de nuit (`shaders/vehicule*.glsl`, `src/render/vehicule_*`, `tests/fidelite_voitures*`) + accroches ≤ 10 lignes du banc de nuit annoncées ici. Coordination au journal avec arwa-2 (WFS-235) et agent 1 (WFS-230, lecture seule des valeurs E13).
+- Interdit : `src/render/eclairage_*`, `shaders/eclairage*` (WFS-230), bloc des phares de `nuit.cpp`, `src/world/**` (WFS-249), iOS, tailles d'interface.
+- Plan : RG-01 cause nommée (mesures) → RG-02 / RG-03 ambiance du ciel de nuit + reflet du vernis (rapport carrosserie / route 0,4 à 1,5, Golf bleue) → RG-04 toutes les voitures → RG-05 jour inchangé (indice ≥ 99 %) → RG-06 scènes sens inverse < 70 m et 70-160 m (ANO-148). Parcours complet accueil → Campagne de nuit → course → retour. 🟡 à valider par l'utilisateur après fusion.
