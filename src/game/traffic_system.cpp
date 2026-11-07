@@ -461,7 +461,7 @@ void benchTrafficScenes(Game& g, Renderer& r, const std::string& out) {
 // devant la Golf arrêtée, dans les 3 files, en ligne droite (trafic-motos-<carte>-<moment>) puis dans une courbe de 18 à 60 m
 // de rayon (trafic-motos-virage-<carte>-<moment>), puis de près, à 4,5 m de chaque côté du joueur et à 10 m devant lui
 // (trafic-motos-pres-<carte>-<moment>) ; journal : modèle, vitesse, rayon, inclinaison et équilibre, pilotes dessinés
-static void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
+void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
     for (const char* carte : {"ville", "plage"}) {
         static Track piste; piste.build(mapById(carte), trace::versionCarte(carte));
         int64_t courbe = -1;   // début de la 1re courbe serrée (rayon de 18 à 60 m tenu sur 20 m au moins) : inclinaison bien visible
