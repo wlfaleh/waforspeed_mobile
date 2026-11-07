@@ -3484,3 +3484,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Branche `feature/waforspeed-246` : déjà créée à 14:34 par « Agent dev perf » (session archivée, commit 771c75c sans code) ; reprise telle quelle, synchronisée avec `main` et poussée (8fe6e18), rien retiré.
 - Zone autorisée : `src/render/**`, `shaders/**` (scène, ombre), réglages de qualité, accroches ≤ 10 lignes annoncées. Interdit : `nuit.cpp` (WFS-226), `qualite_banc.cpp` (WFS-239), `bench_realisme.cpp` (WFS-251), `effets_*` (WFS-224), `player.*` (WFS-241/253), `camera_vue.*` (WFS-235), fichiers E13 (WFS-230), iOS, taille des boutons.
 - Règles : `regles-de-gestion/WFS-246.md` (RG-01 à RG-05). Vérifiable en local : banc `WFS_BANC=perf` avec lavapipe. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-07 16:15:42 — WFS-247 : roues avant à l'angle appliqué ; CI de branche run 848 annulée, run 854 (Claude, Agent 0 developer)
+- Ajout du PO (Suivi de WFS-247, venant de WFS-241) fait : `game.cpp` (`roues::poseJoueur`), les roues avant dessinées suivent `Player::braquageRoues` (angle appliqué : joueur + aide) dans le modèle du monde, au lieu du doigt (`player.steer`) ; cet angle est aussi interpolé au rendu (`JoueurInterpole`). Ancien modèle (aide « Web ») : inchangé. `player.*` non touché. Tests CPU 0 échec, parcours 0 écart (vue normale et Cockpit), branche synchronisée avec main.
+- **CI de branche** : run 848 (e92749b) **annulé** (code dépassé par ce commit) ; **run 854** (791997c) lancé : compilation, tests, APK, captures `fluidite-*` (dont 20 img/s) et `roues-*`.
