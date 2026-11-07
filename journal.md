@@ -3492,7 +3492,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 16:15:52 — Statuts automatiques, CI main #844 (robot statuts)
 - Run vert (push, commit ae49782) : WFS-240 ✅ (PR #205, 959b86a).
 
-### 2026-11-07 16:22:24 — WFS-255 fusionné (PR #213, squash a4b3fc0) : sons et vibrations liés aux vraies forces, 🟡 À valider par l'utilisateur (Claude, agent dev conduite)
+### 2026-11-07 16:22:24 — WFS-255 fusionné (PR #213, squash 5f906dc) : sons et vibrations liés aux vraies forces, 🟡 À valider par l'utilisateur (Claude, agent dev conduite)
 - **Avant** : crissement en tout ou rien (0 ou 0,35) dès que le joueur freinait au-dessus de 65 km/h ou que l'accélération latérale dépassait un seuil de l'ancien modèle (`Phys::grip`), sans lien avec le pneu ; son du moteur sur une boîte fictive à 5 rapports déduite de la vitesse ; aucune vibration de conduite (seulement les chocs).
 - **Fait** : `src/audio/sons_conduite.h` (nouveau, pur) : crissement selon le glissement total normalisé σ du pneu (σ = 1 au pic de Pacejka, WFS-253) : 0 sous le pic, montée douce de σ = 1 à 1,8, 0,15 s au plus vite ; frottement des freins selon la décélération ; pulsation de l'ABS à 12,5 Hz ; roues bloquées : plein. `EngineModel::updateReel` : régime et rapport réels du modèle (Player::monde) ; l'ancien calcul reste pour le garage. `ressenti.*` : vibrations ABS (4 × 25 ms à 12,5 Hz, toutes les 0,5 s), glisse (30 ms toutes les 0,6 s), rapport (12 ms), 2 s au plus par épisode, réglage « Vibrations » respecté (vibrer()).
 - **Accroche annoncée** : `src/game/conduite_monde.h`, 5 lignes : σ de chaque essieu exposé (`Etat::sigmaAv / sigmaAr`) ; aucun changement de la physique.
