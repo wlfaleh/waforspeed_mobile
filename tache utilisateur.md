@@ -101,3 +101,9 @@ demande utilisateur :
 
 - « Pour la première minute il y a une évolution de graphique, pas de RAM, pas de chauffe, pas de bugs, mais après 2 minutes à peu près il commence à ramer, à bugger. » (APK 883, transmis par Claude, agent 5, 2026-11-07)
 ( PO, 2026-11-07 21:44:57 UTC : c'est noté. L'agent 5 a trouvé la cause probable : ce n'est pas le décor, c'est le **trafic** : avec le temps, beaucoup trop de voitures se retrouvent autour de toi (≈ 60 au lieu de ≈ 5), et le téléphone dessine 12 fois plus de voitures. Anomalie **ANO-151** et ticket urgent **WFS-281** (P1, en tête de la liste) : trafic stable pendant 10 min sur les 4 cartes, sans bouchon permanent. Il sera donné au prochain développeur du trafic qui demande un ticket ; après la fusion, il attendra ta confirmation sur le téléphone. )
+
+- Vue cockpit : règle-la, remets le tableau de bord et la carcasse de voiture, regarde l'avis de l'agent expert conduite (conversation avec le PO, 2026-11-07 22:20 UTC)
+( PO : c'est fait — WFS-235 ❌, **ANO-152** avec votre capture, **WFS-282** (P1) donné à Claude, agent 2 (il avait fait les intérieurs d'avant) : d'abord remettre la planche de bord et la carrosserie d'avant, puis régler la vue selon l'avis de l'expert conduite ; captures jour / nuit regardées par le lead dev avant la fusion. )
+
+- Créer une tâche urgente pour supprimer les ronds-points dans toutes les maps, c'est une catastrophe (conversation avec le PO, 2026-11-07 22:43 UTC)
+( PO : c'est créé — **WFS-283** (P1, en tête de liste) : chaque rond-point devient un carrefour simple, sur toutes les cartes ; course, trafic, police, GPS et chocs suivent ; le code des giratoires est gardé de côté, rien n'est effacé. WFS-248 ❌, **ANO-158**. )

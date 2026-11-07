@@ -267,7 +267,8 @@ protected:
         refuses_--; if (section) { refusesSec_--; posesSec_++; }
         if (it.t == T_PITWALL || it.t == T_GARAGE || it.t == T_STAND)   // WFS-275 (accroche) : murs qui renvoient le son (mur des stands vitré 2,7 m)
             parois::declarer("circuit", len(), it.t == T_PITWALL ? n : n + (int64_t)std::lround(it.l / SEG_M / 2), it.side, it.lat,
-                             it.t == T_PITWALL ? 2.7f : it.t == T_GARAGE ? 7.f : hauteurRang(it.k - 1) + 2.f, it.t == T_PITWALL ? 3 * (float)SEG_M : it.l);
+                             it.t == T_PITWALL ? 2.7f : it.t == T_GARAGE ? 7.f : hauteurRang(it.k - 1) + 2.f, it.t == T_PITWALL ? 3 * (float)SEG_M : it.l,
+                             it.t == T_PITWALL ? 0.4f : it.t == T_GARAGE ? 12.f : it.k * RANG, it.t == T_GARAGE ? parois::ALPHA_DUR : parois::ALPHA_BETON);   // WFS-278 : obstacle, matériau
         return true;
     }
 

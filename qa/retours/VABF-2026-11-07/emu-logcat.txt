@@ -1,0 +1,314 @@
+--------- beginning of main
+11-07 21:20:34.447  6505  6530 I WaForSpeed: PLANTAGE gestionnaire installé : /data/user/0/com.waforspeed.game/files/plantage.txt, version 0.1.883 (883), Google sdk_gphone64_x86_64, Android 14 (API 34)
+11-07 21:20:34.447  6505  6530 I WaForSpeed: mode GPU logiciel demandé (intent qa_simu=true)
+11-07 21:20:34.447  6505  6530 I WaForSpeed: Système de tâches : 1 threads de travail
+11-07 21:20:34.451  6505  6530 I WaForSpeed: gyroscope (WFS-108) : capteur de gravité
+11-07 21:20:34.530  6505  6505 I WaForSpeed: MISEAJOUR déjà vérifiée il y a moins de 6 h
+11-07 21:20:34.533  6505  6530 I WaForSpeed: CHAUFFE écoute de l'état thermique (statut Android 0, code 0)
+11-07 21:20:34.534  6505  6530 I WaForSpeed: sauvegarde : /data/user/0/com.waforspeed.game/files/sauvegarde.txt lue (valide) : car=golf best=0
+11-07 21:20:34.535  6505  6505 I WaForSpeed: CHAUFFE performances soutenues non prises en charge par ce téléphone
+11-07 21:20:34.563  6505  6505 I WaForSpeed: Marges de l'écran : gauche 128, haut 0, droite 0, bas 0
+11-07 21:20:34.564  6505  6505 I WaForSpeed: ENCARTS g/d/h/b 128/0/0/0 px (fenêtre 0x0, API 34)
+11-07 21:20:34.661  6505  6505 I WaForSpeed: Marges de l'écran : gauche 128, haut 0, droite 0, bas 0
+11-07 21:20:34.665  6505  6530 I WaForSpeed: setFrameRate 60 : ok (code 0)
+11-07 21:20:34.712  6505  6530 D vulkan  : searching for layers in '/data/app/~~aCRLGdamijq5Tv7-T7kowg==/com.waforspeed.game-t86twPFKGgO4XgF2AtKaBQ==/lib/x86_64'
+11-07 21:20:34.712  6505  6530 D vulkan  : searching for layers in '/data/app/~~aCRLGdamijq5Tv7-T7kowg==/com.waforspeed.game-t86twPFKGgO4XgF2AtKaBQ==/base.apk!/lib/x86_64'
+11-07 21:20:34.718  6505  6530 I WaForSpeed: GPU : SwiftShader Device (Subzero) (Vulkan 1.3)
+11-07 21:20:34.819  6505  6505 I WaForSpeed: Marges de l'écran : gauche 128, haut 0, droite 0, bas 0
+11-07 21:20:34.909  6505  6530 I WaForSpeed: GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %)
+11-07 21:20:34.911  6505  6530 I WaForSpeed: Profondeur 126, MSAA x1, mipmaps GPU oui
+11-07 21:20:34.978  6505  6530 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:20:34.991  6505  6530 I WaForSpeed: Ombres du soleil : carte 2048x2048, filtre bilinéaire
+11-07 21:20:35.050  6505  6530 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:20:37.374  6505  6530 I WaForSpeed: passes (WFS-150) : 4 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+11-07 21:20:37.396  6505  6530 I WaForSpeed: éclairage (WFS-151) : table BRDF 32x32 et cube noir prêts
+11-07 21:20:39.769  6505  6530 I WaForSpeed: Police : 192 caractères dans l'atlas
+11-07 21:20:39.771  6505  6530 I WaForSpeed: chargement : première image 2,419 s après l'initialisation Vulkan, écran complet (police) 4,793 s
+11-07 21:20:39.773  6505  6530 I WaForSpeed: configuration : configgame.json (APK), 110 clé(s) lue(s), 0 valeur(s) du jeu, 0 erreur(s)
+11-07 21:20:39.773  6505  6530 I WaForSpeed: mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)
+11-07 21:20:39.773  6505  6530 I WaForSpeed: chargement : Préparation du moteur 2,40 s
+11-07 21:20:42.044  6505  6530 I WaForSpeed: tracé 2 : ville, 32 sections, 5794 segments (6953 m), 2 carrefour(s) à feux
+11-07 21:20:54.419  6505  6530 I WaForSpeed: route : textures/route/enrobe-use/route_enrobe-use-couleur.astc.ktx2 : ASTC 4x4 sRGB, 1024x1024 (0 niveau(x) sauté(s)), 1365.4 Ko (WFS-205)
+11-07 21:21:03.961  6505  6530 I WaForSpeed: route : textures/route/enrobe-use/route_enrobe-use-normale.astc.ktx2 : ASTC 4x4 linéaire, 1024x1024 (0 niveau(x) sauté(s)), 1365.4 Ko (WFS-205)
+11-07 21:21:06.380  6505  6530 I WaForSpeed: route : textures/route/enrobe-use/route_enrobe-use-orm.astc.ktx2 : ASTC 4x4 linéaire, 512x512 (0 niveau(x) sauté(s)), 341.4 Ko (WFS-205)
+11-07 21:21:15.219  6505  6530 I WaForSpeed: route : textures/route/beton-trottoir/route_beton-trottoir-couleur.astc.ktx2 : ASTC 4x4 sRGB, 1024x1024 (0 niveau(x) sauté(s)), 1365.4 Ko (WFS-205)
+11-07 21:21:24.758  6505  6530 I WaForSpeed: route : textures/route/beton-trottoir/route_beton-trottoir-normale.astc.ktx2 : ASTC 4x4 linéaire, 1024x1024 (0 niveau(x) sauté(s)), 1365.4 Ko (WFS-205)
+11-07 21:21:27.121  6505  6530 I WaForSpeed: route : textures/route/beton-trottoir/route_beton-trottoir-orm.astc.ktx2 : ASTC 6x6 linéaire, 512x512 (0 niveau(x) sauté(s)), 154.7 Ko (WFS-205)
+11-07 21:21:27.138  6505  6530 I WaForSpeed: people/humains/h01.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.79 m
+11-07 21:21:27.157  6505  6530 I WaForSpeed: people/humains/h02.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.85 m
+11-07 21:21:27.181  6505  6530 I WaForSpeed: people/humains/h03.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+11-07 21:21:27.200  6505  6530 I WaForSpeed: people/humains/h04.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.82 m
+11-07 21:21:27.225  6505  6530 I WaForSpeed: people/humains/h05.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+11-07 21:21:27.247  6505  6530 I WaForSpeed: people/humains/h06.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+11-07 21:21:27.272  6505  6530 I WaForSpeed: people/humains/f01.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+11-07 21:21:27.297  6505  6530 I WaForSpeed: people/humains/f02.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.69 m
+11-07 21:21:27.315  6505  6530 I WaForSpeed: people/humains/f03.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.54 m
+11-07 21:21:27.342  6505  6530 I WaForSpeed: people/humains/f04.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.72 m
+11-07 21:21:27.365  6505  6530 I WaForSpeed: people/humains/f05.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.66 m
+11-07 21:21:27.386  6505  6530 I WaForSpeed: people/humains/f06.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.57 m
+11-07 21:21:27.392  6505  6530 I WaForSpeed: conducteurs (WFS-211) : 12 humains réalistes, statures 1.539 à 1.851 m, 3 niveaux de détail (corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2)
+11-07 21:21:27.394  6505  6530 I WaForSpeed: chargement : Construction de la route 47,62 s
+11-07 21:21:27.664  6505  6530 I WaForSpeed: cars/golf.wfm : version 1, tangentes calculées au chargement (94940 sommets, 26.2 ms, WFS-149)
+11-07 21:21:27.696  6505  6530 I WaForSpeed: cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+11-07 21:21:27.702  6505  6530 I WaForSpeed: cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+11-07 21:21:27.708  6505  6530 I WaForSpeed: cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:27.710  6505  6530 I WaForSpeed: cars/golf.wfm : 3 niveaux allégés, 64222 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 18 très fin (1.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:30.462  6505  6530 I WaForSpeed: cars/golf.wfm : 21 matériaux, 13 textures, 210043 triangles
+11-07 21:21:30.462  6505  6530 I WaForSpeed: voiture : modèle complet, 210043 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+11-07 21:21:30.471  6505  6530 I WaForSpeed: chargement : Chargement du modèle 3D… 3,08 s
+11-07 21:21:30.664  6505  6530 I WaForSpeed: cars/golf.wfm : version 1, tangentes calculées au chargement (94940 sommets, 21.5 ms, WFS-149)
+11-07 21:21:30.683  6505  6530 I WaForSpeed: cars/golf.wfm : 4 roues séparées (rayon 0.319 m, essieux z -1.26 / 1.37), 10931 triangles tournent (WFS-60)
+11-07 21:21:30.690  6505  6530 I WaForSpeed: cars/golf.wfm : feu arrière découpé dans le matériau 13, 396 triangles (WFS-109)
+11-07 21:21:30.691  6505  6530 I WaForSpeed: cars/golf.wfm : 1020 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:30.695  6505  6530 I WaForSpeed: cars/golf.wfm : 3 niveaux allégés, 64222 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 4 très fin (3.3 mm) → préfiltré (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 5 très fin (3.2 mm) → préfiltré (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 9 très fin (2.9 mm) → préfiltré (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 14 très fin (1.2 mm) → préfiltré (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 16 très fin (1.3 mm) → préfiltré (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 17 très fin (2.0 mm) → préfiltré (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : matériau 18 très fin (1.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:33.525  6505  6530 I WaForSpeed: cars/golf.wfm : 21 matériaux, 13 textures, 210043 triangles
+11-07 21:21:33.525  6505  6530 I WaForSpeed: voiture : modèle complet, 210043 triangles, aniso ×8, mipmaps oui (cars/golf.wfm, WFS-134)
+11-07 21:21:33.598  6505  6530 I WaForSpeed: cars/m4.wfm : version 1, tangentes calculées au chargement (133087 sommets, 8.7 ms, WFS-149)
+11-07 21:21:33.609  6505  6530 I WaForSpeed: cars/m4.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.53 / 1.32), 25788 triangles tournent (WFS-60)
+11-07 21:21:33.610  6505  6530 I WaForSpeed: cars/m4.wfm : 355 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:33.612  6505  6530 I WaForSpeed: cars/m4.wfm : 3 niveaux allégés, 84005 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 2 très fin (3.3 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 4 très fin (1.1 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 5 très fin (0.1 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 8 très fin (2.4 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 12 très fin (2.0 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 13 très fin (0.6 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 22 très fin (3.3 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 24 très fin (3.6 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 25 très fin (3.3 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 26 très fin (4.0 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 30 très fin (0.7 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 31 très fin (2.6 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 32 très fin (0.2 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 33 très fin (2.7 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 34 très fin (2.2 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 35 très fin (1.5 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 41 très fin (3.8 mm) → préfiltré (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : matériau 45 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:34.099  6505  6530 I WaForSpeed: cars/m4.wfm : 51 matériaux, 18 textures, 249409 triangles
+11-07 21:21:34.099  6505  6530 I WaForSpeed: voiture : modèle complet, 249409 triangles, aniso ×8, mipmaps oui (cars/m4.wfm, WFS-134)
+11-07 21:21:34.106  6505  6530 I WaForSpeed: cars/p911.wfm : matériau 2 : peinture unie métallisée (métal 0,45, rugosité 0,32, RG-01) (WFS-170)
+11-07 21:21:34.106  6505  6530 I WaForSpeed: cars/p911.wfm : matériau 12 : vernis séparé retiré (peinture visible, RG-01) (WFS-170)
+11-07 21:21:34.174  6505  6530 I WaForSpeed: cars/p911.wfm : version 1, tangentes calculées au chargement (91857 sommets, 9.8 ms, WFS-149)
+11-07 21:21:34.185  6505  6530 I WaForSpeed: cars/p911.wfm : 4 roues séparées (rayon 0.338 m, essieux z -1.27 / 1.28), 24989 triangles tournent (WFS-60)
+11-07 21:21:34.187  6505  6530 I WaForSpeed: cars/p911.wfm : feu arrière découpé dans le matériau 9, 1636 triangles (WFS-109)
+11-07 21:21:34.190  6505  6530 I WaForSpeed: cars/p911.wfm : 755 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:34.192  6505  6530 I WaForSpeed: cars/p911.wfm : 3 niveaux allégés, 80620 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:34.405  6505  6530 I WaForSpeed: cars/p911.wfm : matériau 2 très fin (2.6 mm) → préfiltré (WFS-42)
+11-07 21:21:34.405  6505  6530 I WaForSpeed: cars/p911.wfm : matériau 4 très fin (2.0 mm) → préfiltré (WFS-42)
+11-07 21:21:34.405  6505  6530 I WaForSpeed: cars/p911.wfm : matériau 7 très fin (3.8 mm) → préfiltré (WFS-42)
+11-07 21:21:34.405  6505  6530 I WaForSpeed: cars/p911.wfm : matériau 9 très fin (2.4 mm) → préfiltré (WFS-42)
+11-07 21:21:34.405  6505  6530 I WaForSpeed: cars/p911.wfm : 13 matériaux, 8 textures, 238841 triangles
+11-07 21:21:34.405  6505  6530 I WaForSpeed: voiture : modèle complet, 238841 triangles, aniso ×8, mipmaps oui (cars/p911.wfm, WFS-134)
+11-07 21:21:34.465  6505  6530 I WaForSpeed: cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 11.9 ms, WFS-149)
+11-07 21:21:34.472  6505  6530 I WaForSpeed: cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+11-07 21:21:34.473  6505  6530 I WaForSpeed: cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+11-07 21:21:34.473  6505  6530 I WaForSpeed: cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:34.474  6505  6530 I WaForSpeed: cars/gallardo.wfm : 3 niveaux allégés, 55050 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:34.737  6505  6530 I WaForSpeed: cars/gallardo.wfm : matériau 5 très fin (0.9 mm) → préfiltré (WFS-42)
+11-07 21:21:34.737  6505  6530 I WaForSpeed: cars/gallardo.wfm : 18 matériaux, 21 textures, 188989 triangles
+11-07 21:21:34.737  6505  6530 I WaForSpeed: voiture : modèle complet, 188989 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+11-07 21:21:34.751  6505  6530 I WaForSpeed: Système : TrafficSystem (ordre 50)
+11-07 21:21:34.753  6505  6530 I WaForSpeed: Ville : plan des quartiers, 2770 objets, 344 commerces, 6 panneaux
+11-07 21:21:34.755  6505  6530 I WaForSpeed: Ville (WFS-176) : 4 lieu(x) (casino, centre commercial, garages), 10 terrasses ajoutées près des carrefours, 13 promeneurs avec chien
+11-07 21:21:34.755  6505  6530 I WaForSpeed: Ville (WFS-137) : plan adapté au tracé 2 (32 sections) : 642 / 2770 objets, 117 commerces et 3 panneaux retirés (courbes serrées, autoroute, tunnel, pont, rues des carrefours) ; 2 carrefour(s) à feux, 1 rond(s)-point(s)
+11-07 21:21:34.756  6505  6530 I WaForSpeed: chocs (WFS-256) : ville : 4991 obstacle(s) de la Ville, 1 îlot(s) de rond-point (les autres cartes déclarent leur décor à leur chargement)
+11-07 21:21:34.756  6505  6530 I WaForSpeed: Système : wfs::ChocsDecor (ordre 99)
+11-07 21:21:34.897  6505  6530 I WaForSpeed: Ville (WFS-137) : rond-point au segment 1153 (rayon 14.0 m) : 12 amorces et immeubles aux abords
+11-07 21:21:34.915  6505  6530 I WaForSpeed: vie : 3 textes d'enseignes dans l'atlas
+11-07 21:21:34.966  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 7 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 6274 sommets changés de plus de 10° (WFS-170)
+11-07 21:21:34.983  6505  6530 I WaForSpeed: cars/p208.wfm : version 1, tangentes calculées au chargement (131808 sommets, 8.7 ms, WFS-149)
+11-07 21:21:34.997  6505  6530 I WaForSpeed: cars/p208.wfm : 4 roues séparées (rayon 0.310 m, essieux z -1.19 / 1.35), 48140 triangles tournent (WFS-60)
+11-07 21:21:34.997  6505  6530 I WaForSpeed: cars/p208.wfm : 2778 triangles de feux arrière marqués (WFS-170)
+11-07 21:21:34.998  6505  6530 I WaForSpeed: cars/p208.wfm : 2179 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:35.000  6505  6530 I WaForSpeed: cars/p208.wfm : 3 niveaux allégés, 77598 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 0 très fin (3.0 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 2 très fin (2.9 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 3 très fin (2.3 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 6 très fin (1.6 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 7 très fin (3.5 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 10 très fin (1.1 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 11 très fin (1.7 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 13 très fin (1.2 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : matériau 14 très fin (1.4 mm) → préfiltré (WFS-42)
+11-07 21:21:35.240  6505  6530 I WaForSpeed: cars/p208.wfm : 17 matériaux, 4 textures, 255230 triangles
+11-07 21:21:35.240  6505  6530 I WaForSpeed: voiture : modèle complet, 255230 triangles, aniso ×8, mipmaps oui (cars/p208.wfm, WFS-134)
+11-07 21:21:35.296  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 4 : normales lissées (recalculées depuis la géométrie, arêtes > 40° gardées), 8356 sommets changés de plus de 10° (WFS-170)
+11-07 21:21:35.320  6505  6530 I WaForSpeed: cars/x5.wfm : version 1, tangentes calculées au chargement (136983 sommets, 15.6 ms, WFS-149)
+11-07 21:21:35.331  6505  6530 I WaForSpeed: cars/x5.wfm : 4 roues séparées (rayon 0.379 m, essieux z -1.59 / 1.40), 21488 triangles tournent (WFS-60)
+11-07 21:21:35.332  6505  6530 I WaForSpeed: cars/x5.wfm : 968 triangles de feux arrière marqués (WFS-170)
+11-07 21:21:35.332  6505  6530 I WaForSpeed: cars/x5.wfm : 1035 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:35.335  6505  6530 I WaForSpeed: cars/x5.wfm : 3 niveaux allégés, 89046 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:35.693  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 11 : cabochon rouge → feu rouge sombre #5A0A0E (WFS-134)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 2 très fin (3.1 mm) → préfiltré (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 3 très fin (2.6 mm) → préfiltré (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 7 très fin (2.6 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 8 très fin (3.7 mm) → préfiltré (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 10 très fin (2.5 mm) → préfiltré (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 11 très fin (1.8 mm) → préfiltré (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : matériau 20 très fin (3.7 mm) → préfiltré (WFS-42)
+11-07 21:21:35.697  6505  6530 I WaForSpeed: cars/x5.wfm : 29 matériaux, 37 textures, 273609 triangles
+11-07 21:21:35.697  6505  6530 I WaForSpeed: voiture : modèle complet, 273609 triangles, aniso ×8, mipmaps oui (cars/x5.wfm, WFS-134)
+11-07 21:21:35.701  6505  6530 I WaForSpeed: Ville (WFS-175) : autoroute 2062-3363, tunnel 2568-2818, pont 1729-1937 (eau à -5.5 m), 3 portique(s)
+11-07 21:21:35.727  6505  6530 I WaForSpeed: vie : 6 textes d'enseignes dans l'atlas
+11-07 21:21:35.734  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 14 : barres des feux arrière → verre rouge opaque (WFS-182, RG-03) (WFS-170)
+11-07 21:21:35.852  6505  6530 I WaForSpeed: cars/sf90.wfm : version 1, tangentes calculées au chargement (117467 sommets, 18.7 ms, WFS-149)
+11-07 21:21:35.862  6505  6530 I WaForSpeed: cars/sf90.wfm : 4 roues séparées (rayon 0.343 m, essieux z -1.18 / 1.49), 19366 triangles tournent (WFS-60)
+11-07 21:21:35.862  6505  6530 I WaForSpeed: cars/sf90.wfm : 116 triangles de feux arrière marqués (WFS-170)
+11-07 21:21:35.862  6505  6530 I WaForSpeed: cars/sf90.wfm : 339 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:35.864  6505  6530 I WaForSpeed: cars/sf90.wfm : 3 niveaux allégés, 83361 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 0 très fin (2.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 8 très fin (3.2 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 9 très fin (1.4 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 14 très fin (2.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 16 très fin (3.5 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 19 très fin (1.9 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 20 très fin (2.0 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 21 très fin (1.7 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 24 très fin (2.8 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 29 très fin (1.7 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 30 très fin (1.8 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 33 très fin (3.3 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 34 très fin (3.5 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 35 très fin (3.0 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 41 très fin (3.1 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 44 très fin (3.5 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 45 très fin (2.4 mm) → préfiltré (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 48 très fin (1.0 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : matériau 52 très fin (2.5 mm) → préfiltré, fils en couverture partielle (WFS-42)
+11-07 21:21:37.166  6505  6530 I WaForSpeed: cars/sf90.wfm : 54 matériaux, 42 textures, 247239 triangles
+11-07 21:21:37.166  6505  6530 I WaForSpeed: voiture : modèle complet, 247239 triangles, aniso ×8, mipmaps oui (cars/sf90.wfm, WFS-134)
+11-07 21:21:37.234  6505  6530 I WaForSpeed: cars/gallardo.wfm : version 1, tangentes calculées au chargement (89281 sommets, 10.9 ms, WFS-149)
+11-07 21:21:37.241  6505  6530 I WaForSpeed: cars/gallardo.wfm : 4 roues séparées (rayon 0.325 m, essieux z -1.14 / 1.43), 13420 triangles tournent (WFS-60)
+11-07 21:21:37.241  6505  6530 I WaForSpeed: cars/gallardo.wfm : 190 triangles de feux arrière marqués (WFS-170)
+11-07 21:21:37.242  6505  6530 I WaForSpeed: cars/gallardo.wfm : 664 triangles de tranches de portes en gris sombre (WFS-134, ANO-67)
+11-07 21:21:37.243  6505  6530 I WaForSpeed: cars/gallardo.wfm : 3 niveaux allégés, 55050 triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)
+11-07 21:21:37.504  6505  6530 I WaForSpeed: cars/gallardo.wfm : matériau 5 très fin (0.9 mm) → préfiltré (WFS-42)
+11-07 21:21:37.504  6505  6530 I WaForSpeed: cars/gallardo.wfm : 18 matériaux, 21 textures, 188989 triangles
+11-07 21:21:37.504  6505  6530 I WaForSpeed: voiture : modèle complet, 188989 triangles, aniso ×8, mipmaps oui (cars/gallardo.wfm, WFS-134)
+11-07 21:21:37.585  6505  6530 I WaForSpeed: Ville (WFS-176) : lieu 0 au segment 20, côté 1, 40 m
+11-07 21:21:37.585  6505  6530 I WaForSpeed: Ville (WFS-176) : lieu 1 au segment 1937, côté 1, 80 m
+11-07 21:21:37.585  6505  6530 I WaForSpeed: Ville (WFS-176) : lieu 2 au segment 468, côté 1, 14 m
+11-07 21:21:37.585  6505  6530 I WaForSpeed: Ville (WFS-176) : lieu 2 au segment 1364, côté 1, 14 m
+11-07 21:21:37.585  6505  6530 I WaForSpeed: Ville (WFS-176) : 4 lieu(x), 5 groupe(s) de pigeons, 13 chien(s)
+11-07 21:21:37.586  6505  6530 I WaForSpeed: Ville : 161 lampadaires
+11-07 21:21:37.586  6505  6530 I WaForSpeed: décor fixe (WFS-268) : ville : un tour = le précédent tourné de -7.93° (écart 0.0000 m)
+11-07 21:21:37.768  6505  6530 I WaForSpeed: décor fixe (WFS-268) : ville : sommets par matériau (détail/allégé) : 0:0k/0k 1:0k/0k 2:15k/15k 3:39k/7k 5:178k/72k 6:125k/43k 7:3k/3k 8:148k/261k 9:8k/5k 10:86k/86k 11:0k/0k 12:0k/0k 13:0k/0k 14:54k/0k 15:32k/0k 16:104k/0k 17:2k/2k 18:6k/1k 19:2k/2k 20:0k/0k 21:75k/75k 22:0k/0k 23:0k/0k 24:0k/0k 25:0k/0k
+11-07 21:21:39.581  6505  6530 I WaForSpeed: décor fixe (WFS-268) : ville : 182 morceaux → 46 blocs de 154 m, 1464570 sommets, 60.6 Mo GPU, préparé en 1995 ms
+11-07 21:21:39.599  6505  6530 I WaForSpeed: Système : Ville (ordre 100)
+11-07 21:21:39.599  6505  6530 I WaForSpeed: Système : Plage (ordre 105)
+11-07 21:21:39.765  6505  6530 I WaForSpeed: people/homme.wfp : 10302 sommets, 79155 indices, 65 os (palette 62), 7 clips, 12 plages, 1.60 m
+11-07 21:21:39.928  6505  6530 I WaForSpeed: people/femme.wfp : 15891 sommets, 99990 indices, 65 os (palette 62), 7 clips, 12 plages, 1.55 m
+11-07 21:21:39.943  6505  6530 I WaForSpeed: people/humains/e04g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.03 m
+11-07 21:21:39.959  6505  6530 I WaForSpeed: people/humains/e04f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.01 m
+11-07 21:21:39.975  6505  6530 I WaForSpeed: people/humains/e07g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+11-07 21:21:39.988  6505  6530 I WaForSpeed: people/humains/e07f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.22 m
+11-07 21:21:40.002  6505  6530 I WaForSpeed: people/humains/e10g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.39 m
+11-07 21:21:40.016  6505  6530 I WaForSpeed: people/humains/e10f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.38 m
+11-07 21:21:40.036  6505  6530 I WaForSpeed: people/humains/e14g.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.64 m
+11-07 21:21:40.047  6505  6530 I WaForSpeed: people/humains/e14f.wfp : 14517 sommets, 121200 indices, 65 os (palette 52), 7 clips, 3 plages, 1.60 m
+11-07 21:21:40.048  6505  6530 I WaForSpeed: Enfants (WFS-240, RG-04) : cadence à 1,0 m/s (pas/min) : e04g 158 e04f 161 e07g 127 e07f 128 e10g 109 e10f 110 e14g 91 e14f 93 ; adulte 82
+11-07 21:21:40.075  6505  6530 I WaForSpeed: Poussettes (WFS-240) : 378 triangles (tissu 58, métal 168, plastique 152), petit assis 398 triangles
+11-07 21:21:40.075  6505  6530 I WaForSpeed: Enfants (WFS-233) : 52 familles sur 882 piétons (10 % visés ; 4 ans 11, 7 ans 8, 10 ans 18, 14 ans 15) ; WFS-240 : 16 poussette(s)
+11-07 21:21:40.075  6505  6530 I WaForSpeed: Piétons : 882 personnes (ville)
+11-07 21:21:40.075  6505  6530 I WaForSpeed: Piétons (WFS-222) : 114 à pied (promeneurs 6, marcheurs 104, passants 4 ; 114 omis sur ordre de l'utilisateur), 768 assis ou baigneurs
+11-07 21:21:40.075  6505  6530 I WaForSpeed: Système : Pietons (ordre 106)
+11-07 21:21:40.075  6505  6530 I WaForSpeed: Système : carte::Campagne (ordre 107)
+11-07 21:21:40.103  6505  6530 I WaForSpeed: vie : 5 textes d'enseignes dans l'atlas
+11-07 21:21:40.121  6505  6530 I WaForSpeed: vie : 3 panneaux néon (ville)
+11-07 21:21:40.121  6505  6530 I WaForSpeed: Système : Enseignes (ordre 107)
+11-07 21:21:40.121  6505  6530 I WaForSpeed: Système : carte::Circuit (ordre 108)
+11-07 21:21:40.170  6505  6530 I WaForSpeed: vie : 11 textes d'enseignes dans l'atlas
+11-07 21:21:40.173  6505  6530 I WaForSpeed: Système : Portique (ordre 108)
+11-07 21:21:40.220  6505  6530 I WaForSpeed: vie : 10 textes d'enseignes dans l'atlas
+11-07 21:21:40.229  6505  6530 I WaForSpeed: vie : 227 commerces, 768 clients attablés, 0 serviettes (ville)
+11-07 21:21:40.229  6505  6530 I WaForSpeed: Système : Commerces (ordre 109)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: archi (WFS-161) : 580 bâtiments du kit posés, 903452 triangles au niveau de détail 0 (tous), nuit oui
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : ArchiCarteSysteme (ordre 110)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Pluie : nuit en ville, pluie active
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : wfs::Pluie (ordre 199)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : wfs::AideDirection (ordre 202)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: fantôme : aucun fantôme sur le terrain ville
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : CourseSystem (ordre 210)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : TraceSysteme (ordre 215)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : DuelSystem (ordre 220)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : RessentiSystem (ordre 220)
+11-07 21:21:40.254  6505  6530 I WaForSpeed: Système : Course5System (ordre 222)
+11-07 21:21:40.259  6505  6530 I WaForSpeed: Système : PoursuiteSystem (ordre 224)
+11-07 21:21:40.274  6505  6530 I WaForSpeed: Système : Camera (ordre 260)
+11-07 21:21:40.471  6505  6530 I WaForSpeed: son des lieux (WFS-261) : sources calculées à 48000 Hz en 194 ms (8.6 Mo, une fois par lancement)
+11-07 21:21:40.485  6505  6530 I WaForSpeed: son : AAudio 48000 Hz, 2 canal(aux), rafale 960 échantillons
+11-07 21:21:40.557  6505  6530 I WaForSpeed: musique : boucle de 8.73 s calculée (418909 échantillons par variante, 3.4 Mo)
+11-07 21:21:40.570  6505  6530 I WaForSpeed: PAROIS ville : 2547 segments avec une paroi à gauche, 3910 à droite, 621 immeubles (masques)
+11-07 21:21:40.570  6505  6530 I WaForSpeed: LIEUX ville : fontaine 1, vagues 0, tribune 0, ferme 0, terrasse 138
+11-07 21:21:40.570  6505  6530 I WaForSpeed: MUSIQUE menu
+11-07 21:21:40.570  6505  6530 I WaForSpeed: AMBIANCE nuit (ville)
+11-07 21:21:40.570  6505  6530 I WaForSpeed: Système : AudioSystem (ordre 300)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : EffetsSystem (ordre 350)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : QualiteSystem (ordre 360)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : ChauffeSystem (ordre 361)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : ui::Texte (ordre 400)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : Hud (ordre 420)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : MiniCarte (ordre 422)
+11-07 21:21:40.584  6505  6530 I WaForSpeed: Système : Toasts (ordre 425)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::GarageEnregistre (ordre 440)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::Menu (ordre 450)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::Terrain (ordre 452)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::Salon (ordre 453)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::Pause (ordre 455)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ChoixMode (ordre 458)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::EcranReglages (ordre 460)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : manette::FocusManette (ordre 489)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : ecrans::FonduChargement (ordre 490)
+11-07 21:21:40.597  6505  6530 I WaForSpeed: Système : PlancheVoitures (ordre 498)
+11-07 21:21:40.600  6505  6530 I WaForSpeed: Système : SceneEssai (ordre 900)
+11-07 21:21:40.600  6505  6530 I WaForSpeed: Système : SqueletteEssai (ordre 905)
+11-07 21:21:40.600  6505  6530 I WaForSpeed: Système : VehiculeNuitBanc (ordre 949)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Nuit : carte ville, 227 lampadaires, phares de croisement LED (20877 cd chacun), route mouillée
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : Nuit (ordre 950)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : wfs::CielCouvert (ordre 960)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : RealismeBanc (ordre 970)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : PassesBanc (ordre 975)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : LumiereBanc (ordre 985)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : ArchiBanc (ordre 985)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: Système : VueHauteBanc (ordre 995)
+11-07 21:21:40.601  6505  6530 I WaForSpeed: chargement : Construction de la ville 10,13 s
+11-07 21:21:40.603  6505  6530 I WaForSpeed: chargement : total 63,23 s
+11-07 21:21:40.603  6505  6530 I WaForSpeed: QA pret : moteur initialise
+11-07 21:21:42.935  6505  6530 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:21:42.963  6505  6530 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:21:42.964  6505  6530 I WaForSpeed: Écran : course → menu
+11-07 21:21:42.964  6505  6530 I WaForSpeed: course : figée (écran menu)
+11-07 21:21:42.964  6505  6530 I WaForSpeed: AMBIANCE coupée
+11-07 21:21:43.021  6505  6530 I WaForSpeed: environnement (WFS-150) : cubemap HDR 128x128 × 6 (0.75 Mo), rendue à 256x256 (suréchantillonnage 2 × 2, 0.75 Mo de plus)
+11-07 21:21:43.038  6505  6530 I WaForSpeed: Ville : 194 appels de dessin (0 morceaux, 46 blocs préparés : 69 appels pour le décor fixe, avant masquage) ; créations en course (tout le jeu) : 0 maillages, 0 matériaux
+11-07 21:21:43.255  6505  6530 I WaForSpeed: IPS plafond 30 (écran menu)
+11-07 21:21:43.568  6505  6530 I WaForSpeed: VOITURES 0 voix (0 voitures autour)
+11-07 21:21:43.569  6505  6530 I WaForSpeed: PAROIS gauche 0 m, droite 0 m
+11-07 21:21:43.569  6505  6530 I WaForSpeed: Rendu : Haute · 25 % · MSAA ×1 · -- img/s · chauffe 0 (netteté du niveau 2, -1 images/s)
+11-07 21:21:43.569  6505  6530 I WaForSpeed: CHAUFFE niveau=0 (statut Android 0)
+11-07 21:21:43.569  6505  6530 I WaForSpeed: modes : sauvegarde relue (Checkpoint, 4 km, normale)
+11-07 21:21:58.375  6505  6530 I WaForSpeed: QA ips=0.3 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:04.218  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:11.086  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:17.631  6505  6530 I WaForSpeed: environnement (WFS-150) : capture 1 prête (128 px, point 0.0 1.5 0.0)
+11-07 21:22:17.633  6505  6530 I WaForSpeed: QA ips=0.1 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:24.341  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:29.923  6505  6530 I WaForSpeed: QA ips=0.1 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:35.353  6505  6530 I WaForSpeed: éclairage (WFS-151) : sonde 1 (128 px, 495.0 ms CPU) en (0.0 1.5 0.0), rebond 1, EV100 1.64
+11-07 21:22:35.355  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:40.890  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
