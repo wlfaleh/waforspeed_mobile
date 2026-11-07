@@ -32,7 +32,8 @@ enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POL
        T_GLISS, T_MURET, T_DANGER, T_CASCADE,   // WFS-138 : glissière, muret, panneau A1, cascade
        T_FONTAINE, T_FEU, T_COMMERCE,           // WFS-178 : rond-point fleuri, feu tricolore, commerces du village
        T_AUTO, T_PEAGE, T_PANNEAU_A,            // WFS-179 : autoroute (un par segment), aire de péage, panneau bleu
-       T_ENCLOS };                              // WFS-186 : enclos des chevaux (clôture de bois sur les 4 côtés)
+       T_ENCLOS,                                // WFS-186 : enclos des chevaux (clôture de bois sur les 4 côtés)
+       T_CEDEZ };                               // WFS-223 : ligne de cédez-le-passage à l'entrée de l'anneau
 // WFS-179 : textes des panneaux bleus de l'autoroute et du péage (noms de lieux inventés)
 const char* const PANNEAUX_A[4] = {"VALLÉE VERTE  14 km", "LES PINS  9 km", "AIRE DE REPOS  2 km", "PÉAGE"};
 // WFS-178 (RG-03) : commerces du village (it.k) et texte de leur enseigne (pas de vraie marque ni de vrai nom de lieu)
@@ -316,10 +317,41 @@ protected:
             cyl(S, c + vec3{0, 0.42f, 0}, 2.75f, 0.1f, 20, uv(C_GLASS));     // eau
             cyl(S, c, 0.35f, 2.4f, 10, uv(C_PIERRE0 + 1));                  // colonne
             cyl(S, c + vec3{0, 2.2f, 0}, 1.0f, 0.25f, 14, uv(C_PIERRE0));   // vasque haute
-            for (int i = 0; i < 16; i++) {   // massifs : couronne de fleurs à 5-7 m du centre (rouge, jaune, blanc, mauve)
-                const float a = 2 * PI * i / 16, rr = 5.5f + (i % 2) * 1.2f;
-                const int col = i % 4 == 0 ? C_RED : i % 4 == 1 ? C_HAY : i % 4 == 2 ? C_WHITE : C_FLAG0 + 2;
-                box(S, c + vec3{std::cos(a) * rr, 0, std::sin(a) * rr}, p.r, p.f, 1.4f, 0.35f, 1.4f, uv(col));
+            // WFS-223 (RG-03) : l'îlot s'arrête à 6,5 m du centre (anneau de 14 m − demi-chaussée 7,5 m) : bordure de béton
+            // continue de 0,15 m de haut et 0,20 m de large (albédo 0,25 : case 0x8a8884), herbe dedans (profil du sol) ;
+            // massif circulaire de terre (4,3 à 5,7 m) planté de 36 touffes fleuries : plus aucune boîte de couleur
+            const float rI = (float)RW, R0 = it.lat - rI - 0.2f;   // rayon intérieur de la bordure
+            const int NB = 48;
+            for (int i = 0; i < NB; i++) {
+                const float a0 = 2 * PI * i / NB, a1 = 2 * PI * (i + 1) / NB;
+                auto P = [&](float ang, float rr, float y) { return c + vec3{std::cos(ang) * rr, y, std::sin(ang) * rr}; };
+                quad(S, P(a0, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0.15f), P(a0, R0 + 0.2f, 0.15f), uv(C_WALK));    // face côté anneau
+                quad(S, P(a0, R0, 0.15f), P(a0, R0 + 0.2f, 0.15f), P(a1, R0 + 0.2f, 0.15f), P(a1, R0, 0.15f), uv(C_WALK));              // dessus
+                quad(S, P(a1, 4.3f, 0.08f), P(a0, 4.3f, 0.08f), P(a0, 5.7f, 0.08f), P(a1, 5.7f, 0.08f), uv(C_VINE_A));             // terre du massif
+            }
+            Mulberry32 Rf((uint32_t)(a * 13 + 7));
+            const int FLEURS[4] = {C_RED, C_HAY, C_WHITE, C_FLAG0 + 2};
+            for (int i = 0; i < 36; i++) {   // touffe : feuillage (cartes d'herbe) et 3 corolles colorées de 12 cm à 0,35 m
+                const float ang = 2 * PI * (i + (float)Rf.next() * 0.6f) / 36, rr = 4.5f + (float)Rf.next() * 1.0f;
+                const vec3 b = c + vec3{std::cos(ang) * rr, 0.08f, std::sin(ang) * rr};
+                veg::touffe(out[P_FEUILLU], b, 0.35f, ang, 1.f);
+                const int col = FLEURS[i % 4];
+                for (int k = 0; k < 3; k++) {
+                    const float da = (float)Rf.next() * 6.28f, dr = 0.1f + (float)Rf.next() * 0.12f;
+                    const vec3 f = b + vec3{std::cos(da) * dr, 0.3f + (float)Rf.next() * 0.08f, std::sin(da) * dr};
+                    tri(S, f + vec3{-0.06f, 0, -0.04f}, f + vec3{0, 0, 0.07f}, f + vec3{0.06f, 0, -0.04f}, uv(col));
+                }
+            }
+            break;
+        }
+        case T_CEDEZ: {   // WFS-223 (RG-02) : ligne de cédez-le-passage (T'2, IISR 7e partie) en travers de la chaussée à l'entrée
+            // de l'anneau : traits de 0,50 m, intervalles de 0,50 m, 0,50 m d'épaisseur, peinture (case 0xe9e9e6)
+            const Pose p1 = poseAt(t, a + 1);
+            const float R = (float)RW, ep = 0.5f / (float)SEG_M;   // épaisseur en fraction de segment
+            for (float x = -R + 0.25f; x + 0.5f <= R - 0.2f; x += 1.0f) {
+                const vec3 a0 = lateral(p, x, 0.016f), a1 = lateral(p, x + 0.5f, 0.016f);
+                const vec3 b0 = a0 + (lateral(p1, x, 0.016f) - a0) * ep, b1 = a1 + (lateral(p1, x + 0.5f, 0.016f) - a1) * ep;
+                quadSol(S, a0, a1, b1, b0, uv(C_ZEBRA));
             }
             break;
         }
@@ -732,6 +764,8 @@ private:
             if (sec.type == trace::Type::RondPoint && fontaineSeg_ < 0) {   // centre de l'anneau : à gauche du milieu
                 fontaineSeg_ = (sec.debut + sec.fin) / 2;
                 Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; CarteDecor::item(fontaineSeg_, it);
+                for (int64_t a = sec.debut + 1; a < sec.fin; a++)   // WFS-223 : entrée de l'anneau = la courbure change de sens
+                    if (track_->segAt(a).curve * track_->segAt(sec.debut + 2).curve < 0) { Item c; c.t = T_CEDEZ; CarteDecor::item(a, c); break; }
                 vigilance_.push_back(sec.debut);
                 // supermarché et parking à l'entrée du village (180 m avant le rond-point), garage 60 m après
                 commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);

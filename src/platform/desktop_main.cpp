@@ -210,6 +210,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "rondspoints") { const int e = benchRondsPoints(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-223
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
     if (banc == "ville") { benchVille(g, r, out); return finir(); }           // WFS-137 : lieux de la Ville seuls (essai local)
