@@ -2382,3 +2382,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 07:34:49 — Statuts automatiques, CI main #811 (robot statuts)
 - Run vert (push, commit 841d75f) : WFS-209 ✅ (PR #180, 841d75f).
+
+### 2026-11-07 07:35:25 — Recette de nuit : WFS-73 correctif, WFS-209 ; fin de la recette (qa-lead)
+- **WFS-73 correctif** VALIDÉ (construction 810, 070045e : stature plausible, tête sous le pavillon) ; **WFS-209** VALIDÉ (construction 811, 841d75f : 12 humains sans déformation, APK 176,2 Mo).
+- Fin de la recette de nuit : toutes les lignes de `qa/Check.md` sont cochées sauf WFS-88 (iOS, gel). Trois REFUSÉ en attente d'un ticket de correction du PO : WFS-151, WFS-137, WFS-178 (voir l'entrée « bilan » plus haut).

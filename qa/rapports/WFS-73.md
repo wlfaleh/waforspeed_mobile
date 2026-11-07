@@ -14,3 +14,6 @@
 | ANO-XX | Gravité | Capture | Ce qui ne va pas |
 |---|---|---|---|
 | ANO-110 | Mineure | `conducteurs-rrsport-jour`, `-nuit` | Vitres avant du RR Sport noires et opaques : le conducteur ajouté n'est pas visible, alors que les vraies vitres avant sont claires (seules les arrière sont teintées). **Correction** : matériau des vitres avant du RR Sport transparent (teinte légère), comme la Golf et la SF90 |
+
+## Correctif (PR #179, squash 070045e) — stature des conducteurs, fusion par confiance
+- **Verdict : VALIDÉ** — construction 810 de `main` (070045e, 692/692 captures à jour) : `conducteurs-golf-jour`, `conducteurs-sf90-jour` agrandies : taille plausible, tête nettement sous le pavillon, œil à hauteur de la vue cockpit. ANO-110 (vitres du RR Sport) reste ouverte.
