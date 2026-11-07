@@ -4291,3 +4291,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **CI de branche #888** (une seule fois, ligne Gradle non testable ici) : `compilation`, `android` et `publication-apk` verts ; APK `versionName='0.1.888'` (journal du job `android`).
 - Branche 2557b4a synchronisée avec `main` (la dernière synchronisation n'apporte aucun changement de code) : **62 tests CPU OK** ; parcours complet 0 écart (vue normale et Cockpit, mesuré avant la synchronisation, aucun code changé depuis).
 - Revue demandée à l'agent `lead-dev` (PR #241). Je ne fusionne pas moi-même (règle de l'utilisateur).
+
+### 2026-11-07 22:32:06 — Limite de 80 Mo du décor supprimée (décision de l'utilisateur) (po-scrum-master)
+- WFS-273 RG-02 : plus de seuil ; mémoire notée au journal seulement ; tout chargé avant la conduite, rien en course, repli si manque de mémoire. Règle ajoutée aux consignes du PO.
