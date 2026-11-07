@@ -33,7 +33,8 @@ static const Joueur JOUEURS[] = {
     {"glisser, sans retard", 0, false, 1.0},
     {"flèches, 0,2 s de réaction", 24, true, 1.0},
     {"glisser, 0,3 s de réaction", 36, false, 1.0},
-    {"glisser, 1,4 × la vitesse normale", 0, false, 1.4},   // aide activée seulement : marge au-dessus de la vitesse normale
+    // WFS-241 : vitesse normale = 0,7 g au plus ; 1,1 × = 0,85 g, 95 % de la limite des pneus de la Golf (0,89 g) (au-delà : voir « trop vite »)
+    {"glisser, 1,1 × la vitesse normale", 0, false, 1.1},  // aide activée seulement : marge au-dessus de la vitesse normale
 };
 struct Mesure { double ecartMax = 0, sautMax = 0; int sorties = 0; double vMin = 1e9, vMax = 0; };
 
@@ -92,6 +93,14 @@ int main() {
                 }
             }
             g_retard = 0; g_fleches = false; g_vitesse = 1;
+            {   // WFS-241 (RG-02 c) : 1,4 × la vitesse normale (1,4 g : au-delà de toute adhérence), aide activée, ligne idéale :
+                // la voiture élargit (physique), sans saut de cap ni mur invisible
+                g_vitesse = 1.4;
+                const Mesure vite = rouler(t, s, Aide::Activee, true);
+                g_vitesse = 1;
+                std::printf("  trop vite (1,4 × la vitesse normale), aide activée : écart max %.2f, saut de cap max %.3f rad/image\n", vite.ecartMax, vite.sautMax);
+                VERIFIE(vite.sautMax <= 0.08, "%s %s : trop vite, saut de cap %.3f rad par image", id, trace::nomType(s.type), vite.sautMax);
+            }
             const Mesure lache = rouler(t, s, Aide::Activee, false), libre = rouler(t, s, Aide::Desactivee, false);
             std::printf("  volant lâché : aide activée écart max %.2f (%d pas dehors) ; aide désactivée écart max %.2f\n", lache.ecartMax,
                         lache.sorties, libre.ecartMax);

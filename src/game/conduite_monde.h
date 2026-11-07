@@ -174,7 +174,17 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
         Fxf -= sgn(u) * Fb * p.partFreinAvant; Fxr -= sgn(u) * Fb * (1 - p.partFreinAvant);
     }
     const double mt = c.frein > 0 ? 1.0 : p.muTraction;
-    Fxf = std::clamp(Fxf, -0.98 * Dlf * mt, 0.98 * Dlf * mt); Fxr = std::clamp(Fxr, -0.98 * Dlr * mt, 0.98 * Dlr * mt);   // ABS, antipatinage
+    // antipatinage et ESP (activés, comme sur les vraies voitures) : la poussée laisse à chaque essieu la force latérale que
+    // le virage lui demande (accélération latérale actuelle) ; l'ABS freine à fond mais garde au moins la moitié de
+    // l'adhérence pour tourner (la voiture reste dirigeable en freinant dans le virage)
+    const double ayAbs = std::abs(e.ay), needF = m * ayAbs * p.b / p.L, needR = m * ayAbs * p.a / p.L;
+    auto borne = [&](double Fx, double D, double Dl, double need) {
+        const bool frein = Fx * u < 0;   // force qui ralentit
+        const double res = frein ? std::min(need, 0.5 * D) : std::min(need, 0.95 * D), q = res / std::max(D, 1.0);
+        const double lim = 0.98 * Dl * mt * std::sqrt(std::max(0.0, 1 - q * q));
+        return std::clamp(Fx, -lim, lim);
+    };
+    Fxf = borne(Fxf, Df, Dlf, needF); Fxr = borne(Fxr, Dr, Dlr, needR);
 
     // ---------- forces latérales (cercle d'adhérence : ce qui sert à freiner ou accélérer ne sert plus à tourner) ----------
     auto reste = [](double D, double Fx, double Dl) { const double q = std::min(1.0, std::abs(Fx) / std::max(Dl, 1.0)); return D * std::sqrt(1 - q * q); };

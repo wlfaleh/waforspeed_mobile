@@ -16,10 +16,16 @@
 namespace wfs {
 class Game; class Renderer;
 
-// vitesse de virage normale (unités/s) : la plus basse conseillée au trafic sur les 40 m qui viennent, 70 km/h au plus
+// vitesse de virage normale (unités/s) : la plus basse conseillée au trafic sur les 40 m qui viennent, 70 km/h au plus.
+// WFS-241 : et celle qu'un conducteur prend vraiment : 0,7 g d'accélération latérale au plus dans le rayon du virage
+// (épingle de 20 m : 42 km/h ; le trafic y est conseillé à 60 km/h, soit 1,4 g, impossible pour une vraie voiture)
 inline double vitesseVirageNormale(const Track& t, double dist, double facteur = 1) {
     double v = 70 / 3.6 / M;
-    for (double m = 0; m <= 40; m += 2) v = std::min(v, trace::vitesseTrafic(t, t.wrap(dist + m / M)));
+    for (double m = 0; m <= 40; m += 2) {
+        const double z = t.wrap(dist + m / M), k = std::abs(t.findSegment(z).curve) * CURVE_K / SEG_M;   // courbure (1/m)
+        v = std::min(v, trace::vitesseTrafic(t, z));
+        if (k > 1e-4) v = std::min(v, std::sqrt(0.7 * 9.81 / k) / M);
+    }
     return v * facteur;
 }
 
@@ -30,13 +36,12 @@ inline DriveInput joueurLigneIdeale(const Player& p, Track& t, bool volant = tru
     in.gas = p.speed < cible * 0.97; in.brake = p.speed > cible * 1.06;
     if (!volant) return in;
     const TrackPoint P = t.point(p.dist, p.playerX * RW);
-    const double ld = std::max(5.0, 0.6 * v);   // point visé à 0,6 s devant (5 m au moins)
+    const double ld = std::max(5.0, (p.modeleMonde() ? 0.8 : 0.6) * v);   // point visé à 0,6 s devant (0,8 s : WFS-241, conduite réelle), 5 m au moins
     const TrackPoint T = t.point(p.dist + ld / M, 0);
     const double psi = P.th + p.heading, dx = T.x - P.x, dz = T.z - P.z;
     const double av = dx * std::sin(psi) - dz * std::cos(psi), dr = dx * std::cos(psi) + dz * std::sin(psi);
     const double a = std::atan2(dr, av), kappa = 2 * std::sin(a) / std::max(1.0, std::hypot(dx, dz));   // courbure voulue (1/m)
-    const double roue = std::atan(kappa * p.perf.wb / p.perf.handling), roueMax = Phys::maxSteer / (1 + v / Phys::steerV);
-    in.steer = (float)std::clamp(roue / roueMax, -1.0, 1.0);
+    in.steer = (float)p.braquagePour(kappa, v);   // WFS-241 : selon le modèle de conduite en cours
     return in;
 }
 
