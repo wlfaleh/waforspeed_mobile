@@ -3557,3 +3557,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - L'utilisateur a répondu « KO » dans ma session, en désignant la conduite (WFS-241) et les freins / ABS / ESP (WFS-253) ; WFS-255 non cité. Pas de détail donné.
 - Règle des KO appliquée : je m'arrête ; le PO décide de la suite (anomalie, US de correction). WFS-256 (chocs) arrêté sans fusion : branche `feature/waforspeed-256` gardée (17c1334, 46 tests CPU OK) ; CI de branche run 857 annulée (base refusée).
 - Repli possible pour l'analyse : `g_conduiteMonde = false` (`src/game/player.h`) rend l'ancien modèle à la voiture du joueur.
+
+### 2026-11-07 16:53:37 — WFS-241 et WFS-253 refusés par l'utilisateur : ANO-131, ANO-132, WFS-258, WFS-259 (po-scrum-master)
+- Refus transmis par l'agent dev conduite (≈ 17:00 UTC). Règle des KO : nouvelles US, autre développeur. Détails demandés à l'utilisateur avant de coder (WFS-258, 259 ⏳ En attente).
+- WFS-255 (sons) non cité : reste 🟡. WFS-256 (chocs) repris par le même agent (ticket non refusé).
+- Repli possible : `g_conduiteMonde = false` (ancien modèle), décision de l'utilisateur demandée.

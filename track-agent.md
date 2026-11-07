@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 16:35:47 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 16:53:37 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -30,7 +30,7 @@
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes) ; test de la fenêtre de la rue sur les 20 intérieurs | 235 : 16:11 (haut du pare-brise, test des 20 intérieurs) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 15:41 (CI de branche run 848) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) |  | WFS-241 et 253 refusés par l'utilisateur (KO) : arrêt ; WFS-256 suspendu (branche gardée, CI 857 annulée) | 256 : 17c1334 | ✅ libre, attend le PO |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-256 | P1 chocs avec le décor et les voitures (reprise après le refus de WFS-241 et 253, qui partent à un autre développeur : WFS-258, 259) | 256 : 17c1334 (16:5x) | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
 
