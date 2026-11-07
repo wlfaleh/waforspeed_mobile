@@ -21,7 +21,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) |  | WFS-218 🟣 fusionné (PR #206, squash ae49782) ; ticket suivant à demander au PO (pas WFS-246) | 218 : fusion 14:57 (ae49782) | 🟢 libre |
-| Claude, agent 1 (01UY1Vv2) | WFS-234 | Carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte | 234 : 14:49 (b2f97be) | ✅ actif |
+| Claude, agent 1 (01UY1Vv2) | — | WFS-234 fusionnée (PR #209, squash bee2d1f) ; libre, attend l'accord de l'utilisateur avant un nouveau ticket | 234 : PR #209 fusionnée ; 220 : PR #190 | 🟢 libre |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 14:05 (98327cb) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
 | Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris (⏳ Prêt, pour un autre développeur) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
