@@ -5,4 +5,5 @@ namespace wfs {
 class Game; class Renderer;
 // ombres-a.png / ombres-b.png : deux captures à 1 m d'écart (stabilité des bords) ; ombres-coupees.png : sans soleil (nuit)
 void benchShadowScenes(Game& g, Renderer& r, const std::string& out);
+void benchOmbres(Game& g, Renderer& r, const std::string& out);   // WFS-227 : banc « ombres » (WFS_BANC=ombres)
 }

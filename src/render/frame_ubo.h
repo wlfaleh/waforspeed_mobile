@@ -12,9 +12,10 @@ struct FrameUBO {
     mat4 shadowMat; vec4 shadowP;
     // WFS-45 : même ordre que shaders/common.glsl
     vec4 camFwd, fogLin, hemiSky, hemiGround, spotN;
-    vec4 spotPos[8], spotDir[8], spotCol[8], spotCone[8];   // WFS-09 : 8 lumières
+    vec4 spotPos[12], spotDir[12], spotCol[12], spotCone[12];   // WFS-09 : 8 lumières ; WFS-226 : 12 (phares des autres voitures)
     vec4 nuitA, nuitB;                                      // WFS-09 / WFS-16 : route mouillée, reflets
     vec4 iblSH[9], iblA, iblB, cielP;                       // WFS-151 (accroche E13) : IBL, exposition, ciel (common.glsl)
+    mat4 ombreCasc[4]; vec4 ombreFin, ombreDemi, ombreP;   // WFS-227 (accroche E13) : cascades d'ombre du soleil (common.glsl)
 };
 
 } // namespace wfs

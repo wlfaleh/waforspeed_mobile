@@ -40,8 +40,10 @@
 #include "enseignes.h"   // WFS-175 : atlas de textes (portiques)
 #include "vegetation.h"
 #include "ville_quartiers.h"
+#include "archi_carte.h"   // WFS-161 (accroche) : immeubles du kit d'architecture
 #include "zones.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
+#include "giratoire.h"  // WFS-248 : giratoire reconstruit (anneau, îlot, raccord des branches)
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 
 namespace wfs {
@@ -236,6 +238,12 @@ public:
             for (int64_t a = 0; a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE)
                 for (int64_t k = 0; k <= (int64_t)std::ceil(o.len / SEG_M); k++) bati_[(size_t)((a + k) % L)] |= o.side > 0 ? 2 : 1;
         }
+        archi::carte::vider();   // WFS-161 (accroche, ST-5) : immeubles posés dans le kit (6 styles) ; repli WFS_ARCHI=0 : anciennes boîtes
+        for (int64_t a = 0, L = (int64_t)plan_->objets.size(); a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE) {
+            const carte::Pose pm = poseS(*g.track, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
+            const vec3 x = pm.f * -s, c = pm.o + pm.r * (s * ((float)RW + SET_BACK));   // façade face à la rue, x dans son sens
+            archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, o.balcons || o.h < 20 ? archi::Style::Classique : archi::Style::Moderne, (uint32_t)(a * 2 + (o.side > 0)));
+        }
         {   // WFS-137 : optiques des feux (éteinte : verre sombre ; LED allumées, comme la Corniche) et jet de la fontaine
             Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
             lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
@@ -334,6 +342,7 @@ public:
         Geo& U = out[P_UNI];
         switch (o.t) {
         case ville::IMMEUBLE: {   // DECOR.bld : boîte centrée sur l'immeuble, fondations 3 m sous le trottoir
+            if (archi::carte::actif()) break;   // WFS-161 (accroche) : bâtiment du kit à la place de la boîte (archi_carte.cpp)
             const carte::Pose pm = poseS(t, (double)a + o.len / SEG_M / 2);
             const vec3 c = pm.o + pm.r * (s * (R + SET_BACK + o.d / 2));
             Geo& fac = out[o.k == 1 || o.k == 2 ? P_FACADE_B : P_FACADE_A];   // TINTS : 0 et 3 chaudes, 1 et 2 froides
@@ -498,6 +507,7 @@ public:
                 // WFS-212 (RG-01) : au rond-point, un objet du bord (lampadaire, banc, arbre…) qui retombe sur la chaussée d'une autre
                 // partie du tracé n'est pas posé (les immeubles sont déjà écartés de toute la route : abordsRondPoint)
                 if (o.t != ville::IMMEUBLE && surAutreChaussee(carte::lateral(p, (float)o.side * o.lat), seg, 1.0f)) continue;
+                if (o.t != ville::IMMEUBLE && surGiratoire(carte::lateral(p, (float)o.side * o.lat), 1.0f)) continue;   // WFS-248
                 objet(t, o, a, seg, z, p, lod, out);
             }
             lieux(t, a, seg, p, lod, out);   // WFS-137 : rond-point et carrefours du tracé 2
@@ -562,28 +572,44 @@ public:
                     }
                 }
             }
-            {   // WFS-223 (RG-02) : ligne de cédez-le-passage (T'2) à l'entrée de l'anneau (la courbure change de sens) : traits de
-                // 0,50 m, intervalles de 0,50 m, 0,50 m d'épaisseur, en travers de la chaussée
-                int64_t e = -1;
-                for (int64_t k = rp.debut + 1; k < rp.fin && e < 0; k++) if (t.segAt(k).curve * t.segAt(rp.debut + 2).curve < 0) e = k;
-                if (e >= 0 && seg == mod(e)) {
-                    const carte::Pose q1 = poseS(t, (double)a + 0.5 / SEG_M);
-                    for (float x = -R + 0.25f; x + 0.5f <= R - 0.2f; x += 1.0f)
-                        carte::quadSol(U, carte::lateral(p, x, 0.016f), carte::lateral(p, x + 0.5f, 0.016f), carte::lateral(q1, x + 0.5f, 0.016f), carte::lateral(q1, x, 0.016f), uvc(U_ZEBRA));
-                }
-            }
+            // WFS-248 : le cédez-le-passage de WFS-223 (en travers de toute la chaussée, de travers) est remplacé par celui de
+            // l'ouvrage reconstruit (giratoire.cpp : voie entrante seulement, au bord de l'anneau)
             if (seg != mod(rp.centre)) continue;
             const double c = t.segAt(a).curve;
             const float kc = c > 0 ? 1.f : -1.f;
-            const vec3 ctr = p.o + p.r * (rp.rayon * kc);
-            const float ri = rp.rayon - R - 1.5f;   // WFS-212 (RG-01) : 1,5 m de pavés entre la chaussée et la bordure de l'îlot
             const size_t irp = (size_t)(&rp - P.ronds.data());
+            // WFS-248 : ouvrage reconstruit (anneau de 9 m, couronne, îlot de 8 m, raccord des branches) ; le centre vient de
+            // l'ouvrage (cercle passant par l'axe de l'anneau) ; îlot plus grand : fontaine et platanes s'y posent
+            const giratoire::Giratoire* gr = irp < gir_.size() && gir_[irp].ok ? &gir_[irp] : nullptr;
+            const vec3 ctr = gr ? gr->c : p.o + p.r * (rp.rayon * kc);
+            const float ri = gr ? giratoire::R_ILOT : rp.rayon - R - 1.5f;
+            if (gr) {
+                std::vector<giratoire::Tri> tris; giratoire::geometrie(*gr, t, tris);
+                const vec2 uvs[giratoire::NB_SURFACES] = {uvc(U_ASPHALTE), uvc(U_ZEBRA), uvc(U_DALLE), uvc(U_BORDURE), uvc(U_PELOUSE)};
+                for (const giratoire::Tri& tr : tris) {
+                    if (tr.s != giratoire::ASPHALTE) { carte::tri(U, tr.a, tr.b, tr.c, uvs[tr.s]); continue; }
+                    // asphalte : matériau de la chaussée de la route (même grain), uv en mètres sans aucun marquage
+                    Geo& G = out[P_ROUTE];
+                    const uint32_t k0 = (uint32_t)G.v.size();
+                    for (const vec3& q : {tr.a, tr.b, tr.c}) { const vec2 u = giratoire::uvChaussee(*gr, q); G.v.push_back({q.x, q.y, q.z, 0, 1, 0, u.x, u.y}); }
+                    G.i.insert(G.i.end(), {k0, k0 + 1, k0 + 2});
+                }
+            }
             auto monde = [&](vec3 l) { return p.o + p.r * l.x + p.f * l.z + vec3{0, l.y, 0}; };
             auto dir = [&](vec3 l) { return p.r * l.x + p.f * l.z; };
             if (irp < abords_.size()) for (const Abord& ab : abords_[irp]) {
                 const vec3 c = monde(ab.c), u = dir(ab.u), n = dir(ab.n);
                 if (ab.k < 0) {   // amorce : asphalte (au ras de l'anneau) et ses deux bordures de trottoir
                     const vec3 a0 = c + u * ab.a, a1 = c + u * (ab.a + ab.b);
+                    if (gr) {   // WFS-248 : même asphalte que l'anneau et la route (matériau de la chaussée, sans marquage)
+                        const vec3 Q[4] = {a0 - n * ab.h + vec3{0, giratoire::Y_ANNEAU, 0}, a0 + n * ab.h + vec3{0, giratoire::Y_ANNEAU, 0},
+                                           a1 + n * ab.h + vec3{0, giratoire::Y_ANNEAU, 0}, a1 - n * ab.h + vec3{0, giratoire::Y_ANNEAU, 0}};
+                        Geo& G = out[P_ROUTE];
+                        const uint32_t k0 = (uint32_t)G.v.size();
+                        for (const vec3& q : Q) { const vec2 u = giratoire::uvChaussee(*gr, q); G.v.push_back({q.x, q.y, q.z, 0, 1, 0, u.x, u.y}); }
+                        if (cross(Q[1] - Q[0], Q[2] - Q[0]).y > 0) G.i.insert(G.i.end(), {k0, k0 + 1, k0 + 2, k0, k0 + 2, k0 + 3});
+                        else G.i.insert(G.i.end(), {k0, k0 + 2, k0 + 1, k0, k0 + 3, k0 + 2});
+                    } else
                     carte::quadSol(U, a0 - n * ab.h + vec3{0, 0.02f, 0}, a0 + n * ab.h + vec3{0, 0.02f, 0}, a1 + n * ab.h + vec3{0, 0.02f, 0}, a1 - n * ab.h + vec3{0, 0.02f, 0}, uvc(U_ASPHALTE));
                     for (float sd : {-1.f, 1.f})
                         carte::quadSol(out[P_TROTTOIR], a0 + n * (sd * ab.h) + vec3{0, 0.15f, 0}, a0 + n * (sd * (ab.h + 5)) + vec3{0, 0.15f, 0},
@@ -596,9 +622,11 @@ public:
             }
             if (ri < 2.5f) continue;
             const vec3 b = ctr + vec3{0, 0.15f, 0};
-            carte::cyl(U, b, ri, 0.22f, 28, uvc(U_BORDURE));
-            disque(b + vec3{0, 0.225f, 0}, ri - 0.25f, 28, uvc(U_PELOUSE));   // gazon (la bordure de 25 cm reste visible)
-            const vec3 g = b + vec3{0, 0.22f, 0};
+            if (!gr) {   // repli (ouvrage non reconnu) : îlot de WFS-137
+                carte::cyl(U, b, ri, 0.22f, 28, uvc(U_BORDURE));
+                disque(b + vec3{0, 0.225f, 0}, ri - 0.25f, 28, uvc(U_PELOUSE));   // gazon (la bordure de 25 cm reste visible)
+            }
+            const vec3 g = gr ? ctr + vec3{0, giratoire::H_BORDURE, 0} : b + vec3{0, 0.22f, 0};   // WFS-248 : sur le gazon de l'îlot
             carte::cyl(U, g, 2.4f, 0.55f, 20, uvc(U_PIERRE));            // bassin (4,8 m)
             disque(g + vec3{0, 0.57f, 0}, 2.15f, 20, uvc(U_EAU));       // eau du bassin
             carte::cyl(U, g, 0.3f, 1.75f, 10, uvc(U_PIERRE));            // colonne
@@ -607,7 +635,7 @@ public:
             Mulberry32 Rt((uint32_t)(rp.centre * 31 + 7));
             Geo* leaf[2] = {&out[P_LEAF0], &out[P_LEAF1]};
             for (int k = 0; k < 3; k++) {   // trois platanes autour du bassin, entre la fontaine et la bordure
-                const float an = 2 * PI * k / 3 + 0.5f, d = std::min(ri - 1.f, 3.9f);
+                const float an = 2 * PI * k / 3 + 0.5f, d = gr ? ri - 2.5f : std::min(ri - 1.f, 3.9f);   // WFS-248 : îlot de 8 m
                 veg::platane(&out[P_BARK], &out[P_CORE], leaf, g + vec3{std::cos(an) * d, 0, std::sin(an) * d}, 3.2f, Rt, lod);
             }
         }
@@ -895,12 +923,14 @@ public:
     bool surAutreChaussee(const vec3& q, int64_t seg, float marge) const { return chaussee::surAutre(routesRp_, (int64_t)plan_->objets.size(), q, seg, marge); }
     bool procheRondPoint(int64_t a0, int64_t a1) const { for (int64_t a = a0; a < a1; a += 4) if (chaussee::proche(routesRp_, (int64_t)plan_->objets.size(), a)) return true; return false; }
 
+    bool surGiratoire(const vec3& q, float marge) const { for (const giratoire::Giratoire& g : gir_) if (giratoire::dansOuvrage(g, q, marge)) return true; return false; }
     void horsChaussee(Geo& W) const {
         if (routesRp_.empty() || W.i.empty()) return;
         std::vector<uint32_t> garde; garde.reserve(W.i.size());
         for (size_t k = 0; k + 2 < W.i.size(); k += 3) {
             const Vertex &A = W.v[W.i[k]], &B = W.v[W.i[k + 1]], &C = W.v[W.i[k + 2]];
             const vec3 m{(A.px + B.px + C.px) / 3, 0, (A.pz + B.pz + C.pz) / 3};
+            if (surGiratoire(m, 0.3f)) continue;   // WFS-248 : rien sur l'ouvrage reconstruit (trottoirs, bas-côtés)
             if (!surAutreChaussee(m, (int64_t)std::lround(A.v / SEG_M), 0.3f)) garde.insert(garde.end(), {W.i[k], W.i[k + 1], W.i[k + 2]});
         }
         W.i.swap(garde);
@@ -1523,6 +1553,9 @@ public:
     void abordsRondPoint(Track& t) {
         abords_.assign(plan_->ronds.size(), {});
         routesRp_ = chaussee::axes(t, {trace::Type::RondPoint});   // WFS-212 : axe de la route autour des ronds-points
+        gir_.assign(plan_->ronds.size(), {});
+        for (size_t i = 0; i < plan_->ronds.size(); i++)   // WFS-248 : ouvrage reconstruit, à partir de la section du tracé
+            for (const trace::Section& s : trace::sections(t)) if (s.type == trace::Type::RondPoint && s.debut == plan_->ronds[i].debut) gir_[i] = giratoire::calculer(t, s);
         const float R = (float)RW;
         for (size_t i = 0; i < plan_->ronds.size(); i++) {
             const ville::RondPoint& rp = plan_->ronds[i];
@@ -1540,11 +1573,14 @@ public:
             Mulberry32 D((uint32_t)(rp.centre * 7 + 3));
             for (int b = 0; b < 4; b++) {
                 const vec3 u = bras[b], n{-u.z, 0, u.x};
-                const float r0 = rp.rayon + R - 0.5f;   // bord extérieur de l'anneau
+                const float r0 = rp.rayon + R - 0.5f;   // bord extérieur de l'anneau (immeubles)
                 if (b >= 2) {   // amorce : 30 m d'asphalte (largeur de la route), si elle ne touche aucune autre partie de la route
                     bool ok = true;
                     for (float d = r0 + 6; d <= r0 + 30 && ok; d += 3) ok = libre(ctr + u * d, 2 * R);
-                    if (ok) abords_[i].push_back({local(ctr), localDir(u), localDir(n), r0, 30, R, -1, b});
+                    // WFS-248 : l'amorce part du bord de l'anneau reconstruit (plus d'espace vide entre les deux) ; rive ouverte
+                    const vec3 cg = gir_[i].ok ? gir_[i].c : ctr;
+                    if (ok) { abords_[i].push_back({local(cg), localDir(u), localDir(n), giratoire::R_EXT, 30 + r0 - giratoire::R_EXT, R, -1, b});
+                              gir_[i].autresBranches.push_back(std::atan2(u.z, u.x)); }
                 }
                 for (float sd : {-1.f, 1.f}) for (int k = 0; k < 2; k++) {   // deux immeubles de chaque côté de chaque branche
                     const float len = 14 + (float)D.next() * 6, dep = 9 + (float)D.next() * 5, h = 12 + (float)D.next() * 18;
@@ -1685,6 +1721,7 @@ private:
     // h = demi-largeur) ou immeuble (a, b : demi-longueur et demi-profondeur, h : hauteur, k : teinte)
     struct Abord { vec3 c, u, n; float a, b, h; int k, bras; };
     std::vector<chaussee::Axe> routesRp_;   // WFS-212 : axe de la route autour des ronds-points
+    std::vector<giratoire::Giratoire> gir_;   // WFS-248 : un ouvrage par rond-point (même ordre que plan_->ronds)
     std::vector<std::vector<Abord>> abords_;
     Mesh jet_{};
     Material lentilleEteinte_, lentille_[3], eauJet_;

@@ -8,6 +8,9 @@
   envoi annule l'ancien. Les publications ont leur propre groupe (`apercu-apk-<ref>`, `apercu-captures-<ref>`) : un run plus récent peut annuler
   une publication en attente (le robot le compte vert, WFS-236).
 - **Jobs** :
+  - `compilation` (WFS-250) : le jeu est compilé **une seule fois** par run (apt-get en 2 essais, `cmake --build build`) ; archive tar `compilation`
+    (`wfs_bench`, tous les `test_*`, `liste-tests.txt` ; shaders inclus dans le binaire), gardée 1 jour ; les 12 bancs et `endurance` en dépendent
+    (`needs: compilation`), la décompressent et la vérifient (`tools/qa/verifier_compilation.sh` : binaire ou test manquant = rouge).
   - `banc-essai (<groupe>)` × 12 : `partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte` (+ test de la piste), `ecrans-2400`, `menu1-2400`,
     `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `realisme` (+ textures KTX2 `tools/textures/ci_textures.sh`) ; Vulkan logiciel ; `WFS_BANC=<groupe> ./build/wfs_bench captures assets/` ;
     artefact `captures-<groupe>`.

@@ -8,6 +8,7 @@
 #include "../core/math.h"
 #include "../game/roues.h"   // WFS-60 : RoueModele, RouesPose
 #include "masquage.h"   // WFS-82 : masquage hors champ et au loin
+#include "eclairage_ombres.h"   // WFS-227 : cascades d'ombre du soleil
 #include "../core/gpu_logiciel.h"
 
 namespace wfs {
@@ -23,6 +24,8 @@ enum MatFlags : uint32_t {
     MAT_FANTOME = 131072,   // WFS-134 (moteur seulement) : fantôme du record, translucide teinté cyan (scene.frag)
     MAT_EMTEX = 262144,     // WFS-134 (moteur seulement) : émission × couleur de la texture (pièces texturées émissives)
     MAT_TANGENTE = 524288,  // WFS-149 (moteur seulement) : carte de normales dans le repère tangent des sommets (sinon dérivées écran)
+    MAT_INTERIEUR = 1048576,   // WFS-161 (accroche) : vitre d'immeuble, pièce simulée derrière (decor.glsl, interieurFenetre)
+    MAT_FACADE = 2097152,      // WFS-161 (accroche) : mur du kit d'architecture, appareil procédural (decor.glsl, surfaceFacade)
 };
 
 // WFS-149 (RG-04) : + tangente (xyz + signe de la bitangente), 4 octets signés normalisés (/127) ; nulle = sans tangente
@@ -75,7 +78,7 @@ struct Model {
 };
 
 // WFS-09 : état des feux d'une voiture (setLights du jeu web : nuit, frein, recul)
-struct FeuxVoiture { bool nuit = false, stop = false, recul = false; float frein = -1; };   // WFS-109 : niveau 0-1 du stop (80 ms), < 0 : stop net
+struct FeuxVoiture { bool nuit = false, stop = false, recul = false; float frein = -1; bool joueur = false; };   // WFS-226 : joueur = phares déjà portés par nuit.cpp   // WFS-109 : niveau 0-1 du stop (80 ms), < 0 : stop net
 
 struct FrameParams {
     mat4 view, proj; vec3 camPos;
@@ -86,9 +89,11 @@ struct FrameParams {
     // ombres du soleil (WFS-07) : la boîte d'ombre suit le point focus (la voiture), coupées la nuit
     bool shadows = true, hasFocus = false; vec3 focus{};
     // WFS-45 : projecteurs (three SpotLight, r128 sans lumières physiques), hémisphère, brouillard linéaire. Couleurs linéaires.
-    struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1; };
+    struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1;
+                  bool croisement = false; };   // WFS-218 : feu de croisement (phares.h) : intensité en cd / LUX_PAR_UNITE, 1/d², coupure
     // WFS-09 : 8 au plus (phares, feu de recul, 4 lampadaires) ; angle ≥ PI = lumière ponctuelle (PointLight)
-    Spot spots[8]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
+    static constexpr int SPOTS_MAX = 12;                     // WFS-226 : 8 → 12 (phares des autres voitures)
+    Spot spots[SPOTS_MAX]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
     vec3 hemiSky{}, hemiGround{}; float hemiIntensity = 0;   // HemisphereLight ; 0 = ambiance du ciel actuelle
     float fogNear = 0, fogFar = 0;                           // fogFar > 0 : brouillard linéaire (Fog) au lieu de l'exponentiel
     // WFS-09 : feux des voitures allumés (nuit) ; WFS-16 : chaussée mouillée, flaques, reflets temps réel de la scène
@@ -143,6 +148,7 @@ public:
     void drawQuads(const Vertex* v, int nQuads, const Material& mat);
     void halo(const vec3& c, float taille, const vec3& couleur);
     void haloSol(const vec3& c, const vec3& r, const vec3& f, float demiR, float demiF, const vec3& couleur);
+    void lumiereSol(const Vertex* v, int nQuads) { drawQuads(v, nQuads, haloMat_); }   // WFS-226 : quads additifs, couleur des sommets (uv 0,5)
     // feux de la prochaine voiture dessinée par draw(Model) (la voiture du joueur : WFS-09, src/render/nuit.cpp) ;
     // remis à l'état de nuit de FrameParams::feux à chaque beginFrame
     void feuxProchaineVoiture(const FeuxVoiture& f) { feuxSuivant_ = f; feuxSuivantPose_ = true; }
@@ -168,6 +174,7 @@ public:
     bool forceSansReflets = false; // WFS-222 (RG-03) : baisse automatique : pas de passe de reflet (route mouillée)
     bool rendu221 = false;         // WFS-222 : banc seulement (WFS_AVANT_222=1) : rendu d'avant WFS-222, pour comparer images et coûts
     bool qualiteBasse = false;     // WFS-82 : petits objets coupés plus tôt (150 m) en qualité Basse
+    int niveauOmbres = 2;          // WFS-227 : niveau affiché (1 Moyenne : 2 cascades, 2 Haute : 3, 3 Ultra : 4 ; Basse : ombres coupées)
     uint32_t objetsMasques() const { return masquesPrec_; }   // WFS-82 : objets non dessinés à la dernière image (journal)
     float bloomForce = 1.f;        // WFS-15 : bloom (UnrealBloomPass du jeu web) : 1 en Moyenne / Haute, 0 en Basse
     uint32_t appelsDessin() const { return appelsPrec_; }   // WFS-15 : appels de dessin de la dernière image (journal)
@@ -189,13 +196,16 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 7; bool i16 = false; };
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; };   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
-    enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CAPTURE = 8 };
+    // WFS-227 : bit VIS_CASCADE0 << k (16, 32, 64, 128) : objet dans la cascade d'ombre k
+    enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CAPTURE = 8, VIS_CASCADE0 = 16 };
     uint8_t classer(const masquage::Sphere& s);
-    masquage::Frustum fCam_, fReflet_, fOmbre_; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
+    float texelCasc_[4] = {};   // WFS-227 : taille d'un texel de chaque cascade (1re : 0, tout objet y porte ombre)
+    vec3 regardCasc_{0, 0, -1};  // WFS-227 : regard de la caméra (tranches des cascades)
+    masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4]; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
     void createTargets();
     void destroyTargets();
     void createPipelines();
@@ -254,6 +264,7 @@ private:
 
     // ombres du soleil (WFS-07)
     Image shadowMap_;
+    ombres::Cascades cascades_;   // WFS-227 : cascades de l'image (eclairage_ombres.h)
     uint32_t shadowSize_ = 2048;
     VkRenderPass shadowPass_ = VK_NULL_HANDLE;
     VkFramebuffer shadowFb_ = VK_NULL_HANDLE;
