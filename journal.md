@@ -2722,3 +2722,27 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 10:30:51 — WFS-222 : le téléphone de l'utilisateur est puissant → objectif ≥ 60 img/s en Basse, ≥ 45 en Haute ; chercher une erreur grossière (po-scrum-master)
 - **Précision de l'utilisateur** : il joue à Call of Duty sans problème ; le matériel n'est pas en cause.
 - **WFS-222** : objectifs relevés (Basse ≥ 60, Haute ≥ 45 stables, aucune image > 33 ms) ; pistes d'erreur grossière à vérifier d'abord : APK « debug » (`debuggable true`), couches de validation, rendu logiciel, cadence d'affichage, un seul cœur, travail refait à chaque image, chauffe dès le départ.
+
+### 2026-11-07 10:32:58 — WFS-217 fusionné par confiance : aide à la direction corrigée + réglage (agent arwa, session trafic)
+- PR #189, squash a63d209. Statut 🟣 (✅ au premier run vert de `main`).
+- Cause mesurée : dans le jeu web, la route porte la voiture. Elle tourne avec la route sans volant, et le joueur qui braque pour suivre le virage qu'il voit tourne deux fois. Ensuite, le cap borné (centré sur l'axe du segment) et le réalignement la ramènent de force. Mesures sur le tracé 2 : un joueur précis s'en sort (écart 0,06). Un joueur aux flèches avec 0,2 s de réaction est ballotté : écart 0,15 à 0,19 et sauts de cap jusqu'à 0,041 rad par image, venant de la bordure (× −0,25 d'un coup) et des bornes.
+- Correction (`player.cpp`, `Player::guider`, voiture du joueur seulement) :
+  - la route tourne sous la voiture ; avec l'aide activée, l'aide porte toute la part du virage sans volant, et rien au-delà de 0,35 de braquage ;
+  - réalignement vers la direction réelle de la route (courbure lissée sur ±3 m, anticipée de 0,23 × v, 8 m au plus) ;
+  - cap borné élargi vers l'intérieur de 8 m × courbure (0,6 rad au plus), ramené à 2,5 rad/s au plus ;
+  - au-delà de l'adhérence, l'aide porte la part du virage qui manque ;
+  - la bordure renvoie la voiture progressivement ;
+  - force centrifuge sur la courbure lissée.
+  Aide désactivée : ni compensation, ni réalignement, ni borne. Ordinateur, trafic et références du jeu web : `Aide::Web`, sans changement (RG-05) ; le système `aide_direction.cpp` (ordre 202) pose le réglage sur la voiture du joueur.
+- Résultats aux flèches avec 0,2 s de réaction : écart 0,07 à 0,10 et saut de cap ≤ 0,019 rad par image, contre 0,15 à 0,19 et 0,041 pour le jeu web. Volant lâché à la vitesse normale : reste sur la route (aide activée), quitte sa ligne (aide désactivée). À 1,4 × la vitesse normale : aide activée sans sortie.
+- Réglage : 12e ligne « Aide à la direction : Activée / Désactivée », clé `aide` de la sauvegarde, Activée par défaut, rien dans `configgame.json`.
+- **Accroches annoncées** :
+  - `src/ui/ecrans/reglages.cpp` : 9 lignes (ligne, valeur, toucher, lecture / écriture). Sur grand écran, la ligne est sous « Fermer » et la place de « Fermer » est fixée à celle d'avant ;
+  - sauvegarde : 4 lignes (`sauvegarde.h` / `.cpp` : champ, défaut, écriture, lecture) ;
+  - `CMakeLists.txt` : 1 ligne (`test_aide_direction`) ;
+  - `conduite_libre_banc.cpp` : appel du nouveau banc.
+- Vérifié en local :
+  - 43 tests CPU OK ;
+  - banc `benchAideDirection` (fin de partie2b, +33 s) : 8 cas, 0 écart ; trace de la trajectoire au journal du banc ; captures `conduite-epingle` et `conduite-rond-point` regardées ;
+  - parcours complet 0 écart ; `menu2` en 1280 et 2400 : `reglages-108` identique à `main` sur les 11 lignes et « Fermer » (écart ≤ 1).
+- Limites : aucun essai sur un vrai téléphone. Le joueur simulé n'est qu'un modèle de joueur humain. La conduite du joueur change sur toutes les cartes : le volant doit maintenant suivre les virages, et l'aide prend le relais quand on le lâche.
