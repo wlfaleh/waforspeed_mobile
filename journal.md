@@ -2326,3 +2326,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-178 REFUSÉ** (bloquante) : `carte-campagne-rondpoint` : touffes d'herbe et buissons en travers de la chaussée à l'entrée du rond-point du village (déjà sur `apercu-waforspeed-178`).
 - **WFS-137 REFUSÉ** (bloquante) : `carte-ville-fontaine` / `-nuit` : la voiture roule sur le dallage de la place de la fontaine, posé sur la chaussée (aucune ligne), fontaine hors cadre.
 - **Pour le PO (`po-scrum-master`)** : deux tickets de correction prioritaires à créer (Campagne : végétation sur la chaussée au rond-point du village ; Ville : place de la fontaine sur la chaussée). Détail et correction proposée dans les rapports.
+
+### 2026-11-07 06:00:26 — Recette de nuit, lot 3 : WFS-158 (livraisons 1 à 5), 151, 176, 189, 196, 179, 191, 198, 199, 186 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55) ; Releases de branche `apercu-waforspeed-197/151/200/205` pour l'avant / après de WFS-151 ; API GitHub pour les robots.
+- **WFS-158** livraisons 1 à 4 VALIDÉ ; livraison 5 PASSABLE AVEC ANOMALIES MINEURES (ANO-107 : plaque de la Model 3 illisible) ; **WFS-176**, **189**, **196**, **179**, **191**, **198**, **199**, **186** VALIDÉ.
+- **WFS-151 REFUSÉ** (bloquante) : 14 captures `vitrine-<id>-0` entièrement blanches et `course-sf90` blanche après 4 s de course : l'exposition ne se remet pas à une valeur juste après un nouveau chargement de voiture (`g.init` / `g.shutdown` du banc `vitrines`). Normales sur `apercu-waforspeed-197` (main juste avant WFS-151), blanches dès `apercu-waforspeed-151`.
+- **Pour le PO (`po-scrum-master`)** : ticket de correction prioritaire à créer (écran blanc après rechargement d'une voiture, exposition WFS-151), détail dans `qa/rapports/WFS-151.md`.
