@@ -22,6 +22,12 @@ inline int age(int morpho) { return AGES[std::clamp(morpho, 0, NB_ENFANTS - 1) /
 inline bool fille(int morpho) { return morpho % 2 == 1; }
 // main dans la main à 4 et 7 ans ; à 10 et 14 ans, l'enfant marche à côté (avis expert-realisme-3d)
 inline bool tientLaMain(int morpho) { return age(morpho) <= 7; }
+// WFS-240 (RG-03) : coiffure adulte (Hair_Long de femme.wfp) posée sur la tête de l'enfant, valeurs mesurées sur les maillages
+// (crâne du niveau de détail moyen, 20 cm du haut) : échelle = largeur du crâne enfant / adulte (4, 7, 10, 14 ans) ; décalage
+// vertical (m, repère du personnage) pour garder la marge de l'adulte (1 cm de cheveux au-dessus du crâne) : l'os de la tête
+// des enfants MakeHuman est plus haut par rapport au crâne que celui de l'adulte
+inline float teteSurAdulte(int morpho) { const int a = age(morpho); return a <= 4 ? 0.883f : a <= 7 ? 0.920f : a <= 10 ? 0.938f : 1.007f; }
+inline float cheveuxDecalageY(int morpho) { const int a = age(morpho); return a <= 4 ? -0.053f : a <= 7 ? -0.048f : a <= 10 ? -0.057f : -0.049f; }
 // vitesse de marche libre (m/s) : Sutherland et al. 1980, Lythgo et al. 2009 (avis expert-realisme-3d, « à confirmer ») ;
 // la famille marche au pas de l'enfant, bornée à 0,9 m/s au moins
 inline double vitesseMax(int morpho) { const int a = age(morpho); return a <= 4 ? 1.0 : a <= 7 ? 1.1 : 1.15; }

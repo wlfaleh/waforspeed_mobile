@@ -90,6 +90,7 @@ Look pedLook(const Personne& P, int i, bool beach) {
 struct Dessin {
     const Personnage* M = nullptr; PoseSquelette* pose = nullptr; mat4 monde = mat4::identity();
     float yaw = 0, echelle = 1; vec3 pos{}; ApparencePersonnage app; int lod = 0, i = -1; const char* coiffure = nullptr;
+    float cheveuxLongs = 0, cheveuxDy = 0;   // WFS-240 (RG-03) : fille aux cheveux longs : échelle et décalage de la coiffure, 0 sinon
 };
 vec3 transformer(const mat4& m, const vec3& p) {
     return {m.at(0, 0) * p.x + m.at(0, 1) * p.y + m.at(0, 2) * p.z + m.at(0, 3), m.at(1, 0) * p.x + m.at(1, 1) * p.y + m.at(1, 2) * p.z + m.at(1, 3),
@@ -127,6 +128,7 @@ void tenirLaMain(Dessin& A, Dessin& E) {
 
 // WFS-233 (banc d'essai seulement) : familles de 4 et 7 ans placées sur le trottoir de droite, devant la voiture à l'arrêt
 bool g_bancFamilles = false;
+bool g_bancCheveux = false;   // WFS-240 (banc) : une fille aux cheveux longs de 7 ou 10 ans et son parent, à 6 m devant la voiture
 
 class Pietons : public System {
 public:
@@ -266,6 +268,8 @@ public:
             D.lod = dm < seuils[0] && k < PED_FULL ? 0 : dm < seuils[1] ? 1 : 2;
             D.app = L.app; D.app.corps = M->corps;
             D.coiffure = P.enfant >= 0 ? nullptr : COIFFURES[L.femme ? 1 : 0][L.hair % 3];   // enfants : cheveux peints sur le corps
+            // WFS-240 (RG-03) : une fille sur deux a les cheveux longs (coiffure « Hair_Long » de femme.wfp, Quaternius CC0)
+            if (cheveuxLongs(P, i)) { D.cheveuxLongs = familles::teteSurAdulte(P.enfant); D.cheveuxDy = familles::cheveuxDecalageY(P.enfant); }
         }
         for (int a = 0; a < nd; a++) {   // WFS-233 : main dans la main (4 et 7 ans)
             const Personne& E = gens_[(size_t)d[a].i];
@@ -298,6 +302,7 @@ public:
             if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, D.lod); coiffure = plageParNom(*D.M, nom); }
             for (const Plage* pl : {corps, coiffure})
                 if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app);
+            if (D.cheveuxLongs > 0) dessinerCheveuxLongs(r, D);   // WFS-240 (RG-03)
         }
         for (int k = 0; k < nPous; k++) {   // WFS-240 : poussette (tissu, métal, plastique) et petit assis dedans
             for (int p = 0; p < poussette::NB_PARTIES; p++) if (pousMesh_[p].indexCount) r.draw(pousMesh_[p], pousMat_[p], poussettes_[k].monde);
@@ -434,6 +439,16 @@ private:
                 places++; break;
             }
         }
+        if (g_bancCheveux)   // WFS-240 : la première fille aux cheveux longs de 7 ou 10 ans, à 6 m, à la place de la famille de 4 ans
+            for (size_t i = 0; i < gens_.size(); i++) {
+                Personne& E = gens_[i];
+                if (!cheveuxLongs(E, (int)i) || E.famille < 0 || E.pose != 0 || familles::age(E.enfant) < 7 || familles::age(E.enfant) > 10) continue;
+                Personne& P = gens_[(size_t)E.famille];
+                const double s = s0 + 6.0 / SEG_M;   // de dos (elle s'éloigne) : les cheveux longs tombent dans le dos
+                P.dir = E.dir = 1; P.v = E.v = 0.95; P.s = s; P.lat = RW + 1.5;
+                E.s = s + familles::AVANCE_M / SEG_M; E.lat = RW + 1.5 + familles::ECART_LAT_M;
+                places++; break;
+            }
         WFS_LOG("Enfants (WFS-233, banc) : %d famille(s) placée(s) devant la voiture", places);
     }
 
@@ -483,6 +498,26 @@ private:
         WFS_LOG("Poussettes (WFS-240) : %d triangles (tissu %zu, métal %zu, plastique %zu), petit assis %d triangles%s", tri,
                 g[0].i.size() / 3, g[1].i.size() / 3, g[2].i.size() / 3, triPetit, poussettesOk_ ? "" : " : indisponibles, aucune poussette");
     }
+    // WFS-240 (RG-03) : coiffure « Hair_Long » de femme.wfp (même squelette que les enfants de WFS-233, vérifié par
+    // test_fidelite_humains) posée sur la tête de l'enfant : chaque os = décalage × pose de l'enfant × échelle de la tête × inverse
+    // de la liaison adulte (la coiffure suit le crâne de l'enfant, à sa taille, 1 cm au-dessus) ; ≤ 1 104 triangles (détail moyen de près)
+    static bool cheveuxLongs(const Personne& P, int i) { return P.enfant >= 0 && !P.poussette && familles::fille(P.enfant) && ((uint32_t)i * 2654435761u >> 16) % 2 == 0; }
+    void dessinerCheveuxLongs(Renderer& r, const Dessin& D) {
+        const Personnage& F = modeles_[1];
+        char nom[32];
+        std::snprintf(nom, sizeof nom, "Hair_Long-%d", D.lod == 0 ? 1 : 2);
+        const Plage* pl = plageParNom(F, nom);
+        if (!pl || F.palette.size() > cheveuxPal_.size()) return;
+        const mat4 k = scale({D.cheveuxLongs, D.cheveuxLongs, D.cheveuxLongs}), dy = translate({0, D.cheveuxDy, 0});
+        for (size_t j = 0; j < F.palette.size(); j++) {
+            const size_t b = (size_t)F.palette[j];
+            cheveuxPal_[j] = b < D.pose->modele.size() && b < F.os.size() ? dy * D.pose->modele[b] * k * F.os[b].bindInverse : mat4::identity();
+        }
+        ApparencePersonnage app = D.app; app.corps = F.corps;
+        r.drawSkinned(F.maillage, F.materiau, D.monde, cheveuxPal_.data(), (int)F.palette.size(), pl->premier, pl->nombre, &app);
+    }
+    std::vector<mat4> cheveuxPal_ = std::vector<mat4>(SKIN_MAX_OS, mat4::identity());   // WFS-240 : alloué une fois
+
     void detruirePoussettes(Renderer& r) {
         if (!pousMat_[0].set && !petitTex_.img) return;
         for (Mesh& m : pousMesh_) if (m.vb.buf) { r.destroy(m); m = Mesh{}; }
@@ -546,6 +581,17 @@ void benchPietons(Game& g, Renderer& r, const std::string& out) {
         }
         g.shutdown();
     }
+    g_bancCheveux = true;   // WFS-240 (RG-03) : enfants-cheveux-longs (Ville, de jour)
+    if (g.init(r, "golf", "ville")) {
+        g.setAutopilot(false); g.camMode = 0;
+        double t = 1200;
+        for (int i = 0; i < 30; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); }
+        g.render(t); g.render(t + 0.01);
+        r.capturePng(out + "/enfants-cheveux-longs.png");
+        WFS_LOG("capture enfants-cheveux-longs");
+        g.shutdown();
+    }
+    g_bancCheveux = false;
     g_bancFamilles = false;
     // WFS-210 (RG-01) : conducteur vu de côté (vitrine à 6,5 m) sur les 4 cartes, de jour ; Ville aussi de nuit : tenue du lieu,
     // peau, cheveux et yeux (conducteurs-tenue-<carte>[-nuit].png) ; tenue tirée au journal
