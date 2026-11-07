@@ -3322,3 +3322,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 15:06:48 — WFS-224 repris à l'agent 4, stoppé par l'utilisateur (po-scrum-master)
 - Ordre de l'utilisateur : l'agent 4 (Claude, 011cpqZan) est stoppé ; ne plus lui attribuer de ticket.
 - `feature/waforspeed-224` ne contient que le commit de début (533e360, aucun code) : la branche est gardée, le ticket repart ⏳ Prêt, en tête de l'ordre de priorité, pour le premier développeur qui demande (pas l'agent 4).
+
+### 2026-11-07 15:08:02 — WFS-248 en cours chez l'agent 5 (po-scrum-master)
+- L'agent 5 a pris WFS-248 et poussé son commit de début à 14:54 (f66165c). `TACHES.md` et `track-agent.md` le disaient libre par erreur : corrigé.
