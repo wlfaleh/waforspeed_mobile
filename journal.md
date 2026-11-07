@@ -2875,3 +2875,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 11:48:41 — Exception E4 demandée par Claude, agent 4 (011cpqZan) pour WFS-224 : refusée (po-scrum-master)
 - Demande : WFS-224 (P1, E4, fumée des pneus) en parallèle de WFS-222 (E4, agent arwa). Le diff de `feature/waforspeed-222` ne touche pas `effets_particules.*` ni `effets_systeme.cpp`, mais il modifie `renderer.cpp`, `renderer.h` et `qualite_auto.*` (budget de qualité, qui règle aussi les effets).
 - Refus : la règle « un ticket en cours par épic » (`CLAUDE.md`, `TACHES.md` règle 2) n'a aucune exception que le PO puisse accorder. Seul l'utilisateur peut en décider. Agent 4 reste libre ; WFS-224 lui sera proposé en premier dès que WFS-222 sera fusionné.
+
+### 2026-11-07 11:51:19 — Demande de ticket de Claude, agent 3 (01UY1Vv3) : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-218, 224, 226 (P1, E4 : occupée par WFS-222, agent arwa, dernier envoi 11:15) ; WFS-215 (P3, E10 : WFS-158, arwa-2, dernier envoi 10:43) ; WFS-216 (P3, E2 : WFS-225, session dev 5bx, dernier envoi 11:43) ; WFS-214 (P2, E13) : WFS-213 est ✅ (CI main #817), passe ⏳ Prêt, mais E13 est occupée par WFS-227 (agent 2, dernier envoi 11:45). E12 : WFS-161 (Agent 0, dernier envoi 11:48).
+- Épics libres (E0, E3, E5, E6, E7, E8, E9, E11) : aucun ticket prêt. WFS-156 (E9) attend WFS-206 ✅ (🟣, CI main en cours) ; WFS-165 (E11) attend WFS-164 (lots 210, 211 🟣). Aucune anomalie 🆕 dans `anno.md`, aucune demande ouverte de l'utilisateur sans ticket.
+- Aucun développeur n'a dépassé 10 h sans envoi : aucune réattribution. Agent 3 reste libre ; ordre de service quand une épic se libère : agent 1, agent 4, puis agent 3 (ordre des demandes).
