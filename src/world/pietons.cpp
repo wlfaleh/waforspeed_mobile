@@ -488,14 +488,20 @@ bool lire(const char* chemin, Brut& b) {
     auto f32 = [&]() { float v = 0; if (const uint8_t* q = prendre(4)) std::memcpy(&v, q, 4); return v; };
     auto nom = [&]() { const uint8_t* q = prendre(32); return q ? std::string((const char*)q, strnlen((const char*)q, 32)) : std::string(); };
     const uint8_t* magie = prendre(4);
-    if (!magie || std::memcmp(magie, "WFP1", 4) != 0 || u32() != 2) return false;
+    const uint32_t version = magie && std::memcmp(magie, "WFP1", 4) == 0 ? u32() : 0;
+    if (version != 2 && version != 3) return false;   // WFS-240 : version 3 (humains de WFS-209 : tangente en plus)
     for (uint32_t t = 0, n = u32(); ok && t < n; t++) prendre(u32());
     f32(); f32(); b.p.hauteur = f32();
     b.p.corps = {f32(), f32(), f32(), f32()};
     const uint32_t nV = u32(), nI = u32(), nP = u32(), nO = u32(), nC = u32();
     if (!ok || nV > 200000 || nI > 600000 || nO > 256) return false;
     b.v.resize(nV); b.idx.resize(nI);
-    if (const uint8_t* q = prendre((size_t)nV * sizeof(SkinVertex))) std::memcpy(b.v.data(), q, (size_t)nV * sizeof(SkinVertex));
+    if (version == 2) { if (const uint8_t* q = prendre((size_t)nV * sizeof(SkinVertex))) std::memcpy(b.v.data(), q, (size_t)nV * sizeof(SkinVertex)); }
+    else if (const uint8_t* q = prendre((size_t)nV * 84))   // comme chargerPersonnage : tangente (16 octets après l'uv) mise de côté
+        for (uint32_t i = 0; i < nV; i++) {
+            std::memcpy(&b.v[i], q + (size_t)i * 84, 32);
+            std::memcpy(reinterpret_cast<uint8_t*>(&b.v[i]) + 32, q + (size_t)i * 84 + 48, 36);
+        }
     if (const uint8_t* q = prendre((size_t)nI * 4)) std::memcpy(b.idx.data(), q, (size_t)nI * 4);
     b.p.plages.resize(nP);
     for (Plage& pl : b.p.plages) { pl.nom = nom(); pl.premier = u32(); pl.nombre = u32(); }
@@ -632,7 +638,46 @@ Cache batir() {
     return c;
 }
 
+
+// WFS-240 (RG-02) : enfants de 7, 10 et 14 ans (garçon, fille) assis, mêmes poses et variantes que les adultes ; fesses en
+// y = 0 ; assise = hauteur du siège (0,45 m) : les jambes de l'enfant pendent devant le siège
+constexpr const char* ENFANTS_TRIBUNE[6] = {"e07g", "e07f", "e10g", "e10f", "e14g", "e14f"};
+int indiceEnfant(int e, int pose, int variante, int proche) { return ((e * 2 + (pose == ASSIS_PARLE)) * VARIANTES + variante) * 2 + proche; }
+
+Cache batirEnfants() {
+    Cache c;
+    c.s.resize((size_t)indiceEnfant(5, ASSIS_PARLE, VARIANTES - 1, 1) + 1);
+    size_t tri = 0;
+    for (int e = 0; e < 6; e++) {
+        Brut b;
+        if (!lire((std::string("people/humains/") + ENFANTS_TRIBUNE[e] + ".wfp").c_str(), b)) {
+            WFS_ERR("Spectateurs (WFS-240) : enfant illisible (people/humains/%s.wfp) : aucun enfant en tribune", ENFANTS_TRIBUNE[e]);
+            return Cache{};
+        }
+        for (int p : {ASSIS_REPOS, ASSIS_PARLE}) for (int v = 0; v < VARIANTES; v++) for (int pr = 0; pr < 2; pr++) {
+            Silhouette& S = c.s[(size_t)indiceEnfant(e, p, v, pr)];
+            S = construire(b, e % 2, 0, (Pose)p, v, pr ? 0.08f : 0.13f);   // grille plus fine : l'enfant est plus petit
+            S.assise = 0.45f;
+            tri = std::max(tri, S.i.size() / 3);
+        }
+    }
+    c.ok = true;
+    float tete[3] = {0, 0, 0};   // hauteur de la tête au-dessus du siège (fesses en y = 0), 7, 10 et 14 ans (garçon, repos, de près)
+    for (int a = 0; a < 3; a++) for (const Sommet& v : c.s[(size_t)indiceEnfant(a * 2, ASSIS_REPOS, 0, 1)].v) tete[a] = std::max(tete[a], v.p.y);
+    WFS_LOG("Spectateurs (WFS-240) : %zu silhouettes d'enfants assis (7, 10, 14 ans ; garçon, fille), %zu triangles au plus ; "
+            "tête au-dessus du siège %.2f / %.2f / %.2f m", c.s.size(), tri, tete[0], tete[1], tete[2]);
+    return c;
+}
+
 } // namespace
+
+const Silhouette* silhouetteEnfant(uint32_t h, Pose pose, int variante, bool proche) {
+    static const Cache c = batirEnfants();
+    if (!c.ok) return nullptr;
+    const int e = (int)((h >> 9) % 6);
+    return &c.s[(size_t)indiceEnfant(e, pose == ASSIS_PARLE ? ASSIS_PARLE : ASSIS_REPOS, ((variante % VARIANTES) + VARIANTES) % VARIANTES, proche ? 1 : 0)];
+}
+
 
 const Silhouette* silhouette(bool femme, int coiffure, Pose pose, int variante, bool proche) {
     static const Cache c = batir();   // une fois, au premier appel (initialisation sûre entre fils : morceaux construits en parallèle)

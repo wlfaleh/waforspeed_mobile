@@ -87,5 +87,16 @@ struct Sommet { vec3 p, n; Zone zone; };
 struct Silhouette { std::vector<Sommet> v; std::vector<uint32_t> i; float assise = 0.45f; };   // assise : fesses − pieds (m), assis seulement
 // proche : grille de 10 cm, sinon 16 cm (de loin) ; nullptr si les personnages sont illisibles
 const Silhouette* silhouette(bool femme, int coiffure, Pose pose, int variante, bool proche);
+// WFS-240 (RG-02) : enfants en tribune. ≈ 10 % des spectateurs assis, à côté d'un adulte assis du même rang, deviennent un enfant
+// de 7, 10 ou 14 ans (morphotypes de WFS-233) : la place reste occupée, le nombre de spectateurs ne change pas. Tirage par le
+// hachage h de la place (le même que le reste du spectateur) ; silhouette assise de l'enfant (fesses en y = 0, assise 0,45 m
+// comme le siège : pieds dans le vide), garçon ou fille selon h
+// tirage réglé sur les deux tribunes du Grand Prix (même hachage que circuit.cpp) : 180 ‰ des places éligibles → 10,0 %
+// des spectateurs (38 enfants sur 381 en Haute : 22 / 250 à la grille, 16 / 131 à l'épingle)
+constexpr uint32_t ENFANTS_TRIBUNE_POUR_MILLE = 180;
+inline bool enfantEnTribune(uint32_t h, bool assis, bool voisinAdulte) {
+    return assis && voisinAdulte && ((h * 0x9E3779B1u) >> 12) % 1000 < ENFANTS_TRIBUNE_POUR_MILLE;
+}
+const Silhouette* silhouetteEnfant(uint32_t h, Pose pose, int variante, bool proche);
 } // namespace foule
 } // namespace wfs

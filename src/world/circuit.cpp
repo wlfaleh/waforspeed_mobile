@@ -583,12 +583,15 @@ protected:
             }
             // sièges (assise + dossier, couleur de la tribune) et spectateurs assis ou debout (RG-02)
             const Pose& P = pm;
+            int kPrec = -1; float dPrec = -1e9f; bool adultePrec = false;   // WFS-240 (RG-02) : place précédente du rang
             sieges(it, [&](int k, float d, bool occupe, uint32_t h) {
                 const vec3 q = base + out_ * (k * RANG + 0.12f) + P.f * d;   // place : arrière du rang, jambes vers la route
                 const float y = hauteurRang(k);
                 const foule::Silhouette* sil = nullptr;
                 const bool debout = occupe && h % 7 == 0;   // un spectateur sur sept debout devant sa place
-                if (occupe) sil = foule::silhouette(h & 1, (int)(h >> 1) % foule::COIFFURES,
+                const bool enfant = occupe && foule::enfantEnTribune(h, !debout, adultePrec && k == kPrec && d - dPrec < SIEGE * 1.5f);   // WFS-240
+                kPrec = k; dPrec = d; adultePrec = occupe && !debout && !enfant;   // WFS-240 : un enfant toujours à côté d'un adulte assis
+                if (occupe) sil = enfant ? foule::silhouetteEnfant(h, (foule::Pose)(foule::ASSIS_REPOS + (h >> 3) % 2), (int)(h >> 4) % foule::VARIANTES, !lod) : foule::silhouette(h & 1, (int)(h >> 1) % foule::COIFFURES,
                                                     (foule::Pose)(debout ? foule::DEBOUT_REPOS + (h >> 3) % 2 : foule::ASSIS_REPOS + (h >> 3) % 2),
                                                     (int)(h >> 4) % foule::VARIANTES, !lod);
                 const float assise = sil && !debout ? sil->assise : 0.45f;
