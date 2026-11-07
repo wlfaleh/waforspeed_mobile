@@ -70,13 +70,13 @@ jobs:
     if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne
     needs: compilation   # WFS-250
     runs-on: ubuntu-24.04
-    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme, run #825) + 2 × 5 min d'installation au pire, et marge
+    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme au run #825, sorti des envois par WFS-252) + 2 × 5 min d'installation au pire, et marge
     strategy:
       fail-fast: false
       matrix:
         # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
         # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
-        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, realisme-1, realisme-2, conduite-chocs]   # WFS-148 : banc de référence du réalisme ; WFS-252 : coupé en deux parties en parallèle (WFS-251)
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs]   # WFS-252 (décision de l'utilisateur, 2026-11-07) : le banc du réalisme (WFS-148) ne tourne plus à chaque envoi, mais chaque matin à 07:00 heure de Paris (realisme.yml)
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -133,10 +133,6 @@ jobs:
               mkdir -p conduite && WFS_BANC=conduite ./build/wfs_bench conduite assets/ && cp conduite/conduite.txt conduite/conduite-*.png captures/   # WFS-241 (accroche) : banc de conduite, vidéos épingle / rond-point (1280x720)
               mkdir -p chocs && WFS_BANC=chocs ./build/wfs_bench chocs assets/ && cp chocs/chocs.txt chocs/chocs-*.png captures/   # WFS-256 (accroche) : chocs avec le décor des 4 cartes
               ;;
-            realisme-1|realisme-2)   # WFS-148 ; WFS-252 : une partie du banc (WFS-251) ; la texture d'essai KTX2 n'est lue que par la partie 2
-              partie=${{ matrix.groupe }}; partie=${partie#realisme-}
-              if [ "$partie" = 2 ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi   # WFS-149 : KTX2 d'essai, rapport PSNR
-              WFS_BANC=realisme WFS_REALISME_PARTIE=$partie ./build/wfs_bench captures assets/ ;;   # morceaux : captures/realisme-partie-N.morceaux
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4
@@ -284,41 +280,8 @@ jobs:
 
   # WFS-106 RG-06 : les captures après le banc (même partiel), seulement celles qui ont changé (RG-11) ; ne touchent jamais
   # à l'APK, au tag ni au titre ; échec = avertissement, job vert (RG-03) ; 20 min au plus (RG-07)
-  # WFS-252 (RG-03) : rapports finaux du banc realisme (realisme-fidelite.txt, realisme-mesures.txt) assemblés à partir des deux
-  # parties (WFS-251, WFS_REALISME_PARTIE=fusion) : contenu identique à celui d'un banc complet ; partie absente ou étape en double = rouge
-  realisme-fusion:
-    needs: [compilation, banc-essai]
-    if: ${{ !cancelled() && github.event_name != 'schedule' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - name: Outils (Vulkan logiciel)
-        run: |
-          for essai in 1 2; do
-            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y libvulkan1 mesa-vulkan-drivers && break
-            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
-          done
-      - uses: actions/download-artifact@v4
-        with: { name: compilation }
-      - uses: actions/download-artifact@v4
-        with: { pattern: 'captures-realisme-*', path: parties }
-      - name: Fusion des deux parties du banc realisme
-        run: |
-          mkdir -p build captures && tar -xf compilation.tar -C build && bash tools/qa/verifier_compilation.sh build
-          for n in 1 2; do
-            f=parties/captures-realisme-$n/realisme-partie-$n.morceaux
-            [ -s "$f" ] || { echo "::error::$f absent : partie $n du banc realisme non terminée"; exit 1; }
-            cp "$f" captures/
-          done
-          WFS_BANC=realisme WFS_REALISME_PARTIE=fusion ./build/wfs_bench captures assets/
-          ls -la captures
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: { name: captures-realisme, path: 'captures/*.txt' }
-
   publication-captures:
-    needs: [banc-essai, realisme-fusion]
+    needs: [banc-essai]
     runs-on: ubuntu-24.04
     if: ${{ !cancelled() && github.event_name != 'schedule' }}   # WFS-185 (RG-06)
     timeout-minutes: 20
