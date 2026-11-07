@@ -17,6 +17,7 @@
 #include "zones.h"
 #include "foule_familles.h"   // WFS-233 : enfants et familles
 #include "foule_poussette.h"   // WFS-240 : poussettes
+#include "foule_apparition.h"  // WFS-257 : apparition naturelle
 #include "vegetation.h"        // WFS-240 : géométrie (veg::Geo)
 #include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
 #include "ville_quartiers.h"   // WFS-137 : piétons des passages zébrés
@@ -27,14 +28,21 @@ namespace plage { bool vueBanc(); }   // WFS-216 (RG-02, accroche E11) : vue de 
 namespace {
 
 // valeurs du jeu web (people.js)
-constexpr double PED_RANGE0 = -10, PED_RANGE1 = 115;   // tronçons (1,2 m) derrière / devant le joueur
+// WFS-257 (RG-02) : portée de 48 m derrière (au lieu de 12 m : la caméra Poursuite voit derrière la voiture ; hors du cadre,
+// une personne derrière ne coûte rien) à 138 m devant (jeu web), fondu sur les 20 derniers mètres
+constexpr double PED_RANGE0 = -40, PED_RANGE1 = 115;   // tronçons (1,2 m) derrière / devant le joueur
 constexpr double PED_WALK_SPEED = 1.1, PED_JOG_SPEED = 2.9;   // m/s des animations d'origine
 constexpr float PED_LOD_M[2] = {16.f, 50.f};
 constexpr float PED_LOD_BASSE_M[2] = {8.f, 30.f};   // WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k)
-constexpr int PED_FULL = 8;            // maillages complets
 constexpr int PEOPLE_MAX = 220;        // life.js
-// affichés : 8 au plus — chaque personne = 2 dessins (corps + coiffure) et le renderer en accepte SKIN_MAX_INSTANCES (16)
-constexpr int AFFICHES = std::min(PED_FULL, SKIN_MAX_INSTANCES / 2);
+// WFS-257 (cause d'ANO-130) : les 8 places de WFS-19 (8 piétons × 2 dessins) faisaient apparaître et disparaître les gens
+// sous les yeux du joueur à chaque changement des « 8 plus proches ». Désormais toute personne dans le cadre est dessinée :
+// INST_PIETONS instances (corps + coiffure = 2) pour les nouvelles venues, celles déjà affichées gardent toujours leur place ;
+// SKIN_MAX_INSTANCES (renderer.h) = 32 des conducteurs (WFS-73) + piétons
+constexpr int INST_PIETONS = 120;   // 60 personnes : la Ville en montre jusqu'à 40 dans le cadre (banc WFS-257), marge pour les fondus croisés
+constexpr int DESSINES = 64;           // personnes dessinées par image au plus (tableaux)
+constexpr int POSES_ENFANT = 8;        // instances par morphotype d'enfant et par image (WFS-233 : 2)
+static_assert(INST_PIETONS + 32 <= SKIN_MAX_INSTANCES, "WFS-257 : places des piétons et des conducteurs");
 
 // palettes de pedLook (people.js), codes sRGB
 vec3 hx(unsigned h) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f}; }
@@ -91,6 +99,7 @@ struct Dessin {
     const Personnage* M = nullptr; PoseSquelette* pose = nullptr; mat4 monde = mat4::identity();
     float yaw = 0, echelle = 1; vec3 pos{}; ApparencePersonnage app; int lod = 0, i = -1; const char* coiffure = nullptr;
     float cheveuxLongs = 0, cheveuxDy = 0;   // WFS-240 (RG-03) : fille aux cheveux longs : échelle et décalage de la coiffure, 0 sinon
+    int lodPrec = -1; float lodT = 1, op = 1;   // WFS-257 : fondu croisé des niveaux de détail, opacité (RG-03)
 };
 vec3 transformer(const mat4& m, const vec3& p) {
     return {m.at(0, 0) * p.x + m.at(0, 1) * p.y + m.at(0, 2) * p.z + m.at(0, 3), m.at(1, 0) * p.x + m.at(1, 1) * p.y + m.at(1, 2) * p.z + m.at(1, 3),
@@ -130,12 +139,43 @@ void tenirLaMain(Dessin& A, Dessin& E) {
 bool g_bancFamilles = false;
 bool g_bancCheveux = false;   // WFS-240 (banc) : une fille aux cheveux longs de 7 ou 10 ans et son parent, à 6 m devant la voiture
 
+// WFS-257 (RG-01, RG-06) : mesure des apparitions, disparitions, sauts et changements de détail visibles (banc seulement).
+// « Visible » : centre du corps dans l'image (caméra de l'image) et personne haute d'au moins 1 % de la hauteur de l'écran
+// (≈ 11 px sur un téléphone de 1 080 px : en deçà, elle ne se distingue plus du décor). Une apparition ou une disparition
+// visible : l'opacité varie plus vite qu'un fondu de 0,4 s (RG-03 : 0,5 s, marge de 20 %) ; un saut : plus de 10 m/s d'une
+// image à l'autre (marche 1,1 m/s, course 2,9 m/s) ; un détail brutal : niveau de détail changé sans fondu.
+struct EtatMesure { float o = 0; vec3 pos{}; int lod = -1; bool vu = false; };
+struct Mesure {
+    bool actif = false;
+    int images = 0, apparitions = 0, disparitions = 0, sauts = 0, detailsBrutaux = 0, vusMax = 0, affichesMax = 0;
+    int fondusProches = 0;   // entrées en fondu (permises) d'une personne déjà grande à l'écran (≥ 3 % : à moins de ≈ 35 m)
+    double vusSomme = 0;
+    std::vector<EtatMesure> prec;
+    std::string premier;   // premier évènement (journal) : personne, distance, nature
+    int imagePremier = -1;
+    void remettre() { const bool a = actif; *this = Mesure{}; actif = a; }
+};
+Mesure g_mesure;
+// part de la hauteur de l'écran occupée par une personne de 1,75 m dont le centre est en p ; < 0 : hors de l'image
+float hauteurVue(const GameView& g, const vec3& p) {
+    const mat4 pv = g.proj * g.view;
+    const vec3 c{p.x, p.y + 0.9f, p.z};
+    const float x = pv.at(0, 0) * c.x + pv.at(0, 1) * c.y + pv.at(0, 2) * c.z + pv.at(0, 3);
+    const float y = pv.at(1, 0) * c.x + pv.at(1, 1) * c.y + pv.at(1, 2) * c.z + pv.at(1, 3);
+    const float w = pv.at(3, 0) * c.x + pv.at(3, 1) * c.y + pv.at(3, 2) * c.z + pv.at(3, 3);
+    if (w < 0.3f || std::fabs(x) > w || std::fabs(y) > w) return -1;
+    return std::fabs(g.proj.at(1, 1)) * 1.75f / w * 0.5f;
+}
+constexpr float HAUTEUR_DISTINGUEE = 0.01f;
+// banc : début (tronçons) de la fenêtre de 100 tronçons la plus peuplée de la partie en cours (−1 : aucune personne)
+int64_t g_zoneDense = -1, g_longueur = 1;
+
 class Pietons : public System {
 public:
     const char* name() const override { return "pietons"; }
 
     void init(Renderer& r, const GameView& g) override {
-        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0;
+        gens_.clear(); actif_ = false; omis_ = 0; tirage_ = 0; etat_.clear(); tPrec_ = 0; premiere_ = true;
         if (!g.map || !g.track) return;
         const char* id = g.map->id;
         tenue::carte() = id;   // WFS-210 : tenue des conducteurs selon la carte
@@ -167,6 +207,7 @@ public:
         formerFamilles(r, *g.map);   // WFS-233
         if (g_bancFamilles) placerFamillesBanc(g.player ? g.player->position / SEG : 0.0);
         actif_ = true;
+        zoneDense();   // WFS-257 (banc)
         WFS_LOG("Piétons : %zu personnes (%s)", gens_.size(), id);
         // WFS-222 (RG-07) : détail (marcheurs, promeneurs et passants : moitié des tirages ; assis et baigneurs : inchangés)
         WFS_LOG("Piétons (WFS-222) : %zu à pied (promeneurs %zu, marcheurs %zu, passants %zu ; %d omis sur ordre de l'utilisateur), %zu assis ou baigneurs",
@@ -197,75 +238,81 @@ public:
         if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;   // WFS-216 : la foule de la fête dans les vues du banc
         Track& tr = *g.track;
         const double len = (double)tr.segmentCount(), aP = g.player->position / SEG, aMod = std::fmod(std::fmod(aP, len) + len, len);
-        // 1. les plus proches (devant compte plus que derrière), petit bonus pour ceux déjà affichés (pas de clignotement)
-        int choisis[AFFICHES]; double cles[AFFICHES]; int n = 0;
+        const double carLat = g.player->playerX * RW;
+        const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
+        if (etat_.size() != gens_.size()) { etat_.assign(gens_.size(), apparition::Etat{}); candDe_.assign(gens_.size(), -1); pos_.assign(gens_.size(), vec3{}); yaw_.assign(gens_.size(), 0.f); }
+        const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
+        const mat4 pv = g.proj * g.view;
+        // 1. WFS-257 : chaque personne de la portée : place dans le monde, dans le cadre ou non (RG-02)
+        cand_.clear();
         for (int i = 0; i < (int)gens_.size(); i++) {
             Personne& P = gens_[(size_t)i];
             double rel = P.s - aMod; if (rel > len / 2) rel -= len; if (rel < -len / 2) rel += len;
-            P.rel = rel;
+            P.rel = rel; candDe_[(size_t)i] = -1;
+            if (rel < PED_RANGE0 || rel > PED_RANGE1 || P.poussette) {   // le petit de la poussette suit son parent (plus bas)
+                if (!P.poussette) apparition::avancerOpacite(etat_[(size_t)i], false, false, false, 0, dt);
+                continue;
+            }
+            // une voiture arrive sur le trottoir : la personne s'écarte vers les façades (dodge du jeu web) ; WFS-257 (RG-04) :
+            // pas de côté vif (≈ 4 m/s) au lieu d'un bond de 2,6 m en 0,25 s
+            if (std::fabs(P.rel) < 6 && std::fabs(carLat - P.lat) < 2.4) P.dodge = std::min(1.0, P.dodge + dt * 1.6); else P.dodge = std::max(0.0, P.dodge - dt * 0.5);
+            const double side = P.lat >= 0 ? 1 : -1, lat = P.lat + side * P.dodge * 2.6;
+            const TrackPoint tp = tr.point((aP + P.rel) * SEG, lat);
+            const double gy = P.y != 0 ? P.y : sol(side);
+            pos_[(size_t)i] = {(float)tp.x, (float)(tp.y + gy), (float)tp.z};
+            // le personnage regarde vers +Z dans son repère : face au sens de la route = demi-tour (repère natif)
+            float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
+            if (P.pose == 5 && etat_[(size_t)i].op > 0) {   // WFS-257 (RG-04) : le passant se retourne (≈ 1 s pour un demi-tour), sans pivot instantané
+                float e = std::remainder(yaw - yaw_[(size_t)i], 6.2831853f);
+                const float pas = (float)dt * 3.2f;
+                yaw = yaw_[(size_t)i] + std::clamp(e, -pas, pas);
+            }
+            yaw_[(size_t)i] = yaw;
+            const double dm = rel * SEG_M;
+            const float opMax = apparition::opaciteDistance(dm, PED_RANGE1 * SEG_M);
+            if (!dansCadre(pv, g.proj, pos_[(size_t)i])) { apparition::avancerOpacite(etat_[(size_t)i], true, false, false, opMax, dt); continue; }
+            // 1re image de la partie (carte chargée, scène qui s'ouvre) : chacun est déjà à sa place, sans fondu
+            if (premiere_) apparition::avancerOpacite(etat_[(size_t)i], true, false, false, opMax, dt);
+            const apparition::Etat& e = etat_[(size_t)i];
+            candDe_[(size_t)i] = (int)cand_.size();
+            cand_.push_back({i, -1, (float)std::fabs(dm), e.lieu == apparition::Lieu::Affichee && e.op > 0, e.lodPrec >= 0 ? 4 : 2});   // corps + coiffure (× 2 en fondu croisé)
         }
-        for (int i = 0; i < (int)gens_.size(); i++) {
-            const Personne& P = gens_[(size_t)i];
-            if (P.rel < PED_RANGE0 || P.rel > PED_RANGE1) continue;
-            // WFS-233 : un enfant a la clé de son parent (moins un rien) : la famille entre ou sort ensemble
-            const Personne& C = P.enfant >= 0 && P.famille >= 0 ? gens_[(size_t)P.famille] : P;
-            const int ic = P.enfant >= 0 && P.famille >= 0 ? P.famille : i;
-            const double sc = std::max(0.0, (C.rel >= 0 ? C.rel : -C.rel * 2.5) + std::fabs(C.lat) * 0.15 - (affiche_[ic % 256] == ic ? 6 : 0) - (C.pose == 5 ? 30 : 0)) + (P.enfant >= 0 ? 1e-3 : 0);   // WFS-137 : passage zébré en priorité
-            int k = n < AFFICHES ? n++ : AFFICHES;   // insertion dans les AFFICHES meilleurs (sans allocation)
-            if (k == AFFICHES) { if (sc >= cles[AFFICHES - 1]) continue; k = AFFICHES - 1; }
-            while (k > 0 && cles[k - 1] > sc) { cles[k] = cles[k - 1]; choisis[k] = choisis[k - 1]; k--; }
-            cles[k] = sc; choisis[k] = i;
+        for (apparition::Candidat& c : cand_) {   // WFS-233 : la famille entre ou sort ensemble
+            const int f = gens_[(size_t)c.i].famille;
+            if (f >= 0 && !gens_[(size_t)f].poussette) c.lien = candDe_[(size_t)f];
         }
-        // WFS-233 : jamais un enfant sans son adulte à l'écran (ni l'inverse, sauf si l'autre est hors de portée)
-        auto present = [&](int i) { for (int k = 0; k < n; k++) if (choisis[k] == i) return true; return false; };
-        { int m = 0;
-          for (int k = 0; k < n; k++) {
-              const Personne& P = gens_[(size_t)choisis[k]];
-              const bool seul = P.famille >= 0 && !present(P.famille);
-              if (seul && (P.enfant >= 0 || (gens_[(size_t)P.famille].rel >= PED_RANGE0 && gens_[(size_t)P.famille].rel <= PED_RANGE1))) continue;
-              choisis[m++] = choisis[k];
-          }
-          n = m; }
-        std::fill(std::begin(affiche_), std::end(affiche_), -1);
-        // 2. pose de chacun (sans dessiner) ; 3. mains des familles (IK) ; 4. dessin
-        Dessin d[AFFICHES]; int nd = 0;
+        apparition::choisirPlaces(cand_, ordre_, INST_PIETONS, place_);
+        premiere_ = false;
+        // 2. opacité et niveau de détail de chacun ; pose de ceux qu'on dessine (sans dessiner)
+        Dessin d[DESSINES]; int nd = 0;
         int util[2] = {0, 0}, utilE[familles::NB_ENFANTS] = {};
-        const double carLat = g.player->playerX * RW;
-        const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
-        for (int k = 0; k < n; k++) {
-            const int i = choisis[k];
+        for (size_t k = 0; k < cand_.size(); k++) {
+            const int i = cand_[k].i;
             Personne& P = gens_[(size_t)i];
-            affiche_[i % 256] = i;
-            if (P.poussette) continue;   // WFS-240 : le petit est dessiné dans la poussette de son parent (plus bas)
+            apparition::Etat& e = etat_[(size_t)i];
+            const double dm = std::fabs(P.rel) * SEG_M;
+            apparition::avancerOpacite(e, true, true, place_[k] != 0, apparition::opaciteDistance(P.rel * SEG_M, PED_RANGE1 * SEG_M), dt);
+            apparition::avancerNiveau(e, (float)dm, seuils, dt);
+            if (e.op <= 0 || nd >= DESSINES) continue;
             if (!P.look_) { P.look = P.enfant >= 0 ? lookEnfant(P, i) : pedLook(P, i, plage_); P.look_ = true; }
             const Look& L = P.look;
             const Personnage* M; PoseSquelette* pose;
             if (P.enfant >= 0) {
-                if (!enfantsOk_ || utilE[P.enfant] >= 2) continue;
+                if (!enfantsOk_ || utilE[P.enfant] >= POSES_ENFANT) continue;
                 M = &enfants_[P.enfant]; pose = &posesEnfants_[P.enfant][utilE[P.enfant]++];
             } else {
                 const int sx = L.femme ? 1 : 0;
-                if (util[sx] >= AFFICHES) continue;
+                if (util[sx] >= DESSINES) continue;
                 M = &modeles_[sx]; pose = &poses_[sx][util[sx]++];
             }
-            // une voiture arrive sur le trottoir : la personne s'écarte vers les façades (dodge du jeu web)
-            if (std::fabs(P.rel) < 6 && std::fabs(carLat - P.lat) < 2.4) P.dodge = std::min(1.0, P.dodge + dt * 4); else P.dodge = std::max(0.0, P.dodge - dt * 0.5);
-            if (P.famille >= 0 && P.enfant >= 0) P.dodge = gens_[(size_t)P.famille].dodge;   // WFS-233 : l'enfant suit son parent
-            const double side = P.lat >= 0 ? 1 : -1, lat = P.lat + side * P.dodge * 2.6;
-            const TrackPoint tp = tr.point((aP + P.rel) * SEG, lat);
-            const double gy = P.y != 0 ? P.y : sol(side);
-            // le personnage regarde vers +Z dans son repère : face au sens de la route = demi-tour (repère natif)
-            const float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
+            const float yaw = yaw_[(size_t)i];
             const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 || P.marche ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : P.pose == 4 ? (i % 3 ? "Jog_Fwd_Loop" : "Idle_Talking_Loop") : L.idle;   // WFS-180 : on danse, on saute
             echantillonner(*M, clipParNom(*M, anim), P.t + P.ph / 6.283 * 1.333, *pose);
             Dessin& D = d[nd++];
             D.M = M; D.pose = pose; D.i = i; D.yaw = yaw; D.echelle = L.scale;
-            D.pos = {(float)tp.x, (float)(tp.y + gy), (float)tp.z};
+            D.pos = pos_[(size_t)i];
             D.monde = translate(D.pos) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
-            const double dm = std::fabs(P.rel) * SEG_M;
-            // WFS-222 (RG-03) : qualité Basse : maillage complet à moins de 8 m seulement, moyen jusqu'à 30 m (Haute inchangée)
-            const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;
-            D.lod = dm < seuils[0] && k < PED_FULL ? 0 : dm < seuils[1] ? 1 : 2;
+            D.lod = e.lod; D.lodPrec = e.lodPrec; D.lodT = e.lodT; D.op = e.op;
             D.app = L.app; D.app.corps = M->corps;
             D.coiffure = P.enfant >= 0 ? nullptr : COIFFURES[L.femme ? 1 : 0][L.hair % 3];   // enfants : cheveux peints sur le corps
             // WFS-240 (RG-03) : une fille sur deux a les cheveux longs (coiffure « Hair_Long » de femme.wfp, Quaternius CC0)
@@ -291,29 +338,104 @@ public:
                 const Bras& b = d2(bg) < d2(bd) ? bg : bd;
                 atteindre(*d[a].M, *d[a].pose, b.epaule, b.coude, b.main, versModele(d[a], cible));
             }
-            poussettes_[nPous++] = {monde, familles::fille(gens_[(size_t)A.famille].enfant)};
+            poussettes_[nPous++] = {monde, familles::fille(gens_[(size_t)A.famille].enfant), apparition::tramage(d[a].op)};   // WFS-257 : même fondu que le parent
         }
+        // 3. dessin : niveau affiché (fondu d'opacité ou fondu croisé, RG-03) et, pendant un fondu croisé, niveau précédent
         char nom[48];
         for (int k = 0; k < nd; k++) {
             const Dessin& D = d[k];
-            std::snprintf(nom, sizeof nom, "corps-%d", D.lod);
-            const Plage* corps = plageParNom(*D.M, nom);
-            const Plage* coiffure = nullptr;
-            if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, D.lod); coiffure = plageParNom(*D.M, nom); }
-            for (const Plage* pl : {corps, coiffure})
-                if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app);
-            if (D.cheveuxLongs > 0) dessinerCheveuxLongs(r, D);   // WFS-240 (RG-03)
+            const bool croise = D.lodPrec >= 0;
+            for (int passe = 0; passe < (croise ? 2 : 1); passe++) {
+                const int lod = passe ? D.lodPrec : D.lod;
+                const float fondu = croise ? (passe ? apparition::tramageComplement(D.lodT) : apparition::tramage(D.lodT)) : apparition::tramage(D.op);
+                std::snprintf(nom, sizeof nom, "corps-%d", lod);
+                const Plage* corps = plageParNom(*D.M, nom);
+                const Plage* coiffure = nullptr;
+                if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, lod); coiffure = plageParNom(*D.M, nom); }
+                for (const Plage* pl : {corps, coiffure})
+                    if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app, fondu);
+            }
+            if (D.cheveuxLongs > 0) {   // WFS-240 (RG-03) : niveaux 1 (complet et moyen) et 2 (loin) de la coiffure
+                const int h = D.lod == 0 ? 1 : 2, hp = croise ? (D.lodPrec == 0 ? 1 : 2) : h;
+                if (!croise || h == hp) dessinerCheveuxLongs(r, D, h, apparition::tramage(croise ? 1.f : D.op));
+                else { dessinerCheveuxLongs(r, D, h, apparition::tramage(D.lodT)); dessinerCheveuxLongs(r, D, hp, apparition::tramageComplement(D.lodT)); }
+            }
         }
         for (int k = 0; k < nPous; k++) {   // WFS-240 : poussette (tissu, métal, plastique) et petit assis dedans
-            for (int p = 0; p < poussette::NB_PARTIES; p++) if (pousMesh_[p].indexCount) r.draw(pousMesh_[p], pousMat_[p], poussettes_[k].monde);
+            for (int p = 0; p < poussette::NB_PARTIES; p++) if (pousMesh_[p].indexCount) r.draw(pousMesh_[p], pousMat_[p], poussettes_[k].monde, poussettes_[k].fondu);
             const Mesh& b = petitMesh_[poussettes_[k].fille ? 1 : 0];
             if (b.indexCount) r.draw(b, petitMat_, poussettes_[k].monde * translate({0, poussette::SIEGE_Y, poussette::SIEGE_Z})
-                                                   * scale({poussette::ECHELLE_PETIT, poussette::ECHELLE_PETIT, poussette::ECHELLE_PETIT}));
+                                                   * scale({poussette::ECHELLE_PETIT, poussette::ECHELLE_PETIT, poussette::ECHELLE_PETIT}), poussettes_[k].fondu);
+        }
+        if (g_mesure.actif) {   // WFS-257 (banc)
+            float op[DESSINES]; bool fo[DESSINES];
+            for (int k = 0; k < nd; k++) { op[k] = d[k].op; fo[k] = d[k].lodPrec >= 0; }
+            mesurer(g, d, nd, op, fo, dt);
         }
         tPrec_ = g.time;
     }
 
+    // WFS-257 (RG-02) : la personne (sphère de 1,3 m autour du centre du corps) touche le cadre de la caméra
+    static bool dansCadre(const mat4& pv, const mat4& proj, const vec3& p) {
+        const vec3 c{p.x, p.y + 0.9f, p.z};
+        const float x = pv.at(0, 0) * c.x + pv.at(0, 1) * c.y + pv.at(0, 2) * c.z + pv.at(0, 3);
+        const float y = pv.at(1, 0) * c.x + pv.at(1, 1) * c.y + pv.at(1, 2) * c.z + pv.at(1, 3);
+        const float w = pv.at(3, 0) * c.x + pv.at(3, 1) * c.y + pv.at(3, 2) * c.z + pv.at(3, 3);
+        constexpr float R = 1.3f;
+        const float kx = std::sqrt(proj.at(0, 0) * proj.at(0, 0) + 1.f), ky = std::sqrt(proj.at(1, 1) * proj.at(1, 1) + 1.f);
+        return w > -R && std::fabs(x) - w <= R * kx && std::fabs(y) - w <= R * ky;
+    }
+
 private:
+    void zoneDense() {
+        const int64_t len = (int64_t)piste_->segmentCount();
+        std::vector<int> n((size_t)len + 1, 0);
+        for (const Personne& P : gens_) n[(size_t)std::clamp<int64_t>((int64_t)P.s, 0, len - 1)]++;
+        int meilleur = 0, c = 0; g_zoneDense = -1; g_longueur = std::max<int64_t>(1, len);
+        for (int64_t k = 0; k < 100 && k < len; k++) c += n[(size_t)k];
+        for (int64_t a = 0; a < len; a++) {   // fenêtre [a, a + 100) sur la boucle
+            if (c > meilleur) { meilleur = c; g_zoneDense = a; }
+            c += n[(size_t)((a + 100) % len)] - n[(size_t)a];
+        }
+    }
+    // WFS-257 (RG-01, RG-06, banc seulement) : évènements visibles de l'image (voir Mesure)
+    void mesurer(const GameView& g, const Dessin* d, int nd, const float* op, const bool* fondu, double dt) {
+        Mesure& M = g_mesure;
+        if (dt <= 1e-6) return;
+        if (M.prec.size() != gens_.size()) M.prec.assign(gens_.size(), EtatMesure{});
+        std::vector<EtatMesure> cur(gens_.size());
+        std::vector<char> fo(gens_.size(), 0);
+        for (int k = 0; k < nd; k++) { cur[(size_t)d[k].i] = {op[k], d[k].pos, d[k].lod, false}; fo[(size_t)d[k].i] = fondu[k]; }
+        const double vMax = 1.0 / 0.4;
+        int vus = 0, aff = 0;
+        auto noter = [&](size_t i, const char* quoi, const vec3& p) {
+            if (!M.premier.empty()) return;
+            char b[160]; const float dx = p.x - g.camPos.x, dz = p.z - g.camPos.z;
+            std::snprintf(b, sizeof b, "%s, personne %zu (pose %d%s), à %.0f m de la caméra", quoi, i, gens_[i].pose, gens_[i].enfant >= 0 ? ", enfant" : "", std::sqrt(dx * dx + dz * dz));
+            M.premier = b; M.imagePremier = M.images;
+        };
+        for (size_t i = 0; i < gens_.size(); i++) {
+            const EtatMesure& a = M.prec[i]; EtatMesure& b = cur[i];
+            if (a.o <= 0 && b.o <= 0) continue;
+            const vec3 pos = b.o > 0 ? b.pos : a.pos;
+            const float hv = hauteurVue(g, pos);
+            b.vu = hv >= HAUTEUR_DISTINGUEE;
+            if (M.images > 0 && a.o <= 0 && b.o > 0 && hv >= 0.03f) M.fondusProches++;
+            if (b.o > 0) { aff++; if (b.vu) vus++; }
+            if (!b.vu || M.images == 0) continue;   // 1re image mesurée : état de départ seulement
+            const double dO = (double)b.o - (double)a.o;
+            if (dO > vMax * dt + 1e-4) { M.apparitions++; noter(i, "apparition", pos); }
+            if (-dO > vMax * dt + 1e-4) { M.disparitions++; noter(i, "disparition", pos); }
+            if (a.o > 0 && b.o > 0) {
+                const vec3 dp = b.pos - a.pos;
+                if (std::sqrt(dp.x * dp.x + dp.y * dp.y + dp.z * dp.z) > 10.0 * dt) { M.sauts++; noter(i, "saut", pos); }
+                if (a.lod != b.lod && !fo[i]) { M.detailsBrutaux++; noter(i, "détail brutal", pos); }
+            }
+        }
+        M.vusSomme += vus; M.vusMax = std::max(M.vusMax, vus); M.affichesMax = std::max(M.affichesMax, aff);
+        M.prec.swap(cur); M.images++;
+    }
+
     // WFS-233 : tenue de l'enfant (couleurs tirées comme pedLook, sans maillot ni tenue de soirée), teint et cheveux du parent
     Look lookEnfant(const Personne& P, int i) {
         Personne& par = gens_[(size_t)std::max(P.famille, 0)];
@@ -454,8 +576,8 @@ private:
 
     // WFS-240 (RG-01) : maillages de la poussette (une fois par partie), du petit (garçon, fille) ; matériaux réels :
     // tissu polyester (sombre, mat), aluminium anodisé (métal), plastique noir des roues et de la poignée
-    static constexpr int MAX_POUSSETTES = 4;
-    struct Poussette { mat4 monde; bool fille; };
+    static constexpr int MAX_POUSSETTES = 8;   // WFS-257 : toutes celles du cadre (4 auparavant, avec 8 personnes affichées)
+    struct Poussette { mat4 monde; bool fille; float fondu; };
     Poussette poussettes_[MAX_POUSSETTES];
     Mesh pousMesh_[poussette::NB_PARTIES]{}, petitMesh_[2]{};
     Material pousMat_[poussette::NB_PARTIES]{}, petitMat_{};
@@ -502,10 +624,10 @@ private:
     // test_fidelite_humains) posée sur la tête de l'enfant : chaque os = décalage × pose de l'enfant × échelle de la tête × inverse
     // de la liaison adulte (la coiffure suit le crâne de l'enfant, à sa taille, 1 cm au-dessus) ; ≤ 1 104 triangles (détail moyen de près)
     static bool cheveuxLongs(const Personne& P, int i) { return P.enfant >= 0 && !P.poussette && familles::fille(P.enfant) && ((uint32_t)i * 2654435761u >> 16) % 2 == 0; }
-    void dessinerCheveuxLongs(Renderer& r, const Dessin& D) {
+    void dessinerCheveuxLongs(Renderer& r, const Dessin& D, int niveau, float fondu) {
         const Personnage& F = modeles_[1];
         char nom[32];
-        std::snprintf(nom, sizeof nom, "Hair_Long-%d", D.lod == 0 ? 1 : 2);
+        std::snprintf(nom, sizeof nom, "Hair_Long-%d", niveau);
         const Plage* pl = plageParNom(F, nom);
         if (!pl || F.palette.size() > cheveuxPal_.size()) return;
         const mat4 k = scale({D.cheveuxLongs, D.cheveuxLongs, D.cheveuxLongs}), dy = translate({0, D.cheveuxDy, 0});
@@ -514,7 +636,7 @@ private:
             cheveuxPal_[j] = b < D.pose->modele.size() && b < F.os.size() ? dy * D.pose->modele[b] * k * F.os[b].bindInverse : mat4::identity();
         }
         ApparencePersonnage app = D.app; app.corps = F.corps;
-        r.drawSkinned(F.maillage, F.materiau, D.monde, cheveuxPal_.data(), (int)F.palette.size(), pl->premier, pl->nombre, &app);
+        r.drawSkinned(F.maillage, F.materiau, D.monde, cheveuxPal_.data(), (int)F.palette.size(), pl->premier, pl->nombre, &app, fondu);
     }
     std::vector<mat4> cheveuxPal_ = std::vector<mat4>(SKIN_MAX_OS, mat4::identity());   // WFS-240 : alloué une fois
 
@@ -530,12 +652,20 @@ private:
 
     std::vector<Personne> gens_;
     Personnage enfants_[familles::NB_ENFANTS];             // WFS-233
-    PoseSquelette posesEnfants_[familles::NB_ENFANTS][2];  // WFS-233 : deux instances au plus par morphotype et par image
+    PoseSquelette posesEnfants_[familles::NB_ENFANTS][POSES_ENFANT];  // WFS-233 ; WFS-257 : POSES_ENFANT par morphotype et par image
     float kBassin_[familles::NB_ENFANTS] = {};
     bool enfantsOk_ = false;
     Personnage modeles_[2];   // 0 homme, 1 femme
-    PoseSquelette poses_[2][AFFICHES];
-    int affiche_[256];
+    PoseSquelette poses_[2][DESSINES];
+    // WFS-257 : état d'affichage (opacité, détail), place dans le monde, orientation affichée de chaque personne ; candidats du
+    // cadre et leurs places (tableaux gardés d'une image à l'autre : aucune allocation une fois remplis)
+    std::vector<apparition::Etat> etat_;
+    std::vector<int> candDe_, ordre_;
+    std::vector<vec3> pos_;
+    std::vector<float> yaw_;
+    std::vector<apparition::Candidat> cand_;
+    std::vector<char> place_;
+    bool premiere_ = true;   // WFS-257 : 1re image de la partie
     int omis_ = 0, tirage_ = 0;   // WFS-222 (RG-07)
     double tPrec_ = 0;
     bool actif_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
@@ -546,7 +676,9 @@ private:
 
 WFS_SYSTEM(Pietons, 106)   // décor (100-199) : après la ville (100) et la plage (105)
 
+void benchApparitions(Game& g, Renderer& r, const std::string& out);
 void benchPietons(Game& g, Renderer& r, const std::string& out) {
+    if (std::getenv("WFS_APPARITIONS_SEUL")) { benchApparitions(g, r, out); return; }   // WFS-257 : essai local
     for (const char* carte : {"ville", "plage"}) {
         if (!g.init(r, "golf", carte)) { WFS_ERR("piétons : chargement %s impossible", carte); continue; }
         g.setAutopilot(true); g.camMode = 1;
@@ -610,6 +742,59 @@ void benchPietons(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
     unsetenv("WFS_MOMENT");
+    benchApparitions(g, r, out);   // WFS-257
+}
+
+// WFS-257 (RG-01, RG-06) : apparitions et disparitions visibles des personnes, 4 cartes, jour et nuit, à 20 images/s :
+// course en pilote automatique (vue Proche), départ 150 m avant la partie la plus peuplée de la carte, WFS_APPARITIONS_S
+// secondes mesurées par cas après 2 s de mise en route. Sans WFS_APPARITIONS_S (CI, job partie2c ≤ 11 min) : Ville de
+// jour seule, 4 s ; avec : les 4 cartes, jour et nuit (essai local : 12 s par cas ≈ 15 min). WFS_APPARITIONS_SUITE=<dossier> (essai local) : rejoue chaque cas et enregistre la suite de 7 images autour
+// du premier évènement (apparition-<carte>-<moment>-<n>.png). Total au journal : « apparitions visibles : N ».
+void benchApparitions(Game& g, Renderer& r, const std::string& out) {
+    const char* e = std::getenv("WFS_APPARITIONS_S");
+    const int images = std::clamp(e ? std::atoi(e) : 4, 1, 600) * 20;
+    const char* suite = std::getenv("WFS_APPARITIONS_SUITE");
+    (void)out;
+    int total = 0, sauts = 0, details = 0;
+    g_mesure.actif = true;
+    for (const char* moment : {"jour", "nuit"}) for (const char* carte : {"ville", "plage", "campagne", "circuit"}) {
+        if (!e && (std::strcmp(moment, "jour") || std::strcmp(carte, "ville"))) continue;
+        setenv("WFS_MOMENT", moment, 1);
+        // départ 150 m avant la partie la plus peuplée de la carte (WFS_DEPART du décor), la voiture partant de l'arrêt
+        unsetenv("WFS_DEPART");
+        if (!g.init(r, "golf", carte)) { WFS_ERR("apparitions : chargement %s impossible", carte); continue; }
+        const int64_t dep = g_zoneDense >= 0 ? ((g_zoneDense - (int64_t)(150 / SEG_M) - (int64_t)(g.player().position / SEG)) % g_longueur + g_longueur) % g_longueur : 0;
+        g.shutdown();
+        setenv("WFS_DEPART", std::to_string(dep).c_str(), 1);
+        auto jouer = [&](int n, int capDe, int capA) {
+            if (!g.init(r, "golf", carte)) return false;
+            g.setAutopilot(true); g.camMode = 0;
+            double t = 2000;
+            for (int i = 0; i < 40; i++) { for (int k = 0; k < 3; k++) g.update(1.0 / 60); t += 0.05; g.render(t); }   // 2 s de mise en route
+            g_mesure.remettre();
+            for (int i = 0; i < n; i++) {
+                for (int k = 0; k < 3; k++) g.update(1.0 / 60);
+                t += 0.05; g.render(t);
+                if (i >= capDe && i <= capA) r.capturePng(std::string(suite) + "/apparition-" + carte + "-" + moment + "-" + std::to_string(i - capDe) + ".png");
+            }
+            return true;
+        };
+        if (!jouer(images, -1, -2)) { WFS_ERR("apparitions : chargement %s impossible", carte); continue; }
+        const Mesure m = g_mesure;
+        WFS_LOG("WFS-257 apparitions %s %s : %d images, %d apparition(s), %d disparition(s), %d saut(s), %d détail(s) brutal(aux) visibles, %d entrée(s) en fondu de près ; "
+                "personnes vues %.1f en moyenne, %d au plus ; affichées au plus %d%s%s", carte, moment, m.images, m.apparitions, m.disparitions,
+                m.sauts, m.detailsBrutaux, m.fondusProches, m.images ? m.vusSomme / m.images : 0.0, m.vusMax, m.affichesMax, m.premier.empty() ? "" : " ; premier : ", m.premier.c_str());
+        total += m.apparitions + m.disparitions; sauts += m.sauts; details += m.detailsBrutaux;
+        g.shutdown();
+        if (suite && m.imagePremier >= 0) {
+            WFS_LOG("WFS-257 suite %s %s : images %d à %d (premier évènement à l'image %d)", carte, moment, m.imagePremier - 3, m.imagePremier + 3, m.imagePremier);
+            jouer(m.imagePremier + 4, m.imagePremier - 3, m.imagePremier + 3);
+            g.shutdown();
+        }
+    }
+    g_mesure.actif = false;
+    unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    WFS_LOG("WFS-257 : apparitions et disparitions visibles : %d ; sauts : %d ; détails brutaux : %d (objectif : 0)", total, sauts, details);
 }
 
 // ---------------------------------------------------------------- WFS-199 : spectateurs (foule allégée, posée une fois)
