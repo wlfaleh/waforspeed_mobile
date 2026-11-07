@@ -36,7 +36,11 @@ struct Wfp {
     uint32_t version = 0, nV = 0, nI = 0; float corps[4] = {};
     std::vector<float> P, N, T;           // positions, normales, tangentes (xyz w)
     std::vector<float> poids;             // 4 par sommet
+    std::vector<float> C;                 // _cloth (bras, hauteur, jambe, partie)
+    std::vector<uint8_t> pal;             // palette d'os (4 par sommet)
+    std::vector<uint32_t> I; std::vector<std::pair<uint32_t, uint32_t>> plagesI;   // WFS-211 : indices, plages (premier, nombre)
     std::vector<std::string> plages, os; std::vector<int> parents; uint32_t nPal = 0, nClips = 0;
+    std::vector<uint32_t> palette;        // os du jeu de chaque entrée de la palette
 };
 static bool lire(const std::string& chemin, Wfp& w) {
     std::ifstream f(chemin, std::ios::binary);
@@ -59,28 +63,38 @@ static bool lire(const std::string& chemin, Wfp& w) {
         w.P.insert(w.P.end(), x, x + 3); w.N.insert(w.N.end(), x + 3, x + 6);
         if (w.version == 3) { float t[4]; std::memcpy(t, s + 32, 16); w.T.insert(w.T.end(), t, t + 4); }
         float p[4]; std::memcpy(p, s + (w.version == 3 ? 52 : 36), 16); w.poids.insert(w.poids.end(), p, p + 4);
+        float c[4]; std::memcpy(c, s + (w.version == 3 ? 68 : 52), 16); w.C.insert(w.C.end(), c, c + 4);
+        w.pal.insert(w.pal.end(), s + (w.version == 3 ? 48 : 32), s + (w.version == 3 ? 52 : 36));
     }
-    o += (size_t)w.nV * pas + (size_t)w.nI * 4;
-    for (uint32_t i = 0; i < nP; i++) { w.plages.emplace_back((const char*)&b[o]); o += 40; }
+    o += (size_t)w.nV * pas;
+    if (o + (size_t)w.nI * 4 > b.size()) return false;
+    w.I.resize(w.nI); std::memcpy(w.I.data(), &b[o], (size_t)w.nI * 4); o += (size_t)w.nI * 4;
+    for (uint32_t i = 0; i < nP; i++) { w.plages.emplace_back((const char*)&b[o]); uint32_t a[2]; std::memcpy(a, &b[o + 32], 8); w.plagesI.push_back({a[0], a[1]}); o += 40; }
     for (uint32_t i = 0; i < nO; i++) { w.os.emplace_back((const char*)&b[o]); int32_t p; std::memcpy(&p, &b[o + 32], 4); w.parents.push_back(p); o += 32 + 4 + 40 + 64; }
     w.nPal = u32();
+    for (uint32_t i = 0; i < w.nPal && i <= 64; i++) w.palette.push_back(u32());
     return o <= b.size();
 }
 
 // mêmes définitions que mesurer() de tools/convert_people_makehuman.py
 struct Mesures { double stature, entrejambe, envergure, menton; };
-static Mesures mesurer(const Wfp& w) {
+// utilise : sommets du niveau de détail mesuré (vide : tous)
+static Mesures mesurer(const Wfp& w, const std::vector<bool>& utilise = {}) {
+    auto pris = [&](uint32_t v) { return utilise.empty() || utilise[v]; };
     double y0 = 1e9, y1 = -1e9, x0 = 1e9, x1 = -1e9;
-    for (uint32_t v = 0; v < w.nV; v++) { y0 = std::min(y0, (double)w.P[v * 3 + 1]); y1 = std::max(y1, (double)w.P[v * 3 + 1]); x0 = std::min(x0, (double)w.P[v * 3]); x1 = std::max(x1, (double)w.P[v * 3]); }
+    for (uint32_t v = 0; v < w.nV; v++) {
+        if (!pris(v)) continue; y0 = std::min(y0, (double)w.P[v * 3 + 1]); y1 = std::max(y1, (double)w.P[v * 3 + 1]); x0 = std::min(x0, (double)w.P[v * 3]); x1 = std::max(x1, (double)w.P[v * 3]); }
     const double st = y1 - y0, cou = w.corps[0] - y0;
     double entre = 1e9, zcou = -1e9, menton = 1e9;
     for (uint32_t v = 0; v < w.nV; v++) {
+        if (!pris(v)) continue;
         const double x = w.P[v * 3], y = w.P[v * 3 + 1] - y0, z = w.P[v * 3 + 2];
         if (std::fabs(x) >= 0.008) continue;
         if (w.N[v * 3 + 1] < -0.5 && y > 0.3 * st && y < 0.6 * st) entre = std::min(entre, y);
         if (y >= cou - 0.02 && y <= cou) zcou = std::max(zcou, z);
     }
     for (uint32_t v = 0; v < w.nV; v++) {
+        if (!pris(v)) continue;
         const double x = w.P[v * 3], y = w.P[v * 3 + 1] - y0, z = w.P[v * 3 + 2];
         if (std::fabs(x) < 0.008 && y > cou - 0.02 && z > zcou + 0.03) menton = std::min(menton, y);
     }
@@ -114,6 +128,33 @@ int main(int argc, char** argv) {
                 && std::find(w.plages.begin(), w.plages.end(), "corps-0") != w.plages.end());
             const Mesures m = mesurer(w);
             st.push_back(m.stature);
+            // WFS-211 (RG-01) : 3 niveaux de détail ; M-01 et M-02 tenus à chacun (sommets réellement dessinés par la plage)
+            int niveaux = 0; bool memes = true;
+            for (int lod = 0; lod < 3; lod++) {
+                const auto it = std::find(w.plages.begin(), w.plages.end(), "corps-" + std::to_string(lod));
+                if (it == w.plages.end()) continue;
+                const auto [a, n] = w.plagesI[(size_t)(it - w.plages.begin())];
+                if ((size_t)a + n > w.I.size() || n == 0) continue;
+                std::vector<bool> u(w.nV, false);
+                for (uint32_t i = a; i < a + n; i++) if (w.I[i] < w.nV) u[w.I[i]] = true;
+                const Mesures l = mesurer(w, u);
+                niveaux++;
+                memes = memes && std::fabs(l.stature / m.stature - 1) < 0.005 && std::fabs(l.entrejambe / m.entrejambe - 1) < 0.005
+                        && std::fabs(l.envergure / m.envergure - 1) < 0.005 && std::fabs(l.menton / m.menton - 1) < 0.005;
+                if (lod > 0) cas(id + " : corps-" + std::to_string(lod) + " allégé (" + std::to_string(n / 3) + " triangles)", n < w.plagesI[0].second * (lod == 1 ? 0.5 : 0.2));
+            }
+            cas(id + " : 3 niveaux de détail, M-01 et M-02 identiques à ± 0,5 % sur chacun", niveaux == 3 && memes);
+            // ANO-111 : aucun sommet de la tête ni du cou dans la zone du haut (hauteur _cloth sous le col : cou + 5 cm)
+            const uint32_t cou = (uint32_t)(std::find(w.os.begin(), w.os.end(), "neck_01") - w.os.begin()),
+                           tete = (uint32_t)(std::find(w.os.begin(), w.os.end(), "Head") - w.os.begin());
+            int teteHabillee = 0;
+            for (uint32_t v = 0; v < w.nV; v++) {
+                const float* pw = &w.poids[v * 4]; const uint8_t* pp = &w.pal[v * 4];
+                float wt = 0;
+                for (int k = 0; k < 4; k++) if (pp[k] < w.palette.size() && (w.palette[pp[k]] == cou || w.palette[pp[k]] == tete)) wt += pw[k];
+                if (wt > 0.5f && w.C[v * 4 + 3] < 0.5f && w.C[v * 4 + 1] <= w.corps[0] + 0.05f) teteHabillee++;
+            }
+            cas(id + " : ANO-111 tête et cou hors du vêtement (" + std::to_string(teteHabillee) + " sommet(s) dans le haut)", teteHabillee == 0);
             mesure(id + " : M-02 entrejambe / stature", m.entrejambe / m.stature, val((std::string("humain.") + sexes[s] + ".ratio_crotchheight").c_str()), 0.02);
             mesure(id + " : M-02 envergure / stature", m.envergure / m.stature, val((std::string("humain.") + sexes[s] + ".ratio_span").c_str()), 0.02);
             mesure(id + " : M-02 tête / stature", (m.stature - m.menton) / m.stature, 1 / 7.5, 0.02);
