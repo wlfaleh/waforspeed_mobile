@@ -4155,3 +4155,30 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-274** (agent arwa) : même panne, corrigée ici ; à son agent de le clore « ↪ Regroupé avec WFS-267 ». La CI de `main` sur 466a4c8 dira si `main` repasse au vert (le robot des statuts passera WFS-267 et WFS-227 en ✅).
 - **Limite connue (signalée au PO)** : quand la caméra reste loin de la voiture plus de 120 images (vues libres de bancs), la sonde est prise comme avant WFS-267 (sans ombre) ; en jeu, cela n'arrive pas (poursuite, Cockpit, garage : point dans la cascade 0).
 - Ligne ajoutée à `qa/Check.md`. Je demande mon ticket suivant au PO.
+
+### 2026-11-07 21:37:22 — WFS-232 : recherche des deux-roues (RG-00, 45 min), 3 modèles CC BY 4.0, téléchargements (arwa-3)
+- **Méthode** : recherche de code GitHub (`"scooter" / "motorcycle" / "vespa" / marques… sketchfab filename:license.txt`), clones partiels en lecture seule dans `/tmp/bac`, rien exécuté, licence lue dans chaque `license.txt`.
+- **Refusés** :
+  - en licence NC-SA : Ducati Streetfighter V4 S, Yamaha YZF 2021, Honda CBR650R, Vespa Mandarinia ;
+  - en licence Sketchfab Standard : « Vespa Scooter » de Marina Belov ;
+  - modèles low-poly ;
+  - Vespa PX125 (alban, CC BY) : relevé photo avec l'éclairage figé dans la texture, matériau « unlit » ;
+  - fichiers Draco de `lxorb/mechanica` : le convertisseur ne lit pas Draco, j'ai pris les originaux ailleurs.
+- **Retenus (CC BY 4.0)** :
+
+  | id | modèle (auteur Sketchfab) | dépôt GitHub (commit) | fichiers, SHA-256 |
+  |---|---|---|---|
+  | scooter | OLA Electric Scooter (neshallads) | `Abhay-s-8/Portfolio` (fcd781b7), `models/ola_electric_scooter_red_color` | scene.gltf 4d9631288fa046e96578e9dd05e16a2a69e6502c935e981fb0ec50a1465e9ef7 ; scene.bin (4 065 328 o) ae11477528ab10f423028fe4be1c2408fbe0f0d5308db478b4d68d06d5dedcfa |
+  | routiere | Honda CB 750 F Super Sport 1970 (Alex.Ka.) | `p-shark/HCAM_project` (c23f055d), `ex09_project/WebContent/image/car/gltf/honda_cb750` | scene.gltf 9c52a72bdf0aca20b8dbb739f0fe8c057da5362f679509dbc3b4e4279537ec13 ; scene.bin (1 579 692 o) 45fb9788d13d0b64d5dca356a7af7d6abfb25fb078d607d3f3ae391df530f05b |
+  | sportive | Kawasaki ninja ZX-6R (valvetin) | `siddharth-vss/CAR-Camera-test` (ea5f593d), `static/kawasaki_ninja_zx-6r` | scene.gltf 0073d7af2b1c76412141729cd77d90aeaa03e191b3780c63ecb97f62c1fc7fa5 ; scene.bin (14 868 588 o) 450dfaa00d3d14147aa62aa76c949aa38b60d12f3dcabb9b8247d82ed1656a2d |
+
+  Le même `scene.bin` de la Honda est dans `KushinoAkira/BanhMi.EXE`, mais seulement comme pointeur LFS : il n'a pas été servi.
+- **Conversion** (branche `feature/waforspeed-232`, 2b6d2c9) :
+  - `.wfm` de 3,1, 2,1 et 5,3 Mo ; 63 k, 37 k et 107 k triangles (la sportive allégée de 335 k) ;
+  - niveaux de détail jusqu'à 3,7 k, 5,3 k et 10,5 k triangles ;
+  - `tools/convert_car.mjs` : nouvelle option `WFS_OPAQUE`, qui traite en alpha découpé les matériaux BLEND mal exportés par Sketchfab.
+- **Dimensions** : `references/reel/deux_roues.json`, statut `a_confirmer` (résumés du moteur de recherche). Écarts de longueur et d'empattement, en ± 1 % :
+  - scooter : 0 / +0,7 % ;
+  - routière : +0,5 % / −0,5 % ;
+  - sportive : −0,9 % / +0,9 % (les proportions du modèle diffèrent du vrai de 1,8 %, écart partagé).
+- **Limite** : roues fixes. La découpe des roues (`roues::decouper`, `model_loader`, `renderer` : 4 roues seulement) est hors de ma zone. Je le propose au PO comme ticket du rendu.
