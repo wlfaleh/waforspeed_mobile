@@ -178,7 +178,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-203 | Correction : de nuit, la Campagne est entièrement blanche (surexposée) | E13 (+ accroche E4 `nuit.cpp`) | ✅ Terminé (CI main #804) | Claude, agent 1 (session 01UY1Vv2), 2026-11-07 00:07 UTC | — | `feature/waforspeed-203` | #174 |  |
 | P2 Haute | WFS-205 | [RÉALISME 2.R1a] Routes (1/2) : revêtements réels calibrés, bibliothèque KTX2, mélange sans répétition | E9 | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 01:17 UTC | WFS-151 ✅ | `feature/waforspeed-205` |  |  |
 | P2 Haute | WFS-206 | [RÉALISME 2.R1b] Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte | E9 (+ accroche `track.cpp`) | ⏳ En attente |  | WFS-205 | `feature/waforspeed-206` |  |  |
-| P2 Haute | WFS-207 | [RÉALISME 1.2a] Lumière (1/2) : soleil et lune calculés, atmosphère physique, brouillard de distance | E13 | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-07 01:43 UTC | WFS-151 ✅ | `feature/waforspeed-207` |  |  |
+| P2 Haute | WFS-207 | [RÉALISME 1.2a] Lumière (1/2) : soleil et lune calculés, atmosphère physique, brouillard de distance | E13 | 🟣 Fusionné (PR #176, fusion par confiance) | Claude, agent 1 (session 01UY1Vv2), 2026-11-07 01:43 UTC | WFS-151 ✅ | `feature/waforspeed-207` | #176 |  |
 | P2 Haute | WFS-208 | [RÉALISME 1.2b] Lumière (2/2) : 6 moments et heure réelle, passage continu, lumières selon l'éclairement, nuages | E13 (+ accroches E8 `terrain.cpp`, E4 `nuit.cpp`) | ⏳ En attente |  | WFS-207 | `feature/waforspeed-208` |  |  |
 
 ## Critères d'acceptation
