@@ -23,11 +23,13 @@ inline bool kFacesValides(const double k[6]) {
 
 // ---- WFS-230 (RG-01) : exposition de nuit selon l'éclairement reçu (lampes + lune + ciel), pas de rayon fixe.
 // Posemètre en lumière incidente à capteur plan : EV100 = log2(E × S / C), S = 100, C = 250 (ISO 2720:1974) : 20 lx (rue
-// éclairée) → EV 3,0 ; 1 lx → −1,3 ; borne −2 atteinte sous 0,63 lx (rase campagne au clair de lune). La borne −2 laisse le
-// paysage au clair de lune (EV mesurée −4,4 à −2,6) environ 1,5 IL sous le gris moyen : sombre mais lisible, pas de « nuit
-// américaine » (avis expert-realisme-3d du 2026-11-07 ; Thompson, Shirley et Ferwerda 2002, « A Spatial Post-Processing
-// Algorithm for Images of Night Scenes », J. Graphics Tools 7(1)) ; DA-realisme.md § 3.
-constexpr double EV_LUNE_MIN = -2.0, C_INCIDENTE = 250.0;
+// éclairée) → EV 3,0 ; 1 lx → −1,3 ; borne basse atteinte sous 0,22 lx (rase campagne au clair de lune) ; Thompson, Shirley et
+// Ferwerda 2002, « A Spatial Post-Processing Algorithm for Images of Night Scenes », J. Graphics Tools 7(1) ; DA-realisme.md § 3.
+// WFS-249 (ANO-128, décision du PO du 2026-11-07) : borne abaissée de −2 à −3,5. Mesuré : à −2, le paysage sous la lune
+// (0,094 lx au sol, lune pleine à 16,8°) sortait 3,1 IL plus sombre que le même paysage à midi (107 250 lx, EV 15), soit 4 à
+// 10 /255 hors phares : noir sur le téléphone (refus de l'utilisateur, WFS-225). À −3,5 : 1,6 IL sous le jour, lisible, et
+// toujours une nuit (les lumières artificielles restent à l'aspect EV 3 : adaptation locale, eclairage_physique.cpp).
+constexpr double EV_LUNE_MIN = -3.5, C_INCIDENTE = 250.0;
 // adaptation locale (RG-03) : sous EV 3, les lumières artificielles gardent l'exposition d'une rue éclairée (eclairage_physique.cpp)
 constexpr double EV_LUMIERES_MIN = 3.0;
 // lampadaire routier : éclairement horizontal sous la lampe 15 lx (classe P1 de l'EN 13201-2:2015, valeur moyenne [à vérifier])
@@ -39,14 +41,14 @@ inline double eclairementLampe(double E0, double d, double h) {
     return E0 / (q * std::sqrt(q));
 }
 // part « rue éclairée » de 0 à 1 selon l'éclairement reçu : 1 à partir de 3 lx (classe la plus faible des routes éclairées, P6 de
-// l'EN 13201-2:2015, ≈ 2 à 3 lx [à vérifier]), 0 sous 0,63 lx (borne −2 du posemètre incident), fondu en log entre les deux
+// l'EN 13201-2:2015, ≈ 2 à 3 lx [à vérifier]), 0 sous 0,63 lx (EV −2 au posemètre incident), fondu en log entre les deux
 constexpr double E_RUE_ECLAIREE = 3.0, E_RASE_CAMPAGNE = 0.625;
 inline double partRue(double eclairement) {
     if (!std::isfinite(eclairement)) return 1;
     const double u = std::clamp(std::log2(std::max(eclairement, 1e-9) / E_RASE_CAMPAGNE) / std::log2(E_RUE_ECLAIREE / E_RASE_CAMPAGNE), 0.0, 1.0);
     return u * u * (3 - 2 * u);
 }
-// exposition de nuit visée : posemètre incident, de −2 (clair de lune) à 5 (rue très éclairée, borne haute de la nuit)
+// exposition de nuit visée : posemètre incident, de −3,5 (clair de lune, WFS-249) à 5 (rue très éclairée, borne haute de la nuit)
 inline double evIncidentNuit(double eclairement) {
     if (!std::isfinite(eclairement)) return EV_REF_NUIT;
     return std::clamp(std::log2(std::max(eclairement, 1e-9) * 100.0 / C_INCIDENTE), EV_LUNE_MIN, EV_NUIT_MAX);
