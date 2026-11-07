@@ -90,6 +90,11 @@ struct Ghost {
     double rd = 0, x = 0, h = 0, v = 0, ft = 0, hitCd = 0;    // distance lissée, écart latéral, cap, vitesse, arrivée (ms)
     int b = 0; bool done = false;
     std::string name, car, paint;
+    // WFS-221 (accroche) : état avant le dernier pas (rendu interpolé, GameView::alpha ; saut > 20 m : pas d'interpolation)
+    double rdPrec = 0, xPrec = 0;
+    void noterPas() { rdPrec = rd; xPrec = x; }
+    double rdRendu(double a) const { return std::abs(rd - rdPrec) * M > 20 ? rd : rdPrec + (rd - rdPrec) * a; }
+    double xRendu(double a) const { return std::abs(rd - rdPrec) * M > 20 ? x : xPrec + (x - xPrec) * a; }
 };
 
 enum class Status { Lobby, Ready, Race, Done };

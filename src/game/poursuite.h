@@ -76,6 +76,7 @@ int policeVoulue(double distKm);
 // ---- RG-03 : une voiture de police (distance rd en unités comme Player::dist, x en demi-largeurs de route, v en unités/s)
 struct Police {
     double rd = 0, x = 0, v = 0, hitCd = 0;
+    double rdPrec = 0, xPrec = 0;     // WFS-221 (accroche) : état avant le dernier pas (rendu interpolé)
     double cibleX = 0;
     int role = 0;                     // 0 : derrière (pousse), 1 : à gauche, 2 : à droite
     bool fixe = false;                // barrage (RG-05) : immobile
