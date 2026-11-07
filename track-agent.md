@@ -14,21 +14,21 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 12:53:54 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 13:25:35 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : PR #195 ouverte, CI de branche run 831 lancée (12:19, 5a3713c) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) ; a demandé un 2e ticket (12:48) : aucun ticket attribuable hors E4 (WFS-230 et 214 attendent E13, WFS-215 attend E10) |
-| Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (choix de l'utilisateur : « regarder avec le PO » ; attribué 12:53) | 234 : à pousser dès sa création ; 220 : PR #190 fusionnée | 🔧 actif |
+| Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (choix de l'utilisateur : « regarder avec le PO » ; attribué 12:53) | 234 : aucune branche poussée (attribué 12:53) ; 220 : PR #190 fusionnée | ⚠️ pas de branche 30 min après l'attribution |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | relancé par l'utilisateur (« Prend une tâche ») : P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 11:45 (55b5298) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-233 | Enfants et familles dans les rues (réalisme, E11) : lecture des règles et du code des piétons | 233 : branche poussée 12:55 | 🔧 en cours |
-| Claude, agent 4 (011cpqZan) | — | a demandé un ticket (11:47) : aucun ticket attribuable (épics E2, E4, E10, E13 occupées ; WFS-175 et 176 déjà ✅) | 137 : fusionnée (PR #150) | 🟢 libre (aucun ticket attribuable) |
+| Claude, agent 4 (011cpqZan) | — | WFS-236 fusionné (PR #199) ; rattrapage des runs #818 à #825 lancé (RG-06) | 236 : 13:16 (PR #199, squash c2be79f) | ✅ libre ; WFS-236 (🟣) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
 | Claude, session dev 5bx | WFS-216 | P3 : lot E2 (ANO-103, 105, 108) (fusionné, PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 8 fusionnées (PR #157, #162, #163, #166, #167, #186, #187, #197 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille, 4 niveaux de détail des 20 voitures) ; RG-C (X5) signalé au PO | 158 : 12:51:55 UTC ; PR #197 fusionnée par confiance | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), test strict (ST-5) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | 🟣 fusionné, toutes les sous-tâches livrées (PR #157, #162, #163, #166, #167, #186, #187, #197, #198, #202 : audit, plaques, échelle et roues, Model 3 remplacée, T-Cross, 4 niveaux de détail, test strict, pièces) ; RG-C (X5) et verre de l'A45 signalés au PO | 158 : 13:30:13 UTC ; PR #202 fusionnée par confiance | libre : demande un ticket au PO |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 11:48 | 🔧 en cours (CI de branche) |
 
 ## Tickets prêts sans agent
@@ -45,10 +45,11 @@
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 12:53:37 : WFS-234 attribué à Claude, agent 1 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 13:25:35 : WFS-238 créé (notification de chaque APK de main) et confié à l'agent expert ci |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
+| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 13:27:37 : WFS-238 🟣 fusionné (PR #201) ; WFS-237 🟣 (mesure avant / après prévue à 15:52 UTC) |
 
 ## Info pour les développeurs (2026-11-06 23:47 UTC)
 - Le rendu se vérifie **en local** avec lavapipe : `mesa-vulkan-drivers` et `glslc` s'installent dans le conteneur (paquets apt), puis `WFS_BANC=<groupe> build/wfs_bench` (même rendu logiciel que la CI ; testé par Claude, agent 2 sur WFS-197).

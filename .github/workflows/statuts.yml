@@ -4,6 +4,9 @@
 # Le script est tools/qa/statuts.py (test : tools/qa/test_statuts.py). Il ne modifie que TACHES.md, track-agent.md et
 # journal.md : ces .md sont dans paths-ignore de build.yml, et un envoi fait avec GITHUB_TOKEN ne lance aucun workflow :
 # le commit du robot ne relance pas la CI.
+# WFS-236 : un run « cancelled » dont seuls les jobs publication-* ont été annulés, avant d'avoir démarré, et dont tous les
+# autres jobs sont verts compte comme vert (liste des jobs lue ici, décision dans statuts.py). Lancement à la main
+# (workflow_dispatch, run_id) : rattrapage d'un run de main déjà terminé (RG-06).
 name: Statuts automatiques
 
 on:
@@ -11,6 +14,11 @@ on:
     workflows: ["Construction WaForSpeed"]
     types: [completed]
     branches: [main]
+  workflow_dispatch:   # WFS-236 (RG-06) : rattrapage d'un run de « Construction WaForSpeed » sur main déjà terminé
+    inputs:
+      run_id:
+        description: "Identifiant du run de build.yml sur main à traiter (nombre de l'adresse …/actions/runs/<id>)"
+        required: true
 
 permissions:
   contents: write   # un commit « (robot statuts) » sur main
@@ -23,7 +31,7 @@ concurrency:
 jobs:
   statuts:
     runs-on: ubuntu-24.04
-    if: github.event.workflow_run.head_branch == 'main'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.head_branch == 'main'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,7 +41,7 @@ jobs:
       - name: Statuts des tickets (🟣 → ✅ si le run est vert)
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
           RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
           RUN_SHA: ${{ github.event.workflow_run.head_sha }}
           CONCLUSION: ${{ github.event.workflow_run.conclusion }}
@@ -42,17 +50,36 @@ jobs:
           set -u
           git config user.name "robot statuts"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then   # WFS-236 (RG-06) : run donné à la main
+            case "$RUN_ID" in ''|*[!0-9]*) echo "::error::statuts : run_id « $RUN_ID » n'est pas un nombre"; exit 1;; esac
+            INFO=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID" \
+                   --jq '[.name, .head_branch, .status, (.conclusion // ""), (.run_number|tostring), .head_sha, .event] | join("\t")')
+            IFS=$'\t' read -r NOM BRANCHE ETAT CONCLUSION RUN_NUMBER RUN_SHA EVENEMENT <<< "$INFO"
+            if [ "$NOM" != "Construction WaForSpeed" ] || [ "$BRANCHE" != "main" ] || [ "$ETAT" != "completed" ]; then
+              echo "::error::statuts : le run $RUN_ID n'est pas un run terminé de « Construction WaForSpeed » sur main ($NOM, $BRANCHE, $ETAT)"
+              exit 1
+            fi
+            echo "statuts : rattrapage du run #$RUN_NUMBER ($CONCLUSION, $EVENEMENT, $RUN_SHA)"
+          fi
           # RG-03 : jobs en échec du run (vide si le run est vert)
           JOBS=""
+          JOBS_JSON=""
           if [ "$CONCLUSION" != "success" ]; then
             JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs?per_page=100" \
                    --jq '[.jobs[] | select(.conclusion == "failure" or .conclusion == "timed_out") | .name] | join(", ")' || true)
+          fi
+          # WFS-236 (RG-01) : run annulé : tous les jobs (toutes les pages, avec leurs étapes), un objet JSON par ligne ;
+          # en cas d'erreur, fichier vide : statuts.py ne traite pas le run (RG-05 d)
+          if [ "$CONCLUSION" = "cancelled" ]; then
+            JOBS_JSON="$RUNNER_TEMP/jobs-$RUN_ID.json"
+            gh api --paginate "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs?per_page=100" --jq '.jobs[]' \
+               > "$JOBS_JSON" || : > "$JOBS_JSON"
           fi
           # RG-06 : un seul commit ; s'il croise un autre envoi, on repart de main à jour et on recalcule (5 essais)
           for essai in 1 2 3 4 5; do
             git fetch -q origin main && git reset -q --hard origin/main
             python3 tools/qa/statuts.py --run-number "$RUN_NUMBER" --sha "$RUN_SHA" --conclusion "$CONCLUSION" \
-                    --evenement "$EVENEMENT" --jobs-en-echec "$JOBS" --depot .
+                    --evenement "$EVENEMENT" --jobs-en-echec "$JOBS" ${JOBS_JSON:+--jobs-json "$JOBS_JSON"} --depot .
             if git diff --quiet -- TACHES.md track-agent.md journal.md; then echo "statuts : rien à envoyer"; exit 0; fi
             git add TACHES.md track-agent.md journal.md
             git commit -q -m "Statuts automatiques : CI main #$RUN_NUMBER ($CONCLUSION) (robot statuts)"
