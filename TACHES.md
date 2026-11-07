@@ -160,7 +160,10 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-211 | [RÉALISME 4.P1a-2] Personnages (2/3) : 3 niveaux de détail, peau (M-03), humains réalistes chez les conducteurs | E11 | ⏳ En attente |  | WFS-209, WFS-73 | `feature/waforspeed-211` |  |  |
 | P2 Haute | WFS-210 | [RÉALISME 4.P1b] Personnages (3/3) : vêtements par lieu, peau translucide, cheveux et yeux | E11 | ⏳ En attente |  | WFS-209 | `feature/waforspeed-210` |  |  |
 | P1 Urgent | WFS-212 | Correction : rien sur la chaussée (place de la fontaine Ville, végétation rond-point Campagne, sol épingle Plage) | E2 | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 06:53 UTC | — | `feature/waforspeed-212` |  |  |
-| P1 Urgent | WFS-213 | Correction : écran blanc après le chargement d'une voiture (exposition de WFS-151) | E13 | ⏳ Prêt (dès que E13 est libre) |  | — | `feature/waforspeed-213` |  |  |
+| P1 Urgent | WFS-213 | Correction : écran blanc après le chargement d'une voiture (exposition de WFS-151) | E13 | ⏳ Prêt — 1er ticket de E13, avant tout autre (dès la fin de WFS-208) |  | — | `feature/waforspeed-213` |  |  |
+| P2 Haute | WFS-214 | Correction (lot E13) : ciel en paliers, chaussée bleue en Ultra (ANO-109, ANO-106) | E13 | ⏳ En attente |  | WFS-213 | `feature/waforspeed-214` |  |  |
+| P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport (ANO-107, ANO-110) | E10 | ⏳ Prêt (dès que E10 est libre) |  | — | `feature/waforspeed-215` |  |  |
+| P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | ⏳ En attente |  | WFS-212 | `feature/waforspeed-216` |  |  |
 
 ## Critères d'acceptation
 
