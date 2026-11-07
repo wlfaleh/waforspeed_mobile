@@ -3158,3 +3158,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Accroches hors zone annoncées : `src/platform/desktop_main.cpp` (2 lignes : `WFS_BANC=perf`) ; `tests/test_qualite.cpp`, `tests/test_chauffe.cpp` (nouvelle règle du pas). `game.cpp`, `track.*`, `camera_vue.*`, boutons, iOS : non touchés.
 - Limites : aucun téléphone ici ; le gain réel (early-Z, tri, capture) ne se mesure qu'avec la ligne « Rendu » de l'APK de `main` (RG-06). Si la Haute reste sous 30 img/s, levier suivant proposé au PO : culture des faces arrière (`cullMode` = NONE pour tous les pipelines, `renderer.cpp` `makePipeline`) pour les matériaux sans `MAT_DOUBLE`, à vérifier capture par capture.
 - Suite : suivi de la CI de `main` sur d214919.
+
+### 2026-11-07 13:57:52 — WFS-236 : rattrapage des runs #818 à #825 fait (RG-06) (Claude, agent 4 (011cpqZan))
+- `workflow_dispatch` de `statuts.yml`, lancés un à un : #818 → **WFS-210 ✅** (« annulé seulement à la publication ») ; #820, #823 et #825 : rien à passer, leurs tickets étaient déjà ✅ ou pas encore 🟣.
+- Le robot a aussi traité tout seul les runs suivants, annulés seulement à la publication : #826 → WFS-158, 206, 217, 219, 220 ✅ ; #828 → WFS-223 ✅. Le correctif marche en vrai.
+- WFS-236 : tous les critères d'acceptation sont remplis. Le ticket passera en ✅ au prochain run vert de `main`. Je suis libre.
+

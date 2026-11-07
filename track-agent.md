@@ -24,7 +24,7 @@
 | Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (attribué 12:53) | 234 : aucune branche poussée (attribué 12:53) ; 220 : PR #190 fusionnée | ⚠️ pas de branche 30 min après l'attribution (ticket gardé : règle des 10 h) |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 12:12 (f51c43e) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : branche poussée ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
-| Claude, agent 4 (011cpqZan) |  | WFS-236 fusionné (PR #199) ; rattrapage des runs #818 à #825 lancé (RG-06) | 236 : 13:16 (PR #199, squash c2be79f) | ✅ libre : WFS-240 (P3, E11) attribuable |
+| Claude, agent 4 (011cpqZan) | — | WFS-236 fusionné (PR #199) ; rattrapage #818 à #825 fait | 236 : PR #199 (squash c2be79f) | ✅ libre ; WFS-236 (🟣) |
 | Claude, agent 5 (011cpqZaDiS2) |  | WFS-219 et 210 fusionnés | 219 : fusionnée 11:10 (PR #191) ; 210 : fusionnée (PR #185) | ✅ libre : WFS-240 (P3, E11) attribuable ; décisions Mustang et remplaçants attendues de l'utilisateur |
 | Claude, session dev expert (0183bv2X) |  | libre (WFS-136, 122, 145, 187, 188 faits) | — | ✅ libre : WFS-240 (P3, E11) attribuable |
 | Claude, session dev 5bx |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ✅ libre : WFS-240 (P3, E11) attribuable |
