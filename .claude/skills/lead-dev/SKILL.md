@@ -32,7 +32,8 @@ qu'aucune catastrophe visible n'arrive plus jusqu'à l'APK.
    Interface : style `design-street-racing`, aucun bouton changé de taille ni de place.
 6. **Règles de gestion et critères** du ticket : couverts, preuves au journal. Si les critères sont remplis mais que l'image ne répond pas à
    la demande de l'utilisateur, **la demande gagne** : REFUS, et tu le signales au PO (critère mal écrit).
-7. **Hygiène** : branche synchronisée avec `main`, tests CPU verts et parcours 0 écart (journal du développeur), aucun fichier hors zone,
+7. **Description de la PR** (règle de l'utilisateur, 2026-11-07) : elle commence par « Agent : <nom dans `track-agent.md`> » et contient une description complète (demande de l'utilisateur, ce qui change, vérification, limites) ; un « À REMPLIR » restant, un nom d'agent absent ou faux → REFUS « description ».
+8. **Hygiène** : branche synchronisée avec `main`, tests CPU verts et parcours 0 écart (journal du développeur), aucun fichier hors zone,
    aucun fichier iOS, checklist `references/checklist-livraison.md` du skill `agent-developer` faite.
 
 ## Ta décision
