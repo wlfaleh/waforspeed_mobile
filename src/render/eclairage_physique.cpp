@@ -366,7 +366,7 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 
 const Etat& etat() { return g.etat; }
 // WFS-230 (RG-04) : exposition k pour la vision de nuit de la passe finale (post.frag) ; 0 de jour ou sans éclairage physique
-float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.nuit ? (float)g.k : 0.f; }
+float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.moment == (int)atmosphere::Moment::Nuit ? (float)g.k : 0.f; }   // heure bleue : inchangée (RG-05)
 void forcer(const Forcage& f) { g.forc = f; }
 void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
     g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
@@ -515,7 +515,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // ne suivent l'exposition que jusqu'à EV 3 (rue éclairée) ; en dessous (clair de lune), elles restent comme à EV 3 : le paysage
     // se lit au clair de lune sans que les phares et les lampes ne deviennent « tout blanc » (Thompson, Shirley et Ferwerda 2002 :
     // l'œil adapté à la nuit ne voit pas les lampes brûlées). De jour (EV ≥ 10), rien ne change (RG-05).
-    const double kLumieres = nuit ? exposition(std::max(g.ev, EV_LUMIERES_MIN)) : k;
+    const double kLumieres = lune ? exposition(std::max(g.ev, EV_LUMIERES_MIN)) : k;   // heure bleue et jour : inchangés (RG-05)
     const double facteur = expOrig * kLumieres / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
     // ---- ciel, sol, brouillard (cd/m²)
     // WFS-207 (RG-02) : de jour, teintes du ciel tirées de l'atmosphère (zénith, horizon) ; la nuit, celles de la carte (lot 2)
