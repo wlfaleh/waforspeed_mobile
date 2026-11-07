@@ -3,6 +3,7 @@
 // Le jeu (thread principal) demande un son par une file sans verrou ; le thread audio (AAudio, WFS-10) le mélange
 // au moteur. Sur le banc d'essai PC (pas de carte son) chaque son demandé écrit « SFX <nom> » au journal (RG-11).
 #pragma once
+#include "sons_conduite.h"   // WFS-255
 #include <atomic>
 #include <cstdint>
 #include <vector>
@@ -88,7 +89,8 @@ private:
     const Course* c_ = nullptr;
     int count_ = -1, level_ = 0, accidents_ = 0, near_ = 0, bumps_ = 0, scrapes_ = 0, state_ = 0;
     int chrono_ = 0, combo_ = 0;   // WFS-124 : valeur entière affichée du chrono, combo au pas précédent
-    bool crisse_ = false, nitro_ = false;
+    bool crisse_ = false, nitro_ = false, abs_ = false;
+    sonsconduite::Calcul calcul_;   // WFS-255 : crissement, freins, ABS de la conduite réaliste
     bool route_ = false; double journalRoute_ = 0;   // WFS-174 : sons de la route en cours, dernière ligne de journal
 };
 

@@ -235,7 +235,7 @@ void SfxEvenements::update(double dt, const GameView& g, SfxMixer& m) {
     }
     if (!c || !enCourse) {
         if (c) resync(*c);
-        if (crisse_ || nitro_) m.setBoucles(0, 0);
+        m.setBoucles(0, 0); abs_ = false;   // WFS-255 : toujours (la pulsation de l'ABS reste sous le seuil de crisse_)
         crisse_ = nitro_ = false;
         if (route_) { m.setRoute({}); route_ = false; WFS_LOG("SFX route coupée"); }   // WFS-174 (RG-07) : menus, garage, pause
         return;
@@ -277,12 +277,26 @@ void SfxEvenements::update(double dt, const GameView& g, SfxMixer& m) {
     const Player& pl = *g.player;
     const double vms = std::abs(pl.speed) * M;
     const bool joue = c->playing();
-    const bool crisse = joue && ((pl.braking && vms > 18) || std::abs(pl.spinYaw) > 0.3 || (std::abs(pl.latAcc) > Phys::grip * 0.92 && vms > 20));
     const bool nitro = joue && pl.nitroOn;
+    if (pl.modeleMonde()) {   // WFS-255 (RG-01, RG-02) : crissement selon le glissement réel des pneus, freins, pulsation de l'ABS
+        sonsconduite::Entree e;
+        e.vms = vms; e.sigmaAv = pl.monde.sigmaAv; e.sigmaAr = pl.monde.sigmaAr; e.abs = pl.monde.absActif;
+        e.freine = pl.braking; e.decel = std::max(0.0, -pl.lonAcc);
+        float gc = joue ? calcul_.crissement(dt, e) : 0.f;
+        if (joue && std::abs(pl.spinYaw) > 0.3) gc = sonsconduite::GAIN_MAX;   // tête-à-queue après un accident
+        const bool crisse = gc > 0.15f;
+        if (crisse && !crisse_) WFS_LOG("SFX crissement (glissement %.2f / %.2f%s)", e.sigmaAv, e.sigmaAr, e.abs ? ", ABS" : "");
+        if (e.abs && !abs_) WFS_LOG("SFX ABS");
+        if (nitro && !nitro_) WFS_LOG("SFX nitro");
+        m.setBoucles(gc, nitro ? 0.4f : 0.f);   // chaque pas : volume continu (atomique), pulsation de l'ABS
+        crisse_ = crisse; nitro_ = nitro; abs_ = e.abs;
+    } else {
+    const bool crisse = joue && ((pl.braking && vms > 18) || std::abs(pl.spinYaw) > 0.3 || (std::abs(pl.latAcc) > Phys::grip * 0.92 && vms > 20));
     if (crisse && !crisse_) WFS_LOG("SFX crissement");
     if (nitro && !nitro_) WFS_LOG("SFX nitro");
     if (crisse != crisse_ || nitro != nitro_) m.setBoucles(crisse ? 0.35f : 0.f, nitro ? 0.4f : 0.f);
     crisse_ = crisse; nitro_ = nitro;
+    }
 
     {   // WFS-174 : sons de la route (RG-01 à RG-07) ; en course seulement, toutes les courses ; « Son : Coupé » : setMuted / réglage
         route::Entree e;
