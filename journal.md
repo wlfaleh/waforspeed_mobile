@@ -3318,3 +3318,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes, WFS_BANC=conduite), `.github/workflows/build.yml` (1 ligne, groupe ecrans-2400), `CMakeLists.txt` (1 ligne, test_conduite).
 - Téléchargement (contrôle de syntaxe local, rien exécuté, rien dans le dépôt) : https://github.com/KhronosGroup/Vulkan-Headers étiquette v1.3.290, licence Apache-2.0, commit b379292b2ab6df5771ba9870d53cf8b2c9295daf.
 - **CI de branche** : run 845 (workflow_dispatch de build.yml, branche synchronisée avec main 5f97871) : vérifie compilation, APK, tous les bancs (parcours, captures avec le pilote automatique) et les vidéos `conduite-*`.
+
+### 2026-11-07 15:06:48 — WFS-224 repris à l'agent 4, stoppé par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur : l'agent 4 (Claude, 011cpqZan) est stoppé ; ne plus lui attribuer de ticket.
+- `feature/waforspeed-224` ne contient que le commit de début (533e360, aucun code) : la branche est gardée, le ticket repart ⏳ Prêt, en tête de l'ordre de priorité, pour le premier développeur qui demande (pas l'agent 4).
