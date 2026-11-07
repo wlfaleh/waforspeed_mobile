@@ -211,9 +211,17 @@ void Player::synchroniser(Track& t) {
         v = monde.v() * k; r = monde.r * k;
     }
     const TrackPoint C = t.pointLisse(dist, playerX * RW);
+    const double xAvant = sX_;
     monde.x = C.x; monde.z = C.z; monde.cap = C.th + heading; monde.r = r;
     const double sn = std::sin(monde.cap), cs = std::cos(monde.cap);
     monde.vx = u * sn + v * cs; monde.vz = -u * cs + v * sn;
+    // WFS-256 (RG-04) : un système a écarté la voiture sur le côté (contact avec une voiture du trafic, un adversaire, la
+    // police) : la vitesse qui la ramène vers ce contact est annulée (contrainte de contact), sinon elle y rentre au pas suivant
+    if (mondeOk_ && playerX != xAvant) {
+        const double sens = playerX > xAvant ? 1.0 : -1.0, nx = std::cos(C.th) * sens, nz = std::sin(C.th) * sens;
+        const double vn = monde.vx * nx + monde.vz * nz;
+        if (vn < 0) { monde.vx -= vn * nx; monde.vz -= vn * nz; }
+    }
     if (!mondeOk_) monde.rapport = 1;
     mondeOk_ = true;
 }
