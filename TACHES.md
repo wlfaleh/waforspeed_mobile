@@ -217,6 +217,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-269 | [TECHNIQUE] [URGENT] Tout préparer au chargement (2/2) : éclairage du décor fixe précalculé (occlusion, lumière indirecte, par moment de la journée) | E13 + E4 | ⏳ En attente (après WFS-268 ; E13 tenue par WFS-230) |  | WFS-268 fusionné ; **pas** agent arwa | `feature/waforspeed-269` |  |  |
 | P1 Urgent | WFS-270 | Correction (lot E10, QA) : voitures visibles la nuit hors des lampadaires (voiture du joueur noire en Campagne) (ANO-147 ; + ANO-148) | E10 (exception PO : peinture et vernis de nuit seuls, en parallèle de WFS-235 d'arwa-2 ; + accroches ≤ 10 lignes banc de nuit) | 🔧 En cours (🟡 à valider par l'utilisateur après fusion) | agent arwa (Claude, session trafic), 2026-11-07 18:00 UTC | — (coordination WFS-230, agent 1) | `feature/waforspeed-270` |  |  |
 | P2 Haute | WFS-271 | Correction (lot E2, QA) : raccords des ronds-points (plaque sombre, traits blancs isolés, piéton sur l'îlot) (ANO-142, 143, 144) | E2 | ⏳ Prêt |  | WFS-248 🟡 | `feature/waforspeed-271` |  |  |
+| P2 Haute | WFS-272 | [RÉALISME] Son des autres voitures : adversaires, trafic et police placés (gauche / droite, Doppler) | E6 (+ lecture E3, accroches ≤ 10 lignes) | 🔧 En cours | arwa-4 (Claude, session 01Us6uCw), 2026-11-07 18:10 UTC | WFS-261 🟣 | `feature/waforspeed-272` |  |  |
 
 ## Critères d'acceptation
 
