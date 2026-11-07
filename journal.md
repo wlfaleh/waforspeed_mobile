@@ -2319,3 +2319,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-138** PASSABLE AVEC ANOMALIES MINEURES (ANO-103 : col peu reconnaissable) ; **WFS-171** VALIDÉ ; **WFS-139** PASSABLE AVEC ANOMALIES MINEURES (ANO-104 : trou du terrain dans une épingle, vue de dessus) ; **WFS-139 correctif** VALIDÉ ; **WFS-184** VALIDÉ (mesures, wav non écoutés) ; **WFS-180** PASSABLE AVEC ANOMALIES MINEURES (ANO-105 : foule et bateaux invisibles) ; **WFS-140** VALIDÉ.
 - WFS-88 (iOS, gel) laissé ☐ sans rien lancer.
 - Rapports `qa/rapports/WFS-XX.md`, cases cochées dans `qa/Check.md`, ANO-103 à 105 au tableau `anno.md` (🆕, pour le PO).
+
+### 2026-11-07 05:59:13 — Recette de nuit, lot 2 : WFS-150 (+ correction), 183, 178, 137, 187, 145, 181, 185, 188, 175 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55), journaux `endurance` / `texte` du run 807, `test_conduite_libre` en local.
+- **WFS-150** PASSABLE AVEC ANOMALIES MINEURES (ANO-106 : chaussée bleue en Ultra) ; **WFS-150 correction** VALIDÉ ; **WFS-183** VALIDÉ ; **WFS-187** VALIDÉ ; **WFS-145** VALIDÉ ; **WFS-181** VALIDÉ ; **WFS-185** VALIDÉ ; **WFS-188** VALIDÉ ; **WFS-175** VALIDÉ.
+- **WFS-178 REFUSÉ** (bloquante) : `carte-campagne-rondpoint` : touffes d'herbe et buissons en travers de la chaussée à l'entrée du rond-point du village (déjà sur `apercu-waforspeed-178`).
+- **WFS-137 REFUSÉ** (bloquante) : `carte-ville-fontaine` / `-nuit` : la voiture roule sur le dallage de la place de la fontaine, posé sur la chaussée (aucune ligne), fontaine hors cadre.
+- **Pour le PO (`po-scrum-master`)** : deux tickets de correction prioritaires à créer (Campagne : végétation sur la chaussée au rond-point du village ; Ville : place de la fontaine sur la chaussée). Détail et correction proposée dans les rapports.
