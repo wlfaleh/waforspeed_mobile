@@ -13,6 +13,7 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <string>
 #include "../core/ecran.h"
 #include "../core/math.h"
 #include "../core/configgame.h"   // WFS-128
@@ -85,6 +86,9 @@ bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& ca
 // (volant et aiguille en radians, fov = champ de vision vertical de l'image, en degrés)
 struct EtatCockpit { bool actif = false; float volant = 0, aiguille = 2.2f, fov = 58.f; };
 const EtatCockpit& etatCockpit();
+// WFS-197 : banc d'essai des intérieurs par modèle (captures cockpit-*.png dans outDir), puis g.shutdown()
+class Game; class Renderer;
+void benchCockpit(Game& g, Renderer& r, const std::string& outDir);
 // centre du bouton de vue posé à la dernière image (banc d'essai : appui simulé) ; false s'il n'est pas affiché
 bool boutonVue(float& cx, float& cy);
 

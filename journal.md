@@ -2888,3 +2888,48 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Règles** : `regles-de-gestion/WFS-186.md` (RG-01 à RG-05, + RG-02 / RG-C4 de WFS-138) ; source : dépôts GitHub publics (`.claude/skills/waforspeed-natif/references/modeles-3d-github.md` § 5, piste CC0 `trebeljahr/quaternius-showcase`), licence lue dans le fichier de la source, journal (dépôt, licence, SHA-256) ; choix réaliste avec `expert-realisme-3d`.
 - **Critères** : troupeaux en modèles réels visibles de jour et de nuit, tailles réelles ±1 %, aucun animal sur la route, aucune boîte, parcours complet 0 écart, ligne `qa/Check.md`.
 - **WFS-199** : limite des poses fixes (16 instances animées par image, `SKIN_MAX_INSTANCES`) dite à l'utilisateur dans `tache utilisateur.md` ; aucun ticket E0 créé sans sa demande (il demandait de vrais spectateurs, c'est livré).
+
+### 2026-11-06 23:39:20 — Statuts automatiques, CI main #795 (robot statuts)
+- Run rouge (push, commit edb17c0), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
+
+### 2026-11-06 23:44:56 — Fusion WFS-197 : vue cockpit réaliste, lot 1 (Claude, agent 2 (01UY1Vv5))
+- Fait : PR #169, squash 2cb114b, fusion par confiance.
+  - Intérieurs Golf, M4, 911 et SF90 : planche avec un creux sous la visière du combiné, aérateurs chromés (alu sur la 911), console, montants, rétroviseur, contre-portes.
+  - Volant du modèle : jante en D, grain du cuir en normal map, coutures M, boutons M1/M2, manettino, palettes.
+  - Combiné par marque, avec les vraies valeurs du jeu.
+  - Carte sur l'écran central ; pour la SF90, dans le combiné.
+  - Essuie-glaces sur la pluie de la météo.
+  - Hauteur d'œil par modèle.
+- CI de branche (run 789, la seule permise) : elle a montré trois défauts, corrigés depuis.
+  1. Combiné caché par le haut de la planche.
+  2. Nuit et pluie non lues : je lisais `GameView::night`, et le banc effaçait `WFS_MOMENT` ; la météo lit `WFS_MOMENT` à chaque image.
+  3. Moyeu trop clair (grain sans uv).
+  Les corrections ont été vérifiées **en local avec lavapipe** (mesa-vulkan-drivers et glslc installés dans le conteneur : même rendu logiciel que la CI), sans seconde CI de branche.
+  Le job `realisme` du run 789 était rouge à cause du banc des passes de WFS-150, déjà rouge sur main (WFS-200 en cours) : pas lié à ce ticket.
+- Mesures RG-08 (banc `cockpit`, 1280x720) :
+  - 27 à 32 appels de dessin par intérieur (cockpit commun : 7) ;
+  - 1,21 à 1,23 Mo par intérieur (maillages, écrans dynamiques, grain 256 × 256), construit une seule fois par voiture ;
+  - aucune allocation par image (tampons des écrans de capacité fixe).
+  - Fluidité en Basse **non mesurée sur téléphone** : +20 à +25 appels de dessin, sous la limite de 40.
+- RG-09 : `WFS_BANC=parcours` en local : « parcours complet : 0 écart(s) OK » et « parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK ».
+- Banc `cockpit`, durée en local : 4 min 30 s. Dans la CI, le job `partie2c` passera d'environ 3 à environ 9 minutes (la boucle d'attente des balais ne fait plus de rendu).
+- Fidélité : **non mesurable** (cotes E ou AC, sources au journal de 21:46 et dans `vehicule_cockpit_defs.cpp`). Pour passer en V : hauteur des yeux en position assise (ANSUR-II) dans `anthropometrie.json`, photos cotées depuis la place du conducteur, et deux sites de pièces à autoriser par le PO (`eurospares.co.uk`, `wipersizechart.com`).
+- Limites : boutons rouges de la SF90 un peu lilas (rien n'ombre l'habitacle sous le ciel) ; pas de gouttes sur le pare-brise (le jeu n'en a pas). Lots 2 et 3 : à créer par le PO.
+
+### 2026-11-06 23:47:27 — WFS-150 : rouge `banc-essai (realisme)` des runs 790 et 791 corrigé (agent arwa, session trafic)
+- Écart exact : banc des passes, M-01 nuit face +X : 0,0159 contre 0,0161 (**-1,50 %**, tolérance ± 1 %) ; les 11 autres faces conformes. Même valeur aux runs 790 (e622b04) et 791 (00bd580), reproduite à l'identique en local (lavapipe).
+- Cause : vert au run 782 (5ed39ec, nuit +X à -0,17 %). Depuis, la Ville (WFS-176) a mis une vitrine très claire au bord de la face +X du point de capture (luminance de la face 0,0108 → 0,0161). La face de 256 px est rendue à **un échantillon par texel**, la scène de référence en MSAA ×4 à 720 px : sur les arêtes d'un objet très clair, le recouvrement partiel d'un texel est perdu (ex. colonne 248 : 0,033 contre 0,067). Preuve : la scène seule, échantillonnée sur la même grille de 256 px, s'écarte déjà de -2,14 % de sa propre moyenne. Le défaut est dans la capture (WFS-150), pas dans WFS-176 : aucun code d'un autre ticket à corriger.
+- Correction (`src/render/environnement.cpp`, `.h`) : chaque face est rendue à 2 × 2 fois sa taille (512 px en Ultra) puis réduite dans le cube par un blit linéaire 2:1 (moyenne exacte de 2 × 2 texels) : un texel vaut la luminance moyenne de son angle solide. Une seule cible suréchantillonnée pour les 6 faces (Ultra : 3 Mo de plus ; Haute 0,75 ; Basse 0,19). Coût : rendu de la face ×4 pixels, seulement pendant les 6 images d'une capture demandée (jamais à chaque image). Aucun seuil changé.
+- Vérification locale (branche synchronisée avec `main`) : `WFS_BANC=realisme` complet avec les couches de validation Vulkan : **0 erreur de validation**, banc des passes **0 écart**, M-01 jour de -0,37 % à +0,07 %, nuit de -0,89 % à +0,03 % (nuit +X : -0,89 %, marge mince : à surveiller). Indice lumière (WFS-151) 100 %. Les 2 erreurs restantes du banc local sont les textures d'essai KTX2 absentes (étape `ci_textures.sh` de la CI, non lancée ici). Tests CPU : 37 / 37.
+- Limites : non construit pour Android en local ; `realisme-cubemap-essai` change (faces lissées), à regarder.
+
+### 2026-11-06 23:47:59 — WFS-201 et WFS-202 créés (lots 2 et 3 de WFS-195), WFS-201 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- Suite de la fusion de WFS-197 (PR #169, 2cb114b, 🟣) : le suivi de la CI de `main` pour WFS-197 passe au PO (ordre de l'utilisateur : « prends un autre sujet ; s'il y a un problème, le PO regarde qui corrige »). Run de `main` rouge sur un job d'un autre ticket (banc des passes de WFS-150, corrigé par agent arwa, PR #170) : pas de correction demandée à WFS-197 tant que rien ne le désigne.
+- Créés : **WFS-201** (lot 2 : a45, s3, giulia, p208, gallardo, mustang, model3, x5) et **WFS-202** (lot 3 : abarth, compass, corsa, elantra, gt86, rrsport, tcross, v60 ; attend WFS-201). Règles : `regles-de-gestion/WFS-201.md`, `WFS-202.md` ; découpage noté dans `WFS-195.md`.
+- **Attribution** : WFS-201 (P2 Haute, seul ticket prêt) à Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-201`. Épic E3 libre (WFS-188, 189, 191, 197 🟣). Zone : celle de WFS-197 (`src/game/camera_vue.*`, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`, `tests/test_cockpit*`) + accroche `references/reel/anthropometrie.json`. Interdits : fichiers de WFS-158 (`assets/cars/*.wfm`, `*.lod`, `convert_car.mjs`, `model_loader.*`, `cars.h`…), `src/world/**`, E13, `.github/**`, boutons, iOS.
+- **Décisions du PO sur les 4 choix de l'agent 2** (écrites dans `WFS-195.md` et `WFS-201.md`) : M4 d'avant restylage, oui ; 911 992.1, oui ; SF90 sans écran central, carte dans le combiné, oui ; pas de gouttes sur le pare-brise, oui (hors périmètre, le jeu n'en a pas). Règle pour les lots 2 et 3 : la génération que représente le `.wfm`.
+- **eyeheightsitting (ANSUR-II)** : confié à WFS-201 (RG-07), lu dans la même copie GitHub d'ANSUR-II que WFS-148 (permis, `regles-reseau.md` § 2.4). Le PO n'écrit pas dans `references/`.
+- **Sites `eurospares.co.uk` et `wipersizechart.com`** : non autorisés ; demande présentée à l'utilisateur dans `tache utilisateur.md` (site, tickets WFS-201/202, lecture de cotes seulement, aucune licence de fichier en jeu). En attendant : cote des balais « non mesurable ».
+- **Info développeurs** : rendu vérifiable en local avec lavapipe (`mesa-vulkan-drivers` + `glslc`, `WFS_BANC=<groupe> build/wfs_bench`), noté dans `track-agent.md`.
+- Règle des 10 h : aucun ticket libéré (derniers envois : 190 à 20:40, 200 à 23:13, 158 à 23:06, 186 à 23:37).

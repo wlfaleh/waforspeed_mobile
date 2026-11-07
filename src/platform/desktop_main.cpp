@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>   // WFS-197 (accroche)
 #include <fstream>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "../audio/audio_system.h"
 #include "../core/scene_essai.h"
 #include "../game/camera_banc.h"
+#include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
 namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }   // WFS-115 (modes_ecran.cpp)
@@ -182,8 +184,13 @@ int main(int argc, char** argv) {
     if (banc == "endurance") { const int code = benchEndurance(vk, r, g, out, cw, chh); finir(); return code; }   // WFS-91 : endurance
     if (banc == "parcours") {   // WFS-115 ; WFS-126 (RG-08) : parcours complet jusqu'au retour à l'accueil
         ui::chargerPolice(r);
-        const int e = benchParcours(g, r, out) + parcoursFinMenu(g, r, out);
+        int e = benchParcours(g, r, out) + parcoursFinMenu(g, r, out);
         WFS_LOG("parcours complet : %d écart(s)%s", e, e ? " ÉCHEC" : " OK");
+        {   // WFS-197 (accroche, RG-09) : même parcours en vue Cockpit (intérieur de la voiture choisie), captures dans cockpit/
+            const VueCamera v = vueCamera(); choisirVue(VueCamera::Cockpit); std::filesystem::create_directories(out + "/cockpit");
+            const int ec = benchParcours(g, r, out + "/cockpit") + parcoursFinMenu(g, r, out + "/cockpit");
+            WFS_LOG("parcours complet en vue Cockpit (WFS-197) : %d écart(s)%s", ec, ec ? " ÉCHEC" : " OK"); choisirVue(v); e += ec;
+        }
         finir(); return e > 0 ? 3 : 0;
     }
     if (banc == "trace") { ui::chargerPolice(r); const int e = trace::benchTrace(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-136 (accroche) : tracé 2
@@ -193,6 +200,7 @@ int main(int argc, char** argv) {
     if (banc == "vie") { ui::chargerPolice(r); benchVie(g, r, out); return finir(); }   // WFS-71 : terrasse, enseignes, portique, plage
     if (banc == "garage") { ecrans::benchGarage(g, r, out); return finir(); }   // WFS-11 : garage seul (essai local)
     if (banc == "camera") { benchCameras(g, r, out); return finir(); }   // WFS-66 : caméras seules (2400x1080 : job ecrans-2400)
+    if (banc == "cockpit") { benchCockpit(g, r, out); return finir(); }   // WFS-197 (accroche) : intérieurs par modèle seuls
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
@@ -300,6 +308,7 @@ int main(int argc, char** argv) {
         benchSpots(r, out);           // WFS-45 : projecteurs, hémisphère, brouillard linéaire (spots-sol.png)
         benchSquelette(g, r, out);    // WFS-63 : personnages animés par squelette (squelette-*.png)
         benchCameras(g, r, out);      // WFS-66 : vues poursuite, capot, cockpit (camera-*.png)
+        benchCockpit(g, r, out);      // WFS-197 (accroche) : intérieurs Golf, M4, 911, SF90 (cockpit-*.png)
         benchPietons(g, r, out);      // WFS-19 : piétons de la ville et de la plage (pietons-*.png)
         benchRessenti(g, r, out);     // WFS-70 : choc, flèches, mouvements réduits (ressenti-*.png)
     }

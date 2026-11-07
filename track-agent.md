@@ -14,34 +14,38 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-06 23:37:00 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-06 23:47:40 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | CI de `main` au vert de bout en bout : `endurance` verte au run 790 ; reste `banc-essai (realisme)` rouge (banc des passes WFS-150, 1 écart), correction du banc des passes confiée à Agent 0 (WFS-200) | 190 : 20:40 (rien poussé depuis 2 h 57) | 🔴 P1 en cours, ⚠️ branche sans envoi depuis plus de 2 h ; suit aussi la CI de WFS-175 et WFS-150 (🟣) ; 🔴 **ordre de l'utilisateur (23:12 UTC) : corriger le banc des passes tout de suite** (règles de WFS-190) |
-| Claude, agent 1 (01UY1Vv2) | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en vrais modèles 3D libres (dépôts GitHub publics) | 186 : à créer et pousser (attribué 23:37) ; 199 : fusionnée 23:36 (PR #168, f279a8c) ; 198 : PR #165 ; 179 : PR #161 ; 176 : PR #158 | ✅ actif ; WFS-199, 198, 179, 176 🟣 (le robot des statuts les passe en ✅) |
-| Claude, agent 2 (01UY1Vv5) | WFS-197 | Vue cockpit réaliste (1/3) : intérieurs Golf, M4, 911, SF90, écran carte, essuie-glaces | 197 : 21:47 (4a52d55) | ✅ actif ; CI de branche lancée à la main (une fois, rendu) : captures `cockpit-*` à regarder avant la fusion |
+| agent arwa (Claude, session trafic) | WFS-190 / WFS-150 | rouge `banc-essai (realisme)` des runs 790 / 791 (M-01 nuit +X à -1,50 %) corrigé : capture d'environnement suréchantillonnée 2 × 2 (PR #170, fusion par confiance) ; suit la CI de `main` | 150 : 23:47 (PR #170) | 🟣 suit la CI de `main` (realisme et endurance) |
+| Claude, agent 1 (01UY1Vv2) | WFS-186 | Campagne : animaux de ferme (vaches, moutons, chevaux) en vrais modèles 3D libres (dépôts GitHub publics) | 186 : 23:37 (branche poussée) ; 199 : fusionnée 23:36 (PR #168, f279a8c) ; 198 : PR #165 ; 179 : PR #161 ; 176 : PR #158 | ✅ actif ; WFS-199, 198, 179, 176 🟣 (le robot des statuts les passe en ✅) |
+| Claude, agent 2 (01UY1Vv5) | WFS-201 | Vue cockpit réaliste, lot 2 : intérieurs A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3, X5 (+ `eyeheightsitting` ANSUR-II) | 201 : à créer et pousser (attribué 23:47) ; 197 : fusionnée 23:44 (PR #169, squash 2cb114b) | ✅ actif ; WFS-197 🟣 (CI de `main` suivie par le PO, ✅ par le robot des statuts) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre ; WFS-191 et WFS-140 restent 🟣 (runs de main rouges sur des jobs d'autres tickets : `realisme` 42305395876, `endurance` 42257956758) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (🟣, PR #148) |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 23:06 (dernier envoi de la branche) ; PR #167 fusionnée par confiance | 🔵 suit la CI de main (PR #157 à #167) ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 23:06 (dernier envoi de la branche, 00:06 heure de Paris) ; PR #167 fusionnée par confiance | 🔵 suit la CI de main (PR #157 à #167) ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-200 | CI de `main` rouge : écart M-01 nuit face +X (−1,50 %) du banc des passes ; bissection en cours | 200 : 23:13 | 🔴 P1 en cours ; suit aussi la CI de `main` de WFS-151 (🟣) |
 
 ## Tickets prêts sans agent
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
-| — | — | aucun ticket prêt sans agent (WFS-186 attribué à Claude, agent 1, 23:37) |
+| — | — | aucun ticket prêt sans agent (WFS-201 attribué à Claude, agent 2, 23:47) |
+| WFS-202 | E3 (+ fichiers cockpit E10) | lot 3 de la vue cockpit : attend WFS-201 |
 | — | — | WFS-152 à 167 (réalisme) attendent WFS-151 ✅ (🟣, PR #156) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-06 23:37:00 : WFS-186 (E2, P2) attribué à Claude, agent 1 (01UY1Vv2) ; WFS-199 🟣 (poses fixes : réponse à l'utilisateur dans `tache utilisateur.md`) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-06 23:47:40 : WFS-201 et WFS-202 créés (lots 2 et 3 de WFS-195), WFS-201 attribué à Claude, agent 2 ; demande de 2 sites présentée à l'utilisateur ; suit la CI de `main` de WFS-197 |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
+
+## Info pour les développeurs (2026-11-06 23:47 UTC)
+- Le rendu se vérifie **en local** avec lavapipe : `mesa-vulkan-drivers` et `glslc` s'installent dans le conteneur (paquets apt), puis `WFS_BANC=<groupe> build/wfs_bench` (même rendu logiciel que la CI ; testé par Claude, agent 2 sur WFS-197).
