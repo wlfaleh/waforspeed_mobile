@@ -34,10 +34,10 @@ vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59
 
 // WFS-276 (RG-01 à RG-03) : la nuit, adaptation de chaque pixel à sa propre luminance dans les basses lumières. Près d'une lampe,
 // l'exposition globale montre la flaque (≈ 15 lx) mais le paysage sous la lune (≈ 0,1 lx, 7 IL plus bas) sortait noir (péage :
-// 52 % de pixels noirs). Sous le seuil SEUIL_NUIT (≈ 1,85 IL sous le gris moyen, après exposition), la luminance est relevée en
-// puissance 1/2 : clarté perçue ∝ L^0,5 aux faibles adaptations (S. S. Stevens, « To Honor Fechner and Repeal His Law »,
+// 52 % de pixels noirs). Sous le seuil SEUIL_NUIT (0,08 : ≈ 1,17 IL sous le gris moyen 0,18, après exposition), la luminance est relevée
+// en puissance PUISSANCE_NUIT (0,45) : clarté perçue ∝ L^0,33 à 0,5 aux faibles adaptations (S. S. Stevens, « To Honor Fechner and Repeal His Law »,
 // Science 133, 1961 ; J. C. Stevens et S. S. Stevens 1963, exposant 0,33 à 0,5 dans l'obscurité). 7 IL d'écart deviennent
-// ≈ 3,5 IL : la flaque reste nettement plus claire (RG-02 : ≥ 2 IL) ; au-dessus du seuil (flaques, rues éclairées, phares),
+// ≈ 3,8 IL (test_fidelite_lumiere) : la flaque reste nettement plus claire (RG-02 : ≥ 2 IL) ; au-dessus du seuil (flaques, rues éclairées, phares),
 // rien ne change ; continu au seuil (même valeur), teinte gardée ; aucun halo (rien de spatial) ; de jour (k = 0) : rien.
 const float SEUIL_NUIT = 0.08, PUISSANCE_NUIT = 0.45;
 vec3 basseLumiereNuit(vec3 c, float k) {
