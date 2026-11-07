@@ -86,7 +86,8 @@ struct FrameParams {
     // ombres du soleil (WFS-07) : la boîte d'ombre suit le point focus (la voiture), coupées la nuit
     bool shadows = true, hasFocus = false; vec3 focus{};
     // WFS-45 : projecteurs (three SpotLight, r128 sans lumières physiques), hémisphère, brouillard linéaire. Couleurs linéaires.
-    struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1; };
+    struct Spot { vec3 pos, target; vec3 color{1, 1, 1}; float intensity = 1, distance = 0, angle = PI / 3, penumbra = 0, decay = 1;
+                  bool croisement = false; };   // WFS-218 : feu de croisement (phares.h) : intensité en cd / LUX_PAR_UNITE, 1/d², coupure
     // WFS-09 : 8 au plus (phares, feu de recul, 4 lampadaires) ; angle ≥ PI = lumière ponctuelle (PointLight)
     Spot spots[8]; int spotCount = 0;                        // 0 projecteur par défaut : rendu inchangé
     vec3 hemiSky{}, hemiGround{}; float hemiIntensity = 0;   // HemisphereLight ; 0 = ambiance du ciel actuelle
