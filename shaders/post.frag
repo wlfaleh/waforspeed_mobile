@@ -39,7 +39,7 @@ vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59
 // Science 133, 1961 ; J. C. Stevens et S. S. Stevens 1963, exposant 0,33 à 0,5 dans l'obscurité). 7 IL d'écart deviennent
 // ≈ 3,5 IL : la flaque reste nettement plus claire (RG-02 : ≥ 2 IL) ; au-dessus du seuil (flaques, rues éclairées, phares),
 // rien ne change ; continu au seuil (même valeur), teinte gardée ; aucun halo (rien de spatial) ; de jour (k = 0) : rien.
-const float SEUIL_NUIT = 0.05, PUISSANCE_NUIT = 0.5;
+const float SEUIL_NUIT = 0.08, PUISSANCE_NUIT = 0.45;
 vec3 basseLumiereNuit(vec3 c, float k) {
     if (k <= 0.0) return c;
     float Y = dot(max(c, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722));
