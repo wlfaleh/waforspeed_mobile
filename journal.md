@@ -4327,3 +4327,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:49:51 — WFS-279 fusionné par le lead dev (lead-dev)
 - PR #241 (arwa-5), squash 08e611b. Demande : voir la version de l'APK en petit sur l'écran de chargement. 7 captures ouvertes (5 paires `chargement-*` + zooms 1280 « dev » et 2400 « v0.1.912 ») : seul le coin bas droit change, rien d'autre ne bouge (écran d'erreur et fondu compris). Code : source unique `versionName` → `-DWFS_VERSION` → `chargement.cpp`, « dev » sur PC ; `test_version_chargement` ajouté ; aucun fichier `.github/**`, `tools/qa/**` ni iOS. Statut 🟣. À surveiller sur l'APK de `main` : « v0.1.N » affiché (pas « dev »).
+
+### 2026-11-07 22:50:36 — WFS-279 : seconde revue du lead dev, même verdict, aucune fusion en double (lead-dev)
+- Revue de la PR #241 menée en parallèle d'une autre session `lead-dev` (01UY1Vv3), qui a fusionné à 22:49:30 (squash 08e611b) : je ne refusionne rien et ne touche ni à `TACHES.md` ni à `qa/Check.md`. Mon verdict aurait été le même : **ACCEPTÉ**.
+- Les 12 images de `qa/pr/WFS-279/` ouvertes une à une ; écart avant / après des JPG mesuré : **0 hors du coin bas droit** sur les 5 paires (écarts seulement dans le rectangle de la version).
+- **Point « à surveiller » de la ligne `qa/Check.md` levé** : l'APK de la CI de branche #888 (Release `apercu-waforspeed-279`, `WaForSpeed.apk`, SHA-256 3a28a8fb401cdf79a38e6dfd6ac005b1621069e17169d4b8598e6f7027204904, dépôt du projet ; lu sans rien lancer) contient la chaîne « 0.1.888 » dans `libwaforspeed.so` (arm64-v8a et x86_64) : la valeur de Gradle arrive bien jusqu'au code natif, l'APK de `main` affichera « v0.1.N », pas « dev ».
+- **Petit écran montré** : le banc 2400×1080 (420 dpi, 411 dp de haut) passe par la mise en page petit écran de WFS-147 (texte de 14 dp) ; banc relancé en local avec `-DWFS_VERSION=0.1.888` : « v0.1.888 » lisible en bas à droite, loin du bouton « Réessayer ».
+- Vérifié sur 2557b4a dans un dossier à part : 62 tests CPU OK (dont `test_version_chargement`) ; changer la version ne recompile que `chargement.cpp`. Parcours non relancé jusqu'au bout (9 min sur 2 cœurs, arrêté à l'écran de course, sans erreur) : on garde le 0 écart du journal d'arwa-5.
+- Pour le PO : deux sessions `lead-dev` ont fait la même revue en même temps ; un seul appel par PR suffit.
