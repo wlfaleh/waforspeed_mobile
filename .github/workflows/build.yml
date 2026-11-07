@@ -122,6 +122,7 @@ jobs:
               for f in hud/minicarte-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-173 : minicarte-checkpoint-2400, minicarte-ligne-2400
               mkdir -p fluidite && WFS_BANC=fluidite ./build/wfs_bench fluidite assets/ && cp fluidite/fluidite.txt fluidite/fluidite-*-0[0-5].png captures/   # WFS-221 (accroche) : à-coups avant / après (1280x720)
               mkdir -p conduite && WFS_BANC=conduite ./build/wfs_bench conduite assets/ && cp conduite/conduite.txt conduite/conduite-*.png captures/   # WFS-241 (accroche) : banc de conduite, vidéos épingle / rond-point (1280x720)
+              mkdir -p chocs && WFS_BANC=chocs ./build/wfs_bench chocs assets/ && cp chocs/chocs.txt chocs/chocs-*.png captures/   # WFS-256 (accroche) : chocs avec le décor des 4 cartes
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
             menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
               mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37

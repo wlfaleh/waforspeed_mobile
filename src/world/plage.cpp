@@ -31,6 +31,7 @@
 #include "../game/player.h"
 #include "../game/trace_cartes.h"
 #include "../game/track.h"
+#include "../game/chocs_decor.h"   // WFS-256 (accroche)
 #include "../render/eclairage.h"
 #include "giratoire.h"   // WFS-248 : giratoire reconstruit
 #include "../render/renderer.h"
@@ -764,7 +765,37 @@ public:
         placerEtabs(t);   // WFS-181
         // éclairage de nuit (src/render/nuit.cpp) : lumière du jeu web (scene.js) à RW + 0,6, 5,6 m, côté du poteau
         for (const Lampe& l : lamps_) lampadaires().push_back({l.seg, l.side * (R + 0.6f), 5.6f, StyleLampadaire::Plage});
+        declarerChocs(t);   // WFS-256 (accroche) : objets solides pour les chocs du joueur
         WFS_LOG("Plage : %zu palmiers, %zu parasols, %zu lampadaires, %s", palms_.size(), umbrellas_.size(), lamps_.size(), night_ ? "nuit" : "jour");
+    }
+
+    // ---------------------------------------------------------------- WFS-256 (accroche, autorisée par le PO : ajout seul)
+    // objets solides de la Corniche pour les chocs du joueur (src/game/chocs_decor.h) : formes relevées sur le dessin
+    // (palmier : tronc ; lampadaire : poteau de 9 cm ; feux : mât de 6 cm ; bornes ; glissières ; arbres ; piédroits du tunnel)
+    void declarerChocs(Track& t) const {
+        using chocs::ObstacleRoute; using G = chocs::Genre;
+        auto cyl = [](float lat, float r, G g, float along = 0) { ObstacleRoute o; o.lat = lat; o.r = r; o.genre = g; o.along = along; return o; };
+        auto boite = [](float lat, float hx, float hz, G g, float along = 0) { ObstacleRoute o; o.forme = chocs::Forme::Boite; o.lat = lat; o.hx = hx; o.hz = hz; o.genre = g; o.along = along; return o; };
+        for (const Palm& p : palms_) chocs::declarerObjet(t, p.seg, cyl(p.lat, 0.2f, G::Arbre), false);
+        for (const Lampe& l : lamps_) chocs::declarerObjet(t, l.seg, boite(l.side * ((float)RW + 0.8f), 0.045f, 0.045f, G::Poteau), false);
+        for (const FeuDecor& fd : feux_) for (float sd : {-1.f, 1.f}) chocs::declarerObjet(t, fd.ligne, cyl(sd * ((float)RW + 0.7f), 0.06f, G::Poteau), false);
+        for (const Objet& o : objets_) {
+            const float s = (float)o.side;
+            switch (o.t) {
+            case O_BORNE: chocs::declarerObjet(t, o.seg, cyl(s * o.lat, 0.18f, G::Mobilier), false); break;
+            case O_GLISSIERE: chocs::declarerObjet(t, o.seg, boite(s * o.lat, 0.05f, 1.5f * (float)SEG_M, G::Mur, 1.5f * (float)SEG_M), false); break;
+            case O_PIN: chocs::declarerObjet(t, o.seg, cyl(s * o.lat, 0.25f, G::Arbre, o.along), false); break;
+            case O_ARBRE: chocs::declarerObjet(t, o.seg, cyl(s * o.lat, 0.3f, G::Arbre, o.along), false); break;
+            case O_ROCHER: chocs::declarerObjet(t, o.seg, cyl(s * o.lat, o.h, G::Mur), false); break;
+            case O_VILLA: chocs::declarerObjet(t, o.seg, boite(s * (o.lat + o.d / 2), o.d / 2, o.w / 2, G::Batiment), false); break;
+            default: break;   // tour de sauveteur, bateaux : hors de portée (au-delà du bord) ou dans l'eau
+            }
+        }
+        for (int64_t a = 0; a < len_; a++) for (int side : {-1, 1})   // glissière continue côté mer (decorFalaise, même condition)
+            if (formeCote(a, side) == K_MER && GLISS_LAT + 0.3f < std::min(bordSol(t, a, side), bordSol(t, a + 1, side)))
+                chocs::declarerObjet(t, a, boite(side * (GLISS_LAT + 0.03f), 0.03f, (float)SEG_M / 2 + 0.05f, G::Mur, (float)SEG_M / 2), false);
+        if (tunDeb_ >= 0) for (int64_t a = tunDeb_; a < tunFin_; a++) for (float sd : {-1.f, 1.f})   // piédroits du tunnel
+            chocs::declarerObjet(t, a, boite(sd * (TUNNEL_W + 0.15f), 0.15f, (float)SEG_M / 2 + 0.05f, G::Mur, (float)SEG_M / 2), false);
     }
 
     // WFS-139 (RG-C1, RG-C2) : objets du tracé 1 retirés de la chaussée et des autres branches de la route, des falaises

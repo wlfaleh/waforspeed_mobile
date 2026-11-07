@@ -216,6 +216,34 @@ protected:
         }
     }
 
+    // ---------------------------------------------------------------- WFS-256 (accroche, autorisée par le PO : ajout seul)
+    // formes de choc des objets de la Campagne, relevées sur dessine() ci-dessous (box : largeur selon r, longueur selon f)
+    int solide(const Item& it, chocs::ObstacleRoute o[4]) const override {
+        if (const int n = CarteDecor::solide(it, o)) return n;   // arbres, lampadaires
+        using G = chocs::Genre; const float s = (float)it.side, R = (float)RW, SG = (float)SEG_M;
+        int n = 0;
+        auto bt = [&](float lat, float hx, float hz, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.forme = chocs::Forme::Boite; q.lat = lat; q.hx = hx; q.hz = hz; q.genre = g; q.along = al; };
+        auto cy = [&](float lat, float r, G g) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.lat = lat; q.r = r; q.genre = g; };
+        switch (it.t) {
+        case T_POLE: cy(s * it.lat, 0.14f, G::Poteau); break;
+        case T_SIGN: bt(s * it.lat, 0.05f, 0.05f, G::Poteau); break;
+        case T_J6: bt(s * it.lat, 0.06f, 0.06f, G::Poteau); break;
+        case T_DANGER: case T_FEU: cy(s * it.lat, it.t == T_FEU ? 0.06f : 0.04f, G::Poteau); break;
+        case T_PANNEAU_A: for (float al : {-1.2f, 1.2f}) bt(s * it.lat, 0.05f, 0.05f, G::Poteau, al); break;   // deux poteaux (panneau à 2,2 m)
+        case T_FENCE: bt(s * it.lat, 0.06f, 1.5f * SG, G::Mur); break;
+        case T_HEDGE: bt(s * it.lat, 0.55f, it.l / 2, G::Mur, it.l / 2); break;
+        case T_GLISS: bt(s * (it.lat - 0.015f), 0.03f, SG, G::Mur, SG); break;
+        case T_MURET: bt(s * (it.lat + 0.2f), 0.2f, SG / 2 + 0.05f, G::Mur, SG / 2); break;
+        case T_FARM: bt(s * it.lat, 4.f, 5.5f, G::Batiment); break;
+        case T_VILLA: case T_COMMERCE: bt(s * (it.lat + it.d / 2), it.d / 2, it.w / 2, G::Batiment); break;
+        case T_TURBINE: cy(s * it.lat, 1.f, G::Poteau); break;
+        case T_AUTO: bt(-(R + 1.5f), 0.3f, SG / 2 + 0.05f, G::Mur, SG / 2); break;   // séparateur béton DBA (côté gauche)
+        case T_PEAGE: for (float lat : {R + 2.3f, -(R + 1.5f)}) for (float al : {-5.f, 5.f}) bt(lat, 0.25f, 0.25f, G::Poteau, al); break;   // piliers
+        default: break;   // passages, vignes, cascade, fontaine (dans l'îlot), bottes, enclos : au loin ou sans relief
+        }
+        return n;
+    }
+
     void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         Geo& S = out[P_UNI];
         const char* z = zone(a);
