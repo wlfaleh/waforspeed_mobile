@@ -106,6 +106,15 @@ float sunShadow(vec3 p, vec3 n) {
 // projecteurs (WFS-45) : SpotLight de three.js r128 sans lumières physiques (lights_pars_begin / lights_fragment_begin) :
 // cône smoothstep(coneCos, penumbraCos, cosθ), distance pow(saturate(1 − d / portée), décroissance), même GGX que le soleil.
 // Pas d'ombre portée des projecteurs.
+// WFS-218 : feu de croisement (spotCone.z = 1) : répartition et constantes de src/render/phares.h (à garder identiques),
+// éclairement physique 1/d² ; w : direction phare → point, D : axe du phare (avant de la voiture, horizontal)
+float feuCroisement(vec3 w, vec3 D, float d, float range) {
+    vec3 R = normalize(cross(D, vec3(0.0, 1.0, 0.0))), U = cross(R, D);
+    float el = degrees(asin(clamp(dot(w, U), -1.0, 1.0))), az = degrees(atan(dot(w, R), dot(w, D)));
+    float lim = -0.57 + min(max(az, 0.0) * 0.26795, 1.57), t = (-el - 1.2) / 2.5, ah = az / 18.0;
+    float v = (el > -1.2 ? 1.0 : 1.0 / (1.0 + t * t)) * (1.0 - 0.985 * smoothstep(lim - 0.3, lim + 0.3, el));
+    return v * (1.0 - smoothstep(60.0, 80.0, abs(az))) / (1.0 + ah * ah) * (1.0 - smoothstep(0.8 * range, range, d)) / max(d * d, 0.25);
+}
 vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     int n = int(F.spotN.x + 0.5);
@@ -117,10 +126,11 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         vec3 L = Lv / max(d, 1e-4);
         float cosT = dot(L, -F.spotDir[i].xyz);
         float NoL = max(dot(N, L), 0.0);
-        if (cosT <= F.spotCone[i].x || NoL <= 0.0) continue;
+        bool croisement = F.spotCone[i].z > 0.5;   // WFS-218
+        if ((!croisement && cosT <= F.spotCone[i].x) || NoL <= 0.0) continue;
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
-        float k = smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att * NoL;
+        float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;
         vec3 H = normalize(V + L);
         float NoH = max(dot(N, H), 0.0), VoH = max(dot(V, H), 0.0);
         vec3 Fs = F_Schlick(f0, VoH);

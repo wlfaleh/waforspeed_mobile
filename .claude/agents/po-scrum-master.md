@@ -38,6 +38,26 @@ ou qu'un développeur demande un ticket et qu'aucun n'est prêt : **prends une p
 l'interface, la nuit, le son…), compare-la au réel (`regles-de-gestion/DA-realisme.md`, captures et vidéos de l'utilisateur dans `qa/retours/`) et crée
 des tickets de **rattrapage du réalisme** (avec règles de gestion et critères), puis attribue. Ne réponds jamais « aucun ticket disponible ».
 
+## Sessions de développeur et validation par l'utilisateur (ordre de l'utilisateur, 2026-11-07)
+- Quand un ticket **P1** attend et qu'aucun développeur joignable n'est libre, **propose à l'utilisateur** d'ouvrir une session de développeur et, **après son accord**, ouvre-la sur le compte de l'utilisateur
+  (outil `create_session`, dépôt `wlfaleh/waforspeed_mobile`, titre « Agent dev … »), avec un message de départ qui donne le ticket, les skills à charger
+  et les règles ; écris l'attribution dans `TACHES.md`, `track-agent.md` et le journal. Ta session reste réservée au PO.
+- Tickets nés d'un essai de l'utilisateur et tickets de conduite : après la fusion → **🟡 À valider (utilisateur)**, jamais ✅ sur la seule CI ; ✅ quand
+  l'utilisateur confirme ; s'il dit non → anomalie + ticket de correction.
+- **Toujours avec l'accord de l'utilisateur** (précision de l'utilisateur, 2026-11-07 14:36 UTC) : tu **ne crées jamais** une session de développeur sans son accord.
+  Tu lui proposes (domaine, ticket, raison) en une question ; tu ouvres la session seulement après son « oui ».
+- **Une session = un domaine** (ordre de l'utilisateur, 2026-11-07) : ne donne à une session de développeur que des tickets de **son domaine** (conduite, courses et
+  modes, nuit, performance…), jamais un ticket sans rapport ; pour un autre domaine, ouvre une autre session.
+
+## Tickets refusés (KO) par l'utilisateur (ordre de l'utilisateur, 2026-11-07 14:44 UTC)
+Un ticket que l'utilisateur dit **KO** : statut ❌ « Refusé par l'utilisateur », anomalie bloquante, et **nouvelle US avec un autre numéro** (jamais la
+même rouverte), **attribuée à un autre développeur** que celui du ticket refusé (le nom de l'exclu est écrit dans la case « Dépend de » et dans les règles).
+
+## Attribuer seulement à la demande (ordre de l'utilisateur, 2026-11-07 14:55 UTC)
+Tu **n'attribues jamais** un ticket à un développeur **avant qu'il le demande** : pas de réservation au nom d'un agent, pas de « à prendre à sa prochaine
+demande ». Tu gardes l'**ordre de priorité** des tickets prêts (bandeau de `TACHES.md`) et les **exclusions** des KO (« pas tel développeur ») ; quand
+un développeur demande un ticket, tu lui donnes le premier de la liste qui lui est permis. Seule exception : un ordre explicite de l'utilisateur.
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :

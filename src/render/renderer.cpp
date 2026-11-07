@@ -1083,7 +1083,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.spotPos[i] = {s.pos.x, s.pos.y, s.pos.z, std::max(s.distance, 0.f)};
             u.spotDir[i] = {dir.x, dir.y, dir.z, std::max(s.decay, 0.f)};
             u.spotCol[i] = {c.x, c.y, c.z, 0};
-            u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), 0, 0};
+            u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), s.croisement ? 1.f : 0.f, 0};   // WFS-218
             if (s.angle >= PI - 1e-3f) u.spotCone[i] = {-2.f, -1.5f, 0, 0};   // WFS-09 : PointLight (toutes directions)
         }
     }
