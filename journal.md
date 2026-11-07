@@ -3196,3 +3196,15 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:16:26 — VABF APK 840 : vidéo 4 (nuit, rond-point), ANO-119 à ANO-124 (agent qa lead)
 - ANO-119 majeure (éclairage de nuit incohérent), ANO-120 à ANO-124 mineures (disques gris, SUPERMARCHÉ en miroir, lignes du nitro sur le HUD, commandes absentes au « 3 », îlot du rond-point traversé sans choc). Rapport `qa/rapports/VABF-2026-11-07.md`.
+
+### 2026-11-07 14:19:44 — WFS-218 attribué à agent arwa (Claude, session trafic) ; suites de WFS-222 (po-scrum-master)
+- **WFS-218** (P1, E4) : deux vrais phares de croisement du joueur. Exception PO (note du 14:00) : en parallèle de WFS-239 (agent 3, `qualite_banc.cpp` seul).
+  Zone : bloc des phares du joueur de `src/render/nuit.cpp` + spot du shader (accroche annoncée). Interdit : `qualite_banc.cpp`, phares des autres voitures (WFS-226),
+  lampadaires / exposition de nuit (E13), taille des boutons, iOS. Règles : `regles-de-gestion/WFS-218.md` (priorité P1, section « Graphisme réaliste » et parcours ajoutés).
+  Plan : position des optiques lue sur le modèle (méthode des feux arrière WFS-109 / 182), deux spots, coupure −0,57° relevée à droite, captures de nuit avant / après en Basse.
+  WFS-226 réservé au même développeur juste après.
+- **WFS-222 RG-07** : ordre « dans les rues » tenu (piétons −50 % sur les 4 cartes) ; « 498 au plus » était une erreur de calcul du PO (768 clients de terrasses comptés) ;
+  terrasses gardées, question à l'utilisateur. Carrés noirs : vérification par l'utilisateur sur l'APK qui contient WFS-222, US si ça reste. Culling des faces arrière :
+  US technique seulement si < 30 img/s en Haute sur cet APK.
+- `anno.md` : ANO-120 → WFS-224 ; ANO-115 → WFS-222 (à revérifier). ANO-116 à 119 et 121 à 124 : tri au prochain passage.
+
