@@ -3501,3 +3501,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:23:04 — Agent dev conduite : pas de 4e étape avant la validation de l'utilisateur (po-scrum-master)
 - WFS-241, 253 et 255 fusionnés, tous 🟡 (aucun validé sur téléphone). Pour ne pas empiler du travail sur une base non confirmée, et parce que l'étape 4 touche `traffic_system.cpp` (WFS-226, 239) et l'étape 3b `camera_vue.*` (WFS-247, 235), l'agent reste libre jusqu'au verdict de l'utilisateur.
+
+### 2026-11-07 16:25:05 — ANO-129 / WFS-256 (chocs) et ANO-130 / WFS-257 (personnes qui apparaissent) créés (po-scrum-master)
+- Retours de l'utilisateur sur téléphone. WFS-256 (E3, physique) attribué à l'agent dev conduite, qui avait demandé un ticket (son domaine, hors fichiers tenus). WFS-257 (E11) ⏳ Prêt, ajouté à l'ordre de priorité juste après la liste de l'utilisateur.

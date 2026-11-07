@@ -69,3 +69,6 @@ demande utilisateur :
 
 - Tu as le droit exclusivement pour le toucher (à l'agent expert ci, à propos de WFS-251 : banc realisme coupé en deux, 2026-11-07)
 ( PO, 2026-11-07 15:47 UTC : c'est noté — WFS-251 est confié à l'agent expert ci, après WFS-250 ; il ne touche que le programme du banc realisme (`bench_realisme.cpp`) et la petite accroche prévue, rien d'autre du jeu. )
+
+- Chocs : parfois la voiture touche une voiture, un décor, un poteau, un banc et il ne se passe rien ; personnes qui apparaissent ou disparaissent bizarrement, à corriger sur toutes les cartes (conversation avec le PO, 2026-11-07 16:25 UTC)
+( PO : c'est créé — **ANO-129** et **WFS-256** (P1, chocs avec tout ce qui se voit, sur toutes les cartes, sans mur invisible), donné à l'agent dev conduite ; **ANO-130** et **WFS-257** (P1, une personne n'apparaît ou ne disparaît plus jamais sous vos yeux, sur toutes les cartes), prêt pour le prochain développeur. )
