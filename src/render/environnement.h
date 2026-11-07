@@ -7,6 +7,8 @@
 //
 // Chaque face est rendue comme la passe miroir des reflets (WFS-16) : ciel, objets opaques (rigides et animés), puis
 // transparents, avec la lumière, les ombres et le brouillard de l'image courante, sans masquage des objets (6 directions).
+// Chaque face est rendue à 2 × 2 fois sa taille puis réduite (blit linéaire 2:1) : un texel vaut la luminance moyenne de son
+// angle solide (M-01 : ± 1 % contre la scène vue dans la même direction, même quand de petites vitrines très claires la bordent).
 // Repère des faces : convention des cubemaps Vulkan (+X, −X, +Y, −Y, +Z, −Z ; texel (s, t) de la spécification), pour
 // qu'un shader échantillonne la direction monde telle quelle (samplerCube) : prêt pour l'éclairage d'image (WFS-151).
 #pragma once

@@ -3,11 +3,18 @@
 #include "camera_vue.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"
 #include "../render/renderer.h"
+#include "../render/vehicule_cockpit_geo.h"   // WFS-197 : primitives du cockpit (déplacées depuis ce fichier)
+#include "../render/vehicule_cockpit.h"       // WFS-197 : intérieurs par modèle
+#include "../audio/engine_synth.h"           // WFS-197 : EngineModel (régime et rapport du combiné, comme le son)
+#include "../ui/minicarte.h"                 // WFS-197 (RG-05) : découpe de la carte (minicarte::decouper, lecture)
+#include "../world/meteo.h"                  // WFS-197 (RG-06) : pluieActive (lecture)
 #include "../ui/text.h"
 #include "cars.h"
 #include "commandes_tactiles.h"   // WFS-98 : dessin2d (biseau à bords lissés)
@@ -26,6 +33,8 @@ VueCamera g_vue = VueCamera::Poursuite;   // store('waforspeed-cam') du jeu web 
 struct Suivi { bool init = false; VueCamera vue = VueCamera::Poursuite; vec3 eye{}, look{}; float fov = 72.f;
                double camHd = 0, distDyn = 0; } g_suivi;   // WFS-98 : camHd et camDistDyn d'updateCamera du jeu web
 EtatCockpit g_ck;
+float g_ckEssuieT = 0;   // WFS-197 : phase des essuie-glaces au dernier pas (banc d'essai)
+cockpit::EtatInterieur g_ckInt; int g_ckAppels = 0; size_t g_ckOctets = 0; const char* g_ckCar = nullptr;   // WFS-197 : banc d'essai
 struct Zone { float x = 0, y = 0, w = 0, h = 0;
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } } g_bouton;
 }
@@ -100,7 +109,11 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
     const CarDims& d = car.d;
     vec3 eyeL, lookL;
     if (V.cockpit) {   // œil du conducteur (à gauche) : inner.localToWorld(−0,36 ; H × 0,74 ; −L × 0,02), regard 30 m devant
-        eyeL = {-0.36f, d.H * 0.74f, -d.L * 0.02f}; lookL = {-0.36f, d.H * 0.66f, -d.L * 0.02f - 30.f};
+        // WFS-197 (RG-07) : voiture qui a son intérieur : hauteur d'œil du modèle (assise), même écart œil → regard
+        const cockpit::InterieurDef* idef = cockpit::interieurPour(car.id);
+        // WFS-201 (RG-07) : œil = assise du modèle + hauteur des yeux assis d'ANSUR-II (cockpit commun : H × 0,74)
+        const float oeil = idef ? cockpit::hauteurOeil(*idef) : d.H * 0.74f;
+        eyeL = {-0.36f, oeil, -d.L * 0.02f}; lookL = {-0.36f, oeil - d.H * 0.08f, -d.L * 0.02f - 30.f};
     } else {           // capot : au milieu, devant le pare-brise, le capot reste dans le bas de l'image
         eyeL = {0.f, d.H * 0.84f, -d.L * 0.24f}; lookL = {0.f, d.H * 0.72f, -d.L * 0.24f - 30.f};
     }
@@ -134,78 +147,9 @@ bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& ca
 
 namespace {
 
-// ---------- géométries de three.js, construites par code (repère de la caméra : x à droite, y en haut, −z devant) ----------
-struct Geo {
-    std::vector<Vertex> v; std::vector<uint32_t> i;
-    void sommet(const mat4& M, vec3 p, vec3 n) {
-        const vec3 q = M.transformPoint(p), m = normalize(M.transformDir(n));
-        v.push_back({q.x, q.y, q.z, m.x, m.y, m.z, 0, 0});
-    }
-    void quad(uint32_t a, uint32_t b, uint32_t c, uint32_t d) { i.insert(i.end(), {a, b, c, a, c, d}); }
-};
-// BoxGeometry(w, h, d)
-void boite(Geo& g, const mat4& M, float w, float h, float d) {
-    const float x = w / 2, y = h / 2, z = d / 2;
-    const vec3 n[6] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
-    for (const vec3& f : n) {
-        // deux axes du plan de la face
-        const vec3 u = std::fabs(f.y) > 0.5f ? vec3{1, 0, 0} : vec3{0, 1, 0}, t = cross(f, u);
-        const uint32_t b = (uint32_t)g.v.size();
-        for (int k = 0; k < 4; k++) {
-            const float su = (k == 1 || k == 2) ? 1.f : -1.f, st = k >= 2 ? 1.f : -1.f;
-            const vec3 p = f + u * su + t * st;
-            g.sommet(M, {p.x * x, p.y * y, p.z * z}, f);
-        }
-        g.quad(b, b + 1, b + 2, b + 3);
-    }
-}
-// CircleGeometry(r, n) / RingGeometry(ri, ro, n) dans le plan xy, face vers +z
-void anneau(Geo& g, const mat4& M, float ri, float ro, int n) {
-    const uint32_t b = (uint32_t)g.v.size();
-    for (int k = 0; k <= n; k++) {
-        const float a = 2 * PI * k / n, c = std::cos(a), s = std::sin(a);
-        g.sommet(M, {c * ri, s * ri, 0}, {0, 0, 1}); g.sommet(M, {c * ro, s * ro, 0}, {0, 0, 1});
-    }
-    for (int k = 0; k < n; k++) g.quad(b + 2 * k, b + 2 * k + 1, b + 2 * k + 3, b + 2 * k + 2);
-}
-// PlaneGeometry(w, h) dans le plan xy
-void plan(Geo& g, const mat4& M, float w, float h) {
-    const uint32_t b = (uint32_t)g.v.size();
-    g.sommet(M, {-w / 2, -h / 2, 0}, {0, 0, 1}); g.sommet(M, {w / 2, -h / 2, 0}, {0, 0, 1});
-    g.sommet(M, {w / 2, h / 2, 0}, {0, 0, 1}); g.sommet(M, {-w / 2, h / 2, 0}, {0, 0, 1});
-    g.quad(b, b + 1, b + 2, b + 3);
-}
-// TorusGeometry(R, r, radial, tubular) : anneau dans le plan xy
-void tore(Geo& g, const mat4& M, float R, float r, int radial, int tub) {
-    const uint32_t b = (uint32_t)g.v.size();
-    for (int j = 0; j <= radial; j++) for (int k = 0; k <= tub; k++) {
-        const float u = 2 * PI * k / tub, w = 2 * PI * j / radial;
-        const vec3 c{std::cos(u) * R, std::sin(u) * R, 0};
-        const vec3 p{(R + r * std::cos(w)) * std::cos(u), (R + r * std::cos(w)) * std::sin(u), r * std::sin(w)};
-        g.sommet(M, p, normalize(p - c));
-    }
-    for (int j = 0; j < radial; j++) for (int k = 0; k < tub; k++) {
-        const uint32_t a = b + j * (tub + 1) + k, c = a + tub + 1;
-        g.quad(a, c, c + 1, a + 1);
-    }
-}
-// CylinderGeometry(rHaut, rBas, h, n), axe y, avec ses deux disques
-void cylindre(Geo& g, const mat4& M, float rh, float rb, float h, int n) {
-    const uint32_t b = (uint32_t)g.v.size();
-    for (int k = 0; k <= n; k++) {
-        const float a = 2 * PI * k / n, c = std::cos(a), s = std::sin(a);
-        const vec3 nr = normalize({c, (rb - rh) / h, s});
-        g.sommet(M, {c * rh, h / 2, s * rh}, nr); g.sommet(M, {c * rb, -h / 2, s * rb}, nr);
-    }
-    for (int k = 0; k < n; k++) g.quad(b + 2 * k, b + 2 * k + 1, b + 2 * k + 3, b + 2 * k + 2);
-    for (int haut = 0; haut < 2; haut++) {
-        const float y = haut ? h / 2 : -h / 2, rr = haut ? rh : rb;
-        const uint32_t c0 = (uint32_t)g.v.size();
-        g.sommet(M, {0, y, 0}, {0, haut ? 1.f : -1.f, 0});
-        for (int k = 0; k <= n; k++) { const float a = 2 * PI * k / n; g.sommet(M, {std::cos(a) * rr, y, std::sin(a) * rr}, {0, haut ? 1.f : -1.f, 0}); }
-        for (int k = 0; k < n; k++) g.i.insert(g.i.end(), {c0, c0 + 1 + k, c0 + 2 + k});
-    }
-}
+// géométries construites par code (Geo, boite, anneau, plan, tore, cylindre) : src/render/vehicule_cockpit_geo.h
+// (WFS-197 : partagées avec les intérieurs par modèle)
+using namespace cockpit;
 
 vec3 lin(unsigned h) {   // couleur hexadécimale → linéaire (comme hexColor de Game)
     auto l = [](float c) { return std::pow(c, 2.2f); };
@@ -261,10 +205,30 @@ public:
             *mesh = r.makeMesh(geo->v, geo->i);
     }
 
+    // WFS-197 : modèle moteur (régime, rapport : mêmes entrées que le son, audio_system.cpp) et essuie-glaces, à chaque pas
+    void update(double dt, const GameView& g) override {
+        if (!g.player || !g.car) return;
+        const Player& pl = *g.player;
+        const double v = std::abs(pl.speed) * M;
+        const bool gaz = pl.nitroOn || (!pl.braking && (pl.lonAcc > 0.4 || (v > 0.5 && pl.lonAcc > -0.6)));
+        const double top = MAX_SPEED * pl.perf.top * (pl.nitroOn ? pl.perf.nitroMult : 1);
+        moteur_.update(dt, pl.speed, top, MAX_SPEED, gaz, pl.nitroOn, true, engineVoiceFor(g.car->id).pitch, false, cibles_);
+        essuie_.avancer((float)dt, pl.kmh(), meteo::pluieActive(g.map ? g.map->id : nullptr, nuitDemandee()));
+        g_ckEssuieT = essuie_.phase;
+    }
+
     void render(Renderer& r, const GameView& g) override {
         const EtatCockpit& ck = etatCockpit();
         if (!ck.actif || g.sceneDediee) return;
         const mat4 cam = inverseAffine(g.view);   // cockpit attaché à la caméra (camera.add(g))
+        // WFS-197 (RG-01) : intérieur du modèle s'il existe (construit à la première vue Cockpit de cette voiture), sinon le
+        // cockpit commun ci-dessous, inchangé
+        const cockpit::InterieurDef* idef = g.car ? cockpit::interieurPour(g.car->id) : nullptr;
+        if (idef != interieur_.def()) {
+            if (interieur_.pret()) interieur_.detruire(r);
+            if (idef) interieur_.construire(r, *idef);
+        }
+        if (interieur_.pret() && g.player && g.track) { dessinerInterieur(r, g, cam, ck); return; }
         r.draw(statique_, sombre_, cam);
         r.draw(cadran_, cadranMat_, cam);
         r.draw(anneau_, cyan_, cam);
@@ -303,12 +267,52 @@ public:
     void onEcran(Ecran, Ecran nouveau, const GameView&) override { if (nouveau != Ecran::Course) { g_bouton = {}; doigt_ = -1; } }
 
     void shutdown(Renderer& r) override {
+        interieur_.detruire(r);   // WFS-197
         for (Mesh* m : {&statique_, &cadran_, &anneau_, &aiguille_, &jante_, &branches_, &repere_}) r.destroy(*m);
         for (Material* m : {&sombre_, &cuir_, &alu_, &cadranMat_, &cyan_, &orange_}) r.destroy(*m);   // WFS-187 (accroche) : jeux de descripteurs rendus
         g_bouton = {}; g_ck = {};
     }
 
 private:
+    // nuit demandée : même source que l'ambiance de nuit et la pluie (WFS_MOMENT, fixé par Game au choix du moment ; meteo.cpp)
+    static bool nuitDemandee() { const char* m = std::getenv("WFS_MOMENT"); return m && std::strcmp(m, "nuit") == 0; }
+    // WFS-197 : intérieur par modèle : carte de l'écran central (RG-05), valeurs du combiné (RG-04), essuie-glaces (RG-06)
+    void dessinerInterieur(Renderer& r, const GameView& g, const mat4& cam, const EtatCockpit& ck) {
+        const Player& pl = *g.player;
+        Track& t = *g.track;
+        float W, H; interieur_.tailleCarte(W, H);
+        route_.clear();
+        const TrackPoint pj = t.point(pl.dist, pl.playerX * RW);
+        const double cap = pj.th + pl.heading;
+        const vec2 joueur{(float)pj.x, (float)pj.z};
+        const float echelle = H / (float)(cockpit::CARTE_ARRIERE_M + cockpit::CARTE_AVANT_M), yJ = -H / 2 + H * cockpit::CARTE_JOUEUR_Y;
+        vec2 prec{};
+        const int n = (int)((cockpit::CARTE_ARRIERE_M + cockpit::CARTE_AVANT_M) / cockpit::CARTE_PAS_M);
+        for (int k = 0; k <= n; k++) {
+            const double s = pl.dist + (-cockpit::CARTE_ARRIERE_M + k * cockpit::CARTE_PAS_M) / M;
+            const TrackPoint p = t.point(s, 0);
+            const vec2 uv = cockpit::versVoiture({(float)p.x, (float)p.z}, joueur, cap);
+            const vec2 e{uv.x * echelle, yJ + uv.y * echelle};
+            if (k > 0) {
+                vec2 a = prec, b = e;
+                if (minicarte::decouper(a, b, -W / 2, -H / 2, W / 2, H / 2)) { route_.push_back(a); route_.push_back(b); }
+            }
+            prec = e;
+        }
+        cockpit::EtatInterieur e;
+        e.volant = ck.volant;
+        e.v.kmh = cockpit::vitesseAffichee(pl.kmh());
+        e.v.regime = moteur_.rpm; e.v.rapport = pl.reversing ? -1 : (e.v.kmh < 1 ? 0 : moteur_.gear);
+        e.v.nitro = (float)pl.nitro; e.v.nuit = nuitDemandee();
+        e.essuie = essuie_.angle(interieur_.def()->arc);
+        interieur_.dessiner(r, cam, e, route_, joueur, cap);
+        g_ckInt = e; g_ckAppels = interieur_.appels(); g_ckOctets = interieur_.octets(); g_ckCar = interieur_.def()->car;
+    }
+
+    cockpit::Interieur interieur_;
+    cockpit::EtatEssuie essuie_;
+    EngineModel moteur_; EngineTargets cibles_;
+    std::vector<vec2> route_;
     Material sombre_, cuir_, alu_, cadranMat_, cyan_, orange_;
     Mesh statique_, cadran_, anneau_, aiguille_, jante_, branches_, repere_;
     int doigt_ = -1;
@@ -317,5 +321,70 @@ private:
 } // namespace
 
 WFS_SYSTEM(Camera, 260)
+
+// ---------- WFS-197 : banc d'essai des intérieurs (captures cockpit-<modèle>-{jour,braquage,carte,pluie,nuit}, cockpit-corsa) ----------
+void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vector<std::string>& voitures) {
+    const VueCamera avant = vueCamera();
+    const bool regles = courseBenchRulesOn();
+    courseBenchRules(true);
+    double t = 900;
+    auto rouler = [&](int images) { for (int i = 0; i < images; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 6 == 0) g.render(t); } };
+    auto capture = [&](const std::string& nom) {
+        g.render(t); g.render(t + 1.0 / 60); t += 1.0 / 60;
+        r.capturePng(out + "/" + nom + ".png");
+        const Player& pl = g.player();
+        const cockpit::EtatInterieur& e = g_ckInt;
+        if (g_ckCar && cockpit::interieurPour(g.player().car->id))
+            WFS_LOG("capture %s : intérieur %s, %d appels de dessin, %.2f Mo ; jeu : %.0f km/h, braquage %+.2f, nitro %.2f ; combiné : "
+                    "%d km/h, régime %.2f, rapport %d, nitro %.2f ; volant %+.2f rad ; essuie-glaces %.2f rad%s", nom.c_str(), g_ckCar, g_ckAppels,
+                    g_ckOctets / 1048576.0, pl.kmh(), pl.steer, pl.nitro, e.v.kmh, e.v.regime, e.v.rapport, e.v.nitro, e.volant, e.essuie,
+                    e.v.nuit ? ", nuit" : "");
+        else WFS_LOG("capture %s : cockpit commun (voiture %s sans intérieur propre)", nom.c_str(), pl.car->id);
+    };
+    auto course = [&](const char* car, const char* carte, bool nuit) {
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);   // gardé pendant la course (nuit, pluie : lus à chaque image)
+        const bool ok = g.init(r, car, carte);
+        if (!ok) { WFS_ERR("cockpit : chargement impossible (%s, %s)", car, carte); return false; }
+        choisirVue(VueCamera::Cockpit); g.camMode = 0; g.setAutopilot(true);
+        rouler(60 * 3 + 30);   // décompte puis départ
+        return true;
+    };
+    const float W = (float)r.width(), H = (float)r.height();
+    for (const std::string& v : voitures) {
+        const char* car = v.c_str();
+        const std::string c = "cockpit-" + v;
+        // RG-01 : voiture sans intérieur propre (Corsa, lot 3) : une capture du cockpit commun, qui doit rester inchangé
+        if (!cockpit::interieurPour(car)) { if (course(car, "ville", false)) { rouler(90); capture(c); } continue; }
+        if (course(car, "ville", false)) {
+            rouler(90);
+            capture(c + "-jour");
+            // braquage : gaz et doigt glissé dans la zone de braquage (comme camera-cockpit)
+            g.setAutopilot(false);
+            g.onTouch({31, W * 0.89f, H * 0.74f, true});
+            g.onTouch({32, W * 0.20f, H * 0.70f, true}); g.onTouch({32, W * 0.29f, H * 0.70f, true});
+            rouler(24);
+            capture(c + "-braquage");
+            g.onTouch({32, W * 0.29f, H * 0.70f, false}); g.onTouch({31, W * 0.89f, H * 0.74f, false});
+            g.setAutopilot(true);
+            rouler(90);   // la carte montre la route qui arrive (virages)
+            capture(c + "-carte");
+        }
+        if (course(car, "ville", true)) {   // pluie : la Ville de nuit (meteo::pluieActive) ; balais au milieu de leur course
+            const float arc = cockpit::interieurPour(car)->arc;   // pas de rendu pendant l'attente (le banc reste court) ; angle relu à chaque image
+            // phase 0,5 = balai en haut de sa course (angle = arc) : on s'arrête dès 0,40 (angle ≥ 0,90 × arc)
+            for (int k = 0; k < 240 && (g_ckEssuieT < 0.40f || g_ckEssuieT > 0.5f); k++) { g.update(1.0 / 60); t += 1.0 / 60; }
+            (void)arc;
+            capture(c + "-pluie");
+            // WFS-201 : nuit (même course : écrans de nuit, combiné lisible) quand les balais repassent au repos, entre deux balayages ;
+            // « hors pluie, balais à l'arrêt » se voit sur -jour (une course de moins par voiture : banc plus court)
+            for (int k = 0; k < 120 && g_ckEssuieT > 0.02f; k++) { g.update(1.0 / 60); t += 1.0 / 60; }
+            capture(c + "-nuit");
+        }
+    }
+    g.shutdown();
+    unsetenv("WFS_MOMENT");
+    courseBenchRules(regles);
+    choisirVue(avant);
+}
 
 } // namespace wfs

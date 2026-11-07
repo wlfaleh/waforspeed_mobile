@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <vector>
 #include "../core/log.h"
+#include "../core/platform.h"   // WFS-186 : readAsset (animaux .wfa)
 #include "decor_carte.h"
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2 (lacets du col, pont)
 #include "enseignes.h"   // WFS-178 : textes des enseignes du village (atlas)
@@ -25,10 +26,13 @@ namespace wfs {
 namespace carte {
 namespace {
 
+int64_t g_troupeau[3] = {-1, -1, -1};   // WFS-186 : premier segment de chaque troupeau (vache, cheval, mouton), pour le banc
+
 enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POLE, T_SIGN, T_VILLA, T_CHURCH, T_ZEBRA, T_VINES,
        T_GLISS, T_MURET, T_DANGER, T_CASCADE,   // WFS-138 : glissière, muret, panneau A1, cascade
        T_FONTAINE, T_FEU, T_COMMERCE,           // WFS-178 : rond-point fleuri, feu tricolore, commerces du village
-       T_AUTO, T_PEAGE, T_PANNEAU_A };          // WFS-179 : autoroute (un par segment), aire de péage, panneau bleu
+       T_AUTO, T_PEAGE, T_PANNEAU_A,            // WFS-179 : autoroute (un par segment), aire de péage, panneau bleu
+       T_ENCLOS };                              // WFS-186 : enclos des chevaux (clôture de bois sur les 4 côtés)
 // WFS-179 : textes des panneaux bleus de l'autoroute et du péage (noms de lieux inventés)
 const char* const PANNEAUX_A[4] = {"VALLÉE VERTE  14 km", "LES PINS  9 km", "AIRE DE REPOS  2 km", "PÉAGE"};
 // WFS-178 (RG-03) : commerces du village (it.k) et texte de leur enseigne (pas de vraie marque ni de vrai nom de lieu)
@@ -49,6 +53,7 @@ public:
     const char* name() const override { return "campagne"; }
     // WFS-178 : atlas des enseignes (lettres blanches, néon doux la nuit) et feux tricolores (lampes allumées / éteintes)
     void init(Renderer& r, const GameView& g) override {
+        betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1;   // WFS-186 : placés de nouveau par CarteDecor::init
         CarteDecor::init(r, g);
         for (auto& T : txt_) T = {};
         if (!active_) return;
@@ -68,6 +73,7 @@ public:
         for (const char* t : PANNEAUX_A) atlas_.ajouter(t);   // WFS-179
         if (auDeb_ >= 0)   // WFS-179 : voitures en sens inverse (deux modèles qui ne sont pas ceux du trafic)
             for (int i = 0; i < 2; i++) if (!loadCarModel(r, i ? "cars/corsa.wfm" : "cars/v60.wfm", autos_[i])) WFS_ERR("Campagne : modèle du sens inverse introuvable");
+        chargerAnimaux(r);   // WFS-186
         if (!atlas_.construire(r)) return;   // police absente : enseignes sans texte
         // lettres blanches de jour ; la nuit, enseigne éclairée sans halo exagéré (émission modérée, pas de bloom fort)
         mats_[P_TEXTE0] = atlas_.materiau(r, 0xf4f1e8, night_ ? 1.1f : 0.f);
@@ -106,6 +112,7 @@ protected:
         if (libre_.empty()) { calculerLibre(); placerCol(); }
         // WFS-138 (RG-C1) : un objet n'est posé que s'il tient avant la mi-distance de la route voisine (2 m de marge)
         if (auDeb_ == -2) calculerAutoroute();   // WFS-179
+        std::vector<Obst> obst;   // WFS-186
         auto item = [&](int64_t n, const Item& it) {
             // WFS-179 (RG-C1) : rien sur la chaussée opposée de l'autoroute ni sur l'aire de péage
             if (autoroute(n) && ((it.side < 0 && it.lat < (float)RW + 21) || (aPeage(n) && it.lat < (float)RW + 8))) return;
@@ -122,6 +129,11 @@ protected:
                 for (int64_t v : vigilance_) { const int64_t d = v - n; if (d >= 0 && d < 50) return; }
             // clairière de la cascade (RG-01) : rien entre la route et la paroi, sur ±15 segments (≈ 18 m)
             if (aCascade_ && it.side == cascadeCote_ && std::llabs(n - cascadeSeg_) < 15) return;
+            // WFS-186 : place prise par les arbres, fermes, bottes et éoliennes (les animaux n'y sont pas posés)
+            if (it.t == T_TREE) obst.push_back({n - 3, n + 3, it.side, it.lat - 3, it.lat + 3});
+            if (it.t == T_FARM) obst.push_back({n - 7, n + 25, it.side, it.lat - 7, it.lat + 8});
+            if (it.t == T_BALES) obst.push_back({n - 2, n + it.k * 3 + 2, it.side, it.lat - 2, it.lat + 4});
+            if (it.t == T_TURBINE || it.t == T_HEDGE) obst.push_back({n - 3, n + (int64_t)(it.l / SEG_M) + 3, it.side, it.lat - 3, it.lat + 3});
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };
@@ -161,6 +173,7 @@ protected:
                 }
             }
             for (int64_t n = z0 + 20; n < z1; n += 50) { Item it; it.t = T_POLE; it.side = (n / 50) % 2 ? 1 : -1; it.lat = R + 2.6f; it.petit = true; item(n, it); }
+            troupeaux(z0, z1, obst);   // WFS-186 : après le reste du champ (tirages à part : le décor existant ne change pas)
         } else if (!std::strcmp(z, "foret")) {
             for (int side : {-1, 1}) for (int64_t n = z0 + fl(D() * 3); n < z1; n += 1 + fl(D() * 2)) {
                 { const float lat = R + 4.5f + D() * 9, h = 12 + D() * 10; const int kind = D() < 0.7f ? K_PINE : K_ROUND; tree(n, side, lat, h, kind, (D() - 0.5f) * 1.2f); }
@@ -456,6 +469,23 @@ protected:
             quadSol(S, v - p.f * 4.f, v + p.f * 4.f, v + p.f * 4.f - p.r * (s * 6.f), v - p.f * 4.f - p.r * (s * 6.f), uv(C_GLASS));
             break;
         }
+        case T_ENCLOS: {   // WFS-186 : enclos des chevaux : poteaux de 1,3 m tous les 2,5 m, deux lisses (0,6 et 1,1 m)
+            const vec3 c = lateral(p, s * it.lat), ex = p.r * s, ez = p.f;   // centre ; largeur it.w selon r, longueur it.l selon f
+            const float W = it.w / 2, Lg = it.l / 2;
+            const vec3 coins[4] = {c - ex * W - ez * Lg, c + ex * W - ez * Lg, c + ex * W + ez * Lg, c - ex * W + ez * Lg};
+            for (int k = 0; k < 4; k++) {
+                const vec3 A = coins[k], B = coins[(k + 1) % 4], d = B - A;
+                const float L = length(d); const vec3 u = d * (1.f / L), lat = cross(vec3{0, 1, 0}, u);
+                const int np = std::max(1, (int)std::ceil(L / 2.5f));
+                for (int q = 0; q < np; q++) {
+                    const vec3 P = A + u * (L * q / np);
+                    box(S, P + vec3{0, gy(it.lat + dot(P - c, ex)) - 0.05f, 0}, lat, u, 0.12f, 1.35f, 0.12f, uv(C_WOOD));
+                }
+                const vec3 m = (A + B) * 0.5f;
+                for (float y : {0.6f, 1.1f}) box(S, m + vec3{0, gy(it.lat + dot(m - c, ex)) + y, 0}, lat, u, 0.06f, 0.1f, L, uv(C_WOOD));
+            }
+            break;
+        }
         default: break;
         }
     }
@@ -481,6 +511,7 @@ protected:
             }
         }
         nS += autoroutesAnimes(r, g, c0, c1);   // WFS-179
+        nS += animauxAnimes(r, g, c0, c1);      // WFS-186
         if (rotors_.empty()) {
             for (const auto& [seg, it] : turbines_) {
                 Geo B;
@@ -568,6 +599,8 @@ protected:
         for (int k = 0; k < 3; k++) { r.destroy(lampeOn_[k]); r.destroy(lampeOff_[k]); }   // WFS-187 (accroche) : jeux de descripteurs rendus
         lampeMesh_ = Mesh{}; fontaineSeg_ = feuSeg_ = -1; vigilance_.clear(); commerces_.clear();
         for (Model& m : autos_) if (m.ok) { r.destroy(m); m = Model{}; }   // WFS-179
+        for (auto& esp : betesMesh_) for (auto& robe : esp) { for (Mesh& m : robe) r.destroy(m); robe.clear(); }   // WFS-186
+        betes_.clear();
         for (auto& T : txtA_) T = {};
         auDeb_ = -2; auFin_ = -1;
         if (solFond_.vb.buf) r.destroy(solFond_);
@@ -823,6 +856,141 @@ private:
     int64_t cascadeSeg_ = -1; int cascadeCote_ = 0;
     float yPied_ = 0;
 
+    // ==================================================================================================================
+    // WFS-186 (RG-02, RG-C4 de WFS-138) : animaux de ferme (vaches, moutons, chevaux) en vrais modèles (convertir_ferme.py)
+    // ==================================================================================================================
+    struct Obst { int64_t n0, n1; int side; float lat0, lat1; };
+    enum { VACHE, CHEVAL, MOUTON, NB_ESPECES };
+    struct Bete { int64_t seg; int side; float lat, along, yaw, ech, phase; int8_t espece, robe; };
+    static constexpr int NB_ROBES[NB_ESPECES] = {3, 2, 2};
+    std::vector<Bete> betes_;
+    int numBloc_ = 0;
+    std::vector<Mesh> betesMesh_[NB_ESPECES][3];   // [espèce][robe] : 5 poses (4 phases du broutage, repos)
+
+    // poses figées .wfa (même lecture que la Ville et la Plage) ; teinte de chaque matériau d'origine : case de la palette
+    bool chargerWfa(Renderer& r, const char* chemin, const int* couleurs, int nCouleurs, std::vector<Mesh>& poses) {
+        std::vector<uint8_t> d;
+        if (!readAsset(chemin, d) || d.size() < 12 || std::memcmp(d.data(), "WFA1", 4)) { WFS_ERR("Animal illisible : %s", chemin); return false; }
+        uint32_t np = 0, nv = 0; std::memcpy(&np, &d[4], 4); std::memcpy(&nv, &d[8], 4);
+        if (np == 0 || np > 32 || nv == 0 || nv > 200000 || nv % 3 || d.size() < 12 + (size_t)nv + (size_t)np * nv * 24) { WFS_ERR("Animal invalide : %s", chemin); return false; }
+        std::vector<uint32_t> idx(nv);
+        for (uint32_t i = 0; i < nv; i++) idx[i] = i;
+        for (uint32_t q = 0; q < np; q++) {
+            std::vector<Vertex> v(nv);
+            const uint8_t* src = d.data() + 12 + nv + (size_t)q * nv * 24;
+            for (uint32_t i = 0; i < nv; i++) {
+                float f[6]; std::memcpy(f, src + (size_t)i * 24, 24);
+                const vec2 t = uv(couleurs[std::min<int>(d[12 + i], nCouleurs - 1)]);
+                v[i] = {f[0], f[1], f[2], f[3], f[4], f[5], t.x, t.y};
+            }
+            poses.push_back(r.makeMesh(v, idx, false));
+        }
+        return true;
+    }
+    // robes réelles (cases de la palette commune ; codes = matériaux d'origine, dans l'ordre du .gltf) :
+    //   vache (Main, Main_Light, Hooves, Muzzle, Eye_Black, Eye_White, Horns) : limousine (froment, auréoles claires autour des
+    //   yeux et du mufle), charolaise (crème), montbéliarde (pie rouge) ;
+    //   cheval (Main, Main_Dark, Main_Light, Hooves, Hair, Muzzle, Eye_White, Eye_Black) : bai (crins noirs), gris ;
+    //   mouton (White, Black) : laine blanc cassé ou crème, tête et pattes noires (suffolk)
+    void chargerAnimaux(Renderer& r) {
+        static const int VA[3][7] = {{C_OAK + 3, C_VINE_A + 6, C_OAK + 2, C_VINE_A + 6, C_CHURCH + 9, C_WOOD + 2, C_WOOD + 3},
+                                     {C_WOOD + 3, C_WOOD + 2, C_OAK + 1, C_WALLS0 + 2, C_CHURCH + 9, C_WOOD + 2, C_WOOD + 3},
+                                     {C_WOOD + 5, C_WOOD + 2, C_OAK + 2, C_WALLS0 + 2, C_CHURCH + 9, C_WOOD + 2, C_WOOD + 3}};
+        static const int CH_[2][8] = {{C_OAK + 3, C_OAK + 2, C_VINE_A, C_OAK, C_CHURCH + 9, C_OAK + 2, C_WOOD + 2, C_CHURCH + 9},
+                                      {C_CHURCH + 7, C_TIRE + 4, C_CHURCH + 6, C_OAK + 1, C_TIRE + 3, C_TIRE + 4, C_WOOD + 2, C_CHURCH + 9}};
+        static const int MO[2][2] = {{C_WALLS0 + 5, C_CHURCH + 9}, {C_VINE_A + 6, C_CHURCH + 9}};
+        bool ok = true;
+        for (int k = 0; k < 3 && ok; k++) ok = chargerWfa(r, "world/animaux/vache.wfa", VA[k], 7, betesMesh_[VACHE][k]);
+        for (int k = 0; k < 2 && ok; k++) ok = chargerWfa(r, "world/animaux/cheval.wfa", CH_[k], 8, betesMesh_[CHEVAL][k]);
+        for (int k = 0; k < 2 && ok; k++) ok = chargerWfa(r, "world/animaux/mouton.wfa", MO[k], 2, betesMesh_[MOUTON][k]);
+        for (auto& esp : betesMesh_) for (auto& robe : esp) ok = ok && (robe.empty() || robe.size() >= 5);
+        if (!ok) {   // RG-03 : pas de modèle réel = pas d'animal (jamais de boîte à la place)
+            for (auto& esp : betesMesh_) for (auto& robe : esp) { for (Mesh& m : robe) r.destroy(m); robe.clear(); }
+            WFS_ERR("Campagne (WFS-186) : animaux indisponibles, aucun animal affiché");
+        }
+    }
+
+    // un troupeau par bloc clôturé de 90 segments (côté route : clôture T_FENCE, champs de WFS-138) : vaches 5 à 12, moutons
+    // 10 à 30, chevaux 2 à 4 dans un enclos ; tirages à part (graine du bloc), jamais sur une route (RG-C1 : place libre),
+    // ni sur un arbre, une ferme, des bottes ou une éolienne
+    void troupeaux(int64_t z0, int64_t z1, const std::vector<Obst>& obst) {
+        const float R = (float)RW, SM = (float)SEG_M;
+        for (int side : {-1, 1}) {
+            const int64_t off = side > 0 ? 40 : 0;
+            for (int64_t k = (z0 + off) / 90; k * 90 - off < z1; k++) {
+                if (k % 2) continue;   // bloc sans clôture (haie)
+                const int64_t b0 = k * 90 - off, c = b0 + 45;
+                if (b0 < z0 || b0 + 90 > z1) continue;
+                bool route = false;
+                for (int64_t n = b0; n < b0 + 90 && !route; n++) route = autoroute(n) || aPeage(n);
+                if (route) continue;
+                Mulberry32 T((uint32_t)(c * 2654435761u) ^ (side > 0 ? 0x9e3779b9u : 0x7f4a7c15u));
+                auto D = [&]() { return (float)T.next(); };
+                // espèce : suite fixe le long du tracé (chaque espèce présente sur la carte), un bloc sur six laissé vide
+                static const int SUITE[6] = {VACHE, MOUTON, CHEVAL, VACHE, -1, MOUTON};
+                const int esp = SUITE[numBloc_++ % 6];
+                if (esp < 0) continue;
+                const int nb = esp == VACHE ? 5 + (int)(D() * 8) : esp == MOUTON ? 10 + (int)(D() * 21) : 2 + (int)(D() * 3);
+                const float lat0 = R + 9, prof = esp == VACHE ? 28.f : esp == MOUTON ? 18.f : 16.f, longu = esp == CHEVAL ? 30.f : 60.f;
+                const Libre* l = libreA(c, side);
+                if (l && lat0 + prof + 4 > l->m) continue;   // champ trop étroit (autre route derrière)
+                if (esp == CHEVAL) { Item e; e.t = T_ENCLOS; e.side = side; e.lat = lat0 + prof / 2; e.w = prof + 3; e.l = longu + 3; CarteDecor::item(c, e); }
+                const int robe0 = (int)(D() * NB_ROBES[esp]);
+                const size_t debut = betes_.size();
+                for (int i = 0, essais = 0; i < nb && essais < nb * 6; essais++) {
+                    Bete b; b.side = side; b.espece = (int8_t)esp;
+                    const float al = (D() - 0.5f) * longu;
+                    b.seg = c + (int64_t)std::floor(al / SM); b.along = al - (float)(b.seg - c) * SM;
+                    b.lat = lat0 + 1.5f + D() * (prof - 3);
+                    bool pris = false;
+                    for (const Obst& o : obst) pris = pris || (o.side == side && b.seg >= o.n0 && b.seg <= o.n1 && b.lat >= o.lat0 - 2 && b.lat <= o.lat1 + 2);
+                    // RG-02 : deux bêtes à 1,6 m au moins (2,5 m pour les grands animaux)
+                    const float ecart = esp == MOUTON ? 1.6f : 2.5f;
+                    for (size_t j = debut; j < betes_.size() && !pris; j++) {
+                        const float dl = (float)(betes_[j].seg - b.seg) * SM + betes_[j].along - b.along, dt = betes_[j].lat - b.lat;
+                        pris = dl * dl + dt * dt < ecart * ecart;
+                    }
+                    if (pris) continue;
+                    // robe : celle du troupeau, une bête sur trois d'une autre robe ; jamais identique à la voisine précédente
+                    // (orientation, instant du broutage et taille à ±1 % tirés pour chacune)
+                    b.robe = (int8_t)(D() < 0.67f ? robe0 : (int)(D() * NB_ROBES[esp]));
+                    b.yaw = D() * 2 * PI; b.phase = D() * 16; b.ech = 0.99f + D() * 0.02f;   // RG-02 : taille réelle à ±1 %
+                    betes_.push_back(b); i++;
+                }
+                if (betes_.size() > debut) WFS_LOG("Campagne (WFS-186) : troupeau de %zu %s au segment %lld, côté %d", betes_.size() - debut,
+                                                   esp == VACHE ? "vaches" : esp == CHEVAL ? "chevaux" : "moutons", (long long)c, side);
+                const int64_t m = ((c % len()) + len()) % len();
+                if (g_troupeau[esp] < 0 || m < g_troupeau[esp]) g_troupeau[esp] = m;
+            }
+        }
+    }
+
+    // RG-02 / RG-C4 : bêtes des morceaux chargés, de 30 m derrière à 240 m devant (160 m en Basse), 40 au plus (16 en Basse) ;
+    // broutage : 4 phases de 0,4 s deux fois de suite (tête qui descend et remonte), puis 3,2 s de repos ; un appel par bête
+    int animauxAnimes(Renderer& r, const GameView& g, int64_t c0, int64_t c1) {
+        if (betes_.empty() || betesMesh_[VACHE][0].empty()) return 0;
+        Track& t = *g.track;
+        const bool basse = r.qualiteBasse;
+        const double loin = basse ? 160 : 240; const int maxi = basse ? 16 : 40;
+        int n = 0;
+        for (const Bete& b : betes_) {
+            if (n >= maxi) break;
+            int64_t a;
+            if (!dansMorceau(b.seg, c0 * CH, (c1 + 1) * CH, a)) continue;
+            const double dz = ((double)a - g.player->dist / SEG) * SEG_M + b.along;
+            if (dz < -30 || dz > loin) continue;
+            const std::vector<Mesh>& P = betesMesh_[b.espece][std::min<int>(b.robe, NB_ROBES[b.espece] - 1)];
+            if (P.size() < 5) continue;
+            const int f = (int)std::fmod(g.time * 2.5 + b.phase, 16.0);
+            const Mesh& m = P[f < 8 ? f % 4 : 4];
+            const Pose p = poseAt(t, a);
+            const vec3 o = lateral(p, b.side * b.lat, solY(zone(a), a, b.side, b.lat)) + p.f * b.along;
+            r.draw(m, mats_[P_UNI], translate(o) * rotateY(b.yaw) * scale({b.ech, b.ech, b.ech}));
+            n++;
+        }
+        return n;
+    }
+
     std::vector<std::pair<int64_t, Item>> turbines_;
     std::vector<Mesh> rotors_;
 };
@@ -830,6 +998,8 @@ private:
 } // namespace
 } // namespace carte
 
-WFS_SYSTEM(carte::Campagne, 107)   // décor (100-199) : après la plage (105) et les piétons (106)
+WFS_SYSTEM(carte::Campagne, 107)
+
+namespace campagne { int64_t troupeau(int espece) { return espece >= 0 && espece < 3 ? carte::g_troupeau[espece] : -1; } }   // WFS-186 : banc   // décor (100-199) : après la plage (105) et les piétons (106)
 
 } // namespace wfs

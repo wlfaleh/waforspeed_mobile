@@ -164,7 +164,8 @@ def anthropometrie(ansur, sortie):
     for sexe, chemin in fichiers.items():
         rows = list(csv.DictReader(open(chemin, encoding='latin-1')))
         for col, nom in (("stature", "taille (stature)"), ("crotchheight", "hauteur de l'entrejambe"), ("acromialheight", "hauteur des épaules (acromion)"),
-                         ("span", "envergure"), ("biacromialbreadth", "largeur des épaules (biacromiale)")):
+                         ("span", "envergure"), ("biacromialbreadth", "largeur des épaules (biacromiale)"),
+                         ("eyeheightsitting", "hauteur des yeux en position assise (au-dessus du siège)")):   # WFS-201 (RG-07, accroche)
             v = sorted(float(r[col]) for r in rows); q = statistics.quantiles(v, n=100)
             mesures.append({"id": f"humain.{sexe}.{col}", "domaine": "anthropometrie", "grandeur": f"{nom}, {sexe}", "unite": "mm",
                             "valeur": round(statistics.mean(v), 1), "ecart_type": round(statistics.stdev(v), 1),
