@@ -101,6 +101,23 @@ std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauf
 // ligne du rendu réellement utilisé, lue en direct (qualite_systeme.cpp) : Réglages, journal, rapport partagé
 std::string ligneRendu();
 
+// WFS-246 (RG-06) : mesure sur le téléphone : durées des images sur une fenêtre glissante de 20 s de course (médiane, 95 %,
+// 99 %, images > 33 ms et > 50 ms). Calcul seul (testé par tests/test_qualite.cpp) ; le système de qualité l'alimente.
+struct MesureImages {
+    static constexpr double FENETRE_S = 20;
+    static constexpr int CAP = 20 * 144;     // 144 Hz au plus
+    float ms[CAP] = {}; int n = 0, tete = 0; double duree = 0;   // tete : prochaine place ; duree : somme des n gardées (ms)
+    void ajouter(float msImage);
+    void vider() { n = 0; tete = 0; duree = 0; }
+    struct Stats { float mediane = 0, p95 = 0, p99 = 0; int plus33 = 0, plus50 = 0, images = 0; float secondes = 0; };
+    Stats stats() const;
+};
+// texte du fichier rendu-mesure.txt (et de la feuille de partage), ligne courte des Réglages ; vides avant toute mesure
+std::string texteMesure();
+std::string ligneMesure();
+void mesureEssai(const float* ms, int n);   // banc : remplit la fenêtre (capture des Réglages)
+inline std::string dossierMesure;   // Android : externalDataPath (android_main.cpp) ; vide : aucun fichier écrit
+
 // premier lancement (aucun réglage enregistré) : Haute comme le jeu web, Basse sur un GPU logiciel
 inline int niveauInitial(bool gpuLogiciel) { return gpuLogiciel ? BASSE : HAUTE; }
 

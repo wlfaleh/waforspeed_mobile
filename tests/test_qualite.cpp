@@ -106,6 +106,22 @@ int main() {
     oublierRetenus();
     std::printf("netteté de la Basse (WFS-144) : MSAA ×2, aniso ×4, retenus respectés : OK\n");
 
+    // WFS-246 (RG-06) : fenêtre glissante de 20 s : médiane, 95 %, 99 %, images > 33 et > 50 ms
+    {
+        static MesureImages m;
+        VERIFIE(m.stats().images == 0, "vide au départ");
+        for (int i = 0; i < 1000; i++) m.ajouter(10.f);   // 10 s à 10 ms
+        for (int i = 0; i < 100; i++) m.ajouter(i < 60 ? 40.f : 60.f);   // 60 images à 40 ms, 40 à 60 ms (+ 4,8 s)
+        MesureImages::Stats st = m.stats();
+        VERIFIE(st.images == 1100 && st.plus33 == 100 && st.plus50 == 40 && st.mediane == 10.f, "comptes (%d images, %d, %d, méd. %.1f)", st.images, st.plus33, st.plus50, st.mediane);
+        VERIFIE(st.p95 == 40.f && st.p99 == 60.f, "95 %% %.1f, 99 %% %.1f", st.p95, st.p99);
+        for (int i = 0; i < 2000; i++) m.ajouter(16.f);   // 32 s de plus : seules les 20 dernières secondes restent
+        st = m.stats();
+        VERIFIE(st.images == 1250 && st.plus33 == 0 && std::abs(st.secondes - 20.f) < 0.02f && st.p99 == 16.f, "fenêtre de 20 s (%d images, %.2f s)", st.images, st.secondes);
+        m.ajouter(-1.f); m.ajouter(9000.f); VERIFIE(m.stats().images == 1250, "durées impossibles ignorées");
+        std::printf("mesure du téléphone (WFS-246 RG-06) : médiane, 95 / 99 %%, > 33 / > 50 ms sur 20 s glissantes : OK\n");
+    }
+
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("qualité : tout est OK\n");
     return 0;

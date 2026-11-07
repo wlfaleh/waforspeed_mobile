@@ -184,6 +184,14 @@ public:
     const ChronoImage& chronoImage() const { return chronoPrec_; }
     // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
     double gpuImageMs() const { return gpuImageMs_; }
+    // WFS-246 (RG-06) : temps GPU de chaque passe (ms, lissé) ; mesuree = faux sans horodatages
+    static constexpr uint32_t HORODATAGES = 5;   // WFS-246 (RG-06) : horodatages par image (ombre, reflet, scène, fin de scène, fin de la passe finale)
+    struct GpuPasses { double ombre = 0, reflet = 0, scene = 0, post = 0; bool mesuree = false; };
+    const GpuPasses& gpuPasses() const { return gpuPasses_; }
+    // WFS-246 (RG-07) : résolution dynamique (0,1 à 1 de la capacité) sans recréer les cibles ; appliquée à l'image suivante
+    void echelleDynamique(float e);
+    float echelleDynamiqueActuelle() const { return echelleDyn_; }
+    uint32_t recreations() const { return recreations_; }   // WFS-246 : appels de resize()
     // objets en file pour la passe de scène (vus par la caméra) : appels et triangles, comptés par système au banc
     void fileScene(uint32_t& appels, uint32_t& triangles) const {
         appels = triangles = 0;
@@ -234,7 +242,9 @@ private:
     VkCtx* vk_ = nullptr;
     uint32_t lw_ = 0, lh_ = 0;   // taille logique (tampon)
     uint32_t vw_ = 0, vh_ = 0;   // taille d'affichage (fenêtre), 0 = identique
-    uint32_t sw_ = 0, sh_ = 0;   // taille de la scène 3D (logique × renderScale)
+    uint32_t sw_ = 0, sh_ = 0;   // zone dessinée de la scène 3D (WFS-246 : capacité × échelle dynamique, + 2 px)
+    uint32_t cw_ = 0, ch_ = 0;   // WFS-246 (RG-07) : taille des cibles de la scène (logique × renderScale), fixe en course
+    float echelleDyn_ = 1.f;     // WFS-246 : part de la capacité lue par la passe finale
     VkRenderPass scenePass_ = VK_NULL_HANDLE, finalPass_ = VK_NULL_HANDLE;
     Image msaaColor_, depth_, hdr_;
     VkFramebuffer sceneFb_ = VK_NULL_HANDLE;
@@ -293,6 +303,8 @@ private:
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
     double gpuImageMs_ = -1;   // WFS-246
+    GpuPasses gpuPasses_;      // WFS-246 (RG-06)
+    uint32_t recreations_ = 0;  // WFS-246 (RG-07)
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     // WFS-09 / WFS-16 : lumières de nuit et reflets

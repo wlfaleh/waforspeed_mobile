@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 #if defined(__ANDROID__)
 #include <sys/system_properties.h>
 #endif
@@ -42,6 +43,24 @@ int Auto::image(double dt, bool enCourse, double gpuMs) {
     if (echelle != prev || palier != palierPrev) effet |= ECHELLE;
     if (!fait && !choixJoueur && niveau > BASSE && echelle <= bas + 1e-4f && fps < 30) { fait = true; niveau--; effet |= RETRO; }
     return effet;
+}
+
+// WFS-246 (RG-06) : anneau des durées d'image ; les plus anciennes sortent dès que la fenêtre dépasse 20 s
+void MesureImages::ajouter(float msImage) {
+    if (!(msImage > 0) || msImage > 5000) return;   // reprise après une pause : ignorée
+    if (n == CAP) { duree -= ms[(tete - n + CAP) % CAP]; n--; }
+    ms[tete] = msImage; tete = (tete + 1) % CAP; n++; duree += msImage;
+    while (n > 1 && duree - ms[(tete - n + CAP) % CAP] >= FENETRE_S * 1000) { duree -= ms[(tete - n + CAP) % CAP]; n--; }
+}
+MesureImages::Stats MesureImages::stats() const {
+    Stats s; s.images = n; s.secondes = (float)(duree / 1000);
+    if (!n) return s;
+    std::vector<float> v(n);
+    for (int i = 0; i < n; i++) { v[i] = ms[(tete - n + i + CAP) % CAP]; s.plus33 += v[i] > 33.3f; s.plus50 += v[i] > 50.f; }
+    std::sort(v.begin(), v.end());
+    auto rang = [&](double q) { return v[(size_t)std::clamp((int)std::ceil(q * n) - 1, 0, n - 1)]; };   // rang le plus proche
+    s.mediane = rang(0.5); s.p95 = rang(0.95); s.p99 = rang(0.99);
+    return s;
 }
 
 // WFS-150 (RG-05) : mode diagnostic, lu une fois

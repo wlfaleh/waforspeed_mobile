@@ -309,7 +309,7 @@ void Renderer::createShadows() {
     // mesure du coût GPU de la passe (2 horodatages par image en vol)
     if (vk.props.limits.timestampComputeAndGraphics) {
         VkQueryPoolCreateInfo q{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
-        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 4 * FRAMES;   // ombre, reflet (WFS-16), scène
+        q.queryType = VK_QUERY_TYPE_TIMESTAMP; q.queryCount = 5 * FRAMES;   // ombre, reflet (WFS-16), scène ; WFS-246 (RG-06) : fin de la passe finale (bloom, post, interface)
         VK_OK(vkCreateQueryPool(d, &q, nullptr, &tsPool_));
     }
     WFS_LOG("Ombres du soleil : carte %ux%u, filtre %s", shadowSize_, shadowSize_, linear ? "bilinéaire" : "au plus proche");
@@ -317,13 +317,19 @@ void Renderer::createShadows() {
 
 void Renderer::readShadowTiming() {
     if (!tsPool_ || !tsWritten_[cur_]) return;
-    uint64_t t[4];
-    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 4, 4, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
+    uint64_t t[5];
+    if (vkGetQueryPoolResults(vk_->device, tsPool_, (uint32_t)cur_ * 5, 5, sizeof t, t, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS) return;
     const double k = vk_->props.limits.timestampPeriod * 1e-6;
     shadowMsSum_ += (double)(t[1] - t[0]) * k;
     refletMsSum_ += (double)(t[2] - t[1]) * k;   // WFS-16 : passe de reflet (0 sans route mouillée)
     sceneMsSum_ += (double)(t[3] - t[2]) * k;    // WFS-42 : coût de la passe de scène, pour comparer avant / après
     { const double g = (double)(t[3] - t[0]) * k; if (g > 0 && g < 1000) gpuImageMs_ = gpuImageMs_ < 0 ? g : gpuImageMs_ * 0.9 + g * 0.1; }   // WFS-246
+    {   // WFS-246 (RG-06) : temps GPU de chaque passe, lissé (ombre, reflet, scène, fin : bloom + post + interface)
+        const double v[4] = {(double)(t[1] - t[0]) * k, (double)(t[2] - t[1]) * k, (double)(t[3] - t[2]) * k, (double)(t[4] - t[3]) * k};
+        double* m[4] = {&gpuPasses_.ombre, &gpuPasses_.reflet, &gpuPasses_.scene, &gpuPasses_.post};
+        for (int i = 0; i < 4; i++) if (v[i] >= 0 && v[i] < 1000) *m[i] = gpuPasses_.mesuree ? *m[i] * 0.9 + v[i] * 0.1 : v[i];
+        gpuPasses_.mesuree = true;
+    }
     if (++shadowMsN_ == 120) {
         WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms ; reflets %.2f ms (WFS-16)", shadowMsSum_ / shadowMsN_, shadowSize_,
                 sceneMsSum_ / shadowMsN_, refletMsSum_ / shadowMsN_);
@@ -333,7 +339,7 @@ void Renderer::readShadowTiming() {
 
 // passe d'ombre : objets opaques vus du soleil (sauf sol, route, trottoirs : ils reçoivent l'ombre sans en projeter)
 void Renderer::shadowPass(VkCommandBuffer cb) {
-    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 4, 4); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4); }
+    if (tsPool_) { vkCmdResetQueryPool(cb, tsPool_, (uint32_t)cur_ * 5, 5); vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5); }
     VkClearValue clear{}; clear.depthStencil = {1.f, 0};
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     rbi.renderPass = shadowPass_; rbi.framebuffer = shadowFb_; rbi.renderArea = {{0, 0}, {shadowSize_, shadowSize_}};
@@ -362,7 +368,7 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         }
     }
     vkCmdEndRenderPass(cb);
-    if (tsPool_) vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 1);
+    if (tsPool_) vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 1);
 }
 
 void Renderer::rotationMatrix(float r[4]) const {
@@ -433,7 +439,7 @@ struct Renderer::Bloom {
         }
         VkCommandBuffer cb = vk.beginOneShot();
         for (int i = 0; i < N; i++) {
-            w[i] = std::max(1u, R.sw_ >> (i + 1)); ht[i] = std::max(1u, R.sh_ >> (i + 1));
+            w[i] = std::max(1u, R.cw_ >> (i + 1)); ht[i] = std::max(1u, R.ch_ >> (i + 1));   // WFS-246 (RG-07) : capacité
             for (Image* im : {&h[i], &v[i]}) {
                 *im = vk.createImage(w[i], ht[i], 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
                 // lisible dès le départ (bloom coupé : la passe finale garde un descripteur valide)
@@ -498,7 +504,7 @@ struct Renderer::Bloom {
         VkRect2D sc{{0, 0}, {w[i], ht[i]}};
         vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, R.postPLayout_, 0, 1, &s, 0, nullptr);
-        struct { float rot[4]; float params[4]; float bloom[4]; } pp{{1, 0, 0, 1}, {R.exposure_, 0, 0, 0}, {mode, poidsNiveau, z, 0}};
+        struct { float rot[4]; float params[4]; float bloom[4]; } pp{{1, 0, 0, 1}, {R.exposure_, 0, 0, mode == 1 ? R.echelleDyn_ : 0.f}, {mode, poidsNiveau, z, 0}};   // WFS-246 : w = part de la scène lue
         vkCmdPushConstants(cb, R.postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);
         vkCmdDraw(cb, 3, 1, 0, 0);
         vkCmdEndRenderPass(cb);
@@ -522,12 +528,15 @@ void Renderer::createTargets() {
     lw_ = rotated ? vk.swapExtent.height : vk.swapExtent.width;
     lh_ = rotated ? vk.swapExtent.width : vk.swapExtent.height;
     // scène 3D éventuellement rendue en plus petit (GPU lents), agrandie par la passe finale
-    sw_ = std::max(1u, (uint32_t)(lw_ * vk.renderScale)); sh_ = std::max(1u, (uint32_t)(lh_ * vk.renderScale));
+    // WFS-246 (RG-07) : cibles de la scène créées à la CAPACITÉ (échelle du niveau, renderScale) ; la résolution dynamique ne
+    // change ensuite que la zone dessinée (sw_ × sh_, echelleDynamique) : aucune recréation ni attente du GPU en course
+    cw_ = std::max(1u, (uint32_t)(lw_ * vk.renderScale)); ch_ = std::max(1u, (uint32_t)(lh_ * vk.renderScale));
+    echelleDynamique(echelleDyn_);
     const bool ms = vk.msaa != VK_SAMPLE_COUNT_1_BIT;
 
-    hdr_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);   // WFS-150 : relue par le banc (HDR)
-    if (ms) msaaColor_ = vk.createImage(sw_, sh_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
-    depth_ = vk.createImage(sw_, sh_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
+    hdr_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);   // WFS-150 : relue par le banc (HDR)
+    if (ms) msaaColor_ = vk.createImage(cw_, ch_, 1, HDR_FORMAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_COLOR_BIT, true);
+    depth_ = vk.createImage(cw_, ch_, 1, vk.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vk.msaa, VK_IMAGE_ASPECT_DEPTH_BIT, true);
 
     if (!scenePass_) {
         // ---------- passe de scène : couleur HDR (MSAA) + profondeur, résolue dans hdr_ ----------
@@ -586,7 +595,7 @@ void Renderer::createTargets() {
     VkImageView views[3] = {ms ? msaaColor_.view : hdr_.view, depth_.view, hdr_.view};
     VkFramebufferCreateInfo fci{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
     fci.renderPass = scenePass_; fci.attachmentCount = ms ? 3 : 2; fci.pAttachments = views;
-    fci.width = sw_; fci.height = sh_; fci.layers = 1;
+    fci.width = cw_; fci.height = ch_; fci.layers = 1;
     VK_OK(vkCreateFramebuffer(d, &fci, nullptr, &sceneFb_));
     finalFbs_.resize(vk.swapViews.size());
     for (size_t i = 0; i < vk.swapViews.size(); i++) {
@@ -601,14 +610,23 @@ void Renderer::createTargets() {
     createReflets();
     if (!bloom_) bloom_ = new Bloom();   // WFS-100 : chaîne du bloom (écrit aussi le bloom dans postSet_)
     bloom_->creer(*this);
-    WFS_LOG("Cibles de rendu : %ux%u (logique), scène %ux%u, MSAA x%d", lw_, lh_, sw_, sh_, (int)vk.msaa);
+    WFS_LOG("Cibles de rendu : %ux%u (logique), scène %ux%u, MSAA x%d", lw_, lh_, cw_, ch_, (int)vk.msaa);
+}
+
+// WFS-246 (RG-07) : résolution dynamique sans recréation : zone dessinée = e × capacité, plus 2 pixels de vraie image au bord
+// (les lectures bilinéaires de la passe finale et du bloom, jusqu'à e × capacité, ne touchent jamais un pixel non dessiné ;
+// champ rogné de 2 / sw_ ≈ 0,15 %) ; e = 1 : toute la cible, image identique à avant
+void Renderer::echelleDynamique(float e) {
+    echelleDyn_ = e >= 0.999f ? 1.f : std::clamp(e, 0.1f, 1.f);
+    if (echelleDyn_ >= 1.f || !cw_) { sw_ = cw_; sh_ = ch_; return; }
+    sw_ = std::min(cw_, (uint32_t)std::ceil(cw_ * echelleDyn_) + 2); sh_ = std::min(ch_, (uint32_t)std::ceil(ch_ * echelleDyn_) + 2);
 }
 
 // ---------- WFS-16 : passe de reflet (scène vue dans le miroir de la chaussée), demi-résolution, une cible par image en vol ----------
 // Image n : la passe miroir écrit refletColor_[n], puis la passe de scène la lit : jamais lue et écrite dans la même passe.
 void Renderer::createReflets() {
     VkCtx& vk = *vk_; VkDevice d = vk.device;
-    rw_ = std::max(1u, sw_ / 2); rh_ = std::max(1u, sh_ / 2);
+    rw_ = std::max(1u, cw_ / 2); rh_ = std::max(1u, ch_ / 2);   // WFS-246 (RG-07) : capacité (lu en coordonnées d'écran normalisées)
     if (!refletPass_) {
         VkAttachmentDescription at[2]{};
         at[0].format = HDR_FORMAT; at[0].samples = VK_SAMPLE_COUNT_1_BIT;
@@ -713,6 +731,7 @@ void Renderer::destroyTargets() {
 }
 
 bool Renderer::resize() {
+    recreations_++;   // WFS-246 (RG-07) : compté par le banc perf (aucune pendant la résolution dynamique)
     vk_->waitIdle();
     destroyTargets();
     const bool refaire = appliquerNettete();   // WFS-144 : MSAA / anisotrope du niveau (Basse : ×2 / ×4)
@@ -1464,7 +1483,7 @@ void Renderer::endFrame() {
     // objets transparents (vitres, halos) : du plus loin au plus proche, triés une fois pour les deux passes
     std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
     refletPass(r.cb);   // WFS-16 : reflet de la scène (route mouillée seulement)
-    if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 2);
+    if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 2);
     passes::avantScene(*this, r.cb);   // WFS-150 (RG-01) : ombres → pré-passe → passes d'écran (capture d'environnement)
     // passe de scène : ciel, objets opaques (dans l'ordre d'appel), puis transparents
     VkClearValue clears[3]{};
@@ -1494,7 +1513,11 @@ void Renderer::endFrame() {
         const bool d = rendu221 || aDecoupe(p);   // WFS-222 : shader sans discard si l'objet n'a pas de découpe
         // WFS-246 (levier 1) : sans découpe et sans MAT_DOUBLE : faces arrière retirées
         // route, trottoirs et sol (bandes de game.cpp, tournées dans l'autre sens, toujours vus de dessus) : rien à retirer
-        const bool cull = !d && facesArriere_ && p.mat && !(p.mat->flags & (MAT_DOUBLE | MAT_GLASS | MAT_ROAD | MAT_WALK | MAT_GROUND));
+        // RG-02.1 : objet posé en miroir (échelle négative : déterminant < 0, ordre des sommets inversé) : deux faces gardées
+        const mat4& mo = p.pc.model;
+        const float det = mo.at(0, 0) * (mo.at(1, 1) * mo.at(2, 2) - mo.at(2, 1) * mo.at(1, 2)) - mo.at(0, 1) * (mo.at(1, 0) * mo.at(2, 2) - mo.at(2, 0) * mo.at(1, 2)) +
+                          mo.at(0, 2) * (mo.at(1, 0) * mo.at(2, 1) - mo.at(2, 0) * mo.at(1, 1));
+        const bool cull = !d && facesArriere_ && det > 0 && p.mat && !(p.mat->flags & (MAT_DOUBLE | MAT_GLASS | MAT_ROAD | MAT_WALK | MAT_GROUND));
         const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : cull ? skinOpaqueCull_ : skinOpaque_) : (d ? opaqueDecoupe_ : cull ? opaqueCull_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
@@ -1519,7 +1542,7 @@ void Renderer::endFrame() {
     vkCmdEndRenderPass(r.cb);
     if (bloom_) bloom_->dessiner(*this, r.cb);   // WFS-100 : chaîne du bloom, comptée avec la passe de scène
     // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène (+ bloom, WFS-100)
-    if (tsPool_) { vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 4 + 3); tsWritten_[cur_] = true; }
+    if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 3);
     passes::apresScene(*this, r.cb);   // WFS-150 : post-traitement enfichable (avant la passe finale)
 
     // passe finale : tonemapping puis interface
@@ -1534,6 +1557,7 @@ void Renderer::endFrame() {
     pp.params[0] = exposure_; pp.params[1] = vk.swapSrgb ? 1.f : 0.f;
     // WFS-15 / WFS-100 : force du bloom (calculée en début d'image) ; seuil 1,0 et genou 0,5 dans post.frag
     pp.params[2] = bloom_ ? bloom_->force : 0.f;
+    pp.params[3] = echelleDyn_;   // WFS-246 (RG-07) : part de la cible de scène dessinée, agrandie à tout l'écran
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, post_);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &postSet_, 0, nullptr);
     vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);
@@ -1549,6 +1573,7 @@ void Renderer::endFrame() {
         vkCmdDraw(r.cb, (uint32_t)ui_vtx_.size(), 1, 0, 0);
     }
     vkCmdEndRenderPass(r.cb);
+    if (tsPool_) { vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 4); tsWritten_[cur_] = true; }   // WFS-246 (RG-06)
     VK_OK(vkEndCommandBuffer(r.cb));
 
     VkPipelineStageFlags wait = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
