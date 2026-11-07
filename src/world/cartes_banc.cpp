@@ -261,4 +261,37 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
 }
 
+// WFS-223 (RG-01, RG-06) : chaque rond-point des cartes au tracé 2 : 15 m avant l'entrée (caméra de course) et vue haute,
+// de jour et de nuit, qualité Haute puis Basse (WFS_QUALITE_BASSE=1) : captures rondpoint-<carte>-<vue>-<moment>
+int benchRondsPoints(Game& g, Renderer& r, const std::string& out) {
+    int ecarts = 0;
+    const bool basse = std::getenv("WFS_QUALITE_BASSE") != nullptr;
+    for (const char* carte : {"ville", "campagne", "plage", "circuit"}) {
+        Track t; t.build(mapById(carte), trace::versionCarte(carte));
+        int n = 0;
+        for (const trace::Section& s : t.sections()) {
+            if (s.type != trace::Type::RondPoint) continue;
+            n++;
+            int64_t entree = s.debut;   // entrée de l'anneau : la courbure change de sens (fin de la courbe d'approche)
+            for (int64_t a = s.debut + 1; a < s.fin; a++) if (t.segAt(a).curve * t.segAt(s.debut + 2).curve < 0) { entree = a; break; }
+            for (const char* mo : {"jour", "nuit"}) for (int cam : {0, 1, 2}) {   // 2 : caméra de course dans l'anneau (milieu)
+                setenv("WFS_MOMENT", mo, 1);
+                setenv("WFS_DEPART", std::to_string(cam == 2 ? (s.debut + s.fin) / 2 : entree - (int64_t)(15 / SEG_M)).c_str(), 1);
+                r.qualiteBasse = basse;   // lue par les décors à l'initialisation
+                if (!g.init(r, "golf", carte)) { ecarts++; continue; }
+                g.setAutopilot(false); g.camMode = cam == 2 ? 0 : cam; g.allerA(Ecran::Course);
+                for (int i = 0; i < 240; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+                g.render(404); g.render(404.02);
+                const std::string nom = std::string("rondpoint-") + carte + (n > 1 ? std::to_string(n) : "") + (cam == 1 ? "-haut" : cam == 2 ? "-anneau" : "-course") + "-" + mo + (basse ? "-basse" : "");
+                r.capturePng(out + "/" + nom + ".png");
+                WFS_LOG("capture %s : segment %lld (anneau de %.0f m), %u appels de dessin", nom.c_str(), (long long)s.debut, s.rayon, r.appelsDessin());
+                g.shutdown();
+            }
+        }
+        WFS_LOG("ronds-points : %s : %d", carte, n);
+    }
+    unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    return ecarts;
+}
+
 } // namespace wfs

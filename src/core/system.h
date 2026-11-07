@@ -59,6 +59,7 @@ struct GameView {
     float uiWidth = 0, uiHeight = 0;   // taille de l'interface (pixels logiques, paysage)
     Marges marges;                     // zone sûre de l'interface (WFS-51)
     bool night = false;                // ambiance de nuit
+    double alpha = 1;                  // WFS-221 : part du pas de simulation suivant déjà écoulée (rendu interpolé : prec + (actuel − prec) × alpha)
     // écran affiché (WFS-36) et demande de changement : appliquée entre deux images, puis System::onEcran
     Ecran ecran = Ecran::Course;
     std::function<void(Ecran)> allerA;

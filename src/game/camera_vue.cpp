@@ -31,7 +31,26 @@ namespace wfs {
 namespace {
 VueCamera g_vue = VueCamera::Poursuite;   // store('waforspeed-cam') du jeu web : mémorisée pour la session
 struct Suivi { bool init = false; VueCamera vue = VueCamera::Poursuite; vec3 eye{}, look{}; float fov = 72.f;
-               double camHd = 0, distDyn = 0; } g_suivi;   // WFS-98 : camHd et camDistDyn d'updateCamera du jeu web
+               double camHd = 0, distDyn = 0;              // WFS-98 : camHd et camDistDyn d'updateCamera du jeu web
+               vec3 eyeT0{}, lookT0{}; double hdT0 = 0; } g_suivi;   // WFS-221 : cibles de l'image précédente (filtre exact)
+// WFS-221 (RG-02 c) : filtre du premier ordre (constante k /s) résolu EXACTEMENT pour une cible qui avance linéairement pendant
+// l'image (x = y − v/k + (x0 − y0 + v/k)·e^(−k·dt)) : même retard moyen qu'avant, mais il ne dépend plus de la durée de chaque
+// image (l'ancien lerp prenait la cible pour immobile : à 200 km/h, retard de ≈ 4 m variable d'une image à l'autre : la voiture
+// avançait et reculait dans le cadre)
+template <class T> static void suivreExact(T& x, T& cible0, const T& cible, double k, float fdt) {
+    if (!g_cameraFiltreExact) { x = lerp(x, cible, 1.f - (float)std::exp(-fdt * k)); cible0 = cible; return; }
+    if (fdt <= 1e-5f) { cible0 = cible; return; }
+    const T vk = (cible - cible0) * (float)(1.0 / (fdt * k));
+    x = cible - vk + (x - cible0 + vk) * (float)std::exp(-fdt * k);
+    cible0 = cible;
+}
+static void suivreExact(double& x, double& cible0, double cible, double k, float fdt) {
+    if (!g_cameraFiltreExact) { x += (cible - x) * std::min(1.0, fdt * k); cible0 = cible; return; }   // ancien pas d'Euler
+    if (fdt <= 1e-5f) { cible0 = cible; return; }
+    const double vk = (cible - cible0) / (fdt * k);
+    x = cible - vk + (x - cible0 + vk) * std::exp(-fdt * k);
+    cible0 = cible;
+}
 EtatCockpit g_ck;
 float g_ckEssuieT = 0;   // WFS-197 : phase des essuie-glaces au dernier pas (banc d'essai)
 cockpit::EtatInterieur g_ckInt; int g_ckAppels = 0; size_t g_ckOctets = 0; const char* g_ckCar = nullptr;   // WFS-197 : banc d'essai
@@ -63,15 +82,19 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         const Poursuite& P = g_vue == VueCamera::Proche ? POURSUITE_PROCHE : POURSUITE_LOIN;
         const double p = std::abs(pl.speed) / MAX_SPEED, lat = pl.playerX * RW;
         const vec3 carPos = carM.transformPoint({0, 0, 0});
-        const double th = track.point(pl.dist, lat).th;
+        const double th = track.pointLisse(pl.dist, lat).th;   // WFS-221 : cap de la route lissé (continu)
         const double hdT = th + pl.heading + pl.spinYaw * 0.15;   // tête-à-queue : la caméra n'en suit qu'un peu (reste stable)
         const bool neuf = !g_suivi.init || g_suivi.vue != g_vue || length(g_suivi.eye - carPos) > 25.f + P.dist;   // camInit
-        if (neuf) { g_suivi.camHd = hdT; g_suivi.distDyn = P.dist; }
-        double dh = hdT - g_suivi.camHd;
-        dh = std::atan2(std::sin(dh), std::cos(dh));
-        g_suivi.camHd += dh * std::min(1.0, fdt * 3.4);   // ≈ 0,3 s de retard : la voiture pivote d'abord dans l'image
+        if (neuf) { g_suivi.camHd = hdT; g_suivi.distDyn = P.dist; g_suivi.hdT0 = hdT; }
+        {   // ≈ 0,3 s de retard : la voiture pivote d'abord dans l'image (WFS-221 : filtre exact, cible ramenée près de camHd)
+            double cible = hdT, c0 = g_suivi.hdT0;
+            cible = g_suivi.camHd + std::atan2(std::sin(cible - g_suivi.camHd), std::cos(cible - g_suivi.camHd));
+            c0 = cible - std::atan2(std::sin(cible - c0), std::cos(cible - c0));
+            suivreExact(g_suivi.camHd, c0, cible, 3.4, fdt);
+            g_suivi.hdT0 = c0;
+        }
         const double distT = P.dist + p * 0.6 + std::clamp(pl.lonAcc * 0.05, -0.4, 0.6);   // s'éloigne en accélérant
-        g_suivi.distDyn += (distT - g_suivi.distDyn) * std::min(1.0, fdt * 2.5);
+        g_suivi.distDyn += (distT - g_suivi.distDyn) * (g_cameraFiltreExact ? 1.0 - std::exp(-fdt * 2.5) : std::min(1.0, fdt * 2.5));   // WFS-221 : exact (même constante)
         const double t = std::clamp((std::abs(std::sin(pl.heading)) - 0.3) / 0.4, 0.0, 1.0), a = t * t * (3 - 2 * t);
         // demi-tour (RG-07) : recul ≥ 6 m, œil à 3 m au moins (≥ 2,5 m) et regard relevé de 0,8 m : la voiture, vue de plus
         // haut, descend dans le tiers bas de l'image (WFS-105 : planchers sans effet en Poursuite, déjà à 9 m et 6,3 m)
@@ -92,9 +115,9 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         const vec3 lT{(carPos.x + f.x * P.ahead) * 0.6f + devant.x * 0.4f, carPos.y + P.lookH + 0.8f * (float)a,
                       (carPos.z + f.z * P.ahead) * 0.6f + devant.z * 0.4f};
         const float fovT = fovVue(g_vue, p, pl.nitroOn);
-        if (neuf) { g_suivi.init = true; g_suivi.vue = g_vue; g_suivi.eye = eT; g_suivi.look = lT; g_suivi.fov = fovT; }
-        g_suivi.eye = lerp(g_suivi.eye, eT, 1.f - std::exp(-fdt * SUIVI_OEIL));
-        g_suivi.look = lerp(g_suivi.look, lT, 1.f - std::exp(-fdt * SUIVI_REGARD));
+        if (neuf) { g_suivi.init = true; g_suivi.vue = g_vue; g_suivi.eye = eT; g_suivi.look = lT; g_suivi.fov = fovT; g_suivi.eyeT0 = eT; g_suivi.lookT0 = lT; }
+        suivreExact(g_suivi.eye, g_suivi.eyeT0, eT, SUIVI_OEIL, fdt);      // WFS-221 : filtre exact (mêmes constantes)
+        suivreExact(g_suivi.look, g_suivi.lookT0, lT, SUIVI_REGARD, fdt);
         g_suivi.fov = lisser(g_suivi.fov, fovT, fdt, 4.f);
         g_suivi.eye.y = std::max(g_suivi.eye.y, sol);
         eye = g_suivi.eye; look = g_suivi.look; fov = g_suivi.fov; g_ck.fov = fov;
