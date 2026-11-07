@@ -34,7 +34,7 @@ inline ReglagesConduite& reglagesConduite() { static ReglagesConduite r; return 
 // WFS-241 : modèle de conduite de la voiture du joueur (aides Activee / Desactivee). true : conduite réaliste en coordonnées
 // du monde (conduite_monde.h) ; false : ancien modèle « par rapport à l'axe de la route » (WFS-217), gardé comme repli interne
 // et pour les mesures « avant » du banc de conduite. L'ordinateur (Aide::Web) garde toujours la conduite du jeu web.
-inline bool g_conduiteMonde = true;
+inline bool g_conduiteMonde = false;   // WFS-258 (RG-00) : repli sur l'ancien modèle, refus de WFS-241 par l'utilisateur (le nouveau reste disponible, rien n'est supprimé)
 // WFS-253 : ABS, antipatinage, ESP de la voiture du joueur : toujours activés dans le jeu ; le banc les coupe un par un pour les mesurer
 struct AidesVoiture { bool abs = true, antipatinage = true, esp = true; };
 inline AidesVoiture g_aidesVoiture;
