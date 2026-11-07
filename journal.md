@@ -2372,3 +2372,29 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-209** : accroche `bench_squelette.cpp` (≈ 30 lignes, banc seulement) validée a posteriori. **WFS-73** : écart à RG-02 (corps entier) accepté. **WFS-211** : extension de `SkinVertex` (tangente) permise en accroche ≤ 10 lignes annoncée au journal.
 - **Correction du tableau** : WFS-210 avait été marqué 🟣 Fusionné (PR #180) par erreur ; remis en ⏳ En attente (la PR #180 ne livre que WFS-209).
 - Anomalies encore 🆕 (ANO-103, 105, 106, 107, 108, 109) : à ranger en lots au prochain passage du PO.
+
+### 2026-11-07 06:57:40 — Statuts automatiques, CI main #809 (robot statuts)
+- Run vert (push, commit 7f344b9) : WFS-73 ✅ (PR #178, 7f344b9).
+
+### 2026-11-07 06:58:29 — Recette de nuit : WFS-73 (qa-lead)
+- **WFS-73** PASSABLE AVEC ANOMALIES MINEURES sur la construction 809 de `main` (7f344b9) : conducteurs de la Golf et de la SF90 bien placés, aucun en vue cockpit ni au garage ; ANO-110 : vitres avant du RR Sport opaques, conducteur invisible.
+- Lignes ajoutées pendant la recette : WFS-73 correctif (#179) et WFS-209 (#180), recette dès les captures des runs 810 / 811.
+
+### 2026-11-07 07:34:49 — Statuts automatiques, CI main #811 (robot statuts)
+- Run vert (push, commit 841d75f) : WFS-209 ✅ (PR #180, 841d75f).
+
+### 2026-11-07 07:35:25 — Recette de nuit : WFS-73 correctif, WFS-209 ; fin de la recette (qa-lead)
+- **WFS-73 correctif** VALIDÉ (construction 810, 070045e : stature plausible, tête sous le pavillon) ; **WFS-209** VALIDÉ (construction 811, 841d75f : 12 humains sans déformation, APK 176,2 Mo).
+- Fin de la recette de nuit : toutes les lignes de `qa/Check.md` sont cochées sauf WFS-88 (iOS, gel). Trois REFUSÉ en attente d'un ticket de correction du PO : WFS-151, WFS-137, WFS-178 (voir l'entrée « bilan » plus haut).
+### 2026-11-07 07:35:44 — Recette de nuit : WFS-88, WFS-73 (correctif), WFS-209 (qa-lead)
+
+- Nouvelle règle de recette appliquée : seulement les critères d'acceptation et le jeu qui fonctionne.
+- **WFS-88** : VALIDÉ côté Android. Le code est sous `__APPLE__` et le chemin Android est identique ; la CI de `main` est verte. La partie iOS n'est pas vérifiable (GEL iOS).
+- **WFS-73 (correctif, #179)** : déjà validé par l'autre session `qa-lead` (0183bv2Z) en même temps ; mon constat est le même (stature plausible, tête sous le pavillon), rapport non doublé.
+- **WFS-209** : validé par l'autre session `qa-lead` ; en complément, j'ai relevé **ANO-111** (mineure : menton et cou des hommes colorés en bleu par le vêtement, encolure des femmes en dents de scie), donc le verdict passe à **PASSABLE AVEC ANOMALIES MINEURES**. Le teint unique par sexe n'est pas retenu (peau au lot suivant).
+- `qa/Check.md` : plus aucun ticket à recetter.
+
+### 2026-11-07 07:40:53 — Bloquantes de la recette de nuit : tickets vérifiés ; ANO-103 à 110 rangées en 3 lots (WFS-214, 215, 216) (po-scrum-master)
+- **Bloquantes** (demande du QA lead) : déjà couvertes par les tickets créés à 06:53:33, rien en double. **WFS-213** (P1 Urgent, E13) : écran blanc des 14 `vitrine-<id>-0` et de `course-sf90` (normal sur `apercu-waforspeed-197`, blanc depuis `apercu-waforspeed-151`, encore sur la construction 808) : **premier ticket de E13, avant tout autre**, dès la fin de WFS-208 (agent 1, envoi 07:10 ; un ticket actif par épic). **WFS-212** (P1 Urgent, E2, agent 2, branche poussée 07:23) : place de la fontaine de la Ville (WFS-137) et végétation du rond-point de la Campagne (WFS-178), + ANO-104.
+- **Lots d'anomalies** (📋 dans `anno.md`) : **WFS-214** (P2, E13, après WFS-213) ANO-109 ciel en paliers, ANO-106 chaussée bleue en Ultra ; **WFS-215** (P3, E10, prêt dès que E10 est libre, WFS-158 en cours) ANO-107 plaque Model 3, ANO-110 vitres avant RR Sport ; **WFS-216** (P3, E2, après WFS-212) ANO-103 col, ANO-105 foule et bateaux, ANO-108 troupeaux de nuit. Règles : `regles-de-gestion/WFS-214.md`, `WFS-215.md`, `WFS-216.md`.
+- **ANO-111** (WFS-209, vêtement sur le cou et le visage, relevée à 07:35:44) : rangée dans **WFS-211** (E11, peau), 📋 ; règle ajoutée dans `regles-de-gestion/WFS-211.md`.
