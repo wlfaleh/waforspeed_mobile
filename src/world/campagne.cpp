@@ -336,7 +336,10 @@ protected:
             break;
         }
         case T_FONTAINE: {   // îlot du rond-point (rayon 14 m) : fontaine de pierre Ø 6 m, vasque, colonne, massifs de fleurs
-            const vec3 c = lateral(p, s * it.lat, gy(it.lat) - 0.05f);
+            vec3 c = lateral(p, s * it.lat, gy(it.lat) - 0.05f);
+            const giratoire::Giratoire* gr = nullptr;   // WFS-248 : sur l'îlot du giratoire reconstruit (centre exact, gazon à 15 cm)
+            for (const giratoire::Giratoire& g : gir_) if (giratoire::dansOuvrage(g, c, 2.f)) gr = &g;
+            if (gr) c = gr->c + vec3{0, giratoire::H_BORDURE - 0.08f, 0};
             cyl(S, c, 3.0f, 0.5f, 20, uv(C_PIERRE0));                       // bassin : margelle de 0,5 m
             cyl(S, c + vec3{0, 0.42f, 0}, 2.75f, 0.1f, 20, uv(C_GLASS));     // eau
             cyl(S, c, 0.35f, 2.4f, 10, uv(C_PIERRE0 + 1));                  // colonne
@@ -349,8 +352,10 @@ protected:
             for (int i = 0; i < NB; i++) {
                 const float a0 = 2 * PI * i / NB, a1 = 2 * PI * (i + 1) / NB;
                 auto P = [&](float ang, float rr, float y) { return c + vec3{std::cos(ang) * rr, y, std::sin(ang) * rr}; };
-                quad(S, P(a0, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0.15f), P(a0, R0 + 0.2f, 0.15f), uv(C_WALK));    // face côté anneau
-                quad(S, P(a0, R0, 0.15f), P(a0, R0 + 0.2f, 0.15f), P(a1, R0 + 0.2f, 0.15f), P(a1, R0, 0.15f), uv(C_WALK));              // dessus
+                if (!gr) {   // repli (WFS-223) : bordure de l'îlot de 6,5 m ; avec l'ouvrage, la bordure est celle de giratoire.cpp
+                    quad(S, P(a0, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0.15f), P(a0, R0 + 0.2f, 0.15f), uv(C_WALK));    // face côté anneau
+                    quad(S, P(a0, R0, 0.15f), P(a0, R0 + 0.2f, 0.15f), P(a1, R0 + 0.2f, 0.15f), P(a1, R0, 0.15f), uv(C_WALK));              // dessus
+                }
                 quad(S, P(a1, 4.3f, 0.08f), P(a0, 4.3f, 0.08f), P(a0, 5.7f, 0.08f), P(a1, 5.7f, 0.08f), uv(C_VINE_A));             // terre du massif
             }
             Mulberry32 Rf((uint32_t)(a * 13 + 7));
@@ -797,9 +802,9 @@ private:
             }
             if (sec.type == trace::Type::RondPoint && fontaineSeg_ < 0) {   // centre de l'anneau : à gauche du milieu
                 fontaineSeg_ = (sec.debut + sec.fin) / 2;
-                Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; CarteDecor::item(fontaineSeg_, it);
-                for (int64_t a = sec.debut + 1; a < sec.fin; a++)   // WFS-223 : entrée de l'anneau = la courbure change de sens
-                    if (track_->segAt(a).curve * track_->segAt(sec.debut + 2).curve < 0) { Item c; c.t = T_CEDEZ; CarteDecor::item(a, c); break; }
+                Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; it.ilot = true; CarteDecor::item(fontaineSeg_, it);
+                // WFS-248 : le cédez-le-passage de WFS-223 (T_CEDEZ, en travers de toute la chaussée) est remplacé par celui du
+                // giratoire reconstruit (decor_carte.cpp, giratoire.cpp)
                 vigilance_.push_back(sec.debut);
                 // WFS-225 (RG-02) : giratoire éclairé : mâts sur le bord extérieur de l'anneau tous les 45° environ, et à
                 // l'approche et à la sortie (côté droit) ; ceux qui tomberaient sur une autre branche ne sont pas posés
