@@ -2640,3 +2640,15 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Retour de l'utilisateur** (essai sur téléphone) : en vue Proche et Poursuite, la voiture a un comportement bizarre, pas fluide.
 - **Causes probables (code de main)** : `game.cpp` ≈ 242-247, pas fixes de 1/120 s rendus sans interpolation (0, 1 ou 2 pas par image) ; `track.cpp:87`, pente par segment sans transition (bascule de la voiture à chaque segment) ; direction linéaire par morceaux.
 - **WFS-221** (`[TECHNIQUE]`, P1 Urgent, E0 + E3, ⏳ Prêt) : banc `fluidite` (temps d'image irréguliers 14-22 ms, mesures dans le repère caméra), rendu interpolé, route lissée, objectifs chiffrés, vidéo avant / après ; CI de branche permise (US technique). À attribuer au premier développeur libre, avant WFS-217.
+
+### 2026-11-07 10:20:00 — Vidéo de l'utilisateur analysée : ≈ 20 img/s et sauts de lacet ; WFS-221 complété (po-scrum-master)
+- **Vidéo** (enregistrement d'écran, 12 s, Poursuite, Campagne) : 240 images en 12 s (≈ 20 img/s, 12 à 30 selon la seconde ; 30 à 100 ms entre deux images) ; lacet de la voiture qui saute d'une image à l'autre dans le rond-point ; voiture qui flotte dans le cadre. Images extraites dans `qa/retours/2026-11-07-video-conduite-*.jpg` (la vidéo, 24 Mo, n'est pas mise dans le dépôt).
+- **WFS-221** : section « Constat sur la vidéo » et **RG-07** (cadence réelle sur téléphone : ≥ 30 img/s stables en Haute, ≥ 45 en Basse, coût par passe, ticket à part si gros changement de rendu).
+
+### 2026-11-07 10:22:06 — WFS-221 : prochain ticket attribué, au premier développeur libre (ordre de l'utilisateur) (po-scrum-master)
+- **Ordre de l'utilisateur** : un agent disponible prend WFS-221 (fluidité) ; Agent 0 reste sur WFS-161.
+- **Agents libres** : agent 4, agent 5 (WFS-210 fusionné), session dev expert, session dev 5bx (autre compte : pas de message direct possible). **Le premier qui demande un ticket au PO reçoit WFS-221, avant tout autre** (bandeau en tête de `TACHES.md`). Exception PO : E3 partagée avec WFS-217 (arwa), fichiers séparés (`game.cpp`, `track.*`, `camera_vue.*` pour WFS-221 ; `player.*` pour WFS-217).
+- **arwa-2 a repris WFS-158** (envoi à 09:47) : contrôle de 11:23 annulé, rien à découper.
+
+### 2026-11-07 10:23:03 — WFS-221 : cadence réelle du téléphone de l'utilisateur = 10 img/s en Haute (po-scrum-master)
+- Capture des Réglages envoyée par l'utilisateur : « Rendu : Haute · 100 % · MSAA ×4 · 10 img/s · chauffe 1 » (`qa/retours/2026-11-07-reglages-rendu-10ips.jpg`). Ajoutée à WFS-221 comme point de départ ; la baisse automatique de qualité ne remonte pas la cadence, à vérifier (RG-07).
