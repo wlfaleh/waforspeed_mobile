@@ -175,6 +175,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-200 | [TECHNIQUE] [URGENT] CI de `main` rouge : banc des passes (WFS-150), M-01 nuit face +X −1,5 % | E7 / E0 | 🔧 En cours | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | — | `feature/waforspeed-200` |  |  |
 | P2 Haute | WFS-201 | [RÉALISME] Vue cockpit réaliste (2/3) : intérieurs A 45, S3, Giulia, 208, Gallardo, Mustang, Model 3 et X5 (lot 2 de WFS-195) | E3 `camera_vue.*` (exception PO 23:46 : mêmes fichiers que WFS-197, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**` ; accroche `references/reel/anthropometrie.json` au lot 2) | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-06 23:47 UTC | WFS-197 🟣 (code sur `main`) | `feature/waforspeed-201` |  |  |
 | P2 Haute | WFS-202 | [RÉALISME] Vue cockpit réaliste (3/3) : intérieurs 500 Abarth, Compass, Corsa, Elantra N, GT86, Range Rover Sport, T-Cross et V60 (lot 3 de WFS-195) | E3 `camera_vue.*` (exception PO 23:46 : mêmes fichiers que WFS-197, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`) | ⏳ En attente |  | WFS-201 | `feature/waforspeed-202` |  |  |
+| P1 Urgent | WFS-203 | Correction : de nuit, la Campagne est entièrement blanche (surexposée) | E13 (+ accroche E4 `nuit.cpp`) | 🔧 En cours | Claude, agent 1 (session 01UY1Vv2), 2026-11-07 00:07 UTC | — | `feature/waforspeed-203` |  |  |
 
 ## Critères d'acceptation
 
