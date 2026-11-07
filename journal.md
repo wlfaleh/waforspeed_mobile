@@ -4361,3 +4361,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 23:06:38 — Nom de l'agent et description complète obligatoires dans chaque PR (po-scrum-master)
 - Règle de l'utilisateur : CLAUDE.md (Commits et fusions, point 3), skill lead-dev (point 7 : refus sinon), checklist ; `captures_pr.sh` exige `AGENT=` et écrit l'en-tête « Agent : … » et la section Description à remplir dans `pr.md`.
+
+### 2026-11-07 23:08:08 — ANO-155 annulée (agent qa lead)
+- L’utilisateur : « Folg » est la marque, « Folg 8 » le modèle ; « Folg Folg 8 » au salon du duel est voulu. Ligne d’anno.md et rapport VABF mis à jour, PO prévenu.
