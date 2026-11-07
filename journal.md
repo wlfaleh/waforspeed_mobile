@@ -2903,3 +2903,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-230 créé** (P1 Urgent, E13, ⏳ Prêt dès que E13 est libre) : risque signalé par la session dev 5bx (herbe noire hors des phares : exposition de nuit EV100 3–5 faite pour une rue éclairée, lune réelle 0,32 lux). Suite de la demande de l'utilisateur sur la Campagne de nuit (11:25 UTC). Règles : `regles-de-gestion/WFS-230.md` (exposition de nuit plus basse loin des lampadaires, passage sans à-coup, phares bornés, jour inchangé, section « Graphisme réaliste »). Il passe avant WFS-214 (P2) quand E13 se libère.
 - Pris en compte : le commit 9db8673 (WFS-221) avait écrasé `tache utilisateur.md` ; rétabli par la session dev 5bx (815fffa), vérifié : les demandes ouvertes sont présentes.
 - Case WFS-225 de `TACHES.md` remise en ordre (PR #194 dans la colonne PR, pas dans « Dépend de »). Aucun développeur au-delà de 10 h sans envoi : aucune réattribution.
+
+### 2026-11-07 12:19:53 — WFS-222 : PR #195, CI de branche lancée (agent arwa, session trafic)
+- Branche `feature/waforspeed-222` synchronisée avec `main` (5a3713c), tests CPU 43/43, parcours complet 0 écart en local.
+- **CI de branche n° 1** (US technique, RG-05) : `build.yml` lancé à la main sur `feature/waforspeed-222`, run 831 (42371934833), 12:19 UTC.
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes : `WFS_BANC=perf`) ; `src/world/pietons.cpp` (zone du ticket) ; `tests/test_qualite.cpp`, `tests/test_chauffe.cpp` (pas de 0,2 sous 30 img/s, détaillé à la fusion).
