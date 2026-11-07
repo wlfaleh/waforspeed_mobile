@@ -22,6 +22,13 @@ struct Phys {
 constexpr double CENTRIFUGAL = 0.2;
 constexpr double REV_MAX = -MAX_SPEED * 0.12, REV_ACC = MAX_SPEED * 0.1;
 
+// WFS-217 : aide à la direction (« guide auto »). Web : aides du jeu web, gardées telles quelles pour l'ordinateur et les
+// références (simulateCourse, tests) ; Activee / Desactivee : voiture du joueur, selon la ligne « Aide à la direction » des
+// Réglages (posée à chaque pas par le système aide_direction.cpp).
+enum class Aide : uint8_t { Web = 0, Activee = 1, Desactivee = 2 };
+struct ReglagesConduite { bool aideDirection = true; };   // Réglages (WFS-217 RG-02) : Activée par défaut, rien dans configgame.json
+inline ReglagesConduite& reglagesConduite() { static ReglagesConduite r; return r; }
+
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};
     double position = 0, dist = 0, playerX = 0, speed = 0, steer = 0, heading = 0;
@@ -30,11 +37,16 @@ struct Player {
     bool nitroOn = false, braking = false, reversing = false;
     // accident (playerAccident du jeu web) : tête-à-queue puis remise dans l'axe, commandes bloquées un moment
     double playerSpin = 0, spinYaw = 0, controlLock = 0;
+    Aide aide = Aide::Web;   // WFS-217 : gardée par reset()
     void reset(const CarDef& c);
     void accident(double impact, int side) { playerSpin = side * (3 + impact * 9); controlLock = 0.6 + impact * 1.2; }
     // une étape de conduite (dt en secondes) ; analog : braquage continu (-1..1) du tactile
     void update(double dt, const DriveInput& in, Track& track, bool playing);
+    // WFS-217 : cap et position latérale de la voiture du joueur (aide Activee / Desactivee), voir player.cpp
+    void guider(double dt, double yawRate, double v, bool locked, Track& track);
     double kmh() const { return speed / MAX_SPEED * 260.0; }
+private:
+    double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
 };
 
 } // namespace wfs
