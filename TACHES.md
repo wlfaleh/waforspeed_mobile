@@ -165,6 +165,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport (ANO-107, ANO-110) | E10 | ⏳ Prêt (dès que E10 est libre) |  | — | `feature/waforspeed-215` |  |  |
 | P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | ⏳ En attente |  | WFS-212 | `feature/waforspeed-216` |  |  |
 | P1 Urgent | WFS-217 | Conduite : corriger le « guide auto » (aide à la direction) dans les virages serrés et ronds-points + réglage Activée / Désactivée | E3 (+ accroche E8 `reglages.cpp`) | ⏳ Prêt |  | — | `feature/waforspeed-217` |  |  |
+| P2 Haute | WFS-218 | Correction : phares du joueur en vrais feux de croisement (coupure du faisceau), façades éblouies la nuit | E4 | ⏳ Prêt |  | — | `feature/waforspeed-218` |  |  |
 
 ## Critères d'acceptation
 

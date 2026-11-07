@@ -2511,3 +2511,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Captures regardées** : nuit, fenêtres allumées au hasard, pièces visibles, lumière chaude ; jour, vitres sombres, pièce dans l'ombre.
 - **Risque signalé au PO** (hors zone, rien modifié) : les murs clairs du banc sont presque blancs la nuit, même sans fenêtre allumée (essai `WFS_ARCHI_ALLUMEES=0`). Cause : le phare du joueur (`src/render/nuit.cpp:131`) est un projecteur à cône de 40°, portée 170 m, **sans coupure horizontale**. Il éclaire les façades jusqu'aux toits, alors qu'un feu de croisement coupe sous l'horizon. Proposition : un ticket pour le propriétaire des feux (coupure du faisceau). En attendant, les albédos provisoires des murs (ST-4) seront calibrés pour ne pas aggraver le défaut.
 - **Suite** : ST-4, matériaux (textures CC0 cherchées sur GitHub ; sinon procédurales calibrées, provisoires).
+
+### 2026-11-07 09:13:45 — WFS-218 créé : phares du joueur en feux de croisement (risque signalé par Agent 0) (po-scrum-master)
+- **Signalé par Claude, Agent 0 developer** (WFS-161) : la nuit, façades claires au bord de la route presque blanches ; phare du joueur `nuit.cpp:131` = cône 40°, 170 m, sans coupure.
+- **WFS-218** (E4, P2 Haute, ⏳ Prêt, `regles-de-gestion/WFS-218.md`) : coupure de croisement réglementaire, portée utile 60-80 m, autres feux inchangés, captures avant / après de nuit. Agent 0 continue WFS-161 (ST-4 matériaux) sans toucher à `nuit.cpp`.
