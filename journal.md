@@ -2701,3 +2701,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 10:26:38 — Basse : 26 img/s, pas plus fluide ; WFS-222 créé (performance) en parallèle de WFS-221 (po-scrum-master)
 - **Mesure de l'utilisateur** : en Basse, « Basse · 75 % · MSAA ×2 · 26 img/s · chauffe 1 » ; vidéo en Ville : 223 images en 9,2 s, médiane 34 ms, 37 images > 50 ms ; « c'est pareil ». Grands carrés noirs sur les façades et près de la caméra (à identifier). Captures dans `qa/retours/2026-11-07-*`.
 - **WFS-222** (`[TECHNIQUE]`, P1 Urgent, E4, `regles-de-gestion/WFS-222.md`) : profilage (processeur par système, appels de dessin, GPU par passe), objectif ≥ 30 img/s stables sur le téléphone, baisse automatique efficace, carrés noirs ; fichiers séparés de WFS-221. Bandeau de `TACHES.md` : WFS-221 puis WFS-222 aux premiers développeurs libres.
+
+### 2026-11-07 10:27:15 — WFS-221 : symptôme exact « la voiture avance, recule, avance » ; RG-08 (po-scrum-master)
+- Description de l'utilisateur ajoutée à WFS-221 : allers-retours de la voiture devant la caméra. Cause attendue : position par pas non interpolée (0, 1 ou 2 pas par image) contre caméra lissée au temps de l'image. **RG-08** : mesurer les changements de sens de la distance voiture ↔ caméra ; objectif : aucun aller-retour > 2 cm.
