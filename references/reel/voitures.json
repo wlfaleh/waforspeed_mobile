@@ -45,11 +45,11 @@
    "note": "le modèle du jeu est une « Abarth 500 » : données de l'Abarth 595 (même carrosserie, à confirmer) ; pneus selon version (205/40 R17 en Competizione) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
   },
   "FICHE-TCROSS": {
-   "titre": "Volkswagen T-Cross (2019-2023) : Volkswagen UK, autotijd.be ; pneus : carsales.com.au",
-   "lien": "https://volkswagen.co.uk/en/new/t-cross/t-cross-dimensions.html",
+   "titre": "Volkswagen T-Cross version chinoise à empattement long (SAIC-VW, 2019-2026), celle du modèle 3D (WFS-158, note du PO du 2026-11-07) : autocango.com (fiche 2023 1.4T), auto.ru (« T-Cross I (China Market) ») ; pneus : version européenne",
+   "lien": "https://www.autocango.com/carspecs-detail/Volkswagen-T-Cross-EL97A",
    "acces": "non_ouvert",
    "annee": "2026 (consultation)",
-   "note": "empattement 2551 (Volkswagen UK) ou 2563 (CarExpert) ; page non ouverte (réseau de la session) : valeur lue dans le résumé du moteur de recherche, 2026-11-06"
+   "note": "4218 × 1760 × 1599 mm, empattement 2651, voies 1533 / 1512 (autocango.com et https://auto.ru/catalog/cars/volkswagen/t_cross/specifications/ concordants) ; la version européenne (4108 × 1760 × 1584, empattement 2551) n'est pas celle du modèle (plaques « T-Cross » et « 途铠 » chinoises, empattement mesuré 2,58 m à l'échelle européenne) ; pages non ouvertes (réseau de la session) : valeurs lues dans le résumé du moteur de recherche, 2026-11-07"
   },
   "FICHE-COMPASS": {
    "titre": "Jeep Compass II (MP, restylée 2021) : autotijd.be, vehiclesizes.com, auto-data.net",
@@ -848,7 +848,7 @@
    }
   },
   {
-   "valeur": 4108,
+   "valeur": 4218,
    "id": "voiture.tcross.longueur",
    "domaine": "voitures",
    "grandeur": "longueur hors tout",
@@ -876,8 +876,7 @@
    }
   },
   {
-   "min": 1583,
-   "max": 1584,
+   "valeur": 1599,
    "id": "voiture.tcross.hauteur",
    "domaine": "voitures",
    "grandeur": "hauteur",
@@ -891,8 +890,7 @@
    }
   },
   {
-   "min": 2551,
-   "max": 2563,
+   "valeur": 2651,
    "id": "voiture.tcross.empattement",
    "domaine": "voitures",
    "grandeur": "empattement",
@@ -906,8 +904,7 @@
    }
   },
   {
-   "min": 1526,
-   "max": 1534,
+   "valeur": 1533,
    "id": "voiture.tcross.voie_av",
    "domaine": "voitures",
    "grandeur": "voie avant",
@@ -921,8 +918,7 @@
    }
   },
   {
-   "min": 1504,
-   "max": 1512,
+   "valeur": 1512,
    "id": "voiture.tcross.voie_ar",
    "domaine": "voitures",
    "grandeur": "voie arrière",
