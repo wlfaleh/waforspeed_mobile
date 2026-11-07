@@ -15,6 +15,7 @@
 #include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu ; WFS-140 : sections du Grand Prix
 #include "../game/track.h"
 #include "../render/renderer.h"
+#include "../ui/ecrans/reglages.h"   // WFS-249 : qualité Basse du banc campagne
 #include "decor_carte.h"
 #include "ville_quartiers.h"   // WFS-176 : lieux de la Ville
 #include "zones.h"
@@ -159,8 +160,12 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
                         {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0},
                         {"carte-campagne-peage", au >= 0 ? au : -1, 0}, {"carte-campagne-autoroute", au >= 0 ? au + (int64_t)(300 / SEG_M) : -1, 0}};   // WFS-179
     const char* seule = std::getenv("WFS_CAMPAGNE_LIEU");   // WFS-179 : essai local d'un seul lieu (préfixe du nom)
+    const char* moment = std::getenv("WFS_CAMPAGNE_MOMENT");   // WFS-249 : « nuit » (ou « jour ») seulement
+    const bool basse = std::getenv("WFS_QUALITE_BASSE") != nullptr;   // WFS-249 (RG-03) : qualité Basse, captures …-basse
+    if (basse) { ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true; }
     for (const char* mo : {"jour", "nuit"}) for (const Cap& c : caps) {
         if (seule && std::string(c.nom).rfind(seule, 0) != 0) continue;
+        if (moment && std::strcmp(moment, mo)) continue;
         if (c.seg < 0) { ecarts++; WFS_ERR("banc campagne : %s introuvable", c.nom); continue; }
         if (!std::strcmp(mo, "nuit") && c.cam == 1) continue;
         setenv("WFS_MOMENT", mo, 1);
@@ -182,13 +187,14 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
             carte::g_vueCarte.oeil = {(float)o.x, (float)o.y + 45, (float)o.z}; carte::g_vueCarte.fov = 55; carte::g_vueCarte.actif = true;
         }
         g.render(404); g.render(404.02);
-        const std::string nom = std::string(c.nom) + (!std::strcmp(mo, "nuit") ? "-nuit" : "");
+        const std::string nom = std::string(c.nom) + (!std::strcmp(mo, "nuit") ? "-nuit" : "") + (basse ? "-basse" : "");
         r.capturePng(out + "/" + nom + ".png");
         carte::g_vueCarte.actif = false;
         WFS_LOG("capture %s : segment %lld, %.0f m, %u appels de dessin", nom.c_str(), (long long)c.seg, g.player().dist * M, r.appelsDessin());
         g.shutdown();
     }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+    if (basse) { ecrans::reglages().qualite = ecrans::QUALITE_HAUTE; r.qualiteBasse = false; }
     // RG-C5 : la campagne se roule de bout en bout au tracé 2 : du départ jusqu'au haut du col (+ 200 m) en pilote
     // automatique, sans jamais rester arrêté (décor sur la chaussée, caméra dans le décor), puis retour à l'accueil
     if (!parcours) return ecarts;

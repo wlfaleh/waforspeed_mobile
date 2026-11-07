@@ -40,15 +40,20 @@ constexpr int CYLINDRES = 4;                       // la fiche (cars.h) ne donne
 // mesure 0,072 à 0,082 (5 voix de moteur, master 0,5 ; journal WFS-272) : la voiture du trafic est 6 dB plus bas
 constexpr float NIVEAU_7_5 = 0.072f;
 constexpr float PLAFOND = 2 * NIVEAU_7_5;          // plafond doux : une voiture voisine ne dépasse jamais le moteur du joueur
-constexpr float CHARGE_DB = 6.f;                   // moteur en charge (adversaires, police) : propulsion + 6 dB (estimation)
+// moteur en charge (adversaires, police) : propulsion + 6 dB ≈ C_P × a, C_P = 5,5 dB par m/s² (tableau F-3, catégorie 1,
+// carrefour) pour une accélération de ≈ 1,1 m/s² (estimation de l'accélération)
+constexpr float CHARGE_DB = 6.f;
 constexpr float LISSAGE_DOPPLER = 0.012f;          // s : lissage du facteur Doppler (≈ un pas) ; le mélangeur glisse sur chaque bloc
 
-// ---------- RG-02 : CNOSSOS-EU (directive (UE) 2015/996, annexe, appendice F, tableau F-1, catégorie 1 : voitures) ----------
+// ---------- RG-02 : CNOSSOS-EU (directive 2002/49/CE, annexe II consolidée : directive (UE) 2015/996, tableau F-1 remplacé par
+// la directive déléguée (UE) 2021/1226, annexe, point 19 a) ; catégorie 1 : voitures) ----------
 // puissance acoustique par bande d'octave (63 Hz à 8 kHz) : roulement L_R = A_R + B_R · lg(v / 70) ; propulsion
-// L_P = A_P + B_P · (v − 70) / 70 (v en km/h) ; pondération A ajoutée pour l'oreille
-inline constexpr float A_R[8] = {79.7f, 85.7f, 84.5f, 90.2f, 97.3f, 93.9f, 84.1f, 74.3f};
+// L_P = A_P + B_P · (v − 70) / 70 (v en km/h) ; pondération A de 2.5.5 (même directive) ajoutée pour l'oreille.
+// WFS-275 (RG-01) : valeurs relues sur deux sources GitHub publiques concordantes (references/reel/son/cnossos-eu-f1.md) ;
+// A_R et A_P corrigés (WFS-272 avait les valeurs de 2015/996, remplacées en 2021) ; B_R, B_P et la pondération A inchangés
+inline constexpr float A_R[8] = {83.1f, 89.2f, 87.7f, 93.1f, 100.1f, 96.7f, 86.8f, 76.2f};
 inline constexpr float B_R[8] = {30.0f, 41.5f, 38.9f, 25.7f, 32.5f, 37.2f, 39.0f, 40.0f};
-inline constexpr float A_P[8] = {94.5f, 89.2f, 88.0f, 85.9f, 84.2f, 86.9f, 83.3f, 76.1f};
+inline constexpr float A_P[8] = {97.9f, 92.5f, 90.7f, 87.2f, 84.7f, 88.0f, 84.4f, 77.1f};
 inline constexpr float B_P[8] = {-1.3f, 7.2f, 7.7f, 8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
 inline constexpr float POND_A[8] = {-26.2f, -16.1f, -8.6f, -3.2f, 0.f, 1.2f, 1.0f, -1.1f};
 float roulementDbA(float kmh);     // L_WA du roulement (pneus), v ≥ 20 km/h (domaine de la méthode), dB(A)

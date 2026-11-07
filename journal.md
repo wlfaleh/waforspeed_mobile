@@ -4014,3 +4014,33 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Script partagé** `tools/qa/banc_groupe.sh` : étape « Captures du rendu » de `build.yml` reprise telle quelle (diff vérifié) + parties du réalisme ; groupe inconnu = code 2.
 - **Numéro** : d'abord écrit WFS-275 par erreur sur ma branche locale (WFS-275 = ticket son d'arwa-4, sa branche n'a pas été touchée) ; corrigé en WFS-277 avant tout envoi sur main.
 - **Preuve** : run 1 de l'ancien `realisme.yml` annulé (fichier renommé) ; 1er run de `matin.yml` lancé à la main sur main (2026-11-07 20:19:49).
+
+### 2026-11-07 20:43:10 — WFS-249 fusionné (PR #235, squash d3c1c68) → 🟡 ; B écarté, cause 2 → WFS-276 (Claude, Agent 0 developer)
+- **A** (décision du PO) : borne `EV_LUNE_MIN` −2 → −3,5 ; `DA-realisme.md` § 3 mis à jour avec la mesure ; `test_fidelite_lumiere` adapté sans être affaibli (borne à 0,221 lx, 38,5 m d'une lampe ; 103 vérifications). **Pixels noirs sous l'horizon**, avant → après (Haute = Basse) : autoroute 9,2 → 0,3 % ; cascade 23 → 6,4 % ; col 14,5 → 7 % ; vignes 18 → 6 % ; troupeaux 7 → 1 à 3 %. Saturés ≤ 0,01 %. Bas-côtés et collines : 0,1-1,5 → 2-7 % du blanc.
+- **B** (exposition de la Campagne près des lampes), 4 essais au banc, tous écartés :
+  1. exposition sur la lune seule : péage 52 → 0,4 % de noirs, mais flaques orange effacées (image grise de jour couvert : les lampes, à l'aspect EV 3, ne ressortent plus que de 0,8 IL) ;
+  2. lumières rapprochées de l'exposition de la lune (écart de 2 à 5,5 IL) : 0,2 à 29 % de pixels brûlés ;
+  3. mi-chemin (× 0,5) : péage encore 16 % noir ;
+  4. plancher « rue » à EV 0 : sans effet (péage 39 %), car la mesure réfléchie des sondes donne EV 4-5 près des lampes.
+  → Une exposition globale ne peut pas montrer à la fois la flaque (15 lx) et le paysage sous la lune (0,1 lx), soit 7 IL d'écart. Le PO crée **WFS-276** (tonemapping local), réservé à Agent 0.
+- **Vérifications** : banc `nuit` avant / après : Ville, circuit et Corniche **0 pixel différent** ; seules changent les scènes de Campagne (et la Poursuite vue de haut, 6 % : zones sous 0,63 lx). Tests CPU OK, parcours 0 écart (normal et Cockpit), après synchronisation avec main.
+
+### 2026-11-07 20:54:33 — WFS-275 : acoustique des lieux fusionnée (PR #237, fusion par confiance) (arwa-4)
+- **RG-01, CNOSSOS-EU vérifié** : j'ai relu le tableau F-1, catégorie 1, sur deux dépôts GitHub publics, par clone partiel en lecture seule dans `/tmp`, sans rien exécuter ni rien ajouter au dépôt :
+  - `jmrplens/phonometry` (MIT), commit 4e0b6b7, fichier `src/phonometry/environment/sources/cnossos_road.py`, SHA-256 5d7712cf… ;
+  - `Arpapiemonte/openoise-map` (GPL-3.0), commit f40f947, fichier `tools/on_Acoustics_CNOSSOS_Road_Params.xml`, SHA-256 735ef2dc….
+  Les deux donnent les mêmes valeurs, celles de la directive déléguée (UE) 2021/1226, qui a remplacé le tableau F-1 en 2021. Je n'en ai repris que les nombres. **Avant / après** : A_R passe de 79,7 · 85,7 · 84,5 · 90,2 · 97,3 · 93,9 · 84,1 · 74,3 à 83,1 · 89,2 · 87,7 · 93,1 · 100,1 · 96,7 · 86,8 · 76,2 ; A_P passe de 94,5 · 89,2 · 88,0 · 85,9 · 84,2 · 86,9 · 83,3 · 76,1 à 97,9 · 92,5 · 90,7 · 87,2 · 84,7 · 88,0 · 84,4 · 77,1. B_R, B_P et la pondération A étaient justes. Le tableau F-3 donne C_P = 5,5 dB par m/s² (catégorie 1), ce qui justifie les +6 dB du moteur en charge. `test_audio_voitures` reste vert : pneus +8,5 dB au-dessus du moteur à 60 km/h (+6,8 avant), voiture du trafic −9,0 dB sous le moteur du joueur. Trace dans `references/reel/son/cnossos-eu-f1.md`.
+- **Fait** : module `src/audio/parois_sons.*`.
+  - Parois par segment et par côté, la plus proche gagnant, jusqu'à 40 m. La Ville est lue dans le plan (façades à RW + 6,5 m, entrepôts) ; la Corniche, la Campagne et le Grand Prix passent par des accroches.
+  - Écho par sources images : délai 2·d / c, niveau 20·lg(1,5 / chemin), α = 0,05 soit −0,22 dB par réflexion. Une rue bordée des deux côtés ajoute les ordres 2 et 3. Chaque écho vient du côté de sa paroi, avec le panoramique de WFS-261.
+  - Trouées en 75 ms ; changement de délai en fondu entre deux prises de 60 ms ; fondu croisé de 0,4 s avec l'écho du tunnel.
+  - Masques de la Ville : diffraction ISO 9613-2, D = 10·lg(3 + 20·N), N = 2·δ / λ à 1 kHz, détour par les côtés (enveloppe convexe) ou par le toit. Plafond 20 dB, passe-bas 1 kHz, appliqué aux voix de WFS-272 et aux sources de WFS-261.
+- **Accroches** (annoncées ici, rien ajouté au décor) : `plage.cpp` (4 lignes : roche côté montagne des lacets, villas), `campagne.cpp` (5 lignes et 1 modifiée : maisons, commerces, église, fermes), `circuit.cpp` (5 lignes : mur des stands vitré de 2,7 m, garages, tribunes, dans `poser`) ; `CMakeLists.txt` (1 ligne : `test_audio_parois`).
+- **Vérifié** : 59 tests CPU OK. `test_audio_parois` mesure le délai à 2 799 échantillons pour 2 798,8 attendus et le niveau à −22,83 dB pour −22,83. Côté : 16 dB. Trouées en 75 à 83 ms, tunnel en 0,40 s, aucun clic au changement de délai. D(0,1 m) = 11,66 dB et les détours sont exacts. Le champ libre est identique à l'échantillon près. Coût : écho 0,04 ms par bloc, masques 0,01 ms par pas. Au banc, le délai mesuré par intercorrélation au bruit est égal au délai attendu (81,6, 91,8 et 63,6 ms). Essai local des 4 cartes : Ville 2 547 / 3 910 segments avec paroi et 621 immeubles, Corniche 2 092 / 0, Campagne 523 / 512, Grand Prix 1 155 / 479. Bancs locaux : « parcours complet : 0 écart(s) OK », parcours en vue Cockpit à 0, parcours Course à 5 à 0, parcours Poursuite à 0.
+- **Limites** :
+  - α = 0,05 est une valeur usuelle des tables d'acoustique du bâtiment, **[à vérifier]** : aucune source lisible sur GitHub.
+  - Pas de queue de réverbération de rue : la règle l'exige sourcée.
+  - La Corniche n'a de paroi qu'à gauche (villas côté mer : aucune trouvée).
+  - Les lieux du tracé 2 de la Ville (casino, centre commercial, garages de WFS-176) ne renvoient pas encore le son : leur façade n'est pas donnée par le plan.
+  - Masques limités à la Ville (règle). Plusieurs immeubles sur la ligne : le plus fort compte, sans cumul.
+  - Rien n'a été écouté sur un vrai téléphone.
