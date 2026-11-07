@@ -4401,3 +4401,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Pour le PO** : d'autres géométries construites par code (décor, ouvrages, panneaux…) peuvent avoir perdu des faces de la même façon depuis WFS-246. Un contrôle par épic serait utile (`WFS_FACES=0` au banc pour comparer).
 - **Vérifications** : 62 tests CPU, parcours en vue Cockpit 0 écart (RG-00) ; captures avant / après régénérées (Golf, SF90, X5, Corsa) pour la nouvelle revue du lead dev.
 
+
+### 2026-11-07 23:26:33 — WFS-283 : décision RG-08, seuils de la Course à 5 sur la route sans rond-point (po-scrum-master)
+- **Question d'arwa-5** (suite de RG-07) : RG-06 fait (2 lignes `trace::forcerRondsPoints(true)` dans `test_aide_direction.cpp` et `test_conduite.cpp`, verts). Sans rond-point, la course de 4 km est ≈ 5 s plus courte et deux mesures de `test_course5` passent sous leur seuil : **SF90, nitro 3,0 → 2,7 s** (RG-06 de WFS-189 : 3 à 6 s ; jauge du joueur rechargée au temps) et **M4, Difficile 2,0 → 1,8** (RG-02 : ≥ 2,0). Les deux étaient déjà pile sur la borne avec le rond-point. L'essai `NITROS` 2 → 3 dans `course5.h` est sans effet.
+- **Décision (a), réduite aux deux voitures** : SF90 2,5 à 6 s de nitro ; M4 ≥ 1,8 en Difficile. Tout le reste inchangé (6 autres voitures 3 à 6 s ; Mustang, Golf, X5, 208, Compass ≥ 2,0 en Difficile ; Facile, Normale, exceptions, RG-02 bis ±3 %, RG-02 ter, RG-04, graines et cas du test).
+- **(b) refusée** : `configgame.json` non touché (`course5.vitesse_difficile`, bloc `nitro`) : ce serait changer toutes les courses Difficile et la nitro du joueur, non demandé par l'utilisateur.
+- **Exception de fichier** : `tests/test_course5.cpp`, les deux seules vérifications (commentaire « WFS-283 RG-08 ») ; `course5.h` : aucun changement gardé. Tableau des 7 voitures avant / après au journal ; si une autre vérification échoue, arrêt et retour au PO.
+- Écrit dans `regles-de-gestion/WFS-283.md` (RG-08, Suivi) et `regles-de-gestion/WFS-189.md` (révision de RG-02 et RG-06, anciennes valeurs gardées). Rappel : `feature/waforspeed-283` toujours pas poussée à 2026-11-07 23:26:33.
