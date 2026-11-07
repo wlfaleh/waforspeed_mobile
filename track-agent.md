@@ -30,7 +30,7 @@
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes) ; test de la fenêtre de la rue sur les 20 intérieurs | 235 : 16:11 (haut du pare-brise, test des 20 intérieurs) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 15:41 (CI de branche run 848) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-255 | P1 étape 3a « Conduite réaliste » : sons et vibrations liés aux forces ; WFS-241 et 253 🟡 | 255 : branche poussée 16:1x | 🔴 en cours (P1) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) |  | WFS-255 fusionné (PR #213, squash a4b3fc0) ; WFS-241, 253, 255 🟡 à valider par l'utilisateur ; demande la suite au PO | 255 : fusionnée 16:22 | ✅ libre |
 
 ## Tickets prêts sans agent
 

@@ -3491,3 +3491,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:15:52 — Statuts automatiques, CI main #844 (robot statuts)
 - Run vert (push, commit ae49782) : WFS-240 ✅ (PR #205, 959b86a).
+
+### 2026-11-07 16:22:24 — WFS-255 fusionné (PR #213, squash a4b3fc0) : sons et vibrations liés aux vraies forces, 🟡 À valider par l'utilisateur (Claude, agent dev conduite)
+- **Avant** : crissement en tout ou rien (0 ou 0,35) dès que le joueur freinait au-dessus de 65 km/h ou que l'accélération latérale dépassait un seuil de l'ancien modèle (`Phys::grip`), sans lien avec le pneu ; son du moteur sur une boîte fictive à 5 rapports déduite de la vitesse ; aucune vibration de conduite (seulement les chocs).
+- **Fait** : `src/audio/sons_conduite.h` (nouveau, pur) : crissement selon le glissement total normalisé σ du pneu (σ = 1 au pic de Pacejka, WFS-253) : 0 sous le pic, montée douce de σ = 1 à 1,8, 0,15 s au plus vite ; frottement des freins selon la décélération ; pulsation de l'ABS à 12,5 Hz ; roues bloquées : plein. `EngineModel::updateReel` : régime et rapport réels du modèle (Player::monde) ; l'ancien calcul reste pour le garage. `ressenti.*` : vibrations ABS (4 × 25 ms à 12,5 Hz, toutes les 0,5 s), glisse (30 ms toutes les 0,6 s), rapport (12 ms), 2 s au plus par épisode, réglage « Vibrations » respecté (vibrer()).
+- **Accroche annoncée** : `src/game/conduite_monde.h`, 5 lignes : σ de chaque essieu exposé (`Etat::sigmaAv / sigmaAr`) ; aucun changement de la physique.
+- **Mesures** (`test_sons_conduite`, Golf / Mustang) : virage à 0,5 g → crissement 0,000 ; volant à fond à 80 km/h → 0,32 / 0,33, montée ≤ 0,019 par pas ; freinage 100 → 0 avec ABS : 23 / 24 pulsations entendues, 4 vibrations ABS, la dernière à 1,50 s (arrêt en 2,9 s) ; sans ABS : crissement plein 0,35 ; 0-100 : son du moteur à ± 0,9 / 1,3 % du régime réel, même rapport à chaque pas, 2 rapports = 2 à-coups ; déterminisme au bit près. 43 tests CPU OK. Fusion par confiance (son et vibrations seulement ; aucune image changée).
+- Limite : le son et la vibration ne s'entendent / se sentent que sur le téléphone : à valider par l'utilisateur.
