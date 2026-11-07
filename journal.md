@@ -3586,3 +3586,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Règles : `regles-de-gestion/WFS-245.md` (RG-01 à RG-05, section Suivi ajoutée). Branche `feature/waforspeed-245` partie de `main`, séparée de celle de WFS-235. Après fusion : 🟡 À valider (utilisateur).
 - **Règle des 8 tickets prêts** : après cette attribution il en restait 7 → **WFS-261** créé (P2, E6, axe Réalisme, partie « le son ») : sortie stéréo Android, au moins 5 sons placés dans le monde (fontaine, vagues, tribunes, fermes, terrasses) avec baisse de 6 dB par doublement de distance, écho des tunnels ; rien retiré de WFS-76 ; fichiers séparés des sons de conduite (WFS-260 garde la priorité sur E6). Règles : `regles-de-gestion/WFS-261.md`. Ajouté en fin d'ordre du PO. Prêts : WFS-214, 215, 224, 232, 242, 243, 249, 261 (8).
 - Suivi : WFS-239 (agent 3) sans envoi depuis 13:43 (3 h 30, P1) : alerte dans `track-agent.md`, pas de retrait avant 10 h.
+
+### 2026-11-07 17:15:04 — Recette, lot 4 (personnages, nuit) : WFS-233 et WFS-240 VALIDÉS, WFS-210 et WFS-225 REFUSÉS (QA-arwa)
+- Captures : Release `apercu` de main, construction 844 (ae49782, CI verte, 45 tests CPU, parcours 0 écart) ; `test_fidelite_humains` (100 %) et `test_conducteurs` refaits en local.
+- **WFS-233 : VALIDÉ** (enfants main dans la main sur trottoir / promenade, 10-15 % des piétons, total inchangé). **WFS-240 : VALIDÉ** (poussettes, enfants en tribune, cheveux longs, cadence ± 10 %).
+- **WFS-210 : REFUSÉ** — **ANO-134 bloquante** : les 12 conducteurs réalistes n'ont ni cheveux ni yeux (aucune plage `Hair_*` dans les `.wfp`, vérifié ; partie yeux / cheveux jamais portée) : crânes nus, taches grises autour des yeux et de la bouche. Tenues par carte, peau et indices 16 bits conformes.
+- **WFS-225 : REFUSÉ** — lampadaires allumés au banc, mais herbe noire hors des phares (≈ 5/255) : ANO-128 (refus de l'utilisateur) toujours là, correction déjà prévue par WFS-249.
+- Bloquante → PO : ANO-134.
