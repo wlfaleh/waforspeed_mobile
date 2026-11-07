@@ -4324,3 +4324,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:43:00 — WFS-283 créé : supprimer les ronds-points sur toutes les cartes ; WFS-248 ❌, ANO-158 (po-scrum-master)
 - Ordre de l'utilisateur. Carrefours simples à la place, dépendances (course, trafic, GPS, chocs) dans les RG ; code des giratoires gardé désactivé. Au premier développeur qui demande, pas dev Y ni agent 5.
+
+### 2026-11-07 22:49:51 — WFS-279 fusionné par le lead dev (lead-dev)
+- PR #241 (arwa-5), squash 08e611b. Demande : voir la version de l'APK en petit sur l'écran de chargement. 7 captures ouvertes (5 paires `chargement-*` + zooms 1280 « dev » et 2400 « v0.1.912 ») : seul le coin bas droit change, rien d'autre ne bouge (écran d'erreur et fondu compris). Code : source unique `versionName` → `-DWFS_VERSION` → `chargement.cpp`, « dev » sur PC ; `test_version_chargement` ajouté ; aucun fichier `.github/**`, `tools/qa/**` ni iOS. Statut 🟣. À surveiller sur l'APK de `main` : « v0.1.N » affiché (pas « dev »).
