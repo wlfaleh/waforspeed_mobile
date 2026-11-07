@@ -2345,3 +2345,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Écart à RG-02 (au PO)** : le corps entier est dessiné (niveau de détail 0 à moins de 15 m, sinon 1), pas le buste seul : découper le buste demanderait un maillage propre ou un plan de coupe dans `scene_skin.frag` (hors zone) ; les jambes restent sous la planche (vérifié sur les captures).
 - **Mesures** (pose Sitting_Idle_Loop) : œil 0,589 m (homme) / 0,569 m (femme) au-dessus du siège à l'échelle du personnage (1,60 m) ; Golf : œil à 1,045 m (pavillon 1,417 m) ; SF90 : œil 0,853 m (pavillon 1,171 m).
 - **Preuves (local, lavapipe)** : 40 tests CPU OK (`test_conducteurs` : pavillon, échelle 1, voiture basse, SUV) ; parcours complet 0 écart (vue normale et Cockpit) ; captures `conducteurs-*` jour et nuit regardées (tête sous le pavillon, face au volant).
+
+### 2026-11-07 06:19:23 — Statuts automatiques, CI main #808 (robot statuts)
+- Run vert (push, commit 152ab47) : WFS-205 ✅ (PR #177, 152ab47).
