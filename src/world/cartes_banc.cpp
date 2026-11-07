@@ -139,7 +139,7 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     int64_t feu = -1, rp = -1;   // WFS-178 : 20 m avant la ligne d'arrêt du feu du village, 15 m avant l'entrée du rond-point
     for (const trace::Section& s : t.sections()) {
         if (s.type == trace::Type::Feux && !s.depart && feu < 0) feu = s.ligneArret - (int64_t)(20 / SEG_M);
-        if (s.type == trace::Type::RondPoint && rp < 0) rp = s.debut - (int64_t)(15 / SEG_M);
+        if ((s.type == trace::Type::RondPoint || s.exRondPoint) && rp < 0) rp = s.debut - (int64_t)(15 / SEG_M);   // WFS-283 : carrefour simple, même nom
     }
     int64_t vi = -1;
     for (int64_t a = 0; a < L && vi < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), "Vignobles")) vi = a + 40;
@@ -232,7 +232,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
     const int64_t m40 = (int64_t)(40 / SEG_M);
     for (const trace::Section& s : trace::sections(t)) {
         using T = trace::Type;
-        if (s.type == T::RondPoint && !rp) { rp = true; lieux.push_back({"carte-ville-rond-point", s.debut, 45, true}); }
+        if ((s.type == T::RondPoint || s.exRondPoint) && !rp) { rp = true; lieux.push_back({"carte-ville-rond-point", s.debut, 45, true}); }   // WFS-283 : carrefour simple, même nom
         else if (s.type == T::Feux && !fx) { fx = true; lieux.push_back({"carte-ville-feux", s.ligneArret, 30, true}); }
         else if (s.type == T::Autoroute && !au) { au = true; lieux.push_back({"carte-ville-autoroute", s.debut + 2 * m40, 0, true}); }
         else if (s.type == T::Tunnel && !tu) { tu = true; lieux.push_back({"carte-ville-tunnel", s.debut, 40, true}); }
@@ -241,6 +241,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-virage-" + std::to_string(++virages), s.debut, 35, false});
             lieux.push_back({"carte-ville-virage-" + std::to_string(virages) + "-haut", (s.debut + s.fin) / 2, 18, false, 1});   // au cœur du virage
         }
+        if (s.exRondPoint) lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});   // WFS-283 : plus de fontaine
         if (s.type == T::RondPoint) {
             lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
             lieux.push_back({"carte-ville-fontaine", s.debut, -20, true, 1});   // WFS-212 (RG-05) : 20 m dans l'anneau, l'îlot et sa fontaine devant
@@ -294,10 +295,12 @@ int benchRondsPoints(Game& g, Renderer& r, const std::string& out) {
         Track t; t.build(mapById(carte), trace::versionCarte(carte));
         int n = 0;
         for (const trace::Section& s : t.sections()) {
-            if (s.type != trace::Type::RondPoint) continue;
+            // WFS-283 : même banc, mêmes noms, au carrefour simple qui remplace chaque rond-point (avant / après de la PR)
+            if (s.type != trace::Type::RondPoint && !s.exRondPoint) continue;
             n++;
             int64_t entree = s.debut;   // entrée de l'anneau : la courbure change de sens (fin de la courbe d'approche)
-            for (int64_t a = s.debut + 1; a < s.fin; a++) if (t.segAt(a).curve * t.segAt(s.debut + 2).curve < 0) { entree = a; break; }
+            if (s.type == trace::Type::RondPoint)
+                for (int64_t a = s.debut + 1; a < s.fin; a++) if (t.segAt(a).curve * t.segAt(s.debut + 2).curve < 0) { entree = a; break; }
             for (const char* mo : {"jour", "nuit"}) for (int cam : {0, 1, 2}) {   // 2 : caméra de course dans l'anneau (milieu)
                 setenv("WFS_MOMENT", mo, 1);
                 setenv("WFS_DEPART", std::to_string(cam == 2 ? (s.debut + s.fin) / 2 : entree - (int64_t)(15 / SEG_M)).c_str(), 1);

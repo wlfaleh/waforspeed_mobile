@@ -645,6 +645,7 @@ public:
         for (const trace::Section& s : S) {
             if (s.type == trace::Type::Lacets) for (int64_t n = s.debut; n < s.fin; n++) sol_[(size_t)mod(n)] = S_FALAISE;
             if (s.type == trace::Type::Tunnel) { tunDeb_ = s.debut; tunFin_ = s.fin; for (int64_t n = s.debut; n < s.fin; n++) sol_[(size_t)mod(n)] = S_TUNNEL; }
+            if (s.exRondPoint) for (int64_t n = s.debut - 15; n < s.fin + 15; n++) sol_[(size_t)mod(n)] = S_PLACE;   // WFS-283 : place de la station au carrefour simple
             if (s.type == trace::Type::RondPoint) {
                 for (int64_t n = s.debut - 15; n < s.fin + 15; n++) sol_[(size_t)mod(n)] = S_PLACE;
                 rpDeb_ = s.debut; rpFin_ = s.fin;
@@ -2337,7 +2338,7 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     for (const trace::Section& s : S) {
         if (s.type == trace::Type::Lacets && !la) la = &s;
         if (s.type == trace::Type::Tunnel && !tu) tu = &s;
-        if (s.type == trace::Type::RondPoint && !rp) rp = &s;
+        if ((s.type == trace::Type::RondPoint || s.exRondPoint) && !rp) rp = &s;   // WFS-283 : carrefour simple, même place
         if (s.type == trace::Type::Feux && !fx) fx = &s;
     }
     int64_t village = -1;   // village au tracé 2 : sur la descente de la falaise, hors des lacets

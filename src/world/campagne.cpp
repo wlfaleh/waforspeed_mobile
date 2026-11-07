@@ -860,6 +860,15 @@ private:
                 commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
                 commerce(sec.fin + 100, -1, CO_BOULANGERIE, 9, 9, 6.f, 4);
             }
+            if (sec.exRondPoint) {   // WFS-283 (RG-02) : carrefour simple du village (plus de rond-point) : mêmes commerces et
+                // mêmes lampes à l'approche et à la sortie, mâts sur le bord extérieur du virage (à droite), sans îlot ni fontaine
+                vigilance_.push_back(sec.debut);
+                for (int64_t a = sec.debut + 2; a < sec.fin; a += (int64_t)(11 / SEG_M)) poserLampe(a, 1);
+                poserLampe(sec.debut - (int64_t)(10 / SEG_M), 1); poserLampe(sec.fin + (int64_t)(10 / SEG_M), 1);
+                commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);
+                commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
+                commerce(sec.fin + 100, -1, CO_BOULANGERIE, 9, 9, 6.f, 4);
+            }
             if (sec.type == trace::Type::Feux && feuSeg_ < 0 && !sec.depart) {   // feu du village : un poteau de chaque côté
                 feuSeg_ = sec.ligneArret; feuIdx_ = sec.feu; vigilance_.push_back(sec.ligneArret);
                 for (int side : {-1, 1}) { Item it; it.t = T_FEU; it.side = side; it.lat = R + 0.8f; CarteDecor::item(feuSeg_, it); }
