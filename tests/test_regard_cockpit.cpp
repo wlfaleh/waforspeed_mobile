@@ -63,9 +63,13 @@ int main() {
             VERIFIE(H > 0, "%s : hauteur de la voiture inconnue", d.car);
             const float y = cockpit::toitAuDessusOeil(d, H), z = cockpit::toitDevantOeil(d, y), el = std::atan2(y, -z);
             VERIFIE(y >= 0.10f && y <= 0.30f && z < -0.3f && z > -0.9f, "%s : haut du pare-brise (%+.2f ; %+.2f)", d.car, y, z);
-            VERIFIE(el >= 12 * DEG - 1e-4f, "%s : haut du pare-brise vu à %.1f° (≥ 12°)", d.car, el / DEG);
-            // rétroviseur : glace de 250 mm au milieu de la voiture, 7,5 cm sous le ciel de toit : son bord gauche hors de ±15°
-            const float bordG = std::atan2(CX - 0.125f * std::cos(0.30f), -z);
+            const cockpit::PavillonDef pv = cockpit::pavillonPour(d.car);
+            VERIFIE(pv.elevationToit >= 10 * DEG - 1e-4f && el >= pv.elevationToit - 1e-4f, "%s : haut du pare-brise vu à %.1f° (≥ %.0f°)",
+                    d.car, el / DEG, pv.elevationToit / DEG);
+            // rétroviseur au milieu de la voiture (coque par modèle) : son bord gauche hors de ±15° ; son centre sous le ciel de toit
+            VERIFIE(pv.retroL >= 0.20f && pv.retroL <= 0.27f && pv.retroH >= 0.055f && pv.retroDescente > pv.retroH * 0.5f,
+                    "%s : rétroviseur %.0f × %.0f mm, centre %.1f cm sous le toit", d.car, pv.retroL * 1000, pv.retroH * 1000, pv.retroDescente * 100);
+            const float bordG = std::atan2(CX - pv.retroL * 0.5f * std::cos(0.30f), -z);
             VERIFIE(bordG > A15, "%s : bord du rétroviseur à %.1f° de l'axe (> 15°)", d.car, bordG / DEG);
             // montant gauche (garniture de 65 mm) : entre l'horizon et +8°, son bord intérieur hors de ±15° autour de l'axe
             const vec3 a{CX - 0.74f, d.pareBriseY, d.pareBriseZ}, b{CX - 0.62f, y - 0.01f, z + 0.02f};

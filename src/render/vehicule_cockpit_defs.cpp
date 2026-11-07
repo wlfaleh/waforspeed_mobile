@@ -188,6 +188,21 @@ static const InterieurDef DEFS[] = {
      Essuie::Paralleles, 0.650f, 0.500f, 1.62f, 0.477f},
 };
 
+PavillonDef pavillonPour(const char* carId) {
+    struct Ligne { const char* car; PavillonDef p; };
+    constexpr float DIX_DEGRES = 10.f * 3.14159265f / 180.f;
+    static const Ligne LIGNES[] = {
+        {"abarth",   {0.215f, 0.065f, 0.065f, ELEVATION_TOIT_MIN}},   // rétroviseur de la 500 : petit et haut
+        {"p911",     {0.245f, 0.065f, 0.060f, ELEVATION_TOIT_MIN}},
+        {"gt86",     {0.240f, 0.065f, 0.060f, ELEVATION_TOIT_MIN}},
+        {"mustang",  {0.250f, 0.068f, 0.070f, ELEVATION_TOIT_MIN}},
+        {"gallardo", {0.240f, 0.065f, 0.055f, DIX_DEGRES}},
+        {"sf90",     {0.220f, 0.058f, 0.050f, DIX_DEGRES}},
+    };
+    if (carId) for (const Ligne& l : LIGNES) if (std::strcmp(l.car, carId) == 0) return l.p;
+    return {};
+}
+
 const InterieurDef* interieurPour(const char* carId) {
     if (!carId) return nullptr;
     for (const InterieurDef& d : DEFS) if (std::strcmp(d.car, carId) == 0) return &d;

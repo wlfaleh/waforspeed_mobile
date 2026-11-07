@@ -9,6 +9,7 @@
 #include <vector>
 #include "../core/log.h"
 #include "../core/system.h"
+#include "../render/eclairage_physique.h"   // WFS-235 : banc (captures des sondes suspendues pendant la mesure)
 #include "../render/renderer.h"
 #include "../render/vehicule_cockpit_geo.h"   // WFS-197 : primitives du cockpit (déplacées depuis ce fichier)
 #include "../render/vehicule_cockpit.h"       // WFS-197 : intérieurs par modèle
@@ -55,7 +56,6 @@ static void suivreExact(double& x, double& cible0, double cible, double k, float
 EtatCockpit g_ck;
 float g_ckEssuieT = 0;   // WFS-197 : phase des essuie-glaces au dernier pas (banc d'essai)
 cockpit::EtatInterieur g_ckInt; int g_ckAppels = 0; size_t g_ckOctets = 0; const char* g_ckCar = nullptr;   // WFS-197 : banc d'essai
-bool g_ckSansInterieur = false;   // WFS-235 : banc d'essai : image sans l'intérieur (part cachée, RG-05)
 bool g_ckBalaisRepos = false;     // WFS-235 : banc d'essai : balais dessinés au repos (part cachée par l'intérieur fixe)
 struct Zone { float x = 0, y = 0, w = 0, h = 0;
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } } g_bouton;
@@ -291,7 +291,7 @@ public:
 
     void render(Renderer& r, const GameView& g) override {
         const EtatCockpit& ck = etatCockpit();
-        if (!ck.actif || g.sceneDediee || g_ckSansInterieur) return;   // WFS-235 : banc (part de l'image cachée par l'intérieur)
+        if (!ck.actif || g.sceneDediee) return;
         // WFS-235 : intérieur attaché à la voiture, à la place de l'œil au repos (avant : à la caméra, camera.add(g) du jeu web ;
         // le regard qui suit le virage et la tête qui bouge le feraient tourner avec eux)
         const mat4 cam = ck.repere;
@@ -416,23 +416,50 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
         else WFS_LOG("capture %s : cockpit commun (voiture %s sans intérieur propre)", nom.c_str(), pl.car->id);
     };
     // WFS-235 (RG-05, critère arbitré par le PO le 2026-11-07) : parts de l'image cachées par l'intérieur, d'après le même
-    // instant dessiné avec et sans l'intérieur (pixels qui changent ; l'interface est la même dans les deux images) :
+    // instant dessiné deux fois, l'intérieur normal puis tout en couleur clé (cockpit::g_interieurCle) : pixels qui changent =
+    // pixels de l'intérieur (même géométrie : la lumière de la rue ne change pas ; l'interface est la même dans les deux) :
     //   fenêtre de la rue : de l'horizon à +8°, ±15° autour de l'axe de la voiture (0 % visé) ;
     //   bande de la rue : de l'horizon à +8°, toute la largeur (≤ vraie voiture + 2 points) ;
     //   au-dessus de l'horizon : tout ce qui est au-dessus (écrit seulement) ; direction de chaque pixel : caméra de l'image
     //   balaisRepos : sous la pluie, les balais en mouvement passent devant la rue (comme dans une vraie voiture) : la
     //   fenêtre de la rue se mesure balais au repos (intérieur fixe) ; la mesure balais en mouvement est seulement écrite
     auto partCachee = [&](const std::string& nom, bool balaisRepos = false) {
-        const std::string a = out + "/" + nom + "-mesure.png", b = out + "/" + nom + "-sans-interieur.png";
-        g_ckBalaisRepos = balaisRepos;
-        g.render(t); r.capturePng(a);
-        const float balais = g_ckInt.essuie;
-        g_ckBalaisRepos = false;
-        g_ckSansInterieur = true; g.render(t); r.capturePng(b); g_ckSansInterieur = false;
-        int wa, ha, ca, wb, hb, cb;
-        unsigned char* pa = stbi_load(a.c_str(), &wa, &ha, &ca, 3);
-        unsigned char* pb = stbi_load(b.c_str(), &wb, &hb, &cb, 3);
-        if (pa && pb && wa == wb && ha == hb) {
+        const std::string a = out + "/" + nom + "-mesure.png", b = out + "/" + nom + "-cle.png", a2 = out + "/" + nom + "-controle.png";
+        // même lumière pour les deux images : aucune nouvelle capture des sondes pendant la mesure, et les captures en route
+        // finissent avant (relecture 2 images plus tard, puis calcul en tâche de fond : à la fin, l'exposition se recale d'un
+        // coup) ; temps figé : pas d'adaptation de l'œil ; contrôle : image avec l'intérieur refaite après celle sans
+        // halo (bloom) coupé pendant la mesure : les lueurs ne débordent ni de la couleur clé, ni des lampes cachées par le pavillon
+        eclairage::suspendreCaptures(true);
+        const float bloomAvant = r.bloomForce;
+        r.bloomForce = 0;
+        int wa = 0, ha = 0, ca, wb, hb, cb, w2, h2, c2;
+        unsigned char *pa = nullptr, *pb = nullptr;
+        float balais = 0, instable = 100;
+        for (int essai = 0; essai < 3 && instable > 0.2f; essai++) {
+            stbi_image_free(pa); stbi_image_free(pb); pa = pb = nullptr;   // nul accepté
+            for (int i = 0; i < 3; i++) g.render(t);
+            g_ckBalaisRepos = balaisRepos;
+            g.render(t); r.capturePng(a);
+            balais = g_ckInt.essuie;
+            cockpit::g_interieurCle = true; g.render(t); r.capturePng(b); cockpit::g_interieurCle = false;
+            g.render(t); r.capturePng(a2);
+            g_ckBalaisRepos = false;
+            pa = stbi_load(a.c_str(), &wa, &ha, &ca, 3); pb = stbi_load(b.c_str(), &wb, &hb, &cb, 3);
+            unsigned char* p2 = stbi_load(a2.c_str(), &w2, &h2, &c2, 3);
+            if (pa && p2 && w2 == wa && h2 == ha) {
+                long n = 0;
+                for (long i = 0; i < (long)wa * ha * 3; i += 3)
+                    n += std::max({std::abs(pa[i] - p2[i]), std::abs(pa[i + 1] - p2[i + 1]), std::abs(pa[i + 2] - p2[i + 2])}) > 12;
+                instable = 100.f * n / ((float)wa * ha);
+            }
+            stbi_image_free(p2);
+        }
+        eclairage::suspendreCaptures(false);   // banc hors ligne : la qualité automatique (qui peut aussi les suspendre) est inactive
+        r.bloomForce = bloomAvant;
+        std::remove(a2.c_str());
+        if (instable > 0.2f) WFS_ERR("%s (WFS-235 RG-05) : lumière instable pendant la mesure (%.1f %% des pixels changent entre deux images "
+                                    "avec l'intérieur) : mesure non retenue", nom.c_str(), instable);
+        else if (pa && pb && wa == wb && ha == hb) {
             const vec3 f = normalize(vueRegard()), sd = normalize(cross(f, {0, 1, 0})), u = cross(sd, f);
             const vec3 av = etatCockpit().repere.transformDir({0, 0, -1});
             const float tanV = std::tan(etatCockpit().fov * PI / 360.f), tanH = tanV * (float)wa / (float)ha, azVoiture = std::atan2(av.x, -av.z);
@@ -452,9 +479,10 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
             }
             auto pct = [&](int k) { return n[k] ? 100.0 * c[k] / n[k] : 0.0; };
             WFS_LOG("capture %s (WFS-235 RG-05) : regard %s ; cachés par l'intérieur : fenêtre de la rue %.1f %% (0 %% visé), bande de la rue %.1f %%, "
-                    "au-dessus de l'horizon %.1f %% ; balais %.2f rad%s", nom.c_str(),
+                    "au-dessus de l'horizon %.1f %% ; balais %.2f rad%s ; tangage de la voiture %+.1f° ; contrôle %.2f %%", nom.c_str(),
                     regardCockpit() == RegardCockpit::Bas ? "bas" : regardCockpit() == RegardCockpit::Haut ? "haut" : "normal",
-                    pct(0), pct(1), pct(2), balais, balais > 0.02f ? " (en mouvement, pluie : mesure écrite seulement)" : "");
+                    pct(0), pct(1), pct(2), balais, balais > 0.02f ? " (en mouvement, pluie : mesure écrite seulement)" : "",
+                    std::asin(std::clamp(av.y, -1.f, 1.f)) * 180.f / PI, instable);   // tangage : nez vers le bas, la bande monte
         } else WFS_ERR("%s : parts cachées non mesurées (captures illisibles)", nom.c_str());
         stbi_image_free(pa); stbi_image_free(pb);   // nul accepté
         std::remove(a.c_str()); std::remove(b.c_str());
