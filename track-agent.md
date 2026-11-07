@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 21:36:14 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 21:44:57 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -28,7 +28,7 @@
 | Claude, agent 5 (011cpqZaDiS2) | — | libre (demande son ticket suivant au PO ; WFS-273 lui est proposé en premier) | 268 : fusionnée par confiance le 2026-11-07 19:34 UTC (Ville et Corniche préparées au chargement, Campagne et Grand Prix en repli, décision du PO), 🟡 ; 248 : fusionnée (PR #208, 🟡) | 🟢 libre |
 | Claude, agent dev X (0183bv2X, ex-« session dev expert ») |  | WFS-246 fusionné (PR #229), 🟡 à valider par l'utilisateur ; libre ; E4 libre : WFS-273 (n° 0 du bandeau) puis WFS-262 à 265, au premier qui demande (WFS-262 proposé d'abord à lui) | 246 : fusionné #229 (ad94d9d), 🟡 À valider (utilisateur) | 🟢 libre |
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre : pause de l'utilisateur finie à 18:00 UTC ; ticket seulement à sa demande |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-245 | P3 WFS-245 étiquettes du HUD lisibles (E5, en parallèle, demande de l'utilisateur) : codé, 59 tests CPU et parcours 0 écart, captures regardées ; fusion par confiance en cours (🟡). WFS-235 (P1) **fusionné** PR #236 (squash 66fdd3d), 🟡 À valider (utilisateur) | 235 : 21:04 (fusionné, #236) ; 245 : 21:04 (a44542b) | 🔴 en cours (WFS-245) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-245 | P3 WFS-245 textes du HUD lisibles (E5) : livraison 1 fusionnée PR #238 (squash 5032e8b) ; livraison 2 en cours : RG-09 (ANO-141), texte du bandeau de la carte GPS. WFS-235 (P1) fusionné PR #236, 🟡 À valider (utilisateur) | 245 : 21:59 (livraison 1 fusionnée, #238) | 🔴 en cours (WFS-245, livraison 2) |
 | arwa-4 (Claude, session 01Us6uCw) | WFS-278 | domaine **son** : P2 WFS-278 acoustique des lieux (2) : façades du casino, du centre commercial et des garages (WFS-176), sons masqués à la Corniche, à la Campagne et au Grand Prix, diffraction multiple et absorption des parois sourcées (limites de WFS-275) ; attribué 20:57 à sa demande ; avant : WFS-275 🟣 (PR #237, squash b009c48), WFS-272 🟣 (PR #227), WFS-261 🟣 (PR #219) | 278 : 20:59 (59ed778) ; 275 : fusionnée 20:54 (PR #237) | 🔧 en cours (P2) |
 | arwa-3 (Claude, session 01Us6uCt) | WFS-232 | domaine **courses, modes et trafic** : P2 WFS-232 (1/2) motos et scooters dans le trafic, pilotes casqués, inclinaison en virage, feux la nuit (WFS-232 découpé à 21:28 : garés et faufilement → WFS-280) ; attribué 21:30 à sa demande ; exception PO : `traffic.*`, `traffic_system.*`, `deux_roues*`, `assets/cars/deux_roues/**`, **pas** `player.*` / `conduite_*` (WFS-258) ; 🟡 après fusion ; avant : WFS-243 🟡 (PR #239), WFS-242 🟡 (PR #222) | 232 : 21:28 (2da6fe7, branche créée et poussée) ; 243 : fusionnée 21:20 (PR #239) | 🔧 en cours (P2) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-276 | P1 WFS-276 nuit, tonemapping local (E13) ; WFS-249 🟡 (PR #235, squash d3c1c68) | 276 : 21:28 (e65cc5e) ; 249 : fusionnée 20:40 (d3c1c68) | 🔴 en cours (P1) |
@@ -39,6 +39,7 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
+| WFS-281 (P1) | E3 | **nouveau, n° 00 du bandeau** : le jeu rame après 2 min, le trafic s'accumule dans la vue (ANO-151) ; domaine trafic (skill `expert-conduite`), mêmes fichiers que WFS-232 (arwa-3) : en coordination ; au premier développeur du domaine qui le demande, **pas** agent 5 |
 | WFS-269 (P1) | E13 + E4 | prêt depuis la fusion de WFS-268 (🟡) ; E13 tenue par WFS-276 (Agent 0) |
 | WFS-273 (P1) | E4 | prêt depuis la fusion de WFS-246 (19:51, 🟡) ; n° 0 du bandeau : premier ticket de E4, au premier développeur qui le demande (agent 5 d'abord), **pas** agent arwa |
 | WFS-262 à 265 (P1) | E4 | après WFS-273 (un ticket actif par épic), une par une ; WFS-262 proposé d'abord à agent dev X |
@@ -53,7 +54,8 @@
 | Agent | Rôle | Dernière action |
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 21:36 : WFS-279 (partie jeu, version sur l'écran de chargement, P2) attribué à arwa-5 à sa demande (« petites tâches », ordre de l'utilisateur) ; règles précisées (source unique `versionName`, gel de la CI) ; WFS-273 et WFS-266 (P1) restent au premier qui demande ; 2026-11-07 21:27 : WFS-232 découpé (1/2 trafic, 2/2 garés et faufilement = WFS-280 créé) et attribué à arwa-3 à sa demande ; cédez-le-passage de WFS-243 sans objet (décision) ; 2026-11-07 20:57 : WFS-278 (son, acoustique des lieux 2, tiré des limites de WFS-275) créé et attribué à arwa-4 à sa demande (aucun ticket prêt du son) ; 2026-11-07 19:56 : WFS-275 (son, acoustique des lieux) créé et attribué à arwa-4 à sa demande ; WFS-273 prêt (E4 libérée par la fusion de WFS-246), WFS-262 après lui ; 2026-11-07 19:48 : cause du rouge corrigée (WFS-227, pas les phares ; vérifiée) ; WFS-274 laissé à l'agent arwa (règle des 10 h), rien à coder pour lui ; accroche `environnement.cpp` validée pour arwa-5 (WFS-267) ; 19:45 : WFS-243 attribué à arwa-3, ANO-150 rangée, WFS-269 prêt ; 19:50 : accord à arwa-3 pour une accroche ≤ 10 lignes dans `renderer.*` (WFS-243, ANO-117), hors des lignes de WFS-246 |
+| lead-dev | relit chaque PR : ouvre les captures avant / après (≥ 3, `qa/pr/WFS-XX/`), compare à la demande de l'utilisateur, **seul à fusionner** (squash) ou refuse ; appelé par le développeur juste après sa PR (`.claude/agents/lead-dev.md`) | créé le 2026-11-07 21:45 UTC (règle de l'utilisateur) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 21:44 : ANO-151 (bloquante) et WFS-281 (P1, trafic qui s'accumule après 2 min, signalé par l'agent 5 d'après l'essai de l'utilisateur) créés, en tête du bandeau |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 soir terminée (26 tickets ; lot 3 : WFS-218 VALIDÉ, WFS-158 et 219 PASSABLES, WFS-226 REFUSÉ) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |

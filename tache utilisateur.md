@@ -98,3 +98,6 @@ demande utilisateur :
 
 - Tableau journée / matin validé (avec l'agent expert ci, 2026-11-07 ≈ 21:00 UTC)
 ( PO : c'est appliqué dans `CLAUDE.md`, le `qa-lead` et mes consignes — **à chaque fusion** : compilation, tests, parcours, endurance, APK (le ticket reste 🟣) ; **à 4 h** (heure de France) : tous les bancs, le réalisme, l'émulateur ; s'ils sont verts, les tickets passent ✅ ; **à 7 h** : la QA, si « 🧪 Recette QA prête » est publié. **Gel de la CI 2 à 3 jours.** Numéro de version (nom de l'APK + écran de chargement) : **WFS-279** créé. )
+
+- « Pour la première minute il y a une évolution de graphique, pas de RAM, pas de chauffe, pas de bugs, mais après 2 minutes à peu près il commence à ramer, à bugger. » (APK 883, transmis par Claude, agent 5, 2026-11-07)
+( PO, 2026-11-07 21:44:57 UTC : c'est noté. L'agent 5 a trouvé la cause probable : ce n'est pas le décor, c'est le **trafic** : avec le temps, beaucoup trop de voitures se retrouvent autour de toi (≈ 60 au lieu de ≈ 5), et le téléphone dessine 12 fois plus de voitures. Anomalie **ANO-151** et ticket urgent **WFS-281** (P1, en tête de la liste) : trafic stable pendant 10 min sur les 4 cartes, sans bouchon permanent. Il sera donné au prochain développeur du trafic qui demande un ticket ; après la fusion, il attendra ta confirmation sur le téléphone. )
