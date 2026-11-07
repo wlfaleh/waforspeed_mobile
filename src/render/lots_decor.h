@@ -37,7 +37,8 @@ using Construire = std::function<void(int64_t chunk, bool lod, std::vector<Verte
 class DecorFixe {
 public:
     // nom : carte (journal) ; parts : nombre de matériaux ; blocChunks : morceaux par bloc (4 = 154 m)
-    bool preparer(Renderer& r, Track& t, int parts, int blocChunks, const Construire& construire, const char* nom);
+    // deuxNiveaux = false : un seul niveau de détail (route de Game) : la version allégée n'est ni construite ni gardée
+    bool preparer(Renderer& r, Track& t, int parts, int blocChunks, const Construire& construire, const char* nom, bool deuxNiveaux = true);
     void liberer(Renderer& r);
     bool pret() const { return pret_; }
     int64_t longueurTour() const { return L_; }   // segments d'un tour (fin du dernier morceau : les cartes s'y arrêtent)
@@ -68,7 +69,7 @@ private:
     std::vector<Bloc> blocs_;
     int parts_ = 0;
     int64_t L_ = 0;
-    bool pret_ = false;
+    bool pret_ = false, deuxNiveaux_ = true;
     size_t sommets_ = 0, octets_ = 0;
     double dureeMs_ = 0;
     // matrice d'un tour : monde = R(k·θ) (x − p0) + q_k (lots_decor_tour.h) ; cache des 8 derniers tours demandés
@@ -93,7 +94,7 @@ template <class F> int DecorFixe::dessiner(Track& t, int64_t aP, int64_t arriere
             // détail si le point du bloc le plus proche du joueur est à moins de lodLoinM : jamais moins détaillé que les
             // morceaux d'avant (choisis morceau par morceau), un peu plus au loin dans le bloc de la limite
             const int64_t a0 = b.s0 + base, a1 = b.s1 + base, proche = aP < a0 ? a0 - aP : aP >= a1 ? aP - a1 + 1 : 0;
-            const bool lod = segmentsVersMetres(proche) > lodLoinM;
+            const bool lod = deuxNiveaux_ && segmentsVersMetres(proche) > lodLoinM;
             for (int p = 0; p < parts_; p++) if (b.m[lod][(size_t)p].indexCount) { dessin(p, b.m[lod][(size_t)p], M); n++; }
         }
     }

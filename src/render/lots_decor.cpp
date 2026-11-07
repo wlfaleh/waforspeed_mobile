@@ -15,8 +15,9 @@ namespace wfs::lots {
 
 bool g_lotsDecor = [] { const char* e = std::getenv("WFS_LOTS"); return !(e && std::strcmp(e, "0") == 0); }();
 
-bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const Construire& construire, const char* nom) {
+bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const Construire& construire, const char* nom, bool deuxNiveaux) {
     liberer(r);
+    deuxNiveaux_ = deuxNiveaux;
     const auto t0 = std::chrono::steady_clock::now();
     parts_ = std::min(parts, MAX_PARTS);
     L_ = (int64_t)t.segmentCount();
@@ -31,7 +32,7 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
     struct Morceau { std::array<std::vector<Vertex>, MAX_PARTS> v; std::array<std::vector<uint32_t>, MAX_PARTS> i; };
     std::vector<Morceau> cpu((size_t)nChunks * 2);
     jobs().parallelFor((int)cpu.size(), 1, [&](int b0, int e0) {
-        for (int k = b0; k < e0; k++) construire(k / 2, (k & 1) != 0, cpu[(size_t)k].v.data(), cpu[(size_t)k].i.data());
+        for (int k = b0; k < e0; k++) if (deuxNiveaux || (k & 1) == 0) construire(k / 2, (k & 1) != 0, cpu[(size_t)k].v.data(), cpu[(size_t)k].i.data());
     });
     // regroupement : bloc de blocChunks morceaux, un maillage par matériau et par niveau de détail
     const int64_t B = std::max(1, blocChunks);
@@ -45,7 +46,7 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
     std::vector<Vertex> vv; std::vector<uint32_t> ii;
     for (int64_t c0 = 0; c0 < nChunks; c0 += B) {
         Bloc bl; bl.s0 = c0 * CH; bl.s1 = std::min(L_, (c0 + B) * CH);
-        for (int lod = 0; lod < 2; lod++) for (int p = 0; p < parts_; p++) {
+        for (int lod = 0; lod < (deuxNiveaux ? 2 : 1); lod++) for (int p = 0; p < parts_; p++) {
             vv.clear(); ii.clear();
             for (int64_t c = c0; c < std::min(nChunks, c0 + B); c++) {
                 const Morceau& m = cpu[(size_t)(c * 2 + lod)];

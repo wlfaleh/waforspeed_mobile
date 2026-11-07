@@ -33,9 +33,9 @@ using Geo = veg::Geo;
 enum Part { P_UNI, P_FEUILLU, P_CONIF, P_NEON, P_ROUTE, P_TEXTE0, P_TEXTE1, P_TEXTE2, P_COUNT };
 constexpr int PAL_W = 128;                // cases de la palette
 constexpr int AHEAD = 22, BEHIND = 2;     // morceaux dessinés (comme la route de Game)
-// WFS-268 (décision du PO, 2026-11-07 18:33 UTC) : Campagne et Grand Prix gardent l'ancienne gestion en course (un tour préparé
-// = 175 à 212 Mo GPU, trop pour un téléphone de 4 Go) jusqu'aux instances des arbres (WFS-273) ; true = décor préparé au chargement
-constexpr bool LOTS_CARTES_SOCLE = false;
+// WFS-268 : Campagne et Grand Prix aussi préparés au chargement (ordre de l'utilisateur, 2026-11-07 : « le max possible dans le
+// chargement, même 1 Go ») ; false = ancienne gestion par morceaux en course pour ces deux cartes
+constexpr bool LOTS_CARTES_SOCLE = true;
 constexpr double LOD_FAR_M = 200;         // au-delà : arbres allégés, petits objets non dessinés (SMALL_DECOR)
 
 // bande de sol : de a à b (m depuis l'axe), hauteurs ya → yb, case de palette

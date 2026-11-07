@@ -6,6 +6,7 @@
 #include <vector>
 #include "player.h"
 #include "track.h"
+#include "../render/lots_decor.h"   // WFS-268 (accroche) : route préparée au chargement
 #include "../render/renderer.h"
 #include "../core/system.h"
 
@@ -71,6 +72,7 @@ private:
     const CarDef* carDef_ = nullptr;
     vec3 paint_{0.1f, 0.3f, 0.85f};
     std::map<int64_t, Chunk> chunks_;
+    lots::DecorFixe routeLots_; int64_t limiteRoute_ = INT64_MAX;   // WFS-268 (accroche) : route du tour 0 préparée au chargement
     std::vector<std::pair<uint64_t, Mesh>> graveyard_;
     uint64_t frameNo_ = 0;
     Material roadMat_, walkMat_, groundMat_, shadowMat_;

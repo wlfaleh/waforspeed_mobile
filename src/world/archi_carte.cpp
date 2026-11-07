@@ -93,8 +93,8 @@ public:
             mats_[S_VITRE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         }
         pret_ = true;
-        // WFS-268 (RG-08) : Ville et Corniche : tous les morceaux, aux 3 niveaux de détail, préparés ici (écran de chargement)
-        if (lots::g_lotsDecor && g.map && (!std::strcmp(g.map->id, "ville") || !std::strcmp(g.map->id, "plage"))) preparerTout(r, *g.track);
+        // WFS-268 (RG-08) : toutes les cartes : tous les morceaux, aux 3 niveaux de détail, préparés ici (écran de chargement)
+        if (lots::g_lotsDecor) preparerTout(r, *g.track);
         size_t tri = 0;
         for (const Bat& b : g_bats) { Batiment x; construire(b.plan, b.profondeur, 0, x); for (const Maillage& m : x.part) tri += m.triangles(); }
         WFS_LOG("archi (WFS-161) : %zu bâtiments du kit posés, %zu triangles au niveau de détail 0 (tous), nuit %s", g_bats.size(), tri, nuit ? "oui" : "non");

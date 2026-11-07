@@ -58,6 +58,7 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     setCar(carId);
     if (progression && !car_.ok) return false;   // WFS-35 : voiture introuvable, l'écran garde l'étape où l'erreur a eu lieu
     if (progression) progression(0.70f, "Construction de la ville");   // WFS-35
+    if (lots::g_lotsDecor) { limiteRoute_ = (int64_t)track_.segmentCount(); routeLots_.preparer(r, track_, 3, 4, [this](int64_t c, bool, std::vector<Vertex>* v, std::vector<uint32_t>* i) { ChunkCpu o; buildChunkCpu(c, o); for (int w = 0; w < 3; w++) { v[w] = std::move(o.v[w]); i[w] = std::move(o.i[w]); } }, "route", false); limiteRoute_ = INT64_MAX; }   // WFS-268 (accroche)
     systemsInit();
     return car_.ok;
 }
@@ -78,6 +79,7 @@ void Game::shutdown() {
     systemsShutdown();
     for (auto& [k, c] : chunks_) { r_->destroy(c.road); r_->destroy(c.walk); r_->destroy(c.ground); }
     chunks_.clear();
+    routeLots_.liberer(*r_);   // WFS-268 (accroche)
     for (auto& g : graveyard_) r_->destroy(g.second);
     graveyard_.clear();
     r_->destroy(car_);
@@ -93,12 +95,13 @@ void Game::shutdown() {
 // uv = mètres (x latéral, y distance le long de la route) : les shaders dessinent l'asphalte et les marquages.
 void Game::buildChunkCpu(int64_t c, ChunkCpu& out) {
     const int64_t a0 = c * CH;
+    const int nCH = limiteRoute_ == INT64_MAX ? CH : (int)std::min<int64_t>(CH, limiteRoute_ - a0);   // WFS-268 (accroche) : dernier morceau borné au tour
     const double halfRoad = RW;
     // profils transversaux : (latéral en m, hauteur)
     auto strip = [&](int which, const std::vector<std::pair<float, float>>& prof) {
         auto& V = out.v[which]; auto& I = out.i[which];
         const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)V.size();
-        for (int i = 0; i <= CH; i++) {
+        for (int i = 0; i <= nCH; i++) {
             const double s = (double)(a0 + i) * SEG;
             const trace::Rayon ri = trace::rayonInterieur(track_, s);   // WFS-136 (accroche A1) : courbes serrées du tracé 2
             for (uint32_t k = 0; k < cols; k++) {
@@ -107,7 +110,7 @@ void Game::buildChunkCpu(int64_t c, ChunkCpu& out) {
                 V.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
             }
         }
-        for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+        for (int i = 0; i < nCH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
             uint32_t q = base + i * cols + k;
             I.insert(I.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
         }
@@ -142,6 +145,7 @@ void Game::buildChunkCpu(int64_t c, ChunkCpu& out) {
 void Game::retire(Mesh& m) { if (m.indexCount || m.vb.buf) graveyard_.push_back({frameNo_, m}); m = Mesh{}; }
 
 void Game::streamChunks() {
+    if (routeLots_.pret()) return;   // WFS-268 (accroche) : route préparée au chargement, rien à construire en course
     const int64_t pc = (int64_t)std::floor(player_.dist / SEG) / CH;
     // morceaux trop loin : libérés quand le GPU ne les utilise plus
     for (auto it = chunks_.begin(); it != chunks_.end();) {
@@ -364,7 +368,13 @@ void Game::render(double time) {
     if (!r_->beginFrame(fp)) return;
 
     const mat4 I = mat4::identity();
-    if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
+    if ((!dediee || sd.route) && routeLots_.pret())   // WFS-268 (accroche) : blocs du tour 0, matrice du tour, même fenêtre
+        routeLots_.dessiner(track_, (int64_t)std::floor(player_.dist / SEG) / CH * CH, CHUNKS_BEHIND * CH, (CHUNKS_AHEAD + 1) * CH - 1, 1e30, [&](int p, const Mesh& m, const mat4& M) {
+            if (p == 2 && !solPropre) r_->draw(m, groundMat_, M);
+            else if (p == 1 && !trottoirPropre) r_->draw(m, walkMat_, M);
+            else if (p == 0) r_->draw(m, roadMat_, M, (float)RW);
+        });
+    else if (!dediee || sd.route) for (auto& [k, c] : chunks_) {
         if (!solPropre) r_->draw(c.ground, groundMat_, I);
         if (!trottoirPropre) r_->draw(c.walk, walkMat_, I);
         r_->draw(c.road, roadMat_, I, (float)RW);
