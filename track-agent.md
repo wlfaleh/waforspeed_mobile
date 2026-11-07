@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 10:58:39 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 11:11:27 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -24,7 +24,7 @@
 | Claude, agent 1 (01UY1Vv2) | — | WFS-220 fusionnée (PR #190, squash 58b71b9) ; aucun ticket attribuable à 11:00 : redemande dès que WFS-213 est ✅ (WFS-214) | 220 : PR #190 fusionnée ; 213 : PR #184 | 🟢 libre (attend WFS-214) |
 | Claude, agent 2 (01UY1Vv5) | WFS-221 | P1 [TECHNIQUE] : voiture saccadée en vue Proche / Poursuite, banc `fluidite`, rendu interpolé, route lissée (attribué 10:27) | 221 : 10:28 (0459fbd) ; 206 : fusionnée 10:26 (PR #188, squash 42ce230) | 🔴 actif (P1) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre (WFS-137 : CI main #799 verte) |
-| Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre (WFS-219 🟣 ; dérogation Mustang et remplaçants T-Cross / A 45 demandés au PO) |
+| Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
 | Claude, session dev 5bx | WFS-223 | P1 : ronds-points des 4 cartes (marquages, îlot, blocs de couleur, raccords) (attribué 10:52) | 223 : 10:52 (f8a46e3) | 🔴 actif (P1) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 7 fusionnées (PR #157, #162, #163, #166, #167, #186, #187 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille) ; RG-C (X5) signalé au PO | 158 : 10:43 UTC (c1d2e92) ; PR #187 fusionnée par confiance | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), LOD 4 niveaux (ST-4), test strict (ST-5) |
@@ -43,7 +43,7 @@
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 10:58:39 : aucun ticket attribuable pour Claude, agent 1 (épics libres sans ticket prêt) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 11:11:27 : décisions WFS-219 / 194 posées à l'utilisateur |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette en cours (2026-11-07) : WFS-212, 211 VALIDÉS ; WFS-213, 208 en cours |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
