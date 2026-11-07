@@ -1,0 +1,182 @@
+{
+ "fichier": "architecture.json",
+ "description": "Architecture des bâtiments (hauteurs de niveau, ouvertures, garde-corps, fenêtres éclairées) — WFS-161 (M-01, M-02, M-04)",
+ "sources": {
+  "RG-WFS161": {
+   "titre": "Règles de gestion de WFS-161, RG-01 (plages de hauteur d'étage et de rez-de-chaussée du kit d'architecture)",
+   "editeur": "PO WaForSpeed",
+   "annee": "2026",
+   "lien": "regles-de-gestion/WFS-161.md",
+   "acces": "ouvert",
+   "note": "choix de conception du PO pour le jeu, pas une mesure"
+  },
+  "DECRET-2002-120": {
+   "titre": "Décret n° 2002-120 du 30 janvier 2002 relatif aux caractéristiques du logement décent, article 4 (pièce principale : hauteur sous plafond au moins égale à 2,20 m, ou volume habitable d'au moins 20 m³)",
+   "editeur": "République française (Légifrance)",
+   "annee": "2002",
+   "lien": "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000217471",
+   "acces": "non_ouvert",
+   "note": "Légifrance non ouvrable depuis la session (réseau limité) : valeur relevée de mémoire du texte, à confirmer"
+  },
+  "NF-P01-012": {
+   "titre": "NF P01-012 : dimensions des garde-corps, règles de sécurité relatives aux dimensions (hauteur de protection 1,00 m ; 0,80 m si l'épaisseur de l'appui atteint 0,50 m)",
+   "editeur": "AFNOR",
+   "annee": "1988",
+   "lien": "https://www.boutique.afnor.org/fr-fr/norme/nf-p01012/",
+   "acces": "non_ouvert",
+   "note": "norme payante, non ouvrable depuis la session : à confirmer"
+  },
+  "ARRETE-2015-ACCES": {
+   "titre": "Arrêté du 24 décembre 2015 relatif à l'accessibilité des bâtiments d'habitation collectifs et des maisons individuelles neufs, porte d'entrée : largeur nominale 0,90 m, passage utile 0,83 m",
+   "editeur": "République française (Légifrance)",
+   "annee": "2015",
+   "lien": "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000031697926",
+   "acces": "non_ouvert",
+   "note": "Légifrance non ouvrable depuis la session : à confirmer"
+  }
+ },
+ "mesures": [
+  {
+   "id": "archi.rdc.hauteur",
+   "domaine": "architecture",
+   "grandeur": "hauteur de niveau du rez-de-chaussée (plancher à plancher)",
+   "unite": "m",
+   "min": 3.5,
+   "max": 4.5,
+   "source": "RG-WFS161",
+   "statut": "conception",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "archi.etage.hauteur",
+   "domaine": "architecture",
+   "grandeur": "hauteur de niveau d'un étage courant (plancher à plancher)",
+   "unite": "m",
+   "min": 2.7,
+   "max": 3.2,
+   "source": "RG-WFS161",
+   "statut": "conception",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "archi.logement.hauteur_sous_plafond_min",
+   "domaine": "architecture",
+   "grandeur": "hauteur sous plafond minimale d'une pièce principale de logement",
+   "unite": "m",
+   "valeur": 2.2,
+   "source": "DECRET-2002-120",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   },
+   "note": "contrôle de cohérence : étage 2,7 m moins un plancher de 0,2 à 0,3 m laisse au moins 2,4 m"
+  },
+  {
+   "id": "archi.garde_corps.hauteur",
+   "domaine": "architecture",
+   "grandeur": "hauteur de protection d'un garde-corps (balcon, porte-fenêtre)",
+   "unite": "m",
+   "valeur": 1.0,
+   "source": "NF-P01-012",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "archi.porte_entree.largeur",
+   "domaine": "architecture",
+   "grandeur": "largeur nominale d'une porte d'entrée de logement neuf",
+   "unite": "m",
+   "valeur": 0.9,
+   "source": "ARRETE-2015-ACCES",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "archi.porte_entree.passage_utile",
+   "domaine": "architecture",
+   "grandeur": "passage utile d'une porte d'entrée de logement neuf",
+   "unite": "m",
+   "valeur": 0.83,
+   "source": "ARRETE-2015-ACCES",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "archi.fenetre.largeur",
+   "domaine": "architecture",
+   "grandeur": "largeur courante d'une fenêtre d'étage (tableau)",
+   "unite": "m",
+   "valeur": null,
+   "source": "RG-WFS161",
+   "statut": "a_sourcer",
+   "note": "aucune norme ouverte ne fixe une plage courante ; plages du kit (archi_kit.cpp) à confirmer par une source ; mesure M-02 « non mesurable » tant que la valeur manque"
+  },
+  {
+   "id": "archi.fenetre.hauteur",
+   "domaine": "architecture",
+   "grandeur": "hauteur courante d'une fenêtre d'étage (tableau)",
+   "unite": "m",
+   "valeur": null,
+   "source": "RG-WFS161",
+   "statut": "a_sourcer",
+   "note": "même raison que archi.fenetre.largeur"
+  },
+  {
+   "id": "archi.fenetre.allege",
+   "domaine": "architecture",
+   "grandeur": "hauteur courante d'allège d'une fenêtre (appui au-dessus du plancher)",
+   "unite": "m",
+   "valeur": null,
+   "source": "RG-WFS161",
+   "statut": "a_sourcer",
+   "note": "liée à la hauteur de garde-corps (archi.garde_corps.hauteur) ; plage courante sans source ouverte"
+  },
+  {
+   "id": "archi.fenetre_allumee.luminance",
+   "domaine": "architecture",
+   "grandeur": "luminance d'une fenêtre éclairée de l'intérieur, vue de la rue la nuit",
+   "unite": "cd/m²",
+   "valeur": null,
+   "source": "RG-WFS161",
+   "statut": "a_sourcer",
+   "note": "M-04 : aucune photométrie publiée trouvée sur GitHub (seul site ouvert) ; « non mesurable » tant que la valeur manque"
+  },
+  {
+   "id": "archi.interieur.temperature_couleur",
+   "domaine": "architecture",
+   "grandeur": "température de couleur de l'éclairage intérieur simulé (RG-03)",
+   "unite": "K",
+   "min": 2700,
+   "max": 3000,
+   "source": "RG-WFS161",
+   "statut": "conception",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 100,
+    "regle": "DA-realisme.md § 4 (température de couleur ± 100 K)"
+   }
+  }
+ ]
+}

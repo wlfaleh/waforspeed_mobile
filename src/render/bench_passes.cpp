@@ -61,6 +61,11 @@ WFS_SYSTEM(PassesBanc, 975)   // banc (900-999) : après l'ambiance du banc du r
 
 std::string fmt(double v, int d) { char b[48]; std::snprintf(b, sizeof b, "%.*f", d, v); return b; }
 double luminance(const float* p) { return 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; }   // Rec. 709 / sRGB linéaire (Y relatif)
+// M-01 (WFS-161, accroche autorisée par le PO) : luminance bornée des deux côtés (cubemap et scène). Le ciel vaut ~0,5 ; le disque
+// solaire, des milliers : quand une arête (immeuble du kit) le coupe, la part couverte dépend de la résolution (256 / 720 px)
+// et domine la moyenne. La borne ne touche que le disque solaire ; tolérance ± 1 % inchangée sur les 6 faces.
+constexpr double Y_MAX_M01 = 20;
+double luminanceM01(const float* p) { return std::min(luminance(p), Y_MAX_M01); }
 
 // ACES de post.frag (sans vignette ni bloom) puis gamma 1 / 2,2 : affichage de la planche seulement
 uint8_t versOctet(float x, float expo) {
@@ -186,7 +191,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
             if (!passes::lireHdr(r, hdr, w, h)) { ecarts++; continue; }
             const uint32_t x0 = (w - std::min(w, h)) / 2, cote = std::min(w, h);   // carré central = les 90° × 90° de la face
             double s = 0;
-            for (uint32_t y = 0; y < cote; y++) for (uint32_t x = x0; x < x0 + cote; x++) s += luminance(&hdr[((size_t)y * w + x) * 4]);
+            for (uint32_t y = 0; y < cote; y++) for (uint32_t x = x0; x < x0 + cote; x++) s += luminanceM01(&hdr[((size_t)y * w + x) * 4]);
             lumScene[f] = s / ((double)cote * cote);
         }
         const bool unePar = environnement::capturesFaites() == avant + 1 && environnement::prete();
@@ -210,7 +215,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         static const char* NF[6] = {"+X", "-X", "+Y", "-Y", "+Z", "-Z"};
         int conformes = 0;
         for (int f = 0; f < 6 && lu; f++) {
-            double s = 0; for (size_t i = 0; i < faces[f].size(); i += 4) s += luminance(&faces[f][i]);
+            double s = 0; for (size_t i = 0; i < faces[f].size(); i += 4) s += luminanceM01(&faces[f][i]);
             const double lf = s / ((double)cote * cote), e = lumScene[f] > 0 ? (lf - lumScene[f]) / lumScene[f] : 0;
             const bool ok = std::fabs(e) <= 0.01;
             conformes += ok;
