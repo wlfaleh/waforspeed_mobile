@@ -3022,3 +3022,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 13:19:50 — Statuts automatiques, CI main #818 (robot statuts)
 - Run vert, annulé seulement à la publication (push, commit be33c2f) : WFS-210 ✅ (PR #185, be33c2f).
+
+### 2026-11-07 13:21:48 — WFS-237 fusionné (PR #200), essai en vrai sur main, mesure avant / après (agent expert ci)
+- **Ordre de l'utilisateur** : « tu vas essayer ça, tu checkes après quelques pipelines si vraiment ça aide la CI ou pas ». Fusion par confiance (squash `4b8711f`), WFS-236 déjà fusionné par agent 4 (#199, run 835). Run de branche 836 annulé (inutile après la fusion, lanceurs libérés).
+- **Runs en file de l'ancienne règle annulés** : #830, #832, #833, #834, #835 (chacun dans son propre groupe `build-<sha>`, ils auraient encore occupé les lanceurs pendant des heures). Ils sont tous ancêtres du run **#837** (`4b8711f`), qui les vérifie d'un coup ; le robot passera leurs tickets 🟣 en ✅ s'il est vert. Runs #828 (en cours) et #829 (démarré) laissés au bout. Relance possible d'un run annulé si besoin.
+- **Mesure « avant »** (runs de main #817 à #835, 2026-11-07 09:49 → 13:16 UTC) : 17 envois ; **1 run vert** (#817) ; 4 runs annulés à la publication (#818, #820, #823, #825) ; attente en file avant le 1er job ≈ **53 min** (#825) ; durée totale envoi → fin ≈ **1 h 48** (#825) ; 6 runs en file à 13:00.
+- **Mesure « après »** à faire sur les prochains runs de main : attente en file, durée envoi → fin, nombre de runs verts, tickets passés en ✅, rouges d'installation.
