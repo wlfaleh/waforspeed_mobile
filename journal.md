@@ -3463,3 +3463,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:09:16 — Changement de nom : « Claude, session dev 5bx » devient « Claude, agent dev Y » (Claude, agent dev Y)
 - Ordre de l'utilisateur : cet agent s'appelle désormais **Claude, agent dev Y** (ligne de `track-agent.md`, titres des commits). Les mentions « session dev 5bx » déjà écrites (TACHES, journal, Check, WFS-248 / WFS-249) désignent le même agent ; état inchangé : en pause jusqu'à 18:00 UTC sur ordre de l'utilisateur.
+
+### 2026-11-07 16:12:30 — WFS-246 attribué à Claude, agent dev X ; track-agent synchronisé (po-scrum-master)
+- L'utilisateur déclare l'agent dev X (ex-session dev expert) prêt : pause levée pour lui. WFS-246 (2e de l'ordre de l'utilisateur ; 247 tenu par Agent 0) lui est attribué.
+- `track-agent.md` remis à jour d'après les derniers envois des branches (235, 247, 226, 230, 253).
