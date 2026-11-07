@@ -63,6 +63,17 @@ float profondeurTableau(const Plan& p, const Baie& b) {
     return b.niveau > 0 && p.etage == Etage::Loggias ? LOGGIA : S.retrait;
 }
 
+// ST-3 : uv d'une vitre = données de sa baie pour la pièce simulée derrière (decor.glsl, interieurFenetre) :
+// u = largeur (dm) × 100 + allège (dm) + x relatif, v = hauteur (dm) + y relatif (x, y relatifs de 0 à 0,999)
+void uvVitre(const Plan& p, const Baie& b, Maillage& m, uint32_t k) {
+    const float l = std::round(std::min(b.l, 9.9f) * 10), h = std::round(std::min(b.h, 9.9f) * 10);
+    const float al = std::round(std::clamp(b.y - p.niveauY(b.niveau), 0.f, 9.9f) * 10);
+    for (uint32_t j = k; j < m.v.size(); j++) {
+        const float u = std::clamp((m.v[j].p.x - (b.x - b.l / 2)) / b.l, 0.f, 1.f) * 0.999f, v = std::clamp((m.v[j].p.y - b.y) / b.h, 0.f, 1.f) * 0.999f;
+        m.v[j].uv = {l * 100 + al + u, h + v};
+    }
+}
+
 bool balconFilant(const Plan& p, int niveau) {   // classique : balcon filant au 2e étage et au dernier (au moins 4 étages)
     return p.style == Style::Classique && p.etages >= 4 && (niveau == 2 || niveau == p.etages);
 }
@@ -104,7 +115,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     if (lod >= 2) {   // loin : la baie est peinte à plat, 1 cm devant le mur plein
         const uint32_t k = (uint32_t)fond.v.size();
         rectZ(fond, x0, x1, y0, y1, 0.01f, 1);
-        if (vitre) for (uint32_t j = k; j < fond.v.size(); j++) fond.v[j].uv = {(fond.v[j].p.x - x0) / b.l, (fond.v[j].p.y - y0) / b.h};
+        if (vitre) uvVitre(p, b, fond, k);
         return;
     }
     const float d = profondeurTableau(p, b);
@@ -115,7 +126,7 @@ void ouverture(const Plan& p, const Baie& b, int lod, Batiment& out) {
     rectY(tab, x0, x1, 0, -d, y0, 1);    // fond d'appui
     const uint32_t k = (uint32_t)fond.v.size();
     rectZ(fond, x0, x1, y0, y1, -d, 1);  // vitre ou porte au fond du tableau
-    if (vitre) for (uint32_t j = k; j < fond.v.size(); j++) fond.v[j].uv = {(fond.v[j].p.x - x0) / b.l, (fond.v[j].p.y - y0) / b.h};
+    if (vitre) uvVitre(p, b, fond, k);
     if (lod >= 1) return;
     // appui en saillie sous les fenêtres (pas sous les portes ni les vitrines)
     if (b.type == Ouverture::Fenetre)

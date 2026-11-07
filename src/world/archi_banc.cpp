@@ -3,6 +3,7 @@
 // (niveaux 1 et 2) et de dessus (toitures). Matériaux provisoires : albédos du référentiel (references/reel/materiaux.json),
 // béton à la place de la pierre, du crépi et du zinc tant que ST-4 ne les a pas sourcés. Inactif hors banc.
 #include <cmath>
+#include <cstring>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "../game/game.h"
 #include "../game/track.h"
 #include "../render/bench_realisme.h"   // référentiel (albédos)
+#include "../render/eclairage_unites.h"   // ST-3 : couleur d'une lampe à 2850 K
 #include "../render/renderer.h"
 #include "archi_geo.h"
 #include "decor_carte.h"
@@ -51,6 +53,7 @@ public:
             Material m; m.color = {c.x, c.y, c.z, 1}; m.rough = rough; m.metal = metal; m.flags = MAT_DOUBLE;
             return r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
+        const char* mo = std::getenv("WFS_MOMENT"); const bool nuit = mo && !std::strcmp(mo, "nuit");
         Track& t = *g.track;
         float along = 0;   // m le long de la route depuis le début de la rangée
         for (int s = 0; s < NB; s++) {
@@ -59,7 +62,17 @@ public:
             const vec3 murC = st == archi::Style::Industriel ? brique : beton;   // pierre, crépi : provisoire (ST-4)
             mats_[s][archi::MUR] = mat(murC, 0.9f, 0);
             mats_[s][archi::ENCADREMENT] = mat(beton, 0.8f, 0);
-            mats_[s][archi::VITRE] = mat({0.03f, 0.035f, 0.04f}, 0.05f, 0);   // verre vu de face : presque noir, reflet du ciel
+            {   // ST-3 : vitre + pièce simulée derrière (decor.glsl). Murs de la pièce : L = ρ E / π avec E = 200 lx (éclairage
+                // domestique, valeur de conception : aucune photométrie publiée ouverte, M-04 « non mesurable ») et ρ = 0,5,
+                // soit 31,8 cd/m², lampe à 2850 K (RG-03 : 2700-3000 K) ; 35 % des fenêtres allumées la nuit (conception)
+                double rgb[3]; lumiere::couleurTemperature(2850, rgb);
+                const float L = (float)(0.5 * 200.0 / lumiere::PI_L);
+                Material m; m.color = {0.03f, 0.035f, 0.04f, 1}; m.rough = 0.05f; m.metal = 0; m.flags = MAT_DOUBLE | MAT_INTERIEUR;
+                m.emissive = {(float)rgb[0] * L, (float)rgb[1] * L, (float)rgb[2] * L};
+                m.cutoff = nuit ? 0.35f : 0.f;   // part des fenêtres allumées (decor.glsl lit pc.params.z)
+                if (const char* a = std::getenv("WFS_ARCHI_ALLUMEES")) m.cutoff = (float)std::atof(a);   // essai local : part imposée
+                mats_[s][archi::VITRE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+            }
             mats_[s][archi::MENUISERIE] = mat({0.18f, 0.12f, 0.07f}, 0.6f, 0);
             mats_[s][archi::TOIT] = plans_[s].toit == archi::Toit::Tuiles ? mat(tuile, 0.8f, 0)
                                   : plans_[s].toit == archi::Toit::Zinc ? mat(inox * 0.6f, 0.45f, 1) : mat(beton * 0.6f, 0.95f, 0);
@@ -155,9 +168,11 @@ void benchArchi(Game& g, Renderer& r, const std::string& out) {
     std::vector<Cap> caps(std::begin(CAPS), std::end(CAPS));
     static std::string noms[NB];
     for (int s = 0; s < NB; s++) { noms[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom; caps.push_back({noms[s].c_str(), "jour", 3, 0}); }
+    static std::string nuits[NB];
+    for (int s = 0; s < NB; s++) { nuits[s] = std::string("archi-style-") + archi::regles((archi::Style)s).nom + "-nuit"; caps.push_back({nuits[s].c_str(), "nuit", 3, 0}); }
     int k = 0;
     for (const Cap& c : caps) {
-        if (c.vue == 3) g_archi.style = k++;
+        if (c.vue == 3) g_archi.style = (k++) % NB;
         setenv("WFS_MOMENT", c.moment, 1);
         setenv("WFS_DEPART", "0", 1);
         g_archi.vue = c.vue; g_archi.lod = c.lod;

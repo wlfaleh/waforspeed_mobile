@@ -38,7 +38,12 @@ int main() {
                         const float aire = length(c);
                         verifierQue(std::isfinite(aire) && aire > 1e-8f, "triangle non vide et fini");
                         if (aire > 1e-8f) verifierQue(dot(c * (1.f / aire), A.n) > 0.99f, "normale dans le sens de l'enroulement");
-                        if (k == VITRE) verifierQue(A.uv.x >= -1e-4f && A.uv.x <= 1.0001f && A.uv.y >= -1e-4f && A.uv.y <= 1.0001f, "uv de vitre dans 0..1");
+                        if (k == VITRE) {   // ST-3 : uv = données de la baie (largeur, allège, hauteur en dm) + position relative
+                            const float l = std::floor(A.uv.x / 100) * 0.1f, h = std::floor(A.uv.y) * 0.1f;
+                            const float fu = A.uv.x - std::floor(A.uv.x), fv = A.uv.y - std::floor(A.uv.y);
+                            verifierQue(l > 0.3f && l < 9.95f && h > 0.3f && h < 9.95f, "uv de vitre : largeur et hauteur de la baie lisibles");
+                            verifierQue(fu >= 0 && fu < 1 && fv >= 0 && fv < 1, "uv de vitre : position relative dans 0..1");
+                        }
                     }
                 }
                 tris[lod] += t;
@@ -49,6 +54,14 @@ int main() {
                 const double aire = aireFacade(b.part[MUR], p.hauteur());
                 verifierQue(std::fabs(aire - attendu) <= 1e-3 * attendu, "aire du mur de façade = façade − ouvertures");
                 if (lod == 0) {
+                    // ST-3 : chaque vitre porte les dimensions de sa baie (± 5 cm, arrondi au décimètre)
+                    const Maillage& vi = b.part[VITRE];
+                    for (const Sommet& v : vi.v) {
+                        const float l = std::floor(v.uv.x / 100) * 0.1f, h = std::floor(v.uv.y) * 0.1f;
+                        bool trouve = false;
+                        for (const Baie& x : p.baies) trouve |= std::fabs(x.l - l) <= 0.051f && std::fabs(x.h - h) <= 0.051f && std::fabs(v.p.x - x.x) <= x.l / 2 + 1e-3f;
+                        verifierQue(trouve, "ST-3 : dimensions codées dans la vitre = celles de sa baie");
+                    }
                     // ST-2 : volets dans la façade, jamais devant une ouverture
                     const Maillage& vo = b.part[VOLET];
                     for (size_t i = 0; i + 2 < vo.i.size(); i += 3) {
