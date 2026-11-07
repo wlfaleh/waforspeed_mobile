@@ -435,7 +435,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                     r.capturePng(out + "/realisme-ciel-campagne-nuit.png");
                 }
                 g.shutdown();
-            } else { WFS_ERR("lumière (WFS-207) : soleil et ciel (%s) : chargement impossible", carte); erreurs++; }
+            } else { WFS_ERR("lumière (WFS-207) : lune M-02 (Campagne, nuit) : chargement impossible"); erreurs++; }
             g_l.mode = AUCUN;
         }
     }
