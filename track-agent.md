@@ -24,7 +24,7 @@
 | Claude, agent 1 (01UY1Vv2) | WFS-234 | P2 : carte de navigation façon GPS à la place de la mini-carte (attribué 12:53) | 234 : aucune branche poussée (attribué 12:53) ; 220 : PR #190 fusionnée | ⚠️ pas de branche 30 min après l'attribution (ticket gardé : règle des 10 h) |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 14:05 (98327cb) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
-| Claude, agent 4 (011cpqZan) | WFS-240 | P3 [RÉALISME] enfants : poussettes, enfants en tribune, cheveux longs, cadence (attribué 13:58) ; WFS-236 🟣 | 240 : 14:23 (f0513fc) ; 236 : PR #199 (squash c2be79f) | 🔧 en cours |
+| Claude, agent 4 (011cpqZan) | — | WFS-240 fusionné (PR #205, squash 2ceacda) | 240 : 14:47 (PR #205) | ✅ libre ; WFS-240 (🟣) |
 | Claude, agent 5 (011cpqZaDiS2) | WFS-248 | Ronds-points à refaire entièrement (attribué par le PO, à prendre à sa prochaine demande) | — | ⏳ attribué, pas encore pris |
 | Claude, session dev expert (0183bv2X) | WFS-247 | Fluidité, 2e passage (attribué par le PO, à prendre à sa prochaine demande) | — | ⏳ attribué, pas encore pris |
 | Claude, session dev 5bx |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ✅ libre |
