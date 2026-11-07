@@ -123,3 +123,4 @@ Mêmes statuts que plus haut. Gravité : bloquante / majeure / mineure.
 | ANO-PROD | Gravité | Ticket d'origine | Capture / logcat | Anomalie | Statut | US de correction |
 |---|---|---|---|---|---|---|
 | ANO-113 | WFS-217 (essai de l'utilisateur, APK 840, 2026-11-07 14:03 UTC) | téléphone de l'utilisateur | **Bloquante** — aide à la direction : désactivée, aucune différence ; activée, la voiture ne suit toujours pas la route dans les virages et les ronds-points. **Correction** : WFS-241 | 🎫 WFS-241 | |
+| ANO-114 | WFS-110 / WFS-189 (essai de l'utilisateur, APK 840, 2026-11-07 14:06 UTC) | `qa/retours/2026-11-07-depart-course5-chevauchement.jpg` | **Bloquante** — Course à 5 : voitures qui se chevauchent sur la grille de départ, joueur toujours dernier, chrono qui tourne pendant le compte à rebours. **Correction** : WFS-242 | 🎫 WFS-242 | |
