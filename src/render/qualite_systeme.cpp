@@ -4,6 +4,7 @@
 // Inactif hors écran (banc d'essai : captures inchangées) et en mode GPU logiciel (WFS-59 gère déjà l'échelle).
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <string>
 #include "../core/log.h"
@@ -39,6 +40,9 @@ public:
     void init(Renderer& r, const GameView&) override {
         r_ = &r; g_r = &r; dernier_ = -1; effets_ = 0;
         actif_ = !r.vk().offscreen && !r.gpuLogiciel();
+        if (std::getenv("WFS_MESURE_ESSAI") && !g_mesure.n) {   // WFS-246 : banc PC, ligne de la mesure dans les captures des Réglages
+            static float v[1200]; for (int i = 0; i < 1200; i++) v[i] = i % 100 == 0 ? 52.f : i % 25 == 0 ? 36.f : 16.7f; qualite::mesureEssai(v, 1200);
+        }
         mesure_ = !r.vk().offscreen;   // WFS-134 (RG-01) : images/s mesurées sur le téléphone, même en GPU logiciel
         static bool annonce = false;
         if (actif_ && !annonce) {
