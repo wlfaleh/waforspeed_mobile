@@ -3325,3 +3325,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 15:08:02 — WFS-248 en cours chez l'agent 5 (po-scrum-master)
 - L'agent 5 a pris WFS-248 et poussé son commit de début à 14:54 (f66165c). `TACHES.md` et `track-agent.md` le disaient libre par erreur : corrigé.
+
+### 2026-11-07 15:09:25 — Sessions dev expert et dev 5bx en pause jusqu'à 19 h France (po-scrum-master)
+- Ordre de l'utilisateur : ne pas compter sur ces deux sessions ni leur attribuer de ticket avant 2026-11-07 18:00 UTC (19 h, heure de France). WFS-224 attend le premier autre développeur qui demande un ticket.
