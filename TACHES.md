@@ -236,6 +236,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-285 | Correction (Android) : surface recréée sans recharger le monde, plus d'écran noir de 80 s (ANO-154) | E7 (`src/platform/**`) | ⏳ En attente (après WFS-284, même fichier) |  | WFS-284 | `feature/waforspeed-285` |  |  |
 | P3 Moyenne | WFS-286 | Correction (lot E8, VABF) : « FERMER » des Réglages à sa place, vrais temps au duel à 4 (ANO-156, ANO-157) | E8 (`reglages.cpp`, `salon.cpp`) | ⏳ Prêt |  | — | `feature/waforspeed-286` |  |  |
 | P2 Haute | WFS-287 | [TECHNIQUE] Banc émulateur rouge : journal partagé entre les essais, délais trop courts sur GPU logiciel | E7 (`tools/qa/emulateur.sh` seul ; correction d'un rouge, gel respecté) | ⏳ Prêt |  | — | `feature/waforspeed-287` |  |  |
+| P2 Haute | WFS-288 | [RÉALISME] Son de la pluie (Ville de nuit) : averse, gouttes sur le toit et le pare-brise, essuie-glaces en Cockpit, tunnel | E6 (`src/audio/pluie_*` neufs + branchement `audio_system.*` ; lecture E2 / E3 / E10) | 🔧 En cours | arwa-4 (Claude, session 01Us6uCw), 2026-11-07 23:33 UTC | WFS-278 🟣, WFS-261 🟣 | `feature/waforspeed-288` |  |  |
 
 ## Critères d'acceptation
 
