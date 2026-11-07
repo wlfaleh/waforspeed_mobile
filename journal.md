@@ -2487,3 +2487,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Captures regardées** (lavapipe local) : fenêtres en retrait, balcons, vitrages du moderne, tuiles, zinc, toiture-terrasse avec édicule ; 6 styles distincts vus de dessus ; LOD 2 fidèle à la silhouette de loin. **À reprendre** : de nuit, la façade blanche dans l'axe des phares est surexposée (albédo provisoire 0,51, à revoir en ST-3 / ST-4) ; dans la courbe du banc, deux bâtiments se touchent par l'arrière (disposition du banc, pas du kit).
 - **Vérification** : 45 tests CPU verts ; branche synchronisée avec `main` (0e461fd).
 - **Suite** : ST-2 (6 styles : traits propres à chacun, volets du méditerranéen, bandeaux du moderne, génoise, matériaux par style), puis ST-3 (intérieurs de nuit).
+
+### 2026-11-07 09:00:03 — WFS-161 (ST-2) : traits des 6 styles (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 0877e89, synchronisée 21325ca) : classique (balcons filants au 2e et au dernier étage, encadrements) ; moderne (nez de dalle en bandeau, meneau) ; méditerranéen (volets battants ouverts, nouvelle partie `VOLET`, encadrements) ; génoise sous les tuiles à la place de la corniche ; industriel (baies d'atelier à petits bois) ; villa (dalle de toit en débord).
+- **Tests** : `test_archi_geo` 4 370 294 contrôles, 0 échec (volets jamais devant une ouverture, bandeaux, balcons filants d'une rive à l'autre) ; 45 tests CPU verts.
+- **Captures regardées** (`archi-style-<nom>`, une par style, de face) : les 6 styles se reconnaissent. Triangles moyens au LOD 0 : 311 (villa) à 3 587 (méditerranéen, volets et encadrements) ; LOD 1 : 202 à 1 139.
+- **Restent** : textures (ST-4 : pierre, crépi, zinc, volets ; matériaux encore unis et provisoires), surexposition de nuit d'un mur clair face aux phares (à mesurer en ST-3, M-04).
+- **Suite** : ST-3, intérieurs de nuit (interior mapping, 2700-3000 K, fenêtres allumées selon l'heure).
