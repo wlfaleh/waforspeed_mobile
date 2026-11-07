@@ -54,6 +54,7 @@ qu'aucune catastrophe visible n'arrive plus jusqu'à l'APK.
   (`git pull`, seulement la ligne du ticket) : case Statut de `TACHES.md` → **« ↩️ Retour lead dev (PR #N) »**, et la ligne du développeur dans
   `track-agent.md` → « ↩️ retour lead dev sur PR #N : à corriger », dans le même commit (`TACHES : WFS-XX retour lead dev (lead-dev)`), pour que
   le développeur et le PO le voient. Le développeur corrige, régénère les captures, remet le statut en « 🔀 En PR #N » et te rappelle.
+- **Avant de relire de nouveau** : vérifie que le développeur a répondu sous ton commentaire dans la PR (« bien reçu », qui corrige, quoi, puis « corrigé dans <commit> » point par point) ; sinon, tu ne relis pas et tu le lui dis (règle de l'utilisateur, 2026-11-07).
 - Au 3e refus sur la même PR, ou si le ticket lui-même est mal posé : tu préviens le PO (`po-scrum-master`).
 
 ## Interdits

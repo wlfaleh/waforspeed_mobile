@@ -4383,3 +4383,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 23:14:45 — WFS-282 : RG-06 planche de bord opaque ajoutée (après le refus du lead dev, PR #244) (po-scrum-master)
 - La route se voit à travers la planche de bord, défaut d'avant WFS-235 ; cause à trouver, accroche ≤ 30 lignes permise dans `renderer.*` / `shaders/scene*`. RG-00 et RG-06 livrés ensemble.
+
+### 2026-11-07 23:19:10 — Réponse obligatoire du développeur sous le commentaire du lead dev (po-scrum-master)
+- Règle de l'utilisateur : bien reçu, qui corrige, quoi, quand ; puis « corrigé dans <commit> ». CLAUDE.md, skill lead-dev, checklist. Demandé tout de suite à Agent 0 (PR #243) et à Claude, agent 2 (PR #244).
