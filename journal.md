@@ -2967,3 +2967,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 12:53:54 — WFS-233 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
 - **Demande de l'utilisateur** : parler directement aux agents qui attendent. Agent 3 attendait un ticket (« aucun ticket prêt » à 11:52).
 - **Ticket** : WFS-233 [RÉALISME] Enfants et familles dans les rues · E11 (libre) · branche `feature/waforspeed-233` · règles `regles-de-gestion/WFS-233.md` (MakeHuman CC0 comme WFS-209, avec un adulte, jamais sur la route, dans le −50 % de WFS-222).
+
+### 2026-11-07 12:54:37 — Début WFS-233 : enfants et familles dans les rues (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-233` créée depuis `main` (b57d917) et poussée tout de suite.
+- Lecture : CLAUDE.md, skills agent-developer et waforspeed-natif, `regles-de-gestion/WFS-233.md`, DA-realisme ; ensuite analyse de `src/world/pietons.*` et des humains de WFS-209 / 210.
