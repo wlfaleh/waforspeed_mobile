@@ -1,5 +1,6 @@
 // WaForSpeed — WFS-205 : bibliothèque des revêtements de route : données et calculs sans GPU (tests/fidelite_routes.cpp).
 #include <algorithm>
+#include <cstring>
 #include "route_revetements.h"
 
 namespace wfs::route {
@@ -22,6 +23,27 @@ const InfoRevetement& info(Revetement r) { return INFOS[std::clamp((int)r, 0, NB
 uint32_t coteMax(int qualite, bool orm) {
     const uint32_t c = qualite >= 2 ? 1024u : qualite == 1 ? 512u : 256u;   // Ultra / Haute, Moyenne, Basse
     return orm ? c / 2 : c;
+}
+
+Carte carteDe(const char* id) {
+    if (!id) return Carte::Ville;
+    if (!std::strcmp(id, "campagne")) return Carte::Campagne;
+    if (!std::strcmp(id, "plage")) return Carte::Corniche;
+    if (!std::strcmp(id, "circuit")) return Carte::Circuit;
+    return Carte::Ville;
+}
+
+Revetement chaussee(Carte c) {
+    switch (c) {
+    case Carte::Campagne: return Revetement::EnrobeCampagne;
+    case Carte::Circuit: return Revetement::BetonCircuit;
+    default: return Revetement::EnrobeUse;   // Ville, Corniche (enrobé usé : le plus clair des enrobés, 0,10-0,18)
+    }
+}
+
+float codeMateriau(int qualite, Carte c) {
+    const float mode = qualite >= 2 ? 2.f : qualite == 1 ? 1.f : 0.f;
+    return mode + 4.f * (float)(int)c;
 }
 
 int niveauxSautes(uint32_t cote, uint32_t maxi) {

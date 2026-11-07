@@ -16,7 +16,11 @@
 #include <string>
 #include <vector>
 #include "../src/render/ktx2.h"
+#include "../src/render/bench_realisme.h"   // lecteur JSON du référentiel (reel::lireJson)
+#include "../src/render/route_mesures.h"
 #include "../src/render/route_revetements.h"
+#include <cstring>
+#include <cstdlib>
 using namespace wfs;
 
 #ifndef WFS_SOURCE_DIR
@@ -43,7 +47,6 @@ static bool charger(const std::string& chemin, std::vector<uint8_t>& o) {
     o.assign(std::istreambuf_iterator<char>(f), {});
     return true;
 }
-static double lin(double c) { return c <= 0.04045 ? c / 12.92 : std::pow((c + 0.055) / 1.055, 2.4); }
 
 // --- copie C++ du repli procédural de shaders/route.glsl (hash, noise, fbm, constantes de l'asphalte) pour RG-02 / RG-04
 static double fract(double x) { return x - std::floor(x); }
@@ -73,25 +76,14 @@ int main(int argc, char** argv) {
                 const uint32_t maxi = std::string(v) == "astc" ? (orm ? 512u : 1024u) : (orm ? 256u : 512u);
                 cas(std::string(in.id) + "-" + carte + "." + v + " : " + std::to_string(f.w) + " px ≤ " + std::to_string(maxi), f.w <= maxi && f.w == f.h);
                 if (std::string(v) == "astc") astcTotal += (double)o.size();
-                if (std::string(v) != "rgba8" || f.bloc.compresse) continue;
-                // niveau 0 du repli RGBA8 (= l'ASTC décompressé, réduit à 512) : statistiques de la carte
-                const ktx2::Niveau& n0 = f.niveaux[0];
-                const uint8_t* px = f.donnees + n0.offset;
-                const size_t n = (size_t)n0.w * n0.h;
-                if (std::string(carte) == "couleur") {
-                    double s = 0;
-                    for (size_t k = 0; k < n; k++)
-                        s += 0.2126 * lin(px[4 * k] / 255.0) + 0.7152 * lin(px[4 * k + 1] / 255.0) + 0.0722 * lin(px[4 * k + 2] / 255.0);
-                    mesure(in.id, "M-01 albédo moyen", s / n, in.albedoMin, in.albedoMax);
-                } else if (orm) {
-                    double g = 0, b = 0;
-                    for (size_t k = 0; k < n; k++) { g += px[4 * k + 1] / 255.0; b = std::max(b, px[4 * k + 2] / 255.0); }
-                    mesure(in.id, "M-02 rugosité sèche moyenne", g / n, in.rugositeMin, in.rugositeMax);
-                    cas(std::string(in.id) + " : jamais métallique (canal B de l'ORM nul)", b < 0.01);
-                }
             }
         }
         if (!present) std::printf("routes : %s incomplet (repli procédural en jeu)\n", in.id);
+    }
+    // M-01, M-02 : mesures communes au banc « realisme » (WFS-206, RG-05 : src/render/route_mesures.cpp)
+    for (const route::MesureRevetement& m : route::mesurerBibliotheque(depot)) {
+        mesure(m.id, m.grandeur.c_str(), m.valeur, m.min, m.max);
+        if (m.grandeur.rfind("M-02", 0) == 0) cas(m.id + " : jamais métallique (canal B de l'ORM nul)", !m.metal);
     }
     std::printf("routes : ASTC de la bibliothèque : %.1f Mo (téléphone, dans l'APK)\n", astcTotal / 1048576.0);
     cas("ASTC de la bibliothèque ≤ 25 Mo (décision du PO, budget de l'APK ≤ 200 Mo)", astcTotal <= 25.0 * 1048576.0);
@@ -113,6 +105,55 @@ int main(int argc, char** argv) {
             }
         const route::InfoRevetement& use = route::info(route::Revetement::EnrobeUse);
         mesure("repli-procedural", "M-01 albédo moyen (route.glsl)", s / n, use.albedoMin, use.albedoMax);
+    }
+    // ---------------------------------------------------------------- WFS-206
+    {   // RG-02 : revêtement propre à chaque carte ; carte et mode de lecture transmis au shader (pc.params.z = mode + 4 × carte)
+        using route::Carte; using route::Revetement;
+        cas("RG-02 : Ville et Corniche enrobé usé, Campagne enrobé grenu, Grand Prix béton bitumineux de course",
+            route::chaussee(route::carteDe("ville")) == Revetement::EnrobeUse && route::chaussee(route::carteDe("plage")) == Revetement::EnrobeUse
+            && route::chaussee(route::carteDe("campagne")) == Revetement::EnrobeCampagne && route::chaussee(route::carteDe("circuit")) == Revetement::BetonCircuit
+            && route::carteDe("plage") == Carte::Corniche && route::carteDe(nullptr) == Carte::Ville);
+        bool code = true;
+        for (int q = 0; q < 4; q++) for (int c = 0; c < 4; c++) {
+            const float z = route::codeMateriau(q, (Carte)c), mode = std::fmod(z, 4.f);
+            code = code && (int)std::floor(z / 4.f + 0.01f) == c && mode == (q >= 2 ? 2.f : q == 1 ? 1.f : 0.f);
+        }
+        cas("code du matériau : carte et mode relus comme route.glsl (modeLecture, carteRoute)", code);
+    }
+    {   // M-03, M-04 : constantes du shader = constantes C++ ; écartement = voie moyenne des voitures (voitures.json) ± 5 %
+        std::vector<uint8_t> g; charger(depot + "/shaders/route.glsl", g);
+        const std::string glsl(g.begin(), g.end());
+        auto constante = [&](const char* nom) {
+            const size_t i = glsl.find(std::string("const float ") + nom + " = ");
+            return i == std::string::npos ? -1.0 : std::atof(glsl.c_str() + i + std::strlen("const float ") + std::strlen(nom) + 3);
+        };
+        cas("route.glsl : BANDE_ROULEMENT_M, ECARTEMENT_ROUES_M, BORDURE_LARGEUR_M identiques au C++, DEMI_CHAUSSEE_M = RW (7,5)",
+            std::fabs(constante("BANDE_ROULEMENT_M") - route::BANDE_ROULEMENT_M) < 1e-4 && std::fabs(constante("ECARTEMENT_ROUES_M") - route::ECARTEMENT_ROUES_M) < 1e-4
+            && std::fabs(constante("BORDURE_LARGEUR_M") - route::BORDURE_LARGEUR_M) < 1e-4 && std::fabs(constante("DEMI_CHAUSSEE_M") - 7.5) < 1e-4);
+        double somme = 0; int n = 0;   // voies avant et arrière relevées (mesures voiture.*.voie_av / voie_ar de voitures.json)
+        wfs::reel::Json vj; std::string err;
+        if (wfs::reel::lireJson(depot + "/references/reel/voitures.json", vj, err))
+            if (const wfs::reel::Json* ms = vj.get("mesures"))
+                for (const wfs::reel::Json& m : ms->a) {
+                    const std::string id = m.texte("id");
+                    if (id.find(".voie_a") == std::string::npos) continue;
+                    const double v = m.nombre("valeur", 0);
+                    if (v > 500) { somme += v; n++; }
+                }
+        const double voie = n ? somme / n / 1000.0 : 0;
+        char t[160]; std::snprintf(t, sizeof t, "M-03 : écartement des bandes %.3f m = voie moyenne %.3f m (%d voies) ± 5 %%", route::ECARTEMENT_ROUES_M, voie, n);
+        mesure("bandes-roulement", "M-03 écartement / voie", route::ECARTEMENT_ROUES_M / std::max(voie, 1e-6), 0.95, 1.05);
+        cas(t, n >= 10 && std::fabs(route::ECARTEMENT_ROUES_M / voie - 1) <= 0.05);
+        mesure("bandes-roulement", "M-03 largeur (m)", route::BANDE_ROULEMENT_M, 0.8, 1.0);
+        // M-04 : bordure : 12-15 cm ± 1 % (CURB_H de la chaussée de Game et de la Ville)
+        for (const char* f : {"/src/game/game.cpp", "/src/world/ville.cpp"}) {
+            std::vector<uint8_t> b; charger(depot + f, b);
+            const std::string src(b.begin(), b.end());
+            const size_t i = src.find("CURB_H = ");
+            const double h = i == std::string::npos ? 0 : std::atof(src.c_str() + i + 9);
+            mesure(std::string("bordure") + (std::strstr(f, "ville") ? "-ville" : "-jeu"), "M-04 hauteur (m)", h, 0.12 * 0.99, 0.15 * 1.01);
+        }
+        mesure("bordure-granit", "M-04 hauteur du shader (m)", route::BORDURE_H_M, 0.12 * 0.99, 0.15 * 1.01);
     }
     const double indice = mesures ? 100.0 * conformes / mesures : 0;
     std::printf("routes : indice de fidélité des revêtements : %.1f %% (%d / %d mesures dans leur plage)\n", indice, conformes, mesures);

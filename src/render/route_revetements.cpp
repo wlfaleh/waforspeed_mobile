@@ -18,6 +18,7 @@ struct Charge {
 };
 Charge g_charges[NB_REVETEMENTS];
 int g_qualite = 2;   // Haute
+Carte g_carte = Carte::Ville;   // WFS-206
 
 // une carte : première variante que le GPU sait lire, envoyée sans ses « sauter » premiers niveaux (jamais sous 4×4)
 bool chargerCarte(VkCtx& vk, const std::string& base, uint32_t maxi, Image& out, size_t& octets, const char*& variante) {
@@ -45,7 +46,8 @@ bool chargerCarte(VkCtx& vk, const std::string& base, uint32_t maxi, Image& out,
 
 } // namespace
 
-void preparer(int qualite) { g_qualite = std::clamp(qualite, 0, 3); }
+void preparer(int qualite, const char* mapId) { g_qualite = std::clamp(qualite, 0, 3); g_carte = carteDe(mapId); }
+Revetement chaussee() { return chaussee(g_carte); }
 
 Material creerMateriau(Renderer& r, Revetement rev, const Material& base) {
     const int i = std::clamp((int)rev, 0, NB_REVETEMENTS - 1);
@@ -63,9 +65,9 @@ Material creerMateriau(Renderer& r, Revetement rev, const Material& base) {
         }
         c.ok = tout;
     }
-    if (!c.ok) return r.makeMaterial(base, nullptr, nullptr, nullptr);
     Material m = base;
-    m.cutoff = g_qualite >= 2 ? 2.f : g_qualite == 1 ? 1.f : 0.f;   // mode de lecture (route.glsl : pc.params.z)
+    m.cutoff = codeMateriau(g_qualite, g_carte);   // mode de lecture et carte (route.glsl : pc.params.z) ; repli compris (WFS-206)
+    if (!c.ok) return r.makeMaterial(m, nullptr, nullptr, nullptr);
     return r.makeMaterial(m, &c.cartes[0], &c.cartes[1], &c.cartes[2]);
 }
 
