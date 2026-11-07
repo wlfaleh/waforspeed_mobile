@@ -22,6 +22,14 @@ public:
     void update(double dt);
     void render(double time);
     const Player& player() const { return player_; }
+    // WFS-221 (RG-02) : vue de l'image sans dessin : voiture du joueur INTERPOLÉE entre les deux derniers pas de simulation
+    // (alphaRendu = part du pas suivant déjà écoulée), caméra calculée sur cet état ; appelée une fois par image (render, banc
+    // « fluidite » : src/game/bench_fluidite.cpp). La conduite (pas fixes de 1/120 s) ne change pas.
+    struct Vue { mat4 carM; vec3 carPos, fwd, eye, look; float fov = 60; bool interieure = false; };
+    Vue calculerVue(double time);
+    double alphaRendu() const;
+    static inline bool interpolation = true;   // banc « fluidite » seulement : false = rendu du dernier pas (mesure « avant »)
+    int pasDerniereImage() const { return pasImage_; }
     void setCar(const char* carId);
     // écrans (WFS-36, voir src/core/ecran.h) : demande appliquée entre deux images, systèmes prévenus par onEcran
     void allerA(Ecran e) { ecranDemande_ = e; demandeEcran_ = true; }
@@ -68,6 +76,7 @@ private:
     Mesh shadowQuad_;
     double lastTime_ = 0;
     vec3 camEye_{}, camLook_{}; bool camInit_ = false;
+    vec3 camEyeT_{}, camLookT_{};   // WFS-221 : cibles de la caméra à l'image précédente (filtre exact)
     // commandes
     DriveInput input_;
     int steerId_ = -1, gasId_ = -1, brakeId_ = -1, nitroId_ = -1;
@@ -75,6 +84,10 @@ private:
     bool autopilot_ = false;
     bool latchGas_ = false, latchBrake_ = false, latchNitro_ = false;
     double acc_ = 0;
+    // WFS-221 : état du joueur avant le dernier pas de simulation (interpolation du rendu) ; invalide après un chargement
+    Player prec_; bool precOk_ = false; int pasImage_ = 0;
+    struct JoueurInterpole;   // remplace player_ par l'état interpolé le temps d'une image (rendu de tous les systèmes)
+    bool interpole_ = false;
     Marges marges_;
     // écran affiché ; par défaut Course tant que le menu (WFS-37) n'existe pas
     Ecran ecran_ = Ecran::Course, ecranDemande_ = Ecran::Course;

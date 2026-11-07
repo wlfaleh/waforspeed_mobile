@@ -2752,3 +2752,154 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Zone autorisée** : `src/render/**` (E4), réglages de qualité et baisse automatique, `src/world/pietons.*` / décor (allègement au loin, accroches annoncées au journal), bancs. **Interdit** : `game.cpp`, `track.*`, `camera_vue.*` (WFS-221), taille des boutons (ordre permanent), iOS (gel).
 - **Critères** : regles-de-gestion/WFS-222.md (RG-07 piétons −50 % en premier, mesure avant / après ; RG-01 bis erreur grossière d'abord : APK debug, -O2/-O3, couches de validation, FIFO, un seul cœur ; profilage 3 postes ; ≥ 60 img/s Basse, ≥ 45 Haute ; carrés noirs ; pas de régression ; parcours 0 écart).
 - **Plan court** : piétons −50 % → vérifier la construction Release / validation → banc perf et profilage → leviers RG-03 → APK de main mesuré par l'utilisateur.
+
+### 2026-11-07 10:52:05 — Début WFS-223 : ronds-points, attribué à Claude, session dev 5bx (po-scrum-master)
+- **Ticket** : WFS-223 Ronds-points : défauts graphiques sur les 4 cartes (P1 Urgent, E2). Ticket prêt le plus prioritaire d'une épic libre (E2 sans ticket actif ; gel iOS respecté).
+- **Zone autorisée** : `src/world/**` des cartes (E2), `assets/world/**` hors `modeles/`, `shaders/world_*` ; marquages de route par accroche ≤ 10 lignes annoncée (E9 `route_*`). **Interdit** : `track.*`, `camera_vue.*`, `game.cpp` (WFS-221), `src/world/pietons.*` (WFS-222), `player.*`, iOS, taille des boutons.
+- **Critères** : regles-de-gestion/WFS-223.md (RG-01 inventaire et captures avant ; RG-02 marquages ; RG-03 îlot sans boîtes de couleur ; RG-04 raccords ; RG-05 rien sur la chaussée, appels de dessin tenus ; RG-06 captures avant / après, parcours 0 écart). Section « Graphisme réaliste » ajoutée (charte § 3).
+- **Plan court** : inventaire des ronds-points → marquages → îlot → raccords → captures et ligne `qa/Check.md`.
+
+### 2026-11-07 10:54:03 — Début WFS-219 : voitures de remplacement (lot 1), attribué à Claude, agent 5 (011cpqZaDiS2) (po-scrum-master)
+- **Ticket** : WFS-219 Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles, rien de branché (P2 Haute, E10, exception PO : fichiers neufs à côté de WFS-158). Choix : aucune US technique ni P1 libre (WFS-220 à 223 déjà attribués) ; WFS-218 (P2, E4) bloqué par WFS-222 sur E4 ; WFS-219 = P2 prêt le plus prioritaire attribuable. Gel iOS respecté.
+- **Zone autorisée** : fichiers **nouveaux** seulement : `assets/cars/remplacants/**`, `assets/licences/remplacants/**` ; lancement (sans modification) de `tools/convert_car.mjs`, `tools/simplifier_voiture.mjs`, `test_fidelite_voitures`, `wfs_bench` (vitrine) sur des copies. **Interdit** : tout fichier existant de E10 (WFS-158, arwa-2), `src/game/cars.h`, `assets/cars/<id>.wfm` actuels, outils, code de rendu ; zones de WFS-220 (E7), 221 (`game.cpp`, `track.*`, `camera_vue.*`, `player.*`), 222 (E4), 223 (E2), 161 (E12) ; iOS.
+- **Réseau** : `regles-reseau.md` § 2.4 (dépôts GitHub publics, méthode `modeles-3d-github.md`), CC0 / CC BY seulement, licence lue dans la source, SHA-256 et adresse au journal, rien exécuté.
+- **Critères** : regles-de-gestion/WFS-219.md (RG-01 à RG-05) ; avis d'`expert-realisme-3d` (consultant).
+- **Plan court** : recherche des 5 modèles → conversion dans `remplacants/` → mesures ±1 % et vitrine en local → rapport au journal → fusion par confiance + ligne `qa/Check.md`.
+
+### 2026-11-07 10:56:05 — WFS-220 : banc de chauffe de la CI réparé (Claude, agent 1)
+- Cause (RG-01) : le run #816 de `main` a tué le banc à 240 s (limite fixe de `chauffe.sh`), juste avant la capture `chauffe-retabli` ; en local, le banc a aussi montré « sauvegarde inchangée (ÉCHEC) », une régression de WFS-208 (l'écran terrain écrivait le moment dans la sauvegarde même pendant le banc).
+- Correction (RG-03) : accroche d'une ligne dans `src/ui/ecrans/terrain.cpp` (le moment n'est écrit que si la sauvegarde est active) ; limite réglable `CHAUFFE_LIMITE` dans `tools/qa/chauffe.sh`, 600 s par défaut. Mesures : 136 s en local avant, 129 s après ; CI de branche run #819 (RG-06, job `endurance` vérifié) : **245 s**, code 0, 3 captures (`chauffe-bandeau`, `chauffe-fin`, `chauffe-retabli`), toutes les vérifications « (ok) », 0 écart. 600 s laisse plus de 25 % de marge (le minimum serait 307 s).
+- RG-02 : aucune vérification retirée. RG-04 : la logique de chauffe ne change pas.
+- RG-05 (accroche de 2 lignes dans `.gitignore` : `__pycache__/`) : sortis du suivi par `git rm --cached` : `tools/qa/__pycache__/statuts.cpython-313.pyc` et `references/reel/outils/__pycache__/extraire.cpython-313.pyc`.
+- Branche synchronisée avec `main`, compilation et tests CPU verts : fusion.
+
+### 2026-11-07 10:58:39 — Demande de ticket de Claude, agent 1 : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-215 (E10, occupée par WFS-158 et WFS-219), WFS-216 (E2, occupée par WFS-223), WFS-218 (E4, occupée par WFS-222). WFS-214 (E13) attend WFS-213 ✅ : 🟣, run de `main` 42361330960 en file d'attente depuis 09:49 UTC (lanceurs occupés, aucune CI rouge).
+- Épics libres (E7, E9, E11, E13…) : leurs tickets suivants attendent une validation (WFS-156 après WFS-206, WFS-165 après WFS-164). Aucune anomalie 🆕 dans `anno.md`.
+- Claude, agent 1 redemande dès que WFS-213 passe ✅ : WFS-214 sera alors attribuable. `track-agent.md` mis à jour.
+
+
+### 2026-11-07 11:10:37 — WFS-219 fusionné (PR #191, squash 4448d7c, fusion par confiance) : rapport des 5 voitures (Claude, agent 5)
+Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lecture par clone partiel en lecture seule (bac à sable de la session, rien exécuté). Liste pour le lot 2 (WFS-194) :
+- **Mustang Shelby GT500 — RETENU, sous dérogation du PO à confirmer.** « Ford Mustang Shelby GT500 » par Jiaxing, https://sketchfab.com/3d-models/ford-mustang-shelby-gt500-0eaa7a16796540f29461ddae05ecdeb3, **CC BY 4.0** (license.txt lu) ; dépôt `trivedikavya/MUSTANGpreviewbykavyatrivedi`, chemin `ford_mustang_shelby_gt500/` (même modèle et même licence dans `jvsysarch/apex` et `Toby-Query/StreetCred`) ; SHA-256 : scene.gltf 44af2ace24f37a39620c4629f64976bd26750a7798ef868dbf4bdcdfc94c383b, scene.bin 9352954b727d0947bc2f839bc077bab2ef9a9984925cdb159477c32f56289779 (17 Mo). Conversion (outils lancés sur une copie du dépôt, non modifiés) : `simplifier_voiture.mjs` en 2 passes (0,012 puis 0,02 : 348 393 → 101 691 triangles ; une seule passe restait à 12 Mo), `convert_car.mjs` (4,82 m, rotation 180°, peinture `carpaint`, feux `rearlight`), `corriger_voitures` (× 0,99, pneus posés). Résultat `assets/cars/remplacants/mustang.wfm` : **7,03 Mo** (actuel 5,9 Mo), 102 000 triangles, SHA-256 fbf5814f90740f20e84ff9cc6eef8ee8fbceb424a180b49d70350766d3d479fc. `test_fidelite_voitures` (sur la copie) : longueur, largeur, empattement, voie ar, roues conformes ; **hauteur −2,5 %**, **voie av +1,8 %** (proportions du modèle ; échelle non uniforme interdite) ; l'actuel a 1 écart (voie ar −1,5 %). Rendu vitrine local (lavapipe) comparé à l'actuel : carrosserie lisse, 4 roues, feux arrière repérés ; **pas de plaque**. Avis `expert-realisme-3d` : à retenir sous **dérogation écrite du PO** (le blocage de licence pèse plus que 2 écarts), vérifier la hauteur sans l'aileron et la garde au sol avant WFS-194.
+- **X5 — REFUSÉ.** Seul CC BY : « 2020 BMW X5 M Competition » par David_Holiday (`Sanyajo/car_sales_website_with_3d_models`, `DiplomServer/src/main/resources/static/model/bmwX5/`, scene.gltf 939c1ec3…78eb, scene.bin 5d109204…04b4) : export de type SketchUp (matériaux edge_color, textures « BMW_M8_2020_Modified »), 490 000 triangles qui ne se simplifient pas (bords ouverts), **19 Mo** converti, aucune pièce de peinture. Autre copie trouvée : Ddiaz Design, CC BY-NC-SA (l'actuel).
+- **Elantra N — REFUSÉ.** CC BY seulement chez `prozac0401/WebSim` (tonielpro520, 2022), empaqueté dans `avante_n-runtime.js` : il faudrait exécuter le script (interdit, `regles-reseau.md`). Autre copie : Ddiaz Design, CC BY-NC.
+- **T-Cross — REFUSÉ** : aucun CC0 / CC BY (seule copie : Ddiaz Design, CC BY-NC-SA, l'actuel).
+- **A 45 — REFUSÉ** : même modèle que l'actuel (Lexyc16, Mercedes-Benz A45 AMG 2018) ; `tensornull/CarVision` dit CC BY, `balramadan/car-view`, `vladyslavhurzhyi/car-rent`, `braazbedat10205-blip/gloss-boss-detailin2` disent CC BY-NC → licence la plus restrictive retenue.
+- **Remplaçants proposés au PO (décision attendue)** : T-Cross → VW Passat (I3D, CC BY, `krisAndreev/MyMiniCar`, `src/MyMiniCar.Web/wwwroot/models/vw-passat/`) — changement de catégorie (berline) ; A 45 → Mercedes-AMG CLS (RADEONGAMER, CC BY, `xardas110/Engine3D_DX12`, `Assets/Models/mercedes/`) **origine à vérifier** (auteur souvent associé à des extractions de jeux, avis expert), repli Mercedes Classe E W212 (Peter_D, CC BY, `bujue600-arch/carVison`) ; AMG One écartée (hypervoiture, origine douteuse).
+- Jeu inchangé : fichiers neufs seulement (`assets/cars/remplacants/`, `assets/licences/remplacants/`), parcours complet 0 écart (vue normale et Cockpit), `verifier_licences.py` 0 manque. Le .wfm (7 Mo) est copié dans l'APK sans être chargé jusqu'à WFS-194.
+
+### 2026-11-07 11:11:27 — WFS-219 : décisions sur les remplaçants soumises à l'utilisateur ; agent 5 sans ticket attribuable (po-scrum-master)
+- Retour d'agent 5 (PR #191, squash 4448d7c) : Mustang retenue avec 2 mesures hors ±1 % (hauteur −2,5 %, voie avant +1,8 %), avis d'expert-realisme-3d favorable sous dérogation ; T-Cross, X5, A 45, Elantra N refusés.
+- **Pas de dérogation accordée par le PO** : la tolérance ±1 % relève de la règle de réalisme (ordre permanent) et RG-02 de WFS-194 réserve le choix d'une autre voiture à l'utilisateur. Question unique posée dans `tache utilisateur.md` (recommandation : accepter la Mustang ; Passat pour le T-Cross, Classe E W212 pour l'A 45 ; X5 et Elantra N gardés tant que le jeu est gratuit). Suivi dans `regles-de-gestion/WFS-194.md`.
+- Claude, agent 5 libre : aucun ticket attribuable (mêmes raisons qu'à 10:58:39 : WFS-215 sur E10 occupée par WFS-158, WFS-216 sur E2 occupée par WFS-223, WFS-218 sur E4 occupée par WFS-222, WFS-214 attend WFS-213 ✅). Il redemande dès qu'une épic se libère.
+
+### 2026-11-07 11:25:35 — Vidéo de nuit de l'utilisateur : WFS-218 élargi (deux phares), WFS-224, 225, 226 créés (po-scrum-master)
+- **Vidéo** (Campagne de nuit, 9 s) : un seul faisceau au centre ; boules grises derrière la voiture au braquage ; scène presque noire, lampadaires éteints ; autres voitures sans phares (feux arrière seulement). Planche : `qa/retours/2026-11-07-video-nuit-campagne.jpg`.
+- **WFS-218** → P1, RG-00 : deux phares (positions du modèle), optiques avant allumées. **WFS-224** (E4) fumée des pneus. **WFS-225** (E2) Campagne de nuit. **WFS-226** (E4 + E3) phares de toutes les autres voitures. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 11:27:39 — WFS-223 fusionné (PR #192, squash 00be4ab, fusion par confiance) : ronds-points (Claude, session dev 5bx)
+- **Inventaire (RG-01)** : 3 ronds-points — Ville (`ville::Plan::ronds`), Campagne (fontaine du village, `T_FONTAINE`), Corniche (`plage.cpp`, `rpSeg_`) ; **aucun au Grand Prix**. Anneau de 14 m (`courbe(-270,14)`), îlot de 6,5 m.
+- **Défauts trouvés (captures « avant »)** : tirets de voie peints dans l'anneau sur les 3 cartes (le shader ne connaît que l'abscisse) ; aucune ligne de cédez-le-passage aux entrées ; à la Campagne, 16 massifs en boîtes de couleur de 1,4 m qui débordaient de l'îlot sur la chaussée (mes massifs de WFS-178).
+- **Corrections** : `shaders/route.glsl` (accroche E9, 6 lignes) : courbure estimée par les dérivées écran, tirets retirés sous 18 m de rayon, lignes de rive gardées ; ligne de cédez-le-passage (traits de 0,5 m tous les 1,0 m, 0,5 m de large, T'2) à l'entrée de chaque anneau : `campagne.cpp` (`T_CEDEZ`), accroches `ville.cpp` et `plage.cpp` (`rpEntree_`) ; îlot de la Campagne : bordure béton continue 0,15 × 0,20 m (`C_WALK`, albédo 0,25), couronne de terre, 36 touffes fleuries (`veg::touffe`), plus aucune boîte.
+- **Nouveau banc** `WFS_BANC=rondspoints` (`cartes_banc.cpp`, `desktop_main.cpp`) : course (15 m avant l'entrée), dessus, anneau ; jour et nuit ; Haute et `WFS_QUALITE_BASSE=1`.
+- **Vérifié en local** : tests CPU verts, parcours complet 0 écart, captures Haute et Basse regardées (rien sur la chaussée, raccords sans trou).
+- **Signalé, non corrigé (hors zone)** : à la Corniche, des piétons marchent sur l'îlot et traversent l'anneau (`pietons.*`, zone de WFS-222).
+
+### 2026-11-07 11:27:55 — 2e vidéo de nuit (départ, Campagne) : confirme WFS-218, 224, 226 ; WFS-226 RG-05 carrosseries visibles (po-scrum-master)
+- Planche : `qa/retours/2026-11-07-video-nuit-campagne-depart.jpg`. Un seul faisceau (WFS-218) ; boules grises au braquage à 206 et 235 km/h (WFS-224) ; adversaires et voiture du joueur en silhouettes noires avec seulement les feux arrière (WFS-226, **RG-05** ajoutée : carrosseries visibles la nuit). Lampadaires du village visibles au loin (WFS-225 : les autres poteaux).
+
+### 2026-11-07 11:28:30 — Début WFS-225 : attribué à Claude, session dev 5bx (po-scrum-master)
+- Demande de Claude, session dev 5bx (libre après WFS-223 🟣, PR #192). Choix : WFS-225 (P1 Urgent, E2 libérée par WFS-223) passe avant WFS-216 (P3, même épic, reste ⏳ Prêt). WFS-218, 224, 226 (P1) : E4 occupée par WFS-222, E3 par WFS-221.
+- Zone autorisée : `src/world/campagne.cpp` (E2) ; réglages de nuit de la carte par accroche ≤ 10 lignes annoncée au journal (`nuit.cpp`, hors bloc des phares). Interdit : phares du joueur (WFS-218), fumée (WFS-224), phares des autres voitures (WFS-226), iOS, taille des boutons.
+- Critères (`regles-de-gestion/WFS-225.md`) : tous les lampadaires allumés la nuit (lampe + flaque au sol) ; village, ronds-points, carrefours, péage éclairés ; rase campagne lisible au clair de lune (catadioptres, bandes, silhouettes) ; budget du téléphone tenu (WFS-222) ; captures `carte-campagne-nuit` avant / après (route, village, rond-point, péage, col), qualité Basse ; test de parcours complet ; ligne `qa/Check.md`. Graphisme réaliste : charte `DA-realisme.md` § 3 (éclairage public).
+- Branche `feature/waforspeed-225`, à pousser tout de suite (premier commit).
+
+### 2026-11-07 11:30:29 — WFS-221 fusionné (PR #193) : voiture fluide en vue Proche et Poursuite (Claude, agent 2 (01UY1Vv5))
+- **Mesure « avant »** (banc `WFS_BANC=fluidite`, nouveau, sans dessin, 1 min 30) : 4 scénarios (la plus longue ligne droite, un virage serré, une épingle, une montée), vues Proche et Poursuite, 30, 60 et 90 images/s irrégulières (± 30 %, graine fixe).
+  - Pas par image à 60 images/s : 0/1/2/3 = 0/107/386/108.
+  - À-coup de la voiture vue par la caméra : 190 à 350 mm.
+  - Aller-retour voiture ↔ caméra : 18 à 35 cm, soit 24 à 74 par seconde. C'est le « avance, recule, avance » de l'utilisateur.
+  - Sauts d'angle jusqu'à 1,4° en courbe.
+- **Causes confirmées**
+  - `src/game/game.cpp:243-247` : rendu du dernier pas de 1/120 s, sans interpolation.
+  - `game.cpp:274` et `src/game/camera_vue.cpp:96-97` : lissage `lerp(x, cible, 1 − e^(−k·dt))`, qui traite la cible comme immobile. Le retard de la caméra (≈ v/k, 3 à 4 m à 150 km/h) change avec la durée de chaque image.
+  - `src/game/track.cpp:87` : pente par segment ; direction cassée tous les 1,2 m.
+- **Correction** (physique inchangée)
+  - Rendu interpolé : `Game::JoueurInterpole` et `calculerVue`.
+  - Même filtre de caméra, résolu exactement pour une cible en mouvement (`suivreExact`, mêmes constantes : même caméra, RG-06).
+  - `Track::pointLisse` (Catmull-Rom) pour ce qui bouge ; pente de `point()` continue.
+  - Trafic, adversaires (course à 5, duel), police et fantôme interpolés (`GameView::alpha`).
+- **Après**
+  - Ligne droite et montée : à-coup ≤ 3,1 mm, angle ≤ 0,004°, aller-retour ≤ 0,32 cm, aux trois cadences. Objectifs RG-03 et RG-08 tenus.
+  - Courbes : à-coup de 4 à 16 mm. Il vient de la trajectoire physique elle-même (cap qui suit la courbure de chaque segment, consigne du banc), hors périmètre (physique inchangée) ; valeurs données pour information dans `fluidite.txt`.
+- **Accroches annoncées**
+  - `src/core/system.h` (1 ligne : `GameView::alpha`).
+  - `traffic.h` et `traffic_system.cpp`.
+  - `duel.h`, `duel.cpp` et `duel_system.cpp`.
+  - `course5.cpp`, `course5_system.cpp` et `course_system.cpp`.
+  - `poursuite.h`, `poursuite.cpp` et `poursuite_system.cpp`.
+  - `src/platform/desktop_main.cpp` (banc).
+  - `.github/workflows/build.yml` (banc `fluidite` dans le job `ecrans-2400`, captures `fluidite-*`).
+  - Chaque accroche fait 6 lignes au plus.
+- **Interrupteurs de banc** pour mesurer l'« avant » : `Game::interpolation`, `Track::penteLissee`, `g_cameraFiltreExact`. Aucun réglage pour le joueur.
+- **Vérifications** : 43 tests CPU ; parcours 0 écart ; captures de la course à 5 normales. Pas de CI de branche lancée.
+
+
+### 2026-11-07 11:32:50 — WFS-227 attribué à Claude, agent 2 (01UY1Vv5) ; WFS-153 découpée en 3 lots (po-scrum-master)
+- Demande de l'agent 2, libre après WFS-221 (🟣, PR #193). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa). WFS-215 (E10) et WFS-216 (E2) : épics occupées.
+- WFS-152 passe ✅ : ses deux lots WFS-207 et WFS-208 sont ✅ (CI main #815). WFS-153 devient attribuable (E13 libre : WFS-213 🟣).
+- WFS-153 (2 à 3 jours) découpée (un ticket = une journée au plus) : **WFS-227** (cascades, pénombre ; M-01, M-02), **WFS-228** (ombres des lumières de nuit, allumage selon l'éclairement, accroche `nuit.cpp` seulement quand E4 n'y travaille pas), **WFS-229** (GTAO, ombre de contact calculée ; le rectangle `F_SHADOW` est gardé en Basse). Règles : `regles-de-gestion/WFS-227.md`, `WFS-228.md`, `WFS-229.md`.
+- **Début WFS-227** — épic E13, branche `feature/waforspeed-227`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `nuit.cpp`, iOS. Critères : cascades par niveau stabilisées, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe (WFS-222 P1 en cours), parcours complet vert. Graphisme vu avec `expert-realisme-3d`.
+- WFS-214 (E13, agent 1 en attente) attendra la fin de WFS-227 dans l'épic.
+- Retour de l'agent 2 sur le reste de WFS-221 (à-coup de 4 à 16 mm en courbe, trajectoire physique) : pas de ticket créé (finition, hors demande) ; noté dans `regles-de-gestion/WFS-221.md` côté développeur.
+
+### 2026-11-07 11:33:20 — WFS-227 rendu, agent 2 en pause (Claude, agent 2 (01UY1Vv5))
+- Ordre de l'utilisateur (après WFS-221) : « Tu termines cette tâche et tu ne prends pas un autre ticket automatiquement ».
+- WFS-227 (attribué à 11:31 par le PO, juste avant cet ordre) : **non commencé**, aucune branche créée. Il est remis à ⏳ Prêt, sans responsable ; le découpage de WFS-153 (227, 228, 229) est gardé.
+- L'agent 2 ne demande plus de ticket tant que l'utilisateur ne le relance pas.
+
+
+### 2026-11-07 11:44:49 — WFS-227 attribué à Claude, agent 2 (01UY1Vv5), relancé par l'utilisateur (po-scrum-master)
+- L'utilisateur relance l'agent 2 (« Prend une tâche »). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa, dernier envoi 11:15). WFS-215 (E10, WFS-158) et WFS-216 (E2, WFS-225) : épics occupées. WFS-214 (E13) attend WFS-213 ✅ (🟣).
+- **Début WFS-227** — épic E13 (libre : WFS-213 🟣), branche `feature/waforspeed-227`. Règles : `regles-de-gestion/WFS-227.md`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `src/render/bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `src/render/nuit.cpp`, iOS. Critères : cascades par niveau stabilisées avec fondu, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe, coût GPU au journal, parcours complet vert, ligne `qa/Check.md`. Graphisme vu avec `expert-realisme-3d`.
+
+### 2026-11-07 11:47:48 — Demande de ticket de Claude, agent 4 (011cpqZan) : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-218, 224, 226 (P1, E4 : occupée par WFS-222, agent arwa, dernier envoi 11:15) ; WFS-215 (P3, E10 : occupée par WFS-158, arwa-2, dernier envoi 10:43) ; WFS-216 (P3, E2 : occupée par WFS-225, session dev 5bx, dernier envoi 11:43). WFS-214 attend WFS-213 ✅ et l'épic E13 (WFS-227, agent 2, dernier envoi 11:45).
+- Suites Ville proposées par l'agent : WFS-175 et WFS-176 sont déjà ✅ (archive). Aucun ticket prêt dans les épics libres (E0, E3, E5, E6, E7, E8, E9, E11).
+- Aucun développeur n'a dépassé 10 h sans envoi : aucune réattribution. Agent 4 reste libre ; il sera servi dès qu'une épic se libère ou qu'un nouveau besoin de l'utilisateur est découpé.
+
+### 2026-11-07 11:48:23 — Statuts automatiques, CI main #817 (robot statuts)
+- Run vert (push, commit 941e475) : WFS-213 ✅ (PR #184, 941e475).
+
+### 2026-11-07 11:48:41 — Exception E4 demandée par Claude, agent 4 (011cpqZan) pour WFS-224 : refusée (po-scrum-master)
+- Demande : WFS-224 (P1, E4, fumée des pneus) en parallèle de WFS-222 (E4, agent arwa). Le diff de `feature/waforspeed-222` ne touche pas `effets_particules.*` ni `effets_systeme.cpp`, mais il modifie `renderer.cpp`, `renderer.h` et `qualite_auto.*` (budget de qualité, qui règle aussi les effets).
+- Refus : la règle « un ticket en cours par épic » (`CLAUDE.md`, `TACHES.md` règle 2) n'a aucune exception que le PO puisse accorder. Seul l'utilisateur peut en décider. Agent 4 reste libre ; WFS-224 lui sera proposé en premier dès que WFS-222 sera fusionné.
+
+### 2026-11-07 11:51:19 — Demande de ticket de Claude, agent 3 (01UY1Vv3) : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-218, 224, 226 (P1, E4 : occupée par WFS-222, agent arwa, dernier envoi 11:15) ; WFS-215 (P3, E10 : WFS-158, arwa-2, dernier envoi 10:43) ; WFS-216 (P3, E2 : WFS-225, session dev 5bx, dernier envoi 11:43) ; WFS-214 (P2, E13) : WFS-213 est ✅ (CI main #817), passe ⏳ Prêt, mais E13 est occupée par WFS-227 (agent 2, dernier envoi 11:45). E12 : WFS-161 (Agent 0, dernier envoi 11:48).
+- Épics libres (E0, E3, E5, E6, E7, E8, E9, E11) : aucun ticket prêt. WFS-156 (E9) attend WFS-206 ✅ (🟣, CI main en cours) ; WFS-165 (E11) attend WFS-164 (lots 210, 211 🟣). Aucune anomalie 🆕 dans `anno.md`, aucune demande ouverte de l'utilisateur sans ticket.
+- Aucun développeur n'a dépassé 10 h sans envoi : aucune réattribution. Agent 3 reste libre ; ordre de service quand une épic se libère : agent 1, agent 4, puis agent 3 (ordre des demandes).
+
+### 2026-11-07 11:57:07 — Recette après fusion : WFS-213 VALIDÉ, WFS-208 PASSABLE — recette du 2026-11-07 terminée (QA-arwa)
+- **WFS-213 : VALIDÉ** (`apercu` 817, 941e475, CI verte) — plus d'écran blanc après le chargement d'une voiture : les 20 `vitrine-*-0` normales (luminance 87-92/255, 0 % de blanc ; 14 étaient blanches), `course-sf90` normale, vitrines déjà bonnes identiques, parcours 0 écart, indice lumière 100 %. Bloquante de WFS-151 corrigée.
+- **WFS-208 : PASSABLE AVEC ANOMALIES MINEURES** (`apercu` 815, 6ddbeec) — exposition, angles de l'heure dorée et bleue, lampadaires selon l'éclairement, lune, nuages par carte, passage continu (0,236 EV < 0,311) conformes, indice lumière 100 %. ANO-112 : capture `terrain-moments` (choix des 6 moments) absente du banc.
+- Remarques gardées pour la campagne VABF : ciel de midi sombre (déjà ANO-109), têtes de tour et de lampadaire qui brillent à l'heure dorée sur le circuit, rejet de sonde écrit en `[ERREUR]` au journal (WFS-213), écran blanc à vérifier sur téléphone.
+- Bilan du jour : WFS-211, 212, 213 VALIDÉS ; WFS-208 PASSABLE. Aucune bloquante.
+
+### 2026-11-07 11:58:16 — WFS-225 fusionné (PR #194, squash 6d3992c, fusion par confiance) : Campagne de nuit (Claude, session dev 5bx)
+- **Causes du « tout noir »** : (1) `nuit.cpp` effaçait la liste des lampadaires de la Campagne (`if (campagne_) L.clear()`, héritage du web « nuit sans lampadaires ») : même ceux du péage ne s'allumaient pas ; (2) `decor_carte.cpp` éteignait les lanternes (part `P_NEON`) la nuit sur la Campagne ; (3) les lampadaires du village (`T_LAMP`) n'étaient jamais inscrits dans `lampadaires()` ; (4) la rase campagne est éclairée par la vraie lune (éclairage physique, E13) : pleine lune à 17° de hauteur, 0,32 lux, exposition de nuit bornée à EV 3–5 : l'herbe reste à moins de 1 % du gris moyen. Le clair de lune réglé dans `nuit.cpp` (soleil, hémisphère) est remplacé par l'éclairage physique : essai fait (lune × 2), **pixels identiques**, retiré.
+- **Corrections** : accroche `nuit.cpp` (5 lignes, hors bloc des phares) : liste plus effacée, double passage du faisceau gardé sur la Campagne, ciel et voile lointain de la Campagne × 2 (bleu de pleine lune : silhouettes des arbres et des collines) ; `decor_carte.cpp` : lanternes allumées la nuit sur toutes les cartes ; `campagne.cpp` : `poserLampe()` pose le mât (`CarteDecor::lampe`) et inscrit sa lumière (lanterne à RW − 1,9 m, 7,36 m) ; lampadaires du village, 2 mâts à chaque entrée et sortie du village, mâts tous les 11 m sur le bord extérieur de l'anneau du rond-point + approche et sortie, 2 mâts au carrefour du feu ; un mât qui tomberait sur une autre branche n'est ni posé ni allumé. 45 lampadaires sur la carte. **Balises J6** (NF P 98-584) en rase campagne tous les 50 m des deux côtés : fût blanc de 1,00 m, bande noire de 0,25 m, catadioptre orange 180 × 40 mm vers le sens qui l'a à droite, deux ronds blancs vers l'autre sens (aucun tirage du décor ajouté).
+- **Vérifié en local** : banc `WFS_BANC=campagne` en qualité Basse (avant / après, 11 vues de nuit + jour), 43 tests CPU verts, parcours complet 0 écart. Jour : vues identiques sauf les nouveaux mâts (rond-point, entrées du village).
+- **Budget (RG-03), à suivre par WFS-222** : 4 lumières ponctuelles au plus (inchangé) ; chaque lampadaire visible ajoute son halo et sa flaque (comme en Ville) : appels de dessin +36 (vaches), +68 (village 736 → 804), +52 (rond-point), +12 (péage), +0 en rase campagne sans lampadaire. Les balises J6 sont dans les morceaux du décor (aucun appel en plus).
+- **Risque signalé au PO (zone E13, non corrigé)** : hors du faisceau et des lampadaires, l'herbe reste noire, car l'exposition de nuit (EV ≥ 3) est faite pour une rue éclairée. Proposition : US E13 « adaptation de l'œil la nuit sur route non éclairée » (EV de nuit plus bas loin des lampadaires, phares bornés pour rester sans « tout blanc »).
+
+### 2026-11-07 11:58:46 — tache utilisateur.md : 3 demandes ouvertes rétablies (Claude, session dev 5bx)
+- Le commit 9db8673 (WFS-221) avait remplacé `tache utilisateur.md` par une version plus ancienne : 3 demandes ouvertes avaient disparu (personnes et ronds-points, question du PO sur les voitures non commerciales, vidéo de nuit). Elles sont rétablies mot pour mot depuis ef45ef4, réponses comprises ; rien d'autre n'est retiré. La réponse de WFS-225 est ajoutée sous la vidéo de nuit.
+
+### 2026-11-07 12:00:15 — WFS-216 attribué à Claude, session dev 5bx ; WFS-230 créé (risque nuit E13) ; tache utilisateur.md rétabli (po-scrum-master)
+- Demande de Claude, session dev 5bx, libre après WFS-225 (🟣, PR #194, squash 6d3992c). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa, dernier envoi 11:15). WFS-214 (P2, E13) : épic occupée par WFS-227 (agent 2, 11:45). WFS-215 (P3, E10) : WFS-158 (arwa-2). E2 libérée par WFS-225 : **WFS-216** (P3) est le seul ticket prêt d'une épic libre.
+- **Début WFS-216** — épic E2, branche `feature/waforspeed-216`. Règles : `regles-de-gestion/WFS-216.md`. Zone : `src/world/**` sauf fichiers E11 / E12, `assets/world/**` sauf `modeles/`, `shaders/world_*`. Critères : ANO-103 (col Campagne), ANO-105 (foule et bateaux Plage), ANO-108 (troupeaux de nuit) invisibles sur les captures citées, parcours complet 0 écart, ligne `qa/Check.md`. Branche à pousser dès sa création.
+- **WFS-230 créé** (P1 Urgent, E13, ⏳ Prêt dès que E13 est libre) : risque signalé par la session dev 5bx (herbe noire hors des phares : exposition de nuit EV100 3–5 faite pour une rue éclairée, lune réelle 0,32 lux). Suite de la demande de l'utilisateur sur la Campagne de nuit (11:25 UTC). Règles : `regles-de-gestion/WFS-230.md` (exposition de nuit plus basse loin des lampadaires, passage sans à-coup, phares bornés, jour inchangé, section « Graphisme réaliste »). Il passe avant WFS-214 (P2) quand E13 se libère.
+- Pris en compte : le commit 9db8673 (WFS-221) avait écrasé `tache utilisateur.md` ; rétabli par la session dev 5bx (815fffa), vérifié : les demandes ouvertes sont présentes.
+- Case WFS-225 de `TACHES.md` remise en ordre (PR #194 dans la colonne PR, pas dans « Dépend de »). Aucun développeur au-delà de 10 h sans envoi : aucune réattribution.

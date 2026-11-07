@@ -194,6 +194,15 @@ void surfaceRoute(inout vec4 base, inout float rough, inout float metal, inout v
         float dash = step(fract(p.y / 12.0), 0.45);
         lane = max(lane, (1.0 - smoothstep(0.06, 0.08, abs(p.x - lx))) * dash);
     }
+    // WFS-223 (RG-02) : pas de tirets de voie dans un virage serré (anneau de giratoire) : uv.y croît de SEG_M par segment sur
+    // toute la largeur, donc d(uv.y)/d(longueur réelle) = R / (R − x) : on le mesure par les dérivées écran (gradient de p.y
+    // dans le plan de la chaussée) ; courbure κ = (1 − 1 / rapport) / x : rayon < 18 m (anneau de 14 m) : tirets retirés,
+    // lignes de rive gardées ; épingles (22 m) et virages ordinaires inchangés
+    vec3 wx = dFdx(vWorld), wy = dFdy(vWorld); vec2 sy = vec2(dFdx(p.y), dFdy(p.y));
+    float aa = dot(wx, wx), ab = dot(wx, wy), bb = dot(wy, wy), det = aa * bb - ab * ab;
+    float g2 = det > 1e-14 ? (bb * sy.x * sy.x - 2.0 * ab * sy.x * sy.y + aa * sy.y * sy.y) / det : 1.0;
+    float kappa = abs(1.0 - inversesqrt(max(g2, 1e-6))) / max(abs(p.x), 0.5);
+    lane *= 1.0 - smoothstep(0.047, 0.055, kappa);
     float paint = max(edgeL, lane) * (0.75 + 0.25 * noise(p * 6.0));
     base.rgb = mix(asphalt, vec3(0.78, 0.78, 0.74), paint);
     // WFS-142 (RG-02) : asphalte sec, jour et nuit : mat (rugosité 0,75 à 0,9), lignes peintes 0,55, jamais métallique

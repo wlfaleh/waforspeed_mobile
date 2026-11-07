@@ -1,0 +1,21 @@
+Model Information:
+* title:	Ford Mustang Shelby GT500
+* source:	https://sketchfab.com/3d-models/ford-mustang-shelby-gt500-0eaa7a16796540f29461ddae05ecdeb3
+* author:	Jiaxing (https://sketchfab.com/saitoyang)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Ford Mustang Shelby GT500" (https://sketchfab.com/3d-models/ford-mustang-shelby-gt500-0eaa7a16796540f29461ddae05ecdeb3) by Jiaxing (https://sketchfab.com/saitoyang) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+---
+Trouvé dans le dépôt GitHub public trivedikavya/MUSTANGpreviewbykavyatrivedi, dossier ford_mustang_shelby_gt500/
+(même modèle aussi dans jvsysarch/apex et Toby-Query/StreetCred, même licence CC BY 4.0), le 2026-11-07 (WFS-219).
+SHA-256 des fichiers source : scene.gltf 44af2ace24f37a39620c4629f64976bd26750a7798ef868dbf4bdcdfc94c383b,
+scene.bin 9352954b727d0947bc2f839bc077bab2ef9a9984925cdb159477c32f56289779.
+
+Modifications for WaForSpeed: simplified with tools/simplifier_voiture.mjs (two passes: error 0.012 then 0.02,
+348 393 → 101 691 triangles), converted with tools/convert_car.mjs (length 4.82 m, rotateY 180°, paint material
+"carpaint", rear lights "rearlight"), scaled ×0.99 and tyres seated by tools/corriger_voitures (WFS-158).
+Not yet used by the game (WFS-194 will plug it in).

@@ -52,13 +52,13 @@ public:
         const char* id = g.map->id;
         ville_ = !std::strcmp(id, "ville"); plage_ = !std::strcmp(id, "plage");
         campagne_ = !std::strcmp(id, "campagne"); circuit_ = !std::strcmp(id, "circuit");
-        // RG-06 : la campagne n'a pas d'éclairage public. La ville inscrit ses lampadaires (src/world/ville.cpp) ;
+        // RG-06 : la ville et la campagne (WFS-225) inscrivent leurs lampadaires (src/world/ville.cpp, campagne.cpp) ;
         // la corniche et le circuit n'ont pas encore de lampadaires en décor natif : têtes de lampe placées ici aux pas du
         // jeu web (decor.js : « beach » tous les 30 segments côté mer, « flood » tous les 34 en alternance)
         auto& L = lampadaires();
         const int64_t len = (int64_t)g.track->segmentCount();
-        if (campagne_) L.clear();
-        else if (L.empty() && plage_) for (int64_t n = 15; n < len; n += 30) L.push_back({n, (float)RW + 0.6f, 5.6f, StyleLampadaire::Plage});
+        // WFS-225 (RG-01) : la Campagne inscrit ses lampadaires (village, rond-point, feu, péage) : ils ne sont plus effacés ici
+        if (L.empty() && plage_) for (int64_t n = 15; n < len; n += 30) L.push_back({n, (float)RW + 0.6f, 5.6f, StyleLampadaire::Plage});
         else if (L.empty() && circuit_)
             for (int64_t n = 10; n < len; n += 34) L.push_back({n, ((n / 34) % 2 ? 1.f : -1.f) * ((float)RW + 4.f), 16.f, StyleLampadaire::Stade});
         std::sort(L.begin(), L.end(), [](const Lampadaire& a, const Lampadaire& b) { return a.seg < b.seg; });
@@ -108,7 +108,8 @@ public:
         const float k = rue ? 1.4f : 2.2f;
         uint32_t hor = 0x3a1a36, fog = 0x120d1d, hemiS = 0x46327a; float hemiI = 0.75f, fogFar = 540;
         if (plage_) { hor = 0x2b2240; fog = 0x141428; fogFar = 640; }
-        if (campagne_) { hor = 0x1b2236; fog = 0x0d1218; hemiS = 0x3a4670; hemiI = 0.6f; }
+        // WFS-225 (RG-02) : ciel de pleine lune et voile lointain bleutés (×2) : silhouettes des arbres et des collines lisibles
+        if (campagne_) { hor = 0x2a3656; fog = 0x1c2638; hemiS = 0x3a4670; hemiI = 0.6f; }
         if (circuit_) { hor = 0x1f2440; fog = 0x0e1020; hemiS = 0x5a5c90; hemiI = 0.95f; fogFar = 640; }
         if (ecrans::reglages().qualite == ecrans::QUALITE_BASSE) fogFar = std::min(fogFar, 420.f);
         fp.skyTop = linHex(0x04040a) * k; fp.skyHorizon = linHex(hor) * k; fp.ground = linHex(0x0a0a10) * k;
@@ -176,7 +177,7 @@ public:
         for (int i = 1; i < NR; i++) for (int c = 1; c < NC; c++) { sommet(i - 1, c - 1); sommet(i - 1, c); sommet(i, c); sommet(i, c - 1); }
         const int nq = n / 4;
         r.drawQuads(v, nq, r.poolMat);
-        if (lampadaires().empty()) r.drawQuads(v, nq, r.poolMat);   // sans éclairage public : deuxième passage (≈ 4× au cœur)
+        if (lampadaires().empty() || campagne_) r.drawQuads(v, nq, r.poolMat);   // sans éclairage public, et routes de campagne (WFS-225) : deuxième passage (≈ 4× au cœur)
         // ---------- RG-05 : têtes de lampe et flaques de lumière (poolQuad, MAT.pool) ----------
         const auto& L = lampadaires();
         const int64_t len = (int64_t)t.segmentCount(), aP = (int64_t)std::floor(p.dist / SEG);

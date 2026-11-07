@@ -118,7 +118,7 @@ public:
             if (it == models_.end() || !it->second.ok) continue;
             double& yaw = yaw_[id];
             yaw += (gh.h - yaw) * 0.15;
-            const TrackPoint p = g.track->point(gh.rd, gh.x * RW);
+            const TrackPoint p = g.track->pointLisse(gh.rdRendu(g.alpha), gh.xRendu(g.alpha) * RW);   // WFS-221 (accroche)
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
             const CarDef& cd = carById(gh.car.c_str());
             const vec3 paint = hexLin(cd.paint);

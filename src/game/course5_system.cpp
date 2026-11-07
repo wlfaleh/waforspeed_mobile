@@ -137,7 +137,7 @@ public:
             if (rel < -60 / M || rel > 700 / M) continue;
             auto it = models_.find(o.car);
             if (it == models_.end() || !it->second.ok) continue;
-            const TrackPoint p = g.track->point(o.g.rd, o.g.x * RW);
+            const TrackPoint p = g.track->pointLisse(o.g.rdRendu(g.alpha), o.g.xRendu(g.alpha) * RW);   // WFS-221 (accroche) : rendu interpolé
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th)) * rotateX((float)p.slope);
             peintures_[o.car] = lin(o.peinture);   // Renderer::draw garde l'adresse de la peinture jusqu'à la fin de l'image
             r.draw(it->second, m, &peintures_[o.car]);
