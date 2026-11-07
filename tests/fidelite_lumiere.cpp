@@ -158,6 +158,7 @@ int main(int argc, char** argv) {
     VERIFIE(std::fabs(evIncidentNuit(1) - std::log2(0.4)) < 1e-9, "1 lx : EV −1,32 (%.3f)", evIncidentNuit(1));
     VERIFIE(evIncidentNuit(0.094) == EV_LUNE_MIN && evIncidentNuit(0) == EV_LUNE_MIN && evIncidentNuit(std::nan("")) == EV_REF_NUIT, "clair de lune : −2 ; NaN : EV de référence 4");
     VERIFIE(std::fabs(evIncidentNuit(0.625) - EV_LUNE_MIN) < 1e-9, "borne −2 atteinte à 0,625 lx (%.3f)", evIncidentNuit(0.625));
+    VERIFIE(partRue(20) == 1 && partRue(3) == 1 && partRue(0.5) == 0 && partRue(1.3) > 0.3 && partRue(1.3) < 0.7 && partRue(NAN) == 1, "part rue éclairée : 1 dès 3 lx, 0 sous 0,63 lx (%.3f à 1,3 lx)", partRue(1.3));
     VERIFIE(evIncidentNuit(1000) == EV_NUIT_MAX && evIncidentNuit(0.01) == EV_LUNE_MIN && evIncidentNuit(INFINITY) == EV_REF_NUIT && std::fabs(evIncidentNuit(20) - 3) < 1e-9,
             "exposition incidente de nuit : −2 à 5, 20 lx → 3");
     VERIFIE(proche(eclairementLampe(15, 0, 8), 15, 1e-12) && proche(eclairementLampe(15, 8, 8), 15 / std::pow(2.0, 1.5), 1e-12), "lampe : 15 lx au pied, ÷ 2^1,5 à d = h");

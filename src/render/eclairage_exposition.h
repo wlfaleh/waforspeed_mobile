@@ -38,6 +38,14 @@ inline double eclairementLampe(double E0, double d, double h) {
     const double q = 1.0 + (d / h) * (d / h);
     return E0 / (q * std::sqrt(q));
 }
+// part « rue éclairée » de 0 à 1 selon l'éclairement reçu : 1 à partir de 3 lx (classe la plus faible des routes éclairées, P6 de
+// l'EN 13201-2:2015, ≈ 2 à 3 lx [à vérifier]), 0 sous 0,63 lx (borne −2 du posemètre incident), fondu en log entre les deux
+constexpr double E_RUE_ECLAIREE = 3.0, E_RASE_CAMPAGNE = 0.625;
+inline double partRue(double eclairement) {
+    if (!std::isfinite(eclairement)) return 1;
+    const double u = std::clamp(std::log2(std::max(eclairement, 1e-9) / E_RASE_CAMPAGNE) / std::log2(E_RUE_ECLAIREE / E_RASE_CAMPAGNE), 0.0, 1.0);
+    return u * u * (3 - 2 * u);
+}
 // exposition de nuit visée : posemètre incident, de −2 (clair de lune) à 5 (rue très éclairée, borne haute de la nuit)
 inline double evIncidentNuit(double eclairement) {
     if (!std::isfinite(eclairement)) return EV_REF_NUIT;
