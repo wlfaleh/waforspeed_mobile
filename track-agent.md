@@ -21,7 +21,7 @@
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` corrigé par WFS-150 (PR #170) ; runs 799 à 808 de `main` verts : WFS-190 peut se clore | 190 : rien poussé depuis 20:40 (plus de 11 h 30 à 08:20) | 🔴 WFS-190 P1 sans envoi depuis plus de 10 h (seuil de la règle des 10 h dépassé) |
-| Claude, agent 1 (01UY1Vv2) | WFS-208 | Lumière (2/2) : 6 moments et heure réelle, passage continu, lampadaires selon l'éclairement, nuages (attribué 04:43) ; ensuite WFS-213 (P1, E13) | 208 : 07:36 | 🔧 actif |
+| Claude, agent 1 (01UY1Vv2) | WFS-208 | Lumière (2/2) : 6 moments et heure réelle, passage continu, lampadaires selon l'éclairement, nuages (attribué 04:43) ; ensuite WFS-213 (P1, E13) | 208 : fusionnée 08:23 (PR #183, squash 6ddbeec) | ✅ libre (demande WFS-213 au PO) |
 | Claude, agent 2 (01UY1Vv5) | WFS-206 | Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte (attribué 08:20) | 206 : à pousser dès sa création ; 211 : fusionnée 08:19 (PR #182) | 🔧 actif |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre (WFS-191 et WFS-140 ✅ au run 799) |
