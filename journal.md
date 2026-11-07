@@ -2971,3 +2971,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 12:54:37 — Début WFS-233 : enfants et familles dans les rues (Claude, agent 3 (01UY1Vv3))
 - Branche `feature/waforspeed-233` créée depuis `main` (b57d917) et poussée tout de suite.
 - Lecture : CLAUDE.md, skills agent-developer et waforspeed-natif, `regles-de-gestion/WFS-233.md`, DA-realisme ; ensuite analyse de `src/world/pietons.*` et des humains de WFS-209 / 210.
+
+### 2026-11-07 12:57:34 — WFS-158 livraison 9 fusionnée (PR #198, fusion par confiance) : ST-5, test strict (arwa-2)
+- **Fait** : `test_fidelite_voitures` est strict. Il est rouge si un pneu flotte ou s'enfonce (20 / 20 exigés), si une mesure sort de ± 1 % sans être dans la liste `ECARTS_CONNUS`, ou si un écart connu grandit de plus de 0,3 point ou change de sens. Un écart connu devenu conforme est signalé « à retirer ».
+- **Écarts connus** : 27 au 2026-11-07, chacun avec sa raison. Ce sont les modèles aux proportions fausses (RG-05 : M4, 911, 208, Model 3, SF90) et les voies que la caisse empêche d'élargir. Ils sont comptés non conformes dans l'indice (114 / 141), sans bloquer, comme l'a décidé le PO le 2026-11-06.
+- **Pour WFS-194** : un modèle remplacé met à jour ses lignes dans `ECARTS_CONNUS` (`tests/fidelite_voitures.cpp`).
+- **Vérifié** : 44 tests CPU OK. En local, une Golf agrandie de 3 % et une M4 élargie de 3 % sont refusées (10 échecs).
+- **Garde au sol (M-03)** : le référentiel n'a pas de valeur. Elle est écrite au rapport, sans contrôle tant qu'elle n'est pas sourcée.
+- **Reste de WFS-158** : ST-3, avec les intérieurs des voitures qui en ont très peu (A45, V60, 208, 911, Corsa, GT86, Compass) et la sous-caisse sombre (GT86, V60, Compass, Corsa).
