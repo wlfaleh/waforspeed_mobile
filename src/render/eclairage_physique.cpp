@@ -489,13 +489,15 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
-    // WFS-230 (RG-01) : nuit au clair de lune : la borne basse suit l'éclairement reçu par le conducteur (lune, ciel et lampadaires
-    // proches) : EV 3 dans une rue éclairée, jusqu'à −2 en rase campagne ; passage continu (adaptation de l'œil, RG-02)
+    // WFS-230 (RG-01) : nuit au clair de lune : l'exposition suit l'éclairement reçu par le conducteur (lune, ciel et lampadaires
+    // proches), mesuré comme un posemètre incident (evIncidentNuit) : EV 3 sous les lampes d'une rue, jusqu'à −2 en rase campagne.
+    // La mesure réfléchie des sondes n'est pas prise la nuit : la tache des phares la tirait vers EV 2 (essai du 2026-11-07 :
+    // 0,49 cd/m² en rase campagne) et le paysage restait noir. Passage continu par l'adaptation de l'œil (RG-02).
     double evMinLu = evMin;
     if (lune) {
         g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);
-        evMinLu = evMinNuit(g.eRecu);
-        if (std::getenv("WFS_EV_INCIDENT")) cible = std::clamp(std::log2(std::max(g.eRecu, 1e-9) * 100.0 / C_INCIDENTE), EV_LUNE_MIN, EV_NUIT_MAX);   // ESSAI
+        evMinLu = EV_LUNE_MIN;
+        cible = evIncidentNuit(g.eRecu);
     }
     cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
@@ -504,10 +506,14 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     else g.ev = adapter(g.ev, cible, dt);
     if (!std::isfinite(g.ev)) g.ev = std::clamp(nuit ? EV_REF_NUIT : EV_REF_JOUR, evMin, evMax);   // WFS-213 (RG-02) : jamais de valeur non finie
     g.dtImage = dt;
-    if (std::getenv("WFS_TRACE_EV")) WFS_LOG("TRACE ev %.2f cible %.2f evMin %.2f Lmes %.4f eRecu %.3f eLamp %.2f nuit %d lune %d", g.ev, cible, evMinLu, Lmes, g.eRecu, g.etat.eLampadaireSol, (int)nuit, (int)lune);   // TEMPORAIRE
     const double k = exposition(g.ev);
     const double expOrig = fp.exposure;
-    const double facteur = expOrig * k / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
+    // WFS-230 (RG-03) : adaptation locale de l'œil : les lumières artificielles (phares, lampadaires, néons, halos, voile des villes)
+    // ne suivent l'exposition que jusqu'à EV 3 (rue éclairée) ; en dessous (clair de lune), elles restent comme à EV 3 : le paysage
+    // se lit au clair de lune sans que les phares et les lampes ne deviennent « tout blanc » (Thompson, Shirley et Ferwerda 2002 :
+    // l'œil adapté à la nuit ne voit pas les lampes brûlées). De jour (EV ≥ 10), rien ne change (RG-05).
+    const double kLumieres = nuit ? exposition(std::max(g.ev, EV_LUMIERES_MIN)) : k;
+    const double facteur = expOrig * kLumieres / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
     // ---- ciel, sol, brouillard (cd/m²)
     // WFS-207 (RG-02) : de jour, teintes du ciel tirées de l'atmosphère (zénith, horizon) ; la nuit, celles de la carte (lot 2)
     auto teinte = [](const double c[3]) { const double y = std::max(luminanceRgb(c), 1e-12); return vec3{(float)(c[0] / y), (float)(c[1] / y), (float)(c[2] / y)}; };
