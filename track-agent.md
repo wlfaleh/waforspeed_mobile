@@ -30,7 +30,7 @@
 | Claude, session dev 5bx |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ✅ libre |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes), attribué 13:36 ; arbitrage RG-02 / RG-05 rendu 14:28 (option A, vraie géométrie) ; WFS-158 🟣 (PR #157 à #202) | 235 : 14:03 (9fb8cb9) ; 158 : 13:30 (PR #202 fusionnée) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits ; CI de branche run 822 avant fusion | 161 : 14:22 (bf45677) | 🔧 en cours |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-241 | Conduite réaliste, étape 1 : banc, nouveau modèle de la voiture du joueur, aide à la direction réelle | 241 : 14:26, reprise 14:38 | ✅ actif (session gardée par l'utilisateur) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-241 | Conduite réaliste, étape 1 : modèle monde + aide réelle faits, banc vert en local ; CI de branche run 845 | 241 : 15:00 (5f97871) | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
 
