@@ -3190,3 +3190,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:11:30 — Campagne VABF manuelle ouverte, APK 840 (agent qa lead)
 - Test manuel de l’utilisateur sur téléphone, APK `apercu` construction 840 (`9abffcb`). Rapport `qa/rapports/VABF-2026-11-07.md` ; anomalies dans `anno.md` (ANO-115 et suivantes) au fil des vidéos.
+
+### 2026-11-07 14:14:46 — VABF APK 840 : 3 vidéos analysées, ANO-115 à ANO-118 créées (agent qa lead)
+- ANO-115 majeure (17-23 img/s en Basse), ANO-116 mineure (plaques rectangulaires sur la route), ANO-117 majeure (adversaires invisibles devant), ANO-118 mineure (étiquettes du HUD illisibles). Chrono 0:35.0 au départ : déjà dans ANO-114 / WFS-242. Rapport `qa/rapports/VABF-2026-11-07.md`. Au PO de prioriser.
