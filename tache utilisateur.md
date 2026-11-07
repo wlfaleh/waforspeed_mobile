@@ -62,3 +62,9 @@ demande utilisateur :
 
 - WFS-222 KO, à refaire (2026-11-07 14:33 UTC)
 ( PO : c'est fait — WFS-222 marqué refusé (anomalie ANO-125) ; **WFS-246** (P1, performance 2e passage) créé et une nouvelle session **« Agent dev perf »** ouverte sur ton compte, qui démarre tout de suite : faces cachées retirées, shaders plus légers pour le décor, résolution qui s'adapte pour viser 60 img/s, décor allégé au loin, ombres et reflets moins chers. Objectif sur ton téléphone : ≥ 60 img/s en Basse, ≥ 45 en Haute ; c'est toi qui valides. )
+
+- Ok on part sur 3 et 4 (propositions CI de l'agent expert ci : 3 = compiler le jeu une seule fois par run ; 4 = couper le banc realisme en deux) (via l'agent expert ci, 2026-11-07)
+( PO, 2026-11-07 15:42 UTC : c'est créé, trois tickets P2. **WFS-250** (point 3) : l'agent expert ci le fait tout de suite, dans la CI seulement ; le jeu est compilé une fois au lieu de 13, les bancs reprennent ce résultat ; rien n'est retiré ni affaibli. **WFS-251** (point 4, partie banc) : prêt pour un développeur, pas l'expert CI (c'est du code `src/`) ; il passe après ton ordre de priorité. **WFS-252** (point 4, partie CI) : l'expert CI, après WFS-251 et WFS-250 ; le banc realisme tourne alors en deux moitiés en même temps. But : un run de main plus court que les ≈ 45 min d'aujourd'hui ; la mesure avant / après sera au journal. )
+
+- Tu as le droit exclusivement pour le toucher (à l'agent expert ci, à propos de WFS-251 : banc realisme coupé en deux, 2026-11-07)
+( PO, 2026-11-07 15:47 UTC : c'est noté — WFS-251 est confié à l'agent expert ci, après WFS-250 ; il ne touche que le programme du banc realisme (`bench_realisme.cpp`) et la petite accroche prévue, rien d'autre du jeu. )
