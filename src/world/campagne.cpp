@@ -33,7 +33,8 @@ enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POL
        T_FONTAINE, T_FEU, T_COMMERCE,           // WFS-178 : rond-point fleuri, feu tricolore, commerces du village
        T_AUTO, T_PEAGE, T_PANNEAU_A,            // WFS-179 : autoroute (un par segment), aire de péage, panneau bleu
        T_ENCLOS,                                // WFS-186 : enclos des chevaux (clôture de bois sur les 4 côtés)
-       T_CEDEZ };                               // WFS-223 : ligne de cédez-le-passage à l'entrée de l'anneau
+       T_CEDEZ,                                 // WFS-223 : ligne de cédez-le-passage à l'entrée de l'anneau
+       T_J6 };                                  // WFS-225 : balise de virage / d'accotement J6 à catadioptres
 // WFS-179 : textes des panneaux bleus de l'autoroute et du péage (noms de lieux inventés)
 const char* const PANNEAUX_A[4] = {"VALLÉE VERTE  14 km", "LES PINS  9 km", "AIRE DE REPOS  2 km", "PÉAGE"};
 // WFS-178 (RG-03) : commerces du village (it.k) et texte de leur enseigne (pas de vraie marque ni de vrai nom de lieu)
@@ -135,6 +136,7 @@ protected:
             if (it.t == T_FARM) obst.push_back({n - 7, n + 25, it.side, it.lat - 7, it.lat + 8});
             if (it.t == T_BALES) obst.push_back({n - 2, n + it.k * 3 + 2, it.side, it.lat - 2, it.lat + 4});
             if (it.t == T_TURBINE || it.t == T_HEDGE) obst.push_back({n - 3, n + (int64_t)(it.l / SEG_M) + 3, it.side, it.lat - 3, it.lat + 3});
+            if (it.t == T_LAMP) { poserLampe(n, it.side); return; }   // WFS-225 (RG-01) : mât et lumière de nuit ensemble
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };
@@ -157,6 +159,12 @@ protected:
             if (altitude(n) > 60) kind = K_PINE;   // WFS-138 (RG-01) : étage montagnard : les sapins remplacent les feuillus
             Item it; it.t = T_TREE; it.side = side; it.lat = lat; it.h = h; it.k = kind; it.along = along; item(n, it);
         };
+        // WFS-225 (RG-02) : balises J6 de rase campagne tous les 50 m, des deux côtés, sur l'accotement (hors agglomération,
+        // hors virages serrés balisés par murets et glissières) : leurs catadioptres renvoient les phares et dessinent la
+        // route la nuit. Aucun tirage D() : le reste du décor ne change pas.
+        if (!std::strcmp(z, "champs") || !std::strcmp(z, "foret") || !std::strcmp(z, "vignes"))
+            for (int64_t n = z0 + 21; n < z1; n += (int64_t)(50 / SM)) if (!procheSerre(n))
+                for (int side : {-1, 1}) { Item it; it.t = T_J6; it.side = side; it.lat = R + 1.0f; item(n, it); }
         if (!std::strcmp(z, "champs")) {
             for (int side : {-1, 1}) {
                 for (int64_t n = z0; n < z1; n += 3) if (fl((n + (side > 0 ? 40 : 0)) / 90.f) % 2 == 0) { Item it; it.t = T_FENCE; it.side = side; it.lat = R + 3.4f; it.petit = true; item(n, it); }
@@ -188,6 +196,8 @@ protected:
             }
             { Item it; it.t = T_CHURCH; it.side = D() < 0.5f ? -1 : 1; it.lat = R + 20; item(z0 + (z1 - z0) / 2, it); }
             for (int64_t n = z0 + 10; n < z1; n += 24) { Item it; it.t = T_LAMP; it.side = (n / 24) % 2 ? 1 : -1; it.k = 0; item(n, it); }
+            // WFS-225 (RG-02) : entrées du village éclairées (un mât de chaque côté, 6 m après l'entrée et avant la sortie)
+            for (int64_t n : {z0 + (int64_t)(6 / SM), z1 - 1 - (int64_t)(6 / SM)}) for (int side : {-1, 1}) { Item it; it.t = T_LAMP; it.side = side; item(n, it); }
             for (int64_t n = z0 + 40; n < z1; n += 120) { Item it; it.t = T_ZEBRA; item(n, it); }
         } else if (!std::strcmp(z, "vignes")) {
             for (int side : {-1, 1}) {
@@ -244,6 +254,17 @@ protected:
             const vec3 b = lateral(p, s * it.lat, -0.2f);
             cyl(S, b, 0.14f, 8.5f, 8, uv(C_WOOD));
             box(S, b + vec3{0, 7.8f, 0}, p.r, p.f, 1.6f, 0.12f, 0.12f, uv(C_WOOD));
+            break;
+        }
+        case T_J6: {   // balise J6 (NF P 98-584) : 1,00 m hors sol, fût blanc de 0,12 m, bande noire de 0,25 m en tête ;
+            // catadioptres (part P_NEON : renvoi des phares, allumés la nuit) : un rectangle orange de 180 × 40 mm vers les
+            // conducteurs qui l'ont à droite, deux ronds blancs (≈ 60 mm) vers le sens opposé
+            const vec3 b = lateral(p, s * it.lat);
+            box(S, b, p.r, p.f, 0.12f, 0.75f, 0.12f, uv(C_WHITE));
+            box(S, b + vec3{0, 0.75f, 0}, p.r, p.f, 0.12f, 0.25f, 0.12f, uv(C_CHECK_B));
+            const vec3 face = p.f * (0.062f * (float)s);   // orange en b − face : vers le sens qui a la balise à sa droite
+            box(out[P_NEON], b - face + vec3{0, 0.79f, 0}, p.r, p.f, 0.04f, 0.18f, 0.01f, uv(C_FLAG0 + 5));
+            for (float yy : {0.80f, 0.90f}) box(out[P_NEON], b + face + vec3{0, yy, 0}, p.r, p.f, 0.06f, 0.06f, 0.01f, uv(C_WHITE));
             break;
         }
         case T_SIGN: {
@@ -647,6 +668,16 @@ private:
     // hauteur corrigée en rampe depuis le bord de la chaussée (correction 0) jusqu'à la coupe (sol = mi-hauteur des deux
     // routes) : le sol rejoint exactement celui de la voisine et ne recouvre jamais sa chaussée ; pente forte vers le haut :
     // talus de roche (paroi côté montagne)
+    // WFS-225 (RG-01) : lampadaire de village (mât de 7,6 m, crosse, lanterne à RW − 1,9 m et 7,36 m : CarteDecor::lampe)
+    // posé avec sa lumière de nuit (nuit.cpp : les 4 plus proches s'allument, halo de la lanterne, flaque au sol) ; un mât
+    // qui tomberait sur une autre branche (rond-point, épingle) n'est posé ni dessiné, et n'éclaire donc rien
+    void poserLampe(int64_t n, int side) {
+        const int64_t L = len(), m = ((n % L) + L) % L;
+        const Pose p = poseAt(*track_, m);
+        if (surAutreChaussee(lateral(p, side * ((float)RW + 0.8f)), m, 0.5f) || surAutreChaussee(lateral(p, side * ((float)RW - 1.9f)), m, 0.f)) return;
+        Item it; it.t = T_LAMP; it.side = side; it.k = 0; CarteDecor::item(m, it);
+        lampadaires().push_back({m, side * ((float)RW - 1.9f), 7.36f, StyleLampadaire::Ville});
+    }
     // WFS-179 : tronçon d'autoroute du tracé 2 (sections autoroute contiguës), aire de péage à 30 m de son début
     static constexpr int64_t PEAGE_SEG = 25;
     void calculerAutoroute() {
@@ -767,6 +798,13 @@ private:
                 for (int64_t a = sec.debut + 1; a < sec.fin; a++)   // WFS-223 : entrée de l'anneau = la courbure change de sens
                     if (track_->segAt(a).curve * track_->segAt(sec.debut + 2).curve < 0) { Item c; c.t = T_CEDEZ; CarteDecor::item(a, c); break; }
                 vigilance_.push_back(sec.debut);
+                // WFS-225 (RG-02) : giratoire éclairé : mâts sur le bord extérieur de l'anneau tous les 45° environ, et à
+                // l'approche et à la sortie (côté droit) ; ceux qui tomberaient sur une autre branche ne sont pas posés
+                const int ext = sec.cote > 0 ? 1 : -1;   // bord extérieur : côté opposé à la fontaine (posée à cote > 0 ? -1 : 1)
+                int64_t e0 = -1, e1 = -1;
+                for (int64_t a = sec.debut + 1; a < sec.fin; a++) if (track_->segAt(a).curve * track_->segAt(sec.debut + 2).curve < 0) { if (e0 < 0) e0 = a; e1 = a; }
+                if (e0 >= 0) for (int64_t a = e0; a <= e1; a += (int64_t)(11 / SEG_M)) poserLampe(a, ext);
+                poserLampe(sec.debut - (int64_t)(10 / SEG_M), 1); poserLampe(sec.fin + (int64_t)(10 / SEG_M), 1);
                 // supermarché et parking à l'entrée du village (180 m avant le rond-point), garage 60 m après
                 commerce(sec.debut - 150, 1, CO_SUPERMARCHE, 34, 22, 6.5f, 12);
                 commerce(sec.fin + 50, 1, CO_GARAGE, 14, 10, 5.f, 9);
@@ -775,6 +813,8 @@ private:
             if (sec.type == trace::Type::Feux && feuSeg_ < 0 && !sec.depart) {   // feu du village : un poteau de chaque côté
                 feuSeg_ = sec.ligneArret; feuIdx_ = sec.feu; vigilance_.push_back(sec.ligneArret);
                 for (int side : {-1, 1}) { Item it; it.t = T_FEU; it.side = side; it.lat = R + 0.8f; CarteDecor::item(feuSeg_, it); }
+                // WFS-225 (RG-02) : carrefour éclairé : un mât de chaque côté, au carrefour (8 m après la ligne d'arrêt)
+                for (int side : {-1, 1}) poserLampe(sec.ligneArret + (int64_t)(8 / SEG_M) + (side > 0 ? 2 : 0), side);
                 // place du village : café-terrasse et bar face à face, juste après le carrefour
                 commerce(sec.ligneArret + 20, 1, CO_CAFE, 11, 9, 7.f, 6);
                 commerce(sec.ligneArret + 24, -1, CO_BAR, 10, 9, 7.f, 6);
