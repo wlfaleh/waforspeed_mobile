@@ -2671,3 +2671,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Indice voitures** : 114 / 141 (80,9 %), pneus posés 20 / 20, 5 modèles aux proportions fausses (RG-05 : M4, 911, 208, Model 3, SF90).
 - **Preuves** : captures locales (lavapipe, 2400 × 1080) des vues de face et arrière, avant / après, des 10 voitures et du T-Cross ; 42 tests CPU OK.
 - **Suite** : ST-3 (étriers, intérieurs, sous-caisse), ST-4 (LOD 4 niveaux), ST-5 (test strict).
+
+### 2026-11-07 10:26:15 — WFS-161 (ST-5 Corniche, ST-6) : villas de la Corniche, mesures ; CI de branche run 822 (Claude, Agent 0 developer)
+- **ST-5 Corniche** (`feature/waforspeed-161`) : **accroche `src/world/plage.cpp`** (7 lignes) : les villas du village (`O_VILLA`) sont posées dans le kit en style méditerranéen (154 bâtiments) ; boîte sautée si le kit est actif. Banc `corniche` : village en façades méditerranéennes à volets. `carte-plage-falaise` est identique au pixel avec `WFS_ARCHI=0` : son défaut de caméra existait avant le kit.
+- **ST-6** : `src/world/archi_mesures.h` écrit le domaine « architecture » dans `realisme-fidelite.txt` (**accroche `src/render/bench_realisme.cpp`**, 2 lignes) : M-01 (RDC et étage des 6 styles), garde-corps, M-03 (béton, brique = référentiel), température des intérieurs 2850 K → **16 conformes / 16 mesurables (100 %)** ; M-02, M-04, pierre / crépi / zinc → 4 non mesurables (valeurs à sourcer). `test_archi_kit` le vérifie.
+- **Vérification** : 45 tests CPU verts ; parcours complet 0 écart (11:0x) ; branche synchronisée avec `main` (9c5d416).
+- **Confiance ≤ 50 %** (gros changement du rendu de trois cartes) : **CI de branche lancée une fois, run 822** (`workflow_dispatch`, 9c5d416). Fusion après le vert et les captures regardées.
+- **Branche `buildings`** : rien de déposé à 10:2x ; le ticket ne l'attend pas (décision du PO).

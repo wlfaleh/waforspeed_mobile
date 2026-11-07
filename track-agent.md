@@ -28,7 +28,7 @@
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 7 fusionnées (PR #157, #162, #163, #166, #167, #186, #187 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille) ; RG-C (X5) signalé au PO | 158 : 10:24 UTC (2d2d052 sur main, PR #187 fusionnée par confiance) | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), LOD 4 niveaux (ST-4), test strict (ST-5) |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-4 faits, ST-5 Ville et Campagne faits (Corniche en cours) ; branche « buildings » pour les textures de l'utilisateur | 161 : 10:2x (a68543a) | 🔧 en cours |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 10:2x (9c5d416) | 🔧 en cours (CI de branche) |
 
 ## Tickets prêts sans agent
 
