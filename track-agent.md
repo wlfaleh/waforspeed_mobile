@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 17:38:00 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 17:43:17 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -45,16 +45,16 @@
 | WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
 | WFS-243 (P2) | E3 | après WFS-242 (arwa-3) ; épic E3 tenue par WFS-258, WFS-235, WFS-247 et WFS-242 |
-| WFS-266 (P2) | E11 | nouveau (17:24, ANO-134 bloquante de la recette de WFS-210) : épic E11 tenue par WFS-257 (agent arwa) ; ensuite au premier développeur qui demande |
-| WFS-252 (P2) | E7 | en attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci |
+| WFS-266 (P2) | E11 | ANO-134 bloquante (WFS-210 REFUSÉ) : correction prioritaire, **premier ticket de E11** dès que WFS-257 (agent arwa) est fusionné ; au premier développeur qui le demande ensuite |
+| WFS-252 (P2) | E7 | en attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci ; + ANO-135, ANO-136 et durée de l'artefact `compilation` (rangés à 17:43) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 17:38 : WFS-268 (P1, tout préparer au chargement) attribué à Claude, agent 5 à sa demande ; avant, 17:36 : WFS-267 (CI de main rouge) attribué à arwa-5 à sa demande ; avant, 17:33:20 : WFS-268 et WFS-269 créés (P1, tout préparer au chargement, ordre de l'utilisateur) ; avant, 17:30 : WFS-245, tailles du HUD arbitrées à la demande d'arwa-2 (RG-01 corrigée) ; avant, 17:24 : WFS-242 attribué à arwa-3 à sa demande (exception PO dans E3, fichiers séparés) ; WFS-266 créé (ANO-134) ; WFS-267 créé (CI de main #852 rouge) ; avant : WFS-224 à agent arwa (17:19), WFS-261 à arwa-4 (17:21) |
-| QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | 2026-11-07 17:15 : lot 4 rendu (WFS-233, 240 VALIDÉS ; WFS-210 REFUSÉ, ANO-134 bloquante, US de correction à créer par le PO ; WFS-225 REFUSÉ, déjà repris par WFS-249) ; lot 5 à suivre |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 17:43 : recette QA des lots 4 et 5 rangée : CI rouge #852 déjà sous WFS-267 (arwa-5, RG-05 message à chaque erreur, piste WFS-227 / WFS-234) ; ANO-134 → WFS-266 (premier de E11 après WFS-257) ; ANO-135, 136 → lot WFS-252 ; ANO-137 → WFS-231 ; PR de WFS-237 / 238 corrigées ; avant, 17:38 : WFS-268 attribué à Claude, agent 5 |
+| QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | 2026-11-07 17:39 : lots 4 et 5 rendus (3f91bda, c57a9a3) : WFS-210 REFUSÉ (ANO-134 → WFS-266), WFS-225 REFUSÉ (→ WFS-249), WFS-222 REFUSÉ (→ WFS-246), WFS-233, 240, 220, 236, 250 VALIDÉS, WFS-237, 238, 161 PASSABLES (ANO-135 à 137, rangées par le PO à 17:43) ; en cours : lots conduite, routes, voitures ; à revoir : WFS-220 au run de nuit (2026-11-08 02:17 UTC) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |
 | agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 16:52:32 : WFS-250 🟣 fusionné (PR #215) ; WFS-251 🔧 (comparaison locale lavapipe en cours ; dernier envoi 15:51 UTC, eb39a13) ; WFS-252 ensuite ; **à prévenir par arwa-5** avant toute retouche de `bench_realisme.cpp` (WFS-267) |
