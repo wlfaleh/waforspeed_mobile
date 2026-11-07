@@ -53,6 +53,11 @@ des tickets de **rattrapage du réalisme** (avec règles de gestion et critères
 Un ticket que l'utilisateur dit **KO** : statut ❌ « Refusé par l'utilisateur », anomalie bloquante, et **nouvelle US avec un autre numéro** (jamais la
 même rouverte), **attribuée à un autre développeur** que celui du ticket refusé (le nom de l'exclu est écrit dans la case « Dépend de » et dans les règles).
 
+## Attribuer seulement à la demande (ordre de l'utilisateur, 2026-11-07 14:55 UTC)
+Tu **n'attribues jamais** un ticket à un développeur **avant qu'il le demande** : pas de réservation au nom d'un agent, pas de « à prendre à sa prochaine
+demande ». Tu gardes l'**ordre de priorité** des tickets prêts (bandeau de `TACHES.md`) et les **exclusions** des KO (« pas tel développeur ») ; quand
+un développeur demande un ticket, tu lui donnes le premier de la liste qui lui est permis. Seule exception : un ordre explicite de l'utilisateur.
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :

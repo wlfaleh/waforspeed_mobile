@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "archi_carte.h"   // WFS-161 (accroche) : villas du kit d'architecture
 #include "../../third_party/stb/stb_image.h"
 #include "../core/jobs.h"
 #include "../core/log.h"
@@ -487,6 +488,11 @@ public:
         { const char* dep = std::getenv("WFS_DEPART"); depart_ = dep ? std::atoll(dep) : 0; }   // WFS-94 : banc d'essai
         objets_.clear();
         place(*g.track);
+        for (const Objet& o : objets_) if (o.t == O_VILLA) {   // WFS-161 (accroche, ST-5) : villas du kit, style méditerranéen ; repli WFS_ARCHI=0
+            const Frame fr = frameAt(*g.track, (double)o.seg * SEG); const float s = (float)o.side; const vec3 x = fr.f * -s;
+            const vec3 c = fr.o + fr.r * (s * o.lat) + vec3{0, solY(zoneId(*g.map, o.seg, len_), o.side, o.lat) - 0.2f, 0};
+            archi::carte::poser(o.seg, c - x * (o.w / 2), x, fr.r * -s, o.w, o.d, o.h, archi::Style::Mediterraneen, (uint32_t)(o.seg * 2 + (o.side > 0)));
+        }
         initPlage(r, *g.track, *g.map);
         initEtabs(r, *g.track);   // WFS-181
     }
@@ -989,6 +995,7 @@ public:
         const vec3 r = fr.r * (float)o.side, f = fr.f;   // r vers l'extérieur de la route
         switch (o.t) {
         case O_VILLA: {   // boîte, 3 fenêtres par étage sur la façade côté route, toit à deux pans
+            if (archi::carte::actif()) break;   // WFS-161 (accroche) : villa du kit (archi_carte.cpp) à la place de la boîte
             const float lat = o.lat + o.d / 2;
             const vec3 c = fr.o + r * lat + vec3{0, solY(z, o.side, lat) - 0.2f, 0};
             const int mur = C_MURV0 + (o.roof == 1 ? o.col : (o.col + 2) % 6);

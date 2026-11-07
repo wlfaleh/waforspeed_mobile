@@ -40,6 +40,7 @@
 #include "enseignes.h"   // WFS-175 : atlas de textes (portiques)
 #include "vegetation.h"
 #include "ville_quartiers.h"
+#include "archi_carte.h"   // WFS-161 (accroche) : immeubles du kit d'architecture
 #include "zones.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
 #include "giratoire.h"  // WFS-248 : giratoire reconstruit (anneau, îlot, raccord des branches)
@@ -237,6 +238,12 @@ public:
             for (int64_t a = 0; a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE)
                 for (int64_t k = 0; k <= (int64_t)std::ceil(o.len / SEG_M); k++) bati_[(size_t)((a + k) % L)] |= o.side > 0 ? 2 : 1;
         }
+        archi::carte::vider();   // WFS-161 (accroche, ST-5) : immeubles posés dans le kit (6 styles) ; repli WFS_ARCHI=0 : anciennes boîtes
+        for (int64_t a = 0, L = (int64_t)plan_->objets.size(); a < L; a++) for (const ville::Objet& o : plan_->objets[(size_t)a]) if (o.t == ville::IMMEUBLE) {
+            const carte::Pose pm = poseS(*g.track, (double)a + o.len / SEG_M / 2); const float s = (float)o.side;
+            const vec3 x = pm.f * -s, c = pm.o + pm.r * (s * ((float)RW + SET_BACK));   // façade face à la rue, x dans son sens
+            archi::carte::poser(a, c - x * (o.len / 2), x, pm.r * -s, o.len, o.d, o.h, o.balcons || o.h < 20 ? archi::Style::Classique : archi::Style::Moderne, (uint32_t)(a * 2 + (o.side > 0)));
+        }
         {   // WFS-137 : optiques des feux (éteinte : verre sombre ; LED allumées, comme la Corniche) et jet de la fontaine
             Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
             lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
@@ -335,6 +342,7 @@ public:
         Geo& U = out[P_UNI];
         switch (o.t) {
         case ville::IMMEUBLE: {   // DECOR.bld : boîte centrée sur l'immeuble, fondations 3 m sous le trottoir
+            if (archi::carte::actif()) break;   // WFS-161 (accroche) : bâtiment du kit à la place de la boîte (archi_carte.cpp)
             const carte::Pose pm = poseS(t, (double)a + o.len / SEG_M / 2);
             const vec3 c = pm.o + pm.r * (s * (R + SET_BACK + o.d / 2));
             Geo& fac = out[o.k == 1 || o.k == 2 ? P_FACADE_B : P_FACADE_A];   // TINTS : 0 et 3 chaudes, 1 et 2 froides
