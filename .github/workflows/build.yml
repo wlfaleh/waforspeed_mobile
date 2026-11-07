@@ -10,7 +10,8 @@
 #    publication-captures part après le banc et n'envoie que les captures changées (quota horaire de l'API commun à
 #    tous les jobs du dépôt, branches comprises ; les 200 derniers appels restent aux APK)
 # WFS-69 : pas de build pour la documentation seule ; un seul build par commit (l'envoi, pas la PR : les coches
-# du commit s'affichent sur la PR) ; sur main, aucun build annulé : chaque commit de code publie son APK.
+# du commit s'affichent sur la PR) ; WFS-237 : sur main, un run commencé va toujours au bout, mais les fusions arrivées pendant
+# ce run partagent le run suivant (un seul en attente : le plus récent, qui contient toutes les fusions).
 name: Construction WaForSpeed
 
 # WFS-185 (règle de l'utilisateur, 2026-11-06) : plus de CI sur les branches ni les PR (les lanceurs restent à main) ; le
@@ -28,8 +29,12 @@ permissions:
   contents: write
 
 concurrency:
-  # branche : le nouvel envoi annule l'ancien ; main : un groupe par commit, rien n'est annulé
-  group: build-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  # branche : le nouvel envoi annule l'ancien.
+  # WFS-237 (RG-01, RG-02) : main = un seul groupe (« main ») ; un run commencé n'est jamais annulé (cancel-in-progress: false) ;
+  # GitHub ne garde qu'un run en attente : un envoi plus récent le remplace (il contient toutes les fusions d'avant), et le robot
+  # des statuts passe en ✅ tous les tickets 🟣 dont le commit est ancêtre d'un run vert. La nuit (schedule) a son propre groupe
+  # (« main-nuit ») pour qu'un envoi n'annule jamais le banc d'endurance de nuit en attente.
+  group: build-${{ github.ref != 'refs/heads/main' && github.ref || github.event_name == 'schedule' && 'main-nuit' || 'main' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -37,6 +42,7 @@ jobs:
     name: banc-essai (${{ matrix.groupe }})
     if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne
     runs-on: ubuntu-24.04
+    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme, run #825) + 2 × 5 min d'installation au pire, et marge
     strategy:
       fail-fast: false
       matrix:
@@ -46,7 +52,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
-        run: sudo apt-get update && sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build
+        # WFS-237 (RG-05) : même boucle que le job endurance (WFS-126 : miroir Ubuntu parfois bloqué) : 5 min au plus par essai, 2 essais
+        run: |
+          for essai in 1 2; do
+            timeout 300 sudo apt-get update && timeout 300 sudo apt-get install -y glslc libvulkan-dev mesa-vulkan-drivers ninja-build && break
+            [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
+          done
       - name: Compilation
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build build
       - name: Test de la piste (identique au jeu web)
@@ -199,6 +210,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event_name != 'schedule'   # WFS-185 (RG-06) : envoi sur main ou lancement à la main
     timeout-minutes: 70
+    permissions: { contents: write, issues: write, actions: read }   # WFS-238 (RG-06) : Release (comme avant), commentaire de notification, runs précédents
     concurrency:
       group: apercu-apk-${{ github.ref }}
       cancel-in-progress: false
@@ -213,6 +225,22 @@ jobs:
           GH_REPO: ${{ github.repository }}
           PUBLIER: apk
         run: bash tools/qa/publier_apercu.sh
+      # WFS-238 : notification en temps réel sur le téléphone de l'utilisateur : un commentaire qui le mentionne dans l'issue épinglée
+      # « 📱 Nouvel APK de main » (l'application GitHub prévient à chaque mention). Seulement sur main, seulement si CE run a publié
+      # l'APK (titre de la Release = cette construction ; « APK plus récent déjà en ligne » = rien), un seul commentaire par construction,
+      # aucun envoi hors de GitHub ; un échec = avertissement, jamais un job rouge (RG-07).
+      - name: Notification du nouvel APK (issue « 📱 Nouvel APK de main »)
+        if: success() && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMITS: ${{ toJson(github.event.commits) }}
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: bash tools/qa/notifier_apk.sh
 
   # WFS-106 RG-06 : les captures après le banc (même partiel), seulement celles qui ont changé (RG-11) ; ne touchent jamais
   # à l'APK, au tag ni au titre ; échec = avertissement, job vert (RG-03) ; 20 min au plus (RG-07)
@@ -243,15 +271,36 @@ jobs:
     name: résumé (commit et tickets)
     if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
+    permissions: { contents: read, actions: read }   # WFS-237 (RG-03) : lire les runs précédents et la comparaison de commits
     steps:
       - name: Commit et tickets du run
         env:
           COMMITS: ${{ toJson(github.event.commits) }}
           HEAD_MSG: ${{ github.event.head_commit.message }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          tickets=$(printf '%s\n%s\n' "$COMMITS" "$HEAD_MSG" | grep -oE 'WFS-[0-9]+' | sort -u -t- -k2,2n | tr '\n' ' ')
+          # WFS-237 (RG-03) : sur main, tous les commits depuis le dernier run de main qui a vraiment tourné (envoi, terminé, non annulé :
+          # un run annulé en attente n'a rien vérifié), pour que le résumé liste toutes les fusions regroupées dans ce run
+          liste="" ; base="" ; incomplete=""
+          if [ "$GITHUB_REF_NAME" = main ]; then
+            base=$(gh api "repos/$GH_REPO/actions/workflows/build.yml/runs?branch=main&event=push&status=completed&per_page=30" \
+                     --jq "[.workflow_runs[] | select(.id != ${{ github.run_id }} and .conclusion != \"cancelled\")][0].head_sha // empty" 2>/dev/null || true)
+            if [ -n "$base" ]; then
+              liste=$(gh api "repos/$GH_REPO/compare/$base...$GITHUB_SHA" \
+                        --jq '.commits[] | .sha[0:7] + " " + (.commit.message | gsub("\n"; " ¶ "))' 2>/dev/null || true)
+            fi
+            [ -z "$liste" ] && incomplete=1
+          fi
+          tickets=$(printf '%s\n%s\n%s\n' "$COMMITS" "$HEAD_MSG" "$liste" | grep -oE 'WFS-[0-9]+' | sort -u -t- -k2,2n | tr '\n' ' ')
           {
             echo "### Run ${{ github.run_number }} (id ${{ github.run_id }})"
             echo "- commit : \`${GITHUB_SHA::7}\` sur \`${GITHUB_REF_NAME}\` (${{ github.event_name }})"
             echo "- tickets : ${tickets:-aucun}"
+            if [ -n "$liste" ]; then
+              echo "- commits validés depuis le dernier run de main (\`${base::7}\`) : $(printf '%s\n' "$liste" | grep -c .)"
+              printf '%s\n' "$liste" | sed 's/ ¶ .*//; s/^/  - /'
+            elif [ -n "$incomplete" ]; then
+              echo "- liste incomplète : commits du dernier envoi seulement (dernier run de main ou comparaison illisible)"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

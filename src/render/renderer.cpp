@@ -11,6 +11,7 @@
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
 #include "../core/platform.h"   // WFS-222 : nowSeconds (banc de profilage)
+#include "vehicule_lod.h"         // WFS-158 (RG-04) : niveaux de détail des voitures
 #if defined(__APPLE__)
 #include <chrono>
 #endif
@@ -1094,6 +1095,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     ombresContact_ = fp.ombresContact; ombreFaite_ = false; fantomeSuivant_ = false;   // WFS-134
     quadsUsed_ = 0; view_ = fp.view;
     camPos_ = fp.camPos; exposure_ = fp.exposure;
+    focalePx_ = std::fabs(fp.proj.at(1, 1)) * (float)sh_ * 0.5f;   // WFS-158 (RG-04)
     transparent_.clear(); opaqueQ_.clear(); ui_vtx_.clear(); skinUsed_ = 0;
     readShadowTiming();
     passes::debutImage(*this);   // WFS-150 (RG-05) : coût des passes de l'image précédente sur ce tampon ; capture : aucun masquage
@@ -1184,15 +1186,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     if (anim) for (int k = 0; k < 4; k++) wr[k] = world * roues::matrice(m.roues[k], *roues);
     vec3 c = world.transformPoint((m.bmin + m.bmax) * 0.5f);
     float depth = length(c - camPos_);
-    // WFS-134 (RG-11, RG-12) : version allégée au-delà de 60 m du joueur, sans saut : de 64 à 72 m de la caméra (≈ 56 à 64 m
-    // du joueur, caméra de poursuite 8 m derrière), les deux versions sont dessinées en tramage écran complémentaire (fondu
-    // de 8 m, scene.frag) ; jamais de cubes. t = 0 : complète, 1 : allégée
-    // Qualité Basse : au même endroit, version allégée en 4 pièces (partsBasse : moins d'appels de dessin)
-    const bool versBasse = qualiteBasse && !m.partsBasse.empty();
-    const std::vector<ModelPart>& loin = versBasse ? m.partsBasse : m.partsLod;
-    const float d0 = 64.f;
-    // WFS-144 (RG-03 a) : voiture demandée en lots (police en Basse) : version en lots seule, à toute distance
-    const float tLod = loin.empty() || fantome ? 0.f : lots && versBasse ? 1.f : std::clamp((depth - d0) / 8.f, 0.f, 1.f);
+    // WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : 4 niveaux de détail choisis par la taille de la voiture à l'écran, fondu tramé
+    // écran complémentaire entre deux niveaux (scene.frag) ; jamais de cubes ; Basse, fantôme, police en lots : vehicule_lod.h
+    const auto lod = vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1235,8 +1231,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         else opaqueQ_.push_back(p);
     }
     };
-    if (tLod < 1.f) emettre(m.parts, tLod > 0.f ? -(3.f + tLod) : 0.f);      // complète : pixels où le seuil ≥ t
-    if (tLod > 0.f) emettre(loin, tLod < 1.f ? -(1.f + tLod) : 0.f);   // allégée : pixels où le seuil < t
+    emettre(*lod.a, lod.t > 0.f ? -(3.f + lod.t) : 0.f);   // niveau a : pixels où le seuil ≥ t
+    if (lod.t > 0.f) emettre(*lod.b, -(1.f + lod.t));    // niveau b : pixels où le seuil < t
 }
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {

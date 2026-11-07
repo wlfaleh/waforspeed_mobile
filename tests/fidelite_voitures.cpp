@@ -2,10 +2,14 @@
 // référentiel du réel (references/reel/voitures.json, WFS-148) : longueur, largeur sans rétroviseurs, hauteur hors antenne,
 // empattement, voies, diamètres des roues (M-01, M-02), pneus posés sur le sol (RG-02). Pour chaque voiture, le diagnostic
 // dit ce que permet RG-01 (échelle globale, position des roues) et ce qui ne se corrige pas sans changer le modèle (RG-05).
-// Rouge si un modèle ne se lit pas, si ses 4 roues ne sont pas trouvées ou si une mesure manque au référentiel. Les écarts
-// au réel sont l'état actuel, écrits et comptés : ils n'échouent pas encore ; ST-5 rendra le test strict (critère « vert
-// pour les 20 voitures » de WFS-158).
+// Rouge si un modèle ne se lit pas, si ses 4 roues ne sont pas trouvées ou si une mesure manque au référentiel.
+// ST-3 : rouge aussi si un habitacle est presque vide ou si le dessous de caisse est ouvert (pièces, RG-03).
+// ST-5 (test strict, critère « vert pour les 20 voitures » de WFS-158) : rouge aussi si un pneu flotte ou s'enfonce, si une
+// mesure sort de la tolérance de ± 1 % sans être dans la liste des écarts connus ci-dessous (modèles aux proportions
+// fausses, RG-05 : écarts listés au rapport, comptés non conformes, sans bloquer, décision du PO du 2026-11-06), ou si un
+// écart connu grandit de plus de 0,3 point ou change de sens. Un écart connu devenu conforme est signalé (à retirer).
 // usage : test_fidelite_voitures [dossier du dépôt] [fichier de sortie du rapport]
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -23,6 +27,44 @@ static int echecs = 0;
 
 static const std::vector<std::string> VOITURES = {"golf", "m4", "p911", "gallardo", "p208", "abarth", "tcross", "compass", "s3", "x5", "giulia", "a45",
                                                   "model3", "corsa", "gt86", "elantra", "v60", "rrsport", "mustang", "sf90"};   // CARS (src/game/cars.h)
+
+// ST-5 : écarts connus au 2026-11-07 (après ST-2 à ST-4), hors tolérance de ± 1 % ; écart relatif hors de la bande de
+// tolérance (comme le rapport), en %. Un modèle remplacé (WFS-194) ou corrigé met sa ligne à jour.
+struct EcartConnu { const char* voiture; const char* mesure; double pct; const char* raison; };
+static const EcartConnu ECARTS_CONNUS[] = {
+    {"m4", "largeur", 8.6, "RG-05 : caisse du modèle trop large"},
+    {"p911", "largeur", 5.2, "RG-05 : caisse du modèle trop large"},
+    {"p911", "empattement", 1.7, "RG-05 : roues du modèle"},
+    {"gallardo", "largeur", -0.4, "résidu d'échelle"},
+    {"p208", "largeur", -2.8, "RG-05 : caisse du modèle trop étroite"},
+    {"p208", "voie_av", -6.1, "RG-05 : roues du modèle rentrées dans la caisse"},
+    {"p208", "voie_ar", -6.1, "RG-05 : roues du modèle rentrées dans la caisse"},
+    {"tcross", "hauteur", -1.8, "RG-05 : pavillon du modèle"},
+    {"tcross", "voie_av", -2.4, "roues du modèle (élargir déborderait de la caisse)"},
+    {"tcross", "voie_ar", -1.1, "roues du modèle (élargir déborderait de la caisse)"},
+    {"compass", "voie_av", -8.7, "roues du modèle (élargir déborderait de la caisse)"},
+    {"compass", "voie_ar", -7.3, "roues du modèle (élargir déborderait de la caisse)"},
+    {"s3", "largeur", 0.4, "résidu d'échelle"},
+    {"a45", "voie_av", -1.1, "roues du modèle (élargir déborderait de la caisse)"},
+    {"a45", "voie_ar", -1.4, "roues du modèle (élargir déborderait de la caisse)"},
+    {"model3", "largeur", 5.2, "RG-05 : caisse du modèle trop large"},
+    {"model3", "voie_av", 5.4, "RG-05 : caisse du modèle trop large"},
+    {"model3", "voie_ar", 5.1, "RG-05 : caisse du modèle trop large"},
+    {"corsa", "largeur", 0.5, "résidu d'échelle"},
+    {"corsa", "voie_av", 1.1, "roues du modèle"},
+    {"corsa", "voie_ar", 1.1, "roues du modèle"},
+    {"gt86", "empattement", -1.8, "roues du modèle (les déplacer sort les pneus des passages)"},
+    {"elantra", "voie_av", -0.8, "roues du modèle (élargir déborderait de la caisse)"},
+    {"elantra", "voie_ar", -1.4, "roues du modèle (élargir déborderait de la caisse)"},
+    {"v60", "largeur", -0.7, "résidu d'échelle"},
+    {"mustang", "voie_ar", -1.5, "roues du modèle (élargir déborderait de la caisse)"},
+    {"sf90", "hauteur", -2.7, "RG-05 : pavillon du modèle"},
+};
+constexpr double MARGE_PCT = 0.3;
+// ST-3 : seuils des pièces (20 voitures du 2026-11-07 : habitacle de 388 triangles (A45, sièges vus par les vitres) à
+// 49 889 ; dessous fermé de 96 % (Range Rover) à 100 %)
+constexpr int HABITACLE_MIN = 300;
+constexpr double DESSOUS_MIN = 0.90;   // un écart connu peut bouger de 0,3 point (arrondis, reconversion), pas plus
 
 // valeur du jeu (m) contre la mesure du référentiel (mm), bornes tolérance comprise
 static vehicule::Ecart ecart(const reel::Referentiel& R, const std::string& id, double jeu) {
@@ -44,6 +86,51 @@ static std::string pct(const vehicule::Ecart& e) {
     return b;
 }
 
+// ST-3 (RG-03) : pièces présentes, mesurées sur la géométrie (triangles opaques : ni vitres ni pièces transparentes) :
+// habitacle meublé (sièges, planche, volant) et dessous de caisse fermé entre les essieux. Les disques et étriers sont vérifiés
+// à part (audit du 2026-11-07, regles-de-gestion/WFS-158.md) : dans la plupart des modèles, ils font partie des pièces de la
+// roue (WFS-60), et rien ne les distingue sûrement des rayons de la jante dans la géométrie.
+struct Pieces { int habitacle = 0; double dessous = 0; };
+static Pieces compterPieces(const vehicule::ModeleWfm& m, double sol) {
+    Pieces p;
+    std::vector<roues::Maillage> ms;
+    for (size_t k = 0; k < m.sommets.size(); k++)
+        ms.push_back({m.sommets[k].data(), 8, (uint32_t)(m.sommets[k].size() / 8), m.indices[k].data(), (uint32_t)m.indices[k].size(), (m.drapeaux[k] & 128) != 0});
+    const roues::Decoupe r = roues::decouper(ms);
+    const float* bb = m.boite;
+    const double W = bb[3] - bb[0], H = bb[4] - sol, L = bb[5] - bb[2], cx = 0.5 * (bb[0] + bb[3]), cz = 0.5 * (bb[2] + bb[5]);
+    // dessous : cases de 5 cm entre les essieux (40 cm de marge), à 20 cm des flancs, couvertes vues d'en dessous par une pièce basse
+    const double h = 0.05, xm = W / 2 - 0.2;
+    double z0 = bb[2] + 0.3 * L, z1 = bb[5] - 0.3 * L;
+    if (r.n == 4) { z0 = 0.5 * (r.roues[roues::LF].centre.z + r.roues[roues::RF].centre.z) + 0.4; z1 = 0.5 * (r.roues[roues::LB].centre.z + r.roues[roues::RB].centre.z) - 0.4; }
+    const int nx = std::max(1, (int)(2 * xm / h)), nz = std::max(1, (int)((z1 - z0) / h));
+    std::vector<uint8_t> couvert((size_t)nx * nz, 0);
+    for (size_t k = 0; k < m.sommets.size(); k++) {
+        if (m.drapeaux[k] & (2 | 64)) continue;
+        const float* v = m.sommets[k].data(); const auto& I = m.indices[k];
+        for (size_t t = 0; t + 2 < I.size(); t += 3) {
+            const float *a = v + 8 * I[t], *b = v + 8 * I[t + 1], *c = v + 8 * I[t + 2];
+            const double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], wx = c[0] - a[0], wy = c[1] - a[1], wz = c[2] - a[2];
+            if (std::hypot(uy * wz - uz * wy, uz * wx - ux * wz, ux * wy - uy * wx) < 1e-10) continue;   // triangle vide
+            const double gx = (a[0] + b[0] + c[0]) / 3.0, gy = (a[1] + b[1] + c[1]) / 3.0, gz = (a[2] + b[2] + c[2]) / 3.0;
+            if (std::fabs(gx - cx) < 0.35 * W && gy > sol + 0.25 * H && gy < sol + 0.72 * H && std::fabs(gz - cz) < 0.22 * L) p.habitacle++;
+            if (std::min({a[1], b[1], c[1]}) > sol + 0.8) continue;
+            const double d = (double)(b[2] - c[2]) * (a[0] - c[0]) + (double)(c[0] - b[0]) * (a[2] - c[2]);
+            if (std::fabs(d) < 1e-12) continue;
+            const int i0 = std::max(0, (int)((std::min({a[0], b[0], c[0]}) - (cx - xm)) / h)), i1 = std::min(nx - 1, (int)((std::max({a[0], b[0], c[0]}) - (cx - xm)) / h));
+            const int j0 = std::max(0, (int)((std::min({a[2], b[2], c[2]}) - z0) / h)), j1 = std::min(nz - 1, (int)((std::max({a[2], b[2], c[2]}) - z0) / h));
+            for (int i = i0; i <= i1; i++) for (int j = j0; j <= j1; j++) {
+                const double x = cx - xm + (i + 0.5) * h, z = z0 + (j + 0.5) * h;
+                const double l0 = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / d, l1 = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / d;
+                if (l0 >= 0 && l1 >= 0 && l0 + l1 <= 1) couvert[(size_t)i * nz + j] = 1;
+            }
+        }
+    }
+    size_t n = 0; for (uint8_t c : couvert) n += c;
+    p.dessous = (double)n / couvert.size();
+    return p;
+}
+
 int main(int argc, char** argv) {
     const std::string racine = argc > 1 ? argv[1] : WFS_SOURCE_DIR;
     reel::Referentiel R;
@@ -58,7 +145,8 @@ int main(int argc, char** argv) {
     ecrire("écarts au réel, tolérance ± 1 % comprise (conforme = dans la tolérance) ; « antenne » : hauteur brute − hauteur fiche\n\n");
     ecrire("%-9s %11s %11s %11s %11s %11s %11s %11s %11s | %8s %8s | %s\n", "voiture", "longueur", "largeur", "hauteur", "empatt.", "voie av", "voie ar",
            "roue av", "roue ar", "antenne", "pneus", "diagnostic (RG-01 / RG-05)");
-    int conformesBoite = 0, conformes = 0, connues = 0, posees = 0, aRemplacer = 0;
+    int conformesBoite = 0, conformes = 0, connues = 0, posees = 0, aRemplacer = 0, nConnus = 0;
+    std::string piecesTxt;
     for (const std::string& c : VOITURES) {
         vehicule::ModeleWfm m; std::string err;
         if (!vehicule::lireWfm(racine + "/assets/cars/" + c + ".wfm", m, err)) { VERIFIE(false, "%s.wfm : %s", c.c_str(), err.c_str()); continue; }
@@ -76,6 +164,20 @@ int main(int argc, char** argv) {
         for (const auto& x : e) { connues += x.connu; conformes += x.connu && vehicule::ecartRelatif(x) == 0; }
         const bool pose = d.ecartPneuMax <= vehicule::TOL_PNEU_M && std::fabs(d.ecartSolBoite) <= vehicule::TOL_PNEU_M;
         posees += pose;
+        // ST-5 : strict
+        VERIFIE(pose, "%s : pneus non posés (écart %.0f mm, sous les pneus %.0f mm, RG-02)", c.c_str(), d.ecartPneuMax * 1000, d.ecartSolBoite * 1000);
+        const char* grandeurs[8] = {"longueur", "largeur", "hauteur", "empattement", "voie_av", "voie_ar", "roue_av", "roue_ar"};
+        for (int i = 0; i < 8; i++) {
+            if (!e[i].connu) continue;
+            const double r = vehicule::ecartRelatif(e[i]) * 100;
+            const EcartConnu* k = nullptr;
+            for (const EcartConnu& x : ECARTS_CONNUS) if (c == x.voiture && std::string(grandeurs[i]) == x.mesure) k = &x;
+            if (r == 0) { if (k) std::printf("note : %s %s maintenant conforme : retirer l'écart connu (%+.1f %%)\n", c.c_str(), grandeurs[i], k->pct); continue; }
+            VERIFIE(k != nullptr, "%s : %s hors tolérance (%+.1f %%), absente des écarts connus", c.c_str(), grandeurs[i], r);
+            if (k) VERIFIE(r * k->pct > 0 && std::fabs(r) <= std::fabs(k->pct) + MARGE_PCT, "%s : %s %+.1f %% (écart connu %+.1f %% : %s) : l'écart a grandi ou changé de sens",
+                           c.c_str(), grandeurs[i], r, k->pct, k->raison);
+            nConnus += k != nullptr;
+        }
         // diagnostic : meilleure échelle globale (carrosserie), puis roues à déplacer à cette échelle
         const vehicule::Echelle s = vehicule::meilleureEchelle(e, 3);
         std::string diag;
@@ -92,6 +194,11 @@ int main(int argc, char** argv) {
             if (x.connu && r != 0) { std::snprintf(b, sizeof b, " ; %s %+.0f mm", noms[i - 3], (r < 0 ? x.bas - x.jeu : x.haut - x.jeu) * -1000); diag += b; }
         }
         if (!pose) { std::snprintf(b, sizeof b, " ; pneus : écart %.0f mm, sous les pneus %.0f mm", d.ecartPneuMax * 1000, d.ecartSolBoite * 1000); diag += b; }
+        // ST-3 (RG-03) : pièces présentes
+        const Pieces pc = compterPieces(m, d.sol);
+        piecesTxt += "  " + c + " : habitacle " + std::to_string(pc.habitacle) + " triangles, dessous fermé à " + std::to_string((int)std::lround(pc.dessous * 100)) + " %\n";
+        VERIFIE(pc.habitacle >= HABITACLE_MIN, "%s : habitacle presque vide (%d triangles, RG-03 : sièges, planche, volant)", c.c_str(), pc.habitacle);
+        VERIFIE(pc.dessous >= DESSOUS_MIN, "%s : dessous de caisse ouvert (%.0f %% fermé, RG-03)", c.c_str(), pc.dessous * 100);
         char antenne[16]; std::snprintf(antenne, sizeof antenne, "%+.0f mm", (d.hauteurBrute - d.hauteur) * 1000);
         ecrire("%-9s %s %s %s %s %s %s %s %s | %8s %8s | %s\n", c.c_str(), pct(e[0]).c_str(), pct(e[1]).c_str(), pct(e[2]).c_str(), pct(e[3]).c_str(),
                pct(e[4]).c_str(), pct(e[5]).c_str(), pct(e[6]).c_str(), pct(e[7]).c_str(), antenne, pose ? "posés" : "NON", diag.c_str());
@@ -104,6 +211,10 @@ int main(int argc, char** argv) {
            "modèles aux proportions fausses (RG-05) : %d\n",
            conformesBoite, connuesBoite, connuesBoite ? 100.0 * conformesBoite / connuesBoite : 0, conformes, connues, connues ? 100.0 * conformes / connues : 0,
            posees, aRemplacer);
+    ecrire("écarts connus (ST-5, hors tolérance mais listés, sans bloquer : RG-05) : %d ; toute autre mesure hors de ± 1 %% fait échouer le test\n", nConnus);
+    ecrire("\npièces (ST-3, RG-03 : habitacle ≥ %d triangles, dessous fermé ≥ %.0f %%) :\n", HABITACLE_MIN, DESSOUS_MIN * 100);
+    std::printf("%s", piecesTxt.c_str()); rapport += piecesTxt;   // plus long que le tampon d'ecrire
+    VERIFIE(posees == 20, "pneus posés : %d / 20 (RG-02)", posees);
     if (argc > 2) { if (std::FILE* f = std::fopen(argv[2], "w")) { std::fwrite(rapport.data(), 1, rapport.size(), f); std::fclose(f); } }
     // la mesure elle-même : une antenne fine ne compte pas dans la hauteur, un toit oui (modèle synthétique)
     {
@@ -138,6 +249,6 @@ int main(int argc, char** argv) {
         VERIFIE(!vehicule::lireWfm(racine + "/CMakeLists.txt", m, e), "fichier d'un autre format accepté");
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
-    std::printf("test_fidelite_voitures : OK (audit ST-1 : écarts au réel = état actuel, écrits ; ST-5 rend le test strict)\n");
+    std::printf("test_fidelite_voitures : OK (strict, ST-3 et ST-5 : 20 voitures, pneus posés, mesures conformes ou écarts connus, habitacle et dessous de caisse)\n");
     return 0;
 }

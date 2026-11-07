@@ -67,6 +67,7 @@ struct Model {
     Buffer vb, ib; std::vector<ModelPart> parts; std::vector<Material> mats; std::vector<Image> textures;
     std::vector<ModelPart> partsLod;   // WFS-134 (RG-11, RG-12) : version allégée (<id>.lod), vide si absente
     std::vector<ModelPart> partsBasse; // WFS-134 (RG-11) : 4 pièces au plus (peinture, feux, vitres, reste), qualité Basse au loin
+    std::vector<std::vector<ModelPart>> partsNiveaux;   // WFS-158 (RG-04) : niveaux de détail 2 et 3 (<id>.lod), après partsLod
     vec3 bmin, bmax; bool ok = false;
     RoueModele roues[4]; int nRoues = 0;   // WFS-60 : roues séparées au chargement (src/game/roues.h)
     FeuxModele feux;
@@ -293,6 +294,7 @@ private:
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;
     vec3 camPos_{};
+    float focalePx_ = 864.f;   // WFS-158 (RG-04) : |proj(1,1)| × hauteur de la scène / 2 (taille des voitures à l'écran)
     float exposure_ = 1;
     std::vector<VkShaderModule> modules_;
     double tangentesMs_ = 0; size_t tangentesSommets_ = 0;   // WFS-149

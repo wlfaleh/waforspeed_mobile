@@ -15,11 +15,13 @@
 #include "../game/trace_cartes.h"   // WFS-179
 #include "../render/squelette.h"
 #include "zones.h"
+#include "foule_familles.h"   // WFS-233 : enfants et familles
 #include "enseignes.h"   // WFS-71 : clients attablés, serviettes, baigneurs
 #include "ville_quartiers.h"   // WFS-137 : piétons des passages zébrés
 
 namespace wfs {
 namespace plage { const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len); }   // WFS-180 (plage.cpp)
+namespace plage { bool vueBanc(); }   // WFS-216 (RG-02, accroche E11) : vue de banc de la Corniche (fête vue de la promenade)
 namespace {
 
 // valeurs du jeu web (people.js)
@@ -51,6 +53,8 @@ struct Personne {
     double s = 0, lat = 0, v = 1.1, ph = 0, dodge = 0, y = 0, t = 0; int pose = 0, dir = 1;
     bool look_ = false; Look look; double rel = 0;
     bool assis = false, yawFixe = false, marche = false; float yawRel = 0; int feu = -1;   // WFS-71 : assis / orientation du décor ; WFS-137 : passage zébré (pose 5)
+    double latMin = 0, latMax = 0;   // WFS-233 : bande du trottoir où la personne a été tirée (|lat|)
+    int enfant = -1, famille = -1;   // WFS-233 : morphotype d'enfant (familles::ENFANTS) ; autre membre de la famille (indice)
 };
 
 // pedLook (people.js) : tirée une fois, déterministe selon la place de la personne dans la liste
@@ -77,6 +81,49 @@ Look pedLook(const Personne& P, int i, bool beach) {
     L.scale = (L.femme ? 0.95f : 0.97f) + r() * 0.08f;
     return L;
 }
+
+// WFS-233 : une personne prête à dessiner (pose échantillonnée, place dans le monde) : les mains des familles se règlent entre
+// l'échantillonnage et le dessin
+struct Dessin {
+    const Personnage* M = nullptr; PoseSquelette* pose = nullptr; mat4 monde = mat4::identity();
+    float yaw = 0, echelle = 1; vec3 pos{}; ApparencePersonnage app; int lod = 0, i = -1; const char* coiffure = nullptr;
+};
+vec3 transformer(const mat4& m, const vec3& p) {
+    return {m.at(0, 0) * p.x + m.at(0, 1) * p.y + m.at(0, 2) * p.z + m.at(0, 3), m.at(1, 0) * p.x + m.at(1, 1) * p.y + m.at(1, 2) * p.z + m.at(1, 3),
+            m.at(2, 0) * p.x + m.at(2, 1) * p.y + m.at(2, 2) * p.z + m.at(2, 3)};
+}
+// point du monde → repère du modèle d'une personne (monde = translation × rotation Y × échelle uniforme)
+vec3 versModele(const Dessin& D, const vec3& p) {
+    const vec3 q = p - D.pos;
+    const float c = std::cos(D.yaw), s = std::sin(D.yaw);
+    return vec3{c * q.x - s * q.z, q.y, s * q.x + c * q.z} * (1.f / D.echelle);
+}
+struct Bras { int epaule = -1, coude = -1, main = -1; };
+Bras bras(const Personnage& M, bool gauche) {
+    const char* c = gauche ? "_l" : "_r";
+    return {osParNom(M, std::string("upperarm") + c), osParNom(M, std::string("lowerarm") + c), osParNom(M, std::string("hand") + c)};
+}
+vec3 epauleMonde(const Dessin& D, const Bras& b) { return b.epaule < 0 ? D.pos : transformer(D.monde, transformer(D.pose->modele[(size_t)b.epaule], {0, 0, 0})); }
+
+// WFS-233 : main dans la main (avis expert-realisme-3d) : point de prise commun entre les deux épaules qui se font face, à
+// mi-hauteur entre « épaule de l'adulte − 0,62 m » (bras presque tendu) et « épaule de l'enfant − 0,10 m » (bras levé) :
+// ≈ 0,76 m pour un enfant de 1,02 m, ≈ 0,84 m pour 1,22 m ; chaque bras l'atteint par IK à 2 os (coude dans son plan d'origine)
+void tenirLaMain(Dessin& A, Dessin& E) {
+    if (!A.M || !E.M || !A.pose || !E.pose) return;
+    const Bras aG = bras(*A.M, true), aD = bras(*A.M, false), eG = bras(*E.M, true), eD = bras(*E.M, false);
+    auto d2 = [](const vec3& p, const vec3& q) { return (p.x - q.x) * (p.x - q.x) + (p.z - q.z) * (p.z - q.z); };
+    const Bras& ba = d2(epauleMonde(A, aG), E.pos) < d2(epauleMonde(A, aD), E.pos) ? aG : aD;
+    const Bras& be = d2(epauleMonde(E, eG), A.pos) < d2(epauleMonde(E, eD), A.pos) ? eG : eD;
+    const vec3 sa = epauleMonde(A, ba), se = epauleMonde(E, be);
+    const float sol = std::min(A.pos.y, E.pos.y);
+    const float h = 0.5f * (sa.y - sol - 0.62f) + 0.5f * (se.y - sol - 0.10f);
+    const vec3 prise{(sa.x + se.x) * 0.5f, sol + h, (sa.z + se.z) * 0.5f};
+    atteindre(*A.M, *A.pose, ba.epaule, ba.coude, ba.main, versModele(A, prise));
+    atteindre(*E.M, *E.pose, be.epaule, be.coude, be.main, versModele(E, prise));
+}
+
+// WFS-233 (banc d'essai seulement) : familles de 4 et 7 ans placées sur le trottoir de droite, devant la voiture à l'arrêt
+bool g_bancFamilles = false;
 
 class Pietons : public System {
 public:
@@ -112,6 +159,8 @@ public:
             gens_.clear(); return;
         }
         for (int k = 0; k < 2; k++) for (PoseSquelette& p : poses_[k]) preparerPose(modeles_[k], p);
+        formerFamilles(r, *g.map);   // WFS-233
+        if (g_bancFamilles) placerFamillesBanc(g.player ? g.player->position / SEG : 0.0);
         actif_ = true;
         WFS_LOG("Piétons : %zu personnes (%s)", gens_.size(), id);
         // WFS-222 (RG-07) : détail (marcheurs, promeneurs et passants : moitié des tirages ; assis et baigneurs : inchangés)
@@ -121,7 +170,8 @@ public:
 
     void shutdown(Renderer& r) override {
         for (Personnage& m : modeles_) if (m.ok) detruirePersonnage(r, m);
-        gens_.clear(); actif_ = false;
+        for (Personnage& m : enfants_) if (m.ok) detruirePersonnage(r, m);   // WFS-233
+        gens_.clear(); actif_ = false; enfantsOk_ = false;
     }
 
     // les marcheurs avancent tous, même invisibles (updatePeopleReal) ; temps d'animation de chacun
@@ -131,13 +181,14 @@ public:
         for (Personne& P : gens_) {
             if (P.pose == 0) { P.s += P.dir * P.v / SEG_M * dt; if (P.s >= len) P.s -= len; if (P.s < 0) P.s += len; }
             if (P.pose == 5) ville::traverser(P.lat, P.dir, P.marche, P.yawRel, P.y, P.feu, P.v, dt);   // WFS-137 (RG-02) : au rouge des voitures
-            const double rate = P.pose == 0 ? (P.v > 2.2 ? P.v / PED_JOG_SPEED : P.v / PED_WALK_SPEED) : 1.0;
+            double rate = P.pose == 0 ? (P.v > 2.2 ? P.v / PED_JOG_SPEED : P.v / PED_WALK_SPEED) : 1.0;
+            if (P.enfant >= 0 && P.pose == 0) rate = familles::cadence(P.v, kBassin_[P.enfant]);   // WFS-233 : foulée de l'enfant
             P.t += dt * rate / (P.look_ ? P.look.scale : 1.f);
         }
     }
 
     void render(Renderer& r, const GameView& g) override {
-        if (!actif_ || g.sceneDediee || !g.player) return;
+        if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;   // WFS-216 : la foule de la fête dans les vues du banc
         Track& tr = *g.track;
         const double len = (double)tr.segmentCount(), aP = g.player->position / SEG, aMod = std::fmod(std::fmod(aP, len) + len, len);
         // 1. les plus proches (devant compte plus que derrière), petit bonus pour ceux déjà affichés (pas de clignotement)
@@ -146,61 +197,111 @@ public:
             Personne& P = gens_[(size_t)i];
             double rel = P.s - aMod; if (rel > len / 2) rel -= len; if (rel < -len / 2) rel += len;
             P.rel = rel;
-            if (rel < PED_RANGE0 || rel > PED_RANGE1) continue;
-            const double sc = std::max(0.0, (rel >= 0 ? rel : -rel * 2.5) + std::fabs(P.lat) * 0.15 - (affiche_[i % 256] == i ? 6 : 0) - (P.pose == 5 ? 30 : 0));   // WFS-137 : passage zébré en priorité
+        }
+        for (int i = 0; i < (int)gens_.size(); i++) {
+            const Personne& P = gens_[(size_t)i];
+            if (P.rel < PED_RANGE0 || P.rel > PED_RANGE1) continue;
+            // WFS-233 : un enfant a la clé de son parent (moins un rien) : la famille entre ou sort ensemble
+            const Personne& C = P.enfant >= 0 && P.famille >= 0 ? gens_[(size_t)P.famille] : P;
+            const int ic = P.enfant >= 0 && P.famille >= 0 ? P.famille : i;
+            const double sc = std::max(0.0, (C.rel >= 0 ? C.rel : -C.rel * 2.5) + std::fabs(C.lat) * 0.15 - (affiche_[ic % 256] == ic ? 6 : 0) - (C.pose == 5 ? 30 : 0)) + (P.enfant >= 0 ? 1e-3 : 0);   // WFS-137 : passage zébré en priorité
             int k = n < AFFICHES ? n++ : AFFICHES;   // insertion dans les AFFICHES meilleurs (sans allocation)
             if (k == AFFICHES) { if (sc >= cles[AFFICHES - 1]) continue; k = AFFICHES - 1; }
             while (k > 0 && cles[k - 1] > sc) { cles[k] = cles[k - 1]; choisis[k] = choisis[k - 1]; k--; }
             cles[k] = sc; choisis[k] = i;
         }
+        // WFS-233 : jamais un enfant sans son adulte à l'écran (ni l'inverse, sauf si l'autre est hors de portée)
+        auto present = [&](int i) { for (int k = 0; k < n; k++) if (choisis[k] == i) return true; return false; };
+        { int m = 0;
+          for (int k = 0; k < n; k++) {
+              const Personne& P = gens_[(size_t)choisis[k]];
+              const bool seul = P.famille >= 0 && !present(P.famille);
+              if (seul && (P.enfant >= 0 || (gens_[(size_t)P.famille].rel >= PED_RANGE0 && gens_[(size_t)P.famille].rel <= PED_RANGE1))) continue;
+              choisis[m++] = choisis[k];
+          }
+          n = m; }
         std::fill(std::begin(affiche_), std::end(affiche_), -1);
-        int util[2] = {0, 0};
+        // 2. pose de chacun (sans dessiner) ; 3. mains des familles (IK) ; 4. dessin
+        Dessin d[AFFICHES]; int nd = 0;
+        int util[2] = {0, 0}, utilE[familles::NB_ENFANTS] = {};
         const double carLat = g.player->playerX * RW;
+        const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
         for (int k = 0; k < n; k++) {
             const int i = choisis[k];
             Personne& P = gens_[(size_t)i];
             affiche_[i % 256] = i;
-            if (!P.look_) { P.look = pedLook(P, i, plage_); P.look_ = true; }
+            if (!P.look_) { P.look = P.enfant >= 0 ? lookEnfant(P, i) : pedLook(P, i, plage_); P.look_ = true; }
             const Look& L = P.look;
-            const int sx = L.femme ? 1 : 0;
-            if (util[sx] >= AFFICHES) continue;
-            PoseSquelette& pose = poses_[sx][util[sx]++];
-            const Personnage& M = modeles_[sx];
+            const Personnage* M; PoseSquelette* pose;
+            if (P.enfant >= 0) {
+                if (!enfantsOk_ || utilE[P.enfant] >= 2) continue;
+                M = &enfants_[P.enfant]; pose = &posesEnfants_[P.enfant][utilE[P.enfant]++];
+            } else {
+                const int sx = L.femme ? 1 : 0;
+                if (util[sx] >= AFFICHES) continue;
+                M = &modeles_[sx]; pose = &poses_[sx][util[sx]++];
+            }
             // une voiture arrive sur le trottoir : la personne s'écarte vers les façades (dodge du jeu web)
-            const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
             if (std::fabs(P.rel) < 6 && std::fabs(carLat - P.lat) < 2.4) P.dodge = std::min(1.0, P.dodge + dt * 4); else P.dodge = std::max(0.0, P.dodge - dt * 0.5);
+            if (P.famille >= 0 && P.enfant >= 0) P.dodge = gens_[(size_t)P.famille].dodge;   // WFS-233 : l'enfant suit son parent
             const double side = P.lat >= 0 ? 1 : -1, lat = P.lat + side * P.dodge * 2.6;
             const TrackPoint tp = tr.point((aP + P.rel) * SEG, lat);
             const double gy = P.y != 0 ? P.y : sol(side);
             // le personnage regarde vers +Z dans son repère : face au sens de la route = demi-tour (repère natif)
-            float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
+            const float yaw = (float)(-tp.th) + (P.yawFixe ? P.yawRel : (P.dir > 0 ? 3.14159265f : 0.f));
             const char* anim = P.assis ? "Sitting_Idle_Loop" : P.pose == 0 || P.marche ? (P.v * (1 + P.dodge * 0.6) > 2.2 ? "Jog_Fwd_Loop" : L.walk) : P.pose == 4 ? (i % 3 ? "Jog_Fwd_Loop" : "Idle_Talking_Loop") : L.idle;   // WFS-180 : on danse, on saute
-            echantillonner(M, clipParNom(M, anim), P.t + P.ph / 6.283 * 1.333, pose);
-            const mat4 monde = translate({(float)tp.x, (float)(tp.y + gy), (float)tp.z}) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
+            echantillonner(*M, clipParNom(*M, anim), P.t + P.ph / 6.283 * 1.333, *pose);
+            Dessin& D = d[nd++];
+            D.M = M; D.pose = pose; D.i = i; D.yaw = yaw; D.echelle = L.scale;
+            D.pos = {(float)tp.x, (float)(tp.y + gy), (float)tp.z};
+            D.monde = translate(D.pos) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
             const double dm = std::fabs(P.rel) * SEG_M;
             // WFS-222 (RG-03) : qualité Basse : maillage complet à moins de 8 m seulement, moyen jusqu'à 30 m (Haute inchangée)
             const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;
-            const int lod = dm < seuils[0] && k < PED_FULL ? 0 : dm < seuils[1] ? 1 : 2;
-            ApparencePersonnage app = L.app; app.corps = M.corps;
-            char nom[48];
-            std::snprintf(nom, sizeof nom, "corps-%d", lod);
-            const Plage* corps = plageParNom(M, nom);
-            std::snprintf(nom, sizeof nom, "%s-%d", COIFFURES[sx][L.hair % 3], lod);
-            const Plage* coiffure = plageParNom(M, nom);
+            D.lod = dm < seuils[0] && k < PED_FULL ? 0 : dm < seuils[1] ? 1 : 2;
+            D.app = L.app; D.app.corps = M->corps;
+            D.coiffure = P.enfant >= 0 ? nullptr : COIFFURES[L.femme ? 1 : 0][L.hair % 3];   // enfants : cheveux peints sur le corps
+        }
+        for (int a = 0; a < nd; a++) {   // WFS-233 : main dans la main (4 et 7 ans)
+            const Personne& E = gens_[(size_t)d[a].i];
+            if (E.enfant < 0 || E.famille < 0 || !familles::tientLaMain(E.enfant)) continue;
+            for (int b = 0; b < nd; b++) if (d[b].i == E.famille) { tenirLaMain(d[b], d[a]); break; }
+        }
+        char nom[48];
+        for (int k = 0; k < nd; k++) {
+            const Dessin& D = d[k];
+            std::snprintf(nom, sizeof nom, "corps-%d", D.lod);
+            const Plage* corps = plageParNom(*D.M, nom);
+            const Plage* coiffure = nullptr;
+            if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, D.lod); coiffure = plageParNom(*D.M, nom); }
             for (const Plage* pl : {corps, coiffure})
-                if (pl) r.drawSkinned(M.maillage, M.materiau, monde, pose.palette.data(), (int)pose.palette.size(), pl->premier, pl->nombre, &app);
+                if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app);
         }
         tPrec_ = g.time;
     }
 
 private:
+    // WFS-233 : tenue de l'enfant (couleurs tirées comme pedLook, sans maillot ni tenue de soirée), teint et cheveux du parent
+    Look lookEnfant(const Personne& P, int i) {
+        Personne& par = gens_[(size_t)std::max(P.famille, 0)];
+        if (!par.look_) { par.look = pedLook(par, P.famille, plage_); par.look_ = true; }
+        Look L = pedLook(P, i, plage_);
+        L.swim = false; L.femme = familles::fille(P.enfant); L.walk = "Walk_Loop"; L.idle = "Idle_Loop";
+        Mulberry32 R((uint32_t)i * 7919u + 233u);
+        L.scale = 0.97f + 0.06f * (float)R.next();   // ± 3 % autour de la médiane CDC (deux enfants du même âge diffèrent)
+        L.app.peau = familles::peauEnfant(par.look.app.peau); L.app.cheveux = par.look.app.cheveux;
+        if (par.look.app.cheveux.x > 0.45f && std::fabs(par.look.app.cheveux.x - par.look.app.cheveux.z) < 0.05f) L.app.cheveux = hx(HAIR[1]);   // parent aux cheveux gris : châtain foncé
+        L.app.vetement = {L.app.vetement.x, L.app.vetement.y, 1.f, (float)tenue::TISSU_COTON};
+        return L;
+    }
+
     // hauteur du sol des piétons (GROUND du jeu web) : trottoir de la ville 0,15 m, promenade de la plage 0,1 m
     double sol(double) const { return ville_ ? 0.15 : 0.1; }
 
     // addPerson (life.js) : direction, vitesse et phase tirées à la graine (le jeu web utilise Math.random)
-    void ajouter(double s, double lat, int pose, Mulberry32& A, double v = 0) {
+    void ajouter(double s, double lat, int pose, Mulberry32& A, double v = 0, double latMin = 0, double latMax = 0) {
         if ((int)gens_.size() + omis_ >= PEOPLE_MAX) return;   // plafond du jeu web compté sur la liste d'origine (WFS-222)
-        Personne P; P.s = s; P.lat = lat; P.pose = pose;
+        Personne P; P.s = s; P.lat = lat; P.pose = pose; P.latMin = latMin; P.latMax = latMax;   // WFS-233 : bande du trottoir
         P.dir = A.next() < 0.5 ? -1 : 1; P.v = v > 0 ? v : 1.1 + A.next() * 0.6; P.ph = A.next() * 6.28;
         if (garder()) gens_.push_back(P);   // WFS-222 (RG-07) : tirages inchangés (mêmes places pour ceux qui restent)
     }
@@ -216,7 +317,7 @@ private:
         for (int64_t n = 0; n < len; n += 3) {
             const char* z = zoneId(map, n, len);
             auto walk = [&](int side, double a, double b, double p) {
-                if (rnd() < p) { const double s = n + rnd() * 3; ajouter(s, side * (a + rnd() * (b - a)), 0, A); }
+                if (rnd() < p) { const double s = n + rnd() * 3; ajouter(s, side * (a + rnd() * (b - a)), 0, A, 0, a, b); }
             };
             if (ville_) {
                 if (!std::strcmp(z, "port")) { walk(-1, RW + 1.5, RW + 4.5, 0.06); walk(1, RW + 1.5, RW + 4.5, 0.06); continue; }
@@ -230,12 +331,78 @@ private:
             } else if (campagne_ && !std::strcmp(z, "village") && !(piste_ && trace::sectionA(*piste_, (double)n * SEG) && trace::sectionA(*piste_, (double)n * SEG)->autoroute)) {   // WFS-179 : personne à pied sur l'autoroute
                 walk(-1, RW + 0.3, RW + 1.4, 0.25); walk(1, RW + 0.3, RW + 1.4, 0.25);
             } else if (circuit_ && !std::strcmp(z, "paddock")) {
-                if (rnd() < 0.35) { const double s2 = rnd(); ajouter((double)n, (A.next() < 0.5 ? -1 : 1) * (RW + 5 + s2 * 6), 3, A); }
+                if (rnd() < 0.35) { const double s2 = rnd(); ajouter((double)n, (A.next() < 0.5 ? -1 : 1) * (RW + 5 + s2 * 6), 3, A, 0, RW + 5, RW + 11); }
             }
         }
     }
 
+    // WFS-233 (RG-01 à RG-03) : 8 enfants MakeHuman chargés pour les cartes qui en ont ; des marcheurs adultes deviennent les
+    // enfants d'un autre (total inchangé). Un modèle manquant : aucun enfant, les adultes restent (repli sans perte de piétons)
+    void formerFamilles(Renderer& r, const MapDef& map) {
+        enfantsOk_ = false;
+        const double part = familles::partEnfants(map.id);
+        if (part <= 0) return;
+        bool ok = true;
+        for (int k = 0; k < familles::NB_ENFANTS && ok; k++) ok = chargerPersonnage(r, std::string("people/humains/") + familles::ENFANTS[k] + ".wfp", enfants_[k]);
+        if (!ok) {
+            WFS_ERR("Enfants (WFS-233) : humains illisibles (assets/people/humains/e*.wfp) : piétons adultes seulement");
+            for (Personnage& m : enfants_) if (m.ok) detruirePersonnage(r, m);
+            return;
+        }
+        // rapport des hauteurs de bassin (pose de repos) enfant / adulte du clip (homme.wfp) : foulée du clip de l'enfant
+        auto bassin = [](const Personnage& M) {
+            PoseSquelette ps; preparerPose(M, ps); echantillonner(M, -1, 0, ps);
+            const int o = osParNom(M, "pelvis");
+            return o >= 0 ? ps.modele[(size_t)o].at(1, 3) : 0.f;
+        };
+        const float ref = bassin(modeles_[0]);
+        for (int k = 0; k < familles::NB_ENFANTS; k++) {
+            kBassin_[k] = ref > 0 ? bassin(enfants_[k]) / ref : 0.6f;
+            for (PoseSquelette& ps : posesEnfants_[k]) preparerPose(enfants_[k], ps);
+        }
+        std::vector<familles::Marcheur> m(gens_.size());
+        for (size_t i = 0; i < gens_.size(); i++) {
+            const Personne& P = gens_[i];
+            m[i] = {P.s, P.lat, P.v, P.dir, P.latMin, P.latMax, (P.pose == 0 || P.pose == 3) && !P.assis && P.latMax > P.latMin && P.v < 2.2};
+        }
+        const std::vector<familles::Lien> liens = familles::former(m, (int)gens_.size(), part, (uint32_t)map.seed, SEG_M);
+        int ages[4] = {0, 0, 0, 0};
+        for (const familles::Lien& l : liens) {
+            Personne& P = gens_[(size_t)l.parent]; Personne& E = gens_[(size_t)l.enfant];
+            P.lat = m[(size_t)l.parent].lat; P.v = m[(size_t)l.parent].v;
+            const double ph = P.ph;
+            E = P; E.s = m[(size_t)l.enfant].s; E.lat = m[(size_t)l.enfant].lat; E.ph = ph + 2.1; E.look_ = false;
+            E.enfant = l.morpho; E.famille = l.parent; P.famille = l.enfant;
+            ages[l.morpho / 2]++;
+        }
+        enfantsOk_ = true;
+        WFS_LOG("Enfants (WFS-233) : %zu familles sur %zu piétons (%.0f %% visés ; 4 ans %d, 7 ans %d, 10 ans %d, 14 ans %d)",
+                liens.size(), gens_.size(), part * 100, ages[0], ages[1], ages[2], ages[3]);
+    }
+
+    // banc : la première famille de 4 ans et la première de 7 ans, à 7 et 11 m devant la voiture, côté droit, vers la caméra
+    void placerFamillesBanc(double s0) {
+        int places = 0;
+        for (int want : {0, 1}) {
+            for (size_t i = 0; i < gens_.size(); i++) {
+                Personne& E = gens_[i];
+                if (E.enfant < 0 || E.famille < 0 || E.pose != 0 || familles::age(E.enfant) != (want ? 7 : 4)) continue;
+                Personne& P = gens_[(size_t)E.famille];
+                const double s = s0 + (want ? 11.0 : 7.0) / SEG_M, cote = 1;
+                P.dir = E.dir = -1; P.v = E.v = 0.95;
+                P.s = s; P.lat = cote * (RW + 1.5);
+                E.s = s - familles::AVANCE_M / SEG_M; E.lat = cote * (RW + 1.5 + familles::ECART_LAT_M);
+                places++; break;
+            }
+        }
+        WFS_LOG("Enfants (WFS-233, banc) : %d famille(s) placée(s) devant la voiture", places);
+    }
+
     std::vector<Personne> gens_;
+    Personnage enfants_[familles::NB_ENFANTS];             // WFS-233
+    PoseSquelette posesEnfants_[familles::NB_ENFANTS][2];  // WFS-233 : deux instances au plus par morphotype et par image
+    float kBassin_[familles::NB_ENFANTS] = {};
+    bool enfantsOk_ = false;
     Personnage modeles_[2];   // 0 homme, 1 femme
     PoseSquelette poses_[2][AFFICHES];
     int affiche_[256];
@@ -266,6 +433,25 @@ void benchPietons(Game& g, Renderer& r, const std::string& out) {
         } else capture("pietons-plage");
         g.shutdown();
     }
+    // WFS-233 (RG-04) : familles de jour, voiture à l'arrêt (poursuite proche), enfants de 4 et 7 ans devant elle à droite :
+    // enfants-<carte>.png (Ville, Corniche, Campagne) ; deux instants de la marche en Ville
+    g_bancFamilles = true;
+    for (const char* carte : {"ville", "plage", "campagne"}) {
+        if (!g.init(r, "golf", carte)) { WFS_ERR("enfants : chargement %s impossible", carte); continue; }
+        g.setAutopilot(false); g.camMode = 0;
+        double t = 1100;
+        for (int i = 0; i < 30; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); }
+        g.render(t); g.render(t + 0.01);
+        r.capturePng(out + "/enfants-" + carte + ".png");
+        WFS_LOG("capture enfants-%s", carte);
+        if (!std::strcmp(carte, "ville")) {
+            for (int i = 0; i < 20; i++) { g.update(1.0 / 60); t += 1.0 / 60; }
+            g.render(t); g.render(t + 0.01);
+            r.capturePng(out + "/enfants-ville-1.png");
+        }
+        g.shutdown();
+    }
+    g_bancFamilles = false;
     // WFS-210 (RG-01) : conducteur vu de côté (vitrine à 6,5 m) sur les 4 cartes, de jour ; Ville aussi de nuit : tenue du lieu,
     // peau, cheveux et yeux (conducteurs-tenue-<carte>[-nuit].png) ; tenue tirée au journal
     struct Cas { const char* carte; const char* moment; };

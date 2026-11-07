@@ -3,8 +3,11 @@
 
 Cas : ligne 🟣 contenue dans le run → ✅ (tableau, ligne de détail, track-agent.md) ; 🟣 fusionnée après le run → inchangée ;
 ligne mal formée → inchangée et listée au journal ; run rouge → aucun statut changé, entrée au journal ; run annulé → rien.
+WFS-236 (RG-05) : run annulé dont seules les publications ont été annulées avant de démarrer → vert (a) ; un job de test
+annulé (b), un job en échec (c), une liste de jobs vide ou illisible (d), une publication arrêtée après avoir démarré (e) → rien.
 Usage : python3 tools/qa/test_statuts.py   (code de sortie 0 si tout est vert)
 """
+import json
 import subprocess
 import sys
 import tempfile
@@ -66,6 +69,90 @@ def lancer(d, run, conclusion, numero=812, jobs=""):
                          "--date", "2026-11-06 22:00:00", "--jobs-en-echec", jobs])
 
 
+# ---------------------------------------------------------------- WFS-236 : run annulé seulement à la publication
+ETAPES_OK = [{"name": "Set up job", "status": "completed", "conclusion": "success"},
+             {"name": "Captures", "status": "completed", "conclusion": "success"}]
+
+
+def job(nom, conclusion, etapes=None):
+    return {"name": nom, "status": "completed", "conclusion": conclusion, "steps": ETAPES_OK if etapes is None else etapes}
+
+
+def jobs_du_run(**changes):
+    """Jobs d'un run de main (noms de build.yml) : construction et tests verts, publications annulées avant de démarrer."""
+    jobs = [job("banc-essai (partie1a)", "success"), job("banc-essai (nuit)", "success"), job("endurance", "success"),
+            job("android", "success"), job("résumé (commit et tickets)", "success"),
+            job("publication-apk", "cancelled", []), job("publication-captures", "cancelled", [])]
+    return [changes.get(j["name"], j) for j in jobs]
+
+
+def lancer_annule(d, run, numero, texte_jobs):
+    f = d / f"jobs-{numero}.json"
+    f.write_text(texte_jobs, encoding="utf-8")
+    return statuts.main(["--run-number", str(numero), "--sha", run, "--conclusion", "cancelled", "--depot", str(d),
+                         "--date", "2026-11-07 14:00:00", "--jobs-json", str(f)])
+
+
+def tester_annule_a_la_publication():
+    # (a) seules les publications annulées, avant de démarrer → vert ; la réponse paginée de gh (un objet par ligne) est lue
+    with tempfile.TemporaryDirectory() as t:
+        d = Path(t); run = depot(d)
+        texte = "\n".join(json.dumps(j) for j in jobs_du_run())
+        verifie(lancer_annule(d, run, 818, texte) == 0, "(a) annulé à la publication seulement : sortie 0")
+        T = (d / "TACHES.md").read_text(encoding="utf-8")
+        J = (d / "journal.md").read_text(encoding="utf-8")
+        verifie("| ✅ Terminé (CI main #818) | agent 2 |" in T and "| 🟣 Fusionné (PR #12) |" in T,
+                "(a) WFS-11 du run → ✅ Terminé (CI main #818), WFS-12 (après le run) inchangé")
+        verifie("WFS-11 (✅ CI main #818)" in (d / "track-agent.md").read_text(encoding="utf-8"), "(a) track-agent.md : WFS-11 → ✅")
+        verifie("CI main #818 (robot statuts)" in J and "Run vert, annulé seulement à la publication" in J,
+                "(a) journal : « annulé seulement à la publication »")
+    # publication à moitié sautée (étapes « skipped » seulement) ou réussie : toujours vert
+    sautee = job("publication-apk", "cancelled", [{"name": "Set up job", "status": "completed", "conclusion": "skipped"}])
+    verifie(statuts.annule_seulement_a_la_publication(jobs_du_run(**{"publication-apk": sautee})),
+            "(a) publication aux étapes toutes sautées : annulée avant de démarrer → vert")
+    verifie(statuts.annule_seulement_a_la_publication(jobs_du_run(**{"publication-captures": job("publication-captures", "success")})),
+            "(a) une publication réussie, l'autre annulée avant de démarrer → vert")
+    verifie(statuts.annule_seulement_a_la_publication(json.loads(json.dumps({"jobs": jobs_du_run()}))["jobs"]),
+            "(a) réponse de l'API en objet {\"jobs\": [...]} lue")
+    cas = {
+        "(b) un job de test annulé → rien": jobs_du_run(**{"banc-essai (nuit)": job("banc-essai (nuit)", "cancelled")}),
+        "(b) un job de construction sauté → rien": jobs_du_run(**{"android": job("android", "skipped", [])}),
+        "(c) un job en échec → rien": jobs_du_run(**{"endurance": job("endurance", "failure")}),
+        "(e) publication arrêtée par son délai (étape démarrée) → rien": jobs_du_run(**{"publication-apk": job(
+            "publication-apk", "cancelled", [{"name": "Set up job", "status": "completed", "conclusion": "success"},
+                                             {"name": "Envoi", "status": "completed", "conclusion": "cancelled"}])}),
+        "(e) publication annulée à la main pendant une étape → rien": jobs_du_run(**{"publication-captures": job(
+            "publication-captures", "cancelled", [{"name": "Set up job", "status": "in_progress", "conclusion": None}])}),
+        "(e) publication en échec → rien": jobs_du_run(**{"publication-apk": job("publication-apk", "failure")}),
+        "aucune publication annulée (run annulé pour une autre raison) → rien":
+            jobs_du_run(**{"publication-apk": job("publication-apk", "success"), "publication-captures": job("publication-captures", "success")}),
+    }
+    for quoi, jobs in cas.items():
+        verifie(not statuts.annule_seulement_a_la_publication(jobs), quoi)
+    for quoi, jobs in list(cas.items())[:4]:   # bout à bout : le run n'est pas traité, rien ne change
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t); run = depot(d)
+            lancer_annule(d, run, 820, json.dumps(jobs))
+            verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES and (d / "journal.md").read_text(encoding="utf-8") == "# Journal\n",
+                    quoi.split(" →")[0] + " : TACHES.md et journal inchangés")
+    # (d) liste vide, illisible, ou fichier absent → rien
+    for quoi, texte in {"(d) liste de jobs vide": "", "(d) liste de jobs illisible": "{pas du json",
+                        "(d) réponse sans jobs": json.dumps({"total_count": 0, "jobs": []})}.items():
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t); run = depot(d)
+            lancer_annule(d, run, 823, texte)
+            verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES and (d / "journal.md").read_text(encoding="utf-8") == "# Journal\n",
+                    quoi + " → rien")
+    with tempfile.TemporaryDirectory() as t:
+        d = Path(t); run = depot(d)
+        statuts.main(["--run-number", "825", "--sha", run, "--conclusion", "cancelled", "--depot", str(d), "--jobs-json", str(d / "absent.json")])
+        verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES, "(d) fichier des jobs absent → rien")
+        # nuit (schedule) annulée : jamais verte, même avec des jobs verts
+        f = d / "j.json"; f.write_text(json.dumps(jobs_du_run()), encoding="utf-8")
+        statuts.main(["--run-number", "826", "--sha", run, "--conclusion", "cancelled", "--evenement", "schedule", "--depot", str(d), "--jobs-json", str(f)])
+        verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES, "run de nuit annulé : rien")
+
+
 def main():
     with tempfile.TemporaryDirectory() as t:
         d = Path(t); run = depot(d)
@@ -107,6 +194,7 @@ def main():
                 "run annulé : rien")
         statuts.main(["--run-number", "815", "--sha", run, "--conclusion", "success", "--evenement", "schedule", "--depot", str(d)])
         verifie((d / "TACHES.md").read_text(encoding="utf-8") == TACHES, "run de nuit (endurance seule) vert : aucun ✅")
+    tester_annule_a_la_publication()
     print(f"statuts : {'tout est OK' if not echecs else str(echecs) + ' échec(s)'}")
     return 1 if echecs else 0
 

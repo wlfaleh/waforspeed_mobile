@@ -66,9 +66,9 @@ node plaques_voitures.mjs "$@"
 # une plaque posée devant le bouclier allonge la voiture de quelques millimètres (longueur hors tout, plaques comprises) :
 # 2e passage de la correction (sans effet si la voiture reste dans ses tolérances)
 "$CORR" "$RACINE" "$@"
-# WFS-134 (RG-11, RG-12) : versions allégées (assets/cars/<id>.lod : indices seuls, 30 % des triangles au moins) des voitures
-# du trafic, de la police et du camion de la poursuite ; vues au-delà de 60 m, avec fondu (Renderer::draw)
-# (WFS-158 : avec une liste d'id, seules les voitures de la liste sont allégées)
-for id in golf m4 p911 gallardo p208 x5; do
+# WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : versions allégées des 20 voitures (assets/cars/<id>.lod : indices seuls, niveaux
+# de détail 1 à 3, de 30 % à 5 % des triangles environ) ; choisies par la taille de la voiture à l'écran, avec fondu
+# (src/render/vehicule_lod.h) ; avec une liste d'id, seules les voitures de la liste sont allégées
+for id in golf m4 p911 gallardo $(for v in "${VOITURES[@]}"; do echo "${v%%|*}"; done); do
   if [ $# -gt 0 ] && [[ ! " $* " =~ " $id " ]]; then continue; fi
   node alleger_voiture.mjs "$RACINE/assets/cars/$id.wfm" "$RACINE/assets/cars/$id.lod" 0.3; done
