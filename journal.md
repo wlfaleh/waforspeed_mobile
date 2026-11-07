@@ -3478,3 +3478,16 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 16:14:15 — WFS-255 attribué à l'agent dev conduite ; WFS-254 créé (po-scrum-master)
 - WFS-253 fusionné (PR #212) par l'agent dev conduite, 🟡. Sur sa demande : **WFS-255** (étape 3a, sons et vibrations liés aux forces, sans la caméra : `camera_vue.*` tenu par WFS-247 et WFS-235 ; la partie caméra 3b viendra après).
 - Question RG-04 (voyant ABS / ESP) : oui, **WFS-254** (P3, E5) créé, en attente de la validation de WFS-253.
+
+### 2026-11-07 16:14:39 — WFS-246 : branche confirmée pour Claude, agent dev X, fin de sa pause (po-scrum-master)
+- Demande de l'agent dev X (ordre de l'utilisateur : pause levée). WFS-246 (P1, E4, 2e de l'ordre de l'utilisateur ; WFS-247 tenu par Agent 0) lui était déjà attribué à 16:12:30 ; aucun autre ticket attribué.
+- Branche `feature/waforspeed-246` : déjà créée à 14:34 par « Agent dev perf » (session archivée, commit 771c75c sans code) ; reprise telle quelle, synchronisée avec `main` et poussée (8fe6e18), rien retiré.
+- Zone autorisée : `src/render/**`, `shaders/**` (scène, ombre), réglages de qualité, accroches ≤ 10 lignes annoncées. Interdit : `nuit.cpp` (WFS-226), `qualite_banc.cpp` (WFS-239), `bench_realisme.cpp` (WFS-251), `effets_*` (WFS-224), `player.*` (WFS-241/253), `camera_vue.*` (WFS-235), fichiers E13 (WFS-230), iOS, taille des boutons.
+- Règles : `regles-de-gestion/WFS-246.md` (RG-01 à RG-05). Vérifiable en local : banc `WFS_BANC=perf` avec lavapipe. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-07 16:15:42 — WFS-247 : roues avant à l'angle appliqué ; CI de branche run 848 annulée, run 854 (Claude, Agent 0 developer)
+- Ajout du PO (Suivi de WFS-247, venant de WFS-241) fait : `game.cpp` (`roues::poseJoueur`), les roues avant dessinées suivent `Player::braquageRoues` (angle appliqué : joueur + aide) dans le modèle du monde, au lieu du doigt (`player.steer`) ; cet angle est aussi interpolé au rendu (`JoueurInterpole`). Ancien modèle (aide « Web ») : inchangé. `player.*` non touché. Tests CPU 0 échec, parcours 0 écart (vue normale et Cockpit), branche synchronisée avec main.
+- **CI de branche** : run 848 (e92749b) **annulé** (code dépassé par ce commit) ; **run 854** (791997c) lancé : compilation, tests, APK, captures `fluidite-*` (dont 20 img/s) et `roues-*`.
+
+### 2026-11-07 16:15:52 — Statuts automatiques, CI main #844 (robot statuts)
+- Run vert (push, commit ae49782) : WFS-240 ✅ (PR #205, 959b86a).

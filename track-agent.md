@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 16:14:15 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 16:14:39 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -26,7 +26,7 @@
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
 | Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris (⏳ Prêt, pour un autre développeur) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 248 : fusionnée (PR #208, d611b1e, 15:32 UTC, squash) | ✅ libre (WFS-248 🟡 : confirmation de l'utilisateur attendue) |
-| Claude, agent dev X (0183bv2X, ex-« session dev expert ») | WFS-246 | P1 [TECHNIQUE] performance, 2e passage (WFS-222 refusé) : faces arrière, shaders par coût, résolution adaptative, LOD, ombres ; attribué 16:12 (déclaré prêt par l'utilisateur, pause levée) | 246 : branche à créer et pousser | 🔴 en cours (P1) |
+| Claude, agent dev X (0183bv2X, ex-« session dev expert ») | WFS-246 | P1 [TECHNIQUE] performance, 2e passage (WFS-222 refusé) : faces arrière, shaders par coût, résolution adaptative, LOD, ombres ; attribué 16:12, pause levée par l'utilisateur | 246 : 16:14 (8fe6e18, synchronisée avec main) | 🔴 en cours (P1) |
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes) ; test de la fenêtre de la rue sur les 20 intérieurs | 235 : 16:11 (haut du pare-brise, test des 20 intérieurs) | 🔧 en cours |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 15:41 (CI de branche run 848) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
@@ -37,7 +37,6 @@
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
 | WFS-224 (P1) | E4 | repris à l'agent 4 (stoppé par l'utilisateur) : au premier développeur qui demande, **pas** l'agent 4 |
-| WFS-246 (P1) | E4 | épic E4 tenue (WFS-218, 224, 239) ; pas à l'agent arwa |
 | WFS-249 (P1) | E2 + E13 | E13 tenue par WFS-230 (agent 1) ; WFS-248 🟡 ; pas à la session dev 5bx |
 | WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
