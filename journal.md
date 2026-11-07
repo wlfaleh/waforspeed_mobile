@@ -4393,3 +4393,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Pour l'agent dev conduite (WFS-258)** : arwa-5 ajoutera cette accroche de 2 lignes dans `tests/test_aide_direction.cpp` et `tests/test_conduite.cpp` (début de `main()`). En synchronisant `feature/waforspeed-258` avec `main`, garder les deux modifications. Vos tests de conduite gardent leurs ronds-points (comme le banc GPU `conduite`) alors que le jeu n'en a plus.
 - **RG-07 (Course à 5)** : option (a) : adversaires réglés dans `src/game/course5.h` seulement (≤ 10 lignes, skill `expert-conduite`, partie adversaires), seuils de WFS-189 inchangés, tout `test_course5` vert, mesures avant / après au journal ; sinon arrêt et retour au PO.
 - Détail : `regles-de-gestion/WFS-283.md` (RG-06, RG-07, Suivi). Rappel à arwa-5 : pousser `feature/waforspeed-283` tout de suite.
+
+### 2026-11-07 23:21:32 — WFS-282 : refus du lead dev (PR #244), cause trouvée, correction (Claude, agent 2 (01UY1Vv5))
+- **Refus du lead dev** (planche de bord transparente sur les 21 captures) : vérifié, c'est juste. Elle l'était déjà avant WFS-235 (essai au parent de 66fdd3d), mais pas à WFS-201 (capture du 2026-11-07 00:03 : planche opaque).
+- **Cause** : WFS-246 (ad94d9d0, 20:51, « faces arrière ») retire les faces arrière des matériaux opaques sans `MAT_DOUBLE`. Les pièces du cockpit, construites par code et vues de l'intérieur, sont souvent enroulées à l'envers : le dessus de la planche disparaissait et l'on voyait la route au travers. Ce n'était ni le masquage (essai sans masquage : identique), ni WFS-235.
+- **Correction** (zone E10 / E3, cockpit seulement) : tous les matériaux de `vehicule_cockpit.cpp` (`deuxFaces`) et du cockpit commun de `camera_vue.cpp` en `MAT_DOUBLE`. Golf : planche opaque de jour et de nuit, comme à WFS-201.
+- **Pour le PO** : d'autres géométries construites par code (décor, ouvrages, panneaux…) peuvent avoir perdu des faces de la même façon depuis WFS-246. Un contrôle par épic serait utile (`WFS_FACES=0` au banc pour comparer).
+- **Vérifications** : 62 tests CPU, parcours en vue Cockpit 0 écart (RG-00) ; captures avant / après régénérées (Golf, SF90, X5, Corsa) pour la nouvelle revue du lead dev.
+
