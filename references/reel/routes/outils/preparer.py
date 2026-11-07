@@ -6,7 +6,7 @@
 #     *_rough_2k.* (rugosité seule : occlusion 1, métal 0), tels que téléchargés (SHA-256 au journal de WFS-205)
 #
 # Étapes, pour chaque revêtement de CIBLES (plages : revetements.json, expert-realisme-3d 2026-11-07) :
-#   1. albédo (RG-02) : diff en linéaire, moyenne de luminance Rec. 709 ; gain k = centre de la plage / moyenne, appliqué aux trois
+#   1. albédo (RG-02) : diff en linéaire, teinte moyenne ramenée au référentiel (TEINTES), moyenne de luminance Rec. 709 ; gain k = centre de la plage / moyenne, appliqué aux trois
 #      canaux en linéaire (teinte et contraste relatif gardés) ; 1er centile ≥ 0,02 et 99e ≤ 0,9 (extrêmes tassés seulement) ;
 #   2. rugosité (M-02) : r' = a·r + b, moyenne au centre de la plage, écart-type gardé (a réduit s'il fait sortir de la plage) ;
 #   3. réduction (décision du PO, WFS-205 Suivi 01:40:18) : couleur et normale 2K → 1K (moyenne 2×2 en linéaire ; normales
@@ -35,6 +35,12 @@ CIBLES = {
     'paves-granit':    ('cobblestone_floor_08', 0.20, 0.35, 0.60, 0.80, 2.0),
     'gravier':         ('gravel_road',         0.20, 0.35, 0.90, 1.00, 2.0),
 }
+# teinte moyenne visée (R, G, B divisés par leur moyenne, linéaire) : les scans d'asphalte usé, de béton et de gravier sont
+# nettement bruns (poussière, éclairage de la prise de vue : worn_asphalt 1,43 / 0,93 / 0,64). Asphalte : mat.asphalte_neuf.albedo
+# du référentiel (0,0429 / 0,0414 / 0,0401 : quasi neutre, V) ; béton, granit, gravier : gris légèrement chaud (E, expert)
+ASPHALTE = (1.034, 0.998, 0.967)
+TEINTES = {'enrobe-neuf': ASPHALTE, 'enrobe-use': ASPHALTE, 'enrobe-campagne': ASPHALTE, 'beton-circuit': ASPHALTE,
+           'beton-trottoir': (1.04, 1.0, 0.96), 'paves-granit': (1.06, 1.0, 0.94), 'gravier': (1.10, 1.0, 0.90)}
 SAUT_RGBA8 = 1   # niveau retiré de la variante RGBA8 (1024 → 512, 512 → 256)
 
 def srgb_vers_lin(c): return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
@@ -49,11 +55,13 @@ def trouver(dossier, motif):
     l = sorted(dossier.glob(f'*_{motif}_2k.*'))
     return l[0] if l else None
 
-def calibrer_albedo(diff, amin, amax):
+def calibrer_albedo(diff, amin, amax, teinte):
     lin = srgb_vers_lin(diff)
-    y = luminance(lin); avant = float(y.mean())
+    m = lin.reshape(-1, 3).mean(0); rel = m / m.mean()
+    avant = float(luminance(lin).mean())   # albédo du scan d'origine
+    lin = lin * (np.array(teinte) / rel)   # teinte moyenne ramenée au référentiel (variations locales gardées)
     centre = 0.5 * (amin + amax)
-    k = centre / avant
+    k = centre / float(luminance(lin).mean())   # gain sur la luminance (après la correction de teinte)
     out = lin * k
     yo = luminance(out)
     p1, p99 = np.percentile(yo, 1), np.percentile(yo, 99)
@@ -121,7 +129,8 @@ def main():
         dest = RACINE / 'assets/textures/route' / rid; dest.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory() as tmp:
             tmp = pathlib.Path(tmp)
-            coul, k, avant, apres, p1, p99 = calibrer_albedo(charger(diff), amin, amax)
+            coul, k, avant, apres, p1, p99 = calibrer_albedo(charger(diff), amin, amax, TEINTES[rid])
+            rel = srgb_vers_lin(charger(diff)).reshape(-1, 3).mean(0); rel = rel / rel.mean()
             sauver(tmp / 'couleur.png', lin_vers_srgb(reduire2(srgb_vers_lin(coul))))   # 1K, moyenne en linéaire
             if arm:
                 orm = charger(arm)   # R occlusion, G rugosité, B métal (linéaires)
@@ -148,6 +157,7 @@ def main():
                 octets[nom] = alleger(sortie)
         doc['revetements'][rid] = {
             'scan': f'Poly Haven « {scan} » (CC0 1.0)', 'cote_m': cote, 'statut_cote': 'E',
+            'teinte': {'scan': [round(float(x), 3) for x in rel], 'visee': list(TEINTES[rid])},
             'albedo': {'plage': [amin, amax], 'avant': round(avant, 4), 'gain_k': round(k, 4), 'apres': round(apres, 4),
                        'centile_1': round(p1, 4), 'centile_99': round(p99, 4)},
             'rugosite': {'plage': [rmin, rmax], 'avant': round(gavant, 4), 'a': round(ga, 4), 'b': round(gb, 4), 'apres': round(gapres, 4)},
