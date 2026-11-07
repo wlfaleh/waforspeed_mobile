@@ -430,9 +430,12 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     else { const double y = std::max(luminanceRgb(A.soleil), 1e-9); for (int q = 0; q < 3; q++) coul[q] = A.soleil[q] / y; }
     const vec3 couleur{(float)coul[0], (float)coul[1], (float)coul[2]};
     // crépuscule raccordé au ciel diffus au coucher (aucun saut, RG-02) : valeurs publiées × E_ciel(0°) / 750 lx
-    const double Ed = lune ? E_NUIT_SANS_LUNE : crep ? atmosphere::eclairementCrepuscule(h) * eclairementCielDiffus(0.001) / 750.0 : eclairementCielDiffus(h);
-    if (std::fabs(h - g.hCache) > 1e-4) { g.hCache = h; g.kCache = cieFacteur(h); }
-    const double K = (nuit || crep) ? 0 : g.kCache, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : crep ? Ed / PI_L : (nuit ? E_NUIT_SANS_LUNE / PI_L : 0);
+    // fondu entre le ciel du jour (CIE) et le ciel uniforme du crépuscule de −1° à +2° : aucune bascule au coucher (RG-02)
+    const double hj = std::max(h, 0.05), u = std::clamp((h + 1.0) / 3.0, 0.0, 1.0), wj = lune || nuit ? (lune ? 0.0 : u * u * (3 - 2 * u)) : u * u * (3 - 2 * u);
+    const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) / 750.0;
+    const double Ed = lune ? E_NUIT_SANS_LUNE : wj * eclairementCielDiffus(hj) + (1 - wj) * Ecrep;
+    if (std::fabs(hj - g.hCache) > 1e-4) { g.hCache = hj; g.kCache = cieFacteur(hj); }
+    const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
     // ---- RG-02 : exposition (mesure sur les sondes, bornée par moment, adaptation de l'œil)
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
     const double Lmes = mesurerLuminance(g.avant);
@@ -455,11 +458,10 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double Esol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;
     const vec3 sol = fp.ground * (float)(Esol / PI_L);   // couleur du sol du ciel = albédo
     vec3 brume;
-    if (!nuit && crep) brume = horizon0 * (float)(Ed / PI_L);   // WFS-208 : aube : brume du ciel uniforme du crépuscule
-    else if (!nuit) {   // brouillard de jour : teinte du jeu, luminance moyenne du ciel à 5° de hauteur (modèle)
-        double L5 = 0; const double z = 85 * PI_L / 180;
-        for (int j = 0; j < 16; j++) { const double a = 2 * PI_L * (j + 0.5) / 16, d[3] = {std::sin(z) * std::cos(a), std::cos(z), std::sin(z) * std::sin(a)}, ss[3] = {s.x, s.y, s.z}; L5 += K * cieRelative(d, ss) / 16; }
-        brume = horizon0 * (float)L5;   // WFS-207 (RG-03) : perspective aérienne au loin = couleur de l'horizon de la même atmosphère
+    if (!nuit) {   // brouillard de jour : teinte du jeu, luminance moyenne du ciel à 5° de hauteur (modèle) ; WFS-208 : + ciel du crépuscule
+        double L5 = 0; const double z = 85 * PI_L / 180; const vec3 sc = atmosphere::directionMonde(hj, astre.azimut);
+        for (int j = 0; j < 16; j++) { const double a = 2 * PI_L * (j + 0.5) / 16, d[3] = {std::sin(z) * std::cos(a), std::cos(z), std::sin(z) * std::sin(a)}, ss[3] = {sc.x, sc.y, sc.z}; L5 += K * cieRelative(d, ss) / 16; }
+        brume = horizon0 * (float)(L5 + Lnuit);   // WFS-207 (RG-03) : perspective aérienne au loin = couleur de l'horizon de la même atmosphère
         // brouillard de distance physique : le brouillard exponentiel des cartes prend l'extinction au sol de la même atmosphère
         // (Rayleigh + Mie + ozone, pondérée en luminance) ; un brouillard linéaire (pluie de meteo.cpp) reste tel quel
         if (fp.fogFar <= 0) fp.fogDensity = (float)A.extY;

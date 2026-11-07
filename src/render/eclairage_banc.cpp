@@ -480,7 +480,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         g_l = EtatBanc{};
         if (g.init(r, "golf", "campagne")) {
             g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course); eclairage::remettreAZero();
-            double tp = 0, evPrec = -100, sautMax = 0, hDebut = 0, hFin = 0; int cap = 0;
+            double tp = 0, evPrec = -100, sautMax = 0, hSaut = 0, hDebut = 0, hFin = 0; int cap = 0;
             for (int i = 0; i <= 180 * 60; i++) {
                 g.update(1.0 / 60); tp += 1.0 / 60;
                 if (i % 30) continue;
@@ -488,12 +488,12 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                 const eclairage::Etat e = eclairage::etat();
                 if (i == 0) hDebut = e.astreHauteur;
                 hFin = e.astreHauteur;
-                if (evPrec > -50 && tp > 2.0) sautMax = std::max(sautMax, std::fabs(e.ev - evPrec));   // après le recalage du départ
+                if (evPrec > -50 && tp > 2.0 && std::fabs(e.ev - evPrec) > sautMax) { sautMax = std::fabs(e.ev - evPrec); hSaut = e.astreHauteur; }   // après le recalage du départ
                 evPrec = e.ev;
                 if (i % 3600 == 0 && cap < 4) r.capturePng(out + "/realisme-transition-" + std::to_string(cap++) + ".png");
             }
             rap.ajouter(ligne("lum.wfs208.transition", "RG-02 : passage continu, heure dorée × 20 pendant 3 min (soleil de " + fmt(hDebut, 2) + "° à " + fmt(hFin, 2) + "°) : plus grand écart d'exposition entre deux images (0,5 s)",
-                              fmt(sautMax, 3) + " EV", "aucun saut visible (≤ 0,1 EV en 0,5 s ; adaptation de l'œil de WFS-151)", "≤ 0,1 EV", sautMax <= 0.1, "conception"));
+                              fmt(sautMax, 3) + " EV", "aucun saut visible (≤ 0,1 EV en 0,5 s ; adaptation de l'œil de WFS-151)", "≤ 0,1 EV", sautMax <= 0.1, "conception", "plus grand écart à h " + fmt(hSaut, 2) + "°"));
             g.shutdown();
         } else erreurs++;
         eclairage::accelererTemps(1); eclairage::choisirMoment(-1);   // les bancs suivants gardent jour / nuit
