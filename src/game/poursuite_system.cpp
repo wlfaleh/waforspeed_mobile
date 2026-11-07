@@ -234,7 +234,8 @@ public:
             const double rel = (p.rd - sP) * M;
             if (rel < -60 || rel > 300) continue;
             if (r.qualiteBasse && std::abs(rel) > 90) continue;   // WFS-134 (RG-11) : Basse : police dessinée jusqu'à 90 m (coût)
-            const TrackPoint q = g.track->point(p.rd, p.x * RW);
+            const double al = std::abs(p.rd - p.rdPrec) * M > 20 ? 1.0 : g.alpha;   // WFS-221 (accroche) : rendu interpolé
+            const TrackPoint q = g.track->pointLisse(p.rdPrec + (p.rd - p.rdPrec) * al, (p.xPrec + (p.x - p.xPrec) * al) * RW);
             const mat4 m = translate({(float)q.x, (float)q.y, (float)q.z}) * rotateY((float)-(q.th)) * rotateX((float)q.slope);
             const CarDef& cd = carById(policeCar_);
             const float L = cd.d.L, W = cd.d.W, H = cd.d.H;

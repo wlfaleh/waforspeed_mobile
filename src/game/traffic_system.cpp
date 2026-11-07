@@ -70,6 +70,7 @@ public:
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
         pv.myLen = webCarLength(pl.car->id, pl.car->d.L);
+        for (TrafficCar& c : traffic_.cars) { c.zPrec = c.z; c.offPrec = c.offset; c.yawPrec = c.laneYaw; }   // WFS-221 (accroche)
         traffic_.advance(dt, pv);
         if (stops_.size() != traffic_.cars.size()) stops_.resize(traffic_.cars.size());   // WFS-67 : feux stop
         for (size_t i = 0; i < traffic_.cars.size(); i++) stops_[i].maj(traffic_.cars[i].speed, dt);
@@ -137,9 +138,11 @@ public:
             const TrafficCar& c = *vis[k].c;
             const int mi = nativeModelFor(c.type);
             if (!models_[mi].ok) continue;
-            const double s = pl.dist + t.relZ(c.z - pl.position);
-            TrackPoint p = t.point(s, c.offset * RW);
-            const double yaw = c.laneYaw + (c.crashed ? c.crashYaw : 0);
+            // WFS-221 (accroche) : rendu interpolé entre les deux derniers pas, comme le joueur (sauf apparition ou saut)
+            const double dzc = t.relZ(c.z - c.zPrec), al = std::abs(dzc) * M > 20 ? 1.0 : g.alpha;
+            const double s = pl.dist + t.relZ(c.zPrec + dzc * al - pl.position);
+            TrackPoint p = t.pointLisse(s, (c.offPrec + (c.offset - c.offPrec) * al) * RW);
+            const double yaw = c.yawPrec + (c.laneYaw - c.yawPrec) * al + (c.crashed ? c.crashYaw : 0);
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
             const float L = (float)WEB_CARS[c.type].L, W = (float)WEB_CARS[c.type].W, k0 = L / CARS[mi].d.L;
             r.draw(shadow_, shadowMat_, m * scale({W * 1.25f, 1.f, L * 1.12f}));

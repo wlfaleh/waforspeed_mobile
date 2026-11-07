@@ -55,6 +55,7 @@ struct TrafficCar {
     bool pending = false; int pendLane = 0; double pendT = 0;
     double prevDz = 0;
     double laneYaw = 0;                     // cap dû au changement de file (rad), pour l'affichage
+    double zPrec = 0, offPrec = 0, yawPrec = 0;   // WFS-221 : état avant le dernier pas (rendu interpolé, GameView::alpha)
     // WFS-136 (RG-03) : voiture qui traverse le carrefour à feux n° traverse (−1 : voiture normale), au rouge, de gauche
     // à droite ; cachée (ni dessinée, ni touchée) le reste du temps
     int traverse = -1, rangTraverse = 0;

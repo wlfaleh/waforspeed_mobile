@@ -94,7 +94,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (!fantActif_ || g.sceneDediee || !g.player || !g.track || g.ecran != Ecran::Course || course_.state == RaceState::Count || !fantModele_.ok) return;
         fantome::Echantillon e;
-        if (!fantome::interpoler(lecture_, tJeu_, e)) return;   // trace finie : plus de fantôme
+        if (!fantome::interpoler(lecture_, tJeu_ - (1 - g.alpha) / 120.0, e)) return;   // trace finie : plus de fantôme ; WFS-221 (accroche) : temps interpolé
         const double rel = e.d - g.player->dist;
         if (rel < -40 / M || rel > 600 / M) return;
         fantYaw_ += (e.h - fantYaw_) * 0.15;

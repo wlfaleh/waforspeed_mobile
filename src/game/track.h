@@ -34,6 +34,7 @@ struct TrackPoint { double x, y, z, th, slope; };
 
 class Track {
 public:
+    static inline bool penteLissee = true;   // WFS-221 : banc « fluidite » seulement : false = pente par segment (mesure « avant »)
     // version 1 : tracé du jeu web (courbes tirées au hasard, références des tests) ; 2 : tracé en sections (WFS-136)
     void build(const MapDef& map, int version = 1);
     int version() const { return version_; }
@@ -47,6 +48,10 @@ public:
     const Pose& pose(int64_t a);
     // point sur la route : s = abscisse absolue (unités), lat = mètres à droite du centre
     TrackPoint point(double s, double lat);
+    // WFS-221 (RG-02 b) : même tracé, LISSÉ pour ce qui bouge (voiture, caméra, trafic) : spline de Catmull-Rom passant par les
+    // lignes de segment (écart à la polyligne de la route ≤ quelques mm), direction et pente continues (point() casse la
+    // direction à chaque ligne de segment : à-coups de rotation dans les courbes serrées). La route et le décor gardent point().
+    TrackPoint pointLisse(double s, double lat);
     size_t segmentCount() const { return segs_.size(); }
     const MapDef* map() const { return map_; }
     // WFS-136 : utilisés par trace::construire (tracé 2) ; addRoad du jeu web, altitude de fin (unités)

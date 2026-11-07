@@ -2814,3 +2814,69 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Zone autorisée : `src/world/campagne.cpp` (E2) ; réglages de nuit de la carte par accroche ≤ 10 lignes annoncée au journal (`nuit.cpp`, hors bloc des phares). Interdit : phares du joueur (WFS-218), fumée (WFS-224), phares des autres voitures (WFS-226), iOS, taille des boutons.
 - Critères (`regles-de-gestion/WFS-225.md`) : tous les lampadaires allumés la nuit (lampe + flaque au sol) ; village, ronds-points, carrefours, péage éclairés ; rase campagne lisible au clair de lune (catadioptres, bandes, silhouettes) ; budget du téléphone tenu (WFS-222) ; captures `carte-campagne-nuit` avant / après (route, village, rond-point, péage, col), qualité Basse ; test de parcours complet ; ligne `qa/Check.md`. Graphisme réaliste : charte `DA-realisme.md` § 3 (éclairage public).
 - Branche `feature/waforspeed-225`, à pousser tout de suite (premier commit).
+
+### 2026-11-07 11:30:29 — WFS-221 fusionné (PR #193) : voiture fluide en vue Proche et Poursuite (Claude, agent 2 (01UY1Vv5))
+- **Mesure « avant »** (banc `WFS_BANC=fluidite`, nouveau, sans dessin, 1 min 30) : 4 scénarios (la plus longue ligne droite, un virage serré, une épingle, une montée), vues Proche et Poursuite, 30, 60 et 90 images/s irrégulières (± 30 %, graine fixe).
+  - Pas par image à 60 images/s : 0/1/2/3 = 0/107/386/108.
+  - À-coup de la voiture vue par la caméra : 190 à 350 mm.
+  - Aller-retour voiture ↔ caméra : 18 à 35 cm, soit 24 à 74 par seconde. C'est le « avance, recule, avance » de l'utilisateur.
+  - Sauts d'angle jusqu'à 1,4° en courbe.
+- **Causes confirmées**
+  - `src/game/game.cpp:243-247` : rendu du dernier pas de 1/120 s, sans interpolation.
+  - `game.cpp:274` et `src/game/camera_vue.cpp:96-97` : lissage `lerp(x, cible, 1 − e^(−k·dt))`, qui traite la cible comme immobile. Le retard de la caméra (≈ v/k, 3 à 4 m à 150 km/h) change avec la durée de chaque image.
+  - `src/game/track.cpp:87` : pente par segment ; direction cassée tous les 1,2 m.
+- **Correction** (physique inchangée)
+  - Rendu interpolé : `Game::JoueurInterpole` et `calculerVue`.
+  - Même filtre de caméra, résolu exactement pour une cible en mouvement (`suivreExact`, mêmes constantes : même caméra, RG-06).
+  - `Track::pointLisse` (Catmull-Rom) pour ce qui bouge ; pente de `point()` continue.
+  - Trafic, adversaires (course à 5, duel), police et fantôme interpolés (`GameView::alpha`).
+- **Après**
+  - Ligne droite et montée : à-coup ≤ 3,1 mm, angle ≤ 0,004°, aller-retour ≤ 0,32 cm, aux trois cadences. Objectifs RG-03 et RG-08 tenus.
+  - Courbes : à-coup de 4 à 16 mm. Il vient de la trajectoire physique elle-même (cap qui suit la courbure de chaque segment, consigne du banc), hors périmètre (physique inchangée) ; valeurs données pour information dans `fluidite.txt`.
+- **Accroches annoncées**
+  - `src/core/system.h` (1 ligne : `GameView::alpha`).
+  - `traffic.h` et `traffic_system.cpp`.
+  - `duel.h`, `duel.cpp` et `duel_system.cpp`.
+  - `course5.cpp`, `course5_system.cpp` et `course_system.cpp`.
+  - `poursuite.h`, `poursuite.cpp` et `poursuite_system.cpp`.
+  - `src/platform/desktop_main.cpp` (banc).
+  - `.github/workflows/build.yml` (banc `fluidite` dans le job `ecrans-2400`, captures `fluidite-*`).
+  - Chaque accroche fait 6 lignes au plus.
+- **Interrupteurs de banc** pour mesurer l'« avant » : `Game::interpolation`, `Track::penteLissee`, `g_cameraFiltreExact`. Aucun réglage pour le joueur.
+- **Vérifications** : 43 tests CPU ; parcours 0 écart ; captures de la course à 5 normales. Pas de CI de branche lancée.
+
+
+### 2026-11-07 11:32:50 — WFS-227 attribué à Claude, agent 2 (01UY1Vv5) ; WFS-153 découpée en 3 lots (po-scrum-master)
+- Demande de l'agent 2, libre après WFS-221 (🟣, PR #193). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa). WFS-215 (E10) et WFS-216 (E2) : épics occupées.
+- WFS-152 passe ✅ : ses deux lots WFS-207 et WFS-208 sont ✅ (CI main #815). WFS-153 devient attribuable (E13 libre : WFS-213 🟣).
+- WFS-153 (2 à 3 jours) découpée (un ticket = une journée au plus) : **WFS-227** (cascades, pénombre ; M-01, M-02), **WFS-228** (ombres des lumières de nuit, allumage selon l'éclairement, accroche `nuit.cpp` seulement quand E4 n'y travaille pas), **WFS-229** (GTAO, ombre de contact calculée ; le rectangle `F_SHADOW` est gardé en Basse). Règles : `regles-de-gestion/WFS-227.md`, `WFS-228.md`, `WFS-229.md`.
+- **Début WFS-227** — épic E13, branche `feature/waforspeed-227`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `nuit.cpp`, iOS. Critères : cascades par niveau stabilisées, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe (WFS-222 P1 en cours), parcours complet vert. Graphisme vu avec `expert-realisme-3d`.
+- WFS-214 (E13, agent 1 en attente) attendra la fin de WFS-227 dans l'épic.
+- Retour de l'agent 2 sur le reste de WFS-221 (à-coup de 4 à 16 mm en courbe, trajectoire physique) : pas de ticket créé (finition, hors demande) ; noté dans `regles-de-gestion/WFS-221.md` côté développeur.
+
+### 2026-11-07 11:33:20 — WFS-227 rendu, agent 2 en pause (Claude, agent 2 (01UY1Vv5))
+- Ordre de l'utilisateur (après WFS-221) : « Tu termines cette tâche et tu ne prends pas un autre ticket automatiquement ».
+- WFS-227 (attribué à 11:31 par le PO, juste avant cet ordre) : **non commencé**, aucune branche créée. Il est remis à ⏳ Prêt, sans responsable ; le découpage de WFS-153 (227, 228, 229) est gardé.
+- L'agent 2 ne demande plus de ticket tant que l'utilisateur ne le relance pas.
+
+
+### 2026-11-07 11:44:49 — WFS-227 attribué à Claude, agent 2 (01UY1Vv5), relancé par l'utilisateur (po-scrum-master)
+- L'utilisateur relance l'agent 2 (« Prend une tâche »). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa, dernier envoi 11:15). WFS-215 (E10, WFS-158) et WFS-216 (E2, WFS-225) : épics occupées. WFS-214 (E13) attend WFS-213 ✅ (🟣).
+- **Début WFS-227** — épic E13 (libre : WFS-213 🟣), branche `feature/waforspeed-227`. Règles : `regles-de-gestion/WFS-227.md`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `src/render/bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `src/render/nuit.cpp`, iOS. Critères : cascades par niveau stabilisées avec fondu, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe, coût GPU au journal, parcours complet vert, ligne `qa/Check.md`. Graphisme vu avec `expert-realisme-3d`.
+
+### 2026-11-07 11:47:48 — Demande de ticket de Claude, agent 4 (011cpqZan) : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-218, 224, 226 (P1, E4 : occupée par WFS-222, agent arwa, dernier envoi 11:15) ; WFS-215 (P3, E10 : occupée par WFS-158, arwa-2, dernier envoi 10:43) ; WFS-216 (P3, E2 : occupée par WFS-225, session dev 5bx, dernier envoi 11:43). WFS-214 attend WFS-213 ✅ et l'épic E13 (WFS-227, agent 2, dernier envoi 11:45).
+- Suites Ville proposées par l'agent : WFS-175 et WFS-176 sont déjà ✅ (archive). Aucun ticket prêt dans les épics libres (E0, E3, E5, E6, E7, E8, E9, E11).
+- Aucun développeur n'a dépassé 10 h sans envoi : aucune réattribution. Agent 4 reste libre ; il sera servi dès qu'une épic se libère ou qu'un nouveau besoin de l'utilisateur est découpé.
+
+### 2026-11-07 11:48:23 — Statuts automatiques, CI main #817 (robot statuts)
+- Run vert (push, commit 941e475) : WFS-213 ✅ (PR #184, 941e475).
+
+### 2026-11-07 11:48:41 — Exception E4 demandée par Claude, agent 4 (011cpqZan) pour WFS-224 : refusée (po-scrum-master)
+- Demande : WFS-224 (P1, E4, fumée des pneus) en parallèle de WFS-222 (E4, agent arwa). Le diff de `feature/waforspeed-222` ne touche pas `effets_particules.*` ni `effets_systeme.cpp`, mais il modifie `renderer.cpp`, `renderer.h` et `qualite_auto.*` (budget de qualité, qui règle aussi les effets).
+- Refus : la règle « un ticket en cours par épic » (`CLAUDE.md`, `TACHES.md` règle 2) n'a aucune exception que le PO puisse accorder. Seul l'utilisateur peut en décider. Agent 4 reste libre ; WFS-224 lui sera proposé en premier dès que WFS-222 sera fusionné.
+
+### 2026-11-07 11:51:19 — Demande de ticket de Claude, agent 3 (01UY1Vv3) : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-218, 224, 226 (P1, E4 : occupée par WFS-222, agent arwa, dernier envoi 11:15) ; WFS-215 (P3, E10 : WFS-158, arwa-2, dernier envoi 10:43) ; WFS-216 (P3, E2 : WFS-225, session dev 5bx, dernier envoi 11:43) ; WFS-214 (P2, E13) : WFS-213 est ✅ (CI main #817), passe ⏳ Prêt, mais E13 est occupée par WFS-227 (agent 2, dernier envoi 11:45). E12 : WFS-161 (Agent 0, dernier envoi 11:48).
+- Épics libres (E0, E3, E5, E6, E7, E8, E9, E11) : aucun ticket prêt. WFS-156 (E9) attend WFS-206 ✅ (🟣, CI main en cours) ; WFS-165 (E11) attend WFS-164 (lots 210, 211 🟣). Aucune anomalie 🆕 dans `anno.md`, aucune demande ouverte de l'utilisateur sans ticket.
+- Aucun développeur n'a dépassé 10 h sans envoi : aucune réattribution. Agent 3 reste libre ; ordre de service quand une épic se libère : agent 1, agent 4, puis agent 3 (ordre des demandes).
