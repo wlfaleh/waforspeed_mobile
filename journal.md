@@ -3776,3 +3776,44 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Zone** : `src/audio/voitures_sons*` (neufs), `audio_system.*`, `ambiance_lieux.*`, `trafic_sons.*`, `sirene_son.h`, nouveaux `tests/test_audio_voitures*` ; accroches de lecture ≤ 10 lignes dans `course5_system.cpp`, `duel_system.cpp`, `poursuite_system.cpp` (`course*` / `duel*` tenus par WFS-242, arwa-3 : fin de fichier, synchronisation avec `main`). **Interdit** : sons de conduite (`sons_conduite.h`, `route_sons.h`, `engine_synth.*` en écriture, `ressenti.*`, `player.*`), `traffic_system.cpp`, `src/render/**`, iOS (gel), tailles d'interface.
 - Branche `feature/waforspeed-272` à créer depuis `main` et pousser tout de suite. Skills : `agent-developer`, `waforspeed-natif`. Après fusion : 🟣 puis ✅ par le robot (ni essai de l'utilisateur, ni conduite).
 - Suivi : Agent 0 (WFS-247, P1) sans envoi depuis 16:15 (≈ 2 h) et agent 3 (WFS-239, P1) depuis 13:43 : alertes dans `track-agent.md`, pas de retrait avant 10 h. Agent dev Y : pause de l'utilisateur finie à 18:00 UTC.
+
+### 2026-11-07 18:27:03 — WFS-246 : RG-06, RG-07 et levier 1 poussés, CI de branche 863 (Claude, agent dev X)
+- **Périmètre recentré (PO 17:13) appliqué** : leviers 2 (éclairage simple du décor lointain), 4 (voitures complètes au-dessus de 200 px au lieu de 60, petits objets lointains, piétons Basse) et 5 (pas d'ombre des petits objets au-delà de 40 m) **retirés de la branche** ; leur code reste dans l'historique de `feature/waforspeed-246` (commits 6c… levier 2 et 825010c leviers 4-5), prêt pour WFS-262 à 265.
+- **Levier 1** (e79fa14) : faces arrière retirées sur les opaques sans découpe. **Gardent leurs deux faces** : MAT_DOUBLE (feuillage, panneaux fins), MAT_GLASS (vitres), MAT_ROAD / MAT_WALK / MAT_GROUND (bandes de `game.cpp` tournées dans l'autre sens), matériaux à découpe (alpha masqué, fondu tramé), et **tout objet posé en miroir** (déterminant < 0, RG-02.1). Banc `WFS_FACES=0` contre normal : garage 0 px d'écart, perf Ville 138 px (0,015 %), 20 voitures (vitrines) : voir l'entrée suivante.
+- **RG-07** : cibles de scène créées à la capacité du niveau ; la résolution dynamique ne change que la zone dessinée (+ 2 px de vraie image au bord) et la part lue par la passe finale et le bloom. Banc `WFS_PERF_ECHELLE=alterne` (100 % / 60 % toutes les 10 images, Ville Haute et Basse) : **0 recréation des cibles, 0 attente du GPU**. Capture agrandie à 60 % : plein écran, interface nette.
+- **Levier 3** : budget 16,7 ms (Basse) / 22 ms (Moyenne, Haute) ; au-delà, scène de 100 % (75 % en Basse) **jusqu'à 60 %**, puis seulement après, effets coupés (palier 1 bloom / reflets / captures, palier 2 ombres) ; remontée au temps GPU (horodatages, sous 65 % du budget). Remplace les planchers fixes de WFS-104 / WFS-134.
+- **RG-06** : 20 s glissantes de course : médiane, 95 %, 99 %, images > 33 et > 50 ms, temps GPU ombre / reflet / capture / scène / post (5e horodatage). 2e ligne sous « Rendu » dans les Réglages (la toucher ouvre la feuille de partage d'Android, comme l'invitation) ; fichier `rendu-mesure.txt` dans le dossier de données externe ; ligne au journal du rapport de plantage en fin de course.
+- **Banc perf (lavapipe, indicatif seulement, RG-03 modifiée)**, Ville, 90 images : sans → avec faces arrière : scène Haute 500,1 → 476,0 ms, Basse 232,6 → 219,9 ms. Zone dessinée à 60 % (sans recréation) : image Haute 596 → 352 ms (−41 %), Basse 251 → 182 ms (−27 %).
+- **Accroches annoncées (≤ 10 lignes)** : `src/ui/ecrans/reglages.cpp` (2e ligne et partage, aucun bouton touché), `src/platform/android_main.cpp` (dossier du fichier), `shaders/post.frag` (part de la scène lue), `src/render/passes.cpp` (5 horodatages par image).
+- **Constats pour le PO** : (1) rectangles sombres à bords nets sur la chaussée en Ville (sous la voiture et à droite), présents sur `main` avec ou sans mon changement ; (2) la rétrogradation automatique (`appliquerQualiteNiveau`, hors de ma zone) appelle encore `resize()` une fois en course : rare désormais (seulement à 60 % et sous 30 img/s).
+- **CI de branche (US technique)** : run **863** (`workflow_dispatch` de `build.yml`, branche synchronisée avec `main`, 8f95756) : vérifie la construction Android (non faisable ici, pas de NDK), les tests et les captures.
+
+### 2026-11-07 16:01:06 — WFS-230 : début, nuit sur route non éclairée (Claude, agent 1)
+- Ticket attribué par le PO (commit d7592cc) sur ordre de l'utilisateur (« Prend un sujet »). Branche `feature/waforspeed-230`, zone E13.
+
+### 2026-11-07 18:27:52 — WFS-230 : nuit sur route non éclairée, prête à fusionner (Claude, agent 1)
+- **Cause** : la nuit, l'exposition suivait la luminance mesurée sur les sondes, que la tache des phares tirait vers EV 2 à 3. Le paysage au clair de lune (EV −4,4 à −2,6) sortait donc noir.
+- **Correction (zone E13)**, détail dans `regles-de-gestion/WFS-230.md` :
+  - posemètre incident sur l'éclairement reçu (lune, ciel et lampadaires) : EV −2 en rase campagne, mesure d'avant (EV 3 à 5) dans une rue éclairée d'au moins 3 lx, fondu entre les deux ;
+  - lumières artificielles bornées à EV 3 (adaptation locale) ;
+  - vision de nuit (Purkinje) dans `post.frag`, au moment Nuit seulement.
+  - Valeur choisie avec `expert-realisme-3d` et notée dans `DA-realisme.md` § 3.
+- **Accroches annoncées** :
+  - `src/game/game.cpp`, 1 ligne : `view_.night = fp.night` (RG-09) ;
+  - `src/render/renderer.cpp`, 1 ligne : `params.w` de la passe finale.
+- **Mesures** (luminance relative des bas-côtés hors phares, % du blanc ; pixels saturés hors interface) :
+  - Campagne de nuit : cascade 0,11 / 0,14 → 0,53 / 0,25 ; vaches 0,20 / 0,31 → 1,10 / 1,29 ; autoroute 0,27 / 0,26 → 1,93 / 1,11 ; col 0,10 / 0,62 → 0,49 / 1,33 ;
+  - pixels saturés : au plus 0,63 % (village), contre 0,40 % avant ; limite de 2 %.
+- **Ville et circuit de nuit** : banc `nuit` comparé à main construit à la base de fusion. Mêmes exposition et lampes, 0 % saturé. Seul changement voulu : les vitrines s'allument enfin la nuit (RG-09).
+- **Banc `realisme`** (main et branche côte à côte) :
+  - indice lumière 100 % (69 / 69) des deux côtés ;
+  - jour et heure bleue identiques ligne pour ligne ; seule la nuit change (Campagne : EV 3 → −2) ;
+  - code 3 et 116 lignes d'erreur aussi sur main : sans lien avec le ticket.
+- **Tests** : 55 tests CPU verts (`fidelite_lumiere` : 101 vérifications), parcours complet 0 écart, après synchronisation avec main (y compris WFS-226).
+- **Non fait localement** : capture `carte-campagne-nuit` du banc `cartes` (trop long en local) ; elle sort de la CI de main.
+- **Fusion par confiance**. Après la fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-07 18:33:02 — WFS-268 : décision du PO avant fusion (option A) et création de WFS-273 (po-scrum-master)
+- Question de Claude, agent 5 : mémoire GPU du décor préparé sur tout le tour (Ville 61 Mo, Corniche 72 Mo, Campagne 212 Mo, Grand Prix 175-196 Mo).
+- Décision : décor préparé au chargement en **Ville et Corniche** seulement ; Campagne et Grand Prix gardent l'ancienne gestion (interrupteur, rien de supprimé). Accroches acceptées : `renderer.h/.cpp` (6 lignes), `circuit.cpp` et `campagne.cpp` (1 ligne chacun). Détail dans `regles-de-gestion/WFS-268.md` (Suivi).
+- **WFS-273** créé (P1, E4, ⏳ En attente de WFS-268 et WFS-246) : instances des arbres (RG-02 de WFS-268), ≤ 80 Mo par carte, puis Campagne et Grand Prix préparés, vibreurs du Grand Prix corrigés. Non attribué.
