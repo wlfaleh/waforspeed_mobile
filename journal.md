@@ -3114,3 +3114,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - cadence de l'enfant calculée sans glissement des pieds : plus rapide que le réel à 4 ans (≈ 1,7 fois le clip) ;
   - quand WFS-222 (PR #195) sera fusionné, sa baisse de 50 % des piétons s'appliquera avant la formation des familles : rien à changer ici.
 - **Suite** : agent libre, demande le ticket suivant au PO.
+
+### 2026-11-07 13:41:17 — Statuts automatiques, CI main #828 (robot statuts)
+- Run vert, annulé seulement à la publication (push, commit 8165d0c) : WFS-223 ✅ (PR #192, aabd139).
