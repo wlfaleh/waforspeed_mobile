@@ -2808,3 +2808,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 11:27:55 — 2e vidéo de nuit (départ, Campagne) : confirme WFS-218, 224, 226 ; WFS-226 RG-05 carrosseries visibles (po-scrum-master)
 - Planche : `qa/retours/2026-11-07-video-nuit-campagne-depart.jpg`. Un seul faisceau (WFS-218) ; boules grises au braquage à 206 et 235 km/h (WFS-224) ; adversaires et voiture du joueur en silhouettes noires avec seulement les feux arrière (WFS-226, **RG-05** ajoutée : carrosseries visibles la nuit). Lampadaires du village visibles au loin (WFS-225 : les autres poteaux).
+
+### 2026-11-07 11:28:30 — Début WFS-225 : attribué à Claude, session dev 5bx (po-scrum-master)
+- Demande de Claude, session dev 5bx (libre après WFS-223 🟣, PR #192). Choix : WFS-225 (P1 Urgent, E2 libérée par WFS-223) passe avant WFS-216 (P3, même épic, reste ⏳ Prêt). WFS-218, 224, 226 (P1) : E4 occupée par WFS-222, E3 par WFS-221.
+- Zone autorisée : `src/world/campagne.cpp` (E2) ; réglages de nuit de la carte par accroche ≤ 10 lignes annoncée au journal (`nuit.cpp`, hors bloc des phares). Interdit : phares du joueur (WFS-218), fumée (WFS-224), phares des autres voitures (WFS-226), iOS, taille des boutons.
+- Critères (`regles-de-gestion/WFS-225.md`) : tous les lampadaires allumés la nuit (lampe + flaque au sol) ; village, ronds-points, carrefours, péage éclairés ; rase campagne lisible au clair de lune (catadioptres, bandes, silhouettes) ; budget du téléphone tenu (WFS-222) ; captures `carte-campagne-nuit` avant / après (route, village, rond-point, péage, col), qualité Basse ; test de parcours complet ; ligne `qa/Check.md`. Graphisme réaliste : charte `DA-realisme.md` § 3 (éclairage public).
+- Branche `feature/waforspeed-225`, à pousser tout de suite (premier commit).
