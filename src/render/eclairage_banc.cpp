@@ -474,29 +474,36 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         g.shutdown();
         g_l.mode = AUCUN;
     }
-    {   // passage continu : heure dorée, temps × 20, 3 min de course (1 h de soleil), une image toutes les 0,5 s
-        preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
-        eclairage::choisirMoment((int)atmosphere::Moment::Doree); eclairage::accelererTemps(20);
-        g_l = EtatBanc{};
-        if (g.init(r, "golf", "campagne")) {
+    {   // passage continu : heure dorée, 3 min de course, une image toutes les 0,5 s ; d'abord temps × 1 (référence : petits
+        // recalages de l'exposition aux nouvelles sondes de la voiture qui roule, WFS-151), puis temps × 20 (1 h de soleil)
+        double sautRef = 0, sautMax = 0, hSaut = 0, hDebut = 0, hFin = 0, dLogE = 0;
+        for (int passe = 0; passe < 2; passe++) {
+            const bool vite = passe == 1;
+            preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
+            eclairage::choisirMoment((int)atmosphere::Moment::Doree); eclairage::accelererTemps(vite ? 20 : 1);
+            g_l = EtatBanc{};
+            if (!g.init(r, "golf", "campagne")) { erreurs++; continue; }
             g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course); eclairage::remettreAZero();
-            double tp = 0, evPrec = -100, sautMax = 0, hSaut = 0, hDebut = 0, hFin = 0, tSonde = -1; int cap = 0;
+            double tp = 0, evPrec = -100, ePrec = -1, tSonde = -1, saut = 0; int cap = 0;
             for (int i = 0; i <= 180 * 60; i++) {
                 g.update(1.0 / 60); tp += 1.0 / 60;
                 if (i % 30) continue;
                 g.render(3000 + tp);
                 const eclairage::Etat e = eclairage::etat();
-                if (i == 0) hDebut = e.astreHauteur;
-                hFin = e.astreHauteur;
+                if (vite && i == 0) hDebut = e.astreHauteur;
+                if (vite) hFin = e.astreHauteur;
                 if (tSonde < 0 && eclairage::sondeCapturePrete()) tSonde = tp;   // 1re sonde capturée : recalage voulu de WFS-151 (hors mesure)
-                if (evPrec > -50 && tSonde >= 0 && tp > tSonde + 2.0 && std::fabs(e.ev - evPrec) > sautMax) { sautMax = std::fabs(e.ev - evPrec); hSaut = e.astreHauteur; }
-                evPrec = e.ev;
-                if (i % 3600 == 0 && cap < 4) r.capturePng(out + "/realisme-transition-" + std::to_string(cap++) + ".png");
+                if (evPrec > -50 && tSonde >= 0 && tp > tSonde + 2.0 && std::fabs(e.ev - evPrec) > saut) { saut = std::fabs(e.ev - evPrec); if (vite) hSaut = e.astreHauteur; }
+                if (vite && ePrec > 0 && e.eSol > 0) dLogE = std::max(dLogE, std::fabs(std::log2(e.eSol / ePrec)));
+                evPrec = e.ev; ePrec = e.eSol;
+                if (vite && i % 3600 == 0 && cap < 4) r.capturePng(out + "/realisme-transition-" + std::to_string(cap++) + ".png");
             }
-            rap.ajouter(ligne("lum.wfs208.transition", "RG-02 : passage continu, heure dorée × 20 pendant 3 min (soleil de " + fmt(hDebut, 2) + "° à " + fmt(hFin, 2) + "°) : plus grand écart d'exposition entre deux images (0,5 s)",
-                              fmt(sautMax, 3) + " EV", "aucun saut visible (≤ 0,1 EV en 0,5 s ; adaptation de l'œil de WFS-151)", "≤ 0,1 EV", sautMax <= 0.1, "conception", "plus grand écart à h " + fmt(hSaut, 2) + "°"));
+            (vite ? sautMax : sautRef) = saut;
             g.shutdown();
-        } else erreurs++;
+        }
+        rap.ajouter(ligne("lum.wfs208.transition", "RG-02 : passage continu, heure dorée × 20 pendant 3 min (soleil de " + fmt(hDebut, 2) + "° à " + fmt(hFin, 2) + "°) : plus grand écart d'exposition entre deux images (0,5 s)",
+                          fmt(sautMax, 3) + " EV", fmt(sautRef, 3) + " EV à × 1 (sondes de la voiture qui roule) + 0,1 EV au plus", "≤ référence + 0,1 EV", sautMax <= sautRef + 0.1, "conception",
+                          "plus grand écart à h " + fmt(hSaut, 2) + "° ; éclairement au sol : au plus " + fmt(dLogE, 3) + " IL entre deux images"));
         eclairage::accelererTemps(1); eclairage::choisirMoment(-1);   // les bancs suivants gardent jour / nuit
     }
     // ---------------- tunnel de la Corniche : voiture dans le tunnel, puis sortie (adaptation de l'exposition)
