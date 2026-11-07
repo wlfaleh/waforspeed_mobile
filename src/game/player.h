@@ -56,7 +56,7 @@ struct Player {
     // le rendu, la caméra, le trafic et la course les lisent comme avant. Un système qui les modifie (choc, remise en piste,
     // départ) est pris en compte au pas suivant (la voiture est replacée dans le monde, sa vitesse gardée en direction).
     bool modeleMonde() const { return aide != Aide::Web && g_conduiteMonde; }
-    conduite::Etat monde{};
+    physique::Etat monde{};
     double braquageRoues = 0;   // angle des roues avant appliqué (rad, joueur + aide), modèle du monde
     double aideRoues = 0;       // part de cet angle ajoutée par l'aide à la direction (rad)
     // volant (−1..1) qui donne la courbure k (1/m) à la vitesse v (m/s), selon le modèle en cours (joueur simulé des bancs)
@@ -67,7 +67,7 @@ private:
     void synchroniser(Track& track);
     void projeter(Track& track);
     double aider(double v, Track& track);
-    const conduite::Params* cm_ = nullptr;
+    const physique::Params* cm_ = nullptr;
     bool mondeOk_ = false, cibleOk_ = false;
     double sDist_ = 0, sX_ = 0, sHead_ = 0, sSpeed_ = 0;   // dernière projection écrite (détection d'un changement extérieur)
     double latCible_ = 0;      // aide : écart latéral (m) de la voie suivie, celui où le joueur a lâché le volant

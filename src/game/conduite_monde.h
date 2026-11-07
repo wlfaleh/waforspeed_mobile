@@ -23,7 +23,7 @@
 #include <cstring>
 #include "cars.h"
 
-namespace wfs::conduite {
+namespace wfs::physique {
 
 constexpr double G = 9.81;            // m/s²
 constexpr double RHO_AIR = 1.2;       // kg/m³ (air à 20 °C)
@@ -194,11 +194,25 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
     const double Fyf = forceLaterale(af, p.cyAvant, Fzf, Df, Dyf), Fyr = forceLaterale(ar, p.cyArriere, Fzr, Dr, Dyr);
 
     // ---------- somme des forces (repère de la voiture) ----------
+    double Fx_esp = 0;   // freinage de l'ESP (N)
     double Fx = Fxf * cd - Fyf * sd + Fxr;
     const double Fy = Fxf * sd + Fyf * cd + Fyr;
-    const double Mz = p.a * (Fxf * sd + Fyf * cd) - p.b * Fyr;
+    double Mz = p.a * (Fxf * sd + Fyf * cd) - p.b * Fyr;
+    // ESP (activé, comme sur les vraies voitures) : si la voiture tourne plus vite que ce que le volant et l'adhérence
+    // justifient (survirage, tête-à-queue qui commence), le freinage d'une roue avant extérieure crée un couple qui la redresse
+    // (approché : couple borné par 30 % du poids freiné sur une roue, à la demi-voie) ; il ralentit un peu la voiture
+    if (au > V_DYNAMIQUE) {
+        const double rRef = std::clamp(u * std::tan(d) / p.L, -p.mu * G / au, p.mu * G / au);
+        const double exces = std::abs(e.r) - std::abs(rRef) - 0.05, beta = std::atan2(vl, au);
+        if ((exces > 0 && e.r * rRef >= 0) || (std::abs(e.r) > 0.05 && e.r * rRef < 0) || (std::abs(beta) > 0.10 && beta * e.r < 0)) {
+            const double voulu = 10.0 * std::max(exces, std::abs(beta) - 0.06) * p.Iz, Fmax = 0.3 * mg;
+            const double Mesp = std::min(std::abs(voulu), Fmax * p.voie / 2);
+            Mz -= sgn(e.r) * Mesp;
+            Fx_esp = Mesp / (p.voie / 2) * sgn(u);
+        }
+    }
     const double resist = 0.5 * RHO_AIR * p.CdA * u * au + (au > 0.01 ? s.crr * mg * sgn(u) : 0);
-    Fx -= resist + mg * std::sin(s.pente);
+    Fx -= resist + mg * std::sin(s.pente) + Fx_esp;
 
     // ---------- intégration (semi-implicite) ----------
     const double fx = sn, fz = -cs, rx = cs, rz = sn;   // avant, droite
@@ -283,4 +297,4 @@ inline const Params& params(const CarDef& c) {
     thread_local Params autre; autre = etalonner(c); return autre;
 }
 
-} // namespace wfs::conduite
+} // namespace wfs::physique
