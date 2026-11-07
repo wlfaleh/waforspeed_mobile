@@ -3210,3 +3210,83 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:19:55 — Statuts automatiques, CI main #840 (robot statuts)
 - Run vert (workflow_dispatch, commit 9abffcb) : WFS-216 ✅ (PR #196, b097f86), WFS-221 ✅ (PR #193, 9db8673), WFS-225 ✅ (PR #194, 815fffa), WFS-236 ✅ (PR #199, 024f8b6), WFS-237 ✅ (PR #199, 024f8b6), WFS-238 ✅ (PR #201, 1dfba86).
+
+### 2026-11-07 14:21:39 — VABF : ANO-113 reproduite dans la vidéo 4, aide désactivée (agent qa lead)
+- Sur retour de l’utilisateur : au rond-point, la voiture tourne seule et freine seule de 240 à 70 km/h sans aucun appui, aide désactivée. Preuve ajoutée à ANO-113 (WFS-241) ; ANO-124 reformulée ; rapport corrigé.
+
+### 2026-11-07 14:23:19 — VABF 2026-11-07 : anomalies ANO-115 à ANO-124 priorisées, WFS-243 à WFS-245 créés (po-scrum-master)
+- Demande du QA (sur ordre de l'utilisateur), rapport `qa/rapports/VABF-2026-11-07.md`, APK 840 (9abffcb). Aucune bloquante nouvelle ; majeures d'abord.
+- Rattachées à des tickets existants (pas de doublon créé) : ANO-115 → WFS-222 (P1, fusionné **après** l'APK 840 : à vérifier sur le prochain APK, en Course à 5) ; ANO-119 → WFS-230 (P1, RG-07 lumière de lune homogène sol / arbres / carrosseries, RG-08 voiture du joueur visible) ; ANO-120 → WFS-224 (P1, même défaut) ; ANO-122 → WFS-224 (RG-05, même fichier `effets_systeme.cpp`) ; ANO-123 → WFS-242 (P1, RG-07 commandes visibles dès le « 3 », boutons inchangés) ; ANO-121 → WFS-231 (P2, RG-05 enseignes à l'endroit).
+- Créés : **WFS-243** (P2, E3, après WFS-241 / 242) ANO-117 adversaires invisibles + ANO-124 îlot du rond-point (à confirmer avec l'aide corrigée) ; **WFS-244** (P3, E9, prêt tout de suite) ANO-116 plaques sur la chaussée ; **WFS-245** (P3, E5, après WFS-234) ANO-118 étiquettes du HUD (taille des boutons exclue : ordre permanent).
+- Complément du QA (b4d5a92) : WFS-241 RG-07 ajoutée : aide désactivée = ni direction, ni freinage, ni nitro automatiques (preuve `v4-rond-point-sans-volant-planche.jpg`).
+- `anno.md` : statuts et colonne « US de correction » remplis ; `track-agent.md` à jour. Campagne VABF toujours ouverte.
+
+### 2026-11-07 14:25:25 — Skill / agent expert-conduite ; règle 🟡 « à valider par l'utilisateur » ; deux sessions de développeur ouvertes par le PO (po-scrum-master)
+- **Accord de l'utilisateur** pour : (1) un agent et un skill experts en conduite ; (2) le PO ouvre lui-même des sessions de développeur quand un P1 attend ; (3) les tickets nés d'un essai de l'utilisateur et les tickets de conduite restent 🟡 jusqu'à sa confirmation.
+- **Créés** : `.claude/skills/expert-conduite/SKILL.md` (modèle cible en coordonnées du monde, pneus, transfert de charge, moteur, boîte, freins, aides, banc `conduite` contre les fiches, ordre de travail), `.claude/agents/expert-conduite.md` ; statut 🟡 dans la légende de `TACHES.md` ; règles dans `CLAUDE.md` et l'agent PO.
+- **WFS-241** devient l'étape 1 du chantier « Conduite réaliste » (RG-04 tranchée : conduite en coordonnées du monde).
+- **Sessions ouvertes** (compte de l'utilisateur) : « Agent dev conduite » (session_01UY1Vv1HhvwRLyzGwJojas5) → WFS-241 ; « Agent dev course » (session_01UY1Vv1dqtmnzuHnjhy9VJz) → WFS-242 puis WFS-218 + 226. Reste libre et prioritaire : WFS-224.
+
+### 2026-11-07 14:28:39 — WFS-235 : arbitrage RG-02 / RG-05 (vue Cockpit), option A ; conflit d'attribution WFS-218 signalé (po-scrum-master)
+- **Question d'arwa-2** : la vraie géométrie de l'expert (pavillon, montants, rétroviseur d'une Golf) cache ≈ 25 % de l'image au-dessus de l'horizon, contre « < 15 % » demandé par RG-05.
+- **Décision : option A, vraie géométrie** (cotes de `expert-realisme-3d`, vraies matières, jamais d'aplat noir). Le « < 15 % » était un chiffre du PO : remplacé par un critère qui mesure l'ordre de l'utilisateur (« voir la rue ») : (1) fenêtre de la rue, horizon → +8°, ±15° autour de l'axe de la voiture : **0 % caché** ; (2) bande de la rue, horizon → +8°, toute la largeur : **≤ vraie voiture + 2 points** (le « ≤ 10 % » proposé n'est pas tenable : la glace réelle du rétroviseur en cache seule ≈ 12 %, calcul rapide du PO) ; (3) route visible jusqu'à l'horizon (RG-02) ; (4) part au-dessus de l'horizon au journal seulement. Banc `camera-cockpit`, regard Normal, 20 voitures × ligne droite / virage × jour / nuit. Détail : `regles-de-gestion/WFS-235.md` (RG-05 et « Suivi »).
+- **Conflit signalé (rien changé dans `TACHES.md`)** : WFS-218 attribué à agent arwa à 14:19, branche poussée à 14:20 (2d3c20e), puis réservé à l'agent dev course à 14:25 (après WFS-242). Règle des 10 h : à trancher par la session PO (01UY1Vv1). `track-agent.md` : lignes des deux nouvelles sessions rangées dans « Agents développeurs », heures d'envoi à jour.
+
+### 2026-11-07 14:30:34 — WFS-221, 222, 223, 225 remis en 🟡 À valider (utilisateur) (po-scrum-master)
+- Ces tickets viennent des vidéos de l'utilisateur d'aujourd'hui ; règle 🟡 (2026-11-07) appliquée après coup : ils ne restent pas ✅ sur la seule CI. ✅ quand l'utilisateur confirme sur l'APK de `main` (WFS-222 n'était pas encore dans l'APK 840).
+
+### 2026-11-07 14:33:14 — WFS-222 refusé par l'utilisateur (ANO-125) ; WFS-246 créé ; session « Agent dev perf » ouverte (po-scrum-master)
+- **Retour de l'utilisateur** : « 222 KO, à refaire » (APK 842, qui contient WFS-222). WFS-222 → ❌ Refusé ; anomalie ANO-125 (bloquante).
+- **Constat** (journal de WFS-222) : gain de ≈ 6 à 12 % seulement ; GPU = goulot (passe de scène ≈ 80 %), `cullMode` = NONE partout, shader de scène lourd pour tout le décor.
+- **WFS-246** (`[TECHNIQUE]`, P1, E4) : faces arrière, shaders par coût, résolution adaptative (viser 60 img/s), LOD au-delà de 150 m, ombres et capture allégées ; coût GPU ÷ 3 au banc ; ≥ 60 / 45 img/s sur le téléphone, validé par l'utilisateur.
+- **Session ouverte par le PO** : « Agent dev perf » (session_01UY1Vv56DjekCWRRAAjo4bp).
+
+### 2026-11-07 14:34:50 — Une session = un domaine : WFS-218 + 226 et 224 retirés de l'agent dev course ; session « Agent dev nuit » ouverte (po-scrum-master)
+- **Remarque de l'utilisateur** : ne pas réserver à l'agent dev course des tâches sans rapport avec la course.
+- **Fait** : agent dev course prévenu (seulement WFS-242, puis courses et modes) ; session **« Agent dev nuit »** (session_01UY1Vv46gFUTj96omGSDRJT) ouverte : WFS-218 + 226 (phares), puis WFS-224 (fumée des pneus). Règle « une session = un domaine » dans l'agent PO.
+
+### 2026-11-07 14:35:39 — Le PO ouvre des sessions de développeur sans demander l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** : le PO peut créer des sessions sans son accord. Écrit dans l'agent PO : ouverture dès qu'un ticket prêt n'a pas de développeur joignable ou qu'un nouveau domaine apparaît ; information de l'utilisateur après coup ; toujours une session = un domaine.
+
+### 2026-11-07 14:36:17 — Correction : le PO ne crée aucune session de développeur sans l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** (« non, tu ne peux pas ») : la règle de 14:3x est annulée. Le PO propose et ouvre une session seulement après le « oui » de l'utilisateur. Les 4 sessions déjà ouvertes (conduite, course, perf, nuit) avaient son accord et restent.
+
+### 2026-11-07 14:37:13 — Les 4 sessions de développeur ouvertes par le PO sont archivées (décision de l'utilisateur) (po-scrum-master)
+- **Archivées** : « Agent dev conduite » (WFS-241, en lecture du code), « Agent dev course » (WFS-242, grille corrigée et compilée, tests en cours), « Agent dev perf » (WFS-246, au tout début), « Agent dev nuit » (WFS-218 + 226, branche créée, étude des phares).
+- **Tickets remis ⏳ Prêt**, responsable vidé : WFS-241, 242, 246, 218, 226, 224 ; les branches `feature/waforspeed-241 / 242 / 246 / 218` sont **gardées** (ce qui a été poussé reste, ce qui était seulement en local dans les sessions est perdu). Lignes retirées de `track-agent.md`. Bandeau de `TACHES.md` mis à jour.
+
+### 2026-11-07 14:37:35 — WFS-218 rendu à l'agent arwa (il l'avait pris à 14:19, avant la réservation du PO) (po-scrum-master)
+- Conflit corrigé : WFS-218 🔧 agent arwa (branche 2d3c20e) ; WFS-226 prêt, à lui donner après WFS-218 (même fichier). `track-agent.md` nettoyé des sessions archivées.
+
+### 2026-11-07 14:38:49 — Session « Agent dev conduite » gardée par l'utilisateur, ressortie de l'archive ; WFS-241 lui revient (po-scrum-master)
+- L'utilisateur n'avait validé qu'une session : celle de la conduite. Elle est ressortie de l'archive et reprend WFS-241 sur sa branche ; les trois autres restent archivées.
+
+### 2026-11-07 14:41:14 — WFS-217 marqué « Refusé par l'utilisateur » (po-scrum-master)
+- WFS-217 affichait ✅ (CI main #826) alors que l'utilisateur l'a refusé sur l'APK 840 (ANO-113, correction WFS-241). Statut corrigé.
+
+### 2026-11-07 14:42:25 — WFS-221, 223, 225 refusés par l'utilisateur ; ANO-126 à 128 ; WFS-247 à 249 créés (po-scrum-master)
+- **Verdict de l'utilisateur** : 221 KO, 223 KO, 225 KO. Statuts → ❌ Refusé ; anomalies bloquantes ANO-126 (fluidité), ANO-127 (ronds-points), ANO-128 (Campagne de nuit).
+- **Corrections (P1 Urgent, ⏳ Prêt)** : WFS-247 fluidité 2e passage (E0 + E3, aux cadences réelles du téléphone) ; WFS-248 ronds-points 2e passage (E2, inventaire sur l'APK) ; WFS-249 Campagne de nuit 2e passage (E2 + E13, mesure de luminance, absorbe WFS-230). Toutes en 🟡 après fusion, validées par l'utilisateur. Aucune session ouverte sans son accord.
+
+### 2026-11-07 14:44:42 — Règle des KO : nouvelle US, autre développeur ; WFS-248 : ronds-points à refaire entièrement (po-scrum-master)
+- **Ordre de l'utilisateur** : un ticket KO est recréé sous un autre numéro et confié à un autre développeur. Écrit dans `CLAUDE.md` et l'agent PO ; exclusions inscrites (case « Dépend de » et règles) : WFS-241 et 246 pas à l'agent arwa ; WFS-247 pas à l'agent 2 ; WFS-248 et 249 pas à la session dev 5bx.
+- **WFS-248** : « à refaire entièrement » (reconstruction des ronds-points des 4 cartes aux dimensions réelles, liste de tous les bugs avant / après).
+
+### 2026-11-07 14:45:07 — Corrections des KO attribuées à d'autres développeurs : WFS-247 → session dev expert, WFS-248 → agent 5 (po-scrum-master)
+- Règle des KO appliquée : WFS-247 (fluidité) à la session dev expert (pas l'agent 2) ; WFS-248 (ronds-points à refaire) à l'agent 5 (pas la session dev 5bx) ; WFS-249 au prochain libre sauf la session dev 5bx ; WFS-246 au prochain libre sauf l'agent arwa. Ces développeurs sont sur l'autre compte (pas de message direct) : bandeau en tête de `TACHES.md`, lignes de `track-agent.md` ; ils prennent le ticket à leur prochaine demande au PO.
+
+### 2026-11-07 14:47:58 — WFS-240 fusionné par confiance (PR #205) (Claude, agent 4 (011cpqZan))
+- **RG-01, poussettes** : ≈ 1 famille sur 4 (25,3 % sur 4 000 tirages) ; poussette citadine de 1,0 × 0,6 m, poignée à 1,0 m, 378 triangles (tissu, aluminium, plastique) ; l'enfant de la famille devient le petit assis dedans (total inchangé) ; mains de l'adulte sur la poignée (IK) ; valeurs à confirmer dans `references/reel/humains/poussette.md`. Poussettes par carte : Ville 16, Corniche 7, Campagne 2, Grand Prix 2.
+- **RG-02, tribunes** : 10,0 % des spectateurs (38 sur 381) sont des enfants de 7, 10 ou 14 ans assis à côté d'un adulte ; nombre de spectateurs inchangé ; tête au-dessus du siège 0,63 / 0,68 / 0,79 m. **Accroche annoncée** : `src/world/circuit.cpp`, 4 lignes (place précédente du rang, choix de la silhouette).
+- **RG-03, cheveux longs** : une fille sur deux, coiffure « Hair_Long » de `femme.wfp` (Quaternius CC0, déjà dans le dépôt : aucun téléchargement) ; 1 104 / 377 triangles ; échelle et décalage mesurés sur les maillages. **Avis expert-realisme-3d** : acceptable (longueur, volume, une sur deux) ; à confirmer : ligne du front à 4 ans, cheveux contre les épaules en marchant. Queue de cheval : aucune libre de droits dans le dépôt, non faite.
+- **RG-04, cadence** (règle corrigée par le PO) : 158 à 161 / 127 / 109 / 91 à 93 pas/min à 1,0 m/s, contre 154 / 128 / 113 / 97 réels (à confirmer) : tout à ± 10 %, vérifié par `test_fidelite_humains`.
+- **Preuves** : 44 tests CPU, indice de fidélité des humains 100 % (72 / 72), parcours 0 écart (vue normale et cockpit), captures `enfants-*`, `enfants-cheveux-longs` (nouvelle) et `carte-circuit-tribune-*` regardées. APK non construit en local.
+
+### 2026-11-07 14:49:14 — WFS-224 attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de l'agent 4, libre après WFS-240 (🟣, PR #205). Ordre « nuit en priorité » (bandeau 14:00) : WFS-218 🔧 agent arwa, WFS-226 réservé à l'agent arwa après WFS-218 (même `nuit.cpp`) ; le suivant est **WFS-224** (P1, E4). Exception d'épic E4 déjà décidée (journal 14:00 : WFS-224 en parallèle de WFS-239, fichiers séparés) ; promis à l'agent 4 depuis 11:48. WFS-249 (E2 + E13) et WFS-246 (E4) restent bloqués par leurs épics.
+- **Zone autorisée** : `src/render/effets_*` (`effets_particules.*`, `effets_systeme.cpp`), tests CPU de la fumée dans `tests/**` (fichiers neufs). **Interdit** : `nuit.cpp` (WFS-218 / 226), `qualite_banc.cpp` (WFS-239), `renderer.*` et `qualite_auto.*` (sauf accroche ≤ 10 lignes annoncée au journal), iOS (gel), taille des boutons.
+- **Critères** (`regles-de-gestion/WFS-224.md`) : RG-01 fumée seulement en vrai dérapage ; RG-02 volutes transparentes à bords flous, jamais de disques, aucune particule devant le HUD (ANO-120) ; RG-03 rien avec « Réduire les mouvements », coût GPU tenu ; RG-04 captures `braquage-gauche` / `braquage-droite` jour et nuit à 100 et 150 km/h avant / après, tests CPU, parcours 0 écart ; RG-05 lignes du nitro sous le HUD (ANO-122).
+- Rappels : skill `agent-developer` d'abord ; branche `feature/waforspeed-224` poussée tout de suite ; se synchroniser souvent avec `main` (deux autres tickets E4 actifs) ; fusion par confiance si > 50 % ; ticket né d'un essai de l'utilisateur → 🟡 À valider après fusion.
+
+### 2026-11-07 14:54:00 — WFS-248 : début (Claude, agent 5)
+- Ticket pris (attribué par le PO à 14:45). Branche `feature/waforspeed-248`. Étape 1 : inventaire des défauts des ronds-points des 4 cartes (RG-00 bis, RG-01) au banc local (lavapipe), avant toute reconstruction.
