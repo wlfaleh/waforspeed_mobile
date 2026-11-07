@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <random>   // WFS-242 : jeton de la grille
+#include "course5.h"   // WFS-242 (RG-05) : places de la grille de départ
 #include "player.h"
 #include "trace_cartes.h"   // WFS-136 (accroche A6) : version du tracé dans la présence
 
@@ -158,9 +160,11 @@ bool Session::join(std::unique_ptr<Transport> t, std::string_view code, bool hos
     t_ = std::move(t); code_ = c; host_ = host; round_ = 0; st_ = Status::Lobby; ghosts_.clear();
     nick_ = cleanName(nick); if (nick_.empty()) nick_ = "Pilote";
     car_ = car ? car : "golf"; paint_ = paint ? paint : ""; map_ = map;
+    jeton_ = std::random_device{}() & 0x7fffffffu;   // WFS-242 (RG-05) : ordre des places de la grille (une fois par salon)
     t_->presence({{"n", nick_}, {"st", "lobby"}, {"r", "0"}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"car", car_}, {"paint", paint_},
                   {"host", host ? "1" : "0"}, {"map", host ? map_ : ""}, {"km", host ? std::to_string(km_) : ""},
-                  {"trace", trace::signature()}});   // WFS-136 (RG-07, A7.5) : cartes au tracé 2
+                  {"trace", trace::signature()},   // WFS-136 (RG-07, A7.5) : cartes au tracé 2
+                  {"j", std::to_string(jeton_)}});
     return true;
 }
 void Session::leave() {
@@ -214,8 +218,19 @@ void Session::startRace() {
     round_ += 1; st_ = Status::Race; myFinish_ = 0; presenceTimer_ = 0; ghosts_.clear();
     partants_.clear();   // WFS-122 (RG-02) : qui prend le départ (un partant qui quitte en course reste au classement : « parti »)
     for (const PeerView& p : others()) partants_[p.id] = {peerName(p.f), 0};
+    // WFS-242 (RG-05) : place sur la grille : créateur devant, puis par jeton (et pseudo) croissant ; chaque téléphone ne place
+    // que sa voiture, les autres la voient à sa place par la présence (d, x)
+    place_ = 0;
+    if (!host_)
+        for (const PeerView& p : others()) {
+            if (str(p.f, "host") == "1") { place_++; continue; }
+            const uint32_t j = (uint32_t)clampd(num(p.f, "j", 0), 0, 2147483647.0);
+            place_ += j < jeton_ || (j == jeton_ && peerName(p.f) < nick_);
+        }
     startMs_ = t_->nowMs();
-    t_->presence({{"st", "race"}, {"r", std::to_string(round_)}, {"d", "0"}, {"x", "0"}, {"v", "0"}, {"ft", ""}, {"car", car_}, {"paint", paint_}});
+    const course5::Place pg = course5::placeGrille(place_);   // WFS-242 : les autres me voient tout de suite à ma place (pas de glissement)
+    t_->presence({{"st", "race"}, {"r", std::to_string(round_)}, {"d", std::to_string((long long)std::llround(pg.s))},
+                  {"x", fmt(std::round(pg.x * 1000) / 1000, 3)}, {"v", "0"}, {"ft", ""}, {"car", car_}, {"paint", paint_}});
 }
 double Session::trafficClock() const { return t_ ? (t_->nowMs() - startMs_) / 1000.0 - 3.0 : -3.0; }
 
@@ -249,7 +264,8 @@ void Session::updateGhosts(double dt) {
         const std::string st = str(p.f, "st");
         if ((st != "race" && st != "done") || (int)num(p.f, "r", -1) != round_) continue;
         const double v = st == "race" ? clampd(num(p.f, "v"), 0, MAX_SPEED * 1.6) : 0;
-        const double est = clampd(num(p.f, "d"), 0, fin) + v * std::min(0.5, std::max(0.0, now - p.updatedAt) / 1000);
+        // WFS-242 (RG-05) : distance négative permise jusqu'à D_GRILLE (grille de départ derrière la ligne)
+        const double est = clampd(num(p.f, "d"), D_GRILLE, fin) + v * std::min(0.5, std::max(0.0, now - p.updatedAt) / 1000);
         const double x = clampd(num(p.f, "x"), -2, 2);
         auto it = ghosts_.find(p.id);
         Ghost g; if (it != ghosts_.end()) g = it->second; else { g.rd = est; g.x = x; }

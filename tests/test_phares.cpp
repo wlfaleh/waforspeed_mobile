@@ -1,6 +1,7 @@
 // Feux de croisement du joueur (WFS-218) : flux de la paire = flux sourcé (±5 %, PB-LUM), coupure à −0,57° et remontée de
 // 15° côté droit (RG-01), presque plus de lumière au-dessus (pas de mur éclairé jusqu'au toit), route et pieds de façade
-// proches éclairés, portée utile 60-80 m (RG-02), teintes 3500 K / 5700 K de luminance 1.
+// proches éclairés, portée utile 60-80 m (RG-02), teintes 3500 K / 5700 K de luminance 1 ; WFS-226 : lumière au sol des
+// autres voitures (même photométrie), étalement en azimut borné.
 // usage : test_phares
 #include <cmath>
 #include <cstdio>
@@ -65,6 +66,13 @@ int main() {
     const double oeil = lux(false, -3.5 - 0.65, 1.1, 50, h, 0, 0, -1) + lux(false, -3.5 + 0.65, 1.1, 50, h, 0, 0, -1);
     std::printf("portée %.0f m ; bas-côté droit à 70 m %.2f lx ; œil en face à 50 m %.3f lx\n", portee, cible, oeil);
     VERIFIE(portee >= 60 && portee <= 80, "portée utile 60-80 m"); VERIFIE(cible > 1, "bas-côté droit à 70 m"); VERIFIE(oeil < 0.4, "éblouissement B50L");
+    // WFS-226 : lumière au sol des autres voitures (paire LED) = même photométrie que les vrais projecteurs
+    for (double z : {3.0, 10.0, 25.0}) {
+        const double ref = lux(true, -0.65, 0, z, h, 0, 1, 0) + lux(true, 0.65, 0, z, h, 0, 1, 0), e = eclairementSol(0, (float)z, 0.65f, (float)h);
+        VERIFIE(std::abs(e / ref - 1) < 0.01, "lumière au sol des autres à %.0f m : %.3f au lieu de %.3f lx", z, e, ref);
+    }
+    // WFS-226 : flanc d'une voiture voisine, à 45° de l'axe : moins de 3 % de la crête
+    VERIFIE(intensiteRelative(-0.1f, 45.f) < 0.03f, "étalement à 45°");
     // teintes de luminance 1
     for (const vec3& c : {TEINTE_HALOGENE, TEINTE_LED}) VERIFIE(std::abs(0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z - 1) < 0.01f, "luminance de la teinte");
     VERIFIE(!led("abarth") && led("golf") && !led(nullptr), "LED selon la voiture");

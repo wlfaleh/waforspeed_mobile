@@ -17,6 +17,7 @@
 #include "sauvegarde.h"   // WFS-24 : record
 #include "traffic_system.h"
 #include "../platform/manette.h"   // WFS-22
+#include "../ui/ecrans/chargement.h"  // WFS-242 (RG-07) : fondu du chargement (commandes cachées)
 #include "../ui/ecrans/terrain.h"     // WFS-125 : banc (« Rouler »)
 #include "../ui/garage.h"             // WFS-125 : banc (« Choisir »)
 #include "poursuite.h"                // WFS-125 : banc (poursuite)
@@ -62,12 +63,13 @@ public:
             restartReq_ = false;
             pl.reset(*pl.car);
             trafficRestart(pl.position);
-            course_.reset(); nouveauRecord_ = false;
+            course_.reset(); nouveauRecord_ = false; attente_ = 0;
             WFS_LOG("course : nouvelle course (même graine de trafic)");
             demarrerFantome(g);   // WFS-125
             return;
         }
         if (g.ecran != Ecran::Course) return;   // WFS-38 / WFS-74 : course figée hors de l'écran Course (menu, garage, terrain…)
+        if (attendreDepart(dt)) return;           // WFS-242 (RG-07) : le « 3 » arrive avec les commandes
         const RaceState before = course_.state; const int cp = course_.level;
         course_.step(dt, pl, activeTrafficMut(), pl.position, dt / std::max(1e-6, course_.echelleDt));   // WFS-70 (RG-05) : chrono en temps réel
         // WFS-125 (RG-05 / RG-06) : horloge de jeu de la course (le ralenti ralentit aussi le fantôme), trace toutes les 0,1 s
@@ -131,6 +133,22 @@ public:
 
     static CourseSystem* active_;
     Course course_;
+    // WFS-242 (RG-07, ANO-123) : avant le premier « 3 », le compte à rebours attend la fin du fondu du chargement (les commandes
+    // tactiles y sont cachées : elles apparaissaient d'un coup ≈ 1 s après le « 3 », pendant l'image figée du chargement des
+    // adversaires) et les modèles des ordinateurs de la Course à 5 ; au plus ATTENTE_MAX_S, pour ne jamais bloquer le départ.
+    // Le duel en ligne n'attend pas (horloge commune des téléphones). Vrai : pas de règle de course à ce pas
+    static constexpr double ATTENTE_MAX_S = 2;
+    double attente_ = 0;
+    bool attendreDepart(double dt) {
+        if (course_.state != RaceState::Count || course_.lastCount >= 0 || duelSession().inRoom()) return false;
+        const bool fondu = ecrans::fonduEnCours(), adversaires = !course5::course5PreteAuDepart();
+        if ((fondu || adversaires) && attente_ < ATTENTE_MAX_S) { attente_ += dt; return true; }
+        if (attente_ > 0)
+            WFS_LOG("course : compte à rebours lancé après %.2f s d'attente (%s)", attente_,
+                    fondu || adversaires ? "attente maximale atteinte" : "fondu fini, adversaires prêts");
+        attente_ = 0;
+        return false;
+    }
     // WFS-125 : banc d'essai (parcours RG-09)
     bool bouton(const std::string& nom, float& x, float& y) const {
         const Bouton& b = nom == "rejouer" ? rejouer_ : menu_;

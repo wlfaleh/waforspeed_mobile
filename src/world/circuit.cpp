@@ -28,6 +28,7 @@
 #include "decor_carte.h"
 #include "enseignes.h"   // AtlasTextes (WFS-71) : texte des panneaux publicitaires (WFS-93)
 #include "pietons.h"     // WFS-199 : spectateurs (personnages du jeu allégés, foule::silhouette)
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : tribunes déclarées au son des lieux
 
 namespace wfs {
 namespace carte {
@@ -330,10 +331,12 @@ protected:
         };
         auto pneus = [&](int64_t n0, int64_t n1, int side, float lat) { for (int64_t n = n0; n < n1; n += 4) poser(n, objet(T_TIRES, side, lat, true), true); };
         // WFS-199 (RG-01) : 2 tribunes au plus : id 0 face à la grille de départ, 1 à l'extérieur de l'épingle
+        std::vector<lieux::Lieu> tribunesSon;   // WFS-261 (accroche) : centre de chaque tribune posée (foule du son des lieux)
         auto tribune = [&](int64_t n, int side, float lat, int rangs, int segs, int id) {
             Item it = objet(T_STAND, side, lat); it.l = segs * SM - 1; it.k = rangs; it.col = id;
             if (!poser(n, it, true)) return;
             tribunes_++;
+            tribunesSon.push_back({mod(n + (int64_t)std::lround(it.l / SM / 2)), 0.f, side * (lat + (rangs - 1) * RANG * 0.5f), hauteurRang(rangs / 2) + 0.9f, 0});
             sieges(it, [&](int, float, bool occupe, uint32_t) { spectateurs_ += occupe; });
             for (float d = 4; d < it.l - 2; d += 9)   // drapeaux agités au dernier rang (animes)
                 drapeaux_.push_back({mod(n + (int64_t)(d / SM)), side, lat + (rangs - 1) * RANG + 0.1f, hauteurRang(rangs - 1) + 1.2f, (int)(mod(n) + (int64_t)d) % 6});
@@ -431,6 +434,7 @@ protected:
                     for (int r = 0; r < 4; r++) { Item te = objet(T_TENTE, side, R + 24 + r * 7.5f, true); te.col = (int)((n + r * 5) % 6); te.along = (r % 2) * 2.f; poser(n, te, true); }
             }
         }
+        lieux::poser("circuit", lieux::TRIBUNE, std::move(tribunesSon));   // WFS-261 (accroche)
     }
 
     // ---------------------------------------------------------------- WFS-140 : objets animés (animes)
@@ -525,6 +529,29 @@ protected:
             const float tt = (float)g.time * (0.12f + 0.03f * k) + k * 2.1f;
             const vec3 c = lateral(p, (k % 2 ? 1.f : -1.f) * (70 + 25 * k) + 30 * std::cos(tt), 38 + 6 * k) + p.f * (30 * std::sin(tt));
             r.draw(oiseaux_, mats_[P_UNI], translate(c) * rotateY(-tt - p.th)); n++;
+        }
+        return n;
+    }
+
+    // ---------------------------------------------------------------- WFS-256 (accroche, autorisée par le PO : ajout seul)
+    // formes de choc des objets du Grand Prix, relevées sur dessine() ci-dessous (box : largeur selon r, longueur selon f)
+    int solide(const Item& it, chocs::ObstacleRoute o[4]) const override {
+        if (const int n = CarteDecor::solide(it, o)) return n;   // arbres, projecteurs
+        using G = chocs::Genre; const float s = (float)it.side, R = (float)RW, SG = (float)SEG_M;
+        int n = 0;
+        auto bt = [&](float lat, float hx, float hz, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.forme = chocs::Forme::Boite; q.lat = lat; q.hx = hx; q.hz = hz; q.genre = g; q.along = al; };
+        auto cy = [&](float lat, float r, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.lat = lat; q.r = r; q.genre = g; q.along = al; };
+        switch (it.t) {
+        case T_TIRES: for (int i = 0; i < 4; i++) cy(s * it.lat, 0.6f, G::Mur, i * 1.2f); break;   // 4 piles de pneus
+        case T_ADBOARD: bt(s * (it.lat + 0.11f), 0.12f, 5.75f, G::Mur, 5 * SG); break;          // cadre de 11,5 m (pose a + 5)
+        case T_PITWALL: bt(s * it.lat, 0.2f, 1.5f * SG, G::Mur); break;
+        case T_MARSHAL: bt(s * it.lat, 0.8f, 0.8f, G::Batiment); break;
+        case T_FREIN: for (float al : {-0.6f, 0.6f}) bt(s * it.lat, 0.04f, 0.04f, G::Poteau, al); break;
+        case T_PORTIQUE: for (float sd : {-1.f, 1.f}) bt(sd * (R + 1.6f), 0.25f, 0.25f, G::Poteau); break;
+        case T_PASSERELLE: for (float sd : {-1.f, 1.f}) bt(sd * (R + 2.5f), 0.5f, 0.5f, G::Poteau); break;
+        case T_FLAG: cy(s * it.lat, 0.08f, G::Poteau); break;
+        case T_GRILLAGE: bt(s * it.lat, 0.03f, 1.8f, G::Mur, 1.8f); break;
+        default: break;   // tribunes, garages, stands, camions : au-delà du bord de la carte ; grille de départ : peinte au sol
         }
         return n;
     }

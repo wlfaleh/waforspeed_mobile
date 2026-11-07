@@ -135,10 +135,20 @@ else()
   target_compile_definitions(test_archi_geo PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
   target_compile_definitions(test_fidelite_lumiere PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_fidelite_lumiere_ombres tests/fidelite_lumiere_ombres.cpp)   # WFS-227 : cascades d'ombre, M-01, M-02
+  target_compile_definitions(test_fidelite_lumiere_ombres PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_ville_lieux tests/test_ville_lieux.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-137 : lieux de la Ville au tracé 2
   add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
   add_executable(test_aide_direction tests/test_aide_direction.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-217 : aide à la direction
+  add_executable(test_conduite tests/test_conduite.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-241 : banc de conduite sans GPU (fiches, 6 virages, RG-07, déterminisme)
+  add_executable(test_sons_conduite tests/test_sons_conduite.cpp src/audio/engine_synth.cpp)   # WFS-255 : sons et vibrations liés aux forces
+  add_executable(test_audio_lieux tests/test_audio_lieux.cpp src/audio/ambiance_lieux.cpp src/game/track.cpp src/game/player.cpp)   # WFS-261 : son des lieux
+  add_executable(test_chocs tests/test_chocs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : chocs avec le décor (poteau, mur, test continu)
+  add_executable(test_chocs_cartes tests/test_chocs_cartes.cpp src/game/chocs_declaration.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/world/giratoire.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : obstacles de la Ville et des îlots, aucun mur invisible
+  add_executable(test_chocs_voitures tests/test_chocs_voitures.cpp src/game/duel.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/game/traffic.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-256 : jamais deux voitures l'une dans l'autre
+  target_link_libraries(test_chocs_voitures Threads::Threads)
   add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
+  add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)
   # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
   get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
   foreach(cible IN LISTS cibles_wfs)

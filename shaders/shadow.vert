@@ -7,5 +7,5 @@ layout(push_constant) uniform P { mat4 model; vec4 color; vec4 params; vec4 emis
 layout(location = 0) out vec2 vUv;
 void main() {
     vUv = inUv;
-    gl_Position = F.shadowMat * (pc.model * vec4(inPos, 1.0));
+    gl_Position = F.ombreCasc[int(pc.emissive.x + 0.5)] * (pc.model * vec4(inPos, 1.0));   // WFS-227 : cascade de la tuile (pc.emissive.x)
 }
