@@ -489,12 +489,10 @@ private:
         const bool epingle = m == nav::Manoeuvre::EpingleGauche || m == nav::Manoeuvre::EpingleDroite;
         const bool leger = m == nav::Manoeuvre::LegerGauche || m == nav::Manoeuvre::LegerDroite;
         if (epingle) {   // demi-tour : montée, arc, descente
-            const float rx = 0.38f * s;
-            vec2 arc[10];
-            for (int i = 0; i < 10; i++) { const float th = 3.14159265f * i / 9; arc[i] = {c.x - sens * rx + sens * rx * std::cos(th), coude.y - 0.25f * s - rx * std::sin(th)}; }
-            vec2 tout[12]; int n = 0; tout[n++] = {c.x, bas.y};   // montée, arc (il part de c.x), descente
-            for (int i = 0; i < 10; i++) tout[n++] = arc[i];
-            tout[n++] = {c.x - 2 * sens * rx, coude.y + 0.25f * s};
+            const float rx = 0.38f * s, x0 = c.x - sens * rx;   // montée en x0, arc, descente en x0 + 2 rx (centré sur l'icône)
+            vec2 tout[12]; int n = 0; tout[n++] = {x0, bas.y};
+            for (int i = 0; i < 10; i++) { const float th = 3.14159265f * i / 9; tout[n++] = {x0 + sens * rx * (1 - std::cos(th)), coude.y - 0.25f * s - rx * std::sin(th)}; }
+            tout[n++] = {x0 + 2 * sens * rx, coude.y + 0.25f * s};
             bande(P, tout, n, e, b, true);
             tete(tout[n - 1], {0, 1});
             return;
@@ -571,7 +569,7 @@ void benchMiniCarte(Game& g, Renderer& r, const std::string& out) {
                 const nav::Prochaine p = nav::prochaine(trace::sections(*g_piste), g.player().dist, g_piste->length(), c->duelFinish, M);
                 if (voulu(p.m) && p.distanceM >= dMin && p.distanceM <= dMax) return true;
             }
-            image(i);
+            g.update(1.0 / 60); t += 1.0 / 60; if (i % 30 == 0) g.render(t);   // une image sur 30 : banc plus court sur la CI
         }
         return false;
     };
