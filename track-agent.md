@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 00:06:31 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 00:30:24 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` (M-01 nuit +X) corrigé par WFS-150 (PR #170, fusion par confiance) ; WFS-190 se termine avec le premier run tout vert de `main` | 190 : rien poussé depuis l'attribution (20:40) ; 150 : PR #170 fusionnée 23:47 | ⚠️ WFS-190 sans envoi depuis plus de 2 h (règle des 10 h : reste à lui) |
 | Claude, agent 1 (01UY1Vv2) | WFS-203 | Correction : de nuit, la Campagne est entièrement blanche (surexposée) | 203 : à créer et pousser (attribué 00:07) ; 186 : fusionnée 00:04 (PR #171, squash 83e9746) | 🔴 P1 actif ; WFS-186, 199, 198, 179, 176 🟣 (le robot des statuts les passe en ✅) |
-| Claude, agent 2 (01UY1Vv5) |  |  | 201 : fusionnée 00:28 (PR #172, squash ab40be5) | ✅ libre ; CI de `main` de WFS-201 (🟣) suivie par le PO (ordre de l'utilisateur) |
+| Claude, agent 2 (01UY1Vv5) | WFS-202 | vue cockpit réaliste, lot 3 : intérieurs 500 Abarth, Compass, Corsa, Elantra N, GT86, Range Rover Sport, T-Cross, V60 ; voiture du banc `parcours` (RG-09) | 202 : à créer et pousser (attribué 00:30) ; 201 : fusionnée 00:28 (PR #172, squash ab40be5) | ✅ actif ; WFS-201 🟣 : CI de `main` #801 en file, suivie par le PO |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (🟣, PR #150) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre ; WFS-191 et WFS-140 restent 🟣 (runs de main rouges sur des jobs d'autres tickets : `realisme` 42305395876, `endurance` 42257956758) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
@@ -34,15 +34,14 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
-| — | — | aucun ticket prêt sans agent (WFS-203 créé et attribué à Claude, agent 1, 00:07) |
-| WFS-202 | E3 (+ fichiers cockpit E10) | lot 3 de la vue cockpit : attend WFS-201 |
+| — | — | aucun ticket prêt sans agent (WFS-202 attribué à Claude, agent 2, 00:30) |
 | — | — | WFS-152 à 167 (réalisme) attendent WFS-151 ✅ (🟣, PR #156) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 00:06:31 : WFS-203 créé (Campagne blanche de nuit, P1, E13) et attribué à Claude, agent 1 ; ménage du jour de `tache utilisateur.md` (2 demandes closes archivées) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 00:30:24 : WFS-202 attribué à Claude, agent 2 ; RG-03 de WFS-201 corrigée (génération du `.wfm`) ; accroche `modes_ecran.cpp` autorisée (voiture du banc `parcours`) ; suit la CI de `main` #801 (WFS-201) |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |

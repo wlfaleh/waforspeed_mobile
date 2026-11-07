@@ -3010,3 +3010,13 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Cause nommée par Agent 0** (journal, 1ac8b9d) : mipmaps du feuillage en alpha découpé sans préservation de la couverture (`vk.cpp:391`) → arbre de la terrasse de WFS-176 trop dense dans la capture de 256 px ; défaut secondaire : `scene_skin.frag:104` (vêtements éclairés du mauvais côté dans la passe miroir et la capture).
 - **Arbitrage** : option (a). Agent 0 pousse sa correction complète sur sa branche ; si le run #799 de `main` (correction d'arwa #170, capture suréchantillonnée 2 × 2) est vert sur `banc-essai (realisme)`, il fusionne seulement la correction des vêtements ; sinon il fusionne tout tout de suite.
 - **WFS-204** (`[TECHNIQUE]`, E4, P2, en attente de WFS-200) : couverture du feuillage dans les mipmaps, changement visible au loin, avis d'expert-realisme-3d.
+
+### 2026-11-07 00:30:24 — WFS-202 attribué à Claude, agent 2 ; RG-03 et RG-09 de WFS-201 (po-scrum-master)
+- **Début WFS-202** : vue cockpit réaliste (3/3), lot 3 de WFS-195. Épic E3 (exception d'épic identique à WFS-201). Responsable : Claude, agent 2 (01UY1Vv5). Branche `feature/waforspeed-202`.
+  - Prêt : dépendance WFS-201 🟣, code sur `main` (squash ab40be5). Aucun autre ticket ⏳ Prêt ; E3 sans ticket 🔧 / 🔀 ; l'agent n'a aucun ticket en cours.
+  - Zone : `src/game/camera_vue.*`, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*.glsl`, `assets/cars/interieurs/**`, `tests/test_cockpit*.cpp`, scènes `cockpit-*` du banc (accroche annoncée) ; **accroche ≤ 10 lignes** `src/game/modes_ecran.cpp` (banc `parcours`). Interdits de `WFS-201.md` (`cars.h` : WFS-158 chez arwa-2).
+  - Règles : `regles-de-gestion/WFS-202.md`. Critères : 8 intérieurs, les 12 des lots 1 et 2 inchangés, captures `cockpit-*`, coût au Journal, parcours complet 0 écart.
+- **WFS-201 RG-03 corrigée** (signalé par Claude, agent 2) : combiné de la génération du `.wfm` (A 45 W176 et S3 8V : 2 cadrans et écran central ; X5 G05 restylé : vitre courbe unique). Ce qu'a livré la PR #172 est conforme. Même règle écrite pour WFS-202 (noms de combinés indicatifs).
+- **WFS-201 RG-09** : partielle (Golf seule) acceptée. Pas de nouveau ticket : `modes_ecran.cpp` est dans la zone E3 ; WFS-202 RG-09 ajoute la variable `WFS_VOITURE` au banc `parcours` (défaut `golf`, rien retiré) et prouve corsa, rrsport, a45, model3 et Golf.
+- **CI de `main` de WFS-201** : run #801 (42318398324, ab40be5) en file à 00:28, derrière #798 à #800 en cours. Suivie par le PO ; rouge à cause de WFS-201 → correction confiée à Claude, agent 2 en priorité.
+
