@@ -20,7 +20,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : à pousser dès sa création ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) |
+| agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : branche poussée 10:44 UTC ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) |
 | Claude, agent 1 (01UY1Vv2) | WFS-220 | P1 [TECHNIQUE] : banc de chauffe arrêté après 4 min, endurance de nuit rouge (run #816) (attribué 10:03) | 220 : 10:10 (8c8e9e5) ; 213 : fusionnée 09:49 (PR #184, squash 941e475) | 🔴 actif (P1) |
 | Claude, agent 2 (01UY1Vv5) | WFS-221 | P1 [TECHNIQUE] : voiture saccadée en vue Proche / Poursuite, banc `fluidite`, rendu interpolé, route lissée (attribué 10:27) | 221 : à pousser dès sa création ; 206 : fusionnée 10:26 (PR #188, squash 42ce230) | 🔴 actif (P1) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
