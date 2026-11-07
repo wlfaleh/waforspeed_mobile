@@ -4335,3 +4335,54 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Petit écran montré** : le banc 2400×1080 (420 dpi, 411 dp de haut) passe par la mise en page petit écran de WFS-147 (texte de 14 dp) ; banc relancé en local avec `-DWFS_VERSION=0.1.888` : « v0.1.888 » lisible en bas à droite, loin du bouton « Réessayer ».
 - Vérifié sur 2557b4a dans un dossier à part : 62 tests CPU OK (dont `test_version_chargement`) ; changer la version ne recompile que `chargement.cpp`. Parcours non relancé jusqu'au bout (9 min sur 2 cœurs, arrêté à l'écran de course, sans erreur) : on garde le 0 écart du journal d'arwa-5.
 - Pour le PO : deux sessions `lead-dev` ont fait la même revue en même temps ; un seul appel par PR suffit.
+
+### 2026-11-07 22:56:55 — WFS-276 refusé par le lead dev, PR #243 (lead-dev)
+- 48 paires avant / après ouvertes une par une. Image : demande de l'utilisateur tenue (paysage visible près des lampes au péage, au village et au rond-point ; flaques orange toujours plus claires ; Ville identique). Rien de cassé à l'œil.
+- Refus pour : (1) branche pas synchronisée avec main (base 4185263) ; (2) RG-01 : courbe globale par pixel à la place d'une adaptation spatiale, **décision du PO à prendre** (accepter ou non cet « équivalent », à écrire dans regles-de-gestion/WFS-276.md) ; (3) RG-05 : coût Basse / Haute non mesuré ; (4) aucune preuve de WFS-276 au journal ; (5) pas de captures de jour (RG-04) ; (6) commentaire du shader inexact (1/2 au lieu de 0,45 ; 1,85 IL au lieu de 1,17).
+- Détail : https://github.com/wlfaleh/waforspeed_mobile/pull/243#issuecomment-6714148711
+
+### 2026-11-07 22:57:54 — WFS-276 : courbe par pixel acceptée pour RG-01 (po-scrum-master)
+- Équivalent sourcé (loi de Stevens) de l'adaptation spatiale ; nuit, hors Ville. Le lead dev reste juge des images.
+
+### 2026-11-07 23:02:52 — Début WFS-283 : attribué à arwa-5 (po-scrum-master)
+- Ticket : WFS-283 [URGENT] supprimer les ronds-points sur toutes les cartes (ANO-158), P1, épic E2 (+ accroches E3, E5), règles `regles-de-gestion/WFS-283.md`. Demandé par arwa-5 (Claude, session 01Us6uCwsJ63), libre après WFS-279 (PR #241, squash 08e611b).
+- Choix : premier ticket du bandeau qui lui est permis (WFS-283 en tête depuis 22:43, ordre de l'utilisateur ; arwa-5 n'est ni dev Y ni agent 5). WFS-281 (n° 00) est du domaine trafic (`expert-conduite`, fichiers de WFS-232) : il reste à un développeur du trafic. E2 libre (WFS-249 🟡, WFS-271 non attribué). Ticket d'une journée, pas un ticket court : la priorité de l'utilisateur passe avant.
+- Zone (exception PO, détail dans les règles) : E2 `giratoire.*`, `ville*`, `campagne.cpp`, `plage.cpp`, `decor_carte.cpp`, `chaussee.h`, `enseignes.cpp`, `cartes_banc.cpp` ; accroches E3 `trace_cartes*`, `chocs_*`, `course5.h` ; E5 `navigation.h`, `minicarte.cpp`. En coordination : `traffic.*` / `test_trace.cpp` (arwa-3, WFS-232), `minicarte.cpp` (arwa-2, WFS-245), `test_chocs_cartes.cpp` (agent dev conduite, WFS-258). Interdit : fichiers de WFS-268 (`decor_carte.h`, `commerces.cpp`, `lots_decor*`, `game.*`), bancs de conduite, WFS-282, WFS-262, WFS-276, `.github/**`, `tools/qa/**`, iOS, taille des boutons.
+- Règles complétées : section « Graphisme réaliste » par partie (chaussée, marquages, trottoirs, décor ; charte § 3), bancs de captures (`rondspoints:1280x720`, `course5`, `hud:1280x720` filtré `minicarte-*`), le banc `rondspoints` garde les mêmes noms et places pour la paire avant / après.
+- Critères : plus aucun rond-point visible, carrefours propres jour et nuit, courses / Duel / Poursuite / trafic / GPS justes, tests CPU verts, **parcours complet 0 écart**, captures regardées par le `lead-dev` ; après fusion **🟡 À valider (utilisateur)**.
+- **WFS-271 ⏸ suspendu** : raccords des ronds-points, sans objet avec WFS-283 (rien annulé).
+- **WFS-278 🟣** : PR #240 fusionnée à 22:46:42 UTC par commit de fusion (84e1c4d), **pas en squash** (règle du 2026-11-06) ; écritures d'après fusion absentes : statut mis à jour par le PO. arwa-4 libre.
+- Agent 3 (WFS-239) : dernier envoi 13:43:04 UTC, 9 h 20 sans commit ; retrait possible seulement après 23:43 UTC.
+
+### 2026-11-07 23:04:45 — WFS-282 (RG-00) refusé par le lead dev, PR #244 (lead-dev)
+- 42 images ouvertes (21 paires, banc cockpit, Golf / SF90 / X5) et la capture de l'utilisateur. Mieux : champ de 72° en hauteur, plus de rue ; bande noire du toit de la SF90 disparue ; code des 3 fichiers identique au parent de 66fdd3d.
+- **Refus** : la planche de bord est transparente sur les 21 captures « après » : la route (gravier, lignes) se voit à travers, sous le volant (ex. `apres-cockpit-x5-braquage`). La demande de l'utilisateur (« remets le tableau de bord ») n'est donc pas remplie. Le bloc noir du rétroviseur reste (RG-03). Aucune entrée au journal du développeur pour les tests. Branche en retard de 3 commits.
+- **Pour le PO** : RG-00 (« repli seul ») ne remet pas la planche de bord, car le défaut existait déjà avant WFS-235. Il faut ajouter une règle « planche opaque » à WFS-282, et peut-être élargir la zone si la cause est hors de `vehicule_cockpit*`. Détail dans le commentaire de la PR #244.
+
+### 2026-11-07 23:06:38 — Nom de l'agent et description complète obligatoires dans chaque PR (po-scrum-master)
+- Règle de l'utilisateur : CLAUDE.md (Commits et fusions, point 3), skill lead-dev (point 7 : refus sinon), checklist ; `captures_pr.sh` exige `AGENT=` et écrit l'en-tête « Agent : … » et la section Description à remplir dans `pr.md`.
+
+### 2026-11-07 23:08:08 — ANO-155 annulée (agent qa lead)
+- L’utilisateur : « Folg » est la marque, « Folg 8 » le modèle ; « Folg Folg 8 » au salon du duel est voulu. Ligne d’anno.md et rapport VABF mis à jour, PO prévenu.
+
+### 2026-11-07 23:10:30 — VABF du 2026-11-07 priorisée : WFS-284 à WFS-287 créés (po-scrum-master)
+- Demande de l'agent qa lead (ordre de l'utilisateur « remonte direct »), rapport `qa/rapports/VABF-2026-11-07.md`, construction 883 (c9eda61).
+- **ANO-153** (ANR après « Course solo », majeure) → **WFS-284** P2, E7 (`android_main.cpp`, entrées lues pendant tout chargement). Aucun doublon (WFS-246 ne traite que la résolution).
+- **ANO-154** (moteur entièrement rechargé quand la surface est recréée, majeure) → **WFS-285** P2, E7, après WFS-284 (même fichier) ; repli actuel gardé (ANO-52, WFS-100), rien retiré.
+- **ANO-155** : annulée par l'utilisateur (« Folg Folg 8 » voulu), aucun ticket.
+- **ANO-156** (« FERMER » au milieu des Réglages) et **ANO-157** (duel à 4 : 0:00.0, cause probable `duelArriveeForcee` du banc) → un seul lot **WFS-286** P3, E8 ; tailles des boutons inchangées (ordre permanent).
+- **Banc émulateur rouge** (`tools/qa/emulateur.sh` : journal partagé entre essais, délais trop courts) → **WFS-287** [TECHNIQUE] P2, E7 : correction d'un rouge, permise par le gel de la CI ; diagnostic transmis à l'agent expert ci, attribution à la demande seulement.
+- Corrections vues sur la construction 883 notées au suivi de WFS-242 (ANO-114), WFS-230 (ANO-119), WFS-224 (ANO-122) ; statuts inchangés (à confirmer sur téléphone).
+- Bandeau des tickets prêts complété ; `anno.md` (Statut, US), `TACHES.md`, `track-agent.md` à jour.
+
+### 2026-11-07 23:11:34 — Règle : le lead dev relit le code et approuve la PR avant de fusionner (lead-dev)
+- Ordre de l'utilisateur (conversation). Skill `lead-dev` : étape 8 « Revue du code » (tout le diff), approbation GitHub (`APPROVE`, ou revue `COMMENT` « ✅ Approuvé par le lead dev » si même compte) obligatoire avant la fusion ; refus en `REQUEST_CHANGES`. Agent `lead-dev` et `CLAUDE.md` alignés. L'utilisateur règle aussi le dépôt sur « squash seulement » (Settings → Pull Requests).
+
+### 2026-11-07 23:13:48 — Règle : statut « ↩️ Retour lead dev » en cas de refus de PR (lead-dev)
+- Ordre de l'utilisateur (conversation) : quand le lead dev refuse une PR, il passe lui-même le ticket en « ↩️ Retour lead dev (PR #N) » dans `TACHES.md` et la ligne du développeur dans `track-agent.md`, pour que le développeur le voie ; le développeur corrige puis remet « 🔀 En PR #N ». Skill et agent `lead-dev`, `CLAUDE.md` (règle des statuts) mis à jour.
+
+### 2026-11-07 23:14:45 — WFS-282 : RG-06 planche de bord opaque ajoutée (après le refus du lead dev, PR #244) (po-scrum-master)
+- La route se voit à travers la planche de bord, défaut d'avant WFS-235 ; cause à trouver, accroche ≤ 30 lignes permise dans `renderer.*` / `shaders/scene*`. RG-00 et RG-06 livrés ensemble.
+
+### 2026-11-07 23:19:10 — Réponse obligatoire du développeur sous le commentaire du lead dev (po-scrum-master)
+- Règle de l'utilisateur : bien reçu, qui corrige, quoi, quand ; puis « corrigé dans <commit> ». CLAUDE.md, skill lead-dev, checklist. Demandé tout de suite à Agent 0 (PR #243) et à Claude, agent 2 (PR #244).
