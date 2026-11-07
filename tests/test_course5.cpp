@@ -31,7 +31,10 @@ Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char
     if (carteFaite != cle) { t.build(mapById(carte), version); carteFaite = cle; }
     Player pl; pl.reset(carById(car));
     auto os = course5::tirer(graine, car, d);
-    course5::grille(os, pl.dist);
+    // WFS-242 (RG-01, RG-02) : le joueur à sa place de la grille (tirée par la graine), comme course5_system
+    const int place = std::min((int)os.size(), course5::tirerPlaceJoueur(graine));
+    course5::grille(os, place);
+    course5::placerSurGrille(pl, t, course5::placeGrille(place));
     const double finish = km * duel::KM, dt = 1.0 / 120;
     Simu r; double ftJ = 0; course5::SuiviDepassements suivi;
     std::vector<double> colle(os.size(), 0);
@@ -82,7 +85,7 @@ int main() {
     // RG-04 : 10 km, 3 graines, pas de 1/120 s ; le joueur est loin derrière (les ordinateurs roulent seuls)
     for (uint32_t graine : {1234u, 7u, 424242u}) {
         auto os = course5::tirer(graine, "golf");
-        course5::grille(os, 0);
+        course5::grille(os, -1);
         const double finish = 10 * duel::KM;
         int chocs = 0; double t = 0;
         bool tous = false;
@@ -109,7 +112,7 @@ int main() {
         double moyenne[3] = {0, 0, 0};
         for (int d = 0; d < 3; d++) {
             auto os = course5::tirer(1234, "golf", (course5::Difficulte)d);
-            course5::grille(os, 0);
+            course5::grille(os, -1);
             const double finish = 10 * duel::KM;
             int chocs = 0, nitrosMax = 0; double t = 0; bool tous = false;
             for (int i = 0; i < 120 * 60 * 12 && !tous; i++) {
@@ -139,7 +142,7 @@ int main() {
     // RG-04 : rattrapage : un ordinateur 300 m derrière le joueur (même vitesse visée que lui) revient sous 150 m
     {
         auto os = course5::tirer(7, "golf");
-        os.resize(1); course5::grille(os, 0);
+        os.resize(1); course5::grille(os, -1);
         const double v = os[0].cible, finish = 50 * duel::KM;
         os[0].g.v = v;
         double sJ = 300 / M, ecart = 300; bool revenu = false;
@@ -162,7 +165,7 @@ int main() {
     // RG-05 : aspiration : 20 m derrière une voiture plus rapide de la même file → +4 % de vitesse visée
     {
         auto os = course5::tirer(7, "golf");
-        os.resize(1); course5::grille(os, 0);
+        os.resize(1); course5::grille(os, -1);
         const double v = os[0].cible, finish = 50 * duel::KM;
         os[0].g.x = os[0].cibleX = 0; os[0].file = 1; os[0].g.v = v; os[0].nitros = 0;
         double sJ = 20 / M;
@@ -178,7 +181,7 @@ int main() {
 
     // RG-06 : classement : arrivés d'abord (temps), puis distance ; position du joueur
     auto os = course5::tirer(5, "m4");
-    course5::grille(os, 0);
+    course5::grille(os, -1);
     os[0].g.done = true; os[0].g.ft = 200000; os[0].g.rd = 2 * duel::KM;
     os[1].g.rd = 1.5 * duel::KM; os[2].g.rd = 0.5 * duel::KM; os[3].g.rd = 1.0 * duel::KM;
     auto ls = course5::classement(os, "Pilote", 1.2 * duel::KM, 0, false, 2 * duel::KM);
@@ -220,7 +223,7 @@ int main() {
     // de 2 s à moins de 8 m (pare-chocs) derrière un autre de sa file dans les 10 premières secondes. Graine du banc,
     // avec la Golf et avec la SF90.
     for (const char* joueur : {"golf", "sf90"}) {
-        auto os = course5::tirer(20261105, joueur); course5::grille(os, 0);
+        auto os = course5::tirer(20261105, joueur); course5::grille(os, -1);
         bool range = true;
         for (const auto& a : os) for (const auto& b : os)
             if (std::abs(a.g.x - b.g.x) < 0.45 && a.g.rd > b.g.rd) {
@@ -290,7 +293,8 @@ int main() {
             if (!sf90) VERIFIE(place[1] >= 1.5 && (compass || place[1] <= 3.5), "RG-02 : %s : place moyenne %.1f en Normale", v, place[1]);
             if (!sf90) VERIFIE(place[2] >= 2.0, "RG-02 : %s : place moyenne %.1f en Difficile (≥ 2,0)", v, place[2]);
             VERIFIE(place[0] < 5.0, "RG-06 : %s : dernier en moyenne en Facile", v);
-            VERIFIE(nMin >= 3 && nMax <= 6, "RG-06 : %s : %.1f à %.1f s de nitro sur 4 km (3 à 6)", v, nMin, nMax);
+            // WFS-242 : 1e-6 : 360 pas de 1/120 s font 3 s, la somme flottante 2,999 999… (SF90 partie en tête : 3,000 s)
+            VERIFIE(nMin + 1e-6 >= 3 && nMax <= 6, "RG-06 : %s : %.1f à %.1f s de nitro sur 4 km (3 à 6)", v, nMin, nMax);
         }
     }
     // WFS-189 (RG-02 bis) : virages des ordinateurs calés sur la conduite du joueur : un ordinateur à 100 % de sa pointe fait
@@ -303,12 +307,115 @@ int main() {
                 DriveInput in; in.gas = true; in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
                 pl.update(dt, in, piste, true); if (pl.dist * M >= 4000) tj = (i + 1) * dt;
             }
-            auto os = course5::tirer(1, v); os.resize(1); os[0].car = v; course5::grille(os, 0);
+            auto os = course5::tirer(1, v); os.resize(1); os[0].car = v; course5::grille(os, -1);
             os[0].g.rd = 0; os[0].nitros = 0; os[0].cible = MAX_SPEED * 0.995 * carById(v).spec.vmax / 260;
             for (int i = 0; i < 120 * 200 && !ti; i++) { course5::avancer(os, dt, 1e12, i * dt, -1e9, 0, 0, &piste); if (os[0].g.rd * M >= 4000) ti = (i + 1) * dt; }
             std::printf("RG-02 bis : %-8s 4 km : pilote automatique %.1f s, ordinateur à 100 %% %.1f s (%+.1f %%)\n", v, tj, ti, (ti / tj - 1) * 100);
             VERIFIE(tj > 0 && std::abs(ti / tj - 1) <= 0.03, "RG-02 bis : %s : écart %.1f %%", v, (ti / tj - 1) * 100);
         }
+    }
+
+    // WFS-242 (RG-01) : grille réelle : pour les 20 voitures du joueur, 5 places en quinconce derrière la ligne, chacune dans
+    // sa voie, aucune carrosserie dans une autre ; côte à côte (même hauteur de grille), au moins 1,5 m entre deux carrosseries
+    {
+        int fautes = 0; double ecartVoie = 1e9, ecartLateral = 1e9, avantMax = -1e9;
+        for (int i = 0; i < CAR_COUNT; i++)
+            for (uint32_t g : {1u, 1234u, 20261105u, 99u, 7u}) {
+                const char* joueur = CARS[i].id;
+                auto os = course5::tirer(g, joueur);
+                const int place = std::min((int)os.size(), course5::tirerPlaceJoueur(g));
+                course5::grille(os, place);
+                const course5::Place pj = course5::placeGrille(place);
+                struct B { double s, x, L, W; int file; };
+                std::vector<B> bs{{pj.s * M, pj.x * RW, CARS[i].d.L, CARS[i].d.W, pj.file}};
+                for (const auto& o : os) { const CarDef& c = carById(o.car.c_str()); bs.push_back({o.g.rd * M, o.g.x * RW, c.d.L, c.d.W, o.file}); }
+                for (size_t a = 0; a < bs.size(); a++) {
+                    avantMax = std::max(avantMax, bs[a].s + bs[a].L / 2);
+                    fautes += bs[a].s + bs[a].L / 2 > -1.0;   // avant de la voiture à plus de 1 m derrière la ligne (s = 0)
+                    fautes += std::abs(bs[a].x - course5::FILES[bs[a].file] * RW) > 1e-9 || bs[a].file == 1;   // voie de gauche ou de droite
+                    for (size_t b = a + 1; b < bs.size(); b++) {
+                        const double dz = std::abs(bs[a].s - bs[b].s) - (bs[a].L + bs[b].L) / 2, dx = std::abs(bs[a].x - bs[b].x) - (bs[a].W + bs[b].W) / 2;
+                        fautes += dz <= 0 && dx <= 0;                         // carrosseries l'une dans l'autre
+                        if (bs[a].file == bs[b].file) ecartVoie = std::min(ecartVoie, dz);
+                        else ecartLateral = std::min(ecartLateral, dx);
+                    }
+                }
+                std::set<int> places; for (const auto& b : bs) places.insert((int)std::lround(-b.s));
+                fautes += places.size() != bs.size();   // 5 places différentes
+            }
+        std::printf("WFS-242 RG-01 : 20 voitures × 5 graines : avant le plus avancé à %.2f m de la ligne, même voie ≥ %.2f m "
+                    "de pare-chocs à pare-chocs, côte à côte ≥ %.2f m entre carrosseries : %s\n", -avantMax, ecartVoie, ecartLateral, fautes ? "ÉCHEC" : "OK");
+        VERIFIE(fautes == 0, "WFS-242 RG-01 : %d faute(s) sur la grille", fautes);
+        VERIFIE(ecartVoie > 8 && ecartLateral >= 1.5, "WFS-242 RG-01 : écarts %.2f m (même voie) et %.2f m (côte à côte)", ecartVoie, ecartLateral);
+    }
+    // WFS-242 (RG-02) : place du joueur tirée au sort : sur 1 000 graines, chacune des 5 places entre 15 et 25 % du temps
+    {
+        int n[course5::PLACES] = {};
+        for (uint32_t g = 0; g < 1000; g++) n[course5::tirerPlaceJoueur(g * 2654435761u + 17u)]++;
+        bool ok = true; for (int k = 0; k < course5::PLACES; k++) ok = ok && n[k] >= 150 && n[k] <= 250;
+        std::printf("WFS-242 RG-02 : place du joueur sur 1 000 graines : %d / %d / %d / %d / %d : %s\n", n[0], n[1], n[2], n[3], n[4], ok ? "OK" : "ÉCHEC");
+        VERIFIE(ok, "WFS-242 RG-02 : tirage de la place du joueur déséquilibré");
+        VERIFIE(course5::tirerPlaceJoueur(1234) == course5::tirerPlaceJoueur(1234), "WFS-242 RG-02 : même graine, même place");
+    }
+    // WFS-242 (RG-03, RG-06) : départ sur les 4 cartes : 3 s de compte à rebours (personne ne bouge : le joueur appuie sur les gaz,
+    // la course le retient comme Course::hold), puis 5 s de course ; le joueur, plein gaz, garde sa voie (ou roule tout droit) et freine
+    // derrière une voiture plus lente ; distance
+    // minimale entre deux carrosseries (> 0,5 m), aucun changement de voie des ordinateurs pendant les 3 premières secondes
+    {
+        double pire = 1e9; int changements = 0, bouges = 0, freinages = 0;
+        for (const char* carte : {"ville", "campagne", "plage", "circuit"}) {
+            static Track t; t.build(mapById(carte), trace::versionCarte(carte));
+            double pireCarte = 1e9;
+            for (uint32_t g : {1u, 1234u, 20261105u, 99u, 7u})
+                for (const char* car : {"golf", "sf90", "p208"})
+                    for (bool tenir : {true, false}) {
+                        Player pl; pl.reset(carById(car));
+                        auto os = course5::tirer(g, car);
+                        const int place = std::min((int)os.size(), course5::tirerPlaceJoueur(g));
+                        course5::grille(os, place);
+                        course5::placerSurGrille(pl, t, course5::placeGrille(place));
+                        const double x0 = pl.playerX, s0 = pl.dist;
+                        std::vector<int> files; for (const auto& o : os) files.push_back(o.file);
+                        const auto rd0 = os; const double dt = 1.0 / 120;
+                        for (int i = 0; i < 120 * 8; i++) {
+                            const bool course = i >= 360;   // 3 s de décompte, puis la course
+                            DriveInput in; in.gas = true;
+                            in.steer = tenir ? (float)std::clamp((x0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0) : 0.f;
+                            // joueur prudent : il freine quand la voiture de devant, dans sa voie, est à moins de 2 m + 0,6 s × sa
+                            // vitesse (pare-chocs à pare-chocs) : rattraper une voiture plus lente devant soi, c'est à lui de freiner
+                            double devant = 1e9;
+                            for (const auto& o : os)
+                                if (std::abs(o.g.x - pl.playerX) * RW < 2.0 && o.g.rd > pl.dist)
+                                    devant = std::min(devant, (o.g.rd - pl.dist) * M - (carById(o.car.c_str()).d.L + pl.car->d.L) / 2);
+                            if (course && devant < 2 + 0.6 * pl.speed * M) { in.gas = false; in.brake = true; freinages++; }
+                            pl.update(dt, in, t, true);
+                            if (!course) { pl.speed = 0; pl.nitroOn = false; continue; }   // Course::hold ; ordinateurs à l'arrêt (course5_system)
+                            const double tc = (i - 359) * dt;
+                            course5::avancer(os, dt, 4 * duel::KM, tc, pl.dist, pl.playerX, pl.speed, &t);
+                            if (tc < course5::GARDE_VOIE_S) for (size_t k = 0; k < os.size(); k++) changements += os[k].file != files[k];
+                            struct B { double s, x, L, W; };
+                            std::vector<B> bs{{pl.dist * M, pl.playerX * RW, pl.car->d.L, pl.car->d.W}};
+                            for (const auto& o : os) { const CarDef& c = carById(o.car.c_str()); bs.push_back({o.g.rd * M, o.g.x * RW, c.d.L, c.d.W}); }
+                            for (size_t a = 0; a < bs.size(); a++) for (size_t b = a + 1; b < bs.size(); b++) {
+                                const double dz = std::abs(bs[a].s - bs[b].s) - (bs[a].L + bs[b].L) / 2, dx = std::abs(bs[a].x - bs[b].x) - (bs[a].W + bs[b].W) / 2;
+                                const double e = std::max(dz, dx);   // écart entre les deux boîtes (négatif : l'une dans l'autre)
+                                pireCarte = std::min(pireCarte, e);
+                            }
+                            if (i == 360) {   // au « GO » : rien n'a bougé pendant le décompte (le joueur a moins de 20 cm de rampe)
+                                bouges += std::abs(pl.dist - s0) * M > 0.20 || std::abs(pl.playerX - x0) * RW > 0.05;
+                                for (size_t k = 0; k < os.size(); k++) bouges += std::abs(os[k].g.rd - rd0[k].g.rd) * M > 0.20;
+                            }
+                        }
+                    }
+            std::printf("WFS-242 RG-03 : %-8s : distance minimale entre deux voitures pendant les 5 premières secondes : %.2f m\n", carte, pireCarte);
+            pire = std::min(pire, pireCarte);
+        }
+        VERIFIE(pire > 0.5, "WFS-242 RG-03 : deux voitures à %.2f m au départ", pire);
+        VERIFIE(changements == 0, "WFS-242 RG-03 : %d changement(s) de voie pendant les 3 premières secondes", changements);
+        VERIFIE(bouges == 0, "WFS-242 RG-03 : %d voiture(s) qui bougent pendant le décompte", bouges);
+        std::printf("WFS-242 RG-03 : 4 cartes × 5 graines × 3 voitures × 2 conduites : écart minimal %.2f m, %d changement de voie, "
+                    "%d voiture qui bouge au décompte (joueur qui freine derrière une voiture plus lente : %.1f s en tout) : %s\n",
+                    pire, changements, bouges, freinages / 120.0, pire > 0.5 && !changements && !bouges ? "OK" : "ÉCHEC");
     }
 
     if (testPoursuite()) echecs++;   // WFS-111

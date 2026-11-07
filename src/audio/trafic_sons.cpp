@@ -22,7 +22,7 @@ SonsDuPas TraficSons::update(double dt, bool actif, const std::vector<VoitureSon
     } else {
         if (prevDz_.size() != v.size()) prevDz_.resize(v.size(), NAN);   // voitures ajoutées : pas de passage au premier pas
         // RG-02 : passage = la distance longitudinale change de signe, tout près, assez vite
-        float meilleur = 0;
+        float meilleur = 0; int iMeilleur = -1;   // WFS-272 : voiture du passage (placée à gauche / à droite)
         for (size_t i = 0; i < v.size(); i++) {
             const VoitureSon& c = v[i];
             const double p = prevDz_[i], d = c.dzM;
@@ -31,9 +31,9 @@ SonsDuPas TraficSons::update(double dt, bool actif, const std::vector<VoitureSon
             if (!((p > 0 && d <= 0) || (p < 0 && d >= 0)) || c.vRelKmh < PASSAGE_KMH) continue;
             const double k = std::clamp((c.vRelKmh - PASSAGE_KMH) / (PASSAGE_KMH_MAX - PASSAGE_KMH), 0.0, 1.0);
             const float g = (float)((PASSAGE_VOL_MIN + (PASSAGE_VOL_MAX - PASSAGE_VOL_MIN) * k) * (1 - 0.5 * c.lat / PASSAGE_LAT));
-            meilleur = std::max(meilleur, g);
+            if (g > meilleur) { meilleur = g; iMeilleur = (int)i; }
         }
-        if (meilleur > 0 && depuisPassage_ >= PASSAGE_INTERVALLE) { s.passages = 1; s.gainPassage = meilleur; depuisPassage_ = 0; }
+        if (meilleur > 0 && depuisPassage_ >= PASSAGE_INTERVALLE) { s.passages = 1; s.gainPassage = meilleur; s.voiturePassage = iMeilleur; depuisPassage_ = 0; }
 
         // RG-03 (a) : quasi-contact → klaxon 0,15 s après, une fois sur deux (xorshift : même suite à chaque partie)
         if (quasi_ >= 0 && quasiContacts > quasi_) {
@@ -56,7 +56,12 @@ SonsDuPas TraficSons::update(double dt, bool actif, const std::vector<VoitureSon
             colle_ = idx == colleIdx_ ? colle_ + dt : dt; colleIdx_ = idx;
             if (colle_ > COLLE_S) { klaxonne = true; colle_ = 0; }
         }
-        if (klaxonne && depuisKlaxon_ >= KLAXON_INTERVALLE) { s.klaxon = true; depuisKlaxon_ = 0; }
+        if (klaxonne && depuisKlaxon_ >= KLAXON_INTERVALLE) {
+            s.klaxon = true; depuisKlaxon_ = 0;
+            s.voitureKlaxon = idx;   // WFS-272 : la voiture collée ; après un quasi-contact : la plus proche (celle qu'on a frôlée)
+            for (size_t i = 0; i < v.size() && idx < 0; i++)
+                if (!v[i].accidentee && (s.voitureKlaxon < 0 || std::abs(v[i].dzM) < std::abs(v[(size_t)s.voitureKlaxon].dzM))) s.voitureKlaxon = (int)i;
+        }
 
         // RG-04 : rumeur = 0,04 par voiture à moins de 40 m, plafonnée à 0,25
         int n = 0;

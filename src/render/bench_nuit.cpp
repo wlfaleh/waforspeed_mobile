@@ -14,6 +14,8 @@
 
 namespace wfs {
 
+void benchNuitSensInverse(Game& g, Renderer& r, const std::string& out);   // WFS-270 : vehicule_nuit_banc.cpp
+
 void benchNuit(Game& g, Renderer& r, const std::string& out) {
     setenv("WFS_MOMENT", "nuit", 1);
     double t = 800;
@@ -81,7 +83,8 @@ void benchNuit(Game& g, Renderer& r, const std::string& out) {
     struct Scene { const char* carte; const char* nom; ModeCourse mode; int images; };
     const Scene scenes[] = {{"ville", "ville", ModeCourse::Checkpoint, 300}, {"campagne", "campagne", ModeCourse::Checkpoint, 300},
                             {"plage", "corniche", ModeCourse::Checkpoint, 300}, {"ville", "course5", ModeCourse::Course5, 150},
-                            {"ville", "poursuite", ModeCourse::Poursuite, 600}};
+                            {"ville", "poursuite", ModeCourse::Poursuite, 600},
+                            {"ville", "course5-go", ModeCourse::Course5, 330}};   // WFS-270 : Course à 5 après le « GO » (5,5 s)
     for (const Scene& sc : scenes) {
         modeCourse() = sc.mode; kmCourse5() = 2; courseBenchRules(true);
         if (!g.init(r, "golf", sc.carte)) { WFS_ERR("nuit : chargement %s impossible", sc.carte); continue; }
@@ -95,6 +98,7 @@ void benchNuit(Game& g, Renderer& r, const std::string& out) {
         g.shutdown();
     }
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4; courseBenchRules(false);
+    benchNuitSensInverse(g, r, out);   // WFS-270 (RG-06, ANO-148) : sens inverse à < 70 m et à 70-160 m (vehicule_nuit_banc.cpp)
     ecrans::reglages().qualite = ecrans::QUALITE_HAUTE;
     unsetenv("WFS_MOMENT");
 }

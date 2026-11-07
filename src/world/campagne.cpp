@@ -22,6 +22,7 @@
 #include "../game/roues.h"          // WFS-179 : roues des voitures en sens inverse
 #include "../render/eclairage.h"    // WFS-179 : lumières de nuit du péage
 #include "../render/model_loader.h" // WFS-179 : modèles des voitures en sens inverse
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : troupeaux et fontaine déclarés au son des lieux
 
 namespace wfs {
 namespace carte {
@@ -60,7 +61,9 @@ public:
     // WFS-178 : atlas des enseignes (lettres blanches, néon doux la nuit) et feux tricolores (lampes allumées / éteintes)
     void init(Renderer& r, const GameView& g) override {
         betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1;   // WFS-186 : placés de nouveau par CarteDecor::init
+        fermesSon_.clear(); fontaineSon_.clear();   // WFS-261 (accroche)
         CarteDecor::init(r, g);
+        if (active_) { lieux::poser("campagne", lieux::FERME, fermesSon_); lieux::poser("campagne", lieux::FONTAINE, fontaineSon_); }   // WFS-261
         for (auto& T : txt_) T = {};
         if (!active_) return;
         {   // tête du feu : une lampe de Ø 200 mm (disque à 12 côtés, face −z), dessinée 3 fois par feu
@@ -85,6 +88,7 @@ public:
         mats_[P_TEXTE0] = atlas_.materiau(r, 0xf4f1e8, night_ ? 1.1f : 0.f);
         for (int k = 0; k < CO_NB; k++) txt_[k] = atlas_.texte(ENSEIGNES[k]);
         for (int k = 0; k < 4; k++) txtA_[k] = atlas_.texte(PANNEAUX_A[k]);   // WFS-179
+        preparerDecor(r);   // WFS-268 (accroche) : décor fixe préparé ici, une fois les enseignes prêtes
     }
 
 protected:
@@ -835,6 +839,7 @@ private:
             if (sec.type == trace::Type::RondPoint && fontaineSeg_ < 0) {   // centre de l'anneau : à gauche du milieu
                 fontaineSeg_ = (sec.debut + sec.fin) / 2;
                 Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; it.ilot = true; CarteDecor::item(fontaineSeg_, it);
+                fontaineSon_.push_back({fontaineSeg_, 0.f, it.side * it.lat, 1.f, 0});   // WFS-261 (accroche) : son de la fontaine
                 // WFS-248 : le cédez-le-passage de WFS-223 (T_CEDEZ, en travers de toute la chaussée) est remplacé par celui du
                 // giratoire reconstruit (decor_carte.cpp, giratoire.cpp)
                 vigilance_.push_back(sec.debut);
@@ -946,6 +951,7 @@ private:
         WFS_LOG("campagne : %s au segment %lld, côté %s", ENSEIGNES[k], (long long)n, side > 0 ? "droit" : "gauche");
     }
     int64_t fontaineSeg_ = -1, feuSeg_ = -1; int feuIdx_ = 0;
+    std::vector<lieux::Lieu> fermesSon_, fontaineSon_;   // WFS-261 (accroche) : troupeaux (espèce) et fontaine, pour le son des lieux
     std::vector<int64_t> vigilance_;
     struct Emprise { int64_t seg; int side; int64_t demi; };   // segments occupés par un commerce (± demi)
     std::vector<Emprise> commerces_;   // RG-C1 : segments à dégager dans les 60 m qui précèdent (feu, entrée du rond-point)
@@ -1073,6 +1079,7 @@ private:
                     b.yaw = D() * 2 * PI; b.phase = D() * 16; b.ech = 0.99f + D() * 0.02f;   // RG-02 : taille réelle à ±1 %
                     betes_.push_back(b); i++;
                 }
+                if (betes_.size() > debut) fermesSon_.push_back({((c % len()) + len()) % len(), 0.f, side * (lat0 + prof / 2), 1.f, (uint8_t)esp});   // WFS-261 (accroche)
                 if (betes_.size() > debut) WFS_LOG("Campagne (WFS-186) : troupeau de %zu %s au segment %lld, côté %d", betes_.size() - debut,
                                                    esp == VACHE ? "vaches" : esp == CHEVAL ? "chevaux" : "moutons", (long long)c, side);
                 const int64_t m = ((c % len()) + len()) % len();
