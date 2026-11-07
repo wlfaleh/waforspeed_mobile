@@ -55,6 +55,7 @@ struct Etat {
     double poidsB = 1;               // part de la sonde B dans le mélange
     double msTraitement = 0;         // dernier traitement CPU d'une sonde (ms)
     vec3 astre{0, 1, 0}; double astreHauteur = 0, astreAzimut = 0, astrePhase = 0;   // WFS-207 : astre calculé (soleil ou lune)
+    int moment = 2; double heureUtc = 0, eSol = 0;   // WFS-208 : moment appliqué, heure UTC, éclairement horizontal au sol (lx)
     double luminanceMesuree = 0;     // cd/m², bande 80-98,3 % de l'histogramme (exposition automatique)
     double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
 };
@@ -80,7 +81,7 @@ struct Forcage {
 };
 void forcer(const Forcage& f);
 // WFS-208 : moment de la journée (atmosphere::Moment : aube, matin, midi, heure dorée, heure bleue, nuit, heure réelle), choisi à
-// l'écran Terrain (sinon relu dans la sauvegarde) ; le temps écoulé repart de zéro ; accélération du temps (× 1 par défaut)
+// l'écran Terrain (sinon relu dans la sauvegarde ; < 0 : aucun choix) ; le temps écoulé repart de zéro ; accélération du temps (× 1 par défaut)
 void choisirMoment(int moment);
 int momentChoisi();
 void accelererTemps(double facteur);

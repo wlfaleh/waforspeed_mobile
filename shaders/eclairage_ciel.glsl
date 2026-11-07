@@ -9,6 +9,18 @@
 const float COS_RAYON_SOLEIL = 0.99998918;   // cos(0,2665°) : demi-angle apparent du soleil (NASA NSSDC, « Sun Fact Sheet »)
 float cieF(float chi) { return 1.0 + 10.0 * (exp(-3.0 * chi) - exp(-3.0 * 1.5707963)) + 0.45 * cos(chi) * cos(chi); }
 float ciePhi(float cz) { return cz <= 1e-6 ? 1.0 : 1.0 - exp(-0.32 / cz); }
+// WFS-208 (RG-04) : nuages : couche plane à 2 km (projection d.xz / d.y), bruit de valeur sur 4 octaves ; couverture de la
+// carte dans cielP.w le jour (la nuit, cielP.w est la phase de la lune et il n'y a pas de nuages) ; éclairés par le soleil
+// (albédo 0,6, diffusion lambertienne) : coût de quelques opérations par pixel de ciel, aucune texture, aucun appel de dessin
+float hashN(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float bruit(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hashN(i), hashN(i + vec2(1, 0)), f.x), mix(hashN(i + vec2(0, 1)), hashN(i + vec2(1, 1)), f.x), f.y); }
+float nuages(vec3 d, float couverture) {
+    if (couverture <= 0.0 || d.y <= 0.02) return 0.0;
+    vec2 p = d.xz / d.y * 0.6; float v = 0.0, a = 0.5;
+    for (int o = 0; o < 4; o++) { v += a * bruit(p); p *= 2.03; a *= 0.5; }
+    return smoothstep(1.0 - couverture, 1.0 - couverture + 0.25, v) * smoothstep(0.02, 0.15, d.y);
+}
 vec3 cielPhysique(vec3 d) {
     vec3 s = normalize(F.sunDir.xyz);
     float h = d.y;
@@ -25,6 +37,11 @@ vec3 cielPhysique(vec3 d) {
             eclaire = step(0.0, dot(n, vec3(sin(F.cielP.w), 0.0, cos(F.cielP.w))));
         }
         col += F.sunColor.rgb * F.cielP.z * eclaire;
+    }
+    if (F.cielP.y <= 0.0) {   // WFS-208 : nuages de jour (devant le soleil)
+        float n = nuages(d, F.cielP.w);
+        vec3 nuage = F.sunColor.rgb * F.sunDir.w * (0.6 / 3.14159265) * (max(s.y, 0.05) + 0.35);
+        col = mix(col, nuage, n * 0.9);
     }
     return col;
 }

@@ -439,6 +439,65 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
             g_l.mode = AUCUN;
         }
     }
+    // ---------------- WFS-208 : 6 moments × 2 cartes (realisme-ciel-<moment>-<carte>), M-04 (lampadaires sous 50 lx), M-05
+    // (heure dorée, heure bleue), puis 3 min en heure dorée accélérée × 20 (realisme-transition-0..3, aucun saut d'exposition)
+    for (const char* carte : {"campagne", "circuit"}) for (int m = 0; m < 6; m++) {
+        const atmosphere::Moment mo = (atmosphere::Moment)m;
+        const bool nuitM = atmosphere::momentDeNuit(mo);
+        preparer(g, r, carte, nuitM ? "nuit" : "jour", -1, ecrans::QUALITE_HAUTE);
+        eclairage::choisirMoment(m);
+        g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = 60;
+        if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+        g.allerA(ECRAN);
+        for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+        if (!g_l.piste) { erreurs++; g.shutdown(); continue; }
+        const eclairage::Etat e0 = eclairage::etat();
+        const vec3 az = normalize(vec3{e0.astre.x, 0, e0.astre.z});
+        g_l.oeil = pointRoute(*g_l.piste, g_l.dist, 0, 0, 3.f); g_l.cible = g_l.oeil + normalize(az + vec3{0, 0.25f, 0}) * 10.f; g_l.haut = {0, 1, 0};
+        attendreSondes(g, t);
+        const eclairage::Etat e = eclairage::etat();
+        r.capturePng(out + "/realisme-ciel-" + atmosphere::nomMoment(mo) + "-" + carte + ".png");
+        infos << "WFS-208 : " << carte << ", " << atmosphere::nomMoment(mo) << " : " << fmt(e.heureUtc, 2) << " h UTC, astre h " << fmt(e.astreHauteur, 2) << "°, E sol "
+              << fmt(e.eSol, 3) << " lx, EV100 " << fmt(e.ev, 2) << ", lumières de nuit " << (nuitM ? "allumées" : "éteintes") << ".\n";
+        if (carte[0] == 'c' && carte[1] == 'a') {
+            if (mo != atmosphere::Moment::Nuit)   // M-04 : lampadaires allumés ⇔ éclairement au sol sous 50 lx (± 5 %)
+                rap.ajouter(ligne(std::string("lum.wfs208.m04.") + atmosphere::nomMoment(mo), std::string("M-04 : lampadaires ") + (nuitM ? "allumés" : "éteints") + " à l'" + atmosphere::nomMoment(mo) + " (éclairement au sol)",
+                                  fmt(e.eSol, 1) + " lx", "allumés sous 50 lx (± 5 %), éteints au-dessus", "± 5 %",
+                                  nuitM ? e.eSol < atmosphere::SEUIL_LAMPADAIRES_LX * 1.05 : e.eSol > atmosphere::SEUIL_LAMPADAIRES_LX * 0.95, "conception"));
+            if (mo == atmosphere::Moment::Doree || mo == atmosphere::Moment::Bleue) {   // M-05 : hauteurs publiées
+                const bool dor = mo == atmosphere::Moment::Doree; const double a = dor ? 0 : -6, b = dor ? 6 : -4;
+                rap.ajouter(ligne(std::string("lum.wfs208.m05.") + atmosphere::nomMoment(mo), std::string("M-05 : hauteur du soleil à l'") + (dor ? "heure dorée" : "heure bleue"),
+                                  fmt(e.astreHauteur, 2) + "°", "[" + fmt(a, 0) + "° ; " + fmt(b, 0) + "°] (définitions courantes : dorée 0 à 6°, bleue −4 à −6°)", "dans la plage",
+                                  e.astreHauteur >= a && e.astreHauteur <= b, "a_confirmer"));
+            }
+        }
+        g.shutdown();
+        g_l.mode = AUCUN;
+    }
+    {   // passage continu : heure dorée, temps × 20, 3 min de course (1 h de soleil), une image toutes les 0,5 s
+        preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
+        eclairage::choisirMoment((int)atmosphere::Moment::Doree); eclairage::accelererTemps(20);
+        g_l = EtatBanc{};
+        if (g.init(r, "golf", "campagne")) {
+            g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course);
+            double tp = 0, evPrec = -100, sautMax = 0, hDebut = 0, hFin = 0; int cap = 0;
+            for (int i = 0; i <= 180 * 60; i++) {
+                g.update(1.0 / 60); tp += 1.0 / 60;
+                if (i % 30) continue;
+                g.render(3000 + tp);
+                const eclairage::Etat e = eclairage::etat();
+                if (i == 0) hDebut = e.astreHauteur;
+                hFin = e.astreHauteur;
+                if (evPrec > -50) sautMax = std::max(sautMax, std::fabs(e.ev - evPrec));
+                evPrec = e.ev;
+                if (i % 3600 == 0 && cap < 4) r.capturePng(out + "/realisme-transition-" + std::to_string(cap++) + ".png");
+            }
+            rap.ajouter(ligne("lum.wfs208.transition", "RG-02 : passage continu, heure dorée × 20 pendant 3 min (soleil de " + fmt(hDebut, 2) + "° à " + fmt(hFin, 2) + "°) : plus grand écart d'exposition entre deux images (0,5 s)",
+                              fmt(sautMax, 3) + " EV", "aucun saut visible (≤ 0,1 EV en 0,5 s ; adaptation de l'œil de WFS-151)", "≤ 0,1 EV", sautMax <= 0.1, "conception"));
+            g.shutdown();
+        } else erreurs++;
+        eclairage::accelererTemps(1); eclairage::choisirMoment(-1);   // les bancs suivants gardent jour / nuit
+    }
     // ---------------- tunnel de la Corniche : voiture dans le tunnel, puis sortie (adaptation de l'exposition)
     {
         int64_t debut = -1, fin = -1;

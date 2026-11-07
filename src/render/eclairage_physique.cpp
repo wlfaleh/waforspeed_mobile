@@ -349,7 +349,10 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 
 const Etat& etat() { return g.etat; }
 void forcer(const Forcage& f) { g.forc = f; }
-void choisirMoment(int m) { g.moment = (atmosphere::Moment)std::clamp(m, 0, (int)atmosphere::Moment::NB - 1); g.momentChoisi = true; g.ecoule = 0; g.heureMoment[(int)atmosphere::Moment::Reel] = -100; }   // WFS-208
+void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
+    g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
+    g.momentLu = false; g.ecoule = 0; g.heureMoment[(int)atmosphere::Moment::Reel] = -100;
+}
 int momentChoisi() { return (int)g.moment; }
 void accelererTemps(double f) { g.acceleration = std::max(0.0, f); }   // WFS-208 (RG-02)
 void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
@@ -369,6 +372,12 @@ void irradiance(const vec3& n, double E[3]) {
     const double w = g.B.capture && g.A.capture ? g.w : 1.0;
     if (w < 1) irradianceSh9(g.A.sh, n.x, n.y, n.z, a);
     for (int q = 0; q < 3; q++) E[q] = a[q] * (1 - w) + b[q] * w;
+}
+
+// WFS-208 (RG-04) : couverture nuageuse de la carte (part du ciel couverte, été méditerranéen : littoral plus dégagé)
+double couvertureNuages(const GameView& gv) {
+    const char* id = gv.map ? gv.map->id : "";
+    return !std::strcmp(id, "plage") ? 0.15 : !std::strcmp(id, "ville") ? 0.25 : !std::strcmp(id, "circuit") ? 0.30 : 0.35;
 }
 
 void physique(FrameParams& fp, bool dediee, const GameView& gv) {
@@ -476,7 +485,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         }
     }
     g.k = k; g.facteur = facteur;
-    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), nuit ? (float)atmosphere::rad(astre.phase) : 0.f};   // WFS-207 : w = angle de phase de la lune
+    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), lune ? (float)atmosphere::rad(astre.phase) : (float)couvertureNuages(gv)};   // WFS-208 : w = phase de la lune, ou couverture nuageuse de jour   // WFS-207 : w = angle de phase de la lune
     // ---- RG-03 / ST-4 : sondes locales
     const int niveau = qualite::niveauAffiche(ecrans::reglages().qualite);
     double esp = espacement(niveau);
@@ -504,7 +513,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     e.actif = true; e.nuit = nuit; e.hauteurSoleil = h; e.eSoleilNormal = E; e.eSoleilHorizontal = E * std::max(std::sin(h * PI_L / 180.0), 0.0);
     e.eCielDiffus = Ed; e.facteurCie = K; e.luminanceZenith = nuit ? Lnuit : K * cieF((90 - h) * PI_L / 180) * ciePhi(0);
     e.ev = g.ev; e.evCible = cible; e.k = k; e.facteurArtistique = facteur; e.couleurSoleil = couleur;
-    e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = nuit ? astre.phase : 0;   // WFS-207
+    e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = lune ? astre.phase : 0;   // WFS-207
+    e.moment = (int)mom; e.heureUtc = heure; e.eSol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;   // WFS-208
     e.sondeCaptureActive = g.B.capture; e.positionSonde = g.B.pos; e.poidsB = g.w; e.luminanceMesuree = Lmes;
 }
 
