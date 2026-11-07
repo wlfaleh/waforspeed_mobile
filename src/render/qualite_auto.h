@@ -109,9 +109,25 @@ struct MesureImages {
     float ms[CAP] = {}; int n = 0, tete = 0; double duree = 0;   // tete : prochaine place ; duree : somme des n gardées (ms)
     void ajouter(float msImage);
     void vider() { n = 0; tete = 0; duree = 0; }
-    struct Stats { float mediane = 0, p95 = 0, p99 = 0; int plus33 = 0, plus50 = 0, images = 0; float secondes = 0; };
+    struct Stats { float mediane = 0, p95 = 0, p99 = 0, ecartType = 0; int plus33 = 0, plus50 = 0, images = 0; float secondes = 0; };   // WFS-262 (RG-05) : écart type
     Stats stats() const;
 };
+// WFS-262 (RG-04) : cadence de la course, choisie automatiquement : 60 img/s ; 30 quand le téléphone ne tient pas 60 alors
+// que la scène est déjà à 60 % et les effets allégés (95 % des images > 20 ms pendant 6 s) : 30 régulières se sentent mieux
+// que 40 à 55 irrégulières. Retour à 60 quand le GPU a de la marge (< 11 ms pendant 10 s). Lu par chauffe::plafondIps.
+struct Cadence {
+    int ips = 60; double tSous = 0, tMarge = 0;
+    // dt : durée de l'image (s) ; p95 : 95 % des images de la fenêtre (ms) ; gpuMs ≤ 0 : inconnu ; renvoie vrai si changée
+    bool image(double dt, bool enCourse, bool auPlancher, float p95, double gpuMs) {
+        if (!enCourse) { tSous = tMarge = 0; return false; }
+        const int avant = ips;
+        if (ips == 60) { tSous = auPlancher && p95 > 20.f ? tSous + dt : 0; if (tSous >= 6) { ips = 30; tSous = 0; } }
+        else { tMarge = gpuMs > 0 && gpuMs < 11 ? tMarge + dt : 0; if (tMarge >= 10) { ips = 60; tMarge = 0; } }
+        return ips != avant;
+    }
+};
+inline int cadenceCourse = 60;   // plafond des images/s en course (chauffe::plafondIps)
+
 // texte du fichier rendu-mesure.txt (et de la feuille de partage), ligne courte des Réglages ; vides avant toute mesure
 std::string texteMesure();
 std::string ligneMesure();

@@ -286,6 +286,7 @@ bool Renderer::init(VkCtx& vk) {
         ombreQuad_ = makeMesh(v, {0, 1, 2, 0, 2, 3});
     }
     ETAPE_RENDU("matériaux, fin de Renderer::init");
+    WFS_LOG("pipelines (WFS-262) : Renderer::init en %.0f ms, %u pipelines créés (2e lancement plus court si le cache est relu)", msDepuisInit(), pipelinesCrees_);
     return true;
 }
 
