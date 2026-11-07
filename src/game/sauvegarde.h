@@ -63,6 +63,7 @@ public:
     bool gaucher = false, vibrations = true;   // WFS-75 : commandes en miroir, vibrations (propres au jeu natif)
     bool grandsBoutons = false;                // WFS-108 : boutons : normaux / grands (× 1,25)
     int gyro = 0, gyroZone = 1;                // WFS-108 : gyroscope 0 coupé, 1 doux, 2 moyen, 3 fort ; zone morte 0..2
+    bool aideDirection = true;                 // WFS-217 : aide à la direction (clé aide : activee / desactivee)
     std::string mode = "checkpoint";           // WFS-110 : mode de course (checkpoint / course5 / poursuite : WFS-119)
     int km5 = 4;                               // WFS-110 : distance de la course à 5 (2, 4, 6 ou 10 km)
     std::string diff5 = "normale";             // WFS-133 (RG-02) : difficulté de la course à 5 (facile / normale / difficile)

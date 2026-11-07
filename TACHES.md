@@ -118,7 +118,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | 4 — Personnages | WFS-164 (après WFS-151) → WFS-165 → WFS-166 | E11 | technical artist personnages, animation |
 | 5 — Harmonisation | WFS-167 (après toutes) | E13 | rendu |
 
-> 🔴 **Prochain ticket à attribuer, avant tout autre : WFS-222 (performance, ≈ 10-26 img/s sur le téléphone)** — ordre de l'utilisateur : au **premier développeur libre** qui demande un ticket. WFS-221 (fluidité) attribué à Claude, agent 2 (10:27 UTC).
+> 🔴 **WFS-222 (performance) attribué à agent arwa (Claude, session trafic) (10:42 UTC)**, premier développeur libre (ordre de l'utilisateur). WFS-221 (fluidité) attribué à Claude, agent 2 (10:27 UTC).
 
 ## Tableau (par numéro de ticket)
 
@@ -157,12 +157,13 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-214 | Correction (lot E13) : ciel en paliers, chaussée bleue en Ultra (ANO-109, ANO-106) | E13 | ⏳ En attente |  | WFS-213 | `feature/waforspeed-214` |  |  |
 | P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport (ANO-107, ANO-110) | E10 | ⏳ Prêt (dès que E10 est libre) |  | — | `feature/waforspeed-215` |  |  |
 | P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | ⏳ Prêt |  | WFS-212 ✅ | `feature/waforspeed-216` |  |  |
-| P1 Urgent | WFS-217 | Conduite : corriger le « guide auto » (aide à la direction) dans les virages serrés et ronds-points + réglage Activée / Désactivée | E3 (+ accroche E8 `reglages.cpp`) | 🔧 En cours | agent arwa (Claude, session trafic), 2026-11-07 09:48 UTC | — | `feature/waforspeed-217` |  |  |
+| P1 Urgent | WFS-217 | Conduite : corriger le « guide auto » (aide à la direction) dans les virages serrés et ronds-points + réglage Activée / Désactivée | E3 (+ accroche E8 `reglages.cpp`) | 🟣 Fusionné (PR #189, fusion par confiance, squash a63d209) | agent arwa (Claude, session trafic), 2026-11-07 09:48 UTC | — | `feature/waforspeed-217` | #189 |  |
 | P2 Haute | WFS-218 | Correction : phares du joueur en vrais feux de croisement (coupure du faisceau), façades éblouies la nuit | E4 | ⏳ Prêt |  | — | `feature/waforspeed-218` |  |  |
-| P2 Haute | WFS-219 | Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles (rien de branché) | E10 (exception PO : fichiers neufs `remplacants/`, à côté de WFS-158) | ⏳ Prêt |  | — | `feature/waforspeed-219` |  |  |
-| P1 Urgent | WFS-220 | [TECHNIQUE] Correction pipeline CI : banc de chauffe arrêté après 4 min (endurance de nuit, run #816) | E7 | 🔧 En cours | Claude, agent 1 (01UY1Vv2), 2026-11-07 10:03 UTC | — | `feature/waforspeed-220` |  |  |
+| P2 Haute | WFS-219 | Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles (rien de branché) | E10 (exception PO : fichiers neufs `remplacants/`, à côté de WFS-158) | 🟣 Fusionné (PR #191, 4448d7c ; Mustang retenu sous dérogation à confirmer, 4 refus) | Claude, agent 5 (011cpqZaDiS2), 2026-11-07 10:53 UTC | — | `feature/waforspeed-219` |  |  |
+| P1 Urgent | WFS-220 | [TECHNIQUE] Correction pipeline CI : banc de chauffe arrêté après 4 min (endurance de nuit, run #816) | E7 | 🟣 Fusionné (PR #190) | Claude, agent 1 (01UY1Vv2), 2026-11-07 10:03 UTC | — | `feature/waforspeed-220` | #190 |  |
 | P1 Urgent | WFS-221 | [TECHNIQUE] [URGENT] Voiture saccadée en vue Proche / Poursuite : banc de fluidité, rendu interpolé, pente et virages lissés | E0 + E3 (exception PO : `game.cpp`, `track.*`, `camera_vue.*` ; WFS-217 garde `player.*`) | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 10:27 UTC | — | `feature/waforspeed-221` |  |  |
-| P1 Urgent | WFS-222 | [TECHNIQUE] [URGENT] Performance sur téléphone : de 10-26 img/s à ≥ 30 stables (profilage, allègement, baisse auto efficace) | E4 | ⏳ Prêt — **à attribuer juste après WFS-221** |  | — | `feature/waforspeed-222` |  |  |
+| P1 Urgent | WFS-222 | [TECHNIQUE] [URGENT] Performance sur téléphone : de 10-26 img/s à ≥ 30 stables (profilage, allègement, baisse auto efficace) | E4 | 🔧 En cours | agent arwa (Claude, session trafic), 2026-11-07 10:42 UTC | — | `feature/waforspeed-222` |  |  |
+| P1 Urgent | WFS-223 | Ronds-points : corriger les défauts graphiques (marquages, îlot, blocs de couleur, raccords) sur les 4 cartes | E2 | 🔧 En cours | Claude, session dev 5bx, 2026-11-07 10:52 UTC | — | `feature/waforspeed-223` |  |  |
 
 ## Critères d'acceptation
 

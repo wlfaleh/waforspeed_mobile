@@ -2713,3 +2713,83 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-206, accroche de 2 lignes dans `game.cpp` au lieu de `track.cpp`** : acceptée (≤ 10 lignes, annoncée au journal).
 - **M-05 (vibreurs du Grand Prix)** : reste « non mesurable » dans l'indice des routes ; aucun ticket créé maintenant. Aucun site n'est ajouté sans accord de l'utilisateur (`regles-reseau.md`). Si l'utilisateur fournit une source (ou accepte un site précis, présenté par le PO), le PO crée alors un ticket E2 (`src/world/circuit.cpp`) pour la géométrie, avec les valeurs dans `references/reel/routes/`.
 - **WFS-222** reste le prochain ticket à attribuer au premier développeur libre.
+
+### 2026-11-07 10:30:06 — −50 % de personnes dans les rues (WFS-222 RG-07) ; WFS-223 créé (ronds-points) (po-scrum-master)
+- **Ordres de l'utilisateur** : au moins 50 % de personnes en moins dans les rues ; une tâche pour corriger les défauts graphiques des ronds-points.
+- **WFS-222** : RG-07 (piétons −50 % sur toutes les cartes, Ville 996 → ≤ 498, en premier, mesure avant / après).
+- **WFS-223** (E2, P1 Urgent, ⏳ Prêt) : inventaire des ronds-points des 4 cartes, marquages réglementaires, îlot central, blocs de couleur remplacés, raccords ; captures avant / après. Bandeau de `TACHES.md` : 221, puis 222, puis 223. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 10:30:51 — WFS-222 : le téléphone de l'utilisateur est puissant → objectif ≥ 60 img/s en Basse, ≥ 45 en Haute ; chercher une erreur grossière (po-scrum-master)
+- **Précision de l'utilisateur** : il joue à Call of Duty sans problème ; le matériel n'est pas en cause.
+- **WFS-222** : objectifs relevés (Basse ≥ 60, Haute ≥ 45 stables, aucune image > 33 ms) ; pistes d'erreur grossière à vérifier d'abord : APK « debug » (`debuggable true`), couches de validation, rendu logiciel, cadence d'affichage, un seul cœur, travail refait à chaque image, chauffe dès le départ.
+
+### 2026-11-07 10:32:58 — WFS-217 fusionné par confiance : aide à la direction corrigée + réglage (agent arwa, session trafic)
+- PR #189, squash a63d209. Statut 🟣 (✅ au premier run vert de `main`).
+- Cause mesurée : dans le jeu web, la route porte la voiture. Elle tourne avec la route sans volant, et le joueur qui braque pour suivre le virage qu'il voit tourne deux fois. Ensuite, le cap borné (centré sur l'axe du segment) et le réalignement la ramènent de force. Mesures sur le tracé 2 : un joueur précis s'en sort (écart 0,06). Un joueur aux flèches avec 0,2 s de réaction est ballotté : écart 0,15 à 0,19 et sauts de cap jusqu'à 0,041 rad par image, venant de la bordure (× −0,25 d'un coup) et des bornes.
+- Correction (`player.cpp`, `Player::guider`, voiture du joueur seulement) :
+  - la route tourne sous la voiture ; avec l'aide activée, l'aide porte toute la part du virage sans volant, et rien au-delà de 0,35 de braquage ;
+  - réalignement vers la direction réelle de la route (courbure lissée sur ±3 m, anticipée de 0,23 × v, 8 m au plus) ;
+  - cap borné élargi vers l'intérieur de 8 m × courbure (0,6 rad au plus), ramené à 2,5 rad/s au plus ;
+  - au-delà de l'adhérence, l'aide porte la part du virage qui manque ;
+  - la bordure renvoie la voiture progressivement ;
+  - force centrifuge sur la courbure lissée.
+  Aide désactivée : ni compensation, ni réalignement, ni borne. Ordinateur, trafic et références du jeu web : `Aide::Web`, sans changement (RG-05) ; le système `aide_direction.cpp` (ordre 202) pose le réglage sur la voiture du joueur.
+- Résultats aux flèches avec 0,2 s de réaction : écart 0,07 à 0,10 et saut de cap ≤ 0,019 rad par image, contre 0,15 à 0,19 et 0,041 pour le jeu web. Volant lâché à la vitesse normale : reste sur la route (aide activée), quitte sa ligne (aide désactivée). À 1,4 × la vitesse normale : aide activée sans sortie.
+- Réglage : 12e ligne « Aide à la direction : Activée / Désactivée », clé `aide` de la sauvegarde, Activée par défaut, rien dans `configgame.json`.
+- **Accroches annoncées** :
+  - `src/ui/ecrans/reglages.cpp` : 9 lignes (ligne, valeur, toucher, lecture / écriture). Sur grand écran, la ligne est sous « Fermer » et la place de « Fermer » est fixée à celle d'avant ;
+  - sauvegarde : 4 lignes (`sauvegarde.h` / `.cpp` : champ, défaut, écriture, lecture) ;
+  - `CMakeLists.txt` : 1 ligne (`test_aide_direction`) ;
+  - `conduite_libre_banc.cpp` : appel du nouveau banc.
+- Vérifié en local :
+  - 43 tests CPU OK ;
+  - banc `benchAideDirection` (fin de partie2b, +33 s) : 8 cas, 0 écart ; trace de la trajectoire au journal du banc ; captures `conduite-epingle` et `conduite-rond-point` regardées ;
+  - parcours complet 0 écart ; `menu2` en 1280 et 2400 : `reglages-108` identique à `main` sur les 11 lignes et « Fermer » (écart ≤ 1).
+- Limites : aucun essai sur un vrai téléphone. Le joueur simulé n'est qu'un modèle de joueur humain. La conduite du joueur change sur toutes les cartes : le volant doit maintenant suivre les virages, et l'aide prend le relais quand on le lâche.
+
+### 2026-11-07 10:41:59 — Début WFS-222 : performance sur téléphone, attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- **Ticket** : WFS-222 [TECHNIQUE] [URGENT] Performance sur téléphone (P1, E4). Demande d'agent arwa (« Prends autre chose ») ; WFS-221 demandé mais déjà à Claude, agent 2 (10:27 UTC). WFS-217 d'arwa est 🟣 fusionné (PR #189) : arwa est libre ; E4 n'a aucun autre ticket actif (WFS-88 iOS suspendu, gel).
+- **Zone autorisée** : `src/render/**` (E4), réglages de qualité et baisse automatique, `src/world/pietons.*` / décor (allègement au loin, accroches annoncées au journal), bancs. **Interdit** : `game.cpp`, `track.*`, `camera_vue.*` (WFS-221), taille des boutons (ordre permanent), iOS (gel).
+- **Critères** : regles-de-gestion/WFS-222.md (RG-07 piétons −50 % en premier, mesure avant / après ; RG-01 bis erreur grossière d'abord : APK debug, -O2/-O3, couches de validation, FIFO, un seul cœur ; profilage 3 postes ; ≥ 60 img/s Basse, ≥ 45 Haute ; carrés noirs ; pas de régression ; parcours 0 écart).
+- **Plan court** : piétons −50 % → vérifier la construction Release / validation → banc perf et profilage → leviers RG-03 → APK de main mesuré par l'utilisateur.
+
+### 2026-11-07 10:52:05 — Début WFS-223 : ronds-points, attribué à Claude, session dev 5bx (po-scrum-master)
+- **Ticket** : WFS-223 Ronds-points : défauts graphiques sur les 4 cartes (P1 Urgent, E2). Ticket prêt le plus prioritaire d'une épic libre (E2 sans ticket actif ; gel iOS respecté).
+- **Zone autorisée** : `src/world/**` des cartes (E2), `assets/world/**` hors `modeles/`, `shaders/world_*` ; marquages de route par accroche ≤ 10 lignes annoncée (E9 `route_*`). **Interdit** : `track.*`, `camera_vue.*`, `game.cpp` (WFS-221), `src/world/pietons.*` (WFS-222), `player.*`, iOS, taille des boutons.
+- **Critères** : regles-de-gestion/WFS-223.md (RG-01 inventaire et captures avant ; RG-02 marquages ; RG-03 îlot sans boîtes de couleur ; RG-04 raccords ; RG-05 rien sur la chaussée, appels de dessin tenus ; RG-06 captures avant / après, parcours 0 écart). Section « Graphisme réaliste » ajoutée (charte § 3).
+- **Plan court** : inventaire des ronds-points → marquages → îlot → raccords → captures et ligne `qa/Check.md`.
+
+### 2026-11-07 10:54:03 — Début WFS-219 : voitures de remplacement (lot 1), attribué à Claude, agent 5 (011cpqZaDiS2) (po-scrum-master)
+- **Ticket** : WFS-219 Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles, rien de branché (P2 Haute, E10, exception PO : fichiers neufs à côté de WFS-158). Choix : aucune US technique ni P1 libre (WFS-220 à 223 déjà attribués) ; WFS-218 (P2, E4) bloqué par WFS-222 sur E4 ; WFS-219 = P2 prêt le plus prioritaire attribuable. Gel iOS respecté.
+- **Zone autorisée** : fichiers **nouveaux** seulement : `assets/cars/remplacants/**`, `assets/licences/remplacants/**` ; lancement (sans modification) de `tools/convert_car.mjs`, `tools/simplifier_voiture.mjs`, `test_fidelite_voitures`, `wfs_bench` (vitrine) sur des copies. **Interdit** : tout fichier existant de E10 (WFS-158, arwa-2), `src/game/cars.h`, `assets/cars/<id>.wfm` actuels, outils, code de rendu ; zones de WFS-220 (E7), 221 (`game.cpp`, `track.*`, `camera_vue.*`, `player.*`), 222 (E4), 223 (E2), 161 (E12) ; iOS.
+- **Réseau** : `regles-reseau.md` § 2.4 (dépôts GitHub publics, méthode `modeles-3d-github.md`), CC0 / CC BY seulement, licence lue dans la source, SHA-256 et adresse au journal, rien exécuté.
+- **Critères** : regles-de-gestion/WFS-219.md (RG-01 à RG-05) ; avis d'`expert-realisme-3d` (consultant).
+- **Plan court** : recherche des 5 modèles → conversion dans `remplacants/` → mesures ±1 % et vitrine en local → rapport au journal → fusion par confiance + ligne `qa/Check.md`.
+
+### 2026-11-07 10:56:05 — WFS-220 : banc de chauffe de la CI réparé (Claude, agent 1)
+- Cause (RG-01) : le run #816 de `main` a tué le banc à 240 s (limite fixe de `chauffe.sh`), juste avant la capture `chauffe-retabli` ; en local, le banc a aussi montré « sauvegarde inchangée (ÉCHEC) », une régression de WFS-208 (l'écran terrain écrivait le moment dans la sauvegarde même pendant le banc).
+- Correction (RG-03) : accroche d'une ligne dans `src/ui/ecrans/terrain.cpp` (le moment n'est écrit que si la sauvegarde est active) ; limite réglable `CHAUFFE_LIMITE` dans `tools/qa/chauffe.sh`, 600 s par défaut. Mesures : 136 s en local avant, 129 s après ; CI de branche run #819 (RG-06, job `endurance` vérifié) : **245 s**, code 0, 3 captures (`chauffe-bandeau`, `chauffe-fin`, `chauffe-retabli`), toutes les vérifications « (ok) », 0 écart. 600 s laisse plus de 25 % de marge (le minimum serait 307 s).
+- RG-02 : aucune vérification retirée. RG-04 : la logique de chauffe ne change pas.
+- RG-05 (accroche de 2 lignes dans `.gitignore` : `__pycache__/`) : sortis du suivi par `git rm --cached` : `tools/qa/__pycache__/statuts.cpython-313.pyc` et `references/reel/outils/__pycache__/extraire.cpython-313.pyc`.
+- Branche synchronisée avec `main`, compilation et tests CPU verts : fusion.
+
+### 2026-11-07 10:58:39 — Demande de ticket de Claude, agent 1 : aucun ticket attribuable (po-scrum-master)
+- Tickets ⏳ Prêt : WFS-215 (E10, occupée par WFS-158 et WFS-219), WFS-216 (E2, occupée par WFS-223), WFS-218 (E4, occupée par WFS-222). WFS-214 (E13) attend WFS-213 ✅ : 🟣, run de `main` 42361330960 en file d'attente depuis 09:49 UTC (lanceurs occupés, aucune CI rouge).
+- Épics libres (E7, E9, E11, E13…) : leurs tickets suivants attendent une validation (WFS-156 après WFS-206, WFS-165 après WFS-164). Aucune anomalie 🆕 dans `anno.md`.
+- Claude, agent 1 redemande dès que WFS-213 passe ✅ : WFS-214 sera alors attribuable. `track-agent.md` mis à jour.
+
+
+### 2026-11-07 11:10:37 — WFS-219 fusionné (PR #191, squash 4448d7c, fusion par confiance) : rapport des 5 voitures (Claude, agent 5)
+Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lecture par clone partiel en lecture seule (bac à sable de la session, rien exécuté). Liste pour le lot 2 (WFS-194) :
+- **Mustang Shelby GT500 — RETENU, sous dérogation du PO à confirmer.** « Ford Mustang Shelby GT500 » par Jiaxing, https://sketchfab.com/3d-models/ford-mustang-shelby-gt500-0eaa7a16796540f29461ddae05ecdeb3, **CC BY 4.0** (license.txt lu) ; dépôt `trivedikavya/MUSTANGpreviewbykavyatrivedi`, chemin `ford_mustang_shelby_gt500/` (même modèle et même licence dans `jvsysarch/apex` et `Toby-Query/StreetCred`) ; SHA-256 : scene.gltf 44af2ace24f37a39620c4629f64976bd26750a7798ef868dbf4bdcdfc94c383b, scene.bin 9352954b727d0947bc2f839bc077bab2ef9a9984925cdb159477c32f56289779 (17 Mo). Conversion (outils lancés sur une copie du dépôt, non modifiés) : `simplifier_voiture.mjs` en 2 passes (0,012 puis 0,02 : 348 393 → 101 691 triangles ; une seule passe restait à 12 Mo), `convert_car.mjs` (4,82 m, rotation 180°, peinture `carpaint`, feux `rearlight`), `corriger_voitures` (× 0,99, pneus posés). Résultat `assets/cars/remplacants/mustang.wfm` : **7,03 Mo** (actuel 5,9 Mo), 102 000 triangles, SHA-256 fbf5814f90740f20e84ff9cc6eef8ee8fbceb424a180b49d70350766d3d479fc. `test_fidelite_voitures` (sur la copie) : longueur, largeur, empattement, voie ar, roues conformes ; **hauteur −2,5 %**, **voie av +1,8 %** (proportions du modèle ; échelle non uniforme interdite) ; l'actuel a 1 écart (voie ar −1,5 %). Rendu vitrine local (lavapipe) comparé à l'actuel : carrosserie lisse, 4 roues, feux arrière repérés ; **pas de plaque**. Avis `expert-realisme-3d` : à retenir sous **dérogation écrite du PO** (le blocage de licence pèse plus que 2 écarts), vérifier la hauteur sans l'aileron et la garde au sol avant WFS-194.
+- **X5 — REFUSÉ.** Seul CC BY : « 2020 BMW X5 M Competition » par David_Holiday (`Sanyajo/car_sales_website_with_3d_models`, `DiplomServer/src/main/resources/static/model/bmwX5/`, scene.gltf 939c1ec3…78eb, scene.bin 5d109204…04b4) : export de type SketchUp (matériaux edge_color, textures « BMW_M8_2020_Modified »), 490 000 triangles qui ne se simplifient pas (bords ouverts), **19 Mo** converti, aucune pièce de peinture. Autre copie trouvée : Ddiaz Design, CC BY-NC-SA (l'actuel).
+- **Elantra N — REFUSÉ.** CC BY seulement chez `prozac0401/WebSim` (tonielpro520, 2022), empaqueté dans `avante_n-runtime.js` : il faudrait exécuter le script (interdit, `regles-reseau.md`). Autre copie : Ddiaz Design, CC BY-NC.
+- **T-Cross — REFUSÉ** : aucun CC0 / CC BY (seule copie : Ddiaz Design, CC BY-NC-SA, l'actuel).
+- **A 45 — REFUSÉ** : même modèle que l'actuel (Lexyc16, Mercedes-Benz A45 AMG 2018) ; `tensornull/CarVision` dit CC BY, `balramadan/car-view`, `vladyslavhurzhyi/car-rent`, `braazbedat10205-blip/gloss-boss-detailin2` disent CC BY-NC → licence la plus restrictive retenue.
+- **Remplaçants proposés au PO (décision attendue)** : T-Cross → VW Passat (I3D, CC BY, `krisAndreev/MyMiniCar`, `src/MyMiniCar.Web/wwwroot/models/vw-passat/`) — changement de catégorie (berline) ; A 45 → Mercedes-AMG CLS (RADEONGAMER, CC BY, `xardas110/Engine3D_DX12`, `Assets/Models/mercedes/`) **origine à vérifier** (auteur souvent associé à des extractions de jeux, avis expert), repli Mercedes Classe E W212 (Peter_D, CC BY, `bujue600-arch/carVison`) ; AMG One écartée (hypervoiture, origine douteuse).
+- Jeu inchangé : fichiers neufs seulement (`assets/cars/remplacants/`, `assets/licences/remplacants/`), parcours complet 0 écart (vue normale et Cockpit), `verifier_licences.py` 0 manque. Le .wfm (7 Mo) est copié dans l'APK sans être chargé jusqu'à WFS-194.
+
+### 2026-11-07 11:11:27 — WFS-219 : décisions sur les remplaçants soumises à l'utilisateur ; agent 5 sans ticket attribuable (po-scrum-master)
+- Retour d'agent 5 (PR #191, squash 4448d7c) : Mustang retenue avec 2 mesures hors ±1 % (hauteur −2,5 %, voie avant +1,8 %), avis d'expert-realisme-3d favorable sous dérogation ; T-Cross, X5, A 45, Elantra N refusés.
+- **Pas de dérogation accordée par le PO** : la tolérance ±1 % relève de la règle de réalisme (ordre permanent) et RG-02 de WFS-194 réserve le choix d'une autre voiture à l'utilisateur. Question unique posée dans `tache utilisateur.md` (recommandation : accepter la Mustang ; Passat pour le T-Cross, Classe E W212 pour l'A 45 ; X5 et Elantra N gardés tant que le jeu est gratuit). Suivi dans `regles-de-gestion/WFS-194.md`.
+- Claude, agent 5 libre : aucun ticket attribuable (mêmes raisons qu'à 10:58:39 : WFS-215 sur E10 occupée par WFS-158, WFS-216 sur E2 occupée par WFS-223, WFS-218 sur E4 occupée par WFS-222, WFS-214 attend WFS-213 ✅). Il redemande dès qu'une épic se libère.

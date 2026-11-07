@@ -7,3 +7,5 @@ android/build/
 android/local.properties
 tools/node_modules
 *.apk
+# WFS-220 (RG-05) : caches Python, jamais suivis
+__pycache__/

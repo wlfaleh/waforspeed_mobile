@@ -13,7 +13,7 @@ static int g_echecs = 0;
 
 static bool estDefaut(const Sauvegarde& s) {
     return s.best == 0 && s.car == "golf" && s.paint.empty() && s.map == "ville" && s.tod == "nuit" && s.quality == "high" && !s.qualityChoisie && s.music &&
-           s.cam == "poursuite" && !s.muted && s.nick == "Pilote" && s.km == 4 && s.steer == "glisser" && s.diff5 == "normale";
+           s.cam == "poursuite" && !s.muted && s.nick == "Pilote" && s.km == 4 && s.steer == "glisser" && s.diff5 == "normale" && s.aideDirection;   // WFS-217 : aide à la direction activée
 }
 static std::string lireFichier(const std::string& p) {
     std::ifstream f(p, std::ios::binary); std::stringstream ss; ss << f.rdbuf(); return ss.str();
@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
         Sauvegarde s; s.charger(chemin);
         s.best = 48210; s.car = "m4"; s.paint["m4"] = "rouge"; s.paint["golf"] = "vert"; s.map = "circuit"; s.tod = "jour";
         s.setQualiteIndex(0); s.setCamIndex(2); s.muted = true; s.music = false; s.nick = "Zoé"; s.km = 10; s.steer = "fleches"; s.diff5 = "difficile";
+        s.aideDirection = false;   // WFS-217
         s.enregistrer(); s.attendre();
         std::FILE* t = std::fopen((chemin + ".tmp").c_str(), "rb");
         VERIFIER(t == nullptr);   // le temporaire a été renommé
@@ -39,6 +40,7 @@ int main(int argc, char** argv) {
         const std::string c = lireFichier(chemin);
         VERIFIER(c.rfind("version=1\n", 0) == 0);
         VERIFIER(c.find("waforspeed-best=48210\n") != std::string::npos);
+        VERIFIER(c.find("aide=desactivee\n") != std::string::npos);   // WFS-217
         std::printf("fichier écrit :\n%s", c.c_str());
     }
     {
@@ -47,6 +49,7 @@ int main(int argc, char** argv) {
         VERIFIER(s.peinture("p911") == "gris");   // non choisie : peinture d'origine (myPaint)
         VERIFIER(s.map == "circuit"); VERIFIER(s.tod == "jour"); VERIFIER(s.quality == "low"); VERIFIER(s.cam == "cockpit");
         VERIFIER(s.camIndex() == 2); VERIFIER(s.muted); VERIFIER(!s.music); VERIFIER(s.qualityChoisie); VERIFIER(s.nick == "Zoé"); VERIFIER(s.km == 10); VERIFIER(s.steer == "fleches"); VERIFIER(s.diff5 == "difficile");   // WFS-133
+        VERIFIER(!s.aideDirection);   // WFS-217 : « Aide à la direction : Désactivée » reprise au lancement suivant
         // une seconde écriture remplace la première (dernière valeur gagnante)
         s.best = 50000; s.enregistrer(); s.car = "p911"; s.enregistrer(); s.attendre();
         Sauvegarde r; r.charger(chemin); VERIFIER(r.best == 50000); VERIFIER(r.car == "p911");
@@ -62,7 +65,7 @@ int main(int argc, char** argv) {
     {
         Sauvegarde s;
         VERIFIER(s.lire("version=1\r\ncar=fusee\npaint-golf=fuchsia\npaint-fusee=rouge\nmap=lune\ntod=aube\nquality=ultra\ncam=drone\n"
-                        "muted=oui\nnick=   \nkm=5\nsteer=volant\ndiff5=extreme\nwaforspeed-best=-3\nligne sans egal\ninconnue=1\n"));
+                        "muted=oui\nnick=   \nkm=5\nsteer=volant\ndiff5=extreme\naide=peut-etre\nwaforspeed-best=-3\nligne sans egal\ninconnue=1\n"));
         VERIFIER(estDefaut(s));
         VERIFIER(s.lire("version=1\ntrace=2\nwaforspeed-car=gallardo\nbest=12\nkm=2\nnick=\tUn pseudo beaucoup trop long\n"));
         VERIFIER(s.car == "gallardo"); VERIFIER(s.best == 12); VERIFIER(s.km == 2);
