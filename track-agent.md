@@ -39,7 +39,6 @@
 | WFS-218 (P1) | E4 | épic occupée par WFS-222 (agent arwa) |
 | WFS-224 (P1), WFS-226 (P1) | E4 (+ E3) | épic E4 occupée par WFS-222 (agent arwa) |
 | WFS-230 (P1) | E13 | nouveau (risque signalé par session dev 5bx) ; attend l'épic E13 (WFS-227, agent 2) |
-| WFS-237 (P1) | E7 | réservé à l'agent expert ci ; attend WFS-236 🟣 (agent 4) |
 | WFS-214 (P2) | E13 | WFS-213 ✅ (CI main #817) ; attend l'épic E13 (WFS-227, agent 2), après WFS-230 |
 
 ## Agents de pilotage
@@ -50,7 +49,7 @@
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
-| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, propositions d'US techniques | 2026-11-07 : propositions 1, 2, 5 validées (Smart Brain, utilisateur) → WFS-236 complété, WFS-237 qu'il développera après WFS-236 |
+| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, propositions d'US techniques | 2026-11-07 13:19:42 : WFS-237 🔧 (branche poussée, ca97f82 ; CI de branche run 836) ; fusion après WFS-236 ; ne touche que la CI (règle de l'utilisateur) |
 
 ## Info pour les développeurs (2026-11-06 23:47 UTC)
 - Le rendu se vérifie **en local** avec lavapipe : `mesa-vulkan-drivers` et `glslc` s'installent dans le conteneur (paquets apt), puis `WFS_BANC=<groupe> build/wfs_bench` (même rendu logiciel que la CI ; testé par Claude, agent 2 sur WFS-197).

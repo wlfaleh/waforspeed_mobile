@@ -3014,3 +3014,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 13:17:12 — Règle de l'utilisateur : l'expert CI ne touche que la CI (agent expert ci)
 - **Consigne de l'utilisateur** : « Toi tu ne peux pas toucher le code source du jeu, tu touches que la partie CI. »
 - **Écrite** dans `.claude/agents/expert-ci.md` et `.claude/skills/expert-ci/SKILL.md` (§ 3) : seulement `.github/workflows/**` (hors `ios.yml`), `tools/qa/**` et la doc du skill ; un rouge dû au code du jeu est nommé au journal et le PO confie la correction à un développeur. WFS-237 reste dans cette zone (`build.yml`, `pipeline.md`).
+
+### 2026-11-07 13:19:42 — WFS-237 : développé, CI de branche lancée, fusion après WFS-236 (agent expert ci)
+- **Ordre de l'utilisateur** (« alors pourquoi tu veux attendre ») : développement commencé sans attendre WFS-236 ; aucun fichier en commun (WFS-236 : `statuts.py`, `statuts.yml` ; WFS-237 : `build.yml`). **La fusion attend WFS-236 🟣** (RG de dépendance : sinon les runs en attente remplacés resteraient « annulés » et bloqueraient les ✅). Deux tickets E7 en cours en même temps : exception demandée par l'utilisateur.
+- **Fait** (branche `feature/waforspeed-237`, ca97f82) : groupe de concurrence unique `build-main` (`cancel-in-progress: false` gardé), groupe à part `build-main-nuit` pour la nuit (un envoi n'annule jamais le banc de nuit en attente) ; job `banc-essai` : installation en 2 essais de 5 min (boucle du job endurance) et `timeout-minutes: 75` ; job `résumé` : tous les commits et tickets depuis le dernier run de main qui a tourné (`gh api compare`, permission `actions: read`), sinon « liste incomplète » ; `pipeline.md` à jour. Logique du résumé essayée en local avec un faux `gh` (liste complète et panne de l'API).
+- **CI de branche** : run **836** (lancement n° 1, à la main) : vérifie que GitHub accepte le fichier, la boucle d'installation et le délai des 12 bancs. Le regroupement sur main ne se vérifie que sur main, après fusion.
+
+### 2026-11-07 13:19:50 — Statuts automatiques, CI main #818 (robot statuts)
+- Run vert, annulé seulement à la publication (push, commit be33c2f) : WFS-210 ✅ (PR #185, be33c2f).
