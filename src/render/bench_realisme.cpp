@@ -425,7 +425,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
         setenv("WFS_MOMENT", "jour", 1); unsetenv("WFS_DEPART");
         reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
         g_banc.oeil = {-8, 0, 2}; g_banc.cible = {80, 0, 0.5f}; g_banc.fov = 60;
-        if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+        if (!g.init(r, "golf", carte)) { WFS_ERR("réalisme : coût de %s (%s) : chargement impossible", carte, qualites[q]); erreurs++; continue; }
         g.allerA(ECRAN_BANC);
         for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
         const double t0 = nowSeconds();
@@ -469,7 +469,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                   << " (sans unité), exposition " << fmt(L.exposure, 2) << ", ambiance " << fmt(L.ambient, 2) << ".\n"
                   << "Couleur relevée après tonemapping (PNG, moyenne de 9 × 9 pixels au centre de chaque case). Avant tonemapping (HDR) : non mesurable\n"
                   << "dans WFS-148 (le Renderer ne relit pas la cible HDR ; ajout proposé pour WFS-150, passes enfichables).\n";
-            if (!px) { rap.nonMesurable("couleurs", "cc.*", "charte rendue", "capture realisme-etalon.png illisible"); erreurs++; }
+            if (!px) { rap.nonMesurable("couleurs", "cc.*", "charte rendue", "capture realisme-etalon.png illisible"); WFS_ERR("réalisme : capture realisme-etalon.png illisible"); erreurs++; }
             else {
                 const double s = g.player().dist;
                 Track piste; piste.build(mapById("campagne"));
@@ -532,7 +532,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
                 stbi_image_free(px);
             }
             g.shutdown();
-        } else erreurs++;
+        } else { WFS_ERR("réalisme : scène d'étalonnage : chargement de la Campagne impossible"); erreurs++; }
         g_banc.etalon = false;
     }
     ranger(E_ETALON);
@@ -548,7 +548,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
             setenv("WFS_MOMENT", "jour", 1); setenv("WFS_DEPART", std::to_string(depart).c_str(), 1);
             reglages.qualite = q ? ecrans::QUALITE_HAUTE : ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r);
             g_banc.oeil = v.oeil; g_banc.cible = v.cible;
-            if (!g.init(r, "golf", v.carte)) { erreurs++; continue; }
+            if (!g.init(r, "golf", v.carte)) { WFS_ERR("réalisme : texture d'essai KTX2 : chargement de %s impossible", v.carte); erreurs++; continue; }
             g.setAutopilot(false); g.camMode = 0; g.allerA(ECRAN_BANC);
             for (int i = 0; i < PAS_AVANT_CAPTURE; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
             for (int i = 0; i < 3; i++) g.render(t);
