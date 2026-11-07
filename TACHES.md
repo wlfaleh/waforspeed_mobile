@@ -156,7 +156,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-213 | Correction : écran blanc après le chargement d'une voiture (exposition de WFS-151) | E13 | ✅ Terminé (CI main #817) | Claude, agent 1 (01UY1Vv2), 2026-11-07 08:24 UTC | — | `feature/waforspeed-213` | #184 |  |
 | P2 Haute | WFS-214 | Correction (lot E13) : ciel en paliers, chaussée bleue en Ultra (ANO-109, ANO-106) | E13 | ⏳ Prêt (dès que E13 est libre) |  | WFS-213 | `feature/waforspeed-214` |  |  |
 | P3 Moyenne | WFS-215 | Correction (lot E10) : plaque arrière Model 3, vitres avant RR Sport (ANO-107, ANO-110) | E10 | ⏳ Prêt (dès que E10 est libre) |  | — | `feature/waforspeed-215` |  |  |
-| P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | ⏳ Prêt |  | WFS-212 ✅ | `feature/waforspeed-216` |  |  |
+| P3 Moyenne | WFS-216 | Correction (lot E2) : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) | E2 | 🔧 En cours | Claude, session dev 5bx, 2026-11-07 12:00 UTC | WFS-212 ✅ | `feature/waforspeed-216` |  |  |
 | P1 Urgent | WFS-217 | Conduite : corriger le « guide auto » (aide à la direction) dans les virages serrés et ronds-points + réglage Activée / Désactivée | E3 (+ accroche E8 `reglages.cpp`) | 🟣 Fusionné (PR #189, fusion par confiance, squash a63d209) | agent arwa (Claude, session trafic), 2026-11-07 09:48 UTC | — | `feature/waforspeed-217` | #189 |  |
 | P1 Urgent | WFS-218 | Phares du joueur : **deux** vrais feux de croisement (gauche et droit, coupure), plus une seule lampe au centre | E4 | ⏳ Prêt |  | — | `feature/waforspeed-218` |  |  |
 | P2 Haute | WFS-219 | Voitures non commerciales — lot 1 : trouver, vérifier, convertir les 5 nouveaux modèles (rien de branché) | E10 (exception PO : fichiers neufs `remplacants/`, à côté de WFS-158) | 🟣 Fusionné (PR #191, 4448d7c ; Mustang retenu sous dérogation à confirmer, 4 refus) | Claude, agent 5 (011cpqZaDiS2), 2026-11-07 10:53 UTC | — | `feature/waforspeed-219` |  |  |
@@ -165,11 +165,12 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-222 | [TECHNIQUE] [URGENT] Performance sur téléphone : de 10-26 img/s à ≥ 30 stables (profilage, allègement, baisse auto efficace) | E4 | 🔧 En cours | agent arwa (Claude, session trafic), 2026-11-07 10:42 UTC | — | `feature/waforspeed-222` |  |  |
 | P1 Urgent | WFS-223 | Ronds-points : corriger les défauts graphiques (marquages, îlot, blocs de couleur, raccords) sur les 4 cartes | E2 | 🟣 Fusionné (PR #192, squash 00be4ab) | Claude, session dev 5bx, 2026-11-07 10:52 UTC | — | `feature/waforspeed-223` | #192 |  |
 | P1 Urgent | WFS-224 | Correction : boules grises (fumée des pneus) qui sortent derrière la voiture quand on tourne | E4 | ⏳ Prêt |  | — | `feature/waforspeed-224` |  |  |
-| P1 Urgent | WFS-225 | Campagne de nuit : lampadaires allumés, nuit lisible (aujourd'hui tout noir) | E2 | 🟣 Fusionné | Claude, session dev 5bx, 2026-11-07 11:28 UTC | #194 | `feature/waforspeed-225` |  |  |
+| P1 Urgent | WFS-225 | Campagne de nuit : lampadaires allumés, nuit lisible (aujourd'hui tout noir) | E2 | 🟣 Fusionné (#194, squash 6d3992c) | Claude, session dev 5bx, 2026-11-07 11:28 UTC | — | `feature/waforspeed-225` | #194 |  |
 | P1 Urgent | WFS-226 | Nuit : phares allumés sur toutes les autres voitures (trafic, adversaires, police) | E4 + E3 | ⏳ Prêt |  | — | `feature/waforspeed-226` |  |  |
 | P2 Haute | WFS-227 | [RÉALISME 1.3a] Lumière (1/3) : ombres du soleil en cascades stabilisées, pénombre physique | E13 | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 11:44 UTC | WFS-152 ✅ | `feature/waforspeed-227` |  |  |
 | P2 Haute | WFS-228 | [RÉALISME 1.3b] Lumière (2/3) : ombres des phares et lampadaires la nuit, allumage selon l'éclairement | E13 (+ accroche E4 `nuit.cpp`) | ⏳ En attente |  | WFS-227 | `feature/waforspeed-228` |  |  |
 | P2 Haute | WFS-229 | [RÉALISME 1.3c] Lumière (3/3) : occlusion ambiante (GTAO), ombre de contact calculée sous les voitures | E13 | ⏳ En attente |  | WFS-227 | `feature/waforspeed-229` |  |  |
+| P1 Urgent | WFS-230 | Nuit sur route non éclairée : adaptation de l'œil, herbe et bas-côtés visibles au clair de lune | E13 | ⏳ Prêt (dès que E13 est libre) |  | WFS-225 🟣 | `feature/waforspeed-230` |  |  |
 
 ## Critères d'acceptation
 
