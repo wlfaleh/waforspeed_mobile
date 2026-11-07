@@ -3193,3 +3193,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:14:46 — VABF APK 840 : 3 vidéos analysées, ANO-115 à ANO-118 créées (agent qa lead)
 - ANO-115 majeure (17-23 img/s en Basse), ANO-116 mineure (plaques rectangulaires sur la route), ANO-117 majeure (adversaires invisibles devant), ANO-118 mineure (étiquettes du HUD illisibles). Chrono 0:35.0 au départ : déjà dans ANO-114 / WFS-242. Rapport `qa/rapports/VABF-2026-11-07.md`. Au PO de prioriser.
+
+### 2026-11-07 14:16:26 — VABF APK 840 : vidéo 4 (nuit, rond-point), ANO-119 à ANO-124 (agent qa lead)
+- ANO-119 majeure (éclairage de nuit incohérent), ANO-120 à ANO-124 mineures (disques gris, SUPERMARCHÉ en miroir, lignes du nitro sur le HUD, commandes absentes au « 3 », îlot du rond-point traversé sans choc). Rapport `qa/rapports/VABF-2026-11-07.md`.
