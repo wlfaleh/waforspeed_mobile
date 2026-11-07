@@ -2635,3 +2635,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Vérification** : parcours complet **0 écart** (vue normale et vue Cockpit) ; 45 tests CPU verts ; banc `archi` sur la Campagne (116 bâtiments, 22 514 triangles au niveau 0 au total) ; capture de la Ville regardée.
 - **Branche `buildings`** (e3d6d39), créée à la demande de l'utilisateur (10:1x) : il y déposera les 18 textures Poly Haven dans `assets/textures/decor/sources/<nom>/` (`LISEZMOI.md` : noms et SHA-256). Je les reprendrai dans `feature/waforspeed-161` après vérification ; l'utilisateur supprimera ensuite la branche.
 - **Suite** : Corniche (`plage.cpp`, villas du village perché), captures des quartiers et banc réalisme, ST-6 (mesures), fusion.
+
+### 2026-11-07 10:12:43 — WFS-221 créé : voiture saccadée en vue Proche / Poursuite, US technique urgente (po-scrum-master)
+- **Retour de l'utilisateur** (essai sur téléphone) : en vue Proche et Poursuite, la voiture a un comportement bizarre, pas fluide.
+- **Causes probables (code de main)** : `game.cpp` ≈ 242-247, pas fixes de 1/120 s rendus sans interpolation (0, 1 ou 2 pas par image) ; `track.cpp:87`, pente par segment sans transition (bascule de la voiture à chaque segment) ; direction linéaire par morceaux.
+- **WFS-221** (`[TECHNIQUE]`, P1 Urgent, E0 + E3, ⏳ Prêt) : banc `fluidite` (temps d'image irréguliers 14-22 ms, mesures dans le repère caméra), rendu interpolé, route lissée, objectifs chiffrés, vidéo avant / après ; CI de branche permise (US technique). À attribuer au premier développeur libre, avant WFS-217.
