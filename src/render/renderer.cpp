@@ -768,6 +768,10 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     vp.viewportCount = 1; vp.scissorCount = 1;
     VkPipelineRasterizationStateCreateInfo rs{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
     rs.polygonMode = VK_POLYGON_MODE_FILL; rs.cullMode = VK_CULL_MODE_NONE; rs.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; rs.lineWidth = 1.f;
+    if (cullPipeline_) {   // WFS-246 : faces arrière retirées ; orientation des faces avant réglable au banc (WFS_FACE_AVANT=cw)
+        static const bool cw = std::getenv("WFS_FACE_AVANT") && std::strcmp(std::getenv("WFS_FACE_AVANT"), "cw") == 0;
+        rs.cullMode = VK_CULL_MODE_BACK_BIT; rs.frontFace = cw ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    }
     VkPipelineMultisampleStateCreateInfo ms{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
     ms.rasterizationSamples = samples;
     VkPipelineDepthStencilStateCreateInfo ds{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
@@ -844,6 +848,11 @@ void Renderer::createScenePipelines() {
     skyApres_ = makePipeline(kv, kf, 0, false, false, true, false, scenePass_, s, sceneLayout_);   // WFS-222 : profondeur 0 = vide
     skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_, false, 0, true);   // WFS-63 ; WFS-222
     skinOpaqueDecoupe_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);
+    cullPipeline_ = 1;   // WFS-246 (levier 1)
+    opaqueCull_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+    skinOpaqueCull_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_, false, 0, true);
+    cullPipeline_ = 0;
+    { const char* f = std::getenv("WFS_FACES"); facesArriere_ = !(f && f[0] == '0'); }
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
     addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
@@ -875,7 +884,7 @@ bool Renderer::appliquerNettete() {
     const bool refaire = ms != vk_->msaa;
     if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
         VkDevice d = vk_->device;
-        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_, &opaqueCull_, &skinOpaqueCull_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -1479,7 +1488,10 @@ void Renderer::endFrame() {
     for (uint32_t i : ordreOpaques_) {
         const Pending& p = opaqueQ_[i];
         const bool d = rendu221 || aDecoupe(p);   // WFS-222 : shader sans discard si l'objet n'a pas de découpe
-        const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : skinOpaque_) : (d ? opaqueDecoupe_ : opaque_);   // WFS-63
+        // WFS-246 (levier 1) : sans découpe et sans MAT_DOUBLE : faces arrière retirées
+        // route, trottoirs et sol (bandes de game.cpp, tournées dans l'autre sens, toujours vus de dessus) : rien à retirer
+        const bool cull = !d && facesArriere_ && p.mat && !(p.mat->flags & (MAT_DOUBLE | MAT_GLASS | MAT_ROAD | MAT_WALK | MAT_GROUND));
+        const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : cull ? skinOpaqueCull_ : skinOpaque_) : (d ? opaqueDecoupe_ : cull ? opaqueCull_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
     }
@@ -1583,7 +1595,7 @@ void Renderer::shutdown() {
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
     for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_, skyApres_,
-                         poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_})
+                         poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_, opaqueCull_, skinOpaqueCull_})
         if (p) vkDestroyPipeline(d, p, nullptr);
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
     vk_->destroy(quadIb_);
@@ -1615,6 +1627,7 @@ void Renderer::shutdown() {
     sceneLayout_ = postPLayout_ = skinLayout_ = VK_NULL_HANDLE;
     opaque_ = blend_ = sky_ = post_ = ui_ = shadowPipe_ = shadowMaskPipe_ = skinOpaque_ = skinShadow_ = skinShadowMask_ = VK_NULL_HANDLE;
     opaqueDecoupe_ = skinOpaqueDecoupe_ = skyApres_ = VK_NULL_HANDLE;   // WFS-222
+    opaqueCull_ = skinOpaqueCull_ = VK_NULL_HANDLE;   // WFS-246
     poolPipe_ = addPipe_ = refOpaque_ = refBlend_ = refSky_ = refAdd_ = VK_NULL_HANDLE;
     pool_ = VK_NULL_HANDLE; sampler_ = clampSampler_ = shadowSampler_ = VK_NULL_HANDLE; tsPool_ = VK_NULL_HANDLE;
     postSet_ = fontSet_ = VK_NULL_HANDLE; osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;
