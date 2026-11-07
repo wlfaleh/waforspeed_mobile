@@ -2543,3 +2543,22 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:35:31 — Statuts automatiques, CI main #815 (robot statuts)
 - Run vert (push, commit 6ddbeec) : WFS-208 ✅ (PR #183, 6ddbeec), WFS-211 ✅ (PR #182, abd8570).
+
+### 2026-11-07 09:37:59 — WFS-161 (ST-4) : repli procédural provisoire des façades ; accès aux textures toujours bloqué (Claude, Agent 0 developer)
+- **Accès** : l'utilisateur a dit « ok » à l'ajout de `dunkean/magna-urbis`. Le dépôt est lisible en anonyme (le proxy sert les lectures de dépôts publics), mais **pas ses objets LFS**. Rattacher le dépôt avec identifiants (seule voie pour le LFS) a été refusé par le filtre de permissions de la session. Question reposée à l'utilisateur : ajouter le dépôt aux sources de la session, ou autoriser `add_repo` dans les réglages.
+- **Fait** (`feature/waforspeed-161`, fcd2ed0, synchronisée 508ba2e) : `surfaceFacade` dans `shaders/decor.glsl`, **provisoire** :
+  - pierre de taille (assises 0,40 m, blocs 0,80 m, joints 8 mm), brique (22 × 6,5 cm + joints 1 cm, panneresses), moellons, crépi, béton ;
+  - M-03 : albédo moyen = référentiel (teinte des éléments compensée selon la part des joints, variations de moyenne nulle ; mortier 0,45 = valeur de conception) ;
+  - RG-04 : salissure en pied de mur (0 à 0,6 m) et coulures verticales.
+  - Accroches annoncées : `MAT_FACADE` (`renderer.h`, 1 ligne), `scene.frag` (2 lignes).
+- **Captures regardées** : brique lisible (module, joints) ; moellons du village ; pierre de taille et crépi discrets à cette distance. 45 tests CPU verts.
+- **Limites** : la pierre, le crépi et le zinc n'ont pas d'albédo au référentiel (béton provisoire) ; les coulures ne suivent pas encore la position des appuis.
+- **Suite** : ST-5, branchement du kit dans les cartes (accroches ≤ 10 lignes, repli sur l'ancien code), puis ST-6 (mesures).
+
+### 2026-11-07 09:40:50 — WFS-161 (ST-4) : copies hors LFS cherchées (piste du PO), aucune trouvée ; l'utilisateur dépose les fichiers (Claude, Agent 0 developer)
+- **Piste du PO (09:37)** : chercher les mêmes images Poly Haven hors LFS dans d'autres dépôts publics, preuve par le même SHA-256. Recherche de code sur les 18 noms de fichiers : 16 résultats hors `dunkean/magna-urbis`, 9 candidats distincts (`withRen/SAE501`, `minhtri-wotiso2pm/PRU213-ThuyKieu`, `FT1E/Game-Scripts`, `freegamesunblocked76/freegamesunblocked76.github.io`, `BeatrizAligh/Hitori-Kakurembo`, `yanxue06/portfolio`). Clone partiel en lecture seule, un fichier par candidat : **tous sont des pointeurs LFS** (131-132 octets) ou un fichier vide (14 octets). Aucune image réelle accessible, rien d'accepté.
+- **Solution** : l'utilisateur a proposé de télécharger lui-même les 18 fichiers et de les déposer sur `feature/waforspeed-161`, dans `assets/textures/decor/sources/<nom>/` (liste, pages Poly Haven et SHA-256 donnés dans la conversation). À réception : vérification des 18 SHA-256, licence CC0 et auteurs dans `assets/licences/`, conversion KTX2, branchement à la place du repli procédural.
+- En attendant : ST-5 (kit dans les cartes) avec le repli procédural provisoire.
+
+### 2026-11-07 09:41:47 — WFS-161 : textures procédurales provisoires, l'utilisateur ne déposera pas les fichiers (po-scrum-master)
+- L'utilisateur n'a pas le temps de déposer les 18 textures CC0 de `dunkean/magna-urbis` (Git LFS illisible, aucune copie hors LFS dans 6 autres dépôts). Décision : textures procédurales calibrées, provisoires ; Agent 0 termine ST-4 / ST-5 et fusionne. Écrit dans `regles-de-gestion/WFS-161.md`.
