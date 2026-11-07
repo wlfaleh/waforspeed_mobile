@@ -3682,3 +3682,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   sinon nommer la cause (piste : WFS-161 4fe82c8, seul commit de la plage ae49782..0ffe7d0 à toucher `bench_realisme.cpp`) et la corriger ; indice `couleurs` mesuré (24 cases).
 - Fin : RG-00 vert → « ✅ Terminé (CI main #859, RG-00, sans code) » ; sinon PR squash, ✅ par le robot. **Pas de 🟡** (US technique de la CI). CI de branche permise, une à la fois, notée au journal.
 - Règles : `regles-de-gestion/WFS-267.md` (section « Suivi — attribution à arwa-5 »).
+
+### 2026-11-07 17:37:36 — Début : WFS-268 attribué à Claude, agent 5 (po-scrum-master)
+- Ticket : WFS-268 [TECHNIQUE] [URGENT] Tout préparer au chargement (1/2) : décor fixe regroupé et instances, aucune création ni allocation en course. P1, épic E4 (exception PO, en parallèle de WFS-246 tenu par agent dev X). Attribué à sa demande ; en tête de l'ordre de l'utilisateur (17:32 UTC).
+- Zone autorisée : nouveaux `src/render/lots_decor.*`, `tests/lots_decor*` ; accroches ≤ 10 lignes annoncées au journal dans `renderer.cpp` / `renderer.h` (hors des lignes de WFS-246) et au chargement de la carte (`src/world/decor_carte.*` ou le chargement existant), + une entrée CMake pour les nouveaux fichiers.
+- Interdit : lignes de WFS-246 (`resize()`, `makePipeline`, `createScenePipelines`, `appliquerNettete`, `endFrame`, `readShadowTiming`, `shutdown`, `qualite_auto.*`, `qualite_systeme.cpp`, `shaders/scene.frag`), `eclairage_*` et `post.frag` (WFS-230), `pietons.cpp` / `foule_apparition.h` et `Renderer::draw` / `drawSkinned` (WFS-257), `effets_*` (WFS-224), `camera_vue.*` / `vehicule_cockpit*` (WFS-235), `game.*` (WFS-247), `player.*`, `bench_realisme.cpp` (WFS-251 / 267), `nuit.cpp`, iOS.
+- Critères : décor ≤ 60 appels de dessin en Ville ; 0 création / allocation du décor en course sur 20 s ; captures ≤ 1 % d'écart (4 cartes, jour / nuit) ; chargement + ≤ 3 s ; chiffres RG-06 de WFS-246 avant / après ; parcours complet 4 cartes. Après fusion : 🟡 À valider (utilisateur).
+- CI : US technique, CI de branche permise autant que nécessaire, une à la fois, chaque run noté au journal.
+- Règles : `regles-de-gestion/WFS-268.md`.
