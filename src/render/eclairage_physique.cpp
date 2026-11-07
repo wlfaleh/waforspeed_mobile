@@ -495,6 +495,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     if (lune) {
         g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);
         evMinLu = evMinNuit(g.eRecu);
+        if (std::getenv("WFS_EV_INCIDENT")) cible = std::clamp(std::log2(std::max(g.eRecu, 1e-9) * 100.0 / C_INCIDENTE), EV_LUNE_MIN, EV_NUIT_MAX);   // ESSAI
     }
     cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
@@ -503,6 +504,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     else g.ev = adapter(g.ev, cible, dt);
     if (!std::isfinite(g.ev)) g.ev = std::clamp(nuit ? EV_REF_NUIT : EV_REF_JOUR, evMin, evMax);   // WFS-213 (RG-02) : jamais de valeur non finie
     g.dtImage = dt;
+    if (std::getenv("WFS_TRACE_EV")) WFS_LOG("TRACE ev %.2f cible %.2f evMin %.2f Lmes %.4f eRecu %.3f eLamp %.2f nuit %d lune %d", g.ev, cible, evMinLu, Lmes, g.eRecu, g.etat.eLampadaireSol, (int)nuit, (int)lune);   // TEMPORAIRE
     const double k = exposition(g.ev);
     const double expOrig = fp.exposure;
     const double facteur = expOrig * k / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
