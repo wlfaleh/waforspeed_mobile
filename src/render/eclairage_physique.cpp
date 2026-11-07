@@ -497,15 +497,9 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // (jusqu'à −3,5) ; entre les deux, fondu en EV (partRue).
     double evMinLu = evMin;
     if (lune) {
-        const double eLune = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed, eLampes = eclairementLampes(gv, point);
-        g.eRecu = eLune + eLampes;
-        // WFS-249 (B, décision du PO) : en Campagne, quelques lampes isolées (péage, village, rond-point) ne règlent plus l'exposition
-        // de toute l'image : elle suit la lune et le ciel, et les lampes passent par l'adaptation locale (kLumieres, aspect EV 3).
-        // Avant : EV 3 près d'une lampe, le paysage autour (lune seule) 5 IL plus bas, noir (péage : 41 % de pixels noirs).
-        // Ville, Corniche, Grand Prix : rues éclairées, inchangées.
-        const bool campagne = gv.map && !std::strcmp(gv.map->id, "campagne");
-        const double w = campagne ? 0.0 : partRue(g.eRecu);
-        cible = w * std::clamp(cible, EV_NUIT_MIN, evMax) + (1 - w) * evIncidentNuit(campagne ? eLune : g.eRecu);
+        g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);
+        const double w = partRue(g.eRecu);
+        cible = w * std::clamp(cible, EV_NUIT_MIN, evMax) + (1 - w) * evIncidentNuit(g.eRecu);
         evMinLu = EV_LUNE_MIN;
     }
     cible = std::clamp(cible, evMinLu, evMax);
