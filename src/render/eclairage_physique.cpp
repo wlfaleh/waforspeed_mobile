@@ -63,6 +63,7 @@ struct Etat_ {
     // relecture
     int capturesVues = 0, faceVue = -1; double kFace[6]{}; bool relecture = false; int relectureImage = -1, relectureAttente = 0;
     Buffer tampon; int coteRelu = 0; vec3 posRelue{}; int generationRelue = 0; bool loinRelu = false;
+    int generationDemande = -1;   // WFS-203 : scène (generation) de la dernière capture demandée
     // traitement
     std::atomic<bool> fini{false}; bool enCours = false; Resultat res;
     std::vector<Retrait> retraits;
@@ -260,7 +261,11 @@ public:
         if (captures > g.capturesVues) {
             g.kFace[5] = k; g.capturesVues = captures; g.faceVue = -1;
             // seulement une capture demandée ici (pas celle d'un autre banc), au point demandé
-            if (!g.relecture && environnement::image() && g.imageActive && length(environnement::point() - g.dernierPoint) < 0.01f) lancerRelecture(vk, img);
+            // WFS-203 : et dans la scène en cours : une capture demandée avant remettreAZero (course de jour, puis course de nuit
+            // au même départ) a des faces rendues dans l'autre scène ; relue, elle donnait à la nuit des luminances de jour
+            // (≈ 2600 cd/m² au lieu de ≈ 0,1) : exposition bloquée à EV100 5, image blanche. Elle est abandonnée, une autre est demandée.
+            if (!g.relecture && environnement::image() && g.imageActive && length(environnement::point() - g.dernierPoint) < 0.01f &&
+                g.generationDemande == g.generation) lancerRelecture(vk, img);
         } else if (face > 0 && face != g.faceVue) { g.kFace[face - 1] = k; g.faceVue = face; }
         // 2. relecture lue deux images plus tard (barrière de cette image attendue par Renderer::beginFrame)
         if (g.relecture && img.image == g.relectureImage && --g.relectureAttente <= 0) lireRelecture(vk);
@@ -447,7 +452,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente
             const vec3 p = g.forcerCapture && g.iterations > 0 ? g.dernierPoint : point;
             g.eclaireLoin = !g.B.capture || length(g.B.pos - p) > 2.5f * (float)esp;
-            environnement::demander(p); g.dernierPoint = p; g.aucuneDemande = false; g.forcerCapture = false;
+            environnement::demander(p); g.dernierPoint = p; g.aucuneDemande = false; g.forcerCapture = false; g.generationDemande = g.generation;
         }
     }
     g.imageActive = true;
