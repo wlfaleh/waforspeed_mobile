@@ -79,6 +79,11 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
     const int CHAUFFE = std::getenv("WFS_PERF_CHAUFFE") ? std::atoi(std::getenv("WFS_PERF_CHAUFFE")) : 180;
     const int IMAGES = std::getenv("WFS_PERF_IMAGES") ? std::atoi(std::getenv("WFS_PERF_IMAGES")) : 300;
     const char* seule = std::getenv("WFS_PERF_CARTE");   // essai local : une seule carte
+    // WFS-246 (RG-07) : WFS_PERF_ECHELLE=0.6 : scène dessinée à 60 % de ses cibles ; =alterne : 100 % / 60 % toutes les 10 images
+    // (la résolution dynamique ne doit recréer aucune cible ni attendre le GPU : recréations comptées, 0 attendu)
+    const char* ech = std::getenv("WFS_PERF_ECHELLE");
+    const bool alterne = ech && std::string(ech) == "alterne";
+    const float echFixe = ech && !alterne ? (float)std::atof(ech) : 1.f;
     ecrans::Reglages& R = ecrans::reglages();
     const int q0 = R.qualite;
     std::vector<Resultat> res;
@@ -93,13 +98,16 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
             // essai local : WFS_PERF_AVANCE=n images de course sans mesure (une image dessinée sur 30) avant la chauffe
             const int AVANCE = std::getenv("WFS_PERF_AVANCE") ? std::atoi(std::getenv("WFS_PERF_AVANCE")) : 0;
             for (int i = 0; i < AVANCE; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(t); t += 1.0 / 60; }
+            r.echelleDynamique(echFixe);   // WFS-246
             for (int i = 0; i < CHAUFFE; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }
+            const uint32_t recre0 = r.recreations();
             for (auto& [nom, k] : cumuls()) k = Cumul{};   // remise à zéro (les chronomètres gardent une référence sur leur cumul)
             passes::remettreAZero();
             Resultat s; s.carte = c.carte; s.qualite = c.nom;
             double appels = 0, tri = 0;
             double pireHors = 0; std::string pireNom;   // pire image : système le plus cher de cette image
             for (int i = 0; i < IMAGES; i++) {
+                if (alterne && i % 10 == 0) r.echelleDynamique((i / 10) % 2 ? 0.6f : 1.f);   // WFS-246 (RG-07)
                 for (auto& [nom, k] : cumuls()) k.avant = k.update + k.render + k.ui + k.autre;
                 const double t0 = nowSeconds();
                 g.update(1.0 / 60);
@@ -152,7 +160,14 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
             for (size_t k = 0; k < s.dessins.size() && k < 8; k++)
                 WFS_LOG("perf %s %s :   triangles %-40s %8.0f", s.carte.c_str(), s.qualite.c_str(), s.dessins[k].second.c_str(), s.dessins[k].first);
             res.push_back(s);
-            r.capturePng(out + "/perf-" + s.carte + "-" + (c.q == qualite::BASSE ? "basse" : "haute") + ".png");   // fin de la mesure
+            if (ech) {   // WFS-246 (RG-07)
+                const uint32_t n = r.recreations() - recre0;
+                if (n) WFS_ERR("perf %s %s : échelle %s : %u recréation(s) des cibles pendant la mesure (RG-07 : 0 attendu)", s.carte.c_str(), s.qualite.c_str(), ech, n);
+                else WFS_LOG("perf %s %s : échelle %s : aucune recréation des cibles ni attente du GPU pendant la mesure (WFS-246 RG-07 : OK)", s.carte.c_str(), s.qualite.c_str(), ech);
+                if (alterne) r.echelleDynamique(0.6f);   // capture à 60 % (agrandie par la passe finale)
+            }
+            r.capturePng(out + "/perf-" + s.carte + "-" + (c.q == qualite::BASSE ? "basse" : "haute") + (ech ? "-echelle" : "") + ".png");   // fin de la mesure
+            r.echelleDynamique(1.f);
             g.shutdown();
         }
     }
