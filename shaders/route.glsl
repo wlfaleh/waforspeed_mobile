@@ -26,12 +26,27 @@ float rnoise(vec2 p) {
 const float COTE_SCAN = 2.0;   // côté d'un scan en mètres (Poly Haven, E : references/reel/routes/revetements.json)
 struct Revet { vec3 albedo; vec3 n; float rough; float ao; float lon; };   // lon : longueur moyenne des normales filtrées (Toksvig)
 vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx + p3.yz) * p3.zy); }
+// Filtrage des normales (Toksvig 2005, LEAN) : les mipmaps de tools/textures/convertir.py sont RENORMALISÉES (WFS-149) : une
+// mipmap grossière garde des pentes aussi fortes que le niveau 0, et la chaussée vue de loin (ou dans la capture d'environnement
+// 256 px de WFS-150) brille autrement qu'au plus près. Ici, l'empreinte du pixel en texels (ρ) dit quelle part du relief est
+// « sous le pixel » : le relief s'aplatit (facteur 1 / (1 + (ρ − 1) / 2) au-delà d'un texel) et la pente perdue passe dans la
+// rugosité (α² += σ² × (1 − facteur²), σ² = variance des pentes d'un scan d'asphalte, E). Même reflet moyen à toutes les distances.
+const float SIGMA2_PENTES = 0.08;
+float facteurRelief(vec2 dx, vec2 dy) {
+    float rho = max(length(dx), length(dy)) * float(textureSize(texNormal, 0).x);
+    return 1.0 / (1.0 + max(rho - 1.0, 0.0) * 0.5);
+}
+float roughToksvig(float rough, float lon) {   // lon : facteur de relief gardé (1 : tout le relief au pixel)
+    float v = SIGMA2_PENTES * (1.0 - lon * lon);
+    return clamp(pow(pow(rough, 4.0) + v, 0.25), 0.0, 1.0);
+}
 Revet lire1(vec2 st, vec2 dx, vec2 dy, mat2 R) {
     Revet r;
     r.albedo = textureGrad(texColor, st, dx, dy).rgb;
     vec3 n = textureGrad(texNormal, st, dx, dy).xyz * 2.0 - 1.0;
     r.n = vec3(transpose(R) * n.xy, n.z);   // texture lue tournée de R : la pente revient dans le repère de la route
-    r.lon = length(n);                      // < 1 quand la mipmap moyenne des pentes différentes
+    r.lon = facteurRelief(dx, dy);          // part du relief que le pixel voit (empreinte en texels)
+    r.n.xy *= r.lon;
     vec3 orm = textureGrad(texMR, st, dx, dy).rgb;
     r.ao = orm.r; r.rough = orm.g;
     return r;
@@ -69,13 +84,6 @@ Revet lireRevetement(vec2 uvM, float mode, bool joints) {
     }
     r.n = normalize(r.n);
     return r;
-}
-// Toksvig (2005) : une mipmap de normales moyenne des pentes différentes (longueur < 1) : la part perdue passe dans la rugosité
-// (α² += (1 − l) / l, α = rugosité²). Le reflet reste le même à toutes les distances et toutes les résolutions (scène, capture
-// d'environnement 256 px de WFS-150 : M-01 ± 1 % ; sans cela, grain de reflets de la chaussée mouillée qui diffère : − 2,2 %).
-float roughToksvig(float rough, float lon) {
-    float l = clamp(lon, 0.05, 1.0), v = (1.0 - l) / l;
-    return clamp(pow(pow(rough, 4.0) + v, 0.25), 0.0, 1.0);
 }
 // macro-variations (albédo × 1 ± 12 %, rugosité ± 0,04) en coordonnées monde : taches, zones refaites, sans motif à 100 m
 vec2 macroRevetement(vec2 w) {
