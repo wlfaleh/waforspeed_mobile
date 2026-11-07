@@ -3263,3 +3263,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:41:14 — WFS-217 marqué « Refusé par l'utilisateur » (po-scrum-master)
 - WFS-217 affichait ✅ (CI main #826) alors que l'utilisateur l'a refusé sur l'APK 840 (ANO-113, correction WFS-241). Statut corrigé.
+
+### 2026-11-07 14:42:25 — WFS-221, 223, 225 refusés par l'utilisateur ; ANO-126 à 128 ; WFS-247 à 249 créés (po-scrum-master)
+- **Verdict de l'utilisateur** : 221 KO, 223 KO, 225 KO. Statuts → ❌ Refusé ; anomalies bloquantes ANO-126 (fluidité), ANO-127 (ronds-points), ANO-128 (Campagne de nuit).
+- **Corrections (P1 Urgent, ⏳ Prêt)** : WFS-247 fluidité 2e passage (E0 + E3, aux cadences réelles du téléphone) ; WFS-248 ronds-points 2e passage (E2, inventaire sur l'APK) ; WFS-249 Campagne de nuit 2e passage (E2 + E13, mesure de luminance, absorbe WFS-230). Toutes en 🟡 après fusion, validées par l'utilisateur. Aucune session ouverte sans son accord.
