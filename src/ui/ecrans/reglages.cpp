@@ -45,7 +45,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
-const Ligne LIGNES[12] = {
+const Ligne LIGNES[13] = {
     {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute", "Ultra"}},   // WFS-150 (RG-04) : « Ultra » seulement si la Haute tient (nChoix)
     {"Son", 2, {"Activé", "Coupé", nullptr}},
@@ -58,9 +58,10 @@ const Ligne LIGNES[12] = {
     {"Gyroscope", 4, {"Coupé", "Doux", "Moyen", "Fort"}},       // WFS-108 RG-03 : sensibilité (28°, 20°, 14° pour braquer à fond)
     {"Zone morte gyro", 3, {"Petite", "Moyenne", "Grande"}},    // WFS-108 RG-03 : 1,5°, 3°, 5°
     {"Aide à la direction", 2, {"Activée", "Désactivée", nullptr}},   // WFS-217 RG-02 : reglagesConduite (player.h)
+    {"Regard cockpit", 3, {"Bas", "Normal", "Haut"}},   // WFS-235 RG-03 : regardCockpit (camera_vue.h), clé regard
 };
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
-       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, N_LIGNES = 12 };
+       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, N_LIGNES = 13 };
 
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
@@ -92,6 +93,7 @@ bool lire() {
     while (std::fscanf(fp, " %31[^=]=%d", cle, &v) == 2) {
         if (!std::strcmp(cle, "mouvements")) reglagesRessenti().reduireMouvements = v != 0;   // WFS-80 (RG-02)
         else if (!std::strcmp(cle, "ultra")) qualite::ultraChoisi = v != 0;   // WFS-150 : Ultra (absent de la sauvegarde commune)
+        else if (!std::strcmp(cle, "regard")) choisirRegard((RegardCockpit)std::clamp(v, 0, 2));   // WFS-235 (RG-03), comme « mouvements »
         else if (commune) continue;   // WFS-24 : les autres réglages viennent de la sauvegarde commune
         else if (!std::strcmp(cle, "camera")) R.camera = std::clamp(v, 0, 2);
         else if (!std::strcmp(cle, "qualite")) { R.qualite = std::clamp(v, 0, 2); R.qualiteChoisie = true; }
@@ -123,7 +125,7 @@ void ecrire() {
     const Reglages& R = reglages();
     std::fprintf(fp, "camera=%d\nqualite=%d\nson=%d\nmusique=%d\ngaucher=%d\nvibrations=%d\nmouvements=%d\n", R.camera, R.qualite, (int)R.son,
                  (int)R.musique, (int)R.gaucher, (int)R.vibrations, (int)reglagesRessenti().reduireMouvements);
-    std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\nultra=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone, (int)qualite::ultraChoisi);   // WFS-108 ; WFS-150
+    std::fprintf(fp, "boutons=%d\ngyro=%d\ngyrozone=%d\nultra=%d\nregard=%d\n", (int)grandsBoutons(), reglagesGyro().niveau, reglagesGyro().zone, (int)qualite::ultraChoisi, (int)regardCockpit());   // WFS-108 ; WFS-150 ; WFS-235
     std::fclose(fp);
 }
 
@@ -155,6 +157,7 @@ int valeur(int ligne) {
     case L_GYRO: return reglagesGyro().niveau;
     case L_GYROZONE: return reglagesGyro().zone;
     case L_AIDE: return reglagesConduite().aideDirection ? 0 : 1;   // WFS-217
+    case L_REGARD: return (int)regardCockpit();   // WFS-235
     default: return R.vibrations ? 0 : 1;
     }
 }
@@ -197,6 +200,7 @@ public:
             else if (l == L_GYRO) reglagesGyro().niveau = c;
             else if (l == L_GYROZONE) reglagesGyro().zone = c;
             else if (l == L_AIDE) reglagesConduite().aideDirection = c == 0;   // WFS-217 : appliquée au pas suivant
+            else if (l == L_REGARD) choisirRegard((RegardCockpit)c);   // WFS-235 (RG-03) : appliqué à l'image suivante
             else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
@@ -286,7 +290,7 @@ private:
         r.uiRect(0, 0, W, H, hex(BG, 0.86f));
         const Marges& m = g.marges;
         const float zl = m.gauche, zw = W - m.gauche - m.droite;
-        const int PAR_COL = (N_LIGNES + 1) / 2;
+        const int PAR_COL = (L_REGARD + 1) / 2;   // WFS-235 : « Regard cockpit » dans l'en-tête, les 12 autres lignes ne bougent pas
         // WFS-168 (RG-01) : taille des choix et de « Fermer » d'avant WFS-147 (unité kb = H / 720, comme à 349f7d0 :
         // choix de 30 x 170 au plus, « Fermer » de 50) ; lignes, colonnes et textes en dp gardés (choix centrés dans leur ligne)
         const float kb = H / 720.f, choixH = 30 * kb;
@@ -310,7 +314,8 @@ private:
         const float colGap = 24 * k, colW = (pw - 48 * k - colGap) / 2, libW = 104 * k, segGap = 6 * k;
         for (int l = 0; l < N_LIGNES; l++) {
             const int col = l / PAR_COL, rang = l % PAR_COL;
-            const float cx = x0 + col * (colW + colGap), y = py + haut + rang * (rowH + gap);
+            const bool entete = l == L_REGARD;   // WFS-235 (RG-03) : entre le titre et « Fermer »
+            const float cx = entete ? px + (pw - colW) / 2 : x0 + col * (colW + colGap), y = entete ? py + (haut - rowH) / 2 : py + haut + rang * (rowH + gap);
             r.uiRect(cx, y + rowH + gap / 2, colW, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             // libellé : sur deux lignes s'il dépasse sa place (« Réduire les mouvements », « Zone morte gyro »)
             const std::string lib = ui::majuscules(LIGNES[l].libelle);

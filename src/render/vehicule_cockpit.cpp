@@ -158,7 +158,7 @@ std::vector<uint8_t> grainCuir(int N) {
 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_MIROIR, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -280,6 +280,9 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
     mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
     mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
+    // WFS-235 (RG-02) : glace du rétroviseur : miroir argenté (réflectance ≈ 0,8, presque lisse) : il montre le ciel et la rue
+    // de l'éclairage d'ambiance au lieu d'un pavé noir devant la route
+    mat(M_MIROIR, 0xe6e8ea, 0.06f, 1.f);
     std::vector<Vertex> v; std::vector<uint32_t> i;
     auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
@@ -331,13 +334,20 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
     {
         Geo mont, pav, ret, porte;
-        const vec3 bas[2] = {{CX - 0.72f, Yb, Zb}, {CX + 0.72f, Yb, Zb}};
-        const vec3 haut[2] = {{CX - 0.62f, 0.40f, -0.42f}, {CX + 0.62f, 0.40f, -0.42f}};
-        for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
+        // WFS-235 (RG-02) : montants aux coins du pare-brise (± 0,74 m du milieu en bas, ± 0,64 m en haut), garniture de 65 mm
+        // vue de face (avant : ± 0,72 / ± 0,62 m et 75 mm) : ils restent au bord du champ de vision du conducteur
+        const vec3 bas[2] = {{CX - 0.74f, Yb, Zb}, {CX + 0.74f, Yb, Zb}};
+        const vec3 haut[2] = {{CX - 0.64f, 0.40f, -0.42f}, {CX + 0.64f, 0.40f, -0.42f}};
+        for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.065f, 0.05f);
         boite(pav, translate({CX, 0.43f, -0.28f}), 1.40f, 0.04f, 0.32f);
-        // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
-        boite(ret, translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f), 0.24f, 0.065f, 0.025f);
+        // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil) ;
+        // WFS-235 : coque noire et glace argentée tournée vers le conducteur
+        const mat4 R = translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f);
+        boite(ret, R, 0.24f, 0.065f, 0.025f);
         boite(ret, translate({CX - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
+        Geo glace;
+        plan(glace, R * translate({0, 0, 0.0131f}), 0.226f, 0.052f);
+        prend(glace, M_MIROIR);
         // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
         for (float sx : {-1.f, 1.f}) {
             const float x = CX + sx * 0.80f;
