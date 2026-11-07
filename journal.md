@@ -3565,3 +3565,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 16:56:23 — Tous les sujets de l'expert conduite refusés ; WFS-258 en tout premier avec repli immédiat (po-scrum-master)
 - Retour de l'utilisateur recopié dans WFS-258 et 259. WFS-255 aussi refusé → ANO-133, WFS-260. WFS-258 ⏳ Prêt, RG-00 : remettre `g_conduiteMonde = false` tout de suite (fusion seule), puis corriger.
+
+### 2026-11-07 16:56:53 — WFS-258 : vidéo de l'utilisateur (Grand Prix, sortie tout droit au 1er virage à 228 km/h, aide activée) jointe (po-scrum-master)
+- `qa/retours/2026-11-07-video-conduite-gp-planche.jpg`, `qa/retours/2026-11-07-reglages-conduite.jpg`.
