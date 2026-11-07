@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 14:19:44 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 14:23:19 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -38,12 +38,15 @@
 | WFS-226 (P1), WFS-224 (P1) | E4 (+ E3) | WFS-226 réservé à agent arwa juste après WFS-218 (même fichier `nuit.cpp`) ; WFS-224 au prochain libre après WFS-239 |
 | WFS-230 (P1), WFS-214 (P2) | E13 | épic E13 tenue par WFS-227 (agent 2) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
+| WFS-241 (P1), WFS-242 (P1), puis WFS-243 (P2) | E3 | épic E3 libre : WFS-241 et WFS-242 au prochain développeur libre (priorité absolue) ; WFS-243 après eux (mêmes fichiers) |
+| WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
+| WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 14:19 : WFS-218 attribué à agent arwa ; WFS-222 RG-07 tranchée (erreur du PO sur 498) ; ANO-115 et ANO-120 planifiées |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 14:23 : VABF du 2026-11-07 priorisée (ANO-115 à 124) : WFS-243, 244, 245 créés ; rattachements à WFS-222, 224, 230, 231, 241, 242 |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 ; avis sur WFS-236 et 237 |

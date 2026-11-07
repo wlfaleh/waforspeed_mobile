@@ -3213,3 +3213,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:21:39 — VABF : ANO-113 reproduite dans la vidéo 4, aide désactivée (agent qa lead)
 - Sur retour de l’utilisateur : au rond-point, la voiture tourne seule et freine seule de 240 à 70 km/h sans aucun appui, aide désactivée. Preuve ajoutée à ANO-113 (WFS-241) ; ANO-124 reformulée ; rapport corrigé.
+
+### 2026-11-07 14:23:19 — VABF 2026-11-07 : anomalies ANO-115 à ANO-124 priorisées, WFS-243 à WFS-245 créés (po-scrum-master)
+- Demande du QA (sur ordre de l'utilisateur), rapport `qa/rapports/VABF-2026-11-07.md`, APK 840 (9abffcb). Aucune bloquante nouvelle ; majeures d'abord.
+- Rattachées à des tickets existants (pas de doublon créé) : ANO-115 → WFS-222 (P1, fusionné **après** l'APK 840 : à vérifier sur le prochain APK, en Course à 5) ; ANO-119 → WFS-230 (P1, RG-07 lumière de lune homogène sol / arbres / carrosseries, RG-08 voiture du joueur visible) ; ANO-120 → WFS-224 (P1, même défaut) ; ANO-122 → WFS-224 (RG-05, même fichier `effets_systeme.cpp`) ; ANO-123 → WFS-242 (P1, RG-07 commandes visibles dès le « 3 », boutons inchangés) ; ANO-121 → WFS-231 (P2, RG-05 enseignes à l'endroit).
+- Créés : **WFS-243** (P2, E3, après WFS-241 / 242) ANO-117 adversaires invisibles + ANO-124 îlot du rond-point (à confirmer avec l'aide corrigée) ; **WFS-244** (P3, E9, prêt tout de suite) ANO-116 plaques sur la chaussée ; **WFS-245** (P3, E5, après WFS-234) ANO-118 étiquettes du HUD (taille des boutons exclue : ordre permanent).
+- Complément du QA (b4d5a92) : WFS-241 RG-07 ajoutée : aide désactivée = ni direction, ni freinage, ni nitro automatiques (preuve `v4-rond-point-sans-volant-planche.jpg`).
+- `anno.md` : statuts et colonne « US de correction » remplis ; `track-agent.md` à jour. Campagne VABF toujours ouverte.

@@ -185,6 +185,9 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-240 | [RÉALISME] Enfants (suite de WFS-233) : poussettes, enfants en tribune, cheveux longs, cadence de marche | E11 (+ accroche E2 `circuit.cpp`) | 🔧 En cours | Claude, agent 4 (011cpqZan), 2026-11-07 13:58 UTC | WFS-233 🟣 | `feature/waforspeed-240` |  |  |
 | P1 Urgent | WFS-241 | [URGENT] Correction de WFS-217 : aide désactivée sans effet, activée ne suit pas les virages et ronds-points (ANO-113) | E3 | ⏳ Prêt — **priorité absolue avec la nuit** |  | — | `feature/waforspeed-241` |  |  |
 | P1 Urgent | WFS-242 | [URGENT] Course à 5 : départ propre (voitures qui se chevauchent, joueur toujours dernier, chrono pendant le compte à rebours) (ANO-114) | E3 | ⏳ Prêt — **priorité absolue** |  | — | `feature/waforspeed-242` |  |  |
+| P2 Haute | WFS-243 | Correction (lot E3, VABF) : adversaires visibles et classement juste en Course à 5, îlot du rond-point solide (ANO-117, ANO-124) | E3 | ⏳ Prêt (après WFS-241 et WFS-242, épic E3) |  | WFS-241, WFS-242 | `feature/waforspeed-243` |  |  |
+| P3 Moyenne | WFS-244 | Correction (lot E9) : plaques rectangulaires à bords nets sur la chaussée (ANO-116) | E9 | ⏳ Prêt |  | — | `feature/waforspeed-244` |  |  |
+| P3 Moyenne | WFS-245 | Correction (lot E5) : étiquettes du HUD lisibles sur téléphone (ARRIVÉE, TEMPS, SCORE…) (ANO-118) | E5 | ⏳ Prêt (après WFS-234, épic E5) |  | — | `feature/waforspeed-245` |  |  |
 
 ## Critères d'acceptation
 
