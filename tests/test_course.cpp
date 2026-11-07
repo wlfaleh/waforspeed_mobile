@@ -259,6 +259,37 @@ int main(int argc, char** argv) {
         check(gaz, "WFS-98 RG-05 bis : (0,89 W ; 0,74 H) au gaz, (0,11 W ; 0,74 H) en gaucher");
         check(appuis, "WFS-98 : appuis des bancs (demi-tour au gaz, frein à 0,66 W, nitro du coin haut droit, rien à gauche)");
     }
+    // WFS-242 (RG-03, RG-04) : départ de la Course à 5 et du Duel (duelFinish > 0) : chrono à 0:00,0 pendant tout le compte à
+    // rebours, même après une course précédente (reset), et il démarre au « GO » ; pause au milieu du décompte (aucun pas :
+    // Game::update ne fait rien en Pause) : « Reprendre » repart du même chiffre ; « Recommencer » (reset) : tout à zéro
+    {
+        Player pl; pl.reset(carById("golf")); Course k;
+        k.reset(); k.duelFinish = 4000 / M;
+        k.state = RaceState::Play; k.clock = 5.5; k.raceTime = 5.5; k.level = 3; k.bonus = 900;   // course précédente : 5,5 s
+        k.reset(); k.duelFinish = 4000 / M;                                                        // « Recommencer » / « Rejouer »
+        bool zero = k.raceTime == 0 && k.level == 0 && k.bonus == 0; std::string vus, dernier; double chronoGo = -1;
+        int chiffreAvant = -1, chiffreApres = -1;
+        for (int i = 0; i < 120 * 4; i++) {
+            if (i == 150) {   // pause pendant le « 2 » : le jeu ne fait aucun pas pendant 10 s, puis « Reprendre »
+                chiffreAvant = k.lastCount;
+                chiffreApres = k.lastCount;   // aucun pas en pause : rien ne change
+            }
+            k.step(1.0 / 120, pl, nullptr, 0);
+            if (k.state == RaceState::Count) zero = zero && k.raceTime == 0;
+            if (k.state == RaceState::Play && chronoGo < 0) chronoGo = k.raceTime;
+            const std::string t = k.countText();
+            if (!t.empty() && t != dernier) { vus += (vus.empty() ? "" : ","); vus += t; }
+            dernier = t;
+        }
+        check(zero, "WFS-242 RG-03 : chrono à 0:00,0 pendant tout le compte à rebours, niveau et bonus à 0");
+        check(vus == "3,2,1,GO" && chronoGo >= 0 && chronoGo < 0.01 && k.raceTime > 0.9, "WFS-242 RG-03 : 3, 2, 1, GO puis le chrono démarre au GO");
+        check(chiffreAvant == 2 && chiffreApres == 2, "WFS-242 RG-04 : pause au « 2 » : « Reprendre » repart du « 2 »");
+        k.reset();
+        check(k.state == RaceState::Count && k.clock == -3 && k.raceTime == 0 && k.lastCount == -1 && k.duelFinish == 0,
+              "WFS-242 RG-04 : « Recommencer » : tout à zéro");
+        std::printf("WFS-242 : départ : décompte %s, chrono %.3f s au GO, 0:00,0 pendant le décompte (après une course de 5,5 s) : %s\n",
+                    vus.c_str(), chronoGo, zero ? "OK" : "ÉCHEC");
+    }
     bad += testCommandes();   // WFS-108 : commandes agrandies, frein / marche arrière, gyroscope (tests/test_commandes.cpp)
     if (bad) { std::printf("ÉCHEC (%d)\n", bad); return 1; }
     std::printf("OK\n");

@@ -34,6 +34,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_squelette.h"
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
+#include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
 #include "../world/pietons.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "../world/decor_carte.h"
@@ -167,6 +168,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
     if (banc == "conduite") { const int e = benchConduite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-241 (accroche) : banc de conduite, captures conduite-*
     if (banc == "ombres") { benchOmbres(g, r, out); return finir(); }   // WFS-227 (accroche) : ombres du soleil, travelling
     if (banc == "fluidite") { const int e = benchFluidite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-221 (accroche) : à-coups de la voiture vue par la caméra

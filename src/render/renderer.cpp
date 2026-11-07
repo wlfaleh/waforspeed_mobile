@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
+#include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
@@ -1072,7 +1073,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             const vec3 a = fp.hemiSky * fp.hemiIntensity, b = fp.hemiGround * fp.hemiIntensity;
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
-        const int n = std::clamp(fp.spotCount, 0, 8);
+        const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
         u.spotN = {(float)n, 0, 0, 0};
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[i];
@@ -1340,6 +1341,8 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
+    if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
+                                                 (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
     auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
         const vec3 v = camPos_ - p;
@@ -1518,6 +1521,7 @@ void Renderer::endFrame() {
     pp.params[0] = exposure_; pp.params[1] = vk.swapSrgb ? 1.f : 0.f;
     // WFS-15 / WFS-100 : force du bloom (calculée en début d'image) ; seuil 1,0 et genou 0,5 dans post.frag
     pp.params[2] = bloom_ ? bloom_->force : 0.f;
+    pp.params[3] = eclairage::kVisionNuit();   // WFS-230 (accroche E13) : vision de nuit (Purkinje) ; 0 de jour
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, post_);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &postSet_, 0, nullptr);
     vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);

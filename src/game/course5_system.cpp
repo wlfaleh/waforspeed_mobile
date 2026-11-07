@@ -32,6 +32,7 @@ bool sansTrafic(bool enCourse) { return enCourse && (modeCourse() == ModeCourse:
 namespace {
 
 uint32_t g_graineBanc = 0;   // banc d'essai : tirage fixe (captures stables)
+bool g_vueDessusBanc = false;   // WFS-242 (RG-06) : banc d'essai : grille de départ vue de dessus (scène dédiée)
 
 const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
@@ -76,12 +77,17 @@ public:
             if (!graineFixe_) { graine_ = g_graineBanc ? g_graineBanc : std::getenv("WFS_BANC") ? 1234u : (uint32_t)(nowSeconds() * 1000.0) * 2654435761u + 17u; graineFixe_ = true; }
             c->duelFinish = kmCourse5() * duel::KM;
             os_ = course5::tirer(graine_, pl.car->id, course5::difficulte());   // WFS-133 (RG-03) : difficulté choisie
-            course5::grille(os_, pl.dist); depasses_.reset();
+            // WFS-242 (RG-01, RG-02) : grille derrière la ligne, place du joueur tirée au sort (même graine : même place)
+            placeJoueur_ = std::min((int)os_.size(), course5::tirerPlaceJoueur(graine_));
+            course5::grille(os_, placeJoueur_); depasses_.reset();
+            course5::placerSurGrille(pl, *g.track, course5::placeGrille(placeJoueur_));
             libererHorsGrille();   // WFS-130 (RG-01 / RG-02) : « Rejouer » retire les mêmes voitures, rien n'est détruit
             actif_ = true; fini_ = false; depart_ = false; ftJoueur_ = 0; overT_ = 0; t_ = 0; nouveauRecord_ = false;
+            ecartMin_ = ecartMinimal(pl); ecartLogue_ = false;   // WFS-242 (RG-06) : sur la grille, puis pendant les 5 premières secondes
+            WFS_LOG("course à 5 : grille : distance minimale entre deux voitures %.2f m", ecartMin_);
             std::string noms; for (const auto& o : os_) noms += (noms.empty() ? "" : ", ") + o.car;
-            WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté %s)", graine_, kmCourse5(), noms.c_str(),
-                    course5::cleDifficulte(course5::difficulte()));
+            WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté %s), joueur à la place %d/%d", graine_, kmCourse5(), noms.c_str(),
+                    course5::cleDifficulte(course5::difficulte()), placeJoueur_ + 1, (int)os_.size() + 1);
         }
         if (!actif_ || c->state == RaceState::Count) return;   // décompte : tout le monde attend sur la grille
         if (!depart_ && c->state == RaceState::Play) {   // WFS-130 (RG-06) : ordinateurs prêts à être dessinés au départ
@@ -90,6 +96,13 @@ public:
             WFS_LOG("course à 5 : départ, %d/%zu ordinateurs avec leur modèle, %zu modèle(s) d'ordinateur en mémoire", prets, os_.size(), models_.size());
         }
         t_ = c->state == RaceState::Play ? c->raceTime : t_ + dt;
+        if (c->state == RaceState::Play && !ecartLogue_) {   // WFS-242 (RG-06) : distance minimale entre deux voitures au départ
+            ecartMin_ = std::min(ecartMin_, ecartMinimal(pl));
+            if (t_ >= 5) {
+                ecartLogue_ = true;
+                WFS_LOG("course à 5 : départ : distance minimale entre deux voitures pendant les 5 premières secondes : %.2f m", ecartMin_);
+            }
+        }
         std::vector<int> nitros; for (const auto& o : os_) nitros.push_back(o.nitrosPrises);
         course5::avancer(os_, dt, c->duelFinish, t_, pl.dist, pl.playerX, pl.speed, g.track);   // WFS-189 : virages
         if (c->state == RaceState::Play && !fini_) {   // WFS-189 (RG-04) : nitro rechargée au temps et aux dépassements
@@ -129,8 +142,20 @@ public:
             overT_ += dt;
         }
     }
+    // WFS-242 (RG-06) : banc d'essai seulement : grille vue de dessus, à 42 m de haut au-dessus de la 3e place, le haut de
+    // l'image vers l'avant de la course ; Game dessine la route (et la ligne de départ) et la voiture du joueur, render() les ordinateurs
+    bool scene(FrameParams& fp, SceneDediee& s, const GameView& g) override {
+        if (!g_vueDessusBanc || !actif_ || !g.track || g.ecran != Ecran::Course) return false;
+        const double s0 = course5::placeGrille(2).s;
+        const TrackPoint a = g.track->point(s0, 0), b = g.track->point(s0 + 10 / M, 0);
+        const vec3 cible{(float)a.x, (float)a.y, (float)a.z}, avant = normalize(vec3{(float)(b.x - a.x), 0, (float)(b.z - a.z)});
+        const vec3 oeil = cible - avant * 4.f + vec3{0, 42, 0};
+        fp.view = lookAt(oeil, cible, avant); fp.camPos = oeil;
+        s.cible = cible; s.route = true; s.joueur = true; s.commandes = false;
+        return true;
+    }
     void render(Renderer& r, const GameView& g) override {
-        if (!actif_ || g.sceneDediee || !g.player || !g.track) return;
+        if (!actif_ || (g.sceneDediee && !g_vueDessusBanc) || !g.player || !g.track) return;
         const double sP = g.player->dist;
         for (const course5::Ordinateur& o : os_) {
             const double rel = o.g.rd - sP;
@@ -168,6 +193,24 @@ public:
         x = z.x + z.w / 2; y = z.y + z.h / 2; return true;
     }
     bool nouveauRecord() const { return nouveauRecord_; }
+    // WFS-242 (RG-06) : écart le plus petit entre les boîtes de deux voitures (joueur et ordinateurs), le long de la route et en
+    // travers (m ; négatif : l'une dans l'autre), comme le test CPU tests/test_course5.cpp
+    double ecartMinimal(const Player& pl) const {
+        struct B { double s, x, L, W; };
+        std::vector<B> bs{{pl.dist * M, pl.playerX * RW, pl.car ? pl.car->d.L : 4.4, pl.car ? pl.car->d.W : 1.8}};
+        for (const auto& o : os_) { const CarDef& c = carById(o.car.c_str()); bs.push_back({o.g.rd * M, o.g.x * RW, c.d.L, c.d.W}); }
+        double e = 1e9;
+        for (size_t a = 0; a < bs.size(); a++)
+            for (size_t b = a + 1; b < bs.size(); b++)
+                e = std::min(e, std::max(std::abs(bs[a].s - bs[b].s) - (bs[a].L + bs[b].L) / 2, std::abs(bs[a].x - bs[b].x) - (bs[a].W + bs[b].W) / 2));
+        return e;
+    }
+    // WFS-242 (RG-07) : modèle de chaque ordinateur de la grille chargé (ou essayé : un modèle illisible ne bloque pas le départ)
+    bool pretAuDepart() const {
+        if (!actif_) return true;
+        for (const auto& o : os_) if (!models_.count(o.car)) return false;
+        return true;
+    }
     Course5System() { actif5 = this; }
     ~Course5System() override { if (actif5 == this) actif5 = nullptr; }
     static Course5System* actif5;
@@ -209,7 +252,7 @@ private:
         y += rh;
         for (const auto& l : ls) {
             const float k = (float)std::clamp(l.d / fin, 0.0, 1.0);
-            const std::string km = l.fini ? "Arrivé" : ui::decimal(l.d * M / 1000, 2) + " km";
+            const std::string km = l.fini ? "Arrivé" : ui::decimal(std::max(0.0, l.d) * M / 1000, 2) + " km";   // WFS-242 : grille derrière la ligne : 0,00
             ui::text(r, x + 1.2f * u, y + 0.6f * u, px, l.nom, l.moi ? ui::ORANGE : TEXTE, ui::GAUCHE, 0.f, false);
             ui::text(r, x + w - 1.2f * u, y + 0.6f * u, px, km, TEXTE, ui::DROITE, 0.f, false);
             r.uiRect(x + 1.2f * u, y + rh - 0.9f * u, w - 2.4f * u, 0.5f * u, PISTE);
@@ -236,7 +279,7 @@ private:
         for (size_t i = 0; i < ls.size(); i++) {
             const auto& l = ls[i];
             std::string tm;
-            if (!l.fini) tm = ui::decimal(l.d * M / 1000, 2) + " km";
+            if (!l.fini) tm = ui::decimal(std::max(0.0, l.d) * M / 1000, 2) + " km";   // WFS-242 : derrière la ligne : 0,00
             else if (i == 0 || tete < 0) tm = ui::chrono(l.ft);
             else tm = "+" + ui::decimal(l.ft - tete, 1) + " s";
             const vec4 c = l.moi ? ui::ORANGE : TEXTE;
@@ -260,6 +303,8 @@ private:
     bool actif_ = false, fini_ = false, depart_ = false, rejouer_ = false, graineFixe_ = false, nouveauRecord_ = false, aspJoueur_ = false;
     course5::SuiviDepassements depasses_;   // WFS-189 (RG-04) : dépassements du joueur
     uint32_t graine_ = 0;
+    int placeJoueur_ = 0;   // WFS-242 (RG-02) : place du joueur sur la grille (0 = devant)
+    double ecartMin_ = 1e9; bool ecartLogue_ = false;   // WFS-242 (RG-06) : distance minimale au départ (journal)
     double ftJoueur_ = 0, overT_ = 0, t_ = 0;
     Zone rejouerZ_, menuZ_;
     ui::FiltreAppui appui_;
@@ -273,6 +318,7 @@ Course5System* Course5System::actif5 = nullptr;
 bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5System::actif5 && Course5System::actif5->bouton(nom, x, y); }
 int course5Positions(double* rd, int max) { return Course5System::actif5 ? Course5System::actif5->positions(rd, max) : 0; }   // WFS-173
 bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
+bool course5::course5PreteAuDepart() { return !Course5System::actif5 || Course5System::actif5->pretAuDepart(); }   // WFS-242 (RG-07)
 
 WFS_SYSTEM(Course5System, 222)   // gameplay (200-299) : après la course (210) et le duel (220)
 
@@ -308,10 +354,29 @@ void benchCourse5(Game& g, Renderer& r, const std::string& out) {
     capture("course5-fin");
     WFS_LOG("capture course5-fin : %s, %.2f s de course", c && c->state == RaceState::Over ? "arrivé" : "pas arrivé", c ? c->raceTime : 0.0);
     g.setAutopilot(false);
+    g.shutdown();
+    // WFS-242 (RG-06) : départ sur les 4 cartes, une graine par carte (places du joueur 3, 4, 5 et 1) : au « 3 », vue de derrière
+    // (caméra Proche, commandes affichées : RG-07) et vue de dessus ; distance minimale entre voitures au journal (grille, 5 s)
+    const std::pair<const char*, uint32_t> DEPARTS[] = {{"ville", 1234u}, {"campagne", 99u}, {"plage", 7u}, {"circuit", 1u}};
+    for (const auto& [carte, graine] : DEPARTS) {
+        g_graineBanc = graine;
+        if (!g.init(r, "golf", carte)) continue;
+        g.allerA(Ecran::Menu); images(30, 10);
+        g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
+        images(30, 6);
+        const Course* k = activeCourse();
+        const std::string base = std::string("course5-depart-") + carte;
+        capture((base + "-arriere").c_str());
+        WFS_LOG("capture %s-arriere : « %s », joueur à %.2f m de la ligne, voie %+.2f, %.0f km/h", base.c_str(), k ? k->countText().c_str() : "?",
+                g.player().dist * M, g.player().playerX, g.player().kmh());
+        g_vueDessusBanc = true; capture((base + "-dessus").c_str()); g_vueDessusBanc = false;
+        for (int i = 0; i < 9 * 60; i++) g.update(1.0 / 60);   // fin du décompte, puis 5 s de course (distance minimale au journal)
+        g.setAutopilot(false);
+        g.shutdown();
+    }
     g_graineBanc = 0;
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
     courseBenchRules(false);
-    g.shutdown();
     benchParcoursCourse5(g, r, out);   // WFS-133 (RG-10) : parcours complet avec la difficulté (modes_ecran.cpp)
 }
 

@@ -360,6 +360,7 @@ void Game::render(double time) {
     if (dediee) { eye = fp.camPos; look = sd.cible; }
     fp.ombresContact = !dediee;   // WFS-134 (RG-05) : ombre de contact sous chaque voiture en course (pas au garage)
     eclairage::physique(fp, dediee, view_);   // WFS-151 (accroche E13) : unités physiques, exposition, sondes IBL
+    view_.night = fp.night;   // WFS-230 (RG-09, accroche E13) : nuit de l'image pour les systèmes (vitrines, bord de l'écran, carte)
     if (!r_->beginFrame(fp)) return;
 
     const mat4 I = mat4::identity();

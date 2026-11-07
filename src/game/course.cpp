@@ -8,7 +8,8 @@ namespace wfs {
 // resetRace('play') du jeu web (partie « règles ») puis startRace() : state = 'count'
 void Course::reset() {
     state = RaceState::Count; clock = -3;
-    timeLeft = reglesWeb ? 30 : TEMPS_DEPART; nextCp = CHECK_DIST;   // WFS-110 : 60 s (30 s pour la référence du jeu web) level = 0; bonus = 0; raceTime = 0;
+    timeLeft = reglesWeb ? 30 : TEMPS_DEPART; nextCp = CHECK_DIST;   // WFS-110 : 60 s (30 s pour la référence du jeu web)
+    level = 0; bonus = 0; raceTime = 0;   // WFS-242 (RG-03, RG-04) : étaient restés dans le commentaire ci-dessus (chrono de la course précédente affiché pendant le décompte)
     combo = 0; comboTimer = 0; nearCount = 0; maxKmh = 0; overTimer = 0; accidents = 0;
     bumps = 0; scrapes = 0; lastImpact = 0;   // WFS-28
     lastCount = -1; goShown = 0; timeScale = 1; slowmoT = 0; echelleDt = 1;

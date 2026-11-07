@@ -18,6 +18,7 @@
 #include <vector>
 #include "../core/system.h"
 #include "../game/track.h"
+#include "../game/chocs_decor.h"   // WFS-256 (accroche)
 #include "../render/renderer.h"
 #include "giratoire.h"   // WFS-248 : giratoires reconstruits
 #include "vegetation.h"
@@ -98,6 +99,9 @@ protected:
     virtual void place(const char* zone, int64_t z0, int64_t z1, Mulberry32& D) = 0;
     // dessin d'un objet propre à la carte (appelé en parallèle : lit seulement la piste et les objets)
     virtual void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const = 0;
+    // WFS-256 (accroche) : formes de choc de l'objet (chocs_decor.h, 4 au plus), relevées sur son dessin ; 0 : rien de
+    // solide. Ici : arbres et lampadaires (communs) ; chaque carte ajoute ses objets (campagne.cpp, circuit.cpp)
+    virtual int solide(const Item& it, chocs::ObstacleRoute o[4]) const;
     // chaussée propre (circuit : texture roadCircuit) : false = celle de Game
     virtual bool routePropre() const { return false; }
     // dessins animés après les morceaux (rotors des éoliennes) ; morceaux c0..c1 chargés ; renvoie le nombre de dessins
