@@ -26,11 +26,12 @@ vec3 cielPhysique(vec3 d) {
     float h = d.y;
     vec3 teinte = mix(F.skyHorizon.rgb, F.skyTop.rgb, pow(clamp(h, 0.0, 1.0), 0.45));
     teinte /= max(dot(teinte, vec3(0.2126729, 0.7151522, 0.0721750)), 1e-6);
-    float L = F.cielP.y > 0.0 ? F.cielP.y : F.cielP.x * cieF(acos(clamp(dot(d, s), -1.0, 1.0))) * ciePhi(max(h, 0.0));
+    // WFS-208 : ciel du jour (CIE) + ciel uniforme du crépuscule ou de la nuit (fondu au coucher : les deux à la fois)
+    float L = F.cielP.x * cieF(acos(clamp(dot(d, s), -1.0, 1.0))) * ciePhi(max(h, 0.0)) + F.cielP.y;
     vec3 col = mix(teinte * L, F.groundCol.rgb, smoothstep(0.0, -0.25, h));
     if (F.nuitA.w < 0.5 && dot(d, s) > COS_RAYON_SOLEIL) {
         float eclaire = 1.0;
-        if (F.cielP.y > 0.0) {   // WFS-207 : lune, partie éclairée selon l'angle de phase (terminateur vertical)
+        if (F.cielP.x <= 0.0) {   // WFS-207 : lune (nuit : pas de ciel de jour), partie éclairée selon l'angle de phase
             vec3 ax = normalize(cross(s, vec3(0.0, 1.0, 0.0))), ay = cross(ax, s);
             vec2 q = vec2(dot(d - s, ax), dot(d - s, ay)) / sqrt(1.0 - COS_RAYON_SOLEIL * COS_RAYON_SOLEIL);
             vec3 n = vec3(q, sqrt(max(0.0, 1.0 - dot(q, q))));
@@ -38,7 +39,7 @@ vec3 cielPhysique(vec3 d) {
         }
         col += F.sunColor.rgb * F.cielP.z * eclaire;
     }
-    if (F.cielP.y <= 0.0) {   // WFS-208 : nuages de jour (devant le soleil)
+    if (F.cielP.x > 0.0) {   // WFS-208 : nuages de jour (devant le soleil)
         float n = nuages(d, F.cielP.w);
         // soleil (albédo 0,6, lambertien) + lumière du ciel rediffusée : un nuage n'est jamais plus sombre que le ciel qui l'entoure
         vec3 nuage = F.sunColor.rgb * F.sunDir.w * (0.6 / 3.14159265) * (max(s.y, 0.05) + 0.35) + col * 1.1;

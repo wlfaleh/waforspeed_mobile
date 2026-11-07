@@ -431,7 +431,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const vec3 couleur{(float)coul[0], (float)coul[1], (float)coul[2]};
     // crépuscule raccordé au ciel diffus au coucher (aucun saut, RG-02) : valeurs publiées × E_ciel(0°) / 750 lx
     // fondu entre le ciel du jour (CIE) et le ciel uniforme du crépuscule de −1° à +2° : aucune bascule au coucher (RG-02)
-    const double hj = std::max(h, 0.05), u = std::clamp((h + 1.0) / 3.0, 0.0, 1.0), wj = lune || nuit ? (lune ? 0.0 : u * u * (3 - 2 * u)) : u * u * (3 - 2 * u);
+    const double hj = std::max(h, 0.05), u = std::clamp((h + 1.0) / 3.0, 0.0, 1.0), w0 = u * u * (3 - 2 * u);
+    const double wj = lune ? 0.0 : w0 > 0.999 ? 1.0 : w0 < 0.001 ? 0.0 : w0;   // poids du ciel du jour (bords francs : pas de reste numérique)
     const double Ecrep = atmosphere::eclairementCrepuscule(std::min(h, 0.0)) * eclairementCielDiffus(0.001) / 750.0;
     const double Ed = lune ? E_NUIT_SANS_LUNE : wj * eclairementCielDiffus(hj) + (1 - wj) * Ecrep;
     if (std::fabs(hj - g.hCache) > 1e-4) { g.hCache = hj; g.kCache = cieFacteur(hj); }
