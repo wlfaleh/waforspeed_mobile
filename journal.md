@@ -3290,3 +3290,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:54:00 — WFS-248 : début (Claude, agent 5)
 - Ticket pris (attribué par le PO à 14:45). Branche `feature/waforspeed-248`. Étape 1 : inventaire des défauts des ronds-points des 4 cartes (RG-00 bis, RG-01) au banc local (lavapipe), avant toute reconstruction.
+
+### 2026-11-07 14:55:05 — Plus d'attribution avant la demande du développeur ; réservations retirées (po-scrum-master)
+- **Ordre de l'utilisateur** : ne pas donner de sujet à un développeur avant qu'il le demande. Règle écrite dans l'agent PO.
+- **Annulé** : WFS-247 (session dev expert), WFS-248 (agent 5), réservations de WFS-226 et WFS-224 → ⏳ Prêt, sans responsable ; exclusions des KO gardées. Bandeau de `TACHES.md` = ordre de priorité seulement : 242, 246, 247, 248, 249, 226, 224.
