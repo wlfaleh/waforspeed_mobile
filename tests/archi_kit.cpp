@@ -3,6 +3,7 @@
 // du style, dans leur niveau et dans la façade, sans chevauchement ; déterminisme ; hauteur obtenue proche de la voulue.
 #include "../src/world/archi_kit.h"
 #include "../src/render/bench_realisme.h"   // référentiel du réel (lecture JSON seulement)
+#include "../src/world/archi_mesures.h"   // WFS-161 (ST-6) : mesures du domaine « architecture »
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -74,6 +75,17 @@ int main() {
         // cohérence : un étage de la plage laisse la hauteur sous plafond minimale sous un plancher de 0,3 m
         const wfs::reel::Json* hsp = R.mesure("archi.logement.hauteur_sous_plafond_min");
         verifierQue(hsp && H_ETAGE.min - 0.3 >= hsp->nombre("valeur", 99), "étage minimal − plancher ≥ hauteur sous plafond minimale");
+    }
+    {   // ST-6 : mesures du domaine « architecture » : toute mesure mesurable est conforme ; M-02 / M-04 sans source → non mesurables
+        wfs::reel::Referentiel R; R.charger(std::string(WFS_SOURCE_DIR) + "/references/reel");
+        wfs::reel::Rapport rap; mesuresArchitecture(R, rap);
+        int ok = 0, ko = 0, nm = 0;
+        for (const auto& l : rap.lignes) {
+            if (l.etat == wfs::reel::Etat::Conforme) ok++; else if (l.etat == wfs::reel::Etat::NonConforme) { ko++; std::printf("[ÉCHEC] %s %s : jeu %s, réel %s\n", l.id.c_str(), l.grandeur.c_str(), l.jeu.c_str(), l.reel.c_str()); } else nm++;
+        }
+        std::printf("[%s] mesures « architecture » : %d conformes, %d non conformes, %d non mesurables\n", ko ? "ÉCHEC" : "OK", ok, ko, nm);
+        verifierQue(ko == 0 && ok >= 15, "ST-6 : mesures du kit conformes au référentiel");
+        verifierQue(nm >= 3, "ST-6 : M-02 / M-04 sans source restent non mesurables (jamais 0 %)");
     }
     for (int r = 0; r < 4; r++) verifierQue(vus[0][r] > 0, "chaque type de rez-de-chaussée apparaît (RG-01)");
     for (int e = 0; e < 3; e++) verifierQue(vus[1][e] > 0, "chaque type d'étage apparaît (RG-01)");

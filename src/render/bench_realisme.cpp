@@ -9,6 +9,7 @@
 // ambiances des cartes) et dessine la charte d'étalonnage. Le joueur est posé par WFS_DEPART (lu par les cartes), à
 // l'écran Menu (voiture immobile, aucune commande, aucun menu dessiné sans police chargée) ; trafic et piétons sont
 // figés : un nombre fixe de pas de simulation, puis plus aucun avant la capture (graines fixes : images reproductibles).
+#include "../world/archi_mesures.h"   // WFS-161 (accroche) : mesures du kit d'architecture
 #include "bench_realisme.h"
 #include <array>
 #include <cstdlib>
@@ -488,6 +489,7 @@ int benchRealisme(Game& g, Renderer& r, const std::string& out) {
     // ---------------- mesures géométriques (voitures, routes) et soleil calculé : les mêmes que test_fidelite
     std::vector<std::string> cars; for (int i = 0; i < CAR_COUNT; i++) cars.push_back(CARS[i].id);
     reel::mesuresDonnees(R, rap, ".", cars);
+    archi::mesuresArchitecture(R, rap);   // WFS-161 (accroche, ST-6) : domaine « architecture »
 
     // ---------------- écriture des rapports
     std::string titre = "WaForSpeed — rapport de fidélité au réel (WFS-148, RG-05) : ÉTAT ZÉRO de l'axe Réalisme\n";
