@@ -2951,3 +2951,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Plan court : nommer la cause (exposition auto WFS-151, IBL WFS-150, ou `nuit.cpp`), la corriger sans toucher aux bancs, preuve chiffrée avant / après (pixels saturés < 2 %, luminance, EV100), autres cartes de nuit inchangées, `WFS_BANC=parcours` 0 écart.
 - Règle des 10 h : aucun ticket libéré (derniers envois : 190 à 20:40, 200 à 23:13, 158 à 23:06 UTC, 201 à 00:02).
 - **Ménage du jour** (premier appel du 2026-11-07) : `tache utilisateur.md` : 4 demandes avant, 2 après ; 2 demandes closes (Model 3 remplacée, WFS-158 PR #167 ; spectateurs du Grand Prix, WFS-199 PR #168) déplacées dans `archive/tache-utilisateur-repondu.md` (2 ajoutées) : rien de perdu. Journal et tickets terminés : le robot `archives.yml` passe à 03:07 UTC ; son commit sera vérifié au prochain appel.
+
+### 2026-11-07 00:08:31 — Statuts automatiques, CI main #796 (robot statuts)
+- Run rouge (push, commit aa9fdb9), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-198.
