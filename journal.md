@@ -3023,3 +3023,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 00:36:06 — Statuts automatiques, CI main #798 (robot statuts)
 - Run rouge (push, commit 2cb114b), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-109, WFS-134, WFS-137, WFS-139, WFS-140, WFS-150, WFS-151, WFS-175, WFS-176, WFS-178, WFS-179, WFS-181, WFS-188, WFS-189, WFS-191, WFS-196, WFS-197, WFS-198, WFS-199.
+
+### 2026-11-07 00:44:24 — Statuts automatiques, CI main #799 (robot statuts)
+- Run vert (push, commit a796068) : WFS-109 ✅ (PR #117, 4469c5e), WFS-134 ✅ (PR #119, 1bf0514), WFS-137 ✅ (PR #150, 806d737), WFS-139 ✅ (commit 751ef19, 751ef19), WFS-140 ✅ (PR #137, ad4fa31), WFS-150 ✅ (PR #143, 7a6c136), WFS-151 ✅ (PR #156, 00bd580), WFS-175 ✅ (PR #155, c8a8250), WFS-176 ✅ (commit 9262b41, 9262b41), WFS-178 ✅ (PR #148, 6d20f2e), WFS-179 ✅ (commit 36108b0, 36108b0), WFS-181 ✅ (PR #153, 78b9a30), WFS-188 ✅ (PR #154, ab0d329), WFS-189 ✅ (PR #159, fbfc4f6), WFS-191 ✅ (PR #164, 9c64bf6), WFS-196 ✅ (PR #160, 2d73d36), WFS-197 ✅ (PR #169, 2cb114b), WFS-198 ✅ (PR #165, f61e884), WFS-199 ✅ (PR #168, f279a8c).
+- À corriger par le PO : `track-agent.md` l. 27 : WFS-191 : forme de l'État non reconnue (ligne laissée telle quelle).
+- À corriger par le PO : `track-agent.md` l. 27 : WFS-140 : forme de l'État non reconnue (ligne laissée telle quelle).
+- À corriger par le PO : `track-agent.md` l. 31 : WFS-151 : forme de l'État non reconnue (ligne laissée telle quelle).
