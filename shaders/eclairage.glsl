@@ -32,8 +32,9 @@ vec3 perturb(vec3 N, vec3 p, vec2 uv, vec3 tn) {
 // Biais (acné, décollement) en texels de la cascade : décalage le long de la normale 1,5 texel, profondeur 1 texel (pente
 // plafonnée par le décalage normal) ; une cascade fine (près) garde donc un biais fin : l'ombre reste collée au pied.
 // Pénombre (RG-02) : largeur = distance occultant → récepteur × tan(0,53°) (F.ombreP.w) : distance de l'occultant estimée par
-// des comparaisons à des profondeurs décalées (0,3 à 30 m, carte de comparaison : pas de lecture brute) ; filtre sur un disque
-// de Poisson de cette largeur (au moins un texel), tourné par pixel (pas de bandes). Moyenne : moins de lectures, même physique.
+// des comparaisons à des profondeurs décalées (0,3 à 30 m, dichotomie : 3 essais ; carte de comparaison : pas de lecture brute) ;
+// filtre sur un disque de Poisson de cette largeur (au moins un texel), tourné par pixel (pas de bandes) : 8 lectures en Haute et
+// Ultra (4 pour la recherche), 4 en Moyenne (1 pour la recherche) : moins de lectures, même physique. Point éclairé : 4 lectures.
 const float RECUL_SOLEIL_M = 120.0;
 const vec2 POISSON[12] = vec2[12](vec2(-0.326, -0.406), vec2(-0.840, -0.074), vec2(-0.696, 0.457), vec2(-0.203, 0.621),
     vec2(0.962, -0.195), vec2(0.473, -0.480), vec2(0.519, 0.767), vec2(0.185, -0.893), vec2(0.507, 0.064), vec2(0.896, 0.412),
@@ -62,19 +63,20 @@ float ombreCascade(int k, vec3 p, vec3 n) {
     for (int i = 0; i < nS; i++) occ0 += 1.0 - texture(shadowMap, vec3(clamp(auv + dS[i] * rs, lo, hi), z));
     occ0 /= float(nS);
     if (occ0 <= 0.0) return 1.0;                                         // aucun occultant autour : éclairé
-    float dB = DELTAS_M[4], prev = occ0, prevD = 0.0;
-    for (int j = 0; j < 5; j++) {
+    // dichotomie sur les 5 profondeurs (3 comparaisons) : plus grand Δ où au moins la moitié de l'occultation reste
+    int lo2 = -1, hi2 = 4;   // occ(Δ[lo2]) > ½ occ0 (lo2 = −1 : Δ = 0) ; occ(Δ[hi2]) ≤ ½ occ0 supposé (au-delà : 30 m)
+    for (int it = 0; it < 3; it++) {
+        int mid = (lo2 + hi2 + 1) / 2;
         float o = 0.0;
-        for (int i = 0; i < nS; i++) o += 1.0 - texture(shadowMap, vec3(clamp(auv + dS[i] * rs, lo, hi), z - DELTAS_M[j] / profM));
-        o /= float(nS);
-        if (o <= 0.5 * occ0) { dB = mix(prevD, DELTAS_M[j], clamp((prev - 0.5 * occ0) / max(prev - o, 1e-4), 0.0, 1.0)); break; }
-        prev = o; prevD = DELTAS_M[j];
+        for (int i = 0; i < nS; i++) o += 1.0 - texture(shadowMap, vec3(clamp(auv + dS[i] * rs, lo, hi), z - DELTAS_M[mid] / profM));
+        if (o / float(nS) > 0.5 * occ0) lo2 = mid; else hi2 = mid;
     }
+    float dB = sqrt(max(lo2 >= 0 ? DELTAS_M[lo2] : 0.15, 0.15) * DELTAS_M[hi2]);   // milieu géométrique de l'intervalle trouvé
     // 2) filtre sur la largeur de la pénombre (demi-largeur en rayon), au moins un texel
     float r = max(0.5 * dB * F.ombreP.w, texelM) / mParUv;
     float ang = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2831853;
     mat2 R = mat2(cos(ang), sin(ang), -sin(ang), cos(ang));
-    int nF = fine ? 12 : 6;
+    int nF = fine ? 8 : 4;
     float sum = 0.0;
     for (int i = 0; i < 12; i++) {
         if (i >= nF) break;

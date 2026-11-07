@@ -908,7 +908,11 @@ uint8_t Renderer::classer(const masquage::Sphere& s) {
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
                       (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
     uint8_t c = 0;   // WFS-227 (accroche) : cascades d'ombre que l'objet touche (passe d'ombre : une tuile seulement si besoin)
-    if (v & VIS_OMBRE) for (int k = 0; k < cascades_.n; k++) if (masquage::visible(fCasc_[k], s)) c |= (uint8_t)(VIS_CASCADE0 << k);
+    // tranche de la cascade (le long du regard) + portée de l'ombre de l'objet (≈ 3 × son rayon + 5 m) : un objet près de la
+    // caméra (la voiture) n'est pas redessiné dans les cascades lointaines, ni un petit objet (< 2 texels) dans une cascade grossière
+    const float d = dot(s.c - camPos_, regardCasc_), portee = 3 * s.r + 5;
+    if (v & VIS_OMBRE) for (int k = 0; k < cascades_.n; k++)
+        if (s.r >= 2 * texelCasc_[k] && d + s.r + portee >= (k ? cascades_.fin[k - 1] : -1e9f) && d - s.r <= cascades_.fin[k] && masquage::visible(fCasc_[k], s)) c |= (uint8_t)(VIS_CASCADE0 << k);
     if (!v) masques_++;
     return v | c;
 }
@@ -1033,6 +1037,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         u.shadowP = {shadowsOn_ ? 1.f : 0.f, 1.f / (float)shadowSize_, SHADOW_NORMAL_BIAS, SHADOW_BIAS};
         // WFS-227 (accroche E13) : cascades stabilisées (eclairage_ombres.h) ; shadowMat = boîte de toutes les cascades (masquage)
         const vec3 regard{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)};
+        regardCasc_ = normalize(regard);
         cascades_ = ombres::calculer(L, fp.camPos, regard, std::clamp(niveauOmbres, 1, 3), shadowSize_);
         for (int k = 0; k < 4; k++) { u.ombreCasc[k] = cascades_.m[std::min(k, cascades_.n - 1)]; (&u.ombreFin.x)[k] = cascades_.fin[std::min(k, cascades_.n - 1)]; (&u.ombreDemi.x)[k] = cascades_.demi[std::min(k, cascades_.n - 1)]; }
         u.ombreP = {(float)cascades_.n, (float)std::clamp(niveauOmbres, 1, 3), (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_), (float)ombres::tanSoleil()};
@@ -1084,7 +1089,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
         fReflet_ = masquage::depuis(fp.proj * fp.view * R);
         fOmbre_ = masquage::depuis(u.shadowMat);
-        for (int k = 0; k < cascades_.n; k++) fCasc_[k] = masquage::depuis(cascades_.m[k]);   // WFS-227
+        for (int k = 0; k < cascades_.n; k++) { fCasc_[k] = masquage::depuis(cascades_.m[k]); texelCasc_[k] = k ? 2 * cascades_.demi[k] / (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_) : 0.f; }   // WFS-227
         finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
         masquesPrec_ = masques_; masques_ = 0;
     }

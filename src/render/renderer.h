@@ -183,6 +183,8 @@ private:
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CASCADE0 = 8 };   // WFS-227 : bit 8 << k : dans la cascade k
     uint8_t classer(const masquage::Sphere& s);
+    float texelCasc_[4] = {};   // WFS-227 : taille d'un texel de chaque cascade (1re : 0, tout objet y porte ombre)
+    vec3 regardCasc_{0, 0, -1};  // WFS-227 : regard de la caméra (tranches des cascades)
     masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4]; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
     void createTargets();
     void destroyTargets();
