@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include "../core/log.h"
+#include "aide_direction_banc.h"   // WFS-217
 #include "../render/renderer.h"
 #include "game.h"
 #include "player.h"
@@ -52,6 +53,7 @@ void benchConduiteLibre(Game& g, Renderer& r, const std::string& out) {
             p.kmh(), p.heading, p.dist * M, enFace);
     g.onTouch({1, x0, yv, false}); if (gaz) g.onTouch({2, W * 0.9f, H * 0.8f, false});
     g.shutdown();
+    benchAideDirection(g, r, out);   // WFS-217 : épingles et ronds-points, aide activée puis désactivée (conduite-epingle, conduite-rond-point)
 }
 
 } // namespace wfs
