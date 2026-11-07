@@ -2528,3 +2528,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Décision de l'utilisateur** : vente, publicité ou achats possibles (dit la veille ; confirmé ce matin). Les 5 modèles sous licence non commerciale (T-Cross, X5, A 45, Elantra N, Mustang) doivent être remplacés.
 - **WFS-194** : P4 conditionnelle → **P2 Haute**, dépendance « décision » retirée ; reste « après WFS-158 » (même épic E10). Voie par défaut : modèles CC0 / CC BY trouvés dans les dépôts GitHub publics (`modeles-3d-github.md`).
 - Note du PO : je n'avais pas retrouvé cette décision de la veille dans mes notes ; elle est maintenant écrite dans les règles du ticket.
+
+### 2026-11-07 09:27:26 — WFS-194 découpé : lot 1 WFS-219 prêt tout de suite, lot 2 après WFS-158 (po-scrum-master)
+- **Demande de l'utilisateur** : commencer une partie de WFS-194 avant WFS-158.
+- **WFS-219** (E10, P2, ⏳ Prêt, exception PO : 2e ticket E10, **fichiers neufs seulement** `assets/cars/remplacants/**`, `assets/licences/remplacants/**`) : recherche dans les dépôts GitHub publics, licences CC0 / CC BY, conversion avec les outils existants sans les modifier, mesures ±1 %, avis d'expert-realisme-3d ; **rien de branché**, le jeu ne change pas.
+- **WFS-194** devient le lot 2 (branchement dans `cars.h`), après WFS-158 et WFS-219. Aucun conflit possible avec arwa-2 : aucun fichier commun.
