@@ -89,7 +89,8 @@ using namespace wfs;
 // Rend le nombre d'écarts.
 static int parcoursFinMenu(Game& g, Renderer& r, const std::string& out) {
     courseBenchRules(true);
-    if (!g.init(r, "golf", "ville")) { courseBenchRules(false); WFS_ERR("parcours : chargement impossible (fin de course)"); return 1; }
+    const char* voiture = std::getenv("WFS_VOITURE") && *std::getenv("WFS_VOITURE") ? std::getenv("WFS_VOITURE") : "golf";   // WFS-202 (RG-09)
+    if (!g.init(r, voiture, "ville")) { courseBenchRules(false); WFS_ERR("parcours : chargement impossible (fin de course)"); return 1; }
     g.setAutopilot(false); g.camMode = 0;
     double t = 1700; int n = 0, ecarts = 0;
     auto image = [&]() { g.update(1.0 / 60); t += 1.0 / 60; if (++n % 4 == 0) g.render(t); };
