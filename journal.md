@@ -4203,3 +4203,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Mesure de l'agent 5 (banc perf, Ville, Haute) : TrafficSystem de 54 appels / 23 000 triangles au départ à 644 appels / 701 000 triangles après ≈ 2,8 min ; même montée avec `WFS_LOTS=0` : pas WFS-268, c'est le trafic (≈ 60 voitures dans la vue au lieu de ≈ 5).
 - Créés : **ANO-151** (bloquante, 📋 Planifiée) et **WFS-281** (P1, [TECHNIQUE] [URGENT], E3, règles `regles-de-gestion/WFS-281.md`), n° 00 du bandeau. Exception PO : mêmes fichiers que WFS-232 (arwa-3), en coordination. 🟡 après fusion (essai de l'utilisateur).
 - Non attribué (attribution seulement à la demande) : domaine trafic, skill `expert-conduite` ; **pas** l'agent 5 (domaine décor). Réponse à l'utilisateur dans `tache utilisateur.md`.
+
+### 2026-11-07 21:45:04 — Lead dev créé : captures obligatoires dans la PR, lui seul fusionne (po-scrum-master)
+- Règle de l'utilisateur après le refus de la vue Cockpit (WFS-235) : plus de fusion par confiance. Le développeur lance `tools/qa/captures_pr.sh` (banc d'essai PC, avant / après, ≥ 3 captures dans `qa/pr/WFS-XX/`), ouvre sa PR et appelle aussitôt l'agent `lead-dev`, qui regarde les images et fusionne ou refuse.
+- Fichiers : `.claude/skills/lead-dev/SKILL.md`, `.claude/agents/lead-dev.md`, `tools/qa/captures_pr.sh` ; `CLAUDE.md`, `po-scrum-master.md` (section « Captures demandées » dans chaque US), `qa-lead` et `waforspeed-natif` (ancienne règle barrée), checklist de livraison.
+- Pas de workflow GitHub sur les PR : interdit par la règle « pas de CI sur les PR » et par le gel de la CI ; l'automatisme passe par l'appel du lead dev dans la session du développeur.
