@@ -63,6 +63,7 @@ struct Etat {
     // 1 = bloquée au freinage ; > 0 aussi en patinage), ABS, antipatinage et ESP en action
     double glissementAv = 0, glissementAr = 0;
     bool absActif = false, tcActif = false, espActif = false;
+    double sigmaAv = 0, sigmaAr = 0;   // WFS-255 (accroche) : glissement total normalisé de chaque essieu (> 1 : au-delà du pic, le pneu crisse)
     double u() const { return vx * std::sin(cap) - vz * std::cos(cap); }   // vitesse longitudinale (m/s, < 0 en arrière)
     double v() const { return vx * std::cos(cap) + vz * std::sin(cap); }   // vitesse latérale (m/s, + = vers la droite)
 };
@@ -193,7 +194,7 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
     const double part = p.transmission == Transmission::Avant ? 1.0 : p.transmission == Transmission::Arriere ? 0.0 : p.partAvant;
     double Fbf = 0, Fbr = 0;   // demande de freinage (N, ≥ 0)
     if (c.frein > 0 && au > 0.01) { const double Fb = c.frein * 1.3 * mg; Fbf = Fb * p.partFreinAvant; Fbr = Fb * (1 - p.partFreinAvant); }
-    struct Essieu { double Fx = 0, Fy = 0, k = 0; bool abs = false, tc = false; };
+    struct Essieu { double Fx = 0, Fy = 0, k = 0, sg = 0; bool abs = false, tc = false; };
     auto essieu = [&](double moteur, double frein, double alpha, double cy, double Fz, double D, double Dl) {
         Essieu r;
         if (D <= 1) return r;
@@ -218,7 +219,7 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
             if (c.esp && std::abs(sy) < 1) kmax = std::min(kmax, K_PIC * std::sqrt(1 - sy * sy));
         }
         double fy = 0, fx = dem > 0 ? forces(kmax, mt, fy) : 0;
-        if (dem <= 0) { forces(0, mt, fy); r.Fy = fy; return r; }
+        if (dem <= 0) { forces(0, mt, fy); r.Fy = fy; r.sg = std::abs(sy); return r; }
         if (fx <= dem) {   // demande au-delà de ce que le pneu donne à kmax : ABS ou antipatinage en action, ou roue bloquée / qui patine
             r.k = kmax; r.abs = freine && c.abs; r.tc = !freine && c.antipatinage;
             if (!freine && !c.antipatinage) {   // sans antipatinage : la roue patine d'autant plus que le couple dépasse l'adhérence
@@ -230,13 +231,13 @@ inline void pas(const Params& p, Etat& e, const Commande& c, const Sol& s, doubl
             for (int it = 0; it < 18; it++) { const double mid = (lo + hi) / 2; double f2; (forces(mid, mt, f2) < dem ? lo : hi) = mid; }
             r.k = hi; fx = forces(hi, mt, fy);
         }
-        r.Fx = sensF * fx; r.Fy = fy;
+        r.Fx = sensF * fx; r.Fy = fy; r.sg = std::hypot(r.k / K_PIC, sy);
         return r;
     };
     const double moteurTotal = Fdrive - Fmoteur * sgn(u);
     const Essieu ea = essieu(moteurTotal * part, Fbf, af, p.cyAvant, Fzf, Df, Dlf), eb = essieu(moteurTotal * (1 - part), Fbr, ar, p.cyArriere, Fzr, Dr, Dlr);
     const double Fxf = ea.Fx, Fxr = eb.Fx, Fyf = ea.Fy, Fyr = eb.Fy;
-    e.glissementAv = ea.k; e.glissementAr = eb.k; e.absActif = ea.abs || eb.abs; e.tcActif = ea.tc || eb.tc; e.espActif = false;
+    e.glissementAv = ea.k; e.glissementAr = eb.k; e.sigmaAv = ea.sg; e.sigmaAr = eb.sg; e.absActif = ea.abs || eb.abs; e.tcActif = ea.tc || eb.tc; e.espActif = false;
 
     // ---------- somme des forces (repère de la voiture) ----------
     double Fx_esp = 0;   // freinage de l'ESP (N)

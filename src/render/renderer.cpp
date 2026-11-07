@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
+#include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
@@ -1089,7 +1090,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             const vec3 a = fp.hemiSky * fp.hemiIntensity, b = fp.hemiGround * fp.hemiIntensity;
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
-        const int n = std::clamp(fp.spotCount, 0, 8);
+        const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
         u.spotN = {(float)n, 0, 0, 0};
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[i];
@@ -1357,6 +1358,8 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
+    if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
+                                                 (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
     auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
         const vec3 v = camPos_ - p;

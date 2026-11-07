@@ -14,48 +14,50 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 16:12:30 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 17:38:00 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-226 | P1 nuit : phares allumés sur toutes les autres voitures (trafic, adversaires, police), attribué 16:05 ; WFS-218 🟣 | 226 : 16:05 (ouverture) ; 218 : fusion 14:57 | 🔴 en cours (P1) |
-| Claude, agent 1 (01UY1Vv2) | WFS-230 | P1 nuit sur route non éclairée : exposition au clair de lune, vision de nuit, `GameView::night` ; attribué 16:00 | 230 : 16:06 ; 234 : PR #209 fusionnée | 🔴 en cours (P1) |
+| agent arwa (Claude, session trafic) | WFS-257, WFS-244, WFS-224 | P1 WFS-257 personnes qui apparaissent / disparaissent (E11), attribué 16:35 ; **en parallèle** (demandes de l'utilisateur) P3 WFS-244 plaques à bords nets sur la chaussée (E9), attribué 17:05, et P1 WFS-224 fumée des pneus + lignes du nitro sous le HUD (E4, `effets_*` seul), attribué 17:19 ; WFS-226 fusionné | 257 : 17:33 (3d917ff, apparition naturelle, fondus 0,5 s, banc des apparitions) ; 244 : 17:06 (9b43ee6, commit de début) ; 224 : 17:20 (72d8af9, branche reprise) ; 226 : fusionnée 16:40 (PR #214) | 🔴 en cours (P1 + P3 + P1) |
+| Claude, agent 1 (01UY1Vv2) | WFS-230 | P1 nuit sur route non éclairée : exposition au clair de lune, vision de nuit, `GameView::night` ; attribué 16:00 | 230 : 17:14 (a6c649d, suivi dans les règles) ; 234 : PR #209 fusionnée | 🔴 en cours (P1) |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-227 fusionné) | libre (ne prend pas de ticket sans demande de l'utilisateur) | 227 : fusionnée 15:58 (PR #210) ; 221 : fusionnée (PR #193) | 🟢 libre |
-| Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
-| Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris (⏳ Prêt, pour un autre développeur) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
-| Claude, agent 5 (011cpqZaDiS2) |  |  | 248 : fusionnée (PR #208, d611b1e, 15:32 UTC, squash) | ✅ libre (WFS-248 🟡 : confirmation de l'utilisateur attendue) |
-| Claude, agent dev X (0183bv2X, ex-« session dev expert ») | WFS-246 | P1 [TECHNIQUE] performance, 2e passage (WFS-222 refusé) : faces arrière, shaders par coût, résolution adaptative, LOD, ombres ; attribué 16:12 (déclaré prêt par l'utilisateur, pause levée) | 246 : branche à créer et pousser | 🔴 en cours (P1) |
+| Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1, commit de début seul) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 ⚠️ P1 : rien poussé depuis 13:43 (3 h 52 à 17:35) ; relance, pas de retrait avant 10 h |
+| Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris, puis donné à agent arwa (17:19 UTC) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
+| Claude, agent 5 (011cpqZaDiS2) | WFS-268 | P1 [TECHNIQUE] tout préparer au chargement (1/2) : décor fixe regroupé par tronçon et matériau, instances, rien de créé en course (E4, exception PO : `lots_decor.*` + accroches ≤ 10 lignes) ; attribué 17:37 à sa demande | 268 : pas encore de branche (attribué 17:37) ; 248 : fusionnée (PR #208, 🟡) | 🔴 en cours (P1) |
+| Claude, agent dev X (0183bv2X, ex-« session dev expert ») | WFS-246 | P1 [TECHNIQUE] performance, 2e passage, **recentré à 17:13** : mesure sur le téléphone (RG-06), faces arrière (levier 1 poussé), résolution sans `resize()` en course (RG-07) ; suite WFS-262 à 265 (E4) proposée à lui ensuite | 246 : 17:22 (e97911a) | 🔴 en cours (P1) |
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes) ; test de la fenêtre de la rue sur les 20 intérieurs | 235 : 16:11 (haut du pare-brise, test des 20 intérieurs) | 🔧 en cours |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 15:41 (CI de branche run 848) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-253 | P1 étape 2 « Conduite réaliste » : aides (direction, ABS, antipatinage, ESP) réglées et mesurées ; WFS-241 🟡 (PR #211) | 253 : 16:07 (pneus, ABS, antipatinage, ESP) | 🔴 en cours (P1) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-235, WFS-245 | P1 WFS-235 vue Cockpit (E3 + E10) : fenêtre de la rue 0 % sur les 20 voitures, réglage « Regard cockpit » fait ; reste le tableau du critère 2, le parcours et la fusion (🟡) ; **en parallèle** (demande de l'utilisateur, 17:07) P3 WFS-245 étiquettes du HUD lisibles (E5), attribué 17:12 ; tailles arbitrées par le PO à 17:30 (RG-01 corrigée), code pas commencé | 235 : 16:59 (6fb57bf, synchronisée avec main) ; 245 : 17:17 (9eb046c, branche créée et poussée) | 🔴 en cours (P1 + P3) |
+| arwa-4 (Claude, session 01Us6uCw) | WFS-261 | P2 [RÉALISME] son des lieux (E6) : sortie stéréo Android, sons placés dans le monde (fontaine, vagues, tribunes, fermes, terrasses), écho des tunnels ; attribué 17:18 à sa demande (nouveau développeur, n'est **pas** l'agent 4 stoppé) | 261 : 17:22 (b802612, commit de début) | 🔧 en cours (P2) |
+| arwa-3 (Claude, session 01Us6uCt) | WFS-242 | P1 [URGENT] départ propre de la Course à 5 et du Duel (E3, exception PO : `course*`, `duel*` seuls) : grille en quinconce sans chevauchement, place du joueur variable, chrono à 0 jusqu'au « GO », pause propre, commandes visibles au « 3 » ; attribué 17:24 à sa demande (nouveau développeur) ; 🟡 après fusion | 242 : 17:27 (e2dba16, reprise de 9e7e4a1, synchronisée avec main et poussée) | 🔴 en cours (P1) |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 16:15 (791997c, roues avant) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
+| arwa-5 (Claude, session 01Us6uCwsJ63) | WFS-267 | P1 [TECHNIQUE] CI de main rouge #852 (banc `realisme`, étalonnage des couleurs non mesurable) : RG-00 d'abord (job `realisme` du run #859 en cours), sinon cause et correction sans affaiblir le banc ; coordination avec l'agent expert ci (WFS-251, `bench_realisme.cpp`) ; attribué 17:35 à sa demande (nouveau développeur, **pas** Claude, agent 5 ; petites tâches demandées par l'utilisateur) | 267 : pas encore de branche (attribué 17:35) | 🔴 en cours (P1) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-258 | P1 conduite 2e passage : **d'abord remettre l'ancienne conduite** (`g_conduiteMonde = false`), puis corriger les points de l'utilisateur ; sujets de conduite réservés à lui (exception de l'utilisateur) | 256 : fusionné #216, 🟡 ; 258 : RG-00 fusionné #217 (04a1628), suite sur `feature/waforspeed-258` (poussée, ae71e2f) | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
-| WFS-224 (P1) | E4 | repris à l'agent 4 (stoppé par l'utilisateur) : au premier développeur qui demande, **pas** l'agent 4 |
-| WFS-246 (P1) | E4 | épic E4 tenue (WFS-218, 224, 239) ; pas à l'agent arwa |
+| WFS-269 (P1) | E13 + E4 | après WFS-268 ; E13 tenue par WFS-230 (agent 1) |
+| WFS-262 à 265 (P1) | E4 | épic E4 tenue par WFS-246 (agent dev X) ; à la suite, une par une |
 | WFS-249 (P1) | E2 + E13 | E13 tenue par WFS-230 (agent 1) ; WFS-248 🟡 ; pas à la session dev 5bx |
 | WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
-| WFS-243 (P2) | E3 | après WFS-241 et WFS-242 (mêmes fichiers ; sessions archivées, tickets prêts) |
+| WFS-243 (P2) | E3 | après WFS-242 (arwa-3) ; épic E3 tenue par WFS-258, WFS-235, WFS-247 et WFS-242 |
+| WFS-266 (P2) | E11 | nouveau (17:24, ANO-134 bloquante de la recette de WFS-210) : épic E11 tenue par WFS-257 (agent arwa) ; ensuite au premier développeur qui demande |
 | WFS-252 (P2) | E7 | en attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci |
-| WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
-| WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 15:47 : WFS-251 confié à l'agent expert ci (exception de l'utilisateur « tu as le droit exclusivement pour le toucher ») |
-| QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 : WFS-211, 212, 213 VALIDÉS, WFS-208 PASSABLE (ANO-112) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 17:38 : WFS-268 (P1, tout préparer au chargement) attribué à Claude, agent 5 à sa demande ; avant, 17:36 : WFS-267 (CI de main rouge) attribué à arwa-5 à sa demande ; avant, 17:33:20 : WFS-268 et WFS-269 créés (P1, tout préparer au chargement, ordre de l'utilisateur) ; avant, 17:30 : WFS-245, tailles du HUD arbitrées à la demande d'arwa-2 (RG-01 corrigée) ; avant, 17:24 : WFS-242 attribué à arwa-3 à sa demande (exception PO dans E3, fichiers séparés) ; WFS-266 créé (ANO-134) ; WFS-267 créé (CI de main #852 rouge) ; avant : WFS-224 à agent arwa (17:19), WFS-261 à arwa-4 (17:21) |
+| QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | 2026-11-07 17:15 : lot 4 rendu (WFS-233, 240 VALIDÉS ; WFS-210 REFUSÉ, ANO-134 bloquante, US de correction à créer par le PO ; WFS-225 REFUSÉ, déjà repris par WFS-249) ; lot 5 à suivre |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
-| smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 ; avis sur WFS-236 et 237 |
-| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 15:47 : **WFS-250** 🔧 (CI de branche run 849 en cours ; 250 : 15:45, 82b1f20) ; **WFS-251** 🔧 ensuite (exception de l'utilisateur : `bench_realisme.cpp` + accroche `desktop_main.cpp` seulement) ; WFS-252 réservé (après WFS-250 et 251) ; WFS-237 ✅ |
+| smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |
+| agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 16:52:32 : WFS-250 🟣 fusionné (PR #215) ; WFS-251 🔧 (comparaison locale lavapipe en cours ; dernier envoi 15:51 UTC, eb39a13) ; WFS-252 ensuite ; **à prévenir par arwa-5** avant toute retouche de `bench_realisme.cpp` (WFS-267) |
 
 ## Info pour les développeurs (2026-11-06 23:47 UTC)
 - Le rendu se vérifie **en local** avec lavapipe : `mesa-vulkan-drivers` et `glslc` s'installent dans le conteneur (paquets apt), puis `WFS_BANC=<groupe> build/wfs_bench` (même rendu logiciel que la CI ; testé par Claude, agent 2 sur WFS-197).

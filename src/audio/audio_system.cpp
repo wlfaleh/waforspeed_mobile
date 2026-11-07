@@ -89,7 +89,10 @@ public:
         const bool throttle = pl.nitroOn || (!pl.braking && (pl.lonAcc > 0.4 || (v > 0.5 && pl.lonAcc > -0.6)));
         const double top = MAX_SPEED * pl.perf.top * (pl.nitroOn ? pl.perf.nitroMult : 1);
         EngineSynth& s = *synths_[idx];
-        model_.update(dt, pl.speed, top, MAX_SPEED, throttle, pl.nitroOn, true, voice.pitch, false, s.targets);
+        if (pl.modeleMonde() && !montree) {   // WFS-255 (RG-03) : régime et rapport réels de la conduite réaliste
+            const double coupure = physique::params(*pl.car).wMax * 60 / (2 * 3.14159265358979);
+            model_.updateReel(dt, pl.monde.regime, coupure, pl.monde.rapport, pl.speed, top, throttle, pl.nitroOn, true, voice.pitch, false, s.targets);
+        } else model_.update(dt, pl.speed, top, MAX_SPEED, throttle, pl.nitroOn, true, voice.pitch, false, s.targets);
         {   // WFS-120 : pétarades, turbo, rupteur (en course seulement, aucune pour la Model 3 électrique)
             const Course* c = activeCourse();
             const bool enCourse = g.ecran == Ecran::Course && !g.sceneDediee && c && c->state == RaceState::Play;

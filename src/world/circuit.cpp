@@ -529,6 +529,29 @@ protected:
         return n;
     }
 
+    // ---------------------------------------------------------------- WFS-256 (accroche, autorisée par le PO : ajout seul)
+    // formes de choc des objets du Grand Prix, relevées sur dessine() ci-dessous (box : largeur selon r, longueur selon f)
+    int solide(const Item& it, chocs::ObstacleRoute o[4]) const override {
+        if (const int n = CarteDecor::solide(it, o)) return n;   // arbres, projecteurs
+        using G = chocs::Genre; const float s = (float)it.side, R = (float)RW, SG = (float)SEG_M;
+        int n = 0;
+        auto bt = [&](float lat, float hx, float hz, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.forme = chocs::Forme::Boite; q.lat = lat; q.hx = hx; q.hz = hz; q.genre = g; q.along = al; };
+        auto cy = [&](float lat, float r, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.lat = lat; q.r = r; q.genre = g; q.along = al; };
+        switch (it.t) {
+        case T_TIRES: for (int i = 0; i < 4; i++) cy(s * it.lat, 0.6f, G::Mur, i * 1.2f); break;   // 4 piles de pneus
+        case T_ADBOARD: bt(s * (it.lat + 0.11f), 0.12f, 5.75f, G::Mur, 5 * SG); break;          // cadre de 11,5 m (pose a + 5)
+        case T_PITWALL: bt(s * it.lat, 0.2f, 1.5f * SG, G::Mur); break;
+        case T_MARSHAL: bt(s * it.lat, 0.8f, 0.8f, G::Batiment); break;
+        case T_FREIN: for (float al : {-0.6f, 0.6f}) bt(s * it.lat, 0.04f, 0.04f, G::Poteau, al); break;
+        case T_PORTIQUE: for (float sd : {-1.f, 1.f}) bt(sd * (R + 1.6f), 0.25f, 0.25f, G::Poteau); break;
+        case T_PASSERELLE: for (float sd : {-1.f, 1.f}) bt(sd * (R + 2.5f), 0.5f, 0.5f, G::Poteau); break;
+        case T_FLAG: cy(s * it.lat, 0.08f, G::Poteau); break;
+        case T_GRILLAGE: bt(s * it.lat, 0.03f, 1.8f, G::Mur, 1.8f); break;
+        default: break;   // tribunes, garages, stands, camions : au-delà du bord de la carte ; grille de départ : peinte au sol
+        }
+        return n;
+    }
+
     void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         Geo& S = out[P_UNI];
         const float s = (float)it.side;
