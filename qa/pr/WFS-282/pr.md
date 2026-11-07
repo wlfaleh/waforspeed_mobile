@@ -4,10 +4,10 @@
 
 ## Description (à remplir par le développeur avant d'ouvrir la PR)
 
-- **Demande de l'utilisateur** (en une phrase) : À REMPLIR
-- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR
-- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
-- **Limites et risques connus** : À REMPLIR
+- **Demande de l'utilisateur** (en une phrase) : « règle la vue cockpit, remets le tableau de bord et la carcasse de voiture » (WFS-235 refusé, ANO-152) ; cette PR = RG-00 (retour à l'intérieur d'avant WFS-235) + RG-06 (planche de bord opaque).
+- **Ce qui change** (fichiers, comportement, à l'écran) : `src/render/vehicule_cockpit.cpp/.h/_defs.cpp` remis à l'état du parent de 66fdd3d (planche, volant, compteurs, écran carte, essuie-glaces, carrosserie de WFS-197/201/202 ; seule reprise : couleur clé du banc) ; champ de vision cockpit = `configgame` (72° en hauteur, au lieu de 85° en largeur ≈ 46° en hauteur) ; **RG-06** : tous les matériaux du cockpit (`vehicule_cockpit.cpp` `deuxFaces`, cockpit commun de `camera_vue.cpp`) en `MAT_DOUBLE` : la planche était transparente depuis WFS-246 (ad94d9d0, faces arrière retirées des opaques sans `MAT_DOUBLE`) ; `test_regard_cockpit` adapté. À l'écran : plus de rue, planche et volant à leur taille d'avant, **planche opaque** (plus de route visible au travers), jour et nuit.
+- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : 62 tests CPU verts ; parcours complet en vue Cockpit 0 écart (après la correction) ; banc `cockpit` avant (main) / après : Golf, SF90, X5, Corsa (jour, virage, braquage, carte, pluie, nuit, nuit-virage) ; cause vérifiée par essais (sans masquage : identique ; parent de 66fdd3d : déjà transparente ; WFS-201 : opaque).
+- **Limites et risques connus** : rétroviseur noir qui pend du pavillon et planche sombre la nuit : RG-03 / RG-04, dans la PR suivante du ticket ; capture départ de nuit Plage 2340×1080 : PR suivante ; d'autres géométries construites par code ont pu perdre des faces depuis WFS-246 (signalé au PO, hors zone).
 
 ## Captures pour le lead dev (28 après)
 
