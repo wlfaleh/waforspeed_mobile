@@ -5,6 +5,7 @@
 //  - mur (boîte) pris en biais à 30° : la voiture glisse le long, tourne, garde une partie de sa vitesse (RG-03) ;
 //  - petit objet (poubelle, cylindre de 30 cm) : fixe comme son image ; la voiture s'arrête ;
 //  - sans obstacle : aucune réaction (RG-05, pas de mur invisible) ; déterminisme.
+//  - chaque essai dans les deux modèles de conduite (g_conduiteMonde vrai, puis faux).
 // usage : test_chocs
 #include <cmath>
 #include <cstdio>
@@ -19,7 +20,7 @@ static int echecs = 0;
 
 struct Res { double capMax = 0, vMinApresChoc = 1e9, vAvant = 0, vApres = 0, penetration = 0, capFinal = 0, distFinale = 0; int chocs = 0; };
 
-// la Golf part à `kmh` sur la ligne droite de départ de la Ville, sans commande ; obstacle o posé à `devant` m, latéral `lat` m
+// la Golf part à `kmh` sur la ligne droite de départ de la Ville, gaz tenu jusqu'au choc puis sans commande ; obstacle o posé à `devant` m, latéral `lat` m
 static Res essai(Track& t, double kmh, chocs::Obstacle o, double devant, double lat, bool poser = true) {
     chocs::registre().preparer((int64_t)t.segmentCount());
     Player p; p.reset(carById("golf")); p.aide = Aide::Desactivee;
@@ -34,7 +35,8 @@ static Res essai(Track& t, double kmh, chocs::Obstacle o, double devant, double 
     Res r; r.vAvant = kmh;
     for (int n = 0; n < 120 * 6; n++) {
         const int n0 = p.chocsDecor.n;
-        p.update(1.0 / 120, DriveInput{}, t, true);
+        DriveInput in; in.gas = r.chocs == 0 && p.chocsDecor.n == 0 && p.kmh() < kmh;   // vitesse tenue jusqu'au premier choc (la conduite d'avant freine en roue libre)
+        p.update(1.0 / 120, in, t, true);
         if (p.chocsDecor.n > 0) { r.capMax = std::max(r.capMax, std::abs(p.heading)); if (p.chocsDecor.n > n0) r.vMinApresChoc = std::min(r.vMinApresChoc, std::abs(p.kmh())); }
         // pénétration : distance du centre de l'obstacle au rectangle de la voiture (négative si dedans)
         if (poser) {
@@ -47,8 +49,11 @@ static Res essai(Track& t, double kmh, chocs::Obstacle o, double devant, double 
     return r;
 }
 
-int main() {
-    static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+// mêmes essais avec la conduite réelle (g_conduiteMonde vrai) et la conduite d'avant (faux) : la réaction au choc est derrière
+// l'interface de Player, commune aux deux modèles
+static void essais(Track& t, bool monde) {
+    g_conduiteMonde = monde;
+    std::printf("--- conduite %s ---\n", monde ? "réelle (coordonnées du monde)" : "d'avant (par rapport à la route)");
     chocs::Obstacle poteau; poteau.forme = chocs::Forme::Cylindre; poteau.r = 0.15; poteau.genre = chocs::Genre::Poteau;
     for (double kmh : {30.0, 80.0, 150.0}) {
         const Res r = essai(t, kmh, poteau, 40, 0.3);
@@ -86,6 +91,13 @@ int main() {
         const Res a = essai(t, 80, poteau, 40, 0.3), b = essai(t, 80, poteau, 40, 0.3);
         VERIFIE(a.vApres == b.vApres && a.capFinal == b.capFinal && a.distFinale == b.distFinale, "choc non déterministe");
     }
+}
+
+int main() {
+    static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+    essais(t, true);
+    essais(t, false);
+    g_conduiteMonde = true;
     std::printf("chocs avec le décor (WFS-256) : %s\n", echecs ? "ÉCHEC" : "OK");
     return echecs ? 1 : 0;
 }

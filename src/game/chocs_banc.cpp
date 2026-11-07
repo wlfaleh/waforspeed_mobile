@@ -1,7 +1,7 @@
 // WaForSpeed — banc des chocs avec le décor (WFS-256, WFS_BANC=chocs ; RG-06). Pour chaque carte (Ville, Corniche, Campagne,
 // Grand Prix), la vraie partie est chargée (les cartes déclarent leurs objets solides : chocs_cartes.cpp, plage.cpp,
 // decor_carte.cpp), puis :
-//  - mesures sans GPU (chocs_banc.h) : tours complets au pilote sans choc (aucun mur invisible) ; chaque genre d'objet à portée
+//  - mesures sans GPU (chocs_banc.h), dans les deux modèles de conduite (g_conduiteMonde vrai puis faux) : tours complets au pilote sans choc (aucun mur invisible) ; chaque genre d'objet à portée
 //    arrêté à 30, 80 et 150 km/h ; tableau dans chocs.txt ;
 //  - captures chocs-<carte>-0 / -1 / -2 : la voiture lancée à 60 km/h sur le premier poteau (ou mur) à portée : avant le choc,
 //    au choc, 1 s après (dans la partie : décor, caméra de poursuite, HUD).
@@ -21,7 +21,7 @@ namespace wfs {
 int benchChocs(Game& g, Renderer& r, const std::string& out) {
     ui::chargerPolice(r);
     int ecarts = 0; std::string rapport;
-    const bool reglesAvant = courseBenchRulesOn(), aideAvant = reglagesConduite().aideDirection;
+    const bool reglesAvant = courseBenchRulesOn(), aideAvant = reglagesConduite().aideDirection, mondeAvant = g_conduiteMonde;
     double temps = 8000;
     for (const char* carte : {"ville", "plage", "campagne", "circuit"}) {
         courseBenchRules(true);
@@ -29,7 +29,12 @@ int benchChocs(Game& g, Renderer& r, const std::string& out) {
         // 1) chargement réel de la carte (registre rempli), mesures sans GPU sur la même piste
         if (!g.init(r, "golf", carte)) { WFS_ERR("chocs : chargement de %s impossible", carte); ecarts++; continue; }
         Track& t = banc_conduite::piste(carte);
-        ecarts += banc_chocs::mesurer(t, mapById(carte), rapport);
+        for (bool monde : {true, false}) {   // conduite réelle, puis conduite d'avant : même réaction au choc (interface de Player)
+            g_conduiteMonde = monde;
+            rapport += monde ? "# conduite réelle (g_conduiteMonde vrai)\n" : "# conduite d'avant (g_conduiteMonde faux)\n";
+            ecarts += banc_chocs::mesurer(t, mapById(carte), rapport);
+        }
+        g_conduiteMonde = mondeAvant;
         // 2) obstacle visé pour les captures : premier poteau (sinon mur) à portée, assez loin du départ
         const auto& ps = chocs::registre().parSegment();
         int64_t seg = -1; chocs::ObstacleRoute cible{};

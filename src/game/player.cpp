@@ -66,6 +66,9 @@ void Player::reset(const CarDef& c) {
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
     if (modeleMonde()) { updateMonde(dt, in, track, playing); return; }   // WFS-241 : voiture du joueur, conduite réaliste
+    // WFS-256 : voiture du joueur en conduite d'avant (g_conduiteMonde faux) : pose de départ pour les chocs avec le décor
+    const bool chocsDecorActifs = aide != Aide::Web && chocs::registre().taille() > 0;
+    const double dAvant = dist, xAvant = playerX, capAvant = heading;
     const Segment& seg = track.findSegment(position);
     const double speedPct = speed / MAX_SPEED;
 
@@ -160,6 +163,22 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
         speed *= 1 - dt * 2;
     }
     speed = clampd(speed, REV_MAX, MAX_SPEED * 1.6);
+    if (chocsDecorActifs) {   // WFS-256 : même test continu et même réaction que la conduite réelle, sur la pose dans le monde
+        const TrackPoint A = track.pointLisse(dAvant, xAvant * RW), B = track.pointLisse(dist, playerX * RW);
+        double x = B.x, z = B.z, cap = B.th + heading, r = 0;
+        const double u = speed * M, sn = std::sin(cap), cs = std::cos(cap);
+        double vx = u * sn, vz = -u * cs;
+        const physique::Params& P = physique::params(*car);   // masse et inertie de la fiche (la conduite d'avant n'en change pas)
+        if (heurter(track, A.x, A.z, A.th + capAvant, x, z, cap, vx, vz, r, P.masse, P.Iz)) {
+            // la conduite d'avant n'a pas de vitesse de travers : la voiture prend la direction de sa vitesse après le choc
+            // (le long du mur), ou garde son cap si elle est renvoyée en arrière (poteau pris de face)
+            const double avance = vx * std::sin(cap) - vz * std::cos(cap), v = std::hypot(vx, vz);
+            const double capAligne = std::atan2(vx, -vz);
+            if (avance > 0 && v > 1.0 && !enfonceParPivot(x, z, cap, capAligne)) { cap = capAligne; speed = std::min(v / M, MAX_SPEED * 1.6); }
+            else speed = clampd(avance / M, REV_MAX, MAX_SPEED * 1.6);
+            projeterPose(track, x, z, cap);
+        }
+    }
 }
 
 // ================================================================ WFS-241 : conduite en coordonnées du monde
@@ -186,19 +205,21 @@ double Player::braquagePour(double k, double v) const {
 }
 
 // position et cap réels → projection sur la route (tracé lissé, celui du rendu : la voiture est dessinée exactement où elle est)
-void Player::projeter(Track& t) {
+void Player::projeter(Track& t) { projeterPose(t, monde.x, monde.z, monde.cap); }
+
+void Player::projeterPose(Track& t, double x, double z, double cap) {
     double s = dist;
     TrackPoint C{};
     for (int i = 0; i < 6; i++) {   // point de la ligne de la route le plus proche (Newton, converge en 2 ou 3 tours)
         C = t.pointLisse(s, 0);
-        const double e = (monde.x - C.x) * std::sin(C.th) - (monde.z - C.z) * std::cos(C.th);
+        const double e = (x - C.x) * std::sin(C.th) - (z - C.z) * std::cos(C.th);
         s += e / M;
         if (std::abs(e) < 1e-6) break;
     }
     C = t.pointLisse(s, 0);
     dist = s; position = t.wrap(s);
-    playerX = ((monde.x - C.x) * std::cos(C.th) + (monde.z - C.z) * std::sin(C.th)) / RW;
-    heading = std::remainder(monde.cap - C.th, 2 * PI_D);
+    playerX = ((x - C.x) * std::cos(C.th) + (z - C.z) * std::sin(C.th)) / RW;
+    heading = std::remainder(cap - C.th, 2 * PI_D);
 }
 
 // un système a déplacé la voiture par la route (choc du trafic, remise en piste, départ, reset) : la voiture est replacée
@@ -228,30 +249,42 @@ void Player::synchroniser(Track& t) {
 
 // WFS-256 : test continu tous les 10 cm du déplacement du pas (rien ne se traverse, même à 300 km/h), puis réaction
 // d'un corps rigide (chocs_decor.h) au premier contact ; le reste du déplacement du pas est abandonné
-void Player::heurter(Track& track, double x0, double z0, double cap0) {
+bool Player::heurter(Track& track, double x0, double z0, double cap0, double& x, double& z, double& cap, double& vx, double& vz, double& r,
+                     double m, double Iz) {
     const chocs::Registre& reg = chocs::registre();
-    if (reg.taille() == 0) return;
-    const double hl = car->d.L / 2, hw = car->d.W / 2, pas = std::hypot(monde.x - x0, monde.z - z0);
+    if (reg.taille() == 0) return false;
+    const double hl = car->d.L / 2, hw = car->d.W / 2, pas = std::hypot(x - x0, z - z0);
     // obstacles du voisinage (une fois par pas) : à moins de la demi-diagonale de la voiture + le déplacement du pas
     obstaclesProches_.clear();
     reg.autour(track, dist, std::hypot(hl, hw) + pas + 1.0, [&](const chocs::Obstacle& o) { obstaclesProches_.push_back(o); });
-    if (obstaclesProches_.empty()) return;
-    const double x1 = monde.x, z1 = monde.z, cap1 = monde.cap;
+    if (obstaclesProches_.empty()) return false;
+    const double x1 = x, z1 = z, cap1 = cap;
     const int n = std::max(1, (int)std::ceil(pas / 0.10));
     for (int k = 1; k <= n; k++) {
-        const double t = (double)k / n, cap = cap0 + (cap1 - cap0) * t;
+        const double t = (double)k / n, ck = cap0 + std::remainder(cap1 - cap0, 2 * PI_D) * t;
         double px = x0 + (x1 - x0) * t, pz = z0 + (z1 - z0) * t;
         bool touche = false;
         for (const chocs::Obstacle& o : obstaclesProches_) {
-            const chocs::Contact c = chocs::contact(px, pz, cap, hl, hw, o);
+            const chocs::Contact c = chocs::contact(px, pz, ck, hl, hw, o);
             if (!c.touche) continue;
-            if (!touche) { monde.x = px; monde.z = pz; monde.cap = cap; touche = true; }   // la voiture s'arrête au premier contact du pas
-            const chocs::Reponse r = chocs::reagir(monde.x, monde.z, monde.vx, monde.vz, monde.r, cm_->masse, cm_->Iz, c, o);
-            px = monde.x; pz = monde.z;
-            if (r.choc) { chocsDecor.n++; if (r.impact > chocsDecor.impact) { chocsDecor.impact = r.impact; chocsDecor.genre = r.genre; } }
+            if (!touche) { x = px; z = pz; cap = ck; touche = true; }   // la voiture s'arrête au premier contact du pas
+            const chocs::Reponse rp = chocs::reagir(x, z, vx, vz, r, m, Iz, c, o);
+            px = x; pz = z;
+            if (rp.choc) { chocsDecor.n++; if (rp.impact > chocsDecor.impact) { chocsDecor.impact = rp.impact; chocsDecor.genre = rp.genre; } }
         }
-        if (touche) return;
+        if (touche) return true;
     }
+    return false;
+}
+
+// WFS-256 (conduite d'avant) : pivoter la voiture sur place de cap0 à cap1 l'enfoncerait-il dans un obstacle voisin ?
+bool Player::enfonceParPivot(double x, double z, double cap0, double cap1) const {
+    const double hl = car->d.L / 2, hw = car->d.W / 2;
+    for (const chocs::Obstacle& o : obstaclesProches_) {
+        const chocs::Contact a = chocs::contact(x, z, cap0, hl, hw, o), b = chocs::contact(x, z, cap1, hl, hw, o);
+        if (b.touche && b.prof > (a.touche ? a.prof : 0) + 0.005) return true;
+    }
+    return false;
 }
 
 // aide à la direction (activée) : angle de roues ajouté pour suivre la voie où le joueur a laissé la voiture (poursuite
@@ -318,7 +351,7 @@ void Player::updateMonde(double dt, const DriveInput& in, Track& track, bool pla
     sol.pente = track.pointLisse(dist, playerX * RW).slope * std::cos(heading);
     const double x0 = monde.x, z0 = monde.z, cap0 = monde.cap;
     physique::pas(P, monde, c, sol, dt);
-    heurter(track, x0, z0, cap0);   // WFS-256 : chocs avec le décor, sans rien traverser entre deux pas
+    heurter(track, x0, z0, cap0, monde.x, monde.z, monde.cap, monde.vx, monde.vz, monde.r, P.masse, P.Iz);   // WFS-256 : chocs avec le décor
     projeter(track);
 
     // glissière (bord de la carte) : la voiture glisse le long, sa vitesse vers l'extérieur est annulée, son cap redressé
