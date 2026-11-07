@@ -3,6 +3,7 @@
 // puces 2 / 4 / 6 / 10 km), Poursuite (« Bientôt », WFS-111) et Duel (→ salon). « Continuer » lance le parcours habituel
 // (garage, terrain, course) ; « Retour » referme le panneau. Le mode et la distance sont gardés dans la sauvegarde.
 #include <algorithm>
+#include <cstdlib>   // WFS-202 : std::getenv
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -246,7 +247,9 @@ void choixModeBanc(bool force) { g_forceBanc = force; if (!force) g_ouvert = fal
 // Captures parcours-mode, parcours-terrain, parcours-course. Rend le nombre d'écarts (0 = parcours conforme).
 int benchParcours(Game& g, Renderer& r, const std::string& out) {
     courseBenchRules(true);
-    if (!g.init(r, "golf", "ville")) { courseBenchRules(false); WFS_ERR("parcours : chargement impossible"); return 1; }
+    // WFS-202 (accroche, RG-09) : voiture du parcours dans WFS_VOITURE (garage, course en vue Cockpit) ; sans variable : la Golf
+    const char* voiture = std::getenv("WFS_VOITURE") && *std::getenv("WFS_VOITURE") ? std::getenv("WFS_VOITURE") : "golf";
+    if (!g.init(r, voiture, "ville")) { courseBenchRules(false); WFS_ERR("parcours : chargement impossible"); return 1; }
     g.setAutopilot(false); g.camMode = 0;
     choixModeBanc(true);
     double t = 1500;

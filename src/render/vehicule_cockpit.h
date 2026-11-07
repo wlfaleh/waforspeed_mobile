@@ -51,6 +51,7 @@ struct InterieurDef {
     bool molettes = false;           // WFS-201 : deux molettes sur les branches (Model 3)
     bool palettesColonne = false;    // WFS-201 : palettes fixées sur la colonne, elles ne tournent pas avec le volant (Giulia, Gallardo)
     bool repereHaut = false;         // WFS-201 : repère de couleur à midi sur la jante (A 45)
+    bool boutonsBranches = false;    // WFS-202 : boutons de la couleur du repère sur les branches (Elantra N : boutons N bleus)
 };
 
 // WFS-201 (RG-07) : hauteur des yeux assis d'ANSUR-II (references/reel/anthropometrie.json, humain.*.eyeheightsitting) :

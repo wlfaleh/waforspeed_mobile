@@ -369,11 +369,14 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         cylindre(mo, rotateX(PI / 2) * translate({0, -0.012f, 0}), 0.072f, 0.078f, 0.05f, 28);   // moyeu (coussin du sac gonflable)
         // branches : 3 (à 9 h, 3 h et 6 h) ou 2 (à 9 h et 3 h, SF90 : branches larges qui portent les commandes)
         const float hub = 0.07f;
-        std::vector<float> angles = d.branches == 2 ? std::vector<float>{0.f, PI} : std::vector<float>{0.f, PI, -PI / 2};
+        // WFS-202 : 4 branches (Range Rover Sport) : deux presque horizontales, deux en V vers le bas
+        std::vector<float> angles = d.branches == 2 ? std::vector<float>{0.f, PI}
+                                  : d.branches == 4 ? std::vector<float>{0.10f, PI - 0.10f, -PI / 2 + 0.45f, -PI / 2 - 0.45f}
+                                                    : std::vector<float>{0.f, PI, -PI / 2};
         for (float a : angles) {
             const vec2 bout = ligneJante(a, R, d.meplat, d.meplatHaut);
             const float l = std::sqrt(bout.x * bout.x + bout.y * bout.y) - hub;
-            const float large = d.branches == 2 ? 0.060f : (a == -PI / 2 ? 0.032f : 0.040f);
+            const float large = d.branches == 2 ? 0.060f : d.branches == 4 ? (a < 0 ? 0.026f : 0.036f) : (a == -PI / 2 ? 0.032f : 0.040f);
             boite(br, rotateZ(a) * translate({hub + l * 0.5f, 0, -0.008f}), l, large, 0.016f);
         }
         // coutures colorées en bas de la jante (M4 : bleu clair, bleu foncé, rouge), de part et d'autre de la branche basse
@@ -385,7 +388,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             }
         // repère : M4 (boutons M1 / M2 rouges sur les branches), Golf (agrafe GTI rouge sur la branche basse), SF90 (rouge à midi)
         if (d.repereCol) {
-            if (coutures) for (float sx : {-1.f, 1.f}) boite(rep, translate({sx * 0.105f, 0.018f, 0.012f}), 0.022f, 0.014f, 0.008f);
+            if (coutures || d.boutonsBranches) for (float sx : {-1.f, 1.f}) boite(rep, translate({sx * 0.105f, 0.018f, 0.012f}), 0.022f, 0.014f, 0.008f);
             else if (d.manettino || d.repereHaut) boite(rep, translate({0, R + rt * 0.2f, 0.004f}), 0.012f, rt * 2.1f, rt * 2.1f);
             else if (!d.demarreur) boite(rep, translate({0, -R * 0.55f, 0.010f}), 0.045f, 0.012f, 0.004f);   // Giulia : le rouge est le démarreur
         }
