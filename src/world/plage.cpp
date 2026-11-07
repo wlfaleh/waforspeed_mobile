@@ -32,6 +32,7 @@
 #include "../game/trace_cartes.h"
 #include "../game/track.h"
 #include "../render/eclairage.h"
+#include "giratoire.h"   // WFS-248 : giratoire reconstruit
 #include "../render/renderer.h"
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 #include "enseignes.h"   // WFS-180 : vie::Baigneur (danseurs et joueurs pour les piétons), vie::hauteurSable
@@ -163,7 +164,9 @@ constexpr float STIPE_K = 1.5f, STIPE_E = 0.8f;   // ANO-13 : gain d'albédo et 
 // WFS-180 : P_GUIRL ampoules des guirlandes, P_FILET filet de beach-volley (transparent)
 enum Part { P_UNI, P_OCEAN, P_STIPE, P_PALME, P_SECHE, P_NEON, P_ROC, P_ACIER, P_SODIUM, P_ROUTE, P_VOUTE, P_GUIRL, P_FILET,
            // WFS-181 : chaume, bois, vitrages (3000 K, 4000 K la nuit), néon du casino, textes des enseignes (3 couleurs)
-           P_PAILLE, P_BOIS, P_VITRINE, P_VITRINE_F, P_NEONR, P_TXT_CHAUD, P_TXT_ROSE, P_TXT_FROID, P_COUNT };
+           P_PAILLE, P_BOIS, P_VITRINE, P_VITRINE_F, P_NEONR, P_TXT_CHAUD, P_TXT_ROSE, P_TXT_FROID,
+           P_TROTTOIR, P_GIR,   // WFS-248 : trottoirs de Game redessinés ici (coupés au giratoire), asphalte de l'anneau
+           P_COUNT };
 constexpr int AHEAD = 22, BEHIND = 2;
 constexpr double LOD_FAR_M = 200;     // au-delà : palmiers allégés, petits objets (parasols) non dessinés
 constexpr float OCEAN_Y = -1.75f;     // niveau de la mer sous la route (le sable mouillé y plonge)
@@ -544,6 +547,8 @@ public:
         mats_[P_SODIUM] = r.makeMaterial(ms, nullptr, nullptr, nullptr);
         Material mo; mo.flags = MAT_ROAD; mo.rough = 0.8f;   // même surface procédurale que la chaussée de Game
         mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, mo);   // WFS-205 (accroche)
+        mats_[P_GIR] = route::creerMateriau(r, route::chaussee(), mo);   // WFS-248 : anneau du giratoire = chaussée de la route
+        { Material mw; mw.flags = MAT_WALK; mw.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, mw); }   // comme le trottoir de Game
         // lentilles du feu tricolore : éteinte (verre sombre), rouge, orange, vert (LED, allumées)
         Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
         lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);
@@ -583,7 +588,7 @@ public:
         const int64_t L = len_;
         sol_.assign((size_t)L, S_PLAGE); cache_.assign((size_t)L, 0);
         touche_.assign((size_t)L * 2, 1e9f); autreY_.assign((size_t)L * 2, 0.f);
-        feux_.clear(); tunDeb_ = tunFin_ = rpSeg_ = rpDeb_ = rpFin_ = rpEntree_ = -1;
+        feux_.clear(); tunDeb_ = tunFin_ = rpSeg_ = rpDeb_ = rpFin_ = rpEntree_ = -1; gir_ = {};   // WFS-248
         const auto& S = trace::sections(t);
         if (S.empty()) return;   // tracé 1 : décor d'avant, inchangé
         // centres de la route (tour 1, avec la fin du tour 0 et le début du tour 2) dans une grille de 16 m
@@ -635,6 +640,9 @@ public:
                 rpSeg_ = (rpSeg_ + f) / 2;
                 for (int64_t n = s.debut + 1; n < s.fin && rpEntree_ < 0; n++)   // WFS-223 : entrée de l'anneau (la courbure change de sens)
                     if (t.segAt(n).curve * t.segAt(s.debut + 2).curve < 0) rpEntree_ = n;
+                gir_ = giratoire::calculer(t, s);   // WFS-248 : ouvrage reconstruit
+                if (gir_.ok) WFS_LOG("Corniche : giratoire reconstruit au segment %lld (axe à ±%.2f m du cercle) (WFS-248)", (long long)s.debut, gir_.ecartAxe);
+                else WFS_ERR("Corniche : giratoire du segment %lld non reconnu (WFS-248)", (long long)s.debut);
             }
             if (s.type == trace::Type::Feux && !s.depart) {
                 const int64_t croise = s.ligneArret + (int64_t)std::lround(trace::CARREFOUR_M / SEG_M);
@@ -704,6 +712,10 @@ public:
     // objets : jamais à moins d'1 m d'une autre chaussée (≥ RW + 1 m, RG-C1), ni au-delà du rayon intérieur ;
     // vérifié sur toute la longueur de l'objet (±demi-longueur)
     bool placeLibre(Track& t, int64_t n, int side, float lat, float ext, float demiLong = 2.f) const {
+        if (gir_.ok) {   // WFS-248 : rien sur le giratoire reconstruit (lampadaires, palmiers, parasols, objets)
+            const TrackPoint q = t.point((double)n * SEG, side * lat);
+            if (giratoire::dansOuvrage(gir_, {(float)q.x, 0, (float)q.z}, ext + 0.3f)) return false;
+        }
         if (touche_.empty()) return true;
         const int64_t w = (int64_t)std::ceil(demiLong / SEG_M);
         for (int64_t k = n - w; k <= n + w; k += std::max<int64_t>(1, w / 3)) {
@@ -1055,6 +1067,8 @@ public:
     }
 
     bool remplaceSol(const GameView&) const override { return active_; }
+    // WFS-248 : trottoirs de Game dessinés ici (même calcul) pour les couper sur le giratoire (ils traversaient l'anneau)
+    bool remplaceTrottoir(const GameView& g) const override { return active_ && gir_.ok && !g.sceneDediee && g.player; }
 
     // ambiance de la plage (envFor) : brouillard plus loin de jour, nuit bleutée
     void ambiance(FrameParams& fp, const GameView& g) override {
@@ -1866,7 +1880,7 @@ public:
                 }
             }
         }
-        if (rpEntree_ >= 0 && mod(a) == mod(rpEntree_)) {   // WFS-223 (RG-02) : ligne de cédez-le-passage (T'2) à l'entrée de
+        if (!gir_.ok && rpEntree_ >= 0 && mod(a) == mod(rpEntree_)) {   // WFS-248 : remplacé par le cédez-le-passage du giratoire ;   // WFS-223 (RG-02) : ligne de cédez-le-passage (T'2) à l'entrée de
             // l'anneau : traits de 0,50 m, intervalles de 0,50 m, 0,50 m d'épaisseur, enduit blanc (albédo 0,74)
             const Pose& p0 = t.pose(a); const Pose& p1 = t.pose(a + 1);
             auto L = [&](const Pose& q, float x) { return vec3{(float)(q.x + std::cos(q.th) * x), (float)q.y + 0.016f, (float)(q.z + std::sin(q.th) * x)}; };
@@ -1879,16 +1893,20 @@ public:
         if (rpSeg_ >= 0 && mod(a) == mod(rpSeg_)) {   // îlot du rond-point : gazon, ancre géante, trois palmiers
             const Pose& p = t.pose(a);
             const double c = t.segAt(a).curve, rr = SEG_M / (std::abs(c) * CURVE_K), kc = c > 0 ? 1 : -1;
-            const vec3 ctr{(float)(p.x + std::cos(p.th) * rr * kc), (float)p.y, (float)(p.z + std::sin(p.th) * rr * kc)};
-            const float ri = (float)(rr - RW - 4) - 0.1f;   // bord intérieur du trottoir de l'anneau
+            // WFS-248 : centre et îlot (8 m, bordure et gazon) de l'ouvrage reconstruit ; repli : îlot de WFS-139
+            const vec3 ctr = gir_.ok ? gir_.c : vec3{(float)(p.x + std::cos(p.th) * rr * kc), (float)p.y, (float)(p.z + std::sin(p.th) * rr * kc)};
+            const float ri = gir_.ok ? giratoire::R_ILOT : (float)(rr - RW - 4) - 0.1f;   // bord intérieur du trottoir de l'anneau
+            const float hI = gir_.ok ? giratoire::H_BORDURE : 0.25f;
             if (ri > 1.f) {
-                cylinder(out[P_UNI], ctr, ri, 0.25f, 20, palUv(C_PROM));   // bordure
-                for (int k = 0; k < 20; k++) {   // gazon
-                    const float a0 = 2 * PI * k / 20, a1 = 2 * PI * (k + 1) / 20;
-                    tri(out[P_UNI], ctr + vec3{0, 0.25f, 0}, ctr + vec3{std::cos(a1) * ri, 0.25f, std::sin(a1) * ri}, ctr + vec3{std::cos(a0) * ri, 0.25f, std::sin(a0) * ri}, palUv(C_GAZON));
+                if (!gir_.ok) {
+                    cylinder(out[P_UNI], ctr, ri, 0.25f, 20, palUv(C_PROM));   // bordure
+                    for (int k = 0; k < 20; k++) {   // gazon
+                        const float a0 = 2 * PI * k / 20, a1 = 2 * PI * (k + 1) / 20;
+                        tri(out[P_UNI], ctr + vec3{0, 0.25f, 0}, ctr + vec3{std::cos(a1) * ri, 0.25f, std::sin(a1) * ri}, ctr + vec3{std::cos(a0) * ri, 0.25f, std::sin(a0) * ri}, palUv(C_GAZON));
+                    }
                 }
                 // ancre marine monumentale (4 m) : verge, jas, organeau, bras et pattes ; acier peint
-                const vec3 b = ctr + vec3{0, 0.25f, 0}, X{1, 0, 0}, Z{0, 0, 1};
+                const vec3 b = ctr + vec3{0, hI, 0}, X{1, 0, 0}, Z{0, 0, 1};
                 box(out[P_UNI], b, X, Z, 0.14f, 0.14f, 3.6f, palUv(C_ANCRE));
                 box(out[P_UNI], b + vec3{0, 3.0f, 0}, Z, X, 0.1f, 1.1f, 0.2f, palUv(C_ANCRE));   // jas, en travers des bras
                 ball(out[P_UNI], b + vec3{0, 3.85f, 0}, {0.3f, 0.3f, 0.08f}, palUv(C_ANCRE));
@@ -1901,7 +1919,7 @@ public:
                 }
                 Mulberry32 Rn(4242);
                 for (int k = 0; k < 3; k++) {
-                    const float an = 2 * PI * k / 3 + 0.5f, d = std::min(ri - 0.4f, 1.7f);
+                    const float an = 2 * PI * k / 3 + 0.5f, d = gir_.ok ? ri - 2.5f : std::min(ri - 0.4f, 1.7f);   // WFS-248 : îlot de 8 m
                     veg::palmier(out[P_STIPE], out[P_PALME], out[P_SECHE], ctr + vec3{std::cos(an) * d, 0.2f, std::sin(an) * d}, 7.f + k * 0.8f, an, 0.08f, Rn, lod);
                 }
             }
@@ -1927,6 +1945,48 @@ public:
         }
     }
 
+    // WFS-248 : trottoirs de Game (Game::buildChunkCpu, bande 1 : bordure de 15 cm de RW à RW + 4, repliée à 90 % du rayon
+    // intérieur des courbes serrées), même calcul que la Ville (trottoirChunk) ; un triangle posé sur le giratoire n'est pas gardé
+    void trottoirs(Track& t, int64_t c, Geo& W) const {
+        const int64_t a0 = c * CH;
+        const float R = (float)RW, WALK_W = 4.0f, CURB_H = 0.15f;
+        Geo G;
+        auto strip = [&](const std::vector<std::pair<float, float>>& prof) {
+            const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)G.v.size();
+            for (int i = 0; i <= CH; i++) {
+                const double s = (double)(a0 + i) * SEG;
+                const trace::Rayon ri = trace::rayonInterieur(t, s);
+                for (uint32_t k = 0; k < cols; k++) {
+                    const float lat = prof[k].first, lim = (float)(0.9 * (lat > 0 ? ri.droite : ri.gauche));
+                    TrackPoint p = t.point(s, ri.m < 60 && std::abs(lat) > lim ? (lat > 0 ? lim : -lim) : lat);
+                    G.v.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
+                }
+            }
+            for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+                const uint32_t q = base + i * cols + k;
+                G.i.insert(G.i.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
+            }
+        };
+        strip({{-R - WALK_W, CURB_H}, {-R - 0.12f, CURB_H}, {-R, CURB_H - 0.02f}, {-R, 0.f}});
+        strip({{R, 0.f}, {R, CURB_H - 0.02f}, {R + 0.12f, CURB_H}, {R + WALK_W, CURB_H}});
+        for (auto& v : G.v) { v.nx = v.ny = v.nz = 0; }
+        for (size_t k = 0; k + 2 < G.i.size(); k += 3) {
+            Vertex &A = G.v[G.i[k]], &B = G.v[G.i[k + 1]], &C = G.v[G.i[k + 2]];
+            const vec3 e1{B.px - A.px, B.py - A.py, B.pz - A.pz}, e2{C.px - A.px, C.py - A.py, C.pz - A.pz};
+            vec3 n = cross(e1, e2);
+            if (n.y < 0 && std::fabs(n.y) > 0.3f * length(n)) n = -n;
+            for (Vertex* x : {&A, &B, &C}) { x->nx += n.x; x->ny += n.y; x->nz += n.z; }
+        }
+        for (auto& v : G.v) { vec3 n = normalize({v.nx, v.ny, v.nz}); if (length(n) < 0.5f) n = {0, 1, 0}; v.nx = n.x; v.ny = n.y; v.nz = n.z; }
+        const uint32_t base = (uint32_t)W.v.size();
+        W.v.insert(W.v.end(), G.v.begin(), G.v.end());
+        for (size_t k = 0; k + 2 < G.i.size(); k += 3) {
+            const Vertex &A = G.v[G.i[k]], &B = G.v[G.i[k + 1]], &C = G.v[G.i[k + 2]];
+            if (giratoire::dansOuvrage(gir_, {(A.px + B.px + C.px) / 3, 0, (A.pz + B.pz + C.pz) / 3}, 0.2f)) continue;
+            W.i.insert(W.i.end(), {base + G.i[k], base + G.i[k + 1], base + G.i[k + 2]});
+        }
+    }
+
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
         const MapDef& map = *t.map();
         const int64_t len = (int64_t)t.segmentCount();
@@ -1934,6 +1994,7 @@ public:
         // sol et mer, segment par segment (WFS-139 : forme du bas-côté selon la section du tracé 2, bandes rabotées au bord
         // permis ; roche texturée, uv en mètres / ROC_TUILE)
         const bool t2 = !trace::sections(t).empty();
+        if (gir_.ok) trottoirs(t, c, out[P_TROTTOIR]);   // WFS-248 : trottoirs de Game (remplaceTrottoir), coupés sur le giratoire
         for (int64_t a = a0; a < a1; a++) {
             const double s0 = (double)a * SEG, s1 = (double)(a + 1) * SEG;
             const float v0 = (float)std::fmod((double)a * SEG_M, 400.0) / ROC_TUILE, v1 = v0 + (float)SEG_M / ROC_TUILE;
@@ -1951,6 +2012,17 @@ public:
                     if (x.col == ROC) {
                         const vec2 ua{u0 / ROC_TUILE, v0}, ub{(u0 + l0) / ROC_TUILE, v0}, uc{(u1 + l1) / ROC_TUILE, v1}, ud{u1 / ROC_TUILE, v1};
                         if (side > 0) quadUv(out[P_ROC], A, B, C, Dd, ua, ub, uc, ud); else quadUv(out[P_ROC], A, Dd, C, B, ua, ud, uc, ub);
+                    } else if (gir_.ok && giratoire::distanceCentre(gir_, P(s0, 0, 0)) < giratoire::R_EXT + (float)RW + 45) {
+                        // WFS-248 : près du giratoire, bande découpée en pas de 1 m : rien sur l'ouvrage reconstruit
+                        const int nc = std::max(1, (int)std::ceil(std::max(x.b - x.a, y.b - y.a)));
+                        for (int k = 0; k < nc; k++) {
+                            auto L = [&](const Band& bb, float f) { return bb.a + (bb.b - bb.a) * f; };
+                            auto H = [&](const Band& bb, float f) { return bb.ya + (bb.yb - bb.ya) * f; };
+                            const float f0 = (float)k / nc, f1 = (float)(k + 1) / nc;
+                            const vec3 a2 = P(s0, L(x, f0), H(x, f0)), b2 = P(s0, L(x, f1), H(x, f1)), c2 = P(s1, L(y, f1), H(y, f1)), d2 = P(s1, L(y, f0), H(y, f0));
+                            if (giratoire::dansOuvrage(gir_, (a2 + b2 + c2 + d2) * 0.25f, 0.2f)) continue;
+                            if (side > 0) quad(out[P_UNI], a2, b2, c2, d2, palUv(x.col)); else quad(out[P_UNI], a2, d2, c2, b2, palUv(x.col));
+                        }
                     } else if (side > 0) quad(out[P_UNI], A, B, C, Dd, palUv(x.col)); else quad(out[P_UNI], A, Dd, C, B, palUv(x.col));   // face vers le haut
                     u0 += l0; u1 += l1;
                 }
@@ -1962,6 +2034,17 @@ public:
                 quad(out[P_OCEAN], Q(s0, m0), Q(s0, f0), Q(s1, f1), Q(s1, m1), {0, 0});
             }
             if (t2) decorFalaise(t, a, lod, out);
+            if (gir_.ok && mod(a) == mod((gir_.entree + gir_.sortie) / 2)) {   // WFS-248 : l'ouvrage reconstruit
+                std::vector<giratoire::Tri> tris; giratoire::geometrie(gir_, t, tris);
+                const int col[giratoire::NB_SURFACES] = {C_PROM, C_ENDUIT, C_PROM, C_PROM, C_GAZON};
+                for (const giratoire::Tri& tr : tris) {
+                    if (tr.s != giratoire::ASPHALTE) { tri(out[P_UNI], tr.a, tr.b, tr.c, palUv(tr.s == giratoire::MARQUAGE ? C_ENDUIT : col[tr.s])); continue; }
+                    Geo& G = out[P_GIR];
+                    const uint32_t k0 = (uint32_t)G.v.size();
+                    for (const vec3& q : {tr.a, tr.b, tr.c}) { const vec2 u = giratoire::uvChaussee(gir_, q); G.v.push_back({q.x, q.y, q.z, 0, 1, 0, u.x, u.y}); }
+                    G.i.insert(G.i.end(), {k0, k0 + 1, k0 + 2});
+                }
+            }
             for (const Bouchon& bo : bouchons_) if (bo.seg == mod(a)) {   // WFS-212 (RG-03) : sol fermé au centre de l'épingle
                 const int N = 16;
                 for (int k = 0; k < N; k++) {
@@ -2055,7 +2138,9 @@ public:
         const mat4 I = mat4::identity();
         int draws = 0;
         for (auto& [k, ch] : chunks_) for (int p = 0; p < P_COUNT; p++) if (ch.m[p].indexCount) {
-            if (p == P_ROUTE) r.draw(ch.m[p], mats_[p], I, 4.5f); else r.draw(ch.m[p], mats_[p], I);   // rue transversale : 9 m
+            if (p == P_ROUTE) r.draw(ch.m[p], mats_[p], I, 4.5f);   // rue transversale : 9 m
+            else if (p == P_GIR) r.draw(ch.m[p], mats_[p], I, 100.f);   // WFS-248 : anneau (aucun marquage de la chaussée)
+            else r.draw(ch.m[p], mats_[p], I);
             draws++;
         }
         draws += dessineLentilles(r, t, (int64_t)std::floor(g.player->dist / SEG));
@@ -2128,6 +2213,7 @@ private:
     std::vector<uint8_t> sol_, cache_;   // nature du sol (Sol), côtés à dégager (bit 1 : gauche, 2 : droite)
     std::vector<float> touche_, autreY_;   // [segment · 2 + (côté > 0)] : latéral où l'on touche une autre branche, son altitude
     int64_t tunDeb_ = -1, tunFin_ = -1, rpSeg_ = -1, rpDeb_ = -1, rpFin_ = -1, rpEntree_ = -1;   // rpEntree_ : WFS-223
+    giratoire::Giratoire gir_;   // WFS-248
     struct Bouchon { int64_t seg; vec3 c; float r; int col; };   // WFS-212 : sol au centre d'une épingle
     std::vector<Bouchon> bouchons_;
     struct FeuDecor { int64_t ligne, croise; int feu; };
