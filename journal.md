@@ -2372,3 +2372,6 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-209** : accroche `bench_squelette.cpp` (≈ 30 lignes, banc seulement) validée a posteriori. **WFS-73** : écart à RG-02 (corps entier) accepté. **WFS-211** : extension de `SkinVertex` (tangente) permise en accroche ≤ 10 lignes annoncée au journal.
 - **Correction du tableau** : WFS-210 avait été marqué 🟣 Fusionné (PR #180) par erreur ; remis en ⏳ En attente (la PR #180 ne livre que WFS-209).
 - Anomalies encore 🆕 (ANO-103, 105, 106, 107, 108, 109) : à ranger en lots au prochain passage du PO.
+
+### 2026-11-07 06:57:40 — Statuts automatiques, CI main #809 (robot statuts)
+- Run vert (push, commit 7f344b9) : WFS-73 ✅ (PR #178, 7f344b9).

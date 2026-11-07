@@ -129,7 +129,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 |---|---|---|---|---|---|---|---|---|---|
 | P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | 🔎 Fusionné | Claude (session trafic) | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅ … | `feature/waforspeed-50` | #47 | ⛔ REFUSÉ (SIM-MVP-1 à 4) … |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
-| P2 Haute | WFS-73 | Conducteurs dans les voitures (siège mesuré, buste figé, joueur / trafic / duel), personnages actuels | E0 (+ accroches) | 🟣 Fusionné (PR #178, correctif #179) | Claude, agent 2 (01UY1Vv5), 2026-11-07 05:47 UTC | WFS-19 ✅ | `feature/waforspeed-73` |  |  |
+| P2 Haute | WFS-73 | Conducteurs dans les voitures (siège mesuré, buste figé, joueur / trafic / duel), personnages actuels | E0 (+ accroches) | ✅ Terminé (CI main #809) | Claude, agent 2 (01UY1Vv5), 2026-11-07 05:47 UTC | WFS-19 ✅ | `feature/waforspeed-73` |  |  |
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu | Claude (session trafic) | WFS-78 ✅ | `feature/waforspeed-88` | #76 |  |
 | P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans … | E3 | ⏸ Remplacé par WFS-112 |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
 | P2 Haute | WFS-152 | [RÉALISME 1.2] Lumière : ciel physique, soleil et lune calculés (NOAA), 6 moments + heure … | E13 (+ accroche E8 … | ⏳ En attente (découpée : lot 1 WFS-207 ✅, lot 2 WFS-208 🔧) |  | WFS-151 validée | `feature/waforspeed-152` |  |  |
