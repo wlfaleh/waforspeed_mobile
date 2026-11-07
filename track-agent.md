@@ -26,7 +26,7 @@
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre (WFS-137 : CI main #799 verte) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
-| Claude, session dev 5bx | WFS-223 | P1 : ronds-points des 4 cartes (marquages, îlot, blocs de couleur, raccords) (attribué 10:52) | 223 : 10:52 (f8a46e3) | 🔴 actif (P1) |
+| Claude, session dev 5bx | WFS-223 | P1 : ronds-points (fusionné, PR #192, squash 00be4ab) | 223 : fusionnée 11:27 | 🟢 libre |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 7 fusionnées (PR #157, #162, #163, #166, #167, #186, #187 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille) ; RG-C (X5) signalé au PO | 158 : 10:43 UTC (c1d2e92) ; PR #187 fusionnée par confiance | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), LOD 4 niveaux (ST-4), test strict (ST-5) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 10:23 (9c5d416) | 🔧 en cours (CI de branche) |
 
