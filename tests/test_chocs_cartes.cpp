@@ -12,6 +12,7 @@ using namespace wfs;
 
 int main() {
     int ecarts = 0, c = 0; std::string rapport;
+    const bool mondeDefaut = g_conduiteMonde;   // modèle du jeu, rendu à la fin
     for (bool monde : {true, false}) {   // conduite réelle, puis conduite d'avant : même réaction au choc (interface de Player)
     g_conduiteMonde = monde;
     rapport += monde ? "# conduite réelle (g_conduiteMonde vrai)\n" : "# conduite d'avant (g_conduiteMonde faux)\n";
@@ -28,7 +29,7 @@ int main() {
         for (int n = 0; n < 120 * 60 && p.dist < v.finU + 40 / M; n++) { p.update(1.0 / 120, joueurLigneIdeale(p, t), t, true); c += p.chocsDecor.n; p.chocsDecor = {}; }
     }
     }
-    g_conduiteMonde = true;
+    g_conduiteMonde = mondeDefaut;
     std::fputs(rapport.c_str(), stdout);
     std::printf("virages du banc (ligne idéale) : %d choc(s)\n", c);
     if (c) ecarts++;

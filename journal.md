@@ -3623,3 +3623,129 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Plan court** : branche `feature/waforspeed-261` depuis `main`, commit de début poussé tout de suite ; stéréo d'abord (test « mono identique »), puis sources et distance, puis tunnels, banc audio et parcours. Skills : `agent-developer`, `waforspeed-natif`. Après fusion : 🟣, puis ✅ par le robot (ni essai de l'utilisateur, ni conduite).
 - **Correction** : la colonne Branche de WFS-262 à 265 (créés à 17:14) était décalée d'un numéro (`feature/waforspeed-261` pour WFS-262…) : remise à `feature/waforspeed-262` à `-265`, pour éviter tout mélange avec la branche de WFS-261.
 - Reste au PO : ANO-134 (bloquante, recette du lot 4, WFS-210 REFUSÉ) attend son US de correction.
+
+### 2026-11-07 17:23:49 — Statuts automatiques, CI main #852 (robot statuts)
+- Run rouge (push, commit 0ffe7d0), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-227, WFS-234.
+### 2026-11-07 17:24:24 — Début WFS-242 : départ propre de la Course à 5, attribué à arwa-3 (Claude, session 01Us6uCt) ; WFS-266 créé (ANO-134) (po-scrum-master)
+- **Demande** : arwa-3, nouveau développeur libre (nommé par l'utilisateur), demande un ticket. Aucune exclusion ne le vise.
+- **Choix** (ordre du bandeau) : WFS-247, 246, 230 🔧 ; WFS-249 et WFS-214 (E13 tenue par WFS-230) ; WFS-224 pris par agent arwa (17:19) ; WFS-261 pris par arwa-4 (17:21) ;
+  WFS-262 à 265 (E4, après la fusion de WFS-246). Aucun ticket prêt dans une épic libre. Premier de l'ordre de l'utilisateur encore prêt : **WFS-242** (P1, E3, 7e).
+  **Exception PO** à un ticket actif par épic (même pratique que WFS-224 dans E4) : fichiers vérifiés séparés à 17:23 UTC ; WFS-258 tient `player.*` et la conduite,
+  WFS-235 `camera_vue.*`, WFS-247 `game.cpp`, `track.*`, `camera_vue.*` ; aucune de leurs branches ne touche `src/game/course*` ni `duel*`.
+- **Zone autorisée** : `src/game/course.*`, `course_system.*`, `course5*`, `duel*`, nouveaux tests. **Interdit** : `player.*`, `ressenti.*`, conduite, `game.cpp`, `track.*`, `camera_vue.*`,
+  taille et place des boutons (ordre permanent), iOS (gel). Accroche ≤ 10 lignes annoncée au journal (dans `game.cpp` : bloc séparé de WFS-247, prévenir Agent 0).
+- **Branche** : reprendre `feature/waforspeed-242` (9e7e4a1, 14:30, « Claude, agent dev course », session archivée par l'utilisateur), garder ce code, synchroniser avec `main`, pousser.
+- **Critères** : grille en quinconce sans chevauchement (> 0,5 m au banc), place du joueur variable, chrono à 0:00,0 jusqu'au « GO », pause propre, commandes visibles au « 3 »,
+  même chose au Duel ; captures avant / après, tests CPU, parcours 0 écart, ligne `qa/Check.md`. Règles : `regles-de-gestion/WFS-242.md` (section « Suivi » ajoutée).
+  Pas un ticket de conduite ; né d'une vidéo de l'utilisateur → **🟡 À valider (utilisateur)** après fusion.
+- **ANO-134** (bloquante, recette de WFS-210 REFUSÉE) → **WFS-266** (P2, E11, après WFS-257) : cheveux (réutiliser `cuir_chevelu()` de WFS-233 / 240) et yeux (partie 1) des 12 adultes,
+  bouche sans tache grise, `.wfp` régénérés, enfants inchangés. ANO-134 en 📋 Planifiée ; WFS-210 marqué « ⛔ REFUSÉ en recette → WFS-266 » dans la colonne QA.
+- Tickets prêts après cette attribution : WFS-214, 215, 232, 243, 249, 262, 263, 264, 265, 266 (10, règle des 8 tenue).
+
+### 2026-11-07 17:26:03 — CI de main #852 rouge (banc `realisme`) : US technique WFS-267 créée (po-scrum-master)
+- Run #852 (id 42388998918, 0ffe7d0) : seul `banc-essai (realisme)` rouge, « 354 mesures, 1 erreur(s) » ; indice `couleurs` non mesurable (24 cases) : la scène
+  d'étalonnage n'a rien donné (capture illisible ou chargement en échec, à confirmer). Dernier vert : #844. Run #859 (7a3eedc) en cours.
+- **WFS-267** (P1, [TECHNIQUE], E7 + exception E4 `bench_realisme.cpp`) : RG-00 regarder d'abord #859 ; sinon nommer la cause et la corriger sans affaiblir le banc.
+  **Proposé d'abord à l'agent expert ci** (il tient `bench_realisme.cpp` avec WFS-251 : un autre développeur créerait un conflit) ; pas attribué tant que personne ne le demande.
+  Règles : `regles-de-gestion/WFS-267.md`. arwa-3 garde WFS-242 (attribué à 17:24, avant le passage du robot ; domaine courses).
+
+### 2026-11-07 17:30:58 — WFS-245 : arbitrage des tailles du HUD, à la demande d'arwa-2 (po-scrum-master)
+- Question d'arwa-2 avant de coder (5 points). **RG-01 corrigée** : l'ancienne (« 3,5 mm ≈ 0,9 % de la diagonale ») se contredisait (erreur du PO) et, mesurée
+  sur les capitales, était impossible : dans Rajdhani Bold, capitales et chiffres = 0,504 × la taille de `ui::text` (pas 0,729, qui est la ligne de base) ;
+  3,5 mm demanderait une police 60 % plus grande que le chrono. Mesure gardée en mm sur les capitales, à 420 dpi.
+- **Décision** (à 1080 p) : valeur d'ARRIVÉE ≥ 30 px de chiffres (≥ 1,8 mm ; taille 40 × k) ; étiquettes ≥ 20 px de capitales (≥ 1,2 mm ; 27 × k) ;
+  score 34 → 40 × k ; vitesse cockpit 28 → 40 × k ; chrono 48 et vitesse 44 inchangés. Panneau du temps sur deux lignes (≈ 236 × 86 × k, ≤ 112 × k de haut),
+  KM/H et NITRO **centrés sous les chiffres** dans l'arc (pas à droite : « R · KM/H » couperait l'arc), cases inchangées ; contraste ≥ 4,5 : 1 au pire
+  (étiquettes `#A6ADC2` sur fond 0,85 ; arc : disque 0,72 et `#C4C9D6`). Surfaces par vue après ≤ avant ; aucun bouton ne bouge.
+- Détail chiffré : `regles-de-gestion/WFS-245.md` (RG-01, RG-04, Suivi du 2026-11-07 17:30). Zone : + cadre du temps dans `obstacles()` de `minicarte.h`.
+
+### 2026-11-07 17:33:20 — WFS-268 et WFS-269 créés (P1, tout préparer au chargement), ordre de l'utilisateur via smart-brainstorming (po-scrum-master)
+- Besoin (utilisateur) : le jeu rame, ralentit et chauffe ; tout préparer pendant le chargement de la carte.
+- Déjà couvert, renvoi sans doublon : résolution sans recréation → WFS-246 RG-07 ; cache de pipelines, variantes, envoi GPU et image d'échauffement → WFS-262 RG-01 à 03 ; reflets capturés au chargement → WFS-264 RG-01.
+- **WFS-268** (1/2, ≤ 1 jour) : décor fixe regroupé par tronçon et matériau, instances des objets identiques, ≤ 60 appels de dessin du décor en Ville, 0 création / allocation en course, chargement + ≤ 3 s. E4 avec exception PO (fichiers nouveaux `src/render/lots_decor.*`, accroches ≤ 10 lignes, pas les lignes de WFS-246) pour démarrer tout de suite en parallèle de WFS-246. ⏳ Prêt, en tête de l'ordre de priorité ; proposé d'abord à Claude, agent 5 (libre), pas agent arwa.
+- **WFS-269** (2/2) : occlusion et lumière indirecte du décor fixe précalculées, un jeu par moment (WFS-152) ; WFS-229 gardé. ⏳ En attente de WFS-268 et de E13 (WFS-230).
+- WFS-265 RG-03 : instances du décor et décor regroupé renvoyés à WFS-268 (sans condition) ; rien retiré.
+
+### 2026-11-07 17:35:49 — WFS-258 : repli RG-00 fusionné (#217, squash 04a1628) (Claude, agent dev conduite)
+- `g_conduiteMonde = false` : la voiture du joueur reprend l'ancienne conduite (refus de WFS-241). Le modèle de WFS-241 reste dans le code (rien n'est supprimé). Sons, vibrations et moteur repassent par leur chemin d'avant (prévu quand le modèle du monde est coupé) ; les chocs de WFS-256 marchent avec l'ancien modèle.
+- Banc de conduite : la section 5 (pilote, critère de WFS-241) mesurait le modèle par défaut ; elle choisit désormais le nouveau modèle explicitement. Tests des chocs : rendent le modèle du jeu à la fin.
+- Preuves (local) : 54 tests CPU OK (`test_conduite` 0 écart) ; banc `parcours` (rendu logiciel) 0 écart. Fusion par confiance.
+- Suite : points de l'utilisateur un par un (aide activée qui passe virages et ronds-points, dont le 1er virage du GP à 228 km/h ; direction qui suit le doigt ; sensibilité qui baisse avec la vitesse), sur `feature/waforspeed-258`.
+
+### 2026-11-07 17:35:52 — Début WFS-267 : CI de main rouge (#852, banc `realisme`), attribué à arwa-5 (Claude, session 01Us6uCwsJ63) (po-scrum-master)
+- Demande d'arwa-5 (nouveau développeur, ni arwa-4, ni l'agent 4 stoppé, ni Claude, agent 5) ; l'utilisateur lui a demandé des **petites tâches**.
+- Choix : **WFS-267** (P1, [TECHNIQUE]) : CI de `main` rouge → US technique confiée tout de suite à un développeur libre (`CLAUDE.md`) ; l'agent expert ci tient déjà WFS-251 (un ticket par agent) ; E7 sans ticket 🔧.
+  WFS-268 (en tête de l'ordre, rendu ≤ 1 jour, pas une petite tâche) reste au prochain développeur qui demande. WFS-249 : E13 tenue par WFS-230 (même sujet).
+- Épic E7 + exception E4 : `src/render/bench_realisme.cpp` (**coordination avec l'agent expert ci, WFS-251**), `tools/qa/**` et `.github/workflows/build.yml` seulement si la cause y est. Interdit : iOS, tailles d'interface, affaiblir le banc.
+- Plan court : RG-00 regarder le job `banc-essai (realisme)` du run #859 (id 42395748315, 7a3eedc ; en cours depuis 17:27:52) ; en attendant, banc en local sur `main` (lavapipe) ;
+  sinon nommer la cause (piste : WFS-161 4fe82c8, seul commit de la plage ae49782..0ffe7d0 à toucher `bench_realisme.cpp`) et la corriger ; indice `couleurs` mesuré (24 cases).
+- Fin : RG-00 vert → « ✅ Terminé (CI main #859, RG-00, sans code) » ; sinon PR squash, ✅ par le robot. **Pas de 🟡** (US technique de la CI). CI de branche permise, une à la fois, notée au journal.
+- Règles : `regles-de-gestion/WFS-267.md` (section « Suivi — attribution à arwa-5 »).
+
+### 2026-11-07 17:37:36 — Début : WFS-268 attribué à Claude, agent 5 (po-scrum-master)
+- Ticket : WFS-268 [TECHNIQUE] [URGENT] Tout préparer au chargement (1/2) : décor fixe regroupé et instances, aucune création ni allocation en course. P1, épic E4 (exception PO, en parallèle de WFS-246 tenu par agent dev X). Attribué à sa demande ; en tête de l'ordre de l'utilisateur (17:32 UTC).
+- Zone autorisée : nouveaux `src/render/lots_decor.*`, `tests/lots_decor*` ; accroches ≤ 10 lignes annoncées au journal dans `renderer.cpp` / `renderer.h` (hors des lignes de WFS-246) et au chargement de la carte (`src/world/decor_carte.*` ou le chargement existant), + une entrée CMake pour les nouveaux fichiers.
+- Interdit : lignes de WFS-246 (`resize()`, `makePipeline`, `createScenePipelines`, `appliquerNettete`, `endFrame`, `readShadowTiming`, `shutdown`, `qualite_auto.*`, `qualite_systeme.cpp`, `shaders/scene.frag`), `eclairage_*` et `post.frag` (WFS-230), `pietons.cpp` / `foule_apparition.h` et `Renderer::draw` / `drawSkinned` (WFS-257), `effets_*` (WFS-224), `camera_vue.*` / `vehicule_cockpit*` (WFS-235), `game.*` (WFS-247), `player.*`, `bench_realisme.cpp` (WFS-251 / 267), `nuit.cpp`, iOS.
+- Critères : décor ≤ 60 appels de dessin en Ville ; 0 création / allocation du décor en course sur 20 s ; captures ≤ 1 % d'écart (4 cartes, jour / nuit) ; chargement + ≤ 3 s ; chiffres RG-06 de WFS-246 avant / après ; parcours complet 4 cartes. Après fusion : 🟡 À valider (utilisateur).
+- CI : US technique, CI de branche permise autant que nécessaire, une à la fois, chaque run noté au journal.
+- Règles : `regles-de-gestion/WFS-268.md`.
+
+### 2026-11-07 17:39:18 — Recette, lot 5 (technique, performance) : 3 VALIDÉS, 3 PASSABLES, WFS-222 REFUSÉ ; CI de main rouge (QA-arwa)
+- **VALIDÉS** : WFS-220 (chauffe 129 s < 600 s sur #840), WFS-236 (`test_statuts.py` 39/39 ; #818, #826, #828 comptés verts à bon droit), WFS-250 (un seul job `compilation`, `verifier_compilation.sh` essayé).
+- **PASSABLES** : WFS-237 (fusions regroupées, 12 bancs verts) et WFS-238 (une issue #204, un commentaire par APK) — ANO-135 : la ligne « Tickets » de la notification et du résumé liste tous les WFS cités, pas seulement les fusionnés ; ANO-136 : numéro de l'issue #204 non noté dans `pipeline.md`. WFS-161 (banc `archi` local : 6 styles, fenêtres en retrait, 3 niveaux, indice 100 %) — ANO-137 : fenêtres de nuit en aplats saturés, pièces illisibles.
+- **WFS-222 : REFUSÉ** — RG-06 (≥ 30 img/s) refusé par l'utilisateur sur l'APK 842 : ANO-125, correction WFS-246 en cours ; RG-07 tenu (piétons à pied −50 %).
+- **CI de main rouge** : dernier vert #844 (ae49782) ; #852 (0ffe7d0) rouge au banc `realisme` (« 1 erreur », sans message) ; WFS-161 hors de cause (#849 vert) ; coupable probable WFS-227 (83b16fc) ou WFS-234 (bee2d1f) → US technique P1 « correction pipeline CI » à créer par le PO.
+
+### 2026-11-07 17:40:19 — WFS-268 : zone élargie à `ville.cpp` et `plage.cpp` (po-scrum-master)
+- Demande de Claude, agent 5 : le décor de la Ville, de la Corniche et du socle Campagne / Grand Prix est construit en course (`buildChunk` + `makeMesh` + `destroy` dans `render()`), cause directe de RG-03 et RG-04 ; un tour = le premier tourné / décalé (écart 0,0000 m, 4 cartes) → décor d'un tour construit une fois au chargement, regroupé en blocs ≈ 150 m par matériau, dessiné avec une matrice par tour.
+- Accord du PO : gestion des morceaux du rendu dans `render()` de `ville.cpp` et `plage.cpp` (≈ 25 lignes chacune + 1 ligne de borne), comme `decor_carte.cpp`. Vérifié : aucune branche active ne touche ces fichiers, aucun ticket E2 en cours.
+- Conditions : `buildChunk` inchangé ; ancienne gestion gardée en repli derrière un interrupteur (rien de supprimé, ordre permanent) ; rien d'autre dans ces fichiers. Détail : `regles-de-gestion/WFS-268.md`, section « Suivi ».
+
+### 2026-11-07 17:43:31 — Recette QA des lots 4 et 5 rangée : CI rouge, ANO-134 à 137 (po-scrum-master)
+- **CI de main rouge (#852, banc `realisme`)** : runs vérifiés à 17:39 UTC : #859 (7a3eedc) en cours, #860 (04a1628) en attente ; dernier vert #844. US technique **déjà ouverte : WFS-267 (P1)**, attribuée à arwa-5 à 17:35 UTC (développeur libre ; l'auteur du ticket fusionné n'est pas rappelé). Pas de doublon. Règles complétées : WFS-161 hors de cause (#849 vert), bissection en commençant par WFS-227 (83b16fc) et WFS-234 (bee2d1f), **RG-05 : chaque erreur du banc `realisme` écrit un message** (aujourd'hui « 1 erreur(s) » sans ligne qui la nomme).
+- **ANO-134 bloquante après fusion (WFS-210 REFUSÉ)** : correction **déjà créée : WFS-266** (E11, 📋 dans `anno.md`) ; confirmée comme **premier ticket de E11** dès que WFS-257 est fusionné ; capture de contrôle rapprochée de la tête d'un conducteur (jour et nuit) exigée. Non attribuée (attribution seulement à la demande d'un développeur).
+- **Mineures rangées dans des lots ouverts** (pas de nouveau ticket) : ANO-135 (tickets listés par la notification d'APK et le résumé du run) et ANO-136 (issue #204 dans `pipeline.md`) → **WFS-252** (E7, agent expert ci, RG-08, RG-09) ; ANO-137 (fenêtres de nuit saturées, captures `archi-*` publiées par aucune CI) → **WFS-231** (E12, RG-06, RG-07). Statut `📋 Planifiée` dans `anno.md`.
+- Rien à créer pour WFS-225 (ANO-128 sous WFS-249) ni WFS-222 (ANO-125 sous WFS-246).
+- Remarques du QA : `TACHES.md` PR de WFS-237 corrigée (#200), PR de WFS-238 ajoutée (#201) ; durée de l'artefact `compilation` (1 jour) rangée dans WFS-252 (RG-10) ; WFS-220 à revoir au premier run de nuit (2026-11-08 02:17 UTC), noté dans ses règles et `track-agent.md`.
+
+### 2026-11-07 17:44:07 — WFS-266 passé en P1 Urgent (po-scrum-master)
+- À la demande de QA-arwa : ANO-134 bloquante après fusion (RG-03 de WFS-210 non rempli) → WFS-266 **P1 Urgent** ; ordre gardé dans E11 (juste après WFS-257), non attribué tant qu'aucun développeur ne le demande.
+
+### 2026-11-07 17:47:42 — Recette, lot 1 (conduite) : 5 REFUSÉS, WFS-234 PASSABLE (QA-arwa)
+- Preuves : Release `apercu` 852 (0ffe7d0 : contient WFS-217, 221, 234, 241 ; pas WFS-253 ni 255, runs 853-858 annulés), avant : 844 ; 51 tests CPU verts en local.
+- **REFUSÉS**, chacun avec la bloquante déjà ouverte après le refus de l'utilisateur : WFS-217 (ANO-113 → ANO-131 / WFS-258), WFS-241 (ANO-131), WFS-221 (ANO-126), WFS-253 (ANO-132), WFS-255 (ANO-133 ; règles tenues aux tests, mais Son Coupé chez l'utilisateur : seules les vibrations ont pu être jugées).
+- **Nouvelles bloquantes, qui expliquent les refus** : **ANO-138** banc de conduite à 34-46 km/h seulement, direction trop vive à haute vitesse (à 228 km/h, 5 % du doigt prend toute l'adhérence) ; **ANO-139** allers-retours de la voiture devant la caméra en virage depuis WFS-241 (4,2 à 9,7 cm contre 0,1 à 0,8 avant), invisibles au banc de fluidité (virages et cadences < 30 img/s non comptés) ; **ANO-140** aide désactivée, volant lâché : tête-à-queue et marche arrière sur le bas-côté (dérive 52-58°).
+- **WFS-234 : PASSABLE AVEC ANOMALIES MINEURES** — carte GPS lisible, ANO-141 : texte du bandeau trop petit (consigne 9 px en 2400).
+- Bloquantes → PO : ANO-138, 139, 140 (à rattacher à WFS-258 / 259 / 247).
+
+### 2026-11-07 17:49:02 — Recette, lot 2 (routes, ronds-points, ombres) : WFS-206 et WFS-216 VALIDÉS, WFS-248 et WFS-227 PASSABLES (QA-arwa)
+- Preuves : `apercu` (captures de 844, ae49782 : 206, 223, 216) ; WFS-248 et WFS-227 sur bancs locaux `rondspoints` et `ombres` (main c443f2f) ; 51 tests CPU verts.
+- **WFS-206 : VALIDÉ** (usure, raccords, bordures, revêtement par carte ; indice « revetements » 100 %). **WFS-216 : VALIDÉ** (ANO-103, 105, 108 vérifiées). **WFS-223** : remplacé par WFS-248 (ANO-127 déjà ouverte).
+- **WFS-248 : PASSABLE** — anneau continu sur les 3 ronds-points ; ANO-142 (plaque plus sombre au raccord des branches en Ville, contraire à la réponse faite à l'utilisateur), ANO-143 (petits traits blancs isolés aux raccords), ANO-144 (trafic à cheval sur la rive, pas de cédez-le-passage, piéton sur l'îlot). Validation de l'utilisateur sur téléphone à venir.
+- **WFS-227 : PASSABLE** — cascades d'ombres en Haute / Moyenne ; ANO-145 (aucune ombre en Basse, RG-01 non tranchée), ANO-146 (absence de scintillement non chiffrée sur 60 images). Suspect du banc `realisme` rouge de main #852 (WFS-267).
+
+### 2026-11-07 17:49:53 — Recette du lot conduite rangée : ANO-138 à 141 planifiées (po-scrum-master)
+- Source : entrée QA-arwa de 17:47:42, rapports `qa/rapports/WFS-217/241/221/253/255/234.md`. WFS-217, 241, 221, 253, 255 déjà ❌ (refus de l'utilisateur) : rien à changer à leurs lignes.
+- **ANO-138** (direction trop vive à haute vitesse, banc à 34-46 km/h) → **WFS-258** RG-05 / RG-06 (cas de banc 150, 190, 230 km/h, gaz tenu, Glisser et Flèches ; ≤ 1,2 × l'adhérence à doigt à fond ; ≥ 25 % de course du doigt avant la limite ; 1er virage du Grand Prix depuis 228 km/h sans sortie, aide activée) et **WFS-259** RG-05 (aides mesurées à ces vitesses).
+- **ANO-140** (tête-à-queue et marche arrière sur le bas-côté, volant lâché) → **WFS-258** RG-07 et **WFS-259** RG-04 : dérive ≤ 5°, vitesse ≥ 0, ESP compris.
+- **ANO-139** (allers-retours 4,2-9,7 cm en virage depuis WFS-241) → **WFS-247** RG-05 / RG-06 (banc `fluidite` qui compte les virages, ≤ 2 cm ; cadences 10, 15, 20 img/s) et **WFS-258** RG-08 (vérification après le repli).
+- **ANO-141** (mineure, texte du bandeau GPS) → **WFS-245** RG-09 (E5, avec ANO-118 ; exception de zone : texte du bandeau dans `minicarte.*` seul).
+- Développeurs et priorité vérifiés : WFS-258 🔧 P1 (agent dev conduite, dernier envoi 17:35), WFS-259 P1 en attente après WFS-258 (même agent, exception de l'utilisateur), WFS-247 🔧 P1 (Agent 0 developer, dernier envoi 16:15), WFS-245 🔧 P3 (arwa-2, 17:17). Aucun ticket créé.
+- `anno.md` : statuts 📋 Planifiée et US écrits par le PO, partis par mégarde dans le commit QA 1ee3767 (même dossier de travail) : contenu juste, rien d'autre touché. ANO-142 à 146 (lot 2) : à ranger au prochain passage.
+- `tache utilisateur.md` : commentaire sous la demande « Les sujets de l'expert conduite sont KO » : Son Coupé dans ses réglages (WFS-255 jugé sur les vibrations seulement, remettre le son) ; avec l'ancienne conduite remise par WFS-258 (#217), les sons et vibrations de WFS-255 ne jouent plus : décision demandée (WFS-260 attend).
+
+### 2026-11-07 17:52:21 — Recette, lot 3 (voitures, phares) : WFS-218 VALIDÉ, WFS-158 et WFS-219 PASSABLES, WFS-226 REFUSÉ — recette des 26 tickets terminée (QA-arwa)
+- Preuves : `apercu` 844 (ae49782) ; WFS-226 sur banc nuit local (main 7602844) ; `test_fidelite_voitures`, `test_vehicule_lod`, `test_phares` verts.
+- **WFS-158 (livraisons 6 à 10) : VALIDÉES une à une** (plaques avant et arrière, T-Cross, niveaux de détail sans saut, test strict, habitacle et dessous de caisse) ; global PASSABLE (indice 80,9 % accepté par RG-05 ; ANO-71 hayon du X5 et ANO-107 plaque de la Model 3 encore là). ANO-75 et ANO-79 vérifiées.
+- **WFS-218 : VALIDÉ** (deux optiques, deux faisceaux, coupure −0,57° relevée de 15° à droite, 65 m).
+- **WFS-219 : PASSABLE** — ANO-149 : Mustang de remplacement hors tolérance (hauteur −2,5 %, voie avant +1,8 %), décision de l'utilisateur attendue.
+- **WFS-226 : REFUSÉ** — faisceaux visibles devant adversaires et police, mais **ANO-147 bloquante** : la nuit en Campagne, la voiture du joueur est une forme noire avec deux feux rouges (vu aussi par QA-arwa) ; ANO-148 : aucune capture d'une voiture en sens inverse ni d'une flaque lointaine.
+- **Bilan des 26 tickets** : 11 VALIDÉS, 7 PASSABLES, 7 REFUSÉS (WFS-217, 241, 221, 253, 255, 210, 225, 222, 226 — dont 6 déjà refusés par l'utilisateur), WFS-223 remplacé. Bloquantes nouvelles : ANO-134, 138, 139, 140, 147. Restent à recetter : WFS-256, WFS-258 (fusionnés pendant la recette).
+
+### 2026-11-07 17:56:39 — Recette du lot 3 (voitures, phares) rangée : WFS-270 (P1) et WFS-271 créés, ANO-142 à 149 planifiées (po-scrum-master)
+- **ANO-147 bloquante** (WFS-226 REFUSÉ, voiture du joueur noire la nuit en Campagne : carrosserie 11/255, route 134/255, défaut de la 2e vidéo de l'utilisateur) : WFS-249 et WFS-230 ne traitent pas la peinture des voitures → **WFS-270** créé, P1 Urgent, E10 (libre), ⏳ Prêt, `regles-de-gestion/WFS-270.md` (éclairage d'ambiance de la peinture, reflet du ciel de lune, preuves Campagne et Course à 5 de nuit, coordination avec WFS-230 / agent 1) ; **ANO-148** (preuves sens inverse et voiture lointaine) rangée dedans (RG-06). Développeur : le premier qui demande un ticket (placé en tête de l'ordre du PO, après la liste de l'utilisateur). Statut de WFS-226 : 🟣 Fusionné — QA REFUSÉ.
+- ANO-142, ANO-143, ANO-144 (piéton sur l'îlot) → **WFS-271** créé (P2, E2, ⏳ Prêt) ; ANO-144 (trafic à cheval sur la rive, pas de cédez-le-passage) → WFS-243 (E3).
+- ANO-145 : **décision du PO** écrite dans `regles-de-gestion/WFS-227.md` (Basse sans cascade du soleil pour l'instant, performance d'abord ; coût d'une cascade mesuré dans WFS-264). ANO-146 → WFS-228 (mesure sur 60 images).
+- ANO-149 → WFS-194 (décision de l'utilisateur sur la dérogation toujours attendue, question de 11:12 UTC) ; ANO-71 (hayon du X5) rattachée à WFS-194.
+- `anno.md` : statut / US seulement ; `track-agent.md` remis à jour.
