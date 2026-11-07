@@ -27,10 +27,10 @@
   - `banc-essai` (WFS-237) : installation `apt-get` en 2 essais de 5 min au plus (comme `endurance`), `timeout-minutes: 75`.
   - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
 ## matin.yml « Bancs du matin (captures, réalisme, QA) » (WFS-252, WFS-277)
-Chaque matin à **07:00 heure de Paris** (cron 05:00 et 06:00 UTC, le job `heure` garde celui qui tombe à 7 h) + à la main, sur la dernière version de main.
+Chaque matin à **04:00 heure de Paris** (cron 02:00 et 03:00 UTC, le job `heure` garde celui qui tombe à 4 h ; QA à 07:00) + à la main, sur la dernière version de main.
 `compilation` (wfs_bench) → `banc (<groupe>)` × 14 (`partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte`, `ecrans-2400`, `menu1-2400`,
 `menu2-2400`, `vitrines`, `nuit`, `conduite-chocs`, `realisme-1`, `realisme-2` ; `tools/qa/banc_groupe.sh`) → `fusion` (rapports du réalisme, WFS-251)
-→ `publication-captures` (toutes les captures dans la Release `apercu`, lue par la QA le matin, fin ≈ 08:15 Paris). Écart = rouge ; artefacts 30 jours.
+→ `publication-captures` (toutes les captures dans la Release `apercu`, lue par la QA à 07:00, fin ≈ 05:15 Paris). Écart = rouge ; artefacts 30 jours.
 Une seule publication des captures (ici) : `publier_apercu.sh` retire les captures absentes du run. Le robot des statuts ne suit que `build.yml`.
 ## statuts.yml — robot des statuts (WFS-196)
 `workflow_run` de « Construction WaForSpeed » terminé, sur `main` ; `tools/qa/statuts.py` (test `test_statuts.py`) : run vert (hors nuit) → chaque

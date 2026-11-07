@@ -1,19 +1,19 @@
-# Bancs du matin, chaque jour à 07:00 heure de Paris — WFS-252 / WFS-277 (décisions de l'utilisateur, 2026-11-07) :
+# Bancs du matin, chaque jour à 04:00 heure de Paris (décision de l'utilisateur, 2026-11-07 : bancs à 4 h, QA à 7 h) — WFS-252 / WFS-277 (décisions de l'utilisateur, 2026-11-07) :
 # « on lance les CI ensuite lui [la QA] il teste ». À chaque envoi sur main, build.yml ne garde que les tests CPU, le parcours complet,
 # l'endurance et l'APK ; ici, sur la dernière version de main :
 #  - tous les groupes de captures du banc d'essai PC (tools/qa/banc_groupe.sh, le même script que build.yml) ;
 #  - le banc du réalisme en deux parties (WFS-251) puis la fusion de ses rapports (identiques à ceux d'un banc complet) ;
 #  - la publication de toutes les captures dans la Release « apercu » (une seule publication : publier_apercu.sh retire les captures
-#    absentes du run), lues ensuite par la QA (qa-lead) pour la recette du matin.
+#    absentes du run), lues ensuite par la QA (qa-lead) pour la recette de 07:00 (heure de Paris).
 # Un écart (code 3), une partie absente ou une étape en double rend le run rouge. Artefacts gardés 30 jours.
-# GitHub ne connaît que l'heure UTC : deux déclencheurs (05:00 UTC = 07:00 en heure d'été, 06:00 UTC = 07:00 en heure d'hiver),
-# et le job « heure » ne laisse passer que celui qui tombe à 7 h à Paris. Lancement à la main possible (workflow_dispatch).
+# GitHub ne connaît que l'heure UTC : deux déclencheurs (02:00 UTC = 04:00 en heure d'été, 03:00 UTC = 04:00 en heure d'hiver),
+# et le job « heure » ne laisse passer que celui qui tombe à 4 h à Paris. Lancement à la main possible (workflow_dispatch).
 name: Bancs du matin (captures, réalisme, QA)
 
 on:
   schedule:
-    - cron: '0 5 * * *'   # 07:00 à Paris en heure d'été (UTC+2)
-    - cron: '0 6 * * *'   # 07:00 à Paris en heure d'hiver (UTC+1)
+    - cron: '0 2 * * *'   # 04:00 à Paris en heure d'été (UTC+2)
+    - cron: '0 3 * * *'   # 04:00 à Paris en heure d'hiver (UTC+1)
   workflow_dispatch:
 
 permissions:
@@ -30,11 +30,11 @@ jobs:
       lancer: ${{ steps.h.outputs.lancer }}
     steps:
       - id: h
-        name: 7 h à Paris ?
+        name: 4 h à Paris ?
         run: |
           h=$(TZ=Europe/Paris date +%H)
-          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 07 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris)"
-          else echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : ce déclencheur n'est pas celui de 7 h (heure d'été / d'hiver), rien à faire"; fi
+          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 04 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris)"
+          else echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : ce déclencheur n'est pas celui de 4 h (heure d'été / d'hiver), rien à faire"; fi
 
   compilation:
     needs: heure
@@ -123,7 +123,7 @@ jobs:
         if: always()
         with: { name: captures-realisme, path: 'captures/*.txt', retention-days: 30 }
 
-  # toutes les captures du matin dans la Release « apercu » (lues par la QA) ; seulement celles qui ont changé (WFS-106) ;
+  # toutes les captures du matin dans la Release « apercu » (lues par la QA à 07:00) ; seulement celles qui ont changé (WFS-106) ;
   # échec = avertissement ; même groupe de concurrence que l'ancienne publication de build.yml (une écriture à la fois)
   publication-captures:
     needs: [heure, banc, fusion]

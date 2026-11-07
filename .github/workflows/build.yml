@@ -77,7 +77,7 @@ jobs:
         # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
         # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
         # WFS-277 (décision de l'utilisateur, 2026-11-07) : à chaque envoi, seulement les tests CPU et licences (texte) et le parcours complet
-        # du jeu (menu1-2400) ; tous les autres groupes, le réalisme compris, tournent chaque matin à 07:00 heure de Paris (matin.yml), suivis de la QA
+        # du jeu (menu1-2400) ; tous les autres groupes, le réalisme compris, tournent chaque matin à 04:00 heure de Paris (matin.yml), la QA à 07:00
         groupe: [texte, menu1-2400]
     steps:
       - uses: actions/checkout@v4
