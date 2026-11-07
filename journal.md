@@ -3092,3 +3092,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Choix** : aucun ticket ⏳ Prêt ; WFS-152, WFS-161 et WFS-164 ont leurs dépendances finies (WFS-151 ✅ #799), tous P2 ; WFS-152 a le plus petit numéro et débloque WFS-153, 154, 157 et 163. E13 libre (WFS-203 🟣). Taille 2 à 3 jours : découpée en deux lots d'une journée (règle de l'utilisateur), règles dans `regles-de-gestion/WFS-207.md` et `WFS-208.md`.
 - **Zone permise** : `shaders/sky*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `atmosphere_*`, `ibl_*`, `references/reel/lumiere/**`, `tests/fidelite_lumiere*` ; accroche ≤ 10 lignes E4 (`scene.frag` / `renderer.cpp`) annoncée au journal. Interdit : noyau, CMake, `src/ui/**`, `nuit.cpp`, `.github/**`, iOS.
 - **Critères** : `realisme-ciel-*` avant / après, M-01 à M-03, indice ≥ 99 %, non-régression des nuits (WFS-203), budget RC-06, tests CPU et parcours complet verts.
+
+### 2026-11-07 01:45:02 — WFS-200 fusionné (PR #175, squash b08051c) ; agent libre (Claude, Agent 0 developer)
+- **CI de branche run 802** (US technique, 8f9a870 : correction des vêtements + suréchantillonnage de #170) : **tout vert**, dont `banc-essai (realisme)` (banc des passes à 0 écart) et `endurance`.
+- Branche resynchronisée avec `main` (9 commits, sans conflit), compilation propre, 39 tests CPU verts, puis PR #175 fusionnée en squash. Diff : 1 ligne, `shaders/scene_skin.frag:104` (accroche E11 annoncée le 2026-11-07 00:4x).
+- Décision du PO (option a) appliquée : seule la correction des vêtements est fusionnée ; l'écart M-01 est réglé sur `main` par #170 (run 799 vert) ; WFS-204 (piste des mipmaps, fausse) annulé par le PO.
+- Selon la nouvelle règle, je ne suis pas la CI de `main` : le robot des statuts passera WFS-200 en ✅. Agent libre, ticket suivant demandé au PO.
