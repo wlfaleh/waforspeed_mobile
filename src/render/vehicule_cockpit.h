@@ -59,13 +59,19 @@ struct InterieurDef {
 // dos droit, ramenée au dossier incliné de 25° des voitures de tourisme (SAE J1100, angle A40 de 20 à 30° : estimé)
 constexpr float OEIL_ASSIS_M = 0.7859f, DOSSIER_RAD = 25.f * PI / 180.f;
 inline float hauteurOeil(const InterieurDef& d) { return d.assise + OEIL_ASSIS_M * std::cos(DOSSIER_RAD); }
-// WFS-235 (RG-02) : bord bas du ciel de toit (haut du pare-brise) au-dessus de l'œil (m) : hauteur de la voiture − œil − 0,15 m
-// (tôle, garniture, galbe du pavillon au-dessus du pare-brise ; Golf : 1,46 − 1,154 − 0,15 = +0,16, avis d'expert-realisme-3d) ;
-// sans hauteur connue : +0,16 ; borné de +0,08 à +0,30. Pente du pare-brise (dy / dz) de la Golf : du pied (−0,22 ; −1,10) au
-// haut (+0,16 ; −0,52), 33° sur l'horizontale
-constexpr float PENTE_PARE_BRISE = 0.655f;
+// WFS-235 (RG-02) : bord bas du ciel de toit (haut du pare-brise) au-dessus de l'œil (m) : 55 % de la garde au toit (hauteur
+// de la voiture − œil ; le reste : tôle, garniture et galbe du pavillon au-dessus du pare-brise) ; Golf : 0,55 × 0,306 = +0,17
+// (avis d'expert-realisme-3d : +0,16) ; une part plutôt qu'une épaisseur fixe : les toits bas des sportives sont aussi plus
+// minces ; sans hauteur connue : +0,16 ; borné de +0,10 à +0,30
+constexpr float PENTE_PARE_BRISE = 0.655f;   // dy / dz du pare-brise de la Golf : du pied (−0,22 ; −1,10) à (+0,16 ; −0,52), 33°
+// le haut du pare-brise est vu à 12° au moins au-dessus de l'horizontale (compactes : 12 à 17°, avis d'expert ; UN R125 : ≥ 7°) :
+// sur les sportives au pare-brise plus couché que la Golf, il recule vers l'œil
+constexpr float ELEVATION_TOIT_MIN = 12.f * 3.14159265f / 180.f;
 inline float toitAuDessusOeil(const InterieurDef& d, float hauteurVoiture) {
-    return hauteurVoiture > 0 ? std::clamp(hauteurVoiture - hauteurOeil(d) - 0.15f, 0.08f, 0.30f) : 0.16f;
+    return hauteurVoiture > 0 ? std::clamp(0.55f * (hauteurVoiture - hauteurOeil(d)), 0.10f, 0.30f) : 0.16f;
+}
+inline float toitDevantOeil(const InterieurDef& d, float yToit) {
+    return std::max(d.pareBriseZ + (yToit - d.pareBriseY) / PENTE_PARE_BRISE, -yToit / std::tan(ELEVATION_TOIT_MIN));
 }
 
 // RG-01 : intérieur du modèle, nullptr pour une voiture qui garde le cockpit commun

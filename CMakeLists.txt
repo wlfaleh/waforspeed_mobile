@@ -103,7 +103,7 @@ else()
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
   add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
-  add_executable(test_regard_cockpit tests/test_regard_cockpit.cpp src/core/configgame.cpp)   # WFS-235 : regard du conducteur en vue Cockpit
+  add_executable(test_regard_cockpit tests/test_regard_cockpit.cpp src/core/configgame.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-235 : regard du conducteur en vue Cockpit
   add_executable(test_tangentes tests/test_tangentes.cpp src/render/mesh.cpp)   # WFS-149 (RG-04, M-02) : tangentes, .wfm versionnés
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop

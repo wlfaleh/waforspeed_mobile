@@ -353,14 +353,14 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoit
     }
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
     // WFS-235 (RG-02, arbitrage du PO du 2026-11-07 : vraie géométrie, avis d'expert-realisme-3d) : bord bas du ciel de toit
-    // (haut du pare-brise) à la hauteur du toit de la voiture − 0,15 m (tôle, garniture et galbe du pavillon : Golf, y +0,16
-    // au-dessus de l'œil), sur la pente du pare-brise de la Golf (33° : du pied (Yb, Zb) à (+0,16 ; −0,52)) ; montants
+    // (haut du pare-brise) à 55 % de la garde au toit au-dessus de l'œil (Golf +0,17), sur la pente du pare-brise de la Golf
+    // (33°), vu à 12° au moins au-dessus de l'horizontale (toitAuDessusOeil, toitDevantOeil) ; montants
     // de la garniture de 65 mm (4,5 à 6° à l'horizon : largeur vue des deux yeux, UN R125) du coin bas du pare-brise
     // (± 0,74 m du milieu) au coin haut (± 0,62 m) ; ciel de toit fermé jusqu'à 1,2 m derrière l'œil (il fait l'ombre du toit
     // sur la planche) ; avant : pavillon et haut des montants à +0,40 m, hors de l'image, montants tout droits devant l'œil
     {
         Geo mont, pav, ret, porte;
-        const float yToit = toitAuDessusOeil(d, hauteurVoiture), zToit = Zb + (yToit - Yb) / PENTE_PARE_BRISE;
+        const float yToit = toitAuDessusOeil(d, hauteurVoiture), zToit = toitDevantOeil(d, yToit);
         yToit_ = yToit; zToit_ = zToit;
         const vec3 bas[2] = {{CX - 0.74f, Yb, Zb}, {CX + 0.74f, Yb, Zb}};
         const vec3 haut[2] = {{CX - 0.62f, yToit - 0.01f, zToit + 0.02f}, {CX + 0.62f, yToit - 0.01f, zToit + 0.02f}};
