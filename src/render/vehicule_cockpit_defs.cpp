@@ -109,11 +109,12 @@ static const InterieurDef DEFS[] = {
      -0.24f, -0.80f, -0.26f, -1.15f, 0x1a1a1c, 0x232428, 0x6b5444, 0.f, 0.45f, false,
      Essuie::Paralleles, 0.650f, 0.475f, 1.60f, 0.385f, 0, true},
     // X5 (G05 LCI, le .wfm « 2024 X5 xDrive40i ») : volant M Sport (coutures M), palettes ; Curved Display : combiné 12,3 po et écran
-    // 14,9 po côte à côte sur une même vitre courbe tournée vers le conducteur ; position haute ; alu ; balais 650 / 500 (AC)
+    // 14,9 po côte à côte sur une même vitre courbe tournée vers le conducteur (hauts alignés) ; combiné placé pour être vu en entier
+    // entre le moyeu et le haut de la jante (œil haut du SUV : y −0,237, E) ; position haute ; alu ; balais 650 / 500 (AC)
     {"x5", 0.370f, 0.038f, 3, 0.f, true, false, false, 0x3d3d3f, {0x0066b1, 0x1c2c5c, 0xe7222e}, 0x2b2c30, 0,
      {0.f, -0.33f, -0.70f}, -0.45f,
-     Combine::BmwLive, 0.292f, 0.110f, {0.f, -0.22f, -0.86f}, 0xe9eef4, 0x0d0f12, 0xe7222e,
-     0.354f, 0.133f, {0.33f, -0.20f, -0.82f}, -0.30f,
+     Combine::BmwLive, 0.292f, 0.110f, {0.f, -0.237f, -0.86f}, 0xe9eef4, 0x0d0f12, 0xe7222e,
+     0.354f, 0.133f, {0.33f, -0.249f, -0.82f}, -0.30f,
      -0.22f, -0.82f, -0.28f, -1.20f, 0x1c1d20, 0x2a2b2e, 0xe9ebec, 1.f, 0.35f, false,
      Essuie::Paralleles, 0.650f, 0.500f, 1.62f, 0.677f},
 };
