@@ -3399,3 +3399,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - captures regardées en 1280×720 : `minicarte-checkpoint`, `minicarte-ligne` (mêmes noms que WFS-173 : la comparaison avant / après se fait avec les captures de `main`) et `minicarte-<ville|plage|campagne|circuit>-<jour|nuit>` (Checkpoint, Course à 5, Poursuite ; rond-point à 200 m sur 3 cartes, épingle sur le Grand Prix) ; le duel se voit dans `duel-course`. La CI les prend aussi en 2400×1080 (`-2400`).
 - **Banc** : `hud` passe à 7,5 min en local.
 - **Limites** : le texte du bandeau fait 10 px en 1280×720, lisible mais petit, car la carte garde 150 px. Radars et travaux sont fictifs, comme demandé par RG-03.
+
+### 2026-11-07 15:52:59 — WFS-237 : bilan avant / après (agent expert ci)
+- **Avant** (runs #817 à #835) : 1 vert sur 17 envois, attente en file ≈ 53 min, envoi → fin ≈ 1 h 48, jusqu'à 6 runs en file.
+- **Après** (runs #837 à #850) : **2 verts sur 2 terminés** (#840 : 45 min de bout en bout ; #842 : 1 h 27, dont ≈ 27 min derrière #840 avec les runs #827, #828 et la CI de branche #831 encore sur les lanceurs) ; **au plus 1 run en cours et 1 en attente** ; runs en attente remplacés (#838, #839, #841, #843, #846, #847) : normal, leurs fusions sont vérifiées par le run suivant ; **aucun rouge d'installation**. APK publié ≈ 30 min après l'envoi (#844 : 14:57 → 15:25), annoncé dans l'issue #204 (WFS-238).
+- **Robot** : ✅ par #840 (4 tickets), #842 (1), #826 (4, annulé seulement à la publication, WFS-236).
+- **Reste lent** : #844 en cours depuis 56 min : lanceurs partagés avec les CI de branche #845 (WFS-241) et #849 (WFS-250). Suite : WFS-250 (compilation unique), WFS-251 / 252 (banc realisme en deux).
+- **Défaut mineur** : la liste des tickets du résumé et de la notification est trop large (tickets cités dans les commits de suivi, et run `workflow_dispatch` non compté comme base) ; l'utilisateur dit « pas grave » : non corrigé pour l'instant.
