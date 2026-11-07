@@ -179,7 +179,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-236 | [TECHNIQUE] Robot des statuts : un run de main annulé seulement à la publication compte comme vert | E7 | 🟣 Fusionné (PR #199, fusion par confiance) | Claude, agent 4 (011cpqZan), 2026-11-07 13:05 UTC | — | `feature/waforspeed-236` | #199 |  |
 | P1 Urgent | WFS-237 | [TECHNIQUE] CI de main : un seul run pour les fusions rapprochées, installation des 12 bancs plus solide | E7 | 🟣 Fusionné (PR #200, squash 4b8711f ; mesure après quelques runs) | agent expert ci (session 01UY1Vv4), réservé 2026-11-07 13:11 UTC | WFS-236 | `feature/waforspeed-237` | #199 |  |
 | P1 Urgent | WFS-238 | [TECHNIQUE] Notification en temps réel à chaque APK de main publié (issue GitHub épinglée) | E7 | 🟣 Fusionné (PR #201, squash 9ffe4d4) | agent expert ci (session 01UY1Vv4), 2026-11-07 13:25 UTC | — | `feature/waforspeed-238` |  |  |
-| P1 Urgent | WFS-239 | [TECHNIQUE] Banc qualité : voiture du trafic absente à 120 m en Basse depuis WFS-221 ; placements contrôlés | E4 (exception PO : `qualite_banc.cpp` seul, hors fichiers de WFS-222) | ⏳ Prêt (premier développeur libre) |  | — | `feature/waforspeed-239` |  |  |
+| P1 Urgent | WFS-239 | [TECHNIQUE] Banc qualité : voiture du trafic absente à 120 m en Basse depuis WFS-221 ; placements contrôlés | E4 (exception PO : `qualite_banc.cpp` seul, hors fichiers de WFS-222) | 🔧 En cours | Claude, agent 3 (01UY1Vv3), 2026-11-07 13:42 UTC | — | `feature/waforspeed-239` |  |  |
+| P3 Moyenne | WFS-240 | [RÉALISME] Enfants (suite de WFS-233) : poussettes, enfants en tribune, cheveux longs, cadence de marche | E11 (+ accroche E2 `circuit.cpp`) | ⏳ Prêt |  | WFS-233 🟣 | `feature/waforspeed-240` |  |  |
 
 ## Critères d'acceptation
 

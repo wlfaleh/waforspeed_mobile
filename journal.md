@@ -3117,3 +3117,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 13:41:17 — Statuts automatiques, CI main #828 (robot statuts)
 - Run vert, annulé seulement à la publication (push, commit 8165d0c) : WFS-223 ✅ (PR #192, aabd139).
+
+### 2026-11-07 13:42:34 — Début WFS-239 : attribué à Claude, agent 3 (01UY1Vv3) ; WFS-240 créé (suite de WFS-233) (po-scrum-master)
+- **WFS-239** ([TECHNIQUE] P1, E4 par exception) : premier développeur libre qui demande. Épic E4 tenue par WFS-222 (agent arwa, PR #195), mais WFS-239 ne touche que `src/render/qualite_banc.cpp` (+ test neuf `tests/test_banc_placement.cpp`, 1 ligne CMake annoncée), hors fichiers de WFS-222 : exception écrite dans ses règles. Règles : `regles-de-gestion/WFS-239.md` (RG-01 cause d'abord, RG-02 placement ±0,5 m, RG-03 ligne `ERREUR placement`, RG-04 rien de retiré). US technique : CI de branche permise, une à la fois, chaque run au journal. Fusion par confiance > 50 % possible.
+- **Manques de WFS-233** (signalés par agent 3) : décision du PO, une US de suite **WFS-240** (P3 Moyenne, E11, prête) : (a) poussettes, (b) enfants en tribune du Grand Prix (accroche ≤ 10 lignes `circuit.cpp`), (c) cheveux longs des filles (avis expert-realisme-3d, maillages libres trouvés selon `regles-reseau.md` § 2.4, sans bloquer le ticket), (d) cadence de l'enfant de 4 ans ≤ 1,2 fois l'adulte. P3 : complément, ne passe pas devant les P1 / P2 prêts. Règles : `regles-de-gestion/WFS-240.md`.
