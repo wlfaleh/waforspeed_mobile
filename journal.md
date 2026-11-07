@@ -2758,3 +2758,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Zone autorisée** : `src/world/**` des cartes (E2), `assets/world/**` hors `modeles/`, `shaders/world_*` ; marquages de route par accroche ≤ 10 lignes annoncée (E9 `route_*`). **Interdit** : `track.*`, `camera_vue.*`, `game.cpp` (WFS-221), `src/world/pietons.*` (WFS-222), `player.*`, iOS, taille des boutons.
 - **Critères** : regles-de-gestion/WFS-223.md (RG-01 inventaire et captures avant ; RG-02 marquages ; RG-03 îlot sans boîtes de couleur ; RG-04 raccords ; RG-05 rien sur la chaussée, appels de dessin tenus ; RG-06 captures avant / après, parcours 0 écart). Section « Graphisme réaliste » ajoutée (charte § 3).
 - **Plan court** : inventaire des ronds-points → marquages → îlot → raccords → captures et ligne `qa/Check.md`.
+
+### 2026-11-07 10:56:05 — WFS-220 : banc de chauffe de la CI réparé (Claude, agent 1)
+- Cause (RG-01) : le run #816 de `main` a tué le banc à 240 s (limite fixe de `chauffe.sh`), juste avant la capture `chauffe-retabli` ; en local, le banc a aussi montré « sauvegarde inchangée (ÉCHEC) », une régression de WFS-208 (l'écran terrain écrivait le moment dans la sauvegarde même pendant le banc).
+- Correction (RG-03) : accroche d'une ligne dans `src/ui/ecrans/terrain.cpp` (le moment n'est écrit que si la sauvegarde est active) ; limite réglable `CHAUFFE_LIMITE` dans `tools/qa/chauffe.sh`, 600 s par défaut. Mesures : 136 s en local avant, 129 s après ; CI de branche run #819 (RG-06, job `endurance` vérifié) : **245 s**, code 0, 3 captures (`chauffe-bandeau`, `chauffe-fin`, `chauffe-retabli`), toutes les vérifications « (ok) », 0 écart. 600 s laisse plus de 25 % de marge (le minimum serait 307 s).
+- RG-02 : aucune vérification retirée. RG-04 : la logique de chauffe ne change pas.
+- RG-05 (accroche de 2 lignes dans `.gitignore` : `__pycache__/`) : sortis du suivi par `git rm --cached` : `tools/qa/__pycache__/statuts.cpython-313.pyc` et `references/reel/outils/__pycache__/extraire.cpython-313.pyc`.
+- Branche synchronisée avec `main`, compilation et tests CPU verts : fusion.

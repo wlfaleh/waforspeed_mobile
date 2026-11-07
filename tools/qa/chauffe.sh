@@ -3,7 +3,7 @@
 # Usage : tools/qa/chauffe.sh <wfs_bench> <dossier des captures> <assets>
 # Écrit <dossier>/chauffe-journal.txt (lignes CHAUFFE / chauffe / IPS) et copie chauffe-bandeau, chauffe-fin, chauffe-retabli.
 # Échec (code ≠ 0) : banc en échec, plus de LIMITE s, ou ligne « CHAUFFE rétrogradation » / « CHAUFFE rétabli » absente.
-# WFS-220 : limite réglable (CHAUFFE_LIMITE) ; valeur à fixer avec 25 % de marge au-dessus de la durée mesurée sur la CI (RG-03).
+# WFS-220 : limite réglable (CHAUFFE_LIMITE) ; mesuré sur la CI (run #819) : 245 s → 600 s par défaut (≥ 25 % de marge exigés par RG-03 : ≥ 307 s).
 set -u
 BENCH=$1; OUT=$2; ASSETS=$3
 LIMITE=${CHAUFFE_LIMITE:-600}
