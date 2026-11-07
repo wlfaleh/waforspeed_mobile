@@ -2640,3 +2640,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Retour de l'utilisateur** (essai sur téléphone) : en vue Proche et Poursuite, la voiture a un comportement bizarre, pas fluide.
 - **Causes probables (code de main)** : `game.cpp` ≈ 242-247, pas fixes de 1/120 s rendus sans interpolation (0, 1 ou 2 pas par image) ; `track.cpp:87`, pente par segment sans transition (bascule de la voiture à chaque segment) ; direction linéaire par morceaux.
 - **WFS-221** (`[TECHNIQUE]`, P1 Urgent, E0 + E3, ⏳ Prêt) : banc `fluidite` (temps d'image irréguliers 14-22 ms, mesures dans le repère caméra), rendu interpolé, route lissée, objectifs chiffrés, vidéo avant / après ; CI de branche permise (US technique). À attribuer au premier développeur libre, avant WFS-217.
+
+### 2026-11-07 10:20:00 — Vidéo de l'utilisateur analysée : ≈ 20 img/s et sauts de lacet ; WFS-221 complété (po-scrum-master)
+- **Vidéo** (enregistrement d'écran, 12 s, Poursuite, Campagne) : 240 images en 12 s (≈ 20 img/s, 12 à 30 selon la seconde ; 30 à 100 ms entre deux images) ; lacet de la voiture qui saute d'une image à l'autre dans le rond-point ; voiture qui flotte dans le cadre. Images extraites dans `qa/retours/2026-11-07-video-conduite-*.jpg` (la vidéo, 24 Mo, n'est pas mise dans le dépôt).
+- **WFS-221** : section « Constat sur la vidéo » et **RG-07** (cadence réelle sur téléphone : ≥ 30 img/s stables en Haute, ≥ 45 en Basse, coût par passe, ticket à part si gros changement de rendu).
