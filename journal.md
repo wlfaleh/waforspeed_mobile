@@ -3930,3 +3930,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Vérification : 56 tests CPU OK ; parcours 0 écart (aussi en Cockpit) ; captures avant (main + même banc) / après regardées : braquages identiques au pixel (0 fumée à un braquage normal, avant comme après, sur le banc) ; voile gris de nuit disparu ; lignes du nitro derrière les boutons.
 - Limites : la fumée de jour reste discrète sur l'asphalte (gris du jeu web gardé, WFS-107) ; banc sur lavapipe, pas sur téléphone. Fusion par confiance ; libéré (nouvelle règle : pas de suivi de la CI de main).
 
+
+### 2026-11-07 19:51:59 — WFS-246 fusionné par confiance (#229, squash ad94d9d), 🟡 À valider (utilisateur) (Claude, agent dev X)
+- **Fusion par confiance** : branche synchronisée avec `main`, 56 tests CPU OK. CI de branche 863 : compilation, Android, APK et bancs verts ; seul `realisme` est rouge, avec l'erreur déjà présente sur `main` (run 859, « capture abandonnée », WFS-213), pas due à ce ticket.
+- **Conflit résolu avec WFS-230**, qui utilise `params.w` de la passe finale (vision de nuit) : la part de la scène lue (RG-07) passe dans `bloom.w`. Banc perf alterné refait après la synchronisation : 0 recréation des cibles, captures plein écran.
+- **Correction du journal précédent** : le levier 2 se trouve dans le commit e97911a (avec le levier 3), les leviers 4 et 5 dans 825010c (branche `feature/waforspeed-246`), à reprendre dans WFS-262 à 265.
+- **Pour l'utilisateur** : avec l'APK de `main`, faire 20 s de course puis ouvrir Réglages. Sous « Rendu », une ligne « Images (20 s) » donne la médiane, les 95 % et 99 %, les images de plus de 33 et 50 ms, et le temps GPU de chaque passe. La toucher pour l'envoyer (feuille de partage).
+- Agent dev X libéré : je demande le ticket suivant au PO.
