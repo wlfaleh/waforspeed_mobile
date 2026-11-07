@@ -17,7 +17,7 @@ using namespace wfs;
 static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
 
-struct Res { double vAvant = 0, vApres = 0, penetration = 0, capFinal = 0, distFinale = 0; int chocs = 0; };
+struct Res { double capMax = 0, vMinApresChoc = 1e9, vAvant = 0, vApres = 0, penetration = 0, capFinal = 0, distFinale = 0; int chocs = 0; };
 
 // la Golf part à `kmh` sur la ligne droite de départ de la Ville, sans commande ; obstacle o posé à `devant` m, latéral `lat` m
 static Res essai(Track& t, double kmh, chocs::Obstacle o, double devant, double lat, bool poser = true) {
@@ -29,7 +29,9 @@ static Res essai(Track& t, double kmh, chocs::Obstacle o, double devant, double 
     if (poser) chocs::registre().ajouter(o);
     Res r; r.vAvant = kmh;
     for (int n = 0; n < 120 * 6; n++) {
+        const int n0 = p.chocsDecor.n;
         p.update(1.0 / 120, DriveInput{}, t, true);
+        if (p.chocsDecor.n > 0) { r.capMax = std::max(r.capMax, std::abs(p.heading)); if (p.chocsDecor.n > n0) r.vMinApresChoc = std::min(r.vMinApresChoc, std::abs(p.kmh())); }
         // pénétration : distance du centre de l'obstacle au rectangle de la voiture (négative si dedans)
         if (poser) {
             const chocs::Contact c = chocs::contact(p.monde.x, p.monde.z, p.monde.cap, p.car->d.L / 2, p.car->d.W / 2, o);
@@ -61,11 +63,12 @@ int main() {
     {   // mur en biais (30°) sur le côté droit de la trajectoire
         chocs::Obstacle mur; mur.forme = chocs::Forme::Boite; mur.hx = 0.25; mur.hz = 15; mur.angle = 0.52; mur.genre = chocs::Genre::Mur;
         const Res r = essai(t, 80, mur, 30, 1.0);
-        std::printf("mur à 30° à 80 km/h : %d choc(s), %.0f km/h après, cap %+.2f rad, pénétration %.3f m\n", r.chocs, r.vApres, r.capFinal, r.penetration);
+        std::printf("mur à 30° à 80 km/h : %d choc(s), vitesse au plus bas pendant les chocs %.0f km/h, cap max %.2f rad, pénétration %.3f m\n", r.chocs,
+                    r.vMinApresChoc, r.capMax, r.penetration);
         VERIFIE(r.chocs >= 1, "mur en biais : pas de choc");
         VERIFIE(r.penetration < 0.06, "mur en biais : enfoncé de %.3f m", r.penetration);
-        VERIFIE(std::abs(r.capFinal) > 0.05 && std::abs(r.capFinal) < 1.2, "mur en biais : cap final %.2f rad (doit longer le mur, pas tourner sur elle-même)", r.capFinal);
-        VERIFIE(r.vApres > 0 || r.distFinale > 40, "mur en biais : la voiture s'arrête net au lieu de glisser (%.1f m)", r.distFinale);
+        VERIFIE(r.capMax > 0.3 && r.capMax < 0.8, "mur en biais : cap max %.2f rad (doit s'aligner sur le mur, 0,52 rad, sans tourner sur elle-même)", r.capMax);
+        VERIFIE(r.vMinApresChoc > 30, "mur en biais : la voiture s'arrête net au lieu de glisser le long (%.0f km/h)", r.vMinApresChoc);
     }
     {   // poubelle (fixe, comme son image) : la voiture s'arrête contre, ne la traverse pas
         chocs::Obstacle poub = poteau; poub.r = 0.3; poub.genre = chocs::Genre::Mobilier;

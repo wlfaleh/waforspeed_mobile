@@ -115,14 +115,24 @@ inline Contact contact(double cx, double cz, double cap, double hl, double hw, c
     const double bx = std::cos(o.angle), bz = std::sin(o.angle), ux = -bz, uz = bx;
     const double tx = o.x - cx, tz = o.z - cz;
     const double axes[4][2] = {{fx, fz}, {dx, dz}, {bx, bz}, {ux, uz}};
-    double best = 1e18, nx = 0, nz = 0;
-    for (const auto& ax : axes) {
+    double over[4], sgn4[4];
+    for (int i = 0; i < 4; i++) {
+        const double* ax = axes[i];
         const double ra = hl * std::abs(fx * ax[0] + fz * ax[1]) + hw * std::abs(dx * ax[0] + dz * ax[1]);
         const double rb = o.hx * std::abs(bx * ax[0] + bz * ax[1]) + o.hz * std::abs(ux * ax[0] + uz * ax[1]);
-        const double t = tx * ax[0] + tz * ax[1], over = ra + rb - std::abs(t);
-        if (over <= 0) return c;
-        if (over < best) { best = over; const double s = t >= 0 ? -1 : 1; nx = s * ax[0]; nz = s * ax[1]; }
+        const double t = tx * ax[0] + tz * ax[1];
+        over[i] = ra + rb - std::abs(t); sgn4[i] = t >= 0 ? -1 : 1;
+        if (over[i] <= 0) return c;
     }
+    // normale : face de la boîte (mur, bâtiment : la voiture glisse le long), sauf si un coin de la boîte est entré dans la
+    // voiture (petit objet : borne, banc pris par le coin) : face de la voiture
+    bool coinDedans = false;
+    for (int i = 0; i < 4 && !coinDedans; i++) {
+        const double sa = (i & 1) ? 1 : -1, sb = (i & 2) ? 1 : -1, qx = o.x + sa * o.hx * bx + sb * o.hz * ux, qz = o.z + sa * o.hx * bz + sb * o.hz * uz;
+        double rx, rz; plusProche(cx, cz, cap, hl, hw, qx, qz, rx, rz, coinDedans);
+    }
+    const int i0 = coinDedans ? 0 : 2, k = over[i0] <= over[i0 + 1] ? i0 : i0 + 1;
+    const double best = over[k], nx = sgn4[k] * axes[k][0], nz = sgn4[k] * axes[k][1];
     c.touche = true; c.nx = nx; c.nz = nz; c.prof = best;
     // point de contact : le coin le plus enfoncé : coin de la voiture le plus avancé vers la boîte (−n), ou coin de la boîte le
     // plus avancé dans la voiture (+n) quand la boîte est la plus petite dans cette direction
