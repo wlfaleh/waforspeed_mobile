@@ -27,6 +27,9 @@ namespace carte {
 namespace {
 
 int64_t g_troupeau[3] = {-1, -1, -1};   // WFS-186 : premier segment de chaque troupeau (vache, cheval, mouton), pour le banc
+vec3 g_sommet{}; bool g_aSommet = false;   // WFS-216 : cime du plus haut sommet du fond du col, pour le banc
+// WFS-216 (RG-01) : roche du col par plaques : gris de 0x8a8884 (albédo 0,25) et deux pierres calcaires (0,39 à 0,49)
+const int ROCHE[4] = {C_WALK, C_PIERRE0 + 1, C_WALK, C_PIERRE0};
 
 enum { T_FENCE = CarteDecor::T_CARTE, T_HEDGE, T_FARM, T_BALES, T_TURBINE, T_POLE, T_SIGN, T_VILLA, T_CHURCH, T_ZEBRA, T_VINES,
        T_GLISS, T_MURET, T_DANGER, T_CASCADE,   // WFS-138 : glissière, muret, panneau A1, cascade
@@ -714,7 +717,7 @@ private:
         for (int i = 0; i < n; i++) { out[i].ya += corr * (out[i].a - R) / (m - R); out[i].yb += corr * (out[i].b - R) / (m - R); }
         // plus de 24° vers une route nettement plus haute (col) : la roche affleure (gris 0x8a8884, albédo ≈ 0,25) ;
         // en terrain plat (rond-point, village), la rampe ne fait que rattraper le profil : l'herbe reste
-        if (pente > 0.45f && l->h > 2.5f) for (int i = 1; i < n; i++) out[i].col = C_WALK;
+        if (pente > 0.45f && l->h > 2.5f) for (int i = 1; i < n; i++) out[i].col = ROCHE[(((a / 3 + i) % 4) + 4) % 4];   // WFS-216 : plaques de 3,6 m
         return n;
     }
     std::vector<Libre> libre_;   // 2 par segment : [2a] gauche, [2a + 1] droite
@@ -871,6 +874,7 @@ private:
         std::vector<size_t> idx(sommets_.size()); for (size_t i = 0; i < idx.size(); i++) idx[i] = i;
         std::sort(idx.begin(), idx.end(), [&](size_t x, size_t y) { return sommets_[x].h > sommets_[y].h; });
         for (size_t i = 0; i < idx.size() && i < 2; i++) sommets_[idx[i]].neige = true;
+        if (!idx.empty()) { g_sommet = sommets_[idx[0]].c + vec3{0, sommets_[idx[0]].h, 0}; g_aSommet = true; }   // WFS-216 : banc
         WFS_LOG("campagne : %zu sommets en fond du col (2 enneigés)", sommets_.size());
     }
     void construireSommets(Renderer& r) {
@@ -881,9 +885,10 @@ private:
             float rr[N]; for (int i = 0; i < N; i++) rr[i] = 0.75f + 0.5f * (float)D.next();
             const float paliers[4] = {0, 0.35f, 0.7f, 1};
             for (int e = 0; e < 3; e++) {
-                const int col = e == 0 ? C_FOREST : e == 1 || !m.neige ? C_WALK : C_WHITE;
+                const int roche = ROCHE[(int)(&m - sommets_.data()) % 4];   // WFS-216 (RG-01) : roche de chaque sommet
                 const float t0 = paliers[e], t1 = paliers[e + 1];
                 for (int i = 0; i < N; i++) {
+                    const int col = e == 0 ? C_FOREST : e == 1 || !m.neige ? (i % 3 ? roche : ROCHE[(i + 1) % 4]) : C_WHITE;   // faces de roche variées
                     const float a0 = 2 * PI * i / N, a1 = 2 * PI * (i + 1) / N;
                     auto P = [&](float ang, float tt, float k) { const float rad = m.r * (1 - tt) * k; return vec3{m.c.x + std::cos(ang) * rad, m.c.y + m.h * tt, m.c.z + std::sin(ang) * rad}; };
                     const float k0 = rr[i], k1 = rr[(i + 1) % N];
@@ -1074,6 +1079,7 @@ private:
 
 WFS_SYSTEM(carte::Campagne, 107)
 
-namespace campagne { int64_t troupeau(int espece) { return espece >= 0 && espece < 3 ? carte::g_troupeau[espece] : -1; } }   // WFS-186 : banc   // décor (100-199) : après la plage (105) et les piétons (106)
+namespace campagne { int64_t troupeau(int espece) { return espece >= 0 && espece < 3 ? carte::g_troupeau[espece] : -1; }
+                    bool sommet(vec3& s) { s = carte::g_sommet; return carte::g_aSommet; } }   // WFS-216 : banc   // WFS-186 : banc   // décor (100-199) : après la plage (105) et les piétons (106)
 
 } // namespace wfs

@@ -20,6 +20,7 @@
 
 namespace wfs {
 namespace plage { const std::vector<vie::Baigneur>& gens(const MapDef& map, int64_t len); }   // WFS-180 (plage.cpp)
+namespace plage { bool vueBanc(); }   // WFS-216 (RG-02, accroche E11) : vue de banc de la Corniche (fête vue de la promenade)
 namespace {
 
 // valeurs du jeu web (people.js)
@@ -129,7 +130,7 @@ public:
     }
 
     void render(Renderer& r, const GameView& g) override {
-        if (!actif_ || g.sceneDediee || !g.player) return;
+        if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;   // WFS-216 : la foule de la fête dans les vues du banc
         Track& tr = *g.track;
         const double len = (double)tr.segmentCount(), aP = g.player->position / SEG, aMod = std::fmod(std::fmod(aP, len) + len, len);
         // 1. les plus proches (devant compte plus que derrière), petit bonus pour ceux déjà affichés (pas de clignotement)

@@ -442,8 +442,13 @@ void sillage(Geo& g) {
 
 // banc d'essai : vue de dessus de la Corniche (décor compris), réglée par benchCorniche
 struct VueDessus { bool actif = false; vec3 oeil{}, cible{}, haut{0, 0, -1}; float fov = 50; } g_vueDessus;
+} // namespace
+namespace plage { bool vueBanc() { return g_vueDessus.actif; } }   // WFS-216 (RG-02) : la foule reste dessinée (pietons.cpp)
+namespace {
 // WFS-181 : où regarder les animaux (banc d'essai) ; profondeur des bâtiments (m) ; textes des enseignes
 struct OuAnimaux { int64_t dauphinSeg = -1, rocherSeg = -1; float dauphinLat = 0, rocherLat = 0, rocherY = 0; } g_animaux;
+// WFS-216 (RG-02) : où regarder les bateaux (banc d'essai) : le yacht le plus proche du bord, le paquebot
+struct OuBateaux { int64_t yachtSeg = -1, paquebotSeg = -1; float yachtLat = 0, paquebotLat = 0; vec3 yachtPos{}, paquebotPos{}, jetPos{}; } g_bateaux;
 constexpr float PROF_ETAB[plage::E_NB] = {12.f, 9.f, 16.f, 14.f, 7.f};
 const char* const TEXTES_ETAB[] = {"BEACH BAR", "CASINO", "CAFÉ DU PORT", "CAFÉ DE LA PLAGE", "GALERIE MARINE", "LOCATION SCOOTERS"};
 
@@ -1083,7 +1088,14 @@ public:
             const float u = d(), lat = R + 110 + d() * 480, rot = (d() - 0.5f) * 6.2832f, ph = d() * 6.2832f;
             if (large(n)) bateaux_.push_back({u < 0.62f ? (int)B_VOILIER : (int)B_YACHT, n, lat, rot, ph});
         }
-        if (large(len_ / 3)) bateaux_.push_back({B_PAQUEBOT, len_ / 3, 1150.f, 0.3f, 0.f});   // un paquebot au large
+        // un paquebot au large ; WFS-216 (RG-02) : au premier segment de mer libre à partir du tiers du tour (au tracé 2, le
+        // tiers tombait hors de la mer libre : le paquebot n'était jamais posé) ; aucun tirage : les autres bateaux ne changent pas
+        for (int64_t n = len_ / 3; n < len_ / 3 + len_ / 2; n += 10) if (large(n)) { bateaux_.push_back({B_PAQUEBOT, n, 1150.f, 0.3f, 0.f}); break; }
+        g_bateaux = {};   // WFS-216 : banc d'essai
+        for (const Bateau& b : bateaux_) {
+            if (b.type == B_YACHT && (g_bateaux.yachtSeg < 0 || b.lat < g_bateaux.yachtLat)) { g_bateaux.yachtSeg = b.seg; g_bateaux.yachtLat = b.lat; }
+            if (b.type == B_PAQUEBOT) { g_bateaux.paquebotSeg = b.seg; g_bateaux.paquebotLat = b.lat; }
+        }
         for (const plage::Lieu& l : L.lieux) for (int k = 0; k < 2; k++)   // 2 jet-skis devant chaque lieu (4 à 10 en tout)
             if (large(l.seg)) { Bateau b{B_JETSKI, l.seg, R + 62 + k * 22 + d() * 8, 0.f, d() * 6.2832f}; b.base = l.seg; bateaux_.push_back(b); }
         // nuit : projecteur au-dessus de la scène et feu de camp (lumières des 4 plus proches, nuit.cpp)
@@ -1182,6 +1194,7 @@ public:
     // le paquebot), jet-skis qui longent la côte à ≈ 15 m/s ; faisceaux et flammes des fêtes la nuit
     int dessineMer(Renderer& r, Track& t, int64_t segJ, double temps, bool t2) {
         int draws = 0;
+        int64_t jetProche = std::numeric_limits<int64_t>::max();   // WFS-216 : jet-ski le plus proche du joueur (banc)
         auto relatif = [&](int64_t seg) { int64_t d = ((seg - segJ) % len_ + len_) % len_; return d > len_ / 2 ? d - len_ : d; };
         for (const Bateau& b : bateaux_) {
             double sg = (double)b.seg; float sens = 1;
@@ -1205,7 +1218,10 @@ public:
             const vec3 x = normalize(cross(up, z)), zz = cross(x, up);
             vec3 o{(float)p.x, (t2 ? 0.f : (float)p.y) + OCEAN_Y + 0.25f * k * std::sin(ph + 0.7f), (float)p.z};
             r.draw(modeleBateau_[b.type], coqueMat_, repere(o, x, up, zz)); draws++;
+            if (b.type == B_YACHT && b.seg == g_bateaux.yachtSeg) g_bateaux.yachtPos = o;              // WFS-216 : visé par le banc
+            if (b.type == B_PAQUEBOT && b.seg == g_bateaux.paquebotSeg) g_bateaux.paquebotPos = o;
             if (b.type == B_JETSKI) { r.draw(sillage_, sillageMat_, repere(vec3{o.x, (t2 ? 0.f : (float)p.y) + OCEAN_Y, o.z}, cross(up0, z), up0, z)); draws++; }
+            if (b.type == B_JETSKI && std::llabs(rel) < jetProche) { jetProche = std::llabs(rel); g_bateaux.jetPos = o; }
         }
         // fête la plus proche devant le joueur : lyres colorées (jour et nuit), faisceaux qui balaient et flamme (nuit)
         for (const plage::Lieu& l : plage::lieux(*t.map(), len_).lieux) {
@@ -2203,7 +2219,7 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     if (la) { dessus("carte-plage-lacets-dessus", la->debut + 150, la->debut + (la->fin - la->debut) / 2, 520); dessus("carte-plage-epingle-dessus", la->debut + 60, la->debut + 140, 110); }
     if (rp) dessus("carte-plage-rond-point-dessus", rp->debut - 20, (rp->debut + rp->fin) / 2, 110);
     // WFS-180 : vues depuis la promenade (1,7 m au-dessus du trottoir, à RW + 3 m), tournées vers la fête, les jeux et la mer
-    auto promenade = [&](const char* nom, int64_t seg, float recul, float latCible, float hCible, bool nuit) {
+    auto promenade = [&](const char* nom, int64_t seg, float recul, float latCible, float hCible, bool nuit, float fov = 55, const vec3* vise = nullptr) {
         if (seg < 0) { WFS_ERR("banc Corniche : lieu absent pour %s", nom); return; }
         setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, seg - 30)).c_str(), 1);
@@ -2211,7 +2227,8 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); if (i % 40 == 0) g.render(400 + i / 60.0); }
         const TrackPoint o = t.point(((double)seg - recul / SEG_M) * SEG, (float)RW + 3), c = t.point((double)seg * SEG, latCible);
         g_vueDessus.actif = true; g_vueDessus.oeil = {(float)o.x, (float)o.y + 1.85f, (float)o.z};
-        g_vueDessus.cible = {(float)c.x, (float)c.y + hCible, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = 55;
+        g_vueDessus.cible = {(float)c.x, (float)c.y + hCible, (float)c.z}; g_vueDessus.haut = {0, 1, 0}; g_vueDessus.fov = fov;
+        if (vise) { g_vueDessus.actif = false; g.render(404); g_vueDessus.actif = true; g_vueDessus.cible = *vise + vec3{0, hCible, 0}; }   // WFS-216 : position dessinée du bateau au temps de la capture (dessineMer)
         g.render(404); g.render(404.02); r.capturePng(out + "/" + nom + ".png");
         g_vueDessus.actif = false;
         WFS_LOG("capture %s : vue depuis la promenade", nom);
@@ -2220,7 +2237,19 @@ void benchCorniche(Game& g, Renderer& r, const std::string& out) {
     promenade("carte-plage-fete-vue", fete, 22, plage::SCENE_LAT, 1.5f, false);
     promenade("carte-plage-fete-vue-nuit", fete, 22, plage::SCENE_LAT, 1.5f, true);
     promenade("carte-plage-jeux-vue", jeux, 14, plage::VOLLEY_LAT + 8, 0.f, false);
-    promenade("carte-plage-bateaux-vue", jeux, 0, (float)RW + 250, -1.5f, false);
+    // WFS-216 (RG-02, ANO-105) : bateaux reconnaissables, à leur taille réelle, seul le cadrage change : jet-skis et leurs sillages
+    // (62 à 92 m du bord, ± 60 m le long du rivage : le plus proche, champ de 35°), le yacht le plus proche (30°), le paquebot de
+    // 290 m (30°) ; la caméra vise la position dessinée du bateau (dessineMer)
+    promenade("carte-plage-bateaux-vue", jeux, 0, (float)RW + 75, 0.f, false, 35, &g_bateaux.jetPos);
+    {   // positions des bateaux : lues après un premier chargement de la carte (tirages de la carte, déterministes)
+        setenv("WFS_MOMENT", "jour", 1); unsetenv("WFS_DEPART");
+        g.init(r, "golf", "plage"); const OuBateaux ob = g_bateaux; g.shutdown();
+        WFS_LOG("banc Corniche : yacht le plus proche au segment %lld à %.0f m, paquebot %lld", (long long)ob.yachtSeg, ob.yachtLat, (long long)ob.paquebotSeg);
+        if (ob.yachtSeg >= 0) promenade("carte-plage-yacht-vue", ob.yachtSeg, 0, ob.yachtLat, 2.f, false, 30, &g_bateaux.yachtPos);
+        else WFS_ERR("banc Corniche : aucun yacht pour carte-plage-yacht-vue");
+        if (ob.paquebotSeg >= 0) promenade("carte-plage-paquebot-vue", ob.paquebotSeg, 0, ob.paquebotLat, 15.f, false, 30, &g_bateaux.paquebotPos);
+        else WFS_ERR("banc Corniche : pas de paquebot pour carte-plage-paquebot-vue");
+    }
     // WFS-181 : bars de plage, casino, cafés, galerie, location de scooters (caméra de course, jour et nuit), mouettes
     // (caméra de course au premier bar, vue de la promenade sur un rocher), dauphins (vue de la promenade, en plein saut).
     // WFS_PLAGE_AVANT=1 : mêmes vues sans WFS-181, suffixe « -avant » (preuve avant / après, lancée en local)

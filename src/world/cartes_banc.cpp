@@ -21,7 +21,7 @@
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2
 
 namespace wfs {
-namespace campagne { int64_t troupeau(int espece); }   // WFS-186 (campagne.cpp)
+namespace campagne { int64_t troupeau(int espece); bool sommet(vec3& s); }   // WFS-186, WFS-216 (campagne.cpp)
 
 // WFS-212 : caméra haute du banc (vue de dessus d'un lieu) : réglée par le crochet ambiance, sans scène dédiée : la carte entière
 // reste dessinée (la Ville ne dessine rien en scène dédiée). Inactive hors banc.
@@ -148,10 +148,14 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
             (long long)lac->fin, lac->denivele, (long long)ep, (long long)vi);
     int64_t tr[3] = {-1, -1, -1};   // WFS-186 : troupeaux (vaches, chevaux, moutons), caméra 25 m avant le premier de chaque espèce
     if (g.init(r, "golf", "campagne")) { for (int e = 0; e < 3; e++) tr[e] = campagne::troupeau(e) >= 0 ? campagne::troupeau(e) - (int64_t)(25 / SEG_M) : -1; g.shutdown(); }
-    struct Cap { const char* nom; int64_t seg; int cam; };
-    const Cap caps[] = {{"carte-campagne-vaches", tr[0], 0}, {"carte-campagne-chevaux", tr[1], 0}, {"carte-campagne-moutons", tr[2], 0},
-                        {"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1},
-                        {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0}, {"carte-campagne-vignes", vi, 0},
+    // WFS-216 (RG-01, ANO-103) : vue libre (vue = 1 : du haut du col vers la plus haute cime ; 2 : épingle vue d'en haut, depuis
+    // l'approche) ; la voiture part du même segment, seule la caméra change
+    // WFS-216 (RG-03, ANO-108) : recul = m de recul en plus la nuit : le troupeau (17 à 45 m de l'axe) entre dans le cône des
+    // phares (demi-angle 0,7 rad, portée 170 m : nuit.cpp) ; aucune lumière ajoutée
+    struct Cap { const char* nom; int64_t seg; int cam; int vue = 0; float reculNuit = 0; };
+    const Cap caps[] = {{"carte-campagne-vaches", tr[0], 0, 0, 30}, {"carte-campagne-chevaux", tr[1], 0}, {"carte-campagne-moutons", tr[2], 0, 0, 30},
+                        {"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1, 1},
+                        {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0, 2}, {"carte-campagne-vignes", vi, 0},
                         {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0},
                         {"carte-campagne-peage", au >= 0 ? au : -1, 0}, {"carte-campagne-autoroute", au >= 0 ? au + (int64_t)(300 / SEG_M) : -1, 0}};   // WFS-179
     const char* seule = std::getenv("WFS_CAMPAGNE_LIEU");   // WFS-179 : essai local d'un seul lieu (préfixe du nom)
@@ -160,13 +164,27 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
         if (c.seg < 0) { ecarts++; WFS_ERR("banc campagne : %s introuvable", c.nom); continue; }
         if (!std::strcmp(mo, "nuit") && c.cam == 1) continue;
         setenv("WFS_MOMENT", mo, 1);
-        setenv("WFS_DEPART", std::to_string(c.seg).c_str(), 1);
+        setenv("WFS_DEPART", std::to_string(c.seg - (!std::strcmp(mo, "nuit") ? (int64_t)(c.reculNuit / SEG_M) : 0)).c_str(), 1);
         if (!g.init(r, "golf", "campagne")) { ecarts++; continue; }
         g.setAutopilot(false); g.camMode = c.cam; g.allerA(Ecran::Course);
         for (int i = 0; i < 240; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(400 + i / 60.0); }
+        if (c.vue == 1 && campagne::sommet(carte::g_vueCarte.cible)) {   // 30 m au-dessus de la route (au-dessus des sapins), vers la cime ; champ de 38° : les sommets, pas le bord du décor
+            const TrackPoint o = t.point((double)haut * SEG, 0);
+            carte::g_vueCarte.oeil = {(float)o.x, (float)o.y + 30, (float)o.z}; carte::g_vueCarte.cible.y -= 120; carte::g_vueCarte.fov = 38; carte::g_vueCarte.actif = true;
+            vec3 f = carte::g_vueCarte.cible - carte::g_vueCarte.oeil; f.y = 0; f = normalize(f);
+            carte::g_vueCarte.cible = carte::g_vueCarte.cible + vec3{-f.z, 0, f.x} * 250.f;   // 250 m à droite : le grand versant, pas le bord du décor
+        }
+        if (c.vue == 2) {   // épingle : œil 45 m au-dessus de la route, 70 m avant l'épingle ; visé : centre du lacet
+            int64_t fin = ep; while (fin < lac->fin && std::abs(t.segAt(fin).curve) > 10) fin++;
+            const TrackPoint a = t.point((double)ep * SEG, 0), b = t.point((double)fin * SEG, 0), m = t.point((double)(ep + fin) / 2 * SEG, 0),
+                             o = t.point((double)(ep - (int64_t)(70 / SEG_M)) * SEG, 0);
+            carte::g_vueCarte.cible = {(float)(a.x + b.x + m.x) / 3, (float)(a.y + b.y + m.y) / 3, (float)(a.z + b.z + m.z) / 3};
+            carte::g_vueCarte.oeil = {(float)o.x, (float)o.y + 45, (float)o.z}; carte::g_vueCarte.fov = 55; carte::g_vueCarte.actif = true;
+        }
         g.render(404); g.render(404.02);
         const std::string nom = std::string(c.nom) + (!std::strcmp(mo, "nuit") ? "-nuit" : "");
         r.capturePng(out + "/" + nom + ".png");
+        carte::g_vueCarte.actif = false;
         WFS_LOG("capture %s : segment %lld, %.0f m, %u appels de dessin", nom.c_str(), (long long)c.seg, g.player().dist * M, r.appelsDessin());
         g.shutdown();
     }
