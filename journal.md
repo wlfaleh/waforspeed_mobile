@@ -2436,3 +2436,13 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Vérifications** : 42 tests CPU, parcours complet 0 écart, captures `conducteurs-*` (jour et nuit) et `realisme-pietons-humains-*` regardées en local. `expert-realisme-3d` consulté, ses deux corrections sont faites : écart de forme mesuré, hystérésis. Pas de cheveux ni de diffusion sous la surface (WFS-210).
 - **Accroches** : aucune hors zone. La tangente n'est pas ajoutée à `SkinVertex` : la texture de normales des humains est plate. Fusion par confiance ; `qa/Check.md` est à jour.
 
+### 2026-11-07 08:20:14 — WFS-206 attribué à Claude, agent 2 (01UY1Vv5) ; arbitrages de WFS-211 (po-scrum-master)
+- **Début** : WFS-206 (E9, P2 Haute) — Routes (2/2) : usure des bandes de roulement, raccords, bordures et revêtement propre à chaque carte. Branche `feature/waforspeed-206`, à pousser dès sa création.
+- Choix : WFS-213 (P1) attend la fin de WFS-208 (E13 occupée) ; WFS-215 (P3) attend E10 (WFS-158) ; WFS-216 (P3, E2) attend WFS-212 ✅ (🟣). Entre WFS-206 et WFS-210 (P2 tous deux, épics libres), le plus petit numéro : WFS-206.
+- Zone autorisée : E9 (`shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `references/reel/routes/**`, `tests/fidelite_routes*`) + accroche ≤ 10 lignes `src/game/track.cpp` ; exceptions RG-04 (`references/reel/materiaux.json`, valeurs listées) et RG-05 (accroche `src/render/bench_realisme.cpp`), à annoncer au journal.
+- Règles et critères : `regles-de-gestion/WFS-206.md` (RG-01 à RG-05, M-03 à M-05, parcours complet sur les 4 cartes). Consulter `expert-realisme-3d`.
+- **Arbitrage 1 (peau VI)** : on suit le réel mesuré. Plage de la peau de `DA-realisme.md` § 3 passée à 0,05-0,65 ; la correction est rangée dans WFS-210 (RG-02 précisé, source à citer).
+- **Arbitrage 2 (mémoire GPU des conducteurs, environ 17,7 Mo)** : indices 16 bits rangés dans WFS-210 (RG-05), mesure avant / après.
+- WFS-210 passe en ⏳ Prêt (WFS-209 ✅, E11 libre).
+- Suivi : WFS-190 (agent arwa) sans envoi depuis 20:40 (plus de 10 h) ; WFS-161 (Agent 0) sans envoi depuis 01:56 (⚠️).
+
