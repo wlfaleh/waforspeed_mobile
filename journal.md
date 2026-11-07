@@ -3623,3 +3623,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Plan court** : branche `feature/waforspeed-261` depuis `main`, commit de début poussé tout de suite ; stéréo d'abord (test « mono identique »), puis sources et distance, puis tunnels, banc audio et parcours. Skills : `agent-developer`, `waforspeed-natif`. Après fusion : 🟣, puis ✅ par le robot (ni essai de l'utilisateur, ni conduite).
 - **Correction** : la colonne Branche de WFS-262 à 265 (créés à 17:14) était décalée d'un numéro (`feature/waforspeed-261` pour WFS-262…) : remise à `feature/waforspeed-262` à `-265`, pour éviter tout mélange avec la branche de WFS-261.
 - Reste au PO : ANO-134 (bloquante, recette du lot 4, WFS-210 REFUSÉ) attend son US de correction.
+
+### 2026-11-07 17:23:49 — Statuts automatiques, CI main #852 (robot statuts)
+- Run rouge (push, commit 0ffe7d0), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-227, WFS-234.
