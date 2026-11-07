@@ -3,7 +3,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <cstdlib>
+#include <string>
 #include "../core/log.h"
+#include "../game/game.h"
 #include "../render/renderer.h"
 #include "../render/squelette.h"
 #include "../render/vehicule_cockpit.h"   // WFS-201 : assise de chaque modèle (lecture seule)
@@ -12,8 +15,9 @@ namespace wfs::conducteurs {
 
 namespace {
 
-// hauteur des yeux assis d'ANSUR-II (references/reel/anthropometrie.json, eyeheightsitting), dossier à 25° (vue cockpit, WFS-201)
-constexpr float OEIL_ASSIS_HOMME_M = 0.8045f, OEIL_ASSIS_FEMME_M = 0.7477f;
+// stature d'ANSUR-II (references/reel/anthropometrie.json : humain.hommes.stature 1756,2 ± 68,6 mm, humain.femmes.stature
+// 1628,5 ± 64,2 mm) : échelle 1 = stature réelle ÷ hauteur du personnage ; chaque conducteur tiré à ± 1 écart-type
+constexpr float STATURE_M[2] = {1.7562f, 1.6285f}, ECART_M[2] = {0.0686f, 0.0642f};
 // repères du visage pour un adulte de 1,75 m (E, proportions : œil à 0,936 de la stature ; crâne 0,125 au-dessus de l'œil ;
 // œil 0,09 devant l'articulation de la tête ; contact du siège 0,08 sous l'articulation de la cuisse), mis à la taille du personnage
 constexpr float OEIL_STATURE = 0.936f, CRANE_SUR_OEIL = 0.125f / 1.75f, OEIL_AVANT = 0.09f / 1.75f, CUISSE_SIEGE = 0.08f / 1.75f;
@@ -69,32 +73,6 @@ bool chargerModele(Renderer& r, const char* chemin, Modele& M, int sexe) {
 
 } // namespace
 
-void mesurerSiege(Model& m, const float* xyz, size_t pas, size_t n) {
-    const float cx = (m.bmin.x + m.bmax.x) * 0.5f, cz = (m.bmin.z + m.bmax.z) * 0.5f;
-    const float x0 = cx + X_PLACE, z0 = cz + Z_OEIL_L * (m.bmax.z - m.bmin.z);
-    float toit = -1e30f; size_t vus = 0;
-    for (size_t i = 0; i < n; i++) {
-        const float* p = xyz + i * pas;
-        if (std::fabs(p[0] - x0) > 0.12f || std::fabs(p[2] - z0) > 0.2f) continue;
-        toit = std::max(toit, p[1]); vus++;
-    }
-    m.siege = vus ? vec4{toit, x0, z0, 1.f} : vec4{m.bmax.y, x0, z0, 0.f};
-}
-
-Placement placer(float assise, float cibleRel, float oeilRel, float hautCrane, float toitY, bool toitMesure) {
-    Placement P;
-    const float k0 = cibleRel / std::max(oeilRel, 0.1f);
-    float k = k0;
-    if (toitMesure) {   // tête sous le pavillon : échelle réduite (jusqu'à 0,86), puis l'œil descend si cela ne suffit pas
-        const float place = toitY - GARDE_TOIT_M - assise;
-        if (k * (oeilRel + hautCrane) > place) k = std::max(place / (oeilRel + hautCrane), ECHELLE_MIN * k0);
-    }
-    P.echelle = k;
-    P.oeilY = assise + k * oeilRel;
-    if (toitMesure) P.oeilY = std::min(P.oeilY, toitY - GARDE_TOIT_M - k * hautCrane);
-    return P;
-}
-
 bool preparer(Renderer& r) {
     if (g_pret) return true;
     g_pret = chargerModele(r, "people/homme.wfp", g_m[0], 0) && chargerModele(r, "people/femme.wfp", g_m[1], 1);
@@ -141,7 +119,8 @@ void dessinerFile(Renderer& r, const vec3& cam) {
         const Model& mo = *e.m;
         const cockpit::InterieurDef* def = e.car ? cockpit::interieurPour(e.car) : nullptr;
         const float sol = mo.bmin.y, assise = sol + (def ? def->assise : 0.42f);
-        const float cible = (sexe ? OEIL_ASSIS_FEMME_M : OEIL_ASSIS_HOMME_M) * std::cos(cockpit::DOSSIER_RAD);
+        const float stature = STATURE_M[sexe] + (tirage() * 2.f - 1.f) * ECART_M[sexe];
+        const float cible = stature / std::max(M.p.hauteur, 0.5f) * M.oeilRel;   // œil − siège à l'échelle 1 (pose du personnage)
         const Placement P = placer(assise, cible, M.oeilRel, M.crane, mo.siege.x, mo.siege.w > 0.5f);
         const mat4 monde = e.monde * translate({mo.siege.y, P.oeilY, mo.siege.z}) * rotateY(lacet) * scale({P.echelle, P.echelle, P.echelle})
                            * translate({-M.oeil.x, -M.oeil.y, -M.oeil.z});
@@ -156,5 +135,28 @@ void dessinerFile(Renderer& r, const vec3& cam) {
 }
 
 int dessinesDerniereImage() { return g_dessines; }
+
+// banc d'essai : voiture à l'arrêt vue de côté (vitrine, caméra à 6,5 m), jour et nuit : berline (Golf), SUV haut (Range Rover
+// Sport), supercar basse (SF90) : conducteurs-<voiture>-<moment>.png ; une vue arrière gauche (trois quarts) de la Golf
+void benchConducteurs(Game& g, Renderer& r, const std::string& out) {
+    struct Cas { const char* car; float orbit; };
+    const Cas cas[] = {{"golf", 1.5708f}, {"rrsport", 1.5708f}, {"sf90", 1.5708f}, {"golf", 2.4f}};
+    for (const char* moment : {"jour", "nuit"}) {
+        setenv("WFS_MOMENT", moment, 1);
+        int k = 0;
+        for (const Cas& c : cas) {
+            if (!g.init(r, c.car, "ville")) { WFS_ERR("conducteurs : chargement %s impossible", c.car); continue; }
+            g.setAutopilot(false); g.camMode = 2; g.orbit = c.orbit;
+            double t = 1200;
+            for (int i = 0; i < 60; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 10 == 0) g.render(t); }
+            g.render(t); g.render(t + 0.01);
+            const std::string nom = std::string("conducteurs-") + c.car + (k++ == 3 ? "-arriere" : "") + "-" + moment;
+            r.capturePng(out + "/" + nom + ".png");
+            WFS_LOG("capture %s : %d conducteur(s) dessiné(s) (WFS-73)", nom.c_str(), g_dessines);
+            g.shutdown();
+        }
+    }
+    unsetenv("WFS_MOMENT");
+}
 
 } // namespace wfs::conducteurs
