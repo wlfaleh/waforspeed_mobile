@@ -34,6 +34,11 @@ namespace {
 
 uint32_t g_graineBanc = 0;   // banc d'essai : tirage fixe (captures stables)
 bool g_vueDessusBanc = false;   // WFS-242 (RG-06) : banc d'essai : grille de départ vue de dessus (scène dédiée)
+// WFS-243 (RG-01, RG-06) : banc d'essai : joueur posé à g_bancJoueurM (m), ordinateurs à g_bancAdversaires (m devant lui), au
+// pas suivant ; puis journal, à chaque image, de la distance du classement, de la distance dessinée et de la largeur à l'écran
+std::vector<double> g_bancAdversaires; double g_bancJoueurM = 0; bool g_journalAdversaires = false;
+bool g_bancAvant = false;   // WFS-243 : banc : image « avant » (adversaires coupés par la distance, comme avant le ticket)
+bool g_figerBanc = false;   // WFS-243 : banc : ordinateurs arrêtés là où le banc les a posés
 
 const vec4 FOND{10 / 255.f, 11 / 255.f, 16 / 255.f, 0.82f}, SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.92f};
 const vec4 TEXTE{242 / 255.f, 244 / 255.f, 248 / 255.f, 1}, PISTE{1, 1, 1, 0.12f}, MUTED{138 / 255.f, 144 / 255.f, 166 / 255.f, 1};
@@ -90,7 +95,17 @@ public:
             WFS_LOG("course à 5 : graine %u, %d km, ordinateurs %s (difficulté %s), joueur à la place %d/%d", graine_, kmCourse5(), noms.c_str(),
                     course5::cleDifficulte(course5::difficulte()), placeJoueur_ + 1, (int)os_.size() + 1);
         }
-        if (!actif_ || c->state == RaceState::Count) return;   // décompte : tout le monde attend sur la grille
+        if (actif_ && !g_bancAdversaires.empty()) {   // WFS-243 : banc d'essai seulement (ligne droite, voitures arrêtées)
+            course5::Place p; p.s = g_bancJoueurM / M; p.x = course5::FILES[1];
+            course5::placerSurGrille(pl, *g.track, p);
+            for (size_t k = 0; k < os_.size() && k < g_bancAdversaires.size(); k++) {
+                course5::Ordinateur& o = os_[k];
+                o.file = (int)(k % 3); o.g.x = o.cibleX = course5::FILES[o.file];
+                o.g.rd = o.g.rdPrec = pl.dist + g_bancAdversaires[k] / M; o.g.xPrec = o.g.x; o.g.v = 0;
+            }
+            g_bancAdversaires.clear();
+        }
+        if (!actif_ || c->state == RaceState::Count || g_figerBanc) return;   // décompte : tout le monde attend sur la grille ; banc : figés
         if (!depart_ && c->state == RaceState::Play) {   // WFS-130 (RG-06) : ordinateurs prêts à être dessinés au départ
             depart_ = true;
             int prets = 0; for (const auto& o : os_) { auto it = models_.find(o.car); prets += it != models_.end() && it->second.ok; }
@@ -166,6 +181,13 @@ public:
             const TrackPoint p = g.track->pointLisse(o.g.rdRendu(g.alpha), o.g.xRendu(g.alpha) * RW);   // WFS-221 (accroche) : rendu interpolé
             const mat4 m = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th)) * rotateX((float)p.slope);
             peintures_[o.car] = lin(o.peinture);   // Renderer::draw garde l'adresse de la peinture jusqu'à la fin de l'image
+            if (g_journalAdversaires) {   // WFS-243 (RG-01, RG-02) : banc : classement, dessin, largeur sur un téléphone 2340 × 1080
+                const vec3 c{(float)p.x, (float)p.y, (float)p.z};
+                const float prof = -(g.view.transformPoint(c)).z, focale = std::fabs(g.proj.at(1, 1)) * 1080.f * 0.5f;
+                WFS_LOG("course à 5 : %s : classement %.1f m devant, dessiné à %.1f m de la caméra (%.1f m devant le joueur), %.1f px de large en 2340 × 1080",
+                        o.nom.c_str(), rel * M, prof, (o.g.rdRendu(g.alpha) - sP) * M, carById(o.car.c_str()).d.W * focale / std::max(prof, 0.1f));
+            }
+            if (!g_bancAvant) r.adversaireProchaineVoiture();   // WFS-243 (ANO-117) : visible jusqu'à 700 m (avant : coupée à 150 m en Basse, 200 m en Haute)
             r.draw(it->second, m, &peintures_[o.car]);
         }
     }
@@ -376,6 +398,45 @@ void benchCourse5(Game& g, Renderer& r, const std::string& out) {
         for (int i = 0; i < 9 * 60; i++) g.update(1.0 / 60);   // fin du décompte, puis 5 s de course (distance minimale au journal)
         g.setAutopilot(false);
         g.shutdown();
+    }
+    // WFS-243 (RG-01, RG-02, RG-06, ANO-117) : ligne droite de la Campagne, joueur à 0,54 km comme sur la vidéo 3 de la VABF,
+    // ordinateurs arrêtés à 190 m et 400 m devant (puis tous à 400 m et plus), en Haute puis en Basse ; journal par image
+    for (const bool basse : {false, true}) {
+        const bool avant = r.qualiteBasse;
+        r.qualiteBasse = basse; g_graineBanc = 20261105u;
+        if (!g.init(r, "golf", "campagne")) { r.qualiteBasse = avant; continue; }
+        g.allerA(Ecran::Menu); images(30, 10);
+        g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(false);
+        for (int i = 0; i < 4 * 60; i++) g.update(1.0 / 60);   // fin du décompte
+        const char* q = basse ? "basse" : "haute";
+        // 190 m : à 0,54 km comme la vidéo (une bosse cache la route au-delà de ≈ 250 m) ; 400 m : à 1,06 km, ligne de vue
+        // dégagée sur plus de 400 m (cherchée sur le tracé : axe à moins de 5 m de la ligne de vue, aucune bosse)
+        struct Cas { const char* nom; double joueurM; std::vector<double> ecarts; };
+        const Cas CAS[] = {{"190m", 540, {190, 400, 402, 404}}, {"400m", 1060, {400, 402, 404, 406}}};
+        for (const auto& [nom, joueurM, ecarts] : CAS) {
+            g_bancJoueurM = joueurM; g_bancAdversaires = ecarts; g_figerBanc = true;
+            g.update(1.0 / 60);   // placement (collide)
+            g_journalAdversaires = true;
+            g_bancAvant = true; capture((std::string("course5-adversaires-") + nom + "-" + q + "-avant").c_str()); g_bancAvant = false;
+            WFS_LOG("capture course5-adversaires-%s-%s-avant : %u appels de dessin (adversaires coupés par la distance)", nom, q, r.appelsDessin());
+            capture((std::string("course5-adversaires-") + nom + "-" + q).c_str());
+            g_journalAdversaires = false;
+            WFS_LOG("capture course5-adversaires-%s-%s : %u appels de dessin", nom, q, r.appelsDessin());
+            // coût (condition du PO) : 30 images sans puis avec les adversaires lointains : appels de dessin, triangles, temps
+            for (const bool sans : {true, false}) {
+                g_bancAvant = sans; double appels = 0, tri = 0, ms = 0; const int N = 30;
+                for (int i = 0; i < N; i++) {
+                    g.update(1.0 / 60); const double t0 = nowSeconds(); g.render(t += 1.0 / 60);
+                    ms += (nowSeconds() - t0) * 1000; appels += r.appelsDessin(); tri += r.chronoImage().triangles;
+                }
+                WFS_LOG("course à 5 : coût %s %s, %s : %.0f appels de dessin, %.0f triangles, %.1f ms par image (moyenne de %d images, banc)",
+                        nom, q, sans ? "sans les adversaires lointains (avant)" : "avec (après)", appels / N, tri / N, ms / N, N);
+            }
+            g_bancAvant = false;
+        }
+        g_figerBanc = false;
+        g.shutdown();
+        r.qualiteBasse = avant;
     }
     g_graineBanc = 0;
     modeCourse() = ModeCourse::Checkpoint; kmCourse5() = 4;
