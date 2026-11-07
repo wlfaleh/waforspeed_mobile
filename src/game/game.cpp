@@ -16,6 +16,8 @@
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 #include "../ui/ecrans/chargement.h"   // WFS-146 (accroche, ANO-45) : fondu du chargement
+#include "../render/route_revetements.h"   // WFS-205 (accroche E9) : revêtements de route réels
+#include "../render/qualite_auto.h"
 
 namespace wfs {
 
@@ -39,8 +41,9 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
     track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
-    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
-    m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+    route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite));   // WFS-205 (accroche) : enrobé usé, béton de trottoir
+    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::Revetement::EnrobeUse, m);
+    m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
     m.flags = MAT_GROUND; m.rough = 0.95f; groundMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f}; shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     {
@@ -78,6 +81,7 @@ void Game::shutdown() {
     r_->destroy(car_);
     r_->destroy(shadowQuad_);
     for (Material* m : {&roadMat_, &walkMat_, &groundMat_, &shadowMat_}) r_->destroy(*m);   // WFS-187 : refaits à chaque init
+    route::liberer(*r_);   // WFS-205 (accroche) : textures de route rendues (matériaux de Game et des cartes déjà rendus)
     r_ = nullptr;
 }
 

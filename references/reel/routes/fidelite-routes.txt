@@ -1,0 +1,16 @@
+enrobe-neuf      | M-01 albédo moyen | 0.0551 | plage 0.04-0.07 | dans la plage
+enrobe-neuf      | M-02 rugosité sèche moyenne | 0.8257 | plage 0.75-0.90 | dans la plage
+enrobe-use       | M-01 albédo moyen | 0.1398 | plage 0.10-0.18 | dans la plage
+enrobe-use       | M-02 rugosité sèche moyenne | 0.8260 | plage 0.75-0.90 | dans la plage
+enrobe-campagne  | M-01 albédo moyen | 0.1097 | plage 0.08-0.14 | dans la plage
+enrobe-campagne  | M-02 rugosité sèche moyenne | 0.8709 | plage 0.82-0.92 | dans la plage
+beton-circuit    | M-01 albédo moyen | 0.0697 | plage 0.05-0.09 | dans la plage
+beton-circuit    | M-02 rugosité sèche moyenne | 0.7855 | plage 0.72-0.85 | dans la plage
+beton-trottoir   | M-01 albédo moyen | 0.3000 | plage 0.25-0.35 | dans la plage
+beton-trottoir   | M-02 rugosité sèche moyenne | 0.8755 | plage 0.80-0.95 | dans la plage
+paves-granit     | M-01 albédo moyen | 0.2752 | plage 0.20-0.35 | dans la plage
+paves-granit     | M-02 rugosité sèche moyenne | 0.7006 | plage 0.60-0.80 | dans la plage
+gravier          | M-01 albédo moyen | 0.2751 | plage 0.20-0.35 | dans la plage
+gravier          | M-02 rugosité sèche moyenne | 0.9512 | plage 0.90-1.00 | dans la plage
+repli-procedural | M-01 albédo moyen (route.glsl) | 0.1334 | plage 0.10-0.18 | dans la plage
+indice de fidélité des revêtements : 100 % (15 / 15)

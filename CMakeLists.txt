@@ -117,6 +117,8 @@ else()
   add_executable(test_fidelite tests/fidelite_referentiel.cpp src/game/roues.cpp)   # WFS-148 (RG-01, RG-05) : référentiel du réel, mesures géométriques
   add_executable(test_fidelite_voitures tests/fidelite_voitures.cpp src/game/roues.cpp)   # WFS-158 : audit des 20 voitures (mesure « fiche »)
   target_compile_definitions(test_fidelite_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_fidelite_routes tests/fidelite_routes.cpp src/render/ktx2.cpp src/render/route_revetements_defs.cpp)   # WFS-205 : revêtements de route (M-01, M-02)
+  target_compile_definitions(test_fidelite_routes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(corriger_voitures tools/corriger_voitures.cpp src/game/roues.cpp)   # WFS-158 (ST-2) : échelle et roues d'après le référentiel
   target_compile_definitions(corriger_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   target_compile_definitions(test_fidelite_soleil PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
