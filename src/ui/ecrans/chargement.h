@@ -56,6 +56,14 @@ MiseEnPage miseEnPagePetit(float W, float H, float logoMax, float gap);
 float dessinerBlocLogo(Renderer& r, const MiseEnPage& m, float y, float opacite);
 // dessin de l'écran (sans beginFrame / endFrame) : opacite de 0 à 1 (fondu)
 void dessinerChargement(Renderer& r, float W, float H, float p, const std::string& libelle, bool erreur, float opacite);
+// WFS-279 (RG-01, RG-03) : version de l'APK, en petit dans le coin bas droit (écran d'erreur compris). Seule source : versionName de
+// android/app/build.gradle (« 0.1.N »), passé par CMake (WFS_VERSION, chargement.cpp) ; PC, bancs et tests : « dev ».
+// Texte : « 0.1.912 » → « v0.1.912 » ; vide → « dev » ; autre valeur : telle quelle ; 24 caractères au plus.
+const char* versionJeu();
+inline std::string texteVersion(const char* v) {
+    const std::string s = v && *v ? std::string(v).substr(0, 24) : std::string("dev");
+    return s[0] >= '0' && s[0] <= '9' ? "v" + s : s;
+}
 // banc d'essai (desktop_main.cpp) : captures chargement-0/1/2, -fondu et -erreur ; racine(false) fait échouer le
 // chargement des fichiers (voiture introuvable), racine(true) le rétablit
 void benchChargement(Game& g, Renderer& r, const std::string& outDir, double depuis, void (*racine)(bool ok));

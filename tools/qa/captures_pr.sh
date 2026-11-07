@@ -8,6 +8,8 @@
 # Variables facultatives :
 #   FILTRE='cockpit-*'   ne garder que les captures dont le nom correspond (motif du shell, sans .png)
 #   SANS_AVANT=1         pas de captures « avant » (nouvel écran qui n'existe pas sur main)
+# Variable OBLIGATOIRE (règle de l'utilisateur, 2026-11-07) :
+#   AGENT='Claude, agent 2 (01UY1Vv5)'   nom de l'agent tel qu'il est écrit dans track-agent.md : il est écrit en tête de pr.md
 #
 # Ce que fait le script :
 #   1. compile la branche (build/) et lance chaque banc → captures « après » ;
@@ -24,6 +26,8 @@ shift
 [ $# -ge 1 ] || { echo "erreur : au moins un banc (ex. camera:2400x1080)"; exit 2; }
 [[ "$TICKET" =~ ^WFS-[0-9]+$ ]] || { echo "erreur : ticket attendu sous la forme WFS-XX"; exit 2; }
 FILTRE=${FILTRE:-*}
+AGENT=${AGENT:-}
+[ -n "$AGENT" ] || { echo "erreur : AGENT='<nom de l'agent dans track-agent.md>' obligatoire (règle de l'utilisateur : nom de l'agent dans chaque PR)"; exit 2; }
 RACINE=$(git rev-parse --show-toplevel)
 cd "$RACINE"
 BRANCHE=$(git rev-parse --abbrev-ref HEAD)
@@ -96,6 +100,17 @@ done < <(find "$TRAVAIL/apres" -name '*.png' | sort)
 } > "$SORTIE/README.md"
 URL="https://github.com/wlfaleh/waforspeed_mobile/blob/$BRANCHE/$SORTIE"
 {
+  echo "## Agent : $AGENT"
+  echo
+  echo "**Ticket** : $TICKET — règles : \`regles-de-gestion/$TICKET.md\`"
+  echo
+  echo "## Description (à remplir par le développeur avant d'ouvrir la PR)"
+  echo
+  echo "- **Demande de l'utilisateur** (en une phrase) : À REMPLIR"
+  echo "- **Ce qui change** (fichiers, comportement, à l'écran) : À REMPLIR"
+  echo "- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR"
+  echo "- **Limites et risques connus** : À REMPLIR"
+  echo
   echo "## Captures pour le lead dev ($n après)"
   echo
   echo "Dossier : [\`$SORTIE\`]($URL) — produit par \`tools/qa/captures_pr.sh\`."
