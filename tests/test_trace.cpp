@@ -19,6 +19,7 @@ static int echecs = 0;
 #define VERIFIE(c, ...) do { if (!(c)) { std::printf("ÉCHEC : " __VA_ARGS__); std::printf("\n"); echecs++; } } while (0)
 
 static int compte(const Track& t, Type ty) { int n = 0; for (const auto& s : t.sections()) n += s.type == ty; return n; }
+static int carrefours(const Track& t) { int n = 0; for (const auto& s : t.sections()) n += s.exRondPoint; return n; }   // WFS-283
 static double longueurM(const trace::Section& s) { return (s.fin - s.debut) * SEG_M; }
 
 // cap tourné et longueur d'une plage de segments
@@ -83,20 +84,23 @@ static void verifierCarte(const char* id) {
     }
     double aut = 0; for (const auto& s : t.sections()) if (s.autoroute) aut += longueurM(s);
     const std::string m = id;
+    // WFS-283 : sans rond-point (jeu), chaque rond-point est un carrefour simple ; avec (forcerRondsPoints, RG-04), comme avant
+    const int rp = trace::rondsPoints() ? 1 : 0;
+    if (m != "circuit") VERIFIE(compte(t, Type::RondPoint) == rp && carrefours(t) == 1 - rp, "%s : %d rond(s)-point(s), %d carrefour(s) simple(s)", id, compte(t, Type::RondPoint), carrefours(t));
     if (m == "ville") {
-        int serres = 0; for (const auto& s : t.sections()) serres += s.type == Type::Virage && s.rayon <= 30 && std::abs(s.angle) >= 80;
-        VERIFIE(serres == 3 && compte(t, Type::Feux) == 2 && compte(t, Type::RondPoint) == 1 && compte(t, Type::Pont) == 1, "ville : sections");
+        int serres = 0; for (const auto& s : t.sections()) serres += s.type == Type::Virage && s.rayon <= 30 && std::abs(s.angle) >= 80 && !s.exRondPoint;
+        VERIFIE(serres == 3 && compte(t, Type::Feux) == 2 && compte(t, Type::Pont) == 1, "ville : sections");
         VERIFIE(aut >= 1400 && aut <= 1600, "ville : autoroute de %.0f m", aut);
         double tun = 0; for (const auto& s : t.sections()) if (s.type == Type::Tunnel) tun += longueurM(s);
         VERIFIE(std::abs(tun - 300) < 5, "ville : tunnel de %.0f m", tun);
     } else if (m == "plage") {
         const trace::Section* l = nullptr; for (const auto& s : t.sections()) if (s.type == Type::Lacets) l = &s;
         VERIFIE(l && l->branches == 6 && std::abs(l->denivele - 60) < 1, "corniche : 6 lacets, +60 m");
-        VERIFIE(compte(t, Type::Tunnel) == 1 && compte(t, Type::RondPoint) == 1 && compte(t, Type::Feux) == 1, "corniche : sections");
+        VERIFIE(compte(t, Type::Tunnel) == 1 && compte(t, Type::Feux) == 1, "corniche : sections");
     } else if (m == "campagne") {
         const trace::Section* l = nullptr; for (const auto& s : t.sections()) if (s.type == Type::Lacets) l = &s;
         VERIFIE(l && l->branches == 4 && std::abs(l->denivele - 120) < 1, "campagne : col de 120 m à 4 épingles");
-        VERIFIE(compte(t, Type::RondPoint) == 1 && compte(t, Type::Feux) == 1 && compte(t, Type::Pont) == 1, "campagne : sections");
+        VERIFIE(compte(t, Type::Feux) == 1 && compte(t, Type::Pont) == 1, "campagne : sections");
         VERIFIE(aut >= 1900 && aut <= 2100, "campagne : autoroute de %.0f m", aut);
     } else {
         int ep = compte(t, Type::Epingle), ch = compte(t, Type::Chicane); bool depart = false, raid = false;
@@ -104,7 +108,7 @@ static void verifierCarte(const char* id) {
         // ligne droite d'au moins 1 km (segments sans courbure consécutifs)
         double best = 0, cur = 0;
         for (size_t i = 0; i < t.segmentCount(); i++) { cur = std::abs(t.segAt((int64_t)i).curve) < 1e-9 ? cur + SEG_M : 0; best = std::max(best, cur); }
-        VERIFIE(ep == 1 && ch == 2 && depart && raid && best >= 999 && compte(t, Type::RondPoint) == 0, "grand prix : sections (épingle %d, chicanes %d, ligne %.0f m)", ep, ch, best);
+        VERIFIE(ep == 1 && ch == 2 && depart && raid && best >= 999 && compte(t, Type::RondPoint) == 0 && carrefours(t) == 0, "grand prix : sections (épingle %d, chicanes %d, ligne %.0f m)", ep, ch, best);
     }
     // API du décor
     const trace::Section* s0 = trace::sectionA(t, 5 * SEG); const trace::Section* sn = trace::sectionA(t, t.length() - 1);
@@ -199,7 +203,7 @@ static void verifierRecords() {
     Sauvegarde w; w.lire("version=1\ntrace=2\nwaforspeed-best=700\n");
     VERIFIE(w.best == 700 && w.nouveauxTraces && w.cartesAActiver.size() == std::size(trace::CARTES_ACTIVES), "nouvelle carte : records gardés");
     // A7.1 : jeu normal : Ville au tracé 1, Grand Prix au tracé 2 ; banc : forcé partout
-    VERIFIE(trace::versionCarte("ville") == (trace::carteActive("ville") ? 2 : 1) && trace::versionCarte("circuit") == 2 && trace::versionCarte("campagne") == 2 && trace::versionCarte("plage") == 2 && trace::signature() == (trace::carteActive("ville") ? "circuit,campagne,plage,ville" : "circuit,campagne,plage"), "cartes actives");   // WFS-138 : campagne ; WFS-139 : Corniche ; WFS-137 : ville
+    VERIFIE(trace::versionCarte("ville") == (trace::carteActive("ville") ? 2 : 1) && trace::versionCarte("circuit") == 2 && trace::versionCarte("campagne") == 2 && trace::versionCarte("plage") == 2 && trace::signature() == std::string(trace::carteActive("ville") ? "circuit,campagne,plage,ville" : "circuit,campagne,plage") + (trace::rondsPoints() ? "" : ",sans-rond-point"), "cartes actives");   // WFS-283 : tracé sans rond-point   // WFS-138 : campagne ; WFS-139 : Corniche ; WFS-137 : ville
     trace::forcerTrace2(true); VERIFIE(trace::versionCarte("ville") == 2, "tracé 2 forcé au banc"); trace::forcerTrace2(false);
     Sauvegarde r; r.lire(tx); r.best = 900;
     VERIFIE(!r.nouveauxTraces && r.anciens["best_v1"] == "48210" && r.best == 900, "relecture : pas de 2e mise de côté");
@@ -264,13 +268,43 @@ static void verifierAnneaux() {
     }
 }
 
+// WFS-283 (RG-02) : chaque rond-point est devenu un carrefour simple : virage de rue à gauche de 22 m (rayon le plus serré 20 à
+// 24 m), au cap net EXACT du rond-point ; la suite de la carte garde sa place (fin du tracé à moins de 1 m, même cap)
+static void verifierCarrefours() {
+    for (const char* id : {"ville", "plage", "campagne", "circuit"}) {
+        Track avec, sans;
+        trace::forcerRondsPoints(true); avec.build(mapById(id), 2);
+        trace::forcerRondsPoints(false); sans.build(mapById(id), 2);
+        const Pose pa = avec.pose((int64_t)avec.segmentCount()), pb = sans.pose((int64_t)sans.segmentCount());
+        const double ecart = std::hypot(pa.x - pb.x, pa.z - pb.z), dCap = std::abs(pa.th - pb.th);
+        std::printf("%s : %zu → %zu segments, fin du tracé déplacée de %.2f m, cap %.1e rad\n", id, avec.segmentCount(), sans.segmentCount(), ecart, dCap);
+        VERIFIE(ecart < 1.0 && dCap < 1e-9, "%s : la suite de la carte a bougé (%.2f m, %.1e rad)", id, ecart, dCap);
+        VERIFIE(compte(sans, Type::RondPoint) == 0, "%s : rond-point restant", id);
+        for (const auto& s : avec.sections()) if (s.type == Type::RondPoint) {
+            const trace::Section* c = nullptr; for (const auto& x : sans.sections()) if (x.exRondPoint) c = &x;
+            VERIFIE(c && c->type == Type::Virage && c->cote == -1, "%s : carrefour simple absent", id);
+            if (!c) continue;
+            double rMin = 1e9; for (int64_t a = c->debut; a < c->fin; a++) if (std::abs(sans.segAt(a).curve) > 1e-9) rMin = std::min(rMin, SEG_M / (std::abs(sans.segAt(a).curve) * CURVE_K));
+            const double capRp = capTourne(avec, s.debut, s.fin), capC = capTourne(sans, c->debut, c->fin);
+            std::printf("  carrefour simple : %.0f m, rayon %.1f m, cap %+.3f° (rond-point : %+.3f°, %.0f m)\n", longueurM(*c), rMin, capC, capRp, longueurM(s));
+            VERIFIE(std::abs(capC - capRp) < 1e-6 && rMin >= 20 && rMin <= 24 && longueurM(*c) < 60, "%s : carrefour simple (cap %+.3f°, rayon %.1f m)", id, capC, rMin);
+        }
+    }
+    trace::forcerRondsPoints(false);
+}
+
 int main() {
     for (const char* id : {"ville", "plage", "campagne", "circuit"}) verifierCarte(id);
+    // RG-04 : le code des ronds-points reste et reste juste (anneau refermé, comptes d'avant)
+    trace::forcerRondsPoints(true);
+    for (const char* id : {"ville", "plage", "campagne"}) verifierCarte(id);
+    trace::forcerRondsPoints(false);
+    verifierCarrefours();   // WFS-283
     verifierFeux();
     verifierDeterminisme();
     verifierRecords();
     verifierDuel();
-    verifierAnneaux();   // WFS-243
+    trace::forcerRondsPoints(true); verifierAnneaux(); trace::forcerRondsPoints(false);   // WFS-243 (code gardé, RG-04 de WFS-283)
     if (echecs) { std::printf("test_trace : %d échec(s)\n", echecs); return 1; }
     std::printf("test_trace : OK\n");
     return 0;

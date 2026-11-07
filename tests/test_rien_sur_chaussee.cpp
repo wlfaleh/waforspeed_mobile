@@ -17,11 +17,15 @@ static int echecs = 0;
 static void cas(const std::string& quoi, bool ok) { std::printf("chaussée : %-92s → %s\n", quoi.c_str(), ok ? "OK" : "ÉCHEC"); if (!ok) echecs++; }
 
 int main() {
+    // WFS-283 : les sections repliées de la Ville et le défaut sans filtre venaient des ronds-points : 1er passage avec les
+    // ronds-points remis (code gardé, RG-04), 2e passage comme le jeu (carrefours simples)
+    for (const bool avecRp : {true, false}) {
+    trace::forcerRondsPoints(avecRp);
     for (const char* id : {"ville", "campagne", "plage"}) {
         Track t; t.build(mapById(id), trace::versionCarte(id));
         const int64_t L = (int64_t)t.segmentCount();
         const auto ax = chaussee::axes(t, {trace::Type::RondPoint, trace::Type::Epingle, trace::Type::Lacets});
-        cas(std::string(id) + " : sections repliées trouvées au tracé 2 (" + std::to_string(ax.size()) + ")", !ax.empty());
+        if (avecRp) cas(std::string(id) + " : sections repliées trouvées au tracé 2 (" + std::to_string(ax.size()) + ")", !ax.empty());
         std::vector<vec3> axe((size_t)L);
         for (int64_t a = 0; a < L; a++) { const TrackPoint p = t.point((double)a * SEG, 0); axe[(size_t)a] = {(float)p.x, (float)p.y, (float)p.z}; }
         const int64_t propre = (int64_t)(chaussee::PROPRE_M / SEG_M);
@@ -50,9 +54,22 @@ int main() {
         }
         std::printf("chaussée : %s : %d points testés, %d sur une autre partie de la route (dont %d sur le trottoir de RW à RW + 4 m)\n",
                     id, points, dessus, trottoir);
-        cas(std::string(id) + " : aucun point posé sur une autre chaussée n'échappe au filtre", oublis == 0);
-        if (std::string(id) != "plage") cas(std::string(id) + " : le défaut existe sans filtre (trottoir ou bas-côté sur une autre branche)", dessus > 0);
+        cas(std::string(id) + (avecRp ? "" : " (carrefours)") + " : aucun point posé sur une autre chaussée n'échappe au filtre", oublis == 0);
+        if (avecRp && std::string(id) != "plage") cas(std::string(id) + " : le défaut existe sans filtre (trottoir ou bas-côté sur une autre branche)", dessus > 0);
+        // WFS-283 (RG-02) : le carrefour simple ne replie plus la route : autour de lui (±20 m, jusqu'à 12 m du bord), aucune
+        // autre partie de la chaussée, donc rien à cacher sous le décor
+        if (!avecRp) for (const trace::Section& s : trace::sections(t)) if (s.exRondPoint) {
+            int n = 0, autre = 0;
+            for (int64_t a = s.debut - (int64_t)(20 / SEG_M); a <= s.fin + (int64_t)(20 / SEG_M); a++)
+                for (int side : {-1, 1}) for (float lat = (float)RW + 0.3f; lat <= (float)RW + 12; lat += 0.7f) {
+                    const TrackPoint p = t.point((double)chaussee::modL(a, L) * SEG, side * lat); n++;
+                    if (brut({(float)p.x, (float)p.y, (float)p.z}, chaussee::modL(a, L), 0.5f)) autre++;
+                }
+            cas(std::string(id) + " : carrefour simple : aucune autre partie de la route autour (" + std::to_string(autre) + " / " + std::to_string(n) + " points)", autre == 0);
+        }
     }
+    }
+    trace::forcerRondsPoints(true);   // giratoires reconstruits : code gardé (RG-04 de WFS-283)
     // ---------- WFS-248 : giratoires reconstruits (Ville, Campagne, Corniche) ----------
     for (const char* id : {"ville", "campagne", "plage"}) {
         Track t; t.build(mapById(id), trace::versionCarte(id));
