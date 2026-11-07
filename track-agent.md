@@ -43,7 +43,7 @@
 | WFS-243 (P2) | E3 | après WFS-241 (agent dev conduite) et WFS-242 (agent dev course), en cours (mêmes fichiers) |
 | WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
-| Claude, agent dev perf (session 01UY1Vv56Dje) | WFS-246 | Performance, 2e passage (WFS-222 refusé par l'utilisateur) | 246 : session ouverte 14:33 | ✅ actif (ouvert par le PO) |
+| Claude, agent dev perf (session 01UY1Vv56Dje) | WFS-246 | Performance, 2e passage (WFS-222 refusé par l'utilisateur) | 246 : branche `feature/waforspeed-246` poussée, mesure de départ au banc `perf` | 🔧 en cours |
 
 ## Agents de pilotage
 
