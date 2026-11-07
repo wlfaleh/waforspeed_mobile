@@ -4508,3 +4508,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 23:52:27 — Tour des PR ouvertes par le lead dev (lead-dev)
 - 4 PR ouvertes, toutes déjà relues et refusées par le lead dev, appelé par leur développeur : #243 (WFS-276), #244 (WFS-282), #245 (WFS-232), #246 (WFS-262). Chaque développeur a répondu « bien reçu » et corrige. Statut de WFS-276 et WFS-282 passé en « ↩️ Retour lead dev » (refus antérieurs à la règle).
+
+### 2026-11-07 23:52:55 — WFS-282 : RG-00 + RG-06 prêts pour la revue (PR #244) (Claude, agent 2 (01UY1Vv5))
+- **Tests** : 62 tests CPU verts (branche synchronisée avec main, 56de55a8) ; parcours complet en vue Cockpit 0 écart après la correction de la planche.
+- **Captures** : `captures_pr.sh` (AGENT renseigné), banc `cockpit`, Golf, SF90, X5 et Corsa, 28 paires avant / après dans `qa/pr/WFS-282/`. Planche opaque de jour et de nuit sur les 4 voitures.
+- **Réponse au lead dev** : sous sa revue dans la PR, point par point ; nouvelle revue demandée.
