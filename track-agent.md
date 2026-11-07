@@ -30,7 +30,7 @@
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235, WFS-245 | P1 WFS-235 vue Cockpit (E3 + E10) : fenêtre de la rue 0 % sur les 20 voitures, réglage « Regard cockpit » fait ; reste le tableau du critère 2, le parcours et la fusion (🟡) ; **en parallèle** (demande de l'utilisateur, 17:07) P3 WFS-245 étiquettes du HUD lisibles (E5), attribué 17:12 | 235 : 16:59 (6fb57bf, synchronisée avec main) ; 245 : 17:17 (branche créée et poussée) | 🔴 en cours (P1 + P3) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-247 | P1 [TECHNIQUE] fluidité, 2e passage (WFS-221 refusé, ANO-126) : la voiture saute encore devant la caméra en vue Proche / Poursuite ; + roues avant d'après l'angle appliqué | 247 : 16:15 (791997c, roues avant) ; 161 : fusionnée 15:20 | 🔴 en cours (P1) |
-| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-258 | P1 conduite 2e passage : **d'abord remettre l'ancienne conduite** (`g_conduiteMonde = false`), puis corriger les points de l'utilisateur ; WFS-256 (chocs) en pause ; sujets de conduite réservés à lui (exception de l'utilisateur) | 258 : branche à créer (attribué 17:02) ; 256 : 17c1334 (en pause) | 🔴 en cours (P1) |
+| Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-258 | P1 conduite 2e passage : **d'abord remettre l'ancienne conduite** (`g_conduiteMonde = false`), puis corriger les points de l'utilisateur ; sujets de conduite réservés à lui (exception de l'utilisateur) | 256 : fusionné #216 (7a3eedc), 🟡 ; 258 : branche en création | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
 
