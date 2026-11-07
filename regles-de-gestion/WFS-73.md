@@ -48,3 +48,6 @@ Zone de code et accroches autorisées :
 - À réutiliser sans le refaire : `drawSkinned`, `src/render/squelette.*`, `assets/people/*.wfp`, `pedLook` et `ApparencePersonnage` (`src/world/pietons.*`, lecture seule), `src/render/vehicule_mesure.h` si la mesure de la carrosserie y est déjà.
 - Interdit : toucher `src/world/pietons.*` autrement qu'en lecture, créer un personnage, modifier un autre fichier sans le demander au PO.
 Critères inchangés (captures poursuite et trafic, banc `0 écart(s)` hors voitures) + tests CPU verts + **parcours complet** (accueil → choix du terrain → course → retour) vert au banc `parcours`.
+
+## Suivi (PO, 2026-11-07 06:53:33 UTC)
+- Écart à RG-02 (corps entier dessiné, pas le buste seul ; jambes sous la planche, vérifié sur les captures) : **accepté** par le PO. Découper le buste n'est pas demandé.
