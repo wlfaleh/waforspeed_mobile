@@ -3071,3 +3071,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 13:38:08 — Statuts automatiques, CI main #826 (robot statuts)
 - Run vert, annulé seulement à la publication (push, commit 4448d7c) : WFS-158 ✅ (PR #157, e5fe674), WFS-206 ✅ (PR #188, fa7449e), WFS-217 ✅ (PR #189, a63d209), WFS-219 ✅ (PR #191, 4448d7c), WFS-220 ✅ (PR #190, d187fac).
+
+### 2026-11-07 13:38:45 — WFS-235 : début, branche créée (arwa-2)
+- Branche `feature/waforspeed-235` créée depuis `main` et poussée. Skill `agent-developer` chargé, `regles-de-gestion/WFS-235.md` lu.
+- **Plan** :
+  1. RG-01 : captures `camera-cockpit` des 20 voitures et liste des causes des bandes noires ;
+  2. RG-02 : œil, regard et champ de vision ;
+  3. RG-03 : réglage « Regard cockpit » ;
+  4. RG-04 : réalisme, avec l'avis d'expert-realisme-3d ;
+  5. RG-05 : preuves.
+- Zone : `src/game/camera_vue.*`, `camera_banc.cpp`, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`, plus une accroche annoncée dans `reglages.cpp`. Les blocs de WFS-221 ne sont pas touchés.
