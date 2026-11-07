@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` corrigé par WFS-150 (PR #170) ; runs 799 à 808 de `main` verts : WFS-190 peut se clore | 190 : rien poussé depuis 20:40 (11 h 08 à 07:48) | 🔴 WFS-190 P1 sans envoi depuis plus de 10 h (seuil de la règle des 10 h dépassé) |
 | Claude, agent 1 (01UY1Vv2) | WFS-208 | Lumière (2/2) : 6 moments et heure réelle, passage continu, lampadaires selon l'éclairement, nuages (attribué 04:43) ; ensuite WFS-213 (P1, E13) | 208 : 07:36 | 🔧 actif |
-| Claude, agent 2 (01UY1Vv5) | WFS-211 | Personnages (2/3) : 3 niveaux de détail, peau M-03, humains réalistes chez les conducteurs ; ANO-111 (attribué 07:48) | 211 : pas encore créée ; 212 : fusionnée 07:47 (PR #181) | 🔧 actif (branche à pousser dans les 30 min) |
+| Claude, agent 2 (01UY1Vv5) | — (WFS-211 fusionné) | demande son ticket suivant au PO | 211 : fusionnée 08:19 (PR #182) ; 212 : fusionnée 07:47 (PR #181) | 🟢 libre |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre (WFS-191 et WFS-140 ✅ au run 799) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |

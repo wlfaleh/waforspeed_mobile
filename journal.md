@@ -2415,3 +2415,24 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Règles et critères : `regles-de-gestion/WFS-211.md` (RG-01 à RG-04, graphisme réaliste par partie, parcours complet au banc `parcours`). Consulter `expert-realisme-3d` pour la peau et les niveaux de détail.
 - Plan court : niveaux de détail dans `convert_people` + correction du masque `_CLOTH` (ANO-111) → conducteurs tirés parmi les 12 morphotypes → peau M-03 → captures avant / après et indice de fidélité.
 - Suivi : WFS-190 (agent arwa) sans envoi depuis 20:40 (plus de 10 h) ; WFS-161 (Agent 0) sans envoi depuis 01:56 (⚠️).
+
+### 2026-11-07 08:19:06 — WFS-211 fusionné (PR #182) (Claude, agent 2 (01UY1Vv5))
+- **RG-01, niveaux de détail** (`tools/convert_people_lod.py`, nouveau) : QEM par fusion d'arêtes vers un sommet existant (Garland et Heckbert, 1997).
+  - Triangles : 26 756, puis 10 166 (38 %), puis 3 478 (13 %), sur les mêmes sommets.
+  - Verrouillés : bords, ligne médiane et extrêmes, donc M-01 et M-02 identiques aux 3 niveaux.
+  - Écart de forme (Hausdorff, mesuré par `test_fidelite_humains`, borné dans l'outil) : corps-1 ≤ 5,2 mm, corps-2 ≤ 11,3 mm, sous un pixel au seuil.
+  - Seuils : corps-0 < 8 m ≤ corps-1 < 20 m ≤ corps-2 (jusqu'à 50 m), hystérésis de ± 0,5 m gardée par voiture.
+- **RG-02, conducteurs** : 12 morphotypes ; modèle préféré tiré de la graine (finaliseur de MurmurHash3), puis le suivant libre ; stable tant que la voiture reste dans la file, jamais deux voitures de la file avec le même ; repli homme / femme si un fichier manque.
+- **RG-03, peau M-03** : albédo linéaire selon les origines du morphotype.
+  - Peau I ramenée à une luminance de 0,62 ; peau III à 0,467 ; teinte africaine (moitié III, moitié VI) à 0,27.
+  - **Écart signalé au PO** : la peau VI publiée (0,05 à 0,10) est sous le plancher 0,25 de la charte. Le plancher de RG-03 est appliqué ici, mais c'est un écart au réel mesuré (avis expert-realisme-3d).
+- **ANO-111** : les sommets portés par neck_01 et Head ne sont jamais habillés. Le test échoue sur les anciens fichiers (263 à 344 sommets) et passe sur les nouveaux.
+- **RG-04, coût**
+  - APK : + 1,97 Mo bruts (12 .wfp de 1 640 Ko à 1 800 Ko).
+  - Textures : inchangées (8×8 unies, négligeable).
+  - **Mémoire GPU des conducteurs** : environ 17,7 Mo pour les 12 modèles (sommets de 68 octets et indices 32 bits des 3 niveaux), contre environ 2 Mo pour homme / femme. Risque à surveiller sur téléphone ; piste : indices 16 bits (- 40 % sur les indices).
+  - Triangles : + 12 000 pour le conducteur du joueur en corps-0, environ + 4 700 en corps-1, et moins de 2 % du budget d'une voiture (184 000) par conducteur. Images par seconde non mesurées sur téléphone.
+- **Indice de fidélité des humains** : 100 % avant et après (40 / 40).
+- **Vérifications** : 42 tests CPU, parcours complet 0 écart, captures `conducteurs-*` (jour et nuit) et `realisme-pietons-humains-*` regardées en local. `expert-realisme-3d` consulté, ses deux corrections sont faites : écart de forme mesuré, hystérésis. Pas de cheveux ni de diffusion sous la surface (WFS-210).
+- **Accroches** : aucune hors zone. La tangente n'est pas ajoutée à `SkinVertex` : la texture de normales des humains est plate. Fusion par confiance ; `qa/Check.md` est à jour.
+
