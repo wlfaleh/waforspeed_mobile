@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
+#include "cache_pipelines.h"        // WFS-262 (RG-01)
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
@@ -93,6 +94,18 @@ static void etapeRendu(const char* nom) {
 #define ETAPE_RENDU(nom) ((void)0)
 #endif
 
+// WFS-262 (RG-01) : cache écrit dans les données de l'application (fin du chargement, arrière-plan, arrêt)
+void Renderer::enregistrerCachePipelines() {
+    if (!vk_ || !cachePipelines_ || cache_pipelines::chemin().empty()) return;
+    size_t n = 0;
+    if (vkGetPipelineCacheData(vk_->device, cachePipelines_, &n, nullptr) != VK_SUCCESS || !n) return;
+    std::vector<uint8_t> d(n);
+    if (vkGetPipelineCacheData(vk_->device, cachePipelines_, &n, d.data()) != VK_SUCCESS) return;
+    d.resize(n);
+    const bool ok = cache_pipelines::ecrire(cache_pipelines::chemin(), d);
+    WFS_LOG("pipelines (WFS-262) : cache %s (%zu octets, %u pipelines créés depuis le lancement)", ok ? "enregistré" : "NON enregistré", n, pipelinesCrees_);
+}
+
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
     if (vk.offscreen) { const char* a = std::getenv("WFS_AVANT_222"); rendu221 = a && !std::strcmp(a, "1"); }   // WFS-222 : banc seulement
@@ -113,6 +126,21 @@ bool Renderer::init(VkCtx& vk) {
     VK_OK(vkCreateSampler(d, &sci, nullptr, &sampler_));
     if (sci.anisotropyEnable && sci.maxAnisotropy > 4.f) {   // WFS-144 (RG-04) : anisotrope ×4 de la Basse
         sci.maxAnisotropy = 4.f; VK_OK(vkCreateSampler(d, &sci, nullptr, &samplerBasse_));
+    }
+    {   // WFS-262 (RG-01) : cache de pipelines relu du lancement précédent (en-tête vérifié ; refusé → cache vide)
+        cache_pipelines::Identite id{vk.props.vendorID, vk.props.deviceID, {}};
+        std::memcpy(id.uuid, vk.props.pipelineCacheUUID, 16);
+        const std::vector<uint8_t> donnees = cache_pipelines::lire(cache_pipelines::chemin());
+        const bool ok = cache_pipelines::enteteValide(donnees.data(), donnees.size(), id);
+        VkPipelineCacheCreateInfo ci{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO};
+        if (ok) { ci.initialDataSize = donnees.size(); ci.pInitialData = donnees.data(); }
+        if (vkCreatePipelineCache(d, &ci, nullptr, &cachePipelines_) != VK_SUCCESS) {
+            ci.initialDataSize = 0; ci.pInitialData = nullptr;
+            if (vkCreatePipelineCache(d, &ci, nullptr, &cachePipelines_) != VK_SUCCESS) cachePipelines_ = VK_NULL_HANDLE;
+        }
+        WFS_LOG("pipelines (WFS-262) : cache %s (%zu octets lus%s)", ok ? "relu" : "vide", donnees.size(),
+                donnees.empty() ? "" : ok ? "" : ", refusé : autre appareil, autre pilote ou fichier abîmé");
+        debutChargement_ = std::chrono::steady_clock::now();
     }
     msaaMax_ = vk.msaa;   // WFS-144 : MSAA choisi par vk.cpp (×4, ou ×1 : GPU logiciel), plafond de la netteté
     vk.vueDetruiteCtx = this;   // WFS-144 : un matériau dont une texture est détruite n'est plus réécrit (vue invalide)
@@ -819,7 +847,8 @@ VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vert
     gp.stageCount = fs ? 2 : 1; gp.pStages = st; gp.pVertexInputState = &vi; gp.pInputAssemblyState = &ia;
     gp.pViewportState = &vp; gp.pRasterizationState = &rs; gp.pMultisampleState = &ms; gp.pDepthStencilState = &ds;
     gp.pColorBlendState = &cbs; gp.pDynamicState = &dy; gp.layout = layout; gp.renderPass = rp; gp.subpass = 0;
-    VkPipeline p; VK_OK(vkCreateGraphicsPipelines(vk_->device, VK_NULL_HANDLE, 1, &gp, nullptr, &p));
+    VkPipeline p; VK_OK(vkCreateGraphicsPipelines(vk_->device, cachePipelines_, 1, &gp, nullptr, &p));   // WFS-262 (RG-01) : cache
+    pipelinesCrees_++;   // WFS-262 (RG-02) : compteur (0 attendu pendant la course)
     ETAPE_RENDU("un pipeline");   // WFS-88 : MoltenVK traduit les shaders en Metal ici
     return p;
 }
@@ -1620,6 +1649,9 @@ void Renderer::shutdown() {
     if (!vk_) return;
     VkDevice d = vk_->device;
     vk_->waitIdle();
+    enregistrerCachePipelines();   // WFS-262 (RG-01)
+    if (cachePipelines_) vkDestroyPipelineCache(d, cachePipelines_, nullptr);
+    cachePipelines_ = VK_NULL_HANDLE;
     passes::detruire(*this);   // WFS-150
     destroyTargets();
     if (bloom_) { bloom_->liberer(*this); delete bloom_; bloom_ = nullptr; }   // WFS-100
