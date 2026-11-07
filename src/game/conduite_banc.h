@@ -338,7 +338,8 @@ inline int mesurer(std::string& rapport) {
         }
     }
     {   // 5. pilote automatique (démonstrations, bancs, parcours) : un tour complet de chaque carte sans sortie de route
-        ligne(""); ligne("## 5. Pilote automatique (aide activée, vitesse de virage tenue) : un tour complet de chaque carte");
+        ligne(""); ligne("## 5. Pilote automatique (nouveau modèle, aide activée, vitesse de virage tenue) : un tour complet de chaque carte");
+        const bool av5 = g_conduiteMonde; g_conduiteMonde = true;   // WFS-258 : mesure du modèle de WFS-241, quel que soit le modèle du jeu
         for (const char* id : {"circuit", "campagne", "ville", "plage"}) for (const char* car : {"golf", "sf90", "rrsport"}) {
             Track& t = piste(id);
             Player p; p.reset(carById(car)); p.aide = Aide::Activee;
@@ -357,6 +358,7 @@ inline int mesurer(std::string& rapport) {
                           p.dist >= t.length() ? "fini" : "NON fini", n / 120.0, sorties, ecart, bon ? "OK" : "ÉCART");
             ligne(l);
         }
+        g_conduiteMonde = av5;
     }
     ligne(""); ecarts += mesurerAidesRapport(rapport);   // WFS-253
     std::snprintf(l, sizeof l, "\nbanc de conduite (WFS-241, WFS-253) : %d écart(s)", ecarts); ligne(l);
