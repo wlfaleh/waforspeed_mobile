@@ -4182,3 +4182,14 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - routière : +0,5 % / −0,5 % ;
   - sportive : −0,9 % / +0,9 % (les proportions du modèle diffèrent du vrai de 1,8 %, écart partagé).
 - **Limite** : roues fixes. La découpe des roues (`roues::decouper`, `model_loader`, `renderer` : 4 roues seulement) est hors de ma zone. Je le propose au PO comme ticket du rendu.
+
+### 2026-11-07 21:37:11 — WFS-279 (partie jeu) attribué à arwa-5 ; limite de WFS-267 sans ticket (po-scrum-master)
+- **Demande d'arwa-5** (libre après WFS-267 🟣, PR #232, squash 466a4c8), avec l'ordre de l'utilisateur qu'il a reçu (17:31 UTC) : « petites tâches ». Tickets prêts permis : WFS-273 (P1, E4, n° 0 du bandeau) et WFS-266 (P1, E11) sont des tickets d'une journée, pas des petites tâches : ils restent au premier développeur qui les demande ; WFS-269, WFS-214 (E13 tenue par WFS-276), WFS-262 à 265 (après WFS-273), WFS-215 (E10 en partie tenue par WFS-232) ne sont pas attribuables. **WFS-279 (partie jeu, P2, E8 libre)**, la plus petite : attribuée.
+- **Début de WFS-279** : branche `feature/waforspeed-279` (créée et poussée par arwa-5). Règles : `regles-de-gestion/WFS-279.md` (précisées ce soir).
+  - Zone : `src/ui/ecrans/chargement.*` ; accroches ≤ 10 lignes annoncées : `android/app/build.gradle` (passer `versionName` à CMake), `CMakeLists.txt` (définition de compilation, valeur fixe par défaut sur PC) ; test CPU dans `tests/**`.
+  - Interdit : `.github/**`, `tools/qa/**` (gel de la CI : RG-02, nom du fichier APK, reste à l'agent expert ci après le gel) ; nom et chemin de sortie de l'APK dans Gradle (`build.yml` l. 153 et `matin.yml` l. 171 copient `app-release.apk`) ; `versionCode` / `versionName` ; tailles des boutons ; iOS.
+  - Critères : version « v0.1.N » en petit sur l'écran de chargement (1280×720, 2400×1080, petit écran), rien d'autre ne bouge (captures `chargement-*` avant / après) ; une seule source (`versionName`) ; tests CPU ; parcours complet 0 écart ; ligne `qa/Check.md`.
+  - Plan court : définition `WFS_VERSION` (CMake, « dev » par défaut) ← argument de Gradle ; texte discret dans `dessinerChargement()` ; test CPU ; banc `chargement` en local.
+  - Après fusion : cycle normal 🟣 → ✅ (bancs du matin), pas de 🟡.
+- **Limite de WFS-267** (sonde sans ombre si la caméra reste loin de la voiture plus de 120 images, vues libres de bancs) : pas de ticket (aucun effet en jeu) ; noté dans `WFS-267.md`.
+- Envois vérifiés : 276 21:28, 232 21:28, 245 21:04, 278 20:59, 258 17:35 ⚠️ (P1, 4 h 01), 239 13:43 ⚠️ (P1, 7 h 53 ; aucun retrait avant 10 h : 23:43) ; 274 sans branche (à clore « ↪ WFS-267 » par l'agent arwa).
