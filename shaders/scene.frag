@@ -76,6 +76,8 @@ void main() {
         surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
         surfaceSol(base, rough, metal);
+    } else if ((flags & F_FACADE) != 0u) {
+        surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }
 
     vec3 L = normalize(F.sunDir.xyz);
@@ -158,7 +160,8 @@ void main() {
     if ((flags & F_GLASS) != 0u) {
         vitre(col, alpha, albedo, skyAmb, R, sun, NoV, NoH, NoL);
     }
-    col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
+    if ((flags & F_INTERIEUR) != 0u) col += interieurFenetre(N, V, skyAmb) * (vec3(1.0) - Fe);   // WFS-161 (accroche) : pièce derrière la vitre
+    else col += pc.emissive.rgb * (((flags & F_EMTEX) != 0u) ? base.rgb : vec3(1.0)) * F.iblB.w;   // WFS-134 : émission × texture ; WFS-151 (RG-06)
     // WFS-134 (RG-05) : jantes et pneus jamais noyés dans le noir (ambiante minimale 0,08)
     if ((flags & F_WHEEL) != 0u) col = max(col, albedo * 0.08);
 

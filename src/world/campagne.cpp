@@ -12,6 +12,7 @@
 #include <limits>
 #include <unordered_map>
 #include <vector>
+#include "archi_carte.h"   // WFS-161 (accroche) : maisons de village du kit d'architecture
 #include "../core/log.h"
 #include "../core/platform.h"   // WFS-186 : readAsset (animaux .wfa)
 #include "decor_carte.h"
@@ -140,6 +141,8 @@ protected:
             if (it.t == T_BALES) obst.push_back({n - 2, n + it.k * 3 + 2, it.side, it.lat - 2, it.lat + 4});
             if (it.t == T_TURBINE || it.t == T_HEDGE) obst.push_back({n - 3, n + (int64_t)(it.l / SEG_M) + 3, it.side, it.lat - 3, it.lat + 3});
             if (it.t == T_LAMP) { poserLampe(n, it.side); return; }   // WFS-225 (RG-01) : mât et lumière de nuit ensemble
+            if (it.t == T_VILLA) { const Pose pv = poseAt(*track_, n); const float s = (float)it.side; const vec3 x = pv.f * -s;   // WFS-161 (accroche) : maison du kit
+                archi::carte::poser(n, lateral(pv, s * it.lat, solY(z, n, it.side, it.lat) - 0.2f) - x * (it.w / 2), x, pv.r * -s, it.w, it.d, it.h, archi::Style::Village, (uint32_t)(n * 2 + (it.side > 0))); }
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };
@@ -278,6 +281,7 @@ protected:
             break;
         }
         case T_VILLA: {   // maison colorée : murs, fenêtres côté route, toit
+            if (archi::carte::actif()) break;   // WFS-161 (accroche) : maison du kit (archi_carte.cpp) à la place de la boîte
             const vec3 o = lateral(p, s * (it.lat + it.d / 2), gy(it.lat + it.d / 2) - 0.2f);
             // WFS-178 (RG-03) : maisons de village en pierre calcaire (albédo 0,39-0,49) et tuiles de terre cuite
             const int wall = C_PIERRE0 + it.col % 3;
