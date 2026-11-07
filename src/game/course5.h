@@ -33,7 +33,7 @@ bool choixModeCentre(const std::string& zone, float& x, float& y);
 bool course5Bouton(const std::string& nom, float& x, float& y);
 int course5Positions(double* rd, int max);   // WFS-173 (RG-08) : distance des ordinateurs (unités), lecture seule ; rend leur nombre
 bool course5NouveauRecord();
-class Game; class Renderer;
+class Game; class Renderer; struct Player;
 // banc d'essai (WFS_BANC=course5) : modes-choix, course5-grille, course5-course, course5-fin
 void benchCourse5(Game& g, Renderer& r, const std::string& outDir);
 
@@ -70,16 +70,46 @@ std::vector<int> candidats(const char* carJoueur);
 // RG-02 : 4 ordinateurs tirés au hasard (modèles différents entre eux et de celui du joueur), peinture aléatoire ; même
 // graine = même tirage. WFS-189 (RG-01) : parmi les candidats() de la voiture du joueur
 std::vector<Ordinateur> tirer(uint32_t graine, const char* carJoueur, Difficulte d = NORMALE);
-// RG-05 : grille de départ de 5 : le joueur derrière, les ordinateurs sur deux rangées devant lui ; WFS-189 (RG-03) :
-// rangés par vitesse max décroissante (les plus rapides devant)
-void grille(std::vector<Ordinateur>& os, double sJoueur);
+// WFS-242 (RG-01) : grille de départ réelle, derrière la ligne de départ (damier de decor_carte.cpp, en s = 0) : PLACES places
+// en quinconce, 2 par rang, dans la voie de gauche et la voie de droite (FILES[0] et FILES[2], axes des voies de la chaussée à
+// 3 voies : 9,3 m entre les deux axes, ≥ 7 m entre deux carrosseries côte à côte). Quinconce de la FIA : chaque place est
+// DECALAGE_M (8 m) derrière la précédente, en changeant de voie ; un rang (2 places) fait donc RANG_M = 16 m. Ainsi deux voitures
+// d'une même voie ont plus de 11 m de pare-chocs à pare-chocs (WFS-189 RG-03 : plus de 8 m au départ ; avec des rangs de 8 m,
+// des ordinateurs restaient 3 à 4 s collés à moins de 8 m). La 1re place a son centre RECUL_M derrière la ligne : même la voiture
+// la plus longue du catalogue (4,9 m) a son avant à plus de 1 m derrière la ligne.
+constexpr int PLACES = 5;
+constexpr double DECALAGE_M = 8, RANG_M = 2 * DECALAGE_M, RECUL_M = 3.5;
+struct Place { double s = 0, x = 0; int file = 0; };   // distance (unités ; < 0 : derrière la ligne), écart latéral (demi-largeurs), file
+// k = 0 (devant) … PLACES − 1 (derrière) ; hors bornes : ramené dans [0, PLACES − 1]. Rang k / 2 ; place paire à gauche, impaire
+// à droite et DECALAGE_M plus loin derrière (quinconce). En ligne : le Duel (duel.cpp) l'envoie dans la présence du départ
+inline Place placeGrille(int k) {
+    k = std::clamp(k, 0, PLACES - 1);
+    Place p;
+    p.file = k % 2 ? 2 : 0;
+    p.x = FILES[p.file];
+    p.s = -(RECUL_M + RANG_M * (k / 2) + DECALAGE_M * (k % 2)) / M;
+    return p;
+}
+// WFS-242 (RG-02) : place du joueur tirée au sort parmi les 5, d'après la graine de la course (même graine = même place)
+int tirerPlaceJoueur(uint32_t graine);
+// RG-05, WFS-242 (RG-01) : les ordinateurs prennent les places de la grille laissées par le joueur (placeJoueur ; < 0 : toutes
+// les places), dans l'ordre WFS-189 (RG-03) : 0-100 de fiche croissant (à égalité, la plus forte vitesse max devant)
+void grille(std::vector<Ordinateur>& os, int placeJoueur);
+// WFS-242 (RG-01, RG-05) : pose la voiture du joueur à l'arrêt sur une place de la grille (Course à 5 et Duel) : distance,
+// position sur la piste, écart latéral, cap droit. La conduite la prend telle quelle au pas suivant (Player::modeleMonde)
+void placerSurGrille(Player& pl, const Track& t, const Place& p);
+// WFS-242 (RG-07) : vrai quand la Course à 5 est prête à lancer le compte à rebours (modèles des ordinateurs chargés, ou pas
+// de Course à 5 en cours) : le « 3 » n'apparaît pas pendant le chargement, figé, sans les commandes
+bool course5PreteAuDepart();
+// WFS-242 (RG-03) : pendant les GARDE_VOIE_S premières secondes de course, les ordinateurs gardent leur voie (aucun changement
+// de file au départ : pas de choc dans la mêlée) ; ils suivent la voiture de devant
+constexpr double GARDE_VOIE_S = 3;
 // RG-04 : un pas de conduite des ordinateurs (dt en s) ; joueur : distance et écart latéral (les ordinateurs l'évitent) ;
 // arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
 // (RG-06 : nitrosPrises compte les nitros utilisées)
 // WFS-189 (RG-02 bis) : `piste` donnée : les ordinateurs ralentissent avant les virages serrés (rond-point, épingle…) à la
 // vitesse où la voiture du joueur reste sur la chaussée (vitesseVirage), avec le freinage du joueur ; nullptr : sans virages
 void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceTime, double sJoueur, double xJoueur, double vJoueur, const Track* piste = nullptr);
-constexpr double ECART_RANGEES_M = 13;    // WFS-189 (RG-03) : entre les deux rangées de la grille (m)
 constexpr double MARGE_VIRAGE = 0.9;      // WFS-189 (RG-02 bis) : part du cap max utilisée en courbe
 constexpr double DERIVE_MAX = 0.8;        // WFS-189 (RG-02 bis) : dérive latérale tolérée (largeurs de route) dans un virage
 constexpr double COURBURE_VIRAGE = 4;     // WFS-189 (RG-02 bis) : courbure au-delà de laquelle un segment compte comme virage
