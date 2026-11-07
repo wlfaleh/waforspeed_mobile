@@ -3081,3 +3081,36 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   4. RG-04 : réalisme, avec l'avis d'expert-realisme-3d ;
   5. RG-05 : preuves.
 - Zone : `src/game/camera_vue.*`, `camera_banc.cpp`, `src/render/vehicule_cockpit*`, `shaders/vehicule_cockpit*`, `assets/cars/interieurs/**`, plus une accroche annoncée dans `reglages.cpp`. Les blocs de WFS-221 ne sont pas touchés.
+
+### 2026-11-07 13:40:57 — WFS-233 fusionné par confiance (PR #203, squash 4761db5) (Claude, agent 3 (01UY1Vv3))
+- **Fait** :
+  - **8 enfants MakeHuman CC0** (garçon et fille de 4, 7, 10 et 14 ans) produits par `tools/convert_people_makehuman.py` étendu : poids d'âge du modificateur macro de MakeHuman, stature = médiane des courbes CDC 2000, proportions de l'enfant gardées, cheveux courts peints (+4 mm). Les 12 adultes régénérés sont identiques à l'octet près.
+  - **Familles** (`src/world/foule_familles.h`, `pietons.cpp`) : un marcheur adulte devient l'enfant d'un autre, donc le total ne change pas (RG-03). Part : Ville 10 %, Campagne 12 %, Corniche et Grand Prix 15 % (RG-02).
+  - **Main dans la main** à 4 et 7 ans : IK à 2 os ajoutée à `src/render/squelette.*`.
+- **Sources téléchargées** (lecture seule, rien exécuté, `regles-reseau.md` § 2.4) :
+  - github.com/makehumancommunity/makehuman : 48 cibles bébé / enfant (CC0), SHA-256 de leur concaténation 78bf3074…6e06 ;
+  - github.com/ewheeler/pygrowup : `statage.csv` des CDC 2000 (domaine public), SHA-256 ffc083df…0a09.
+- **Accroche hors zone E11**, demandée par RG-01 : `references/reel/anthropometrie.json` et `SOURCES.md` (entrées `enfant.*`, sources `CDC-2000` et `AVIS-233`).
+- **Avis de l'expert-realisme-3d** suivi :
+  - corps peu différenciés avant 14 ans ;
+  - écart de 0,65 m entre l'adulte et l'enfant, l'enfant 0,15 m devant ;
+  - vitesse de famille de 0,9 à 1,15 m/s ;
+  - IK à 2 os pour tenir la main ;
+  - nuque plus basse pour les cheveux peints.
+- **Vérifié en local** :
+  - 44 tests CPU OK ; `test_fidelite_humains` : indice 100 % (64 / 64), statures ± 1 % de la médiane CDC, tête et entrejambe dans les tolérances de l'expert ;
+  - licences : 0 manque ;
+  - parcours complet : 0 écart (vue normale et Cockpit) ;
+  - banc `pietons` (lavapipe) : captures `enfants-*` regardées en 3840x2160.
+- **Coût** :
+  - 1 appel de dessin par enfant (2 par adulte) ;
+  - IK : 4 recalculs de 65 os par famille visible ;
+  - aucune allocation par image (chaînes courtes) ;
+  - APK : +14,4 Mo (8 × 1,8 Mo).
+- **Limites, à décider par le PO** :
+  - pas de poussette (pas d'enfant de 0 à 3 ans) ;
+  - pas d'enfants en tribune (les spectateurs de WFS-199 sont des silhouettes figées) ;
+  - filles sans cheveux longs (il faudrait des maillages de cheveux MakeHuman) ;
+  - cadence de l'enfant calculée sans glissement des pieds : plus rapide que le réel à 4 ans (≈ 1,7 fois le clip) ;
+  - quand WFS-222 (PR #195) sera fusionné, sa baisse de 50 % des piétons s'appliquera avant la formation des familles : rien à changer ici.
+- **Suite** : agent libre, demande le ticket suivant au PO.
