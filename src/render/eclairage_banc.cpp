@@ -188,7 +188,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         char id[32]; std::snprintf(id, sizeof id, "cc.%02d.albedo", k);
         const reel::Json* m = k == 25 ? R.mesure("mat.charte_grise_18.albedo") : R.mesure(id);
         const reel::Json* v = m ? m->get("valeur") : nullptr;
-        if (!v || v->a.size() != 3) { erreurs++; break; }
+        if (!v || v->a.size() != 3) { WFS_ERR("lumière (WFS-151) : étalonnage : %s absent du référentiel", k == 25 ? "mat.charte_grise_18.albedo" : id); erreurs++; break; }
         g_l.albedos.push_back({(float)v->a[0].n, (float)v->a[1].n, (float)v->a[2].n});
     }
     const reel::Json* jSoleil = R.mesure("lum.soleil_midi.intensite"); const reel::Json* jCiel = R.mesure("lum.ciel_clair.intensite");
@@ -219,7 +219,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
             const bool okN = lire(r, hn);
             g_l.noir = false;
             const eclairage::Etat e = eclairage::etat();
-            if (!okC || !okN || !g_l.piste) { erreurs++; rap.nonMesurable("lumiere", "lum.etalon", "charte rendue (HDR)", "cible HDR illisible"); }
+            if (!okC || !okN || !g_l.piste) { WFS_ERR("lumière (WFS-151) : étalonnage HDR (Campagne) : cible HDR illisible ou piste absente"); erreurs++; rap.nonMesurable("lumiere", "lum.etalon", "charte rendue (HDR)", "cible HDR illisible"); }
             else {
                 // différence couleur − noir : part diffuse seule (le reflet spéculaire, identique, s'annule) ; ÷ k : cd/m²
                 const double k = e.k;
@@ -231,7 +231,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                 std::vector<std::array<double, 3>> D(25);
                 for (int q = 0; q < 25; q++) {
                     const vec3 c = casePos(q); const vec3 p = pointRoute(*g_l.piste, g_l.dist, c.x, c.y, SOL);
-                    double o[3]; if (!diffus(p, o)) { erreurs++; o[0] = o[1] = o[2] = 0; }
+                    double o[3]; if (!diffus(p, o)) { WFS_ERR("lumière (WFS-151) : étalonnage HDR : case %d de la charte illisible", q + 1); erreurs++; o[0] = o[1] = o[2] = 0; }
                     D[q] = {o[0], o[1], o[2]};
                 }
                 // M-01 : charte grise : luminance diffuse attendue (même modèle : Lambert (1 − F) au soleil + irradiance de la sonde)
@@ -287,7 +287,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                       << " ; sonde capturée " << (e.sondeCaptureActive ? "oui" : "NON") << " (traitement " << fmt(e.msTraitement, 1) << " ms CPU).\n";
             }
             g.shutdown();
-        } else erreurs++;
+        } else { WFS_ERR("lumière (WFS-151) : étalonnage HDR : chargement de la Campagne impossible"); erreurs++; }
         g_l.mode = AUCUN; eclairage::forcer({});
     }
     // ---------------- M-04 : ciel au zénith et 12° au-dessus de l'horizon (azimut du soleil + 90°), 3 hauteurs du soleil
@@ -295,20 +295,20 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
         eclairage::Forcage f; f.actif = true; f.hauteurSoleil = hs; f.ev = 15; eclairage::forcer(f);
         g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = 20;
-        if (!g.init(r, "golf", "campagne")) { erreurs++; continue; }
+        if (!g.init(r, "golf", "campagne")) { WFS_ERR("lumière (WFS-151) : ciel M-04 (soleil à %.0f°) : chargement de la Campagne impossible", hs); erreurs++; continue; }
         g.allerA(ECRAN);
         for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
         const vec3 sa = eclairage::etat().astre, soleil = normalize(vec3{sa.x, 0, sa.z});   // WFS-207 : azimut du soleil calculé (NOAA)
         const vec3 lateral = normalize(cross(soleil, vec3{0, 1, 0}));
         const double hs2 = 12;
         for (int vue = 0; vue < 2; vue++) {
-            if (!g_l.piste) { erreurs++; break; }
+            if (!g_l.piste) { WFS_ERR("lumière (WFS-151) : ciel M-04 (soleil à %.0f°) : piste absente", hs); erreurs++; break; }
             const vec3 o = pointRoute(*g_l.piste, g_l.dist, 0, 0, 300.f);   // WFS-207 : au-dessus des arbres (le soleil calculé change l'azimut visé)
             vec3 d = vue == 0 ? vec3{0, 1, 0} : normalize(lateral * (float)std::cos(hs2 * PI_L / 180) + vec3{0, (float)std::sin(hs2 * PI_L / 180), 0});
             g_l.oeil = o; g_l.cible = o + d * 10.f; g_l.haut = vue == 0 ? vec3{1, 0, 0} : vec3{0, 1, 0};
             for (int i = 0; i < 3; i++) g.render(t);
             Hdr h; double c[3];
-            if (!lire(r, h)) { erreurs++; continue; }
+            if (!lire(r, h)) { WFS_ERR("lumière (WFS-151) : ciel M-04 (soleil à %.0f°, vue %d) : image HDR illisible", hs, vue); erreurs++; continue; }
             centre(h, 2, c);
             const eclairage::Etat e = eclairage::etat();
             const double Lr = Y(c) / e.k;
@@ -356,10 +356,10 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
             preparer(g, r, carte, "jour", -1, ecrans::QUALITE_HAUTE);
             eclairage::Forcage f; f.actif = true; f.heureUtc = hu; f.sansNuages = true; eclairage::forcer(f);
             g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = (float)FOV;
-            if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+            if (!g.init(r, "golf", carte)) { WFS_ERR("lumière (WFS-207) : soleil et ciel : chargement de %s impossible", carte); erreurs++; continue; }
             g.allerA(ECRAN);
             for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
-            if (!g_l.piste) { erreurs++; g.shutdown(); continue; }
+            if (!g_l.piste) { WFS_ERR("lumière (WFS-207) : soleil et ciel (%s) : piste absente", carte); erreurs++; g.shutdown(); continue; }
             const vec3 o = pointRoute(*g_l.piste, g_l.dist, 0, 0, 300.f);
             const std::string id = std::string("lum.wfs207.") + carte + ".h" + fmt(std::round(ns.hauteurApparente), 0);
             // M-01 et M-02 : caméra vers la direction de la NOAA
@@ -385,7 +385,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                 g_l.cible = o + d * 10.f; g_l.haut = vue == 0 ? vec3{1, 0, 0} : vec3{0, 1, 0};
                 for (int i = 0; i < 3; i++) g.render(t);
                 double c[3], x, y, xm, ym;
-                if (!lire(r, hd)) { erreurs++; continue; }
+                if (!lire(r, hd)) { WFS_ERR("lumière (WFS-207) : ciel (%s, vue %d) : image HDR illisible", carte, vue); erreurs++; continue; }
                 centre(hd, 2, c); xyDe(c, x, y); xyDe(vue == 0 ? A.zenith : A.horizon, xm, ym);
                 const double ec = std::max(std::fabs(x - xm), std::fabs(y - ym));
                 rap.ajouter(ligne(id + (vue == 0 ? ".zenith_xy" : ".horizon_xy"),
@@ -435,7 +435,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                     r.capturePng(out + "/realisme-ciel-campagne-nuit.png");
                 }
                 g.shutdown();
-            } else erreurs++;
+            } else { WFS_ERR("lumière (WFS-207) : lune M-02 (Campagne, nuit) : chargement impossible"); erreurs++; }
             g_l.mode = AUCUN;
         }
     }
@@ -447,10 +447,10 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         preparer(g, r, carte, nuitM ? "nuit" : "jour", -1, ecrans::QUALITE_HAUTE);
         eclairage::choisirMoment(m);
         g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = 60;
-        if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+        if (!g.init(r, "golf", carte)) { WFS_ERR("lumière (WFS-208) : moment %d de %s : chargement impossible", m, carte); erreurs++; continue; }
         g.allerA(ECRAN); eclairage::remettreAZero();   // exposition recalée sur la scène (temps du banc figé : pas d'adaptation)
         for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
-        if (!g_l.piste) { erreurs++; g.shutdown(); continue; }
+        if (!g_l.piste) { WFS_ERR("lumière (WFS-208) : moment %d de %s : piste absente", m, carte); erreurs++; g.shutdown(); continue; }
         const eclairage::Etat e0 = eclairage::etat();
         const vec3 az = normalize(vec3{e0.astre.x, 0, e0.astre.z});
         g_l.oeil = pointRoute(*g_l.piste, g_l.dist, 0, 0, 3.f); g_l.cible = g_l.oeil + normalize(az + vec3{0, 0.25f, 0}) * 10.f; g_l.haut = {0, 1, 0};
@@ -482,7 +482,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
             preparer(g, r, "campagne", "jour", -1, ecrans::QUALITE_HAUTE);
             eclairage::choisirMoment((int)atmosphere::Moment::Doree); eclairage::accelererTemps(vite ? 20 : 1);
             g_l = EtatBanc{};
-            if (!g.init(r, "golf", "campagne")) { erreurs++; continue; }
+            if (!g.init(r, "golf", "campagne")) { WFS_ERR("lumière (WFS-208) : passage continu (heure dorée) : chargement de la Campagne impossible"); erreurs++; continue; }
             g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course); eclairage::remettreAZero();
             double tp = 0, evPrec = -100, ePrec = -1, tSonde = -1, saut = 0; int cap = 0;
             for (int i = 0; i <= 180 * 60; i++) {
@@ -557,10 +557,10 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                     const bool adapte = evSortie[1] > evSortie[0] + 0.3 && evSortie[2] > evSortie[1] + 0.3;
                     infos << "Sortie du tunnel : EV100 " << fmt(evSortie[0], 2) << " → " << fmt(evSortie[1], 2) << " → " << fmt(evSortie[2], 2)
                           << (adapte ? " : l'exposition s'adapte (critère d'acceptation)" : " : PAS D'ADAPTATION VISIBLE") << ".\n";
-                    if (!adapte) erreurs++;
+                    if (!adapte) { WFS_ERR("lumière (WFS-151) : sortie du tunnel de la Corniche : pas d'adaptation de l'exposition (EV100 %.2f → %.2f → %.2f ; + 0,3 voulu à chaque étape)", evSortie[0], evSortie[1], evSortie[2]); erreurs++; }
                 }
                 g.shutdown();
-            } else erreurs++;
+            } else { WFS_ERR("lumière (WFS-151) : tunnel de la Corniche : chargement de la plage impossible"); erreurs++; }
             g_l.mode = AUCUN; eclairage::forcer({});
         }
     }
@@ -578,7 +578,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                                    fmt(eMax, 1) + " lx", "[10 ; 30] lx (DA-realisme.md § 3)", "± 10 %", eMax >= 9 && eMax <= 33, "conception",
                                    "EV100 de la rue : " + fmt(e.ev, 2) + " (bornes de la nuit 3 à 5)"));
             g.shutdown();
-        } else erreurs++;
+        } else { WFS_ERR("lumière (WFS-151) : lampadaire de la Ville la nuit : chargement impossible"); erreurs++; }
     }
     // ---------------- RC-06 : coût de l'éclairage physique, même scène, même processus : sondes en place, puis rendu d'origine
     // (Ville et Campagne, départ, jour, Basse / Moyenne / Haute ; 60 images chacune, scène figée)
@@ -586,7 +586,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
     for (const char* carte : {"ville", "campagne"}) for (int q : {ecrans::QUALITE_BASSE, ecrans::QUALITE_MOYENNE, ecrans::QUALITE_HAUTE}) {
         preparer(g, r, carte, "jour", -1, q);
         g_l = EtatBanc{};
-        if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+        if (!g.init(r, "golf", carte)) { WFS_ERR("lumière (WFS-151) : coût de l'éclairage (%s, qualité %d) : chargement impossible", carte, q); erreurs++; continue; }
         g.allerA(ECRAN);
         for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
         attendreSondes(g, t);
