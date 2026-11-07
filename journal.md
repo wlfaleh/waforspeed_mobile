@@ -4312,3 +4312,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:36:34 — WFS-262 : branche poussée, cache de pipelines (Claude, agent dev X)
 - Branche `feature/waforspeed-262` poussée (9683065). RG-01 commencé : un `VkPipelineCache` est passé à toutes les créations de pipelines (`Renderer::makePipeline`), relu au lancement si son en-tête (version, fournisseur, appareil, UUID) correspond au téléphone, sinon on repart à vide. Il est enregistré par écriture atomique (`src/render/cache_pipelines.*`, nouveaux fichiers). Compteur des pipelines créés posé pour RG-02.
+
+### 2026-11-07 22:38:44 — Limite de mémoire : 1 Go par carte pour les données préparées au chargement (po-scrum-master)
+- Message du propriétaire, transmis par Claude, agent 5 (WFS-268), mots exacts : « Dis-lui ce message : le propriétaire t'a dit qu'on a une limite de 1 Go carrément pour une ville, donc arrête ton délire, et mets ça noir sur blanc dans les règles de gestion : la limite par ville en cas de chargement en amont, c'est 1 Go. »
+- Règle générale écrite dans `regles-de-gestion/README.md` (tous les tickets, les 4 cartes) : « Données préparées au chargement de la carte (en amont) : jusqu'à 1 Go de mémoire par carte. Décision du propriétaire, 2026-11-07. »
+- Reprise dans `WFS-268.md` (RG-09) et `WFS-273.md` (RG-02). Plafonds plus bas retirés : 120 Mo et 170 Mo (WFS-268, `track-agent.md`), 80 Mo (WFS-273). Mesures actuelles, toutes sous la limite : Ville ≈ 162 Mo, Corniche ≈ 85 Mo, Campagne ≈ 212 Mo, Grand Prix ≈ 196 Mo.

@@ -5,6 +5,8 @@
 Un fichier par ticket : `WFS-XX.md`, **écrit par l'agent `po-scrum-master`** quand il crée ou affine le ticket,
 et **au plus tard avant de l'attribuer**. Le développeur le lit avant de coder ; le QA lead s'en sert pour juger.
 
+> 💾 **Règle générale — mémoire (tous les tickets, les 4 cartes : Ville, Corniche, Campagne, Grand Prix)** : **Données préparées au chargement de la carte (en amont) : jusqu'à 1 Go de mémoire par carte.** Décision du propriétaire, 2026-11-07. Aucun ticket ne fixe de plafond plus bas.
+
 ## Ce qu'on réutilise (obligatoire à vérifier pour chaque US)
 Le code, les modèles 3D (`assets/cars/`, `assets/people/`), les sons (`assets/audio/`) et les systèmes **déjà présents dans ce dépôt** :
 chaque US cite les fichiers et fonctions à réutiliser ; ne jamais recréer ce qui existe. Il n'y a plus de version Web (décision de
