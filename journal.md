@@ -3982,3 +3982,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 20:10:18 — Statuts automatiques, CI main #864 (robot statuts)
 - Run rouge (push, commit b7825cf), aucun statut changé. Job(s) en échec : banc-essai (realisme).
 - Tickets 🟣 contenus dans ce run : WFS-161, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-261.
+
+### 2026-11-07 20:10:36 — WFS-252 fusionné (PR #230) : banc du réalisme chaque matin à 07:00 (Paris) (agent expert ci)
+- **Décision de l'utilisateur** : « j'ai rien gagné de ça, tu peux l'enlever carrément et mettre en CI automatisée qui check ce banc, et tu lances ça qu'à 07h de France ».
+- **Fait** : groupe `realisme` retiré de `build.yml` (plus à chaque envoi) ; nouveau `.github/workflows/realisme.yml` : cron 05:00 et 06:00 UTC, job `heure` qui ne garde que le déclencheur de 7 h à Paris (été / hiver), compilation de `wfs_bench`, deux parties en parallèle (WFS-251), fusion des rapports, artefacts 30 jours ; écart = rouge. Bancs conduite (WFS-241) et chocs (WFS-256) sortis d'`ecrans-2400` dans le groupe `conduite-chocs` (≈ 65 min, limite 75). Aucun banc ni seuil retiré.
+- **Conséquence à connaître** : un défaut de réalisme (comme le tunnel de WFS-274) n'est plus vu à la fusion mais le matin suivant ; le robot des statuts ne suit que `build.yml`.
+- **Preuve** : 1er lancement de `realisme.yml` à la main sur main (2026-11-07 20:10:36). CI de branche #874 annulée (version intermédiaire).
