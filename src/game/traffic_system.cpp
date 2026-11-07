@@ -16,6 +16,8 @@
 #include "game.h"
 #include "poursuite.h"   // WFS-111
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
+#include "deux_roues.h"   // WFS-232 : pilotes casqués des deux-roues
+#include "trace_cartes.h"   // WFS-232 : tracé des captures en courbe
 
 namespace wfs {
 
@@ -32,6 +34,19 @@ public:
         { const char* mo = std::getenv("WFS_MOMENT"); nuit_ = mo && !std::strcmp(mo, "nuit"); }   // WFS-81 : feux stop portés par le moteur la nuit
         // modèles natifs, partagés par toutes les voitures du trafic
         for (int i = 0; i < TRAFIC_MODELES; i++) loadCarModel(r, std::string(CARS[i].file), models_[i]);   // WFS-13
+        // WFS-232 : deux-roues (cartes qui en ont : Ville, Corniche, Campagne) ; un phare et un feu arrière au milieu (pas de paire)
+        avecDeuxRoues_ = g.map && partDeuxRoues(g.map->id) > 0;
+        for (int k = 0; k < DEUX_ROUES_COUNT && avecDeuxRoues_; k++) {
+            Model& b = deuxRoues_[k];
+            loadCarModel(r, std::string("cars/deux_roues/") + DEUX_ROUES[k].id + ".wfm", b);
+            if (!b.ok) continue;
+            b.feux.avantX = b.feux.arriereX = 0;
+            if (b.feux.avant == 0) b.feux.avant = b.bmin.z + 0.12f;
+            if (b.feux.avantY == 0) b.feux.avantY = deux_roues::GABARITS[k].poigneeY - 0.15f;
+            if (b.feux.arriere == 0) b.feux.arriere = b.bmax.z - 0.05f;
+            if (b.feux.arriereY == 0) b.feux.arriereY = deux_roues::GABARITS[k].selleY - 0.05f;
+        }
+        if (avecDeuxRoues_) deux_roues::preparer(r);
         Material m; m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f};
         shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
         std::vector<Vertex> v = {{-0.5f, 0.02f, -0.5f, 0, 1, 0, 0, 0}, {0.5f, 0.02f, -0.5f, 0, 1, 0, 1, 0},
@@ -50,6 +65,8 @@ public:
 
     void shutdown(Renderer& r) override {
         for (auto& m : models_) r.destroy(m);
+        for (auto& m : deuxRoues_) if (m.ok) r.destroy(m);   // WFS-232
+        deux_roues::detruire(r);
         r.destroy(shadow_); r.destroy(shadowMat_);   // WFS-187 (accroche) : jeux de descripteurs rendus
         shutdownVivant(r);   // WFS-67
         if (active_ == this) active_ = nullptr;
@@ -136,6 +153,7 @@ public:
         if (r.qualiteBasse) while (n > 0 && vis[n - 1].dz * M > 120) n--;   // Basse : trafic dessiné jusqu'à 120 m
         for (int k = 0; k < n; k++) {
             const TrafficCar& c = *vis[k].c;
+            if (c.deuxRoues) { dessinerDeuxRoues(r, g, c); continue; }   // WFS-232
             const int mi = nativeModelFor(c.type);
             if (!models_[mi].ok) continue;
             // WFS-221 (accroche) : rendu interpolé entre les deux derniers pas, comme le joueur (sauf apparition ou saut)
@@ -157,6 +175,7 @@ public:
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
             conducteurs::ajouter(models_[mi], m * scale({k0, k0, k0}), CARS[mi].id, (uint32_t)ci + 2);   // WFS-73 (accroche)
         }
+        deux_roues::dessinerFile(r, g.camPos);   // WFS-232 : pilotes des deux-roues les plus proches
         dessineHalos(r, g);   // WFS-67
     }
 
@@ -169,6 +188,28 @@ public:
     double pelotonM_ = 0, denseT_ = 0;
 
 private:
+    // WFS-232 (RG-04, RG-06) : deux-roues : modèle à sa taille réelle, incliné dans les virages autour de la ligne de contact des
+    // roues (rendu interpolé comme les voitures), ombre, feux du modèle (phare et feu arrière la nuit, WFS-226), pilote casqué
+    Model deuxRoues_[DEUX_ROUES_COUNT];
+    bool avecDeuxRoues_ = false;
+    void dessinerDeuxRoues(Renderer& r, const GameView& g, const TrafficCar& c) {
+        const Model& b = deuxRoues_[c.deuxRoues - 1];
+        if (!b.ok) return;
+        const Player& pl = *g.player; Track& t = *g.track;
+        const double dzc = t.relZ(c.z - c.zPrec), al = std::abs(dzc) * M > 20 ? 1.0 : g.alpha;
+        const double s = pl.dist + t.relZ(c.zPrec + dzc * al - pl.position);
+        const TrackPoint p = t.pointLisse(s, (c.offPrec + (c.offset - c.offPrec) * al) * RW);
+        const double yaw = c.yawPrec + (c.laneYaw - c.yawPrec) * al + (c.crashed ? c.crashYaw : 0);
+        const float incl = (float)(c.inclPrec + (c.inclinaison - c.inclPrec) * al);
+        const mat4 sol = translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
+        const mat4 m = sol * rotateZ(-incl);   // inclinaison + vers la droite (rotateZ positif penche vers la gauche)
+        const DeuxRouesDims& d = DEUX_ROUES[c.deuxRoues - 1];
+        r.draw(shadow_, shadowMat_, sol * scale({(float)d.W * 1.25f, 1.f, (float)d.L * 1.12f}));
+        const size_t ci = (size_t)(&c - traffic_.cars.data());
+        r.feuxProchaineVoiture(feuxDe(ci, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, g.time));
+        r.draw(b, m, nullptr, nullptr);
+        deux_roues::noter(m, c.deuxRoues - 1, (uint32_t)ci + 2);   // RG-02 : jamais de deux-roues sans pilote
+    }
     // ---------- trafic vivant (WFS-67) ----------
     // silhouette lointaine (makeCarFar / makeCarLow du jeu web) : caisse peinte + habitacle sombre, 2 appels de dessin
     // au lieu d'un par matériau du vrai modèle ; halos des feux : carrés face à la caméra, texture radiale (MAT.blinkHalo)
@@ -416,6 +457,71 @@ void benchTrafficScenes(Game& g, Renderer& r, const std::string& out) {
 }
 
 // ---------- WFS-67 : scènes du banc d'essai du trafic vivant ----------
+// WFS-232 (RG-07) : deux-roues du trafic, Ville et Corniche, jour et nuit : 3 deux-roues (scooter, routière, sportive) placés
+// devant la Golf arrêtée, dans les 3 files, en ligne droite (trafic-motos-<carte>-<moment>) puis dans une courbe de 18 à 60 m
+// de rayon (trafic-motos-virage-<carte>-<moment>), puis de près, à 4,5 m de chaque côté du joueur et à 10 m devant lui
+// (trafic-motos-pres-<carte>-<moment>) ; journal : modèle, vitesse, rayon, inclinaison et équilibre, pilotes dessinés
+static void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
+    for (const char* carte : {"ville", "plage"}) {
+        static Track piste; piste.build(mapById(carte), trace::versionCarte(carte));
+        int64_t courbe = -1;   // début de la 1re courbe serrée (rayon de 18 à 60 m tenu sur 20 m au moins) : inclinaison bien visible
+        for (int64_t a = 100; a + 20 < (int64_t)piste.segmentCount() && courbe < 0; a++) {
+            bool ok = true;
+            for (int64_t k = 0; k < (int64_t)(20 / SEG_M) && ok; k++) { const double kap = std::abs(piste.segAt(a + k).curve * CURVE_K / SEG_M); ok = kap > 1 / 60.0 && kap < 1 / 18.0; }
+            if (ok) courbe = a;
+        }
+        for (const char* moment : {"jour", "nuit"}) for (int vue = 0; vue < 3; vue++) {   // 0 : ligne droite, 1 : courbe, 2 : de près
+            if (vue == 1 && courbe < 0) continue;
+            setenv("WFS_MOMENT", moment, 1);
+            setenv("WFS_DEPART", std::to_string(vue != 1 ? 0 : std::max<int64_t>(0, courbe - (int64_t)(6 / SEG_M))).c_str(), 1);
+            if (!g.init(r, "golf", carte)) { WFS_ERR("deux-roues : chargement %s impossible", carte); continue; }
+            TrafficSystem* s = TrafficSystem::active_;
+            if (!s) { g.shutdown(); continue; }
+            g.setAutopilot(false); g.camMode = 1;
+            double t = 900;
+            for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(t += 0.5); }
+            const Player& pl = g.player();
+            // une voiture de chaque modèle devient (ou reste) un deux-roues, posée devant le joueur, une par file
+            std::vector<size_t> pris;
+            for (int k = 0; k < DEUX_ROUES_COUNT; k++) {
+                size_t best = 0; double loin = -1;
+                for (size_t i = 0; i < s->traffic_.cars.size(); i++) {
+                    const TrafficCar& c = s->traffic_.cars[i];
+                    if (c.cache || c.crashed || std::find(pris.begin(), pris.end(), i) != pris.end()) continue;
+                    const double d = std::abs(s->track_->relZ(c.z - pl.position)) + (c.deuxRoues == k + 1 ? 1e7 : 0);
+                    if (d > loin) { loin = d; best = i; }
+                }
+                pris.push_back(best);
+                TrafficCar& c = s->traffic_.cars[best];
+                const int lane = vue == 2 ? (k == 0 ? 2 : k == 1 ? 0 : 1) : (k == 0 ? 2 : k == 1 ? 1 : 0);   // de près : la file du joueur (1) loin
+                c.deuxRoues = k + 1; c.len = DEUX_ROUES[k].L / M; c.w = DEUX_ROUES[k].W / (2 * RW);
+                c.z = c.zPrec = s->track_->wrap(pl.position + (vue == 0 ? 7.0 + 6.0 * k : vue == 1 ? 9.0 + 5.0 * k : k < 2 ? 4.5 : 10.0) / M);
+                c.lane = c.target = lane; c.offset = c.prevOff = (LANE_X[lane] + DROITE_VOIE) * s->traffic_.facteurVoie(c.z);
+                c.offPrec = c.offset; c.laneYaw = c.yawPrec = 0; c.pending = false; c.think = 1e9; c.signal = 0;
+                // en courbe : vitesse d'une inclinaison de 20° au rayon local (v² = g·R·tan 20°), de 20 à 50 km/h
+                const double kap = s->track_->findSegment(c.z).curve * CURVE_K / SEG_M;
+                const double v = vue != 1 || !kap ? 30 / 3.6 : std::clamp(std::sqrt(9.81 / std::abs(kap) * std::tan(20 * 3.14159265 / 180)), 20 / 3.6, 50 / 3.6);
+                c.speed = c.want = v / M;
+                c.inclinaison = c.inclPrec = inclinaisonEquilibre(v, kap);
+                c.prevDz = s->track_->relZ(c.z - pl.position);
+            }
+            g.update(1.0 / 60); g.render(t += 1.0 / 60); g.render(t += 1.0 / 60);
+            const std::string nom = std::string("trafic-motos-") + (vue == 1 ? "virage-" : vue == 2 ? "pres-" : "") + carte + "-" + moment;
+            r.capturePng(out + "/" + nom + ".png");
+            for (size_t i : pris) {
+                const TrafficCar& c = s->traffic_.cars[i];
+                const double kap = s->track_->findSegment(c.z).curve * CURVE_K / SEG_M;
+                WFS_LOG("capture %s : %s à %.1f m devant, %.0f km/h, rayon %s, inclinaison %.1f° (équilibre %.1f°)", nom.c_str(), DEUX_ROUES[c.deuxRoues - 1].id,
+                        s->track_->relZ(c.z - pl.position) * M, c.speed * M * 3.6, kap ? (std::to_string((int)std::lround(1 / std::abs(kap))) + " m").c_str() : "ligne droite",
+                        c.inclinaison * 180 / 3.14159265, inclinaisonEquilibre(c.speed * M, kap) * 180 / 3.14159265);
+            }
+            WFS_LOG("capture %s : %d pilote(s) casqué(s) dessiné(s), %u appels de dessin", nom.c_str(), deux_roues::dessinesDerniereImage(), r.appelsDessin());
+            g.shutdown();
+        }
+    }
+    unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
+}
+
 void benchTraficVivant(Game& g, Renderer& r, const std::string& out) {
     effetsBanc(true);   // fumée des voitures accidentées (WFS-65) dans trafic-accident
     if (!g.init(r, "golf", "ville")) { WFS_ERR("trafic vivant : chargement impossible"); effetsBanc(false); return; }
@@ -524,6 +630,7 @@ void benchTraficVivant(Game& g, Renderer& r, const std::string& out) {
     }
     g.shutdown();
     effetsBanc(false);
+    benchDeuxRoues(g, r, out);   // WFS-232 : captures trafic-motos-*
 }
 
 } // namespace wfs
