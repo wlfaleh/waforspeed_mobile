@@ -3498,3 +3498,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Accroche annoncée** : `src/game/conduite_monde.h`, 5 lignes : σ de chaque essieu exposé (`Etat::sigmaAv / sigmaAr`) ; aucun changement de la physique.
 - **Mesures** (`test_sons_conduite`, Golf / Mustang) : virage à 0,5 g → crissement 0,000 ; volant à fond à 80 km/h → 0,32 / 0,33, montée ≤ 0,019 par pas ; freinage 100 → 0 avec ABS : 23 / 24 pulsations entendues, 4 vibrations ABS, la dernière à 1,50 s (arrêt en 2,9 s) ; sans ABS : crissement plein 0,35 ; 0-100 : son du moteur à ± 0,9 / 1,3 % du régime réel, même rapport à chaque pas, 2 rapports = 2 à-coups ; déterminisme au bit près. 43 tests CPU OK. Fusion par confiance (son et vibrations seulement ; aucune image changée).
 - Limite : le son et la vibration ne s'entendent / se sentent que sur le téléphone : à valider par l'utilisateur.
+
+### 2026-11-07 16:23:04 — Agent dev conduite : pas de 4e étape avant la validation de l'utilisateur (po-scrum-master)
+- WFS-241, 253 et 255 fusionnés, tous 🟡 (aucun validé sur téléphone). Pour ne pas empiler du travail sur une base non confirmée, et parce que l'étape 4 touche `traffic_system.cpp` (WFS-226, 239) et l'étape 3b `camera_vue.*` (WFS-247, 235), l'agent reste libre jusqu'au verdict de l'utilisateur.
