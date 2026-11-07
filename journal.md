@@ -2543,3 +2543,14 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 09:35:31 — Statuts automatiques, CI main #815 (robot statuts)
 - Run vert (push, commit 6ddbeec) : WFS-208 ✅ (PR #183, 6ddbeec), WFS-211 ✅ (PR #182, abd8570).
+
+### 2026-11-07 09:37:59 — WFS-161 (ST-4) : repli procédural provisoire des façades ; accès aux textures toujours bloqué (Claude, Agent 0 developer)
+- **Accès** : l'utilisateur a dit « ok » à l'ajout de `dunkean/magna-urbis`. Le dépôt est lisible en anonyme (le proxy sert les lectures de dépôts publics), mais **pas ses objets LFS**. Rattacher le dépôt avec identifiants (seule voie pour le LFS) a été refusé par le filtre de permissions de la session. Question reposée à l'utilisateur : ajouter le dépôt aux sources de la session, ou autoriser `add_repo` dans les réglages.
+- **Fait** (`feature/waforspeed-161`, fcd2ed0, synchronisée 508ba2e) : `surfaceFacade` dans `shaders/decor.glsl`, **provisoire** :
+  - pierre de taille (assises 0,40 m, blocs 0,80 m, joints 8 mm), brique (22 × 6,5 cm + joints 1 cm, panneresses), moellons, crépi, béton ;
+  - M-03 : albédo moyen = référentiel (teinte des éléments compensée selon la part des joints, variations de moyenne nulle ; mortier 0,45 = valeur de conception) ;
+  - RG-04 : salissure en pied de mur (0 à 0,6 m) et coulures verticales.
+  - Accroches annoncées : `MAT_FACADE` (`renderer.h`, 1 ligne), `scene.frag` (2 lignes).
+- **Captures regardées** : brique lisible (module, joints) ; moellons du village ; pierre de taille et crépi discrets à cette distance. 45 tests CPU verts.
+- **Limites** : la pierre, le crépi et le zinc n'ont pas d'albédo au référentiel (béton provisoire) ; les coulures ne suivent pas encore la position des appuis.
+- **Suite** : ST-5, branchement du kit dans les cartes (accroches ≤ 10 lignes, repli sur l'ancien code), puis ST-6 (mesures).
