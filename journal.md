@@ -3817,3 +3817,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Question de Claude, agent 5 : mémoire GPU du décor préparé sur tout le tour (Ville 61 Mo, Corniche 72 Mo, Campagne 212 Mo, Grand Prix 175-196 Mo).
 - Décision : décor préparé au chargement en **Ville et Corniche** seulement ; Campagne et Grand Prix gardent l'ancienne gestion (interrupteur, rien de supprimé). Accroches acceptées : `renderer.h/.cpp` (6 lignes), `circuit.cpp` et `campagne.cpp` (1 ligne chacun). Détail dans `regles-de-gestion/WFS-268.md` (Suivi).
 - **WFS-273** créé (P1, E4, ⏳ En attente de WFS-268 et WFS-246) : instances des arbres (RG-02 de WFS-268), ≤ 80 Mo par carte, puis Campagne et Grand Prix préparés, vibreurs du Grand Prix corrigés. Non attribué.
+
+### 2026-11-07 18:44:23 — Statuts automatiques, CI main #859 (robot statuts)
+- Run rouge (push, commit 7a3eedc), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-226, WFS-227, WFS-234, WFS-250.
