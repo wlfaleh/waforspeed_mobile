@@ -2519,3 +2519,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 09:17:45 — WFS-190 fermé : but atteint au run #799 ; agent arwa libre (po-scrum-master)
 - **Accord de l'utilisateur** : fermer WFS-190. Le run #799 de `main` est vert de bout en bout (endurance comprise, avec WFS-145 et WFS-187) ; le dernier rouge (banc des passes) a été réglé par #170 et WFS-200. Aucun travail restant.
 - **Fait** : WFS-190 ✅ Terminé (CI main #799), ligne déplacée dans `archive/taches-terminees.md` ; ordre urgent retiré du haut de `TACHES.md` ; agent arwa **libre** dans `track-agent.md`. **Agent arwa** : plus rien à faire sur WFS-190, demande ton prochain ticket au PO.
+
+### 2026-11-07 09:17:55 — Statuts automatiques, CI main #816 (robot statuts)
+- Run rouge (schedule, commit 4d8bb7c), aucun statut changé. Job(s) en échec : endurance.
+- Tickets 🟣 contenus dans ce run : WFS-208, WFS-211.
