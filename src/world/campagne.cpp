@@ -965,13 +965,13 @@ private:
         }
     }
 
-    // RG-02 / RG-C4 : bêtes des morceaux chargés, de 30 m derrière à 280 m devant (200 m en Basse), 60 au plus (24 en Basse) ;
+    // RG-02 / RG-C4 : bêtes des morceaux chargés, de 30 m derrière à 240 m devant (160 m en Basse), 40 au plus (16 en Basse) ;
     // broutage : 4 phases de 0,4 s deux fois de suite (tête qui descend et remonte), puis 3,2 s de repos ; un appel par bête
     int animauxAnimes(Renderer& r, const GameView& g, int64_t c0, int64_t c1) {
         if (betes_.empty() || betesMesh_[VACHE][0].empty()) return 0;
         Track& t = *g.track;
         const bool basse = r.qualiteBasse;
-        const double loin = basse ? 200 : 280; const int maxi = basse ? 24 : 60;
+        const double loin = basse ? 160 : 240; const int maxi = basse ? 16 : 40;
         int n = 0;
         for (const Bete& b : betes_) {
             if (n >= maxi) break;
