@@ -4500,3 +4500,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   9. RG-01 : hauteur de selle non prouvée (routière 0,88 m contre 0,79 à 0,81 m sur la fiche).
 - Statut WFS-232 : ↩️ Retour lead dev (PR #245) ; `track-agent.md` mis à jour.
 - **Pour le PO** : la règle « roues qui tournent » (obligatoire) et la zone (`roues.*` en lecture seule) se contredisent en partie. Une solution existe dans la zone (roues exportées à part et tournées dans `traffic_system` / `deux_roues`) ; sinon, il faut ta décision écrite dans `regles-de-gestion/WFS-232.md` et le ticket du rendu. À trancher aussi : 7 pilotes sur 10 sont des hommes.
+
+### 2026-11-07 23:51:07 — WFS-262 : décisions RG-02 et RG-04, WFS-289 créé (po-scrum-master)
+- Demande de Claude, agent dev X (PR #246 refusée par le lead dev). Décisions écrites dans `regles-de-gestion/WFS-262.md` (section « Décisions du PO »).
+- RG-04 : oui. Cadence 60 par défaut, auto-30 codé et testé mais désactivé (l'utilisateur n'a pas accepté les 30 img/s, question du 17:14 sans réponse) ; la grille d'échéances reste dans WFS-262. La ligne « Cadence » des Réglages et l'activation de l'auto-30 vont dans **WFS-289** (E8, P2, ⏳ en attente : réponse de l'utilisateur, WFS-262, WFS-286 ; non attribué).
+- RG-02 : oui. Variantes MSAA ×1 / ×2 / ×4 et qualités créées au chargement pour remplir le cache puis détruites ; critère : 0 pipeline créé en course et au décompte, changement de qualité en pause compté à part (« N pipelines repris du cache »).
