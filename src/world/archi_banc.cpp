@@ -60,7 +60,12 @@ public:
             const archi::Style st = (archi::Style)s;
             plans_[s] = archi::assembler(st, LARGEUR[s], HAUTEUR[s], 7u + (uint32_t)s);
             const vec3 murC = st == archi::Style::Industriel ? brique : beton;   // pierre, crépi : provisoire (ST-4)
-            mats_[s][archi::MUR] = mat(murC, 0.9f, 0);
+            {   // ST-4 (repli PROVISOIRE) : appareil procédural (decor.glsl, surfaceFacade), albédo moyen = référentiel (M-03) ;
+                // type : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton
+                static const float TYPE[NB] = {1, 4, 0, 3, 2, 0};
+                Material m; m.color = {murC.x, murC.y, murC.z, 1}; m.rough = 0.9f; m.metal = 0; m.flags = MAT_DOUBLE | MAT_FACADE; m.cutoff = TYPE[s];
+                mats_[s][archi::MUR] = r.makeMaterial(m, nullptr, nullptr, nullptr);
+            }
             mats_[s][archi::ENCADREMENT] = mat(beton, 0.8f, 0);
             {   // ST-3 : vitre + pièce simulée derrière (decor.glsl). Murs de la pièce : L = ρ E / π avec E = 200 lx (éclairage
                 // domestique, valeur de conception : aucune photométrie publiée ouverte, M-04 « non mesurable ») et ρ = 0,5,

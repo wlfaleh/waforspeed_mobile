@@ -76,6 +76,8 @@ void main() {
         surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
         surfaceSol(base, rough, metal);
+    } else if ((flags & F_FACADE) != 0u) {
+        surfaceFacade(base, rough);   // WFS-161 (accroche) : appareil des façades du kit d'architecture
     }
 
     vec3 L = normalize(F.sunDir.xyz);

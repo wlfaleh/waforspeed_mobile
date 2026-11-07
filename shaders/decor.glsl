@@ -57,3 +57,61 @@ vec3 interieurFenetre(vec3 N, vec3 V, vec3 skyAmb) {
     if (allumee) c *= mix(0.75, 1.15, clamp((p.y + al) / (h + al + PIECE_PLAFOND), 0.0, 1.0)) * mix(1.0, 0.7, p.z / PIECE_PROF);
     return c;
 }
+
+// ---------------------------------------------------------------- WFS-161 (ST-4, RG-04) : façades, repli procédural PROVISOIRE
+// En attendant les textures scannées CC0 (Poly Haven, dépôt dunkean/magna-urbis : accès LFS à obtenir), l'appareil de la façade
+// est dessiné ici. Règle de fidélité (M-03) : la moyenne de l'albédo sur la façade reste celle du référentiel (pc.color,
+// references/reel/materiaux.json) : la teinte du mortier est fixée et celle des pierres / briques est calculée pour compenser
+// la part des joints ; les variations d'une pierre à l'autre sont de moyenne nulle. uv en mètres (x le long du mur, y depuis
+// le sol). Type d'appareil dans pc.params.z : 0 crépi, 1 pierre de taille, 2 brique, 3 moellons, 4 béton.
+const uint F_FACADE = 2097152u;
+const float MORTIER = 0.45;                   // albédo du mortier de chaux (gris clair)
+
+// joints d'un appareil réglé (assises de hauteur h, éléments de longueur l, décalés d'une demi-longueur une assise sur deux) :
+// rend 1 dans le joint, 0 dans l'élément ; id = identifiant de l'élément (variation de teinte)
+float joint(vec2 p, float l, float h, float e, out vec2 id) {
+    float rang = floor(p.y / h);
+    float x = p.x / l + 0.5 * mod(rang, 2.0);
+    id = vec2(floor(x), rang);
+    vec2 f = vec2(fract(x) * l, fract(p.y / h) * h);
+    vec2 aw = fwidth(p) + 1e-4;   // joint anticrénelé (largeur du pixel)
+    float jx = 1.0 - smoothstep(e * 0.5 - aw.x, e * 0.5 + aw.x, min(f.x, l - f.x));
+    float jy = 1.0 - smoothstep(e * 0.5 - aw.y, e * 0.5 + aw.y, min(f.y, h - f.y));
+    return max(jx, jy);
+}
+
+void surfaceFacade(inout vec4 base, inout float rough) {
+    const vec3 ref = base.rgb;                // albédo moyen du référentiel
+    const vec2 p = vUv;
+    const int type = int(pc.params.z + 0.5);
+    vec3 c = ref;
+    if (type == 1 || type == 2) {
+        // pierre de taille : assises de 0,40 m, blocs de 0,80 m, joints de 8 mm ; brique (module 22 × 6,5 cm + joints de
+        // 1 cm : pas de 0,23 × 0,075 m, appareil en panneresses)
+        const float l = type == 1 ? 0.80 : 0.23, h = type == 1 ? 0.40 : 0.075, e = type == 1 ? 0.008 : 0.010;
+        vec2 id; float j = joint(p, l, h, e, id);
+        const float fj = 1.0 - (l - e) * (h - e) / (l * h);           // part de la surface occupée par les joints
+        const vec3 element = max((ref - fj * MORTIER) / (1.0 - fj), vec3(0.0));   // compense : moyenne = référentiel
+        const float var = (hash(id + 7.0) - 0.5) * (type == 1 ? 0.10 : 0.18);   // teinte d'un élément à l'autre (moyenne nulle)
+        c = mix(element * (1.0 + var), vec3(MORTIER), j);
+        rough = mix(rough, 0.95, j);
+    } else if (type == 3) {   // moellons : cellules irrégulières de 0,25 à 0,4 m, joints épais
+        vec2 g = p / 0.32, gi = floor(g); float d1 = 9.0, d2 = 9.0; vec2 idc = gi;
+        for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
+            vec2 o = vec2(x, y), q = o + hash22(gi + o) * 0.8 + 0.1 - fract(g);
+            float d = dot(q, q);
+            if (d < d1) { d2 = d1; d1 = d; idc = gi + o; } else if (d < d2) d2 = d;
+        }
+        float j = 1.0 - smoothstep(0.02, 0.06, sqrt(d2) - sqrt(d1));
+        const float fj = 0.18;                                        // part des joints (mesurée sur ce motif, à ± 0,02)
+        const vec3 pierre = max((ref - fj * MORTIER) / (1.0 - fj), vec3(0.0));
+        c = mix(pierre * (1.0 + (hash(idc) - 0.5) * 0.3), vec3(MORTIER), j);
+    } else {   // crépi (0) et béton (4) : grain fin, moyenne nulle
+        const float grain = (fbm(p * (type == 0 ? 9.0 : 3.0)) - 0.47) * (type == 0 ? 0.16 : 0.08);
+        c = ref * (1.0 + grain);
+    }
+    // RG-04 : salissure en pied de mur (rejaillissement de la pluie, 0 à 0,6 m) et coulures verticales (eau sous les appuis)
+    const float pied = 1.0 - 0.22 * (1.0 - smoothstep(0.0, 0.6, p.y)) * (0.7 + 0.6 * fbm(p * vec2(3.0, 1.0)));
+    const float coulure = 1.0 - 0.10 * smoothstep(0.55, 0.9, fbm(vec2(p.x * 6.0, p.y * 0.35)));
+    base.rgb = c * pied * coulure;
+}
