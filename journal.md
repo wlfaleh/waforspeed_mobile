@@ -3267,3 +3267,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:42:25 — WFS-221, 223, 225 refusés par l'utilisateur ; ANO-126 à 128 ; WFS-247 à 249 créés (po-scrum-master)
 - **Verdict de l'utilisateur** : 221 KO, 223 KO, 225 KO. Statuts → ❌ Refusé ; anomalies bloquantes ANO-126 (fluidité), ANO-127 (ronds-points), ANO-128 (Campagne de nuit).
 - **Corrections (P1 Urgent, ⏳ Prêt)** : WFS-247 fluidité 2e passage (E0 + E3, aux cadences réelles du téléphone) ; WFS-248 ronds-points 2e passage (E2, inventaire sur l'APK) ; WFS-249 Campagne de nuit 2e passage (E2 + E13, mesure de luminance, absorbe WFS-230). Toutes en 🟡 après fusion, validées par l'utilisateur. Aucune session ouverte sans son accord.
+
+### 2026-11-07 14:44:42 — Règle des KO : nouvelle US, autre développeur ; WFS-248 : ronds-points à refaire entièrement (po-scrum-master)
+- **Ordre de l'utilisateur** : un ticket KO est recréé sous un autre numéro et confié à un autre développeur. Écrit dans `CLAUDE.md` et l'agent PO ; exclusions inscrites (case « Dépend de » et règles) : WFS-241 et 246 pas à l'agent arwa ; WFS-247 pas à l'agent 2 ; WFS-248 et 249 pas à la session dev 5bx.
+- **WFS-248** : « à refaire entièrement » (reconstruction des ronds-points des 4 cartes aux dimensions réelles, liste de tous les bugs avant / après).

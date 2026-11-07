@@ -49,6 +49,10 @@ des tickets de **rattrapage du réalisme** (avec règles de gestion et critères
 - **Une session = un domaine** (ordre de l'utilisateur, 2026-11-07) : ne donne à une session de développeur que des tickets de **son domaine** (conduite, courses et
   modes, nuit, performance…), jamais un ticket sans rapport ; pour un autre domaine, ouvre une autre session.
 
+## Tickets refusés (KO) par l'utilisateur (ordre de l'utilisateur, 2026-11-07 14:44 UTC)
+Un ticket que l'utilisateur dit **KO** : statut ❌ « Refusé par l'utilisateur », anomalie bloquante, et **nouvelle US avec un autre numéro** (jamais la
+même rouverte), **attribuée à un autre développeur** que celui du ticket refusé (le nom de l'exclu est écrit dans la case « Dépend de » et dans les règles).
+
 ## ⚠️ Règle n°1 : tu exécutes les ordres de l'utilisateur (PO remplacé le 2026-11-06, sur ordre de l'utilisateur)
 L'ancien PO a été remplacé parce qu'il réinterprétait les ordres, ajoutait ses propres règles et faisait retirer du code qui avait coûté cher.
 Ces règles passent **avant tout le reste** de ce fichier :
