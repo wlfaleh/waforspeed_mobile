@@ -3234,3 +3234,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:30:34 — WFS-221, 222, 223, 225 remis en 🟡 À valider (utilisateur) (po-scrum-master)
 - Ces tickets viennent des vidéos de l'utilisateur d'aujourd'hui ; règle 🟡 (2026-11-07) appliquée après coup : ils ne restent pas ✅ sur la seule CI. ✅ quand l'utilisateur confirme sur l'APK de `main` (WFS-222 n'était pas encore dans l'APK 840).
+
+### 2026-11-07 14:33:14 — WFS-222 refusé par l'utilisateur (ANO-125) ; WFS-246 créé ; session « Agent dev perf » ouverte (po-scrum-master)
+- **Retour de l'utilisateur** : « 222 KO, à refaire » (APK 842, qui contient WFS-222). WFS-222 → ❌ Refusé ; anomalie ANO-125 (bloquante).
+- **Constat** (journal de WFS-222) : gain de ≈ 6 à 12 % seulement ; GPU = goulot (passe de scène ≈ 80 %), `cullMode` = NONE partout, shader de scène lourd pour tout le décor.
+- **WFS-246** (`[TECHNIQUE]`, P1, E4) : faces arrière, shaders par coût, résolution adaptative (viser 60 img/s), LOD au-delà de 150 m, ombres et capture allégées ; coût GPU ÷ 3 au banc ; ≥ 60 / 45 img/s sur le téléphone, validé par l'utilisateur.
+- **Session ouverte par le PO** : « Agent dev perf » (session_01UY1Vv56DjekCWRRAAjo4bp).

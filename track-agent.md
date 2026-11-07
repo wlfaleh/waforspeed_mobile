@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 14:28:20 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 14:33:14 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -43,6 +43,7 @@
 | WFS-243 (P2) | E3 | après WFS-241 (agent dev conduite) et WFS-242 (agent dev course), en cours (mêmes fichiers) |
 | WFS-244 (P3) | E9 | épic E9 libre : attribuable tout de suite |
 | WFS-245 (P3) | E5 | épic E5 tenue par WFS-234 (agent 1) |
+| Claude, agent dev perf (session 01UY1Vv56Dje) | WFS-246 | Performance, 2e passage (WFS-222 refusé par l'utilisateur) | 246 : session ouverte 14:33 | ✅ actif (ouvert par le PO) |
 
 ## Agents de pilotage
 

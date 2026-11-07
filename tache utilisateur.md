@@ -56,3 +56,6 @@ demande utilisateur :
 
 - La conduite est catastrophique et loin de la réalité ; le PO annonce des chantiers et rien ne bouge ; un nouvel agent ou skill si besoin — accord de l'utilisateur pour les trois propositions du PO (2026-11-07 14:25 UTC)
 ( PO : c'est fait — 1) skill et agent **expert-conduite** (vraie physique de voiture) ; 2) j'ai **ouvert deux sessions de développeur** sur ton compte : « Agent dev conduite » démarre WFS-241 (nouveau moteur de conduite, aide à la direction qui marche vraiment) et « Agent dev course » démarre WFS-242 (départ de la Course à 5) puis WFS-218 + 226 (phares de nuit) ; 3) règle : un ticket né de ton essai ou un ticket de conduite reste **🟡 À valider** tant que tu ne l'as pas confirmé sur ton téléphone. )
+
+- WFS-222 KO, à refaire (2026-11-07 14:33 UTC)
+( PO : c'est fait — WFS-222 marqué refusé (anomalie ANO-125) ; **WFS-246** (P1, performance 2e passage) créé et une nouvelle session **« Agent dev perf »** ouverte sur ton compte, qui démarre tout de suite : faces cachées retirées, shaders plus légers pour le décor, résolution qui s'adapte pour viser 60 img/s, décor allégé au loin, ombres et reflets moins chers. Objectif sur ton téléphone : ≥ 60 img/s en Basse, ≥ 45 en Haute ; c'est toi qui valides. )
