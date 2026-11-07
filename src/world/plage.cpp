@@ -647,7 +647,8 @@ public:
         // WFS-212 (RG-03, ANO-104) : bouchons de sol au centre des épingles. Le sol de chaque côté s'arrête à 90 % du rayon intérieur
         // (bordSol) : au sommet d'une épingle, il restait un trou autour du centre de rotation (on y voyait le fond et la mer).
         // Sommet = milieu d'une suite de segments de même sens à forte courbure (rayon < 40 m) dans les lacets et les épingles ;
-        // disque de sol (rayon de l'épingle − RW − 0,6 m : jamais sur la chaussée), 3 cm sous le bord du sol existant au sommet
+        // disque de sol (rayon de l'épingle − RW − 0,6 m : jamais sur la chaussée), 3 cm sous le bord du sol existant au sommet,
+        // jamais sous la mer (altitude fixe au tracé 2 : côté falaise, le pied descend à −2 m et la mer recouvrait le disque)
         bouchons_.clear();
         for (const trace::Section& s : S) {
             if (s.type != trace::Type::Epingle && s.type != trace::Type::Lacets) continue;
@@ -655,22 +656,25 @@ public:
                 const double c = t.segAt(n).curve;
                 const double r = std::abs(c) > 1e-9 ? SEG_M / (std::abs(c) * CURVE_K) : 1e9;
                 if (r >= 40) { n++; continue; }
-                int64_t f = n; double cmax = 0;
-                while (f < s.fin && t.segAt(f).curve * c > 0 && SEG_M / (std::abs(t.segAt(f).curve) * CURVE_K) < 40) { cmax = std::max(cmax, std::abs(t.segAt(f).curve)); f++; }
-                const int64_t sommet = (n + f) / 2; const int side = c > 0 ? 1 : -1;
-                const float rayon = (float)(SEG_M / (cmax * CURVE_K)), rd = rayon - (float)RW - 0.6f;
-                if (rd > 1.f) {
-                    Band b[8] = {}; float m = 1e9f;
-                    const int nb = bandes(t, sommet, sommet, side, b, m);
-                    float y = 0; int col = C_GARRIGUE;
-                    for (int i = 0; i < nb; i++) if (b[i].b - b[i].a > 0.01f) { y = b[i].yb; col = b[i].col == ROC ? C_GARRIGUE : b[i].col; }
-                    const TrackPoint cp = t.point((double)sommet * SEG, side * rayon);
-                    bouchons_.push_back({mod(sommet), vec3{(float)cp.x, (float)t.point((double)sommet * SEG, 0).y + y - 0.03f, (float)cp.z}, rd, col});
+                int64_t f = n;
+                while (f < s.fin && t.segAt(f).curve * c > 0 && SEG_M / (std::abs(t.segAt(f).curve) * CURVE_K) < 40) f++;
+                const int side = c > 0 ? 1 : -1; const int64_t sommet = (n + f) / 2;
+                Band b[8] = {}; float m = 1e9f;
+                const int nb = bandes(t, sommet, sommet, side, b, m);
+                float y = 0; int col = C_GARRIGUE;
+                for (int i = 0; i < nb; i++) if (b[i].b - b[i].a > 0.01f) { y = b[i].yb; col = b[i].col == ROC ? C_GARRIGUE : b[i].col; }
+                // un disque par segment serré, centré sur son propre centre de courbure : l'union suit l'arc réel (un seul disque
+                // au rayon le plus serré laissait un coin ouvert contre le trottoir intérieur)
+                for (int64_t k = n; k < f; k++) {
+                    const float rayon = (float)(SEG_M / (std::abs(t.segAt(k).curve) * CURVE_K)), rd = rayon - (float)RW - 0.6f;
+                    if (rd <= 1.f) continue;
+                    const TrackPoint cp = t.point((double)k * SEG, side * rayon);
+                    bouchons_.push_back({mod(k), vec3{(float)cp.x, std::max((float)t.point((double)k * SEG, 0).y + y - 0.03f, OCEAN_Y + 0.05f), (float)cp.z}, rd, col});
                 }
                 n = f;
             }
         }
-        WFS_LOG("Plage (WFS-212) : %zu bouchon(s) de sol au centre des épingles", bouchons_.size());
+        WFS_LOG("Plage (WFS-212) : %zu disque(s) de sol au centre des épingles", bouchons_.size());
     }
 
     // bord à ne pas dépasser (m) du côté side au segment absolu a : 90 % du rayon intérieur des courbes (le sol retomberait
@@ -1924,11 +1928,11 @@ public:
             }
             if (t2) decorFalaise(t, a, lod, out);
             for (const Bouchon& bo : bouchons_) if (bo.seg == mod(a)) {   // WFS-212 (RG-03) : sol fermé au centre de l'épingle
-                const int N = 28;
+                const int N = 16;
                 for (int k = 0; k < N; k++) {
                     const float a0 = 2 * PI * k / N, a1 = 2 * PI * (k + 1) / N;
                     const vec3 p0 = bo.c + vec3{std::cos(a0), 0, std::sin(a0)} * bo.r, p1 = bo.c + vec3{std::cos(a1), 0, std::sin(a1)} * bo.r;
-                    tri(out[P_UNI], bo.c, p1, p0, palUv(bo.col));   // face vers le haut
+                    tri(out[P_UNI], bo.c, p1, p0, palUv(bo.col)); tri(out[P_UNI], bo.c, p0, p1, palUv(bo.col));   // deux faces
                 }
             }
             decorLieux(t, a, lod, out);   // WFS-180
