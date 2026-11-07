@@ -12,7 +12,8 @@
     (`wfs_bench`, tous les `test_*`, `liste-tests.txt` ; shaders inclus dans le binaire), gardée 1 jour ; les 12 bancs et `endurance` en dépendent
     (`needs: compilation`), la décompressent et la vérifient (`tools/qa/verifier_compilation.sh` : binaire ou test manquant = rouge).
   - `banc-essai (<groupe>)` × 2 (WFS-277) : `texte` (+ tests CPU `tools/qa/tests_cpu.sh`, licences) et `menu1-2400` (parcours complet du jeu) ;
-    captures par `tools/qa/banc_groupe.sh <groupe>` (même script que `matin.yml`) ; **plus de publication des captures** à chaque envoi.
+    captures par `tools/qa/banc_groupe.sh <groupe>` (même script que `matin.yml`) ; photos publiées dans la Release **`apercu-fusion`**
+    (`TAG_APERCU`), jamais dans `apercu` (réservée à la publication complète du matin). Plus de lancement de nuit (`schedule` retiré).
   - `endurance` (35 min max) : couches de validation Vulkan, `tools/qa/endurance.sh` (cycles de course, mémoire, objets Vulkan ; verdict RG-13 / 14 / 17 de WFS-145),
     puis `tools/qa/chauffe.sh` (banc de chauffe WFS-123, limite `CHAUFFE_LIMITE`, 600 s par défaut, WFS-220) hors push.
   - `android` : NDK, CMake, SDK 35, APK + AAB, **signature fixe vérifiée** (WFS-118), pages de 16 Ko.
@@ -27,12 +28,17 @@
   - `banc-essai` (WFS-237) : installation `apt-get` en 2 essais de 5 min au plus (comme `endurance`), `timeout-minutes: 75`.
   - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
 ## matin.yml « Bancs du matin (captures, réalisme, QA) » (WFS-252, WFS-277)
-Chaque matin à **07:00 heure de Paris** (cron 05:00 et 06:00 UTC, le job `heure` garde celui qui tombe à 7 h) + à la main, sur la dernière version de main.
-`compilation` (wfs_bench) → `banc (<groupe>)` × 14 (`partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte`, `ecrans-2400`, `menu1-2400`,
-`menu2-2400`, `vitrines`, `nuit`, `conduite-chocs`, `realisme-1`, `realisme-2` ; `tools/qa/banc_groupe.sh`) → `fusion` (rapports du réalisme, WFS-251)
-→ `publication-captures` (toutes les captures dans la Release `apercu`, lue par la QA le matin, fin ≈ 08:15 Paris). Écart = rouge ; artefacts 30 jours.
-Une seule publication des captures (ici) : `publier_apercu.sh` retire les captures absentes du run. Le robot des statuts ne suit que `build.yml`.
-## statuts.yml — robot des statuts (WFS-196)
+Chaque matin à **04:00 heure de Paris** (cron 02:00 et 03:00 UTC, job `heure` qui ne garde que celui de 4 h) + à la main. QA à **07:00**.
+`compilation` (jeu + tests) → `tests` (tests CPU, licences) · `banc (<groupe>)` × 14 (12 groupes de captures + `realisme-1`, `realisme-2` ;
+`tools/qa/banc_groupe.sh`) · `endurance` (+ chauffe ; remplace l'ancien banc de nuit de build.yml) · `android` (APK au numéro du dernier run de
+build.yml : le versionCode ne recule jamais) → `publication-apk` (+ notification « APK du matin », `ORIGINE=matin`) · `emulateur` (parcours mvp,
+un nouvel essai, **information seulement** la 1re semaine : `continue-on-error`, Release `simulateur-matin`) → `fusion` (rapports du réalisme)
+→ `publication-captures` (toutes les captures dans `apercu`) → `recette` (message « 🧪 Recette QA prête » : `tools/qa/recette_prete.sh`).
+Statuts : `statuts.yml` suit aussi ce workflow ; run vert → tickets 🟣 du run en ✅ « (bancs du matin #N) » (option A, WFS-277).
+
+## statuts.yml — robot des statuts (WFS-196, WFS-277)
+**WFS-277 (option A)** : suit `build.yml` et `matin.yml` ; un run de fusion vert ne change aucun statut (🟣 reste), un rouge est noté au journal ;
+un run du matin vert passe les 🟣 du run en ✅ (`--source matin --libelle "bancs du matin"`).
 `workflow_run` de « Construction WaForSpeed » terminé, sur `main` ; `tools/qa/statuts.py` (test `test_statuts.py`) : run vert (hors nuit) → chaque
 ligne 🟣 de `TACHES.md` dont le commit de fusion (PR de la ligne, sinon `(#NNN)`, sinon hash cité) est ancêtre du run passe ✅ « (CI main #N) » ;
 rouge → entrée au journal (jobs en échec, tickets 🟣 du run) ; annulé → rien ; ligne mal formée → « à corriger par le PO ». Commit « (robot statuts) ».

@@ -61,6 +61,9 @@ struct Ordinateur {
     int nitros = 1, nitrosPrises = 0;         // RG-06 : nitros restantes, nitros utilisées
     double nitroT = 0;                        // s de nitro restantes (0 : pas de nitro)
     bool aspiration = false;                  // RG-05 : dans l'aspiration à ce pas
+    double gardeFile = 0;                     // WFS-243 (ANO-150) : s restantes avant de pouvoir changer encore de voie
+    int fileQuittee = -1;                     // WFS-243 (ANO-150) : file quittée au dernier changement (−1 : aucun)
+    int changements = 0;                      // WFS-243 (ANO-150) : changements de voie depuis la grille (banc, tests)
 };
 
 // WFS-189 (RG-01) : vitesse max de fiche des adversaires à ± 20 % de celle du joueur
@@ -104,6 +107,11 @@ bool course5PreteAuDepart();
 // WFS-242 (RG-03) : pendant les GARDE_VOIE_S premières secondes de course, les ordinateurs gardent leur voie (aucun changement
 // de file au départ : pas de choc dans la mêlée) ; ils suivent la voiture de devant
 constexpr double GARDE_VOIE_S = 3;
+// WFS-243 (RG-ANO-150) : un changement de voie décidé est gardé jusqu'à l'arrivée dans la nouvelle file, et au moins
+// GARDE_CHANGEMENT_S ; pas de retour vers la file quittée tant qu'une voiture y est à moins de RETOUR_LIBRE_M devant
+// (avant : la voiture « devant » était cherchée sur la position x, qui rejoint la nouvelle file lentement : cibleX faisait
+// des allers-retours entre deux files à chaque pas quand les deux étaient libres)
+constexpr double GARDE_CHANGEMENT_S = 2, RETOUR_LIBRE_M = 30;
 // RG-04 : un pas de conduite des ordinateurs (dt en s) ; joueur : distance et écart latéral (les ordinateurs l'évitent) ;
 // arrivée à `finish` (unités) avec le temps de course (s). WFS-133 : rattrapage (RG-04), aspiration (RG-05) et nitro
 // (RG-06 : nitrosPrises compte les nitros utilisées)
