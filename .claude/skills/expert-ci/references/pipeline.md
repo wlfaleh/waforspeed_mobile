@@ -3,8 +3,10 @@
 ## build.yml « Construction WaForSpeed »
 - **Déclencheurs** : `push` sur `main` (ignore `**/*.md`, `qa/**`, `regles-de-gestion/**`, `.claude/**`) ; `workflow_dispatch` (branche choisie) ;
   `schedule` `17 2 * * *` (nuit : **seul le job `endurance`** tourne).
-- **Concurrence** : `main` → un groupe par commit, rien n'est annulé ; branche → le nouvel envoi annule l'ancien. Les publications ont leur propre
-  groupe (`apercu-apk-<ref>`, `apercu-captures-<ref>`) : un run plus récent peut annuler une publication en attente (normal).
+- **Concurrence** (WFS-237) : `main` → un seul groupe `build-main` : un run commencé va toujours au bout (`cancel-in-progress: false`), un seul run
+  en attente, remplacé par un envoi plus récent (qui contient toutes les fusions) ; la nuit a son groupe `build-main-nuit` ; branche → le nouvel
+  envoi annule l'ancien. Les publications ont leur propre groupe (`apercu-apk-<ref>`, `apercu-captures-<ref>`) : un run plus récent peut annuler
+  une publication en attente (le robot le compte vert, WFS-236).
 - **Jobs** :
   - `banc-essai (<groupe>)` × 12 : `partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte` (+ test de la piste), `ecrans-2400`, `menu1-2400`,
     `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `realisme` (+ textures KTX2 `tools/textures/ci_textures.sh`) ; Vulkan logiciel ; `WFS_BANC=<groupe> ./build/wfs_bench captures assets/` ;
@@ -15,7 +17,10 @@
   - `publication-apk` : `tools/qa/publier_apercu.sh` (mode APK) → Release `apercu` (`main`) ou `apercu-<branche>` ; nom provisoire puis renommage (jamais de trou).
     Lien fixe de l'APK de main : https://github.com/wlfaleh/waforspeed_mobile/releases/download/apercu/WaForSpeed.apk
   - `publication-captures` : seulement les captures qui ont changé ; un échec = avertissement (job vert).
-  - `résumé (commit et tickets)` : commit et tickets `WFS-XX` du run (pour le robot des statuts).
+  - `résumé (commit et tickets)` : commit et tickets `WFS-XX` du run ; sur main (WFS-237), **tous les commits depuis le dernier run de main qui a
+    tourné** (envoi, terminé, non annulé ; `gh api .../compare`), sinon « liste incomplète » et les commits du dernier envoi.
+  - `banc-essai` (WFS-237) : installation `apt-get` en 2 essais de 5 min au plus (comme `endurance`), `timeout-minutes: 75`.
+  - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
 ## statuts.yml — robot des statuts (WFS-196)
 `workflow_run` de « Construction WaForSpeed » terminé, sur `main` ; `tools/qa/statuts.py` (test `test_statuts.py`) : run vert (hors nuit) → chaque
 ligne 🟣 de `TACHES.md` dont le commit de fusion (PR de la ligne, sinon `(#NNN)`, sinon hash cité) est ancêtre du run passe ✅ « (CI main #N) » ;
