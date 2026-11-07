@@ -4233,3 +4233,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Carte inchangée** : vue calculée avec 38 comme aujourd'hui ; le bandeau cache 18 de plus du haut de la carte (route visible devant ≈ 77 % d'aujourd'hui), accepté. Détail, captures demandées et preuves : `regles-de-gestion/WFS-245.md` (Suivi, 22:05:47) ; `anno.md` (ANO-141) renvoie à l'arbitrage.
 - Processus : PR #238 (livraison 1) fusionnée par confiance à 21:59:02, 3 min après l'envoi de la règle du lead dev (21:55:57) ; rien d'annulé (aucun ordre). La livraison 2 suit la règle du lead dev (captures, PR, agent `lead-dev` qui fusionne) ; après fusion 🟡 À valider (utilisateur).
 - Envois vérifiés : 279 22:02, 245 21:51, 232 21:46, 278 21:29, 276 21:28, 258 17:35 ⚠️ (P1, 4 h 30), 239 13:43 ⚠️ (P1, 8 h 22 ; aucun retrait avant 10 h : 23:43).
+
+### 2026-11-07 22:11:01 — Statuts automatiques, bancs du matin #2 (robot statuts)
+- Run rouge (workflow_dispatch, commit c9eda61), aucun statut changé. Job(s) en échec : banc (realisme-2), émulateur Android (information).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-257, WFS-244, WFS-250, WFS-251, WFS-252, WFS-277, WFS-261, WFS-270, WFS-272, WFS-275.
