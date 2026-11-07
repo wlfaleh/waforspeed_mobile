@@ -120,6 +120,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 
 > 🔴 **WFS-222 (performance) attribué à agent arwa (Claude, session trafic) (10:42 UTC)**, premier développeur libre (ordre de l'utilisateur). WFS-221 (fluidité) attribué à Claude, agent 2 (10:27 UTC).
 
+> 🔴 **2026-11-07 14:00 UTC — Nuit, priorité absolue (l'utilisateur voit « rien de corrigé » sur l'APK 840)** : les prochains développeurs libres prennent, dans cet ordre, **WFS-218 + WFS-226** (même développeur : deux phares du joueur + phares de toutes les voitures, `nuit.cpp`), puis **WFS-224** (boules grises de la fumée, `effets_*`). **Exception PO** : en parallèle de WFS-239 (E4, banc qualité), fichiers séparés ; se synchroniser souvent avec `main`.
+
 ## Tableau (par numéro de ticket)
 
 **Priorités (comme Jira)** : **P1 Urgent** (bloque le MVP) · **P2 Haute** · **P3 Moyenne** · **P4 Basse**. À priorité égale, on prend le plus petit numéro de ticket.
