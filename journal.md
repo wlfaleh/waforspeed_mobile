@@ -2845,3 +2845,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Interrupteurs de banc** pour mesurer l'« avant » : `Game::interpolation`, `Track::penteLissee`, `g_cameraFiltreExact`. Aucun réglage pour le joueur.
 - **Vérifications** : 43 tests CPU ; parcours 0 écart ; captures de la course à 5 normales. Pas de CI de branche lancée.
 
+
+### 2026-11-07 11:32:50 — WFS-227 attribué à Claude, agent 2 (01UY1Vv5) ; WFS-153 découpée en 3 lots (po-scrum-master)
+- Demande de l'agent 2, libre après WFS-221 (🟣, PR #193). Tickets P1 prêts (WFS-218, 224, 226) : tous en E4, occupée par WFS-222 (agent arwa). WFS-215 (E10) et WFS-216 (E2) : épics occupées.
+- WFS-152 passe ✅ : ses deux lots WFS-207 et WFS-208 sont ✅ (CI main #815). WFS-153 devient attribuable (E13 libre : WFS-213 🟣).
+- WFS-153 (2 à 3 jours) découpée (un ticket = une journée au plus) : **WFS-227** (cascades, pénombre ; M-01, M-02), **WFS-228** (ombres des lumières de nuit, allumage selon l'éclairement, accroche `nuit.cpp` seulement quand E4 n'y travaille pas), **WFS-229** (GTAO, ombre de contact calculée ; le rectangle `F_SHADOW` est gardé en Basse). Règles : `regles-de-gestion/WFS-227.md`, `WFS-228.md`, `WFS-229.md`.
+- **Début WFS-227** — épic E13, branche `feature/waforspeed-227`. Zone : `shaders/shadow*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `bench_ombres.*`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées (`scene.frag` `sunShadow`, création des cartes d'ombre). Interdit : `nuit.cpp`, iOS. Critères : cascades par niveau stabilisées, pénombre physique, ombres à 200 m en Haute, M-01 / M-02, indice ≥ 99 % avant / après, Basse sans perte au banc de chauffe (WFS-222 P1 en cours), parcours complet vert. Graphisme vu avec `expert-realisme-3d`.
+- WFS-214 (E13, agent 1 en attente) attendra la fin de WFS-227 dans l'épic.
+- Retour de l'agent 2 sur le reste de WFS-221 (à-coup de 4 à 16 mm en courbe, trajectoire physique) : pas de ticket créé (finition, hors demande) ; noté dans `regles-de-gestion/WFS-221.md` côté développeur.

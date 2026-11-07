@@ -131,8 +131,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu | Claude (session trafic) | WFS-78 ✅ | `feature/waforspeed-88` | #76 |  |
 | P2 Haute | WFS-92 | Duel par Internet : pair PeerJS réel (WebSocket + WebRTC, libdatachannel + Mbed TLS dans … | E3 | ⏸ Remplacé par WFS-112 |  | WFS-89 ✅ | `feature/waforspeed-92` |  |  |
-| P2 Haute | WFS-152 | [RÉALISME 1.2] Lumière : ciel physique, soleil et lune calculés (NOAA), 6 moments + heure … | E13 (+ accroche E8 … | ⏳ En attente (découpée : lot 1 WFS-207 ✅, lot 2 WFS-208 🔧) |  | WFS-151 validée | `feature/waforspeed-152` |  |  |
-| P2 Haute | WFS-153 | [RÉALISME 1.3] Lumière : ombres en cascades à pénombre physique, ombres des lumières la … | E13 | ⏳ En attente |  | WFS-151 validée (après WFS-152, même … | `feature/waforspeed-153` |  |  |
+| P2 Haute | WFS-152 | [RÉALISME 1.2] Lumière : ciel physique, soleil et lune calculés (NOAA), 6 moments + heure … | E13 (+ accroche E8 … | ✅ Terminé (lots WFS-207 ✅, WFS-208 ✅) |  | WFS-151 validée | `feature/waforspeed-152` |  |  |
+| P2 Haute | WFS-153 | [RÉALISME 1.3] Lumière : ombres en cascades à pénombre physique, ombres des lumières la … | E13 | ⏳ En attente (découpée : WFS-227 🔧, WFS-228, WFS-229) |  | WFS-152 ✅ | `feature/waforspeed-153` |  |  |
 | P2 Haute | WFS-154 | [RÉALISME 1.4] Lumière : reflets d'écran (SSR), bloom par énergie, flou de mouvement par … | E13 | ⏳ En attente |  | WFS-153 validée | `feature/waforspeed-154` |  |  |
 | P2 Haute | WFS-155 | [RÉALISME 2.R1] Routes : revêtements réels scannés et calibrés par carte, usure … | E9 (+ accroche `track.cpp`) | ⏳ En attente (découpée : lot 1 WFS-205 🔧, lot 2 WFS-206) |  | WFS-151 validée | `feature/waforspeed-155` |  |  |
 | P2 Haute | WFS-156 | [RÉALISME 2.R2] Routes : marquages réglementaires usés et rétroréfléchissants, fissures … | E9 | ⏳ En attente |  | WFS-206 validée (lot 2 de WFS-155) | `feature/waforspeed-156` |  |  |
@@ -167,6 +167,9 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-224 | Correction : boules grises (fumée des pneus) qui sortent derrière la voiture quand on tourne | E4 | ⏳ Prêt |  | — | `feature/waforspeed-224` |  |  |
 | P1 Urgent | WFS-225 | Campagne de nuit : lampadaires allumés, nuit lisible (aujourd'hui tout noir) | E2 | 🔧 En cours | Claude, session dev 5bx, 2026-11-07 11:28 UTC | — | `feature/waforspeed-225` |  |  |
 | P1 Urgent | WFS-226 | Nuit : phares allumés sur toutes les autres voitures (trafic, adversaires, police) | E4 + E3 | ⏳ Prêt |  | — | `feature/waforspeed-226` |  |  |
+| P2 Haute | WFS-227 | [RÉALISME 1.3a] Lumière (1/3) : ombres du soleil en cascades stabilisées, pénombre physique | E13 | 🔧 En cours | Claude, agent 2 (01UY1Vv5), 2026-11-07 11:31 UTC | WFS-152 ✅ | `feature/waforspeed-227` |  |  |
+| P2 Haute | WFS-228 | [RÉALISME 1.3b] Lumière (2/3) : ombres des phares et lampadaires la nuit, allumage selon l'éclairement | E13 (+ accroche E4 `nuit.cpp`) | ⏳ En attente |  | WFS-227 | `feature/waforspeed-228` |  |  |
+| P2 Haute | WFS-229 | [RÉALISME 1.3c] Lumière (3/3) : occlusion ambiante (GTAO), ombre de contact calculée sous les voitures | E13 | ⏳ En attente |  | WFS-227 | `feature/waforspeed-229` |  |  |
 
 ## Critères d'acceptation
 
