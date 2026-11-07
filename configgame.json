@@ -42,8 +42,8 @@
     "choc_police": 10,
     "colle_distance": 12.0,
     "colle_periode": 1.0,
-    "police_depart": 2,
-    "police_max": 6,
+    "police_depart": 1,
+    "police_max": 3,
     "renfort": 2.0,
     "densite_trafic": 2.5
   },
@@ -98,11 +98,11 @@
   },
   "voitures": {
     "golf": {
-      "marque": "Vollmer",
-      "modele": "Gala 8 GTS"
+      "marque": "Folg",
+      "modele": "Folg 8"
     },
     "m4": {
-      "marque": "Bavaro",
+      "marque": "Bnv",
       "modele": "R4 Competizione"
     },
     "p911": {
