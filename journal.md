@@ -3978,3 +3978,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Résultat local** (branche synchronisée, lavapipe, bloc tunnel) : voiture dans le tunnel EV100 11,99 (lum. 279 cd/m²) ; sortie **12,96 → 14,06 → 14,65 : l'exposition s'adapte**, code 0. Tests CPU : **57 / 57 OK**.
 - **RG-05 (messages)** : chaque `erreurs++` / `ecarts++` muet du banc `realisme` écrit maintenant une ligne `[ERREUR]` (scène, étape, raison) : `bench_realisme.cpp` (4), `eclairage_banc.cpp` (18, dont la sortie du tunnel avec ses 3 EV100), `bench_passes.cpp` (11). Ajouts seulement, aucune condition changée.
 - **CI de branche, lancement n° 1 : run #876** (id 42408934193, `workflow_dispatch` de `build.yml`, commit 22beabe, branche synchronisée) : vérifie le job `banc-essai (realisme)` (0 erreur) et les 12 autres bancs avec le correctif. RG-05 est poussée après (d25b5b7, messages seulement, compilée en local).
+
+### 2026-11-07 20:10:18 — Statuts automatiques, CI main #864 (robot statuts)
+- Run rouge (push, commit b7825cf), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-261.
