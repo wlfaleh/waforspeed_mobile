@@ -41,6 +41,7 @@
 #include "vegetation.h"
 #include "ville_quartiers.h"
 #include "zones.h"
+#include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 
 namespace wfs {
 namespace {
@@ -212,7 +213,7 @@ public:
                 mats_[P_FEN_CHAUD + k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
             }
         }
-        { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // comme le trottoir de Game
+        { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, m); }   // comme le trottoir de Game (WFS-205, accroche)
         initVegetation(r);
         plain(P_LAMP, {1.f, 0.95f, 0.85f}, 0.3f, 0.f, {0.6f, 0.55f, 0.45f});
         // couleurs unies : palette sRGB, éclairage du feuillage (MAT_VTINT, sans reflet), comme CarteDecor
@@ -692,7 +693,7 @@ public:
         // luminaires au sodium haute pression ≈ 2000 K (DA-realisme.md : 1900-2200 K), allumés jour et nuit (tunnel)
         { Material m; m.color = {0.2f, 0.2f, 0.2f, 1}; m.rough = 0.5f; m.flags = MAT_DOUBLE; m.emissive = vec3{1.f, 0.42f, 0.09f} * (nuit_ ? 3.f : 5.f);
           mats_[P_SODIUM] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
-        { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // asphalte de Game
+        { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, m); }   // asphalte de Game (WFS-205, accroche)
         // eau de rivière : sombre (albédo ≈ 0,04), lisse (rugosité 0,08), F0 diélectrique 0,02 : le ciel s'y reflète
         { Material m; m.color = {0.035f, 0.05f, 0.055f, 1}; m.rough = 0.08f; m.metal = 0; mats_[P_EAU] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
         { Material m; m.flags = MAT_GROUND; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game

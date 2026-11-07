@@ -32,6 +32,7 @@
 #include "../game/track.h"
 #include "../render/eclairage.h"
 #include "../render/renderer.h"
+#include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 #include "enseignes.h"   // WFS-180 : vie::Baigneur (danseurs et joueurs pour les piétons), vie::hauteurSable
 #include "vegetation.h"
 #include "zones.h"
@@ -531,7 +532,7 @@ public:
         ms.emissive = vec3{1.f, 0.42f, 0.09f} * (night_ ? 3.f : 5.f);
         mats_[P_SODIUM] = r.makeMaterial(ms, nullptr, nullptr, nullptr);
         Material mo; mo.flags = MAT_ROAD; mo.rough = 0.8f;   // même surface procédurale que la chaussée de Game
-        mats_[P_ROUTE] = r.makeMaterial(mo, nullptr, nullptr, nullptr);
+        mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, mo);   // WFS-205 (accroche)
         // lentilles du feu tricolore : éteinte (verre sombre), rouge, orange, vert (LED, allumées)
         Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
         lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);

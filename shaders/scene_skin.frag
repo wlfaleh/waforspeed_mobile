@@ -112,7 +112,7 @@ void main() {
     if ((flags & F_ROAD) != 0u) {
         surfaceRoute(base, rough, metal, N, wetRoad, flaque);
     } else if ((flags & F_WALK) != 0u) {
-        surfaceTrottoir(base, rough, metal);
+        surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
         surfaceSol(base, rough, metal);
     }

@@ -1,0 +1,6 @@
+route_enrobe-neuf-couleur | couleur | astc 6x6 | 1024x1024, 11 niveaux | 611.6 Ko | niveau 0 37.32 dB | chaîne 37.79 dB | seuil 38 dB | REFUSÉ
+route_enrobe-neuf-couleur | couleur | astc 4x4 | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 47.19 dB | chaîne 47.56 dB | seuil 38 dB | conforme
+route_enrobe-neuf-couleur | couleur | rgba8 (ASTC décompressé) | 1024x1024, 11 niveaux | 5461.3 Ko | niveau 0 47.19 dB | chaîne 47.56 dB | seuil 38 dB | conforme
+route_enrobe-neuf-couleur | couleur | etc2 rgba | 1024x1024, 11 niveaux | 1365.4 Ko | niveau 0 36.73 dB | chaîne 37.06 dB | seuil 38 dB | REFUSÉ
+route_enrobe-neuf-couleur | décodeur ETC2 contrôlé contre etc2comp sur 11 niveaux : écart maximal 0 code
+route_enrobe-neuf-couleur | ETC2 sous 38 dB : non écrit, repli RGBA8 sur les GPU sans ASTC
