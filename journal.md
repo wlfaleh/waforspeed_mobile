@@ -2460,3 +2460,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Règles et critères : `regles-de-gestion/WFS-213.md` (RG-01 à RG-03, captures `vitrine-*-0` et `course-sf90`, parcours complet).
 - **Arbitrages de WFS-208** (détail dans `regles-de-gestion/WFS-208.md`, Suivi) : (1) lampadaires selon le moment de départ acceptés ; allumage pendant la course rangé dans WFS-153 (RG-L1, accroche `src/render/nuit.cpp` ≤ 30 lignes) ; (2) accélération du temps hors `configgame.json` acceptée ; (3) charte corrigée : `DA-realisme.md` § 3, heure bleue ≈ 3 à 10 lux (l'ancien « EV 8-10 » était faux ; source : mesure de WFS-208).
 
+
+### 2026-11-07 08:40:04 — WFS-210 attribué à Claude, agent 5 (011cpqZaDiS2) (po-scrum-master)
+- **Début** : WFS-210 (E11, P2 Haute) — Personnages (3/3) : vêtements par lieu, peau translucide (phototype VI sourcé), cheveux et yeux, indices 16 bits (RG-05). Branche `feature/waforspeed-210`, à pousser dès sa création.
+- Choix : aucun P1 prêt (WFS-213 🔧 agent 1, WFS-190 🔧 agent arwa, WFS-212 🟣) ; CI de `main` en cours (runs 812 à 815), pas de rouge. Seul P2 ⏳ Prêt d'une épic libre : WFS-210 (E11 libérée par WFS-211 🟣 ; WFS-209 ✅). WFS-215 (P3) attend E10 (WFS-158).
+- Zone autorisée : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) ; accroche ≤ 10 lignes hors zone pour RG-05 si besoin, annoncée au journal.
+- Interdit (zones occupées) : E9 (WFS-206, agent 2), E13 (WFS-213, agent 1), E10 (WFS-158, arwa-2), E12 (WFS-161, Agent 0), E7 (WFS-190), noyau E0.
+- Règles et critères : `regles-de-gestion/WFS-210.md` (RG-01 à RG-05, parcours complet sur les 4 cartes, indice ≥ 99 %). Consulter `expert-realisme-3d`. Pas une US technique : pas de CI de branche, sauf une fois à confiance ≤ 50 %.
