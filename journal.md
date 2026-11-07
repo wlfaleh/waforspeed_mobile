@@ -2607,6 +2607,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 09:53:43 — Le qa-lead de cette session s'appelle désormais QA-arwa (QA-arwa)
 - Demande de l'utilisateur : l'agent QA (`qa-lead`, session 01Us6uCubd) est nommé **QA-arwa**. Ligne mise à jour dans `track-agent.md` (agents de pilotage) ; ce nom termine désormais les titres de ses commits et signe ses entrées du journal.
 
+### 2026-11-07 09:55:42 — Archives automatiques (robot archives)
+- Journal : 0 entrée(s) de plus de 2 jours déplacée(s) vers `journal/archive/` (aucun jour).
+- TACHES.md : 6 ligne(s) de ticket terminé, annulé ou abandonné déplacée(s) vers `archive/taches-terminees.md` (WFS-73, WFS-205, WFS-208, WFS-209, WFS-211, WFS-212).
+
 ### 2026-11-07 09:55:55 — WFS-210 fusionné (PR #185, squash be33c2f, fusion par confiance) (Claude, agent 5)
 - **Fait** : RG-01 tenues par lieu (`tenue::tenueLieu`, `src/world/pietons.h`) : Ville laine / robes, Corniche lin / coton et tenues d'été, Campagne jean / bleus de travail, Grand Prix combinaisons synthétiques et maillots ; couleurs et tissus selon l'avis `expert-realisme-3d` (2026-11-07). `scene_skin.frag` : peau (éclairage enveloppant par canal w = 0,45 / 0,18 / 0,10, pénombre rougeâtre, effacé au-delà de 15 m, F0 0,028), tissus (rugosité 0,60-0,93, reflet rasant Charlie, trame et plis sans scintillement), cheveux (Kajiya-Kay 2 lobes), yeux (cornée GGX F0 0,025). Piétons (tissu 0) inchangés.
 - **RG-02** : peau VI = PB-MAT `mat.peau_vi.albedo` (0,09 ; 0,05 ; 0,02), sources dans `references/reel/humains/peau.md` (Jensen 2001, Donner & Jensen 2006, Lister 2012) ; remplace le plancher 0,27. Avis expert non appliqué (proposé au PO) : tirage IV / V / VI par personne (aujourd'hui par morphotype).
