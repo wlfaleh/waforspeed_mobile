@@ -3250,3 +3250,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 14:36:17 — Correction : le PO ne crée aucune session de développeur sans l'accord de l'utilisateur (po-scrum-master)
 - **Précision de l'utilisateur** (« non, tu ne peux pas ») : la règle de 14:3x est annulée. Le PO propose et ouvre une session seulement après le « oui » de l'utilisateur. Les 4 sessions déjà ouvertes (conduite, course, perf, nuit) avaient son accord et restent.
+
+### 2026-11-07 14:37:13 — Les 4 sessions de développeur ouvertes par le PO sont archivées (décision de l'utilisateur) (po-scrum-master)
+- **Archivées** : « Agent dev conduite » (WFS-241, en lecture du code), « Agent dev course » (WFS-242, grille corrigée et compilée, tests en cours), « Agent dev perf » (WFS-246, au tout début), « Agent dev nuit » (WFS-218 + 226, branche créée, étude des phares).
+- **Tickets remis ⏳ Prêt**, responsable vidé : WFS-241, 242, 246, 218, 226, 224 ; les branches `feature/waforspeed-241 / 242 / 246 / 218` sont **gardées** (ce qui a été poussé reste, ce qui était seulement en local dans les sessions est perdu). Lignes retirées de `track-agent.md`. Bandeau de `TACHES.md` mis à jour.
