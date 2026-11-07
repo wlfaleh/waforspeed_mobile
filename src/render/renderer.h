@@ -125,6 +125,11 @@ public:
     // ressources
     Material makeMaterial(const Material& m, const Image* color, const Image* normal, const Image* mr);
     Mesh makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic = false);
+    // WFS-268 (accroche, RG-04) : créations de tampons de maillages (makeMesh) et de jeux de descripteurs (makeMaterial)
+    // depuis le lancement : un écart nul pendant la course = rien n'est créé en course
+    uint64_t creationsMaillages() const { return creationsMaillages_; }
+    uint64_t creationsMateriaux() const { return creationsMateriaux_; }
+    uint64_t creationsMaillages_ = 0, creationsMateriaux_ = 0;
     void updateMesh(Mesh& m, const std::vector<Vertex>& v, const std::vector<uint32_t>& idx);
     void destroy(Mesh& m);
     void destroy(Model& m);

@@ -29,6 +29,7 @@ public:
     Vue calculerVue(double time);
     double alphaRendu() const;
     static inline bool interpolation = true;   // banc « fluidite » seulement : false = rendu du dernier pas (mesure « avant »)
+    static inline bool cameraTempsSimule = true;   // WFS-247 : banc « fluidite » seulement : false = caméra au temps réel de l'image (« avant »)
     int pasDerniereImage() const { return pasImage_; }
     void setCar(const char* carId);
     // écrans (WFS-36, voir src/core/ecran.h) : demande appliquée entre deux images, systèmes prévenus par onEcran
@@ -77,6 +78,7 @@ private:
     double lastTime_ = 0;
     vec3 camEye_{}, camLook_{}; bool camInit_ = false;
     vec3 camEyeT_{}, camLookT_{};   // WFS-221 : cibles de la caméra à l'image précédente (filtre exact)
+    double dtSimVue_ = -1;           // WFS-247 : temps de simulation écoulé depuis la vue précédente (< 0 : aucune mise à jour)
     // commandes
     DriveInput input_;
     int steerId_ = -1, gasId_ = -1, brakeId_ = -1, nitroId_ = -1;

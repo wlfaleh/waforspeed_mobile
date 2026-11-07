@@ -153,6 +153,26 @@ int main(int argc, char** argv) {
         const double V = 3.912 / c45.extY / 1000;
         VERIFIE(V > 30 && V < 60, "visibilité météorologique %.1f km (aérosols τ = 0,09, trouble de Linke ≈ 2)", V);
     }
+    // ---- WFS-230 (RG-01) : borne basse de la nuit selon l'éclairement reçu (posemètre incident C = 250, ISO 2720)
+    VERIFIE(std::fabs(evIncidentNuit(20) - 3) < 1e-9, "rue éclairée (20 lx) : EV 3 (%.3f)", evIncidentNuit(20));
+    VERIFIE(std::fabs(evIncidentNuit(1) - std::log2(0.4)) < 1e-9, "1 lx : EV −1,32 (%.3f)", evIncidentNuit(1));
+    VERIFIE(evIncidentNuit(0.094) == EV_LUNE_MIN && evIncidentNuit(0) == EV_LUNE_MIN && evIncidentNuit(std::nan("")) == EV_REF_NUIT, "clair de lune : −2 ; NaN : EV de référence 4");
+    VERIFIE(std::fabs(evIncidentNuit(0.625) - EV_LUNE_MIN) < 1e-9, "borne −2 atteinte à 0,625 lx (%.3f)", evIncidentNuit(0.625));
+    VERIFIE(partRue(20) == 1 && partRue(3) == 1 && partRue(0.5) == 0 && partRue(1.3) > 0.3 && partRue(1.3) < 0.7 && partRue(NAN) == 1, "part rue éclairée : 1 dès 3 lx, 0 sous 0,63 lx (%.3f à 1,3 lx)", partRue(1.3));
+    VERIFIE(evIncidentNuit(1000) == EV_NUIT_MAX && evIncidentNuit(0.01) == EV_LUNE_MIN && evIncidentNuit(INFINITY) == EV_REF_NUIT && std::fabs(evIncidentNuit(20) - 3) < 1e-9,
+            "exposition incidente de nuit : −2 à 5, 20 lx → 3");
+    VERIFIE(proche(eclairementLampe(15, 0, 8), 15, 1e-12) && proche(eclairementLampe(15, 8, 8), 15 / std::pow(2.0, 1.5), 1e-12), "lampe : 15 lx au pied, ÷ 2^1,5 à d = h");
+    {   // passage continu en s'éloignant d'une lampe de 8 m (+ 0,094 lx de lune) : borne continue (au plus 0,3 EV par mètre ; l'adaptation de l'œil la lisse dans le temps)
+        double prec = evIncidentNuit(eclairementLampe(15, 0, 8) + 0.094), sautMax = 0, d2 = -1;
+        for (double d = 0.5; d <= 80; d += 0.5) {
+            const double e = evIncidentNuit(eclairementLampe(15, d, 8) + 0.094);
+            sautMax = std::max(sautMax, std::fabs(e - prec) / 0.5); prec = e;
+            if (d2 < 0 && e <= EV_LUNE_MIN + 1e-9) d2 = d;
+        }
+        VERIFIE(sautMax < 0.3 && d2 > 15 && d2 < 30, "passage lampe → rase campagne : pente max %.3f EV/m, borne −2 à %.1f m", sautMax, d2);
+        std::printf("WFS-230 : borne de nuit −2 atteinte à %.1f m d'une lampe de 15 lx (8 m), pente max %.3f EV/m\n", d2, sautMax);
+    }
+
     // ---- WFS-213 (RG-03) : 3 enchaînements init / shutdown, mesures valides puis invalides (NaN, infini, sonde absurde de
     // 1,36·10¹¹ cd/m² du banc vitrines) : l'EV reste dans les bornes du jour (10 à 15), jamais non fini
     {

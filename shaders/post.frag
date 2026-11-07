@@ -3,12 +3,33 @@
 // WFS-100 : le même shader sert aussi aux passes du bloom (pc.bloom.x ≠ 0), dessinées hors écran avant la passe finale.
 layout(set = 0, binding = 0) uniform sampler2D hdr;        // passe finale : scène HDR ; passes du bloom : image source
 layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : bloom remonté ; remontée : niveau inférieur
-// params : x exposition, y sortie sRGB matérielle, z force du bloom, w inutilisé
+// params : x exposition, y sortie sRGB matérielle, z force du bloom, w exposition physique k la nuit (WFS-230 : vision de nuit ;
+//          0 de jour : image inchangée)
 // bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
 //                   y poids du niveau (remontée), z pas du flou en texels de la source / niveau inférieur présent (remontée)
 layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;
 layout(location = 0) in vec2 vUv;
 layout(location = 0) out vec4 outColor;
+// WFS-230 (RG-04) : vision de nuit (effet Purkinje), sur la luminance absolue L = pixel / k (cd/m²), avant la courbe de tons.
+//  - luminance scotopique V = Y [1,33 (1 + (Y + Z) / X) − 1,68] (Larson, Rushmeier et Piatko 1997, « A Visibility Matching Tone
+//    Reproduction Operator for High Dynamic Range Scenes », IEEE TVCG 3(4)), ramenée au blanc D65 (÷ 2,573) : un gris garde
+//    sa clarté, les rouges s'assombrissent, les verts et les bleus restent lisibles ;
+//  - poids scotopique s : courbe en S sur log10 L entre 0,005 et 5 cd/m² (vision mésopique, CIE 191:2010), plafonné à 0,9
+//    (choix de jeu : l'herbe au clair de lune garde un peu de couleur) ;
+//  - teinte des bâtonnets : chromaticité (0,25 ; 0,25) (Jensen et coll. 2001, « A Physically-Based Night Sky Model ») à 40 % seulement
+//    (choix de jeu, pas de « nuit américaine ») ; aucun grain, aucune teinte globale. Avis expert-realisme-3d du 2026-11-07.
+vec3 visionNuit(vec3 c, float k) {
+    if (k <= 0.0) return c;
+    vec3 rgb = max(c, vec3(0.0));
+    float X = dot(rgb, vec3(0.4124, 0.3576, 0.1805)), Y = dot(rgb, vec3(0.2126, 0.7152, 0.0722)), Z = dot(rgb, vec3(0.0193, 0.1192, 0.9505));
+    if (Y <= 1e-8 || X <= 1e-8) return c;
+    float V = max(Y * (1.33 * (1.0 + (Y + Z) / X) - 1.68), 0.0) / 2.573;
+    float t = clamp((log(Y / k) / log(10.0) + 2.3) / 3.0, 0.0, 1.0);
+    float s = 0.9 * (1.0 - t * t * (3.0 - 2.0 * t));
+    const vec3 BATONNETS = vec3(0.706, 0.990, 1.966);   // (0,25 ; 0,25) en sRGB linéaire, Y = 1
+    vec3 teinte = mix(vec3(1.0), BATONNETS, 0.4);
+    return mix(c, V * teinte, s);
+}
 vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
 
 // WFS-100 (RG-04) : seuil 1,0 avec genou doux 0,5 (courbe quadratique entre 0,5 et 1,5, puis linéaire)
@@ -30,7 +51,7 @@ vec4 passeBloom(int mode) {
         vec3 s = vec3(0.0);
         for (int i = 0; i < 4; i++) {
             vec2 o = vec2((i & 1) == 0 ? -1.0 : 1.0, (i & 2) == 0 ? -1.0 : 1.0) * px;
-            s += seuilBloom(min(texture(hdr, vUv * pc.params.w + o).rgb * pc.params.x, vec3(24.0)));   // WFS-246 : w = part de la scène dessinée
+            s += seuilBloom(min(texture(hdr, vUv * pc.bloom.w + o).rgb * pc.params.x, vec3(24.0)));   // WFS-246 : bloom.w = part de la scène dessinée
         }
         return vec4(s * 0.25, 1.0);
     }
@@ -55,8 +76,8 @@ vec4 passeBloom(int mode) {
 void main() {
     int mode = int(pc.bloom.x + 0.5);
     if (mode != 0) { outColor = passeBloom(mode); return; }
-    vec2 uvS = vUv * (pc.params.w > 0.0 ? pc.params.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
-    vec3 c = texture(hdr, uvS).rgb * pc.params.x;
+    vec2 uvS = vUv * (pc.bloom.w > 0.0 ? pc.bloom.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
+    vec3 c = visionNuit(texture(hdr, uvS).rgb, pc.params.w) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
     // léger halo autour des zones très lumineuses (soleil, reflets).
     // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
     // carré de 8 × 8 pixels sans trou (WFS-32 : l'ancienne grille de 5 × 5 lectures espacées de 3 pixels transformait
