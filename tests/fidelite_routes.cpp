@@ -106,6 +106,21 @@ int main(int argc, char** argv) {
         const route::InfoRevetement& use = route::info(route::Revetement::EnrobeUse);
         mesure("repli-procedural", "M-01 albédo moyen (route.glsl)", s / n, use.albedoMin, use.albedoMax);
     }
+    // ---------------------------------------------------------------- WFS-244 (ANO-116)
+    {   // RG-02 : un raccord d'enrobé ne s'écarte pas de plus de 8 % de l'asphalte voisin (moyenne d'une voie : bandes de
+        // roulement × 0,87 sur 2 × 0,9 m, hors bandes × 1,02, voie de 5 m) ; avant : × 0,72, soit − 25 % (plaque sombre)
+        std::vector<uint8_t> g; charger(depot + "/shaders/route.glsl", g);
+        const std::string glsl(g.begin(), g.end());
+        auto constante = [&](const char* nom) {
+            const size_t i = glsl.find(std::string("const float ") + nom + " = ");
+            return i == std::string::npos ? -1.0 : std::atof(glsl.c_str() + i + std::strlen("const float ") + std::strlen(nom) + 3);
+        };
+        const double part = 2.0 * route::BANDE_ROULEMENT_M / (2.0 * 7.5 / 3.0);   // voie : 2 RW / 3 (DEMI_CHAUSSEE_M de route.glsl)
+        const double voisin = part * 0.87 + (1.0 - part) * 1.02;
+        for (const char* nom : {"RACCORD_ALB_RECENT", "RACCORD_ALB_ANCIEN"})
+            mesure(std::string("raccord-") + nom, "RG-02 écart de luminance d'un raccord avec la voie voisine (WFS-244)",
+                   std::fabs(constante(nom) / voisin - 1.0), 0.0, 0.08);
+    }
     // ---------------------------------------------------------------- WFS-206
     {   // RG-02 : revêtement propre à chaque carte ; carte et mode de lecture transmis au shader (pc.params.z = mode + 4 × carte)
         using route::Carte; using route::Revetement;
