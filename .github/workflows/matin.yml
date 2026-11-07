@@ -1,12 +1,14 @@
-# Banc du réalisme (WFS-148), chaque matin à 07:00 heure de Paris — WFS-252 (décision de l'utilisateur, 2026-11-07) :
-# le banc ne tourne plus à chaque envoi sur main (build.yml), il vérifie chaque matin la dernière version de main.
-#  - deux parties en parallèle (WFS-251 : WFS_REALISME_PARTIE=1|2), puis la fusion des rapports (WFS_REALISME_PARTIE=fusion) :
-#    realisme-fidelite.txt et realisme-mesures.txt identiques à ceux d'un banc complet ;
-#  - une mesure en écart (code 3), une partie absente ou une étape en double rend le run rouge ;
-#  - captures et rapports dans l'artefact « realisme-<numéro du run> » (gardé 30 jours).
+# Bancs du matin, chaque jour à 07:00 heure de Paris — WFS-252 / WFS-275 (décisions de l'utilisateur, 2026-11-07) :
+# « on lance les CI ensuite lui [la QA] il teste ». À chaque envoi sur main, build.yml ne garde que les tests CPU, le parcours complet,
+# l'endurance et l'APK ; ici, sur la dernière version de main :
+#  - tous les groupes de captures du banc d'essai PC (tools/qa/banc_groupe.sh, le même script que build.yml) ;
+#  - le banc du réalisme en deux parties (WFS-251) puis la fusion de ses rapports (identiques à ceux d'un banc complet) ;
+#  - la publication de toutes les captures dans la Release « apercu » (une seule publication : publier_apercu.sh retire les captures
+#    absentes du run), lues ensuite par la QA (qa-lead) pour la recette du matin.
+# Un écart (code 3), une partie absente ou une étape en double rend le run rouge. Artefacts gardés 30 jours.
 # GitHub ne connaît que l'heure UTC : deux déclencheurs (05:00 UTC = 07:00 en heure d'été, 06:00 UTC = 07:00 en heure d'hiver),
 # et le job « heure » ne laisse passer que celui qui tombe à 7 h à Paris. Lancement à la main possible (workflow_dispatch).
-name: Banc du réalisme (chaque matin)
+name: Bancs du matin (captures, réalisme, QA)
 
 on:
   schedule:
@@ -18,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: realisme-matin-${{ github.ref }}
+  group: bancs-matin-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -31,7 +33,7 @@ jobs:
         name: 7 h à Paris ?
         run: |
           h=$(TZ=Europe/Paris date +%H)
-          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 07 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Banc du réalisme lancé ($h h à Paris)"
+          if [ "${{ github.event_name }}" != schedule ] || [ "$h" = 07 ]; then echo "lancer=oui" >> "$GITHUB_OUTPUT"; echo "Bancs du matin lancés ($h h à Paris)"
           else echo "lancer=non" >> "$GITHUB_OUTPUT"; echo "Il est $h h à Paris : ce déclencheur n'est pas celui de 7 h (heure d'été / d'hiver), rien à faire"; fi
 
   compilation:
@@ -55,17 +57,18 @@ jobs:
           [ -x build/wfs_bench ] || { echo "::error::wfs_bench absent après la compilation"; exit 1; }
           tar -cf compilation.tar -C build wfs_bench
       - uses: actions/upload-artifact@v4
-        with: { name: compilation-realisme, path: compilation.tar, retention-days: 1 }
+        with: { name: compilation-matin, path: compilation.tar, retention-days: 1 }
 
   banc:
-    name: banc du réalisme (partie ${{ matrix.partie }})
+    name: banc (${{ matrix.groupe }})
     needs: compilation
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
-        partie: [1, 2]   # WFS-251 : 1 = captures des 12 vues, coût par carte, soleil et données ; 2 = étalonnage, texture KTX2, passes, lumière
+        # 14 groupes : ceux de build.yml jusqu'à WFS-252, le réalisme en deux parties (WFS-251), conduite et chocs à part (WFS-252)
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs, realisme-1, realisme-2]
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel)
@@ -75,16 +78,14 @@ jobs:
             [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
           done
       - uses: actions/download-artifact@v4
-        with: { name: compilation-realisme }
-      - name: Banc du réalisme, partie ${{ matrix.partie }}
-        run: |
-          mkdir -p build captures && tar -xf compilation.tar -C build
-          # WFS-149 : textures d'essai KTX2 et rapport PSNR, seulement dans la partie qui les lit (partie 2, WFS-251)
-          if [ "${{ matrix.partie }}" = 2 ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi
-          WFS_BANC=realisme WFS_REALISME_PARTIE=${{ matrix.partie }} ./build/wfs_bench captures assets/
+        with: { name: compilation-matin }
+      - name: Jeu compilé
+        run: mkdir -p build && tar -xf compilation.tar -C build && [ -x build/wfs_bench ]
+      - name: Captures (${{ matrix.groupe }})
+        run: bash tools/qa/banc_groupe.sh ${{ matrix.groupe }}
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: 'realisme-partie-${{ matrix.partie }}', path: captures, retention-days: 30 }
+        with: { name: 'captures-${{ matrix.groupe }}', path: captures, retention-days: 30 }
 
   fusion:
     name: rapports du réalisme (fusion des deux parties)
@@ -101,22 +102,48 @@ jobs:
             [ "$essai" = 2 ] && exit 1; echo "::warning::apt-get : essai $essai sans réponse, nouvel essai"
           done
       - uses: actions/download-artifact@v4
-        with: { name: compilation-realisme }
+        with: { name: compilation-matin }
       - uses: actions/download-artifact@v4
-        with: { pattern: 'realisme-partie-*', path: parties }
+        with: { pattern: 'captures-realisme-*', path: parties }
       - name: Fusion des deux parties (rapports finaux)
         run: |
           mkdir -p build captures && tar -xf compilation.tar -C build
           for n in 1 2; do
-            f=parties/realisme-partie-$n/realisme-partie-$n.morceaux
+            f=parties/captures-realisme-$n/realisme-partie-$n.morceaux
             [ -s "$f" ] || { echo "::error::$f absent : partie $n du banc du réalisme non terminée"; exit 1; }
             cp "$f" captures/
           done
           WFS_BANC=realisme WFS_REALISME_PARTIE=fusion ./build/wfs_bench captures assets/
+          rm -f captures/*.morceaux
           {
             echo "### Banc du réalisme — run ${{ github.run_number }} (commit \`${GITHUB_SHA::7}\`)"
             echo '```'; grep -E "^== |^  [a-zé ]+ : " captures/realisme-fidelite.txt | head -40 || true; echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: 'realisme-${{ github.run_number }}', path: 'captures/*.txt', retention-days: 30 }
+        with: { name: captures-realisme, path: 'captures/*.txt', retention-days: 30 }
+
+  # toutes les captures du matin dans la Release « apercu » (lues par la QA) ; seulement celles qui ont changé (WFS-106) ;
+  # échec = avertissement ; même groupe de concurrence que l'ancienne publication de build.yml (une écriture à la fois)
+  publication-captures:
+    needs: [heure, banc, fusion]
+    if: ${{ !cancelled() && needs.heure.outputs.lancer == 'oui' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: { contents: write }
+    concurrency:
+      group: apercu-captures-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/download-artifact@v4
+        continue-on-error: true   # aucun artefact (banc en échec) : le script le dit et finit vert
+        with: { pattern: 'captures-*', path: dl/captures, merge-multiple: true }
+      - name: Captures dans la Release d'aperçu (seulement celles qui ont changé ; WFS-106)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PUBLIER: captures
+          BANC: ${{ needs.banc.result }}
+        run: bash tools/qa/publier_apercu.sh

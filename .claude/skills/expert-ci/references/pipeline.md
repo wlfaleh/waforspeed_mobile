@@ -11,10 +11,8 @@
   - `compilation` (WFS-250) : le jeu est compilé **une seule fois** par run (apt-get en 2 essais, `cmake --build build`) ; archive tar `compilation`
     (`wfs_bench`, tous les `test_*`, `liste-tests.txt` ; shaders inclus dans le binaire), gardée 1 jour ; les 12 bancs et `endurance` en dépendent
     (`needs: compilation`), la décompressent et la vérifient (`tools/qa/verifier_compilation.sh` : binaire ou test manquant = rouge).
-  - `banc-essai (<groupe>)` × 12 : `partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte` (+ test de la piste), `ecrans-2400`, `menu1-2400`,
-    `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `conduite-chocs` (bancs conduite WFS-241 et chocs WFS-256, sortis d'`ecrans-2400` par WFS-252) ;
-    **le banc du réalisme n'y est plus** (WFS-252, décision de l'utilisateur) : voir `realisme.yml` ;
-    artefact `captures-<groupe>`.
+  - `banc-essai (<groupe>)` × 2 (WFS-275) : `texte` (+ tests CPU `tools/qa/tests_cpu.sh`, licences) et `menu1-2400` (parcours complet du jeu) ;
+    captures par `tools/qa/banc_groupe.sh <groupe>` (même script que `matin.yml`) ; **plus de publication des captures** à chaque envoi.
   - `endurance` (35 min max) : couches de validation Vulkan, `tools/qa/endurance.sh` (cycles de course, mémoire, objets Vulkan ; verdict RG-13 / 14 / 17 de WFS-145),
     puis `tools/qa/chauffe.sh` (banc de chauffe WFS-123, limite `CHAUFFE_LIMITE`, 600 s par défaut, WFS-220) hors push.
   - `android` : NDK, CMake, SDK 35, APK + AAB, **signature fixe vérifiée** (WFS-118), pages de 16 Ko.
@@ -24,16 +22,16 @@
     `tools/qa/notifier_apk.sh` ajoute un commentaire `@wlfaleh` (construction, commit, tickets, lien de l'APK, lien du run) dans l'issue fixe
     « 📱 Nouvel APK de main » (créée et épinglée la première fois ; numéro à noter ici) ; un seul commentaire par construction (marque cachée) ;
     permissions du job : `contents: write`, `issues: write`, `actions: read` ; échec = `::warning::`, `continue-on-error`, 2 min au plus.
-  - `publication-captures` : seulement les captures qui ont changé ; un échec = avertissement (job vert).
   - `résumé (commit et tickets)` : commit et tickets `WFS-XX` du run ; sur main (WFS-237), **tous les commits depuis le dernier run de main qui a
     tourné** (envoi, terminé, non annulé ; `gh api .../compare`), sinon « liste incomplète » et les commits du dernier envoi.
   - `banc-essai` (WFS-237) : installation `apt-get` en 2 essais de 5 min au plus (comme `endurance`), `timeout-minutes: 75`.
   - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
-## realisme.yml « Banc du réalisme (chaque matin) » (WFS-252)
-Chaque matin à **07:00 heure de Paris** (cron 05:00 et 06:00 UTC, le job `heure` garde celui qui tombe à 7 h ; été / hiver) + à la main.
-`compilation` (wfs_bench) → `banc (partie 1|2)` en parallèle (`WFS_REALISME_PARTIE`, WFS-251 ; `ci_textures.sh` en partie 2) → `fusion`
-(rapports finaux, résumé du run) ; écart (code 3), partie absente ou étape en double = rouge ; artefacts `realisme-partie-N` et `realisme-<run>` (30 jours).
-Ce workflow ne publie rien dans la Release `apercu` et ne touche pas au robot des statuts (qui ne suit que `build.yml`).
+## matin.yml « Bancs du matin (captures, réalisme, QA) » (WFS-252, WFS-275)
+Chaque matin à **07:00 heure de Paris** (cron 05:00 et 06:00 UTC, le job `heure` garde celui qui tombe à 7 h) + à la main, sur la dernière version de main.
+`compilation` (wfs_bench) → `banc (<groupe>)` × 14 (`partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte`, `ecrans-2400`, `menu1-2400`,
+`menu2-2400`, `vitrines`, `nuit`, `conduite-chocs`, `realisme-1`, `realisme-2` ; `tools/qa/banc_groupe.sh`) → `fusion` (rapports du réalisme, WFS-251)
+→ `publication-captures` (toutes les captures dans la Release `apercu`, lue par la QA le matin, fin ≈ 08:15 Paris). Écart = rouge ; artefacts 30 jours.
+Une seule publication des captures (ici) : `publier_apercu.sh` retire les captures absentes du run. Le robot des statuts ne suit que `build.yml`.
 ## statuts.yml — robot des statuts (WFS-196)
 `workflow_run` de « Construction WaForSpeed » terminé, sur `main` ; `tools/qa/statuts.py` (test `test_statuts.py`) : run vert (hors nuit) → chaque
 ligne 🟣 de `TACHES.md` dont le commit de fusion (PR de la ligne, sinon `(#NNN)`, sinon hash cité) est ancêtre du run passe ✅ « (CI main #N) » ;
