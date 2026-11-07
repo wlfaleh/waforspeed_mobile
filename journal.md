@@ -2591,3 +2591,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   - Capture `carte-ville-virage-1` regardée : façades percées, bandeaux du moderne, cafés et arbres de la rue devant.
   - **Limites** : les vitrines des commerces (`commerces.cpp`) se superposent au rez-de-chaussée du kit (à harmoniser) ; au raccord du tour, un morceau peut manquer une image.
 - **Suite** : Corniche (`plage.cpp`) et Campagne, parcours complet et banc réalisme, puis ST-6 et fusion.
+
+### 2026-11-07 09:48:39 — Début WFS-217 : attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- Ticket : WFS-217 (P1 Urgent), « guide auto » corrigé dans les virages serrés, épingles et ronds-points + réglage « Aide à la direction : Activée / Désactivée » (Réglages du jeu seulement). Épic E3, libre (aucun ticket E3 actif). Branche `feature/waforspeed-217`.
+- Zone autorisée : `src/game/player.*`, banc de conduite dans `src/game/**` (E3), `tests/**` ; accroches ≤ 10 lignes annoncées au journal : `src/ui/ecrans/reglages.cpp` (E8), sauvegarde. Interdit : `configgame.json`, taille ou place des boutons (ordre permanent), iOS (gel), `game.*` / noyau.
+- Critères : `regles-de-gestion/WFS-217.md` (RG-01 à RG-06) : aide qui suit la tangente locale lissée, cap borné élargi selon la courbure, aucun saut de cap > 0,05 rad par image ; réglage enregistré, Activée par défaut ; désactivée = conduite libre ; ordinateur non touché ; banc sur 4 cartes, captures `conduite-epingle` et `conduite-rond-point`, parcours complet 0 écart, tests CPU.
+- Plan court : mesurer la cause au banc, corriger les trois aides de `player.cpp`, ajouter le réglage et sa sauvegarde, tests, captures, fusion (confiance > 50 % ou CI de branche à la main une fois), ligne `qa/Check.md`.
