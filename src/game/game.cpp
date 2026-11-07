@@ -226,6 +226,7 @@ void Game::update(double dt) {
     if (!demandes().carte.empty() && r_) changerCarte();   // WFS-41 / WFS-74 : entre deux images, jamais au milieu
     dt = courseScaleDt(plafondDt(dt));   // WFS-12 : ralenti ×0,35 après un accident ; WFS-59 : 0,05 s (0,5 s en GPU logiciel)
     appliquerEcran();
+    dtSimVue_ = std::max(dtSimVue_, 0.0) + (ecran_ == Ecran::Pause ? 0.0 : dt);   // WFS-247 : temps de la caméra = temps simulé
     if (ecran_ == Ecran::Pause) { acc_ = 0; return; }   // pause : simulation figée
     const bool course = ecran_ == Ecran::Course;
     DriveInput in = course ? input_ : DriveInput{};     // hors course : aucune commande de conduite
@@ -272,7 +273,7 @@ struct Game::JoueurInterpole {
         Player& p = g.player_;
         p.position = a.position + dz * t; p.dist = mix(a.dist, b.dist); p.playerX = mix(a.playerX, b.playerX);
         p.heading = mix(a.heading, b.heading); p.spinYaw = mix(a.spinYaw, b.spinYaw); p.steer = mix(a.steer, b.steer);
-        p.odo = mix(a.odo, b.odo); p.speed = mix(a.speed, b.speed);
+        p.odo = mix(a.odo, b.odo); p.speed = mix(a.speed, b.speed); p.braquageRoues = mix(a.braquageRoues, b.braquageRoues);   // WFS-247
     }
     ~JoueurInterpole() { if (actif) { g.player_ = garde; g.interpole_ = false; } }
 };
@@ -280,8 +281,13 @@ struct Game::JoueurInterpole {
 Game::Vue Game::calculerVue(double time) {
     JoueurInterpole ji(*this);
     Vue v;
-    const float fdt = (float)std::clamp(time - lastTime_, 0.0, 0.1);
-    lastTime_ = time;
+    // WFS-247 : la caméra se lisse sur le temps SIMULÉ depuis la vue précédente (dt après plafond de 0,05 s et ralenti), pas
+    // sur le temps réel de l'image : sous 26 img/s (images de plus de 50 ms), la voiture n'avançait que de 50 ms quand la
+    // caméra en comptait jusqu'à 100 ; le filtre exact (WFS-221) estimait alors mal la vitesse de la cible et son retard
+    // changeait d'une image à l'autre : allers-retours de 20 à 40 cm à 10-20 img/s (banc fluidite). Sans mise à jour depuis
+    // la vue précédente (banc, écran figé) : temps réel, comme avant.
+    const float fdt = (float)std::clamp(dtSimVue_ >= 0 && cameraTempsSimule ? dtSimVue_ : time - lastTime_, 0.0, 0.1);
+    lastTime_ = time; dtSimVue_ = -1;
     const double s = player_.dist, lat = player_.playerX * RW;
     v.carM = carMatrix(s, lat, player_.heading + player_.spinYaw);   // + tête-à-queue après un accident
     v.carPos = v.carM.transformPoint({0, 0, 0});
@@ -367,7 +373,8 @@ void Game::render(double time) {
     if ((!dediee || sd.joueur) && !vueInterieure) {   // WFS-66 : vue cockpit sans la voiture du joueur
         // ombre de contact douce sous la voiture (avant les ombres dynamiques F7)
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
-        const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
+        RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
+        if (player_.modeleMonde()) rouesJoueur.braquage = (float)player_.braquageRoues;   // WFS-247 : angle appliqué (joueur + aide, WFS-241), pas le doigt
         r_->draw(car_, carM, &paint_, &rouesJoueur);
         if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
     }

@@ -2,7 +2,7 @@
 // par la caméra, avec un temps d'image IRRÉGULIER comme sur le téléphone, sans dessin (calcul de la vue seul : rapide).
 //
 // Scénarios : ligne droite (la plus longue section droite des cartes), virage serré, épingle, montée (première section de ce type sur les cartes
-// Ville, Campagne, Corniche, Grand Prix) ; vues Proche et Poursuite du jeu (camera_vue.cpp : choisirVue) ; 30, 60 et 90 images/s, temps d'image
+// Ville, Campagne, Corniche, Grand Prix) ; vues Proche et Poursuite du jeu (camera_vue.cpp : choisirVue) ; 10, 15, 20, 26 (téléphone, WFS-247), 30, 60 et 90 images/s, temps d'image
 // tiré à ± 30 % autour de la moyenne (graine fixe : 60 img/s → 11,7 à 21,7 ms, comme le téléphone) ; 14 s chacun, les 4
 // premières secondes ignorées (mise en vitesse) ; conduite à la manette, douce (gaz, braquage à faible gain), à la vitesse où la
 // voiture tient la courbe (150 km/h en ligne droite et en montée, 90 en virage serré, 55 en épingle). Deux passes : « avant » (rendu du dernier pas, pente par segment : ce
@@ -105,8 +105,8 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
         if (const char* seul = std::getenv("WFS_FLUIDITE_SEUL"); seul && std::string(seul) != sc.nom) continue;   // essai local
         for (int passe = 0; passe < 2; passe++)
             for (int cam = 0; cam < 2; cam++)
-                for (int fps : {30, 60, 90}) {
-                    Game::interpolation = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
+                for (int fps : {10, 15, 20, 26, 30, 60, 90}) {   // WFS-247 (RG-01) : cadences réelles du téléphone (10 à 26 img/s) ajoutées
+                    Game::interpolation = passe == 1; Game::cameraTempsSimule = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
                     setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                     courseBenchRules(true);
                     const bool ok = g.init(r, "golf", carte);
@@ -153,12 +153,12 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     rap << l;
                     WFS_LOG("fluidite : %s", l);
                     if (passe == 1 && (sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee)) {
-                        pireApres[0] = std::max(pireApres[0], res.acoupMm); pireApres[1] = std::max(pireApres[1], res.sautDeg); pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
+                        if (fps >= 30) pireApres[0] = std::max(pireApres[0], res.acoupMm); pireApres[1] = std::max(pireApres[1], res.sautDeg); pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
                         // objectifs (RG-03, RG-08) comptés en ligne droite et en montée : en courbe, la trajectoire PHYSIQUE elle-même
                         // n'est pas lisse (cap qui suit la courbure de chaque segment de 1,2 m, consigne de vitesse en tout ou rien) ;
                         // la physique ne change pas (RG-02) : valeurs données pour information
                         const bool droite = sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee;
-                        if (droite && (res.acoupMm >= 5 || res.sautDeg > 0.2 || res.allerRetourCm > 2)) manques++;
+                        if (droite && ((fps >= 30 && res.acoupMm >= 5) || res.sautDeg > 0.2 || res.allerRetourCm > 2)) manques++;   // WFS-247 : à-coup < 5 mm aux cadences de WFS-221 (30-90) ; aller-retour et angle à toutes
                     }
                 }
     }
@@ -171,9 +171,10 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
             for (const trace::Section& x : trace::sections(t))
                 if ((x.type == trace::Type::Ligne || x.type == trace::Type::Autoroute) && x.fin - x.debut > lg) { carte = c; seg = x.debut; lg = x.fin - x.debut; }
         }
+        for (int ips : {60, 20})   // WFS-247 (RG-04) : aussi à 20 img/s, la cadence du téléphone : fluidite-…-20ips-NN.png
         for (int passe = 0; passe < 2 && carte; passe++)
             for (int cam = 0; cam < 2; cam++) {
-                Game::interpolation = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
+                Game::interpolation = passe == 1; Game::cameraTempsSimule = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
                 setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                 courseBenchRules(true);
                 const bool ok = g.init(r, "golf", carte);
@@ -184,23 +185,23 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                 Mulberry32 R(4221u);
                 double t = 2000;
                 for (int i = 0; i < 60 * 4; i++) { g.manette = DriveInput{}; g.update(1.0 / 60); t += 1.0 / 60; g.calculerVue(t); }
-                for (int i = 0; i < 60 * 5 + 12; i++) {
-                    const double dt = (1.0 / 60) * (0.7 + 0.6 * R.next());
+                for (int i = 0; i < ips * 5 + 12; i++) {
+                    const double dt = (1.0 / ips) * (0.7 + 0.6 * R.next());
                     t += dt;
                     g.manette.gas = g.player().kmh() < 150; g.manette.steer = 0;
                     g.update(dt);
-                    if (i < 60 * 5) { g.calculerVue(t); continue; }
+                    if (i < ips * 5) { g.calculerVue(t); continue; }
                     g.render(t);
-                    char nom[96]; std::snprintf(nom, sizeof nom, "/fluidite-%s-%s-%02d.png", passe ? "apres" : "avant", cam ? "poursuite" : "proche", i - 60 * 5);
+                    char nom[96]; std::snprintf(nom, sizeof nom, "/fluidite-%s-%s%s-%02d.png", passe ? "apres" : "avant", cam ? "poursuite" : "proche", ips == 20 ? "-20ips" : "", i - ips * 5);
                     r.capturePng(out + nom);
                 }
                 g.shutdown();
             }
     }
     g.modeManette = false; g.manette = DriveInput{};
-    Game::interpolation = true; Track::penteLissee = true; g_cameraFiltreExact = true; choisirVue(VueCamera::Poursuite);
+    Game::interpolation = true; Game::cameraTempsSimule = true; Track::penteLissee = true; g_cameraFiltreExact = true; choisirVue(VueCamera::Poursuite);
     char f[200];
-    std::snprintf(f, sizeof f, "après, ligne droite et montée, pire cas : à-coup %.2f mm (objectif < 5), saut d'angle %.3f° (≤ 0,2), aller-retour %.2f cm (≤ 2) ; objectifs manqués : %d\n",
+    std::snprintf(f, sizeof f, "après, ligne droite et montée, pire cas : à-coup %.2f mm à 30-90 img/s (objectif < 5), saut d'angle %.3f° (≤ 0,2), aller-retour %.2f cm (≤ 2) ; objectifs manqués : %d\n",
                   pireApres[0], pireApres[1], pireApres[2], manques);
     rap << f;
     std::ofstream(out + "/fluidite.txt") << rap.str();
