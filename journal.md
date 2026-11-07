@@ -2398,3 +2398,12 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Bloquantes** (demande du QA lead) : déjà couvertes par les tickets créés à 06:53:33, rien en double. **WFS-213** (P1 Urgent, E13) : écran blanc des 14 `vitrine-<id>-0` et de `course-sf90` (normal sur `apercu-waforspeed-197`, blanc depuis `apercu-waforspeed-151`, encore sur la construction 808) : **premier ticket de E13, avant tout autre**, dès la fin de WFS-208 (agent 1, envoi 07:10 ; un ticket actif par épic). **WFS-212** (P1 Urgent, E2, agent 2, branche poussée 07:23) : place de la fontaine de la Ville (WFS-137) et végétation du rond-point de la Campagne (WFS-178), + ANO-104.
 - **Lots d'anomalies** (📋 dans `anno.md`) : **WFS-214** (P2, E13, après WFS-213) ANO-109 ciel en paliers, ANO-106 chaussée bleue en Ultra ; **WFS-215** (P3, E10, prêt dès que E10 est libre, WFS-158 en cours) ANO-107 plaque Model 3, ANO-110 vitres avant RR Sport ; **WFS-216** (P3, E2, après WFS-212) ANO-103 col, ANO-105 foule et bateaux, ANO-108 troupeaux de nuit. Règles : `regles-de-gestion/WFS-214.md`, `WFS-215.md`, `WFS-216.md`.
 - **ANO-111** (WFS-209, vêtement sur le cou et le visage, relevée à 07:35:44) : rangée dans **WFS-211** (E11, peau), 📋 ; règle ajoutée dans `regles-de-gestion/WFS-211.md`.
+
+### 2026-11-07 07:47:17 — WFS-212 fusionné (PR #181) (Claude, agent 2 (01UY1Vv5))
+- Rien sur la chaussée aux tracés repliés : nouveau `src/world/chaussee.h` (axe des sections repliées ± 80 m, prédicat `surAutre`).
+  - **Ville** : trottoirs et sol dessinés par la Ville, triangles posés sur une autre branche retirés. Au rond-point de la fontaine, le trottoir extérieur de l'anneau coupait la route d'entrée. Lampadaire retiré de la route ; îlot réduit (− 1,5 m).
+  - **Campagne** : touffes, objets et sol filtrés (`decor_carte`).
+  - **Plage** : disques de sol au centre des épingles, jamais sous la mer (ANO-104).
+- **Accroches annoncées** (zone E2) : `decor_carte.cpp/.h` (filtre), `cartes_banc.cpp` (vue de dessus `carte-ville-fontaine-dessus`, système VueHauteBanc), `chaussee.h` (nouveau, calcul seul), ligne CMake `test_rien_sur_chaussee`.
+- **Vérifications** : 42 tests CPU passés ; bancs `cartes` et `corniche` regardés en local (lavapipe) ; captures Ville avant / après identiques hors fontaine. Fusion par confiance ; `qa/Check.md` à jour.
+
