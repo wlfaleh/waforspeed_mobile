@@ -448,7 +448,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         eclairage::choisirMoment(m);
         g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = 60;
         if (!g.init(r, "golf", carte)) { erreurs++; continue; }
-        g.allerA(ECRAN);
+        g.allerA(ECRAN); eclairage::remettreAZero();   // exposition recalée sur la scène (temps du banc figé : pas d'adaptation)
         for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
         if (!g_l.piste) { erreurs++; g.shutdown(); continue; }
         const eclairage::Etat e0 = eclairage::etat();
@@ -461,7 +461,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
               << fmt(e.eSol, 3) << " lx, EV100 " << fmt(e.ev, 2) << ", lumières de nuit " << (nuitM ? "allumées" : "éteintes") << ".\n";
         if (carte[0] == 'c' && carte[1] == 'a') {
             if (mo != atmosphere::Moment::Nuit)   // M-04 : lampadaires allumés ⇔ éclairement au sol sous 50 lx (± 5 %)
-                rap.ajouter(ligne(std::string("lum.wfs208.m04.") + atmosphere::nomMoment(mo), std::string("M-04 : lampadaires ") + (nuitM ? "allumés" : "éteints") + " à l'" + atmosphere::nomMoment(mo) + " (éclairement au sol)",
+                rap.ajouter(ligne(std::string("lum.wfs208.m04.") + atmosphere::nomMoment(mo), std::string("M-04 : lampadaires ") + (nuitM ? "allumés" : "éteints") + ", moment « " + atmosphere::nomMoment(mo) + " » (éclairement au sol)",
                                   fmt(e.eSol, 1) + " lx", "allumés sous 50 lx (± 5 %), éteints au-dessus", "± 5 %",
                                   nuitM ? e.eSol < atmosphere::SEUIL_LAMPADAIRES_LX * 1.05 : e.eSol > atmosphere::SEUIL_LAMPADAIRES_LX * 0.95, "conception"));
             if (mo == atmosphere::Moment::Doree || mo == atmosphere::Moment::Bleue) {   // M-05 : hauteurs publiées
@@ -479,7 +479,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         eclairage::choisirMoment((int)atmosphere::Moment::Doree); eclairage::accelererTemps(20);
         g_l = EtatBanc{};
         if (g.init(r, "golf", "campagne")) {
-            g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course);
+            g.setAutopilot(true); g.camMode = 0; g.allerA(Ecran::Course); eclairage::remettreAZero();
             double tp = 0, evPrec = -100, sautMax = 0, hDebut = 0, hFin = 0; int cap = 0;
             for (int i = 0; i <= 180 * 60; i++) {
                 g.update(1.0 / 60); tp += 1.0 / 60;
@@ -488,7 +488,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
                 const eclairage::Etat e = eclairage::etat();
                 if (i == 0) hDebut = e.astreHauteur;
                 hFin = e.astreHauteur;
-                if (evPrec > -50) sautMax = std::max(sautMax, std::fabs(e.ev - evPrec));
+                if (evPrec > -50 && tp > 2.0) sautMax = std::max(sautMax, std::fabs(e.ev - evPrec));   // après le recalage du départ
                 evPrec = e.ev;
                 if (i % 3600 == 0 && cap < 4) r.capturePng(out + "/realisme-transition-" + std::to_string(cap++) + ".png");
             }
