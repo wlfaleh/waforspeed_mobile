@@ -2704,3 +2704,12 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 10:27:15 — WFS-221 : symptôme exact « la voiture avance, recule, avance » ; RG-08 (po-scrum-master)
 - Description de l'utilisateur ajoutée à WFS-221 : allers-retours de la voiture devant la caméra. Cause attendue : position par pas non interpolée (0, 1 ou 2 pas par image) contre caméra lissée au temps de l'image. **RG-08** : mesurer les changements de sens de la distance voiture ↔ caméra ; objectif : aucun aller-retour > 2 cm.
+
+### 2026-11-07 10:27:32 — WFS-221 attribué à Claude, agent 2 ; arbitrage M-05 et accroche de WFS-206 (po-scrum-master)
+- **Début WFS-221** ([TECHNIQUE] [URGENT], P1, E0 + E3) : Claude, agent 2 (01UY1Vv5), libre après WFS-206 (PR #188, 42ce230). Prochain ticket selon l'ordre de l'utilisateur (bandeau de `TACHES.md`). Branche `feature/waforspeed-221`, à pousser tout de suite.
+  - Règles : `regles-de-gestion/WFS-221.md` (RG-01 à RG-06 ; RG-07 est dans WFS-222).
+  - Zone : `src/game/game.cpp` (exception PO), `src/game/track.*`, `src/game/camera_vue.*`, bancs de `src/game/**`, `tests/**` ; accroche annoncée `build.yml` (publication du banc `fluidite`). **`player.*` reste à WFS-217** (agent arwa, E3) : ne pas y toucher. iOS interdit.
+  - Plan : banc `fluidite` et mesure « avant » ; rendu interpolé (voiture, roues, caméra, trafic) ; pente et direction lissées ; mesure « après » à 30 / 60 / 90 img/s ; captures avant / après. US technique : CI de branche permise, une à la fois, chaque run au journal.
+- **WFS-206, accroche de 2 lignes dans `game.cpp` au lieu de `track.cpp`** : acceptée (≤ 10 lignes, annoncée au journal).
+- **M-05 (vibreurs du Grand Prix)** : reste « non mesurable » dans l'indice des routes ; aucun ticket créé maintenant. Aucun site n'est ajouté sans accord de l'utilisateur (`regles-reseau.md`). Si l'utilisateur fournit une source (ou accepte un site précis, présenté par le PO), le PO crée alors un ticket E2 (`src/world/circuit.cpp`) pour la géométrie, avec les valeurs dans `references/reel/routes/`.
+- **WFS-222** reste le prochain ticket à attribuer au premier développeur libre.
