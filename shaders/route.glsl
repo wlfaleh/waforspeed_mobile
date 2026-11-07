@@ -101,8 +101,9 @@ const float DEMI_CHAUSSEE_M = 7.5;       // RW (src/game/track.h) : le trottoir 
 float modeLecture() { return mod(pc.params.z, 4.0); }
 int carteRoute() { return int(floor(pc.params.z / 4.0 + 0.01)); }
 // usure de la chaussée au point p (uv en mètres) : x = facteur d'albédo, y = écart de rugosité, z = facteur de relief (normales)
-//   - bandes de roulement (au pas des roues de chaque voie) : liant poli et gomme : plus sombres (− 13 %), plus lisses (− 0,07),
-//     relief émoussé ; entre les bandes et en rive : granulats à nu, un peu plus clairs (+ 5 %) et grenus ;
+//   - bandes de roulement (au pas des roues de chaque voie) : liant poli et gomme : plus sombres (− 13 %), plus lisses (− 0,05),
+//     relief émoussé (80 % de la macrotexture) ; entre les bandes et en rive : granulats à nu, un peu plus clairs (+ 2 %) et
+//     grenus ; albédo moyen d'une voie ≤ 1 × le revêtement (l'usure ne rend pas la route plus claire : avis expert-realisme-3d)
 //   - raccords de chantier : rectangles d'enrobé repris sur une voie (3 à 15 m), plus sombres s'ils sont récents, joint de
 //     bitume de 3 cm brillant ; Ville fréquents, Campagne parfois, Corniche rarement, Grand Prix jamais (piste resurfacée d'un bloc).
 vec3 usureRoute(vec2 p, float halfW, int carte) {
@@ -114,7 +115,7 @@ vec3 usureRoute(vec2 p, float halfW, int carte) {
     float bande = 1.0 - smoothstep(BANDE_ROULEMENT_M * 0.5 - 0.18, BANDE_ROULEMENT_M * 0.5 + 0.08, dx);
     float force = carte == 3 ? 0.5 : 1.0;                              // circuit : gomme surtout sur la trajectoire, usure faible
     bande *= force * (0.75 + 0.25 * rnoise(p * vec2(0.6, 0.08)));
-    float alb = mix(1.05, 0.87, bande), dr = mix(0.02, -0.07, bande), rel = mix(1.0, 0.65, bande);
+    float alb = mix(1.02, 0.87, bande), dr = mix(0.02, -0.05, bande), rel = mix(1.0, 0.8, bande);   // moyenne d'une voie ≤ 1 (avis expert)
     // raccords : une case de 37 m par voie
     float proba = carte == 0 ? 0.45 : carte == 1 ? 0.25 : carte == 2 ? 0.12 : 0.0;
     float cy = floor(p.y / 37.0);
