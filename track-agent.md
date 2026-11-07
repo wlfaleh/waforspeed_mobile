@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 17:43:17 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 17:44:07 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -45,7 +45,7 @@
 | WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
 | WFS-243 (P2) | E3 | après WFS-242 (arwa-3) ; épic E3 tenue par WFS-258, WFS-235, WFS-247 et WFS-242 |
-| WFS-266 (P2) | E11 | ANO-134 bloquante (WFS-210 REFUSÉ) : correction prioritaire, **premier ticket de E11** dès que WFS-257 (agent arwa) est fusionné ; au premier développeur qui le demande ensuite |
+| WFS-266 (P1) | E11 | ANO-134 bloquante (WFS-210 REFUSÉ) : correction prioritaire, **premier ticket de E11** dès que WFS-257 (agent arwa) est fusionné ; au premier développeur qui le demande ensuite |
 | WFS-252 (P2) | E7 | en attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci ; + ANO-135, ANO-136 et durée de l'artefact `compilation` (rangés à 17:43) |
 
 ## Agents de pilotage

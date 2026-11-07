@@ -3708,3 +3708,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Mineures rangées dans des lots ouverts** (pas de nouveau ticket) : ANO-135 (tickets listés par la notification d'APK et le résumé du run) et ANO-136 (issue #204 dans `pipeline.md`) → **WFS-252** (E7, agent expert ci, RG-08, RG-09) ; ANO-137 (fenêtres de nuit saturées, captures `archi-*` publiées par aucune CI) → **WFS-231** (E12, RG-06, RG-07). Statut `📋 Planifiée` dans `anno.md`.
 - Rien à créer pour WFS-225 (ANO-128 sous WFS-249) ni WFS-222 (ANO-125 sous WFS-246).
 - Remarques du QA : `TACHES.md` PR de WFS-237 corrigée (#200), PR de WFS-238 ajoutée (#201) ; durée de l'artefact `compilation` (1 jour) rangée dans WFS-252 (RG-10) ; WFS-220 à revoir au premier run de nuit (2026-11-08 02:17 UTC), noté dans ses règles et `track-agent.md`.
+
+### 2026-11-07 17:44:07 — WFS-266 passé en P1 Urgent (po-scrum-master)
+- À la demande de QA-arwa : ANO-134 bloquante après fusion (RG-03 de WFS-210 non rempli) → WFS-266 **P1 Urgent** ; ordre gardé dans E11 (juste après WFS-257), non attribué tant qu'aucun développeur ne le demande.
