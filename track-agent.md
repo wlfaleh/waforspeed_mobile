@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 17:25:00 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 17:26:30 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -38,6 +38,7 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
+| WFS-267 (P1) | E7 + E4 | [TECHNIQUE] CI de main rouge #852 (banc `realisme`, 1 erreur) : proposé d'abord à l'agent expert ci (tient `bench_realisme.cpp` avec WFS-251) ; RG-00 : regarder d'abord le run #859 |
 | WFS-262 à 265 (P1) | E4 | épic E4 tenue par WFS-246 (agent dev X) ; à la suite, une par une |
 | WFS-249 (P1) | E2 + E13 | E13 tenue par WFS-230 (agent 1) ; WFS-248 🟡 ; pas à la session dev 5bx |
 | WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
@@ -51,7 +52,7 @@
 | Agent | Rôle | Dernière action |
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 17:24 : WFS-242 attribué à arwa-3 à sa demande (exception PO dans E3, fichiers séparés) ; WFS-266 créé (ANO-134) ; avant : WFS-224 à agent arwa (17:19), WFS-261 à arwa-4 (17:21) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 17:24 : WFS-242 attribué à arwa-3 à sa demande (exception PO dans E3, fichiers séparés) ; WFS-266 créé (ANO-134) ; WFS-267 créé (CI de main #852 rouge) ; avant : WFS-224 à agent arwa (17:19), WFS-261 à arwa-4 (17:21) |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | 2026-11-07 17:15 : lot 4 rendu (WFS-233, 240 VALIDÉS ; WFS-210 REFUSÉ, ANO-134 bloquante, US de correction à créer par le PO ; WFS-225 REFUSÉ, déjà repris par WFS-249) ; lot 5 à suivre |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |

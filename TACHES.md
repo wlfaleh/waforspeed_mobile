@@ -212,6 +212,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-264 | [TECHNIQUE] Performance 5 : moins de passes (capture précalculée par zone, reflets, ombres, bloom en Basse) | E4 | ⏳ Prêt (après WFS-263) |  | WFS-263 fusionné ; **pas** agent arwa | `feature/waforspeed-264` |  |  |
 | P1 Urgent | WFS-265 | [TECHNIQUE] Performance 6 : niveaux de détail au loin, densité selon la qualité (+ leviers selon les mesures du téléphone) | E4 | ⏳ Prêt (après WFS-264) |  | WFS-264 fusionné ; **pas** agent arwa | `feature/waforspeed-265` |  |  |
 | P2 Haute | WFS-266 | Correction (lot E11, QA) : cheveux et yeux des 12 humains réalistes (conducteurs chauves, taches grises) (ANO-134) | E11 (+ accroche ≤ 10 lignes `conducteurs.cpp`) | ⏳ Prêt (après WFS-257, épic E11) |  | WFS-210 ✅ (refusé en recette, ANO-134) | `feature/waforspeed-266` |  |  |
+| P1 Urgent | WFS-267 | [TECHNIQUE] CI de main rouge (run #852) : banc `realisme`, 1 erreur (étalonnage des couleurs non mesurable) | E7 + E4 (exception : `bench_realisme.cpp`, coordination avec WFS-251) | ⏳ Prêt (proposé d'abord à l'agent expert ci) |  | — | `feature/waforspeed-267` |  |  |
 
 ## Critères d'acceptation
 

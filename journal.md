@@ -3642,3 +3642,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **ANO-134** (bloquante, recette de WFS-210 REFUSÉE) → **WFS-266** (P2, E11, après WFS-257) : cheveux (réutiliser `cuir_chevelu()` de WFS-233 / 240) et yeux (partie 1) des 12 adultes,
   bouche sans tache grise, `.wfp` régénérés, enfants inchangés. ANO-134 en 📋 Planifiée ; WFS-210 marqué « ⛔ REFUSÉ en recette → WFS-266 » dans la colonne QA.
 - Tickets prêts après cette attribution : WFS-214, 215, 232, 243, 249, 262, 263, 264, 265, 266 (10, règle des 8 tenue).
+
+### 2026-11-07 17:26:03 — CI de main #852 rouge (banc `realisme`) : US technique WFS-267 créée (po-scrum-master)
+- Run #852 (id 42388998918, 0ffe7d0) : seul `banc-essai (realisme)` rouge, « 354 mesures, 1 erreur(s) » ; indice `couleurs` non mesurable (24 cases) : la scène
+  d'étalonnage n'a rien donné (capture illisible ou chargement en échec, à confirmer). Dernier vert : #844. Run #859 (7a3eedc) en cours.
+- **WFS-267** (P1, [TECHNIQUE], E7 + exception E4 `bench_realisme.cpp`) : RG-00 regarder d'abord #859 ; sinon nommer la cause et la corriger sans affaiblir le banc.
+  **Proposé d'abord à l'agent expert ci** (il tient `bench_realisme.cpp` avec WFS-251 : un autre développeur créerait un conflit) ; pas attribué tant que personne ne le demande.
+  Règles : `regles-de-gestion/WFS-267.md`. arwa-3 garde WFS-242 (attribué à 17:24, avant le passage du robot ; domaine courses).
