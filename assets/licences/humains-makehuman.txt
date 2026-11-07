@@ -1,0 +1,23 @@
+Humains réalistes (WFS-209, lot 1 de WFS-164) : assets/people/humains/h01.wfp … h06.wfp (hommes), f01.wfp … f06.wfp (femmes)
+
+Origine : MakeHuman 1.x, ressources (« assets ») publiées sous CC0 1.0 Universel (domaine public) :
+https://github.com/makehumancommunity/makehuman — fichier LICENSE.ASSETS.md (CC0 1.0) et LICENSE.md § C (assets) ; chaque cible
+porte la mention « This asset was explicitly released as CC0 in september 2020 ». Lu dans le dépôt GitHub public (regles-reseau.md
+§ 2.4), révision de la branche par défaut au 2026-11-07, rien exécuté.
+Fichiers utilisés (makehuman/data/…) et SHA-256 :
+  3dobjs/base.obj            8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c
+  rigs/default.mhskel        99f179bce0aa850b45d4191a1d0d234c5851f881c057439470ded3bddf729a24
+  rigs/default_weights.mhw   0f3641d651ae3d00ad6b4ccee43142edb109d3bd909d27d9e4139ef1beed8625
+  targets/macrodetails/*     192 cibles d'adultes (young / old) : SHA-256 de leur concaténation (ordre alphabétique)
+                             e762c006039b019027d7f357839e551100bd57926e81e23934150aa70779c59d
+  LICENSE.ASSETS.md          f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c
+
+Squelette, palette et animations : ceux des personnages du jeu (assets/people/homme.wfp, femme.wfp : Quaternius, CC0,
+voir personnages-quaternius.txt), repris tels quels.
+
+Modifications faites pour WaForSpeed (tools/convert_people_makehuman.py ; table et mesures : references/reel/humains/) :
+- 12 morphotypes : cibles macro de MakeHuman (sexe, âge, musculature, poids, origines) ; corps seul (groupe « body ») ;
+- reciblage sur le squelette du jeu (65 os, pose de repos en T) : poids de MakeHuman regroupés, membres tournés vers la pose du jeu ;
+- proportions amenées aux ratios d'ANSUR-II (entrejambe, envergure) et tête à 1/7,5 de la stature ; stature à la moyenne et à
+  l'écart-type d'ANSUR-II (6 hommes, 6 femmes) ;
+- attribut _cloth (WFS-72), tangentes ; texture de couleur unie (teinte de peau neutre), normales plates ; format .wfp version 3.
