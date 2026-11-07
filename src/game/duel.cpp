@@ -253,6 +253,7 @@ void Session::updateGhosts(double dt) {
         const double x = clampd(num(p.f, "x"), -2, 2);
         auto it = ghosts_.find(p.id);
         Ghost g; if (it != ghosts_.end()) g = it->second; else { g.rd = est; g.x = x; }
+        g.noterPas();   // WFS-221 (accroche)
         g.rd = std::abs(est - g.rd) > 4000 ? est : g.rd + (est - g.rd) * std::min(1.0, dt * 8);
         g.x += (x - g.x) * std::min(1.0, dt * 10);
         g.h = clampd(num(p.f, "h"), -3.2, 3.2); g.b = (int)clampd(num(p.f, "b"), 0, 2); g.v = v;

@@ -241,6 +241,7 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         if (virageFrein) o.g.v = std::max(cible, o.g.v - (double)Phys::brake / M * dt);
         else if (o.g.v < cible) o.g.v = std::min(cible, o.g.v + (o.nitroT > 0 ? pousse * 1.6 - freine : acc) * dt);
         else o.g.v = std::max(cible, o.g.v - pf.a0 / M * 0.9 * 1.6 * dt);   // ralentir : comme avant WFS-189 (a0 × 0,9 × 1,6)
+        o.g.noterPas();   // WFS-221 (accroche) : rendu interpolé
         o.g.x += std::clamp(o.cibleX - o.g.x, -0.9 * dt, 0.9 * dt);
         o.g.rd += o.g.v * dt;
         if (!o.g.done && o.g.rd >= finish) { o.g.done = true; o.g.ft = raceTime * 1000; }
