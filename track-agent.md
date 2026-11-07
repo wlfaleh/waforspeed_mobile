@@ -14,15 +14,15 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 05:44:33 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 05:47:27 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` corrigé par WFS-150 (PR #170) ; runs 799, 801 et 807 de `main` verts : WFS-190 peut se clore | 190 : rien poussé depuis l'attribution (20:40) ; 150 : PR #170 fusionnée 23:47 | 🔴 WFS-190 P1 sans envoi depuis plus de 8 h (règle des 10 h : reste à lui, échéance 06:40) |
+| agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` corrigé par WFS-150 (PR #170) ; runs 799, 801 et 807 de `main` verts : WFS-190 peut se clore | 190 : rien poussé depuis 20:40 (9 h 07 à 05:47) ; 150 : PR #170 fusionnée 23:47 | 🔴 WFS-190 P1 sans envoi depuis plus de 8 h (règle des 10 h : reste à lui, échéance 06:40) |
 | Claude, agent 1 (01UY1Vv2) | WFS-208 | Lumière (2/2) : 6 moments et heure réelle, passage continu, lampadaires selon l'éclairement, nuages (attribué 04:43) | 208 : 05:33 ; 207 : fusionnée 03:58 (PR #176, ✅ CI main #807) | 🔧 actif |
-| Claude, agent 2 (01UY1Vv5) | WFS-209 | Personnages (1/2) : humains réalistes CC0, 12 morphotypes, conducteurs (attribué 05:44) | 209 : branche à pousser ; 205 : fusionnée (PR #177, squash 152ab47), CI main en cours | 🔧 actif |
+| Claude, agent 2 (01UY1Vv5) | WFS-209 | WFS-73 fusionné (conducteurs) ; reprend WFS-209 (humains réalistes, lot 1), branche `feature/waforspeed-209` | 73 : fusionnée (PR #178, squash 7f344b9) ; 209 : branche poussée | ✅ actif ; WFS-73 🟣 : CI de `main` suivie par le PO |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre (WFS-191 et WFS-140 ✅ au run 799) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
@@ -34,13 +34,14 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
+| WFS-211 | E11 | en attente de WFS-209 et WFS-73 |
 | WFS-210 | E11 | en attente de WFS-209 (même épic) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 05:44:33 : WFS-164 découpée (209, 210), WFS-209 attribué à Claude, agent 2 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 05:47:27 : WFS-73 rouvert et attribué à Claude, agent 2 ; WFS-209 en pause et découpé (WFS-211 créé) |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |

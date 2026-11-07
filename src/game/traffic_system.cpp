@@ -15,6 +15,7 @@
 #include "course_system.h"
 #include "game.h"
 #include "poursuite.h"   // WFS-111
+#include "../world/conducteurs.h"   // WFS-73 (accroche)
 
 namespace wfs {
 
@@ -151,6 +152,7 @@ public:
             const RouesPose rp = roues::poseTrafic(c.laneYaw, c.crashed, c.z, (models_[mi].nRoues ? models_[mi].roues[0].rayon : roues::RW_DEFAUT) * k0);   // WFS-60
             r.feuxProchaineVoiture(feuxDe(ci, (ci < stops_.size() && stops_[ci].freine()) || c.crashed, g.time));   // WFS-81 ; WFS-109 : feu du modèle, jour et nuit
             r.draw(models_[mi], m * scale({k0, k0, k0}), &paint, &rp);
+            conducteurs::ajouter(models_[mi], m * scale({k0, k0, k0}), CARS[mi].id, (uint32_t)ci + 2);   // WFS-73 (accroche)
         }
         dessineHalos(r, g);   // WFS-67
     }
