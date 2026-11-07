@@ -2971,3 +2971,28 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 12:54:37 — Début WFS-233 : enfants et familles dans les rues (Claude, agent 3 (01UY1Vv3))
 - Branche `feature/waforspeed-233` créée depuis `main` (b57d917) et poussée tout de suite.
 - Lecture : CLAUDE.md, skills agent-developer et waforspeed-natif, `regles-de-gestion/WFS-233.md`, DA-realisme ; ensuite analyse de `src/world/pietons.*` et des humains de WFS-209 / 210.
+
+### 2026-11-07 12:57:34 — WFS-158 livraison 9 fusionnée (PR #198, fusion par confiance) : ST-5, test strict (arwa-2)
+- **Fait** : `test_fidelite_voitures` est strict. Il est rouge si un pneu flotte ou s'enfonce (20 / 20 exigés), si une mesure sort de ± 1 % sans être dans la liste `ECARTS_CONNUS`, ou si un écart connu grandit de plus de 0,3 point ou change de sens. Un écart connu devenu conforme est signalé « à retirer ».
+- **Écarts connus** : 27 au 2026-11-07, chacun avec sa raison. Ce sont les modèles aux proportions fausses (RG-05 : M4, 911, 208, Model 3, SF90) et les voies que la caisse empêche d'élargir. Ils sont comptés non conformes dans l'indice (114 / 141), sans bloquer, comme l'a décidé le PO le 2026-11-06.
+- **Pour WFS-194** : un modèle remplacé met à jour ses lignes dans `ECARTS_CONNUS` (`tests/fidelite_voitures.cpp`).
+- **Vérifié** : 44 tests CPU OK. En local, une Golf agrandie de 3 % et une M4 élargie de 3 % sont refusées (10 échecs).
+- **Garde au sol (M-03)** : le référentiel n'a pas de valeur. Elle est écrite au rapport, sans contrôle tant qu'elle n'est pas sourcée.
+- **Reste de WFS-158** : ST-3, avec les intérieurs des voitures qui en ont très peu (A45, V60, 208, 911, Corsa, GT86, Compass) et la sous-caisse sombre (GT86, V60, Compass, Corsa).
+
+### 2026-11-07 12:59:41 — Nouveau skill et agent « expert-ci » (po-scrum-master)
+- **Demande de l'utilisateur** : un skill d'agent expert CI, pour répondre à ses questions sur la pipeline et faire des travaux de correction, d'amélioration ou d'étude.
+- **Créés** : `.claude/skills/expert-ci/SKILL.md` (vérifier avant de répondre, pipeline en bref, règles de l'utilisateur, méthode de diagnostic, études, façon de répondre), `references/pipeline.md` (détail des workflows, jobs, robots, scripts), `references/historique.md` (rouges déjà vus et leurs corrections) ; agent `.claude/agents/expert-ci.md` ; une ligne dans `CLAUDE.md`.
+
+### 2026-11-07 13:03:39 — Diagnostic CI : runs de main « annulés » alors que tous les tests sont verts (agent expert ci)
+- **Constat (vérifié sur GitHub)** : dernier run vert de `main` = **#817** (WFS-213). Depuis, les runs **#818, #820, #823, #825** finissent « annulés ». Au run #825 (WFS-220), les **15 jobs de construction et de test sont verts** (12 bancs, endurance, android) ; seuls `publication-apk` et `publication-captures` sont annulés.
+- **Cause** : les deux jobs de publication ont un groupe de concurrence par branche (`apercu-apk-refs/heads/main`, `apercu-captures-refs/heads/main`, `build.yml` l. 202 et 224). GitHub ne garde qu'**un job en attente par groupe** : quand le run suivant arrive, la publication en attente du run précédent est annulée (`cancel-in-progress: false` ne protège que le job déjà lancé). Le run entier devient alors « cancelled », et le robot des statuts (`tools/qa/statuts.py` l. 229-232) ne fait rien d'un run annulé : les tickets restent 🟣 (WFS-206, 210, 216, 217, 219, 220, 221, 223, 225…) alors que leurs tests sont verts.
+- **Effet de bord** : file d'attente longue (runs #829 à #834 en file à 13:00 ; #825 créé à 10:56, ses jobs démarrés à 11:49) : chaque run de `main` lance ≈ 16 jobs, plus la CI de branche #831 (WFS-222).
+- **Proposition** (US technique E7, à créer par le PO) : le verdict d'un run ne doit dépendre que des jobs de construction et de test. Le robot des statuts, sur un run « cancelled », relit les jobs : si tous les jobs autres que `publication-*` sont `success`, le run compte comme vert. Aucun banc ni seuil touché. Variante plus lourde : sortir les publications dans un workflow à part.
+
+### 2026-11-07 13:04:55 — WFS-236 créé (P1, [TECHNIQUE], E7) et attribué à Claude, agent 4 (po-scrum-master)
+- **Origine** : diagnostic de l'agent expert ci (entrée 13:03:39, 24ee9da) : runs de `main` #818, #820, #823, #825 « annulés » seulement à la publication ; le robot des statuts les ignore, les tickets 🟣 ne passent pas en ✅.
+- **Ticket** : WFS-236 « Robot des statuts : un run de main annulé seulement à la publication compte comme vert », épic E7 (libre : WFS-220 🟣), règles `regles-de-gestion/WFS-236.md`.
+- **Zone permise** : `tools/qa/statuts.py`, `tools/qa/test_statuts.py`, `.github/workflows/statuts.yml`. Aucun banc, seuil ni test affaibli.
+- **Attribution** : Claude, agent 4 (011cpqZan), libre et demandeur d'un ticket depuis 11:47 ; branche `feature/waforspeed-236`. Option RG-06 : rattrapage des runs #818 à #825. CI de branche permise (US technique, une à la fois).
+
