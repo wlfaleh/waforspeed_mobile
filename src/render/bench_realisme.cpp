@@ -251,8 +251,9 @@ std::string carteDuLieu(const char* carte) { return std::string("lieu.") + carte
 // final est l'assemblage des morceaux dans l'ordre des étapes : banc complet (sans variable) et fusion des deux parties suivent le même
 // chemin, donc les mêmes lignes dans le même ordre. Étape 6 (soleil du jeu) relit la lumière relevée à l'étape 0 : même partie.
 enum Etape { E_CAPTURES, E_COUT, E_ETALON, E_TEXTURE_KTX2, E_PASSES, E_LUMIERE, E_SOLEIL_DONNEES, NB_ETAPES };
-// partie de chaque étape (durées mesurées en local avec lavapipe, journal WFS-251) ; la texture KTX2 (WFS-149) est lue par la partie 2
-constexpr int PARTIE_DE[NB_ETAPES] = {1, 2, 2, 2, 2, 2, 1};
+// partie de chaque étape, d'après les durées mesurées en local avec lavapipe (journal WFS-251) : partie 1 = captures, coût par carte,
+// lumière, soleil et données ; partie 2 = étalonnage, texture d'essai KTX2 (WFS-149 : seule la partie 2 la lit), passes (WFS-150)
+constexpr int PARTIE_DE[NB_ETAPES] = {1, 1, 2, 2, 2, 1, 1};
 struct Morceau { bool fait = false; std::vector<reel::LigneRapport> lignes; std::string mesures, infos; };
 
 std::string echapper(const std::string& s) {
