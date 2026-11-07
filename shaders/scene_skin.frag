@@ -101,7 +101,7 @@ void main() {
         }
         base.rgb = pow(max(col, vec3(0.0)), vec3(2.2));
         rough = part < 0.5 ? mix(0.52, 0.9, cm) : (part < 1.5 ? 0.15 : 0.72);
-        vec3 geo = normalize(vNrm) * (gl_FrontFacing ? 1.0 : -1.0);
+        vec3 geo = normalize(vNrm) * (face ? 1.0 : -1.0);   // WFS-200 : même sens que N (ligne 61) : passe miroir et capture ont les faces inversées
         N = normalize(mix(N, geo, cm * 0.85));                            // tissus : pas les muscles du modèle nu
     }
     if ((flags & F_MASK) != 0u && base.a < pc.params.z) discard;
@@ -112,7 +112,7 @@ void main() {
     if ((flags & F_ROAD) != 0u) {
         surfaceRoute(base, rough, metal, N, wetRoad, flaque);
     } else if ((flags & F_WALK) != 0u) {
-        surfaceTrottoir(base, rough, metal);
+        surfaceTrottoir(base, rough, metal, N);   // WFS-205 (accroche) : normale du béton
     } else if ((flags & F_GROUND) != 0u) {
         surfaceSol(base, rough, metal);
     }

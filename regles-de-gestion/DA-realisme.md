@@ -43,11 +43,11 @@
 ## 3. Charte du réel (valeurs de référence, à ±10 %)
 **Albédo (couleur de base, en linéaire)** : asphalte neuf 0,04-0,07 · asphalte usé 0,10-0,18 · béton de trottoir 0,25-0,35 ·
 marquage blanc 0,65-0,80 · herbe 0,15-0,25 · sable sec 0,35-0,45 · pierre claire 0,40-0,55 · brique 0,20-0,30 · neige 0,80-0,90 ·
-peau 0,25-0,65 selon le teint (jamais de blanc ni de noir purs).
+peau 0,05-0,65 selon le teint (jamais de blanc ni de noir purs ; plancher abaissé de 0,25 à 0,05 le 2026-11-07 par le PO : la peau du phototype VI publiée mesure 0,05-0,10, signalé par WFS-211 avec avis `expert-realisme-3d`, source à citer dans `references/reel/humains/` par WFS-210).
 **Rugosité** : asphalte sec 0,75-0,90 · mouillé 0,35-0,50 (jamais miroir, WFS-142) · eau de flaque 0,05-0,10, flaques ≤ 10 % ·
 vernis de voiture 0,02-0,08 · verre 0,0-0,05 · chrome 0,05-0,15 (métal 1) · pneu 0,85-0,95 · tissu 0,8-1,0.
 **F0 (réflexion de face)** : diélectriques 0,02-0,05 · métaux = couleur du métal. **Aucun asphalte, béton ou peau métallique.**
-**Lumière** : soleil de midi ≈ 100 000 lux (EV100 ≈ 15), ciel couvert ≈ 10 000 lux (EV 12), heure bleue EV 8-10, rue éclairée
+**Lumière** : soleil de midi ≈ 100 000 lux (EV100 ≈ 15), ciel couvert ≈ 10 000 lux (EV 12), heure bleue ≈ 3 à 10 lux (soleil entre −4° et −6° ; 3,4 lux à −6°, EV ≈ 3,7 à 5 lux en exposition automatique du moteur ; l'ancien « EV 8-10 » était faux, corrigé le 2026-11-07, source : mesure de WFS-208 et éclairement publié du crépuscule civil), rue éclairée
 la nuit EV 3-5 · lampadaire sodium 1900-2200 K, LED 3000-4000 K, 10 à 30 lux sur la chaussée · phares halogènes 3200 K,
 LED / xénon 5500-6500 K · néons d'enseigne saturés mais **bornés** (pas de halo qui mange l'écran).
 **Routes (proche des normes européennes)** : voie 3,0 m en ville, 3,5 m sur route et autoroute · ligne 12-15 cm de large ·

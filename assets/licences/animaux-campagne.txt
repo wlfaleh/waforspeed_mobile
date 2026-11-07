@@ -1,0 +1,29 @@
+Animaux de ferme de la Campagne (WFS-186, RG-02 et RG-C4 de WFS-138) — assets/world/animaux/
+=========================================================================================
+
+vache.wfa — vache, 2450 triangles, 5 poses (4 phases de l'animation « Eating » : tête qui broute, 1 pose « Idle »)
+cheval.wfa — cheval, 2182 triangles, 5 poses (même découpage)
+  Modèles d'origine : Cow.gltf et Horse.gltf de l'« Ultimate Animated Animal Pack » de Quaternius (https://quaternius.com),
+  copiés depuis le dossier models/glTF du dépôt public https://github.com/benjaminpjones/catch-the-animal
+  (commit cf8e52eeb64429a210cebb4b12fe62b3ab06af2b). Auteur : Quaternius (Tomás Laulhé).
+  Licence : CC0 1.0 Universel (domaine public), https://creativecommons.org/publicdomain/zero/1.0/
+  Licence lue dans LICENSES.md du dépôt public https://github.com/trebeljahr/quaternius-showcase (« animals_pack |
+  Ultimate Animated Animal Pack | CC0-1.0 »).
+  SHA-256 des fichiers téléchargés : Cow.gltf b04af067688d9fadf1395b4456dbf3117c2f760fb49e704ee5c8b6391fc8adb5,
+  Horse.gltf 3deb61550dff1d2786d04b6e8559d63ad3907d6ab606ba28ce0af074ed96341b.
+
+mouton.wfa — mouton, 612 triangles, 5 poses (4 phases de l'animation « Idle », 1 pose de repos ; le modèle n'a pas d'« Eating »)
+  Modèle d'origine : Sheep.gltf et Sheep.bin du « Farm Animals Pack » de Quaternius, copiés depuis le dossier
+  threejs/resources/models/animals du dépôt public https://github.com/gfxfundamentals/threejsfundamentals
+  (commit e6fe8df91b7b6bee83b58f9125009f001d312d2d). Auteur : Quaternius (Tomás Laulhé).
+  Licence : CC0 1.0 Universel (domaine public), lue dans « Farm Animals by @Quaternius/License.txt » du même pack, copie du
+  dépôt public https://github.com/Dewflash/isekai-leveling (assets/sourced/quaternius-farm-animals) :
+  « Farm Animals Pack by Quaternius — License: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication ».
+  SHA-256 : Sheep.gltf ffd45ab5eb7391d3edff39f2c13dff75041750d00223e3fcb90a1a5c9f8ec144,
+  Sheep.bin 6cb11ea54cf30531294b65deace51f475fa9087807b2a95b511ccdb902a26026.
+
+Modifications (assets/world/animaux/convertir_ferme.py) : poses calculées par habillage linéaire à partir du squelette
+d'origine, axe long mis selon +Z (tête en avant), mise à l'échelle à la hauteur au garrot de l'espèce (vache 1,40 m,
+cheval 1,60 m, mouton 0,70 m) ; robes (couleurs) données par campagne.cpp : vache limousine, charolaise, montbéliarde ;
+cheval bai, gris ; mouton à laine blanc cassé ou crème, tête et pattes noires.
+Crédit (facultatif en CC0) : animaux par Quaternius.

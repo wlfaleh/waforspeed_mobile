@@ -54,6 +54,8 @@ struct Etat {
     vec3 positionSonde{};            // point de la sonde B
     double poidsB = 1;               // part de la sonde B dans le mélange
     double msTraitement = 0;         // dernier traitement CPU d'une sonde (ms)
+    vec3 astre{0, 1, 0}; double astreHauteur = 0, astreAzimut = 0, astrePhase = 0;   // WFS-207 : astre calculé (soleil ou lune)
+    int moment = 2; double heureUtc = 0, eSol = 0;   // WFS-208 : moment appliqué, heure UTC, éclairement horizontal au sol (lx)
     double luminanceMesuree = 0;     // cd/m², bande 80-98,3 % de l'histogramme (exposition automatique)
     double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
 };
@@ -72,10 +74,18 @@ struct Forcage {
     bool actif = false;
     double hauteurSoleil = -100;     // ° ; < −90 : celle de la carte
     double ev = -100;                // EV100 fixe ; < −50 : exposition automatique
+    double heureUtc = -100;          // WFS-207 : heure UTC du soleil (lieu et date fictifs) ; < −50 : celle du moment
+    bool sansNuages = false;         // WFS-208 : ciel clair (mesures de chromaticité M-03 de WFS-207)
+    double azimutSoleil = -1000;     // WFS-207 : azimut forcé (°, du nord vers l'est ; étalon de WFS-151) ; < −500 : celui du soleil calculé
     bool abscisseForcee = false; double abscisse = 0;   // abscisse (unités de la piste) des sondes (tunnels, ponts)
     bool pointForce = false; vec3 point{};             // point des sondes (sinon la voiture)
 };
 void forcer(const Forcage& f);
+// WFS-208 : moment de la journée (atmosphere::Moment : aube, matin, midi, heure dorée, heure bleue, nuit, heure réelle), choisi à
+// l'écran Terrain (sinon relu dans la sauvegarde ; < 0 : aucun choix) ; le temps écoulé repart de zéro ; accélération du temps (× 1 par défaut)
+void choisirMoment(int moment);
+int momentChoisi();
+void accelererTemps(double facteur);
 void desactiver(bool oui);            // banc avant / après : rendu d'origine (aucune conversion)
 bool sondeCapturePrete();             // au moins une capture traitée depuis la dernière remise à zéro
 void remettreAZero();                 // nouvelle scène : sondes oubliées, exposition recalée sur la prochaine mesure

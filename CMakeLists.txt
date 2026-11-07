@@ -102,6 +102,7 @@ else()
   add_executable(test_manette tests/test_manette.cpp src/platform/manette.cpp)   # WFS-22 : manettes
   add_executable(test_masquage tests/test_masquage.cpp src/render/masquage.cpp)   # WFS-82
   add_executable(test_ktx2 tests/test_ktx2.cpp src/render/ktx2.cpp)   # WFS-149 (RG-01) : textures KTX2
+  add_executable(test_cockpit tests/test_cockpit.cpp src/render/vehicule_cockpit_defs.cpp)   # WFS-197 : intérieurs par modèle de la vue cockpit
   add_executable(test_tangentes tests/test_tangentes.cpp src/render/mesh.cpp)   # WFS-149 (RG-04, M-02) : tangentes, .wfm versionnés
   add_executable(test_passes tests/test_passes.cpp src/render/qualite_auto.cpp)   # WFS-150 : faces de la cubemap, niveau Ultra
   add_executable(test_feux_modele tests/test_feux_modele.cpp)   # WFS-109 : découpe des feux arrière, transition du stop
@@ -114,8 +115,13 @@ else()
   add_executable(test_plantage tests/test_plantage.cpp src/platform/plantage.cpp)   # WFS-126 : anneau du journal, rapport de plantage
   add_executable(test_fidelite_soleil tests/fidelite_soleil.cpp)   # WFS-148 (RG-02) : soleil (NOAA) contre 10 valeurs de contrôle
   add_executable(test_fidelite tests/fidelite_referentiel.cpp src/game/roues.cpp)   # WFS-148 (RG-01, RG-05) : référentiel du réel, mesures géométriques
+  add_executable(test_fidelite_humains tests/fidelite_humains.cpp)   # WFS-209 : humains réalistes (M-01, M-02, squelette du jeu)
+  target_compile_definitions(test_fidelite_humains PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_voitures tests/fidelite_voitures.cpp src/game/roues.cpp)   # WFS-158 : audit des 20 voitures (mesure « fiche »)
   target_compile_definitions(test_fidelite_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+  add_executable(test_conducteurs tests/conducteurs_test.cpp)   # WFS-73 : conducteurs (pavillon mesuré, placement)
+  add_executable(test_fidelite_routes tests/fidelite_routes.cpp src/render/ktx2.cpp src/render/route_revetements_defs.cpp)   # WFS-205 : revêtements de route (M-01, M-02)
+  target_compile_definitions(test_fidelite_routes PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(corriger_voitures tools/corriger_voitures.cpp src/game/roues.cpp)   # WFS-158 (ST-2) : échelle et roues d'après le référentiel
   target_compile_definitions(corriger_voitures PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   target_compile_definitions(test_fidelite_soleil PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
@@ -124,6 +130,7 @@ else()
   target_compile_definitions(test_fidelite_lumiere PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_ville_lieux tests/test_ville_lieux.cpp src/world/ville_quartiers.cpp src/world/zones.cpp src/game/track.cpp)   # WFS-137 : lieux de la Ville au tracé 2
   add_executable(test_trace tests/test_trace.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-136
+  add_executable(test_rien_sur_chaussee tests/test_rien_sur_chaussee.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-212 : rien sur la chaussée (rond-point, épingles)
   # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
   get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
   foreach(cible IN LISTS cibles_wfs)
