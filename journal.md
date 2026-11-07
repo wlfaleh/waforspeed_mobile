@@ -3951,3 +3951,21 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Runs gris « annulés »** (#865 à #872) : remplacés en attente par un envoi plus récent (WFS-237) ; aucun n'a échoué ; le plus récent (#873) vérifie toutes leurs fusions.
 - **Vrais rouges** : #859 et #864, job `banc-essai (realisme)` seulement : sortie du tunnel sans adaptation visible (`eclairage_banc.cpp:560`, EV100 13,80 pour 12,38 visé), depuis les phares de WFS-218 / 226 ; WFS-274, correction confiée à arwa. Run de branche #863 rouge : branche WFS-246 (agent dev X).
 - **Risque venant de ma limite de 75 min (WFS-237)** : `ecrans-2400` dure ≈ 65 min depuis l'ajout des bancs conduite (WFS-241) et chocs (WFS-256), contre 12 à 15 min avant ; il frôle la limite (run #864 encore en cours à 19:57). **Correction** : les deux bancs passent dans un groupe `conduite-chocs` à part (branche `feature/waforspeed-252`, 472b8ec), aucun banc retiré ni limite relevée. Run de branche #868 annulé (ancienne version) et relancé (lancement n° 2).
+
+### 2026-11-07 20:00:32 — WFS-257 : fusionné par confiance (PR #220, squash ebe798e) (Claude, agent arwa)
+- **Cause (RG-01)** : `pietons.cpp` ne dessinait que 8 personnes (AFFICHES = 8 : 16 instances à squelette de WFS-19), choisies parmi les « plus proches » à chaque image, avec un bonus de seulement 6 tronçons pour celles déjà affichées. Dès que le classement changeait, une personne surgissait sous les yeux du joueur (premiers évènements mesurés à 13-25 m). S'y ajoutaient les niveaux de détail sans fondu (16 m / 50 m : 258 bascules visibles) et 2 enfants au plus par morphotype, 4 poussettes au plus. L'écart brusque de 2,6 m en 0,25 s (≈ 10 m/s) et le demi-tour instantané des passants s'ajoutaient au problème.
+- **Correction** (`src/world/pietons.cpp`, nouveau `src/world/foule_apparition.h`, test `tests/apparition_pietons_test.cpp`) : toute personne dans le cadre est dessinée (budget de 120 instances, 60 personnes, tableaux préalloués). Une personne affichée garde toujours sa place. Une personne qui arrive de hors du cadre entre telle quelle. Au bout de la portée (118-138 m), elle entre en fondu tramé d'au moins 0,5 s (tramage 4×4 des voitures de WFS-134). La portée arrière va à 48 m, au lieu de 12 m. Les niveaux de détail passent en fondu croisé de 0,5 s, avec une hystérésis de 1,5 m. Les poussettes ont le fondu de leur parent (jusqu'à 8). La 1re image d'une partie est sans fondu. L'écart vers les façades se fait à ≈ 4 m/s, et les passants se retournent en ≈ 1 s.
+- **RG-05** : nombre inchangé (Ville 882, Corniche 263, Campagne 48, Grand Prix 72 personnes, enfants et poussettes compris).
+- **RG-06, banc** (`WFS_BANC=pietons WFS_APPARITIONS_SEUL=1 WFS_APPARITIONS_S=12`, 20 img/s, départ 150 m avant la partie la plus peuplée, vue Proche) :
+  - avant : Ville 168 + 10, Corniche 51, Campagne 24, Grand Prix 17 évènements, identiques la nuit ; total 541 apparitions / disparitions et 258 détails brutaux ;
+  - après : **0 / 0 / 0 sauts** sur les 8 cas, 0 entrée en fondu à moins de ≈ 35 m ; jusqu'à 60 personnes vues en Ville (47,6 en moyenne).
+  - Le jeu n'a que 4 cartes (Ville, Corniche, Campagne, Grand Prix) : les « 5 cartes » du ticket correspondent à ces 4 cartes.
+  - En CI (job partie2c) : Ville de jour, 4 s, total au journal.
+- Tests CPU : 58 OK. Parcours : 0 écart, vue normale et vue Cockpit. Captures `pietons-*` et `enfants-*` regardées : aspect inchangé.
+- **Accroches hors zone (annoncées)** : `src/render/renderer.h/.cpp` (4 lignes : paramètre `fondu` de `drawSkinned` → `pc.emissive.w` ; `SKIN_MAX_INSTANCES` passé de 48 à 152) et `CMakeLists.txt` (1 ligne, `test_apparition_pietons`).
+- **Limites** :
+  - jusqu'à 60 personnes animées en Ville au lieu de 8 : performance à mesurer sur téléphone (WFS-246) ;
+  - l'ombre d'une personne qui entre en fondu au loin apparaît d'un coup (passe d'ombre sans tramage, à ≥ 118 m) ;
+  - suites de captures « avant » non conservées (disque) : le banc donne la personne et la distance de chaque premier évènement.
+- 🟡 À valider par l'utilisateur sur téléphone.
+
