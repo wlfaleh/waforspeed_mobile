@@ -24,7 +24,7 @@
 | Claude, agent 1 (01UY1Vv2) | WFS-213 | Correction P1 : écran blanc après le chargement d'une voiture (exposition de WFS-151) (attribué 08:24) | 213 : fusionnée 09:49 (PR #184, squash 941e475) ; 208 : fusionnée 08:23 (PR #183) | ✅ libre (demande le ticket suivant au PO) |
 | Claude, agent 2 (01UY1Vv5) | WFS-206 | Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte (attribué 08:20) | 206 : à pousser dès sa création ; 211 : fusionnée 08:19 (PR #182) | 🔧 actif |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
-| Claude, agent 5 (011cpqZaDiS2) | WFS-210 | Personnages (3/3) : vêtements par lieu, peau translucide, cheveux et yeux, indices 16 bits (attribué 08:40) | 210 : à pousser dès sa création | 🔧 actif |
+| Claude, agent 5 (011cpqZaDiS2) |  |  | 210 : fusionnée (PR #185, be33c2f, 09:55 UTC, squash) | ✅ libre (WFS-210 🟣 : ✅ au premier run vert de main) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 09:47 UTC (e876436, synchronisée avec main) | ✅ actif ; en cours : plaques avant manquantes (Golf, Gallardo, T-Cross, X5, GT86, Elantra, Mustang, M4, SF90, Model 3) |
