@@ -21,7 +21,9 @@ static bool g_banc = false;          // banc d'essai : effets seulement dans les
 static effets::Particules* g_parts = nullptr;
 static int g_dernierChoc = 0;
 static float g_capChoc = 0;
+static bool g_bancDerapage = false;   // WFS-224 : banc seulement, fumée des pneus forcée
 void effetsBanc(bool on) { g_banc = on; }
+void effetsBancDerapage(bool on) { g_bancDerapage = on; }
 int effetsEtincelles() { return g_parts ? g_parts->sparks().vivantes() : 0; }
 int effetsFumee() { return g_parts ? g_parts->smoke().vivantes() : 0; }
 int effetsDernierChoc() { return g_dernierChoc; }
@@ -29,7 +31,8 @@ float effetsCapDernierChoc() { return g_capChoc; }
 
 namespace {
 
-constexpr int NIV = 4;               // niveaux de fondu de la fumée (un appel de dessin chacun)
+constexpr int NIV = 6;               // WFS-224 : niveaux d'opacité de la fumée (un appel de dessin chacun)
+constexpr float ALPHA_FUMEE = 0.30f; // WFS-224 (RG-02) : opacité d'une volute au plus dense (0,45 du jeu web : disques trop pleins)
 constexpr float EXPO = 0.85f;        // exposition de la course (Game::render)
 
 // WFS-101 : voiture du trafic au contact du joueur juste après hitCar (qui l'a repoussée de 0,25 m) : la plus proche,
@@ -60,26 +63,31 @@ public:
         r_ = &r; parts_.vider(); g_parts = &parts_;
         actif_ = !r.vk().offscreen || g_banc;
         parts_.setReduit(r.gpuLogiciel());   // RG-05 : qualité basse (GPU logiciel) → moitié moins de particules
-        // texture radiale (TEXS.radial du jeu web, 128 × 128) : blanc, alpha 1 au centre, 0,45 à 35 % du rayon, 0 au bord
-        // (WFS-107 RG-05 : bouffées rondes et douces ; avant : (1 − r)², plus dure au centre)
+        // WFS-224 (RG-02) : texture de volute (128 × 128) : blanc, alpha gaussien à bord nul, modulé par un bruit lisse
+        // (voluteAlpha) ; avant : TEXS.radial du jeu web, disque plein au centre (« boules grises », ANO-120)
         constexpr int T = 128;
         std::vector<uint8_t> px(T * T * 4);
         for (int y = 0; y < T; y++) for (int x = 0; x < T; x++) {
             const float dx = (x + 0.5f) / T * 2 - 1, dy = (y + 0.5f) / T * 2 - 1;
             uint8_t* p = &px[(size_t)(y * T + x) * 4];
-            p[0] = p[1] = p[2] = 255; p[3] = (uint8_t)std::lround(effets::radial(std::sqrt(dx * dx + dy * dy)) * 255);
+            p[0] = p[1] = p[2] = 255; p[3] = (uint8_t)std::lround(effets::voluteAlpha(dx, dy) * 255);
         }
         tex_ = r.vk().uploadTexture(px.data(), T, T, false);
         // fumée : PointsMaterial du jeu web (non éclairé) : albédo noir et metal 1 → ni diffus, ni reflet du ciel, ni
         // reflet du soleil (f0 = 0, rugosité 1) : seule la lumière émise reste (avec metal 0, le reflet ajoutait ≈ 0,01 à
         // 0,03 en HDR, un quart de la couleur de jour). WFS-107 (RG-04) : couleur du jeu web convertie par versHdr (comme
         // les étincelles de WFS-101) ; l'ancienne conversion (ACES ≈ 0,214·x) la rendait ≈ 4,5 fois trop claire : gris
-        // presque blanc à l'écran (« feu blanc » au braquage). Transparence 0,45 × texture, mélange normal.
+        // presque blanc à l'écran (« feu blanc » au braquage). Mélange normal.
+        // WFS-224 (RG-02) : la volute s'efface par son opacité (niveau k : ALPHA_FUMEE × (k + 0,5) / NIV), plus par sa
+        // couleur ; deux jeux de matériaux : jour (gris du jeu web) et nuit, où la fumée derrière la voiture n'est éclairée
+        // que par les feux arrière : gris très sombre teinté de rouge (pas de gris clair dans le noir).
         for (int k = 0; k < NIV; k++) {
-            Material m; m.color = {0, 0, 0, 0.45f}; m.rough = 1; m.metal = 1;
-            m.emissive = effets::fumeeHdr((k + 0.5f) / NIV, EXPO);   // fondu moyen du niveau
-            mats_[k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
-            mats_[k].flags |= MAT_BLEND | MAT_DOUBLE;
+            for (int nuit = 0; nuit < 2; nuit++) {
+                Material m; m.color = {0, 0, 0, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 1;
+                m.emissive = nuit ? effets::versHdr(vec3{0.06f, 0.04f, 0.04f}, EXPO) : effets::fumeeHdr(1, EXPO);
+                mats_[nuit][k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
+                mats_[nuit][k].flags |= MAT_BLEND | MAT_DOUBLE;
+            }
             for (int b = 0; b < 2; b++) {   // réserve pleine (140 bouffées) : jamais réallouée pendant la partie
                 meshes_[b][k] = r.makeMesh(std::vector<Vertex>(140 * 4), std::vector<uint32_t>(140 * 6), true);
                 meshes_[b][k].indexCount = 0;
@@ -94,7 +102,7 @@ public:
     void shutdown(Renderer& r) override {
         for (auto& b : meshes_) for (auto& m : b) r.destroy(m);
         r.vk().destroy(tex_);
-        for (Material& m : mats_) r.destroy(m);
+        for (auto& j : mats_) for (Material& m : j) r.destroy(m);
         r.destroy(matEtincelles_);   // WFS-187 : jeux de descripteurs rendus
         if (g_parts == &parts_) g_parts = nullptr;
     }
@@ -137,9 +145,14 @@ public:
             acc_ = c->accidents; bumps_ = c->bumps; scr_ = c->scrapes;
         }
         vitessePrec_ = pl.speed;
-        // fumée des pneus : gros freinage, tête-à-queue, dérapage à haute vitesse (scene.js)
+        // fumée des pneus. WFS-224 (RG-01, ANO-120) : seulement en vrai dérapage (effets::vraiDerapage) ; avant, le seuil
+        // du jeu web (accélération latérale > 0,92 × adhérence au-delà de 72 km/h, ou frein au-delà de 65 km/h) fumait à
+        // chaque coup de volant à grande vitesse et à chaque freinage. Conduite du jeu web (sans état du monde) : tête-à-queue seul.
         const double vms = pl.speed * M;
-        const bool skid = (pl.braking && vms > 18) || std::abs(pl.spinYaw) > 0.3 || (std::abs(pl.latAcc) > Phys::grip * 0.92 && vms > 20);
+        const bool monde = pl.modeleMonde();
+        const double derive = monde ? std::atan2(pl.monde.v(), std::max(std::abs(pl.monde.u()), 0.1)) : 0.0;
+        const bool skid = effets::vraiDerapage(vms, derive, monde ? pl.monde.sigmaAr : 0.0,
+                                               monde ? std::max(pl.monde.glissementAv, pl.monde.glissementAr) : 0.0, pl.spinYaw) || (g_banc && g_bancDerapage);
         skid_ -= dt;
         if (skid && skid_ <= 0) {
             skid_ = 0.05f;
@@ -198,11 +211,17 @@ public:
         // web, même règle que les étincelles : ≈ 1,33 m en vue Proche (58°) ; avant : 2,4 m, ≈ 1,8 fois trop grand) ;
         // centre remonté pour que son bas reste au-dessus de la route (sinon la route le coupe net : bandes à bord
         // horizontal sur les captures)
-        const float taille = parts_.smoke().taille / p11, hs = taille * 0.5f * std::abs(up.y);
+        // WFS-224 (RG-02) : chaque volute grandit (voluteEchelle) ; son opacité (apparition, effacement, proximité de la
+        // caméra) choisit le niveau ; trop transparente, elle n'est pas dessinée
+        const float base = parts_.smoke().taille / p11;
         for (auto q : parts_.smoke().p) {
             if (!q.vivante()) continue;
+            const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * std::abs(up.y);
             q.p.y = std::max(q.p.y, q.floor + hs);
-            const int k = std::min(NIV - 1, (int)(q.fondu() * NIV));
+            const float d = dot(g.camPos - q.p, nrm);
+            const float a = effets::voluteOpacite(q.fondu()) * effets::voluteProche(d);
+            const int k = std::min(NIV - 1, (int)(a * NIV));
+            if (a * NIV < 0.5f) continue;
             auto& v = vtx_[k]; auto& ix = idx_[k];
             const uint32_t n = (uint32_t)v.size();
             vec3 c4[4]; coins(q.p, taille * 0.5f, c4);
@@ -214,29 +233,44 @@ public:
             Mesh& m = meshes_[b][k];
             if (vtx_[k].empty()) { m.indexCount = 0; continue; }
             r.updateMesh(m, vtx_[k], idx_[k]);
-            r.draw(m, mats_[k], mat4::identity());
+            r.draw(m, mats_[g.night ? 1 : 0][k], mat4::identity());
         }
+        if (nitro_ && (!r.gpuLogiciel() || g_banc) && !reglagesRessenti().reduireMouvements && g.ecran == Ecran::Course)
+            lignesNitro(r, g, right, up, nrm);
     }
 
-    // drawFx : lignes de vitesse sous nitro, vignette (teintée sous nitro), flash rouge des chocs
+    // drawFx du jeu web : 28 traits tirés à chaque image, rgba(230,240,255,.14) : α × 2,5 = 0,35 (WFS-101 RG-02, ANO-25 :
+    // invisibles sur téléphone), 2 px à 720 p, autour du point (w/2, 0,45 h). WFS-224 (RG-05, ANO-122) : dessinés DANS la
+    // scène (carrés additifs à 1,5 m devant la caméra, comme les étincelles), donc sous toute l'interface (commandes,
+    // compteur, classement, carte) ; avant : quadrilatères d'interface, par-dessus le bouton Nitro et visibles à travers le
+    // HUD. Le trait reste à la même place à l'écran : point (x, y) de l'écran → point à la profondeur D du cône de vue.
+    void lignesNitro(Renderer& r, const GameView& g, const vec3& right, const vec3& up, const vec3& nrm) {
+        const float w = g.uiWidth, h = g.uiHeight, s = h / 720.f;
+        const float p00 = std::max(1e-3f, std::abs(g.proj.at(0, 0))), p11 = std::max(1e-3f, std::abs(g.proj.at(1, 1)));
+        constexpr float D = 1.5f;
+        auto monde = [&](float x, float y) {   // pixel d'interface (y vers le bas) → point du monde à D m devant la caméra
+            const float nx = x / w * 2 - 1, ny = 1 - y / h * 2;
+            return g.camPos - nrm * D + right * (nx * D / p00) + up * (ny * D / p11);
+        };
+        const float u = std::min(w, h), e = std::max(1.f, 1.f * s);
+        const vec3 col = effets::versHdr(vec3{230 / 255.f, 240 / 255.f, 1.f} * 0.35f, EXPO);
+        lignes_.clear();
+        for (int i = 0; i < 28; i++) {
+            const float ang = rnd() * 6.2831853f, r0 = u * (0.32f + rnd() * 0.18f), r1 = r0 + u * (0.2f + rnd() * 0.25f);
+            const float x0 = w / 2 + std::cos(ang) * r0, y0 = h * 0.45f + std::sin(ang) * r0 * 0.7f;
+            const float x1 = w / 2 + std::cos(ang) * r1, y1 = h * 0.45f + std::sin(ang) * r1 * 0.7f;
+            const float dx = x1 - x0, dy = y1 - y0, l = std::max(1e-3f, std::sqrt(dx * dx + dy * dy)), nx = -dy / l * e, ny = dx / l * e;
+            const vec3 c4[4] = {monde(x0 + nx, y0 + ny), monde(x1 + nx, y1 + ny), monde(x1 - nx, y1 - ny), monde(x0 - nx, y0 - ny)};
+            for (const vec3& c : c4) lignes_.push_back({c.x, c.y, c.z, col.x, col.y, col.z, 0.5f, 0.5f});   // uv au centre : trait plein
+        }
+        r.drawQuads(lignes_.data(), (int)lignes_.size() / 4, matEtincelles_);
+    }
+
+    // drawFx : vignette (teintée sous nitro), flash rouge des chocs
     void drawUi(Renderer& r, const GameView& g) override {
         if (!actif_ || g.sceneDediee || g.ecran != Ecran::Course) return;
-        const float w = g.uiWidth, h = g.uiHeight, s = h / 720.f;
-        if (nitro_ && !r.gpuLogiciel() && !reglagesRessenti().reduireMouvements) {   // fx.js : nitroOn && !reduceMotion (WFS-70 RG-04)
-            // 28 traits tirés à chaque image, rgba(230,240,255,.14) au jeu web : α × 2,5 = 0,35 (WFS-101 RG-02, ANO-25 :
-            // invisibles sur téléphone), 2 px à 720 p (demi-épaisseur e de chaque côté du trait)
-            const float u = std::min(w, h), e = std::max(1.f, 1.f * s);
-            const vec4 c{230 / 255.f, 240 / 255.f, 1, 0.35f};
-            for (int i = 0; i < 28; i++) {
-                const float ang = rnd() * 6.2831853f, r0 = u * (0.32f + rnd() * 0.18f), r1 = r0 + u * (0.2f + rnd() * 0.25f);
-                const float x0 = w / 2 + std::cos(ang) * r0, y0 = h * 0.45f + std::sin(ang) * r0 * 0.7f;
-                const float x1 = w / 2 + std::cos(ang) * r1, y1 = h * 0.45f + std::sin(ang) * r1 * 0.7f;
-                const float dx = x1 - x0, dy = y1 - y0, l = std::max(1e-3f, std::sqrt(dx * dx + dy * dy)), nx = -dy / l * e, ny = dx / l * e;
-                const UiVertex q[4] = {{x0 + nx, y0 + ny, -1, -1, c.x, c.y, c.z, c.w}, {x1 + nx, y1 + ny, -1, -1, c.x, c.y, c.z, c.w},
-                                       {x1 - nx, y1 - ny, -1, -1, c.x, c.y, c.z, c.w}, {x0 - nx, y0 - ny, -1, -1, c.x, c.y, c.z, c.w}};
-                r.uiQuad(q);
-            }
-        }
+        const float w = g.uiWidth, h = g.uiHeight;
+        // WFS-224 (RG-05) : les lignes de vitesse du nitro sont dessinées dans la scène (lignesNitro, render)
         // dégradé radial centré en (w/2, 0,55 h) : transparent jusqu'à 0,38 × min(w,h), plein à 0,78 × max(w,h)
         // rgba(5,6,10,ENV.vignette) (0,55 la nuit, 0,3 le jour) ; sous nitro : rgba(0,30,40,.5)
         const vec4 bord = nitro_ ? vec4{0, 30 / 255.f, 40 / 255.f, 0.5f} : vec4{5 / 255.f, 6 / 255.f, 10 / 255.f, g.night ? 0.55f : 0.3f};
@@ -260,9 +294,9 @@ private:
     bool actif_ = true, nitro_ = false;
     effets::Particules parts_;
     Image tex_;
-    Material mats_[NIV], matEtincelles_;
+    Material mats_[2][NIV], matEtincelles_;   // fumée : [jour, nuit][niveau d'opacité]
     Mesh meshes_[2][NIV];
-    std::vector<Vertex> vtx_[NIV], etincelles_;
+    std::vector<Vertex> vtx_[NIV], etincelles_, lignes_;
     std::vector<uint32_t> idx_[NIV];
     int buf_ = 0;
     float flash_ = 0, skid_ = 0;
