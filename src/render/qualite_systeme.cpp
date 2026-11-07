@@ -57,10 +57,10 @@ public:
         if (g_ipsT >= 1) { g_ips = (float)(g_ipsN / g_ipsT); g_ipsT = 0; g_ipsN = 0; }
         if (!actif_) return;
         const ecrans::Reglages& R = ecrans::reglages();
-        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; }   // changé dans les réglages
+        if (R.qualite != g_auto.niveau) { g_auto.niveau = R.qualite; g_auto.echelle = 1; g_auto.palier = 0; }   // changé dans les réglages (WFS-246 : palier)
         g_auto.choixJoueur = R.qualiteChoisie;
         const Course* c = activeCourse();
-        effets_ |= g_auto.imageChauffe(dt, g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing(), chauffeNiveau());
+        effets_ |= g_auto.imageChauffe(dt, g.ecran == Ecran::Course && !g.sceneDediee && c && c->playing(), chauffeNiveau(), r_->gpuImageMs());   // WFS-246 : marge du GPU
         if (g_auto.mesures != mesuresVues_) {   // WFS-150 (RG-04) : la Haute tient-elle (Ultra proposé) ?
             mesuresVues_ = g_auto.mesures; const bool avant = qualite::tenueUltra.tenue;
             qualite::tenueUltra.mesure(g_auto.fpsMesure, R.qualite, chauffeNiveau());
@@ -82,15 +82,15 @@ public:
             WFS_LOG("qualité : rétrogradation automatique au niveau %d (%.0f images/s à l'échelle 0,6)", g_auto.niveau, g_auto.fpsMesure);
         }
         const float avant = r_->vk().renderScale;
-        r_->vk().renderScale = qualite::echelleScene(g_auto.niveau, g_auto.echelle);   // WFS-104 / WFS-134 : jamais sous la netteté du garage
+        r_->vk().renderScale = qualite::echelleScene(g_auto.niveau, g_auto.echelle);   // WFS-246 : de 100 % (75 % en Basse) à 60 %
         if (r_->vk().renderScale != avant) r_->resize();
-        // WFS-104 : téléphone lent → bloom puis ombres coupés, la résolution de la voiture ne bouge pas
-        const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.echelle);
+        // WFS-246 : effets coupés seulement une fois la scène à 60 % (paliers de qualite_auto.h)
+        const qualite::Allegement al = qualite::allegement(g_auto.niveau, g_auto.palier);
         r_->bloomForce = al.bloom ? qualite::bloomNiveau(g_auto.niveau) : 0.f;
         r_->forceNoShadows = !al.ombres;
         r_->forceSansReflets = !al.reflets; eclairage::suspendreCaptures(!al.captures);   // WFS-222 (RG-03)
-        WFS_LOG("qualité : %.0f images/s → facteur dynamique %.2f (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s, reflets %s, captures %s)", g_auto.fpsMesure,
-                g_auto.echelle, r_->vk().renderScale * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées",
+        WFS_LOG("qualité : %.0f images/s, GPU %.1f ms → facteur dynamique %.2f, palier %d (scène à %.0f %%, MSAA ×%d, bloom %s, ombres %s, reflets %s, captures %s)", g_auto.fpsMesure,
+                r_->gpuImageMs(), g_auto.echelle, g_auto.palier, r_->vk().renderScale * 100, (int)r_->vk().msaa, al.bloom ? "oui" : "coupé", al.ombres ? "oui" : "coupées",
                 al.reflets ? "oui" : "coupés", al.captures ? "oui" : "suspendues");
         effets_ = 0;
     }

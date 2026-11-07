@@ -322,6 +322,7 @@ void Renderer::readShadowTiming() {
     shadowMsSum_ += (double)(t[1] - t[0]) * k;
     refletMsSum_ += (double)(t[2] - t[1]) * k;   // WFS-16 : passe de reflet (0 sans route mouillée)
     sceneMsSum_ += (double)(t[3] - t[2]) * k;    // WFS-42 : coût de la passe de scène, pour comparer avant / après
+    { const double g = (double)(t[3] - t[0]) * k; if (g > 0 && g < 1000) gpuImageMs_ = gpuImageMs_ < 0 ? g : gpuImageMs_ * 0.9 + g * 0.1; }   // WFS-246
     if (++shadowMsN_ == 120) {
         WFS_LOG("Ombres : passe d'ombre %.2f ms GPU en moyenne (carte %u) ; passe de scène %.2f ms ; reflets %.2f ms (WFS-16)", shadowMsSum_ / shadowMsN_, shadowSize_,
                 sceneMsSum_ / shadowMsN_, refletMsSum_ / shadowMsN_);

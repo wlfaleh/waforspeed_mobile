@@ -31,8 +31,9 @@ int main() {
     // 35 images/s : l'échelle baisse mais pas de rétrogradation (≥ 30)
     Auto b; course(b, 35, 20);
     VERIFIE(std::abs(b.echelle - 0.6f) < 1e-6f && b.niveau == HAUTE && !b.fait, "35 images/s : pas de rétrogradation");
-    // 60 images/s : l'échelle remonte jusqu'à 1
-    course(b, 60, 10);
+    // 60 images/s : WFS-246 : les effets reviennent d'abord (2 paliers, 4 s), puis l'échelle remonte jusqu'à 1 (8 s)
+    VERIFIE(b.palier == 2, "35 images/s au plancher : effets coupés après la résolution (palier %d)", b.palier);
+    course(b, 60, 14);
     VERIFIE(std::abs(b.echelle - 1.f) < 1e-6f, "remontée à 1 (%.2f)", b.echelle);
     // 50 images/s : zone morte, rien ne bouge
     const float e0 = b.echelle; VERIFIE(course(b, 50, 10) == Auto::RIEN && b.echelle == e0, "zone morte 40-57");
@@ -46,29 +47,41 @@ int main() {
     Auto e; e.niveau = BASSE; course(e, 20, 30); VERIFIE(e.niveau == BASSE, "pas de niveau sous Basse");
     std::printf("choix du joueur, hors course, niveau Basse : OK\n");
 
-    // WFS-104 (RG-02) : netteté du garage en course : Haute toujours 100 %, Moyenne jamais sous 90 %, Basse 50 % fixe
-    bool hauteFixe = true, moyenneOk = true;
-    for (float d = 0.6f; d <= 1.0001f; d += 0.1f) {
-        hauteFixe = hauteFixe && echelleRendu(HAUTE, d) == 1.f;
-        moyenneOk = moyenneOk && echelleRendu(MOYENNE, d) >= 0.9f - 1e-6f && echelleRendu(MOYENNE, d) <= 1.f;
-    }
-    VERIFIE(hauteFixe, "Haute : toujours 100 %%");
-    VERIFIE(moyenneOk && echelleRendu(MOYENNE, 1) == 1.f && std::abs(echelleRendu(MOYENNE, 0.6f) - 0.9f) < 1e-6f, "Moyenne : 90-100 %%");
-    VERIFIE(echelleRendu(BASSE, 1) == 0.75f && echelleRendu(BASSE, 0.6f) == 0.75f, "Basse : 75 %% fixe (WFS-134 RG-03)");
-    std::printf("échelle réelle (WFS-104, WFS-134) : Haute 100 %% fixe, Moyenne 90-100 %%, Basse 75 %% : OK\n");
+    // WFS-246 (levier 3) : résolution adaptative à tous les niveaux, de 100 % (Basse 75 %) jusqu'à 60 %, jamais en dessous
+    bool dansBornes = true;
+    for (int q = BASSE; q <= HAUTE; q++) for (float d = 0.3f; d <= 1.0001f; d += 0.05f)
+        dansBornes = dansBornes && echelleRendu(q, d) >= ECHELLE_MIN - 1e-6f && echelleRendu(q, d) <= echelleNiveau(q) + 1e-6f;
+    VERIFIE(dansBornes, "échelle toujours entre 60 %% et celle du niveau");
+    VERIFIE(echelleRendu(HAUTE, 1) == 1.f && std::abs(echelleRendu(HAUTE, 0.6f) - 0.6f) < 1e-6f && std::abs(echelleRendu(MOYENNE, 0.8f) - 0.8f) < 1e-6f, "Haute / Moyenne : 100 → 60 %%");
+    VERIFIE(echelleRendu(BASSE, 1) == 0.75f && std::abs(echelleRendu(BASSE, 0.8f) - 0.6f) < 1e-6f && std::abs(echelleRendu(BASSE, 0.6f) - 0.6f) < 1e-6f, "Basse : 75 → 60 %%");
+    VERIFIE(budgetMs(BASSE) < 16.8f && budgetMs(HAUTE) == 22.f && budgetMs(MOYENNE) == 22.f, "budgets 16,7 / 22 ms");
+    std::printf("échelle réelle (WFS-246) : Haute et Moyenne 100 → 60 %%, Basse 75 → 60 %% : OK\n");
+    // WFS-246 : Basse à 50 images/s (20 ms > 16,7) : la résolution descend à 60 % (facteur 0,8), puis les effets
+    { Auto f; f.niveau = BASSE; course(f, 50, 2);
+      VERIFIE(std::abs(f.echelle - 0.9f) < 1e-6f && f.palier == 0, "Basse 50 img/s : 1re baisse (%.2f)", f.echelle);
+      course(f, 50, 2); VERIFIE(std::abs(f.echelle - 0.8f) < 1e-6f && f.palier == 0, "Basse : scène à 60 %% (%.2f)", f.echelle);
+      course(f, 50, 2); VERIFIE(f.palier == 1 && std::abs(f.echelle - 0.8f) < 1e-6f, "Basse : effets après la résolution (palier %d)", f.palier);
+      // image calée sur 60 Hz : sans horodatages, aucune remontée en Basse ; GPU à 9 ms (< 65 % de 16,7) : remontée
+      course(f, 60, 4); VERIFIE(f.palier == 1 && std::abs(f.echelle - 0.8f) < 1e-6f, "Basse 60 Hz sans mesure GPU : rien ne bouge");
+      int e = 0; for (int i = 0; i < 60 * 8; i++) e |= f.image(1.0 / 60, true, 9.0);
+      VERIFIE(f.palier == 0 && std::abs(f.echelle - 1.f) < 1e-6f && (e & Auto::ECHELLE), "Basse GPU 9 ms : effets puis 75 %% (%.2f, palier %d)", f.echelle, f.palier);
+      // Haute 60 Hz, GPU 18 ms (> 65 % de 22) : pas de remontée (pas d'aller-retour)
+      Auto h; h.echelle = 0.7f; for (int i = 0; i < 60 * 6; i++) h.image(1.0 / 60, true, 18.0);
+      VERIFIE(std::abs(h.echelle - 0.7f) < 1e-6f, "Haute GPU 18 ms : échelle gardée (%.2f)", h.echelle);
+      std::printf("Basse 50 img/s : 75 → 60 %% puis effets ; remontée au temps GPU, sans aller-retour : OK\n"); }
     // WFS-134 (RG-02) : rétrogradation automatique et chauffe : la résolution reste celle du niveau quitté
     VERIFIE(niveauNettete(BASSE) == BASSE && echelleScene(BASSE, 1) == 0.75f, "sans baisse en cours : niveau du joueur");
     retenuChauffe = HAUTE;   // chauffe sévère : Haute → Moyenne puis → Basse à la course suivante
-    VERIFIE(echelleScene(MOYENNE, 1) == 1.f && echelleScene(BASSE, 1) == 1.f && echelleScene(BASSE, 0.6f) == 1.f, "chauffe : Haute gardée à 100 %%");
+    VERIFIE(echelleScene(MOYENNE, 1) == 1.f && echelleScene(BASSE, 1) == 1.f && echelleScene(BASSE, 0.6f) == echelleScene(HAUTE, 0.6f), "chauffe : Haute gardée à 100 %%");
     oublierRetenus(); retenuAuto = MOYENNE;   // rétrogradation automatique Moyenne → Basse
-    VERIFIE(std::abs(echelleScene(BASSE, 0.6f) - 0.9f) < 1e-6f && echelleScene(BASSE, 1) == 1.f, "rétrogradation : plancher de la Moyenne gardé");
+    VERIFIE(echelleScene(BASSE, 0.8f) == echelleScene(MOYENNE, 0.8f) && echelleScene(BASSE, 1) == 1.f, "rétrogradation : échelle de la Moyenne gardée");
     retenuChauffe = HAUTE; VERIFIE(niveauNettete(BASSE) == HAUTE, "deux baisses : la plus haute netteté");
     oublierRetenus(); VERIFIE(echelleScene(BASSE, 1) == 0.75f, "choix du joueur : retenus oubliés");
     // la chauffe simulée de bout en bout (Regulateur de WFS-123 non lié ici) : aucune échelle sous le plancher du joueur
     bool jamaisSous = true;
     for (int choisi = BASSE; choisi <= HAUTE; choisi++) for (int q = BASSE; q <= choisi; q++) for (float d = 0.6f; d <= 1.0001f; d += 0.1f) {
         retenuChauffe = q < choisi ? choisi : -1;
-        jamaisSous = jamaisSous && echelleScene(q, d) >= plancher(choisi) - 1e-6f;
+        jamaisSous = jamaisSous && std::abs(echelleScene(q, d) - echelleScene(choisi, d)) < 1e-6f;   // WFS-246 : même échelle qu'au niveau choisi
     }
     oublierRetenus();
     VERIFIE(jamaisSous, "aucune baisse de résolution par la chauffe (WFS-134 RG-02)");
@@ -78,14 +91,11 @@ int main() {
     VERIFIE(l == "Rendu : Haute · 100 % · MSAA ×4 · 58 img/s · chauffe 0", "ligne « Rendu » (Haute)");
     VERIFIE(l2 == "Rendu : Basse · 75 % · MSAA ×4 · -- img/s · chauffe 2", "ligne « Rendu » (Basse, non mesuré)");
     std::printf("%s / %s : OK\n", l.c_str(), l2.c_str());
-    // téléphone lent : bloom coupé à 0,8, ombres à 0,6, rien à 0,9 ; Basse : ni bloom ni ombres
-    const Allegement a1 = allegement(HAUTE, 0.9f), a8 = allegement(HAUTE, 0.8f), a6 = allegement(MOYENNE, 0.6f), aB = allegement(BASSE, 1);
-    VERIFIE(a1.bloom && a1.ombres && !a8.bloom && a8.ombres && !a6.bloom && !a6.ombres && !aB.bloom && !aB.ombres, "allègement");
-    std::printf("allègement : bloom coupé à 0,8, ombres à 0,6, résolution intacte : OK\n");
-    // WFS-222 (RG-03) : au plancher, reflets et captures d'environnement coupés à tous les niveaux (Basse comprise)
-    const Allegement b6 = allegement(BASSE, 0.6f), b7 = allegement(BASSE, 0.7f), h6 = allegement(HAUTE, 0.6f);
-    VERIFIE(!b6.reflets && !b6.captures && b7.reflets && b7.captures && !h6.reflets && !h6.captures && a1.reflets && a8.captures, "allègement WFS-222");
-    std::printf("allègement (WFS-222) : reflets et captures coupés au plancher, Basse comprise : OK\n");
+    // WFS-246 : allègement par paliers, après la résolution : 1 = bloom, reflets, captures ; 2 = + ombres ; Basse : ni bloom ni ombres
+    const Allegement a0 = allegement(HAUTE, 0), a1 = allegement(HAUTE, 1), a2 = allegement(MOYENNE, 2), aB = allegement(BASSE, 0), b1 = allegement(BASSE, 1);
+    VERIFIE(a0.bloom && a0.ombres && a0.reflets && a0.captures && !a1.bloom && a1.ombres && !a1.reflets && !a1.captures, "allègement palier 1");
+    VERIFIE(!a2.bloom && !a2.ombres && !a2.reflets && !a2.captures && !aB.bloom && !aB.ombres && aB.reflets && aB.captures && !b1.reflets && !b1.captures, "allègement palier 2, Basse");
+    std::printf("allègement (WFS-246) : palier 1 bloom / reflets / captures, palier 2 ombres, Basse sans bloom ni ombres : OK\n");
 
     // WFS-144 (RG-04) : Basse à MSAA ×2 et anisotrope ×4 ; Moyenne / Haute inchangées ; netteté retenue ; GPU sans ×2 ou sans MSAA
     oublierRetenus();

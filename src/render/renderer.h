@@ -180,6 +180,8 @@ public:
     // (enregistrement des passes et envoi) et triangles de la dernière image ; mesure seule, aucun effet sur le rendu
     struct ChronoImage { double attenteGpuMs = 0, finImageMs = 0; uint32_t triangles = 0; };
     const ChronoImage& chronoImage() const { return chronoPrec_; }
+    // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
+    double gpuImageMs() const { return gpuImageMs_; }
     // objets en file pour la passe de scène (vus par la caméra) : appels et triangles, comptés par système au banc
     void fileScene(uint32_t& appels, uint32_t& triangles) const {
         appels = triangles = 0;
@@ -288,6 +290,7 @@ private:
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
+    double gpuImageMs_ = -1;   // WFS-246
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     // WFS-09 / WFS-16 : lumières de nuit et reflets
