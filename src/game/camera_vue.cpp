@@ -185,9 +185,9 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         eyeL = {0.f, d.H * 0.84f, -d.L * 0.24f}; lookL = {0.f, d.H * 0.72f, -d.L * 0.24f - 30.f};
     }
     const vec3 eT = carM.transformPoint(eyeL), lT = carM.transformPoint(lookL);
-    // WFS-235 (RG-02) : cockpit : champ HORIZONTAL de 85° (vertical selon la forme de l'écran) ; capot : champ de configgame.json
-    const float fovT = V.cockpit ? fovVerticalDepuisHorizontal(fovHorizontalCockpit(pl.speed / MAX_SPEED, pl.nitroOn), g_aspect)
-                                 : fovVue(g_vue, pl.speed / MAX_SPEED, pl.nitroOn);
+    // WFS-282 (RG-00, ANO-152) : cockpit et capot : champ de configgame.json (cockpit : 72° en hauteur). Le champ horizontal de
+    // 85° de WFS-235 (≈ 46° en hauteur sur 2340 × 1080) grossissait tout l'intérieur ≈ 1,7 fois et mangeait la rue
+    const float fovT = fovVue(g_vue, pl.speed / MAX_SPEED, pl.nitroOn);
     if (!g_suivi.init || g_suivi.vue != g_vue || length(g_suivi.eye - eT) > 25.f) {
         g_suivi = {true, g_vue, eT, lT, fovT};
         g_ck.volant = volantCible(pl.steer);
@@ -300,7 +300,7 @@ public:
         const cockpit::InterieurDef* idef = g.car ? cockpit::interieurPour(g.car->id) : nullptr;
         if (idef != interieur_.def()) {
             if (interieur_.pret()) interieur_.detruire(r);
-            if (idef) interieur_.construire(r, *idef, g.car ? g.car->d.H : 0.f);   // WFS-235 : ciel de toit à la hauteur de la voiture
+            if (idef) interieur_.construire(r, *idef);   // WFS-282 (RG-00) : intérieur d'avant WFS-235
         }
         if (interieur_.pret() && g.player && g.track) { dessinerInterieur(r, g, cam, ck); return; }
         r.draw(statique_, sombre_, cam);

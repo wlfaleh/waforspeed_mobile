@@ -8,8 +8,8 @@
 
 namespace wfs::cockpit {
 
-bool g_interieurCle = false;   // WFS-235 (RG-05) : voir vehicule_cockpit.h
-float g_refletPlanche = 0.005f;   // WFS-235 (RG-04) : voir vehicule_cockpit.h (banc : 0,02 donnait + 6 à 9 % au pied du pare-brise)
+bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
+const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
 
 // définitions par modèle (DEFS, interieurPour) : vehicule_cockpit_defs.cpp (sans rendu : testées par tests/test_cockpit.cpp)
 
@@ -161,7 +161,7 @@ std::vector<uint8_t> grainCuir(int N) {
 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_MIROIR, M_MIROIR_NUIT, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -238,7 +238,7 @@ void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_
     v.clear(); i.clear();
 }
 
-bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoiture) {
+bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     detruire(r);
     def_ = &d; octets_ = 0;
     // matériaux (valeurs physiques : charte du réel, DA-realisme.md ; cuir albédo 0,04-0,12, rugosité 0,55-0,75)
@@ -248,15 +248,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoit
         octets_ += px.size();
     }
     mats_.assign(M_N, Material{});
-    // WFS-235 (RG-04) : albédo linéaire minimal (luminance) de chaque garniture, d'après l'avis d'expert-realisme-3d
-    // (références : noir de la ColorChecker 0,031, pneu 0,023, references/reel/) : sous ces valeurs, une pièce noire ne
-    // montre plus que le reflet du ciel et se lit comme un trou (les « bandes noires ») ; teinte gardée
-    auto auMoins = [](vec3 l, float yMin) {
-        const float y = 0.2126f * l.x + 0.7152f * l.y + 0.0722f * l.z;
-        return y >= yMin ? l : y > 1e-5f ? l * (yMin / y) : vec3{yMin, yMin, yMin};
-    };
-    auto mat = [&](int k, unsigned c, float rough, float metal, bool grain = false, float yMin = 0) {
-        Material m; const vec3 l = auMoins(lin(c), yMin); m.color = {l.x, l.y, l.z, 1}; m.rough = rough; m.metal = metal;
+    auto mat = [&](int k, unsigned c, float rough, float metal, bool grain = false) {
+        Material m; const vec3 l = lin(c); m.color = {l.x, l.y, l.z, 1}; m.rough = rough; m.metal = metal;
         mats_[(size_t)k] = r.makeMaterial(m, nullptr, grain && grain_.view ? &grain_ : nullptr, nullptr);
     };
     auto ecran = [&](int k, unsigned c, float force) {
@@ -270,18 +263,10 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoit
         m.color = {l.x, l.y, l.z, 1}; m.rough = 0.65f; m.metal = 0;
         mats_[M_CUIR] = r.makeMaterial(m, nullptr, grain_.view ? &grain_ : nullptr, nullptr);
     }
-    mat(M_PLANCHE_HAUT, d.plancheHaut, 0.70f, 0, true, 0.045f);   // haut de planche : cuir ou matière moussée grainée (≥ 0,045)
-    mat(M_PLANCHE_BAS, d.plancheBas, 0.80f, 0, true, 0.040f);     // plastique dur grainé, aucun reflet métallique (≥ 0,040)
-    // accents : alu brossé (métal 1) à F0 ≈ 0,91 (mat.aluminium 0,916 ; 0x8f9398 donnait 0,27 : un métal sombre) ; carbone
-    // verni, noir laqué ; WFS-235 : aucune couleur d'accent non métallique sous 0,03 par canal (liseré rouge de la Golf)
-    {
-        Material m; vec3 l = lin(d.accent);
-        if (d.accentMetal > 0.5f) l = auMoins(l, 0.90f);
-        else l = {std::max(l.x, 0.03f), std::max(l.y, 0.03f), std::max(l.z, 0.03f)};
-        m.color = {l.x, l.y, l.z, 1}; m.rough = d.accentRugo; m.metal = d.accentMetal;
-        mats_[M_ACCENT] = r.makeMaterial(m, nullptr, nullptr, nullptr);
-    }
-    mat(M_LAQUE, 0x0a0a0b, 0.05f, 0, false, 0.012f);         // noir laqué des cadres d'écran, rétroviseur (≥ 0,012)
+    mat(M_PLANCHE_HAUT, d.plancheHaut, 0.72f, 0, true);    // haut de planche : cuir ou matière moussée grainée
+    mat(M_PLANCHE_BAS, d.plancheBas, 0.85f, 0, true);      // plastique grainé (aucun reflet métallique)
+    mat(M_ACCENT, d.accent, d.accentRugo, d.accentMetal);   // alu brossé (métal 1), carbone verni (0,3), noir laqué
+    mat(M_LAQUE, 0x0a0a0b, 0.12f, 0);                       // noir laqué des cadres d'écran, rétroviseur
     mat(M_BRANCHES, d.branchesCol, d.branchesCol > 0x505050 ? 0.35f : 0.3f, d.branchesCol > 0x505050 ? 1.f : 0.f);
     for (int k = 0; k < 3; k++) mat(M_COUTURE0 + k, d.couture[k] ? d.couture[k] : 0x202020, 0.7f, 0);
     // repères et commandes rouges (manettino, démarreur, boutons M, agrafe GTI) : plastique rouge satiné, teinte assombrie de
@@ -290,20 +275,14 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoit
         const unsigned c = d.repereCol ? d.repereCol : 0x202020;
         mat(M_REPERE, ((((c >> 16) & 255) / 2) << 16) | ((((c >> 8) & 255) / 2) << 8) | ((c & 255) / 2), 0.7f, 0);
     }
-    mat(M_MOYEU, 0x1c1c1e, 0.85f, 0, false, 0.040f);       // coussin du sac gonflable : plastique moussé (pièce sans uv : pas de grain)
+    mat(M_MOYEU, 0x1c1c1e, 0.85f, 0);                       // coussin du sac gonflable : plastique moussé (pièce sans uv : pas de grain)
     // enjoliveurs des aérateurs : chrome satiné (mat.chrome, albédo 0,65-0,70) ; alu brossé sur la 911
-    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f, false, 0.90f); else mat(M_CHROME, 0xd2d6da, 0.18f, 1.f);
+    if (d.accentMetal > 0.5f) mat(M_CHROME, d.accent, 0.35f, 1.f); else mat(M_CHROME, 0xd2d6da, 0.18f, 1.f);
     ecran(M_FOND_COMBINE, d.combineFond, 1.0f);
     ecran(M_FOND_ECRAN, 0x1b2430, 1.0f);
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
-    mat(M_LAMES, 0x0a0a0a, 0.8f, 0, false, 0.030f);          // lames des aérateurs (≥ 0,030)
-    mat(M_PAVILLON, 0x26272a, 0.95f, 0, false, 0.040f);      // ciel de toit et montants : tissu anthracite (≥ 0,040)
-    // WFS-235 (RG-02) : zone de la lunette dans la glace du rétroviseur : miroir argenté presque lisse : il montre le ciel et la
-    // rue de l'éclairage d'ambiance au lieu d'un pavé noir
-    mat(M_MIROIR, 0xcbcbcb, 0.03f, 1.f);   // F0 ≈ 0,60 (0,8 × transmission 0,75 d'une lunette claire)
-    // la nuit, la rue derrière est noire (seuls les phares qui suivent brilleraient) : la sonde d'ambiance, éclairée par les
-    // lampadaires et les vitrines, faisait de la glace un pavé blanc ; F0 0,08 (position « nuit » d'un rétroviseur, ≈ 4 à 10 %)
-    mat(M_MIROIR_NUIT, 0x515151, 0.03f, 1.f);
+    mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
+    mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
     std::vector<Vertex> v; std::vector<uint32_t> i;
     auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
@@ -353,39 +332,19 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoit
         prend(con, M_PLANCHE_BAS); prend(sel, M_ACCENT);
     }
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
-    // WFS-235 (RG-02, arbitrage du PO du 2026-11-07 : vraie géométrie, avis d'expert-realisme-3d) : bord bas du ciel de toit
-    // (haut du pare-brise) à 55 % de la garde au toit au-dessus de l'œil (Golf +0,17), sur la pente du pare-brise de la Golf
-    // (33°), vu à 12° au moins au-dessus de l'horizontale (10° : Gallardo, SF90 ; toitAuDessusOeil, toitDevantOeil) ; montants
-    // de la garniture de 65 mm (4,5 à 6° à l'horizon : largeur vue des deux yeux, UN R125) du coin bas du pare-brise
-    // (± 0,74 m du milieu) au coin haut (± 0,62 m) ; ciel de toit fermé jusqu'à 1,2 m derrière l'œil (il fait l'ombre du toit
-    // sur la planche) ; avant : pavillon et haut des montants à +0,40 m, hors de l'image, montants tout droits devant l'œil
     {
         Geo mont, pav, ret, porte;
-        const float yToit = toitAuDessusOeil(d, hauteurVoiture), zToit = toitDevantOeil(d, yToit);
-        yToit_ = yToit; zToit_ = zToit;
-        const vec3 bas[2] = {{CX - 0.74f, Yb, Zb}, {CX + 0.74f, Yb, Zb}};
-        const vec3 haut[2] = {{CX - 0.62f, yToit - 0.01f, zToit + 0.02f}, {CX + 0.62f, yToit - 0.01f, zToit + 0.02f}};
-        for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.065f, 0.035f);
-        boite(pav, translate({CX, yToit + 0.02f, (zToit + 1.2f) * 0.5f}), 1.40f, 0.04f, 1.2f - zToit);
-        // rétroviseur intérieur (taille et hauteur par modèle : pavillonPour ; Golf : coque 262 × 80 mm, glace 250 × 70, centre
-        // 7,5 cm sous le ciel de toit) au milieu de la voiture, au bord du pare-brise, tourné de 17° vers le conducteur (moitié de
-        // l'angle œil → glace) et incliné de 5° vers le bas (avis d'expert) ; coque noire, pied fixé au ciel de toit ; glace
-        // sombre (F0 0,04 : appuie-têtes, banquette, montants) et zone de la lunette (12 à 60 % de la hauteur, 10 % de marge)
-        // argentée à 0,8 × la transmission d'une lunette claire (0,75) = 0,60
-        const PavillonDef pv = pavillonPour(d.car);
-        const float gl = pv.retroL - 0.012f, gh = pv.retroH - 0.010f;   // glace : coque moins son bord
-        const mat4 R = translate({CX, yToit - pv.retroDescente, zToit}) * rotateY(-0.30f) * rotateX(0.087f);
-        boite(ret, R * translate({0, 0, -0.012f}), pv.retroL, pv.retroH, 0.024f);
-        boite(ret, translate({CX, yToit - 0.015f, zToit + 0.01f}), 0.022f, 0.04f, 0.02f);
-        Geo glace, lunette;
-        plan(glace, R * translate({0, 0, 0.0005f}), gl, gh);
-        plan(lunette, R * translate({0, (0.36f - 0.5f) * gh, 0.0010f}), gl * 0.8f, gh * 0.48f);
-        prend(glace, M_LAQUE); prend(lunette, M_MIROIR);
-        // contre-portes (avis d'expert, Golf) : garniture à 0,36 m à gauche de l'œil, bas de la vitre à 0,27 m sous l'œil (la rue
-        // se voit au-dessus) ; accoudoir et poignée (place du conducteur et du passager)
+        const vec3 bas[2] = {{CX - 0.72f, Yb, Zb}, {CX + 0.72f, Yb, Zb}};
+        const vec3 haut[2] = {{CX - 0.62f, 0.40f, -0.42f}, {CX + 0.62f, 0.40f, -0.42f}};
+        for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
+        boite(pav, translate({CX, 0.43f, -0.28f}), 1.40f, 0.04f, 0.32f);
+        // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
+        boite(ret, translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f), 0.24f, 0.065f, 0.025f);
+        boite(ret, translate({CX - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
+        // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
         for (float sx : {-1.f, 1.f}) {
-            const float x = CX + sx * 0.75f, haut = std::min(Y - 0.01f, -0.27f), bas2 = Y - 0.63f;
-            boite(porte, translate({x, (haut + bas2) * 0.5f, -0.30f}), 0.06f, haut - bas2, 1.30f);
+            const float x = CX + sx * 0.80f;
+            boite(porte, translate({x, Y - 0.32f, -0.30f}), 0.06f, 0.62f, 1.30f);
             boite(porte, translate({x - sx * 0.04f, Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);
         }
         prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(porte, M_PLANCHE_BAS);
@@ -469,10 +428,8 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d, float hauteurVoit
     auto emis = [&](unsigned c, float f) { Material m; m.color = {0, 0, 0, 1}; m.rough = 0.2f; m.emissive = lin(c) * f; return r.makeMaterial(m, nullptr, nullptr, nullptr); };
     const unsigned cols[D_N] = {d.combineActif, 0x2c3440, d.combineAlerte, 0xc8d0da, 0xff6a00};
     for (int k = 0; k < D_N; k++) { dynMat_[k] = emis(cols[k], 1.0f); dynNuit_[k] = emis(cols[k], 0.45f); }   // nuit : moins lumineux, jamais éblouissant
-    { Material h; h.flags = MAT_ADD | MAT_BLEND; refletMat_ = r.makeMaterial(h, nullptr, nullptr, nullptr); }   // WFS-235 (RG-04)
-    { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {16, 0, 16}; cleMat_ = r.makeMaterial(c, nullptr, nullptr, nullptr); }   // WFS-235 (RG-05)
-    WFS_LOG("cockpit (WFS-197) : intérieur %s construit : %zu pièces, %.2f Mo ; haut du pare-brise à %+.2f / %+.2f m de l'œil (WFS-235)", d.car,
-            pieces_.size(), octets_ / 1048576.0, yToit_, zToit_);
+    { Material c; c.color = {0, 0, 0, 1}; c.rough = 1; c.emissive = {16, 0, 16}; cleMat_ = r.makeMaterial(c, nullptr, nullptr, nullptr); }   // banc (WFS-235, RG-05)
+    WFS_LOG("cockpit (WFS-197) : intérieur %s construit : %zu pièces, %.2f Mo", d.car, pieces_.size(), octets_ / 1048576.0);
     return true;
 }
 
@@ -488,8 +445,6 @@ void Interieur::detruire(Renderer& r) {
     for (int k = 0; k < D_N; k++) { r.destroy(dyn_[k]); r.destroy(dynMat_[k]); r.destroy(dynNuit_[k]); dyn_[k] = {}; dynMat_[k] = dynNuit_[k] = {}; }
     for (Mesh& m : bras_) m = {};
     brasMat_ = {};
-    if (refletMat_.set) r.destroy(refletMat_);   // WFS-235
-    refletMat_ = {};
     if (cleMat_.set) r.destroy(cleMat_);
     cleMat_ = {};
     if (grain_.view) r.vk().destroy(grain_);
@@ -647,8 +602,6 @@ void Interieur::dessinerCarte(Renderer& r, const mat4& cam, const std::vector<ve
     }
 }
 
-const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
-
 void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, const std::vector<vec2>& route, vec2 joueur, double cap) {
     if (!def_) return;
     const InterieurDef& d = *def_;
@@ -657,25 +610,11 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        if (m == M_MIROIR && e.v.nuit) m = M_MIROIR_NUIT;   // WFS-235
         r.draw(p.m, mat(mats_[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
-    }
-    // WFS-235 (RG-04) : reflet de la planche dans le pare-brise, de jour : quad additif dans le plan du verre, 5 mm devant lui,
-    // du pied jusqu'à 40 % de sa hauteur, de CX − 0,60 à CX + 0,60 ; dégradé du halo (eclairage.glsl) : uv (0,5 ; 0,5) en bas
-    // = 1, (0,5 ; 1) en haut = 0 ; couleur (portée par la normale) gris neutre de la planche ; la nuit : rien (planche sombre)
-    if (!e.v.nuit && g_refletPlanche > 0 && refletMat_.set) {
-        const vec3 base{0, d.pareBriseY, d.pareBriseZ}, haut{0, yToit_, zToit_};
-        const vec3 eu = normalize(haut - base), en = normalize(cross(vec3{1, 0, 0}, eu));   // en : vers l'œil
-        const float L = length(haut - base) * 0.40f, k = g_refletPlanche;
-        auto pt = [&](float x, float t) { return cam.transformPoint(vec3{x, base.y, base.z} + eu * t + en * 0.005f); };
-        const vec3 a = pt(CX - 0.60f, 0), b = pt(CX + 0.60f, 0), c = pt(CX + 0.60f, L), q = pt(CX - 0.60f, L);
-        const Vertex v[4] = {{a.x, a.y, a.z, k, k, k, 0.5f, 0.5f}, {b.x, b.y, b.z, k, k, k, 0.5f, 0.5f},
-                             {c.x, c.y, c.z, k, k, k, 0.5f, 1.f}, {q.x, q.y, q.z, k, k, k, 0.5f, 1.f}};
-        r.drawQuads(v, 1, refletMat_); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {
-        const vec3 base{CX, d.pareBriseY - 0.01f, d.pareBriseZ}, haut{CX, yToit_, zToit_};   // WFS-235 : plan du vrai pare-brise
+        const vec3 base{CX, d.pareBriseY - 0.01f, d.pareBriseZ}, haut{CX, 0.40f, -0.42f};
         const vec3 ex{1, 0, 0}, eu = normalize(haut - base), en = cross(ex, eu);
         auto repere = [&](vec3 o, float sens) {   // sens +1 : repos vers la droite, tourne vers le haut ; −1 : en miroir
             mat4 B = mat4::identity();
