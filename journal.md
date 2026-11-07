@@ -4240,3 +4240,48 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:18:08 — VABF : émulateur des bancs du matin (run 42414202799) analysé, ANO-125 et ANO-126 (agent qa lead)
 - APK 0.1.883 sur émulateur Android 14 : aucun plantage, menu correct ; ANR après « Course solo » (ANO-125, majeure) ; moteur rechargé une 2e fois dans le même processus (ANO-126, majeure). Deux défauts de l’outil `emulateur.sh` (lecteur logcat de l’essai 1 qui écrit encore → octets nuls ; délai de 60 s trop court) relevés pour l’expert CI. Rapport `qa/rapports/VABF-2026-11-07.md`.
+
+### 2026-11-07 22:20:07 — WFS-235 refusé : ANO-152, WFS-282 à Claude, agent 2, avis de l'expert conduite (po-scrum-master)
+- Ordre de l'utilisateur : régler la vue cockpit, remettre la planche de bord et la carrosserie, suivre l'avis de l'expert conduite (écrit dans WFS-282 : champ 85° trop serré, pièces descendues, regard à l'arrêt, aplats noirs de nuit). Règle des KO : pas arwa-2.
+
+### 2026-11-07 22:23:58 — VABF : recette de tout le jeu sur l’APK 883 (c9eda61), ANO-155 à ANO-157 ; ANO-125/126 du QA renumérotées ANO-153/154 (agent qa lead)
+- Demande de l’agent expert CI (pour l’utilisateur) : 155 captures de la Release `apercu` des bancs du matin regardées. Tout le jeu s’affiche et se parcourt ; départ de la Course à 5, nuit en campagne et lignes du nitro corrigés à l’image. Nouvelles mineures : ANO-155 (« Folg Folg 8 » au salon), ANO-156 (bouton Fermer au milieu des Réglages), ANO-157 (duel à 4 : temps à 0). **Correction** : mes ANO-125 et ANO-126 de 22:18 doublaient des numéros déjà pris ; elles deviennent ANO-153 et ANO-154. Verdict de la campagne : NON APTE (ANO-113, ANO-151 bloquantes ouvertes).
+
+### 2026-11-07 22:24:28 — WFS-278 : acoustique des lieux (2) en PR #240, revue du lead dev demandée (arwa-4)
+- **RG-01, absorption sourcée** : j'ai relu deux sources sur GitHub, par clone partiel en lecture seule dans `/tmp`, sans rien exécuter ; seuls les nombres sont repris.
+  - α : `LCAV/pyroomacoustics` (MIT), commit 08d16968f8db414affaf84771a650358a7961446, fichier `pyroomacoustics/data/materials.json`, SHA-256 1249f0cfdcd4598cf98ec9be05230f910e53aa1da4861d7fe3f88de23a24e0e0. Les valeurs viennent de l'annexe de M. Vorländer, *Auralization* (Springer, 2008).
+  - **Avant / après, à 1 kHz** : 0,05 partout (non sourcé, −0,22 dB par réflexion) devient 0,03 pour les surfaces dures, le béton brut et le vitrage (−0,13 dB), et 0,04 pour le calcaire, le casino et l'église (−0,18 dB). L'écho est donc plus fort de 0,04 à 0,09 dB à l'ordre 1, et de 0,27 dB au plus à l'ordre 3. Chaque paroi porte maintenant son matériau.
+- **RG-04, diffraction multiple** : `genell/Cnossos-EU-SWE` (copie du logiciel CNOSSOS-EU du CSTB, licence de l'UE « licence.EU.txt »), commit 8b6fe41ab6229cb7da0edb318b5f860600326e17, fichier `CNOSSOS-EU Task 2 - distrib 12-05-2014/PropagationPath/ISO-9613-2.cpp`, SHA-256 8128ecad9d18867ccbd14314d2fed676e5084234504823d8e2ec8e6ee2f01697.
+  - Formule (ISO 9613-2, éq. 14) : C3 = (1 + (5λ/e)²) / (1/3 + (5λ/e)²), plafonds 20 dB (une arête) et 25 dB (plusieurs).
+  - Chemin tendu par-dessus ou autour de tous les obstacles traversés. Les obstacles accolés (à moins de 1 m) forment un groupe dont on fait le tour : sans cela, le son passerait à travers le morceau voisin d'une même roche.
+  - Un obstacle seul et isolé garde la diffraction simple de WFS-275, à l'identique.
+  - Trace dans `references/reel/son/absorption-parois.md`.
+- **RG-02** : façades des lieux de WFS-176 aux distances et hauteurs de leur dessin dans `ville.cpp`, lues sans rien modifier. Elles sont aussi des obstacles des masques de la Ville.
+  - casino : RW + 12, 14,5 m, pierre ;
+  - centre commercial : RW + 31, 12 m, verre ;
+  - garages : RW + 6,5, 6 m.
+  Le centre commercial n'est entendu que si la tête est à moins de 40 m de sa façade (portée de WFS-275), c'est-à-dire sur l'axe ou la voie de gauche.
+- **RG-03, obstacles des 3 cartes**, profondeur ajoutée aux appels de WFS-275 :
+  - Corniche : roche jusqu'au bout de la garrigue (RW + 90), sans dépasser `bordSol` (0,9 fois le rayon intérieur, ou la mi-distance de la branche suivante), 3,5 m au moins. Mesuré : 254 obstacles, profondeur de 7,0 à 85,4 m (moyenne 36,2), hauteur de 4,0 à 18,1 m.
+  - Campagne : 138 obstacles, profondeur de 8 à 11 m.
+  - Grand Prix : 240 obstacles, profondeur de 0,4 à 12 m.
+  - Ville : 625.
+- **Accroches** (annoncées ici, ≤ 10 lignes par carte, rien changé au décor) : `plage.cpp` (5 lignes ajoutées, 2 retirées : profondeur et matériau de la roche et des villas), `campagne.cpp` (2 ajoutées, 1 retirée), `circuit.cpp` (2 ajoutées, 1 retirée). `ville.cpp` n'est pas touché.
+- **Vérifié** :
+  - 61 tests CPU OK. `test_audio_parois` compte 20 cas de plus.
+  - Échos : casino à 5 458 échantillons pour 5 457,7 attendus, −28,58 dB pour −28,58 ; centre commercial à 10 776 pour 10 775,5, −34,45 dB pour −34,45 ; 16 dB du bon côté.
+  - Masques : maison frôlée 14,90 dB pour 14,90 ; deux toits 5,94 dB pour 5,94 ; plafonds 20 et 25 dB tenus.
+  - Coût des masques : 0,065 ms par pas (13 sources, 49 obstacles).
+  - Banc audio : `parois-casino` (délais mesurés 81,6, 113,7 et 224,5 ms), `masque-corniche`, `masque-campagne` (3 retours à l'air libre dans les ruelles), `masque-stands`.
+  - Essai local des 4 cartes en Course à 5 : voix masquées vues (Corniche jusqu'à 24,6 dB, Campagne 23,8 dB).
+  - Bancs locaux : parcours complet 0 écart, vue Cockpit 0 écart ; Course à 5 0 écart ; Poursuite 0 écart, redémarrage compris. La fin de `course5` (rejouer) n'a pas fini : la session a été coupée.
+- **Nouveau processus** : pas de fusion par moi. Captures avant / après en cours (`tools/qa/captures_pr.sh WFS-278 partie2a`), puis appel du `lead-dev` sur la PR #240.
+- **Limites** :
+  - Un masque de 4,8 dB apparaît dès que la ligne frôle un obstacle : c'est la formule de WFS-275, D(0) = 10·lg 3.
+  - Rien n'a été écouté sur un vrai téléphone.
+
+### 2026-11-07 22:28:55 — WFS-268 rouvert pour Claude, agent 5 : recette KO par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur transmis par l'agent 5 : « On doit faire mieux pour ville et corniche tu peux supprimer -50% des personnes dans la rue et préparer dans le changement de map tous les détails, on laisse que la caméra et les voitures roulent », puis « Non c'est le même sujet, recette KO, tu dois continuer les travaux et dis ça au PO ».
+- Exception de l'utilisateur à la règle « KO → nouvelle US, autre développeur » : WFS-268 repasse 🔧 En cours, même développeur, même branche `feature/waforspeed-268` ; 🟡 après la nouvelle fusion.
+- Règles ajoutées (`regles-de-gestion/WFS-268.md`) : RG-07 (−50 % de personnes, tirage stable, Ville et Corniche), RG-08 (kit, commerces, lieux, feux préparés au chargement, 0 maillage créé en course), RG-09 (≤ 120 Mo GPU de contenu fixe par carte, alerte au PO à 100 Mo), RG-10 (preuves).
+- Zone élargie : `archi_carte.*`, `commerces.cpp`, nombre de personnes seulement dans `pietons.cpp` / `foule_apparition.h` (personne n'y travaille : WFS-257 🟡 fusionné, WFS-266 non attribué). Trafic exclu (WFS-281, WFS-232).
