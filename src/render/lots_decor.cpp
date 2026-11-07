@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../game/track.h"
@@ -34,6 +35,13 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
     });
     // regroupement : bloc de blocChunks morceaux, un maillage par matériau et par niveau de détail
     const int64_t B = std::max(1, blocChunks);
+    {   // journal : sommets par matériau (détail / allégé), pour suivre le coût mémoire
+        std::array<size_t, MAX_PARTS> nd{}, nl{};
+        for (size_t k = 0; k < cpu.size(); k++) for (int p = 0; p < parts_; p++) ((k & 1) ? nl : nd)[(size_t)p] += cpu[k].v[(size_t)p].size();
+        std::string txt;
+        for (int p = 0; p < parts_; p++) if (nd[(size_t)p] + nl[(size_t)p]) txt += " " + std::to_string(p) + ":" + std::to_string(nd[(size_t)p] / 1000) + "k/" + std::to_string(nl[(size_t)p] / 1000) + "k";
+        WFS_LOG("décor fixe (WFS-268) : %s : sommets par matériau (détail/allégé) :%s", nom, txt.c_str());
+    }
     std::vector<Vertex> vv; std::vector<uint32_t> ii;
     for (int64_t c0 = 0; c0 < nChunks; c0 += B) {
         Bloc bl; bl.s0 = c0 * CH; bl.s1 = std::min(L_, (c0 + B) * CH);

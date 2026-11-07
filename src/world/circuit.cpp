@@ -94,6 +94,7 @@ public:
         if (night_) mats_[P_TEXTE0 + 1] = atlas_.materiau(r, LETTRES[1], 1.4f, SEUIL_PANNEAUX);
         for (int k = 0; k < 4; k++) ad_[k] = atlas_.texte(AD_TEXTS[k]);
         for (int k = 0; k < 8; k++) tx_[k] = atlas_.texte(TEXTES[k]);
+        preparerDecor(r);   // WFS-268 (accroche) : décor fixe préparé ici, une fois les panneaux prêts
     }
 
 protected:

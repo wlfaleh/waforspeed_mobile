@@ -46,7 +46,7 @@ public:
     int64_t tourDe(int64_t a) const { return L_ <= 0 ? 0 : (a >= 0 ? a / L_ : -((-a + L_ - 1) / L_)); }
     const mat4& matrice(Track& t, int64_t k) { return matriceTour(t, k); }
 
-    // blocs de la fenêtre [aP − arriere, aP + avant] (segments absolus) ; lodLoinM : au-delà, version allégée.
+    // blocs de la fenêtre [aP − arriere, aP + avant] (segments absolus) ; lodLoinM : bloc entièrement au-delà → version allégée.
     // dessin(part, maillage, monde) est appelé pour chaque maillage non vide ; rend le nombre d'appels. N'alloue rien.
     template <class F> int dessiner(Track& t, int64_t aP, int64_t arriere, int64_t avant, double lodLoinM, F&& dessin);
 
@@ -90,8 +90,10 @@ template <class F> int DecorFixe::dessiner(Track& t, int64_t aP, int64_t arriere
         const mat4& M = matriceTour(t, k);
         for (const Bloc& b : blocs_) {
             if (b.s1 + base <= s0 || b.s0 + base > s1) continue;
-            const int64_t mil = base + (b.s0 + b.s1) / 2;
-            const bool lod = segmentsVersMetres(mil > aP ? mil - aP : aP - mil) > lodLoinM;
+            // détail si le point du bloc le plus proche du joueur est à moins de lodLoinM : jamais moins détaillé que les
+            // morceaux d'avant (choisis morceau par morceau), un peu plus au loin dans le bloc de la limite
+            const int64_t a0 = b.s0 + base, a1 = b.s1 + base, proche = aP < a0 ? a0 - aP : aP >= a1 ? aP - a1 + 1 : 0;
+            const bool lod = segmentsVersMetres(proche) > lodLoinM;
             for (int p = 0; p < parts_; p++) if (b.m[lod][(size_t)p].indexCount) { dessin(p, b.m[lod][(size_t)p], M); n++; }
         }
     }

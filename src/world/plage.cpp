@@ -499,7 +499,7 @@ public:
         initEtabs(r, *g.track);   // WFS-181
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = len_;
-            lots_.preparer(r, *g.track, P_COUNT, 4, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
+            lots_.preparer(r, *g.track, P_COUNT, 3, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {   // 3 morceaux (115 m) : débord au bout de la fenêtre ≤ 2 morceaux (mer dégagée)
                 Geo out[P_COUNT];
                 buildChunk(*g.track, c, lod, out);
                 for (int p = 0; p < P_COUNT; p++) { v[p] = std::move(out[p].v); i[p] = std::move(out[p].i); }

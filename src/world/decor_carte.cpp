@@ -220,15 +220,7 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
     size_t nb = 0; for (auto& v : items_) nb += v.size();
     WFS_LOG("Carte %s : %zu objets de décor, %zu zones", carteId(), nb, ranges.size());
     WFS_LOG("Carte %s : %s%s", carteId(), night_ ? "nuit" : "jour", depart_ ? " (départ avancé, banc d'essai)" : "");
-    if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
-        limiteTour_ = L;
-        lots_.preparer(r, *track_, P_COUNT, 4, [this](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
-            Geo out[P_COUNT];
-            buildChunk(*track_, c, lod, out);
-            for (int p = 0; p < P_COUNT; p++) { v[p] = std::move(out[p].v); i[p] = std::move(out[p].i); }
-        }, carteId());
-        limiteTour_ = INT64_MAX;
-    }
+    lotsTente_ = false;   // WFS-268 : décor fixe préparé à la fin de l'init de la carte (preparerDecor), sinon à la première image
 }
 
 // WFS-256 (accroche) : objets communs : arbre (tronc de 25 à 30 cm de rayon ; cyprès 15 cm), lampadaire de village (mât de
@@ -436,9 +428,25 @@ bool CarteDecor::scene(FrameParams& fp, SceneDediee& sd, const GameView& g) {
     return true;
 }
 
+// WFS-268 : tout le décor fixe d'un tour, construit une fois (écran de chargement), envoyé au GPU une fois. Appelé par la carte
+// à la fin de son init (enseignes et panneaux prêts : buildChunk les lit) ; repli : première image (police absente…)
+void CarteDecor::preparerDecor(Renderer& r) {
+    if (!active_ || lotsTente_) return;
+    lotsTente_ = true;
+    if (!lots::g_lotsDecor || !LOTS_CARTES_SOCLE) return;
+    limiteTour_ = len();
+    lots_.preparer(r, *track_, P_COUNT, 4, [this](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
+        Geo out[P_COUNT];
+        buildChunk(*track_, c, lod, out);
+        for (int p = 0; p < P_COUNT; p++) { v[p] = std::move(out[p].v); i[p] = std::move(out[p].i); }
+    }, carteId());
+    limiteTour_ = INT64_MAX;
+}
+
 void CarteDecor::render(Renderer& r, const GameView& g) {
     if (!active_ || (g.sceneDediee && !g_vueCarte.actif)) return;
     frame_++;
+    preparerDecor(r);   // WFS-268 : repli (sans effet si déjà fait)
     Track& t = *g.track;
     const int64_t pc = (int64_t)std::floor(g.player->dist / SEG) / CH;
     for (auto it = chunks_.begin(); it != chunks_.end();) {
