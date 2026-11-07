@@ -41,6 +41,8 @@
 #include "vegetation.h"
 #include "ville_quartiers.h"
 #include "zones.h"
+#include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
+#include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 
 namespace wfs {
 namespace {
@@ -212,7 +214,7 @@ public:
                 mats_[P_FEN_CHAUD + k] = r.makeMaterial(m, nullptr, nullptr, nullptr);
             }
         }
-        { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // comme le trottoir de Game
+        { Material m; m.flags = MAT_WALK; m.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, m); }   // comme le trottoir de Game (WFS-205, accroche)
         initVegetation(r);
         plain(P_LAMP, {1.f, 0.95f, 0.85f}, 0.3f, 0.f, {0.6f, 0.55f, 0.45f});
         // couleurs unies : palette sRGB, éclairage du feuillage (MAT_VTINT, sans reflet), comme CarteDecor
@@ -449,7 +451,8 @@ public:
     void buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) const {
         const ville::Plan& P = *plan_;
         const int64_t L = (int64_t)P.objets.size(), a0 = c * CH, a1 = a0 + CH;
-        if (riv_.deb >= 0) solChunk(t, c, out[P_SOL]);   // WFS-175 : bas-côtés de Game, abaissés sous l'eau de la rivière
+        solChunk(t, c, out[P_SOL]);   // WFS-175 : bas-côtés de Game, abaissés sous l'eau de la rivière ; WFS-212 : toujours (coupés au rond-point)
+        trottoirChunk(t, c, out[P_TROTTOIR]);           // WFS-212 : trottoir de Game (bordure, RW à RW + 4), dessiné par la Ville
         for (int64_t a = a0; a < a1; a++) {
             const int64_t seg = ((a % L) + L) % L;   // la piste se répète (tours)
             const char* z = zoneId(*t.map(), seg, L);
@@ -491,7 +494,12 @@ public:
                                    carte::lateral(p1, s * std::min(b.b, l1), b.yb), carte::lateral(p, s * std::min(b.b, l0), b.yb), col);
                 }
             }
-            for (const ville::Objet& o : P.objets[(size_t)seg]) objet(t, o, a, seg, z, p, lod, out);
+            for (const ville::Objet& o : P.objets[(size_t)seg]) {
+                // WFS-212 (RG-01) : au rond-point, un objet du bord (lampadaire, banc, arbre…) qui retombe sur la chaussée d'une autre
+                // partie du tracé n'est pas posé (les immeubles sont déjà écartés de toute la route : abordsRondPoint)
+                if (o.t != ville::IMMEUBLE && surAutreChaussee(carte::lateral(p, (float)o.side * o.lat), seg, 1.0f)) continue;
+                objet(t, o, a, seg, z, p, lod, out);
+            }
             lieux(t, a, seg, p, lod, out);   // WFS-137 : rond-point et carrefours du tracé 2
             for (const ville::Lieu& l : P.lieux) if (l.seg == seg) lieuVille(t, a, l, lod, out);   // WFS-176
             if (!P.voie.empty() && P.voie[(size_t)seg] != ville::RUE) {   // WFS-175 : autoroute, tunnel, pont
@@ -516,6 +524,8 @@ public:
                 }
             }
         }
+        horsChaussee(out[P_TROTTOIR]);   // WFS-212 (RG-01) : rien sur la chaussée d'une autre partie du tracé (rond-point)
+        horsChaussee(out[P_SOL]);
     }
 
     // WFS-137 (RG-01) : îlot du rond-point : bordure, gazon, fontaine (bassin, colonne, vasque ; le jet est animé dans
@@ -556,7 +566,7 @@ public:
             const double c = t.segAt(a).curve;
             const float kc = c > 0 ? 1.f : -1.f;
             const vec3 ctr = p.o + p.r * (rp.rayon * kc);
-            const float ri = rp.rayon - R - 1.2f;   // 1,2 m de pavés entre la chaussée et la bordure
+            const float ri = rp.rayon - R - 1.5f;   // WFS-212 (RG-01) : 1,5 m de pavés entre la chaussée et la bordure de l'îlot
             const size_t irp = (size_t)(&rp - P.ronds.data());
             auto monde = [&](vec3 l) { return p.o + p.r * l.x + p.f * l.z + vec3{0, l.y, 0}; };
             auto dir = [&](vec3 l) { return p.r * l.x + p.f * l.z; };
@@ -692,7 +702,7 @@ public:
         // luminaires au sodium haute pression ≈ 2000 K (DA-realisme.md : 1900-2200 K), allumés jour et nuit (tunnel)
         { Material m; m.color = {0.2f, 0.2f, 0.2f, 1}; m.rough = 0.5f; m.flags = MAT_DOUBLE; m.emissive = vec3{1.f, 0.42f, 0.09f} * (nuit_ ? 3.f : 5.f);
           mats_[P_SODIUM] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
-        { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // asphalte de Game
+        { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, m); }   // asphalte de Game (WFS-205, accroche)
         // eau de rivière : sombre (albédo ≈ 0,04), lisse (rugosité 0,08), F0 diélectrique 0,02 : le ciel s'y reflète
         { Material m; m.color = {0.035f, 0.05f, 0.055f, 1}; m.rough = 0.08f; m.metal = 0; mats_[P_EAU] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
         { Material m; m.flags = MAT_GROUND; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game
@@ -827,6 +837,65 @@ public:
         return false;
     }
 
+    // WFS-212 (RG-01) : trottoirs de Game (Game::buildChunkCpu, bande 1, même calcul au bit près : bordure de 15 cm, de RW à RW + 4,
+    // replié à 90 % du rayon intérieur des courbes serrées), dessinés par la Ville (remplaceTrottoir) pour pouvoir les couper là où
+    // une autre partie du tracé passe : au rond-point, l'anneau fait le tour de l'îlot et son trottoir extérieur coupait la route
+    // d'entrée (le joueur roulait sur des dalles, ANO bloquante de la recette de WFS-137)
+    void trottoirChunk(Track& t, int64_t c, Geo& W) const {
+        const int64_t a0 = c * CH;
+        const float R = (float)RW, WALK_W = 4.0f, CURB_H = 0.15f;
+        Geo G;
+        auto strip = [&](const std::vector<std::pair<float, float>>& prof) {
+            const uint32_t cols = (uint32_t)prof.size(), base = (uint32_t)G.v.size();
+            for (int i = 0; i <= CH; i++) {
+                const double s = (double)(a0 + i) * SEG;
+                const trace::Rayon ri = trace::rayonInterieur(t, s);
+                for (uint32_t k = 0; k < cols; k++) {
+                    const float lat = prof[k].first, lim = (float)(0.9 * (lat > 0 ? ri.droite : ri.gauche));
+                    TrackPoint p = t.point(s, ri.m < 60 && std::abs(lat) > lim ? (lat > 0 ? lim : -lim) : lat);
+                    G.v.push_back({(float)p.x, (float)(p.y + prof[k].second), (float)p.z, 0, 1, 0, prof[k].first, (float)((a0 + i) * SEG_M)});
+                }
+            }
+            for (int i = 0; i < CH; i++) for (uint32_t k = 0; k + 1 < cols; k++) {
+                const uint32_t q = base + i * cols + k;
+                G.i.insert(G.i.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
+            }
+        };
+        strip({{-R - WALK_W, CURB_H}, {-R - 0.12f, CURB_H}, {-R, CURB_H - 0.02f}, {-R, 0.f}});
+        strip({{R, 0.f}, {R, CURB_H - 0.02f}, {R + 0.12f, CURB_H}, {R + WALK_W, CURB_H}});
+        for (auto& v : G.v) { v.nx = v.ny = v.nz = 0; }
+        for (size_t k = 0; k + 2 < G.i.size(); k += 3) {
+            Vertex &A = G.v[G.i[k]], &B = G.v[G.i[k + 1]], &C = G.v[G.i[k + 2]];
+            vec3 e1{B.px - A.px, B.py - A.py, B.pz - A.pz}, e2{C.px - A.px, C.py - A.py, C.pz - A.pz};
+            vec3 n = cross(e1, e2);
+            if (n.y < 0 && std::fabs(n.y) > 0.3f * length(n)) n = -n;
+            for (Vertex* x : {&A, &B, &C}) { x->nx += n.x; x->ny += n.y; x->nz += n.z; }
+        }
+        for (auto& v : G.v) { vec3 n = normalize({v.nx, v.ny, v.nz}); if (length(n) < 0.5f) n = {0, 1, 0}; v.nx = n.x; v.ny = n.y; v.nz = n.z; }
+        const uint32_t base = (uint32_t)W.v.size();
+        W.v.insert(W.v.end(), G.v.begin(), G.v.end());
+        for (uint32_t i : G.i) W.i.push_back(base + i);
+    }
+
+    // WFS-212 (RG-01) : retire d'un maillage de trottoir les triangles posés sur la chaussée d'une AUTRE partie du tracé, autour des
+    // ronds-points (axe de la route à moins de RW + 0,3 m du centre du triangle, la partie du tracé du triangle lui-même exclue :
+    // ± 30 m autour du segment lu dans sa coordonnée v = segment × SEG_M)
+
+    // WFS-212 : le point q (monde) est-il sur la chaussée d'une autre partie du tracé (rond-point) ? (src/world/chaussee.h)
+    bool surAutreChaussee(const vec3& q, int64_t seg, float marge) const { return chaussee::surAutre(routesRp_, (int64_t)plan_->objets.size(), q, seg, marge); }
+    bool procheRondPoint(int64_t a0, int64_t a1) const { for (int64_t a = a0; a < a1; a += 4) if (chaussee::proche(routesRp_, (int64_t)plan_->objets.size(), a)) return true; return false; }
+
+    void horsChaussee(Geo& W) const {
+        if (routesRp_.empty() || W.i.empty()) return;
+        std::vector<uint32_t> garde; garde.reserve(W.i.size());
+        for (size_t k = 0; k + 2 < W.i.size(); k += 3) {
+            const Vertex &A = W.v[W.i[k]], &B = W.v[W.i[k + 1]], &C = W.v[W.i[k + 2]];
+            const vec3 m{(A.px + B.px + C.px) / 3, 0, (A.pz + B.pz + C.pz) / 3};
+            if (!surAutreChaussee(m, (int64_t)std::lround(A.v / SEG_M), 0.3f)) garde.insert(garde.end(), {W.i[k], W.i[k + 1], W.i[k + 2]});
+        }
+        W.i.swap(garde);
+    }
+
     // bas-côtés de Game (Game::buildChunkCpu, bande 2, même calcul au bit près : mêmes sommets, mêmes normales), sauf sous le pont
     // où ils passent sous l'eau : dessinés par la Ville à la place de Game quand la rivière est en vue (remplaceSol)
     void solChunk(Track& t, int64_t c, Geo& G) const {
@@ -851,8 +920,17 @@ public:
                 I.insert(I.end(), {q, q + cols, q + 1, q + 1, q + cols, q + cols + 1});
             }
         };
-        strip({{-R - WALK_W - GROUND_W, -6.f}, {-R - WALK_W - 80.f, -0.8f}, {-R - WALK_W - 20.f, 0.f}, {-R - WALK_W, CURB_H - 0.02f}});
-        strip({{R + WALK_W, CURB_H - 0.02f}, {R + WALK_W + 20.f, 0.f}, {R + WALK_W + 80.f, -0.8f}, {R + WALK_W + GROUND_W, -6.f}});
+        // WFS-212 : près d'un rond-point, mêmes bandes (même surface, linéaire par morceaux) découpées en colonnes de 1 m jusqu'à
+        // RW + WALK_W + 40 m, pour que horsChaussee retire exactement la partie posée sur une autre branche du tracé
+        std::vector<std::pair<float, float>> d = {{R + WALK_W, CURB_H - 0.02f}};
+        if (procheRondPoint(a0, a0 + CH))
+            for (int k = 1; k < 40; k++) { const float x = (float)k; d.push_back({R + WALK_W + x, x <= 20 ? (CURB_H - 0.02f) * (1 - x / 20) : -0.8f * (x - 20) / 60}); }
+        for (auto q : std::vector<std::pair<float, float>>{{R + WALK_W + 20.f, 0.f}, {R + WALK_W + 80.f, -0.8f}, {R + WALK_W + GROUND_W, -6.f}})
+            if (q.first > d.back().first) d.push_back(q);
+        std::vector<std::pair<float, float>> g;
+        for (auto it = d.rbegin(); it != d.rend(); ++it) g.push_back({-it->first, it->second});
+        strip(g);
+        strip(d);
         auto& V = G.v; auto& I = G.i;
         for (auto& v : V) { v.nx = v.ny = v.nz = 0; }
         for (size_t k = 0; k + 2 < I.size(); k += 3) {
@@ -1434,6 +1512,7 @@ public:
     // seulement s'ils restent à plus de RW + 6 m de toute la route (± 360 m) : rien ne retombe sur l'entrée ni la sortie
     void abordsRondPoint(Track& t) {
         abords_.assign(plan_->ronds.size(), {});
+        routesRp_ = chaussee::axes(t, {trace::Type::RondPoint});   // WFS-212 : axe de la route autour des ronds-points
         const float R = (float)RW;
         for (size_t i = 0; i < plan_->ronds.size(); i++) {
             const ville::RondPoint& rp = plan_->ronds[i];
@@ -1552,14 +1631,13 @@ public:
         active_ = false;
     }
 
-    // WFS-175 : la Ville dessine les bas-côtés de Game (au bit près) quand la rivière du pont est dans les morceaux en vue,
-    // pour les abaisser sous l'eau ; ailleurs, Game les dessine comme avant
+    // WFS-212 (RG-01) : la Ville dessine aussi les trottoirs de Game (trottoirChunk), coupés là où une autre partie du tracé passe
+    bool remplaceTrottoir(const GameView& g) const override { return active_ && plan_ && !g.sceneDediee && g.player; }
+
+    // WFS-175 : la Ville dessine les bas-côtés de Game (au bit près), pour les abaisser sous l'eau de la rivière du pont
+    // WFS-212 : toujours (bas-côtés coupés au rond-point, comme les trottoirs)
     bool remplaceSol(const GameView& g) const override {
-        solActif_ = false;
-        if (!active_ || !plan_ || riv_.deb < 0 || g.sceneDediee || !g.player) return false;
-        const int64_t aP = (int64_t)std::floor(g.player->dist / SEG), pc = aP / CH;
-        const int64_t x = proche(riv_.d0, aP), w0 = (pc - BEHIND) * CH, w1 = (pc + AHEAD + 1) * CH;
-        solActif_ = x + (riv_.d1 - riv_.d0) >= w0 && x <= w1;
+        solActif_ = active_ && plan_ && !g.sceneDediee && g.player;
         return solActif_;
     }
 
@@ -1596,6 +1674,7 @@ private:
     // abords d'un rond-point (repère de la route au centre de l'anneau) : amorce (bras = −1 : demi-longueur a = départ, b = longueur,
     // h = demi-largeur) ou immeuble (a, b : demi-longueur et demi-profondeur, h : hauteur, k : teinte)
     struct Abord { vec3 c, u, n; float a, b, h; int k, bras; };
+    std::vector<chaussee::Axe> routesRp_;   // WFS-212 : axe de la route autour des ronds-points
     std::vector<std::vector<Abord>> abords_;
     Mesh jet_{};
     Material lentilleEteinte_, lentille_[3], eauJet_;

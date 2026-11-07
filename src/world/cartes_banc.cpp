@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include "../core/log.h"
+#include "../core/system.h"   // WFS-212 : caméra haute du banc
 #include "../game/course_system.h"   // WFS-137 : courseBenchRules
 #include "../game/game.h"
 #include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu ; WFS-140 : sections du Grand Prix
@@ -21,6 +22,23 @@
 
 namespace wfs {
 namespace campagne { int64_t troupeau(int espece); }   // WFS-186 (campagne.cpp)
+
+// WFS-212 : caméra haute du banc (vue de dessus d'un lieu) : réglée par le crochet ambiance, sans scène dédiée : la carte entière
+// reste dessinée (la Ville ne dessine rien en scène dédiée). Inactive hors banc.
+namespace {
+struct VueHaute { bool actif = false; vec3 oeil{}, cible{}; float fov = 50; } g_vueHaute;
+class VueHauteBanc : public System {
+public:
+    const char* name() const override { return "vue-haute-banc"; }
+    void ambiance(FrameParams& fp, const GameView& g) override {
+        if (!g_vueHaute.actif) return;
+        fp.view = lookAt(g_vueHaute.oeil, g_vueHaute.cible, {0, 0, -1});
+        fp.proj = perspectiveVk(g_vueHaute.fov * PI / 180.f, g.uiWidth / std::max(1.f, g.uiHeight), 0.1f);
+        fp.camPos = g_vueHaute.oeil;
+    }
+};
+} // namespace
+WFS_SYSTEM(VueHauteBanc, 995)
 
 void benchCorniche(Game& g, Renderer& r, const std::string& out);   // WFS-139 (plage.cpp)
 
@@ -201,7 +219,8 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         }
         if (s.type == T::RondPoint) {
             lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
-            lieux.push_back({"carte-ville-fontaine", s.debut, -3, true, 1});   // à l'entrée de l'anneau, l'îlot devant à gauche
+            lieux.push_back({"carte-ville-fontaine", s.debut, -20, true, 1});   // WFS-212 (RG-05) : 20 m dans l'anneau, l'îlot et sa fontaine devant
+            lieux.push_back({"carte-ville-fontaine-dessus", s.debut, -3, false, 2});   // WFS-212 : place de la fontaine vue de dessus (70 m)
         }
     }
     {   // WFS-176 : casino, centre commercial, garages (jour et nuit), un promeneur et son chien, pigeons d'un carrefour
@@ -223,9 +242,18 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, l.seg - (int64_t)(l.avant / SEG_M))).c_str(), 1);
         courseBenchRules(true);
         if (!g.init(r, "golf", "ville")) { WFS_ERR("banc ville : chargement impossible"); continue; }
-        g.setAutopilot(false); g.camMode = l.cam; g.allerA(Ecran::Course);
+        g.setAutopilot(false); g.camMode = l.cam == 2 ? 0 : l.cam; g.allerA(Ecran::Course);
         for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(500 + i / 60.0); }   // décompte : voiture arrêtée
+        if (l.cam == 2) {   // WFS-212 : vue de dessus centrée sur le rond-point (centre de l'anneau), 70 m au-dessus
+            const ville::Plan& P = ville::adapter(mapById("ville"), t);
+            for (const ville::RondPoint& rp : P.ronds) {
+                const TrackPoint c = t.point((double)rp.centre * SEG, 0), d = t.point((double)rp.centre * SEG, rp.rayon * (t.segAt(rp.centre).curve > 0 ? 1.f : -1.f));
+                (void)c; g_vueHaute.cible = {(float)d.x, (float)d.y, (float)d.z}; g_vueHaute.oeil = g_vueHaute.cible + vec3{0, 70, 0.01f}; g_vueHaute.actif = true;
+                break;
+            }
+        }
         g.render(502); g.render(502.02); r.capturePng(out + "/" + nom + ".png");
+        g_vueHaute.actif = false;
         WFS_LOG("capture %s : segment %lld, %.0f m avant, %.0f m, %u appels de dessin", nom.c_str(), (long long)l.seg, l.avant, g.player().dist * M, r.appelsDessin());   // WFS-175 : coût
         g.shutdown();
     }

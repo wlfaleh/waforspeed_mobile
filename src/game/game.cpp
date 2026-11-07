@@ -16,6 +16,9 @@
 #include "sauvegarde.h"       // WFS-24 : peinture gardée
 #include "../ui/ecrans/reglages.h"   // WFS-75 : miroirX (gaucher)
 #include "../ui/ecrans/chargement.h"   // WFS-146 (accroche, ANO-45) : fondu du chargement
+#include "../render/route_revetements.h"   // WFS-205 (accroche E9) : revêtements de route réels
+#include "../render/qualite_auto.h"
+#include "../world/conducteurs.h"   // WFS-73 (accroche) : conducteurs dans les voitures
 
 namespace wfs {
 
@@ -39,9 +42,11 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
     track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
-    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
-    m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+    route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite));   // WFS-205 (accroche) : enrobé usé, béton de trottoir
+    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::Revetement::EnrobeUse, m);
+    m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
     m.flags = MAT_GROUND; m.rough = 0.95f; groundMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
+    conducteurs::preparer(r);   // WFS-73 (accroche) : homme / femme en pose assise
     m.flags = MAT_SHADOWBLOB | MAT_BLEND; m.color = {0, 0, 0, 0.75f}; shadowMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     {
         // carré 1x1 au sol (uv 0..1), légèrement surélevé
@@ -78,6 +83,8 @@ void Game::shutdown() {
     r_->destroy(car_);
     r_->destroy(shadowQuad_);
     for (Material* m : {&roadMat_, &walkMat_, &groundMat_, &shadowMat_}) r_->destroy(*m);   // WFS-187 : refaits à chaque init
+    route::liberer(*r_);   // WFS-205 (accroche) : textures de route rendues (matériaux de Game et des cartes déjà rendus)
+    conducteurs::liberer(*r_);   // WFS-73 (accroche)
     r_ = nullptr;
 }
 
@@ -311,7 +318,9 @@ void Game::render(double time) {
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
         const RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
         r_->draw(car_, carM, &paint_, &rouesJoueur);
+        if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
     }
+    conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
     if (camMode != 2 && ecran_ == Ecran::Course && (!dediee || sd.commandes) && !modeManette) drawControls();   // WFS-22 : masquées à la manette   // commandes de conduite : seulement en course
     systemsUi();
     r_->endFrame();

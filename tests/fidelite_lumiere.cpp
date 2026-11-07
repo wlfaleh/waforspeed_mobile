@@ -7,6 +7,7 @@
 #include <string>
 #include "../src/render/bench_realisme.h"
 #include "../src/render/eclairage_unites.h"
+#include "../src/render/atmosphere_physique.h"   // WFS-207
 using namespace wfs::lumiere;
 
 #ifndef WFS_SOURCE_DIR
@@ -134,6 +135,23 @@ int main(int argc, char** argv) {
     const double eMidi = val("lum.soleil_midi.intensite", "typique");
     const double eh70 = eclairementSoleilNormal(H_MIDI_DEG) * std::sin(H_MIDI_DEG * PI_L / 180);
     VERIFIE(proche(eh70, eMidi, 0.05), "soleil à 70° : %.0f lx au sol contre %.0f lx (± 5 %%, photométrie)", eh70, eMidi);
+    // ---- WFS-207 : astres calculés et atmosphère (atmosphere_physique.h)
+    {
+        namespace A = wfs::atmosphere;
+        const wfs::vec3 est = A::directionMonde(0, 90), nord = A::directionMonde(0, 0);
+        VERIFIE(std::fabs(est.x - 1) < 1e-5 && std::fabs(nord.z + 1) < 1e-5, "repère du monde : est = +X, nord = −Z");
+        const A::Astre so = A::soleil(A::lieu().heureJourUtc);
+        VERIFIE(so.hauteur > 68 && so.hauteur < 71 && so.azimut > 170 && so.azimut < 190, "soleil de midi solaire (29 juin, 43,55° N) : h %.2f°, az %.2f°", so.hauteur, so.azimut);
+        // pleine lune du 29 juin 2026 à 23 h 57 UTC (USNO, « Phases of the Moon ») : fraction éclairée ≈ 1 à 22 h 30 UTC
+        const A::Astre lu = A::lune(A::lieu().heureNuitUtc);
+        VERIFIE(lu.fraction > 0.98 && lu.hauteur > 5 && lu.hauteur < 30, "lune de 0 h 30 : fraction %.3f, h %.2f° (pleine lune basse au sud en été)", lu.fraction, lu.hauteur);
+        const A::Ciel c45 = A::ciel(A::directionMonde(45, 180)), c10 = A::ciel(A::directionMonde(10, 180));
+        double xz, yz, xh, yh; A::chromaticite(c45.zenith, xz, yz); A::chromaticite(c45.horizon, xh, yh);
+        VERIFIE(xz > 0.20 && xz < 0.28 && yz > 0.20 && yz < 0.30 && xh > xz, "ciel, soleil à 45° : zénith bleu (x %.3f y %.3f), horizon plus pâle (x %.3f)", xz, yz, xh);
+        VERIFIE(c10.soleil[0] > c10.soleil[1] && c10.soleil[1] > c10.soleil[2], "soleil à 10° rougi par la traversée de l'atmosphère");
+        const double V = 3.912 / c45.extY / 1000;
+        VERIFIE(V > 30 && V < 60, "visibilité météorologique %.1f km (aérosols τ = 0,09, trouble de Linke ≈ 2)", V);
+    }
     std::printf("fidelite_lumiere : %d vérifications, %d échec(s)\n", verifs, echecs);
     return echecs ? 1 : 0;
 }

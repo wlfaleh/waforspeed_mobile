@@ -1,0 +1,210 @@
+{
+ "description": "WFS-209 : 12 morphotypes des humains réalistes (MakeHuman CC0) ; mesures du fichier .wfp (pose de repos en T) : M-01 stature, M-02 entrejambe / stature, envergure / stature (ANSUR-II), tête (vertex-menton) / stature (1/7,5). Définitions : tests/fidelite_humains.cpp et tools/convert_people_makehuman.py (mesurer).",
+ "source_ratios": "references/reel/anthropometrie.json (humain.*.stature, ratio_crotchheight, ratio_span)",
+ "morphotypes": [
+  {
+   "id": "h01",
+   "sexe": "homme",
+   "age": 25,
+   "musculature": 0.55,
+   "poids": 0.45,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 0.0,
+    "europeenne": 1.0
+   },
+   "z_stature": 0.463,
+   "stature_m": 1.788,
+   "entrejambe_sur_stature": 0.4815,
+   "envergure_sur_stature": 1.033,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "h02",
+   "sexe": "homme",
+   "age": 31,
+   "musculature": 0.75,
+   "poids": 0.55,
+   "origines": {
+    "africaine": 1.0,
+    "asiatique": 0.0,
+    "europeenne": 0.0
+   },
+   "z_stature": 1.389,
+   "stature_m": 1.8515,
+   "entrejambe_sur_stature": 0.4815,
+   "envergure_sur_stature": 1.033,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "h03",
+   "sexe": "homme",
+   "age": 38,
+   "musculature": 0.5,
+   "poids": 0.5,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 1.0,
+    "europeenne": 0.0
+   },
+   "z_stature": -1.389,
+   "stature_m": 1.6609,
+   "entrejambe_sur_stature": 0.4815,
+   "envergure_sur_stature": 1.033,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "h04",
+   "sexe": "homme",
+   "age": 48,
+   "musculature": 0.45,
+   "poids": 0.8,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 0.0,
+    "europeenne": 1.0
+   },
+   "z_stature": 0.926,
+   "stature_m": 1.8197,
+   "entrejambe_sur_stature": 0.4815,
+   "envergure_sur_stature": 1.033,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "h05",
+   "sexe": "homme",
+   "age": 58,
+   "musculature": 0.5,
+   "poids": 0.65,
+   "origines": {
+    "africaine": 0.6,
+    "asiatique": 0.0,
+    "europeenne": 0.4
+   },
+   "z_stature": -0.926,
+   "stature_m": 1.6927,
+   "entrejambe_sur_stature": 0.4819,
+   "envergure_sur_stature": 1.0338,
+   "tete_sur_stature": 0.1332
+  },
+  {
+   "id": "h06",
+   "sexe": "homme",
+   "age": 72,
+   "musculature": 0.35,
+   "poids": 0.4,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 0.5,
+    "europeenne": 0.5
+   },
+   "z_stature": -0.463,
+   "stature_m": 1.7244,
+   "entrejambe_sur_stature": 0.4815,
+   "envergure_sur_stature": 1.033,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "f01",
+   "sexe": "femme",
+   "age": 24,
+   "musculature": 0.5,
+   "poids": 0.4,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 0.0,
+    "europeenne": 1.0
+   },
+   "z_stature": -0.463,
+   "stature_m": 1.5988,
+   "entrejambe_sur_stature": 0.4802,
+   "envergure_sur_stature": 1.0195,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "f02",
+   "sexe": "femme",
+   "age": 29,
+   "musculature": 0.55,
+   "poids": 0.5,
+   "origines": {
+    "africaine": 1.0,
+    "asiatique": 0.0,
+    "europeenne": 0.0
+   },
+   "z_stature": 0.926,
+   "stature_m": 1.6879,
+   "entrejambe_sur_stature": 0.4802,
+   "envergure_sur_stature": 1.0195,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "f03",
+   "sexe": "femme",
+   "age": 36,
+   "musculature": 0.45,
+   "poids": 0.55,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 1.0,
+    "europeenne": 0.0
+   },
+   "z_stature": -1.389,
+   "stature_m": 1.5393,
+   "entrejambe_sur_stature": 0.4802,
+   "envergure_sur_stature": 1.0195,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "f04",
+   "sexe": "femme",
+   "age": 45,
+   "musculature": 0.45,
+   "poids": 0.8,
+   "origines": {
+    "africaine": 0.0,
+    "asiatique": 0.0,
+    "europeenne": 1.0
+   },
+   "z_stature": 1.389,
+   "stature_m": 1.7177,
+   "entrejambe_sur_stature": 0.4802,
+   "envergure_sur_stature": 1.0195,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "f05",
+   "sexe": "femme",
+   "age": 56,
+   "musculature": 0.4,
+   "poids": 0.6,
+   "origines": {
+    "africaine": 0.3,
+    "asiatique": 0.3,
+    "europeenne": 0.4
+   },
+   "z_stature": 0.463,
+   "stature_m": 1.6582,
+   "entrejambe_sur_stature": 0.4802,
+   "envergure_sur_stature": 1.0195,
+   "tete_sur_stature": 0.1333
+  },
+  {
+   "id": "f06",
+   "sexe": "femme",
+   "age": 70,
+   "musculature": 0.35,
+   "poids": 0.5,
+   "origines": {
+    "africaine": 0.5,
+    "asiatique": 0.0,
+    "europeenne": 0.5
+   },
+   "z_stature": -0.926,
+   "stature_m": 1.5691,
+   "entrejambe_sur_stature": 0.4802,
+   "envergure_sur_stature": 1.0195,
+   "tete_sur_stature": 0.1333
+  }
+ ]
+}
