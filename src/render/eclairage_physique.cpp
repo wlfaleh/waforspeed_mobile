@@ -56,6 +56,7 @@ struct Etat_ {
     double heureMoment[(int)atmosphere::Moment::NB] = {-100, -100, -100, -100, -100, -100, -100}, ecoule = 0, acceleration = 1;
     // image courante (physique → avantImage)
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
+    double eRecu = 0;   // WFS-230 : éclairement horizontal reçu par le conducteur la nuit (lx)
     bool capturesSuspendues = false;   // WFS-222 (RG-03)
     // scène
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
@@ -364,6 +365,8 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 } // namespace
 
 const Etat& etat() { return g.etat; }
+// WFS-230 (RG-04) : exposition k pour la vision de nuit de la passe finale (post.frag) ; 0 de jour ou sans éclairage physique
+float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.nuit ? (float)g.k : 0.f; }
 void forcer(const Forcage& f) { g.forc = f; }
 void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
     g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
@@ -392,6 +395,24 @@ void irradiance(const vec3& n, double E[3]) {
 }
 
 // WFS-208 (RG-04) : couverture nuageuse de la carte (part du ciel couverte, été méditerranéen : littoral plus dégagé)
+// WFS-230 (RG-01) : éclairement horizontal reçu au point p par les lampadaires de la carte (copie la plus proche du joueur de
+// chaque lampadaire du tour, à moins de 160 m : au-delà, moins de 0,02 lx) : pilote la borne basse de l'exposition de nuit
+double eclairementLampes(const GameView& gv, vec3 p) {
+    if (!gv.track || lampadaires().empty()) return 0;
+    Track& t = *gv.track;
+    const double L = t.length(), z = gv.player ? gv.player->position : 0;
+    if (!(L > 0)) return 0;
+    double E = 0;
+    for (const Lampadaire& l : lampadaires()) {
+        double s = (double)l.seg * SEG;
+        s += std::round((z - s) / L) * L;
+        if (std::fabs(s - z) * M > 160) continue;
+        const TrackPoint q = t.point(s, l.lat);
+        E += eclairementLampe(E_LAMPE_SOL, std::hypot(q.x - p.x, q.z - p.z), l.y);
+    }
+    return E;
+}
+
 double couvertureNuages(const GameView& gv) {
     const char* id = gv.map ? gv.map->id : "";
     return !std::strcmp(id, "plage") ? 0.15 : !std::strcmp(id, "ville") ? 0.25 : !std::strcmp(id, "circuit") ? 0.30 : 0.35;
@@ -468,7 +489,14 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
-    cible = std::clamp(cible, evMin, evMax);
+    // WFS-230 (RG-01) : nuit au clair de lune : la borne basse suit l'éclairement reçu par le conducteur (lune, ciel et lampadaires
+    // proches) : EV 3 dans une rue éclairée, jusqu'à −2 en rase campagne ; passage continu (adaptation de l'œil, RG-02)
+    double evMinLu = evMin;
+    if (lune) {
+        g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);
+        evMinLu = evMinNuit(g.eRecu);
+    }
+    cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
     if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
@@ -545,6 +573,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     e.ev = g.ev; e.evCible = cible; e.k = k; e.facteurArtistique = facteur; e.couleurSoleil = couleur;
     e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = lune ? astre.phase : 0;   // WFS-207
     e.moment = (int)mom; e.heureUtc = heure; e.eSol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;   // WFS-208
+    e.eRecu = lune ? g.eRecu : -1; e.evMin = evMinLu;   // WFS-230
     e.sondeCaptureActive = g.B.capture; e.positionSonde = g.B.pos; e.poidsB = g.w; e.luminanceMesuree = Lmes;
 }
 

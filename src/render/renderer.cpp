@@ -1518,6 +1518,7 @@ void Renderer::endFrame() {
     pp.params[0] = exposure_; pp.params[1] = vk.swapSrgb ? 1.f : 0.f;
     // WFS-15 / WFS-100 : force du bloom (calculée en début d'image) ; seuil 1,0 et genou 0,5 dans post.frag
     pp.params[2] = bloom_ ? bloom_->force : 0.f;
+    pp.params[3] = eclairage::kVisionNuit();   // WFS-230 (accroche E13) : vision de nuit (Purkinje) ; 0 de jour
     vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, post_);
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, postPLayout_, 0, 1, &postSet_, 0, nullptr);
     vkCmdPushConstants(r.cb, postPLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof pp, &pp);
