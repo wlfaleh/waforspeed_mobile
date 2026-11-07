@@ -10,6 +10,7 @@
 #include "../game/trace_cartes.h"
 #include "../game/track.h"
 #include "../ui/ecrans/reglages.h"
+#include "atmosphere_physique.h"   // WFS-207 : astres et atmosphère (M-01 à M-03)
 #include "eclairage_physique.h"
 #include "passes.h"
 #include "renderer.h"
@@ -296,7 +297,7 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         if (!g.init(r, "golf", "campagne")) { erreurs++; continue; }
         g.allerA(ECRAN);
         for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
-        const vec3 soleil = normalize(vec3{-0.45f, 0, -0.5f});   // azimut du soleil du jeu (Game::render)
+        const vec3 sa = eclairage::etat().astre, soleil = normalize(vec3{sa.x, 0, sa.z});   // WFS-207 : azimut du soleil calculé (NOAA)
         const vec3 lateral = normalize(cross(soleil, vec3{0, 1, 0}));
         const double hs2 = 12;
         for (int vue = 0; vue < 2; vue++) {
@@ -321,6 +322,121 @@ int benchLumiere(Game& g, Renderer& r, const std::string& out, const reel::Refer
         }
         g.shutdown();
         g_l.mode = AUCUN; eclairage::forcer({});
+    }
+    // ---------------- WFS-207 : M-01 soleil à l'écran contre la NOAA (hauteur, azimut), M-02 diamètre apparent du soleil et
+    // de la lune, M-03 chromaticité du ciel au zénith et à l'horizon contre le modèle d'atmosphère (Hillaire 2020) ;
+    // 3 heures (midi solaire, soleil à 10° et à 2°) × 2 cartes, caméra à 300 m au-dessus de la route, champ de 1,5°
+    {
+        const atmosphere::Lieu& Lx = atmosphere::lieu();
+        auto noaa = [&](double hu) { return reel::soleil(Lx.lat, Lx.lon, Lx.annee, Lx.mois, Lx.jour, hu); };
+        double hMidi = 9; for (double hu = 9; hu <= 15; hu += 0.005) if (noaa(hu).hauteurApparente > noaa(hMidi).hauteurApparente) hMidi = hu;
+        auto heure = [&](double cible) { double a = hMidi, b = 21; for (int i = 0; i < 60; i++) { const double m = 0.5 * (a + b); (noaa(m).hauteurApparente > cible ? a : b) = m; } return 0.5 * (a + b); };
+        const double FOV = 1.5;
+        // disque : pixels au-dessus du quart du maximum ; centre (direction mesurée) et diamètre équivalent (°)
+        auto disque = [&](const Hdr& hd, const vec3& oeil, const vec3& fwd, const vec3& haut, vec3& dir, double& diam) {
+            double mx = 0; for (size_t i = 0; i < (size_t)hd.w * hd.h; i++) { const double c[3] = {hd.px[i * 4], hd.px[i * 4 + 1], hd.px[i * 4 + 2]}; mx = std::max(mx, Y(c)); }
+            double sx = 0, sy = 0; size_t n = 0;
+            for (uint32_t y = 0; y < hd.h; y++) for (uint32_t x = 0; x < hd.w; x++) {
+                const size_t i = ((size_t)y * hd.w + x) * 4; const double c[3] = {hd.px[i], hd.px[i + 1], hd.px[i + 2]};
+                if (Y(c) > 0.25 * mx) { sx += x + 0.5; sy += y + 0.5; n++; }
+            }
+            if (!n || mx <= 0) return false;
+            const double t = std::tan(FOV * PI_L / 360) / (hd.h / 2.0);   // tangente par pixel (champ vertical)
+            const vec3 dr = normalize(cross(fwd, haut)), up = cross(dr, fwd);
+            dir = normalize(fwd + dr * (float)((sx / n - hd.w / 2.0) * t) - up * (float)((sy / n - hd.h / 2.0) * t));
+            diam = 2 * std::sqrt(n / PI_L) * FOV / hd.h; (void)oeil;
+            return true;
+        };
+        auto xyDe = [](const double c[3], double& x, double& y) { atmosphere::chromaticite(c, x, y); };
+        for (const char* carte : {"campagne", "circuit"}) for (int k = 0; k < 3; k++) {
+            const double hu = k == 0 ? hMidi : heure(k == 1 ? 10.0 : 2.0);
+            const reel::Soleil ns = noaa(hu);
+            const vec3 attendu = atmosphere::directionMonde(ns.hauteurApparente, ns.azimut);
+            preparer(g, r, carte, "jour", -1, ecrans::QUALITE_HAUTE);
+            eclairage::Forcage f; f.actif = true; f.heureUtc = hu; eclairage::forcer(f);
+            g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = (float)FOV;
+            if (!g.init(r, "golf", carte)) { erreurs++; continue; }
+            g.allerA(ECRAN);
+            for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+            if (!g_l.piste) { erreurs++; g.shutdown(); continue; }
+            const vec3 o = pointRoute(*g_l.piste, g_l.dist, 0, 0, 300.f);
+            const std::string id = std::string("lum.wfs207.") + carte + ".h" + fmt(std::round(ns.hauteurApparente), 0);
+            // M-01 et M-02 : caméra vers la direction de la NOAA
+            g_l.oeil = o; g_l.cible = o + attendu * 10.f; g_l.haut = std::fabs(attendu.y) > 0.95f ? vec3{1, 0, 0} : vec3{0, 1, 0};
+            for (int i = 0; i < 3; i++) g.render(t);
+            Hdr hd; vec3 mes; double diam = 0;
+            if (lire(r, hd) && disque(hd, o, attendu, g_l.haut, mes, diam)) {
+                const double hm = std::asin(std::clamp((double)mes.y, -1.0, 1.0)) * 180 / PI_L, am = atmosphere::norm360(std::atan2((double)mes.x, -(double)mes.z) * 180 / PI_L);
+                double da = std::fmod(am - ns.azimut + 540.0, 360.0) - 180.0; da *= std::cos(ns.hauteurApparente * PI_L / 180);
+                const double dh = hm - ns.hauteurApparente;
+                rap.ajouter(ligne(id + ".hauteur", std::string("M-01 : hauteur du centre du disque du soleil à l'écran (") + carte + ", " + fmt(hu, 2) + " h UTC)",
+                                  fmt(hm, 3) + "°", fmt(ns.hauteurApparente, 3) + "° (NOAA, réfraction comprise)", "± 0,5°", std::fabs(dh) <= 0.5, "conception", "écart " + fmt(dh, 3) + "°"));
+                rap.ajouter(ligne(id + ".azimut", std::string("M-01 : azimut du centre du disque (écart sur le ciel, Δaz × cos h)"),
+                                  fmt(am, 3) + "°", fmt(ns.azimut, 3) + "° (NOAA)", "± 0,5°", std::fabs(da) <= 0.5, "conception", "écart " + fmt(da, 3) + "°"));
+                if (k == 0) rap.ajouter(ligne(std::string("lum.wfs207.") + carte + ".diametre_soleil", "M-02 : diamètre apparent du soleil (disque à l'écran, champ 1,5°)",
+                                              fmt(diam, 4) + "°", "0,533° (32,0', NASA « Sun Fact Sheet »)", "± 1 %", std::fabs(diam / 0.533 - 1) <= 0.01, "conception", "écart " + fmt((diam / 0.533 - 1) * 100, 2) + " %"));
+            } else rap.nonMesurable("lumiere", id + ".position", "M-01 : disque du soleil", "disque introuvable dans l'image (caché ?)");
+            // M-03 : zénith, puis horizon (azimut du soleil + 90°, 0,05° au-dessus de l'horizon) contre le modèle
+            const atmosphere::Ciel A = atmosphere::ciel(attendu);
+            const vec3 lat = normalize(cross(vec3{attendu.x, 0, attendu.z}, vec3{0, 1, 0}));
+            for (int vue = 0; vue < 2; vue++) {
+                const vec3 d = vue == 0 ? vec3{0, 1, 0} : normalize(lat + vec3{0, 0.000873f, 0});
+                g_l.cible = o + d * 10.f; g_l.haut = vue == 0 ? vec3{1, 0, 0} : vec3{0, 1, 0};
+                for (int i = 0; i < 3; i++) g.render(t);
+                double c[3], x, y, xm, ym;
+                if (!lire(r, hd)) { erreurs++; continue; }
+                centre(hd, 2, c); xyDe(c, x, y); xyDe(vue == 0 ? A.zenith : A.horizon, xm, ym);
+                const double ec = std::max(std::fabs(x - xm), std::fabs(y - ym));
+                rap.ajouter(ligne(id + (vue == 0 ? ".zenith_xy" : ".horizon_xy"),
+                                  std::string("M-03 : chromaticité du ciel ") + (vue == 0 ? "au zénith" : "à l'horizon (moyenne des azimuts du modèle)") + ", soleil à " + fmt(ns.hauteurApparente, 1) + "°",
+                                  "x " + fmt(x, 4) + " y " + fmt(y, 4), "x " + fmt(xm, 4) + " y " + fmt(ym, 4) + " (Rayleigh, Mie, ozone, diffusion multiple : Hillaire 2020)",
+                                  "≤ 0,01", ec <= 0.01, "conception", "écart " + fmt(ec, 4)));
+                if (vue == 0 && carte[1] == 'a') {   // information : zénith de Preetham, Shirley et Smits (1999), trouble T = 2,5
+                    const double th = (90 - ns.hauteurApparente) * PI_L / 180, T = 2.5, t3 = th * th * th, t2 = th * th;
+                    const double xp = T * T * (0.00166 * t3 - 0.00375 * t2 + 0.00209 * th) + T * (-0.02903 * t3 + 0.06377 * t2 - 0.03202 * th + 0.00394) + (0.11693 * t3 - 0.21196 * t2 + 0.06052 * th + 0.25886);
+                    const double yp = T * T * (0.00275 * t3 - 0.00610 * t2 + 0.00317 * th) + T * (-0.04214 * t3 + 0.08970 * t2 - 0.04153 * th + 0.00516) + (0.15346 * t3 - 0.26756 * t2 + 0.06670 * th + 0.26688);
+                    infos << "WFS-207, information : zénith soleil à " << fmt(ns.hauteurApparente, 1) << "° : jeu x " << fmt(x, 4) << " y " << fmt(y, 4)
+                          << " ; Preetham 1999 (T 2,5) x " << fmt(xp, 4) << " y " << fmt(yp, 4) << " (modèle analytique publié, pour comparaison).\n";
+                }
+                r.capturePng(out + "/realisme-ciel-" + carte + "-h" + fmt(std::round(ns.hauteurApparente), 0) + (vue == 0 ? "-zenith" : "-horizon") + ".png");
+            }
+            // vue d'ensemble : 25° au-dessus de l'horizon, vers le soleil, champ de 60° (soleil, dégradé, brume au loin)
+            g_l.fov = 60; g_l.oeil = pointRoute(*g_l.piste, g_l.dist, 0, 0, 3.f);
+            g_l.cible = g_l.oeil + normalize(vec3{attendu.x, 0, attendu.z} + vec3{0, 0.25f, 0}) * 10.f; g_l.haut = {0, 1, 0};
+            for (int i = 0; i < 3; i++) g.render(t);
+            r.capturePng(out + "/realisme-ciel-" + carte + "-h" + fmt(std::round(ns.hauteurApparente), 0) + ".png");
+            g.shutdown();
+            g_l.mode = AUCUN; eclairage::forcer({});
+        }
+        // M-02 : la lune (nuit), même mesure ; vue d'ensemble de nuit
+        {
+            const atmosphere::Astre lu = atmosphere::lune(Lx.heureNuitUtc);
+            preparer(g, r, "campagne", "nuit", -1, ecrans::QUALITE_HAUTE);
+            g_l = EtatBanc{}; g_l.mode = LIBRE; g_l.monde = true; g_l.fov = (float)FOV;
+            if (g.init(r, "golf", "campagne")) {
+                g.allerA(ECRAN);
+                for (int i = 0; i < PAS; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); }
+                if (g_l.piste) {
+                    const vec3 o = pointRoute(*g_l.piste, g_l.dist, 0, 0, 300.f);
+                    g_l.oeil = o; g_l.cible = o + lu.dir * 10.f; g_l.haut = {0, 1, 0};
+                    for (int i = 0; i < 3; i++) g.render(t);
+                    Hdr hd; vec3 mes; double diam = 0;
+                    if (lire(r, hd) && disque(hd, o, lu.dir, g_l.haut, mes, diam)) {
+                        rap.ajouter(ligne("lum.wfs207.diametre_lune", "M-02 : diamètre apparent de la lune (disque à l'écran, phase " + fmt(lu.phase, 1) + "°, fraction éclairée " + fmt(lu.fraction, 3) + ")",
+                                          fmt(diam, 4) + "°", "0,53° (règle de gestion WFS-207)", "± 1 %", std::fabs(diam / 0.53 - 1) <= 0.01, "conception", "écart " + fmt((diam / 0.53 - 1) * 100, 2) + " %"));
+                        const double ec = std::acos(std::clamp((double)dot(mes, lu.dir), -1.0, 1.0)) * 180 / PI_L;
+                        infos << "WFS-207 : lune à l'écran à " << fmt(ec, 3) << "° de sa position calculée (h " << fmt(lu.hauteur, 2) << "°, az " << fmt(lu.azimut, 2) << "°).\n";
+                    } else rap.nonMesurable("lumiere", "lum.wfs207.diametre_lune", "M-02 : disque de la lune", "disque introuvable dans l'image");
+                    r.capturePng(out + "/realisme-ciel-lune-zoom.png");
+                    g_l.fov = 60; g_l.oeil = pointRoute(*g_l.piste, g_l.dist, 0, 0, 3.f);
+                    g_l.cible = g_l.oeil + normalize(vec3{lu.dir.x, 0, lu.dir.z} + vec3{0, 0.3f, 0}) * 10.f;
+                    for (int i = 0; i < 3; i++) g.render(t);
+                    r.capturePng(out + "/realisme-ciel-campagne-nuit.png");
+                }
+                g.shutdown();
+            } else erreurs++;
+            g_l.mode = AUCUN;
+        }
     }
     // ---------------- tunnel de la Corniche : voiture dans le tunnel, puis sortie (adaptation de l'exposition)
     {

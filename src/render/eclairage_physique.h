@@ -54,6 +54,7 @@ struct Etat {
     vec3 positionSonde{};            // point de la sonde B
     double poidsB = 1;               // part de la sonde B dans le mélange
     double msTraitement = 0;         // dernier traitement CPU d'une sonde (ms)
+    vec3 astre{0, 1, 0}; double astreHauteur = 0, astreAzimut = 0, astrePhase = 0;   // WFS-207 : astre calculé (soleil ou lune)
     double luminanceMesuree = 0;     // cd/m², bande 80-98,3 % de l'histogramme (exposition automatique)
     double eLampadaireSol = -1;      // lx sous le premier lampadaire allumé (RG-06 : intensité artistique convertie), −1 sans
 };
@@ -72,6 +73,7 @@ struct Forcage {
     bool actif = false;
     double hauteurSoleil = -100;     // ° ; < −90 : celle de la carte
     double ev = -100;                // EV100 fixe ; < −50 : exposition automatique
+    double heureUtc = -100;          // WFS-207 : heure UTC du soleil (lieu et date fictifs) ; < −50 : celle du moment
     bool abscisseForcee = false; double abscisse = 0;   // abscisse (unités de la piste) des sondes (tunnels, ponts)
     bool pointForce = false; vec3 point{};             // point des sondes (sinon la voiture)
 };

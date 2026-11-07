@@ -1,4 +1,5 @@
 // WaForSpeed — WFS-151 : éclairage physique, exposition automatique et sondes IBL (voir eclairage_physique.h).
+#include "atmosphere_physique.h"   // WFS-207 : astres calculés, atmosphère physique
 #include "eclairage_physique.h"
 #include <atomic>
 #include <chrono>
@@ -47,6 +48,7 @@ struct Retrait { int images; Image img; Buffer tampon; };
 
 struct Etat_ {
     bool desactive = false; Forcage forc; Etat etat;
+    vec3 astreCache{0, -2, 0}; bool cielCalcule = false; atmosphere::Ciel atmo;   // WFS-207 : atmosphère de l'astre courant
     // image courante (physique → avantImage)
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
     // scène
@@ -374,17 +376,25 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.tPrec = t; g.pointPrec = point; g.nuitPrec = fp.night;
     const bool nuit = fp.night;
     // ---- RG-01 : soleil (lune la nuit) en lux
-    vec3 s = normalize(fp.sunDir);
+    // WFS-207 (RG-01) : astre calculé pour le lieu et la date fictifs (atmosphere_physique.h) : soleil de la NOAA le jour
+    // (heure forcée par le banc possible), lune de Meeus la nuit (sa fraction éclairée règle son éclairement)
+    const atmosphere::Astre astre = nuit ? atmosphere::lune(atmosphere::lieu().heureNuitUtc)
+                                         : atmosphere::soleil(g.forc.actif && g.forc.heureUtc > -50 ? g.forc.heureUtc : atmosphere::lieu().heureJourUtc);
+    vec3 s = astre.dir;
     if (g.forc.actif && g.forc.hauteurSoleil > -90) {
         vec3 hz{s.x, 0, s.z}; hz = length(hz) > 1e-4f ? normalize(hz) : vec3{1, 0, 0};
         const float h = (float)(g.forc.hauteurSoleil * PI_L / 180.0);
         s = hz * std::cos(h) + vec3{0, std::sin(h), 0};
     }
     const double h = std::asin(std::clamp((double)s.y, -1.0, 1.0)) * 180.0 / PI_L;
-    const double E = nuit ? E_PLEINE_LUNE : eclairementSoleilNormal(h);
+    const double E = nuit ? E_PLEINE_LUNE * astre.fraction * (astre.hauteur > 0 ? 1.0 : 0.0) : eclairementSoleilNormal(h);
+    // WFS-207 (RG-02) : atmosphère calculée quand l'astre change de place (cache) : couleur du soleil au sol (transmittance),
+    // teintes du ciel au zénith et à l'horizon, extinction au sol (brouillard)
+    if (length(s - g.astreCache) > 1e-5f || !g.cielCalcule) { g.astreCache = s; g.atmo = atmosphere::ciel(s); g.cielCalcule = true; }
+    const atmosphere::Ciel& A = g.atmo;
     double coul[3];
     if (nuit) couleurTemperature(T_PLEINE_LUNE, coul);
-    else { const double c[3] = {fp.sunColor.x, fp.sunColor.y, fp.sunColor.z}; const double y = std::max(luminanceRgb(c), 1e-6); for (int q = 0; q < 3; q++) coul[q] = c[q] / y; }
+    else { const double y = std::max(luminanceRgb(A.soleil), 1e-9); for (int q = 0; q < 3; q++) coul[q] = A.soleil[q] / y; }
     const vec3 couleur{(float)coul[0], (float)coul[1], (float)coul[2]};
     const double Ed = nuit ? E_NUIT_SANS_LUNE : eclairementCielDiffus(h);
     if (std::fabs(h - g.hCache) > 1e-4) { g.hCache = h; g.kCache = cieFacteur(h); }
@@ -403,15 +413,19 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double expOrig = fp.exposure;
     const double facteur = expOrig * k / exposition(nuit ? EV_REF_NUIT : EV_REF_JOUR);
     // ---- ciel, sol, brouillard (cd/m²)
-    const vec3 haut0 = fp.skyTop, horizon0 = fp.skyHorizon;
+    // WFS-207 (RG-02) : de jour, teintes du ciel tirées de l'atmosphère (zénith, horizon) ; la nuit, celles de la carte (lot 2)
+    auto teinte = [](const double c[3]) { const double y = std::max(luminanceRgb(c), 1e-12); return vec3{(float)(c[0] / y), (float)(c[1] / y), (float)(c[2] / y)}; };
+    const vec3 haut0 = nuit ? fp.skyTop : teinte(A.zenith), horizon0 = nuit ? fp.skyHorizon : teinte(A.horizon);
     const double Esol = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed;
     const vec3 sol = fp.ground * (float)(Esol / PI_L);   // couleur du sol du ciel = albédo
     vec3 brume;
     if (!nuit) {   // brouillard de jour : teinte du jeu, luminance moyenne du ciel à 5° de hauteur (modèle)
         double L5 = 0; const double z = 85 * PI_L / 180;
         for (int j = 0; j < 16; j++) { const double a = 2 * PI_L * (j + 0.5) / 16, d[3] = {std::sin(z) * std::cos(a), std::cos(z), std::sin(z) * std::sin(a)}, ss[3] = {s.x, s.y, s.z}; L5 += K * cieRelative(d, ss) / 16; }
-        const double c[3] = {fp.fogColor.x, fp.fogColor.y, fp.fogColor.z};
-        brume = fp.fogColor * (float)(L5 / std::max(luminanceRgb(c), 1e-6));
+        brume = horizon0 * (float)L5;   // WFS-207 (RG-03) : perspective aérienne au loin = couleur de l'horizon de la même atmosphère
+        // brouillard de distance physique : le brouillard exponentiel des cartes prend l'extinction au sol de la même atmosphère
+        // (Rayleigh + Mie + ozone, pondérée en luminance) ; un brouillard linéaire (pluie de meteo.cpp) reste tel quel
+        if (fp.fogFar <= 0) fp.fogDensity = (float)A.extY;
     } else brume = fp.fogColor * (float)(facteur / k);   // nuit : lumière des villes diffusée (intensité artistique, RG-06)
     // sonde du ciel (CPU) quand le ciel change
     Etat_::Ciel c{nuit, K, Lnuit, haut0, horizon0, sol, brume, s};
@@ -433,7 +447,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
         }
     }
     g.k = k; g.facteur = facteur;
-    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), 0};
+    g.cielP = {(float)(K * k), (float)(Lnuit * k), (float)std::min(E / angleSolideSoleil() * k, 60000.0), nuit ? (float)atmosphere::rad(astre.phase) : 0.f};   // WFS-207 : w = angle de phase de la lune
     // ---- RG-03 / ST-4 : sondes locales
     const int niveau = qualite::niveauAffiche(ecrans::reglages().qualite);
     double esp = espacement(niveau);
@@ -461,6 +475,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     e.actif = true; e.nuit = nuit; e.hauteurSoleil = h; e.eSoleilNormal = E; e.eSoleilHorizontal = E * std::max(std::sin(h * PI_L / 180.0), 0.0);
     e.eCielDiffus = Ed; e.facteurCie = K; e.luminanceZenith = nuit ? Lnuit : K * cieF((90 - h) * PI_L / 180) * ciePhi(0);
     e.ev = g.ev; e.evCible = cible; e.k = k; e.facteurArtistique = facteur; e.couleurSoleil = couleur;
+    e.astre = s; e.astreHauteur = h; e.astreAzimut = astre.azimut; e.astrePhase = nuit ? astre.phase : 0;   // WFS-207
     e.sondeCaptureActive = g.B.capture; e.positionSonde = g.B.pos; e.poidsB = g.w; e.luminanceMesuree = Lmes;
 }
 
