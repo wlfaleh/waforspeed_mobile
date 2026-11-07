@@ -19,12 +19,18 @@
 #   4. attribut _CLOTH (WFS-72) : bras (0-1 bras, 1-2 avant-bras, 2-3 main), hauteur (y de repos), jambe (0-1 cuisse, 1-2 jambe,
 #      2-3 pied, 3-4 orteils), partie (0 : corps) ; repères du corps (cou, taille, profondeur du cou) comme les personnages du jeu ;
 #   5. .wfp version 3 : sommets de 84 octets (tangente ajoutée après l'uv) ; texture de couleur unie (teinte de peau neutre,
-#      multipliée par l'apparence), normales plates ; plage « corps-0 ».
+#      multipliée par l'apparence), normales plates ; plages « corps-0 », « corps-1 », « corps-2 » (WFS-211 : niveaux de détail,
+#      tools/convert_people_lod.py) ; tête et cou jamais habillés (ANO-111).
 import argparse, hashlib, io, json, math, pathlib, struct, sys
 import numpy as np
 from PIL import Image
 
 ICI = pathlib.Path(__file__).resolve().parent
+sys.dont_write_bytecode = True   # aucun __pycache__ dans le dépôt
+sys.path.insert(0, str(ICI))
+from convert_people_lod import simplifier   # WFS-211 : niveaux de détail
+LOD_PART = (1.0, 0.38, 0.13)
+LOD_ECART = (0, 0.006, 0.016)   # écart de forme borné (m) : sous un pixel aux seuils 8 m et 20 m (champ 60°, 1080 px)
 
 # ---------------------------------------------------------------- morphotypes (RG-02)
 # sexe 0 femme / 1 homme ; âge en années ; musculature et poids 0..1 (0,5 moyen) ; origines (africaine, asiatique, européenne)
@@ -386,6 +392,11 @@ def attribut_cloth(r, P, Wv):
                 a, b = bouts[k], bouts[k + 1]
                 t = ((P[m] - a) @ (b - a)) / max(float((b - a) @ (b - a)), 1e-12)
                 cl[m, col] = k + np.clip(t, 0, 0.999)
+    # WFS-211 (ANO-111) : tête et cou jamais habillés. Le col du haut se mesure depuis l'articulation du cou (neck_01) ; chez
+    # MakeHuman, le menton et la bouche descendent sous « cou + 5 cm » et prenaient la couleur du haut : les sommets portés
+    # surtout par neck_01 et Head reçoivent une hauteur au-dessus du col (le shader et pietons.cpp les voient en peau)
+    tete = Wv[:, idx['neck_01']] + Wv[:, idx['Head']] > 0.5
+    cl[tete, 1] = np.maximum(cl[tete, 1], pos[idx['neck_01']][1] + 0.1)
     return cl
 
 def ecrire_wfp(chemin, r, mh):
@@ -410,7 +421,15 @@ def ecrire_wfp(chemin, r, mh):
     out = bytearray(b'WFP1') + struct.pack('<I', 3) + struct.pack('<I', len(tex))
     for t in tex: out += struct.pack('<I', len(t)) + t
     out += struct.pack('<3f', 0.5, 0.0, float(r['stature'])) + struct.pack('<4f', *corps)
-    plages = [('corps-0', 0, len(tri) * 3)]
+    # WFS-211 (RG-01) : 3 niveaux de détail (proportions des personnages du jeu : 100 %, 38 %, 13 % des triangles), mêmes
+    # sommets ; verrouillés : ligne médiane (|x| < 8 mm : entrejambe, menton, M-02) et extrêmes (stature, envergure)
+    verrou = np.abs(P[:, 0]) < 0.008
+    for a in (P[:, 0].argmin(), P[:, 0].argmax(), P[:, 1].argmin(), P[:, 1].argmax()): verrou[a] = True
+    niveaux = [tri] + [simplifier(P, tri, int(len(tri) * f), verrou, e) for f, e in zip(LOD_PART[1:], LOD_ECART[1:])]
+    plages, debut = [], 0
+    for k, t in enumerate(niveaux):
+        plages.append(('corps-%d' % k, debut, len(t) * 3)); debut += len(t) * 3
+    tri = np.concatenate(niveaux)
     clips = mise_a_echelle_clips(r['clips'], r['nC'], idx['pelvis'], r['k_racine'])
     out += struct.pack('<5I', len(P), len(tri) * 3, len(plages), len(O), r['nC'])
     v = np.zeros(len(P), dtype=[('p', '<f4', 3), ('n', '<f4', 3), ('uv', '<f4', 2), ('t', '<f4', 4), ('pal', 'u1', 4), ('w', '<f4', 4), ('cl', '<f4', 4)])
@@ -427,7 +446,7 @@ def ecrire_wfp(chemin, r, mh):
                + struct.pack('<3f', 1, 1, 1) + struct.pack('<16f', *inv.T.ravel())   # colonne par colonne (comme glTF)
     out += struct.pack('<I', len(utilises)) + struct.pack('<%dI' % len(utilises), *utilises) + clips
     pathlib.Path(chemin).write_bytes(bytes(out))
-    return dict(sommets=len(P), triangles=len(tri), octets=len(out), stature=r['stature'])
+    return dict(sommets=len(P), triangles=[len(t) for t in niveaux], octets=len(out), stature=r['stature'])
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
@@ -445,7 +464,7 @@ def main():
         if choix and m[0] not in choix: continue
         r = convertir(mh, jeu, m, a.sortie, cache)
         s = ecrire_wfp(pathlib.Path(a.sortie) / (m[0] + '.wfp'), r, mh)
-        print('%s : stature %.4f m, %d sommets, %d triangles, %.1f Ko' % (m[0], s['stature'], s['sommets'], s['triangles'], s['octets'] / 1024))
+        print('%s : stature %.4f m, %d sommets, triangles %s, %.1f Ko' % (m[0], s['stature'], s['sommets'], s['triangles'], s['octets'] / 1024))
 
 if __name__ == '__main__':
     main()
