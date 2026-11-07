@@ -23,6 +23,7 @@
 #include "../render/eclairage.h"    // WFS-179 : lumières de nuit du péage
 #include "../render/model_loader.h" // WFS-179 : modèles des voitures en sens inverse
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : troupeaux et fontaine déclarés au son des lieux
+#include "../audio/parois_sons.h"      // WFS-275 (accroche) : maisons, église, commerces, fermes (écho)
 
 namespace wfs {
 namespace carte {
@@ -61,7 +62,7 @@ public:
     // WFS-178 : atlas des enseignes (lettres blanches, néon doux la nuit) et feux tricolores (lampes allumées / éteintes)
     void init(Renderer& r, const GameView& g) override {
         betes_.clear(); numBloc_ = 0; for (int64_t& x : g_troupeau) x = -1;   // WFS-186 : placés de nouveau par CarteDecor::init
-        fermesSon_.clear(); fontaineSon_.clear();   // WFS-261 (accroche)
+        fermesSon_.clear(); fontaineSon_.clear(); parois::effacer("campagne");   // WFS-261, WFS-275 (accroches)
         CarteDecor::init(r, g);
         if (active_) { lieux::poser("campagne", lieux::FERME, fermesSon_); lieux::poser("campagne", lieux::FONTAINE, fontaineSon_); }   // WFS-261
         for (auto& T : txt_) T = {};
@@ -147,6 +148,9 @@ protected:
             if (it.t == T_LAMP) { poserLampe(n, it.side); return; }   // WFS-225 (RG-01) : mât et lumière de nuit ensemble
             if (it.t == T_VILLA) { const Pose pv = poseAt(*track_, n); const float s = (float)it.side; const vec3 x = pv.f * -s;   // WFS-161 (accroche) : maison du kit
                 archi::carte::poser(n, lateral(pv, s * it.lat, solY(z, n, it.side, it.lat) - 0.2f) - x * (it.w / 2), x, pv.r * -s, it.w, it.d, it.h, archi::Style::Village, (uint32_t)(n * 2 + (it.side > 0))); }
+            if (it.t == T_VILLA || it.t == T_COMMERCE || it.t == T_CHURCH || it.t == T_FARM)   // WFS-275 (accroche) : façade côté route (écho)
+                parois::declarer("campagne", len(), n, it.side, it.t == T_CHURCH ? it.lat - 5 : it.t == T_FARM ? it.lat - 4 : it.lat,
+                                 it.t == T_CHURCH ? 9.f : it.t == T_FARM ? 6.f : std::max(it.h, 4.f), it.t == T_CHURCH ? 18.f : it.t == T_FARM ? 11.f : it.w);
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };

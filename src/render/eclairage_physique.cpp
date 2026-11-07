@@ -490,11 +490,11 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
     // WFS-230 (RG-01) : nuit au clair de lune : l'exposition dépend de l'éclairement reçu par le conducteur (lune, ciel et lampadaires
-    // proches). Loin des lampes, posemètre incident (evIncidentNuit) jusqu'à −2.
+    // proches). Loin des lampes, posemètre incident (evIncidentNuit) jusqu'à −3,5 (WFS-249).
     // La mesure réfléchie des sondes n'est pas prise la nuit : la tache des phares la tirait vers EV 2 (essai du 2026-11-07 :
     // 0,49 cd/m² en rase campagne) et le paysage restait noir. Passage continu par l'adaptation de l'œil (RG-02).
     // Rue éclairée (≥ 3 lx reçus) : bornes et mesure d'avant (EV 3 à 5, RG-01) ; rase campagne (≤ 0,63 lx) : posemètre incident
-    // (−2) ; entre les deux, fondu en EV (partRue).
+    // (jusqu'à −3,5) ; entre les deux, fondu en EV (partRue).
     double evMinLu = evMin;
     if (lune) {
         g.eRecu = E * std::max(std::sin(h * PI_L / 180.0), 0.0) + Ed + eclairementLampes(gv, point);

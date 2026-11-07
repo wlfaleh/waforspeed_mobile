@@ -19,6 +19,11 @@ constexpr int LANES = 3;
 constexpr double LANE_X[LANES] = {-2.0 / 3.0, 0.0, 2.0 / 3.0};
 constexpr double PLAYER_Z = 0;
 constexpr double LANE_HALF = 0.36;          // écart latéral (demi-largeurs de route) à partir duquel deux voitures se gênent
+// WFS-243 (RG-ANO-144) : dans l'anneau d'un rond-point (axe du tracé à 14 m du centre, asphalte de 9,5 à 18,5 m, WFS-248), les
+// files de ±5 m mettaient une voiture sur la couronne de pavés (9 m) et une autre hors de l'anneau (19 m) : les files y sont
+// resserrées à ±2,25 m (FACTEUR_ANNEAU × LANE_X : carrosseries entre 10,85 et 17,15 m du centre), avec une rampe de
+// RAMPE_ANNEAU_M avant l'entrée et après la sortie de l'anneau ; aucun changement de file dans l'anneau
+constexpr double FACTEUR_ANNEAU = 0.45, RAMPE_ANNEAU_M = 15;
 constexpr double SAFE_TIME = 1.1;           // temps de sécurité derrière la voiture de devant (s)
 constexpr double SAFE_MIN = 5.0 / M;        // distance minimale à l'arrêt (unités)
 constexpr double NEAR_MISS = 0.24;          // marge latérale d'un quasi-contact (demi-largeurs de route)
@@ -121,6 +126,10 @@ private:
     void findLeaders(const TrafficView& pv, int begin, int end);
     void ajouterTrace2(int n, double playerPos);   // WFS-136 : voitures en plus sur l'autoroute, voitures qui traversent
     void placerTraverse(TrafficCar& car) const;     // WFS-136 : position d'une voiture qui traverse (horloge des feux)
+public:
+    double facteurVoie(double z) const;             // WFS-243 : 1 hors des anneaux, FACTEUR_ANNEAU dedans (rampes entre les deux)
+private:
+    std::vector<std::pair<int64_t, int64_t>> anneaux_;   // WFS-243 : segments [entrée, sortie] de l'anneau de chaque rond-point
     Track* track_ = nullptr;
     std::vector<double> gap_, lead_;        // voiture de devant de chaque voiture (calculées avant le pas)
     double scrapeCd_ = 0;

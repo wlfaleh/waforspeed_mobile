@@ -21,9 +21,12 @@ namespace {
 
 // jetons :root du jeu web (codes sRGB, comme ui::CYAN)
 vec4 hex(unsigned h, float a = 1) { return {((h >> 16) & 255) / 255.f, ((h >> 8) & 255) / 255.f, (h & 255) / 255.f, a}; }
-const unsigned TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF,
+const unsigned TEXTE = 0xF2F4F8, DANGER = 0xFF1F4B, ACCENT = 0xFF6A00, ACCENT2 = 0x00E5FF,
                SURFACE2 = 0x1E2130, SUCCESS = 0xB6FF00;
 const vec4 GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f};   // --glass rgba(20,22,31,.72)
+// WFS-245 : tailles, couleurs et contrastes des textes du HUD (hud.h, namespace hud)
+using hud::CAPITALES; using hud::BASE; using hud::ETIQUETTE_PX; using hud::ARRIVEE_PX; using hud::ETIQUETTE; using hud::ETIQUETTE_ARC;
+const vec4 FOND_PANNEAU = hex(hud::FOND, hud::FOND_ALPHA);   // 0x0A0B10 à 0,85 (WFS-135 : celui du score)
 
 // halo néon (text-shadow) : copies transparentes du texte autour de sa place
 void halo(Renderer& r, float x, float y, float px, const std::string& t, const vec4& c, ui::Align a, float rad, bool italique = false) {
@@ -32,12 +35,17 @@ void halo(Renderer& r, float x, float y, float px, const std::string& t, const v
         ui::text(r, x + std::cos(ang) * d, y + std::sin(ang) * d, px, t, c, a, 0, false, italique);
     }
 }
-// .label : capitales, espacement 0,16 em, gris ; 11 px du web portés à 13 px minimum et calés sur les pixels entiers
-// (à 11 px sur 720 p, « TEMPS » se lisait « IEMPS »)
+// .label : capitales, espacement 0,16 em, calées sur les pixels entiers ; WFS-245 : 27 px de référence (au lieu de 11, porté à
+// 13 au moins), gris clair #A6ADC2 (au lieu de #8A90A6 : 2,3 : 1 seulement)
+float labelPx(float k) { return std::round(ETIQUETTE_PX * k); }
 void label(Renderer& r, float x, float y, float k, const std::string& t, ui::Align a = ui::GAUCHE, const vec4* c = nullptr) {
-    const float px = std::round(std::max(13.f, 11 * k));
-    ui::text(r, std::round(x), std::round(y), px, ui::majuscules(t), c ? *c : hex(MUTED), a, 0.16f, false);
+    ui::text(r, std::round(x), std::round(y), labelPx(k), ui::majuscules(t), c ? *c : hex(ETIQUETTE), a, 0.16f, false);
 }
+// étiquette posée sur une ligne de base (alignée sur des chiffres d'une autre taille)
+void labelSurBase(Renderer& r, float x, float base, float k, const std::string& t, ui::Align a = ui::GAUCHE, const vec4* c = nullptr) {
+    label(r, x, base - BASE * labelPx(k), k, t, a, c);
+}
+float largeurLabel(float k, const std::string& t) { return ui::width(labelPx(k), ui::majuscules(t), 0.16f); }
 // barre de progression dégradée cyan → orange (.cp-bar i), tranches bord à bord
 void barre(Renderer& r, float x, float y, float w, float h, float p) {
     r.uiRect(x, y, w, h, hex(SURFACE2));
@@ -53,6 +61,7 @@ void barre(Renderer& r, float x, float y, float w, float h, float p) {
 
 // banc d'essai (WFS-46) : vitesse affichée forcée (captures hud-arc-120 / hud-arc-320), −1 = vitesse réelle
 int g_kmhForce = -1;
+float g_surfaceHud = 0;   // WFS-245 (RG-04) : surface des panneaux de la dernière image, px de référence (720 p) au carré
 
 // compteur en arc (WFS-46) : drawSpeedo(k) de js/ui/hud.js, canvas 380 px affiché en 190 px (.speedo) → rayon 80 px,
 // trait 7 px ; arc de 270° depuis 135° (0,75 π), échelle 0-380, zone rouge au-delà de 300, graduations tous les 20
@@ -101,34 +110,47 @@ public:
         // WFS-52 : zone sûre (encoche, coins arrondis) = marges de view.marges (WFS-51) + gouttières de WFS-27 ;
         // marges à 0 : positions de WFS-27 inchangées
         const Marges& mg = g.marges;
+        g_surfaceHud = 0;
 
         // ---------- haut gauche : temps + checkpoint (.p-time) ----------
+        // WFS-245 (RG-02, RG-04, arbitrage du PO) : panneau plus large et moins haut (TEMPS_L × TEMPS_H, plus petit qu'avant :
+        // 200 × 112) ; ligne 1 : chrono puis TEMPS sur sa ligne de base ; ligne 2 : ARRIVÉE puis la distance en grands chiffres
+        // (ou CHECKPOINT n) ; ligne 3 : la barre ; fond du score (contraste des étiquettes)
         {
-            const float w = 200 * k, h = 112 * k, x = mg.gauche + gl, y = mg.haut + gt;
-            r.uiRect(x, y, w, h, GLASS);
-            label(r, x + pad, y + 10 * k, k, "Temps");
             const bool ligne = c->duelFinish > 0;   // WFS-110 : course à une ligne d'arrivée (course à 5, duel) : chrono et distance
             const bool bas = !ligne && c->timeLeft < 8;   // .time-value.low
             const std::string t = ligne ? ui::chrono(c->raceTime) : ui::decimal(std::max(0.0, c->timeLeft), 1);
-            const float tp = 48 * k, ty = y + 26 * k;
+            const std::string dist = ligne ? ui::majuscules(ui::decimal(std::max(0.0, c->duelFinish - pl.dist) * M / 1000, 2) + " km") : "";
+            const std::string lib2 = ligne ? "Arrivée" : "Checkpoint " + std::to_string(c->level + 1);
+            const float tp = hud::CHRONO_PX * k, ap = ARRIVEE_PX * k, m = hud::TEMPS_MARGE * k, ecart = 8 * k;
+            const float l1 = ui::width(tp, t, 0) + ecart + largeurLabel(k, "Temps");
+            const float l2 = largeurLabel(k, lib2) + (ligne ? ecart + ui::width(ap, dist, 0) : 0);
+            const float w = std::max(hud::TEMPS_L * k, 2 * m + std::max(l1, l2)), h = hud::TEMPS_H * k, x = mg.gauche + gl, y = mg.haut + gt;
+            r.uiRect(x, y, w, h, FOND_PANNEAU);
+            const float base1 = y + 10 * k + CAPITALES * tp, ty = base1 - BASE * tp;   // haut des chiffres à 10 px du haut
             // WFS-48 : .time-value en italique (font-style: italic du web)
-            halo(r, x + pad, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k, true);
-            ui::text(r, x + pad, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false, true);
-            if (ligne) { label(r, x + pad, y + 80 * k, k, "Arrivée " + ui::decimal(std::max(0.0, c->duelFinish - pl.dist) * M / 1000, 2) + " km"); barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)std::clamp(pl.dist / c->duelFinish, 0.0, 1.0)); }
-            else {
-            label(r, x + pad, y + 80 * k, k, "Checkpoint " + std::to_string(c->level + 1));
-            barre(r, x + pad, y + 96 * k, w - 2 * pad, 6 * k, (float)(1 - (c->nextCp - pl.dist) / CHECK_DIST));
-            }
+            halo(r, x + m, ty, tp, t, bas ? hex(DANGER, 0.12f) : hex(ACCENT2, 0.07f), ui::GAUCHE, 2.5f * k, true);
+            ui::text(r, x + m, ty, tp, t, bas ? hex(DANGER) : hex(TEXTE), ui::GAUCHE, 0, false, true);
+            labelSurBase(r, x + m + ui::width(tp, t, 0) + ecart, base1, k, "Temps");
+            const float base2 = base1 + 9 * k + CAPITALES * ap;   // 9 px entre les deux lignes de chiffres
+            labelSurBase(r, x + m, base2, k, lib2);
+            if (ligne) ui::text(r, x + m + largeurLabel(k, lib2) + ecart, base2 - BASE * ap, ap, dist, hex(TEXTE), ui::GAUCHE, 0, false, true);
+            const float pb = ligne ? (float)std::clamp(pl.dist / c->duelFinish, 0.0, 1.0) : (float)(1 - (c->nextCp - pl.dist) / CHECK_DIST);
+            barre(r, x + m, base2 + 7 * k, w - 2 * m, 6 * k, pb);
+            g_surfaceHud = w * h / (k * k);
         }
         // ---------- haut droite : score + combo (.p-score) ----------
         if (modeCourse() != ModeCourse::Poursuite) {   // WFS-119 RG-02 : en poursuite, seul le score de poursuite est affiché
             const float w = 180 * k, h = c->combo > 1 ? 92 * k : 70 * k, x = W - mg.droite - gl - w, y = mg.haut + gt;
-            r.uiRect(x, y, w, h, hex(0x0A0B10, 0.85f));   // WFS-135 (ANO-64) : fond opaque, l'enseigne derrière ne se lit plus
+            r.uiRect(x, y, w, h, FOND_PANNEAU);   // WFS-135 (ANO-64) : fond opaque, l'enseigne derrière ne se lit plus
             const float xr = x + w - pad;
-            label(r, xr, y + 10 * k, k, "Score", ui::DROITE);
-            // WFS-48 : .score-value et .combo en italique ; WFS-135 : ombre de 2 px sous les chiffres
-            ui::text(r, xr, y + 26 * k + 2 * k, 34 * k, ui::nombre(c->score(pl)), vec4{0, 0, 0, 0.6f}, ui::DROITE, 0, false, true);
-            ui::text(r, xr, y + 26 * k, 34 * k, ui::nombre(c->score(pl)), hex(TEXTE), ui::DROITE, 0, false, true);
+            label(r, xr, y + 8 * k, k, "Score", ui::DROITE);
+            // WFS-48 : .score-value et .combo en italique ; WFS-135 : ombre de 2 px sous les chiffres ; WFS-245 : chiffres 40 (au lieu
+            // de 34), plus grands que l'étiquette, sous elle (capitales de l'étiquette de 14 à 28 px, chiffres de 36 à 56 px du haut)
+            const float sp = hud::SCORE_PX * k, sb = y + 8 * k + BASE * labelPx(k) + 8 * k + CAPITALES * sp, sy = sb - BASE * sp;
+            ui::text(r, xr, sy + 2 * k, sp, ui::nombre(c->score(pl)), vec4{0, 0, 0, 0.6f}, ui::DROITE, 0, false, true);
+            ui::text(r, xr, sy, sp, ui::nombre(c->score(pl)), hex(TEXTE), ui::DROITE, 0, false, true);
+            g_surfaceHud += w * h / (k * k);
             if (c->combo > 1)   // .combo : cyan, 16 px
                 ui::text(r, xr, y + 66 * k, 16 * k, "Combo ×" + std::to_string(c->combo), hex(ACCENT2), ui::DROITE, 0.04f, false, true);
         }
@@ -138,19 +160,21 @@ public:
         // ---------- vue cockpit (WFS-98, RG-06, ANO-24) : vitesse sous le temps ----------
         // le cadran du tableau de bord 3D donne déjà la vitesse : pas de compteur en arc ; chiffres 28 px et cases de nitro
         // dans un petit panneau sous le temps, sur la rangée du bouton « Menu » (à sa droite, bord droit sur celui du temps)
+        // WFS-245 : chiffres 40 (au lieu de 28) et étiquette 27, marges de 10 px, même hauteur de 40 px (rangée du bouton Menu)
         if (etatCockpit().actif) {
-            const std::string lib = ui::majuscules(arriere ? "R · km/h" : "km/h");
-            const float tp = 28 * k, lp = std::round(std::max(13.f, 11 * k)), wd = ui::width(tp, "000", 0), h = 40 * k;
-            const float w = pad + wd + 6 * k + ui::width(lp, lib, 0.16f) + pad;
+            const std::string lib = arriere ? "R · km/h" : "km/h";
+            const float tp = hud::VITESSE_COCKPIT_PX * k, mp = 10 * k, wd = ui::width(tp, "000", 0), h = 40 * k;
+            const float w = mp + wd + 6 * k + largeurLabel(k, lib) + mp;
             const float wMenu = pad + 18 * k + 6 * k + ui::width(14 * k, "MENU", 0.1f) + pad;   // .cam-btn#menuBtnHud (pause.cpp)
-            const float x = std::max(mg.gauche + gl + 200 * k - w, mg.gauche + gl + wMenu + 8 * k), y = mg.haut + gt + 112 * k + 10 * k;
-            r.uiRect(x, y, w, h, GLASS);
-            const float ty = y + 17 * k - 0.4768f * tp, base = ty + 0.7288f * tp;   // milieu des capitales à 17 px du haut
-            ui::text(r, x + pad + wd, ty, tp, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::DROITE, 0, false, true);
-            label(r, x + pad + wd + 6 * k, base - 0.7288f * lp, k, lib);   // même ligne de base que les chiffres
-            const float gap = 2 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 4 * k, cy = y + 30 * k;
+            const float x = std::max(mg.gauche + gl + hud::TEMPS_L * k - w, mg.gauche + gl + wMenu + 8 * k), y = mg.haut + gt + 112 * k + 10 * k;
+            r.uiRect(x, y, w, h, FOND_PANNEAU);
+            const float base = y + 17 * k + 0.5f * CAPITALES * tp, ty = base - BASE * tp;   // milieu des chiffres à 17 px du haut
+            ui::text(r, x + mp + wd, ty, tp, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::DROITE, 0, false, true);
+            labelSurBase(r, x + mp + wd + 6 * k, base, k, lib);   // même ligne de base que les chiffres
+            const float gap = 2 * k, cw = (w - 2 * mp - 9 * gap) / 10, ch = 4 * k, cy = y + 31 * k;
             for (int i = 0; i < 10; i++)
-                r.uiRect(x + pad + i * (cw + gap), cy, cw, ch, i < on ? hex(SUCCESS, pl.nitroOn ? 1.f : 0.85f) : hex(SURFACE2));
+                r.uiRect(x + mp + i * (cw + gap), cy, cw, ch, i < on ? hex(SUCCESS, pl.nitroOn ? 1.f : 0.85f) : hex(SURFACE2));
+            g_surfaceHud += w * h / (k * k);
             return;
         }
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
@@ -158,14 +182,17 @@ public:
             // centré dans la zone sûre (entre les marges gauche et droite)
             // WFS-46 : compteur en arc (Ø 190 px ≈ 26 % de la hauteur) ; lecture au centre ; nitro dans l'ouverture du bas
             const float cx = (mg.gauche + W - mg.droite) / 2, R = 95 * k, ccy = H - mg.bas - gt - R - 4 * k;
-            r.uiCircle(cx, ccy, R - 2 * k, {GLASS.x, GLASS.y, GLASS.z, 0.55f});   // fond discret pour la lisibilité
+            // WFS-245 : disque à 0,72 (au lieu de 0,55) ; KM/H et NITRO (27, #C4C9D6) centrés sous les chiffres : capitales de
+            // + 8 à + 22 px et de + 29 à + 43 px du centre, tout le texte à moins de 58 px du centre (graduations dès 60 px)
+            r.uiCircle(cx, ccy, R - 2 * k, {GLASS.x, GLASS.y, GLASS.z, hud::DISQUE_ALPHA});   // fond pour la lisibilité
             compteur(r, cx, ccy, k, v);
             ui::text(r, cx, ccy - 30 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
-            label(r, cx, ccy + 18 * k, k, arriere ? "R · km/h" : "km/h", ui::CENTRE);
+            const vec4 clair = hex(ETIQUETTE_ARC);
+            label(r, cx, ccy + 8 * k - (BASE - CAPITALES) * labelPx(k), k, arriere ? "R · km/h" : "km/h", ui::CENTRE, &clair);
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
             const vec4 lumineux = hex(SUCCESS);
             const float w = 112 * k, x = cx - w / 2, pad = 0;
-            label(r, cx, ccy + 44 * k, k, "Nitro", ui::CENTRE, pl.nitroOn ? &lumineux : nullptr);
+            label(r, cx, ccy + 29 * k - (BASE - CAPITALES) * labelPx(k), k, "Nitro", ui::CENTRE, pl.nitroOn ? &lumineux : &clair);
             const float gap = 2 * k, cw = (w - 2 * pad - 9 * gap) / 10, ch = 9 * k, cy = ccy + 64 * k;
             for (int i = 0; i < 10; i++) {
                 const float xi = x + pad + i * (cw + gap);
@@ -228,6 +255,40 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
         g.setMarges({}); g.montrerMarges = false;
     }
     g.onTouch({7, gx, gy, false});
+    // WFS-245 (RG-05) : HUD lisible à la taille du téléphone : Course solo (Checkpoint) et Course à 5, jour et nuit, vue normale et
+    // Cockpit ; écrits : surface des panneaux (RG-04), hauteur des capitales des étiquettes et des chiffres d'ARRIVÉE (RG-01)
+    {
+        const VueCamera vueAvant = vueCamera();
+        const ModeCourse modeAvant = modeCourse();
+        const int kmAvant = kmCourse5();
+        auto scene = [&](const char* nom, ModeCourse mode, bool nuit, bool cockpit) {
+            modeCourse() = mode; kmCourse5() = 2;
+            if (nuit) setenv("WFS_MOMENT", "nuit", 1); else unsetenv("WFS_MOMENT");
+            if (!g.init(r, "golf", "ville")) { WFS_ERR("HUD (WFS-245) : chargement impossible (%s)", nom); return; }
+            choisirVue(cockpit ? VueCamera::Cockpit : VueCamera::Poursuite);
+            g.setAutopilot(true); g.camMode = 0;
+            rouler(60 * 9);
+            capture(nom);
+            const float k = H / 720.f, lp = labelPx(k);
+            // surface d'avant (calculée avec les tailles d'avant) : temps 200 × 112, score 180 × 70 ; vue Cockpit : panneau de la
+            // vitesse en chiffres de 28 et étiquette de max(13, 11 × k), marges de 14
+            const float ancienKmh = (14 * k + ui::width(28 * k, "000", 0) + 6 * k + ui::width(std::round(std::max(13.f, 11 * k)), "KM/H", 0.16f) + 14 * k) / k;
+            const Course* cc = activeCourse();
+            const float avant = hud::AVANT_TEMPS_L * hud::AVANT_TEMPS_H + 180 * (cc && cc->combo > 1 ? 92 : 70) + (cockpit ? ancienKmh * 40 : 0);
+            WFS_LOG("capture %s (WFS-245) : panneaux du HUD %.0f px² (px de référence, k = %.2f ; avant : %.0f px²) ; capitales des étiquettes %.1f px "
+                    "(%.2f mm à 420 dpi), chiffres d'ARRIVÉE %.1f px (%.2f mm)", nom, g_surfaceHud, k, avant, CAPITALES * lp,
+                    CAPITALES * lp / (420.f / 25.4f), CAPITALES * std::round(ARRIVEE_PX * k), CAPITALES * std::round(ARRIVEE_PX * k) / (420.f / 25.4f));
+            if (g_surfaceHud > avant + 1) WFS_ERR("HUD (WFS-245, RG-04) : %s : panneaux %.0f px² pour %.0f avant", nom, g_surfaceHud, avant);
+        };
+        scene("hud-solo-jour", ModeCourse::Checkpoint, false, false);
+        scene("hud-solo-nuit", ModeCourse::Checkpoint, true, false);
+        scene("hud-course5-jour", ModeCourse::Course5, false, false);
+        scene("hud-course5-nuit", ModeCourse::Course5, true, false);
+        scene("hud-cockpit-jour", ModeCourse::Course5, false, true);
+        scene("hud-cockpit-nuit", ModeCourse::Checkpoint, true, true);
+        unsetenv("WFS_MOMENT");
+        modeCourse() = modeAvant; kmCourse5() = kmAvant; choisirVue(vueAvant);
+    }
     g.shutdown();
     courseBenchRules(false);
     benchToasts(g, r, out);   // WFS-47 : bandeaux (toast-checkpoint, toast-pile)

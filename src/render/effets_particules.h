@@ -46,12 +46,52 @@ inline vec3 versHdr(const vec3& c, float exposition) { return {versHdr(c.x, expo
 // web, jamais blanc, sous le seuil du bloom de nuit
 inline vec3 fumeeHdr(float fondu, float exposition) { return versHdr(vec3{0.32f, 0.32f, 0.352f} * std::clamp(fondu, 0.f, 1.f), exposition); }
 
-// WFS-107 (RG-05) : texture des particules, TEXS.radial du jeu web (renderer.js) : dégradé blanc dont l'alpha vaut 1 au
-// centre (r = 0), 0,45 à r = 0,35 et 0 au bord (r = 1, r = distance au centre / demi-côté) ; rien au-delà (coins)
-inline float radial(float r) {
-    r = std::max(r, 0.f);
-    if (r >= 1) return 0;
-    return r < 0.35f ? 1.f - 0.55f * r / 0.35f : 0.45f * (1.f - r) / 0.65f;
+// WFS-224 (RG-02, ANO-120) : texture des volutes de fumée. Le profil TEXS.radial (alpha 1 au centre, 0,45 à 35 % du
+// rayon) donnait des disques nets et pleins (« boules grises ») : profil gaussien exp(−4 r²) ramené à 0 au bord (aucune
+// marche), modulé par un bruit de valeur lisse (4 × 4 cellules, interpolation cubique) qui casse le rond en volutes.
+// (x, y) dans [−1, 1] ; rend l'alpha de la texture (0..1), 0 hors du cercle unité.
+inline float bruitVolute(float x, float y) {
+    auto h = [](int i, int j) {   // valeur pseudo-aléatoire 0..1 d'un nœud (hachage entier, déterministe)
+        uint32_t n = (uint32_t)(i * 374761393 + j * 668265263); n = (n ^ (n >> 13)) * 1274126177u;
+        return ((n ^ (n >> 16)) & 0xffff) / 65535.f;
+    };
+    const float u = (x + 1) * 2, v = (y + 1) * 2;   // 4 cellules sur le carré
+    const int i = (int)std::floor(u), j = (int)std::floor(v);
+    float fu = u - i, fv = v - j; fu = fu * fu * (3 - 2 * fu); fv = fv * fv * (3 - 2 * fv);
+    const float a = h(i, j) + (h(i + 1, j) - h(i, j)) * fu, b = h(i, j + 1) + (h(i + 1, j + 1) - h(i, j + 1)) * fu;
+    return a + (b - a) * fv;
+}
+inline float voluteAlpha(float x, float y) {
+    const float r2 = x * x + y * y;
+    if (r2 >= 1) return 0;
+    const float e1 = std::exp(-4.f);
+    const float profil = (std::exp(-4.f * r2) - e1) / (1 - e1);
+    return profil * (0.55f + 0.45f * bruitVolute(x, y));
+}
+// WFS-224 (RG-02) : vie d'une volute (age = 1 − fondu, 0 → 1) : elle apparaît en 0,15 de sa vie (pas de disque qui surgit),
+// puis s'efface en douceur (fondu^1,5) ; sa taille grandit de 0,5 à 2 fois la taille de base (la fumée se dilate)
+inline float voluteOpacite(float fondu) {
+    fondu = std::clamp(fondu, 0.f, 1.f);
+    const float age = 1 - fondu;
+    return std::min(1.f, age / 0.15f) * std::pow(fondu, 1.5f);
+}
+inline float voluteEchelle(float fondu) { return 0.5f + 1.5f * (1 - std::clamp(fondu, 0.f, 1.f)); }
+// WFS-224 (RG-02, ANO-120) : une volute qui passe près de la caméra (la voiture la laisse derrière elle) remplissait
+// l'écran jusqu'au compteur : effacée en dessous de 1,5 m de profondeur, entière au-delà de 4 m
+inline float voluteProche(float profondeur) {
+    const float t = std::clamp((profondeur - 1.5f) / 2.5f, 0.f, 1.f);
+    return t * t * (3 - 2 * t);
+}
+
+// WFS-224 (RG-01) : vrai dérapage, seul cas où les pneus fument (plus à chaque coup de volant ni à chaque freinage) :
+// - essieu arrière au-delà du pic d'adhérence (sigmaAr > 1, conduite_monde.h) ET dérive de la caisse > 8° (pic du pneu
+//   vers 7°, C_PNEU de conduite_monde.h) ET vitesse > 15 m/s (54 km/h) ;
+// - ou roues bloquées (glissement > 0,5 : ABS coupé) au-dessus de 8 m/s ;
+// - ou tête-à-queue d'accident (lacet ajouté > 0,3 rad, comme avant).
+inline bool vraiDerapage(double vitesse, double derive, double sigmaAr, double glissementBloque, double lacetAccident) {
+    if (std::abs(lacetAccident) > 0.3) return true;
+    if (glissementBloque > 0.5 && vitesse > 8) return true;
+    return vitesse > 15 && std::abs(derive) > 0.14 && sigmaAr > 1;
 }
 
 struct Particule {
@@ -84,7 +124,8 @@ public:
     int etincelles(const vec3& at, float floor, const vec3& vel, int count = 40);
     // sol : hauteur de la route sous la bouffée (affichage : le carré ne passe pas sous la route) ; par défaut at.y − 0,5 ;
     // rend le nombre de bouffées émises
-    int fumee(const vec3& at, int count = 2, float sol = -1e9f);
+    // WFS-224 : vel = vitesse de départ ajoutée (m/s), par défaut nulle (jeu web)
+    int fumee(const vec3& at, int count = 2, float sol = -1e9f, const vec3& vel = {});
     void update(float dt);
     void vider();
     const Reserve& sparks() const { return sparks_; }

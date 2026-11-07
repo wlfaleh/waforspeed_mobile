@@ -127,7 +127,7 @@ void SfxMixer::play(SfxId id, float gain) {
 void SfxMixer::setBoucles(float crissement, float nitro) { cibleCrissement_ = crissement; cibleNitro_ = nitro; }
 
 // ---------------------------------------------------------------- thread audio : aucune allocation, aucun verrou
-void SfxMixer::mix(float* out, int n, double now) {
+void SfxMixer::mix(float* out, int n, double now, float* G, float* D) {
     if (!pret_.load(std::memory_order_acquire)) return;
     // nouvelles demandes → voix libres (la plus ancienne est reprise si toutes sont prises)
     uint32_t q = queue_.load(std::memory_order_relaxed);
@@ -151,6 +151,7 @@ void SfxMixer::mix(float* out, int n, double now) {
     const float cR = actif ? cibleRumeur_.load() : 0.f;   // WFS-121
     const float cS = actif ? cibleSirene_.load() : 0.f, cY = yelpSirene_.load() ? 1.f : 0.f, cD = dopplerSirene_.load();   // WFS-131
     const bool finS = finSirene_.load();
+    const float pG = panG_.load(), pD = panD_.load();   // WFS-272 (accroche) : sirène placée à gauche / à droite
     // WFS-174 : sons de la route (silence en pause ou muet, comme les autres boucles)
     const float cV = actif ? cVent_.load() : 0.f, cO = cOuverture_.load(), cRo = actif ? cRoulement_.load() : 0.f;
     const float cB = actif ? cBord_.load() : 0.f, cH = actif ? cHerbe_.load() : 0.f, cE = actif ? cEau_.load() : 0.f, cCa = cCadence_.load();
@@ -178,7 +179,8 @@ void SfxMixer::mix(float* out, int n, double now) {
         if (gSirene_ <= 1e-4f) baisseSirene_ = false;   // WFS-184 : sirène muette → la prochaine poursuite repart à plein
         attSirene_ = attenuationSirene(attSirene_, baisseSirene_, pasBaisse_);
         if (gSirene_ > 1e-4f) {
-            s += gSirene_ * attSirene_ * ((1 - mixYelp_) * lireBoucle(boucleWail_, posWail_) + mixYelp_ * lireBoucle(boucleYelp_, posYelp_));
+            const float sir = gSirene_ * attSirene_ * ((1 - mixYelp_) * lireBoucle(boucleWail_, posWail_) + mixYelp_ * lireBoucle(boucleYelp_, posYelp_));
+            if (G) { G[i] += sir * master * fade_ * pG; D[i] += sir * master * fade_ * pD; } else s += sir;   // WFS-272 (accroche)
             posWail_ = avancerBoucle(posWail_, pasSirene_, boucleWail_.size()); posYelp_ = avancerBoucle(posYelp_, pasSirene_, boucleYelp_.size());
         }
         {   // WFS-174 (RG-01 à RG-06) : sons de la route, cibles lissées (95 % en 0,15 s)

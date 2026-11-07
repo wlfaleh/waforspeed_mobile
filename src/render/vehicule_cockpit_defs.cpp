@@ -18,7 +18,7 @@ static const InterieurDef DEFS[] = {
     // GTI rouge sur la branche basse, palettes DSG ; Digital Cockpit Pro 10,25 po (244 × 91 mm) et écran central 10 po
     // (232 × 104 mm) dans le même îlot, tourné de 9° vers le conducteur ; liseré rouge sur toute la largeur ; balais 650 / 450 mm
     {"golf", 0.370f, 0.034f, 3, 0.18f, true, false, false, 0x3d3d3f, {0, 0, 0}, 0x1a1a1c, 0xbe141e,
-     {0.f, -0.31f, -0.76f}, -0.38f,
+     {0.f, -0.33f, -0.76f}, -0.38f,   // WFS-235 : volant 2 cm plus bas (avis d'expert : le haut de la jante cachait une bande de route)
      Combine::VwDigital, 0.244f, 0.091f, {0.f, -0.24f, -0.86f}, 0xdfe6ee, 0x0e1116, 0xff2a2a,
      0.232f, 0.104f, {0.33f, -0.24f, -0.74f}, -0.16f,
      -0.17f, -0.78f, -0.22f, -1.10f, 0x1c1d20, 0x232428, 0xbe141e, 0.f, 0.40f, false,
@@ -187,6 +187,21 @@ static const InterieurDef DEFS[] = {
      -0.17f, -0.80f, -0.24f, -1.20f, 0x1a1a1c, 0x1c1c1e, 0xe9ebec, 1.f, 0.35f, false,
      Essuie::Paralleles, 0.650f, 0.500f, 1.62f, 0.477f},
 };
+
+PavillonDef pavillonPour(const char* carId) {
+    struct Ligne { const char* car; PavillonDef p; };
+    constexpr float DIX_DEGRES = 10.f * 3.14159265f / 180.f;
+    static const Ligne LIGNES[] = {
+        {"abarth",   {0.215f, 0.065f, 0.065f, ELEVATION_TOIT_MIN}},   // rétroviseur de la 500 : petit et haut
+        {"p911",     {0.245f, 0.065f, 0.060f, ELEVATION_TOIT_MIN}},
+        {"gt86",     {0.240f, 0.065f, 0.060f, ELEVATION_TOIT_MIN}},
+        {"mustang",  {0.250f, 0.068f, 0.070f, ELEVATION_TOIT_MIN}},
+        {"gallardo", {0.240f, 0.065f, 0.055f, DIX_DEGRES}},
+        {"sf90",     {0.220f, 0.058f, 0.050f, DIX_DEGRES}},
+    };
+    if (carId) for (const Ligne& l : LIGNES) if (std::strcmp(l.car, carId) == 0) return l.p;
+    return {};
+}
 
 const InterieurDef* interieurPour(const char* carId) {
     if (!carId) return nullptr;

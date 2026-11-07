@@ -1,6 +1,6 @@
 // Effets de conduite (WFS-65) : particules identiques à js/world/particles.js — réserves de 220 étincelles et
 // 140 bouffées, réserve circulaire, durées, gravité, frottement, rebond des étincelles, fumée qui monte, qualité basse.
-// WFS-107 : « réduire les mouvements » (aucune particule), texture TEXS.radial, gris de la fumée à l'écran.
+// WFS-107 : « réduire les mouvements » (aucune particule), gris de la fumée à l'écran. WFS-224 : volutes douces, vrai dérapage.
 // usage : test_effets
 #include <cmath>
 #include <cstdio>
@@ -98,12 +98,38 @@ int main() {
     VERIFIE(rm.fumee({0, 2, 0}, 2) == 2 && rm.etincelles({0, 1, 0}, 0.5f, {}, 10) == 10, "réglage retiré : l'émission ne reprend pas");
     std::printf("réduire les mouvements : aucune étincelle ni fumée émise, reprise ensuite : OK\n");
 
-    // WFS-107 (RG-05) : texture TEXS.radial du jeu web : alpha 1 au centre, 0,45 à 35 % du rayon, 0 au bord, décroissant
-    VERIFIE(radial(0) == 1 && std::abs(radial(0.35f) - 0.45f) < 1e-6f && radial(1) == 0 && radial(1.3f) == 0, "profil radial (1 ; 0,45 ; 0)");
-    VERIFIE(std::abs(radial(0.175f) - 0.725f) < 1e-6f && std::abs(radial(0.675f) - 0.225f) < 1e-6f, "profil radial linéaire entre les arrêts");
-    bool decroit = true; for (int i = 1; i <= 140; i++) decroit &= radial(i / 100.f) <= radial((i - 1) / 100.f);
-    VERIFIE(decroit, "profil radial non décroissant");
-    std::printf("texture radiale du jeu web (1 → 0,45 à r = 0,35 → 0 au bord) : OK\n");
+    // WFS-224 (RG-02, ANO-120) : volutes, jamais de disque net : alpha nul au bord et hors du cercle, aucune marche (écart
+    // entre deux points voisins de 1/64 du rayon < 0,05), bord très transparent (< 0,06 au-delà de 90 % du rayon),
+    // profil décroissant en moyenne sur chaque anneau, opacité qui monte puis s'efface, taille qui grandit, rien près de la caméra
+    float marche = 0, bord = 0; bool decroit = true; float precedent = 2;
+    for (int i = 0; i <= 64; i++) {
+        float anneau = 0;
+        for (int k = 0; k < 32; k++) {
+            const float a = k * 6.2831853f / 32, r0 = i / 64.f, r1 = (i + 1) / 64.f;
+            const float v0 = voluteAlpha(r0 * std::cos(a), r0 * std::sin(a)), v1 = voluteAlpha(r1 * std::cos(a), r1 * std::sin(a));
+            marche = std::max(marche, std::abs(v1 - v0)); anneau += v0 / 32;
+            if (r0 >= 0.9f) bord = std::max(bord, v0);
+        }
+        decroit &= anneau <= precedent + 1e-6f; precedent = anneau;
+    }
+    VERIFIE(voluteAlpha(1, 0) == 0 && voluteAlpha(0.8f, 0.8f) == 0 && voluteAlpha(0, 0) <= 1 && voluteAlpha(0, 0) > 0.5f, "volute : centre dense, rien hors du cercle");
+    VERIFIE(marche < 0.05f, "volute : marche de %.3f entre deux points voisins (bord net)", marche);
+    VERIFIE(bord < 0.06f, "volute : bord trop opaque (%.3f)", bord);
+    VERIFIE(decroit, "volute : profil moyen non décroissant");
+    VERIFIE(voluteOpacite(1) == 0 && voluteOpacite(0) == 0 && voluteOpacite(0.85f) > 0.7f && voluteOpacite(0.3f) < voluteOpacite(0.7f), "volute : apparition puis effacement");
+    VERIFIE(voluteEchelle(1) == 0.5f && voluteEchelle(0) == 2.f, "volute : taille 0,5 → 2");
+    VERIFIE(voluteProche(1.5f) == 0 && voluteProche(4.f) == 1 && voluteProche(2.5f) > 0 && voluteProche(2.5f) < 1, "volute : effacée près de la caméra");
+    std::printf("volutes de fumée douces (marche %.3f, bord %.3f), apparition, effacement, croissance, rien près de la caméra : OK\n", marche, bord);
+
+    // WFS-224 (RG-01) : fumée seulement en vrai dérapage
+    VERIFIE(!vraiDerapage(42, 0.05, 0.8, 0, 0), "coup de volant normal à 150 km/h : pas de fumée");
+    VERIFIE(!vraiDerapage(42, 0.20, 0.9, 0, 0), "dérive sans pneu arrière saturé : pas de fumée");
+    VERIFIE(!vraiDerapage(42, 0.10, 1.3, 0, 0), "pneu arrière saturé, dérive < 8° : pas de fumée");
+    VERIFIE(!vraiDerapage(10, 0.30, 1.3, 0, 0), "dérapage lent (36 km/h) : pas de fumée");
+    VERIFIE(!vraiDerapage(30, 0, 0, 0.15, 0), "freinage avec ABS (glissement 15 %) : pas de fumée");
+    VERIFIE(vraiDerapage(30, 0.25, 1.2, 0, 0) && vraiDerapage(30, -0.25, 1.2, 0, 0), "vrai dérapage (14°, 108 km/h) : fumée");
+    VERIFIE(vraiDerapage(20, 0, 0, 0.9, 0) && vraiDerapage(5, 0, 0, 0, 0.5), "roues bloquées, tête-à-queue : fumée");
+    std::printf("fumée des pneus seulement en vrai dérapage (dérive > 8°, arrière saturé, > 54 km/h), roues bloquées ou tête-à-queue : OK\n");
 
     // WFS-107 (RG-04) : couleur de la fumée à l'écran (sans mélange : ACES × 0,85, gamma 2,2) = celle du jeu web pour
     // chaque fondu, jamais blanche (≤ 0,45 au plus clair, contre ≈ 0,79 avec l'ancienne conversion) ; lumière × exposition

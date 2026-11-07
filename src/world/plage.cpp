@@ -41,6 +41,7 @@
 #include "vegetation.h"
 #include "zones.h"
 #include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : rivage déclaré au son des lieux
+#include "../audio/parois_sons.h"      // WFS-275 (accroche) : falaise et villas (écho)
 
 namespace wfs {
 
@@ -1177,6 +1178,9 @@ public:
             }
             lieux::poser("plage", lieux::VAGUES, std::move(rivage));
         }
+        parois::effacer("plage");   // WFS-275 (accroche) : paroi de roche côté montagne (face raide de 3,5 m, au milieu), villas
+        for (int64_t n = 0; n < len_; n++) if (formeCote(n, -1) == K_TERRE) parois::declarer("plage", len_, n, -1, (villagePerche(t, n) ? R + 22 : R + 4.6f) + 1.75f, hauteurParoi(n), (float)SEG_M);
+        for (const Objet& o : objets_) if (o.t == O_VILLA) parois::declarer("plage", len_, o.seg, o.side, o.lat, o.h, o.w);
     }
 
     // décor fixe d'une fête ou d'un terrain de jeux, posé dans le morceau qui contient son segment (repère du segment)

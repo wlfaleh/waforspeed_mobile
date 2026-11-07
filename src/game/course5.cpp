@@ -105,6 +105,7 @@ void grille(std::vector<Ordinateur>& os, int placeJoueur) {
         o.g.rdPrec = o.g.rd; o.g.xPrec = o.g.x;   // WFS-221 : aucun glissement dessiné depuis l'ancienne place
         o.g.v = 0; o.g.done = false; o.g.ft = 0; o.g.hitCd = 0;
         o.nitros = NITROS[o.diff]; o.nitrosPrises = 0; o.nitroT = 0; o.aspiration = false;   // WFS-133
+        o.gardeFile = 0; o.fileQuittee = -1; o.changements = 0;   // WFS-243 (ANO-150)
     }
 }
 
@@ -210,6 +211,8 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
             if (ecartJ < -C.rattrapageDerriereM) cible *= 1 + C.rattrapageBonus;
             else if (ecartJ > C.rattrapageDevantM) cible *= 1 - (o.diff == FACILE ? C.rattrapageMalusFacile : C.rattrapageMalus);
         }
+        if (o.gardeFile > 0) o.gardeFile -= dt;   // WFS-243 (ANO-150)
+        const bool enChangement = std::abs(o.g.x - o.cibleX) > 0.05;   // pas encore arrivé dans la file choisie
         // voiture la plus proche devant, dans ma file
         int devant = -1; double dzMin = 1e9;
         for (size_t i = 0; i < vs.size(); i++) {
@@ -227,12 +230,16 @@ void avancer(std::vector<Ordinateur>& os, double dt, double finish, double raceT
         if (devant >= 0 && dzMin < 30) {
             const Voiture& f = vs[(size_t)devant];
             if (f.v < cible * 0.98) {   // plus lente : dépasser par une file libre, sinon la suivre
-                bool change = false;
-                const bool garde = raceTime < GARDE_VOIE_S;   // WFS-242 (RG-03) : au départ, chacun garde sa voie et suit
+                bool change = enChangement;   // WFS-243 (ANO-150) : dépassement en cours, gardé jusqu'à la nouvelle file
+                const bool garde = raceTime < GARDE_VOIE_S || enChangement || o.gardeFile > 0;   // WFS-242 (RG-03) : au départ, chacun garde sa voie et suit
                 for (int dir : {-1, 1}) {
                     const int nf = o.file + dir;
                     if (nf < 0 || nf > 2 || change || garde) continue;
-                    if (fileLibre(vs, k, FILES[nf], o.g.rd, 10, 22)) { o.file = nf; o.cibleX = FILES[nf]; change = true; }
+                    const double portee = nf == o.fileQuittee ? RETOUR_LIBRE_M : 22;   // WFS-243 (ANO-150) : retour vers la file quittée
+                    if (fileLibre(vs, k, FILES[nf], o.g.rd, 10, portee)) {
+                        o.fileQuittee = o.file; o.file = nf; o.cibleX = FILES[nf]; change = true;
+                        o.gardeFile = GARDE_CHANGEMENT_S; o.changements++;
+                    }
                 }
                 // RG-06 : dépassement (file libre trouvée, voiture devant à moins de 30 m), lancé (pas dans la mêlée du départ)
                 prendre = prendre || (change && o.g.v > 0.8 * o.cible);
