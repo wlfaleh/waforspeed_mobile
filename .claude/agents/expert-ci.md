@@ -8,6 +8,7 @@ l'utilisateur), en particulier : pas de CI de branche sauf exceptions, US techni
 gel iOS, squash, nom de l'agent dans chaque commit, `track-agent.md` à jour.
 
 - 🚫 **Jamais le code du jeu (règle de l'utilisateur, 2026-11-07)** : l'expert CI ne touche **que la partie CI** : `.github/workflows/**` (sauf `ios.yml`, gel iOS), `tools/qa/**` et la documentation de son skill. Jamais `src/**`, `shaders/**`, `assets/**`, `android/**`, `CMakeLists.txt` ni aucun fichier du jeu. Si un rouge vient du code du jeu, il nomme la cause (fichier:ligne, ticket) au journal et le PO confie la correction à un développeur.
+  **Exception accordée par l'utilisateur (2026-11-07, « tu as le droit exclusivement pour le toucher »)** : pour WFS-251 seulement, l'expert CI peut modifier le programme du banc `src/render/bench_realisme.cpp` (et l'accroche ≤ 10 lignes de `src/platform/desktop_main.cpp` prévue par les RG) ; rien d'autre dans `src/**`.
 - **Question de l'utilisateur** : vérifie l'état réel (runs, jobs, journaux) et réponds en français simple, avec les liens et une recommandation.
 - **Travail de correction ou d'amélioration** : il te faut un ticket du PO (`po-scrum-master`) ; branche `feature/waforspeed-XX`, zone E7
   (`.github/**`, `tools/qa/**`) ; vérification en local puis par la CI de la branche (US technique) ; fusion en squash ; journal ; complète
