@@ -3051,3 +3051,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 01:05:53 — Statuts automatiques, CI main #800 (robot statuts)
 - Run vert (push, commit 83e9746) : WFS-186 ✅ (PR #171, 83e9746).
 - À corriger par le PO : `track-agent.md` l. 24 : WFS-186 : forme de l'État non reconnue (ligne laissée telle quelle).
+
+### 2026-11-07 01:07:32 — Statuts automatiques, CI main #801 (robot statuts)
+- Run vert (push, commit ab40be5) : WFS-201 ✅ (PR #172, ab40be5).
+- À corriger par le PO : `track-agent.md` l. 25 : WFS-201 : forme de l'État non reconnue (ligne laissée telle quelle).
