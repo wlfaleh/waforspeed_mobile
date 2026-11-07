@@ -11,13 +11,15 @@ name: Statuts automatiques
 
 on:
   workflow_run:
-    workflows: ["Construction WaForSpeed"]
+    # WFS-277 (option A de l'utilisateur) : run de fusion (build.yml) vert → tickets laissés en 🟣, rouge → journal ;
+    # bancs du matin (matin.yml) verts → tickets 🟣 du run en ✅ (bancs du matin #N), rouges → journal
+    workflows: ["Construction WaForSpeed", "Bancs du matin (captures, réalisme, QA)"]
     types: [completed]
     branches: [main]
   workflow_dispatch:   # WFS-236 (RG-06) : rattrapage d'un run de « Construction WaForSpeed » sur main déjà terminé
     inputs:
       run_id:
-        description: "Identifiant du run de build.yml sur main à traiter (nombre de l'adresse …/actions/runs/<id>)"
+        description: "Identifiant du run de build.yml ou de matin.yml sur main à traiter (nombre de l'adresse …/actions/runs/<id>)"
         required: true
 
 permissions:
@@ -46,6 +48,7 @@ jobs:
           RUN_SHA: ${{ github.event.workflow_run.head_sha }}
           CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           EVENEMENT: ${{ github.event.workflow_run.event }}
+          NOM: ${{ github.event.workflow_run.name }}
         run: |
           set -u
           git config user.name "robot statuts"
@@ -55,12 +58,14 @@ jobs:
             INFO=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID" \
                    --jq '[.name, .head_branch, .status, (.conclusion // ""), (.run_number|tostring), .head_sha, .event] | join("\t")')
             IFS=$'\t' read -r NOM BRANCHE ETAT CONCLUSION RUN_NUMBER RUN_SHA EVENEMENT <<< "$INFO"
-            if [ "$NOM" != "Construction WaForSpeed" ] || [ "$BRANCHE" != "main" ] || [ "$ETAT" != "completed" ]; then
-              echo "::error::statuts : le run $RUN_ID n'est pas un run terminé de « Construction WaForSpeed » sur main ($NOM, $BRANCHE, $ETAT)"
+            if { [ "$NOM" != "Construction WaForSpeed" ] && [ "$NOM" != "Bancs du matin (captures, réalisme, QA)" ]; } || [ "$BRANCHE" != "main" ] || [ "$ETAT" != "completed" ]; then
+              echo "::error::statuts : le run $RUN_ID n'est pas un run terminé de build.yml ou matin.yml sur main ($NOM, $BRANCHE, $ETAT)"
               exit 1
             fi
             echo "statuts : rattrapage du run #$RUN_NUMBER ($CONCLUSION, $EVENEMENT, $RUN_SHA)"
           fi
+          # WFS-277 : source du run (fusion ou matin) et texte du statut
+          if [ "$NOM" = "Bancs du matin (captures, réalisme, QA)" ]; then SOURCE=matin; LIBELLE="bancs du matin"; else SOURCE=fusion; LIBELLE="CI main"; fi
           # RG-03 : jobs en échec du run (vide si le run est vert)
           JOBS=""
           JOBS_JSON=""
@@ -79,10 +84,11 @@ jobs:
           for essai in 1 2 3 4 5; do
             git fetch -q origin main && git reset -q --hard origin/main
             python3 tools/qa/statuts.py --run-number "$RUN_NUMBER" --sha "$RUN_SHA" --conclusion "$CONCLUSION" \
-                    --evenement "$EVENEMENT" --jobs-en-echec "$JOBS" ${JOBS_JSON:+--jobs-json "$JOBS_JSON"} --depot .
+                    --evenement "$EVENEMENT" --jobs-en-echec "$JOBS" ${JOBS_JSON:+--jobs-json "$JOBS_JSON"} --depot . \
+                    --source "$SOURCE" --libelle "$LIBELLE"
             if git diff --quiet -- TACHES.md track-agent.md journal.md; then echo "statuts : rien à envoyer"; exit 0; fi
             git add TACHES.md track-agent.md journal.md
-            git commit -q -m "Statuts automatiques : CI main #$RUN_NUMBER ($CONCLUSION) (robot statuts)"
+            git commit -q -m "Statuts automatiques : $LIBELLE #$RUN_NUMBER ($CONCLUSION) (robot statuts)"
             if git push -q origin HEAD:main; then echo "statuts : envoyé (essai $essai)"; exit 0; fi
             echo "statuts : envoi refusé (essai $essai), nouvel essai"
             sleep $((essai * 5))

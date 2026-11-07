@@ -160,6 +160,7 @@ public:
     // WFS-134 (RG-07, ANO-60) : la prochaine voiture dessinée par draw(Model) est le fantôme du record : translucide
     // (α 0,45), teintée cyan, sans ombre de contact, sans feux
     void fantomeProchaineVoiture() { fantomeSuivant_ = true; feuxProchaineVoiture(FeuxVoiture{}); }
+    void adversaireProchaineVoiture() { adversaireSuivant_ = true; }   // WFS-243 (ANO-117) : adversaire (Course à 5, Duel) : sans limite de distance (WFS-82), champ seul
     // WFS-144 (RG-03 a) : en qualité Basse, la prochaine voiture dessinée par draw(Model) prend sa version en lots de matériaux
     // (partsBasse : peinture, feux, vitres, reste) à toute distance : police de la poursuite, moins d'appels de dessin, jamais de cubes
     void lotsProchaineVoiture() { lotsSuivant_ = true; }
@@ -217,7 +218,7 @@ private:
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
     // WFS-227 : bit VIS_CASCADE0 << k (16, 32, 64, 128) : objet dans la cascade d'ombre k
     enum : uint8_t { VIS_CAM = 1, VIS_REFLET = 2, VIS_OMBRE = 4, VIS_CAPTURE = 8, VIS_CASCADE0 = 16 };
-    uint8_t classer(const masquage::Sphere& s);
+    uint8_t classer(const masquage::Sphere& s, bool sansDistance = false);   // WFS-243 : sansDistance pour les adversaires
     float texelCasc_[4] = {};   // WFS-227 : taille d'un texel de chaque cascade (1re : 0, tout objet y porte ombre)
     vec3 regardCasc_{0, 0, -1};  // WFS-227 : regard de la caméra (tranches des cascades)
     masquage::Frustum fCam_, fReflet_, fOmbre_, fCasc_[4]; float finBrouillard_ = 1e9f; uint32_t masques_ = 0, masquesPrec_ = 0;
@@ -326,7 +327,7 @@ private:
     mat4 view_ = mat4::identity();
     FeuxVoiture feuxNuit_, feuxSuivant_; bool feuxSuivantPose_ = false;
     // WFS-134 : fantôme, ombres de contact posées par le moteur (quad et matériau propres)
-    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false;
+    bool fantomeSuivant_ = false, ombreFaite_ = false, ombresContact_ = false, lotsSuivant_ = false, adversaireSuivant_ = false;
     Mesh ombreQuad_; Material ombreMat_;
     double refletMsSum_ = 0;
     vec3 camPos_{};

@@ -147,9 +147,9 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         const bool pareil = !A.empty() && A == B;
         mes << "  image du jeu avec / sans la passe d'essai (et la pré-passe) : " << (pareil ? "identique (0 écart, RG-06)" : "DIFFÉRENTE") << "\n";
         WFS_LOG("passes (WFS-150) : image avec / sans passe d'essai : %s", pareil ? "identique" : "différente");
-        if (!pareil) ecarts++;
+        if (!pareil) { WFS_ERR("passes (WFS-150) : image du jeu différente avec la passe d'essai"); ecarts++; }
         std::remove((out + "/passes-sans-essai.png").c_str()); std::remove((out + "/passes-avec-essai.png").c_str());
-    } else ecarts++;
+    } else { WFS_ERR("passes (WFS-150) : images avec / sans passe d'essai illisibles"); ecarts++; }
 
     // ---------------- RG-05 / P-02 : coût des passes du Renderer par niveau (Ville, jour, même vue, 130 images)
     mes << "\n== coût GPU des passes par niveau (Ville, jour, vue fixe, scène figée, 130 images ; aucune passe enfichable active) ==\n  niveau | ms par image (mur)";
@@ -157,7 +157,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
     mes << "\n";
     for (int n = 0; n < 4; n++) {
         niveau(n);
-        if (!g.init(r, "golf", "ville")) { ecarts++; continue; }
+        if (!g.init(r, "golf", "ville")) { WFS_ERR("passes (WFS-150) : niveau %d : chargement de la Ville impossible", n); ecarts++; continue; }
         g.allerA(Ecran::Chargement); scene(g, t);
         passes::remettreAZero();
         const double t0 = nowSeconds();
@@ -176,7 +176,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
         // M-01 compare donc la scène sans ce reflet (WFS_REFLETS=0, interrupteur de mesure de WFS-142), jour comme nuit
         setenv("WFS_REFLETS", "0", 1);
         niveau(qualite::ULTRA);
-        if (!g.init(r, "golf", "ville")) { ecarts++; continue; }
+        if (!g.init(r, "golf", "ville")) { WFS_ERR("environnement (WFS-150) : M-01 (%s) : chargement de la Ville impossible", moment); ecarts++; continue; }
         g.allerA(Ecran::Chargement); g_b.pointPose = false; g_b.face = 0;
         scene(g, t);
         const int avant = environnement::capturesFaites();
@@ -188,7 +188,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
             if (environnement::faceSuivante() != f) { WFS_ERR("environnement : face %d attendue, %d en cours", f, environnement::faceSuivante()); ecarts++; }
             g.render(t);
             std::vector<float> hdr; uint32_t w = 0, h = 0;
-            if (!passes::lireHdr(r, hdr, w, h)) { ecarts++; continue; }
+            if (!passes::lireHdr(r, hdr, w, h)) { WFS_ERR("environnement (WFS-150) : M-01 (%s) face %d : cible HDR illisible", moment, f); ecarts++; continue; }
             const uint32_t x0 = (w - std::min(w, h)) / 2, cote = std::min(w, h);   // carré central = les 90° × 90° de la face
             double s = 0;
             for (uint32_t y = 0; y < cote; y++) for (uint32_t x = x0; x < x0 + cote; x++) s += luminanceM01(&hdr[((size_t)y * w + x) * 4]);
@@ -211,7 +211,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
             << (rienDePlus ? "aucune capture" : "CAPTURE EN TROP") << " ; coût : " << coutCapture << "\n"
             << "  M-01 : luminance moyenne Y (sRGB linéaire) de chaque face contre la scène vue dans la même direction (carré central de la cible HDR, 90°), ± 1 %\n"
             << "  face | Y face | Y scène | écart | verdict\n";
-        if (!unePar || !rienDePlus || !lu || cote != 256) ecarts++;
+        if (!unePar || !rienDePlus || !lu || cote != 256) { WFS_ERR("environnement (WFS-150) : capture (%s) : une face par image %s, capture en trop %s, relue %s, côté %d (256 voulu)", moment, unePar ? "oui" : "NON", rienDePlus ? "non" : "OUI", lu ? "oui" : "NON", (int)cote); ecarts++; }
         static const char* NF[6] = {"+X", "-X", "+Y", "-Y", "+Z", "-Z"};
         int conformes = 0;
         for (int f = 0; f < 6 && lu; f++) {
@@ -225,7 +225,7 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
             WFS_LOG("environnement (WFS-150) : M-01 %s face %s : %.4f contre %.4f (%.2f %%)", moment, NF[f], lf, lumScene[f], e * 100);
         }
         mes << "  M-01 " << moment << " : " << conformes << " / 6 faces conformes\n";
-        if (conformes < 6) ecarts++;
+        if (conformes < 6) { WFS_ERR("environnement (WFS-150) : M-01 (%s) : %d / 6 faces conformes", moment, conformes); ecarts++; }
         if (jour && lu) {   // planche en croix (+Y en haut ; −X, +Z, +X, −Z au milieu ; −Y en bas), exposition et ACES du jeu
             const int W = 4 * cote, H = 3 * cote;
             std::vector<uint8_t> px((size_t)W * H * 4, 40);
@@ -244,12 +244,12 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
     {   // taille selon le niveau : Haute 128, Basse 64 (demande seule, sans image)
         for (int n : {qualite::HAUTE, qualite::BASSE}) {
             niveau(n);
-            if (!g.init(r, "golf", "ville")) { ecarts++; continue; }
+            if (!g.init(r, "golf", "ville")) { WFS_ERR("environnement (WFS-150) : taille de la capture (niveau %d) : chargement de la Ville impossible", n); ecarts++; continue; }
             g.allerA(Ecran::Chargement); scene(g, t, 20);
             environnement::demander(g_b.point);
             for (int i = 0; i < 6; i++) g.render(t);
             mes << "  capture en " << NOMS[n] << " : " << environnement::taille() << " px (" << (environnement::prete() ? "prête" : "PAS PRÊTE") << ")\n";
-            if (environnement::taille() != qualite::tailleCubemap(n) || !environnement::prete()) ecarts++;
+            if (environnement::taille() != qualite::tailleCubemap(n) || !environnement::prete()) { WFS_ERR("environnement (WFS-150) : capture en %s : %d px (%d voulus), %s", NOMS[n], environnement::taille(), qualite::tailleCubemap(n), environnement::prete() ? "prête" : "pas prête"); ecarts++; }
             g.shutdown();
         }
     }
@@ -319,10 +319,10 @@ int benchPasses(Game& g, Renderer& r, const std::string& out, std::ostream& mes,
             << " (bouton Réglages, choix Ultra, Fermer, course avec 1 capture de 256 px, retour à l'accueil en Ultra)\n"
             << "  ligne « Rendu » en mode diagnostic : " << "voir reglages-diagnostic.png\n";
         WFS_LOG("parcours (WFS-150) : accueil → Réglages (Ultra) → course → accueil : %d / 5 étapes%s", etapes, etapes == 5 ? " OK" : " ÉCHEC");
-        if (etapes != 5 || !propose) ecarts++;
+        if (etapes != 5 || !propose) { WFS_ERR("parcours (WFS-150) : %d / 5 étapes, Ultra %s", etapes, propose ? "proposé" : "non proposé"); ecarts++; }
         qualite::tenueUltra = {};
         g.shutdown();
-    } else ecarts++;
+    } else { WFS_ERR("parcours (WFS-150) : chargement de la Ville impossible"); ecarts++; }
     niveau(q0 == qualite::HAUTE && u0 ? qualite::ULTRA : q0);
     unsetenv("WFS_MOMENT");
     WFS_LOG("passes (WFS-150) : banc terminé, %d écart(s)", ecarts);

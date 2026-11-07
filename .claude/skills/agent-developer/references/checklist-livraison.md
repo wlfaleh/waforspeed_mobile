@@ -26,6 +26,8 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 - [ ] `bash tools/qa/tests_cpu.sh build` vert ; nouveau test pour chaque règle calculable ; test de non-régression pour chaque bug corrigé.
 - [ ] Serveur touché : `serveur/test` vert.
 - [ ] Captures du banc d'essai du ticket produites et **regardées** ; aucune autre capture dégradée.
+- [ ] **`bash tools/qa/captures_pr.sh WFS-XX <banc>[:LxH] ...`** lancé : au moins 3 captures avant / après (jour et nuit si le sujet se voit) dans `qa/pr/WFS-XX/`, `pr.md` collé dans la PR.
+- [ ] PR ouverte, puis **agent `lead-dev` appelé** (numéro de PR, ticket) : c'est lui qui fusionne ; je ne fusionne jamais moi-même (règle de l'utilisateur, 2026-11-07).
 - [ ] Écran ou parcours touché : parcours complet (accueil → … → course → retour) prouvé au Journal (`WFS_BANC=parcours`, 0 écart).
 - [ ] Performance : coût mesuré et noté au Journal si le rendu ou la simulation change.
 

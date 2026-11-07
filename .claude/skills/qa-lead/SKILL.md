@@ -30,7 +30,7 @@ description: QA lead de WaForSpeed Mobile — (1) recette d'un ticket : vérifie
 
 
 ## Tickets fusionnés par confiance
-**Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire)** : développeur confiant à plus de 50% → il fusionne tout de suite (conditions et suite : `CLAUDE.md`, règle de fusion n°1). Dans `qa/Check.md` ils sont marqués « fusion par confiance » : même recette, faite après la fusion, sur `main`.
+**[Supprimé le 2026-11-07 : un développeur ne fusionne plus ; captures avant / après dans la PR et fusion par l’agent `lead-dev`, voir `CLAUDE.md`]** ~~Fusion directe par confiance (règle de l’utilisateur, 2026-11-04, prioritaire)** : développeur confiant à plus de 50% → il fusionne tout de suite (conditions et suite : `CLAUDE.md`, règle de fusion n°1). Dans `qa/Check.md` ils sont marqués « fusion par confiance » : même recette, faite après la fusion, sur `main`.
 
 ## Campagne de test VABF sur l'émulateur : anomalies de prod
 - **Quand** : fin d'épic (ticket « Vérification simulateur EX ») ou à la demande de l'utilisateur ou du PO.

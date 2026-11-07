@@ -4024,3 +4024,197 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   4. plancher « rue » à EV 0 : sans effet (péage 39 %), car la mesure réfléchie des sondes donne EV 4-5 près des lampes.
   → Une exposition globale ne peut pas montrer à la fois la flaque (15 lx) et le paysage sous la lune (0,1 lx), soit 7 IL d'écart. Le PO crée **WFS-276** (tonemapping local), réservé à Agent 0.
 - **Vérifications** : banc `nuit` avant / après : Ville, circuit et Corniche **0 pixel différent** ; seules changent les scènes de Campagne (et la Poursuite vue de haut, 6 % : zones sous 0,63 lx). Tests CPU OK, parcours 0 écart (normal et Cockpit), après synchronisation avec main.
+
+### 2026-11-07 20:54:33 — WFS-275 : acoustique des lieux fusionnée (PR #237, fusion par confiance) (arwa-4)
+- **RG-01, CNOSSOS-EU vérifié** : j'ai relu le tableau F-1, catégorie 1, sur deux dépôts GitHub publics, par clone partiel en lecture seule dans `/tmp`, sans rien exécuter ni rien ajouter au dépôt :
+  - `jmrplens/phonometry` (MIT), commit 4e0b6b7, fichier `src/phonometry/environment/sources/cnossos_road.py`, SHA-256 5d7712cf… ;
+  - `Arpapiemonte/openoise-map` (GPL-3.0), commit f40f947, fichier `tools/on_Acoustics_CNOSSOS_Road_Params.xml`, SHA-256 735ef2dc….
+  Les deux donnent les mêmes valeurs, celles de la directive déléguée (UE) 2021/1226, qui a remplacé le tableau F-1 en 2021. Je n'en ai repris que les nombres. **Avant / après** : A_R passe de 79,7 · 85,7 · 84,5 · 90,2 · 97,3 · 93,9 · 84,1 · 74,3 à 83,1 · 89,2 · 87,7 · 93,1 · 100,1 · 96,7 · 86,8 · 76,2 ; A_P passe de 94,5 · 89,2 · 88,0 · 85,9 · 84,2 · 86,9 · 83,3 · 76,1 à 97,9 · 92,5 · 90,7 · 87,2 · 84,7 · 88,0 · 84,4 · 77,1. B_R, B_P et la pondération A étaient justes. Le tableau F-3 donne C_P = 5,5 dB par m/s² (catégorie 1), ce qui justifie les +6 dB du moteur en charge. `test_audio_voitures` reste vert : pneus +8,5 dB au-dessus du moteur à 60 km/h (+6,8 avant), voiture du trafic −9,0 dB sous le moteur du joueur. Trace dans `references/reel/son/cnossos-eu-f1.md`.
+- **Fait** : module `src/audio/parois_sons.*`.
+  - Parois par segment et par côté, la plus proche gagnant, jusqu'à 40 m. La Ville est lue dans le plan (façades à RW + 6,5 m, entrepôts) ; la Corniche, la Campagne et le Grand Prix passent par des accroches.
+  - Écho par sources images : délai 2·d / c, niveau 20·lg(1,5 / chemin), α = 0,05 soit −0,22 dB par réflexion. Une rue bordée des deux côtés ajoute les ordres 2 et 3. Chaque écho vient du côté de sa paroi, avec le panoramique de WFS-261.
+  - Trouées en 75 ms ; changement de délai en fondu entre deux prises de 60 ms ; fondu croisé de 0,4 s avec l'écho du tunnel.
+  - Masques de la Ville : diffraction ISO 9613-2, D = 10·lg(3 + 20·N), N = 2·δ / λ à 1 kHz, détour par les côtés (enveloppe convexe) ou par le toit. Plafond 20 dB, passe-bas 1 kHz, appliqué aux voix de WFS-272 et aux sources de WFS-261.
+- **Accroches** (annoncées ici, rien ajouté au décor) : `plage.cpp` (4 lignes : roche côté montagne des lacets, villas), `campagne.cpp` (5 lignes et 1 modifiée : maisons, commerces, église, fermes), `circuit.cpp` (5 lignes : mur des stands vitré de 2,7 m, garages, tribunes, dans `poser`) ; `CMakeLists.txt` (1 ligne : `test_audio_parois`).
+- **Vérifié** : 59 tests CPU OK. `test_audio_parois` mesure le délai à 2 799 échantillons pour 2 798,8 attendus et le niveau à −22,83 dB pour −22,83. Côté : 16 dB. Trouées en 75 à 83 ms, tunnel en 0,40 s, aucun clic au changement de délai. D(0,1 m) = 11,66 dB et les détours sont exacts. Le champ libre est identique à l'échantillon près. Coût : écho 0,04 ms par bloc, masques 0,01 ms par pas. Au banc, le délai mesuré par intercorrélation au bruit est égal au délai attendu (81,6, 91,8 et 63,6 ms). Essai local des 4 cartes : Ville 2 547 / 3 910 segments avec paroi et 621 immeubles, Corniche 2 092 / 0, Campagne 523 / 512, Grand Prix 1 155 / 479. Bancs locaux : « parcours complet : 0 écart(s) OK », parcours en vue Cockpit à 0, parcours Course à 5 à 0, parcours Poursuite à 0.
+- **Limites** :
+  - α = 0,05 est une valeur usuelle des tables d'acoustique du bâtiment, **[à vérifier]** : aucune source lisible sur GitHub.
+  - Pas de queue de réverbération de rue : la règle l'exige sourcée.
+  - La Corniche n'a de paroi qu'à gauche (villas côté mer : aucune trouvée).
+  - Les lieux du tracé 2 de la Ville (casino, centre commercial, garages de WFS-176) ne renvoient pas encore le son : leur façade n'est pas donnée par le plan.
+  - Masques limités à la Ville (règle). Plusieurs immeubles sur la ligne : le plus fort compte, sans cumul.
+  - Rien n'a été écouté sur un vrai téléphone.
+
+### 2026-11-07 20:58:33 — WFS-278 créé et attribué à arwa-4 (son, acoustique des lieux 2) (po-scrum-master)
+- **Demande** : arwa-4 (Claude, session 01Us6uCw), domaine « son », libre après la fusion de WFS-275 (PR #237, squash b009c48, 20:54 UTC).
+- **Ordre du bandeau parcouru** : WFS-269 et WFS-214 (E13 tenue par WFS-276, Agent 0) ; WFS-273 et WFS-262 à 265 (performance) ; n° 1 à 8, WFS-270, 257, 244, 245 : 🔧 / 🟡 / 🟣 ; WFS-232 et 215 (E3 / E10 tenues par WFS-235 et WFS-243) ; WFS-271 (E2, ronds-points) et WFS-266 (E11, personnages) : autres domaines. Seul ticket du son : WFS-260, en attente de WFS-258 et réservé à l'agent dev conduite. → règle « jamais à court de tickets ».
+- **Ticket** : **WFS-278** (P2 Haute, E6, axe Réalisme), tiré des limites de WFS-275 notées au journal (20:54:33) : façades du casino, du centre commercial et des garages de WFS-176 (Ville, tracé 2) qui renvoient le son ; sons masqués à la Corniche (roche des lacets, villas), à la Campagne (village) et au Grand Prix (garages, stands, tribunes) ; diffraction multiple et absorption α des parois relues sur une source GitHub publique, sinon comportement actuel gardé et « non vérifiable » écrit. Règles : `regles-de-gestion/WFS-278.md`.
+- **Zone** : `src/audio/parois_*`, `acoustique_*` (neufs), `audio_system.*`, branchement du masque dans `voitures_sons.*` / `ambiance_lieux.*`, `tests/test_audio_parois*`, `references/reel/son/**` ; accroches de lecture ≤ 10 lignes par carte (`ville.cpp`, `plage.cpp`, `campagne.cpp`, `circuit.cpp`). Interdit : sons de conduite (`sfx.*`, `sons_conduite.h`, `route_sons.h`, `engine_synth.*`, `ressenti.*`, `player.*`, `conduite_*` : WFS-258 à 260), `src/render/**`, `shaders/**`, iOS, tailles d'interface.
+- **Suite** : branche `feature/waforspeed-278` à pousser tout de suite ; skills `agent-developer`, `waforspeed-natif` ; ni essai de l'utilisateur ni conduite : 🟣 puis ✅ par le robot (pas de 🟡) ; ligne `qa/Check.md` à la fusion ; pas de CI de branche sauf une fois à confiance ≤ 50 %. CI de `main` #881 (b009c48) en file au moment de l'attribution.
+- **Tickets prêts** : 11 (WFS-214, 215, 232, 262 à 266, 269, 271, 273), sur 6 épics (E2, E4, E10, E3 + E10, E11, E13) : règle des 8 tenue.
+
+### 2026-11-07 21:04:34 — WFS-235 fusionné (PR #236, squash 66fdd3d) : vue Cockpit, voir la rue, regard qui suit la route, réglage « Regard cockpit », 🟡 À valider (utilisateur) (arwa-2)
+- **Fusion par confiance** (PR #236, squash 66fdd3d ; branche synchronisée avec `main` ; 60 tests CPU OK dont le nouveau `test_regard_cockpit` ; parcours complet 0 écart ; banc `cockpit` des 20 voitures en 1200 × 540, même cadrage que 2400 × 1080). **Statut 🟡 À valider (utilisateur)** : défaut vu par l'utilisateur sur son téléphone.
+- **RG-01, causes des bandes noires (20 voitures)** : (1) champ de 72° **vertical**, soit ≈ 116° horizontaux sur un écran 20:9 : les pièces proches de l'œil (montants, haut de planche, rétroviseur) devenaient énormes ; (2) albédos presque noirs (0,001 à 0,015) pour la planche, les montants, le ciel de toit et la coque du rétroviseur : sans lumière directe ils sortaient en aplats noirs ; (3) montants trop hauts et trop droits devant l'œil, pavillon hors de l'image : deux grandes diagonales noires du bas jusqu'en haut ; (4) rétroviseur en bloc noir sans glace ; (5) regard fixe à 30 m devant, sans suivre le virage. Même cause sur les 20 intérieurs (bloc commun de `construire`), aucune pièce mal découpée ni intérieur d'un autre modèle.
+- **RG-02** : champ fixe de **85° horizontaux** (vertical calculé selon l'écran, 44,8° en 20:9) ; œil à la place du conducteur (x −0,36 m, hauteur d'yeux assis ANSUR-II au dossier de 25°) ; regard Normal incliné de −3,5° ; il vise la route à 12 à 40 m devant selon la vitesse et tourne jusqu'à 12° vers l'intérieur du virage (lissé, pivot du cou à 9 cm). Vraie géométrie (arbitrage du PO, option A, cotes d'`expert-realisme-3d`) : haut du pare-brise à 55 % de la garde au toit, sur la pente de la Golf, vu à 12° au moins (10° pour la Gallardo et la SF90, comme les vraies) ; montants de 65 mm du coin bas au coin haut du pare-brise ; ciel de toit fermé ; rétroviseur au milieu, tourné de 17° vers le conducteur, taille et hauteur par modèle (`pavillonPour`) ; contre-portes à la vraie place.
+- **RG-03** : ligne **« Regard cockpit »** (Bas / Normal / Haut : −7°, −3,5°, 0°) dans les Réglages, enregistrée (`regard=` dans `reglages.txt`, comme `mouvements`). **Accroche annoncée** dans `src/ui/ecrans/reglages.cpp` (E8) : 10 lignes ajoutées et 5 modifiées (une ligne du tableau, une clé lue / écrite, la valeur, le toucher, la mise en page à 2 colonnes) ; aucun bouton ne change de taille ni de place (captures `reglages` 2400 et 1280 regardées).
+- **RG-04** (avis d'`expert-realisme-3d`) : albédos réels (plastique grainé 0,040 à 0,045, rugosité 0,70 à 0,80 ; cuir ; alu brossé ≥ 0,90 ; noir laqué 0,012 ; tissu du ciel de toit 0,040) ; glace du rétroviseur argentée (F0 ≈ 0,60 le jour, 0,08 la nuit) ; reflet léger de la planche dans le bas du pare-brise le jour (k = 0,005 : 0,02 voilait 6 à 9 % du bas du pare-brise) ; mouvement de tête doux (accélération, freinage, virage ; ±2 à 3 cm) coupé avec « Réduire les mouvements » (le regard tourne alors 2 fois moins) ; volant de la Golf 2 cm plus bas (cote réelle).
+- **RG-05, critère arbitré le 2026-11-07 14:28 UTC** : 20 voitures × ligne droite / virage × jour / nuit, regard Normal (et Bas / Haut sur la ligne droite de jour), banc `cockpit` en 1200 × 540 (même cadrage qu'en 2400 × 1080). **Mesure exacte de la part cachée** : le même instant est dessiné deux fois, l'intérieur normal puis tout en magenta émissif (couleur clé, `cockpit::g_interieurCle`) ; caché = pixel qui change. La 1re méthode (avec / sans l'intérieur) se trompait dans les deux sens : elle ne voyait pas l'intérieur sombre devant une rue sombre (Gallardo, ligne droite : 13,0 % au lieu de 18,5 %) et comptait comme « caché » le halo des lampes et de la lune cachées par le pavillon (jusqu'à 14 % de la fenêtre la nuit en virage sur la Gallardo et la SF90). Pendant la mesure : halo (bloom) coupé, captures des sondes de lumière suspendues, image de contrôle refaite (0,00 % d'écart sur les 140 mesures). Sous la pluie, les **balais en mouvement** passent devant la rue comme dans une vraie voiture (jusqu'à 6,6 % de la fenêtre sur l'Audi S3) : la fenêtre se mesure balais au repos, la mesure balais en mouvement est écrite à part. Tangage de la voiture écrit avec chaque mesure (0,0° sur la Ville). Valeur réelle : calcul d'`expert-realisme-3d` (mêmes champ, regard et bande ; « virage » : regard tourné de 12° ; cotes réelles en partie estimées : toit ±2°, montants ±15 mm).
+
+| Voiture | Haut du pare-brise (y / z, m de l'œil) | Fenêtre de la rue (max) | Fenêtre en Bas / Haut | Bande, ligne droite (max) | Réel + 2 | Bande, virage (max) | Réel virage + 2 | Au-dessus de l'horizon (max ; réel) | Verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| a45 | +0.19 / -0.47 | 0,0 % | 0,0 % | 9,7 % | 13,4 % | 9,9 % | 24,5 % | 22,4 % ; 30,8 % | OK |
+| abarth | +0.17 / -0.48 | 0,0 % | 0,0 % | 10,5 % | 12,5 % | 11,3 % | 21,8 % | 19,6 % ; 20,8 % | OK |
+| compass | +0.18 / -0.50 | 0,0 % | 0,0 % | 13,6 % | 19,3 % | 14,7 % | 25,4 % | 22,8 % ; 27,9 % | OK |
+| corsa | +0.15 / -0.52 | 0,0 % | 0,0 % | 25,5 % | 29,1 % | 27,7 % | 31,2 % | 36,9 % ; 40,3 % | OK |
+| elantra | +0.20 / -0.58 | 0,0 % | 0,0 % | 10,6 % | 13,1 % | 11,0 % | 23,7 % | 21,5 % ; 30,0 % | OK |
+| gallardo | +0.13 / -0.69 | 0,0 % | 0,0 % | 18,5 % | 21,0 % | 19,6 % | 30,3 % | 52,5 % ; 51,7 % | OK |
+| giulia | +0.17 / -0.59 | 0,0 % | 0,0 % | 18,3 % | 21,1 % | 19,8 % | 26,5 % | 33,9 % ; 38,7 % | OK |
+| golf | +0.17 / -0.51 | 0,0 % | 0,0 % | 18,6 % | 26,9 % | 20,4 % | 31,1 % | 26,3 % ; 34,4 % | OK |
+| gt86 | +0.15 / -0.57 | 0,0 % | 0,0 % | 16,8 % | 20,7 % | 18,3 % | 27,4 % | 37,3 % ; 42,5 % | OK |
+| m4 | +0.19 / -0.53 | 0,0 % | 0,0 % | 12,6 % | 15,1 % | 13,3 % | 24,5 % | 22,1 % ; 31,8 % | OK |
+| model3 | +0.19 / -0.47 | 0,0 % | 0,0 % | 11,0 % | 16,0 % | 11,5 % | 21,6 % | 22,9 % ; 23,6 % | OK |
+| mustang | +0.15 / -0.65 | 0,0 % | 0,0 % | 18,4 % | 23,1 % | 19,0 % | 29,1 % | 42,3 % ; 45,4 % | OK |
+| p208 | +0.14 / -0.53 | 0,0 % | 0,0 % | 27,9 % | 34,3 % | 30,3 % | 36,0 % | 41,3 % ; 46,0 % | OK |
+| p911 | +0.16 / -0.45 | 0,0 % | 0,0 % | 12,6 % | 18,0 % | 14,0 % | 24,4 % | 21,2 % ; 38,9 % | OK |
+| rrsport | +0.17 / -0.53 | 0,0 % | 0,0 % | 17,8 % | 26,8 % | 19,6 % | 29,4 % | 27,3 % ; 32,7 % | OK |
+| s3 | +0.18 / -0.50 | 0,0 % | 0,0 % | 13,0 % | 17,3 % | 14,1 % | 24,4 % | 22,6 % ; 32,4 % | OK |
+| sf90 | +0.13 / -0.71 | 0,0 % | 0,0 % | 16,0 % | 23,5 % | 17,0 % | 30,6 % | 53,4 % ; 55,0 % | OK |
+| tcross | +0.19 / -0.44 | 0,0 % | 0,0 % | 11,2 % | 16,7 % | 12,1 % | 24,3 % | 23,2 % ; 27,4 % | OK |
+| v60 | +0.16 / -0.59 | 0,0 % | 0,0 % | 20,5 % | 25,0 % | 22,4 % | 28,7 % | 37,0 % ; 37,7 % | OK |
+| x5 | +0.20 / -0.47 | 0,0 % | 0,0 % | 8,0 % | 18,3 % | 8,1 % | 23,0 % | 22,0 % ; 26,8 % | OK |
+
+0 voiture(s) hors règle ; contrôle de lumière max 0.00 % ; balais en mouvement (fenêtre, écrit) : a45 0.0 %, abarth 0.0 %, compass 0.0 %, corsa 0.0 %, elantra 0.0 %, gallardo 0.5 %, giulia 0.0 %, golf 4.5 %, gt86 0.0 %, m4 0.0 %, model3 0.0 %, mustang 2.8 %, p208 0.0 %, p911 6.1 %, rrsport 0.0 %, s3 6.6 %, sf90 0.0 %, tcross 0.1 %, v60 5.9 %, x5 0.0 %
+
+- **Corrections après l'avis d'expert** : cinq voitures dépassaient « réel + 2 points » à cause du rétroviseur commun (taille de la Golf, 7,5 cm sous le toit) : 911, Gallardo, SF90, GT86, 500 Abarth ; Mustang trop juste. Rétroviseur par modèle (`pavillonPour` : 500 : 215 × 65 mm ; 911 : 245 × 65 ; GT86 et Gallardo : 240 × 65 ; SF90 : 220 × 58 ; Mustang : 250 × 68, centres 5 à 7 cm sous le toit) et haut du pare-brise vu à 10° (Gallardo, SF90, comme les vraies). Après correction, les 20 voitures tiennent même la lecture stricte (bande la plus haute, virage compris, ≤ réel en ligne droite + 2 points).
+- **Au-dessus de l'horizon** (critère 4, sans seuil) : la vraie Golf est à **≈ 34 %** en ligne droite (montant réel vu d'un œil, 105 mm, et boîtier de caméra) ; l'« ≈ 25 % » donné plus tôt par l'expert était trop bas (correction de l'expert).
+- **Limites** : pas d'essai sur téléphone (à valider par l'utilisateur sur l'APK de `main`) ; même place latérale de l'œil (−0,36 m) pour les 20 voitures ; les montants de 65 mm sont plus fins que la silhouette réelle vue d'un œil (90 à 120 mm) : une marge, pas un défaut (avis d'expert) ; verre de l'A45 laissé à WFS-215 (il ne voile pas la vue cockpit).
+
+### 2026-11-07 21:06:14 — WFS-277 (2) fusionné (PR #234) : tableau journée / matin validé par l'utilisateur (agent expert ci)
+- **Décisions de l'utilisateur** : tous les bancs à 04:00 heure de Paris, émulateur inclus, APK aussi le matin ; QA à 07:00 ; option A (le ✅ vient des bancs du matin) ; au moins un banc avec photos à chaque fusion ; « commence tout de suite, c'est validé ». Avis de Smart Brain suivis : émulateur seulement informatif la 1re semaine (nouvel essai s'il échoue), message « Recette prête » avec verdict en tête, gel de la CI 2-3 jours après.
+- **build.yml (journée)** : compilation, tests CPU + licences, texte et menu1-2400 (photos dans `apercu-fusion`, `TAG_APERCU` dans publier_apercu.sh), endurance, APK + notification ; plus de lancement de nuit.
+- **matin.yml (04:00)** : compilation (jeu + tests), tests, 14 groupes (dont réalisme en 2 parties + fusion), endurance + chauffe, APK (numéro = dernier run de build.yml, versionCode jamais en recul) + notification « APK du matin » (`ORIGINE=matin`), émulateur (Release `simulateur-matin`, mise à jour sans suppression), captures dans `apercu`, message « 🧪 Recette QA prête » (`tools/qa/recette_prete.sh`).
+- **Robot des statuts (option A)** : statuts.yml suit build.yml et matin.yml ; `statuts.py --source fusion|matin --libelle` ; fusion verte → 🟣 gardé, matin vert → ✅ « (bancs du matin #N) » ; test_statuts 43/43 (4 nouveaux cas).
+- **Preuve** : 1er run de matin.yml (ancienne version) annulé ; nouveau run lancé à la main sur main (2026-11-07 21:06:14).
+- **Règles à mettre à jour par le PO** (CLAUDE.md, qa-lead.md) : statut ✅ par les bancs du matin ; QA à 07:00 après le message « Recette prête » ; émulateur chaque matin (plus seulement en fin d'épic).
+
+### 2026-11-07 21:07:21 — CI de journée / bancs du matin (PR #234) : règles mises à jour ; WFS-279 versions créé (po-scrum-master)
+- Décision de l'utilisateur rapportée par l'agent expert ci : ✅ par les bancs du matin (04:00), QA à 07:00, émulateur chaque matin, gel de la CI 2-3 jours. CLAUDE.md, qa-lead.md, po-scrum-master.md, tache utilisateur.md à jour.
+
+### 2026-11-07 21:23:51 — WFS-243 : adversaires visibles au loin, classement, îlot, trafic de l'anneau, voies des ordinateurs, fusionné (#239) (arwa-3)
+- **ANO-117, cause nommée** : `Renderer::draw(Model)` classe toute la voiture par `masquage::distanceMax` (WFS-82 RG-02). Rayon ≈ 2,4 m, sous 3 m : la voiture est coupée au-delà de 150 m en Basse et de 200 m en Haute. Ce n'est ni le classement, ni `rdRendu`, ni les modèles.
+- **ANO-117, correction** : accroche du rendu de 9 lignes, avec l'accord du PO (`renderer.h` l. 163, 221 et 330 ; `renderer.cpp` : `classer`, `beginFrame`, `draw(Model)`).
+  - Le drapeau `adversaireProchaineVoiture()` est remis à faux après chaque voiture et à chaque image.
+  - Il n'est appelé que pour les 4 adversaires de la Course à 5 et l'adversaire du Duel (accroche d'une ligne dans `duel_system.cpp`).
+  - Trafic, police, joueur, décor et `distanceMax` inchangés (RG-05).
+- **Banc `course5`** (Campagne, adversaires arrêtés, Haute et Basse) :
+
+  | cas | classement | dessiné (devant le joueur) | largeur en 2340 × 1080 | avant le ticket |
+  |---|---|---|---|---|
+  | 190 m (à 0,54 km) | 190,0 m | 190,0 m | 8,5 px | coupé en Basse (150 m) |
+  | 400 m (à 1,06 km) | 400,0 à 406,0 m | 400,0 à 406,0 m | 4,2 px | coupé en Basse et en Haute |
+
+  - Captures `-avant` / après regardées : à 190 m en Basse, la voiture apparaît au bout de la ligne droite ; à 400 m, les 4 voitures sont au bout de la ligne droite du village.
+  - À 0,54 km, une bosse cache la route au-delà de ≈ 250 m. La capture à 400 m est donc prise à 1,06 km, sur une ligne de vue dégagée cherchée sur le tracé.
+- **Coût** (condition du PO, moyenne de 30 images au banc lavapipe) :
+  - Haute, 400 m : 447 → 453 appels de dessin, 865 → 904 ms par image.
+  - Basse : les écarts entre deux séries (±50 000 triangles, à cause des captures d'environnement et des sondes) sont plus grands que le coût des 4 voitures, qui sont toutes au niveau de détail le plus léger.
+  - Le banc `perf` ne sait pas se mettre en Course à 5 et `bench_perf.cpp` est hors de ma zone : la mesure est donc dans le banc `course5`.
+- **RG-03 (classement)** : nouveau test, 3 × 60 s sur la Ville. La position affichée est égale à l'ordre réel à chacun des 21 600 pas ; 9 changements de place, vus au pas même.
+- **RG-04 (îlot)** : déjà solide depuis WFS-256. `test_chocs_cartes` arrête la voiture contre l'îlot à 30, 80 et 150 km/h, sur la Ville, la Campagne et la Corniche, avec les deux modèles de conduite. Rien changé.
+- **RG-ANO-144 (trafic de l'anneau)** :
+  - Cause : les files du trafic sont à ±5 m de l'axe (anneau de 14 m). Une voiture roulait donc sur la couronne de pavés et une autre hors de l'anneau.
+  - Correction (`traffic.*`, `FACTEUR_ANNEAU`) : files resserrées à ±2,25 m dans l'anneau, avec une rampe de 15 m ; pas de changement de file dans l'anneau ; voitures posées déjà resserrées. Tracé 1 inchangé : la référence du jeu web reste juste au bit près.
+  - Test, 400 voitures pendant 2 min, sur la Ville, la Campagne et la Corniche :
+    - avant : carrosseries de 7,66 à 20,34 m du centre ; environ 65 % des positions sur la couronne ou hors de l'anneau ;
+    - après : de 10,40 à 17,59 m, aucune dehors.
+  - Capture `rondpoint-plage-anneau-jour` regardée : la voiture du trafic est sur l'asphalte de l'anneau.
+  - **Cédez-le-passage non fait.** Tout le trafic suit le même trajet : entrée, ¾ de tour, sortie. Le quart d'anneau entre la sortie et l'entrée ne porte donc jamais de voiture, et aucune voiture n'arrive à l'entrée par l'anneau : la règle ne se déclencherait jamais. Je n'ai pas codé une règle qui ne fait rien. Proposition au PO : soit le trafic ralentit au cédez-le-passage, soit on attend d'avoir du trafic sur les autres branches.
+- **RG-ANO-150 (voies des ordinateurs)** :
+  - Règle codée : un changement de voie est gardé jusqu'à l'arrivée dans la nouvelle file, et au moins 2 s. Pas de retour vers la file quittée si une voiture y est à moins de 30 m.
+  - Test, code de `main` → après :
+    - cas « voiture lente devant, deux files libres » : 71 → 1 changement de voie ;
+    - 60 s de course à la Ville : 56,1 → 0,6 changement par ordinateur et par minute (pire cas : 91,2 → 1,2).
+  - Départ (WFS-242), vitesse et difficulté inchangés.
+- **Vérifié** : 60 tests CPU verts ; en local, bancs `course5` (« Rejouer » OK), `rondspoints` et `parcours` (0 écart, vue normale et Cockpit).
+- **Limites** : rien vu sur téléphone ; le coût en Basse n'est pas séparable du bruit du banc.
+- Fusion par confiance, squash 77e2b7f ; ligne `qa/Check.md` ; **🟡 À valider (utilisateur)**.
+
+### 2026-11-07 21:27:53 — WFS-232 découpé (WFS-280 créé) et attribué à arwa-3 ; cédez-le-passage de WFS-243 sans objet (po-scrum-master)
+- **Demande d'arwa-3** (libre après WFS-243 🟡, PR #239, squash 77e2b7f). Bandeau de 15:18 : n° 0 à 8 faits, en cours ou en attente d'une épic (WFS-269 : E13 tenue par WFS-276 ; WFS-273 : performance, autre domaine) ; ordre du PO : 270, 257 fusionnés, WFS-214 (E13 tenue) → **WFS-232** (deux-roues dans le trafic, P2), premier permis du domaine d'arwa-3 (courses, modes et trafic : `traffic.*` déjà touché dans WFS-243) ; E10 libérée par WFS-235 (🟡) et WFS-270 (🟣).
+- **Découpage** (un ticket = une journée) : WFS-232 (1/2) motos et scooters **dans le trafic** (3 modèles au moins, pilotes casqués, 10-15 % Ville / Corniche, 5 % Campagne, inclinaison φ = atan(v²/(g·R)), chocs, feux la nuit) ; **WFS-280** (2/2, créé, ⏳ en attente de WFS-232) garés et faufilement. Règles : `regles-de-gestion/WFS-232.md` (section « Découpage »), `regles-de-gestion/WFS-280.md`.
+- **Zone (exception PO, en parallèle de WFS-258)** : `traffic.*`, `traffic_system.*`, `deux_roues*` (nouveaux), `assets/cars/deux_roues/**`, `tools/convert_car.mjs`, `references/reel/**`, `tests/**` ; accroches ≤ 10 lignes annoncées (`conducteurs.*`, `vehicule_*`, `renderer.*`) ; interdits `player.*`, `conduite_*`, `aide_direction*`, `ressenti.*`, `camera_vue.*`, `game.cpp`, `.github/**` (gel de la CI), iOS. Réseau : GitHub public seulement (`regles-reseau.md` § 2.4), CC0 / CC BY, SHA-256 au journal ; moins de 3 modèles → le dire au PO.
+- Skills : `agent-developer`, `waforspeed-natif`, `expert-conduite`. Après la fusion → 🟡 À valider (utilisateur).
+- **WFS-243, cédez-le-passage (RG-ANO-144)** : ni ralentissement sans raison (a), ni trafic sur les autres branches (b) : la règle est sans objet tant qu'aucune voiture ne roule sur l'anneau en amont d'une entrée ; aucun code, aucun ticket. Noté dans `WFS-243.md` et ANO-144 (`anno.md`).
+- **Dossier partagé** (signalé par arwa-3) : le PO n'écrit que dans `/home/claude/wfs-main` (arbre de travail de `main`) ; ce dossier partage le `.git` du clone d'arwa-3 (`git worktree`), pas ses fichiers.
+- Envois vérifiés : 245 21:04, 278 20:59, 276 20:57, 267 20:04 (PR #232), 258 17:35 ⚠️, 239 13:43 ⚠️ (P1, aucun retrait avant 10 h : 23:43) ; 274 sans branche (rien à coder, à clore par l'agent arwa).
+
+### 2026-11-07 21:33:27 — WFS-267 : fusionné (PR #232, squash 466a4c8) ; libre (arwa-5)
+- **CI de branche run #876 verte** (13 bancs, endurance, APK) : `banc-essai (realisme)` **0 erreur** ; indices identiques au run vert #844 (lumière 69 / 69, soleil 30 / 30, photométrie 12 / 12, revêtements 14 / 14, voitures 109 / 141) + architecture 16 / 16 (WFS-161). Durée du job `realisme` : 68 min (#859 sans le correctif : 67 min ; limite 75 min : WFS-252 la réduit).
+- Branche synchronisée avant la fusion (WFS-235, 243, 249, 270, 275 compris) : 60 tests CPU OK, bloc tunnel local OK (12,96 → 14,06 → 14,65).
+- **WFS-274** (agent arwa) : même panne, corrigée ici ; à son agent de le clore « ↪ Regroupé avec WFS-267 ». La CI de `main` sur 466a4c8 dira si `main` repasse au vert (le robot des statuts passera WFS-267 et WFS-227 en ✅).
+- **Limite connue (signalée au PO)** : quand la caméra reste loin de la voiture plus de 120 images (vues libres de bancs), la sonde est prise comme avant WFS-267 (sans ombre) ; en jeu, cela n'arrive pas (poursuite, Cockpit, garage : point dans la cascade 0).
+- Ligne ajoutée à `qa/Check.md`. Je demande mon ticket suivant au PO.
+
+### 2026-11-07 21:37:22 — WFS-232 : recherche des deux-roues (RG-00, 45 min), 3 modèles CC BY 4.0, téléchargements (arwa-3)
+- **Méthode** : recherche de code GitHub (`"scooter" / "motorcycle" / "vespa" / marques… sketchfab filename:license.txt`), clones partiels en lecture seule dans `/tmp/bac`, rien exécuté, licence lue dans chaque `license.txt`.
+- **Refusés** :
+  - en licence NC-SA : Ducati Streetfighter V4 S, Yamaha YZF 2021, Honda CBR650R, Vespa Mandarinia ;
+  - en licence Sketchfab Standard : « Vespa Scooter » de Marina Belov ;
+  - modèles low-poly ;
+  - Vespa PX125 (alban, CC BY) : relevé photo avec l'éclairage figé dans la texture, matériau « unlit » ;
+  - fichiers Draco de `lxorb/mechanica` : le convertisseur ne lit pas Draco, j'ai pris les originaux ailleurs.
+- **Retenus (CC BY 4.0)** :
+
+  | id | modèle (auteur Sketchfab) | dépôt GitHub (commit) | fichiers, SHA-256 |
+  |---|---|---|---|
+  | scooter | OLA Electric Scooter (neshallads) | `Abhay-s-8/Portfolio` (fcd781b7), `models/ola_electric_scooter_red_color` | scene.gltf 4d9631288fa046e96578e9dd05e16a2a69e6502c935e981fb0ec50a1465e9ef7 ; scene.bin (4 065 328 o) ae11477528ab10f423028fe4be1c2408fbe0f0d5308db478b4d68d06d5dedcfa |
+  | routiere | Honda CB 750 F Super Sport 1970 (Alex.Ka.) | `p-shark/HCAM_project` (c23f055d), `ex09_project/WebContent/image/car/gltf/honda_cb750` | scene.gltf 9c52a72bdf0aca20b8dbb739f0fe8c057da5362f679509dbc3b4e4279537ec13 ; scene.bin (1 579 692 o) 45fb9788d13d0b64d5dca356a7af7d6abfb25fb078d607d3f3ae391df530f05b |
+  | sportive | Kawasaki ninja ZX-6R (valvetin) | `siddharth-vss/CAR-Camera-test` (ea5f593d), `static/kawasaki_ninja_zx-6r` | scene.gltf 0073d7af2b1c76412141729cd77d90aeaa03e191b3780c63ecb97f62c1fc7fa5 ; scene.bin (14 868 588 o) 450dfaa00d3d14147aa62aa76c949aa38b60d12f3dcabb9b8247d82ed1656a2d |
+
+  Le même `scene.bin` de la Honda est dans `KushinoAkira/BanhMi.EXE`, mais seulement comme pointeur LFS : il n'a pas été servi.
+- **Conversion** (branche `feature/waforspeed-232`, 2b6d2c9) :
+  - `.wfm` de 3,1, 2,1 et 5,3 Mo ; 63 k, 37 k et 107 k triangles (la sportive allégée de 335 k) ;
+  - niveaux de détail jusqu'à 3,7 k, 5,3 k et 10,5 k triangles ;
+  - `tools/convert_car.mjs` : nouvelle option `WFS_OPAQUE`, qui traite en alpha découpé les matériaux BLEND mal exportés par Sketchfab.
+- **Dimensions** : `references/reel/deux_roues.json`, statut `a_confirmer` (résumés du moteur de recherche). Écarts de longueur et d'empattement, en ± 1 % :
+  - scooter : 0 / +0,7 % ;
+  - routière : +0,5 % / −0,5 % ;
+  - sportive : −0,9 % / +0,9 % (les proportions du modèle diffèrent du vrai de 1,8 %, écart partagé).
+- **Limite** : roues fixes. La découpe des roues (`roues::decouper`, `model_loader`, `renderer` : 4 roues seulement) est hors de ma zone. Je le propose au PO comme ticket du rendu.
+
+### 2026-11-07 21:37:11 — WFS-279 (partie jeu) attribué à arwa-5 ; limite de WFS-267 sans ticket (po-scrum-master)
+- **Demande d'arwa-5** (libre après WFS-267 🟣, PR #232, squash 466a4c8), avec l'ordre de l'utilisateur qu'il a reçu (17:31 UTC) : « petites tâches ». Tickets prêts permis : WFS-273 (P1, E4, n° 0 du bandeau) et WFS-266 (P1, E11) sont des tickets d'une journée, pas des petites tâches : ils restent au premier développeur qui les demande ; WFS-269, WFS-214 (E13 tenue par WFS-276), WFS-262 à 265 (après WFS-273), WFS-215 (E10 en partie tenue par WFS-232) ne sont pas attribuables. **WFS-279 (partie jeu, P2, E8 libre)**, la plus petite : attribuée.
+- **Début de WFS-279** : branche `feature/waforspeed-279` (créée et poussée par arwa-5). Règles : `regles-de-gestion/WFS-279.md` (précisées ce soir).
+  - Zone : `src/ui/ecrans/chargement.*` ; accroches ≤ 10 lignes annoncées : `android/app/build.gradle` (passer `versionName` à CMake), `CMakeLists.txt` (définition de compilation, valeur fixe par défaut sur PC) ; test CPU dans `tests/**`.
+  - Interdit : `.github/**`, `tools/qa/**` (gel de la CI : RG-02, nom du fichier APK, reste à l'agent expert ci après le gel) ; nom et chemin de sortie de l'APK dans Gradle (`build.yml` l. 153 et `matin.yml` l. 171 copient `app-release.apk`) ; `versionCode` / `versionName` ; tailles des boutons ; iOS.
+  - Critères : version « v0.1.N » en petit sur l'écran de chargement (1280×720, 2400×1080, petit écran), rien d'autre ne bouge (captures `chargement-*` avant / après) ; une seule source (`versionName`) ; tests CPU ; parcours complet 0 écart ; ligne `qa/Check.md`.
+  - Plan court : définition `WFS_VERSION` (CMake, « dev » par défaut) ← argument de Gradle ; texte discret dans `dessinerChargement()` ; test CPU ; banc `chargement` en local.
+  - Après fusion : cycle normal 🟣 → ✅ (bancs du matin), pas de 🟡.
+- **Limite de WFS-267** (sonde sans ombre si la caméra reste loin de la voiture plus de 120 images, vues libres de bancs) : pas de ticket (aucun effet en jeu) ; noté dans `WFS-267.md`.
+- Envois vérifiés : 276 21:28, 232 21:28, 245 21:04, 278 20:59, 258 17:35 ⚠️ (P1, 4 h 01), 239 13:43 ⚠️ (P1, 7 h 53 ; aucun retrait avant 10 h : 23:43) ; 274 sans branche (à clore « ↪ WFS-267 » par l'agent arwa).
+
+### 2026-11-07 21:38:43 — Statuts automatiques, CI main #875 (robot statuts)
+- Run rouge (push, commit ebe798e), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-251, WFS-261, WFS-272.
+
+### 2026-11-07 21:44:57 — ANO-151 et WFS-281 : le jeu rame après 2 min (trafic) (po-scrum-master)
+- Signalement de Claude, agent 5 : l'utilisateur (APK de main 883, c9eda61) voit le jeu fluide la 1re minute puis ramer et saccader vers 2 min.
+- Mesure de l'agent 5 (banc perf, Ville, Haute) : TrafficSystem de 54 appels / 23 000 triangles au départ à 644 appels / 701 000 triangles après ≈ 2,8 min ; même montée avec `WFS_LOTS=0` : pas WFS-268, c'est le trafic (≈ 60 voitures dans la vue au lieu de ≈ 5).
+- Créés : **ANO-151** (bloquante, 📋 Planifiée) et **WFS-281** (P1, [TECHNIQUE] [URGENT], E3, règles `regles-de-gestion/WFS-281.md`), n° 00 du bandeau. Exception PO : mêmes fichiers que WFS-232 (arwa-3), en coordination. 🟡 après fusion (essai de l'utilisateur).
+- Non attribué (attribution seulement à la demande) : domaine trafic, skill `expert-conduite` ; **pas** l'agent 5 (domaine décor). Réponse à l'utilisateur dans `tache utilisateur.md`.
+
+### 2026-11-07 21:45:04 — Lead dev créé : captures obligatoires dans la PR, lui seul fusionne (po-scrum-master)
+- Règle de l'utilisateur après le refus de la vue Cockpit (WFS-235) : plus de fusion par confiance. Le développeur lance `tools/qa/captures_pr.sh` (banc d'essai PC, avant / après, ≥ 3 captures dans `qa/pr/WFS-XX/`), ouvre sa PR et appelle aussitôt l'agent `lead-dev`, qui regarde les images et fusionne ou refuse.
+- Fichiers : `.claude/skills/lead-dev/SKILL.md`, `.claude/agents/lead-dev.md`, `tools/qa/captures_pr.sh` ; `CLAUDE.md`, `po-scrum-master.md` (section « Captures demandées » dans chaque US), `qa-lead` et `waforspeed-natif` (ancienne règle barrée), checklist de livraison.
+- Pas de workflow GitHub sur les PR : interdit par la règle « pas de CI sur les PR » et par le gel de la CI ; l'automatisme passe par l'appel du lead dev dans la session du développeur.
+
+### 2026-11-07 21:59:41 — WFS-245 : livraison 1 fusionnée (PR #238, squash 5032e8b) : étiquettes et distance d'arrivée du HUD lisibles (arwa-2)
+- **Livraison 1, fusion par confiance** (PR #238, squash 5032e8b ; branche synchronisée avec `main` ; 61 tests CPU OK dont le nouveau `test_hud_lisible` ; parcours complet 0 écart ; banc `hud` en 2400 × 1080 regardé). **RG-09 (ANO-141, bandeau de la carte GPS), ajoutée par le PO à 17:48 UTC, vue après la fusion** : livraison 2 sur la même branche ; le ticket reste 🔧 jusqu'à elle, puis 🟡 À valider (utilisateur).
+- **Mesures RG-01** (arbitrage du PO du 17:30 UTC ; capitales et chiffres de Rajdhani Bold = 0,504 × la taille du texte ; capture 2400 × 1080, k = 1,5, 420 dpi = 16,5 px/mm) : capitales des étiquettes TEMPS, ARRIVÉE, CHECKPOINT n, SCORE, KM/H, NITRO **20,7 px (1,25 mm)**, avant 8,6 px (0,52 mm) ; chiffres de la distance d'arrivée **30,2 px (1,83 mm)**, avant 8,6 px (ils étaient dans l'étiquette) ; chiffres du score 30,2 px (avant 25,7) ; vitesse de la vue Cockpit 30,2 px (avant 21,2) ; chrono (36,3 px) et vitesse du compteur (33,3 px) inchangés.
+- **RG-02** : panneau du temps : ligne 1 « 0:06.0 TEMPS » (chrono puis l'étiquette sur sa ligne de base), ligne 2 « ARRIVÉE 1,92 KM » (distance en chiffres de 40, plus grands que l'étiquette ; en Course solo : « CHECKPOINT n »), ligne 3 la barre.
+- **RG-04, surfaces des panneaux** (px de référence au carré, écrites par le banc) : vue normale **32 424 après, 35 000 avant** (temps 200 × 112 → 236 × 84, score 180 × 70 inchangé) ; vue Cockpit **37 949 après, 38 795 avant** (+ panneau de la vitesse). Le panneau du temps est plus large (vers le ciel et les façades) et moins haut ; le bouton Menu et les boutons de caméra ne bougent pas.
+- **Contrastes** (WCAG 2.1, mélange en sRGB comme l'interface, au pire : fond blanc derrière) : étiquettes des panneaux #A6ADC2 sur 0x0A0B10 à 0,85 : **5,9 : 1** (avant 2,3 : 1) ; KM/H et NITRO du compteur sur son disque à 0,72 : **#D0D4DE, 4,8 : 1 sur du blanc** (voiture blanche derrière le compteur), 6,2 : 1 sur un béton clair ; le #C4C9D6 proposé ne donnait que 4,3 : 1 sur du blanc (choix permis par le PO s'il est mesuré ≥ 4,5 : 1). NITRO reste vert en nitro active.
+- **RG-03** : aucun bouton changé (volant, Gaz, Frein, Nitro, Menu, caméra : mêmes cadres, `commandes_tactiles` et `pause.cpp` non touchés) ; seul `obstacles()` de `minicarte.h` suit la nouvelle taille du panneau du temps (`hud::TEMPS_L`, `TEMPS_H`, constantes partagées dans `hud.h`).
+- **RG-05, captures** (banc `WFS_BANC=hud`, 2400 × 1080) : `hud-solo-jour`, `hud-solo-nuit`, `hud-course5-jour`, `hud-course5-nuit`, `hud-cockpit-jour`, `hud-cockpit-nuit` (nouvelles) ; `hud-course`, `hud-temps-bas`, `hud-nitro`, `hud-combo`, `hud-arc-120`, `hud-arc-320`, `encoche-hud` (existantes) ; avant : les mêmes captures du banc `hud` de `main` (`hud-course`, `hud-temps-bas`, `hud-nitro`, `hud-combo`, `hud-arc-*`, `encoche-hud`), et `cockpit-golf-jour` du banc `cockpit` pour la vue Cockpit.
+- **Limites** : pas d'essai sur téléphone (l'utilisateur confirme sur l'APK de `main`) ; la densité de 420 dpi est celle du téléphone de référence du projet : sur un 2340 × 1080 de 6,4 à 6,7 pouces (385 à 405 ppi), les textes sont un peu plus grands ; la ligne « Combo ×n » et le tableau des positions de la Course à 5 ne changent pas (hors périmètre d'ANO-118).
