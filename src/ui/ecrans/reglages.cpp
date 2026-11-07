@@ -45,7 +45,7 @@ void biseau(Renderer& r, float x, float y, float w, float h, float biais, const 
 // lignes du panneau (index.html, #pause .settings ; « Graphismes » en 3 niveaux, « Direction » remplacée plus tard
 // par la disposition des commandes)
 struct Ligne { const char* libelle; int n; const char* choix[4]; };   // WFS-85 : 4 vues
-const Ligne LIGNES[11] = {
+const Ligne LIGNES[12] = {
     {"Caméra", 4, {VUES[0].nom, VUES[1].nom, VUES[2].nom, VUES[3].nom}},   // colonne = VueCamera   // vues de WFS-66 (CAM_MODES du web)
     {"Graphismes", 3, {"Basse", "Moyenne", "Haute", "Ultra"}},   // WFS-150 (RG-04) : « Ultra » seulement si la Haute tient (nChoix)
     {"Son", 2, {"Activé", "Coupé", nullptr}},
@@ -57,9 +57,10 @@ const Ligne LIGNES[11] = {
     {"Boutons", 2, {"Normaux", "Grands", nullptr}},             // WFS-108 RG-04 : taille des commandes tactiles (× 1,25)
     {"Gyroscope", 4, {"Coupé", "Doux", "Moyen", "Fort"}},       // WFS-108 RG-03 : sensibilité (28°, 20°, 14° pour braquer à fond)
     {"Zone morte gyro", 3, {"Petite", "Moyenne", "Grande"}},    // WFS-108 RG-03 : 1,5°, 3°, 5°
+    {"Aide à la direction", 2, {"Activée", "Désactivée", nullptr}},   // WFS-217 RG-02 : reglagesConduite (player.h)
 };
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
-       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, N_LIGNES = 11 };
+       L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, N_LIGNES = 12 };
 
 Zone g_bouton, g_fermer, g_choix[N_LIGNES][4];
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
@@ -80,6 +81,7 @@ bool lire() {
         Reglages& R = reglages(); R.camera = s.camIndex(); R.son = !s.muted; R.musique = s.music;
         R.gaucher = s.gaucher; R.vibrations = s.vibrations;   // WFS-75
         grandsBoutons() = s.grandsBoutons; reglagesGyro() = {s.gyro, s.gyroZone};   // WFS-108
+        reglagesConduite().aideDirection = s.aideDirection;   // WFS-217
         if (s.qualityChoisie) { R.qualite = s.qualiteIndex(); R.qualiteChoisie = true; }
     }
     const std::string f = fichier();
@@ -111,6 +113,7 @@ void ecrire() {
         const Reglages& R = reglages(); s.setCamIndex(R.camera); s.muted = !R.son; s.music = R.musique;
         s.gaucher = R.gaucher; s.vibrations = R.vibrations;   // WFS-75
         s.grandsBoutons = grandsBoutons(); s.gyro = reglagesGyro().niveau; s.gyroZone = reglagesGyro().zone;   // WFS-108
+        s.aideDirection = reglagesConduite().aideDirection;   // WFS-217
         if (R.qualiteChoisie) s.setQualiteIndex(R.qualite);
         s.enregistrer();   // WFS-80 : le fichier simple garde en plus « mouvements » (absent de la sauvegarde commune)
     }
@@ -151,6 +154,7 @@ int valeur(int ligne) {
     case L_BOUTONS: return grandsBoutons() ? 1 : 0;   // WFS-108
     case L_GYRO: return reglagesGyro().niveau;
     case L_GYROZONE: return reglagesGyro().zone;
+    case L_AIDE: return reglagesConduite().aideDirection ? 0 : 1;   // WFS-217
     default: return R.vibrations ? 0 : 1;
     }
 }
@@ -192,6 +196,7 @@ public:
             } else if (l == L_BOUTONS) grandsBoutons() = c == 1;   // WFS-108 : appliqué à l'image suivante
             else if (l == L_GYRO) reglagesGyro().niveau = c;
             else if (l == L_GYROZONE) reglagesGyro().zone = c;
+            else if (l == L_AIDE) reglagesConduite().aideDirection = c == 0;   // WFS-217 : appliquée au pas suivant
             else reglagesRessenti().reduireMouvements = c == 1;   // WFS-80 (RG-02) : clé mouvements
             WFS_LOG("réglages : %s = %s", LIGNES[l].libelle, LIGNES[l].choix[c]);
             ecrire();
@@ -243,6 +248,7 @@ private:
         float y = py + haut;
         const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
         for (int l = 0; l < N_LIGNES; l++) {
+            if (l == L_AIDE) y += 10 * k + bh + gap;   // WFS-217 (RG-04) : sous « Fermer », qui garde sa place
             r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = nChoix(l);
@@ -264,7 +270,7 @@ private:
         // .btn « Fermer » (orange, biais 14 px), à droite
         const float tp = 20 * k;
         const std::string ft = ui::majuscules("Fermer");
-        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = y + 10 * k;
+        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)L_AIDE * (rowH + gap) + 10 * k;
         g_fermer = {fx, fy, fw, bh};
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
         ui::text(r, x0, fy + (bh - 15 * k) / 2, 15 * k, qualite::ligneRendu(), hex(ACCENT2), ui::GAUCHE, 0.02f, false);

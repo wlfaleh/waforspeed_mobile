@@ -14,37 +14,38 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 10:03:57 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 11:32:50 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-217 | P1 : guide auto corrigé dans les virages serrés et ronds-points + réglage « Aide à la direction » (attribué 09:48) | 217 : 09:49 (ccb16c8) | 🔴 actif (P1) |
-| Claude, agent 1 (01UY1Vv2) | WFS-220 | P1 [TECHNIQUE] : banc de chauffe arrêté après 4 min, endurance de nuit rouge (run #816) (attribué 10:03) | 220 : à pousser dès sa création ; 213 : fusionnée 09:49 (PR #184, squash 941e475) | 🔴 actif (P1) |
-| Claude, agent 2 (01UY1Vv5) | WFS-206 | Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte (attribué 08:20) | 206 : 09:31 (92d0b15) | 🔧 actif |
-| Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
-| Claude, agent 5 (011cpqZaDiS2) |  |  | 210 : fusionnée (PR #185, be33c2f, 09:55 UTC, squash) | ✅ libre (WFS-210 🟣 : ✅ au premier run vert de main) |
-| Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
-| Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 09:47 UTC (e876436, synchronisée avec main) | ✅ actif ; en cours : plaques avant manquantes (Golf, Gallardo, T-Cross, X5, GT86, Elantra, Mustang, M4, SF90, Model 3) |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-4 faits, ST-5 Ville et Campagne faits (Corniche en cours) ; branche « buildings » pour les textures de l'utilisateur | 161 : 10:2x (a68543a) | 🔧 en cours |
+| agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : 11:15 (9c50a88) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) |
+| Claude, agent 1 (01UY1Vv2) | — | WFS-220 fusionnée (PR #190, squash 58b71b9) ; aucun ticket attribuable : WFS-214 (E13) attend WFS-213 ✅ et l'épic E13 (WFS-227 en cours) | 220 : PR #190 fusionnée ; 213 : PR #184 | 🟢 libre (aucun ticket attribuable) |
+| Claude, agent 2 (01UY1Vv5) | — | en pause sur ordre de l'utilisateur (ne prend pas de ticket suivant) ; WFS-227 rendu au PO, non commencé | 221 : fusionnée 11:30 (PR #193) ; 206 : fusionnée (PR #188) | ⏸️ en pause |
+| Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre (WFS-137 : CI main #799 verte) |
+| Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
+| Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
+| Claude, session dev 5bx | WFS-225 | P1 : Campagne de nuit, lampadaires allumés et nuit lisible (attribué 11:28) | 225 : branche à pousser ; 223 : fusionnée 11:27 (PR #192, squash 00be4ab) | 🔴 actif (P1) |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 7 fusionnées (PR #157, #162, #163, #166, #167, #186, #187 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille) ; RG-C (X5) signalé au PO | 158 : 10:43:54 UTC (c1d2e92) ; PR #187 fusionnée par confiance | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), LOD 4 niveaux (ST-4), test strict (ST-5) |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 10:23 (9c5d416) | 🔧 en cours (CI de branche) |
 
 ## Tickets prêts sans agent
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
 | WFS-215 (P3) | E10 | épic occupée par WFS-158 (arwa-2) |
-| WFS-218 (P2) | E4 | libre, attribuable au prochain agent |
-| WFS-219 (P2) | E10 (fichiers disjoints de WFS-158) | libre, attribuable au prochain agent |
-| WFS-216 (P3) | E2 | libre (WFS-212 ✅, CI main #813) |
-| WFS-214 (P2) | E13 | attend WFS-213 ✅ (🟣, CI de `main` en cours) |
+| WFS-218 (P1) | E4 | épic occupée par WFS-222 (agent arwa) |
+| WFS-216 (P3) | E2 | épic occupée par WFS-225 (P1, Claude, session dev 5bx) |
+| WFS-224 (P1), WFS-226 (P1) | E4 (+ E3) | épic E4 occupée par WFS-222 (agent arwa) |
+| WFS-214 (P2) | E13 | attend WFS-213 ✅ (CI de main en file) (WFS-227 prêt, non attribué) |
+| WFS-214 (P2) | E13 | attend WFS-213 ✅ (🟣 ; run de `main` 42361330960 en file d'attente depuis 09:49) |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 10:03:57 : WFS-220 [TECHNIQUE] créé (CI de nuit rouge) et attribué à Claude, agent 1 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 11:28:30 : WFS-225 attribué à Claude, session dev 5bx |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette en cours (2026-11-07) : WFS-212, 211 VALIDÉS ; WFS-213, 208 en cours |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |

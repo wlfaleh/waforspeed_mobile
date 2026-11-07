@@ -74,6 +74,7 @@ void avancer(std::vector<Police>& ps, double dt, double t, double sJ, double xJ,
             if (mieuxD < 12) vCible = std::min(vCible, gene->v);
         }
         if (rel <= 40 || gene) p.cibleX = cx;
+        p.rdPrec = p.rd; p.xPrec = p.x;   // WFS-221 (accroche)
         const double dx = std::clamp(p.cibleX - p.x, -0.9 * dt, 0.9 * dt);
         p.x = std::clamp(p.x + dx, -0.92, 0.92);
         const double acc = (vCible > p.v ? MAX_SPEED * 0.45 : MAX_SPEED * 0.9) * dt;

@@ -50,6 +50,7 @@ inline constexpr VueDef VUES[VUE_NOMBRE] = {
 // WFS-128 : valeurs de configgame.json (section camera) ; défauts du code dans ConfigJeu::Camera (src/core/configgame.h)
 using Poursuite = CamPoursuite;   // { dist, h, ahead, lookH }
 inline const Poursuite &POURSUITE_LOIN = g_configJeu.camera.loin, &POURSUITE_PROCHE = g_configJeu.camera.proche;
+inline bool g_cameraFiltreExact = true;   // WFS-221 : banc « fluidite » seulement : false = anciennes formules de lissage (mesure « avant »)
 inline const float &SUIVI_OEIL = g_configJeu.camera.suiviOeil, &SUIVI_REGARD = g_configJeu.camera.suiviRegard;   // lissage du suivi (/s), comme updateCamera du jeu web
 
 // vue choisie (mémorisée pour toute la session) ; vueSuivante = cycleCamera du jeu web

@@ -12,7 +12,7 @@ ICI="$(cd "$(dirname "$0")" && pwd)"; RACINE="$ICI/.."
 VOITURES=(
   "p208|peugeot-208|4.06|180|^Carro_Pintura$||"
   "abarth|abarth-500|3.66|180|^CAR_Livrea$||"
-  "tcross|vw-t-cross|4.11|180|^carpaint$||"
+  "tcross|vw-t-cross|4.218|180|^carpaint$||"   # WFS-158 : version chinoise à empattement long (celle du modèle)
   "compass|jeep-compass|4.40|180|^00_-_BODY$||"
   "s3|audi-a3|4.47|180|^carpaint$||"
   "x5|bmw-x5|4.92|180|^CARPAINT$||"

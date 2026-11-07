@@ -39,8 +39,9 @@ const VOITURES = {
   // « 途铠 » (masquées : atlas du modèle, matériau 10), dans le logement du hayon (X5), sur le porte-plaque gris (GT86)
   golf: { plaque: -1, cadre: -1, numero: 'BJ-276-WC', dep: '38', ajouts: [{ cote: -1, y0: 0.471 }, { cote: 1, y0: 0.50 }] },
   gallardo: { plaque: -1, cadre: -1, numero: 'DL-865-ZP', dep: '83', ajouts: [{ cote: -1, y0: 0.36 }, { cote: 1, y0: 0.37 }] },
-  tcross: { plaque: -1, cadre: -1, numero: 'FT-148-CX', dep: '57', ajouts: [{ cote: -1, y0: 0.4725 }, { cote: 1, y0: 0.802 }],
-            masquer: { maillage: 10, boites: [[-0.24, 0.24, 0.39, 0.555, -2.08, -2.02], [-0.25, 0.25, 0.72, 0.885, 1.92, 1.98]] } },
+  // T-Cross : version chinoise à empattement long (4,218 m, WFS-158) ; positions mesurées à cette taille
+  tcross: { plaque: -1, cadre: -1, numero: 'FT-148-CX', dep: '57', ajouts: [{ cote: -1, y0: 0.485 }, { cote: 1, y0: 0.823 }],
+            masquer: { maillage: 10, boites: [[-0.246, 0.246, 0.40, 0.57, -2.135, -2.073], [-0.257, 0.257, 0.739, 0.908, 1.970, 2.032]] } },
   x5: { plaque: -1, cadre: -1, numero: 'HB-530-RV', dep: '78', ajouts: [{ cote: -1, y0: 0.56 }, { cote: 1, y0: 0.70 }] },
   gt86: { plaque: -1, cadre: -1, numero: 'CG-861-PZ', dep: '69', ajouts: [{ cote: -1, y0: 0.54 }, { cote: 1, y0: 0.548 }] },
 };

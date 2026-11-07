@@ -84,7 +84,34 @@ TrackPoint Track::point(double s, double lat) {
     o.x = p0.x + (p1.x - p0.x) * f + std::cos(o.th) * lat;
     o.z = p0.z + (p1.z - p0.z) * f + std::sin(o.th) * lat;
     o.y = p0.y + (p1.y - p0.y) * f;
-    o.slope = std::atan2(p1.y - p0.y, SEG_M);
+    // WFS-221 (RG-02 b) : pente lissée : la pente d'un segment était constante et changeait d'un coup au segment suivant (la
+    // voiture basculait par à-coups dans les montées) ; ici, pente aux lignes de segment = moyenne des deux segments voisins,
+    // interpolée le long du segment (continue). Position (y) inchangée : la route et le décor ne bougent pas.
+    if (!penteLissee) { o.slope = std::atan2(p1.y - p0.y, SEG_M); return o; }
+    const double ym = pose(a - 1).y, y2 = pose(a + 2).y;
+    const double g0 = (p1.y - ym) / (2 * SEG_M), g1 = (y2 - p0.y) / (2 * SEG_M);
+    o.slope = std::atan(g0 + (g1 - g0) * f);
+    return o;
+}
+
+TrackPoint Track::pointLisse(double s, double lat) {
+    if (!penteLissee) return point(s, lat);   // banc « fluidite », mesure « avant »
+    const double fa = s / SEG; const int64_t a = (int64_t)std::floor(fa); const double f = fa - a;
+    const Pose q0 = pose(a - 1), q1 = pose(a), q2 = pose(a + 1), q3 = pose(a + 2);
+    // Catmull-Rom uniforme : valeur et dérivée (par unité de f) ; passe par q1 (f = 0) et q2 (f = 1)
+    auto cr = [f](double p0, double p1, double p2, double p3, double& d) {
+        const double f2 = f * f, f3 = f2 * f;
+        d = 0.5 * ((-p0 + p2) + 2 * (2 * p0 - 5 * p1 + 4 * p2 - p3) * f + 3 * (-p0 + 3 * p1 - 3 * p2 + p3) * f2);
+        return 0.5 * (2 * p1 + (-p0 + p2) * f + (2 * p0 - 5 * p1 + 4 * p2 - p3) * f2 + (-p0 + 3 * p1 - 3 * p2 + p3) * f3);
+    };
+    double dx, dy, dz;
+    const double x = cr(q0.x, q1.x, q2.x, q3.x, dx), y = cr(q0.y, q1.y, q2.y, q3.y, dy), z = cr(q0.z, q1.z, q2.z, q3.z, dz);
+    TrackPoint o;
+    // sens de th : x += sin(th), z −= cos(th) le long du tracé (Track::pose) ; continuité du tour gardée (th de point() ± π)
+    const double thL = std::atan2(dx, -dz), thP = q1.th + (q2.th - q1.th) * f;
+    o.th = thP + std::remainder(thL - thP, 2 * PI);
+    o.x = x + std::cos(o.th) * lat; o.z = z + std::sin(o.th) * lat; o.y = y;
+    o.slope = std::atan2(dy, std::hypot(dx, dz));
     return o;
 }
 

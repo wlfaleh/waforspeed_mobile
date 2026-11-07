@@ -16,7 +16,8 @@
 #include "../game/camera_vue.h"   // WFS-197 (accroche) : benchCockpit
 #include "../game/game.h"
 #include "../game/course5.h"   // WFS-110
-namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }   // WFS-115 (modes_ecran.cpp)
+namespace wfs { int benchParcours(Game& g, Renderer& r, const std::string& out); }
+namespace wfs { int benchFluidite(Game& g, Renderer& r, const std::string& out); }   // WFS-221 (bench_fluidite.cpp)   // WFS-115 (modes_ecran.cpp)
 namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out); }   // WFS-139 (plage.cpp)
 namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }   // WFS-161 (accroche) : kit d'architecture (archi_banc.cpp)
 #include "../game/poursuite.h"   // WFS-111
@@ -163,6 +164,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "fluidite") { const int e = benchFluidite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-221 (accroche) : à-coups de la voiture vue par la caméra
     if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
     if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
         ui::chargerPolice(r);
@@ -211,6 +213,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
+    if (banc == "rondspoints") { const int e = benchRondsPoints(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-223
     if (banc == "campagne") { const int e = benchCampagne(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-138 : col, épingle, vignes
     if (banc == "cartes") { benchCartes(g, r, out); return finir(); }         // WFS-53 : cartes Campagne et Grand Prix seules
     if (banc == "archi") { benchArchi(g, r, out); return finir(); }           // WFS-161 (accroche) : kit d'architecture, 6 styles, niveaux de détail

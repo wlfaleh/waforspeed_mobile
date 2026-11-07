@@ -42,8 +42,8 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
     track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
-    route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite));   // WFS-205 (accroche) : enrobé usé, béton de trottoir
-    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::Revetement::EnrobeUse, m);
+    route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite), mapId);   // WFS-205, WFS-206 (accroche) : revêtement de la carte
+    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::chaussee(), m);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
     m.flags = MAT_GROUND; m.rough = 0.95f; groundMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     conducteurs::preparer(r);   // WFS-73 (accroche) : homme / femme en pose assise
@@ -242,48 +242,98 @@ void Game::update(double dt) {
     // pas fixes de 1/120 s : la conduite est identique quelle que soit la fréquence d'affichage
     acc_ += dt;
     const double step = 1.0 / 120.0;
+    pasImage_ = 0;
     for (int pas = 0; acc_ >= step && pas < gpu_logiciel::PAS_MAX; ++pas) {   // WFS-59 : 60 pas au plus par image
         if (!course) player_.speed = 0;   // hors course : voiture immobile, la scène continue de vivre derrière
+        prec_ = player_; precOk_ = true; pasImage_++;   // WFS-221 : état d'avant le pas (interpolation du rendu)
         player_.update(step, in, track_, true); for (auto& sy : systems_) sy->collide(step, player_, view_); systemsUpdate(step); acc_ -= step; }
+    if (acc_ >= step) acc_ = std::fmod(acc_, step);   // WFS-221 : plafond de pas atteint : le retard n'est pas rattrapé (alpha < 1)
+    view_.alpha = alphaRendu();
+}
+
+// ---------------------------------------------------------------- WFS-221 : rendu interpolé (RG-02)
+// Cause des à-coups (mesurée au banc « fluidite ») : le rendu montrait l'état du DERNIER pas de 1/120 s ; avec des images
+// irrégulières (14 à 22 ms au téléphone : 1, 2 ou 3 pas par image), la voiture avançait par sauts pendant que la caméra,
+// lissée sur le temps de l'image, la suivait en continu : « la voiture avance, recule, avance ». Le rendu montre maintenant
+// l'état interpolé entre les deux derniers pas (retard fixe d'un pas, 8 ms), pour la voiture, ses roues, la caméra et tout ce
+// que les systèmes placent par rapport au joueur (GameView::player) ; le trafic interpole aussi ses voitures (GameView::alpha).
+double Game::alphaRendu() const { return interpolation ? std::clamp(acc_ * 120.0, 0.0, 1.0) : 1.0; }
+
+struct Game::JoueurInterpole {
+    Game& g; Player garde; bool actif = false;
+    explicit JoueurInterpole(Game& jeu) : g(jeu) {
+        if (g.interpole_ || !g.precOk_) return;
+        const Player& a = g.prec_; const Player& b = g.player_;
+        const double dz = g.track_.relZ(b.position - a.position), t = g.alphaRendu();
+        // saut (départ, remise en piste, téléportation d'un système) : pas d'interpolation
+        if (std::abs(dz) * M > 20 || std::abs(b.playerX - a.playerX) > 1 || std::abs(b.spinYaw - a.spinYaw) > 1 || std::abs(b.heading - a.heading) > 1) return;
+        garde = g.player_; actif = g.interpole_ = true;
+        auto mix = [t](double u, double v) { return u + (v - u) * t; };
+        Player& p = g.player_;
+        p.position = a.position + dz * t; p.dist = mix(a.dist, b.dist); p.playerX = mix(a.playerX, b.playerX);
+        p.heading = mix(a.heading, b.heading); p.spinYaw = mix(a.spinYaw, b.spinYaw); p.steer = mix(a.steer, b.steer);
+        p.odo = mix(a.odo, b.odo); p.speed = mix(a.speed, b.speed);
+    }
+    ~JoueurInterpole() { if (actif) { g.player_ = garde; g.interpole_ = false; } }
+};
+
+Game::Vue Game::calculerVue(double time) {
+    JoueurInterpole ji(*this);
+    Vue v;
+    const float fdt = (float)std::clamp(time - lastTime_, 0.0, 0.1);
+    lastTime_ = time;
+    const double s = player_.dist, lat = player_.playerX * RW;
+    v.carM = carMatrix(s, lat, player_.heading + player_.spinYaw);   // + tête-à-queue après un accident
+    v.carPos = v.carM.transformPoint({0, 0, 0});
+    v.fwd = normalize(v.carM.transformDir({0, 0, -1}));
+    vec3& eye = v.eye; vec3& look = v.look;
+    if (camMode == 2) {   // vitrine : on tourne autour de la voiture
+        float a = orbit;
+        eye = v.carPos + vec3{std::sin(a) * 6.5f, 1.7f, std::cos(a) * 6.5f};
+        look = v.carPos + vec3{0, 0.55f, 0};
+        camInit_ = false;
+    } else {
+        const float back = camMode == 0 ? 5.2f : 8.0f, up = camMode == 0 ? 1.55f : 2.6f;
+        // la caméra suit le cap de la route (pas le dérapage) avec un peu de retard
+        TrackPoint behind = track_.pointLisse(s - back / M, lat * 0.85);   // WFS-221 : tracé lissé
+        vec3 eyeT = vec3{(float)behind.x, (float)behind.y + up, (float)behind.z};
+        vec3 lookT = v.carPos + v.fwd * 4.0f + vec3{0, 0.8f, 0};
+        // lissage indépendant de la fréquence d'affichage ; si la caméra est trop loin (téléportation), on la recale
+        if (!camInit_ || length(camEye_ - eyeT) > 25.f) { camEye_ = eyeT; camLook_ = lookT; camEyeT_ = eyeT; camLookT_ = lookT; camInit_ = true; }
+        // WFS-221 (RG-02 c) : même filtre du premier ordre (constantes 14 et 20 /s : même retard, même caméra), résolu
+        // EXACTEMENT pour une cible qui avance en ligne droite pendant l'image : x = y − v/k + (x0 − y0 + v/k)·e^(−k·dt).
+        // L'ancien « lerp(x, y, 1 − e^(−k·dt)) » prenait la cible comme immobile pendant l'image : son retard (≈ v/k, 4 m à
+        // 200 km/h) changeait avec la durée de chaque image : la voiture avançait et reculait dans le cadre
+        auto suivre = [&](vec3& x, vec3& cible0, const vec3& cible, float k) {
+            if (fdt <= 1e-5f || !g_cameraFiltreExact) { x = lerp(x, cible, 1.f - std::exp(-fdt * k)); cible0 = cible; return; }
+            const vec3 vk = (cible - cible0) * (1.f / (fdt * k));   // v / k
+            x = cible - vk + (x - cible0 + vk) * std::exp(-fdt * k);
+            cible0 = cible;
+        };
+        suivre(camEye_, camEyeT_, eyeT, 14.f); suivre(camLook_, camLookT_, lookT, 20.f);
+        eye = camEye_; look = camLook_;
+    }
+    v.fov = (camMode == 0 ? 58.f : 62.f) + (float)std::min(player_.kmh() / 300.0, 1.0) * 8.f;
+    v.interieure = cameraVue(track_, player_, *carDef_, v.carM, camMode, ecran_, fdt, eye, look, v.fov);   // WFS-66
+    return v;
 }
 
 mat4 Game::carMatrix(double s, double lat, double yaw) {
-    TrackPoint p = track_.point(s, lat);
+    TrackPoint p = track_.pointLisse(s, lat);   // WFS-221 : tracé lissé (direction et pente continues)
     return translate({(float)p.x, (float)p.y, (float)p.z}) * rotateY((float)-(p.th + yaw)) * rotateX((float)p.slope);
 }
 
 void Game::render(double time) {
     frameNo_++;
     appliquerEcran();
-    struct LastT { double& t; double v; ~LastT() { t = v; } } keepTime{lastTime_, time};
     streamChunks();
-    const double s = player_.dist, lat = player_.playerX * RW;
-    mat4 carM = carMatrix(s, lat, player_.heading + player_.spinYaw);   // + tête-à-queue après un accident
-    vec3 carPos = carM.transformPoint({0, 0, 0});
-    vec3 fwd = normalize(carM.transformDir({0, 0, -1}));
-
-    // ---------- caméra ----------
-    vec3 eye, look;
-    if (camMode == 2) {   // vitrine : on tourne autour de la voiture
-        float a = orbit;
-        eye = carPos + vec3{std::sin(a) * 6.5f, 1.7f, std::cos(a) * 6.5f};
-        look = carPos + vec3{0, 0.55f, 0};
-        camInit_ = false;
-    } else {
-        const float back = camMode == 0 ? 5.2f : 8.0f, up = camMode == 0 ? 1.55f : 2.6f;
-        // la caméra suit le cap de la route (pas le dérapage) avec un peu de retard
-        TrackPoint behind = track_.point(s - back / M, lat * 0.85);
-        vec3 eyeT = vec3{(float)behind.x, (float)behind.y + up, (float)behind.z};
-        vec3 lookT = carPos + fwd * 4.0f + vec3{0, 0.8f, 0};
-        // lissage indépendant de la fréquence d'affichage ; si la caméra est trop loin (téléportation), on la recale
-        const float fdt = (float)std::clamp(time - lastTime_, 0.0, 0.1);
-        if (!camInit_ || length(camEye_ - eyeT) > 25.f) { camEye_ = eyeT; camLook_ = lookT; camInit_ = true; }
-        camEye_ = lerp(camEye_, eyeT, 1.f - std::exp(-fdt * 14.f)); camLook_ = lerp(camLook_, lookT, 1.f - std::exp(-fdt * 20.f));
-        eye = camEye_; look = camLook_;
-    }
+    JoueurInterpole ji(*this);   // WFS-221 : toute l'image (voiture, roues, caméra, systèmes) sur l'état interpolé
+    const Vue vue = calculerVue(time);
+    const mat4 carM = vue.carM; const vec3 carPos = vue.carPos;
+    vec3 eye = vue.eye, look = vue.look;
+    float fov = vue.fov;
+    const bool vueInterieure = vue.interieure;
     float aspect = (float)r_->width() / (float)std::max(1u, r_->height());
-    float fov = (camMode == 0 ? 58.f : 62.f) + (float)std::min(player_.kmh() / 300.0, 1.0) * 8.f;
-    const bool vueInterieure = cameraVue(track_, player_, *carDef_, carM, camMode, ecran_, (float)std::clamp(time - lastTime_, 0.0, 0.1), eye, look, fov);   // WFS-66
 
     FrameParams fp;
     fp.view = lookAt(eye, look, {0, 1, 0});
