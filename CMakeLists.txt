@@ -92,6 +92,7 @@ else()
   add_executable(test_trafic_vivant tests/test_trafic_vivant.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/core/jobs.cpp)   # WFS-67
   target_link_libraries(test_trafic_vivant Threads::Threads)
   add_executable(test_qualite tests/test_qualite.cpp src/render/qualite_auto.cpp)   # WFS-15
+  add_executable(test_cache_pipelines tests/test_cache_pipelines.cpp src/render/cache_pipelines.cpp)   # WFS-262 (RG-01)
   add_executable(test_chauffe tests/test_chauffe.cpp src/platform/chauffe.cpp src/render/qualite_auto.cpp)   # WFS-123 : chauffe
   add_executable(test_appui tests/test_appui.cpp)   # WFS-113 : un doigt = un appui
   add_executable(test_petit_ecran tests/test_petit_ecran.cpp)   # WFS-147 : téléphone couché en dp
