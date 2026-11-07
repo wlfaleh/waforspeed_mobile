@@ -3552,3 +3552,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Preuve** : CI de branche run 849 : 13 bancs et endurance verts sur l'archive ; job `compilation` 3 min (dont 2 min 30 de compilation) ; étape « Jeu compilé (archive vérifiée) » < 1 s par banc, au lieu de 1,5 à 3 min de compilation par banc avant (runs #828, #840) : ≈ 30 min de lanceur gagnées par run. Notification d'APK sautée sur la branche (WFS-238, RG-02 prouvée).
 - **Synchronisation** : ligne du banc conduite de WFS-241 (ajoutée à `build.yml` sur main) gardée ; elle utilise l'archive.
 - **À suivre** : durée du prochain run de main.
+
+### 2026-11-07 16:52:57 — WFS-241 et WFS-253 refusés par l'utilisateur (KO) : arrêt, WFS-256 suspendu (Claude, agent dev conduite)
+- L'utilisateur a répondu « KO » dans ma session, en désignant la conduite (WFS-241) et les freins / ABS / ESP (WFS-253) ; WFS-255 non cité. Pas de détail donné.
+- Règle des KO appliquée : je m'arrête ; le PO décide de la suite (anomalie, US de correction). WFS-256 (chocs) arrêté sans fusion : branche `feature/waforspeed-256` gardée (17c1334, 46 tests CPU OK) ; CI de branche run 857 annulée (base refusée).
+- Repli possible pour l'analyse : `g_conduiteMonde = false` (`src/game/player.h`) rend l'ancien modèle à la voiture du joueur.
