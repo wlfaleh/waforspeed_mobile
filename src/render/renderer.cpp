@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
+#include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
@@ -65,6 +66,7 @@ static const uint32_t SPV_SCENE_SKIN_FRAG[] = {   // WFS-72
 static constexpr VkDeviceSize OS_PALETTE = sizeof(float) * 16 * SKIN_MAX_OS, OS_APPARENCE = sizeof(float) * 4 * 8;
 static constexpr VkDeviceSize OS_SLOT = (OS_PALETTE + OS_APPARENCE + 255) / 256 * 256;
 
+#include "eclairage_ombres.h"   // WFS-227
 #include "frame_ubo.h"   // WFS-150 : FrameUBO déplacé tel quel (lu aussi par les passes enfichables, src/render/passes.cpp)
 
 // ombres du soleil (WFS-07, valeurs du jeu web : renderer.js applyEnv / stableShadow)
@@ -263,7 +265,7 @@ bool Renderer::init(VkCtx& vk) {
 void Renderer::createShadows() {
     VkCtx& vk = *vk_; VkDevice d = vk.device;
 #ifdef __ANDROID__
-    shadowSize_ = 1024;
+    shadowSize_ = 2048;   // WFS-227 : atlas de 2 × 2 cascades de 1024 (+ 6 Mo, D16) ; avant : 1024
 #else
     shadowSize_ = 2048;
 #endif
@@ -343,12 +345,19 @@ void Renderer::shadowPass(VkCommandBuffer cb) {
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &fr_[cur_].frameSet, 0, nullptr);
         constexpr uint32_t NO_CAST = MAT_SHADOWBLOB | MAT_ROAD | MAT_WALK | MAT_GROUND | MAT_BLEND;
         VkPipeline bound = VK_NULL_HANDLE;
-        for (const Pending& p : opaqueQ_) {
-            if ((p.mat->flags & NO_CAST) || !(p.vis & VIS_OMBRE)) continue;   // WFS-82 : hors de la boîte d'ombre
+        // WFS-227 (accroche E13) : une tuile de l'atlas par cascade (2 × 2 ; une cascade : image entière), cascade dans pc.emissive.x
+        const uint32_t tu = cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_;
+        for (int k = 0; k < cascades_.n; k++) {
+        VkViewport vt{(float)(tu * (k % 2)), (float)(tu * (k / 2)), (float)tu, (float)tu, 0, 1}; VkRect2D st{{(int32_t)(tu * (k % 2)), (int32_t)(tu * (k / 2))}, {tu, tu}};
+        vkCmdSetViewport(cb, 0, 1, &vt); vkCmdSetScissor(cb, 0, 1, &st);
+        for (Pending p : opaqueQ_) {
+            if ((p.mat->flags & NO_CAST) || !(p.vis & (VIS_CASCADE0 << k))) continue;   // WFS-82, WFS-227 : hors de cette cascade
             const bool masque = p.mat->flags & MAT_MASK;
             VkPipeline want = p.osOfs >= 0 ? (masque ? skinShadowMask_ : skinShadow_) : (masque ? shadowMaskPipe_ : shadowPipe_);   // WFS-63
             if (want != bound) { vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, want); bound = want; }
+            p.pc.emissive.x = (float)k;
             flushDraw(p);
+        }
         }
     }
     vkCmdEndRenderPass(cb);
@@ -909,16 +918,23 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
 uint8_t Renderer::classer(const masquage::Sphere& s) {
-    if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE;
+    constexpr uint8_t CASC = 0xF0;   // WFS-227 : toutes les cascades d'ombre
+    if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;
     // WFS-150 : image d'une capture d'environnement : tout objet reste en file pour la capture (6 directions) ;
     // WFS-222 : mais la passe de scène, l'ombre et le reflet de cette image gardent leur masquage (VIS_CAPTURE seul sinon)
-    if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE;   // banc : comparaison avec l'avant
+    if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;   // banc : comparaison avec l'avant
     const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
     if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
                       (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
+    uint8_t c = 0;   // WFS-227 (accroche) : cascades d'ombre que l'objet touche (passe d'ombre : une tuile seulement si besoin)
+    // tranche de la cascade (le long du regard) + portée de l'ombre de l'objet (≈ 3 × son rayon + 5 m) : un objet près de la
+    // caméra (la voiture) n'est pas redessiné dans les cascades lointaines, ni un petit objet (< 2 texels) dans une cascade grossière
+    const float d = dot(s.c - camPos_, regardCasc_), portee = 3 * s.r + 5;
+    if (v & VIS_OMBRE) for (int k = 0; k < cascades_.n; k++)
+        if (s.r >= 2 * texelCasc_[k] && d + s.r + portee >= (k ? cascades_.fin[k - 1] : -1e9f) && d - s.r <= cascades_.fin[k] && masquage::visible(fCasc_[k], s)) c |= (uint8_t)(VIS_CASCADE0 << k);
     if (!v && !tout) masques_++;
-    return v | tout;
+    return v | tout | c;
 }
 
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
@@ -1041,6 +1057,13 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         P.at(3, 3) = 1;
         u.shadowMat = P * V;
         u.shadowP = {shadowsOn_ ? 1.f : 0.f, 1.f / (float)shadowSize_, SHADOW_NORMAL_BIAS, SHADOW_BIAS};
+        // WFS-227 (accroche E13) : cascades stabilisées (eclairage_ombres.h) ; shadowMat = boîte de toutes les cascades (masquage)
+        const vec3 regard{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)};
+        regardCasc_ = normalize(regard);
+        cascades_ = ombres::calculer(L, fp.camPos, regard, std::clamp(niveauOmbres, 1, 3), shadowSize_);
+        for (int k = 0; k < 4; k++) { u.ombreCasc[k] = cascades_.m[std::min(k, cascades_.n - 1)]; (&u.ombreFin.x)[k] = cascades_.fin[std::min(k, cascades_.n - 1)]; (&u.ombreDemi.x)[k] = cascades_.demi[std::min(k, cascades_.n - 1)]; }
+        u.ombreP = {(float)cascades_.n, (float)std::clamp(niveauOmbres, 1, 3), (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_), (float)ombres::tanSoleil()};
+        u.shadowMat = cascades_.union_;
     }
     {   // WFS-45 : projecteurs, lumière hémisphère, brouillard linéaire (three.js r128, physicallyCorrectLights non activé)
         const vec3 fwd = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
@@ -1050,7 +1073,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             const vec3 a = fp.hemiSky * fp.hemiIntensity, b = fp.hemiGround * fp.hemiIntensity;
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
-        const int n = std::clamp(fp.spotCount, 0, 8);
+        const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
         u.spotN = {(float)n, 0, 0, 0};
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[i];
@@ -1061,7 +1084,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.spotPos[i] = {s.pos.x, s.pos.y, s.pos.z, std::max(s.distance, 0.f)};
             u.spotDir[i] = {dir.x, dir.y, dir.z, std::max(s.decay, 0.f)};
             u.spotCol[i] = {c.x, c.y, c.z, 0};
-            u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), 0, 0};
+            u.spotCone[i] = {std::cos(s.angle), std::cos(s.angle * (1.f - std::clamp(s.penumbra, 0.f, 1.f))), s.croisement ? 1.f : 0.f, 0};   // WFS-218
             if (s.angle >= PI - 1e-3f) u.spotCone[i] = {-2.f, -1.5f, 0, 0};   // WFS-09 : PointLight (toutes directions)
         }
     }
@@ -1088,6 +1111,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         mat4 R = mat4::identity(); R.at(1, 1) = -1; R.at(1, 3) = 2 * fp.refletY;
         fReflet_ = masquage::depuis(fp.proj * fp.view * R);
         fOmbre_ = masquage::depuis(u.shadowMat);
+        for (int k = 0; k < cascades_.n; k++) { fCasc_[k] = masquage::depuis(cascades_.m[k]); texelCasc_[k] = k ? 2 * cascades_.demi[k] / (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_) : 0.f; }   // WFS-227
         finBrouillard_ = masquage::finBrouillard(fp.fogFar, fp.fogDensity);
         masquesPrec_ = masques_; masques_ = 0;
     }
@@ -1317,6 +1341,8 @@ void Renderer::feuxVoiture(const Model& m, const mat4& w, const FeuxVoiture& f) 
     const FeuxModele& F = m.feux;
     const float ech = length(w.transformDir({1, 0, 0}));
     const vec3 arriere = normalize(w.transformDir({0, 0, 1})), avant = arriere * -1.f;   // avant de la voiture vers −Z
+    if (f.nuit && !f.joueur) phares::noterAutre({w.transformPoint({0, F.avantY, F.avant}), avant, normalize(w.transformDir({1, 0, 0})), F.avantX * ech,   // WFS-226
+                                                 (F.avantY - m.bmin.y) * ech, w.transformPoint({0, m.bmin.y, F.avant})});
     // un feu : cœur net + lueur douce, selon la distance et le côté d'où on le regarde
     auto feu = [&](const vec3& p, const vec3& dehors, float coeur, float lueur, const vec3& col, float iCoeur, float iLueur) {
         const vec3 v = camPos_ - p;

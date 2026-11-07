@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <string>
 #include "../src/world/chaussee.h"
+#include "../src/world/giratoire.cpp"   // WFS-248 : giratoires reconstruits (compilé ici : aucune ligne de CMake)
 using namespace wfs;
 
 static int echecs = 0;
@@ -51,6 +52,47 @@ int main() {
                     id, points, dessus, trottoir);
         cas(std::string(id) + " : aucun point posé sur une autre chaussée n'échappe au filtre", oublis == 0);
         if (std::string(id) != "plage") cas(std::string(id) + " : le défaut existe sans filtre (trottoir ou bas-côté sur une autre branche)", dessus > 0);
+    }
+    // ---------- WFS-248 : giratoires reconstruits (Ville, Campagne, Corniche) ----------
+    for (const char* id : {"ville", "campagne", "plage"}) {
+        Track t; t.build(mapById(id), trace::versionCarte(id));
+        for (const trace::Section& s : trace::sections(t)) {
+            if (s.type != trace::Type::RondPoint) continue;
+            const giratoire::Giratoire g = giratoire::calculer(t, s);
+            const std::string n = std::string(id) + " : giratoire du segment " + std::to_string(s.debut);
+            cas(n + " reconnu (centre, entrée, sortie)", g.ok);
+            if (!g.ok) continue;
+            // dimensions réelles (CEREMA / SETRA) : rayon extérieur 15 à 25 m, anneau de 7 à 9 m, îlot infranchissable entouré d'une couronne
+            cas(n + " : rayon extérieur 15-25 m, anneau 7-9 m, îlot < couronne", giratoire::R_EXT >= 15 && giratoire::R_EXT <= 25 &&
+                giratoire::R_EXT - giratoire::R_COURONNE >= 7 && giratoire::R_EXT - giratoire::R_COURONNE <= 9 && giratoire::R_ILOT < giratoire::R_COURONNE);
+            // la voiture (axe du tracé, ± 1 m de demi-largeur) reste dans l'anneau tout le long du ¾ de tour, avec 2 m de marge
+            float dmin = 1e9f, dmax = 0;
+            for (int64_t a = g.entree; a < g.sortie; a++) {
+                const TrackPoint p = t.point((double)a * SEG, 0);
+                const float d = giratoire::distanceCentre(g, {(float)p.x, 0, (float)p.z});
+                dmin = std::min(dmin, d); dmax = std::max(dmax, d);
+            }
+            std::printf("chaussée : %s : axe de l'anneau à %.2f-%.2f m du centre (anneau %.1f-%.1f m), branches à %.0f° et %.0f°\n", n.c_str(), dmin, dmax,
+                        giratoire::R_COURONNE, giratoire::R_EXT, g.angEntree * 57.2958f, g.angSortie * 57.2958f);
+            cas(n + " : la voiture reste dans l'anneau (≥ 2 m de chaque bord)", dmin - 1 >= giratoire::R_COURONNE + 2 && dmax + 1 <= giratoire::R_EXT - 2);
+            // géométrie : anneau continu sur 360° (aucun trou), rien d'asphalte sur l'îlot, cédez-le-passage et îlot séparateur présents
+            std::vector<giratoire::Tri> tris; giratoire::geometrie(g, t, tris);
+            int secteurs[36] = {}, asphalteIlot = 0, marquages = 0, ilotSep = 0;
+            for (const giratoire::Tri& tr : tris) {
+                const vec3 m = (tr.a + tr.b + tr.c) * (1.f / 3);
+                const float d = giratoire::distanceCentre(g, m);
+                if (tr.s == giratoire::ASPHALTE && d < giratoire::R_COURONNE - 0.01f) asphalteIlot++;
+                if (tr.s == giratoire::ASPHALTE && d >= giratoire::R_COURONNE && d <= giratoire::R_EXT) {
+                    const float a = std::atan2(m.z - g.c.z, m.x - g.c.x);
+                    secteurs[std::clamp((int)((a + PI) / (2 * PI) * 36), 0, 35)]++;
+                }
+                if (tr.s == giratoire::MARQUAGE) marquages++;
+                if (tr.s == giratoire::PELOUSE && d > giratoire::R_EXT) ilotSep++;
+            }
+            int vides = 0; for (int k : secteurs) vides += k == 0;
+            cas(n + " : anneau d'asphalte continu (36 secteurs de 10° couverts), aucun asphalte sur l'îlot", vides == 0 && asphalteIlot == 0);
+            cas(n + " : lignes de rive, cédez-le-passage et îlot séparateur posés", marquages > 100 && ilotSep > 0);
+        }
     }
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("chaussée : tout est OK\n");
