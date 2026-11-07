@@ -11,6 +11,7 @@
 #include "correctifs_voitures.h"   // WFS-170 : correctifs des modèles au chargement (ANO-71 à 77)
 #include "feux_modele.h"   // WFS-109 : découpe des feux arrière (RG-13)
 #include "mesh.h"          // WFS-149 : sommets versionnés, tangentes
+#include "vehicule_lod.h"  // WFS-158 (RG-04) : niveaux de détail des voitures
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG
@@ -198,27 +199,15 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
                 lues ? "lues dans le fichier" : (version >= tangentes::WFM_VERSION_TANGENTES ? "illisibles, calculées" : "calculées au chargement"),
                 verts.size(), (nowSeconds() - t0) * 1000);
     }
-    // WFS-134 (RG-11, RG-12) : version allégée <id>.lod (tools/alleger_voiture.mjs) : nouveaux indices de chaque maillage,
-    // mêmes sommets et matériaux ; une pièce par maillage (roues fixes : la version allégée n'est vue qu'au-delà de 56 m)
-    std::vector<uint32_t> lodIdx; std::vector<ModelPart> lodParts;
+    // WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : versions allégées <id>.lod (tools/alleger_voiture.mjs, vehicule_lod.h) :
+    // nouveaux indices de chaque maillage pour les niveaux 1 à 3, mêmes sommets et matériaux ; niveaux à la suite dans lodIdx
+    // (fin de chaque niveau : lodFins), une pièce par maillage et par niveau (roues fixes : vues seulement au loin)
+    std::vector<uint32_t> lodIdx, lodFins; std::vector<ModelPart> lodParts;
     {
         std::vector<uint8_t> lf;
         const std::string lodPath = path.size() > 4 ? path.substr(0, path.size() - 4) + ".lod" : path;
-        if (path.size() > 4 && path.compare(path.size() - 4, 4, ".wfm") == 0 && readAsset(lodPath, lf) && lf.size() >= 8 &&
-            std::memcmp(lf.data(), "WFL1", 4) == 0) {
-            Reader lr{lf.data() + 4, lf.data() + lf.size()};
-            const uint32_t n = lr.get<uint32_t>();
-            bool ok = n == out.parts.size();
-            for (uint32_t i = 0; ok && i < n; i++) {
-                const uint32_t ni = lr.get<uint32_t>();
-                const uint8_t* ip = lr.take((size_t)ni * 4);
-                if (!lr.ok) { ok = false; break; }
-                const ModelPart& full = out.parts[i];
-                lodParts.push_back({(uint32_t)lodIdx.size(), ni, full.vertexOffset, full.material});
-                const size_t i0 = lodIdx.size(); lodIdx.resize(i0 + ni); std::memcpy(&lodIdx[i0], ip, (size_t)ni * 4);
-            }
-            if (!ok) { lodIdx.clear(); lodParts.clear(); WFS_ERR("%s : version allégée illisible (ignorée)", lodPath.c_str()); }
-        }
+        if (path.size() > 4 && path.compare(path.size() - 4, 4, ".wfm") == 0 && readAsset(lodPath, lf) &&
+            !vehicule_lod::lire(lf.data(), lf.size(), out.parts, lodIdx, lodParts, lodFins)) WFS_ERR("%s : version allégée illisible (ignorée)", lodPath.c_str());
     }
     // WFS-60 : roues séparées (splitWheels du jeu web) : chaque matériau est redécoupé en une partie fixe et une partie
     // par roue (mêmes sommets, indices regroupés) ; sans 4 roues trouvées, le modèle reste tel quel
@@ -309,10 +298,9 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
     if (!lodParts.empty()) {   // WFS-134 : version allégée traitée pareil, puis mise à la suite dans le même tampon d'indices
         tranches(lodIdx, lodParts);
         const uint32_t base = (uint32_t)idx.size();
-        for (ModelPart& p : lodParts) p.firstIndex += base;
         idx.insert(idx.end(), lodIdx.begin(), lodIdx.end());
-        out.partsLod = lodParts;
-        WFS_LOG("%s : version allégée, %zu triangles (fondu de 64 à 72 m de la caméra, au-delà : seule, WFS-134)", path.c_str(), lodIdx.size() / 3);
+        vehicule_lod::repartir(lodParts, lodFins, base, out.partsLod, out.partsNiveaux);   // WFS-158 (RG-04)
+        WFS_LOG("%s : %zu niveaux allégés, %zu triangles en tout (choix par la taille à l'écran, fondu tramé : WFS-134, WFS-158)", path.c_str(), lodFins.size(), lodIdx.size() / 3);
     }
     // WFS-134 (RG-11) : version « Basse lointaine » en 4 appels de dessin au plus : carrosserie (peinture), feux arrière,
     // vitres, reste opaque en gris sombre ; même forme que la version allégée (ou complète), indices absolus à la suite.
@@ -345,7 +333,9 @@ bool loadCarModel(Renderer& r, const std::string& path, Model& out) {
         }
     }
     // WFS-170 : matériaux retirés (vernis séparé de la 911…) : leurs pièces ne sont plus dessinées
-    for (std::vector<ModelPart>* l : {&out.parts, &out.partsLod, &out.partsBasse})
+    std::vector<std::vector<ModelPart>*> listes{&out.parts, &out.partsLod, &out.partsBasse};
+    for (std::vector<ModelPart>& n : out.partsNiveaux) listes.push_back(&n);   // WFS-158 (RG-04) : niveaux 2 et 3
+    for (std::vector<ModelPart>* l : listes)
         l->erase(std::remove_if(l->begin(), l->end(), [&](const ModelPart& p) { return p.material < retire.size() && retire[p.material]; }), l->end());
     // vitres et pièces transparentes dessinées après les pièces opaques
     out.vb = r.vk().uploadBuffer(verts.data(), verts.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
