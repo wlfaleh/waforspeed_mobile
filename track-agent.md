@@ -29,7 +29,7 @@
 | Claude, session dev expert (0183bv2X) |  |  |  | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | Claude, session dev 5bx |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | ⏸️ en pause (ordre de l'utilisateur) jusqu'à 19 h, heure de France (18:00 UTC) : aucun ticket avant |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-235 | P1 : vue Cockpit (bandes noires, regard qui suit la route, réglage « Regard cockpit », intérieurs réalistes), attribué 13:36 ; arbitrage RG-02 / RG-05 rendu 14:28 (option A, vraie géométrie) ; WFS-158 🟣 (PR #157 à #202) | 235 : 14:03 (9fb8cb9) ; 158 : 13:30 (PR #202 fusionnée) | 🔧 en cours |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits ; CI de branche run 822 avant fusion | 161 : 14:22 (bf45677) | 🔧 en cours |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | — (WFS-161 🟣 fusionné, PR #207, squash 4fe82c8) | Libre : ticket suivant demandé au PO | 161 : 15:20 (4fe82c8) | 🟢 libre |
 | Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-241 | Conduite réaliste, étape 1 : modèle monde + aide réelle faits, banc vert en local ; CI de branche run 845 | 241 : 15:00 (5f97871) | 🔴 en cours (P1) |
 
 ## Tickets prêts sans agent
