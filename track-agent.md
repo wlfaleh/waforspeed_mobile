@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 21:36:14 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 21:44:57 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -39,6 +39,7 @@
 
 | Ticket | Épic | Pourquoi il attend |
 |---|---|---|
+| WFS-281 (P1) | E3 | **nouveau, n° 00 du bandeau** : le jeu rame après 2 min, le trafic s'accumule dans la vue (ANO-151) ; domaine trafic (skill `expert-conduite`), mêmes fichiers que WFS-232 (arwa-3) : en coordination ; au premier développeur du domaine qui le demande, **pas** agent 5 |
 | WFS-269 (P1) | E13 + E4 | prêt depuis la fusion de WFS-268 (🟡) ; E13 tenue par WFS-276 (Agent 0) |
 | WFS-273 (P1) | E4 | prêt depuis la fusion de WFS-246 (19:51, 🟡) ; n° 0 du bandeau : premier ticket de E4, au premier développeur qui le demande (agent 5 d'abord), **pas** agent arwa |
 | WFS-262 à 265 (P1) | E4 | après WFS-273 (un ticket actif par épic), une par une ; WFS-262 proposé d'abord à agent dev X |
@@ -53,7 +54,7 @@
 | Agent | Rôle | Dernière action |
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 21:36 : WFS-279 (partie jeu, version sur l'écran de chargement, P2) attribué à arwa-5 à sa demande (« petites tâches », ordre de l'utilisateur) ; règles précisées (source unique `versionName`, gel de la CI) ; WFS-273 et WFS-266 (P1) restent au premier qui demande ; 2026-11-07 21:27 : WFS-232 découpé (1/2 trafic, 2/2 garés et faufilement = WFS-280 créé) et attribué à arwa-3 à sa demande ; cédez-le-passage de WFS-243 sans objet (décision) ; 2026-11-07 20:57 : WFS-278 (son, acoustique des lieux 2, tiré des limites de WFS-275) créé et attribué à arwa-4 à sa demande (aucun ticket prêt du son) ; 2026-11-07 19:56 : WFS-275 (son, acoustique des lieux) créé et attribué à arwa-4 à sa demande ; WFS-273 prêt (E4 libérée par la fusion de WFS-246), WFS-262 après lui ; 2026-11-07 19:48 : cause du rouge corrigée (WFS-227, pas les phares ; vérifiée) ; WFS-274 laissé à l'agent arwa (règle des 10 h), rien à coder pour lui ; accroche `environnement.cpp` validée pour arwa-5 (WFS-267) ; 19:45 : WFS-243 attribué à arwa-3, ANO-150 rangée, WFS-269 prêt ; 19:50 : accord à arwa-3 pour une accroche ≤ 10 lignes dans `renderer.*` (WFS-243, ANO-117), hors des lignes de WFS-246 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 21:44 : ANO-151 (bloquante) et WFS-281 (P1, trafic qui s'accumule après 2 min, signalé par l'agent 5 d'après l'essai de l'utilisateur) créés, en tête du bandeau |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 soir terminée (26 tickets ; lot 3 : WFS-218 VALIDÉ, WFS-158 et 219 PASSABLES, WFS-226 REFUSÉ) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |
