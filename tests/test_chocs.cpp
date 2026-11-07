@@ -96,8 +96,9 @@ static void essais(Track& t, bool monde) {
 int main() {
     static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
     essais(t, true);
+    const bool mondeDefaut = g_conduiteMonde;   // modèle du jeu, rendu à la fin
     essais(t, false);
-    g_conduiteMonde = true;
+    g_conduiteMonde = mondeDefaut;
     std::printf("chocs avec le décor (WFS-256) : %s\n", echecs ? "ÉCHEC" : "OK");
     return echecs ? 1 : 0;
 }
