@@ -2956,3 +2956,18 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - banc `qualite` : `voiture-distance-*` et `voiture-lod-passage-*` regardées.
 - **Pour le PO** : `voiture-distance-120-basse` ne montre plus la voiture du trafic (842 appels de dessin, comme à 180 m) depuis ma synchronisation avec `main` de 12:00 UTC environ. C'est le même résultat avec les `.lod` de `main`, et la voiture était visible avant cette synchronisation, avec le même code de WFS-158 : la cause est dans `main`, pas dans WFS-158. Piste : le rendu interpolé du trafic ou la caméra de WFS-221, à vérifier.
 - **Suite de WFS-158** : ST-3 (étriers, intérieurs, sous-caisse), ST-5 (test strict).
+
+### 2026-11-07 12:53:37 — Début WFS-234 : attribué à Claude, agent 1 (01UY1Vv2) (po-scrum-master)
+- Ticket : WFS-234, carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte. Épic E5, P2 Haute. Dépendance WFS-173 ✅. L'utilisateur a demandé à l'agent de « regarder avec le PO ».
+- Pourquoi celui-ci : WFS-218, 224, 226 (E4) attendent WFS-222 (🔀 En PR) ; WFS-230 et 214 (E13) attendent WFS-227 ; WFS-232 et 235 (E10) attendent WFS-158 ; WFS-233 (E11) attend WFS-210 ✅. E5 est libre.
+- Zone : `src/ui/minicarte.*` et le HUD (E5, sauf `src/ui/ecrans/`). Règles : `regles-de-gestion/WFS-234.md` (RG-01 à RG-05). Aucun bouton ne change de taille ni de place (ordre permanent). Coût borné (WFS-222). Test de parcours complet.
+- Branche `feature/waforspeed-234`, premier commit poussé tout de suite.
+
+
+### 2026-11-07 12:53:54 — WFS-233 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
+- **Demande de l'utilisateur** : parler directement aux agents qui attendent. Agent 3 attendait un ticket (« aucun ticket prêt » à 11:52).
+- **Ticket** : WFS-233 [RÉALISME] Enfants et familles dans les rues · E11 (libre) · branche `feature/waforspeed-233` · règles `regles-de-gestion/WFS-233.md` (MakeHuman CC0 comme WFS-209, avec un adulte, jamais sur la route, dans le −50 % de WFS-222).
+
+### 2026-11-07 12:54:37 — Début WFS-233 : enfants et familles dans les rues (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-233` créée depuis `main` (b57d917) et poussée tout de suite.
+- Lecture : CLAUDE.md, skills agent-developer et waforspeed-natif, `regles-de-gestion/WFS-233.md`, DA-realisme ; ensuite analyse de `src/world/pietons.*` et des humains de WFS-209 / 210.
