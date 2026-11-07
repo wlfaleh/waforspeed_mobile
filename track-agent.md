@@ -42,7 +42,7 @@
 | Agent | Rôle | Dernière action |
 |---|---|---|
 | po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 09:48:39 : WFS-217 attribué à agent arwa (Claude, session trafic) |
-| qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette de nuit (06:19) : 29 VALIDÉ, 8 PASSABLE (ANO-103 à 109), 3 REFUSÉ (WFS-151, 137, 178) |
+| QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette de nuit (06:19) : 29 VALIDÉ, 8 PASSABLE (ANO-103 à 109), 3 REFUSÉ (WFS-151, 137, 178) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
 
