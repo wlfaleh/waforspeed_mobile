@@ -25,7 +25,7 @@
 | Claude, agent 2 (01UY1Vv5) | WFS-221 | P1 [TECHNIQUE] : voiture saccadée en vue Proche / Poursuite, banc `fluidite`, rendu interpolé, route lissée (attribué 10:27) | 221 : à pousser dès sa création ; 206 : fusionnée 10:26 (PR #188, squash 42ce230) | 🔴 actif (P1) |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 210 : fusionnée (PR #185, be33c2f, 09:55 UTC, squash) | ✅ libre (WFS-210 🟣 : ✅ au premier run vert de main) |
-| Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
+| Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 7 fusionnées (PR #157, #162, #163, #166, #167, #186, #187 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille) ; RG-C (X5) signalé au PO | 158 : 10:24 UTC (2d2d052 sur main, PR #187 fusionnée par confiance) | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), LOD 4 niveaux (ST-4), test strict (ST-5) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 10:23 (9c5d416) | 🔧 en cours (CI de branche) |
