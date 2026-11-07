@@ -3208,3 +3208,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   US technique seulement si < 30 img/s en Haute sur cet APK.
 - `anno.md` : ANO-120 → WFS-224 ; ANO-115 → WFS-222 (à revérifier). ANO-116 à 119 et 121 à 124 : tri au prochain passage.
 
+### 2026-11-07 14:19:55 — Statuts automatiques, CI main #840 (robot statuts)
+- Run vert (workflow_dispatch, commit 9abffcb) : WFS-216 ✅ (PR #196, b097f86), WFS-221 ✅ (PR #193, 9db8673), WFS-225 ✅ (PR #194, 815fffa), WFS-236 ✅ (PR #199, 024f8b6), WFS-237 ✅ (PR #199, 024f8b6), WFS-238 ✅ (PR #201, 1dfba86).
