@@ -3068,3 +3068,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Point 2 (étriers)** : pas de ticket à part (trop petit) : **RG-06 de WFS-160** (ST-2 roues) : matrice « braquage seul », pièces d'étrier marquées à la conversion, accroches `roues.*` et `renderer.cpp`.
 - **Point 3 (voiture absente de `voiture-distance-120-basse`)** : **WFS-239** créé, [TECHNIQUE] P1, E4 par exception (seulement `qualite_banc.cpp`, que WFS-222 ne touche pas ; vérifié sur `origin/feature/waforspeed-222`). Piste du PO à vérifier : depuis WFS-221, le rendu se fait sur le joueur interpolé ; en Basse le trafic n'est dessiné que jusqu'à 120 m ; la voiture placée pile à 120 m passe au-delà. Placements contrôlés (±0,5 m) et ligne `ERREUR placement` au journal du banc. Pour le premier développeur libre qui demande (agents 4, 5, session dev expert, session dev 5bx).
 - **Tickets prêts** : 8 (WFS-214, 215, 218, 224, 226, 230, 232, 239).
+
+### 2026-11-07 13:38:08 — Statuts automatiques, CI main #826 (robot statuts)
+- Run vert, annulé seulement à la publication (push, commit 4448d7c) : WFS-158 ✅ (PR #157, e5fe674), WFS-206 ✅ (PR #188, fa7449e), WFS-217 ✅ (PR #189, a63d209), WFS-219 ✅ (PR #191, 4448d7c), WFS-220 ✅ (PR #190, d187fac).
