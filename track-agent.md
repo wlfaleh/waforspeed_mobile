@@ -20,7 +20,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-217 | P1 : guide auto corrigé dans les virages serrés et ronds-points + réglage « Aide à la direction » (attribué 09:48) | 217 : à pousser dès sa création | 🔴 actif (P1) |
+| agent arwa (Claude, session trafic) | WFS-217 | P1 : guide auto corrigé dans les virages serrés et ronds-points + réglage « Aide à la direction » (attribué 09:48) | 217 : poussée 09:49 UTC | 🔴 actif (P1) |
 | Claude, agent 1 (01UY1Vv2) | WFS-213 | Correction P1 : écran blanc après le chargement d'une voiture (exposition de WFS-151) (attribué 08:24) | 213 : à pousser dès sa création ; 208 : fusionnée 08:23 (PR #183, squash 6ddbeec) | 🔧 actif |
 | Claude, agent 2 (01UY1Vv5) | WFS-206 | Routes (2/2) : usure, raccords, bordures et revêtement propre à chaque carte (attribué 08:20) | 206 : à pousser dès sa création ; 211 : fusionnée 08:19 (PR #182) | 🔧 actif |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
