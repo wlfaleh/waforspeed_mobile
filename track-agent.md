@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 23:02:52 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 23:10:30 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -23,7 +23,7 @@
 | agent arwa (Claude, session trafic) | WFS-274 (rien à coder), WFS-270 | **WFS-274 : rien à faire sur les phares** (19:48 : la cause du rouge est WFS-227, **pas** ses phares ; corrigée par arwa-5 sous WFS-267 ; priorité absolue levée ; le ticket reste à lui, règle des 10 h : à lui de le clore « ↪ Regroupé avec WFS-267 ») ; P1 WFS-270 🟣 fusionné (PR #231, squash b21b9c8 ; 🟡 à valider par l'utilisateur ; ANO-147 / 148 renvoyées au QA) ; P1 WFS-257 personnes qui apparaissent / disparaissent (E11), attribué 16:35 ; **en parallèle** (demandes de l'utilisateur) P1 WFS-224 fumée des pneus + lignes du nitro sous le HUD 🟣 fusionné (PR #228) ; WFS-244 🟣 fusionné ; WFS-226 fusionné, QA REFUSÉ | 270 : fusionnée 20:12 (PR #231, squash b21b9c8) ; 257 : fusionnée 20:00 (PR #220, squash ebe798e) ; 224 : fusionnée 19:51 (PR #228, squash 2a3f341) ; 244 : fusionnée 18:05 (PR #218, squash 4a0fbb9) ; 274 : aucune branche | 🔴 en cours (P1 + P1 + P1) |
 | Claude, agent 1 (01UY1Vv2) | — | WFS-230 fusionnée (PR #221, squash b7825cf), 🟡 à valider par l'utilisateur ; libre, attend l'accord de l'utilisateur avant un nouveau ticket | 230 : PR #221 fusionnée ; 234 : PR #209 | 🟢 libre |
 | Claude, agent 2 (01UY1Vv5) | WFS-282 | Vue Cockpit 2e passage : RG-00 (planche de bord et carrosserie d'avant, champ 72°) fait, captures avant / après de RG-00 poussées | 282 : 22:56 (29cbdfe, captures de RG-00) ; 227 : fusionnée (PR #210) | 🔴 en cours (P1) |
-| Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1, commit de début seul) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 ⚠️ P1 : rien poussé depuis 13:43 (9 h 20 à 23:03) ; relance, pas de retrait avant 10 h (23:43) |
+| Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1, commit de début seul) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 ⚠️ P1 : rien poussé depuis 13:43 (9 h 30 à 23:10) ; relance, pas de retrait avant 10 h (23:43) |
 | Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris, puis donné à agent arwa (17:19 UTC) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
 | Claude, agent 5 (011cpqZaDiS2) | WFS-268 | P1 WFS-268 rouvert (recette KO par l'utilisateur, suite sur son ordre) : −50 % de personnes en Ville et Corniche, tout le fixe préparé au chargement (kit, commerces, lieux, feux), ≤ 1 Go de mémoire par carte (décision du propriétaire) | 268 : suite poussée 22:46 (7c70a2b, Campagne et Grand Prix, immeubles du kit) ; 1re partie fusionnée par confiance 19:34 (🟡) ; 248 : ❌ (ronds-points supprimés, WFS-283) | 🔴 en cours (P1) |
 | Claude, agent dev X (0183bv2X, ex-« session dev expert ») | WFS-262 | P1 [TECHNIQUE] Performance 3 (E4, exception PO en parallèle de WFS-268 d'agent 5 et WFS-239 d'agent 3) : cache de pipelines, toutes les variantes au chargement, cadence d'image stable ; attribué 22:33 à sa demande ; avant : WFS-246 🟡 (PR #229, squash ad94d9d) | 262 : 22:59 (c2643ee, synchronisation avec main ; cache de pipelines) ; 246 : fusionné #229 (ad94d9d) | 🔴 en cours (P1) |
@@ -47,6 +47,10 @@
 | WFS-215 (P3) | E10 | E10 tenue en partie par WFS-232 (arwa-3 : nouveau dossier `assets/cars/deux_roues/` et `convert_car.mjs` seuls) ; domaine voitures |
 | WFS-266 (P1) | E11 | ANO-134 bloquante (WFS-210 REFUSÉ) : correction prioritaire ; E11 libre (WFS-257 🟣) : au premier développeur qui le demande (domaine personnages) |
 | WFS-280 (P2) | E3 + E2 | en attente de WFS-232 (modèles et pilotes des deux-roues) |
+| WFS-284 (P2) | E7 | **nouveau (VABF 2026-11-07, ANO-153)** : ANR « isn't responding » pendant un chargement ; au premier développeur qui le demande |
+| WFS-285 (P2) | E7 | nouveau (ANO-154) : surface recréée sans recharger le monde ; après WFS-284 (même fichier) |
+| WFS-286 (P3) | E8 | nouveau (ANO-156, ANO-157) : « FERMER » des Réglages, temps du duel à 4 ; E8 libre |
+| WFS-287 (P2) | E7 | nouveau [TECHNIQUE] : banc émulateur rouge (`tools/qa/emulateur.sh`), diagnostic transmis à l'agent expert ci ; une seule E7 active à la fois |
 
 ## Agents de pilotage
 
@@ -54,7 +58,7 @@
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
 | lead-dev | relit chaque PR : ouvre les captures avant / après (≥ 3, `qa/pr/WFS-XX/`), compare à la demande de l'utilisateur, **seul à fusionner** (squash) ou refuse ; appelé par le développeur juste après sa PR (`.claude/agents/lead-dev.md`) | créé le 2026-11-07 21:45 UTC (règle de l'utilisateur) |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 23:02 : WFS-283 attribué à arwa-5 (à sa demande) ; WFS-271 suspendu (sans objet) ; WFS-278 passé 🟣 (PR #240) ; avant : WFS-262 attribué à agent dev X (22:33) |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 23:10 : VABF du 2026-11-07 priorisée (ANO-153 → WFS-284, ANO-154 → WFS-285, ANO-156 / 157 → WFS-286, banc émulateur → WFS-287 ; ANO-155 annulée par l'utilisateur) ; avant : 2026-11-07 23:02 : WFS-283 attribué à arwa-5 (à sa demande) ; WFS-271 suspendu (sans objet) ; WFS-278 passé 🟣 (PR #240) ; avant : WFS-262 attribué à agent dev X (22:33) |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 soir terminée (26 tickets ; lot 3 : WFS-218 VALIDÉ, WFS-158 et 219 PASSABLES, WFS-226 REFUSÉ) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |

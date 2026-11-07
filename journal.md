@@ -4364,3 +4364,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 23:08:08 — ANO-155 annulée (agent qa lead)
 - L’utilisateur : « Folg » est la marque, « Folg 8 » le modèle ; « Folg Folg 8 » au salon du duel est voulu. Ligne d’anno.md et rapport VABF mis à jour, PO prévenu.
+
+### 2026-11-07 23:10:30 — VABF du 2026-11-07 priorisée : WFS-284 à WFS-287 créés (po-scrum-master)
+- Demande de l'agent qa lead (ordre de l'utilisateur « remonte direct »), rapport `qa/rapports/VABF-2026-11-07.md`, construction 883 (c9eda61).
+- **ANO-153** (ANR après « Course solo », majeure) → **WFS-284** P2, E7 (`android_main.cpp`, entrées lues pendant tout chargement). Aucun doublon (WFS-246 ne traite que la résolution).
+- **ANO-154** (moteur entièrement rechargé quand la surface est recréée, majeure) → **WFS-285** P2, E7, après WFS-284 (même fichier) ; repli actuel gardé (ANO-52, WFS-100), rien retiré.
+- **ANO-155** : annulée par l'utilisateur (« Folg Folg 8 » voulu), aucun ticket.
+- **ANO-156** (« FERMER » au milieu des Réglages) et **ANO-157** (duel à 4 : 0:00.0, cause probable `duelArriveeForcee` du banc) → un seul lot **WFS-286** P3, E8 ; tailles des boutons inchangées (ordre permanent).
+- **Banc émulateur rouge** (`tools/qa/emulateur.sh` : journal partagé entre essais, délais trop courts) → **WFS-287** [TECHNIQUE] P2, E7 : correction d'un rouge, permise par le gel de la CI ; diagnostic transmis à l'agent expert ci, attribution à la demande seulement.
+- Corrections vues sur la construction 883 notées au suivi de WFS-242 (ANO-114), WFS-230 (ANO-119), WFS-224 (ANO-122) ; statuts inchangés (à confirmer sur téléphone).
+- Bandeau des tickets prêts complété ; `anno.md` (Statut, US), `TACHES.md`, `track-agent.md` à jour.
