@@ -41,7 +41,13 @@ public:
     // une étape (dt en s) : speed et top en unités/s, throttle 0/1, nitro, active = en course
     void update(double dt, double speed, double top, double maxSpeed, bool throttle, bool nitro, bool active,
                 float pitch, bool electric, EngineTargets& out);
+    // WFS-255 : conduite réaliste (Player::monde) : régime (tr/min) et rapport réels du modèle de la voiture ; le son suit le
+    // régime réel rapporté au régime de coupure (0,06 à 1,05 comme le modèle du jeu web) et marque chaque passage de rapport
+    void updateReel(double dt, double regimeTrMin, double regimeCoupure, int rapport, double vitesse, double top, bool throttle,
+                    bool nitro, bool active, float pitch, bool electric, EngineTargets& out);
     float rpm = 0.12f, load = 0; int gear = 1; float shiftT = 0, shiftDip = 0;
+private:
+    void cibles(float v, bool active, float pitch, bool nitro, bool electric, EngineTargets& out);   // régime → cibles du son
 };
 
 // WFS-120 : pétarades au lever de pied, souffle du turbo au passage de rapport, rupteur à la vitesse de pointe.
