@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 22:20:07 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 22:28:55 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -25,7 +25,7 @@
 | Claude, agent 2 (01UY1Vv5) | WFS-282 | Vue Cockpit 2e passage : RG-00 (planche de bord et carrosserie d'avant, champ 72°) fait, captures avant / après en cours | 282 : branche poussée 22:26 (RG-00 commité) ; 227 : fusionnée (PR #210) | 🔧 actif |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1, commit de début seul) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 ⚠️ P1 : rien poussé depuis 13:43 (8 h 22 à 22:05) ; relance, pas de retrait avant 10 h (23:43) |
 | Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris, puis donné à agent arwa (17:19 UTC) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
-| Claude, agent 5 (011cpqZaDiS2) | — | libre (demande son ticket suivant au PO ; WFS-273 lui est proposé en premier) | 268 : fusionnée par confiance le 2026-11-07 19:34 UTC (Ville et Corniche préparées au chargement, Campagne et Grand Prix en repli, décision du PO), 🟡 ; 248 : fusionnée (PR #208, 🟡) | 🟢 libre |
+| Claude, agent 5 (011cpqZaDiS2) | WFS-268 | P1 WFS-268 rouvert (recette KO par l'utilisateur, suite sur son ordre) : −50 % de personnes en Ville et Corniche, tout le fixe préparé au chargement (kit, commerces, lieux, feux), ≤ 120 Mo GPU par carte | 268 : fusionnée par confiance le 2026-11-07 19:34 UTC (Ville et Corniche préparées au chargement, Campagne et Grand Prix en repli, décision du PO), 🟡 ; 248 : fusionnée (PR #208, 🟡) | 🔴 en cours (P1) |
 | Claude, agent dev X (0183bv2X, ex-« session dev expert ») |  | WFS-246 fusionné (PR #229), 🟡 à valider par l'utilisateur ; libre ; E4 libre : WFS-273 (n° 0 du bandeau) puis WFS-262 à 265, au premier qui demande (WFS-262 proposé d'abord à lui) | 246 : fusionné #229 (ad94d9d), 🟡 À valider (utilisateur) | 🟢 libre |
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre : pause de l'utilisateur finie à 18:00 UTC ; ticket seulement à sa demande |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-245 | P3 WFS-245 textes du HUD lisibles (E5) : livraison 1 fusionnée PR #238 (squash 5032e8b) ; livraison 2 en cours : RG-09 (ANO-141), texte du bandeau de la carte GPS, **arbitrée par le PO à 22:05** (bandeau 56, distance 32, consigne 20, nom de rue 16 ; carte inchangée) ; fusion par le `lead-dev`. WFS-235 (P1) fusionné PR #236, 🟡 À valider (utilisateur) | 245 : 21:51 (8a39fd0) ; livraison 1 fusionnée 21:59 (#238, 5032e8b) | 🔴 en cours (WFS-245, livraison 2) |
@@ -55,7 +55,7 @@
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
 | lead-dev | relit chaque PR : ouvre les captures avant / après (≥ 3, `qa/pr/WFS-XX/`), compare à la demande de l'utilisateur, **seul à fusionner** (squash) ou refuse ; appelé par le développeur juste après sa PR (`.claude/agents/lead-dev.md`) | créé le 2026-11-07 21:45 UTC (règle de l'utilisateur) |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 22:05 : RG-09 de WFS-245 arbitrée (bandeau de la carte GPS, ANO-141), à la demande d'arwa-2 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 22:28 : WFS-268 rouvert pour agent 5 sur ordre de l'utilisateur (recette KO, RG-07 à 10) ; avant : ANO-151 et WFS-281 (trafic) créés |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-07 soir terminée (26 tickets ; lot 3 : WFS-218 VALIDÉ, WFS-158 et 219 PASSABLES, WFS-226 REFUSÉ) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |

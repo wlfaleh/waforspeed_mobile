@@ -4279,3 +4279,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Limites** :
   - Un masque de 4,8 dB apparaît dès que la ligne frôle un obstacle : c'est la formule de WFS-275, D(0) = 10·lg 3.
   - Rien n'a été écouté sur un vrai téléphone.
+
+### 2026-11-07 22:28:55 — WFS-268 rouvert pour Claude, agent 5 : recette KO par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur transmis par l'agent 5 : « On doit faire mieux pour ville et corniche tu peux supprimer -50% des personnes dans la rue et préparer dans le changement de map tous les détails, on laisse que la caméra et les voitures roulent », puis « Non c'est le même sujet, recette KO, tu dois continuer les travaux et dis ça au PO ».
+- Exception de l'utilisateur à la règle « KO → nouvelle US, autre développeur » : WFS-268 repasse 🔧 En cours, même développeur, même branche `feature/waforspeed-268` ; 🟡 après la nouvelle fusion.
+- Règles ajoutées (`regles-de-gestion/WFS-268.md`) : RG-07 (−50 % de personnes, tirage stable, Ville et Corniche), RG-08 (kit, commerces, lieux, feux préparés au chargement, 0 maillage créé en course), RG-09 (≤ 120 Mo GPU de contenu fixe par carte, alerte au PO à 100 Mo), RG-10 (preuves).
+- Zone élargie : `archi_carte.*`, `commerces.cpp`, nombre de personnes seulement dans `pietons.cpp` / `foule_apparition.h` (personne n'y travaille : WFS-257 🟡 fusionné, WFS-266 non attribué). Trafic exclu (WFS-281, WFS-232).
