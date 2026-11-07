@@ -175,6 +175,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P2 Haute | WFS-232 | [RÉALISME] Deux-roues : motos et scooters dans le trafic et garés | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-232` |  |  |
 | P2 Haute | WFS-233 | [RÉALISME] Enfants et familles dans les rues | E11 | ⏳ Prêt |  | WFS-209 ✅, WFS-210 | `feature/waforspeed-233` |  |  |
 | P2 Haute | WFS-234 | Carte de navigation façon GPS (Google Maps / Waze) à la place de la mini-carte | E5 | ⏳ Prêt |  | WFS-173 ✅ | `feature/waforspeed-234` |  |  |
+| P1 Urgent | WFS-235 | Vue Cockpit : voir la rue (plus de barres noires), regard réaliste qui suit la route, réglage « Regard cockpit », intérieurs plus réalistes | E3 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-235` |  |  |
 
 ## Critères d'acceptation
 
