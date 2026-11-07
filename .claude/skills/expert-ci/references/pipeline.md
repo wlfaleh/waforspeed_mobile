@@ -12,7 +12,8 @@
     (`wfs_bench`, tous les `test_*`, `liste-tests.txt` ; shaders inclus dans le binaire), gardée 1 jour ; les 12 bancs et `endurance` en dépendent
     (`needs: compilation`), la décompressent et la vérifient (`tools/qa/verifier_compilation.sh` : binaire ou test manquant = rouge).
   - `banc-essai (<groupe>)` × 12 : `partie1a`, `partie1b`, `partie2a`, `partie2b`, `partie2c`, `texte` (+ test de la piste), `ecrans-2400`, `menu1-2400`,
-    `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `realisme` (+ textures KTX2 `tools/textures/ci_textures.sh`) ; Vulkan logiciel ; `WFS_BANC=<groupe> ./build/wfs_bench captures assets/` ;
+    `menu2-2400`, `vitrines` (+ `trace`), `nuit`, `conduite-chocs` (bancs conduite WFS-241 et chocs WFS-256, sortis d'`ecrans-2400` par WFS-252) ;
+    **le banc du réalisme n'y est plus** (WFS-252, décision de l'utilisateur) : voir `realisme.yml` ;
     artefact `captures-<groupe>`.
   - `endurance` (35 min max) : couches de validation Vulkan, `tools/qa/endurance.sh` (cycles de course, mémoire, objets Vulkan ; verdict RG-13 / 14 / 17 de WFS-145),
     puis `tools/qa/chauffe.sh` (banc de chauffe WFS-123, limite `CHAUFFE_LIMITE`, 600 s par défaut, WFS-220) hors push.
@@ -28,6 +29,11 @@
     tourné** (envoi, terminé, non annulé ; `gh api .../compare`), sinon « liste incomplète » et les commits du dernier envoi.
   - `banc-essai` (WFS-237) : installation `apt-get` en 2 essais de 5 min au plus (comme `endurance`), `timeout-minutes: 75`.
   - Run rouge qui regroupe plusieurs tickets : l'expert CI trouve le coupable (journaux d'erreur, puis au besoin CI d'une branche commit par commit).
+## realisme.yml « Banc du réalisme (chaque matin) » (WFS-252)
+Chaque matin à **07:00 heure de Paris** (cron 05:00 et 06:00 UTC, le job `heure` garde celui qui tombe à 7 h ; été / hiver) + à la main.
+`compilation` (wfs_bench) → `banc (partie 1|2)` en parallèle (`WFS_REALISME_PARTIE`, WFS-251 ; `ci_textures.sh` en partie 2) → `fusion`
+(rapports finaux, résumé du run) ; écart (code 3), partie absente ou étape en double = rouge ; artefacts `realisme-partie-N` et `realisme-<run>` (30 jours).
+Ce workflow ne publie rien dans la Release `apercu` et ne touche pas au robot des statuts (qui ne suit que `build.yml`).
 ## statuts.yml — robot des statuts (WFS-196)
 `workflow_run` de « Construction WaForSpeed » terminé, sur `main` ; `tools/qa/statuts.py` (test `test_statuts.py`) : run vert (hors nuit) → chaque
 ligne 🟣 de `TACHES.md` dont le commit de fusion (PR de la ligne, sinon `(#NNN)`, sinon hash cité) est ancêtre du run passe ✅ « (CI main #N) » ;

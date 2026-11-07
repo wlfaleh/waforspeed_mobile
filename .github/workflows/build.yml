@@ -70,13 +70,13 @@ jobs:
     if: github.event_name != 'schedule'   # WFS-114 : la nuit, seul le job endurance tourne
     needs: compilation   # WFS-250
     runs-on: ubuntu-24.04
-    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme, run #825) + 2 × 5 min d'installation au pire, et marge
+    timeout-minutes: 75   # WFS-237 (RG-06) : banc le plus long ≈ 42 min (realisme au run #825, sorti des envois par WFS-252) + 2 × 5 min d'installation au pire, et marge
     strategy:
       fail-fast: false
       matrix:
         # WFS-106 : partie1, partie2 et ecrans-2400 coupés (durées mesurées au run 41928993894), vie lancé dans texte ;
         # 11 jobs au plus 12 (machines partagées par les agents) ; nuit : WFS-09
-        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, realisme]   # WFS-148 : banc de référence du réalisme
+        groupe: [partie1a, partie1b, partie2a, partie2b, partie2c, texte, ecrans-2400, menu1-2400, menu2-2400, vitrines, nuit, conduite-chocs]   # WFS-252 (décision de l'utilisateur, 2026-11-07) : le banc du réalisme (WFS-148) ne tourne plus à chaque envoi, mais chaque matin à 07:00 heure de Paris (realisme.yml)
     steps:
       - uses: actions/checkout@v4
       - name: Outils (Vulkan logiciel, compilateur de shaders)
@@ -98,8 +98,7 @@ jobs:
         run: |
           mkdir -p captures
           case "${{ matrix.groupe }}" in
-            partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit|realisme)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09 ; realisme : WFS-148
-              if [ "${{ matrix.groupe }}" = realisme ]; then bash tools/textures/ci_textures.sh captures || exit 1; fi   # WFS-149 : KTX2 d'essai, rapport PSNR
+            partie1a|partie1b|partie2a|partie2b|partie2c|vitrines|nuit)   # vitrines : WFS-13, 16 voitures ajoutées ; nuit : WFS-09
               WFS_BANC=${{ matrix.groupe }} ./build/wfs_bench captures assets/
               # WFS-136 (accroche) : tracé 2 forcé sur les 4 cartes (rond-point, feu rouge, épingle, autoroute) ; un écart = rouge
               if [ "${{ matrix.groupe }}" = vitrines ]; then mkdir -p trace && WFS_BANC=trace ./build/wfs_bench trace assets/ && cp trace/trace-*.png captures/; fi ;;
@@ -121,8 +120,6 @@ jobs:
               mkdir -p hud && WFS_BANC=hud WFS_TAILLE=2400x1080 ./build/wfs_bench hud assets/ && cp hud/hud-course.png captures/hud-2400.png && cp hud/encoche-hud.png captures/encoche-hud-2400.png   # WFS-27, WFS-52
               for f in hud/minicarte-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done   # WFS-173 : minicarte-checkpoint-2400, minicarte-ligne-2400
               mkdir -p fluidite && WFS_BANC=fluidite ./build/wfs_bench fluidite assets/ && cp fluidite/fluidite.txt fluidite/fluidite-*-0[0-5].png captures/   # WFS-221 (accroche) : à-coups avant / après (1280x720)
-              mkdir -p conduite && WFS_BANC=conduite ./build/wfs_bench conduite assets/ && cp conduite/conduite.txt conduite/conduite-*.png captures/   # WFS-241 (accroche) : banc de conduite, vidéos épingle / rond-point (1280x720)
-              mkdir -p chocs && WFS_BANC=chocs ./build/wfs_bench chocs assets/ && cp chocs/chocs.txt chocs/chocs-*.png captures/   # WFS-256 (accroche) : chocs avec le décor des 4 cartes
               mkdir -p camera && WFS_BANC=camera WFS_TAILLE=2400x1080 ./build/wfs_bench camera assets/ && for f in camera/camera-*.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-66
             menu1-2400)   # WFS-106 : 1re moitié du groupe menu en 2400x1080 (menu, appuis, pause, garage, terrain)
               mkdir -p menu && WFS_BANC=menu1 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/ && cp menu/menu-0.png captures/menu-1.png   # WFS-37
@@ -132,6 +129,10 @@ jobs:
             menu2-2400)   # WFS-106 : 2e moitié du groupe menu en 2400x1080 (réglages, salon du duel)
               mkdir -p menu && WFS_BANC=menu2 WFS_TAILLE=2400x1080 ./build/wfs_bench menu assets/
               for f in menu/reglages-menu.png menu/reglages-pause.png menu/menu-duel.png menu/salon-*.png menu/duel-reseau-course.png menu/duel-resultat-4.png; do cp "$f" "captures/$(basename "$f" .png)-2400.png"; done ;;   # WFS-68, WFS-83 ; WFS-122 (accroche) : duel-resultat-4
+            conduite-chocs)   # WFS-252 : bancs de conduite (WFS-241) et des chocs (WFS-256) sortis d'ecrans-2400 (≈ 65 min au run #864, limite 75 min)
+              mkdir -p conduite && WFS_BANC=conduite ./build/wfs_bench conduite assets/ && cp conduite/conduite.txt conduite/conduite-*.png captures/   # WFS-241 (accroche) : banc de conduite, vidéos épingle / rond-point (1280x720)
+              mkdir -p chocs && WFS_BANC=chocs ./build/wfs_bench chocs assets/ && cp chocs/chocs.txt chocs/chocs-*.png captures/   # WFS-256 (accroche) : chocs avec le décor des 4 cartes
+              ;;
           esac
           ls -la captures
       - uses: actions/upload-artifact@v4
