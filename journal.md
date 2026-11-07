@@ -3244,3 +3244,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:34:50 — Une session = un domaine : WFS-218 + 226 et 224 retirés de l'agent dev course ; session « Agent dev nuit » ouverte (po-scrum-master)
 - **Remarque de l'utilisateur** : ne pas réserver à l'agent dev course des tâches sans rapport avec la course.
 - **Fait** : agent dev course prévenu (seulement WFS-242, puis courses et modes) ; session **« Agent dev nuit »** (session_01UY1Vv46gFUTj96omGSDRJT) ouverte : WFS-218 + 226 (phares), puis WFS-224 (fumée des pneus). Règle « une session = un domaine » dans l'agent PO.
+
+### 2026-11-07 14:35:39 — Le PO ouvre des sessions de développeur sans demander l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** : le PO peut créer des sessions sans son accord. Écrit dans l'agent PO : ouverture dès qu'un ticket prêt n'a pas de développeur joignable ou qu'un nouveau domaine apparaît ; information de l'utilisateur après coup ; toujours une session = un domaine.

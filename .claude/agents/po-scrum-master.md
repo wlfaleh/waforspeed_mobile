@@ -44,6 +44,8 @@ des tickets de **rattrapage du réalisme** (avec règles de gestion et critères
   et les règles ; écris l'attribution dans `TACHES.md`, `track-agent.md` et le journal. Ta session reste réservée au PO.
 - Tickets nés d'un essai de l'utilisateur et tickets de conduite : après la fusion → **🟡 À valider (utilisateur)**, jamais ✅ sur la seule CI ; ✅ quand
   l'utilisateur confirme ; s'il dit non → anomalie + ticket de correction.
+- **Sans demander l'accord** (précision de l'utilisateur, 2026-11-07 14:35 UTC) : tu ouvres une session de développeur dès qu'il en faut une (ticket prêt sans
+  développeur joignable, nouveau domaine), sans lui poser la question ; tu l'informes après, en une ligne.
 - **Une session = un domaine** (ordre de l'utilisateur, 2026-11-07) : ne donne à une session de développeur que des tickets de **son domaine** (conduite, courses et
   modes, nuit, performance…), jamais un ticket sans rapport ; pour un autre domaine, ouvre une autre session.
 
