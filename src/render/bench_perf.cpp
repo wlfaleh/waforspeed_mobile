@@ -69,7 +69,6 @@ struct Resultat {
 } // namespace
 
 void benchPerf(Game& g, Renderer& r, const std::string& out) {
-    (void)out;
     // registre enveloppé (rétabli à la fin du banc)
     std::vector<SystemEntry>& reg = systemRegistry();
     const std::vector<SystemEntry> origine = reg;
@@ -80,7 +79,6 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
     const int CHAUFFE = std::getenv("WFS_PERF_CHAUFFE") ? std::atoi(std::getenv("WFS_PERF_CHAUFFE")) : 180;
     const int IMAGES = std::getenv("WFS_PERF_IMAGES") ? std::atoi(std::getenv("WFS_PERF_IMAGES")) : 300;
     const char* seule = std::getenv("WFS_PERF_CARTE");   // essai local : une seule carte
-    r.rendu221 = std::getenv("WFS_PERF_AVANT") && std::atoi(std::getenv("WFS_PERF_AVANT")) == 1;   // rendu d'avant WFS-222 (comparaison)
     ecrans::Reglages& R = ecrans::reglages();
     const int q0 = R.qualite;
     std::vector<Resultat> res;
@@ -92,6 +90,9 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
             if (!g.init(r, "golf", c.carte)) { WFS_ERR("perf : chargement %s impossible", c.carte); continue; }
             g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 1;
             double t = 2000;
+            // essai local : WFS_PERF_AVANCE=n images de course sans mesure (une image dessinée sur 30) avant la chauffe
+            const int AVANCE = std::getenv("WFS_PERF_AVANCE") ? std::atoi(std::getenv("WFS_PERF_AVANCE")) : 0;
+            for (int i = 0; i < AVANCE; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(t); t += 1.0 / 60; }
             for (int i = 0; i < CHAUFFE; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }
             for (auto& [nom, k] : cumuls()) k = Cumul{};   // remise à zéro (les chronomètres gardent une référence sur leur cumul)
             passes::remettreAZero();
@@ -151,6 +152,7 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
             for (size_t k = 0; k < s.dessins.size() && k < 8; k++)
                 WFS_LOG("perf %s %s :   triangles %-40s %8.0f", s.carte.c_str(), s.qualite.c_str(), s.dessins[k].second.c_str(), s.dessins[k].first);
             res.push_back(s);
+            r.capturePng(out + "/perf-" + s.carte + "-" + (c.q == qualite::BASSE ? "basse" : "haute") + ".png");   // fin de la mesure
             g.shutdown();
         }
     }
@@ -162,7 +164,6 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
                 s.cpu, s.cpuPire, s.appels, s.triangles, poste(0).c_str(), poste(1).c_str(), poste(2).c_str());
     }
     R.qualite = q0; ecrans::appliquerQualiteNiveau(r);
-    r.rendu221 = false;
     reg = origine;
 }
 

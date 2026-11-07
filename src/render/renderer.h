@@ -165,7 +165,7 @@ public:
     Image white, flatNormal;
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
     bool forceSansReflets = false; // WFS-222 (RG-03) : baisse automatique : pas de passe de reflet (route mouillée)
-    bool rendu221 = false;         // WFS-222 : banc de profilage seulement (WFS_PERF_AVANT=1) : rendu d'avant WFS-222 pour comparer
+    bool rendu221 = false;         // WFS-222 : banc seulement (WFS_AVANT_222=1) : rendu d'avant WFS-222, pour comparer images et coûts
     bool qualiteBasse = false;     // WFS-82 : petits objets coupés plus tôt (150 m) en qualité Basse
     uint32_t objetsMasques() const { return masquesPrec_; }   // WFS-82 : objets non dessinés à la dernière image (journal)
     float bloomForce = 1.f;        // WFS-15 : bloom (UnrealBloomPass du jeu web) : 1 en Moyenne / Haute, 0 en Basse
@@ -263,6 +263,8 @@ private:
     VkPipeline skinOpaque_ = VK_NULL_HANDLE, skinShadow_ = VK_NULL_HANDLE, skinShadowMask_ = VK_NULL_HANDLE;
     // WFS-222 : opaques avec découpe (shader avec discard) ; opaque_ et skinOpaque_ sont sans discard (early-Z)
     VkPipeline opaqueDecoupe_ = VK_NULL_HANDLE, skinOpaqueDecoupe_ = VK_NULL_HANDLE;
+    VkPipeline skyApres_ = VK_NULL_HANDLE;   // WFS-222 : ciel dessiné après les opaques, test de profondeur (pixels vides seulement)
+    std::vector<uint32_t> ordreOpaques_;     // WFS-222 : opaques de la passe de scène, du plus proche au plus loin
     Buffer osBuf_[2]; VkDescriptorSet osSet_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
     int skinUsed_ = 0;
     VkSampler shadowSampler_ = VK_NULL_HANDLE;

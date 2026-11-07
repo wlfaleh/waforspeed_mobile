@@ -92,6 +92,7 @@ static void etapeRendu(const char* nom) {
 
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
+    if (vk.offscreen) { const char* a = std::getenv("WFS_AVANT_222"); rendu221 = a && !std::strcmp(a, "1"); }   // WFS-222 : banc seulement
     VkDevice d = vk.device;
 #if defined(__APPLE__)
     g_etapeRendu = std::chrono::steady_clock::now();
@@ -831,6 +832,7 @@ void Renderer::createScenePipelines() {
     opaqueDecoupe_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
     blend_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_);
     sky_ = makePipeline(kv, kf, 0, false, false, false, false, scenePass_, s, sceneLayout_);
+    skyApres_ = makePipeline(kv, kf, 0, false, false, true, false, scenePass_, s, sceneLayout_);   // WFS-222 : profondeur 0 = vide
     skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_, false, 0, true);   // WFS-63 ; WFS-222
     skinOpaqueDecoupe_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
@@ -864,7 +866,7 @@ bool Renderer::appliquerNettete() {
     const bool refaire = ms != vk_->msaa;
     if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
         VkDevice d = vk_->device;
-        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -1445,16 +1447,26 @@ void Renderer::endFrame() {
         vkCmdSetViewport(r.cb, 0, 1, &vpt); vkCmdSetScissor(r.cb, 0, 1, &sc);
     }
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &r.frameSet, 0, nullptr);
-    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
-    vkCmdDraw(r.cb, 3, 1, 0, 0);
-    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
-    VkPipeline lie = opaque_;
-    for (const Pending& p : opaqueQ_) {
-        if (!(p.vis & VIS_CAM)) continue;   // WFS-82 : hors champ (gardé pour l'ombre ou le reflet)
-        const bool d = rendu221 || aDecoupe(p);   // WFS-222 : même ordre de dessin, seul le pipeline change (image identique)
+    if (rendu221) {   // banc : ordre d'avant WFS-222 (ciel plein écran d'abord)
+        vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
+        vkCmdDraw(r.cb, 3, 1, 0, 0);
+    }
+    // WFS-222 : opaques du plus proche au plus loin (les pixels cachés sont rejetés avant le shader), puis le ciel dans les
+    // seuls pixels restés vides (profondeur 0) ; à profondeur égale, l'ordre d'appel est gardé (tri stable)
+    ordreOpaques_.clear();
+    for (uint32_t i = 0; i < (uint32_t)opaqueQ_.size(); i++) if (opaqueQ_[i].vis & VIS_CAM) ordreOpaques_.push_back(i);   // WFS-82 : hors champ (gardé pour l'ombre ou le reflet)
+    if (!rendu221) std::stable_sort(ordreOpaques_.begin(), ordreOpaques_.end(), [&](uint32_t a, uint32_t b) { return opaqueQ_[a].depth < opaqueQ_[b].depth; });
+    VkPipeline lie = VK_NULL_HANDLE;
+    for (uint32_t i : ordreOpaques_) {
+        const Pending& p = opaqueQ_[i];
+        const bool d = rendu221 || aDecoupe(p);   // WFS-222 : shader sans discard si l'objet n'a pas de découpe
         const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : skinOpaque_) : (d ? opaqueDecoupe_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
+    }
+    if (!rendu221) {
+        vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skyApres_);
+        vkCmdDraw(r.cb, 3, 1, 0, 0);
     }
     passes::dansScene(*this, r.cb, EtapeRendu::Scene);   // WFS-150 : passes enfichables de la scène (opaques)
     // objets transparents (vitres) : du plus loin au plus proche
@@ -1551,7 +1563,7 @@ void Renderer::shutdown() {
         vkDestroyFence(d, r.fence, nullptr); vkDestroySemaphore(d, r.acquired, nullptr); vkDestroySemaphore(d, r.done, nullptr);
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
-    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_,
+    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_, skyApres_,
                          poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_})
         if (p) vkDestroyPipeline(d, p, nullptr);
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
@@ -1583,7 +1595,7 @@ void Renderer::shutdown() {
     frameLayout_ = matLayout_ = postLayout_ = osLayout_ = VK_NULL_HANDLE;
     sceneLayout_ = postPLayout_ = skinLayout_ = VK_NULL_HANDLE;
     opaque_ = blend_ = sky_ = post_ = ui_ = shadowPipe_ = shadowMaskPipe_ = skinOpaque_ = skinShadow_ = skinShadowMask_ = VK_NULL_HANDLE;
-    opaqueDecoupe_ = skinOpaqueDecoupe_ = VK_NULL_HANDLE;   // WFS-222
+    opaqueDecoupe_ = skinOpaqueDecoupe_ = skyApres_ = VK_NULL_HANDLE;   // WFS-222
     poolPipe_ = addPipe_ = refOpaque_ = refBlend_ = refSky_ = refAdd_ = VK_NULL_HANDLE;
     pool_ = VK_NULL_HANDLE; sampler_ = clampSampler_ = shadowSampler_ = VK_NULL_HANDLE; tsPool_ = VK_NULL_HANDLE;
     postSet_ = fontSet_ = VK_NULL_HANDLE; osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;

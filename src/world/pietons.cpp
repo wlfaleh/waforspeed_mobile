@@ -26,6 +26,7 @@ namespace {
 constexpr double PED_RANGE0 = -10, PED_RANGE1 = 115;   // tronçons (1,2 m) derrière / devant le joueur
 constexpr double PED_WALK_SPEED = 1.1, PED_JOG_SPEED = 2.9;   // m/s des animations d'origine
 constexpr float PED_LOD_M[2] = {16.f, 50.f};
+constexpr float PED_LOD_BASSE_M[2] = {8.f, 30.f};   // WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k)
 constexpr int PED_FULL = 8;            // maillages complets
 constexpr int PEOPLE_MAX = 220;        // life.js
 // affichés : 8 au plus — chaque personne = 2 dessins (corps + coiffure) et le renderer en accepte SKIN_MAX_INSTANCES (16)
@@ -177,7 +178,9 @@ public:
             echantillonner(M, clipParNom(M, anim), P.t + P.ph / 6.283 * 1.333, pose);
             const mat4 monde = translate({(float)tp.x, (float)(tp.y + gy), (float)tp.z}) * rotateY(yaw) * scale({L.scale, L.scale, L.scale});
             const double dm = std::fabs(P.rel) * SEG_M;
-            const int lod = dm < PED_LOD_M[0] && k < PED_FULL ? 0 : dm < PED_LOD_M[1] ? 1 : 2;
+            // WFS-222 (RG-03) : qualité Basse : maillage complet à moins de 8 m seulement, moyen jusqu'à 30 m (Haute inchangée)
+            const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;
+            const int lod = dm < seuils[0] && k < PED_FULL ? 0 : dm < seuils[1] ? 1 : 2;
             ApparencePersonnage app = L.app; app.corps = M.corps;
             char nom[48];
             std::snprintf(nom, sizeof nom, "corps-%d", lod);
