@@ -2386,7 +2386,15 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 07:35:25 — Recette de nuit : WFS-73 correctif, WFS-209 ; fin de la recette (qa-lead)
 - **WFS-73 correctif** VALIDÉ (construction 810, 070045e : stature plausible, tête sous le pavillon) ; **WFS-209** VALIDÉ (construction 811, 841d75f : 12 humains sans déformation, APK 176,2 Mo).
 - Fin de la recette de nuit : toutes les lignes de `qa/Check.md` sont cochées sauf WFS-88 (iOS, gel). Trois REFUSÉ en attente d'un ticket de correction du PO : WFS-151, WFS-137, WFS-178 (voir l'entrée « bilan » plus haut).
+### 2026-11-07 07:35:44 — Recette de nuit : WFS-88, WFS-73 (correctif), WFS-209 (qa-lead)
 
-### 2026-11-07 07:38:11 — Bloquantes de la recette de nuit : tickets vérifiés ; ANO-103 à 110 rangées en 3 lots (WFS-214, 215, 216) (po-scrum-master)
+- Nouvelle règle de recette appliquée : seulement les critères d'acceptation et le jeu qui fonctionne.
+- **WFS-88** : VALIDÉ côté Android. Le code est sous `__APPLE__` et le chemin Android est identique ; la CI de `main` est verte. La partie iOS n'est pas vérifiable (GEL iOS).
+- **WFS-73 (correctif, #179)** : déjà validé par l'autre session `qa-lead` (0183bv2Z) en même temps ; mon constat est le même (stature plausible, tête sous le pavillon), rapport non doublé.
+- **WFS-209** : validé par l'autre session `qa-lead` ; en complément, j'ai relevé **ANO-111** (mineure : menton et cou des hommes colorés en bleu par le vêtement, encolure des femmes en dents de scie), donc le verdict passe à **PASSABLE AVEC ANOMALIES MINEURES**. Le teint unique par sexe n'est pas retenu (peau au lot suivant).
+- `qa/Check.md` : plus aucun ticket à recetter.
+
+### 2026-11-07 07:40:53 — Bloquantes de la recette de nuit : tickets vérifiés ; ANO-103 à 110 rangées en 3 lots (WFS-214, 215, 216) (po-scrum-master)
 - **Bloquantes** (demande du QA lead) : déjà couvertes par les tickets créés à 06:53:33, rien en double. **WFS-213** (P1 Urgent, E13) : écran blanc des 14 `vitrine-<id>-0` et de `course-sf90` (normal sur `apercu-waforspeed-197`, blanc depuis `apercu-waforspeed-151`, encore sur la construction 808) : **premier ticket de E13, avant tout autre**, dès la fin de WFS-208 (agent 1, envoi 07:10 ; un ticket actif par épic). **WFS-212** (P1 Urgent, E2, agent 2, branche poussée 07:23) : place de la fontaine de la Ville (WFS-137) et végétation du rond-point de la Campagne (WFS-178), + ANO-104.
 - **Lots d'anomalies** (📋 dans `anno.md`) : **WFS-214** (P2, E13, après WFS-213) ANO-109 ciel en paliers, ANO-106 chaussée bleue en Ultra ; **WFS-215** (P3, E10, prêt dès que E10 est libre, WFS-158 en cours) ANO-107 plaque Model 3, ANO-110 vitres avant RR Sport ; **WFS-216** (P3, E2, après WFS-212) ANO-103 col, ANO-105 foule et bateaux, ANO-108 troupeaux de nuit. Règles : `regles-de-gestion/WFS-214.md`, `WFS-215.md`, `WFS-216.md`.
+- **ANO-111** (WFS-209, vêtement sur le cou et le visage, relevée à 07:35:44) : rangée dans **WFS-211** (E11, peau), 📋 ; règle ajoutée dans `regles-de-gestion/WFS-211.md`.

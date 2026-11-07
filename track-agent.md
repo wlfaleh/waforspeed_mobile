@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 07:38:11 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 07:40:53 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -37,13 +37,13 @@
 | WFS-213 (P1) | E13 | épic occupée par WFS-208 (agent 1) ; 1er ticket de E13 ensuite |
 | WFS-215 (P3) | E10 | épic occupée par WFS-158 (arwa-2) |
 | WFS-206 | E9 | prêt (WFS-205 ✅), aucun agent libre |
-| WFS-211 | E11 | WFS-209 et WFS-73 🟣, en attente de la CI verte de `main` |
+| WFS-211 | E11 | prêt à donner (WFS-209 et WFS-73 ✅) ; contient ANO-111 |
 
 ## Agents de pilotage
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 07:38:11 : bloquantes vérifiées (WFS-212, WFS-213) ; ANO-103 à 110 rangées dans WFS-214, 215, 216 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 07:40:53 : bloquantes vérifiées (WFS-212, WFS-213) ; ANO-103 à 111 rangées dans WFS-214, 215, 216, 211 |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette de nuit (06:19) : 29 VALIDÉ, 8 PASSABLE (ANO-103 à 109), 3 REFUSÉ (WFS-151, 137, 178) |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
