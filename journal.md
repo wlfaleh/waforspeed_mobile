@@ -3356,3 +3356,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Preuves** : banc local avant / après, parcours complet 0 écart (normal et Cockpit), `test_rien_sur_chaussee` (15 cas : dimensions CEREMA, voiture dans l'anneau à ≥ 2 m des bords, anneau continu, rien sur l'îlot, marquages et îlot séparateur).
 - **Non fait (hors zone E2)** : le trafic qui cède le passage à l'entrée (code du trafic). Le tracé n'est pas modifié (zone E3).
 - Statut 🟡 : l'utilisateur confirme sur son téléphone (APK de main).
+
+### 2026-11-07 15:43:44 — WFS-250, WFS-251, WFS-252 créés : propositions CI 3 et 4 (ordre de l'utilisateur « Ok on part sur 3 et 4 ») (po-scrum-master)
+- **Origine** : demande de l'agent expert ci (session 01UY1Vv4), mesures runs #828, #840, #842 (run de main ≈ 45 min ; `banc-essai (realisme)` 32 à 42 min, chemin critique ; 13 compilations par run). Smart Brain d'accord avec conditions (2 essais d'apt-get, archive tar, test ou shader absent = rouge).
+- **WFS-250** (P2, E7, [TECHNIQUE]) : job `compilation` unique, archive tar partagée par les 12 bancs et `endurance`. **Attribué à l'agent expert ci** (épic E7 libre ; zone : `build.yml`, `tools/qa/**`, `pipeline.md`, jamais `src/**`). Règles : `regles-de-gestion/WFS-250.md`.
+- **WFS-251** (P2, E4, exception PO : `src/render/bench_realisme.cpp` seul + accroche ≤ 10 lignes `desktop_main.cpp` ; hors fichiers de WFS-239 et WFS-246 ; `eclairage_banc.cpp` non modifié) : `WFS_REALISME_PARTIE` = 1 ou 2, fusion des rapports identique au banc complet, preuve lavapipe. ⏳ Prêt, pour un **agent développeur** (pas l'expert CI), à donner après l'ordre de priorité de l'utilisateur (ajouté en tête de l'« ordre du PO »).
+- **WFS-252** (P2, E7) : matrice `realisme-1` / `realisme-2`, `ci_textures.sh` dans la seule partie KTX2, fusion à la publication. ⏳ En attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci.
+- `TACHES.md`, `track-agent.md`, `tache utilisateur.md` (réponse) mis à jour.
