@@ -4240,3 +4240,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:18:08 — VABF : émulateur des bancs du matin (run 42414202799) analysé, ANO-125 et ANO-126 (agent qa lead)
 - APK 0.1.883 sur émulateur Android 14 : aucun plantage, menu correct ; ANR après « Course solo » (ANO-125, majeure) ; moteur rechargé une 2e fois dans le même processus (ANO-126, majeure). Deux défauts de l’outil `emulateur.sh` (lecteur logcat de l’essai 1 qui écrit encore → octets nuls ; délai de 60 s trop court) relevés pour l’expert CI. Rapport `qa/rapports/VABF-2026-11-07.md`.
+
+### 2026-11-07 22:20:07 — WFS-235 refusé : ANO-152, WFS-282 à Claude, agent 2, avis de l'expert conduite (po-scrum-master)
+- Ordre de l'utilisateur : régler la vue cockpit, remettre la planche de bord et la carrosserie, suivre l'avis de l'expert conduite (écrit dans WFS-282 : champ 85° trop serré, pièces descendues, regard à l'arrêt, aplats noirs de nuit). Règle des KO : pas arwa-2.
