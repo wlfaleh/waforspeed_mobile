@@ -1,8 +1,8 @@
 // WaForSpeed — nuit complète (ticket WFS-09, épic E4 ; absorbe WFS-16 « route mouillée avec reflets »).
 // Port de l'éclairage de nuit du jeu web (wlfaleh/waaps, waforspeed/) :
 //   - ambiance (js/world/maps.js, envFor nuit) : ciel, hémisphère #46327a / #08080e, lune #8a96ff, brouillard linéaire 40-540 m ;
-//   - phares du joueur (js/cars/player.js, buildPlayer) : projecteur 0xfff1dd, intensité ENV.headlight, portée 170 m,
-//     angle 0,7, pénombre 0,65 ; feu de recul (PointLight 0xe8eeff, 2,2 la nuit, 14 m) ;
+//   - phares du joueur : deux feux de croisement réels (WFS-218, phares.h ; avant : projecteur unique du web, 0xfff1dd,
+//     portée 170 m, angle 0,7) ; feu de recul (PointLight 0xe8eeff, 2,2 la nuit, 14 m) ;
 //   - tache des phares (buildBeam / updateBeam) : grille 17 × 11 qui épouse la route, deuxième passage sans éclairage public ;
 //   - lampadaires (js/world/scene.js, « éclairage des lampadaires proches ») : 4 lumières au plus sur les plus proches,
 //     halo de la tête et flaque de lumière au sol (poolQuad de js/world/decor.js) ;
@@ -24,6 +24,7 @@
 #include "eclairage.h"
 #include "renderer.h"
 #include "feux_modele.h"   // WFS-109
+#include "phares.h"        // WFS-218 : feux de croisement du joueur
 #include "../world/meteo.h"   // WFS-142 (RG-01) : route mouillée seulement quand il pleut (lecture seule)
 
 namespace wfs {
@@ -62,10 +63,9 @@ public:
         else if (L.empty() && circuit_)
             for (int64_t n = 10; n < len; n += 34) L.push_back({n, ((n / 34) % 2 ? 1.f : -1.f) * ((float)RW + 4.f), 16.f, StyleLampadaire::Stade});
         std::sort(L.begin(), L.end(), [](const Lampadaire& a, const Lampadaire& b) { return a.seg < b.seg; });
-        WFS_LOG("Nuit : carte %s, %zu lampadaires, phares %.1f%s", id, L.size(), phare(), mouille() ? ", route mouillée" : "");
+        WFS_LOG("Nuit : carte %s, %zu lampadaires, phares de croisement %s (%.0f cd chacun)%s", id, L.size(), phares::led(g.car ? g.car->id : nullptr) ? "LED" : "halogènes",
+                phares::creteCd(phares::led(g.car ? g.car->id : nullptr)), mouille() ? ", route mouillée" : "");
     }
-
-    float phare() const { return campagne_ ? 3.f : 2.4f; }   // ENV.headlight
     // WFS-142 (RG-01) : la chaussée n'est mouillée que s'il pleut (meteo::pluieActive : la ville la nuit), ou si le banc
     // force la météo (WFS_METEO=pluie / sec). Avant : mouillée à chaque nuit en ville et sur la corniche, même sans pluie.
     static int meteoForcee() {   // 1 pluie, 0 sec, -1 rien de forcé
@@ -126,10 +126,19 @@ public:
         // ---------- lumières : phares, recul, 4 lampadaires les plus proches ----------
         fp.spotCount = 0;
         const CarDims& d = g.car->d;
-        FrameParams::Spot& h = fp.spots[fp.spotCount++];   // RG-02
-        h.pos = W.transformPoint({0, std::max(0.6f, d.H * 0.41f), -d.L / 2 - 0.2f});
-        h.target = W.transformPoint({0, -0.5f, -60});
-        h.color = linHex(0xfff1dd); h.intensity = phare(); h.distance = 170; h.angle = 0.7f; h.penumbra = 0.65f; h.decay = 1;
+        // WFS-218 (RG-00 à RG-02) : deux feux de croisement réels, un à chaque optique avant lue sur le modèle (mêmes centres
+        // que les halos des phares, Renderer::feuxVoiture ; sans modèle : proportions du jeu web), 3 cm devant la glace ;
+        // axe = avant de la voiture, à l'horizontale ; coupure, intensité (cd, flux sourcé) et teinte : phares.h. Remplace
+        // le projecteur unique au centre (cône de 40°, portée 170 m, sans coupure : murs éclairés jusqu'au toit).
+        const bool estLed = phares::led(g.car->id);
+        const FeuxModele* fm = g.modele && g.modele->ok ? &g.modele->feux : nullptr;
+        const float ox = fm ? fm->avantX : d.W / 2 - 0.3f, oy = fm ? fm->avantY : std::max(0.6f, d.H * 0.41f), oz = fm ? fm->avant - 0.03f : -d.L / 2 - 0.03f;
+        for (int cote : {-1, 1}) {
+            FrameParams::Spot& h = fp.spots[fp.spotCount++];
+            h.pos = W.transformPoint({cote * ox, oy, oz}); h.target = W.transformPoint({cote * ox, oy, oz - 10.f});
+            h.color = estLed ? phares::TEINTE_LED : phares::TEINTE_HALOGENE; h.intensity = phares::creteCd(estLed) / feux_modele::LUX_PAR_UNITE;
+            h.distance = phares::PORTEE_M; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
+        }
         if (g.player->reversing || g.player->speed < -1) {   // feu de recul (revLight)
             // WFS-171 (RG-01, ANO-70) : lumière posée sur les feux (hauteur ≈ 0,6 H, ras du pare-chocs ; elle était 0,8 m
             // derrière et 0,6 m de haut : disque blanc décollé), tournée vers l'arrière et 31° vers le bas, cône de 83°
