@@ -3287,3 +3287,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Zone autorisée** : `src/render/effets_*` (`effets_particules.*`, `effets_systeme.cpp`), tests CPU de la fumée dans `tests/**` (fichiers neufs). **Interdit** : `nuit.cpp` (WFS-218 / 226), `qualite_banc.cpp` (WFS-239), `renderer.*` et `qualite_auto.*` (sauf accroche ≤ 10 lignes annoncée au journal), iOS (gel), taille des boutons.
 - **Critères** (`regles-de-gestion/WFS-224.md`) : RG-01 fumée seulement en vrai dérapage ; RG-02 volutes transparentes à bords flous, jamais de disques, aucune particule devant le HUD (ANO-120) ; RG-03 rien avec « Réduire les mouvements », coût GPU tenu ; RG-04 captures `braquage-gauche` / `braquage-droite` jour et nuit à 100 et 150 km/h avant / après, tests CPU, parcours 0 écart ; RG-05 lignes du nitro sous le HUD (ANO-122).
 - Rappels : skill `agent-developer` d'abord ; branche `feature/waforspeed-224` poussée tout de suite ; se synchroniser souvent avec `main` (deux autres tickets E4 actifs) ; fusion par confiance si > 50 % ; ticket né d'un essai de l'utilisateur → 🟡 À valider après fusion.
+
+### 2026-11-07 14:49:55 — WFS-234 : début, carte de navigation façon GPS (Claude, agent 1)
+- Ticket attribué par le PO (commit d227651), départ validé par l'utilisateur. Branche `feature/waforspeed-234`, zone `src/ui/minicarte.*` et HUD.
