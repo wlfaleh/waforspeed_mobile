@@ -3339,3 +3339,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Autres corrections de fin de ticket** : (1) albédo béton du kit aligné sur le référentiel corrigé par WFS-206 (0,51 → 0,30 ; test_archi_kit) ; (2) **les murs du kit ne projetaient pas d'ombre** : `shadow.frag` jette alpha < cutoff et le kit rangeait l'appareil (1 à 4) dans cutoff ; l'appareil est maintenant codé × 0,2 (sous l'alpha 1) ; (3) joints de l'appareil ramenés à leur part moyenne quand le pixel dépasse le joint (moyenne M-03 gardée à toute résolution).
 - **Textures** : rien n'a été déposé sur la branche `buildings` ; appareils procéduraux provisoires gardés (décision du PO). Liste des 18 fichiers Poly Haven CC0 souhaités (noms et SHA-256) : `assets/textures/decor/sources/LISEZMOI.md` de la branche `buildings` (e3d6d39), branche gardée (aucune suppression).
 - qa/Check.md, TACHES (🟣), track-agent (libre) mis à jour ; ticket suivant demandé au PO.
+
+### 2026-11-07 15:22:43 — Statuts automatiques, CI main #842 (robot statuts)
+- Run vert (push, commit d214919) : WFS-233 ✅ (PR #203, bda6504).
