@@ -105,8 +105,8 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
         if (const char* seul = std::getenv("WFS_FLUIDITE_SEUL"); seul && std::string(seul) != sc.nom) continue;   // essai local
         for (int passe = 0; passe < 2; passe++)
             for (int cam = 0; cam < 2; cam++)
-                for (int fps : {30, 60, 90}) {
-                    Game::interpolation = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
+                for (int fps : {10, 15, 20, 26, 30, 60, 90}) {   // WFS-247 (RG-01) : cadences réelles du téléphone (10 à 26 img/s) ajoutées
+                    Game::interpolation = passe == 1; Game::cameraTempsSimule = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
                     setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                     courseBenchRules(true);
                     const bool ok = g.init(r, "golf", carte);
@@ -153,12 +153,12 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
                     rap << l;
                     WFS_LOG("fluidite : %s", l);
                     if (passe == 1 && (sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee)) {
-                        pireApres[0] = std::max(pireApres[0], res.acoupMm); pireApres[1] = std::max(pireApres[1], res.sautDeg); pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
+                        if (fps >= 30) pireApres[0] = std::max(pireApres[0], res.acoupMm); pireApres[1] = std::max(pireApres[1], res.sautDeg); pireApres[2] = std::max(pireApres[2], res.allerRetourCm);
                         // objectifs (RG-03, RG-08) comptés en ligne droite et en montée : en courbe, la trajectoire PHYSIQUE elle-même
                         // n'est pas lisse (cap qui suit la courbure de chaque segment de 1,2 m, consigne de vitesse en tout ou rien) ;
                         // la physique ne change pas (RG-02) : valeurs données pour information
                         const bool droite = sc.type == trace::Type::Ligne || sc.type == trace::Type::Montee;
-                        if (droite && (res.acoupMm >= 5 || res.sautDeg > 0.2 || res.allerRetourCm > 2)) manques++;
+                        if (droite && ((fps >= 30 && res.acoupMm >= 5) || res.sautDeg > 0.2 || res.allerRetourCm > 2)) manques++;   // WFS-247 : à-coup < 5 mm aux cadences de WFS-221 (30-90) ; aller-retour et angle à toutes
                     }
                 }
     }
@@ -173,7 +173,7 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
         }
         for (int passe = 0; passe < 2 && carte; passe++)
             for (int cam = 0; cam < 2; cam++) {
-                Game::interpolation = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
+                Game::interpolation = passe == 1; Game::cameraTempsSimule = passe == 1; Track::penteLissee = passe == 1; g_cameraFiltreExact = passe == 1;
                 setenv("WFS_DEPART", std::to_string(seg).c_str(), 1);
                 courseBenchRules(true);
                 const bool ok = g.init(r, "golf", carte);
@@ -198,9 +198,9 @@ int benchFluidite(Game& g, Renderer& r, const std::string& out) {
             }
     }
     g.modeManette = false; g.manette = DriveInput{};
-    Game::interpolation = true; Track::penteLissee = true; g_cameraFiltreExact = true; choisirVue(VueCamera::Poursuite);
+    Game::interpolation = true; Game::cameraTempsSimule = true; Track::penteLissee = true; g_cameraFiltreExact = true; choisirVue(VueCamera::Poursuite);
     char f[200];
-    std::snprintf(f, sizeof f, "après, ligne droite et montée, pire cas : à-coup %.2f mm (objectif < 5), saut d'angle %.3f° (≤ 0,2), aller-retour %.2f cm (≤ 2) ; objectifs manqués : %d\n",
+    std::snprintf(f, sizeof f, "après, ligne droite et montée, pire cas : à-coup %.2f mm à 30-90 img/s (objectif < 5), saut d'angle %.3f° (≤ 0,2), aller-retour %.2f cm (≤ 2) ; objectifs manqués : %d\n",
                   pireApres[0], pireApres[1], pireApres[2], manques);
     rap << f;
     std::ofstream(out + "/fluidite.txt") << rap.str();
