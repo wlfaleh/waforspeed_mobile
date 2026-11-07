@@ -3074,3 +3074,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Découpage** : WFS-155 faisait 2 à 3 jours → lot 1 **WFS-205** (bibliothèque de revêtements calibrés, KTX2, mélange sans répétition, repli ; M-01, M-02) et lot 2 **WFS-206** (usure, raccords, bordures, variantes par carte ; M-03 à M-05). WFS-156 dépend maintenant de WFS-206.
 - **Début WFS-205** : Claude, agent 2 (01UY1Vv5), épic E9, branche `feature/waforspeed-205`. Zone : `shaders/route*.glsl`, `src/render/route_*`, `assets/textures/route/**`, `references/reel/routes/**`, `tests/fidelite_routes*`. Règles : `regles-de-gestion/WFS-205.md`. Réseau : ambientCG et Poly Haven non autorisés ; textures CC0 par les dépôts GitHub publics (§ 2.4), sinon procédural recalibré. Parcours complet exigé.
 - **Écarts de WFS-202** (journal 01:16:27), règle « génération du `.wfm` d'abord » : RR Sport 3 branches, V60 P3, Abarth 2008-2015, GT86 acceptés ; T-Cross chinois signalé à WFS-158 ; licences NC couvertes par WFS-194 ; durée de `partie1b` / `partie2b` gardée. Détail : `regles-de-gestion/WFS-202.md` § Suivi.
+
+### 2026-11-07 01:40:18 — WFS-205 : arbitrage résolution / budget APK (po-scrum-master)
+- Option A retenue (1K couleur et normale, ORM 512, ASTC 4x4, ≈ 22 Mo les 7 revêtements) ; seuil PSNR de WFS-149 non assoupli ; repli RGBA8 hors APK.
+- Accroche autorisée : une ligne `ignoreAssetsPattern` dans `android/app/build.gradle`, limitée aux replis des textures de route. Détail : `regles-de-gestion/WFS-205.md` (Suivi).
