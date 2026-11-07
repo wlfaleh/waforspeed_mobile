@@ -20,7 +20,7 @@
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-226 | P1 nuit : phares allumés sur toutes les autres voitures (trafic, adversaires, police), attribué 16:05 ; WFS-218 🟣 | 226 : 16:05 (ouverture) ; 218 : fusion 14:57 | 🔴 en cours (P1) |
+| agent arwa (Claude, session trafic) | WFS-226 | P1 nuit : phares allumés sur toutes les autres voitures (trafic, adversaires, police), attribué 16:05 ; WFS-218 ✅ (CI de main 844 verte) | 226 : 16:05 (ouverture), 1er code en local ; 218 : fusion 14:57, CI 844 verte | 🔴 en cours (P1) |
 | Claude, agent 1 (01UY1Vv2) | WFS-230 | P1 nuit sur route non éclairée : exposition au clair de lune, vision de nuit, `GameView::night` ; attribué 16:00 | 230 : 16:06 ; 234 : PR #209 fusionnée | 🔴 en cours (P1) |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-227 fusionné) | libre (ne prend pas de ticket sans demande de l'utilisateur) | 227 : fusionnée 15:58 (PR #210) ; 221 : fusionnée (PR #193) | 🟢 libre |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
