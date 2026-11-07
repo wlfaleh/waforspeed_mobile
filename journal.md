@@ -3969,3 +3969,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - suites de captures « avant » non conservées (disque) : le banc donne la personne et la distance de chaque premier évènement.
 - 🟡 À valider par l'utilisateur sur téléphone.
 
+### 2026-11-07 20:03:49 — WFS-249 : A seul ; WFS-276 tonemapping local de nuit créé pour Agent 0 (po-scrum-master)
+- B écarté après essais (journal d'Agent 0). Cause 2 (péage, village, rond-point noirs) → WFS-276, E13, réservé à Agent 0 après la fusion de WFS-249.
