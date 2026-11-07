@@ -39,13 +39,14 @@ public:
     void setRumeur(float g) { cibleRumeur_ = g; }   // WFS-121 (RG-04) : rumeur du trafic proche (0..0,25)
     // WFS-131 : sirène visée (gain 0..0,45, mode « yelp », facteur Doppler, extinction de fin de course)
     void setSirene(float gain, bool yelp, float doppler, bool fin) { cibleSirene_ = gain; yelpSirene_ = yelp; dopplerSirene_ = doppler; finSirene_ = fin; }
+    void setPanSirene(float g, float d) { panG_ = g; panD_ = d; }   // WFS-272 (accroche) : gauche / droite de la police (1, 1 : au centre)
     // WFS-174 : sons de la route visés (vent, roulement, bande rugueuse, herbe, eau : route_sons.h)
     void setRoute(const route::Cibles& c) {
         cVent_ = c.vent; cOuverture_ = c.ouverture; cRoulement_ = c.roulement; cBord_ = c.bord; cHerbe_ = c.herbe; cEau_ = c.eau; cCadence_ = c.cadenceBord;
     }
     void setMuted(bool m) { muted_ = m; }        // future option « Son » (setMuted du jeu web)
     // thread audio : ajoute les bruitages dans out ; now : horloge (sans nouvelles du jeu → silence, pause)
-    void mix(float* out, int n, double now);
+    void mix(float* out, int n, double now, float* G = nullptr, float* D = nullptr);   // WFS-272 : G, D : sirène placée
     std::atomic<double> lastUpdate{0};
     float master = 0.5f;                         // sfxGain du jeu web
     const std::vector<float>& tampon(SfxId id) const { return sons_[(int)id]; }
@@ -64,6 +65,7 @@ private:
     size_t posCrissement_ = 0, posNitro_ = 0;
     std::atomic<float> cibleSirene_{0}, dopplerSirene_{1};   // WFS-131 : sirène (thread du jeu → thread audio)
     std::atomic<bool> yelpSirene_{false}, finSirene_{false};
+    std::atomic<float> panG_{1}, panD_{1};   // WFS-272 (accroche)
     float gSirene_ = 0, mixYelp_ = 0, pasSirene_ = 1, kSirene_ = 0.001f, pasFinSirene_ = 0.001f, pasYelp_ = 0.001f;
     double posWail_ = 0, posYelp_ = 0;
     float attSirene_ = 1, pasBaisse_ = 0.001f; bool baisseSirene_ = false;   // WFS-184 (RG-01) : sirène baissée pendant un jingle

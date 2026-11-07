@@ -23,6 +23,7 @@
 #include "sauvegarde.h"
 #include "traffic.h"
 #include "traffic_system.h"
+#include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
 
 namespace wfs {
 
@@ -187,6 +188,7 @@ public:
 
     // WFS-125 : banc d'essai (parcours RG-09)
     int positions(double* rd, int max) const { int n = 0; if (actif_) for (const auto& o : os_) if (n < max) rd[n++] = o.g.rd; return n; }   // WFS-173
+    const std::vector<course5::Ordinateur>* ordinateurs() const { return actif_ ? &os_ : nullptr; }   // WFS-272 (accroche) : son des adversaires
     bool bouton(const std::string& nom, float& x, float& y) const {
         const Zone& z = nom == "rejouer" ? rejouerZ_ : menuZ_;
         if (!actif_ || !fini_ || z.w <= 0) return false;
@@ -317,6 +319,7 @@ Course5System* Course5System::actif5 = nullptr;
 // WFS-125 : banc d'essai (parcours RG-09) : boutons de l'écran de fin, record battu
 bool course5Bouton(const std::string& nom, float& x, float& y) { return Course5System::actif5 && Course5System::actif5->bouton(nom, x, y); }
 int course5Positions(double* rd, int max) { return Course5System::actif5 ? Course5System::actif5->positions(rd, max) : 0; }   // WFS-173
+const std::vector<course5::Ordinateur>* course5Ordinateurs() { return Course5System::actif5 ? Course5System::actif5->ordinateurs() : nullptr; }   // WFS-272 (accroche)
 bool course5NouveauRecord() { return Course5System::actif5 && Course5System::actif5->nouveauRecord(); }
 bool course5::course5PreteAuDepart() { return !Course5System::actif5 || Course5System::actif5->pretAuDepart(); }   // WFS-242 (RG-07)
 

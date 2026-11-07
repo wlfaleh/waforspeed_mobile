@@ -29,6 +29,7 @@
 #include "sauvegarde.h"   // WFS-119 : redémarrage simulé
 #include "traffic.h"
 #include "traffic_system.h"
+#include "../audio/voitures_sons.h"   // WFS-272 (accroche) : déclaration des lectures pour le son des voitures
 
 namespace wfs {
 
@@ -333,6 +334,7 @@ public:
     bool fini() const { return fini_ && overT_ >= 0.9; }
     int policeMobiles() const { int n = 0; for (const Police& p : police_) n += !p.fixe; return n; }
     int police(double* rd, bool* fixe, int max) const { int n = 0; if (actif_) for (const Police& p : police_) if (n < max) { rd[n] = p.rd; fixe[n++] = p.fixe; } return n; }   // WFS-173
+    const std::vector<Police>* voitures(const char** car) const { if (car) *car = policeCar_; return actif_ ? &police_ : nullptr; }   // WFS-272 (accroche)
     int policeDerriere(double sJ) const { int n = 0; for (const Police& p : police_) n += !p.fixe && p.rd < sJ && (sJ - p.rd) * M < 40; return n; }
     const std::string& bandeauActuel() const { return ban_; }
     // banc (WFS-172, RG-02) : voitures de police mobiles entre a et b m du joueur (sJ, xJ)
@@ -580,6 +582,7 @@ WFS_SYSTEM(PoursuiteSystem, 224)   // gameplay (200-299) : après la course (210
 
 // WFS-125 : banc d'essai (parcours RG-09)
 int poursuitePolice(double* rd, bool* fixe, int max) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->police(rd, fixe, max) : 0; }   // WFS-173
+const std::vector<poursuite::Police>* poursuiteVoitures(const char** car) { return PoursuiteSystem::actif ? PoursuiteSystem::actif->voitures(car) : nullptr; }   // WFS-272 (accroche)
 bool poursuiteBouton(const std::string& nom, float& x, float& y) {
     const PoursuiteSystem* s = PoursuiteSystem::actif;
     if (!s) return false;

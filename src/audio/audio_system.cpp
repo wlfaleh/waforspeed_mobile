@@ -32,6 +32,10 @@
 #include "ambiance_lieux.h"            // WFS-261 : son des lieux (sources placées, tunnels, stéréo)
 #include "../game/trace_cartes.h"      // WFS-261 : section sous la voiture (tunnel), lecture seule
 #include "../world/enseignes.h"        // WFS-261 : clients attablés des terrasses (vie::clientsTerrasses), lecture seule
+#include "voitures_sons.h"             // WFS-272 : son des autres voitures (adversaires, police, trafic)
+#include "../game/course5.h"           // WFS-272 : adversaires de la Course à 5 (lecture seule)
+#include "../game/duel_system.h"       // WFS-272 : adversaires du Duel (duelSession().ghosts(), lecture seule)
+#include "../game/poursuite.h"         // WFS-272 : police de la Poursuite (lecture seule)
 
 namespace wfs {
 
@@ -57,11 +61,12 @@ public:
         // WFS-261 : tampons du rappel et son des lieux prêts AVANT l'ouverture du flux (aucune allocation dans le rappel)
         const char* mo = std::getenv("WFS_MOMENT");
         const bool nuit = mo && std::strcmp(mo, "nuit") == 0;
-        for (auto* b : {&blocMono_, &blocG_, &blocD_}) b->assign(BLOC, 0.f);
+        for (auto* b : {&blocMono_, &blocG_, &blocD_, &blocBus_}) b->assign(BLOC, 0.f);
         lieux_.build((float)OUT_RATE, nuit); tunnel_.build((float)OUT_RATE);
+        voitures_.build((float)OUT_RATE); attribution_.reset(); candidats_.reserve(128);   // WFS-272
         const int rate = audioOutStart([this](float* out, int n) { remplir(out, n); });
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
-        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); }   // WFS-261
+        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); }   // WFS-261, WFS-272
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
         // WFS-76 : musique (une fois par lancement) et ambiance de la carte de cette partie (moment : WFS_MOMENT, comme la plage)
         musique().build((float)(rate ? rate : OUT_RATE));
@@ -116,6 +121,7 @@ public:
         sfx_.lastUpdate = nowSeconds(); events_.update(dt, g, sfx_);   // WFS-28 : un son par événement de la partie
         sonsTrafic(dt, g);   // WFS-121
         sonsLieux(g);        // WFS-261
+        sonsVoitures(dt, g); // WFS-272
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
             const int n = (int)g_rec.acc; g_rec.acc -= n;
@@ -148,8 +154,10 @@ private:
         }
         const SonsDuPas s = traficSons_.update(dt, actif, voituresSon_, pl.kmh(), webCarLength(pl.car->id, pl.car->d.L) * M,
                                               st ? st->nearMisses : 0);
-        if (s.passages) sfx_.play(SfxId::Passage, s.gainPassage);
-        if (s.klaxon) sfx_.play(SfxId::Klaxon);
+        // WFS-272 (RG-06) : passage et klaxon joués avec le gauche / droite de leur voiture (même tampon, même gain) ; le banc
+        // hors ligne (moteur.wav, mono) les garde dans SfxMixer, comme avant
+        if (s.passages) { if (g_rec.on) sfx_.play(SfxId::Passage, s.gainPassage); else { voitures_.jouer(&sfx_.tampon(SfxId::Passage), s.gainPassage, panTrafic(g, s.voiturePassage)); WFS_LOG("SFX %s", sfxNom(SfxId::Passage)); } }
+        if (s.klaxon) { if (g_rec.on) sfx_.play(SfxId::Klaxon); else { voitures_.jouer(&sfx_.tampon(SfxId::Klaxon), 1.f, panTrafic(g, s.voitureKlaxon)); WFS_LOG("SFX %s", sfxNom(SfxId::Klaxon)); } }
         if (s.rumeur != rumeur_) { sfx_.setRumeur(s.rumeur); rumeur_ = s.rumeur; }
         if (s.journalRumeur) WFS_LOG("rumeur %.2f", s.rumeur);
     }
@@ -180,7 +188,7 @@ private:
     // blocs de BLOC trames ; l'écho du tunnel (moteur, vent, trafic : avant musique et ambiance) et les sources placées
     // s'ajoutent à gauche et à droite ; le mono est recopié à l'égal dans les deux canaux. Aucune allocation, aucun verrou.
     static constexpr int BLOC = 1024;
-    std::vector<float> blocMono_, blocG_, blocD_;
+    std::vector<float> blocMono_, blocG_, blocD_, blocBus_;
     void remplir(float* out, int n) {
         const double now = nowSeconds();
         const int canaux = audioOutCanaux();
@@ -189,10 +197,12 @@ private:
         const float master = sfx_.master * gVie_;
         for (int fait = 0; fait < n;) {
             const int k = std::min(n - fait, BLOC);
-            float* m = blocMono_.data(); float* G = blocG_.data(); float* D = blocD_.data();
-            renderInto(m, k, now); sfx_.mix(m, k, now);
+            float* m = blocMono_.data(); float* G = blocG_.data(); float* D = blocD_.data(); float* bus = blocBus_.data();
             std::fill(G, G + k, 0.f); std::fill(D, D + k, 0.f);
-            tunnel_.process(m, G, D, k);   // RG-05
+            renderInto(m, k, now); sfx_.mix(m, k, now, G, D);   // WFS-272 : la sirène sort à gauche / à droite (G, D)
+            for (int i = 0; i < k; i++) bus[i] = m[i] + 0.5f * (G[i] + D[i]);   // écho : moteur, bruitages, sirène
+            voitures_.mix(G, D, bus, k, sfx_.master, now - sfx_.lastUpdate.load() < 0.25);   // WFS-272 : autres voitures, passage, klaxon
+            tunnel_.process(bus, G, D, k);   // RG-05 (WFS-261) ; RG-07 (WFS-272) : les voitures passent dans l'écho
             musique().mix(m, k, master); ambiance_.mix(m, k, master);
             lieux_.mix(G, D, k, master);   // RG-02 à RG-04
             lieux::entrelacer(m, G, D, out + (size_t)fait * (size_t)canaux, k, canaux);
@@ -254,6 +264,82 @@ private:
         const bool tun = s && s->type == trace::Type::Tunnel;
         if (tun != tunnelLog_) { tunnelLog_ = tun; WFS_LOG("TUNNEL %s", tun ? "entrée (écho)" : "sortie"); }
         tunnel_.dedans(tun);
+    }
+    // WFS-272 (RG-01, RG-02, RG-05) : voix des autres voitures. Candidats du pas (adversaires de la Course à 5 et du Duel, police
+    // mobile, trafic visible), 8 voix au plus (Attribution), cibles calculées depuis la tête du conducteur ; RG-06 : sirène placée
+    voitures::SonsVoitures voitures_; voitures::Attribution attribution_;
+    std::vector<voitures::Candidat> candidats_;
+    vec3 ici_{}, vIci_{}, avant_{0, 0, -1}, droite_{1, 0, 0};
+    int voixLog_ = -1; double horlogeVoix_ = 1;
+    // voiture du trafic → fiche : même choix que l'affichage (traffic_system.cpp, nativeModelFor) : le même modèle s'il existe
+    // parmi les TRAFIC_MODELES, sinon celui de longueur la plus proche
+    static const CarDef& voitureDuTrafic(int type) {
+        const WebCarDims& w = WEB_CARS[std::clamp(type, 0, WEB_CAR_COUNT - 1)];
+        int best = 0; double bd = 1e9;
+        for (int i = 0; i < TRAFIC_MODELES; i++) {
+            if (std::strcmp(CARS[i].id, w.id) == 0) return CARS[i];
+            const double d = std::abs(CARS[i].d.L - w.L);
+            if (d < bd) { bd = d; best = i; }
+        }
+        return CARS[best];
+    }
+    void ecoute(const GameView& g) {   // tête du conducteur, vitesse et axes de sa voiture
+        const Player& pl = *g.player;
+        const TrackPoint P = g.track->pointLisse(pl.dist, pl.playerX * RW);
+        const double cap = P.th + pl.heading;
+        ici_ = {(float)P.x, (float)P.y + 1.2f, (float)P.z};
+        avant_ = {(float)std::sin(cap), 0, (float)-std::cos(cap)}; droite_ = {(float)std::cos(cap), 0, (float)std::sin(cap)};
+        vIci_ = avant_ * (float)(pl.speed * M);
+    }
+    voitures::Pan panTrafic(const GameView& g, int i) {   // RG-06 : gauche / droite de la voiture du trafic i (−1 : au centre)
+        const Traffic* tr = activeTraffic();
+        if (!tr || !g.track || !g.player || i < 0 || i >= (int)tr->cars.size()) return {};
+        ecoute(g);
+        const TrafficCar& c = tr->cars[(size_t)i];
+        const TrackPoint q = g.track->pointLisse(g.player->dist + g.track->relZ(c.z - g.player->position), c.offset * RW);
+        const vec3 d = vec3{(float)q.x, (float)q.y + 0.6f, (float)q.z} - ici_;
+        return voitures::panExistant(std::atan2(dot(d, droite_), dot(d, avant_)));
+    }
+    void sonsVoitures(double dt, const GameView& g) {
+        candidats_.clear();
+        const bool actif = lieuxActifs_ && g.track && g.player;
+        if (actif) {
+            const Player& pl = *g.player; Track& t = *g.track;
+            ecoute(g);
+            auto ajouter = [&](uint64_t id, double rd, double x, double v, const CarDef& car, uint8_t genre) {
+                if (std::abs(rd - pl.dist) * M > 600) return;   // loin le long de la route (la portée est de 200 m au plus)
+                const TrackPoint q = t.pointLisse(rd, x * RW);
+                voitures::Candidat c; c.id = id; c.car = &car; c.genre = genre;
+                c.p = {(float)q.x, (float)q.y + 0.6f, (float)q.z};
+                c.v = vec3{(float)std::sin(q.th), 0, (float)-std::cos(q.th)} * (float)(v * M);
+                c.kmh = (float)(std::abs(v) * M * 3.6);
+                candidats_.push_back(c);
+            };
+            if (const auto* os = course5Ordinateurs())
+                for (size_t i = 0; i < os->size(); i++) { const auto& o = (*os)[i]; ajouter((1ull << 56) | i, o.g.rd, o.g.x, o.g.v, carById(o.car.c_str()), voitures::ADVERSAIRE); }
+            for (const auto& [nom, gh] : duelSession().ghosts())
+                if (!gh.done) ajouter((2ull << 56) | (std::hash<std::string>{}(nom) & 0xFFFFFFFFFFFFFFull), gh.rd, gh.x, gh.v, carById(gh.car.c_str()), voitures::ADVERSAIRE);
+            const char* pc = "p208";
+            if (const auto* ps = poursuiteVoitures(&pc))
+                for (size_t i = 0; i < ps->size(); i++) if (!(*ps)[i].fixe) ajouter((3ull << 56) | i, (*ps)[i].rd, (*ps)[i].x, (*ps)[i].v, carById(pc), voitures::POLICE);
+            if (const Traffic* tr = activeTraffic())
+                for (size_t i = 0; i < tr->cars.size(); i++) {
+                    const TrafficCar& c = tr->cars[i];
+                    if (!c.cache) ajouter((4ull << 56) | i, pl.dist + t.relZ(c.z - pl.position), c.offset, c.speed, voitureDuTrafic(c.type), voitures::TRAFIC);
+                }
+        }
+        attribution_.update((float)dt, candidats_, ici_);
+        for (int v = 0; v < voitures::VOIX; v++) voitures_.cible(v, voitures::calculerCible(attribution_.voix(v), (float)dt, ici_, vIci_, avant_, droite_));
+        horlogeVoix_ += dt;   // journal : au plus une ligne par seconde, quand le nombre de voix a changé
+        if (attribution_.actives() != voixLog_ && horlogeVoix_ >= 1) { horlogeVoix_ = 0; voixLog_ = attribution_.actives(); WFS_LOG("VOITURES %d voix (%zu voitures autour)", voixLog_, candidats_.size()); }
+        // RG-06 : sirène à gauche / à droite de la police mobile la plus proche ; sans police : au centre (comme avant)
+        float best = 1e30f; voitures::Pan pan;
+        for (const voitures::Candidat& c : candidats_)
+            if (c.genre == voitures::POLICE) {
+                const vec3 d = c.p - ici_;
+                if (dot(d, d) < best) { best = dot(d, d); pan = voitures::panExistant(std::atan2(dot(d, droite_), dot(d, avant_))); }
+            }
+        sfx_.setPanSirene(pan.g, pan.d);
     }
     std::atomic<double> vivant_{0};
     float gVie_ = 0;   // thread audio seulement
@@ -451,6 +537,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     benchMusique(out);   // WFS-76 : musique-menu / musique-course / ambiance-<carte> (.wav + .png)
     benchSirene(out);    // WFS-131 : sirene.wav
     lieux::benchLieux(out, g_rec.pcm);   // WFS-261 : lieu-<source>.wav / .png (stéréo), lieu-tunnel, coût
+    voitures::benchVoitures(out);        // WFS-272 : voitures-course5, voitures-trafic, voitures-police (stéréo, hauteur), coût
 }
 
 } // namespace wfs
