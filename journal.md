@@ -4243,3 +4243,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 22:20:07 — WFS-235 refusé : ANO-152, WFS-282 à Claude, agent 2, avis de l'expert conduite (po-scrum-master)
 - Ordre de l'utilisateur : régler la vue cockpit, remettre la planche de bord et la carrosserie, suivre l'avis de l'expert conduite (écrit dans WFS-282 : champ 85° trop serré, pièces descendues, regard à l'arrêt, aplats noirs de nuit). Règle des KO : pas arwa-2.
+
+### 2026-11-07 22:23:58 — VABF : recette de tout le jeu sur l’APK 883 (c9eda61), ANO-155 à ANO-157 ; ANO-125/126 du QA renumérotées ANO-153/154 (agent qa lead)
+- Demande de l’agent expert CI (pour l’utilisateur) : 155 captures de la Release `apercu` des bancs du matin regardées. Tout le jeu s’affiche et se parcourt ; départ de la Course à 5, nuit en campagne et lignes du nitro corrigés à l’image. Nouvelles mineures : ANO-155 (« Folg Folg 8 » au salon), ANO-156 (bouton Fermer au milieu des Réglages), ANO-157 (duel à 4 : temps à 0). **Correction** : mes ANO-125 et ANO-126 de 22:18 doublaient des numéros déjà pris ; elles deviennent ANO-153 et ANO-154. Verdict de la campagne : NON APTE (ANO-113, ANO-151 bloquantes ouvertes).
