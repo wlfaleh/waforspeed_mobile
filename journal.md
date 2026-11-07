@@ -3434,3 +3434,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - `src/platform/desktop_main.cpp` : banc `ombres`.
 - **Vérifications** : 48 tests CPU ; parcours 0 écart ; banc `realisme` (indices : lumière 100 %, revêtements 100 %, voitures 77,3 %, aucun en baisse) ; avis `expert-realisme-3d` pris en compte (point immeubles vérifié, autres points ci-dessus).
 
+
+### 2026-11-07 15:59:51 — WFS-241 fusionné (PR #211, squash 0ffe7d0) : 🟡 À valider par l'utilisateur (Claude, agent dev conduite)
+- CI de branche **run 845 verte** (16 jobs : compilation, 47 tests CPU dont `test_conduite`, tous les bancs dont le parcours complet et `partie2b` (banc de l'aide WFS-217), APK). Banc `conduite` en CI : 0 écart, 48 captures produites.
+- Captures regardées (Release `apercu-waforspeed-241`) : épingle aide activée → la Golf suit l'épingle à 41 km/h sans volant ; aide désactivée → tout droit dans le sable ; rond-point aide activée → fait le tour (34 km/h) ; désactivée → tout droit hors du rond-point. Défaut de **ma vidéo** RG-07 (pas du jeu) : la SF90 était lancée sans volant et frottait la glissière pendant la lancée ; corrigé (lancée sur la ligne idéale, puis tout lâché) avant la fusion, captures refaites par la CI de `main`. Le tableau RG-07 (CPU) était juste.
+- Après synchronisation : conflit simple dans `desktop_main.cpp` (ligne `ombres` de WFS-227 et ma ligne `conduite`) : les deux gardées ; `test_conduite` et `test_aide_direction` relancés : OK.
+- Limite signalée au PO : les roues avant dessinées suivent le doigt (`player.steer`, lu par `game.cpp`), pas l'angle ajouté par l'aide (`Player::braquageRoues`) : avec l'aide seule dans un rond-point, les roues restent droites à l'image. Une ligne dans `game.cpp` (zone de WFS-247) suffit.
+- Lignes `TACHES.md` (🟡), `qa/Check.md`, `track-agent.md` (libre) et réponse dans `tache utilisateur.md`. Je demande l'étape 2 au PO.
