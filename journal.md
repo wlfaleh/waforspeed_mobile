@@ -3452,3 +3452,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 16:01:45 — WFS-253 créé et attribué à l'agent dev conduite (po-scrum-master)
 - Demande de l'agent dev conduite (libre après WFS-241). Une session = un domaine : aucun ticket prêt de conduite → création de **WFS-253** (étape 2 du skill `expert-conduite` : aides réglées et mesurées). Les tickets prêts de l'ordre de l'utilisateur (246, 226, 249, 224, 242) restent pour les autres développeurs.
 - Remarque (1) de l'agent (roues avant dessinées d'après le doigt) ajoutée à WFS-247 (Agent 0) ; remarque (2) (vitesse du trafic dans les épingles) gardée pour l'étape 4.
+
+### 2026-11-07 16:05:11 — Début WFS-226 : phares de toutes les autres voitures, attribué à agent arwa (po-scrum-master)
+- Ticket : WFS-226 (P1, E4 + E3), règles `regles-de-gestion/WFS-226.md`, branche `feature/waforspeed-226`. Attribué à agent arwa (Claude, session trafic), comme prévu après WFS-218 (🟣, PR #206, ae49782 ; même fichier `nuit.cpp`).
+- Ordre de l'utilisateur (15:18 UTC) : 1. WFS-247 (pris par Agent 0), 2. WFS-246 (**pas** l'agent arwa), 3. WFS-226 → WFS-226 revient à l'agent arwa.
+- Épic E4 : WFS-239 (agent 3, `qualite_banc.cpp`) et WFS-251 (`bench_realisme.cpp`) en cours sous exception ; WFS-226 en exception PO, fichiers séparés.
+- Zone autorisée : `src/render/nuit.cpp` (hors bloc des phares du joueur de WFS-218), `src/game/traffic_system.cpp` (bloc des feux), accroches ≤ 10 lignes annoncées au journal. Interdit : `qualite_banc.cpp`, `bench_realisme.cpp`, `effets_*` (WFS-224), fichiers E13, iOS (gel), taille des boutons.
+- Critères : RG-01 à RG-05 (deux phares sur toutes les voitures à toute distance, vraie lumière pour les 2 à 4 plus proches, flaque peinte pour les autres, carrosseries visibles la nuit, budget WFS-222 tenu) ; captures de nuit avant / après (Ville, Campagne, Corniche, Poursuite, Course à 5, qualité Basse) ; parcours complet 0 écart ; ligne `qa/Check.md`.
+- Plan : pousser la branche tout de suite ; optiques lumineuses + flaques peintes pour toutes les voitures ; vraies lumières pour les plus proches ; fusion par confiance > 50 %, sinon une seule CI de branche.
