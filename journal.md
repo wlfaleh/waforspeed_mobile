@@ -4014,3 +4014,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Script partagé** `tools/qa/banc_groupe.sh` : étape « Captures du rendu » de `build.yml` reprise telle quelle (diff vérifié) + parties du réalisme ; groupe inconnu = code 2.
 - **Numéro** : d'abord écrit WFS-275 par erreur sur ma branche locale (WFS-275 = ticket son d'arwa-4, sa branche n'a pas été touchée) ; corrigé en WFS-277 avant tout envoi sur main.
 - **Preuve** : run 1 de l'ancien `realisme.yml` annulé (fichier renommé) ; 1er run de `matin.yml` lancé à la main sur main (2026-11-07 20:19:49).
+
+### 2026-11-07 20:43:10 — WFS-249 fusionné (PR #235, squash d3c1c68) → 🟡 ; B écarté, cause 2 → WFS-276 (Claude, Agent 0 developer)
+- **A** (décision du PO) : borne `EV_LUNE_MIN` −2 → −3,5 ; `DA-realisme.md` § 3 mis à jour avec la mesure ; `test_fidelite_lumiere` adapté sans être affaibli (borne à 0,221 lx, 38,5 m d'une lampe ; 103 vérifications). **Pixels noirs sous l'horizon**, avant → après (Haute = Basse) : autoroute 9,2 → 0,3 % ; cascade 23 → 6,4 % ; col 14,5 → 7 % ; vignes 18 → 6 % ; troupeaux 7 → 1 à 3 %. Saturés ≤ 0,01 %. Bas-côtés et collines : 0,1-1,5 → 2-7 % du blanc.
+- **B** (exposition de la Campagne près des lampes), 4 essais au banc, tous écartés :
+  1. exposition sur la lune seule : péage 52 → 0,4 % de noirs, mais flaques orange effacées (image grise de jour couvert : les lampes, à l'aspect EV 3, ne ressortent plus que de 0,8 IL) ;
+  2. lumières rapprochées de l'exposition de la lune (écart de 2 à 5,5 IL) : 0,2 à 29 % de pixels brûlés ;
+  3. mi-chemin (× 0,5) : péage encore 16 % noir ;
+  4. plancher « rue » à EV 0 : sans effet (péage 39 %), car la mesure réfléchie des sondes donne EV 4-5 près des lampes.
+  → Une exposition globale ne peut pas montrer à la fois la flaque (15 lx) et le paysage sous la lune (0,1 lx), soit 7 IL d'écart. Le PO crée **WFS-276** (tonemapping local), réservé à Agent 0.
+- **Vérifications** : banc `nuit` avant / après : Ville, circuit et Corniche **0 pixel différent** ; seules changent les scènes de Campagne (et la Poursuite vue de haut, 6 % : zones sous 0,63 lx). Tests CPU OK, parcours 0 écart (normal et Cockpit), après synchronisation avec main.
