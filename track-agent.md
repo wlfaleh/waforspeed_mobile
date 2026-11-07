@@ -27,7 +27,7 @@
 | Claude, agent 4 (011cpqZan) | — | a demandé un ticket (11:47) : aucun ticket attribuable (épics E2, E4, E10, E13 occupées ; WFS-175 et 176 déjà ✅) | 137 : fusionnée (PR #150) | 🟢 libre (aucun ticket attribuable) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
-| Claude, session dev 5bx | WFS-216 | P3 lot E2 : col Campagne, foule et bateaux Plage, troupeaux de nuit (ANO-103, 105, 108) (attribué 12:00) ; WFS-225 fusionnée (PR #194, squash 6d3992c) | 216 : pas encore poussée ; 225 : fusionnée 11:58 | 🔧 en cours (branche à pousser) |
+| Claude, session dev 5bx | WFS-216 | P3 : lot E2 (ANO-103, 105, 108) (fusionné, PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 7 fusionnées (PR #157, #162, #163, #166, #167, #186, #187 : audit, plaques des 20 voitures, échelle et roues, Model 3 remplacée, T-Cross à sa vraie taille) ; RG-C (X5) signalé au PO | 158 : 10:43:54 UTC ; PR #187 fusionnée par confiance | ✅ actif ; suite : étriers, intérieurs, sous-caisse (ST-3), LOD 4 niveaux (ST-4), test strict (ST-5) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-161 | Kit d'architecture : ST-1 à ST-6 faits (textures procédurales provisoires) ; CI de branche run 822 avant fusion | 161 : 11:48 | 🔧 en cours (CI de branche) |
 
