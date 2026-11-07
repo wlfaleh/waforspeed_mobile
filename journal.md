@@ -2375,3 +2375,7 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 
 ### 2026-11-07 06:57:40 — Statuts automatiques, CI main #809 (robot statuts)
 - Run vert (push, commit 7f344b9) : WFS-73 ✅ (PR #178, 7f344b9).
+
+### 2026-11-07 06:58:29 — Recette de nuit : WFS-73 (qa-lead)
+- **WFS-73** PASSABLE AVEC ANOMALIES MINEURES sur la construction 809 de `main` (7f344b9) : conducteurs de la Golf et de la SF90 bien placés, aucun en vue cockpit ni au garage ; ANO-110 : vitres avant du RR Sport opaques, conducteur invisible.
+- Lignes ajoutées pendant la recette : WFS-73 correctif (#179) et WFS-209 (#180), recette dès les captures des runs 810 / 811.
