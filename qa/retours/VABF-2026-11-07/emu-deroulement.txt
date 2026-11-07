@@ -1,0 +1,80 @@
+[QA] installation
+Performing Streamed Install
+Success
+[QA] écran : Physical size: 1080x2400 (taille d'origine, pas de wm size)
+[QA] lancement (scénario mvp, extra qa_simu)
+Starting: Intent { cmp=com.waforspeed.game/.JeuActivity (has extras) }
+[QA] étape chargement atteinte après 8 s — attendu « écran complet \(police\) » — ligne 24 du journal du jeu : 11-07 21:16:07.089 I/WaForSpeed( 3356): chargement : première image 2,939 s après l'initialisation Vulkan, écran complet (police) 5,626 s
+[QA] capture 01-chargement
+[QA] étape menu atteinte après 135 s — attendu « Écran : course → menu » — ligne 575 du journal du jeu : 11-07 21:18:47.168 I/WaForSpeed( 3356): Écran : course → menu
+[QA] capture 02-menu
+[QA] écran 2400x1080 (paysage)
+[QA] fenêtre du jeu 2400x1080 (taille logique, points d'appui calculés dessus)
+[QA] appui course-solo 444,541
+[QA] ÉCHEC étape course-solo (délai 60 s)
+[QA] capture 03-appui-course-solo
+[QA] écran en fin de scénario : Physical size: 1080x2400
+11-07 21:16:01.033  3356  3462 I WaForSpeed: mode GPU logiciel demandé (intent qa_simu=true)
+11-07 21:16:01.254  3356  3462 I WaForSpeed: GPU : SwiftShader Device (Subzero) (Vulkan 1.3)
+11-07 21:16:01.289  3356  3462 I WaForSpeed: GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %)
+11-07 21:16:01.292  3356  3462 I WaForSpeed: Profondeur 126, MSAA x1, mipmaps GPU oui
+11-07 21:16:01.463  3356  3462 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:16:01.548  3356  3462 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:16:04.371  3356  3462 I WaForSpeed: passes (WFS-150) : 4 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+11-07 21:16:07.089  3356  3462 I WaForSpeed: chargement : première image 2,939 s après l'initialisation Vulkan, écran complet (police) 5,626 s
+11-07 21:16:07.092  3356  3462 I WaForSpeed: mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)
+11-07 21:17:19.811  3356  3462 I WaForSpeed: décor fixe (WFS-268) : ville : 182 morceaux → 46 blocs de 154 m, 1464570 sommets, 60.6 Mo GPU, préparé en 2632 ms
+11-07 21:17:21.034  3356  3462 I WaForSpeed: QA pret : moteur initialise
+11-07 21:17:23.438  3356  3462 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:17:23.457  3356  3462 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:17:24.310  3356  5112 I WaForSpeed: GPU : SwiftShader Device (Subzero) (Vulkan 1.3)
+11-07 21:17:24.328  3356  5112 I WaForSpeed: GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %)
+11-07 21:17:24.329  3356  5112 I WaForSpeed: Profondeur 126, MSAA x1, mipmaps GPU oui
+11-07 21:17:24.346  3356  5112 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:17:24.462  3356  5112 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:17:27.708  3356  5112 I WaForSpeed: passes (WFS-150) : 4 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+11-07 21:17:30.428  3356  5112 I WaForSpeed: chargement : première image 3,399 s après l'initialisation Vulkan, écran complet (police) 6,079 s
+11-07 21:17:30.428  3356  5112 I WaForSpeed: mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)
+11-07 21:18:43.705  3356  5112 I WaForSpeed: décor fixe (WFS-268) : ville : 182 morceaux → 46 blocs de 154 m, 1464570 sommets, 60.6 Mo GPU, préparé en 2334 ms
+11-07 21:18:44.563  3356  5112 I WaForSpeed: QA pret : moteur initialise
+11-07 21:18:47.133  3356  5112 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:18:47.168  3356  5112 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:19:03.108  3356  5112 I WaForSpeed: QA ips=0.3 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:19:08.956  3356  5112 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:19:16.796  3356  5112 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:19:23.781  3356  5112 I WaForSpeed: QA ips=0.1 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:19:31.164  3356  5112 I WaForSpeed: QA ips=0.1 vitesse=0 km/h distance=0 m ecran=2400x1080
+[QA] ÉCHEC : étape « course-solo » non atteinte
+[QA] RÉSULTAT TECHNIQUE : ÉCHEC
+[QA] installation
+Performing Streamed Install
+Success
+[QA] écran : Physical size: 1080x2400 (taille d'origine, pas de wm size)
+[QA] lancement (scénario mvp, extra qa_simu)
+Starting: Intent { cmp=com.waforspeed.game/.JeuActivity (has extras) }
+[QA] ÉCHEC étape chargement (délai 120 s)
+[QA] capture 01-chargement
+[QA] écran en fin de scénario : Physical size: 1080x2400
+11-07 21:20:34.447  6505  6530 I WaForSpeed: mode GPU logiciel demandé (intent qa_simu=true)
+11-07 21:20:34.718  6505  6530 I WaForSpeed: GPU : SwiftShader Device (Subzero) (Vulkan 1.3)
+11-07 21:20:34.909  6505  6530 I WaForSpeed: GPU logiciel : qualité réduite (sans MSAA, rendu à 25 %)
+11-07 21:20:34.911  6505  6530 I WaForSpeed: Profondeur 126, MSAA x1, mipmaps GPU oui
+11-07 21:20:34.978  6505  6530 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:20:35.050  6505  6530 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:20:37.374  6505  6530 I WaForSpeed: passes (WFS-150) : 4 enregistrées (pré-passe : pré-passe profondeur + normales (½ résolution) ; écran : capture d'environnement (1 face) ; écran : sondes IBL (relecture, envoi) ; écran : passe d'essai (lit la pré-passe)), horodatages GPU oui
+11-07 21:20:39.771  6505  6530 I WaForSpeed: chargement : première image 2,419 s après l'initialisation Vulkan, écran complet (police) 4,793 s
+11-07 21:20:39.773  6505  6530 I WaForSpeed: mode GPU logiciel : actif (dt max 0,5 s, rendu 25 %, sans ombres)
+11-07 21:21:39.581  6505  6530 I WaForSpeed: décor fixe (WFS-268) : ville : 182 morceaux → 46 blocs de 154 m, 1464570 sommets, 60.6 Mo GPU, préparé en 1995 ms
+11-07 21:21:40.603  6505  6530 I WaForSpeed: QA pret : moteur initialise
+11-07 21:21:42.935  6505  6530 I WaForSpeed: Swapchain 1080x2400, 3 images, rotation 2
+11-07 21:21:42.963  6505  6530 I WaForSpeed: Cibles de rendu : 2400x1080 (logique), scène 600x270, MSAA x1
+11-07 21:21:58.375  6505  6530 I WaForSpeed: QA ips=0.3 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:04.218  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:11.086  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:17.633  6505  6530 I WaForSpeed: QA ips=0.1 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:24.341  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:29.923  6505  6530 I WaForSpeed: QA ips=0.1 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:35.355  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+11-07 21:22:40.890  6505  6530 I WaForSpeed: QA ips=0.2 vitesse=0 km/h distance=0 m ecran=2400x1080
+[QA] ÉCHEC : étape « chargement » non atteinte
+[QA] RÉSULTAT TECHNIQUE : ÉCHEC

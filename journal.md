@@ -4237,3 +4237,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 22:11:01 — Statuts automatiques, bancs du matin #2 (robot statuts)
 - Run rouge (workflow_dispatch, commit c9eda61), aucun statut changé. Job(s) en échec : banc (realisme-2), émulateur Android (information).
 - Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-257, WFS-244, WFS-250, WFS-251, WFS-252, WFS-277, WFS-261, WFS-270, WFS-272, WFS-275.
+
+### 2026-11-07 22:18:08 — VABF : émulateur des bancs du matin (run 42414202799) analysé, ANO-125 et ANO-126 (agent qa lead)
+- APK 0.1.883 sur émulateur Android 14 : aucun plantage, menu correct ; ANR après « Course solo » (ANO-125, majeure) ; moteur rechargé une 2e fois dans le même processus (ANO-126, majeure). Deux défauts de l’outil `emulateur.sh` (lecteur logcat de l’essai 1 qui écrit encore → octets nuls ; délai de 60 s trop court) relevés pour l’expert CI. Rapport `qa/rapports/VABF-2026-11-07.md`.
