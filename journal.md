@@ -3824,3 +3824,18 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-07 18:46:43 — CI de main rouge (banc realisme, run #859) : WFS-274 créé (po-scrum-master)
 - Signalé par l'agent expert ci : un seul job rouge, `banc-essai (realisme)`, 1 erreur ; dernier vert #852. Suspect : WFS-226 (à confirmer). Diagnostic par l'agent expert ci ; correction par l'auteur du ticket fautif.
+
+### 2026-11-07 18:46:45 — WFS-242 : départ propre de la Course à 5 et du Duel, fusionné (#222) (arwa-3)
+- **Causes** (ANO-114, ANO-123) : les 4 ordinateurs étaient posés **devant** le joueur (8 et 21 m), lui sur la ligne : il partait toujours dernier, et de la caméra Proche les voitures semblaient l'une dans l'autre ; le chrono gardait le temps de la course précédente (remise à zéro restée dans un commentaire, corrigée par 9e7e4a1, gardé) ; au Duel, les deux joueurs partaient au même endroit ; les commandes, cachées pendant le fondu du chargement, apparaissaient ≈ 1 s après le « 3 » (image figée du chargement des adversaires).
+- **Fait** (`course5.*`, `course5_system.cpp`, `course_system.cpp`, `duel.*`, `duel_system.cpp`, tests) :
+  - RG-01 : 5 places en quinconce derrière la ligne, voies de gauche et de droite (axes des voies, 9,3 m l'un de l'autre). **Choix** : 8 m entre deux places successives (quinconce de la FIA), donc 16 m par rang de 2. Avec des rangs de 8 m, deux ordinateurs d'une même voie restaient 3 à 4 s collés à moins de 8 m (règle WFS-189 RG-03, arbitrage du PO, test rouge). Avec 16 m, plus de 11 m de pare-chocs à pare-chocs. Avant de la 1re voiture à 1,03 m au moins de la ligne.
+  - RG-02 : **choix** du tirage au sort parmi les 5 places (graine de la course). Même graine, même place (« Rejouer »). Un ordinateur parti derrière ne remplit pas la nitro du joueur au premier pas.
+  - RG-03 : chrono à 0 pendant le décompte. Ordinateurs dans leur voie pendant 3 s (`GARDE_VOIE_S`), ils suivent la voiture de devant. RG-04 : pause sans changement (« Reprendre » au même chiffre, « Recommencer » à zéro).
+  - RG-05 : Duel : place sur la grille (créateur devant, puis par jeton tiré à l'entrée dans le salon, clé « j » de la présence, champ facultatif). Présence du départ à la place de la grille ; distance négative reçue acceptée jusqu'à −40 m.
+  - RG-07 : avant le premier « 3 », le compte à rebours attend la fin du fondu du chargement et les modèles des adversaires, 2 s au plus. Duel en ligne exclu (horloge commune). Rien changé dans `game.cpp` (pas d'accroche).
+- **Vérifié** :
+  - 55 tests CPU verts. Nouveaux : grille des 20 voitures × 5 graines (aucun chevauchement, 11,12 m dans une voie, 7,28 m côte à côte) ; tirage 208 / 198 / 189 / 210 / 195 sur 1 000 graines ; départ sur les 4 cartes, 3 voitures, 2 conduites (écart minimal 1,52 m, 0 changement de voie en 3 s, rien ne bouge au décompte) ; chrono, pause, Duel à 3 joueurs (places 0 / 1 / 2, adversaire vu à −11,50 m).
+  - Banc `course5` en local (lavapipe) : 8 captures `course5-depart-<carte>-arriere|dessus` **regardées**, aucune voiture dans une autre, commandes au « 3 », places 3/5, 4/5, 5/5 et 1/5. Distance minimale : grille 7,35 à 7,51 m, 5 premières secondes 3,06 à 7,44 m. « Rejouer » OK.
+  - Banc `parcours` : 0 écart (vue normale et Cockpit).
+- **Limites** : pas vu sur téléphone. Au premier « 3 », la caméra rejoint la voiture sur sa place en ≈ 0,2 s (filtre de `game.cpp`, hors zone ; place proche de la ligne seulement). Déjà présent avant mon ticket et signalé au PO : un ordinateur peut changer de voie à chaque pas quand deux voies sont libres (`avancer`, va-et-vient sur place, invisible à l'écran) ; je n'y ai pas touché (conduite des ordinateurs).
+- Fusion par confiance, squash 71fed22 ; `qa/Check.md` ; **🟡 À valider (utilisateur)**.
