@@ -108,6 +108,17 @@ void Traffic::addCars(int n, double playerPos) {
         c.color = (int)std::floor(R.next() * TRAFFIC_PAINT_COUNT);
         c.w = WEB_CARS[c.type].W / (2 * RW);
         c.target = c.lane; c.offset = c.prevOff = LANE_X[c.lane] * facteurVoie(z);   // WFS-243 : déjà resserrée si posée dans un anneau
+        if (track_->version() == 2) {   // WFS-232 (RG-03) : deux-roues, tirage à part (celui du jeu web reste le même)
+            // quota exact (et non un tirage par véhicule : 29 véhicules en Campagne) : le véhicule i est un deux-roues quand
+            // floor((i + 1) × part + phase) dépasse floor(i × part + phase), phase et modèle tirés par la graine
+            const double part = partDeuxRoues(map.id), phase = Mulberry32(seed * 2246822519u + 0x27d4eb2fu).next(), i0 = (double)cars.size();
+            Mulberry32 D(seed * 2246822519u + (uint32_t)(cars.size() + 1) * 3266489917u);
+            if (std::floor((i0 + 1) * part + phase) > std::floor(i0 * part + phase)) {
+                const int k = std::min(DEUX_ROUES_COUNT - 1, (int)(D.next() * DEUX_ROUES_COUNT));
+                c.deuxRoues = k + 1; c.len = DEUX_ROUES[k].L / M; c.w = DEUX_ROUES[k].W / (2 * RW);
+                c.offset = c.prevOff = (LANE_X[c.lane] + DROITE_VOIE) * facteurVoie(z);
+            }
+        }
         c.z = z; c.speed = c.want;
         c.rng = (uint32_t)(R.next() * 4294967296.0);
         c.think = 1 + R.next() * 4;
@@ -242,13 +253,20 @@ void Traffic::step(double h, const TrafficView& pv) {
             }
         }
         // abandonne le changement si la file se remplit, sinon glisse vers elle
-        if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - LANE_X[car.lane] * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
-        const double d = LANE_X[car.target] * kv - car.offset;
+        const double droite = car.deuxRoues ? DROITE_VOIE : 0;   // WFS-232 : deux-roues du côté droit de sa voie
+        if (car.target != car.lane && !laneFree(car, car.target, pv) && std::abs(car.offset - (LANE_X[car.lane] + droite) * kv) < 0.2) { car.target = car.lane; car.signal = 0; }
+        const double d = (LANE_X[car.target] + droite) * kv - car.offset;
         const double move = clampd(d, -0.5 * h, 0.5 * h);
         car.offset += move;
         car.laneYaw = std::atan2(move * RW, std::max(car.speed * M * h, 1e-3));
         if (std::abs(d) < 0.01) { car.lane = car.target; if (!car.pending) car.signal = 0; }
         car.z = track_->wrap(car.z + car.speed * h);
+        if (car.deuxRoues) {   // WFS-232 (RG-04) : inclinaison d'équilibre dans la courbe, sans à-coup (filtre du premier ordre)
+            const double kappa = track_->findSegment(car.z).curve * CURVE_K / SEG_M;   // 1/m, + à droite
+            car.inclPrec = car.inclinaison;
+            const double pas = (inclinaisonEquilibre(car.speed * M, kappa) - car.inclinaison) * std::min(1.0, h * LISSAGE_INCLINAISON);
+            car.inclinaison += std::clamp(pas, -ROULIS_MAX * h, ROULIS_MAX * h);   // roulis au plus 60°/s (pas d'à-coup)
+        }
     }
 }
 

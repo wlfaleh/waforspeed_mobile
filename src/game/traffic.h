@@ -24,6 +24,24 @@ constexpr double LANE_HALF = 0.36;          // écart latéral (demi-largeurs de
 // resserrées à ±2,25 m (FACTEUR_ANNEAU × LANE_X : carrosseries entre 10,85 et 17,15 m du centre), avec une rampe de
 // RAMPE_ANNEAU_M avant l'entrée et après la sortie de l'anneau ; aucun changement de file dans l'anneau
 constexpr double FACTEUR_ANNEAU = 0.45, RAMPE_ANNEAU_M = 15;
+// WFS-232 (RG-01, RG-03, RG-04) : deux-roues du trafic (assets/cars/deux_roues/<id>.wfm ; mesures : references/reel/deux_roues.json) :
+// longueur hors tout et largeur (m) des modèles convertis. Ils prennent la place de voitures (même nombre de véhicules qu'avant),
+// tirées à part (le tirage du jeu web ne change pas), seulement au tracé 2 ; ils roulent du côté droit de leur voie (DROITE_VOIE)
+struct DeuxRouesDims { const char* id; double L, W; };
+inline const DeuxRouesDims DEUX_ROUES[] = {{"scooter", 1.859, 0.712}, {"routiere", 2.171, 0.885}, {"sportive", 2.007, 0.710}};
+constexpr int DEUX_ROUES_COUNT = sizeof(DEUX_ROUES) / sizeof(DEUX_ROUES[0]);
+constexpr double DROITE_VOIE = 0.13;            // +1 m vers la droite de l'axe de la voie (demi-largeurs de route)
+constexpr double INCLINAISON_MAX = 0.7853981633974483, LISSAGE_INCLINAISON = 5;   // 45° ; constante du filtre (1/s)
+constexpr double ROULIS_MAX = 1.0471975511965976;   // 60°/s : vitesse de roulis la plus forte (un pilote met ≈ 0,7 s pour se pencher à 40°)
+// part des deux-roues parmi les véhicules du trafic (RG-03) : Ville et Corniche 12,5 % (10 à 15 %), Campagne 5 %, Grand Prix 0
+inline double partDeuxRoues(const char* carte) {
+    if (!carte) return 0;
+    if (!std::strcmp(carte, "ville") || !std::strcmp(carte, "plage")) return 0.125;
+    return !std::strcmp(carte, "campagne") ? 0.05 : 0.0;
+}
+// RG-04 : inclinaison d'équilibre (rad, + vers la droite) d'un deux-roues à v (m/s) dans une courbe de courbure kappa (1/m,
+// + à droite) : tan φ = v² / (g R), bornée à 45° ; tout droit : 0
+inline double inclinaisonEquilibre(double v, double kappa) { return std::clamp(std::atan(v * v * kappa / 9.81), -INCLINAISON_MAX, INCLINAISON_MAX); }
 constexpr double SAFE_TIME = 1.1;           // temps de sécurité derrière la voiture de devant (s)
 constexpr double SAFE_MIN = 5.0 / M;        // distance minimale à l'arrêt (unités)
 constexpr double NEAR_MISS = 0.24;          // marge latérale d'un quasi-contact (demi-largeurs de route)
@@ -65,6 +83,8 @@ struct TrafficCar {
     // à droite ; cachée (ni dessinée, ni touchée) le reste du temps
     int traverse = -1, rangTraverse = 0;
     bool cache = false;
+    int deuxRoues = 0;                      // WFS-232 : 0 voiture ; 1 + indice dans DEUX_ROUES pour un deux-roues
+    double inclinaison = 0, inclPrec = 0;   // WFS-232 (RG-04) : inclinaison (rad, + à droite), lissée ; avant le dernier pas
 };
 
 // ---------- trafic vivant (WFS-67) : état d'affichage, calculé à partir de la simulation sans la modifier ----------

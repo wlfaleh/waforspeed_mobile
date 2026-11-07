@@ -264,6 +264,75 @@ static void verifierAnneaux() {
     }
 }
 
+// WFS-232 (RG-03, RG-04, RG-05) : deux-roues du trafic : part par carte (5 graines), même nombre de véhicules qu'avant,
+// inclinaison d'équilibre atan(v² / (g R)) bornée à 45° et sans à-coup, chocs comme une voiture
+static void verifierDeuxRoues() {
+    const std::pair<const char*, double> PARTS[] = {{"ville", 0.125}, {"plage", 0.125}, {"campagne", 0.05}, {"circuit", 0.0}};
+    for (const auto& [carte, part] : PARTS) {
+        static Track t; t.build(mapById(carte), trace::versionCarte(carte));
+        double somme = 0; size_t total = 0, n0 = 0;
+        for (uint32_t g : {1u, 1234u, 20261105u, 99u, 7u}) {
+            Traffic tr; tr.parallel = false; tr.reset(t, g, mapById(carte).trafficN, 0);
+            int dr = 0; for (const TrafficCar& c : tr.cars) dr += c.deuxRoues > 0;
+            somme += (double)dr / tr.cars.size(); total += tr.cars.size();
+            if (g == 1) n0 = tr.cars.size();
+        }
+        const double moy = somme / 5;
+        std::printf("WFS-232 RG-03 : %-8s : %.1f %% de deux-roues en moyenne sur 5 graines (visé %.1f %%), %zu véhicules par graine\n", carte, moy * 100, part * 100, total / 5);
+        if (part >= 0.1) VERIFIE(moy >= 0.10 && moy <= 0.15, "WFS-232 RG-03 : %s : %.1f %% de deux-roues (10 à 15 %%)", carte, moy * 100);
+        else if (part > 0) VERIFIE(moy >= 0.03 && moy <= 0.07, "WFS-232 RG-03 : %s : %.1f %% de deux-roues (≈ 5 %%)", carte, moy * 100);
+        else VERIFIE(moy == 0, "WFS-232 RG-03 : %s : %.1f %% de deux-roues (0 au Grand Prix)", carte, moy * 100);
+        (void)n0;
+    }
+    // RG-04 : formule (50 km/h dans une courbe de 50 m : 21,5° ; tout droit : 0 ; très serré : 45° au plus, à gauche négatif)
+    const double f = inclinaisonEquilibre(50 / 3.6, 1.0 / 50) * 180 / 3.14159265358979;
+    VERIFIE(std::abs(f - 21.46) < 0.05 && inclinaisonEquilibre(30, 0) == 0 && std::abs(inclinaisonEquilibre(40, 1.0 / 10) - INCLINAISON_MAX) < 1e-12 &&
+            inclinaisonEquilibre(50 / 3.6, -1.0 / 50) < 0, "WFS-232 RG-04 : formule de l'inclinaison (%.2f°)", f);
+    // 2 min de trafic à la Ville : inclinaison bornée, sans à-coup (1° au plus par pas de 1/60 s : roulis ≤ 60°/s), à moins de 2°
+    // de l'équilibre quand celui-ci est stable depuis 1 s (vitesse et courbe tenues), moins de 2° en ligne droite tenue
+    {
+        static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+        Traffic tr; tr.parallel = false; tr.reset(t, 1234, mapById("ville").trafficN, 0, true);
+        TrafficView pv; pv.position = 0; pv.speed = 0; pv.myLen = 700;
+        double pire = 0, sautMax = 0, ecartTenu = 0, droitMax = 0; int tenus = 0;
+        std::vector<double> stable(tr.cars.size(), 0), eqPrec(tr.cars.size(), 0);
+        for (int i = 0; i < 120 * 60; i++) {
+            tr.step(T_STEP, pv);
+            for (size_t k = 0; k < tr.cars.size(); k++) {
+                const TrafficCar& c = tr.cars[k];
+                if (!c.deuxRoues || c.crashed) continue;
+                pire = std::max(pire, std::abs(c.inclinaison)); sautMax = std::max(sautMax, std::abs(c.inclinaison - c.inclPrec));
+                const double eq = inclinaisonEquilibre(c.speed * M, t.findSegment(c.z).curve * CURVE_K / SEG_M);
+                stable[k] = std::abs(eq - eqPrec[k]) < 0.2 * 3.14159265358979 / 180 ? stable[k] + T_STEP : 0; eqPrec[k] = eq;
+                if (stable[k] < 1.0) continue;   // équilibre (vitesse × courbe) stable depuis 1 s
+                if (eq == 0) droitMax = std::max(droitMax, std::abs(c.inclinaison));
+                else { ecartTenu = std::max(ecartTenu, std::abs(c.inclinaison - eq)); tenus++; }
+            }
+        }
+        const double DEG = 180 / 3.14159265358979;
+        std::printf("WFS-232 RG-04 : Ville, 2 min : inclinaison au plus %.1f°, saut au plus %.2f° par pas, écart à l'équilibre stable depuis 1 s %.2f° (%d mesures), en ligne droite au plus %.2f°\n",
+                    pire * DEG, sautMax * DEG, ecartTenu * DEG, tenus, droitMax * DEG);
+        VERIFIE(pire <= INCLINAISON_MAX + 1e-9 && sautMax * DEG < 1.001 && tenus > 0 && ecartTenu * DEG < 2 && droitMax * DEG < 2,
+                "WFS-232 RG-04 : inclinaison %.1f°, saut %.2f°, écart %.1f°, ligne droite %.2f°", pire * DEG, sautMax * DEG, ecartTenu * DEG, droitMax * DEG);
+    }
+    // RG-05 : le joueur à 120 km/h rattrape un deux-roues arrêté dans sa file : accident, comme une voiture (et quasi-contact à côté)
+    {
+        static Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+        Traffic tr; tr.parallel = false; tr.reset(t, 1, 1, 0); tr.cars.resize(1);
+        TrafficCar& c = tr.cars[0];
+        c.deuxRoues = 3; c.len = DEUX_ROUES[2].L / M; c.w = DEUX_ROUES[2].W / (2 * RW); c.offset = c.prevOff = 0; c.lane = c.target = 1;
+        c.speed = c.want = 0; c.z = 40 / M; c.prevDz = c.z; c.crashed = false; c.cache = false;
+        Player pl; pl.reset(carById("golf")); pl.speed = 120.0 / 260 * MAX_SPEED;
+        int acc = 0;
+        for (int i = 0; i < 240 && !acc; i++) {
+            pl.position += pl.speed * (1.0 / 120); pl.dist = pl.position;
+            acc += tr.collide(pl, 1.0 / 120).accidents;
+        }
+        std::printf("WFS-232 RG-05 : joueur à 120 km/h contre un deux-roues arrêté : %d accident(s), deux-roues %s\n", acc, c.crashed ? "renversé (glisse)" : "intact");
+        VERIFIE(acc == 1 && c.crashed, "WFS-232 RG-05 : choc avec un deux-roues (%d accident(s))", acc);
+    }
+}
+
 int main() {
     for (const char* id : {"ville", "plage", "campagne", "circuit"}) verifierCarte(id);
     verifierFeux();
@@ -271,6 +340,7 @@ int main() {
     verifierRecords();
     verifierDuel();
     verifierAnneaux();   // WFS-243
+    verifierDeuxRoues();   // WFS-232
     if (echecs) { std::printf("test_trace : %d échec(s)\n", echecs); return 1; }
     std::printf("test_trace : OK\n");
     return 0;
