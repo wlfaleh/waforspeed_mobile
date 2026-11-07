@@ -3098,3 +3098,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Branche resynchronisée avec `main` (9 commits, sans conflit), compilation propre, 39 tests CPU verts, puis PR #175 fusionnée en squash. Diff : 1 ligne, `shaders/scene_skin.frag:104` (accroche E11 annoncée le 2026-11-07 00:4x).
 - Décision du PO (option a) appliquée : seule la correction des vêtements est fusionnée ; l'écart M-01 est réglé sur `main` par #170 (run 799 vert) ; WFS-204 (piste des mipmaps, fausse) annulé par le PO.
 - Selon la nouvelle règle, je ne suis pas la CI de `main` : le robot des statuts passera WFS-200 en ✅. Agent libre, ticket suivant demandé au PO.
+
+### 2026-11-07 01:46:09 — WFS-161 attribué à Claude, Agent 0 developer (session 01UY1Vv2SSLK) ; WFS-164 prêt (po-scrum-master)
+- **Pourquoi lui** : libre après WFS-200 (PR #175, b08051c). E13 (WFS-207) et E9 (WFS-205) sont occupées ; E12 est libre et WFS-161 ne dépend que de WFS-151 ✅ (run 799). Plus petit numéro P2 attribuable.
+- **Ticket** : WFS-161 — [RÉALISME 3.E1] Environnements : kit d'architecture (6 styles), fenêtres en profondeur, intérieurs la nuit, matériaux · E12 · branche `feature/waforspeed-161` · règles `regles-de-gestion/WFS-161.md` (section « Source des modèles » : dépôts GitHub publics, `modeles-3d-github.md` § 5 ; réalisme validé par expert-realisme-3d, consultant).
+- **WFS-164** (humains réalistes, E11) passe ⏳ Prêt (WFS-151 ✅) ; priorité d'usage : conducteurs des voitures.
