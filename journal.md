@@ -3812,3 +3812,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Tests** : 55 tests CPU verts (`fidelite_lumiere` : 101 vérifications), parcours complet 0 écart, après synchronisation avec main (y compris WFS-226).
 - **Non fait localement** : capture `carte-campagne-nuit` du banc `cartes` (trop long en local) ; elle sort de la CI de main.
 - **Fusion par confiance**. Après la fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-07 18:33:02 — WFS-268 : décision du PO avant fusion (option A) et création de WFS-273 (po-scrum-master)
+- Question de Claude, agent 5 : mémoire GPU du décor préparé sur tout le tour (Ville 61 Mo, Corniche 72 Mo, Campagne 212 Mo, Grand Prix 175-196 Mo).
+- Décision : décor préparé au chargement en **Ville et Corniche** seulement ; Campagne et Grand Prix gardent l'ancienne gestion (interrupteur, rien de supprimé). Accroches acceptées : `renderer.h/.cpp` (6 lignes), `circuit.cpp` et `campagne.cpp` (1 ligne chacun). Détail dans `regles-de-gestion/WFS-268.md` (Suivi).
+- **WFS-273** créé (P1, E4, ⏳ En attente de WFS-268 et WFS-246) : instances des arbres (RG-02 de WFS-268), ≤ 80 Mo par carte, puis Campagne et Grand Prix préparés, vibreurs du Grand Prix corrigés. Non attribué.
