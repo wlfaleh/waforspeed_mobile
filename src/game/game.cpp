@@ -42,8 +42,8 @@ bool Game::init(Renderer& r, const char* carId, const char* mapId, void (*progre
     if (progression) progression(0.10f, "Construction de la route");   // WFS-35
     track_.build(mapById(mapId), trace::versionCarte(mapId));   // WFS-136 (accroche) : tracé 2 des cartes actives (A7)
     Material m;
-    route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite));   // WFS-205 (accroche) : enrobé usé, béton de trottoir
-    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::Revetement::EnrobeUse, m);
+    route::preparer(qualite::niveauAffiche(ecrans::reglages().qualite), mapId);   // WFS-205, WFS-206 (accroche) : revêtement de la carte
+    m.flags = MAT_ROAD; m.rough = 0.8f; roadMat_ = route::creerMateriau(r, route::chaussee(), m);
     m.flags = MAT_WALK; m.rough = 0.85f; walkMat_ = route::creerMateriau(r, route::Revetement::BetonTrottoir, m);
     m.flags = MAT_GROUND; m.rough = 0.95f; groundMat_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
     conducteurs::preparer(r);   // WFS-73 (accroche) : homme / femme en pose assise
