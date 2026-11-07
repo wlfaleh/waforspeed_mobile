@@ -226,8 +226,35 @@ inline int mesurer(std::string& rapport) {
             ligne(""); ligne(l);
         }
     }
+    {   // 5. pilote automatique (démonstrations, bancs, parcours) : un tour complet de chaque carte sans sortie de route
+        ligne(""); ligne("## 5. Pilote automatique (aide activée, vitesse de virage tenue) : un tour complet de chaque carte");
+        for (const char* id : {"circuit", "campagne", "ville", "plage"}) for (const char* car : {"golf", "sf90", "rrsport"}) {
+            Track& t = piste(id);
+            Player p; p.reset(carById(car)); p.aide = Aide::Activee;
+            int sorties = 0, n = 0; double ecart = 0;
+            for (; n < 120 * 600 && p.dist < t.length(); n++) {
+                DriveInput in; in.gas = true;
+                in.steer = (float)std::clamp((0.0 - p.playerX) * 3.0 - p.heading * 4.0, -1.0, 1.0);   // pilote de game.cpp
+                limiterPilote(p, t, in);
+                p.update(1.0 / 120, in, t, true);
+                if (std::abs(p.playerX) > 1) sorties++;
+                ecart = std::max(ecart, std::abs(p.playerX));
+            }
+            const bool bon = sorties == 0 && p.dist >= t.length();
+            if (!bon) ecarts++;
+            std::snprintf(l, sizeof l, "- %s, %s : tour %s en %.0f s, %d image(s) hors de la route, écart max %.2f demi-largeur → %s", id, car,
+                          p.dist >= t.length() ? "fini" : "NON fini", n / 120.0, sorties, ecart, bon ? "OK" : "ÉCART");
+            ligne(l);
+        }
+    }
     std::snprintf(l, sizeof l, "\nbanc de conduite (WFS-241) : %d écart(s)", ecarts); ligne(l);
     return ecarts;
 }
 
 } // namespace wfs::banc_conduite
+
+namespace wfs {
+class Game; class Renderer;
+// banc dans la partie (conduite_banc.cpp) : conduite.txt + suites de captures ; rend le nombre d'écarts
+int benchConduite(Game& g, Renderer& r, const std::string& out);
+} // namespace wfs

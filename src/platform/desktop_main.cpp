@@ -32,6 +32,7 @@ namespace wfs { void benchCorniche(Game& g, Renderer& r, const std::string& out)
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
+#include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../world/pietons.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "../world/decor_carte.h"
@@ -165,6 +166,7 @@ int main(int argc, char** argv) {
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
+    if (banc == "conduite") { const int e = benchConduite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-241 (accroche) : banc de conduite, captures conduite-*
     if (banc == "fluidite") { const int e = benchFluidite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-221 (accroche) : à-coups de la voiture vue par la caméra
     if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
     if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90

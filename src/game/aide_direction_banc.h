@@ -45,6 +45,36 @@ inline DriveInput joueurLigneIdeale(const Player& p, Track& t, bool volant = tru
     return in;
 }
 
+// WFS-241 : pilote automatique (démonstrations, bancs) avec la conduite réelle. Il ne peut plus passer les virages pied au
+// plancher (la route ne porte plus la voiture), et sa direction proportionnelle (« −écart − cap », game.cpp, trafic) oscille
+// à grande vitesse. Ici, seulement pour la voiture du joueur en conduite réelle :
+//  - vitesse permise : 0,6 g d'accélération latérale au plus dans le rayon de chaque virage des 600 m qui viennent, freinage
+//    de 0,7 g pour l'atteindre avant le virage ;
+//  - direction : la file voulue est relue dans la commande reçue (évitement du trafic : « (file − écart) × 5 − cap × 4 »),
+//    puis visée 0,8 s devant (poursuite pure, comme le joueur simulé) ; sans trafic, la voiture va au centre.
+inline double vitessePilote(const Track& t, double dist) {
+    double v = 1e9;
+    for (double m = 0; m <= 600; m += 4) {
+        const double k = std::abs(t.findSegment(t.wrap(dist + m / M)).curve) * CURVE_K / SEG_M;
+        if (k > 1e-4) v = std::min(v, std::sqrt(0.6 * 9.81 / k + 2 * 0.7 * 9.81 * m));
+    }
+    return v;   // m/s
+}
+inline void limiterPilote(const Player& p, Track& t, DriveInput& in) {
+    if (!p.modeleMonde()) return;
+    const double v = p.speed * M, vp = vitessePilote(t, p.dist);
+    if (v > vp) { in.gas = false; in.nitro = false; in.brake = v > vp * 1.03; }
+    if (std::abs(p.heading) > 1.2) return;   // demi-tour, contresens : commande reçue gardée
+    // file voulue, ramenée à la file du trafic la plus proche (−2/3, 0, 2/3 : LANE_X) : elle ne suit pas la voiture qui élargit
+    const double brute = p.playerX + (in.steer + 4 * p.heading) / 5;
+    const double file = std::abs(brute) < 1.0 / 3 ? 0.0 : (brute > 0 ? 2.0 / 3 : -2.0 / 3);   // demi-largeurs
+    const double vv = std::max(std::abs(v), 1.0), ld = std::max(8.0, 0.8 * vv);
+    const TrackPoint P = t.point(p.dist, p.playerX * RW), T = t.point(p.dist + ld / M, file * RW);
+    const double psi = P.th + p.heading, dx = T.x - P.x, dz = T.z - P.z;
+    const double av = dx * std::sin(psi) - dz * std::cos(psi), dr = dx * std::cos(psi) + dz * std::sin(psi);
+    in.steer = (float)p.braquagePour(2 * dr / std::max(1.0, av * av + dr * dr), vv);
+}
+
 // banc d'essai : rend le nombre d'écarts (sorties de route, sauts de cap > 0,05 rad par image)
 int benchAideDirection(Game& g, Renderer& r, const std::string& out);
 
