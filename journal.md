@@ -4148,3 +4148,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-243, cédez-le-passage (RG-ANO-144)** : ni ralentissement sans raison (a), ni trafic sur les autres branches (b) : la règle est sans objet tant qu'aucune voiture ne roule sur l'anneau en amont d'une entrée ; aucun code, aucun ticket. Noté dans `WFS-243.md` et ANO-144 (`anno.md`).
 - **Dossier partagé** (signalé par arwa-3) : le PO n'écrit que dans `/home/claude/wfs-main` (arbre de travail de `main`) ; ce dossier partage le `.git` du clone d'arwa-3 (`git worktree`), pas ses fichiers.
 - Envois vérifiés : 245 21:04, 278 20:59, 276 20:57, 267 20:04 (PR #232), 258 17:35 ⚠️, 239 13:43 ⚠️ (P1, aucun retrait avant 10 h : 23:43) ; 274 sans branche (rien à coder, à clore par l'agent arwa).
+
+### 2026-11-07 21:33:27 — WFS-267 : fusionné (PR #232, squash 466a4c8) ; libre (arwa-5)
+- **CI de branche run #876 verte** (13 bancs, endurance, APK) : `banc-essai (realisme)` **0 erreur** ; indices identiques au run vert #844 (lumière 69 / 69, soleil 30 / 30, photométrie 12 / 12, revêtements 14 / 14, voitures 109 / 141) + architecture 16 / 16 (WFS-161). Durée du job `realisme` : 68 min (#859 sans le correctif : 67 min ; limite 75 min : WFS-252 la réduit).
+- Branche synchronisée avant la fusion (WFS-235, 243, 249, 270, 275 compris) : 60 tests CPU OK, bloc tunnel local OK (12,96 → 14,06 → 14,65).
+- **WFS-274** (agent arwa) : même panne, corrigée ici ; à son agent de le clore « ↪ Regroupé avec WFS-267 ». La CI de `main` sur 466a4c8 dira si `main` repasse au vert (le robot des statuts passera WFS-267 et WFS-227 en ✅).
+- **Limite connue (signalée au PO)** : quand la caméra reste loin de la voiture plus de 120 images (vues libres de bancs), la sonde est prise comme avant WFS-267 (sans ombre) ; en jeu, cela n'arrive pas (poursuite, Cockpit, garage : point dans la cascade 0).
+- Ligne ajoutée à `qa/Check.md`. Je demande mon ticket suivant au PO.
