@@ -3562,3 +3562,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Refus transmis par l'agent dev conduite (≈ 17:00 UTC). Règle des KO : nouvelles US, autre développeur. Détails demandés à l'utilisateur avant de coder (WFS-258, 259 ⏳ En attente).
 - WFS-255 (sons) non cité : reste 🟡. WFS-256 (chocs) repris par le même agent (ticket non refusé).
 - Repli possible : `g_conduiteMonde = false` (ancien modèle), décision de l'utilisateur demandée.
+
+### 2026-11-07 16:56:23 — Tous les sujets de l'expert conduite refusés ; WFS-258 en tout premier avec repli immédiat (po-scrum-master)
+- Retour de l'utilisateur recopié dans WFS-258 et 259. WFS-255 aussi refusé → ANO-133, WFS-260. WFS-258 ⏳ Prêt, RG-00 : remettre `g_conduiteMonde = false` tout de suite (fusion seule), puis corriger.

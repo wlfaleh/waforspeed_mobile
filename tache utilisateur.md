@@ -73,3 +73,6 @@ demande utilisateur :
 
 - Chocs : parfois la voiture touche une voiture, un décor, un poteau, un banc et il ne se passe rien ; personnes qui apparaissent ou disparaissent bizarrement, à corriger sur toutes les cartes (conversation avec le PO, 2026-11-07 16:25 UTC)
 ( PO : c'est créé — **ANO-129** et **WFS-256** (P1, chocs avec tout ce qui se voit, sur toutes les cartes, sans mur invisible), donné à l'agent dev conduite ; **ANO-130** et **WFS-257** (P1, une personne n'apparaît ou ne disparaît plus jamais sous vos yeux, sur toutes les cartes), prêt pour le prochain développeur. )
+
+- Les sujets de l'expert conduite sont KO : aide activée mais virages et ronds-points ne passent pas, la direction ne suit pas, trop rapide selon la vitesse, l'application est devenue pire (conversation avec le PO, 2026-11-07 16:56 UTC)
+( PO : c'est fait — WFS-241, 253 et 255 ❌ ; **WFS-258** en tout premier pour le prochain développeur (pas l'agent dev conduite) : **d'abord remettre l'ancienne conduite tout de suite**, puis corriger vos points un par un ; WFS-259 (freins, ABS, ESP) et WFS-260 (sons) après. )
