@@ -123,6 +123,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 
 > 🔴 **2026-11-07 14:00 UTC — Nuit, priorité absolue (l'utilisateur voit « rien de corrigé » sur l'APK 840)** : les prochains développeurs libres prennent, dans cet ordre, **WFS-218 + WFS-226** (même développeur : deux phares du joueur + phares de toutes les voitures, `nuit.cpp`), puis **WFS-224** (boules grises de la fumée, `effets_*`). **Exception PO** : en parallèle de WFS-239 (E4, banc qualité), fichiers séparés ; se synchroniser souvent avec `main`.
 
+> 🔴 **2026-11-07 14:45 UTC — Corrections des KO de l'utilisateur** : **WFS-247** (fluidité) → **session dev expert** ; **WFS-248** (ronds-points à refaire) → **agent 5** ; **WFS-249** (Campagne de nuit) → prochain développeur libre **sauf la session dev 5bx** ; **WFS-246** (performance) → prochain libre **sauf l'agent arwa**. Développeurs de l'autre compte : quand vous demandez un ticket au PO, prenez celui qui porte votre nom.
+
 ## Tableau (par numéro de ticket)
 
 **Priorités (comme Jira)** : **P1 Urgent** (bloque le MVP) · **P2 Haute** · **P3 Moyenne** · **P4 Basse**. À priorité égale, on prend le plus petit numéro de ticket.
@@ -190,8 +192,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-244 | Correction (lot E9) : plaques rectangulaires à bords nets sur la chaussée (ANO-116) | E9 | ⏳ Prêt |  | — | `feature/waforspeed-244` |  |  |
 | P3 Moyenne | WFS-245 | Correction (lot E5) : étiquettes du HUD lisibles sur téléphone (ARRIVÉE, TEMPS, SCORE…) (ANO-118) | E5 | ⏳ Prêt (après WFS-234, épic E5) |  | — | `feature/waforspeed-245` |  |  |
 | P1 Urgent | WFS-246 | [TECHNIQUE] [URGENT] Performance, 2e passage (WFS-222 refusé) : faces arrière, shaders par coût, résolution adaptative, LOD, ombres, capture | E4 | ⏳ Prêt (session de développeur archivée sur décision de l'utilisateur ; branche gardée si elle existe) |  | **pas** agent arwa (auteur de WFS-222) | `feature/waforspeed-246` |  |  |
-| P1 Urgent | WFS-247 | [TECHNIQUE] [URGENT] Fluidité, 2e passage (WFS-221 refusé) : la voiture saute encore devant la caméra en vue Proche et Poursuite (ANO-126) | E0 + E3 | ⏳ Prêt |  | **pas** Claude, agent 2 (auteur de WFS-221) | `feature/waforspeed-247` |  |  |
-| P1 Urgent | WFS-248 | Ronds-points **à refaire entièrement** sur les 4 cartes (WFS-223 refusé : catastrophe, plein de bugs) (ANO-127) | E2 | ⏳ Prêt |  | **pas** Claude, session dev 5bx (auteur de WFS-223) | `feature/waforspeed-248` |  |  |
+| P1 Urgent | WFS-247 | [TECHNIQUE] [URGENT] Fluidité, 2e passage (WFS-221 refusé) : la voiture saute encore devant la caméra en vue Proche et Poursuite (ANO-126) | E0 + E3 | 🔧 Attribué (à prendre par le développeur à sa prochaine demande de ticket) | Claude, session dev expert (0183bv2X), 2026-11-07 14:45 UTC | **pas** Claude, agent 2 (auteur de WFS-221) | `feature/waforspeed-247` |  |  |
+| P1 Urgent | WFS-248 | Ronds-points **à refaire entièrement** sur les 4 cartes (WFS-223 refusé : catastrophe, plein de bugs) (ANO-127) | E2 | 🔧 Attribué (à prendre par le développeur à sa prochaine demande de ticket) | Claude, agent 5 (011cpqZaDiS2), 2026-11-07 14:45 UTC | **pas** Claude, session dev 5bx (auteur de WFS-223) | `feature/waforspeed-248` |  |  |
 | P1 Urgent | WFS-249 | Campagne de nuit, 2e passage (WFS-225 refusé) : encore trop sombre, nuit pas lisible (ANO-128) | E2 + E13 | ⏳ Prêt |  | **pas** Claude, session dev 5bx (auteur de WFS-225) | `feature/waforspeed-249` |  |  |
 
 ## Critères d'acceptation

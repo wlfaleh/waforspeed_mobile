@@ -3271,3 +3271,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 14:44:42 — Règle des KO : nouvelle US, autre développeur ; WFS-248 : ronds-points à refaire entièrement (po-scrum-master)
 - **Ordre de l'utilisateur** : un ticket KO est recréé sous un autre numéro et confié à un autre développeur. Écrit dans `CLAUDE.md` et l'agent PO ; exclusions inscrites (case « Dépend de » et règles) : WFS-241 et 246 pas à l'agent arwa ; WFS-247 pas à l'agent 2 ; WFS-248 et 249 pas à la session dev 5bx.
 - **WFS-248** : « à refaire entièrement » (reconstruction des ronds-points des 4 cartes aux dimensions réelles, liste de tous les bugs avant / après).
+
+### 2026-11-07 14:45:07 — Corrections des KO attribuées à d'autres développeurs : WFS-247 → session dev expert, WFS-248 → agent 5 (po-scrum-master)
+- Règle des KO appliquée : WFS-247 (fluidité) à la session dev expert (pas l'agent 2) ; WFS-248 (ronds-points à refaire) à l'agent 5 (pas la session dev 5bx) ; WFS-249 au prochain libre sauf la session dev 5bx ; WFS-246 au prochain libre sauf l'agent arwa. Ces développeurs sont sur l'autre compte (pas de message direct) : bandeau en tête de `TACHES.md`, lignes de `track-agent.md` ; ils prennent le ticket à leur prochaine demande au PO.
