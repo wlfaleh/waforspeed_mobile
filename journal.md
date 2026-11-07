@@ -3649,3 +3649,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-267** (P1, [TECHNIQUE], E7 + exception E4 `bench_realisme.cpp`) : RG-00 regarder d'abord #859 ; sinon nommer la cause et la corriger sans affaiblir le banc.
   **Proposé d'abord à l'agent expert ci** (il tient `bench_realisme.cpp` avec WFS-251 : un autre développeur créerait un conflit) ; pas attribué tant que personne ne le demande.
   Règles : `regles-de-gestion/WFS-267.md`. arwa-3 garde WFS-242 (attribué à 17:24, avant le passage du robot ; domaine courses).
+
+### 2026-11-07 17:30:58 — WFS-245 : arbitrage des tailles du HUD, à la demande d'arwa-2 (po-scrum-master)
+- Question d'arwa-2 avant de coder (5 points). **RG-01 corrigée** : l'ancienne (« 3,5 mm ≈ 0,9 % de la diagonale ») se contredisait (erreur du PO) et, mesurée
+  sur les capitales, était impossible : dans Rajdhani Bold, capitales et chiffres = 0,504 × la taille de `ui::text` (pas 0,729, qui est la ligne de base) ;
+  3,5 mm demanderait une police 60 % plus grande que le chrono. Mesure gardée en mm sur les capitales, à 420 dpi.
+- **Décision** (à 1080 p) : valeur d'ARRIVÉE ≥ 30 px de chiffres (≥ 1,8 mm ; taille 40 × k) ; étiquettes ≥ 20 px de capitales (≥ 1,2 mm ; 27 × k) ;
+  score 34 → 40 × k ; vitesse cockpit 28 → 40 × k ; chrono 48 et vitesse 44 inchangés. Panneau du temps sur deux lignes (≈ 236 × 86 × k, ≤ 112 × k de haut),
+  KM/H et NITRO **centrés sous les chiffres** dans l'arc (pas à droite : « R · KM/H » couperait l'arc), cases inchangées ; contraste ≥ 4,5 : 1 au pire
+  (étiquettes `#A6ADC2` sur fond 0,85 ; arc : disque 0,72 et `#C4C9D6`). Surfaces par vue après ≤ avant ; aucun bouton ne bouge.
+- Détail chiffré : `regles-de-gestion/WFS-245.md` (RG-01, RG-04, Suivi du 2026-11-07 17:30). Zone : + cadre du temps dans `obstacles()` de `minicarte.h`.
