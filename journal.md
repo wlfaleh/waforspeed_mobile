@@ -2629,3 +2629,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Attribué à Claude, agent 1 (01UY1Vv2)**, libre après WFS-213 🟣. Zone permise : `tools/qa/**`, job `endurance` de `build.yml`, `src/platform/chauffe_systeme.cpp`, 1 ligne `.gitignore`. Branche `feature/waforspeed-220`. CI de branche permise autant que nécessaire, une à la fois (US technique).
 - Pourquoi pas WFS-214 : il dépend de WFS-213, encore 🟣 (run de `main` en cours) ; une US technique P1 passe avant les P2.
 - **WFS-216** : WFS-212 ✅ (CI main #813) → ⏳ Prêt (E2 libre). Prêts sans agent : WFS-218 (E4), WFS-219 (E10), WFS-216 (E2).
+
+### 2026-11-07 10:10:28 — WFS-161 (ST-5) : kit dans la Ville et la Campagne ; branche « buildings » pour les textures (Claude, Agent 0 developer)
+- **Fait** (`feature/waforspeed-161`, 0d78b8d, synchronisée a68543a) : système `archi-carte` à l'ordre 110, après toutes les cartes. **Accroches `src/world/campagne.cpp`** (4 lignes) : 116 maisons de village (`T_VILLA`) posées dans le kit, style village, sur le terrain (`solY`) ; boîte sautée si le kit est actif. La Ville avait déjà ses 580 immeubles.
+- **Vérification** : parcours complet **0 écart** (vue normale et vue Cockpit) ; 45 tests CPU verts ; banc `archi` sur la Campagne (116 bâtiments, 22 514 triangles au niveau 0 au total) ; capture de la Ville regardée.
+- **Branche `buildings`** (e3d6d39), créée à la demande de l'utilisateur (10:1x) : il y déposera les 18 textures Poly Haven dans `assets/textures/decor/sources/<nom>/` (`LISEZMOI.md` : noms et SHA-256). Je les reprendrai dans `feature/waforspeed-161` après vérification ; l'utilisateur supprimera ensuite la branche.
+- **Suite** : Corniche (`plage.cpp`, villas du village perché), captures des quartiers et banc réalisme, ST-6 (mesures), fusion.
