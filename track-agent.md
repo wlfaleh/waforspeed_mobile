@@ -14,14 +14,14 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 15:47:00 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 16:00:00 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) |  | WFS-218 🟣 fusionné (PR #206, squash ae49782) ; ticket suivant à demander au PO (pas WFS-246) | 218 : fusion 14:57 (ae49782) | 🟢 libre |
-| Claude, agent 1 (01UY1Vv2) | — | WFS-234 fusionnée (PR #209, squash bee2d1f) ; libre, attend l'accord de l'utilisateur avant un nouveau ticket | 234 : PR #209 fusionnée ; 220 : PR #190 | 🟢 libre |
+| Claude, agent 1 (01UY1Vv2) | WFS-230 | P1 nuit sur route non éclairée (E13) : exposition qui s'adapte au clair de lune loin des lampadaires, herbe, arbres et voiture visibles ; + accroche `GameView::night` (RG-09) ; attribué 16:00 | 230 : branche à créer et pousser ; 234 : PR #209 fusionnée | 🔴 en cours (P1) |
 | Claude, agent 2 (01UY1Vv5) | — (WFS-227 fusionné) | libre (ne prend pas de ticket sans demande de l'utilisateur) | 227 : fusionnée 15:58 (PR #210) ; 221 : fusionnée (PR #193) | 🟢 libre |
 | Claude, agent 3 (01UY1Vv3) | WFS-239 | P1 [TECHNIQUE] banc qualité : voiture du trafic absente à 120 m en Basse ; recherche de la cause | 239 : 13:43 (323eeb1) ; 233 : fusionnée (PR #203, 4761db5) | 🔴 actif (P1) |
 | Claude, agent 4 (011cpqZan) |  | Stoppé par l'utilisateur (15:06 UTC) : **plus aucun ticket à lui donner** ; WFS-224 repris (⏳ Prêt, pour un autre développeur) | 224 : 14:49 (533e360, commit de début seul, sans code) ; 240 : fusionnée (PR #205) | ⛔ stoppé par l'utilisateur |
@@ -39,8 +39,8 @@
 | WFS-224 (P1) | E4 | repris à l'agent 4 (stoppé par l'utilisateur) : au premier développeur qui demande, **pas** l'agent 4 |
 | WFS-226 (P1) | E4 (+ E3) | à l'agent arwa après WFS-218 (même fichier `nuit.cpp`) |
 | WFS-246 (P1) | E4 | épic E4 tenue (WFS-218, 224, 239) ; pas à l'agent arwa |
-| WFS-249 (P1) | E2 + E13 | épics tenues par WFS-248 (agent 5) et WFS-227 (agent 2) ; pas à la session dev 5bx |
-| WFS-230 (P1), WFS-214 (P2) | E13 | épic E13 tenue par WFS-227 (agent 2) |
+| WFS-249 (P1) | E2 + E13 | E13 tenue par WFS-230 (agent 1) ; WFS-248 🟡 ; pas à la session dev 5bx |
+| WFS-214 (P2) | E13 | épic E13 tenue par WFS-230 (agent 1) |
 | WFS-232 (P2), WFS-215 (P3) | E3 + E10, E10 | épics tenues par WFS-235 (arwa-2) |
 | WFS-243 (P2) | E3 | après WFS-241 et WFS-242 (mêmes fichiers ; sessions archivées, tickets prêts) |
 | WFS-252 (P2) | E7 | en attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci |

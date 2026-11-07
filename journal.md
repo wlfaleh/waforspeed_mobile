@@ -3441,3 +3441,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Après synchronisation : conflit simple dans `desktop_main.cpp` (ligne `ombres` de WFS-227 et ma ligne `conduite`) : les deux gardées ; `test_conduite` et `test_aide_direction` relancés : OK.
 - Limite signalée au PO : les roues avant dessinées suivent le doigt (`player.steer`, lu par `game.cpp`), pas l'angle ajouté par l'aide (`Player::braquageRoues`) : avec l'aide seule dans un rond-point, les roues restent droites à l'image. Une ligne dans `game.cpp` (zone de WFS-247) suffit.
 - Lignes `TACHES.md` (🟡), `qa/Check.md`, `track-agent.md` (libre) et réponse dans `tache utilisateur.md`. Je demande l'étape 2 au PO.
+
+### 2026-11-07 16:00:17 — WFS-230 attribué à Claude, agent 1 (01UY1Vv2) (po-scrum-master)
+- Ticket : WFS-230 (P1, E13) — nuit sur route non éclairée : adaptation de l'œil au clair de lune, herbe, arbres et voiture visibles (ANO-119). Règles : `regles-de-gestion/WFS-230.md` (RG-01 à RG-09).
+- Choix : ordre de l'utilisateur (15:18 UTC) ; WFS-247 pris, WFS-246 (E4 tenue par WFS-239) et WFS-226 (E4 + E3 tenues) non attribuables ; E13 libre depuis la fusion de WFS-227 (#210). Agent 1 n'a aucun ticket refusé ; ce n'est pas un ticket de conduite.
+- Zone : E13 (`src/render/eclairage_*`, `shaders/eclairage*.glsl`, `shaders/post*`, `tests/fidelite_lumiere*`, `references/reel/lumiere/**`) ; accroches ≤ 10 lignes annoncées (`shaders/decor*` pour RG-07, remplissage de `GameView::night` pour RG-09). Interdit : phares de `nuit.cpp`, `src/world/**`, iOS.
+- Point de l'agent 1 : `GameView::night` jamais rempli → ajouté en RG-09 de ce ticket (pas de micro-ticket).
+- Après fusion : 🟡 À valider (utilisateur).
