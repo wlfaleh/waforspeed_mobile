@@ -4285,3 +4285,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Exception de l'utilisateur à la règle « KO → nouvelle US, autre développeur » : WFS-268 repasse 🔧 En cours, même développeur, même branche `feature/waforspeed-268` ; 🟡 après la nouvelle fusion.
 - Règles ajoutées (`regles-de-gestion/WFS-268.md`) : RG-07 (−50 % de personnes, tirage stable, Ville et Corniche), RG-08 (kit, commerces, lieux, feux préparés au chargement, 0 maillage créé en course), RG-09 (≤ 120 Mo GPU de contenu fixe par carte, alerte au PO à 100 Mo), RG-10 (preuves).
 - Zone élargie : `archi_carte.*`, `commerces.cpp`, nombre de personnes seulement dans `pietons.cpp` / `foule_apparition.h` (personne n'y travaille : WFS-257 🟡 fusionné, WFS-266 non attribué). Trafic exclu (WFS-281, WFS-232).
+
+### 2026-11-07 22:29:47 — WFS-279 : PR #241 ouverte, captures pour le lead dev, revue demandée (arwa-5)
+- Nouvelle règle (lead dev, 2026-11-07) appliquée : `bash tools/qa/captures_pr.sh WFS-279 chargement:2400x1080` → 5 paires avant / après (`chargement-0/1/2`, `-erreur`, `-fondu`) dans `qa/pr/WFS-279/`, + 2 agrandissements du coin (« v0.1.912 » compilé avec `-DWFS_VERSION=0.1.912` ; « dev » à 1280×720) ; `pr.md` collé dans la description de la PR.
+- **CI de branche #888** (une seule fois, ligne Gradle non testable ici) : `compilation`, `android` et `publication-apk` verts ; APK `versionName='0.1.888'` (journal du job `android`).
+- Branche 2557b4a synchronisée avec `main` (la dernière synchronisation n'apporte aucun changement de code) : **62 tests CPU OK** ; parcours complet 0 écart (vue normale et Cockpit, mesuré avant la synchronisation, aucun code changé depuis).
+- Revue demandée à l'agent `lead-dev` (PR #241). Je ne fusionne pas moi-même (règle de l'utilisateur).
