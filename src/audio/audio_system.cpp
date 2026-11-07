@@ -33,6 +33,8 @@
 #include "../game/trace_cartes.h"      // WFS-261 : section sous la voiture (tunnel), lecture seule
 #include "../world/enseignes.h"        // WFS-261 : clients attablés des terrasses (vie::clientsTerrasses), lecture seule
 #include "voitures_sons.h"             // WFS-272 : son des autres voitures (adversaires, police, trafic)
+#include "parois_sons.h"               // WFS-275 : écho des murs, sons masqués derrière les immeubles
+#include "../world/ville_quartiers.h"  // WFS-275 : plan de la Ville (façades, immeubles), lecture seule
 #include "../game/course5.h"           // WFS-272 : adversaires de la Course à 5 (lecture seule)
 #include "../game/duel_system.h"       // WFS-272 : adversaires du Duel (duelSession().ghosts(), lecture seule)
 #include "../game/poursuite.h"         // WFS-272 : police de la Poursuite (lecture seule)
@@ -64,9 +66,10 @@ public:
         for (auto* b : {&blocMono_, &blocG_, &blocD_, &blocBus_}) b->assign(BLOC, 0.f);
         lieux_.build((float)OUT_RATE, nuit); tunnel_.build((float)OUT_RATE);
         voitures_.build((float)OUT_RATE); attribution_.reset(); candidats_.reserve(128);   // WFS-272
+        echos_.build((float)OUT_RATE);   // WFS-275
         const int rate = audioOutStart([this](float* out, int n) { remplir(out, n); });
         if (rate && rate != OUT_RATE) for (auto& s : synths_) s->setOutputRate((float)rate);
-        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); }   // WFS-261, WFS-272
+        if (rate && rate != OUT_RATE) { lieux_.build((float)rate, nuit); tunnel_.build((float)rate); voitures_.build((float)rate); echos_.build((float)rate); }   // WFS-261, WFS-272, WFS-275
         sfx_.build((float)(rate ? rate : OUT_RATE));   // WFS-28 : bruitages calculés une fois, à la fréquence du flux
         // WFS-76 : musique (une fois par lancement) et ambiance de la carte de cette partie (moment : WFS_MOMENT, comme la plage)
         musique().build((float)(rate ? rate : OUT_RATE));
@@ -120,8 +123,10 @@ public:
         decider(g);   // WFS-76
         sfx_.lastUpdate = nowSeconds(); events_.update(dt, g, sfx_);   // WFS-28 : un son par événement de la partie
         sonsTrafic(dt, g);   // WFS-121
+        preparerParois(g);   // WFS-275 : immeubles proches (masques), avant les sources
         sonsLieux(g);        // WFS-261
         sonsVoitures(dt, g); // WFS-272
+        sonsParois(dt, g);   // WFS-275
         if (g_rec.on) {   // banc d'essai : le son de ce pas est calculé tout de suite et gardé
             g_rec.t += dt; g_rec.acc += dt * OUT_RATE;
             const int n = (int)g_rec.acc; g_rec.acc -= n;
@@ -203,6 +208,7 @@ private:
             for (int i = 0; i < k; i++) bus[i] = m[i] + 0.5f * (G[i] + D[i]);   // écho : moteur, bruitages, sirène
             voitures_.mix(G, D, bus, k, sfx_.master, now - sfx_.lastUpdate.load() < 0.25);   // WFS-272 : autres voitures, passage, klaxon
             tunnel_.process(bus, G, D, k);   // RG-05 (WFS-261) ; RG-07 (WFS-272) : les voitures passent dans l'écho
+            echos_.process(bus, G, D, k);    // WFS-275 : écho des murs (même bus) ; sans mur, rien n'est ajouté
             musique().mix(m, k, master); ambiance_.mix(m, k, master);
             lieux_.mix(G, D, k, master);   // RG-02 à RG-04
             lieux::entrelacer(m, G, D, out + (size_t)fait * (size_t)canaux, k, canaux);
@@ -222,6 +228,18 @@ private:
             for (const vie::Client& c : vie::clientsTerrasses(*g.map, (int64_t)g.track->segmentCount())) cl.push_back({c.s, c.lat});
             lieux::poser("ville", lieux::TERRASSE, lieux::regrouperTerrasses(cl, (int64_t)g.track->segmentCount()));
         }
+        immeubles_.clear();   // WFS-275 : Ville : façades (écho) et immeubles (masques) lus dans le plan ; autres cartes : accroches
+        if (carte_ == "ville") {
+            const ville::Plan& P = ville::adapter(*g.map, *g.track);
+            parois::depuisVille(P, (int64_t)g.track->segmentCount());
+            immeubles_ = parois::immeublesVille(P, (int64_t)g.track->segmentCount());
+        }
+        {
+            int nG = 0, nD = 0;
+            for (const parois::Cotes& c : parois::lire(carte_)) { nG += c[0].d > 0; nD += c[1].d > 0; }
+            WFS_LOG("PAROIS %s : %d segments avec une paroi à gauche, %d à droite, %zu immeubles (masques)", carte_.c_str(), nG, nD, immeubles_.size());
+        }
+        suiviParois_.reset(); for (float& m : masqueLieu_) m = 0; for (auto& x : masqueId_) x = 0;
         char txt[160]; int k = 0;
         for (int t = 0; t < lieux::NB_TYPES; t++)
             k += std::snprintf(txt + k, sizeof txt - (size_t)k, "%s%s %zu", t ? ", " : "", lieux::nomType(t), lieux::lire(carte_, (lieux::Type)t).size());
@@ -258,7 +276,9 @@ private:
                 if (porte) WFS_LOG("LIEU %s à portée : %.0f m, %.0f° (%s)", lieux::nomType(ty), dist, az * 57.2958f, az > 0 ? "droite" : "gauche");
                 else WFS_LOG("LIEU %s hors de portée", lieux::nomType(ty));
             }
-            lieux_.cible(ty, porte ? lieux::spatialiser(dist, az, lieux::FICHES[ty]) : lieux::Gains{}, var);
+            lieux::Gains gs = porte ? lieux::spatialiser(dist, az, lieux::FICHES[ty]) : lieux::Gains{};
+            masquer(gs.gG, gs.gD, gs.coupure, masqueLieu_[ty], porte ? parois::masqueDb(ici_, q, proches_) : 0.f);   // WFS-275 (RG-06)
+            lieux_.cible(ty, gs, var);
         }
         const trace::Section* s = trace::sectionA(t, pl.dist);
         const bool tun = s && s->type == trace::Type::Tunnel;
@@ -300,6 +320,50 @@ private:
         const vec3 d = vec3{(float)q.x, (float)q.y + 0.6f, (float)q.z} - ici_;
         return voitures::panExistant(std::atan2(dot(d, droite_), dot(d, avant_)));
     }
+    // WFS-275 (RG-02 à RG-07) : écho des murs et masques
+    parois::Echos echos_;
+    std::vector<parois::Immeuble> immeubles_;            // Ville : immeubles du plan (repère de la route)
+    std::vector<parois::ImmeubleMonde> proches_;         // immeubles à moins de 150 m, dans le monde (tour du joueur)
+    parois::Suivi suiviParois_;                          // présence des parois (fondus des trouées), tunnel
+    float masqueLieu_[lieux::NB_TYPES] = {}, masqueVoix_[voitures::VOIX] = {};
+    uint64_t masqueId_[voitures::VOIX] = {};
+    int parLog_ = -1;
+    static void masquer(float& gG, float& gD, float& coupure, float& m, float cible) { parois::appliquerMasque(gG, gD, coupure, m, cible, 1.f / 120); }
+    void preparerParois(const GameView& g) {
+        proches_.clear();
+        if (immeubles_.empty() || !g.track || !g.player) return;
+        ecoute(g);
+        Track& t = *g.track;
+        const int64_t aP = (int64_t)std::floor(g.player->dist / SEG);
+        const int64_t L = (int64_t)t.segmentCount();
+        for (const parois::Immeuble& im : immeubles_) {
+            const vec3 c = lieux::positionMonde(t, im.centre, aP);
+            if (dot(c - ici_, c - ici_) > 150.f * 150.f) continue;
+            const int64_t k = (int64_t)std::floor((double)(aP - im.centre.seg) / (double)L + 0.5);
+            const double th = t.pose(im.centre.seg + k * L).th;
+            proches_.push_back({c, {(float)std::cos(th), 0, (float)std::sin(th)}, {(float)std::sin(th), 0, (float)-std::cos(th)}, im.demiProf, im.demiLong, im.h});
+        }
+    }
+    void sonsParois(double dt, const GameView& g) {
+        const std::vector<parois::Cotes>& P = parois::lire(carte_);
+        float a = 0, b = 0;   // distances de la tête aux parois (m), 0 : aucune
+        if (lieuxActifs_ && g.track && g.player && !P.empty()) {
+            const int64_t n = (int64_t)P.size(), s = (((int64_t)std::floor(g.player->dist / SEG) % n) + n) % n;
+            const float x = (float)(g.player->playerX * RW);   // + à droite
+            const parois::Cotes& c = P[(size_t)s];
+            if (c[0].d > 0) a = std::max(0.5f, c[0].d + x);
+            if (c[1].d > 0) b = std::max(0.5f, c[1].d - x);
+            if (a > parois::PORTEE) a = 0;
+            if (b > parois::PORTEE) b = 0;
+        }
+        parois::Reflexion r[6]; float gG[6], gD[6];
+        const int nr = suiviParois_.pas((float)dt, a, b, tunnelLog_, r, gG, gD);   // RG-05 : trouées, tunnel
+        for (int i = 0; i < parois::PRISES; i++) echos_.cible(i, i < nr ? r[i].delai : 0.01f, i < nr ? gG[i] : 0.f, i < nr ? gD[i] : 0.f);
+        const int etat = (a > 0) + 2 * (b > 0);   // journal du banc : une ligne quand les côtés changent, au plus une par seconde
+        horlogeParois_ += dt;
+        if (etat != parLog_ && horlogeParois_ >= 1) { horlogeParois_ = 0; parLog_ = etat; WFS_LOG("PAROIS gauche %.0f m, droite %.0f m", a, b); }
+    }
+    double horlogeParois_ = 1;
     void sonsVoitures(double dt, const GameView& g) {
         candidats_.clear();
         const bool actif = lieuxActifs_ && g.track && g.player;
@@ -329,7 +393,14 @@ private:
                 }
         }
         attribution_.update((float)dt, candidats_, ici_);
-        for (int v = 0; v < voitures::VOIX; v++) voitures_.cible(v, voitures::calculerCible(attribution_.voix(v), (float)dt, ici_, vIci_, avant_, droite_));
+        for (int v = 0; v < voitures::VOIX; v++) {
+            voitures::Cible c = voitures::calculerCible(attribution_.voix(v), (float)dt, ici_, vIci_, avant_, droite_);
+            const voitures::EtatVoix& e = attribution_.voix(v);   // WFS-275 (RG-06) : voiture cachée derrière un immeuble de la Ville
+            const float cibleMasque = e.occupee ? parois::masqueDb(ici_, e.c.p, proches_) : 0.f;
+            if (masqueId_[v] != e.id) { masqueId_[v] = e.id; masqueVoix_[v] = cibleMasque; }   // nouvelle voix : elle entre déjà en fondu
+            masquer(c.gG, c.gD, c.coupure, masqueVoix_[v], cibleMasque);
+            voitures_.cible(v, c);
+        }
         horlogeVoix_ += dt;   // journal : au plus une ligne par seconde, quand le nombre de voix a changé
         if (attribution_.actives() != voixLog_ && horlogeVoix_ >= 1) { horlogeVoix_ = 0; voixLog_ = attribution_.actives(); WFS_LOG("VOITURES %d voix (%zu voitures autour)", voixLog_, candidats_.size()); }
         // RG-06 : sirène à gauche / à droite de la police mobile la plus proche ; sans police : au centre (comme avant)
@@ -538,6 +609,7 @@ void benchAudioScene(Game& g, Renderer& r, const std::string& out) {
     benchSirene(out);    // WFS-131 : sirene.wav
     lieux::benchLieux(out, g_rec.pcm);   // WFS-261 : lieu-<source>.wav / .png (stéréo), lieu-tunnel, coût
     voitures::benchVoitures(out);        // WFS-272 : voitures-course5, voitures-trafic, voitures-police (stéréo, hauteur), coût
+    parois::benchParois(out, g_rec.pcm); // WFS-275 : parois-ville, parois-falaise, parois-stands, masque-ville, coût
 }
 
 } // namespace wfs

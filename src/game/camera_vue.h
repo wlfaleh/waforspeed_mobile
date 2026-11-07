@@ -7,7 +7,9 @@
 //   et regard relevé (voiture dans le tiers bas).
 // - Capot : œil au-dessus du capot, lié à la carrosserie, champ de vision 72° (hood du jeu web).
 // - Cockpit : œil du conducteur (à gauche), voiture du joueur cachée, tableau de bord, montants de pare-brise, volant qui
-//   tourne de −braquage × 2,3 (lissé) et aiguille de 0 à 300 km/h (2,2 − v / 300 × 4,4 rad), champ de vision 72°.
+//   tourne de −braquage × 2,3 (lissé) et aiguille de 0 à 300 km/h (2,2 − v / 300 × 4,4 rad) ; WFS-235 : champ de vision
+//   horizontal de 85° (vertical selon l'écran), regard un peu plongeant (réglage « Regard cockpit ») qui suit le virage,
+//   mouvement de tête doux (sauf « Réduire les mouvements »).
 // La vue choisie est mémorisée (elle survit à Game::init : nouvelle course, changement de voiture) ; l'écran des
 // réglages (WFS-41) et la sauvegarde (WFS-24) passent par vueCamera() / choisirVue().
 #pragma once
@@ -76,6 +78,41 @@ inline float fovVue(VueCamera v, double p, bool nitro) {
     return c.fov[(int)v] + (float)std::min(std::fabs(p), 1.3) * c.elargVitesse + (nitro ? c.elargNitro : 0.f);
 }
 
+// ---------- WFS-235 : regard du conducteur en vue Cockpit (RG-02, RG-03, RG-04) ----------
+// « Regard cockpit » (Réglages) : la caméra regarde un peu plus bas ou plus haut ; Normal par défaut ; enregistré par l'écran
+// des réglages (clé regard du fichier des réglages, comme « Réduire les mouvements »)
+enum class RegardCockpit { Bas = 0, Normal = 1, Haut = 2 };
+RegardCockpit regardCockpit();
+void choisirRegard(RegardCockpit r);
+// champ de vision HORIZONTAL de la vue Cockpit (RG-02 : 75 à 90°, vision d'un conducteur) : 85°, fixe (avis d'expert :
+// un champ qui s'élargit avec la vitesse fait « respirer » la planche) ; le champ vertical en découle selon la forme de
+// l'écran (2400 × 1080 : ≈ 45°)
+constexpr float COCKPIT_FOV_H = 85.f;
+inline float fovHorizontalCockpit(double, bool) { return COCKPIT_FOV_H; }
+// champ vertical (°) d'un champ horizontal donné (°) sur un écran de rapport largeur / hauteur ; borné de 30 à 75°
+inline float fovVerticalDepuisHorizontal(float horizontalDeg, float aspect) {
+    const float a = std::max(0.3f, aspect), h = horizontalDeg * 3.14159265f / 180.f;
+    return std::clamp(2.f * std::atan(std::tan(h * 0.5f) / a) * 180.f / 3.14159265f, 30.f, 75.f);
+}
+// inclinaison du regard sous l'horizontale (rad, négatif = vers le bas) : un conducteur regarde la route à 20-40 m, quelques
+// degrés sous l'horizon (RG-02 « légèrement plongeant ») ; Bas −7°, Normal −3,5°, Haut 0°
+inline float inclinaisonRegard(RegardCockpit r) {
+    return r == RegardCockpit::Bas ? -7.f * 3.14159265f / 180.f : r == RegardCockpit::Haut ? 0.f : -3.5f * 3.14159265f / 180.f;
+}
+// regard qui suit le virage : la tête tourne vers le point de la route visé à ≈ 1,5 s (12 à 40 m), à 60 % de son angle,
+// ±12° au plus (la tête d'un conducteur suit le virage sans regarder tout le point de corde) ; angle en rad (+ = à droite)
+constexpr float COCKPIT_SUIVI_VIRAGE = 0.6f, COCKPIT_LACET_MAX = 12.f * 3.14159265f / 180.f;
+inline float distanceRegard(double kmh) { return (float)std::clamp(std::fabs(kmh) / 3.6 * 1.5, 12.0, 40.0); }
+inline float lacetVirage(float angleVersRoute) { return std::clamp(angleVersRoute * COCKPIT_SUIVI_VIRAGE, -COCKPIT_LACET_MAX, COCKPIT_LACET_MAX); }
+// RG-04 : mouvement de tête (m, repère de la voiture : x à droite, z vers l'arrière) : vers l'avant au freinage, vers
+// l'arrière à l'accélération (3 mm par m/s², 3 cm au plus), vers l'extérieur du virage (2 mm par m/s², 2 cm au plus)
+inline vec3 mouvementTete(double lonAcc, double latAcc) {
+    return {(float)std::clamp(-latAcc * 0.002, -0.02, 0.02), 0.f, (float)std::clamp(lonAcc * 0.003, -0.03, 0.03)};
+}
+// la tête tourne autour du cou, 9 cm derrière les yeux (estimé, avis d'expert) : à 12° de lacet, l'œil glisse de ≈ 1,9 cm
+constexpr float COCKPIT_COU_M = 0.09f;
+inline vec3 decalageCou(float lacet) { return {COCKPIT_COU_M * std::sin(lacet), 0.f, COCKPIT_COU_M * (1.f - std::cos(lacet))}; }
+
 // ---------- accroche de Game::render (WFS-66) ----------
 // Appelée après la caméra de poursuite de Game (eye, look, fov déjà calculés). camMode 2 (vitrine) et écrans hors course
 // et pause : rien ne change. Poursuite et proche : eye, look et fov remplacés (updateCamera du jeu web, WFS-85 / WFS-98) ;
@@ -86,7 +123,8 @@ bool cameraVue(Track& track, const Player& pl, const CarDef& car, const mat4& ca
 
 // état du cockpit de l'image en cours (lu par le système « camera » pour dessiner le cockpit)
 // (volant et aiguille en radians, fov = champ de vision vertical de l'image, en degrés)
-struct EtatCockpit { bool actif = false; float volant = 0, aiguille = 2.2f, fov = 58.f; };
+// WFS-235 : repere = repère de l'intérieur (monde ← œil au repos, attaché à la voiture : la tête tourne et bouge dedans)
+struct EtatCockpit { bool actif = false; float volant = 0, aiguille = 2.2f, fov = 58.f; mat4 repere = mat4::identity(); };
 const EtatCockpit& etatCockpit();
 // WFS-197 : banc d'essai des intérieurs par modèle (captures cockpit-*.png dans outDir), puis g.shutdown()
 class Game; class Renderer;
