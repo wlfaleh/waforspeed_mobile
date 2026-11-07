@@ -104,3 +104,6 @@ demande utilisateur :
 
 - Vue cockpit : règle-la, remets le tableau de bord et la carcasse de voiture, regarde l'avis de l'agent expert conduite (conversation avec le PO, 2026-11-07 22:20 UTC)
 ( PO : c'est fait — WFS-235 ❌, **ANO-152** avec votre capture, **WFS-282** (P1) donné à Claude, agent 2 (il avait fait les intérieurs d'avant) : d'abord remettre la planche de bord et la carrosserie d'avant, puis régler la vue selon l'avis de l'expert conduite ; captures jour / nuit regardées par le lead dev avant la fusion. )
+
+- Créer une tâche urgente pour supprimer les ronds-points dans toutes les maps, c'est une catastrophe (conversation avec le PO, 2026-11-07 22:43 UTC)
+( PO : c'est créé — **WFS-283** (P1, en tête de liste) : chaque rond-point devient un carrefour simple, sur toutes les cartes ; course, trafic, police, GPS et chocs suivent ; le code des giratoires est gardé de côté, rien n'est effacé. WFS-248 ❌, **ANO-158**. )

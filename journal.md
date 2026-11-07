@@ -4321,3 +4321,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 22:40:43 — Limite de 1 Go : précision « lors du chargement » (po-scrum-master)
 - Précision du propriétaire, transmise par le coordinateur, mots exacts : « Très important : on parle de lors du chargement. »
 - Règle reformulée dans `regles-de-gestion/README.md` (l. 8), `WFS-268.md` (RG-09) et `WFS-273.md` (RG-02) : « Lors du chargement de la carte (écran de chargement), on peut préparer en amont jusqu'à 1 Go de données en mémoire par carte : tout ce qui peut être préparé à ce moment-là doit l'être, pour que rien ne soit construit pendant la course. Décision du propriétaire, 2026-11-07. »
+
+### 2026-11-07 22:43:00 — WFS-283 créé : supprimer les ronds-points sur toutes les cartes ; WFS-248 ❌, ANO-158 (po-scrum-master)
+- Ordre de l'utilisateur. Carrefours simples à la place, dépendances (course, trafic, GPS, chocs) dans les RG ; code des giratoires gardé désactivé. Au premier développeur qui demande, pas dev Y ni agent 5.
