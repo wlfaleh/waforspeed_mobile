@@ -76,7 +76,7 @@ struct Plan {
 // embarqué dans l'APK) ; test_archi_kit vérifie qu'ils restent égaux au référentiel. Pierre, crépi, zinc : absents du
 // référentiel, béton à la place (PROVISOIRE, ST-4).
 struct Albedo { const char* id; float r, g, b; };
-inline constexpr Albedo ALB_BETON{"mat.beton.albedo", 0.51f, 0.51f, 0.51f};
+inline constexpr Albedo ALB_BETON{"mat.beton.albedo", 0.30f, 0.30f, 0.30f};   // WFS-206 : 0,51 → 0,30 au référentiel
 inline constexpr Albedo ALB_BRIQUE{"mat.brique.albedo", 0.262f, 0.095f, 0.061f};
 inline constexpr Albedo ALB_TERRE_CUITE{"mat.terre_cuite.albedo", 0.555f, 0.212f, 0.11f};
 inline constexpr Albedo ALB_ALUMINIUM{"mat.aluminium.albedo", 0.916f, 0.923f, 0.924f};
