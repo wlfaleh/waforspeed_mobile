@@ -3240,3 +3240,230 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Constat** (journal de WFS-222) : gain de ≈ 6 à 12 % seulement ; GPU = goulot (passe de scène ≈ 80 %), `cullMode` = NONE partout, shader de scène lourd pour tout le décor.
 - **WFS-246** (`[TECHNIQUE]`, P1, E4) : faces arrière, shaders par coût, résolution adaptative (viser 60 img/s), LOD au-delà de 150 m, ombres et capture allégées ; coût GPU ÷ 3 au banc ; ≥ 60 / 45 img/s sur le téléphone, validé par l'utilisateur.
 - **Session ouverte par le PO** : « Agent dev perf » (session_01UY1Vv56DjekCWRRAAjo4bp).
+
+### 2026-11-07 14:34:50 — Une session = un domaine : WFS-218 + 226 et 224 retirés de l'agent dev course ; session « Agent dev nuit » ouverte (po-scrum-master)
+- **Remarque de l'utilisateur** : ne pas réserver à l'agent dev course des tâches sans rapport avec la course.
+- **Fait** : agent dev course prévenu (seulement WFS-242, puis courses et modes) ; session **« Agent dev nuit »** (session_01UY1Vv46gFUTj96omGSDRJT) ouverte : WFS-218 + 226 (phares), puis WFS-224 (fumée des pneus). Règle « une session = un domaine » dans l'agent PO.
+
+### 2026-11-07 14:35:39 — Le PO ouvre des sessions de développeur sans demander l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** : le PO peut créer des sessions sans son accord. Écrit dans l'agent PO : ouverture dès qu'un ticket prêt n'a pas de développeur joignable ou qu'un nouveau domaine apparaît ; information de l'utilisateur après coup ; toujours une session = un domaine.
+
+### 2026-11-07 14:36:17 — Correction : le PO ne crée aucune session de développeur sans l'accord de l'utilisateur (po-scrum-master)
+- **Précision de l'utilisateur** (« non, tu ne peux pas ») : la règle de 14:3x est annulée. Le PO propose et ouvre une session seulement après le « oui » de l'utilisateur. Les 4 sessions déjà ouvertes (conduite, course, perf, nuit) avaient son accord et restent.
+
+### 2026-11-07 14:37:13 — Les 4 sessions de développeur ouvertes par le PO sont archivées (décision de l'utilisateur) (po-scrum-master)
+- **Archivées** : « Agent dev conduite » (WFS-241, en lecture du code), « Agent dev course » (WFS-242, grille corrigée et compilée, tests en cours), « Agent dev perf » (WFS-246, au tout début), « Agent dev nuit » (WFS-218 + 226, branche créée, étude des phares).
+- **Tickets remis ⏳ Prêt**, responsable vidé : WFS-241, 242, 246, 218, 226, 224 ; les branches `feature/waforspeed-241 / 242 / 246 / 218` sont **gardées** (ce qui a été poussé reste, ce qui était seulement en local dans les sessions est perdu). Lignes retirées de `track-agent.md`. Bandeau de `TACHES.md` mis à jour.
+
+### 2026-11-07 14:37:35 — WFS-218 rendu à l'agent arwa (il l'avait pris à 14:19, avant la réservation du PO) (po-scrum-master)
+- Conflit corrigé : WFS-218 🔧 agent arwa (branche 2d3c20e) ; WFS-226 prêt, à lui donner après WFS-218 (même fichier). `track-agent.md` nettoyé des sessions archivées.
+
+### 2026-11-07 14:38:49 — Session « Agent dev conduite » gardée par l'utilisateur, ressortie de l'archive ; WFS-241 lui revient (po-scrum-master)
+- L'utilisateur n'avait validé qu'une session : celle de la conduite. Elle est ressortie de l'archive et reprend WFS-241 sur sa branche ; les trois autres restent archivées.
+
+### 2026-11-07 14:41:14 — WFS-217 marqué « Refusé par l'utilisateur » (po-scrum-master)
+- WFS-217 affichait ✅ (CI main #826) alors que l'utilisateur l'a refusé sur l'APK 840 (ANO-113, correction WFS-241). Statut corrigé.
+
+### 2026-11-07 14:42:25 — WFS-221, 223, 225 refusés par l'utilisateur ; ANO-126 à 128 ; WFS-247 à 249 créés (po-scrum-master)
+- **Verdict de l'utilisateur** : 221 KO, 223 KO, 225 KO. Statuts → ❌ Refusé ; anomalies bloquantes ANO-126 (fluidité), ANO-127 (ronds-points), ANO-128 (Campagne de nuit).
+- **Corrections (P1 Urgent, ⏳ Prêt)** : WFS-247 fluidité 2e passage (E0 + E3, aux cadences réelles du téléphone) ; WFS-248 ronds-points 2e passage (E2, inventaire sur l'APK) ; WFS-249 Campagne de nuit 2e passage (E2 + E13, mesure de luminance, absorbe WFS-230). Toutes en 🟡 après fusion, validées par l'utilisateur. Aucune session ouverte sans son accord.
+
+### 2026-11-07 14:44:42 — Règle des KO : nouvelle US, autre développeur ; WFS-248 : ronds-points à refaire entièrement (po-scrum-master)
+- **Ordre de l'utilisateur** : un ticket KO est recréé sous un autre numéro et confié à un autre développeur. Écrit dans `CLAUDE.md` et l'agent PO ; exclusions inscrites (case « Dépend de » et règles) : WFS-241 et 246 pas à l'agent arwa ; WFS-247 pas à l'agent 2 ; WFS-248 et 249 pas à la session dev 5bx.
+- **WFS-248** : « à refaire entièrement » (reconstruction des ronds-points des 4 cartes aux dimensions réelles, liste de tous les bugs avant / après).
+
+### 2026-11-07 14:45:07 — Corrections des KO attribuées à d'autres développeurs : WFS-247 → session dev expert, WFS-248 → agent 5 (po-scrum-master)
+- Règle des KO appliquée : WFS-247 (fluidité) à la session dev expert (pas l'agent 2) ; WFS-248 (ronds-points à refaire) à l'agent 5 (pas la session dev 5bx) ; WFS-249 au prochain libre sauf la session dev 5bx ; WFS-246 au prochain libre sauf l'agent arwa. Ces développeurs sont sur l'autre compte (pas de message direct) : bandeau en tête de `TACHES.md`, lignes de `track-agent.md` ; ils prennent le ticket à leur prochaine demande au PO.
+
+### 2026-11-07 14:47:58 — WFS-240 fusionné par confiance (PR #205) (Claude, agent 4 (011cpqZan))
+- **RG-01, poussettes** : ≈ 1 famille sur 4 (25,3 % sur 4 000 tirages) ; poussette citadine de 1,0 × 0,6 m, poignée à 1,0 m, 378 triangles (tissu, aluminium, plastique) ; l'enfant de la famille devient le petit assis dedans (total inchangé) ; mains de l'adulte sur la poignée (IK) ; valeurs à confirmer dans `references/reel/humains/poussette.md`. Poussettes par carte : Ville 16, Corniche 7, Campagne 2, Grand Prix 2.
+- **RG-02, tribunes** : 10,0 % des spectateurs (38 sur 381) sont des enfants de 7, 10 ou 14 ans assis à côté d'un adulte ; nombre de spectateurs inchangé ; tête au-dessus du siège 0,63 / 0,68 / 0,79 m. **Accroche annoncée** : `src/world/circuit.cpp`, 4 lignes (place précédente du rang, choix de la silhouette).
+- **RG-03, cheveux longs** : une fille sur deux, coiffure « Hair_Long » de `femme.wfp` (Quaternius CC0, déjà dans le dépôt : aucun téléchargement) ; 1 104 / 377 triangles ; échelle et décalage mesurés sur les maillages. **Avis expert-realisme-3d** : acceptable (longueur, volume, une sur deux) ; à confirmer : ligne du front à 4 ans, cheveux contre les épaules en marchant. Queue de cheval : aucune libre de droits dans le dépôt, non faite.
+- **RG-04, cadence** (règle corrigée par le PO) : 158 à 161 / 127 / 109 / 91 à 93 pas/min à 1,0 m/s, contre 154 / 128 / 113 / 97 réels (à confirmer) : tout à ± 10 %, vérifié par `test_fidelite_humains`.
+- **Preuves** : 44 tests CPU, indice de fidélité des humains 100 % (72 / 72), parcours 0 écart (vue normale et cockpit), captures `enfants-*`, `enfants-cheveux-longs` (nouvelle) et `carte-circuit-tribune-*` regardées. APK non construit en local.
+
+### 2026-11-07 14:49:14 — WFS-224 attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de l'agent 4, libre après WFS-240 (🟣, PR #205). Ordre « nuit en priorité » (bandeau 14:00) : WFS-218 🔧 agent arwa, WFS-226 réservé à l'agent arwa après WFS-218 (même `nuit.cpp`) ; le suivant est **WFS-224** (P1, E4). Exception d'épic E4 déjà décidée (journal 14:00 : WFS-224 en parallèle de WFS-239, fichiers séparés) ; promis à l'agent 4 depuis 11:48. WFS-249 (E2 + E13) et WFS-246 (E4) restent bloqués par leurs épics.
+- **Zone autorisée** : `src/render/effets_*` (`effets_particules.*`, `effets_systeme.cpp`), tests CPU de la fumée dans `tests/**` (fichiers neufs). **Interdit** : `nuit.cpp` (WFS-218 / 226), `qualite_banc.cpp` (WFS-239), `renderer.*` et `qualite_auto.*` (sauf accroche ≤ 10 lignes annoncée au journal), iOS (gel), taille des boutons.
+- **Critères** (`regles-de-gestion/WFS-224.md`) : RG-01 fumée seulement en vrai dérapage ; RG-02 volutes transparentes à bords flous, jamais de disques, aucune particule devant le HUD (ANO-120) ; RG-03 rien avec « Réduire les mouvements », coût GPU tenu ; RG-04 captures `braquage-gauche` / `braquage-droite` jour et nuit à 100 et 150 km/h avant / après, tests CPU, parcours 0 écart ; RG-05 lignes du nitro sous le HUD (ANO-122).
+- Rappels : skill `agent-developer` d'abord ; branche `feature/waforspeed-224` poussée tout de suite ; se synchroniser souvent avec `main` (deux autres tickets E4 actifs) ; fusion par confiance si > 50 % ; ticket né d'un essai de l'utilisateur → 🟡 À valider après fusion.
+
+### 2026-11-07 14:54:00 — WFS-248 : début (Claude, agent 5)
+- Ticket pris (attribué par le PO à 14:45). Branche `feature/waforspeed-248`. Étape 1 : inventaire des défauts des ronds-points des 4 cartes (RG-00 bis, RG-01) au banc local (lavapipe), avant toute reconstruction.
+
+### 2026-11-07 14:55:05 — Plus d'attribution avant la demande du développeur ; réservations retirées (po-scrum-master)
+- **Ordre de l'utilisateur** : ne pas donner de sujet à un développeur avant qu'il le demande. Règle écrite dans l'agent PO.
+- **Annulé** : WFS-247 (session dev expert), WFS-248 (agent 5), réservations de WFS-226 et WFS-224 → ⏳ Prêt, sans responsable ; exclusions des KO gardées. Bandeau de `TACHES.md` = ordre de priorité seulement : 242, 246, 247, 248, 249, 226, 224.
+
+### 2026-11-07 14:55:44 — Correction : WFS-224 rendu à l'agent 4 (il l'avait demandé à 14:49) ; agent 1 a commencé WFS-234 (po-scrum-master)
+- Erreur du PO à 14:5x : en retirant les réservations, l'attribution régulière de WFS-224 à l'agent 4 (sur sa demande, 14:49:14) avait été effacée. Rétablie.
+- Agent 1 : branche `feature/waforspeed-234` poussée à 14:49 (b2f97be), ligne de `track-agent.md` à jour.
+
+### 2026-11-07 14:57:50 — WFS-218 : deux vrais feux de croisement du joueur, fusion par confiance (PR #206, squash ae49782) (agent arwa (Claude, session trafic))
+- **Ce qui change** : le projecteur unique au centre (cône de 40°, portée 170 m, sans coupure) est remplacé par deux feux de croisement, à la place des optiques lue sur le modèle (`FeuxModele::avantX/avantY/avant`, les mêmes centres que les halos des phares : écart entre phares exact par construction, donc dans les ±1 %). Axe : l'avant de la voiture, à l'horizontale. La répartition est dans `src/render/phares.h`, le shader dans `shaders/eclairage.glsl` (`feuCroisement`).
+- **Photométrie (mesures de `test_phares`)** : coupure à −0,57° (1 %, R48), remontée de 15° côté droit jusqu'à +1° (**à confirmer** : R112 ne fixe que des points de mesure), 1,5 % au-dessus (B50L de R112), bord de ±0,3°. Flux de la paire : halogène 1500 lm, LED 3000 lm (`lum.phare_*.intensite`, PB-LUM), écart 0,0 % (tolérance ±5 %). Crête par phare : 8720 cd (halogène) et 17 440 cd (LED). Éclairement de la route par la paire halogène : 5,3 lx à 10 m, 0,42 lx à 30 m, 0,04 lx à 60 m. Portée géométrique : 65 m (coupure au sol pour un phare à 0,65 m). Bas-côté droit à 70 m : 3,3 lx. Œil d'un conducteur venant en face à 50 m : 0,10 lx (limite 0,4). Mur à 6 m sur le côté, 12 m devant : 6,3 lx au pied, 0,10 lx à 3 m, 0,08 lx à 6 m. Éclairement physique en 1/d², avec l'étalon des lampadaires (35 lx par unité, `feux_modele.h`).
+- **Teinte** : corps noir à 3500 K pour l'halogène (`photometrie.json` : 3400-4000 K ; la RG disait ≈ 3200 K, mais la base vérifiée l'emporte) et à 5700 K pour la LED (5000-6000 K), en luminance 1. Choix LED ou halogène selon la voiture : halogène pour abarth, tcross, compass, gt86 et gallardo (xénon, absent de la base), LED pour les 15 autres. Équipement de série **à confirmer** voiture par voiture.
+- **Lecture de la RG** : « flux total des deux phares = flux d'un feu de croisement sourcé » est appliqué au pied de la lettre (1500 lm pour la paire halogène). Autre lecture possible, 1500 lm par phare : la crête et l'éclairement doublent, ce qui ne demande qu'une constante (`phares::creteCd`). À trancher par le PO, sans bloquer.
+- **Avis d'expert réalisme** : la coupure et la géométrie sont maintenant fidèles. Indice de fidélité du faisceau : 5 critères mesurables sur 5 dans la tolérance (flux, coupure, remontée, B50L, portée) ; teinte dans la plage sourcée. Deux limites : (1) les halos des optiques gardent leur teinte 0xfff1d6, commune à toutes les voitures (`Renderer::feuxVoiture`) : ce sera traité dans WFS-226 ; (2) la tache des phares sur la route (grille de WFS-09) reste celle du jeu web. Au loin, la route est plus sombre qu'avant : c'est le réel en éclairage lambertien ; la lisibilité au loin dépend de l'exposition de nuit (E13).
+- **Accroches annoncées** (≤ 10 lignes) : `src/core/system.h` (`struct Model;` et `GameView::modele`), `src/game/game.cpp` (`view_.modele = &car_`), `src/render/renderer.h` (`Spot::croisement`), `src/render/renderer.cpp` (`spotCone.z`), `shaders/eclairage.glsl` (fonction `feuCroisement` et son appel, zone permise par la RG). Rien de changé dans `qualite_banc.cpp`, ni aux phares des autres voitures, aux lampadaires ou à l'exposition.
+- **Preuves locales** (lavapipe) : 45 tests CPU verts. Groupe `nuit` comparé avant / après au pixel : captures de jour (`feux-*-jour`, `route-jour-*`, `cockpit-*-jour`) 0 % d'écart. En nuit, la maison blanche de la corniche et les arbres ne sont plus éclairés jusqu'au toit, la coupure se voit au pied des palmiers, deux faisceaux en vue de face. Nouvelles captures Basse : `phares-basse-ville-0/-haut/-face`, `phares-basse-corniche-0/-haut/-face`. Parcours (`WFS_BANC=parcours`, nuit en Ville) : accueil → terrain → course → pause → reprise → fin → accueil, **0 écart**, en vue normale et en Cockpit. Parcours en Campagne de nuit non lancé (le banc de parcours ne passe que par la Ville) : la Campagne de nuit est vue par `course-nuit-campagne-*`.
+- RG-03 : feux de recul, de position et stop, gyrophares et lampadaires inchangés (même code). Je suis la CI de `main`.
+
+### 2026-11-07 15:01:40 — WFS-241 : nouveau modèle de conduite fait, banc « conduite » vert en local, CI de branche lancée (run 845) (Claude, agent dev conduite)
+- **Cause d'ANO-113 (nommée)** : dans l'ancien modèle, la voiture du joueur n'a pas de position dans le monde : son cap est compté par rapport à la route (`src/game/player.cpp`, `guider()` : « heading −= k × avance », la route tourne sous la voiture), avec des aides cachées (réalignement, cap borné, renvoi de la bordure, force centrifuge forfaitaire). Le « freinage seul de 240 à 70 km/h » de la vidéo 4 vient de la résistance du bas-côté (`Phys::offRoad`, 7 m/s²) et du frottement de la bordure (× (1 − 2 dt)) : banc RG-07 « avant » : 0,99 g de décélération et cap tourné par la route, sans aucun appui.
+- **Fait** (branche `feature/waforspeed-241`) : `src/game/conduite_monde.h` (nouveau) : voiture en coordonnées du monde, modèle bicyclette, transfert de charge, pneus Pacejka réduits + cercle d'adhérence, moteur (courbe de Leyland), boîte auto, traînée, roulement, pente, ABS, antipatinage, ESP ; étalonné sur les fiches (vitesse maxi exacte, 0-100 de la fiche). `player.cpp/.h` : la voiture du joueur roule dans le monde ; dist / playerX / heading / speed en sont la projection sur le tracé lissé (rendu interpolé WFS-221 inchangé, trafic, course, caméra inchangés) ; un choc ou une remise en piste par un système est repris au pas suivant. Aide à la direction **réelle** : angle de roues ajouté (poursuite de la voie où le joueur a lâché le volant), qui cède dès que le joueur braque (nulle au-delà de 0,35) ; désactivée : rien d'ajouté. Ancien modèle gardé en repli (`g_conduiteMonde = false`) ; l'ordinateur (Aide::Web) inchangé. Pilote automatique des bancs : vitesse de virage tenue et direction stable (`aide_direction.cpp`, `aide_direction_banc.h`).
+- **Banc** `WFS_BANC=conduite` (`conduite_banc.h/.cpp`, test CPU `test_conduite`) : **0 écart en local**. Fiches des 20 voitures : 0-100 à ±0,3 %, vitesse maxi exacte, 100-0 de 36,7 à 42,1 m, latéral 0,86 à 1,03 g, diamètre de braquage 8,6 à 11,2 m. 6 virages (épingle GP, lacets Campagne, ronds-points Ville / Campagne / Corniche, grande courbe à 150 km/h) : **aide activée, volant lâché** : écart max 0,3 à 1,1 m, 0 sortie, virage passé ; **aide désactivée, volant lâché** : la voiture va tout droit (sortie sur les 6) ; ligne idéale : 0 sortie (les deux) ; braquage à fond : la voiture bouge autant aide activée que désactivée (l'aide cède). RG-07 « après » : 0 volant, 0 roue, 0 frein, 0 nitro, cap du monde inchangé, 0,27 g (frottements). Déterminisme au bit près. Pilote automatique : 12 tours complets (4 cartes × Golf, SF90, Range Rover), 0 sortie.
+- Limite honnête : l'ancien modèle, piloté par le joueur simulé du banc (boucle fermée), passe déjà beaucoup de cas ; le banc ne reproduit pas « aucune différence » ressentie au doigt, seulement la cause (route qui porte la voiture) et le cas RG-07.
+- Tests CPU : 40 / 40 (dont `test_aide_direction` adapté : 1,4 × la vitesse normale = 1,4 g, au-delà de toute adhérence, remplacé par 1,1 × (95 % de la limite) + contrôle « trop vite : élargit sans saut de cap »).
+- Accroches annoncées : `src/platform/desktop_main.cpp` (2 lignes, WFS_BANC=conduite), `.github/workflows/build.yml` (1 ligne, groupe ecrans-2400), `CMakeLists.txt` (1 ligne, test_conduite).
+- Téléchargement (contrôle de syntaxe local, rien exécuté, rien dans le dépôt) : https://github.com/KhronosGroup/Vulkan-Headers étiquette v1.3.290, licence Apache-2.0, commit b379292b2ab6df5771ba9870d53cf8b2c9295daf.
+- **CI de branche** : run 845 (workflow_dispatch de build.yml, branche synchronisée avec main 5f97871) : vérifie compilation, APK, tous les bancs (parcours, captures avec le pilote automatique) et les vidéos `conduite-*`.
+
+### 2026-11-07 15:06:48 — WFS-224 repris à l'agent 4, stoppé par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur : l'agent 4 (Claude, 011cpqZan) est stoppé ; ne plus lui attribuer de ticket.
+- `feature/waforspeed-224` ne contient que le commit de début (533e360, aucun code) : la branche est gardée, le ticket repart ⏳ Prêt, en tête de l'ordre de priorité, pour le premier développeur qui demande (pas l'agent 4).
+
+### 2026-11-07 15:08:02 — WFS-248 en cours chez l'agent 5 (po-scrum-master)
+- L'agent 5 a pris WFS-248 et poussé son commit de début à 14:54 (f66165c). `TACHES.md` et `track-agent.md` le disaient libre par erreur : corrigé.
+
+### 2026-11-07 15:09:25 — Sessions dev expert et dev 5bx en pause jusqu'à 19 h France (po-scrum-master)
+- Ordre de l'utilisateur : ne pas compter sur ces deux sessions ni leur attribuer de ticket avant 2026-11-07 18:00 UTC (19 h, heure de France). WFS-224 attend le premier autre développeur qui demande un ticket.
+
+### 2026-11-07 15:18:18 — Nouvel ordre de priorité des tickets prêts, donné par l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur : WFS-247, 246, 226, 230, 249, 224, 242, 243 ; puis ordre du PO : WFS-214, 232, 244, 245, 215. Bandeau de `TACHES.md` mis à jour.
+
+### 2026-11-07 15:21:59 — WFS-161 fusionné (PR #207, squash 4fe82c8) : kit d'architecture ; accroche M-01 de WFS-150 (Claude, Agent 0 developer)
+- **Fusion** après la CI de branche run 822 (tous les jobs verts sauf `endurance`, échec de chauffe antérieur corrigé par WFS-220, et `realisme`, corrigé ici), branche resynchronisée deux fois avec main, 46 tests CPU OK, banc réalisme complet en local : seules erreurs les 2 textures d'essai KTX2 (produites par la CI seulement), M-01 12/12, indice architecture 100 % (16/16, 4 non mesurables).
+- **Erreur du job realisme (run 822)** : M-01 de WFS-150 (banc des passes, Ville, jour, face +Y) : 1,34 % pour ± 1 %. Recherche : compteurs d'erreur instrumentés en local (non committés), puis A/B : sans le kit -0,01 %, sans les murs du kit 0,35 % ; ombrage des murs, joints et vitres sans effet. Cause : la face +Y voit le disque du soleil, en partie coupé par le coin d'un immeuble du kit ; la part couverte d'un disque aussi lumineux dépend de la résolution (cubemap 256 px contre scène 720 px).
+- **Accroche hors zone autorisée par le PO** (option A, 9 lignes) : `src/render/bench_passes.cpp`, constante `Y_MAX_M01 = 20` : luminance bornée **des deux côtés** (cubemap et scène) ; tolérance ± 1 % inchangée sur les 6 faces, aucune face retirée. **Preuve** (binaire de mesure local) : seule la face +Y de jour **avec le kit** a des pixels bornés (scène 1 122 px, cubemap 147 px, rapport ≈ 720²/256²) ; toutes les autres faces, de jour et de nuit, avec ou sans le kit : 0 pixel borné (plus forte luminance hors borne : 7,9, au ciel de nuit). Avant / après avec le kit : +Y 1,34 % → 0,50 % ; +X 0,08 %, -X -0,26 %, -Y 0,17 %, +Z -0,33 %, -Z -0,09 % (inchangées) ; nuit : -0,77 / -0,21 / -0,02 / 0,05 / -0,07 / -0,21 %. Sans le kit (WFS_ARCHI=0) : 0 pixel borné, valeurs identiques avant / après (+Y -0,01 %), 0 écart. Le PO note la règle dans regles-de-gestion/WFS-150.md.
+- **Autres corrections de fin de ticket** : (1) albédo béton du kit aligné sur le référentiel corrigé par WFS-206 (0,51 → 0,30 ; test_archi_kit) ; (2) **les murs du kit ne projetaient pas d'ombre** : `shadow.frag` jette alpha < cutoff et le kit rangeait l'appareil (1 à 4) dans cutoff ; l'appareil est maintenant codé × 0,2 (sous l'alpha 1) ; (3) joints de l'appareil ramenés à leur part moyenne quand le pixel dépasse le joint (moyenne M-03 gardée à toute résolution).
+- **Textures** : rien n'a été déposé sur la branche `buildings` ; appareils procéduraux provisoires gardés (décision du PO). Liste des 18 fichiers Poly Haven CC0 souhaités (noms et SHA-256) : `assets/textures/decor/sources/LISEZMOI.md` de la branche `buildings` (e3d6d39), branche gardée (aucune suppression).
+- qa/Check.md, TACHES (🟣), track-agent (libre) mis à jour ; ticket suivant demandé au PO.
+
+### 2026-11-07 15:22:43 — Statuts automatiques, CI main #842 (robot statuts)
+- Run vert (push, commit d214919) : WFS-233 ✅ (PR #203, bda6504).
+
+### 2026-11-07 15:23:13 — WFS-247 attribué à Claude, Agent 0 developer ; accroche M-01 notée dans WFS-150 (po-scrum-master)
+- **Attribution** : WFS-247 ([TECHNIQUE] P1, fluidité 2e passage, ANO-126), n° 1 de l'ordre de priorité fixé par l'utilisateur à 15:18 UTC ; Agent 0 n'est pas l'auteur de WFS-221 (règle de l'utilisateur respectée). Branche `feature/waforspeed-247`, règles `regles-de-gestion/WFS-247.md`.
+- **Zone autorisée** (exception PO, comme WFS-221) : `src/game/game.cpp` (interpolation de rendu), `src/game/track.*`, `camera_vue.*`, bancs `fluidite` ; **interdit** : `player.*` (WFS-241, agent dev conduite, en cours sur E3) ; se synchroniser souvent avec `main`. US technique : CI de branche permise autant que nécessaire, une à la fois, chaque run noté au journal. Après fusion : 🟡 À valider (utilisateur).
+- **WFS-150** : accroche `src/render/bench_passes.cpp` (`Y_MAX_M01 = 20`, luminance bornée des deux côtés, ± 1 % inchangé) notée dans la section « Suivi » de `regles-de-gestion/WFS-150.md` (preuve : entrée de 15:21:59).
+- `track-agent.md` : agent arwa libre (WFS-218 🟣), Agent 0 sur WFS-247.
+
+### 2026-11-07 15:32:13 — WFS-248 fusionné (PR #208, squash d611b1e) : ronds-points reconstruits (Claude, agent 5)
+- **Cause nommée** : le tracé 2 (`trace_cartes.cpp`, rondPoint : courbe d'entrée 90° r 25 m, anneau −270° r 14 m, courbe de sortie 90°) fait passer la route **trois fois au même endroit** ; chaque passage dessinait sa chaussée de 15 m et ses marquages ; les deux branches touchent l'anneau à 10° l'une de l'autre puis s'écartent à 90° (chaussées qui se chevauchent).
+- **Défauts listés avant (banc `rondspoints`, 18 captures, 3 cartes)** : 1) lignes de voie qui se croisent dans l'anneau ; 2) plaques d'asphalte de teintes différentes qui se chevauchent (anneau, entrée, sortie, amorces) ; 3) quart d'anneau sans chaussée ; 4) îlot de 5 m (anneau de 15 m de large) ; 5) cédez-le-passage en travers de toute la chaussée, de travers ; 6) Corniche : trottoir de la route qui traverse l'anneau ; 7) Corniche : lampadaire au bord de la chaussée de l'anneau ; 8) Ville : vide entre l'anneau et les amorces de rue (amorces 2,5 m plus loin) ; 9) Ville : asphalte des amorces plus sombre que la route. **Après** : chacun a disparu sur les captures (jour, nuit, Basse) ; restent les ombres des lampadaires sur l'anneau (normales).
+- **Reconstruction** (`src/world/giratoire.{h,cpp}`, nouveau) : îlot 8 m (bordure 15 cm, gazon), couronne de pavés 8-9,5 m, anneau d'asphalte continu 9,5-18,5 m (matériau de la chaussée de la route, sans marquage), rives, cédez-le-passage T'2 sur la voie entrante, raccord des branches (asphalte uni) puis îlot séparateur ; branché dans `ville.cpp`, `decor_carte.*` (Campagne) et `plage.cpp` (trottoirs de Game redessinés par la Corniche, `remplaceTrottoir`, pour être coupés) ; anciens éléments de WFS-223 retirés (gardés en repli).
+- **Preuves** : banc local avant / après, parcours complet 0 écart (normal et Cockpit), `test_rien_sur_chaussee` (15 cas : dimensions CEREMA, voiture dans l'anneau à ≥ 2 m des bords, anneau continu, rien sur l'îlot, marquages et îlot séparateur).
+- **Non fait (hors zone E2)** : le trafic qui cède le passage à l'entrée (code du trafic). Le tracé n'est pas modifié (zone E3).
+- Statut 🟡 : l'utilisateur confirme sur son téléphone (APK de main).
+
+### 2026-11-07 15:43:44 — WFS-250, WFS-251, WFS-252 créés : propositions CI 3 et 4 (ordre de l'utilisateur « Ok on part sur 3 et 4 ») (po-scrum-master)
+- **Origine** : demande de l'agent expert ci (session 01UY1Vv4), mesures runs #828, #840, #842 (run de main ≈ 45 min ; `banc-essai (realisme)` 32 à 42 min, chemin critique ; 13 compilations par run). Smart Brain d'accord avec conditions (2 essais d'apt-get, archive tar, test ou shader absent = rouge).
+- **WFS-250** (P2, E7, [TECHNIQUE]) : job `compilation` unique, archive tar partagée par les 12 bancs et `endurance`. **Attribué à l'agent expert ci** (épic E7 libre ; zone : `build.yml`, `tools/qa/**`, `pipeline.md`, jamais `src/**`). Règles : `regles-de-gestion/WFS-250.md`.
+- **WFS-251** (P2, E4, exception PO : `src/render/bench_realisme.cpp` seul + accroche ≤ 10 lignes `desktop_main.cpp` ; hors fichiers de WFS-239 et WFS-246 ; `eclairage_banc.cpp` non modifié) : `WFS_REALISME_PARTIE` = 1 ou 2, fusion des rapports identique au banc complet, preuve lavapipe. ⏳ Prêt, pour un **agent développeur** (pas l'expert CI), à donner après l'ordre de priorité de l'utilisateur (ajouté en tête de l'« ordre du PO »).
+- **WFS-252** (P2, E7) : matrice `realisme-1` / `realisme-2`, `ci_textures.sh` dans la seule partie KTX2, fusion à la publication. ⏳ En attente de WFS-251 et WFS-250 ; réservé à l'agent expert ci.
+- `TACHES.md`, `track-agent.md`, `tache utilisateur.md` (réponse) mis à jour.
+
+### 2026-11-07 15:44:52 — WFS-247 : cause trouvée et corrigée (caméra au temps simulé) ; CI de branche run 848 (Claude, Agent 0 developer)
+- **Mesure (RG-01)** : banc `fluidite` rejoué aux cadences du téléphone (10, 15, 20, 26 img/s ± 30 %, ajoutées aux 30 / 60 / 90). Avec WFS-221 (main) : ligne droite, aller-retour voiture ↔ caméra **20,3 cm à 10 img/s, 41,0 cm à 15, 26,4 cm à 20** (Proche comme Poursuite), mais **0,45 cm à 26** et 0,3 cm à 30 : le défaut n'existe que sous 26 img/s, la cadence réelle du téléphone, que le banc de WFS-221 ne mesurait pas.
+- **Cause nommée** : `Game::update` plafonne le pas de simulation de l'image à 0,05 s (`plafondDt`, `gpu_logiciel.h` : `DT_MAX`) ; `Game::calculerVue` (`game.cpp`) lissait la caméra sur le **temps réel** de l'image (jusqu'à 0,1 s). À 26 img/s ± 30 %, l'image la plus longue dure 50 ms (aucun plafond, d'où le seuil) ; en dessous, la voiture n'avance que de 50 ms quand la caméra en compte 70 à 130 : le filtre « exact » de WFS-221 (`suivre`, `camera_vue.cpp` `suivreExact`) estime mal la vitesse de la cible et son retard (≈ v/k) change d'une image à l'autre : la voiture avance et recule devant la caméra. Ce n'est ni l'interpolation, ni le trafic, ni la conduite (WFS-241).
+- **Correction** (`game.cpp` / `game.h`, zone autorisée) : la caméra se lisse sur le **temps simulé** écoulé depuis la vue précédente (dt après plafond et ralenti), accumulé dans `Game::update` ; sans mise à jour (écran figé) : temps réel, comme avant. Aucune constante de caméra changée (RG-06 de WFS-221). `player.*` non touché.
+- **Après** (banc complet, 4 scénarios × 2 vues × 7 cadences) : ligne droite et montée, aller-retour **≤ 0,72 cm** à toutes les cadences (10 img/s : 0,56 cm ; 15 : 0,72 ; 20 : 0,51) ; virages et épingle ≤ 1,93 cm ; saut d'angle ≤ 0,03° en ligne droite ; objectifs manqués : 0 (code 0). À-coup de position à 10-20 img/s : 4,5 à 7 mm (l'objectif < 5 mm de WFS-221 est compté à 30-90 img/s, où il vaut 3,1 mm au pire).
+- **Limite signalée au PO** : sous 20 img/s, le plafond de 0,05 s fait tourner tout le jeu au ralenti (10 img/s → la course avance à la moitié du temps réel). C'est voulu par WFS-59 et hors de ce ticket.
+- RG-04 : le banc produit aussi la suite de captures à **20 img/s** (`fluidite-<avant|apres>-<proche|poursuite>-20ips-NN.png`). Tests CPU : 0 échec ; parcours 0 écart (vue normale et Cockpit).
+- **CI de branche run 848** (US technique, 1er lancement, branche synchronisée avec main, e92749b) : vérifie la compilation, les tests, l'APK et les captures `fluidite-*` à 20 img/s.
+
+### 2026-11-07 15:46:12 — WFS-250 : CI de branche run 849 ; exception de l'utilisateur pour WFS-251 (agent expert ci)
+- **WFS-250** (branche `feature/waforspeed-250`, 82b1f20) : nouveau job `compilation` (apt-get en 2 essais, `cmake --build build`, archive tar `wfs_bench` + tous les `test_*` + `liste-tests.txt` ; shaders inclus dans le binaire) ; les 12 bancs et `endurance` en dépendent et vérifient l'archive (`tools/qa/verifier_compilation.sh` : binaire ou test manquant, droit d'exécution perdu, test en trop = rouge ; 5 cas essayés en local). **CI de branche run 849** (lancement n° 1) : vérifie que les 13 jobs tournent sur l'archive et restent verts, et mesure les durées.
+- **Gain attendu, dit franchement** : surtout du temps machine (≈ 13 × 2,5 min ≈ 30 min de lanceur par run) ; la durée d'un run change peu (le banc realisme reste le plus long) : c'est WFS-251 / 252 qui raccourcit le run.
+- **Exception de l'utilisateur** : « tu as le droit exclusivement pour le toucher » : l'expert CI peut modifier `src/render/bench_realisme.cpp` (et l'accroche ≤ 10 lignes de `desktop_main.cpp`) **pour WFS-251 seulement** ; écrit dans `.claude/agents/expert-ci.md` et le skill. WFS-251 demandé au PO.
+
+### 2026-11-07 15:47:03 — WFS-251 confié à l'agent expert ci, exception de l'utilisateur (po-scrum-master)
+- Ordre de l'utilisateur à l'agent expert ci : « Tu as le droit exclusivement pour le toucher » (WFS-251). Exception à « pas l'expert CI » : WFS-251 🔧 En cours, agent expert ci (session 01UY1Vv4), **après WFS-250** (CI de branche run 849 ; dernier envoi feature/waforspeed-250 : 15:45:37, 82b1f20).
+- Zone : `src/render/bench_realisme.cpp` (+ `.h`), accroche ≤ 10 lignes `desktop_main.cpp`, outil de fusion ; rien d'autre dans `src/**`. Règles : `regles-de-gestion/WFS-251.md` (Suivi). WFS-251 retiré de l'ordre du PO des tickets prêts. WFS-252 reste réservé à l'expert CI après WFS-250 et 251.
+
+### 2026-11-07 14:49:55 — WFS-234 : début, carte de navigation façon GPS (Claude, agent 1)
+- Ticket attribué par le PO (commit d227651), départ validé par l'utilisateur. Branche `feature/waforspeed-234`, zone `src/ui/minicarte.*` et HUD.
+
+### 2026-11-07 15:49:59 — WFS-234 : carte de navigation façon GPS, prête à fusionner (Claude, agent 1)
+- **Fait (zone E5)** :
+  - `src/ui/navigation.h` (nouveau, calculs purs) : prochaine manœuvre lue dans le tracé 2 (virage, virage serré, épingle, lacets, chicane, rond-point et sa sortie, carrefour à feux, arrivée), distance arrondie comme un GPS, zoom selon la vitesse lissé, noms de rues inventés, terrain par zone, radars et travaux fictifs, bouchons ;
+  - `src/ui/minicarte.cpp` réécrit : carte orientée cap de la voiture, aplats, rues des carrefours et ronds-points, itinéraire en couleur, bandeau du prochain virage, nom de la rue, signalements en fondu. **Place inchangée** (`placer()` de WFS-173) : aucun bouton ne bouge, pas de toucher.
+- **Accroche** : 1 ligne dans `CMakeLists.txt` (`test_navigation`). Lecture seule de `eclairage::etat().nuit` : `GameView::night` n'est rempli par personne (constat, à signaler au PO).
+- **Écart au skill design-street-racing**, pour suivre RG-01 : la carte est claire le jour. Le bandeau reste en verre sombre avec liseré cyan.
+- **Coût (RG-04)** : 1 662 à 3 312 sommets par image (borne de 4 000), aucune allocation par image.
+- **Preuves (RG-05)** :
+  - `test_navigation` : 1 085 vérifications vertes (4 cartes : prochain virage et distance tous les 3 m sur 2 tours, contrôle par force brute, 3e sortie au rond-point, arrondis, zoom, noms, bouchons) ;
+  - 48 tests CPU verts ; `test_minicarte` (place) inchangé et vert ;
+  - parcours complet : 0 écart ;
+  - captures regardées en 1280×720 : `minicarte-checkpoint`, `minicarte-ligne` (mêmes noms que WFS-173 : la comparaison avant / après se fait avec les captures de `main`) et `minicarte-<ville|plage|campagne|circuit>-<jour|nuit>` (Checkpoint, Course à 5, Poursuite ; rond-point à 200 m sur 3 cartes, épingle sur le Grand Prix) ; le duel se voit dans `duel-course`. La CI les prend aussi en 2400×1080 (`-2400`).
+- **Banc** : `hud` passe à 7,5 min en local.
+- **Limites** : le texte du bandeau fait 10 px en 1280×720, lisible mais petit, car la carte garde 150 px. Radars et travaux sont fictifs, comme demandé par RG-03.
+
+### 2026-11-07 15:52:59 — WFS-237 : bilan avant / après (agent expert ci)
+- **Avant** (runs #817 à #835) : 1 vert sur 17 envois, attente en file ≈ 53 min, envoi → fin ≈ 1 h 48, jusqu'à 6 runs en file.
+- **Après** (runs #837 à #850) : **2 verts sur 2 terminés** (#840 : 45 min de bout en bout ; #842 : 1 h 27, dont ≈ 27 min derrière #840 avec les runs #827, #828 et la CI de branche #831 encore sur les lanceurs) ; **au plus 1 run en cours et 1 en attente** ; runs en attente remplacés (#838, #839, #841, #843, #846, #847) : normal, leurs fusions sont vérifiées par le run suivant ; **aucun rouge d'installation**. APK publié ≈ 30 min après l'envoi (#844 : 14:57 → 15:25), annoncé dans l'issue #204 (WFS-238).
+- **Robot** : ✅ par #840 (4 tickets), #842 (1), #826 (4, annulé seulement à la publication, WFS-236).
+- **Reste lent** : #844 en cours depuis 56 min : lanceurs partagés avec les CI de branche #845 (WFS-241) et #849 (WFS-250). Suite : WFS-250 (compilation unique), WFS-251 / 252 (banc realisme en deux).
+- **Défaut mineur** : la liste des tickets du résumé et de la notification est trop large (tickets cités dans les commits de suivi, et run `workflow_dispatch` non compté comme base) ; l'utilisateur dit « pas grave » : non corrigé pour l'instant.
+
+### 2026-11-07 15:58:34 — WFS-227 fusionné (PR #210) : ombres du soleil en cascades, pénombre physique (Claude, agent 2 (01UY1Vv5))
+- **Cascades** (`src/render/eclairage_ombres.h`, calcul pur) : Ultra 4 jusqu'à 250 m, Haute 3 jusqu'à 200 m, Moyenne 2 jusqu'à 100 m.
+  - Sphères de rayon fixe, centre calé sur la grille des texels (stabilité prouvée par le test).
+  - Fondu sur les derniers 15 % de chaque cascade ; atlas 2×2 dans la carte de 2048.
+  - Texels en Haute : 5,4 / 18,5 / 70,8 cm.
+- **Pénombre** (`sunShadow`) : distance de l'occultant estimée par comparaisons à profondeur décalée (dichotomie entre 0,3 et 30 m), puis disque de Poisson de rayon ½ × distance × tan(0,53°), tourné par pixel. Biais exprimés en texels de la cascade.
+- **Coût** (lavapipe, même scène, temps GPU par image) :
+  - main : 440 ms (passe d'ombre 49 ms) ;
+  - Moyenne : 484 ms (+10 %, passe d'ombre 78 ms) ;
+  - Haute : 583 ms (+32 %, passe d'ombre 107 ms) ;
+  - Basse : ombres coupées, aucune perte.
+  - Objets limités à la tranche de leur cascade ; petits objets (< 2 texels) exclus des cascades grossières.
+- **Points pour le PO**
+  - (1) Basse reste sans ombre du soleil (RG-04, aucune perte), ce qui s'écarte de RG-01 (« 1 cascade en Basse ») : décision à écrire dans `regles-de-gestion/WFS-227.md`.
+  - (2) Carte d'ombre Android passée de 1024 à 2048 (+6 Mo, remplissage × 4) : à vérifier sur téléphone avec WFS-222 (P1, performance). Les mesures ci-dessus viennent de lavapipe, pas d'un GPU de téléphone.
+  - (3) La mesure du scintillement image par image (60 images, écart de luminance chiffré dans `realisme-fidelite.txt`) n'est pas faite. La stabilité est prouvée par le test CPU (décalage par texels entiers) et les captures du travelling.
+- **Immeubles (RG-03)**
+  - Avec le soleil réel de `ville-large`, aucune ombre d'immeuble ne se voit : elles tombent du côté caché.
+  - Vérifié avec un soleil bas forcé (essai local, retiré) : les immeubles portent bien de grandes ombres dans les cascades lointaines.
+- **Accroches annoncées**
+  - `shaders/common.glsl` et `src/render/frame_ubo.h` : champs des cascades.
+  - `src/render/renderer.cpp` et `.h` : matrices, passe par tuile, bits de cascade dans `vis` (16 << k, après `VIS_CAPTURE` de WFS-222), carte de 2048 sur Android.
+  - `shaders/shadow.vert` et `shadow_skin.vert`.
+  - `src/ui/ecrans/reglages.cpp` : `niveauOmbres`, 1 ligne.
+  - `src/platform/desktop_main.cpp` : banc `ombres`.
+- **Vérifications** : 48 tests CPU ; parcours 0 écart ; banc `realisme` (indices : lumière 100 %, revêtements 100 %, voitures 77,3 %, aucun en baisse) ; avis `expert-realisme-3d` pris en compte (point immeubles vérifié, autres points ci-dessus).
+
+
+### 2026-11-07 15:59:51 — WFS-241 fusionné (PR #211, squash 0ffe7d0) : 🟡 À valider par l'utilisateur (Claude, agent dev conduite)
+- CI de branche **run 845 verte** (16 jobs : compilation, 47 tests CPU dont `test_conduite`, tous les bancs dont le parcours complet et `partie2b` (banc de l'aide WFS-217), APK). Banc `conduite` en CI : 0 écart, 48 captures produites.
+- Captures regardées (Release `apercu-waforspeed-241`) : épingle aide activée → la Golf suit l'épingle à 41 km/h sans volant ; aide désactivée → tout droit dans le sable ; rond-point aide activée → fait le tour (34 km/h) ; désactivée → tout droit hors du rond-point. Défaut de **ma vidéo** RG-07 (pas du jeu) : la SF90 était lancée sans volant et frottait la glissière pendant la lancée ; corrigé (lancée sur la ligne idéale, puis tout lâché) avant la fusion, captures refaites par la CI de `main`. Le tableau RG-07 (CPU) était juste.
+- Après synchronisation : conflit simple dans `desktop_main.cpp` (ligne `ombres` de WFS-227 et ma ligne `conduite`) : les deux gardées ; `test_conduite` et `test_aide_direction` relancés : OK.
+- Limite signalée au PO : les roues avant dessinées suivent le doigt (`player.steer`, lu par `game.cpp`), pas l'angle ajouté par l'aide (`Player::braquageRoues`) : avec l'aide seule dans un rond-point, les roues restent droites à l'image. Une ligne dans `game.cpp` (zone de WFS-247) suffit.
+- Lignes `TACHES.md` (🟡), `qa/Check.md`, `track-agent.md` (libre) et réponse dans `tache utilisateur.md`. Je demande l'étape 2 au PO.
+
+### 2026-11-07 16:00:17 — WFS-230 attribué à Claude, agent 1 (01UY1Vv2) (po-scrum-master)
+- Ticket : WFS-230 (P1, E13) — nuit sur route non éclairée : adaptation de l'œil au clair de lune, herbe, arbres et voiture visibles (ANO-119). Règles : `regles-de-gestion/WFS-230.md` (RG-01 à RG-09).
+- Choix : ordre de l'utilisateur (15:18 UTC) ; WFS-247 pris, WFS-246 (E4 tenue par WFS-239) et WFS-226 (E4 + E3 tenues) non attribuables ; E13 libre depuis la fusion de WFS-227 (#210). Agent 1 n'a aucun ticket refusé ; ce n'est pas un ticket de conduite.
+- Zone : E13 (`src/render/eclairage_*`, `shaders/eclairage*.glsl`, `shaders/post*`, `tests/fidelite_lumiere*`, `references/reel/lumiere/**`) ; accroches ≤ 10 lignes annoncées (`shaders/decor*` pour RG-07, remplissage de `GameView::night` pour RG-09). Interdit : phares de `nuit.cpp`, `src/world/**`, iOS.
+- Point de l'agent 1 : `GameView::night` jamais rempli → ajouté en RG-09 de ce ticket (pas de micro-ticket).
+- Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-07 16:01:45 — WFS-253 créé et attribué à l'agent dev conduite (po-scrum-master)
+- Demande de l'agent dev conduite (libre après WFS-241). Une session = un domaine : aucun ticket prêt de conduite → création de **WFS-253** (étape 2 du skill `expert-conduite` : aides réglées et mesurées). Les tickets prêts de l'ordre de l'utilisateur (246, 226, 249, 224, 242) restent pour les autres développeurs.
+- Remarque (1) de l'agent (roues avant dessinées d'après le doigt) ajoutée à WFS-247 (Agent 0) ; remarque (2) (vitesse du trafic dans les épingles) gardée pour l'étape 4.
+
+### 2026-11-07 16:05:11 — Début WFS-226 : phares de toutes les autres voitures, attribué à agent arwa (po-scrum-master)
+- Ticket : WFS-226 (P1, E4 + E3), règles `regles-de-gestion/WFS-226.md`, branche `feature/waforspeed-226`. Attribué à agent arwa (Claude, session trafic), comme prévu après WFS-218 (🟣, PR #206, ae49782 ; même fichier `nuit.cpp`).
+- Ordre de l'utilisateur (15:18 UTC) : 1. WFS-247 (pris par Agent 0), 2. WFS-246 (**pas** l'agent arwa), 3. WFS-226 → WFS-226 revient à l'agent arwa.
+- Épic E4 : WFS-239 (agent 3, `qualite_banc.cpp`) et WFS-251 (`bench_realisme.cpp`) en cours sous exception ; WFS-226 en exception PO, fichiers séparés.
+- Zone autorisée : `src/render/nuit.cpp` (hors bloc des phares du joueur de WFS-218), `src/game/traffic_system.cpp` (bloc des feux), accroches ≤ 10 lignes annoncées au journal. Interdit : `qualite_banc.cpp`, `bench_realisme.cpp`, `effets_*` (WFS-224), fichiers E13, iOS (gel), taille des boutons.
+- Critères : RG-01 à RG-05 (deux phares sur toutes les voitures à toute distance, vraie lumière pour les 2 à 4 plus proches, flaque peinte pour les autres, carrosseries visibles la nuit, budget WFS-222 tenu) ; captures de nuit avant / après (Ville, Campagne, Corniche, Poursuite, Course à 5, qualité Basse) ; parcours complet 0 écart ; ligne `qa/Check.md`.
+- Plan : pousser la branche tout de suite ; optiques lumineuses + flaques peintes pour toutes les voitures ; vraies lumières pour les plus proches ; fusion par confiance > 50 %, sinon une seule CI de branche.
+
+### 2026-11-07 16:09:16 — Changement de nom : « Claude, session dev 5bx » devient « Claude, agent dev Y » (Claude, agent dev Y)
+- Ordre de l'utilisateur : cet agent s'appelle désormais **Claude, agent dev Y** (ligne de `track-agent.md`, titres des commits). Les mentions « session dev 5bx » déjà écrites (TACHES, journal, Check, WFS-248 / WFS-249) désignent le même agent ; état inchangé : en pause jusqu'à 18:00 UTC sur ordre de l'utilisateur.
+
+### 2026-11-07 16:12:30 — WFS-246 attribué à Claude, agent dev X ; track-agent synchronisé (po-scrum-master)
+- L'utilisateur déclare l'agent dev X (ex-session dev expert) prêt : pause levée pour lui. WFS-246 (2e de l'ordre de l'utilisateur ; 247 tenu par Agent 0) lui est attribué.
+- `track-agent.md` remis à jour d'après les derniers envois des branches (235, 247, 226, 230, 253).

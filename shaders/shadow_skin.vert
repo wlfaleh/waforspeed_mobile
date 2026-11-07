@@ -11,5 +11,5 @@ layout(location = 0) out vec2 vUv;
 void main() {
     mat4 s = B.os[inOs.x] * inPoids.x + B.os[inOs.y] * inPoids.y + B.os[inOs.z] * inPoids.z + B.os[inOs.w] * inPoids.w;
     vUv = inUv;
-    gl_Position = F.shadowMat * (pc.model * (s * vec4(inPos, 1.0)));
+    gl_Position = F.ombreCasc[int(pc.emissive.x + 0.5)] * (pc.model * (s * vec4(inPos, 1.0)));   // WFS-227 : cascade de la tuile
 }

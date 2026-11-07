@@ -1,5 +1,6 @@
 // WaForSpeed — socle commun des cartes Campagne et Grand Prix (WFS-53) : voir decor_carte.h.
 #include "decor_carte.h"
+#include "../render/route_revetements.h"   // WFS-248 : asphalte du giratoire = chaussée de la route
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -178,6 +179,17 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
         Material mr; mr.rough = 0.8f;
         mats_[P_ROUTE] = r.makeMaterial(mr, &routeTex_, nullptr, nullptr);
     }
+    // WFS-248 : giratoires reconstruits (avant le décor : les objets qui tomberaient sur l'ouvrage ne sont pas dessinés) ;
+    // asphalte de l'anneau avec le matériau de la chaussée de la route (même grain, sans marquage)
+    gir_.clear(); girSeg_.clear();
+    for (const trace::Section& s : trace::sections(*track_)) if (s.type == trace::Type::RondPoint) {
+        const giratoire::Giratoire gg = giratoire::calculer(*track_, s);
+        if (!gg.ok) { WFS_ERR("Carte %s : giratoire du segment %lld non reconnu (WFS-248)", carteId(), (long long)s.debut); continue; }
+        gir_.push_back(gg); girSeg_.push_back((gg.entree + gg.sortie) / 2);
+        WFS_LOG("Carte %s : giratoire reconstruit au segment %lld (anneau %.1f-%.1f m, îlot %.1f m, axe à ±%.2f m du cercle) (WFS-248)", carteId(),
+                (long long)s.debut, giratoire::R_COURONNE, giratoire::R_EXT, giratoire::R_ILOT, gg.ecartAxe);
+    }
+    if (!gir_.empty() && !routePropre()) { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = route::creerMateriau(r, route::chaussee(), m); }
     // generateDecor : plages [z0, z1) de même zone, tirages de la graine de la carte mulberry32(seed · 31 + 7)
     const int64_t L = len();
     items_.assign((size_t)L, {});
@@ -347,15 +359,27 @@ void CarteDecor::buildChunk(Track& t, int64_t c, bool lod, Geo out[P_COUNT]) {
                     const float x1 = x0 < R + 40 ? std::min(b[i].b, x0 + 1.f) : b[i].b;
                     auto y = [&](float x) { return b[i].ya + (b[i].yb - b[i].ya) * (x - b[i].a) / (b[i].b - b[i].a); };
                     const vec3 m = (lateral(p0, s * x0) + lateral(p1, s * x1)) * 0.5f;
-                    if (!surAutreChaussee(m, a, 0.f))
+                    if (!surAutreChaussee(m, a, 0.f) && !surGiratoire(m, 0.2f))   // WFS-248 : rien sur le giratoire reconstruit
                         quadSol(out[P_UNI], lateral(p0, s * x0, y(x0)), lateral(p1, s * x0, y(x0)), lateral(p1, s * x1, y(x1)), lateral(p0, s * x1, y(x1)), uv(b[i].col));
                     x0 = x1;
                 }
             }
         }
         const Pose& p = p0;
+        for (size_t gi = 0; gi < gir_.size(); gi++) if (((a % L) + L) % L == ((girSeg_[gi] % L) + L) % L) {   // WFS-248 : l'ouvrage
+            std::vector<giratoire::Tri> tris; giratoire::geometrie(gir_[gi], t, tris);
+            const int col[giratoire::NB_SURFACES] = {C_WALK, C_ZEBRA, C_WALL2, C_WALK, C_GRASS};
+            for (const giratoire::Tri& tr : tris) {
+                if (tr.s != giratoire::ASPHALTE) { tri(out[P_UNI], tr.a, tr.b, tr.c, uv(col[tr.s])); continue; }
+                Geo& G = out[P_ROUTE];
+                const uint32_t k0 = (uint32_t)G.v.size();
+                for (const vec3& q : {tr.a, tr.b, tr.c}) { const vec2 u = giratoire::uvChaussee(gir_[gi], q); G.v.push_back({q.x, q.y, q.z, 0, 1, 0, u.x, u.y}); }
+                G.i.insert(G.i.end(), {k0, k0 + 1, k0 + 2});
+            }
+        }
         for (const Item& it : items_[(size_t)(((a % L) + L) % L)]) {
             if (lod && it.petit) continue;   // SMALL_DECOR : rien au loin
+            if (!it.ilot && it.t != T_VERGE && !gir_.empty() && surGiratoire(lateral(p0, it.side * (it.t == T_LAMP ? R + 0.8f : it.lat)) + p0.f * it.along, it.t == T_TREE ? 1.5f : 0.5f)) continue;   // WFS-248
             // WFS-212 (RG-02) : rien sur une autre branche du rond-point ni dans l'épingle (arbres : 1,5 m de marge, couronne)
             const float latObj = it.t == T_LAMP ? R + 0.8f : it.lat;   // lampadaire : mât à RW + 0,8 m
             if (it.t != T_VERGE && latObj > 0 && surAutreChaussee(lateral(p0, it.side * latObj) + p0.f * it.along, a, it.t == T_TREE ? 1.5f : 0.5f)) continue;

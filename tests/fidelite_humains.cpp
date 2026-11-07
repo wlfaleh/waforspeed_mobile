@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <array>
 #include <iterator>
 #include <map>
 #include <tuple>
@@ -45,6 +46,8 @@ struct Wfp {
     std::vector<uint32_t> I; std::vector<std::pair<uint32_t, uint32_t>> plagesI;   // WFS-211 : indices, plages (premier, nombre)
     std::vector<std::string> plages, os; std::vector<int> parents; uint32_t nPal = 0, nClips = 0;
     std::vector<uint32_t> palette;        // os du jeu de chaque entrée de la palette
+    std::vector<std::array<float, 16>> bindInv;   // WFS-240 : inverse de la pose de liaison de chaque os (colonne-majeure)
+    std::map<std::string, float> durees;          // WFS-240 : durée de chaque clip (s)
 };
 static bool lire(const std::string& chemin, Wfp& w) {
     std::ifstream f(chemin, std::ios::binary);
@@ -74,9 +77,19 @@ static bool lire(const std::string& chemin, Wfp& w) {
     if (o + (size_t)w.nI * 4 > b.size()) return false;
     w.I.resize(w.nI); std::memcpy(w.I.data(), &b[o], (size_t)w.nI * 4); o += (size_t)w.nI * 4;
     for (uint32_t i = 0; i < nP; i++) { w.plages.emplace_back((const char*)&b[o]); uint32_t a[2]; std::memcpy(a, &b[o + 32], 8); w.plagesI.push_back({a[0], a[1]}); o += 40; }
-    for (uint32_t i = 0; i < nO; i++) { w.os.emplace_back((const char*)&b[o]); int32_t p; std::memcpy(&p, &b[o + 32], 4); w.parents.push_back(p); o += 32 + 4 + 40 + 64; }
+    for (uint32_t i = 0; i < nO; i++) {
+        w.os.emplace_back((const char*)&b[o]); int32_t p; std::memcpy(&p, &b[o + 32], 4); w.parents.push_back(p);
+        std::array<float, 16> m{}; if (o + 140 <= b.size()) std::memcpy(m.data(), &b[o + 76], 64); w.bindInv.push_back(m);   // WFS-240
+        o += 32 + 4 + 40 + 64;
+    }
     w.nPal = u32();
-    for (uint32_t i = 0; i < w.nPal && i <= 64; i++) w.palette.push_back(u32());
+    for (uint32_t i = 0; i < w.nPal; i++) { const uint32_t x = u32(); if (i <= 64) w.palette.push_back(x); }
+    for (uint32_t c = 0; c < w.nClips && o + 40 <= b.size(); c++) {   // WFS-240 : durée des clips (canaux sautés)
+        const std::string nom((const char*)&b[o], strnlen((const char*)&b[o], 32)); o += 32;
+        w.durees[nom] = f32();
+        const uint32_t nC = u32();
+        for (uint32_t k = 0; k < nC && o + 12 <= b.size(); k++) { u32(); const uint32_t chemin = u32(), n = u32(); o += (size_t)n * 4 * (1 + (chemin == 1 ? 4 : 3)); }
+    }
     return o <= b.size();
 }
 
@@ -248,6 +261,24 @@ int main(int argc, char** argv) {
         int cheveux = 0, bas = 0;
         for (uint32_t v = 0; v < w.nV; v++) if (w.C[v * 4 + 3] > 1.5f) { cheveux++; if (w.P[v * 3 + 1] < w.corps[0]) bas++; }
         cas(n + " : cheveux peints (" + std::to_string(cheveux) + " sommets), tous au-dessus du cou", cheveux > 100 && bas == 0);
+    }
+    // WFS-240 (RG-04) : cadence de marche de chaque enfant à 1,0 m/s, comme le jeu (pietons.cpp) : rapport des hauteurs de
+    // bassin (pose de liaison) enfant / homme, clip « Walk_Loop » de l'enfant ; ± 10 % de la valeur réelle de son âge
+    auto bassin = [](const Wfp& w) {
+        for (size_t i = 0; i < w.os.size(); i++) if (w.os[i] == "pelvis") {
+            const auto& m = w.bindInv[i];   // os rigide : position = −Rᵀ·t
+            return -(m[4] * m[12] + m[5] * m[13] + m[6] * m[14]);
+        }
+        return 0.f;
+    };
+    const float bassinHomme = bassin(jeu[1]);
+    cas("homme.wfp : os « pelvis » et hauteur de bassin lisibles (" + std::to_string(bassinHomme).substr(0, 5) + " m)", bassinHomme > 0.8f && bassinHomme < 1.2f);
+    for (const char* id : {"e04g", "e04f", "e07g", "e07f", "e10g", "e10f", "e14g", "e14f"}) {
+        Wfp w;
+        if (!lire(depot + "/assets/people/humains/" + id + ".wfp", w)) continue;
+        const int a = (std::stoi(std::string(id).substr(1, 2)) == 4 ? 0 : std::stoi(std::string(id).substr(1, 2)) == 7 ? 1 : std::stoi(std::string(id).substr(1, 2)) == 10 ? 2 : 3);
+        const double k = bassinHomme > 0 ? bassin(w) / bassinHomme : 0, spm = wfs::familles::pasParMinute(1.0, k, w.durees.count("Walk_Loop") ? w.durees["Walk_Loop"] : 0);
+        mesure(std::string(id) + " : RG-04 cadence à 1,0 m/s (pas/min, réel à confirmer, ± 10 %)", spm, wfs::familles::CADENCE_REELLE_1MS[a], wfs::familles::CADENCE_TOLERANCE);
     }
     if (familles_test::executer()) echecs++;   // WFS-233 (RG-02, RG-03)
     if (tenues_test::executer()) echecs++;   // WFS-210 (RG-01, RG-02)
