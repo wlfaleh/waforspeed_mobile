@@ -4481,6 +4481,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   2. RG-04 : la ligne « Cadence : Auto / 30 / 60 » est retirée sans accord écrit du PO, alors que le passage automatique à 30 img/s est livré sans moyen de revenir à 60 (la question de l'utilisateur sur le 30 reste ouverte) ;
   3. RG-02 : les variantes MSAA et les qualités ne sont pas créées au chargement, et un changement de qualité en pause n'est pas compté ;
   4. la cadence peut rester bloquée à 30 toute la session sur un téléphone sans horodatages GPU, et elle n'est pas remise à 60 au début de chaque course ;
-  5. le journal du développeur ne contient ni les accroches (, ) ni les résultats.
-- Statut WFS-262 : ↩️ Retour lead dev (PR #246) ;  mis à jour.
+  5. le journal du développeur ne contient ni les accroches (`android_main.cpp`, `chauffe.h`) ni les résultats.
+- Statut WFS-262 : ↩️ Retour lead dev (PR #246) ; `track-agent.md` mis à jour.
 - **Pour le PO** : décider par écrit si WFS-262 peut sortir sans la ligne « Cadence » (ticket d'interface séparé, E8) et si le 30 automatique peut être livré avant la réponse de l'utilisateur.
