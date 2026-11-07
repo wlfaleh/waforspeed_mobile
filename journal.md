@@ -3969,3 +3969,58 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - suites de captures « avant » non conservées (disque) : le banc donne la personne et la distance de chaque premier évènement.
 - 🟡 À valider par l'utilisateur sur téléphone.
 
+### 2026-11-07 20:03:49 — WFS-249 : A seul ; WFS-276 tonemapping local de nuit créé pour Agent 0 (po-scrum-master)
+- B écarté après essais (journal d'Agent 0). Cause 2 (péage, village, rond-point noirs) → WFS-276, E13, réservé à Agent 0 après la fusion de WFS-249.
+
+### 2026-11-07 20:07:02 — WFS-267 : mécanisme prouvé, correctif poussé, CI de branche #876 (arwa-5)
+- **Preuve du mécanisme** (sondes relues en local, 83b16fc) : la 1re sonde du tunnel est prise pendant la mise en route du banc, caméra encore à l'origine du monde (0 ; 2 ; 0), voiture dans le tunnel à 1 400 m : le point est hors de toutes les cascades, la sonde voit le tunnel au soleil (face la plus claire : 3 366 cd/m² en moyenne ; 158 avec le correctif). Essais sans effet (donc écartés) : occultants dans toutes les cascades, choix de la cascade par la boîte au lieu de la profondeur.
+- **Correctif (accroche annoncée, validée par le PO à 19:48)** : `src/render/environnement.cpp`, 6 lignes (1 champ `attente`, 4 lignes dans `active()`, remise à 0 dans `demander()`) : une face de capture **attend** que la caméra couvre le point (sphère de la cascade 0 : `camPos + camFwd × ombreFin.x`, rayon `ombreDemi.x`, valeurs de l'image), **120 images au plus** (puis capture comme avant : jamais de capture bloquée). Ombres coupées (Basse, nuit) : aucune attente. En jeu (poursuite à ≈ 11 m, Cockpit, garage), le point est toujours dans la cascade 0 : rien ne change. WFS-227 non annulé, aucun seuil ni mesure du banc changés. La 1re version dans `eclairage_physique.cpp` (fa4eafe) est retirée (fichier de WFS-249).
+- **Résultat local** (branche synchronisée, lavapipe, bloc tunnel) : voiture dans le tunnel EV100 11,99 (lum. 279 cd/m²) ; sortie **12,96 → 14,06 → 14,65 : l'exposition s'adapte**, code 0. Tests CPU : **57 / 57 OK**.
+- **RG-05 (messages)** : chaque `erreurs++` / `ecarts++` muet du banc `realisme` écrit maintenant une ligne `[ERREUR]` (scène, étape, raison) : `bench_realisme.cpp` (4), `eclairage_banc.cpp` (18, dont la sortie du tunnel avec ses 3 EV100), `bench_passes.cpp` (11). Ajouts seulement, aucune condition changée.
+- **CI de branche, lancement n° 1 : run #876** (id 42408934193, `workflow_dispatch` de `build.yml`, commit 22beabe, branche synchronisée) : vérifie le job `banc-essai (realisme)` (0 erreur) et les 12 autres bancs avec le correctif. RG-05 est poussée après (d25b5b7, messages seulement, compilée en local).
+
+### 2026-11-07 20:10:18 — Statuts automatiques, CI main #864 (robot statuts)
+- Run rouge (push, commit b7825cf), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-261.
+
+### 2026-11-07 20:10:36 — WFS-252 fusionné (PR #230) : banc du réalisme chaque matin à 07:00 (Paris) (agent expert ci)
+- **Décision de l'utilisateur** : « j'ai rien gagné de ça, tu peux l'enlever carrément et mettre en CI automatisée qui check ce banc, et tu lances ça qu'à 07h de France ».
+- **Fait** : groupe `realisme` retiré de `build.yml` (plus à chaque envoi) ; nouveau `.github/workflows/realisme.yml` : cron 05:00 et 06:00 UTC, job `heure` qui ne garde que le déclencheur de 7 h à Paris (été / hiver), compilation de `wfs_bench`, deux parties en parallèle (WFS-251), fusion des rapports, artefacts 30 jours ; écart = rouge. Bancs conduite (WFS-241) et chocs (WFS-256) sortis d'`ecrans-2400` dans le groupe `conduite-chocs` (≈ 65 min, limite 75). Aucun banc ni seuil retiré.
+- **Conséquence à connaître** : un défaut de réalisme (comme le tunnel de WFS-274) n'est plus vu à la fusion mais le matin suivant ; le robot des statuts ne suit que `build.yml`.
+- **Preuve** : 1er lancement de `realisme.yml` à la main sur main (2026-11-07 20:10:36). CI de branche #874 annulée (version intermédiaire).
+
+### 2026-11-07 20:11:01 — Banc realisme déplacé en CI du matin (WFS-252) : règle du PO ajoutée (po-scrum-master)
+- realisme.yml rouge un matin → US technique P1, comme pour main. WFS-274 reste P1 pour l'agent arwa (défaut réel du tunnel).
+
+### 2026-11-07 20:13:06 — WFS-270 fusionné : voitures visibles la nuit hors des lampadaires, ANO-147 et ANO-148 (agent arwa)
+- **Cause (RG-01)**, mesurée sur `phares-autres-campagne-haut` (main avant WFS-230) : la nuit, la peinture recevait le ciel de lune (iblDiffus), la lune et la lumière directe, comme la route, mais rien de la chaussée éclairée qui entoure la voiture. Route voisine hors faisceau : 7/255. Route éclairée à côté de l'avant : 138/255. Carrosserie : noire, 6 pixels bleutés seulement. Le terme qui manquait, c'est la **lumière renvoyée par la chaussée éclairée**. L'exposition (WFS-230) assombrissait aussi toute la scène.
+- **Correction** (`shaders/vehicule.glsl`, seulement la nuit, `F.misc.y`) : `eclairementRouteAutour()` mesure l'éclairement de la chaussée à 4, 6,5 et 10 m devant la voiture, avec les projecteurs de l'image (E13 en lecture seule, rien n'est modifié : **agent 1 / WFS-230 prévenu ici**). Rebond sur la peinture : asphalte ρ = 0,14 (DA-realisme § 3), facteur de vue du sol (1 − N.y) / 2, part diffuse isotrope K = 2,0. Ce K est une **correction calée sur RG-02, pas une constante physique**. La luminance est compressée au-delà de 0,5 (sinon la peinture devient blanche sous plusieurs faisceaux en Ville). Sous l'horizon, le vernis reflète la chaussée éclairée (RG-03). Toutes les voitures passent par ce shader (RG-04). **arwa-2 (WFS-235)** : `vehicule.glsl` ne touche que `vernisPeinture`, aucun fichier de WFS-235 n'est modifié.
+- **Mesures** (Campagne, vue haute, Golf) :
+  - avant WFS-230 : hayon (46,15,58) au lieu de (45,8,20) (lueur rouge des feux seule) ; 5 885 pixels bleutés au lieu de 6 ;
+  - après synchronisation avec main (WFS-230 fusionné) : carrosserie / route voisine **1,25 → 1,47**, carrosserie / route du faisceau 0,87 → 1,02, carrosserie 57 → 67/255.
+- **Risque pour le PO** : la vision de nuit de WFS-230 (`post.frag`, Purkinje, poids jusqu'à 0,9) rend la Golf gris bleuté (74,63,85). Le critère « la Golf reste bleue » n'est tenu qu'en partie, et la cause est hors de ma zone. À arbitrer avec WFS-230 si l'utilisateur veut un bleu plus franc.
+- **ANO-148 (RG-06)** : nouveau fichier `src/render/vehicule_nuit_banc.cpp`. Un système de banc (ordre 949, inactif hors banc) relève les voitures notées avant le système de nuit. La scène se joue sur l'autoroute de la Campagne, en Basse, et donne `phares-sens-inverse-campagne-haut` / `-0` : sens inverse à 60 m (vraie lumière) et à 97 m (flaque au sol). Une scène de plus, `phares-autres-course5-go-*`, montre la Course à 5 après le GO (5,5 s, les 5 voitures se lisent). **Accroche annoncée : 3 lignes dans `src/render/bench_nuit.cpp`** (déclaration, appel, scène).
+- **Vérifications** : jour pixel identique (`route-jour-sec` / `-pluie`, avec et sans reflet, avant et après) ; le crépuscule n'est pas touché (`fp.night` faux) ; 58 tests CPU OK ; `WFS_MOMENT=nuit WFS_BANC=parcours` 0 écart, vue normale et Cockpit. Indice de fidélité des voitures : le test CPU est inchangé et vert, la peinture de jour aussi.
+- **Coût GPU (RG-07)** : aucune passe en plus. La nuit, chaque pixel de peinture fait 3 points × projecteurs (8 au plus en Basse), sans GGX. Non mesuré au banc de chauffe ni sur téléphone (limite).
+- Fusion par confiance : PR #231, squash b21b9c8. Statut 🟣, puis 🟡 à valider par l'utilisateur. Réponse ajoutée dans `tache utilisateur.md` (vidéo de 11:27). Ligne ajoutée dans `qa/Check.md`.
+
+### 2026-11-07 20:17:53 — QA du matin : WFS-277 créé (agent expert ci), CLAUDE.md et qa-lead.md mis à jour (po-scrum-master)
+- Décision de l'utilisateur rapportée par l'agent expert ci. Bancs de captures chaque matin 07:00 Paris (matin.yml), QA après ≈ 08:15 ; build.yml de main réduit (compilation, tests, parcours, endurance, APK).
+
+### 2026-11-07 20:19:49 — WFS-277 fusionné (PR #233) : bancs de captures chaque matin à 07:00, QA ensuite (agent expert ci)
+- **Décision de l'utilisateur** : « on peut organiser la QA de nuit la matinée aussi : on lance les CI ensuite lui il teste ».
+- **À chaque envoi sur main** (`build.yml`) : compilation, `texte` (tests CPU, licences), `menu1-2400` (parcours complet), endurance, APK + notification ; plus de publication des captures.
+- **Chaque matin à 07:00 Paris** (`matin.yml`, ex-`realisme.yml`) : 14 groupes (12 de captures + réalisme en 2 parties) → fusion du réalisme → publication de toutes les captures dans `apercu` (une seule publication : `publier_apercu.sh` retire les captures absentes du run). Fin estimée ≈ 08:15 Paris : la QA fait sa recette ensuite.
+- **Script partagé** `tools/qa/banc_groupe.sh` : étape « Captures du rendu » de `build.yml` reprise telle quelle (diff vérifié) + parties du réalisme ; groupe inconnu = code 2.
+- **Numéro** : d'abord écrit WFS-275 par erreur sur ma branche locale (WFS-275 = ticket son d'arwa-4, sa branche n'a pas été touchée) ; corrigé en WFS-277 avant tout envoi sur main.
+- **Preuve** : run 1 de l'ancien `realisme.yml` annulé (fichier renommé) ; 1er run de `matin.yml` lancé à la main sur main (2026-11-07 20:19:49).
+
+### 2026-11-07 20:43:10 — WFS-249 fusionné (PR #235, squash d3c1c68) → 🟡 ; B écarté, cause 2 → WFS-276 (Claude, Agent 0 developer)
+- **A** (décision du PO) : borne `EV_LUNE_MIN` −2 → −3,5 ; `DA-realisme.md` § 3 mis à jour avec la mesure ; `test_fidelite_lumiere` adapté sans être affaibli (borne à 0,221 lx, 38,5 m d'une lampe ; 103 vérifications). **Pixels noirs sous l'horizon**, avant → après (Haute = Basse) : autoroute 9,2 → 0,3 % ; cascade 23 → 6,4 % ; col 14,5 → 7 % ; vignes 18 → 6 % ; troupeaux 7 → 1 à 3 %. Saturés ≤ 0,01 %. Bas-côtés et collines : 0,1-1,5 → 2-7 % du blanc.
+- **B** (exposition de la Campagne près des lampes), 4 essais au banc, tous écartés :
+  1. exposition sur la lune seule : péage 52 → 0,4 % de noirs, mais flaques orange effacées (image grise de jour couvert : les lampes, à l'aspect EV 3, ne ressortent plus que de 0,8 IL) ;
+  2. lumières rapprochées de l'exposition de la lune (écart de 2 à 5,5 IL) : 0,2 à 29 % de pixels brûlés ;
+  3. mi-chemin (× 0,5) : péage encore 16 % noir ;
+  4. plancher « rue » à EV 0 : sans effet (péage 39 %), car la mesure réfléchie des sondes donne EV 4-5 près des lampes.
+  → Une exposition globale ne peut pas montrer à la fois la flaque (15 lx) et le paysage sous la lune (0,1 lx), soit 7 IL d'écart. Le PO crée **WFS-276** (tonemapping local), réservé à Agent 0.
+- **Vérifications** : banc `nuit` avant / après : Ville, circuit et Corniche **0 pixel différent** ; seules changent les scènes de Campagne (et la Poursuite vue de haut, 6 % : zones sous 0,63 lx). Tests CPU OK, parcours 0 écart (normal et Cockpit), après synchronisation avec main.
