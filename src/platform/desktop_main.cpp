@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
     if (banc == "ombres") { benchOmbres(g, r, out); return finir(); }   // WFS-227 (accroche) : ombres du soleil, travelling
     if (banc == "fluidite") { const int e = benchFluidite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-221 (accroche) : à-coups de la voiture vue par la caméra
     if (banc == "carte") { benchChangementCarte(g, r, out); return finir(); }   // WFS-74 : changement de carte seul (essai local)
+    if (banc == "effets") { ui::chargerPolice(r); benchEffets(g, r, out); return finir(); }   // WFS-224 (accroche) : effets de conduite seuls (essai local)
     if (banc == "vitrines") {   // WFS-13 : vitrine des 16 voitures ajoutées, garage de 2 d'entre elles, course avec la SF90
         ui::chargerPolice(r);
         for (int i = TRAFIC_MODELES; i < CAR_COUNT; i++) {
