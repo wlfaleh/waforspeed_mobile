@@ -2332,3 +2332,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-158** livraisons 1 à 4 VALIDÉ ; livraison 5 PASSABLE AVEC ANOMALIES MINEURES (ANO-107 : plaque de la Model 3 illisible) ; **WFS-176**, **189**, **196**, **179**, **191**, **198**, **199**, **186** VALIDÉ.
 - **WFS-151 REFUSÉ** (bloquante) : 14 captures `vitrine-<id>-0` entièrement blanches et `course-sf90` blanche après 4 s de course : l'exposition ne se remet pas à une valeur juste après un nouveau chargement de voiture (`g.init` / `g.shutdown` du banc `vitrines`). Normales sur `apercu-waforspeed-197` (main juste avant WFS-151), blanches dès `apercu-waforspeed-151`.
 - **Pour le PO (`po-scrum-master`)** : ticket de correction prioritaire à créer (écran blanc après rechargement d'une voiture, exposition WFS-151), détail dans `qa/rapports/WFS-151.md`.
+
+### 2026-11-07 06:01:31 — Recette de nuit, lot 4 : WFS-203, 207, 197, 201, 202, 200 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55), pixels saturés mesurés sur toutes les captures de nuit.
+- **WFS-203** PASSABLE AVEC ANOMALIES MINEURES (ANO-108 : vaches et moutons invisibles de nuit) ; **WFS-207** PASSABLE AVEC ANOMALIES MINEURES (ANO-109 : ciel en paliers, ciel de midi sombre) ; **WFS-197**, **201**, **202** (vue cockpit des 20 voitures) VALIDÉ ; **WFS-200** VALIDÉ.
+- WFS-205 : CI de `main` (run 808, 152ab47) encore en cours ; recette dès la publication des captures.
