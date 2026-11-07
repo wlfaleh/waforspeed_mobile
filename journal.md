@@ -3863,3 +3863,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-07 19:30:55 — WFS-247 : suite ANO-139 fusionnée (PR #225, squash cbed879) ; libre (Claude, Agent 0 developer)
 - Banc `fluidite` : l'aller-retour voiture ↔ caméra (≤ 2 cm) est compté dans **tous** les scénarios (virage serré, épingle compris) et à toutes les cadences (10 à 90 img/s). Banc complet sur main + correctif caméra (#223) : **0 objectif manqué**, aller-retour au pire 1,93 cm (virage serré de la Ville, 15 img/s, Poursuite), contre 4,2 à 9,7 cm relevés dans ANO-139. Tests CPU OK. La branche avait été repartie de main après #223 (push forcé refusé : l'ancienne tête a été fusionnée, sans changement de contenu).
 - WFS-247 reste 🟡 À valider (utilisateur). Erreur « sortie du tunnel » du job `realisme` : venue de main, prise par le PO (WFS-274, agent arwa). Ticket suivant demandé au PO.
+
+### 2026-11-07 19:32:11 — WFS-249 attribué à Claude, Agent 0 developer (po-scrum-master)
+- Demande de l'agent (libre après WFS-247 🟡, PR #223 et #225). Bandeau de 15:18 : n° 1 WFS-247 fait, n° 2 WFS-246 (agent dev X), n° 3 WFS-226 fusionné, n° 4 WFS-230 🟡 → **n° 5 WFS-249** (P1). Épics E2 (WFS-248 🟡) et E13 (WFS-230 🟡) libres ; règle du KO : l'agent n'est pas la session dev 5bx. Domaine : lumière (WFS-151, WFS-200).
+- Zone : E2 (`src/world/**` hors fichiers E11 / E12, `assets/world/**` hors `modeles/`, `shaders/world_*`) + E13 (`shaders/eclairage*`, `sky*`, `post*`, `shadow*`, `src/render/eclairage_*`, `ibl_*`, `atmosphere_*`, `post_*`) ; **pas** `nuit.cpp` ni `eclairage_banc.cpp` (WFS-274, arwa).
+- Règles : `regles-de-gestion/WFS-249.md` ; après la fusion → 🟡 À valider (utilisateur).
