@@ -5,7 +5,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
+#include <vector>
 #include "../core/log.h"
+#include "../core/platform.h"   // readAsset : sommet du corps lu dans le .wfp
 #include "../game/game.h"
 #include "../render/renderer.h"
 #include "../render/squelette.h"
@@ -16,7 +18,7 @@ namespace wfs::conducteurs {
 namespace {
 
 // stature d'ANSUR-II (references/reel/anthropometrie.json : humain.hommes.stature 1756,2 ± 68,6 mm, humain.femmes.stature
-// 1628,5 ± 64,2 mm) : échelle 1 = stature réelle ÷ hauteur du personnage ; chaque conducteur tiré à ± 1 écart-type
+// 1628,5 ± 64,2 mm) : échelle 1 = stature réelle ÷ sommet du corps du personnage (mesuré dans le .wfp) ; chaque conducteur tiré à ± 1 écart-type
 constexpr float STATURE_M[2] = {1.7562f, 1.6285f}, ECART_M[2] = {0.0686f, 0.0642f};
 // repères du visage pour un adulte de 1,75 m (E, proportions : œil à 0,936 de la stature ; crâne 0,125 au-dessus de l'œil ;
 // œil 0,09 devant l'articulation de la tête ; contact du siège 0,08 sous l'articulation de la cuisse), mis à la taille du personnage
@@ -32,6 +34,7 @@ const char* const COIFFURES[2][3] = {{"Hair_SimpleParted", "Hair_Buzzed", "Hair_
 
 struct Modele {
     Personnage p; PoseSquelette pose;
+    float stature = 1.75f;       // sommet du corps en pose de repos (sommets « corps », hors cheveux), unités du personnage
     vec3 oeil{};                 // œil dans la pose assise (repère du personnage, m)
     float oeilRel = 0.75f, crane = 0.1f;   // œil − contact du siège ; crâne − œil (pose assise)
     const Plage* corps[2] = {nullptr, nullptr};
@@ -49,12 +52,40 @@ int osParNom(const Personnage& p, const char* nom) {
 }
 vec3 position(const mat4& m) { return {m.at(0, 3), m.at(1, 3), m.at(2, 3)}; }
 
+// sommet du corps (y max des sommets de partie 0 : ni yeux ni cheveux) lu dans le .wfp (en-tête documenté dans
+// tools/convert_people.mjs) : Personnage::hauteur est la hauteur de l'articulation de la tête (1,60 m pour l'homme Quaternius,
+// dont le corps mesure 1,81 m) et ne donne pas la stature
+float sommetCorps(const char* chemin) {
+    std::vector<uint8_t> b;
+    if (!readAsset(chemin, b) || b.size() < 12) return 0;
+    size_t o = 4;
+    auto u32 = [&](uint32_t& v) { if (o + 4 > b.size()) return false; std::memcpy(&v, &b[o], 4); o += 4; return true; };
+    uint32_t version = 0, nTex = 0;
+    if (!u32(version) || (version != 2 && version != 3) || !u32(nTex) || nTex > 8) return 0;
+    for (uint32_t i = 0; i < nTex; i++) { uint32_t n = 0; if (!u32(n) || o + n > b.size()) return 0; o += n; }
+    o += 7 * 4;   // rugosité, métal, hauteur, corps[4]
+    uint32_t nV = 0;
+    if (!u32(nV)) return 0;
+    o += 4 * 4;   // nIndices, nPlages, nOs, nClips
+    const size_t pas = version == 2 ? 68 : 84, partie = pas - 4;   // partie : dernier flottant de cloth
+    if (o + (size_t)nV * pas > b.size()) return 0;
+    float haut = 0;
+    for (uint32_t v = 0; v < nV; v++) {
+        float y = 0, part = 0;
+        std::memcpy(&y, &b[o + v * pas + 4], 4); std::memcpy(&part, &b[o + v * pas + partie], 4);
+        if (part < 0.5f) haut = std::max(haut, y);
+    }
+    return haut;
+}
+
 bool chargerModele(Renderer& r, const char* chemin, Modele& M, int sexe) {
     if (!chargerPersonnage(r, chemin, M.p)) return false;
     preparerPose(M.p, M.pose);
     const int tete = osParNom(M.p, "Head"), cuisse = osParNom(M.p, "thigh_l");
     if (tete < 0 || cuisse < 0) { WFS_ERR("conducteurs : %s : os Head / thigh_l absents", chemin); return false; }
-    const float h = M.p.hauteur > 0.5f ? M.p.hauteur : 1.6f;
+    M.stature = sommetCorps(chemin);
+    if (M.stature < 0.5f) { WFS_ERR("conducteurs : %s : sommet du corps illisible", chemin); return false; }
+    const float h = M.stature;
     echantillonner(M.p, -1, 0, M.pose);   // repos (debout) : hauteur de l'œil au-dessus de l'articulation de la tête
     const float oeilSurTete = h * OEIL_STATURE - position(M.pose.modele[(size_t)tete]).y;
     echantillonner(M.p, clipParNom(M.p, "Sitting_Idle_Loop"), 0, M.pose);   // RG-02 : pose assise figée (palette une fois)
@@ -66,8 +97,8 @@ bool chargerModele(Renderer& r, const char* chemin, Modele& M, int sexe) {
         M.corps[lod] = plageParNom(M.p, "corps-" + std::to_string(lod));
         for (int k = 0; k < 3; k++) M.coiffure[k][lod] = plageParNom(M.p, std::string(COIFFURES[sexe][k]) + "-" + std::to_string(lod));
     }
-    WFS_LOG("conducteurs : %s : œil assis %.3f m au-dessus du siège, crâne %.3f m au-dessus de l'œil (pose Sitting_Idle_Loop) (WFS-73)",
-            chemin, M.oeilRel, M.crane);
+    WFS_LOG("conducteurs : %s : corps de %.3f m, œil assis %.3f m au-dessus du siège, crâne %.3f m au-dessus de l'œil (pose Sitting_Idle_Loop) (WFS-73)",
+            chemin, M.stature, M.oeilRel, M.crane);
     return M.corps[0] && M.corps[1] && M.oeilRel > 0.3f;
 }
 
@@ -120,7 +151,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
         const cockpit::InterieurDef* def = e.car ? cockpit::interieurPour(e.car) : nullptr;
         const float sol = mo.bmin.y, assise = sol + (def ? def->assise : 0.42f);
         const float stature = STATURE_M[sexe] + (tirage() * 2.f - 1.f) * ECART_M[sexe];
-        const float cible = stature / std::max(M.p.hauteur, 0.5f) * M.oeilRel;   // œil − siège à l'échelle 1 (pose du personnage)
+        const float cible = stature / M.stature * M.oeilRel;   // œil − siège à l'échelle 1 (pose du personnage)
         const Placement P = placer(assise, cible, M.oeilRel, M.crane, mo.siege.x, mo.siege.w > 0.5f);
         const mat4 monde = e.monde * translate({mo.siege.y, P.oeilY, mo.siege.z}) * rotateY(lacet) * scale({P.echelle, P.echelle, P.echelle})
                            * translate({-M.oeil.x, -M.oeil.y, -M.oeil.z});
