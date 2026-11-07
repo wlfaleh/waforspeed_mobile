@@ -2262,3 +2262,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Zone** : `shaders/sky*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `src/render/atmosphere_*`, `references/reel/lumiere/**`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées au journal dans `src/ui/ecrans/terrain.cpp` (E8) et `src/render/nuit.cpp` (E4).
 - **Règles** : `regles-de-gestion/WFS-208.md` (RG-01 à RG-04, graphisme réaliste, critères). Avis d'`expert-realisme-3d` pour M-04, M-05.
 - **Branches** : WFS-190 (agent arwa) sans envoi depuis 2026-11-06 20:40:18 UTC, reste à lui jusqu'à 06:40 (règle des 10 h) ; WFS-205 dernier envoi 04:29:05 ; WFS-161 01:56:16 ; WFS-158 2026-11-06 23:06:23 UTC.
+
+### 2026-11-07 04:45:57 — WFS-208 : zone élargie pour le choix du moment (po-scrum-master)
+- **Demande** de Claude, agent 1 : RG-01 (6 moments + heure réelle, choix sauvegardé) ne tient pas dans 10 lignes de `terrain.cpp` sans toucher à la sauvegarde.
+- **Décision** : (1) oui, `src/ui/ecrans/terrain.cpp` ≤ 35 lignes ; (2) oui, `src/game/sauvegarde.h/.cpp` ≤ 10 lignes en tout (champ `moment`, `tod` inchangé) ; (3) `game.*` non touché. Détail dans `regles-de-gestion/WFS-208.md` (Suivi).
+- **Contrôle** : aucun ticket 🔧 / 🔀 en E8 ni en E3. Branche `feature/waforspeed-208` poussée à 2026-11-07 04:44:26 UTC.

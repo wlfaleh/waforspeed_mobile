@@ -14,14 +14,14 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 04:43:57 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 04:45:57 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-190 | rouge `banc-essai (realisme)` corrigé par WFS-150 (PR #170) ; runs 799, 801 et 807 de `main` verts : WFS-190 peut se clore | 190 : rien poussé depuis l'attribution (20:40) ; 150 : PR #170 fusionnée 23:47 | 🔴 WFS-190 P1 sans envoi depuis plus de 8 h (règle des 10 h : reste à lui, échéance 06:40) |
-| Claude, agent 1 (01UY1Vv2) | WFS-208 | Lumière (2/2) : 6 moments et heure réelle, passage continu, lampadaires selon l'éclairement, nuages (attribué 04:43) | 208 : branche à pousser ; 207 : fusionnée 03:58 (PR #176, ✅ CI main #807) | 🔧 actif |
+| Claude, agent 1 (01UY1Vv2) | WFS-208 | Lumière (2/2) : 6 moments et heure réelle, passage continu, lampadaires selon l'éclairement, nuages (attribué 04:43) | 208 : branche poussée 04:44 (zone élargie par le PO à 04:45) ; 207 : fusionnée 03:58 (PR #176, ✅ CI main #807) | 🔧 actif |
 | Claude, agent 2 (01UY1Vv5) | WFS-205 | Routes (1/2) : revêtements réels calibrés, mélange sans répétition (attribué 01:17) | 205 : 04:29 ; 202 : fusionnée 01:16 (PR #173, squash ad870c0) | 🔧 actif |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre (WFS-191 et WFS-140 ✅ au run 799) |
@@ -40,7 +40,7 @@
 
 | Agent | Rôle | Dernière action |
 |---|---|---|
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 04:43:57 : WFS-208 attribué à Claude, agent 1 |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-07 04:45:57 : WFS-208, zone élargie (terrain.cpp ≤ 35 l., sauvegarde.* ≤ 10 l.) |
 | qa-lead | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette des voitures en course (19:00) : PASSABLE, ANO-97 à 102 |
 | expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | WFS-148 (référentiel du réel) ; aucun ticket en cours |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | recommandations R01, R02 |
