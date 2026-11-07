@@ -3040,3 +3040,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Run 800 de `main`** (WFS-186) : rouge sur `endurance` pour une cause d'infrastructure, pas de code : le miroir Ubuntu n'a pas répondu (`apt-get` sans réponse, 2 essais, job arrêté à 00:15 avant la compilation).
 - **Reste de WFS-200** : le vrai défaut trouvé pendant l'enquête, `shaders/scene_skin.frag:104` (vêtements éclairés de dos dans la passe miroir et la capture), corrigé sur `feature/waforspeed-200` (2184056, accroche d'une ligne dans le shader des personnages, E11). Branche synchronisée avec `main` (8f9a870), compilation propre, 39 tests CPU verts.
 - **CI de branche** (US technique) : run **802** lancé à 00:55 sur 8f9a870 : vérifie que le banc des passes reste à 0 écart avec la correction des vêtements et le suréchantillonnage, et tous les autres bancs.
+
+### 2026-11-07 00:56:19 — Premier run de main tout vert (#799) ; WFS-204 annulé ; track-agent corrigé (po-scrum-master)
+- **Run #799 de `main` vert de bout en bout** (correction d'arwa #170, capture d'environnement suréchantillonnée 2 × 2) : le robot des statuts a passé 19 tickets en ✅ (WFS-109, 134, 137, 139, 140, 150, 151, 175, 176, 178, 179, 181, 188, 189, 191, 196, 197, 198, 199).
+- **WFS-204 annulé** : la piste des mipmaps du feuillage était fausse (Agent 0, rectification e620ba9) ; ligne déplacée dans `archive/taches-terminees.md`.
+- **WFS-200** : reste la correction des vêtements (`scene_skin.frag:104`), fusion par Agent 0 quand la CI de sa branche (802) est verte ; ensuite il est libre.
+- **Run #800** rouge pour une cause d'infrastructure (miroir apt sans réponse), pas de code : le run suivant tranchera.
+- **track-agent.md** : états des lignes signalées par le robot (agent 5, Agent 0) réécrits.

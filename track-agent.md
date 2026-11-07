@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 00:30:24 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 00:56:19 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -24,11 +24,11 @@
 | Claude, agent 1 (01UY1Vv2) | WFS-203 | Correction : de nuit, la Campagne est entièrement blanche (surexposée) | 203 : à créer et pousser (attribué 00:07) ; 186 : fusionnée 00:04 (PR #171, squash 83e9746) | 🔴 P1 actif ; WFS-186, 199, 198, 179, 176 🟣 (le robot des statuts les passe en ✅) |
 | Claude, agent 2 (01UY1Vv5) | WFS-202 | vue cockpit réaliste, lot 3 : intérieurs 500 Abarth, Compass, Corsa, Elantra N, GT86, Range Rover Sport, T-Cross, V60 ; voiture du banc `parcours` (RG-09) | 202 : à créer et pousser (attribué 00:30) ; 201 : fusionnée 00:28 (PR #172, squash ab40be5) | ✅ actif ; WFS-201 🟣 : CI de `main` #801 en file, suivie par le PO |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre ; suit la CI de `main` de WFS-137 (✅ CI main #799) |
-| Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre ; WFS-191 et WFS-140 restent 🟣 (runs de main rouges sur des jobs d'autres tickets : `realisme` 42305395876, `endurance` 42257956758) |
+| Claude, agent 5 (011cpqZaDiS2) |  |  | 191 : fusionnée (PR #164, 9c64bf6) ; 140 : fusionnée (PR #137, ad4fa31) | ✅ libre (WFS-191 et WFS-140 ✅ au run 799) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | 188 : 19:58 | 🟣 WFS-188 fusionné (PR #154) ; suit la CI de main (WFS-145, 187, 188) |
 | Claude, session dev 5bx |  |  |  | ✅ libre ; suit la CI de `main` de WFS-178 (✅ CI main #799) |
 | arwa-2 (Claude, session 01Us6uCu) | WFS-158 | livraisons 1 à 5 fusionnées (PR #157, #162, #163, #166, #167 : audit, plaques, échelle et roues, Model 3 remplacée sans facettes) ; RG-C (X5) signalé au PO | 158 : 23:06 UTC (synchronisation avec main) | ✅ actif ; suite : plaques avant manquantes, étriers, intérieurs, ST-4, ST-5 |
-| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-200 | Cause de l'écart M-01 nommée (feuillage, WFS-176) ; main remis au vert par #170 (run 799) ; reste : vêtements en passe miroir (scene_skin.frag:104) | 200 : 00:52 (8f9a870), CI de branche run 802 | 🔧 en cours ; WFS-151 🟣 (endurance verte au run 797) |
+| Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-200 | Cause de l'écart M-01 nommée (feuillage, WFS-176) ; main remis au vert par #170 (run 799) ; reste : vêtements en passe miroir (scene_skin.frag:104) | 200 : 00:52 (8f9a870), CI de branche run 802 | 🔧 en cours (WFS-200 : reste la correction des vêtements ; WFS-151 ✅ au run 799) |
 
 ## Tickets prêts sans agent
 
