@@ -855,7 +855,6 @@ void Renderer::createScenePipelines() {
     skinOpaqueCull_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_, false, 0, true);
     cullPipeline_ = 0;
     { const char* f = std::getenv("WFS_FACES"); facesArriere_ = !(f && f[0] == '0'); }
-    if (const char* t = std::getenv("WFS_TAILLE_MIN")) { tailleMinBasse_ = (float)std::atof(t); tailleMin_ = tailleMinBasse_ / 2; }   // WFS-246 : banc (0 : coupé)
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
     addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
@@ -935,15 +934,9 @@ uint8_t Renderer::classer(const masquage::Sphere& s) {
     // WFS-222 : mais la passe de scène, l'ombre et le reflet de cette image gardent leur masquage (VIS_CAPTURE seul sinon)
     if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;   // banc : comparaison avec l'avant
     const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
-    const float dCam = length(s.c - camPos_);
-    if (dCam - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
-    // WFS-246 (levier 4) : petit objet vu sous un angle minuscule (rayon / distance sous tailleMin_ : quelques pixels) au-delà
-    // de 40 m : retiré (Basse 0,006 : un objet de 1 m de rayon à 170 m ; Haute 0,003 : à 330 m)
-    if (dCam > 40.f && s.r < dCam * (qualiteBasse ? tailleMinBasse_ : tailleMin_)) { if (!tout) masques_++; return tout; }
-    // WFS-246 (levier 5) : petit objet (rayon < 1,5 m : panneau, borne, piéton) à plus de 40 m : pas d'ombre portée
-    const bool ombrePetit = !(dCam > 40.f && s.r < 1.5f);
+    if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
-                      (shadowsOn_ && ombrePetit && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
+                      (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
     uint8_t c = 0;   // WFS-227 (accroche) : cascades d'ombre que l'objet touche (passe d'ombre : une tuile seulement si besoin)
     // tranche de la cascade (le long du regard) + portée de l'ombre de l'objet (≈ 3 × son rayon + 5 m) : un objet près de la
     // caméra (la voiture) n'est pas redessiné dans les cascades lointaines, ni un petit objet (< 2 texels) dans une cascade grossière

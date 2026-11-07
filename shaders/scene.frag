@@ -48,11 +48,6 @@ void main() {
         return;
     }
     vec3 N = normalize(vNrm);
-    // WFS-246 (levier 2) : décor lointain (au-delà de DECOR_LOIN m, hors voitures, route, transparents) : éclairage simple,
-    // sans carte de normales, sans reflet GGX du soleil, ambiance de la sonde sans lecture du cube préfiltré
-    const uint F_VOITURE = F_PAINT | F_GLASS | F_WHEEL | F_TAIL | F_HEAD | F_FANTOME;
-    const float DECOR_LOIN = 70.0;
-    bool simple = (flags & (F_VOITURE | F_ROAD | F_BLEND | F_INTERIEUR)) == 0u && length(F.camPos.xyz - vWorld) > DECOR_LOIN;
     vec3 V = normalize(F.camPos.xyz - vWorld);
     bool vtint = (flags & F_VTINT) != 0u;   // végétation (WFS-34) : |normale| = luminosité, même éclairage des deux faces
     // pièces double face. Route, trottoirs et bas-côtés : normales déjà orientées vers le haut à la construction, mais
@@ -67,8 +62,7 @@ void main() {
     teinteVegetation(base, vtint, flags);
     float metal = pc.params.x, rough = pc.params.y;
     if ((flags & F_HASMR) != 0u) { vec4 mr = texture(texMR, vUv); rough *= mr.g; metal *= mr.b; }
-    if (simple) {}   // WFS-246 : pas de relief de la carte de normales au loin
-    else if ((flags & F_HASNORMAL) != 0u && (flags & F_TANGENTE) != 0u && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)
+    if ((flags & F_HASNORMAL) != 0u && (flags & F_TANGENTE) != 0u && dot(vTan.xyz, vTan.xyz) > 0.25)   // WFS-149 (RG-04)
         N = perturbTangente(N, vTan, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
     else if ((flags & F_HASNORMAL) != 0u) N = perturb(N, vWorld, vUv, normalize(texture(texNormal, vUv).xyz * 2.0 - 1.0));
     if (!SANS_DISCARD && (flags & F_MASK) != 0u && base.a < pc.params.z) discard;   // WFS-222
@@ -106,7 +100,7 @@ void main() {
     vec3 f0 = mix(vec3(0.04), albedo, metal);
     if (wetRoad) f0 = vec3(mix(0.04, 0.02, flaque));   // WFS-142 (RG-03) : eau des flaques f0 = 0,02
     vec3 Fs = F_Schlick(f0, VoH);
-    vec3 spec = (vtint || simple) ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
+    vec3 spec = vtint ? vec3(0.0) : D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * Fs;   // feuillage : Lambert sans reflet (jeu web)
     vec3 diff = (1.0 - Fs) * (1.0 - metal) * albedo / PI;
     vec3 sun = F.sunColor.rgb * F.sunDir.w;
     float ombre = sunShadow(vWorld, N);
@@ -128,14 +122,11 @@ void main() {
     // effective (élargie par l'anticrénelage) : sinon chaque petite facette en miroir renvoie le soleil → points brillants
     float roughEnv = fine ? max(rough, sqrt(a)) : rough;
     float sunK = pow(1.0 - clamp(roughEnv, 0.0, 1.0), 6.0);
-    vec3 env = simple ? mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5) * F.misc.z : mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
+    vec3 env = mix(skyColor(R, sunK), mix(F.skyHorizon.rgb, F.skyTop.rgb, 0.5), clamp(roughEnv * 1.2, 0.0, 1.0)) * F.misc.z;
     // WFS-134 (ANO-67) : carrosserie : sous l'horizon, reflet de la chaussée sombre plutôt que du sol clair du ciel
     if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
-    if (!simple) iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
-    else if (F.iblA.x > 0.5) {   // WFS-246 : diffus de la sonde ; reflet = ciel moyen × Fresnel de face (aucune lecture de texture)
-        skyAmb = iblDiffus(N); specOcc = 1.0; Fe = (flags & F_VTINT) != 0u ? vec3(0.0) : f0;
-    }
+    iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
     if (wetRoad && F.nuitA.z > 0.5) {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
         // WFS-142 (RG-04) : il ne REMPLACE plus le reflet du ciel (avant : env = reflet, l'image nette de la rue sur toute la

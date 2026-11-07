@@ -30,7 +30,7 @@ namespace {
 constexpr double PED_RANGE0 = -10, PED_RANGE1 = 115;   // tronçons (1,2 m) derrière / devant le joueur
 constexpr double PED_WALK_SPEED = 1.1, PED_JOG_SPEED = 2.9;   // m/s des animations d'origine
 constexpr float PED_LOD_M[2] = {16.f, 50.f};
-constexpr float PED_LOD_BASSE_M[2] = {5.f, 20.f};   // WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k) ; WFS-246 (accroche, levier 4) : 8 / 30 m avant
+constexpr float PED_LOD_BASSE_M[2] = {8.f, 30.f};   // WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k)
 constexpr int PED_FULL = 8;            // maillages complets
 constexpr int PEOPLE_MAX = 220;        // life.js
 // affichés : 8 au plus — chaque personne = 2 dessins (corps + coiffure) et le renderer en accepte SKIN_MAX_INSTANCES (16)
