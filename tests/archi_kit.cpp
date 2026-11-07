@@ -2,8 +2,10 @@
 // M-01 : hauteurs d'étage et de rez-de-chaussée dans les plages de RG-01 ; M-02 (partie règles) : ouvertures dans les plages
 // du style, dans leur niveau et dans la façade, sans chevauchement ; déterminisme ; hauteur obtenue proche de la voulue.
 #include "../src/world/archi_kit.h"
+#include "../src/render/bench_realisme.h"   // référentiel du réel (lecture JSON seulement)
 #include <cmath>
 #include <cstdio>
+#include <string>
 
 using namespace wfs::archi;
 
@@ -50,6 +52,22 @@ int main() {
             plans++;
         }
         std::printf("[%s] %-14s : %d plans, %d non conformes, écart de hauteur max %.2f m\n", erreurs ? "ÉCHEC" : "OK", S.nom, plans, erreurs, ecartMax);
+    }
+    // référentiel (references/reel/architecture.json) : les plages codées dans archi_kit.h sont celles du référentiel
+    {
+        wfs::reel::Referentiel R;
+        verifierQue(R.charger(std::string(WFS_SOURCE_DIR) + "/references/reel"), "référentiel lisible");
+        auto plage = [&](const char* id, Plage p) {
+            const wfs::reel::Json* m = R.mesure(id);
+            const bool ok = m && std::fabs(m->nombre("min", -1) - p.min) < 1e-4 && std::fabs(m->nombre("max", -1) - p.max) < 1e-4;
+            std::printf("[%s] %s : %.2f-%.2f m (kit %.2f-%.2f m)\n", ok ? "OK" : "ÉCHEC", id, m ? m->nombre("min", -1) : -1, m ? m->nombre("max", -1) : -1, p.min, p.max);
+            verifierQue(ok, "plage du kit = plage du référentiel");
+        };
+        plage("archi.rdc.hauteur", H_RDC);
+        plage("archi.etage.hauteur", H_ETAGE);
+        // cohérence : un étage de la plage laisse la hauteur sous plafond minimale sous un plancher de 0,3 m
+        const wfs::reel::Json* hsp = R.mesure("archi.logement.hauteur_sous_plafond_min");
+        verifierQue(hsp && H_ETAGE.min - 0.3 >= hsp->nombre("valeur", 99), "étage minimal − plancher ≥ hauteur sous plafond minimale");
     }
     for (int r = 0; r < 4; r++) verifierQue(vus[0][r] > 0, "chaque type de rez-de-chaussée apparaît (RG-01)");
     for (int e = 0; e < 3; e++) verifierQue(vus[1][e] > 0, "chaque type d'étage apparaît (RG-01)");

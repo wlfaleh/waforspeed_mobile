@@ -27,6 +27,7 @@ Reproduire les fichiers extraits : `outils/extraire.py` (jeux de données libres
 | `anthropometrie.json` | (f) tailles et proportions adultes (hommes, femmes) |
 | `lieux.json` | (g) latitude, longitude, date et heure des moments des 4 cartes (lieux fictifs) |
 | `soleil_controle.json` | 10 positions du soleil de contrôle (RG-02) |
+| `architecture.json` | WFS-161 : hauteurs de niveau (RG-01), garde-corps, portes, fenêtres (M-02), fenêtre éclairée la nuit (M-04) |
 
 ## Sources
 
@@ -79,3 +80,9 @@ Reproduire les fichiers extraits : `outils/extraire.py` (jeux de données libres
 
 ### lieux.json
 - `CONCEPTION-148` — Choix de conception de WFS-148 : lieux fictifs cohérents avec le décor de chaque carte (aucune ville nommée). WaForSpeed (expert-realisme-3d), d'après RG-01 (g) de regles-de-gestion/WFS-148.md, 2026. `regles-de-gestion/WFS-148.md` Accès depuis la session : ouvert. Note : valeurs proposées, à valider par le PO : ce ne sont pas des données mesurées ; seule la latitude de la Corniche (43,5° N) est donnée par RG-01. (16 valeurs : conception 16)
+
+### architecture.json (WFS-161, exception de zone accordée par le PO le 2026-11-07 01:48)
+- `RG-WFS161` — Règles de gestion de WFS-161, RG-01 : étage 2,7-3,2 m, rez-de-chaussée 3,5-4,5 m (choix de conception du PO). `regles-de-gestion/WFS-161.md`. Accès : ouvert.
+- `DECRET-2002-120` — Décret n° 2002-120 du 30 janvier 2002 (logement décent), article 4 : hauteur sous plafond ≥ 2,20 m. <https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000217471> Accès depuis la session : page non ouverte (Légifrance bloqué) ; à confirmer.
+- `NF-P01-012` — NF P01-012 (AFNOR) : garde-corps, hauteur de protection 1,00 m. <https://www.boutique.afnor.org/fr-fr/norme/nf-p01012/> Norme payante, non ouverte ; à confirmer.
+- `ARRETE-2015-ACCES` — Arrêté du 24 décembre 2015 (accessibilité des logements neufs) : porte d'entrée 0,90 m nominale, 0,83 m de passage utile. <https://www.legifrance.gouv.fr/loda/id/JORFTEXT000031697926> Page non ouverte ; à confirmer.
