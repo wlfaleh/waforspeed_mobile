@@ -1219,6 +1219,7 @@ public:
             depart_ = 0;
         }
         if (pilote_ && piloteT_ == g.time) return;   // image conduite par le pilote automatique
+        if (pl.aide != Aide::Web) return;   // WFS-256 (accroche) : voiture du joueur : chocs du décor en vraie physique, dans les deux modèles (src/game/chocs_cartes.cpp)
         if (std::fabs(pl.playerX) <= 1 || pl.speed <= MAX_SPEED / 6) return;
         Course* course = activeCourseMut();
         if (!course || !course->playing()) return;

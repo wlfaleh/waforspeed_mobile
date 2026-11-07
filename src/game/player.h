@@ -3,6 +3,7 @@
 #pragma once
 #include "cars.h"
 #include "conduite_monde.h"   // WFS-241 : conduite en coordonnées du monde
+#include "chocs_decor.h"      // WFS-256 : chocs avec le décor
 #include "track.h"
 
 namespace wfs {
@@ -64,7 +65,17 @@ struct Player {
     double aideRoues = 0;       // part de cet angle ajoutée par l'aide à la direction (rad)
     // volant (−1..1) qui donne la courbure k (1/m) à la vitesse v (m/s), selon le modèle en cours (joueur simulé des bancs)
     double braquagePour(double k, double v) const;
+    // WFS-256 : chocs avec le décor depuis la dernière lecture (lus et remis à zéro par le système chocs_decor.cpp) :
+    // nombre, vitesse d'impact la plus forte (m/s, vers l'obstacle) et genre de l'objet touché
+    struct ChocsDuPas { int n = 0; double impact = 0; chocs::Genre genre = chocs::Genre::Autre; } chocsDecor;
 private:
+    // WFS-256 : test continu du pas (pose de départ → pose (x, z, cap) d'arrivée) et réaction de corps rigide ; vrai si contact
+    // (pose et vitesse corrigées). Commun aux deux modèles de conduite (conduite réelle et conduite d'avant)
+    bool heurter(Track& track, double x0, double z0, double cap0, double& x, double& z, double& cap, double& vx, double& vz, double& r,
+                 double m, double Iz);
+    void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
+    bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
+    std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
     void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
     void synchroniser(Track& track);

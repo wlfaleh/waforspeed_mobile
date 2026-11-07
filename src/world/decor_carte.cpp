@@ -203,9 +203,33 @@ void CarteDecor::init(Renderer& r, const GameView& g) {
         const char* z = zone(a);
         if (std::strcmp(z, "village") && std::strcmp(z, "paddock") && std::strcmp(z, "gravier")) { Item v; v.t = T_VERGE; item(a, v); }
     }
+    {   // WFS-256 (accroche, autorisée par le PO) : objets solides pour les chocs du joueur, mêmes filtres que le dessin (buildChunk)
+        const float R = (float)RW;
+        for (int64_t a = 0; a < L; a++) {
+            const Pose p0 = poseAt(*track_, a);
+            for (const Item& it : items_[(size_t)a]) {
+                chocs::ObstacleRoute o[4]; const float lo = it.t == T_LAMP ? R + 0.8f : it.lat, m = it.t == T_TREE ? 1.5f : 0.5f;
+                const int n = solide(it, o);
+                if (n == 0) continue;
+                const vec3 q = lateral(p0, it.side * lo) + p0.f * it.along;
+                if ((!it.ilot && !gir_.empty() && surGiratoire(q, m)) || (lo > 0 && surAutreChaussee(q, a, m))) continue;
+                for (int k = 0; k < n; k++) chocs::declarerObjet(*track_, a, o[k], false);
+            }
+        }
+    }
     size_t nb = 0; for (auto& v : items_) nb += v.size();
     WFS_LOG("Carte %s : %zu objets de décor, %zu zones", carteId(), nb, ranges.size());
     WFS_LOG("Carte %s : %s%s", carteId(), night_ ? "nuit" : "jour", depart_ ? " (départ avancé, banc d'essai)" : "");
+}
+
+// WFS-256 (accroche) : objets communs : arbre (tronc de 25 à 30 cm de rayon ; cyprès 15 cm), lampadaire de village (mât de
+// 18 × 18 cm à RW + 0,8 m), projecteur du circuit (mât de 25 cm à RW + 7 m : lampe(), flood)
+int CarteDecor::solide(const Item& it, chocs::ObstacleRoute o[4]) const {
+    const float R = (float)RW, s = (float)it.side;
+    o[0] = {};
+    if (it.t == T_TREE) { o[0].lat = s * it.lat; o[0].along = it.along; o[0].r = it.k == K_CYPRESS ? 0.15f : 0.3f; o[0].genre = chocs::Genre::Arbre; return 1; }
+    if (it.t == T_LAMP) { o[0].lat = s * (it.k != 0 ? R + 7.f : R + 0.8f); o[0].r = it.k != 0 ? 0.25f : 0.09f; o[0].genre = chocs::Genre::Poteau; return 1; }
+    return 0;
 }
 
 const char* CarteDecor::zone(int64_t a) const { return zoneId(map(), a, len()); }
