@@ -3672,3 +3672,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Banc de conduite : la section 5 (pilote, critère de WFS-241) mesurait le modèle par défaut ; elle choisit désormais le nouveau modèle explicitement. Tests des chocs : rendent le modèle du jeu à la fin.
 - Preuves (local) : 54 tests CPU OK (`test_conduite` 0 écart) ; banc `parcours` (rendu logiciel) 0 écart. Fusion par confiance.
 - Suite : points de l'utilisateur un par un (aide activée qui passe virages et ronds-points, dont le 1er virage du GP à 228 km/h ; direction qui suit le doigt ; sensibilité qui baisse avec la vitesse), sur `feature/waforspeed-258`.
+
+### 2026-11-07 17:35:52 — Début WFS-267 : CI de main rouge (#852, banc `realisme`), attribué à arwa-5 (Claude, session 01Us6uCwsJ63) (po-scrum-master)
+- Demande d'arwa-5 (nouveau développeur, ni arwa-4, ni l'agent 4 stoppé, ni Claude, agent 5) ; l'utilisateur lui a demandé des **petites tâches**.
+- Choix : **WFS-267** (P1, [TECHNIQUE]) : CI de `main` rouge → US technique confiée tout de suite à un développeur libre (`CLAUDE.md`) ; l'agent expert ci tient déjà WFS-251 (un ticket par agent) ; E7 sans ticket 🔧.
+  WFS-268 (en tête de l'ordre, rendu ≤ 1 jour, pas une petite tâche) reste au prochain développeur qui demande. WFS-249 : E13 tenue par WFS-230 (même sujet).
+- Épic E7 + exception E4 : `src/render/bench_realisme.cpp` (**coordination avec l'agent expert ci, WFS-251**), `tools/qa/**` et `.github/workflows/build.yml` seulement si la cause y est. Interdit : iOS, tailles d'interface, affaiblir le banc.
+- Plan court : RG-00 regarder le job `banc-essai (realisme)` du run #859 (id 42395748315, 7a3eedc ; en cours depuis 17:27:52) ; en attendant, banc en local sur `main` (lavapipe) ;
+  sinon nommer la cause (piste : WFS-161 4fe82c8, seul commit de la plage ae49782..0ffe7d0 à toucher `bench_realisme.cpp`) et la corriger ; indice `couleurs` mesuré (24 cases).
+- Fin : RG-00 vert → « ✅ Terminé (CI main #859, RG-00, sans code) » ; sinon PR squash, ✅ par le robot. **Pas de 🟡** (US technique de la CI). CI de branche permise, une à la fois, notée au journal.
+- Règles : `regles-de-gestion/WFS-267.md` (section « Suivi — attribution à arwa-5 »).
