@@ -2313,3 +2313,27 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **WFS-211 créé** (E11, P2, ⏳ en attente de WFS-209 et WFS-73) : 3 niveaux de détail, peau M-03, humains réalistes chez les conducteurs ; règles `regles-de-gestion/WFS-211.md`. WFS-210 devient le lot 3/3.
 - Alerte : WFS-190 (agent arwa) sans envoi depuis 20:40, 9 h 07 ; règle des 10 h : reste à lui jusqu'à 06:40.
 
+
+### 2026-11-07 05:58:02 — Recette de nuit, lot 1 : WFS-138, 171, 139 (+ correctif), 184, 180, 140 (qa-lead)
+- Source : Release `apercu` de `main`, construction 807 (a756c55, 684/684 captures à jour) ; journaux des jobs du run 807 ; `test_audio` relancé en local (artefacts : 403).
+- **WFS-138** PASSABLE AVEC ANOMALIES MINEURES (ANO-103 : col peu reconnaissable) ; **WFS-171** VALIDÉ ; **WFS-139** PASSABLE AVEC ANOMALIES MINEURES (ANO-104 : trou du terrain dans une épingle, vue de dessus) ; **WFS-139 correctif** VALIDÉ ; **WFS-184** VALIDÉ (mesures, wav non écoutés) ; **WFS-180** PASSABLE AVEC ANOMALIES MINEURES (ANO-105 : foule et bateaux invisibles) ; **WFS-140** VALIDÉ.
+- WFS-88 (iOS, gel) laissé ☐ sans rien lancer.
+- Rapports `qa/rapports/WFS-XX.md`, cases cochées dans `qa/Check.md`, ANO-103 à 105 au tableau `anno.md` (🆕, pour le PO).
+
+### 2026-11-07 05:59:13 — Recette de nuit, lot 2 : WFS-150 (+ correction), 183, 178, 137, 187, 145, 181, 185, 188, 175 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55), journaux `endurance` / `texte` du run 807, `test_conduite_libre` en local.
+- **WFS-150** PASSABLE AVEC ANOMALIES MINEURES (ANO-106 : chaussée bleue en Ultra) ; **WFS-150 correction** VALIDÉ ; **WFS-183** VALIDÉ ; **WFS-187** VALIDÉ ; **WFS-145** VALIDÉ ; **WFS-181** VALIDÉ ; **WFS-185** VALIDÉ ; **WFS-188** VALIDÉ ; **WFS-175** VALIDÉ.
+- **WFS-178 REFUSÉ** (bloquante) : `carte-campagne-rondpoint` : touffes d'herbe et buissons en travers de la chaussée à l'entrée du rond-point du village (déjà sur `apercu-waforspeed-178`).
+- **WFS-137 REFUSÉ** (bloquante) : `carte-ville-fontaine` / `-nuit` : la voiture roule sur le dallage de la place de la fontaine, posé sur la chaussée (aucune ligne), fontaine hors cadre.
+- **Pour le PO (`po-scrum-master`)** : deux tickets de correction prioritaires à créer (Campagne : végétation sur la chaussée au rond-point du village ; Ville : place de la fontaine sur la chaussée). Détail et correction proposée dans les rapports.
+
+### 2026-11-07 06:00:26 — Recette de nuit, lot 3 : WFS-158 (livraisons 1 à 5), 151, 176, 189, 196, 179, 191, 198, 199, 186 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55) ; Releases de branche `apercu-waforspeed-197/151/200/205` pour l'avant / après de WFS-151 ; API GitHub pour les robots.
+- **WFS-158** livraisons 1 à 4 VALIDÉ ; livraison 5 PASSABLE AVEC ANOMALIES MINEURES (ANO-107 : plaque de la Model 3 illisible) ; **WFS-176**, **189**, **196**, **179**, **191**, **198**, **199**, **186** VALIDÉ.
+- **WFS-151 REFUSÉ** (bloquante) : 14 captures `vitrine-<id>-0` entièrement blanches et `course-sf90` blanche après 4 s de course : l'exposition ne se remet pas à une valeur juste après un nouveau chargement de voiture (`g.init` / `g.shutdown` du banc `vitrines`). Normales sur `apercu-waforspeed-197` (main juste avant WFS-151), blanches dès `apercu-waforspeed-151`.
+- **Pour le PO (`po-scrum-master`)** : ticket de correction prioritaire à créer (écran blanc après rechargement d'une voiture, exposition WFS-151), détail dans `qa/rapports/WFS-151.md`.
+
+### 2026-11-07 06:01:31 — Recette de nuit, lot 4 : WFS-203, 207, 197, 201, 202, 200 (qa-lead)
+- Source : Release `apercu` de `main` (construction 807, a756c55), pixels saturés mesurés sur toutes les captures de nuit.
+- **WFS-203** PASSABLE AVEC ANOMALIES MINEURES (ANO-108 : vaches et moutons invisibles de nuit) ; **WFS-207** PASSABLE AVEC ANOMALIES MINEURES (ANO-109 : ciel en paliers, ciel de midi sombre) ; **WFS-197**, **201**, **202** (vue cockpit des 20 voitures) VALIDÉ ; **WFS-200** VALIDÉ.
+- WFS-205 : CI de `main` (run 808, 152ab47) encore en cours ; recette dès la publication des captures.
