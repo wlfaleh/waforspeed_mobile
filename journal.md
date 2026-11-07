@@ -2386,3 +2386,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 07:35:25 — Recette de nuit : WFS-73 correctif, WFS-209 ; fin de la recette (qa-lead)
 - **WFS-73 correctif** VALIDÉ (construction 810, 070045e : stature plausible, tête sous le pavillon) ; **WFS-209** VALIDÉ (construction 811, 841d75f : 12 humains sans déformation, APK 176,2 Mo).
 - Fin de la recette de nuit : toutes les lignes de `qa/Check.md` sont cochées sauf WFS-88 (iOS, gel). Trois REFUSÉ en attente d'un ticket de correction du PO : WFS-151, WFS-137, WFS-178 (voir l'entrée « bilan » plus haut).
+### 2026-11-07 07:35:44 — Recette de nuit : WFS-88, WFS-73 (correctif), WFS-209 (qa-lead)
+
+- Nouvelle règle de recette appliquée : seulement les critères d'acceptation et le jeu qui fonctionne.
+- **WFS-88** : VALIDÉ côté Android. Le code est sous `__APPLE__` et le chemin Android est identique ; la CI de `main` est verte. La partie iOS n'est pas vérifiable (GEL iOS).
+- **WFS-73 (correctif, #179)** : déjà validé par l'autre session `qa-lead` (0183bv2Z) en même temps ; mon constat est le même (stature plausible, tête sous le pavillon), rapport non doublé.
+- **WFS-209** : validé par l'autre session `qa-lead` ; en complément, j'ai relevé **ANO-111** (mineure : menton et cou des hommes colorés en bleu par le vêtement, encolure des femmes en dents de scie), donc le verdict passe à **PASSABLE AVEC ANOMALIES MINEURES**. Le teint unique par sexe n'est pas retenu (peau au lot suivant).
+- `qa/Check.md` : plus aucun ticket à recetter.
