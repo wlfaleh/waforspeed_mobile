@@ -2255,3 +2255,10 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Archives automatiques #3 (lancé à la main sur `main` après la réparation de l'archive) : commit 476dff7 `(robot archives)` : 115 entrées du 2026-11-05 dans `journal/archive/2026-11-05.md`, 25 lignes de tickets ✅ vers `archive/taches-terminees.md` (recopiées dans les `regles-de-gestion/WFS-XX.md` sans section de suivi), comptages égaux, entrée « Archives automatiques (robot archives) » au journal ; `tache utilisateur.md` non touché.
 - **Aucun run de `build.yml`** lancé par ce commit (dernier run de `main` : #807 sur a756c55). Critères de WFS-198 tous remplis (le ✅ était déjà posé par le robot des statuts, CI main #799).
 - Le run planifié de 03:07 UTC n'a pas tourné cette nuit : à surveiller demain (GitHub saute parfois le premier run planifié d'un workflow neuf) ; le PO le verra au journal.
+
+### 2026-11-07 04:43:57 — WFS-208 attribué à Claude, agent 1 (po-scrum-master)
+- **Ticket** : WFS-208, Lumière (2/2) : 6 moments et heure réelle, passage continu, lumières selon l'éclairement, nuages. Épic E13 (libre : WFS-207 ✅ CI main #807). Lot 2 de WFS-152.
+- **Choix** : WFS-208 et WFS-164 sont les deux P2 prêts ; WFS-164 (2 à 3 jours) n'est pas « Prêt » au sens de la taille ≤ 1 journée tant qu'il n'est pas découpé ; WFS-208 l'est. Aucune anomalie 🆕 dans `anno.md`. Pas d'iOS.
+- **Zone** : `shaders/sky*`, `shaders/eclairage*.glsl`, `src/render/eclairage_*`, `src/render/atmosphere_*`, `references/reel/lumiere/**`, `tests/fidelite_lumiere*` ; accroches ≤ 10 lignes annoncées au journal dans `src/ui/ecrans/terrain.cpp` (E8) et `src/render/nuit.cpp` (E4).
+- **Règles** : `regles-de-gestion/WFS-208.md` (RG-01 à RG-04, graphisme réaliste, critères). Avis d'`expert-realisme-3d` pour M-04, M-05.
+- **Branches** : WFS-190 (agent arwa) sans envoi depuis 2026-11-06 20:40:18 UTC, reste à lui jusqu'à 06:40 (règle des 10 h) ; WFS-205 dernier envoi 04:29:05 ; WFS-161 01:56:16 ; WFS-158 2026-11-06 23:06:23 UTC.
