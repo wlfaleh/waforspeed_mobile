@@ -67,7 +67,7 @@ void main() {
         fonduLod();
     }
     // WFS-16 : passe de reflet (vue miroir de la chaussée) : rien de ce qui est sous le plan
-    if (F.nuitA.w > 0.5 && vWorld.y < F.nuitB.x - 0.05) discard;
+    if (!SANS_DISCARD && F.nuitA.w > 0.5 && vWorld.y < F.nuitB.x - 0.05) discard;   // WFS-222 : SANS_DISCARD (common.glsl)
     if ((flags & F_ADD) != 0u) {   // WFS-09 : halo des feux et des lampadaires (TEXS.radial du jeu web, mélange additif)
         outColor = haloLumiere();
         return;
@@ -148,7 +148,7 @@ void main() {
         vec3 Nt = bosseHauteur(N, vWorld, hT);
         if (tissuK > 0.0) { N = normalize(mix(N, Nt, tissuK)); rough = min(1.0, rough + 0.05 * (1.0 - fondu) * tissuK); }
     }
-    if ((flags & F_MASK) != 0u && base.a < pc.params.z) discard;
+    if (!SANS_DISCARD && (flags & F_MASK) != 0u && base.a < pc.params.z) discard;   // WFS-222
 
     // ---------- surfaces procédurales (uv = mètres : x latéral, y le long de la route) ----------
     bool wetRoad = false;   // WFS-16 : chaussée mouillée ; WFS-142 (RG-01) : seulement quand il pleut

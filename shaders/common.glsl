@@ -1,4 +1,8 @@
 // WaForSpeed — données communes aux shaders de scène
+// WFS-222 : SANS_DISCARD = vrai pour les pipelines des objets opaques sans découpe (ni alpha masqué, ni tramage de fondu,
+// ni passe de reflet) : le pilote retire les « discard » du shader, et le test de profondeur se fait AVANT le shader
+// (early-Z, LRZ des GPU mobiles) : les pixels cachés ne sont plus calculés. Faux par défaut : comportement d'avant.
+layout(constant_id = 0) const bool SANS_DISCARD = false;
 layout(set = 0, binding = 0) uniform Frame {
     mat4 viewProj;
     mat4 invViewProj;

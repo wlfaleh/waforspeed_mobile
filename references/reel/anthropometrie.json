@@ -1,6 +1,6 @@
 {
  "fichier": "anthropometrie.json",
- "description": "Anthropométrie adulte — WFS-148 RG-01 (f)",
+ "description": "Anthropométrie adulte — WFS-148 RG-01 (f) ; enfants de 4, 7, 10 et 14 ans — WFS-233 RG-01",
  "sources": {
   "ANSUR-II": {
    "titre": "2012 Anthropometric Survey of U.S. Army Personnel (ANSUR II) : fichiers publics (NATICK/TR-15/007)",
@@ -14,6 +14,26 @@
     "femmes": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a"
    },
    "note": "fichiers lus dans la copie github.com/senihberkay/US-Army-ANSUR-II (empreintes ci-contre) ; population militaire des États-Unis (pas la population française) : sert aux proportions et aux plages de taille"
+  },
+  "CDC-2000": {
+   "titre": "CDC Growth Charts 2000 : stature-for-age, 2 à 20 ans (statage.csv, paramètres LMS et percentiles)",
+   "editeur": "National Center for Health Statistics, Centers for Disease Control and Prevention (États-Unis)",
+   "annee": "2000",
+   "lien": "https://www.cdc.gov/growthcharts/percentile_data_files.htm",
+   "licence": "domaine public (gouvernement des États-Unis)",
+   "acces": "ouvert",
+   "empreintes_sha256": {
+    "statage.csv": "ffc083df5147311255de986d2215625725c3f6fd46a3619b09314d88a0c37a09"
+   },
+   "note": "fichier lu dans la copie github.com/ewheeler/pygrowup (pygrowup/tables/source/cdc/statage.csv, empreinte ci-contre) ; population des États-Unis ; valeur = médiane M à l'âge révolu (Agemos = 12 × âge + 0,5), écart-type ≈ M × S"
+  },
+  "AVIS-233": {
+   "titre": "Proportions des enfants : valeurs de contrôle de l'expert-realisme-3d pour WFS-233 (rapport hauteur assise / stature, Fredriks et al. 2005 ; règle tête / stature)",
+   "editeur": "WaForSpeed (expert-realisme-3d)",
+   "annee": "2026",
+   "lien": "regles-de-gestion/WFS-233.md",
+   "acces": "ouvert",
+   "note": "valeurs données de mémoire par l'expert, non vérifiées sur la publication : statut « à confirmer »"
   }
  },
  "mesures": [
@@ -332,6 +352,238 @@
    "source": "ANSUR-II",
    "statut": "a_sourcer",
    "note": "les fichiers publics d'ANSUR II n'ont pas la hauteur vertex – menton ; la règle « 1/7,5 » de la charte n'a pas de source ouverte"
+  },
+  {
+   "id": "enfant.garcons.stature.4ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), garçons de 4 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1025.1,
+   "ecart_type": 42.4,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 48.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.garcons.stature.7ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), garçons de 7 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1220.3,
+   "ecart_type": 54.2,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 84.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.garcons.stature.10ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), garçons de 10 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1388.2,
+   "ecart_type": 66.1,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 120.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.garcons.stature.14ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), garçons de 14 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1641.4,
+   "ecart_type": 80.3,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 168.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.filles.stature.4ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), filles de 4 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1010.3,
+   "ecart_type": 43.7,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 48.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.filles.stature.7ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), filles de 7 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1217.6,
+   "ecart_type": 55.4,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 84.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.filles.stature.10ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), filles de 10 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1382.1,
+   "ecart_type": 67.3,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 120.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.filles.stature.14ans",
+   "domaine": "anthropometrie",
+   "grandeur": "taille (stature), filles de 14 ans (médiane)",
+   "unite": "mm",
+   "valeur": 1604.8,
+   "ecart_type": 65.8,
+   "source": "CDC-2000",
+   "statut": "verifie",
+   "formule": "colonne M de statage.csv à Agemos = 168.5 ; écart-type ≈ M × S",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.01,
+    "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+   }
+  },
+  {
+   "id": "enfant.tete_sur_taille.4ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de la tête (vertex – menton) / taille, enfant de 4 ans",
+   "unite": "-",
+   "valeur": 0.175,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.08
+   }
+  },
+  {
+   "id": "enfant.entrejambe_sur_taille.4ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de l'entrejambe / taille, enfant de 4 ans",
+   "unite": "-",
+   "valeur": 0.4,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.02
+   }
+  },
+  {
+   "id": "enfant.tete_sur_taille.7ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de la tête (vertex – menton) / taille, enfant de 7 ans",
+   "unite": "-",
+   "valeur": 0.16,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.08
+   }
+  },
+  {
+   "id": "enfant.entrejambe_sur_taille.7ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de l'entrejambe / taille, enfant de 7 ans",
+   "unite": "-",
+   "valeur": 0.43,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.02
+   }
+  },
+  {
+   "id": "enfant.tete_sur_taille.10ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de la tête (vertex – menton) / taille, enfant de 10 ans",
+   "unite": "-",
+   "valeur": 0.148,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.08
+   }
+  },
+  {
+   "id": "enfant.entrejambe_sur_taille.10ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de l'entrejambe / taille, enfant de 10 ans",
+   "unite": "-",
+   "valeur": 0.45,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.02
+   }
+  },
+  {
+   "id": "enfant.tete_sur_taille.14ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de la tête (vertex – menton) / taille, enfant de 14 ans",
+   "unite": "-",
+   "valeur": 0.138,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "relative",
+    "valeur": 0.08
+   }
+  },
+  {
+   "id": "enfant.entrejambe_sur_taille.14ans",
+   "domaine": "anthropometrie",
+   "grandeur": "hauteur de l'entrejambe / taille, enfant de 14 ans",
+   "unite": "-",
+   "valeur": 0.46,
+   "source": "AVIS-233",
+   "statut": "a_confirmer",
+   "tolerance": {
+    "type": "absolue",
+    "valeur": 0.02
+   }
   }
  ]
 }
