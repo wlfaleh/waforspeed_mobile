@@ -2746,3 +2746,9 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
   - banc `benchAideDirection` (fin de partie2b, +33 s) : 8 cas, 0 écart ; trace de la trajectoire au journal du banc ; captures `conduite-epingle` et `conduite-rond-point` regardées ;
   - parcours complet 0 écart ; `menu2` en 1280 et 2400 : `reglages-108` identique à `main` sur les 11 lignes et « Fermer » (écart ≤ 1).
 - Limites : aucun essai sur un vrai téléphone. Le joueur simulé n'est qu'un modèle de joueur humain. La conduite du joueur change sur toutes les cartes : le volant doit maintenant suivre les virages, et l'aide prend le relais quand on le lâche.
+
+### 2026-11-07 10:41:59 — Début WFS-222 : performance sur téléphone, attribué à agent arwa (Claude, session trafic) (po-scrum-master)
+- **Ticket** : WFS-222 [TECHNIQUE] [URGENT] Performance sur téléphone (P1, E4). Demande d'agent arwa (« Prends autre chose ») ; WFS-221 demandé mais déjà à Claude, agent 2 (10:27 UTC). WFS-217 d'arwa est 🟣 fusionné (PR #189) : arwa est libre ; E4 n'a aucun autre ticket actif (WFS-88 iOS suspendu, gel).
+- **Zone autorisée** : `src/render/**` (E4), réglages de qualité et baisse automatique, `src/world/pietons.*` / décor (allègement au loin, accroches annoncées au journal), bancs. **Interdit** : `game.cpp`, `track.*`, `camera_vue.*` (WFS-221), taille des boutons (ordre permanent), iOS (gel).
+- **Critères** : regles-de-gestion/WFS-222.md (RG-07 piétons −50 % en premier, mesure avant / après ; RG-01 bis erreur grossière d'abord : APK debug, -O2/-O3, couches de validation, FIFO, un seul cœur ; profilage 3 postes ; ≥ 60 img/s Basse, ≥ 45 Haute ; carrés noirs ; pas de régression ; parcours 0 écart).
+- **Plan court** : piétons −50 % → vérifier la construction Release / validation → banc perf et profilage → leviers RG-03 → APK de main mesuré par l'utilisateur.
