@@ -93,6 +93,11 @@ void surfaceFacade(inout vec4 base, inout float rough) {
         const float fj = 1.0 - (l - e) * (h - e) / (l * h);           // part de la surface occupée par les joints
         const vec3 element = max((ref - fj * MORTIER) / (1.0 - fj), vec3(0.0));   // compense : moyenne = référentiel
         const float var = (hash(id + 7.0) - 0.5) * (type == 1 ? 0.10 : 0.18);   // teinte d'un élément à l'autre (moyenne nulle)
+        // M-03 à toute résolution : quand le pixel dépasse le joint, l'anticrénelage l'élargit et la moyenne glisse vers le
+        // mortier (cubemap de 128 ou 256 px, façade lointaine) : le joint tend alors vers sa part moyenne fj (banc des passes,
+        // M-01 de WFS-150 : cubemap contre scène à ± 1 %)
+        const vec2 pw = fwidth(p);
+        j = mix(j, fj, smoothstep(0.5 * e, 2.0 * e, max(pw.x, pw.y)));
         c = mix(element * (1.0 + var), vec3(MORTIER), j);
         rough = mix(rough, 0.95, j);
     } else if (type == 3) {   // moellons : cellules irrégulières de 0,25 à 0,4 m, joints épais
