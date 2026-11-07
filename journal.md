@@ -2701,3 +2701,24 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 ### 2026-11-07 10:26:38 — Basse : 26 img/s, pas plus fluide ; WFS-222 créé (performance) en parallèle de WFS-221 (po-scrum-master)
 - **Mesure de l'utilisateur** : en Basse, « Basse · 75 % · MSAA ×2 · 26 img/s · chauffe 1 » ; vidéo en Ville : 223 images en 9,2 s, médiane 34 ms, 37 images > 50 ms ; « c'est pareil ». Grands carrés noirs sur les façades et près de la caméra (à identifier). Captures dans `qa/retours/2026-11-07-*`.
 - **WFS-222** (`[TECHNIQUE]`, P1 Urgent, E4, `regles-de-gestion/WFS-222.md`) : profilage (processeur par système, appels de dessin, GPU par passe), objectif ≥ 30 img/s stables sur le téléphone, baisse automatique efficace, carrés noirs ; fichiers séparés de WFS-221. Bandeau de `TACHES.md` : WFS-221 puis WFS-222 aux premiers développeurs libres.
+
+### 2026-11-07 10:27:15 — WFS-221 : symptôme exact « la voiture avance, recule, avance » ; RG-08 (po-scrum-master)
+- Description de l'utilisateur ajoutée à WFS-221 : allers-retours de la voiture devant la caméra. Cause attendue : position par pas non interpolée (0, 1 ou 2 pas par image) contre caméra lissée au temps de l'image. **RG-08** : mesurer les changements de sens de la distance voiture ↔ caméra ; objectif : aucun aller-retour > 2 cm.
+
+### 2026-11-07 10:27:32 — WFS-221 attribué à Claude, agent 2 ; arbitrage M-05 et accroche de WFS-206 (po-scrum-master)
+- **Début WFS-221** ([TECHNIQUE] [URGENT], P1, E0 + E3) : Claude, agent 2 (01UY1Vv5), libre après WFS-206 (PR #188, 42ce230). Prochain ticket selon l'ordre de l'utilisateur (bandeau de `TACHES.md`). Branche `feature/waforspeed-221`, à pousser tout de suite.
+  - Règles : `regles-de-gestion/WFS-221.md` (RG-01 à RG-06 ; RG-07 est dans WFS-222).
+  - Zone : `src/game/game.cpp` (exception PO), `src/game/track.*`, `src/game/camera_vue.*`, bancs de `src/game/**`, `tests/**` ; accroche annoncée `build.yml` (publication du banc `fluidite`). **`player.*` reste à WFS-217** (agent arwa, E3) : ne pas y toucher. iOS interdit.
+  - Plan : banc `fluidite` et mesure « avant » ; rendu interpolé (voiture, roues, caméra, trafic) ; pente et direction lissées ; mesure « après » à 30 / 60 / 90 img/s ; captures avant / après. US technique : CI de branche permise, une à la fois, chaque run au journal.
+- **WFS-206, accroche de 2 lignes dans `game.cpp` au lieu de `track.cpp`** : acceptée (≤ 10 lignes, annoncée au journal).
+- **M-05 (vibreurs du Grand Prix)** : reste « non mesurable » dans l'indice des routes ; aucun ticket créé maintenant. Aucun site n'est ajouté sans accord de l'utilisateur (`regles-reseau.md`). Si l'utilisateur fournit une source (ou accepte un site précis, présenté par le PO), le PO crée alors un ticket E2 (`src/world/circuit.cpp`) pour la géométrie, avec les valeurs dans `references/reel/routes/`.
+- **WFS-222** reste le prochain ticket à attribuer au premier développeur libre.
+
+### 2026-11-07 10:30:06 — −50 % de personnes dans les rues (WFS-222 RG-07) ; WFS-223 créé (ronds-points) (po-scrum-master)
+- **Ordres de l'utilisateur** : au moins 50 % de personnes en moins dans les rues ; une tâche pour corriger les défauts graphiques des ronds-points.
+- **WFS-222** : RG-07 (piétons −50 % sur toutes les cartes, Ville 996 → ≤ 498, en premier, mesure avant / après).
+- **WFS-223** (E2, P1 Urgent, ⏳ Prêt) : inventaire des ronds-points des 4 cartes, marquages réglementaires, îlot central, blocs de couleur remplacés, raccords ; captures avant / après. Bandeau de `TACHES.md` : 221, puis 222, puis 223. Réponse dans `tache utilisateur.md`.
+
+### 2026-11-07 10:30:51 — WFS-222 : le téléphone de l'utilisateur est puissant → objectif ≥ 60 img/s en Basse, ≥ 45 en Haute ; chercher une erreur grossière (po-scrum-master)
+- **Précision de l'utilisateur** : il joue à Call of Duty sans problème ; le matériel n'est pas en cause.
+- **WFS-222** : objectifs relevés (Basse ≥ 60, Haute ≥ 45 stables, aucune image > 33 ms) ; pistes d'erreur grossière à vérifier d'abord : APK « debug » (`debuggable true`), couches de validation, rendu logiciel, cadence d'affichage, un seul cœur, travail refait à chaque image, chauffe dès le départ.
