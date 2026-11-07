@@ -2814,3 +2814,34 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Zone autorisée : `src/world/campagne.cpp` (E2) ; réglages de nuit de la carte par accroche ≤ 10 lignes annoncée au journal (`nuit.cpp`, hors bloc des phares). Interdit : phares du joueur (WFS-218), fumée (WFS-224), phares des autres voitures (WFS-226), iOS, taille des boutons.
 - Critères (`regles-de-gestion/WFS-225.md`) : tous les lampadaires allumés la nuit (lampe + flaque au sol) ; village, ronds-points, carrefours, péage éclairés ; rase campagne lisible au clair de lune (catadioptres, bandes, silhouettes) ; budget du téléphone tenu (WFS-222) ; captures `carte-campagne-nuit` avant / après (route, village, rond-point, péage, col), qualité Basse ; test de parcours complet ; ligne `qa/Check.md`. Graphisme réaliste : charte `DA-realisme.md` § 3 (éclairage public).
 - Branche `feature/waforspeed-225`, à pousser tout de suite (premier commit).
+
+### 2026-11-07 11:30:29 — WFS-221 fusionné (PR #193) : voiture fluide en vue Proche et Poursuite (Claude, agent 2 (01UY1Vv5))
+- **Mesure « avant »** (banc `WFS_BANC=fluidite`, nouveau, sans dessin, 1 min 30) : 4 scénarios (la plus longue ligne droite, un virage serré, une épingle, une montée), vues Proche et Poursuite, 30, 60 et 90 images/s irrégulières (± 30 %, graine fixe).
+  - Pas par image à 60 images/s : 0/1/2/3 = 0/107/386/108.
+  - À-coup de la voiture vue par la caméra : 190 à 350 mm.
+  - Aller-retour voiture ↔ caméra : 18 à 35 cm, soit 24 à 74 par seconde. C'est le « avance, recule, avance » de l'utilisateur.
+  - Sauts d'angle jusqu'à 1,4° en courbe.
+- **Causes confirmées**
+  - `src/game/game.cpp:243-247` : rendu du dernier pas de 1/120 s, sans interpolation.
+  - `game.cpp:274` et `src/game/camera_vue.cpp:96-97` : lissage `lerp(x, cible, 1 − e^(−k·dt))`, qui traite la cible comme immobile. Le retard de la caméra (≈ v/k, 3 à 4 m à 150 km/h) change avec la durée de chaque image.
+  - `src/game/track.cpp:87` : pente par segment ; direction cassée tous les 1,2 m.
+- **Correction** (physique inchangée)
+  - Rendu interpolé : `Game::JoueurInterpole` et `calculerVue`.
+  - Même filtre de caméra, résolu exactement pour une cible en mouvement (`suivreExact`, mêmes constantes : même caméra, RG-06).
+  - `Track::pointLisse` (Catmull-Rom) pour ce qui bouge ; pente de `point()` continue.
+  - Trafic, adversaires (course à 5, duel), police et fantôme interpolés (`GameView::alpha`).
+- **Après**
+  - Ligne droite et montée : à-coup ≤ 3,1 mm, angle ≤ 0,004°, aller-retour ≤ 0,32 cm, aux trois cadences. Objectifs RG-03 et RG-08 tenus.
+  - Courbes : à-coup de 4 à 16 mm. Il vient de la trajectoire physique elle-même (cap qui suit la courbure de chaque segment, consigne du banc), hors périmètre (physique inchangée) ; valeurs données pour information dans `fluidite.txt`.
+- **Accroches annoncées**
+  - `src/core/system.h` (1 ligne : `GameView::alpha`).
+  - `traffic.h` et `traffic_system.cpp`.
+  - `duel.h`, `duel.cpp` et `duel_system.cpp`.
+  - `course5.cpp`, `course5_system.cpp` et `course_system.cpp`.
+  - `poursuite.h`, `poursuite.cpp` et `poursuite_system.cpp`.
+  - `src/platform/desktop_main.cpp` (banc).
+  - `.github/workflows/build.yml` (banc `fluidite` dans le job `ecrans-2400`, captures `fluidite-*`).
+  - Chaque accroche fait 6 lignes au plus.
+- **Interrupteurs de banc** pour mesurer l'« avant » : `Game::interpolation`, `Track::penteLissee`, `g_cameraFiltreExact`. Aucun réglage pour le joueur.
+- **Vérifications** : 43 tests CPU ; parcours 0 écart ; captures de la course à 5 normales. Pas de CI de branche lancée.
+

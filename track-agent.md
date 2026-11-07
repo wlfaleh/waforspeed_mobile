@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : 11:15 (9c50a88) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) |
 | Claude, agent 1 (01UY1Vv2) | — | WFS-220 fusionnée (PR #190, squash 58b71b9) ; aucun ticket attribuable à 11:00 : redemande dès que WFS-213 est ✅ (WFS-214) | 220 : PR #190 fusionnée ; 213 : PR #184 | 🟢 libre (attend WFS-214) |
-| Claude, agent 2 (01UY1Vv5) | WFS-221 | P1 [TECHNIQUE] : voiture saccadée en vue Proche / Poursuite, banc `fluidite`, rendu interpolé, route lissée (attribué 10:27) | 221 : 10:28 (0459fbd) ; 206 : fusionnée 10:26 (PR #188, squash 42ce230) | 🔴 actif (P1) |
+| Claude, agent 2 (01UY1Vv5) | — (WFS-221 fusionné) | demande son ticket suivant au PO | 221 : fusionnée 11:30 (PR #193) ; 206 : fusionnée (PR #188) | 🟢 libre |
 | Claude, agent 4 (011cpqZan) |  |  |  | ✅ libre (WFS-137 : CI main #799 verte) |
 | Claude, agent 5 (011cpqZaDiS2) |  |  | 219 : fusionnée (PR #191, 4448d7c, 11:10 UTC, squash) ; 210 : fusionnée (PR #185) | ✅ libre, aucun ticket attribuable (WFS-219 🟣 ; décisions Mustang et remplaçants posées à l'utilisateur) |
 | Claude, session dev expert (0183bv2X) |  | libre (5 tâches faites : WFS-136, 122, 145, 187, 188) | — | ✅ libre : CI de main verte (#799), WFS-145 / 187 / 188 validés par la QA |
