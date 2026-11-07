@@ -118,7 +118,7 @@ int main() {
     VERIFIE(decroit, "volute : profil moyen non décroissant");
     VERIFIE(voluteOpacite(1) == 0 && voluteOpacite(0) == 0 && voluteOpacite(0.85f) > 0.7f && voluteOpacite(0.3f) < voluteOpacite(0.7f), "volute : apparition puis effacement");
     VERIFIE(voluteEchelle(1) == 0.5f && voluteEchelle(0) == 2.f, "volute : taille 0,5 → 2");
-    VERIFIE(voluteProche(1.5f) == 0 && voluteProche(6.f) == 1 && voluteProche(4.f) > 0 && voluteProche(4.f) < 1, "volute : effacée près de la caméra");
+    VERIFIE(voluteProche(1.5f) == 0 && voluteProche(4.f) == 1 && voluteProche(2.5f) > 0 && voluteProche(2.5f) < 1, "volute : effacée près de la caméra");
     std::printf("volutes de fumée douces (marche %.3f, bord %.3f), apparition, effacement, croissance, rien près de la caméra : OK\n", marche, bord);
 
     // WFS-224 (RG-01) : fumée seulement en vrai dérapage

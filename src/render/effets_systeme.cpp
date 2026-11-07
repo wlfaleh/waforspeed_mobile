@@ -157,9 +157,13 @@ public:
         if (skid && skid_ <= 0) {
             skid_ = 0.05f;
             const double L = pl.car ? pl.car->d.L : 4.3, W = pl.car ? pl.car->d.W : 1.8;
+            // WFS-224 (RG-02) : la volute part avec 40 % de la vitesse de la voiture (air entraîné par le sillage juste
+            // derrière la caisse, ordre de grandeur des mesures de sillage de véhicule) : elle traîne derrière la voiture au
+            // lieu de filer d'un coup vers la caméra
+            const vec3 sillage = monde ? vec3{(float)pl.monde.vx, 0.f, (float)pl.monde.vz} * 0.4f : vec3{};
             for (int sx : {-1, 1}) {
                 const TrackPoint q = g.track->point(pl.dist - L * 0.35 / M, pl.playerX * RW + sx * W * 0.4);
-                parts_.fumee({(float)q.x, (float)q.y + 0.25f, (float)q.z}, 1, (float)q.y);
+                parts_.fumee({(float)q.x, (float)q.y + 0.25f, (float)q.z}, 1, (float)q.y, sillage);
             }
         }
         // fumée du capot des voitures du trafic accidentées : 5 s, une bouffée toutes les 0,12 s
@@ -235,7 +239,7 @@ public:
             r.updateMesh(m, vtx_[k], idx_[k]);
             r.draw(m, mats_[g.night ? 1 : 0][k], mat4::identity());
         }
-        if (nitro_ && (!r.gpuLogiciel() || g_banc) && !reglagesRessenti().reduireMouvements && g.ecran == Ecran::Course)
+        if (nitro_ && !r.gpuLogiciel() && !reglagesRessenti().reduireMouvements && g.ecran == Ecran::Course)
             lignesNitro(r, g, right, up, nrm);
     }
 

@@ -77,9 +77,9 @@ inline float voluteOpacite(float fondu) {
 }
 inline float voluteEchelle(float fondu) { return 0.5f + 1.5f * (1 - std::clamp(fondu, 0.f, 1.f)); }
 // WFS-224 (RG-02, ANO-120) : une volute qui passe près de la caméra (la voiture la laisse derrière elle) remplissait
-// l'écran jusqu'au compteur : effacée en dessous de 2 m de profondeur, entière au-delà de 6 m
+// l'écran jusqu'au compteur : effacée en dessous de 1,5 m de profondeur, entière au-delà de 4 m
 inline float voluteProche(float profondeur) {
-    const float t = std::clamp((profondeur - 2.f) / 4.f, 0.f, 1.f);
+    const float t = std::clamp((profondeur - 1.5f) / 2.5f, 0.f, 1.f);
     return t * t * (3 - 2 * t);
 }
 
@@ -124,7 +124,8 @@ public:
     int etincelles(const vec3& at, float floor, const vec3& vel, int count = 40);
     // sol : hauteur de la route sous la bouffée (affichage : le carré ne passe pas sous la route) ; par défaut at.y − 0,5 ;
     // rend le nombre de bouffées émises
-    int fumee(const vec3& at, int count = 2, float sol = -1e9f);
+    // WFS-224 : vel = vitesse de départ ajoutée (m/s), par défaut nulle (jeu web)
+    int fumee(const vec3& at, int count = 2, float sol = -1e9f, const vec3& vel = {});
     void update(float dt);
     void vider();
     const Reserve& sparks() const { return sparks_; }
