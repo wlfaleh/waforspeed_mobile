@@ -210,6 +210,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event_name != 'schedule'   # WFS-185 (RG-06) : envoi sur main ou lancement à la main
     timeout-minutes: 70
+    permissions: { contents: write, issues: write, actions: read }   # WFS-238 (RG-06) : Release (comme avant), commentaire de notification, runs précédents
     concurrency:
       group: apercu-apk-${{ github.ref }}
       cancel-in-progress: false
@@ -224,6 +225,22 @@ jobs:
           GH_REPO: ${{ github.repository }}
           PUBLIER: apk
         run: bash tools/qa/publier_apercu.sh
+      # WFS-238 : notification en temps réel sur le téléphone de l'utilisateur : un commentaire qui le mentionne dans l'issue épinglée
+      # « 📱 Nouvel APK de main » (l'application GitHub prévient à chaque mention). Seulement sur main, seulement si CE run a publié
+      # l'APK (titre de la Release = cette construction ; « APK plus récent déjà en ligne » = rien), un seul commentaire par construction,
+      # aucun envoi hors de GitHub ; un échec = avertissement, jamais un job rouge (RG-07).
+      - name: Notification du nouvel APK (issue « 📱 Nouvel APK de main »)
+        if: success() && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMITS: ${{ toJson(github.event.commits) }}
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: bash tools/qa/notifier_apk.sh
 
   # WFS-106 RG-06 : les captures après le banc (même partiel), seulement celles qui ont changé (RG-11) ; ne touchent jamais
   # à l'APK, au tag ni au titre ; échec = avertissement, job vert (RG-03) ; 20 min au plus (RG-07)

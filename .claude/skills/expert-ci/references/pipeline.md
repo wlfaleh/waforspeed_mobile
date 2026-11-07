@@ -16,6 +16,10 @@
   - `android` : NDK, CMake, SDK 35, APK + AAB, **signature fixe vérifiée** (WFS-118), pages de 16 Ko.
   - `publication-apk` : `tools/qa/publier_apercu.sh` (mode APK) → Release `apercu` (`main`) ou `apercu-<branche>` ; nom provisoire puis renommage (jamais de trou).
     Lien fixe de l'APK de main : https://github.com/wlfaleh/waforspeed_mobile/releases/download/apercu/WaForSpeed.apk
+  - Notification (WFS-238) : dernière étape de `publication-apk`, **seulement sur main** et seulement si ce run a publié l'APK (titre de la Release) :
+    `tools/qa/notifier_apk.sh` ajoute un commentaire `@wlfaleh` (construction, commit, tickets, lien de l'APK, lien du run) dans l'issue fixe
+    « 📱 Nouvel APK de main » (créée et épinglée la première fois ; numéro à noter ici) ; un seul commentaire par construction (marque cachée) ;
+    permissions du job : `contents: write`, `issues: write`, `actions: read` ; échec = `::warning::`, `continue-on-error`, 2 min au plus.
   - `publication-captures` : seulement les captures qui ont changé ; un échec = avertissement (job vert).
   - `résumé (commit et tickets)` : commit et tickets `WFS-XX` du run ; sur main (WFS-237), **tous les commits depuis le dernier run de main qui a
     tourné** (envoi, terminé, non annulé ; `gh api .../compare`), sinon « liste incomplète » et les commits du dernier envoi.
