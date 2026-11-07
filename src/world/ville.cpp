@@ -44,6 +44,7 @@
 #include "zones.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
 #include "giratoire.h"  // WFS-248 : giratoire reconstruit (anneau, îlot, raccord des branches)
+#include "../audio/ambiance_lieux.h"   // WFS-261 (accroche) : fontaines déclarées au son des lieux
 #include "../render/route_revetements.h"   // WFS-205 (accroche E9)
 
 namespace wfs {
@@ -1557,6 +1558,11 @@ public:
         gir_.assign(plan_->ronds.size(), {});
         for (size_t i = 0; i < plan_->ronds.size(); i++)   // WFS-248 : ouvrage reconstruit, à partir de la section du tracé
             for (const trace::Section& s : trace::sections(t)) if (s.type == trace::Type::RondPoint && s.debut == plan_->ronds[i].debut) gir_[i] = giratoire::calculer(t, s);
+        {   // WFS-261 (accroche) : fontaine au centre de chaque îlot (bassin, colonne, vasque : lieux()), pour le son des lieux
+            std::vector<lieux::Lieu> f;
+            for (const giratoire::Giratoire& gi : gir_) if (gi.ok) f.push_back(lieux::depuisMonde(t, gi.debut, gi.c + vec3{0, 1.f, 0}));
+            lieux::poser("ville", lieux::FONTAINE, std::move(f));
+        }
         const float R = (float)RW;
         for (size_t i = 0; i < plan_->ronds.size(); i++) {
             const ville::RondPoint& rp = plan_->ronds[i];
