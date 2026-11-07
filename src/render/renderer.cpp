@@ -10,6 +10,7 @@
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "eclairage_physique.h"   // WFS-151 : éclairage physique et IBL (accroche E13)
 #include "../core/configgame.h"   // WFS-142 : force du reflet de la route mouillée
+#include "../core/platform.h"   // WFS-222 : nowSeconds (banc de profilage)
 #include "vehicule_lod.h"         // WFS-158 (RG-04) : niveaux de détail des voitures
 #if defined(__APPLE__)
 #include <chrono>
@@ -92,6 +93,7 @@ static void etapeRendu(const char* nom) {
 
 bool Renderer::init(VkCtx& vk) {
     vk_ = &vk;
+    if (vk.offscreen) { const char* a = std::getenv("WFS_AVANT_222"); rendu221 = a && !std::strcmp(a, "1"); }   // WFS-222 : banc seulement
     VkDevice d = vk.device;
 #if defined(__APPLE__)
     g_etapeRendu = std::chrono::steady_clock::now();
@@ -711,11 +713,17 @@ bool Renderer::resize() {
 }
 
 VkPipeline Renderer::makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
-                                  VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly, int melange) {
+                                  VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly, int melange,
+                                  bool sansDiscard) {
     VkPipelineShaderStageCreateInfo st[2]{};
     st[0].sType = st[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     st[0].stage = VK_SHADER_STAGE_VERTEX_BIT; st[0].module = vs; st[0].pName = "main";
     st[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; st[1].module = fs; st[1].pName = "main";
+    // WFS-222 : constante de spécialisation 0 (SANS_DISCARD, booléen 32 bits) : shader sans discard → early-Z
+    const VkBool32 vrai = VK_TRUE;
+    const VkSpecializationMapEntry entree{0, 0, sizeof(VkBool32)};
+    const VkSpecializationInfo spec{1, &entree, sizeof(VkBool32), &vrai};
+    if (sansDiscard) st[1].pSpecializationInfo = &spec;
 
     VkVertexInputBindingDescription bind{};
     VkVertexInputAttributeDescription attr[6]{};
@@ -819,10 +827,15 @@ void Renderer::createPipelines() {
 void Renderer::createScenePipelines() {
     const VkShaderModule sv = modScene_[0], sf = modScene_[1], kv = modScene_[2], kf = modScene_[3], kv2 = modScene_[4], kf2 = modScene_[5];
     const VkSampleCountFlagBits s = vk_->msaa;
-    opaque_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
+    // WFS-222 : opaques sans découpe : shader spécialisé sans discard (test de profondeur avant le shader, LRZ / early-Z des
+    // GPU mobiles) ; avec découpe (alpha masqué, fondu des voitures) : shader complet, comme avant
+    opaque_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_, false, 0, true);
+    opaqueDecoupe_ = makePipeline(sv, sf, 1, false, false, true, true, scenePass_, s, sceneLayout_);
     blend_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_);
     sky_ = makePipeline(kv, kf, 0, false, false, false, false, scenePass_, s, sceneLayout_);
-    skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);   // WFS-63
+    skyApres_ = makePipeline(kv, kf, 0, false, false, true, false, scenePass_, s, sceneLayout_);   // WFS-222 : profondeur 0 = vide
+    skinOpaque_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_, false, 0, true);   // WFS-63 ; WFS-222
+    skinOpaqueDecoupe_ = makePipeline(kv2, kf2, 3, false, false, true, true, scenePass_, s, skinLayout_);
     // WFS-09 : tache des phares (multiplicative) et halos (additifs)
     poolPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 1);
     addPipe_ = makePipeline(sv, sf, 1, true, false, true, false, scenePass_, s, sceneLayout_, false, 2);
@@ -854,7 +867,7 @@ bool Renderer::appliquerNettete() {
     const bool refaire = ms != vk_->msaa;
     if (refaire) {   // passe de scène et ses pipelines refaits au nouveau nombre d'échantillons (createTargets puis createScenePipelines)
         VkDevice d = vk_->device;
-        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
+        for (VkPipeline* p : {&opaque_, &blend_, &sky_, &skinOpaque_, &poolPipe_, &addPipe_, &opaqueDecoupe_, &skinOpaqueDecoupe_, &skyApres_}) { if (*p) vkDestroyPipeline(d, *p, nullptr); *p = VK_NULL_HANDLE; }
         if (scenePass_) vkDestroyRenderPass(d, scenePass_, nullptr);
         scenePass_ = VK_NULL_HANDLE;
         vk_->msaa = ms;
@@ -896,12 +909,16 @@ template <class V> static masquage::Sphere bornes(const std::vector<V>& v) {
 
 // WFS-82 : distance (petits objets au loin), puis caméra, miroir des reflets et boîte d'ombre
 uint8_t Renderer::classer(const masquage::Sphere& s) {
-    if (s.r < 0 || sansMasquage_) return VIS_CAM | VIS_REFLET | VIS_OMBRE;   // WFS-150 : capture d'environnement
-    if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { masques_++; return 0; }
+    if (s.r < 0) return VIS_CAM | VIS_REFLET | VIS_OMBRE;
+    // WFS-150 : image d'une capture d'environnement : tout objet reste en file pour la capture (6 directions) ;
+    // WFS-222 : mais la passe de scène, l'ombre et le reflet de cette image gardent leur masquage (VIS_CAPTURE seul sinon)
+    if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE;   // banc : comparaison avec l'avant
+    const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
+    if (length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
                       (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
-    if (!v) masques_++;
-    return v;
+    if (!v && !tout) masques_++;
+    return v | tout;
 }
 
 Mesh Renderer::makeMesh(const std::vector<Vertex>& v, const std::vector<uint32_t>& idx, bool dynamic) {
@@ -978,6 +995,7 @@ void Renderer::destroy(Material& m) {
 bool Renderer::beginFrame(const FrameParams& fp) {
     VkCtx& vk = *vk_; VkDevice d = vk.device;
     FrameRes& r = fr_[cur_];
+    const double tAttente = nowSeconds();   // WFS-222 (RG-01) : attente du GPU (image en vol), beginFrame entier
     VK_OK(vkWaitForFences(d, 1, &r.fence, VK_TRUE, UINT64_MAX));
     if (vk.offscreen) imageIndex_ = 0;
     else {
@@ -1003,6 +1021,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // repère du soleil fixe et centre calé sur la grille des texels → bords d'ombre stables quand on roule
     shadowsOn_ = fp.shadows && !fp.night && !forceNoShadows; night_ = fp.night || forceNoShadows;
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
+    chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
     if (bloom_) bloom_->force = gpuLogiciel() ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);
     {
@@ -1047,7 +1066,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         }
     }
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
-    refletsOn_ = fp.mouille && fp.reflets;
+    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets;   // WFS-222 (RG-03)
     u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
     // WFS-142 (RG-04, RG-08) : w = force du reflet sur la chaussée (configgame) ; WFS_REFLETS=0 : −1, aucun reflet (mesure du banc)
     const char* eR = std::getenv("WFS_REFLETS");
@@ -1085,12 +1104,14 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     VK_OK(vkResetCommandBuffer(r.cb, 0));
     VK_OK(vkBeginCommandBuffer(r.cb, &bi));
+    chronoPrec_.attenteGpuMs = (nowSeconds() - tAttente) * 1000;   // WFS-222 : tout beginFrame (lavapipe attend aussi dans vkUpdateDescriptorSets)
     inFrame_ = true;
     return true;
 }
 
 void Renderer::flushDraw(const Pending& p) {
     appels_++;   // WFS-15
+    chrono_.triangles += p.count / 3;   // WFS-222
     VkCommandBuffer cb = fr_[cur_].cb;
 #if defined(__APPLE__)
     // WFS-88 : le GPU du simulateur iOS (famille Apple 2) refuse un sommet de base non nul (MoltenVK : VK_ERROR_FEATURE_NOT_PRESENT,
@@ -1400,6 +1421,7 @@ void Renderer::uiCircle(float cx, float cy, float r, const vec4& c) {
 
 void Renderer::endFrame() {
     if (!inFrame_) return;
+    const double tFin = nowSeconds();   // WFS-222 (RG-01)
     VkCtx& vk = *vk_;
     FrameRes& r = fr_[cur_];
     shadowPass(r.cb);
@@ -1421,15 +1443,26 @@ void Renderer::endFrame() {
         vkCmdSetViewport(r.cb, 0, 1, &vpt); vkCmdSetScissor(r.cb, 0, 1, &sc);
     }
     vkCmdBindDescriptorSets(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &r.frameSet, 0, nullptr);
-    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
-    vkCmdDraw(r.cb, 3, 1, 0, 0);
-    vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_);
-    VkPipeline lie = opaque_;
-    for (const Pending& p : opaqueQ_) {
-        if (!(p.vis & VIS_CAM)) continue;   // WFS-82 : hors champ (gardé pour l'ombre ou le reflet)
-        const VkPipeline voulu = p.osOfs >= 0 ? skinOpaque_ : opaque_;   // WFS-63
+    if (rendu221) {   // banc : ordre d'avant WFS-222 (ciel plein écran d'abord)
+        vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sky_);
+        vkCmdDraw(r.cb, 3, 1, 0, 0);
+    }
+    // WFS-222 : opaques du plus proche au plus loin (les pixels cachés sont rejetés avant le shader), puis le ciel dans les
+    // seuls pixels restés vides (profondeur 0) ; à profondeur égale, l'ordre d'appel est gardé (tri stable)
+    ordreOpaques_.clear();
+    for (uint32_t i = 0; i < (uint32_t)opaqueQ_.size(); i++) if (opaqueQ_[i].vis & VIS_CAM) ordreOpaques_.push_back(i);   // WFS-82 : hors champ (gardé pour l'ombre ou le reflet)
+    if (!rendu221) std::stable_sort(ordreOpaques_.begin(), ordreOpaques_.end(), [&](uint32_t a, uint32_t b) { return opaqueQ_[a].depth < opaqueQ_[b].depth; });
+    VkPipeline lie = VK_NULL_HANDLE;
+    for (uint32_t i : ordreOpaques_) {
+        const Pending& p = opaqueQ_[i];
+        const bool d = rendu221 || aDecoupe(p);   // WFS-222 : shader sans discard si l'objet n'a pas de découpe
+        const VkPipeline voulu = p.osOfs >= 0 ? (d ? skinOpaqueDecoupe_ : skinOpaque_) : (d ? opaqueDecoupe_ : opaque_);   // WFS-63
         if (voulu != lie) { vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, voulu); lie = voulu; }
         flushDraw(p);
+    }
+    if (!rendu221) {
+        vkCmdBindPipeline(r.cb, VK_PIPELINE_BIND_POINT_GRAPHICS, skyApres_);
+        vkCmdDraw(r.cb, 3, 1, 0, 0);
     }
     passes::dansScene(*this, r.cb, EtapeRendu::Scene);   // WFS-150 : passes enfichables de la scène (opaques)
     // objets transparents (vitres) : du plus loin au plus proche
@@ -1496,6 +1529,7 @@ void Renderer::endFrame() {
     }
     inFrame_ = false;
     cur_ = (cur_ + 1) % FRAMES;
+    chrono_.finImageMs = (nowSeconds() - tFin) * 1000;
 }
 
 bool Renderer::capturePng(const std::string& path) {
@@ -1525,7 +1559,7 @@ void Renderer::shutdown() {
         vkDestroyFence(d, r.fence, nullptr); vkDestroySemaphore(d, r.acquired, nullptr); vkDestroySemaphore(d, r.done, nullptr);
         vk_->destroy(r.ubo); vk_->destroy(r.uiVb);
     }
-    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_,
+    for (VkPipeline p : {opaque_, blend_, sky_, post_, ui_, shadowPipe_, shadowMaskPipe_, skinOpaque_, skinShadow_, skinShadowMask_, opaqueDecoupe_, skinOpaqueDecoupe_, skyApres_,
                          poolPipe_, addPipe_, refOpaque_, refBlend_, refSky_, refAdd_})
         if (p) vkDestroyPipeline(d, p, nullptr);
     for (int f = 0; f < FRAMES; f++) { vk_->destroy(refletUbo_[f]); vk_->destroy(quadVb_[f]); }
@@ -1557,6 +1591,7 @@ void Renderer::shutdown() {
     frameLayout_ = matLayout_ = postLayout_ = osLayout_ = VK_NULL_HANDLE;
     sceneLayout_ = postPLayout_ = skinLayout_ = VK_NULL_HANDLE;
     opaque_ = blend_ = sky_ = post_ = ui_ = shadowPipe_ = shadowMaskPipe_ = skinOpaque_ = skinShadow_ = skinShadowMask_ = VK_NULL_HANDLE;
+    opaqueDecoupe_ = skinOpaqueDecoupe_ = skyApres_ = VK_NULL_HANDLE;   // WFS-222
     poolPipe_ = addPipe_ = refOpaque_ = refBlend_ = refSky_ = refAdd_ = VK_NULL_HANDLE;
     pool_ = VK_NULL_HANDLE; sampler_ = clampSampler_ = shadowSampler_ = VK_NULL_HANDLE; tsPool_ = VK_NULL_HANDLE;
     postSet_ = fontSet_ = VK_NULL_HANDLE; osSet_[0] = osSet_[1] = refletSet_[0] = refletSet_[1] = VK_NULL_HANDLE;

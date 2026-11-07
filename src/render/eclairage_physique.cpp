@@ -56,6 +56,7 @@ struct Etat_ {
     double heureMoment[(int)atmosphere::Moment::NB] = {-100, -100, -100, -100, -100, -100, -100}, ecoule = 0, acceleration = 1;
     // image courante (physique → avantImage)
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
+    bool capturesSuspendues = false;   // WFS-222 (RG-03)
     // scène
     bool init = false; double tPrec = -1; vec3 pointPrec{}; bool nuitPrec = false;
     const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
@@ -371,6 +372,7 @@ void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sino
 int momentChoisi() { return (int)g.moment; }
 void accelererTemps(double f) { g.acceleration = std::max(0.0, f); }   // WFS-208 (RG-02)
 void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
+void suspendreCaptures(bool oui) { g.capturesSuspendues = oui; }   // WFS-222
 bool sondeCapturePrete() { return g.B.capture && !g.forcerCapture && !g.enCours && !g.relecture && !environnement::enCours(); }
 void remettreAZero() {
     g.recaler = true; g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
@@ -525,7 +527,8 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     if (ouvrage) esp = std::min(esp, 40.0);
     if (type != g.typePrec && g.typePrec != -1 && (ouvrage || g.typePrec == (int)trace::Type::Tunnel || g.typePrec == (int)trace::Type::Pont)) g.forcerCapture = true;
     g.typePrec = type;
-    if (!environnement::enCours() && !g.relecture && !g.enCours) {
+    // WFS-222 (RG-03) : captures suspendues par la baisse automatique, sauf la toute première (aucune sonde encore)
+    if (!environnement::enCours() && !g.relecture && !g.enCours && (!g.capturesSuspendues || !g.B.capture)) {
         if (g.aucuneDemande || g.forcerCapture || length(point - g.dernierPoint) > esp) {
             // la capture est éclairée par les sondes en place : si elles sont loin (ou si c'est la sonde du ciel), la place
             // sera recapturée (rebonds) ; une recapture forcée garde le point de la précédente

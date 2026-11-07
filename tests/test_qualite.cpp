@@ -18,15 +18,15 @@ int main() {
     VERIFIE(echelleNiveau(BASSE) == 0.75f && echelleNiveau(MOYENNE) == 1.f && echelleNiveau(HAUTE) == 1.f, "échelles des niveaux (WFS-104)");
     VERIFIE(bloomNiveau(BASSE) == 0.f && bloomNiveau(MOYENNE) > 0 && bloomNiveau(HAUTE) > 0, "bloom coupé en Basse seulement");
 
-    // 25 images/s : −0,1 toutes les 2 s jusqu'à 0,6, puis rétrogradation unique
+    // 25 images/s : WFS-222 (RG-03) : −0,2 toutes les 2 s sous 30 images/s jusqu'à 0,6, puis rétrogradation unique
     Auto a;
-    VERIFIE(course(a, 25, 2) & Auto::ECHELLE && std::abs(a.echelle - 0.9f) < 1e-6f, "1re baisse (%.2f)", a.echelle);
-    // watchPerf : la rétrogradation est testée juste après la baisse, dans la même mesure que l'arrivée à 0,6 (8 s)
-    VERIFIE(course(a, 25, 6) & Auto::RETRO && std::abs(a.echelle - 0.6f) < 1e-6f && a.niveau == MOYENNE && a.fait,
+    VERIFIE(course(a, 25, 2) & Auto::ECHELLE && std::abs(a.echelle - 0.8f) < 1e-6f, "1re baisse (%.2f)", a.echelle);
+    // watchPerf : la rétrogradation est testée juste après la baisse, dans la même mesure que l'arrivée à 0,6 (4 s)
+    VERIFIE(course(a, 25, 2) & Auto::RETRO && std::abs(a.echelle - 0.6f) < 1e-6f && a.niveau == MOYENNE && a.fait,
             "à 0,6 sous 30 images/s : rétrogradation (%.2f, niveau %d)", a.echelle, a.niveau);
     course(a, 25, 10);
     VERIFIE(a.niveau == MOYENNE, "une seule rétrogradation (niveau %d)", a.niveau);
-    std::printf("25 images/s : échelle 1 → 0,6 par pas de 0,1 toutes les 2 s, Haute → Moyenne à 0,6, une seule fois : OK\n");
+    std::printf("25 images/s : échelle 1 → 0,6 par pas de 0,2 toutes les 2 s (WFS-222), Haute → Moyenne à 0,6, une seule fois : OK\n");
 
     // 35 images/s : l'échelle baisse mais pas de rétrogradation (≥ 30)
     Auto b; course(b, 35, 20);
@@ -82,6 +82,10 @@ int main() {
     const Allegement a1 = allegement(HAUTE, 0.9f), a8 = allegement(HAUTE, 0.8f), a6 = allegement(MOYENNE, 0.6f), aB = allegement(BASSE, 1);
     VERIFIE(a1.bloom && a1.ombres && !a8.bloom && a8.ombres && !a6.bloom && !a6.ombres && !aB.bloom && !aB.ombres, "allègement");
     std::printf("allègement : bloom coupé à 0,8, ombres à 0,6, résolution intacte : OK\n");
+    // WFS-222 (RG-03) : au plancher, reflets et captures d'environnement coupés à tous les niveaux (Basse comprise)
+    const Allegement b6 = allegement(BASSE, 0.6f), b7 = allegement(BASSE, 0.7f), h6 = allegement(HAUTE, 0.6f);
+    VERIFIE(!b6.reflets && !b6.captures && b7.reflets && b7.captures && !h6.reflets && !h6.captures && a1.reflets && a8.captures, "allègement WFS-222");
+    std::printf("allègement (WFS-222) : reflets et captures coupés au plancher, Basse comprise : OK\n");
 
     // WFS-144 (RG-04) : Basse à MSAA ×2 et anisotrope ×4 ; Moyenne / Haute inchangées ; netteté retenue ; GPU sans ×2 ou sans MSAA
     oublierRetenus();
