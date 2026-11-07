@@ -12,6 +12,7 @@
 #include <limits>
 #include <unordered_map>
 #include <vector>
+#include "archi_carte.h"   // WFS-161 (accroche) : maisons de village du kit d'architecture
 #include "../core/log.h"
 #include "../core/platform.h"   // WFS-186 : readAsset (animaux .wfa)
 #include "decor_carte.h"
@@ -140,6 +141,8 @@ protected:
             if (it.t == T_BALES) obst.push_back({n - 2, n + it.k * 3 + 2, it.side, it.lat - 2, it.lat + 4});
             if (it.t == T_TURBINE || it.t == T_HEDGE) obst.push_back({n - 3, n + (int64_t)(it.l / SEG_M) + 3, it.side, it.lat - 3, it.lat + 3});
             if (it.t == T_LAMP) { poserLampe(n, it.side); return; }   // WFS-225 (RG-01) : mât et lumière de nuit ensemble
+            if (it.t == T_VILLA) { const Pose pv = poseAt(*track_, n); const float s = (float)it.side; const vec3 x = pv.f * -s;   // WFS-161 (accroche) : maison du kit
+                archi::carte::poser(n, lateral(pv, s * it.lat, solY(z, n, it.side, it.lat) - 0.2f) - x * (it.w / 2), x, pv.r * -s, it.w, it.d, it.h, archi::Style::Village, (uint32_t)(n * 2 + (it.side > 0))); }
             CarteDecor::item(n, it);
         };
         auto D = [&]() { return (float)Dm.next(); };
@@ -213,6 +216,34 @@ protected:
         }
     }
 
+    // ---------------------------------------------------------------- WFS-256 (accroche, autorisée par le PO : ajout seul)
+    // formes de choc des objets de la Campagne, relevées sur dessine() ci-dessous (box : largeur selon r, longueur selon f)
+    int solide(const Item& it, chocs::ObstacleRoute o[4]) const override {
+        if (const int n = CarteDecor::solide(it, o)) return n;   // arbres, lampadaires
+        using G = chocs::Genre; const float s = (float)it.side, R = (float)RW, SG = (float)SEG_M;
+        int n = 0;
+        auto bt = [&](float lat, float hx, float hz, G g, float al = 0) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.forme = chocs::Forme::Boite; q.lat = lat; q.hx = hx; q.hz = hz; q.genre = g; q.along = al; };
+        auto cy = [&](float lat, float r, G g) { chocs::ObstacleRoute& q = o[n++]; q = {}; q.lat = lat; q.r = r; q.genre = g; };
+        switch (it.t) {
+        case T_POLE: cy(s * it.lat, 0.14f, G::Poteau); break;
+        case T_SIGN: bt(s * it.lat, 0.05f, 0.05f, G::Poteau); break;
+        case T_J6: bt(s * it.lat, 0.06f, 0.06f, G::Poteau); break;
+        case T_DANGER: case T_FEU: cy(s * it.lat, it.t == T_FEU ? 0.06f : 0.04f, G::Poteau); break;
+        case T_PANNEAU_A: for (float al : {-1.2f, 1.2f}) bt(s * it.lat, 0.05f, 0.05f, G::Poteau, al); break;   // deux poteaux (panneau à 2,2 m)
+        case T_FENCE: bt(s * it.lat, 0.06f, 1.5f * SG, G::Mur); break;
+        case T_HEDGE: bt(s * it.lat, 0.55f, it.l / 2, G::Mur, it.l / 2); break;
+        case T_GLISS: bt(s * (it.lat - 0.015f), 0.03f, SG, G::Mur, SG); break;
+        case T_MURET: bt(s * (it.lat + 0.2f), 0.2f, SG / 2 + 0.05f, G::Mur, SG / 2); break;
+        case T_FARM: bt(s * it.lat, 4.f, 5.5f, G::Batiment); break;
+        case T_VILLA: case T_COMMERCE: bt(s * (it.lat + it.d / 2), it.d / 2, it.w / 2, G::Batiment); break;
+        case T_TURBINE: cy(s * it.lat, 1.f, G::Poteau); break;
+        case T_AUTO: bt(-(R + 1.5f), 0.3f, SG / 2 + 0.05f, G::Mur, SG / 2); break;   // séparateur béton DBA (côté gauche)
+        case T_PEAGE: for (float lat : {R + 2.3f, -(R + 1.5f)}) for (float al : {-5.f, 5.f}) bt(lat, 0.25f, 0.25f, G::Poteau, al); break;   // piliers
+        default: break;   // passages, vignes, cascade, fontaine (dans l'îlot), bottes, enclos : au loin ou sans relief
+        }
+        return n;
+    }
+
     void dessine(Track& t, const Item& it, int64_t a, const Pose& p, bool lod, Geo out[P_COUNT]) const override {
         Geo& S = out[P_UNI];
         const char* z = zone(a);
@@ -278,6 +309,7 @@ protected:
             break;
         }
         case T_VILLA: {   // maison colorée : murs, fenêtres côté route, toit
+            if (archi::carte::actif()) break;   // WFS-161 (accroche) : maison du kit (archi_carte.cpp) à la place de la boîte
             const vec3 o = lateral(p, s * (it.lat + it.d / 2), gy(it.lat + it.d / 2) - 0.2f);
             // WFS-178 (RG-03) : maisons de village en pierre calcaire (albédo 0,39-0,49) et tuiles de terre cuite
             const int wall = C_PIERRE0 + it.col % 3;
@@ -336,7 +368,10 @@ protected:
             break;
         }
         case T_FONTAINE: {   // îlot du rond-point (rayon 14 m) : fontaine de pierre Ø 6 m, vasque, colonne, massifs de fleurs
-            const vec3 c = lateral(p, s * it.lat, gy(it.lat) - 0.05f);
+            vec3 c = lateral(p, s * it.lat, gy(it.lat) - 0.05f);
+            const giratoire::Giratoire* gr = nullptr;   // WFS-248 : sur l'îlot du giratoire reconstruit (centre exact, gazon à 15 cm)
+            for (const giratoire::Giratoire& g : gir_) if (giratoire::dansOuvrage(g, c, 2.f)) gr = &g;
+            if (gr) c = gr->c + vec3{0, giratoire::H_BORDURE - 0.08f, 0};
             cyl(S, c, 3.0f, 0.5f, 20, uv(C_PIERRE0));                       // bassin : margelle de 0,5 m
             cyl(S, c + vec3{0, 0.42f, 0}, 2.75f, 0.1f, 20, uv(C_GLASS));     // eau
             cyl(S, c, 0.35f, 2.4f, 10, uv(C_PIERRE0 + 1));                  // colonne
@@ -349,8 +384,10 @@ protected:
             for (int i = 0; i < NB; i++) {
                 const float a0 = 2 * PI * i / NB, a1 = 2 * PI * (i + 1) / NB;
                 auto P = [&](float ang, float rr, float y) { return c + vec3{std::cos(ang) * rr, y, std::sin(ang) * rr}; };
-                quad(S, P(a0, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0.15f), P(a0, R0 + 0.2f, 0.15f), uv(C_WALK));    // face côté anneau
-                quad(S, P(a0, R0, 0.15f), P(a0, R0 + 0.2f, 0.15f), P(a1, R0 + 0.2f, 0.15f), P(a1, R0, 0.15f), uv(C_WALK));              // dessus
+                if (!gr) {   // repli (WFS-223) : bordure de l'îlot de 6,5 m ; avec l'ouvrage, la bordure est celle de giratoire.cpp
+                    quad(S, P(a0, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0), P(a1, R0 + 0.2f, 0.15f), P(a0, R0 + 0.2f, 0.15f), uv(C_WALK));    // face côté anneau
+                    quad(S, P(a0, R0, 0.15f), P(a0, R0 + 0.2f, 0.15f), P(a1, R0 + 0.2f, 0.15f), P(a1, R0, 0.15f), uv(C_WALK));              // dessus
+                }
                 quad(S, P(a1, 4.3f, 0.08f), P(a0, 4.3f, 0.08f), P(a0, 5.7f, 0.08f), P(a1, 5.7f, 0.08f), uv(C_VINE_A));             // terre du massif
             }
             Mulberry32 Rf((uint32_t)(a * 13 + 7));
@@ -797,9 +834,9 @@ private:
             }
             if (sec.type == trace::Type::RondPoint && fontaineSeg_ < 0) {   // centre de l'anneau : à gauche du milieu
                 fontaineSeg_ = (sec.debut + sec.fin) / 2;
-                Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; CarteDecor::item(fontaineSeg_, it);
-                for (int64_t a = sec.debut + 1; a < sec.fin; a++)   // WFS-223 : entrée de l'anneau = la courbure change de sens
-                    if (track_->segAt(a).curve * track_->segAt(sec.debut + 2).curve < 0) { Item c; c.t = T_CEDEZ; CarteDecor::item(a, c); break; }
+                Item it; it.t = T_FONTAINE; it.side = sec.cote > 0 ? -1 : 1; it.lat = (float)sec.rayon; it.ilot = true; CarteDecor::item(fontaineSeg_, it);
+                // WFS-248 : le cédez-le-passage de WFS-223 (T_CEDEZ, en travers de toute la chaussée) est remplacé par celui du
+                // giratoire reconstruit (decor_carte.cpp, giratoire.cpp)
                 vigilance_.push_back(sec.debut);
                 // WFS-225 (RG-02) : giratoire éclairé : mâts sur le bord extérieur de l'anneau tous les 45° environ, et à
                 // l'approche et à la sortie (côté droit) ; ceux qui tomberaient sur une autre branche ne sont pas posés

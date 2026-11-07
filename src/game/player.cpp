@@ -58,12 +58,17 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
 
 void Player::reset(const CarDef& c) {
     car = &c; perf = carPerf(c);
+    cm_ = nullptr; mondeOk_ = cibleOk_ = false; monde = {}; braquageRoues = aideRoues = latCible_ = 0;   // WFS-241
     position = dist = playerX = speed = steer = heading = odo = 0;
     latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
+    if (modeleMonde()) { updateMonde(dt, in, track, playing); return; }   // WFS-241 : voiture du joueur, conduite réaliste
+    // WFS-256 : voiture du joueur en conduite d'avant (g_conduiteMonde faux) : pose de départ pour les chocs avec le décor
+    const bool chocsDecorActifs = aide != Aide::Web && chocs::registre().taille() > 0;
+    const double dAvant = dist, xAvant = playerX, capAvant = heading;
     const Segment& seg = track.findSegment(position);
     const double speedPct = speed / MAX_SPEED;
 
@@ -158,6 +163,219 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
         speed *= 1 - dt * 2;
     }
     speed = clampd(speed, REV_MAX, MAX_SPEED * 1.6);
+    if (chocsDecorActifs) {   // WFS-256 : même test continu et même réaction que la conduite réelle, sur la pose dans le monde
+        const TrackPoint A = track.pointLisse(dAvant, xAvant * RW), B = track.pointLisse(dist, playerX * RW);
+        double x = B.x, z = B.z, cap = B.th + heading, r = 0;
+        const double u = speed * M, sn = std::sin(cap), cs = std::cos(cap);
+        double vx = u * sn, vz = -u * cs;
+        const physique::Params& P = physique::params(*car);   // masse et inertie de la fiche (la conduite d'avant n'en change pas)
+        if (heurter(track, A.x, A.z, A.th + capAvant, x, z, cap, vx, vz, r, P.masse, P.Iz)) {
+            // la conduite d'avant n'a pas de vitesse de travers : la voiture prend la direction de sa vitesse après le choc
+            // (le long du mur), ou garde son cap si elle est renvoyée en arrière (poteau pris de face)
+            const double avance = vx * std::sin(cap) - vz * std::cos(cap), v = std::hypot(vx, vz);
+            const double capAligne = std::atan2(vx, -vz);
+            if (avance > 0 && v > 1.0 && !enfonceParPivot(x, z, cap, capAligne)) { cap = capAligne; speed = std::min(v / M, MAX_SPEED * 1.6); }
+            else speed = clampd(avance / M, REV_MAX, MAX_SPEED * 1.6);
+            projeterPose(track, x, z, cap);
+        }
+    }
+}
+
+// ================================================================ WFS-241 : conduite en coordonnées du monde
+// Cause de fond d'ANO-113 (banc « conduite », mesures « avant ») : dans l'ancien modèle, la voiture n'a pas de position dans
+// le monde : son cap est compté par rapport à la route (player.cpp, guider() : « heading −= k × avance », la route tourne
+// sous la voiture) et des aides cachées la ramènent vers l'axe (réalignement, cap borné, renvoi de la bordure, force
+// centrifuge forfaitaire). Activée ou désactivée, la route « porte » donc toujours en partie la voiture, et les deux réglages
+// se ressemblent. Ici, la voiture roule dans le monde (conduite_monde.h) : sans volant ni aide, elle va tout droit ; l'aide à
+// la direction est un vrai angle de roues ajouté, calculé pour suivre la voie, qui cède dès que le joueur braque.
+namespace {
+constexpr double AIDE_VOLANT_PLEIN = 0.35;   // volant au-delà duquel l'aide laisse tout au joueur (comme WFS-217)
+constexpr double AIDE_VOLANT_LIBRE = 0.05;   // volant sous lequel le joueur est « lâché » (l'aide garde la voie où il l'a laissée)
+constexpr double AIDE_VMIN = 2.0;            // m/s : manœuvres (demi-tour, marche arrière) sans aide
+constexpr double BORDURE_RENVOI = 2.5;       // rad/s : cap redressé le long de la glissière au plus (pas de saut)
+}
+
+double Player::braquagePour(double k, double v) const {
+    if (!modeleMonde()) {   // ancien modèle : angle des roues de Player::update
+        const double roue = std::atan(k * perf.wb / perf.handling), roueMax = Phys::maxSteer / (1 + v / Phys::steerV);
+        return std::clamp(roue / roueMax, -1.0, 1.0);
+    }
+    const physique::Params& P = cm_ ? *cm_ : physique::params(*car);
+    return std::clamp(std::atan(k * P.L) / physique::braquageMax(P, v), -1.0, 1.0);
+}
+
+// position et cap réels → projection sur la route (tracé lissé, celui du rendu : la voiture est dessinée exactement où elle est)
+void Player::projeter(Track& t) { projeterPose(t, monde.x, monde.z, monde.cap); }
+
+void Player::projeterPose(Track& t, double x, double z, double cap) {
+    double s = dist;
+    TrackPoint C{};
+    for (int i = 0; i < 6; i++) {   // point de la ligne de la route le plus proche (Newton, converge en 2 ou 3 tours)
+        C = t.pointLisse(s, 0);
+        const double e = (x - C.x) * std::sin(C.th) - (z - C.z) * std::cos(C.th);
+        s += e / M;
+        if (std::abs(e) < 1e-6) break;
+    }
+    C = t.pointLisse(s, 0);
+    dist = s; position = t.wrap(s);
+    playerX = ((x - C.x) * std::cos(C.th) + (z - C.z) * std::sin(C.th)) / RW;
+    heading = std::remainder(cap - C.th, 2 * PI_D);
+}
+
+// un système a déplacé la voiture par la route (choc du trafic, remise en piste, départ, reset) : la voiture est replacée
+// dans le monde à cet endroit, avec ce cap ; sa vitesse garde sa direction dans la voiture (dérive comprise)
+void Player::synchroniser(Track& t) {
+    if (mondeOk_ && dist == sDist_ && playerX == sX_ && heading == sHead_ && speed == sSpeed_) return;
+    double u = speed * M, v = 0, r = 0;
+    if (mondeOk_) {
+        const double u0 = monde.u(), k = std::abs(u0) > 0.1 ? std::clamp(u / u0, 0.0, 1.5) : 0.0;
+        v = monde.v() * k; r = monde.r * k;
+    }
+    const TrackPoint C = t.pointLisse(dist, playerX * RW);
+    const double xAvant = sX_;
+    monde.x = C.x; monde.z = C.z; monde.cap = C.th + heading; monde.r = r;
+    const double sn = std::sin(monde.cap), cs = std::cos(monde.cap);
+    monde.vx = u * sn + v * cs; monde.vz = -u * cs + v * sn;
+    // WFS-256 (RG-04) : un système a écarté la voiture sur le côté (contact avec une voiture du trafic, un adversaire, la
+    // police) : la vitesse qui la ramène vers ce contact est annulée (contrainte de contact), sinon elle y rentre au pas suivant
+    if (mondeOk_ && playerX != xAvant) {
+        const double sens = playerX > xAvant ? 1.0 : -1.0, nx = std::cos(C.th) * sens, nz = std::sin(C.th) * sens;
+        const double vn = monde.vx * nx + monde.vz * nz;
+        if (vn < 0) { monde.vx -= vn * nx; monde.vz -= vn * nz; }
+    }
+    if (!mondeOk_) monde.rapport = 1;
+    mondeOk_ = true;
+}
+
+// WFS-256 : test continu tous les 10 cm du déplacement du pas (rien ne se traverse, même à 300 km/h), puis réaction
+// d'un corps rigide (chocs_decor.h) au premier contact ; le reste du déplacement du pas est abandonné
+bool Player::heurter(Track& track, double x0, double z0, double cap0, double& x, double& z, double& cap, double& vx, double& vz, double& r,
+                     double m, double Iz) {
+    const chocs::Registre& reg = chocs::registre();
+    if (reg.taille() == 0) return false;
+    const double hl = car->d.L / 2, hw = car->d.W / 2, pas = std::hypot(x - x0, z - z0);
+    // obstacles du voisinage (une fois par pas) : à moins de la demi-diagonale de la voiture + le déplacement du pas
+    obstaclesProches_.clear();
+    reg.autour(track, dist, std::hypot(hl, hw) + pas + 1.0, [&](const chocs::Obstacle& o) { obstaclesProches_.push_back(o); });
+    if (obstaclesProches_.empty()) return false;
+    const double x1 = x, z1 = z, cap1 = cap;
+    const int n = std::max(1, (int)std::ceil(pas / 0.10));
+    for (int k = 1; k <= n; k++) {
+        const double t = (double)k / n, ck = cap0 + std::remainder(cap1 - cap0, 2 * PI_D) * t;
+        double px = x0 + (x1 - x0) * t, pz = z0 + (z1 - z0) * t;
+        bool touche = false;
+        for (const chocs::Obstacle& o : obstaclesProches_) {
+            const chocs::Contact c = chocs::contact(px, pz, ck, hl, hw, o);
+            if (!c.touche) continue;
+            if (!touche) { x = px; z = pz; cap = ck; touche = true; }   // la voiture s'arrête au premier contact du pas
+            const chocs::Reponse rp = chocs::reagir(x, z, vx, vz, r, m, Iz, c, o);
+            px = x; pz = z;
+            if (rp.choc) { chocsDecor.n++; if (rp.impact > chocsDecor.impact) { chocsDecor.impact = rp.impact; chocsDecor.genre = rp.genre; } }
+        }
+        if (touche) return true;
+    }
+    return false;
+}
+
+// WFS-256 (conduite d'avant) : pivoter la voiture sur place de cap0 à cap1 l'enfoncerait-il dans un obstacle voisin ?
+bool Player::enfonceParPivot(double x, double z, double cap0, double cap1) const {
+    const double hl = car->d.L / 2, hw = car->d.W / 2;
+    for (const chocs::Obstacle& o : obstaclesProches_) {
+        const chocs::Contact a = chocs::contact(x, z, cap0, hl, hw, o), b = chocs::contact(x, z, cap1, hl, hw, o);
+        if (b.touche && b.prof > (a.touche ? a.prof : 0) + 0.005) return true;
+    }
+    return false;
+}
+
+// aide à la direction (activée) : angle de roues ajouté pour suivre la voie où le joueur a laissé la voiture (poursuite
+// pure : point de cette voie visé 0,6 s devant, comme un conducteur qui regarde où va la route). Part de l'aide : pleine
+// volant lâché, nulle au-delà de 0,35 (elle ne lutte jamais contre le joueur). Pas d'aide à contresens ni en manœuvre.
+double Player::aider(double v, Track& t) {
+    const double a = std::abs(steer), edgeM = (t.map() ? t.map()->edge : 1.6) * RW;
+    if (a > AIDE_VOLANT_LIBRE || !cibleOk_) { latCible_ = playerX * RW; cibleOk_ = true; }
+    latCible_ = std::clamp(latCible_, -std::min(RW - 1.2, edgeM), std::min(RW - 1.2, edgeM));   // la voie suivie reste sur la chaussée
+    if (std::abs(heading) > PI_D / 2 || v < AIDE_VMIN || monde.u() < 0) return 0;
+    const double w = 1 - std::clamp(a / AIDE_VOLANT_PLEIN, 0.0, 1.0);
+    if (w <= 0) return 0;
+    const physique::Params& P = *cm_;
+    const double ld = std::clamp(0.6 * v, 6.0, 30.0);
+    const TrackPoint T = t.pointLisse(dist + ld / M, latCible_);
+    const double dx = T.x - monde.x, dz = T.z - monde.z, sn = std::sin(monde.cap), cs = std::cos(monde.cap);
+    const double av = dx * sn - dz * cs, dr = dx * cs + dz * sn;
+    const double kappa = 2 * dr / std::max(1.0, av * av + dr * dr);   // courbure du cercle qui passe par le point visé (1/m)
+    const double roue = std::clamp(std::atan(kappa * P.L), -physique::braquageMax(P, v), physique::braquageMax(P, v));
+    return w * roue;
+}
+
+void Player::updateMonde(double dt, const DriveInput& in, Track& track, bool playing) {
+    if (!cm_) cm_ = &physique::params(*car);
+    const physique::Params& P = *cm_;
+    // tête-à-queue après un accident : comme l'ancien modèle (rotation montrée, dérive), commandes bloquées un moment
+    controlLock = std::max(0.0, controlLock - dt);
+    if (std::abs(playerSpin) > 0.25) {
+        spinYaw += playerSpin * dt; playerSpin *= std::max(0.0, 1 - 2.4 * dt);
+        playerX += playerSpin * 0.012 * dt * std::min(1.0, speed / MAX_SPEED * 3);
+    } else { playerSpin = 0; spinYaw += (0 - spinYaw) * std::min(1.0, dt * 3); if (std::abs(spinYaw) < 0.002) spinYaw = 0; }
+    spinYaw = std::atan2(std::sin(spinYaw), std::cos(spinYaw));
+    const bool locked = controlLock > 0;
+    synchroniser(track);
+
+    // volant progressif (mêmes vitesses que l'ancien modèle : configgame.json, steerIn / steerOut)
+    if (playing && !locked) {
+        const double target = std::clamp((double)in.steer, -1.0, 1.0);
+        const double rate = (std::abs(target) < 1e-3 || signf((float)target) != signf((float)steer)) ? Phys::steerOut : Phys::steerIn;
+        steer += std::clamp(target - steer, -dt * rate, dt * rate);
+    } else steer += -steer * std::min(1.0, dt * 4);
+    const double u = monde.u(), v = std::abs(u);
+    const double roueMax = physique::braquageMax(P, v);
+    aideRoues = aide == Aide::Activee && playing && !locked ? aider(v, track) : 0;
+    braquageRoues = locked ? 0 : std::clamp(steer * roueMax + aideRoues, -roueMax, roueMax);
+
+    // commandes : mêmes règles que l'ancien modèle (frein puis marche arrière enchaînée sous vRecul, nitro) ; rien d'automatique
+    nitroOn = playing && in.nitro && nitro > 0.01;
+    if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
+    const bool accelerating = playing && !locked && in.gas && !in.brake;
+    reversing = playing && !locked && in.brake && !in.gas && u < Phys::vRecul;
+    braking = playing && !locked && in.brake && u > 0 && !reversing;
+    physique::Commande c;
+    c.braquage = braquageRoues;
+    if (!playing) {}
+    else if (locked) c.frein = 0.5;
+    else if (reversing) { c.recul = true; c.gaz = 1; }
+    else if (braking || (accelerating && u < -0.05)) c.frein = 1;
+    else if (accelerating) c.gaz = 1;
+    c.nitro = nitroOn ? config().nitro.poussee : 1;
+    c.abs = g_aidesVoiture.abs; c.antipatinage = g_aidesVoiture.antipatinage; c.esp = g_aidesVoiture.esp;   // WFS-253
+    physique::Sol sol;
+    if (std::abs(playerX) > 1) { sol.mu = physique::MU_HERBE; sol.crr = physique::CRR_HERBE; }   // bas-côté
+    sol.pente = track.pointLisse(dist, playerX * RW).slope * std::cos(heading);
+    const double x0 = monde.x, z0 = monde.z, cap0 = monde.cap;
+    physique::pas(P, monde, c, sol, dt);
+    heurter(track, x0, z0, cap0, monde.x, monde.z, monde.cap, monde.vx, monde.vz, monde.r, P.masse, P.Iz);   // WFS-256 : chocs avec le décor
+    projeter(track);
+
+    // glissière (bord de la carte) : la voiture glisse le long, sa vitesse vers l'extérieur est annulée, son cap redressé
+    const double edge = track.map() ? track.map()->edge : 1.6;
+    if (std::abs(playerX) > edge) {
+        const double cote = playerX > 0 ? 1.0 : -1.0;
+        playerX = cote * edge;
+        const TrackPoint C = track.pointLisse(dist, playerX * RW);
+        monde.x = C.x; monde.z = C.z;
+        const double nx = std::cos(C.th) * cote, nz = std::sin(C.th) * cote, vn = monde.vx * nx + monde.vz * nz;
+        if (vn > 0) { monde.vx -= nx * vn * 1.1; monde.vz -= nz * vn * 1.1; }
+        const double frot = std::max(0.0, 1 - dt * 1.5);   // frottement contre la glissière
+        monde.vx *= frot; monde.vz *= frot;
+        if (std::sin(heading) * cote > 0) {
+            const double ax = std::abs(heading) > PI_D / 2 ? (heading > 0 ? PI_D : -PI_D) : 0.0, dev = heading - ax;
+            heading = ax + (dev > 0 ? 1 : -1) * std::max(0.0, std::abs(dev) - BORDURE_RENVOI * dt);
+            monde.cap = C.th + heading; monde.r *= 0.5;
+        }
+    }
+    const double prevSpeed = speed;
+    speed = std::clamp(monde.u() / M, REV_MAX, MAX_SPEED * 1.6);
+    odo += dt * speed;
+    latAcc = monde.ay; lonAcc = (speed - prevSpeed) * M / std::max(dt, 1e-3);
+    sDist_ = dist; sX_ = playerX; sHead_ = heading; sSpeed_ = speed;
 }
 
 } // namespace wfs

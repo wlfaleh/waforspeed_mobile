@@ -307,7 +307,8 @@ inline bool lireJson(const std::string& chemin, Json& out, std::string& erreur) 
 
 // fichiers du référentiel (references/reel/), dans l'ordre du rapport
 inline const char* const FICHIERS_REFERENTIEL[] = {"voitures.json", "marquage.json", "soleil_controle.json", "colorchecker.json", "photometrie.json",
-                                                   "materiaux.json", "anthropometrie.json", "lieux.json"};
+                                                   "materiaux.json", "anthropometrie.json", "lieux.json",
+                                                   "architecture.json"};   // WFS-161 : hauteurs de niveau, ouvertures (exception de zone du PO)
 
 // une mesure du référentiel par son identifiant (dans tous les fichiers chargés)
 struct Referentiel {

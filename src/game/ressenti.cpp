@@ -48,7 +48,7 @@ public:
     void shutdown(Renderer&) override { if (active_ == this) active_ = nullptr; }
 
     // après la course (ordre 220 > 210) : chocs du pas qui vient d'être joué
-    void collide(double, Player& pl, const GameView& g) override {
+    void collide(double dt, Player& pl, const GameView& g) override {
         const Course* c = activeCourse();
         if (!c) return;
         // nouvelle course (« Rejouer », menu) : compteurs remis à zéro, aucun effet
@@ -72,6 +72,14 @@ public:
             vibrer(MOTIF, 1);
         }
         suivre(c);
+        if (c->playing() && pl.modeleMonde()) {   // WFS-255 : vibrations liées aux forces (ABS, glisse, passage de rapport)
+            using V = VibrationsConduite;
+            const V::Motif m = vibrations_.update(dt, std::abs(pl.monde.u()), std::max(pl.monde.sigmaAv, pl.monde.sigmaAr),
+                                                  pl.monde.absActif, pl.monde.rapport, pl.lonAcc > 0.3);
+            if (m == V::Motif::Abs) vibrer(V::ABS_MS, 7);
+            else if (m == V::Motif::Glisse) vibrer(V::GLISSE_MS, 1);
+            else if (m == V::Motif::Rapport) vibrer(V::RAPPORT_MS, 1);
+        }
         // bordure de la route en course (update.js : |playerX| > MAP.edge → shake 0,12)
         const double edge = g.map ? g.map->edge : 1.6;
         if (c->playing() && std::abs(pl.playerX) >= edge && std::abs(pl.speed) > MAX_SPEED * 0.01) etat_.bordure(reduit);
@@ -93,6 +101,7 @@ private:
     }
     const Course* c_ = nullptr;
     int accidents_ = 0, bumps_ = 0, scrapes_ = 0;
+    VibrationsConduite vibrations_;   // WFS-255
 };
 RessentiSystem* RessentiSystem::active_ = nullptr;
 WFS_SYSTEM(RessentiSystem, 220)   // gameplay (200-299), après la course (210) dont il lit les compteurs

@@ -1,8 +1,8 @@
 // WaForSpeed — nuit complète (ticket WFS-09, épic E4 ; absorbe WFS-16 « route mouillée avec reflets »).
 // Port de l'éclairage de nuit du jeu web (wlfaleh/waaps, waforspeed/) :
 //   - ambiance (js/world/maps.js, envFor nuit) : ciel, hémisphère #46327a / #08080e, lune #8a96ff, brouillard linéaire 40-540 m ;
-//   - phares du joueur (js/cars/player.js, buildPlayer) : projecteur 0xfff1dd, intensité ENV.headlight, portée 170 m,
-//     angle 0,7, pénombre 0,65 ; feu de recul (PointLight 0xe8eeff, 2,2 la nuit, 14 m) ;
+//   - phares du joueur : deux feux de croisement réels (WFS-218, phares.h ; avant : projecteur unique du web, 0xfff1dd,
+//     portée 170 m, angle 0,7) ; feu de recul (PointLight 0xe8eeff, 2,2 la nuit, 14 m) ;
 //   - tache des phares (buildBeam / updateBeam) : grille 17 × 11 qui épouse la route, deuxième passage sans éclairage public ;
 //   - lampadaires (js/world/scene.js, « éclairage des lampadaires proches ») : 4 lumières au plus sur les plus proches,
 //     halo de la tête et flaque de lumière au sol (poolQuad de js/world/decor.js) ;
@@ -24,6 +24,7 @@
 #include "eclairage.h"
 #include "renderer.h"
 #include "feux_modele.h"   // WFS-109
+#include "phares.h"        // WFS-218 : feux de croisement du joueur
 #include "../world/meteo.h"   // WFS-142 (RG-01) : route mouillée seulement quand il pleut (lecture seule)
 
 namespace wfs {
@@ -62,10 +63,9 @@ public:
         else if (L.empty() && circuit_)
             for (int64_t n = 10; n < len; n += 34) L.push_back({n, ((n / 34) % 2 ? 1.f : -1.f) * ((float)RW + 4.f), 16.f, StyleLampadaire::Stade});
         std::sort(L.begin(), L.end(), [](const Lampadaire& a, const Lampadaire& b) { return a.seg < b.seg; });
-        WFS_LOG("Nuit : carte %s, %zu lampadaires, phares %.1f%s", id, L.size(), phare(), mouille() ? ", route mouillée" : "");
+        WFS_LOG("Nuit : carte %s, %zu lampadaires, phares de croisement %s (%.0f cd chacun)%s", id, L.size(), phares::led(g.car ? g.car->id : nullptr) ? "LED" : "halogènes",
+                phares::creteCd(phares::led(g.car ? g.car->id : nullptr)), mouille() ? ", route mouillée" : "");
     }
-
-    float phare() const { return campagne_ ? 3.f : 2.4f; }   // ENV.headlight
     // WFS-142 (RG-01) : la chaussée n'est mouillée que s'il pleut (meteo::pluieActive : la ville la nuit), ou si le banc
     // force la météo (WFS_METEO=pluie / sec). Avant : mouillée à chaque nuit en ville et sur la corniche, même sans pluie.
     static int meteoForcee() {   // 1 pluie, 0 sec, -1 rien de forcé
@@ -126,10 +126,19 @@ public:
         // ---------- lumières : phares, recul, 4 lampadaires les plus proches ----------
         fp.spotCount = 0;
         const CarDims& d = g.car->d;
-        FrameParams::Spot& h = fp.spots[fp.spotCount++];   // RG-02
-        h.pos = W.transformPoint({0, std::max(0.6f, d.H * 0.41f), -d.L / 2 - 0.2f});
-        h.target = W.transformPoint({0, -0.5f, -60});
-        h.color = linHex(0xfff1dd); h.intensity = phare(); h.distance = 170; h.angle = 0.7f; h.penumbra = 0.65f; h.decay = 1;
+        // WFS-218 (RG-00 à RG-02) : deux feux de croisement réels, un à chaque optique avant lue sur le modèle (mêmes centres
+        // que les halos des phares, Renderer::feuxVoiture ; sans modèle : proportions du jeu web), 3 cm devant la glace ;
+        // axe = avant de la voiture, à l'horizontale ; coupure, intensité (cd, flux sourcé) et teinte : phares.h. Remplace
+        // le projecteur unique au centre (cône de 40°, portée 170 m, sans coupure : murs éclairés jusqu'au toit).
+        const bool estLed = phares::led(g.car->id);
+        const FeuxModele* fm = g.modele && g.modele->ok ? &g.modele->feux : nullptr;
+        const float ox = fm ? fm->avantX : d.W / 2 - 0.3f, oy = fm ? fm->avantY : std::max(0.6f, d.H * 0.41f), oz = fm ? fm->avant - 0.03f : -d.L / 2 - 0.03f;
+        for (int cote : {-1, 1}) {
+            FrameParams::Spot& h = fp.spots[fp.spotCount++];
+            h.pos = W.transformPoint({cote * ox, oy, oz}); h.target = W.transformPoint({cote * ox, oy, oz - 10.f});
+            h.color = estLed ? phares::TEINTE_LED : phares::TEINTE_HALOGENE; h.intensity = phares::creteCd(estLed) / feux_modele::LUX_PAR_UNITE;
+            h.distance = phares::PORTEE_M; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
+        }
         if (g.player->reversing || g.player->speed < -1) {   // feu de recul (revLight)
             // WFS-171 (RG-01, ANO-70) : lumière posée sur les feux (hauteur ≈ 0,6 H, ras du pare-chocs ; elle était 0,8 m
             // derrière et 0,6 m de haut : disque blanc décollé), tournée vers l'arrière et 31° vers le bas, cône de 83°
@@ -156,6 +165,59 @@ public:
             const bool stade = l.style == StyleLampadaire::Stade;
             s.color = linHex(stade ? 0xeaf2ff : 0xffb46b); s.intensity = stade ? 1.8f : 1.1f; s.distance = stade ? 60.f : 26.f;
         }
+        pharesAutres(fp, W.transformPoint({0, 0, 0}));
+    }
+
+    // ---------- WFS-226 (RG-01, RG-02) : vraies lumières des autres voitures les plus proches ----------
+    // Voitures notées à l'image précédente par Renderer::feuxVoiture (trafic, adversaires, police, camion) : les 2 (Basse) ou
+    // 4 plus proches du joueur, à moins de 70 m, reçoivent un feu de croisement réel (même photométrie que le joueur, paire
+    // LED en un projecteur au milieu des optiques, 10 cm devant, position prolongée d'une image). Les autres : lumière au sol calculée (lumiereSolAutres).
+    void pharesAutres(FrameParams& fp, const vec3& joueur) {
+        eclairants_.clear();
+        const int nMax = ecrans::reglages().qualite == ecrans::QUALITE_BASSE ? phares::AUTRES_ECLAIRANTS_BASSE : phares::AUTRES_ECLAIRANTS;
+        tri_.clear();
+        for (size_t i = 0; i < prec_.size(); i++) {
+            const float dist = length(prec_[i].centre - joueur);
+            if (dist < phares::AUTRES_PORTEE_SPOT) tri_.push_back({dist, i});
+        }
+        std::sort(tri_.begin(), tri_.end());
+        for (size_t k = 0; k < tri_.size() && (int)k < nMax && fp.spotCount < FrameParams::SPOTS_MAX; k++) {
+            const phares::PhareAutre& a = prec_[tri_[k].second];
+            // position de cette image : celle de l'image précédente + son déplacement depuis l'avant-dernière (voiture la
+            // plus proche à moins de 3 m) : sans cela, à 110 km/h, la lumière partait 0,5 m en arrière (flanc des voisines)
+            vec3 depl{}; float dMin = 3.f;
+            for (const phares::PhareAutre& b : prec2_) { const float dd = length(b.centre - a.centre); if (dd < dMin) { dMin = dd; depl = a.centre - b.centre; } }
+            FrameParams::Spot& h = fp.spots[fp.spotCount++];
+            h.pos = a.centre + depl + a.avant * 0.1f; h.target = h.pos + a.avant * 10.f;
+            h.color = phares::TEINTE_LED; h.intensity = 2 * phares::creteCd(true) / feux_modele::LUX_PAR_UNITE;
+            h.distance = 90; h.angle = 1.45f; h.penumbra = 0; h.decay = 0; h.croisement = true;
+            eclairants_.push_back(a.centre + depl);
+        }
+    }
+    // RG-02 : lumière des phares au sol pour les voitures sans vraie lumière (éclairement de phares::eclairementSol changé en
+    // luminance d'asphalte, ρ E / LUX_PAR_UNITE comme le rendu des projecteurs), grille couchée devant la voiture, bords fondus
+    void lumiereSolAutres(Renderer& r, const GameView& g) {
+        static constexpr float RANGS[] = {0.3f, 1.5f, 3.5f, 6.5f, 10.5f, 15.5f, 22.f, 30.f};
+        constexpr int NZ = 8, NX = 7; constexpr float DEMI = 7.f;
+        auto& A = phares::autres();
+        for (const phares::PhareAutre& a : A) {
+            bool eclaire = false;
+            for (const vec3& e : eclairants_) eclaire = eclaire || length(e - a.centre) < 2.5f;
+            if (eclaire || length(a.centre - g.camPos) > 160.f) continue;
+            Vertex v[(NZ - 1) * (NX - 1) * 4]; vec3 p[NZ][NX], c[NZ][NX];
+            const vec3 haut = normalize(cross(a.droite, a.avant));   // droite × avant = haut (avant vers −Z)
+            for (int k = 0; k < NZ; k++) for (int i = 0; i < NX; i++) {
+                const float x = -DEMI + 2 * DEMI * i / (NX - 1), z = RANGS[k];
+                const float fen = (1 - phares::lisse(DEMI * 0.5f, DEMI, std::abs(x))) * (1 - phares::lisse(RANGS[NZ - 3], RANGS[NZ - 1], z));
+                p[k][i] = a.sol + a.droite * x + a.avant * z + haut * 0.04f;
+                c[k][i] = phares::TEINTE_LED * (feux_modele::ALBEDO_ASPHALTE * phares::eclairementSol(x, z, a.demiEcart, a.hauteur) / feux_modele::LUX_PAR_UNITE * fen);
+            }
+            int n = 0;
+            auto sommet = [&](int k, int i) { const vec3& q = p[k][i]; const vec3& cc = c[k][i]; v[n++] = {q.x, q.y, q.z, cc.x, cc.y, cc.z, 0.5f, 0.5f}; };
+            for (int k = 0; k < NZ - 1; k++) for (int i = 0; i < NX - 1; i++) { sommet(k, i); sommet(k, i + 1); sommet(k + 1, i + 1); sommet(k + 1, i); }
+            r.lumiereSol(v, n / 4);
+        }
+        prec2_.swap(prec_); prec_.assign(A.begin(), A.end()); A.clear();
     }
 
     void render(Renderer& r, const GameView& g) override {
@@ -201,6 +263,7 @@ public:
             const TrackPoint hq = t.point(s, l.lat);
             r.halo({(float)hq.x, (float)hq.y + l.y + 0.25f, (float)hq.z}, 1.1f, tete * 1.6f);
         }
+        lumiereSolAutres(r, g);   // WFS-226 : après le trafic, les adversaires et la police (systèmes d'ordre < 950)
         feuxJoueur(r, g);
     }
 
@@ -209,16 +272,19 @@ public:
     void feuxJoueur(Renderer& r, const GameView& g) {
         const Player& p = *g.player;
         stopK_ = feux_modele::transition(stopK_, p.braking, tFeux_ < 0 ? -1.f : (float)(g.time - tFeux_)); tFeux_ = g.time;
-        FeuxVoiture fx; fx.nuit = actif(g); fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;
+        FeuxVoiture fx; fx.nuit = actif(g); fx.joueur = true;   // WFS-226 : ses phares sont les deux projecteurs ci-dessus fx.stop = p.braking; fx.recul = p.reversing || p.speed < -1; fx.frein = stopK_;
         r.feuxProchaineVoiture(fx);
     }
     float stopK_ = 0; double tFeux_ = -1;
 
-    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; }
+    void shutdown(Renderer&) override { lampadaires().clear(); nuit_ = false; prec_.clear(); prec2_.clear(); phares::autres().clear(); }
 
 private:
     bool nuit_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
     std::vector<std::pair<int64_t, size_t>> proches_;
+    std::vector<phares::PhareAutre> prec_, prec2_;   // WFS-226 : voitures notées à l'image précédente et à l'avant-dernière
+    std::vector<vec3> eclairants_;                   // WFS-226 : centres des voitures à vraie lumière cette image
+    std::vector<std::pair<float, size_t>> tri_;
 };
 
 } // namespace
