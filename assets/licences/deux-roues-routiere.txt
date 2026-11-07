@@ -1,0 +1,14 @@
+Model Information:
+* title:	Honda CB 750 F Super Sport 1970
+* source:	https://sketchfab.com/3d-models/honda-cb-750-f-super-sport-1970-f121301624174b179ca4d50158797b03
+* author:	Alex.Ka. (https://sketchfab.com/Alex.Ka)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Honda CB 750 F Super Sport 1970" (https://sketchfab.com/3d-models/honda-cb-750-f-super-sport-1970-f121301624174b179ca4d50158797b03) by Alex.Ka. (https://sketchfab.com/Alex.Ka) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Found in the public GitHub repository p-shark/HCAM_project (commit c23f055d70cf3f353ec08766f3d91d2575bfa14f), folder ex09_project/WebContent/image/car/gltf/honda_cb750 ; files SHA-256: scene.gltf 9c52a72b…ec13, scene.bin 45fb9788…f05b.
+Modifications for WaForSpeed (WFS-232, 2026-11-07): converted to .wfm by tools/convert_car.mjs ; longueur 2,171 m (longueur et empattement à ± 1 % de la fiche) ; tourné de 180° ; niveaux de détail (.lod). No brand name is shown in the game.

@@ -22,6 +22,7 @@
 // normales, de métal ou de rugosité, sans émission) : les motifs des modèles (camouflage, paillettes étirées) disparaissent.
 // WFS_ROUES=forme : pièces en forme de roue (rondes, posées au sol, sur un côté) regroupées à part avec le drapeau 128,
 // pour les modèles dont les roues n'ont pas de nom reconnaissable et partagent leur matériau avec la carrosserie (GT86).
+// WFS-232 : WFS_OPAQUE=<regex matériau> : matériaux BLEND traités en alpha découpé (surfaces opaques mal exportées).
 // WFS-158 (RG-A, M-04) : WFS_PLAQUE=<regex matériau> : plaques avant et arrière remises au format européen 520 × 110 mm ;
 // WFS_TEXTURES=« matériau|couleur=fichier[|normale=fichier] ; … » : images du dépôt à la place des textures d'un matériau
 // (plaques au nom de l'auteur du modèle, remplacées par les plaques neutres de tools/plaques_neutres.mjs).
@@ -199,8 +200,11 @@ for (const [cle, ps] of groups) {
   if (rx.paint.test(name) && !estRoue) flags |= 1;
   else if (all(rx.tail)) flags |= 4;
   else if (all(rx.head)) flags |= 8;
-  if (m && m.getAlphaMode() === 'BLEND') flags |= 2;
-  if (m && m.getAlphaMode() === 'MASK') flags |= 32;
+  // WFS-232 : WFS_OPAQUE=<regex matériau> : surfaces opaques exportées en BLEND par Sketchfab (carénages, moteur des deux-roues) :
+  // alpha découpé (bords nets des autocollants) au lieu de transparent (file triée, jamais allégé par alleger_voiture.mjs)
+  const opaque = process.env.WFS_OPAQUE && new RegExp(process.env.WFS_OPAQUE, 'i').test(name);
+  if (m && m.getAlphaMode() === 'BLEND' && !opaque) flags |= 2;
+  if (m && (m.getAlphaMode() === 'MASK' || (opaque && m.getAlphaMode() === 'BLEND'))) flags |= 32;
   if (m && m.getDoubleSided()) flags |= 16;
   if (all(rx.glass)) flags |= 64 | 2;
   if (all(rx.wheel) || estRoue) flags |= 128;

@@ -1,0 +1,160 @@
+{
+  "fichier": "deux_roues.json",
+  "description": "Dimensions constructeur des 3 deux-roues du trafic — WFS-232 RG-01 (longueur, empattement, hauteur de selle)",
+  "sources": {
+    "FICHE-OLA-S1-PRO": {
+      "titre": "Ola S1 Pro (2e génération) : fiches 91wheels.com, 91mobiles.com, bikebd.com",
+      "lien": "https://www.91wheels.com/scooters/ola-electric/s1-pro/specifications",
+      "acces": "non_ouvert",
+      "annee": "2026 (consultation)",
+      "note": "longueur 1859, empattement 1359, selle 792 à 805 selon la source ; 3e génération : 1900 de long ; page non ouverte (réseau de la session) : valeurs lues dans le résumé du moteur de recherche, 2026-11-07"
+    },
+    "FICHE-HONDA-CB750": {
+      "titre": "Honda CB750 Four (1969-1978) : Redbook (annonce bikesales.com.au 1974), philharmonicmoto.com, motorcyclespecs.co.za",
+      "lien": "https://www.motorcyclespecs.co.za/model/Honda/honda_cb750k_69.html",
+      "acces": "non_ouvert",
+      "annee": "2026 (consultation)",
+      "note": "longueur 2160 (Redbook, philharmonicmoto) à 2200 (Wikipédia) ; empattement 1453 à 1460 ; selle 790 à 810 ; page non ouverte (réseau de la session) : valeurs lues dans le résumé du moteur de recherche, 2026-11-07"
+    },
+    "FICHE-KAWASAKI-ZX6R-2019": {
+      "titre": "Kawasaki Ninja ZX-6R 2019 : 1000ps.com, bikez.com, ultimatespecs.com, motorcyclespecs.co.za",
+      "lien": "https://1000ps.com/en-gb/model/203/kawasaki-ninja-zx-6r/2019",
+      "acces": "non_ouvert",
+      "annee": "2026 (consultation)",
+      "note": "longueur 2024 à 2025, empattement 1400, selle 830 ; page non ouverte (réseau de la session) : valeurs lues dans le résumé du moteur de recherche, 2026-11-07"
+    }
+  },
+  "mesures": [
+    {
+      "valeur": 1859,
+      "id": "deux_roues.scooter.longueur",
+      "domaine": "deux_roues",
+      "grandeur": "longueur hors tout",
+      "unite": "mm",
+      "source": "FICHE-OLA-S1-PRO",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "valeur": 1359,
+      "id": "deux_roues.scooter.empattement",
+      "domaine": "deux_roues",
+      "grandeur": "empattement",
+      "unite": "mm",
+      "source": "FICHE-OLA-S1-PRO",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "min": 792,
+      "max": 805,
+      "id": "deux_roues.scooter.selle",
+      "domaine": "deux_roues",
+      "grandeur": "hauteur de selle",
+      "unite": "mm",
+      "source": "FICHE-OLA-S1-PRO",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "min": 2160,
+      "max": 2200,
+      "id": "deux_roues.routiere.longueur",
+      "domaine": "deux_roues",
+      "grandeur": "longueur hors tout",
+      "unite": "mm",
+      "source": "FICHE-HONDA-CB750",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "min": 1453,
+      "max": 1460,
+      "id": "deux_roues.routiere.empattement",
+      "domaine": "deux_roues",
+      "grandeur": "empattement",
+      "unite": "mm",
+      "source": "FICHE-HONDA-CB750",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "min": 790,
+      "max": 810,
+      "id": "deux_roues.routiere.selle",
+      "domaine": "deux_roues",
+      "grandeur": "hauteur de selle",
+      "unite": "mm",
+      "source": "FICHE-HONDA-CB750",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "min": 2024,
+      "max": 2025,
+      "id": "deux_roues.sportive.longueur",
+      "domaine": "deux_roues",
+      "grandeur": "longueur hors tout",
+      "unite": "mm",
+      "source": "FICHE-KAWASAKI-ZX6R-2019",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "valeur": 1400,
+      "id": "deux_roues.sportive.empattement",
+      "domaine": "deux_roues",
+      "grandeur": "empattement",
+      "unite": "mm",
+      "source": "FICHE-KAWASAKI-ZX6R-2019",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    },
+    {
+      "valeur": 830,
+      "id": "deux_roues.sportive.selle",
+      "domaine": "deux_roues",
+      "grandeur": "hauteur de selle",
+      "unite": "mm",
+      "source": "FICHE-KAWASAKI-ZX6R-2019",
+      "statut": "a_confirmer",
+      "tolerance": {
+        "type": "relative",
+        "valeur": 0.01,
+        "regle": "DA-realisme.md § 4 (dimensions ± 1 %)"
+      }
+    }
+  ]
+}
