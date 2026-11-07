@@ -56,6 +56,7 @@ EtatCockpit g_ck;
 float g_ckEssuieT = 0;   // WFS-197 : phase des essuie-glaces au dernier pas (banc d'essai)
 cockpit::EtatInterieur g_ckInt; int g_ckAppels = 0; size_t g_ckOctets = 0; const char* g_ckCar = nullptr;   // WFS-197 : banc d'essai
 bool g_ckSansInterieur = false;   // WFS-235 : banc d'essai : image sans l'intérieur (part cachée, RG-05)
+bool g_ckBalaisRepos = false;     // WFS-235 : banc d'essai : balais dessinés au repos (part cachée par l'intérieur fixe)
 struct Zone { float x = 0, y = 0, w = 0, h = 0;
     bool contient(float px, float py) const { return w > 0 && px >= x && px <= x + w && py >= y && py <= y + h; } } g_bouton;
 }
@@ -377,7 +378,7 @@ private:
         e.v.kmh = cockpit::vitesseAffichee(pl.kmh());
         e.v.regime = moteur_.rpm; e.v.rapport = pl.reversing ? -1 : (e.v.kmh < 1 ? 0 : moteur_.gear);
         e.v.nitro = (float)pl.nitro; e.v.nuit = nuitDemandee();
-        e.essuie = essuie_.angle(interieur_.def()->arc);
+        e.essuie = g_ckBalaisRepos ? 0.f : essuie_.angle(interieur_.def()->arc);
         interieur_.dessiner(r, cam, e, route_, joueur, cap);
         g_ckInt = e; g_ckAppels = interieur_.appels(); g_ckOctets = interieur_.octets(); g_ckCar = interieur_.def()->car;
     }
@@ -419,9 +420,14 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
     //   fenêtre de la rue : de l'horizon à +8°, ±15° autour de l'axe de la voiture (0 % visé) ;
     //   bande de la rue : de l'horizon à +8°, toute la largeur (≤ vraie voiture + 2 points) ;
     //   au-dessus de l'horizon : tout ce qui est au-dessus (écrit seulement) ; direction de chaque pixel : caméra de l'image
-    auto partCachee = [&](const std::string& nom) {
+    //   balaisRepos : sous la pluie, les balais en mouvement passent devant la rue (comme dans une vraie voiture) : la
+    //   fenêtre de la rue se mesure balais au repos (intérieur fixe) ; la mesure balais en mouvement est seulement écrite
+    auto partCachee = [&](const std::string& nom, bool balaisRepos = false) {
         const std::string a = out + "/" + nom + "-mesure.png", b = out + "/" + nom + "-sans-interieur.png";
+        g_ckBalaisRepos = balaisRepos;
         g.render(t); r.capturePng(a);
+        const float balais = g_ckInt.essuie;
+        g_ckBalaisRepos = false;
         g_ckSansInterieur = true; g.render(t); r.capturePng(b); g_ckSansInterieur = false;
         int wa, ha, ca, wb, hb, cb;
         unsigned char* pa = stbi_load(a.c_str(), &wa, &ha, &ca, 3);
@@ -446,8 +452,9 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
             }
             auto pct = [&](int k) { return n[k] ? 100.0 * c[k] / n[k] : 0.0; };
             WFS_LOG("capture %s (WFS-235 RG-05) : regard %s ; cachés par l'intérieur : fenêtre de la rue %.1f %% (0 %% visé), bande de la rue %.1f %%, "
-                    "au-dessus de l'horizon %.1f %%", nom.c_str(), regardCockpit() == RegardCockpit::Bas ? "bas" : regardCockpit() == RegardCockpit::Haut ? "haut" : "normal",
-                    pct(0), pct(1), pct(2));
+                    "au-dessus de l'horizon %.1f %% ; balais %.2f rad%s", nom.c_str(),
+                    regardCockpit() == RegardCockpit::Bas ? "bas" : regardCockpit() == RegardCockpit::Haut ? "haut" : "normal",
+                    pct(0), pct(1), pct(2), balais, balais > 0.02f ? " (en mouvement, pluie : mesure écrite seulement)" : "");
         } else WFS_ERR("%s : parts cachées non mesurées (captures illisibles)", nom.c_str());
         stbi_image_free(pa); stbi_image_free(pb);   // nul accepté
         std::remove(a.c_str()); std::remove(b.c_str());
@@ -512,7 +519,9 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
             for (int k = 0; k < 120 && g_ckEssuieT > 0.02f; k++) { g.update(1.0 / 60); t += 1.0 / 60; }
             capture(c + "-nuit");
             partCachee(c + "-nuit");   // WFS-235 (RG-05)
-            if (jusquAuVirage()) { capture(c + "-nuit-virage"); partCachee(c + "-nuit-virage"); }   // WFS-235 (RG-05)
+            if (jusquAuVirage()) {   // WFS-235 (RG-05) : balais où ils sont (écrit), puis au repos (critère)
+                capture(c + "-nuit-virage"); partCachee(c + "-nuit-virage"); partCachee(c + "-nuit-virage", true);
+            }
         }
     }
     g.shutdown();
