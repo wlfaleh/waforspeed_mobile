@@ -2337,3 +2337,8 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - Source : Release `apercu` de `main` (construction 807, a756c55), pixels saturés mesurés sur toutes les captures de nuit.
 - **WFS-203** PASSABLE AVEC ANOMALIES MINEURES (ANO-108 : vaches et moutons invisibles de nuit) ; **WFS-207** PASSABLE AVEC ANOMALIES MINEURES (ANO-109 : ciel en paliers, ciel de midi sombre) ; **WFS-197**, **201**, **202** (vue cockpit des 20 voitures) VALIDÉ ; **WFS-200** VALIDÉ.
 - WFS-205 : CI de `main` (run 808, 152ab47) encore en cours ; recette dès la publication des captures.
+
+### 2026-11-07 06:19:59 — Recette de nuit, fin : WFS-205 ; bilan (qa-lead)
+- **WFS-205** VALIDÉ sur la construction 808 de `main` (152ab47, run vert, APK 164,7 Mo, M-01 12/12).
+- Bilan de la nuit (40 lignes de `qa/Check.md`) : 29 VALIDÉ, 8 PASSABLE AVEC ANOMALIES MINEURES (ANO-103 à 109), **3 REFUSÉ : WFS-151, WFS-137, WFS-178**. WFS-88 (iOS, gel) laissé ☐.
+- **Pour le PO (`po-scrum-master`)**, trois tickets de correction prioritaires à créer : (1) écran blanc après rechargement d'une voiture (`vitrine-*-0`, `course-sf90`, encore blanches sur 808) — WFS-151 ; (2) place de la fontaine de la Ville posée sur la chaussée — WFS-137 ; (3) végétation en travers de la chaussée au rond-point du village de la Campagne — WFS-178. Je n'ai pas pu lancer l'agent PO moi-même dans cette session.
