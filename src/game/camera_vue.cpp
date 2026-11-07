@@ -249,13 +249,14 @@ public:
 
     void init(Renderer& r, const GameView&) override {
         // matériaux de buildCockpit (MeshStandardMaterial ; MeshBasicMaterial = sans lumière : noir + émission)
-        Material m;
+        // WFS-282 : double face (WFS-246 retire les faces arrière des opaques : pièces du cockpit vues de l'intérieur)
+        Material m; m.flags = MAT_DOUBLE;
         m.color = {lin(0x2a2c33).x, lin(0x2a2c33).y, lin(0x2a2c33).z, 1}; m.rough = 0.7f; m.metal = 0.15f; sombre_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
         m.color = {lin(0x23242a).x, lin(0x23242a).y, lin(0x23242a).z, 1}; m.rough = 0.5f; m.metal = 0.1f; m.emissive = lin(0x08090c);
         cuir_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
         m.color = {lin(0x9aa0a8).x, lin(0x9aa0a8).y, lin(0x9aa0a8).z, 1}; m.rough = 0.3f; m.metal = 0.9f; m.emissive = {};
         alu_ = r.makeMaterial(m, nullptr, nullptr, nullptr);
-        auto basique = [&](unsigned c) { Material b; b.color = {0, 0, 0, 1}; b.rough = 1; b.metal = 0; b.emissive = lin(c); return r.makeMaterial(b, nullptr, nullptr, nullptr); };
+        auto basique = [&](unsigned c) { Material b; b.flags = MAT_DOUBLE; b.color = {0, 0, 0, 1}; b.rough = 1; b.metal = 0; b.emissive = lin(c); return r.makeMaterial(b, nullptr, nullptr, nullptr); };
         cadranMat_ = basique(0x0b1a22); cyan_ = basique(0x00e5ff); orange_ = basique(0xff6a00);
         const mat4 I = mat4::identity();
         Geo st, ca, an, ai, ja, br, re;
