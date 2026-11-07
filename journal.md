@@ -4193,3 +4193,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - Après fusion : cycle normal 🟣 → ✅ (bancs du matin), pas de 🟡.
 - **Limite de WFS-267** (sonde sans ombre si la caméra reste loin de la voiture plus de 120 images, vues libres de bancs) : pas de ticket (aucun effet en jeu) ; noté dans `WFS-267.md`.
 - Envois vérifiés : 276 21:28, 232 21:28, 245 21:04, 278 20:59, 258 17:35 ⚠️ (P1, 4 h 01), 239 13:43 ⚠️ (P1, 7 h 53 ; aucun retrait avant 10 h : 23:43) ; 274 sans branche (à clore « ↪ WFS-267 » par l'agent arwa).
+
+### 2026-11-07 21:38:43 — Statuts automatiques, CI main #875 (robot statuts)
+- Run rouge (push, commit ebe798e), aucun statut changé. Job(s) en échec : banc-essai (realisme).
+- Tickets 🟣 contenus dans ce run : WFS-161, WFS-224, WFS-226, WFS-227, WFS-234, WFS-244, WFS-250, WFS-251, WFS-261, WFS-272.
