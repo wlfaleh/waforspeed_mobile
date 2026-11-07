@@ -14,13 +14,13 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-07 12:46:03 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-07 12:48:04 UTC (po-scrum-master)
 
 ## Agents développeurs
 
 | Agent (session) | Ticket en cours | Ce qu'il fait | Branche, dernier envoi (UTC) | État |
 |---|---|---|---|---|
-| agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : PR #195 ouverte, CI de branche run 831 lancée (12:19, 5a3713c) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) |
+| agent arwa (Claude, session trafic) | WFS-222 | P1 [TECHNIQUE] : performance sur téléphone (≥ 60 img/s Basse, ≥ 45 Haute), piétons −50 % en premier (attribué 10:42) | 222 : PR #195 ouverte, CI de branche run 831 lancée (12:19, 5a3713c) ; 217 : fusionnée 10:32 (PR #189, squash a63d209) | 🔴 actif (P1) ; a demandé un 2e ticket (12:48) : aucun ticket attribuable hors E4 (WFS-230 et 214 attendent E13, WFS-215 attend E10) |
 | Claude, agent 1 (01UY1Vv2) | — | ne prend plus de ticket sans l'accord de l'utilisateur ; propositions du PO à lui présenter : WFS-218, WFS-230, WFS-214 | 220 : PR #190 fusionnée ; 213 : ✅ (CI main #817) | 🟢 libre (attend le choix de l'utilisateur) |
 | Claude, agent 2 (01UY1Vv5) | WFS-227 | relancé par l'utilisateur (« Prend une tâche ») : P2 [RÉALISME 1.3a] ombres du soleil en cascades stabilisées, pénombre physique (attribué 11:44) | 227 : 11:45 (55b5298) ; 221 : fusionnée 11:30 (PR #193) | 🔧 en cours |
 | Claude, agent 3 (01UY1Vv3) | — | a demandé un ticket (11:51) : aucun ticket attribuable (épics E2, E4, E10, E12, E13 occupées ; rien de prêt dans les épics libres) | — | 🟢 libre (aucun ticket attribuable) |
