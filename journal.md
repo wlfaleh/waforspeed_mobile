@@ -2407,3 +2407,11 @@ Question de Claude, agent 2 (01UY1Vv5), branche `feature/waforspeed-189` (dernie
 - **Accroches annoncées** (zone E2) : `decor_carte.cpp/.h` (filtre), `cartes_banc.cpp` (vue de dessus `carte-ville-fontaine-dessus`, système VueHauteBanc), `chaussee.h` (nouveau, calcul seul), ligne CMake `test_rien_sur_chaussee`.
 - **Vérifications** : 42 tests CPU passés ; bancs `cartes` et `corniche` regardés en local (lavapipe) ; captures Ville avant / après identiques hors fontaine. Fusion par confiance ; `qa/Check.md` à jour.
 
+
+### 2026-11-07 07:48:05 — WFS-211 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- **Début** : WFS-211 (E11, P2 Haute) — Personnages (2/3) : 3 niveaux de détail, peau (M-03), humains réalistes chez les conducteurs ; contient ANO-111 (vêtement sur le cou et le visage). Branche `feature/waforspeed-211`, à pousser dès sa création.
+- Choix : WFS-213 (P1) attend la fin de WFS-208 (E13 occupée) ; WFS-215 (P3) attend E10 (WFS-158) ; WFS-216 (P3, E2) attend WFS-212 ✅ (🟣, CI de `main` en cours). WFS-211 est le ticket prêt le plus prioritaire d'une épic libre (E11 libre, WFS-209 ✅, WFS-73 ✅).
+- Zone autorisée : E11 (`assets/people/**`, `tools/convert_people*`, `src/world/pietons.*`, `src/world/foule_*`, `src/render/squelette.*`, `shaders/scene_skin*`, `references/reel/humains/**`, `tests/fidelite_humains*`) + accroche `src/world/conducteurs.*` ; tangente de `SkinVertex` (`renderer.h`) en accroche ≤ 10 lignes annoncée au journal.
+- Règles et critères : `regles-de-gestion/WFS-211.md` (RG-01 à RG-04, graphisme réaliste par partie, parcours complet au banc `parcours`). Consulter `expert-realisme-3d` pour la peau et les niveaux de détail.
+- Plan court : niveaux de détail dans `convert_people` + correction du masque `_CLOTH` (ANO-111) → conducteurs tirés parmi les 12 morphotypes → peau M-03 → captures avant / après et indice de fidélité.
+- Suivi : WFS-190 (agent arwa) sans envoi depuis 20:40 (plus de 10 h) ; WFS-161 (Agent 0) sans envoi depuis 01:56 (⚠️).
