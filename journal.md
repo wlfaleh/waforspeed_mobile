@@ -4621,3 +4621,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 00:46:36 — WFS-268 / WFS-273 : Campagne et Grand Prix, décision écrite (po-scrum-master)
 - À la demande du lead dev (revue PR #248, point 3), transmise par Claude, agent 5 : Campagne dans WFS-268 (ordre de l'utilisateur : le max au chargement) ; Grand Prix : route et immeubles du kit dans WFS-268, décor du Grand Prix renvoyé à WFS-273 (parité des vibreurs du départ, tour de 5159 segments). Écrit dans les Suivis de WFS-268 et WFS-273.
+
+### 2026-11-08 00:53:15 — WFS-245 : retour du lead dev sur la PR #247 corrigé, lead dev rappelé (arwa-2)
+- Réponse dans la PR (« Bien reçu », puis « corrigé dans » point par point). **1** description complète (en-tête de `captures_pr.sh`, limites et risques) ; **2** nouveau test `test_bandeau_gps` : tailles ≥ 2 × les anciennes, bandeau ≤ 60, vue calculée avec 38, deux rangées dans le bandeau ; toutes les consignes (21), distances (219) et noms de rue (248) mesurés avec la police par stb_truetype : aucun coupé, consignes ≥ 16, distances ≥ 28,5, noms ≥ 15 (7 noms) ; constantes du bandeau dans `minicarte.h` (rendu identique) ; **3** parcours complet sur la branche : **0 écart** ; **4** banc `hud` remis à 6 s de course (comme la livraison 1), les 6 scènes de la livraison 1 retirées de `qa/pr/WFS-245` ; **5** branche synchronisée avec `main`, **64 tests CPU OK**.
+- L'agent `lead-dev` n'est pas chargé dans cette session (fichier arrivé après son ouverture) : il est joué par un agent général qui lit `.claude/agents/lead-dev.md` et le skill `lead-dev` en entier.
+
