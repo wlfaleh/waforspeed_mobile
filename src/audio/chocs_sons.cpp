@@ -206,7 +206,18 @@ void SonsChocs::bloc(Voix& x, float* y, int n) {
     const int nE = std::clamp(x.nc - x.t, 0, n);   // force du contact (demi-sinus de Hertz) dans ce bloc
     for (int i = 0; i < nE; i++) e[i] = x.aire * std::sin(PI_F * ((float)(x.t + i) + 0.5f) / (float)x.nc) * (1 + RUGOSITE * bruit());
     for (int i = 0; i < n; i++) y[i] = 0;
-    for (int k = 0; k < x.n; k++) {
+    // modes deux par deux : deux récurrences indépendantes dans la même boucle (le processeur les calcule en parallèle)
+    int k = 0;
+    for (; k + 1 < x.n; k += 2) {
+        Resonateur &r = x.r[k], &q = x.r[k + 1];
+        float a1 = r.y1, a2 = r.y2, b1 = q.y1, b2 = q.y2;
+        const float ra = r.c1, rb = r.c2, rc = r.b, qa = q.c1, qb = q.c2, qc = q.b;
+        int i = 0;
+        for (; i < nE; i++) { const float s = ra * a1 - rb * a2 + rc * e[i], u = qa * b1 - qb * b2 + qc * e[i]; a2 = a1; a1 = s; b2 = b1; b1 = u; y[i] += s + u; }
+        for (; i < n; i++) { const float s = ra * a1 - rb * a2, u = qa * b1 - qb * b2; a2 = a1; a1 = s; b2 = b1; b1 = u; y[i] += s + u; }
+        r.y1 = a1; r.y2 = a2; q.y1 = b1; q.y2 = b2;
+    }
+    for (; k < x.n; k++) {
         Resonateur& r = x.r[k];
         float y1 = r.y1, y2 = r.y2;
         const float c1 = r.c1, c2 = r.c2, b = r.b;
