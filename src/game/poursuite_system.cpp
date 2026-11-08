@@ -825,7 +825,7 @@ void benchPoursuite(Game& g, Renderer& r, const std::string& out) {
             images(k == 1 ? 6 : 60, 6);
             char nom[64];
             WFS_LOG("poursuite (banc) : arrivée du renfort, image %d : à %.0f m derrière le joueur (dessin jusqu'à %.0f m)", k, s->bancDerniere(g.player()), DESSIN_DERRIERE_M);
-            g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.18f;
+            g.camMode = 2; g.render(t += 0.02); g.orbit = s->orbitAvant_ + 0.5f;
             std::snprintf(nom, sizeof nom, "poursuite-arrivee-%d-arriere", k); capture(nom);
             g.camMode = 0; g.render(t += 0.02);
             std::snprintf(nom, sizeof nom, "poursuite-arrivee-%d", k); capture(nom);

@@ -19,7 +19,7 @@ void perdre(Etat& e, int points, const char* raison) {
 void chocTrafic(Etat& e, const char* raison) { if (e.cdTrafic > 0) return; e.cdTrafic = DELAI_CHOC; e.chocsTrafic++; perdre(e, CHOC_TRAFIC, raison); }
 void chocGlissiere(Etat& e, const char* raison) { if (e.cdGlissiere > 0) return; e.cdGlissiere = DELAI_CHOC; e.chocsGlissiere++; perdre(e, CHOC_GLISSIERE, raison); }
 void chocPolice(Etat& e) { e.chocsPolice++; perdre(e, CHOC_POLICE, RAISON_POLICE); }
-std::string textePerte(int points, const char* raison) { return "\xE2\x88\x92" + std::to_string(points) + " " + (raison ? raison : ""); }   // « − » (U+2212)
+std::string textePerte(int points, const char* raison) { return "-" + std::to_string(points) + " " + (raison ? raison : ""); }   // « - » (la police de l’interface n’a pas le signe U+2212)
 void quasiContact(Etat& e) { if (e.arrete || e.gagne) return; e.quasi++; e.score = std::min(SCORE_DEPART, e.score + 1); }
 
 void pas(Etat& e, double dt, double dPoliceM) {

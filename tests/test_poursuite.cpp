@@ -206,7 +206,7 @@ int testPoursuite() {
         verifie(RAISON_COLLE);
         const int avant = e.pertes; pas(e, 1, 100); quasiContact(e);
         VERIFIE(e.pertes == avant, "aucune perte sans raison");
-        VERIFIE(textePerte(5, RAISON_TRAFIC) == "\xE2\x88\x92" "5 CHOC AVEC LE TRAFIC", "texte : %s", textePerte(5, RAISON_TRAFIC).c_str());
+        VERIFIE(textePerte(5, RAISON_TRAFIC) == "-5 CHOC AVEC LE TRAFIC", "texte : %s", textePerte(5, RAISON_TRAFIC).c_str());
         std::printf("score : chaque perte a sa raison à l'écran (%d raisons) : OK\n", n);
     }
     // WFS-338 (RG-01, ANO-191) : chantier réel : biseau qui barre toute la file fermée, cônes posés avant d'être dessinés
