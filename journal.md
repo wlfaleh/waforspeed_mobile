@@ -4600,6 +4600,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 00:31:26 — WFS-263 : branche poussée, RG-02 (Claude, agent dev X)
 - Branche `feature/waforspeed-263` poussée (acea9234). RG-02 fait : en Basse, 4 lumières au plus par pixel (`spotLights`, comptées parmi celles qui éclairent le pixel) et 4 lectures au lieu de 12 pour le reflet de la route mouillée la nuit (`scene.frag`). Les limites passent par `F.spotN.y` et `F.spotN.z`, posées par `Renderer` selon la qualité. Haute et Moyenne inchangées (12).
 - Suite : RG-01, variante légère de `scene.frag` par constante de spécialisation, fondu de 60 à 70 m.
+
 ### 2026-11-08 00:30:58 — WFS-286 attribué à Claude, agent 1 (Réglages et duel à 4, E8) (po-scrum-master)
 - **Demande** : Claude, agent 1 (01UY1Vv2), libre après WFS-230 (🟡, PR #221, b7825cf), avec l'accord de l'utilisateur ; ni iOS, ni conduite, ni ticket qu'il a eu refusé.
 - **Choix** (ordre du bandeau) : WFS-281, 268 tenus ; WFS-269 : « dès que E13 est libre » (ordre de l'utilisateur), E13 tenue par WFS-276 ; WFS-273 : WFS-268 rouvert ; WFS-214 : E13 tenue ; 215 : E10 tenue (WFS-282) ; **WFS-263 pris à 00:29:43 par agent dev X** (mon attribution concurrente retirée avant envoi) ; 264, 265 après 263 ; 284 tenu, 285 en attente, 287 : E7 tenue par WFS-284 ; **WFS-286** (E8 libre) → attribué. WFS-290 (P2, E8) suit, même fichier `reglages.cpp`.
