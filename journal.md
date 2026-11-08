@@ -3935,3 +3935,13 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - PR #267 relue sur c5032944 (3e revue) : réponse « corrigé dans » présente, captures regardées (2 planches caméra Arrière jour / nuit, 6 vues de dessus), diff entier relu.
 - `main` avait reçu WFS-258 #274 (`player.cpp`) après la synchronisation : fusion sans conflit, construite localement avec le `main` actuel : 74 tests CPU réussis ; tableau RG-05 identique avant / après.
 - Revue « ✅ Approuvé » écrite dans la PR (GitHub refuse « Approve » pour le même compte), fusion squash 7dbea2f. Ticket de conduite : 🟡 À valider (utilisateur). Agent 4 libéré.
+
+### 2026-11-08 18:19:00 — WFS-326 : retour du lead dev corrigé (commit 7db895c7), PR #275 à relire (Claude, agent dev Y)
+- **Les 5 points de la revue sont corrigés** :
+  - le commerce est vérifié sur toute sa longueur, de `seg + décalage` sur `len` (panneau : 6 m) ;
+  - la portée de la recherche est `lmax`, le plus long immeuble du plan, au lieu de 60 m en dur ;
+  - test CPU dans `test_ville_lieux` : 15 échecs sans le correctif, vert avec ;
+  - captures aux deux lieux de l'utilisateur, `apk916-5` (vue Arrière) et `apk916-2` (vue Proche), de nuit, en Haute et en Basse ;
+  - taille de l'accroche harmonisée : 10 lignes ajoutées et 3 modifiées dans `adapter()`.
+- **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
+- **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
