@@ -32,7 +32,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
 
   - au départ (vue Proche), la ligne « Rendu » des captures passe de 383 appels / 554 k triangles (personnes 44 %) à 319 appels / 450 k (personnes 10 %).
 - **Limites et risques connus** :
-  - Banc en rendu logiciel : les img/s du téléphone diront le gain. RG-03 (≥ 30 img/s stables) à confirmer par l'utilisateur, 🟡 après la fusion.
+  - Banc en rendu logiciel : les img/s du téléphone diront le gain. L'objectif ≥ 30 img/s stables en Basse est à confirmer par l'utilisateur, 🟡 après la fusion.
   - Les voitures (41 à 58 % des triangles sur le téléphone) restent le 1er poste : WFS-265. Le décor au loin (≈ 42 k triangles en gros morceaux à plus de 140 m) est confié à WFS-265 par le PO.
   - Familles de triangles approchées : conducteurs et pilotes comptés en personnes, poussettes en décor.
   - La ville est volontairement moins peuplée : moins de monde sur les trottoirs et aux terrasses, sur décision de l'utilisateur.
