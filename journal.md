@@ -3885,3 +3885,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Description de la PR réécrite (limites : tramé visible au téléobjectif, `mustang.wfm` sans `.lod`, `lod-ville-300`).
 
 ### 2026-11-08 17:43:52 — APK 918 : vidéos de l'utilisateur regardées ; ANO-177 / WFS-328 (flash blanc au départ de nuit) créé (po-scrum-master)
+
+### 2026-11-08 17:44:20 — WFS-327 : (A) si RG-02 tenue, sinon (B) (po-scrum-master)
