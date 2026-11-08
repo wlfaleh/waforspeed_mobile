@@ -50,7 +50,10 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     const double d = std::min(ANTICIPE_MAX, ANTICIPE_S * std::abs(v));
     // WFS-258 (RG-00b, point 1) : maintien de voie : volant lâché, l'aide ramène la voiture vers la file où le joueur l'a
     // laissée (sans cela, la dérive vers l'extérieur des virages n'était jamais corrigée) ; seulement la part de l'aide (w)
-    if (std::abs(steer) > 0.05 || !active || g_avantWfs258) fileAide_ = playerX;   // banc « avant » : sans maintien de voie
+    // la file est reprise à la position de la voiture quand le joueur braque, sous 5 m/s (grille de départ, arrêt) et quand un
+    // autre système a déplacé la voiture depuis le pas précédent (placement sur la grille, remise en piste, choc)
+    const bool deplacee = playerX != finPasX_ || dist != finPasD_;
+    if (std::abs(steer) > 0.05 || !active || g_avantWfs258 || std::abs(v) < 5 || deplacee) fileAide_ = playerX;   // banc « avant » : sans maintien de voie
     const double corrFile = clampd(-(playerX - fileAide_) * FILE_GAIN, -FILE_CORR_MAX, FILE_CORR_MAX) * sens * w;
     const double cible = axe + track.point(dist + sens * d / M, 0).th - th0 + corrFile;
     double dev = heading - cible;
@@ -72,6 +75,7 @@ void Player::reset(const CarDef& c) {
     position = dist = playerX = speed = steer = heading = odo = 0;
     latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
+    fileAide_ = playerX; finPasX_ = 1e9;   // WFS-258 : maintien de voie repris à la position de la voiture
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
@@ -204,6 +208,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
             projeterPose(track, x, z, cap);
         }
     }
+    finPasX_ = playerX; finPasD_ = dist;   // WFS-258 : pose laissée par ce pas (déplacement par un autre système détecté au suivant)
 }
 
 // ================================================================ WFS-241 : conduite en coordonnées du monde

@@ -6,7 +6,10 @@
 //  - aide désactivée : l'aide ne fait rien (ni gaz coupé, ni frein : RG-07 de WFS-241) ;
 //  - un tour de chaque carte, gaz tenu, aide activée, volant lâché puis tenu : aucune image hors de la route ;
 //  - l'interrupteur du banc (g_avantWfs258) rend le comportement de main (pas de ralentissement) ;
-//  - la table des ordinateurs de la Course à 5 est bien branchée (course5.cpp lié, comme dans le jeu).
+//  - la table des ordinateurs de la Course à 5 est bien branchée (course5.cpp lié, comme dans le jeu) ;
+//  - départ de la grille (revue du lead dev, PR #263) : voiture posée à x = 0,5, aide activée, volant lâché : à l'arrêt elle ne
+//    tourne pas, au départ elle reste dans sa file (le maintien de voie reprend la file où la voiture est posée), aussi après
+//    une course finie au bord gauche puis une remise sur la grille.
 // usage : test_aide_ralentit
 #include <cstdio>
 #include "../src/game/trace_cartes.h"
@@ -63,6 +66,23 @@ int main() {
         g_avantWfs258 = false;
         std::printf("- banc, comportement de main rejoué : %d image(s) hors route\n", b.herbe);
         VERIFIE(b.herbe > 0 && b.freinAide == 0, "g_avantWfs258 ne rejoue pas main (%d image(s) hors route, %d pas de frein)", b.herbe, b.freinAide);
+    }
+    {   // départ de la grille : décompte de 3 s (voiture tenue à l'arrêt) puis 3 s gaz tenu, volant lâché
+        static Track v; v.build(mapById("ville"), trace::versionCarte("ville"));
+        auto depart = [&](Player& p, const char* quand) {
+            p.dist = 60 / M; p.position = v.wrap(p.dist); p.playerX = 0.5; p.heading = 0; p.speed = 0;   // comme course5::placerSurGrille
+            double capMax = 0;
+            for (int k = 0; k < 360; k++) { p.update(DT, DriveInput{}, v, false); p.speed = 0; capMax = std::max(capMax, std::abs(p.heading)); }
+            const double x0 = p.playerX; double ecart = 0;
+            for (int k = 0; k < 360; k++) { DriveInput in; in.gas = true; p.update(DT, in, v, true); capMax = std::max(capMax, std::abs(p.heading)); ecart = std::max(ecart, std::abs(p.playerX - x0)); }
+            std::printf("- départ de la grille (x = 0,5) %s : cap max %.3f rad, x bouge de %.3f demi-largeur en 3 s\n", quand, capMax, ecart);
+            VERIFIE(capMax <= 0.02 && ecart <= 0.05, "départ de la grille %s : cap max %.3f rad, x bouge de %.3f", quand, capMax, ecart);
+        };
+        Player p = voiture("golf", Aide::Activee, v, 60 / M, 0.5 * RW, 0);
+        depart(p, "après le reset");
+        for (int k = 0; k < 120 * 20; k++) { DriveInput in; in.gas = true; in.steer = p.playerX > -0.6 ? -0.3f : 0.f; p.update(DT, in, v, true); }   // course finie au bord gauche
+        for (int k = 0; k < 120 * 5; k++) { DriveInput in; in.brake = p.kmh() > 1; p.update(DT, in, v, true); }
+        depart(p, "après une course finie au bord gauche");
     }
     std::printf("## Un tour de chaque carte, aide activée, gaz tenu\n");
     for (const char* carte : {"circuit", "campagne", "ville", "plage"}) {
