@@ -432,7 +432,9 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
     const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
     if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
-        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; }
+        if (!g.init || autreScene || fp.night != g.nuitPrec) g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR;
+        // WFS-328 (RG-02) : toute nouvelle scène (aussi « Recommencer » et téléportation) se recale dès sa première image
+        g.evInit = false;
         remettreAZero(); g.init = true; dt = 0;
     }
     g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
@@ -487,9 +489,15 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     const double K = lune ? 0 : g.kCache * wj, Lnuit = lune ? E_NUIT_SANS_LUNE / PI_L : (1 - wj) * Ecrep / PI_L;
     // ---- RG-02 : exposition (mesure sur les sondes, bornée par moment, adaptation de l'œil)
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
-    double Lmes = mesurerLuminance(g.avant);
+    // WFS-328 (ANO-177, RG-01) : avant la première sonde locale d'une scène, la mesure lisait la sonde du ciel : celle de la scène
+    // d'avant à la première image (jour du menu : 3 458 cd/m²), puis le seul ciel de nuit sans lampadaires (0,025 cd/m²) :
+    // exposition 1,5 à 2 IL trop claire pendant le décompte (image blanche / rose) jusqu'à la capture (≈ 3 s sur le téléphone).
+    // La nuit, la mesure réfléchie attend donc la sonde locale (la valeur du moment, EV_REF_NUIT, la remplace, mêlée au
+    // posemètre incident des lampadaires, connu dès la 1re image) ; de jour, elle attend que la sonde du ciel soit à jour.
+    const bool mesureSure = g.B.capture || (!nuit && !g.cielAFaire);
+    double Lmes = mesureSure ? mesurerLuminance(g.avant) : 0;
     if (!luminanceValide(Lmes)) Lmes = 0;   // WFS-213 (RG-02) : mesure invalide : la dernière exposition juste est gardée
-    double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.ev;
+    double cible = Lmes > 0 ? ev100Luminance(Lmes) : g.B.capture ? g.ev : nuit ? EV_REF_NUIT : EV_REF_JOUR;
     // WFS-208 : bornes selon la hauteur du soleil : crépuscule EV 3 à 15, heure dorée 8 à 15, jour 10 à 15, nuit 3 à 5
     const double evMin = lune ? EV_NUIT_MIN : h < -1 ? EV_NUIT_MIN : h < 6 ? 8.0 : (nuit ? EV_NUIT_MIN : EV_JOUR_MIN), evMax = lune ? EV_NUIT_MAX : EV_JOUR_MAX;
     // WFS-230 (RG-01) : nuit au clair de lune : l'exposition dépend de l'éclairement reçu par le conducteur (lune, ciel et lampadaires
