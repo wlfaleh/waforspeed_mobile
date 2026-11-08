@@ -54,11 +54,15 @@ Dessin<M> dessin(const M& m, float distance, float focalePx, bool basse, bool lo
     const Liste* l[NIVEAUX] = {&m.parts};
     int n = 1;
     const bool versBasse = basse && !m.partsBasse.empty();
-    if (!fantome) {
-        const Liste& loin = versBasse ? m.partsBasse : m.partsLod;
-        if (!loin.empty()) l[n++] = &loin;
-        // niveaux 2 et 3 : qualité Moyenne et plus (en Basse, la version en 4 pièces reste au loin, comme WFS-134)
-        for (size_t k = 0; n == (int)k + 2 && !basse && k < m.partsNiveaux.size() && n < NIVEAUX; k++)
+    if (!fantome && versBasse) {
+        // WFS-265 (retour du lead dev, PR #268) : en Basse, complète au-dessus de 200 px, puis niveau 1 (feux, vitres et lunette
+        // intacts) jusqu'à 48 px (≈ 77 m), puis la version en 4 pièces au loin (WFS-134 : avant, dès 64 m)
+        if (!m.partsLod.empty()) l[n++] = &m.partsLod;
+        l[n++] = &m.partsBasse;
+    } else if (!fantome) {
+        if (!m.partsLod.empty()) l[n++] = &m.partsLod;
+        // niveaux 2 et 3 : qualité Moyenne et plus
+        for (size_t k = 0; n == (int)k + 2 && k < m.partsNiveaux.size() && n < NIVEAUX; k++)
             if (!m.partsNiveaux[k].empty()) l[n++] = &m.partsNiveaux[k];
     }
     if (lots && versBasse && !fantome) return {&m.partsBasse, &m.partsBasse, 0.f, 1};

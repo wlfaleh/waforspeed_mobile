@@ -1391,7 +1391,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || !m.indexCount) return;
-    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82
+    const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
+    const uint8_t vis = classer(sp);   // WFS-82
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
     p.vis = vis;
@@ -1399,7 +1400,6 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
         // voiture, ni route, ni transparent, ni vitre d'immeuble (mêmes exclusions que F_COMPLET de scene.frag)
         static_assert(shader_leger::COMPLET == (MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR),
                       "shader_leger.h : exclusions différentes des drapeaux du moteur");
-        const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
         p.loin = shader_leger::eligible(mat.flags, length(sp.c - camPos_), sp.r);   // WFS-264 (RG-06) : règle isolée et testée
     }
     p.pc.model = world; p.pc.color = mat.color;
@@ -1407,7 +1407,6 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
     {   // WFS-265 (RG-01) : petit objet sur ses 15 derniers mètres avant sa distance maximale (masquage::distanceMax) : fondu tramé
         // au lieu d'une coupure nette ; route, trottoirs et sol jamais (bandes de la route, toujours entières)
-        const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
         if (sp.r >= 0 && !(mat.flags & (MAT_ROAD | MAT_WALK | MAT_GROUND))) {
             const float part = lod_distance::partVisible(length(sp.c - camPos_) - sp.r, masquage::distanceMax(sp.r, qualiteBasse, finBrouillard_));
             if (part < 1.f) p.pc.emissive.w = lod_distance::combinerFondu(0.f, part);
@@ -1424,7 +1423,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
     const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
     // WFS-265 (RG-01) : personnes au loin effacées en fondu tramé (lod_distance.h) ; la simulation et leur nombre ne changent pas
     const float part = lod_distance::partVisible(length(sp.c - camPos_), lod_distance::personnesMax(qualiteBasse));
-    if (part <= 0.f) return;
+    if (part <= 0.f) { masques_++; return; }   // compté comme objet masqué (journal du banc, remarque du lead dev, PR #268)
     fondu = lod_distance::combinerFondu(fondu, part);
     const uint8_t vis = classer(sp);   // WFS-82 : avant de prendre une place
     if (!vis) return;

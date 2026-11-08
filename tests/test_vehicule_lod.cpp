@@ -56,6 +56,11 @@ int main() {
         VERIFIE(d(100, false, false, false).a == &mo.partsNiveaux[0], "Haute, 100 m : niveau 2");
         VERIFIE(d(200, false, false, false).a == &mo.partsNiveaux[1], "Haute, 200 m : niveau 3");
         VERIFIE(d(190, true, false, false).a == &mo.partsBasse, "Basse, 190 m : version en 4 pièces");
+        VERIFIE(d(10, true, false, false).a == &mo.parts && d(40, true, false, false).a == &mo.partsLod && d(70, true, false, false).a == &mo.partsLod,
+                "Basse (WFS-265, PR #268) : complète près, niveau 1 de 18 à 77 m (feux et vitres intacts), pas la version en 4 pièces");
+        VERIFIE(d(100, true, false, false).a == &mo.partsBasse, "Basse, 100 m : version en 4 pièces");
+        Modele sansLod = mo; sansLod.partsLod.clear();
+        VERIFIE(d(10, true, false, false).a == &mo.parts && vehicule_lod::dessin(sansLod, 40, F, true, false, false).a == &sansLod.partsBasse, "Basse sans .lod : complète puis 4 pièces");
         VERIFIE(d(10, true, true, false).a == &mo.partsBasse && d(10, true, true, false).t == 0, "police en lots : partsBasse seule, même de près");
         VERIFIE(d(190, false, false, true).a == &mo.parts, "fantôme : complet à toute distance");
         const auto f = d(19.5f, false, false, false);   // WFS-265 : fondu de 18,4 à 20,7 m (64 à 72 m avant)
