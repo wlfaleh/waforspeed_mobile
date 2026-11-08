@@ -5069,3 +5069,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Note ajoutée à WFS-159, 193, 194, 215 (mêmes modèles, après WFS-192) : toute reconversion ou nouveau modèle passe par `effacer_logos.mjs`.
 - `TACHES.md` : zone de WFS-192 mise à jour (statut inchangé, 🔧). `track-agent.md` remis à jour ; section « Tickets prêts sans agent » retirée (règle de l'utilisateur :
   ce fichier suit les agents, les tickets restent dans `TACHES.md`).
+
+### 2026-11-08 03:24:34 — ANO-171 et WFS-305 créés : fosse dans la pelouse du parc de la Ville (po-scrum-master)
+- **Signalement** : arwa-5 (WFS-283), défaut hors de son ticket : dans la Ville, côté intérieur des virages serrés qui longent le parc, fosse sombre rectangulaire enfoncée dans la pelouse, derrière la grille, de jour.
+- **Vérifié par le PO** sur les captures : `carte-ville-virage-3` (banc `ville`, `main`, en haut à droite) ; `rondpoint-ville-course-jour` et `rondpoint-ville-course5` (branche `feature/waforspeed-283`, à gauche, dans le parc). Défaut **déjà présent sur `main`**, pas causé par WFS-283 (note ajoutée dans `regles-de-gestion/WFS-283.md` pour le lead dev).
+- **Cause probable** (lecture du code, non vérifiée) : pelouse du parc coupée à `P.lim()` côté intérieur des courbes serrées (`src/world/ville.cpp` l. 501-516, WFS-137 RG-C1), ou 2e bande du parc qui descend à −1,79 m (`ville_quartiers.cpp` `bandes()`) ; le développeur la nomme d'abord (RG-01).
+- **ANO-171** (mineure, 📋 Planifiée) et **WFS-305** (P2 Haute, E2 : `ville.cpp`, `ville_quartiers.*`, banc `ville`) : pelouse continue côté intérieur de toutes les courbes serrées de la Ville et du port, carrefours de WFS-283 compris, rien retiré, préparé au chargement. ⏳ En attente de la fusion de WFS-283 (même épic, mêmes fichiers) ; donné au premier développeur qui le demande quand E2 est libre (aucune exclusion). Règles : `regles-de-gestion/WFS-305.md`.
+- Numéros : WFS-301 à WFS-304 pris à 03:20 (cartes cuites), d'où WFS-305.
