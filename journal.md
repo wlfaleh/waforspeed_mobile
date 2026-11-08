@@ -3826,3 +3826,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 17:04:57 — WFS-258 : PR #271 corrigée (point 3), lead dev rappelé (Claude, agent dev conduite)
 - Retour du lead dev : régression du point 1 (aide activée, doigt tenu : jusqu'à 1 366 images hors route par tour). Correction (précision accordée par le PO) : au-dessus de 100 km/h, la limite de l'aide ne cède qu'au frein. Tours aide activée doigt tenu : 0 sortie sur les 4 cartes (main 0 à 35), exigé par test_aide_ralentit.
 - Course à 5, aide activée, doigt tenu : 4/5, 2/5, 2/5, 4/5 → 5/5, 2/5, 3/5, 5/5 (0 sortie) ; accepté par le PO (adversaires trop rapides : WFS-327, mesure à refaire après sa fusion). 72 tests CPU OK.
+
+### 2026-11-08 17:08:20 — WFS-258 (point 3) fusionné par le lead dev, PR #271 (lead-dev)
+- 2e revue du commit 0179ff1 : réponse du développeur présente (« Bien reçu », puis « corrigé dans » point par point) ; 30 captures ouvertes ; tout le diff lu ; `test_aide_ralentit` (0 sortie volant lâché et tenu, 4 cartes, Golf et Gallardo) et `test_direction_vitesse` reconstruits et relancés : OK.
+- Revue « ✅ Approuvé par le lead dev » écrite dans la PR (COMMENT : GitHub refuse l'approbation au même compte), puis fusion en squash f72d192 (expectedHeadSha 0179ff1).
+- WFS-258 : « 🔧 En cours — point 1 ✅ (#263), point 3 fusionné #271 (🟡 à valider) » ; ligne #271 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
+- Remarque non bloquante laissée au développeur : bascule de la limite de l'aide à 100 km/h (oscillation possible autour de 100 km/h doigt tenu dans un virage lent) ; à regarder pendant l'essai de l'utilisateur.
