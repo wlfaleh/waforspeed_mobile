@@ -149,12 +149,15 @@ protected:
     // Dessin : par essence et par partie, un appel pour les exemplaires proches (détail), un pour les lointains (allégé).
     // WFS_ARBRES_INSTANCES=0 : arbres dans les morceaux (rendu d'avant, banc avant / après)
     enum Essence { E_CYPRES, E_PIN, E_SAPIN_FORET, E_SAPIN, E_CHENE_FORET, E_CHENE, E_NB };
+    // décision du PO (2026-11-08 06:40 UTC) : 3 modèles de détail par essence (aucun clone à moins de 10 m : arbres_variantes.h),
+    // un seul modèle allégé. Liste g = 0..2 : arbres du modèle de détail g ; liste 3 : tous les arbres (version allégée)
+    static constexpr int LISTES = 4;
     struct ArbresEssence {
-        Mesh m[2][2]{};             // [0 détail, 1 allégé][0 écorce, 1 feuillage]
-        Instances ex[2];            // [0 écorce, 1 feuillage], dans l'ordre de seg
-        std::vector<int64_t> seg;   // segment (tour 0) de chaque exemplaire
-        std::vector<vec3> pied;     // pied de chaque arbre (tour 0)
-        float h0 = 10, hMax = 0;    // hauteur du modèle ; plus grand arbre
+        Mesh m[LISTES][2]{};                 // modèle de la liste [g][0 écorce, 1 feuillage] (liste 3 : allégé)
+        Instances ex[LISTES][2];             // exemplaires de la liste, dans l'ordre de seg
+        std::vector<int64_t> seg[LISTES];    // segment (tour 0) de chaque exemplaire
+        std::vector<vec3> pied[LISTES];      // pied de chaque arbre (tour 0)
+        float h[LISTES] = {10, 10, 10, 10}, hMax = 0;   // hauteur de chaque modèle (quantiles 1/6, 1/2, 5/6 ; allégé : moyenne) ; plus grand arbre
     };
     ArbresEssence arbres_[E_NB];
     bool arbresPrets_ = false;

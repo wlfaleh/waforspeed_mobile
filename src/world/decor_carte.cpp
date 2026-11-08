@@ -12,6 +12,7 @@
 #include "../game/player.h"
 #include "chaussee.h"   // WFS-212 : rien sur la chaussée d'une autre partie du tracé
 #include "zones.h"
+#include "arbres_variantes.h"   // WFS-273 : modèles des arbres en exemplaires
 
 namespace wfs {
 namespace carte {
@@ -444,8 +445,12 @@ bool CarteDecor::exemplaireArbre(Track& t, const Item& it, int64_t a, int& essen
         if (std::strstr(zoneName(map(), a, len()), "pins")) { essence = E_PIN; tk = tkOf(TINT_PINE[(int)(R.next() * 2)], TINT_FIR[0]); }
         else { essence = foret ? E_SAPIN_FORET : E_SAPIN; tk = tkOf(TINT_FIR[(int)(R.next() * 3)], TINT_FIR[0]); }
     } else { essence = foret ? E_CHENE_FORET : E_CHENE; tk = tkOf(TINT_OAK[(int)(R.next() * 3)], TINT_OAK[0]); }
-    Mulberry32 Ry(graine * 2654435761u + 0x9e3779b9u);   // lacet : tirage à part (aucun arbre cloné vu de la même face)
-    lacet = rnd(Ry) * 6.2831853f;
+    // lacet : pin et chêne : celui qui remet l'inclinaison du modèle (tournée vers +x à sa construction) dans la direction tirée pour
+    // cet arbre par veg::pin / veg::broadleaf (mêmes tirages, juste après la teinte) : troncs et ombres comme avant ; sapin et cyprès
+    // (droits) : tirage à part
+    if (essence == E_PIN) { rnd(R); lacet = -rnd(R) * 6.283f; }   // lean, puis az (TAU du jeu web)
+    else if (essence == E_CHENE || essence == E_CHENE_FORET) { const float lx = rnd(R) - 0.5f, lz = rnd(R) - 0.5f; lacet = -std::atan2(lz, lx); }
+    else { Mulberry32 Ry(graine * 2654435761u + 0x9e3779b9u); lacet = rnd(Ry) * 6.2831853f; }
     return true;
 }
 
@@ -457,61 +462,91 @@ void CarteDecor::preparerArbres(Renderer& r) {
     Track& t = *track_;
     const int64_t L = len();
     t.pose(-2); t.pose(L + 40);   // poses du tour 0 calculées ici (thread principal)
-    struct Ex { int64_t seg; vec3 pied; float h, tk, lacet; };
+    struct Ex { int64_t seg; float h, tk; };
     std::vector<Ex> liste[E_NB];
+    std::vector<arbres::Arbre> choix[E_NB];
     for (int64_t a = 0; a < L; a++) for (const Item& it : items_[(size_t)a]) {
         if (it.t != T_TREE) continue;
         int es; vec3 pied; float tk, lacet;
-        if (exemplaireArbre(t, it, a, es, pied, tk, lacet)) liste[es].push_back({a, pied, it.h, tk, lacet});
+        if (!exemplaireArbre(t, it, a, es, pied, tk, lacet)) continue;
+        liste[es].push_back({a, it.h, tk});
+        choix[es].push_back({pied, lacet, (uint32_t)((int)(it.h * 1000) + (int)a * 7 + (it.side > 0 ? 3 : 0) + (int)(it.lat * 10)), 0});
     }
-    // modèles : un arbre par essence et par niveau, construit au pied (0, 0, 0) à la hauteur moyenne de l'essence (échelle proche de
-    // 1 : écart de forme minimal), luminosité 1 (la teinte de chaque arbre passe par l'exemplaire), tirages fixes (reproductible)
+    // modèles : construits au pied (0, 0, 0), 3 de détail aux hauteurs 1/6, 1/2 et 5/6 de l'essence, 1 allégé à la hauteur moyenne
+    // (échelle proche de 1), luminosité 1 (la teinte de chaque arbre passe par l'exemplaire), tirages fixes (reproductible)
     const veg::Ecorce fir{uv(C_FIR).x, uv(C_FIR).x}, pineLow{uv(C_PINELOW).x, uv(C_PINELOW).x}, pine{uv(C_PINE).x, uv(C_PINELOW).x};
-    size_t sommets = 0, nEx = 0;
+    size_t sommets = 0, nEx = 0, octetsEx = 0;
+    int tournes = 0, clones = 0;
     for (int es = 0; es < E_NB; es++) {
         ArbresEssence& A = arbres_[es];
-        std::vector<Ex>& V = liste[es];
+        const std::vector<Ex>& V = liste[es];
         if (V.empty()) continue;
         double hs = 0; for (const Ex& x : V) { hs += x.h; A.hMax = std::max(A.hMax, x.h); }
-        A.h0 = (float)(hs / (double)V.size());
-        for (int niv = 0; niv < 2; niv++) {
+        std::vector<float> hTri; for (const Ex& x : V) hTri.push_back(x.h);
+        std::sort(hTri.begin(), hTri.end());
+        for (int g = 0; g < 3; g++) A.h[g] = hTri[std::min(hTri.size() - 1, hTri.size() * (size_t)(2 * g + 1) / 6)];
+        A.h[3] = (float)(hs / (double)V.size());
+        // modèle préféré : celui dont la hauteur est la plus proche (moins d'écart de forme à l'échelle) ; autre modèle si clone
+        for (size_t i = 0; i < V.size(); i++) {
+            int best = 0; for (int g = 1; g < 3; g++) if (std::fabs(A.h[g] - V[i].h) < std::fabs(A.h[best] - V[i].h)) best = g;
+            choix[es][i].graine = (uint32_t)best;
+        }
+        tournes += arbres::choisirModeles(choix[es]);
+        clones += arbres::compterClones(choix[es]);
+        for (int g = 0; g < LISTES; g++) {
             Geo ecorce, feuillage;
-            Mulberry32 R(1000u + (uint32_t)es);
+            Mulberry32 R(1000u + (uint32_t)es * 16u + (uint32_t)(g % arbres::MODELES));   // liste 3 : forme du modèle 0, allégée
             const veg::Out o{&ecorce, nullptr, &feuillage};
-            const bool lod = niv == 1;
+            const bool lod = g == 3;
             switch (es) {
-            case E_CYPRES: veg::cypres(o, {0, 0, 0}, A.h0, R, 1.f, fir, lod); break;
-            case E_PIN: veg::pin(o, {0, 0, 0}, A.h0, R, 1.f, false, pineLow, pine, lod); break;
-            case E_SAPIN_FORET: veg::sapin(o, {0, 0, 0}, A.h0, R, 1.f, 0.175f, 0.215f, fir, lod); break;   // clear, w : milieux des tirages
-            case E_SAPIN: veg::sapin(o, {0, 0, 0}, A.h0, R, 1.f, 0.04f, 0.215f, fir, lod); break;
+            case E_CYPRES: veg::cypres(o, {0, 0, 0}, A.h[g], R, 1.f, fir, lod); break;
+            case E_PIN: veg::pin(o, {0, 0, 0}, A.h[g], R, 1.f, false, pineLow, pine, lod); break;
+            case E_SAPIN_FORET: veg::sapin(o, {0, 0, 0}, A.h[g], R, 1.f, 0.175f, 0.215f, fir, lod); break;   // clear, w : milieux des tirages
+            case E_SAPIN: veg::sapin(o, {0, 0, 0}, A.h[g], R, 1.f, 0.04f, 0.215f, fir, lod); break;
             default: {
                 const bool f = es == E_CHENE_FORET;
                 veg::Broadleaf b; b.cw = f ? 0.27f : 0.36f; b.ch = f ? 0.3f : 0.27f; b.cy = f ? 0.7f : 0.62f; b.trunkH = f ? 0.5f : 0.4f;
                 b.uA = uv(C_OAK).x; b.uB = uv(C_OAK2).x; b.tk = 1.f;
-                veg::broadleaf(o, {0, 0, 0}, A.h0, R, b, lod);
+                veg::broadleaf(o, {0, 0, 0}, A.h[g], R, b, lod);
             }
             }
-            if (!ecorce.i.empty()) A.m[niv][0] = r.makeMesh(ecorce.v, ecorce.i);
-            if (!feuillage.i.empty()) A.m[niv][1] = r.makeMesh(feuillage.v, feuillage.i);
+            {   // inclinaison du modèle tournée vers +x (voir exemplaireArbre) : mêmes premiers tirages que veg::pin / veg::broadleaf
+                Mulberry32 Rq(1000u + (uint32_t)es * 16u + (uint32_t)(g % arbres::MODELES));
+                float az = 0;
+                if (es == E_PIN) { rnd(Rq); az = rnd(Rq) * 6.283f; }
+                else if (es == E_CHENE || es == E_CHENE_FORET) { const float lx = rnd(Rq) - 0.5f, lz = rnd(Rq) - 0.5f; az = std::atan2(lz, lx); }
+                if (az != 0) {
+                    const mat4 Q = rotateY(az);   // direction φ → φ − az : l'inclinaison du modèle passe à 0 (+x)
+                    for (Geo* G : {&ecorce, &feuillage}) for (Vertex& q : G->v) {
+                        const vec3 p2 = Q.transformPoint({q.px, q.py, q.pz}), n2 = Q.transformDir({q.nx, q.ny, q.nz});
+                        q.px = p2.x; q.py = p2.y; q.pz = p2.z; q.nx = n2.x; q.ny = n2.y; q.nz = n2.z;
+                    }
+                }
+            }
+            if (!ecorce.i.empty()) A.m[g][0] = r.makeMesh(ecorce.v, ecorce.i);
+            if (!feuillage.i.empty()) A.m[g][1] = r.makeMesh(feuillage.v, feuillage.i);
             sommets += ecorce.v.size() + feuillage.v.size();
+            std::vector<Instance> ie, ifl;
+            for (size_t i = 0; i < V.size(); i++) {   // dans l'ordre des segments
+                const arbres::Arbre& c = choix[es][i];
+                if (g < 3 && c.modele != g) continue;
+                const float s = V[i].h / A.h[g];
+                const mat4 M = arbres::matriceArbre(c.pied, c.lacet, s);
+                ie.push_back(instance(M, 1.f / s)); ifl.push_back(instance(M, V[i].tk / s));
+                A.seg[g].push_back(V[i].seg); A.pied[g].push_back(c.pied);
+            }
+            A.ex[g][0] = r.makeInstances(ie); A.ex[g][1] = r.makeInstances(ifl);
+            octetsEx += (ie.size() + ifl.size()) * sizeof(Instance);
         }
-        std::vector<Instance> ie, ifl;
-        ie.reserve(V.size()); ifl.reserve(V.size());
-        for (const Ex& x : V) {   // V est déjà dans l'ordre des segments
-            const float s = x.h / A.h0;
-            const mat4 M = translate(x.pied) * rotateY(x.lacet) * scale({s, s, s});
-            ie.push_back(instance(M, 1.f / s)); ifl.push_back(instance(M, x.tk / s));
-            A.seg.push_back(x.seg); A.pied.push_back(x.pied);
-        }
-        A.ex[0] = r.makeInstances(ie); A.ex[1] = r.makeInstances(ifl);
         nEx += V.size();
     }
     tourArbres_ = lots::mesurerTour(t);
     arbresPrets_ = true;
     const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-    WFS_LOG("arbres (WFS-273) : %s : %zu arbres en exemplaires, %zu sommets de modèles, %.1f Mo GPU (modèles %.2f + exemplaires %.2f), %.0f ms",
-            carteId(), nEx, sommets, (double)(sommets * sizeof(Vertex) + nEx * 2 * sizeof(Instance)) / 1e6, (double)sommets * sizeof(Vertex) / 1e6,
-            (double)nEx * 2 * sizeof(Instance) / 1e6, ms);
+    WFS_LOG("arbres (WFS-273) : %s : %zu arbres en exemplaires (3 modèles de détail + 1 allégé par essence, %d lacets tournés, %d clone(s) à moins de 10 m), "
+            "%zu sommets de modèles, %.2f Mo GPU (modèles %.2f + exemplaires %.2f), %.0f ms",
+            carteId(), nEx, tournes, clones, sommets, (double)(sommets * sizeof(Vertex) + octetsEx) / 1e6, (double)sommets * sizeof(Vertex) / 1e6,
+            (double)octetsEx / 1e6, ms);
 }
 
 int CarteDecor::dessinerArbres(Renderer& r, int64_t aP) {
@@ -520,7 +555,7 @@ int CarteDecor::dessinerArbres(Renderer& r, int64_t aP) {
     if (L <= 0) return 0;
     const int64_t w0 = (aP / CH - BEHIND) * CH, w1 = (aP / CH + AHEAD + 1) * CH - 1, proche = aP + (int64_t)(LOD_FAR_M / SEG_M);
     int appels = 0;
-    // intervalles [s0, s1] (segments absolus) : détail jusqu'à proche, allégé au-delà ; découpés par tour
+    // intervalles [s0, s1] (segments absolus) : détail (listes 0 à 2) jusqu'à proche, allégé (liste 3) au-delà ; découpés par tour
     const int64_t bornes[2][2] = {{w0, std::min(w1, proche)}, {proche + 1, w1}};
     for (int niv = 0; niv < 2; niv++) {
         const int64_t s0 = bornes[niv][0], s1 = bornes[niv][1];
@@ -529,22 +564,29 @@ int CarteDecor::dessinerArbres(Renderer& r, int64_t aP) {
         for (int64_t k = k0; k <= k1; k++) {
             const int64_t a0 = std::max(s0, k * L) - k * L, a1 = std::min(s1, (k + 1) * L - 1) - k * L;
             const mat4 M = lots::matriceDuTour(*track_, tourArbres_, k);
-            for (ArbresEssence& A : arbres_) {
-                if (A.seg.empty()) continue;
-                const uint32_t i0 = (uint32_t)(std::lower_bound(A.seg.begin(), A.seg.end(), a0) - A.seg.begin());
-                const uint32_t i1 = (uint32_t)(std::upper_bound(A.seg.begin(), A.seg.end(), a1) - A.seg.begin());
-                if (i1 <= i0) continue;
-                vec3 lo = A.pied[i0], hi = A.pied[i0];   // boîte des pieds, puis la hauteur du plus grand arbre
-                for (uint32_t i = i0; i < i1; i++) { const vec3& q = A.pied[i]; lo = {std::min(lo.x, q.x), std::min(lo.y, q.y), std::min(lo.z, q.z)}; hi = {std::max(hi.x, q.x), std::max(hi.y, q.y), std::max(hi.z, q.z)}; }
-                hi.y += A.hMax;
-                const vec3 c = M.transformPoint((lo + hi) * 0.5f);
-                const float rayon = length(hi - lo) * 0.5f + A.hMax * 0.6f;
-                for (int part = 0; part < 2; part++) {
-                    const Mesh& m = A.m[niv][part];
-                    if (!m.indexCount) continue;
-                    const int mat = part == 0 ? P_UNI : (&A - arbres_ >= E_CHENE_FORET ? P_FEUILLU : P_CONIF);
-                    r.drawInstances(m, mats_[mat], A.ex[part], i0, i1 - i0, c, rayon, &M);
-                    appels++;
+            for (int es = 0; es < E_NB; es++) {
+                ArbresEssence& A = arbres_[es];
+                for (int g = niv == 0 ? 0 : 3; g < (niv == 0 ? 3 : 4); g++) {
+                    const std::vector<int64_t>& S = A.seg[g];
+                    if (S.empty()) continue;
+                    const uint32_t i0 = (uint32_t)(std::lower_bound(S.begin(), S.end(), a0) - S.begin());
+                    const uint32_t i1 = (uint32_t)(std::upper_bound(S.begin(), S.end(), a1) - S.begin());
+                    if (i1 <= i0) continue;
+                    vec3 lo = A.pied[g][i0], hi = lo;   // boîte des pieds, puis la hauteur du plus grand arbre
+                    for (uint32_t i = i0; i < i1; i++) {
+                        const vec3& q = A.pied[g][i];
+                        lo = {std::min(lo.x, q.x), std::min(lo.y, q.y), std::min(lo.z, q.z)}; hi = {std::max(hi.x, q.x), std::max(hi.y, q.y), std::max(hi.z, q.z)};
+                    }
+                    hi.y += A.hMax;
+                    const vec3 c = M.transformPoint((lo + hi) * 0.5f);
+                    const float rayon = length(hi - lo) * 0.5f + A.hMax * 0.6f;
+                    for (int part = 0; part < 2; part++) {
+                        const Mesh& m = A.m[g][part];
+                        if (!m.indexCount) continue;
+                        const int mat = part == 0 ? P_UNI : (es >= E_CHENE_FORET ? P_FEUILLU : P_CONIF);
+                        r.drawInstances(m, mats_[mat], A.ex[g][part], i0, i1 - i0, c, rayon, &M);
+                        appels++;
+                    }
                 }
             }
         }
@@ -636,7 +678,7 @@ void CarteDecor::shutdown(Renderer& r) {
     lots_.liberer(r);   // WFS-268
     for (ArbresEssence& e : arbres_) {   // WFS-273
         for (auto& l : e.m) for (Mesh& m : l) if (m.vb.buf) r.destroy(m);
-        for (Instances& x : e.ex) r.destroy(x);
+        for (auto& l : e.ex) for (Instances& x : l) r.destroy(x);
         e = ArbresEssence{};
     }
     arbresPrets_ = false;

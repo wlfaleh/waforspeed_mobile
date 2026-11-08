@@ -144,6 +144,7 @@ else()
   add_executable(test_fidelite_lumiere_precalcule tests/fidelite_lumiere_precalcule.cpp src/render/eclairage_precalcule.cpp src/core/jobs.cpp)   # WFS-269 : occlusion du décor fixe précalculée
   target_link_libraries(test_fidelite_lumiere_precalcule Threads::Threads)
   add_executable(test_instances tests/test_instances.cpp)   # WFS-273 (RG-01) : exemplaires du dessin instancié
+  add_executable(test_arbres_variantes tests/test_arbres_variantes.cpp)   # WFS-273 (RG-01) : modèles des arbres, aucun clone côte à côte
   target_compile_definitions(test_instances PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
   add_executable(test_fidelite_lumiere tests/fidelite_lumiere.cpp)   # WFS-151 (ST-1) : photométrie, exposition, ciel, IBL
   target_compile_definitions(test_fidelite_lumiere PRIVATE WFS_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
