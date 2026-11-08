@@ -95,7 +95,7 @@ inline float inclinaisonRegard(RegardCockpit r) {
 constexpr float COCKPIT_SUIVI_VIRAGE = 0.4f, COCKPIT_LACET_MAX = 7.f * 3.14159265f / 180.f, COCKPIT_LISSAGE_REGARD = 1.5f;
 inline float distanceRegard(double kmh) { return (float)std::clamp(std::fabs(kmh) / 3.6 * 1.5, 20.0, 40.0); }
 inline float suiviSelonVitesse(double kmh) { return (float)std::clamp((std::fabs(kmh) - 20.0) / 10.0, 0.0, 1.0); }
-inline float lacetVirage(float angleVersRoute, double kmh = 100) {
+inline float lacetVirage(float angleVersRoute, double kmh) {
     return std::clamp(angleVersRoute * COCKPIT_SUIVI_VIRAGE, -COCKPIT_LACET_MAX, COCKPIT_LACET_MAX) * suiviSelonVitesse(kmh);
 }
 // RG-02 : mouvement de tête (m, repère de la voiture : x à droite, z vers l'arrière) : vers l'avant au freinage, vers

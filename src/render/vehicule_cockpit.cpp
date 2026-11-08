@@ -289,13 +289,20 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
     mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
     mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
-    // WFS-282 (RG-03) : glace du rétroviseur (miroir argenté : reflète la rue et le ciel, au lieu d'un bloc noir)
-    mat(M_GLACE, 0x8a8e92, 0.05f, 1.f);   // glace teintée (anti-éblouissement) : la nuit, les lumières de la rue ne l'allument pas en blanc
+    // WFS-282 (RG-03) : glace du rétroviseur : surface claire et lisse, éclairée par le ciel (claire le jour) ; en métal, elle ne
+    // reflétait presque rien dans l'habitacle (bloc presque noir, refus du lead dev sur la PR #251)
+    mat(M_GLACE, 0xa4aab0, 0.12f, 0);
     // WFS-282 (RG-04) : la nuit, l'habitacle reçoit un peu de lumière (compteurs, écran, rue, ≈ 0,5 à 1 lux) : chaque matière
     // garde sa couleur, plus une petite émission proportionnelle à son albédo (métaux : un tiers) ; sans elle, planche,
     // volant et montants sortaient en aplats noirs
+    // ; ni les écrans (déjà lumineux), ni la glace du rétroviseur (la nuit, elle reste sombre comme le ciel qu'elle reflète)
     matsNuit_ = mats_;
-    for (Material& m : matsNuit_) m.emissive = m.emissive + vec3{m.color.x, m.color.y, m.color.z} * (AMBIANCE_NUIT * (m.metal > 0.5f ? 0.33f : 1.f));
+    for (int k = 0; k < M_N; k++) {
+        Material& m = matsNuit_[(size_t)k];
+        const bool lumineux = m.emissive.x + m.emissive.y + m.emissive.z > 0.f;
+        if (lumineux || k == M_GLACE) continue;
+        m.emissive = vec3{m.color.x, m.color.y, m.color.z} * (AMBIANCE_NUIT * (m.metal > 0.5f ? 0.33f : 1.f));
+    }
     std::vector<Vertex> v; std::vector<uint32_t> i;
     auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
