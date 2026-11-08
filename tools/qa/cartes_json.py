@@ -17,7 +17,7 @@ Format écrit (lu par le jeu : android/.../ListePaquets.java de WFS-306 ; le jeu
 Le fichier est stable : mêmes paquets → même cartes.json, octet par octet (aucune date).
 
 Usage : python3 tools/qa/cartes_json.py <dossier des paquets> <sortie cartes.json> --adresse-base <URL> --version-min-apk N
-        [--commit SHA] [--nom ville=Ville ...]
+        [--commit SHA] [--nom ville=Ville ...] [--versionne --publies <fichier>]
 Code de sortie : 0 si bon ; 2 si un paquet manque, est illisible ou si le dossier est vide.
 """
 import argparse
@@ -84,7 +84,14 @@ def lire_entete(octets):
             "format": FORMATS[fmt], "empreinte": f"{empreinte:016x}", "blocs": [b[0] for b in blocs]}
 
 
-def construire(dossier, adresse_base, version_min_apk, commit="", noms=None):
+def nom_publie(nom_local, sha256):
+    """Nom du fichier dans la Release : <carte>_<format>-<12 premiers chiffres du SHA-256>.wfcarte. Un contenu nouveau a donc
+    une adresse nouvelle : la liste publiée ne montre jamais un fichier remplacé entre-temps (le téléphone range toujours le
+    paquet sous <carte>_<format>.wfcarte, WFS-306)."""
+    return nom_local[:-len(".wfcarte")] + "-" + sha256[:12] + ".wfcarte"
+
+
+def construire(dossier, adresse_base, version_min_apk, commit="", noms=None, versionne=False):
     noms = noms or {}
     fichiers = sorted(f for f in Path(dossier).iterdir() if f.is_file() and NOM_FICHIER.match(f.name))
     if not fichiers:
@@ -99,15 +106,18 @@ def construire(dossier, adresse_base, version_min_apk, commit="", noms=None):
             raise PaquetFaux(f"{f.name} : {err}")
         if e["carte"] != carte_nom or e["format"] != fmt_nom:
             raise PaquetFaux(f"{f.name} : l'en-tête dit {e['carte']} / {e['format']}")
+        sha = hashlib.sha256(octets).hexdigest()
+        publie = nom_publie(f.name, sha) if versionne else f.name
         paquets.append({
             "carte": e["carte"], "nom": noms.get(e["carte"], e["carte"].capitalize()), "format": e["format"],
             "version_carte": e["version_carte"], "version_format": e["version_format"], "empreinte": e["empreinte"],
-            "version_min_apk": version_min_apk, "taille": len(octets), "sha256": hashlib.sha256(octets).hexdigest(),
-            "adresse": adresse_base.rstrip("/") + "/" + f.name,
+            "version_min_apk": version_min_apk, "taille": len(octets), "sha256": sha,
+            "adresse": adresse_base.rstrip("/") + "/" + publie, "_local": f.name, "_publie": publie,
         })
     # ordre stable : carte, puis format dans l'ordre préféré du jeu (ASTC, ETC2, RGBA8)
     paquets.sort(key=lambda x: (x["carte"], FORMATS.index(x["format"])))
-    return {"version": VERSION_LISTE, "version_liste": VERSION_LISTE, "carte_par_defaut": "ville",
+    publies = [(p.pop("_local"), p.pop("_publie")) for p in paquets]
+    return publies, {"version": VERSION_LISTE, "version_liste": VERSION_LISTE, "carte_par_defaut": "ville",
             "version_min_apk": version_min_apk, "commit": commit, "paquets": paquets}
 
 
@@ -119,17 +129,21 @@ def main(argv=None):
     a.add_argument("--version-min-apk", type=int, required=True)
     a.add_argument("--commit", default="")
     a.add_argument("--nom", action="append", default=[], help="carte=Nom affiché")
+    a.add_argument("--versionne", action="store_true", help="adresses <carte>_<format>-<sha12>.wfcarte (publication)")
+    a.add_argument("--publies", help="écrit « <fichier local> <nom publié> », une ligne par paquet")
     o = a.parse_args(argv)
     if not o.adresse_base.startswith("https://"):
         print("cartes.json : l'adresse de base doit commencer par https://", file=sys.stderr)
         return 2
     noms = dict(x.split("=", 1) for x in o.nom)
     try:
-        liste = construire(o.dossier, o.adresse_base, o.version_min_apk, o.commit, noms)
+        publies, liste = construire(o.dossier, o.adresse_base, o.version_min_apk, o.commit, noms, o.versionne)
     except PaquetFaux as err:
         print(f"cartes.json : {err}", file=sys.stderr)
         return 2
     Path(o.sortie).write_text(json.dumps(liste, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if o.publies:
+        Path(o.publies).write_text("".join(f"{a} {b}\n" for a, b in publies), encoding="utf-8")
     for p in liste["paquets"]:
         print(f"{p['carte']}_{p['format']}.wfcarte : {p['taille'] / 1048576:.2f} Mo, sha256 {p['sha256']}, empreinte {p['empreinte']}")
     return 0

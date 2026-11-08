@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Test de tools/qa/cartes_json.py (WFS-302, RG-03) sur des paquets .wfcarte d'exemple écrits dans un dossier temporaire.
 
-Cas : 3 formats bons → liste juste (ordre ASTC, ETC2, RGBA8 ; taille, SHA-256, adresse directe, empreinte en hexadécimal) et
+Cas : 3 formats bons → liste juste (adresses simples ou versionnées par le SHA-256) (ordre ASTC, ETC2, RGBA8 ; taille, SHA-256, adresse directe, empreinte en hexadécimal) et
 stable octet par octet ; bloc abîmé (CRC faux), en-tête abîmé, format futur, nom de fichier qui ne dit pas l'en-tête, dossier
 vide, adresse non https → code 2, aucune liste écrite.
 Usage : python3 tools/qa/test_cartes_json.py   (code de sortie 0 si tout est vert)
@@ -69,6 +69,12 @@ with tempfile.TemporaryDirectory() as t:
              "empreinte en hexadécimal (16 chiffres), nom, versions")
     verifier(lancer(bon, t / "b.json", "--commit", "abc") == 0 and (t / "a.json").read_bytes() == (t / "b.json").read_bytes(),
              "liste stable octet par octet")
+    verifier(lancer(bon, t / "v.json", "--versionne", "--publies", str(t / "publies.txt")) == 0, "liste versionnée → code 0")
+    v = json.loads((t / "v.json").read_text(encoding="utf-8"))["paquets"][0]
+    publies = (t / "publies.txt").read_text(encoding="utf-8").split("\n")[0].split()
+    attendu = "ville_astc-" + hashlib.sha256(octets).hexdigest()[:12] + ".wfcarte"
+    verifier(v["adresse"] == BASE + "/" + attendu and publies == ["ville_astc.wfcarte", attendu],
+             "nom publié versionné par le SHA-256 (adresse nouvelle pour un contenu nouveau) et liste des noms publiés")
 
     def refuse(nom, octets, quoi):
         d = t / nom
