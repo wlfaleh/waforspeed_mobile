@@ -4328,3 +4328,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Point 11, voiture rouge de travers collée au joueur : confirmé (ANO-180 / WFS-333). Point 12, voiture noire visible sous la planche en vue Cockpit : probable, ANO-181 (mineure, à confirmer). Leçon notée : regarder aussi les images en grand.
 
 ### 2026-11-08 22:13:34 — ANO-181 (portière absente en cockpit) rattachée à WFS-323 (po-scrum-master)
+
+### 2026-11-08 22:17:24 — ANO-182 / WFS-334 : pluie dans l'habitacle et dans les tunnels (retour de l'utilisateur) (po-scrum-master)
