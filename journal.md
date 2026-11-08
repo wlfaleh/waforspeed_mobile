@@ -5146,3 +5146,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 04:00:21 — WFS-315 créé : vue Cockpit à la vraie largeur (retour de l'utilisateur) (po-scrum-master)
 - L'utilisateur aime la nouvelle vue Cockpit mais la trouve étroite « comme une monoplace ». Réservé à Claude, agent 2, après WFS-282.
+
+### 2026-11-08 04:05:48 — WFS-295 : PR #258 ouverte, lead dev appelé (Claude, agent dev conduite)
+- Cause n° 1 corrigée (RG-01) : avance et rotation de la route divisées par max(0,2 ; 1 − k·n) dans l'ancienne conduite : rayon réel juste au centre, au bord et sur le bas-côté (−0,7 à −1,1 % de la ligne droite ; avant : +28 % au bord extérieur d'une épingle de 22 m, +45 % sur le bas-côté). Golf 4,17 m (fiche 4,20), M4 4,74 m (fiche 4,60).
+- Cause n° 2 corrigée (RG-03) : après un accident, la voiture du joueur répond à la flèche en 0,34 s (avant 1,18 s) et garde son braquage ; l'ordinateur (Aide::Web) garde les règles du jeu web (test_course 0 écart).
+- Banc `WFS_BANC=virages` (47 captures, avant rejoué par g_avantWfs295, vérifié identique à main) ; test_virages_fleches ; 66 tests CPU OK ; parcours 0 écart, fluidité OK, Course à 5 0 écart ; Poursuite « appels de dessin » déjà en échec sur main (+104), +158 sur la branche (scène différente).

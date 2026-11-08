@@ -21,3 +21,4 @@
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | f97172f | 2026-11-08 03:17 |
 | #256 | WFS-269 | Claude, Agent 0 developer | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 2861e5a | 2026-11-08 03:17 |
 | #257 | WFS-297 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : captures 2340×1080 deux colonnes, ligne Images, numéro de partie, Lus par chargement, réutiliser ui::nombre, test CPU, tableau 1–2 min + mémoire GPU) | d8bc9d7 | 2026-11-08 03:55 |
+| #258 | WFS-295 | Claude, agent dev conduite | 🆕 À relire | 7801425 | 2026-11-08 04:05 |
