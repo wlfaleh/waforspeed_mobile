@@ -65,7 +65,7 @@ public:
     // RG-01 : appui = état pressé ; l'action part au relâcher sur le même choix, glisser hors du choix l'annule.
     // RG-05 : sur le menu, tout toucher est gardé (aucune commande de conduite).
     bool onTouch(const Touch& t, const GameView& g) override {
-        if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y)) return false;   // WFS-68 : bouton et panneau des réglages
+        if (g.ecran != Ecran::Menu || toucheReglages(t.x, t.y, t.id)) return false;   // WFS-68 : bouton et panneau des réglages
         if (choixModeOuvert()) { doigt_ = -1; presse_ = -1; return false; }   // WFS-110 : panneau des modes par-dessus
         const int sous = choixSous(t.x, t.y);
         if (t.down) {

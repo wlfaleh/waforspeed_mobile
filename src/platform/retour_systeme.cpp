@@ -23,9 +23,7 @@ ActionRetour decider(const Game& g) {
     const bool retour = std::any_of(z.begin(), z.end(), [](const manette::Zone& q) { return q.retour; });
     const Course* c = activeCourse();
     const bool finie = c && c->state == RaceState::Over;
-    // WFS-290 (accroche, RG-04) : réglages ouverts en pause : Retour appuie sur « Fermer » (seule zone retour du panneau), pas « Reprendre »
-    if (g.ecran() == Ecran::Pause && ecrans::reglagesOuverts() && retour) return ActionRetour::BoutonRetour;
-    return actionRetour(g.ecran(), finie, retour, g.ecran() == Ecran::Menu && choixModeOuvert());
+    return actionRetourReglages(g.ecran(), finie, retour, g.ecran() == Ecran::Menu && choixModeOuvert(), ecrans::reglagesOuverts());   // WFS-290
 }
 } // namespace
 
