@@ -118,9 +118,10 @@ float feuCroisement(vec3 w, vec3 D, float d, float range) {
 vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float a, bool noSpec) {
     vec3 sum = vec3(0.0);
     int n = int(F.spotN.x + 0.5);
+    int parPixel = F.spotN.y > 0.5 ? int(F.spotN.y + 0.5) : 12, vus = 0;   // WFS-263 (RG-02) : 4 lumières par pixel au plus en Basse
     float NoV = max(dot(N, V), 1e-3);
     for (int i = 0; i < 12; i++) {   // WFS-226 : 12 projecteurs au plus
-        if (i >= n) break;
+        if (i >= n || vus >= parPixel) break;
         vec3 Lv = F.spotPos[i].xyz - p;
         float d = length(Lv);
         vec3 L = Lv / max(d, 1e-4);
@@ -128,6 +129,7 @@ vec3 spotLights(vec3 p, vec3 N, vec3 V, vec3 albedo, vec3 f0, float metal, float
         float NoL = max(dot(N, L), 0.0);
         bool croisement = F.spotCone[i].z > 0.5;   // WFS-218
         if ((!croisement && cosT <= F.spotCone[i].x) || (croisement && (d > F.spotPos[i].w || cosT < 0.17)) || NoL <= 0.0) continue;   // WFS-226 : hors faisceau
+        vus++;   // WFS-263 : lumière qui éclaire ce pixel
         float range = F.spotPos[i].w, decay = F.spotDir[i].w;
         float att = (range > 0.0 && decay > 0.0) ? pow(clamp(1.0 - d / range, 0.0, 1.0), decay) : 1.0;
         float k = (croisement ? feuCroisement(-L, F.spotDir[i].xyz, d, range) : smoothstep(F.spotCone[i].x, F.spotCone[i].y, cosT) * att) * NoL;

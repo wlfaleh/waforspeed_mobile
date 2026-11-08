@@ -138,8 +138,10 @@ void main() {
         float spread = mix(0.08, 0.02, flaque);
         float j0 = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));   // bruit entrelacé (IGN)
         vec3 rs = vec3(0.0); float ws = 0.0;
+        int lectures = F.spotN.z > 0.5 ? int(F.spotN.z + 0.5) : 12;   // WFS-263 (RG-02) : 4 lectures en Basse, 12 sinon
         for (int i = 0; i < 12; i++) {
-            float t = (float(i) + j0) / 12.0 - 0.5;                    // −0,5 .. 0,5
+            if (i >= lectures) break;
+            float t = (float(i) + j0) / float(lectures) - 0.5;          // −0,5 .. 0,5
             float wt = 1.0 - abs(t) * 1.6;                              // tente : le centre compte plus
             vec2 o = vec2((fract(float(i) * 0.618) - 0.5) * spread * 0.15, t * spread);
             rs += texture(reflTex, suv + o).rgb * wt; ws += wt;

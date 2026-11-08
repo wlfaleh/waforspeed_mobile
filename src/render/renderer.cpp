@@ -1178,7 +1178,8 @@ bool Renderer::beginFrame(const FrameParams& fp) {
             u.hemiSky = {a.x, a.y, a.z, 1}; u.hemiGround = {b.x, b.y, b.z, 0};
         }
         const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
-        u.spotN = {(float)n, 0, 0, 0};
+        // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
+        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, 0};
         for (int i = 0; i < n; i++) {
             const FrameParams::Spot& s = fp.spots[i];
             vec3 dir = normalize(s.target - s.pos);
