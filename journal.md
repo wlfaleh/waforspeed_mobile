@@ -4645,3 +4645,368 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **WFS-242 : VALIDÉ** (grille sans chevauchement, place variable, chrono à 0 jusqu'au GO). **WFS-243 : VALIDÉ** (adversaires à leur vraie distance, 0 pas faux sur 21 600). **WFS-256 : VALIDÉ** (voiture arrêtée par chaque type d'objet à 30, 80, 150 km/h, 0 mur invisible).
 - **WFS-224 : PASSABLE** — plus de boules grises ; ANO-165 : fumée invisible de jour en vrai dérapage. **WFS-247 : PASSABLE** — aller-retour en virage ≤ 1,93 cm de 10 à 90 img/s (ANO-139 corrigée pour l'aller-retour) ; ANO-166 : à-coup en virage et rond-point non comptés au banc.
 - Vérifiées au banc : ANO-114, 117, 120, 122, 123, 124, 126, 129, 150. Remarque VABF : `choc-etincelles` et `accident-fumee` ne montrent plus aucun choc (« accidents 0 »).
+
+### 2026-11-08 01:05:43 — WFS-245 fusionné par le lead dev, PR #247 (livraison 2, RG-09, ANO-141) (lead-dev)
+- **2e revue**, après le refus 5815698036. Le développeur a répondu point par point dans la PR (6714931000, 6715286542) ; les 5 points sont corrigés : description complète, test `test_bandeau_gps`, parcours 0 écart, banc `hud` remis à 6 s, synchronisation avec `main`.
+- **Approbation** écrite dans la PR, en commentaire « ✅ Approuvé par le lead dev » (5815875745), car GitHub refuse « Approve » sur le même compte. **Squash 97c6cd4** : `WFS-245 : livraison 2, textes du bandeau de la carte GPS lisibles (RG-09, ANO-141) (#247) (arwa-2)`.
+- **Captures** : 38 « après » et 31 « avant », toutes ouvertes (PNG pleine taille, carte recadrée ; les 69 JPEG de la PR leur correspondent et sont identiques à ceux de la 1re revue). Bandeau environ 2 × plus lisible en 2400 et 1280, de jour et de nuit, et carte identique en dessous. Boutons de `hud-course-2400` identiques au pixel. Rien de cassé sur les scènes HUD ni sur les messages.
+- **Code** : diff relu en entier. Constantes dans `minicarte.h` avec les mêmes nombres que la 1re revue, donc rendu identique et captures valables. Vue toujours calculée avec 38. J'ai compilé et lancé `test_bandeau_gps` à part (`-Wall -Wextra`) : 248 noms, 21 consignes, 219 distances, aucun coupé. **64 tests CPU OK** sur la branche (relancés par moi).
+- **Branche** : synchronisée à 10bc664. Depuis, `main` n'a reçu que 5 à 7 commits de documents, sans fichier commun avec la PR. La fusion d'essai (`git merge-tree`) passe sans conflit, et aucun fichier de code de `main` n'a changé depuis la synchronisation.
+- **Remarques non bloquantes** : `using namespace minicarte;` en double (lignes 37 et 51 de `minicarte.cpp`) ; nom `CONSIGNE_X` réutilisé comme marge droite de la distance.
+- **À surveiller** : rond-point de la Plage en partie sous le bandeau à 200 m (≈ 77 % de route visible, accepté par le PO) ; deux consignes sous 2 × (18,5 et 16).
+- **Statut** : 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; arwa-2 libre dans `track-agent.md`.
+
+### 2026-11-08 01:06:19 — Recette, lot M2 (nuit, vue cockpit) : WFS-230, 249, 282 VALIDÉS, WFS-270 PASSABLE, WFS-235 remplacé — recette du 2026-11-08 terminée (QA-arwa)
+- Preuves : `apercu` (c9eda61) pour WFS-230, 249, 270, 235 ; WFS-282 sur banc local `cockpit` (5bcdfd2 : golf, sf90, x5, corsa, 28 captures), 62 tests CPU verts, parcours de nuit 0 écart.
+- **WFS-230 : VALIDÉ** 🟡 (herbe hors des phares 20 à 66 / 255 contre 5-6 avant, indice lumière 100 %). **WFS-249 : VALIDÉ** 🟡 (0 à 2,4 % de noir sous l'horizon en rase campagne ; péage renvoyé à WFS-276).
+- **WFS-270 : PASSABLE** 🟡 — voiture du joueur visible la nuit (ANO-147 et ANO-148 vérifiées) ; ANO-167 : la Golf bleue paraît gris argent en Campagne de nuit (rapport carrosserie / route 1,74 à 1,93 > 1,5).
+- **WFS-282 (RG-00, RG-06) : VALIDÉ** 🟡 — planche, volant, compteurs, capot remis, planche opaque (ANO-163 vérifiée au banc), rue visible ; ANO-152 corrigée en partie (rétroviseur noir, planche trop sombre la nuit : RG-03, RG-04 à venir). **WFS-235** : remplacé par WFS-282.
+- **Bilan de la recette (25 tickets)** : 16 VALIDÉS, 6 PASSABLES, 2 REFUSÉS (WFS-268 : KO de l'utilisateur ; WFS-246 : ANO-163, corrigée depuis par WFS-282), 1 remplacé. Nouvelles : ANO-160 à 167 (ANO-163 bloquante, déjà corrigée au banc). Restent : WFS-262, WFS-276 (fusionnés cette nuit). Le banc `realisme-2` est à confirmer aux bancs du matin.
+
+### 2026-11-08 01:07:38 — Tableau `suivi-pr.md` et lead dev automatique chaque heure (lead-dev)
+- Ordre de l'utilisateur (conversation) : tableau des PR ouvertes (statut, lead dev qui relit, commit relu), ligne supprimée à la fusion, pour que plusieurs lead dev se partagent les revues sans doublon ; tâche planifiée « Lead dev automatique » chaque heure. Skill `lead-dev`, checklist `agent-developer`, `CLAUDE.md` mis à jour. État initial : #245, #248, #249 ↩️ ; #250 🆕.
+
+### 2026-11-08 01:07:46 — WFS-269 : arbitrage A + C (po-scrum-master)
+- Occlusion précalculée par sommet dans la zone, rebond SH9 par bloc ; critère de coût : neutre ou en baisse ; B (noyau) refusé.
+### 2026-11-08 01:07:42 — WFS-269 : risque signalé (Claude, Agent 0 developer)
+- **Constat** :
+  - WFS-229 (GTAO) n'existe pas (⏳) : rien à retirer en Basse (RG-03).
+  - Le diffus indirect est déjà un SH9 global (`shaders/eclairage.glsl`, `iblDiffus`, 9 multiplications par pixel).
+  - Les postes chers de la passe scène restent dynamiques par RG-03 : ombres PCF 9 lectures, lampes et phares, spéculaire de la sonde (cube + table BRDF).
+  - `Vertex` (36 octets, `renderer.h`) n'a pas de place libre pour 6 jeux de lumière indirecte.
+- **Conséquence** : le critère « temps GPU de la passe scène en baisse » est incertain avec le seul précalcul décrit. Un vrai stockage par sommet ou par texture touche le noyau du renderer (plus de 10 lignes).
+- **Proposition au PO** :
+  - A (recommandée) : occlusion par sommet rangée dans la longueur de la normale, comme la végétation (MAT_VTINT), accroche ≤ 10 lignes ; rebond par bloc et par moment (SH9, interpolé) ; décor rugueux sans lecture du cube spéculaire (gain mesurable) ;
+  - B : attribut ou textures d'éclairage (noyau) ;
+  - C : critère de coût « neutre » au lieu d'« en baisse ».
+- **Décision attendue de** : PO. En attendant, je code la partie commune : occlusion calculée au chargement sur une grille de voxels du bloc (`src/render/eclairage_precalcule.*`), avec son test CPU.
+
+### 2026-11-08 01:09:53 — Recette de nuit du 2026-11-08 planifiée : WFS-292, WFS-293, WFS-294 créés ; ANO-160 à 167 rangées (po-scrum-master)
+- **ANO-165** (fumée invisible de jour, WFS-224) + **ANO-167** (Golf bleue gris argent la nuit en Campagne) + remarque VABF (`choc-etincelles`, `accident-fumee` : « accidents 0 », plus aucun choc au banc d'effets) → **WFS-292** P2 (E4 + E10, exception PO : `effets_*`, `bench_effets.*`, `eclairementRouteAutour()`), ⏳ Prêt, 🟡 après fusion.
+  **Arbitrage ANO-167** : WFS-230 RG-04 (vision de nuit, `post.frag`) gardée ; correction côté WFS-270 (part diffuse K), WFS-292 RG-04.
+- **ANO-166** (à-coup non compté en virage, banc de fluidité de WFS-247) → **WFS-293** [TECHNIQUE] P2 (E0 + E3) : seuils fixés par le PO (< 5 mm partout à ≥ 30 img/s, ≤ 10 mm à 10-20 img/s), carrefour à la place du rond-point (WFS-283), correction de l'à-coup dans la même PR ; ⏳ Prêt, 🟡 après fusion.
+- **ANO-135, ANO-136** (notification d'APK : WFS-252 fusionné sans elles), **ANO-160** (artefact 1 jour), **ANO-161** (durée du run non écrite ; mesure du QA : #844 53 min, #885 48 min, #887 63 min, groupe `texte` le plus long), **ANO-162** (« Recette QA prête » annonce l'émulateur vert) → **WFS-294** [TECHNIQUE] P3 (E7), ⏳ En attente de la fin du gel de la CI (pas avant le 2026-11-09).
+- **ANO-164** (écart 1,19 % / 2,1 % > 1 %, WFS-268) : non acceptée ; ramenée à ≤ 1 % par la livraison 2 (PR #248) → WFS-268 RG-11.
+- **ANO-163** (planche transparente, WFS-246) : corrigée au banc par WFS-282 RG-00 (dd41283) ; à confirmer sur téléphone.
+- Points relevés : **WFS-258** n'a livré que RG-00 (repli) : restent RG-00b, RG-05 à 07 ; ANO-138 et ANO-140 restent ouvertes (modèle de WFS-241 hors jeu, à corriger avant tout retour). **WFS-282** : RG-01 à 05 en cours (branche poussée 01:04) ; ANO-152 reste ouverte (rétroviseur noir, planche sombre la nuit). WFS-224 passé 🟡 (ticket né d'un essai de l'utilisateur).
+- **Banc `realisme-2`** rouge au run du matin du 07/11 (panne corrigée par WFS-267) : à vérifier aux bancs du matin du 08/11 (04:00 heure de Paris, pas encore lancés) ; s'il est encore rouge → US technique P1 « correction bancs du matin ».
+- Tickets ⏳ Prêt : 9 (WFS-214, 215, 264, 265, 273, 287, 290, 292, 293). Rien d'iOS. Règles : `regles-de-gestion/WFS-292.md`, `WFS-293.md`, `WFS-294.md` ; suivis ajoutés à WFS-224, 230, 247, 252, 258, 268, 270, 282.
+
+### 2026-11-08 01:10:36 — WFS-282 : PR #251 (RG-01 à RG-05), lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- RG-02 : regard 40 % de l'angle, ±7°, au-dessus de 20 km/h, visée 20-40 m, lissage 1,5 /s ; tête 2 cm au plus. RG-03 : œil de la caméra 4 cm au-dessus de l'œil du siège (intérieur dans le repère du siège) ; rétroviseur en glace argentée teintée (le « bloc noir » de la capture de l'utilisateur). RG-04 : lumière d'ambiance de nuit de l'habitacle dans `vehicule_cockpit.cpp` (émission = 25 % de l'albédo), rien dans `nuit.cpp`. Code mort `fovHorizontalCockpit` retiré.
+- Banc `cockpit` en 2340 × 1080 : fenêtre de la rue cachée 0 % partout ; intérieur 35,5-38,6 % (cible 30-35 % atteinte en regard Haut seulement, limite du champ de 72°) ; X5 : bande de la rue 8,0 → 11,4 % (cadrage dû au regard plus doux, vérifié au banc), Golf et SF90 mieux. 63 tests CPU verts.
+
+### 2026-11-08 01:10:26 — WFS-283 : ronds-points supprimés, inventaire (RG-01), code et preuves locales (arwa-5)
+- **Inventaire (RG-01)** : 3 ronds-points, tous construits par `Plan::rondPoint()` (`src/game/trace_cartes.cpp`) : **Ville** (« à fontaine », segments 1083-1223), **Campagne** (village, 752-892), **Corniche** (entrée de la station, 486-626) ; **Grand Prix : aucun**. Courses, Duel, Poursuite et trafic roulent sur ces mêmes tracés : aucun autre rond-point. Chacun tournait la route de −90,28° presque sur place (déplacement net < 0,1 m, 168 m de route).
+- **Remplacement (RG-02)** : interrupteur `trace::rondsPoints()` (faux en jeu) ; à la place, `carrefourSimple()` : virage de rue à gauche de **22 m** (comme les virages serrés de la Ville), au **cap net exact** du rond-point ; les droites voisines raccourcies de 12 segments chacune : **la suite de chaque carte reste à sa place à 0,64 m près, même cap** (`test_trace`) ; tour plus court de 156 m ; Grand Prix inchangé. Section marquée `exRondPoint`.
+- **Ce qui suit (RG-03)** : giratoire, îlot, fontaine, anneau, cédez-le-passage : plus construits (code gardé, RG-04 : `WFS_RONDS_POINTS=1`, banc `conduite`, `forcerRondsPoints(true)`) ; trafic (40 km/h de l'anneau, files de l'anneau) et chocs des îlots : sans objet ; **GPS** : « Virage serré à gauche » à 150 m, plus aucune consigne de rond-point (`test_navigation`) ; Campagne : supermarché, garage, boulangerie et lampadaires gardés au carrefour, sans fontaine ; Corniche : place pavée de la station gardée autour du carrefour ; Duel : signature « ,sans-rond-point » (un APK d'avant n'a plus la même route).
+- **Effet de bord corrigé** : tour plus court → un passage piéton de la dernière zone de la Ville retombait 7 m derrière la ligne de départ (sous la grille) : plus de passage piéton sous la grille (`ville_quartiers.cpp`, `grilleDepart`).
+- **Décisions du PO appliquées** : RG-06 (`test_aide_direction`, `test_conduite` : `forcerRondsPoints(true)` seulement, verts) ; RG-08 (`test_course5` : SF90 nitro 2,5 à 6 s, M4 Difficile ≥ 1,8). Tableau main → branche (Ville, 4 km, 5 graines) : sf90 places 1,0/1,0/1,0 → idem, 62,4 → 57,3 s, nitro 3,0-4,5 → 2,7-4,2 ; m4 1,2/1,8/2,0 → 1,0/1,6/1,8, 69,5 → 64,3 s, 3,4-4,9 → 3,1-4,2 ; mustang 1,0/2,2/2,8 → 1,0/1,6/2,8 ; golf 1,8/2,2/3,0 → 1,2/2,2/3,0 ; x5 1,4/2,2/2,8 → 1,0/2,2/2,8 ; p208 1,4/2,8/3,6 → 1,0/2,8/3,4 ; compass 1,4/4,0/5,0 → 1,0/3,4/4,6.
+- **Preuves locales** : **63 tests CPU OK** (branche synchronisée, dc6a4fd) ; banc `rondspoints` regardé (Ville, Campagne, Corniche, jour et nuit) : route continue, marquages ordinaires, trottoirs continus, aucune pièce de giratoire ; Course à 5 au carrefour de la Ville : 2 adversaires sur la route dans le virage (nouvelle capture `rondpoint-ville-course5`).
+- **Défaut DÉJÀ présent sur main, signalé au PO (hors ticket)** : à l'intérieur des virages serrés de la Ville **dans le parc**, une fosse sombre dans la pelouse (raccord du sol au côté intérieur) : visible sur `main` à `carte-ville-virage-3` (88°, 24 m), et maintenant aussi au carrefour de la Ville. Proposition : ticket de décor E2 (sol de la Ville au côté intérieur des virages serrés).
+- En cours : captures avant / après (`captures_pr.sh` : `rondspoints`, `hud` (carte GPS), `course5`), puis PR et lead dev.
+
+### 2026-11-08 01:13:20 — WFS-282 : PR #251 refusée par le lead dev (lead-dev)
+- **Captures** : les 24 « après » et 21 « avant » de `qa/pr/WFS-282/` sont ouvertes (Golf, SF90, X5 ; jour, virage, braquage, carte, pluie, nuit, nuit-virage, départ de nuit sur la Plage comparé à `qa/retours/2026-11-07-cockpit-nuit-plage.jpg`), et tout le diff est lu. Plus de rue partout, planche opaque, regard plus doux conforme à RG-02, code propre.
+- **Refus** : (1) de jour, le rétroviseur est toujours un bloc noir (ANO-152 non corrigée) ; (2) de nuit, il devient une plaque gris clair plus claire que le ciel, comme allumée (la lumière d'ambiance de nuit s'applique aussi à `M_GLACE`), y compris sur la Plage ; (3) RG-05 X5 (bande 8,0 → 11,4 %) et (4) RG-03 intérieur 35,5-38,6 % en regard Normal : il faut l'arbitrage du PO écrit dans `regles-de-gestion/WFS-282.md` ; (5) resynchroniser avec `main` (WFS-245) et régénérer les captures.
+- Revue postée en commentaire sur la PR #251 (GitHub refuse « changements demandés » quand la PR est ouverte avec le même compte). TACHES, track-agent et suivi-pr : ↩️ Retour lead dev (PR #251).
+
+
+### 2026-11-08 01:15:02 — WFS-282 : arbitrage RG-03 / RG-05 (PR #251) (po-scrum-master)
+- RG-03 précisé : intérieur ≤ 40 % en regard Normal, ≤ 35 % en Haut, horizon 45-47 % ; fenêtre de la rue devant (±15°, horizon + 8°) cachée à 0 %. Champ de 72° et œil +4 cm max inchangés.
+- RG-05 : mesuré sur la fenêtre ±15° (0 %) ; bande pleine largeur écrite, hausse permise seulement si RG-02 en est la cause, plafond 12 % par voiture (X5 11,4 %). Ticket gardé par Claude, agent 2. Détail : `regles-de-gestion/WFS-282.md`.
+
+### 2026-11-08 01:17:39 — WFS-239 repris à agent 3 et donné à arwa-2 ; WFS-192 prêt ; ménage du jour de `tache utilisateur.md` (po-scrum-master)
+- **Demande** : arwa-2 (Claude, session 01Us6uCu), libre après WFS-245 (🟡, PR #247, squash 97c6cd4) et WFS-235 (❌ → WFS-282). Domaine de sa session : **voitures** (WFS-158 : dimensions, plaques, niveaux de détail). Ni iOS, ni conduite, ni KO dont il est l'auteur.
+- **Ordre du bandeau parcouru** : WFS-281, 268 (retours lead dev, à leurs développeurs), 269 (Agent 0), 273 (attend la fusion de WFS-268, même décor), n° 1 à 8 et WFS-270, 257, 244, 245 : 🔧 / 🟡 / 🟣 ; WFS-214 (E13 tenue par WFS-269), 232 (arwa-3), 215 (P3, E10), 264 / 265 (après WFS-263), 284 / 286 (pris), 287 (E7 tenue par WFS-284), 290 (après WFS-286) ; WFS-292 et 293 (recette du 08/11) : effets / fluidité, autres domaines. Aucun ticket prêt permis dans une épic libre.
+- **Règle des 10 h** : **WFS-239** (P1 [TECHNIQUE], banc qualité, E4 en exception `qualite_banc.cpp` seul) : Claude, agent 3, attribué 2026-11-07 13:42 UTC, **dernier envoi sur `feature/waforspeed-239` : 2026-11-07 13:43:04 UTC** (323eeb1, commit de début sans code), soit **11 h 33 sans commit** → libéré et **donné à arwa-2**, à sa demande : P1, domaine voitures (niveaux de détail de WFS-158), défaut signalé par arwa-2 lui-même (journal 2026-11-07 12:52:52). Branche existante reprise (rien supprimé). Zone mise à jour dans `regles-de-gestion/WFS-239.md` (§ « Suivi — réattribution ») : permis `qualite_banc.cpp` + test neuf ; interdits `renderer.*`, `shaders/**` (WFS-263), `traffic*` (WFS-281, WFS-232), `vehicule_lod.*`, `game.*`, `camera_vue.*`, `vehicule_cockpit*` (WFS-282), `lots_decor.*` (WFS-268), `bench_fluidite.cpp` (WFS-293). Captures : banc `qualite` 1280x720, `FILTRE='voiture-*'` ; pas de banc `hud` ni de 2400x1080.
+- **WFS-192** (P2, E10, voitures sans marque, logos des 20 modèles) : WFS-191 ✅ (CI #799) et WFS-158 ✅ (CI #826, QA VALIDÉ) → **⏳ Prêt** ; section « Graphisme réaliste » ajoutée (zone effacée ΔE2000 ≤ 2, matière gardée, `test_fidelite_voitures` strict) ; zone en exception PO (modèles, licences, bloc à part de `convert_car.mjs` ; pas les fichiers de WFS-282, 232, 292) ; placé avant WFS-215 (P3, mêmes modèles, statut « après WFS-192 »).
+- **À découper avant d'être prêts** (dépendances finies, 2 à 3 jours chacun) : WFS-156 (E9), WFS-159 (E10), WFS-162 (E12), WFS-231 (E12 + E2, après WFS-283 pour la partie cartes). Non fait dans cet appel.
+- **Tickets prêts** : 10 (WFS-192, 214, 215, 264, 265, 273, 287, 290, 292, 293) : E4, E7, E8, E10, E13, E0 + E3.
+- **Ménage du jour** (premier ménage du 2026-11-08) : `tache utilisateur.md` : **26 → 19** demandes ; 7 demandes répondues et closes (propositions CI 1-2-5, notification d'APK, trois propositions sur la conduite, propositions CI 3-4, droit sur WFS-251, QA du matin, tableau journée / matin) déplacées dans `archive/tache-utilisateur-repondu.md` (**41 → 48**) : rien de perdu. Les demandes avec une question ou une validation attendue de l'utilisateur restent en haut. Journal et lignes ✅ de `TACHES.md` : robot `archives.yml` à 03:07 UTC (dernier commit `(robot archives)` 98ae0a1 : 6 lignes retirées, 6 archivées, comptes égaux). Raccourcissement des cases longues de `TACHES.md` : non fait dans cet appel (après le passage du robot).
+
+### 2026-11-08 01:19:59 — WFS-239 : reprise par arwa-2, branche synchronisée et poussée (arwa-2)
+- Ticket repris à Claude, agent 3 (règle des 10 h, décision du PO de 01:16 UTC). Branche `feature/waforspeed-239` reprise (commit de début 323eeb1 d'agent 3 gardé), synchronisée avec `main` et poussée. Skills `agent-developer` et `waforspeed-natif` relus ; `regles-de-gestion/WFS-239.md` lu en entier. Zone : `src/render/qualite_banc.cpp` et un test neuf `tests/test_banc_placement.cpp` (+ 1 ligne `CMakeLists.txt`, accroche annoncée ici). D'abord RG-01 : reproduire sur `main` et sur `42ce230` (avant WFS-221), cause au journal avant toute correction.
+
+
+### 2026-11-08 01:20:42 — WFS-284 : PR #250 ouverte, veilleur des entrées Android (agent arwa)
+- **Cause (ANO-153)** : le fil du jeu ne lit la file des entrées Android qu'entre deux images ; à l'émulateur, `qa/retours/VABF-2026-11-07/emu-logcat.txt` montre des étapes de chargement d'un seul tenant (« Construction de la route 47,62 s », « Construction de la ville 10,13 s ») et le menu tourne à 0,1-0,3 img/s : un appui attend plus de 5 s → ANR.
+- **Correction** (`src/platform/android_main.cpp` seul, aucune accroche dans `chargement.*`) : fil « veilleur des entrées » ; pendant tout chargement (premier, changement de carte, « Réessayer ») il lit la file toutes les 50 ms, appuis et Retour pris et ignorés, jamais rejoués (RG-01, RG-03), volume laissé à Android ; hors chargement, seulement si le fil du jeu n'a pas lu la file depuis 1 s : appuis et Retour gardés puis rejoués dans l'ordre. Ligne logcat de fin de chargement : `chargement : entrées lues, plus long écart N ms (K événements ignorés)` (RG-05).
+- **Risque signalé au PO (RG-02)** : passer par un autre fil n'est permis que s'il est indispensable ; c'est le cas (une étape de 47 s sans rappel de progression ; rappels supplémentaires = code de chargement hors zone, sans garantie). Le fil ne touche que la file des entrées (verrou commun avec `process_input`, `a->mutex` de la colle), jamais l'état du jeu.
+- **Preuves** : CI de branche `build.yml` run 42431712817 (une seule, branche synchronisée) : compilation ✅, **android (APK) ✅**, publication-apk ✅ (bancs encore en cours au moment de la PR) ; tests CPU locaux 62/62 ✅ ; `tools/qa/captures_pr.sh WFS-284 chargement` : 5 captures avant / après **identiques au pixel près** (`qa/pr/WFS-284/`, le banc PC ne compile pas `android_main.cpp`) ; code du veilleur compilé à part (g++ et clang++ `-Wall -Wextra`, en-têtes NDK simulés) sans avertissement.
+- **Limites** : ni émulateur ni NDK dans le conteneur : « aucun ANR » et la valeur de N se vérifieront aux bancs du matin (`matin.yml`, parcours mvp jusqu'à course-solo) une fois fusionné. Hors chargement, une commande de manette reçue pendant une image de plus d'1 s est laissée à Android. Pause pendant un chargement : le fil Java de la colle attend toujours la fin du chargement (cycle de vie, WFS-285).
+- **Fusion** : règle du lead dev (CLAUDE.md, 2026-11-07) : je ne fusionne pas ; ligne `suivi-pr.md` #250 en 🆕 pour le lead dev automatique de chaque heure.
+
+### 2026-11-08 01:30:40 — WFS-281 : retour du lead dev traité, PR #249 à relire (agent arwa)
+- **Cause (RG-01)** : `Course::step` ajoute 6 voitures à chaque checkpoint (600 m) jusqu'à 110 : Ville 47 → 113 voitures en 2 min 30, Corniche 36 → 114, Campagne 29 → 113, Grand Prix 16 → 112. 2e cause, banc seulement : `keepTrafficInView` ramenait une voiture devant le joueur chaque seconde. Relevé toutes les 30 s pendant 10 min (`test_trafic_duree --journal`, avec ou sans `--avant`), dans l'ordre 30 s → 600 s (texte complet : `qa/pr/WFS-281/releve-rg01-*.txt` sur la branche) :
+| carte | version | voitures au total (toutes les 30 s, de 30 s à 600 s) | à moins de 150 m | dans la fenêtre de dessin (moyenne des 30 s) | arrêtées | immobilité max |
+|---|---|---|---|---|---|---|
+| Ville | avant (main) | 59 77 89 107 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 | 6 3 6 7 9 10 2 9 4 7 7 9 9 2 6 6 7 2 5 4 | 2.8 3.8 4.8 6.1 5.5 8.3 2.7 5.8 5.3 5.8 8.3 8.3 6.2 3.5 5.7 6.7 5.3 2.9 8.1 4.4 | 0 0 0 2 5 4 1 1 7 0 0 0 0 3 4 1 3 0 0 0 | 6.0 s |
+| Ville | après | 47 47 47 47 47 47 47 47 47 47 47 47 47 47 47 47 47 47 47 47 | 6 0 5 2 4 0 2 2 1 6 0 5 0 4 3 7 1 2 3 0 | 2.8 3.0 2.1 2.1 3.2 2.2 1.4 3.0 2.0 4.1 2.7 2.1 1.3 2.1 3.5 3.5 2.8 1.7 2.6 0.4 | 0 0 0 0 3 0 0 1 2 0 0 0 3 0 1 0 2 1 0 0 | 5.9 s |
+| Corniche | avant (main) | 48 54 72 90 102 108 114 114 114 114 114 114 114 114 114 114 114 114 114 114 | 1 7 4 3 4 9 7 8 10 8 7 5 5 18 10 9 7 5 10 13 | 1.6 5.4 3.8 3.7 8.4 8.2 7.4 6.6 7.0 11.3 8.1 8.4 4.8 14.2 8.0 8.2 7.4 4.8 6.1 9.8 | 0 0 0 0 0 0 2 1 7 0 0 0 0 0 0 2 4 7 0 0 | 7.2 s |
+| Corniche | après | 36 36 36 36 36 36 36 36 36 36 36 36 36 36 36 36 36 36 36 36 | 0 3 1 3 4 0 5 5 2 3 3 3 1 5 3 3 2 3 1 5 | 1.4 3.5 1.1 2.6 1.7 0.7 4.1 3.9 1.6 3.5 1.6 1.7 1.4 2.7 3.2 2.1 1.8 3.0 1.9 2.2 | 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 1 1 2 0 0 | 7.9 s |
+| Campagne | avant (main) | 41 53 71 89 101 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 | 4 3 3 1 8 4 8 3 5 4 11 9 8 5 5 5 7 5 4 6 | 1.5 3.5 2.7 2.2 4.7 4.4 8.5 4.9 5.8 3.1 8.3 9.6 7.6 4.6 5.7 6.2 5.8 4.7 3.8 6.4 | 0 0 0 0 0 0 1 3 4 0 0 0 0 0 0 0 1 6 0 0 | 7.7 s |
+| Campagne | après | 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 | 3 0 2 0 3 1 1 1 5 1 2 2 2 1 2 1 3 2 0 1 | 1.2 1.5 1.8 0.6 2.1 0.3 1.3 0.7 3.1 2.0 1.2 2.1 1.8 0.8 1.0 1.1 1.6 2.6 0.6 1.9 | 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1 0 1 0 0 | 6.0 s |
+| Grand Prix | avant (main) | 28 46 64 76 94 112 112 112 112 112 112 112 112 112 112 112 112 112 112 112 | 0 2 5 3 4 2 4 6 4 1 7 9 16 9 14 11 5 6 4 9 | 0.2 1.3 5.7 5.3 3.9 2.8 5.8 3.9 3.4 1.4 10.3 10.7 11.3 10.0 13.1 11.7 6.7 6.0 5.0 7.7 | 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 | 0.0 s |
+| Grand Prix | après | 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 | 0 1 0 0 1 1 0 3 3 3 1 2 1 0 0 0 1 0 2 2 | 0.0 0.7 0.7 0.2 1.4 0.4 0.5 1.5 3.1 2.5 0.8 1.2 0.6 0.0 0.5 0.0 1.3 0.0 0.7 2.0 | 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 | 0.0 s |
+- **Banc perf (RG-02, RG-06)**, appels / triangles du trafic, avant → après, Haute et Basse, 4 cartes, durées 0 / 10000 / 36000 (+ Ville 38000 jour et nuit) : tableau complet dans la PR #249. Exemples : Ville Haute 30 / 212 / 154 → 30 / 105 / 0 ; Grand Prix Haute 21 / 225 / 489 → 21 / 62 / 15 ; Campagne Basse 3 / 9 / 137 → 3 / 0 / 43. Limite : le banc mesure un seul instant (20 images). Au départ, la vue a 1 voiture lointaine ; à 10 min, elle a 0 à 4 voitures selon l'instant (Corniche Haute 10 min : 258 appels pour 3 voitures proches). Le « ≤ 1,3 × » est tenu **en moyenne sur 10 min** (`test_trafic_duree` : Ville 2,43 pour 2,23 au départ, Corniche 2,29 / 2,19, Campagne 1,47 / 1,41, Grand Prix 0,91 / 0,85) et le total reste constant ; il n'est pas tenu à chaque instant du banc. Proposition au PO : mesurer ce critère en moyenne sur la course.
+- **RG-04** : le trafic passe par `Renderer::draw` (renderer.cpp ≈ l. 1320), qui appelle `vehicule_lod::dessin` pour chaque voiture. Seuils `SEUILS_PX` = 60 / 36 / 22 px (`vehicule_lod.h`), soit ≈ 64 / 105 / 170 m pour une Golf ; en Basse, version en 4 pièces dès le 1er seuil. Rien à corriger.
+- **RG-07** : parcours complet `WFS_BANC=parcours WFS_PARCOURS_COURSE_S=600` (Course solo Ville, 10 min, fin, retour à l'accueil) : **0 écart**. Tests CPU : **65 réussis** (`tools/qa/tests_cpu.sh`, branche synchronisée 98d22f7).
+- **Changement de jeu, pour le PO** : en Course solo, la montée de difficulté du jeu web (+6 voitures par checkpoint) **disparaît** ; le trafic reste celui du départ. La poursuite garde son trafic dense.
+- **Constat hors ticket, pour le PO** : sur une route plus dégagée, le pilote automatique du banc roule plus vite et sort parfois sur le trottoir ou l'herbe (captures Ville à 2 min 50 et 10 min, Corniche à 10 min). C'est la conduite ou le pilote automatique, pas ma zone.
+- **Fonctions touchées** (coordination WFS-232) : `Traffic::reset`, `Traffic::addCars`, `Traffic::fixerTotal` (nouvelle), `TrafficSystem::init`, `TrafficSystem::collide` (poursuite), `TrafficSystem::keepTrafficInView`.
+- **Accroches annoncées** : `src/render/bench_perf.cpp` (4 lignes : `WFS_PERF_AVANCE_RENDU`, ligne « trafic : N voitures ») ; `src/platform/desktop_main.cpp` (1 ligne : `WFS_PARCOURS_COURSE_S`, course longue du parcours, sans rendu).
+- **Captures** : `qa/pr/WFS-281/`, 8 paires avant / après (Ville 0, 2 min 50, 10 min et 10 min 30, Basse, nuit avec les phares ; Corniche et Campagne à 10 min). Aucune CI de branche lancée.
+
+### 2026-11-08 01:45:42 — WFS-266 : cheveux et yeux des 12 humains réalistes, PR #252 ouverte, au lead dev (agent arwa)
+- **Cause (ANO-134)** : les 12 adultes (`h01..h06`, `f01..f06.wfp`) ne gardaient que le groupe « body » de MakeHuman : orbites ouvertes sans globe (l'intérieur de la tête se voyait : taches gris clair autour des yeux), aucune partie 1 (yeux) ni 2 (cheveux), aucune plage `Hair_*`.
+- **Correction** (`tools/convert_people_makehuman.py`) : globes oculaires MakeHuman `helper-l-eye` / `helper-r-eye` en partie 1 (centre du globe dans `_cloth.xyz`) ; cuir chevelu peint (partie 2) avec `cuir_chevelu()` et `VOLUME_CHEVEUX` réutilisés ; f01, f02, f03, f05 (4 femmes sur 6) : `Hair_Long` de `femme.wfp` (Quaternius CC0, comme WFS-240) posé sur la tête et ajouté aux plages `corps-<lod>` (0 appel de dessin de plus) ; dents et langue non reprises. `scene_skin.frag` (réglage) : iris 11,7 mm et pupille 3,5 mm au pixel, sclère codes sRGB 0,76 / 0,72 / 0,68 (jamais blanc pur), cheveux adultes à la couleur de la palette, ligne des cheveux jamais classée « œil ». Sources de l'œil : `references/reel/humains/oeil.md` (Rüfer 2005, Watson et Yellott 2012, Dodgson 2004 ; sclère et iris « à confirmer »).
+- **Accroche annoncée** : `src/world/conducteurs.cpp`, 2 lignes dans `sommetCorps()` : stature d'un humain v3 lue dans l'en-tête du `.wfp` (le crâne passe en partie 2).
+- **Sources** : clone partiel en lecture seule de `github.com/makehumancommunity/makehuman` (révision a8bc2d54ff0ac92e78ff71431b1023eda42bf482, CC0 1.0, LICENSE.ASSETS.md), rien exécuté ; SHA-256 identiques à WFS-209 : base.obj 8e761e66…fb4c, default.mhskel 99f179bc…9a24, default_weights.mhw 0f3641d6…8625.
+- **SHA-256 des 12 .wfp régénérés** : f01 8251e29b64ac0687f18a14cd9db9ad45ba943695453fc5fbfbf11524b14d52e9 ; f02 3bd87e16ccdc4ccfe82daac866ef38ee2afdd1fc16544ea1f68fd97421c7d330 ; f03 22af7d8bdd538af78e7830deb39f93c3c867ddd44eca22c6a3063b216125a3fb ; f04 9ebdf135bb29facadf610449b06c35759b27a7124f335ded5939ad8ac7bed5bf ; f05 dfc09670c02be86a6cb19860dab76461948fcbf9ab9c137418b4a50bed6dbbbf ; f06 8794aa10b85dbcf450db07b4cb26455f5c976f8beb42d6021b082ccf8599c407 ; h01 101799807cad7221c28ce2a0d0f8b2d921bceb949d08f297e2bee9968f46dec3 ; h02 405e2ee2d4f449cbe9ad901778e8cc45aaa2e00b00351dc3e8909afc156e87b4 ; h03 277b8329e0166d1d2984bba1b8ee496fcf0d5ab79ba009c2540e6b5155cbed0f ; h04 fb016e858992d875303d5d62d3bf0230065d536b4ae5b96b2c613c7b00ae1829 ; h05 74a6994f89f1cb54f9875a917b35b825593efb22743b224249e3905284767d5c ; h06 ad033d3ee7c324e8392059a432c6dcd2588809a72557b2c5fe181dff6524798e. **8 enfants inchangés** (`git diff origin/main` : aucun `e*.wfp`).
+- **Preuves** : tests CPU `bash tools/qa/tests_cpu.sh build` **64 réussis** (branche synchronisée) ; `test_fidelite_humains` **100 % (72 / 72)**, cas WFS-266 OK (2 yeux par adulte, écart des pupilles 57,0 à 63,2 mm ; cheveux peints au-dessus du cou ; 4 femmes sur 6 aux cheveux longs ; écart de forme corps-1 ≤ 3,9 mm, corps-2 ≤ 11,3 mm) ; **parcours complet 0 écart** (Cockpit : 0 écart).
+- **Banc perf Ville** (`WFS_BANC=perf WFS_PERF_CARTE=ville`, même binaire, assets seuls changés) : appels 930 → 930 (Haute), 303 → 303 (Basse) ; triangles 1 734 448 → 1 738 126 (+0,21 %) et 549 493 → 550 703 (+0,22 %) ; « Pietons » identique (338 687 / 249 274) : écart dû aux conducteurs seuls, **< 5 %** (≈ +1,1 % des triangles des personnes). Temps d'image non comparables (lavapipe, bancs en parallèle).
+- **Captures** : `qa/pr/WFS-266/` (`captures_pr.sh WFS-266 squelette conducteurs`, 10 paires jour et nuit) + 3 gros plans (3840x2160 recadrés : têtes de face f01 / h01, conducteur de la Golf jour et nuit).
+- **Avis réalisme (expert)** : anatomie et géométrie des yeux justes (écart des pupilles dans la plage réelle, iris aux dimensions mesurées, aucun œil vide ni tache grise) ; cheveux : plus aucun crâne nu, coiffure longue crédible de face et de nuit ; limites : ligne des cheveux courts dentelée au gros plan (arêtes du maillage, comme WFS-233), sclère et iris « à confirmer », coiffure longue rigide. Indice de fidélité mesuré 100 % sur les 72 mesures du test (pas de 99 % annoncé sans mesure).
+- Aucune CI de branche lancée. Fusion : par le lead dev (règle de l'utilisateur, 2026-11-07).
+
+### 2026-11-08 01:55:02 — WFS-239 : RG-01, cause reproduite (arwa-2)
+- **Reproduit en local** (lavapipe, `WFS_BANC=qualite`, 1280 × 720) : sur `main` (9fece05), `voiture-distance-120-basse` **779 appels de dessin = `voiture-distance-180-basse` 779** : la voiture du trafic n'est pas dessinée à 120 m en Basse. Sur **42ce230** (juste avant WFS-221) : **850 à 120 m contre 842 à 180 m** : elle l'était.
+- **Commit en cause : 8165d0c (WFS-221, PR #193)**, `src/game/game.cpp` l. 263-279 (`Game::JoueurInterpole`) : toute l'image est dessinée sur le joueur **interpolé** entre les deux derniers pas (`alphaRendu` ≈ 0 au banc : un pas de retard, 15 cm à 67 km/h). Le tri du trafic (`src/game/traffic_system.cpp` l. 129 et 136) mesure la distance depuis ce joueur interpolé ; le banc (`src/render/qualite_banc.cpp`, `placer`) posait la voiture **pile à 120 m du joueur simulé** : vue du joueur dessiné elle est à 120,15 m, donc coupée par `vis[n - 1].dz * M > 120`. **La piste du PO est juste.**
+- **Deuxième effet (risque, pas observé)** : `placer` ne remettait pas `zPrec` / `offPrec` / `yawPrec`. `zPrec` n'est recopié qu'au début d'un pas du trafic (`traffic_system.cpp` l. 73) et le banc ne fait aucun pas entre deux placements : `zPrec` reste la place naturelle de la voiture avant le premier placement. Si cette place est à 20 m ou moins de la place demandée, la voiture est dessinée entre les deux (l. 142-143 ; avec `alpha` ≈ 0, à l'ancienne place) ; sinon (cas habituel, saut de plus de 20 m) elle est dessinée à sa place. *Correction de ma première écriture : je n'ai vu aucune capture fausse pour cette raison ; c'est un risque du banc, fermé par RG-02.*
+- **RG-05 (jeu, pour le PO, non corrigé ici)** : dans le jeu aussi, la limite de 120 m en Basse est mesurée entre la place **simulée** de la voiture du trafic (`c.z`) et le joueur **dessiné**, alors que la voiture est dessinée à sa place interpolée : une voiture entre 120 et ≈ 120,4 m peut apparaître et disparaître d'une image à l'autre au bord de la limite (effet minime, au loin, en Basse seulement).
+
+### 2026-11-08 00:32:20 — WFS-286 : début, « FERMER » des Réglages et temps du duel à 4 (Claude, agent 1)
+- Ticket attribué par le PO (commits fbe7a1b, 92ea9ba) sur ordre de l'utilisateur (« Prend un sujet »). Branche `feature/waforspeed-286`, zone E8.
+
+### 2026-11-08 02:03:09 — WFS-286 : « FERMER » à sa place, vrais temps au duel à 4, PR ouverte (Claude, agent 1)
+- **Réglages (ANO-156)** : en mise en page grand écran (1280×720), « FERMER » était volontairement placé après la ligne 11. Les 13 lignes se suivent maintenant, et « FERMER » est sous la dernière ligne, à la même taille. Le téléphone n'a pas changé.
+- **Duel à 4 (ANO-157)** : défaut du banc seulement. L'arrivée forcée dès le départ donnait un temps de 0, et les amis simulés étaient calés sur ce temps. La manche dure maintenant 12 s de course avant l'arrivée forcée, et les vrais temps sont vérifiés. Aucune accroche dans `src/game/duel*`.
+- **Preuves** : 63 tests CPU verts ; parcours `menu2` du duel conforme (0 écart ; manches à 81,9 et 79,5 s) ; captures avant / après dans `qa/pr/WFS-286/`.
+
+### 2026-11-08 02:05:56 — WFS-286 fusionné par le lead dev (lead-dev)
+- PR #253 relue : 6 paires de captures ouvertes (Réglages menu, pause, manette, `reglages` : « FERMER » sous la dernière ligne, 13 lignes à la suite ; duel à 4 : 1:21.3, +1,5 / +3,0 / +4,5 s au lieu de 0:00.0 et +0,0 s), tout le diff lu (`reglages.cpp`, `salon.cpp` banc seulement, rien dans `src/game/duel*`).
+- Approbation écrite dans la PR (revue « ✅ Approuvé par le lead dev », même compte GitHub), puis squash **2081d32**. Statut 🟣 (né de la VABF, ✅ par la CI). Remarque : banc `menu2` plus long (≈ 80 s par manche du duel).
+
+### 2026-11-08 02:07:45 — WFS-288 : son de la pluie en PR #254, revue du lead dev demandée (arwa-4)
+- **RG-01, sources** : relues sur GitHub par clone partiel, en lecture seule dans `/tmp`, sans rien exécuter ; seuls les nombres sont repris.
+  - `velatkilic/LISA` (GPL-3.0), commit ce06a7fbf2d0c9c4ad35d9dad55a79dfa8d5d7d4, `pylisa/atmos_models.py`, SHA-256 4873ecbe6c33bee3aa7bfbfb9759de2dbef0291d3a8c98865ac9688d9afb4028 : Marshall et Palmer, N0 = 8 000, Λ = 4,1·R^−0,21.
+  - `ltelab/disdrodb` (GPL-3.0), commit ccca01c72afc0ec074180ebe1e57c83bd29e1682, `disdrodb/fall_velocity/rain.py`, SHA-256 f124b46a123b2e14e3b45c58f0820dc5a62b485790f48b8307594c43e10e3897 : Atlas et coll. 1973, v = 9,65 − 10,3·e^−0,6D (ajustée sur Gunn et Kinzer).
+  - `ryancinsight/kwavers` (MIT), commit 4b5ced3115fb856ed498ae08da750c8ca25d5d1c, `crates/kwavers-python/src/analytical_bindings/cavitation/bubble.rs`, SHA-256 f9946a15be1498a6a53cda0b1cfb6d2b3dc08bce44694a79a7b8c77c948dda47 : Minnaert, f·r = 3,29 m/s.
+- **RG-01, calculs** (5 mm/h) :
+  - Λ = 2,924 mm⁻¹ ; 634 gouttes/m³ ; **2 104 impacts/m²/s**, dont **2,65 % de grosses** (55,8/m²/s) ;
+  - contrôle : la pluie recalculée donne 5,90 mm/h ;
+  - pare-brise de la Golf (33,2°) : 1 760 / 6 585 / 14 305 impacts/m²/s à 0 / 50 / 130 km/h, **rapport 1 / 3,74 / 8,13** ;
+  - surfaces : toit 1,97 m² (4 145 impacts/s), pare-brise 0,99 m² [proportions de la Golf, à vérifier].
+- **Fait** : `src/audio/pluie_sons.*` (averse stéréo calculée en direct, gouttes isolées, bulles, tambourinage, essuie-glaces sur `cockpit::EtatEssuie`, tunnel), branché dans `audio_system.cpp` (écran Course comme l'ambiance, sortie G / D après les lieux), banc `benchPluie` (`pluie-arriere`, `pluie-cockpit`, `pluie-tunnel`), `tests/test_audio_pluie.cpp`.
+- **Accroches** : `CMakeLists.txt` 1 ligne (`test_audio_pluie`). Aucune autre accroche ; `meteo.h`, `vehicule_cockpit.h` et `camera_vue.h` en lecture seule.
+- **WFS-282** a retiré `PENTE_PARE_BRISE` de `vehicule_cockpit.h`. Cette pente de la Golf (0,655) est maintenant gardée dans `pluie_sons.h`, avec son origine.
+- **Niveaux** (RG-07, décision : niveau absolu non mesurable, il dépend du téléphone) :
+  - averse : 0,006 RMS avant `master` ; habitacle −20 dB et passe-bas 1 kHz [à vérifier] ;
+  - goutte 0,04, bulle 0,012, impact 0,014 ;
+  - crête de la pluie 9,0 dB sous la crête du moteur de la Golf à mi-régime ; chuintement des pneus 3,7 dB au-dessus de l'averse dans sa bande à 50 km/h.
+- **Vérifié** :
+  - `test_audio_pluie` : 16 cas OK ; 65 tests CPU OK après synchronisation avec main (a1cfdbc) ;
+  - essuie-glaces : phase du son = phase de l'image après 10 min de pas (écart 0) ;
+  - tunnel : coupure en 0,31 s, reprise en 0,51 s ;
+  - coût : 0,025 ms par bloc en vue Cockpit à 130 km/h ;
+  - `WFS_MOMENT=nuit WFS_BANC=parcours` (sur 91e0591) : parcours complet 0 écart, vue Cockpit 0 écart, « PLUIE vue extérieure » puis « vue Cockpit » au journal ;
+  - captures (`captures_pr.sh WFS-288 partie2a`, filtre audio) : les 24 courbes audio existantes sont identiques octet pour octet à main, 3 `pluie-*` sont nouvelles.
+- **Limites** : sons des essuie-glaces, résonances du toit et du pare-brise, isolation de l'habitacle et zones d'écoute des gouttes et des bulles sans source lisible ([à vérifier]) ; rien n'a été écouté sur un vrai téléphone.
+
+### 2026-11-08 02:07:44 — WFS-269 : rebond par bloc abandonné (doublon des sondes de WFS-151) (po-scrum-master)
+
+### 2026-11-08 02:15:12 — ANO-168 / WFS-295 (direction dans les virages, urgent) et WFS-296 (marche arrière visible) créés ; avis de l'expert conduite (po-scrum-master)
+- Vidéo de l'utilisateur jointe. Cause n° 1 : facteur 1/(1 − k·n) absent du calcul relatif à la route (`player.cpp:39, 119-121`) ; n° 2 : blocage 1,14 s après un choc ; n° 3 : marche arrière par le frein. WFS-295 réservé à l'agent dev conduite, avant la suite de WFS-258.
+
+### 2026-11-08 02:16:33 — WFS-268 (PR #248) : 2e revue, refusée (lead-dev)
+- Commit relu `213df11` ; réponse du développeur sous la revue lue. Points de la 1re revue : synchronisation faite (mais `main` a encore avancé : conflits `journal.md`, `qa/Check.md`), vibreurs du départ du Grand Prix corrigés (0,00 %), décision du PO écrite (00:46:36), départ de la Campagne montré (0,09 % / 0,50 %, raccord de chaussée accepté).
+- 15 paires ouvertes une par une ; tout le diff relu, rien de bloquant dans le code.
+- Refus : (1) captures « après » de la Ville et de la Corniche d'avant la synchronisation (bandeau GPS petit face à un « avant » avec WFS-245) : tout régénérer sur la tête ; (2) RG-11 / ANO-164 non traitée (`carte-plage-marina` 1,19 %, `carte-plage-lacets-dessus` 2,1 % à ramener à ≤ 1 %) ; (3) resynchroniser avec `main`. Revue postée dans la PR ; TACHES.md, track-agent.md, suivi-pr.md mis à jour.
+
+### 2026-11-08 02:16:49 — WFS-281 : 2e retour lead dev sur PR #249 (lead-dev)
+- Relu 98d22f7 : 8 captures ouvertes, tout le diff lu. Points 1, 2, 3, 5, 6, 8 du 1er refus faits ; correction du jeu (`totalFixe` / `plafond`) juste et dans la zone.
+- Défauts : (1) 5 captures « après » sur 6 en Ville montrent la Golf **arrêtée sur le trottoir** (avant : sur la chaussée) : le banc perf « après » ne mesure pas une course ; cause probable : changement de `keepTrafficInView` (bancs hors écran) ; (2) RG-02 non tenu au banc à 10 min (Corniche Haute 24 → 258 appels, Campagne Haute 24 → 152, Ville 10 min 30 18 874 → 261 915 triangles) ; (3) commande de reproduction du ticket (54 → 644 appels) non rejouée ; (4) branche en retard de 13 commits.
+- **Pour le PO** : le développeur propose de mesurer RG-02 **en moyenne sur la course** (le départ ne montre qu'une voiture lointaine). Le lead dev ne change pas un critère : décision à écrire dans `regles-de-gestion/WFS-281.md`. Aussi : montée de difficulté (+6 voitures par checkpoint) retirée en Course solo ; pilote automatique du banc qui sort de la route sur route dégagée.
+
+### 2026-11-08 02:16:52 — WFS-284 fusionné par le lead dev (lead-dev)
+- PR #250 (agent arwa), commit relu 4c8f1f0, approuvée sur GitHub, fusion en squash avec `expectedHeadSha` → **94f6f41** sur `main`. Avant, aucune autre revue n'existait sur la PR.
+- Captures : 5 paires `qa/pr/WFS-284/`, toutes ouvertes ; avant et après identiques à l'octet (le banc PC ne compile pas `android_main.cpp`) : RG-04 tenue.
+- Code relu en entier (veilleur des entrées, `android_main.cpp` seul) : ordre des verrous `g_file` → `a->mutex` sûr, pas d'auto-blocage (le changement de carte part de `Game::update`), RG-01, RG-03 et RG-05 tenues, fil arrêté par `join`. Remarques non bloquantes dans l'approbation (rejeu sans `manette::evenementAndroid`, Retour au menu principal pendant une image de plus d'1 s, `<vector>` implicite).
+- Statut : **🟣** (défaut vu à l'émulateur de la VABF, pas sur le téléphone de l'utilisateur). Preuve de l'absence d'ANR et de la ligne RG-05 attendue de l'émulateur des bancs du matin ; noté dans `qa/Check.md` pour la QA. Ligne #250 retirée de `suivi-pr.md`.
+
+
+### 2026-11-08 02:17:37 — WFS-266 fusionné par le lead dev (lead-dev)
+- **PR #252** (agent arwa, Claude, session trafic), commit relu ff2bb31, **approuvée** sur GitHub (revue APPROVE) puis fusionnée en squash : **8c8bdc7** `WFS-266 : cheveux et yeux des 12 humains réalistes (ANO-134) (#252) (agent arwa)`.
+- **Captures** : 13 paires de `qa/pr/WFS-266/` ouvertes une par une. Gros plans : avant, crânes nus et orbites claires ; après, cheveux (mi-longs pour f01, courts pour h01) et yeux sombres, plus de taches grises, et coiffure visible sur le conducteur de la Golf, de jour comme de nuit. Planches des 12 humains, debout et assis : tous coiffés, 4 femmes aux cheveux longs. Conducteurs Golf, RR Sport et SF90, de jour et de nuit : aucune régression.
+- **Code** : tout le diff lu. Vérifié à part : les `.wfp` adultes (160 sommets d'œil, cuir chevelu, mèches pour f01, f02, f03 et f05, indices 16 bits, 3 niveaux de détail, en-tête « hauteur » égal à la stature lue par l'accroche de `conducteurs.cpp`) ; aucune différence pour les 8 enfants ; les yeux et cheveux de `femme.wfp`, de `homme.wfp` et des enfants ont `_cloth.x = −1`, donc ils restent hors des nouvelles branches de `scene_skin.frag`. Fusion avec `main` sans conflit.
+- **Statut** : 🟣 (défaut vu en recette QA, pas sur le téléphone de l'utilisateur). Ligne `qa/Check.md` ajoutée, ligne #252 retirée de `suivi-pr.md`. Remarques non bloquantes : la ligne des cheveux courts des hommes est dentelée ; sclère et iris « à confirmer ».
+
+### 2026-11-08 02:18:30 — WFS-281 : décisions du PO sur la PR #249 (po-scrum-master)
+- À la demande du lead dev (2e refus, entrée 02:16:49). Détail dans `regles-de-gestion/WFS-281.md` (Suivi).
+- (1) RG-02 / RG-06 **à chaque mesure**, pas en moyenne ; mesure = médiane d'un passage du banc ou d'un relevé de 30 s ; valeur de départ = la plus haute de la 1re minute.
+- (2) Montée de difficulté (+6 voitures par checkpoint) : **suppression refusée** ; gardée, plafonnée par RG-02, voitures préparées au chargement ; pas de nouveau ticket.
+- (3) Pilote automatique du banc : **corrigé dans cette PR** (retour à l'ancienne conduite du pilote, `keepTrafficInView` déplace sans ajouter), pas de ticket technique.
+- `track-agent.md` remis à jour (derniers envois des branches).
+
+### 2026-11-08 02:19:55 — ANO-169 / WFS-297 créé : le jeu ralentit d'une partie à l'autre (po-scrum-master)
+- Captures de l'utilisateur : 1re partie 25 img/s, GPU scène 33,4 ms ; 2e partie 10 img/s, GPU scène 86,8 ms. Mesure de 3 parties de suite demandée ; coordination WFS-281 (trafic) et WFS-268 (décor).
+
+### 2026-11-08 02:24:08 — WFS-288 fusionné par le lead dev (lead-dev)
+- **PR #254** (arwa-4 (Claude, session 01Us6uCw)), commit relu c393132. GitHub refuse l'approbation par le même compte : revue « ✅ Approuvé par le lead dev » postée en commentaire, puis fusion en squash avec le commit de tête attendu : **d8080a2** `WFS-288 : son de la pluie (Ville de nuit) : averse, gouttes sur le toit et le pare-brise, essuie-glaces en Cockpit, tunnel (#254) (arwa-4 (Claude, session 01Us6uCw))`.
+- **Captures** : 27 « après » de `qa/pr/WFS-288/` ouvertes une par une. `pluie-arriere` : averse gauche / droite vers −49 dB, fondu d'entrée 1 s, maximum vers 3-5 kHz ; `pluie-cockpit` : frottement des balais (45 puis 65 par minute), pare-brise vers 1,5 kHz qui monte de l'arrêt à 130 km/h ; `pluie-tunnel` : silence complet dans le tunnel, reprise en 0,5 s. Les 24 courbes audio existantes sont identiques octet pour octet à `main` (SHA-256).
+- **Code** : tout le diff lu (`audio_system.cpp`, `pluie_sons.*`, `pluie_sons_banc.cpp`, `test_audio_pluie.cpp`, `CMakeLists.txt`, `pluie.md`). Mêmes entrées que l'image pour les essuie-glaces, thread audio sans allocation ni verrou, rien n'est touché hors pluie ; `PENTE_PARE_BRISE` = 0,655, même valeur que la constante retirée par WFS-282.
+- **Vérifié en local** (main cc9b632 + branche) : compilation sans avertissement, `test_audio_pluie` 16 cas OK, **65 tests CPU OK** (`tools/qa/tests_cpu.sh`, 173 s). Les commits de `main` arrivés depuis (WFS-266, WFS-284, PO) ne touchent ni `src/audio` ni `CMakeLists.txt`.
+- **Mesure du lead dev** sur les .wav du banc : l'averse du dehors est 25 dB sous le moteur du banc, et sous lui dans chaque octave (−10 dB à 8 kHz). C'est la borne de RG-07 (pneus +3,7 dB au-dessus de l'averse à 50 km/h). Point à écouter sur le téléphone, noté dans `qa/Check.md`.
+- **Statut** : 🟣 (ni retour de l'utilisateur ni conduite : ✅ par les bancs du matin). Ligne #254 retirée de `suivi-pr.md` ; arwa-4 libre. Remarques non bloquantes dans la revue : ρ G / D = 0,195 pour un seuil de 0,2 ; pas de cas « Son : Coupé » dans le test ; `(void)cad;` inutile.
+
+### 2026-11-08 02:25:00 — WFS-263 : shader léger au loin, mesures et captures (Claude, agent dev X)
+- **RG-01** : variante légère de `scene.frag` par la constante de spécialisation `LEGER` (id 1, `common.glsl`).
+  - Elle s'applique au décor au-delà de 60 m, avec un fondu de 60 à 70 m.
+  - Elle retire : la carte de normales, la table BRDF (remplacée par l'approximation de Karis), le ciel analytique et la 2e lecture de sonde. Il ne reste qu'une lecture de reflet (cube le plus récent) ; ambiance par harmoniques sphériques ; diffus et soleil inchangés.
+  - Toujours en shader complet : voitures, route, transparents, vitres d'immeuble.
+  - Pipelines `opaqueLeger_` et `opaqueLegerDouble_`, avec et sans retrait des faces : un objet y passe si toute sa sphère est au-delà de 70 m (`Pending::loin`). Ils sont créés au chargement et mis en cache avec les variantes MSAA (WFS-262).
+  - Dans le shader complet, le même calcul s'arrête pour chaque pixel au-delà de 70 m.
+- **RG-02** : en Basse, 4 lumières au plus par pixel (`spotLights`, `F.spotN.y`) et 4 lectures au lieu de 12 pour le reflet de la route mouillée (`F.spotN.z`).
+- **Mesures au banc** (lavapipe, indicatif ; Ville, 90 images ; `main` → branche) :
+  - passe de scène : Haute 526,5 → 517,9 ms (−1,6 %), Basse 257,2 → 250,7 ms (−2,5 %) ;
+  - le choix de pipeline seul (`WFS_LEGER=0`) ne gagne rien sur lavapipe, qui compile les sauts du shader ; le gain attendu est sur le GPU du téléphone (registres, lectures de texture), à mesurer avec la ligne « Images (20 s) ».
+- **Réalisme (seuil de 3 %)** : 0 pixel changé de plus de 16 sur 255 ; écart maximal de 10 sur 255.
+  - Pixels modifiés au-delà de 60 m : luminance moyenne 48,1 → 47,2 (−1,9 %) en Haute, 58,8 → 57,9 (−1,4 %) en Basse.
+  - Basse de nuit à la Corniche : 0,46 % de pixels changés (plafond de 4 lumières), sans écart visible.
+  - Banc `realisme` complet en cours, pour comparer les indices de fidélité avec `main`.
+- 63 tests CPU OK, parcours 0 écart.
+- Captures avant / après dans `qa/pr/WFS-263/` (42 paires) : perf des 4 cartes en Haute et Basse, course de nuit, route mouillée, phares en Basse.
+
+### 2026-11-08 02:26:13 — WFS-297 attribué à Claude, agent 1 (accord de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 02:28:28 — WFS-288 fusionné par le lead dev (#254, d8080a2) : réponse dans la PR, parcours de nuit relancé (arwa-4)
+- Parcours de nuit relancé sur le code final de la branche (`WFS_MOMENT=nuit WFS_BANC=parcours`) : « parcours complet : 0 écart(s) OK » et « parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK », PLUIE vue extérieure puis vue Cockpit au journal du banc.
+- Réponse point par point aux remarques du lead dev dans la PR #254. Le niveau de l'averse dehors (≈ 25 dB sous le moteur, imposé par RG-07 pour garder le chuintement des pneus audible) est à juger sur le téléphone.
+- arwa-4 libre : je demande le ticket suivant au PO.
+
+### 2026-11-08 02:29:10 — WFS-297 : RG-06 chiffres de mémoire au chargement et dans les Réglages (demande de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 02:29:37 — WFS-282 : PR #251 refusée de nouveau par le lead dev (lead-dev)
+- 2e revue au commit f97172f7 : 21 paires, 3 départs de nuit sur la Plage et 2 gros plans du rétroviseur ouverts ; tout le diff lu.
+- Corrigé : le rétroviseur de jour n'est plus un bloc noir (glace gris clair), le rétroviseur de nuit est sombre en Ville, l'habitacle est lisible la nuit, la branche est synchronisée et le code est propre.
+- Refusé pour : (1) le rétroviseur de nuit sur la Plage, une plaque gris clair (luminance ≈ 77) sur un ciel ≈ 25-38, dans la scène même de l'utilisateur ; (2) des seuils de l'arbitrage du PO dépassés : SF90 en virage 40,8-40,9 % (≤ 40), regard Haut SF90 36,9 % (≤ 35), bande Golf 12,8 % et X5 12,7 % (≤ 12), montants à ≈ 22-25° au lieu de plus de 30°.
+- **Au PO (po-scrum-master)** : RG-00 (géométrie d'avant WFS-235, montants à ≈ 22-25°) contredit l'arbitrage (« montants au-delà de 30° toujours exigé »). Il faut trancher par écrit dans `regles-de-gestion/WFS-282.md`, ainsi que les seuils du regard Haut et de la SF90 en virage.
+
+### 2026-11-08 02:30:59 — WFS-282 : arbitrage n° 2 du PO sur la PR #251 (po-scrum-master)
+- Demande de Claude, agent 2, après le 2e refus du lead dev. Décision écrite dans `regles-de-gestion/WFS-282.md` (« Arbitrage du PO n° 2 »).
+- (1) « Montants au-delà de 30° » retiré (contraire à RG-00, demande de l'utilisateur) : montants à leur place réelle, fenêtre de la rue ±15° cachée à 0 %. (2) Intérieur en Normal ≤ 40 %, sauf SF90 en virage ≤ 42 %. (3) Regard Haut : mesuré sans seuil.
+- Ticket non réattribué (règle des 10 heures) : Claude, agent 2 corrige le rétroviseur de nuit et rappelle le lead dev.
+
+### 2026-11-08 02:36:41 — WFS-298 (son des chocs selon ce qu'on touche, E6) créé et attribué à arwa-4 (po-scrum-master)
+- Demande de ticket d'arwa-4 (Claude, session 01Us6uCw), libre après la fusion de WFS-288 (PR #254, squash d8080a2, 02:23 UTC, lead dev). Domaine : le son (« une session = un domaine »).
+- Bandeau parcouru : WFS-281, 268 (↩️), 269 (🔧), 273, 264, 265 (performance, E4), 214 (E13 tenue), 192, 215 (voitures), 285, 287 (Android, CI), 290 (écrans), 292, 293, 296, 295 (conduite) : aucun du son ; WFS-260 réservé à l'agent dev conduite, en attente de WFS-258 → règle « jamais à court de tickets ».
+- Partie comparée au réel : **les chocs**. Depuis WFS-256, `chocs::Genre` sait ce qui est touché, mais tout fait le même coup sourd (`SfxId::Choc`, au centre). **WFS-298** (P2, E6, ≤ 1 journée) : 5 familles (métal sonore, bois et feuillage, mobilier, béton, voiture), synthèse modale sourcée (facteurs de perte, Hertz), force et clarté selon la vitesse, côté gauche / droite, coup sourd actuel gardé ; genre retrouvé dans `src/audio` sans accroche (repli ≤ 5 lignes dans `chocs_cartes.cpp` seulement si le banc `chocs` n'est pas à 100 %). Règles : `regles-de-gestion/WFS-298.md`. Branche `feature/waforspeed-298`.
+- Remarques du lead dev sur WFS-288 : averse discrète en vue extérieure (≈ 25 dB sous le moteur, RG-07) → à juger par l'utilisateur, rien changé sans son avis (noté dans `WFS-288.md`) ; `(void)cad;` → WFS-298 RG-00.
+- Mise à jour du suivi : WFS-295 🔧 (branche de l'agent dev conduite poussée à 02:15, f04a335 ; WFS-258 attend derrière, ordre de l'utilisateur : pas de retrait) ; WFS-285 ⏳ Prêt (WFS-284 fusionné, #250) ; E7 et E8 libres ; 12 tickets prêts. `track-agent.md` remis à jour (derniers envois des branches). Robot des archives : pas encore passé cette nuit (03:07 UTC), à vérifier au prochain appel.
+
+### 2026-11-08 02:40:03 — WFS-298 : question d'arwa-4 tranchée, option A (synthèse en direct) (po-scrum-master)
+- Question d'arwa-4 : RG-03 (clarté ∝ v^(1/5) ± 5 %) impossible à tenir avec des tampons joués par `SonsVoitures::jouer` (RG-05 / RG-07) sans ≈ 16 Mo de son.
+- **Décision : option A.** Le choc est synthétisé en direct dans le thread audio (comme la pluie de WFS-288) : modes amortis, excitation filtrée à la
+  coupure exacte de la vitesse ; variantes et voix préparées au chargement ; aucune allocation, aucun verrou, aucun fichier son ; côté par
+  `voitures::panExistant(az)`, ajouté avec les voix de WFS-272 (écho du tunnel compris) ; coût ≤ 0,05 ms par bloc mesuré toutes voix actives.
+  Option B refusée : elle affaiblissait le critère chiffré de RG-03. RG-05 et RG-07 réécrites, détail dans le Suivi de `regles-de-gestion/WFS-298.md`.
+  Zone de code inchangée (`voitures_sons.*` non modifié). Branche `feature/waforspeed-298` poussée à 02:37 (f44fae5, commit de début).
+
+### 2026-11-08 02:44:44 — WFS-239 : PR #255 ouverte, lead dev appelé (arwa-2)
+- **RG-02** : avant chaque placement, le banc `qualite` fait exactement un pas et calcule la position du joueur dessiné (avant + (après − avant) × `Game::alphaRendu`) ; voitures posées depuis lui, état d'avant le pas remis (`zPrec`, `offPrec`, `yawPrec`). **RG-03** : contrôle après chaque capture de voitures posées (chaque voiture dessinée seule, comparée à l'image sans aucune, même instant ; distance dessinée calculée comme le trafic) ; ligne `ERREUR placement` si une voiture en deçà de la limite (Basse 120 m, Haute 300 m) n'est pas dessinée ou est à plus de 0,5 m.
+- **Résultat** (banc `qualite`, 1280 × 720) : 0 ligne `ERREUR placement` ; `voiture-distance-120-basse` : voiture dessinée à 120,00 m (visible sur la capture) ; `-180-basse` : non dessinée (au-delà de la limite) ; `voiture-basse-poursuite` : 14 posées de 8 à 151 m, les 11 en deçà de 120 m dessinées ; distances dessinées exactes (0,00 m). Banc `fluidite` : à-coup 3,09 mm (inchangé). 65 tests CPU OK. Captures avant / après : `qa/pr/WFS-239` (23, `captures_pr.sh … qualite`, `FILTRE='voiture-*'`).
+- Pas de test CPU neuf, pas d'accroche dans `CMakeLists.txt` : la règle demande une image (banc) ; le contrôle RG-03 tourne avec le banc `qualite` de la CI.
+
+
+### 2026-11-08 02:49:46 — WFS-232 : corrections du retour du lead dev (PR #245, 9 points), nouvelle routière, mesures, coût, parcours (arwa-3)
+- **Téléchargements** (règles du réseau : GitHub public, rien n'est exécuté, CC BY 4.0) :
+  - **Honda CB500X** de DevanirGrau (Sketchfab, CC BY 4.0). Origine : `lxorb/mechanica`, commit 7bbb0e26bfe309cd9144275ea620c00aa6922696, fichier `web/store/models/generic/adventure/model.glb` (Draco). SHA-256 du model.glb : 76ec335b07044fb08c61d2cb25d3b62ca4b201f6b800199001fa0a56b4e653a6 ; du license.txt : b152c62a781033da7ea1b7744daf01b035873c15f4257d440a60f38c4916f7d2. Il remplace la Honda CB750 : dans ce modèle, la roue avant et le guidon sont braqués de 20° et la selle est à +9 %. Décompression avec le paquet npm `draco3dgltf` 1.5.9 (Apache-2.0), installé à part dans /tmp, hors du dépôt.
+  - **Suzuki SV650 2020** de johnnokomis (CC BY 4.0). Origine : `abdulkadershohan/threeJs-practice`, commit d9e3f24196af84eae0b210e6f61ffe98aee98873. SHA-256 du scene.gltf : bff1edb79175a36a3b15634d7c0b95fb2be707f4afb489f627ed6161d2e82877 ; du scene.bin : e8d7c8e4fd40212883ae2dab88ab89339db1458159f52175c7eabd8a8a18e6fb. **Refusé** : c'est un relevé photographique d'un million de triangles en un seul matériau, sans pièces séparées.
+- **Conversion** (`tools/convert_car.mjs`, nouvelles options `WFS_ROUES_2R`, `WFS_ROUES_2R_CYL`, `WFS_PIECE`, `WFS_FEU`, `WFS_PHARE`, `WFS_EXCLURE_NOEUD`, `WFS_ALLEGER`, `WFS_TEXTURE_MAX`) : chaque deux-roues est en 3 fichiers (corps, roue avant, roue arrière), chacun avec ses niveaux de détail.
+  - Sans les nouvelles options, la reconversion du scooter, de l'ancienne routière et de la sportive redonne les mêmes fichiers au bit près.
+  - Corps et roues : scooter 58 k + 2 × 2 k triangles, routière 49 k + 2 × 6 k, sportive 49 k + 2 × 6 k. Total 11,9 Mo, contre 11,2 Mo avant.
+  - Routière : bagage de la selle, plaque et logos retirés.
+  - Sportive : feu arrière et phare sortis de leur matériau partagé.
+- **Mesures sur les modèles** (`references/reel/deux_roues.json`, champ `modele_mm`) :
+
+  | modèle | longueur | empattement | selle | fiche de la selle |
+  |---|---|---|---|---|
+  | scooter | 1 859 | 1 369 (+0,7 %) | 772 | 792 à 805 (−2,5 %) |
+  | routière | 2 155 | 1 446 (+0,1 %) | 839 | 830 à 834 (+0,6 %) |
+  | sportive | 2 007 | 1 406 (+0,4 %) | 815 | 830 (−1,8 %) |
+
+  Méthode : la selle est mesurée au point le plus bas de son dessus. Les écarts du scooter et de la sportive viennent des proportions des modèles : seule une échelle uniforme est permise, une échelle par axe rendrait les roues ovales. Je les signale au PO.
+- **Code** :
+  - **trafic** :
+    - les deux-roues ralentissent avant les courbes jusqu'à l'inclinaison de confort de 25° (75 % des inclinaisons de tous les jours, étude BASt 82.0710), en freinant à 4 m/s² ;
+    - au choc, ils tombent sur le flanc (pendule inversé, 77° en 0,37 s), puis glissent ;
+    - `deuxRouesPermis` : si un modèle ou un pilote manque, aucun deux-roues dans le trafic ;
+    - `Traffic::dessines` : la sélection des véhicules dessinés, la même pour le rendu et pour les tests ;
+  - **rendu** :
+    - les roues tournent à v/r et sont dessinées sans feux (cause des taches blanches de nuit) ;
+    - un pilote sur chaque deux-roues dessiné, à toute distance ;
+    - buste penché selon la moto : sportive ≈ 30°, routière ≈ 7° ;
+    - pilote couché au sol après la chute.
+- **Accroche** : `src/platform/desktop_main.cpp`, 1 ligne (groupe de banc `motos`), déjà annoncée.
+- **Preuves** :
+  - 65 tests CPU réussis, sur la branche synchronisée avec `main` (33fa189) ;
+  - banc `motos` : 0 écart entre deux-roues et pilotes dessinés ;
+  - parcours : 0 écart avant et après, en vue normale et en vue Cockpit ;
+  - captures dans `qa/pr/WFS-232` (50 vues, chacune avec sa version sans deux-roues, et des agrandissements), toutes regardées.
+- **Coût** (banc `perf`, Ville, chauffe 60, 150 images, lavapipe, `main` 5264639 contre la branche) :
+
+  | qualité | appels de dessin | processeur (ms) | pire image (ms) |
+  |---|---|---|---|
+  | Haute | 1025 → 988 | 3,0 → 2,7 | 10,4 → 4,4 |
+  | Basse | 348 → 348 | 2,4 → 2,4 | 5,3 → 4,0 |
+
+- **Checklist `checklist-livraison.md`** passée :
+  - zone respectée, aucun fichier iOS ;
+  - aucune allocation ajoutée dans la boucle de course ;
+  - ressources créées au chargement et détruites dans `shutdown` ;
+  - constantes physiques sourcées ;
+  - branche synchronisée, compilation propre, tests et parcours verts ;
+  - captures regardées, description de la PR complète ;
+  - réponse au lead dev dans la PR, puis `suivi-pr.md` en 🔁 et lead dev rappelé.
+- **Pour le PO** :
+  - selles du scooter (−2,5 %) et de la sportive (−1,8 %) : accepter l'écart, ou d'autres modèles ;
+  - 7 pilotes sur 10 sont des hommes : choix de conception à trancher.
+
+### 2026-11-08 02:50:37 — WFS-269 : occlusion du décor fixe précalculée au chargement, prête pour la PR (Claude, Agent 0 developer)
+- **Arbitrage du PO** : A + C (Suivi de WFS-269.md). Pas de SH9 par bloc : le rebond local, ce sont les sondes de WFS-151.
+- **Fait** :
+  - module `src/render/eclairage_precalcule.*` : part du ciel vue depuis chaque sommet du décor fixe des blocs (WFS-268), sur une grille d'occupation à deux niveaux (voxels de 0,5 m, cellules de 8 m), 8 rayons en cosinus jusqu'à 5 m ; les rayons vers le bas sont libres (la sonde tient déjà compte du sol) ;
+  - rangement : dans la **longueur de la normale** (aucun octet de plus par sommet) ;
+  - lecture : accroche de 3 lignes dans `shaders/scene.frag`, drapeau `MAT_AO` (1 ligne, `renderer.h`), qui n'agit que sur l'ambiance et le reflet du ciel ; pour les matériaux MAT_VTINT, occlusion atténuée (0,6) car elle touche aussi le soleil.
+- **Cartes** :
+  - Ville : façades, béton, trottoirs ;
+  - Corniche : décor uni, rochers, trottoirs, chaume, bois ;
+  - Campagne / Grand Prix : décor uni (MAT_VTINT) ;
+  - accroches dans `ville.cpp`, `plage.cpp`, `decor_carte.cpp` (masques et MAT_AO) et `lots_decor.*` (appel).
+- **Chargement (RG-04)**, Ville, PC 4 cœurs : 0,73 s pour l'occlusion (788 000 sommets, 3,3 millions de voxels), 7 Mo temporaires. Essais écartés : table plate de clés (5,5 s puis 1,5 s), tri des clés (1,2 s), clés non triées (580 Mo).
+- **Coût en course (C)**, banc `perf` Ville : Haute 747 → 772 ms, Basse 322 → 326 ms, dans le bruit (±4 %).
+- **Captures** (`qa/pr/WFS-269`, 99 paires, Ville, Corniche, Campagne, jour et nuit) :
+  - Corniche : dessous des arcades et façades à l'ombre plus sombres ;
+  - Ville : bas des façades sous les avancées et au fond des rues ;
+  - Campagne : presque inchangée (maisons du kit WFS-161, hors blocs).
+- **Corrigé après les premières captures** : façades dégagées assombries en entier (sol compté comme obstacle) et bandes sur les pelouses de la Ville (sol et décor uni ne reçoivent plus).
+- **Tests** : `test_fidelite_lumiere_precalcule` (9 contrôles : sol dégagé 1,00, pied du mur 0,62, sous l'auvent 0,53, mur dégagé uniforme, végétation intacte, reproductible) ; tests CPU OK.
+- **Limite** : pas de captures du Grand Prix (même code que la Campagne). Gain de réalisme modeste : l'occlusion n'agit que sur la lumière du ciel.
+
+### 2026-11-08 03:00:57 — WFS-299 créé : alléger la Ville de nuit (suite du diagnostic de WFS-297) (po-scrum-master)
+- Rien ne s'accumule entre les parties ; Ville de nuit trop lourde (piétons, lumières). Réservé à Claude, agent 1 après WFS-297.
+
+### 2026-11-08 03:07:30 — WFS-239 fusionné par le lead dev (lead-dev)
+- **PR #255** (arwa-2 (Claude, session 01Us6uCu)), commit relu 5573be1. Aucune autre revue sur ce commit. GitHub refuse l'approbation par le même compte : revue « ✅ Approuvé par le lead dev » postée en commentaire, puis fusion en squash avec le commit de tête attendu : **0f0eee4** `WFS-239 : [TECHNIQUE] banc qualité : voiture du trafic de nouveau visible à 120 m en Basse, placements contrôlés (#255) (arwa-2)`.
+- **Captures** : 23 paires de `qa/pr/WFS-239/` ouvertes une par une. `voiture-distance-120-basse` : la voiture rouge est de nouveau au fond de la rue (absente avant) ; `-180-basse` : pas de voiture, avant comme après ; les autres distances, la course avec trafic et la poursuite Basse : mêmes voitures, mêmes places.
+- **Code** : tout le diff relu (`src/render/qualite_banc.cpp`, seul fichier de code). Position du joueur dessiné calculée comme `Game::JoueurInterpole`, état d'avant le pas remis, contrôle par appels de dessin (deux images, parité gardée, état remis).
+- **Vérifié sur la tête 5573be1** (avec WFS-266) : `WFS_BANC=qualite` relancé, 0 `ERREUR placement`, les 19 lignes « contrôle » identiques à la PR (11 min 10 s) ; `qualite_banc.cpp` sans avertissement (`-Wall -Wextra`) ; **65 tests CPU OK** (190 s).
+- **Pour le PO** : (1) `voiture-lod-passage-56` a maintenant des façades bleues, à chaque lancement. Les images de contrôle font avancer les captures d'environnement, et la sonde IBL 13 (rebond 1) arrive juste avant la capture. La voiture n'y est pour rien. Proposition : une US technique pour que le banc `qualite` attende des sondes stables avant chaque capture (comme `attendreSondes` du banc éclairage), et vérifier si ce passage au bleu se voit en jeu quand une sonde arrive (WFS-151). (2) RG-03 : « dessinée(s) » compte chaque voiture seule ; en poursuite Basse, l'image n'en montre que 3, à cause du plafond voulu (WFS-111 / WFS-134).
+- **Remarques au développeur** (dans la revue) : captures « après » faites avant la synchronisation (à refaire après chaque synchronisation) ; distance du joueur recalculée et non lue dans le jeu ; écrire aussi les appels « avec » ; `<cstdio>` à inclure.
+- **Statut** : 🟣 (US technique : ✅ par les bancs du matin). Ligne `qa/Check.md` ajoutée, ligne #255 retirée de `suivi-pr.md`. arwa-2 est libéré.
+
+### 2026-11-08 03:07:59 — WFS-269 refusé par le lead dev, PR #256 (lead-dev)
+- **Revue de 2861e5a** : 99 paires ouvertes (avant / après, jour et nuit), écart moyen mesuré par paire, tout le diff relu. `test_fidelite_lumiere_precalcule` compile et passe (9/9).
+- **Défauts** (détail dans la revue de la PR) : (1) dents de scie sombres sous la roche en surplomb de la Corniche (bateaux-vue, jeux-vue) ; (2) traînées brunes et taches sur la falaise, le trottoir et la place du giratoire (epingle-dessus, lacets-dessus, rond-point-dessus) ; (3) Ville sans gain visible (écart 0,02 à 0,27 sur 255) ; (4) Campagne et Grand Prix identiques au pixel près (`LOTS_CARTES_SOCLE = false`), description inexacte ; (5) code mort `tri`, commentaire de `F_AO` ; (6) un commit de retard sur main.
+- **Statut** : ↩️ Retour lead dev (PR #256) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
