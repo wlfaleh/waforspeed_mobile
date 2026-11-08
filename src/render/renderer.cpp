@@ -8,6 +8,7 @@
 #include "feux_modele.h"           // WFS-171 : valeurs photométriques des feux, éclairement au sol
 #include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "cache_pipelines.h"        // WFS-262 (RG-01)
+#include "shader_leger.h"           // WFS-264 (RG-06)
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "../core/memoire.h"   // WFS-297 (RG-06)
@@ -1035,8 +1036,10 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;   // banc : comparaison avec l'avant
     const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
     if (!sansDistance && length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
+    // WFS-264 (RG-03) : petit objet (rayon < 1,5 m : panneau, borne, piéton, mobilier) à plus de 40 m : pas d'ombre portée
+    const bool ombrePetit = !(length(s.c - camPos_) > 40.f && s.r < 1.5f);
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
-                      (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
+                      (shadowsOn_ && ombrePetit && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
     uint8_t c = 0;   // WFS-227 (accroche) : cascades d'ombre que l'objet touche (passe d'ombre : une tuile seulement si besoin)
     // tranche de la cascade (le long du regard) + portée de l'ombre de l'objet (≈ 3 × son rayon + 5 m) : un objet près de la
     // caméra (la voiture) n'est pas redessiné dans les cascades lointaines, ni un petit objet (< 2 texels) dans une cascade grossière
@@ -1149,7 +1152,12 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // boîte d'ombre (stableShadow du jeu web) : centrée sur la voiture, 20 m devant dans le sens de la caméra,
     // repère du soleil fixe et centre calé sur la grille des texels → bords d'ombre stables quand on roule
     shadowsOn_ = fp.shadows && !fp.night && !forceNoShadows; night_ = fp.night || forceNoShadows;
+    // WFS-264 (RG-03, ANO-145) : mesure d'une cascade unique en Basse (40 m, toute la carte) ; la Basse reste sans ombre du
+    // soleil (décision du PO, regles-de-gestion/WFS-227.md) : WFS_OMBRES_BASSE=1 au banc seulement, pour le chiffre au journal
+    static const bool ombresBasse = [] { const char* e = std::getenv("WFS_OMBRES_BASSE"); return e && e[0] == '1'; }();
+    if (qualiteBasse && ombresBasse) { shadowsOn_ = fp.shadows && !fp.night; night_ = fp.night; }
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
+    comptesPrec_ = comptes_; comptes_ = ComptesImage{};   // WFS-317 (I9)
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
     if (bloom_) bloom_->force = gpuLogiciel() ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);
@@ -1173,9 +1181,9 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         // WFS-227 (accroche E13) : cascades stabilisées (eclairage_ombres.h) ; shadowMat = boîte de toutes les cascades (masquage)
         const vec3 regard{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)};
         regardCasc_ = normalize(regard);
-        cascades_ = ombres::calculer(L, fp.camPos, regard, std::clamp(niveauOmbres, 1, 3), shadowSize_);
+        cascades_ = ombres::calculer(L, fp.camPos, regard, niveauCascades(), shadowSize_);
         for (int k = 0; k < 4; k++) { u.ombreCasc[k] = cascades_.m[std::min(k, cascades_.n - 1)]; (&u.ombreFin.x)[k] = cascades_.fin[std::min(k, cascades_.n - 1)]; (&u.ombreDemi.x)[k] = cascades_.demi[std::min(k, cascades_.n - 1)]; }
-        u.ombreP = {(float)cascades_.n, (float)std::clamp(niveauOmbres, 1, 3), (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_), (float)ombres::tanSoleil()};
+        u.ombreP = {(float)cascades_.n, (float)std::max(niveauCascades(), 1), (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_), (float)ombres::tanSoleil()};
         u.shadowMat = cascades_.union_;
     }
     {   // WFS-45 : projecteurs, lumière hémisphère, brouillard linéaire (three.js r128, physicallyCorrectLights non activé)
@@ -1208,7 +1216,9 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         }
     }
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
-    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets;   // WFS-222 (RG-03)
+    // WFS-264 (RG-02) : reflet temps réel en Haute seulement (nuit.cpp : fp.reflets = Haute, déjà avant ce ticket) ; coupé en Basse
+    // ici aussi, quoi que demande la scène (ciel et sonde seuls)
+    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets && !qualiteBasse;   // WFS-222 (RG-03)
     u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
     // WFS-142 (RG-04, RG-08) : w = force du reflet sur la chaussée (configgame) ; WFS_REFLETS=0 : −1, aucun reflet (mesure du banc)
     const char* eR = std::getenv("WFS_REFLETS");
@@ -1255,6 +1265,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
 void Renderer::flushDraw(const Pending& p) {
     appels_++;   // WFS-15
     chrono_.triangles += p.count / 3;   // WFS-222
+    comptes_.appels[p.famille]++; comptes_.triangles[p.famille] += p.count / 3;   // WFS-317 (I9)
     VkCommandBuffer cb = fr_[cur_].cb;
 #if defined(__APPLE__)
     // WFS-88 : le GPU du simulateur iOS (famille Apple 2) refuse un sommet de base non nul (MoltenVK : VK_ERROR_FEATURE_NOT_PRESENT,
@@ -1338,6 +1349,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        p.famille = FAM_VOITURES;   // WFS-317 (I9)
         // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
         // WFS-60) dessinées en un seul appel
         if (!anim) while (pi + 1 < parts.size() && parts[pi + 1].material == part.material && parts[pi + 1].vertexOffset == part.vertexOffset && parts[pi + 1].feuArriere == part.feuArriere &&
@@ -1387,9 +1399,10 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     p.vis = vis;
     {   // WFS-263 (RG-01) : variante légère si l'objet entier est au-delà de 70 m (fin du fondu de scene.frag) et n'est ni
         // voiture, ni route, ni transparent, ni vitre d'immeuble (mêmes exclusions que F_COMPLET de scene.frag)
-        constexpr uint32_t COMPLET = MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR;
+        static_assert(shader_leger::COMPLET == (MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR),
+                      "shader_leger.h : exclusions différentes des drapeaux du moteur");
         const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
-        p.loin = !(mat.flags & COMPLET) && sp.r >= 0 && length(sp.c - camPos_) - sp.r > 70.f;
+        p.loin = shader_leger::eligible(mat.flags, length(sp.c - camPos_), sp.r);   // WFS-264 (RG-06) : règle isolée et testée
     }
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
@@ -1419,6 +1432,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
         std::memcpy((uint8_t*)osBuf_[cur_].mapped + ofs + OS_PALETTE, look, sizeof(look));
     }
     Pending p{m.vb.buf, m.ib.buf, first, count ? count : m.indexCount - first, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
+    p.famille = FAM_PERSONNES;   // WFS-317 (I9)
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, fondu};   // WFS-257 : tramage du fondu (fonduLod), 0 sinon

@@ -1,4 +1,5 @@
 // WaForSpeed — piétons animés (WFS-19) : voir pietons.h.
+#include "../ui/ecrans/reglages.h"   // WFS-299 : banc des apparitions en qualité Basse
 #include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "pietons.h"
 #include <algorithm>
@@ -33,8 +34,12 @@ namespace {
 // une personne derrière ne coûte rien) à 138 m devant (jeu web), fondu sur les 20 derniers mètres
 constexpr double PED_RANGE0 = -40, PED_RANGE1 = 115;   // tronçons (1,2 m) derrière / devant le joueur
 constexpr double PED_WALK_SPEED = 1.1, PED_JOG_SPEED = 2.9;   // m/s des animations d'origine
-constexpr float PED_LOD_M[2] = {16.f, 50.f};
-constexpr float PED_LOD_BASSE_M[2] = {8.f, 30.f};   // WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k)
+constexpr float PED_LOD_M[3] = {16.f, 50.f, 1e9f};   // Moyenne et Haute : pas de niveau 3 (WFS-299 : inchangées)
+// WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k) ; WFS-299 (RG-01, décision du PO : « très simple »
+// au-delà de 25-30 m) : moyen jusqu'à 20 m, loin de 20 à 30 m, puis niveau 3 « très simple » (≈ 0,8 k avec la coiffure, fabriqué au
+// chargement par squelette.cpp à partir du niveau 2)
+constexpr float PED_LOD_BASSE_M[3] = {8.f, 20.f, 30.f};
+constexpr float PED_LOD_BASSE_AVANT_M[3] = {8.f, 30.f, 1e9f};   // banc seulement (WFS_PIETONS_AVANT) : seuils d'avant WFS-299, pour les captures avant / après
 constexpr int PEOPLE_MAX = 220;        // life.js
 // WFS-257 (cause d'ANO-130) : les 8 places de WFS-19 (8 piétons × 2 dessins) faisaient apparaître et disparaître les gens
 // sous les yeux du joueur à chaque changement des « 8 plus proches ». Désormais toute personne dans le cadre est dessinée :
@@ -244,7 +249,8 @@ public:
         const double carLat = g.player->playerX * RW;
         const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
         if (etat_.size() != gens_.size()) { etat_.assign(gens_.size(), apparition::Etat{}); candDe_.assign(gens_.size(), -1); pos_.assign(gens_.size(), vec3{}); yaw_.assign(gens_.size(), 0.f); }
-        const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
+        static const bool avant299 = std::getenv("WFS_PIETONS_AVANT") != nullptr;   // WFS-299 : banc, comparaison avant / après
+        const float* seuils = r.qualiteBasse ? (avant299 ? PED_LOD_BASSE_AVANT_M : PED_LOD_BASSE_M) : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 20 m, loin à 30 m, puis niveau 3 (WFS-299)
         const mat4 pv = g.proj * g.view;
         // 1. WFS-257 : chaque personne de la portée : place dans le monde, dans le cadre ou non (RG-02)
         cand_.clear();
@@ -353,13 +359,17 @@ public:
                 const float fondu = croise ? (passe ? apparition::tramageComplement(D.lodT) : apparition::tramage(D.lodT)) : apparition::tramage(D.op);
                 std::snprintf(nom, sizeof nom, "corps-%d", lod);
                 const Plage* corps = plageParNom(*D.M, nom);
+                if (!corps && lod == 3) corps = plageParNom(*D.M, "corps-2");   // WFS-299 : niveau 3 absent (modèle sans niveau 2) : niveau 2
                 const Plage* coiffure = nullptr;
-                if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, lod); coiffure = plageParNom(*D.M, nom); }
+                if (D.coiffure) {
+                    std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, lod); coiffure = plageParNom(*D.M, nom);
+                    if (!coiffure && lod == 3) { std::snprintf(nom, sizeof nom, "%s-2", D.coiffure); coiffure = plageParNom(*D.M, nom); }
+                }
                 for (const Plage* pl : {corps, coiffure})
                     if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app, fondu);
             }
             if (D.cheveuxLongs > 0) {   // WFS-240 (RG-03) : niveaux 1 (complet et moyen) et 2 (loin) de la coiffure
-                const int h = D.lod == 0 ? 1 : 2, hp = croise ? (D.lodPrec == 0 ? 1 : 2) : h;
+                const int h = D.lod == 0 ? 1 : D.lod >= 3 ? 3 : 2, hp = croise ? (D.lodPrec == 0 ? 1 : D.lodPrec >= 3 ? 3 : 2) : h;   // WFS-299 : niveau 3
                 if (!croise || h == hp) dessinerCheveuxLongs(r, D, h, apparition::tramage(croise ? 1.f : D.op));
                 else { dessinerCheveuxLongs(r, D, h, apparition::tramage(D.lodT)); dessinerCheveuxLongs(r, D, hp, apparition::tramageComplement(D.lodT)); }
             }
@@ -632,6 +642,7 @@ private:
         char nom[32];
         std::snprintf(nom, sizeof nom, "Hair_Long-%d", niveau);
         const Plage* pl = plageParNom(F, nom);
+        if (!pl && niveau == 3) pl = plageParNom(F, "Hair_Long-2");   // WFS-299 : niveau 3 absent : niveau 2
         if (!pl || F.palette.size() > cheveuxPal_.size()) return;
         const mat4 k = scale({D.cheveuxLongs, D.cheveuxLongs, D.cheveuxLongs}), dy = translate({0, D.cheveuxDy, 0});
         for (size_t j = 0; j < F.palette.size(); j++) {
@@ -760,6 +771,10 @@ void benchApparitions(Game& g, Renderer& r, const std::string& out) {
     (void)out;
     int total = 0, sauts = 0, details = 0;
     g_mesure.actif = true;
+    // WFS-299 : WFS_APPARITIONS_BASSE=1 : qualité Basse (niveau 3 « très simple » des piétons au-delà de 30 m)
+    const bool basse = std::getenv("WFS_APPARITIONS_BASSE") != nullptr;
+    ecrans::Reglages& R = ecrans::reglages(); const int q0 = R.qualite;
+    if (basse) { R.qualite = ecrans::QUALITE_BASSE; ecrans::appliquerQualiteNiveau(r); }
     for (const char* moment : {"jour", "nuit"}) for (const char* carte : {"ville", "plage", "campagne", "circuit"}) {
         if (!e && (std::strcmp(moment, "jour") || std::strcmp(carte, "ville"))) continue;
         setenv("WFS_MOMENT", moment, 1);
@@ -798,6 +813,7 @@ void benchApparitions(Game& g, Renderer& r, const std::string& out) {
     g_mesure.actif = false;
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
     WFS_LOG("WFS-257 : apparitions et disparitions visibles : %d ; sauts : %d ; détails brutaux : %d (objectif : 0)", total, sauts, details);
+    if (basse) { R.qualite = q0; ecrans::appliquerQualiteNiveau(r); }
 }
 
 // ---------------------------------------------------------------- WFS-199 : spectateurs (foule allégée, posée une fois)

@@ -84,6 +84,13 @@ int main() {
             VERIFIE(av.m == Manoeuvre::RondPoint && std::fabs(av.distanceM - 150) < 1e-6 && texteDistance(av.distanceM) == "150 m",
                     "%s : 150 m avant le rond-point : %s à %.1f m", id, texteConsigne(av).c_str(), av.distanceM);
         }
+        // WFS-283 (RG-03) : plus aucune consigne de rond-point en jeu ; le carrefour simple s'annonce comme un virage serré à gauche
+        for (const auto& q : S) if (q.exRondPoint) {
+            const Prochaine av = prochaine(S, q.debutU() - 150 / M, L, 0, M);
+            VERIFIE(nRp == 0 && manoeuvreDe(q) == Manoeuvre::SerreGauche && av.m == Manoeuvre::SerreGauche && std::fabs(av.distanceM - 150) < 1e-6 &&
+                    texteConsigne(av).find("rond-point") == std::string::npos, "%s : carrefour simple : %s à %.1f m", id, texteConsigne(av).c_str(), av.distanceM);
+            std::printf("navigation : %s : carrefour simple annoncé « %s » à %s\n", id, texteConsigne(av).c_str(), texteDistance(av.distanceM).c_str());
+        }
         // arrivée plus proche que la manœuvre suivante
         const Prochaine p0 = prochaine(S, 0, L, 0, M);
         const double arr = (p0.distanceM - 50) / M;

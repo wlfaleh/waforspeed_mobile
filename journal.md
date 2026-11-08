@@ -3542,3 +3542,220 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   2. **Test CPU** : aucun test ne vérifie que ces disques restent hors de la chaussée.
 - **Remarque au PO** : pour un simple virage sans plaque à part, la règle « luminance de la plaque du carrefour ≤ 3 % » n'a plus d'objet. Je propose de l'écrire ainsi dans `regles-de-gestion/WFS-283.md` : « même asphalte que la route, pas de plaque ».
 - Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/261#pullrequestreview-5818094697 . `TACHES.md` : ↩️ Retour lead dev (PR #261) ; `track-agent.md` et `suivi-pr.md` mis à jour. C'est le 2e refus de cette PR.
+
+### 2026-11-08 13:45:34 — WFS-258 : PR #263 corrigée après le retour du lead dev, rappel du lead dev (Claude, agent dev conduite)
+- Point 1 du lead dev (bloquant) : la file du maintien de voie est reprise à la position de la voiture (reset, grille, arrêt, voiture déplacée) ; test du départ de la grille (cap 0, x immobile ; sur 9833d7d : 0,30 rad, x de 0,50 à 0,05).
+- Point 2 : décision écrite du PO, option A : la limite de l'aide cède quand le joueur braque à 0,35 et plus ou freine ; volant lâché : 0 sortie sur les 4 cartes ; volant tenu en Course à 5 : 4/5, 2/5, 2/5, 4/5 (main 2/5 partout avec 96 à 260 images hors route). 70 tests CPU OK.
+
+### 2026-11-08 13:54:49 — WFS-258 (point 1) fusionné par le lead dev (lead-dev)
+- PR #263, 2e revue du commit 0f43287 : le développeur a répondu point par point sous la revue. J'ai regardé les 8 paires de `qa/pr/WFS-258/` : l'aide freine de 236 à 97 km/h avant l'épingle, et la voiture reste droite dans sa file (avant : 296 km/h, la voiture arrivait en travers avec le bandeau « ACCIDENT ! »).
+- J'ai relu tout le diff (`player.cpp`, `player.h`, accroche de 2 lignes dans `course5.cpp`, banc `virages`, `test_aide_ralentit`). Défaut du 1er refus corrigé : la file est reprise au `reset()`, sous 5 m/s et après un déplacement par un autre système. J'ai reconstruit et relancé les tests : 70 tests CPU OK. Départ de la grille : cap 0,000 rad. Volant lâché : 0 sortie sur les 4 cartes.
+- Option A du PO appliquée : la limite cède dès que le volant atteint 0,35 ou que le joueur freine.
+- Revue « ✅ Approuvé » publiée en commentaire (GitHub refuse l'approbation quand la PR vient du même compte). Fusion en squash : b76c6b4. WFS-258 passe en « 🔧 En cours — point 1 fusionné #263 (🟡 à valider) ». Ligne #263 retirée de `suivi-pr.md`, ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-08 14:00:57 — WFS-318 créé : fantôme du record réglable et étiqueté (po-scrum-master)
+- Question de l'utilisateur (voiture fantôme en Checkpoint = WFS-125). Après WFS-290 → WFS-291 (onglets) → WFS-318.
+
+### 2026-11-08 14:04:35 — WFS-264 : PR #265 ouverte (Claude, agent dev X)
+- **RG-01** : en Basse, capture d'environnement au départ et à chaque changement de zone (tunnel, pont) seulement. Banc perf Ville, 600 images : sur `main`, une capture en pleine course (−200 m, 43,7 ms sur les images où elle tourne) ; sur la branche, aucune.
+- **RG-02** : le reflet temps réel n'existait déjà qu'en Haute (`nuit.cpp`). J'ai ajouté une coupure explicite en Basse dans `Renderer`, et je n'ai pas gardé de demi-résolution en Moyenne, où le reflet est déjà coupé.
+- **RG-03** : plus d'ombre au-delà de 40 m pour les objets de rayon < 1,5 m. Passe d'ombre en Haute 102,9 → 100,8 ms. Une Basse avec ombres aurait une cascade unique de 40 m.
+- **ANO-145** : une cascade unique en Basse coûte +24 % (image 288 → 358 ms, ombre 47 ms) sur lavapipe. Trop cher : la Basse reste sans ombre du soleil (décision du PO dans WFS-227). La mesure se refait au banc avec `WFS_OMBRES_BASSE=1`.
+- **RG-04** : bloom déjà coupé en Basse, et le moteur n'a pas d'anticrénelage temporel : rien à alléger.
+- **RG-05 et RG-06 (promesses au lead dev)** : bloc de `scene.frag` réindenté ; règle du shader léger isolée (`shader_leger.h`) et testée (`tests/test_shader_leger.cpp`, accroche `CMakeLists.txt` +1).
+- **Vérifications** : 67 tests CPU OK, parcours 0 écart. Banc `realisme` (partie 1) : indices identiques et 0 image modifiée. 28 paires de captures identiques.
+
+### 2026-11-08 14:05:14 — Réglages (WFS-290, 291, 318) après le chantier Paquets de cartes (décision de l'utilisateur) (po-scrum-master)
+
+
+### 2026-11-08 11:50:23 — WFS-299 : début, alléger la Ville de nuit (Claude, agent 1)
+- Ticket réservé par le PO après WFS-297, départ demandé par l'utilisateur (« Commence »). Branche `feature/waforspeed-299`.
+
+### 2026-11-08 13:51:27 — WFS-299 : piétons au loin simplifiés (niveau 3), PR à ouvrir (Claude, agent 1)
+- **Périmètre fixé par le PO** : RG-01 seul. RG-02 (4 lumières par pixel en Basse) est déjà sur main avec WFS-263 ; RG-03 (≥ 25 img/s) sort du ticket, et le PO demandera la mesure sur le téléphone.
+- **Mesure de départ** (Ville de nuit, Basse, banc lavapipe) : sans aucun piéton, le temps GPU ne baisse que de 18 % (410 → 338 ms).
+- **Répartition des piétons** : 4 au niveau complet (75 k triangles), 13 au niveau moyen (90 k), 39 au niveau lointain (89 k, soit 2,3 k chacun).
+- **Fait** :
+  - niveau 3 « très simple » fabriqué au chargement (`squelette.cpp`, regroupement des sommets en cubes de 7 cm), soit 0,8 k triangles avec la coiffure ;
+  - seuils de Basse 8 / 20 / 30 m ; Moyenne et Haute inchangées.
+- **Après** (2340×1080, vue Proche, au départ) : piétons 260 k → 174 k triangles (−33 %), scène 744 k → 658 k (−12 %), même nombre d'appels. Temps du banc logiciel inchangé, car il est limité par les pixels.
+- **Apparitions en Basse** (4 cartes, jour et nuit) : 0 saut, 0 détail brutal.
+- **Tests** : 69 tests CPU verts (`test_apparition_pietons` passe à 3 seuils et teste le niveau 3), parcours 0 écart.
+
+### 2026-11-08 14:09:58 — WFS-299 fusionné par le lead dev (lead-dev)
+- PR #264 relue au commit 5cbe9a4 (synchronisation avec main seule, aucun code changé depuis c19db89, `journal.md` sans marqueur de conflit) ; approbation écrite dans la PR, puis fusion en squash : **fd207d3**.
+- WFS-299 → 🟡 À valider (utilisateur) ; ligne #264 retirée de `suivi-pr.md` ; Claude, agent 1 libre ; ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-08 14:10:11 — Play Store : test interne aujourd'hui, public demain (décision de l'utilisateur) ; WFS-319 et WFS-320 créés ; gel de la CI levé pour la publication (po-scrum-master)
+
+### 2026-11-08 14:14:55 — WFS-264 fusionné par le lead dev (lead-dev)
+- **PR #265** (Claude, agent dev X) : revue publiée dans la PR (GitHub refuse l'approbation depuis le même compte, donc revue en commentaire « ✅ Approuvé par le lead dev »), puis fusion en squash **f9f5fbc** (`expectedHeadSha` 14444bde).
+- **Captures** : les 28 paires ouvertes, avec comparaison pixel par pixel. Elles sont identiques, sauf `perf-campagne-haute` (ombre d'une vache à plus de 40 m, ≈ 35 pixels, effet voulu de RG-03) et un écart ≤ 8/255 en Haute sur Circuit et Plage.
+- **Code** : diff complet relu (RG-01 capture par zone, sondes remises à zéro au changement de carte ou au saut de plus de 80 m ; RG-02 reflet déjà en Haute seule ; RG-03 cascade de 40 m, `niveau 0` ; RG-05, RG-06 test CPU).
+- **Tests** : construction de main (7e9fa2e4) + branche faite par le lead dev, 71 tests CPU OK.
+- **Remarques non bloquantes** : branche en retard sur #262 et #263 (fusion propre) ; RG-ANO-145 à reporter dans `regles-de-gestion/WFS-227.md` ; mesures sur le téléphone attendues.
+- **Statut** : 🟡 À valider (utilisateur) ; agent dev X libéré.
+### 2026-11-08 14:14:54 — Skill et agent `expert-cartes` créés ; publication entière à l'agent expert ci (WFS-319 et WFS-320) (po-scrum-master)
+- Demandes de l'utilisateur : un expert pour les cartes et leur téléchargement ; pas d'autre agent pour la publication.
+
+### 2026-11-08 14:23:19 — WFS-308 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
+- Demande d'agent 3, développeur expert des cartes (ordre de l'utilisateur : « prends un sujet, regarde avec le PO »), skill `expert-cartes`.
+- Choix : **WFS-308** (P2, E8 libre, seul ticket prêt du chantier « Paquets de cartes »). **WFS-301 reste en attente** : l'ordre de l'utilisateur (03:48) met la performance de base (WFS-268, PR #248 pas fusionnée) avant WFS-301, et WFS-301 touche `lots_decor.*` (fichiers de WFS-268) ; le PO ne lève pas cette attente.
+- Zone : `src/ui/ecrans/cgu.*` (neuf), `store/cgu.md` (neuf), accroches ≤ 10 lignes (Réglages, sauvegarde, démarrage, copie des textes dans l'APK) annoncées au journal. **Pas** `store/confidentialite.md` ni `store/fiche-fr.md` : ils restent à l'agent expert ci (WFS-320, publication entière, décision de l'utilisateur) ; agent 3 lui envoie le texte à intégrer (RG-01, RG-02). Détail : `regles-de-gestion/WFS-308.md` § Suivi.
+- Critères : RG-01 à RG-06 (parcours complet installation neuve → CGU → refuser → relancer → accepter → course → retour), captures avant / après ≥ 3, PR relue par `lead-dev`.
+
+
+### 2026-11-08 14:36:07 — WFS-268 (PR #248, reprise par Claude, Agent 0 developer) : RG-11 / ANO-164 corrigée, accroche du renderer annoncée (Claude, Agent 0 developer)
+- **Cause d'ANO-164** : `DecorFixe::dessiner` dessinait un bloc entier (3 à 4 morceaux) dès qu'il touchait la fenêtre : jusqu'à 2 morceaux de décor en trop au bout de la fenêtre (vue de dessus des lacets) et une colline en trop dont l'ombre tombait sur la mer (marina). **Correction** (commit b12e80a9) : fin des index de chaque morceau gardée dans le bloc ; seuls les morceaux de la fenêtre sont dessinés, chacun à son niveau de détail (même règle que l'ancienne gestion), morceaux voisins de même niveau en un appel.
+- **Accroche du renderer** (`src/render/renderer.h` / `.cpp`, 2 lignes) : `Mesh::premier` (premier index dessiné, 0 par défaut) lu par `Renderer::draw(Mesh)` : une vue sur une partie des index d'un bloc, sans nouveau tampon.
+- **Mesures** (même binaire, ancienne / nouvelle gestion) : `carte-plage-marina` 1,19 % → 0,18 %, `carte-plage-lacets-dessus` 2,1 % → 0,00 % ; avant / après `main` (captures de la PR) : 0,54 % et 0,52 %. Synchronisé avec main (WFS-269, WFS-264…), 71 tests CPU OK ; `parcours` 0 écart et `perf` 0 création en course (avant la dernière synchronisation ; refaits après).
+
+### 2026-11-08 14:57:46 — WFS-283 : 2e revue du lead dev corrigée (PR #261) : disques de sol de la Corniche, test, luminance (arwa-5)
+- **Corniche** : les disques de sol du carrefour simple (WFS-212) débordaient sur la voie intérieure. En cause, les segments d'entrée et de sortie progressives : rayon 26 à 39 m, centre loin de celui du virage de 22 m. Le calcul passe dans `src/world/bouchons_sol.h` (nouveau, en-tête seul), sans changement pour les épingles et les lacets. Au carrefour simple, le rayon de chaque disque est aussi borné par la distance réelle à l'axe de toute la section (±20 segments), moins RW + 0,6 m (c57d399c).
+- **Nouveau test** dans `tests/test_rien_sur_chaussee.cpp` : « carrefour simple : disques de sol hors de la chaussée (≥ RW + 0,6 m de l'axe) », sur la Ville, la Campagne et la Corniche, avec un calcul brut sur la ligne brisée de tout le tour.
+  - Avec la borne : bord des disques à 8,10 m de l'axe.
+  - Sans la borne (ancien calcul, celui de 3e76065) : −7,95 m. Le test le vérifie aussi : « sans la borne, des disques débordaient sur la chaussée ».
+- **Captures** refaites en une fois avec `tools/qa/captures_pr.sh` (57 min), commit 9872756f. Branche resynchronisée ensuite avec `main` (WFS-258, WFS-299, WFS-264 arrivés pendant les captures) : **71 tests CPU OK**.
+- **Luminance du raccord de la Corniche**, mesurée de nouveau : +3,7 % de jour (+2,1 % avant la correction ; −1,6 % sur `main`). C'est le même asphalte : les moitiés gauche et droite de la plaque du virage diffèrent déjà de 4,8 % (0,182 contre 0,191). La Ville (−6,8 %) et la Campagne (+0,0 %) ne changent pas.
+- « Corrigé dans » posté sous la revue. `TACHES.md` : 🔀 En PR #261 ; `suivi-pr.md` : 🔁 ; lead dev rappelé.
+
+
+### 2026-11-08 15:03:58 — Début : WFS-265 attribué à Claude, agent dev X (po-scrum-master)
+- Demande de l'agent dev X (session 0183bv2X), libre après la fusion de WFS-264 (#265, squash f9f5fbc, 🟡). Ticket prêt le plus prioritaire qui lui est permis : WFS-265 (P1, E4), prévu à la suite de WFS-264 dans l'ordre du bandeau ; WFS-317 (P1, E4) a un numéro plus grand et reste ⏳ Prêt.
+- Épic E4, exception PO comme WFS-264 (en parallèle de WFS-268 ↩️ et WFS-273 🔧 d'Agent 0 developer). Zone : `src/render/**`, `shaders/**`, réglages de qualité, accroches ≤ 10 lignes annoncées. Interdit : `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.*`, `foule_*`, chemin instancié et arbres de WFS-273 (`renderer.*` instancié, `scene.vert`), `nuit.cpp`, `qualite_banc.cpp`, `player.*`, `camera_vue.*`, taille des boutons, iOS.
+- Règles : `regles-de-gestion/WFS-265.md` (RG-01 LOD au-delà de 150 m avec fondu, ≤ 300 k triangles en Basse ; RG-02 densité selon la qualité ; RG-03 seulement sur chiffres du téléphone ; instancing déjà dans WFS-268 / WFS-273). Branche `feature/waforspeed-265`, premier commit poussé tout de suite. Après fusion : 🟡 À valider (utilisateur).
+
+### 2026-11-08 15:06:20 — Début : WFS-317 attribué à Claude, agent 1 (po-scrum-master)
+- Ticket : WFS-317 [TECHNIQUE] [URGENT] Performance, 3e passage (ANO-115), P1, E4 (exception PO). Demandé par Claude, agent 1 (01UY1Vv2), libre après WFS-299 (#264), avec l'accord de l'utilisateur (« Prend une tâche »).
+- Choix : premier P1 ⏳ Prêt permis (WFS-319 / 320 tenus par l'agent expert ci ; WFS-316 conduite exclue ; agent 1 n'est pas agent arwa). Domaine performance, comme WFS-297 et WFS-299.
+- Zone : `src/render/**`, `shaders/**`, réglages de qualité, `bench_perf*` + accroches ≤ 10 lignes annoncées ; pas `lots_decor.*`, `archi_carte.*`, `commerces.cpp`, `pietons.*`, `foule_*`, `squelette.*`, `nuit.cpp`, lumières de nuit en Basse ; pas le LOD ni la densité de WFS-265 (agent dev X).
+- Plan : I9 (appels et triangles par image, par famille) → mesure du téléphone RG-01 → correction des 2 premiers postes → captures (4 scènes des règles) → PR, `lead-dev`, 🟡 après fusion.
+
+
+### 2026-11-08 15:09:08 — WFS-283 fusionné par le lead dev (lead-dev)
+- **PR #261**, 3e revue, commit relu **770c7b24** : acceptée. Revue écrite dans la PR (« ✅ Approuvé par le lead dev », en commentaire : GitHub refuse l'approbation d'une PR ouverte avec le même compte). Fusion en squash **6fb3420**, liée au commit relu.
+- **Réponse du développeur** : « corrigé dans » posté point par point sous la 2e revue (c57d399c pour les deux points bloquants).
+- **Captures** : les 57 de `qa/pr/WFS-283/` sont ouvertes une par une (29 « après », 28 « avant »). Les 6 `rondpoint-plage-*` sont aussi comparées à celles de 3e76065, avec un agrandissement du bord intérieur. Sur la Corniche, de jour et de nuit, la ligne de rive intérieure, la bordure et le trottoir sont continus. Le sable reste derrière le trottoir, sans trou bleu ni bloc. Campagne et Ville : mêmes fichiers qu'à la 2e revue. GPS : « 200 m, Virage serré à gauche » sur les 3 cartes.
+- **Code** (diff depuis 3e76065) :
+  - `src/world/bouchons_sol.h` : le calcul des épingles et des lacets ne change pas. Au carrefour simple, le rayon de chaque disque est borné par la distance à l'axe, moins RW + 0,6 m. Aucun point du disque n'est donc sur la chaussée.
+  - `plage.cpp` lit ce calcul, avec la même hauteur et la même teinte.
+  - Nouveau cas dans `test_rien_sur_chaussee` : bord des disques à 8,10 m de l'axe avec la borne, à −7,95 m sans. Il voit donc le défaut de 3e76065.
+  - Les synchronisations ddad05ce et 770c7b24 ne touchent aucun fichier du ticket.
+- **Tests relancés par le lead dev** sur 770c7b24, dans une construction à part : `test_rien_sur_chaussee`, `test_trace`, `test_navigation`, `test_ville_lieux`, `test_aide_direction`, `test_conduite`, `test_aide_ralentit` et `test_course5`. Tous **OK**. La luminance de la Corniche, recalculée sur les captures, donne **+3,7 %** (moitiés du rectangle 0,182 / 0,191) : même asphalte, acceptée.
+- **Oubli du lead dev** : le parcours complet 0 écart n'est pas noté au journal du développeur pour WFS-283, et je ne l'ai vu qu'après la fusion. Il est vérifié par la CI de fusion (`build.yml`, run #913, parcours `menu1-2400`) ; je le relance aussi en local sur 770c7b24. Si l'un des deux est rouge : US technique (PO).
+- **Remarque** : dans `minicarte-ligne`, la voiture est sur le trottoir dans l'« après » et sur la route dans l'« avant ». Ce n'est pas WFS-283 : l'« après » a été pris sur ddad05ce, avant l'arrivée de WFS-258 et WFS-299 sur `main`, et il est identique à l'« avant » de la 2e revue. À surveiller aux bancs du matin.
+- **Statuts** : `TACHES.md` → **🟡 À valider (utilisateur)** (ANO-158, retour de l'utilisateur). Ligne #261 retirée de `suivi-pr.md`. Ligne d'arwa-5 dans `track-agent.md` : libre, puis arrêt (ordre de l'utilisateur). WFS-283 ajouté à `qa/Check.md`. WFS-305 (ANO-171) peut démarrer.
+
+### 2026-11-08 15:10:26 — WFS-283 fusionné par le lead dev (PR #261, 6fb3420a) ; réponse à l'utilisateur ; arrêt d'arwa-5 (arwa-5)
+- PR #261 approuvée et fusionnée en squash par le lead dev après la 3e revue (6fb3420a). Ticket en **🟡 À valider (utilisateur)**.
+- Réponse écrite à l'utilisateur dans `tache utilisateur.md`, sous sa demande du 2026-11-07 22:43 UTC.
+- **Ordre de l'utilisateur (2026-11-08 11:47 UTC) appliqué** : je ne demande plus de ticket au PO. arwa-5 est arrêté.
+
+### 2026-11-08 15:11:06 — L'agent expert CI devient « expert CI / CD » (agent expert ci cd)
+- **Demande de l'utilisateur** : « tu peux changer tes skills et ton nom en expert CI CD, et tu ajoutes le nécessaire ».
+- **Fait** : agent `.claude/agents/expert-ci-cd.md` et skill `.claude/skills/expert-ci-cd/` (renommés depuis `expert-ci`) ; nom au suivi des agents et dans les commits : « agent expert ci cd ». Ajouts : § 7 « Livraison continue » du skill et `references/livraison.md` (versionCode / versionName, signature APK et AAB, signature par Google Play, premier envoi manuel, mises à jour, 3 niveaux d'automatisation, iOS plus tard) ; tableau des workflows à jour (build.yml, matin.yml, publication.yml) ; règles de l'agent : rien sans validation explicite de l'utilisateur, le lead dev fusionne. Références mises à jour : ligne Expert CI / CD de `CLAUDE.md`, agent et skill expert-cartes, ma ligne de `track-agent.md`. Les entrées anciennes du journal et des règles de gestion gardent l'ancien nom (historique).
+
+### 2026-11-08 15:12:46 — WFS-317 : méthode en deux PR accordée ; voitures au loin = WFS-265 (po-scrum-master)
+
+### 2026-11-08 15:16:55 — WFS-265 : critère « triangles ≤ 300 k en Basse » tranché, Ville → WFS-321 (po-scrum-master)
+- **Question** de Claude, agent dev X : mesures en Basse après son travail : Circuit 257 k, Campagne 296 k, Plage 312 k, Ville 506 k (piétons 160 k, décor Ville + ArchiCarte + Commerces 211 k, voiture du joueur ≈ 110 k), le reste étant hors de sa zone.
+- **Décision : option (a)**. WFS-265 accepté sur ce critère avec Circuit et Campagne ≤ 300 k, Plage ≤ 300 k visé (≤ 315 k accepté) ; **Ville en Basse → WFS-321** (P1 [TECHNIQUE], ⏳ En attente de WFS-268 fusionné et de la mesure du téléphone de WFS-317 ; pas d'attribution d'avance ; pas agent arwa). Option (b) refusée (`pietons.*` hors zone) ; option (c) refusée (WFS-134). Écrit dans `regles-de-gestion/WFS-265.md` (« Décision du PO ») et `regles-de-gestion/WFS-321.md`.
+
+### 2026-11-08 15:18:36 — WFS-192 : PR #266 ouverte, lead dev appelé (arwa-2)
+- PR https://github.com/wlfaleh/waforspeed_mobile/pull/266 (tête 07eac56, branche synchronisée avec `main`) ; arbitrages du PO appliqués : RG-12 (centre du volant de la M4 sans texture, couleur du volant : ΔE2000 0,00), RG-13 (grain : 16 zones unies listées dans `qa/pr/WFS-192/inventaire.md` et dans la PR).
+- Captures : `captures_pr.sh` (vitrines-feux des 20 voitures, garage, parcours : 0 écart, aussi en vue Cockpit) + vues de près avant / après des 20 voitures (face ; et arrière pour 10 d'entre elles), `qa/pr/WFS-192/pres-<id>.jpg`.
+- Tests après la dernière synchronisation : 71 tests CPU verts ; `test_audio_chocs` (WFS-298) sensible au temps sur cette machine (2 échecs sur 4 à 0,052–0,056 ms pour 0,05, puis vert) : signalé, rien de ce ticket.
+
+### 2026-11-08 15:23:11 — WFS-296 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- Demande : « un ticket facile et rapide » (ordre de l'utilisateur, relayé par l'agent 2, libre après WFS-315 #262 et WFS-282, tous deux 🟡).
+- Choix : **WFS-296** (P2, E5 libre) : signal « R » bien visible au HUD quand la voiture recule ; zone `src/ui/**` sauf `src/ui/ecrans/**` ; aucun bouton ne change de taille ni de place (ordre permanent) ; aucune modification de la conduite. Règles : `regles-de-gestion/WFS-296.md`. Captures : marche avant, marche arrière, nuit ; tests CPU ; parcours ; 🟡 après fusion.
+- Écartés : WFS-214 (E13, rendu du ciel : plus risqué), WFS-285 / 287 (E7 occupée par WFS-319), WFS-292 / 300 (E4 occupée), WFS-293 (E3 occupée), WFS-308 (déjà à l'agent 3).
+- Idée de l'agent (banc `cockpit` qui affiche encore les anciennes cibles horizon 40-45 % / intérieur 30-35 %, remarque du lead dev sur #262) : pas de ticket seul (micro-ticket, E10 occupée par WFS-192 #266) ; à ranger dans le prochain ticket cockpit.
+
+### 2026-11-08 15:25:06 — WFS-300 attribué à Claude, agent 5 (po-scrum-master)
+- Demande de l'utilisateur relayée par l'agent 5 : « une tâche facile et rapide, et après l'avoir terminée tu stoppes ».
+- Ticket : **WFS-300** (P2, [TECHNIQUE], E4 en exception PO) — banc qualité : captures stables (sondes prêtes avant chaque capture, plus de façades bleues sur `voiture-lod-passage-56`), journal du banc plus clair (placées / dessinées une à une / dessinées ensemble). Règles : `regles-de-gestion/WFS-300.md`.
+- Choix : seul ticket prêt à un seul fichier, hors conduite, hors iOS, sans coordination ; WFS-287 écarté (E7 tenue par WFS-319, `tools/qa/**` gelé), WFS-285 / 214 / 292 / 293 plus gros ou partagés, WFS-215 après WFS-192.
+- Zone permise : `src/render/qualite_banc.cpp` seul (lecture seule : `eclairage_banc.*`, `ibl_*`, `game.h`). Interdit : `eclairage_*`, `ibl_*`, `renderer.*`, `shaders/**`, `lots_decor.*`, `vehicule_lod.*`, `src/game/**`, `bench_fluidite.cpp`, `bench_realisme.cpp`, `.github/**`, `tools/qa/**`, iOS, taille des boutons. Branche `feature/waforspeed-300`. CI de branche permise (US technique), une à la fois, notée au journal.
+
+### 2026-11-08 15:25:41 — Claude, agent dev Y : aucun ticket facile attribuable (po-scrum-master)
+- Demande d'agent dev Y (pause levée par l'utilisateur : « une tâche facile et rapide, puis tu t'arrêtes » ; pas d'iOS, pas WFS-248 / 249, pas de conduite).
+- WFS-296 (seul ticket facile, E5) donné à Claude, agent 2 à 15:23:11 ; WFS-300 donné à Claude, agent 5 juste après. Prêts restants : WFS-215 (après WFS-192), 285 et 287 (E7 occupée par WFS-319), 292 (E4 occupée), 293 (E3 occupée) ; seul attribuable : **WFS-214** (E13, ciel et chaussée, une journée, risque de rendu) : proposé à l'agent, pas attribué sans son accord.
+
+
+### 2026-11-08 15:31:14 — WFS-283 : parcours complet relancé par le lead dev après la fusion (lead-dev)
+- `WFS_BANC=parcours`, sur 770c7b24 (même code que le squash 6fb3420), avec un `wfs_bench` construit à part : **« parcours complet : 0 écart(s) OK »** et **« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »**. Le point oublié avant la fusion est donc vérifié.
+- La CI de fusion (`build.yml`, run #913) est encore en file à 2026-11-08 15:31:14 UTC. Le robot des statuts ne change pas les 🟡 : WFS-283 reste **🟡 À valider (utilisateur)**.
+
+### 2026-11-08 15:45:28 — WFS-316 (PR #267) refusé par le lead dev (lead-dev)
+- Commit relu 2cb172f ; 6 vues de dessus ouvertes (anneau, épingle, 90°) ; tout le diff lu (`player.cpp/.h`, `virages_banc.cpp`, `test_direction_anneau.cpp`, `CMakeLists.txt`) : code conforme à RG-02, pas de défaut bloquant.
+- Refus : (1) pas de suite d'images en caméra Arrière (captures 2 et 4 de la règle) ; (2) RG-01 : aucun « avant » ne reproduit la sortie de la vidéo (rouge reste sur la chaussée ; épingle et 90° : avant = après) ; (3) aucune entrée du développeur au journal, `TACHES.md` resté 🔧 ; (4) RG-03 remplacé par « même rayon qu'en ligne droite » sans décision du PO ; (5) RG-05 grande vitesse (borne du cap coupée à toutes les vitesses) non montré.
+- Revue écrite dans la PR (COMMENT : même compte GitHub). `TACHES.md` → ↩️ Retour lead dev (PR #267) ; `track-agent.md` et `suivi-pr.md` à jour. **PO** : décider du critère RG-03 (rayon de la fiche contre adhérence ≈ 2 g du jeu).
+
+
+### 2026-11-08 15:47:09 — WFS-265 : PR #268 ouverte (Claude, agent dev X)
+- **Voitures** : version complète seulement au-dessus de 200 px à l'écran. Seuils 200 / 48 / 26 px (avant : 60 / 36 / 22).
+- **Personnes** : effacées en fondu tramé de 15 m (Basse : 75 → 90 m ; autres qualités : 135 → 150 m). Leur nombre ne change pas. Le fondu se combine avec celui d'apparition de WFS-257.
+- **Petits objets** : fondu sur les 15 derniers mètres avant leur distance maximale. En Basse, les objets de moins de 3 m de rayon s'effacent à 110 m au lieu de 150 m (`masquage.cpp`).
+- **Triangles en Basse**, `main` → branche : Circuit 257 → 257 k, Campagne 296 → 296 k, Plage 322 → 303 k, Ville 532 → 501 k. La Ville sort du ticket (décision du PO, WFS-321). Une limite de 60 m pour les personnes en Basse a été essayée : −4 % seulement, car les piétons comptés sont proches.
+- **RG-03** non fait (conditionnel) : aucune mesure du téléphone ne montre encore qu'il en faut.
+- **Accroches** : `CMakeLists.txt` +1 (`test_lod_distance`), `tests/test_masquage.cpp` (seuil de la Basse).
+- **Vérifications** : 68 tests CPU OK, parcours 0 écart, 22 paires de captures (au plus 0,2 % de pixels changés).
+
+### 2026-11-08 15:51:21 — WFS-265 (PR #268) refusé par le lead dev (lead-dev)
+- 22 paires ouvertes (zoom de la voiture rouge à 10, 25, 50 et 120 m) ; tout le diff lu (`lod_distance.h`, `renderer.cpp`, `masquage.cpp`, `vehicule_lod.h`, tests, `CMakeLists.txt`) : code sans défaut bloquant.
+- Bloquant : (1) en Basse, le seuil de 200 px fait passer le trafic à `partsBasse` (version en 4 pièces) dès 18 m : sur `voiture-distance-10-basse`, feux arrière éteints et lunette en aplat sur la voiture juste devant, pire qu'avant ; (2) captures à 50, 150 et 300 m des 4 cartes absentes (exigées par le ticket et rappelées par le PO) ; (3) aucune suite d'images du fondu (personnes 75 → 90 m, petits objets 95 → 110 m en Basse) ; (4) pas de capture de nuit des feux arrière.
+- À régler, sans bloquer à lui seul : la décision RG-03 au journal, à faire confirmer par le PO (elle attend la mesure du téléphone de WFS-317 I9).
+- Revue publiée dans la PR en « commentaire » (« changements demandés » refusé par GitHub, même compte) ; `TACHES.md` → ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+### 2026-11-08 15:52:51 — WFS-308 (PR #269) refusée par le lead dev, 1er refus (lead-dev)
+- Commit relu : 0eeaed25. Les 13 captures ouvertes (6 neuves CGU / Réglages, 7 paires avant / après des Réglages) : conformes, seul le bouton « Conditions d'utilisation » change dans les Réglages. Diff entier lu (36 fichiers).
+- **Bloquant 1** : `termGraphics` (branche CGU) ferme le renderer et Vulkan sans libérer la police (`ui::unload` n'est appelé que par `game.shutdown`) ; au retour de l'arrière-plan, `chargerPolice` ne redonne pas l'atlas au nouveau renderer : CGU sans texte lisible, image Vulkan périmée.
+- **Bloquant 2** : boucle Android avec un délai de 33 ms pendant les CGU : tant que le doigt glisse (événements toutes les 8 à 16 ms), aucune image n'est dessinée, et le texte saute au lieu de suivre le doigt (RG-03).
+- À régler aussi : accroche `android_main.cpp` d'environ 20 lignes (> 10, accord du PO ou réduction) ; commentaire WFS-246 déplacé dans `reglages.cpp`. Revue postée en commentaire (GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #269).
+
+### 2026-11-08 15:55:45 — WFS-308 : accroche de android_main.cpp acceptée au-delà de 10 lignes (po-scrum-master)
+- Demande d'agent 3 (PR #269, point 3 du refus du lead dev). Accepté : ≈ 22 lignes ajoutées / 2 changées, branchement Android seulement, logique dans `src/ui/ecrans/cgu.cpp`. Conditions et raison dans `regles-de-gestion/WFS-308.md` (Suivi). Les autres points du refus restent à corriger.
+
+### 2026-11-08 15:56:06 — WFS-316 : arbitrage du PO sur RG-01, RG-02 et RG-03 (po-scrum-master)
+- Demande du lead dev (refus de la PR #267, 15:45) et de Claude, agent 4 (011cpqZan), faits mesurés par `tests/test_direction_anneau.cpp`.
+- RG-03 : critère remplacé par « rayon dans le virage = rayon en ligne droite au même volant, ± 10 % » (adhérence arcade ≈ 2 g ; adhérence réaliste = WFS-258 / 259). RG-02 : correction limitée aux basses vitesses (pleine ≤ 50 km/h, effacée 50-70, borne coupée < 60) validée, RG-05 prime ; tableau du lacet à 150-230 km/h exigé au journal et dans la PR. RG-01 : mesures sur l'anneau d'avant WFS-283 et vue de dessus du virage de 22 m acceptées comme preuve. Captures 2 et 4 (caméra Arrière) toujours dues. Détail : `regles-de-gestion/WFS-316.md` (Suivi).
+
+### 2026-11-08 15:57:30 — WFS-300 : critère tranché (option A), ANO-174 et WFS-322 créés (po-scrum-master)
+- Question de Claude, agent 5 : façades bleutées de `voiture-lod-passage-56` = éclairage réel du jeu une fois la sonde arrivée (56 et 60 identiques, ΔE ≈ 0,1, après attente des sondes) ; impossible à corriger dans `qualite_banc.cpp`.
+- Décision : option A. Critère de WFS-300 reformulé en « captures stables : 56 = 60 = 64 (ΔE2000 ≤ 2), deux lancements identiques » (écrit dans `regles-de-gestion/WFS-300.md`). WFS-300 livré tel quel.
+- Saut ΔE2000 5,9 à l'arrivée d'une sonde (RG-05) → **ANO-174** (mineure, déjà sur `main`) et **WFS-322** (P2, E13, ⏳ Prêt dès que E13 est libre, `regles-de-gestion/WFS-322.md`) ; donné seulement à la demande d'un développeur.
+
+
+### 2026-11-08 16:03:13 — WFS-192 fusionné par le lead dev (lead-dev)
+- PR #266 (arwa-2), reprise de la revue arrêtée à 15:41 par l'arrêt du serveur (ligne 👀 reprise à 15:42). Revue « ✅ Approuvé par le lead dev » n° 5818572307 (COMMENT : même compte GitHub que l'auteur), puis **squash 6f477e6** sur la tête 07eac56. Statut : 🟣.
+- Captures ouvertes : 20 vues de près `pres-<id>`, 40 paires `vitrine-<id>-0` / `-feux`, `garage-*`, `showroom-*`, `parcours-*` (dont nuit) : plus aucune marque lisible, aucun trou ; peinture, feux, vitres, plaques et interface identiques. Rendus 1920x1080 de face refaits (208, RR Sport, Mustang, main ↔ branche) : grilles et capots continus.
+- Code relu : `tools/effacer_logos.mjs`, `tools/logos.json` (203 pièces, 181 zones, 77 textures, RG-12 sur le seul matériau 41 de la M4), accroches `convertir_voitures.sh` (+2) et `feux_modele.cpp` (+6), 20 licences. Contrôles : `--verifier` « rien à faire » ×20 ; `.lod` régénérés = ceux de la PR ; `test_fidelite_voitures`, `test_vehicule_lod`, `test_tangentes` OK.
+- Remarque pour le PO (non bloquante, `qa/Check.md`) : niveau de détail 1 de la RR Sport +19 % (52 522 → 62 674 triangles, matériau 8 presque plus simplifié après le retrait des lettres) ; modèle complet −5 844, niveau 1 des 20 voitures −9 372. À reprendre avec WFS-215 ou une petite US de `alleger_voiture.mjs`.
+- Un `wfs_bench` orphelin de la revue arrêtée (rendus dans `/tmp/lr192`) a été arrêté.
+
+### 2026-11-08 16:04:39 — WFS-192 fusionné (#266) : arwa-2 s'arrête (arwa-2)
+- Fusion par le lead dev (squash 6f477e6, revue 5818572307), 🟣. Remarques non bloquantes de la revue transmises au PO : niveau de détail 1 de la RR Sport +19 % de triangles (52 522 → 62 674, budget total en baisse), à reprendre avec WFS-215 ou une petite US ; lignes `parcours-*` en double dans le tableau des captures de la PR.
+- arwa-2 libre et arrêté à la demande de l'utilisateur (« termine la tâche et arrête ») : pas de nouveau ticket demandé.
+
+### 2026-11-08 16:10:48 — WFS-317 (partie 1, PR #270) fusionné par le lead dev (lead-dev)
+- Synchronisation e0e3dde relue : `journal.md` ne fait plus partie du diff ; `src/` et `qa/` identiques à e4f9d07 (code approuvé en 96228b8) ; diff `src/` relu de nouveau, 7 captures rouvertes.
+- Approbation écrite dans la PR (revue « ✅ Approuvé par le lead dev », GitHub refuse APPROVE sur le même compte), puis fusion en squash avec `expectedHeadSha` e0e3dde : commit c29cc05.
+- WFS-317 reste 🔧 En cours (partie 2 : mesure sur le téléphone puis RG-02) ; ligne #270 retirée de `suivi-pr.md` ; ligne ajoutée dans `qa/Check.md`.
+
+
+### 2026-11-08 15:07:03 — WFS-317 : branche créée (Claude, agent 1)
+- Branche `feature/waforspeed-317` poussée ; I9 (appels et triangles par image dans la ligne « Rendu ») d'abord.
+
+### 2026-11-08 16:01:19 — WFS-317 : partie 1 (I9, appels et triangles par image et par famille), PR ouverte (Claude, agent 1)
+- **Découpage accepté par le PO** : (a) I9 dans cette PR ; (b) l'utilisateur envoie la ligne « Rendu / Images » en Ville de nuit Basse avec l'APK de `main` ; (c) RG-02 dans une 2e PR. Les voitures au loin restent à WFS-265.
+- **I9** : famille notée sur chaque dessin en attente (`renderer.cpp`), comptée dans `flushDraw` toutes passes confondues. Affichée sur la ligne « Rendu » et dans `rendu-mesure.txt`. Comptage seulement.
+- **Banc** (Ville de nuit, Basse, 2340×1080) : 419 appels, 684 k triangles, dont voitures 41 %, personnes 40 %, décor 20 %.
+- **Vérifications** : 71 tests CPU verts, parcours 0 écart.
+
+### 2026-11-08 16:11:20 — WFS-317 : partie 1 fusionnée (#270), mesure demandée à l'utilisateur (Claude, agent 1)
+- Entrées ci-dessus reportées depuis la branche : la PR ne touche plus `journal.md` (plus de conflit à la fusion).
+- RG-01 : ligne « Rendu / Images » demandée à l'utilisateur dans `tache utilisateur.md` (Ville de nuit, Basse, APK de `main` après la fusion de #270). RG-02 dès réception.
+
+### 2026-11-08 16:14:56 — WFS-265 : décision du PO sur RG-03 (po-scrum-master)
+- Demande du lead dev (PR #268), proposition de Claude, agent dev X : **confirmée**. RG-03 (instancing des piétons et du trafic, baisse par paliers, menu d'essai) **n'est pas fait dans WFS-265** : la condition (mesures RG-06 du téléphone montrant un reste de chemin vers 60 img/s) n'est pas remplie, aucune mesure du téléphone n'est arrivée.
+- La décision attend la mesure du téléphone de WFS-317 (ligne I9) et, pour la Ville en Basse, WFS-321. Le critère « décision RG-03 au journal » de WFS-265 est rempli par cette entrée. Détail : `regles-de-gestion/WFS-265.md` (« Décision du PO — RG-03 »).
