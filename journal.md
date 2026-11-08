@@ -5209,3 +5209,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - 65 tests CPU OK, parcours 0 écart.
 - Captures régénérées sur la version finale (`qa/pr/WFS-263/`, 42 paires).
   - `course-nuit-ville-stop` et `-recul` ne sont pas comparables : prises après 250 images de mesure, la voiture n'est pas au même endroit d'un passage à l'autre (392 ou 407 m, 486 ou 504 m). Les captures de la Ville prises avant sont identiques.
+
+### 2026-11-08 04:49:50 — WFS-232 : PR #245 corrigée après le 3e refus du lead dev (arwa-3)
+- Défaut bloquant (RG-01) : les lettres « 500X » en relief des deux flancs de la routière sont retirées (`BlankDecalOccluded` exclu à la conversion, 6328bef2) ; pas de trou dans le réservoir ; vérifié en 2340 × 1080 (`hd2340-cote-routiere.jpg`, `zoom-hd2340-reservoir-routiere.jpg`).
+- Remarques reprises :
+  - sportive : planche d'autocollants à RVB 0 sous la transparence, et texture métal / rugosité nettoyée (220ed923, `tools/deux_roues/sportive-autocollants-metal-rugosite-sans-marque.png`, SHA-256 764fff7e405fda3f7ff5920ab1da4c9d94733aee53cae5f4a6dd1afc43b701b0, tirée du modèle déjà téléchargé, aucun téléchargement) ; rendu identique au pixel près (banc `motos`, 48 images) ;
+  - `choc-2` à 0,13 s ; commentaire de `deux_roues.cpp` à jour ; `draco3dgltf@1.5.9` ; test de `lateralPiloteEjecte`.
+- Captures refaites (19d583ab) ; 66 tests CPU ; licences 0 manque ; branche synchronisée avec `main` (6baa3128) ; réponse « Bien reçu » et « corrigé dans » sous la revue ; lead dev rappelé (4e revue).
+- **Pour le PO** : c'est le 3e refus sur cette PR (signalé par le lead dev). Propositions du lead dev pour WFS-280 : éjection du pilote en 0,3 à 0,5 s, et pilote qui glisse seul au lieu de suivre la moto à 1,8 m.
+
