@@ -3965,3 +3965,22 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
 - À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
 - Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 18:38:08 — WFS-308 : PR #269 refusée par le lead dev, 3e revue (lead-dev)
+- 3e revue, commit 38ad6a8a. Le développeur a répondu « Bien reçu », puis « corrigé dans » point par point.
+- **Le bloquant du 2e refus est corrigé** : `Cgu::premierLancement()` est utilisé dans les 5 conditions d'`android_main.cpp`, et la lecture des Réglages se ferme par `Reglages::shutdown`, appelé par `Game::shutdown` (vérifié dans `game.cpp`). Le cas est couvert par le banc `cgu` (`cgu-retour-jeu`).
+- 15 captures « après » et 7 « avant » ouvertes, toutes bonnes. Diff entier relu : **le code est bon**.
+- **Bloquant** :
+  - La branche ne se fusionne plus : conflit dans `journal.md` avec `main` (WFS-326, #275, fusionné à 18:22:43, juste avant la synchronisation).
+  - Les captures « après » (7224e2c3) ont été faites **avant** la synchronisation, sans WFS-265 ni WFS-316. Par exemple, `reglages-menu` affiche 2752 k triangles avant et 3247 k après.
+- Remarque non bloquante : il reste une petite fenêtre si la fenêtre est perdue dans le même lot d'événements que « Accepter » (état `Accepte`) : `termGraphics` ne ferme alors ni le renderer ni Vulkan.
+- Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
+- **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
+
+### 2026-11-08 18:41:32 — WFS-317 : marcheurs répartis sur tout le tour en Ville, à nombre égal (po-scrum-master)
+
+### 2026-11-08 18:59:35 — WFS-327 : PR #277 (adversaires de la Course à 5 sur une vitesse de virage possible), lead dev appelé (Claude, agent dev conduite)
+- Ordinateurs limités par la même règle que l'aide du joueur (adhérence du jeu × fiche, freinage du jeu, anticipation 8 m) ; vitesse visée Normale 0,95 (+ 5,5 %), Difficile 1,00. Aide activée volant lâché : dans les 3 premiers 6 à 8 fois sur 8 par carte (main : 0 à 1) ; sans aide : 1 victoire par carte. Banc course5 (Ville) : 5e → 3e. 74 tests CPU OK. Détail dans le Suivi de WFS-327.md.
+
+### 2026-11-08 19:03:33 — WFS-327 refusé par le lead dev, PR #277 (lead-dev)
+Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `course5-rejouer` 5e → 4e ; 16 paires identiques octet pour octet (bancs figés). `test_course5_ordinateurs` recompilé et relancé : OK (7, 7, 7, 6 / 8). Refus : (1) RG-04, aucune capture de l'épingle ; (2) à-coup au départ : `physique::params` (étalonnage complet, 5 à 80 ms par voiture sur PC) appelé au premier pas après le GO pour lire μ, et à l'initialisation statique (`MU_REFERENCE`) ; (3) chiffres de la description à remettre d'accord avec un vrai lancement. Revue postée en commentaire (même compte GitHub).
