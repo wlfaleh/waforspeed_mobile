@@ -4458,3 +4458,8 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
 
 ### 2026-11-08 23:04:56 — WFS-291 : découpage des onglets validé (po-scrum-master)
 Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affichage (5 lignes + place WFS-318), Conduite (6), Son (2) ; en-tête et bas communs ; clé `onglet` gardée. Écrit dans `regles-de-gestion/WFS-291.md` (Suivi). Le ticket reste en attente de la fusion de WFS-290 (PR #287).
+
+### 2026-11-08 23:07:15 — WFS-290 : PR #287 refusée par le lead dev (lead-dev)
+- Commit relu 7a247292 ; 8 captures ouvertes (menu et pause, avant / après identiques : aucun bouton déplacé, RG-03 tenue) ; diff complet relu (14 fichiers) ; causes et banc `reglages-appuis` solides.
+- **Défauts** : (1) RG-04 non faite : pas de changement de couleur à l'appui sur « Réglages » / « Fermer » (règle remplacée sans décision du PO) ; (2) aucun test CPU de la cible de 48 dp, de l'anti-rebond ni du cas Retour en pause réglages ouverts (banc hors CI) ; (3) petit : commentaire « 95 × 25 dp » faux (82), README des captures sans colonne « Avant ».
+- TACHES : ↩️ Retour lead dev (PR #287) ; track-agent et suivi-pr mis à jour.
