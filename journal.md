@@ -5118,3 +5118,55 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Annulé proprement** : cuisson dans l'APK, préparation sur le téléphone, budget de 25 Mo, choix d'hébergement (tranché : GitHub Releases). Rien n'est retiré du code.
 - **Questions à l'utilisateur** : (1) sites de textures photo CC0 à autoriser (`regles-reseau.md`) ; (2) tracé de la Ville gardé (proposé) ; (3) relecture juridique des CGU.
 
+### 2026-11-08 03:48:06 — Paquets de cartes : étape 1 avec la Ville actuelle, avis du lead dev intégré (po-scrum-master)
+- **Décision de l'utilisateur** (transmise par le coordinateur) : « on garde la Ville actuelle et on commence avec la Ville en téléchargement pour gagner du temps ». Étape 1 = paquet de la **Ville actuelle** (même image, WFS-301 RG-04), téléchargé au premier lancement après les CGU ; Ville du code = secours hors ligne. Nouvelle Ville = US à part, plus tard.
+- **Avis du lead dev intégré** (lecture seule, 2026-11-08) : décor / rendu dans le paquet, tracé / chocs / trafic dans le code (blocs `trace` et `chocs` réservés dans le format pour une future carte) ; 2e source « stockage interne » derrière `readAsset()` (accroche E0, WFS-301 RG-03) ; téléchargement par un service Java (`HttpURLConnection`, `Range`, `.part`, SHA-256 `MessageDigest`, renommage ; le C++ ne lit que des fichiers finis) ; 3 formats de texture (ASTC / ETC2 / RGBA8, KTX2 sans supercompression) → un fichier par format, choisi au téléchargement ; `cartes.json` spécifié (version min. de l'APK, format de texture, adresses directes, pas l'API GitHub) ; redirection et `Range` testés sur le téléphone ; CGU avec l'adresse IP vue par l'hébergeur ; règle Wi-Fi / taille annoncée ; Ville du code qui reste performante.
+- **US mises à jour** : WFS-301 (réécrit), WFS-302 (réécrit, RG-06 essai réel), WFS-306 (réécrit : dépend de 301 + 308, faux paquet, plus de 302), WFS-308 (IP), WFS-303 et WFS-307 passés après l'étape 1 (P3), **WFS-309** réécrit en US unique « plus tard » (budget chiffré : < 100 dessins, ≤ 400 000 triangles, ≤ 128 Mo de textures, 30 img/s ; tracé à définir), **WFS-310, 311, 312 🚫 abandonnés** (contenu gardé pour le découpage de WFS-309), WFS-313 dépend de WFS-309 ; WFS-313, 304, 314 en P3.
+- **Ordre** (lead dev) : performance de base → WFS-301 → WFS-306 et WFS-308 en parallèle → WFS-302 → nouvelle Ville → autres cartes.
+
+
+### 2026-11-08 03:48:24 — WFS-232 : 2e retour du lead dev corrigé (PR #245) : marques retirées, pilote au sol, vues de côté, script de conversion (arwa-3)
+- **Décision du PO** (4267247) : les écarts de selle (scooter −2,5 %, sportive −1,8 %) sont acceptés et notés dans `deux_roues.json` (`ecart_accepte`). Le ralentissement avant les courbes (25°) et les 7 pilotes hommes sur 10 sont gardés.
+- **Marques** :
+  - sportive : autocollants Kawasaki, emblème, Ninja et ZX-6R rendus transparents (`tools/deux_roues/sportive-autocollants-sans-marque.png`) ; compteur, écran et commodo gardés ;
+  - scooter : logo « ola » repeint, à la fois sur la couleur et sur la texture métal / rugosité, où il était aussi (`tools/deux_roues/scooter-carrosserie-*-sans-logo.png`) ;
+  - `WFS_TEXTURES` accepte maintenant `mr=` ;
+  - licences corrigées.
+- **Pilote après la chute** : couché en travers de la chaussée, 1,8 m derrière le deux-roues, du côté opposé à la chute, à 1 m au moins du bord de la chaussée.
+- **Banc `motos`** : vues de côté de près des 3 modèles (`trafic-motos-cote-*`). Le deux-roues n'y fait aucun pas de simulation : sinon il glisserait vers sa file en pivotant sur place.
+- **Fuite** de `deux_roues::preparer` corrigée : en cas d'échec, les personnages déjà chargés sont rendus.
+- **Conversion rejouable** : `tools/convertir_deux_roues.sh` (les 9 fichiers et leurs niveaux de détail ; options par modèle) et `tools/deux_roues/dedraco.mjs`.
+  - Commande : `SCOOTER=… ROUTIERE=… SPORTIVE=… DRACO=… tools/convertir_deux_roues.sh`.
+  - Les fichiers déjà livrés sont reproduits au bit près, sauf les deux textures sans marque.
+  - Pour la sportive, la simplification se fait avec le motif de peinture « Panels » (106 979 triangles).
+- **Preuves** : 65 tests CPU réussis ; banc `motos` sans écart ; licences : 0 manque ; captures refaites et regardées (`qa/pr/WFS-232`) ; branche d9cffcac synchronisée avec `main`.
+
+### 2026-11-08 03:48:58 — Textures des nouvelles cartes : seulement GitHub (po-scrum-master)
+- **Réponse de l'utilisateur** : « seulement GitHub » ; aucun nouveau site (ni ambientcg.com ni polyhaven.com), § 1 de `regles-reseau.md` inchangé. Noté dans WFS-309 (RG-04) et WFS-313, 304, 314 (RG-04).
+
+### 2026-11-08 04:00:21 — WFS-315 créé : vue Cockpit à la vraie largeur (retour de l'utilisateur) (po-scrum-master)
+- L'utilisateur aime la nouvelle vue Cockpit mais la trouve étroite « comme une monoplace ». Réservé à Claude, agent 2, après WFS-282.
+
+### 2026-11-08 04:05:48 — WFS-295 : PR #258 ouverte, lead dev appelé (Claude, agent dev conduite)
+- Cause n° 1 corrigée (RG-01) : avance et rotation de la route divisées par max(0,2 ; 1 − k·n) dans l'ancienne conduite : rayon réel juste au centre, au bord et sur le bas-côté (−0,7 à −1,1 % de la ligne droite ; avant : +28 % au bord extérieur d'une épingle de 22 m, +45 % sur le bas-côté). Golf 4,17 m (fiche 4,20), M4 4,74 m (fiche 4,60).
+- Cause n° 2 corrigée (RG-03) : après un accident, la voiture du joueur répond à la flèche en 0,34 s (avant 1,18 s) et garde son braquage ; l'ordinateur (Aide::Web) garde les règles du jeu web (test_course 0 écart).
+- Banc `WFS_BANC=virages` (47 captures, avant rejoué par g_avantWfs295, vérifié identique à main) ; test_virages_fleches ; 66 tests CPU OK ; parcours 0 écart, fluidité OK, Course à 5 0 écart ; Poursuite « appels de dessin » déjà en échec sur main (+104), +158 sur la branche (scène différente).
+
+### 2026-11-08 04:07:40 — WFS-232 : PR #245 refusée à la 3e revue du lead dev (lead-dev)
+- **Revue** : https://github.com/wlfaleh/waforspeed_mobile/pull/245#pullrequestreview-5816556961, commit relu d9cffcac. J'ai ouvert les 64 captures, lu tout le diff, relancé les 65 tests CPU (verts) et ouvert les textures et matériaux des 3 modèles et des 6 roues.
+- **Corrigés depuis la 2e revue** : décision du PO (4267247) ; plus de marque lisible sur la sportive et le scooter (vérifié aussi en 2340 × 1080) ; pilote couché en entier sur la chaussée après la chute (`choc-3`).
+- **Défaut bloquant (1)** : RG-01, « sans marque ». La routière porte encore son nom de modèle « 500X » sur les deux flancs :
+  - matériau n° 21 de `routiere.wfm` (`BlankDecalOccluded_M` dans la source) ;
+  - illisible en 1280 × 720, mais lisible à la résolution du téléphone (banc `motos` refait en 2340 × 1080) ;
+  - c'est un oubli de ma 2e revue, qui disait la routière propre.
+- **Remarques non bloquantes** :
+  - sportive : les mots de marque restent dans les couleurs cachées (transparence à 0) et dans la texture métal / rugosité. Ils sont invisibles en jeu : découpe vérifiée pour l'image, les ombres et les reflets ;
+  - `choc-2` : le pilote passe de la selle au sol en une image, et le commentaire du banc est faux ;
+  - commentaire « à valider par le PO » à mettre à jour ;
+  - version de `draco3dgltf` (1.5.9) à écrire dans le script ;
+  - pas de test CPU pour le placement du pilote éjecté.
+- **Pour le PO (po-scrum-master), 3e refus sur cette PR** :
+  - le ticket n'est pas mal posé, le reste est bon : il ne manque que ce monogramme, que le développeur peut corriger vite ;
+  - à ranger dans WFS-280 : éjection progressive du pilote (0,3 à 0,5 s) et pilote qui glisse sans suivre la moto ; peinture neutre des couleurs cachées de la sportive si elle n'est pas faite ici ;
+  - déjà notés : phare (paire de 3 000 lm) et clignotants.
+- **Statuts** : `TACHES.md` → « ↩️ Retour lead dev (PR #245) » ; `track-agent.md` (arwa-3) et `suivi-pr.md` → retour lead dev.
