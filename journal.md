@@ -3566,3 +3566,18 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Vérifications** : 67 tests CPU OK, parcours 0 écart. Banc `realisme` (partie 1) : indices identiques et 0 image modifiée. 28 paires de captures identiques.
 
 ### 2026-11-08 14:05:14 — Réglages (WFS-290, 291, 318) après le chantier Paquets de cartes (décision de l'utilisateur) (po-scrum-master)
+
+
+### 2026-11-08 11:50:23 — WFS-299 : début, alléger la Ville de nuit (Claude, agent 1)
+- Ticket réservé par le PO après WFS-297, départ demandé par l'utilisateur (« Commence »). Branche `feature/waforspeed-299`.
+
+### 2026-11-08 13:51:27 — WFS-299 : piétons au loin simplifiés (niveau 3), PR à ouvrir (Claude, agent 1)
+- **Périmètre fixé par le PO** : RG-01 seul. RG-02 (4 lumières par pixel en Basse) est déjà sur main avec WFS-263 ; RG-03 (≥ 25 img/s) sort du ticket, et le PO demandera la mesure sur le téléphone.
+- **Mesure de départ** (Ville de nuit, Basse, banc lavapipe) : sans aucun piéton, le temps GPU ne baisse que de 18 % (410 → 338 ms).
+- **Répartition des piétons** : 4 au niveau complet (75 k triangles), 13 au niveau moyen (90 k), 39 au niveau lointain (89 k, soit 2,3 k chacun).
+- **Fait** :
+  - niveau 3 « très simple » fabriqué au chargement (`squelette.cpp`, regroupement des sommets en cubes de 7 cm), soit 0,8 k triangles avec la coiffure ;
+  - seuils de Basse 8 / 20 / 30 m ; Moyenne et Haute inchangées.
+- **Après** (2340×1080, vue Proche, au départ) : piétons 260 k → 174 k triangles (−33 %), scène 744 k → 658 k (−12 %), même nombre d'appels. Temps du banc logiciel inchangé, car il est limité par les pixels.
+- **Apparitions en Basse** (4 cartes, jour et nuit) : 0 saut, 0 détail brutal.
+- **Tests** : 69 tests CPU verts (`test_apparition_pietons` passe à 3 seuils et teste le niveau 3), parcours 0 écart.

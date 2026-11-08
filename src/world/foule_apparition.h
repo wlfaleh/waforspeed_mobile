@@ -49,9 +49,10 @@ inline void avancerOpacite(Etat& e, bool dansPortee, bool cadre, bool place, flo
     e.lieu = Lieu::Affichee;
 }
 
-// niveau voulu pour la distance d (m), seuils {complet, moyen}, avec hystérésis autour du niveau affiché
-inline int niveauVoulu(float d, const float seuils[2], int actuel) {
-    int n = d < seuils[0] ? 0 : d < seuils[1] ? 1 : 2;
+// niveau voulu pour la distance d (m), seuils {complet, moyen, loin} (WFS-299 : 3e seuil, au-delà niveau 3 « très simple » ;
+// infini = pas de niveau 3), avec hystérésis autour du niveau affiché
+inline int niveauVoulu(float d, const float seuils[3], int actuel) {
+    int n = d < seuils[0] ? 0 : d < seuils[1] ? 1 : d < seuils[2] ? 2 : 3;
     if (actuel >= 0 && n != actuel) {
         const int bas = std::min(n, actuel);   // frontière franchie entre bas et bas + 1 (un seul niveau d'écart compté)
         if (std::abs(n - actuel) == 1 && std::fabs(d - seuils[bas]) < HYSTERESE_M) n = actuel;
@@ -62,7 +63,7 @@ inline int niveauVoulu(float d, const float seuils[2], int actuel) {
 // RG-03 / RG-04 : niveau de détail. Hors du cadre ou invisible : changement immédiat (personne ne le voit). Dans le
 // cadre, pleinement visible : fondu croisé de FONDU_S entre l'ancien et le nouveau niveau ; pendant un fondu (opacité
 // ou détail), le changement attend la fin.
-inline void avancerNiveau(Etat& e, float distM, const float seuils[2], double dt) {
+inline void avancerNiveau(Etat& e, float distM, const float seuils[3], double dt) {
     if (e.lodPrec >= 0) {
         e.lodT = std::min(1.f, e.lodT + (float)std::max(0.0, dt) / FONDU_S);
         if (e.lodT >= 1.f) e.lodPrec = -1;
