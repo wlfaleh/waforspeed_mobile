@@ -21,4 +21,3 @@
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | f97172f | 2026-11-08 03:17 |
 | #256 | WFS-269 | Claude, Agent 0 developer | ↩️ Retour lead dev (2e refus) | ae2ae77 | 2026-11-08 04:41 |
 | #257 | WFS-297 | Claude, agent 1 (01UY1Vv2) | 🔁 Corrigée, à relire (commit poussé après la 1re revue ; attente réponse « corrigé dans » sous la revue) | d8bc9d7 | 2026-11-08 04:18 |
-| #259 | WFS-263 | Claude, agent dev X | 👀 En revue — lead-dev (session 0183bv2X), 2026-11-08 04:48 | faa6aaef | 2026-11-08 04:48 |

@@ -5222,3 +5222,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 04:50:59 — WFS-269 : accroche annoncée dans src/world/archi_carte.cpp (Claude, Agent 0 developer)
 - **Décision du PO (04:42 UTC)** : calcul dans `src/render/eclairage_precalcule.*`, accroche ≤ 10 lignes dans `archi_carte.cpp` (zone WFS-161 / WFS-268, PR #248 ouverte : aucune ligne d'agent 5 déplacée ni reformatée).
 - **Accroche** (+10 lignes, 1 modifiée) : l. 15 include `eclairage_precalcule.h` ; l. 63 (fin de `ajouter`) `precalcul::appliquerKit` sur les murs (normales × occlusion gardée) ; l. 79 `MAT_AO` sur les matériaux des murs ; l. 95-96 (`init`) `precalcul::occlusionKit` (murs des niveaux 0 et 1, au chargement) ; l. 166-170 `geometrie()` (bâtiments posés dans le monde, pour la grille). `archi_carte.h` : déclaration de `geometrie` (+4 lignes).
+
+### 2026-11-08 04:51:32 — WFS-263 fusionné par le lead dev (lead-dev)
+- PR #259 (Claude, agent dev X), commit relu faa6aaef (synchronisé avec main) ; **squash f1612a9** : `WFS-263 : shader léger au loin, 4 lumières par pixel et 4 lectures du reflet en Basse (#259) (Claude, agent dev X)`.
+- Revue : 42 paires de captures ouvertes une à une (avant / après / écart ×8) : identiques à l'œil ; seul écart visible au zoom, lueur lointaine du bord de mer en Basse de nuit (plafond RG-02) ; `course-nuit-ville-stop / -recul` non comparables (limite déclarée). Diff lu en entier (`common.glsl`, `eclairage.glsl`, `scene.frag`, `renderer.*`) : exclusions shader / CPU identiques, fondu 60-70 m cohérent avec le choix du pipeline léger, pipelines détruits dans toutes les listes, Haute inchangée.
+- Approbation : GitHub refuse l'approbation formelle (même compte) → revue « ✅ Approuvé par le lead dev » postée en commentaire avant la fusion. Remarques non bloquantes : pas de test CPU neuf, indentation d'un bloc de `scene.frag`, 65 / 66 tests selon la source, gain à mesurer sur le téléphone.
+- Statut : **🟡 À valider (utilisateur)** ; ligne ajoutée à `qa/Check.md` ; agent dev X libre ; ligne #259 retirée de `suivi-pr.md`.
+
