@@ -5049,3 +5049,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **US** : WFS-301 (E0 + E4 `lots_decor.*` sérialisation : format, cuisson, lecture, Ville + Corniche ; après WFS-268 et WFS-269 fusionnés, pour ne pas croiser agent 5 et Agent 0) → WFS-302 (E7 : cuisson dans la CI, APK, poids, mesure sur le téléphone ; après le gel de la CI) → WFS-303 (E4 + E13 : lumière WFS-269 et reflets WFS-264 cuits) → WFS-304 (Campagne et Grand Prix, après WFS-273). Règles : `regles-de-gestion/WFS-301.md` à `WFS-304.md`. P2 Haute, ⏳ En attente de leurs dépendances.
 - **Question à l'utilisateur** : budget de poids ajouté à l'APK (provisoire 25 Mo compressés par carte, ≈ 100 Mo pour 4 cartes ; les actifs font déjà 219 Mo). Mesure réelle faite dans WFS-301.
 
+
+### 2026-11-08 03:23:32 — WFS-232 : décision du PO sur la PR #245 (selles, ralentissement en courbe, pilotes) (po-scrum-master)
+- Demande d'arwa-3 après la 2e revue du lead dev (défaut n° 1). Décision écrite dans `regles-de-gestion/WFS-232.md`, section « Décision du PO » :
+  1. selles du scooter (−2,5 %) et de la sportive (−1,8 %) : écart accepté pour ce ticket, sans exception à la charte (7 mesures de dimensions sur 9 dans les ±1 %, écrit tel quel) ; correction rangée dans **WFS-280 RG-05** (1 h au plus) ; même cas que la Mustang, question ouverte à l'utilisateur ;
+  2. ralentissement des deux-roues avant les courbes (25°, 4 m/s², 36 km/h dans 22 m, calcul vérifié) : accepté, écart voulu à RG-03 pour les seuls deux-roues (sinon RG-04 donnerait 78°) ;
+  3. 7 pilotes sur 10 hommes : gardé (aucune règle de gestion sur ce point).
+- Défauts n° 2 (marques) et n° 3 (pilote au sol) : au développeur. Propositions d'arwa-3 (phare des deux-roues, clignotants avec WFS-280) : notées, à traiter au prochain lot.
+- `track-agent.md` remis à jour (arwa-3, arwa-4, arwa-5 : alerte levée, envoi 03:19 ; agent arwa : ⚠️ WFS-281 sans envoi depuis 01:25).
