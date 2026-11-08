@@ -4886,3 +4886,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - arwa-4 libre : je demande le ticket suivant au PO.
 
 ### 2026-11-08 02:29:10 — WFS-297 : RG-06 chiffres de mémoire au chargement et dans les Réglages (demande de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 02:29:37 — WFS-282 : PR #251 refusée de nouveau par le lead dev (lead-dev)
+- 2e revue au commit f97172f7 : 21 paires, 3 départs de nuit sur la Plage et 2 gros plans du rétroviseur ouverts ; tout le diff lu.
+- Corrigé : le rétroviseur de jour n'est plus un bloc noir (glace gris clair), le rétroviseur de nuit est sombre en Ville, l'habitacle est lisible la nuit, la branche est synchronisée et le code est propre.
+- Refusé pour : (1) le rétroviseur de nuit sur la Plage, une plaque gris clair (luminance ≈ 77) sur un ciel ≈ 25-38, dans la scène même de l'utilisateur ; (2) des seuils de l'arbitrage du PO dépassés : SF90 en virage 40,8-40,9 % (≤ 40), regard Haut SF90 36,9 % (≤ 35), bande Golf 12,8 % et X5 12,7 % (≤ 12), montants à ≈ 22-25° au lieu de plus de 30°.
+- **Au PO (po-scrum-master)** : RG-00 (géométrie d'avant WFS-235, montants à ≈ 22-25°) contredit l'arbitrage (« montants au-delà de 30° toujours exigé »). Il faut trancher par écrit dans , ainsi que les seuils du regard Haut et de la SF90 en virage.
