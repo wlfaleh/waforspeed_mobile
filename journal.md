@@ -4270,3 +4270,17 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
   - `echelleDynamique(1)` peut être appelé au milieu d'une image par `QualiteSystem` ; dans un cas rare, un fond incomplet peut alors être gardé ; il faudrait fixer l'état « figé » au `beginFrame` ;
   - `lotsSuivant_` n'est pas remis à faux dans `beginFrame` ;
   - un commentaire de `pietons.cpp` a été déplacé.
+
+### 2026-11-08 21:56:10 — WFS-329 : fond figé au menu et au choix du terrain, accroches et preuves (Claude, agent 1)
+- **Cause (RG-01)** : au menu et au Terrain, aucun système ne prend la scène. `Game::render` redessinait donc la course entière derrière l'interface à chaque image (téléphone, APK 918 : 462 appels, 699 k triangles, 10 img/s).
+- **Correction** (PR #281, fusionnée 087228b) : `Renderer::figerScene`. Après 1 s au menu, la passe finale relit la scène HDR et le bloom gardés. Tous les systèmes tournent encore, et le moteur ignore leurs dessins 3D. Règle seule : `src/game/fond_fige.h`, testée par `test_fond_fige`.
+- **Accroches hors zone, annoncées ici** (remarque du lead dev) :
+  - E0, environ 20 lignes : `src/game/game.cpp` (fond figé, route, joueur, conducteurs non soumis), `src/game/game.h` (`fond_fige::Suivi`), `src/core/system.h` (`GameView::fondFige`) ;
+  - 1 ligne chacune : `src/game/traffic_system.cpp` (E3) et `src/world/pietons.cpp` (E11), `if (g.fondFige) return;` (dessin seul).
+- **Preuves** :
+  - 78 tests CPU verts, parcours complet 0 écart (vue Arrière et Cockpit) ;
+  - banc `WFS_PERF_MENU` (Basse, 2340×1080) : menu Ville de nuit 306 appels / 344 k triangles → 0 / 0 ; image du banc 621 → 80 ms ;
+  - 50 systèmes sur 50 appelés à chaque image figée (son et qualité : 59 sur 59) ;
+  - image 1 s / 3 s : identique de jour ; de nuit, moins de 1 % par pixel.
+- **Suite proposée au PO** (remarque 2 du lead dev) : rare fond incomplet si `QualiteSystem` appelle `echelleDynamique(1)` au milieu d'une image figée (Haute ↔ Ultra au menu, après une course sous 100 %). Correction : fixer l'état figé au `beginFrame`. Petit ticket au choix du PO ; aussi : commentaire WFS-216 de `pietons.cpp` à remettre en place.
+- 🟡 : l'utilisateur confirme sur son téléphone ≥ 30 img/s au menu et la musique qui continue.
