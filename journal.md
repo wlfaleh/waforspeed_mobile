@@ -4655,3 +4655,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Remarques non bloquantes** : `using namespace minicarte;` en double (lignes 37 et 51 de `minicarte.cpp`) ; nom `CONSIGNE_X` réutilisé comme marge droite de la distance.
 - **À surveiller** : rond-point de la Plage en partie sous le bandeau à 200 m (≈ 77 % de route visible, accepté par le PO) ; deux consignes sous 2 × (18,5 et 16).
 - **Statut** : 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; arwa-2 libre dans `track-agent.md`.
+
+### 2026-11-08 01:06:19 — Recette, lot M2 (nuit, vue cockpit) : WFS-230, 249, 282 VALIDÉS, WFS-270 PASSABLE, WFS-235 remplacé — recette du 2026-11-08 terminée (QA-arwa)
+- Preuves : `apercu` (c9eda61) pour WFS-230, 249, 270, 235 ; WFS-282 sur banc local `cockpit` (5bcdfd2 : golf, sf90, x5, corsa, 28 captures), 62 tests CPU verts, parcours de nuit 0 écart.
+- **WFS-230 : VALIDÉ** 🟡 (herbe hors des phares 20 à 66 / 255 contre 5-6 avant, indice lumière 100 %). **WFS-249 : VALIDÉ** 🟡 (0 à 2,4 % de noir sous l'horizon en rase campagne ; péage renvoyé à WFS-276).
+- **WFS-270 : PASSABLE** 🟡 — voiture du joueur visible la nuit (ANO-147 et ANO-148 vérifiées) ; ANO-167 : la Golf bleue paraît gris argent en Campagne de nuit (rapport carrosserie / route 1,74 à 1,93 > 1,5).
+- **WFS-282 (RG-00, RG-06) : VALIDÉ** 🟡 — planche, volant, compteurs, capot remis, planche opaque (ANO-163 vérifiée au banc), rue visible ; ANO-152 corrigée en partie (rétroviseur noir, planche trop sombre la nuit : RG-03, RG-04 à venir). **WFS-235** : remplacé par WFS-282.
+- **Bilan de la recette (25 tickets)** : 16 VALIDÉS, 6 PASSABLES, 2 REFUSÉS (WFS-268 : KO de l'utilisateur ; WFS-246 : ANO-163, corrigée depuis par WFS-282), 1 remplacé. Nouvelles : ANO-160 à 167 (ANO-163 bloquante, déjà corrigée au banc). Restent : WFS-262, WFS-276 (fusionnés cette nuit). Le banc `realisme-2` est à confirmer aux bancs du matin.
