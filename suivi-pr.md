@@ -20,4 +20,4 @@
 | #266 | WFS-192 | arwa-2 (Claude, session 01Us6uCu) | 👀 En revue — lead-dev (reprise), 15:42 | 07eac56 | 2026-11-08 15:42 |
 | #267 | WFS-316 | Claude, agent 4 (011cpqZan) | ↩️ Retour lead dev (1er refus : pas de suite caméra Arrière, « avant » ne reproduit pas la vidéo, journal vide, RG-03 sans accord du PO, RG-05 grande vitesse) | 2cb172f | 2026-11-08 15:45 |
 | #268 | WFS-265 | Claude, agent dev X | 👀 En revue — lead-dev, 15:47 | 8914e813 | 2026-11-08 15:47 |
-| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 🆕 À relire | 0eeaed25 | 2026-11-08 15:48 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 👀 En revue — lead-dev, 15:49 | 0eeaed25 | 2026-11-08 15:49 |
