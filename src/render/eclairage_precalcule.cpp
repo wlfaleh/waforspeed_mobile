@@ -129,6 +129,9 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
     Grille::Curseur cu;
     for (const vec3& dl : directions().d) {
         const vec3 d = t * dl.x + b * dl.y + n * dl.z;
+        // rayon vers le bas : il verrait le sol, dont la sonde d'éclairage (SH9, plus sombre en bas) tient déjà compte ; le
+        // compter comme caché assombrirait deux fois toute façade dégagée (essai au banc : casino de la Corniche) : libre
+        if (d.y < -0.05f) { libres++; continue; }
         bool touche = false;
         for (int s = 1; s <= pas && !touche; s++) {
             const vec3 q = o + d * (s * VOXEL_M * 0.5f);

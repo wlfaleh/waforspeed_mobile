@@ -1,7 +1,7 @@
 // WaForSpeed — WFS-269 : occlusion ambiante précalculée du décor fixe (src/render/eclairage_precalcule.*).
 // Scène d'essai : un sol de 40 × 40 m, un mur de 6 m de haut et 20 m de long, un auvent de 3 × 6 m à 3 m de haut.
-// Vérifié : sol dégagé ≈ ciel entier ; pied du mur nettement plus sombre ; dessous de l'auvent plus sombre encore ; haut du mur
-// côté ciel peu touché ; jamais sous le plancher ; même résultat à chaque calcul ; la végétation (recoit = false) n'est pas
+// Vérifié : sol dégagé ≈ ciel entier ; pied du mur nettement plus sombre ; dessous de l'auvent plus sombre encore ; mur dégagé
+// uniforme (les rayons vers le bas sont libres : la sonde tient déjà compte du sol) ; jamais sous le plancher ; même résultat à chaque calcul ; la végétation (recoit = false) n'est pas
 // modifiée ; durée mesurée (RG-04).
 #include <cmath>
 #include <cstdio>
@@ -56,7 +56,9 @@ int main() {
     VERIFIE(libre > 0.95f, "sol dégagé : ciel entier (%.2f)", libre);
     VERIFIE(piedMur < libre - 0.2f, "pied du mur plus sombre que le sol dégagé (%.2f contre %.2f)", piedMur, libre);
     VERIFIE(sousAuvent < piedMur, "dessous de l'auvent plus sombre que le pied du mur (%.2f contre %.2f)", sousAuvent, piedMur);
-    VERIFIE(hautMur > basMur, "mur : plus de ciel en haut qu'en bas (%.2f contre %.2f)", hautMur, basMur);
+    VERIFIE(std::fabs(hautMur - basMur) < 0.05f, "mur dégagé : uniforme de haut en bas, le sol ne l'assombrit pas (%.2f / %.2f)", hautMur, basMur);
+    const float murLoin = aoPres(mur, {-9, 3, 0});
+    VERIFIE(murLoin > 0.9f, "mur dégagé : pas assombri par le sol (rayons vers le bas libres) (%.2f)", murLoin);
     float mini = 2;
     for (const auto* v : {&sol, &mur, &auvent}) for (const Vertex& s : *v) mini = std::min(mini, precalcul::occlusionSommet(s));
     VERIFIE(mini >= precalcul::OCCLUSION_MIN - 1e-4f, "jamais sous le plancher %.2f (minimum %.3f)", precalcul::OCCLUSION_MIN, mini);

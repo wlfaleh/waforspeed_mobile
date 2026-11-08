@@ -276,9 +276,9 @@ public:
         WFS_LOG("Ville : %zu lampadaires%s", nl, depart_ ? " (départ avancé, banc d'essai)" : "");
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = (int64_t)plan_->objets.size();
-            {   // WFS-269 (accroche) : occlusion précalculée : façades, béton, trottoirs, sol (MAT_AO) et décor uni (MAT_VTINT) la reçoivent
+            {   // WFS-269 (accroche) : occlusion précalculée : façades, béton, trottoirs (MAT_AO) et décor uni (MAT_VTINT) la reçoivent ; pas le sol (bandes sous les feuillages)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
-                lots_.occlusion(b({P_FACADE_A, P_FACADE_B, P_BETON, P_TROTTOIR, P_SOL, P_UNI}), b({P_FACADE_A, P_FACADE_B, P_BETON, P_VOUTE, P_UNI, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_CONIF, P_METAL}), b({P_UNI}));
+                lots_.occlusion(b({P_FACADE_A, P_FACADE_B, P_BETON, P_TROTTOIR, P_UNI}), b({P_FACADE_A, P_FACADE_B, P_BETON, P_VOUTE, P_UNI, P_BARK, P_CORE, P_LEAF0, P_LEAF1, P_CONIF, P_METAL}), b({P_UNI}));
             }
             lots_.preparer(r, *g.track, P_COUNT, 4, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {
                 Geo out[P_COUNT];
@@ -759,7 +759,7 @@ public:
         { Material m; m.flags = MAT_ROAD; m.rough = 0.8f; mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, m); }   // asphalte de Game (WFS-205, accroche)
         // eau de rivière : sombre (albédo ≈ 0,04), lisse (rugosité 0,08), F0 diélectrique 0,02 : le ciel s'y reflète
         { Material m; m.color = {0.035f, 0.05f, 0.055f, 1}; m.rough = 0.08f; m.metal = 0; mats_[P_EAU] = r.makeMaterial(m, nullptr, nullptr, nullptr); }
-        { Material m; m.flags = MAT_GROUND | MAT_AO; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game
+        { Material m; m.flags = MAT_GROUND; m.rough = 0.95f; mats_[P_SOL] = r.makeMaterial(m, nullptr, nullptr, nullptr); }   // = sol de Game
         // portiques : 3 au plus sur l'autoroute, à 150 m du début puis tous les 420 m (pas dans les 60 m avant le tunnel)
         static const char* const DIR[3][2] = {{"Centre", "Port"}, {"Port", "Aéroport"}, {"Aéroport", "Centre"}};
         if (au_.first >= 0) {
