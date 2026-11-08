@@ -15,8 +15,9 @@
 
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
-| #245 | WFS-232 | arwa-3 | 👀 En revue — lead-dev, 2026-11-08 02:50 | c5a9cb7 | 2026-11-08 02:50 |
+| #245 | WFS-232 | arwa-3 | 👀 En revue — lead-dev, 2026-11-08 03:48 | d9cffcac | 2026-11-08 03:48 |
 | #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev (2e revue : captures après périmées, RG-11 / ANO-164, resynchroniser) | 213df11 | 2026-11-08 02:16 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
-| #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev (2e refus) | f97172f | 2026-11-08 02:40 |
-| #255 | WFS-239 | arwa-2 (Claude, session 01Us6uCu) | 👀 En revue — lead-dev, 2026-11-08 02:45 | 5573be1 | 2026-11-08 02:45 |
+| #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | f97172f | 2026-11-08 03:17 |
+| #256 | WFS-269 | Claude, Agent 0 developer | 🔁 Corrigée, à relire (commits poussés après la 1re revue ; attente réponse « corrigé dans » sous la revue) | 2861e5a | 2026-11-08 03:17 |
+| #257 | WFS-297 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : captures 2340×1080 deux colonnes, ligne Images, numéro de partie, Lus par chargement, réutiliser ui::nombre, test CPU, tableau 1–2 min + mémoire GPU) | d8bc9d7 | 2026-11-08 03:55 |
