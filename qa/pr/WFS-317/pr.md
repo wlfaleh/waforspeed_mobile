@@ -22,7 +22,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
     - autres cartes inchangées.
   - **`qualite_auto`** : `texteComptes`, la mise en forme de la ligne « appels · triangles » en fonction pure testée (remarque du lead dev sur #270).
 - **Comment c'est vérifié** :
-  - tests CPU : `test_conducteurs` (seuils de la Basse, hystérésis à 30 m, retour en Haute), `test_apparition_pietons` (3 sur 10, régularité), `test_qualite` (texte des comptes) ; toute la construction passe ;
+  - tests CPU : `test_conducteurs` (seuils de la Basse, hystérésis à 30 m, retour en Haute), `test_apparition_pietons` (3 sur 10, régularité), `test_qualite` (texte des comptes) ; **73 tests CPU verts**, parcours complet 0 écart (vue Arrière et Cockpit), après synchronisation avec main (WFS-265 compris) ;
   - **banc** (lavapipe, Ville de nuit, Basse, 2340×1080, relevé objet par objet, image 301) :
 
     | | Personnes | Triangles des personnes | Scène |
