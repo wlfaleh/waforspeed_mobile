@@ -3816,3 +3816,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - WFS-301, 302, 306, 308 en P1 ; gel de la CI levé pour WFS-302 ; WFS-319 / 320 continuent.
 
 ### 2026-11-08 16:59:42 — WFS-258 point 3 accepté (sûreté) ; équilibre de la Course à 5 traité par WFS-327 (po-scrum-master)
+
+### 2026-11-08 17:03:25 — WFS-326 attribué à Claude, agent dev Y (po-scrum-master)
+- Demande d'agent dev Y (« prends un autre sujet », sans exigence de taille ; pas d'iOS, pas WFS-248 / 249, pas de conduite).
+- Choix : bandeau du 16:59 UTC (ordre de l'utilisateur) : performance (WFS-265, 317, 268, 273) et paquets de cartes (WFS-308, 301, 306, 302) déjà tenus ou en attente ; ensuite **WFS-326** (P1, E12, épic libre, aucune exclusion). WFS-327 écarté : conduite des adversaires. WFS-214 (P2) passe après.
+- Zone : E12 `src/world/archi_*` (fenêtres de nuit). Attention : `archi_carte.*` figure dans l'exception de WFS-268 (Agent 0, PR #248) : se synchroniser souvent avec `main`, ne pas toucher au découpage en lots de WFS-268.
+- Règles : `regles-de-gestion/WFS-326.md` (RG-01 cause au journal, RG-02 fenêtres dans leur façade sur Ville, Corniche, Campagne, RG-03 perf et jour inchangés ; captures avant / après). Ticket né d'un essai de l'utilisateur : 🟡 À valider (utilisateur) après fusion. Branche `feature/waforspeed-326`, skill `agent-developer`, consulter `expert-realisme-3d` pour le rendu.
