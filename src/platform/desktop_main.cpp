@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -71,6 +72,7 @@ bool readAsset(const std::string& path, std::vector<uint8_t>& out) {
     std::ifstream f(g_root + path, std::ios::binary);
     if (!f) return false;
     out.assign(std::istreambuf_iterator<char>(f), {});
+    memoire::compteurs().octetsLus += (int64_t)out.size();   // WFS-297 (RG-06)
     return true;
 }
 double nowSeconds() {

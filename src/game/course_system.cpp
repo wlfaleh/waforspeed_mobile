@@ -1,5 +1,6 @@
 // WaForSpeed — module « course » (WFS-12) : voir course_system.h.
 #include "course_system.h"
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -72,6 +73,10 @@ public:
         if (attendreDepart(dt)) return;           // WFS-242 (RG-07) : le « 3 » arrive avec les commandes
         const RaceState before = course_.state; const int cp = course_.level;
         course_.step(dt, pl, activeTrafficMut(), pl.position, dt / std::max(1e-6, course_.echelleDt));   // WFS-70 (RG-05) : chrono en temps réel
+        if (before == RaceState::Count && course_.state == RaceState::Play) {   // WFS-297 (RG-06, accroche) : départ d'une course = partie suivante
+            const int n = memoire::nouvellePartie();   // hors de WFS_LOG (la macro peut évaluer ses arguments deux fois)
+            WFS_LOG("course : départ, partie %d depuis le lancement", n);
+        }
         // WFS-125 (RG-05 / RG-06) : horloge de jeu de la course (le ralenti ralentit aussi le fantôme), trace toutes les 0,1 s
         if (course_.state == RaceState::Play) {
             tJeu_ += dt;

@@ -5311,3 +5311,57 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Mémoire** : Campagne 3216 arbres → 1,2 Mo GPU (modèles 0,4 + exemplaires 0,8) ; Grand Prix 568 arbres ; préparation 24 ms (PC).
 - **Écarts avant / après** (même binaire, `WFS_ARBRES_INSTANCES=0` / 1) : forêt (col 2,42 %, pins 2,09 %, haut du col 1,97 %, col-haut 1,73 %, cascade 1,66 / 1,70 % nuit, forêt 1,50 %, circuit forêt 1,00 %) ≤ 3 % ; autres vues ≤ 0,91 % ; Ville et Corniche 0,00 %. Vue cockpit en bord de route boisé (nouvelle) : 5,88 % de jour (arbres vus de près, formes différentes, aucun clone), 0,96 % de nuit.
 - **Attente** : décor du Grand Prix préparé (RG-03) et vibreurs (RG-04) touchent `lots_decor.*` / `decor_carte.cpp` : après la fusion de la PR #248 (WFS-268), comme décidé par le PO.
+
+### 2026-11-08 02:26:57 — WFS-297 : début, ralentissement d'une partie à l'autre (Claude, agent 1)
+- Ticket attribué par le PO (message de la session PO), accord de l'utilisateur confirmé dans ma session. Branche `feature/waforspeed-297`.
+
+### 2026-11-08 03:00:12 — WFS-297 : diagnostic (RG-01) : rien ne s'accumule d'une partie à l'autre, la Ville de nuit est plus lourde par nature (Claude, agent 1)
+- **Banc ajouté** : `WFS_BANC=perf WFS_PERF_PARTIES=1` (`src/render/bench_perf.cpp`). Il enchaîne des parties sans quitter le jeu, par le même chemin que « Rouler » (`Game::demandes`), en qualité Basse, caméra Proche. Il mesure au départ, à 1 min et à 2 min : image, GPU par passe, appels et triangles par système, trafic, lampadaires, RSS. Banc PC lavapipe : les ms ne sont pas celles du téléphone, seuls les rapports comptent.
+- **Suite Corniche → Ville nuit → Ville jour → Ville nuit** (au départ) :
+
+  | Partie | Appels | Triangles | GPU (ms) | RSS (Mo) |
+  |---|---|---|---|---|
+  | 1. Corniche jour | 230 | 363 k | 215 | 1 018 |
+  | 2. Ville nuit | 339 | 523 k | 336 | 1 385 |
+  | 3. Ville jour | 291 | 526 k | 289 | 1 411 |
+  | 4. Ville nuit | 339 | 523 k | 334 | 1 402 |
+
+  La 2e et la 4e partie (Ville de nuit) sont identiques.
+- **Contre-épreuve Ville nuit → Corniche** : Ville de nuit en 1re partie : 339 appels, 525 k triangles, GPU 333 ms, soit les mêmes chiffres qu'en 2e partie. Corniche après la Ville : 231 appels, 363 k triangles, GPU 217 ms, comme en 1re partie.
+- **Conclusion (RG-02)** : ni dessin ni mémoire ne grossissent d'une partie à l'autre. Les objets Vulkan sont aussi stables d'un cycle à l'autre au banc d'endurance (1 155 allocations). La RSS monte de 350 Mo au premier chargement de la Ville puis reste stable.
+- **Cause de « la 2e partie est une catastrophe »** : la 2e partie était la Ville de nuit, la scène la plus lourde du jeu. Au départ, elle demande 1,5 fois plus d'appels et de triangles que la Corniche, et 1,55 fois son temps GPU sur le banc. Au téléphone, la scène est 2,6 fois plus chère (33,4 → 86,8 ms), avec « chauffe 0 » dans les deux parties : pas de baisse due à la chaleur.
+- **Ce qui pèse en Ville au départ** :
+  - Pietons : 131 appels, 258 k triangles, soit la moitié de la scène. Ce sont des personnages animés, coûteux en sommets sur un GPU de téléphone ;
+  - ArchiCarteSysteme : 52 appels, 66 k triangles ;
+  - Ville : 32 appels, 43 k triangles ;
+  - Commerces : 17 appels, 19 k triangles ;
+  - de nuit, en plus : jusqu'à 8 lumières calculées par pixel (Nuit : 41 appels).
+- **Pas de fichier:ligne qui grossit** : aucune croissance mesurée. Les gros postes fixes sont nommés ci-dessus.
+- **Suite** : RG-06 (chiffres de mémoire au chargement et dans les Réglages). L'allègement de la Ville de nuit (piétons au loin, lumières de nuit en Basse) est proposé au PO, car il touche les zones E2 et E4 et les tickets WFS-268 et WFS-281.
+
+### 2026-11-08 03:40:21 — WFS-297 : chiffres de mémoire (RG-06), PR ouverte (Claude, agent 1)
+- **Compteurs mesurés** (`src/core/memoire.h`) :
+  - mémoire de la carte graphique, comptée dans `vk.cpp` ;
+  - octets lus par `readAsset` ;
+  - objets 3D vivants ;
+  - personnes (accroche de 2 lignes dans `pietons.cpp`) ;
+  - numéro de la partie (`Game::init`) ;
+  - mémoire du jeu (`/proc/self/statm`).
+- **Affichage** : à l'écran de chargement (2 lignes sous l'étape) et dans les Réglages (fin de la ligne « Rendu », réduite si besoin). Aucun bouton déplacé.
+- **Accroches annoncées** :
+  - `readAsset` : 1 ligne dans `desktop_main.cpp`, 1 ligne dans `android_main.cpp` ;
+  - `pietons.cpp` : 2 lignes ;
+  - `reglages.h` / `reglages.cpp` : `ouvrirReglagesBanc`, pour le banc.
+- **Exemple, banc 1280** : partie 2 (Ville de nuit), Lus 247 Mo, 983 objets 3D, 47 voitures, 882 personnes, mémoire jeu 1 249 Mo, carte graphique 601 Mo.
+- **Vérifications** : 65 tests CPU verts, parcours 0 écart.
+- **Suite** : RG-05 passe à WFS-299 (allègement de la Ville de nuit), réservé après ce ticket.
+
+### 2026-11-08 07:49:10 — WFS-297 : corrections après la revue du lead dev (PR #257) (Claude, agent 1)
+- **Captures** : en 2340×1080 (mise en page du téléphone), avec la ligne « Images (20 s) » remplie par les valeurs d'essai du banc.
+- **Numéro de la partie** : compté au départ de chaque course (« GO »), qu'elle vienne de « Rouler », de « Rejouer », d'un rechargement ou d'une manche de duel. L'appel est fait hors de `WFS_LOG`, qui évalue ses arguments deux fois : avant, chaque partie comptait pour 2.
+- **« Lus »** : compté par chargement (« Lus pour cette partie »).
+- **Code recopié retiré** : les textes passent par `ui::nombre`, et le banc lit la mémoire du processus par `memoire::processusMo`.
+- **Test** : `test_memoire` ajouté.
+- **Banc** : tableau complet (départ, 1 min, 2 min, colonne carte graphique) et Ville de nuit à 0, 30 et 60 s.
+- **Vérifications** : 66 tests CPU verts, parcours 0 écart (parties 1 à 4 numérotées).
+- **Accroches** : `course_system.cpp` (4 lignes, départ = partie suivante) ; celle de `duel_system.cpp` est retirée.

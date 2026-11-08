@@ -167,6 +167,7 @@ else()
   add_executable(test_bandeau_gps tests/test_bandeau_gps.cpp)   # WFS-245 (RG-09) : textes du bandeau de la carte GPS (tailles, place, toutes les consignes et rues)
   add_executable(test_lots_decor tests/lots_decor_test.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-268 : passage d'un tour au suivant (décor préparé au chargement)
   add_executable(test_navigation tests/test_navigation.cpp src/game/trace_cartes.cpp src/game/duel.cpp src/game/traffic.cpp src/game/track.cpp src/game/player.cpp src/game/sauvegarde.cpp src/core/jobs.cpp)   # WFS-234 : carte de navigation (prochain virage, distance)
+  add_executable(test_memoire tests/test_memoire.cpp)   # WFS-297 : compteurs de mémoire et de chargement
   # WFS-136 (accroche) : tout test qui lie track.cpp lie aussi le tracé 2 (trace::construire, sans dépendance au moteur)
   get_property(cibles_wfs DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
   foreach(cible IN LISTS cibles_wfs)
