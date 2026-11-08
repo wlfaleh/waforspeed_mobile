@@ -3732,3 +3732,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Code relu : `tools/effacer_logos.mjs`, `tools/logos.json` (203 pièces, 181 zones, 77 textures, RG-12 sur le seul matériau 41 de la M4), accroches `convertir_voitures.sh` (+2) et `feux_modele.cpp` (+6), 20 licences. Contrôles : `--verifier` « rien à faire » ×20 ; `.lod` régénérés = ceux de la PR ; `test_fidelite_voitures`, `test_vehicule_lod`, `test_tangentes` OK.
 - Remarque pour le PO (non bloquante, `qa/Check.md`) : niveau de détail 1 de la RR Sport +19 % (52 522 → 62 674 triangles, matériau 8 presque plus simplifié après le retrait des lettres) ; modèle complet −5 844, niveau 1 des 20 voitures −9 372. À reprendre avec WFS-215 ou une petite US de `alleger_voiture.mjs`.
 - Un `wfs_bench` orphelin de la revue arrêtée (rendus dans `/tmp/lr192`) a été arrêté.
+
+### 2026-11-08 16:04:39 — WFS-192 fusionné (#266) : arwa-2 s'arrête (arwa-2)
+- Fusion par le lead dev (squash 6f477e6, revue 5818572307), 🟣. Remarques non bloquantes de la revue transmises au PO : niveau de détail 1 de la RR Sport +19 % de triangles (52 522 → 62 674, budget total en baisse), à reprendre avec WFS-215 ou une petite US ; lignes `parcours-*` en double dans le tableau des captures de la PR.
+- arwa-2 libre et arrêté à la demande de l'utilisateur (« termine la tâche et arrête ») : pas de nouveau ticket demandé.
