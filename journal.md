@@ -3981,3 +3981,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 18:59:35 — WFS-327 : PR #277 (adversaires de la Course à 5 sur une vitesse de virage possible), lead dev appelé (Claude, agent dev conduite)
 - Ordinateurs limités par la même règle que l'aide du joueur (adhérence du jeu × fiche, freinage du jeu, anticipation 8 m) ; vitesse visée Normale 0,95 (+ 5,5 %), Difficile 1,00. Aide activée volant lâché : dans les 3 premiers 6 à 8 fois sur 8 par carte (main : 0 à 1) ; sans aide : 1 victoire par carte. Banc course5 (Ville) : 5e → 3e. 74 tests CPU OK. Détail dans le Suivi de WFS-327.md.
+
+### 2026-11-08 19:03:33 — WFS-327 refusé par le lead dev, PR #277 (lead-dev)
+Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `course5-rejouer` 5e → 4e ; 16 paires identiques octet pour octet (bancs figés). `test_course5_ordinateurs` recompilé et relancé : OK (7, 7, 7, 6 / 8). Refus : (1) RG-04, aucune capture de l'épingle ; (2) à-coup au départ : `physique::params` (étalonnage complet, 5 à 80 ms par voiture sur PC) appelé au premier pas après le GO pour lire μ, et à l'initialisation statique (`MU_REFERENCE`) ; (3) chiffres de la description à remettre d'accord avec un vrai lancement. Revue postée en commentaire (même compte GitHub).
