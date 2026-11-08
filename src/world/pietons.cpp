@@ -246,6 +246,7 @@ public:
         const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
         if (etat_.size() != gens_.size()) { etat_.assign(gens_.size(), apparition::Etat{}); candDe_.assign(gens_.size(), -1); pos_.assign(gens_.size(), vec3{}); yaw_.assign(gens_.size(), 0.f); }
         const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
+        static float essai[2] = {0, 0}; if (const char* e = std::getenv("WFS_ESSAI_LOD")) { std::sscanf(e, "%f,%f", &essai[0], &essai[1]); if (r.qualiteBasse) seuils = essai; }   // ESSAI WFS-299 (temporaire)
         const mat4 pv = g.proj * g.view;
         // 1. WFS-257 : chaque personne de la portée : place dans le monde, dans le cadre ou non (RG-02)
         cand_.clear();
