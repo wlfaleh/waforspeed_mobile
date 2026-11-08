@@ -4787,3 +4787,29 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 02:05:56 — WFS-286 fusionné par le lead dev (lead-dev)
 - PR #253 relue : 6 paires de captures ouvertes (Réglages menu, pause, manette, `reglages` : « FERMER » sous la dernière ligne, 13 lignes à la suite ; duel à 4 : 1:21.3, +1,5 / +3,0 / +4,5 s au lieu de 0:00.0 et +0,0 s), tout le diff lu (`reglages.cpp`, `salon.cpp` banc seulement, rien dans `src/game/duel*`).
 - Approbation écrite dans la PR (revue « ✅ Approuvé par le lead dev », même compte GitHub), puis squash **2081d32**. Statut 🟣 (né de la VABF, ✅ par la CI). Remarque : banc `menu2` plus long (≈ 80 s par manche du duel).
+
+### 2026-11-08 02:07:45 — WFS-288 : son de la pluie en PR #254, revue du lead dev demandée (arwa-4)
+- **RG-01, sources** : relues sur GitHub par clone partiel, en lecture seule dans `/tmp`, sans rien exécuter ; seuls les nombres sont repris.
+  - `velatkilic/LISA` (GPL-3.0), commit ce06a7fbf2d0c9c4ad35d9dad55a79dfa8d5d7d4, `pylisa/atmos_models.py`, SHA-256 4873ecbe6c33bee3aa7bfbfb9759de2dbef0291d3a8c98865ac9688d9afb4028 : Marshall et Palmer, N0 = 8 000, Λ = 4,1·R^−0,21.
+  - `ltelab/disdrodb` (GPL-3.0), commit ccca01c72afc0ec074180ebe1e57c83bd29e1682, `disdrodb/fall_velocity/rain.py`, SHA-256 f124b46a123b2e14e3b45c58f0820dc5a62b485790f48b8307594c43e10e3897 : Atlas et coll. 1973, v = 9,65 − 10,3·e^−0,6D (ajustée sur Gunn et Kinzer).
+  - `ryancinsight/kwavers` (MIT), commit 4b5ced3115fb856ed498ae08da750c8ca25d5d1c, `crates/kwavers-python/src/analytical_bindings/cavitation/bubble.rs`, SHA-256 f9946a15be1498a6a53cda0b1cfb6d2b3dc08bce44694a79a7b8c77c948dda47 : Minnaert, f·r = 3,29 m/s.
+- **RG-01, calculs** (5 mm/h) :
+  - Λ = 2,924 mm⁻¹ ; 634 gouttes/m³ ; **2 104 impacts/m²/s**, dont **2,65 % de grosses** (55,8/m²/s) ;
+  - contrôle : la pluie recalculée donne 5,90 mm/h ;
+  - pare-brise de la Golf (33,2°) : 1 760 / 6 585 / 14 305 impacts/m²/s à 0 / 50 / 130 km/h, **rapport 1 / 3,74 / 8,13** ;
+  - surfaces : toit 1,97 m² (4 145 impacts/s), pare-brise 0,99 m² [proportions de la Golf, à vérifier].
+- **Fait** : `src/audio/pluie_sons.*` (averse stéréo calculée en direct, gouttes isolées, bulles, tambourinage, essuie-glaces sur `cockpit::EtatEssuie`, tunnel), branché dans `audio_system.cpp` (écran Course comme l'ambiance, sortie G / D après les lieux), banc `benchPluie` (`pluie-arriere`, `pluie-cockpit`, `pluie-tunnel`), `tests/test_audio_pluie.cpp`.
+- **Accroches** : `CMakeLists.txt` 1 ligne (`test_audio_pluie`). Aucune autre accroche ; `meteo.h`, `vehicule_cockpit.h` et `camera_vue.h` en lecture seule.
+- **WFS-282** a retiré `PENTE_PARE_BRISE` de `vehicule_cockpit.h`. Cette pente de la Golf (0,655) est maintenant gardée dans `pluie_sons.h`, avec son origine.
+- **Niveaux** (RG-07, décision : niveau absolu non mesurable, il dépend du téléphone) :
+  - averse : 0,006 RMS avant `master` ; habitacle −20 dB et passe-bas 1 kHz [à vérifier] ;
+  - goutte 0,04, bulle 0,012, impact 0,014 ;
+  - crête de la pluie 9,0 dB sous la crête du moteur de la Golf à mi-régime ; chuintement des pneus 3,7 dB au-dessus de l'averse dans sa bande à 50 km/h.
+- **Vérifié** :
+  - `test_audio_pluie` : 16 cas OK ; 65 tests CPU OK après synchronisation avec main (a1cfdbc) ;
+  - essuie-glaces : phase du son = phase de l'image après 10 min de pas (écart 0) ;
+  - tunnel : coupure en 0,31 s, reprise en 0,51 s ;
+  - coût : 0,025 ms par bloc en vue Cockpit à 130 km/h ;
+  - `WFS_MOMENT=nuit WFS_BANC=parcours` (sur 91e0591) : parcours complet 0 écart, vue Cockpit 0 écart, « PLUIE vue extérieure » puis « vue Cockpit » au journal ;
+  - captures (`captures_pr.sh WFS-288 partie2a`, filtre audio) : les 24 courbes audio existantes sont identiques octet pour octet à main, 3 `pluie-*` sont nouvelles.
+- **Limites** : sons des essuie-glaces, résonances du toit et du pare-brise, isolation de l'habitacle et zones d'écoute des gouttes et des bulles sans source lisible ([à vérifier]) ; rien n'a été écouté sur un vrai téléphone.
