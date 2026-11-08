@@ -7,7 +7,9 @@
 //  4. virages-rond-point-sans-aide-NN / -aide-NN : rond-point de la Ville aux flèches, aide désactivée puis activée ;
 //  5. virages-cercle-10kmh : cercles volant à fond à 10 km/h (Golf en bleu, M4 en rouge) et cercle de la fiche (blanc) ;
 //  6. virages-gp-aide-avant-NN / -apres-NN (WFS-258, vidéo de l'utilisateur) : Grand Prix, Gallardo lancée à pleine vitesse,
-//     aide activée, gaz tenu, volant lâché, 1er virage (épingle de 20 m) ; « avant » : l'aide ne ralentit pas (g_avantWfs258).
+//     aide activée, gaz tenu, volant lâché, 1er virage (épingle de 20 m) ; « avant » : l'aide ne ralentit pas (g_avantWfs258) ;
+//  7. classement (sans capture) : Course à 5 de 2 km sur les 4 cartes (tirage fixe), joueur gaz tenu (pilote automatique), aide activée, avec et
+//     sans ralentissement de l'aide : place, temps, images hors route (virages.txt ; décision du PO : jamais systématiquement dernier).
 // Mesures sans GPU (rayons, épingles, choc) : virages.txt (mêmes calculs que tests/test_virages_fleches.cpp).
 #include <cstdio>
 #include <cstdlib>
@@ -18,12 +20,14 @@
 #include "../render/renderer.h"
 #include "../ui/text.h"
 #include "conduite_banc.h"
+#include "course5.h"
 #include "course_system.h"
 #include "game.h"
 #include "trace_cartes.h"
 #include "virages_banc.h"
 
 namespace wfs {
+const std::vector<course5::Ordinateur>* course5Ordinateurs();   // course5_system.cpp (accroche de WFS-272)
 namespace {
 using namespace banc_virages;
 
@@ -194,6 +198,34 @@ int premierVirageGP(Game& g, Renderer& r, bool avant, const std::string& out, do
     return pris < 8 ? 1 : 0;
 }
 
+// 7. WFS-258 : Course à 5 de 2 km, joueur au pilote automatique (gaz tenu, suit sa file), aide activée ; place à l'arrivée
+int classementCourse5(Game& g, Renderer& r, const char* carte, bool avant, std::string& rapport, double& temps) {
+    modeCourse() = ModeCourse::Course5; kmCourse5() = 2;
+    reglagesConduite().aideDirection = true;
+    if (!g.init(r, "golf", carte)) { modeCourse() = ModeCourse::Checkpoint; return 1; }
+    g_avantWfs258 = avant;
+    g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) g.update(1.0 / 60);
+    g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
+    const Player& p = g.player();
+    const Course* c = activeCourse();
+    int herbe = 0, n = 0;
+    for (; n < 60 * 300 && !(c && c->state == RaceState::Over); n++) {
+        g.update(1.0 / 60); temps += 1.0 / 60; c = activeCourse();
+        if (c && c->playing()) herbe += std::abs(p.playerX) > 1;
+        if (n % 600 == 0) g.render(temps);
+    }
+    int place = 1;
+    if (const auto* os = course5Ordinateurs()) for (const auto& o : *os) place += o.g.done ? 1 : 0;
+    char l[220];
+    std::snprintf(l, sizeof l, "- %s, %s : %s, place %d/5, %.1f s de course, %d image(s) hors route\n", carte,
+                  avant ? "sans ralentissement (main)" : "aide qui ralentit", c && c->state == RaceState::Over ? "arrivé" : "PAS arrivé", place,
+                  c ? c->raceTime : 0.0, herbe);
+    rapport += l; WFS_LOG("classement : %s", l);
+    g_avantWfs258 = false; g.setAutopilot(false); g.shutdown();
+    modeCourse() = ModeCourse::Checkpoint;
+    return 0;
+}
+
 } // namespace
 
 int benchVirages(Game& g, Renderer& r, const std::string& out) {
@@ -221,6 +253,9 @@ int benchVirages(Game& g, Renderer& r, const std::string& out) {
     ecarts += choc(g, r, false, out, temps);
     ecarts += premierVirageGP(g, r, true, out, temps);    // 6. WFS-258 : aide qui ralentit à temps
     ecarts += premierVirageGP(g, r, false, out, temps);
+    rapport += "## 7. Course à 5 de 2 km, joueur gaz tenu (pilote automatique), aide activée : avec et sans ralentissement de l'aide\n";
+    for (const char* carte : {"ville", "campagne", "plage", "circuit"})   // tirage fixe du banc (graine 1234 sous WFS_BANC)
+        for (bool avant : {true, false}) ecarts += classementCourse5(g, r, carte, avant, rapport, temps);
     const banc_conduite::Virage* rp = nullptr;   // 4. rond-point de la Ville, aide désactivée puis activée
     const std::vector<banc_conduite::Virage> vs = banc_conduite::virages();
     for (const auto& v : vs) if (std::strstr(v.nom, "rond-point de la Ville")) rp = &v;
