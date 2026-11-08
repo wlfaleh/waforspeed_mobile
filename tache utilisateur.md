@@ -122,3 +122,7 @@ demande utilisateur :
 
 - Mettre I9 : budget par image (appels de dessin, triangles, par famille) visible sur le téléphone (via smart-brainstorming, 2026-11-08)
 ( PO, 2026-11-08 13:03:29 UTC : c'est fait — ajouté à **WFS-317** (RG-01), pas de nouveau ticket : la ligne « Rendu » des Réglages et le fichier de mesure montreront le nombre de dessins et de triangles par image, si possible par famille (décor, voitures, piétons). Le développeur de WFS-317 l'ajoute avant de mesurer sur ton téléphone ; on saura quoi corriger en premier. )
+
+- Voiture fantôme en mode Checkpoint : c'est quoi ? la mettre dans les Réglages ; les réglages en onglets sont-ils créés ? (conversation avec le PO, 2026-11-08 14:00 UTC)
+( PO : c'est le fantôme de votre record (WFS-125). **WFS-318** (P3) créé : réglage « Fantôme du record : Affiché / Caché » dans l'onglet Affichage + étiquette « Votre record · temps ». Les onglets : oui, **WFS-291** existe (P3, après WFS-290 boutons Réglages / Fermer) ; WFS-318 passe juste après. )
+( PO, 2026-11-08 14:05 UTC — noté : WFS-290, 291 et 318 passent **après** le chantier « Paquets de cartes » (téléchargement des cartes). )
