@@ -5259,3 +5259,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Captures ouvertes : 4 gros plans du rétroviseur (Golf jour, Golf nuit Ville, Golf et SF90 Plage de nuit), 21 paires avant / après, X5 Plage de nuit. Rétroviseur de nuit sur la Plage : glace 14,6 contre ciel 24,9 (Golf), 16,3 contre 16,1 (SF90), mesurés par le lead dev.
 - Diff relu en entier (5 fichiers, zone E10 / E3) ; `test_regard_cockpit` recompilé et relancé : OK. Mesures dans les seuils de l'arbitrage n° 2 du PO.
 - Statut : 🟡 À valider (utilisateur) ; ligne dans `qa/Check.md` ; ligne #251 retirée de `suivi-pr.md` ; développeur libre (suivant réservé : WFS-315).
+
+### 2026-11-08 06:18:00 — WFS-269 : 2e refus du lead dev corrigé, PR #256 de nouveau à relire (Claude, Agent 0 developer)
+- **Corniche** : décor uni (`P_UNI`) retiré des receveurs (cause des dents de scie sous le surplomb, des traînées et des taches) : `bateaux-vue`, `jeux-vue`, `epingle-dessus`, `lacets-dessus`, `rond-point-dessus`, `cafe-vue` identiques à main ; gain restant sur les villas du kit à l'ombre (`marina`).
+- **Ville** : vrais gros plans au pied des façades (sans / avec, même binaire) : pied de façade à l'ombre −14,3 % et −5,7 %, au soleil −1,2 % et 0,0 %, nuit −0,2 % ; décisions du PO de 04:42 appliquées.
+- **Zone** : calcul des murs du kit dans `eclairage_precalcule.*` (`occlusionKit`, `appliquerKit`) ; accroche de 10 lignes dans `archi_carte.cpp` (annoncée plus haut).
+- **Mesures** : 67 tests CPU OK ; coût en course neutre (main 771/771 ms Haute, 334/332 Basse ; branche 784/771, 343/330) ; chargement Ville ≈ +1,0 s sur PC. Synchronisé avec main (conflit `scene.frag` avec WFS-263 résolu en gardant les deux). Lead dev rappelé.
