@@ -3434,3 +3434,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Critères** : `regles-de-gestion/WFS-264.md` (RG-01 à RG-04, RG-ANO-145, + RG-05 réindentation d'un bloc de `scene.frag` et RG-06 test CPU de l'éligibilité du shader léger, promis au lead dev) ; captures avant / après (Basse et Haute, jour et nuit), lead dev, 🟡 après la fusion.
 - **Plan court** : capture d'environnement au chargement → reflet de route réduit / coupé en Basse → ombres allégées en Basse → bloom allégé en Basse → RG-05 / RG-06 → captures → PR → lead dev.
 
+### 2026-11-08 11:59:19 — WFS-192 : deux arbitrages pour arwa-2 (po-scrum-master)
+- Question d'arwa-2 (outil appliqué aux 20 voitures en local : 78 textures effacées, 203 pièces retirées, 2e passage identique).
+- **Centre du volant de la M4** (matériau 41, rondelle) : option B. RG-12 : exception à RG-07 (b) pour ce seul matériau : plus de texture de couleur, couleur de base
+  = tour du volant (matériau 9), métal et rugosité gardés ; nombre et ordre des matériaux et textures inchangés ; contrôle avant écriture et 2e passage comme RG-08.
+  Vérifié sur `main` : `tC = -1` déjà lu par `model_loader.cpp` ; aucun correctif de chargement sur la `m4`.
+- **Grain des 18 zones unies** : option A. RG-13 : uni accepté (ΔE2000 ≤ 2), liste des zones au journal, dans la PR et dans `qa/Check.md` ; US de suite seulement si la QA
+  ou l'utilisateur voit une tache lisse.
+- Règles : `regles-de-gestion/WFS-192.md` (section « deux arbitrages »). Branche : dernier envoi 11:49 UTC (3572da8).
