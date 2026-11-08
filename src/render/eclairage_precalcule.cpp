@@ -124,7 +124,6 @@ const Directions& directions() {
 float ciel(const Grille& g, const vec3& p, const vec3& n) {
     const vec3 t = normalize(std::fabs(n.y) < 0.9f ? cross(n, vec3{0, 1, 0}) : cross(n, vec3{1, 0, 0})), b = cross(n, t);
     const vec3 o = p + n * DECALAGE_M;
-    const int pas = (int)(PORTEE_M / (VOXEL_M * 0.5f));
     int libres = 0;
     Grille::Curseur cu;
     for (const vec3& dl : directions().d) {
@@ -133,8 +132,8 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
         // compter comme caché assombrirait deux fois toute façade dégagée (essai au banc : casino de la Corniche) : libre
         if (d.y < -0.05f) { libres++; continue; }
         bool touche = false;
-        for (int s = 1; s <= pas && !touche; s++) {
-            const vec3 q = o + d * (s * VOXEL_M * 0.5f);
+        for (float t = VOXEL_M * 0.5f; t <= PORTEE_M && !touche; t += std::max(VOXEL_M * 0.5f, t * PAS_CROISSANCE)) {
+            const vec3 q = o + d * t;
             touche = g.contient(cellule(q.x), cellule(q.y), cellule(q.z), cu);
         }
         libres += !touche;
