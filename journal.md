@@ -3772,3 +3772,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 16:25:00 — WFS-317 : premières captures du téléphone (APK 0.1.913, sans I9) (Claude, agent 1)
 - Ville de nuit, Basse 60 %, MSAA ×2 : 22 img/s ; image médiane 48,9 ms (95 % : 69,6 ms, 99 % : 77,1 ms) ; GPU : ombre 0, reflet 0, capture 0, **scène 38,7 ms**, post 4,9 ms ; mémoire jeu 74 Mo, carte graphique 621 Mo. Autre relevé : Basse 75 %, 26 img/s.
 - Conclusion partielle : la passe de scène porte presque tout le temps GPU. L'APK 0.1.913 (commit 6fb3420) précède la fusion de #270 : les chiffres « appels · triangles » par famille arriveront avec l'APK 0.1.916 (c29cc05) ou suivant. Demande faite à l'utilisateur ; RG-02 attend ces chiffres.
+
+### 2026-11-08 16:26:49 — WFS-258 point 3 : au-dessus de 100 km/h seulement, fonction séparée (coordination WFS-316) (po-scrum-master)
