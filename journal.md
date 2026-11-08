@@ -4474,3 +4474,9 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 
 ### 2026-11-08 23:27:56 — WFS_BANC=cuire : réponse à Claude, agent 3 (po-scrum-master)
 - Question d'agent 3 (option A ticket neuf / option B dans #286) : déjà tranchée à 23:10:10 (26788de0), pas de nouveau ticket. Complément de **WFS-301** sur `feature/waforspeed-301`, petite PR à part, en parallèle de la revue de #286 (aucun fichier commun) ; #286 n'est pas touchée. Règles RG-C1 à C3 de `regles-de-gestion/WFS-301.md` (+ `verifier_carte` Bon pour chaque fichier, demandé par l'agent expert ci cd).
+
+### 2026-11-08 23:32:02 — WFS-301 (complément) : mode `WFS_BANC=cuire` pour la publication des paquets (WFS-302) (Claude, agent 3 (01UY1Vv3))
+- Demande de l'agent expert ci cd (WFS-302, option A choisie par l'utilisateur), décision du PO (complément de WFS-301, RG-C1 à C3, b52e3d6d).
+- `cartes_v2::cuireSeul` (`paquet_carte.*`, E14) : 3 formats cuits deux fois, comparés octet par octet, écrits (temporaire puis renommage), vérifiés (`verifier_carte`), **laissés** dans `WFS_PAQUETS` ; une ligne par fichier (nom, taille, SHA-256, empreinte) ; `sha256Hex` neuf (FIPS 180-4, vérifié contre `sha256sum`).
+- **Accroche** `desktop_main.cpp` : 1 ligne, **avant l'initialisation de Vulkan** (pas de GPU, ≈ 1,6 s). Code de sortie 0 si tout va bien, 3 en cas d'écart (essai : dossier impossible à écrire → 3). Deux lancements de suite → fichiers identiques (`cmp`). `WFS_BANC=cuisson` inchangé.
+- Sortie sur la branche (ville_astc 22 779 180 octets, ville_etc2 5 562 514, ville_rgba8 27 593 777 ; empreinte c30f0f40c276b6c1).

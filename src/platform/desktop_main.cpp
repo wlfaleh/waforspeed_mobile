@@ -151,6 +151,7 @@ int main(int argc, char** argv) {
     // taille des captures (WFS_TAILLE=2400x1080 pour tester un grand écran), 1280x720 par défaut
     unsigned cw = 1280, chh = 720;
     if (const char* t = std::getenv("WFS_TAILLE")) std::sscanf(t, "%ux%u", &cw, &chh);
+    if (const char* b = std::getenv("WFS_BANC"); b && !std::strcmp(b, "cuire")) { carte::dossierPaquets() = std::getenv("WFS_PAQUETS") ? std::getenv("WFS_PAQUETS") : "build/paquets"; return cartes_v2::cuireSeul(g_root) > 0 ? 3 : 0; }   // WFS-301 (accroche, RG-C1 à C3) : paquets à publier (WFS-302), sans Vulkan
     if (!vk.init(nullptr, cw, chh)) return 1;
     const double tVk = nowSeconds();
     Renderer r; r.init(vk);
