@@ -4198,3 +4198,8 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
   - Le banc `campagne` sort en « échec » des deux côtés (arrêt de 4,0 s sur la route du col, limite 3 s) : défaut déjà présent sur main, il ne vient pas de ce ticket.
 - **Captures** : 8 avant / après dans `qa/pr/WFS-292/`. Ligne 🆕 ajoutée dans `suivi-pr.md`.
 - **Fichiers touchés** : `src/render/effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`. Aucune accroche.
+
+### 2026-11-08 21:18:17 — WFS-292 : PR #279 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : 5 paires de captures ouvertes, tout le diff lu (`bench_effets.cpp`, `effets_particules.h`, `effets_systeme.cpp`). Bon : RG-03 (vrai choc au banc, cause nommée : le pilote automatique évitait la voiture), RG-02 (rien de lumineux la nuit), zone respectée.
+- Refus : (1) RG-04 non tenue (Golf grise de nuit en Campagne) : l'arbitrage du PO excluait `post.frag`, une nouvelle décision écrite du PO est nécessaire ; (2) fumée de jour en taches rondes espacées et non en nappe, rapport médian 1,17 < 1,3 ; (3) « à remplir » resté dans la description ; (4) capture de Ville de nuit (RG-05) manquante ; (5) 11 commits de retard sur main.
+- **Pour le PO** : trancher RG-04 de WFS-292 (retirer de ce ticket et créer un ticket à part, ou autoriser `post.frag`).
