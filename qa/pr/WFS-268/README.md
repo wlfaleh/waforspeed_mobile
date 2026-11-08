@@ -1,12 +1,14 @@
 # WFS-268 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-268` comparée à `origin/main` ; bancs : cartes ; filtre : `@(carte-ville-casino|carte-ville-casino-nuit|carte-ville-feux-nuit|carte-ville-residentiel|carte-plage-cafe-vue|carte-plage-corniche|nuit-plage-corniche|carte-campagne-jour|carte-campagne-nuit|carte-campagne-col|carte-circuit-depart|carte-circuit-depart-nuit|carte-circuit-jour)`.
+Branche `feature/waforspeed-268` comparée à `origin/main` ; bancs : cartes ; filtre : `@(carte-ville-casino|carte-ville-casino-nuit|carte-ville-feux-nuit|carte-ville-residentiel|carte-plage-cafe-vue|carte-plage-corniche|nuit-plage-corniche|carte-campagne-jour|carte-campagne-nuit|carte-campagne-col|carte-campagne-vaches|carte-campagne-vaches-nuit|carte-circuit-depart|carte-circuit-depart-nuit|carte-circuit-jour)`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
 | `carte-campagne-col` | ![avant](avant-carte-campagne-col.jpg) | ![après](apres-carte-campagne-col.jpg) |
 | `carte-campagne-jour` | ![avant](avant-carte-campagne-jour.jpg) | ![après](apres-carte-campagne-jour.jpg) |
 | `carte-campagne-nuit` | ![avant](avant-carte-campagne-nuit.jpg) | ![après](apres-carte-campagne-nuit.jpg) |
+| `carte-campagne-vaches-nuit` | ![avant](avant-carte-campagne-vaches-nuit.jpg) | ![après](apres-carte-campagne-vaches-nuit.jpg) |
+| `carte-campagne-vaches` | ![avant](avant-carte-campagne-vaches.jpg) | ![après](apres-carte-campagne-vaches.jpg) |
 | `carte-circuit-depart-nuit` | ![avant](avant-carte-circuit-depart-nuit.jpg) | ![après](apres-carte-circuit-depart-nuit.jpg) |
 | `carte-circuit-depart` | ![avant](avant-carte-circuit-depart.jpg) | ![après](apres-carte-circuit-depart.jpg) |
 | `carte-circuit-jour` | ![avant](avant-carte-circuit-jour.jpg) | ![après](apres-carte-circuit-jour.jpg) |

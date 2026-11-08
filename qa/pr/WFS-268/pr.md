@@ -9,7 +9,7 @@
 - **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
 - **Limites et risques connus** : À REMPLIR
 
-## Captures pour le lead dev (13 après)
+## Captures pour le lead dev (15 après)
 
 Dossier : [`qa/pr/WFS-268`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268) — produit par `tools/qa/captures_pr.sh`.
 
@@ -18,6 +18,8 @@ Dossier : [`qa/pr/WFS-268`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `carte-campagne-col` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-campagne-col.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-campagne-col.jpg?raw=true) |
 | `carte-campagne-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-campagne-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-campagne-jour.jpg?raw=true) |
 | `carte-campagne-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-campagne-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-campagne-nuit.jpg?raw=true) |
+| `carte-campagne-vaches-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-campagne-vaches-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-campagne-vaches-nuit.jpg?raw=true) |
+| `carte-campagne-vaches` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-campagne-vaches.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-campagne-vaches.jpg?raw=true) |
 | `carte-circuit-depart-nuit` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-circuit-depart-nuit.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-circuit-depart-nuit.jpg?raw=true) |
 | `carte-circuit-depart` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-circuit-depart.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-circuit-depart.jpg?raw=true) |
 | `carte-circuit-jour` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/avant-carte-circuit-jour.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-268/qa/pr/WFS-268/apres-carte-circuit-jour.jpg?raw=true) |
