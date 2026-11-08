@@ -50,6 +50,9 @@ constexpr double TOMBE = 1.35, HAUTEUR_CHUTE = 0.6, AMORCE_CHUTE = 0.08;   // ra
 // études de conduite réelle de Würzburg et Dresde) ; la borne de 45° reste pour les cas extrêmes. v ≤ √(g · R · tan 25°) au point le
 // plus serré des VUE_VIRAGE_M (+ distance de freinage) devant lui, atteint en freinant à FREIN_VIRAGE (4 m/s², freinage doux)
 constexpr double INCLINAISON_CONFORT = 0.4363323129985824, VUE_VIRAGE_M = 15, FREIN_VIRAGE = 4;
+// RG-05 : pilote éjecté d'un deux-roues couché : écart latéral (m, + à droite) où il est couché, à 1 m du côté opposé à la chute
+// (sens : côté de la chute, ±1), et jamais à moins de 1 m du bord de la chaussée (ni sur le trottoir : corps en travers ≈ 1,8 m)
+inline double lateralPiloteEjecte(double latDeuxRoues, int sens) { return std::clamp(latDeuxRoues - (sens >= 0 ? 1.0 : -1.0), -(RW - 1.0), RW - 1.0); }
 constexpr int TRAFIC_DESSINES_MAX = 14;   // véhicules du trafic dessinés par image, au plus (WFS-20, WFS-134)
 constexpr double SAFE_TIME = 1.1;           // temps de sécurité derrière la voiture de devant (s)
 constexpr double SAFE_MIN = 5.0 / M;        // distance minimale à l'arrêt (unités)

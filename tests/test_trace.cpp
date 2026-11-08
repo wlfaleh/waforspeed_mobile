@@ -348,6 +348,18 @@ static void verifierDeuxRoues() {
                     "puis immobile à %.2f° près, vitesse finale %.0f km/h\n", acc, c.crashed ? "accidenté" : "intact", TOMBE * DEG, tCouche, pireCouche * DEG, c.speed * M * 3.6);
         VERIFIE(acc == 1 && c.crashed && tCouche > 0.3 && tCouche < 1.5 && pireCouche < 1e-6, "WFS-232 RG-05 : choc, chute en %.2f s", tCouche);
     }
+    // RG-05 (retour du lead dev, 2e revue) : le pilote éjecté reste couché sur la chaussée (corps en travers : 1 m de marge à chaque
+    // bord), du côté opposé à la chute, à toute position du deux-roues couché (la glissade va jusqu'à ±1,12 demi-largeur)
+    {
+        bool ok = true; double pire = 0;
+        for (double lat = -1.12 * RW; lat <= 1.12 * RW + 1e-9; lat += 0.05) for (int sens : {-1, 1}) {
+            const double p = lateralPiloteEjecte(lat, sens);
+            pire = std::max(pire, std::abs(p));
+            ok = ok && std::abs(p) <= RW - 1.0 + 1e-9 && (std::abs(lat) > RW - 2.0 || std::abs(p - (lat - sens)) < 1e-9);
+        }
+        std::printf("WFS-232 RG-05 : pilote éjecté : au plus %.2f m de l'axe (chaussée ±%.1f m, bord à 1 m), du côté opposé à la chute\n", pire, RW);
+        VERIFIE(ok, "WFS-232 RG-05 : pilote éjecté hors de la chaussée (%.2f m)", pire);
+    }
     // RG-02 (retour du lead dev, 4) : un pilote par deux-roues dessiné : la sélection du dessin (Traffic::dessines, celle de
     // TrafficSystem::render) ne donne jamais plus de deux-roues que la file des pilotes n'en prend (deux_roues.h : PILOTES_MAX), à toute
     // distance (pilotes dessinés jusqu'à 300 m, comme le trafic) ; 2 min de trafic à la Ville et à la Corniche, Haute et Basse

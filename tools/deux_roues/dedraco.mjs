@@ -1,5 +1,5 @@
 // WaForSpeed — WFS-232 : décompresse un .glb Draco (KHR_draco_mesh_compression) en .glb ordinaire, lisible par convert_car.mjs.
-// usage : DRACO=<dossier où « npm install draco3dgltf » a été fait> node deux_roues/dedraco.mjs entree.glb sortie.glb
+// usage : DRACO=<dossier où « npm install draco3dgltf@1.5.9 » a été fait> node deux_roues/dedraco.mjs entree.glb sortie.glb
 // (draco3dgltf : décodeur officiel de Google, Apache-2.0, installé hors du dépôt : il ne sert qu'à cette conversion)
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';

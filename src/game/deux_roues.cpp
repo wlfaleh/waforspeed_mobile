@@ -210,7 +210,7 @@ void dessinerFile(Renderer& r, const vec3& cam) {
     for (int i = 0; i < g_n; i++) {
         const Entree& e = g_file[i];
         Mulberry32 R(e.graine * 2654435761u + 0x2d2u);
-        const Humain& H = g_h[R.next() < 0.7 ? 0 : 1];   // 7 pilotes sur 10 sont des hommes (choix de conception, à valider par le PO)
+        const Humain& H = g_h[R.next() < 0.7 ? 0 : 1];   // 7 pilotes sur 10 sont des hommes (choix de conception gardé par le PO le 2026-11-08, WFS-232)
         ApparencePersonnage app;
         app.peau = peauApparence(conducteurs::albedoPeau(H.indice)); app.corps = H.p.corps;
         tenue::tenueLieu(tenue::carteCourante(), e.graine, H.femme, app);

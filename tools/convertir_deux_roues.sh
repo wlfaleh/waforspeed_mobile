@@ -5,7 +5,7 @@
 #   SCOOTER=<Abhay-s-8/Portfolio>/models/ola_electric_scooter_red_color/scene.gltf          (OLA Electric Scooter, neshallads, CC BY 4.0)
 #   ROUTIERE=<lxorb/mechanica>/web/store/models/generic/adventure/model.glb (Draco)        (Honda CB500X, DevanirGrau, CC BY 4.0)
 #   SPORTIVE=<siddharth-vss/CAR-Camera-test>/static/kawasaki_ninja_zx-6r/scene.gltf       (Kawasaki ninja ZX-6R, valvetin, CC BY 4.0)
-#   DRACO=<dossier où « npm install draco3dgltf » a été fait> (pour la routière seulement)
+#   DRACO=<dossier où « npm install draco3dgltf@1.5.9 » a été fait> (pour la routière seulement ; Apache-2.0)
 # usage : SCOOTER=… ROUTIERE=… SPORTIVE=… DRACO=… tools/convertir_deux_roues.sh [scooter|routiere|sportive …]   (sans nom : les 3)
 set -e
 ICI="$(cd "$(dirname "$0")" && pwd)"; SORTIE="$ICI/../assets/cars/deux_roues"; TMP="$(mktemp -d)"
@@ -27,10 +27,11 @@ if veut scooter; then   # roues dans un seul nœud « wheels_Wheel » ; logo « 
   WFS_ROUES_2R='wheels_Wheel' WFS_OPAQUE='Second|Base' WFS_TEXTURES='Base|couleur=deux_roues/scooter-carrosserie-sans-logo.png|mr=deux_roues/scooter-carrosserie-metal-rugosite-sans-logo.png' \
     conv scooter "${SCOOTER:?}" 1.859 180 ''
 fi
-if veut routiere; then  # Draco décompressé, allégé (erreur 0,006), bagage / plaque / logos retirés, pièces sombres, pneus et chaîne allégés
+if veut routiere; then  # Draco décompressé, allégé (erreur 0,006), bagage / plaque / logos / lettres « 500X » en relief du réservoir
+  # (BlankDecalOccluded_M) retirés, pièces sombres, pneus et chaîne allégés
   DRACO="${DRACO:?}" node deux_roues/dedraco.mjs "${ROUTIERE:?}" "$TMP/cb500x.glb"
   node simplifier_voiture.mjs "$TMP/cb500x.glb" "$TMP/cb500x_s.glb" AUCUNE 0.006
-  WFS_EXCLURE='NylonBag|FabricBag|NylonStrap|HondaDecal|^logo$|Placa' WFS_EXCLURE_NOEUD='^Object_(143|145|147|149|151) ' WFS_PHARE='^Object_(175|259) ' \
+  WFS_EXCLURE='NylonBag|FabricBag|NylonStrap|HondaDecal|^logo$|Placa|BlankDecalOccluded' WFS_EXCLURE_NOEUD='^Object_(143|145|147|149|151) ' WFS_PHARE='^Object_(175|259) ' \
   WFS_ROUES_2R='^Object_(20|22|24|26|28|30|265|267|269|271|273|275) ' \
   WFS_ALLEGER='HondaTire4_M=0.12!;Chain_M=0.15!;preto_fosco_l=0.45!;preto_semibrilho=0.45!;preto_fosco=0.5!;borracha=0.5!;disco_freio=0.5!;aco_parafuso=0.5!' \
     conv routiere "$TMP/cb500x_s.glb" 2.155 auto 'Lanterna|Stoplight'

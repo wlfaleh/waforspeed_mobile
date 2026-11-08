@@ -237,7 +237,7 @@ private:
         mat4 solPilote = chaussee;
         if (ejecte) {
             const double latB = (c.offPrec + (c.offset - c.offPrec) * al) * RW;
-            const double latP = std::clamp(latB - (incl >= 0 ? 1.0 : -1.0), -(RW - 1.0), RW - 1.0);
+            const double latP = lateralPiloteEjecte(latB, incl >= 0 ? 1 : -1);
             const TrackPoint pp = t.pointLisse(s - 1.8 / M, latP);
             solPilote = translate({(float)pp.x, (float)pp.y, (float)pp.z}) * rotateY((float)-pp.th) * rotateX((float)pp.slope);
         }
@@ -624,8 +624,8 @@ void benchDeuxRoues(Game& g, Renderer& r, const std::string& out) {
                     v.clear(); v.push_back(poser(1, 1, 9, 40)); ecarter(v); g.update(1.0 / 60);
                     capture("trafic-motos-choc-1", v);
                     Traffic::crash(T.cars[v[0]], 0.6, 1);   // même glissade que le choc du joueur (Traffic::collide)
-                    image(15); capture("trafic-motos-choc-2", v);   // 0,25 s : il bascule, le pilote encore dessus
-                    image(75); capture("trafic-motos-choc-3", v);   // 1,5 s : couché, glissé ; pilote au sol à côté
+                    image(8); capture("trafic-motos-choc-2", v);    // 0,13 s : il bascule (≈ 25°), le pilote encore dessus (éjecté passé 45°)
+                    image(82); capture("trafic-motos-choc-3", v);   // 1,5 s : couché, glissé ; pilote au sol, sur la chaussée
                 }
             } else {
                 // (d) courbe, à la vitesse du trafic : routière partie 35 m derrière la Golf (arrêtée 6 m avant la courbe), dans la file
