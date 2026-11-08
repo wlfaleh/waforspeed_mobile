@@ -3442,3 +3442,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Grain des 18 zones unies** : option A. RG-13 : uni accepté (ΔE2000 ≤ 2), liste des zones au journal, dans la PR et dans `qa/Check.md` ; US de suite seulement si la QA
   ou l'utilisateur voit une tache lisse.
 - Règles : `regles-de-gestion/WFS-192.md` (section « deux arbitrages »). Branche : dernier envoi 11:49 UTC (3572da8).
+
+### 2026-11-08 12:01:07 — WFS-316 : autre développeur que l'agent dev conduite, décision de l'utilisateur (po-scrum-master)
+- Réponse de l'utilisateur à la question du PO (transmise par l'agent qa lead) : « autre développeur ». WFS-316 n'est **pas** confié à Claude, agent dev conduite
+  (WFS-295 et WFS-241 refusés) ; l'exception du 2026-11-07 17:02 ne s'applique pas à WFS-316, la règle des KO s'applique.
+- Écrit dans `TACHES.md` (bandeau et ligne WFS-316), `regles-de-gestion/WFS-316.md` (Développeur, Suivi), `tache utilisateur.md`, `track-agent.md`.
+- WFS-316 reste ⏳ Prêt (P1), donné au premier autre développeur qui demande, avec le skill `expert-conduite`. Aucune attribution d'avance.
