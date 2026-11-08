@@ -4323,3 +4323,6 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 ### 2026-11-08 22:11:37 — Recette manuelle APK 928 (KO) : ANO-179 (délavé en pleine course) ajoutée à WFS-328 (RG-05), PR #282 bloquée sans preuve (po-scrum-master)
 
 ### 2026-11-08 22:12:35 — ANO-180 / WFS-333 : voiture du trafic collée au joueur, de travers, à sa vitesse (vu par le PO après la question de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:13:20 — Recette APK 928 complétée : points 11 et 12, ANO-181 (agent qa lead)
+- Point 11, voiture rouge de travers collée au joueur : confirmé (ANO-180 / WFS-333). Point 12, voiture noire visible sous la planche en vue Cockpit : probable, ANO-181 (mineure, à confirmer). Leçon notée : regarder aussi les images en grand.

@@ -18,7 +18,9 @@
 | 7 | Performance | **À REVOIR** | Réglages des vidéos 1, 3, 4, 5 et 6 | Chiffres présents en bas des Réglages mais illisibles sur les planches : pas de comparaison possible avec l'APK 918. |
 | 8 | Foule en Ville et menu fluide | **Non visible** | — | Aucune image du menu principal ; foule peu visible en vue Cockpit de nuit. |
 | 9 | Écran de chargement | **OK** | `apk928-chargement.jpg` | v0.1.928, « Construction de la ville 70 % », 55 Mo lus, mémoire jeu 212 Mo, carte graphique 146 Mo, partie 1 : tout est lisible. |
-| 10 | Autres défauts | voir ANO-179 | — | Rien d'autre de nouveau sur ces planches. |
+| 10 | Autres défauts | voir les points 11 et 12 | — | Rien d'autre sur les planches réduites. Les points 11 et 12 ont été vus en grand, à la demande du PO. |
+| 11 | Voiture rouge du trafic de travers à côté du joueur (point ajouté par le PO) | **KO** (confirmé) | `2026-11-08-apk928-video1-voiture-de-travers.jpg` | De 232,9 à 229,5 s, 80 à 129 km/h : une voiture rouge du trafic avance **en travers**, à moitié sur le trottoir de droite, collée à la voiture du joueur et à sa vitesse, pendant 3,4 s. Elle quitte l'image à 229,0 s. → ANO-180 / WFS-333 (créés par le PO). |
+| 12 | Voiture noire dans l'habitacle en vue Cockpit (point ajouté par le PO) | **Probable, à confirmer** | `2026-11-08-apk928-video4-cockpit-voiture.jpg` | À 40,4 s, la roue avant et l'aile d'une voiture noire qui double par la gauche sont dessinées sous la ligne de la planche de bord, à la place de la portière ; à 40,0 s, elle est devant à gauche. Soit la portière n'est pas dessinée, soit la voiture traverse celle du joueur → **ANO-181** (mineure, à confirmer). |
 
 ## Anomalies
 
@@ -27,6 +29,12 @@
 | ANO-177 (départ délavé) | Bloquante | toujours présente dans 928 (WFS-328 en PR #282) ; dure jusqu'à 5 s, vue Cockpit comprise |
 | **ANO-179** (image délavée en pleine course, Checkpoint) | **Bloquante** | 🆕 nouvelle, à rattacher à WFS-328 |
 | ANO-159 (boutons) | — | à revoir (WFS-290 en cours) |
+| ANO-180 (voiture de travers) | Bloquante | confirmée (WFS-333) |
+| **ANO-181** (voiture visible dans la portière, cockpit) | **Mineure**, à confirmer | 🆕 nouvelle |
+
+## Leçon pour les prochaines recettes
+
+Regarder chaque vidéo aussi en grand (planches de 640 px au moins par image), pas seulement les planches réduites : le point 11 était invisible à petite taille.
 
 ## Verdict global
 
