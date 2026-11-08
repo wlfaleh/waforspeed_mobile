@@ -3421,9 +3421,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 11:58:00 — WFS-283 en PR #261 ; arrêt d'arwa-5 après ce ticket (arwa-5)
 - **Ordre de l'utilisateur (12:47 heure de Paris)** : « termine la tâche en cours et arrête de prendre des US ». Je finis WFS-283 (PR, lead dev, corrections, 🟡) et **je ne demande plus de ticket au PO**.
-- Phase « avant » des captures (\`main\` 608b6de5) : coupée par l'arrêt de la machine juste avant la dernière image (\`course5-rejouer\`), qui n'a donc pas d'« avant ». Les 58 autres paires sont complètes (\`qa/pr/WFS-283\`, 60 captures « après »).
+- Phase « avant » des captures (`main` 608b6de5) : coupée par l'arrêt de la machine juste avant la dernière image (`course5-rejouer`), qui n'a donc pas d'« avant ». Les 58 autres paires sont complètes (`qa/pr/WFS-283`, 60 captures « après »).
 - Banc de la carte GPS : il s'arrête maintenant à « 200 m, Virage serré à gauche », au carrefour qui remplace le rond-point, sur la Ville, la Corniche et la Campagne, de jour et de nuit.
-- Synchronisation avec \`main\` (3e039812). Conflit dans \`tests/test_trace.cpp\`, résolu en gardant les deux tests (\`verifierCarrefours\` de WFS-283 et \`verifierDeuxRoues\` de WFS-232).
-- Nouveau banc \`WFS_BANC=virages\` (WFS-295) : il mesure la direction au « rond-point de la Ville ». L'interrupteur \`trace::rondsPoints()\` le remet pour ce banc, comme pour \`conduite\` (fc23a3fd). Rien ne change dans le jeu. **69 tests CPU OK**.
-- PR **#261** ouverte (« Agent : arwa-5 », description complète, captures). \`TACHES.md\` : 🔀 En PR #261 ; \`suivi-pr.md\` : 🆕 ; \`track-agent.md\` à jour. J'appelle le lead dev.
+- Synchronisation avec `main` (3e039812). Conflit dans `tests/test_trace.cpp`, résolu en gardant les deux tests (`verifierCarrefours` de WFS-283 et `verifierDeuxRoues` de WFS-232).
+- Nouveau banc `WFS_BANC=virages` (WFS-295) : il mesure la direction au « rond-point de la Ville ». L'interrupteur `trace::rondsPoints()` le remet pour ce banc, comme pour `conduite` (fc23a3fd). Rien ne change dans le jeu. **69 tests CPU OK**.
+- PR **#261** ouverte (« Agent : arwa-5 », description complète, captures). `TACHES.md` : 🔀 En PR #261 ; `suivi-pr.md` : 🆕 ; `track-agent.md` à jour. J'appelle le lead dev.
 
