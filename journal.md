@@ -3481,3 +3481,14 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **RG-07 / RG-08** : textures non listées identiques octet pour octet ; 2e passage « rien à faire » pour les 20 voitures, SHA-256 des 40 `.wfm` / `.lod` identiques après une passe de plus. Laissé tel quel : étiquettes du moteur invisibles capot fermé (Elantra, Mustang).
 - **Budget du téléphone (RG-03)** : 582 → 559 maillages (−23 appels de dessin), 2 367 870 → 2 324 872 triangles, 2 338 810 → 2 323 941 sommets, 122,1 → 119,8 Mo de `.wfm`. **Tests** : 69 tests CPU verts, dont `test_fidelite_voitures` (±1 %), `test_vehicule_lod`, `test_tangentes`. **Licences** (RG-05) : phrase « Modèle modifié pour WaForSpeed (WFS-192) » ajoutée à la ligne « Modifications » des 20 fichiers.
 - Suite : captures `captures_pr.sh` (vitrines-feux des 20 voitures, garage, parcours) en cours, puis PR et lead dev.
+
+### 2026-11-08 12:48:38 — WFS-315 : PR #262 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
+- Captures 2340 × 1080 Golf / X5 / 500 Abarth avant / après (`qa/pr/WFS-315/`) ; regard Normal : fenêtre de la rue 0 % partout, intérieur 34,2-38,2 % (≤ 42 %), bande ≤ 11,9 %, horizon 46,4-46,6 % ; 69 tests verts. Limites écrites dans la PR : place passager sous les boutons du HUD, changement faible sur la Golf (cotes proches des anciennes).
+
+### 2026-11-08 12:52:33 — WFS-315 refusé par le lead dev, PR #262 (lead-dev)
+- 24 paires ouvertes (Golf, X5, 500 Abarth ; jour, nuit, pluie, virage, braquage, carte, Plage de nuit) et tout le diff lu (commit af6cc82).
+- Bloquant : une plaque sombre (couvercle du sac gonflable passager, posé à Y + 0,008 au-dessus du profil de la planche) flotte au-dessus de la ligne de planche côté passager, devant la rue, sur les 24 captures « après » ; elle brille la nuit à la Plage.
+- À revoir en même temps : bord gauche de la boîte à gants qui fait un trait vertical isolé la nuit.
+- Bien : table des largeurs par modèle, œil et repère cohérents, montant droit à sa place, différence X5 / 500 visible, mesures WFS-282 tenues.
+- Remarque au PO : sur la Golf, l'effet « 2 places » reste faible (cotes réelles proches des anciennes) ; l'utilisateur jugera en 🟡.
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/262#pullrequestreview-5817956477
