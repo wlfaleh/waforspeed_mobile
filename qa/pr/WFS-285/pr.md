@@ -29,7 +29,7 @@ Agent : Claude, agent dev Y
     surface recréée en 31 ms
     endurance : retour d'arrière-plan 3 (au menu), surface seule, écran menu gardé, RSS 1457.8 → 1453.9 Mo
     ```
-  - 76 tests CPU verts, parcours complet 0 écart.
+  - 77 tests CPU verts après synchronisation avec `main` (avec WFS-301 dans le même fichier, sans conflit), parcours complet 0 écart.
   - **Compilation Android** : pas de NDK dans le conteneur. `android_main.cpp` est passé à `g++ -fsyntax-only -D__ANDROID__` avec l'en-tête Vulkan Android du système, `jni.h` du JDK et des en-têtes Android minimaux. Aucune erreur dans le fichier, et une erreur glissée exprès est bien détectée.
 - **Limites et risques connus**
   - Le banc tourne en rendu hors écran : il refait les cibles d'écran, pas une vraie surface Android. La vraie preuve est sur téléphone ou sur l'émulateur des bancs du matin : une seule ligne « QA pret » par processus, et `surface recréée en N ms` avec N < 1000.
