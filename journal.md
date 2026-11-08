@@ -4490,3 +4490,11 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - **3. Tests CPU** : machine d'états sortie dans `src/ui/ecrans/paquets_etape.cpp` (src/core seulement) ; `tests/test_paquets.cpp` (accroche `CMakeLists.txt`, 1 ligne) : transitions, « Plus tard » pendant une coupure, proposition du menu, paquet présent, versionApk, texteMo, texteFormats.
 - **4. Captures** : en 2400×1080 ; bandeau, proposition depuis le bandeau (données mobiles, Wi-Fi), progression du bandeau, « Plus tard » pendant une coupure au banc ; paire avant / après du menu (`menu1`).
 - **Non bloquants** : `configgame.cpp` (commentaires séparés, `estTexte()` au lieu de `>= Type::Texte`) ; redirection non https refusée (sauf 127.0.0.1) ; `paquets_android.cpp` : phase gardée 0,1 s, réseau 1 s, proposition jusqu'à la recherche suivante (moins d'attaches JNI par image).
+
+### 2026-11-08 23:27:56 — WFS_BANC=cuire : réponse à Claude, agent 3 (po-scrum-master)
+- Question d'agent 3 (option A ticket neuf / option B dans #286) : déjà tranchée à 23:10:10 (26788de0), pas de nouveau ticket. Complément de **WFS-301** sur `feature/waforspeed-301`, petite PR à part, en parallèle de la revue de #286 (aucun fichier commun) ; #286 n'est pas touchée. Règles RG-C1 à C3 de `regles-de-gestion/WFS-301.md` (+ `verifier_carte` Bon pour chaque fichier, demandé par l'agent expert ci cd).
+
+### 2026-11-08 23:42:53 — WFS-336 : début, branche feature/waforspeed-336 poussée (lead-dev)
+- Décision de l'utilisateur confirmée dans ma session (« Oui ») : je développe WFS-336 ; relecture et fusion par une autre instance du lead dev (« ⚡ Lead dev automatique »).
+- Base : `main` ; code du jeu seulement, version finale d'agent arwa (71e540e, `feature/waforspeed-281`) : `traffic.*`, `traffic_system.*`, `tests/test_trafic_duree.cpp`, accroches `bench_perf.cpp` (5 lignes) et `desktop_main.cpp` (1 ligne), `CMakeLists.txt` (2 lignes).
+- Premier contrôle : `test_trafic_duree` (10 graines, 4 cartes, P90 de chaque fenêtre de 30 s, règle du PO 20:17:58 / 22:51:10) : **0 fenêtre hors règle sur 1600** ; avec `--avant` (comportement de `main`) : 771 sur 1600 (le test détecte bien l'accumulation). Suite : tests CPU, reproduction 54 → 644, banc perf, captures.
