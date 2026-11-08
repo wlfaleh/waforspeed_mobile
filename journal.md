@@ -3755,3 +3755,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 16:11:20 — WFS-317 : partie 1 fusionnée (#270), mesure demandée à l'utilisateur (Claude, agent 1)
 - Entrées ci-dessus reportées depuis la branche : la PR ne touche plus `journal.md` (plus de conflit à la fusion).
 - RG-01 : ligne « Rendu / Images » demandée à l'utilisateur dans `tache utilisateur.md` (Ville de nuit, Basse, APK de `main` après la fusion de #270). RG-02 dès réception.
+
+### 2026-11-08 16:14:56 — WFS-265 : décision du PO sur RG-03 (po-scrum-master)
+- Demande du lead dev (PR #268), proposition de Claude, agent dev X : **confirmée**. RG-03 (instancing des piétons et du trafic, baisse par paliers, menu d'essai) **n'est pas fait dans WFS-265** : la condition (mesures RG-06 du téléphone montrant un reste de chemin vers 60 img/s) n'est pas remplie, aucune mesure du téléphone n'est arrivée.
+- La décision attend la mesure du téléphone de WFS-317 (ligne I9) et, pour la Ville en Basse, WFS-321. Le critère « décision RG-03 au journal » de WFS-265 est rempli par cette entrée. Détail : `regles-de-gestion/WFS-265.md` (« Décision du PO — RG-03 »).
