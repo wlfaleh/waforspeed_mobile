@@ -43,6 +43,9 @@ inline AidesVoiture g_aidesVoiture;
 // WFS-295 : banc seulement (WFS_BANC=virages) : rejoue le comportement d'avant la correction (avance sans 1/(1 − k·n), blocage de
 // 0,6 + 1,2 × impact après un accident, braquage remis à zéro) pour les captures « avant » ; toujours faux dans le jeu
 inline bool g_avantWfs295 = false;
+// WFS-316 : banc seulement : rejoue le comportement d'avant la correction (force centrifuge forfaitaire et cap borné appliqués
+// même volant tenu) pour les mesures « avant » ; toujours faux dans le jeu
+inline bool g_avantWfs316 = false;
 // WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages et ne tient pas la file
 // (comportement de main) ; faux dans le jeu
 inline bool g_avantWfs258 = false;
@@ -108,6 +111,7 @@ private:
     void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
     bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
     std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
+    bool cedeAuDoigt_ = true;   // WFS-258 : la limite de l'aide cède au doigt (sous 95 km/h ; reprend au-dessus de 100 km/h)
     double fileAide_ = 0;   // WFS-258 : file (demi-largeurs) où le joueur a laissé la voiture (maintien de voie de l'aide)
     double finPasX_ = 1e9, finPasD_ = 1e9;   // WFS-258 : pose à la fin du pas précédent (ancienne conduite)
     double facRoute_ = 1;   // WFS-295 : 1 − k·n (rayon à l'écart n de l'axe), au moins 0,2

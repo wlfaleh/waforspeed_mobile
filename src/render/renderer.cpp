@@ -9,6 +9,7 @@
 #include "phares.h"                // WFS-226 : phares des autres voitures notés pour le système de nuit
 #include "cache_pipelines.h"        // WFS-262 (RG-01)
 #include "shader_leger.h"           // WFS-264 (RG-06)
+#include "lod_distance.h"           // WFS-265 (RG-01)
 #include "qualite_auto.h"          // WFS-144 : niveau de netteté (MSAA, anisotrope)
 #include "passes.h"                // WFS-150 : passes enfichables (ordonnanceur, pré-passe, capture, coûts)
 #include "../core/memoire.h"   // WFS-297 (RG-06)
@@ -1343,7 +1344,9 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
     float depth = length(c - camPos_);
     // WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : 4 niveaux de détail choisis par la taille de la voiture à l'écran, fondu tramé
     // écran complémentaire entre deux niveaux (scene.frag) ; jamais de cubes ; Basse, fantôme, police en lots : vehicule_lod.h
-    const auto lod = vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
+    // WFS-265 (2e retour du lead dev, PR #268) : la voiture du joueur est toujours complète, sans fondu (WFS-134), quelle que soit
+    // sa taille à l'écran (vue haute, résolution dynamique) ; les autres suivent les niveaux de détail
+    const auto lod = dessinJoueur ? vehicule_lod::Dessin<Model>{&m.parts, &m.parts, 0.f, 0} : vehicule_lod::dessin(m, depth, focalePx_, qualiteBasse, lots, fantome);
     auto emettre = [&](const std::vector<ModelPart>& parts, float tramage) {   // tramage : 0 aucun, sinon code de scene.frag
     for (size_t pi = 0; pi < parts.size(); pi++) {
         const ModelPart& part = parts[pi];
@@ -1393,7 +1396,8 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
 
 void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float roadHalfWidth) {
     if (!inFrame_ || !m.indexCount) return;
-    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82
+    const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});   // WFS-265 : calculée une fois (classement, shader léger, fondu)
+    const uint8_t vis = classer(sp);   // WFS-82
     if (!vis) return;
     Pending p{m.vb.buf, m.ib.buf, m.premier, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};   // WFS-268 : m.premier
     p.vis = vis;
@@ -1401,12 +1405,18 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
         // voiture, ni route, ni transparent, ni vitre d'immeuble (mêmes exclusions que F_COMPLET de scene.frag)
         static_assert(shader_leger::COMPLET == (MAT_PAINT | MAT_GLASS | MAT_WHEEL | MAT_TAIL | MAT_HEAD | MAT_FANTOME | MAT_ROAD | MAT_BLEND | MAT_INTERIEUR),
                       "shader_leger.h : exclusions différentes des drapeaux du moteur");
-        const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
         p.loin = shader_leger::eligible(mat.flags, length(sp.c - camPos_), sp.r);   // WFS-264 (RG-06) : règle isolée et testée
     }
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, roadHalfWidth};
+    {   // WFS-265 (RG-01) : petit objet sur ses 15 derniers mètres avant sa distance maximale (masquage::distanceMax) : fondu tramé
+        // au lieu d'une coupure nette ; route, trottoirs et sol jamais (bandes de la route, toujours entières)
+        if (sp.r >= 0 && !(mat.flags & (MAT_ROAD | MAT_WALK | MAT_GROUND))) {
+            const float part = lod_distance::partVisible(length(sp.c - camPos_) - sp.r, masquage::distanceMax(sp.r, qualiteBasse, finBrouillard_));
+            if (part < 1.f) p.pc.emissive.w = lod_distance::combinerFondu(0.f, part);
+        }
+    }
     // ombre de contact sous les voitures (RG-05) ; WFS-134 (RG-05) : opacité 0,45 partout, ombre du soleil active ou non
     if (mat.flags & MAT_SHADOWBLOB) { p.pc.color.w *= 0.45f / 0.75f; ombreFaite_ = true; } else ombreFaite_ = false;
     if (mat.flags & MAT_BLEND) transparent_.push_back(p); else opaqueQ_.push_back(p);
@@ -1415,7 +1425,12 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
 void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4& world, const mat4* os, int nOs, uint32_t first, uint32_t count,
                            const ApparencePersonnage* ap, float fondu) {
     if (!inFrame_ || !m.indexCount || !os || nOs <= 0) return;
-    const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82 : avant de prendre une place
+    const masquage::Sphere sp = masquage::monde(world, {m.centre, m.rayon});
+    // WFS-265 (RG-01) : personnes au loin effacées en fondu tramé (lod_distance.h) ; la simulation et leur nombre ne changent pas
+    const float part = lod_distance::partVisible(length(sp.c - camPos_), lod_distance::personnesMax(qualiteBasse));
+    if (part <= 0.f) { masques_++; return; }   // compté comme objet masqué (journal du banc, remarque du lead dev, PR #268)
+    fondu = lod_distance::combinerFondu(fondu, part);
+    const uint8_t vis = classer(sp);   // WFS-82 : avant de prendre une place
     if (!vis) return;
     if (skinUsed_ >= SKIN_MAX_INSTANCES) return;   // au-delà : ignorée (RG-05 de WFS-63)
     const int n = std::min(nOs, SKIN_MAX_OS);

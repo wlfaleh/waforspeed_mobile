@@ -387,7 +387,9 @@ void Game::render(double time) {
         r_->draw(shadowQuad_, shadowMat_, carM * scale({carDef_->d.W * 1.25f, 1.f, carDef_->d.L * 1.12f}));
         RouesPose rouesJoueur = roues::poseJoueur(player_.steer, player_.speed, player_.odo, car_.nRoues ? car_.roues[0].rayon : roues::RW_DEFAUT);   // WFS-60
         if (player_.modeleMonde()) rouesJoueur.braquage = (float)player_.braquageRoues;   // WFS-247 : angle appliqué (joueur + aide, WFS-241), pas le doigt
+        r_->dessinJoueur = true;    // WFS-265 (accroche) : voiture du joueur toujours complète (niveaux de détail du renderer)
         r_->draw(car_, carM, &paint_, &rouesJoueur);
+        r_->dessinJoueur = false;
         if (!dediee) conducteurs::ajouter(car_, carM, carDef_->id, 1);   // WFS-73 (accroche) : conducteur du joueur (pas au garage)
     }
     conducteurs::dessinerFile(*r_, fp.camPos);   // WFS-73 (accroche) : après les piétons, du plus proche au plus loin
