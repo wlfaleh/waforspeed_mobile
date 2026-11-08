@@ -4113,3 +4113,8 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - **RG-05** (Ville, jour, Haute) : 10 images autour de l'arrivée d'une sonde (`voiture-sonde-0` à `-9`), zone de façades : 24,0 / −2,4 / 1,8 → 20,0 / −0,8 / −3,2, saut ΔE2000 **5,9** sur une image (> 2) : pour le PO (ANO-174, WFS-322).
 - **RG-06** : rien retiré ; durée du banc `qualite` 9 min 48 s (11 min 10 s + 2 min au plus). La ligne « capture abandonnée (face sans exposition connue) » existe aussi sur `main`.
 - Vérifications : 71 tests CPU OK ; captures avant / après `qa/pr/WFS-300/` (33). PR ouverte pour le lead dev.
+
+### 2026-11-08 20:37:55 — Revue des PR ouvertes avec les avis du lead dev (ordre de l'utilisateur) (po-scrum-master)
+- **#272 (WFS-300) fusionnée** (d88e426) : code jugé bon par le lead dev, banc seulement (`qualite_banc.cpp`), aucun effet sur le jeu ; branche synchronisée par le PO (conflits de documents seulement), 76 tests CPU verts. Suite : WFS-330 (captures régénérées).
+- **#249 (WFS-281) non fusionnée** : risque — sur les captures « après », la voiture du joueur est hors de la route ; mesures manquantes ; 28 commits de retard. Décision du PO sur la mesure de RG-02 écrite dans WFS-281.md.
+- **#248 (WFS-268) non fusionnée** : risque — aucune capture sur le commit de tête, un morceau de décor peut-être disparu (`carte-plage-lacets-dessus`), conflit avec main ; gros changement du rendu.
