@@ -6,9 +6,21 @@ Branche `feature/waforspeed-317` comparée à `origin/main` ; bancs : perf:2340x
 |---|---|---|
 | `parties-1-chargement` | ![avant](avant-parties-1-chargement.jpg) | ![après](apres-parties-1-chargement.jpg) |
 | `parties-1-reglages` | ![avant](avant-parties-1-reglages.jpg) | ![après](apres-parties-1-reglages.jpg) |
+| `parties-1-suite-0` | ![avant](avant-parties-1-suite-0.jpg) | ![après](apres-parties-1-suite-0.jpg) |
+| `parties-1-suite-1` | ![avant](avant-parties-1-suite-1.jpg) | ![après](apres-parties-1-suite-1.jpg) |
+| `parties-1-suite-2` | ![avant](avant-parties-1-suite-2.jpg) | ![après](apres-parties-1-suite-2.jpg) |
+| `parties-1-suite-3` | ![avant](avant-parties-1-suite-3.jpg) | ![après](apres-parties-1-suite-3.jpg) |
+| `parties-1-suite-4` | ![avant](avant-parties-1-suite-4.jpg) | ![après](apres-parties-1-suite-4.jpg) |
+| `parties-1-suite-5` | ![avant](avant-parties-1-suite-5.jpg) | ![après](apres-parties-1-suite-5.jpg) |
+| `parties-1-ville-nuit-0s` | ![avant](avant-parties-1-ville-nuit-0s.jpg) | ![après](apres-parties-1-ville-nuit-0s.jpg) |
+| `parties-1-ville-nuit-30s` | ![avant](avant-parties-1-ville-nuit-30s.jpg) | ![après](apres-parties-1-ville-nuit-30s.jpg) |
+| `parties-1-ville-nuit-60s` | ![avant](avant-parties-1-ville-nuit-60s.jpg) | ![après](apres-parties-1-ville-nuit-60s.jpg) |
 | `parties-1-ville-nuit` | ![avant](avant-parties-1-ville-nuit.jpg) | ![après](apres-parties-1-ville-nuit.jpg) |
 | `parties-2-chargement` | ![avant](avant-parties-2-chargement.jpg) | ![après](apres-parties-2-chargement.jpg) |
 | `parties-2-reglages` | ![avant](avant-parties-2-reglages.jpg) | ![après](apres-parties-2-reglages.jpg) |
+| `parties-2-ville-jour-0s` | — | ![après](apres-parties-2-ville-jour-0s.jpg) |
+| `parties-2-ville-jour-30s` | — | ![après](apres-parties-2-ville-jour-30s.jpg) |
+| `parties-2-ville-jour-60s` | — | ![après](apres-parties-2-ville-jour-60s.jpg) |
 | `parties-2-ville-jour` | ![avant](avant-parties-2-ville-jour.jpg) | ![après](apres-parties-2-ville-jour.jpg) |
 | `conducteurs-tenue-campagne` | ![avant](avant-conducteurs-tenue-campagne.jpg) | ![après](apres-conducteurs-tenue-campagne.jpg) |
 | `conducteurs-tenue-circuit` | ![avant](avant-conducteurs-tenue-circuit.jpg) | ![après](apres-conducteurs-tenue-circuit.jpg) |
