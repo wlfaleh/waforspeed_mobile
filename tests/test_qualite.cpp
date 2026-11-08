@@ -91,6 +91,17 @@ int main() {
     VERIFIE(l == "Rendu : Haute · 100 % · MSAA ×4 · 58 img/s · chauffe 0", "ligne « Rendu » (Haute)");
     VERIFIE(l2 == "Rendu : Basse · 75 % · MSAA ×4 · -- img/s · chauffe 2", "ligne « Rendu » (Basse, non mesuré)");
     std::printf("%s / %s : OK\n", l.c_str(), l2.c_str());
+    {   // WFS-317 (I9) : budget de dessin de l'image (mesure du téléphone, APK 916 : 372 appels, 439 k triangles)
+        const uint32_t ap[3] = {150, 60, 162}, tr[3] = {140480, 180000, 118520}, zero[3] = {0, 0, 0};
+        const std::string c = texteComptes(ap, tr, false), d = texteComptes(ap, tr, true);
+        VERIFIE(c == "372 appels · 439 k triangles (décor 32 %, voitures 41 %, personnes 27 %)", "dessin : ligne courte : %s", c.c_str());
+        VERIFIE(d == "dessin de l'image (toutes passes) : 372 appels, 439000 triangles ; décor 150 appels, 140480 triangles ; voitures 60 appels, "
+                     "180000 triangles ; personnes 162 appels, 118520 triangles", "dessin : détail : %s", d.c_str());
+        VERIFIE(texteComptes(zero, zero, false).empty() && texteComptes(zero, tr, true).empty(), "dessin : aucun appel → rien");
+        const uint32_t un[3] = {2, 0, 0}, peu[3] = {499, 0, 0};
+        VERIFIE(texteComptes(un, peu, false) == "2 appels · 0 k triangles (décor 100 %, voitures 0 %, personnes 0 %)", "dessin : moins de 500 triangles");
+        std::printf("%s : OK\n", c.c_str());
+    }
     // WFS-246 : allègement par paliers, après la résolution : 1 = bloom, reflets, captures ; 2 = + ombres ; Basse : ni bloom ni ombres
     const Allegement a0 = allegement(HAUTE, 0), a1 = allegement(HAUTE, 1), a2 = allegement(MOYENNE, 2), aB = allegement(BASSE, 0), b1 = allegement(BASSE, 1);
     VERIFIE(a0.bloom && a0.ombres && a0.reflets && a0.captures && !a1.bloom && a1.ombres && !a1.reflets && !a1.captures, "allègement palier 1");
