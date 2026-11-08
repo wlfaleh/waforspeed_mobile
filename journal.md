@@ -3555,3 +3555,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 14:00:57 — WFS-318 créé : fantôme du record réglable et étiqueté (po-scrum-master)
 - Question de l'utilisateur (voiture fantôme en Checkpoint = WFS-125). Après WFS-290 → WFS-291 (onglets) → WFS-318.
+
+### 2026-11-08 14:04:35 — WFS-264 : PR #265 ouverte (Claude, agent dev X)
+- **RG-01** : en Basse, capture d'environnement au départ et à chaque changement de zone (tunnel, pont) seulement. Banc perf Ville, 600 images : sur `main`, une capture en pleine course (−200 m, 43,7 ms sur les images où elle tourne) ; sur la branche, aucune.
+- **RG-02** : le reflet temps réel n'existait déjà qu'en Haute (`nuit.cpp`). J'ai ajouté une coupure explicite en Basse dans `Renderer`, et je n'ai pas gardé de demi-résolution en Moyenne, où le reflet est déjà coupé.
+- **RG-03** : plus d'ombre au-delà de 40 m pour les objets de rayon < 1,5 m. Passe d'ombre en Haute 102,9 → 100,8 ms. Une Basse avec ombres aurait une cascade unique de 40 m.
+- **ANO-145** : une cascade unique en Basse coûte +24 % (image 288 → 358 ms, ombre 47 ms) sur lavapipe. Trop cher : la Basse reste sans ombre du soleil (décision du PO dans WFS-227). La mesure se refait au banc avec `WFS_OMBRES_BASSE=1`.
+- **RG-04** : bloom déjà coupé en Basse, et le moteur n'a pas d'anticrénelage temporel : rien à alléger.
+- **RG-05 et RG-06 (promesses au lead dev)** : bloc de `scene.frag` réindenté ; règle du shader léger isolée (`shader_leger.h`) et testée (`tests/test_shader_leger.cpp`, accroche `CMakeLists.txt` +1).
+- **Vérifications** : 67 tests CPU OK, parcours 0 écart. Banc `realisme` (partie 1) : indices identiques et 0 image modifiée. 28 paires de captures identiques.
