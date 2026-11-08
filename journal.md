@@ -5076,3 +5076,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Cause probable** (lecture du code, non vérifiée) : pelouse du parc coupée à `P.lim()` côté intérieur des courbes serrées (`src/world/ville.cpp` l. 501-516, WFS-137 RG-C1), ou 2e bande du parc qui descend à −1,79 m (`ville_quartiers.cpp` `bandes()`) ; le développeur la nomme d'abord (RG-01).
 - **ANO-171** (mineure, 📋 Planifiée) et **WFS-305** (P2 Haute, E2 : `ville.cpp`, `ville_quartiers.*`, banc `ville`) : pelouse continue côté intérieur de toutes les courbes serrées de la Ville et du port, carrefours de WFS-283 compris, rien retiré, préparé au chargement. ⏳ En attente de la fusion de WFS-283 (même épic, mêmes fichiers) ; donné au premier développeur qui le demande quand E2 est libre (aucune exclusion). Règles : `regles-de-gestion/WFS-305.md`.
 - Numéros : WFS-301 à WFS-304 pris à 03:20 (cartes cuites), d'où WFS-305.
+
+### 2026-11-08 03:26:18 — Cartes préparées sur le téléphone : WFS-301 à WFS-304 revus (po-scrum-master)
+- **Décision de l'utilisateur** (transmise par smart-brainstorming, 2026-11-08) : pas de cuisson par la CI dans l'APK ; préparation directe au premier lancement après l'installation, écran « Installation des paquets » comme les autres applications.
+- **WFS-301** : fichiers `.wfcarte` écrits dans le stockage interne (`internalDataPath`), jamais dans l'APK ; écriture temporaire + vérification + renommage (RG-06 bis) ; `preparer_carte` avec progression et reprise ; `wfs_bench` en mode cuisson pour les tests PC seulement ; budget de 25 Mo sans objet, mesures = durée de préparation et place prise.
+- **WFS-302** : réécrit. Ancienne version (cuisson CI, poids de l'APK) abandonnée ; devient l'écran « Installation des paquets » / « Mise à jour des paquets » (E8 + accroches E7), bloquant, carte N/M, reprise, repli, place insuffisante (« Réessayer » / « Jouer sans »), cache de pipelines de WFS-262 rempli à la fin, mesure sur le téléphone. Ne dépend plus du gel de la CI ; ne touche à aucun workflow.
+- **WFS-303 / 304** : « préparé » au lieu de « cuit » ; sondes préparées sur le téléphone lui-même ; budget = durée visée de WFS-302.
+- **Décisions du PO** : écran bloquant (« direct ») ; aucun réseau ; 2 fils de travail au plus (chauffe).
+- **Question à l'utilisateur** : durée maximale acceptable de l'installation au premier lancement (proposé : ≤ 2 min sur son téléphone).
+
