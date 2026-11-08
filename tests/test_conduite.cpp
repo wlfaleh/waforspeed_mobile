@@ -5,6 +5,7 @@
 #include "../src/game/conduite_banc.h"
 
 int main() {
+    wfs::trace::forcerRondsPoints(true);   // WFS-283 RG-06 : mesures de conduite sur les anciens ronds-points (interrupteur, code gardé)
     std::string rapport;
     const int e = wfs::banc_conduite::mesurer(rapport);
     std::fputs(rapport.c_str(), stdout);
