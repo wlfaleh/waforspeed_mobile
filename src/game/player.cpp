@@ -166,7 +166,10 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     freinAide = false;
     // Décision du PO (option A) : la limite CÈDE quand le joueur conduit lui-même : il braque fort (doigt ou flèche à 0,35 et plus,
     // VOLANT_PLEIN : l'aide lui laisse déjà tout le volant) ou il freine ; elle ne ralentit que volant lâché ou presque
-    const bool joueurConduit = std::abs(in.steer) >= VOLANT_PLEIN || in.brake;
+    // WFS-258 (point 3, revue du lead dev, PR #271) : au-dessus de 100 km/h, la direction est réduite (un doigt à fond veut dire
+    // « tourner au maximum », pas « aller plus vite ») : la limite ne cède plus qu'au frein ; sinon le joueur, qui braque plus pour
+    // le même virage, passait le seuil et arrivait trop vite (et le seuil sur le braquage réduit oscillait autour de 126 km/h)
+    const bool joueurConduit = (std::abs(in.steer) >= VOLANT_PLEIN && (std::abs(v) <= 100 / 3.6 || g_avantWfs258Vif)) || in.brake;   // banc « avant » : règle de main
     if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258 && !joueurConduit) {
         double vp = vitesseVirageAide(track, dist, Phys::grip / 9.81, Phys::brake / 9.81);
         if (g_vitesseVirageCourse5) vp = std::min(vp, g_vitesseVirageCourse5(track, dist) * M * 0.9);
