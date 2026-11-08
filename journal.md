@@ -3768,3 +3768,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Banc neuf `WFS_BANC=lod`** (`bench_lod.cpp`, accroche `desktop_main.cpp` +2) : 4 cartes à 50, 150 et 300 m en Haute et Basse, traversée du fondu en Basse, feux du trafic de nuit en Basse.
 - **Résultat** : 49 paires, au plus 0,97 % de pixels changés (nuit : voiture plus claire qu'avant). RG-03 confirmé par le PO (eafbaa72).
 - 72 tests CPU OK, parcours 0 écart.
+
+### 2026-11-08 16:25:00 — WFS-317 : premières captures du téléphone (APK 0.1.913, sans I9) (Claude, agent 1)
+- Ville de nuit, Basse 60 %, MSAA ×2 : 22 img/s ; image médiane 48,9 ms (95 % : 69,6 ms, 99 % : 77,1 ms) ; GPU : ombre 0, reflet 0, capture 0, **scène 38,7 ms**, post 4,9 ms ; mémoire jeu 74 Mo, carte graphique 621 Mo. Autre relevé : Basse 75 %, 26 img/s.
+- Conclusion partielle : la passe de scène porte presque tout le temps GPU. L'APK 0.1.913 (commit 6fb3420) précède la fusion de #270 : les chiffres « appels · triangles » par famille arriveront avec l'APK 0.1.916 (c29cc05) ou suivant. Demande faite à l'utilisateur ; RG-02 attend ces chiffres.
