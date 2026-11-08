@@ -4137,3 +4137,5 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 
 ### 2026-11-08 20:51:30 — Réservations retirées (règle de l'utilisateur : seulement pour les skills spéciaux) (po-scrum-master)
 - WFS-215, 293, 322, 323 → ⏳ Prêt sans nom ; WFS-291, 318 → après WFS-290 (même fichier). Gardés : sujets de conduite (agent dev conduite), CI / publication (expert ci), cartes (expert-cartes).
+
+### 2026-11-08 20:53:17 — Réglages WFS-291 et 318 rendus à Claude, agent 2 (confirmation de l'utilisateur) (po-scrum-master)
