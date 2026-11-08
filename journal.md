@@ -5057,3 +5057,15 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   3. 7 pilotes sur 10 hommes : gardé (aucune règle de gestion sur ce point).
 - Défauts n° 2 (marques) et n° 3 (pilote au sol) : au développeur. Propositions d'arwa-3 (phare des deux-roues, clignotants avec WFS-280) : notées, à traiter au prochain lot.
 - `track-agent.md` remis à jour (arwa-3, arwa-4, arwa-5 : alerte levée, envoi 03:19 ; agent arwa : ⚠️ WFS-281 sans envoi depuis 01:25).
+
+### 2026-11-08 03:25:06 — WFS-192 : méthode des logos tranchée, oui à l'outil neuf `effacer_logos.mjs` (po-scrum-master)
+- **Question d'arwa-2** (avant de coder) : reconvertir les 20 voitures avec un bloc dans `convert_car.mjs` rejouerait toute la chaîne de WFS-158 (risque RG-03) ;
+  il propose un outil neuf `tools/effacer_logos.mjs` + `tools/logos.json` qui retouche directement les `.wfm`, puis `.lod` régénéré par `alleger_voiture.mjs` (non modifié).
+- **Décision : oui** (même façon de faire que `corriger_voitures` et `plaques_voitures.mjs`) ; option « reconversion complète » écartée. Conditions RG-06 à RG-11 dans
+  `regles-de-gestion/WFS-192.md` : `convert_car.mjs` plus touché ; accroche ≤ 3 lignes dans `convertir_voitures.sh` (avant `alleger_voiture.mjs`) pour que les logos
+  ne reviennent pas à une reconversion ; textures sans logo identiques octet pour octet, rangs des matériaux et textures inchangés, `TAN1` et plaques gardées ;
+  2e passage = mêmes SHA-256 ; l'outil s'arrête sans écrire si la voiture ne correspond pas à `logos.json` ; correspondance source ↔ `.wfm` vérifiée voiture par voiture
+  (Model 3, V60, A 45, RR Sport en particulier) ; pas de pièce retirée au-dessus d'un trou ; aucune dépendance ni téléchargement.
+- Note ajoutée à WFS-159, 193, 194, 215 (mêmes modèles, après WFS-192) : toute reconversion ou nouveau modèle passe par `effacer_logos.mjs`.
+- `TACHES.md` : zone de WFS-192 mise à jour (statut inchangé, 🔧). `track-agent.md` remis à jour ; section « Tickets prêts sans agent » retirée (règle de l'utilisateur :
+  ce fichier suit les agents, les tickets restent dans `TACHES.md`).

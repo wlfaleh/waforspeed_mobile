@@ -14,7 +14,7 @@
 > - **Après une fusion, l'agent est libre** (règle de l'utilisateur, 2026-11-06 23:20 UTC) : il ne « suit » plus la CI de `main` ; la colonne État ne le dit plus.
 > - Alerte ⚠️ quand un ticket n'a rien reçu depuis plus de 2 h, ou n'a pas de branche 30 min après l'attribution ; 🔴 pour un ticket P1.
 
-**Dernière mise à jour** : 2026-11-08 03:23:14 UTC (po-scrum-master)
+**Dernière mise à jour** : 2026-11-08 03:25:06 UTC (po-scrum-master)
 
 ## Agents développeurs
 
@@ -28,31 +28,12 @@
 | Claude, agent 5 (011cpqZaDiS2) | WFS-268 | P1 WFS-268 rouvert (recette KO par l'utilisateur, suite sur son ordre) : −50 % de personnes en Ville et Corniche, tout le fixe préparé au chargement (kit, commerces, lieux, feux), ≤ 1 Go de mémoire par carte (décision du propriétaire) | 268 : 01:18 (213df11, PR #248) ; + RG-11 (ANO-164, captures ≤ 1 %) | 🔴 ⚠️ rien depuis 01:18 UTC (≈ 2 h à 03:20) ; ↩️ retour lead dev sur PR #248 : à corriger (2e revue, 213df11 : captures « après » à régénérer sur la tête, RG-11 / ANO-164 marina et lacets-dessus ≤ 1 %, resynchroniser avec main) |
 | Claude, agent dev X (0183bv2X, ex-« session dev expert ») | WFS-263 | P1 [TECHNIQUE] Performance 4 (E4, exception PO en parallèle de WFS-268 d'agent 5 et WFS-239 d'arwa-2) : shaders par coût, léger au loin, complet au premier plan ; attribué 00:29 UTC à sa demande ; avant : WFS-262 🟡 (#246, squash 26ce0c5), WFS-246 🟡 (#229, ad94d9d) | 263 : 02:59 (f251758, plafond de 4 lumières par pixel) ; mesures au journal 02:25 | 🔴 en cours (WFS-263, PR à ouvrir) |
 | Claude, agent dev Y |  | WFS-216 fusionné (PR #196, squash f5340d7) | 216 : fusionnée 12:42 | 🟢 libre : pause de l'utilisateur finie à 18:00 UTC ; ticket seulement à sa demande |
-| arwa-2 (Claude, session 01Us6uCu) | WFS-192 | domaine **voitures** : P2 WFS-192 voitures sans marque (2/4) : logos effacés ou masqués sur les 20 modèles (E10 en exception PO : modèles `assets/cars/<id>.wfm` / `.lod`, licences, bloc à part de `convert_car.mjs` ; **pas** les fichiers de WFS-282, WFS-232, WFS-292) ; attribué 03:16 à sa demande ; avant : WFS-239 🟣 (#255, 0f0eee4), WFS-245 🟡 (#238, #247), WFS-235 ❌ (→ WFS-282) | 192 : 03:20 (branche créée depuis main et poussée) | 🔧 attribué 03:16 : RG-01 inventaire des logos au journal d'abord |
+| arwa-2 (Claude, session 01Us6uCu) | WFS-192 | domaine **voitures** : P2 WFS-192 voitures sans marque (2/4) : logos effacés ou masqués sur les 20 modèles (E10 en exception PO : modèles `assets/cars/<id>.wfm` / `.lod`, licences, outil neuf `tools/effacer_logos.mjs` + `tools/logos.json`, accroche ≤ 3 lignes de `convertir_voitures.sh` ; **pas** `convert_car.mjs` ni les fichiers de WFS-282, WFS-232, WFS-292) ; attribué 03:16 à sa demande ; avant : WFS-239 🟣 (#255, 0f0eee4), WFS-245 🟡 (#238, #247), WFS-235 ❌ (→ WFS-282) | 192 : 03:20 (branche créée depuis main et poussée) | 🔧 en cours : méthode tranchée par le PO à 03:24 (oui à l'outil neuf, conditions RG-06 à RG-11 dans WFS-192.md) ; RG-01 inventaire des logos au journal d'abord |
 | arwa-4 (Claude, session 01Us6uCw) | WFS-298 | domaine **son** : P2 WFS-298 son des chocs selon ce qu'on touche (poteau, arbre, mobilier, mur, voiture), force selon la vitesse, côté gauche / droite ; + RG-00 `(void)cad;` de `pluie_sons.cpp` (remarque du lead dev) (E6, fichiers neufs `src/audio/chocs_sons*` + branchement `audio_system.*` ; lecture seule E3) ; attribué 02:34 à sa demande ; avant : WFS-288 🟣 (PR #254, d8080a2), WFS-278 🟣 (#240), WFS-275 🟣 (#237), WFS-272 🟣 (#227), WFS-261 🟣 (#219) | 298 : 02:37 (f44fae5, début), 03:08 (78ca4d5, codé), 03:19 (903ba09, synchronisation avec main) ; 288 : PR #254 fusionnée 02:23 par le lead dev | 🔧 en cours : codé (option A du PO), tests verts ; banc `chocs`, parcours et captures avant / après en cours, puis PR et `lead-dev` |
 | arwa-3 (Claude, session 01Us6uCt) | WFS-232 | domaine **courses, modes et trafic** : P2 WFS-232 (1/2) motos et scooters dans le trafic, pilotes casqués, inclinaison en virage, feux la nuit (garés et faufilement → WFS-280) ; attribué 21:30 à sa demande ; exception PO : `traffic.*`, `traffic_system.*`, `deux_roues*`, `assets/cars/deux_roues/**`, **pas** `player.*` / `conduite_*` ; 🟡 après fusion ; avant : WFS-243 🟡 (PR #239), WFS-242 🟡 (PR #222) | 232 : PR #245 corrigée 02:49 (c5a9cb7), 2e revue du lead dev 03:19 : refusée (3 points) ; 243 : fusionnée 21:20 (PR #239) | ↩️ retour lead dev sur PR #245 : à corriger (marques de la sportive et du scooter, pilote au sol après la chute) ; **décision du PO rendue à 03:22 dans WFS-232.md** (selles −2,5 % / −1,8 % acceptées, correction rangée dans WFS-280 RG-05 ; ralentissement à 25° accepté ; pilotes gardés) |
 | Claude, Agent 0 developer (session 01UY1Vv2SSLK) | WFS-269 | Occlusion du décor fixe précalculée : ↩️ retour lead dev sur PR #256 : à corriger | 269 : 03:10 (eaadf0f, synchronisation avec main ; PR #256) | ↩️ retour lead dev sur PR #256 : à corriger |
 | arwa-5 (Claude, session 01Us6uCwsJ63) | WFS-283 | P1 WFS-283 ronds-points supprimés (E2 + accroches E3, E5) : interrupteur `trace::rondsPoints()`, virage de rue de 22 m au même cap, suite des cartes à la même place ; décor du village et de la station, bancs, GPS, tests (RG-06, RG-08) faits ; 63 tests CPU OK ; captures avant / après en cours | 283 : 03:19 (d322480, banc de la carte GPS au carrefour) ; 279 : fusionnée 22:49 (PR #241) | 🔴 en cours (P1) : captures avant / après, banc GPS corrigé (envoi 03:19, alerte levée) |
 | Claude, agent dev conduite (session 01UY1Vv1Hhvw) | WFS-295, WFS-258 | P1 **WFS-295 d'abord** (ordre de l'utilisateur, 02:15) : la voiture tourne vraiment dans les virages et épingles (facteur 1/(1 − k·n), blocage après choc ≤ 0,5 s, ANO-168) ; puis la suite de WFS-258 (conduite 2e passage : RG-00b, RG-05 à 07, ANO-138, ANO-140) et WFS-259 ; sujets de conduite réservés à lui (exception de l'utilisateur) ; **info (PO, 23:21)** : arwa-5 (WFS-283 RG-06) ajoute 2 lignes au début de `main()` de `tests/test_aide_direction.cpp` et `tests/test_conduite.cpp` (`trace::forcerRondsPoints(true)`) : à garder en synchronisant | 295 : 03:04 (4f5b249, captures du banc virages pour le lead dev) ; 258 : 17:35 (ae71e2f), RG-00 fusionné #217 (04a1628) ; 256 : fusionné #216, 🟡 | 🔴 en cours (WFS-295) ; WFS-258 en attente derrière WFS-295 (ordre de l'utilisateur) : pas de retrait |
-
-## Tickets prêts sans agent
-
-| Ticket | Épic | Pourquoi il attend |
-|---|---|---|
-| WFS-273 (P1) | E4 | n° 0 du bandeau : premier ticket de E4, au premier développeur du domaine performance qui le demande (agent 5 d'abord), **pas** agent arwa |
-| WFS-264, WFS-265 (P1) | E4 | après WFS-263 (agent dev X, en cours), une par une |
-| WFS-214 (P2) | E13 | épic E13 tenue par WFS-269 (Agent 0) |
-| WFS-215 (P3) | E10 | après WFS-192 (mêmes modèles de voitures, en cours par arwa-2) ; domaine voitures |
-| WFS-280 (P2) | E3 + E2 | en attente de WFS-232 (modèles et pilotes des deux-roues) |
-| WFS-285 (P2) | E7 | prêt depuis la fusion de WFS-284 (#250) : surface recréée sans recharger le monde (ANO-154) ; une seule E7 active à la fois (avec WFS-287) |
-| WFS-287 (P2) | E7 | [TECHNIQUE] banc émulateur rouge (`tools/qa/emulateur.sh`) ; E7 libre depuis la fusion de WFS-284 |
-| WFS-290 (P2) | E8 | boutons « Réglages » / « Fermer » (ANO-159) ; E8 libre depuis la fusion de WFS-286 (#253) |
-| WFS-292 (P2) | E4 + E10 | recette du 08/11 : fumée des pneus de jour, chocs du banc d'effets, Golf bleue la nuit (ANO-165, ANO-167) ; au premier développeur qui le demande |
-| WFS-293 (P2) | E0 + E3 | [TECHNIQUE] banc de fluidité en virage et au carrefour, à-coup corrigé (ANO-166) |
-| WFS-296 (P2) | E5 | marche arrière bien visible quand le frein fait reculer (ANO-168) |
-| WFS-299 (P1) | E11 + E4 / E13 | après WFS-297 (agent 1) : Ville de nuit allégée |
-| WFS-300 (P2) | E4 (`qualite_banc.cpp` seul) | [TECHNIQUE] banc `qualite` : sondes stables avant chaque capture (façades bleues), journal « une à une / ensemble » ; créé 03:16 (revue du lead dev de #255) |
-| WFS-294 (P3) | E7 | [TECHNIQUE] lot CI (ANO-135, 136, 160, 161, 162) : en attente de la fin du gel de la CI (pas avant le 2026-11-09) |
 
 ## Agents de pilotage
 
@@ -60,9 +41,9 @@
 |---|---|---|
 | expert-conduite | développeur expert en physique de la voiture (skill `expert-conduite`) : chantier « Conduite réaliste » | créé le 2026-11-07 |
 | lead-dev | relit chaque PR : ouvre les captures avant / après (≥ 3, `qa/pr/WFS-XX/`), compare à la demande de l'utilisateur, **seul à fusionner** (squash) ou refuse ; appelé par le développeur juste après sa PR (`.claude/agents/lead-dev.md`) | créé le 2026-11-07 21:45 UTC (règle de l'utilisateur) |
-| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-08 03:20 : **WFS-301 à WFS-304** créés (cartes cuites à la fabrication de l'APK, demande de l'utilisateur via smart-brainstorming ; en attente de WFS-268 / 269, gel de la CI, WFS-273) ; question du budget de poids posée à l'utilisateur |
+| po-scrum-master | attribue les tickets, écrit les règles de gestion, tient `TACHES.md`, le journal et ce fichier | 2026-11-08 03:24 : WFS-192, méthode tranchée à la demande d'arwa-2 (oui à l'outil neuf `tools/effacer_logos.mjs`, RG-06 à RG-11) ; section des tickets retirée de ce fichier (règle de l'utilisateur : il suit les agents, les tickets restent dans `TACHES.md`) |
 | QA-arwa (qa-lead, Claude session 01Us6uCubd) | recette de nuit des tickets de `qa/Check.md`, verdicts et anomalies ; campagne VABF sur émulateur | recette du 2026-11-08 nuit terminée (01:06) : 25 tickets ; ANO-160 à 167 créées, planifiées par le PO à 01:12 |
-| expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-235 (RG-04, intérieurs) |
+| expert-realisme-3d | expert du graphisme et du réalisme 3D (WFS-148 à 167) : **consultant, pas développeur** ; conseille les développeurs, ne tient pas de ticket de code | à consulter par arwa-2 pour WFS-192 (méthode d'effacement des logos, ΔE2000 ≤ 2) |
 | smart-brainstorming | propose des idées dans `recommandations-smart-brain.md`, ne décide rien, ne parle qu'avec l'utilisateur | 2026-11-07 : constats et recommandations performance (ANO-125) transmis au PO sur ordre de l'utilisateur |
 | agent expert ci (session 01UY1Vv4) | expert de la pipeline CI (`.claude/agents/expert-ci.md`) : diagnostics, US techniques de la CI | 2026-11-07 21:06:14 : WFS-277 🟣 (PR #234 : tableau journée / matin validé) ; bancs du matin lancés à la main pour preuve ; puis gel de la CI 2-3 jours |
 
