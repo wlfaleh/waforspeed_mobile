@@ -14,6 +14,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/game.h"
+#include "../game/course_system.h"   // WFS-297 : règles de la course au banc des parties
 #include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes
 #include "eclairage.h"                // WFS-297 : lampadaires déclarés
 #include "../ui/ecrans/reglages.h"
@@ -97,6 +98,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
     const int MINUTE = std::getenv("WFS_PERF_MINUTE") ? std::atoi(std::getenv("WFS_PERF_MINUTE")) : 60 * 60;   // images de course entre deux fenêtres
     std::vector<Fenetre> res;
     double t = 3000;
+    courseBenchRules(true);   // décompte et « GO » comme dans le jeu (le numéro de la partie avance au départ)
     for (size_t k = 0; k < parties.size(); k++) {
         const auto& [carte, nuit] = parties[k];
         const std::string nom = std::to_string(k + 1) + ". " + carte + (nuit ? " nuit" : " jour");
@@ -113,7 +115,8 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-chargement.png");
         }
         g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
-        for (int i = 0; i < 4 * 60; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }   // décompte et départ
+        for (int i = 0; i < 4 * 60; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }   // décompte et départ (« GO » : partie suivante, RG-06)
+        courseBenchSetTime(1e6);   // règles de la course comme dans le jeu, sans fin de chrono pendant les mesures
         {   // RG-06 : panneau Réglages depuis la pause (rendu, mémoire, numéro de la partie)
             g.allerA(Ecran::Pause); g.update(1.0 / 60);
             ecrans::ouvrirReglagesBanc(true);
@@ -157,6 +160,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
         }
     }
     g.shutdown();
+    courseBenchRules(false);
     WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) | carte graphique (Mo) |");
     for (const Fenetre& w : res)
         WFS_LOG("parties : | %s | %s | %.1f | %.2f | %u | %u | %d | %d | %.0f | %.0f |", w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo);
