@@ -531,8 +531,8 @@ public:
                 // WFS-305 (ANO-171) : carreaux qui ferment le sol au-delà de Plan::lim (côté intérieur des courbes serrées)
                 const vec2 colB = uvc(U_BETON), colP = uvc(U_PELOUSE);
                 for (const ville::CarreauSol& q : (*carreaux_)[(size_t)seg]) {
-                    const float h = ville::CARREAU_SOL / 2;
-                    carte::quadSol(out[P_UNI], {q.x - h, q.y, q.z - h}, {q.x - h, q.y, q.z + h}, {q.x + h, q.y, q.z + h}, {q.x + h, q.y, q.z - h},
+                    const float C = ville::CARREAU_SOL, x0 = q.gx * C, x1 = (q.gx + 1) * C, z0 = q.gz * C, z1 = (q.gz + 1) * C;
+                    carte::quadSol(out[P_UNI], {x0, q.coin[0], z0}, {x0, q.coin[1], z1}, {x1, q.coin[2], z1}, {x1, q.coin[3], z0},
                                    std::strcmp(z, "parc") ? colB : colP);   // comme la bande (pelouse au parc, béton au port)
                 }
             }

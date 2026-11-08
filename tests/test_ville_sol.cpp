@@ -94,12 +94,15 @@ int main() {
                 return ri.m < 60 ? (float)(s > 0 ? ri.droite : ri.gauche) : std::numeric_limits<float>::infinity(); };
             const float f = std::min(b.b, 0.999f * std::min(centre(a), centre(a + 1)));
             if (f > b.a) domaineTout.quad(pose(a, s * b.a, 0), pose(a + 1, s * b.a, 0), pose(a + 1, s * f, 0), pose(a, s * f, 0));
+            // de l'autre côté du centre : coin retourné, du centre à la fin de la bande (secteur au-delà du centre du virage)
+            const float g = std::max(b.a, 1.001f * std::max(centre(a), centre(a + 1)));
+            if (std::isfinite(g) && g < b.b) domaineTout.quad(pose(a, s * g, 0), pose(a + 1, s * g, 0), pose(a + 1, s * b.b, 0), pose(a, s * b.b, 0));
         }
         for (const ville::CarreauSol& q : rac[(size_t)a]) {
             nRac++;
             if (q.bande >= nb) hors++;
-            const float h = ville::CARREAU_SOL / 2;
-            apres.quad({q.x - h, q.y, q.z - h}, {q.x - h, q.y, q.z + h}, {q.x + h, q.y, q.z + h}, {q.x + h, q.y, q.z - h}, q.bord ? 2 : 1);
+            const float C = ville::CARREAU_SOL, x0 = q.gx * C, x1 = (q.gx + 1) * C, z0 = q.gz * C, z1 = (q.gz + 1) * C;
+            apres.quad({x0, q.coin[0], z0}, {x0, q.coin[1], z1}, {x1, q.coin[2], z1}, {x1, q.coin[3], z0}, q.bord ? 2 : 1);
         }
     }
     VERIFIE(hors == 0, "RG-05 : %zu carreau(x) d'une bande absente", hors);
@@ -117,9 +120,9 @@ int main() {
     // RG-05 : aucun carreau sur une chaussée ni sur un trottoir (ses 4 coins à plus de RW + 6 m de tout point du tracé)
     int surRoute = 0;
     for (int64_t a = 0; a < L; a++) for (const ville::CarreauSol& q : rac[(size_t)a]) {
-        const float h = ville::CARREAU_SOL / 2;
-        for (const auto& [dx, dz] : {std::pair{-h, -h}, std::pair{-h, h}, std::pair{h, h}, std::pair{h, -h}}) {
-            int64_t k; if (plusProche(q.x + dx, q.z + dz, k) < R + 6 - 0.01f) { surRoute++; break; }
+        const float C = ville::CARREAU_SOL;
+        for (const auto& [ex, ez] : {std::pair{0, 0}, std::pair{0, 1}, std::pair{1, 1}, std::pair{1, 0}}) {
+            int64_t k; if (plusProche((q.gx + ex) * C, (q.gz + ez) * C, k) < R + 6 - 0.01f) { surRoute++; break; }
         }
     }
     VERIFIE(surRoute == 0, "RG-05 : %d carreau(x) sur une chaussée ou un trottoir", surRoute);

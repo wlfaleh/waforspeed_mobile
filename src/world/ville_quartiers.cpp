@@ -579,9 +579,14 @@ const std::vector<std::vector<CarreauSol>>& carreauxSol(const MapDef& map, Track
         const float lim = std::min(P.lim(a, s), P.lim(a + 1, s));
         if (!n || !std::isfinite(lim)) continue;
         const Rep& q = rep[(size_t)a];
-        for (int i = 0; i < n; i++) {
-            // au plus jusqu'au centre des courbes serrées : au-delà, les lignes des segments se croisent (quadrilatère replié)
-            const float d = std::max(b[i].a, lim), f = std::min(b[i].b, 0.999f * std::min(centre(a, s), centre(a + 1, s)));
+        // dans une courbe serrée, les lignes des segments se croisent au centre du virage : la partie coupée est faite de deux
+        // morceaux, de lim au centre, puis du centre à la fin de la bande (coin retourné, de l'autre côté du centre : sans lui, le
+        // secteur au-delà du centre, qu'aucune bande ne couvre, restait une fosse)
+        const float c0a = centre(a, s), c1a = centre(a + 1, s);
+        for (int i = 0; i < n; i++) for (int morceau = 0; morceau < 2; morceau++) {
+            if (morceau == 1 && !std::isfinite(std::max(c0a, c1a))) break;
+            const float d = morceau == 0 ? std::max(b[i].a, lim) : std::max(b[i].a, 1.001f * std::max(c0a, c1a));
+            const float f = morceau == 0 ? std::min(b[i].b, 0.999f * std::min(c0a, c1a)) : std::min(b[i].b, std::max(c0a, c1a) + 40);   // au-delà de 40 m du centre : déjà couvert par les bandes des rues voisines (test_ville_sol)
             if (d >= f) continue;
             // cases du réseau touchées par la partie coupée : points de la partie tous les 0,25 m (la moitié d'une case)
             std::vector<std::pair<int64_t, int64_t>> cases;
@@ -616,7 +621,7 @@ const std::vector<std::vector<CarreauSol>>& carreauxSol(const MapDef& map, Track
                     // hauteur : celle de la bande coupée à cet endroit ; case à moitié sous une bande posée : celle de cette bande (bord fixe
                     // du lissage ci-dessous)
                     const float y = (c0 ? yc : q.y + b[i].ya + (b[i].yb - b[i].ya) * (v - b[i].a) / (b[i].b - b[i].a)) - 0.01f;
-                    out[(size_t)a].push_back({x, y, z, (uint8_t)i, c0});
+                    out[(size_t)a].push_back({(int32_t)gx, (int32_t)gz, y, {y, y, y, y}, (uint8_t)i, c0});
                     nb++;
                 }
         }
@@ -629,7 +634,7 @@ const std::vector<std::vector<CarreauSol>>& carreauxSol(const MapDef& map, Track
         std::map<std::pair<int64_t, int64_t>, Ref> idx;
         for (int64_t a = 0; a < L; a++) for (size_t i = 0; i < out[(size_t)a].size(); i++) {
             const CarreauSol& q = out[(size_t)a][i];
-            idx[{(int64_t)std::floor(q.x / C), (int64_t)std::floor(q.z / C)}] = {a, i};
+            idx[{q.gx, q.gz}] = {a, i};
         }
         struct Voisin { CarreauSol* c; float y; };   // carreau voisin, ou hauteur fixe d'une bande (c nul)
         std::vector<std::pair<CarreauSol*, std::vector<Voisin>>> sys;
@@ -656,6 +661,19 @@ const std::vector<std::vector<CarreauSol>>& carreauxSol(const MapDef& map, Track
             if (ecart < 0.0005f) break;
         }
         for (auto& [c, v] : sys) c->y -= 0.01f;   // 1 cm sous la bande voisine : elle le cache là où ils se touchent
+        // coins : moyenne des carreaux qui partagent le coin (le sol devient un seul maillage continu, sans fente entre deux cases)
+        for (auto& [cle, r] : idx) {
+            CarreauSol& c = out[(size_t)r.a][r.i];
+            static constexpr int CX[4] = {0, 0, 1, 1}, CZ[4] = {0, 1, 1, 0};
+            for (int k = 0; k < 4; k++) {
+                float som = 0; int nbc = 0;
+                for (int ex = -1; ex <= 0; ex++) for (int ez = -1; ez <= 0; ez++) {
+                    auto f = idx.find({cle.first + CX[k] + ex, cle.second + CZ[k] + ez});
+                    if (f != idx.end()) { som += out[(size_t)f->second.a][f->second.i].y; nbc++; }
+                }
+                c.coin[k] = som / (float)std::max(1, nbc);
+            }
+        }
     }
     WFS_LOG("Ville : sol fermé dans les courbes serrées (WFS-305) : %zu carreau(x) de %.1f m (%.0f m²)", nb, C, nb * C * C);
     return out;
