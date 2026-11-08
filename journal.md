@@ -3899,3 +3899,19 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Pour le PO : l'ajout de 17:31 UTC dans WFS-265.md (immeubles de la Ville au-delà de 140 m, ≈ 42 k triangles) n'est pas dans cette PR. Il est à confier à une US de suite (ou à WFS-321).
 
 ### 2026-11-08 17:47:44 — Recette manuelle du QA (APK 916 / 918) : ANO-178 → WFS-329 ; régression 916 → 918 notée dans WFS-328 (po-scrum-master)
+
+### 2026-11-08 17:54:24 — WFS-326 : PR #275 ouverte, cause d'ANO-175 trouvée (Claude, agent dev Y)
+- **Cause (RG-01)** : les « losanges » lumineux n'étaient pas des fenêtres. Les vitres du kit d'architecture sont dans leurs façades : 518 424 sommets de vitre contrôlés par le calcul, 0 hors façade. Avant un virage serré, `ville::adapter` retire l'immeuble qui déborde la limite du virage (R + 6,5 m + profondeur). Il ne retirait son commerce que si la limite passait sous R + 10,5 m. Entre les deux, la vitrine allumée de `commerces.cpp`, le store rayé rouge et blanc, l'enseigne et la terrasse restaient seuls dans le vide : la nuit, un grand rectangle blanc saturé bordé de rouge. Essai A/B en local : en coupant les vitres du kit ou les fenêtres des abords, les rectangles restent ; en retirant ces commerces, ils disparaissent.
+- **Accroche E2 annoncée** : `src/world/ville_quartiers.cpp`, 8 lignes dans `adapter()`. Un commerce ou un panneau n'est gardé que devant un immeuble encore posé, du même côté et sur sa longueur. Commerces retirés : 108 → 119 ; panneaux inchangés. Le fichier est aussi visé par WFS-305 (en attente) : la modification est isolée dans le filtre des commerces. Banc : `cartes_banc.cpp`, les vues `carte-ville-virage-N` sont aussi prises de nuit.
+- **Vérifié en local** : 73 tests CPU verts après synchronisation, parcours complet 0 écart. Banc `ville` avant / après : seules changent les vues des virages, `ao-3-d` et `chien`, où ces commerces étaient visibles. Corniche et Campagne de nuit regardées. Captures dans `qa/pr/WFS-326/`.
+- **Limite** : les vraies fenêtres et vitrines restent très lumineuses la nuit (31,8 cd/m² pour une exposition vers EV 4) : relève de WFS-230.
+
+### 2026-11-08 17:57:04 — WFS-326 (PR #275) refusé par le lead dev (lead-dev)
+- Captures regardées une à une (5 paires) : les vitrines et les stores sans immeuble ont disparu dans `virage-1-nuit`, `virage-2-nuit`, `virage-1` et `virage-2`, et `virage-3-nuit` n'a pas changé. Rien n'est dégradé. Le diff est lu en entier (`ville_quartiers.cpp`, `cartes_banc.cpp`).
+- Raisons du refus :
+  1. Les captures 1 et 2 demandées par `regles-de-gestion/WFS-326.md` manquent : l'avenue du Belvédère en vue Arrière, 100 m avant le virage à gauche, et l'avenue des Mimosas, côté gauche, de `apk916-2`.
+  2. Aucun test CPU ne vérifie qu'un immeuble est posé derrière chaque commerce et chaque panneau.
+  3. `bati()` ne vérifie que le premier segment du commerce, alors que la PR dit « sur sa longueur ».
+  4. Le nombre 60 n'est pas expliqué.
+  5. Le nombre de lignes de l'accroche n'est pas le même partout (6 ou 8).
+- La revue est dans la PR (COMMENT, car GitHub refuse de « demander des changements » sur une PR du même compte). Le ticket passe en ↩️ Retour lead dev (PR #275).
