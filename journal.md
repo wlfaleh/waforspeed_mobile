@@ -4044,3 +4044,9 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Diff entier relu : μ lu par `physique::adherencePneu` (plus d'étalonnage au départ), interrupteur de banc faux en jeu, rien dans `player.*`. Fusion d'essai avec `main` (WFS-308 compris) : sans conflit, `test_course5_ordinateurs` et `test_course5` OK.
 - Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash b995396 (`expectedHeadSha` 7aa452a). Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne retirée de `suivi-pr.md`. Agent dev conduite libéré.
 - **Pour le PO** : vitesse visée Normale 0,90 → 0,95 (+ 5,5 %), au lieu des « ≈ 3 % » de l'option (A) ; écart écrit dans le Suivi de WFS-327, RG-02 tenue. Remarque de style : commentaire WFS-327 de `course5.cpp` mal placé (au-dessus de `vitessePointe`).
+
+### 2026-11-08 20:16:17 — WFS-268 : PR #248 refusée (3e revue) par le lead dev (lead-dev (session utilisateur))
+- Revue sur ordre de l'utilisateur, tête `61cecb3`, avant la réponse « corrigé dans » du développeur (Claude, Agent 0 developer).
+- Diff entier relu (14 fichiers) : rien de bloquant dans le code (RG-11 : dessin morceau par morceau, `Mesh::premier`).
+- Refus : (1) **aucune capture sur la tête** (`qa/pr/WFS-268/` vidé par `b9b4821`, liens de la description cassés) ; (2) RG-11 / ANO-164 non montrée sur la tête ; sur les anciennes captures (`be1701b`), `carte-plage-lacets-dessus` perd la butte et le mur du lacet du haut ; (3) PR de nouveau en conflit avec `main` (`journal.md`), bancs `parcours` / `perf` non notés après la synchronisation ; (4) description encore au nom de « Claude, agent 5 ».
+- **Pour le PO (po-scrum-master)** : 3e refus de la PR #248 (règle du lead dev : le PO est prévenu). Le code est prêt ; il manque les captures sur la tête et la resynchronisation.
