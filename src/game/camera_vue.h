@@ -78,39 +78,36 @@ inline float fovVue(VueCamera v, double p, bool nitro) {
     return c.fov[(int)v] + (float)std::min(std::fabs(p), 1.3) * c.elargVitesse + (nitro ? c.elargNitro : 0.f);
 }
 
-// ---------- WFS-235 : regard du conducteur en vue Cockpit (RG-02, RG-03, RG-04) ----------
+// ---------- WFS-235, WFS-282 : regard du conducteur en vue Cockpit ----------
 // « Regard cockpit » (Réglages) : la caméra regarde un peu plus bas ou plus haut ; Normal par défaut ; enregistré par l'écran
 // des réglages (clé regard du fichier des réglages, comme « Réduire les mouvements »)
 enum class RegardCockpit { Bas = 0, Normal = 1, Haut = 2 };
 RegardCockpit regardCockpit();
 void choisirRegard(RegardCockpit r);
-// champ de vision HORIZONTAL de la vue Cockpit (RG-02 : 75 à 90°, vision d'un conducteur) : 85°, fixe (avis d'expert :
-// un champ qui s'élargit avec la vitesse fait « respirer » la planche) ; le champ vertical en découle selon la forme de
-// l'écran (2400 × 1080 : ≈ 45°)
-constexpr float COCKPIT_FOV_H = 85.f;
-inline float fovHorizontalCockpit(double, bool) { return COCKPIT_FOV_H; }
-// champ vertical (°) d'un champ horizontal donné (°) sur un écran de rapport largeur / hauteur ; borné de 30 à 75°
-inline float fovVerticalDepuisHorizontal(float horizontalDeg, float aspect) {
-    const float a = std::max(0.3f, aspect), h = horizontalDeg * 3.14159265f / 180.f;
-    return std::clamp(2.f * std::atan(std::tan(h * 0.5f) / a) * 180.f / 3.14159265f, 30.f, 75.f);
-}
 // inclinaison du regard sous l'horizontale (rad, négatif = vers le bas) : un conducteur regarde la route à 20-40 m, quelques
 // degrés sous l'horizon (RG-02 « légèrement plongeant ») ; Bas −7°, Normal −3,5°, Haut 0°
 inline float inclinaisonRegard(RegardCockpit r) {
     return r == RegardCockpit::Bas ? -7.f * 3.14159265f / 180.f : r == RegardCockpit::Haut ? 0.f : -3.5f * 3.14159265f / 180.f;
 }
-// regard qui suit le virage : la tête tourne vers le point de la route visé à ≈ 1,5 s (12 à 40 m), à 60 % de son angle,
-// ±12° au plus (la tête d'un conducteur suit le virage sans regarder tout le point de corde) ; angle en rad (+ = à droite)
-constexpr float COCKPIT_SUIVI_VIRAGE = 0.6f, COCKPIT_LACET_MAX = 12.f * 3.14159265f / 180.f;
-inline float distanceRegard(double kmh) { return (float)std::clamp(std::fabs(kmh) / 3.6 * 1.5, 12.0, 40.0); }
-inline float lacetVirage(float angleVersRoute) { return std::clamp(angleVersRoute * COCKPIT_SUIVI_VIRAGE, -COCKPIT_LACET_MAX, COCKPIT_LACET_MAX); }
-// RG-04 : mouvement de tête (m, repère de la voiture : x à droite, z vers l'arrière) : vers l'avant au freinage, vers
-// l'arrière à l'accélération (3 mm par m/s², 3 cm au plus), vers l'extérieur du virage (2 mm par m/s², 2 cm au plus)
+// WFS-282 (RG-02) : regard plus doux : la tête vise le point de la route à ≈ 1,5 s (20 à 40 m), en suit 40 % de l'angle,
+// ±7° au plus ; à l'arrêt et sous 20 km/h, regard droit devant (rien à suivre : une petite erreur de file au départ faisait
+// tourner la tête de 12°), plein suivi à partir de 30 km/h ; angle en rad (+ = à droite)
+constexpr float COCKPIT_SUIVI_VIRAGE = 0.4f, COCKPIT_LACET_MAX = 7.f * 3.14159265f / 180.f, COCKPIT_LISSAGE_REGARD = 1.5f;
+inline float distanceRegard(double kmh) { return (float)std::clamp(std::fabs(kmh) / 3.6 * 1.5, 20.0, 40.0); }
+inline float suiviSelonVitesse(double kmh) { return (float)std::clamp((std::fabs(kmh) - 20.0) / 10.0, 0.0, 1.0); }
+inline float lacetVirage(float angleVersRoute, double kmh = 100) {
+    return std::clamp(angleVersRoute * COCKPIT_SUIVI_VIRAGE, -COCKPIT_LACET_MAX, COCKPIT_LACET_MAX) * suiviSelonVitesse(kmh);
+}
+// RG-02 : mouvement de tête (m, repère de la voiture : x à droite, z vers l'arrière) : vers l'avant au freinage, vers
+// l'arrière à l'accélération (2 mm par m/s², 2 cm au plus), vers l'extérieur du virage (1,5 mm par m/s², 1,5 cm au plus) ;
+// coupé par « Réduire les mouvements »
 inline vec3 mouvementTete(double lonAcc, double latAcc) {
-    return {(float)std::clamp(-latAcc * 0.002, -0.02, 0.02), 0.f, (float)std::clamp(lonAcc * 0.003, -0.03, 0.03)};
+    return {(float)std::clamp(-latAcc * 0.0015, -0.015, 0.015), 0.f, (float)std::clamp(lonAcc * 0.002, -0.02, 0.02)};
 }
 // la tête tourne autour du cou, 9 cm derrière les yeux (estimé, avis d'expert) : à 12° de lacet, l'œil glisse de ≈ 1,9 cm
 constexpr float COCKPIT_COU_M = 0.09f;
+// WFS-282 (RG-03) : œil de la caméra au-dessus de l'œil du siège (m ; 2 à 4 cm acceptés par la règle) : plus de rue, moins de planche
+constexpr float COCKPIT_OEIL_PLUS_M = 0.04f;
 inline vec3 decalageCou(float lacet) { return {COCKPIT_COU_M * std::sin(lacet), 0.f, COCKPIT_COU_M * (1.f - std::cos(lacet))}; }
 
 // ---------- accroche de Game::render (WFS-66) ----------

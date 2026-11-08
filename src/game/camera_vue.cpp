@@ -88,20 +88,21 @@ void choisirRegard(RegardCockpit r) {
     WFS_LOG("caméra : regard cockpit %s", r == RegardCockpit::Bas ? "bas" : r == RegardCockpit::Haut ? "haut" : "normal");
 }
 
-// le regard vise le point de la route à ≈ 1,5 s, sur la file de la voiture, et en suit 60 % (±12°), lissé à 2,5 /s ;
+// le regard vise le point de la route à ≈ 1,5 s, sur la file de la voiture, et en suit 40 % (±7°, au-dessus de 20 km/h),
+// lissé à 1,5 /s (WFS-282, RG-02) ;
 // la tête suit les accélérations (lissées à 4 /s) ; « Réduire les mouvements » : tête immobile, regard qui suit à moitié
 static void regarderRoute(Track& track, const Player& pl, const mat4& carM, const vec3& oeilL, float fdt) {
     const bool calme = reglagesRessenti().reduireMouvements;
     const TrackPoint p = track.pointLisse(pl.dist + distanceRegard(pl.kmh()) / M, pl.playerX * RW);
     const vec3 q = inverseAffine(carM).transformPoint({(float)p.x, (float)p.y, (float)p.z});
-    const float lacetT = lacetVirage(std::atan2(q.x - oeilL.x, -(q.z - oeilL.z))) * (calme ? 0.5f : 1.f);
+    const float lacetT = lacetVirage(std::atan2(q.x - oeilL.x, -(q.z - oeilL.z)), pl.kmh()) * (calme ? 0.5f : 1.f);
     const vec3 av = carM.transformDir({0, 0, -1});
     const double cap = std::atan2(av.x, -av.z), v = std::abs(pl.speed) * M;
     double latAcc = 0;
     if (g_regard.init && fdt > 1e-4f) latAcc = v * std::atan2(std::sin(cap - g_regard.cap), std::cos(cap - g_regard.cap)) / fdt;
     const vec3 teteT = calme ? vec3{} : mouvementTete(pl.lonAcc, latAcc);
     if (!g_regard.init || g_suivi.vue != VueCamera::Cockpit || !g_suivi.init) { g_regard.lacet = lacetT; g_regard.tete = teteT; }
-    g_regard.lacet += (lacetT - g_regard.lacet) * (1.f - std::exp(-fdt * 2.5f));
+    g_regard.lacet += (lacetT - g_regard.lacet) * (1.f - std::exp(-fdt * COCKPIT_LISSAGE_REGARD));
     g_regard.tete = lerp(g_regard.tete, teteT, 1.f - std::exp(-fdt * 4.f));
     g_regard.cap = cap; g_regard.init = true;
 }
@@ -178,7 +179,9 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         regarderRoute(track, pl, carM, eyeL, fdt);   // WFS-235 : regard et tête (repère de la voiture)
         // l'intérieur reste attaché à la voiture, à la place de l'œil (la tête tourne et bouge dedans)
         g_ck.repere = carM * translate(eyeL);
-        eyeL = eyeL + g_regard.tete + decalageCou(g_regard.lacet);
+        // WFS-282 (RG-03) : l'œil de la caméra est 4 cm au-dessus de l'œil du siège (marge permise : 2 à 4 cm) ; l'intérieur
+        // reste dans le repère du siège : la planche descend dans l'image et la rue gagne de la place
+        eyeL = eyeL + vec3{0, COCKPIT_OEIL_PLUS_M, 0} + g_regard.tete + decalageCou(g_regard.lacet);
         const float pente = std::tan(inclinaisonRegard(g_regardChoisi));
         lookL = eyeL + vec3{std::sin(g_regard.lacet) * 30.f, pente * 30.f, -std::cos(g_regard.lacet) * 30.f};
     } else {           // capot : au milieu, devant le pare-brise, le capot reste dans le bas de l'image
@@ -465,24 +468,28 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
             const vec3 av = etatCockpit().repere.transformDir({0, 0, -1});
             const float tanV = std::tan(etatCockpit().fov * PI / 360.f), tanH = tanV * (float)wa / (float)ha, azVoiture = std::atan2(av.x, -av.z);
             const float H8 = 8.f * PI / 180.f, A15 = 15.f * PI / 180.f;
-            long n[3] = {0, 0, 0}, c[3] = {0, 0, 0};   // fenêtre, bande, au-dessus de l'horizon
+            long n[4] = {0, 0, 0, 0}, c[4] = {0, 0, 0, 0};   // fenêtre, bande, au-dessus de l'horizon, toute l'image (WFS-282)
             for (int y = 0; y < ha; y++) for (int x = 0; x < wa; x++) {
                 const vec3 d = f + sd * (((x + 0.5f) / wa * 2 - 1) * tanH) + u * ((1 - (y + 0.5f) / ha * 2) * tanV);
                 const float el = std::atan2(d.y, std::sqrt(d.x * d.x + d.z * d.z));
-                if (el < 0) continue;
-                float az = std::atan2(d.x, -d.z) - azVoiture; az = std::atan2(std::sin(az), std::cos(az));
                 const unsigned char *p = pa + ((size_t)y * wa + x) * 3, *q = pb + ((size_t)y * wa + x) * 3;
                 const bool cache = std::max({std::abs(p[0] - q[0]), std::abs(p[1] - q[1]), std::abs(p[2] - q[2])}) > 12;
+                n[3]++; c[3] += cache;
+                if (el < 0) continue;
+                float az = std::atan2(d.x, -d.z) - azVoiture; az = std::atan2(std::sin(az), std::cos(az));
                 const bool bande = el <= H8, fenetre = bande && std::fabs(az) <= A15;
                 n[2]++; c[2] += cache;
                 if (bande) { n[1]++; c[1] += cache; }
                 if (fenetre) { n[0]++; c[0] += cache; }
             }
             auto pct = [&](int k) { return n[k] ? 100.0 * c[k] / n[k] : 0.0; };
+            // WFS-282 (RG-03) : horizon au milieu de l'image (part de la hauteur depuis le haut ; 40 à 45 % visé)
+            const float horizon = 0.5f + std::tan(std::asin(std::clamp(f.y, -1.f, 1.f))) / (2 * tanV);
             WFS_LOG("capture %s (WFS-235 RG-05) : regard %s ; cachés par l'intérieur : fenêtre de la rue %.1f %% (0 %% visé), bande de la rue %.1f %%, "
-                    "au-dessus de l'horizon %.1f %% ; balais %.2f rad%s ; tangage de la voiture %+.1f° ; contrôle %.2f %%", nom.c_str(),
+                    "au-dessus de l'horizon %.1f %%, toute l'image %.1f %% (WFS-282 : 30 à 35 %% visé) ; horizon à %.1f %% depuis le haut ; "
+                    "balais %.2f rad%s ; tangage de la voiture %+.1f° ; contrôle %.2f %%", nom.c_str(),
                     regardCockpit() == RegardCockpit::Bas ? "bas" : regardCockpit() == RegardCockpit::Haut ? "haut" : "normal",
-                    pct(0), pct(1), pct(2), balais, balais > 0.02f ? " (en mouvement, pluie : mesure écrite seulement)" : "",
+                    pct(0), pct(1), pct(2), pct(3), horizon * 100, balais, balais > 0.02f ? " (en mouvement, pluie : mesure écrite seulement)" : "",
                     std::asin(std::clamp(av.y, -1.f, 1.f)) * 180.f / PI, instable);   // tangage : nez vers le bas, la bande monte
         } else WFS_ERR("%s : parts cachées non mesurées (captures illisibles)", nom.c_str());
         stbi_image_free(pa); stbi_image_free(pb);   // nul accepté
@@ -552,6 +559,8 @@ void benchCockpit(Game& g, Renderer& r, const std::string& out, const std::vecto
                 capture(c + "-nuit-virage"); partCachee(c + "-nuit-virage"); partCachee(c + "-nuit-virage", true);
             }
         }
+        // WFS-282 : départ de nuit sur la Plage (capture de l'utilisateur, qa/retours/2026-11-07-cockpit-nuit-plage.jpg)
+        if (course(car, "plage", true)) { rouler(70); capture(c + "-plage-nuit-depart"); partCachee(c + "-plage-nuit-depart"); }
     }
     g.shutdown();
     unsetenv("WFS_MOMENT");

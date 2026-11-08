@@ -11,6 +11,8 @@ namespace wfs::cockpit {
 // WFS-282 : pièces construites par code, vues de l'intérieur : jamais de retrait des faces arrière (WFS-246 retire les faces
 // arrière des matériaux opaques sans MAT_DOUBLE : le dessus de la planche de bord disparaissait, on voyait la route au travers)
 static Material deuxFaces(Material m) { m.flags |= MAT_DOUBLE; return m; }
+// WFS-282 (RG-04) : lumière d'ambiance de nuit de l'habitacle, en part de l'albédo de chaque matière (émission, mêmes unités que les écrans)
+constexpr float AMBIANCE_NUIT = 0.25f;
 
 bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
 const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
@@ -165,7 +167,7 @@ std::vector<uint8_t> grainCuir(int N) {
 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -287,6 +289,13 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
     mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
     mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
+    // WFS-282 (RG-03) : glace du rétroviseur (miroir argenté : reflète la rue et le ciel, au lieu d'un bloc noir)
+    mat(M_GLACE, 0x8a8e92, 0.05f, 1.f);   // glace teintée (anti-éblouissement) : la nuit, les lumières de la rue ne l'allument pas en blanc
+    // WFS-282 (RG-04) : la nuit, l'habitacle reçoit un peu de lumière (compteurs, écran, rue, ≈ 0,5 à 1 lux) : chaque matière
+    // garde sa couleur, plus une petite émission proportionnelle à son albédo (métaux : un tiers) ; sans elle, planche,
+    // volant et montants sortaient en aplats noirs
+    matsNuit_ = mats_;
+    for (Material& m : matsNuit_) m.emissive = m.emissive + vec3{m.color.x, m.color.y, m.color.z} * (AMBIANCE_NUIT * (m.metal > 0.5f ? 0.33f : 1.f));
     std::vector<Vertex> v; std::vector<uint32_t> i;
     auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
@@ -337,13 +346,15 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     }
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
     {
-        Geo mont, pav, ret, porte;
+        Geo mont, pav, ret, porte, glace;
         const vec3 bas[2] = {{CX - 0.72f, Yb, Zb}, {CX + 0.72f, Yb, Zb}};
         const vec3 haut[2] = {{CX - 0.62f, 0.40f, -0.42f}, {CX + 0.62f, 0.40f, -0.42f}};
         for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
         boite(pav, translate({CX, 0.43f, -0.28f}), 1.40f, 0.04f, 0.32f);
         // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
-        boite(ret, translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f), 0.24f, 0.065f, 0.025f);
+        const mat4 R = translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f);
+        boite(ret, R, 0.24f, 0.065f, 0.025f);
+        plan(glace, R * translate({0, 0, 0.0135f}), 0.226f, 0.052f);   // WFS-282 (RG-03) : glace côté conducteur, cadre noir de 7 mm
         boite(ret, translate({CX - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
         // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
         for (float sx : {-1.f, 1.f}) {
@@ -351,7 +362,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
             boite(porte, translate({x, Y - 0.32f, -0.30f}), 0.06f, 0.62f, 1.30f);
             boite(porte, translate({x - sx * 0.04f, Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);
         }
-        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(porte, M_PLANCHE_BAS);
+        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PLANCHE_BAS);
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -413,6 +424,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // essuie-glaces : bras + balai, dans le repère du balai (x le long du bras, y vers le haut du pare-brise)
     {
         Material m; m.color = {0.012f, 0.012f, 0.012f, 1}; m.rough = 0.55f; m.metal = 0; brasMat_ = r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr);
+        brasNuit_ = brasMat_; brasNuit_.emissive = vec3{m.color.x, m.color.y, m.color.z} * AMBIANCE_NUIT;   // WFS-282 (RG-04)
         for (int k = 0; k < 2; k++) {
             const float L = k == 0 ? d.balaiG : d.balaiD;
             if (L <= 0) continue;
@@ -443,12 +455,12 @@ void Interieur::detruire(Renderer& r) {
     for (Piece& p : pieces_) r.destroy(p.m);
     pieces_.clear();
     for (Material& m : mats_) r.destroy(m);
-    mats_.clear();
+    mats_.clear(); matsNuit_.clear();   // copies de nuit : même jeu de descripteurs (rien à détruire)
     for (Mesh& m : bras_) if (m.indexCount) r.destroy(m);
     if (brasMat_.set) r.destroy(brasMat_);
     for (int k = 0; k < D_N; k++) { r.destroy(dyn_[k]); r.destroy(dynMat_[k]); r.destroy(dynNuit_[k]); dyn_[k] = {}; dynMat_[k] = dynNuit_[k] = {}; }
     for (Mesh& m : bras_) m = {};
-    brasMat_ = {};
+    brasMat_ = {}; brasNuit_ = {};
     if (cleMat_.set) r.destroy(cleMat_);
     cleMat_ = {};
     if (grain_.view) r.vk().destroy(grain_);
@@ -614,7 +626,7 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        r.draw(p.m, mat(mats_[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
+        r.draw(p.m, mat((e.v.nuit && m < (int)matsNuit_.size() ? matsNuit_ : mats_)[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {
@@ -630,15 +642,15 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
         };
         switch (d.essuie) {
         case Essuie::Paralleles:
-            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
-            if (bras_[1].indexCount) { r.draw(bras_[1], mat(brasMat_), cam * repere(base + vec3{0.08f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[1].indexCount) { r.draw(bras_[1], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{0.08f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
             break;
         case Essuie::Opposition:
-            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
-            if (bras_[1].indexCount) { r.draw(bras_[1], mat(brasMat_), cam * repere(base + vec3{0.62f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[1].indexCount) { r.draw(bras_[1], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{0.62f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
             break;
         case Essuie::Unique:
-            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.02f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.02f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
             break;
         }
     }
