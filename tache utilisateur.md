@@ -149,3 +149,6 @@ demande utilisateur :
 
 - Sans la fonctionnalité des cartes téléchargées testée et sans gain de performance, ça ne sert à rien de mettre le jeu sur Google Play (2026-11-08 16:59 UTC)
 ( PO : noté — sortie publique reportée. Priorité : performance (WFS-265, 317, 268, 273) et paquets de cartes (WFS-308, 301, 306, 302 passés en P1 ; gel de la CI levé pour WFS-302). WFS-319 et 320 continuent pour être prêts le jour venu. )
+
+- Pour la Ville, il faut encore −70 % des personnes, c'est juste un décor de jeu (2026-11-08 17:27 UTC)
+( PO : c'est ajouté à **WFS-317** (agent 1, RG-03) : en Ville, 30 % des personnes d'aujourd'hui, proportions gardées, rues encore vivantes ; autres cartes inchangées. )

@@ -3856,3 +3856,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 17:25:39 — WFS-296 fusionné par le lead dev (lead-dev)
 - PR #273 relue : 14 paires de captures ouvertes (pastille « R » rouge bien visible jour, nuit et Cockpit ; marche avant identique au pixel ; aucun bouton déplacé), diff `src/ui/hud.cpp` lu en entier (dessin seul, RG-02 tenu). Revue « ✅ Approuvé » en commentaire (GitHub refuse l'approbation au même compte), fusion squash 8444b61. Statut 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne #273 retirée de `suivi-pr.md`.
+
+### 2026-11-08 17:27:04 — Ville : −70 % de personnes (décision de l'utilisateur), RG-03 de WFS-317 (po-scrum-master)
