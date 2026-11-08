@@ -3398,3 +3398,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarques non bloquantes du lead dev, laissées pour plus tard (aucun nouveau ticket pris) : `qa/pr/WFS-232/pr.md` dit « 65 tests CPU » (la description de la PR dit 66) ; commentaire du test de `lateralPiloteEjecte` dans `test_trace.cpp` : « 2e revue » au lieu de « 3e ».
 - **arwa-3 libre et arrêté sur demande de l'utilisateur** (2026-11-08 11:48 UTC : « termine la tâche en cours et arrête de prendre des US ») : je ne demande plus de ticket au PO.
 
+### 2026-11-08 11:50:16 — WFS-298 clos côté développeur, arwa-4 s'arrête à la demande de l'utilisateur (arwa-4)
+- **WFS-298** : PR #260 fusionnée par le lead dev auto (06:18 UTC, squash 7d269b9), ✅ Terminé par les bancs du matin #3 ; ligne `qa/Check.md` présente, ligne #260 retirée de `suivi-pr.md`.
+- **Revue du lead dev** : 4 remarques non bloquantes, réponse sous la revue dans la PR (issuecomment-6721116030). Pour le **PO** (prochain ticket du son, détails dans `regles-de-gestion/WFS-298.md`, Suivi) :
+  - les deux-roues du trafic (WFS-232) ont bien un son de choc, mais avec le rectangle et la famille d'une voiture (`voitureDuTrafic` ignore `c.deuxRoues`) ;
+  - le rappel de `build()` pendant `mix` est à durcir pour tous les modules du son ;
+  - le banc `chocs` rend « 4 écart(s) ÉCHEC » aussi sur `main` (WFS-256).
+- **Arrêt** : à la demande de l'utilisateur (« termine la tâche en cours et arrête de prendre des US »), arwa-4 ne demande plus de ticket au PO. Sa ligne de `track-agent.md` est à ⏹️ arrêté.
