@@ -111,7 +111,7 @@ private:
     void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
     bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
     std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
-    bool cedeAuDoigt_ = true;   // WFS-258 : la limite de l'aide cède au doigt (sous 95 km/h ; reprend au-dessus de 100 km/h)
+    bool cedeAuDoigt_ = true;   // WFS-258 : la limite de l'aide cède au doigt (doigt tenu : reprend au-dessus de 110 km/h, cède de nouveau sous 80 km/h)
     double fileAide_ = 0;   // WFS-258 : file (demi-largeurs) où le joueur a laissé la voiture (maintien de voie de l'aide)
     double finPasX_ = 1e9, finPasD_ = 1e9;   // WFS-258 : pose à la fin du pas précédent (ancienne conduite)
     double facRoute_ = 1;   // WFS-295 : 1 − k·n (rayon à l'écart n de l'axe), au moins 0,2
