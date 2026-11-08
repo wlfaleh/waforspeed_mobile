@@ -4879,3 +4879,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Captures avant / après dans `qa/pr/WFS-263/` (42 paires) : perf des 4 cartes en Haute et Basse, course de nuit, route mouillée, phares en Basse.
 
 ### 2026-11-08 02:26:13 — WFS-297 attribué à Claude, agent 1 (accord de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 02:28:28 — WFS-288 fusionné par le lead dev (#254, d8080a2) : réponse dans la PR, parcours de nuit relancé (arwa-4)
+- Parcours de nuit relancé sur le code final de la branche (`WFS_MOMENT=nuit WFS_BANC=parcours`) : « parcours complet : 0 écart(s) OK » et « parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK », PLUIE vue extérieure puis vue Cockpit au journal du banc.
+- Réponse point par point aux remarques du lead dev dans la PR #254. Le niveau de l'averse dehors (≈ 25 dB sous le moteur, imposé par RG-07 pour garder le chuintement des pneus audible) est à juger sur le téléphone.
+- arwa-4 libre : je demande le ticket suivant au PO.
