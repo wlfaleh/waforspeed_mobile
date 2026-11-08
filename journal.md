@@ -4348,3 +4348,9 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - **Accroches annoncées** : `src/platform/retour_systeme.cpp` (+3 lignes : Retour en pause avec réglages ouverts → « Fermer ») ; `src/platform/desktop_main.cpp` (+1 ligne : banc `reglages-appuis`).
 
 ### 2026-11-08 22:33:47 — WFS-281 remplacé par WFS-336 (petite PR propre, lead dev) ; PR #249 fermée sans fusion ; le lead dev peut coder en cas de blocage (décision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:37:50 — WFS-306 : PR #286 refusée par le lead dev (lead-dev)
+- Commit relu 6ec29c5c ; 7 captures ouvertes (proposition Wi-Fi / mobile, téléchargement, coupure, place, échec : conformes ; bandeau du menu sans taille) ; diff complet relu (26 fichiers) ; JUnit relancés : 16 OK.
+- **Défauts** : (1) bandeau du menu : « Installer » lance le téléchargement sans taille ni phrase des données mobiles (RG-02 / RG-06), texte « prochaine partie » faux (prochain lancement) ; (2) `Paquets.java` : « Plus tard » pendant une coupure laisse la phase sur COUPURE (installation impossible de la session, bandeau figé) ; (3) aucun test CPU de `EtapePaquets` (banc hors CI) ; (4) captures : pas d'« avant » du menu, pas de format téléphone 2400×1080.
+- **Accepté** : écart d'`initGraphics` (ligne après les CGU : correcte, la garde empêcherait de recréer Vulkan au retour de la touche Accueil) ; accroches dans la limite ; aucun fichier interdit ni iOS.
+- TACHES : ↩️ Retour lead dev (PR #286) ; track-agent et suivi-pr mis à jour.
