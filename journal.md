@@ -4904,3 +4904,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Partie comparée au réel : **les chocs**. Depuis WFS-256, `chocs::Genre` sait ce qui est touché, mais tout fait le même coup sourd (`SfxId::Choc`, au centre). **WFS-298** (P2, E6, ≤ 1 journée) : 5 familles (métal sonore, bois et feuillage, mobilier, béton, voiture), synthèse modale sourcée (facteurs de perte, Hertz), force et clarté selon la vitesse, côté gauche / droite, coup sourd actuel gardé ; genre retrouvé dans `src/audio` sans accroche (repli ≤ 5 lignes dans `chocs_cartes.cpp` seulement si le banc `chocs` n'est pas à 100 %). Règles : `regles-de-gestion/WFS-298.md`. Branche `feature/waforspeed-298`.
 - Remarques du lead dev sur WFS-288 : averse discrète en vue extérieure (≈ 25 dB sous le moteur, RG-07) → à juger par l'utilisateur, rien changé sans son avis (noté dans `WFS-288.md`) ; `(void)cad;` → WFS-298 RG-00.
 - Mise à jour du suivi : WFS-295 🔧 (branche de l'agent dev conduite poussée à 02:15, f04a335 ; WFS-258 attend derrière, ordre de l'utilisateur : pas de retrait) ; WFS-285 ⏳ Prêt (WFS-284 fusionné, #250) ; E7 et E8 libres ; 12 tickets prêts. `track-agent.md` remis à jour (derniers envois des branches). Robot des archives : pas encore passé cette nuit (03:07 UTC), à vérifier au prochain appel.
+
+### 2026-11-08 02:40:03 — WFS-298 : question d'arwa-4 tranchée, option A (synthèse en direct) (po-scrum-master)
+- Question d'arwa-4 : RG-03 (clarté ∝ v^(1/5) ± 5 %) impossible à tenir avec des tampons joués par `SonsVoitures::jouer` (RG-05 / RG-07) sans ≈ 16 Mo de son.
+- **Décision : option A.** Le choc est synthétisé en direct dans le thread audio (comme la pluie de WFS-288) : modes amortis, excitation filtrée à la
+  coupure exacte de la vitesse ; variantes et voix préparées au chargement ; aucune allocation, aucun verrou, aucun fichier son ; côté par
+  `voitures::panExistant(az)`, ajouté avec les voix de WFS-272 (écho du tunnel compris) ; coût ≤ 0,05 ms par bloc mesuré toutes voix actives.
+  Option B refusée : elle affaiblissait le critère chiffré de RG-03. RG-05 et RG-07 réécrites, détail dans le Suivi de `regles-de-gestion/WFS-298.md`.
+  Zone de code inchangée (`voitures_sons.*` non modifié). Branche `feature/waforspeed-298` poussée à 02:37 (f44fae5, commit de début).
