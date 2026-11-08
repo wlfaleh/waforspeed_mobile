@@ -5209,3 +5209,47 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - 65 tests CPU OK, parcours 0 écart.
 - Captures régénérées sur la version finale (`qa/pr/WFS-263/`, 42 paires).
   - `course-nuit-ville-stop` et `-recul` ne sont pas comparables : prises après 250 images de mesure, la voiture n'est pas au même endroit d'un passage à l'autre (392 ou 407 m, 486 ou 504 m). Les captures de la Ville prises avant sont identiques.
+
+### 2026-11-08 04:49:50 — WFS-232 : PR #245 corrigée après le 3e refus du lead dev (arwa-3)
+- Défaut bloquant (RG-01) : les lettres « 500X » en relief des deux flancs de la routière sont retirées (`BlankDecalOccluded` exclu à la conversion, 6328bef2) ; pas de trou dans le réservoir ; vérifié en 2340 × 1080 (`hd2340-cote-routiere.jpg`, `zoom-hd2340-reservoir-routiere.jpg`).
+- Remarques reprises :
+  - sportive : planche d'autocollants à RVB 0 sous la transparence, et texture métal / rugosité nettoyée (220ed923, `tools/deux_roues/sportive-autocollants-metal-rugosite-sans-marque.png`, SHA-256 764fff7e405fda3f7ff5920ab1da4c9d94733aee53cae5f4a6dd1afc43b701b0, tirée du modèle déjà téléchargé, aucun téléchargement) ; rendu identique au pixel près (banc `motos`, 48 images) ;
+  - `choc-2` à 0,13 s ; commentaire de `deux_roues.cpp` à jour ; `draco3dgltf@1.5.9` ; test de `lateralPiloteEjecte`.
+- Captures refaites (19d583ab) ; 66 tests CPU ; licences 0 manque ; branche synchronisée avec `main` (6baa3128) ; réponse « Bien reçu » et « corrigé dans » sous la revue ; lead dev rappelé (4e revue).
+- **Pour le PO** : c'est le 3e refus sur cette PR (signalé par le lead dev). Propositions du lead dev pour WFS-280 : éjection du pilote en 0,3 à 0,5 s, et pilote qui glisse seul au lieu de suivre la moto à 1,8 m.
+
+
+### 2026-11-08 04:50:59 — WFS-269 : accroche annoncée dans src/world/archi_carte.cpp (Claude, Agent 0 developer)
+- **Décision du PO (04:42 UTC)** : calcul dans `src/render/eclairage_precalcule.*`, accroche ≤ 10 lignes dans `archi_carte.cpp` (zone WFS-161 / WFS-268, PR #248 ouverte : aucune ligne d'agent 5 déplacée ni reformatée).
+- **Accroche** (+10 lignes, 1 modifiée) : l. 15 include `eclairage_precalcule.h` ; l. 63 (fin de `ajouter`) `precalcul::appliquerKit` sur les murs (normales × occlusion gardée) ; l. 79 `MAT_AO` sur les matériaux des murs ; l. 95-96 (`init`) `precalcul::occlusionKit` (murs des niveaux 0 et 1, au chargement) ; l. 166-170 `geometrie()` (bâtiments posés dans le monde, pour la grille). `archi_carte.h` : déclaration de `geometrie` (+4 lignes).
+
+### 2026-11-08 04:51:32 — WFS-263 fusionné par le lead dev (lead-dev)
+- PR #259 (Claude, agent dev X), commit relu faa6aaef (synchronisé avec main) ; **squash f1612a9** : `WFS-263 : shader léger au loin, 4 lumières par pixel et 4 lectures du reflet en Basse (#259) (Claude, agent dev X)`.
+- Revue : 42 paires de captures ouvertes une à une (avant / après / écart ×8) : identiques à l'œil ; seul écart visible au zoom, lueur lointaine du bord de mer en Basse de nuit (plafond RG-02) ; `course-nuit-ville-stop / -recul` non comparables (limite déclarée). Diff lu en entier (`common.glsl`, `eclairage.glsl`, `scene.frag`, `renderer.*`) : exclusions shader / CPU identiques, fondu 60-70 m cohérent avec le choix du pipeline léger, pipelines détruits dans toutes les listes, Haute inchangée.
+- Approbation : GitHub refuse l'approbation formelle (même compte) → revue « ✅ Approuvé par le lead dev » postée en commentaire avant la fusion. Remarques non bloquantes : pas de test CPU neuf, indentation d'un bloc de `scene.frag`, 65 / 66 tests selon la source, gain à mesurer sur le téléphone.
+- Statut : **🟡 À valider (utilisateur)** ; ligne ajoutée à `qa/Check.md` ; agent dev X libre ; ligne #259 retirée de `suivi-pr.md`.
+
+
+### 2026-11-08 04:53:09 — WFS-298 : son des chocs en PR #260, revue du lead dev demandée (arwa-4)
+- **Décision du PO (02:39, option A)** : synthèse modale en direct dans le thread audio. La clarté suit exactement v^(1/5), sans tampon par vitesse. Le son ne passe pas par `SonsVoitures::jouer` ; `voitures_sons.*` n'est pas touché.
+- **RG-02, source** : `jmrplens/phonometry` (MIT), commit d1a9027f050796d89e03d21c7c848910ef22bf5e, relu par clone partiel en lecture seule dans `/tmp`, sans rien exécuter ; seuls les nombres sont repris.
+  - `src/phonometry/solids/data/bies-2017-table-c1.json`, SHA-256 dd68038e84266d272957a4bb4dfd29fb34f704b34fb9d4979febf9669266a03f (Bies, *Engineering Noise Control*, 5e éd., tableau C.1, η en place) ;
+  - `cremer-2005-table-4-3.json`, SHA-256 4533d2af9740a96e7c0d7895d29b191d07015094264133fe833a1d1372332721 (Cremer, Heckl, Petersson 2005, tableau 4.3 : η interne seulement) ;
+  - `hopkins-2007-table-a2.json`, SHA-256 84dca877ee2ef73ae1e8eb2399479dddaf33301c9de737e41f584e9b0d28f141.
+- **η retenus** : acier boulonné 0,01, tôle 0,02, bois 0,05, plastique 0,1, verre 0,02.
+- **T60 = 2,2 / (f·η)** : poteau 1,17 s, arbre 0,142 s, mobilier 0,229 s, voiture 0,379 s ; béton 0,08 s (valeur du PO : un mur tenu par le sol n'est pas un panneau). Modes [à vérifier] ; mât d'éclairage en tube de 120 × 3,5 mm sur 6 m. Tout est dans `references/reel/son/chocs.md`.
+- **RG-03** : amplitude ∝ v (7 à 80 km/h). Force de contact en demi-sinus de Hertz (Johnson 1985 : t ∝ v^(−1/5)) ; durées à 30 km/h [à vérifier] : 0,25 / 0,5 / 0,25 / 4 / 0,33 ms. 4 variantes par famille, jamais deux fois de suite.
+- **RG-04** : au pas où `bumps` ou `accidents` monte, l'obstacle du registre à 0,5 m au plus de la voiture, sinon l'autre voiture à 1 m au plus ; côté par `voitures::panExistant`. Vitesse de l'accident : celle du joueur au pas d'avant, au moins 14 m/s (`lastImpact` n'est donné qu'aux petits chocs). Aucune accroche dans `src/game`.
+- **RG-05, niveaux** (décision : volume absolu non mesurable) : crête à 30 km/h −4,5 dB du coup sourd au centre, −1,6 dB du côté de l'obstacle ; à l'accident, 5,7 à 9,6 dB sous le son d'accident ; pire cas du bus 0,48.
+- **Accroches** : `CMakeLists.txt` 1 ligne (`test_audio_chocs`) ; `pluie_sons.cpp` 1 ligne retirée (RG-00, `(void)cad;`).
+- **Vérifié** :
+  - `test_audio_chocs` : 13 cas OK ; T60 ±6 % au plus, +5,8 à +6,3 dB par doublement, coupure 2^(1/5) exacte, 16 dB du bon côté, coût 0,031 ms par bloc avec 4 voix (plafond 0,05) ;
+  - 67 tests CPU OK après synchronisation (aab9555) ;
+  - parcours complet 0 écart, vue Cockpit 0 écart ;
+  - captures : les 27 courbes audio existantes sont identiques octet pour octet à main, ainsi que les .wav de la pluie ; 11 `chocs-*` nouvelles.
+- **Banc `chocs` (WFS-256)** : les 4 chocs qui ont lieu donnent tous la bonne famille (arbre 34 et 8 km/h, poteau 59 km/h deux fois, à droite). Mais le banc rend « 4 écart(s) ÉCHEC » (« 0 capture(s) sur 3, le choc n'a pas eu lieu ? » sur les 4 cartes). **`main` fait de même** (compilé à part, mêmes lignes) : ce n'est pas dû à WFS-298. À signaler au PO pour WFS-256.
+- **Limites** :
+  - le parcours avec un choc voulu contre un lampadaire puis contre une voiture du trafic n'existe pas, et `src/game` est hors zone ;
+  - la recherche d'une voiture touchée n'est prouvée que par le test (distances) ;
+  - graves peu rendus par un petit haut-parleur ;
+  - rien n'a été écouté sur un vrai téléphone.
