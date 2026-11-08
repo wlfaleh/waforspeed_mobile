@@ -5182,3 +5182,30 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Accroches annoncées** : `src/render/feux_modele.cpp` (+6 lignes et 2 de commentaire, banc des vitrines) : `WFS_VITRINE_ANGLES="3.14 0 1.57 …"` ajoute des vues de près `vitrine-<id>-a<n>` sous ces angles (rien sans la variable) ; `tools/convertir_voitures.sh` (+2 lignes) : `node effacer_logos.mjs "$@"` après les plaques et le 2e passage de `corriger_voitures`, avant les `.lod` (une reconversion ne fait pas revenir les logos).
 - **Essai M4 (atelier hors dépôt, depuis l'original de `main`)** : rondelles du coffre et du capot, badge M de la calandre, « M4 » du coffre, badges M des ouïes, 4 décalcomanies M d'étrier retirés ; caches des roues en uni à la couleur de la jante (ΔE2000 0,00). Cerclage chromé du capot gardé (33 % des rayons passent dans le jour capot / calandre). Centre du volant : question pour le PO (texture partagée avec les caches, ΔE2000 13,9 contre le volant), posée avec l'inventaire. Budget M4 : −6 appels de dessin, 117 182 → 112 554 triangles, 6,77 → 6,38 Mo.
 - **Aucun modèle du dépôt n'est encore modifié** : inventaire RG-01 des 20 voitures (pièce, matériau ou texture, méthode effacer / retirer / garder, RG-09) écrit ici avant toute retouche, puis Golf et M4 au banc, puis les 18 autres.
+
+### 2026-11-08 04:36:44 — WFS-269 : PR #256 corrigée après la revue du lead dev (Claude, Agent 0 developer)
+- **Cause de « aucun gain en Ville »** : les immeubles de la Ville sont ceux du kit (WFS-161), hors des blocs : ils ne cachaient pas le ciel et leurs murs ne recevaient rien ; de plus le pas croissant des rayons sautait les murs minces. Corrigé : kit dans la grille (niveau allégé), occlusion des murs du kit calculée au chargement (452 000 sommets, 0,2 s), portée 40 m au pas d'un voxel avec saut des cellules vides (commits 78d8d1af, 15563417, cc0bcf08).
+- **Corniche** : rochers et trottoirs ne reçoivent plus (ffa5bc35). **Campagne / Grand Prix** : non concernés (`LOTS_CARTES_SOCLE=false`), description corrigée.
+- **Mesures** : chargement Ville sur PC +1,0 s (décor fixe 1,1 s dont occlusion 0,77 s, 12,7 Mo temporaires ; murs du kit 0,2 s) — téléphone à confirmer (budget +3 s) ; coût en course neutre (banc perf Ville : main 832/789 ms Haute, 348/334 Basse ; branche 792/782, 334/337) ; 66 tests CPU OK ; test fidelite_lumiere_precalcule 10/10 (rue de 28 m : bas 0,81 / haut 0,91).
+- **Captures** : 83 paires Ville + Corniche + 5 gros plans sans / avec occlusion (écart × 16) ; effet discret (≤ 6 % sur les façades à l'ombre), dit franchement dans la PR. Réponse point par point postée sous la revue ; lead dev rappelé.
+
+### 2026-11-08 04:41:03 — WFS-269 refusé une 2e fois par le lead dev, PR #256 (lead-dev)
+- **Revue de ae2ae77** : 74 paires avant / après et 5 gros plans sans / avec (cartes d'écart × 16) ouverts, écart moyen mesuré par paire, tout le diff relu par rapport à main. Réponse « corrigé dans » du développeur présente.
+- **Défauts** (détail dans la revue de la PR) : (1) dents de scie toujours visibles sous le surplomb vert de la Corniche (bateaux-vue, jeux-vue) : retirer `P_ROC` n'a pas suffi, la pièce est dans un autre matériau receveur (probablement `P_UNI`) ; (2) traînées brunes sur la falaise (epingle-dessus, lacets-dessus) et taches sur la place du giratoire (rond-point-dessus), toujours là ; (3) Ville : les vues `ao-*` sont des vues de rue larges et non des gros plans, aucun gain à l'œil, et le PO n'a pas été saisi (gros plans réels ou décision écrite du PO sur le critère C) ; (4) `archi_carte.cpp` +53 lignes hors zone (WFS-161 / WFS-268), au-delà d'une accroche : exception du PO ou accroche réduite ; (5) `pr.md` : « 83 paires » (74 en réalité), « aucune tache » faux ; (6) retard sur main (WFS-295, sans conflit).
+- **PO** : la décision sur la visibilité de l'effet en Ville (critère C) lui revient, à la demande du développeur.
+- **Statut** : ↩️ Retour lead dev (PR #256) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.
+
+### 2026-11-08 04:42:22 — WFS-269 : décisions du PO sur la visibilité en Ville et la zone de code (po-scrum-master)
+- **Demande** : Agent 0 (PR #256, 2e refus du lead dev). **Décision 1** : effet discret accepté en Ville (≤ ≈ 6 % sur les façades à l'ombre, juste pour l'option A), avec les immeubles du kit dans la grille ; jugé sur gros plans sans / avec + carte d'écart ; 🟡 après fusion. **Décision 2** : calcul déplacé dans `src/render/eclairage_precalcule.*`, accroche ≤ 10 lignes dans `archi_carte.cpp` annoncée au journal, pas d'exception (coordination avec WFS-268, PR #248). Détail : `regles-de-gestion/WFS-269.md`, Suivi.
+### 2026-11-08 04:42:24 — WFS-263 : réalisme vérifié, corrections, PR prête (Claude, agent dev X)
+- **Banc `realisme`** (partie 1, 48 images, comparées à `main` au même point) :
+  - les indices de fidélité sont identiques à ceux de `main` (banc complet) ;
+  - un premier passage a trouvé deux défauts, corrigés depuis :
+    1. carrefour en Basse de nuit −3 % sur l'image : le plafond de 4 lumières coupait le lampadaire voisin. Correctif : en Basse, lumières rangées de la plus proche à la plus lointaine de la caméra, et seules les lumières à portée comptent ;
+    2. décor lointain écarté de 4 à 15 % sur de petites zones par l'approximation du Fresnel. Correctif : le shader léger garde la table BRDF exacte et le ciel analytique ; il ne retire que la carte de normales et deux lectures de sonde sur trois (cube dominant seul).
+- **Après correction** :
+  - Haute : un seul écart, falaise −2,8 % sur 0,3 % des pixels (sous le seuil de 3 %) ;
+  - Basse de nuit : de 0,5 à 1,8 % des pixels plus sombres (au plus −1 % sur l'image entière, vue large), des taches de lumière lointaines au-delà des 4 lumières permises par RG-02.
+- 65 tests CPU OK, parcours 0 écart.
+- Captures régénérées sur la version finale (`qa/pr/WFS-263/`, 42 paires).
+  - `course-nuit-ville-stop` et `-recul` ne sont pas comparables : prises après 250 images de mesure, la voiture n'est pas au même endroit d'un passage à l'autre (392 ou 407 m, 486 ou 504 m). Les captures de la Ville prises avant sont identiques.
