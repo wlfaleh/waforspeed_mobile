@@ -3,6 +3,9 @@
 // ni passe de reflet) : le pilote retire les « discard » du shader, et le test de profondeur se fait AVANT le shader
 // (early-Z, LRZ des GPU mobiles) : les pixels cachés ne sont plus calculés. Faux par défaut : comportement d'avant.
 layout(constant_id = 0) const bool SANS_DISCARD = false;
+// WFS-263 (RG-01) : LEGER = vrai pour la variante légère de scene.frag (décor dont le point le plus proche est à plus de 70 m) :
+// sans carte de normales, une seule lecture de la sonde (cube dominant) au lieu de trois ; faux par défaut
+layout(constant_id = 1) const bool LEGER = false;
 layout(set = 0, binding = 0) uniform Frame {
     mat4 viewProj;
     mat4 invViewProj;
