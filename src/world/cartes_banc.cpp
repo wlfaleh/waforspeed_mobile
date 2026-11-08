@@ -18,6 +18,7 @@
 #include "../render/renderer.h"
 #include "../ui/ecrans/reglages.h"   // WFS-249 : qualité Basse du banc campagne
 #include "decor_carte.h"
+#include "../game/camera_vue.h"   // WFS-326 : vue Proche des lieux de l'utilisateur
 #include "ville_quartiers.h"   // WFS-176 : lieux de la Ville
 #include "zones.h"
 #include "../game/trace_cartes.h"   // WFS-138 : sections du tracé 2
@@ -227,7 +228,7 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
 void benchVille(Game& g, Renderer& r, const std::string& out) {
     if (!trace::carteActive("ville")) return;
     Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
-    struct Lieu { std::string nom; int64_t seg; double avant; bool nuit; int cam = 0; };   // cam 1 : caméra haute (contrôle du côté intérieur)
+    struct Lieu { std::string nom; int64_t seg; double avant; bool nuit; int cam = 0; VueCamera vue = VueCamera::Poursuite; };   // cam 1 : caméra haute (contrôle du côté intérieur) ; vue : WFS-326
     std::vector<Lieu> lieux;
     int virages = 0; bool fx = false, rp = false, au = false, tu = false, po = false;
     const int64_t m40 = (int64_t)(40 / SEG_M);
@@ -243,6 +244,10 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-virage-" + std::to_string(virages) + "-haut", (s.debut + s.fin) / 2, 18, false, 1});   // au cœur du virage
         }
         if (s.exRondPoint) lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});   // WFS-283 : plus de fontaine
+        // WFS-326 (ANO-175) : lieux des captures de l'utilisateur (APK 0.1.916) : apk916-5, avenue du Belvédère, vue Arrière, 100 m
+        // avant le virage serré à gauche (ancien rond-point) ; apk916-2 : avenue des Mimosas, vue Proche, 22 m avant le dernier virage à gauche
+        if (s.exRondPoint || s.type == T::RondPoint) lieux.push_back({"carte-ville-apk916-5", s.debut, 100, true});
+        if (s.type == T::Virage && s.cote < 0 && s.debut * SEG_M > 5500) lieux.push_back({"carte-ville-apk916-2", s.debut, 22, true, 0, VueCamera::Proche});
         if (s.type == T::RondPoint) {
             lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
             lieux.push_back({"carte-ville-fontaine", s.debut, -20, true, 1});   // WFS-212 (RG-05) : 20 m dans l'anneau, l'îlot et sa fontaine devant
@@ -271,6 +276,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         }
     }
     const char* seul = std::getenv("WFS_VILLE_LIEU");   // essai local : un seul lieu (préfixe du nom)
+    if (std::getenv("WFS_QUALITE_BASSE")) { ecrans::reglages().qualite = ecrans::QUALITE_BASSE; r.qualiteBasse = true; }   // WFS-326 : qualité du téléphone de l'utilisateur
     for (const Lieu& l : lieux) for (int n = 0; n < (l.nuit ? 2 : 1); n++) {
         const std::string nom = l.nom + (n ? "-nuit" : "") + (l.cam == 3 && std::getenv("WFS_SANS_AO") ? "-sans" : "");
         if (seul && nom.rfind(seul, 0) != 0) continue;
@@ -279,7 +285,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
         setenv("WFS_DEPART", std::to_string(std::max<int64_t>(0, segL - (int64_t)(l.avant / SEG_M))).c_str(), 1);
         courseBenchRules(true);
         if (!g.init(r, "golf", "ville")) { WFS_ERR("banc ville : chargement impossible"); continue; }
-        g.setAutopilot(false); g.camMode = l.cam >= 2 ? 0 : l.cam; g.allerA(Ecran::Course);
+        g.setAutopilot(false); g.camMode = l.cam >= 2 ? 0 : l.cam; choisirVue(l.vue); g.allerA(Ecran::Course);
         for (int i = 0; i < 90; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(500 + i / 60.0); }   // décompte : voiture arrêtée
         if (l.cam == 2) {   // WFS-212 : vue de dessus centrée sur le rond-point (centre de l'anneau), 70 m au-dessus
             const ville::Plan& P = ville::adapter(mapById("ville"), t);
@@ -296,7 +302,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             g_vueHaute.fov = 55; g_vueHaute.haut = {0, 1, 0}; g_vueHaute.actif = true;
         }
         g.render(502); g.render(502.02); r.capturePng(out + "/" + nom + ".png");
-        g_vueHaute.actif = false; g_vueHaute.fov = 50; g_vueHaute.haut = {0, 0, -1};
+        g_vueHaute.actif = false; g_vueHaute.fov = 50; g_vueHaute.haut = {0, 0, -1}; choisirVue(VueCamera::Poursuite);
         WFS_LOG("capture %s : segment %lld, %.0f m avant, %.0f m, %u appels de dessin", nom.c_str(), (long long)l.seg, l.avant, g.player().dist * M, r.appelsDessin());   // WFS-175 : coût
         g.shutdown();
     }
