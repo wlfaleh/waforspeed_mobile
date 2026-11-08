@@ -3782,3 +3782,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Statut WFS-265 : ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
 
 ### 2026-11-08 16:30:43 — WFS-258 point 1 (aide à la direction) validé par l'utilisateur sur téléphone (po-scrum-master)
+
+### 2026-11-08 16:38:27 — WFS-300 : banc qualité, captures stables, journal plus clair (Claude, agent 5)
+- **RG-01 cause** : les images de contrôle de WFS-239 (RG-03) font avancer les captures d'environnement ; la sonde B (rebond) arrivait avant la capture de `voiture-lod-passage-56` mais pas encore avant `-60`. Façade de droite (L*a*b*) : `main` 56 m 7,8 / 2,8 / −8,4 (bleutée), 60 m 12,1 / −0,5 / −1,5 (grise) ; commit d'avant WFS-239 (da0030f) : 12,3 / −0,6 / −1,0 à 56, 60 et 64 m (sonde pas encore arrivée).
+- **RG-02** (`qualite_banc.cpp` seul) : avant chaque capture, `attendreSondes` puis attente jusqu'à 6 images sans nouvelle sonde (journal « sondes … (WFS-300 RG-02) »). Deux lancements de suite : écart moyen ≤ 0,005 niveau sur 255 sur 33 captures `voiture-*` ; 56 / 60 / 64 m : même couleur (ΔE2000 ≈ 0,1). Une fois les sondes stables, les façades de cette rue sont bleutées dans le jeu : critère reformulé par le PO (option A, c78b9d1), ANO-174 et WFS-322 (E13) créés.
+- **RG-03** : « placées / dessinées une à une / dessinées ensemble » pour chaque capture de voitures posées ; poursuite Basse 14 / 11 / 3 (plafond voulu WFS-111 / WFS-134, écrit comme tel) ; 0 ligne `ERREUR placement`.
+- **RG-04** : `<cstdio>` inclus ; pas de fonction publique de la position dessinée dans `game.h` : calcul de WFS-239 gardé.
+- **RG-05** (Ville, jour, Haute) : 10 images autour de l'arrivée d'une sonde (`voiture-sonde-0` à `-9`), zone de façades : 24,0 / −2,4 / 1,8 → 20,0 / −0,8 / −3,2, saut ΔE2000 **5,9** sur une image (> 2) : pour le PO (ANO-174, WFS-322).
+- **RG-06** : rien retiré ; durée du banc `qualite` 9 min 48 s (11 min 10 s + 2 min au plus). La ligne « capture abandonnée (face sans exposition connue) » existe aussi sur `main`.
+- Vérifications : 71 tests CPU OK ; captures avant / après `qa/pr/WFS-300/` (33). PR ouverte pour le lead dev.
