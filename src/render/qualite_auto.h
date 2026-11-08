@@ -100,6 +100,9 @@ inline float anisoScene(int q, float anisoGpu) { return netteteBasse(q) && aniso
 std::string texteRendu(int niveau, float echelle, int msaa, float ips, int chauffe);
 // ligne du rendu réellement utilisé, lue en direct (qualite_systeme.cpp) : Réglages, journal, rapport partagé
 std::string ligneRendu();
+// WFS-317 (I9) : budget de dessin de la dernière image (toutes passes) : « 420 appels · 744 k triangles (décor 63 %, voitures 13 %,
+// personnes 24 %) » ; detail : appels et triangles de chaque famille (fichier de mesure)
+std::string texteDessin(bool detail);
 
 // WFS-246 (RG-06) : mesure sur le téléphone : durées des images sur une fenêtre glissante de 20 s de course (médiane, 95 %,
 // 99 %, images > 33 ms et > 50 ms). Calcul seul (testé par tests/test_qualite.cpp) ; le système de qualité l'alimente.

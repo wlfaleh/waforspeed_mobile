@@ -190,6 +190,11 @@ public:
     // WFS-222 (RG-01) : banc de profilage (WFS_BANC=perf) : attente du GPU dans beginFrame, temps processeur de endFrame
     // (enregistrement des passes et envoi) et triangles de la dernière image ; mesure seule, aucun effet sur le rendu
     struct ChronoImage { double attenteGpuMs = 0, finImageMs = 0; uint32_t triangles = 0; };
+    // WFS-317 (I9) : appels de dessin et triangles de la dernière image, toutes passes, par famille (comptage seulement) :
+    // 0 décor (route, bâtiments, végétation, effets), 1 voitures (modèles), 2 personnes (maillages à squelette)
+    enum Famille : uint8_t { FAM_DECOR = 0, FAM_VOITURES = 1, FAM_PERSONNES = 2, FAM_N = 3 };
+    struct ComptesImage { uint32_t appels[FAM_N] = {}, triangles[FAM_N] = {}; };
+    const ComptesImage& comptesImage() const { return comptesPrec_; }
     const ChronoImage& chronoImage() const { return chronoPrec_; }
     // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
     double gpuImageMs() const { return gpuImageMs_; }
@@ -219,7 +224,7 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; };   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; };   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
@@ -316,6 +321,7 @@ private:
     VkSampler shadowSampler_ = VK_NULL_HANDLE;
     struct Bloom; Bloom* bloom_ = nullptr;   // WFS-100 : chaîne du bloom « dual filter » (renderer.cpp)
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
+    ComptesImage comptes_, comptesPrec_;   // WFS-317 (I9)
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};
