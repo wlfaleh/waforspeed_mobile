@@ -72,6 +72,7 @@ static Mesure rouler(Track& t, const trace::Section& s, Aide aide, bool volant, 
 static const char* nomAide(Aide a) { return a == Aide::Web ? "jeu web" : a == Aide::Activee ? "activée" : "désactivée"; }
 
 int main() {
+    wfs::trace::forcerRondsPoints(true);   // WFS-283 RG-06 : mesures de conduite sur les anciens ronds-points (interrupteur, code gardé)
     const char* cartes[] = {"circuit", "campagne", "ville", "plage"};
     int nSections = 0;
     for (const char* id : cartes) {

@@ -23,8 +23,17 @@ int main() {
     int feux = 0, ronds = 0;
     for (const auto& s : trace::sections(t)) { feux += s.type == trace::Type::Feux && !s.depart; ronds += s.type == trace::Type::RondPoint; }
     VERIFIE((int)P.carrefours.size() == feux && feux > 0, "carrefours à feux : %zu au plan, %d sections", P.carrefours.size(), feux);
-    VERIFIE((int)P.ronds.size() == ronds && ronds > 0, "ronds-points : %zu au plan, %d sections", P.ronds.size(), ronds);
-    for (const auto& r : P.ronds) VERIFIE(std::fabs(r.rayon - 14) < 1.5f, "rayon de l'anneau %.1f m (14 m attendus)", r.rayon);
+    // WFS-283 : plus de rond-point en jeu (carrefour simple) ; le plan de la Ville le lit encore quand l'interrupteur le remet (RG-04)
+    VERIFIE((int)P.ronds.size() == ronds && ronds == (trace::rondsPoints() ? 1 : 0), "ronds-points : %zu au plan, %d sections", P.ronds.size(), ronds);
+    {
+        trace::forcerRondsPoints(true);
+        static Track t2; t2.build(mapById("ville"), 2);
+        const ville::Plan& P2 = ville::adapter(mapById("ville"), t2);
+        int r2 = 0; for (const auto& s : trace::sections(t2)) r2 += s.type == trace::Type::RondPoint;
+        VERIFIE((int)P2.ronds.size() == r2 && r2 == 1, "ronds-points remis (RG-04) : %zu au plan, %d sections", P2.ronds.size(), r2);
+        for (const auto& r : P2.ronds) VERIFIE(std::fabs(r.rayon - 14) < 1.5f, "rayon de l'anneau %.1f m (14 m attendus)", r.rayon);
+        trace::forcerRondsPoints(false);
+    }
     // RG-C1 : aucun objet (sauf lampadaire) sur la rue transversale ni à 1,5 m de ses bords
     const int64_t L = (int64_t)P.objets.size();
     for (const auto& c : P.carrefours)
