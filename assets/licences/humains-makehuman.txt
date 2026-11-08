@@ -29,3 +29,8 @@ WFS-233 (enfants) : assets/people/humains/e04g.wfp … e14f.wfp (garçons g et f
 Modifications (tools/convert_people_makehuman.py, ENFANTS) : poids d'âge du modificateur macro de MakeHuman (bébé, enfant, jeune) ;
 stature = médiane CDC 2000 (references/reel/anthropometrie.json, enfant.*) ; proportions des cibles d'enfant gardées (aucun ratio
 adulte imposé) ; cuir chevelu peint en cheveux courts (partie 2 de _cloth) et épaissi de 4 mm.
+
+WFS-266 (adultes h01 … f06, régénérés ; enfants inchangés) : mêmes sources CC0 (mêmes SHA-256 que ci-dessus, dépôt relu le 2026-11-08,
+révision a8bc2d54ff0ac92e78ff71431b1023eda42bf482). En plus : globes oculaires « helper-l-eye » / « helper-r-eye » de base.obj
+(partie 1 : yeux) ; cuir chevelu peint (partie 2) ; f01, f02, f03, f05 : coiffure « Hair_Long » de femme.wfp (Quaternius, CC0,
+voir personnages-quaternius.txt) posée sur la tête de l'humain (boîte de la tête, mèches à 3 mm au moins de la peau).

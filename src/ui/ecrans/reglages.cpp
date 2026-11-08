@@ -255,7 +255,6 @@ private:
         float y = py + haut;
         const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
         for (int l = 0; l < N_LIGNES; l++) {
-            if (l == L_AIDE) y += 10 * k + bh + gap;   // WFS-217 (RG-04) : sous « Fermer », qui garde sa place
             r.uiRect(x0, y + rowH + gap / 2, pw - 72 * k, 1 * k, hex(TEXTE, 0.08f));   // séparateur
             ui::text(r, x0, y + (rowH - 14 * k) / 2, 14 * k, ui::majuscules(LIGNES[l].libelle), hex(MUTED), ui::GAUCHE, 0.16f, false);
             const int n = nChoix(l);
@@ -274,10 +273,11 @@ private:
             for (int c = n; c < 4; c++) g_choix[l][c] = {};
             y += rowH + gap;
         }
-        // .btn « Fermer » (orange, biais 14 px), à droite
+        // .btn « Fermer » (orange, biais 14 px), à droite, sous la dernière ligne ; WFS-286 (RG-01, ANO-156) : toutes les lignes à la
+        // suite (avant : « Aide à la direction » et « Regard cockpit » sous le bouton, placé après la ligne 11) ; tailles inchangées
         const float tp = 20 * k;
         const std::string ft = ui::majuscules("Fermer");
-        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)L_AIDE * (rowH + gap) + 10 * k;
+        const float fw = ui::width(tp, ft, 0.12f) + 56 * k, fx = px + pw - 36 * k - fw, fy = py + haut + (float)N_LIGNES * (rowH + gap) + 10 * k;
         g_fermer = {fx, fy, fw, bh};
         // WFS-134 (RG-01) : rendu réellement utilisé (niveau, échelle, MSAA, images/s, chauffe), à gauche de « Fermer »
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne, réduite pour tenir avant « Fermer »

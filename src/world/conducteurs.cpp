@@ -72,6 +72,8 @@ float sommetCorps(const char* chemin) {
     uint32_t version = 0, nTex = 0;
     if (!u32(version) || (version != 2 && version != 3) || !u32(nTex) || nTex > 8) return 0;
     for (uint32_t i = 0; i < nTex; i++) { uint32_t n = 0; if (!u32(n) || o + n > b.size()) return 0; o += n; }
+    // WFS-266 (accroche) : humain réaliste (version 3) : stature écrite par convert_people_makehuman.py (le crâne est en partie 2)
+    if (float h = 0; version == 3 && o + 12 <= b.size() && (std::memcpy(&h, &b[o + 8], 4), h > 0.5f && h < 2.5f)) return h;
     o += 7 * 4;   // rugosité, métal, hauteur, corps[4]
     uint32_t nV = 0;
     if (!u32(nV)) return 0;
