@@ -89,3 +89,6 @@ demande utilisateur :
 
 - Le bouton Réglages et le bouton Fermer des réglages ne passent pas toujours (jeu et menu) ; réglages en onglets (2 ou 3), plus clair, pas urgent (conversation avec le PO, 2026-11-08 00:04 UTC)
 ( PO : c'est créé — **WFS-290** (P2) avec **ANO-159** : chaque appui ouvre ou ferme les réglages, 100 fois sur 100, sans déplacer de bouton ; **WFS-291** (P3, après WFS-290) : réglages en 2 ou 3 onglets (Affichage, Conduite, Son), tous les réglages gardés. )
+
+- Dans les virages, à gauche ou à droite, la voiture ne tourne pas assez ; régler, demander l'avis de l'expert conduite, créer les tâches urgentes (vidéo, conversation avec le PO, 2026-11-08 02:15 UTC)
+( PO : c'est fait — avis de l'expert dans **WFS-295** (P1 urgent, agent dev conduite, avant la suite de WFS-258) : erreur de calcul dans les virages (la voiture tourne moins large au bord et sur le bas-côté), commandes bloquées 1,1 s après un choc ; **WFS-296** (P2) : marche arrière bien visible ; **ANO-168**. )

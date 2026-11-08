@@ -4815,3 +4815,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Limites** : sons des essuie-glaces, résonances du toit et du pare-brise, isolation de l'habitacle et zones d'écoute des gouttes et des bulles sans source lisible ([à vérifier]) ; rien n'a été écouté sur un vrai téléphone.
 
 ### 2026-11-08 02:07:44 — WFS-269 : rebond par bloc abandonné (doublon des sondes de WFS-151) (po-scrum-master)
+
+### 2026-11-08 02:15:12 — ANO-168 / WFS-295 (direction dans les virages, urgent) et WFS-296 (marche arrière visible) créés ; avis de l'expert conduite (po-scrum-master)
+- Vidéo de l'utilisateur jointe. Cause n° 1 : facteur 1/(1 − k·n) absent du calcul relatif à la route (`player.cpp:39, 119-121`) ; n° 2 : blocage 1,14 s après un choc ; n° 3 : marche arrière par le frein. WFS-295 réservé à l'agent dev conduite, avant la suite de WFS-258.
