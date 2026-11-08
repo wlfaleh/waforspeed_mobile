@@ -167,7 +167,15 @@ public:
             // WFS-292 (RG-01, lead dev : « ronds détachés loin derrière ») : 65 % de la vitesse (sillage proche, juste derrière
             // les roues : la nappe reste accrochée aux roues au lieu de filer vers la caméra) et 0,8 m/s vers le bas, qui retient
             // la montée de 1,2 m/s de fumee() : 0,4 m/s net, la fumée de pneu monte peu et s'étale au ras de la chaussée
-            const vec3 sillage = monde ? vec3{(float)pl.monde.vx * 0.65f, -0.8f, (float)pl.monde.vz * 0.65f} : vec3{0, -0.8f, 0};
+            // Sans le modèle du monde (conduite du jeu web, banc), la vitesse vient de la piste : sinon la volute restait
+            // immobile et la voiture la laissait en ronds espacés de 1,2 m (mesuré au banc).
+            vec3 vVoit = monde ? vec3{(float)pl.monde.vx, 0.f, (float)pl.monde.vz} : vec3{};
+            if (!monde) {
+                const TrackPoint a = g.track->point(pl.dist, pl.playerX * RW), b = g.track->point(pl.dist + 1.0 / M, pl.playerX * RW);
+                vec3 f{(float)(b.x - a.x), 0.f, (float)(b.z - a.z)};
+                if (length(f) > 1e-4f) vVoit = normalize(f) * (float)vms;
+            }
+            const vec3 sillage = vVoit * 0.65f + vec3{0, -0.8f, 0};
             for (int sx : {-1, 1}) {
                 const TrackPoint q = g.track->point(pl.dist - L * 0.35 / M, pl.playerX * RW + sx * W * 0.4);
                 parts_.fumee({(float)q.x, (float)q.y + 0.15f, (float)q.z}, 1, (float)q.y, sillage);
@@ -224,10 +232,13 @@ public:
         // horizontal sur les captures)
         // WFS-224 (RG-02) : chaque volute grandit (voluteEchelle) ; son opacité (apparition, effacement, proximité de la
         // caméra) choisit le niveau ; trop transparente, elle n'est pas dessinée
+        // WFS-292 (RG-01, revue du lead dev : « ronds détachés ») : volute 1,5 fois plus large que haute (× 1,6 en largeur,
+        // × 0,8 en hauteur) : les voisines se recouvrent en une nappe au ras de la chaussée au lieu de ronds posés en file
+        constexpr float LARGE = 1.6f, HAUTE = 0.8f;
         const float base = parts_.smoke().taille / p11;
         for (auto q : parts_.smoke().p) {
             if (!q.vivante()) continue;
-            const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * std::abs(up.y);
+            const float taille = base * effets::voluteEchelle(q.fondu()), hs = taille * 0.5f * HAUTE * std::abs(up.y);
             q.p.y = std::max(q.p.y, q.floor + hs);
             const float d = dot(g.camPos - q.p, nrm);
             const float a = effets::voluteOpacite(q.fondu()) * effets::voluteProche(d);
@@ -235,7 +246,8 @@ public:
             if (a * NIV < 0.5f) continue;
             auto& v = vtx_[k]; auto& ix = idx_[k];
             const uint32_t n = (uint32_t)v.size();
-            vec3 c4[4]; coins(q.p, taille * 0.5f, c4);
+            const vec3 dx = right * (taille * 0.5f * LARGE), dy = up * (taille * 0.5f * HAUTE);
+            const vec3 c4[4] = {q.p - dx - dy, q.p + dx - dy, q.p + dx + dy, q.p - dx + dy};
             // WFS-292 : normale vers le haut (MAT_VTINT : sa longueur 1 garde l'albédo) : volute éclairée comme un nuage
             v.push_back({c4[0].x, c4[0].y, c4[0].z, 0, 1, 0, 0, 1}); v.push_back({c4[1].x, c4[1].y, c4[1].z, 0, 1, 0, 1, 1});
             v.push_back({c4[2].x, c4[2].y, c4[2].z, 0, 1, 0, 1, 0}); v.push_back({c4[3].x, c4[3].y, c4[3].z, 0, 1, 0, 0, 0});
