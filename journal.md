@@ -3832,3 +3832,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Revue « ✅ Approuvé par le lead dev » écrite dans la PR (COMMENT : GitHub refuse l'approbation au même compte), puis fusion en squash f72d192 (expectedHeadSha 0179ff1).
 - WFS-258 : « 🔧 En cours — point 1 ✅ (#263), point 3 fusionné #271 (🟡 à valider) » ; ligne #271 retirée de `suivi-pr.md` ; ligne ajoutée à `qa/Check.md`.
 - Remarque non bloquante laissée au développeur : bascule de la limite de l'aide à 100 km/h (oscillation possible autour de 100 km/h doigt tenu dans un virage lent) ; à regarder pendant l'essai de l'utilisateur.
+
+### 2026-11-08 17:09:04 — WFS-258 point 3 fusionné ; petite correction de bascule, puis WFS-327 réservé à l'agent dev conduite (po-scrum-master)
