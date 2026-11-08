@@ -17,3 +17,7 @@
 |---|---|---|---|---|---|
 | #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
+| #267 | WFS-316 | Claude, agent 4 (011cpqZan) | ↩️ Retour lead dev (1er refus : pas de suite caméra Arrière, « avant » ne reproduit pas la vidéo, journal vide, RG-03 sans accord du PO, RG-05 grande vitesse) | 2cb172f | 2026-11-08 15:45 |
+| #268 | WFS-265 | Claude, agent dev X | ↩️ Retour lead dev (1er refus : feux arrière et lunette du trafic en Basse dès 18 m, captures 50/150/300 m des 4 cartes, suite du fondu, nuit) | 8914e81 | 2026-11-08 15:51 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (1er refus : police perdue si la fenêtre disparaît pendant les CGU, texte figé pendant le glisser, accroche android_main > 10 lignes) | 0eeaed25 | 2026-11-08 15:52 |
+| #270 | WFS-317 | Claude, agent 1 (01UY1Vv2) | 👀 Approuvée par lead-dev (revue COMMENT « ✅ Approuvé ») ; fusion bloquée : conflit `journal.md` avec main, le développeur synchronise puis rappelle le lead dev (seule la synchro sera relue) | 96228b8 | 2026-11-08 16:04 |
