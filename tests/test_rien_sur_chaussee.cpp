@@ -6,10 +6,12 @@
 //     brut « à moins de RW + marge d'une autre partie » ⇒ surAutre vrai (aucun oubli de la fenêtre ± 80 m) ;
 //   - le défaut des recettes existe bien sans le filtre (des points du trottoir de Game tombent sur une autre partie de la
 //     route au rond-point de la Ville et de la Campagne) : le filtre est nécessaire, et il les écarte tous.
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <string>
 #include "../src/world/chaussee.h"
+#include "../src/world/bouchons_sol.h"   // WFS-283 : disques de sol du carrefour simple (Corniche)
 #include "../src/world/giratoire.cpp"   // WFS-248 : giratoires reconstruits (compilé ici : aucune ligne de CMake)
 using namespace wfs;
 
@@ -66,6 +68,31 @@ int main() {
                     if (brut({(float)p.x, (float)p.y, (float)p.z}, chaussee::modL(a, L), 0.5f)) autre++;
                 }
             cas(std::string(id) + " : carrefour simple : aucune autre partie de la route autour (" + std::to_string(autre) + " / " + std::to_string(n) + " points)", autre == 0);
+            // WFS-283 (revue du lead dev, 2e refus) : disques de sol au centre du virage (plage.cpp, bouchons_sol.h) : aucun point
+            // d'un disque à moins de RW + 0,6 m de l'axe, contre un calcul brut (ligne brisée de TOUT le tour, entrée et sortie
+            // progressives comprises). Sans la borne (commit 3e76065), les disques des segments d'entrée et de sortie (rayon 26 à
+            // 39 m, centrés loin du centre du virage de 22 m) débordaient sur la voie intérieure : le test le montre aussi.
+            auto pire = [&](bool borne, int& n) {
+                double m = 1e18; n = 0;
+                for (const bouchons::Disque& d : bouchons::section(t, s, borne)) {
+                    n++;
+                    double da = 1e18;
+                    for (int64_t a = 0; a < L; a++) {
+                        const vec3 &p = axe[(size_t)a], &q = axe[(size_t)((a + 1) % L)];
+                        const double ux = q.x - p.x, uz = q.z - p.z, l2 = ux * ux + uz * uz;
+                        const double u = l2 > 0 ? std::clamp(((d.cx - p.x) * ux + (d.cz - p.z) * uz) / l2, 0.0, 1.0) : 0.0;
+                        da = std::min(da, std::hypot(d.cx - (p.x + u * ux), d.cz - (p.z + u * uz)));
+                    }
+                    m = std::min(m, da - d.r);   // bord du disque le plus proche de l'axe
+                }
+                return m;
+            };
+            int nSans = 0, nAvec = 0;
+            const double sans = pire(false, nSans), avec = pire(true, nAvec), bord = RW + bouchons::MARGE - 1e-3;   // 1 mm : axe du test en float
+            std::printf("chaussée : %s : disques de sol du carrefour simple : sans borne %d disque(s), bord à %.2f m de l'axe ; avec borne %d, à %.2f m (chaussée : %.1f m)\n",
+                        id, nSans, sans, nAvec, avec, RW);
+            cas(std::string(id) + " : carrefour simple : disques de sol hors de la chaussée (≥ RW + 0,6 m de l'axe)", nAvec > 0 && avec >= bord);
+            if (std::string(id) == "plage") cas("plage : carrefour simple : sans la borne, des disques débordaient sur la chaussée (défaut de 3e76065)", sans < bord);
         }
     }
     }

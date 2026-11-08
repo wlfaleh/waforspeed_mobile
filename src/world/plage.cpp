@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <vector>
 #include "archi_carte.h"   // WFS-161 (accroche) : villas du kit d'architecture
+#include "bouchons_sol.h"   // WFS-212 / WFS-283 : disques de sol au centre des virages serrés
 #include "../../third_party/stb/stb_image.h"
 #include "../core/jobs.h"
 #include "../core/log.h"
@@ -697,28 +698,19 @@ public:
         bouchons_.clear();
         for (const trace::Section& s : S) {
             // WFS-283 (RG-02) : aussi au carrefour simple qui remplace le rond-point (virage de rue de 22 m) : sans bouchon, on
-            // voyait la mer sous le trou du sol, côté intérieur du virage (plaque bleu-gris sur le sable)
+            // voyait la mer sous le trou du sol ; ses disques sont bornés par la distance réelle à la chaussée (bouchons_sol.h)
             if (s.type != trace::Type::Epingle && s.type != trace::Type::Lacets && !s.exRondPoint) continue;
-            for (int64_t n = s.debut; n < s.fin; ) {
-                const double c = t.segAt(n).curve;
-                const double r = std::abs(c) > 1e-9 ? SEG_M / (std::abs(c) * CURVE_K) : 1e9;
-                if (r >= 40) { n++; continue; }
-                int64_t f = n;
-                while (f < s.fin && t.segAt(f).curve * c > 0 && SEG_M / (std::abs(t.segAt(f).curve) * CURVE_K) < 40) f++;
-                const int side = c > 0 ? 1 : -1; const int64_t sommet = (n + f) / 2;
-                Band b[8] = {}; float m = 1e9f;
-                const int nb = bandes(t, sommet, sommet, side, b, m);
-                float y = 0; int col = C_GARRIGUE;
-                for (int i = 0; i < nb; i++) if (b[i].b - b[i].a > 0.01f) { y = b[i].yb; col = b[i].col == ROC ? C_GARRIGUE : b[i].col; }
-                // un disque par segment serré, centré sur son propre centre de courbure : l'union suit l'arc réel (un seul disque
-                // au rayon le plus serré laissait un coin ouvert contre le trottoir intérieur)
-                for (int64_t k = n; k < f; k++) {
-                    const float rayon = (float)(SEG_M / (std::abs(t.segAt(k).curve) * CURVE_K)), rd = rayon - (float)RW - 0.6f;
-                    if (rd <= 1.f) continue;
-                    const TrackPoint cp = t.point((double)k * SEG, side * rayon);
-                    bouchons_.push_back({mod(k), vec3{(float)cp.x, std::max((float)t.point((double)k * SEG, 0).y + y - 0.03f, OCEAN_Y + 0.05f), (float)cp.z}, rd, col});
+            // un disque par segment serré, centré sur son propre centre de courbure : l'union suit l'arc réel (un seul disque
+            // au rayon le plus serré laissait un coin ouvert contre le trottoir intérieur) ; hauteur et teinte : sol du sommet
+            int64_t sommet = -1; float y = 0; int col = C_GARRIGUE;
+            for (const bouchons::Disque& d : bouchons::section(t, s, s.exRondPoint)) {
+                if (d.sommet != sommet) {
+                    sommet = d.sommet; y = 0; col = C_GARRIGUE;
+                    Band b[8] = {}; float m = 1e9f;
+                    const int nb = bandes(t, sommet, sommet, d.side, b, m);
+                    for (int i = 0; i < nb; i++) if (b[i].b - b[i].a > 0.01f) { y = b[i].yb; col = b[i].col == ROC ? C_GARRIGUE : b[i].col; }
                 }
-                n = f;
+                bouchons_.push_back({mod(d.seg), vec3{(float)d.cx, std::max((float)t.point((double)d.seg * SEG, 0).y + y - 0.03f, OCEAN_Y + 0.05f), (float)d.cz}, (float)d.r, col});
             }
         }
         WFS_LOG("Plage (WFS-212) : %zu disque(s) de sol au centre des épingles", bouchons_.size());
