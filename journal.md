@@ -5144,3 +5144,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 03:48:58 — Textures des nouvelles cartes : seulement GitHub (po-scrum-master)
 - **Réponse de l'utilisateur** : « seulement GitHub » ; aucun nouveau site (ni ambientcg.com ni polyhaven.com), § 1 de `regles-reseau.md` inchangé. Noté dans WFS-309 (RG-04) et WFS-313, 304, 314 (RG-04).
 
+### 2026-11-08 04:00:21 — WFS-315 créé : vue Cockpit à la vraie largeur (retour de l'utilisateur) (po-scrum-master)
+- L'utilisateur aime la nouvelle vue Cockpit mais la trouve étroite « comme une monoplace ». Réservé à Claude, agent 2, après WFS-282.
