@@ -94,6 +94,16 @@ int main() {
         int g10 = 0; for (int n = 0; n < 10; n++) g10 += garderVille(n);
         cas("WFS-317 : Ville : 300 gardés sur 1 000, 3 sur chaque dizaine, au plus 3 omis de suite", gardes == 300 && g10 == 3 && trouMax <= 3);
         cas("WFS-317 : rang négatif : jamais gardé", !garderVille(-1));
+        // marcheurs répartis : candidats serrés au début du tour (comme le plafond de life.js) et clairsemés ailleurs
+        std::vector<double> s; for (int i = 0; i < 500; i++) s.push_back(i * 2.0); for (int i = 0; i < 33; i++) s.push_back(1000 + i * 150.0);
+        const double L = 6000;
+        const std::vector<size_t> a = repartirSurTour(s, L, 16, false), b = repartirSurTour(s, L, 16, true);
+        double ecartMax = 0; std::vector<double> p; for (size_t i : a) p.push_back(s[i]); for (size_t i : b) p.push_back(s[i]);
+        std::sort(p.begin(), p.end()); for (size_t i = 0; i < p.size(); i++) ecartMax = std::max(ecartMax, (i + 1 < p.size() ? p[i + 1] : p[0] + L) - p[i]);
+        bool unique = true; for (size_t i = 0; i < a.size(); i++) for (size_t j = i + 1; j < a.size(); j++) unique = unique && a[i] != a[j];
+        cas("WFS-317 : 32 marcheurs sur un tour de 6 000 m : tous placés, uniques, aucun écart > 2 pas (375 m)", a.size() == 16 && b.size() == 16 && unique && ecartMax <= 375);
+        cas("WFS-317 : liste plus courte que voulu ou vide : jamais plus que la liste",
+            repartirSurTour({1, 2, 3}, 10, 9, true).size() == 3 && repartirSurTour({}, 10, 5, false).empty() && repartirSurTour({1}, 10, 0, false).empty());
     }
     std::printf("apparition : %s (%d échec(s))\n", echecs ? "ÉCHEC" : "OK", echecs);
     return echecs ? 1 : 0;

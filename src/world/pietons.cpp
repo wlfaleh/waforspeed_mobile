@@ -191,7 +191,9 @@ public:
         if (ville_) for (const ville::Promeneur& m : ville::promeneurs(*g.map, *g.track)) { if (!garder()) continue; Personne P; P.s = m.s; P.lat = m.lat; P.v = m.v; P.dir = m.dir; gens_.push_back(P); }   // WFS-176 : promeneurs avec chien (marche reproduite par la Ville) ; WFS-317 : tous gardés (le chien est dessiné par la Ville)
         piste_ = g.track;   // WFS-179
         const size_t nProm = gens_.size();
+        rangListe_ = (int)gens_.size() + omis_; budgetVille_ = 0; candVille_.clear(); longueurTour_ = g.track->segmentCount();   // WFS-317 : rang dans la liste d'origine de life.js
         peupler(*g.map, (int64_t)g.track->segmentCount());
+        if (ville_) repartirVille();   // WFS-317 (RG-03)
         const size_t nMarche = gens_.size();
         {   // WFS-71 : clients des terrasses (placeShop), assis sur les serviettes (beachLife), baigneurs debout dans l'eau
             const int64_t L = (int64_t)g.track->segmentCount(); Personne P; P.assis = P.yawFixe = true;
@@ -215,7 +217,7 @@ public:
         actif_ = true;
         zoneDense();   // WFS-257 (banc)
         WFS_LOG("Piétons : %zu personnes (%s)", gens_.size(), id);
-        if (ville_) WFS_LOG("Piétons (WFS-317, RG-03) : Ville : %d personnes omises (3 sur 10 gardées par liste)", omisVille_);
+        if (ville_) WFS_LOG("Piétons (WFS-317, RG-03) : Ville : %d personnes omises (3 sur 10 gardées ; marcheurs répartis sur tout le tour)", omisVille_);
         memoire::compteurs().personnes = (int)gens_.size();   // WFS-297 (RG-06, accroche)
         // WFS-222 (RG-07) : détail (marcheurs, promeneurs et passants : moitié des tirages ; assis et baigneurs : inchangés)
         WFS_LOG("Piétons (WFS-222) : %zu à pied (promeneurs %zu, marcheurs %zu, passants %zu ; %d omis sur ordre de l'utilisateur), %zu assis ou baigneurs",
@@ -471,17 +473,41 @@ private:
 
     // addPerson (life.js) : direction, vitesse et phase tirées à la graine (le jeu web utilise Math.random)
     void ajouter(double s, double lat, int pose, Mulberry32& A, double v = 0, double latMin = 0, double latMax = 0) {
-        if ((int)gens_.size() + omis_ + omisVille_ >= PEOPLE_MAX) return;   // plafond du jeu web compté sur la liste d'origine (WFS-222 ; WFS-317 : omis de la Ville compris)
+        // plafond du jeu web compté sur la liste d'origine (WFS-222) ; WFS-317 (RG-03) : en Ville, la liste entière du tour est tirée
+        // (aucun plafond) et le plafond ne sert qu'à compter combien la Ville en gardait (repartirVille)
+        const int rang = rangListe_++;
+        if (!ville_ && (int)gens_.size() + omis_ >= PEOPLE_MAX) return;
         Personne P; P.s = s; P.lat = lat; P.pose = pose; P.latMin = latMin; P.latMax = latMax;   // WFS-233 : bande du trottoir
         P.dir = A.next() < 0.5 ? -1 : 1; P.v = v > 0 ? v : 1.1 + A.next() * 0.6; P.ph = A.next() * 6.28;
-        if (garder() && garderVille(VILLE_MARCHEURS)) gens_.push_back(P);   // WFS-222 (RG-07) : tirages inchangés (mêmes places pour ceux qui restent) ; WFS-317 (RG-03)
+        if (!garder()) return;   // WFS-222 (RG-07) : tirages inchangés (mêmes places pour ceux qui restent)
+        if (ville_) { candVille_.push_back(P); if (rang < PEOPLE_MAX) budgetVille_++; return; }
+        gens_.push_back(P);
+    }
+    // WFS-317 (RG-03, décision de l'utilisateur et du PO du 2026-11-08) : Ville : 3 marcheurs sur 10 de ce que gardait le plafond
+    // de life.js (tous serrés dans le 1er km du tour), répartis sur tout le tour : moitié de chaque côté, au plus près de places à pas
+    // réguliers (apparition::repartirSurTour), côtés décalés d'un demi-pas (un marcheur tous les ≈ 200 m environ, en alternant les côtés) ; nombre et coût inchangés
+    void repartirVille() {
+        const int voulu = (budgetVille_ * apparition::VILLE_GARDES_SUR_10 + 9) / 10;
+        const double L = (double)longueurTour_;
+        int pris = 0;
+        for (int c = 0; c < 2; c++) {
+            std::vector<const Personne*> cote;
+            for (const Personne& P : candVille_) if ((P.lat > 0) == (c == 1)) cote.push_back(&P);
+            std::sort(cote.begin(), cote.end(), [&](const Personne* a, const Personne* b) { return std::fmod(a->s, L) < std::fmod(b->s, L); });
+            std::vector<double> pos; pos.reserve(cote.size());
+            for (const Personne* P : cote) pos.push_back(std::fmod(P->s, L));
+            for (size_t i : apparition::repartirSurTour(pos, L, c == 0 ? voulu / 2 : voulu - voulu / 2, c == 1)) { gens_.push_back(*cote[i]); pris++; }
+        }
+        omisVille_ += (int)candVille_.size() - pris;
+        candVille_.clear(); candVille_.shrink_to_fit();
     }
     // WFS-222 (RG-07, ordre de l'utilisateur du 2026-11-07) : au moins 50 % de personnes à pied en moins, sur toutes les cartes :
     // une sur deux des listes d'origine (promeneurs, marcheurs, passants), dans l'ordre des tirages ; les clients attablés,
     // les personnes sur les serviettes et les baigneurs ne sont pas concernés
     bool garder() { const bool g = (tirage_++ % 2) == 1; if (!g) omis_++; return g; }
-    // WFS-317 (RG-03) : Ville : 3 sur 10 de chaque liste (apparition::garderVille, foule_apparition.h), compteur propre à chaque liste ; autres cartes : tous
-    enum ListeVille { VILLE_MARCHEURS, VILLE_TERRASSES, VILLE_PASSANTS, VILLE_NB };
+    // WFS-317 (RG-03) : Ville : 3 sur 10 des clients des terrasses et des passants (apparition::garderVille, foule_apparition.h), compteur
+    // propre à chaque liste ; marcheurs : repartirVille ; autres cartes : tous
+    enum ListeVille { VILLE_TERRASSES, VILLE_PASSANTS, VILLE_NB };
     bool garderVille(int liste) {
         if (!ville_) return true;
         const bool g = apparition::garderVille(tirageVille_[liste]++);
@@ -693,7 +719,9 @@ private:
     bool premiere_ = true;   // WFS-257 : 1re image de la partie
     int omis_ = 0, tirage_ = 0;   // WFS-222 (RG-07)
     double tPrec_ = 0;
-    int tirageVille_[VILLE_NB] = {}, omisVille_ = 0;   // WFS-317 (RG-03)
+    int tirageVille_[VILLE_NB] = {}, omisVille_ = 0, rangListe_ = 0, budgetVille_ = 0;   // WFS-317 (RG-03)
+    int64_t longueurTour_ = 1;   // WFS-317 : tour en tronçons (repartirVille)
+    std::vector<Personne> candVille_;   // WFS-317 (RG-03) : marcheurs de tout le tour avant répartition (chargement seulement)
     bool actif_ = false, ville_ = false, plage_ = false, campagne_ = false, circuit_ = false;
     const Track* piste_ = nullptr;   // WFS-179
 };
