@@ -13,6 +13,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/game.h"
+#include "../game/traffic_system.h"   // WFS-281 (accroche) : voitures du trafic
 #include "../ui/ecrans/reglages.h"
 #include "passes.h"
 #include "qualite_auto.h"
@@ -97,7 +98,9 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
             double t = 2000;
             // essai local : WFS_PERF_AVANCE=n images de course sans mesure (une image dessinée sur 30) avant la chauffe
             const int AVANCE = std::getenv("WFS_PERF_AVANCE") ? std::atoi(std::getenv("WFS_PERF_AVANCE")) : 0;
-            for (int i = 0; i < AVANCE; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(t); t += 1.0 / 60; }
+            const int AR = std::getenv("WFS_PERF_AVANCE_RENDU") ? std::atoi(std::getenv("WFS_PERF_AVANCE_RENDU")) : 30;   // WFS-281 (accroche) : 0 = rien dessiné
+            for (int i = 0; i < AVANCE; i++) { g.update(1.0 / 60); if (AR > 0 && i % AR == 0) g.render(t); t += 1.0 / 60; }
+            if (const Traffic* tr = activeTraffic()) WFS_LOG("perf %s %s : trafic : %zu voitures au total après %d images (WFS-281)", c.carte, c.nom, tr->cars.size(), AVANCE);
             r.echelleDynamique(echFixe);   // WFS-246
             for (int i = 0; i < CHAUFFE; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }
             const uint32_t recre0 = r.recreations();

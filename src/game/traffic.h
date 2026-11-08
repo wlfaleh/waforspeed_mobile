@@ -119,6 +119,11 @@ public:
     void watch(const Player& pl);
 
     std::vector<TrafficCar> cars;
+    // WFS-281 (ANO-151, RG-02) : nombre total de voitures fixé au départ. Vrai (module du jeu) : reset() fixe `plafond`
+    // au nombre de voitures posées et addCars n'en ajoute plus au-delà (les +6 voitures par checkpoint de la course
+    // menaient à 110 voitures après ≈ 2 min). Faux (tests de référence du jeu web) : addCars sans limite, comme le jeu web.
+    bool totalFixe = false;
+    int plafond = 1 << 30;
     uint32_t seed = 1;
     double clock = 0, sim = 0;
     bool parallel = true;

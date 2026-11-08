@@ -21,6 +21,7 @@ static double nextRand(TrafficCar& car) {
 void Traffic::reset(Track& track, uint32_t s, int n, double playerPos, bool menu) {
     track_ = &track;
     cars.clear();
+    plafond = 1 << 30;   // WFS-281 : fixé à la fin, une fois toutes les voitures du départ posées
     seed = s ? s : 1;
     clock = sim = menu ? 0 : -3;   // compte à rebours de 3 s avant le départ (trafficClock du jeu web)
     scrapeCd_ = 0;
@@ -34,6 +35,7 @@ void Traffic::reset(Track& track, uint32_t s, int n, double playerPos, bool menu
     }
     addCars(n, playerPos);
     if (track.version() == 2) ajouterTrace2(n, playerPos);   // WFS-136 ; tracé 1 (jeu web) : rien ne change
+    plafond = totalFixe ? (int)cars.size() : 1 << 30;      // WFS-281 (RG-02) : total du départ
 }
 
 // WFS-136 (RG-04) : +30 % de voitures sur l'autoroute (au prorata de sa longueur) ; (RG-03) 1 ou 2 voitures par carrefour
@@ -90,6 +92,7 @@ void Traffic::placerTraverse(TrafficCar& car) const {
 void Traffic::addCars(int n, double playerPos) {
     const MapDef& map = *track_->map();
     const double L = track_->length();
+    if (totalFixe) n = std::min(n, plafond - (int)cars.size());   // WFS-281 (RG-02) : pas au-delà du total du départ
     for (int i = 0; i < n; i++) {
         Mulberry32 R(seed * 7919u + (uint32_t)(cars.size() + 1) * 104729u);
         TrafficCar c;

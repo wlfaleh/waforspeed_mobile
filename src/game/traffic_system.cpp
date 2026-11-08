@@ -40,6 +40,7 @@ public:
         // trafic de la carte (resetRace du jeu web) ; « Rejouer » (WFS-12) repart de la même graine.
         // Graine tirée au hasard à chaque course : avec le menu (WFS-11).
         trafficN_ = (int)std::lround((g.map ? g.map->trafficN : 42) * config().trafic.densite); track_ = g.track;   // WFS-128 : × trafic.densite (1)
+        traffic_.totalFixe = true;   // WFS-281 (ANO-151, RG-02) : le total de voitures ne grandit plus pendant la course
         traffic_.reset(*g.track, seed_, trafficN_, g.player ? g.player->position : 0);
         stats_ = {};
         active_ = this;
@@ -65,7 +66,10 @@ public:
         if (course) course->hold(pl);
         if (sansTrafic(g.ecran == Ecran::Course)) { traffic_.cars.clear(); stops_.clear(); vide_ = true; return; }   // WFS-110 : course à 5 et duel
         if (vide_) { vide_ = false; traffic_.reset(*g.track, seed_, trafficN_, pl.position); }   // WFS-110 : trafic rendu après
-        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
+        if (const int n = poursuiteTrafic(trafficN_, g.ecran == Ecran::Course); n > (int)traffic_.cars.size()) {
+            traffic_.plafond = n;   // WFS-281 : la poursuite fixe son propre total (trafic dense)
+            traffic_.addCars(n - (int)traffic_.cars.size(), pl.position);   // WFS-111 : trafic dense
+        }
         const bool playing = !course || course->playing();
         TrafficView pv;
         pv.position = pl.position; pv.playerX = pl.playerX; pv.speed = pl.speed;
