@@ -16,8 +16,8 @@
 | PR | Ticket | Développeur | Statut | Commit relu | Mis à jour (UTC) |
 |---|---|---|---|---|---|
 | #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
-| #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
-| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | ↩️ Retour lead dev (3e refus : conflit journal.md avec main après #275, captures « après » faites avant la synchronisation ; code bon) | 38ad6a8a | 2026-11-08 18:38 |
+| #249 | WFS-281 | agent arwa | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | 98d22f7 | 2026-11-08 19:18 |
+| #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | 38ad6a8a | 2026-11-08 19:18 |
 | #272 | WFS-300 | Claude, agent 5 (011cpqZaDiS2) | ↩️ Retour lead dev (1re revue : 24 commits de retard sur main avec 2 conflits, captures à régénérer ; code bon) | 22390b9 | 2026-11-08 17:25 |
-| #276 | WFS-317 | Claude, agent 1 (01UY1Vv2) | ↩️ Retour lead dev (1re revue : captures après faites sans WFS-265, branche en retard de #267 et #275, 267 ≠ 263 personnes, rue vide sur vie-terrasse ; code bon) | b1ac2ca | 2026-11-08 18:29 |
+| #276 | WFS-317 | Claude, agent 1 (01UY1Vv2) | 🔁 Corrigée, à relire (commits poussés après le dernier refus ; attente réponse « corrigé dans » sous la revue) | b1ac2ca | 2026-11-08 19:18 |
 | #277 | WFS-327 | Claude, agent dev conduite | ↩️ Retour lead dev | 27e1bc1 | 2026-11-08 19:03 |
