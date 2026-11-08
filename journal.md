@@ -3725,3 +3725,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Décision : option A. Critère de WFS-300 reformulé en « captures stables : 56 = 60 = 64 (ΔE2000 ≤ 2), deux lancements identiques » (écrit dans `regles-de-gestion/WFS-300.md`). WFS-300 livré tel quel.
 - Saut ΔE2000 5,9 à l'arrivée d'une sonde (RG-05) → **ANO-174** (mineure, déjà sur `main`) et **WFS-322** (P2, E13, ⏳ Prêt dès que E13 est libre, `regles-de-gestion/WFS-322.md`) ; donné seulement à la demande d'un développeur.
 
+
+### 2026-11-08 16:03:13 — WFS-192 fusionné par le lead dev (lead-dev)
+- PR #266 (arwa-2), reprise de la revue arrêtée à 15:41 par l'arrêt du serveur (ligne 👀 reprise à 15:42). Revue « ✅ Approuvé par le lead dev » n° 5818572307 (COMMENT : même compte GitHub que l'auteur), puis **squash 6f477e6** sur la tête 07eac56. Statut : 🟣.
+- Captures ouvertes : 20 vues de près `pres-<id>`, 40 paires `vitrine-<id>-0` / `-feux`, `garage-*`, `showroom-*`, `parcours-*` (dont nuit) : plus aucune marque lisible, aucun trou ; peinture, feux, vitres, plaques et interface identiques. Rendus 1920x1080 de face refaits (208, RR Sport, Mustang, main ↔ branche) : grilles et capots continus.
+- Code relu : `tools/effacer_logos.mjs`, `tools/logos.json` (203 pièces, 181 zones, 77 textures, RG-12 sur le seul matériau 41 de la M4), accroches `convertir_voitures.sh` (+2) et `feux_modele.cpp` (+6), 20 licences. Contrôles : `--verifier` « rien à faire » ×20 ; `.lod` régénérés = ceux de la PR ; `test_fidelite_voitures`, `test_vehicule_lod`, `test_tangentes` OK.
+- Remarque pour le PO (non bloquante, `qa/Check.md`) : niveau de détail 1 de la RR Sport +19 % (52 522 → 62 674 triangles, matériau 8 presque plus simplifié après le retrait des lettres) ; modèle complet −5 844, niveau 1 des 20 voitures −9 372. À reprendre avec WFS-215 ou une petite US de `alleger_voiture.mjs`.
+- Un `wfs_bench` orphelin de la revue arrêtée (rendus dans `/tmp/lr192`) a été arrêté.
