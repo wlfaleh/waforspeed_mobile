@@ -277,7 +277,8 @@ namespace { bool g_forcer = false; int g_rondsPoints = -1; }   // WFS-283 : −1
 bool rondsPoints() {
     if (g_rondsPoints >= 0) return g_rondsPoints == 1;
     const char* e = std::getenv("WFS_RONDS_POINTS"); const char* b = std::getenv("WFS_BANC");
-    return (e && !std::strcmp(e, "1")) || (b && !std::strcmp(b, "conduite"));
+    // bancs de conduite (conduite, virages : WFS-241, WFS-295) : ils mesurent encore l'ancien rond-point de la Ville
+    return (e && !std::strcmp(e, "1")) || (b && (!std::strcmp(b, "conduite") || !std::strcmp(b, "virages")));
 }
 void forcerRondsPoints(bool oui) { g_rondsPoints = oui ? 1 : 0; }
 bool carteActive(const char* id) {

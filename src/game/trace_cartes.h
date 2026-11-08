@@ -34,7 +34,7 @@ void forcerTrace2(bool oui);                   // banc WFS_BANC=trace : tracé 2
 std::string signature();                       // champ « trace » du salon du duel : cartes actives (« circuit »), « 1 » sans carte
 // WFS-283 (RG-04, ordre de l'utilisateur du 2026-11-07) : plus de rond-point sur aucune carte ; chacun devient un carrefour
 // simple (virage de rue à gauche, même cap net, la suite de la carte à la même place). Le code des giratoires reste (décor,
-// trafic, GPS, chocs) : rondsPoints() vrai les remet : WFS_RONDS_POINTS=1, banc de conduite (WFS_BANC=conduite : ses mesures
+// trafic, GPS, chocs) : rondsPoints() vrai les remet : WFS_RONDS_POINTS=1, bancs de conduite (WFS_BANC=conduite ou virages : leurs mesures
 // portent sur les anciens ronds-points, à revoir par l'agent dev conduite) ou forcerRondsPoints(true) (tests des giratoires).
 bool rondsPoints();
 void forcerRondsPoints(bool oui);
