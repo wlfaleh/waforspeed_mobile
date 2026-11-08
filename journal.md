@@ -3782,3 +3782,18 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Statut WFS-265 : ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
 
 ### 2026-11-08 16:30:43 — WFS-258 point 1 (aide à la direction) validé par l'utilisateur sur téléphone (po-scrum-master)
+
+### 2026-11-08 16:40:28 — WFS-316 : PR #267 corrigée après le retour du lead dev (Claude, agent 4 (011cpqZan))
+- **Cause (RG-01)** : la force centrifuge forfaitaire du jeu web (`playerX −= 2·sp²·courbe·CENTRIFUGAL`), gardée par l'ancienne conduite, s'ajoute au vrai virage : la route tourne déjà sous la voiture (repère de Frenet de WFS-295). Elle compte donc le virage deux fois, soit 3,2 m/s vers l'extérieur à 50 km/h dans l'anneau de 14 m.
+- **Part de chaque suspect**, à 50 km/h, demi-volant, 20 img/s, 1,2 s :
+  - anneau de 14 m (avant WFS-283) : aide désactivée, avant +4,43 m, après +1,26 m, soit **3,17 m dus à la force forfaitaire** (la borne du cap n'agit pas sans aide) ; aide activée, la force et la borne ensemble font 3,13 m ;
+  - virage de rue de 22 m qui le remplace (WFS-283) : la force forfaitaire fait 1,84 m ;
+  - images lentes (20 contre 60 img/s) : rayon identique à ± 1 % (la simulation est au pas fixe de 1/120 s ; seule la lecture du doigt change).
+- **Correction (`player.cpp`)** : voiture du joueur, volant tenu (|volant| ≥ 0,05), plus de force forfaitaire ni de borne du cap. La correction est **limitée aux vitesses des virages serrés** (pleine jusqu'à 50 km/h, effacée de 50 à 70 km/h, borne coupée sous 60 km/h) : sans cette limite, l'aide activée était 1,6 à 3,5 fois plus vive à 150-230 km/h. Volant lâché et ordinateur : inchangés. Le PO valide (a3bcc5e9).
+- **Mesures (`test_direction_anneau`)** :
+  - RG-03 : même rayon qu'en ligne droite à ± 2 % (25 et 50 km/h, 6 et 12 %, 20 et 60 img/s) ;
+  - RG-04 : 0 sortie dans le virage de la Ville, l'épingle de la Corniche et le virage à 90°, au doigt et aux flèches, aide activée et désactivée, à 20 et 60 img/s ;
+  - RG-05 : lacet à 150, 190 et 230 km/h identique avant et après, en ligne droite (aide activée 0,296 / 0,250 / 0,205 rad/s ; désactivée 0,492 / 0,391 / 0,324) comme dans un virage rapide du Grand Prix.
+- **Bancs** : 72 tests CPU OK ; `virages`, `conduite`, `fluidite` et `parcours` à 0 écart.
+- **Captures** : vues de dessus, et caméra Arrière (8 images avant et après : virage de la Ville doigt tenu ; virage à 90° de nuit), sans aucune image hors de la chaussée. **Accroche** : chemin des captures du banc des virages (tampon de 128 caractères remplacé, `virages_banc.cpp`).
+
