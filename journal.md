@@ -3651,3 +3651,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Réponse écrite à l'utilisateur dans `tache utilisateur.md`, sous sa demande du 2026-11-07 22:43 UTC.
 - **Ordre de l'utilisateur (2026-11-08 11:47 UTC) appliqué** : je ne demande plus de ticket au PO. arwa-5 est arrêté.
 
+### 2026-11-08 15:11:06 — L'agent expert CI devient « expert CI / CD » (agent expert ci cd)
+- **Demande de l'utilisateur** : « tu peux changer tes skills et ton nom en expert CI CD, et tu ajoutes le nécessaire ».
+- **Fait** : agent `.claude/agents/expert-ci-cd.md` et skill `.claude/skills/expert-ci-cd/` (renommés depuis `expert-ci`) ; nom au suivi des agents et dans les commits : « agent expert ci cd ». Ajouts : § 7 « Livraison continue » du skill et `references/livraison.md` (versionCode / versionName, signature APK et AAB, signature par Google Play, premier envoi manuel, mises à jour, 3 niveaux d'automatisation, iOS plus tard) ; tableau des workflows à jour (build.yml, matin.yml, publication.yml) ; règles de l'agent : rien sans validation explicite de l'utilisateur, le lead dev fusionne. Références mises à jour : ligne Expert CI / CD de `CLAUDE.md`, agent et skill expert-cartes, ma ligne de `track-agent.md`. Les entrées anciennes du journal et des règles de gestion gardent l'ancien nom (historique).
