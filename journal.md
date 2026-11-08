@@ -3587,3 +3587,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - WFS-299 → 🟡 À valider (utilisateur) ; ligne #264 retirée de `suivi-pr.md` ; Claude, agent 1 libre ; ligne ajoutée à `qa/Check.md`.
 
 ### 2026-11-08 14:10:11 — Play Store : test interne aujourd'hui, public demain (décision de l'utilisateur) ; WFS-319 et WFS-320 créés ; gel de la CI levé pour la publication (po-scrum-master)
+
+### 2026-11-08 14:14:55 — WFS-264 fusionné par le lead dev (lead-dev)
+- **PR #265** (Claude, agent dev X) : revue publiée dans la PR (GitHub refuse l'approbation depuis le même compte, donc revue en commentaire « ✅ Approuvé par le lead dev »), puis fusion en squash **f9f5fbc** (`expectedHeadSha` 14444bde).
+- **Captures** : les 28 paires ouvertes, avec comparaison pixel par pixel. Elles sont identiques, sauf `perf-campagne-haute` (ombre d'une vache à plus de 40 m, ≈ 35 pixels, effet voulu de RG-03) et un écart ≤ 8/255 en Haute sur Circuit et Plage.
+- **Code** : diff complet relu (RG-01 capture par zone, sondes remises à zéro au changement de carte ou au saut de plus de 80 m ; RG-02 reflet déjà en Haute seule ; RG-03 cascade de 40 m, `niveau 0` ; RG-05, RG-06 test CPU).
+- **Tests** : construction de main (7e9fa2e4) + branche faite par le lead dev, 71 tests CPU OK.
+- **Remarques non bloquantes** : branche en retard sur #262 et #263 (fusion propre) ; RG-ANO-145 à reporter dans `regles-de-gestion/WFS-227.md` ; mesures sur le téléphone attendues.
+- **Statut** : 🟡 À valider (utilisateur) ; agent dev X libéré.
