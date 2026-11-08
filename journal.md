@@ -3759,3 +3759,26 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 16:14:56 — WFS-265 : décision du PO sur RG-03 (po-scrum-master)
 - Demande du lead dev (PR #268), proposition de Claude, agent dev X : **confirmée**. RG-03 (instancing des piétons et du trafic, baisse par paliers, menu d'essai) **n'est pas fait dans WFS-265** : la condition (mesures RG-06 du téléphone montrant un reste de chemin vers 60 img/s) n'est pas remplie, aucune mesure du téléphone n'est arrivée.
 - La décision attend la mesure du téléphone de WFS-317 (ligne I9) et, pour la Ville en Basse, WFS-321. Le critère « décision RG-03 au journal » de WFS-265 est rempli par cette entrée. Détail : `regles-de-gestion/WFS-265.md` (« Décision du PO — RG-03 »).
+
+### 2026-11-08 16:20:24 — WFS-323, 324, 325 créés : vue Cockpit comme la référence de l'utilisateur (po-scrum-master)
+- Référence `qa/retours/2026-11-08-cockpit-reference-utilisateur.jpg` (cadrage seulement, rien copié). Après la validation de WFS-282 et WFS-315.
+
+### 2026-11-08 16:24:52 — WFS-265 : corrections après le refus du lead dev, PR #268 en 🔁 (Claude, agent dev X)
+- **Voitures du trafic en Basse** : version complète au-dessus de 200 px, niveau 1 (feux et vitres intacts) jusqu'à 48 px, puis 4 pièces (9ab38da9).
+- **Banc neuf `WFS_BANC=lod`** (`bench_lod.cpp`, accroche `desktop_main.cpp` +2) : 4 cartes à 50, 150 et 300 m en Haute et Basse, traversée du fondu en Basse, feux du trafic de nuit en Basse.
+- **Résultat** : 49 paires, au plus 0,97 % de pixels changés (nuit : voiture plus claire qu'avant). RG-03 confirmé par le PO (eafbaa72).
+- 72 tests CPU OK, parcours 0 écart.
+
+### 2026-11-08 16:25:00 — WFS-317 : premières captures du téléphone (APK 0.1.913, sans I9) (Claude, agent 1)
+- Ville de nuit, Basse 60 %, MSAA ×2 : 22 img/s ; image médiane 48,9 ms (95 % : 69,6 ms, 99 % : 77,1 ms) ; GPU : ombre 0, reflet 0, capture 0, **scène 38,7 ms**, post 4,9 ms ; mémoire jeu 74 Mo, carte graphique 621 Mo. Autre relevé : Basse 75 %, 26 img/s.
+- Conclusion partielle : la passe de scène porte presque tout le temps GPU. L'APK 0.1.913 (commit 6fb3420) précède la fusion de #270 : les chiffres « appels · triangles » par famille arriveront avec l'APK 0.1.916 (c29cc05) ou suivant. Demande faite à l'utilisateur ; RG-02 attend ces chiffres.
+
+### 2026-11-08 16:26:49 — WFS-258 point 3 : au-dessus de 100 km/h seulement, fonction séparée (coordination WFS-316) (po-scrum-master)
+
+### 2026-11-08 16:30:38 — WFS-265 : 2e refus du lead dev, PR #268 (lead-dev)
+- Commit relu : 7ea634f5. J'ai ouvert les 49 paires et relu tout le diff. Les points 1 à 6 du 1er refus sont corrigés, et le code est bon.
+- Bloquant : (1) la branche a 14 commits de retard sur `main`, dont 6f477e65 (WFS-192, modèles des voitures) et c29cc053 (WFS-317, renderer). Les « avant » du banc `lod` sont faits avec WFS-192, les « après » sans : de nuit, la voiture du joueur passe de bleu nuit à bleu vif, ce que le diff n'explique pas. Il faut synchroniser et régénérer les captures. (2) La description de la PR n'est pas à jour : « 22 paires », 4 images `perf-*` cassées, le banc `lod` et l'accroche ne sont pas décrits, et la limite annoncée n'y est pas.
+- Remarques : `lod-ville-300` ne montre qu'un mur ; tramé visible au téléobjectif sur les animaux (Haute, 150 m) et les personnes (Basse, 90 m) ; commentaire WFS-222 déplacé dans `desktop_main.cpp` ; `mustang` (remplaçant) sans `.lod`.
+- Statut WFS-265 : ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
+
+### 2026-11-08 16:30:43 — WFS-258 point 1 (aide à la direction) validé par l'utilisateur sur téléphone (po-scrum-master)
