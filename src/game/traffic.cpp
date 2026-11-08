@@ -21,6 +21,7 @@ static double nextRand(TrafficCar& car) {
 void Traffic::reset(Track& track, uint32_t s, int n, double playerPos, bool menu) {
     track_ = &track;
     cars.clear();
+    plafond = SANS_PLAFOND;   // WFS-281 : fixé à la fin, une fois toutes les voitures du départ et la réserve posées
     seed = s ? s : 1;
     clock = sim = menu ? 0 : -3;   // compte à rebours de 3 s avant le départ (trafficClock du jeu web)
     scrapeCd_ = 0;
@@ -32,8 +33,17 @@ void Traffic::reset(Track& track, uint32_t s, int n, double playerPos, bool menu
         for (int64_t a = s.debut + 1; a < s.fin; a++) if (track.segAt(a).curve * c0 < 0) { if (e0 < 0) e0 = a; e1 = a; }
         if (e0 >= 0) anneaux_.push_back({e0, e1});
     }
+    reserve_.clear(); regulT_ = clock;
     addCars(n, playerPos);
     if (track.version() == 2) ajouterTrace2(n, playerPos);   // WFS-136 ; tracé 1 (jeu web) : rien ne change
+    if (totalFixe) {   // WFS-281 (RG-02) : réserve de la montée de difficulté, mêmes tirages que les addCars(6) de la course
+        const int depart = (int)cars.size(), k = (int)std::lround(depart * MONTEE_MAX);
+        cars.reserve((size_t)(depart + k));   // aucune allocation quand la réserve s'active
+        addCars(k, playerPos);
+        reserve_.assign(cars.end() - k, cars.end());
+        cars.resize((size_t)depart);
+        plafond = depart + k;
+    }
 }
 
 // WFS-136 (RG-04) : +30 % de voitures sur l'autoroute (au prorata de sa longueur) ; (RG-03) 1 ou 2 voitures par carrefour
@@ -89,7 +99,17 @@ void Traffic::placerTraverse(TrafficCar& car) const {
 // addCars(n) du jeu web
 void Traffic::addCars(int n, double playerPos) {
     const MapDef& map = *track_->map();
-    const double L = track_->length();
+    if (totalFixe) n = std::min(n, plafond - (int)cars.size());   // WFS-281 (RG-02) : pas au-delà du plafond
+    // WFS-281 : d'abord les voitures de la réserve (préparées au chargement), posées devant le joueur comme une voiture neuve
+    for (; n > 0 && !reserve_.empty(); n--) {
+        TrafficCar c = reserve_.front(); reserve_.erase(reserve_.begin());   // au plus 15 % des voitures : petit tableau
+        Mulberry32 R(c.rng ^ (uint32_t)(cars.size() * 2654435761u));
+        c.z = tirerZ(R, c.lane, c.len, playerPos);
+        c.offset = c.prevOff = (LANE_X[c.lane] + (c.deuxRoues ? DROITE_VOIE : 0)) * facteurVoie(c.z);
+        c.zPrec = c.z; c.offPrec = c.offset; c.speed = c.want;
+        c.prevDz = track_->relZ(c.z - (playerPos + PLAYER_Z));
+        cars.push_back(c);
+    }
     for (int i = 0; i < n; i++) {
         Mulberry32 R(seed * 7919u + (uint32_t)(cars.size() + 1) * 104729u);
         TrafficCar c;
@@ -97,14 +117,7 @@ void Traffic::addCars(int n, double playerPos) {
         c.len = WEB_CARS[c.type].L / M;
         c.want = MAX_SPEED * (map.trafficMin + R.next() * (map.trafficMax - map.trafficMin));
         c.lane = (int)std::floor(R.next() * LANES);
-        double z = 0;
-        for (int k = 0; k < 24; k++) {
-            z = track_->wrap(playerPos + PLAYER_Z + 6000 + R.next() * (L - 12000));
-            bool clash = false;
-            for (const auto& o : cars)
-                if (o.lane == c.lane && std::abs(track_->relZ(o.z - z)) < (o.len + c.len) / 2 + 30 / M) { clash = true; break; }
-            if (!clash) break;
-        }
+        const double z = tirerZ(R, c.lane, c.len, playerPos);
         c.color = (int)std::floor(R.next() * TRAFFIC_PAINT_COUNT);
         c.w = WEB_CARS[c.type].W / (2 * RW);
         c.target = c.lane; c.offset = c.prevOff = LANE_X[c.lane] * facteurVoie(z);   // WFS-243 : déjà resserrée si posée dans un anneau
@@ -125,6 +138,20 @@ void Traffic::addCars(int n, double playerPos) {
         c.prevDz = track_->relZ(z - (playerPos + PLAYER_Z));
         cars.push_back(c);
     }
+}
+
+// place d'une voiture neuve (addCars du jeu web) : 36 m devant le joueur à 36 m derrière, sans chevaucher une voiture de sa file
+double Traffic::tirerZ(Mulberry32& R, int lane, double len, double playerPos) const {
+    const double L = track_->length();
+    double z = 0;
+    for (int k = 0; k < 24; k++) {
+        z = track_->wrap(playerPos + PLAYER_Z + 6000 + R.next() * (L - 12000));
+        bool clash = false;
+        for (const auto& o : cars)
+            if (o.lane == lane && std::abs(track_->relZ(o.z - z)) < (o.len + len) / 2 + 30 / M) { clash = true; break; }
+        if (!clash) break;
+    }
+    return z;
 }
 
 // laneFree(car, lane) : la file est-elle libre autour de la voiture ?
@@ -298,6 +325,51 @@ void Traffic::advance(double dt, const TrafficView& pv) {
     int steps = (int)std::floor((clock - sim) / T_STEP);
     if (steps > 600) { sim = clock - 600 * T_STEP; steps = 600; }
     for (int i = 0; i < steps; i++) { step(T_STEP, pv); sim += T_STEP; }
+    // WFS-281 : régulation de la densité une fois par seconde, dans le jeu seulement (les tests du jeu web n'en ont pas)
+    if (totalFixe && sim - regulT_ >= 1.0) { regulT_ = sim; regulerDensite(pv.position); }
+}
+
+// WFS-281 (ANO-151, RG-02, RG-03) : sur un tracé fermé, les voitures rapides rattrapent les lentes et forment des pelotons
+// qui grossissent avec le temps ; le joueur qui en rattrape un en voit jusqu'à 8 ou 14 d'un coup (10 min de course :
+// médiane de 8 véhicules dessinés pendant 30 s en Ville, 4 au départ). Hors de la vue (devant au-delà de 300 m, derrière
+// au-delà de 40 m), une zone qui dépasse REGUL_MAX × la densité moyenne du tracé (arrondie) envoie ses voitures les plus lentes (celles
+// qui retiennent le peloton) à plus de REGUL_LOIN_M du joueur, à une place libre de leur file : rien ne change à l'écran, le
+// total ne change pas, et le trafic qui arrive dans la vue garde la densité du départ (« un trafic urbain réel qui circule »).
+void Traffic::regulerDensite(double playerPos) {
+    const double Lm = track_->length() * M;
+    if (Lm < 2 * REGUL_LOIN_M + 400) return;
+    int actifs = 0;
+    for (const auto& c : cars) actifs += !c.cache && c.traverse < 0;
+    const double densite = actifs / Lm;   // voitures par mètre
+    for (const auto& zone : REGUL_ZONES) {
+        const int max = std::max(1, (int)std::lround(REGUL_MAX * densite * (zone[1] - zone[0])));
+        int idx[64], n = 0;
+        for (size_t i = 0; i < cars.size() && n < 64; i++) {
+            const TrafficCar& c = cars[i];
+            if (c.cache || c.traverse >= 0 || c.crashed) continue;
+            const double dz = track_->relZ(c.z - playerPos) * M;
+            if (dz >= zone[0] && dz <= zone[1]) idx[n++] = (int)i;
+        }
+        if (n <= max) continue;
+        std::sort(idx, idx + n, [&](int a, int b) { return cars[(size_t)a].want < cars[(size_t)b].want || (cars[(size_t)a].want == cars[(size_t)b].want && a < b); });
+        for (int k = 0; k < n - max; k++) {
+            TrafficCar& c = cars[(size_t)idx[k]];
+            Mulberry32 R(seed * 40503u + c.rng + (uint32_t)std::lround(sim * 60));
+            double z = c.z;
+            for (int essai = 0; essai < 24; essai++) {
+                z = track_->wrap(playerPos + (REGUL_LOIN_M + R.next() * (Lm - 2 * REGUL_LOIN_M)) / M);
+                bool libre = true;
+                for (const auto& o : cars)
+                    if (&o != &c && o.lane == c.lane && std::abs(track_->relZ(o.z - z)) < (o.len + c.len) / 2 + 30 / M) { libre = false; break; }
+                if (libre) break;
+            }
+            c.z = c.zPrec = z;
+            c.target = c.lane; c.pending = false; c.signal = 0; c.laneYaw = c.yawPrec = 0;
+            c.offset = c.prevOff = c.offPrec = (LANE_X[c.lane] + (c.deuxRoues ? DROITE_VOIE : 0)) * facteurVoie(z);
+            c.speed = c.want;
+            c.prevDz = track_->relZ(z - (playerPos + PLAYER_Z));
+        }
+    }
 }
 
 int Traffic::dessines(double position, bool basse, bool dense, const TrafficCar** out) const {
