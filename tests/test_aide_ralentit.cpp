@@ -4,8 +4,9 @@
 //  - 1er virage du Grand Prix (épingle de 20 m) lancé à 228 km/h, Gallardo et Golf, aide activée, volant lâché, gaz tenu ou
 //    lâché : aucune image hors de la route ; volant tenu (« Glisser ») : la limite cède au joueur (décision du PO, option A) ;
 //  - aide désactivée : l'aide ne fait rien (ni gaz coupé, ni frein : RG-07 de WFS-241) ;
-//  - un tour de chaque carte, gaz tenu, aide activée : volant lâché, aucune image hors de la route ; volant tenu, tour fini
-//    (le joueur conduit : temps et sorties au journal) ;
+//  - un tour de chaque carte, gaz tenu, aide activée, volant lâché puis tenu (« Glisser ») : aucune image hors de la route
+//    (au-dessus de 100 km/h, la limite ne cède qu'au frein : WFS-258 point 3), et le frein de l'aide ne clignote pas (10 fois
+//    au plus par tour : écarts 80 / 100 / 110 km/h et 100 / 103 % de la vitesse permise) ;
 //  - l'interrupteur du banc (g_avantWfs258) rend le comportement de main (pas de ralentissement) ;
 //  - la table des ordinateurs de la Course à 5 est bien branchée (course5.cpp lié, comme dans le jeu) ;
 //  - départ de la grille (revue du lead dev, PR #263) : voiture posée à x = 0,5, aide activée, volant lâché : à l'arrêt elle ne
@@ -90,14 +91,21 @@ int main() {
         static Track t; t.build(mapById(carte), trace::versionCarte(carte));
         for (const char* id : {"golf", "gallardo"}) for (bool glisser : {false, true}) {
             Player p = voiture(id, Aide::Activee, t, 0, 0, 0);
-            int herbe = 0, n = 0;
+            int herbe = 0, n = 0, clignote = 0, dernier = -1000; bool f0 = false;
             for (; n < 120 * 900 && p.dist < t.length(); n++) {
                 DriveInput in; in.gas = true; in.steer = glisser ? piloter(p, t, 0, false) : 0.f;
                 p.update(DT, in, t, true);
                 herbe += std::abs(p.playerX) > 1;
+                if (p.freinAide != f0) { if (n - dernier < 60) clignote++; dernier = n; }   // frein de l'aide qui change en moins de 0,5 s
+                f0 = p.freinAide;
             }
+            // remarque du lead dev (PR #271) : pas de va-et-vient du frein de l'aide (main : 221 à 1 317 par tour, doigt tenu)
+            std::printf("  clignotements du frein de l'aide (moins de 0,5 s) : %d\n", clignote);
+            VERIFIE(clignote <= 10, "%s, %s, %s : le frein de l'aide clignote %d fois", carte, id, glisser ? "Glisser" : "volant lâché", clignote);
             std::printf("- %s, %s, %s : tour %s en %.1f s, %d image(s) hors route\n", carte, id, glisser ? "Glisser" : "volant lâché", p.dist >= t.length() ? "fini" : "NON fini", n * DT, herbe);
-            VERIFIE(p.dist >= t.length() && (glisser || herbe == 0), "%s, %s, %s : %d image(s) hors route", carte, id, glisser ? "Glisser" : "volant lâché", herbe);
+            // volant tenu aussi : 0 sortie (revue du lead dev, PR #271 : la direction réduite au-dessus de 100 km/h ne doit pas faire
+            // céder la limite de l'aide ; main : 0 à 35 images selon la carte)
+            VERIFIE(p.dist >= t.length() && herbe == 0, "%s, %s, %s : %d image(s) hors route", carte, id, glisser ? "Glisser" : "volant lâché", herbe);
         }
     }
     g_conduiteMonde = mondeDefaut;

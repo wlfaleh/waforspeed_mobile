@@ -46,6 +46,15 @@ void labelSurBase(Renderer& r, float x, float base, float k, const std::string& 
     label(r, x, base - BASE * labelPx(k), k, t, a, c);
 }
 float largeurLabel(float k, const std::string& t) { return ui::width(labelPx(k), ui::majuscules(t), 0.16f); }
+// WFS-296 (RG-01) : marche arrière bien visible : pastille rouge inclinée (biais de 10°, comme les boutons du jeu) avec un grand
+// « R » noir (texte sur couleur vive : #0A0B10, contraste 5,4 : 1) et un halo rouge ; (x, y) = coin haut gauche, h = hauteur
+void pastilleArriere(Renderer& r, float x, float y, float h, float k) {
+    const float w = h * 0.95f, biais = h * 0.176f;   // tan 10°
+    dessin2d::biseau(r, x - 3 * k, y - 3 * k, w + 6 * k, h + 6 * k, biais, dessin2d::uni(hex(DANGER, 0.30f)));   // halo néon
+    dessin2d::biseau(r, x, y, w, h, biais, dessin2d::uni(hex(DANGER)));
+    const float tp = h * 0.80f, base = y + h * 0.5f + 0.5f * CAPITALES * tp;
+    ui::text(r, x + (w + biais) * 0.5f, base - BASE * tp, tp, "R", hex(hud::FOND), ui::CENTRE, 0, false, true);
+}
 // barre de progression dégradée cyan → orange (.cp-bar i), tranches bord à bord
 void barre(Renderer& r, float x, float y, float w, float h, float p) {
     r.uiRect(x, y, w, h, hex(SURFACE2));
@@ -175,6 +184,7 @@ public:
             for (int i = 0; i < 10; i++)
                 r.uiRect(x + mp + i * (cw + gap), cy, cw, ch, i < on ? hex(SUCCESS, pl.nitroOn ? 1.f : 0.85f) : hex(SURFACE2));
             g_surfaceHud += w * h / (k * k);
+            if (arriere) pastilleArriere(r, x + w + 10 * k, y, h, k);   // WFS-296 : à droite du panneau de vitesse, même hauteur
             return;
         }
         // ---------- bas centre : vitesse + nitro (entre le volant et le frein) ----------
@@ -189,6 +199,10 @@ public:
             ui::text(r, cx, ccy - 30 * k, 44 * k, std::to_string(v), rouge ? hex(DANGER) : hex(TEXTE), ui::CENTRE, 0, false, true);   // .speedo-read (WFS-48)
             const vec4 clair = hex(ETIQUETTE_ARC);
             label(r, cx, ccy + 8 * k - (BASE - CAPITALES) * labelPx(k), k, arriere ? "R · km/h" : "km/h", ui::CENTRE, &clair);
+            if (arriere) {   // WFS-296 : à gauche du compteur, à mi-hauteur (au-dessus, elle cachait la voiture du joueur)
+                const float hp = 64 * k, wp = hp * 0.95f + hp * 0.176f;
+                pastilleArriere(r, cx - R - 14 * k - wp, ccy - hp * 0.5f, hp, k);
+            }
             // .nitro : libellé + 10 cases (round(nitro × 10) allumées, vert --success ; plus lumineuses en nitro active)
             const vec4 lumineux = hex(SUCCESS);
             const float w = 112 * k, x = cx - w / 2, pad = 0;
@@ -286,6 +300,28 @@ void benchHud(Game& g, Renderer& r, const std::string& out) {
         scene("hud-course5-nuit", ModeCourse::Course5, true, false);
         scene("hud-cockpit-jour", ModeCourse::Course5, false, true);
         scene("hud-cockpit-nuit", ModeCourse::Checkpoint, true, true);
+        // WFS-296 (RG-03) : marche arrière : à l'arrêt après le décompte, frein maintenu jusqu'à reculer (comme le joueur) ;
+        // vue normale et Cockpit, jour et nuit (la marche avant : hud-solo-jour / -nuit, hud-cockpit-jour / -nuit ci-dessus)
+        const float fx = ecrans::miroirX(dc.frein.cx(), W), fy = dc.frein.cy();
+        auto arriere = [&](const char* nom, bool nuit, bool cockpit) {
+            modeCourse() = ModeCourse::Checkpoint;
+            if (nuit) setenv("WFS_MOMENT", "nuit", 1); else unsetenv("WFS_MOMENT");
+            if (!g.init(r, "golf", "ville")) { WFS_ERR("HUD (WFS-296) : chargement impossible (%s)", nom); return; }
+            choisirVue(cockpit ? VueCamera::Cockpit : VueCamera::Poursuite);
+            g.setAutopilot(false); g.camMode = 0;
+            rouler(60 * 4);   // décompte (3 s), voiture arrêtée
+            g.onTouch({9, fx, fy, true});
+            rouler(60 * 2);   // frein maintenu : marche arrière
+            capture(nom);
+            WFS_LOG("capture %s (WFS-296) : marche arrière %s, %.1f km/h", nom, g.player().reversing || g.player().speed < -1 ? "oui" : "NON",
+                    g.player().kmh());
+            if (!(g.player().reversing || g.player().speed < -1)) WFS_ERR("HUD (WFS-296) : %s : la voiture ne recule pas", nom);
+            g.onTouch({9, fx, fy, false});
+        };
+        arriere("hud-arriere-jour", false, false);
+        arriere("hud-arriere-nuit", true, false);
+        arriere("hud-arriere-cockpit-jour", false, true);
+        arriere("hud-arriere-cockpit-nuit", true, true);
         unsetenv("WFS_MOMENT");
         modeCourse() = modeAvant; kmCourse5() = kmAvant; choisirVue(vueAvant);
     }

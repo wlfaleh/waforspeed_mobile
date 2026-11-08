@@ -23,7 +23,7 @@ static int echecs = 0;
 namespace {
 struct Simu { int place = 5; double temps = 0, nitroS = 0, jauge30 = 0; int depasses = 0; double colle = 0; bool fini = false; };
 // freinVirage : le joueur simulé freine avant les virages serrés (comme un joueur qui ne sort pas de la route), à la même
-// vitesse permise que les ordinateurs (vitesseVirage, 30 m devant)
+// vitesse permise que les ordinateurs (vitesseVirageOrdinateurDevant depuis WFS-327)
 Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char* carte, double km, bool nitro, bool recharge = true, int trace = 0, bool freinVirage = false) {
     static Track t; static std::string carteFaite;
     const int version = trace ? trace : trace::versionCarte(carte);   // 0 : tracé du jeu (2 en Ville)
@@ -43,7 +43,7 @@ Simu simuler(const char* car, course5::Difficulte d, uint32_t graine, const char
         DriveInput in; in.gas = true;
         in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
         in.nitro = nitro && pl.nitro > 0.5;
-        if (freinVirage && pl.speed > course5::vitesseVirage(t, pl.dist + 30 / M)) { in.gas = false; in.brake = true; in.nitro = false; }
+        if (freinVirage && pl.speed > course5::vitesseVirageOrdinateurDevant(t, pl.dist, carById(car))) { in.gas = false; in.brake = true; in.nitro = false; }   // WFS-327 : vitesse permise aux ordinateurs
         if (!r.fini) pl.update(dt, in, t, true);
         if (!r.fini && pl.nitroOn) r.nitroS += dt;
         course5::avancer(os, dt, finish, tc, pl.dist, pl.playerX, pl.speed, &t);
@@ -300,13 +300,16 @@ int main() {
         }
     }
     // WFS-189 (RG-02 bis) : virages des ordinateurs calés sur la conduite du joueur : un ordinateur à 100 % de sa pointe fait
-    // les 4 km de la Ville dans le temps du pilote automatique du joueur (même voiture), à ± 3 %
+    // les 4 km de la Ville dans le temps du pilote automatique du joueur (même voiture, qui freine à la même vitesse permise
+    // depuis WFS-327), à ± 3 %
     {
         static Track piste; piste.build(mapById("ville"), trace::versionCarte("ville"));
         for (const char* v : {"golf", "compass", "m4", "p208"}) {
             Player pl; pl.reset(carById(v)); const double dt = 1.0 / 120; double tj = 0, ti = 0;
             for (int i = 0; i < 120 * 200 && !tj; i++) {
                 DriveInput in; in.gas = true; in.steer = (float)std::clamp((0.0 - pl.playerX) * 3.0 - pl.heading * 4.0, -1.0, 1.0);
+                // WFS-327 : le pilote freine avant les virages à la vitesse permise aux ordinateurs (même règle des deux côtés)
+                if (pl.speed > course5::vitesseVirageOrdinateurDevant(piste, pl.dist, carById(v))) { in.gas = false; in.brake = true; }
                 pl.update(dt, in, piste, true); if (pl.dist * M >= 4000) tj = (i + 1) * dt;
             }
             auto os = course5::tirer(1, v); os.resize(1); os[0].car = v; course5::grille(os, -1);

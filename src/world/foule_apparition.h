@@ -105,4 +105,39 @@ inline void choisirPlaces(std::vector<Candidat>& c, std::vector<int>& ordre, int
     }
 }
 
+// WFS-317 (RG-03, décision de l'utilisateur du 2026-11-08 : « pour la Ville, il faut encore −70 % des personnes ») : en Ville,
+// toutes qualités, 3 personnes sur 10 : clients des terrasses et passants des passages piétons gardés dans l'ordre des tirages,
+// réguliers (la n-ième est gardée si ⌊(n+1)·3/10⌋ > ⌊n·3/10⌋) ; marcheurs : 3 sur 10 de ce que gardait le plafond de life.js,
+// répartis sur tout le tour (indexReparti, décision du PO) ; les rares promeneurs avec chien restent tous (leur chien est dessiné
+// par la Ville) ; les familles se forment ensuite parmi les marcheurs gardés (même part d'enfants)
+constexpr int VILLE_GARDES_SUR_10 = 3;
+inline bool garderVille(int n) { return n >= 0 && ((n + 1) * VILLE_GARDES_SUR_10) / 10 > (n * VILLE_GARDES_SUR_10) / 10; }
+// marcheurs de la Ville (décision du PO) : n places à pas réguliers sur le tour (longueur L, positions s rangées croissantes, dans
+// [0, L[) ; decale : un demi-pas plus loin (l'autre côté de la rue), pour alterner les côtés ; pour chaque place, le candidat le plus
+// proche (sur le tour, en boucle) pas encore pris ; rend les indices choisis (au plus n, au plus la taille de la liste)
+inline std::vector<size_t> repartirSurTour(const std::vector<double>& s, double L, int n, bool decale) {
+    std::vector<size_t> pris;
+    if (s.empty() || n <= 0 || !(L > 0)) return pris;
+    std::vector<char> deja(s.size(), 0);
+    const double pas = L / n;
+    for (int k = 0; k < n && pris.size() < s.size(); k++) {
+        const double cible = (k + (decale ? 0.75 : 0.25)) * pas;
+        size_t hi = (size_t)(std::lower_bound(s.begin(), s.end(), cible) - s.begin());
+        size_t meilleur = s.size(); double dMin = 1e300;
+        // voisins de part et d'autre de la cible, en sautant ceux déjà pris (au plus toute la liste)
+        for (size_t essai = 0; essai < s.size() && essai < 64; essai++) {
+            for (int sens : {-1, 1}) {
+                const long long idx = sens < 0 ? (long long)hi - 1 - (long long)essai : (long long)hi + (long long)essai;
+                const size_t m = (size_t)(((idx % (long long)s.size()) + (long long)s.size()) % (long long)s.size());
+                if (deja[m]) continue;
+                double d = std::fabs(s[m] - cible); d = std::min(d, L - d);
+                if (d < dMin) { dMin = d; meilleur = m; }
+            }
+            if (meilleur < s.size()) break;
+        }
+        if (meilleur < s.size()) { deja[meilleur] = 1; pris.push_back(meilleur); }
+    }
+    return pris;
+}
+
 } // namespace wfs::apparition
