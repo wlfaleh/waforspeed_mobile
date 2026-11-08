@@ -3715,3 +3715,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 15:55:45 — WFS-308 : accroche de android_main.cpp acceptée au-delà de 10 lignes (po-scrum-master)
 - Demande d'agent 3 (PR #269, point 3 du refus du lead dev). Accepté : ≈ 22 lignes ajoutées / 2 changées, branchement Android seulement, logique dans `src/ui/ecrans/cgu.cpp`. Conditions et raison dans `regles-de-gestion/WFS-308.md` (Suivi). Les autres points du refus restent à corriger.
+
+### 2026-11-08 15:56:06 — WFS-316 : arbitrage du PO sur RG-01, RG-02 et RG-03 (po-scrum-master)
+- Demande du lead dev (refus de la PR #267, 15:45) et de Claude, agent 4 (011cpqZan), faits mesurés par `tests/test_direction_anneau.cpp`.
+- RG-03 : critère remplacé par « rayon dans le virage = rayon en ligne droite au même volant, ± 10 % » (adhérence arcade ≈ 2 g ; adhérence réaliste = WFS-258 / 259). RG-02 : correction limitée aux basses vitesses (pleine ≤ 50 km/h, effacée 50-70, borne coupée < 60) validée, RG-05 prime ; tableau du lacet à 150-230 km/h exigé au journal et dans la PR. RG-01 : mesures sur l'anneau d'avant WFS-283 et vue de dessus du virage de 22 m acceptées comme preuve. Captures 2 et 4 (caméra Arrière) toujours dues. Détail : `regles-de-gestion/WFS-316.md` (Suivi).
