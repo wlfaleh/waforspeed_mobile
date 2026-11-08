@@ -46,11 +46,11 @@ int main() {
     VERIFIE(std::abs(b.r - std::sqrt(24.f) / 2) < 1e-5f && std::abs(b.c.y - 1) < 1e-6f, "sphère d'une boîte");
 
     // RG-02 : coupure au loin selon le rayon et le niveau
-    VERIFIE(distanceMax(1, false, 500) == 200 && distanceMax(1, true, 500) == 150, "petits objets : 200 m / 150 m en Basse");
+    VERIFIE(distanceMax(1, false, 500) == 200 && distanceMax(1, true, 500) == 110, "petits objets : 200 m / 110 m en Basse (WFS-265)");
     VERIFIE(distanceMax(5, false, 500) == 500 && distanceMax(5, true, 500) == 420 && distanceMax(5, true, 300) == 300, "objets moyens : fin du brouillard");
     VERIFIE(distanceMax(30, true, 100) > 1e8f && distanceMax(-1, true, 100) > 1e8f, "grands objets et rayon inconnu : jamais coupés");
     VERIFIE(std::abs(finBrouillard(0, 0.0022f) - 3.912f / 0.0022f) < 1e-2f && finBrouillard(40, 0.01f) == 40, "fin du brouillard");
-    std::printf("sphère monde, coupure selon le rayon (200 / 150 m, brouillard, jamais) : OK\n");
+    std::printf("sphère monde, coupure selon le rayon (200 / 110 m, brouillard, jamais) : OK\n");
 
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("masquage : tout est OK\n");
