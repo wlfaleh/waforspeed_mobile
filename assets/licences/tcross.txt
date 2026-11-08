@@ -8,4 +8,4 @@ Model License:
 * requirements:	Author must be credited. No commercial use. Modified versions must have the same license.
 
 This work is based on "2021 Volkswagen T-Cross 280 TSI" (https://sketchfab.com/3d-models/2021-volkswagen-t-cross-280-tsi-e7a833769e774e62a6500c294cb1aea6) by Ddiaz Design (https://sketchfab.com/ddiaz-design) licensed under CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
-Modifications for WaForSpeed: geometry simplified, textures resized to 1024 px (WebP), files embedded into a single glTF JSON. This modified version is shared under the same license (CC BY-NC-SA 4.0).
+Modifications for WaForSpeed: geometry simplified, textures resized to 1024 px (WebP), files embedded into a single glTF JSON. This modified version is shared under the same license (CC BY-NC-SA 4.0). Modèle modifié pour WaForSpeed (WFS-192) : logos et noms de marque effacés ou retirés (tools/effacer_logos.mjs, tools/logos.json).
