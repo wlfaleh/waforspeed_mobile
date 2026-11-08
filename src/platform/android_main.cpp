@@ -22,6 +22,7 @@
 #include "../game/sauvegarde.h"   // WFS-24
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/cgu.h"   // WFS-308 : conditions d'utilisation au premier lancement
 #include "../ui/ecrans/chargement.h"
 #include "vibration_android.cpp"   // WFS-70 : vibration du téléphone (JNI Vibrator), compilée avec ce fichier
 #include "reseau_android.cpp"     // WFS-83 : verrou de diffusion du Wi-Fi (duel sur le réseau local)
@@ -162,14 +163,20 @@ static void finChargement(android_app* a) {
 }
 } // namespace veilleur
 
+static void chargerJeu(App& app, android_app* a, double tVk);
 static void initGraphics(App& app, android_app* a) {
-    if (app.ready || !a->window) return;
+    if (app.ready || !a->window || ecrans::cgu().premierLancement()) return;
     veilleur::debutChargement();   // WFS-284 : entrées lues par le veilleur jusqu'à la fin, même en cas d'échec
     struct Fin { android_app* a; ~Fin() { veilleur::finChargement(a); } } fin{a};
     if (!app.vk.init(a->window)) { WFS_ERR("Initialisation Vulkan impossible"); return; }
     const double tVk = nowSeconds();
     app.renderer.init(app.vk);
     densiteAndroid(a->config, (float)app.renderer.height(), (float)ANativeWindow_getHeight(a->window));   // WFS-147 : dp dès l'écran de chargement
+    if (ecrans::cgu().demarrer(app.renderer)) return;   // WFS-308 (RG-03) : CGU d'abord, chargement après l'acceptation
+    chargerJeu(app, a, tVk);
+}
+static void chargerJeu(App& app, android_app* a, double tVk) {   // WFS-308 : chargement, après les CGU acceptées
+    veilleur::debutChargement(); struct Fin { android_app* a; ~Fin() { veilleur::finChargement(a); } } fin{a};   // WFS-284, aussi après les CGU
     ecrans::chargement().debut(app.renderer, tVk);   // WFS-35 : écran de chargement, puis fondu ; échec : message rouge
     if (!app.game.init(app.renderer, sauvegarde().car.c_str(), sauvegarde().map.c_str(), ecrans::Chargement::progression)) { ecrans::chargement().erreur(true); return; }   // WFS-24 : voiture et carte gardées ; WFS-146 : « Quitter »
     ecrans::chargement().fin();
@@ -185,6 +192,7 @@ static void initGraphics(App& app, android_app* a) {
 }
 
 static void termGraphics(App& app) {
+    if (!app.ready && ecrans::cgu().tientLaFenetre()) { ecrans::cgu().perdreFenetre(app.renderer); app.renderer.shutdown(); app.vk.shutdown(); return; }   // WFS-308
     if (!app.ready) return;
     app.game.shutdown();
     app.renderer.shutdown();
@@ -223,8 +231,9 @@ static int32_t onInput(android_app* a, AInputEvent* e) {
         if (!app.ready) return 1;   // chargement : pris et ignoré (RG-03)
         return retourSysteme(app.game, act == AKEY_EVENT_ACTION_DOWN, AKeyEvent_getRepeatCount(e)) ? 1 : 0;
     }
-    if (ecrans::chargement().enErreur() && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-146 (RG-10) : bouton de l'écran d'erreur
+    if ((ecrans::chargement().enErreur() || (ecrans::cgu().premierLancement() && !app.ready)) && AInputEvent_getType(e) == AINPUT_EVENT_TYPE_MOTION) {   // WFS-146 (RG-10) : bouton de l'écran d'erreur ; WFS-308 : CGU
         const int32_t k = AMotionEvent_getAction(e) & AMOTION_EVENT_ACTION_MASK;
+        if (ecrans::cgu().premierLancement() && !app.ready) return ecrans::cgu().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
         return ecrans::chargement().toucher(AMotionEvent_getPointerId(e, 0), AMotionEvent_getX(e, 0), AMotionEvent_getY(e, 0), k != AMOTION_EVENT_ACTION_UP && k != AMOTION_EVENT_ACTION_CANCEL) ? 1 : 0;
     }
     if (!app.ready || AInputEvent_getType(e) != AINPUT_EVENT_TYPE_MOTION) return 0;
@@ -285,7 +294,7 @@ void android_main(android_app* a) {
         rejouerEntrees(app);   // WFS-284 : avant les événements suivants (ordre gardé)
         // en pause : on attend les événements sans consommer de batterie
         veilleur::g_enAttente = true;
-        while (ALooper_pollOnce((app.ready && app.focused) ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
+        while (ALooper_pollOnce((app.ready && app.focused) || ecrans::cgu().premierLancement() ? 0 : -1, nullptr, &events, (void**)&src) >= 0) {
             veilleur::g_enAttente = false;
             if (src && src->id == LOOPER_ID_INPUT) { std::lock_guard<std::mutex> l(veilleur::g_file); src->process(a, src); veilleur::g_dernierLu = nowSeconds(); }
             else if (src) src->process(a, src);   // commandes (chargement compris : le veilleur lit la file pendant ce temps)
@@ -294,6 +303,11 @@ void android_main(android_app* a) {
         }
         veilleur::g_enAttente = false; veilleur::g_dernierLu = nowSeconds();
         if (a->destroyRequested) break;
+        if (!app.ready && a->window) switch (ecrans::cgu().image(app.vk, ANativeWindow_getWidth(a->window), ANativeWindow_getHeight(a->window), nowSeconds())) {   // WFS-308
+            case ecrans::Cgu::Etat::Quitter: ANativeActivity_finish(a->activity); break;   // RG-04 : refus
+            case ecrans::Cgu::Etat::Accepte: chargerJeu(app, a, nowSeconds()); break;      // acceptation notée : chargement
+            default: break;
+        }
         if (ecrans::chargement().reessaiDemande()) {   // WFS-146 (RG-10) : « Réessayer » (carte) ou « Quitter » (moteur)
             if (app.ready) { Game::demandes().carte = sauvegarde().map; Game::demandes().nuit = sauvegarde().tod == "nuit"; }
             else ANativeActivity_finish(a->activity);

@@ -43,7 +43,10 @@ android {
 }
 
 // WFS-128 : configgame.json (racine du dépôt) copié dans des assets générés (jamais toute la racine dans l'APK)
-tasks.register('copierConfiggame', Copy) { from '../../configgame.json'; into "$buildDir/generated/configgame" }
+tasks.register('copierConfiggame', Copy) {
+    from '../../configgame.json'; into "$buildDir/generated/configgame"
+    from('../../store') { include 'cgu.md', 'confidentialite.md'; into 'cgu' }   // WFS-308 (RG-03) : textes des CGU dans l'APK (assets cgu/)
+}
 preBuild.dependsOn 'copierConfiggame'
 
 // WFS-132 (RG-08) : test JUnit de la règle de mise à jour (MiseAJourTest, lancé par la CI : testReleaseUnitTest)

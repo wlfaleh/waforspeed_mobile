@@ -134,9 +134,10 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
                     g.render(t); g.render(t + 0.02);
                     r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-suite-" + std::to_string((i - 10 * 60) / 30) + ".png");
                 }
-                if (f == 1 && villeNuit && (i == 0 || (i + 1) % (30 * 60) == 0) && i < 61 * 60) {   // 0, 30 et 60 s
+                // 0, 30 et 60 s ; WFS-317 (RG-03) : Ville de jour aussi (rue au-delà du 1er km : marcheurs répartis sur le tour)
+                if (f == 1 && carte == "ville" && (i == 0 || (i + 1) % (30 * 60) == 0) && i < 61 * 60) {
                     g.render(t); g.render(t + 0.02);
-                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string((i + 1) / 60) + "s.png");
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-" + (nuit ? "nuit-" : "jour-") + std::to_string((i + 1) / 60) + "s.png");
                 }
             }
             for (int i = 0; i < 30; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }   // images complètes avant la mesure

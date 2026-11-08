@@ -1,7 +1,10 @@
 // WaForSpeed — banc d'essai de la qualité (WFS-15) : voir qualite_banc.h.
 #include "qualite_banc.h"
+#include <algorithm>
 #include <cmath>
+#include <cstdio>   // WFS-300 (RG-04) : snprintf
 #include <cstdlib>
+#include <string>
 #include <vector>
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -10,6 +13,10 @@
 #include "../game/course_system.h"
 #include "../game/traffic_system.h"   // WFS-134 : voiture-course-trafic (3 voitures à 10, 25 et 50 m)
 #include "../ui/ecrans/reglages.h"
+#include "../../third_party/stb/stb_image.h"   // WFS-300 (RG-05) : relecture des captures (couleur d'une façade)
+#include "bench_realisme.h"     // WFS-300 (RG-02, RG-05) : srgb8VersLab, deltaE2000 (lecture seule)
+#include "eclairage_banc.h"     // WFS-300 (RG-02) : attendreSondes
+#include "eclairage_physique.h" // WFS-300 (RG-01) : nombre de sondes traitées (lecture seule)
 #include "qualite_auto.h"
 #include "renderer.h"
 
@@ -26,6 +33,43 @@ double unPasPuisPositionDessinee(Game& g) {
     if (g.pasDerniereImage() != 1) WFS_ERR("ERREUR placement (WFS-239 RG-02) : %d pas au lieu d'un avant le placement", g.pasDerniereImage());
     const double apres = g.player().position, a = Game::interpolation ? g.alphaRendu() : 1.0;
     return avant + (apres - avant) * a;
+}
+// WFS-300 (RG-01, RG-02) : avant chaque capture, sondes d'environnement prêtes et stables : attendreSondes (au moins une capture
+// traitée), puis des images au même temps jusqu'à ce qu'aucune nouvelle sonde (rebond compris) n'arrive pendant 6 images de suite
+// (60 au plus). Cause des façades bleues de voiture-lod-passage-56 : les images de contrôle de WFS-239 (RG-03) font avancer les
+// captures d'environnement, et une sonde (rebond) arrivait pendant les 3 images d'avant la capture.
+void sondesStables(Game& g, double t, const std::string& nom) {
+    const int n0 = eclairage::etat().sondesCapturees;
+    attendreSondes(g, t);
+    int n = eclairage::etat().sondesCapturees, calme = 0, images = 0;
+    for (; images < 60 && calme < 6; images++) {
+        g.render(t);
+        const int m = eclairage::etat().sondesCapturees;
+        calme = m == n ? calme + 1 : 0; n = m;
+    }
+    WFS_LOG("sondes %s (WFS-300 RG-02) : %d sonde(s) traitée(s) pendant l'attente (%d → %d), %d image(s) d'attente, sonde B %s",
+            nom.c_str(), n - n0, n0, n, images, eclairage::etat().sondeCaptureActive ? "capturée" : "du ciel");
+}
+void capturer(Game& g, Renderer& r, const std::string& dossier, const std::string& nom, double t) {
+    sondesStables(g, t, nom);
+    r.capturePng(dossier + "/" + nom + ".png");
+}
+// WFS-300 (RG-05) : couleur moyenne (L*a*b*) d'une zone de la capture (x0, y0, x1, y1 en fractions de l'image)
+bool couleurZone(const std::string& png, double x0, double y0, double x1, double y1, reel::Lab& lab) {
+    int w = 0, h = 0, n = 0;
+    unsigned char* px = stbi_load(png.c_str(), &w, &h, &n, 3);
+    if (!px) return false;
+    double acc[3] = {0, 0, 0}; long c = 0;
+    for (int y = (int)(y0 * h); y < (int)(y1 * h); y++) for (int x = (int)(x0 * w); x < (int)(x1 * w); x++) {
+        const unsigned char* q = px + ((size_t)y * w + x) * 3;
+        for (int k = 0; k < 3; k++) acc[k] += q[k];
+        c++;
+    }
+    stbi_image_free(px);
+    if (!c) return false;
+    const double m[3] = {acc[0] / c, acc[1] / c, acc[2] / c};
+    lab = reel::srgb8VersLab(m);
+    return true;
 }
 // WFS-239 (RG-02) : voiture du trafic posée à d m devant le joueur dessiné, au décalage x (demi-largeurs de route), à la vitesse
 // du joueur ; état d'avant le pas remis (WFS-221 : sinon, après un saut de moins de 20 m, elle est dessinée entre son ancienne
@@ -79,9 +123,23 @@ int controler(Game& g, Renderer& r, const std::string& nom, const std::vector<Po
         c = rangee;
     }
     for (size_t k = 0; k < posees.size(); k++) tr->cars[posees[k].i] = garde[k];
+    // WFS-300 (RG-03) : voitures dessinées ENSEMBLE dans l'image réelle (toutes posées) : chacune est retirée à son tour ; elle était
+    // dessinée si l'image perd des appels de dessin sans elle. Moins qu'une à une : plafond voulu (WFS-111 / WFS-134), pas une erreur.
+    int ensemble = 0;
+    if (posees.size() > 1) {
+        const unsigned tous = appels();
+        for (size_t k = 0; k < posees.size(); k++) {
+            TrafficCar& c = tr->cars[posees[k].i];
+            ranger(c, pos, posees[k].i, c.speed);
+            ensemble += appels() < tous;
+            c = garde[k];
+        }
+    } else ensemble = dessinees;
     WFS_LOG("contrôle %s (WFS-239 RG-03) : %zu voiture(s) posée(s), %d dessinée(s) (chacune seule ; image sans : %u appels de dessin), "
             "distances dessinées depuis le joueur dessiné : %s m ; limite de dessin %.0f m%s", nom.c_str(), posees.size(), dessinees, sans,
             distances.c_str(), limite, erreurs ? "" : " ; placement juste");
+    WFS_LOG("voitures %s (WFS-300 RG-03) : placées %zu, dessinées une à une %d, dessinées ensemble %d%s", nom.c_str(), posees.size(), dessinees,
+            ensemble, ensemble < dessinees ? " (plafond de dessin voulu, WFS-111 / WFS-134 : pas une erreur)" : "");
     return erreurs;
 }
 
@@ -116,12 +174,12 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         const double t0 = nowSeconds();
         for (int i = 0; i < 20; i++) { g.update(1.0 / 60); g.render(904 + i / 60.0); }
         const double ms = (nowSeconds() - t0) / 20 * 1000;
-        r.capturePng(out + "/qualite-" + noms[q] + ".png");
+        capturer(g, r, out, std::string("qualite-") + noms[q], 904 + 19 / 60.0);   // WFS-300 (RG-02)
         WFS_LOG("qualité %s (WFS-134 RG-09) : %s", noms[q], qualite::ligneRendu().c_str());
         if (q >= 1) {   // WFS-104 : la Golf en course, vue de près (comme garage-golf), qualités Moyenne et Haute
             g.camMode = 2; g.orbit = 2.4f;
             for (int i = 0; i < 4; i++) g.render(905 + i / 60.0);
-            r.capturePng(out + "/voiture-course-" + noms[q] + ".png");
+            capturer(g, r, out, std::string("voiture-course-") + noms[q], 905 + 3 / 60.0);   // WFS-300 (RG-02)
             WFS_LOG("qualité (WFS-104) : voiture-course-%s : scène à %.0f %%, MSAA ×%d, niveau %s (garage : même échelle, même MSAA)",
                     noms[q], r.vk().renderScale * 100, (int)r.vk().msaa, noms[q]);
             g.camMode = 1;
@@ -154,7 +212,7 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
         // de près (orbite 2,4 m comme voiture-course-haute) ; trafic et Basse : caméra de poursuite haute du joueur
         if (!pr.trafic && pr.niveau == qualite::HAUTE) { g.camMode = 2; g.orbit = 2.4f; } else g.camMode = 1;
         for (int i = 0; i < 4; i++) g.render(914 + i / 60.0);
-        r.capturePng(out + "/" + pr.nom + ".png");
+        capturer(g, r, out, pr.nom, 914 + 3 / 60.0);   // WFS-300 (RG-02)
         WFS_LOG("capture %s (WFS-134) : %s, %.0f km/h", pr.nom, qualite::ligneRendu().c_str(), g.player().kmh());
         controler(g, r, pr.nom, posees, pr.niveau == qualite::BASSE, 914 + 3 / 60.0, posT);   // WFS-239 (RG-03)
         g.shutdown();
@@ -182,16 +240,53 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
                 placer(d);
                 for (int i = 0; i < 3; i++) g.render(944 + i / 60.0);
                 const std::string nom = "voiture-distance-" + std::to_string((int)d) + (niveau == qualite::BASSE ? "-basse" : "");
-                r.capturePng(out + "/" + nom + ".png");
+                capturer(g, r, out, nom, 944 + 2 / 60.0);   // WFS-300 (RG-02)
                 WFS_LOG("capture %s (WFS-134 RG-13) : voiture du trafic à %.0f m, %u appels de dessin", nom.c_str(), d, r.appelsDessin());
                 controler(g, r, nom, {{0, d}}, niveau == qualite::BASSE, 944 + 2 / 60.0, posD);   // WFS-239 (RG-03)
             }
             if (niveau == qualite::HAUTE) for (double d : {56.0, 60.0, 64.0}) {
                 placer(d);
                 for (int i = 0; i < 3; i++) g.render(946 + i / 60.0);
-                r.capturePng(out + "/voiture-lod-passage-" + std::to_string((int)d) + ".png");
+                capturer(g, r, out, "voiture-lod-passage-" + std::to_string((int)d), 946 + 2 / 60.0);   // WFS-300 (RG-02) : plus de façades bleues
                 WFS_LOG("capture voiture-lod-passage-%d (WFS-134 RG-12) : complète → allégée, fondu de 56 à 64 m du joueur", (int)d);
                 controler(g, r, "voiture-lod-passage-" + std::to_string((int)d), {{0, d}}, false, 946 + 2 / 60.0, posD);   // WFS-239 (RG-03)
+            }
+            if (niveau == qualite::HAUTE) {
+                // WFS-300 (RG-05) : mesurer sans corriger : la voiture avance de ≈ 110 m sans image (nouvelle sonde à capturer), puis
+                // images une à une au même temps, chacune capturée ; on garde les 5 d'avant et les 5 d'après l'arrivée de la sonde
+                // (voiture-sonde-0 à -9) et on mesure la couleur d'une zone de façades (quart haut droit) sur chacune : écart d'une
+                // image à l'autre au journal ; plus de ΔE2000 2 → pour le PO (anomalie et ticket E13 à part)
+                g.setAutopilot(true);
+                for (int i = 0; i < 6 * 60; i++) g.update(1.0 / 60);
+                g.setAutopilot(false);
+                std::vector<std::string> f; std::vector<int> nb;
+                int arrivee = -1;
+                for (int i = 0; i < 40 && (arrivee < 0 || i < arrivee + 5); i++) {
+                    g.render(948);
+                    const std::string png = out + "/voiture-sonde-tmp-" + std::to_string(i) + ".png";
+                    r.capturePng(png);
+                    f.push_back(png); nb.push_back(eclairage::etat().sondesCapturees);
+                    if (arrivee < 0 && i > 0 && nb[(size_t)i] > nb[(size_t)i - 1]) arrivee = i;
+                }
+                if (arrivee < 0) WFS_LOG("sonde (WFS-300 RG-05) : aucune sonde arrivée en %zu images après 110 m : mesure impossible", f.size());
+                else {
+                    const int d0 = std::max(0, arrivee - 5);
+                    reel::Lab prec{}; double pire = 0; std::string ecarts;
+                    for (int k = 0; k < 10 && d0 + k < (int)f.size(); k++) {
+                        const std::string nom = out + "/voiture-sonde-" + std::to_string(k) + ".png";
+                        std::rename(f[(size_t)(d0 + k)].c_str(), nom.c_str());
+                        f[(size_t)(d0 + k)].clear();
+                        reel::Lab lab{};
+                        if (!couleurZone(nom, 0.70, 0.04, 0.98, 0.40, lab)) continue;
+                        if (k > 0) { const double e = reel::deltaE2000(prec, lab); pire = std::max(pire, e); char b[32]; std::snprintf(b, sizeof b, "%s%.2f", ecarts.empty() ? "" : ", ", e); ecarts += b; }
+                        prec = lab;
+                        WFS_LOG("sonde (WFS-300 RG-05) : voiture-sonde-%d%s : façades (quart haut droit) L*a*b* %.1f %.1f %.1f, %d sonde(s) traitée(s)", k,
+                                d0 + k == arrivee ? " (arrivée de la sonde)" : "", lab.L, lab.a, lab.b, nb[(size_t)(d0 + k)]);
+                    }
+                    WFS_LOG("sonde (WFS-300 RG-05) : écarts ΔE2000 d'une image à l'autre : %s ; pire %.2f%s", ecarts.c_str(), pire,
+                            pire > 2 ? " → POUR LE PO : changement de couleur visible à l'arrivée d'une sonde en jeu (anomalie et ticket E13 à part)" : " (≤ 2 : pas de saut visible)");
+                }
+                for (const std::string& x : f) if (!x.empty()) std::remove(x.c_str());
             }
             g.shutdown();
         }
@@ -217,7 +312,7 @@ void benchQualite(Game& g, Renderer& r, const std::string& out) {
             }
             unsigned appels = 0;
             for (int i = 0; i < 4; i++) { g.render(930 + i / 60.0); appels += r.appelsDessin(); }
-            r.capturePng(out + "/voiture-basse-poursuite.png");
+            capturer(g, r, out, "voiture-basse-poursuite", 930 + 3 / 60.0);   // WFS-300 (RG-02)
             WFS_LOG("capture voiture-basse-poursuite (WFS-134) : %s, %zu voitures du trafic de 8 à 151 m, vrais modèles (aucun cube), "
                     "%u appels de dessin par image", qualite::ligneRendu().c_str(), places, appels / 4);
             controler(g, r, "voiture-basse-poursuite", posees, true, 930 + 3 / 60.0, posP);   // WFS-239 (RG-03)
