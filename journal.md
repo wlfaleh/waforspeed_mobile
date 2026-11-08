@@ -4452,3 +4452,6 @@ Tenus : règle du 20:37 1/8 ; règle du 20:17 3/8 (véhicules dessinés seuls : 
 - E3, E4, E10 déjà occupées (WFS-336, 293, 292, 215) : exceptions PO à fichiers séparés. WFS-333 non donné (mêmes fichiers `traffic.*` que WFS-336). WFS-193 / 194 non donnés (modèles des voitures, WFS-215 en cours).
 - **Décisions** : WFS-292 RG-04 : Golf gris bleuté en rase campagne accepté (vision de nuit réelle), `post.frag` interdit, bleue sous un lampadaire ; WFS-328 : Corniche 1 IL plus sombre ≤ 3 s accepté, RG-05 (ANO-179) toujours exigée ; WFS-336 : critère RG-02 sur les véhicules dessinés, coût d'une voiture proche → WFS-335.
 - **WFS-339** [TECHNIQUE] P1 créé (banc `campagne` en échec sur `main`, arrêt 4,0 s sur la route du col) : prêt pour un développeur libre.
+
+### 2026-11-08 22:53:20 — WFS-338 démarré : lot Poursuite police (agent arwa (Claude, session trafic))
+- Branche `feature/waforspeed-338` créée depuis `main` (a2d554d). Zone : `src/game/poursuite*`, `src/ui/hud.*` (encart POLICE, texte et chiffre seulement), dessin de la police dans `vehicule_*` (coordination avec WFS-335 `vehicule_lod*` : je ne touche pas à ces fichiers). Aucune accroche hors zone prévue pour l’instant.
