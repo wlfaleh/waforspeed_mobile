@@ -49,6 +49,7 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/feux_modele.h"   // WFS-109 : banc des feux arrière
 #include "../render/renderer.h"
 #include "../render/vk.h"
+#include "../ui/ecrans/cgu.h"   // WFS-308 (accroche) : WFS_BANC=cgu
 #include "../ui/ecrans/chargement.h"
 #include "manette_jeu.h"   // WFS-22
 #include "endurance_banc.h"   // WFS-91
@@ -170,6 +171,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "cgu") { const int e = ecrans::benchCgu(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-308 (accroche) : CGU, parcours RG-06, captures cgu-*
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
     if (banc == "virages") { const int e = benchVirages(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-295 (accroche) : direction dans les virages, captures virages-*

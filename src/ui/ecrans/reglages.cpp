@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "../../core/log.h"
+#include "cgu.h"   // WFS-308 (RG-05) : conditions d'utilisation en lecture seule
 #include "chargement.h"   // WFS-297 (RG-06) : texteMemoire (mémoire du jeu, de la carte graphique, numéro de la partie)
 #include "../../core/system.h"
 #include "../../game/course_system.h"
@@ -65,7 +66,12 @@ const Ligne LIGNES[13] = {
 enum { L_CAMERA = 0, L_QUALITE = 1, L_SON = 2, L_MUSIQUE = 3, L_COMMANDES = 4, L_VIBRATIONS = 5, L_DIRECTION = 6, L_MOUVEMENTS = 7,
        L_BOUTONS = 8, L_GYRO = 9, L_GYROZONE = 10, L_AIDE = 11, L_REGARD = 12, N_LIGNES = 13 };
 
-Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure;   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager)
+Zone g_bouton, g_fermer, g_choix[N_LIGNES][4], g_mesure, g_cgu;   // WFS-308 : g_cgu, « Conditions d'utilisation »
+float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 (RG-05) : bouton vitré, texte cyan ; zone ≥ 44 dp
+    const float tp = 13 * k; const std::string t = ui::majuscules("Conditions d'utilisation"); const float w = ui::width(tp, t, 0.12f) + 28 * k, zh = std::max(h, ui::TOUCHER_MIN_DP * ui::unitePetitEcran((float)r.width(), (float)r.height()));
+    g_cgu = {x - w, y + (h - zh) / 2, w, zh}; biseau(r, x - w - 1, y - 1, w + 2, h + 2, 8 * k, BORD); biseau(r, x - w, y, w, h, 8 * k, GLASS);
+    ui::text(r, x - w / 2, y + (h - tp) / 2, tp, t, hex(ACCENT2), ui::CENTRE, 0.12f, false); return w;
+}   // WFS-246 (accroche) : g_mesure, ligne de la mesure (toucher : partager)
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
 
@@ -177,7 +183,7 @@ public:
         if (reglages().camera != CAM_POURSUITE) appliquerCamera();
         if (reglages().qualite != QUALITE_HAUTE) appliquerQualite(r);
     }
-    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_bouton = {}; }
+    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_bouton = {}; cgu().fermer(); }
 
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause) return false;
@@ -185,8 +191,10 @@ public:
             if (t.down && g_bouton.contient(t.x, t.y)) { g_ouvert = true; doigt_ = t.id; WFS_LOG("réglages : ouverts (%s)", nomEcran(g.ecran)); return true; }
             return t.id == doigt_ && !t.down ? (doigt_ = -1, true) : false;
         }
-        if (!t.down) { if (t.id == doigt_) doigt_ = -1; return true; }
+        if (!t.down) { if (t.id == doigt_) doigt_ = -1; if (cgu().ouvert()) cgu().toucher(t.id, t.x, t.y, false); return true; }
         if (t.id == doigt_) return true;
+        if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
+        if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); doigt_ = t.id; return true; }   // WFS-308 (RG-05)
         if (g_fermer.contient(t.x, t.y)) { g_ouvert = false; doigt_ = t.id; WFS_LOG("réglages : fermés"); return true; }
         if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { doigt_ = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) {
@@ -223,6 +231,7 @@ public:
         if (cp) dessinerPanneauPetit(r, g, W, H, k); else dessinerPanneau(r, g, W, H, k);
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) manette::focus(g_choix[l][c]);
         manette::focus(g_fermer, true);
+        if (cgu().ouvert()) cgu().dessiner(r, W, H, g.marges, g.time);   // WFS-308 (RG-05) : par-dessus le panneau
     }
 
 private:
@@ -253,6 +262,7 @@ private:
         ui::text(r, x0, py + 30 * k, 13 * k, ui::majuscules(g.ecran == Ecran::Pause ? "Course en pause" : "Menu principal"), hex(ACCENT2),
                  ui::GAUCHE, 0.22f, false);
         ui::text(r, x0, py + 52 * k, 56 * k, ui::majuscules("Réglages"), hex(TEXTE), ui::GAUCHE, 0.02f, false, true);
+        boutonCgu(r, px + pw - 36 * k, py + 30 * k, 36 * k, k);   // WFS-308 (RG-05)
         float y = py + haut;
         const float segW = std::min(170 * k, (pw - 72 * k - 190 * k - 3 * 6 * k) / 4);
         for (int l = 0; l < N_LIGNES; l++) {
@@ -362,11 +372,12 @@ private:
         // WFS-134 (RG-01) : rendu réellement utilisé, sous les deux colonnes
         {   // WFS-297 (RG-06) : rendu puis mémoire du jeu, de la carte graphique et numéro de la partie, réduits s'ils ne tiennent pas
             const std::string lr = qualite::ligneRendu() + " · " + texteMemoire(false);
-            const float tr = std::min(14 * k, 14 * k * (pw - 48 * k) / std::max(ui::width(14 * k, lr, 0.02f), 1.f));
+            const float lw = pw - 48 * k - boutonCgu(r, px + pw - 24 * k, py + ph - 32 * k, 26 * k, k) - 12 * k;   // WFS-308 (RG-05) : en bas à droite
+            const float tr = std::min(14 * k, 14 * k * lw / std::max(ui::width(14 * k, lr, 0.02f), 1.f));
             ui::text(r, x0, py + ph - 12 * k - tr, tr, lr, hex(ACCENT2), ui::GAUCHE, 0.02f, false);
         }
         const std::string lm = qualite::ligneMesure();   // WFS-246 (accroche, RG-06) : 2e ligne sous le rendu (toucher : partager)
-        if (!lm.empty()) { const float tm = std::min(10 * k, 10 * k * (pw - 48 * k) / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, pw - 48 * k, 28 * k};
+        if (!lm.empty()) { const float lw = g_cgu.x - 12 * k - x0, tm = std::min(10 * k, 10 * k * lw / std::max(ui::width(10 * k, lm, 0.f), 1.f)); g_mesure = {x0, py + ph - 28 * k, lw, 28 * k};
                            ui::text(r, x0, py + ph - 11 * k, tm, lm, hex(TEXTE), ui::GAUCHE, 0.f, false); } else g_mesure = {};
     }
 
@@ -380,6 +391,7 @@ Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
 bool toucheReglages(float x, float y) { return g_ouvert || g_bouton.contient(x, y); }
+bool boutonCguReglages(float& x, float& y) { x = g_cgu.x + g_cgu.w / 2; y = g_cgu.y + g_cgu.h / 2; return g_ouvert && g_cgu.w > 0; }   // WFS-308
 
 // WFS-80 : banc manette du garage (pastilles) et des réglages : le focus va à la zone visée par la croix (chemin le plus
 // court calculé avec manette::voisin, comme un joueur), A = toucher, B = retour
