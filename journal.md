@@ -4087,6 +4087,24 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - **Épic E7, exception PO** : WFS-319 (agent expert ci) tient la CI et la publication, sans fichier commun. Zone : `src/platform/android_main.cpp` (`initGraphics`, `termGraphics`, `onCmd`) et `src/platform/**` utile, accroche ≤ 10 lignes dans VkCtx / `Renderer` annoncée au journal. **Pas** `readAsset()` (accroche de WFS-301, agent 3) ni les fichiers de WFS-306.
 - **Critères** : `regles-de-gestion/WFS-285.md` (RG-01 à RG-06, ligne `surface recréée en N ms` < 1000, retour sur Pause en course, repli gardé). Branche `feature/waforspeed-285`, PR + captures `captures_pr.sh`, lead dev.
 
+### 2026-11-08 20:25:50 — WFS-258 : mesure Course à 5, doigt tenu, refaite après la fusion de WFS-327 (Claude, agent dev conduite)
+- Banc `WFS_BANC=virages WFS_VIRAGES=vif` (section 10 bis), branche `feature/waforspeed-258` synchronisée avec `main` (WFS-327 compris) : Golf, aide activée, doigt tenu (« Glisser »), 2 km, graine 1234 (Normale), départ 3e.
+- Direction de main (avant le point 3) / direction réduite au-dessus de 100 km/h (point 3) : **Ville 1re / 2e** (52,5 / 56,1 s) ; **Campagne 2e / 2e** (47,2 / 49,9 s) ; **Corniche 1re / 2e** (52,8 / 55,1 s) ; **Grand Prix 2e / 2e** (50,9 / 52,2 s). 0 image hors route partout ; banc : 0 écart.
+- Avec la direction réduite, le joueur est 2e sur les 4 cartes, de 1,3 à 3,6 s plus lent qu'avec la direction de main.
+- Commentaire de `player.h` (bascule 80 / 110 km/h) et commentaire WFS-327 de `course5.cpp` remis d'accord : commit 6b6d620d sur `feature/waforspeed-258` (pas de PR seule pour deux commentaires : ils partent avec la prochaine PR de WFS-258).
+
+### 2026-11-08 20:31:38 — WFS-327 validé par l'utilisateur (Claude, agent dev conduite)
+- L'utilisateur valide WFS-327 (adversaires de la Course à 5 sur une vitesse de virage possible, PR #277) dans la conversation : « Ok je valide ça ». Statut 🟡 → **✅ Terminé** dans `TACHES.md` ; Suivi du ticket mis à jour.
+
+### 2026-11-08 20:32:04 — WFS-327 : recette QA de la matinée demandée par l'utilisateur (Claude, agent dev conduite)
+- L'utilisateur demande que WFS-327 soit aussi vérifié par le QA ce matin : ligne de `qa/Check.md` complétée (règles RG-01 à RG-04 à vérifier), `TACHES.md` : « ✅ Terminé (validé par l'utilisateur ; QA du matin à faire) ».
+
+### 2026-11-08 20:35:21 — Début WFS-305 : attribué à Claude, agent dev conduite, à sa demande ; WFS-258 suspendu (po-scrum-master)
+- Demande de l'utilisateur relayée par l'agent (≈ 20:20 UTC) : « prends un autre sujet loin de ce dernier ticket ». WFS-327 ✅ (validé par l'utilisateur). **WFS-258 ⏸ suspendu**, reste à l'agent dev conduite (branche 6b6d620d gardée) ; WFS-259 / 260 attendent toujours.
+- **WFS-305** (P2, E2, ANO-171 : fosse sombre dans la pelouse du parc de la Ville) : dépendance WFS-283 fusionnée (#261) ; E2 libre. Zone : `src/world/ville.cpp`, `src/world/ville_quartiers.*` (sol du parc et du port), `src/world/cartes_banc.cpp` (banc `ville` seul), test neuf `tests/` + accroche ≤ 10 lignes `CMakeLists.txt`. Interdits : `src/game/**`, `giratoire.*`, E11 / E12, `src/render/**`, `shaders/**`, CI (gel), iOS. Règles : `regles-de-gestion/WFS-305.md`. Skills : `agent-developer`, `waforspeed-natif`, `expert-cartes`. Captures : `bash tools/qa/captures_pr.sh WFS-305 ville rondspoints`, PR, puis `lead-dev`.
+- Plus prioritaires écartés : WFS-214 / 322 (E13 tenue par WFS-328), WFS-287 (E7 tenue par WFS-319 et WFS-285), WFS-293 (E0 tenue par WFS-301, E3 par WFS-281 ; proche de la conduite), WFS-323 et WFS-329 (réservés).
+- Stock de tickets prêts : **WFS-193** (E10, après WFS-215) et **WFS-280** (E3 + E2, dépendance WFS-232 fusionnée) passent ⏳ Prêt : 9 prêts (214, 215, 193, 280, 287, 293, 322, 323, 329).
+
 ### 2026-11-08 16:38:27 — WFS-300 : banc qualité, captures stables, journal plus clair (Claude, agent 5)
 - **RG-01 cause** : les images de contrôle de WFS-239 (RG-03) font avancer les captures d'environnement ; la sonde B (rebond) arrivait avant la capture de `voiture-lod-passage-56` mais pas encore avant `-60`. Façade de droite (L*a*b*) : `main` 56 m 7,8 / 2,8 / −8,4 (bleutée), 60 m 12,1 / −0,5 / −1,5 (grise) ; commit d'avant WFS-239 (da0030f) : 12,3 / −0,6 / −1,0 à 56, 60 et 64 m (sonde pas encore arrivée).
 - **RG-02** (`qualite_banc.cpp` seul) : avant chaque capture, `attendreSondes` puis attente jusqu'à 6 images sans nouvelle sonde (journal « sondes … (WFS-300 RG-02) »). Deux lancements de suite : écart moyen ≤ 0,005 niveau sur 255 sur 33 captures `voiture-*` ; 56 / 60 / 64 m : même couleur (ΔE2000 ≈ 0,1). Une fois les sondes stables, les façades de cette rue sont bleutées dans le jeu : critère reformulé par le PO (option A, c78b9d1), ANO-174 et WFS-322 (E13) créés.
