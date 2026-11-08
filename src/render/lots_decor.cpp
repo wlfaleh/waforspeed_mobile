@@ -47,7 +47,7 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
         WFS_LOG("décor fixe (WFS-269) : %s : occlusion précalculée, %zu sommets, %zu voxels, moyenne %.2f, %.0f ms (grille %.0f ms, %.1f Mo, rendus après le calcul)", nom, b.sommets, b.voxels, b.moyenne, b.ms, b.msGrille, b.memoireMo);
     }
     // regroupement : bloc de blocChunks morceaux, un maillage par matériau et par niveau de détail
-    const int64_t B = std::max(1, blocChunks);
+    const int64_t B = std::min<int64_t>(std::max(1, blocChunks), MAX_BLOC);   // RG-11 : MAX_BLOC morceaux au plus (index de fin)
     {   // journal : sommets par matériau (détail / allégé), pour suivre le coût mémoire
         std::array<size_t, MAX_PARTS> nd{}, nl{};
         for (size_t k = 0; k < cpu.size(); k++) for (int p = 0; p < parts_; p++) ((k & 1) ? nl : nd)[(size_t)p] += cpu[k].v[(size_t)p].size();
@@ -57,7 +57,7 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
     }
     std::vector<Vertex> vv; std::vector<uint32_t> ii;
     for (int64_t c0 = 0; c0 < nChunks; c0 += B) {
-        Bloc bl; bl.s0 = c0 * CH; bl.s1 = std::min(L_, (c0 + B) * CH);
+        Bloc bl; bl.s0 = c0 * CH; bl.s1 = std::min(L_, (c0 + B) * CH); bl.n = (int)(std::min(nChunks, c0 + B) - c0);
         for (int lod = 0; lod < (deuxNiveaux ? 2 : 1); lod++) for (int p = 0; p < parts_; p++) {
             vv.clear(); ii.clear();
             for (int64_t c = c0; c < std::min(nChunks, c0 + B); c++) {
@@ -65,6 +65,7 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
                 const uint32_t base = (uint32_t)vv.size();
                 vv.insert(vv.end(), m.v[(size_t)p].begin(), m.v[(size_t)p].end());
                 for (uint32_t x : m.i[(size_t)p]) ii.push_back(base + x);
+                bl.fin[(size_t)lod][(size_t)p][(size_t)(c - c0 + 1)] = (uint32_t)ii.size();   // RG-11 : fin des index du morceau
             }
             if (ii.empty()) continue;
             bl.m[(size_t)lod][(size_t)p] = r.makeMesh(vv, ii, false);

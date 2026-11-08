@@ -1383,7 +1383,7 @@ void Renderer::draw(const Mesh& m, const Material& mat, const mat4& world, float
     if (!inFrame_ || !m.indexCount) return;
     const uint8_t vis = classer(masquage::monde(world, {m.centre, m.rayon}));   // WFS-82
     if (!vis) return;
-    Pending p{m.vb.buf, m.ib.buf, 0, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
+    Pending p{m.vb.buf, m.ib.buf, m.premier, m.indexCount, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};   // WFS-268 : m.premier
     p.vis = vis;
     {   // WFS-263 (RG-01) : variante légère si l'objet entier est au-delà de 70 m (fin du fondu de scene.frag) et n'est ni
         // voiture, ni route, ni transparent, ni vitre d'immeuble (mêmes exclusions que F_COMPLET de scene.frag)

@@ -43,7 +43,7 @@ struct Material {
     uint32_t flags = 0; VkDescriptorSet set = VK_NULL_HANDLE;
 };
 
-struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; vec3 centre{}; float rayon = -1; };   // WFS-82 : sphère englobante (repère local)
+struct Mesh { Buffer vb, ib; uint32_t indexCount = 0; bool dynamic = false; vec3 centre{}; float rayon = -1; uint32_t premier = 0; };   // WFS-82 : sphère englobante (repère local) ; WFS-268 (accroche) : premier index dessiné (vue sur une partie des index)
 
 // maillage animé par squelette (WFS-63, point d'extension) : sommet = position, normale, uv + 4 os (indices dans la
 // palette de l'instance) et 4 poids ; dessiné avec une palette de matrices d'os (skinning dans le vertex shader).

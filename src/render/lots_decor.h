@@ -16,6 +16,7 @@
 #pragma once
 #include <array>
 #include <climits>
+#include <cstdlib>
 #include <cstdint>
 #include <functional>
 #include <vector>
@@ -72,7 +73,11 @@ public:
     }
 
 private:
-    struct Bloc { int64_t s0 = 0, s1 = 0; std::array<std::array<Mesh, MAX_PARTS>, 2> m{}; };   // segments [s0, s1) du tour 0 ; m[lod][part]
+    // RG-11 (ANO-164) : fin[lod][part][j] = fin des index du morceau j du bloc (0 : début) : on ne dessine que les morceaux de la
+    // fenêtre, chacun à son niveau de détail, comme l'ancienne gestion (plus de morceau en trop au bout de la fenêtre)
+    static constexpr int MAX_BLOC = 8;   // morceaux par bloc au plus
+    struct Bloc { int64_t s0 = 0, s1 = 0; std::array<std::array<Mesh, MAX_PARTS>, 2> m{};
+                  std::array<std::array<std::array<uint32_t, MAX_BLOC + 1>, MAX_PARTS>, 2> fin{}; int n = 0; };   // segments [s0, s1) du tour 0 ; m[lod][part] ; n morceaux
     const mat4& matriceTour(Track& t, int64_t k);   // tour k → monde (tour 0 : identité) ; cache fixe, aucune allocation
     std::vector<Bloc> blocs_;
     int parts_ = 0;
@@ -101,11 +106,27 @@ template <class F> int DecorFixe::dessiner(Track& t, int64_t aP, int64_t arriere
         const mat4& M = matriceTour(t, k);
         for (const Bloc& b : blocs_) {
             if (b.s1 + base <= s0 || b.s0 + base > s1) continue;
-            // détail si le point du bloc le plus proche du joueur est à moins de lodLoinM : jamais moins détaillé que les
-            // morceaux d'avant (choisis morceau par morceau), un peu plus au loin dans le bloc de la limite
-            const int64_t a0 = b.s0 + base, a1 = b.s1 + base, proche = aP < a0 ? a0 - aP : aP >= a1 ? aP - a1 + 1 : 0;
-            const bool lod = deuxNiveaux_ && segmentsVersMetres(proche) > lodLoinM;
-            for (int p = 0; p < parts_; p++) if (b.m[lod][(size_t)p].indexCount) { dessin(p, b.m[lod][(size_t)p], M); n++; }
+            // RG-11 (ANO-164) : seulement les morceaux de la fenêtre [c0, c1] ; niveau de chaque morceau comme l'ancienne gestion
+            // (|c − cP| · CH · SEG_M > lodLoinM : allégé) ; morceaux voisins de même niveau : un seul appel
+            const int64_t cP = aP >= 0 ? aP / CH : -((-aP + CH - 1) / CH), c0 = s0 >= 0 ? s0 / CH : -((-s0 + CH - 1) / CH), c1 = s1 >= 0 ? s1 / CH : -((-s1 + CH - 1) / CH);
+            const int64_t cb = (b.s0 + base) / CH;   // premier morceau du bloc (absolu)
+            int j = 0;
+            while (j < b.n) {
+                const int64_t c = cb + j;
+                if (c < c0 || c > c1) { j++; continue; }
+                const bool lod = deuxNiveaux_ && segmentsVersMetres(std::llabs(c - cP) * CH) > lodLoinM;
+                int j1 = j + 1;
+                while (j1 < b.n && cb + j1 <= c1 && (deuxNiveaux_ && segmentsVersMetres(std::llabs(cb + j1 - cP) * CH) > lodLoinM) == lod) j1++;
+                for (int p = 0; p < parts_; p++) {
+                    const Mesh& m = b.m[lod][(size_t)p];
+                    if (!m.indexCount) continue;
+                    const uint32_t i0 = b.fin[lod][(size_t)p][(size_t)j], i1 = b.fin[lod][(size_t)p][(size_t)j1];
+                    if (i1 <= i0) continue;
+                    Mesh vue = m; vue.premier = i0; vue.indexCount = i1 - i0;
+                    dessin(p, vue, M); n++;
+                }
+                j = j1;
+            }
         }
     }
     return n;
