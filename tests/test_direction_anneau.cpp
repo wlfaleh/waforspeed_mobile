@@ -156,6 +156,32 @@ int main(int argc, char** argv) {
                 aide == Aide::Activee ? "activée" : "désactivée", lentes ? "20" : "60", b.sorties, b.ecartMax, b.fini ? "scène finie" : "scène non finie");
     }
 
+    // ---------- RG-05 : grande vitesse (150 à 230 km/h) pas plus vive : lacet dans le monde, doigt tenu 1 s, avant / après ----------
+    {
+        static Track gp; gp.build(mapById("circuit"), trace::versionCarte("circuit"));
+        double sRapide = -1;   // virage rapide du Grand Prix : rayon de 150 à 600 m
+        for (double s = 300 / M; s < gp.length() && sRapide < 0; s += 2 / M) { const double R = 1 / std::max(1e-9, std::abs(courbure(gp, s))); if (R > 150 && R < 600) sRapide = s; }
+        std::printf("\n## RG-05 : grande vitesse, lacet moyen dans le monde (rad/s), doigt tenu 1 s, 20 img/s, Golf\n");
+        std::printf("| Lieu | km/h | doigt | aide | avant | après |\n|---|---|---|---|---|---|\n");
+        auto lacet = [&](Track& t, double s, double kmh, double part, Aide aide, bool avant) {
+            g_avantWfs316 = avant;
+            const int sg = courbure(t, s + 20 / M) >= 0 ? 1 : -1;
+            Player p = voiture("golf", aide, t, s, 0, kmh);
+            Images im{true}; double temps = 0; const PoseMonde a = pose(p, t);
+            while (temps < 1.0) { const DriveInput in = tenir(p, kmh, doigt(part, sg)); for (double f = temps + im.suivante(); temps + 1e-9 < f; temps += DT) p.update(DT, in, t, true); }
+            g_avantWfs316 = false;
+            return std::abs(std::remainder(pose(p, t).cap - a.cap, 2 * 3.14159265358979)) / temps;
+        };
+        VERIFIE(sRapide > 0, "virage rapide du Grand Prix introuvable");
+        for (int lieu = 0; lieu < 2; lieu++) for (double kmh : {150.0, 190.0, 230.0}) for (double part : {0.06, 0.12}) for (Aide aide : {Aide::Desactivee, Aide::Activee}) {
+            const double s = lieu ? sRapide : 100 / M;
+            const double av = lacet(gp, s, kmh, part, aide, true), ap = lacet(gp, s, kmh, part, aide, false);
+            std::printf("| %s | %.0f | %.0f %% | %s | %.3f | %.3f |\n", lieu ? "virage rapide" : "ligne droite", kmh, part * 100, aide == Aide::Activee ? "activée" : "désactivée", av, ap);
+            VERIFIE(ap <= av * 1.05 + 0.01, "%s, %.0f km/h, doigt %.0f %%, aide %s : lacet %.3f rad/s après contre %.3f avant (plus vive)", lieu ? "virage rapide" : "ligne droite",
+                    kmh, part * 100, aide == Aide::Activee ? "activée" : "désactivée", ap, av);
+        }
+    }
+
     // ---------- RG-05 : volant lâché, comportement d'avant gardé ----------
     {
         auto lache = [&](bool avant) { g_avantWfs316 = avant; Player p = voiture("golf", Aide::Desactivee, ville, sDebutAnneau, 0, 50);
