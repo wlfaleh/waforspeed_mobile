@@ -103,6 +103,10 @@ void benchEffets(Game& g, Renderer& r, const std::string& out) {
         const Course* c = activeCourse();
         const int avant = c ? c->accidents + c->bumps + c->scrapes : 0;
         trafficBenchPlace(14, 0, 80, true);
+        // WFS-292 (RG-03) : le pilote automatique est coupé dès le placement : il évitait la voiture de devant (changement
+        // de file, journal de la CI c9eda61 : x 0,44 → 0,77 à 171 km/h, 0 accident en 3 s) ; la Golf file tout droit sur
+        // son élan et la percute (règles des chocs de WFS-256 inchangées)
+        g.setAutopilot(false);
         int n = 0;
         for (; n < 180; n++) { image(true); if (c && c->accidents + c->bumps + c->scrapes > avant) break; }
         const int emises = effetsDernierChoc();

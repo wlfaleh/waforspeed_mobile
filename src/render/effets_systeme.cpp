@@ -32,7 +32,8 @@ float effetsCapDernierChoc() { return g_capChoc; }
 namespace {
 
 constexpr int NIV = 6;               // WFS-224 : niveaux d'opacité de la fumée (un appel de dessin chacun)
-constexpr float ALPHA_FUMEE = 0.30f; // WFS-224 (RG-02) : opacité d'une volute au plus dense (0,45 du jeu web : disques trop pleins)
+constexpr float ALPHA_FUMEE = 0.53f; // WFS-292 (RG-01) : opacité d'une volute au plus dense : 0,44 à la naissance (voluteOpacite ≈ 0,82), 0,30 avant
+constexpr float ALBEDO_FUMEE = 0.75f; // WFS-292 (RG-01) : fumée de pneu blanche à gris clair (gouttelettes d'huile et caoutchouc : diffuse claire)
 constexpr float EXPO = 0.85f;        // exposition de la course (Game::render)
 
 // WFS-101 : voiture du trafic au contact du joueur juste après hitCar (qui l'a repoussée de 0,25 m) : la plus proche,
@@ -81,12 +82,16 @@ public:
         // WFS-224 (RG-02) : la volute s'efface par son opacité (niveau k : ALPHA_FUMEE × (k + 0,5) / NIV), plus par sa
         // couleur ; deux jeux de matériaux : jour (gris du jeu web) et nuit, où la fumée derrière la voiture n'est éclairée
         // que par les feux arrière : gris très sombre teinté de rouge (pas de gris clair dans le noir).
+        // WFS-292 (RG-01, RG-02, ANO-165) : la lumière émise fixe (gris du jeu web converti à l'exposition 0,85) ne suivait plus
+        // l'exposition physique (WFS-207 / WFS-230) : de jour, la fumée sortait plus sombre que l'asphalte, invisible. La volute
+        // est maintenant une matière diffuse éclairée par la scène (soleil, ciel, phares, lampadaires) : claire de jour, visible
+        // la nuit seulement là où une lumière l'éclaire, jamais un gris lumineux dans le noir. MAT_VTINT : Lambert sans reflet,
+        // même éclairage des deux faces (normale des sommets vers le haut, longueur 1 : nuage éclairé par-dessus).
         for (int k = 0; k < NIV; k++) {
             for (int nuit = 0; nuit < 2; nuit++) {
-                Material m; m.color = {0, 0, 0, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 1;
-                m.emissive = nuit ? effets::versHdr(vec3{0.06f, 0.04f, 0.04f}, EXPO) : effets::fumeeHdr(1, EXPO);
+                Material m; m.color = {ALBEDO_FUMEE, ALBEDO_FUMEE, ALBEDO_FUMEE * 1.02f, ALPHA_FUMEE * (k + 0.5f) / NIV}; m.rough = 1; m.metal = 0;
                 mats_[nuit][k] = r.makeMaterial(m, &tex_, nullptr, nullptr);
-                mats_[nuit][k].flags |= MAT_BLEND | MAT_DOUBLE;
+                mats_[nuit][k].flags |= MAT_BLEND | MAT_DOUBLE | MAT_VTINT;
             }
             for (int b = 0; b < 2; b++) {   // réserve pleine (140 bouffées) : jamais réallouée pendant la partie
                 meshes_[b][k] = r.makeMesh(std::vector<Vertex>(140 * 4), std::vector<uint32_t>(140 * 6), true);
@@ -155,7 +160,7 @@ public:
                                                monde ? std::max(pl.monde.glissementAv, pl.monde.glissementAr) : 0.0, pl.spinYaw) || (g_banc && g_bancDerapage);
         skid_ -= dt;
         if (skid && skid_ <= 0) {
-            skid_ = 0.05f;
+            skid_ = 0.035f;   // WFS-292 (RG-01) : une volute toutes les 35 ms par roue (50 ms avant) : nappe continue, ≤ 140 vivantes
             const double L = pl.car ? pl.car->d.L : 4.3, W = pl.car ? pl.car->d.W : 1.8;
             // WFS-224 (RG-02) : la volute part avec 40 % de la vitesse de la voiture (air entraîné par le sillage juste
             // derrière la caisse, ordre de grandeur des mesures de sillage de véhicule) : elle traîne derrière la voiture au
@@ -229,8 +234,9 @@ public:
             auto& v = vtx_[k]; auto& ix = idx_[k];
             const uint32_t n = (uint32_t)v.size();
             vec3 c4[4]; coins(q.p, taille * 0.5f, c4);
-            v.push_back({c4[0].x, c4[0].y, c4[0].z, nrm.x, nrm.y, nrm.z, 0, 1}); v.push_back({c4[1].x, c4[1].y, c4[1].z, nrm.x, nrm.y, nrm.z, 1, 1});
-            v.push_back({c4[2].x, c4[2].y, c4[2].z, nrm.x, nrm.y, nrm.z, 1, 0}); v.push_back({c4[3].x, c4[3].y, c4[3].z, nrm.x, nrm.y, nrm.z, 0, 0});
+            // WFS-292 : normale vers le haut (MAT_VTINT : sa longueur 1 garde l'albédo) : volute éclairée comme un nuage
+            v.push_back({c4[0].x, c4[0].y, c4[0].z, 0, 1, 0, 0, 1}); v.push_back({c4[1].x, c4[1].y, c4[1].z, 0, 1, 0, 1, 1});
+            v.push_back({c4[2].x, c4[2].y, c4[2].z, 0, 1, 0, 1, 0}); v.push_back({c4[3].x, c4[3].y, c4[3].z, 0, 1, 0, 0, 0});
             ix.insert(ix.end(), {n, n + 1, n + 2, n, n + 2, n + 3});
         }
         for (int k = 0; k < NIV; k++) {
