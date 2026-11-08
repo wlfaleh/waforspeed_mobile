@@ -3883,3 +3883,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Branche synchronisée avec `main` (b9671851) ; 73 tests CPU OK, parcours 0 écart. Captures régénérées, avant et après sur le même `main` (f139b49b).
 - **Défaut trouvé** : dans la vue haute du banc, la voiture du joueur (≈ 200 px) basculait en fondu vers le niveau 1. Correctif : `Renderer::dessinJoueur` (accroche `game.cpp` +2), la voiture du joueur est toujours complète.
 - Description de la PR réécrite (limites : tramé visible au téléobjectif, `mustang.wfm` sans `.lod`, `lod-ville-300`).
+
+### 2026-11-08 17:43:52 — APK 918 : vidéos de l'utilisateur regardées ; ANO-177 / WFS-328 (flash blanc au départ de nuit) créé (po-scrum-master)

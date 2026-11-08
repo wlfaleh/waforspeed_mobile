@@ -152,3 +152,6 @@ demande utilisateur :
 
 - Pour la Ville, il faut encore −70 % des personnes, c'est juste un décor de jeu (2026-11-08 17:27 UTC)
 ( PO : c'est ajouté à **WFS-317** (agent 1, RG-03) : en Ville, 30 % des personnes d'aujourd'hui, proportions gardées, rues encore vivantes ; autres cartes inchangées. )
+
+- Vidéos et captures de l'APK 918 (2026-11-08 17:43 UTC)
+( PO : regardées — nouveau défaut : image blanche / rose au départ des courses de nuit → **ANO-177 / WFS-328** (P1). Toujours visibles et déjà en cours : fenêtres qui flottent (WFS-326, agent dev Y), toujours dernier en Course à 5 (WFS-327, agent dev conduite), performance 10 img/s (WFS-317, 265). )
