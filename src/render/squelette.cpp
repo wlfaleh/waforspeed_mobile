@@ -1,5 +1,6 @@
 // WaForSpeed — personnages animés par squelette (WFS-63) : voir squelette.h et tools/convert_people.mjs (format .wfp).
 #include "squelette.h"
+#include <unordered_map>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -55,6 +56,42 @@ void cle(const std::vector<float>& tm, float t, size_t& k, float& f) {
     f = d > 0 ? (t - tm[k]) / d : 0;
 }
 } // namespace
+
+// WFS-299 (RG-01) : niveau de détail 3 « très simple » des piétons lointains (Basse, au-delà de 30 m), fabriqué au chargement
+// à partir du niveau 2 de chaque plage (« corps-2 » → « corps-3 », « <coiffure>-2 » → « <coiffure>-3 ») par regroupement des
+// sommets (vertex clustering, Rossignac et Borrel 1993) : la pose de repos est découpée en cubes de CUBE_M ; chaque sommet est
+// remplacé par le premier sommet de son cube (il garde ses os, ses poids, son UV : le skinning reste juste) ; les triangles
+// devenus plats disparaissent. Aucun sommet nouveau : seuls des indices sont ajoutés à la fin du tampon.
+constexpr float CUBE_M = 0.07f;
+int ajouterNiveauTresSimple(const std::vector<SkinVertex>& v, std::vector<uint32_t>& idx, std::vector<Plage>& plages) {
+    int ajoutees = 0;
+    const size_t nPlages = plages.size();
+    for (size_t p = 0; p < nPlages; p++) {
+        const Plage src = plages[p];
+        if (src.nom.size() < 2 || src.nom.compare(src.nom.size() - 2, 2, "-2") != 0) continue;
+        const std::string nom = src.nom.substr(0, src.nom.size() - 1) + "3";
+        bool deja = false; for (const Plage& q : plages) deja = deja || q.nom == nom;
+        if (deja || (uint64_t)src.premier + src.nombre > idx.size()) continue;
+        std::unordered_map<uint64_t, uint32_t> cube;   // cube → sommet représentant
+        auto rep = [&](uint32_t i) {
+            const SkinVertex& s = v[i];
+            const auto c = [](float x) { return (uint64_t)(uint32_t)(int32_t)std::floor(x / CUBE_M) & 0x1FFFFF; };
+            const uint64_t k = c(s.px) | c(s.py) << 21 | c(s.pz) << 42;
+            return cube.emplace(k, i).first->second;
+        };
+        Plage dst; dst.nom = nom; dst.premier = (uint32_t)idx.size();
+        for (uint32_t t = src.premier; t + 2 < src.premier + src.nombre; t += 3) {
+            const uint32_t a = rep(idx[t]), b = rep(idx[t + 1]), c = rep(idx[t + 2]);
+            if (a == b || b == c || a == c) continue;   // triangle aplati
+            idx.push_back(a); idx.push_back(b); idx.push_back(c);
+        }
+        dst.nombre = (uint32_t)idx.size() - dst.premier;
+        if (dst.nombre == 0) { idx.resize(dst.premier); continue; }
+        plages.push_back(dst);
+        ajoutees++;
+    }
+    return ajoutees;
+}
 
 bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) {
     std::vector<uint8_t> fichier;
@@ -124,6 +161,7 @@ bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out) 
     }
     Material m; m.rough = rugo; m.metal = metal;
     out.materiau = r.makeMaterial(m, &out.textures[0], &out.textures[1], nullptr);
+    ajouterNiveauTresSimple(v, idx, out.plages);   // WFS-299 (RG-01)
     out.maillage = r.makeSkinnedMesh(v, idx);
     out.ok = true;
     WFS_LOG("%s : %u sommets, %u indices, %u os (palette %u), %u clips, %u plages, %.2f m", chemin.c_str(), nV, nI, nO, nPal, nC, nP, out.hauteur);

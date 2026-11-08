@@ -44,6 +44,8 @@ struct PoseSquelette {
 };
 
 bool chargerPersonnage(Renderer& r, const std::string& chemin, Personnage& out);
+// WFS-299 : ajoute « <nom>-3 » (très simple) pour chaque plage « <nom>-2 », par regroupement des sommets ; rend le nombre de plages ajoutées
+int ajouterNiveauTresSimple(const std::vector<SkinVertex>& v, std::vector<uint32_t>& idx, std::vector<Plage>& plages);
 void detruirePersonnage(Renderer& r, Personnage& p);
 int clipParNom(const Personnage& p, const std::string& nom);              // -1 si absent
 const Plage* plageParNom(const Personnage& p, const std::string& nom);   // nullptr si absente
