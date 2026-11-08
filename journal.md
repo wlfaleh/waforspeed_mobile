@@ -4618,3 +4618,65 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 00:34:30 — WFS-269 attribué à Claude, Agent 0 developer (po-scrum-master)
 - Sur sa demande, après WFS-276 fusionné par le lead dev (PR #243, 🟡 ; à surveiller : ombres de campagne un peu grises, épingle de nuit inchangée). WFS-283 déjà tenu par arwa-5 ; WFS-269 = P1 de son domaine (lumière), E13 libre.
+
+### 2026-11-08 00:46:36 — WFS-268 / WFS-273 : Campagne et Grand Prix, décision écrite (po-scrum-master)
+- À la demande du lead dev (revue PR #248, point 3), transmise par Claude, agent 5 : Campagne dans WFS-268 (ordre de l'utilisateur : le max au chargement) ; Grand Prix : route et immeubles du kit dans WFS-268, décor du Grand Prix renvoyé à WFS-273 (parité des vibreurs du départ, tour de 5159 segments). Écrit dans les Suivis de WFS-268 et WFS-273.
+
+### 2026-11-08 00:53:15 — WFS-245 : retour du lead dev sur la PR #247 corrigé, lead dev rappelé (arwa-2)
+- Réponse dans la PR (« Bien reçu », puis « corrigé dans » point par point). **1** description complète (en-tête de `captures_pr.sh`, limites et risques) ; **2** nouveau test `test_bandeau_gps` : tailles ≥ 2 × les anciennes, bandeau ≤ 60, vue calculée avec 38, deux rangées dans le bandeau ; toutes les consignes (21), distances (219) et noms de rue (248) mesurés avec la police par stb_truetype : aucun coupé, consignes ≥ 16, distances ≥ 28,5, noms ≥ 15 (7 noms) ; constantes du bandeau dans `minicarte.h` (rendu identique) ; **3** parcours complet sur la branche : **0 écart** ; **4** banc `hud` remis à 6 s de course (comme la livraison 1), les 6 scènes de la livraison 1 retirées de `qa/pr/WFS-245` ; **5** branche synchronisée avec `main`, **64 tests CPU OK**.
+- L'agent `lead-dev` n'est pas chargé dans cette session (fichier arrivé après son ouverture) : il est joué par un agent général qui lit `.claude/agents/lead-dev.md` et le skill `lead-dev` en entier.
+
+
+### 2026-11-08 00:53:47 — Recette, lot M4 (performance, personnes, HUD, version) : 4 VALIDÉS, WFS-268 et WFS-246 REFUSÉS (QA-arwa)
+- Preuves : `apercu` (c9eda61, run du matin 42414202799) ; WFS-245 et WFS-279 sur banc local (5bcdfd2) ; APK 891 lu sans être lancé.
+- **VALIDÉS** : WFS-244 (aucune plaque rectangulaire sur les 4 cartes, ANO-116 vérifiée), WFS-257 (0 apparition / disparition brusque au banc, ANO-130 vérifiée, 🟡 utilisateur), WFS-245 livraison 1 (étiquettes 20,7 px en 2400, ANO-118 vérifiée ; ANO-141 attend la livraison 2), WFS-279 partie jeu (« v0.1.891 » dans l'APK 891 ; nom du fichier APK : partie CI après le gel).
+- **WFS-268 : REFUSÉ** — KO de l'utilisateur (22:28 UTC), ticket déjà rouvert ; au banc, décor tenu (≤ 60 appels de dessin après masquage, 0 création en course dans 373 relevés sur 382, mémoire stable) ; ANO-164 (écart des captures 1,19 % et 2,1 % > 1 %). Le « rame après 2 min » vient du trafic (ANO-151 / WFS-281).
+- **WFS-246 : REFUSÉ** — **ANO-163 bloquante** : planche de bord transparente en vue Cockpit (route visible au travers, vu aussi par QA-arwa) depuis le retrait des faces arrière ; correction déjà fusionnée par WFS-282 RG-00, à confirmer. ANO-125 reste ouverte.
+
+### 2026-11-08 00:54:07 — Recette, lot M3 (son) : WFS-261, 272, 275, 278 VALIDÉS (QA-arwa)
+- Preuves : `test_audio`, `test_audio_lieux`, `test_audio_voitures`, `test_audio_parois` verts en local ; banc audio local analysé (`.wav`) ; logcat de l'émulateur (« AAudio 48000 Hz, 2 canal(aux) »).
+- **WFS-261** : stéréo réelle (droite +14,4 à +15,9 dB à 90°, règle ≥ 9 dB), portée et tunnel conformes. **WFS-272** : côtés conformes, Doppler de la police 1,1587 pour 1,1588 théorique, 8 voix au plus, aucun clic. **WFS-275** : délais d'écho 63,6 à 113,7 ms, niveaux à ≤ 0,3 dB de la loi, masque de la Ville ≈ −21 dB. **WFS-278** : casino 113,7 ms et centre commercial 224,5 ms, masques ≈ 20-24 dB, absorption sourcée.
+- Crête ≤ 0,28 (musique 0,90), aucun échantillon saturé ; aucune image changée hors les 3 courbes `parois-*` (effet voulu). Aucune anomalie.
+- Rappel : le Son est Coupé chez l'utilisateur ; rien de tout cela ne s'entend tant qu'il ne le remet pas.
+
+### 2026-11-08 00:55:35 — Recette, lot M1 (conduite et course) : 4 VALIDÉS, WFS-224 et WFS-247 PASSABLES (QA-arwa)
+- Preuves : `apercu` (c9eda61) ; WFS-243 sur banc local `course5` ; 62 tests CPU verts en local (5bcdfd2).
+- **WFS-258 (RG-00, repli)** : VALIDÉ pour le seul livrable fusionné — ancienne conduite en jeu ; aide activée, épingle et rond-point passent (écart 0,4 m, 0 image hors route) ; aide désactivée, tout droit (dérive 0°). Reste du ticket non livré. ANO-138 et ANO-140 encore présentes dans le modèle de WFS-241 gardé hors jeu.
+- **WFS-242 : VALIDÉ** (grille sans chevauchement, place variable, chrono à 0 jusqu'au GO). **WFS-243 : VALIDÉ** (adversaires à leur vraie distance, 0 pas faux sur 21 600). **WFS-256 : VALIDÉ** (voiture arrêtée par chaque type d'objet à 30, 80, 150 km/h, 0 mur invisible).
+- **WFS-224 : PASSABLE** — plus de boules grises ; ANO-165 : fumée invisible de jour en vrai dérapage. **WFS-247 : PASSABLE** — aller-retour en virage ≤ 1,93 cm de 10 à 90 img/s (ANO-139 corrigée pour l'aller-retour) ; ANO-166 : à-coup en virage et rond-point non comptés au banc.
+- Vérifiées au banc : ANO-114, 117, 120, 122, 123, 124, 126, 129, 150. Remarque VABF : `choc-etincelles` et `accident-fumee` ne montrent plus aucun choc (« accidents 0 »).
+
+### 2026-11-08 01:05:43 — WFS-245 fusionné par le lead dev, PR #247 (livraison 2, RG-09, ANO-141) (lead-dev)
+- **2e revue**, après le refus 5815698036. Le développeur a répondu point par point dans la PR (6714931000, 6715286542) ; les 5 points sont corrigés : description complète, test `test_bandeau_gps`, parcours 0 écart, banc `hud` remis à 6 s, synchronisation avec `main`.
+- **Approbation** écrite dans la PR, en commentaire « ✅ Approuvé par le lead dev » (5815875745), car GitHub refuse « Approve » sur le même compte. **Squash 97c6cd4** : `WFS-245 : livraison 2, textes du bandeau de la carte GPS lisibles (RG-09, ANO-141) (#247) (arwa-2)`.
+- **Captures** : 38 « après » et 31 « avant », toutes ouvertes (PNG pleine taille, carte recadrée ; les 69 JPEG de la PR leur correspondent et sont identiques à ceux de la 1re revue). Bandeau environ 2 × plus lisible en 2400 et 1280, de jour et de nuit, et carte identique en dessous. Boutons de `hud-course-2400` identiques au pixel. Rien de cassé sur les scènes HUD ni sur les messages.
+- **Code** : diff relu en entier. Constantes dans `minicarte.h` avec les mêmes nombres que la 1re revue, donc rendu identique et captures valables. Vue toujours calculée avec 38. J'ai compilé et lancé `test_bandeau_gps` à part (`-Wall -Wextra`) : 248 noms, 21 consignes, 219 distances, aucun coupé. **64 tests CPU OK** sur la branche (relancés par moi).
+- **Branche** : synchronisée à 10bc664. Depuis, `main` n'a reçu que 5 à 7 commits de documents, sans fichier commun avec la PR. La fusion d'essai (`git merge-tree`) passe sans conflit, et aucun fichier de code de `main` n'a changé depuis la synchronisation.
+- **Remarques non bloquantes** : `using namespace minicarte;` en double (lignes 37 et 51 de `minicarte.cpp`) ; nom `CONSIGNE_X` réutilisé comme marge droite de la distance.
+- **À surveiller** : rond-point de la Plage en partie sous le bandeau à 200 m (≈ 77 % de route visible, accepté par le PO) ; deux consignes sous 2 × (18,5 et 16).
+- **Statut** : 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; arwa-2 libre dans `track-agent.md`.
+
+### 2026-11-08 01:06:19 — Recette, lot M2 (nuit, vue cockpit) : WFS-230, 249, 282 VALIDÉS, WFS-270 PASSABLE, WFS-235 remplacé — recette du 2026-11-08 terminée (QA-arwa)
+- Preuves : `apercu` (c9eda61) pour WFS-230, 249, 270, 235 ; WFS-282 sur banc local `cockpit` (5bcdfd2 : golf, sf90, x5, corsa, 28 captures), 62 tests CPU verts, parcours de nuit 0 écart.
+- **WFS-230 : VALIDÉ** 🟡 (herbe hors des phares 20 à 66 / 255 contre 5-6 avant, indice lumière 100 %). **WFS-249 : VALIDÉ** 🟡 (0 à 2,4 % de noir sous l'horizon en rase campagne ; péage renvoyé à WFS-276).
+- **WFS-270 : PASSABLE** 🟡 — voiture du joueur visible la nuit (ANO-147 et ANO-148 vérifiées) ; ANO-167 : la Golf bleue paraît gris argent en Campagne de nuit (rapport carrosserie / route 1,74 à 1,93 > 1,5).
+- **WFS-282 (RG-00, RG-06) : VALIDÉ** 🟡 — planche, volant, compteurs, capot remis, planche opaque (ANO-163 vérifiée au banc), rue visible ; ANO-152 corrigée en partie (rétroviseur noir, planche trop sombre la nuit : RG-03, RG-04 à venir). **WFS-235** : remplacé par WFS-282.
+- **Bilan de la recette (25 tickets)** : 16 VALIDÉS, 6 PASSABLES, 2 REFUSÉS (WFS-268 : KO de l'utilisateur ; WFS-246 : ANO-163, corrigée depuis par WFS-282), 1 remplacé. Nouvelles : ANO-160 à 167 (ANO-163 bloquante, déjà corrigée au banc). Restent : WFS-262, WFS-276 (fusionnés cette nuit). Le banc `realisme-2` est à confirmer aux bancs du matin.
+
+### 2026-11-08 01:07:38 — Tableau `suivi-pr.md` et lead dev automatique chaque heure (lead-dev)
+- Ordre de l'utilisateur (conversation) : tableau des PR ouvertes (statut, lead dev qui relit, commit relu), ligne supprimée à la fusion, pour que plusieurs lead dev se partagent les revues sans doublon ; tâche planifiée « Lead dev automatique » chaque heure. Skill `lead-dev`, checklist `agent-developer`, `CLAUDE.md` mis à jour. État initial : #245, #248, #249 ↩️ ; #250 🆕.
+
+### 2026-11-08 01:07:46 — WFS-269 : arbitrage A + C (po-scrum-master)
+- Occlusion précalculée par sommet dans la zone, rebond SH9 par bloc ; critère de coût : neutre ou en baisse ; B (noyau) refusé.
+### 2026-11-08 01:07:42 — WFS-269 : risque signalé (Claude, Agent 0 developer)
+- **Constat** :
+  - WFS-229 (GTAO) n'existe pas (⏳) : rien à retirer en Basse (RG-03).
+  - Le diffus indirect est déjà un SH9 global (`shaders/eclairage.glsl`, `iblDiffus`, 9 multiplications par pixel).
+  - Les postes chers de la passe scène restent dynamiques par RG-03 : ombres PCF 9 lectures, lampes et phares, spéculaire de la sonde (cube + table BRDF).
+  - `Vertex` (36 octets, `renderer.h`) n'a pas de place libre pour 6 jeux de lumière indirecte.
+- **Conséquence** : le critère « temps GPU de la passe scène en baisse » est incertain avec le seul précalcul décrit. Un vrai stockage par sommet ou par texture touche le noyau du renderer (plus de 10 lignes).
+- **Proposition au PO** :
+  - A (recommandée) : occlusion par sommet rangée dans la longueur de la normale, comme la végétation (MAT_VTINT), accroche ≤ 10 lignes ; rebond par bloc et par moment (SH9, interpolé) ; décor rugueux sans lecture du cube spéculaire (gain mesurable) ;
+  - B : attribut ou textures d'éclairage (noyau) ;
+  - C : critère de coût « neutre » au lieu d'« en baisse ».
+- **Décision attendue de** : PO. En attendant, je code la partie commune : occlusion calculée au chargement sur une grille de voxels du bloc (`src/render/eclairage_precalcule.*`), avec son test CPU.

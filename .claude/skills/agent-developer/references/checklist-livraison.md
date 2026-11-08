@@ -29,6 +29,7 @@ ou on écrit au Journal pourquoi elle ne s'applique pas.
 - [ ] Description de la PR : **« Agent : <mon nom dans track-agent.md> »** en tête, puis demande de l'utilisateur, ce qui change, vérification, limites (aucun « À REMPLIR »).
 - [ ] **`AGENT='<mon nom>' bash tools/qa/captures_pr.sh WFS-XX <banc>[:LxH] ...`** lancé : au moins 3 captures avant / après (jour et nuit si le sujet se voit) dans `qa/pr/WFS-XX/`, `pr.md` collé dans la PR.
 - [ ] Commentaire ou refus du lead dev : **réponse sous son commentaire dans la PR** (bien reçu, qui corrige, quoi, quand), puis « corrigé dans <commit> » point par point.
+- [ ] PR ouverte : ligne ajoutée dans `suivi-pr.md` sur `main` (🆕 À relire) ; après une correction, ligne remise en 🔁 « Corrigée, à relire ».
 - [ ] PR ouverte, puis **agent `lead-dev` appelé** (numéro de PR, ticket) : c'est lui qui fusionne ; je ne fusionne jamais moi-même (règle de l'utilisateur, 2026-11-07).
 - [ ] Écran ou parcours touché : parcours complet (accueil → … → course → retour) prouvé au Journal (`WFS_BANC=parcours`, 0 écart).
 - [ ] Performance : coût mesuré et noté au Journal si le rendu ou la simulation change.

@@ -42,6 +42,23 @@ inline float scal(vec2 a, vec2 b) { return a.x * b.x + a.y * b.y; }
 inline float vect(vec2 a, vec2 b) { return a.x * b.y - a.y * b.x; }
 inline vec2 unitaire(vec2 a) { const float l = std::sqrt(scal(a, a)); return l > 1e-9f ? fois(a, 1.f / l) : vec2{0, 1}; }
 
+// ---- WFS-245 (RG-09, ANO-141 ; arbitrage du PO du 2026-11-07 22:05 UTC ; vérifié par tests/test_bandeau_gps.cpp) : textes du
+// bandeau du prochain virage et du nom de rue, en px de référence (720 p, × k ; × côté / COTE sur un cadre plus petit)
+constexpr float BANDEAU = 38;              // haut de la carte réservé au bandeau dans le calcul de la vue (inchangé : même carte)
+constexpr float BANDEAU_DESSIN = 56, BANDEAU_MAX = 60;   // bandeau dessiné (avant : 38), au plus 60 ; liseré cyan de 2 en bas
+constexpr float FLECHE = 28, FLECHE_X = 5, FLECHE_Y = 4;  // flèche de manœuvre 28 × 28 en (x + 5, y + 4)
+constexpr float DISTANCE_X = 38, DISTANCE_MILIEU = 18;    // rangée 1 : distance à x + 38, capitales centrées à y + 18
+constexpr float CONSIGNE_X = 4, CONSIGNE_HAUT = 37;       // rangée 2 : consigne de x + 4 à x + côté − 4, haut des lettres montantes à y + 37
+constexpr float DISTANCE_PX = 32, DISTANCE_MIN = 28, CONSIGNE_PX = 20, CONSIGNE_MIN = 16;   // tailles (avant : 15 et 10)
+constexpr float NOM = 18, NOM_PX = 16, NOM_MIN = 15, NOM_BAS = 3;   // nom de rue : étiquette de 18 à 3 du bas (avant : 13), taille 16 (avant : 8)
+constexpr float AVANT_DISTANCE_PX = 15, AVANT_CONSIGNE_PX = 10, AVANT_NOM_PX = 8;
+constexpr float MONTANTES = 0.551f, JAMBAGES = 0.22f;      // haut des « d » et des accents, bas des « p » et des « g » (× la taille)
+// taille d'un texte : `px`, réduite par pas de 0,5 jusqu'à `mini` si `largeur(taille)` dépasse `lw` (au-delà : coupé avec « … »)
+template <class Largeur> float tailleTexte(Largeur largeur, float px, float mini, float lw) {
+    while (px > mini && largeur(px) > lw) px = std::max(mini, px - 0.5f);
+    return px;
+}
+
 // ---- RG-02 / RG-03 : place de la carte
 // cadres que la carte ne recouvre jamais (pixels de l'interface), écart de ECART × k compris par placer()
 struct Obstacles { Cadre c[12]; int n = 0; void ajouter(const Cadre& x) { if (n < 12) c[n++] = x; } };
