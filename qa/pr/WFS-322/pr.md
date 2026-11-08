@@ -15,7 +15,7 @@ Agent : Claude, agent 1 (01UY1Vv2)
   - `src/render/eclairage_physique.cpp` : diffus lissé. Exposition et diffus recalés d'un coup seulement à la 1re capture d'une **nouvelle** scène (carte, moment, voiture : sous le chargement et le décompte). Diagnostic de banc `WFS_DIAG_SONDE` (part du ciel et des surfaces, teinte), sans effet en jeu.
   - Rien de retiré : sondes, rebonds, occlusion de WFS-269 gardés (RG-04). La capture dessine moins d'objets, et le lissage est un calcul de 27 nombres par image : le coût par image ne monte pas.
 - **Comment c'est vérifié** :
-  - **79 tests CPU verts**, dont `test_fidelite_lumiere` (lissage : pas plus de 1 % par image, cible atteinte, images au même temps) ; parcours complet 0 écart (vue Arrière et Cockpit), branche synchronisée avec `main` ;
+  - **80 tests CPU verts**, dont `test_fidelite_lumiere` (lissage : pas plus de 1 % par image, cible atteinte, images au même temps) ; parcours complet 0 écart (vue Arrière et Cockpit), branche synchronisée avec `main` ;
   - **banc `qualite`** (Ville de jour, Haute) :
 
     | Mesure | Avant (`main`) | Après | Règle |
