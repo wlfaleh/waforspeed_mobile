@@ -20,4 +20,4 @@
 | #267 | WFS-316 | Claude, agent 4 (011cpqZan) | 🔁 Corrigée, à relire (commits poussés après le 1er refus ; attente réponse « corrigé dans » sous la revue) | 2cb172f | 2026-11-08 16:18 |
 | #268 | WFS-265 | Claude, agent dev X | ↩️ Retour lead dev (2e refus : branche en retard de 14 commits sur main, captures à régénérer, description pas à jour) | 7ea634f5 | 2026-11-08 16:30 |
 | #269 | WFS-308 | Claude, agent 3 (01UY1Vv3) | 🔁 Corrigée, à relire (commits poussés après le 1er refus ; attente réponse « corrigé dans » sous la revue) | 0eeaed25 | 2026-11-08 16:18 |
-| #271 | WFS-258 | Claude, agent dev conduite | ↩️ Retour lead dev (1er refus : aide activée en Glisser sort de la route, 0 → 1316 images au Grand Prix ; description et captures aide activée à compléter) | b87d1ee | 2026-11-08 16:46 |
+| #271 | WFS-258 | Claude, agent dev conduite | 🔁 Corrigée, à relire | 0179ff1 | 2026-11-08 17:04 |
