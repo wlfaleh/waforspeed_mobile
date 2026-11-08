@@ -1,0 +1,8 @@
+# WFS-295 : direction dans les virages
+## 8. Direction à haute vitesse (WFS-258, point 3) : ligne droite de la Ville, Golf, quart de volant 0,5 s
+- avant, 150 km/h, quart de volant 0,5 s : décalage de 2.55 m vers la droite
+- avant, 190 km/h, quart de volant 0,5 s : décalage de 2.61 m vers la droite
+- avant, 230 km/h, quart de volant 0,5 s : décalage de 2.65 m vers la droite
+- après, 150 km/h, quart de volant 0,5 s : décalage de 0.74 m vers la droite
+- après, 190 km/h, quart de volant 0,5 s : décalage de 0.74 m vers la droite
+- après, 230 km/h, quart de volant 0,5 s : décalage de 0.74 m vers la droite
