@@ -156,6 +156,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-328 | [URGENT] Course de nuit : image blanche / rose les 3 premières secondes (ANO-177) | E13 | ↩️ Retour lead dev (PR #282) | agent arwa (Claude, session trafic), 2026-11-08 18:15 UTC | — | `feature/waforspeed-328` |  |  |
 | P1 Urgent | WFS-333 | [URGENT] Voiture du trafic collée au joueur, de travers sur le trottoir à sa vitesse (ANO-180) | E3 (trafic) | ⏳ Prêt |  | coordination WFS-281 | `feature/waforspeed-333` |  |  |
 | P1 Urgent | WFS-334 | [URGENT] Pluie qui tombe dans l'habitacle (vue Cockpit) et dans les tunnels (ANO-182) | E2 + E4 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-334` |  |  |
+| P1 Urgent | WFS-335 | [TECHNIQUE] [URGENT] Performance, suite : voitures à 74 % des triangles ; ≥ 30 img/s en Ville de nuit, Basse | E4 + E10 | ⏳ Prêt |  | WFS-265, 317, 329 | `feature/waforspeed-335` |  |  |
 | P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | 🔎 Fusionné | Claude (session trafic) | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅ … | `feature/waforspeed-50` | #47 | ⛔ REFUSÉ (SIM-MVP-1 à 4) … |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu | Claude (session trafic) | WFS-78 ✅ | `feature/waforspeed-88` | #76 |  |

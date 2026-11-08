@@ -162,3 +162,6 @@ demande utilisateur :
 
 - Pas normal : la pluie rentre dans la voiture en vue Cockpit, et dans le tunnel (2026-11-08 22:17 UTC)
 ( PO : c'est créé — **ANO-182 / WFS-334** (P1) : plus de pluie dans l'habitacle (pluie dehors et gouttes sur le pare-brise avec les essuie-glaces), plus de pluie sous les tunnels et les toits. )
+
+- Captures demandées : Réglages en course (Ville de nuit) et Course à 5 (2026-11-08 22:18 UTC)
+( PO : merci — **24 img/s** au lieu de 10, personnes 3 % ; les voitures font maintenant 74 % du dessin → **WFS-335** (P1) pour viser ≥ 30 img/s ; Course à 5 disputée (4e, collé au 3e). )
