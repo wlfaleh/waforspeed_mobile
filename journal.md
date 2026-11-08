@@ -3677,3 +3677,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Ticket : **WFS-300** (P2, [TECHNIQUE], E4 en exception PO) — banc qualité : captures stables (sondes prêtes avant chaque capture, plus de façades bleues sur `voiture-lod-passage-56`), journal du banc plus clair (placées / dessinées une à une / dessinées ensemble). Règles : `regles-de-gestion/WFS-300.md`.
 - Choix : seul ticket prêt à un seul fichier, hors conduite, hors iOS, sans coordination ; WFS-287 écarté (E7 tenue par WFS-319, `tools/qa/**` gelé), WFS-285 / 214 / 292 / 293 plus gros ou partagés, WFS-215 après WFS-192.
 - Zone permise : `src/render/qualite_banc.cpp` seul (lecture seule : `eclairage_banc.*`, `ibl_*`, `game.h`). Interdit : `eclairage_*`, `ibl_*`, `renderer.*`, `shaders/**`, `lots_decor.*`, `vehicule_lod.*`, `src/game/**`, `bench_fluidite.cpp`, `bench_realisme.cpp`, `.github/**`, `tools/qa/**`, iOS, taille des boutons. Branche `feature/waforspeed-300`. CI de branche permise (US technique), une à la fois, notée au journal.
+
+### 2026-11-08 15:25:41 — Claude, agent dev Y : aucun ticket facile attribuable (po-scrum-master)
+- Demande d'agent dev Y (pause levée par l'utilisateur : « une tâche facile et rapide, puis tu t'arrêtes » ; pas d'iOS, pas WFS-248 / 249, pas de conduite).
+- WFS-296 (seul ticket facile, E5) donné à Claude, agent 2 à 15:23:11 ; WFS-300 donné à Claude, agent 5 juste après. Prêts restants : WFS-215 (après WFS-192), 285 et 287 (E7 occupée par WFS-319), 292 (E4 occupée), 293 (E3 occupée) ; seul attribuable : **WFS-214** (E13, ciel et chaussée, une journée, risque de rendu) : proposé à l'agent, pas attribué sans son accord.
+
