@@ -22,7 +22,7 @@ const Material& Interieur::mat(const Material& m) const { return g_interieurCle 
 // ---------------------------------------------------------------- géométrie
 namespace {
 
-constexpr float CX = 0.36f;   // centre de la voiture (repère de l'œil)
+// centre de la voiture dans le repère de l'œil : Interieur::cx_ (WFS-315 : écart œil-axe du modèle, 0,36 m avant)
 constexpr float GRAIN = 12.f;   // répétitions du grain par mètre (motif de 8 cm, cellules de 2,6 mm : grain réel du cuir et du plastique)
 
 vec3 lin(unsigned h) {
@@ -247,6 +247,10 @@ void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_
 bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     detruire(r);
     def_ = &d; octets_ = 0;
+    {   // WFS-315 (RG-01) : largeur de l'habitacle du modèle
+        const Largeur l = largeurPour(d);
+        cx_ = l.oeil; demi_ = l.coudes * 0.5f; montant_ = l.montants * 0.5f;
+    }
     // matériaux (valeurs physiques : charte du réel, DA-realisme.md ; cuir albédo 0,04-0,12, rugosité 0,55-0,75)
     {
         const std::vector<uint8_t> px = grainCuir(256);
@@ -310,7 +314,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     std::vector<Vertex> v; std::vector<uint32_t> i;
     auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
-    const float Y = d.plancheY, Z = d.plancheZ, Yb = d.pareBriseY, Zb = d.pareBriseZ, x0 = CX - 0.78f, x1 = CX + 0.78f;
+    const float Y = d.plancheY, Z = d.plancheZ, Yb = d.pareBriseY, Zb = d.pareBriseZ, x0 = cx_ - demi_, x1 = cx_ + demi_;   // WFS-315 : planche sur toute la largeur aux coudes
     // planche (profil y, z du pied du pare-brise vers le conducteur) : dessus, lèvre, face en retrait derrière le combiné et
     // l'écran central (z ≈ −0,86), puis la partie basse qui revient vers les genoux
     const bool combine = d.combine != Combine::Aucun && d.combineW > 0;   // WFS-201 : Model 3 : aucun combiné derrière le volant
@@ -335,7 +339,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         if (combine) prend(cas, M_PLANCHE_HAUT); else cas = Geo{};
         // jonc décoratif sur toute la largeur, sous la lèvre (alu brossé, carbone, ou liseré rouge de la Golf)
         Geo jonc;
-        boite(jonc, translate({CX, Y - 0.10f, zFace + 0.004f}), x1 - x0 - 0.04f, d.carbone ? 0.05f : 0.010f, 0.006f);
+        boite(jonc, translate({cx_, Y - 0.10f, zFace + 0.004f}), x1 - x0 - 0.04f, d.carbone ? 0.05f : 0.010f, 0.006f);
         prend(jonc, M_ACCENT);
     }
     // aérateurs : deux aux extrémités, deux au centre (sous l'écran central quand il est sur la planche)
@@ -344,32 +348,46 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const bool rond = d.combine == Combine::Porsche5 || d.combine == Combine::FerrariIncurve;
         const float ay = Y - 0.17f, az = zFace + 0.012f;
         for (float x : {x0 + 0.11f, x1 - 0.11f}) aerateur(cadre, lames, translate({x, ay, az}) * rotateX(-0.2f), 0.13f, rond ? 0.09f : 0.055f, rond);
-        for (float x : {CX - 0.09f, CX + 0.09f}) aerateur(cadre, lames, translate({x, ay - 0.04f, az + 0.01f}) * rotateX(-0.2f), 0.11f, 0.045f, false);
+        for (float x : {cx_ - 0.09f, cx_ + 0.09f}) aerateur(cadre, lames, translate({x, ay - 0.04f, az + 0.01f}) * rotateX(-0.2f), 0.11f, 0.045f, false);
         prend(cadre, M_CHROME); prend(lames, M_LAMES);
+    }
+    // WFS-315 (RG-02) : place passager : boîte à gants (porte en léger relief, joint sombre autour) sous la lèvre, couvercle du sac
+    // gonflable passager sur le dessus de planche (joint fin) : on voit que la planche continue devant un 2e siège
+    {
+        Geo bag, joint, sac;
+        const float gx = cx_ + (demi_ * 0.55f), gw = std::min(0.40f, demi_ * 0.75f);   // milieu de la place passager
+        boite(bag, translate({gx, Y - 0.26f, zFace + 0.008f}), gw, 0.15f, 0.016f);
+        boite(joint, translate({gx, Y - 0.26f, zFace + 0.002f}), gw + 0.012f, 0.162f, 0.008f);
+        // couvercle : sur la partie plate du dessus (du point le plus haut, à mi-profondeur, jusqu'à la lèvre), côté conducteur du
+        // point le plus haut : vu de l'œil, il reste sous la ligne de la planche (posé à hauteur fixe sur la pente vers le
+        // pare-brise, il flottait de ≈ 3 cm devant la rue : refus du lead dev, PR #262)
+        const float zm = (Zb + Z) * 0.5f, za = Z - 0.02f, zc = (zm + za) * 0.5f, ym = Y + 0.005f + (Y - (Y + 0.005f)) * 0.5f;
+        boite(sac, translate({gx, ym + 0.0005f, zc}), 0.30f, 0.002f, std::max(0.04f, (za - zm) * 0.8f));
+        prend(bag, M_PLANCHE_BAS); prend(joint, M_PLANCHE_HAUT); prend(sac, M_PLANCHE_HAUT);   // joints mats (le noir laqué brillait la nuit)
     }
     // console centrale et sélecteur
     {
         Geo con, sel;
-        boite(con, translate({CX, Y - 0.50f, zFace + 0.32f}) * rotateX(-0.40f), 0.26f, 0.12f, 0.60f);
-        cylindre(sel, translate({CX, Y - 0.42f, zFace + 0.40f}) * rotateX(-0.2f), 0.020f, 0.024f, 0.07f, 16);
-        boite(sel, translate({CX, Y - 0.375f, zFace + 0.40f}), 0.05f, 0.025f, 0.075f);
+        boite(con, translate({cx_, Y - 0.50f, zFace + 0.32f}) * rotateX(-0.40f), 0.26f, 0.12f, 0.60f);
+        cylindre(sel, translate({cx_, Y - 0.42f, zFace + 0.40f}) * rotateX(-0.2f), 0.020f, 0.024f, 0.07f, 16);
+        boite(sel, translate({cx_, Y - 0.375f, zFace + 0.40f}), 0.05f, 0.025f, 0.075f);
         prend(con, M_PLANCHE_BAS); prend(sel, M_ACCENT);
     }
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
     {
         Geo mont, pav, ret, porte, glace;
-        const vec3 bas[2] = {{CX - 0.72f, Yb, Zb}, {CX + 0.72f, Yb, Zb}};
-        const vec3 haut[2] = {{CX - 0.62f, 0.40f, -0.42f}, {CX + 0.62f, 0.40f, -0.42f}};
+        const vec3 bas[2] = {{cx_ - montant_, Yb, Zb}, {cx_ + montant_, Yb, Zb}};   // WFS-315 : pieds des montants à leur écart réel
+        const vec3 haut[2] = {{cx_ - (montant_ - 0.10f), 0.40f, -0.42f}, {cx_ + (montant_ - 0.10f), 0.40f, -0.42f}};
         for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
-        boite(pav, translate({CX, 0.43f, -0.28f}), 1.40f, 0.04f, 0.32f);
+        boite(pav, translate({cx_, 0.43f, -0.28f}), 2 * demi_ - 0.16f, 0.04f, 0.32f);
         // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
-        const mat4 R = translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f);
+        const mat4 R = translate({cx_ - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f);
         boite(ret, R, 0.24f, 0.065f, 0.025f);
         plan(glace, R * translate({0, 0, 0.0135f}), 0.226f, 0.052f);   // WFS-282 (RG-03) : glace côté conducteur, cadre noir de 7 mm
-        boite(ret, translate({CX - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
+        boite(ret, translate({cx_ - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
         // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
         for (float sx : {-1.f, 1.f}) {
-            const float x = CX + sx * 0.80f;
+            const float x = cx_ + sx * (demi_ + 0.02f);   // WFS-315 : portières au bord de l'habitacle
             boite(porte, translate({x, Y - 0.32f, -0.30f}), 0.06f, 0.62f, 1.30f);
             boite(porte, translate({x - sx * 0.04f, Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);
         }
@@ -641,7 +659,7 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {
-        const vec3 base{CX, d.pareBriseY - 0.01f, d.pareBriseZ}, haut{CX, 0.40f, -0.42f};
+        const vec3 base{cx_, d.pareBriseY - 0.01f, d.pareBriseZ}, haut{cx_, 0.40f, -0.42f};
         const vec3 ex{1, 0, 0}, eu = normalize(haut - base), en = cross(ex, eu);
         auto repere = [&](vec3 o, float sens) {   // sens +1 : repos vers la droite, tourne vers le haut ; −1 : en miroir
             mat4 B = mat4::identity();

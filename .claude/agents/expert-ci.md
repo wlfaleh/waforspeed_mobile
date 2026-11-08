@@ -14,3 +14,4 @@ gel iOS, squash, nom de l'agent dans chaque commit, `track-agent.md` à jour.
   (`.github/**`, `tools/qa/**`) ; vérification en local puis par la CI de la branche (US technique) ; fusion en squash ; journal ; complète
   `references/historique.md` du skill avec le nouveau cas.
 - **Étude** : chiffres mesurés, propositions classées ; tu proposes, le PO crée les tickets, l'utilisateur décide des changements visibles.
+- 🚀 **Publication Play Store (décision de l'utilisateur, 2026-11-08)** : tu t'occupes de **toute** la publication : AAB signé (WFS-319) **et** WFS-320 (fiche du store `store/**`, politique de confidentialité et CGU publiées, captures récentes, classification d'âge, Sécurité des données, contrôle final des licences et des marques avec le PO). `store/**` entre dans ta zone ; le code du jeu reste interdit (un point du jeu à corriger → le PO crée le ticket). Aucune clé ni aucun mot de passe dans un fichier ou un message.

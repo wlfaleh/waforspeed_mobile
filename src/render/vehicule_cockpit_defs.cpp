@@ -193,6 +193,40 @@ const InterieurDef* interieurPour(const char* carId) {
     for (const InterieurDef& d : DEFS) if (std::strcmp(d.car, carId) == 0) return &d;
     return nullptr;
 }
+// WFS-315 (RG-01) : largeur aux coudes à l'avant et écart œil-axe par modèle (sources et statut : journal de WFS-315)
+namespace {
+struct LargeurDef { const char* car; Largeur l; };
+// Statut (expert-realisme-3d, 2026-11-08) : aucune cote vérifiée (sites des constructeurs bloqués par le réseau des agents) ;
+// coudes = largeur aux épaules (fiches US, de mémoire, AC) + 45 mm, ou largeur hors tout − 2 × épaisseur de portière (E) ;
+// œil ≈ 0,25 × coudes (0,26 × pour les supercars, E) ; montants = k × largeur hors tout (k = 0,74 à 0,81 selon la voiture, E)
+const LargeurDef LARGEURS[] = {
+    {"golf", {1.470f, 0.370f, 1.450f}},
+    {"m4", {1.460f, 0.365f, 1.470f}},
+    {"p911", {1.400f, 0.350f, 1.410f}},
+    {"sf90", {1.420f, 0.370f, 1.460f}},
+    {"a45", {1.420f, 0.355f, 1.440f}},
+    {"s3", {1.420f, 0.355f, 1.450f}},
+    {"giulia", {1.450f, 0.365f, 1.470f}},
+    {"p208", {1.400f, 0.350f, 1.430f}},
+    {"gallardo", {1.400f, 0.365f, 1.410f}},
+    {"mustang", {1.480f, 0.370f, 1.500f}},
+    {"model3", {1.480f, 0.370f, 1.500f}},
+    {"x5", {1.550f, 0.390f, 1.620f}},
+    {"abarth", {1.310f, 0.325f, 1.310f}},
+    {"compass", {1.455f, 0.365f, 1.470f}},
+    {"corsa", {1.400f, 0.350f, 1.430f}},
+    {"elantra", {1.465f, 0.365f, 1.480f}},
+    {"gt86", {1.400f, 0.350f, 1.400f}},
+    {"rrsport", {1.580f, 0.395f, 1.660f}},
+    {"tcross", {1.420f, 0.355f, 1.430f}},
+    {"v60", {1.470f, 0.370f, 1.510f}},
+};
+}
+Largeur largeurPour(const InterieurDef& d) {
+    for (const LargeurDef& l : LARGEURS) if (std::strcmp(l.car, d.car) == 0) return l.l;
+    return {};
+}
+
 int nombreInterieurs() { return (int)(sizeof(DEFS) / sizeof(DEFS[0])); }
 const InterieurDef& interieur(int i) { return DEFS[std::clamp(i, 0, nombreInterieurs() - 1)]; }
 
