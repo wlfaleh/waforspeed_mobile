@@ -158,6 +158,8 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P1 Urgent | WFS-333 | [URGENT] Aucune voiture (trafic, adversaires, police) ne pénètre la voiture du joueur, toutes vues, Poursuite comprise (ANO-180, 181, 183) | E3 (trafic) | ⏳ Prêt |  | coordination WFS-281 | `feature/waforspeed-333` |  |  |
 | P1 Urgent | WFS-334 | [URGENT] Pluie qui tombe dans l'habitacle (vue Cockpit) et dans les tunnels (ANO-182) | E2 + E4 + E10 | ⏳ Prêt |  | — | `feature/waforspeed-334` |  |  |
 | P1 Urgent | WFS-335 | [TECHNIQUE] [URGENT] Performance, suite : voitures à 74 % des triangles ; ≥ 30 img/s en Ville de nuit, Basse | E4 + E10 | ⏳ Prêt |  | WFS-265, 317, 329 | `feature/waforspeed-335` |  |  |
+| P2 Haute | WFS-337 | Nuit : le halo des lampadaires flotte à côté de la lampe (ANO-189) | E4 / E13 | ⏳ Prêt |  | — | `feature/waforspeed-337` |  |  |
+| P2 Haute | WFS-338 | Poursuite : messages et chiffres justes (travaux, encart POLICE, score) (ANO-191, 192, 193) | E3 + E5 | ⏳ Prêt |  | — | `feature/waforspeed-338` |  |  |
 | P4 Basse | WFS-50 | [MVP] Vérification simulateur du MVP (parcours complet sur Android) | E7 | 🔎 Fusionné | Claude (session trafic) | WFS-35 ✅, WFS-27 ✅, WFS-37 ✅, WFS-38 ✅ … | `feature/waforspeed-50` | #47 | ⛔ REFUSÉ (SIM-MVP-1 à 4) … |
 | P4 Basse | WFS-64 | Diagnostic : gel intermittent juste après le chargement sur le simulateur | E0 | ⏸ Suspendu |  | WFS-59 ✅ | `feature/waforspeed-64` |  |  |
 | P4 Basse | WFS-88 | iOS : `Renderer::init` ne se bloque plus, démarrage jusqu'au menu | E4 | ⏸ Suspendu | Claude (session trafic) | WFS-78 ✅ | `feature/waforspeed-88` | #76 |  |

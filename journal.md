@@ -4385,3 +4385,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 
 ### 2026-11-08 22:45:52 — VABF : Poursuite APK 931 relue à 3 images/s, ANO-186 à ANO-194 (agent qa lead)
 - À la demande de l’utilisateur (« sortir plus d’anomalies ») : pluie dans l’habitacle, volant du cockpit fixe, compteur illisible, halo des lampadaires décalé, flammes sur le trafic, bandeau Travaux sans chantier, encart Police inutile, score qui baisse, pluie verticale. ANO-175 et ANO-152 toujours là. Transmis au PO.
+
+### 2026-11-08 22:46:35 — Relecture QA de la Poursuite (APK 931) : ANO-186 à 194 rattachées (334, 323, 333) ; WFS-337 (halos) et WFS-338 (Poursuite) créés en P2 (po-scrum-master)
