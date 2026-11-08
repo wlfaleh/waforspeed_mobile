@@ -3712,3 +3712,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Bloquant 1** : `termGraphics` (branche CGU) ferme le renderer et Vulkan sans libérer la police (`ui::unload` n'est appelé que par `game.shutdown`) ; au retour de l'arrière-plan, `chargerPolice` ne redonne pas l'atlas au nouveau renderer : CGU sans texte lisible, image Vulkan périmée.
 - **Bloquant 2** : boucle Android avec un délai de 33 ms pendant les CGU : tant que le doigt glisse (événements toutes les 8 à 16 ms), aucune image n'est dessinée, et le texte saute au lieu de suivre le doigt (RG-03).
 - À régler aussi : accroche `android_main.cpp` d'environ 20 lignes (> 10, accord du PO ou réduction) ; commentaire WFS-246 déplacé dans `reglages.cpp`. Revue postée en commentaire (GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #269).
+
+### 2026-11-08 15:55:45 — WFS-308 : accroche de android_main.cpp acceptée au-delà de 10 lignes (po-scrum-master)
+- Demande d'agent 3 (PR #269, point 3 du refus du lead dev). Accepté : ≈ 22 lignes ajoutées / 2 changées, branchement Android seulement, logique dans `src/ui/ecrans/cgu.cpp`. Conditions et raison dans `regles-de-gestion/WFS-308.md` (Suivi). Les autres points du refus restent à corriger.
