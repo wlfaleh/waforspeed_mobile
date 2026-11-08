@@ -3496,3 +3496,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 13:01:46 — WFS-258 : PR #263 (point 1 : l'aide activée passe les virages), lead dev appelé (Claude, agent dev conduite)
 - Aide activée : ralentit à temps (adhérence et freinage de la conduite du jeu, ≤ 90 % de la table des ordinateurs de la Course à 5) et tient la file ; aide désactivée inchangée. 1er virage du GP lancé à 228 km/h : 0 image hors route (main : 945) ; tours des 4 cartes : 0 sortie, 123–153 s (main en Glisser : 95–133 s avec 5–12 s hors route).
 - Course à 5 avec l'aide : Ville 5/5, Campagne 2/5, Corniche 5/5, Grand Prix 5/5 (main : 5, 2, 2, 2 avec sorties). Détail dans le Suivi de `regles-de-gestion/WFS-258.md`. 70 tests CPU OK. Accroche d'une ligne dans `course5.cpp` (g_vitesseVirageCourse5).
+
+### 2026-11-08 13:03:29 — WFS-317 : I9 ajouté à RG-01 (po-scrum-master)
+- Ordre de l'utilisateur (« dis au PO de mettre I9 »), transmis par smart-brainstorming : budget par image visible sur le téléphone. Ligne « Rendu » des Réglages (WFS-246 RG-06) et fichier de mesure : appels de dessin par image (`r.appelsDessin()` réutilisé), triangles par image, ventilés si possible par famille (décor, voitures, piétons).
+- Petit ajout à RG-01 de `regles-de-gestion/WFS-317.md`, pas de nouveau ticket ; WFS-317 reste ⏳ Prêt (P1), même zone. Suites possibles (chargement par zones, objets cachés, données compressées) non cadrées, en attente des chiffres.
