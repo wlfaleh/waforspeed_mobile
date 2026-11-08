@@ -3686,3 +3686,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 15:31:14 — WFS-283 : parcours complet relancé par le lead dev après la fusion (lead-dev)
 - `WFS_BANC=parcours`, sur 770c7b24 (même code que le squash 6fb3420), avec un `wfs_bench` construit à part : **« parcours complet : 0 écart(s) OK »** et **« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »**. Le point oublié avant la fusion est donc vérifié.
 - La CI de fusion (`build.yml`, run #913) est encore en file à 2026-11-08 15:31:14 UTC. Le robot des statuts ne change pas les 🟡 : WFS-283 reste **🟡 À valider (utilisateur)**.
+
+### 2026-11-08 15:45:28 — WFS-316 (PR #267) refusé par le lead dev (lead-dev)
+- Commit relu 2cb172f ; 6 vues de dessus ouvertes (anneau, épingle, 90°) ; tout le diff lu (`player.cpp/.h`, `virages_banc.cpp`, `test_direction_anneau.cpp`, `CMakeLists.txt`) : code conforme à RG-02, pas de défaut bloquant.
+- Refus : (1) pas de suite d'images en caméra Arrière (captures 2 et 4 de la règle) ; (2) RG-01 : aucun « avant » ne reproduit la sortie de la vidéo (rouge reste sur la chaussée ; épingle et 90° : avant = après) ; (3) aucune entrée du développeur au journal, `TACHES.md` resté 🔧 ; (4) RG-03 remplacé par « même rayon qu'en ligne droite » sans décision du PO ; (5) RG-05 grande vitesse (borne du cap coupée à toutes les vitesses) non montré.
+- Revue écrite dans la PR (COMMENT : même compte GitHub). `TACHES.md` → ↩️ Retour lead dev (PR #267) ; `track-agent.md` et `suivi-pr.md` à jour. **PO** : décider du critère RG-03 (rayon de la fiche contre adhérence ≈ 2 g du jeu).
+
