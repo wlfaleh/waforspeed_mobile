@@ -10,7 +10,7 @@
   - **Stabilité du banc** (RG-02) : deux lancements du même code (avant = `main`, après = branche, aucun code changé) : **32 vues sur 33 identiques au pixel** ; `voiture-basse-poursuite` : 0,002 % (un point lumineux mobile au loin, 12 336 pixels à peine différents) : **inchangée**.
   - **Façade de droite à 56, 60 et 64 m** (`voiture-lod-passage-*`, zone x 0,80-0,98, y 0,02-0,25) : ΔE2000 / 56 m : **0,12 et 0,11** (sous 1 : même couleur). Avant WFS-300 : **6,51 et 6,46** (couleur différente à 60 et 64 m : le défaut corrigé par WFS-300).
   - **Suite `voiture-sonde-0` à `-9`** (quart haut droit) : stable de 0 à 5 (L*a*b* 28,8 −0,7 0,8), **saut de ΔE2000 5,47 entre `sonde-5` et `sonde-6`** (24,9 1,2 −3,3, à l'arrivée de la sonde), stable ensuite : visible ; **relève de WFS-322 (ANO-174), non corrigé ici** (hors périmètre).
-- **Limites et risques connus** : aucun risque pour le jeu (aucun code) ; captures faites sur `main` au commit `69239955` (base de la branche, 20:47 UTC) ; depuis, `main` n'a reçu que les paquets de cartes (WFS-301, fichiers nouveaux, sans effet sur ce banc).
+- **Limites et risques connus** : aucun risque pour le jeu (aucun code) ; captures faites sur `main` au commit `69239955` (base de la branche, 20:45 UTC) ; depuis, `main` n'a reçu que les paquets de cartes (WFS-301, fichiers nouveaux, sans effet sur ce banc).
 
 ### Avant WFS-300 / maintenant (même vue, façade de droite)
 
