@@ -3605,6 +3605,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Critères : RG-01 à RG-06 (parcours complet installation neuve → CGU → refuser → relancer → accepter → course → retour), captures avant / après ≥ 3, PR relue par `lead-dev`.
 
 
+### 2026-11-08 14:25:01 — WFS-308 : début, plan et accroches annoncées (Claude, agent 3 (01UY1Vv3))
+- Branche `feature/waforspeed-308` créée depuis `main` (2ffac6fe). Skills chargés : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`.
+- Plan : écran neuf `src/ui/ecrans/cgu.*` (texte défilant CGU puis confidentialité, case « J'ai lu et j'accepte », « Accepter » actif après la case, « Refuser » → message puis fermeture), dessiné avant le chargement comme l'écran de chargement (Renderer direct, avant `Game::init`) ; `store/cgu.md` neuf.
+- Accroches annoncées (≤ 10 lignes chacune) : (1) `src/game/sauvegarde.*` : clé `cgu=<version acceptée>` ; (2) `src/platform/android_main.cpp` : écran CGU affiché après l'init Vulkan et avant le chargement si la version acceptée < version des CGU, touchers routés vers l'écran, fermeture sur refus ; (3) `android/app/build.gradle` : `store/cgu.md` et `store/confidentialite.md` copiés dans les assets générés (`cgu/`) ; (4) `src/ui/ecrans/reglages.cpp` : bouton « Conditions d'utilisation » (lecture seule) ; (5) `src/platform/desktop_main.cpp` : banc `WFS_BANC=cgu` (captures).
+
 ### 2026-11-08 14:36:07 — WFS-268 (PR #248, reprise par Claude, Agent 0 developer) : RG-11 / ANO-164 corrigée, accroche du renderer annoncée (Claude, Agent 0 developer)
 - **Cause d'ANO-164** : `DecorFixe::dessiner` dessinait un bloc entier (3 à 4 morceaux) dès qu'il touchait la fenêtre : jusqu'à 2 morceaux de décor en trop au bout de la fenêtre (vue de dessus des lacets) et une colline en trop dont l'ombre tombait sur la mer (marina). **Correction** (commit b12e80a9) : fin des index de chaque morceau gardée dans le bloc ; seuls les morceaux de la fenêtre sont dessinés, chacun à son niveau de détail (même règle que l'ancienne gestion), morceaux voisins de même niveau en un appel.
 - **Accroche du renderer** (`src/render/renderer.h` / `.cpp`, 2 lignes) : `Mesh::premier` (premier index dessiné, 0 par défaut) lu par `Renderer::draw(Mesh)` : une vue sur une partie des index d'un bloc, sans nouveau tampon.
@@ -3686,6 +3691,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 15:31:14 — WFS-283 : parcours complet relancé par le lead dev après la fusion (lead-dev)
 - `WFS_BANC=parcours`, sur 770c7b24 (même code que le squash 6fb3420), avec un `wfs_bench` construit à part : **« parcours complet : 0 écart(s) OK »** et **« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »**. Le point oublié avant la fusion est donc vérifié.
 - La CI de fusion (`build.yml`, run #913) est encore en file à 2026-11-08 15:31:14 UTC. Le robot des statuts ne change pas les 🟡 : WFS-283 reste **🟡 À valider (utilisateur)**.
+
+### 2026-11-08 15:40:24 — WFS-308 : écran des CGU fini, preuves, PR à ouvrir (Claude, agent 3 (01UY1Vv3))
+- Livré : écran `src/ui/ecrans/cgu.*` (+ `cgu_texte.cpp`), `store/cgu.md` (version 1, brouillon, relecture juridique conseillée), clé `cgu=` de la sauvegarde, bouton « Conditions d'utilisation » des Réglages (lecture seule), banc `WFS_BANC=cgu`, test `test_cgu`.
+- **Accroches réellement faites** : `sauvegarde.*` 4 lignes ; `android/app/build.gradle` 1 ligne (+ 2 de mise en forme du bloc) ; `desktop_main.cpp` 2 lignes ; `reglages.*` ≈ 12 lignes (bouton, toucher, dessin) ; `android_main.cpp` ≈ 15 lignes : **au-delà des 10 annoncées** (chargement mis dans `chargerJeu` par déplacement, écran des CGU avant lui avec rotation, touchers, perte de fenêtre) ; signalé au PO et au lead dev dans la PR.
+- Preuves : 72 tests CPU OK ; banc `cgu` en 1280×720 et 2400×1080 : parcours RG-06 0 écart (installation neuve → CGU → « Accepter » inactif → défilement → case → refuser → fermeture → relance → CGU → accepter → `cgu=1` relu → relance sans CGU → version changée → CGU ; chargement → menu → Réglages → Conditions → Fermer → course → menu) ; captures `qa/pr/WFS-308/` (cgu et menu2 en 2400×1080, 13 après / 7 avant) regardées : seul le bouton neuf change dans les Réglages.
+- Limite : `android_main.cpp` non compilé en local (pas de NDK) ; à vérifier par la CI de `main` et sur le téléphone. Texte envoyé à l'agent expert ci pour `store/confidentialite.md` et `store/fiche-fr.md` (WFS-320), vers 14:30 UTC.
 
 ### 2026-11-08 15:45:28 — WFS-316 (PR #267) refusé par le lead dev (lead-dev)
 - Commit relu 2cb172f ; 6 vues de dessus ouvertes (anneau, épingle, 90°) ; tout le diff lu (`player.cpp/.h`, `virages_banc.cpp`, `test_direction_anneau.cpp`, `CMakeLists.txt`) : code conforme à RG-02, pas de défaut bloquant.
@@ -3946,6 +3957,22 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
 - **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
 
+### 2026-11-08 16:04:24 — WFS-308 : corrections du 1er refus du lead dev (PR #269) (Claude, agent 3 (01UY1Vv3))
+- **1. Police perdue si la fenêtre disparaît pendant les CGU** : cause : `termGraphics` fermait le renderer sans libérer l'atlas (`ui::unload` seulement via `game.shutdown`), `F.ready` restait vrai et `chargerPolice` ne refaisait rien sur le nouveau renderer. Correction : `Cgu::perdreFenetre` appelle `ui::libererPolice` (accroche de 2 lignes dans `text.h` / `text.cpp`, enveloppe publique de `unload`) avant `renderer.shutdown()` ; au retour `Cgu::demarrer` recharge la police. Preuve : banc `cgu`, cas « fenêtre perdue puis retrouvée » (shutdown puis init du renderer pendant les CGU) : police libérée puis rechargée, capture `cgu-reprise` lisible.
+- **2. Texte figé pendant le glissement** : cause : délai de 33 ms de `ALooper_pollOnce`, la boucle ne sortait pas tant que les MOVE arrivaient. Choix : délai 0 pendant les CGU, comme en jeu ; l'image est rythmée par la présentation (FIFO) dans `Cgu::image`, donc une image par lot d'entrées, sans attente active hors présentation.
+- **3. Accroche de `android_main.cpp`** : logique sortie dans `cgu.cpp` (`demarrer`, `perdreFenetre`, `image` : rotation 8 essais, taille de la fenêtre, image, état) ; reste ≈ 22 lignes, **accordées par écrit par le PO** (WFS-308.md § Suivi, 15:55:45 UTC, commit 8ba03698).
+- **4.** Commentaire WFS-246 de `g_mesure` remis sur sa ligne (`reglages.cpp`).
+
+### 2026-11-08 16:56:13 — WFS-308 : CI de branche (seule permise, confiance ≤ 50 %) et captures régénérées (Claude, agent 3 (01UY1Vv3))
+- CI de branche **run #915** (id 42498019211, `workflow_dispatch` de `build.yml` sur 2d846064, branche synchronisée avec `main`) : vérifie la **compilation Android** de `android_main.cpp` (non compilable en local, pas de NDK) : jobs `android` (APK et AAB construits et signés, pages de 16 Ko) et `compilation` **verts** à 16:10 UTC ; endurance et bancs encore en cours au moment de l'écriture.
+- 72 tests CPU OK (`test_audio_chocs` a échoué une fois sur le seuil de temps RG-07 pendant que la machine compilait, 0,0438 ms pour 0,05 permis ; vert en relançant : test sans lien avec WFS-308).
+- Captures `qa/pr/WFS-308/` régénérées (cgu et menu2 en 2400×1080) : 14 après dont `cgu-reprise` (texte lisible après perte puis retour de la fenêtre), 7 avant.
+
+### 2026-11-08 17:29:31 — WFS-308 : corrections du 2e refus du lead dev (PR #269) (Claude, agent 3 (01UY1Vv3))
+- **Cause** : les conditions CGU d'`android_main.cpp` testaient `cgu().ouvert()`, vrai aussi pour la **lecture depuis les Réglages** ; touche Accueil pendant la lecture → `termGraphics` (branche normale) laissait la lecture ouverte → boucle à délai 0 en arrière-plan, puis `initGraphics` sautée au retour et `Cgu::image` sur un Vulkan fermé.
+- **Correction** : `Cgu::premierLancement()` (ouvert ET mode `Premier`) remplace `ouvert()` dans les 5 conditions d'`android_main.cpp` (même nombre de lignes, accord du PO inchangé) ; `Cgu::image` ne fait rien hors du premier lancement ; la lecture se ferme à l'arrêt du jeu (`shutdown` du système des Réglages, appelé par `Game::shutdown` dans `termGraphics`).
+- **Preuve** : banc `cgu` : lecture ouverte depuis les Réglages (`premierLancement` faux : OK) → `g.shutdown` (lecture fermée : OK) → `r.shutdown`, `r.init`, `g.init` (jeu rechargé, lecture fermée, pas d'écran des CGU : OK) ; capture `cgu-retour-jeu` (menu revenu) ; parcours complet 0 écart. Entrée du journal de 15:40:24 remise à sa place.
+
 ### 2026-11-08 18:23:09 — WFS-326 fusionné par le lead dev (lead-dev)
 - **PR #275**, 2e revue sur e0ceeb93. Le développeur a répondu point par point : les 5 points de la 1re revue sont corrigés (captures aux deux lieux de l'utilisateur en Haute et en Basse, test CPU, longueur entière, `lmax`, taille de l'accroche).
 - **18 captures ouvertes** :
@@ -3977,6 +4004,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
 - **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
 
+### 2026-11-08 18:39:16 — WFS-308 : 3e refus du lead dev (PR #269) : synchronisation, captures après synchronisation, cas « Accepter » puis fenêtre perdue (Claude, agent 3 (01UY1Vv3))
+- **Cas rare signalé par le lead dev** : fenêtre perdue dans le même lot d'événements que l'appui sur « Accepter » (état `Accepte`, pas encore traité par `Cgu::image`) : `termGraphics` ne fermait ni le renderer ni Vulkan. Correction : `Cgu::tientLaFenetre()` (premier lancement ouvert ou `Accepte`) dans la condition de `termGraphics` (même ligne) ; `perdreFenetre` note alors l'acceptation, puis le chargement normal se fait au retour. Preuve au banc `cgu`.
+- Branche synchronisée avec `main` **avant** les captures ; captures régénérées ensuite (commit des captures après celui de la synchronisation).
 ### 2026-11-08 18:41:32 — WFS-317 : marcheurs répartis sur tout le tour en Ville, à nombre égal (po-scrum-master)
 
 ### 2026-11-08 18:59:35 — WFS-327 : PR #277 (adversaires de la Course à 5 sur une vitesse de virage possible), lead dev appelé (Claude, agent dev conduite)
@@ -3984,3 +4014,20 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 19:03:33 — WFS-327 refusé par le lead dev, PR #277 (lead-dev)
 Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `course5-rejouer` 5e → 4e ; 16 paires identiques octet pour octet (bancs figés). `test_course5_ordinateurs` recompilé et relancé : OK (7, 7, 7, 6 / 8). Refus : (1) RG-04, aucune capture de l'épingle ; (2) à-coup au départ : `physique::params` (étalonnage complet, 5 à 80 ms par voiture sur PC) appelé au premier pas après le GO pour lire μ, et à l'initialisation statique (`MU_REFERENCE`) ; (3) chiffres de la description à remettre d'accord avec un vrai lancement. Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-08 19:10:00 — WFS-317 : retour du lead dev sur #276, correction en cours (Claude, agent 1)
+- **Chiffre corrigé** : « 882 → 263 personnes » venait d'une construction intermédiaire (promeneurs avec chien encore réduits). Sur la base actuelle de `main` (WFS-326 compris), la Ville passe de **814 à 248 personnes** (−70 %), les 5 promeneurs avec chien restant tous.
+- **Marcheurs répartis sur tout le tour** (accord du PO, 18:41) : sur `main`, les 110 marcheurs près de la route sont tous dans le 1er km du tour de 6,8 km (plafond `PEOPLE_MAX = 220` de life.js). Désormais, en Ville, environ 33 marcheurs (3 sur 10) sont placés au plus près de places à pas réguliers sur tout le tour, en alternant les côtés : de 4 à 7 marcheurs par kilomètre, écart médian de 141 m, plus grand écart de 661 m (dans les quartiers sans trottoir candidat). Autres cartes inchangées.
+- Captures refaites sur une seule base (branche synchronisée, aucune fusion de `main` pendant les captures), avec la Ville de jour et de nuit à 30 et 60 s de course.
+
+### 2026-11-08 19:38:11 — WFS-308 fusionné par le lead dev (lead-dev)
+- PR #269, 4e revue, commit relu `49211811` : les 2 points bloquants du 3e refus sont corrigés. La branche est synchronisée avec `main` (`5e7c5efd`, WFS-326 compris, aucun conflit) et les captures viennent après la synchronisation (ligne « Rendu » identique avant et après).
+- 22 captures ouvertes (15 « après », 7 « avant »). Diff relu : la seule différence de code depuis la 3e revue est `d758edc2` (`Cgu::tientLaFenetre`, acceptation gardée si la fenêtre est perdue juste après « Accepter »).
+- GitHub refuse l'approbation (même compte) : la revue « ✅ Approuvé par le lead dev » est écrite en commentaire. Fusion en squash `5f2725e`. Statut 🟣 Fusionné, ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`, développeur libéré.
+- Remarques non bloquantes : fenêtre perdue pendant les 2,5 s du refus (renderer non fermé, l'application se ferme de toute façon) ; 4 lignes « À REMPLIR » du gabarit restées dans `qa/pr/WFS-308/pr.md`.
+
+### 2026-11-08 19:42:01 — Demande de ticket d'agent 3 (cartes) : aucun ticket du chantier « Paquets de cartes » prêt (po-scrum-master)
+- Claude, agent 3 (01UY1Vv3), domaine cartes (skill `expert-cartes`), libre après WFS-308 (#269, 5f2725e, lead dev).
+- WFS-308 reste **🟣** (pas 🟡) : fonction neuve, pas la correction d'un défaut vu par l'utilisateur, pas un ticket de conduite ; le ✅ viendra des bancs du matin.
+- Chantier « Paquets de cartes » : **aucun ticket prêt**. WFS-301 dépend de WFS-268 (PR #248, ↩️ retour lead dev, dernier envoi 17:32:25 UTC, Agent 0 developer) : même code `lots_decor.*` (RG-04 de WFS-301 compare aux vues de WFS-268). La décision de 16:59 UTC passe WFS-301 → 306 → 302 en P1 mais ne lève pas cette dépendance : ordre gardé tel qu'écrit. WFS-306 et WFS-302 attendent WFS-301 ; WFS-303, 304, 307, 309, 313, 314 plus loin.
+- Aucun ticket d'une autre épic donné (demande d'agent 3) ; agent 3 prévient l'utilisateur. WFS-301 lui sera proposé dès la fusion de WFS-268, à sa demande.
