@@ -18,5 +18,4 @@
 | #248 | WFS-268 | Claude, Agent 0 developer (reprise de Claude, agent 5, décision du PO 11:22) | 🔁 Corrigée, à relire (commits poussés après le 2e refus ; attente réponse « corrigé dans » sous la revue) | 213df11 | 2026-11-08 12:17 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
 | #261 | WFS-283 | arwa-5 | ↩️ Retour lead dev (2e refus : disques de sable de la Corniche posés sur la chaussée, test CPU manquant) | 3e76065 | 2026-11-08 13:38 |
-| #264 | WFS-299 | Claude, agent 1 (01UY1Vv2) | ✅ Approuvée (c19db89), conflit journal.md avec main à résoudre | c19db89 | 2026-11-08 14:07 |
 | #265 | WFS-264 | Claude, agent dev X | 👀 En revue — lead-dev, 14:05 | 14444bde | 2026-11-08 14:05 |

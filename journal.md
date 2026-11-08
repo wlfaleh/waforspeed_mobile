@@ -3581,3 +3581,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Après** (2340×1080, vue Proche, au départ) : piétons 260 k → 174 k triangles (−33 %), scène 744 k → 658 k (−12 %), même nombre d'appels. Temps du banc logiciel inchangé, car il est limité par les pixels.
 - **Apparitions en Basse** (4 cartes, jour et nuit) : 0 saut, 0 détail brutal.
 - **Tests** : 69 tests CPU verts (`test_apparition_pietons` passe à 3 seuils et teste le niveau 3), parcours 0 écart.
+
+### 2026-11-08 14:09:58 — WFS-299 fusionné par le lead dev (lead-dev)
+- PR #264 relue au commit 5cbe9a4 (synchronisation avec main seule, aucun code changé depuis c19db89, `journal.md` sans marqueur de conflit) ; approbation écrite dans la PR, puis fusion en squash : **fd207d3**.
+- WFS-299 → 🟡 À valider (utilisateur) ; ligne #264 retirée de `suivi-pr.md` ; Claude, agent 1 libre ; ligne ajoutée à `qa/Check.md`.
