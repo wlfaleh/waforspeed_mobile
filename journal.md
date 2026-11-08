@@ -4319,3 +4319,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 
 ### 2026-11-08 22:11:20 — Recette manuelle APK 928 faite, ANO-179 (agent qa lead)
 - 6 images ouvertes. KO : départ délavé (ANO-177, WFS-328 pas dans l’APK, jusqu’à 5 s, vue Cockpit comprise) et **image délavée en pleine course** en Checkpoint (ANO-179, bloquante, nouvelle). OK : lien Conditions d’utilisation, aide à 162-233 km/h, chargement. À revoir : boutons (WFS-290), cockpit, performance et classement illisibles sur les planches. Rapport `qa/rapports/recette-manuelle-apk928.md`.
+
+### 2026-11-08 22:11:37 — Recette manuelle APK 928 (KO) : ANO-179 (délavé en pleine course) ajoutée à WFS-328 (RG-05), PR #282 bloquée sans preuve (po-scrum-master)
