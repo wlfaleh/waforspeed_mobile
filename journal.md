@@ -3814,3 +3814,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 16:59:07 — Sortie publique reportée : d'abord cartes téléchargées testées et gain de performance (décision de l'utilisateur) (po-scrum-master)
 - WFS-301, 302, 306, 308 en P1 ; gel de la CI levé pour WFS-302 ; WFS-319 / 320 continuent.
+
+### 2026-11-08 16:59:42 — WFS-258 point 3 accepté (sûreté) ; équilibre de la Course à 5 traité par WFS-327 (po-scrum-master)
