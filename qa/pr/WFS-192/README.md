@@ -1,0 +1,70 @@
+# WFS-192 — captures avant / après (tools/qa/captures_pr.sh)
+
+Branche `feature/waforspeed-192` comparée à `origin/main` ; bancs : vitrines-feux garage parcours ; filtre : `*`.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `course-p911-gris` | ![avant](avant-course-p911-gris.jpg) | ![après](apres-course-p911-gris.jpg) |
+| `garage-0` | ![avant](avant-garage-0.jpg) | ![après](apres-garage-0.jpg) |
+| `garage-1` | ![avant](avant-garage-1.jpg) | ![après](apres-garage-1.jpg) |
+| `garage-2` | ![avant](avant-garage-2.jpg) | ![après](apres-garage-2.jpg) |
+| `garage-course` | ![avant](avant-garage-course.jpg) | ![après](apres-garage-course.jpg) |
+| `garage-m4` | ![avant](avant-garage-m4.jpg) | ![après](apres-garage-m4.jpg) |
+| `garage-peinture-0` | ![avant](avant-garage-peinture-0.jpg) | ![après](apres-garage-peinture-0.jpg) |
+| `garage-peinture-1` | ![avant](avant-garage-peinture-1.jpg) | ![après](apres-garage-peinture-1.jpg) |
+| `garage-peintures-p911` | ![avant](avant-garage-peintures-p911.jpg) | ![après](apres-garage-peintures-p911.jpg) |
+| `garage-peintures` | ![avant](avant-garage-peintures.jpg) | ![après](apres-garage-peintures.jpg) |
+| `garage-suivant` | ![avant](avant-garage-suivant.jpg) | ![après](apres-garage-suivant.jpg) |
+| `showroom-suivante-1` | ![avant](avant-showroom-suivante-1.jpg) | ![après](apres-showroom-suivante-1.jpg) |
+| `showroom-suivante-2` | ![avant](avant-showroom-suivante-2.jpg) | ![après](apres-showroom-suivante-2.jpg) |
+| `showroom-suivante-3` | ![avant](avant-showroom-suivante-3.jpg) | ![après](apres-showroom-suivante-3.jpg) |
+| `parcours-course` | ![avant](avant-parcours-course.jpg) | ![après](apres-parcours-course.jpg) |
+| `parcours-fin` | ![avant](avant-parcours-fin.jpg) | ![après](apres-parcours-fin.jpg) |
+| `parcours-mode` | ![avant](avant-parcours-mode.jpg) | ![après](apres-parcours-mode.jpg) |
+| `parcours-retour-menu` | ![avant](avant-parcours-retour-menu.jpg) | ![après](apres-parcours-retour-menu.jpg) |
+| `parcours-terrain` | ![avant](avant-parcours-terrain.jpg) | ![après](apres-parcours-terrain.jpg) |
+| `parcours-course` | ![avant](avant-parcours-course.jpg) | ![après](apres-parcours-course.jpg) |
+| `parcours-fin` | ![avant](avant-parcours-fin.jpg) | ![après](apres-parcours-fin.jpg) |
+| `parcours-mode` | ![avant](avant-parcours-mode.jpg) | ![après](apres-parcours-mode.jpg) |
+| `parcours-retour-menu` | ![avant](avant-parcours-retour-menu.jpg) | ![après](apres-parcours-retour-menu.jpg) |
+| `parcours-terrain` | ![avant](avant-parcours-terrain.jpg) | ![après](apres-parcours-terrain.jpg) |
+| `vitrine-a45-0` | ![avant](avant-vitrine-a45-0.jpg) | ![après](apres-vitrine-a45-0.jpg) |
+| `vitrine-a45-feux` | ![avant](avant-vitrine-a45-feux.jpg) | ![après](apres-vitrine-a45-feux.jpg) |
+| `vitrine-abarth-0` | ![avant](avant-vitrine-abarth-0.jpg) | ![après](apres-vitrine-abarth-0.jpg) |
+| `vitrine-abarth-feux` | ![avant](avant-vitrine-abarth-feux.jpg) | ![après](apres-vitrine-abarth-feux.jpg) |
+| `vitrine-compass-0` | ![avant](avant-vitrine-compass-0.jpg) | ![après](apres-vitrine-compass-0.jpg) |
+| `vitrine-compass-feux` | ![avant](avant-vitrine-compass-feux.jpg) | ![après](apres-vitrine-compass-feux.jpg) |
+| `vitrine-corsa-0` | ![avant](avant-vitrine-corsa-0.jpg) | ![après](apres-vitrine-corsa-0.jpg) |
+| `vitrine-corsa-feux` | ![avant](avant-vitrine-corsa-feux.jpg) | ![après](apres-vitrine-corsa-feux.jpg) |
+| `vitrine-elantra-0` | ![avant](avant-vitrine-elantra-0.jpg) | ![après](apres-vitrine-elantra-0.jpg) |
+| `vitrine-elantra-feux` | ![avant](avant-vitrine-elantra-feux.jpg) | ![après](apres-vitrine-elantra-feux.jpg) |
+| `vitrine-gallardo-0` | ![avant](avant-vitrine-gallardo-0.jpg) | ![après](apres-vitrine-gallardo-0.jpg) |
+| `vitrine-gallardo-feux` | ![avant](avant-vitrine-gallardo-feux.jpg) | ![après](apres-vitrine-gallardo-feux.jpg) |
+| `vitrine-giulia-0` | ![avant](avant-vitrine-giulia-0.jpg) | ![après](apres-vitrine-giulia-0.jpg) |
+| `vitrine-giulia-feux` | ![avant](avant-vitrine-giulia-feux.jpg) | ![après](apres-vitrine-giulia-feux.jpg) |
+| `vitrine-golf-0` | ![avant](avant-vitrine-golf-0.jpg) | ![après](apres-vitrine-golf-0.jpg) |
+| `vitrine-golf-feux` | ![avant](avant-vitrine-golf-feux.jpg) | ![après](apres-vitrine-golf-feux.jpg) |
+| `vitrine-gt86-0` | ![avant](avant-vitrine-gt86-0.jpg) | ![après](apres-vitrine-gt86-0.jpg) |
+| `vitrine-gt86-feux` | ![avant](avant-vitrine-gt86-feux.jpg) | ![après](apres-vitrine-gt86-feux.jpg) |
+| `vitrine-m4-0` | ![avant](avant-vitrine-m4-0.jpg) | ![après](apres-vitrine-m4-0.jpg) |
+| `vitrine-m4-feux` | ![avant](avant-vitrine-m4-feux.jpg) | ![après](apres-vitrine-m4-feux.jpg) |
+| `vitrine-model3-0` | ![avant](avant-vitrine-model3-0.jpg) | ![après](apres-vitrine-model3-0.jpg) |
+| `vitrine-model3-feux` | ![avant](avant-vitrine-model3-feux.jpg) | ![après](apres-vitrine-model3-feux.jpg) |
+| `vitrine-mustang-0` | ![avant](avant-vitrine-mustang-0.jpg) | ![après](apres-vitrine-mustang-0.jpg) |
+| `vitrine-mustang-feux` | ![avant](avant-vitrine-mustang-feux.jpg) | ![après](apres-vitrine-mustang-feux.jpg) |
+| `vitrine-p208-0` | ![avant](avant-vitrine-p208-0.jpg) | ![après](apres-vitrine-p208-0.jpg) |
+| `vitrine-p208-feux` | ![avant](avant-vitrine-p208-feux.jpg) | ![après](apres-vitrine-p208-feux.jpg) |
+| `vitrine-p911-0` | ![avant](avant-vitrine-p911-0.jpg) | ![après](apres-vitrine-p911-0.jpg) |
+| `vitrine-p911-feux` | ![avant](avant-vitrine-p911-feux.jpg) | ![après](apres-vitrine-p911-feux.jpg) |
+| `vitrine-rrsport-0` | ![avant](avant-vitrine-rrsport-0.jpg) | ![après](apres-vitrine-rrsport-0.jpg) |
+| `vitrine-rrsport-feux` | ![avant](avant-vitrine-rrsport-feux.jpg) | ![après](apres-vitrine-rrsport-feux.jpg) |
+| `vitrine-s3-0` | ![avant](avant-vitrine-s3-0.jpg) | ![après](apres-vitrine-s3-0.jpg) |
+| `vitrine-s3-feux` | ![avant](avant-vitrine-s3-feux.jpg) | ![après](apres-vitrine-s3-feux.jpg) |
+| `vitrine-sf90-0` | ![avant](avant-vitrine-sf90-0.jpg) | ![après](apres-vitrine-sf90-0.jpg) |
+| `vitrine-sf90-feux` | ![avant](avant-vitrine-sf90-feux.jpg) | ![après](apres-vitrine-sf90-feux.jpg) |
+| `vitrine-tcross-0` | ![avant](avant-vitrine-tcross-0.jpg) | ![après](apres-vitrine-tcross-0.jpg) |
+| `vitrine-tcross-feux` | ![avant](avant-vitrine-tcross-feux.jpg) | ![après](apres-vitrine-tcross-feux.jpg) |
+| `vitrine-v60-0` | ![avant](avant-vitrine-v60-0.jpg) | ![après](apres-vitrine-v60-0.jpg) |
+| `vitrine-v60-feux` | ![avant](avant-vitrine-v60-feux.jpg) | ![après](apres-vitrine-v60-feux.jpg) |
+| `vitrine-x5-0` | ![avant](avant-vitrine-x5-0.jpg) | ![après](apres-vitrine-x5-0.jpg) |
+| `vitrine-x5-feux` | ![avant](avant-vitrine-x5-feux.jpg) | ![après](apres-vitrine-x5-feux.jpg) |

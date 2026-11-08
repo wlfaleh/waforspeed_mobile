@@ -1,0 +1,13 @@
+# WFS-295 : direction dans les virages
+## 1. Épingle à gauche des lacets de la Corniche, vue de dessus (bleu 10, vert 20, orange 30, rouge 50 km/h)
+- avant, 10 km/h, flèche tenue depuis le bord extérieur : rayon 5.29 m
+- avant, 20 km/h, flèche tenue depuis le bord extérieur : rayon 5.90 m
+- avant, 30 km/h, flèche tenue depuis le bord extérieur : rayon 6.45 m
+- avant, 50 km/h, flèche tenue depuis le bord extérieur : rayon 10.55 m
+- après, 10 km/h, flèche tenue depuis le bord extérieur : rayon 4.12 m
+- après, 20 km/h, flèche tenue depuis le bord extérieur : rayon 4.81 m
+- après, 30 km/h, flèche tenue depuis le bord extérieur : rayon 5.43 m
+- après, 50 km/h, flèche tenue depuis le bord extérieur : rayon 8.47 m
+## 5. Cercles volant à fond à 10 km/h
+- golf, volant à fond à 10 km/h : rayon 4.17 m ; fiche 4.20 m (-1 %)
+- m4, volant à fond à 10 km/h : rayon 4.74 m ; fiche 4.60 m (+3 %)

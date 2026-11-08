@@ -11,6 +11,8 @@ namespace wfs::cockpit {
 // WFS-282 : pièces construites par code, vues de l'intérieur : jamais de retrait des faces arrière (WFS-246 retire les faces
 // arrière des matériaux opaques sans MAT_DOUBLE : le dessus de la planche de bord disparaissait, on voyait la route au travers)
 static Material deuxFaces(Material m) { m.flags |= MAT_DOUBLE; return m; }
+// WFS-282 (RG-04) : lumière d'ambiance de nuit de l'habitacle, en part de l'albédo de chaque matière (émission, mêmes unités que les écrans)
+constexpr float AMBIANCE_NUIT = 0.25f;
 
 bool g_interieurCle = false;   // banc « cockpit » (WFS-235, RG-05) : voir vehicule_cockpit.h
 const Material& Interieur::mat(const Material& m) const { return g_interieurCle && cleMat_.set ? cleMat_ : m; }
@@ -20,7 +22,7 @@ const Material& Interieur::mat(const Material& m) const { return g_interieurCle 
 // ---------------------------------------------------------------- géométrie
 namespace {
 
-constexpr float CX = 0.36f;   // centre de la voiture (repère de l'œil)
+// centre de la voiture dans le repère de l'œil : Interieur::cx_ (WFS-315 : écart œil-axe du modèle, 0,36 m avant)
 constexpr float GRAIN = 12.f;   // répétitions du grain par mètre (motif de 8 cm, cellules de 2,6 mm : grain réel du cuir et du plastique)
 
 vec3 lin(unsigned h) {
@@ -165,7 +167,7 @@ std::vector<uint8_t> grainCuir(int N) {
 
 // ---------- matériaux de l'intérieur (indices de Interieur::mats_)
 enum : int { M_CUIR, M_PLANCHE_HAUT, M_PLANCHE_BAS, M_ACCENT, M_LAQUE, M_BRANCHES, M_COUTURE0, M_COUTURE1, M_COUTURE2, M_REPERE,
-             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_N };
+             M_FOND_COMBINE, M_FOND_ECRAN, M_FOND_ECRAN_NUIT, M_LAMES, M_PAVILLON, M_MOYEU, M_CHROME, M_GLACE, M_N };
 // écrans dynamiques
 enum : int { D_ACTIF, D_FOND, D_ALERTE, D_ROUTE, D_FLECHE, D_N };
 constexpr size_t DYN_SOMMETS = 4096;
@@ -245,6 +247,10 @@ void Interieur::ajouter(Renderer& r, std::vector<Vertex>& v, std::vector<uint32_
 bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     detruire(r);
     def_ = &d; octets_ = 0;
+    {   // WFS-315 (RG-01) : largeur de l'habitacle du modèle
+        const Largeur l = largeurPour(d);
+        cx_ = l.oeil; demi_ = l.coudes * 0.5f; montant_ = l.montants * 0.5f;
+    }
     // matériaux (valeurs physiques : charte du réel, DA-realisme.md ; cuir albédo 0,04-0,12, rugosité 0,55-0,75)
     {
         const std::vector<uint8_t> px = grainCuir(256);
@@ -287,10 +293,28 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     ecran(M_FOND_ECRAN_NUIT, 0x0b0f15, 1.0f);
     mat(M_LAMES, 0x0a0a0a, 0.8f, 0);
     mat(M_PAVILLON, 0x26272a, 0.95f, 0);                    // ciel de toit (tissu, Alcantara)
+    // WFS-282 (RG-03) : glace du rétroviseur : surface claire et lisse, éclairée par le ciel (claire le jour) ; en métal, elle ne
+    // reflétait presque rien dans l'habitacle (bloc presque noir, refus du lead dev sur la PR #251)
+    mat(M_GLACE, 0xa4aab0, 0.12f, 0);
+    // WFS-282 (RG-04) : la nuit, l'habitacle reçoit un peu de lumière (compteurs, écran, rue, ≈ 0,5 à 1 lux) : chaque matière
+    // garde sa couleur, plus une petite émission proportionnelle à son albédo (métaux : un tiers) ; sans elle, planche,
+    // volant et montants sortaient en aplats noirs
+    // ; ni les écrans (déjà lumineux), ni la glace du rétroviseur (la nuit, elle reste sombre comme le ciel qu'elle reflète)
+    matsNuit_ = mats_;
+    for (int k = 0; k < M_N; k++) {
+        Material& m = matsNuit_[(size_t)k];
+        const bool lumineux = m.emissive.x + m.emissive.y + m.emissive.z > 0.f;
+        if (k == M_GLACE) {   // glace de nuit : position nuit d'un rétroviseur (réflexion 0,5 %, sans diffus, glace lisse : les lampes ne laissent qu'un petit reflet) : jamais plus claire que le ciel de nuit
+            m.color = {0.005f, 0.005f, 0.005f, m.color.w}; m.metal = 1.f; m.rough = 0.15f;   // métal, rugosité : constantes du dessin
+            continue;
+        }
+        if (lumineux) continue;
+        m.emissive = vec3{m.color.x, m.color.y, m.color.z} * (AMBIANCE_NUIT * (m.metal > 0.5f ? 0.33f : 1.f));
+    }
     std::vector<Vertex> v; std::vector<uint32_t> i;
     auto prend = [&](Geo& g, int m, int attache = 0) { v = std::move(g.v); i = std::move(g.i); ajouter(r, v, i, m, attache); g = Geo{}; };
     const mat4 I = mat4::identity();
-    const float Y = d.plancheY, Z = d.plancheZ, Yb = d.pareBriseY, Zb = d.pareBriseZ, x0 = CX - 0.78f, x1 = CX + 0.78f;
+    const float Y = d.plancheY, Z = d.plancheZ, Yb = d.pareBriseY, Zb = d.pareBriseZ, x0 = cx_ - demi_, x1 = cx_ + demi_;   // WFS-315 : planche sur toute la largeur aux coudes
     // planche (profil y, z du pied du pare-brise vers le conducteur) : dessus, lèvre, face en retrait derrière le combiné et
     // l'écran central (z ≈ −0,86), puis la partie basse qui revient vers les genoux
     const bool combine = d.combine != Combine::Aucun && d.combineW > 0;   // WFS-201 : Model 3 : aucun combiné derrière le volant
@@ -315,7 +339,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         if (combine) prend(cas, M_PLANCHE_HAUT); else cas = Geo{};
         // jonc décoratif sur toute la largeur, sous la lèvre (alu brossé, carbone, ou liseré rouge de la Golf)
         Geo jonc;
-        boite(jonc, translate({CX, Y - 0.10f, zFace + 0.004f}), x1 - x0 - 0.04f, d.carbone ? 0.05f : 0.010f, 0.006f);
+        boite(jonc, translate({cx_, Y - 0.10f, zFace + 0.004f}), x1 - x0 - 0.04f, d.carbone ? 0.05f : 0.010f, 0.006f);
         prend(jonc, M_ACCENT);
     }
     // aérateurs : deux aux extrémités, deux au centre (sous l'écran central quand il est sur la planche)
@@ -324,34 +348,50 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const bool rond = d.combine == Combine::Porsche5 || d.combine == Combine::FerrariIncurve;
         const float ay = Y - 0.17f, az = zFace + 0.012f;
         for (float x : {x0 + 0.11f, x1 - 0.11f}) aerateur(cadre, lames, translate({x, ay, az}) * rotateX(-0.2f), 0.13f, rond ? 0.09f : 0.055f, rond);
-        for (float x : {CX - 0.09f, CX + 0.09f}) aerateur(cadre, lames, translate({x, ay - 0.04f, az + 0.01f}) * rotateX(-0.2f), 0.11f, 0.045f, false);
+        for (float x : {cx_ - 0.09f, cx_ + 0.09f}) aerateur(cadre, lames, translate({x, ay - 0.04f, az + 0.01f}) * rotateX(-0.2f), 0.11f, 0.045f, false);
         prend(cadre, M_CHROME); prend(lames, M_LAMES);
+    }
+    // WFS-315 (RG-02) : place passager : boîte à gants (porte en léger relief, joint sombre autour) sous la lèvre, couvercle du sac
+    // gonflable passager sur le dessus de planche (joint fin) : on voit que la planche continue devant un 2e siège
+    {
+        Geo bag, joint, sac;
+        const float gx = cx_ + (demi_ * 0.55f), gw = std::min(0.40f, demi_ * 0.75f);   // milieu de la place passager
+        boite(bag, translate({gx, Y - 0.26f, zFace + 0.008f}), gw, 0.15f, 0.016f);
+        boite(joint, translate({gx, Y - 0.26f, zFace + 0.002f}), gw + 0.012f, 0.162f, 0.008f);
+        // couvercle : sur la partie plate du dessus (du point le plus haut, à mi-profondeur, jusqu'à la lèvre), côté conducteur du
+        // point le plus haut : vu de l'œil, il reste sous la ligne de la planche (posé à hauteur fixe sur la pente vers le
+        // pare-brise, il flottait de ≈ 3 cm devant la rue : refus du lead dev, PR #262)
+        const float zm = (Zb + Z) * 0.5f, za = Z - 0.02f, zc = (zm + za) * 0.5f, ym = Y + 0.005f + (Y - (Y + 0.005f)) * 0.5f;
+        boite(sac, translate({gx, ym + 0.0005f, zc}), 0.30f, 0.002f, std::max(0.04f, (za - zm) * 0.8f));
+        prend(bag, M_PLANCHE_BAS); prend(joint, M_PLANCHE_HAUT); prend(sac, M_PLANCHE_HAUT);   // joints mats (le noir laqué brillait la nuit)
     }
     // console centrale et sélecteur
     {
         Geo con, sel;
-        boite(con, translate({CX, Y - 0.50f, zFace + 0.32f}) * rotateX(-0.40f), 0.26f, 0.12f, 0.60f);
-        cylindre(sel, translate({CX, Y - 0.42f, zFace + 0.40f}) * rotateX(-0.2f), 0.020f, 0.024f, 0.07f, 16);
-        boite(sel, translate({CX, Y - 0.375f, zFace + 0.40f}), 0.05f, 0.025f, 0.075f);
+        boite(con, translate({cx_, Y - 0.50f, zFace + 0.32f}) * rotateX(-0.40f), 0.26f, 0.12f, 0.60f);
+        cylindre(sel, translate({cx_, Y - 0.42f, zFace + 0.40f}) * rotateX(-0.2f), 0.020f, 0.024f, 0.07f, 16);
+        boite(sel, translate({cx_, Y - 0.375f, zFace + 0.40f}), 0.05f, 0.025f, 0.075f);
         prend(con, M_PLANCHE_BAS); prend(sel, M_ACCENT);
     }
     // montants de pare-brise, ciel de toit, rétroviseur intérieur
     {
-        Geo mont, pav, ret, porte;
-        const vec3 bas[2] = {{CX - 0.72f, Yb, Zb}, {CX + 0.72f, Yb, Zb}};
-        const vec3 haut[2] = {{CX - 0.62f, 0.40f, -0.42f}, {CX + 0.62f, 0.40f, -0.42f}};
+        Geo mont, pav, ret, porte, glace;
+        const vec3 bas[2] = {{cx_ - montant_, Yb, Zb}, {cx_ + montant_, Yb, Zb}};   // WFS-315 : pieds des montants à leur écart réel
+        const vec3 haut[2] = {{cx_ - (montant_ - 0.10f), 0.40f, -0.42f}, {cx_ + (montant_ - 0.10f), 0.40f, -0.42f}};
         for (int k = 0; k < 2; k++) barre(mont, I, bas[k], haut[k], 0.075f, 0.05f);
-        boite(pav, translate({CX, 0.43f, -0.28f}), 1.40f, 0.04f, 0.32f);
+        boite(pav, translate({cx_, 0.43f, -0.28f}), 2 * demi_ - 0.16f, 0.04f, 0.32f);
         // rétroviseur intérieur : 240 × 65 mm, en haut du pare-brise, devant le conducteur à droite (≈ 0,62 m de l'œil)
-        boite(ret, translate({CX - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f), 0.24f, 0.065f, 0.025f);
-        boite(ret, translate({CX - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
+        const mat4 R = translate({cx_ - 0.04f, 0.20f, -0.62f}) * rotateY(0.22f) * rotateX(-0.10f);
+        boite(ret, R, 0.24f, 0.065f, 0.025f);
+        plan(glace, R * translate({0, 0, 0.0135f}), 0.226f, 0.052f);   // WFS-282 (RG-03) : glace côté conducteur, cadre noir de 7 mm
+        boite(ret, translate({cx_ - 0.04f, 0.27f, -0.60f}), 0.022f, 0.08f, 0.02f);
         // contre-portes : panneau intérieur sous la vitre, accoudoir et poignée (place du conducteur et du passager)
         for (float sx : {-1.f, 1.f}) {
-            const float x = CX + sx * 0.80f;
+            const float x = cx_ + sx * (demi_ + 0.02f);   // WFS-315 : portières au bord de l'habitacle
             boite(porte, translate({x, Y - 0.32f, -0.30f}), 0.06f, 0.62f, 1.30f);
             boite(porte, translate({x - sx * 0.04f, Y - 0.24f, -0.20f}), 0.06f, 0.05f, 0.45f);
         }
-        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(porte, M_PLANCHE_BAS);
+        prend(mont, M_PAVILLON); prend(pav, M_PAVILLON); prend(ret, M_LAQUE); prend(glace, M_GLACE); prend(porte, M_PLANCHE_BAS);
     }
     // écrans : fond du combiné, cadre et fond de l'écran central
     {
@@ -413,6 +453,7 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
     // essuie-glaces : bras + balai, dans le repère du balai (x le long du bras, y vers le haut du pare-brise)
     {
         Material m; m.color = {0.012f, 0.012f, 0.012f, 1}; m.rough = 0.55f; m.metal = 0; brasMat_ = r.makeMaterial(deuxFaces(m), nullptr, nullptr, nullptr);
+        brasNuit_ = brasMat_; brasNuit_.emissive = vec3{m.color.x, m.color.y, m.color.z} * AMBIANCE_NUIT;   // WFS-282 (RG-04)
         for (int k = 0; k < 2; k++) {
             const float L = k == 0 ? d.balaiG : d.balaiD;
             if (L <= 0) continue;
@@ -443,12 +484,12 @@ void Interieur::detruire(Renderer& r) {
     for (Piece& p : pieces_) r.destroy(p.m);
     pieces_.clear();
     for (Material& m : mats_) r.destroy(m);
-    mats_.clear();
+    mats_.clear(); matsNuit_.clear();   // copies de nuit : même jeu de descripteurs (rien à détruire)
     for (Mesh& m : bras_) if (m.indexCount) r.destroy(m);
     if (brasMat_.set) r.destroy(brasMat_);
     for (int k = 0; k < D_N; k++) { r.destroy(dyn_[k]); r.destroy(dynMat_[k]); r.destroy(dynNuit_[k]); dyn_[k] = {}; dynMat_[k] = dynNuit_[k] = {}; }
     for (Mesh& m : bras_) m = {};
-    brasMat_ = {};
+    brasMat_ = {}; brasNuit_ = {};
     if (cleMat_.set) r.destroy(cleMat_);
     cleMat_ = {};
     if (grain_.view) r.vk().destroy(grain_);
@@ -614,11 +655,11 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
     for (const Piece& p : pieces_) {
         int m = p.mat;
         if (m == M_FOND_ECRAN && e.v.nuit) m = M_FOND_ECRAN_NUIT;
-        r.draw(p.m, mat(mats_[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
+        r.draw(p.m, mat((e.v.nuit && m < (int)matsNuit_.size() ? matsNuit_ : mats_)[(size_t)m]), p.attache == 1 ? vol : p.attache == 2 ? colonne : cam); appels_++;
     }
     // essuie-glaces : pivots au bas du pare-brise ; plan du pare-brise (axe x, axe « haut » le long des montants)
     {
-        const vec3 base{CX, d.pareBriseY - 0.01f, d.pareBriseZ}, haut{CX, 0.40f, -0.42f};
+        const vec3 base{cx_, d.pareBriseY - 0.01f, d.pareBriseZ}, haut{cx_, 0.40f, -0.42f};
         const vec3 ex{1, 0, 0}, eu = normalize(haut - base), en = cross(ex, eu);
         auto repere = [&](vec3 o, float sens) {   // sens +1 : repos vers la droite, tourne vers le haut ; −1 : en miroir
             mat4 B = mat4::identity();
@@ -630,15 +671,15 @@ void Interieur::dessiner(Renderer& r, const mat4& cam, const EtatInterieur& e, c
         };
         switch (d.essuie) {
         case Essuie::Paralleles:
-            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
-            if (bras_[1].indexCount) { r.draw(bras_[1], mat(brasMat_), cam * repere(base + vec3{0.08f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[1].indexCount) { r.draw(bras_[1], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{0.08f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
             break;
         case Essuie::Opposition:
-            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
-            if (bras_[1].indexCount) { r.draw(bras_[1], mat(brasMat_), cam * repere(base + vec3{0.62f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.62f, 0, 0}, 1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[1].indexCount) { r.draw(bras_[1], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{0.62f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
             break;
         case Essuie::Unique:
-            if (bras_[0].indexCount) { r.draw(bras_[0], mat(brasMat_), cam * repere(base + vec3{-0.02f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
+            if (bras_[0].indexCount) { r.draw(bras_[0], mat(e.v.nuit ? brasNuit_ : brasMat_), cam * repere(base + vec3{-0.02f, 0, 0}, -1) * rotateZ(e.essuie)); appels_++; }
             break;
         }
     }

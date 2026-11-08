@@ -10,11 +10,16 @@
 #include <string>
 #include <vector>
 #include "../core/log.h"
+#include "../core/memoire.h"   // WFS-297 : mémoire du processus et de la carte graphique
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/game.h"
-#include "../game/traffic_system.h"   // WFS-281 (accroche) : voitures du trafic
+#include "../game/camera_vue.h"   // WFS-299 : vue Proche au banc des parties
+#include "../game/course_system.h"   // WFS-297 : règles de la course au banc des parties
+#include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes ; WFS-281 (accroche) : nombre de voitures
+#include "eclairage.h"                // WFS-297 : lampadaires déclarés
 #include "../ui/ecrans/reglages.h"
+#include "../ui/ecrans/chargement.h"   // WFS-297 (RG-06) : écran de chargement et ses chiffres
 #include "passes.h"
 #include "qualite_auto.h"
 #include "renderer.h"
@@ -69,6 +74,106 @@ struct Resultat {
 
 } // namespace
 
+// ---------------------------------------------------------------- WFS-297 (RG-01) : parties de suite sans quitter le jeu
+// WFS_PERF_PARTIES=1 (ou une liste « plage:jour,ville:nuit,ville:jour ») : la 1re partie par init, les suivantes par le même chemin
+// que « Rouler » de l'écran Terrain (Game::demandes, changerCarte). À chaque partie : fenêtres de mesure au départ, après 1 et 2 min
+// de course (pilote automatique, une image sur 10 dessinée entre les fenêtres) : image, appels et triangles par système, coût GPU
+// des passes, trafic, lampadaires, mémoire du processus (RSS). Une ligne « parties : … » par fenêtre, tableau à la fin.
+namespace {
+struct Fenetre { std::string partie, quand; double image = 0, gpu = 0, rss = 0, gpuMo = 0; uint32_t appels = 0, triangles = 0; int trafic = 0, lampes = 0; std::string couts, systemes; };
+}
+
+static void benchParties(Game& g, Renderer& r, const std::string& out, const std::string& liste) {
+    std::vector<std::pair<std::string, bool>> parties;
+    {   // « carte:moment,… » ; défaut : la suite de l'essai de l'utilisateur (Corniche, Ville de nuit, Ville), puis Ville de nuit encore
+        const std::string l = liste == "1" ? "plage:jour,ville:nuit,ville:jour,ville:nuit" : liste;
+        size_t p = 0;
+        while (p < l.size()) {
+            size_t v = l.find(',', p); if (v == std::string::npos) v = l.size();
+            const std::string e = l.substr(p, v - p); const size_t d = e.find(':');
+            parties.push_back({e.substr(0, d), d != std::string::npos && e.substr(d + 1) == "nuit"});
+            p = v + 1;
+        }
+    }
+    const int MESURE = std::getenv("WFS_PERF_IMAGES") ? std::atoi(std::getenv("WFS_PERF_IMAGES")) : 120;
+    const int MINUTE = std::getenv("WFS_PERF_MINUTE") ? std::atoi(std::getenv("WFS_PERF_MINUTE")) : 60 * 60;   // images de course entre deux fenêtres
+    std::vector<Fenetre> res;
+    double t = 3000;
+    const VueCamera vue0 = vueCamera();
+    courseBenchRules(true);   // décompte et « GO » comme dans le jeu (le numéro de la partie avance au départ)
+    for (size_t k = 0; k < parties.size(); k++) {
+        const auto& [carte, nuit] = parties[k];
+        const std::string nom = std::to_string(k + 1) + ". " + carte + (nuit ? " nuit" : " jour");
+        if (k == 0) {
+            setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+            if (!g.init(r, "golf", carte.c_str())) { WFS_ERR("parties : chargement %s impossible", carte.c_str()); return; }
+        } else {   // comme « Rouler » de l'écran Terrain : la demande est appliquée au début de la mise à jour suivante
+            Game::Demandes& d = Game::demandes(); d.carte = carte; d.nuit = nuit;
+            g.update(1.0 / 60); g.render(t); t += 1.0 / 60;
+        }
+        {   // RG-06 : écran de chargement à 100 % (chiffres du chargement et mémoire), capturé à chaque partie
+            FrameParams fp; fp.view = mat4::identity(); fp.proj = mat4::identity(); fp.camPos = {0, 0, 0};
+            if (r.beginFrame(fp)) { ecrans::dessinerChargement(r, (float)r.width(), (float)r.height(), 1, "Prêt", false, 1); r.endFrame(); }
+            r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-chargement.png");
+        }
+        g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        choisirVue(VueCamera::Proche);   // WFS-299 (remarque du lead dev sur WFS-297) : vue Proche, celle de l'utilisateur
+        for (int i = 0; i < 4 * 60; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }   // décompte et départ (« GO » : partie suivante, RG-06)
+        courseBenchSetTime(1e5);   // règles de la course comme dans le jeu, sans fin de chrono pendant les mesures (WFS-299 : sous 1e6, le HUD reste affiché)
+        {   // RG-06 : panneau Réglages depuis la pause (rendu, mémoire, numéro de la partie)
+            g.allerA(Ecran::Pause); g.update(1.0 / 60);
+            ecrans::ouvrirReglagesBanc(true);
+            g.render(t); g.render(t + 0.02); r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-reglages.png");
+            ecrans::ouvrirReglagesBanc(false); g.allerA(Ecran::Course); g.update(1.0 / 60);
+        }
+        for (int f = 0; f < 3; f++) {
+            const bool villeNuit = carte == "ville" && nuit;   // WFS-299 : aussi en 1re partie   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
+            if (f > 0) for (int i = 0; i < MINUTE; i++) {
+                g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60;
+                if (f == 1 && villeNuit && i >= 10 * 60 && i < 13 * 60 && i % 30 == 0) {   // WFS-299 : suite à 0,5 s d'écart (piétons qui se rapprochent : niveaux de détail)
+                    g.render(t); g.render(t + 0.02);
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-suite-" + std::to_string((i - 10 * 60) / 30) + ".png");
+                }
+                if (f == 1 && villeNuit && (i == 0 || (i + 1) % (30 * 60) == 0) && i < 61 * 60) {   // 0, 30 et 60 s
+                    g.render(t); g.render(t + 0.02);
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string((i + 1) / 60) + "s.png");
+                }
+            }
+            for (int i = 0; i < 30; i++) { g.update(1.0 / 60); g.render(t); t += 1.0 / 60; }   // images complètes avant la mesure
+            for (auto& [n, c] : cumuls()) c = Cumul{};
+            passes::remettreAZero();
+            Fenetre w; w.partie = nom; w.quand = f == 0 ? "départ" : f == 1 ? "1 min" : "2 min";
+            double appels = 0, tri = 0;
+            for (int i = 0; i < MESURE; i++) {
+                const double t0 = nowSeconds();
+                g.update(1.0 / 60); g.render(t); t += 1.0 / 60;
+                w.image += (nowSeconds() - t0) * 1000;
+                appels += r.appelsDessin(); tri += r.chronoImage().triangles;
+            }
+            w.image /= MESURE; w.appels = (uint32_t)(appels / MESURE); w.triangles = (uint32_t)(tri / MESURE);
+            for (const passes::Cout& c : passes::coutsCumules()) if (c.mesurable) w.gpu += c.ms;
+            w.couts = passes::texteCouts(passes::coutsCumules());
+            std::vector<std::pair<double, std::string>> d;
+            for (auto& [n, c] : cumuls()) if (c.triangles > 0) d.push_back({c.triangles / MESURE, n + " " + std::to_string((int)(c.appels / MESURE)) + " appels / " + std::to_string((int)(c.triangles / MESURE / 1000)) + " k tri."});
+            std::sort(d.begin(), d.end(), [](auto& a, auto& b) { return a.first > b.first; });
+            for (size_t i = 0; i < d.size() && i < 6; i++) w.systemes += (i ? " ; " : "") + d[i].second;
+            const Traffic* tr = activeTraffic(); w.trafic = tr ? (int)tr->cars.size() : 0;
+            w.lampes = (int)lampadaires().size(); w.rss = memoire::processusMo(); w.gpuMo = memoire::gpuMo();
+            WFS_LOG("parties : %s, %s : image %.1f ms, GPU %.2f ms (%s), %u appels, %u triangles, trafic %d, lampadaires %d, RSS %.0f Mo, carte graphique %.0f Mo, %.2f km",
+                    w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.couts.c_str(), w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo, g.player().dist * M / 1000);
+            WFS_LOG("parties : %s, %s : par système : %s", w.partie.c_str(), w.quand.c_str(), w.systemes.c_str());
+            res.push_back(w);
+            if (f == 0) r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-" + carte + (nuit ? "-nuit" : "-jour") + ".png");
+        }
+    }
+    g.shutdown();
+    courseBenchRules(false);
+    choisirVue(vue0);
+    WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) | carte graphique (Mo) |");
+    for (const Fenetre& w : res)
+        WFS_LOG("parties : | %s | %s | %.1f | %.2f | %u | %u | %d | %d | %.0f | %.0f |", w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo);
+}
+
 void benchPerf(Game& g, Renderer& r, const std::string& out) {
     // registre enveloppé (rétabli à la fin du banc)
     std::vector<SystemEntry>& reg = systemRegistry();
@@ -76,6 +181,14 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
     for (SystemEntry& e : reg) {
         auto make = e.make; const char* nom = e.name;
         e.make = [make, nom]() -> std::unique_ptr<System> { return std::make_unique<Chrono>(make(), nom); };
+    }
+    if (const char* parties = std::getenv("WFS_PERF_PARTIES")) {   // WFS-297 : qualité Basse (celle du téléphone de l'utilisateur)
+        ecrans::Reglages& R0 = ecrans::reglages(); const int q = R0.qualite;
+        R0.qualite = std::getenv("WFS_PERF_HAUTE") ? qualite::HAUTE : qualite::BASSE; ecrans::appliquerQualiteNiveau(r);
+        benchParties(g, r, out, parties);
+        R0.qualite = q; ecrans::appliquerQualiteNiveau(r);
+        reg = origine;
+        return;
     }
     const int CHAUFFE = std::getenv("WFS_PERF_CHAUFFE") ? std::atoi(std::getenv("WFS_PERF_CHAUFFE")) : 180;
     const int IMAGES = std::getenv("WFS_PERF_IMAGES") ? std::atoi(std::getenv("WFS_PERF_IMAGES")) : 300;

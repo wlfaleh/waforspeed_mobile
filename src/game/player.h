@@ -1,6 +1,8 @@
 // WaForSpeed — conduite du joueur (port de la partie « conduite » de js/game/update.js).
 // Unités du jeu web : position/dist en unités (6 mm), speed en unités/s, playerX en demi-largeurs de route.
 #pragma once
+#include <algorithm>
+#include <cmath>
 #include "cars.h"
 #include "conduite_monde.h"   // WFS-241 : conduite en coordonnées du monde
 #include "chocs_decor.h"      // WFS-256 : chocs avec le décor
@@ -38,6 +40,30 @@ inline bool g_conduiteMonde = false;   // WFS-258 (RG-00) : repli sur l'ancien m
 // WFS-253 : ABS, antipatinage, ESP de la voiture du joueur : toujours activés dans le jeu ; le banc les coupe un par un pour les mesurer
 struct AidesVoiture { bool abs = true, antipatinage = true, esp = true; };
 inline AidesVoiture g_aidesVoiture;
+// WFS-295 : banc seulement (WFS_BANC=virages) : rejoue le comportement d'avant la correction (avance sans 1/(1 − k·n), blocage de
+// 0,6 + 1,2 × impact après un accident, braquage remis à zéro) pour les captures « avant » ; toujours faux dans le jeu
+inline bool g_avantWfs295 = false;
+// WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages et ne tient pas la file
+// (comportement de main) ; faux dans le jeu
+inline bool g_avantWfs258 = false;
+// WFS-258 (point 3) : banc seulement : angle des roues d'avant au-dessus de 100 km/h (direction vive) ; faux dans le jeu
+inline bool g_avantWfs258Vif = false;
+// WFS-258 : vitesse où un ordinateur de la Course à 5 reste sur la chaussée (unités/s, course5::vitesseVirage), donnée par
+// course5.cpp au chargement du programme ; nulle quand course5.cpp n'est pas lié (tests sans Course à 5)
+inline double (*g_vitesseVirageCourse5)(const Track&, double) = nullptr;
+
+// WFS-258 : vitesse permise (m/s) à `dist` : accélération latérale `gLat` au plus dans le rayon de chaque virage des 600 m qui
+// viennent, freinage de `gFrein` pour l'atteindre avant le virage. Aide à la direction activée de la voiture du joueur : adhérence
+// et freinage de la conduite du jeu (Phys::grip, Phys::brake, player.cpp) ; pilote automatique (vitessePilote,
+// aide_direction_banc.h, WFS-241) : 0,6 g et 0,7 g, plus prudent
+inline double vitesseVirageAide(const Track& t, double dist, double gLat, double gFrein) {
+    double v = 1e9;
+    for (double m = 0; m <= 600; m += 4) {
+        const double k = std::abs(t.findSegment(t.wrap(dist + m / M)).curve) * CURVE_K / SEG_M;
+        if (k > 1e-4) v = std::min(v, std::sqrt(gLat * 9.81 / k + 2 * gFrein * 9.81 * m));
+    }
+    return v;
+}
 
 struct Player {
     const CarDef* car = nullptr; CarPerf perf{};
@@ -49,7 +75,12 @@ struct Player {
     double playerSpin = 0, spinYaw = 0, controlLock = 0;
     Aide aide = Aide::Web;   // WFS-217 : gardée par reset()
     void reset(const CarDef& c);
-    void accident(double impact, int side) { playerSpin = side * (3 + impact * 9); controlLock = 0.6 + impact * 1.2; }
+    // WFS-295 (RG-03) : commandes bloquées 0,5 s au plus après un accident (avant : 0,6 + 1,2 × impact, jusqu'à 1,8 s)
+    // (voiture du joueur ; l'ordinateur, Aide::Web, garde les règles du jeu web, référence de test_course)
+    void accident(double impact, int side) {
+        playerSpin = side * (3 + impact * 9);
+        controlLock = aide == Aide::Web || g_avantWfs295 ? 0.6 + impact * 1.2 : 0.2 + 0.3 * std::clamp(impact, 0.0, 1.0);
+    }
     // une étape de conduite (dt en secondes) ; analog : braquage continu (-1..1) du tactile
     void update(double dt, const DriveInput& in, Track& track, bool playing);
     // WFS-217 : cap et position latérale de la voiture du joueur (aide Activee / Desactivee), voir player.cpp
@@ -68,6 +99,7 @@ struct Player {
     // WFS-256 : chocs avec le décor depuis la dernière lecture (lus et remis à zéro par le système chocs_decor.cpp) :
     // nombre, vitesse d'impact la plus forte (m/s, vers l'obstacle) et genre de l'objet touché
     struct ChocsDuPas { int n = 0; double impact = 0; chocs::Genre genre = chocs::Genre::Autre; } chocsDecor;
+    bool freinAide = false;   // WFS-258 : l'aide à la direction freine ou coupe le gaz avant un virage (ce pas)
 private:
     // WFS-256 : test continu du pas (pose de départ → pose (x, z, cap) d'arrivée) et réaction de corps rigide ; vrai si contact
     // (pose et vitesse corrigées). Commun aux deux modèles de conduite (conduite réelle et conduite d'avant)
@@ -76,6 +108,10 @@ private:
     void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
     bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
     std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
+    bool cedeAuDoigt_ = true;   // WFS-258 : la limite de l'aide cède au doigt (sous 95 km/h ; reprend au-dessus de 100 km/h)
+    double fileAide_ = 0;   // WFS-258 : file (demi-largeurs) où le joueur a laissé la voiture (maintien de voie de l'aide)
+    double finPasX_ = 1e9, finPasD_ = 1e9;   // WFS-258 : pose à la fin du pas précédent (ancienne conduite)
+    double facRoute_ = 1;   // WFS-295 : 1 − k·n (rayon à l'écart n de l'axe), au moins 0,2
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
     void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
     void synchroniser(Track& track);

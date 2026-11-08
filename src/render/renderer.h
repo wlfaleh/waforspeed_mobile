@@ -27,6 +27,7 @@ enum MatFlags : uint32_t {
     MAT_TANGENTE = 524288,  // WFS-149 (moteur seulement) : carte de normales dans le repère tangent des sommets (sinon dérivées écran)
     MAT_INTERIEUR = 1048576,   // WFS-161 (accroche) : vitre d'immeuble, pièce simulée derrière (decor.glsl, interieurFenetre)
     MAT_FACADE = 2097152,      // WFS-161 (accroche) : mur du kit d'architecture, appareil procédural (decor.glsl, surfaceFacade)
+    MAT_AO = 4194304,          // WFS-269 (accroche) : occlusion précalculée dans la longueur de la normale (ambiance et reflet du ciel)
 };
 
 // WFS-149 (RG-04) : + tangente (xyz + signe de la bitangente), 4 octets signés normalisés (/127) ; nulle = sans tangente
@@ -177,6 +178,8 @@ public:
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
     Image white, flatNormal;
+    int niveauCascades() const { return qualiteBasse ? 0 : std::clamp(niveauOmbres, 1, 3); }   // WFS-264 (RG-03) : Basse = 1 cascade de 40 m
+    bool dessinJoueur = false;     // WFS-265 : vrai pendant le dessin de la voiture du joueur (game.cpp) : modèle complet
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
     bool forceSansReflets = false; // WFS-222 (RG-03) : baisse automatique : pas de passe de reflet (route mouillée)
     bool rendu221 = false;         // WFS-222 : banc seulement (WFS_AVANT_222=1) : rendu d'avant WFS-222, pour comparer images et coûts
@@ -188,6 +191,11 @@ public:
     // WFS-222 (RG-01) : banc de profilage (WFS_BANC=perf) : attente du GPU dans beginFrame, temps processeur de endFrame
     // (enregistrement des passes et envoi) et triangles de la dernière image ; mesure seule, aucun effet sur le rendu
     struct ChronoImage { double attenteGpuMs = 0, finImageMs = 0; uint32_t triangles = 0; };
+    // WFS-317 (I9) : appels de dessin et triangles de la dernière image, toutes passes, par famille (comptage seulement) :
+    // 0 décor (route, bâtiments, végétation, effets), 1 voitures (modèles), 2 personnes (maillages à squelette)
+    enum Famille : uint8_t { FAM_DECOR = 0, FAM_VOITURES = 1, FAM_PERSONNES = 2, FAM_N = 3 };
+    struct ComptesImage { uint32_t appels[FAM_N] = {}, triangles[FAM_N] = {}; };
+    const ComptesImage& comptesImage() const { return comptesPrec_; }
     const ChronoImage& chronoImage() const { return chronoPrec_; }
     // WFS-246 (levier 3) : temps GPU de l'image 3D (ombres → fin de la scène, horodatages), lissé ; −1 sans horodatages
     double gpuImageMs() const { return gpuImageMs_; }
@@ -217,7 +225,7 @@ public:
     float aniso() const { return aniso_; }   // WFS-134 (RG-04) : filtrage anisotrope des textures (×8 si le GPU le permet ; WFS-144 : ×4 en Basse)
 private:
     struct PC { mat4 model; vec4 color; vec4 params; vec4 emissive; };
-    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; };   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
+    struct Pending { VkBuffer vb, ib; uint32_t first, count; int32_t vofs; const Material* mat; PC pc; float depth; int32_t osOfs = -1; uint8_t vis = 0xF7; bool i16 = false; bool loin = false; uint8_t famille = 0; };   // WFS-263 : loin = variante légère   // WFS-227 : 0xF7 = partout (cascades comprises, hors capture)
     // WFS-82 : visibilité d'une sphère monde : bits 1 caméra, 2 reflet, 4 ombre ; 0 = rien à dessiner (objet masqué)
     // WFS-222 : VIS_CAPTURE = gardé pour la capture d'environnement seulement (image d'une capture : la passe de scène, l'ombre
     // et le reflet gardent leur masquage ; avant, les 6 images d'une capture dessinaient tout dans toutes les passes)
@@ -302,6 +310,9 @@ private:
     // WFS-246 (levier 1) : opaques fermés sans faces arrière (VK_CULL_MODE_BACK_BIT) ; MAT_DOUBLE (feuillage, panneaux
     // fins), découpe et vitres gardent les deux faces. cullPipeline_ : mode de la prochaine makePipeline (0 aucun, 1 arrière)
     VkPipeline opaqueCull_ = VK_NULL_HANDLE, skinOpaqueCull_ = VK_NULL_HANDLE;
+    // WFS-263 (RG-01) : variante légère de scene.frag (LEGER), faces arrière retirées ou non ; legerPipeline_ : prochaine makePipeline
+    VkPipeline opaqueLeger_ = VK_NULL_HANDLE, opaqueLegerDouble_ = VK_NULL_HANDLE;
+    bool legerPipeline_ = false, legerActif_ = true;
     int cullPipeline_ = 0;
     bool facesArriere_ = true;   // retrait actif (WFS_FACES=0 au banc : désactivé, pour comparer)
     VkPipeline skyApres_ = VK_NULL_HANDLE;   // WFS-222 : ciel dessiné après les opaques, test de profondeur (pixels vides seulement)
@@ -311,6 +322,7 @@ private:
     VkSampler shadowSampler_ = VK_NULL_HANDLE;
     struct Bloom; Bloom* bloom_ = nullptr;   // WFS-100 : chaîne du bloom « dual filter » (renderer.cpp)
     bool shadowsOn_ = false, night_ = false, nuitScene_ = false; uint32_t appels_ = 0, appelsPrec_ = 0;   // WFS-15
+    ComptesImage comptes_, comptesPrec_;   // WFS-317 (I9)
     ChronoImage chrono_, chronoPrec_;   // WFS-222
     VkQueryPool tsPool_ = VK_NULL_HANDLE;
     bool tsWritten_[2] = {false, false};

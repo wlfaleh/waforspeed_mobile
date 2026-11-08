@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "../core/jobs.h"
 #include "../core/log.h"
 #include "../core/platform.h"
@@ -33,8 +34,10 @@ namespace wfs { void benchArchi(Game& g, Renderer& r, const std::string& out); }
 #include "../render/bench_ombres.h"
 #include "../render/bench_squelette.h"
 #include "../render/bench_perf.h"   // WFS-222 (accroche) : WFS_BANC=perf
+#include "../render/bench_lod.h"   // WFS-265 (accroche) : WFS_BANC=lod
 #include "../game/conduite_banc.h"   // WFS-241 (accroche) : WFS_BANC=conduite
 #include "../game/chocs_banc.h"   // WFS-256 (accroche) : WFS_BANC=chocs
+#include "../game/virages_banc.h"   // WFS-295 (accroche) : WFS_BANC=virages
 #include "../world/pietons.h"
 #include "../world/conducteurs.h"   // WFS-73 (accroche)
 #include "../world/decor_carte.h"
@@ -70,6 +73,7 @@ bool readAsset(const std::string& path, std::vector<uint8_t>& out) {
     std::ifstream f(g_root + path, std::ios::binary);
     if (!f) return false;
     out.assign(std::istreambuf_iterator<char>(f), {});
+    memoire::compteurs().octetsLus += (int64_t)out.size();   // WFS-297 (RG-06)
     return true;
 }
 double nowSeconds() {
@@ -168,8 +172,10 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
     if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
+    if (banc == "virages") { const int e = benchVirages(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-295 (accroche) : direction dans les virages, captures virages-*
     if (banc == "conduite") { const int e = benchConduite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-241 (accroche) : banc de conduite, captures conduite-*
     if (banc == "ombres") { benchOmbres(g, r, out); return finir(); }   // WFS-227 (accroche) : ombres du soleil, travelling
     if (banc == "fluidite") { const int e = benchFluidite(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-221 (accroche) : à-coups de la voiture vue par la caméra
@@ -220,6 +226,7 @@ int main(int argc, char** argv) {
         if (const char* l = std::getenv("WFS_VOITURES")) { v.clear(); std::string t = l; size_t p0 = 0; for (size_t p; (p = t.find(',', p0)) != std::string::npos; p0 = p + 1) v.push_back(t.substr(p0, p - p0)); v.push_back(t.substr(p0)); }   // essai local
         benchCockpit(g, r, out, v); return finir();
     }
+    if (banc == "motos") { benchDeuxRoues(g, r, out); return finir(); }   // WFS-232 (accroche) : deux-roues du trafic seuls (trafic-motos-*)
     if (banc == "conducteurs") { conducteurs::benchConducteurs(g, r, out); return finir(); }   // WFS-73 (accroche) : conducteurs vus de côté
     if (banc == "squelette") { benchSquelette(g, r, out); return finir(); }   // WFS-63 : personnages animés seuls
     if (banc == "rondspoints") { const int e = benchRondsPoints(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-223

@@ -13,6 +13,22 @@ static constexpr double ANTICIPE_MAX = 8.0;    // m
 static constexpr double VOLANT_PLEIN = 0.35;   // braquage au-delà duquel l'aide laisse tout au joueur
 static constexpr double ELARGI_M = 8.0;        // m : borne du cap élargie de 8 m × courbure (rayon 14 m : +0,57 rad)
 static constexpr double ELARGI_MAX = 0.6;      // rad
+static constexpr double FILE_GAIN = 0.6;       // WFS-258 : maintien de voie, rad de cap par demi-largeur d'écart à la file
+static constexpr double FILE_CORR_MAX = 0.3;   // WFS-258 : correction de cap du maintien de voie, au plus (rad)
+
+// WFS-258 (point 3 de RG-00b, ANO-138) : direction moins vive à haute vitesse, voiture du joueur. Au-dessus de 100 km/h, avec
+// l'angle de roues d'avant (maxSteer / (1 + v / steerV)), un quart de volant demandait déjà toute l'adhérence (2,1 g dès
+// 150 km/h, comme le volant à fond) : la moindre touche faisait virer au maximum. L'angle est ramené pour que le volant à fond
+// demande 1,2 × l'adhérence du jeu (Phys::grip, RG-06), un quart de volant à peu près un quart ; réduction progressive de
+// 100 à 130 km/h (aucun à-coup), rien sous 100 km/h (zone de WFS-316). maxSteer, steerV et grip ne changent pas.
+static double reductionBraquageHauteVitesse(double v, double wb) {
+    constexpr double V0 = 100 / 3.6, V1 = 130 / 3.6, MARGE = 1.2;
+    if (v <= V0 || g_avantWfs258Vif) return 1.0;
+    const double roueAvant = Phys::maxSteer / (1 + v / Phys::steerV);                // angle des roues à fond, sans réduction
+    const double roueAdherence = std::atan(MARGE * Phys::grip * wb / (v * v));         // angle qui demande 1,2 × l'adhérence
+    const double f = std::min(1.0, roueAdherence / roueAvant), part = std::min(1.0, (v - V0) / (V1 - V0));
+    return 1.0 - part * (1.0 - f);
+}
 
 // WFS-217 (RG-01, RG-02) : le cap de la voiture est compté par rapport à la route sous elle. Dans le jeu web, la route
 // « porte » la voiture : quand elle tourne, la voiture tourne avec elle sans volant, et le joueur qui braque pour suivre le
@@ -28,7 +44,11 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     const double th0 = track.point(dist, 0).th;
     const double k = (track.point(dist + LISSAGE_M / M, 0).th - track.point(dist - LISSAGE_M / M, 0).th) / (2 * LISSAGE_M);   // 1/m
     courbeLisse_ = k * SEG_M / CURVE_K;   // même unité que Segment::curve (force centrifuge)
-    const double avance = speed * M * std::cos(heading);   // m/s le long de la route (négatif à contresens)
+    // WFS-295 (RG-01) : à l'écart n de l'axe (n > 0 à droite, k > 0 virage à droite), le rayon est 1/k − n : un mètre parcouru
+    // par la voiture fait avancer l'axe de 1 / (1 − k·n) m et tourner la route d'autant (repère de Frenet). Sans ce facteur,
+    // la voiture à l'extérieur du virage tournait comme sur un rayon (1 + n/R) fois trop grand (épingles : ×1,34 au bord)
+    facRoute_ = g_avantWfs295 ? 1.0 : std::max(0.2, 1 - k * playerX * RW);
+    const double avance = speed * M * std::cos(heading) / facRoute_;   // m/s le long de l'axe de la route (négatif à contresens)
     const bool active = aide == Aide::Activee;
     double w = !active ? 0.0 : locked ? 1.0 : 1.0 - clampd(std::abs(steer) / VOLANT_PLEIN, 0, 1);   // part de l'aide
     if (active && !locked && steer * k > 0) {   // braqué dans le virage : l'aide porte ce que l'adhérence ne permet pas
@@ -42,7 +62,14 @@ void Player::guider(double dt, double yawRate, double v, bool locked, Track& tra
     // direction visée : celle de la route un peu plus loin dans le sens de marche (± π à contresens, WFS-90)
     const double axe = std::abs(heading) > PI_D / 2 ? (heading > 0 ? PI_D : -PI_D) : 0.0, sens = axe == 0 ? 1.0 : -1.0;
     const double d = std::min(ANTICIPE_MAX, ANTICIPE_S * std::abs(v));
-    const double cible = axe + track.point(dist + sens * d / M, 0).th - th0;
+    // WFS-258 (RG-00b, point 1) : maintien de voie : volant lâché, l'aide ramène la voiture vers la file où le joueur l'a
+    // laissée (sans cela, la dérive vers l'extérieur des virages n'était jamais corrigée) ; seulement la part de l'aide (w)
+    // la file est reprise à la position de la voiture quand le joueur braque, sous 5 m/s (grille de départ, arrêt) et quand un
+    // autre système a déplacé la voiture depuis le pas précédent (placement sur la grille, remise en piste, choc)
+    const bool deplacee = playerX != finPasX_ || dist != finPasD_;
+    if (std::abs(steer) > 0.05 || !active || g_avantWfs258 || std::abs(v) < 5 || deplacee) fileAide_ = playerX;   // banc « avant » : sans maintien de voie
+    const double corrFile = clampd(-(playerX - fileAide_) * FILE_GAIN, -FILE_CORR_MAX, FILE_CORR_MAX) * sens * w;
+    const double cible = axe + track.point(dist + sens * d / M, 0).th - th0 + corrFile;
     double dev = heading - cible;
     // borne élargie du côté intérieur du virage seulement (trajectoire serrée permise ; vers l'extérieur, borne du jeu web)
     const double elargi = dev * k * sens > 0 ? std::min(ELARGI_MAX, std::abs(k) * ELARGI_M) : 0.0;
@@ -62,6 +89,7 @@ void Player::reset(const CarDef& c) {
     position = dist = playerX = speed = steer = heading = odo = 0;
     latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
+    fileAide_ = playerX; finPasX_ = 1e9; cedeAuDoigt_ = true; freinAide = false;   // WFS-258 : maintien de voie repris à la position de la voiture
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
@@ -87,13 +115,14 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
         double target = clampd(in.steer, -1, 1);
         double rate = (std::abs(target) < 1e-3 || signf((float)target) != signf((float)steer)) ? Phys::steerOut : Phys::steerIn;
         steer += clampd(target - steer, -dt * rate, dt * rate);
-    } else steer += -steer * std::min(1.0, dt * 4);
+    } else if (!playing || aide == Aide::Web || g_avantWfs295) steer += -steer * std::min(1.0, dt * 4);   // WFS-295 (RG-03) : joueur, braquage gardé après un choc
     // angle des roues plus petit à haute vitesse
-    const double wheelAngle = steer * Phys::maxSteer / (1 + std::abs(v) / Phys::steerV);
+    const double wheelAngle = steer * Phys::maxSteer / (1 + std::abs(v) / Phys::steerV) * (aide == Aide::Web ? 1.0 : reductionBraquageHauteVitesse(std::abs(v), perf.wb));
     double yawRate = v / perf.wb * std::tan(wheelAngle) * perf.handling;
     const double yawLim = Phys::grip * perf.handling / std::max(std::abs(v), 1.0);   // limite d'adhérence
     yawRate = clampd(yawRate, -yawLim, yawLim);
     double courbe = seg.curve;   // courbure de la force centrifuge (unités de Segment::curve)
+    facRoute_ = 1;   // ordinateur (jeu web) : la route porte la voiture, avance inchangée
     if (aide != Aide::Web) {   // WFS-217 : voiture du joueur (aide à la direction activée ou désactivée)
         guider(dt, yawRate, v, locked, track);
         courbe = courbeLisse_;
@@ -117,8 +146,9 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     }
     latAcc = v * yawRate;
     const double prevSpeed = speed;
-    position = track.wrap(position + dt * speed * std::cos(heading));
-    dist += dt * speed * std::cos(heading);
+    const double avanceAxe = dt * speed * std::cos(heading) / facRoute_;   // WFS-295 (RG-01) : avance de l'axe de la route
+    position = track.wrap(position + avanceAxe);
+    dist += avanceAxe;
     odo += dt * speed;   // WFS-90
     playerX += v * std::sin(heading) * dt / RW;
     // force centrifuge dans les virages
@@ -126,13 +156,46 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     playerX -= dt * 2 * sp * sp * courbe * CENTRIFUGAL;
 
     // ---------- moteur, freins, frottements (m/s²) ----------
-    nitroOn = playing && in.nitro && nitro > 0.01;
+    // WFS-258 (RG-00b, point 1) : aide activée, la voiture ralentit à temps pour le virage qui vient (épingle du Grand Prix prise
+    // à 228 km/h dans la vidéo de l'utilisateur) : au-dessus de la vitesse permise, gaz et nitro coupés, puis frein. Vitesse
+    // permise : adhérence et freinage de cette conduite (Phys::grip, Phys::brake) sur les 600 m qui viennent, et au plus 90 % de
+    // celle des ordinateurs de la Course à 5 (vitesseVirage, course5.cpp : la plus haute où la voiture reste sur la chaussée ;
+    // trop optimiste dans les chicanes pour un joueur qui braque). Le joueur peut toujours freiner plus tôt ; aide désactivée,
+    // rien n'est fait à sa place (RG-07 de WFS-241).
+    DriveInput cmd = in;
+    // Décision du PO (option A) : la limite CÈDE quand le joueur conduit lui-même : il braque fort (doigt ou flèche à 0,35 et plus,
+    // VOLANT_PLEIN : l'aide lui laisse déjà tout le volant) ou il freine ; elle ne ralentit que volant lâché ou presque
+    // WFS-258 (point 3, revue du lead dev, PR #271) : au-dessus de 100 km/h, la direction est réduite (un doigt à fond veut dire
+    // « tourner au maximum », pas « aller plus vite ») : la limite ne cède plus qu'au frein ; sinon le joueur, qui braque plus pour
+    // le même virage, passait le seuil et arrivait trop vite (et le seuil sur le braquage réduit oscillait autour de 126 km/h)
+    // WFS-258 (remarque du lead dev, PR #271) : écarts contre la bascule (gaz coupé puis remis, feux stop qui clignotent) :
+    //  - doigt relâché (sous 0,35) : la limite cédera au doigt sous 100 km/h, pas au-dessus (règle du point 3) ;
+    //  - doigt tenu : la décision prise au moment où le joueur braque est gardée ; elle ne change qu'au-delà d'un écart (la
+    //    limite reprend au-dessus de 110 km/h, recède sous 80 km/h) : avec 95 / 100 km/h, la voiture faisait encore le va-et-vient
+    //    (freinée au-dessus de 100, relâchée sous 95 : 76 clignotements par tour à la Corniche) ;
+    //  - le frein de l'aide se serre au-dessus de 103 % de la vitesse permise et reste serré jusqu'à revenir à la vitesse permise
+    const double va = std::abs(v);
+    if (std::abs(in.steer) < VOLANT_PLEIN) cedeAuDoigt_ = va <= 100 / 3.6;
+    else if (cedeAuDoigt_ && va > 110 / 3.6) cedeAuDoigt_ = false;
+    else if (!cedeAuDoigt_ && va < 80 / 3.6) cedeAuDoigt_ = true;
+    const bool joueurConduit = (std::abs(in.steer) >= VOLANT_PLEIN && (cedeAuDoigt_ || g_avantWfs258Vif)) || in.brake;   // banc « avant » : règle de main
+    bool freinAideAvant = freinAide;
+    freinAide = false;
+    if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258 && !joueurConduit) {
+        double vp = vitesseVirageAide(track, dist, Phys::grip / 9.81, Phys::brake / 9.81);
+        if (g_vitesseVirageCourse5) vp = std::min(vp, g_vitesseVirageCourse5(track, dist) * M * 0.9);
+        if (v > vp) {
+            cmd.gas = false; cmd.nitro = false;
+            if ((v > vp * 1.03 || freinAideAvant) && v > Phys::vRecul * 2) { cmd.brake = true; freinAide = true; }
+        }
+    }
+    nitroOn = playing && cmd.nitro && nitro > 0.01;
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
     const double top = MAX_SPEED * perf.top * (nitroOn ? perf.nitroMult : 1);
-    const bool accelerating = playing && !locked && in.gas && !in.brake;
+    const bool accelerating = playing && !locked && cmd.gas && !cmd.brake;
     // WFS-90 (RG-03) : marche arrière sans attendre l'arrêt complet (sous 3 m/s, le frein enchaîne sur la marche arrière)
-    reversing = playing && !locked && in.brake && !in.gas && speed * M < Phys::vRecul;
-    braking = playing && !locked && in.brake && speed > 0 && !reversing;
+    reversing = playing && !locked && cmd.brake && !cmd.gas && speed * M < Phys::vRecul;
+    braking = playing && !locked && cmd.brake && speed > 0 && !reversing;
     const double av = std::abs(v);
     const double resist = (Phys::roll + Phys::drag * av * av + (accelerating ? 0 : Phys::engineBrake)) / M;
     // WFS-188 (RG-06) : résistance du bas-côté proportionnelle à la vitesse (pleine dès 15 m/s) : à l'arrêt dans l'herbe,
@@ -179,6 +242,7 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
             projeterPose(track, x, z, cap);
         }
     }
+    finPasX_ = playerX; finPasD_ = dist;   // WFS-258 : pose laissée par ce pas (déplacement par un autre système détecté au suivant)
 }
 
 // ================================================================ WFS-241 : conduite en coordonnées du monde

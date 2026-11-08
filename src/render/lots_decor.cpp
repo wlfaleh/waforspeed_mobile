@@ -1,5 +1,6 @@
 // WaForSpeed — décor fixe préparé au chargement (WFS-268) : voir lots_decor.h.
 #include "lots_decor.h"
+#include "eclairage_precalcule.h"   // WFS-269
 #include <chrono>
 #include <climits>
 #include <cmath>
@@ -33,6 +34,17 @@ bool DecorFixe::preparer(Renderer& r, Track& t, int parts, int blocChunks, const
     jobs().parallelFor((int)cpu.size(), 1, [&](int b0, int e0) {
         for (int k = b0; k < e0; k++) construire(k / 2, (k & 1) != 0, cpu[(size_t)k].v.data(), cpu[(size_t)k].i.data());
     });
+    // WFS-269 : occlusion précalculée (détail : cache le ciel ; détail et allégé : reçoivent) ; WFS_SANS_AO : banc seul (gros plans
+    // avec / sans, même caméra)
+    if (aoRecoit_ && !std::getenv("WFS_SANS_AO")) {
+        std::vector<precalcul::Lot> lots;
+        for (size_t k = 0; k < cpu.size(); k++) for (int p = 0; p < parts_; p++)
+            lots.push_back({&cpu[k].v[(size_t)p], &cpu[k].i[(size_t)p], !(k & 1) && ((aoOcculte_ >> p) & 1), ((aoRecoit_ >> p) & 1) != 0, ((aoVtint_ >> p) & 1) ? FORCE_VTINT : 1.f});
+        if (!occI_.empty()) lots.push_back({&occV_, &occI_, true, false});
+        const precalcul::Bilan b = precalcul::occlusionDecor(lots, !occI_.empty());
+        occV_ = {}; occI_ = {};
+        WFS_LOG("décor fixe (WFS-269) : %s : occlusion précalculée, %zu sommets, %zu voxels, moyenne %.2f, %.0f ms (grille %.0f ms, %.1f Mo, rendus après le calcul)", nom, b.sommets, b.voxels, b.moyenne, b.ms, b.msGrille, b.memoireMo);
+    }
     // regroupement : bloc de blocChunks morceaux, un maillage par matériau et par niveau de détail
     const int64_t B = std::max(1, blocChunks);
     {   // journal : sommets par matériau (détail / allégé), pour suivre le coût mémoire
