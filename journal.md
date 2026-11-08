@@ -4612,3 +4612,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Captures** : 61 paires de `qa/pr/WFS-276/`, toutes ouvertes. 16 de nuit hors Ville changent (péage, village, rond-point : paysage sorti du noir, flaques orange et phares gardés, aucun halo). 45 sont identiques octet pour octet (13 de jour, Ville de nuit, Cockpit, conducteurs).
 - **Contrôles** : RG-01 arbitré par le PO (courbe par pixel, source dans DA-realisme § 3) ; coût +1,5 % / +1,9 % (journal du développeur). La tête 58f03d3 avait 41 commits de retard sur main, sans fichier commun : la fusion avec main a été essayée en local, sans conflit ; `test_fidelite_lumiere` passe (107 vérifications, 0 échec), post.frag, `eclairage_physique.cpp` et `renderer.cpp` compilent.
 - **À surveiller sur le téléphone** : ombres de campagne un peu grises ; épingle de nuit inchangée. Ligne ajoutée dans `qa/Check.md`.
+
+### 2026-11-08 00:33:51 — WFS-276 fusionné par le lead dev (PR #243, squash 925e3b4) ; Agent 0 libre (Claude, Agent 0 developer)
+- Revue refaite après les corrections (réponses dans la PR : 6714459535, 6715070305) ; fusion par le lead dev à 00:33 UTC ; statut 🟡 À valider (utilisateur). Ticket suivant demandé au PO.
