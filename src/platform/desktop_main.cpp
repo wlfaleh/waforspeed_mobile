@@ -170,8 +170,8 @@ int main(int argc, char** argv) {
         g.allerA(Ecran::Menu);
         for (int i = 0; i < 60 * 5; i++) { g.update(1.0 / 60); plantage::minuterieDeclencheur(1.0 / 60, g.ecran() == Ecran::Menu); }
     }
-    if (banc == "perf") { benchPerf(g, r, out); return finir(); }
-    if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "perf") { benchPerf(g, r, out); return finir(); }   // WFS-222 (accroche) : profilage des 4 cartes, Haute et Basse
+    if (banc == "lod") { const int e = benchLod(g, r, out); finir(); return e ? 3 : 0; }   // WFS-265 (accroche) : niveaux de détail au loin
     if (banc == "hud") { benchHud(g, r, out); return finir(); }   // WFS-27 : HUD seul (2400x1080)
     if (banc == "chocs") { const int e = benchChocs(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-256 (accroche) : chocs avec le décor, captures chocs-*
     if (banc == "virages") { const int e = benchVirages(g, r, out); finir(); return e > 0 ? 3 : 0; }   // WFS-295 (accroche) : direction dans les virages, captures virages-*
