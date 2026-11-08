@@ -1,6 +1,6 @@
 # WFS-297 — captures avant / après (tools/qa/captures_pr.sh)
 
-Branche `feature/waforspeed-297` comparée à `origin/main` ; bancs : chargement menu2 ; filtre : `@(chargement-*|reglages-pause|reglages-menu)`.
+Branche `feature/waforspeed-297` comparée à `origin/main` ; bancs : chargement:2340x1080 menu2:2340x1080 ; filtre : `@(chargement-*|reglages-pause|reglages-menu)`.
 
 | Capture | Avant (main) | Après (branche) |
 |---|---|---|
