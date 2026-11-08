@@ -90,9 +90,11 @@ int benchDepart(Game& g, Renderer& r, const std::string& out) {
     // la sonde locale arrive ≈ 3 s après le chargement sur le téléphone (APK 918 : image juste vers 0:03), en 0,3 s sur le banc :
     // le banc la retarde de 3 s pour reproduire le téléphone
     eclairage::Forcage f; f.actif = true; f.retardCapture = 3.0; eclairage::forcer(f);
-    for (const char* carte : {"ville", "plage", "campagne"})
+    const char* seul = std::getenv("WFS_DEPART_SEUL");   // essai local : « recommencer » ne lance que la dernière scène
+    const bool tout = !seul || std::string(seul) != "recommencer";
+    if (tout) for (const char* carte : {"ville", "plage", "campagne"})
         if (d.rouler(carte, true)) d.course(std::string("depart-nuit-") + carte);
-    if (d.rouler("ville", false)) d.course("depart-jour-ville");
+    if (tout && d.rouler("ville", false)) d.course("depart-jour-ville");
     if (d.rouler("ville", true)) {   // pause, reprise, puis « Recommencer » (Pause → Menu → Course, le menu n'est pas dessiné)
         for (int i = 0; i < 60 * 6; i++) d.image(i);
         g.allerA(Ecran::Pause); for (int i = 0; i < 60; i++) d.image(i);

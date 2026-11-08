@@ -64,6 +64,7 @@ struct Etat_ {
     const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
     double ev = 15; bool evInit = false, recaler = true; double dtImage = 0; int generation = 0;
     double tScene = 0;   // WFS-328 : temps de la dernière nouvelle scène (retard de capture du banc)
+    double zPrec = 0;    // WFS-328 : abscisse du joueur à l'image précédente (« Recommencer »)
     bool nuitEstimee = false;   // WFS-328 : image précédente exposée sur l'estimation de nuit (sans sonde locale)
     double hCache = -1000, kCache = 0;
     // ciel (pour la sonde du ciel calculée sur le CPU)
@@ -433,7 +434,12 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // WFS-213 (RG-01) : nouvelle scène aussi quand la piste, la carte ou la voiture change (init, changement de carte ou de voiture) :
     // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
     const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
-    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
+    // WFS-328 (RG-02) : « Recommencer » tôt dans la course ramène la voiture de moins de 80 m : un recul de plus de 20 m sur la piste
+    // en une image (impossible en roulant, même en marche arrière) est aussi une nouvelle scène
+    const double zPiste = gv.player ? gv.player->dist : 0;   // distance parcourue (position revient à 0 à chaque tour)
+    const bool recul = g.init && gv.track == g.pistePrec && (g.zPrec - zPiste) * M > 20;
+    g.zPrec = zPiste;
+    if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene || recul) {
         if (!g.init || autreScene || fp.night != g.nuitPrec) g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR;
         // WFS-328 (RG-02) : toute nouvelle scène (aussi « Recommencer » et téléportation) se recale dès sa première image
         g.evInit = false;
