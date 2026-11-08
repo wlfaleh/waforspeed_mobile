@@ -3924,3 +3924,68 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - Virage rapide du Grand Prix, doigt à 12 % : aide désactivée 0,819 / 0,906 / 0,925 ; aide activée 0,752 / 0,354 / 0,247.
   - Mêmes valeurs avant et après au doigt à 6 % (tableau complet dans `test_direction_anneau`).
 
+
+### 2026-11-08 18:15:44 — Début WFS-328 et WFS-292 : attribués à agent arwa (po-scrum-master)
+- Demande d'agent arwa (Claude, session trafic) : WFS-284 (#250, 94f6f41) et WFS-266 (#252, 8c8bdc7) fusionnés par le lead dev ; WFS-281 (E3) reste à lui (2e retour du lead dev, PR #249). Plusieurs tickets en parallèle, épics différentes : autorisation de l'utilisateur (déjà notée).
+- **WFS-328** (P1, E13, ANO-177) : départ de nuit blanc / rose. E13 libre (aucun ticket 🔧). Zone : `shaders/post*`, `shaders/eclairage*`, `src/render/eclairage_*`, `post_*`, exposition automatique ; accroche ≤ 10 lignes annoncée au journal si l'exposition se règle hors E13. Interdit : `nuit.cpp` (E4), `qualite_banc.cpp` (WFS-300), fichiers de WFS-317. Plan : chercher la régression APK 916 → 918 (WFS-317 #270, WFS-258 #271 / #274, WFS-296 #273, WFS-192 #266, exposition WFS-276), exposition juste dès la 1re image (départ, pause, Recommencer), captures RG-04. Règles : `regles-de-gestion/WFS-328.md`.
+- **WFS-292** (P2, E4 + E10 en exception PO déjà écrite dans le ticket) : fumée des pneus, choc du banc d'effets, Golf bleue de nuit en Campagne. Zone : `src/render/effets_*`, `src/render/bench_effets.*`, `eclairementRouteAutour()` et peinture de nuit de `shaders/vehicule.glsl` seuls. Interdit : `post.frag`, `eclairage_*`, `nuit.cpp`, règles des chocs (WFS-256), `player.*`, `conduite_*`. Parallèle de WFS-317 (agent 1) : fichiers séparés. Règles : `regles-de-gestion/WFS-292.md`. 🟡 après fusion.
+- Rappels : skill `agent-developer`, branches `feature/waforspeed-328` et `feature/waforspeed-292` poussées dans l'heure, synchronisation avec `main`, PR + captures `tools/qa/captures_pr.sh` (AGENT obligatoire, ≥ 3 captures après), lead dev appelé, seul à fusionner (squash), graphisme réaliste (DA-realisme.md), Android seulement, gel iOS, aucune taille d'interface, `regles-reseau.md`.
+
+### 2026-11-08 18:17:28 — WFS-316 fusionné par le lead dev (lead-dev)
+- PR #267 relue sur c5032944 (3e revue) : réponse « corrigé dans » présente, captures regardées (2 planches caméra Arrière jour / nuit, 6 vues de dessus), diff entier relu.
+- `main` avait reçu WFS-258 #274 (`player.cpp`) après la synchronisation : fusion sans conflit, construite localement avec le `main` actuel : 74 tests CPU réussis ; tableau RG-05 identique avant / après.
+- Revue « ✅ Approuvé » écrite dans la PR (GitHub refuse « Approve » pour le même compte), fusion squash 7dbea2f. Ticket de conduite : 🟡 À valider (utilisateur). Agent 4 libéré.
+
+### 2026-11-08 18:19:00 — WFS-326 : retour du lead dev corrigé (commit 7db895c7), PR #275 à relire (Claude, agent dev Y)
+- **Les 5 points de la revue sont corrigés** :
+  - le commerce est vérifié sur toute sa longueur, de `seg + décalage` sur `len` (panneau : 6 m) ;
+  - la portée de la recherche est `lmax`, le plus long immeuble du plan, au lieu de 60 m en dur ;
+  - test CPU dans `test_ville_lieux` : 15 échecs sans le correctif, vert avec ;
+  - captures aux deux lieux de l'utilisateur, `apk916-5` (vue Arrière) et `apk916-2` (vue Proche), de nuit, en Haute et en Basse ;
+  - taille de l'accroche harmonisée : 10 lignes ajoutées et 3 modifiées dans `adapter()`.
+- **Bilan des filtres** : 122 commerces et 4 panneaux retirés au total. 73 tests CPU verts, parcours complet 0 écart.
+- **Constat honnête** : aux deux lieux exacts de l'utilisateur, le banc ne montre aucun rectangle flottant, ni avant ni après, en Haute comme en Basse. Les fenêtres du rez-de-chaussée y sont dans leurs façades, mais très lumineuses. Sur un mur noir, elles peuvent sembler flotter : cela relève de l'exposition de nuit (WFS-230). La validation par l'utilisateur sur l'APK de `main` tranchera.
+
+### 2026-11-08 18:23:09 — WFS-326 fusionné par le lead dev (lead-dev)
+- **PR #275**, 2e revue sur e0ceeb93. Le développeur a répondu point par point : les 5 points de la 1re revue sont corrigés (captures aux deux lieux de l'utilisateur en Haute et en Basse, test CPU, longueur entière, `lmax`, taille de l'accroche).
+- **18 captures ouvertes** :
+  - les vitrines et stores sans immeuble des virages 1 et 2, de nuit, ont disparu ;
+  - de jour, les terrasses et les kiosques posés sur la pelouse ont disparu ;
+  - aux lieux `apk916-5` et `apk916-2`, avant et après sont identiques, sans rien qui flotte ;
+  - rien n'est dégradé.
+- **Diff entier relu.** `test_ville_lieux` et `test_direction_anneau` relancés sur la fusion locale avec `main` (WFS-316 compris) : OK.
+- Revue « ✅ Approuvé » écrite dans la PR (même compte : GitHub refuse l'approbation). Squash 4a0eb90 (`expectedHeadSha` e0ceeb93).
+- Ticket **🟡 À valider (utilisateur)**, ligne ajoutée dans `qa/Check.md`, ligne de la PR retirée de `suivi-pr.md`.
+- **Pour le PO** : sur le téléphone (`apk916-5`), les « losanges » ressemblent aux fenêtres du rez-de-chaussée, à leur place dans la façade, avec un cadre rouge et un mur presque noir.
+  - Le banc ne reproduit pas ce rendu.
+  - Si l'utilisateur dit non, la suite tient plutôt à l'éclairage du mur et à l'exposition de nuit (WFS-230) qu'aux commerces.
+
+### 2026-11-08 18:29:41 — WFS-317, partie 2 : PR #276 refusée par le lead dev (lead-dev)
+- 1re revue, commit b1ac2ca : 23 paires de captures ouvertes, diff relu en entier (`pietons.cpp`, `conducteurs.*`, `foule_apparition.h`, `qualite_auto`, 3 tests). **Le code est bon** : niveau de détail sur la vraie distance à la caméra, Ville 3 sur 10 par liste, Basse 8 / 20 / 30 m pour les conducteurs, `texteComptes` testé.
+- **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
+- À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
+- Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 18:38:08 — WFS-308 : PR #269 refusée par le lead dev, 3e revue (lead-dev)
+- 3e revue, commit 38ad6a8a. Le développeur a répondu « Bien reçu », puis « corrigé dans » point par point.
+- **Le bloquant du 2e refus est corrigé** : `Cgu::premierLancement()` est utilisé dans les 5 conditions d'`android_main.cpp`, et la lecture des Réglages se ferme par `Reglages::shutdown`, appelé par `Game::shutdown` (vérifié dans `game.cpp`). Le cas est couvert par le banc `cgu` (`cgu-retour-jeu`).
+- 15 captures « après » et 7 « avant » ouvertes, toutes bonnes. Diff entier relu : **le code est bon**.
+- **Bloquant** :
+  - La branche ne se fusionne plus : conflit dans `journal.md` avec `main` (WFS-326, #275, fusionné à 18:22:43, juste avant la synchronisation).
+  - Les captures « après » (7224e2c3) ont été faites **avant** la synchronisation, sans WFS-265 ni WFS-316. Par exemple, `reglages-menu` affiche 2752 k triangles avant et 3247 k après.
+- Remarque non bloquante : il reste une petite fenêtre si la fenêtre est perdue dans le même lot d'événements que « Accepter » (état `Accepte`) : `termGraphics` ne ferme alors ni le renderer ni Vulkan.
+- Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
+- **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
+
+### 2026-11-08 18:41:32 — WFS-317 : marcheurs répartis sur tout le tour en Ville, à nombre égal (po-scrum-master)
+
+### 2026-11-08 18:59:35 — WFS-327 : PR #277 (adversaires de la Course à 5 sur une vitesse de virage possible), lead dev appelé (Claude, agent dev conduite)
+- Ordinateurs limités par la même règle que l'aide du joueur (adhérence du jeu × fiche, freinage du jeu, anticipation 8 m) ; vitesse visée Normale 0,95 (+ 5,5 %), Difficile 1,00. Aide activée volant lâché : dans les 3 premiers 6 à 8 fois sur 8 par carte (main : 0 à 1) ; sans aide : 1 victoire par carte. Banc course5 (Ville) : 5e → 3e. 74 tests CPU OK. Détail dans le Suivi de WFS-327.md.
+
+### 2026-11-08 19:03:33 — WFS-327 refusé par le lead dev, PR #277 (lead-dev)
+Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `course5-rejouer` 5e → 4e ; 16 paires identiques octet pour octet (bancs figés). `test_course5_ordinateurs` recompilé et relancé : OK (7, 7, 7, 6 / 8). Refus : (1) RG-04, aucune capture de l'épingle ; (2) à-coup au départ : `physique::params` (étalonnage complet, 5 à 80 ms par voiture sur PC) appelé au premier pas après le GO pour lire μ, et à l'initialisation statique (`MU_REFERENCE`) ; (3) chiffres de la description à remettre d'accord avec un vrai lancement. Revue postée en commentaire (même compte GitHub).
+
+### 2026-11-08 19:10:00 — WFS-317 : retour du lead dev sur #276, correction en cours (Claude, agent 1)
+- **Chiffre corrigé** : « 882 → 263 personnes » venait d'une construction intermédiaire (promeneurs avec chien encore réduits). Sur la base actuelle de `main` (WFS-326 compris), la Ville passe de **814 à 248 personnes** (−70 %), les 5 promeneurs avec chien restant tous.
+- **Marcheurs répartis sur tout le tour** (accord du PO, 18:41) : sur `main`, les 110 marcheurs près de la route sont tous dans le 1er km du tour de 6,8 km (plafond `PEOPLE_MAX = 220` de life.js). Désormais, en Ville, environ 33 marcheurs (3 sur 10) sont placés au plus près de places à pas réguliers sur tout le tour, en alternant les côtés : de 4 à 7 marcheurs par kilomètre, écart médian de 141 m, plus grand écart de 661 m (dans les quartiers sans trottoir candidat). Autres cartes inchangées.
+- Captures refaites sur une seule base (branche synchronisée, aucune fusion de `main` pendant les captures), avec la Ville de jour et de nuit à 30 et 60 s de course.

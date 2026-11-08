@@ -163,6 +163,7 @@ else()
   add_executable(test_audio_chocs tests/test_audio_chocs.cpp src/audio/chocs_sons.cpp src/audio/voitures_sons.cpp src/audio/ambiance_lieux.cpp src/audio/engine_synth.cpp src/game/track.cpp src/game/player.cpp)   # WFS-298 : son des chocs
   add_executable(test_chocs tests/test_chocs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-256 : chocs avec le décor (poteau, mur, test continu)
   add_executable(test_virages_fleches tests/test_virages_fleches.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-295 : rayon juste partout, épingles aux flèches, réponse après un choc
+  add_executable(test_direction_anneau tests/test_direction_anneau.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-316 : volant tenu, anneau et virages serrés à 20 et 60 img/s
   add_executable(test_direction_vitesse tests/test_direction_vitesse.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)   # WFS-258 (point 3) : direction moins vive au-dessus de 100 km/h
   add_executable(test_aide_ralentit tests/test_aide_ralentit.cpp src/game/course5.cpp src/game/duel.cpp src/game/traffic.cpp src/game/reseau_udp.cpp src/game/reseau_peerjs.cpp src/game/binarypack.cpp src/core/jobs.cpp src/game/trace_cartes.cpp src/game/track.cpp src/game/player.cpp)
   target_link_libraries(test_aide_ralentit Threads::Threads)   # WFS-258 : aide activée, la voiture ralentit à temps (1er virage du GP à 228 km/h, tours des 4 cartes)
