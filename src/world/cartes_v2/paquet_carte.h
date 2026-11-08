@@ -24,8 +24,11 @@ bool preparerCarte(const std::string& carte);
 carte::Paquet cuire(const std::string& racine, const std::string& carte, carte::FormatTexture f);
 
 // banc d'essai (WFS_BANC=cuisson) : écrit les paquets de la Ville (3 formats) dans dossierPaquets(), vérifie deux cuissons identiques,
-// puis le parcours RG-08 (paquet absent, corrompu, format futur, valide) avec captures cuisson-* ; renvoie le nombre d'écarts
-int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string& racine);
+// puis paquet absent, corrompu, format futur, valide (captures cuisson-*), RG-07 (chargement de la Ville, médiane de 5, sans puis avec
+// paquet ; tailles ; mémoire) et RG-08 : parcours complet accueil → Ville → course → retour (fonction fournie par la plateforme) avec le
+// paquet présent, puis absent (captures dans out/avec-paquet et out/sans-paquet) ; renvoie le nombre d'écarts
+int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string& racine,
+                 int (*parcours)(Game&, Renderer&, const std::string&) = nullptr);
 
 } // namespace cartes_v2
 } // namespace wfs

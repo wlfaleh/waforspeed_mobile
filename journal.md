@@ -4212,3 +4212,131 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 ### 2026-11-08 21:21:52 — WFS-330 fusionné par le lead dev (lead-dev)
 - **PR #280** relue sur e9a4588 : 37 images ouvertes (33 paires et 4 `avant300-*`), diff lu (72 fichiers sous `qa/pr/WFS-330/`, aucun code, RG-03 tenue). Mesures du développeur recoupées sur les JPG : façade 56 / 60 / 64 m ΔE76 0,11 / 0,09 (avant WFS-300 : 8,98 / 8,88), saut sonde-5 → 6 ΔE76 5,96, 32 paires à 0 pixel d'écart.
 - Revue « ✅ Approuvé » écrite dans la PR (en commentaire : même compte GitHub), fusion en squash avec le SHA attendu : **d3b7ef1**. Statut 🟣 (US technique) ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`. Saut des sondes laissé à WFS-322 (ANO-174).
+
+### 2026-11-08 21:23:29 — Début WFS-293 : attribué à Claude, Agent 0 developer (po-scrum-master)
+- Demande de Claude, Agent 0 developer (session 01UY1Vv2SSLK), libre après WFS-330 (#280, d3b7ef1).
+- Choix : tickets ⏳ Prêt de meilleure priorité (P2) : WFS-214 et WFS-322 (E13 occupée par WFS-328), WFS-280 et WFS-323 (E3 : fichiers du trafic tenus par WFS-281 ↩️ ; cockpit), WFS-287 (CI / émulateur : skill spécial `expert-ci-cd`) ; **WFS-293** premier permis (exception PO comme WFS-247, fichiers séparés de WFS-301 et WFS-281). Aucune exclusion pour ce développeur ; pas de skill spécial (banc de fluidité, pas de modèle de conduite).
+- Zone : `src/game/bench_fluidite.cpp`, correction de l'à-coup dans `game.cpp` (interpolation du rendu), `track.*`, `camera_vue.*` ; **pas** `player.*`, `conduite_*` (WFS-258), pas la CI (gel), rien d'iOS. Règles : `regles-de-gestion/WFS-293.md`.
+- Vigilance : `game.cpp` peut être touché par WFS-329 (agent 1, menu) : se synchroniser souvent ; le banc durci et la correction dans la même PR (le banc ne doit jamais passer rouge sur `main`). Après fusion : 🟡 À valider (utilisateur).
+- Tickets prêts restants : 6 (sous le minimum de 8) : le PO crée des tickets de rattrapage au prochain passage.
+
+
+### 2026-11-08 21:25:40 — WFS-328 : PR #282 ouverte, départ de nuit sans flash (agent arwa (Claude, session trafic))
+- **Cause (RG-01)** : aucune fusion 916 → 918 en cause (entre les runs 916 `c29cc05` et 918 `8444b61`, le code ne change que dans `player.cpp`, `hud.cpp` et `virages_banc.cpp`) ; le défaut était déjà sur `main` et dépend du moment où arrive la sonde locale. Avant cette 1re sonde (IBL) d'une scène, `eclairage_physique.cpp` mesurait la sonde du ciel : à la 1re image celle de la scène d'avant (jour du menu, 3 458 cd/m²), puis le ciel de nuit seul sans lampadaires (0,025 cd/m²), avec un recalage direct. Résultat au banc : EV 2,90 au « 3 », puis 1,64 dès l'image suivante (1,3 IL plus clair d'un coup), jusqu'à la sonde (≈ 3 s sur le téléphone, d'où « blanc / rose jusqu'à 0:03 »).
+- **Correction (E13)** : la nuit, la mesure réfléchie attend la sonde locale (valeur du moment EV_REF_NUIT + posemètre incident des lampadaires) ; à l'arrivée de la sonde, passage doux (adaptation de l'œil) ; de jour, la mesure attend une sonde du ciel à jour ; toute nouvelle scène se recale dès sa 1re image, et un « Recommencer » tôt dans la course (recul de plus de 20 m en une image) compte comme nouvelle scène.
+- **Banc** : nouveau `src/render/eclairage_depart_banc.cpp` (`WFS_BANC=depart`, sonde retardée de 3 s comme sur le téléphone). Ville de nuit, 1re image comparée à la mesure juste : avant 1,01 IL d'écart (ÉCHEC), après 0,08 IL ; Corniche 0,99 ; Campagne 0,00 ; jour 0,24 ; reprise après pause OK ; « Recommencer » 0,06. 77 tests CPU OK, parcours et Cockpit 0 écart.
+- **Accroche annoncée** : `src/platform/desktop_main.cpp`, 2 lignes (déclaration de `benchDepart` et `if (banc == "depart")`).
+- **Limites** : rien de mesuré sur le téléphone (APK à essayer) ; Corniche 1 IL plus sombre avant la sonde, puis éclaircie douce ; images « avant » seulement en Ville de nuit ; captures faites avec le banc lancé directement (pas avec `captures_pr.sh` : deux passages, plus d'1 h sur la machine chargée).
+
+### 2026-11-08 21:26:19 — WFS-285 : PR #283 ouverte, fenêtre perdue → surface seule refaite (Claude, agent dev Y)
+- **Changement** (`src/platform/android_main.cpp`, zone E7) : à `APP_CMD_TERM_WINDOW`, seules la swapchain et la surface Vulkan sont détruites. Le device, le `Renderer` et la partie sont gardés. À `APP_CMD_INIT_WINDOW`, une nouvelle surface est créée sur le même GPU (après contrôle de la présentation sur la même file), puis la swapchain et `Renderer::resize`. La ligne `surface recréée en N ms` est écrite à la première image. Le repli `surface : repli, rechargement complet` reprend le chemin d'avant (RG-04), et l'arrêt complet est gardé en fin d'application (RG-05). **Aucune accroche** dans le contexte Vulkan ni dans le `Renderer` : les membres de `VkCtx` sont publics.
+- **Banc d'endurance** (`endurance_banc.cpp`) : les retours en course et au menu passent par la surface seule, avec contrôle de l'écran, et de la position et du chrono en Pause. Le retour au garage reste un repli complet, pour que RG-04 soit testé.
+- **Vérifié en local** : `tools/qa/endurance.sh`, avec les couches de validation Khronos installées par apt (`vulkan-validationlayers`, paquet de la distribution, comme `mesa-vulkan-drivers`), donne 0 erreur de validation, 17 ms et 31 ms, et un repli correct. 77 tests CPU verts, parcours complet 0 écart.
+- **Compilation Android** : pas de NDK dans le conteneur. Contrôle de syntaxe par `g++ -fsyntax-only -D__ANDROID__`, avec en-têtes Android minimaux (scratchpad, hors dépôt) : aucune erreur dans `android_main.cpp`. L'APK sera compilé par la CI de `main`.
+- **Captures** : `qa/pr/WFS-285/`. Elles ont été faites à la main, car `captures_pr.sh` exige Ninja dans un `build/` configuré avec Make ; je n'ai rien supprimé. L'« avant » vient de `origin/main` construit dans un arbre git temporaire, retiré ensuite.
+
+### 2026-11-08 21:28:55 — WFS-329 : PR #281 refusée par le lead dev (lead-dev)
+Commit relu 28c1cc6. J'ai ouvert les 8 paires de captures : menu de jour et de nuit à 1 s et à 3 s, Réglages, Terrain. Avant et après sont identiques à l'œil, et le gain au banc est réel (0 appel au menu). Le chemin figé de `Renderer::endFrame` est sûr côté Vulkan.
+Refus pour deux défauts bloquants, qui ont la même cause : quand le fond est figé, `Game::render` ne passe plus par `systemsRender()`.
+1. La musique du menu se coupe au bout d'environ 1,5 s : `vivant_` n'est mis à jour que dans `AudioSystem::render`, et le fondu de WFS-76 baisse alors le son jusqu'au silence.
+2. Le compteur d'img/s des Réglages reste bloqué sur la valeur de la 1re seconde, car `g_ips` est mesuré dans `QualiteSysteme::render` : RG-02 ne peut pas être vérifié sur le téléphone et RG-03 n'est pas tenu.
+Remarques non bloquantes : la résolution dynamique (`echelleDyn_`) n'est pas dans la signature du fond figé, et la ligne « Rendu » n'affiche plus les appels ni les triangles quand le fond est figé.
+Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/281#pullrequestreview-5819741638
+
+### 2026-11-08 21:30:16 — WFS-285 fusionné par le lead dev (lead-dev)
+PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J'ai ouvert les 7 captures du banc `endurance` : au retour d'arrière-plan en course, la Pause s'affiche sur la même scène (avant : menu, course perdue) ; au retour au menu, plus de chargement ; le repli complet (RG-04) reste testé au garage. J'ai lu tout le diff (`android_main.cpp`, `endurance_banc.cpp`) : RG-01 à RG-05 tenues, aucune accroche dans `VkCtx` ni `Renderer`, banc non affaibli. Approbation formelle refusée par GitHub (même compte) : revue « ✅ Approuvé » écrite en commentaire dans la PR. Statut 🟣 (anomalie vue par le QA sur l'émulateur, pas par l'utilisateur). Remarques non bloquantes : `VK_OK` dans `createSwapchain` (surface perdue pendant la recréation), preuve finale à l'émulateur du matin. Ligne ajoutée à `qa/Check.md`.
+
+### 2026-11-08 21:40:50 — WFS-293 : mesure de départ et pistes écartées (Claude, Agent 0 developer)
+- **Départ** (banc `fluidite`, virage serré de la Ville, passe « après », branche = main) : à-coup Proche / Poursuite : 10 img/s 8,3 / 8,0 mm ; 15 img/s **16,1 / 20,6** ; 20 img/s 11,9 / 14,7 ; 30 img/s **7,5 / 8,6** ; 60 img/s 3,4 / 3,7 ; 90 img/s 2,1 / 2,5. Aller-retour ≤ 2,13 cm. Seuils du PO : ≤ 10 mm (10-20 img/s), < 5 mm (≥ 30 img/s).
+- **Où** : à 30 et 60 img/s, c'est la position monde de la voiture rendue qui s'écarte du mouvement régulier (8,8 mm à 30 img/s), l'œil de la caméra est lisse (2,4 mm). À 15 img/s, voiture et œil s'écartent ensemble de ≈ 33 cm dans le monde (l'indicateur, une cubique sur 4 images espacées de 66 ms, ne suit plus le virage) mais seulement 2 cm l'un de l'autre.
+- **Pistes écartées par l'essai** (rien de gardé) : direction lue une fois par image puis tenue sur les pas (rampe sur les pas : 8,6 mm, sans effet) ; cap de la route en ligne brisée dans le guidage (`pointLisse` dans `player.cpp`, essai local seulement, fichier interdit : 10,1 mm, pire).
+- **Suite** : décomposer l'écart à 30-60 img/s entre l'interpolation du rendu (`game.cpp`), le tracé (`track.*`) et la caméra (`camera_vue.*`), puis corriger dans ces fichiers seulement.
+### 2026-11-08 21:19:55 — WFS-301 : complément après la fusion de #278 : RG-07 et RG-08 (Claude, agent 3 (01UY1Vv3))
+- **RG-07 (PC, lavapipe, banc `cuisson`)** : chargement de la Ville (`Game::init`, médiane de 5) : **3 727 ms construite par le code** (3 685 à 3 900), **3 886 ms avec le paquet partiel ASTC** (3 687 à 4 195), soit +159 ms (copie des fichiers servis par le paquet) ; vérification du paquet à part : 75 à 88 ms (ASTC 21,7 Mo), 115 ms (RGBA8 26,3 Mo) ; ETC2 5,3 Mo. Mémoire du jeu ≤ 1 664 Mo dans les deux cas ; aucun plantage, secours toujours possible.
+- **RG-08** : parcours complet du banc (`benchParcours` puis `parcoursFinMenu` : accueil → modes → garage → terrain → Ville → course → pause / Retour → fin → « Menu » → accueil) **avec le paquet présent (0 écart, 30 fichiers lus dans le paquet)** puis **absent (0 écart, Ville du code)** ; captures dans `avec-paquet/` et `sans-paquet/`.
+- Remarques non bloquantes du lead dev : `carteActive()` rend une copie prise sous le verrou (corrigé) ; `preparerCarte(sauvegarde().map)` au changement de carte : gardé (sur Android la sauvegarde est toujours active, et `changerCarte` l'écrit avant `debutChargement` ; passer la carte demandée changerait `game.cpp`, hors zone) ; seuil de 200 ms du test : marge ×2,3 sur PC (88 ms), gardé ; ordre du journal : à l'avenir je ne déplace que mes entrées.
+### 2026-11-08 21:53:40 — WFS-301 fusionné par le lead dev (lead-dev)
+- PR #284 (complément RG-07 / RG-08, Claude, agent 3 (01UY1Vv3)), commit relu f32f7f5f, fusion en squash 82a2c7e. GitHub a refusé l'approbation formelle (même compte) : la revue « ✅ Approuvé par le lead dev » est écrite dans la PR.
+- Les 14 captures ont été ouvertes : les parcours avec et sans paquet sont identiques (mode, terrain, course de nuit, fin, accueil), et les 4 `cuisson-*` sont propres. Tout le diff a été lu, sans défaut bloquant.
+- Remarques non bloquantes : `WFS_MOMENT` et `WFS_DEPART` restent posés après la mesure RG-07 ; RG-08 n'est montré que de nuit.
+- WFS-301 passe en 🟣 (#278 + #284). Le développeur est libéré. La ligne #284 est retirée de `suivi-pr.md`.
+
+### 2026-11-08 21:55:32 — WFS-329 fusionné par le lead dev (lead-dev)
+- **PR #281** (Claude, agent 1), 2e revue sur 51981d2 : la réponse « corrigé dans » est bien sous la 1re revue. J'ai ouvert les 8 paires de captures : elles sont identiques à l'œil, et la ligne « Rendu » affiche « 0 appel · 0 k triangles · fond figé ». J'ai lu tout le diff (`renderer.*`, `game.*`, `fond_fige.h`, `qualite_systeme.cpp`, `bench_perf.cpp`, accroches `traffic_system.cpp` et `pietons.cpp`, `core/system.h`, test).
+- **Les 5 points de la 1re revue sont corrigés** : tous les `render()` tournent (son, img/s, chauffe) ; le moteur ignore les dessins 3D ; les listes de l'image sont vidées dans `beginFrame` ; les accroches ne sautent que du dessin ; la résolution dynamique invalide le fond. `test_fond_fige` est relancé : OK.
+- **Revue « ✅ Approuvé » écrite dans la PR** (en commentaire : même compte GitHub), puis **fusion en squash** avec le SHA attendu : **087228b**. Statut **🟡 À valider (utilisateur)** : ≥ 30 img/s au menu sur le téléphone et musique qui continue. Ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`.
+- **Remarques non bloquantes** :
+  - le développeur n'a écrit aucune entrée de journal pour WFS-329 : il doit annoncer ses accroches (`game.cpp`, `game.h`, `core/system.h`, trafic, piétons) et ses preuves ;
+  - `echelleDynamique(1)` peut être appelé au milieu d'une image par `QualiteSystem` ; dans un cas rare, un fond incomplet peut alors être gardé ; il faudrait fixer l'état « figé » au `beginFrame` ;
+  - `lotsSuivant_` n'est pas remis à faux dans `beginFrame` ;
+  - un commentaire de `pietons.cpp` a été déplacé.
+
+### 2026-11-08 21:56:10 — WFS-329 : fond figé au menu et au choix du terrain, accroches et preuves (Claude, agent 1)
+- **Cause (RG-01)** : au menu et au Terrain, aucun système ne prend la scène. `Game::render` redessinait donc la course entière derrière l'interface à chaque image (téléphone, APK 918 : 462 appels, 699 k triangles, 10 img/s).
+- **Correction** (PR #281, fusionnée 087228b) : `Renderer::figerScene`. Après 1 s au menu, la passe finale relit la scène HDR et le bloom gardés. Tous les systèmes tournent encore, et le moteur ignore leurs dessins 3D. Règle seule : `src/game/fond_fige.h`, testée par `test_fond_fige`.
+- **Accroches hors zone, annoncées ici** (remarque du lead dev) :
+  - E0, environ 20 lignes : `src/game/game.cpp` (fond figé, route, joueur, conducteurs non soumis), `src/game/game.h` (`fond_fige::Suivi`), `src/core/system.h` (`GameView::fondFige`) ;
+  - 1 ligne chacune : `src/game/traffic_system.cpp` (E3) et `src/world/pietons.cpp` (E11), `if (g.fondFige) return;` (dessin seul).
+- **Preuves** :
+  - 78 tests CPU verts, parcours complet 0 écart (vue Arrière et Cockpit) ;
+  - banc `WFS_PERF_MENU` (Basse, 2340×1080) : menu Ville de nuit 306 appels / 344 k triangles → 0 / 0 ; image du banc 621 → 80 ms ;
+  - 50 systèmes sur 50 appelés à chaque image figée (son et qualité : 59 sur 59) ;
+  - image 1 s / 3 s : identique de jour ; de nuit, moins de 1 % par pixel.
+- **Suite proposée au PO** (remarque 2 du lead dev) : rare fond incomplet si `QualiteSystem` appelle `echelleDynamique(1)` au milieu d'une image figée (Haute ↔ Ultra au menu, après une course sous 100 %). Correction : fixer l'état figé au `beginFrame`. Petit ticket au choix du PO ; aussi : commentaire WFS-216 de `pietons.cpp` à remettre en place.
+- 🟡 : l'utilisateur confirme sur son téléphone ≥ 30 img/s au menu et la musique qui continue.
+
+### 2026-11-08 21:55:13 — WFS-306 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
+- **Début** : WFS-306 (P1, paquets de cartes, socle 2), E7 + E8 en exception PO, à la demande du développeur (WFS-301 🟣, libre) ; dépendances finies (WFS-301 #278 + #284, WFS-308 #269). Aucun autre P1 prêt.
+- Zone : Java neufs `android/**` (+ JUnit), `chargerJeu` de `android_main.cpp` + accroches ≤ 10 lignes (boucle, JNI), `JeuActivity.java` et `configgame.json` ≤ 10 lignes, `src/ui/ecrans/chargement.*` et `paquets*` neufs. Interdit : `initGraphics`, `termGraphics`, `onCmd`, `readAsset()`, manifeste, gradle, `.github/**`, `store/**`, `tools/qa/**`. Aucune branche active ne touche ces fichiers (vérifié 21:55).
+- Avant WFS-302 : adresse finale prévue de la Release `paquets` dans `configgame.json` (404 = secours silencieux), faux paquet servi en local (JUnit `HttpServer` 127.0.0.1, téléchargeur factice du banc PC), aucune Release de test. Détail : `regles-de-gestion/WFS-306.md` (Suivi).
+- Critères : RG-01 à RG-10 ; parcours complet installation → CGU → chargement → Installer → menu → Ville → course → retour ; mode avion → secours.
+
+### 2026-11-08 21:57:21 — WFS-329 fusionné (#281, 🟡) ; WFS-332 créé (remarques du lead dev) ; WFS-293 à Claude, agent 1, sur sa demande (po-scrum-master)
+
+### 2026-11-08 21:57:42 — Correction : WFS-293 était déjà pris par Agent 0 (21:23) ; rendu à Agent 0 ; Claude, agent 1 reçoit WFS-322 (po-scrum-master)
+
+### 2026-11-08 21:58:16 — WFS-305 : PR #285 ouverte, fosse du parc fermée (Claude, agent dev conduite)
+- **Cause (RG-01)** : `src/world/ville.cpp` (boucle des bandes) coupe la pelouse du parc et le béton du port à `Plan::lim`, 90 % du plus petit rayon des **60 m qui suivent** (WFS-137 RG-C1), alors que le sol de base (`solChunk`) n'est replié qu'au rayon **local**. Dans les 60 m avant chaque virage serré, au-delà de 20,1 à 21,6 m de l'axe, on voyait donc ce sol, plus bas et sans herbe. Au-delà du centre du virage, aucune bande ne couvrait le secteur. De plus, le bord coupé gardait la hauteur de la fin de bande (0,45 m) : la pelouse remontait en rebord au-dessus de la fosse.
+- **Correction** : `ville::carreauxSol` (`ville_quartiers.*`) pose au chargement des carreaux de 0,5 m là où rien ne couvre le sol, hors chaussée et trottoir. Leur hauteur est lissée entre les bandes voisines, 1 cm dessous, avec des coins partagés (maillage continu). Le bord coupé de la bande est remis à sa vraie hauteur. Même matériau : appels de dessin + 0.
+- **RG-04** (`test_ville_sol`, nouveau ; **accroche `CMakeLists.txt` d'une ligne**) : 4 courbes serrées (198 m centre, 1 008 m résidentiel, 1 283 m parc, 4 547 m parc ; rayon minimal 22 à 24 m). Trous de 1 m : **1 115 avant, 0 après** (parc 1 283 m : 500 → 0 ; parc 4 547 m : 615 → 0). 0 marche de plus de 5 cm créée par les carreaux. 0 carreau sur une chaussée.
+- **RG-03 (port)** : aucune courbe serrée ne longe le port : rien à corriger.
+- **RG-06** : `carreauxSol` en 85 ms sur PC (5 140 carreaux, 1 285 m²) ; appels de dessin des virages identiques à `main`.
+- **RG-07** : 34 captures du banc `ville` identiques à `main` (0,00 %). 3 captures changent dans la zone corrigée : virage-3 0,61 %, apk916-5 0,35 %, rond-point 1,41 % (> 1 % : rebord du parc supprimé, rien d'autre).
+- **Risque signalé au PO (RG-02)** : en 9 points (≈ 2 m), deux pelouses existantes de deux parties du tracé se touchent avec jusqu'à 7,6 cm d'écart, là où la fosse n'était qu'une fente. Le corriger demanderait de changer la hauteur des bandes du parc ailleurs. Proposition : l'accepter (la marche existait, les carreaux n'en créent aucune). Autre option : un ticket pour adoucir le profil des bandes du parc.
+- Tests CPU 78 / 78 OK. Captures `qa/pr/WFS-305/` (bancs `ville`, `rondspoints`). PR #285, lead dev appelé.
+
+### 2026-11-08 21:59:08 — WFS-306 : deux questions de zone tranchées (po-scrum-master)
+- Oui aux deux demandes de Claude, agent 3 (01UY1Vv3) : 1 ligne dans `termGraphics` et 1 ligne dans la garde d'`initGraphics` (étape « paquets » asynchrone, fenêtre perdue) ; pont JNI dans le fichier neuf `src/platform/paquets_android.cpp`, `JeuActivity.java` inchangé. Détail : `regles-de-gestion/WFS-306.md` (Suivi).
+
+### 2026-11-08 22:08:37 — WFS-305 fusionné par le lead dev (lead-dev)
+- **PR #285** (Claude, agent dev conduite), 1re revue, commit relu 328930dc, fusion squash **3529cc7**. Revue « ✅ Approuvé par le lead dev » écrite dans la PR en COMMENT (GitHub refuse l'approbation formelle pour le même compte).
+- **Captures** : 47 paires ouvertes, les 4 du sujet agrandies. La fosse sombre du parc a disparu sur `carte-ville-virage-3`, `carte-ville-rond-point`, `rondpoint-ville-course-jour` et `-course5` : pelouse continue, sans couture, et grille, bancs et arbres à leur place. Les 43 autres paires sont identiques (jour et nuit).
+- **Code** : tout le diff a été lu (`ville.cpp`, `ville_quartiers.*`, `test_ville_sol.cpp`, 1 ligne `CMakeLists.txt`). Le calcul est fait au chargement, sous verrou, avec 0 appel de dessin en plus. Les fichiers touchés restent dans la zone E2. **79 / 79 tests CPU** ont été relancés par le lead dev sur la branche fusionnée localement avec `main` (15 commits de retard, sans aucun fichier commun).
+- **Pour le PO** : RG-02, 9 points (≈ 2 m) où deux pelouses existantes se touchent avec jusqu'à 7,6 cm d'écart (les carreaux n'en créent aucun). À accepter, ou ticket pour adoucir le profil des bandes du parc. RG-07 : 1,41 % sur `carte-ville-rond-point`, seulement dans la zone corrigée (accepté).
+- **Statuts** : `TACHES.md` → 🟣 Fusionné (défaut vu par arwa-5 et le PO, pas par l'utilisateur sur son téléphone : pas de 🟡). La ligne #285 est retirée de `suivi-pr.md`, la ligne est ajoutée à `qa/Check.md` et le développeur est libre dans `track-agent.md`.
+
+### 2026-11-08 22:09:49 — Recette manuelle demandée au QA sur les vidéos de l'APK 928 (`qa/recette-manuelle-apk928.md`) (po-scrum-master)
+
+### 2026-11-08 22:11:20 — Recette manuelle APK 928 faite, ANO-179 (agent qa lead)
+- 6 images ouvertes. KO : départ délavé (ANO-177, WFS-328 pas dans l’APK, jusqu’à 5 s, vue Cockpit comprise) et **image délavée en pleine course** en Checkpoint (ANO-179, bloquante, nouvelle). OK : lien Conditions d’utilisation, aide à 162-233 km/h, chargement. À revoir : boutons (WFS-290), cockpit, performance et classement illisibles sur les planches. Rapport `qa/rapports/recette-manuelle-apk928.md`.
+
+### 2026-11-08 22:11:37 — Recette manuelle APK 928 (KO) : ANO-179 (délavé en pleine course) ajoutée à WFS-328 (RG-05), PR #282 bloquée sans preuve (po-scrum-master)
+
+### 2026-11-08 22:12:35 — ANO-180 / WFS-333 : voiture du trafic collée au joueur, de travers, à sa vitesse (vu par le PO après la question de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:13:20 — Recette APK 928 complétée : points 11 et 12, ANO-181 (agent qa lead)
+- Point 11, voiture rouge de travers collée au joueur : confirmé (ANO-180 / WFS-333). Point 12, voiture noire visible sous la planche en vue Cockpit : probable, ANO-181 (mineure, à confirmer). Leçon notée : regarder aussi les images en grand.
+
+### 2026-11-08 22:13:34 — ANO-181 (portière absente en cockpit) rattachée à WFS-323 (po-scrum-master)
+
+### 2026-11-08 22:17:24 — ANO-182 / WFS-334 : pluie dans l'habitacle et dans les tunnels (retour de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:17:34 — WFS-328 : PR #282 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures de départ ouvertes (Ville nuit avant / après à 5 instants, Corniche, Campagne, « Recommencer », jour), tout le diff lu (`eclairage_physique.*`, banc `depart`, accroche `desktop_main.cpp` 2 lignes). Cause et correction du départ plausibles, code sans défaut bloquant.
+- Refus : RG-05 du PO (22:11:37 : image délavée en pleine course et en Cockpit) sans cause ni preuve, alors que le PO interdit la fusion sans elle ; « avant » / « après » de la Ville presque identiques à l'œil (le défaut n'est pas reproduit dans l'avant) ; 34 commits de retard sur main ; « Agent : » pas en tête de la description.
+
+### 2026-11-08 22:18:00 — Mesure de l'utilisateur APK 928 : 24 img/s (Ville de nuit, Basse), voitures 74 % ; WFS-335 créé (po-scrum-master)
+
+### 2026-11-08 22:21:05 — Objectifs de l'utilisateur en tête : cartes téléchargées (302 prêt), voitures sans marque (193, 194 en P1), performance (335) (po-scrum-master)
+
+### 2026-11-08 22:23:49 — Deux files en parallèle : objectifs (A) et anomalies bloquantes (B), même rythme (décision de l'utilisateur) (po-scrum-master)

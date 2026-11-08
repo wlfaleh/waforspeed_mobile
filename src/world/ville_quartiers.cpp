@@ -3,9 +3,11 @@
 // tirage du pas de boucle après le corps, même après un continue) : chaque tirage est une instruction séparée.
 #include "ville_quartiers.h"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <map>
 #include <mutex>
+#include <set>
 #include "../core/log.h"
 #include "../core/math.h"
 #include "../game/track.h"
@@ -461,6 +463,220 @@ void traverser(double& lat, int& dir, bool& marche, float& yawRel, double& y, in
     // le personnage regarde vers +Z : π/2 relatif à la route = vers la droite (+latéral) ; à l'arrêt, face à la chaussée
     yawRel = marche ? (but > lat ? 1.5708f : -1.5708f) : (lat > 0 ? -1.5708f : 1.5708f);
     y = std::fabs(lat) < RW ? 0.02 : 0.15;   // chaussée, ou trottoir (0,15 m)
+}
+
+// ---------- WFS-305 (ANO-171) : sol fermé côté intérieur des courbes serrées ----------
+const std::vector<std::vector<CarreauSol>>& carreauxSol(const MapDef& map, Track& t) {
+    static std::mutex m;
+    static std::map<std::pair<uint32_t, int64_t>, std::vector<std::vector<CarreauSol>>> cache;
+    static const std::vector<std::vector<CarreauSol>> vide;
+    const int64_t L = (int64_t)t.segmentCount();
+    if (std::strcmp(map.id, "ville") || L <= 0) return vide;
+    const Plan& P = adapter(map, t);
+    std::lock_guard<std::mutex> verrou(m);
+    auto it = cache.find({map.seed, L});
+    if (it != cache.end()) return it->second;
+    std::vector<std::vector<CarreauSol>>& out = cache[{map.seed, L}];
+    out.assign((size_t)L, {});
+    if (!P.adapte || P.limG.empty()) return out;
+    const float R = (float)RW, C = CARREAU_SOL;
+    // repère de chaque segment (comme carte::poseAt : origine, latéral r vers la droite, avant f) et grille de 40 m (voisins)
+    struct Rep { float x, y, z, rx, rz, fx, fz; };
+    std::vector<Rep> rep((size_t)L + 1);
+    for (int64_t a = 0; a <= L; a++) {
+        const TrackPoint p = t.point((double)a * SEG, 0);
+        const float c = std::cos((float)p.th), sn = std::sin((float)p.th);
+        rep[(size_t)a] = {(float)p.x, (float)p.y, (float)p.z, c, sn, sn, -c};
+    }
+    constexpr float CASE = 40;
+    float x0 = 1e30f, z0 = 1e30f, x1 = -1e30f, z1 = -1e30f;
+    for (const Rep& r : rep) { x0 = std::min(x0, r.x); z0 = std::min(z0, r.z); x1 = std::max(x1, r.x); z1 = std::max(z1, r.z); }
+    const int nx = (int)((x1 - x0) / CASE) + 1, nz = (int)((z1 - z0) / CASE) + 1;
+    std::vector<std::vector<int32_t>> grille((size_t)nx * nz);
+    auto ix = [&](float x) { return std::clamp((int)((x - x0) / CASE), 0, nx - 1); };
+    auto iz = [&](float z) { return std::clamp((int)((z - z0) / CASE), 0, nz - 1); };
+    for (int64_t a = 0; a < L; a++) grille[(size_t)iz(rep[(size_t)a].z) * nx + ix(rep[(size_t)a].x)].push_back((int32_t)a);
+    // bandes de chaque segment (une rue de la zone : comme ville.cpp, chaussée opposée de l'autoroute, tunnel et pont exclus)
+    auto bandesDe = [&](int64_t a, int s, Bande b[2]) {
+        const uint8_t vo = P.voie[(size_t)a];
+        if (vo != RUE && (s < 0 || vo != AUTOROUTE)) return 0;
+        return bandes(zoneId(map, a, L), b);
+    };
+    // (x, z) dans le quadrilatère de la bande du segment k, côté s, de l0 à l1 m de l'axe (comme ville.cpp : entre les lignes des
+    // segments k et k + 1) ; *lat : latéral du point (interpolé entre les deux lignes)
+    auto dansBande = [&](int64_t k, int s, float l0, float l1, float x, float z, float* lat, float* marge = nullptr) {
+        const Rep& p0 = rep[(size_t)k]; const Rep& p1 = rep[(size_t)k + 1];
+        const float ax = p0.x + s * l0 * p0.rx, az = p0.z + s * l0 * p0.rz, bx = p1.x + s * l0 * p1.rx, bz = p1.z + s * l0 * p1.rz;
+        const float cx = p1.x + s * l1 * p1.rx, cz = p1.z + s * l1 * p1.rz, dx = p0.x + s * l1 * p0.rx, dz = p0.z + s * l1 * p0.rz;
+        auto cote = [](float px, float pz, float qx, float qz, float x2, float z2) { return (qx - px) * (z2 - pz) - (qz - pz) * (x2 - px); };
+        const float e1 = cote(ax, az, bx, bz, x, z), e2 = cote(bx, bz, cx, cz, x, z), e3 = cote(cx, cz, dx, dz, x, z), e4 = cote(dx, dz, ax, az, x, z);
+        if (!((e1 >= 0 && e2 >= 0 && e3 >= 0 && e4 >= 0) || (e1 <= 0 && e2 <= 0 && e3 <= 0 && e4 <= 0))) return false;
+        if (lat) {   // latéral : part du point entre le bord intérieur (AB) et le bord extérieur (DC), par les distances aux deux bords
+            const float di = std::abs(e1) / std::max(1e-6f, std::hypot(bx - ax, bz - az)), de = std::abs(e3) / std::max(1e-6f, std::hypot(dx - cx, dz - cz));
+            *lat = l0 + (l1 - l0) * di / std::max(1e-6f, di + de);
+            if (marge) *marge = std::min({di, de, std::abs(e2) / std::max(1e-6f, std::hypot(cx - bx, cz - bz)),
+                                          std::abs(e4) / std::max(1e-6f, std::hypot(ax - dx, az - dz))});   // distance au bord le plus proche
+        }
+        return true;
+    };
+    // bandes posées (comme ville.cpp : de b.a à Plan::lim), rangées dans une grille de 8 m (chaque case : les bandes qui la touchent)
+    struct Posee { int32_t k; int8_t s; float l1; Bande b; };
+    std::vector<Posee> posees;
+    constexpr float FIN = 8;
+    const int fx = (int)((x1 - x0 + 2 * (R + 130)) / FIN) + 1, fz = (int)((z1 - z0 + 2 * (R + 130)) / FIN) + 1;
+    const float fx0 = x0 - (R + 130), fz0 = z0 - (R + 130);
+    std::vector<std::vector<int32_t>> fine((size_t)fx * fz);
+    auto jx = [&](float x) { return std::clamp((int)((x - fx0) / FIN), 0, fx - 1); };
+    auto jz = [&](float z) { return std::clamp((int)((z - fz0) / FIN), 0, fz - 1); };
+    for (int64_t k = 0; k < L; k++) for (int s : {-1, 1}) {
+        Bande b[2]; const int nb = bandesDe(k, s, b);
+        const float lim = std::min(P.lim(k, s), P.lim(k + 1, s));
+        for (int i = 0; i < nb; i++) {
+            const float l1 = std::min(b[i].b, lim);
+            if (b[i].a >= l1) continue;
+            float bx0 = 1e30f, bz0 = 1e30f, bx1 = -1e30f, bz1 = -1e30f;
+            for (int e = 0; e <= 1; e++) for (float l : {b[i].a, l1}) {
+                const Rep& r = rep[(size_t)k + e];
+                const float x = r.x + s * l * r.rx, z = r.z + s * l * r.rz;
+                bx0 = std::min(bx0, x); bz0 = std::min(bz0, z); bx1 = std::max(bx1, x); bz1 = std::max(bz1, z);
+            }
+            const int32_t id = (int32_t)posees.size();
+            posees.push_back({(int32_t)k, (int8_t)s, l1, b[i]});
+            for (int gz = jz(bz0); gz <= jz(bz1); gz++) for (int gx = jx(bx0); gx <= jx(bx1); gx++) fine[(size_t)gz * fx + gx].push_back(id);
+        }
+    }
+    // (x, z) déjà couvert : chaussée ou trottoir d'un point du tracé (RW + 6 m, plus la demi-diagonale du carreau), ou bande posée ;
+    // hauteur (absolue) de la bande du dessus (celle qu'on voit) dans *y (NaN : chaussée ou trottoir)
+    auto couvert = [&](float x, float z, float* y = nullptr, bool* plein = nullptr) {   // plein : la case entière sous une bande
+        const float route = R + 6 + C * 0.71f;
+        const int cx = ix(x), cz = iz(z);
+        for (int j = std::max(0, cz - 1); j <= std::min(nz - 1, cz + 1); j++)
+            for (int i = std::max(0, cx - 1); i <= std::min(nx - 1, cx + 1); i++)
+                for (int32_t k : grille[(size_t)j * nx + i]) {
+                    const float dx = x - rep[(size_t)k].x, dz = z - rep[(size_t)k].z;
+                    if (dx * dx + dz * dz < route * route) { if (y) *y = std::numeric_limits<float>::quiet_NaN(); return true; }
+                }
+        bool trouve = false; float haut = -1e30f;
+        for (int32_t id : fine[(size_t)jz(z) * fx + jx(x)]) {
+            const Posee& p2 = posees[(size_t)id];
+            const Bande& bb = p2.b;
+            float av, mg;
+            if (!dansBande(p2.k, p2.s, bb.a, p2.l1, x, z, &av, &mg)) continue;
+            if (plein && mg > C * 0.71f) *plein = true;
+            haut = std::max(haut, rep[(size_t)p2.k].y + bb.ya + (bb.yb - bb.ya) * (av - bb.a) / (bb.b - bb.a));
+            trouve = true;
+        }
+        if (trouve && y) *y = haut;
+        return trouve;
+    };
+    auto centre = [&](int64_t a, int s) { const trace::Rayon ri = trace::rayonInterieur(t, (double)a * SEG);   // rayon intérieur local
+        return ri.m < 60 ? (float)(s > 0 ? ri.droite : ri.gauche) : std::numeric_limits<float>::infinity(); };
+    // carreaux : réseau de C m du monde, dans la partie de chaque bande coupée par Plan::lim (de lim à la fin de la bande)
+    std::set<std::pair<int64_t, int64_t>> vus;   // centres déjà traités (indices du réseau)
+    size_t nb = 0;
+    for (int64_t a = 0; a < L; a++) for (int s : {-1, 1}) {
+        Bande b[2]; const int n = bandesDe(a, s, b);
+        const float lim = std::min(P.lim(a, s), P.lim(a + 1, s));
+        if (!n || !std::isfinite(lim)) continue;
+        const Rep& q = rep[(size_t)a];
+        // dans une courbe serrée, les lignes des segments se croisent au centre du virage : la partie coupée est faite de deux
+        // morceaux, de lim au centre, puis du centre à la fin de la bande (coin retourné, de l'autre côté du centre : sans lui, le
+        // secteur au-delà du centre, qu'aucune bande ne couvre, restait une fosse)
+        const float c0a = centre(a, s), c1a = centre(a + 1, s);
+        for (int i = 0; i < n; i++) for (int morceau = 0; morceau < 2; morceau++) {
+            if (morceau == 1 && !std::isfinite(std::max(c0a, c1a))) break;
+            const float d = morceau == 0 ? std::max(b[i].a, lim) : std::max(b[i].a, 1.001f * std::max(c0a, c1a));
+            const float f = morceau == 0 ? std::min(b[i].b, 0.999f * std::min(c0a, c1a)) : std::min(b[i].b, std::max(c0a, c1a) + 40);   // au-delà de 40 m du centre : déjà couvert par les bandes des rues voisines (test_ville_sol)
+            if (d >= f) continue;
+            // cases du réseau touchées par la partie coupée : points de la partie tous les 0,25 m (la moitié d'une case)
+            std::vector<std::pair<int64_t, int64_t>> cases;
+            const int nu = (int)std::ceil((float)SEG_M / (C / 2)), nl = (int)std::ceil((f - d) / (C / 2));
+            for (int iu = 0; iu <= nu; iu++) for (int il = 0; il <= nl; il++) {
+                const float u = (float)iu / nu, l = d + (f - d) * il / std::max(1, nl);
+                const Rep& r0 = rep[(size_t)a]; const Rep& r1 = rep[(size_t)a + 1];
+                const float x = r0.x + (r1.x - r0.x) * u + s * l * (r0.rx + (r1.rx - r0.rx) * u), z = r0.z + (r1.z - r0.z) * u + s * l * (r0.rz + (r1.rz - r0.rz) * u);
+                cases.push_back({(int64_t)std::floor(x / C), (int64_t)std::floor(z / C)});
+            }
+            std::sort(cases.begin(), cases.end());
+            cases.erase(std::unique(cases.begin(), cases.end()), cases.end());
+            for (const auto& [gx, gz] : cases) {
+                    const float x = ((float)gx + 0.5f) * C, z = ((float)gz + 0.5f) * C;
+                    // case qui touche la partie coupée (centre ou un coin dedans : près du centre du virage, la partie est plus mince
+                    // que la case)
+                    float v = 0; bool dedans = dansBande(a, s, d, f, x, z, &v);
+                    for (const auto& [ex, ez] : {std::pair{-1, -1}, std::pair{-1, 1}, std::pair{1, 1}, std::pair{1, -1}})
+                        if (!dedans) dedans = dansBande(a, s, d, f, x + ex * C * 0.49f, z + ez * C * 0.49f, &v);
+                    if (!dedans) continue;
+                    const std::pair<int64_t, int64_t> cle{gx, gz};
+                    if (!vus.insert(cle).second) continue;
+                    // posé si une partie de la case n'est pas couverte (centre ou un coin) : pas de fente au bord des bandes ; jamais si
+                    // le centre est sur la chaussée ou le trottoir
+                    float yc; bool pleine = false;
+                    const bool c0 = couvert(x, z, &yc, &pleine);
+                    if (c0 && (std::isnan(yc) || pleine)) continue;
+                    bool plein = c0;
+                    for (const auto& [ex, ez] : {std::pair{-1, -1}, std::pair{-1, 1}, std::pair{1, 1}, std::pair{1, -1}})
+                        plein = plein && couvert(x + ex * C * 0.49f, z + ez * C * 0.49f);
+                    if (plein) continue;
+                    // hauteur : celle de la bande coupée à cet endroit ; case à moitié sous une bande posée : celle de cette bande (bord fixe
+                    // du lissage ci-dessous)
+                    const float y = (c0 ? yc : q.y + b[i].ya + (b[i].yb - b[i].ya) * (v - b[i].a) / (b[i].b - b[i].a)) - 0.01f;
+                    out[(size_t)a].push_back({(int32_t)gx, (int32_t)gz, y, {y, y, y, y}, (uint8_t)i, c0});
+                    nb++;
+                }
+        }
+    }
+    // hauteurs lissées (RG-02 : pas de marche) : chaque carreau prend la moyenne de ses 4 voisins (carreau, ou bande qui touche le
+    // carreau, à sa hauteur) jusqu'à l'équilibre (Gauss-Seidel) : le sol passe en pente douce de la bande coupée à la bande voisine ;
+    // un voisin sur la chaussée, le trottoir ou hors des bandes ne compte pas
+    {
+        struct Ref { int64_t a; size_t i; };
+        std::map<std::pair<int64_t, int64_t>, Ref> idx;
+        for (int64_t a = 0; a < L; a++) for (size_t i = 0; i < out[(size_t)a].size(); i++) {
+            const CarreauSol& q = out[(size_t)a][i];
+            idx[{q.gx, q.gz}] = {a, i};
+        }
+        struct Voisin { CarreauSol* c; float y; };   // carreau voisin, ou hauteur fixe d'une bande (c nul)
+        std::vector<std::pair<CarreauSol*, std::vector<Voisin>>> sys;
+        for (auto& [cle, r] : idx) {
+            std::vector<Voisin> v;
+            for (const auto& [ex, ez] : {std::pair{1, 0}, std::pair{-1, 0}, std::pair{0, 1}, std::pair{0, -1}}) {
+                const std::pair<int64_t, int64_t> n{cle.first + ex, cle.second + ez};
+                auto f = idx.find(n);
+                if (f != idx.end()) { v.push_back({&out[(size_t)f->second.a][f->second.i], 0}); continue; }
+                float y;
+                if (couvert(((float)n.first + 0.5f) * C, ((float)n.second + 0.5f) * C, &y) && !std::isnan(y)) v.push_back({nullptr, y});
+            }
+            sys.push_back({&out[(size_t)r.a][r.i], std::move(v)});
+        }
+        for (auto& [c, v] : sys) c->y += 0.01f;   // hauteur de la bande (sans le centimètre) pour le calcul
+        for (int iter = 0; iter < 2000; iter++) {
+            float ecart = 0;
+            for (auto& [c, v] : sys) {
+                if (v.empty() || c->bord) continue;   // case à moitié sous une bande : hauteur de la bande, fixe
+                float m2 = 0; for (const Voisin& w : v) m2 += w.c ? w.c->y : w.y;
+                m2 /= (float)v.size();
+                ecart = std::max(ecart, std::abs(m2 - c->y)); c->y = m2;
+            }
+            if (ecart < 0.0005f) break;
+        }
+        for (auto& [c, v] : sys) c->y -= 0.01f;   // 1 cm sous la bande voisine : elle le cache là où ils se touchent
+        // coins : moyenne des carreaux qui partagent le coin (le sol devient un seul maillage continu, sans fente entre deux cases)
+        for (auto& [cle, r] : idx) {
+            CarreauSol& c = out[(size_t)r.a][r.i];
+            static constexpr int CX[4] = {0, 0, 1, 1}, CZ[4] = {0, 1, 1, 0};
+            for (int k = 0; k < 4; k++) {
+                float som = 0; int nbc = 0;
+                for (int ex = -1; ex <= 0; ex++) for (int ez = -1; ez <= 0; ez++) {
+                    auto f = idx.find({cle.first + CX[k] + ex, cle.second + CZ[k] + ez});
+                    if (f != idx.end()) { som += out[(size_t)f->second.a][f->second.i].y; nbc++; }
+                }
+                c.coin[k] = som / (float)std::max(1, nbc);
+            }
+        }
+    }
+    WFS_LOG("Ville : sol fermé dans les courbes serrées (WFS-305) : %zu carreau(x) de %.1f m (%.0f m²)", nb, C, nb * C * C);
+    return out;
 }
 
 } // namespace ville

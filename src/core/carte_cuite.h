@@ -75,7 +75,7 @@ std::string& dossierPaquets();   // posé par la plateforme au démarrage
 void activer(Paquet&& p);
 void desactiver();
 bool actif();
-const std::string& carteActive();
+std::string carteActive();   // copie prise sous le verrou
 // fichier du paquet actif (copie dans out) ; faux s'il n'y est pas (readAsset lit alors l'APK)
 bool lireDansPaquet(const std::string& chemin, std::vector<uint8_t>& out);
 long long lusDansPaquet();   // nombre de fichiers servis par le paquet depuis l'activation (journal, banc)

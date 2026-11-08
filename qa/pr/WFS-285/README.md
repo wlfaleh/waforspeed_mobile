@@ -1,0 +1,10 @@
+# WFS-285 — captures avant / après (banc `endurance`, 1280×720, lavapipe)
+
+Avant : `origin/main` construit à part (arbre git temporaire), même banc. Après : branche. `captures_pr.sh` n'a pas pu servir : le dossier `build/` local est configuré avec Make, et le script exige Ninja (rien n'a été supprimé). Les étapes ont donc été faites à la main, de la même façon.
+
+| Capture | Ce qu'on voit | Avant (main) | Après (branche) |
+|---|---|---|---|
+| `endurance-avant-retour-1` | course en Ville, juste avant le passage en arrière-plan (voiture, chrono 63 s) : capture nouvelle, pas d'« avant » | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/apres-endurance-avant-retour-1.jpg?raw=true) |
+| `endurance-retour-1` | **retour d'arrière-plan en course**. Avant : moteur rechargé, la course est perdue, retour au menu. Après : la Pause sur la même scène, même position et même chrono ; surface refaite en 17 ms | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/avant-endurance-retour-1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/apres-endurance-retour-1.jpg?raw=true) |
+| `endurance-retour-3` | **retour d'arrière-plan au menu**. Avant : rechargement complet puis menu. Après : le menu reste affiché sans chargement ; surface refaite en 31 ms. Le fond animé diffère seulement par l'instant | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/avant-endurance-retour-3.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/apres-endurance-retour-3.jpg?raw=true) |
+| `endurance-retour-2` | **repli (RG-04)**, gardé au banc au garage : rechargement complet comme avant, puis menu ; les deux images montrent le même chemin | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/avant-endurance-retour-2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-285/qa/pr/WFS-285/apres-endurance-retour-2.jpg?raw=true) |

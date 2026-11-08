@@ -231,7 +231,7 @@ void desactiver() {
     A.carte.clear(); A.fichiers.clear(); A.index.clear(); A.lus = 0;
 }
 bool actif() { Actif& A = actif_(); std::lock_guard<std::mutex> v(A.m); return !A.carte.empty(); }
-const std::string& carteActive() { return actif_().carte; }
+std::string carteActive() { Actif& A = actif_(); std::lock_guard<std::mutex> v(A.m); return A.carte; }
 
 bool lireDansPaquet(const std::string& chemin, std::vector<uint8_t>& out) {
     Actif& A = actif_();
