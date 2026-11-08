@@ -3965,3 +3965,14 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Bloquant** : (1) les captures « après » ont été faites sur 067d6e60, sans WFS-265 (#268), et les « avant » sur main avec WFS-265. Le reflog le montre : la synchronisation bc0dade4 vient 1 s après le commit des captures. Sur les captures, les triangles « voitures » passent de ≈ 183 k à ≈ 279 k (partie 1) et à ≈ 251 k (partie 2), alors que le diff ne touche aucune voiture. (2) La branche est de nouveau en retard sur main : WFS-316 (#267) et WFS-326 (#275, vitrines de la Ville de nuit).
 - À corriger aussi : 267 personnes à l'écran de chargement contre 263 dans la description ; aucune personne visible sur `apres-vie-terrasse` (RG-03 : pas de rue vide près de la route), à montrer jour et nuit.
 - Revue « changements demandés » écrite dans la PR (en commentaire : même compte GitHub). Statut ↩️ Retour lead dev (PR #276) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 18:38:08 — WFS-308 : PR #269 refusée par le lead dev, 3e revue (lead-dev)
+- 3e revue, commit 38ad6a8a. Le développeur a répondu « Bien reçu », puis « corrigé dans » point par point.
+- **Le bloquant du 2e refus est corrigé** : `Cgu::premierLancement()` est utilisé dans les 5 conditions d'`android_main.cpp`, et la lecture des Réglages se ferme par `Reglages::shutdown`, appelé par `Game::shutdown` (vérifié dans `game.cpp`). Le cas est couvert par le banc `cgu` (`cgu-retour-jeu`).
+- 15 captures « après » et 7 « avant » ouvertes, toutes bonnes. Diff entier relu : **le code est bon**.
+- **Bloquant** :
+  - La branche ne se fusionne plus : conflit dans `journal.md` avec `main` (WFS-326, #275, fusionné à 18:22:43, juste avant la synchronisation).
+  - Les captures « après » (7224e2c3) ont été faites **avant** la synchronisation, sans WFS-265 ni WFS-316. Par exemple, `reglages-menu` affiche 2752 k triangles avant et 3247 k après.
+- Remarque non bloquante : il reste une petite fenêtre si la fenêtre est perdue dans le même lot d'événements que « Accepter » (état `Accepte`) : `termGraphics` ne ferme alors ni le renderer ni Vulkan.
+- Revue écrite dans la PR (en commentaire, même compte GitHub). Statut ↩️ Retour lead dev (PR #269). track-agent et suivi-pr mis à jour.
+- **Pour le PO (3e refus sur la même PR, règle du lead dev)** : le ticket est bien posé et le code est prêt. Il ne reste que la synchronisation et les captures à refaire, ce qui ne demande que quelques minutes. Aucune décision n'est attendue de ta part.
