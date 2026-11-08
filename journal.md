@@ -4912,3 +4912,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   `voitures::panExistant(az)`, ajouté avec les voix de WFS-272 (écho du tunnel compris) ; coût ≤ 0,05 ms par bloc mesuré toutes voix actives.
   Option B refusée : elle affaiblissait le critère chiffré de RG-03. RG-05 et RG-07 réécrites, détail dans le Suivi de `regles-de-gestion/WFS-298.md`.
   Zone de code inchangée (`voitures_sons.*` non modifié). Branche `feature/waforspeed-298` poussée à 02:37 (f44fae5, commit de début).
+
+### 2026-11-08 02:44:44 — WFS-239 : PR #255 ouverte, lead dev appelé (arwa-2)
+- **RG-02** : avant chaque placement, le banc `qualite` fait exactement un pas et calcule la position du joueur dessiné (avant + (après − avant) × `Game::alphaRendu`) ; voitures posées depuis lui, état d'avant le pas remis (`zPrec`, `offPrec`, `yawPrec`). **RG-03** : contrôle après chaque capture de voitures posées (chaque voiture dessinée seule, comparée à l'image sans aucune, même instant ; distance dessinée calculée comme le trafic) ; ligne `ERREUR placement` si une voiture en deçà de la limite (Basse 120 m, Haute 300 m) n'est pas dessinée ou est à plus de 0,5 m.
+- **Résultat** (banc `qualite`, 1280 × 720) : 0 ligne `ERREUR placement` ; `voiture-distance-120-basse` : voiture dessinée à 120,00 m (visible sur la capture) ; `-180-basse` : non dessinée (au-delà de la limite) ; `voiture-basse-poursuite` : 14 posées de 8 à 151 m, les 11 en deçà de 120 m dessinées ; distances dessinées exactes (0,00 m). Banc `fluidite` : à-coup 3,09 mm (inchangé). 65 tests CPU OK. Captures avant / après : `qa/pr/WFS-239` (23, `captures_pr.sh … qualite`, `FILTRE='voiture-*'`).
+- Pas de test CPU neuf, pas d'accroche dans `CMakeLists.txt` : la règle demande une image (banc) ; le contrôle RG-03 tourne avec le banc `qualite` de la CI.
+

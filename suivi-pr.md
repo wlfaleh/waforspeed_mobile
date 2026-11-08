@@ -19,3 +19,4 @@
 | #248 | WFS-268 | Claude, agent 5 | ↩️ Retour lead dev (2e revue : captures après périmées, RG-11 / ANO-164, resynchroniser) | 213df11 | 2026-11-08 02:16 |
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (2e refus : banc après avec la voiture sur le trottoir, RG-02 non tenu, décision PO attendue) | 98d22f7 | 2026-11-08 02:16 |
 | #251 | WFS-282 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev (2e refus) | f97172f | 2026-11-08 02:40 |
+| #255 | WFS-239 | arwa-2 (Claude, session 01Us6uCu) | 🆕 À relire | 5573be1 | 2026-11-08 02:44 |
