@@ -3506,3 +3506,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Refus 1 (bloquant) : la file du maintien de voie (`fileAide_`) n'est remise à zéro ni par `reset()` ni par `placerSurGrille`. Essai du lead dev, voiture posée à x = 0,5, aide activée, volant lâché : sur la branche, à l'arrêt, elle tourne de 0,30 rad (17°), puis au départ x passe de 0,50 à 0,05 (−0,33 après une course finie à gauche) ; sur `main`, rien ne bouge. Risque d'accrochage sur la grille de la Course à 5 et du Duel.
 - Refus 2 : la description dit « un joueur qui freine et braque peut aller plus vite que l'aide » : c'est faux, la limite s'applique toujours. Le joueur avec l'aide est dernier sur 3 cartes sur 4 : condition du PO à faire trancher, ou limite qui cède au joueur.
 - Revue postée dans la PR (en commentaire, car GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #263). PO prévenu pour le point 2.
+
+### 2026-11-08 13:06:32 — WFS-258 : option A (l'aide cède quand le joueur conduit) (po-scrum-master)
