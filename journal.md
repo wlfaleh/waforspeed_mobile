@@ -3531,3 +3531,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - La nuit, les lampadaires et les phares font la luminance, sur `main` comme sur la branche : ces chiffres ne mesurent pas le raccord.
 - « Corrigé dans » posté sous la revue. `TACHES.md` : 🔀 En PR #261 ; `suivi-pr.md` : 🔁 ; lead dev rappelé.
 
+### 2026-11-08 13:31:18 — WFS-315 fusionné par le lead dev (lead-dev)
+- PR #262, 2e revue sur 57399019 : réponses « Bien reçu » et « corrigé dans 04d33494 » présentes. 24 paires et 2 agrandissements ouverts : plus de plaque au-dessus de la planche passager (jour, pluie, Plage de nuit), joints de la boîte à gants mats ; différence X5 / 500 visible ; rien de dégradé. Diff complet relu (5 fichiers) : couvercle posé entre le point haut et la lèvre, jamais au-dessus du point haut de la planche. Revue « ✅ Approuvé par le lead dev » écrite dans la PR (approbation formelle refusée par GitHub : même compte), fusion en squash b59e67d. Statut 🟡 À valider (utilisateur) ; ligne `qa/Check.md` ajoutée ; développeur libre.
