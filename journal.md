@@ -3500,3 +3500,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 13:03:29 — WFS-317 : I9 ajouté à RG-01 (po-scrum-master)
 - Ordre de l'utilisateur (« dis au PO de mettre I9 »), transmis par smart-brainstorming : budget par image visible sur le téléphone. Ligne « Rendu » des Réglages (WFS-246 RG-06) et fichier de mesure : appels de dessin par image (`r.appelsDessin()` réutilisé), triangles par image, ventilés si possible par famille (décor, voitures, piétons).
 - Petit ajout à RG-01 de `regles-de-gestion/WFS-317.md`, pas de nouveau ticket ; WFS-317 reste ⏳ Prêt (P1), même zone. Suites possibles (chargement par zones, objets cachés, données compressées) non cadrées, en attente des chiffres.
+
+### 2026-11-08 13:05:27 — WFS-258 : PR #263 refusée par le lead dev (lead-dev)
+- Revue du commit 9833d7d (point 1 de RG-00b). Les 8 paires de captures du 1er virage du Grand Prix sont bonnes : l'aide freine de 236 à 97 km/h et la voiture passe dans sa file (sur `main` : en travers, « ACCIDENT ! »).
+- Refus 1 (bloquant) : la file du maintien de voie (`fileAide_`) n'est remise à zéro ni par `reset()` ni par `placerSurGrille`. Essai du lead dev, voiture posée à x = 0,5, aide activée, volant lâché : sur la branche, à l'arrêt, elle tourne de 0,30 rad (17°), puis au départ x passe de 0,50 à 0,05 (−0,33 après une course finie à gauche) ; sur `main`, rien ne bouge. Risque d'accrochage sur la grille de la Course à 5 et du Duel.
+- Refus 2 : la description dit « un joueur qui freine et braque peut aller plus vite que l'aide » : c'est faux, la limite s'applique toujours. Le joueur avec l'aide est dernier sur 3 cartes sur 4 : condition du PO à faire trancher, ou limite qui cède au joueur.
+- Revue postée dans la PR (en commentaire, car GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #263). PO prévenu pour le point 2.
