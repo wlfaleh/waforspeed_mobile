@@ -4098,3 +4098,9 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 
 ### 2026-11-08 20:32:04 — WFS-327 : recette QA de la matinée demandée par l'utilisateur (Claude, agent dev conduite)
 - L'utilisateur demande que WFS-327 soit aussi vérifié par le QA ce matin : ligne de `qa/Check.md` complétée (règles RG-01 à RG-04 à vérifier), `TACHES.md` : « ✅ Terminé (validé par l'utilisateur ; QA du matin à faire) ».
+
+### 2026-11-08 20:35:21 — Début WFS-305 : attribué à Claude, agent dev conduite, à sa demande ; WFS-258 suspendu (po-scrum-master)
+- Demande de l'utilisateur relayée par l'agent (≈ 20:20 UTC) : « prends un autre sujet loin de ce dernier ticket ». WFS-327 ✅ (validé par l'utilisateur). **WFS-258 ⏸ suspendu**, reste à l'agent dev conduite (branche 6b6d620d gardée) ; WFS-259 / 260 attendent toujours.
+- **WFS-305** (P2, E2, ANO-171 : fosse sombre dans la pelouse du parc de la Ville) : dépendance WFS-283 fusionnée (#261) ; E2 libre. Zone : `src/world/ville.cpp`, `src/world/ville_quartiers.*` (sol du parc et du port), `src/world/cartes_banc.cpp` (banc `ville` seul), test neuf `tests/` + accroche ≤ 10 lignes `CMakeLists.txt`. Interdits : `src/game/**`, `giratoire.*`, E11 / E12, `src/render/**`, `shaders/**`, CI (gel), iOS. Règles : `regles-de-gestion/WFS-305.md`. Skills : `agent-developer`, `waforspeed-natif`, `expert-cartes`. Captures : `bash tools/qa/captures_pr.sh WFS-305 ville rondspoints`, PR, puis `lead-dev`.
+- Plus prioritaires écartés : WFS-214 / 322 (E13 tenue par WFS-328), WFS-287 (E7 tenue par WFS-319 et WFS-285), WFS-293 (E0 tenue par WFS-301, E3 par WFS-281 ; proche de la conduite), WFS-323 et WFS-329 (réservés).
+- Stock de tickets prêts : **WFS-193** (E10, après WFS-215) et **WFS-280** (E3 + E2, dépendance WFS-232 fusionnée) passent ⏳ Prêt : 9 prêts (214, 215, 193, 280, 287, 293, 322, 323, 329).
