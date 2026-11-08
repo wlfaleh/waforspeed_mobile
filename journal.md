@@ -4292,3 +4292,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Critères : RG-01 à RG-10 ; parcours complet installation → CGU → chargement → Installer → menu → Ville → course → retour ; mode avion → secours.
 
 ### 2026-11-08 21:57:21 — WFS-329 fusionné (#281, 🟡) ; WFS-332 créé (remarques du lead dev) ; WFS-293 à Claude, agent 1, sur sa demande (po-scrum-master)
+
+### 2026-11-08 21:57:42 — Correction : WFS-293 était déjà pris par Agent 0 (21:23) ; rendu à Agent 0 ; Claude, agent 1 reçoit WFS-322 (po-scrum-master)
