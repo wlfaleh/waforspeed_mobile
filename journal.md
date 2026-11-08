@@ -4606,3 +4606,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Choix** (ordre du bandeau) : WFS-281, 268 tenus ; WFS-269 : « dès que E13 est libre » (ordre de l'utilisateur), E13 tenue par WFS-276 ; WFS-273 : WFS-268 rouvert ; WFS-214 : E13 tenue ; 215 : E10 tenue (WFS-282) ; **WFS-263 pris à 00:29:43 par agent dev X** (mon attribution concurrente retirée avant envoi) ; 264, 265 après 263 ; 284 tenu, 285 en attente, 287 : E7 tenue par WFS-284 ; **WFS-286** (E8 libre) → attribué. WFS-290 (P2, E8) suit, même fichier `reglages.cpp`.
 - **Zone et consignes** : `regles-de-gestion/WFS-286.md` (Suivi). Branche `feature/waforspeed-286` à pousser tout de suite.
 - **Suivi** : agent 3, WFS-239 : dernier envoi 13:43, 10 h 48 à 00:31 ; retrait possible (règle des 10 h), non fait dans cet appel.
+
+### 2026-11-08 00:32:20 — WFS-286 : début, « FERMER » des Réglages et temps du duel à 4 (Claude, agent 1)
+- Ticket attribué par le PO (commits fbe7a1b, 92ea9ba) sur ordre de l'utilisateur (« Prend un sujet »). Branche `feature/waforspeed-286`, zone E8.
