@@ -19,7 +19,7 @@
   - Inventaire RG-01 complet, voiture par voiture : [`qa/pr/WFS-192/inventaire.md`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/inventaire.md).
   - À l'écran : plus de marque lisible sur les voitures. La peinture, les feux, les vitres, les formes et les plaques ne changent pas.
 - **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) :
-  - **69 tests CPU verts**, dont `test_fidelite_voitures` (dimensions à ±1 %), `test_vehicule_lod` et `test_tangentes`.
+  - **71 tests CPU verts** après la dernière synchronisation avec `main`, dont `test_fidelite_voitures` (dimensions à ±1 %), `test_vehicule_lod` et `test_tangentes`. `test_audio_chocs` (WFS-298, hors de ce ticket) est sensible au temps sur cette machine de 2 processeurs : il a échoué 2 fois sur 4 (0,052 à 0,056 ms pour un seuil de 0,05), puis il est passé dans la série complète.
   - **Parcours complet : 0 écart**, aussi en vue Cockpit.
   - **Outil rejouable (RG-08)** : un 2e passage dit « rien à faire » pour les 20 voitures, et les SHA-256 des 40 fichiers restent identiques après une passe de plus. Avant d'écrire, l'outil vérifie chaque voiture (empreintes des textures, triangles, boîtes des pièces).
   - **Correspondance source ↔ `.wfm` (RG-09)** : identique pour les 19 voitures qui ont une source. La Model 3 est repérée par la position des pièces.
