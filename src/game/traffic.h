@@ -44,12 +44,13 @@ inline double partDeuxRoues(const char* carte) {
 inline double inclinaisonEquilibre(double v, double kappa) { return std::clamp(std::atan(v * v * kappa / 9.81), -INCLINAISON_MAX, INCLINAISON_MAX); }
 // RG-05 (retour du lead dev) : deux-roues accidenté : il tombe sur le flanc (pendule inversé : θ'' = g / h · sin θ, centre de
 // gravité à HAUTEUR_CHUTE), puis glisse couché, posé sur le guidon et le repose-pied (TOMBE ≈ 77°) ; relevé hors de la vue
-// retour du lead dev (8b) : un deux-roues du trafic ralentit avant une courbe pour ne pas pencher plus de INCLINAISON_CONFORT
-// (pilote ordinaire : 35° au plus ; les 45° de la borne restent pour la course) : v ≤ √(g · R · tan 35°) au point le plus serré des
-// VUE_VIRAGE_M (+ distance de freinage) devant lui, atteint en freinant à FREIN_VIRAGE (4 m/s²)
-constexpr double INCLINAISON_CONFORT = 0.6108652381980153, VUE_VIRAGE_M = 15, FREIN_VIRAGE = 4;
-constexpr int TRAFIC_DESSINES_MAX = 14;   // véhicules du trafic dessinés par image, au plus (WFS-20, WFS-134)
 constexpr double TOMBE = 1.35, HAUTEUR_CHUTE = 0.6, AMORCE_CHUTE = 0.08;   // rad, m, rad (inclinaison de départ si droit)
+// retour du lead dev (8b) : un deux-roues du trafic ralentit avant une courbe pour ne pas pencher plus de INCLINAISON_CONFORT :
+// 25°, seuil sous lequel restent 75 % des inclinaisons en conduite de tous les jours (BASt, projet 82.0710 « Schräglagenangst »,
+// études de conduite réelle de Würzburg et Dresde) ; la borne de 45° reste pour les cas extrêmes. v ≤ √(g · R · tan 25°) au point le
+// plus serré des VUE_VIRAGE_M (+ distance de freinage) devant lui, atteint en freinant à FREIN_VIRAGE (4 m/s², freinage doux)
+constexpr double INCLINAISON_CONFORT = 0.4363323129985824, VUE_VIRAGE_M = 15, FREIN_VIRAGE = 4;
+constexpr int TRAFIC_DESSINES_MAX = 14;   // véhicules du trafic dessinés par image, au plus (WFS-20, WFS-134)
 constexpr double SAFE_TIME = 1.1;           // temps de sécurité derrière la voiture de devant (s)
 constexpr double SAFE_MIN = 5.0 / M;        // distance minimale à l'arrêt (unités)
 constexpr double NEAR_MISS = 0.24;          // marge latérale d'un quasi-contact (demi-largeurs de route)

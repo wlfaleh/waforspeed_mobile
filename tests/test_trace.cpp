@@ -318,7 +318,7 @@ static void verifierDeuxRoues() {
         const double DEG = 180 / 3.14159265358979;
         std::printf("WFS-232 RG-04 : Ville, 2 min : inclinaison au plus %.1f°, saut au plus %.2f° par pas, écart à l'équilibre stable depuis 1 s %.2f° (%d mesures), en ligne droite au plus %.2f°\n",
                     pire * DEG, sautMax * DEG, ecartTenu * DEG, tenus, droitMax * DEG);
-        // retour du lead dev (8b) : le deux-roues ralentit avant les courbes : 35° au plus (inclinaison de confort), jamais la borne
+        // retour du lead dev (8b) : le deux-roues ralentit avant les courbes : 25° au plus (inclinaison de confort, BASt), jamais la borne
         VERIFIE(pire <= INCLINAISON_CONFORT + 0.5 / DEG && sautMax * DEG < 1.001 && tenus > 0 && ecartTenu * DEG < 2 && droitMax * DEG < 2,
                 "WFS-232 RG-04 : inclinaison %.1f°, saut %.2f°, écart %.1f°, ligne droite %.2f°", pire * DEG, sautMax * DEG, ecartTenu * DEG, droitMax * DEG);
     }
