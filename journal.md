@@ -3889,3 +3889,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 17:44:20 — WFS-327 : (A) si RG-02 tenue, sinon (B) (po-scrum-master)
 
 ### 2026-11-08 17:44:52 — Recette manuelle demandée au QA sur les retours APK 916 / 918 (`qa/recette-manuelle-apk918.md`) (po-scrum-master)
+
+### 2026-11-08 17:46:55 — Recette manuelle APK 916 / 918 faite, ANO-178 (agent qa lead)
+- 16 images ouvertes. KO : départ de nuit délavé (ANO-177, régression 916 → 918), fenêtres hors des façades proches des deux côtés (ANO-175), toujours 5/5 (ANO-176), 10 à 20 img/s en course. OK : aide à la direction jusqu’à 284 km/h, foule, chargement, menus. Nouvelle : ANO-178 (menu principal à 10 img/s, 699 k triangles). Rapport `qa/rapports/recette-manuelle-apk918.md`.
