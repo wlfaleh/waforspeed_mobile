@@ -1,0 +1,135 @@
+## Agent : arwa-2 (Claude, session 01Us6uCu)
+
+**Ticket** : WFS-192 — règles : `regles-de-gestion/WFS-192.md`
+
+## Description
+
+- **Demande de l'utilisateur** (en une phrase) : « on ne lit plus aucune marque sur les 20 voitures, et rien d'autre ne change » (voitures sans marque, phase 2/4).
+- **Ce qui change** (fichiers, comportement, à l'écran) :
+  - Les 20 modèles `assets/cars/<id>.wfm` et `.lod` sont retouchés par l'outil neuf `tools/effacer_logos.mjs`, d'après les données `tools/logos.json` (décision du PO du 2026-11-08 03:24).
+    - **203 pièces de logo retirées** : badges, lettres en relief, rondelles, décalques d'étrier.
+    - **181 zones effacées dans 77 textures** : logos imprimés sur la calandre, le hayon, les caches de roue, les étriers, le volant, les flancs de pneus, les écrans et les seuils de porte. Chaque zone prend la couleur de la pièce voisine ; le relief est mis à plat sur la carte de normales.
+    - M4 : le centre du volant n'a plus de texture et prend la couleur du volant (RG-12, décision du PO).
+  - Une pièce posée sur une ouverture est gardée et passée en uni (RG-10) : on ne voit aucun trou à sa place.
+  - Le `.lod` est régénéré par `alleger_voiture.mjs` (non modifié). Nombre et ordre des matériaux et des textures inchangés.
+  - `assets/licences/*.txt` (RG-05) : la phrase « Modèle modifié pour WaForSpeed (WFS-192) » est ajoutée à la ligne « Modifications ».
+  - Accroches annoncées au journal :
+    - `tools/convertir_voitures.sh` (+2 lignes) : une reconversion ne fait pas revenir les logos ;
+    - `src/render/feux_modele.cpp` (+6 lignes) : `WFS_VITRINE_ANGLES` ajoute des vues de près au banc des vitrines ; rien ne change sans cette variable.
+  - Inventaire RG-01 complet, voiture par voiture : [`qa/pr/WFS-192/inventaire.md`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/inventaire.md).
+  - À l'écran : plus de marque lisible sur les voitures. La peinture, les feux, les vitres, les formes et les plaques ne changent pas.
+- **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) :
+  - **69 tests CPU verts**, dont `test_fidelite_voitures` (dimensions à ±1 %), `test_vehicule_lod` et `test_tangentes`.
+  - **Parcours complet : 0 écart**, aussi en vue Cockpit.
+  - **Outil rejouable (RG-08)** : un 2e passage dit « rien à faire » pour les 20 voitures, et les SHA-256 des 40 fichiers restent identiques après une passe de plus. Avant d'écrire, l'outil vérifie chaque voiture (empreintes des textures, triangles, boîtes des pièces).
+  - **Correspondance source ↔ `.wfm` (RG-09)** : identique pour les 19 voitures qui ont une source. La Model 3 est repérée par la position des pièces.
+  - **Écarts de couleur** (ΔE2000 sur l'albédo, méthode de `expert-realisme-3d`) :
+    - toutes les zones jugées sont à 2 ou moins ;
+    - caches des roues de la M4 contre la jante : 0,00 ; centre du volant contre le volant : 0,00 ;
+    - hors zones, pertes du réencodage JPEG q88 : moyenne 0,355 au plus, 99e centile 2,96 au plus.
+  - **Pas de trou (RG-10)** : tir de rayons sur l'ordinateur (100 points × 5 directions par pièce). Pour les lettres en relief, une sonde de face en plus : la carrosserie est 1 à 4 mm derrière.
+  - **Budget du téléphone** : 582 → 559 maillages (−23 appels de dessin), −43 000 triangles, −15 000 sommets, 122,1 → 119,8 Mo de `.wfm`.
+  - **Captures** : avant / après de `vitrines-feux` (3/4 arrière et arrière, 20 voitures), de `garage` et de `parcours`, plus des vues de face de près des 20 voitures (ci-dessous).
+  - **Vue Cockpit de la M4** : la capture avant / après est identique, car cette vue ne dessine pas le volant du modèle (capture 5 plus demandée par le PO).
+- **Limites et risques connus** :
+  - **Grain (RG-13, accepté par le PO)** : 16 zones sont unies sur une surface au grain marqué (σ de L* de 1,8 à 12). Le grain n'est pas recréé. Liste dans l'inventaire ; points à regarder dans `qa/Check.md`.
+  - **Formes unies gardées, sans marque (RG-02)** : bouclier de la Gallardo ; écussons de la Giulia ; rondelles de la X5 ; écussons de la SF90 ; disque du hayon de la Golf et de la Corsa ; cerclage du capot de la M4. La calandre à 7 fentes de la Compass est une forme : elle va à WFS-193.
+  - **Laissés tels quels** : bandes tricolores sans lettre de l'intérieur de la M4 ; étiquettes du moteur, invisibles capot fermé (Elantra, Mustang).
+  - Le tir de rayons dépasse 5 % pour des lettres en relief sur une surface courbe, et pour des badges posés sur une grille ou une ouïe déjà ouverte dans le modèle. Ils sont vérifiés par la sonde de face et par les vues de près. **À regarder de près** : calandre de l'A 45, ouïes de la M4, lion de la 208, ovales de la RR Sport.
+  - Les textures retouchées sont réencodées en JPEG q88, comme `convert_car.mjs`. Les pertes sont mesurées ci-dessus.
+
+## Vues de près des 20 voitures (RG-04 : face, et arrière pour 10 voitures), avant (main) | après (branche)
+
+Même binaire de la branche pour les deux colonnes (avant : modèles de `main`), banc `vitrines-feux` avec `WFS_VITRINE_ANGLES="3.14 0"`, 1920x1080 recadré sur la voiture. Les vues `vitrine-<id>-0` et `-feux` du tableau ci-dessus sont des 3/4 arrière et des arrières.
+
+- `a45` : ![a45](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-a45.jpg?raw=true)
+- `abarth` : ![abarth](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-abarth.jpg?raw=true)
+- `compass` : ![compass](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-compass.jpg?raw=true)
+- `corsa` : ![corsa](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-corsa.jpg?raw=true)
+- `elantra` : ![elantra](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-elantra.jpg?raw=true)
+- `gallardo` : ![gallardo](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-gallardo.jpg?raw=true)
+- `giulia` : ![giulia](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-giulia.jpg?raw=true)
+- `golf` : ![golf](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-golf.jpg?raw=true)
+- `gt86` : ![gt86](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-gt86.jpg?raw=true)
+- `m4` : ![m4](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-m4.jpg?raw=true)
+- `model3` : ![model3](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-model3.jpg?raw=true)
+- `mustang` : ![mustang](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-mustang.jpg?raw=true)
+- `p208` : ![p208](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-p208.jpg?raw=true)
+- `p911` : ![p911](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-p911.jpg?raw=true)
+- `rrsport` : ![rrsport](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-rrsport.jpg?raw=true)
+- `s3` : ![s3](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-s3.jpg?raw=true)
+- `sf90` : ![sf90](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-sf90.jpg?raw=true)
+- `tcross` : ![tcross](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-tcross.jpg?raw=true)
+- `v60` : ![v60](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-v60.jpg?raw=true)
+- `x5` : ![x5](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/pres-x5.jpg?raw=true)
+
+## Captures pour le lead dev (64 après)
+
+Dossier : [`qa/pr/WFS-192`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192) — produit par `tools/qa/captures_pr.sh`.
+
+| Capture | Avant (main) | Après (branche) |
+|---|---|---|
+| `course-p911-gris` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-course-p911-gris.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-course-p911-gris.jpg?raw=true) |
+| `garage-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-0.jpg?raw=true) |
+| `garage-1` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-1.jpg?raw=true) |
+| `garage-2` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-2.jpg?raw=true) |
+| `garage-course` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-course.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-course.jpg?raw=true) |
+| `garage-m4` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-m4.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-m4.jpg?raw=true) |
+| `garage-peinture-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-peinture-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-peinture-0.jpg?raw=true) |
+| `garage-peinture-1` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-peinture-1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-peinture-1.jpg?raw=true) |
+| `garage-peintures-p911` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-peintures-p911.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-peintures-p911.jpg?raw=true) |
+| `garage-peintures` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-peintures.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-peintures.jpg?raw=true) |
+| `garage-suivant` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-garage-suivant.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-garage-suivant.jpg?raw=true) |
+| `showroom-suivante-1` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-showroom-suivante-1.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-showroom-suivante-1.jpg?raw=true) |
+| `showroom-suivante-2` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-showroom-suivante-2.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-showroom-suivante-2.jpg?raw=true) |
+| `showroom-suivante-3` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-showroom-suivante-3.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-showroom-suivante-3.jpg?raw=true) |
+| `parcours-course` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-course.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-course.jpg?raw=true) |
+| `parcours-fin` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-fin.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-fin.jpg?raw=true) |
+| `parcours-mode` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-mode.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-mode.jpg?raw=true) |
+| `parcours-retour-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-retour-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-retour-menu.jpg?raw=true) |
+| `parcours-terrain` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-terrain.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-terrain.jpg?raw=true) |
+| `parcours-course` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-course.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-course.jpg?raw=true) |
+| `parcours-fin` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-fin.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-fin.jpg?raw=true) |
+| `parcours-mode` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-mode.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-mode.jpg?raw=true) |
+| `parcours-retour-menu` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-retour-menu.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-retour-menu.jpg?raw=true) |
+| `parcours-terrain` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-parcours-terrain.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-parcours-terrain.jpg?raw=true) |
+| `vitrine-a45-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-a45-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-a45-0.jpg?raw=true) |
+| `vitrine-a45-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-a45-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-a45-feux.jpg?raw=true) |
+| `vitrine-abarth-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-abarth-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-abarth-0.jpg?raw=true) |
+| `vitrine-abarth-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-abarth-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-abarth-feux.jpg?raw=true) |
+| `vitrine-compass-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-compass-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-compass-0.jpg?raw=true) |
+| `vitrine-compass-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-compass-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-compass-feux.jpg?raw=true) |
+| `vitrine-corsa-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-corsa-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-corsa-0.jpg?raw=true) |
+| `vitrine-corsa-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-corsa-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-corsa-feux.jpg?raw=true) |
+| `vitrine-elantra-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-elantra-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-elantra-0.jpg?raw=true) |
+| `vitrine-elantra-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-elantra-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-elantra-feux.jpg?raw=true) |
+| `vitrine-gallardo-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-gallardo-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-gallardo-0.jpg?raw=true) |
+| `vitrine-gallardo-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-gallardo-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-gallardo-feux.jpg?raw=true) |
+| `vitrine-giulia-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-giulia-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-giulia-0.jpg?raw=true) |
+| `vitrine-giulia-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-giulia-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-giulia-feux.jpg?raw=true) |
+| `vitrine-golf-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-golf-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-golf-0.jpg?raw=true) |
+| `vitrine-golf-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-golf-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-golf-feux.jpg?raw=true) |
+| `vitrine-gt86-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-gt86-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-gt86-0.jpg?raw=true) |
+| `vitrine-gt86-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-gt86-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-gt86-feux.jpg?raw=true) |
+| `vitrine-m4-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-m4-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-m4-0.jpg?raw=true) |
+| `vitrine-m4-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-m4-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-m4-feux.jpg?raw=true) |
+| `vitrine-model3-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-model3-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-model3-0.jpg?raw=true) |
+| `vitrine-model3-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-model3-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-model3-feux.jpg?raw=true) |
+| `vitrine-mustang-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-mustang-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-mustang-0.jpg?raw=true) |
+| `vitrine-mustang-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-mustang-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-mustang-feux.jpg?raw=true) |
+| `vitrine-p208-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-p208-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-p208-0.jpg?raw=true) |
+| `vitrine-p208-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-p208-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-p208-feux.jpg?raw=true) |
+| `vitrine-p911-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-p911-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-p911-0.jpg?raw=true) |
+| `vitrine-p911-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-p911-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-p911-feux.jpg?raw=true) |
+| `vitrine-rrsport-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-rrsport-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-rrsport-0.jpg?raw=true) |
+| `vitrine-rrsport-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-rrsport-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-rrsport-feux.jpg?raw=true) |
+| `vitrine-s3-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-s3-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-s3-0.jpg?raw=true) |
+| `vitrine-s3-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-s3-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-s3-feux.jpg?raw=true) |
+| `vitrine-sf90-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-sf90-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-sf90-0.jpg?raw=true) |
+| `vitrine-sf90-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-sf90-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-sf90-feux.jpg?raw=true) |
+| `vitrine-tcross-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-tcross-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-tcross-0.jpg?raw=true) |
+| `vitrine-tcross-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-tcross-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-tcross-feux.jpg?raw=true) |
+| `vitrine-v60-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-v60-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-v60-0.jpg?raw=true) |
+| `vitrine-v60-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-v60-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-v60-feux.jpg?raw=true) |
+| `vitrine-x5-0` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-x5-0.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-x5-0.jpg?raw=true) |
+| `vitrine-x5-feux` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/avant-vitrine-x5-feux.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-192/qa/pr/WFS-192/apres-vitrine-x5-feux.jpg?raw=true) |
