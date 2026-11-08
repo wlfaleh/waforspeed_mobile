@@ -19,6 +19,7 @@ inline const vec4 BLANC{1, 1, 1, 1}, CYAN{0.f, 0.898f, 1.f, 1}, ORANGE{1.f, 0.41
 
 bool fontReady();
 bool chargerPolice(Renderer& r);   // WFS-35 : police chargée une seule fois, avant la partie (écran de chargement)
+void libererPolice(Renderer& r);   // WFS-308 : atlas libéré (avant Renderer::shutdown hors partie : fenêtre perdue pendant les CGU)
 // x, y : coin haut-gauche de la ligne (selon l'alignement) en pixels logiques ; px : hauteur des capitales + jambages
 // espacement : en fraction de px (0,16 = letter-spacing .16em du web) ; ombre : léger contour sombre pour la lisibilité
 // italique (WFS-48) : glyphes inclinés de ITALIQUE_DEG (font-style: italic du web, oblique synthétique), cisaillés autour

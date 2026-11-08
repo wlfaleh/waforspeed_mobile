@@ -43,6 +43,7 @@ bool reglagesOuverts();
 void ouvrirReglagesBanc(bool oui);   // WFS-297 : banc seulement (captures du panneau en 1re, 2e, 3e partie)
 // toucher pour les réglages (panneau ouvert, ou bouton « Réglages » visé) : le menu et la pause le laissent passer
 bool toucheReglages(float x, float y);
+bool boutonCguReglages(float& x, float& y);   // WFS-308 (RG-05) : centre du bouton « Conditions d'utilisation » (banc ; faux si absent)
 
 // banc d'essai : reglages-menu, reglages-pause, reglages-basse (qualité basse en course)
 void benchReglages(Game& g, Renderer& r, const std::string& out);

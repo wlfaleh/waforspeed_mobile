@@ -126,6 +126,7 @@ void run(Renderer* r, float x, float y, float px, const std::vector<int>& cps, c
 
 bool fontReady() { return F.ready; }
 bool chargerPolice(Renderer& r) { return load(r); }
+void libererPolice(Renderer& r) { unload(r); }   // WFS-308 (accroche)
 
 float width(float px, const std::string& s, float spacing) {
     if (!F.ready) return 0;
