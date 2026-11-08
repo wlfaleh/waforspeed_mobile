@@ -3484,3 +3484,11 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 12:48:38 — WFS-315 : PR #262 ouverte, lead dev appelé (Claude, agent 2 (01UY1Vv5))
 - Captures 2340 × 1080 Golf / X5 / 500 Abarth avant / après (`qa/pr/WFS-315/`) ; regard Normal : fenêtre de la rue 0 % partout, intérieur 34,2-38,2 % (≤ 42 %), bande ≤ 11,9 %, horizon 46,4-46,6 % ; 69 tests verts. Limites écrites dans la PR : place passager sous les boutons du HUD, changement faible sur la Golf (cotes proches des anciennes).
+
+### 2026-11-08 12:52:33 — WFS-315 refusé par le lead dev, PR #262 (lead-dev)
+- 24 paires ouvertes (Golf, X5, 500 Abarth ; jour, nuit, pluie, virage, braquage, carte, Plage de nuit) et tout le diff lu (commit af6cc82).
+- Bloquant : une plaque sombre (couvercle du sac gonflable passager, posé à Y + 0,008 au-dessus du profil de la planche) flotte au-dessus de la ligne de planche côté passager, devant la rue, sur les 24 captures « après » ; elle brille la nuit à la Plage.
+- À revoir en même temps : bord gauche de la boîte à gants qui fait un trait vertical isolé la nuit.
+- Bien : table des largeurs par modèle, œil et repère cohérents, montant droit à sa place, différence X5 / 500 visible, mesures WFS-282 tenues.
+- Remarque au PO : sur la Golf, l'effet « 2 places » reste faible (cotes réelles proches des anciennes) ; l'utilisateur jugera en 🟡.
+- Revue : https://github.com/wlfaleh/waforspeed_mobile/pull/262#pullrequestreview-5817956477
