@@ -4291,5 +4291,50 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Avant WFS-302 : adresse finale prévue de la Release `paquets` dans `configgame.json` (404 = secours silencieux), faux paquet servi en local (JUnit `HttpServer` 127.0.0.1, téléchargeur factice du banc PC), aucune Release de test. Détail : `regles-de-gestion/WFS-306.md` (Suivi).
 - Critères : RG-01 à RG-10 ; parcours complet installation → CGU → chargement → Installer → menu → Ville → course → retour ; mode avion → secours.
 
+### 2026-11-08 21:57:21 — WFS-329 fusionné (#281, 🟡) ; WFS-332 créé (remarques du lead dev) ; WFS-293 à Claude, agent 1, sur sa demande (po-scrum-master)
+
+### 2026-11-08 21:57:42 — Correction : WFS-293 était déjà pris par Agent 0 (21:23) ; rendu à Agent 0 ; Claude, agent 1 reçoit WFS-322 (po-scrum-master)
+
+### 2026-11-08 21:58:16 — WFS-305 : PR #285 ouverte, fosse du parc fermée (Claude, agent dev conduite)
+- **Cause (RG-01)** : `src/world/ville.cpp` (boucle des bandes) coupe la pelouse du parc et le béton du port à `Plan::lim`, 90 % du plus petit rayon des **60 m qui suivent** (WFS-137 RG-C1), alors que le sol de base (`solChunk`) n'est replié qu'au rayon **local**. Dans les 60 m avant chaque virage serré, au-delà de 20,1 à 21,6 m de l'axe, on voyait donc ce sol, plus bas et sans herbe. Au-delà du centre du virage, aucune bande ne couvrait le secteur. De plus, le bord coupé gardait la hauteur de la fin de bande (0,45 m) : la pelouse remontait en rebord au-dessus de la fosse.
+- **Correction** : `ville::carreauxSol` (`ville_quartiers.*`) pose au chargement des carreaux de 0,5 m là où rien ne couvre le sol, hors chaussée et trottoir. Leur hauteur est lissée entre les bandes voisines, 1 cm dessous, avec des coins partagés (maillage continu). Le bord coupé de la bande est remis à sa vraie hauteur. Même matériau : appels de dessin + 0.
+- **RG-04** (`test_ville_sol`, nouveau ; **accroche `CMakeLists.txt` d'une ligne**) : 4 courbes serrées (198 m centre, 1 008 m résidentiel, 1 283 m parc, 4 547 m parc ; rayon minimal 22 à 24 m). Trous de 1 m : **1 115 avant, 0 après** (parc 1 283 m : 500 → 0 ; parc 4 547 m : 615 → 0). 0 marche de plus de 5 cm créée par les carreaux. 0 carreau sur une chaussée.
+- **RG-03 (port)** : aucune courbe serrée ne longe le port : rien à corriger.
+- **RG-06** : `carreauxSol` en 85 ms sur PC (5 140 carreaux, 1 285 m²) ; appels de dessin des virages identiques à `main`.
+- **RG-07** : 34 captures du banc `ville` identiques à `main` (0,00 %). 3 captures changent dans la zone corrigée : virage-3 0,61 %, apk916-5 0,35 %, rond-point 1,41 % (> 1 % : rebord du parc supprimé, rien d'autre).
+- **Risque signalé au PO (RG-02)** : en 9 points (≈ 2 m), deux pelouses existantes de deux parties du tracé se touchent avec jusqu'à 7,6 cm d'écart, là où la fosse n'était qu'une fente. Le corriger demanderait de changer la hauteur des bandes du parc ailleurs. Proposition : l'accepter (la marche existait, les carreaux n'en créent aucune). Autre option : un ticket pour adoucir le profil des bandes du parc.
+- Tests CPU 78 / 78 OK. Captures `qa/pr/WFS-305/` (bancs `ville`, `rondspoints`). PR #285, lead dev appelé.
+
+### 2026-11-08 21:59:08 — WFS-306 : deux questions de zone tranchées (po-scrum-master)
+- Oui aux deux demandes de Claude, agent 3 (01UY1Vv3) : 1 ligne dans `termGraphics` et 1 ligne dans la garde d'`initGraphics` (étape « paquets » asynchrone, fenêtre perdue) ; pont JNI dans le fichier neuf `src/platform/paquets_android.cpp`, `JeuActivity.java` inchangé. Détail : `regles-de-gestion/WFS-306.md` (Suivi).
+
+### 2026-11-08 22:08:37 — WFS-305 fusionné par le lead dev (lead-dev)
+- **PR #285** (Claude, agent dev conduite), 1re revue, commit relu 328930dc, fusion squash **3529cc7**. Revue « ✅ Approuvé par le lead dev » écrite dans la PR en COMMENT (GitHub refuse l'approbation formelle pour le même compte).
+- **Captures** : 47 paires ouvertes, les 4 du sujet agrandies. La fosse sombre du parc a disparu sur `carte-ville-virage-3`, `carte-ville-rond-point`, `rondpoint-ville-course-jour` et `-course5` : pelouse continue, sans couture, et grille, bancs et arbres à leur place. Les 43 autres paires sont identiques (jour et nuit).
+- **Code** : tout le diff a été lu (`ville.cpp`, `ville_quartiers.*`, `test_ville_sol.cpp`, 1 ligne `CMakeLists.txt`). Le calcul est fait au chargement, sous verrou, avec 0 appel de dessin en plus. Les fichiers touchés restent dans la zone E2. **79 / 79 tests CPU** ont été relancés par le lead dev sur la branche fusionnée localement avec `main` (15 commits de retard, sans aucun fichier commun).
+- **Pour le PO** : RG-02, 9 points (≈ 2 m) où deux pelouses existantes se touchent avec jusqu'à 7,6 cm d'écart (les carreaux n'en créent aucun). À accepter, ou ticket pour adoucir le profil des bandes du parc. RG-07 : 1,41 % sur `carte-ville-rond-point`, seulement dans la zone corrigée (accepté).
+- **Statuts** : `TACHES.md` → 🟣 Fusionné (défaut vu par arwa-5 et le PO, pas par l'utilisateur sur son téléphone : pas de 🟡). La ligne #285 est retirée de `suivi-pr.md`, la ligne est ajoutée à `qa/Check.md` et le développeur est libre dans `track-agent.md`.
+
+### 2026-11-08 22:09:49 — Recette manuelle demandée au QA sur les vidéos de l'APK 928 (`qa/recette-manuelle-apk928.md`) (po-scrum-master)
+
+### 2026-11-08 22:11:20 — Recette manuelle APK 928 faite, ANO-179 (agent qa lead)
+- 6 images ouvertes. KO : départ délavé (ANO-177, WFS-328 pas dans l’APK, jusqu’à 5 s, vue Cockpit comprise) et **image délavée en pleine course** en Checkpoint (ANO-179, bloquante, nouvelle). OK : lien Conditions d’utilisation, aide à 162-233 km/h, chargement. À revoir : boutons (WFS-290), cockpit, performance et classement illisibles sur les planches. Rapport `qa/rapports/recette-manuelle-apk928.md`.
+
+### 2026-11-08 22:11:37 — Recette manuelle APK 928 (KO) : ANO-179 (délavé en pleine course) ajoutée à WFS-328 (RG-05), PR #282 bloquée sans preuve (po-scrum-master)
+
+### 2026-11-08 22:12:35 — ANO-180 / WFS-333 : voiture du trafic collée au joueur, de travers, à sa vitesse (vu par le PO après la question de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:13:20 — Recette APK 928 complétée : points 11 et 12, ANO-181 (agent qa lead)
+- Point 11, voiture rouge de travers collée au joueur : confirmé (ANO-180 / WFS-333). Point 12, voiture noire visible sous la planche en vue Cockpit : probable, ANO-181 (mineure, à confirmer). Leçon notée : regarder aussi les images en grand.
+
+### 2026-11-08 22:13:34 — ANO-181 (portière absente en cockpit) rattachée à WFS-323 (po-scrum-master)
+
+### 2026-11-08 22:17:24 — ANO-182 / WFS-334 : pluie dans l'habitacle et dans les tunnels (retour de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:17:34 — WFS-328 : PR #282 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : captures de départ ouvertes (Ville nuit avant / après à 5 instants, Corniche, Campagne, « Recommencer », jour), tout le diff lu (`eclairage_physique.*`, banc `depart`, accroche `desktop_main.cpp` 2 lignes). Cause et correction du départ plausibles, code sans défaut bloquant.
+- Refus : RG-05 du PO (22:11:37 : image délavée en pleine course et en Cockpit) sans cause ni preuve, alors que le PO interdit la fusion sans elle ; « avant » / « après » de la Ville presque identiques à l'œil (le défaut n'est pas reproduit dans l'avant) ; 34 commits de retard sur main ; « Agent : » pas en tête de la description.
+
+### 2026-11-08 22:18:00 — Mesure de l'utilisateur APK 928 : 24 img/s (Ville de nuit, Basse), voitures 74 % ; WFS-335 créé (po-scrum-master)
 ### 2026-11-08 21:57:48 — WFS-306 : début (Claude, agent 3 (01UY1Vv3))
 - Branche `feature/waforspeed-306` depuis `main` (e728cab3). Skills : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`. Plan et accroches annoncés à l’entrée suivante, après lecture du code.
