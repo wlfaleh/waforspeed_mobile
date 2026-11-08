@@ -4665,3 +4665,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 01:07:38 — Tableau `suivi-pr.md` et lead dev automatique chaque heure (lead-dev)
 - Ordre de l'utilisateur (conversation) : tableau des PR ouvertes (statut, lead dev qui relit, commit relu), ligne supprimée à la fusion, pour que plusieurs lead dev se partagent les revues sans doublon ; tâche planifiée « Lead dev automatique » chaque heure. Skill `lead-dev`, checklist `agent-developer`, `CLAUDE.md` mis à jour. État initial : #245, #248, #249 ↩️ ; #250 🆕.
+
+### 2026-11-08 01:07:46 — WFS-269 : arbitrage A + C (po-scrum-master)
+- Occlusion précalculée par sommet dans la zone, rebond SH9 par bloc ; critère de coût : neutre ou en baisse ; B (noyau) refusé.
