@@ -26,5 +26,7 @@ int trafficBenchCar();   // indice de la voiture visée par le dernier placement
 void benchTrafficScenes(Game& g, Renderer& r, const std::string& outDir);
 // WFS-67 : trafic vivant (captures trafic-clignotant.png, trafic-freinage.png, trafic-accident.png)
 void benchTraficVivant(Game& g, Renderer& r, const std::string& outDir);
+// WFS-232 : deux-roues du trafic seuls (trafic-motos-*, Ville et Corniche, jour et nuit ; aussi à la fin de benchTraficVivant)
+void benchDeuxRoues(Game& g, Renderer& r, const std::string& outDir);
 
 } // namespace wfs

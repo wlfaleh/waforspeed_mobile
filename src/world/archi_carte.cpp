@@ -12,6 +12,7 @@
 #include "../core/system.h"
 #include "../game/player.h"
 #include "../game/track.h"
+#include "../render/eclairage_precalcule.h"   // WFS-269 (accroche)
 #include "../render/eclairage_unites.h"
 #include "../render/renderer.h"
 #include "archi_geo.h"
@@ -59,6 +60,7 @@ void ajouter(const Bat& b, int lod, Cpu& out) {
             out.v[s].push_back(v);
         }
         for (uint32_t i : m.i) out.i[s].push_back(base + i);
+        if (k == MUR) precalcul::appliquerKit((size_t)(&b - g_bats.data()), lod, out.v[s], base);   // WFS-269 : occlusion gardée des murs
     }
 }
 
@@ -74,7 +76,7 @@ public:
             return r.makeMaterial(m, nullptr, nullptr, nullptr);
         };
         for (int s = 0; s < NS; s++)   // murs : appareil procédural (decor.glsl), albédo moyen = référentiel (M-03) ; brique pour l'industriel
-            mats_[S_MUR + s] = mat(s == (int)Style::Industriel ? ALB_BRIQUE : ALB_BETON, 1, 0.9f, 0, MAT_DOUBLE | MAT_FACADE, 0.2f * (float)APPAREIL[s]);   // × 0,2 : sous l'alpha 1 (shadow.frag jette alpha < cutoff)
+            mats_[S_MUR + s] = mat(s == (int)Style::Industriel ? ALB_BRIQUE : ALB_BETON, 1, 0.9f, 0, MAT_DOUBLE | MAT_FACADE | MAT_AO, 0.2f * (float)APPAREIL[s]);   // WFS-269 : MAT_AO   // × 0,2 : sous l'alpha 1 (shadow.frag jette alpha < cutoff)
         mats_[S_TOIT + (int)Toit::Zinc] = mat(ALB_INOX, 0.6f, 0.45f, 1);
         mats_[S_TOIT + (int)Toit::Tuiles] = mat(ALB_TERRE_CUITE, 1, 0.8f, 0);
         mats_[S_TOIT + (int)Toit::Terrasse] = mat(ALB_BETON, 0.6f, 0.95f, 0);
@@ -90,6 +92,8 @@ public:
             mats_[S_VITRE] = r.makeMaterial(m, nullptr, nullptr, nullptr);
         }
         pret_ = true;
+        precalcul::occlusionKit(g_bats.size(), [](size_t k, int lod, std::vector<Vertex>& v) {   // WFS-269 : murs, au chargement
+            Cpu c; ajouter(g_bats[k], lod, c); v = std::move(c.v[slot(MUR, g_bats[k].plan)]); });
         size_t tri = 0;
         for (const Bat& b : g_bats) { Batiment x; construire(b.plan, b.profondeur, 0, x); for (const Maillage& m : x.part) tri += m.triangles(); }
         WFS_LOG("archi (WFS-161) : %zu bâtiments du kit posés, %zu triangles au niveau de détail 0 (tous), nuit %s", g_bats.size(), tri, nuit ? "oui" : "non");
@@ -157,6 +161,11 @@ void vider() { g_bats.clear(); }
 
 void poser(int64_t seg, vec3 origine, vec3 x, vec3 z, float largeur, float profondeur, float hauteur, Style style, uint32_t graine) {
     g_bats.push_back({seg, origine, x, z, profondeur, assembler(style, largeur, hauteur, graine)});
+}
+
+void geometrie(int lod, std::vector<Vertex>& v, std::vector<uint32_t>& i) {   // WFS-269 (accroche) : voir archi_carte.h
+    for (const Bat& b : g_bats) { Cpu c; ajouter(b, lod, c); for (int s = 0; s < NB_SLOTS; s++) {
+        const uint32_t base = (uint32_t)v.size(); v.insert(v.end(), c.v[s].begin(), c.v[s].end()); for (uint32_t x : c.i[s]) i.push_back(base + x); } }
 }
 
 bool actif() {
