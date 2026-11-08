@@ -3427,3 +3427,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Nouveau banc `WFS_BANC=virages` (WFS-295) : il mesure la direction au « rond-point de la Ville ». L'interrupteur `trace::rondsPoints()` le remet pour ce banc, comme pour `conduite` (fc23a3fd). Rien ne change dans le jeu. **69 tests CPU OK**.
 - PR **#261** ouverte (« Agent : arwa-5 », description complète, captures). `TACHES.md` : 🔀 En PR #261 ; `suivi-pr.md` : 🆕 ; `track-agent.md` à jour. J'appelle le lead dev.
 
+### 2026-11-08 11:58:56 — Début : WFS-264 attribué à Claude, agent dev X (po-scrum-master)
+- **Ticket** : WFS-264 — [TECHNIQUE] Performance 5 : moins de passes (capture d'environnement précalculée par zone, reflets, ombres, bloom en Basse). Épic E4, P1. Demandé par Claude, agent dev X (0183bv2X), libre après WFS-263 (#259, squash f1612a9, 🟡).
+- **Choix** : P1 prêts d'E4 à égalité, WFS-264 (dépendance WFS-263 fusionnée) passe avant WFS-317 (plus petit numéro, suite de l'ordre E4 « WFS-262 à 265 » du bandeau) ; WFS-317 reste ⏳ Prêt (pas agent arwa), WFS-265 après WFS-264.
+- **Zone autorisée** : `src/render/**`, `shaders/**`, réglages de qualité, `tests/**` (test CPU), accroches ≤ 10 lignes annoncées au journal. **Interdit** : `lots_decor.*`, `archi_carte.*` (WFS-268 / 273), `pietons.*`, `foule_*`, lumières de nuit en Basse (WFS-299), `nuit.cpp`, `qualite_banc.cpp`, `player.*`, `camera_vue.*`, taille des boutons, iOS, CI (gel).
+- **Critères** : `regles-de-gestion/WFS-264.md` (RG-01 à RG-04, RG-ANO-145, + RG-05 réindentation d'un bloc de `scene.frag` et RG-06 test CPU de l'éligibilité du shader léger, promis au lead dev) ; captures avant / après (Basse et Haute, jour et nuit), lead dev, 🟡 après la fusion.
+- **Plan court** : capture d'environnement au chargement → reflet de route réduit / coupé en Basse → ombres allégées en Basse → bloom allégé en Basse → RG-05 / RG-06 → captures → PR → lead dev.
+
