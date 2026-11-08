@@ -89,7 +89,7 @@ void Player::reset(const CarDef& c) {
     position = dist = playerX = speed = steer = heading = odo = 0;
     latAcc = lonAcc = 0; nitro = config().nitro.depart; nitroOn = braking = reversing = false;
     playerSpin = spinYaw = controlLock = 0;
-    fileAide_ = playerX; finPasX_ = 1e9;   // WFS-258 : maintien de voie repris à la position de la voiture
+    fileAide_ = playerX; finPasX_ = 1e9; cedeAuDoigt_ = true; freinAide = false;   // WFS-258 : maintien de voie repris à la position de la voiture
 }
 
 void Player::update(double dt, const DriveInput& in, Track& track, bool playing) {
@@ -163,17 +163,31 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     // trop optimiste dans les chicanes pour un joueur qui braque). Le joueur peut toujours freiner plus tôt ; aide désactivée,
     // rien n'est fait à sa place (RG-07 de WFS-241).
     DriveInput cmd = in;
-    freinAide = false;
     // Décision du PO (option A) : la limite CÈDE quand le joueur conduit lui-même : il braque fort (doigt ou flèche à 0,35 et plus,
     // VOLANT_PLEIN : l'aide lui laisse déjà tout le volant) ou il freine ; elle ne ralentit que volant lâché ou presque
     // WFS-258 (point 3, revue du lead dev, PR #271) : au-dessus de 100 km/h, la direction est réduite (un doigt à fond veut dire
     // « tourner au maximum », pas « aller plus vite ») : la limite ne cède plus qu'au frein ; sinon le joueur, qui braque plus pour
     // le même virage, passait le seuil et arrivait trop vite (et le seuil sur le braquage réduit oscillait autour de 126 km/h)
-    const bool joueurConduit = (std::abs(in.steer) >= VOLANT_PLEIN && (std::abs(v) <= 100 / 3.6 || g_avantWfs258Vif)) || in.brake;   // banc « avant » : règle de main
+    // WFS-258 (remarque du lead dev, PR #271) : écarts contre la bascule (gaz coupé puis remis, feux stop qui clignotent) :
+    //  - doigt relâché (sous 0,35) : la limite cédera au doigt sous 100 km/h, pas au-dessus (règle du point 3) ;
+    //  - doigt tenu : la décision prise au moment où le joueur braque est gardée ; elle ne change qu'au-delà d'un écart (la
+    //    limite reprend au-dessus de 110 km/h, recède sous 80 km/h) : avec 95 / 100 km/h, la voiture faisait encore le va-et-vient
+    //    (freinée au-dessus de 100, relâchée sous 95 : 76 clignotements par tour à la Corniche) ;
+    //  - le frein de l'aide se serre au-dessus de 103 % de la vitesse permise et reste serré jusqu'à revenir à la vitesse permise
+    const double va = std::abs(v);
+    if (std::abs(in.steer) < VOLANT_PLEIN) cedeAuDoigt_ = va <= 100 / 3.6;
+    else if (cedeAuDoigt_ && va > 110 / 3.6) cedeAuDoigt_ = false;
+    else if (!cedeAuDoigt_ && va < 80 / 3.6) cedeAuDoigt_ = true;
+    const bool joueurConduit = (std::abs(in.steer) >= VOLANT_PLEIN && (cedeAuDoigt_ || g_avantWfs258Vif)) || in.brake;   // banc « avant » : règle de main
+    bool freinAideAvant = freinAide;
+    freinAide = false;
     if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258 && !joueurConduit) {
         double vp = vitesseVirageAide(track, dist, Phys::grip / 9.81, Phys::brake / 9.81);
         if (g_vitesseVirageCourse5) vp = std::min(vp, g_vitesseVirageCourse5(track, dist) * M * 0.9);
-        if (v > vp) { cmd.gas = false; cmd.nitro = false; if (v > vp * 1.03 && v > Phys::vRecul * 2) { cmd.brake = true; freinAide = true; } }
+        if (v > vp) {
+            cmd.gas = false; cmd.nitro = false;
+            if ((v > vp * 1.03 || freinAideAvant) && v > Phys::vRecul * 2) { cmd.brake = true; freinAide = true; }
+        }
     }
     nitroOn = playing && cmd.nitro && nitro > 0.01;
     if (nitroOn) nitro = std::max(0.0, nitro - dt * perf.nitroBurn);
