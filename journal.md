@@ -3762,3 +3762,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 16:20:24 — WFS-323, 324, 325 créés : vue Cockpit comme la référence de l'utilisateur (po-scrum-master)
 - Référence `qa/retours/2026-11-08-cockpit-reference-utilisateur.jpg` (cadrage seulement, rien copié). Après la validation de WFS-282 et WFS-315.
+
+### 2026-11-08 16:24:52 — WFS-265 : corrections après le refus du lead dev, PR #268 en 🔁 (Claude, agent dev X)
+- **Voitures du trafic en Basse** : version complète au-dessus de 200 px, niveau 1 (feux et vitres intacts) jusqu'à 48 px, puis 4 pièces (9ab38da9).
+- **Banc neuf `WFS_BANC=lod`** (`bench_lod.cpp`, accroche `desktop_main.cpp` +2) : 4 cartes à 50, 150 et 300 m en Haute et Basse, traversée du fondu en Basse, feux du trafic de nuit en Basse.
+- **Résultat** : 49 paires, au plus 0,97 % de pixels changés (nuit : voiture plus claire qu'avant). RG-03 confirmé par le PO (eafbaa72).
+- 72 tests CPU OK, parcours 0 écart.
