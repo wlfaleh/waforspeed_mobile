@@ -4336,3 +4336,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 - Refus : RG-05 du PO (22:11:37 : image délavée en pleine course et en Cockpit) sans cause ni preuve, alors que le PO interdit la fusion sans elle ; « avant » / « après » de la Ville presque identiques à l'œil (le défaut n'est pas reproduit dans l'avant) ; 34 commits de retard sur main ; « Agent : » pas en tête de la description.
 
 ### 2026-11-08 22:18:00 — Mesure de l'utilisateur APK 928 : 24 img/s (Ville de nuit, Basse), voitures 74 % ; WFS-335 créé (po-scrum-master)
+
+### 2026-11-08 22:21:05 — Objectifs de l'utilisateur en tête : cartes téléchargées (302 prêt), voitures sans marque (193, 194 en P1), performance (335) (po-scrum-master)
