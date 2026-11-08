@@ -27,6 +27,7 @@ enum MatFlags : uint32_t {
     MAT_TANGENTE = 524288,  // WFS-149 (moteur seulement) : carte de normales dans le repère tangent des sommets (sinon dérivées écran)
     MAT_INTERIEUR = 1048576,   // WFS-161 (accroche) : vitre d'immeuble, pièce simulée derrière (decor.glsl, interieurFenetre)
     MAT_FACADE = 2097152,      // WFS-161 (accroche) : mur du kit d'architecture, appareil procédural (decor.glsl, surfaceFacade)
+    MAT_AO = 4194304,          // WFS-269 (accroche) : occlusion précalculée dans la longueur de la normale (ambiance et reflet du ciel)
 };
 
 // WFS-149 (RG-04) : + tangente (xyz + signe de la bitangente), 4 octets signés normalisés (/127) ; nulle = sans tangente

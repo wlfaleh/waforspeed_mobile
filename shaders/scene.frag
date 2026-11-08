@@ -15,7 +15,7 @@ const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
            F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u,
            F_POOL = 32768u, F_ADD = 65536u,   // WFS-09 : tache des phares (multiplicative), halo (additif)
-           F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u,   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
+           F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u, F_AO = 4194304u,   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
            F_TANGENTE = 524288u;   // WFS-149 : carte de normales dans le repère tangent des sommets
 
 // WFS-149 (RG-05) : code découpé par domaine (déplacé tel quel) : une épic Réalisme par fichier
@@ -127,6 +127,9 @@ void main() {
     if ((flags & F_PAINT) != 0u) env = mix(env, F.groundCol.rgb * 0.3 * F.misc.z, smoothstep(0.0, -0.3, R.y));
     float specOcc = mix(1.0, 0.18, clamp(rough, 0.0, 1.0));   // les surfaces rugueuses reflètent peu le ciel
     iblRemplacer(skyAmb, env, Fe, specOcc, N, R, NoV, roughEnv, f0, flags, flaque);   // WFS-151 (RG-04) : sonde IBL
+    // WFS-269 (accroche) : occlusion du décor fixe précalculée au chargement (eclairage_precalcule.h), rangée dans la longueur de
+    // la normale : ambiance et reflet du ciel seulement (le soleil, les lampes et les phares restent directs)
+    if ((flags & F_AO) != 0u && !vtint) { float aoPre = clamp(length(vNrm), 0.0, 1.0); skyAmb *= aoPre; env *= aoPre; }
     if (wetRoad && F.nuitA.z > 0.5) {
         // WFS-16 : reflet temps réel de la scène (passe miroir, demi-résolution), au même point de l'écran.
         // WFS-142 (RG-04) : il ne REMPLACE plus le reflet du ciel (avant : env = reflet, l'image nette de la rue sur toute la

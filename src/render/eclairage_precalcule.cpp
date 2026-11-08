@@ -118,16 +118,18 @@ Bilan occlusionDecor(std::vector<Lot>& lots) {
     std::atomic<long long> somme{0};
     jobs().parallelFor((int)recoivent.size(), 1, [&](int b0, int e0) {
         size_t n = 0; long long s = 0;
-        for (int k = b0; k < e0; k++)
+        for (int k = b0; k < e0; k++) {
+            const float force = std::clamp(recoivent[(size_t)k]->force, 0.f, 1.f);
             for (Vertex& sv : *recoivent[(size_t)k]->v) {
                 vec3 nn{sv.nx, sv.ny, sv.nz};
                 const float ln = length(nn);
                 if (!(ln > 1e-6f)) continue;
                 nn = nn * (1.f / ln);
-                const float ao = OCCLUSION_MIN + (1 - OCCLUSION_MIN) * ciel(g, {sv.px, sv.py, sv.pz}, nn);
-                sv.nx = nn.x * ao; sv.ny = nn.y * ao; sv.nz = nn.z * ao;
+                const float ao = 1 - force * (1 - OCCLUSION_MIN) * (1 - ciel(g, {sv.px, sv.py, sv.pz}, nn));
+                sv.nx *= ao; sv.ny *= ao; sv.nz *= ao;   // longueur d'avant × occlusion
                 n++; s += (long long)std::lround(ao * 1000);
             }
+        }
         sommets += n; somme += s;
     });
     bil.sommets = sommets;

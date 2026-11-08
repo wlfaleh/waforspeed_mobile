@@ -25,7 +25,8 @@ struct Lot {
     std::vector<Vertex>* v = nullptr;
     const std::vector<uint32_t>* i = nullptr;
     bool occulte = true;   // ses triangles cachent le ciel (bâtiments, murs, arbres, auvents…)
-    bool recoit = false;   // ses sommets reçoivent l'occlusion (longueur de la normale)
+    bool recoit = false;   // ses sommets reçoivent l'occlusion (longueur de la normale MULTIPLIÉE : luminosité MAT_VTINT gardée)
+    float force = 1;       // 1 : occlusion entière ; < 1 : atténuée (matériau MAT_VTINT, où elle touche aussi le soleil direct)
 };
 
 struct Bilan { size_t voxels = 0, sommets = 0; double ms = 0, moyenne = 1; };
