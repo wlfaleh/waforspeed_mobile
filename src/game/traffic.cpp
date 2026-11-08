@@ -343,7 +343,7 @@ void Traffic::regulerDensite(double playerPos) {
     const double densite = actifs / Lm;   // voitures par mètre
     for (const auto& zone : REGUL_ZONES) {
         const int max = std::max(1, (int)std::lround(REGUL_MAX * densite * (zone[1] - zone[0])));
-        int idx[64], n = 0;
+        int idx[64], n = 0;   // 64 voitures au plus par zone : bien au-delà des 4 à 6 attendues (total fixe, 120 voitures au plus)
         for (size_t i = 0; i < cars.size() && n < 64; i++) {
             const TrafficCar& c = cars[i];
             if (c.cache || c.traverse >= 0 || c.crashed) continue;

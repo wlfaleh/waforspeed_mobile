@@ -3,11 +3,13 @@
 // à chaque checkpoint (CHECK_DIST parcourus), la course demande +6 voitures (Course::step : addCars(6) sous 110) ;
 // mesure toutes les 30 s : voitures au total, à moins de 150 m, dans la fenêtre de dessin (30 m derrière à 300 m devant),
 // voitures arrêtées et plus longue immobilité.
-// RG-02 (décision du PO du 2026-11-08) : total constant (voitures actives + réserve de la montée de difficulté) ; véhicules
-// dessinés (Traffic::dessines, la sélection de TrafficSystem::render), médiane de chaque relevé de 30 s ≤ 1,3 × le départ
-// (la plus haute des mesures à 0, 30 et 60 s), Haute et Basse.
+// RG-02 (décision du PO du 2026-11-08 20:17:58, regles-de-gestion/WFS-281.md) : total constant (voitures actives + réserve
+// de la montée de difficulté) ; mesure = P90 des véhicules dessinés (Traffic::dessines, la sélection de TrafficSystem::render)
+// d'une fenêtre de 30 s ; R = la plus haute P90 de la 1re minute ; CHAQUE fenêtre jusqu'à 10 min ≤ max(1,3 × R ; R + 2) et
+// ≤ 8, Haute et Basse, 4 cartes, 10 graines : 0 fenêtre hors règle sur 800.
 // RG-03 : aucune voiture arrêtée plus de 20 s (hors accident, hors voitures qui traversent).
-// usage : test_trafic_duree [carte] [--journal] [--avant]   (--avant : total non fixé, comportement d'avant WFS-281)
+// usage : test_trafic_duree [carte] [--journal] [--avant] [--ideal]   (--avant : total non fixé, comportement d'avant WFS-281 ;
+//         --journal : relevé de chaque fenêtre de la graine 1 ; WFS_GRAINE=n : une seule graine)
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -85,11 +87,15 @@ int main(int argc, char** argv) {
         journal |= std::strcmp(argv[i], "--journal") == 0; avant |= std::strcmp(argv[i], "--avant") == 0;
         ideal |= std::strcmp(argv[i], "--ideal") == 0;   // témoin : voitures reposées au hasard toutes les 30 s (trafic sans aucune accumulation)
     }
+    int horsTotal = 0, fenetresTotal = 0; double moy1Total = 0, moyRTotal = 0; int nbCas = 0;   // trafic pas plus léger : P90 moyenne, 1re minute / suite
+    const int g0 = std::getenv("WFS_GRAINE") ? std::atoi(std::getenv("WFS_GRAINE")) : 1, g1 = std::getenv("WFS_GRAINE") ? g0 : 10;
+    for (int graine = g0; graine <= g1; graine++)
     for (const char* carte : {"ville", "plage", "campagne", "circuit"}) {
         if (seule && std::strcmp(seule, carte) != 0) continue;
+        const bool jr = journal && graine == g0;
         auto tp = std::make_unique<Track>(); Track& t = *tp; t.build(mapById(carte), trace::versionCarte(carte));   // tracé du jeu (WFS-136)
         Traffic tr; tr.parallel = false; tr.totalFixe = !avant;   // comme TrafficSystem::init
-        tr.reset(t, std::getenv("WFS_GRAINE") ? (uint32_t)std::atoi(std::getenv("WFS_GRAINE")) : 0x5eed1u, mapById(carte).trafficN, 0);   // graine du jeu (essai : WFS_GRAINE)
+        tr.reset(t, (uint32_t)graine * 0x9e3779b1u, mapById(carte).trafficN, 0);
         JoueurAuto j; j.v = 0; double dist = 0, prochainCp = CHECK_DIST;
         TrafficView pv; pv.myLen = webCarLength("golf", 4.29);
         const size_t total0 = tr.cars.size() + (size_t)tr.reserve();   // WFS-281 : voitures actives + réserve de la montée
@@ -98,7 +104,11 @@ int main(int argc, char** argv) {
         // de la 1re minute (0, 30 et 60 s) ; chaque mesure jusqu'à 10 min ≤ 1,3 × le départ, Haute et Basse
         std::vector<int> fh, fb; fh.reserve(2000); fb.reserve(2000);
         std::vector<double> medH, medB;   // médianes des relevés (0 s = première image, puis toutes les 30 s)
-        auto mediane = [](std::vector<int>& v) { if (v.empty()) return 0.0; std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end()); return (double)v[v.size() / 2]; };
+        auto mediane = [](std::vector<int>& v) {   // P90 de la fenêtre (décision du PO : garde les pics, pas une image seule)
+            if (v.empty()) return 0.0;
+            const size_t k = std::min(v.size() - 1, (size_t)std::ceil(0.9 * (double)v.size()) - 1);
+            std::nth_element(v.begin(), v.begin() + (long)k, v.end()); return (double)v[k];
+        };
         const TrafficCar* vis[TRAFIC_DESSINES_MAX];
         double pireImmobile = 0; int actifsMax = 0;
         // 3 s de compte à rebours puis 10 min de course
@@ -120,7 +130,6 @@ int main(int argc, char** argv) {
             if (tr.sim <= 0) continue;
             actifsMax = std::max(actifsMax, (int)tr.cars.size());
             fh.push_back(tr.dessines(j.pos, false, false, vis)); fb.push_back(tr.dessines(j.pos, true, false, vis));
-            if (medH.empty()) { medH.push_back(fh.back()); medB.push_back(fb.back()); }   // mesure à 0 s
             const int ts = (int)std::lround(tr.sim / T_STEP);
             if (ideal && ts % (int)std::lround(30 / T_STEP) == 0) {
                 Mulberry32 R((uint32_t)ts * 2654435761u);
@@ -129,34 +138,35 @@ int main(int argc, char** argv) {
             if (ts % (int)std::lround(30 / T_STEP) == 0) {
                 const Mesure m = mesurer(tr, t, j.pos, immobile);
                 medH.push_back(mediane(fh)); medB.push_back(mediane(fb)); fh.clear(); fb.clear();
-                if (journal)
-                    std::printf("%s t=%3.0f s : total %zu (actifs %d, réserve %d), < 150 m %d, dessinées (médiane 30 s) Haute %.0f Basse %.0f, arrêtées %d, immobilité max %.1f s, joueur %.0f km/h\n",
+                if (jr)
+                    std::printf("%s t=%3.0f s : total %zu (actifs %d, réserve %d), < 150 m %d, dessinées (P90 30 s) Haute %.0f Basse %.0f, arrêtées %d, immobilité max %.1f s, joueur %.0f km/h\n",
                                 carte, tr.sim, tr.cars.size() + (size_t)tr.reserve(), m.total, tr.reserve(), m.proches, medH.back(), medB.back(), m.arretees, m.immobileMax, j.v * M * 3.6);
                 pireImmobile = std::max(pireImmobile, m.immobileMax);
                 VERIFIE(tr.cars.size() + (size_t)tr.reserve() == total0, "%s t=%.0f s : %zu voitures au lieu de %zu", carte, tr.sim, tr.cars.size() + (size_t)tr.reserve(), total0);
             }
         }
-        // départ : la plus haute des mesures à 0, 30 et 60 s (au moins 1 voiture : RG-02 porte sur un trafic présent)
-        const double refH = std::max({1.0, medH[0], medH[1], medH[2]}), refB = std::max({1.0, medB[0], medB[1], medB[2]});
-        // relevés au-dessus de 1,3 × le départ (décision du PO : à chaque mesure) et moyenne des relevés de la 2e à la 10e minute
-        double pireH = 0, pireB = 0, moyH = 0, moyB = 0; int horsH = 0, horsB = 0, nb = 0;
-        for (size_t k = 3; k < medH.size(); k++) {
-            pireH = std::max(pireH, medH[k]); pireB = std::max(pireB, medB[k]); moyH += medH[k]; moyB += medB[k]; nb++;
-            horsH += medH[k] > 1.3 * refH; horsB += medB[k] > 1.3 * refB;
+        // R : la plus haute P90 de la 1re minute (fenêtres 0–30 s et 30–60 s) ; chaque fenêtre ≤ max(1,3 × R ; R + 2) et ≤ 8
+        const double refH = std::max(medH[0], medH[1]), refB = std::max(medB[0], medB[1]);
+        const double limH = std::min(8.0, std::max(1.3 * refH, refH + 2)), limB = std::min(8.0, std::max(1.3 * refB, refB + 2));
+        int horsH = 0, horsB = 0; double pireH = 0, pireB = 0, moy1 = (medH[0] + medH[1]) / 2, moyR = 0;
+        for (size_t k = 2; k < medH.size(); k++) moyR += medH[k] / (double)(medH.size() - 2);
+        moy1Total += moy1; moyRTotal += moyR; nbCas++;
+        for (size_t k = 0; k < medH.size(); k++) {
+            pireH = std::max(pireH, medH[k]); pireB = std::max(pireB, medB[k]);
+            horsH += medH[k] > limH; horsB += medB[k] > limB;
         }
-        moyH /= std::max(1, nb); moyB /= std::max(1, nb);
-        std::printf("%s : total %zu (constant : %s), actifs %d au plus ; véhicules dessinés, médiane par relevé de 30 s : Haute départ %.0f, "
-                    "moyenne %.2f, pire %.0f, %d relevé(s) sur %d > 1,3 × ; Basse départ %.0f, moyenne %.2f, pire %.0f, %d relevé(s) > 1,3 × ; "
-                    "immobilité max %.1f s (limite 20 s)\n",
-                    carte, total0, tr.cars.size() + (size_t)tr.reserve() == total0 ? "oui" : "non", actifsMax, refH, moyH, pireH, horsH, nb,
-                    refB, moyB, pireB, horsB, pireImmobile);
-        // RG-02 vérifiée ici : le trafic dans la vue ne grandit pas (moyenne des relevés ≤ 1,3 × le départ). Chaque relevé seul
-        // n'est pas vérifié : sur 10 graines, même un trafic reposé au hasard toutes les 30 s (--ideal, aucune accumulation possible)
-        // en a au-dessus de 1,3 × le départ (véhicules comptés de 1 à 4) : voir le journal du 2026-11-08 (WFS-281), décision du PO
-        VERIFIE(moyH <= 1.3 * refH, "%s : RG-02 : %.2f véhicules dessinés en moyenne (Haute, départ %.0f)", carte, moyH, refH);
-        VERIFIE(moyB <= 1.3 * refB, "%s : RG-02 : %.2f véhicules dessinés en moyenne (Basse, départ %.0f)", carte, moyB, refB);
+        horsTotal += horsH + horsB; fenetresTotal += 2 * (int)medH.size();
+        std::printf("graine %2d %-8s : total %zu (constant : %s), actifs %d au plus ; véhicules dessinés (P90 de 30 s) : Haute R %.0f, pire %.0f, "
+                    "limite %.1f, %d fenêtre(s) hors règle sur %zu ; Basse R %.0f, pire %.0f, limite %.1f, %d hors règle ; immobilité max %.1f s\n",
+                    graine, carte, total0, tr.cars.size() + (size_t)tr.reserve() == total0 ? "oui" : "non", actifsMax, refH, pireH, limH, horsH,
+                    medH.size(), refB, pireB, limB, horsB, pireImmobile);
+        VERIFIE(medH.size() == 20, "%s : %zu fenêtres de 30 s au lieu de 20", carte, medH.size());
+        VERIFIE(horsH == 0, "graine %d %s : RG-02 : %d fenêtre(s) au-dessus de %.1f véhicules (Haute, R = %.0f)", graine, carte, horsH, limH, refH);
+        VERIFIE(horsB == 0, "graine %d %s : RG-02 : %d fenêtre(s) au-dessus de %.1f véhicules (Basse, R = %.0f)", graine, carte, horsB, limB, refB);
         VERIFIE(pireImmobile <= 20, "%s : RG-03 : voiture arrêtée %.1f s (> 20 s)", carte, pireImmobile);
     }
+    std::printf("véhicules dessinés (Haute, P90 de 30 s, moyenne des cartes et graines) : 1re minute %.2f, minutes 2 à 10 %.2f\n", moy1Total / std::max(1, nbCas), moyRTotal / std::max(1, nbCas));
+    std::printf("RG-02 : %d fenêtre(s) hors règle sur %d (Haute et Basse, %d graine(s), 4 cartes ; attendu : 0)\n", horsTotal, fenetresTotal, g1 - g0 + 1);
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("trafic dans la durée : tout est OK\n");
     return 0;
