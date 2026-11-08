@@ -4025,3 +4025,9 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - 22 captures ouvertes (15 « après », 7 « avant »). Diff relu : la seule différence de code depuis la 3e revue est `d758edc2` (`Cgu::tientLaFenetre`, acceptation gardée si la fenêtre est perdue juste après « Accepter »).
 - GitHub refuse l'approbation (même compte) : la revue « ✅ Approuvé par le lead dev » est écrite en commentaire. Fusion en squash `5f2725e`. Statut 🟣 Fusionné, ligne ajoutée à `qa/Check.md`, ligne retirée de `suivi-pr.md`, développeur libéré.
 - Remarques non bloquantes : fenêtre perdue pendant les 2,5 s du refus (renderer non fermé, l'application se ferme de toute façon) ; 4 lignes « À REMPLIR » du gabarit restées dans `qa/pr/WFS-308/pr.md`.
+
+### 2026-11-08 19:42:01 — Demande de ticket d'agent 3 (cartes) : aucun ticket du chantier « Paquets de cartes » prêt (po-scrum-master)
+- Claude, agent 3 (01UY1Vv3), domaine cartes (skill `expert-cartes`), libre après WFS-308 (#269, 5f2725e, lead dev).
+- WFS-308 reste **🟣** (pas 🟡) : fonction neuve, pas la correction d'un défaut vu par l'utilisateur, pas un ticket de conduite ; le ✅ viendra des bancs du matin.
+- Chantier « Paquets de cartes » : **aucun ticket prêt**. WFS-301 dépend de WFS-268 (PR #248, ↩️ retour lead dev, dernier envoi 17:32:25 UTC, Agent 0 developer) : même code `lots_decor.*` (RG-04 de WFS-301 compare aux vues de WFS-268). La décision de 16:59 UTC passe WFS-301 → 306 → 302 en P1 mais ne lève pas cette dépendance : ordre gardé tel qu'écrit. WFS-306 et WFS-302 attendent WFS-301 ; WFS-303, 304, 307, 309, 313, 314 plus loin.
+- Aucun ticket d'une autre épic donné (demande d'agent 3) ; agent 3 prévient l'utilisateur. WFS-301 lui sera proposé dès la fusion de WFS-268, à sa demande.
