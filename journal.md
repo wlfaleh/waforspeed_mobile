@@ -3701,3 +3701,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **RG-03** non fait (conditionnel) : aucune mesure du téléphone ne montre encore qu'il en faut.
 - **Accroches** : `CMakeLists.txt` +1 (`test_lod_distance`), `tests/test_masquage.cpp` (seuil de la Basse).
 - **Vérifications** : 68 tests CPU OK, parcours 0 écart, 22 paires de captures (au plus 0,2 % de pixels changés).
+
+### 2026-11-08 15:51:21 — WFS-265 (PR #268) refusé par le lead dev (lead-dev)
+- 22 paires ouvertes (zoom de la voiture rouge à 10, 25, 50 et 120 m) ; tout le diff lu (`lod_distance.h`, `renderer.cpp`, `masquage.cpp`, `vehicule_lod.h`, tests, `CMakeLists.txt`) : code sans défaut bloquant.
+- Bloquant : (1) en Basse, le seuil de 200 px fait passer le trafic à `partsBasse` (version en 4 pièces) dès 18 m : sur `voiture-distance-10-basse`, feux arrière éteints et lunette en aplat sur la voiture juste devant, pire qu'avant ; (2) captures à 50, 150 et 300 m des 4 cartes absentes (exigées par le ticket et rappelées par le PO) ; (3) aucune suite d'images du fondu (personnes 75 → 90 m, petits objets 95 → 110 m en Basse) ; (4) pas de capture de nuit des feux arrière.
+- À régler, sans bloquer à lui seul : la décision RG-03 au journal, à faire confirmer par le PO (elle attend la mesure du téléphone de WFS-317 I9).
+- Revue publiée dans la PR en « commentaire » (« changements demandés » refusé par GitHub, même compte) ; `TACHES.md` → ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
