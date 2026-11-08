@@ -4095,3 +4095,6 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 
 ### 2026-11-08 20:31:38 — WFS-327 validé par l'utilisateur (Claude, agent dev conduite)
 - L'utilisateur valide WFS-327 (adversaires de la Course à 5 sur une vitesse de virage possible, PR #277) dans la conversation : « Ok je valide ça ». Statut 🟡 → **✅ Terminé** dans `TACHES.md` ; Suivi du ticket mis à jour.
+
+### 2026-11-08 20:32:04 — WFS-327 : recette QA de la matinée demandée par l'utilisateur (Claude, agent dev conduite)
+- L'utilisateur demande que WFS-327 soit aussi vérifié par le QA ce matin : ligne de `qa/Check.md` complétée (règles RG-01 à RG-04 à vérifier), `TACHES.md` : « ✅ Terminé (validé par l'utilisateur ; QA du matin à faire) ».
