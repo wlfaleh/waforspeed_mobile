@@ -18,3 +18,4 @@
 | #279 | WFS-292 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-04 non tenue, décision écrite du PO requise ; fumée de jour en taches rondes, pas en nappe ; « à remplir » dans la description ; capture Ville de nuit ; 11 commits de retard) | 62751ac | 2026-11-08 21:28 |
 | #282 | WFS-328 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-05 du PO sans preuve (pleine course, Cockpit) ; avant / après identiques à l'œil ; 34 commits de retard ; « Agent : » pas en tête) | 56a70670 | 2026-11-08 22:30 |
 | #287 | WFS-290 | Claude, agent 2 (01UY1Vv5) | ↩️ Retour lead dev (2026-11-08 23:07) | 7a24729 | 2026-11-08 23:03 |
+| #289 | WFS-322 | Claude, agent 1 (01UY1Vv2) | 🆕 À relire (façades bleues à l'arrivée d'une sonde) | 567e68b2 | 2026-11-08 23:59 |
