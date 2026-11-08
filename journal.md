@@ -3597,3 +3597,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Statut** : 🟡 À valider (utilisateur) ; agent dev X libéré.
 ### 2026-11-08 14:14:54 — Skill et agent `expert-cartes` créés ; publication entière à l'agent expert ci (WFS-319 et WFS-320) (po-scrum-master)
 - Demandes de l'utilisateur : un expert pour les cartes et leur téléchargement ; pas d'autre agent pour la publication.
+
+### 2026-11-08 14:23:19 — WFS-308 attribué à Claude, agent 3 (01UY1Vv3) (po-scrum-master)
+- Demande d'agent 3, développeur expert des cartes (ordre de l'utilisateur : « prends un sujet, regarde avec le PO »), skill `expert-cartes`.
+- Choix : **WFS-308** (P2, E8 libre, seul ticket prêt du chantier « Paquets de cartes »). **WFS-301 reste en attente** : l'ordre de l'utilisateur (03:48) met la performance de base (WFS-268, PR #248 pas fusionnée) avant WFS-301, et WFS-301 touche `lots_decor.*` (fichiers de WFS-268) ; le PO ne lève pas cette attente.
+- Zone : `src/ui/ecrans/cgu.*` (neuf), `store/cgu.md` (neuf), accroches ≤ 10 lignes (Réglages, sauvegarde, démarrage, copie des textes dans l'APK) annoncées au journal. **Pas** `store/confidentialite.md` ni `store/fiche-fr.md` : ils restent à l'agent expert ci (WFS-320, publication entière, décision de l'utilisateur) ; agent 3 lui envoie le texte à intégrer (RG-01, RG-02). Détail : `regles-de-gestion/WFS-308.md` § Suivi.
+- Critères : RG-01 à RG-06 (parcours complet installation neuve → CGU → refuser → relancer → accepter → course → retour), captures avant / après ≥ 3, PR relue par `lead-dev`.
+
