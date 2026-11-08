@@ -4813,3 +4813,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   - `WFS_MOMENT=nuit WFS_BANC=parcours` (sur 91e0591) : parcours complet 0 écart, vue Cockpit 0 écart, « PLUIE vue extérieure » puis « vue Cockpit » au journal ;
   - captures (`captures_pr.sh WFS-288 partie2a`, filtre audio) : les 24 courbes audio existantes sont identiques octet pour octet à main, 3 `pluie-*` sont nouvelles.
 - **Limites** : sons des essuie-glaces, résonances du toit et du pare-brise, isolation de l'habitacle et zones d'écoute des gouttes et des bulles sans source lisible ([à vérifier]) ; rien n'a été écouté sur un vrai téléphone.
+
+### 2026-11-08 02:07:44 — WFS-269 : rebond par bloc abandonné (doublon des sondes de WFS-151) (po-scrum-master)
