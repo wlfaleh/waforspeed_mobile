@@ -60,6 +60,12 @@ struct InterieurDef {
 constexpr float OEIL_ASSIS_M = 0.7859f, DOSSIER_RAD = 25.f * PI / 180.f;
 inline float hauteurOeil(const InterieurDef& d) { return d.assise + OEIL_ASSIS_M * std::cos(DOSSIER_RAD); }
 
+// WFS-315 (RG-01) : largeur de l'habitacle du modèle : largeur intérieure aux coudes à l'avant (m) et écart latéral entre l'œil
+// du conducteur et l'axe de la voiture (m, le conducteur est à gauche), écart des montants ; cotes et sources : vehicule_cockpit_defs.cpp, journal.
+// Avant WFS-315, toutes les voitures avaient 1,56 m et 0,36 m (valeurs gardées pour un modèle sans cote)
+struct Largeur { float coudes = 1.56f, oeil = 0.36f, montants = 1.44f; };   // montants : écart entre les pieds des deux montants du pare-brise (m)
+Largeur largeurPour(const InterieurDef& d);
+
 // RG-01 : intérieur du modèle, nullptr pour une voiture qui garde le cockpit commun
 const InterieurDef* interieurPour(const char* carId);
 int nombreInterieurs();
@@ -146,6 +152,7 @@ private:
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
     std::vector<Vertex> dv_[5]; std::vector<uint32_t> di_[5];
     int appels_ = 0; size_t octets_ = 0;
+    float cx_ = 0.36f, demi_ = 0.78f, montant_ = 0.72f;   // WFS-315 : centre de la voiture (repère de l'œil), demi-largeur aux coudes, demi-écart des montants (m)
 };
 
 } // namespace wfs::cockpit
