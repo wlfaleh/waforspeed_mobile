@@ -4783,3 +4783,7 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Réglages (ANO-156)** : en mise en page grand écran (1280×720), « FERMER » était volontairement placé après la ligne 11. Les 13 lignes se suivent maintenant, et « FERMER » est sous la dernière ligne, à la même taille. Le téléphone n'a pas changé.
 - **Duel à 4 (ANO-157)** : défaut du banc seulement. L'arrivée forcée dès le départ donnait un temps de 0, et les amis simulés étaient calés sur ce temps. La manche dure maintenant 12 s de course avant l'arrivée forcée, et les vrais temps sont vérifiés. Aucune accroche dans `src/game/duel*`.
 - **Preuves** : 63 tests CPU verts ; parcours `menu2` du duel conforme (0 écart ; manches à 81,9 et 79,5 s) ; captures avant / après dans `qa/pr/WFS-286/`.
+
+### 2026-11-08 02:05:56 — WFS-286 fusionné par le lead dev (lead-dev)
+- PR #253 relue : 6 paires de captures ouvertes (Réglages menu, pause, manette, `reglages` : « FERMER » sous la dernière ligne, 13 lignes à la suite ; duel à 4 : 1:21.3, +1,5 / +3,0 / +4,5 s au lieu de 0:00.0 et +0,0 s), tout le diff lu (`reglages.cpp`, `salon.cpp` banc seulement, rien dans `src/game/duel*`).
+- Approbation écrite dans la PR (revue « ✅ Approuvé par le lead dev », même compte GitHub), puis squash **2081d32**. Statut 🟣 (né de la VABF, ✅ par la CI). Remarque : banc `menu2` plus long (≈ 80 s par manche du duel).
