@@ -48,13 +48,7 @@ constexpr int POINTS_MAX = 256;            // une portion de route découpée
 constexpr int ROUTE_N = 72;                // points de la route dans la fenêtre (RG-01 : de −0,5 à +1,5 fois la vue avant)
 constexpr int SIGNAUX_MAX = 24;            // signalements suivis (fondu)
 constexpr int TRAFIC_MAX = 64;             // voitures du trafic lues pour les accidents et bouchons
-constexpr float BANDEAU = 38;              // hauteur (px de référence) du haut de la carte réservé au bandeau : calcul de la vue
-// WFS-245 (RG-09, ANO-141 ; arbitrage du PO du 2026-11-07 22:05 UTC) : textes du bandeau 2 fois plus grands, dans le même cadre :
-// bandeau dessiné sur 56 (au lieu de 38 ; la vue de la carte ne change pas, le bandeau en couvre le haut), flèche 28 × 28,
-// rangée 1 : distance 32 (réduite jusqu'à 28 si trop longue), rangée 2 : consigne 20 sur une ligne (jusqu'à 16) ; nom de rue 16
-// (jusqu'à 15) sur une étiquette de 18 (avant : 15, 10, 8 et 13) ; valeurs × côté / 150 sur un cadre plus petit
-constexpr float BANDEAU_DESSIN = 56, FLECHE = 28, DISTANCE_PX = 32, DISTANCE_MIN = 28, CONSIGNE_PX = 20, CONSIGNE_MIN = 16;
-constexpr float NOM = 18, NOM_PX = 16, NOM_MIN = 15, MONTANTES = 0.551f;   // MONTANTES : haut des « d », accents (× la taille)
+using namespace minicarte;                 // WFS-245 (RG-09) : tailles du bandeau et du nom de rue (minicarte.h)
 constexpr float FONDU_S = 0.35f;           // RG-03 : durée du fondu des signalements (s)
 
 // dernière image dessinée : journal du banc (RG-05)
@@ -443,27 +437,26 @@ private:
         const float u = echelle(carre, k), h = BANDEAU_DESSIN * u, x = carre.x, y = carre.y, w = carre.w;
         P.rect(x, y, w, h, vec4{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.95f});   // verre sombre du HUD (design-street-racing)
         P.rect(x, y + h - 2 * u, w, 2 * u, hex(ACCENT2, 0.9f));                   // liseré cyan : information
-        const float ic = FLECHE * u, cx = x + 5 * u + ic / 2, cy = y + 4 * u + ic / 2;
+        const float ic = FLECHE * u, cx = x + FLECHE_X * u + ic / 2, cy = y + FLECHE_Y * u + ic / 2;
         fleche(P, pr.m, pr.sortie, {cx, cy}, ic, k);
         const std::string dist = pr.m == nav::Manoeuvre::Aucune ? std::string() : nav::texteDistance(pr.distanceM);
         const std::string cons = nav::texteConsigne(pr), d = dist.empty() ? "Tout droit" : dist;
         // rangée 1 : distance à droite de la flèche, capitales centrées sur elle (y + 18)
-        const float tx = x + 38 * u, lwD = x + w - 4 * u - tx;
-        const float dp = taille(d, DISTANCE_PX * u, DISTANCE_MIN * u, lwD), baseD = y + 18 * u + 0.5f * hud::CAPITALES * dp;
+        const float tx = x + DISTANCE_X * u, lwD = x + w - CONSIGNE_X * u - tx;
+        const float dp = taille(d, DISTANCE_PX * u, DISTANCE_MIN * u, lwD), baseD = y + DISTANCE_MILIEU * u + 0.5f * hud::CAPITALES * dp;
         ui::text(r, tx, baseD - hud::BASE * dp, dp, ajuster(d, dp, lwD), hex(TEXTE), ui::GAUCHE, 0, false);
         // rangée 2 : consigne sur toute la largeur, une ligne, haut des lettres montantes à y + 37 (liseré à y + 54)
-        const float lwC = w - 8 * u, cp = taille(cons, CONSIGNE_PX * u, CONSIGNE_MIN * u, lwC);
-        ui::text(r, x + 4 * u, y + 37 * u - (hud::BASE - MONTANTES) * cp, cp, ajuster(cons, cp, lwC), hex(ACCENT2), ui::GAUCHE, 0, false);
+        const float lwC = w - 2 * CONSIGNE_X * u, cp = taille(cons, CONSIGNE_PX * u, CONSIGNE_MIN * u, lwC);
+        ui::text(r, x + CONSIGNE_X * u, y + CONSIGNE_HAUT * u - (hud::BASE - MONTANTES) * cp, cp, ajuster(cons, cp, lwC), hex(ACCENT2), ui::GAUCHE, 0, false);
         g_etat.prochaine = pr; g_etat.consigne = cons; g_etat.distance = dist; g_etat.tailleDistance = dp; g_etat.tailleConsigne = cp;
         if (pr.section >= 0 && pr.section + 1 < (int)secs.size())
             g_etat.rueSuivante = nav::nomRue(g.map ? g.map->id : "", g.map ? g.map->seed : 0, pr.section + 1, secs[pr.section + 1].type, secs[pr.section + 1].autoroute);
     }
     // WFS-245 (RG-09) : facteur des tailles du bandeau et du nom de rue (px de référence × k), réduit sur un cadre de moins de 150
     static float echelle(const Cadre& carre, float k) { return k * std::min(1.f, carre.w / (COTE * k)); }
-    // taille du texte : `px`, réduite par pas de 0,5 jusqu'à `mini` s'il déborde de `lw` (au-delà : coupé avec « … »)
+    // taille du texte (minicarte::tailleTexte) mesurée avec la police chargée
     static float taille(const std::string& s, float px, float mini, float lw) {
-        while (px > mini && ui::width(px, s) > lw) px = std::max(mini, px - 0.5f);
-        return px;
+        return tailleTexte([&](float p) { return ui::width(p, s); }, px, mini, lw);
     }
     static std::string ajuster(const std::string& s, float px, float lw) {   // coupe avec « … » si le texte déborde
         if (ui::width(px, s) <= lw) return s;
@@ -529,7 +522,7 @@ private:
         // WFS-245 (RG-09) : taille 16 (au lieu de 8, réduite jusqu'à 15), étiquette de 18 à 3 du bas, capitales centrées
         const float u = echelle(carre, k), h = NOM * u, lw = carre.w - 12 * u, px = taille(n, NOM_PX * u, NOM_MIN * u, lw);
         const std::string s = ajuster(n, px, lw);
-        const float w = std::min(lw, ui::width(px, s)) + 8 * u, x = carre.x + (carre.w - w) / 2, y = carre.y + carre.h - h - 3 * u;
+        const float w = std::min(lw, ui::width(px, s)) + 8 * u, x = carre.x + (carre.w - w) / 2, y = carre.y + carre.h - h - NOM_BAS * u;
         P.rect(x, y, w, h, nuit_ ? hex(0x0E1117, 0.88f) : hex(0xFFFFFF, 0.92f));
         const float base = y + h / 2 + 0.5f * hud::CAPITALES * px;
         ui::text(r, carre.x + carre.w / 2, base - hud::BASE * px, px, s, nuit_ ? hex(TEXTE) : hex(0x3C4043), ui::CENTRE, 0, false);

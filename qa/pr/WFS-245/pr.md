@@ -1,4 +1,26 @@
-## Captures pour le lead dev (50 après)
+## Agent : arwa-2 (Claude, session 01Us6uCu)
+
+**Ticket** : WFS-245 (livraison 2) — règles : `regles-de-gestion/WFS-245.md` (RG-09, arbitrage du PO du 2026-11-07 22:05 UTC)
+
+## Description
+
+- **Demande de l'utilisateur** (en une phrase) : sur le téléphone, les textes du bandeau de la carte GPS (distance, consigne, nom de rue) sont trop petits pour être lus en roulant (ANO-141, rangée dans WFS-245 avec ANO-118).
+- **Ce qui change** :
+  - `src/ui/minicarte.cpp` (`bandeau()`, `nomRue()`) : bandeau dessiné sur 56 au lieu de 38, **dans le même cadre** 150 × 150 ; flèche 28 × 28 ; rangée 1 : distance taille 32 (avant 15, réduite jusqu'à 28 si trop longue) ; rangée 2 : consigne taille 20 sur une ligne (avant 10, réduite jusqu'à 16) ; nom de rue taille 16 (avant 8, jusqu'à 15) sur une étiquette de 18 (avant 13). À l'écran : en 2400, capitales de la distance 24,2 px (avant 11,3), consigne 12,1 à 15,1 px (avant 7,6), nom de rue 12,1 px (avant 6,0).
+  - `src/ui/minicarte.h` : tailles et places du bandeau en constantes partagées (`minicarte::BANDEAU_DESSIN`…) et `tailleTexte()`, lues par le dessin et par le test.
+  - La vue de la carte est toujours calculée avec 38 (`minicarte::BANDEAU`) : la carte est identique sous le bandeau ; `placer()`, `obstacles()`, les boutons et les couleurs ne changent pas.
+  - `tests/test_bandeau_gps.cpp` (nouveau, `CMakeLists.txt`).
+- **Comment c'est vérifié** :
+  - `test_bandeau_gps` : tailles ≥ 2 × les anciennes, bandeau ≤ 60, vue calculée avec 38, deux rangées dans le bandeau (flèche et distance, consigne au-dessus du liseré), nom dans son étiquette ; **toutes** les consignes (21), distances (219) et noms de rue possibles (248) mesurés avec la police du jeu (stb_truetype, sans carte graphique) : aucun coupé, consignes ≥ 16 (« Carrefour à feux, tout droit »), distances ≥ 28,5 (« Maintenant »), noms ≥ 15 (7 noms).
+  - 63 tests CPU OK ; parcours complet (`WFS_BANC=parcours`) : **0 écart** (accueil → course → fin → retour) ; banc `hud` en 2400 × 1080 et 1280 × 720 : lignes « (WFS-245 RG-09) » (tailles ci-dessus).
+- **Limites et risques connus** :
+  - le bandeau couvre 18 de plus du haut de la carte : la route visible devant le joueur passe à ≈ 77 % (accepté par le PO) ; sur `minicarte-ligne`, à 300 m, le coude du virage annoncé est caché sous le bandeau ;
+  - deux consignes restent sous 2 × l'ancienne taille, pour tenir sans être coupées : « Au rond-point, Ne sortie » (18,5) et « Carrefour à feux, tout droit » (16) ;
+  - la taille se réduit par pas de 0,5 px de l'écran (et non 0,5 × k) : en 2400, la consigne du rond-point s'arrête à 27,5 px au lieu de 27,75 (1 %) ;
+  - captures « avant » : CI de `main`, construction 885 (466a4c8), qui précède aussi la livraison 1 (#238) : le panneau du temps y est l'ancien ;
+  - pas d'essai sur téléphone : 🟡 à valider par l'utilisateur sur l'APK de `main`.
+
+## Captures pour le lead dev (38 après)
 
 Dossier : [`qa/pr/WFS-245`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245) — mêmes bancs que `tools/qa/captures_pr.sh` (hud:2400x1080 hud:1280x720) ; avant = CI de `main`, construction 885.
 
@@ -7,15 +29,9 @@ Dossier : [`qa/pr/WFS-245`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `encoche-hud-2400` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-encoche-hud-2400.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-encoche-hud-2400.jpg?raw=true) |
 | `hud-arc-120-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-arc-120-2400.jpg?raw=true) |
 | `hud-arc-320-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-arc-320-2400.jpg?raw=true) |
-| `hud-cockpit-jour-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-cockpit-jour-2400.jpg?raw=true) |
-| `hud-cockpit-nuit-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-cockpit-nuit-2400.jpg?raw=true) |
 | `hud-combo-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-combo-2400.jpg?raw=true) |
 | `hud-course-2400` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-course-2400.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-course-2400.jpg?raw=true) |
-| `hud-course5-jour-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-course5-jour-2400.jpg?raw=true) |
-| `hud-course5-nuit-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-course5-nuit-2400.jpg?raw=true) |
 | `hud-nitro-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-nitro-2400.jpg?raw=true) |
-| `hud-solo-jour-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-solo-jour-2400.jpg?raw=true) |
-| `hud-solo-nuit-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-solo-nuit-2400.jpg?raw=true) |
 | `hud-temps-bas-2400` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-temps-bas-2400.jpg?raw=true) |
 | `minicarte-campagne-jour-2400` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-minicarte-campagne-jour-2400.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-minicarte-campagne-jour-2400.jpg?raw=true) |
 | `minicarte-campagne-nuit-2400` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-minicarte-campagne-nuit-2400.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-minicarte-campagne-nuit-2400.jpg?raw=true) |
@@ -32,15 +48,9 @@ Dossier : [`qa/pr/WFS-245`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `encoche-hud-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-encoche-hud-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-encoche-hud-1280.jpg?raw=true) |
 | `hud-arc-120-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-arc-120-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-arc-120-1280.jpg?raw=true) |
 | `hud-arc-320-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-arc-320-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-arc-320-1280.jpg?raw=true) |
-| `hud-cockpit-jour-1280` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-cockpit-jour-1280.jpg?raw=true) |
-| `hud-cockpit-nuit-1280` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-cockpit-nuit-1280.jpg?raw=true) |
 | `hud-combo-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-combo-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-combo-1280.jpg?raw=true) |
 | `hud-course-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-course-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-course-1280.jpg?raw=true) |
-| `hud-course5-jour-1280` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-course5-jour-1280.jpg?raw=true) |
-| `hud-course5-nuit-1280` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-course5-nuit-1280.jpg?raw=true) |
 | `hud-nitro-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-nitro-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-nitro-1280.jpg?raw=true) |
-| `hud-solo-jour-1280` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-solo-jour-1280.jpg?raw=true) |
-| `hud-solo-nuit-1280` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-solo-nuit-1280.jpg?raw=true) |
 | `hud-temps-bas-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-hud-temps-bas-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-hud-temps-bas-1280.jpg?raw=true) |
 | `minicarte-campagne-jour-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-minicarte-campagne-jour-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-minicarte-campagne-jour-1280.jpg?raw=true) |
 | `minicarte-campagne-nuit-1280` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/avant-minicarte-campagne-nuit-1280.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-245/qa/pr/WFS-245/apres-minicarte-campagne-nuit-1280.jpg?raw=true) |
