@@ -4338,3 +4338,5 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 ### 2026-11-08 22:18:00 — Mesure de l'utilisateur APK 928 : 24 img/s (Ville de nuit, Basse), voitures 74 % ; WFS-335 créé (po-scrum-master)
 
 ### 2026-11-08 22:21:05 — Objectifs de l'utilisateur en tête : cartes téléchargées (302 prêt), voitures sans marque (193, 194 en P1), performance (335) (po-scrum-master)
+
+### 2026-11-08 22:23:49 — Deux files en parallèle : objectifs (A) et anomalies bloquantes (B), même rythme (décision de l'utilisateur) (po-scrum-master)
