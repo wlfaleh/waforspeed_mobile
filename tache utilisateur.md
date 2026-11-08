@@ -98,6 +98,7 @@ demande utilisateur :
 ( PO, 2026-11-08 11:53 UTC : ta vidéo sur l'APK 908 montre que ce n'est **pas corrigé** : au rond-point, volant tenu à gauche en « Glisser », aide désactivée, la voiture ne tourne presque pas et monte sur le trottoir. **WFS-295 refusé** (ANO-172), nouveau ticket **WFS-316** (P1). L'erreur de WFS-295 : son essai conduisait avec une consigne écrite directement, pas avec ton doigt, et à la vitesse d'image du PC, pas aux 21 img/s de ton téléphone. Cette fois : d'abord reproduire ta vidéo au banc (doigt en Glisser, 20 img/s), puis enlever ce qui ramène la voiture vers l'extérieur quand tu tiens le volant (cap limité au-dessus de 36 km/h et poussée « centrifuge » héritée du jeu web), essai dans un virage serré et un carrefour, pas seulement au rond-point. Ton ordre du 2026-11-07 réserve la conduite à l'agent dev conduite, je le garde ; si tu veux un autre développeur pour celui-ci, dis-le. Les 21 img/s en Basse (ANO-115) : **WFS-317** (P1) créé, objectif ≥ 30 img/s stables. )
 ( Réponse de l'utilisateur (2026-11-08, transmise par le qa lead) : « autre développeur ». )
 ( PO, 2026-11-08 12:01 UTC : c'est noté — **WFS-316 ne sera pas donné à l'agent dev conduite** (règle des KO) ; il ira au premier autre développeur qui demande un ticket, avec le skill expert-conduite, avant la suite de WFS-258. Écrit dans `TACHES.md` et `regles-de-gestion/WFS-316.md`. )
+( Claude, agent 2 (01UY1Vv5), 2026-11-08 17:26 UTC : une partie de ce que montre ta vidéo est faite et fusionnée (**WFS-296**, PR #273). Quand tu restes sur le frein à l'arrêt, la voiture passe en marche arrière ; avant, seul un petit « R » le disait, et en marche arrière le volant agit à l'envers, d'où l'impression que « ça ne tourne pas ». Maintenant, dès que tu recules, un **grand « R » noir sur une pastille rouge** s'affiche, à gauche du compteur (vue normale) ou à droite de la vitesse (vue Cockpit). Aucun bouton n'a bougé. Le réglage des virages eux-mêmes, c'est WFS-295 (agent dev conduite). **À valider** avec l'APK de `main` (ticket 🟡). )
 
 - Le jeu est devenu grave : il rame beaucoup ; 1re partie Corniche plus ou moins bonne, la 2e une catastrophe ; il faut voir de près (vidéo, conversation avec le PO, 2026-11-08 02:19 UTC)
 ( PO : c'est créé — **ANO-169** et **WFS-297** (P1 urgent, en tête) : vos chiffres montrent 25 img/s à la 1re partie et 10 img/s à la 2e (la carte graphique travaille 2,6 fois plus) : quelque chose s'accumule d'une partie à l'autre. Mesure de 3 parties de suite, cause nommée, rien ne doit s'accumuler, décor chargé avant la conduite. )
@@ -139,3 +140,15 @@ demande utilisateur :
 
 - Je viens de tester le mode aide à la conduite, il fonctionne bien (2026-11-08 16:30 UTC)
 ( PO : noté — WFS-258 point 1 ✅ validé ; l'agent dev conduite est prévenu et continue le point 3. )
+
+- Captures de l'APK 916 (Réglages avec les nouveaux chiffres, courses de nuit, cockpit, chargement) (2026-11-08 16:55 UTC)
+( PO : analysées — performance : le téléphone ralentit avec le nombre de triangles, les voitures en tête → WFS-265 prioritaire, WFS-317 suit ; **WFS-326** (fenêtres qui flottent hors des façades, ANO-175) et **WFS-327** (Course à 5 : toujours dernier, ANO-176) créés en urgence avant la sortie publique. )
+
+- Vue Cockpit : j'ai déjà proposé une amélioration, je valide après ces tâches, pas urgent (2026-11-08 16:57 UTC)
+( PO : noté — WFS-282 et 315 restent 🟡, vous validerez la vue Cockpit à la fin de WFS-323 à 325 ; WFS-323 peut commencer sans attendre (agent 2), sans urgence. )
+
+- Sans la fonctionnalité des cartes téléchargées testée et sans gain de performance, ça ne sert à rien de mettre le jeu sur Google Play (2026-11-08 16:59 UTC)
+( PO : noté — sortie publique reportée. Priorité : performance (WFS-265, 317, 268, 273) et paquets de cartes (WFS-308, 301, 306, 302 passés en P1 ; gel de la CI levé pour WFS-302). WFS-319 et 320 continuent pour être prêts le jour venu. )
+
+- Pour la Ville, il faut encore −70 % des personnes, c'est juste un décor de jeu (2026-11-08 17:27 UTC)
+( PO : c'est ajouté à **WFS-317** (agent 1, RG-03) : en Ville, 30 % des personnes d'aujourd'hui, proportions gardées, rues encore vivantes ; autres cartes inchangées. )
