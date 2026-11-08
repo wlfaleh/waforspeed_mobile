@@ -4621,3 +4621,27 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 00:46:36 — WFS-268 / WFS-273 : Campagne et Grand Prix, décision écrite (po-scrum-master)
 - À la demande du lead dev (revue PR #248, point 3), transmise par Claude, agent 5 : Campagne dans WFS-268 (ordre de l'utilisateur : le max au chargement) ; Grand Prix : route et immeubles du kit dans WFS-268, décor du Grand Prix renvoyé à WFS-273 (parité des vibreurs du départ, tour de 5159 segments). Écrit dans les Suivis de WFS-268 et WFS-273.
+
+### 2026-11-08 00:53:15 — WFS-245 : retour du lead dev sur la PR #247 corrigé, lead dev rappelé (arwa-2)
+- Réponse dans la PR (« Bien reçu », puis « corrigé dans » point par point). **1** description complète (en-tête de `captures_pr.sh`, limites et risques) ; **2** nouveau test `test_bandeau_gps` : tailles ≥ 2 × les anciennes, bandeau ≤ 60, vue calculée avec 38, deux rangées dans le bandeau ; toutes les consignes (21), distances (219) et noms de rue (248) mesurés avec la police par stb_truetype : aucun coupé, consignes ≥ 16, distances ≥ 28,5, noms ≥ 15 (7 noms) ; constantes du bandeau dans `minicarte.h` (rendu identique) ; **3** parcours complet sur la branche : **0 écart** ; **4** banc `hud` remis à 6 s de course (comme la livraison 1), les 6 scènes de la livraison 1 retirées de `qa/pr/WFS-245` ; **5** branche synchronisée avec `main`, **64 tests CPU OK**.
+- L'agent `lead-dev` n'est pas chargé dans cette session (fichier arrivé après son ouverture) : il est joué par un agent général qui lit `.claude/agents/lead-dev.md` et le skill `lead-dev` en entier.
+
+
+### 2026-11-08 00:53:47 — Recette, lot M4 (performance, personnes, HUD, version) : 4 VALIDÉS, WFS-268 et WFS-246 REFUSÉS (QA-arwa)
+- Preuves : `apercu` (c9eda61, run du matin 42414202799) ; WFS-245 et WFS-279 sur banc local (5bcdfd2) ; APK 891 lu sans être lancé.
+- **VALIDÉS** : WFS-244 (aucune plaque rectangulaire sur les 4 cartes, ANO-116 vérifiée), WFS-257 (0 apparition / disparition brusque au banc, ANO-130 vérifiée, 🟡 utilisateur), WFS-245 livraison 1 (étiquettes 20,7 px en 2400, ANO-118 vérifiée ; ANO-141 attend la livraison 2), WFS-279 partie jeu (« v0.1.891 » dans l'APK 891 ; nom du fichier APK : partie CI après le gel).
+- **WFS-268 : REFUSÉ** — KO de l'utilisateur (22:28 UTC), ticket déjà rouvert ; au banc, décor tenu (≤ 60 appels de dessin après masquage, 0 création en course dans 373 relevés sur 382, mémoire stable) ; ANO-164 (écart des captures 1,19 % et 2,1 % > 1 %). Le « rame après 2 min » vient du trafic (ANO-151 / WFS-281).
+- **WFS-246 : REFUSÉ** — **ANO-163 bloquante** : planche de bord transparente en vue Cockpit (route visible au travers, vu aussi par QA-arwa) depuis le retrait des faces arrière ; correction déjà fusionnée par WFS-282 RG-00, à confirmer. ANO-125 reste ouverte.
+
+### 2026-11-08 00:54:07 — Recette, lot M3 (son) : WFS-261, 272, 275, 278 VALIDÉS (QA-arwa)
+- Preuves : `test_audio`, `test_audio_lieux`, `test_audio_voitures`, `test_audio_parois` verts en local ; banc audio local analysé (`.wav`) ; logcat de l'émulateur (« AAudio 48000 Hz, 2 canal(aux) »).
+- **WFS-261** : stéréo réelle (droite +14,4 à +15,9 dB à 90°, règle ≥ 9 dB), portée et tunnel conformes. **WFS-272** : côtés conformes, Doppler de la police 1,1587 pour 1,1588 théorique, 8 voix au plus, aucun clic. **WFS-275** : délais d'écho 63,6 à 113,7 ms, niveaux à ≤ 0,3 dB de la loi, masque de la Ville ≈ −21 dB. **WFS-278** : casino 113,7 ms et centre commercial 224,5 ms, masques ≈ 20-24 dB, absorption sourcée.
+- Crête ≤ 0,28 (musique 0,90), aucun échantillon saturé ; aucune image changée hors les 3 courbes `parois-*` (effet voulu). Aucune anomalie.
+- Rappel : le Son est Coupé chez l'utilisateur ; rien de tout cela ne s'entend tant qu'il ne le remet pas.
+
+### 2026-11-08 00:55:35 — Recette, lot M1 (conduite et course) : 4 VALIDÉS, WFS-224 et WFS-247 PASSABLES (QA-arwa)
+- Preuves : `apercu` (c9eda61) ; WFS-243 sur banc local `course5` ; 62 tests CPU verts en local (5bcdfd2).
+- **WFS-258 (RG-00, repli)** : VALIDÉ pour le seul livrable fusionné — ancienne conduite en jeu ; aide activée, épingle et rond-point passent (écart 0,4 m, 0 image hors route) ; aide désactivée, tout droit (dérive 0°). Reste du ticket non livré. ANO-138 et ANO-140 encore présentes dans le modèle de WFS-241 gardé hors jeu.
+- **WFS-242 : VALIDÉ** (grille sans chevauchement, place variable, chrono à 0 jusqu'au GO). **WFS-243 : VALIDÉ** (adversaires à leur vraie distance, 0 pas faux sur 21 600). **WFS-256 : VALIDÉ** (voiture arrêtée par chaque type d'objet à 30, 80, 150 km/h, 0 mur invisible).
+- **WFS-224 : PASSABLE** — plus de boules grises ; ANO-165 : fumée invisible de jour en vrai dérapage. **WFS-247 : PASSABLE** — aller-retour en virage ≤ 1,93 cm de 10 à 90 img/s (ANO-139 corrigée pour l'aller-retour) ; ANO-166 : à-coup en virage et rond-point non comptés au banc.
+- Vérifiées au banc : ANO-114, 117, 120, 122, 123, 124, 126, 129, 150. Remarque VABF : `choc-etincelles` et `accident-fumee` ne montrent plus aucun choc (« accidents 0 »).
