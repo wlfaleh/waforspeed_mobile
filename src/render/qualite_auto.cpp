@@ -57,6 +57,11 @@ MesureImages::Stats MesureImages::stats() const {
     if (!n) return s;
     std::vector<float> v(n);
     for (int i = 0; i < n; i++) { v[i] = ms[(tete - n + i + CAP) % CAP]; s.plus33 += v[i] > 33.3f; s.plus50 += v[i] > 50.f; }
+    {   // WFS-262 (RG-05) : écart type de la durée d'image (régularité)
+        double m = 0, q = 0; for (float x : v) m += x; m /= n;
+        for (float x : v) q += (x - m) * (x - m);
+        s.ecartType = (float)std::sqrt(q / n);
+    }
     std::sort(v.begin(), v.end());
     auto rang = [&](double q) { return v[(size_t)std::clamp((int)std::ceil(q * n) - 1, 0, n - 1)]; };   // rang le plus proche
     s.mediane = rang(0.5); s.p95 = rang(0.95); s.p99 = rang(0.99);

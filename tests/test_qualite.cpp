@@ -122,6 +122,29 @@ int main() {
         std::printf("mesure du téléphone (WFS-246 RG-06) : médiane, 95 / 99 %%, > 33 / > 50 ms sur 20 s glissantes : OK\n");
     }
 
+    // WFS-262 (RG-04, RG-05) : cadence 60 → 30 au plancher seulement, retour à 60 avec de la marge GPU ; écart type
+    {
+        Cadence c;
+        for (int i = 0; i < 600; i++) c.image(1.0 / 40, true, false, 25.f, 20.0);
+        VERIFIE(c.ips == 60, "hors plancher : 60 gardé");
+        bool change = false; for (int i = 0; i < 40 * 7; i++) change |= c.image(1.0 / 40, true, true, 25.f, 20.0);
+        VERIFIE(change && c.ips == 30, "au plancher, 95 %% > 20 ms pendant 6 s : 30");
+        for (int i = 0; i < 30 * 9; i++) c.image(1.0 / 30, true, true, 33.f, 9.0);
+        VERIFIE(c.ips == 30, "9 s de marge : 30 gardé");
+        for (int i = 0; i < 30 * 2; i++) c.image(1.0 / 30, true, true, 33.f, 9.0);
+        VERIFIE(c.ips == 60, "10 s de marge GPU : retour à 60");
+        Cadence d; for (int i = 0; i < 40 * 7; i++) d.image(1.0 / 40, true, true, 25.f, -1);
+        VERIFIE(d.ips == 30, "sans horodatages : passage à 30");
+        for (int i = 0; i < 30 * 25; i++) d.image(1.0 / 30, true, true, 30.f, -1);
+        VERIFIE(d.ips == 30, "sans horodatages : 30 gardé 25 s");
+        for (int i = 0; i < 30 * 6; i++) d.image(1.0 / 30, true, true, 30.f, -1);
+        VERIFIE(d.ips == 60, "sans horodatages : nouvel essai à 60 après 30 s (jamais bloquée à 30)");
+        VERIFIE(!cadenceAuto && cadenceCourse == 60, "cadence automatique désactivée par défaut : 60");
+        static MesureImages m; for (int i = 0; i < 100; i++) m.ajouter(i % 2 ? 20.f : 10.f);
+        VERIFIE(std::abs(m.stats().ecartType - 5.f) < 1e-3f, "écart type %.3f", m.stats().ecartType);
+        std::printf("cadence (WFS-262) : 60 → 30 au plancher, retour à 60 avec marge, écart type : OK\n");
+    }
+
     if (echecs) { std::printf("%d échec(s)\n", echecs); return 1; }
     std::printf("qualité : tout est OK\n");
     return 0;
