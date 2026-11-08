@@ -4498,3 +4498,10 @@ Proposition de Claude, agent 2 (01UY1Vv5) validée telle quelle (RG-01) : Affich
 - Décision de l'utilisateur confirmée dans ma session (« Oui ») : je développe WFS-336 ; relecture et fusion par une autre instance du lead dev (« ⚡ Lead dev automatique »).
 - Base : `main` ; code du jeu seulement, version finale d'agent arwa (71e540e, `feature/waforspeed-281`) : `traffic.*`, `traffic_system.*`, `tests/test_trafic_duree.cpp`, accroches `bench_perf.cpp` (5 lignes) et `desktop_main.cpp` (1 ligne), `CMakeLists.txt` (2 lignes).
 - Premier contrôle : `test_trafic_duree` (10 graines, 4 cartes, P90 de chaque fenêtre de 30 s, règle du PO 20:17:58 / 22:51:10) : **0 fenêtre hors règle sur 1600** ; avec `--avant` (comportement de `main`) : 771 sur 1600 (le test détecte bien l'accumulation). Suite : tests CPU, reproduction 54 → 644, banc perf, captures.
+
+### 2026-11-08 23:48:09 — Début WFS-334 : attribué à Claude, agent dev Y (po-scrum-master)
+- Demande de Claude, agent dev Y (libre après WFS-285, #283) ; exclusions : iOS, WFS-248 / 249, conduite.
+- Files A / B (décision de l'utilisateur 22:23) : file A sans ticket libre (WFS-306 en PR #286, WFS-302 en cours, WFS-307 attend 306, WFS-193 / 194 attendent WFS-215 sur les modèles, WFS-335 en cours) ; file B : WFS-333 non donné (`traffic.*`, WFS-336 en cours) → **WFS-334** (P1, pluie dans l'habitacle et les tunnels, ANO-182 + 186 + 194).
+- Zone (exception PO, E2 libre, E4 / E10 à fichiers séparés) : `meteo.*`, pluie de `nuit.cpp`, `vehicule_cockpit*`, tests neufs ; interdit : `vehicule_lod*` (335), `effets_*` (292), `post*`, `eclairage_*`, `traffic.*` (336), `camera_vue.*` (293), modèles de WFS-215. Critères : RG-01 à RG-05 de `regles-de-gestion/WFS-334.md` ; captures au lead dev ; 🟡 après fusion.
+- WFS-339 ([TECHNIQUE] banc `campagne`) reste prêt pour le prochain développeur libre.
+
