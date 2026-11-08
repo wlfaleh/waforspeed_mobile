@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <fstream>
 #include "../../core/log.h"
+#include "../../core/memoire.h"   // RG-07 : mémoire du jeu après le chargement
+#include <algorithm>
 #include "../../core/platform.h"
 #include "../../game/game.h"
 #include "../../game/trace_cartes.h"
@@ -104,7 +106,7 @@ carte::Paquet cuire(const std::string& racine, const std::string& c, carte::Form
     return p;
 }
 
-int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string& racine) {
+int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string& racine, int (*parcours)(Game&, Renderer&, const std::string&)) {
     int ecarts = 0;
     auto verifier = [&](bool ok, const std::string& quoi) { WFS_LOG("cuisson (WFS-301) banc : %s : %s", quoi.c_str(), ok ? "OK" : "ÉCART"); if (!ok) ecarts++; };
     const std::string c = "ville", dossier = carte::dossierPaquets();
@@ -191,6 +193,43 @@ int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string
         ecrireFichier(part, bons[0]);
         verifier(carte::verifier_carte(part, {c, carte::FORMATS[0], empreinteAttendue(c)}) == carte::Verdict::NonFini, "fichier .part refusé");
         fs::remove(part, ec);
+    }
+    {   // RG-07 : temps de chargement de la Ville (Game::init), médiane de 5, construite par le code puis avec le paquet ; mémoire du jeu
+        auto mesurer = [&](const char* quoi) {
+            std::vector<double> t; double mo = 0;
+            for (int i = 0; i < 5; i++) {
+                setenv("WFS_MOMENT", "jour", 1); setenv("WFS_DEPART", "0", 1);
+                const double t0 = nowSeconds();
+                const bool ok = g.init(r, "golf", c.c_str());
+                t.push_back(nowSeconds() - t0); mo = std::max(mo, memoire::processusMo());
+                if (!ok) { WFS_ERR("cuisson (WFS-301) banc : chargement impossible (%s)", quoi); ecarts++; }
+                g.shutdown();
+            }
+            std::sort(t.begin(), t.end());
+            WFS_LOG("cuisson (WFS-301) mesure RG-07 : chargement de la Ville %s : médiane %d ms (min %d, max %d, 5 chargements), mémoire du jeu ≤ %.0f Mo",
+                    quoi, (int)std::lround(t[2] * 1000), (int)std::lround(t[0] * 1000), (int)std::lround(t[4] * 1000), mo);
+            return t[2];
+        };
+        retirer(); preparerCarte(c);
+        const double sans = mesurer("construite par le code (sans paquet)");
+        poser(0, bons[0]); poser(2, bons[2]); preparerCarte(c);
+        const double avec = mesurer("avec le paquet partiel (ASTC)");
+        WFS_LOG("cuisson (WFS-301) mesure RG-07 : écart avec / sans paquet : %+d ms (vérification du paquet comprise dans preparerCarte, à part)",
+                (int)std::lround((avec - sans) * 1000));
+    }
+    if (parcours) {   // RG-08 : parcours complet de la plateforme, paquet présent puis absent
+        fs::create_directories(out + "/avec-paquet", ec); fs::create_directories(out + "/sans-paquet", ec);
+        retirer(); poser(0, bons[0]); poser(2, bons[2]);
+        verifier(preparerCarte(c), "parcours : paquet présent et activé");
+        const long long avant = carte::lusDansPaquet();
+        const int e1 = parcours(g, r, out + "/avec-paquet");
+        WFS_LOG("cuisson (WFS-301) banc : parcours complet avec le paquet : %d écart(s), %lld fichier(s) lus dans le paquet", e1, carte::lusDansPaquet() - avant);
+        verifier(e1 == 0 && carte::lusDansPaquet() > avant, "parcours complet accueil → Ville → course → retour, paquet présent");
+        retirer();
+        verifier(!preparerCarte(c), "parcours : paquet absent → Ville du code");
+        const int e2 = parcours(g, r, out + "/sans-paquet");
+        WFS_LOG("cuisson (WFS-301) banc : parcours complet sans paquet : %d écart(s)", e2);
+        verifier(e2 == 0 && carte::lusDansPaquet() == 0, "parcours complet accueil → Ville → course → retour, paquet absent (secours)");
     }
     carte::desactiver();
     retirer();   // le banc ne laisse aucun paquet : les autres scènes jouent la carte du code
