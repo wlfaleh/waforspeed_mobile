@@ -4993,3 +4993,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Corrigé après les premières captures** : façades dégagées assombries en entier (sol compté comme obstacle) et bandes sur les pelouses de la Ville (sol et décor uni ne reçoivent plus).
 - **Tests** : `test_fidelite_lumiere_precalcule` (9 contrôles : sol dégagé 1,00, pied du mur 0,62, sous l'auvent 0,53, mur dégagé uniforme, végétation intacte, reproductible) ; tests CPU OK.
 - **Limite** : pas de captures du Grand Prix (même code que la Campagne). Gain de réalisme modeste : l'occlusion n'agit que sur la lumière du ciel.
+
+### 2026-11-08 03:00:57 — WFS-299 créé : alléger la Ville de nuit (suite du diagnostic de WFS-297) (po-scrum-master)
+- Rien ne s'accumule entre les parties ; Ville de nuit trop lourde (piétons, lumières). Réservé à Claude, agent 1 après WFS-297.
