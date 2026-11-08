@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <chrono>
 #include "../../core/log.h"
 #include "cgu.h"   // WFS-308 (RG-05) : conditions d'utilisation en lecture seule
 #include "chargement.h"   // WFS-297 (RG-06) : texteMemoire (mémoire du jeu, de la carte graphique, numéro de la partie)
@@ -21,6 +22,7 @@
 #include "../../platform/gyroscope.h"
 #include "../../platform/manette.h"  // WFS-80 : focus de la manette
 #include "../../platform/manette_jeu.h"   // WFS-80 : banc (appliquer, focusCourant)
+#include "../../platform/retour_systeme.h"   // WFS-290 : banc de la touche Retour
 #include <deque>
 #include "../../render/renderer.h"
 #include "../../render/vk.h"
@@ -72,6 +74,26 @@ float boutonCgu(Renderer& r, float x, float y, float h, float k) {   // WFS-308 
     g_cgu = {x - w, y + (h - zh) / 2, w, zh}; biseau(r, x - w - 1, y - 1, w + 2, h + 2, 8 * k, BORD); biseau(r, x - w, y, w, h, 8 * k, GLASS);
     ui::text(r, x - w / 2, y + (h - tp) / 2, tp, t, hex(ACCENT2), ui::CENTRE, 0.12f, false); return w;
 }
+// WFS-290 (RG-03, ANO-159) : zone d'appui d'un bouton = son dessin élargi à 48 dp de haut au moins et de 4 dp de chaque côté
+// (règle Android) ; le dessin ne change pas. Sur téléphone, « Réglages » était dessiné en 95 × 25 dp et « Fermer » en 29 dp de
+// haut : un doigt posé un peu à côté du dessin ne comptait pas (banc reglages-appuis : 36 appuis sur 100 dans la cible d'un doigt)
+float g_dpAppui = 1;   // pixels par dp, relevé à chaque image dessinée
+bool dansCible(const Zone& z, float x, float y) {
+    if (z.w <= 0) return false;
+    const float h = std::max(z.h, 48 * g_dpAppui), cy = z.y + z.h / 2, m = 4 * g_dpAppui;
+    return x >= z.x - m && x <= z.x + z.w + m && y >= cy - h / 2 && y <= cy + h / 2;
+}
+// WFS-290 (RG-02) : « Fermer » est dessiné presque à la place de « Réglages » (panneau plein écran sur téléphone) : un 2e appui
+// rapide (geste répété, rebond du doigt) refermait aussitôt le panneau, ou le rouvrait (banc : 0 sur 100). Un appui qui ouvre
+// ou ferme moins de 0,3 s après le précédent est ignoré (personne n'ouvre et ne ferme exprès en moins de 0,3 s)
+constexpr double ANTI_REBOND_S = 0.30;
+double g_horlogeBanc = -1;   // banc : horloge simulée (secondes) ; sinon horloge du téléphone
+double maintenant() {
+    if (g_horlogeBanc >= 0) return g_horlogeBanc;
+    return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+double g_dernierBasculement = -1e9;
+bool basculementPermis() { return maintenant() - g_dernierBasculement >= ANTI_REBOND_S; }
 int nChoix(int l) { return l == L_QUALITE && qualite::ultraPropose() ? 4 : LIGNES[l].n; }   // WFS-150 : Ultra proposé (qualite_auto.h)
 bool g_ouvert = false;
 
@@ -183,20 +205,30 @@ public:
         if (reglages().camera != CAM_POURSUITE) appliquerCamera();
         if (reglages().qualite != QUALITE_HAUTE) appliquerQualite(r);
     }
-    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; g_bouton = {}; cgu().fermer(); }
+    // WFS-290 : la zone du bouton n'est plus effacée au changement d'écran (même place au menu et en pause) : un appui juste après
+    // l'arrivée sur l'écran, avant la 1re image dessinée, comptait pour rien (banc : 0 sur 100) ; hors menu et pause, onTouch l'ignore
+    void onEcran(Ecran, Ecran, const GameView&) override { g_ouvert = false; cgu().fermer(); }
     void shutdown(Renderer&) override { if (cgu().mode() == Cgu::Mode::Lecture) cgu().fermer(); }   // WFS-308 : fenêtre perdue en jeu (termGraphics)
 
     bool onTouch(const Touch& t, const GameView& g) override {
         if (g.ecran != Ecran::Menu && g.ecran != Ecran::Pause) return false;
         if (!g_ouvert) {   // bouton « Réglages » (RG-04 : menu principal et pause)
-            if (t.down && g_bouton.contient(t.x, t.y)) { g_ouvert = true; doigt_ = t.id; WFS_LOG("réglages : ouverts (%s)", nomEcran(g.ecran)); return true; }
+            if (t.down && dansCible(g_bouton, t.x, t.y)) {   // WFS-290 : cible de 48 dp, anti-rebond
+                doigt_ = t.id;
+                if (!basculementPermis()) { WFS_LOG("réglages : appui ignoré (moins de 0,3 s après la fermeture)"); return true; }
+                g_ouvert = true; g_dernierBasculement = maintenant(); WFS_LOG("réglages : ouverts (%s)", nomEcran(g.ecran)); return true;
+            }
             return t.id == doigt_ && !t.down ? (doigt_ = -1, true) : false;
         }
         if (!t.down) { if (t.id == doigt_) doigt_ = -1; if (cgu().ouvert()) cgu().toucher(t.id, t.x, t.y, false); return true; }
         if (t.id == doigt_) return true;
         if (cgu().ouvert()) { cgu().toucher(t.id, t.x, t.y, t.down); return true; }   // WFS-308 : lecture des conditions par-dessus
         if (g_cgu.contient(t.x, t.y) && r_) { cgu().ouvrir(*r_, Cgu::Mode::Lecture); doigt_ = t.id; return true; }   // WFS-308 (RG-05)
-        if (g_fermer.contient(t.x, t.y)) { g_ouvert = false; doigt_ = t.id; WFS_LOG("réglages : fermés"); return true; }
+        if (dansCible(g_fermer, t.x, t.y)) {   // WFS-290 : cible de 48 dp, anti-rebond
+            doigt_ = t.id;
+            if (!basculementPermis()) { WFS_LOG("réglages : appui ignoré (moins de 0,3 s après l'ouverture)"); return true; }
+            g_ouvert = false; g_dernierBasculement = maintenant(); WFS_LOG("réglages : fermés"); return true;
+        }
         if (g_mesure.contient(t.x, t.y) && !qualite::texteMesure().empty()) { doigt_ = t.id; WFS_LOG("réglages : mesure du rendu partagée (WFS-246)"); reseau::partager(qualite::texteMesure()); return true; }
         for (int l = 0; l < N_LIGNES; l++) for (int c = 0; c < nChoix(l); c++) {
             if (!g_choix[l][c].contient(t.x, t.y) || valeur(l) == c) continue;
@@ -226,6 +258,7 @@ public:
         // WFS-147 (RG-01, RG-02, ANO-19) : sur téléphone couché, mise en page propre aux réglages, dessinée en dp
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
         const float W = g.uiWidth, H = g.uiHeight, k = cp ? ui::unitePetitEcran(W, H) : H / 720.f;
+        g_dpAppui = ui::pixelsParDp(W);   // WFS-290 : cible des boutons en dp
         if (!g_ouvert) { dessinerBouton(r, g, W, k, H / 720.f); manette::focus(g_bouton); return; }   // WFS-80 : bouton au focus
         // WFS-80 (RG-05) : panneau ouvert → seuls ses choix et « Fermer » (B) gardent le focus, pas le menu dessous
         manette::zonesImage().clear();
@@ -391,7 +424,7 @@ private:
 Reglages& reglages() { static Reglages R; return R; }
 bool reglagesOuverts() { return g_ouvert; }
 void ouvrirReglagesBanc(bool oui) { g_ouvert = oui; }   // WFS-297
-bool toucheReglages(float x, float y) { return g_ouvert || g_bouton.contient(x, y); }
+bool toucheReglages(float x, float y) { return g_ouvert || dansCible(g_bouton, x, y); }   // WFS-290 : même cible que onTouch
 bool boutonCguReglages(float& x, float& y) { x = g_cgu.x + g_cgu.w / 2; y = g_cgu.y + g_cgu.h / 2; return g_ouvert && g_cgu.w > 0; }   // WFS-308
 
 // WFS-80 : banc manette du garage (pastilles) et des réglages : le focus va à la zone visée par la croix (chemin le plus
@@ -584,7 +617,9 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
     if (!g.init(r, "golf", "ville")) { WFS_ERR("réglages (WFS-290) : chargement impossible"); courseBenchRules(false); return; }
     g.setAutopilot(true); g.camMode = 0;
     double t = 1000;
-    auto image = [&](bool rendu) { g.update(1.0 / 60); t += 1.0 / 60; if (rendu) g.render(t); };
+    g_horlogeBanc = 0;   // horloge simulée : 1/60 s par image, comme le téléphone à 60 images/s
+    auto image = [&](bool rendu) { g.update(1.0 / 60); t += 1.0 / 60; g_horlogeBanc += 1.0 / 60; if (rendu) g.render(t); };
+    auto attendre = [&](int images) { for (int i = 0; i < images; i++) image(false); };   // temps de réaction d'un joueur
     auto capture = [&](const char* nom, const char* quoi) {
         g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
         WFS_LOG("capture %s : écran %s, réglages %s, %s", nom, nomEcran(g.ecran()), g_ouvert ? "ouverts" : "fermés", quoi);
@@ -609,10 +644,10 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
         if (cas == 3) for (int i = 0; i < 30; i++) image(false);
         image(false);
         g.onTouch({id, x, y, false});
-        image(true);
+        image(false);
         if (cas == 4) {   // double : 2e appui 2 images plus tard, au même endroit
             image(false);
-            g.onTouch({id, x, y, true}); image(false); g.onTouch({id, x, y, false}); image(true);
+            g.onTouch({id, x, y, true}); image(false); g.onTouch({id, x, y, false}); image(false);
         }
     };
     const char* NOMS[] = {"centre", "dessin", "doigt 48 dp", "long", "double", "transition", "autre doigt"};
@@ -629,7 +664,9 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
         for (int cas = 0; cas < 7; cas++) {
             int ok[2] = {0, 0};
             for (int essai = 0; essai < 100; essai++) {
-                if (g_ouvert) { g_ouvert = false; image(true); }   // départ : panneau fermé, bouton dessiné
+                attendre(24);   // 0,4 s entre deux gestes (temps de réaction d'un joueur)
+                if (g_ouvert) { g_ouvert = false; image(true); }   // départ : panneau fermé
+                if (essai % 25 == 0) image(true);   // une image dessinée de temps en temps (zones relevées au dessin)
                 const Zone vu = g_bouton;   // le doigt vise le bouton vu à l'écran (sa place ne change pas d'un écran à l'autre)
                 if (cas == 5) {   // transition : on quitte l'écran et on y revient, appui sans image dessinée entre les deux
                     if (ecran == 0) { g.allerA(Ecran::Garage); image(true); g.allerA(Ecran::Menu); }
@@ -643,6 +680,7 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
                 const bool ouvert = g_ouvert;
                 ok[0] += ouvert;
                 if (ouvert) {
+                    image(true); attendre(24);   // le panneau s'affiche, le joueur le voit puis vise « Fermer »
                     appui(g_fermer, cas == 5 || cas == 6 ? 0 : cas);
                     ok[1] += !g_ouvert;
                 }
@@ -653,19 +691,28 @@ void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
             WFS_LOG("réglages (WFS-290) : %s, %s : ouvrir %d / 100, fermer %d / %d", nomE, NOMS[cas], ok[0], ok[1], ok[0]);
         }
         if (ecran == 0) {
-            g_ouvert = false; image(true);
-            appui(g_bouton, 0); capture("reglages-appuis-menu-ouvert", "appui sur « Réglages » au menu : panneau ouvert");
+            g_ouvert = false; image(true); attendre(24);
+            appui(g_bouton, 0); capture("reglages-appuis-menu-ouvert", "appui sur « Réglages » au menu : panneau ouvert"); attendre(24);
             appui(g_fermer, 0); capture("reglages-appuis-menu-ferme", "appui sur « Fermer » : retour au menu");
         } else {
-            g_ouvert = false; image(true);
-            appui(g_bouton, 0); capture("reglages-appuis-pause-ouvert", "en pause, appui sur « Réglages » : panneau ouvert");
+            g_ouvert = false; image(true); attendre(24);
+            appui(g_bouton, 0); capture("reglages-appuis-pause-ouvert", "en pause, appui sur « Réglages » : panneau ouvert"); attendre(24);
             appui(g_fermer, 0); capture("reglages-appuis-pause-ferme", "appui sur « Fermer » : retour à la pause");
+            // RG-04 : touche Retour du téléphone, réglages ouverts en pause : panneau fermé, on reste en pause (avant : la course reprenait)
+            int okRetour = 0;
+            for (int i = 0; i < 100; i++) {
+                attendre(24); appui(g_bouton, 0); image(true); attendre(24);
+                retourSysteme(g, true, 0); image(false); retourSysteme(g, false, 0); image(true);
+                okRetour += !g_ouvert && g.ecran() == Ecran::Pause;
+                if (g.ecran() != Ecran::Pause) allerEnPause();
+            }
+            WFS_LOG("réglages (WFS-290) : pause, touche Retour du téléphone : réglages fermés et pause gardée %d / 100", okRetour);
         }
     }
     WFS_LOG("réglages (WFS-290) : zones d'appui : « Réglages » %.0f × %.0f dp, « Fermer » %.0f × %.0f dp (%.2f px/dp)",
             g_bouton.w / dp, g_bouton.h / dp, g_fermer.w / dp, g_fermer.h / dp, dp);
     WFS_LOG("réglages (WFS-290) : total menu : ouvrir %d / 700, fermer %d ; pause : ouvrir %d / 700, fermer %d", total[0][0], total[0][1], total[1][0], total[1][1]);
-    g_ouvert = false;
+    g_ouvert = false; g_horlogeBanc = -1;
     g.shutdown();
     courseBenchRules(false);
 }
