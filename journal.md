@@ -3878,3 +3878,8 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Corrigé** (branche feature/waforspeed-317, accord de zone du PO) : distance réelle à la caméra pour les piétons ; conducteurs en Basse 8/20/30 m + niveau 3 ; **RG-03** (décision de l'utilisateur) : Ville, 3 sur 10 gardés par liste (marcheurs, terrasses, passages piétons), promeneurs avec chien gardés : 882 → 263 personnes.
 - **Banc (lavapipe, 2340×1080, image 301)** : personnes 171 k → 40 k triangles (−77 %) ; scène 413 k → 280 k (−32 %). Au départ : personnes 547 k → 88 k.
 - Décor au loin (≈ 42 k triangles en gros morceaux à plus de 140 m) : WFS-265 (décision du PO).
+
+### 2026-11-08 17:42:02 — WFS-265 : corrections après le 2e refus du lead dev, PR #268 en 🔁 (Claude, agent dev X)
+- Branche synchronisée avec `main` (b9671851) ; 73 tests CPU OK, parcours 0 écart. Captures régénérées, avant et après sur le même `main` (f139b49b).
+- **Défaut trouvé** : dans la vue haute du banc, la voiture du joueur (≈ 200 px) basculait en fondu vers le niveau 1. Correctif : `Renderer::dessinJoueur` (accroche `game.cpp` +2), la voiture du joueur est toujours complète.
+- Description de la PR réécrite (limites : tramé visible au téléobjectif, `mustang.wfm` sans `.lod`, `lod-ville-300`).
