@@ -4340,6 +4340,51 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 ### 2026-11-08 22:21:05 — Objectifs de l'utilisateur en tête : cartes téléchargées (302 prêt), voitures sans marque (193, 194 en P1), performance (335) (po-scrum-master)
 
 ### 2026-11-08 22:23:49 — Deux files en parallèle : objectifs (A) et anomalies bloquantes (B), même rythme (décision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:32:58 — WFS-290 : causes des appuis perdus sur « Réglages » et « Fermer » (ANO-159), accroche annoncée (Claude, agent 2 (01UY1Vv5))
+- Banc neuf `reglages-appuis` (2340 × 1080, 2,62 px/dp, 100 appuis par cas, menu et pause). **Avant** (code de main) : centre, dessin, appui long, autre doigt posé : 100 / 100 ; **doigt posé dans une cible de 48 dp** : ouvrir 36 / 100 au menu, 51 / 100 en pause, fermer 21 / 36 et 20 / 51 ; **double appui** : 0 / 100 ; **appui juste après le changement d'écran** : 0 / 100.
+- **Causes** : (1) zones d'appui égales au dessin, bien sous les 48 dp d'Android : « Réglages » 82 × 25 dp, « Fermer » 88 × 29 dp ; (2) sur téléphone le panneau est plein écran et « Fermer » tombe presque à la place de « Réglages » : un 2e appui rapide (geste répété, rebond) referme ou rouvre aussitôt ; (3) la zone du bouton était effacée à chaque changement d'écran jusqu'à la 1re image dessinée (60 ms et plus sur un téléphone lent) ; (4) touche Retour du téléphone, réglages ouverts en pause : la course reprenait au lieu de fermer les réglages (RG-04).
+- **Corrections** (`src/ui/ecrans/reglages.cpp`) : cible de 48 dp de haut au moins et 4 dp de plus de chaque côté (dessin inchangé, aucun bouton déplacé) ; un appui qui ouvre ou ferme moins de 0,3 s après le précédent est ignoré ; zone gardée au changement d'écran. **Après** : 100 / 100 dans tous les cas, au menu et en pause ; touche Retour en pause : réglages fermés, pause gardée 100 / 100.
+- **Accroches annoncées** : `src/platform/retour_systeme.cpp` (+3 lignes : Retour en pause avec réglages ouverts → « Fermer ») ; `src/platform/desktop_main.cpp` (+1 ligne : banc `reglages-appuis`).
+
+### 2026-11-08 22:33:47 — WFS-281 remplacé par WFS-336 (petite PR propre, lead dev) ; PR #249 fermée sans fusion ; le lead dev peut coder en cas de blocage (décision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 22:37:50 — WFS-306 : PR #286 refusée par le lead dev (lead-dev)
+- Commit relu 6ec29c5c ; 7 captures ouvertes (proposition Wi-Fi / mobile, téléchargement, coupure, place, échec : conformes ; bandeau du menu sans taille) ; diff complet relu (26 fichiers) ; JUnit relancés : 16 OK.
+- **Défauts** : (1) bandeau du menu : « Installer » lance le téléchargement sans taille ni phrase des données mobiles (RG-02 / RG-06), texte « prochaine partie » faux (prochain lancement) ; (2) `Paquets.java` : « Plus tard » pendant une coupure laisse la phase sur COUPURE (installation impossible de la session, bandeau figé) ; (3) aucun test CPU de `EtapePaquets` (banc hors CI) ; (4) captures : pas d'« avant » du menu, pas de format téléphone 2400×1080.
+- **Accepté** : écart d'`initGraphics` (ligne après les CGU : correcte, la garde empêcherait de recréer Vulkan au retour de la touche Accueil) ; accroches dans la limite ; aucun fichier interdit ni iOS.
+- TACHES : ↩️ Retour lead dev (PR #286) ; track-agent et suivi-pr mis à jour.
+
+### 2026-11-08 22:41:52 — WFS-322 : cause du saut de couleur à l'arrivée d'une sonde, avis de expert-realisme-3d (Claude, agent 1)
+- **RG-01, cause du saut** (`src/render/eclairage_physique.cpp`) : la nouvelle sonde arrivait sans fondu dans le temps.
+  - `installer()` remplace la sonde A d'un coup : saut de (1 − w) × (nouvelle − A) sur une image. La 1re capture remplace la sonde du ciel d'un coup.
+  - Après un saut de plus de 80 m dans la même scène, l'exposition se recalait d'un coup (`recaler`).
+- **Correction** (branche `feature/waforspeed-322`, a93f3de et f396ba0) :
+  - diffus (harmoniques sphériques) lissé dans le temps, constante de 0,6 s (`lisserSh9`, testé) ;
+  - recalage d'un coup seulement à la 1re capture d'une nouvelle scène.
+- **Banc RG-05** (Ville de jour, Haute) : saut de 5,87 → 2,06 ΔE2000 après le lissage seul ; le 2e chiffre, avec la correction de l'exposition, est en cours.
+- **Bleu qui reste (RG-03)** : sondes stables, façades à l'ombre à b* ≈ −6 (zone RG-05, `voiture-lod-passage-56/60`).
+- **Avis de expert-realisme-3d** :
+  - **Réel attendu** : façade grise à l'ombre, rue ensoleillée, sans balance des blancs : environ 7 000 à 8 000 K, soit L* ≈ 20-23, a* 0 à +1, b* −2 à −3,5. Le relevé actuel (b* −6,3, a* +2,5) est la signature d'un éclairage par le ciel seul.
+  - **Occlusion de WFS-269** : elle est appliquée une 2e fois sur une sonde capturée qui contient déjà les immeubles. Ce double comptage est réel mais ne change que L*.
+  - **Recommandation** :
+    - (1) mesurer, dans la capture, la part des surfaces au soleil dans l'éclairement d'une façade ;
+    - (2) projeter deux jeux d'harmoniques (surfaces, ciel) et n'appliquer l'occlusion qu'au ciel, rapportée à l'occlusion vue par la sonde ;
+    - (3) si b* reste sous −4, ramener la teinte du ciel sur la courbe de la lumière du jour. Pas de soleil ajouté artificiellement.
+### 2026-11-08 22:41:50 — WFS-293 : risque signalé par Claude, Agent 0 developer, et décision du PO (po-scrum-master)
+- **Risque signalé au PO** (branche `feature/waforspeed-293`, commit 23d7d295, banc `fluidite`, virage serré de la Ville, passe « après ») :
+  - cause nommée et corrigée (467b9910, `track.cpp`) : la courbure du tracé lissé (Catmull-Rom) sautait à chaque segment de 1,2 m ; passage à une B-spline à courbure continue (position et cap). À-coup Proche / Poursuite : 30 img/s 7,5 / 8,6 → 3,6 / 3,4 mm (seuil < 5) ; 60 img/s 3,4 / 3,7 → 0,9 mm ; 90 img/s 0,4 mm ; 77 tests CPU OK ;
+  - à 15 et 20 img/s le seuil ≤ 10 mm n'est pas tenu : 15,6 / 19,7 mm (15 img/s), 11,9 / 14,6 mm (20 img/s). L'indicateur de WFS-247 (écart à une cubique sur 4 images voisines) a un plancher d'environ 8 mm à 15 img/s sur un mouvement lisse (mouvement de 90 img/s ré-échantillonné) ; il reste aussi un vrai résidu (médiane 2,5 mm contre 0,8 mm sur le mouvement lisse) ;
+  - pistes essayées et retirées : direction en rampe, cap lissé dans `player.cpp` (essai local seulement, fichier interdit, rien poussé), cible de caméra en parabole, point visé lissé.
+  - Options : A (recommandée) indicateur sans plancher à 10-20 img/s (écart à une série de référence à 120 Hz de la même course, au même instant), seuil ≤ 10 mm inchangé ; B garder l'indicateur actuel.
+- **Décision du PO : option A, avec conditions** (détail : `regles-de-gestion/WFS-293.md`, Suivi) : seuils inchangés ; l'ancien indicateur reste affiché au tableau à toutes les cadences et reste juge à ≥ 30 img/s ; la référence à 120 Hz n'a aucun lissage en plus ; un test CPU prouve qu'un saut injecté de 5 mm est vu ; l'« avant » (28,4 mm) doit échouer avec le nouvel indicateur ; le résidu réel à 15 img/s est cherché et corrigé si le nouvel indicateur dépasse 10 mm. Choix de mesure, pas de produit : pas d'avis de smart-brainstorming. Le ticket reste à lui (🔧 En cours), 🟡 après fusion.
+### 2026-11-08 22:42:18 — VABF : Poursuite police sur l’APK 0.1.931, ANO-183 à ANO-185 (agent qa lead)
+- Vidéo de l’utilisateur (« catastrophe ») : voitures du trafic et police dans l’habitacle (ANO-183, bloquante), ciel et scène violets / magenta (ANO-184, majeure), planche du cockpit qui clignote (ANO-185, mineure). Il faut deux appuis sur « Fermer » (ANO-159). 22-23 img/s en Basse. Rapport `qa/rapports/VABF-2026-11-08.md` ; transmis au PO.
+
+### 2026-11-08 22:43:01 — Test Poursuite de l'utilisateur (APK 931, QA) : ANO-183 → WFS-333 (élargi), ANO-184 → WFS-328, ANO-185 → WFS-323, ANO-159 → WFS-290, mesure → WFS-335 (po-scrum-master)
+
+### 2026-11-08 22:45:52 — VABF : Poursuite APK 931 relue à 3 images/s, ANO-186 à ANO-194 (agent qa lead)
+- À la demande de l’utilisateur (« sortir plus d’anomalies ») : pluie dans l’habitacle, volant du cockpit fixe, compteur illisible, halo des lampadaires décalé, flammes sur le trafic, bandeau Travaux sans chantier, encart Police inutile, score qui baisse, pluie verticale. ANO-175 et ANO-152 toujours là. Transmis au PO.
 ### 2026-11-08 21:57:48 — WFS-306 : début (Claude, agent 3 (01UY1Vv3))
 - Branche `feature/waforspeed-306` depuis `main` (e728cab3). Skills : `expert-cartes`, `agent-developer`, `waforspeed-natif`, `design-street-racing`. Plan et accroches annoncés à l’entrée suivante, après lecture du code.
 
