@@ -24,6 +24,25 @@ Dossier : [`qa/pr/WFS-316`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 
 - Note : `test_audio_chocs` a échoué une fois sur la machine chargée (0,0513 ms pour ≤ 0,05), puis passé 3 fois sur 3 : mesure de temps instable, sans lien avec la conduite.
 
+
+## Retour du lead dev (refus du 2026-11-08) : ce qui a été fait
+
+1. **Captures 2 et 4, en caméra Arrière** : suites de 8 images, avant et après, à 20 images/s irrégulières (pas de 50 à 75 ms).
+   - Planche du virage de la Ville (ex-rond-point), doigt tenu à 6 %, de 50 à 25 km/h : ![ville](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-316/qa/pr/WFS-316/planche-ville-arriere.jpg?raw=true)
+   - Planche du virage à 90° de nuit, 40 km/h : ![virage90](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-316/qa/pr/WFS-316/planche-virage90-nuit-arriere.jpg?raw=true)
+   - Images seules : `avant-virages-*-arriere-NN.jpg` et `apres-virages-*-arriere-NN.jpg`.
+   - Aucune image de jeu hors de la chaussée dans les quatre suites.
+2. **RG-01** (preuve acceptée par le PO, `regles-de-gestion/WFS-316.md`, commit a3bcc5e9) :
+   - Sur l'anneau de 14 m, avant WFS-283 : « avant », 4,43 m vers l'extérieur en 1,2 s, dont 3,17 m dus à la force forfaitaire ; « après », 1,26 m.
+   - Sur le virage de rue de 22 m qui le remplace : la force forfaitaire ne fait plus que 1,84 m.
+   - Vue de dessus depuis le cœur du virage : avant (rouge), la voiture dérive vers le bord extérieur ; après (vert), elle suit la ligne.
+3. **Journal et statut** : entrée au journal ; `TACHES.md` passe à 🔀 En PR.
+4. **RG-03 et RG-05** :
+   - RG-03 : le PO valide le critère « même rayon qu'en ligne droite, à ± 10 % ».
+   - RG-05 : la correction est limitée aux virages serrés, décision validée par le PO. Elle est pleine jusqu'à 50 km/h et s'efface de 50 à 70 km/h ; la borne du cap n'est coupée que sous 60 km/h.
+   - À 150, 190 et 230 km/h, le lacet dans le monde est identique avant et après, en ligne droite comme dans un virage rapide du Grand Prix, aide activée (0,296 / 0,250 / 0,205 rad/s en ligne droite) comme désactivée (0,492 / 0,391 / 0,324 rad/s). Tableau complet : `test_direction_anneau`.
+   - Sans cette limite, l'aide activée était 1,6 à 3,5 fois plus vive à grande vitesse.
+
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 https://claude.ai/code/session_011cpqZanQgkx5BB21ZddeBj
