@@ -56,6 +56,7 @@ struct Etat_ {
     double heureMoment[(int)atmosphere::Moment::NB] = {-100, -100, -100, -100, -100, -100, -100}, ecoule = 0, acceleration = 1;
     // image courante (physique → avantImage)
     bool imageActive = false; double k = 0, facteur = 1; vec4 cielP{};
+    bool releverNuit = true;   // WFS-276 : basses lumières relevées la nuit (pas dans la Ville éclairée)
     double eRecu = 0;   // WFS-230 : éclairement horizontal reçu par le conducteur la nuit (lx)
     bool capturesSuspendues = false;   // WFS-222 (RG-03)
     // scène
@@ -366,7 +367,8 @@ int espacement(int niveau) { return niveau >= qualite::ULTRA ? 40 : niveau >= qu
 
 const Etat& etat() { return g.etat; }
 // WFS-230 (RG-04) : exposition k pour la vision de nuit de la passe finale (post.frag) ; 0 de jour ou sans éclairage physique
-float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.moment == (int)atmosphere::Moment::Nuit ? (float)g.k : 0.f; }   // heure bleue : inchangée (RG-05)
+// WFS-276 : signe = relèvement des basses lumières (post.frag) : + Campagne, Corniche, Grand Prix ; − Ville éclairée (inchangée, RG-04)
+float kVisionNuit() { return g.imageActive && !g.desactive && g.etat.actif && g.etat.moment == (int)atmosphere::Moment::Nuit ? (float)(g.releverNuit ? g.k : -g.k) : 0.f; }   // heure bleue : inchangée (RG-05)
 void forcer(const Forcage& f) { g.forc = f; }
 void choisirMoment(int m) {   // WFS-208 ; m < 0 : aucun choix (sauvegarde, sinon midi / nuit selon l'ambiance de la carte)
     g.momentChoisi = m >= 0; g.moment = m >= 0 ? (atmosphere::Moment)std::min(m, (int)atmosphere::Moment::NB - 1) : atmosphere::Moment::Midi;
@@ -420,6 +422,7 @@ double couvertureNuages(const GameView& gv) {
 
 void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.imageActive = false;
+    g.releverNuit = !(gv.map && !std::strcmp(gv.map->id, "ville"));   // WFS-276 (RG-04)
     if (dediee || g.desactive) { g.etat.actif = false; return; }
     // ---- scène : temps, remise à zéro (changement de carte, de moment, téléportation)
     const double t = fp.time;
