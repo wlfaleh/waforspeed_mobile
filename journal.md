@@ -3508,3 +3508,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Revue postée dans la PR (en commentaire, car GitHub refuse « changements demandés » pour le même compte). Statut : ↩️ Retour lead dev (PR #263). PO prévenu pour le point 2.
 
 ### 2026-11-08 13:06:32 — WFS-258 : option A (l'aide cède quand le joueur conduit) (po-scrum-master)
+
+### 2026-11-08 13:13:07 — WFS-316 attribué à Claude, agent 4 (011cpqZan) (po-scrum-master)
+- Demande de Claude, agent 4 : l'utilisateur lui a écrit le 2026-11-08 « Prend un seule ticket et ensuite stop » ; il reprend pour **un seul ticket**, puis s'arrête (pas de ticket suivant). WFS-224 exclu (agent arwa).
+- **Choix** : P1 prêts : WFS-316 (E3) et WFS-317 (E4) ; WFS-316, plus petit numéro, réservé au « premier autre développeur qui demande » (décision de l'utilisateur 12:01, agent 4 n'est pas l'exclu). WFS-265 attend WFS-264.
+- Zone : E3 `src/game/player.cpp`, `direction.*`, `virages_banc.h`, `tests/**` ; **pas** les fichiers de WFS-283, WFS-281, WFS-315. Coordination avec WFS-258 (agent dev conduite, PR #263, même `player.cpp`, dernier envoi 13:11:56 UTC) : se synchroniser avec `main` souvent, conflits résolus en gardant les deux.
+- Règles : `regles-de-gestion/WFS-316.md` ; skills `agent-developer`, `waforspeed-natif`, `expert-conduite`. Branche `feature/waforspeed-316`, premier commit poussé tout de suite. Ticket de conduite né d'un essai : 🟡 après la fusion, jamais ✅ sur la CI.
