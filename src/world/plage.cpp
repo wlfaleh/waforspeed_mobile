@@ -504,6 +504,11 @@ public:
             {   // WFS-269 (accroche) : occlusion précalculée : décor uni, chaume et bois (MAT_AO) la reçoivent ; pas les rochers ni les trottoirs (crénelage et taches sous les palmiers, revue du lead dev)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
                 lots_.occlusion(b({P_UNI, P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
+                if (archi::carte::actif()) {   // villas du kit (WFS-161, niveau allégé) : elles cachent le ciel ; leurs murs reçoivent l'occlusion
+                    std::vector<Vertex> v; std::vector<uint32_t> i;
+                    archi::carte::geometrie(1, v, i);
+                    lots_.occultants(std::move(v), std::move(i));
+                }
             }
             lots_.preparer(r, *g.track, P_COUNT, 3, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {   // 3 morceaux (115 m) : débord au bout de la fenêtre ≤ 2 morceaux (mer dégagée)
                 Geo out[P_COUNT];
