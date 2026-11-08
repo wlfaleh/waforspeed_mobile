@@ -3514,3 +3514,20 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Choix** : P1 prêts : WFS-316 (E3) et WFS-317 (E4) ; WFS-316, plus petit numéro, réservé au « premier autre développeur qui demande » (décision de l'utilisateur 12:01, agent 4 n'est pas l'exclu). WFS-265 attend WFS-264.
 - Zone : E3 `src/game/player.cpp`, `direction.*`, `virages_banc.h`, `tests/**` ; **pas** les fichiers de WFS-283, WFS-281, WFS-315. Coordination avec WFS-258 (agent dev conduite, PR #263, même `player.cpp`, dernier envoi 13:11:56 UTC) : se synchroniser avec `main` souvent, conflits résolus en gardant les deux.
 - Règles : `regles-de-gestion/WFS-316.md` ; skills `agent-developer`, `waforspeed-natif`, `expert-conduite`. Branche `feature/waforspeed-316`, premier commit poussé tout de suite. Ticket de conduite né d'un essai : 🟡 après la fusion, jamais ✅ sur la CI.
+
+### 2026-11-08 13:28:10 — WFS-283 : corrections de la revue du lead dev (PR #261), luminance du raccord (arwa-5)
+- **Corniche** (point 1) : le trou du sol au centre du virage de 22 m (on voyait la mer) est bouché par les disques de sol de WFS-212, posés aussi au carrefour simple (`plage.cpp`, fcb006b2).
+- **Campagne** (point 2) : les « marches » venaient des bandes de sol rectangulaires, coupées à la mi-distance de l'autre branche à une distance qui change d'un segment à l'autre ; on voyait le sol de fond dans les marches. Autour du carrefour simple, les bandes sont maintenant des trapèzes, qui rejoignent la coupe du segment suivant (`decor_carte.cpp`). Le profil est aussi coupé à 90 % du rayon intérieur (`campagne.cpp`). Les trois commerces du village sont dans `commercesVillage()`. 69 tests CPU OK.
+- **Captures** (point 3) : `AGENT='arwa-5' FILTRE='[mr][io]*' bash tools/qa/captures_pr.sh WFS-283 rondspoints:1280x720 hud:1280x720`, en une fois, 57 min. Cela donne 29 captures « après » (19 `rondpoint-*`, 10 `minicarte-*`), commit 7ae33adf.
+- **Luminance du raccord** (point 4). Calcul de `tools/qa/luminance_route.py` (sRGB → linéaire, Rec. 709), en **médiane** par rectangle pour que les marquages ne comptent pas. Vue `rondpoint-*-course-*` : plaque du virage (500-720 × 150-190 px) contre la droite qui arrive (470-800 × 255-295 px).
+
+  | Carte | Jour, branche | Jour, `main` (giratoire) | Nuit, branche | Nuit, `main` |
+  |---|---|---|---|---|
+  | Campagne | +0,0 % | +0,0 % | −5,7 % | −11,0 % |
+  | Corniche | +2,1 % | −1,6 % | −43,1 % | −63,7 % |
+  | Ville | −6,8 % | +3,9 % | −66,0 % | −77,4 % |
+
+  - Ville de jour : le virage a le même asphalte que tous les virages de rue de la Ville, sans plaque à part. Sur la même chaussée du virage, la moitié gauche et la moitié droite du rectangle diffèrent déjà de 6,5 % (0,172 contre 0,184) : l'écart vient de l'éclairage et des taches du revêtement, pas du matériau.
+  - La nuit, les lampadaires et les phares font la luminance, sur `main` comme sur la branche : ces chiffres ne mesurent pas le raccord.
+- « Corrigé dans » posté sous la revue. `TACHES.md` : 🔀 En PR #261 ; `suivi-pr.md` : 🔁 ; lead dev rappelé.
+
