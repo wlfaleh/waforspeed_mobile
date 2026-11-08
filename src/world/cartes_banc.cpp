@@ -11,6 +11,7 @@
 #include "../core/log.h"
 #include "../core/system.h"   // WFS-212 : caméra haute du banc
 #include "../game/course_system.h"   // WFS-137 : courseBenchRules
+#include "../game/course5.h"   // WFS-283 : Course à 5 au carrefour de la Ville
 #include "../game/game.h"
 #include "../game/trace_cartes.h"   // WFS-139 : même tracé que le jeu ; WFS-140 : sections du Grand Prix
 #include "../game/track.h"
@@ -139,7 +140,7 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     int64_t feu = -1, rp = -1;   // WFS-178 : 20 m avant la ligne d'arrêt du feu du village, 15 m avant l'entrée du rond-point
     for (const trace::Section& s : t.sections()) {
         if (s.type == trace::Type::Feux && !s.depart && feu < 0) feu = s.ligneArret - (int64_t)(20 / SEG_M);
-        if (s.type == trace::Type::RondPoint && rp < 0) rp = s.debut - (int64_t)(15 / SEG_M);
+        if ((s.type == trace::Type::RondPoint || s.exRondPoint) && rp < 0) rp = s.debut - (int64_t)(15 / SEG_M);   // WFS-283 : carrefour simple, même nom
     }
     int64_t vi = -1;
     for (int64_t a = 0; a < L && vi < 0; a++) if (!std::strcmp(zoneName(*t.map(), a, L), "Vignobles")) vi = a + 40;
@@ -232,7 +233,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
     const int64_t m40 = (int64_t)(40 / SEG_M);
     for (const trace::Section& s : trace::sections(t)) {
         using T = trace::Type;
-        if (s.type == T::RondPoint && !rp) { rp = true; lieux.push_back({"carte-ville-rond-point", s.debut, 45, true}); }
+        if ((s.type == T::RondPoint || s.exRondPoint) && !rp) { rp = true; lieux.push_back({"carte-ville-rond-point", s.debut, 45, true}); }   // WFS-283 : carrefour simple, même nom
         else if (s.type == T::Feux && !fx) { fx = true; lieux.push_back({"carte-ville-feux", s.ligneArret, 30, true}); }
         else if (s.type == T::Autoroute && !au) { au = true; lieux.push_back({"carte-ville-autoroute", s.debut + 2 * m40, 0, true}); }
         else if (s.type == T::Tunnel && !tu) { tu = true; lieux.push_back({"carte-ville-tunnel", s.debut, 40, true}); }
@@ -241,6 +242,7 @@ void benchVille(Game& g, Renderer& r, const std::string& out) {
             lieux.push_back({"carte-ville-virage-" + std::to_string(++virages), s.debut, 35, false});
             lieux.push_back({"carte-ville-virage-" + std::to_string(virages) + "-haut", (s.debut + s.fin) / 2, 18, false, 1});   // au cœur du virage
         }
+        if (s.exRondPoint) lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});   // WFS-283 : plus de fontaine
         if (s.type == T::RondPoint) {
             lieux.push_back({"carte-ville-rond-point-haut", (s.debut + s.fin) / 2, 12, false, 1});
             lieux.push_back({"carte-ville-fontaine", s.debut, -20, true, 1});   // WFS-212 (RG-05) : 20 m dans l'anneau, l'îlot et sa fontaine devant
@@ -311,10 +313,12 @@ int benchRondsPoints(Game& g, Renderer& r, const std::string& out) {
         Track t; t.build(mapById(carte), trace::versionCarte(carte));
         int n = 0;
         for (const trace::Section& s : t.sections()) {
-            if (s.type != trace::Type::RondPoint) continue;
+            // WFS-283 : même banc, mêmes noms, au carrefour simple qui remplace chaque rond-point (avant / après de la PR)
+            if (s.type != trace::Type::RondPoint && !s.exRondPoint) continue;
             n++;
             int64_t entree = s.debut;   // entrée de l'anneau : la courbure change de sens (fin de la courbe d'approche)
-            for (int64_t a = s.debut + 1; a < s.fin; a++) if (t.segAt(a).curve * t.segAt(s.debut + 2).curve < 0) { entree = a; break; }
+            if (s.type == trace::Type::RondPoint)
+                for (int64_t a = s.debut + 1; a < s.fin; a++) if (t.segAt(a).curve * t.segAt(s.debut + 2).curve < 0) { entree = a; break; }
             for (const char* mo : {"jour", "nuit"}) for (int cam : {0, 1, 2}) {   // 2 : caméra de course dans l'anneau (milieu)
                 setenv("WFS_MOMENT", mo, 1);
                 setenv("WFS_DEPART", std::to_string(cam == 2 ? (s.debut + s.fin) / 2 : entree - (int64_t)(15 / SEG_M)).c_str(), 1);
@@ -330,6 +334,26 @@ int benchRondsPoints(Game& g, Renderer& r, const std::string& out) {
             }
         }
         WFS_LOG("ronds-points : %s : %d", carte, n);
+    }
+    // WFS-283 : Course à 5 (2 km, pilote automatique) qui passe à l'ancien rond-point de la Ville (carrefour simple) : capture
+    // quand le joueur est 15 m avant l'entrée, adversaires autour (sur la route, pas dans le décor) : rondpoint-ville-course5
+    {
+        Track t; t.build(mapById("ville"), trace::versionCarte("ville"));
+        int64_t lieu = -1;
+        for (const trace::Section& s : t.sections()) if ((s.type == trace::Type::RondPoint || s.exRondPoint) && lieu < 0) lieu = s.debut;
+        unsetenv("WFS_DEPART"); setenv("WFS_MOMENT", "jour", 1);
+        const ModeCourse m0 = modeCourse(); const int km0 = kmCourse5();
+        modeCourse() = ModeCourse::Course5; kmCourse5() = 2;
+        if (lieu >= 0 && g.init(r, "compass", "ville")) {   // voiture la plus lente : les adversaires passent le carrefour devant elle
+            g.camMode = 0; g.allerA(Ecran::Course); g.setAutopilot(true);
+            double tt = 600; int i = 0;
+            for (; i < 120 * 60 && g.player().dist < (double)lieu * SEG - 15 / M; i++) { g.update(1.0 / 60); if (i % 30 == 0) g.render(tt += 0.5); }
+            g.render(tt += 0.02); g.render(tt += 0.02); r.capturePng(out + "/rondpoint-ville-course5.png");
+            WFS_LOG("capture rondpoint-ville-course5 : %.2f km, %.0f km/h, %.1f s", g.player().dist * M / 1000, g.player().kmh(), i / 60.0);
+            if (i >= 120 * 60) ecarts++;
+            g.shutdown();
+        } else ecarts++;
+        modeCourse() = m0; kmCourse5() = km0;
     }
     unsetenv("WFS_MOMENT"); unsetenv("WFS_DEPART");
     return ecarts;

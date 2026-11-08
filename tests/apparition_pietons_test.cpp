@@ -11,7 +11,7 @@ static void cas(const std::string& quoi, bool ok) { std::printf("apparition : %-
 
 int main() {
     const double dt = 1.0 / 20;   // 20 images/s (RG-06)
-    const float seuils[2] = {16.f, 50.f};
+    const float seuils[3] = {16.f, 50.f, 1e9f};   // WFS-299 : 3 seuils (pas de niveau 3 ici)
 
     {   // RG-02 : hors du cadre, l'état suit sans fondu ; à l'entrée dans le cadre par le bord, la personne est déjà là
         Etat e;
@@ -59,6 +59,14 @@ int main() {
         Etat f; f.lieu = Lieu::Affichee; f.op = 0.5f; f.lod = 2;
         avancerNiveau(f, 40.f, seuils, dt);
         cas("détail pendant un fondu d'opacité : le changement attend", f.lod == 2 && f.lodPrec < 0);
+        // WFS-299 : niveau 3 « très simple » au-delà du 3e seuil (Basse : 8 / 20 / 30 m), fondu croisé 2 → 3 dans le cadre
+        const float basse[3] = {8.f, 20.f, 30.f};
+        Etat b; b.lieu = Lieu::Affichee; b.op = 1; b.lod = 2;
+        avancerNiveau(b, 25.f, basse, dt);
+        cas("WFS-299 : loin (25 m) : niveau 2", b.lod == 2 && b.lodPrec < 0);
+        avancerNiveau(b, 35.f, basse, dt);
+        cas("WFS-299 : au-delà de 30 m : niveau 3 en fondu croisé depuis le 2", b.lod == 3 && b.lodPrec == 2);
+        cas("WFS-299 : sans 3e seuil (Haute) : jamais de niveau 3", niveauVoulu(500.f, seuils, -1) == 2);
     }
     {   // tramage : complément exact des deux niveaux pendant le fondu croisé
         cas("tramage : 0 sans fondu, −(1 + t) et −(3 + t) pendant un fondu",

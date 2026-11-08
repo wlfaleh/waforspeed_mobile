@@ -86,6 +86,8 @@ WFS_SYSTEM(TraceSysteme, 215)
 namespace {
 // copie (la piste du banc est reconstruite à chaque scène : pas de pointeur vers ses sections)
 bool premiere(const Track& t, Type ty, Section& out) { for (const Section& s : t.sections()) if (s.type == ty) { out = s; return true; } return false; }
+// WFS-283 : carrefour simple qui remplace le rond-point (mêmes captures trace-rond-point*, à la même place)
+bool premiereCarrefour(const Track& t, Section& out) { for (const Section& s : t.sections()) if (s.exRondPoint) { out = s; return true; } return false; }
 vec3 vers3(const Pose& p) { return {(float)p.x, (float)p.y, (float)p.z}; }
 // centre de courbure d'un segment (côté intérieur), en m
 vec3 centre(Track& t, int64_t a) {
@@ -121,7 +123,7 @@ int benchTrace(Game& g, Renderer& r, const std::string& out) {
     // ---- Ville : rond-point, feu rouge, autoroute
     if (Track* tv = aller("ville", 0, 0)) {
         Section rp, fx, au;
-        const bool aRp = premiere(*tv, Type::RondPoint, rp), aAu = premiere(*tv, Type::Autoroute, au);
+        const bool aRp = premiere(*tv, Type::RondPoint, rp) || premiereCarrefour(*tv, rp), aAu = premiere(*tv, Type::Autoroute, au);
         bool aFx = false; for (const Section& s : tv->sections()) if (s.feu == 0) { fx = s; aFx = true; }
         g.shutdown();
         if (aRp && (tv = aller("ville", rp.debut, 60))) {

@@ -14,6 +14,7 @@
 #include "../core/platform.h"
 #include "../core/system.h"
 #include "../game/game.h"
+#include "../game/camera_vue.h"   // WFS-299 : vue Proche au banc des parties
 #include "../game/course_system.h"   // WFS-297 : règles de la course au banc des parties
 #include "../game/traffic_system.h"   // WFS-297 : voitures du trafic vivantes
 #include "eclairage.h"                // WFS-297 : lampadaires déclarés
@@ -98,6 +99,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
     const int MINUTE = std::getenv("WFS_PERF_MINUTE") ? std::atoi(std::getenv("WFS_PERF_MINUTE")) : 60 * 60;   // images de course entre deux fenêtres
     std::vector<Fenetre> res;
     double t = 3000;
+    const VueCamera vue0 = vueCamera();
     courseBenchRules(true);   // décompte et « GO » comme dans le jeu (le numéro de la partie avance au départ)
     for (size_t k = 0; k < parties.size(); k++) {
         const auto& [carte, nuit] = parties[k];
@@ -115,8 +117,9 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-chargement.png");
         }
         g.allerA(Ecran::Course); g.setAutopilot(true); g.camMode = 0;
+        choisirVue(VueCamera::Proche);   // WFS-299 (remarque du lead dev sur WFS-297) : vue Proche, celle de l'utilisateur
         for (int i = 0; i < 4 * 60; i++) { g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60; }   // décompte et départ (« GO » : partie suivante, RG-06)
-        courseBenchSetTime(1e6);   // règles de la course comme dans le jeu, sans fin de chrono pendant les mesures
+        courseBenchSetTime(1e5);   // règles de la course comme dans le jeu, sans fin de chrono pendant les mesures (WFS-299 : sous 1e6, le HUD reste affiché)
         {   // RG-06 : panneau Réglages depuis la pause (rendu, mémoire, numéro de la partie)
             g.allerA(Ecran::Pause); g.update(1.0 / 60);
             ecrans::ouvrirReglagesBanc(true);
@@ -124,9 +127,13 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
             ecrans::ouvrirReglagesBanc(false); g.allerA(Ecran::Course); g.update(1.0 / 60);
         }
         for (int f = 0; f < 3; f++) {
-            const bool villeNuit = carte == "ville" && nuit && k > 0;   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
+            const bool villeNuit = carte == "ville" && nuit;   // WFS-299 : aussi en 1re partie   // demande n° 3 du ticket : Ville de nuit en 2e partie, vue Proche, 3 captures à 30 s
             if (f > 0) for (int i = 0; i < MINUTE; i++) {
                 g.update(1.0 / 60); if (i % 10 == 0) g.render(t); t += 1.0 / 60;
+                if (f == 1 && villeNuit && i >= 10 * 60 && i < 13 * 60 && i % 30 == 0) {   // WFS-299 : suite à 0,5 s d'écart (piétons qui se rapprochent : niveaux de détail)
+                    g.render(t); g.render(t + 0.02);
+                    r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-suite-" + std::to_string((i - 10 * 60) / 30) + ".png");
+                }
                 if (f == 1 && villeNuit && (i == 0 || (i + 1) % (30 * 60) == 0) && i < 61 * 60) {   // 0, 30 et 60 s
                     g.render(t); g.render(t + 0.02);
                     r.capturePng(out + "/parties-" + std::to_string(k + 1) + "-ville-nuit-" + std::to_string((i + 1) / 60) + "s.png");
@@ -161,6 +168,7 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
     }
     g.shutdown();
     courseBenchRules(false);
+    choisirVue(vue0);
     WFS_LOG("parties : | partie | moment | image (ms) | GPU (ms) | appels | triangles | trafic | lampadaires | RSS (Mo) | carte graphique (Mo) |");
     for (const Fenetre& w : res)
         WFS_LOG("parties : | %s | %s | %.1f | %.2f | %u | %u | %d | %d | %.0f | %.0f |", w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo);
