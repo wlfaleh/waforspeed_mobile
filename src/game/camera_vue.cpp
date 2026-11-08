@@ -34,8 +34,7 @@ namespace {
 VueCamera g_vue = VueCamera::Poursuite;   // store('waforspeed-cam') du jeu web : mémorisée pour la session
 struct Suivi { bool init = false; VueCamera vue = VueCamera::Poursuite; vec3 eye{}, look{}; float fov = 72.f;
                double camHd = 0, distDyn = 0;              // WFS-98 : camHd et camDistDyn d'updateCamera du jeu web
-               vec3 eyeT0{}, lookT0{}; double hdT0 = 0;            // WFS-221 : cibles de l'image précédente (filtre exact)
-               vec3 eyeT00{}, lookT00{}; double hdT00 = 0, dtPrec = 0; } g_suivi;   // WFS-293 : et de l'image d'avant (cible en parabole)
+               vec3 eyeT0{}, lookT0{}; double hdT0 = 0; } g_suivi;   // WFS-221 : cibles de l'image précédente (filtre exact)
 // WFS-221 (RG-02 c) : filtre du premier ordre (constante k /s) résolu EXACTEMENT pour une cible qui avance linéairement pendant
 // l'image (x = y − v/k + (x0 − y0 + v/k)·e^(−k·dt)) : même retard moyen qu'avant, mais il ne dépend plus de la durée de chaque
 // image (l'ancien lerp prenait la cible pour immobile : à 200 km/h, retard de ≈ 4 m variable d'une image à l'autre : la voiture
@@ -53,22 +52,6 @@ static void suivreExact(double& x, double& cible0, double cible, double k, float
     const double vk = (cible - cible0) / (fdt * k);
     x = cible - vk + (x - cible0 + vk) * std::exp(-fdt * k);
     cible0 = cible;
-}
-// WFS-293 (RG-04) : en virage, la cible ne va pas en ligne droite pendant l'image (à 15 img/s, 66 ms : accélération centripète
-// ≈ 10 m/s² en virage serré) : supposée en ligne droite, la caméra fait un coude à chaque image (voiture qui saute dans le cadre).
-// Cible en parabole passant par les trois dernières cibles (images −1, 0 et la nouvelle) : solution exacte du filtre pour une cible
-// du second degré : x(t) = y − y'/k + y''/k² + (x0 − y0 + y'0/k − y''/k²)·e^(−k·t). Sans image d'avant : ligne droite (WFS-221).
-template <class T> static void suivreParabole(T& x, T& cible00, T& cible0, const T& cible, double k, float fdt, double dtPrec) {
-    if (!g_cameraFiltreExact || dtPrec <= 1e-5 || fdt <= 1e-5f || !std::getenv("WFS_PARABOLE")) {
-        cible00 = cible0; suivreExact(x, cible0, cible, k, fdt); return; }
-    const double dt = fdt, dp = dtPrec;
-    const T c = ((cible - cible0) * (float)dp + (cible00 - cible0) * (float)dt) * (float)(1.0 / (dt * dp * (dt + dp)));
-    const T b = (cible - cible0 - c * (float)(dt * dt)) * (float)(1.0 / dt);
-    const T acc = c * 2.f;
-    const T xp0 = cible0 - b * (float)(1.0 / k) + acc * (float)(1.0 / (k * k));
-    const T xp1 = cible - (b + c * (float)(2 * dt)) * (float)(1.0 / k) + acc * (float)(1.0 / (k * k));
-    x = xp1 + (x - xp0) * (float)std::exp(-dt * k);
-    cible00 = cible0; cible0 = cible;
 }
 EtatCockpit g_ck;
 float g_ckEssuieT = 0;   // WFS-197 : phase des essuie-glaces au dernier pas (banc d'essai)
@@ -166,16 +149,14 @@ static bool cameraVueBase(Track& track, const Player& pl, const CarDef& car, con
         // WFS-90 : virage qui arrive dans le sens de marche (1 dans le sens de la route, −1 à contresens) ; en travers, droit
         // devant la voiture (le bord de la route n'attire plus le regard)
         const double sens = std::clamp(std::cos(pl.heading) * 3.0, -1.0, 1.0);
-        const TrackPoint dev = std::getenv("WFS_DEVANT_LISSE") ? track.pointLisse(pl.dist + sens * P.ahead * 1.6 / M, lat) : track.point(pl.dist + sens * P.ahead * 1.6 / M, lat);
+        const TrackPoint dev = track.point(pl.dist + sens * P.ahead * 1.6 / M, lat);
         const vec3 devant = lerp(carPos + f * (P.ahead * 1.6f), vec3{(float)dev.x, carPos.y, (float)dev.z}, (float)std::abs(sens));
         const vec3 lT{(carPos.x + f.x * P.ahead) * 0.6f + devant.x * 0.4f, carPos.y + P.lookH + 0.8f * (float)a,
                       (carPos.z + f.z * P.ahead) * 0.6f + devant.z * 0.4f};
         const float fovT = fovVue(g_vue, p, pl.nitroOn);
         if (neuf) { g_suivi.init = true; g_suivi.vue = g_vue; g_suivi.eye = eT; g_suivi.look = lT; g_suivi.fov = fovT; g_suivi.eyeT0 = eT; g_suivi.lookT0 = lT; }
-        if (neuf) { g_suivi.eyeT00 = eT; g_suivi.lookT00 = lT; g_suivi.dtPrec = 0; }
-        suivreParabole(g_suivi.eye, g_suivi.eyeT00, g_suivi.eyeT0, eT, SUIVI_OEIL, fdt, g_suivi.dtPrec);      // WFS-221 / WFS-293
-        suivreParabole(g_suivi.look, g_suivi.lookT00, g_suivi.lookT0, lT, SUIVI_REGARD, fdt, g_suivi.dtPrec);
-        if (fdt > 1e-5f) g_suivi.dtPrec = fdt;
+        suivreExact(g_suivi.eye, g_suivi.eyeT0, eT, SUIVI_OEIL, fdt);      // WFS-221 : filtre exact (mêmes constantes)
+        suivreExact(g_suivi.look, g_suivi.lookT0, lT, SUIVI_REGARD, fdt);
         g_suivi.fov = lisser(g_suivi.fov, fovT, fdt, 4.f);
         g_suivi.eye.y = std::max(g_suivi.eye.y, sol);
         eye = g_suivi.eye; look = g_suivi.look; fov = g_suivi.fov; g_ck.fov = fov;
