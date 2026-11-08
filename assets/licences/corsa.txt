@@ -13,4 +13,4 @@ This work is based on "Opel Corsa 2020" (https://sketchfab.com/3d-models/opel-co
 (Licence et crédit repris de CREDITS.md du dépôt github.com/Davencode/syncuro-models, d'où vient la version utilisée,
 déjà corrigée et allégée par ce dépôt ; ces informations figurent aussi dans asset.extras du fichier.)
 
-Modifications for WaForSpeed: geometry simplified where needed (meshoptimizer, at most about 120 000 triangles), textures converted to WebP 1024 px, glass transmission replaced by simple transparency, everything embedded in a single glTF JSON file. The body colour is changed in game.
+Modifications for WaForSpeed: geometry simplified where needed (meshoptimizer, at most about 120 000 triangles), textures converted to WebP 1024 px, glass transmission replaced by simple transparency, everything embedded in a single glTF JSON file. The body colour is changed in game. Modèle modifié pour WaForSpeed (WFS-192) : logos et noms de marque effacés ou retirés (tools/effacer_logos.mjs, tools/logos.json).

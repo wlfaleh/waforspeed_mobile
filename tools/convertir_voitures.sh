@@ -66,6 +66,8 @@ node plaques_voitures.mjs "$@"
 # une plaque posée devant le bouclier allonge la voiture de quelques millimètres (longueur hors tout, plaques comprises) :
 # 2e passage de la correction (sans effet si la voiture reste dans ses tolérances)
 "$CORR" "$RACINE" "$@"
+# WFS-192 (RG-06) : logos et noms de marque effacés ou retirés d'après tools/logos.json (rejouable ; arrêt sans rien écrire si un modèle a changé)
+node effacer_logos.mjs "$@"
 # WFS-134 (RG-11, RG-12), WFS-158 (RG-04) : versions allégées des 20 voitures (assets/cars/<id>.lod : indices seuls, niveaux
 # de détail 1 à 3, de 30 % à 5 % des triangles environ) ; choisies par la taille de la voiture à l'écran, avec fondu
 # (src/render/vehicule_lod.h) ; avec une liste d'id, seules les voitures de la liste sont allégées

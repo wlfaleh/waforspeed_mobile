@@ -54,6 +54,12 @@ void benchVitrinesFeux(Game& g, Renderer& r, const std::string& out) {
     for (const std::string& id : ids) {
         if (!g.init(r, id.c_str(), "ville")) { WFS_ERR("vitrine feux : chargement de %s impossible", id.c_str()); continue; }
         if (choix) { g.camMode = 2; g.orbit = 0.7f; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-0.png"); }
+        // WFS-192 (accroche, essai local) : logos vus de près : WFS_VITRINE_ANGLES="<angle de l'orbite en rad> …" (0 : arrière,
+        // 3,14 : avant, 1,57 et 4,71 : côtés) : captures vitrine-<id>-a<n> ; rien sans la variable
+        if (const char* an = std::getenv("WFS_VITRINE_ANGLES")) {
+            std::istringstream ia(an); float a; int k = 0; g.camMode = 2;
+            while (ia >> a) { g.orbit = a; g.render(0); g.render(0); r.capturePng(out + "/vitrine-" + id + "-a" + std::to_string(k++) + ".png"); }
+        }
         double t = 1300;
         g.setAutopilot(true); g.camMode = 0;
         for (int i = 0; i < 120; i++) { g.update(1.0 / 60); t += 1.0 / 60; if (i % 8 == 0) g.render(t); }
