@@ -152,6 +152,7 @@ public:
     // voitures visibles (30 m derrière à 300 m devant), les plus proches d'abord, 14 au plus (LOD : WFS-20)
     void render(Renderer& r, const GameView& g) override {
         if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
+        uint32_t a0, t0; r.fileScene(a0, t0);   // WFS-281 : coût du trafic de cette image (médianes du banc perf)
         const Player& pl = *g.player; Track& t = *g.track;
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
         const TrafficCar* vis[TRAFIC_DESSINES_MAX];
@@ -183,9 +184,15 @@ public:
         }
         deux_roues::dessinerFile(r, g.camPos);   // WFS-232 : pilotes des deux-roues les plus proches
         dessineHalos(r, g);   // WFS-67
+        uint32_t a1, t1; r.fileScene(a1, t1);
+        histo_[histoN_++ % HISTO] = {(double)(a1 - a0), (double)(t1 - t0), (double)n};   // WFS-281
     }
 
     static TrafficSystem* active_;
+    // WFS-281 (RG-02) : appels, triangles et véhicules dessinés des HISTO dernières images, pour les médianes du banc perf
+    static constexpr int HISTO = 128;
+    struct CoutImage { double appels = 0, triangles = 0, dessines = 0; };
+    CoutImage histo_[HISTO]; uint32_t histoN_ = 0;
     int deuxRouesDessines_ = 0;   // WFS-232 : deux-roues dessinés à la dernière image (banc d'essai : autant de pilotes, RG-02)
     Traffic traffic_;
     TrafficStats stats_;
@@ -409,17 +416,14 @@ private:
         denseT_ -= dt;
         if (denseT_ > 0) return;
         denseT_ = 1.0;
-        int behind = -1, vues = 0; double bestBehind = -1e18;
+        int behind = -1; double bestBehind = -1e18;
         for (size_t i = 0; i < traffic_.cars.size(); i++) {
             const TrafficCar& c = traffic_.cars[i];
             const double dz = t.relZ(c.z - pl.position) * M;
             if (!c.crashed && dz > 40 && dz < 160) return;
-            if (!c.cache && dz >= -30 && dz <= 300) vues++;   // fenêtre de dessin de render()
             if (!c.crashed && dz < -40 && dz > bestBehind) { bestBehind = dz; behind = (int)i; }
         }
-        // WFS-281 (ANO-151) : une voiture n'est ramenée devant que si la fenêtre de dessin en a moins de 2 ; sinon, au fil des
-        // minutes, les voitures ramenées s'ajoutaient aux files rattrapées et le banc dessinait 3 à 9 fois plus de voitures
-        if (behind < 0 || vues >= 2) return;
+        if (behind < 0) return;
         int lane = 0; double far = -1;
         for (int l = 0; l < LANES; l++) if (std::abs(LANE_X[l] - pl.playerX) > far) { far = std::abs(LANE_X[l] - pl.playerX); lane = l; }
         TrafficCar& c = traffic_.cars[(size_t)behind];
@@ -446,6 +450,21 @@ void trafficRestart(double playerPos) {
 }
 void trafficRestartSeed(uint32_t seed, double playerPos) {
     if (auto* s = TrafficSystem::active_) { s->seed_ = seed; trafficRestart(playerPos); }
+}
+bool trafficMedianes(int images, double& appels, double& triangles, double& dessines) {
+    const TrafficSystem* s = TrafficSystem::active_;
+    if (!s || images <= 0) return false;
+    const int n = std::min({images, TrafficSystem::HISTO, (int)s->histoN_});
+    if (n == 0) return false;
+    auto mediane = [&](double TrafficSystem::CoutImage::*champ) {
+        double v[TrafficSystem::HISTO];
+        for (int k = 0; k < n; k++) v[k] = s->histo_[(s->histoN_ - 1 - k) % TrafficSystem::HISTO].*champ;
+        std::nth_element(v, v + n / 2, v + n);
+        return v[n / 2];
+    };
+    appels = mediane(&TrafficSystem::CoutImage::appels); triangles = mediane(&TrafficSystem::CoutImage::triangles);
+    dessines = mediane(&TrafficSystem::CoutImage::dessines);
+    return true;
 }
 int trafficBenchCar() { return TrafficSystem::active_ ? TrafficSystem::active_->benchCar_ : -1; }
 static void trafficBenchPeloton(double metres) { if (auto* s = TrafficSystem::active_) { s->pelotonReq_ = true; s->pelotonM_ = metres; } }

@@ -156,15 +156,21 @@ public:
     void watch(const Player& pl);
 
     std::vector<TrafficCar> cars;
-    // WFS-281 (ANO-151, RG-02) : nombre total de voitures fixé au départ. Vrai (module du jeu) : reset() fixe `plafond`
-    // au nombre de voitures posées et addCars n'en ajoute plus au-delà (les +6 voitures par checkpoint de la course
-    // menaient à 110 voitures après ≈ 2 min). Faux (tests de référence du jeu web) : addCars sans limite, comme le jeu web.
-    // SANS_PLAFOND : aucune limite au nombre de voitures (comportement du jeu web)
-    static constexpr int SANS_PLAFOND = 1 << 30;
+    // WFS-281 (ANO-151, RG-02 ; décision du PO du 2026-11-08 02:18) : total de voitures fixé au chargement. Vrai (module du jeu) :
+    // reset() pose les voitures du départ et prépare en réserve celles de la montée de difficulté (+6 par checkpoint du jeu web),
+    // plafonnée à MONTEE_MAX des voitures du départ ; addCars active alors des voitures de la réserve (aucune n'est créée en
+    // course) et `plafond` borne les voitures actives. Avant WFS-281, les checkpoints menaient à 110 voitures en ≈ 2 min.
+    // Faux (tests de référence du jeu web) : addCars crée les voitures sans limite, comme le jeu web.
+    static constexpr int SANS_PLAFOND = 1 << 30;   // aucune limite (comportement du jeu web)
+    // densité, hors de la vue, des zones REGUL_ZONES (m, relatives au joueur) : au plus REGUL_MAX × la densité moyenne du tracé
+    // (1 : la densité du départ, posée uniformément ; mesuré sur 10 graines : 65 → 42 relevés hors RG-02 sur 80)
+    static constexpr double REGUL_MAX = 1.0, REGUL_ZONES[2][2] = {{300, 700}, {-400, -40}}, REGUL_LOIN_M = 800;
+    static constexpr double MONTEE_MAX = 0.15;     // montée de difficulté : +15 % de voitures au plus (RG-02 : ≤ 1,3 × le départ)
     bool totalFixe = false;
     int plafond = SANS_PLAFOND;
-    // fixe le total de voitures que addCars ne dépasse pas (poursuite : trafic dense) et passe en total fixé
+    // poursuite (trafic dense, WFS-111) : `n` voitures actives au plus, celles qui manquent après la réserve sont créées
     void fixerTotal(int n) { totalFixe = true; plafond = n; }
+    int reserve() const { return (int)reserve_.size(); }   // voitures préparées, pas encore actives
     uint32_t seed = 1;
     double clock = 0, sim = 0;
     bool parallel = true;
@@ -175,6 +181,10 @@ private:
 public:
     double facteurVoie(double z) const;             // WFS-243 : 1 hors des anneaux, FACTEUR_ANNEAU dedans (rampes entre les deux)
 private:
+    double tirerZ(Mulberry32& R, int lane, double len, double playerPos) const;   // place libre devant le joueur (addCars)
+    void regulerDensite(double playerPos);   // WFS-281 (RG-02, RG-03) : pas de peloton qui se forme hors de la vue du joueur
+    double regulT_ = 0;
+    std::vector<TrafficCar> reserve_;   // WFS-281 : voitures de la montée de difficulté, préparées au chargement
     std::vector<std::pair<int64_t, int64_t>> anneaux_;   // WFS-243 : segments [entrée, sortie] de l'anneau de chaque rond-point
     Track* track_ = nullptr;
     std::vector<double> gap_, lead_;        // voiture de devant de chaque voiture (calculées avant le pas)
