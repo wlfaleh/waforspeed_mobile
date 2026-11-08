@@ -10,7 +10,7 @@
 namespace wfs::lod_distance {
 
 constexpr float FONDU_M = 15.f;   // largeur du fondu (RG-01 : 10 à 20 m)
-// personnes (maillages à squelette) : Basse 90 m (≈ 9 px de haut sur la scène de la Basse), sinon 150 m (RG-01)
+// personnes (maillages à squelette) : Basse 90 m (≈ 8 px de haut sur la scène de la Basse, 540 px), sinon 150 m (RG-01) ; 60 m essayé : −4 % de triangles seulement (piétons proches)
 constexpr float PERSONNES_BASSE_M = 90.f, PERSONNES_M = 150.f;
 inline float personnesMax(bool basse) { return basse ? PERSONNES_BASSE_M : PERSONNES_M; }
 
