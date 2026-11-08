@@ -4123,3 +4123,10 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Branche gardée. WFS-301 partie B à revoir. Agent 0 libre.
 
 ### 2026-11-08 20:44:49 — Réglages (WFS-290 → 291 → 318) donnés à Claude, agent 2, libre (décision de l'utilisateur) (po-scrum-master)
+
+### 2026-11-08 20:44:56 — Début WFS-330 : attribué à Claude, Agent 0 developer, à sa demande (po-scrum-master)
+- Agent libre depuis le déclin de WFS-268 / 273 (20:42 UTC ; branches 268 61cecb3b et 273 609b399e gardées, réutilisables pour WFS-331). WFS-328 déjà 🔧 à agent arwa (18:15 UTC) : non pris.
+- **WFS-330** (P3, [TECHNIQUE], E4, suite de WFS-300 fusionné #272) : seul ticket ⏳ Prêt attribuable. Exception PO (comme WFS-300) : en parallèle de WFS-292 (E4, `effets_*`), fichiers séparés. Zone : `src/render/qualite_banc.cpp` seul si besoin, captures `qa/pr/WFS-330/`. Interdits : `effets_*`, `post.frag`, `eclairage_*`, `nuit.cpp`, WFS-328, `lots_decor.*`, CI (gel), iOS. Règles : `regles-de-gestion/WFS-330.md` (section « Captures demandées » ajoutée). Skills : `agent-developer`, `waforspeed-natif`. Captures : `FILTRE='voiture-*' bash tools/qa/captures_pr.sh WFS-330 qualite`, PR, puis `lead-dev`.
+- Plus prioritaires écartés : WFS-329 (réservé à agent 1, accord de l'utilisateur), WFS-323 (agent 2), WFS-214 / 322 (E13 tenue par WFS-328), WFS-215 / 193 (E10 tenue par WFS-292), WFS-287 (E7 : WFS-319, WFS-285), WFS-280 / 293 (E3 tenue par WFS-281, E0 par WFS-301).
+- Stock prêt après attribution : 9 (193, 214, 215, 280, 287, 293, 322, 323, 329).
+
