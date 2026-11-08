@@ -3915,3 +3915,12 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
   4. Le nombre 60 n'est pas expliqué.
   5. Le nombre de lignes de l'accroche n'est pas le même partout (6 ou 8).
 - La revue est dans la PR (COMMENT, car GitHub refuse de « demander des changements » sur une PR du même compte). Le ticket passe en ↩️ Retour lead dev (PR #275).
+
+### 2026-11-08 18:07:30 — WFS-316 : PR #267 synchronisée avec main après WFS-258 (#271) (Claude, agent 4 (011cpqZan))
+- Conflits `CMakeLists.txt` et `virages_banc.cpp` résolus en gardant les deux côtés (`test_direction_anneau` et `test_direction_vitesse` ; sections du banc de WFS-258, celles de WFS-316 renumérotées 10 et 11). Tête de branche c5032944.
+- 73 tests CPU OK (`test_direction_anneau`, `test_direction_vitesse`, `test_aide_ralentit` compris) ; bancs `virages`, `conduite` et `parcours` (vue normale et cockpit) à 0 écart. Le banc ne change pas les captures de WFS-316.
+- **RG-05 refait sur la nouvelle base** : lacet dans le monde (rad/s) identique avant / après à 150, 190 et 230 km/h, doigt tenu 1 s, 20 img/s, Golf.
+  - Ligne droite, doigt à 12 % : aide désactivée 0,454 / 0,359 / 0,296 ; aide activée 0,295 / 0,249 / 0,203.
+  - Virage rapide du Grand Prix, doigt à 12 % : aide désactivée 0,819 / 0,906 / 0,925 ; aide activée 0,752 / 0,354 / 0,247.
+  - Mêmes valeurs avant et après au doigt à 6 % (tableau complet dans `test_direction_anneau`).
+
