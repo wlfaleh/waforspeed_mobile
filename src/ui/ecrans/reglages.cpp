@@ -569,6 +569,107 @@ void benchReglages(Game& g, Renderer& r, const std::string& out) {
     courseBenchRules(false);
 }
 
+// WFS-290 (RG-01, RG-02) : banc des appuis sur « Réglages » et « Fermer », au menu principal et en pause : 100 essais par cas,
+// comme un joueur (appuis injectés par Game::onTouch, une image dessinée après chaque relâcher, comme le téléphone) :
+//   centre        appui court au centre du dessin ;
+//   dessin        appui court n'importe où sur le dessin du bouton (bords compris) ;
+//   doigt 48 dp   appui court n'importe où dans la cible d'un doigt (dessin élargi à 48 dp de haut, + 4 dp de chaque côté) ;
+//   long          appui tenu 0,5 s ;
+//   double        deux appuis à 2 images d'écart (geste répété) : on attend l'état voulu par le 1er appui ;
+//   transition    appui juste après le changement d'écran (aucune image dessinée entre les deux) ;
+//   autre doigt   un 2e doigt posé ailleurs pendant l'appui.
+// Écrit une ligne « réglages (WFS-290) : <écran> <cas> : ouvrir x / 100, fermer y / 100 » et les captures du ticket.
+void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out) {
+    courseBenchRules(true);
+    if (!g.init(r, "golf", "ville")) { WFS_ERR("réglages (WFS-290) : chargement impossible"); courseBenchRules(false); return; }
+    g.setAutopilot(true); g.camMode = 0;
+    double t = 1000;
+    auto image = [&](bool rendu) { g.update(1.0 / 60); t += 1.0 / 60; if (rendu) g.render(t); };
+    auto capture = [&](const char* nom, const char* quoi) {
+        g.render(t); g.render(t + 0.01); r.capturePng(out + "/" + nom + ".png");
+        WFS_LOG("capture %s : écran %s, réglages %s, %s", nom, nomEcran(g.ecran()), g_ouvert ? "ouverts" : "fermés", quoi);
+    };
+    const float W = (float)r.width(), H = (float)r.height(), dp = ui::pixelsParDp(W);
+    uint32_t graine = 290;
+    auto alea = [&]() { graine = graine * 1664525u + 1013904223u; return (graine >> 8) / 16777216.f; };
+    int idDoigt = 100;
+    // point d'appui selon le cas, dans la zone dessinée z
+    auto point = [&](const Zone& z, int cas, float& x, float& y) {
+        x = z.x + z.w / 2; y = z.y + z.h / 2;
+        if (cas == 1) { x = z.x + alea() * z.w; y = z.y + alea() * z.h; }
+        else if (cas == 2) {
+            const float cw = z.w + 8 * dp, ch = std::max(z.h, 48 * dp);
+            x = z.x + z.w / 2 + (alea() - 0.5f) * cw; y = z.y + z.h / 2 + (alea() - 0.5f) * ch;
+        }
+    };
+    auto appui = [&](const Zone& z, int cas) {
+        float x, y; point(z, cas, x, y);
+        const int id = idDoigt++ % 4;   // comme Android : petits numéros de doigt, réutilisés
+        g.onTouch({id, x, y, true});
+        if (cas == 3) for (int i = 0; i < 30; i++) image(false);
+        image(false);
+        g.onTouch({id, x, y, false});
+        image(true);
+        if (cas == 4) {   // double : 2e appui 2 images plus tard, au même endroit
+            image(false);
+            g.onTouch({id, x, y, true}); image(false); g.onTouch({id, x, y, false}); image(true);
+        }
+    };
+    const char* NOMS[] = {"centre", "dessin", "doigt 48 dp", "long", "double", "transition", "autre doigt"};
+    auto allerAuMenu = [&]() { g.allerA(Ecran::Menu); for (int i = 0; i < 30; i++) image(i % 10 == 9); };
+    auto allerEnPause = [&]() {
+        if (g.ecran() != Ecran::Course) { g.allerA(Ecran::Course); for (int i = 0; i < 60 * 4; i++) image(i % 30 == 29); }
+        g.allerA(Ecran::Pause); image(true);
+    };
+    int total[2][2] = {{0, 0}, {0, 0}};
+    for (int ecran = 0; ecran < 2; ecran++) {
+        const char* nomE = ecran == 0 ? "menu" : "pause";
+        if (ecran == 0) allerAuMenu(); else allerEnPause();
+        if (g_ouvert) { g_ouvert = false; image(true); }
+        for (int cas = 0; cas < 7; cas++) {
+            int ok[2] = {0, 0};
+            for (int essai = 0; essai < 100; essai++) {
+                if (g_ouvert) { g_ouvert = false; image(true); }   // départ : panneau fermé, bouton dessiné
+                const Zone vu = g_bouton;   // le doigt vise le bouton vu à l'écran (sa place ne change pas d'un écran à l'autre)
+                if (cas == 5) {   // transition : on quitte l'écran et on y revient, appui sans image dessinée entre les deux
+                    if (ecran == 0) { g.allerA(Ecran::Garage); image(true); g.allerA(Ecran::Menu); }
+                    else { g.allerA(Ecran::Course); image(true); g.allerA(Ecran::Pause); }
+                    image(false);
+                }
+                const int autre = 9;
+                const float ax = W * 0.15f, ay = H * 0.80f;
+                if (cas == 6) { g.onTouch({autre, ax, ay, true}); image(false); }
+                appui(vu, cas == 5 || cas == 6 ? 0 : cas);
+                const bool ouvert = g_ouvert;
+                ok[0] += ouvert;
+                if (ouvert) {
+                    appui(g_fermer, cas == 5 || cas == 6 ? 0 : cas);
+                    ok[1] += !g_ouvert;
+                }
+                if (cas == 6) { g.onTouch({autre, ax, ay, false}); image(false); }
+                if (g.ecran() != (ecran == 0 ? Ecran::Menu : Ecran::Pause)) { if (ecran == 0) allerAuMenu(); else allerEnPause(); }
+            }
+            total[ecran][0] += ok[0]; total[ecran][1] += ok[1];
+            WFS_LOG("réglages (WFS-290) : %s, %s : ouvrir %d / 100, fermer %d / %d", nomE, NOMS[cas], ok[0], ok[1], ok[0]);
+        }
+        if (ecran == 0) {
+            g_ouvert = false; image(true);
+            appui(g_bouton, 0); capture("reglages-appuis-menu-ouvert", "appui sur « Réglages » au menu : panneau ouvert");
+            appui(g_fermer, 0); capture("reglages-appuis-menu-ferme", "appui sur « Fermer » : retour au menu");
+        } else {
+            g_ouvert = false; image(true);
+            appui(g_bouton, 0); capture("reglages-appuis-pause-ouvert", "en pause, appui sur « Réglages » : panneau ouvert");
+            appui(g_fermer, 0); capture("reglages-appuis-pause-ferme", "appui sur « Fermer » : retour à la pause");
+        }
+    }
+    WFS_LOG("réglages (WFS-290) : zones d'appui : « Réglages » %.0f × %.0f dp, « Fermer » %.0f × %.0f dp (%.2f px/dp)",
+            g_bouton.w / dp, g_bouton.h / dp, g_fermer.w / dp, g_fermer.h / dp, dp);
+    WFS_LOG("réglages (WFS-290) : total menu : ouvrir %d / 700, fermer %d ; pause : ouvrir %d / 700, fermer %d", total[0][0], total[0][1], total[1][0], total[1][1]);
+    g_ouvert = false;
+    g.shutdown();
+    courseBenchRules(false);
+}
+
 void appliquerQualiteNiveau(Renderer& r) { appliquerQualite(r); }   // WFS-15
 
 } // namespace ecrans

@@ -47,6 +47,8 @@ bool boutonCguReglages(float& x, float& y);   // WFS-308 (RG-05) : centre du bou
 
 // banc d'essai : reglages-menu, reglages-pause, reglages-basse (qualité basse en course)
 void benchReglages(Game& g, Renderer& r, const std::string& out);
+// WFS-290 : 100 appuis par cas sur « Réglages » et « Fermer », au menu et en pause (banc reglages-appuis)
+void benchReglagesAppuis(Game& g, Renderer& r, const std::string& out);
 
 } // namespace ecrans
 } // namespace wfs
