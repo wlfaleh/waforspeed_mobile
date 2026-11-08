@@ -3774,3 +3774,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Conclusion partielle : la passe de scène porte presque tout le temps GPU. L'APK 0.1.913 (commit 6fb3420) précède la fusion de #270 : les chiffres « appels · triangles » par famille arriveront avec l'APK 0.1.916 (c29cc05) ou suivant. Demande faite à l'utilisateur ; RG-02 attend ces chiffres.
 
 ### 2026-11-08 16:26:49 — WFS-258 point 3 : au-dessus de 100 km/h seulement, fonction séparée (coordination WFS-316) (po-scrum-master)
+
+### 2026-11-08 16:30:38 — WFS-265 : 2e refus du lead dev, PR #268 (lead-dev)
+- Commit relu : 7ea634f5. J'ai ouvert les 49 paires et relu tout le diff. Les points 1 à 6 du 1er refus sont corrigés, et le code est bon.
+- Bloquant : (1) la branche a 14 commits de retard sur `main`, dont 6f477e65 (WFS-192, modèles des voitures) et c29cc053 (WFS-317, renderer). Les « avant » du banc `lod` sont faits avec WFS-192, les « après » sans : de nuit, la voiture du joueur passe de bleu nuit à bleu vif, ce que le diff n'explique pas. Il faut synchroniser et régénérer les captures. (2) La description de la PR n'est pas à jour : « 22 paires », 4 images `perf-*` cassées, le banc `lod` et l'accroche ne sont pas décrits, et la limite annoncée n'y est pas.
+- Remarques : `lod-ville-300` ne montre qu'un mur ; tramé visible au téléobjectif sur les animaux (Haute, 150 m) et les personnes (Basse, 90 m) ; commentaire WFS-222 déplacé dans `desktop_main.cpp` ; `mustang` (remplaçant) sans `.lod`.
+- Statut WFS-265 : ↩️ Retour lead dev (PR #268) ; `track-agent.md` et `suivi-pr.md` mis à jour.
