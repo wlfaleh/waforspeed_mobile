@@ -4972,3 +4972,41 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Pour le PO** :
   - selles du scooter (−2,5 %) et de la sportive (−1,8 %) : accepter l'écart, ou d'autres modèles ;
   - 7 pilotes sur 10 sont des hommes : choix de conception à trancher.
+
+### 2026-11-08 02:50:37 — WFS-269 : occlusion du décor fixe précalculée au chargement, prête pour la PR (Claude, Agent 0 developer)
+- **Arbitrage du PO** : A + C (Suivi de WFS-269.md). Pas de SH9 par bloc : le rebond local, ce sont les sondes de WFS-151.
+- **Fait** :
+  - module `src/render/eclairage_precalcule.*` : part du ciel vue depuis chaque sommet du décor fixe des blocs (WFS-268), sur une grille d'occupation à deux niveaux (voxels de 0,5 m, cellules de 8 m), 8 rayons en cosinus jusqu'à 5 m ; les rayons vers le bas sont libres (la sonde tient déjà compte du sol) ;
+  - rangement : dans la **longueur de la normale** (aucun octet de plus par sommet) ;
+  - lecture : accroche de 3 lignes dans `shaders/scene.frag`, drapeau `MAT_AO` (1 ligne, `renderer.h`), qui n'agit que sur l'ambiance et le reflet du ciel ; pour les matériaux MAT_VTINT, occlusion atténuée (0,6) car elle touche aussi le soleil.
+- **Cartes** :
+  - Ville : façades, béton, trottoirs ;
+  - Corniche : décor uni, rochers, trottoirs, chaume, bois ;
+  - Campagne / Grand Prix : décor uni (MAT_VTINT) ;
+  - accroches dans `ville.cpp`, `plage.cpp`, `decor_carte.cpp` (masques et MAT_AO) et `lots_decor.*` (appel).
+- **Chargement (RG-04)**, Ville, PC 4 cœurs : 0,73 s pour l'occlusion (788 000 sommets, 3,3 millions de voxels), 7 Mo temporaires. Essais écartés : table plate de clés (5,5 s puis 1,5 s), tri des clés (1,2 s), clés non triées (580 Mo).
+- **Coût en course (C)**, banc `perf` Ville : Haute 747 → 772 ms, Basse 322 → 326 ms, dans le bruit (±4 %).
+- **Captures** (`qa/pr/WFS-269`, 99 paires, Ville, Corniche, Campagne, jour et nuit) :
+  - Corniche : dessous des arcades et façades à l'ombre plus sombres ;
+  - Ville : bas des façades sous les avancées et au fond des rues ;
+  - Campagne : presque inchangée (maisons du kit WFS-161, hors blocs).
+- **Corrigé après les premières captures** : façades dégagées assombries en entier (sol compté comme obstacle) et bandes sur les pelouses de la Ville (sol et décor uni ne reçoivent plus).
+- **Tests** : `test_fidelite_lumiere_precalcule` (9 contrôles : sol dégagé 1,00, pied du mur 0,62, sous l'auvent 0,53, mur dégagé uniforme, végétation intacte, reproductible) ; tests CPU OK.
+- **Limite** : pas de captures du Grand Prix (même code que la Campagne). Gain de réalisme modeste : l'occlusion n'agit que sur la lumière du ciel.
+
+### 2026-11-08 03:00:57 — WFS-299 créé : alléger la Ville de nuit (suite du diagnostic de WFS-297) (po-scrum-master)
+- Rien ne s'accumule entre les parties ; Ville de nuit trop lourde (piétons, lumières). Réservé à Claude, agent 1 après WFS-297.
+
+### 2026-11-08 03:07:30 — WFS-239 fusionné par le lead dev (lead-dev)
+- **PR #255** (arwa-2 (Claude, session 01Us6uCu)), commit relu 5573be1. Aucune autre revue sur ce commit. GitHub refuse l'approbation par le même compte : revue « ✅ Approuvé par le lead dev » postée en commentaire, puis fusion en squash avec le commit de tête attendu : **0f0eee4** `WFS-239 : [TECHNIQUE] banc qualité : voiture du trafic de nouveau visible à 120 m en Basse, placements contrôlés (#255) (arwa-2)`.
+- **Captures** : 23 paires de `qa/pr/WFS-239/` ouvertes une par une. `voiture-distance-120-basse` : la voiture rouge est de nouveau au fond de la rue (absente avant) ; `-180-basse` : pas de voiture, avant comme après ; les autres distances, la course avec trafic et la poursuite Basse : mêmes voitures, mêmes places.
+- **Code** : tout le diff relu (`src/render/qualite_banc.cpp`, seul fichier de code). Position du joueur dessiné calculée comme `Game::JoueurInterpole`, état d'avant le pas remis, contrôle par appels de dessin (deux images, parité gardée, état remis).
+- **Vérifié sur la tête 5573be1** (avec WFS-266) : `WFS_BANC=qualite` relancé, 0 `ERREUR placement`, les 19 lignes « contrôle » identiques à la PR (11 min 10 s) ; `qualite_banc.cpp` sans avertissement (`-Wall -Wextra`) ; **65 tests CPU OK** (190 s).
+- **Pour le PO** : (1) `voiture-lod-passage-56` a maintenant des façades bleues, à chaque lancement. Les images de contrôle font avancer les captures d'environnement, et la sonde IBL 13 (rebond 1) arrive juste avant la capture. La voiture n'y est pour rien. Proposition : une US technique pour que le banc `qualite` attende des sondes stables avant chaque capture (comme `attendreSondes` du banc éclairage), et vérifier si ce passage au bleu se voit en jeu quand une sonde arrive (WFS-151). (2) RG-03 : « dessinée(s) » compte chaque voiture seule ; en poursuite Basse, l'image n'en montre que 3, à cause du plafond voulu (WFS-111 / WFS-134).
+- **Remarques au développeur** (dans la revue) : captures « après » faites avant la synchronisation (à refaire après chaque synchronisation) ; distance du joueur recalculée et non lue dans le jeu ; écrire aussi les appels « avec » ; `<cstdio>` à inclure.
+- **Statut** : 🟣 (US technique : ✅ par les bancs du matin). Ligne `qa/Check.md` ajoutée, ligne #255 retirée de `suivi-pr.md`. arwa-2 est libéré.
+
+### 2026-11-08 03:07:59 — WFS-269 refusé par le lead dev, PR #256 (lead-dev)
+- **Revue de 2861e5a** : 99 paires ouvertes (avant / après, jour et nuit), écart moyen mesuré par paire, tout le diff relu. `test_fidelite_lumiere_precalcule` compile et passe (9/9).
+- **Défauts** (détail dans la revue de la PR) : (1) dents de scie sombres sous la roche en surplomb de la Corniche (bateaux-vue, jeux-vue) ; (2) traînées brunes et taches sur la falaise, le trottoir et la place du giratoire (epingle-dessus, lacets-dessus, rond-point-dessus) ; (3) Ville sans gain visible (écart 0,02 à 0,27 sur 255) ; (4) Campagne et Grand Prix identiques au pixel près (`LOTS_CARTES_SOCLE = false`), description inexacte ; (5) code mort `tri`, commentaire de `F_AO` ; (6) un commit de retard sur main.
+- **Statut** : ↩️ Retour lead dev (PR #256) dans `TACHES.md`, `track-agent.md` et `suivi-pr.md`.

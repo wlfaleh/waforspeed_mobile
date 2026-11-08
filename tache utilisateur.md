@@ -98,3 +98,4 @@ demande utilisateur :
 
 - Afficher au chargement combien de données le jeu a chargé et, dans les Réglages, combien de mémoire il consomme ; dans le même sujet que l'agent 1 (conversation avec le PO, 2026-11-08 02:29 UTC)
 ( PO : c'est ajouté à **WFS-297** (RG-06) : chiffres au chargement (données chargées, objets, mémoire à la fin) et dans les Réglages (mémoire du jeu, de la carte graphique, numéro de la partie) ; l'agent 1 est prévenu. )
+( PO, 2026-11-08 03:00 UTC, suite — diagnostic de l'agent 1 : rien ne s'accumule d'une partie à l'autre ; votre 2e partie était la **Ville de nuit**, la scène la plus lourde (moitié des triangles = piétons, jusqu'à 8 lumières par pixel). Ticket **WFS-299** (P1) créé pour l'alléger, même nombre de piétons. )
