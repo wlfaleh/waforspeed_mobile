@@ -3656,3 +3656,33 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Fait** : agent `.claude/agents/expert-ci-cd.md` et skill `.claude/skills/expert-ci-cd/` (renommés depuis `expert-ci`) ; nom au suivi des agents et dans les commits : « agent expert ci cd ». Ajouts : § 7 « Livraison continue » du skill et `references/livraison.md` (versionCode / versionName, signature APK et AAB, signature par Google Play, premier envoi manuel, mises à jour, 3 niveaux d'automatisation, iOS plus tard) ; tableau des workflows à jour (build.yml, matin.yml, publication.yml) ; règles de l'agent : rien sans validation explicite de l'utilisateur, le lead dev fusionne. Références mises à jour : ligne Expert CI / CD de `CLAUDE.md`, agent et skill expert-cartes, ma ligne de `track-agent.md`. Les entrées anciennes du journal et des règles de gestion gardent l'ancien nom (historique).
 
 ### 2026-11-08 15:12:46 — WFS-317 : méthode en deux PR accordée ; voitures au loin = WFS-265 (po-scrum-master)
+
+### 2026-11-08 15:16:55 — WFS-265 : critère « triangles ≤ 300 k en Basse » tranché, Ville → WFS-321 (po-scrum-master)
+- **Question** de Claude, agent dev X : mesures en Basse après son travail : Circuit 257 k, Campagne 296 k, Plage 312 k, Ville 506 k (piétons 160 k, décor Ville + ArchiCarte + Commerces 211 k, voiture du joueur ≈ 110 k), le reste étant hors de sa zone.
+- **Décision : option (a)**. WFS-265 accepté sur ce critère avec Circuit et Campagne ≤ 300 k, Plage ≤ 300 k visé (≤ 315 k accepté) ; **Ville en Basse → WFS-321** (P1 [TECHNIQUE], ⏳ En attente de WFS-268 fusionné et de la mesure du téléphone de WFS-317 ; pas d'attribution d'avance ; pas agent arwa). Option (b) refusée (`pietons.*` hors zone) ; option (c) refusée (WFS-134). Écrit dans `regles-de-gestion/WFS-265.md` (« Décision du PO ») et `regles-de-gestion/WFS-321.md`.
+
+### 2026-11-08 15:18:36 — WFS-192 : PR #266 ouverte, lead dev appelé (arwa-2)
+- PR https://github.com/wlfaleh/waforspeed_mobile/pull/266 (tête 07eac56, branche synchronisée avec `main`) ; arbitrages du PO appliqués : RG-12 (centre du volant de la M4 sans texture, couleur du volant : ΔE2000 0,00), RG-13 (grain : 16 zones unies listées dans `qa/pr/WFS-192/inventaire.md` et dans la PR).
+- Captures : `captures_pr.sh` (vitrines-feux des 20 voitures, garage, parcours : 0 écart, aussi en vue Cockpit) + vues de près avant / après des 20 voitures (face ; et arrière pour 10 d'entre elles), `qa/pr/WFS-192/pres-<id>.jpg`.
+- Tests après la dernière synchronisation : 71 tests CPU verts ; `test_audio_chocs` (WFS-298) sensible au temps sur cette machine (2 échecs sur 4 à 0,052–0,056 ms pour 0,05, puis vert) : signalé, rien de ce ticket.
+
+### 2026-11-08 15:23:11 — WFS-296 attribué à Claude, agent 2 (01UY1Vv5) (po-scrum-master)
+- Demande : « un ticket facile et rapide » (ordre de l'utilisateur, relayé par l'agent 2, libre après WFS-315 #262 et WFS-282, tous deux 🟡).
+- Choix : **WFS-296** (P2, E5 libre) : signal « R » bien visible au HUD quand la voiture recule ; zone `src/ui/**` sauf `src/ui/ecrans/**` ; aucun bouton ne change de taille ni de place (ordre permanent) ; aucune modification de la conduite. Règles : `regles-de-gestion/WFS-296.md`. Captures : marche avant, marche arrière, nuit ; tests CPU ; parcours ; 🟡 après fusion.
+- Écartés : WFS-214 (E13, rendu du ciel : plus risqué), WFS-285 / 287 (E7 occupée par WFS-319), WFS-292 / 300 (E4 occupée), WFS-293 (E3 occupée), WFS-308 (déjà à l'agent 3).
+- Idée de l'agent (banc `cockpit` qui affiche encore les anciennes cibles horizon 40-45 % / intérieur 30-35 %, remarque du lead dev sur #262) : pas de ticket seul (micro-ticket, E10 occupée par WFS-192 #266) ; à ranger dans le prochain ticket cockpit.
+
+### 2026-11-08 15:25:06 — WFS-300 attribué à Claude, agent 5 (po-scrum-master)
+- Demande de l'utilisateur relayée par l'agent 5 : « une tâche facile et rapide, et après l'avoir terminée tu stoppes ».
+- Ticket : **WFS-300** (P2, [TECHNIQUE], E4 en exception PO) — banc qualité : captures stables (sondes prêtes avant chaque capture, plus de façades bleues sur `voiture-lod-passage-56`), journal du banc plus clair (placées / dessinées une à une / dessinées ensemble). Règles : `regles-de-gestion/WFS-300.md`.
+- Choix : seul ticket prêt à un seul fichier, hors conduite, hors iOS, sans coordination ; WFS-287 écarté (E7 tenue par WFS-319, `tools/qa/**` gelé), WFS-285 / 214 / 292 / 293 plus gros ou partagés, WFS-215 après WFS-192.
+- Zone permise : `src/render/qualite_banc.cpp` seul (lecture seule : `eclairage_banc.*`, `ibl_*`, `game.h`). Interdit : `eclairage_*`, `ibl_*`, `renderer.*`, `shaders/**`, `lots_decor.*`, `vehicule_lod.*`, `src/game/**`, `bench_fluidite.cpp`, `bench_realisme.cpp`, `.github/**`, `tools/qa/**`, iOS, taille des boutons. Branche `feature/waforspeed-300`. CI de branche permise (US technique), une à la fois, notée au journal.
+
+### 2026-11-08 15:25:41 — Claude, agent dev Y : aucun ticket facile attribuable (po-scrum-master)
+- Demande d'agent dev Y (pause levée par l'utilisateur : « une tâche facile et rapide, puis tu t'arrêtes » ; pas d'iOS, pas WFS-248 / 249, pas de conduite).
+- WFS-296 (seul ticket facile, E5) donné à Claude, agent 2 à 15:23:11 ; WFS-300 donné à Claude, agent 5 juste après. Prêts restants : WFS-215 (après WFS-192), 285 et 287 (E7 occupée par WFS-319), 292 (E4 occupée), 293 (E3 occupée) ; seul attribuable : **WFS-214** (E13, ciel et chaussée, une journée, risque de rendu) : proposé à l'agent, pas attribué sans son accord.
+
+
+### 2026-11-08 15:31:14 — WFS-283 : parcours complet relancé par le lead dev après la fusion (lead-dev)
+- `WFS_BANC=parcours`, sur 770c7b24 (même code que le squash 6fb3420), avec un `wfs_bench` construit à part : **« parcours complet : 0 écart(s) OK »** et **« parcours complet en vue Cockpit (WFS-197) : 0 écart(s) OK »**. Le point oublié avant la fusion est donc vérifié.
+- La CI de fusion (`build.yml`, run #913) est encore en file à 2026-11-08 15:31:14 UTC. Le robot des statuts ne change pas les 🟡 : WFS-283 reste **🟡 À valider (utilisateur)**.
