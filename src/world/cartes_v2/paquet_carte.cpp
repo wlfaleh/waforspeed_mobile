@@ -217,17 +217,22 @@ int benchCuisson(Game& g, Renderer& r, const std::string& out, const std::string
         WFS_LOG("cuisson (WFS-301) mesure RG-07 : écart avec / sans paquet : %+d ms (vérification du paquet comprise dans preparerCarte, à part)",
                 (int)std::lround((avec - sans) * 1000));
     }
+    auto prefixer = [&](const std::string& d, const std::string& pre) {   // noms distincts pour les captures des deux parcours
+        for (const auto& e : fs::directory_iterator(d, ec)) if (e.path().extension() == ".png") fs::rename(e.path(), e.path().parent_path() / (pre + e.path().filename().string()), ec);
+    };
     if (parcours) {   // RG-08 : parcours complet de la plateforme, paquet présent puis absent
         fs::create_directories(out + "/avec-paquet", ec); fs::create_directories(out + "/sans-paquet", ec);
         retirer(); poser(0, bons[0]); poser(2, bons[2]);
         verifier(preparerCarte(c), "parcours : paquet présent et activé");
         const long long avant = carte::lusDansPaquet();
         const int e1 = parcours(g, r, out + "/avec-paquet");
+        prefixer(out + "/avec-paquet", "avec-paquet-");
         WFS_LOG("cuisson (WFS-301) banc : parcours complet avec le paquet : %d écart(s), %lld fichier(s) lus dans le paquet", e1, carte::lusDansPaquet() - avant);
         verifier(e1 == 0 && carte::lusDansPaquet() > avant, "parcours complet accueil → Ville → course → retour, paquet présent");
         retirer();
         verifier(!preparerCarte(c), "parcours : paquet absent → Ville du code");
         const int e2 = parcours(g, r, out + "/sans-paquet");
+        prefixer(out + "/sans-paquet", "sans-paquet-");
         WFS_LOG("cuisson (WFS-301) banc : parcours complet sans paquet : %d écart(s)", e2);
         verifier(e2 == 0 && carte::lusDansPaquet() == 0, "parcours complet accueil → Ville → course → retour, paquet absent (secours)");
     }
