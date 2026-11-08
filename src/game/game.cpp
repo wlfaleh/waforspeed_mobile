@@ -1,4 +1,5 @@
 #include "game.h"
+#include "fond_fige.h"   // WFS-329
 #include "../core/memoire.h"   // WFS-297 (RG-06)
 #include "../core/configgame.h"   // WFS-128
 #include <algorithm>
@@ -363,7 +364,16 @@ void Game::render(double time) {
     fp.ombresContact = !dediee;   // WFS-134 (RG-05) : ombre de contact sous chaque voiture en course (pas au garage)
     eclairage::physique(fp, dediee, view_);   // WFS-151 (accroche E13) : unités physiques, exposition, sondes IBL
     view_.night = fp.night;   // WFS-230 (RG-09, accroche E13) : nuit de l'image pour les systèmes (vitrines, bord de l'écran, carte)
+    // WFS-329 (ANO-178) : menu et choix du terrain : la scène est dessinée normalement le temps de se poser, puis figée (le moteur
+    // relit l'image gardée) ; aucun dessin 3D tant qu'elle reste valable (fond_fige.h)
+    static const bool fondAnime = std::getenv("WFS_FOND_ANIME") != nullptr;   // banc : fond d'avant (comparaison avant / après)
+    {
+        fond_fige::Signature sig;
+        sig.basse = r_->qualiteBasse; sig.ombres = r_->niveauOmbres; sig.echelle = r_->vk().renderScale; sig.msaa = (int)r_->vk().msaa; sig.nuit = fp.night;
+        r_->figerScene(fondFige_.avancer(fond_fige::ecranFige(ecran_, dediee, camMode == 2, fondAnime), sig));
+    }
     if (!r_->beginFrame(fp)) return;
+    if (r_->sceneFigee()) { systemsUi(); r_->endFrame(); return; }   // WFS-329 : interface seule par-dessus la scène gardée
 
     const mat4 I = mat4::identity();
     if (!dediee || sd.route) for (auto& [k, c] : chunks_) {

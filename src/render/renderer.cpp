@@ -556,6 +556,7 @@ struct Renderer::Bloom {
 
 void Renderer::createTargets() {
     VkCtx& vk = *vk_; VkDevice d = vk.device;
+    sceneValide_ = false;   // WFS-329 : nouvelles cibles, scène à redessiner avant de pouvoir la figer
     bool rotated = vk.transform == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR || vk.transform == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR;
     lw_ = rotated ? vk.swapExtent.height : vk.swapExtent.width;
     lh_ = rotated ? vk.swapExtent.width : vk.swapExtent.height;
@@ -1605,6 +1606,13 @@ void Renderer::endFrame() {
     const double tFin = nowSeconds();   // WFS-222 (RG-01)
     VkCtx& vk = *vk_;
     FrameRes& r = fr_[cur_];
+    const bool figee = sceneFigee();   // WFS-329 : fond figé : de l'horodatage 0 à 3 directement, rien avant la passe finale
+    if (figee) {
+        if (tsPool_) {
+            vkCmdResetQueryPool(r.cb, tsPool_, (uint32_t)cur_ * 5, 5);
+            for (uint32_t q = 0; q < 4; q++) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + q);
+        }
+    } else {
     shadowPass(r.cb);
     // objets transparents (vitres, halos) : du plus loin au plus proche, triés une fois pour les deux passes
     std::stable_sort(transparent_.begin(), transparent_.end(), [](const Pending& a, const Pending& b) { return a.depth > b.depth; });
@@ -1672,6 +1680,8 @@ void Renderer::endFrame() {
     // WFS-09 : coût mesuré aussi la nuit (sans ombres) : passes de reflet et de scène (+ bloom, WFS-100)
     if (tsPool_) vkCmdWriteTimestamp(r.cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, tsPool_, (uint32_t)cur_ * 5 + 3);
     passes::apresScene(*this, r.cb);   // WFS-150 : post-traitement enfichable (avant la passe finale)
+    sceneValide_ = true;   // WFS-329 : scène HDR de cette image gardée (relue telle quelle si le fond est figé ensuite)
+    }
 
     // passe finale : tonemapping puis interface
     VkRenderPassBeginInfo rbi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};

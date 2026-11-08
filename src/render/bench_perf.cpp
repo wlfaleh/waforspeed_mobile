@@ -175,6 +175,46 @@ static void benchParties(Game& g, Renderer& r, const std::string& out, const std
         WFS_LOG("parties : | %s | %s | %.1f | %.2f | %u | %u | %d | %d | %.0f | %.0f |", w.partie.c_str(), w.quand.c_str(), w.image, w.gpu, w.appels, w.triangles, w.trafic, w.lampes, w.rss, w.gpuMo);
 }
 
+// WFS-329 (ANO-178) : écrans hors course, qualité Basse : WFS_PERF_MENU=ville:nuit,ville:jour. Menu : 30 images au fond animé
+// (avant le fond figé), puis 60 images ; moyennes d'appels, de triangles et de temps processeur par image ; captures du menu
+// (animé à 1 s, puis figé à 3 s), des Réglages ouverts sur le menu, puis de l'écran Terrain. WFS_FOND_ANIME=1 : fond d'avant
+// (scène redessinée à chaque image), même binaire, pour les captures « avant »
+static void benchMenu(Game& g, Renderer& r, const std::string& out, const std::string& liste) {
+    double t = 5000;
+    size_t p = 0;
+    while (p < liste.size()) {
+        size_t v = liste.find(',', p); if (v == std::string::npos) v = liste.size();
+        const std::string e = liste.substr(p, v - p); const size_t d = e.find(':');
+        const std::string carte = e.substr(0, d); const bool nuit = d != std::string::npos && e.substr(d + 1) == "nuit";
+        p = v + 1;
+        setenv("WFS_MOMENT", nuit ? "nuit" : "jour", 1);
+        if (!g.init(r, "golf", carte.c_str())) { WFS_ERR("menu : chargement %s impossible", carte.c_str()); continue; }
+        const std::string nom = "menu-" + carte + (nuit ? "-nuit" : "-jour");
+        g.allerA(Ecran::Menu);
+        double appels[2] = {}, tri[2] = {}, ms[2] = {}; int n[2] = {};
+        for (int i = 0; i < 90; i++) {
+            const double t0 = nowSeconds();
+            g.update(1.0 / 30); g.render(t); t += 1.0 / 30;
+            const int k = i < 30 ? 0 : 1;
+            if (i >= 2 && i != 30) { ms[k] += (nowSeconds() - t0) * 1000; appels[k] += r.appelsDessin(); tri[k] += r.chronoImage().triangles; n[k]++; }
+            if (i == 29) r.capturePng(out + "/" + nom + "-1s.png");
+        }
+        r.capturePng(out + "/" + nom + "-3s.png");
+        for (int k = 0; k < 2; k++) if (n[k]) { appels[k] /= n[k]; tri[k] /= n[k]; ms[k] /= n[k]; }
+        WFS_LOG("menu (WFS-329) : %s : 1re seconde : %.0f appels, %.0f k triangles, %.1f ms ; ensuite : %.0f appels, %.0f k triangles, %.1f ms%s",
+                nom.c_str(), appels[0], tri[0] / 1000, ms[0], appels[1], tri[1] / 1000, ms[1], r.sceneFigee() ? " (fond figé)" : " (fond animé)");
+        ecrans::ouvrirReglagesBanc(true);
+        g.render(t); g.render(t + 0.02); r.capturePng(out + "/" + nom + "-reglages.png");
+        ecrans::ouvrirReglagesBanc(false);
+        g.allerA(Ecran::Terrain);
+        for (int i = 0; i < 40; i++) { g.update(1.0 / 30); g.render(t); t += 1.0 / 30; }
+        r.capturePng(out + "/" + nom + "-terrain.png");
+        WFS_LOG("menu (WFS-329) : %s : écran Terrain : %u appels%s", nom.c_str(), r.appelsDessin(), r.sceneFigee() ? " (fond figé)" : " (fond animé)");
+        g.shutdown();
+    }
+    unsetenv("WFS_MOMENT");
+}
+
 void benchPerf(Game& g, Renderer& r, const std::string& out) {
     // registre enveloppé (rétabli à la fin du banc)
     std::vector<SystemEntry>& reg = systemRegistry();
@@ -182,6 +222,14 @@ void benchPerf(Game& g, Renderer& r, const std::string& out) {
     for (SystemEntry& e : reg) {
         auto make = e.make; const char* nom = e.name;
         e.make = [make, nom]() -> std::unique_ptr<System> { return std::make_unique<Chrono>(make(), nom); };
+    }
+    if (const char* menu = std::getenv("WFS_PERF_MENU")) {   // WFS-329 : écrans hors course, qualité Basse
+        ecrans::Reglages& R0 = ecrans::reglages(); const int q = R0.qualite;
+        R0.qualite = qualite::BASSE; ecrans::appliquerQualiteNiveau(r);
+        benchMenu(g, r, out, menu);
+        R0.qualite = q; ecrans::appliquerQualiteNiveau(r);
+        reg = origine;
+        return;
     }
     if (const char* parties = std::getenv("WFS_PERF_PARTIES")) {   // WFS-297 : qualité Basse (celle du téléphone de l'utilisateur)
         ecrans::Reglages& R0 = ecrans::reglages(); const int q = R0.qualite;
