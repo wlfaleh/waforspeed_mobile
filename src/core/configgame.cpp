@@ -15,7 +15,9 @@ namespace wfs {
 namespace {
 
 // ---------------------------------------------------------------- table des clés (une ligne par réglage, RG-08)
-enum class Type { Entier, Reel, Flottant, Texte, Adresse };   // Adresse (WFS-306) : texte https, sans espace ni guillemet   // Texte (WFS-191) : tampon char, min / max = nombre de caractères
+enum class Type { Entier, Reel, Flottant, Texte, Adresse };   // Texte (WFS-191) : tampon char, min / max = nombre de caractères
+// Adresse (WFS-306) : texte https, sans espace ni guillemet (paquets.adresse_liste)
+bool estTexte(Type t) { return t == Type::Texte || t == Type::Adresse; }   // champs écrits entre guillemets
 struct Champ {
     const char* cle; Type type; void* ptr; double min, max; const char* unite; const char* aide;
 };
@@ -253,8 +255,8 @@ std::string ecrireNombre(double v, Type t) {
 }
 
 // valeur d'une clé telle qu'écrite dans le fichier et le README (texte entre guillemets, nombre)
-std::string ecrireValeur(const Champ& f) { return f.type >= Type::Texte ? echapper((const char*)f.ptr) : ecrireNombre(lireChamp(f), f.type); }
-std::string ecrireBorne(const Champ& f, double v) { return f.type >= Type::Texte ? std::to_string((int)v) : ecrireNombre(v, f.type); }
+std::string ecrireValeur(const Champ& f) { return estTexte(f.type) ? echapper((const char*)f.ptr) : ecrireNombre(lireChamp(f), f.type); }
+std::string ecrireBorne(const Champ& f, double v) { return estTexte(f.type) ? std::to_string((int)v) : ecrireNombre(v, f.type); }
 
 } // namespace
 
@@ -276,7 +278,7 @@ BilanConfig lireConfig(const std::string& texte, const std::string& nom, ConfigJ
         auto it = l.plat.find(f.cle);
         if (it == l.plat.end()) { b.defauts++; b.messages.push_back(std::string(f.cle) + " absente : valeur du jeu (" + ecrireValeur(f) + ")"); continue; }
         const Valeur v = it->second; l.plat.erase(it);
-        if (f.type >= Type::Texte) {   // WFS-191 (RG-08) : marque ou modèle d'une voiture ; WFS-306 : adresse https
+        if (estTexte(f.type)) {   // WFS-191 (RG-08) : marque ou modèle d'une voiture ; WFS-306 : adresse https
             std::string raison;
             if (v.genre != Valeur::Texte) raison = "texte attendu";
             else if (f.type == Type::Adresse) { if (v.texte.rfind("https://", 0) != 0 || v.texte.size() > (size_t)f.max || v.texte.find_first_of(" \"\\<>") != std::string::npos ||

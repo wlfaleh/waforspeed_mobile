@@ -9,6 +9,7 @@
 #include "../core/configgame.h"
 #include "../core/carte_cuite.h"
 #include "../core/log.h"
+#include "../core/platform.h"   // nowSeconds : petits caches (moins d'attaches JNI par image)
 #include "../ui/ecrans/paquets.h"
 
 namespace wfs {
@@ -44,7 +45,11 @@ template <class F> void avecPaquets(F f) {
 
 std::string dossier() { return carte::dossierPaquets(); }
 
+// L'état Java change au plus quelques fois par seconde : phase gardée 0,1 s, réseau 1 s, proposition jusqu'à la prochaine recherche
+// (au lieu de 2 ou 3 attaches JNI par image, remarque du lead dev sur la PR #286).
 struct SourceAndroid : ecrans::SourcePaquets {
+    double tPhase_ = -1, tReseau_ = -1; Phase phase_ = ABSENTE; long long recus_ = 0, taille_ = 0; int reseau_ = 0;
+    bool aProposition_ = false; std::string nom_, format_;
     void chercher(const std::string& c, const std::string& formats, const std::string& empreinte, int versionApk) override {
         avecPaquets([&](JNIEnv* env, jclass k) {
             jmethodID m = env->GetStaticMethodID(k, "chercher", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
@@ -54,8 +59,11 @@ struct SourceAndroid : ecrans::SourcePaquets {
             env->CallStaticVoidMethod(k, m, a, co, ca, fo, em, (jint)versionApk);
             for (jstring s : {a, co, ca, fo, em}) if (s) env->DeleteLocalRef(s);
         });
+        tPhase_ = -1; aProposition_ = false;
     }
     Phase phase(long long& recus, long long& taille) override {
+        const double t = nowSeconds();
+        if (tPhase_ >= 0 && t - tPhase_ < 0.1) { recus = recus_; taille = taille_; return phase_; }
         Phase p = ABSENTE;
         avecPaquets([&](JNIEnv* env, jclass k) {
             jmethodID m = env->GetStaticMethodID(k, "etat", "()[J");
@@ -65,9 +73,11 @@ struct SourceAndroid : ecrans::SourcePaquets {
             p = (Phase)v[0]; recus = v[1]; taille = v[2];
             env->DeleteLocalRef(t);
         });
+        tPhase_ = t; phase_ = p; recus_ = recus; taille_ = taille;
         return p;
     }
     bool proposition(std::string& nom, std::string& format) override {
+        if (aProposition_) { nom = nom_; format = format_; return true; }
         bool ok = false;
         avecPaquets([&](JNIEnv* env, jclass k) {
             jmethodID m = env->GetStaticMethodID(k, "proposition", "()[Ljava/lang/String;");
@@ -83,14 +93,18 @@ struct SourceAndroid : ecrans::SourcePaquets {
             env->DeleteLocalRef(t);
             ok = true;
         });
+        if (ok) { aProposition_ = true; nom_ = nom; format_ = format; }
         return ok;
     }
     int reseau() override {
+        const double t = nowSeconds();
+        if (tReseau_ >= 0 && t - tReseau_ < 1.0) return reseau_;
         int r = 0;
         avecPaquets([&](JNIEnv* env, jclass k) {
             jmethodID m = env->GetStaticMethodID(k, "reseau", "(Landroid/content/Context;)I");
             if (m) r = env->CallStaticIntMethod(k, m, g_paqActivite);
         });
+        tReseau_ = t; reseau_ = r;
         return r;
     }
     long long placeLibre() override {
@@ -110,9 +124,11 @@ struct SourceAndroid : ecrans::SourcePaquets {
             if (m && d) env->CallStaticVoidMethod(k, m, d);
             if (d) env->DeleteLocalRef(d);
         });
+        tPhase_ = -1;
     }
     void arreter() override {
         avecPaquets([&](JNIEnv* env, jclass k) { jmethodID m = env->GetStaticMethodID(k, "arreter", "()V"); if (m) env->CallStaticVoidMethod(k, m); });
+        tPhase_ = -1;
     }
 };
 } // namespace

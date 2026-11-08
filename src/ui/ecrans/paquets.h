@@ -41,14 +41,25 @@ struct SourcePaquets {
 // formats de texture que la carte graphique sait lire, dans l'ordre de préférence (ASTC, ETC2, RGBA8 toujours)
 std::vector<carte::FormatTexture> formatsAcceptes(const VkCtx& vk);
 std::string texteFormats(const std::vector<carte::FormatTexture>& f);   // « astc,etc2,rgba8 »
-int versionApk();                     // N de « 0.1.N » (versionJeu, WFS-279) ; 0 hors CI
-std::string texteMo(long long octets);   // « 210 Mo » (Mo = 1 048 576 octets, comme le journal)
+int versionApk(const char* versionName);   // N de « 0.1.N » ; 0 pour « dev » ou un texte sans numéro
+int versionApk();                     // versionApk(versionJeu()) (WFS-279) ; 0 hors CI
+std::string texteMo(long long octets);   // « 210 Mo » (Mo = 1 048 576 octets, comme le journal ; au moins 1 Mo)
 
 class EtapePaquets {
 public:
     enum class Etat { Ferme, Recherche, Proposition, Telechargement, Place, Echec, Fini };
     // RG-01 : paquet juste déjà là → faux, rien à faire ; sinon l'étape s'ouvre (recherche de la liste) → vrai
     bool demarrer(Renderer& r, SourcePaquets& s, const std::string& carte, const std::vector<carte::FormatTexture>& formats);
+    // même chose sans rendu (machine d'états seule, paquets_etape.cpp ; tests/test_paquets.cpp) : empreinte attendue donnée
+    bool demarrerAvec(SourcePaquets& s, const std::string& carte, const std::vector<carte::FormatTexture>& formats, uint64_t empreinte, int versionApk, double maintenant);
+    // actions des boutons (toucher les appelle ; le test aussi) : « Installer » / « Réessayer », « Plus tard », « Continuer »
+    void installer();
+    void plusTard();
+    void continuer();
+    // RG-06 : bandeau du menu touché → la proposition de RG-02 s'ouvre par-dessus le menu (taille, Wi-Fi, données mobiles) ;
+    // « Installer » lance le téléchargement (le bandeau montre la progression), « Plus tard » referme ; faux sans proposition
+    bool ouvrirProposition(double maintenant);
+    bool enMenu() const { return menu_ && ouvert(); }
     // une image dans l'écran de chargement (rotation vérifiée comme les CGU) ; vrai une seule fois, quand l'étape est finie
     bool image(VkCtx& vk, uint32_t largeurFenetre, uint32_t hauteurFenetre, double maintenant);
     // dessin et état (sans beginFrame / endFrame) ; aussi appelé par le banc
@@ -59,7 +70,8 @@ public:
     void perdreFenetre(Renderer& r);
     bool reprendre(Renderer& r);           // vrai si l'étape était ouverte (initGraphics s'arrête là)
     bool ouvert() const { return etat_ != Etat::Ferme && etat_ != Etat::Fini; }
-    bool tientLaFenetre() const { return ouvert() && fenetre_; }
+    bool tientLaFenetre() const { return ouvert() && fenetre_ && !menu_; }   // étape du chargement seulement (la proposition du menu vit dans le jeu)
+    void fermerMenu() { if (menu_) { etat_ = Etat::Ferme; menu_ = false; } }
     Etat etat() const { return etat_; }
     const std::string& carte() const { return carte_; }
     // banc : zones des boutons (centre)
@@ -71,6 +83,7 @@ public:
     // ---- menu (RG-06) : source et carte gardées après l'étape pour le bandeau
     SourcePaquets* source() const { return source_; }
     std::string empreinte_, formats_;
+    int apk_ = 0;
     bool installe_ = false;                 // paquet installé pendant cette session (bandeau « Installé »)
     bool secours_ = false;                  // l'étape s'est finie sans paquet (bandeau possible au menu)
 
@@ -82,12 +95,14 @@ private:
     std::string carte_, nom_, formatPropose_, message_;
     long long recus_ = 0, taille_ = 0, recusDebut_ = 0;
     int reseau_ = 0, essaisRotation_ = 0, doigt_ = -1, cible_ = 0;
-    bool fenetre_ = true, coupure_ = false;
+    bool fenetre_ = true, coupure_ = false, menu_ = false;
     double t0_ = 0, tDebutTelechargement_ = -1, tFini_ = -1, maintenant_ = 0;
     Zone zInstaller_, zPlusTard_, zContinuer_;
 };
 
 EtapePaquets& paquets();
+// menu (RG-06) : vrai si le toucher va au bandeau des paquets ou à la proposition ouverte par-dessus le menu (le menu le laisse passer)
+bool toucheBandeauPaquets(float x, float y);
 const std::vector<std::string>& astuces();   // ≥ 15 textes courts (assets/textes/astuces-paquets.txt), ligne vide et « # » ignorées
 
 // banc d'essai (WFS_BANC=paquets) : source factice qui copie pas à pas un paquet cuit (WFS-301) ; captures paquets-* et parcours

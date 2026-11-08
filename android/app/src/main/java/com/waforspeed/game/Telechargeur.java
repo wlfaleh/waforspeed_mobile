@@ -4,7 +4,7 @@
 //   - SHA-256 du fichier entier comparé à cartes.json : juste → renommé en <fini> (le C++ ne lit que des fichiers finis) ;
 //     faux → .part effacé, un seul nouvel essai complet, puis SHA_FAUX ;
 //   - place libre comparée au reste à télécharger + 10 % de la taille (RG-07) ;
-//   - redirections suivies (GitHub Releases renvoie vers un autre domaine, toujours en https) ;
+//   - redirections suivies (GitHub Releases renvoie vers un autre domaine) ; une redirection non https est refusée (sauf 127.0.0.1 : tests) ;
 //   - coupure (erreur réseau, arrêt demandé) : le .part est gardé, la reprise repart de là.
 // Rien n'est envoyé hormis la requête du fichier (RG-08).
 package com.waforspeed.game;
@@ -119,6 +119,7 @@ public final class Telechargeur {
             c.disconnect();
             if (suite == null) throw new IOException("redirection sans adresse");
             a = new URL(new URL(a), suite).toString();
+            if (!a.startsWith("https://") && !a.startsWith("http://127.0.0.1")) throw new IOException("redirection non https refusée");   // RG-08
         }
         throw new IOException("trop de redirections");
     }

@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class Paquets {
     private Paquets() {}
 
-    public static final int RIEN = 0, LISTE = 1, PRETE = 2, ABSENTE = 3, TELECHARGE = 4, FINI = 5, COUPURE = 6, SHA_FAUX = 7, PLACE = 8, ERREUR = 9;
+    private static final int RIEN = Installation.RIEN, LISTE = Installation.LISTE, PRETE = Installation.PRETE, ABSENTE = Installation.ABSENTE,
+        TELECHARGE = Installation.TELECHARGE, COUPURE = Installation.COUPURE;
     private static volatile int phase = RIEN;
     private static volatile ListePaquets.Entree entree = null;
     private static final AtomicLong recus = new AtomicLong(0);
@@ -54,23 +55,12 @@ public final class Paquets {
         phase = TELECHARGE;
         lancer(new Runnable() {
             @Override
-            public void run() {
-                final File fini = new File(dossier, e.carte + "_" + e.format + ".wfcarte");
-                while (!arret.get()) {
-                    final Telechargeur.Resultat r = Telechargeur.telecharger(e.adresse, fini, e.taille, e.sha256, recus, arret);
-                    Log.i("WaForSpeed", "PAQUETS " + e.nom + " : " + r + " (" + recus.get() + " / " + e.taille + ")");
-                    switch (r) {
-                        case FINI: phase = FINI; return;
-                        case SHA_FAUX: phase = SHA_FAUX; return;
-                        case PLACE: phase = PLACE; return;
-                        case ERREUR_HTTP: phase = ERREUR; return;
-                        case ARRET: phase = PRETE; return;
-                        default:   // COUPURE : on attend le réseau et on reprend là où on s'est arrêté
-                            phase = COUPURE;
-                            try { Thread.sleep(3000); } catch (InterruptedException x) { return; }
-                            if (!arret.get()) phase = TELECHARGE;
-                    }
-                }
+            public void run() {   // boucle dans Installation (règle pure, testée) : « Plus tard » rend toujours PRETE
+                Installation.executer(e.adresse, new File(dossier, e.carte + "_" + e.format + ".wfcarte"), e.taille, e.sha256, recus, arret, 3000,
+                    new Installation.Suivi() {
+                        @Override public void phase(int p) { Paquets.phase = p; }
+                        @Override public void journal(String t) { Log.i("WaForSpeed", "PAQUETS " + t); }
+                    });
             }
         }, "wfs-paquets-telechargement");
     }

@@ -27,9 +27,7 @@ const unsigned BG = 0x0A0B10, TEXTE = 0xF2F4F8, MUTED = 0x8A90A6, ACCENT = 0xFF6
 const vec4 SURFACE{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.97f}, GLASS{20 / 255.f, 22 / 255.f, 31 / 255.f, 0.72f}, BORD{1, 1, 1, 0.16f};
 constexpr double ASTUCE_S = 7.0;            // RG-04 : 6 à 8 s
 constexpr double TEMPS_RESTANT_APRES_S = 5.0;
-constexpr double FIN_AFFICHEE_S = 0.6;       // « Ville installée » avant la suite du chargement
 
-std::string hexa(uint64_t v) { char b[17]; std::snprintf(b, sizeof b, "%016llx", (unsigned long long)v); return b; }
 
 void bouton(Renderer& r, const EtapePaquets::Zone& z, float k, bool principal, const std::string& t, float tp) {
     if (!principal) dessin2d::biseau(r, z.x - 1, z.y - 1, z.w + 2, z.h + 2, 14 * k, dessin2d::uni(BORD));
@@ -66,20 +64,7 @@ std::vector<carte::FormatTexture> formatsAcceptes(const VkCtx& vk) {
     f.push_back(carte::FormatTexture::RGBA8);   // toujours lu
     return f;
 }
-std::string texteFormats(const std::vector<carte::FormatTexture>& f) {
-    std::string s;
-    for (carte::FormatTexture x : f) s += std::string(s.empty() ? "" : ",") + carte::nomFormat(x);
-    return s;
-}
-int versionApk() {
-    const std::string v = versionJeu();   // « 0.1.N » sur l'APK de la CI, « dev » ailleurs
-    const size_t p = v.rfind('.');
-    if (p == std::string::npos) return 0;
-    int n = 0;
-    for (size_t i = p + 1; i < v.size() && v[i] >= '0' && v[i] <= '9' && n < 100000000; i++) n = n * 10 + (v[i] - '0');
-    return n;
-}
-std::string texteMo(long long o) { return ui::nombre(std::max(1LL, (o + 524288) / 1048576)) + " Mo"; }
+int versionApk() { return versionApk(versionJeu()); }   // « 0.1.N » sur l'APK de la CI, « dev » ailleurs
 
 const std::vector<std::string>& astuces() {
     static std::vector<std::string> a = [] {
@@ -103,80 +88,16 @@ const std::vector<std::string>& astuces() {
 
 // ---------------------------------------------------------------- étape
 bool EtapePaquets::demarrer(Renderer& r, SourcePaquets& s, const std::string& c, const std::vector<carte::FormatTexture>& formats) {
-    r_ = &r; source_ = &s; carte_ = c; fenetre_ = true; installe_ = false; secours_ = false;
-    const uint64_t e = cartes_v2::empreinteAttendue(c);
-    empreinte_ = hexa(e); formats_ = texteFormats(formats);
-    for (carte::FormatTexture f : formats)   // RG-01 : paquet juste et à jour déjà là → rien de plus
-        if (carte::verifier_carte(cheminPaquet(c, f), {c, f, e}) == carte::Verdict::Bon) {
-            WFS_LOG("paquets (WFS-306) : %s présent et vérifié, pas de téléchargement", carte::nomFichier(c, f).c_str());
-            etat_ = Etat::Ferme;
-            return false;
-        }
-    etat_ = Etat::Recherche; t0_ = nowSeconds(); recus_ = taille_ = 0; tDebutTelechargement_ = tFini_ = -1; message_.clear(); doigt_ = -1; essaisRotation_ = 0;
-    s.chercher(c, formats_, empreinte_, versionApk());
-    WFS_LOG("paquets (WFS-306) : %s absent ou ancien, recherche de la liste (formats %s, empreinte %s, APK %d)", c.c_str(), formats_.c_str(), empreinte_.c_str(), versionApk());
-    return true;
-}
-
-void EtapePaquets::finir(bool avecPaquet, const char* raison) {
-    if (!avecPaquet) secours_ = true;
-    tFini_ = maintenant_;
-    etat_ = Etat::Fini;
-    WFS_LOG("paquets (WFS-306) : fin de l'étape, %s (%s)", avecPaquet ? "paquet installé" : "carte du code (secours)", raison);
-}
-
-void EtapePaquets::avancer(double t) {
-    maintenant_ = t;
-    if (!source_ || !ouvert()) return;
-    long long recus = 0, taille = 0;
-    const SourcePaquets::Phase ph = source_->phase(recus, taille);
-    switch (etat_) {
-    case Etat::Recherche:
-        if (ph == SourcePaquets::ABSENTE) { finir(false, "pas de liste ou rien pour ce téléphone"); break; }
-        if (ph == SourcePaquets::PRETE) {
-            source_->proposition(nom_, formatPropose_);
-            taille_ = taille;
-            reseau_ = source_->reseau();
-            const long long libre = source_->placeLibre(), besoin = taille + taille / 10;   // RG-07 (le reste exact est revu par Java)
-            if (libre >= 0 && libre < besoin) {
-                message_ = "Place insuffisante : " + texteMo(besoin) + " nécessaires, " + texteMo(libre) + " libres";
-                etat_ = Etat::Place;
-                WFS_LOG("paquets (WFS-306) : %s", message_.c_str());
-                break;
-            }
-            etat_ = Etat::Proposition;
-            WFS_LOG("paquets (WFS-306) : proposition %s (%s, %s), réseau %s", nom_.c_str(), formatPropose_.c_str(), texteMo(taille_).c_str(),
-                    reseau_ == 1 ? "Wi-Fi" : reseau_ == 2 ? "données mobiles" : "aucun");
-        }
-        break;
-    case Etat::Proposition:
-        reseau_ = source_->reseau();
-        break;
-    case Etat::Telechargement:
-        recus_ = recus; if (taille > 0) taille_ = taille;
-        coupure_ = ph == SourcePaquets::COUPURE;
-        if (ph == SourcePaquets::FINI) {
-            if (tFini_ < 0) { tFini_ = t; installe_ = true; WFS_LOG("paquets (WFS-306) : %s installé (%s)", nom_.c_str(), texteMo(taille_).c_str()); }
-            if (t - tFini_ >= FIN_AFFICHEE_S) finir(true, "téléchargé et vérifié");
-        } else if (ph == SourcePaquets::SHA_FAUX || ph == SourcePaquets::ERREUR) {
-            message_ = ph == SourcePaquets::SHA_FAUX ? "Le paquet téléchargé est abîmé (deux essais)." : "Le téléchargement a échoué.";
-            etat_ = Etat::Echec;
-            WFS_LOG("paquets (WFS-306) : échec : %s", message_.c_str());
-        } else if (ph == SourcePaquets::PLACE) {
-            message_ = "Place insuffisante : " + texteMo(taille_ + taille_ / 10) + " nécessaires, " + texteMo(source_->placeLibre()) + " libres";
-            etat_ = Etat::Place;
-        }
-        break;
-    default: break;
-    }
+    r_ = &r;
+    return demarrerAvec(s, c, formats, cartes_v2::empreinteAttendue(c), versionApk(), nowSeconds());
 }
 
 void EtapePaquets::dessiner(Renderer& r, float W, float H, const Marges& m, double t) {
     if (!ui::fontReady()) return;
     const bool cp = ui::petitEcran(W, H);
     const float k = cp ? ui::unitePetitEcran(W, H) : H / 720.f, kb = H / 720.f;
-    dessinerChargement(r, W, H, 1.f, "Paquets de cartes", false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
-    r.uiRect(0, 0, W, H, hex(BG, 0.82f));
+    if (!menu_) dessinerChargement(r, W, H, 1.f, "Paquets de cartes", false, 1.f);   // fond de l'écran de chargement (logo, barre pleine)
+    r.uiRect(0, 0, W, H, hex(BG, menu_ ? 0.72f : 0.82f));   // au menu (RG-06) : voile sur le menu
     const float pw = std::min(W - m.gauche - m.droite - 32 * k, 760 * k), px = m.gauche + (W - m.gauche - m.droite - pw) / 2;
     const float ph = (cp ? 300 : 340) * k, py = std::max(m.haut + 8 * k, (H - ph) / 2);
     r.uiRect(px, py, pw, ph, SURFACE);
@@ -264,14 +185,9 @@ bool EtapePaquets::toucher(int id, float x, float y, bool down) {
     if (id != doigt_) return true;
     const int c = cible_;
     doigt_ = -1; cible_ = 0;
-    if (c == 1 && zInstaller_.contient(x, y) && (etat_ == Etat::Proposition || etat_ == Etat::Echec)) {
-        WFS_LOG("paquets (WFS-306) : « %s » (%s)", etat_ == Etat::Echec ? "Réessayer" : "Installer", reseau_ == 1 ? "Wi-Fi" : reseau_ == 2 ? "données mobiles" : "sans réseau");
-        etat_ = Etat::Telechargement; tDebutTelechargement_ = maintenant_; recusDebut_ = recus_; tFini_ = -1; coupure_ = false;
-        source_->installer();
-    } else if (c == 2 && zPlusTard_.contient(x, y)) {
-        if (etat_ == Etat::Telechargement) source_->arreter();   // le .part est gardé : reprise à la prochaine installation
-        finir(false, "« Plus tard »");
-    } else if (c == 3 && zContinuer_.contient(x, y)) finir(false, "place insuffisante");
+    if (c == 1 && zInstaller_.contient(x, y)) installer();
+    else if (c == 2 && zPlusTard_.contient(x, y)) plusTard();
+    else if (c == 3 && zContinuer_.contient(x, y)) continuer();
     return true;
 }
 
@@ -317,25 +233,29 @@ public:
         EtapePaquets& e = paquets();
         SourcePaquets* s = e.source();
         if (!s || !e.secours_ || g.ecran != Ecran::Menu) return;
+        if (e.enMenu()) { e.avancer(g.time); return; }   // proposition ouverte : réseau (Wi-Fi / données mobiles) suivi
         long long recus = 0, taille = 0;
         const SourcePaquets::Phase ph = s->phase(recus, taille);
         if (ph == SourcePaquets::ABSENTE && g.time - dernier_ >= 60) {   // connexion revenue ? (une fois par minute au plus)
             dernier_ = g.time;
-            if (s->reseau() != 0) { s->chercher(e.carte(), e.formats_, e.empreinte_, versionApk()); WFS_LOG("paquets (WFS-306) : menu, connexion présente : liste relue"); }
+            if (s->reseau() != 0) { s->chercher(e.carte(), e.formats_, e.empreinte_, e.apk_); WFS_LOG("paquets (WFS-306) : menu, connexion présente : liste relue"); }
         }
     }
+    void onEcran(Ecran, Ecran, const GameView&) override { paquets().fermerMenu(); }
+    void shutdown(Renderer&) override { paquets().fermerMenu(); }   // fenêtre perdue en jeu (termGraphics) : la proposition du menu se referme
     void drawUi(Renderer& r, const GameView& g) override {
         z_ = {};
         EtapePaquets& e = paquets();
         SourcePaquets* s = e.source();
         if (!s || !e.secours_ || g.ecran != Ecran::Menu || g.sceneDediee || !ui::fontReady()) return;
+        if (e.enMenu()) { e.dessiner(r, g.uiWidth, g.uiHeight, g.marges, g.time); return; }   // RG-02 par-dessus le menu
         long long recus = 0, taille = 0;
         const SourcePaquets::Phase ph = s->phase(recus, taille);
         std::string nom, fmt, t;
         if (!s->proposition(nom, fmt)) return;
         if (ph == SourcePaquets::PRETE) t = "Paquet de la " + nom + " disponible — Installer";
         else if (ph == SourcePaquets::TELECHARGE || ph == SourcePaquets::COUPURE) t = nom + " — " + texteMo(recus) + " / " + texteMo(taille);
-        else if (ph == SourcePaquets::FINI) t = nom + " installée : utilisée à la prochaine partie";
+        else if (ph == SourcePaquets::FINI) t = nom + " installée : utilisée au prochain lancement";
         else return;
         const bool cp = ui::petitEcran(g.uiWidth, g.uiHeight);
         const float k = cp ? ui::unitePetitEcran(g.uiWidth, g.uiHeight) : g.uiHeight / 720.f, tp = (cp ? 14 : 15) * k;
@@ -348,18 +268,20 @@ public:
         if (ph == SourcePaquets::PRETE) z_ = {x, y, w, h};
     }
     bool onTouch(const Touch& t, const GameView& g) override {
+        EtapePaquets& e = paquets();
+        if (g.ecran == Ecran::Menu && e.enMenu()) { e.toucher(t.id, t.x, t.y, t.down); return true; }   // la proposition garde les touchers
         if (g.ecran != Ecran::Menu || !z_.contient(t.x, t.y)) return t.id == doigt_ && !t.down ? (doigt_ = -1, true) : false;
         if (t.down) { doigt_ = t.id; return true; }
-        if (t.id == doigt_) {
-            doigt_ = -1;
-            SourcePaquets* s = paquets().source();
-            if (s) { WFS_LOG("paquets (WFS-306) : bandeau du menu, « Installer » (%s)", s->reseau() == 2 ? "données mobiles" : "Wi-Fi"); s->installer(); }
-        }
+        if (t.id == doigt_) { doigt_ = -1; e.ouvrirProposition(g.time); }   // RG-02 : rien ne part sans « Installer » sur la proposition
         return true;
     }
+    // banc : centre du bandeau (faux s'il n'est pas affiché)
+    static bool centre(float& x, float& y) { x = zone().x + zone().w / 2; y = zone().y + zone().h / 2; return zone().w > 0; }
+    static bool contient(float x, float y) { return zone().contient(x, y); }
 private:
+    static EtapePaquets::Zone& zone() { static EtapePaquets::Zone z; return z; }
     double dernier_ = -1e9;
-    EtapePaquets::Zone z_;
+    EtapePaquets::Zone& z_ = zone();
     int doigt_ = -1;
 };
 
@@ -491,18 +413,41 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
     capture("paquets-echec", "paquet abîmé : « Réessayer » / « Plus tard »");
     appui(e.zonePlusTard());
     verifier(!e.ouvert() && e.secours_, "« Plus tard » → secours (Ville du code)");
-    // 6) bandeau du menu (RG-06) : liste présente, paquet non installé
-    s = SourceFactice(); s.racine = racine;
-    e.demarrer(r, s, c, formats); image(3); appui(e.zonePlusTard());
-    verifier(e.secours_, "« Plus tard » sur la proposition → secours");
+    // 6) « Plus tard » pendant une coupure (défaut relevé par le lead dev, PR #286) : phase PRETE, le bandeau propose de nouveau l'installation
+    s = SourceFactice(); s.racine = racine; s.parImage = 64 * 1024; s.coupureA = 1 << 20;
+    e.demarrer(r, s, c, formats); image(3); appui(e.zoneInstaller());
+    s.reseauFactice = 0; image(30);
+    verifier(s.ph == SourcePaquets::COUPURE, "coupure pendant le téléchargement");
+    appui(e.zonePlusTard());
+    long long rr = 0, tt = 0;
+    verifier(!e.ouvert() && e.secours_ && s.phase(rr, tt) == SourcePaquets::PRETE, "« Plus tard » pendant une coupure → phase PRETE (installation de nouveau possible)");
+    s.reseauFactice = 1;
+    // 7) menu : bandeau (RG-06) ; l'appui ouvre la proposition de RG-02 par-dessus le menu (rien ne part sans « Installer »)
     if (!g.init(r, "golf", "ville")) { WFS_ERR("paquets (WFS-306) banc : chargement impossible"); retirer(); return ecarts + 1; }
     g.setAutopilot(true); g.camMode = 0;
     double tg = 1000;
+    auto imageJeu = [&](int n) { for (int i = 0; i < n; i++) { g.update(1.0 / 60); tg += 1.0 / 60; g.render(tg); } };
+    auto captureJeu = [&](const char* nom, const char* quoi) { g.render(tg); g.render(tg + 0.01); r.capturePng(out + "/" + nom + ".png"); WFS_LOG("capture %s : %s", nom, quoi); };
+    auto toucherJeu = [&](int id, float x, float y) { g.onTouch({id, x, y, true}); imageJeu(1); g.onTouch({id, x, y, false}); imageJeu(2); };
     for (int i = 0; i < 30; i++) g.update(1.0 / 60);
     g.allerA(Ecran::Menu);
-    for (int i = 0; i < 60; i++) { g.update(1.0 / 60); tg += 1.0 / 60; g.render(tg); }
-    g.render(tg); g.render(tg + 0.01); r.capturePng(out + "/paquets-bandeau-menu.png");
-    WFS_LOG("capture paquets-bandeau-menu : menu, bandeau « Paquet de la Ville disponible — Installer »");
+    imageJeu(60);
+    captureJeu("paquets-bandeau-menu", "menu, bandeau « Paquet de la Ville disponible — Installer » (après « Plus tard » pendant une coupure)");
+    float bx = 0, by = 0;
+    verifier(BandeauPaquets::centre(bx, by), "bandeau affiché au menu");
+    s.reseauFactice = 2;
+    toucherJeu(40, bx, by);
+    verifier(e.enMenu() && e.etat() == EtapePaquets::Etat::Proposition && s.ph == SourcePaquets::PRETE, "bandeau → proposition par-dessus le menu, rien ne part");
+    captureJeu("paquets-menu-proposition-mobile", "proposition depuis le bandeau, données mobiles : taille et phrase des données mobiles");
+    s.reseauFactice = 1; imageJeu(3);
+    captureJeu("paquets-menu-proposition-wifi", "proposition depuis le bandeau, Wi-Fi : « Installer » mis en avant");
+    { const EtapePaquets::Zone& z = e.zonePlusTard(); toucherJeu(41, z.x + z.w / 2, z.y + z.h / 2); }
+    verifier(!e.enMenu() && g.ecran() == Ecran::Menu && s.ph == SourcePaquets::PRETE, "« Plus tard » → proposition refermée, menu inchangé");
+    toucherJeu(42, bx, by);
+    { const EtapePaquets::Zone& z = e.zoneInstaller(); toucherJeu(43, z.x + z.w / 2, z.y + z.h / 2); }
+    verifier(!e.enMenu() && (s.ph == SourcePaquets::TELECHARGE || s.ph == SourcePaquets::FINI), "« Installer » sur la proposition du menu → téléchargement");
+    imageJeu(4);
+    captureJeu("paquets-bandeau-progression", "bandeau du menu pendant le téléchargement (barre)");
     // hors ligne au menu puis connexion revenue : la liste est relue (une fois par minute au plus)
     s.liste = false; s.ph = SourcePaquets::ABSENTE; s.reseauFactice = 1; const int avant = s.appelsListe;
     for (int i = 0; i < 70 * 60; i++) g.update(1.0 / 60);
@@ -513,6 +458,10 @@ int benchPaquets(Game& g, Renderer& r, const std::string& out, const std::string
     return ecarts;
 }
 
+} // namespace ecrans
+
+namespace ecrans {
+bool toucheBandeauPaquets(float x, float y) { float bx, by; return paquets().enMenu() || (BandeauPaquets::centre(bx, by) && BandeauPaquets::contient(x, y)); }
 } // namespace ecrans
 
 WFS_SYSTEM(ecrans::BandeauPaquets, 458)   // interface (400-499) : par-dessus le menu (450), sous les réglages (460)
