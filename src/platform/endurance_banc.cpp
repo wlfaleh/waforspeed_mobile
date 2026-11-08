@@ -308,11 +308,33 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
     };
     int retours = 0;
     // RG-02 / RG-09 : ce que fait Android sur APP_CMD_TERM_WINDOW puis APP_CMD_INIT_WINDOW (termGraphics / initGraphics)
-    auto retourArrierePlan = [&](const char* ou) -> bool {
+    // WFS-285 (ANO-154) : chemin normal = la surface seule est refaite (moteur, partie et course gardés) : ici, rendu hors
+    // écran, les cibles d'écran du Renderer sont refaites (Renderer::resize, comme après la nouvelle swapchain) ; même écran,
+    // même position, même chrono, ligne « surface recréée en N ms » ; repli = true : chemin de secours (tout recharger, RG-04)
+    auto retourArrierePlan = [&](const char* ou, bool repli) -> bool {
         const std::string voiture = g.player().car ? g.player().car->id : "golf";
-        if (g.ecran() == Ecran::Course) { g.allerA(Ecran::Pause); pas(2); }   // APP_CMD_PAUSE en course → pause (WFS-39)
+        if (g.ecran() == Ecran::Course) { capture("endurance-avant-retour-" + std::to_string(retours + 1)); g.allerA(Ecran::Pause); pas(2); }   // APP_CMD_PAUSE en course → pause (WFS-39)
         const double av = rssMo();
-        g.shutdown(); r.shutdown(); vk.shutdown();                              // termGraphics
+        if (!repli) {
+            const Ecran e = g.ecran(); const double dist = g.player().dist; const Course* c0 = activeCourse(); const double chrono = c0 ? c0->raceTime : -1;
+            const double tf = nowSeconds();
+            vk.waitIdle(); r.resize();                                           // termGraphics (surface) puis initGraphics (surface)
+            pas(1); g.render(t += 0.01);
+            WFS_LOG("surface recréée en %d ms", (int)std::lround((nowSeconds() - tf) * 1000));
+            const Course* c1 = activeCourse();
+            if (g.ecran() != e || (e == Ecran::Pause && (g.player().dist != dist || (c1 ? c1->raceTime : -1) != chrono))) {   // Pause : tout figé
+                WFS_ERR("endurance : retour %d (%s) : écran, position ou chrono changés (%s → %s, %.2f → %.2f m, %.2f → %.2f s)", retours + 1, ou, nomEcran(e), nomEcran(g.ecran()),
+                        dist, g.player().dist, chrono, c1 ? c1->raceTime : -1.0);
+                return false;
+            }
+            retours++;
+            pas(40);   // comme le repli : l'écran a fini d'apparaître (menu) ; en Pause, rien ne bouge
+            capture("endurance-retour-" + std::to_string(retours));
+            WFS_LOG("endurance : retour d'arrière-plan %d (%s), surface seule, écran %s gardé, RSS %.1f → %.1f Mo", retours, ou, nomEcran(g.ecran()), av, rssMo());
+            return true;
+        }
+        WFS_LOG("surface : repli, rechargement complet (banc : retour %d)", retours + 1);
+        g.shutdown(); r.shutdown(); vk.shutdown();                              // termGraphics (repli)
         if (!vk.init(nullptr, largeur, hauteur)) { WFS_ERR("endurance : Vulkan non recréé après le retour %d", retours + 1); return false; }
         // ANO-52 : même Renderer réinitialisé, comme termGraphics d'android_main.cpp (WFS-100 RG-W1, contournement retiré : WFS-111)
         r.init(vk);                                                              // initGraphics
@@ -430,9 +452,9 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
                 WFS_LOG("endurance : cycle %d, pause puis reprise", cy);
             }
             if (cy == 1 && !retour && enCourse >= 30) {   // RG-09 : retour d'arrière-plan en course
-                if (!retourArrierePlan("en course")) return 4;
+                if (!retourArrierePlan("en course", false)) return 4;
                 retour = true;
-                g.allerA(Ecran::Course); g.setAutopilot(true);   // la course repart (nouvelle course, comme sur téléphone)
+                g.allerA(Ecran::Course); g.setAutopilot(true);   // WFS-285 : « Reprendre » : la même course continue
             }
             if (enCourse >= COURSE_MAX) { courseBenchSetTime(0.01); WFS_LOG("endurance : cycle %d, fin forcée à %.0f s", cy, enCourse); }
             if (enCourse > COURSE_MAX + 10) break;
@@ -451,10 +473,10 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
             g_voitureCourante = VOITURES[k]; g_peintureCourante = PEINTURES[k];
             pas(2);
             WFS_LOG("endurance : cycle %d, garage : voiture %s", cy, g.player().car ? g.player().car->id : "?");
-            if (cy == 3 && !retourArrierePlan("au garage")) return 4;
+            if (cy == 3 && !retourArrierePlan("au garage", true)) return 4;   // WFS-285 : repli complet (RG-04) gardé au banc
             if (g.ecran() == Ecran::Garage) { g.allerA(Ecran::Menu); pas(10); }
         }
-        if (cy == 6 && !retourArrierePlan("au menu")) return 4;
+        if (cy == 6 && !retourArrierePlan("au menu", false)) return 4;
     }
     // WFS-145 (RG-08) : relevé de fin (après la Poursuite) à la scène de référence ; RSS écrite pour information
     const Releve relFin = releverReference(CYCLES + 1);
