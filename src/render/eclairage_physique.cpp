@@ -170,7 +170,7 @@ void diagnostiquerSonde(const CubeF& src, const vec3& pos) {
     const int N = src.cotes[0];
     const vec3 normales[4] = {{1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
     for (const vec3& n : normales) {
-        double Ec[3] = {}, Es[3] = {};
+        double Ec[3] = {}, Es[3] = {}, Esol[3] = {};
         for (int f = 0; f < 6; f++) for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) {
             double d[3]; directionTexel(f, (x + 0.5) / N, (y + 0.5) / N, d);
             const double c = d[0] * n.x + d[1] * n.y + d[2] * n.z;
@@ -183,6 +183,7 @@ void diagnostiquerSonde(const CubeF& src, const vec3& pos) {
             const double w = angleSolideTexel(x, y, N) * c;
             double* E = estCiel ? Ec : Es;
             for (int q = 0; q < 3; q++) E[q] += p[q] * w;
+            if (d[1] < 0) for (int q = 0; q < 3; q++) Esol[q] += p[q] * w;   // surfaces sous l'horizon (sol, chaussée)
         }
         auto xy = [](const double* e, double& X, double& Y) {   // sRGB linéaire → XYZ → xy
             const double Xx = 0.4124 * e[0] + 0.3576 * e[1] + 0.1805 * e[2], Yy = 0.2126 * e[0] + 0.7152 * e[1] + 0.0722 * e[2], Zz = 0.0193 * e[0] + 0.1192 * e[1] + 0.9505 * e[2];
@@ -190,6 +191,8 @@ void diagnostiquerSonde(const CubeF& src, const vec3& pos) {
         };
         double xc, yc, xs, ys, xt, yt; const double Et[3] = {Ec[0] + Es[0], Ec[1] + Es[1], Ec[2] + Es[2]};
         xy(Ec, xc, yc); xy(Es, xs, ys); xy(Et, xt, yt);
+        double Eh[3] = {Es[0] - Esol[0], Es[1] - Esol[1], Es[2] - Esol[2]}, xso, yso, xh, yh; xy(Esol, xso, yso); xy(Eh, xh, yh);
+        WFS_LOG("sonde (WFS-322 diagnostic) : sous l'horizon %.0f lx (x %.3f y %.3f), surfaces au-dessus %.0f lx (x %.3f y %.3f)", luminanceRgb(Esol), xso, yso, luminanceRgb(Eh), xh, yh);
         const double lC = luminanceRgb(Ec), lS = luminanceRgb(Es);
         WFS_LOG("sonde (WFS-322 diagnostic) en (%.1f %.1f %.1f), normale (%g %g) : ciel %.0f lx (x %.3f y %.3f), surfaces %.0f lx (x %.3f y %.3f), part des surfaces %.0f %%, total x %.3f y %.3f",
                 pos.x, pos.y, pos.z, n.x, n.z, lC, xc, yc, lS, xs, ys, 100 * lS / std::max(lC + lS, 1e-9), xt, yt);
