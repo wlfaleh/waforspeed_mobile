@@ -156,6 +156,7 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
     struct Cap { const char* nom; int64_t seg; int cam; int vue = 0; float reculNuit = 0; };
     const Cap caps[] = {{"carte-campagne-vaches", tr[0], 0, 0, 30}, {"carte-campagne-chevaux", tr[1], 0}, {"carte-campagne-moutons", tr[2], 0, 0, 30},
                         {"carte-campagne-col", haut, 0}, {"carte-campagne-col-haut", haut, 1, 1},
+                        {"carte-campagne-bord-boise", haut, 0, 3},   // WFS-273 : bord de route boisé à hauteur du cockpit (aucun clone côte à côte)
                         {"carte-campagne-epingle", ep - (int64_t)(40 / SEG_M), 0, 2}, {"carte-campagne-vignes", vi, 0},
                         {"carte-campagne-cascade", pont, 0}, {"carte-campagne-village", feu, 0}, {"carte-campagne-rondpoint", rp, 0},
                         {"carte-campagne-peage", au >= 0 ? au : -1, 0}, {"carte-campagne-autoroute", au >= 0 ? au + (int64_t)(300 / SEG_M) : -1, 0}};   // WFS-179
@@ -185,6 +186,11 @@ int benchCampagne(Game& g, Renderer& r, const std::string& out, bool parcours) {
                              o = t.point((double)(ep - (int64_t)(70 / SEG_M)) * SEG, 0);
             carte::g_vueCarte.cible = {(float)(a.x + b.x + m.x) / 3, (float)(a.y + b.y + m.y) / 3, (float)(a.z + b.z + m.z) / 3};
             carte::g_vueCarte.oeil = {(float)o.x, (float)o.y + 45, (float)o.z}; carte::g_vueCarte.fov = 55; carte::g_vueCarte.actif = true;
+        }
+        if (c.vue == 3) {   // WFS-273 : œil à 1,1 m (cockpit) sur la voie de droite, visée : bord de route boisé 35 m devant, à 3 m de haut
+            const TrackPoint o = t.point((double)c.seg * SEG, RW * 0.5), v = t.point((double)(c.seg + (int64_t)(35 / SEG_M)) * SEG, RW + 6);
+            carte::g_vueCarte.oeil = {(float)o.x, (float)o.y + 1.1f, (float)o.z}; carte::g_vueCarte.cible = {(float)v.x, (float)v.y + 3, (float)v.z};
+            carte::g_vueCarte.fov = 60; carte::g_vueCarte.actif = true;
         }
         g.render(404); g.render(404.02);
         const std::string nom = std::string(c.nom) + (!std::strcmp(mo, "nuit") ? "-nuit" : "") + (basse ? "-basse" : "");
