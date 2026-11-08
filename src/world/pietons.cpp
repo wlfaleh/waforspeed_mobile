@@ -33,8 +33,10 @@ namespace {
 // une personne derrière ne coûte rien) à 138 m devant (jeu web), fondu sur les 20 derniers mètres
 constexpr double PED_RANGE0 = -40, PED_RANGE1 = 115;   // tronçons (1,2 m) derrière / devant le joueur
 constexpr double PED_WALK_SPEED = 1.1, PED_JOG_SPEED = 2.9;   // m/s des animations d'origine
-constexpr float PED_LOD_M[2] = {16.f, 50.f};
-constexpr float PED_LOD_BASSE_M[2] = {8.f, 30.f};   // WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k)
+constexpr float PED_LOD_M[3] = {16.f, 50.f, 1e9f};   // Moyenne et Haute : pas de niveau 3 (WFS-299 : inchangées)
+// WFS-222 : Basse (corps complet 14-15 k triangles, moyen 5,5 k, loin 1,9 k) ; WFS-299 (RG-01) : au-delà de 45 m, niveau 3
+// « très simple » (≈ 0,4 k, fabriqué au chargement par squelette.cpp à partir du niveau 2)
+constexpr float PED_LOD_BASSE_M[3] = {8.f, 30.f, 45.f};
 constexpr int PEOPLE_MAX = 220;        // life.js
 // WFS-257 (cause d'ANO-130) : les 8 places de WFS-19 (8 piétons × 2 dessins) faisaient apparaître et disparaître les gens
 // sous les yeux du joueur à chaque changement des « 8 plus proches ». Désormais toute personne dans le cadre est dessinée :
@@ -239,14 +241,12 @@ public:
 
     void render(Renderer& r, const GameView& g) override {
         if (!actif_ || (g.sceneDediee && !plage::vueBanc()) || !g.player) return;   // WFS-216 : la foule de la fête dans les vues du banc
-        if (std::getenv("WFS_ESSAI_SANS_PIETONS")) return;   // ESSAI WFS-299 (temporaire)
         Track& tr = *g.track;
         const double len = (double)tr.segmentCount(), aP = g.player->position / SEG, aMod = std::fmod(std::fmod(aP, len) + len, len);
         const double carLat = g.player->playerX * RW;
         const double dt = std::clamp(g.time - tPrec_, 0.0, 0.1);
         if (etat_.size() != gens_.size()) { etat_.assign(gens_.size(), apparition::Etat{}); candDe_.assign(gens_.size(), -1); pos_.assign(gens_.size(), vec3{}); yaw_.assign(gens_.size(), 0.f); }
         const float* seuils = r.qualiteBasse ? PED_LOD_BASSE_M : PED_LOD_M;   // WFS-222 (RG-03) : Basse : complet à 8 m, moyen à 30 m
-        static float essai[2] = {0, 0}; if (const char* e = std::getenv("WFS_ESSAI_LOD")) { std::sscanf(e, "%f,%f", &essai[0], &essai[1]); if (r.qualiteBasse) seuils = essai; }   // ESSAI WFS-299 (temporaire)
         const mat4 pv = g.proj * g.view;
         // 1. WFS-257 : chaque personne de la portée : place dans le monde, dans le cadre ou non (RG-02)
         cand_.clear();
@@ -355,8 +355,13 @@ public:
                 const float fondu = croise ? (passe ? apparition::tramageComplement(D.lodT) : apparition::tramage(D.lodT)) : apparition::tramage(D.op);
                 std::snprintf(nom, sizeof nom, "corps-%d", lod);
                 const Plage* corps = plageParNom(*D.M, nom);
+                if (!corps && lod == 3) corps = plageParNom(*D.M, "corps-2");   // WFS-299 : niveau 3 absent (modèle sans niveau 2) : niveau 2
                 const Plage* coiffure = nullptr;
-                if (D.coiffure) { std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, lod); coiffure = plageParNom(*D.M, nom); }
+                if (D.coiffure) {
+                    std::snprintf(nom, sizeof nom, "%s-%d", D.coiffure, lod); coiffure = plageParNom(*D.M, nom);
+                    if (!coiffure && lod == 3) { std::snprintf(nom, sizeof nom, "%s-2", D.coiffure); coiffure = plageParNom(*D.M, nom); }
+                }
+                if (std::getenv("WFS_ESSAI_LOD_TRACE") && corps) { static int fr = 0; static long tri[4]; static int n[4]; if (k == 0 && passe == 0) { if (fr++ % 120 == 1) WFS_LOG("ESSAI lod : n %d/%d/%d/%d tri %ld/%ld/%ld/%ld, nd %d", n[0], n[1], n[2], n[3], tri[0], tri[1], tri[2], tri[3], nd); for (int q = 0; q < 4; q++) { tri[q] = 0; n[q] = 0; } } n[std::clamp(lod, 0, 3)]++; tri[std::clamp(lod, 0, 3)] += corps->nombre / 3 + (coiffure ? coiffure->nombre / 3 : 0); }   // ESSAI WFS-299
                 for (const Plage* pl : {corps, coiffure})
                     if (pl) r.drawSkinned(D.M->maillage, D.M->materiau, D.monde, D.pose->palette.data(), (int)D.pose->palette.size(), pl->premier, pl->nombre, &D.app, fondu);
             }
