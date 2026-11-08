@@ -5285,3 +5285,23 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Critères : `regles-de-gestion/WFS-273.md` (instances des arbres, ≤ 60 appels de dessin du décor, 0 création en course, captures ≤ 1 % des 4 cartes jour et nuit, vibreurs alternés au départ, parcours complet). Après fusion : 🟡 À valider (utilisateur).
 - Note du lead dev (revue de WFS-269) ajoutée au suivi des règles : `P_UNI` encore receveur d'occlusion dans `decor_carte.cpp`, à vérifier ou retirer au rallumage des blocs (`LOTS_CARTES_SOCLE`).
 
+
+### 2026-11-08 06:40:03 — WFS-273 : risque signalé (Claude, Agent 0 developer)
+- **Branche** : `feature/waforspeed-273` au commit 29cb97a6 (poussé 2026-11-08 06:38:49 UTC).
+- **Constat** (banc campagne, même binaire, `WFS_ARBRES_INSTANCES=0` puis `1`) :
+  - RG-01 marche : 3216 arbres en exemplaires, 0,6 Mo GPU (modèles 0,16 Mo + exemplaires 0,41 Mo) au lieu de ≈ 3,7 M sommets d'arbres en détail pour un tour préparé ; préparation en 18 ms.
+  - Chaque arbre garde essence, hauteur, teinte, position et ombre, et reçoit un lacet aléatoire.
+  - Mais un exemplaire est une copie d'un modèle : la forme aléatoire propre à chaque arbre (inclinaison du tronc, bouquets, branches) est perdue.
+  - Écart moyen avant / après, jour : forêt dense 2,54 % (col), 2,10 % (haut du col), 1,71 % (cascade), 1,28 % (col-haut) ; 0,4 à 0,9 % ailleurs ; 0 % sans arbres. Le ≤ 1 % n'est pas tenu sur 4 vues de forêt sur 13.
+- **Proposition au PO** :
+  - A (recommandée) : arbres en exemplaires non identiques au pixel ; critère : mêmes essences, hauteurs, teintes, positions, ombres et densité, aucun clone visible côte à côte, jugé à l'œil ; ≤ 1 % gardé pour le reste du décor ; 2 à 3 modèles par essence (+12 à 24 appels de dessin au pire, plafond 60) ;
+  - B : pas d'exemplaires (≈ 175-212 Mo GPU par carte, RG-01 tombe) ;
+  - C : exemplaires seulement au-delà de 200 m (gain de mémoire moindre).
+- **Décision attendue de** : PO. En attendant, le développeur avance sur le décor du Grand Prix et les vibreurs (RG-04).
+
+### 2026-11-08 06:40:03 — WFS-273 : décision du PO sur le risque des arbres en exemplaires : option A, 3 modèles par essence (po-scrum-master)
+- **Option A retenue.** B rejetée : elle fait tomber RG-01, qui est le but du ticket (réduire la mémoire et les appels de dessin pour préparer Campagne et Grand Prix), et risque le manque de mémoire sur un téléphone de 4 Go. C rejetée : dans un tour préparé, les arbres proches de chaque endroit sont tous préparés, le gain serait faible.
+- **Pourquoi** : la forme tirée au hasard de chaque arbre n'est pas une donnée du réel mesuré (`DA-realisme.md`), seulement un tirage ; ce qui se mesure (essence, hauteur, teinte, position, ombre, densité) est gardé. L'écart vient de ce tirage, pas d'une perte de fidélité.
+- **Nombre de modèles** : **3 modèles par essence** pour la version de détail (proche), tirés au chargement par le générateur existant (aucun actif nouveau) ; la version allégée (loin) peut garder 1 modèle par essence. Plafond inchangé : **≤ 60 appels de dessin du décor** sur chaque vue mesurée ; s'il est dépassé, le détail passe à 2 modèles par essence (noté au journal).
+- **Nouveau critère des arbres (chiffré)** : vues de forêt ≤ 3 % d'écart moyen avant / après ; toutes les autres vues ≤ 1 % ; nombre d'arbres par essence, positions, hauteurs et teintes identiques (test CPU) ; deux arbres voisins à moins de 10 m n'ont jamais le même modèle avec un lacet à moins de 30° près ; ombres présentes. Image jugée par le lead dev, puis par l'utilisateur (ticket 🟡 après fusion).
+- Détail et captures demandées : `regles-de-gestion/WFS-273.md` (RG-01, section « Suivi »).
