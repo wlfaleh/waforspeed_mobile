@@ -153,7 +153,7 @@ public:
     void render(Renderer& r, const GameView& g) override {
         if (g.sceneDediee) return;   // scène dédiée (garage…) : pas de trafic (WFS-44)
         if (g.fondFige) return;   // WFS-329 (accroche) : fond figé du menu : dessin seul (dessins ignorés), rien à calculer
-        uint32_t a0, t0; r.fileScene(a0, t0);   // WFS-336 (repris de WFS-281) : coût du trafic de cette image (médianes du banc perf)
+        uint32_t a0, t0; r.fileScene(a0, t0);   // WFS-281 : coût du trafic de cette image (médianes du banc perf)
         const Player& pl = *g.player; Track& t = *g.track;
         const bool dense = r.qualiteBasse && poursuiteTrafic(1, g.ecran == Ecran::Course) > 0;   // WFS-111 : poursuite en Basse
         const TrafficCar* vis[TRAFIC_DESSINES_MAX];

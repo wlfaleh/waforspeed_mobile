@@ -163,8 +163,9 @@ public:
     // Faux (tests de référence du jeu web) : addCars crée les voitures sans limite, comme le jeu web.
     static constexpr int SANS_PLAFOND = 1 << 30;   // aucune limite (comportement du jeu web)
     // densité, hors de la vue, des zones REGUL_ZONES (m, relatives au joueur) : au plus REGUL_MAX × la densité moyenne du tracé
-    // (1 : la densité du départ, posée uniformément ; mesuré sur 10 graines : 65 → 42 relevés hors RG-02 sur 80)
-    static constexpr double REGUL_MAX = 1.0, REGUL_ZONES[2][2] = {{300, 700}, {-400, -40}}, REGUL_LOIN_M = 800;
+    // (0,8 : mesuré sur 10 graines, 4 cartes, Haute et Basse, règle du PO du 2026-11-08 20:17 : 0 fenêtre hors RG-02 sur 1600 ;
+    // 1 : 6 sur 1600 ; sans régulation : les pelotons montent à 8 véhicules dessinés pour 2 au départ)
+    static constexpr double REGUL_MAX = 0.8, REGUL_ZONES[2][2] = {{300, 700}, {-400, -40}}, REGUL_LOIN_M = 800;
     static constexpr double MONTEE_MAX = 0.15;     // montée de difficulté : +15 % de voitures au plus (RG-02 : ≤ 1,3 × le départ)
     bool totalFixe = false;
     int plafond = SANS_PLAFOND;
