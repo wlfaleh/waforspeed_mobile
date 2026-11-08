@@ -4848,3 +4848,6 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - (2) Montée de difficulté (+6 voitures par checkpoint) : **suppression refusée** ; gardée, plafonnée par RG-02, voitures préparées au chargement ; pas de nouveau ticket.
 - (3) Pilote automatique du banc : **corrigé dans cette PR** (retour à l'ancienne conduite du pilote, `keepTrafficInView` déplace sans ajouter), pas de ticket technique.
 - `track-agent.md` remis à jour (derniers envois des branches).
+
+### 2026-11-08 02:19:55 — ANO-169 / WFS-297 créé : le jeu ralentit d'une partie à l'autre (po-scrum-master)
+- Captures de l'utilisateur : 1re partie 25 img/s, GPU scène 33,4 ms ; 2e partie 10 img/s, GPU scène 86,8 ms. Mesure de 3 parties de suite demandée ; coordination WFS-281 (trafic) et WFS-268 (décor).
