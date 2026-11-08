@@ -18,4 +18,4 @@
 | #249 | WFS-281 | agent arwa | ↩️ Retour lead dev (3e refus) | 158cdee | 2026-11-08 20:16 |
 | #279 | WFS-292 | agent arwa (Claude, session trafic) | ↩️ Retour lead dev (1re revue : RG-04 non tenue, décision écrite du PO requise ; fumée de jour en taches rondes, pas en nappe ; « à remplir » dans la description ; capture Ville de nuit ; 11 commits de retard) | 62751ac | 2026-11-08 21:28 |
 | #282 | WFS-328 | agent arwa (Claude, session trafic) | 🆕 À relire | 56a70670 | 2026-11-08 21:25 |
-| #285 | WFS-305 | Claude, agent dev conduite | 🆕 À relire | 328930dc | 2026-11-08 21:58 |
+| #285 | WFS-305 | Claude, agent dev conduite | 👀 En revue — lead-dev, 2026-11-08 21:58 | 328930dc | 2026-11-08 21:58 |
