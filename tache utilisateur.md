@@ -95,3 +95,6 @@ demande utilisateur :
 
 - Le jeu est devenu grave : il rame beaucoup ; 1re partie Corniche plus ou moins bonne, la 2e une catastrophe ; il faut voir de près (vidéo, conversation avec le PO, 2026-11-08 02:19 UTC)
 ( PO : c'est créé — **ANO-169** et **WFS-297** (P1 urgent, en tête) : vos chiffres montrent 25 img/s à la 1re partie et 10 img/s à la 2e (la carte graphique travaille 2,6 fois plus) : quelque chose s'accumule d'une partie à l'autre. Mesure de 3 parties de suite, cause nommée, rien ne doit s'accumuler, décor chargé avant la conduite. )
+
+- Afficher au chargement combien de données le jeu a chargé et, dans les Réglages, combien de mémoire il consomme ; dans le même sujet que l'agent 1 (conversation avec le PO, 2026-11-08 02:29 UTC)
+( PO : c'est ajouté à **WFS-297** (RG-06) : chiffres au chargement (données chargées, objets, mémoire à la fin) et dans les Réglages (mémoire du jeu, de la carte graphique, numéro de la partie) ; l'agent 1 est prévenu. )
