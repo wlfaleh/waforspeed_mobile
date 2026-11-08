@@ -4918,3 +4918,57 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Résultat** (banc `qualite`, 1280 × 720) : 0 ligne `ERREUR placement` ; `voiture-distance-120-basse` : voiture dessinée à 120,00 m (visible sur la capture) ; `-180-basse` : non dessinée (au-delà de la limite) ; `voiture-basse-poursuite` : 14 posées de 8 à 151 m, les 11 en deçà de 120 m dessinées ; distances dessinées exactes (0,00 m). Banc `fluidite` : à-coup 3,09 mm (inchangé). 65 tests CPU OK. Captures avant / après : `qa/pr/WFS-239` (23, `captures_pr.sh … qualite`, `FILTRE='voiture-*'`).
 - Pas de test CPU neuf, pas d'accroche dans `CMakeLists.txt` : la règle demande une image (banc) ; le contrôle RG-03 tourne avec le banc `qualite` de la CI.
 
+
+### 2026-11-08 02:49:46 — WFS-232 : corrections du retour du lead dev (PR #245, 9 points), nouvelle routière, mesures, coût, parcours (arwa-3)
+- **Téléchargements** (règles du réseau : GitHub public, rien n'est exécuté, CC BY 4.0) :
+  - **Honda CB500X** de DevanirGrau (Sketchfab, CC BY 4.0). Origine : `lxorb/mechanica`, commit 7bbb0e26bfe309cd9144275ea620c00aa6922696, fichier `web/store/models/generic/adventure/model.glb` (Draco). SHA-256 du model.glb : 76ec335b07044fb08c61d2cb25d3b62ca4b201f6b800199001fa0a56b4e653a6 ; du license.txt : b152c62a781033da7ea1b7744daf01b035873c15f4257d440a60f38c4916f7d2. Il remplace la Honda CB750 : dans ce modèle, la roue avant et le guidon sont braqués de 20° et la selle est à +9 %. Décompression avec le paquet npm `draco3dgltf` 1.5.9 (Apache-2.0), installé à part dans /tmp, hors du dépôt.
+  - **Suzuki SV650 2020** de johnnokomis (CC BY 4.0). Origine : `abdulkadershohan/threeJs-practice`, commit d9e3f24196af84eae0b210e6f61ffe98aee98873. SHA-256 du scene.gltf : bff1edb79175a36a3b15634d7c0b95fb2be707f4afb489f627ed6161d2e82877 ; du scene.bin : e8d7c8e4fd40212883ae2dab88ab89339db1458159f52175c7eabd8a8a18e6fb. **Refusé** : c'est un relevé photographique d'un million de triangles en un seul matériau, sans pièces séparées.
+- **Conversion** (`tools/convert_car.mjs`, nouvelles options `WFS_ROUES_2R`, `WFS_ROUES_2R_CYL`, `WFS_PIECE`, `WFS_FEU`, `WFS_PHARE`, `WFS_EXCLURE_NOEUD`, `WFS_ALLEGER`, `WFS_TEXTURE_MAX`) : chaque deux-roues est en 3 fichiers (corps, roue avant, roue arrière), chacun avec ses niveaux de détail.
+  - Sans les nouvelles options, la reconversion du scooter, de l'ancienne routière et de la sportive redonne les mêmes fichiers au bit près.
+  - Corps et roues : scooter 58 k + 2 × 2 k triangles, routière 49 k + 2 × 6 k, sportive 49 k + 2 × 6 k. Total 11,9 Mo, contre 11,2 Mo avant.
+  - Routière : bagage de la selle, plaque et logos retirés.
+  - Sportive : feu arrière et phare sortis de leur matériau partagé.
+- **Mesures sur les modèles** (`references/reel/deux_roues.json`, champ `modele_mm`) :
+
+  | modèle | longueur | empattement | selle | fiche de la selle |
+  |---|---|---|---|---|
+  | scooter | 1 859 | 1 369 (+0,7 %) | 772 | 792 à 805 (−2,5 %) |
+  | routière | 2 155 | 1 446 (+0,1 %) | 839 | 830 à 834 (+0,6 %) |
+  | sportive | 2 007 | 1 406 (+0,4 %) | 815 | 830 (−1,8 %) |
+
+  Méthode : la selle est mesurée au point le plus bas de son dessus. Les écarts du scooter et de la sportive viennent des proportions des modèles : seule une échelle uniforme est permise, une échelle par axe rendrait les roues ovales. Je les signale au PO.
+- **Code** :
+  - **trafic** :
+    - les deux-roues ralentissent avant les courbes jusqu'à l'inclinaison de confort de 25° (75 % des inclinaisons de tous les jours, étude BASt 82.0710), en freinant à 4 m/s² ;
+    - au choc, ils tombent sur le flanc (pendule inversé, 77° en 0,37 s), puis glissent ;
+    - `deuxRouesPermis` : si un modèle ou un pilote manque, aucun deux-roues dans le trafic ;
+    - `Traffic::dessines` : la sélection des véhicules dessinés, la même pour le rendu et pour les tests ;
+  - **rendu** :
+    - les roues tournent à v/r et sont dessinées sans feux (cause des taches blanches de nuit) ;
+    - un pilote sur chaque deux-roues dessiné, à toute distance ;
+    - buste penché selon la moto : sportive ≈ 30°, routière ≈ 7° ;
+    - pilote couché au sol après la chute.
+- **Accroche** : `src/platform/desktop_main.cpp`, 1 ligne (groupe de banc `motos`), déjà annoncée.
+- **Preuves** :
+  - 65 tests CPU réussis, sur la branche synchronisée avec `main` (33fa189) ;
+  - banc `motos` : 0 écart entre deux-roues et pilotes dessinés ;
+  - parcours : 0 écart avant et après, en vue normale et en vue Cockpit ;
+  - captures dans `qa/pr/WFS-232` (50 vues, chacune avec sa version sans deux-roues, et des agrandissements), toutes regardées.
+- **Coût** (banc `perf`, Ville, chauffe 60, 150 images, lavapipe, `main` 5264639 contre la branche) :
+
+  | qualité | appels de dessin | processeur (ms) | pire image (ms) |
+  |---|---|---|---|
+  | Haute | 1025 → 988 | 3,0 → 2,7 | 10,4 → 4,4 |
+  | Basse | 348 → 348 | 2,4 → 2,4 | 5,3 → 4,0 |
+
+- **Checklist `checklist-livraison.md`** passée :
+  - zone respectée, aucun fichier iOS ;
+  - aucune allocation ajoutée dans la boucle de course ;
+  - ressources créées au chargement et détruites dans `shutdown` ;
+  - constantes physiques sourcées ;
+  - branche synchronisée, compilation propre, tests et parcours verts ;
+  - captures regardées, description de la PR complète ;
+  - réponse au lead dev dans la PR, puis `suivi-pr.md` en 🔁 et lead dev rappelé.
+- **Pour le PO** :
+  - selles du scooter (−2,5 %) et de la sportive (−1,8 %) : accepter l'écart, ou d'autres modèles ;
+  - 7 pilotes sur 10 sont des hommes : choix de conception à trancher.
