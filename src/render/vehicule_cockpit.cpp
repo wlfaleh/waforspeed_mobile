@@ -358,8 +358,12 @@ bool Interieur::construire(Renderer& r, const InterieurDef& d) {
         const float gx = cx_ + (demi_ * 0.55f), gw = std::min(0.40f, demi_ * 0.75f);   // milieu de la place passager
         boite(bag, translate({gx, Y - 0.26f, zFace + 0.008f}), gw, 0.15f, 0.016f);
         boite(joint, translate({gx, Y - 0.26f, zFace + 0.002f}), gw + 0.012f, 0.162f, 0.008f);
-        boite(sac, translate({gx, Y + 0.008f, (Zb + Z) * 0.5f + 0.02f}), 0.30f, 0.003f, 0.20f);
-        prend(bag, M_PLANCHE_BAS); prend(joint, M_LAQUE); prend(sac, M_LAQUE);
+        // couvercle : sur la partie plate du dessus (du point le plus haut, à mi-profondeur, jusqu'à la lèvre), côté conducteur du
+        // point le plus haut : vu de l'œil, il reste sous la ligne de la planche (posé à hauteur fixe sur la pente vers le
+        // pare-brise, il flottait de ≈ 3 cm devant la rue : refus du lead dev, PR #262)
+        const float zm = (Zb + Z) * 0.5f, za = Z - 0.02f, zc = (zm + za) * 0.5f, ym = Y + 0.005f + (Y - (Y + 0.005f)) * 0.5f;
+        boite(sac, translate({gx, ym + 0.0005f, zc}), 0.30f, 0.002f, std::max(0.04f, (za - zm) * 0.8f));
+        prend(bag, M_PLANCHE_BAS); prend(joint, M_PLANCHE_HAUT); prend(sac, M_PLANCHE_HAUT);   // joints mats (le noir laqué brillait la nuit)
     }
     // console centrale et sélecteur
     {
