@@ -328,6 +328,7 @@ int benchEndurance(VkCtx& vk, Renderer& r, Game& g, const std::string& out, unsi
                 return false;
             }
             retours++;
+            pas(40);   // comme le repli : l'écran a fini d'apparaître (menu) ; en Pause, rien ne bouge
             capture("endurance-retour-" + std::to_string(retours));
             WFS_LOG("endurance : retour d'arrière-plan %d (%s), surface seule, écran %s gardé, RSS %.1f → %.1f Mo", retours, ou, nomEcran(g.ecran()), av, rssMo());
             return true;
