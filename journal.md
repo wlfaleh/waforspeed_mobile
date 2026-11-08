@@ -3564,3 +3564,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **RG-04** : bloom déjà coupé en Basse, et le moteur n'a pas d'anticrénelage temporel : rien à alléger.
 - **RG-05 et RG-06 (promesses au lead dev)** : bloc de `scene.frag` réindenté ; règle du shader léger isolée (`shader_leger.h`) et testée (`tests/test_shader_leger.cpp`, accroche `CMakeLists.txt` +1).
 - **Vérifications** : 67 tests CPU OK, parcours 0 écart. Banc `realisme` (partie 1) : indices identiques et 0 image modifiée. 28 paires de captures identiques.
+
+### 2026-11-08 14:05:14 — Réglages (WFS-290, 291, 318) après le chantier Paquets de cartes (décision de l'utilisateur) (po-scrum-master)

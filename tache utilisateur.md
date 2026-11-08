@@ -125,3 +125,4 @@ demande utilisateur :
 
 - Voiture fantôme en mode Checkpoint : c'est quoi ? la mettre dans les Réglages ; les réglages en onglets sont-ils créés ? (conversation avec le PO, 2026-11-08 14:00 UTC)
 ( PO : c'est le fantôme de votre record (WFS-125). **WFS-318** (P3) créé : réglage « Fantôme du record : Affiché / Caché » dans l'onglet Affichage + étiquette « Votre record · temps ». Les onglets : oui, **WFS-291** existe (P3, après WFS-290 boutons Réglages / Fermer) ; WFS-318 passe juste après. )
+( PO, 2026-11-08 14:05 UTC — noté : WFS-290, 291 et 318 passent **après** le chantier « Paquets de cartes » (téléchargement des cartes). )
