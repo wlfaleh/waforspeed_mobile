@@ -5,7 +5,8 @@
 //    tenu ou lâché : aucune image hors de la route, aide activée ;
 //  - aide désactivée : l'aide ne fait rien (ni gaz coupé, ni frein : RG-07 de WFS-241) ;
 //  - un tour de chaque carte, gaz tenu, aide activée, volant lâché puis tenu : aucune image hors de la route ;
-//  - l'interrupteur du banc (g_avantWfs258) rend le comportement de main (pas de ralentissement).
+//  - l'interrupteur du banc (g_avantWfs258) rend le comportement de main (pas de ralentissement) ;
+//  - la table des ordinateurs de la Course à 5 est bien branchée (course5.cpp lié, comme dans le jeu).
 // usage : test_aide_ralentit
 #include <cstdio>
 #include "../src/game/trace_cartes.h"
@@ -42,6 +43,7 @@ int main() {
         if (R < 150 && !dans) { dans = true; d0 = s; }
         if (dans && R > 300) { d1 = s; break; }
     }
+    VERIFIE(g_vitesseVirageCourse5 != nullptr, "table des virages de la Course à 5 non branchée");
     std::printf("## 1er virage du Grand Prix (%.0f à %.0f m), lancé à 228 km/h\n", d0 * M, d1 * M);
     const char* noms[3] = {"volant lâché, gaz tenu", "volant lâché, gaz lâché 100 m avant", "Glisser vers l'axe, gaz tenu"};
     for (const char* id : {"gallardo", "golf"}) for (int cas = 0; cas < 3; cas++) {

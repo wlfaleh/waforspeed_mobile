@@ -164,6 +164,8 @@ double vitesseVirage(const Track& t, double s) {
     const int64_t n = (int64_t)v.size(), k = (int64_t)std::floor(s / SEG);
     return n ? v[(size_t)(((k % n) + n) % n)] : 1e18;
 }
+// WFS-258 (accroche) : l'aide à la direction du joueur s'en sert pour ralentir à temps (player.cpp)
+static const bool g_vitesseVirageDonnee = (g_vitesseVirageCourse5 = &vitesseVirage, true);
 
 namespace {
 struct Voiture { double s, x, v, L; };

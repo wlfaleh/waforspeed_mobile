@@ -43,14 +43,18 @@ inline AidesVoiture g_aidesVoiture;
 // WFS-295 : banc seulement (WFS_BANC=virages) : rejoue le comportement d'avant la correction (avance sans 1/(1 − k·n), blocage de
 // 0,6 + 1,2 × impact après un accident, braquage remis à zéro) pour les captures « avant » ; toujours faux dans le jeu
 inline bool g_avantWfs295 = false;
-// WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages (comportement de main) ; faux dans le jeu
+// WFS-258 : banc seulement (WFS_BANC=virages) : l'aide activée ne ralentit pas avant les virages et ne tient pas la file
+// (comportement de main) ; faux dans le jeu
 inline bool g_avantWfs258 = false;
+// WFS-258 : vitesse où un ordinateur de la Course à 5 reste sur la chaussée (unités/s, course5::vitesseVirage), donnée par
+// course5.cpp au chargement du programme ; nulle quand course5.cpp n'est pas lié (tests sans Course à 5)
+inline double (*g_vitesseVirageCourse5)(const Track&, double) = nullptr;
 
 // WFS-258 : vitesse permise (m/s) à `dist` : accélération latérale `gLat` au plus dans le rayon de chaque virage des 600 m qui
 // viennent, freinage de `gFrein` pour l'atteindre avant le virage. Aide à la direction activée de la voiture du joueur : adhérence
-// d'un pneu sur route sèche (0,85 g en virage : épingle de 20 m à 46 km/h, courbe de 250 m à 165 km/h ; 0,8 g au freinage) ;
-// pilote automatique (vitessePilote, aide_direction_banc.h, WFS-241) : 0,6 g et 0,7 g, plus prudent
-inline double vitesseVirageAide(const Track& t, double dist, double gLat = 0.85, double gFrein = 0.8) {
+// et freinage de la conduite du jeu (Phys::grip, Phys::brake, player.cpp) ; pilote automatique (vitessePilote,
+// aide_direction_banc.h, WFS-241) : 0,6 g et 0,7 g, plus prudent
+inline double vitesseVirageAide(const Track& t, double dist, double gLat, double gFrein) {
     double v = 1e9;
     for (double m = 0; m <= 600; m += 4) {
         const double k = std::abs(t.findSegment(t.wrap(dist + m / M)).curve) * CURVE_K / SEG_M;
@@ -102,6 +106,7 @@ private:
     void projeterPose(Track& track, double x, double z, double cap);   // position du monde → dist, playerX, heading
     bool enfonceParPivot(double x, double z, double cap0, double cap1) const;   // conduite d'avant : pivot sur place sans s'enfoncer
     std::vector<chocs::Obstacle> obstaclesProches_;   // WFS-256 : obstacles du voisinage (tampon gardé : pas d'allocation par pas)
+    double fileAide_ = 0;   // WFS-258 : file (demi-largeurs) où le joueur a laissé la voiture (maintien de voie de l'aide)
     double facRoute_ = 1;   // WFS-295 : 1 − k·n (rayon à l'écart n de l'axe), au moins 0,2
     double courbeLisse_ = 0;   // WFS-217 : courbure lissée sous la voiture (force centrifuge du joueur)
     void updateMonde(double dt, const DriveInput& in, Track& track, bool playing);
