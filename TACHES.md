@@ -242,6 +242,7 @@ détriment de la précision**. Charte, analyse de l'existant, limitations, tolé
 | P3 Moyenne | WFS-309 | [RÉALISME] Nouvelle Ville belle et légère : budget chiffré, définition du tracé, découpage (plus tard, hors étape 1) | E14 | ⏳ En attente (étape 1 validée : WFS-306 et WFS-302) |  | WFS-306, WFS-302 validés par l'utilisateur | `feature/waforspeed-309` |  |  |
 | P3 Moyenne | WFS-313 | Corniche belle et légère + son paquet (plus tard, à découper par le PO) | E14 | ⏳ En attente (WFS-309 validé par l'utilisateur) |  | WFS-309 validé | `feature/waforspeed-313` |  |  |
 | P3 Moyenne | WFS-314 | Grand Prix belle et légère + son paquet (plus tard, à découper par le PO) | E14 | ⏳ En attente (WFS-304 validé par l'utilisateur) |  | WFS-304 validé | `feature/waforspeed-314` |  |  |
+| P2 Haute | WFS-322 | Correction (E13) : façades qui virent au bleu à l'arrivée d'une sonde, Ville de jour (ANO-174) | E13 | ⏳ Prêt (dès que E13 est libre) |  | WFS-300 (mesure) | `feature/waforspeed-322` |  |  |
 
 ## Critères d'acceptation
 

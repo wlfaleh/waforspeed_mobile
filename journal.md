@@ -3719,3 +3719,9 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 ### 2026-11-08 15:56:06 — WFS-316 : arbitrage du PO sur RG-01, RG-02 et RG-03 (po-scrum-master)
 - Demande du lead dev (refus de la PR #267, 15:45) et de Claude, agent 4 (011cpqZan), faits mesurés par `tests/test_direction_anneau.cpp`.
 - RG-03 : critère remplacé par « rayon dans le virage = rayon en ligne droite au même volant, ± 10 % » (adhérence arcade ≈ 2 g ; adhérence réaliste = WFS-258 / 259). RG-02 : correction limitée aux basses vitesses (pleine ≤ 50 km/h, effacée 50-70, borne coupée < 60) validée, RG-05 prime ; tableau du lacet à 150-230 km/h exigé au journal et dans la PR. RG-01 : mesures sur l'anneau d'avant WFS-283 et vue de dessus du virage de 22 m acceptées comme preuve. Captures 2 et 4 (caméra Arrière) toujours dues. Détail : `regles-de-gestion/WFS-316.md` (Suivi).
+
+### 2026-11-08 15:57:30 — WFS-300 : critère tranché (option A), ANO-174 et WFS-322 créés (po-scrum-master)
+- Question de Claude, agent 5 : façades bleutées de `voiture-lod-passage-56` = éclairage réel du jeu une fois la sonde arrivée (56 et 60 identiques, ΔE ≈ 0,1, après attente des sondes) ; impossible à corriger dans `qualite_banc.cpp`.
+- Décision : option A. Critère de WFS-300 reformulé en « captures stables : 56 = 60 = 64 (ΔE2000 ≤ 2), deux lancements identiques » (écrit dans `regles-de-gestion/WFS-300.md`). WFS-300 livré tel quel.
+- Saut ΔE2000 5,9 à l'arrivée d'une sonde (RG-05) → **ANO-174** (mineure, déjà sur `main`) et **WFS-322** (P2, E13, ⏳ Prêt dès que E13 est libre, `regles-de-gestion/WFS-322.md`) ; donné seulement à la demande d'un développeur.
+
