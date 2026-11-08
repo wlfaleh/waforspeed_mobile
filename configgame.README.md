@@ -82,6 +82,7 @@ Le fichier `configgame.json` (racine du dépôt) règle le jeu **sans toucher au
 | `conduite.vitesse_recul` | marche arrière enchaînée sous cette vitesse | m/s | 0.0 | 20.0 | 3.0 |
 | `qualite.plancher_moyenne` | résolution la plus basse en qualité Moyenne | × résolution | 0.5 | 1.0 | 0.9 |
 | `qualite.reflet_route_mouillee` | force du reflet de la rue sur la route mouillée (pluie) | × | 0.0 | 1.5 | 1.0 |
+| `paquets.adresse_liste` | adresse https de la liste des paquets de cartes (cartes.json) | caractères | 12 | 200 | "https://github.com/wlfaleh/waforspeed_mobile/releases/download/paquets/cartes.json" |
 | `voitures.golf.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Vollmer" |
 | `voitures.golf.modele` | modèle affiché | caractères | 1 | 24 | "Gala 8 GTS" |
 | `voitures.m4.marque` | marque affichée (garage, menu, salon, course à 5) | caractères | 1 | 16 | "Bavaro" |
