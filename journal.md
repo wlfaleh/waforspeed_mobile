@@ -4198,3 +4198,17 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
   - Le banc `campagne` sort en « échec » des deux côtés (arrêt de 4,0 s sur la route du col, limite 3 s) : défaut déjà présent sur main, il ne vient pas de ce ticket.
 - **Captures** : 8 avant / après dans `qa/pr/WFS-292/`. Ligne 🆕 ajoutée dans `suivi-pr.md`.
 - **Fichiers touchés** : `src/render/effets_systeme.cpp`, `effets_particules.h`, `bench_effets.cpp`. Aucune accroche.
+
+### 2026-11-08 21:18:17 — WFS-292 : PR #279 refusée par le lead dev (lead-dev auto)
+- Revue complète (1re) : 5 paires de captures ouvertes, tout le diff lu (`bench_effets.cpp`, `effets_particules.h`, `effets_systeme.cpp`). Bon : RG-03 (vrai choc au banc, cause nommée : le pilote automatique évitait la voiture), RG-02 (rien de lumineux la nuit), zone respectée.
+- Refus : (1) RG-04 non tenue (Golf grise de nuit en Campagne) : l'arbitrage du PO excluait `post.frag`, une nouvelle décision écrite du PO est nécessaire ; (2) fumée de jour en taches rondes espacées et non en nappe, rapport médian 1,17 < 1,3 ; (3) « à remplir » resté dans la description ; (4) capture de Ville de nuit (RG-05) manquante ; (5) 11 commits de retard sur main.
+- **Pour le PO** : trancher RG-04 de WFS-292 (retirer de ce ticket et créer un ticket à part, ou autoriser `post.frag`).
+
+### 2026-11-08 21:18:50 — WFS-330 : captures du banc qualité régénérées, PR #280 (Claude, Agent 0 developer)
+- **RG-01** : `FILTRE='voiture-*' bash tools/qa/captures_pr.sh WFS-330 qualite` sur `main` (69239955), 33 paires ; plus 4 captures de `main` d'avant WFS-300 (`d88e426b^`).
+- **RG-02** (mesures sur les PNG ; ΔE2000 vérifié sur les paires de Sharma 2005) : stabilité entre deux lancements du même code : 32 vues sur 33 identiques au pixel, `voiture-basse-poursuite` 0,002 % (inchangée) ; façade de droite à 56 / 60 / 64 m : ΔE2000 0,12 et 0,11 (avant WFS-300 : 6,51 et 6,46) ; suite `voiture-sonde-0` à `-9` : saut de ΔE2000 5,47 entre `sonde-5` et `sonde-6` (arrivée de la sonde, visible) → WFS-322 / ANO-174, non corrigé ici.
+- **RG-03** : aucun code changé. PR #280 ouverte, lead dev appelé.
+
+### 2026-11-08 21:21:52 — WFS-330 fusionné par le lead dev (lead-dev)
+- **PR #280** relue sur e9a4588 : 37 images ouvertes (33 paires et 4 `avant300-*`), diff lu (72 fichiers sous `qa/pr/WFS-330/`, aucun code, RG-03 tenue). Mesures du développeur recoupées sur les JPG : façade 56 / 60 / 64 m ΔE76 0,11 / 0,09 (avant WFS-300 : 8,98 / 8,88), saut sonde-5 → 6 ΔE76 5,96, 32 paires à 0 pixel d'écart.
+- Revue « ✅ Approuvé » écrite dans la PR (en commentaire : même compte GitHub), fusion en squash avec le SHA attendu : **d3b7ef1**. Statut 🟣 (US technique) ; ligne `qa/Check.md` ; ligne retirée de `suivi-pr.md`. Saut des sondes laissé à WFS-322 (ANO-174).
