@@ -9,7 +9,7 @@
 - **Comment c'est vérifié** (tests CPU, parcours, bancs, mesures) : À REMPLIR
 - **Limites et risques connus** : À REMPLIR
 
-## Captures pour le lead dev (14 après)
+## Captures pour le lead dev (15 après)
 
 Dossier : [`qa/pr/WFS-308`](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308) — produit par `tools/qa/captures_pr.sh`.
 
@@ -20,6 +20,7 @@ Dossier : [`qa/pr/WFS-308`](https://github.com/wlfaleh/waforspeed_mobile/blob/fe
 | `cgu-premier` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-cgu-premier.jpg?raw=true) |
 | `cgu-refus` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-cgu-refus.jpg?raw=true) |
 | `cgu-reprise` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-cgu-reprise.jpg?raw=true) |
+| `cgu-retour-jeu` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-cgu-retour-jeu.jpg?raw=true) |
 | `reglages-cgu-bouton` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-reglages-cgu-bouton.jpg?raw=true) |
 | `reglages-cgu-lecture` | — | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-reglages-cgu-lecture.jpg?raw=true) |
 | `reglages-108` | ![avant](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/avant-reglages-108.jpg?raw=true) | ![après](https://github.com/wlfaleh/waforspeed_mobile/blob/feature/waforspeed-308/qa/pr/WFS-308/apres-reglages-108.jpg?raw=true) |
