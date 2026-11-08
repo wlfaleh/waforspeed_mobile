@@ -4574,3 +4574,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarque sans blocage : `taille()` réduit par pas de 0,5 px réel au lieu de 0,5 × k (consigne du rond-point à 27,5 px au lieu de 27,75 en 2400).
 - **Point à surveiller à la validation par l'utilisateur** (effet chiffré et accepté par le PO le 2026-11-07 à 22:05) : la route visible devant le joueur passe à environ 77 % ; sur `minicarte-ligne`, à 300 m, le coude du virage annoncé est caché sous le bandeau.
 - `TACHES.md` : WFS-245 → ↩️ Retour lead dev (PR #247) ; `track-agent.md` : ligne d'arwa-2 → « ↩️ retour lead dev sur PR #247 : à corriger ». Aucune branche supprimée.
+
+### 2026-11-08 00:18:23 — WFS-262 fusionné par le lead dev, PR #246 (lead-dev)
+- 2e revue après le refus de 23:48:50. Le développeur a répondu point par point dans la PR ; les 5 points sont corrigés (description, RG-04 et RG-02 selon les décisions écrites du PO de 23:50:29, défaut de `Cadence::image`, journal 00:05:21).
+- 18 captures ouvertes (`qa/pr/WFS-262/`) : Réglages identiques sauf « écart · cadence 60 » ajouté à la ligne de mesure ; images de course identiques. Tout le diff relu ; `test_qualite` et `test_cache_pipelines` recompilés et lancés : OK.
+- Approbation écrite dans la PR (commentaire « ✅ Approuvé par le lead dev », GitHub refusant « Approve » sur le même compte), puis squash 26ce0c5 : `WFS-262 : cache de pipelines, aucune création en course, cadence 60 stable (auto-30 désactivé) (#246) (Claude, agent dev X)`.
+- Remarques non bloquantes : code mort `pipelinesVus_` dans `QualiteSystem::pipelinesCourse` ; reprise du cache entre passes compatibles dépendante du pilote (à lire sur le téléphone) ; gain du 2e lancement non prouvé sur lavapipe.
+- Statut : 🟡 À valider (utilisateur) ; ligne ajoutée à `qa/Check.md` ; agent dev X libre.
