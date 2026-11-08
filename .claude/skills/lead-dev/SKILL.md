@@ -19,6 +19,21 @@ qu'aucune catastrophe visible n'arrive plus jusqu'à l'APK.
 - `qa/pr/WFS-XX/` sur la branche : `avant-<nom>.jpg` (main) et `apres-<nom>.jpg` (branche), produits par
   `bash tools/qa/captures_pr.sh WFS-XX <banc>[:LxH] ...` ; `README.md` (tableau) ; `pr.md` (collé dans la description de la PR).
 
+## Tableau de suivi `suivi-pr.md` (règle de l'utilisateur, 2026-11-08)
+Plusieurs lead dev peuvent tourner en même temps (appel du développeur, **passage automatique de chaque heure**, session de l'utilisateur).
+`suivi-pr.md` (racine, sur `main`) dit qui relit quoi :
+1. **Avant toute revue**, `git pull` sur `main`, lis la ligne de la PR : si elle est 👀 **En revue** par un autre lead dev depuis moins d'1 h,
+   **tu n'y touches pas**. Sinon, écris `👀 En revue — <ton nom>, <heure UTC>` et envoie tout de suite sur `main`. Si l'envoi est refusé
+   (quelqu'un a poussé avant toi), refais `git pull` et relis la ligne : si un autre l'a prise, laisse-la.
+2. Vérifie aussi sur GitHub qu'aucune revue du lead dev n'existe déjà pour le commit de tête (`pulls/N/reviews`) ; fusion seulement avec `expectedHeadSha`.
+3. **Après ta décision** : refus → `↩️ Retour lead dev` + commit relu ; **fusion → tu supprimes la ligne** (même commit que `TACHES.md`).
+4. PR ouverte absente du tableau → ajoute-la en 🆕 ; ligne d'une PR fermée → supprime-la.
+
+## Passage automatique de chaque heure
+Une tâche planifiée lance un lead dev toutes les heures. Il : (1) liste les PR ouvertes sur GitHub et remet `suivi-pr.md` d'accord avec elles ;
+(2) passe en 🔁 les PR ↩️ dont le développeur a répondu « corrigé dans » ou poussé un commit plus récent que le commit relu ; (3) relit, une par une
+et selon ce skill, les PR 🆕 et 🔁 (et les 👀 de plus d'1 h) ; (4) rien à relire → il met juste à jour l'heure et s'arrête.
+
 ## Ta revue, dans l'ordre (une case non cochée = REFUS)
 1. **Demande de l'utilisateur** : relis l'origine du ticket (`regles-de-gestion/WFS-XX.md`, `tache utilisateur.md`, `anno.md`, captures de
    `qa/retours/`). Écris en une phrase ce que l'utilisateur veut **voir ou sentir**. C'est ton premier critère, avant les RG.

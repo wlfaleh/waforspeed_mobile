@@ -59,26 +59,6 @@ struct InterieurDef {
 // dos droit, ramenée au dossier incliné de 25° des voitures de tourisme (SAE J1100, angle A40 de 20 à 30° : estimé)
 constexpr float OEIL_ASSIS_M = 0.7859f, DOSSIER_RAD = 25.f * PI / 180.f;
 inline float hauteurOeil(const InterieurDef& d) { return d.assise + OEIL_ASSIS_M * std::cos(DOSSIER_RAD); }
-// WFS-235 (RG-02) : bord bas du ciel de toit (haut du pare-brise) au-dessus de l'œil (m) : 55 % de la garde au toit (hauteur
-// de la voiture − œil ; le reste : tôle, garniture et galbe du pavillon au-dessus du pare-brise) ; Golf : 0,55 × 0,306 = +0,17
-// (avis d'expert-realisme-3d : +0,16) ; une part plutôt qu'une épaisseur fixe : les toits bas des sportives sont aussi plus
-// minces ; sans hauteur connue : +0,16 ; borné de +0,10 à +0,30
-constexpr float PENTE_PARE_BRISE = 0.655f;   // dy / dz du pare-brise de la Golf : du pied (−0,22 ; −1,10) à (+0,16 ; −0,52), 33°
-// le haut du pare-brise est vu à 12° au moins au-dessus de l'horizontale (compactes : 12 à 17°, avis d'expert ; UN R125 : ≥ 7°) :
-// sur les sportives au pare-brise plus couché que la Golf, il recule vers l'œil
-constexpr float ELEVATION_TOIT_MIN = 12.f * 3.14159265f / 180.f;
-inline float toitAuDessusOeil(const InterieurDef& d, float hauteurVoiture) {
-    return hauteurVoiture > 0 ? std::clamp(0.55f * (hauteurVoiture - hauteurOeil(d)), 0.10f, 0.30f) : 0.16f;
-}
-// WFS-235 (critère 2 de RG-05 : bande de la rue ≤ vraie voiture + 2 points ; cotes d'expert-realisme-3d du 2026-11-07) : par modèle,
-// rétroviseur intérieur (coque largeur × hauteur, m ; descente du centre sous le bord du ciel de toit, m) et élévation la plus basse
-// du haut du pare-brise ; par défaut la Golf (262 × 80 mm, 7,5 cm, 12°) ; 500, 911, GT86, Mustang : coque plus petite et plus haute ;
-// Gallardo, SF90 : pare-brise très couché, haut vu à 10° comme les vraies voitures, petite coque
-struct PavillonDef { float retroL = 0.262f, retroH = 0.080f, retroDescente = 0.075f, elevationToit = ELEVATION_TOIT_MIN; };
-PavillonDef pavillonPour(const char* carId);
-inline float toitDevantOeil(const InterieurDef& d, float yToit) {
-    return std::max(d.pareBriseZ + (yToit - d.pareBriseY) / PENTE_PARE_BRISE, -yToit / std::tan(pavillonPour(d.car).elevationToit));
-}
 
 // RG-01 : intérieur du modèle, nullptr pour une voiture qui garde le cockpit commun
 const InterieurDef* interieurPour(const char* carId);
@@ -132,9 +112,12 @@ struct EtatInterieur {
     float essuie = 0;      // angle des balais (rad)
 };
 
+// banc « cockpit » (WFS-235, RG-05) : vrai = l'intérieur est dessiné d'une couleur clé (mesure de la part de rue visible)
+extern bool g_interieurCle;
+
 class Interieur {
 public:
-    bool construire(Renderer& r, const InterieurDef& d, float hauteurVoiture = 0);   // WFS-235 : hauteur de la voiture (m, ciel de toit)
+    bool construire(Renderer& r, const InterieurDef& d);
     void detruire(Renderer& r);
     bool pret() const { return def_ != nullptr; }
     const InterieurDef* def() const { return def_; }
@@ -155,22 +138,12 @@ private:
     std::vector<Material> mats_;
     Image grain_{};                          // normal map du cuir (grain), calculée
     Mesh bras_[2]{}; Material brasMat_{};    // essuie-glaces (dessinés selon l'angle de l'image)
+    Material cleMat_{};                      // banc : toutes les pièces d'une couleur clé (g_interieurCle, WFS-235)
+    const Material& mat(const Material& m) const;
     // écrans dynamiques : un maillage par couleur (actif, fond, alerte ; route, flèche)
     Mesh dyn_[5]{}; Material dynMat_[5]{}, dynNuit_[5]{};
     std::vector<Vertex> dv_[5]; std::vector<uint32_t> di_[5];
     int appels_ = 0; size_t octets_ = 0;
-    float yToit_ = 0.16f, zToit_ = -0.52f;   // WFS-235 : haut du pare-brise (repère de l'œil : essuie-glaces, reflet)
-    Material refletMat_{};                   // WFS-235 (RG-04) : reflet de la planche dans le pare-brise (additif)
-    Material cleMat_{};                      // WFS-235 (RG-05) : banc : toutes les pièces d'une couleur clé (g_interieurCle)
-    const Material& mat(const Material& m) const;
 };
-// WFS-235 (RG-04) : intensité du reflet de la planche dans le pare-brise, de jour (unités des halos, × lumières artistiques) :
-// réglée au banc pour ≈ 1,5 % de la luminance de la route au pied du pare-brise (0,3 à 3 % en vrai, avis d'expert :
-// R ≈ 0,15 (Fresnel du verre feuilleté à 55-63°) × albédo de la planche 0,045 × éclairement) ; 0 : pas de reflet
-extern float g_refletPlanche;
-// WFS-235 (RG-05) : banc d'essai : intérieur dessiné tout en magenta émissif (couleur clé) : la part de l'image cachée par
-// l'intérieur = pixels qui changent entre l'image normale et l'image clé (même géométrie, donc même lumière dans la rue : les
-// lueurs des lampes cachées par le pavillon ne comptent pas comme cachées)
-extern bool g_interieurCle;
 
 } // namespace wfs::cockpit

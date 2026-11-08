@@ -4,7 +4,7 @@
 layout(set = 0, binding = 0) uniform sampler2D hdr;        // passe finale : scène HDR ; passes du bloom : image source
 layout(set = 0, binding = 1) uniform sampler2D bloomTex;   // passe finale : bloom remonté ; remontée : niveau inférieur
 // params : x exposition, y sortie sRGB matérielle, z force du bloom, w exposition physique k la nuit (WFS-230 : vision de nuit ;
-//          0 de jour : image inchangée)
+//          0 de jour : image inchangée ; WFS-276 : négative dans la Ville = sans relèvement des basses lumières)
 // bloom (WFS-100) : x mode (0 passe finale, 1 seuil + réduction, 2 flou horizontal, 3 flou vertical, 4 remontée),
 //                   y poids du niveau (remontée), z pas du flou en texels de la source / niveau inférieur présent (remontée)
 layout(push_constant) uniform P { vec4 rot; vec4 params; vec4 bloom; } pc;
@@ -31,6 +31,21 @@ vec3 visionNuit(vec3 c, float k) {
     return mix(c, V * teinte, s);
 }
 vec3 aces(vec3 x) { return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+
+// WFS-276 (RG-01 à RG-03) : la nuit, adaptation de chaque pixel à sa propre luminance dans les basses lumières. Près d'une lampe,
+// l'exposition globale montre la flaque (≈ 15 lx) mais le paysage sous la lune (≈ 0,1 lx, 7 IL plus bas) sortait noir (péage :
+// 52 % de pixels noirs). Sous le seuil SEUIL_NUIT (0,08 : ≈ 1,17 IL sous le gris moyen 0,18, après exposition), la luminance est relevée
+// en puissance PUISSANCE_NUIT (0,45) : clarté perçue ∝ L^0,33 à 0,5 aux faibles adaptations (S. S. Stevens, « To Honor Fechner and Repeal His Law »,
+// Science 133, 1961 ; J. C. Stevens et S. S. Stevens 1963, exposant 0,33 à 0,5 dans l'obscurité). 7 IL d'écart deviennent
+// ≈ 3,8 IL (test_fidelite_lumiere) : la flaque reste nettement plus claire (RG-02 : ≥ 2 IL) ; au-dessus du seuil (flaques, rues éclairées, phares),
+// rien ne change ; continu au seuil (même valeur), teinte gardée ; aucun halo (rien de spatial) ; de jour (k = 0) : rien.
+const float SEUIL_NUIT = 0.08, PUISSANCE_NUIT = 0.45;
+vec3 basseLumiereNuit(vec3 c, float k) {
+    if (k <= 0.0) return c;
+    float Y = dot(max(c, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722));
+    if (Y >= SEUIL_NUIT || Y <= 1e-9) return c;
+    return c * (SEUIL_NUIT * pow(Y / SEUIL_NUIT, PUISSANCE_NUIT) / Y);
+}
 
 // WFS-100 (RG-04) : seuil 1,0 avec genou doux 0,5 (courbe quadratique entre 0,5 et 1,5, puis linéaire)
 vec3 seuilBloom(vec3 c) {
@@ -77,7 +92,8 @@ void main() {
     int mode = int(pc.bloom.x + 0.5);
     if (mode != 0) { outColor = passeBloom(mode); return; }
     vec2 uvS = vUv * (pc.bloom.w > 0.0 ? pc.bloom.w : 1.0);   // WFS-246 (RG-07) : part de la cible de scène dessinée
-    vec3 c = visionNuit(texture(hdr, uvS).rgb, pc.params.w) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
+    vec3 c = visionNuit(texture(hdr, uvS).rgb, abs(pc.params.w)) * pc.params.x;   // WFS-230 : vision de nuit (rien de jour)
+    c = basseLumiereNuit(c, pc.params.w);   // WFS-276 : basses lumières de la nuit relevées (rien de jour ; params.w < 0 : Ville, rien)
     // léger halo autour des zones très lumineuses (soleil, reflets).
     // 4 × 4 lectures bilinéaires, chacune à cheval sur 2 × 2 pixels, espacées de 2 pixels : elles couvrent tout le
     // carré de 8 × 8 pixels sans trou (WFS-32 : l'ancienne grille de 5 × 5 lectures espacées de 3 pixels transformait

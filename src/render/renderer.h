@@ -1,5 +1,6 @@
 // WaForSpeed — moteur de rendu : passe de scène HDR (MSAA), passe finale (tonemapping + interface).
 #pragma once
+#include <chrono>
 #include <cstddef>
 #include <string>
 #include <unordered_set>
@@ -198,6 +199,10 @@ public:
     void echelleDynamique(float e);
     float echelleDynamiqueActuelle() const { return echelleDyn_; }
     uint32_t recreations() const { return recreations_; }   // WFS-246 : appels de resize()
+    // WFS-262 : cache de pipelines (RG-01) et compteur des pipelines créés (RG-02 : 0 attendu pendant la course)
+    void enregistrerCachePipelines();
+    uint32_t pipelinesCrees() const { return pipelinesCrees_; }
+    double msDepuisInit() const { return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - debutChargement_).count(); }
     // objets en file pour la passe de scène (vus par la caméra) : appels et triangles, comptés par système au banc
     void fileScene(uint32_t& appels, uint32_t& triangles) const {
         appels = triangles = 0;
@@ -226,6 +231,7 @@ private:
     void destroyTargets();
     void createPipelines();
     void createScenePipelines();   // WFS-144 : pipelines de la passe de scène (nombre d'échantillons vk.msaa)
+    void prechaufferMsaa();        // WFS-262 (RG-02) : variantes MSAA des pipelines de scène dans le cache
     bool appliquerNettete();       // WFS-144 (RG-04) : MSAA et anisotrope du niveau de netteté ; true : passe de scène à refaire
     VkPipeline makePipeline(VkShaderModule vs, VkShaderModule fs, int vertexKind, bool blend, bool premul, bool depthTest, bool depthWrite,
                             VkRenderPass rp, VkSampleCountFlagBits samples, VkPipelineLayout layout, bool depthOnly = false, int melange = 0,
@@ -311,6 +317,8 @@ private:
     double gpuImageMs_ = -1;   // WFS-246
     GpuPasses gpuPasses_;      // WFS-246 (RG-06)
     uint32_t recreations_ = 0;  // WFS-246 (RG-07)
+    VkPipelineCache cachePipelines_ = VK_NULL_HANDLE; uint32_t pipelinesCrees_ = 0;   // WFS-262
+    std::chrono::steady_clock::time_point debutChargement_{};   // WFS-262 : durée du chargement (journal)
     double shadowMsSum_ = 0, sceneMsSum_ = 0; int shadowMsN_ = 0;
     std::vector<UiVertex> ui_vtx_;
     // WFS-09 / WFS-16 : lumières de nuit et reflets
