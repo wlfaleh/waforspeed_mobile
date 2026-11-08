@@ -4841,3 +4841,10 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - **Captures** : 13 paires de `qa/pr/WFS-266/` ouvertes une par une. Gros plans : avant, crânes nus et orbites claires ; après, cheveux (mi-longs pour f01, courts pour h01) et yeux sombres, plus de taches grises, et coiffure visible sur le conducteur de la Golf, de jour comme de nuit. Planches des 12 humains, debout et assis : tous coiffés, 4 femmes aux cheveux longs. Conducteurs Golf, RR Sport et SF90, de jour et de nuit : aucune régression.
 - **Code** : tout le diff lu. Vérifié à part : les `.wfp` adultes (160 sommets d'œil, cuir chevelu, mèches pour f01, f02, f03 et f05, indices 16 bits, 3 niveaux de détail, en-tête « hauteur » égal à la stature lue par l'accroche de `conducteurs.cpp`) ; aucune différence pour les 8 enfants ; les yeux et cheveux de `femme.wfp`, de `homme.wfp` et des enfants ont `_cloth.x = −1`, donc ils restent hors des nouvelles branches de `scene_skin.frag`. Fusion avec `main` sans conflit.
 - **Statut** : 🟣 (défaut vu en recette QA, pas sur le téléphone de l'utilisateur). Ligne `qa/Check.md` ajoutée, ligne #252 retirée de `suivi-pr.md`. Remarques non bloquantes : la ligne des cheveux courts des hommes est dentelée ; sclère et iris « à confirmer ».
+
+### 2026-11-08 02:18:30 — WFS-281 : décisions du PO sur la PR #249 (po-scrum-master)
+- À la demande du lead dev (2e refus, entrée 02:16:49). Détail dans `regles-de-gestion/WFS-281.md` (Suivi).
+- (1) RG-02 / RG-06 **à chaque mesure**, pas en moyenne ; mesure = médiane d'un passage du banc ou d'un relevé de 30 s ; valeur de départ = la plus haute de la 1re minute.
+- (2) Montée de difficulté (+6 voitures par checkpoint) : **suppression refusée** ; gardée, plafonnée par RG-02, voitures préparées au chargement ; pas de nouveau ticket.
+- (3) Pilote automatique du banc : **corrigé dans cette PR** (retour à l'ancienne conduite du pilote, `keepTrafficInView` déplace sans ajouter), pas de ticket technique.
+- `track-agent.md` remis à jour (derniers envois des branches).
