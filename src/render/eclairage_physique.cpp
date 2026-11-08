@@ -69,7 +69,7 @@ struct Etat_ {
     float signatureCiel[16]{}; bool cielAFaire = true;
     // sondes
     Sonde A, B, sondeCiel; double w = 1;
-    Sh9 shAffiche; bool shInit = true;   // WFS-322 : diffus affiché, lissé dans le temps (lisserSh9) ; shInit : prendre la cible telle quelle
+    Sh9 shAffiche; bool shInit = true, sceneNeuve = true;   // WFS-322 : diffus affiché, lissé dans le temps (lisserSh9) ; shInit : prendre la cible telle quelle
     vec3 dernierPoint{}; bool aucuneDemande = true; int typePrec = -1; bool forcerCapture = false;
     bool eclaireLoin = false; int iterations = 0;   // RG-03 : rebonds par recaptures au même point (voir physique())
     // relecture
@@ -303,7 +303,10 @@ public:
             WFS_LOG("éclairage (WFS-151) : sonde %d (%d px, %.1f ms CPU) en (%.1f %.1f %.1f), rebond %d, EV100 %.2f", g.etat.sondesCapturees, g.res.cote, g.res.ms,
                     g.res.pos.x, g.res.pos.y, g.res.pos.z, g.iterations, g.ev);
             installer(std::move(s), premiere);
-            if (premiere) g.recaler = true;
+            // WFS-322 (ANO-174) : exposition et diffus recalés d'un coup à la 1re capture d'une nouvelle scène seulement (carte, moment,
+            // voiture : sous le chargement et le décompte) ; après un saut dans la même scène (plus de 80 m), ils suivent en douceur
+            if (premiere && g.sceneNeuve) { g.recaler = true; g.shInit = true; }
+            if (premiere) g.sceneNeuve = false;
             g.res = Resultat{};
         }
     }
@@ -381,7 +384,8 @@ void desactiver(bool oui) { g.desactive = oui; if (oui) g.imageActive = false; }
 void suspendreCaptures(bool oui) { g.capturesSuspendues = oui; }   // WFS-222
 bool sondeCapturePrete() { return g.B.capture && !g.forcerCapture && !g.enCours && !g.relecture && !environnement::enCours(); }
 void remettreAZero() {
-    g.recaler = true; g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
+    g.recaler = g.sceneNeuve || !g.evInit;   // WFS-322 : saut dans la même scène : l'exposition s'adapte (pas de recalage d'un coup)
+    g.aucuneDemande = true; g.typePrec = -1; g.forcerCapture = false; g.generation++; g.iterations = 0;
     if (g.A.gpu.img && g.A.gpu.img != g.B.gpu.img) retirer(g.A.gpu, Buffer{});
     if (g.B.gpu.img) retirer(g.B.gpu, Buffer{});
     g.A = Sonde{}; g.B = Sonde{};
@@ -434,7 +438,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     // sondes oubliées et exposition remise à la valeur du moment, recalée sur la première mesure valide
     const bool autreScene = gv.track != g.pistePrec || gv.map != g.cartePrec || gv.car != g.voiturePrec;
     if (!g.init || dt < 0 || fp.night != g.nuitPrec || length(point - g.pointPrec) > 80.f || autreScene) {
-        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; }
+        if (!g.init || autreScene || fp.night != g.nuitPrec) { g.ev = fp.night ? EV_REF_NUIT : EV_REF_JOUR; g.evInit = false; g.sceneNeuve = true; }
         remettreAZero(); g.init = true; dt = 0;
     }
     g.pistePrec = gv.track; g.cartePrec = gv.map; g.voiturePrec = gv.car;
