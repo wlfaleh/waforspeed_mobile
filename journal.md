@@ -4076,3 +4076,8 @@ Commit relu 27e1bc1. 40 captures ouvertes : `course5-fin` 5e → 3e (bon), `cour
 - Aucune décision « en moyenne » n'existe : le commentaire du test qui y renvoie est à retirer ; la moyenne reste refusée.
 - Nouvelle mesure (sans affaiblir le but) : **P90 des images sur des fenêtres de 30 s** ; référence R = plus haute P90 de la 1re minute ; à **chaque** fenêtre jusqu'à 10 min, Haute et Basse, 4 cartes, 10 graines : voitures dessinées ≤ max(1,3 × R ; R + 2) et ≤ 8 ; appels et triangles ≤ max(1,3 × R ; R + 2 × coût d'une voiture) ; total constant ; **0 fenêtre hors règle**.
 - Les 6 autres points du lead dev restent à corriger par agent arwa ; ticket inchangé (↩️ Retour lead dev, PR #249).
+
+### 2026-11-08 20:18:54 — WFS-317 (partie 2) fusionné par le lead dev, PR #276 (lead-dev)
+- 2e revue sur la tête 71f5775, sur ordre de l'utilisateur. Les 4 points du 1er refus (b1ac2ca) sont réglés : captures sur une seule base (part « voitures » ≈ 187 k avant comme après), branche à jour (il ne manque que des commits de suivi), 814 → 248 personnes, marcheurs répartis sur tout le tour (accord du PO, 18:41).
+- Toutes les captures de `qa/pr/WFS-317/` ont été regardées et tout le diff relu (`pietons.cpp`, `foule_apparition.h`, `conducteurs.*`, `qualite_*`, `bench_perf.cpp`, tests). `test_apparition_pietons` et `test_qualite` relancés : OK.
+- Approbation écrite dans la PR, puis squash 56377bb. Statut : 🟡 À valider (utilisateur). Remarque : la description de la PR sur GitHub n'a pas été mise à jour ; le texte qui fait foi est `qa/pr/WFS-317/pr.md`.
