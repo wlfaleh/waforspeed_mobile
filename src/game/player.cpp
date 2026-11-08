@@ -147,10 +147,13 @@ void Player::update(double dt, const DriveInput& in, Track& track, bool playing)
     // permise : adhérence et freinage de cette conduite (Phys::grip, Phys::brake) sur les 600 m qui viennent, et au plus 90 % de
     // celle des ordinateurs de la Course à 5 (vitesseVirage, course5.cpp : la plus haute où la voiture reste sur la chaussée ;
     // trop optimiste dans les chicanes pour un joueur qui braque). Le joueur peut toujours freiner plus tôt ; aide désactivée,
-    // rien n'est fait à sa place (RG-07 de WFS-241)
+    // rien n'est fait à sa place (RG-07 de WFS-241).
     DriveInput cmd = in;
     freinAide = false;
-    if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258) {
+    // Décision du PO (option A) : la limite CÈDE quand le joueur conduit lui-même : il braque fort (doigt ou flèche à 0,35 et plus,
+    // VOLANT_PLEIN : l'aide lui laisse déjà tout le volant) ou il freine ; elle ne ralentit que volant lâché ou presque
+    const bool joueurConduit = std::abs(in.steer) >= VOLANT_PLEIN || in.brake;
+    if (aide == Aide::Activee && playing && !locked && speed > 0 && !g_avantWfs258 && !joueurConduit) {
         double vp = vitesseVirageAide(track, dist, Phys::grip / 9.81, Phys::brake / 9.81);
         if (g_vitesseVirageCourse5) vp = std::min(vp, g_vitesseVirageCourse5(track, dist) * M * 0.9);
         if (v > vp) { cmd.gas = false; cmd.nitro = false; if (v > vp * 1.03 && v > Phys::vRecul * 2) { cmd.brake = true; freinAide = true; } }
