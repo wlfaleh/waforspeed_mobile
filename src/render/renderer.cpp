@@ -1157,6 +1157,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     static const bool ombresBasse = [] { const char* e = std::getenv("WFS_OMBRES_BASSE"); return e && e[0] == '1'; }();
     if (qualiteBasse && ombresBasse) { shadowsOn_ = fp.shadows && !fp.night; night_ = fp.night; }
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
+    comptesPrec_ = comptes_; comptes_ = ComptesImage{};   // WFS-317 (I9)
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
     if (bloom_) bloom_->force = gpuLogiciel() ? 0.f : bloomForce * (fp.bloom >= 0.f ? fp.bloom : nuitScene_ ? 0.8f : 0.3f);
@@ -1264,6 +1265,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
 void Renderer::flushDraw(const Pending& p) {
     appels_++;   // WFS-15
     chrono_.triangles += p.count / 3;   // WFS-222
+    comptes_.appels[p.famille]++; comptes_.triangles[p.famille] += p.count / 3;   // WFS-317 (I9)
     VkCommandBuffer cb = fr_[cur_].cb;
 #if defined(__APPLE__)
     // WFS-88 : le GPU du simulateur iOS (famille Apple 2) refuse un sommet de base non nul (MoltenVK : VK_ERROR_FEATURE_NOT_PRESENT,
@@ -1347,6 +1349,7 @@ void Renderer::draw(const Model& m, const mat4& world, const vec3* paint, const 
         const ModelPart& part = parts[pi];
         const Material& mat = m.mats[part.material];
         Pending p{m.vb.buf, m.ib.buf, part.firstIndex, part.indexCount, part.vertexOffset, &mat, {}, depth};
+        p.famille = FAM_VOITURES;   // WFS-317 (I9)
         // WFS-134 (RG-11) : roues fixes → pièces d'un même matériau qui se suivent dans les indices (partie fixe + 4 roues,
         // WFS-60) dessinées en un seul appel
         if (!anim) while (pi + 1 < parts.size() && parts[pi + 1].material == part.material && parts[pi + 1].vertexOffset == part.vertexOffset && parts[pi + 1].feuArriere == part.feuArriere &&
@@ -1429,6 +1432,7 @@ void Renderer::drawSkinned(const SkinnedMesh& m, const Material& mat, const mat4
         std::memcpy((uint8_t*)osBuf_[cur_].mapped + ofs + OS_PALETTE, look, sizeof(look));
     }
     Pending p{m.vb.buf, m.ib.buf, first, count ? count : m.indexCount - first, 0, &mat, {}, length(world.transformPoint({0, 0, 0}) - camPos_)};
+    p.famille = FAM_PERSONNES;   // WFS-317 (I9)
     p.pc.model = world; p.pc.color = mat.color;
     p.pc.params = {mat.metal, mat.rough, mat.cutoff, (float)mat.flags};
     p.pc.emissive = {mat.emissive.x, mat.emissive.y, mat.emissive.z, fondu};   // WFS-257 : tramage du fondu (fonduLod), 0 sinon
