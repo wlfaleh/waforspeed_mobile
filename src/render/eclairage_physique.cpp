@@ -64,6 +64,7 @@ struct Etat_ {
     const void* pistePrec = nullptr; const void* cartePrec = nullptr; const void* voiturePrec = nullptr;   // WFS-213 (RG-01)
     double ev = 15; bool evInit = false, recaler = true; double dtImage = 0; int generation = 0;
     double tScene = 0;   // WFS-328 : temps de la dernière nouvelle scène (retard de capture du banc)
+    bool nuitEstimee = false;   // WFS-328 : image précédente exposée sur l'estimation de nuit (sans sonde locale)
     double hCache = -1000, kCache = 0;
     // ciel (pour la sonde du ciel calculée sur le CPU)
     struct Ciel { bool nuit = false; double K = 0, Lnuit = 0; vec3 haut{}, horizon{}, sol{}, brume{}, soleil{}; } ciel;
@@ -492,7 +493,7 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     g.avant = normalize(vec3{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)});
     // WFS-328 (ANO-177, RG-01) : avant la première sonde locale d'une scène, la mesure lisait la sonde du ciel : celle de la scène
     // d'avant à la première image (jour du menu : 3 458 cd/m²), puis le seul ciel de nuit sans lampadaires (0,025 cd/m²) :
-    // exposition 1,5 à 2 IL trop claire pendant le décompte (image blanche / rose) jusqu'à la capture (≈ 3 s sur le téléphone).
+    // exposition 1,3 IL plus claire d'un coup pendant le décompte au banc (image blanche / rose sur le téléphone) jusqu'à la capture (≈ 3 s).
     // La nuit, la mesure réfléchie attend donc la sonde locale (la valeur du moment, EV_REF_NUIT, la remplace, mêlée au
     // posemètre incident des lampadaires, connu dès la 1re image) ; de jour, elle attend que la sonde du ciel soit à jour.
     const bool mesureSure = g.B.capture || (!nuit && !g.cielAFaire);
@@ -517,8 +518,12 @@ void physique(FrameParams& fp, bool dediee, const GameView& gv) {
     cible = std::clamp(cible, evMinLu, evMax);
     if (g.forc.actif && g.forc.ev > -50) cible = g.forc.ev;
     // recalage sans adaptation : exposition fixe (banc), première image, nouvelle scène jusqu'à sa première capture
-    if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
-    else g.ev = adapter(g.ev, cible, dt);
+    // WFS-328 (RG-02, RG-03) : la nuit, l'image tourne déjà sur l'estimation (valeur du moment) quand la première sonde arrive :
+    // passage doux vers la mesure (adaptation de l'œil, pas de saut visible) ; à temps arrêté (banc) ou de jour, recalage direct
+    const bool doux = g.nuitEstimee && dt > 0;
+    if ((g.forc.actif && g.forc.ev > -50) || !g.evInit || (g.recaler && Lmes > 0 && !doux)) { g.ev = cible; g.evInit = true; if (g.B.capture) g.recaler = false; }
+    else { g.ev = adapter(g.ev, cible, dt); if (doux && g.B.capture) g.recaler = false; }
+    g.nuitEstimee = nuit && !mesureSure;
     if (!std::isfinite(g.ev)) g.ev = std::clamp(nuit ? EV_REF_NUIT : EV_REF_JOUR, evMin, evMax);   // WFS-213 (RG-02) : jamais de valeur non finie
     g.dtImage = dt;
     const double k = exposition(g.ev);
