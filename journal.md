@@ -3834,3 +3834,5 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 - Remarque non bloquante laissée au développeur : bascule de la limite de l'aide à 100 km/h (oscillation possible autour de 100 km/h doigt tenu dans un virage lent) ; à regarder pendant l'essai de l'utilisateur.
 
 ### 2026-11-08 17:09:04 — WFS-258 point 3 fusionné ; petite correction de bascule, puis WFS-327 réservé à l'agent dev conduite (po-scrum-master)
+
+### 2026-11-08 17:11:18 — WFS-317 : accord de zone pour `pietons.cpp` et `conducteurs.*` (niveau de détail selon la caméra, Basse) (po-scrum-master)
