@@ -501,9 +501,9 @@ public:
         initEtabs(r, *g.track);   // WFS-181
         if (lots::g_lotsDecor) {   // WFS-268 : tout le décor fixe d'un tour, construit ici (écran de chargement), envoyé au GPU une fois
             limiteTour_ = len_;
-            {   // WFS-269 (accroche) : occlusion précalculée : décor uni, rochers, trottoirs, chaume et bois (MAT_AO) la reçoivent
+            {   // WFS-269 (accroche) : occlusion précalculée : décor uni, chaume et bois (MAT_AO) la reçoivent ; pas les rochers ni les trottoirs (crénelage et taches sous les palmiers, revue du lead dev)
                 auto b = [](std::initializer_list<int> l) { uint64_t m = 0; for (int x : l) m |= 1ull << x; return m; };
-                lots_.occlusion(b({P_UNI, P_ROC, P_TROTTOIR, P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
+                lots_.occlusion(b({P_UNI, P_PAILLE, P_BOIS}), b({P_UNI, P_ROC, P_VOUTE, P_STIPE, P_PALME, P_SECHE, P_PAILLE, P_BOIS, P_ACIER}), 0);
             }
             lots_.preparer(r, *g.track, P_COUNT, 3, [this, &g](int64_t c, bool lod, std::vector<Vertex>* v, std::vector<uint32_t>* i) {   // 3 morceaux (115 m) : débord au bout de la fenêtre ≤ 2 morceaux (mer dégagée)
                 Geo out[P_COUNT];
@@ -549,7 +549,7 @@ public:
         rocTex_ = r.vk().uploadTexture(c.data(), 256, 256, true);
         rocNrm_ = r.vk().uploadTexture(n.data(), 256, 256, false);
         rocMr_ = r.vk().uploadTexture(m.data(), 256, 256, false);
-        Material mr; mr.rough = 1.f; mr.flags = MAT_DOUBLE | MAT_AO;   // rugosité × texture (0,86-1,0), roche non métallique ; WFS-269 : MAT_AO
+        Material mr; mr.rough = 1.f; mr.flags = MAT_DOUBLE;   // rugosité × texture (0,86-1,0), roche non métallique
         mats_[P_ROC] = r.makeMaterial(mr, &rocTex_, &rocNrm_, &rocMr_);
         // voûte : le moteur n'a ni occultation ambiante ni éclairage d'environnement (DA-realisme.md § 1) ; sous 200 m de
         // roche, la lumière du ciel n'arrive pas : couleur × 0,3 pour ne pas éclairer la voûte comme dehors
@@ -566,7 +566,7 @@ public:
         Material mo; mo.flags = MAT_ROAD; mo.rough = 0.8f;   // même surface procédurale que la chaussée de Game
         mats_[P_ROUTE] = route::creerMateriau(r, route::Revetement::EnrobeUse, mo);   // WFS-205 (accroche)
         mats_[P_GIR] = route::creerMateriau(r, route::chaussee(), mo);   // WFS-248 : anneau du giratoire = chaussée de la route
-        { Material mw; mw.flags = MAT_WALK | MAT_AO; mw.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, mw); }   // comme le trottoir de Game
+        { Material mw; mw.flags = MAT_WALK; mw.rough = 0.85f; mats_[P_TROTTOIR] = route::creerMateriau(r, route::Revetement::BetonTrottoir, mw); }   // comme le trottoir de Game
         // lentilles du feu tricolore : éteinte (verre sombre), rouge, orange, vert (LED, allumées)
         Material ml; ml.color = {0.03f, 0.03f, 0.03f, 1}; ml.rough = 0.2f; ml.flags = MAT_DOUBLE;
         lentilleEteinte_ = r.makeMaterial(ml, nullptr, nullptr, nullptr);

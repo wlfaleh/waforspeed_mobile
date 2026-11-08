@@ -15,7 +15,8 @@ const float PI = 3.14159265;
 const uint F_PAINT = 1u, F_BLEND = 2u, F_TAIL = 4u, F_HEAD = 8u, F_MASK = 32u, F_GLASS = 64u,
            F_ROAD = 256u, F_WALK = 512u, F_GROUND = 1024u, F_SHADOW = 2048u, F_HASNORMAL = 4096u, F_HASMR = 8192u, F_VTINT = 16384u,
            F_POOL = 32768u, F_ADD = 65536u,   // WFS-09 : tache des phares (multiplicative), halo (additif)
-           F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u, F_AO = 4194304u,   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
+           F_WHEEL = 128u, F_FANTOME = 131072u, F_EMTEX = 262144u,   // WFS-134 : jantes et pneus (ambiante minimale), fantôme du record (translucide)
+           F_AO = 4194304u,   // WFS-269 : occlusion du décor fixe précalculée, rangée dans la longueur de la normale
            F_TANGENTE = 524288u;   // WFS-149 : carte de normales dans le repère tangent des sommets
 
 // WFS-149 (RG-05) : code découpé par domaine (déplacé tel quel) : une épic Réalisme par fichier

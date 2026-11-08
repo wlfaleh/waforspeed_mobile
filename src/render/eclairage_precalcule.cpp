@@ -13,7 +13,7 @@ namespace wfs::precalcul {
 namespace {
 
 // grille d'occupation à deux niveaux : cellules de 16 × 16 × 16 voxels (8 m) repérées par une table de hachage à adressage ouvert,
-// chacune un masque de 4096 bits (512 octets). Remplie une fois (un seul fil, clés triées : la cellule change rarement), puis lue
+// chacune un masque de 4096 bits (512 octets). Remplie une fois (une grille par tâche, puis fusion par OU des masques), puis lue
 // par tous les fils (aucune écriture) ; chaque rayon garde sa dernière cellule : presque toujours un simple test de bit.
 // (Essais au banc, Ville, 3,3 millions de voxels : table plate de clés 64 bits, 4,7 s puis 1,5 s en parallèle ; ici bien moins.)
 class Grille {
@@ -147,8 +147,6 @@ float ciel(const Grille& g, const vec3& p, const vec3& n) {
 Bilan occlusionDecor(std::vector<Lot>& lots) {
     const auto t0 = std::chrono::steady_clock::now();
     Bilan bil;
-    size_t tri = 0;
-    for (const Lot& l : lots) if (l.occulte && l.i) tri += l.i->size() / 3;
     // chaque tâche remplit sa propre grille pour une suite de lots voisins (morceaux consécutifs le long de la route : une région
     // compacte), sans garder de clés ; puis les grilles sont fusionnées (OU des masques). Essais au banc (Ville) : clés brutes
     // triées 1,2 s ; non triées 0,8 s mais 72 millions de clés (580 Mo) : écarté.
@@ -178,7 +176,6 @@ Bilan occlusionDecor(std::vector<Lot>& lots) {
     for (auto& p : partielles) { g.fusionner(*p); p.reset(); }
     g.recompter();
     bil.memoireMo = (double)g.cellules() * 512 / 1e6;
-    (void)tri;
     bil.voxels = g.taille();
     bil.msGrille = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
     std::vector<Lot*> recoivent;
