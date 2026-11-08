@@ -4294,3 +4294,13 @@ PR #283 (Claude, agent dev Y), commit relu c9cd8203, fusion en squash b5d8ddb. J
 ### 2026-11-08 21:57:21 — WFS-329 fusionné (#281, 🟡) ; WFS-332 créé (remarques du lead dev) ; WFS-293 à Claude, agent 1, sur sa demande (po-scrum-master)
 
 ### 2026-11-08 21:57:42 — Correction : WFS-293 était déjà pris par Agent 0 (21:23) ; rendu à Agent 0 ; Claude, agent 1 reçoit WFS-322 (po-scrum-master)
+
+### 2026-11-08 21:58:16 — WFS-305 : PR #285 ouverte, fosse du parc fermée (Claude, agent dev conduite)
+- **Cause (RG-01)** : `src/world/ville.cpp` (boucle des bandes) coupe la pelouse du parc et le béton du port à `Plan::lim`, 90 % du plus petit rayon des **60 m qui suivent** (WFS-137 RG-C1), alors que le sol de base (`solChunk`) n'est replié qu'au rayon **local**. Dans les 60 m avant chaque virage serré, au-delà de 20,1 à 21,6 m de l'axe, on voyait donc ce sol, plus bas et sans herbe. Au-delà du centre du virage, aucune bande ne couvrait le secteur. De plus, le bord coupé gardait la hauteur de la fin de bande (0,45 m) : la pelouse remontait en rebord au-dessus de la fosse.
+- **Correction** : `ville::carreauxSol` (`ville_quartiers.*`) pose au chargement des carreaux de 0,5 m là où rien ne couvre le sol, hors chaussée et trottoir. Leur hauteur est lissée entre les bandes voisines, 1 cm dessous, avec des coins partagés (maillage continu). Le bord coupé de la bande est remis à sa vraie hauteur. Même matériau : appels de dessin + 0.
+- **RG-04** (`test_ville_sol`, nouveau ; **accroche `CMakeLists.txt` d'une ligne**) : 4 courbes serrées (198 m centre, 1 008 m résidentiel, 1 283 m parc, 4 547 m parc ; rayon minimal 22 à 24 m). Trous de 1 m : **1 115 avant, 0 après** (parc 1 283 m : 500 → 0 ; parc 4 547 m : 615 → 0). 0 marche de plus de 5 cm créée par les carreaux. 0 carreau sur une chaussée.
+- **RG-03 (port)** : aucune courbe serrée ne longe le port : rien à corriger.
+- **RG-06** : `carreauxSol` en 85 ms sur PC (5 140 carreaux, 1 285 m²) ; appels de dessin des virages identiques à `main`.
+- **RG-07** : 34 captures du banc `ville` identiques à `main` (0,00 %). 3 captures changent dans la zone corrigée : virage-3 0,61 %, apk916-5 0,35 %, rond-point 1,41 % (> 1 % : rebord du parc supprimé, rien d'autre).
+- **Risque signalé au PO (RG-02)** : en 9 points (≈ 2 m), deux pelouses existantes de deux parties du tracé se touchent avec jusqu'à 7,6 cm d'écart, là où la fosse n'était qu'une fente. Le corriger demanderait de changer la hauteur des bandes du parc ailleurs. Proposition : l'accepter (la marche existait, les carreaux n'en créent aucune). Autre option : un ticket pour adoucir le profil des bandes du parc.
+- Tests CPU 78 / 78 OK. Captures `qa/pr/WFS-305/` (bancs `ville`, `rondspoints`). PR #285, lead dev appelé.
