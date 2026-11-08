@@ -3382,3 +3382,19 @@ Recherche : `gh api search/code` (« <modèle> filename:license.txt ») ; lectur
 
 ### 2026-11-08 11:46:22 — VABF 2026-11-08 : vidéo de l’utilisateur sur l’APK 0.1.908, ANO-172 (bloquante) et ANO-173 (agent qa lead)
 - Ville de nuit, aide désactivée : volant tenu à gauche dans le rond-point, la voiture ne tourne presque pas et monte sur le trottoir alors que WFS-295 est dans l’APK (ANO-172, bloquante). Ville de nuit grise en Basse (ANO-173, mineure). ANO-115 revérifiée : toujours 21 img/s. ANO-156 corrigée à l’image. Rapport `qa/rapports/VABF-2026-11-08.md` ; transmis au PO.
+
+### 2026-11-08 04:59:42 — WFS-232 fusionné par le lead dev (lead-dev ; entrée écrite par le lead dev, envoyée sur `main` par arwa-3 : la session du lead dev s'est arrêtée avant l'envoi)
+- **PR #245** (arwa-3), 4e revue, commit relu 6baa3128, squash **d6d41cb**. Approbation écrite dans la PR (revue 5816694573, « ✅ Approuvé par le lead dev », en commentaire : GitHub refuse l'approbation du même compte).
+- **Défaut 1 de la 3e revue (« 500X » sur la routière) corrigé** : banc `motos` refait par le lead dev en 2340 × 1080, comparé à son rendu de la 3e revue. Seuls 479 pixels changent, à l'endroit des lettres ; réservoir sans trou. Dans `routiere.wfm`, seul le matériau `BlankDecalOccluded_M` (440 triangles) est retiré ; les 32 autres matériaux et les 13 textures sont identiques.
+- **Sportive** : plus aucune lettre de marque cachée (planche d'autocollants et texture métal / rugosité unie) ; rendu identique.
+- **Vérifié** : captures refaites ouvertes une par une ; diff des nouveaux commits relu (`lateralPiloteEjecte` et son test, script de conversion, commentaires) ; 66 tests CPU relancés : OK ; licences : 0 manque ; description complète, nom d'agent juste ; aucun fichier iOS ni hors zone. `main` avait avancé avec WFS-263 (shaders, `renderer.*`) : aucun fichier commun, fusion sans conflit.
+- **Statut** : 🟡 À valider (utilisateur) (défaut remonté par l'utilisateur) ; ligne ajoutée à `qa/Check.md` ; ligne #245 supprimée de `suivi-pr.md` ; arwa-3 libéré de WFS-232.
+- **Pour le PO (po-scrum-master)** : à ranger dans WFS-280 : éjection du pilote en 0,3 à 0,5 s et pilote qui glisse seul ; flux du phare (paire de 3 000 lm) et clignotants.
+
+### 2026-11-08 11:49:22 — WFS-232 : suites de la fusion, arwa-3 s'arrête (arwa-3)
+- Fusion de la PR #245 par le lead dev à 04:59 (squash d6d41cb, 4e revue approuvée) ; la session du lead dev s'est arrêtée (limite de l'API) avant d'envoyer ses mises à jour : je les envoie sur `main` (`TACHES.md` 🟡 À valider (utilisateur), ligne `qa/Check.md`, son entrée au journal ci-dessus) ; ligne #245 déjà retirée de `suivi-pr.md`.
+- Ligne `qa/Check.md` complétée de l'écart accepté par le PO (4267247) : selles du scooter −2,5 % et de la sportive −1,8 %, ralentissement à 25° avant les courbes.
+- Réponse à l'utilisateur dans `tache utilisateur.md`, sous la demande « pas de motos » (conversation avec le PO, 2026-11-07 12:51 UTC).
+- Remarques non bloquantes du lead dev, laissées pour plus tard (aucun nouveau ticket pris) : `qa/pr/WFS-232/pr.md` dit « 65 tests CPU » (la description de la PR dit 66) ; commentaire du test de `lateralPiloteEjecte` dans `test_trace.cpp` : « 2e revue » au lieu de « 3e ».
+- **arwa-3 libre et arrêté sur demande de l'utilisateur** (2026-11-08 11:48 UTC : « termine la tâche en cours et arrête de prendre des US ») : je ne demande plus de ticket au PO.
+
