@@ -178,6 +178,8 @@ public:
     bool capturePng(const std::string& path);   // rendu hors écran seulement
 
     Image white, flatNormal;
+    bool refletDemi() const { return !qualiteBasse && niveauOmbres == 1; }   // WFS-264 (RG-02) : Moyenne (niveau affiché 1)
+    int niveauCascades() const { return qualiteBasse ? 0 : std::clamp(niveauOmbres, 1, 3); }   // WFS-264 (RG-03) : Basse = 1 cascade de 40 m
     bool forceNoShadows = false;   // banc d'essai (WFS-07) : rendu sans ombres du soleil, comme la nuit
     bool forceSansReflets = false; // WFS-222 (RG-03) : baisse automatique : pas de passe de reflet (route mouillée)
     bool rendu221 = false;         // WFS-222 : banc seulement (WFS_AVANT_222=1) : rendu d'avant WFS-222, pour comparer images et coûts

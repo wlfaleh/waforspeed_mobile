@@ -728,11 +728,14 @@ void Renderer::refletPass(VkCommandBuffer cb) {
     VkClearValue clears[2]{};
     clears[0].color = {{0, 0, 0, 1}}; clears[1].depthStencil = {0.f, 0};
     VkRenderPassBeginInfo bi{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-    bi.renderPass = refletPass_; bi.framebuffer = refletFb_[cur_]; bi.renderArea = {{0, 0}, {rw_, rh_}};
+    // WFS-264 (RG-02) : Moyenne : reflet dessiné à moitié de sa résolution (coin supérieur gauche de sa cible, lu par scene.frag
+    // avec spotN.w = 0,5) ; Haute : toute la cible (demi-résolution de la scène, comme avant)
+    const uint32_t w = refletDemi() ? std::max(1u, rw_ / 2) : rw_, h = refletDemi() ? std::max(1u, rh_ / 2) : rh_;
+    bi.renderPass = refletPass_; bi.framebuffer = refletFb_[cur_]; bi.renderArea = {{0, 0}, {w, h}};
     bi.clearValueCount = 2; bi.pClearValues = clears;
     vkCmdBeginRenderPass(cb, &bi, VK_SUBPASS_CONTENTS_INLINE);
-    VkViewport vpt{0, 0, (float)rw_, (float)rh_, 0, 1};
-    VkRect2D sc{{0, 0}, {rw_, rh_}};
+    VkViewport vpt{0, 0, (float)w, (float)h, 0, 1};
+    VkRect2D sc{{0, 0}, {w, h}};
     vkCmdSetViewport(cb, 0, 1, &vpt); vkCmdSetScissor(cb, 0, 1, &sc);
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, sceneLayout_, 0, 1, &refletSet_[cur_], 0, nullptr);
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, refSky_);
@@ -1036,8 +1039,10 @@ uint8_t Renderer::classer(const masquage::Sphere& s, bool sansDistance) {
     if (sansMasquage_ && rendu221) return VIS_CAM | VIS_REFLET | VIS_OMBRE | CASC;   // banc : comparaison avec l'avant
     const uint8_t tout = sansMasquage_ ? VIS_CAPTURE : 0;
     if (!sansDistance && length(s.c - camPos_) - s.r > masquage::distanceMax(s.r, qualiteBasse, finBrouillard_)) { if (!tout) masques_++; return tout; }
+    // WFS-264 (RG-03) : petit objet (rayon < 1,5 m : panneau, borne, piéton, mobilier) à plus de 40 m : pas d'ombre portée
+    const bool ombrePetit = !(length(s.c - camPos_) > 40.f && s.r < 1.5f);
     const uint8_t v = (masquage::visible(fCam_, s) ? VIS_CAM : 0) | (refletsOn_ && masquage::visible(fReflet_, s) ? VIS_REFLET : 0) |
-                      (shadowsOn_ && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
+                      (shadowsOn_ && ombrePetit && masquage::visible(fOmbre_, s) ? VIS_OMBRE : 0);
     uint8_t c = 0;   // WFS-227 (accroche) : cascades d'ombre que l'objet touche (passe d'ombre : une tuile seulement si besoin)
     // tranche de la cascade (le long du regard) + portée de l'ombre de l'objet (≈ 3 × son rayon + 5 m) : un objet près de la
     // caméra (la voiture) n'est pas redessiné dans les cascades lointaines, ni un petit objet (< 2 texels) dans une cascade grossière
@@ -1150,6 +1155,10 @@ bool Renderer::beginFrame(const FrameParams& fp) {
     // boîte d'ombre (stableShadow du jeu web) : centrée sur la voiture, 20 m devant dans le sens de la caméra,
     // repère du soleil fixe et centre calé sur la grille des texels → bords d'ombre stables quand on roule
     shadowsOn_ = fp.shadows && !fp.night && !forceNoShadows; night_ = fp.night || forceNoShadows;
+    // WFS-264 (RG-03, ANO-145) : mesure d'une cascade unique en Basse (40 m, toute la carte) ; la Basse reste sans ombre du
+    // soleil (décision du PO, regles-de-gestion/WFS-227.md) : WFS_OMBRES_BASSE=1 au banc seulement, pour le chiffre au journal
+    static const bool ombresBasse = [] { const char* e = std::getenv("WFS_OMBRES_BASSE"); return e && e[0] == '1'; }();
+    if (qualiteBasse && ombresBasse) { shadowsOn_ = fp.shadows && !fp.night; night_ = fp.night; }
     nuitScene_ = fp.night; appelsPrec_ = appels_; appels_ = 0;   // WFS-15
     chronoPrec_ = chrono_; chrono_.triangles = 0;   // WFS-222 : image précédente (attenteGpuMs : celle-ci, fin de beginFrame)
     // WFS-15 / WFS-100 : force d'ENV.bloom du jeu web (nuit 0,8, jour 0,3, garage 0,55 par fp.bloom) ; coupé en Basse et en GPU logiciel
@@ -1174,9 +1183,9 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         // WFS-227 (accroche E13) : cascades stabilisées (eclairage_ombres.h) ; shadowMat = boîte de toutes les cascades (masquage)
         const vec3 regard{-fp.view.at(2, 0), -fp.view.at(2, 1), -fp.view.at(2, 2)};
         regardCasc_ = normalize(regard);
-        cascades_ = ombres::calculer(L, fp.camPos, regard, std::clamp(niveauOmbres, 1, 3), shadowSize_);
+        cascades_ = ombres::calculer(L, fp.camPos, regard, niveauCascades(), shadowSize_);
         for (int k = 0; k < 4; k++) { u.ombreCasc[k] = cascades_.m[std::min(k, cascades_.n - 1)]; (&u.ombreFin.x)[k] = cascades_.fin[std::min(k, cascades_.n - 1)]; (&u.ombreDemi.x)[k] = cascades_.demi[std::min(k, cascades_.n - 1)]; }
-        u.ombreP = {(float)cascades_.n, (float)std::clamp(niveauOmbres, 1, 3), (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_), (float)ombres::tanSoleil()};
+        u.ombreP = {(float)cascades_.n, (float)std::max(niveauCascades(), 1), (float)(cascades_.n > 1 ? shadowSize_ / 2 : shadowSize_), (float)ombres::tanSoleil()};
         u.shadowMat = cascades_.union_;
     }
     {   // WFS-45 : projecteurs, lumière hémisphère, brouillard linéaire (three.js r128, physicallyCorrectLights non activé)
@@ -1189,7 +1198,8 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         }
         const int n = std::clamp(fp.spotCount, 0, FrameParams::SPOTS_MAX);   // WFS-226
         // WFS-263 (RG-02) : y = lumières par pixel au plus (4 en Basse, 12 sinon) ; z = lectures du reflet de la route mouillée (4 / 12)
-        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, 0};
+        // WFS-264 (RG-02) : w = part de la cible du reflet de la route dessinée (0,5 en Moyenne, 1 sinon)
+        u.spotN = {(float)n, qualiteBasse ? 4.f : 12.f, qualiteBasse ? 4.f : 12.f, refletDemi() ? 0.5f : 1.f};
         // WFS-263 (RG-02) : en Basse (4 lumières par pixel au plus), lumières rangées de la plus proche à la plus lointaine de
         // la caméra : le plafond garde celles qui éclairent le premier plan ; Haute : ordre inchangé (image identique)
         int ordre[FrameParams::SPOTS_MAX];
@@ -1209,7 +1219,7 @@ bool Renderer::beginFrame(const FrameParams& fp) {
         }
     }
     // WFS-16 : chaussée mouillée, flaques, reflets de la scène (passe miroir autour de y = refletY)
-    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets;   // WFS-222 (RG-03)
+    refletsOn_ = fp.mouille && fp.reflets && !forceSansReflets && !qualiteBasse;   // WFS-222 (RG-03) ; WFS-264 (RG-02) : coupé en Basse (ciel et sonde seuls)
     u.nuitA = {fp.mouille ? 1.f : 0.f, fp.mouille && fp.flaques ? 1.f : 0.f, refletsOn_ ? 1.f : 0.f, 0};
     // WFS-142 (RG-04, RG-08) : w = force du reflet sur la chaussée (configgame) ; WFS_REFLETS=0 : −1, aucun reflet (mesure du banc)
     const char* eR = std::getenv("WFS_REFLETS");
