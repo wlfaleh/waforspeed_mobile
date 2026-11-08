@@ -46,6 +46,9 @@ private:
     double D() { return D_.next(); }
     int64_t fl(double v) { return (int64_t)v; }   // Math.floor(D() · k) : D() ≥ 0
     size_t idx(int64_t n) const { return (size_t)(((n % L_) + L_) % L_); }
+    // WFS-283 : la dernière zone du tour se replie sur le départ ; jamais de passage piéton sous la grille (45 m derrière la
+    // ligne, 5 m devant) : sans le rond-point, le tour plus court en posait un à 7 m derrière la ligne
+    bool grilleDepart(int64_t n) const { const int64_t a = (int64_t)idx(n); return a < (int64_t)(5 / SEG_M) || a > L_ - (int64_t)(45 / SEG_M); }
     void item(int64_t n, const Objet& o) { P_.objets[idx(n)].push_back(o); }
     void collide(int64_t n, double offM, float hit) { P_.chocs[idx(n)].push_back({(float)(offM / RW), hit}); }
     bool libre(int64_t n) const { return !lampe_[idx(n)]; }
@@ -94,7 +97,7 @@ private:
             }
         }
         for (int64_t n = z0 + 12; n < z1; n += 24) lamp(n, (n / 24) % 2 ? 1 : -1);
-        for (int64_t n = z0 + 40; n < z1; n += 150) { Objet o; o.t = ZEBRA; item(n, o); }
+        for (int64_t n = z0 + 40; n < z1; n += 150) if (!grilleDepart(n)) { Objet o; o.t = ZEBRA; item(n, o); }
         for (int side : {-1, 1}) for (int64_t n = z0 + (side < 0 ? 4 : 10); n < z1; n += 16)
             if (libre(n) && libre(n + 1) && D() > 0.2) arbreRue(n, side, 5 + D() * 2.5);
         for (int64_t n = z0 + 60; n < z1 - 40; n += 130 + fl(D() * 50)) {
@@ -131,7 +134,7 @@ private:
         for (int64_t n = z0 + 80; n < z1 - 20; n += 160) if (libre(n)) {
             Objet o; o.t = ABRIBUS; o.side = D() < 0.5 ? -1 : 1; item(n, o);
         }
-        for (int64_t n = z0 + 50; n < z1; n += 170) { Objet o; o.t = ZEBRA; item(n, o); }
+        for (int64_t n = z0 + 50; n < z1; n += 170) if (!grilleDepart(n)) { Objet o; o.t = ZEBRA; item(n, o); }
     }
 
     // city.parc : un côté tiré (parkSide) : grille, arbres ronds / pins, bancs, fontaines ; l'autre : immeubles moyens
