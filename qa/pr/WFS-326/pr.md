@@ -16,7 +16,7 @@ Agent : Claude, agent dev Y
   - `cartes_banc.cpp` : les vues `carte-ville-virage-N` sont aussi prises de nuit.
   - Le jour, ces mêmes commerces isolés (stores et terrasses sur la pelouse) disparaissent aussi ; rien d'autre ne change.
 - **Comment c'est vérifié** :
-  - tests CPU verts, parcours complet 0 écart ;
+  - 73 tests CPU verts (après synchronisation avec `main`), parcours complet 0 écart ;
   - banc `ville` complet comparé avant / après : seules changent les vues des virages, `ao-3-d` et `chien`, où ces commerces étaient visibles ;
   - Corniche et Campagne de nuit regardées : pas de commerce de ce type, aucun rectangle dans le vide.
 - **Limites et risques connus** :
